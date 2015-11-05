@@ -72833,8 +72833,6 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="2" label="Mouse"/>
   <int value="3" label="Touch gesture"/>
   <int value="4" label="Mouse wheel"/>
-  <int value="5" label="Media (foreground tab)"/>
-  <int value="6" label="Media (background tab)"/>
 </enum>
 
 <enum name="SiteIsolationMimeType" type="int">

@@ -29,9 +29,8 @@ class SiteEngagementHelperTest : public BrowserWithTestWindowTest {
     return helper.Pass();
   }
 
-  void TrackingStarted(SiteEngagementHelper* helper) {
-    helper->input_tracker_.TrackingStarted();
-    helper->media_tracker_.TrackingStarted();
+  void StartTracking(SiteEngagementHelper* helper) {
+    helper->input_tracker_.StartTracking();
   }
 
   // Simulate a user interaction event and handle it.
@@ -43,21 +42,9 @@ class SiteEngagementHelperTest : public BrowserWithTestWindowTest {
   // Simulate a user interaction event and handle it. Reactivates tracking
   // immediately.
   void HandleUserInputAndRestartTracking(SiteEngagementHelper* helper,
-                                         blink::WebInputEvent::Type type) {
+                       blink::WebInputEvent::Type type) {
     helper->input_tracker_.DidGetUserInteraction(type);
-    helper->input_tracker_.TrackingStarted();
-  }
-
-  void HandleMediaPlaying(SiteEngagementHelper* helper, bool is_hidden) {
-    helper->RecordMediaPlaying(is_hidden);
-  }
-
-  void MediaStartedPlaying(SiteEngagementHelper* helper) {
-    helper->media_tracker_.MediaStartedPlaying();
-  }
-
-  void MediaPaused(SiteEngagementHelper* helper) {
-    helper->media_tracker_.MediaPaused();
+    helper->input_tracker_.StartTracking();
   }
 
   // Set a pause timer on the input tracker for test purposes.
@@ -93,7 +80,7 @@ class SiteEngagementHelperTest : public BrowserWithTestWindowTest {
 
     // Check that navigation triggers engagement.
     NavigateWithDisposition(url1, CURRENT_TAB);
-    TrackingStarted(helper.get());
+    StartTracking(helper.get());
 
     EXPECT_DOUBLE_EQ(0.5, service->GetScore(url1));
     EXPECT_EQ(0, service->GetScore(url2));
@@ -114,7 +101,7 @@ class SiteEngagementHelperTest : public BrowserWithTestWindowTest {
 
     // Simulate inputs for a different link.
     NavigateWithDisposition(url2, CURRENT_TAB);
-    TrackingStarted(helper.get());
+    StartTracking(helper.get());
 
     EXPECT_DOUBLE_EQ(0.7, service->GetScore(url1));
     EXPECT_DOUBLE_EQ(0.5, service->GetScore(url2));
@@ -143,81 +130,6 @@ TEST_F(SiteEngagementHelperTest, GestureEngagementAccumulation) {
   UserInputAccumulation(blink::WebInputEvent::GestureTapDown);
 }
 
-TEST_F(SiteEngagementHelperTest, MediaEngagementAccumulation) {
-  AddTab(browser(), GURL("about:blank"));
-  GURL url1("https://www.google.com/");
-  GURL url2("http://www.google.com/");
-  content::WebContents* web_contents =
-    browser()->tab_strip_model()->GetActiveWebContents();
-
-  scoped_ptr<SiteEngagementHelper> helper(CreateHelper(web_contents));
-  SiteEngagementService* service =
-    SiteEngagementServiceFactory::GetForProfile(browser()->profile());
-  DCHECK(service);
-
-  NavigateWithDisposition(url1, CURRENT_TAB);
-  TrackingStarted(helper.get());
-
-  EXPECT_DOUBLE_EQ(0.5, service->GetScore(url1));
-  EXPECT_EQ(0, service->GetScore(url2));
-
-  // Simulate a foreground media input and ensure it is treated correctly.
-  HandleMediaPlaying(helper.get(), false);
-
-  EXPECT_DOUBLE_EQ(0.52, service->GetScore(url1));
-  EXPECT_EQ(0, service->GetScore(url2));
-
-  // Simulate continual media playing, and ensure it is treated correctly.
-  HandleMediaPlaying(helper.get(), false);
-  HandleMediaPlaying(helper.get(), false);
-  HandleMediaPlaying(helper.get(), false);
-
-  EXPECT_DOUBLE_EQ(0.58, service->GetScore(url1));
-  EXPECT_EQ(0, service->GetScore(url2));
-
-  // Simulate backgrounding the media.
-  HandleMediaPlaying(helper.get(), true);
-  HandleMediaPlaying(helper.get(), true);
-
-  EXPECT_DOUBLE_EQ(0.60, service->GetScore(url1));
-  EXPECT_EQ(0, service->GetScore(url2));
-
-  // Simulate inputs for a different link.
-  NavigateWithDisposition(url2, CURRENT_TAB);
-  TrackingStarted(helper.get());
-
-  EXPECT_DOUBLE_EQ(0.6, service->GetScore(url1));
-  EXPECT_DOUBLE_EQ(0.5, service->GetScore(url2));
-  EXPECT_DOUBLE_EQ(1.1, service->GetTotalEngagementPoints());
-
-  HandleMediaPlaying(helper.get(), false);
-  HandleMediaPlaying(helper.get(), false);
-  EXPECT_DOUBLE_EQ(0.6, service->GetScore(url1));
-  EXPECT_DOUBLE_EQ(0.54, service->GetScore(url2));
-  EXPECT_DOUBLE_EQ(1.14, service->GetTotalEngagementPoints());
-}
-
-TEST_F(SiteEngagementHelperTest, MediaEngagement) {
-  AddTab(browser(), GURL("about:blank"));
-  GURL url1("https://www.google.com/");
-  GURL url2("http://www.google.com/");
-  content::WebContents* web_contents =
-    browser()->tab_strip_model()->GetActiveWebContents();
-
-  scoped_ptr<SiteEngagementHelper> helper(CreateHelper(web_contents));
-  SiteEngagementService* service =
-    SiteEngagementServiceFactory::GetForProfile(browser()->profile());
-  DCHECK(service);
-
-  NavigateWithDisposition(url1, CURRENT_TAB);
-  // Start media playing before tracking begins
-  MediaStartedPlaying(helper.get());
-  TrackingStarted(helper.get());
-
-  EXPECT_DOUBLE_EQ(0.52, service->GetScore(url1));
-  EXPECT_EQ(0, service->GetScore(url2));
-}
-
 TEST_F(SiteEngagementHelperTest, MixedInputEngagementAccumulation) {
   AddTab(browser(), GURL("about:blank"));
   GURL url1("https://www.google.com/");
@@ -237,7 +149,7 @@ TEST_F(SiteEngagementHelperTest, MixedInputEngagementAccumulation) {
                               0);
 
   NavigateWithDisposition(url1, CURRENT_TAB);
-  TrackingStarted(helper.get());
+  StartTracking(helper.get());
 
   EXPECT_DOUBLE_EQ(0.5, service->GetScore(url1));
   EXPECT_EQ(0, service->GetScore(url2));
@@ -275,15 +187,13 @@ TEST_F(SiteEngagementHelperTest, MixedInputEngagementAccumulation) {
                                     blink::WebInputEvent::MouseWheel);
   HandleUserInputAndRestartTracking(helper.get(),
                                     blink::WebInputEvent::MouseDown);
-  HandleMediaPlaying(helper.get(), true);
   HandleUserInputAndRestartTracking(helper.get(),
                                     blink::WebInputEvent::GestureTapDown);
-  HandleMediaPlaying(helper.get(), false);
 
-  EXPECT_DOUBLE_EQ(0.93, service->GetScore(url1));
+  EXPECT_DOUBLE_EQ(0.9, service->GetScore(url1));
   EXPECT_EQ(0, service->GetScore(url2));
   histograms.ExpectTotalCount(SiteEngagementMetrics::kEngagementTypeHistogram,
-                              11);
+                              9);
   histograms.ExpectBucketCount(SiteEngagementMetrics::kEngagementTypeHistogram,
                                SiteEngagementMetrics::ENGAGEMENT_MOUSE, 2);
   histograms.ExpectBucketCount(SiteEngagementMetrics::kEngagementTypeHistogram,
@@ -291,30 +201,24 @@ TEST_F(SiteEngagementHelperTest, MixedInputEngagementAccumulation) {
   histograms.ExpectBucketCount(SiteEngagementMetrics::kEngagementTypeHistogram,
                                SiteEngagementMetrics::ENGAGEMENT_TOUCH_GESTURE,
                                3);
-  histograms.ExpectBucketCount(SiteEngagementMetrics::kEngagementTypeHistogram,
-                               SiteEngagementMetrics::ENGAGEMENT_MEDIA_VISIBLE,
-                               1);
-  histograms.ExpectBucketCount(SiteEngagementMetrics::kEngagementTypeHistogram,
-                               SiteEngagementMetrics::ENGAGEMENT_MEDIA_HIDDEN,
-                               1);
 
   NavigateWithDisposition(url2, CURRENT_TAB);
-  TrackingStarted(helper.get());
+  StartTracking(helper.get());
 
-  EXPECT_DOUBLE_EQ(0.93, service->GetScore(url1));
+  EXPECT_DOUBLE_EQ(0.9, service->GetScore(url1));
   EXPECT_DOUBLE_EQ(0.5, service->GetScore(url2));
-  EXPECT_DOUBLE_EQ(1.43, service->GetTotalEngagementPoints());
+  EXPECT_DOUBLE_EQ(1.4, service->GetTotalEngagementPoints());
 
   HandleUserInputAndRestartTracking(helper.get(),
                                     blink::WebInputEvent::GestureTapDown);
   HandleUserInputAndRestartTracking(helper.get(),
                                     blink::WebInputEvent::RawKeyDown);
 
-  EXPECT_DOUBLE_EQ(0.93, service->GetScore(url1));
+  EXPECT_DOUBLE_EQ(0.9, service->GetScore(url1));
   EXPECT_DOUBLE_EQ(0.6, service->GetScore(url2));
-  EXPECT_DOUBLE_EQ(1.53, service->GetTotalEngagementPoints());
+  EXPECT_DOUBLE_EQ(1.5, service->GetTotalEngagementPoints());
   histograms.ExpectTotalCount(SiteEngagementMetrics::kEngagementTypeHistogram,
-                              14);
+                              12);
   histograms.ExpectBucketCount(SiteEngagementMetrics::kEngagementTypeHistogram,
                                SiteEngagementMetrics::ENGAGEMENT_NAVIGATION, 2);
   histograms.ExpectBucketCount(SiteEngagementMetrics::kEngagementTypeHistogram,
