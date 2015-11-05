@@ -83,7 +83,6 @@ _BLACK_LIST_TEST_MODULES = {
     octane,  # Often fails & take long time to timeout on cq bot.
     rasterize_and_record_micro,  # Always fails on cq bot.
     repaint,  # Often fails & takes long time to timeout on cq bot.
-    chrome_signin_startup,  # Failed on linux swarming bot (crbug.com/551236)
     spaceport,  # Takes 451 seconds.
     speedometer,  # Takes 101 seconds.
     jetstream,  # Take 206 seconds.
