@@ -28,8 +28,9 @@ class TemplateURLServiceFactory : public BrowserStateKeyedServiceFactory {
       ios::ChromeBrowserState* browser_state);
   static TemplateURLServiceFactory* GetInstance();
 
-  // Returns the default factory used to build FaviconService. Can be registered
-  // with SetTestingFactory to use the FaviconService instance during testing.
+  // Returns the default factory used to build TemplateURLService. Can be
+  // registered with SetTestingFactory to use the TemplateURLService instance
+  // during testing.
   static TestingFactoryFunction GetDefaultFactory();
 
  private:
