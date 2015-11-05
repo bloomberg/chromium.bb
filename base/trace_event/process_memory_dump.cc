@@ -4,6 +4,7 @@
 
 #include "base/trace_event/process_memory_dump.h"
 
+#include <errno.h>
 #include <vector>
 
 #include "base/process/process_metrics.h"
