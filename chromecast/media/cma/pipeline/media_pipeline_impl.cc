@@ -352,8 +352,8 @@ void MediaPipelineImpl::SetPlaybackRate(double rate) {
 void MediaPipelineImpl::SetVolume(float volume) {
   CMALOG(kLogControl) << __FUNCTION__ << " vol=" << volume;
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(audio_pipeline_);
-  audio_pipeline_->SetVolume(volume);
+  if (audio_pipeline_)
+    audio_pipeline_->SetVolume(volume);
 }
 
 void MediaPipelineImpl::OnFlushDone(
