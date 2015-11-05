@@ -106,15 +106,6 @@ config("jingle_public_configs") {
 }
 
 # From third_party/libjingle/libjingle.gyp's target_defaults.
-config("jingle_all_dependent_configs") {
-  if (is_debug) {
-    # TODO(sergeyu): Fix libjingle to use NDEBUG instead of
-    # _DEBUG and remove this define. See GYP file as well.
-    defines = [ "_DEBUG" ]
-  }
-}
-
-# From third_party/libjingle/libjingle.gyp's target_defaults.
 group("jingle_deps") {
   public_deps = [
     "//third_party/expat",
@@ -267,7 +258,6 @@ static_library("libjingle") {
 
   configs += [ ":jingle_unexported_configs" ]
   public_configs = [ ":jingle_public_configs" ]
-  all_dependent_configs = [ ":jingle_all_dependent_configs" ]
 }
 
 # This has to be is a separate project due to a bug in MSVS 2008 and the
@@ -290,7 +280,6 @@ static_library("libjingle_p2p_constants") {
   ]
   configs += [ ":jingle_unexported_configs" ]
   public_configs = [ ":jingle_public_configs" ]
-  all_dependent_configs = [ ":jingle_all_dependent_configs" ]
 }
 
 if (enable_webrtc) {

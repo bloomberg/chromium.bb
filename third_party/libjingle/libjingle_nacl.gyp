@@ -44,15 +44,6 @@
         'USE_WEBRTC_DEV_BRANCH',
         'timezone=_timezone',
       ],
-      'configurations': {
-        'Debug': {
-          'defines': [
-            # TODO(sergeyu): Fix libjingle to use NDEBUG instead of
-            # _DEBUG and remove this define. See below as well.
-            '_DEBUG',
-          ],
-        }
-      },
       'include_dirs': [
         './<(libjingle_source)',
         '../',
@@ -307,15 +298,6 @@
         'build_glibc': 0,
         'build_newlib': 1,
         'build_pnacl_newlib': 1,
-      },
-      'configurations': {
-        'Debug': {
-          'defines': [
-            # TODO(sergeyu): Fix libjingle to use NDEBUG instead of
-            # _DEBUG and remove this define. See below as well.
-            '_DEBUG',
-          ],
-        }
       },
       'include_dirs': [
         './<(libjingle_source)',
