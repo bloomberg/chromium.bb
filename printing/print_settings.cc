@@ -5,11 +5,22 @@
 #include "printing/print_settings.h"
 
 #include "base/atomic_sequence_num.h"
+#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "printing/print_job_constants.h"
 #include "printing/units.h"
 
 namespace printing {
+
+base::LazyInstance<std::string> g_user_agent;
+
+void SetAgent(const std::string& user_agent) {
+  g_user_agent.Get() = user_agent;
+}
+
+const std::string& GetAgent() {
+  return g_user_agent.Get();
+}
 
 #if defined(USE_CUPS)
 void GetColorModelForMode(

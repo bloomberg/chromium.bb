@@ -10,6 +10,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/time/time.h"
+#include "printing/print_settings.h"
 #include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkData.h"
 #include "third_party/skia/include/core/SkDocument.h"
@@ -163,7 +164,11 @@ bool PdfMetafileSkia::FinishDocument() {
     pdf_doc->endPage();
   }
   SkTArray<SkDocument::Attribute> info;
-  info.emplace_back(SkString("Creator"), SkString("Chromium"));
+  const std::string& user_agent = GetAgent();
+  info.emplace_back(SkString("Creator"),
+                    user_agent.empty()
+                        ? SkString("Chromium")
+                        : SkString(user_agent.c_str(), user_agent.size()));
   SkTime::DateTime now = TimeToSkTime(base::Time::Now());
   pdf_doc->setMetadata(info, &now, &now);
   if (!pdf_doc->close())

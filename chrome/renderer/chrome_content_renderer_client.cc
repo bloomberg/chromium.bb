@@ -125,8 +125,10 @@
 #endif
 
 #if defined(ENABLE_PRINTING)
+#include "chrome/common/chrome_content_client.h"
 #include "chrome/renderer/printing/chrome_print_web_view_helper_delegate.h"
 #include "components/printing/renderer/print_web_view_helper.h"
+#include "printing/print_settings.h"
 #endif
 
 #if defined(ENABLE_PRINT_PREVIEW)
@@ -354,6 +356,9 @@ ChromeContentRendererClient::ChromeContentRendererClient() {
         kPredefinedAllowedCameraDeviceOrigins[i]);
   for (size_t i = 0; i < arraysize(kPredefinedAllowedCompositorOrigins); ++i)
     allowed_compositor_origins_.insert(kPredefinedAllowedCompositorOrigins[i]);
+#endif
+#if defined(ENABLE_PRINTING)
+  printing::SetAgent(GetUserAgent());
 #endif
 }
 
