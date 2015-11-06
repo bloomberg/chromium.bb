@@ -149,7 +149,7 @@ class ContainerURLRequestContext : public URLRequestContext {
 
   void set_transport_security_persister(
       scoped_ptr<TransportSecurityPersister> transport_security_persister) {
-    transport_security_persister = transport_security_persister.Pass();
+    transport_security_persister_ = transport_security_persister.Pass();
   }
 
  private:
