@@ -974,6 +974,7 @@ bool VaapiWrapper::BlitSurface(
   pipeline_param->output_region = &output_region;
   pipeline_param->output_background_color = 0xff000000;
   pipeline_param->output_color_standard = VAProcColorStandardNone;
+  pipeline_param->filter_flags = VA_FILTER_SCALING_HQ;
 
   VA_SUCCESS_OR_RETURN(vaUnmapBuffer(va_display_, va_vpp_buffer_id_),
                        "Couldn't unmap vpp buffer", false);
