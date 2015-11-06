@@ -14,9 +14,9 @@ from telemetry.web_perf.metrics import v8_gc_latency
 from telemetry.web_perf.metrics import smoothness
 from telemetry.web_perf.metrics import memory_timeline
 
-# Disabled on Win due to crbug.com/416502.
-@benchmark.Disabled('win')
-@benchmark.Disabled('reference') # crbug.com/547833
+
+@benchmark.Disabled('win',        # crbug.com/416502
+                    'reference')  # crbug.com/547833
 class V8Top25(perf_benchmark.PerfBenchmark):
   """Measures V8 GC metrics on the while scrolling down the top 25 web pages.
 
