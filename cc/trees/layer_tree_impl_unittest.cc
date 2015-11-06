@@ -14,6 +14,7 @@
 #include "cc/test/layer_tree_host_common_test.h"
 #include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/test/test_task_graph_runner.h"
+#include "cc/trees/draw_property_utils.h"
 #include "cc/trees/layer_tree_host_impl.h"
 #include "ui/gfx/geometry/size_conversions.h"
 
@@ -1872,8 +1873,11 @@ TEST_F(LayerTreeImplTest, HitTestingTouchHandlerRegionsForLayerThatIsNotDrawn) {
           test_point);
   EXPECT_FALSE(result_layer);
   EXPECT_FALSE(test_layer->IsDrawnRenderSurfaceLayerListMember());
-  EXPECT_TRANSFORMATION_MATRIX_EQ(expected_screen_space_transform,
-                                  test_layer->screen_space_transform());
+  EXPECT_TRANSFORMATION_MATRIX_EQ(
+      expected_screen_space_transform,
+      ScreenSpaceTransformFromPropertyTrees(
+          test_layer,
+          host_impl().active_tree()->property_trees()->transform_tree));
 
   // We change the position of the test layer such that the test point is now
   // inside the test_layer.
@@ -1890,8 +1894,11 @@ TEST_F(LayerTreeImplTest, HitTestingTouchHandlerRegionsForLayerThatIsNotDrawn) {
   ASSERT_TRUE(result_layer);
   ASSERT_EQ(test_layer, result_layer);
   EXPECT_FALSE(result_layer->IsDrawnRenderSurfaceLayerListMember());
-  EXPECT_TRANSFORMATION_MATRIX_EQ(expected_screen_space_transform,
-                                  result_layer->screen_space_transform());
+  EXPECT_TRANSFORMATION_MATRIX_EQ(
+      expected_screen_space_transform,
+      ScreenSpaceTransformFromPropertyTrees(
+          test_layer,
+          host_impl().active_tree()->property_trees()->transform_tree));
 }
 
 TEST_F(LayerTreeImplTest, SelectionBoundsForSingleLayer) {

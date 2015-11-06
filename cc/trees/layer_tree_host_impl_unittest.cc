@@ -924,6 +924,7 @@ TEST_F(LayerTreeHostImplTest, NonFastScrollableRegionWithOffset) {
   LayerImpl* root = host_impl_->active_tree()->root_layer();
   root->SetNonFastScrollableRegion(gfx::Rect(0, 0, 50, 50));
   root->SetPosition(gfx::PointF(-25.f, 0.f));
+  root->SetDrawsContent(true);
 
   DrawFrame();
 
@@ -1262,7 +1263,9 @@ TEST_F(LayerTreeHostImplTest, ViewportScrollOrder) {
   CreateBasicVirtualViewportLayers(viewport_size, content_size);
 
   LayerImpl* outer_scroll_layer = host_impl_->OuterViewportScrollLayer();
+  outer_scroll_layer->SetDrawsContent(true);
   LayerImpl* inner_scroll_layer = host_impl_->InnerViewportScrollLayer();
+  inner_scroll_layer->SetDrawsContent(true);
 
   EXPECT_VECTOR_EQ(
       gfx::Vector2dF(500, 500),
@@ -1321,7 +1324,9 @@ TEST_F(LayerTreeHostImplTest, ScrollViewportWithFractionalAmounts) {
   CreateBasicVirtualViewportLayers(viewport_size, content_size);
 
   LayerImpl* outer_scroll_layer = host_impl_->OuterViewportScrollLayer();
+  outer_scroll_layer->SetDrawsContent(true);
   LayerImpl* inner_scroll_layer = host_impl_->InnerViewportScrollLayer();
+  inner_scroll_layer->SetDrawsContent(true);
 
   // Sanity checks.
   EXPECT_VECTOR_EQ(
@@ -1371,7 +1376,9 @@ TEST_F(LayerTreeHostImplTest, ScrollDuringPinchGesture) {
   CreateBasicVirtualViewportLayers(viewport_size, content_size);
 
   LayerImpl* outer_scroll_layer = host_impl_->OuterViewportScrollLayer();
+  outer_scroll_layer->SetDrawsContent(true);
   LayerImpl* inner_scroll_layer = host_impl_->InnerViewportScrollLayer();
+  inner_scroll_layer->SetDrawsContent(true);
 
   EXPECT_VECTOR_EQ(
       gfx::Vector2dF(500, 500),
@@ -3472,10 +3479,12 @@ TEST_F(LayerTreeHostImplTopControlsTest,
 
   LayerImpl* inner_scroll =
       host_impl_->active_tree()->InnerViewportScrollLayer();
+  inner_scroll->SetDrawsContent(true);
   LayerImpl* inner_container =
       host_impl_->active_tree()->InnerViewportContainerLayer();
   LayerImpl* outer_scroll =
       host_impl_->active_tree()->OuterViewportScrollLayer();
+  outer_scroll->SetDrawsContent(true);
   LayerImpl* outer_container =
       host_impl_->active_tree()->OuterViewportContainerLayer();
 
@@ -3639,6 +3648,8 @@ TEST_F(LayerTreeHostImplTopControlsTest, TopControlsScrollableSublayer) {
 
   // Scroll 25px to hide top controls
   gfx::Vector2dF scroll_delta(0.f, 25.f);
+  host_impl_->active_tree()->property_trees()->needs_rebuild = true;
+  host_impl_->active_tree()->BuildPropertyTreesForTesting();
   EXPECT_EQ(InputHandler::SCROLL_STARTED,
             host_impl_->ScrollBegin(gfx::Point(), InputHandler::GESTURE));
   host_impl_->ScrollBy(gfx::Point(), scroll_delta);
@@ -4214,8 +4225,10 @@ TEST_F(LayerTreeHostImplTest, PageScaleDeltaAppliedToRootScrollLayerOnly) {
 
   // Create a normal scrollable root layer and another scrollable child layer.
   LayerImpl* scroll = SetupScrollAndContentsLayers(surface_size);
+  scroll->SetDrawsContent(true);
   LayerImpl* root = host_impl_->active_tree()->root_layer();
   LayerImpl* child = scroll->children()[0];
+  child->SetDrawsContent(true);
 
   scoped_ptr<LayerImpl> scrollable_child_clip =
       LayerImpl::Create(host_impl_->active_tree(), 6);
@@ -4224,6 +4237,7 @@ TEST_F(LayerTreeHostImplTest, PageScaleDeltaAppliedToRootScrollLayerOnly) {
   scrollable_child_clip->AddChild(scrollable_child.Pass());
   child->AddChild(scrollable_child_clip.Pass());
   LayerImpl* grand_child = child->children()[0];
+  grand_child->SetDrawsContent(true);
 
   // Set new page scale on impl thread by pinching.
   RebuildPropertyTrees();
@@ -4533,6 +4547,7 @@ TEST_F(LayerTreeHostImplTest, ScrollBeforeRedraw) {
 
 TEST_F(LayerTreeHostImplTest, ScrollAxisAlignedRotatedLayer) {
   LayerImpl* scroll_layer = SetupScrollAndContentsLayers(gfx::Size(100, 100));
+  scroll_layer->SetDrawsContent(true);
 
   // Rotate the root layer 90 degrees counter-clockwise about its center.
   gfx::Transform rotate_transform;
@@ -4724,6 +4739,7 @@ TEST_F(LayerTreeHostImplTest, ScrollPerspectiveTransformedLayer) {
 TEST_F(LayerTreeHostImplTest, ScrollScaledLayer) {
   LayerImpl* scroll_layer =
       SetupScrollAndContentsLayers(gfx::Size(100, 100));
+  scroll_layer->SetDrawsContent(true);
 
   // Scale the layer to twice its normal size.
   int scale = 2;
@@ -4948,6 +4964,7 @@ TEST_F(LayerTreeHostImplTest,
   LayerImpl* scroll_layer = SetupScrollAndContentsLayers(gfx::Size(100, 100));
   LayerImpl* clip_layer = scroll_layer->parent()->parent();
   clip_layer->SetBounds(gfx::Size(10, 20));
+  scroll_layer->SetDrawsContent(true);
 
   // Draw first frame to clear any pending draws and check scroll.
   DrawFrame();
@@ -5233,15 +5250,15 @@ TEST_F(LayerTreeHostImplTest, NoOverscrollWhenNotAtEdge) {
     scroll_result = host_impl_->ScrollBy(gfx::Point(), gfx::Vector2dF(0, 20));
     EXPECT_TRUE(scroll_result.did_scroll);
     EXPECT_TRUE(scroll_result.did_overscroll_root);
-    EXPECT_EQ(gfx::Vector2dF(0.000000f, 17.699997f).ToString(),
-              host_impl_->accumulated_root_overscroll().ToString());
+    EXPECT_VECTOR2DF_EQ(gfx::Vector2dF(0.000000f, 17.699997f),
+                        host_impl_->accumulated_root_overscroll());
 
     scroll_result =
         host_impl_->ScrollBy(gfx::Point(), gfx::Vector2dF(0.02f, -0.01f));
     EXPECT_FALSE(scroll_result.did_scroll);
     EXPECT_FALSE(scroll_result.did_overscroll_root);
-    EXPECT_EQ(gfx::Vector2dF(0.000000f, 17.699997f).ToString(),
-              host_impl_->accumulated_root_overscroll().ToString());
+    EXPECT_VECTOR2DF_EQ(gfx::Vector2dF(0.000000f, 17.699997f),
+                        host_impl_->accumulated_root_overscroll());
     host_impl_->ScrollEnd();
     // TestCase to check  kEpsilon, which prevents minute values to trigger
     // gloweffect without reaching edge.
@@ -5921,6 +5938,7 @@ TEST_F(LayerTreeHostImplTest, PartialSwapReceivesDamageRect) {
   LayerTreeHostImpl::FrameData frame;
 
   // First frame, the entire screen should get swapped.
+  layer_tree_host_impl->active_tree()->BuildPropertyTreesForTesting();
   EXPECT_EQ(DRAW_SUCCESS, layer_tree_host_impl->PrepareToDraw(&frame));
   layer_tree_host_impl->DrawLayers(&frame);
   layer_tree_host_impl->DidDrawAllLayers(frame);
@@ -5935,6 +5953,8 @@ TEST_F(LayerTreeHostImplTest, PartialSwapReceivesDamageRect) {
   // expected swap rect: vertically flipped, with origin at bottom left corner.
   layer_tree_host_impl->active_tree()->root_layer()->children()[0]->SetPosition(
       gfx::PointF());
+  layer_tree_host_impl->active_tree()->property_trees()->needs_rebuild = true;
+  layer_tree_host_impl->active_tree()->BuildPropertyTreesForTesting();
   EXPECT_EQ(DRAW_SUCCESS, layer_tree_host_impl->PrepareToDraw(&frame));
   layer_tree_host_impl->DrawLayers(&frame);
   host_impl_->DidDrawAllLayers(frame);
@@ -6241,6 +6261,7 @@ static scoped_ptr<LayerTreeHostImpl> SetupLayersForOpacity(
   root->AddChild(child.Pass());
 
   my_host_impl->active_tree()->SetRootLayer(root.Pass());
+  my_host_impl->active_tree()->BuildPropertyTreesForTesting();
   return my_host_impl.Pass();
 }
 
@@ -8210,6 +8231,7 @@ TEST_F(LayerTreeHostImplTest, ExternalTransformReflectedInNextDraw) {
   const gfx::Rect external_clip(layer_size);
   const bool resourceless_software_draw = false;
   LayerImpl* layer = SetupScrollAndContentsLayers(layer_size);
+  layer->SetDrawsContent(true);
 
   host_impl_->SetExternalDrawConstraints(external_transform,
                                          external_viewport,

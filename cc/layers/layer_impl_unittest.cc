@@ -263,6 +263,7 @@ TEST(LayerImplTest, VerifyNeedsUpdateDrawProperties) {
   LayerImpl* layer = layer_ptr.get();
   root->AddChild(layer_ptr.Pass());
   layer->SetScrollClipLayer(root->id());
+  host_impl.active_tree()->BuildPropertyTreesForTesting();
   DCHECK(host_impl.CanDraw());
 
   gfx::PointF arbitrary_point_f = gfx::PointF(0.125f, 0.25f);

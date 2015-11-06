@@ -3258,6 +3258,7 @@ TEST_F(LayerTreeHostCommonTest,
   host_impl.active_tree()->SetRootLayer(root.Pass());
   host_impl.SetVisible(true);
   host_impl.InitializeRenderer(output_surface.get());
+  host_impl.active_tree()->BuildPropertyTreesForTesting();
   bool update_lcd_text = false;
   host_impl.active_tree()->UpdateDrawProperties(update_lcd_text);
 

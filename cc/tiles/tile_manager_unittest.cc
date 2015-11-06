@@ -1685,6 +1685,7 @@ TEST_F(PartialRasterTileManagerTest, CancelledTasksHaveNoContentId) {
   pending_tree->SetRootLayer(pending_layer.Pass());
 
   // Add tilings/tiles for the layer.
+  host_impl_->pending_tree()->BuildPropertyTreesForTesting();
   host_impl_->pending_tree()->UpdateDrawProperties(false /* update_lcd_text */);
 
   // Build the raster queue and invalidate the top tile.
@@ -1776,6 +1777,7 @@ void RunPartialRasterCheck(scoped_ptr<LayerTreeHostImpl> host_impl,
   pending_tree->SetRootLayer(pending_layer.Pass());
 
   // Add tilings/tiles for the layer.
+  host_impl->pending_tree()->BuildPropertyTreesForTesting();
   host_impl->pending_tree()->UpdateDrawProperties(false /* update_lcd_text */);
 
   // Build the raster queue and invalidate the top tile.

@@ -955,7 +955,6 @@ void LayerTreeTest::SetupTree() {
   if (!layer_tree_host_->root_layer()) {
     scoped_refptr<Layer> root_layer = Layer::Create(layer_settings_);
     root_layer->SetBounds(gfx::Size(1, 1));
-    root_layer->SetIsDrawable(true);
     layer_tree_host_->SetRootLayer(root_layer);
   }
 
@@ -963,6 +962,7 @@ void LayerTreeTest::SetupTree() {
   gfx::Size device_root_bounds = gfx::ScaleToCeiledSize(
       root_bounds, layer_tree_host_->device_scale_factor());
   layer_tree_host_->SetViewportSize(device_root_bounds);
+  layer_tree_host_->root_layer()->SetIsDrawable(true);
 }
 
 void LayerTreeTest::Timeout() {
