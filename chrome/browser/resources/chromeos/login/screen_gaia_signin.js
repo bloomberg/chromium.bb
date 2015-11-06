@@ -108,6 +108,7 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
     },
     set cancelable(value) {
       this.cancelable_ = value;
+      $('login-header-bar').updateUI_();
     },
 
     /**
@@ -136,20 +137,38 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
      */
     mostRecentUserActivity_: Date.now(),
 
+    /**
+     * An element containg navigation buttons.
+     */
+    navigation_: undefined,
+
     /** @override */
     decorate: function() {
-      $('offline-gaia').addEventListener('authCompleted',
-          this.onAuthCompletedMessage_.bind(this));
+      this.navigation_ = $('gaia-navigation');
 
       this.gaiaAuthHost_ = new cr.login.GaiaAuthHost($('signin-frame'));
       this.gaiaAuthHost_.addEventListener(
           'ready', this.onAuthReady_.bind(this));
-      this.gaiaAuthHost_.addEventListener(
-          'dialogShown', this.onDialogShown_.bind(this));
-      this.gaiaAuthHost_.addEventListener(
-          'dialogHidden', this.onDialogHidden_.bind(this));
-      this.gaiaAuthHost_.addEventListener(
-          'backButton', this.onBackButton_.bind(this));
+
+      var that = this;
+      [this.gaiaAuthHost_, $('offline-gaia')].forEach(function(frame) {
+        // Ignore events from currently inactive frame.
+        var localFilter = function(callback) {
+          return function(e) {
+            var isEventLocal = frame === $('offline-gaia');
+            if (isEventLocal === that.isLocal)
+              callback.call(that, e);
+          };
+        };
+
+        frame.addEventListener('authCompleted',
+                               localFilter(that.onAuthCompletedMessage_));
+        frame.addEventListener('backButton', localFilter(that.onBackButton_));
+        frame.addEventListener('dialogShown', localFilter(that.onDialogShown_));
+        frame.addEventListener('dialogHidden',
+                               localFilter(that.onDialogHidden_));
+      });
+
       this.gaiaAuthHost_.addEventListener(
           'showView', this.onShowView_.bind(this));
       this.gaiaAuthHost_.confirmPasswordCallback =
@@ -166,22 +185,19 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
           this.onAuthDomainChange_.bind(this));
       this.gaiaAuthHost_.addEventListener('authFlowChange',
           this.onAuthFlowChange_.bind(this));
-      this.gaiaAuthHost_.addEventListener('authCompleted',
-          this.onAuthCompletedMessage_.bind(this));
+
       this.gaiaAuthHost_.addEventListener('loadAbort',
         this.onLoadAbortMessage_.bind(this));
       this.gaiaAuthHost_.addEventListener(
           'identifierEntered', this.onIdentifierEnteredMessage_.bind(this));
 
-      $('back-button-item').addEventListener('click', function(e) {
-        $('back-button-item').hidden = true;
-        $('signin-frame').back();
-        e.preventDefault();
-      });
+      this.navigation_.addEventListener('back', function() {
+        this.navigation_.backVisible = false;
+        this.getSigninFrame_().back();
+      }.bind(this));
 
-      $('close-button-item').addEventListener('click', function(e) {
+      this.navigation_.addEventListener('close', function() {
         this.cancel();
-        e.preventDefault();
       }.bind(this));
 
       $('gaia-whitelist-error').addEventListener('buttonclick', function() {
@@ -214,7 +230,7 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
      * @param {boolean} value Whether local version of Gaia is used.
      */
     set isLocal(value) {
-      this.isLocal_ = value;
+      this.isLocal_ = !!value;
       $('signin-frame').hidden = this.isLocal_;
       $('offline-gaia').hidden = !this.isLocal_;
       chrome.send('updateOfflineLogin', [value]);
@@ -297,15 +313,9 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
      */
     showLoadingUI_: function(show) {
       $('gaia-loading').hidden = !show;
-      if (this.isLocal) {
-        $('offline-gaia').hidden = show;
-      } else {
-        $('signin-frame').hidden = show;
-      }
+      this.getSigninFrame_().hidden = show;
       this.classList.toggle('loading', show);
       $('signin-frame').classList.remove('show');
-      if (!show)
-        this.classList.remove('auth-completed');
     },
 
     /**
@@ -402,9 +412,10 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
       window.requestAnimationFrame(function() {
         chrome.send('loginVisible', ['gaia-loading']);
       });
-      $('back-button-item').disabled = false;
-      $('back-button-item').hidden = true;
-      $('close-button-item').disabled = false;
+
+      this.navigation_.disabled = false;
+      this.navigation_.backVisible = false;
+
       this.classList.toggle('loading', this.loading);
 
       // Button header is always visible when sign in is presented.
@@ -412,13 +423,17 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
       Oobe.getInstance().headerHidden = false;
     },
 
-    onAfterShow: function(data) {
-      if (!this.loading) {
-        if (this.isLocal)
-          $('offline-gaia').focus();
-        else
-          $('signin-frame').focus();
-      }
+    getSigninFrame_: function() {
+      return this.isLocal ? $('offline-gaia') : $('signin-frame');
+    },
+
+    focusSigninFrame: function() {
+      this.getSigninFrame_().focus();
+    },
+
+    onAfterShow: function() {
+      if (!this.loading)
+        this.focusSigninFrame();
     },
 
     /**
@@ -517,7 +532,7 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
     updateCancelButtonState: function() {
       this.cancelable = this.isLocal ||
                         (this.isShowUsers_ && $('pod-row').pods.length);
-      $('close-button-item').hidden = !this.cancelable;
+      this.navigation_.closeVisible = this.cancelable;
     },
 
     /**
@@ -539,17 +554,19 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
 
     /**
      * Invoked when the authFlow property is changed on the GAIA host.
-     * @param {Event} e Property change event.
      */
-    onAuthFlowChange_: function(e) {
+    onAuthFlowChange_: function() {
       var isSAML = this.isSAML();
 
       this.classList.toggle('full-width', isSAML);
       $('saml-notice-container').hidden = !isSAML;
 
+      if (isSAML)
+        this.navigation_.backVisible = false;
+
       if (Oobe.getInstance().currentScreen === this) {
         Oobe.getInstance().updateScreenSize(this);
-        $('close-button-item').hidden = !(isSAML || this.cancelable);
+        this.navigation_.closeVisible = isSAML || this.cancelable;
       }
     },
 
@@ -572,8 +589,7 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
      * @private
      */
     onDialogShown_: function() {
-      $('back-button-item').disabled = true;
-      $('close-button-item').disabled = true;
+      this.navigation_.disabled = true;
     },
 
     /**
@@ -581,8 +597,7 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
      * @private
      */
     onDialogHidden_: function() {
-      $('back-button-item').disabled = false;
-      $('close-button-item').disabled = false;
+      this.navigation_.disabled = false;
     },
 
     /**
@@ -590,9 +605,9 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
      * @private
      */
     onBackButton_: function(e) {
-      $('back-button-item').hidden = !e.detail;
+      this.navigation_.backVisible = !!e.detail;
       $('login-header-bar').updateUI_();
-      $('signin-frame').focus();
+      this.getSigninFrame_().focus();
     },
 
     /**
@@ -751,7 +766,10 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
       }
 
       this.loading = true;
-      this.classList.add('auth-completed');
+
+      this.navigation_.backVisible = false;
+      this.navigation_.closeVisible = false;
+
       // Now that we're in logged in state header should be hidden.
       Oobe.getInstance().headerHidden = true;
       // Clear any error messages that were shown before login.

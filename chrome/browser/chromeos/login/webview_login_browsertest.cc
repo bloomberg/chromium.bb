@@ -28,12 +28,12 @@ class WebviewLoginTest : public OobeBaseTest {
 IN_PROC_BROWSER_TEST_F(WebviewLoginTest, Basic) {
   WaitForGaiaPageLoad();
 
-  JsExpect("$('close-button-item').hidden");
+  JsExpect("!$('gaia-navigation').closeVisible");
 
   SetSignFormField("identifier", OobeBaseTest::kFakeUserEmail);
   ExecuteJsInSigninFrame("document.getElementById('nextButton').click();");
 
-  JsExpect("$('close-button-item').hidden");
+  JsExpect("!$('gaia-navigation').closeVisible");
 
   content::WindowedNotificationObserver session_start_waiter(
       chrome::NOTIFICATION_SESSION_STARTED,
@@ -50,24 +50,25 @@ IN_PROC_BROWSER_TEST_F(WebviewLoginTest, DISABLED_BackButton) {
   WaitForGaiaPageLoad();
 
   // Start: no back button, first page.
-  JsExpect("$('back-button-item').hidden");
+  JsExpect("!$('gaia-navigation').backVisible");
   JsExpect("$('signin-frame').src.indexOf('#identifier') != -1");
 
   // Next step: back button active, second page.
   SetSignFormField("identifier", OobeBaseTest::kFakeUserEmail);
   ExecuteJsInSigninFrame("document.getElementById('nextButton').click();");
-  JsExpect("!$('back-button-item').hidden");
+  JsExpect("$('gaia-navigation').backVisible");
   JsExpect("$('signin-frame').src.indexOf('#challengepassword') != -1");
 
   // One step back: no back button, first page.
-  ASSERT_TRUE(content::ExecuteScript(GetLoginUI()->GetWebContents(),
-                                     "$('back-button-item').click();"));
-  JsExpect("$('back-button-item').hidden");
+  ASSERT_TRUE(
+      content::ExecuteScript(GetLoginUI()->GetWebContents(),
+                             "$('gaia-navigation').$.backButton.click();"));
+  JsExpect("!$('gaia-navigation').backVisible");
   JsExpect("$('signin-frame').src.indexOf('#identifier') != -1");
 
   // Next step (again): back button active, second page, user id remembered.
   ExecuteJsInSigninFrame("document.getElementById('nextButton').click();");
-  JsExpect("!$('back-button-item').hidden");
+  JsExpect("$('gaia-navigation').backVisible");
   JsExpect("$('signin-frame').src.indexOf('#challengepassword') != -1");
 
   content::WindowedNotificationObserver session_start_waiter(

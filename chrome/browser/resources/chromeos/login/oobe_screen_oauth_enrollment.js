@@ -47,13 +47,20 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
 
     get isCancelDisabled() { return this.isCancelDisabled_ },
     set isCancelDisabled(disabled) {
-      if (disabled == this.isCancelDisabled)
-        return;
       this.isCancelDisabled_ = disabled;
     },
 
+    isManualEnrollment_: undefined,
+
+    /**
+     * An element containg navigation buttons.
+     */
+    navigation_: undefined,
+
     /** @override */
     decorate: function() {
+      this.navigation_ = $('oauth-enroll-navigation');
+
       this.authenticator_ =
           new cr.login.Authenticator($('oauth-enroll-auth-view'));
 
@@ -86,6 +93,7 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
               $('oauth-saml-notice-message').textContent =
                   loadTimeData.getStringF('samlNotice',
                                           this.authenticator_.authDomain);
+              this.navigation_.backVisible = false;
             }
             this.classList.toggle('saml', isSAML);
             if (Oobe.getInstance().currentScreen == this)
@@ -94,7 +102,7 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
 
       this.authenticator_.addEventListener('backButton',
           (function(e) {
-            $('oauth-enroll-back-button').hidden = !e.detail;
+            this.navigation_.backVisible = !!e.detail;
             $('oauth-enroll-auth-view').focus();
             $('login-header-bar').updateUI_();
           }).bind(this));
@@ -124,17 +132,13 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
       $('oauth-enroll-success-card').addEventListener(
           'buttonclick', doneCallback);
 
-      $('oauth-enroll-cancel-button').addEventListener('click',
-                                                       this.cancel.bind(this));
-      $('oauth-enroll-refresh-button').addEventListener('click',
-                                                        this.cancel.bind(this));
+      this.navigation_.addEventListener('close', this.cancel.bind(this));
+      this.navigation_.addEventListener('refresh', this.cancel.bind(this));
 
-      $('oauth-enroll-back-button').addEventListener('click',
-          (function(e) {
-            $('oauth-enroll-back-button').hidden = true;
-            $('oauth-enroll-auth-view').back();
-            e.preventDefault();
-          }).bind(this));
+      this.navigation_.addEventListener('back', function() {
+        this.navigation_.backVisible = false;
+        $('oauth-enroll-auth-view').back();
+      }.bind(this));
 
       $('oauth-enroll-attribute-prompt-card').addEventListener('submit',
           this.onAttributesSubmitted.bind(this));
@@ -154,27 +158,6 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
      */
     get header() {
       return loadTimeData.getString('oauthEnrollScreenTitle');
-    },
-
-    /**
-     * Buttons in oobe wizard's button strip.
-     * @type {array} Array of Buttons.
-     */
-    get buttons() {
-      var buttons = [];
-      var ownerDocument = this.ownerDocument;
-
-      function makeButton(id, classes, label, handler) {
-        var button = ownerDocument.createElement('button');
-        button.id = id;
-        button.classList.add('oauth-enroll-button');
-        button.classList.add.apply(button.classList, classes);
-        button.textContent = label;
-        button.addEventListener('click', handler);
-        buttons.push(button);
-      }
-
-      return buttons;
     },
 
     /**
@@ -198,6 +181,8 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
 
       $('login-header-bar').signinUIState = SIGNIN_UI_STATE.ENROLLMENT;
       $('progress-dots').hidden = true;
+      this.classList.remove('saml');
+
       var gaiaParams = {};
       gaiaParams.gaiaUrl = data.gaiaUrl;
       gaiaParams.clientId = data.clientId;
@@ -217,7 +202,9 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
         this.classList.toggle('mode-' + modes[i],
                               data.enrollment_mode == modes[i]);
       }
+      this.isManualEnrollment_ = data.enrollment_mode === 'manual';
       this.isCancelDisabled = true;
+
       this.showStep(STEP_SIGNIN);
     },
 
@@ -232,8 +219,6 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
     showAttributePromptStep: function(annotated_asset_id, annotated_location) {
       $('oauth-enroll-asset-id').value = annotated_asset_id;
       $('oauth-enroll-location').value = annotated_location;
-      $('oauth-enroll-back-button').hidden = true;
-
       this.showStep(STEP_ATTRIBUTE_PROMPT);
     },
 
@@ -255,6 +240,12 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
     showStep: function(step) {
       this.classList.toggle('oauth-enroll-state-' + this.currentStep_, false);
       this.classList.toggle('oauth-enroll-state-' + step, true);
+
+      this.navigation_.backVisible = false;
+      this.navigation_.closeVisible = this.isManualEnrollment_ &&
+          (step == STEP_SIGNIN || step == STEP_ERROR);
+      this.navigation_.refreshVisible =
+          !this.isManualEnrollment_ && step == STEP_SIGNIN;
 
       if (step == STEP_SIGNIN) {
         $('oauth-enroll-auth-view').focus();

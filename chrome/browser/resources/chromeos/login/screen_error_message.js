@@ -96,7 +96,7 @@ login.createScreen('ErrorMessageScreen', 'error-message', function() {
     },
     set cancelable(value) {
       this.cancelable_ = value;
-      $('error-close-button').hidden = !value;
+      $('error-navigation').closeVisible = value;
     },
 
     /** @override */
@@ -128,7 +128,7 @@ login.createScreen('ErrorMessageScreen', 'error-message', function() {
       this.context.addObserver(CONTEXT_KEY_UI_STATE, function(ui_state) {
         self.setUIState(ui_state);
       });
-      $('error-close-button').addEventListener('click', this.cancel.bind(this));
+      $('error-navigation').addEventListener('close', this.cancel.bind(this));
     },
 
     /**

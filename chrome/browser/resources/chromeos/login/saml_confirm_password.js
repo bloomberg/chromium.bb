@@ -30,7 +30,7 @@ Polymer({
   reset: function() {
     this.$.cancelConfirmDlg.close();
     this.disabled = false;
-    this.$.closeButton.hidden = false;
+    this.$.navigation.closeVisible = true;
     if (this.$.animatedPages.selected != 0)
       this.$.animatedPages.selected = 0;
     this.$.passwordInput.value = '';
@@ -59,7 +59,7 @@ Polymer({
     if (!this.$.passwordInput.checkValidity())
       return;
     this.$.animatedPages.selected = 1;
-    this.$.closeButton.hidden = true;
+    this.$.navigation.closeVisible = false;
     this.fire('passwordEnter', {password: this.$.passwordInput.value});
   },
 

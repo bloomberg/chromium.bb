@@ -50,9 +50,7 @@
   width: 100%;
 }
 
-#oauth-enrollment.mode-manual #oauth-enroll-learn-more-link,
-#oauth-enrollment.mode-forced #oauth-enroll-learn-more-link,
-#oauth-enrollment.mode-recovery #oauth-enroll-learn-more-link {
+#oauth-enroll-learn-more-link {
   display: inline;
 }
 
@@ -78,31 +76,6 @@
   display: none;
 }
 
-#oauth-enroll-back-button,
-#oauth-enrollment.saml #oauth-enroll-back-button {
-  display: none;
-}
-
-.oauth-enroll-state-signin #oauth-enroll-back-button {
-  display: inline;
-}
-
-.oauth-enroll-state-signin.mode-manual #oauth-enroll-cancel-button,
-.oauth-enroll-state-signin.mode-forced #oauth-enroll-refresh-button,
-.oauth-enroll-state-signin.mode-recovery #oauth-enroll-refresh-button,
-.oauth-enroll-state-working.mode-manual #oauth-enroll-cancel-button,
-.oauth-enroll-state-working.mode-forced #oauth-enroll-refresh-button,
-.oauth-enroll-state-working.mode-recovery #oauth-enroll-refresh-button,
-.oauth-enroll-state-error.mode-manual #oauth-enroll-cancel-button,
-.oauth-enroll-state-error.mode-manual #oauth-enroll-done-button,
-.oauth-enroll-state-success #oauth-enroll-done-button {
-  display: inline;
-}
-
-#oobe.oauth-enrollment #header-oauth-enrollment {
-  display: block;
-}
-
 #oauth-saml-notice-container {
   -webkit-margin-start: 19px;
   left: 0;
@@ -110,11 +83,6 @@
   right: 0;
   text-align: start;
   top: 15px;
-}
-
-#oauth-enrollment.saml #oauth-enrollment-controls,
-#oauth-enrollment.saml #oauth-enroll-signin-link-container {
-  -webkit-padding-end: 17px;
 }
 
 #oauth-enrollment:not(.saml) #oauth-saml-notice-container {
@@ -127,49 +95,6 @@
   margin: 0 auto;
 }
 
-#oauth-enroll-cancel-button,
-#oauth-enroll-back-button,
-#oauth-enroll-refresh-button {
-  position: absolute;
-  top: 10px;
-  z-index: 1;
-}
-
-#oauth-enroll-cancel-button,
-#oauth-enroll-refresh-button {
-  color: rgba(0, 0, 0, .54);
-  right: 10px;
-}
-
-html[dir=rtl] #oauth-enroll-cancel-button,
-html[dir=rtl] #oauth-enroll-refresh-button {
-  left: 10px;
-  right: auto;
-}
-
-#oauth-enrollment.saml #oauth-enroll-cancel-button,
-#oauth-enrollment.saml #oauth-enroll-refresh-button {
-  color: rgba(0, 0, 0, .54);
-}
-
-.oauth-enroll-state-signin #oauth-enroll-cancel-button,
-.oauth-enroll-state-working #oauth-enroll-cancel-button,
-.oauth-enroll-state-signin #oauth-enroll-refresh-button,
-.oauth-enroll-state-working #oauth-enroll-refresh-button {
-  color: white;
-}
-
-#oauth-enroll-back-button {
-  color: white;
-  left: 10px;
-}
-
-html[dir=rtl] #oauth-enroll-back-button {
-  -webkit-transform: scaleX(-1);
-  left: auto;
-  right: 10px;
-}
-
 #oauth-enroll-attribute-prompt-message {
   color: black;
 }
@@ -177,3 +102,22 @@ html[dir=rtl] #oauth-enroll-back-button {
 #oauth-enroll-attribute-input {
   padding-top: 24px;
 }
+
+#oauth-enroll-navigation {
+  color: rgba(0, 0, 0, .54);
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+  z-index: 1;
+}
+
+.oauth-enroll-state-signin #oauth-enroll-navigation,
+.oauth-enroll-state-working #oauth-enroll-navigation {
+  color: white;
+}
+
+#oauth-enrollment.saml #oauth-enroll-navigation {
+  color: rgba(0, 0, 0, .54);
+}
+

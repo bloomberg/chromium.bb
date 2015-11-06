@@ -13,55 +13,6 @@
   width: 562px;
 }
 
-#saml-info-container {
-  font-size: 12px;
-}
-
-#close-button-item,
-#back-button-item {
-  color: white;
-  position: absolute;
-  top: 10px;
-  z-index: 1;
-}
-
-#close-button-item[disabled],
-#back-button-item[disabled] {
-  color: rgb(127, 127, 127);
-}
-
-#close-button-item {
-  right: 10px;
-}
-
-#back-button-item {
-  left: 10px;
-}
-
-html[dir=rtl] #close-button-item {
-  left: 10px;
-  right: auto;
-}
-
-html[dir=rtl] #back-button-item {
-  -webkit-transform: scaleX(-1);
-  left: auto;
-  right: 10px;
-}
-
-.loading #close-button-item,
-.full-width #close-button-item {
-  color: rgba(0, 0, 0, .54);
-}
-
-.full-width #back-button-item {
-  display: none;
-}
-
-.loading.auth-completed #close-button-item {
-  display: none;
-}
-
 .signin-link {
   color: rgb(37, 79, 155);
   cursor: pointer;
@@ -77,6 +28,7 @@ html[dir=rtl] #back-button-item {
 #gaia-signin-form-container,
 #signin-frame {
   height: 100%;
+  position: relative;
   width: 100%;
 }
 
@@ -138,5 +90,19 @@ html[dir=rtl] #back-button-item {
 
 #gaia-signin.whitelist-error .step-loading {
   visibility: hidden;
+}
+
+#gaia-navigation {
+  color: white;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+  z-index: 1;
+}
+
+.loading #gaia-navigation,
+.full-width #gaia-navigation {
+  color: rgba(0, 0, 0, .54);
 }
 

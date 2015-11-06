@@ -31,11 +31,6 @@ Polymer((function() {
           { get: function() { return false; } });
     },
 
-    onAnimationFinish_: function() {
-      this.$.backButton.hidden = this.isEmailSectionActive_();
-      this.focus();
-    },
-
     focus: function() {
       if (this.isEmailSectionActive_())
         this.$.emailInput.focus();
@@ -43,15 +38,26 @@ Polymer((function() {
         this.$.passwordInput.focus();
     },
 
+    back: function() {
+      this.switchToEmailCard();
+    },
+
+    onAnimationFinish_: function() {
+      this.fire('backButton', !this.isEmailSectionActive_());
+      this.focus();
+    },
+
     onForgotPasswordClicked_: function() {
       this.$.forgotPasswordDlg.fitInto = this;
       this.disabled = true;
+      this.fire('dialogShown');
       this.$.forgotPasswordDlg.open();
       this.$.passwordCard.classList.add('full-disabled');
       this.$.forgotPasswordDlg.focus();
     },
 
     onDialogOverlayClosed_: function() {
+      this.fire('dialogHidden');
       this.disabled = false;
       this.$.passwordCard.classList.remove('full-disabled');
     },
@@ -66,11 +72,6 @@ Polymer((function() {
         this.$.emailInput.value = '';
         this.switchToEmailCard();
       }
-    },
-
-    onBack_: function() {
-      this.$.backButton.hidden = true;
-      this.switchToEmailCard();
     },
 
     isRTL_: function() {

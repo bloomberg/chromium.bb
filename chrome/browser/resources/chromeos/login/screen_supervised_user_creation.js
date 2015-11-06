@@ -617,11 +617,8 @@ login.createScreen('SupervisedUserCreationScreen',
             previewElement.classList.remove('animation');
           });
 
-      $('supervised-user-creation-close-button-item').addEventListener(
-          'click', function(e) {
-            this.cancel();
-            e.preventDefault();
-          }.bind(this));
+      $('supervised-user-creation-navigation').addEventListener('close',
+          this.cancel.bind(this));
     },
 
     buttonIds: [],
@@ -1193,8 +1190,8 @@ login.createScreen('SupervisedUserCreationScreen',
             !this.importList_.selectedPod_ ||
             this.importList_.selectedPod_.user.exists;
       }
-      $('supervised-user-creation-close-button-item').hidden =
-          (visiblePage == 'created');
+      $('supervised-user-creation-navigation').closeVisible =
+          (visiblePage != 'created');
 
       chrome.send('currentSupervisedUserPage', [this.currentPage_]);
     },

@@ -550,15 +550,11 @@ html[dir=rtl] #supervised-user-creation-flip-photo {
   display: block;
 }
 
-#supervised-user-creation-close-button-item {
+#supervised-user-creation-navigation {
   color: rgba(0, 0, 0, .54);
+  left: 0;
   position: absolute;
-  right: 10px;
-  top: 10px;
+  right: 0;
+  top: 0;
   z-index: 1;
-}
-
-html[dir=rtl] #supervised-user-creation-close-button-item {
-  left: 10px;
-  right: auto;
 }

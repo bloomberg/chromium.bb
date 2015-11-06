@@ -290,11 +290,11 @@ cr.define('login', function() {
     updateUI_: function() {
       var gaiaIsActive = (this.signinUIState_ == SIGNIN_UI_STATE.GAIA_SIGNIN);
       var gaiaIsActiveWithBackButton =
-          gaiaIsActive && !$('back-button-item').hidden;
+          gaiaIsActive && $('gaia-navigation').backVisible;
       var enrollmentIsActive =
           (this.signinUIState_ == SIGNIN_UI_STATE.ENROLLMENT);
       var enrollmentIsActiveWithBackButton =
-          enrollmentIsActive && !$('oauth-enroll-back-button').hidden;
+          enrollmentIsActive && $('oauth-enroll-navigation').backVisible;
       var accountPickerIsActive =
           (this.signinUIState_ == SIGNIN_UI_STATE.ACCOUNT_PICKER);
       var supervisedUserCreationDialogIsActive =

@@ -437,8 +437,9 @@ IN_PROC_BROWSER_TEST_F(SamlTest, MAYBE_SamlUI) {
 
   // Click on 'cancel'.
   content::DOMMessageQueue message_queue;  // Observe before 'cancel'.
-  ASSERT_TRUE(content::ExecuteScript(GetLoginUI()->GetWebContents(),
-                                     "$('close-button-item').click();"));
+  ASSERT_TRUE(
+      content::ExecuteScript(GetLoginUI()->GetWebContents(),
+                             "$('gaia-navigation').$.closeButton.click();"));
 
   // Auth flow should change back to Gaia.
   std::string message;

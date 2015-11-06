@@ -140,15 +140,11 @@
   -webkit-animation: connecting-indicator-ellipsis 3s 1s infinite;
 }
 
-#error-close-button {
+#error-navigation {
   color: rgba(0, 0, 0, .54);
+  left: 0;
   position: absolute;
-  right: 10px;
-  top: 10px;
+  right: 0;
+  top: 0;
   z-index: 1;
-}
-
-html[dir=rtl] #error-close-button {
-  left: 10px;
-  right: auto;
 }

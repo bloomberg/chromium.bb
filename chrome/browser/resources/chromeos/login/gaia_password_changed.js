@@ -35,7 +35,7 @@ Polymer({
     this.clearPassword();
     this.$.oldPasswordInput.isInvalid = false;
     this.disabled = false;
-    this.$.closeButton.hidden = false;
+    this.$.navigation.closeVisible = true;
     this.$.oldPasswordCard.classList.remove('disabled');
   },
 
@@ -73,7 +73,7 @@ Polymer({
 
   onProceedClicked_: function() {
     this.disabled = true;
-    this.$.closeButton.hidden = true;
+    this.$.navigation.closeVisible = false;
     this.$.animatedPages.selected = 2;
     this.fire('proceedAnyway');
   },
