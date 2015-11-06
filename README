@@ -69,10 +69,10 @@ all of the interfaces in the protocol are prefixed with +z+ and
 postfixed with the major version number.
 
 For example, an unstable protocol called foo-bar with major version 2
-containing the two interfaces wl_foo and wl_bar both minor version 1 will
+containing the two interfaces wp_foo and wp_bar both minor version 1 will
 be placed in the directory +unstable/foo-bar/+ consisting of one file
 called +README+ and one called +foo-bar-unstable-v2.xml+. The XML file
-will consist of two interfaces called +zwl_foo2+ and +zwl_bar2+ with the
+will consist of two interfaces called +zwp_foo2+ and +zwp_bar2+ with the
 +version+ attribute set to +1+.
 
 Unstable protocol changes
