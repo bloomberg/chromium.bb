@@ -654,27 +654,23 @@ bool DXVAVideoDecodeAccelerator::Initialize(media::VideoCodecProfile profile,
   // Instead of crashing while delay loading the DLL when calling MFStartup()
   // below, probe whether we can successfully load the DLL now.
   // See http://crbug.com/339678 for details.
-  HMODULE dxgi_manager_dll = NULL;
-  if ((dxgi_manager_dll = ::GetModuleHandle(L"MFPlat.dll")) == NULL) {
-    HMODULE mfplat_dll = ::LoadLibrary(L"MFPlat.dll");
-    RETURN_ON_FAILURE(mfplat_dll, "MFPlat.dll is required for decoding",
-                      false);
-    // On Windows 8+ mfplat.dll provides the MFCreateDXGIDeviceManager API.
-    // On Windows 7 mshtmlmedia.dll provides it.
-    dxgi_manager_dll = mfplat_dll;
-  }
+  HMODULE dxgi_manager_dll = ::GetModuleHandle(L"MFPlat.dll");
+  RETURN_ON_FAILURE(dxgi_manager_dll, "MFPlat.dll is required for decoding",
+                    false);
+
+  // On Windows 8+ mfplat.dll provides the MFCreateDXGIDeviceManager API.
+  // On Windows 7 mshtmlmedia.dll provides it.
 
   // TODO(ananta)
   // The code below works, as in we can create the DX11 device manager for
   // Windows 7. However the IMFTransform we use for texture conversion and
   // copy does not exist on Windows 7. Look into an alternate approach
   // and enable the code below.
-#if defined ENABLE_DX11_FOR_WIN7
-  if ((base::win::GetVersion() == base::win::VERSION_WIN7) &&
-       ((dxgi_manager_dll = ::GetModuleHandle(L"mshtmlmedia.dll")) == NULL)) {
-    HMODULE mshtml_media_dll = ::LoadLibrary(L"mshtmlmedia.dll");
-    if (mshtml_media_dll)
-      dxgi_manager_dll = mshtml_media_dll;
+#if defined(ENABLE_DX11_FOR_WIN7)
+  if (base::win::GetVersion() == base::win::VERSION_WIN7) {
+    dxgi_manager_dll = ::GetModuleHandle(L"mshtmlmedia.dll");
+    RETURN_ON_FAILURE(dxgi_manager_dll,
+        "mshtmlmedia.dll is required for decoding", false);
   }
 #endif
   // If we don't find the MFCreateDXGIDeviceManager API we fallback to D3D9
@@ -819,7 +815,7 @@ bool DXVAVideoDecodeAccelerator::CreateDX11DevManager() {
       d3d11_query_.Receive());
   RETURN_ON_HR_FAILURE(hr, "Failed to create DX11 device query", false);
 
-  HMODULE video_processor_dll = ::LoadLibrary(L"msvproc.dll");
+  HMODULE video_processor_dll = ::GetModuleHandle(L"msvproc.dll");
   RETURN_ON_FAILURE(video_processor_dll, "Failed to load video processor",
                     false);
 
@@ -1035,6 +1031,21 @@ DXVAVideoDecodeAccelerator::GetSupportedProfiles() {
   return profiles;
 }
 
+// static
+void DXVAVideoDecodeAccelerator::PreSandboxInitialization() {
+  ::LoadLibrary(L"MFPlat.dll");
+  ::LoadLibrary(L"msmpeg2vdec.dll");
+
+  if (base::win::GetVersion() > base::win::VERSION_WIN7) {
+    LoadLibrary(L"msvproc.dll");
+  } else {
+    LoadLibrary(L"dxva2.dll");
+#if defined(ENABLE_DX11_FOR_WIN7)
+    LoadLibrary(L"mshtmlmedia.dll");
+#endif
+  }
+}
+
 bool DXVAVideoDecodeAccelerator::InitDecoder(media::VideoCodecProfile profile) {
   HMODULE decoder_dll = NULL;
 
@@ -1046,7 +1057,7 @@ bool DXVAVideoDecodeAccelerator::InitDecoder(media::VideoCodecProfile profile) {
     // was previously done because it failed inside the sandbox, and now is done
     // as a more minimal approach to avoid other side-effects CCI might have (as
     // we are still in a reduced sandbox).
-    decoder_dll = ::LoadLibrary(L"msmpeg2vdec.dll");
+    decoder_dll = ::GetModuleHandle(L"msmpeg2vdec.dll");
     RETURN_ON_FAILURE(decoder_dll,
                       "msmpeg2vdec.dll required for decoding is not loaded",
                       false);

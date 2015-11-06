@@ -79,6 +79,9 @@ class CONTENT_EXPORT DXVAVideoDecodeAccelerator
   static media::VideoDecodeAccelerator::SupportedProfiles
       GetSupportedProfiles();
 
+  // Preload dlls required for decoding.
+  static void PreSandboxInitialization();
+
  private:
   typedef void* EGLConfig;
   typedef void* EGLSurface;
