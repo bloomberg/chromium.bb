@@ -284,6 +284,13 @@ Chrome.  Then drag another window so that it partially overlaps the green box.
 Move the mouse over to the green box, it will turn red.  Now move the mouse to
 the overlapping window.  It should turn back to green, but because of a bug, it
 doesn't.</p>
+<p>Open <a href="repros/mouseEnterLeaveEvents.html">this link</a> in
+Chrome. Move the mouse inside and outside the Chrome window. When the mouse is
+inside, a green box appears; when the mouse is outside, the box is red. The
+color changes are caused by 'mouseenter' and 'mousleave' events firing. Now
+drag another window so that it partially overlaps the Chrome window. Move the
+mouse from the Chrome window to the overlapping window; the box should turn
+red, but it doesn't.</p>
 
 <h3>
     <a name="bugfix-noBRAtStartOfPara">bugfix/noBRAtStartOfPara</a>

@@ -1,0 +1,22 @@
+<style>
+
+#theDiv {
+    width: 400px;
+    height: 300px;
+}
+
+.entered {
+	background-color: green;
+}
+
+.exited {
+	background-color: red;
+}
+
+</style>
+
+<body onmouseenter="console.log('mouseenter');document.getElementById('theDiv').classList.remove('exited');document.getElementById('theDiv').classList.add('entered');"
+	  onmouseleave="console.log('mouseleave');document.getElementById('theDiv').classList.remove('entered');document.getElementById('theDiv').classList.add('exited');">
+<div id="theDiv">
+</div>
+</body>
