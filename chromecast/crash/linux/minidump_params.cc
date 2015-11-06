@@ -13,7 +13,8 @@ MinidumpParams::MinidumpParams(const std::string& p_process_name,
                                const std::string& p_current_app_name,
                                const std::string& p_last_app_name,
                                const std::string& p_cast_release_version,
-                               const std::string& p_cast_build_number)
+                               const std::string& p_cast_build_number,
+                               const std::string& p_reason)
     : process_name(p_process_name),
       process_uptime(p_process_uptime),
       suffix(p_suffix),
@@ -21,7 +22,8 @@ MinidumpParams::MinidumpParams(const std::string& p_process_name,
       current_app_name(p_current_app_name),
       last_app_name(p_last_app_name),
       cast_release_version(p_cast_release_version),
-      cast_build_number(p_cast_build_number) {
+      cast_build_number(p_cast_build_number),
+      reason(p_reason) {
 }
 
 MinidumpParams::MinidumpParams() : process_uptime(0) {

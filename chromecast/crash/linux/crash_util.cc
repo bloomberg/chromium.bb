@@ -52,7 +52,8 @@ bool CrashUtil::RequestUploadCrashDump(
                         AppStateTracker::GetCurrentApp(),
                         AppStateTracker::GetLastLaunchedApp(),
                         CAST_BUILD_RELEASE,
-                        CAST_BUILD_INCREMENTAL);
+                        CAST_BUILD_INCREMENTAL,
+                        ""  /* reason */);
   DummyMinidumpGenerator minidump_generator(existing_minidump_path);
 
   base::FilePath filename = base::FilePath(existing_minidump_path).BaseName();

@@ -117,7 +117,8 @@ TEST(DumpInfoTest, AllOptionalFieldsIsValid) {
       "\"cur_app_name\": \"current_app\","
       "\"last_app_name\": \"last_app\","
       "\"release_version\": \"RELEASE\","
-      "\"build_number\": \"BUILD_NUMBER\""
+      "\"build_number\": \"BUILD_NUMBER\","
+      "\"reason\": \"foo\""
       "}"));
   struct tm tm = {0};
   tm.tm_isdst = 0;
@@ -140,6 +141,7 @@ TEST(DumpInfoTest, AllOptionalFieldsIsValid) {
   ASSERT_EQ("previous_app", info->params().previous_app_name);
   ASSERT_EQ("current_app", info->params().current_app_name);
   ASSERT_EQ("last_app", info->params().last_app_name);
+  ASSERT_EQ("foo", info->params().reason);
 }
 
 TEST(DumpInfoTest, SomeOptionalFieldsIsValid) {
@@ -174,7 +176,7 @@ TEST(DumpInfoTest, SomeOptionalFieldsIsValid) {
   ASSERT_EQ("previous_app", info->params().previous_app_name);
 }
 
-TEST(DumpInfoTest, TooManyFieldsIsNotValid) {
+TEST(DumpInfoTest, ExtraFieldsIsNotValid) {
   scoped_ptr<DumpInfo> info(CreateDumpInfo(
       "{"
       "\"name\": \"name\","

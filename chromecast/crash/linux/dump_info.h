@@ -58,6 +58,7 @@ class DumpInfo {
   //   "last_app_name": <last_app_name>,
   //   "release_version": <release_version>,
   //   "build_number": <build_number>
+  //   "reason": <reason>
   // }
   scoped_ptr<base::Value> GetAsValue() const;
   const MinidumpParams& params() const { return params_; }

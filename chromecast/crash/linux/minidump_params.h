@@ -18,7 +18,8 @@ struct MinidumpParams {
                  const std::string& p_current_app_name,
                  const std::string& p_last_app_name,
                  const std::string& p_cast_release_version,
-                 const std::string& p_cast_build_number);
+                 const std::string& p_cast_build_number,
+                 const std::string& p_reason);
   MinidumpParams(const MinidumpParams& params);
   ~MinidumpParams();
 
@@ -32,6 +33,8 @@ struct MinidumpParams {
   std::string cast_release_version;
   // Build number is numerical string such as "20000".
   std::string cast_build_number;
+  // Reason for crash, if one is available.
+  std::string reason;
 };
 
 }  // namespace chromecast
