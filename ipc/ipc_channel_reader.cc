@@ -122,7 +122,8 @@ bool ChannelReader::TranslateInputData(const char* input_data,
       0;
 
   // Save any partial data in the overflow buffer.
-  input_overflow_buf_.assign(p, end - p);
+  if (p != input_overflow_buf_.data())
+    input_overflow_buf_.assign(p, end - p);
 
   if (!input_overflow_buf_.empty()) {
     // We have something in the overflow buffer, which means that we will
