@@ -61430,6 +61430,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="987" label="DeviceOrientationAbsoluteInsecureOrigin"/>
   <int value="988" label="DeviceOrientationAbsoluteSecureOrigin"/>
   <int value="989" label="FontFaceConstructor"/>
+  <int value="990" label="ServiceWorkerControlledPage"/>
+  <int value="991" label="MeterElementWithContinuousCapacityAppearance"/>
+  <int value="992" label="MeterElementWithDiscreteCapacityAppearance"/>
+  <int value="993" label="MeterElementWithMeterAppearance"/>
+  <int value="994" label="MeterElementWithNoneAppearance"/>
+  <int value="995" label="MeterElementWithRatingAppearance"/>
+  <int value="996" label="MeterElementWithRelevancyAppearance"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">
