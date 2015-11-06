@@ -26,9 +26,10 @@ interface WindowManager {
   const string kPreferredSize_Property = "prop:preferred-size";
   // The window's show state. Type: ShowState.
   const string kShowState_Property = "prop:show-state";
+  // The window's resize behavior. Type: ResizeBehavior.
+  const string kResizeBehavior_Property = "prop:resize-behavior";
 
-  OpenWindow(WindowTreeClient client,
-             map<string, array<uint8>> properties);
+  OpenWindow(WindowTreeClient client, map<string, array<uint8>> properties);
 
   // Updates the window's preferred size and triggers a relayout of the window
   // within its container.
@@ -40,6 +41,8 @@ interface WindowManager {
 
   SetShowState(uint32 window_id, ShowState show_state) =>
       (WindowManagerErrorCode result);
+
+  SetResizeBehavior(uint32 window_id, ResizeBehavior resize_behavior);
 
   GetConfig() => (WindowManagerConfig config);
 };

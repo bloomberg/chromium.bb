@@ -373,6 +373,12 @@ void Window::SetShowState(mojom::ShowState show_state) {
         ->SetShowState(id_, show_state);
 }
 
+void Window::SetResizeBehavior(mojom::ResizeBehavior resize_behavior) {
+  if (connection_)
+    static_cast<WindowTreeClientImpl*>(connection_)
+        ->SetResizeBehavior(id_, resize_behavior);
+}
+
 void Window::SetFocus() {
   if (connection_)
     static_cast<WindowTreeClientImpl*>(connection_)->SetFocus(id_);

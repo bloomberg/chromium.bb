@@ -7,6 +7,7 @@
 
 #include "components/mus/example/wm/public/interfaces/container.mojom.h"
 #include "components/mus/public/interfaces/window_manager.mojom.h"
+#include "components/mus/public/interfaces/window_manager_constants.mojom.h"
 
 namespace gfx {
 class Rect;
@@ -29,5 +30,7 @@ void SetWindowPreferredSize(mus::Window* window, const gfx::Size& size);
 gfx::Size GetWindowPreferredSize(mus::Window* window);
 
 ash::mojom::Container GetRequestedContainer(mus::Window* window);
+
+mus::mojom::ResizeBehavior GetResizeBehavior(const mus::Window* window);
 
 #endif  // COMPONENTS_MUS_EXAMPLE_WM_PROPERTY_UTIL_H_

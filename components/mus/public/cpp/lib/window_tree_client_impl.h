@@ -93,6 +93,7 @@ class WindowTreeClientImpl : public WindowTreeConnection,
 
   void SetPreferredSize(Id window_id, const gfx::Size& size);
   void SetShowState(Id window_id, mojom::ShowState show_state);
+  void SetResizeBehavior(Id window_id, mojom::ResizeBehavior resize_behavior);
 
  private:
   typedef std::map<Id, Window*> IdToWindowMap;

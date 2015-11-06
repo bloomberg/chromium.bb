@@ -39,6 +39,8 @@ class WindowManagerImpl : public mus::mojom::WindowManager,
   void SetShowState(mus::Id window_id,
                     mus::mojom::ShowState show_state,
                     const WindowManagerErrorCodeCallback& callback) override;
+  void SetResizeBehavior(uint32_t window_id,
+                         mus::mojom::ResizeBehavior resize_behavior) override;
   void GetConfig(const GetConfigCallback& callback) override;
 
   // mus::WindowObserver:

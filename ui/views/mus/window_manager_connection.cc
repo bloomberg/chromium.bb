@@ -140,11 +140,12 @@ void WindowManagerConnection::OnConnectionLost(
     mus::WindowTreeConnection* connection) {}
 
 NativeWidget* WindowManagerConnection::CreateNativeWidget(
+    const Widget::InitParams& init_params,
     internal::NativeWidgetDelegate* delegate) {
-  return new NativeWidgetMus(
-      delegate, app_->shell(),
-      NewWindow(std::map<std::string, std::vector<uint8_t>>()),
-      mus::mojom::SURFACE_TYPE_DEFAULT);
+  std::map<std::string, std::vector<uint8_t>> properties;
+  NativeWidgetMus::ConfigurePropertiesForNewWindow(init_params, &properties);
+  return new NativeWidgetMus(delegate, app_->shell(), NewWindow(properties),
+                             mus::mojom::SURFACE_TYPE_DEFAULT);
 }
 
 }  // namespace views

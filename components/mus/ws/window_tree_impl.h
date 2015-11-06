@@ -228,6 +228,8 @@ class WindowTreeImpl : public mojom::WindowTree, public AccessPolicyDelegate {
   void SetShowState(uint32_t window_id,
                     mus::mojom::ShowState show_state,
                     const SetShowStateCallback& callback) override;
+  void SetResizeBehavior(uint32_t window_id,
+                         mus::mojom::ResizeBehavior resize_behavior) override;
 
   // AccessPolicyDelegate:
   bool IsRootForAccessPolicy(const WindowId& id) const override;

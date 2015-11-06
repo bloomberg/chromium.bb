@@ -196,6 +196,7 @@ interface WindowTree {
       (WindowManagerErrorCode result);
   SetShowState(uint32 window_id, ShowState show_state) =>
       (WindowManagerErrorCode result);
+  SetResizeBehavior(uint32 window_id, ResizeBehavior resize_behavior);
 };
 
 // Changes to windows are not sent to the connection that originated the

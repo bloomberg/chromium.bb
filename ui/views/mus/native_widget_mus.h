@@ -5,6 +5,9 @@
 #ifndef UI_VIEWS_MUS_NATIVE_WIDGET_MUS_H_
 #define UI_VIEWS_MUS_NATIVE_WIDGET_MUS_H_
 
+#include <map>
+#include <string>
+
 #include "base/memory/scoped_ptr.h"
 #include "components/mus/public/interfaces/window_manager.mojom.h"
 #include "ui/aura/window_delegate.h"
@@ -58,16 +61,17 @@ class NativeWidgetMus : public internal::NativeWidgetPrivate,
   static void SetWindowManagerClientAreaInsets(
       const WindowManagerClientAreaInsets& insets);
 
+  // Configures the set of properties supplied to the window manager when
+  // creating a new Window for a Widget.
+  static void ConfigurePropertiesForNewWindow(
+      const Widget::InitParams& init_params,
+      std::map<std::string, std::vector<uint8_t>>* properties);
+
   mus::Window* window() { return window_; }
 
  protected:
   // internal::NativeWidgetPrivate:
   NonClientFrameView* CreateNonClientFrameView() override;
-
- private:
-  void UpdateClientAreaInWindowManager();
-
-  // internal::NativeWidgetPrivate:
   void InitNativeWidget(const Widget::InitParams& params) override;
   bool ShouldUseNativeFrame() const override;
   bool ShouldWindowContentsBeTransparent() const override;
@@ -177,6 +181,9 @@ class NativeWidgetMus : public internal::NativeWidgetPrivate,
   void OnMouseEvent(ui::MouseEvent* event) override;
   void OnScrollEvent(ui::ScrollEvent* event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
+
+ private:
+  void UpdateClientAreaInWindowManager();
 
   mus::Window* window_;
 

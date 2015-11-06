@@ -4,6 +4,7 @@
 
 #include "ui/views/mus/native_widget_mus.h"
 
+#include "components/mus/public/cpp/property_type_converters.h"
 #include "components/mus/public/cpp/window.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "ui/aura/client/default_capture_client.h"
@@ -122,6 +123,18 @@ class ClientSideNonClientFrameView : public NonClientFrameView {
   DISALLOW_COPY_AND_ASSIGN(ClientSideNonClientFrameView);
 };
 
+mus::mojom::ResizeBehavior ResizeBehaviorFromDelegate(
+    WidgetDelegate* delegate) {
+  int32_t behavior = mus::mojom::RESIZE_BEHAVIOR_NONE;
+  if (delegate->CanResize())
+    behavior |= mus::mojom::RESIZE_BEHAVIOR_CAN_RESIZE;
+  if (delegate->CanMaximize())
+    behavior |= mus::mojom::RESIZE_BEHAVIOR_CAN_MAXIMIZE;
+  if (delegate->CanMinimize())
+    behavior |= mus::mojom::RESIZE_BEHAVIOR_CAN_MINIMIZE;
+  return static_cast<mus::mojom::ResizeBehavior>(behavior);
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -148,20 +161,16 @@ void NativeWidgetMus::SetWindowManagerClientAreaInsets(
   window_manager_client_area_insets = new WindowManagerClientAreaInsets(insets);
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// NativeWidgetMus, private:
-
-void NativeWidgetMus::UpdateClientAreaInWindowManager() {
-  NonClientView* non_client_view =
-      native_widget_delegate_->AsWidget()->non_client_view();
-  if (!non_client_view || !non_client_view->client_view())
+// static
+void NativeWidgetMus::ConfigurePropertiesForNewWindow(
+    const Widget::InitParams& init_params,
+    std::map<std::string, std::vector<uint8_t>>* properties) {
+  if (!Widget::RequiresNonClientView(init_params.type))
     return;
 
-  const gfx::Rect client_area_rect(non_client_view->client_view()->bounds());
-  window_->SetClientArea(gfx::Insets(
-      client_area_rect.y(), client_area_rect.x(),
-      non_client_view->bounds().height() - client_area_rect.bottom(),
-      non_client_view->bounds().width() - client_area_rect.right()));
+  (*properties)[mus::mojom::WindowManager::kResizeBehavior_Property] =
+      mojo::TypeConverter<const std::vector<uint8_t>, int32_t>::Convert(
+          ResizeBehaviorFromDelegate(init_params.delegate));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -536,7 +545,8 @@ bool NativeWidgetMus::IsTranslucentWindowOpacitySupported() const {
 }
 
 void NativeWidgetMus::OnSizeConstraintsChanged() {
-  // NOTIMPLEMENTED();
+  window_->SetResizeBehavior(
+      ResizeBehaviorFromDelegate(GetWidget()->widget_delegate()));
 }
 
 void NativeWidgetMus::RepostNativeEvent(gfx::NativeEvent native_event) {
@@ -668,6 +678,22 @@ void NativeWidgetMus::OnScrollEvent(ui::ScrollEvent* event) {
 
 void NativeWidgetMus::OnGestureEvent(ui::GestureEvent* event) {
   native_widget_delegate_->OnGestureEvent(event);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// NativeWidgetMus, private:
+
+void NativeWidgetMus::UpdateClientAreaInWindowManager() {
+  NonClientView* non_client_view =
+      native_widget_delegate_->AsWidget()->non_client_view();
+  if (!non_client_view || !non_client_view->client_view())
+    return;
+
+  const gfx::Rect client_area_rect(non_client_view->client_view()->bounds());
+  window_->SetClientArea(gfx::Insets(
+      client_area_rect.y(), client_area_rect.x(),
+      non_client_view->bounds().height() - client_area_rect.bottom(),
+      non_client_view->bounds().width() - client_area_rect.right()));
 }
 
 }  // namespace views

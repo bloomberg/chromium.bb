@@ -61,3 +61,13 @@ ash::mojom::Container GetRequestedContainer(mus::Window* window) {
   }
   return ash::mojom::CONTAINER_USER_WINDOWS;
 }
+
+mus::mojom::ResizeBehavior GetResizeBehavior(const mus::Window* window) {
+  if (window->HasSharedProperty(
+          mus::mojom::WindowManager::kResizeBehavior_Property)) {
+    return static_cast<mus::mojom::ResizeBehavior>(
+        window->GetSharedProperty<int32_t>(
+            mus::mojom::WindowManager::kResizeBehavior_Property));
+  }
+  return mus::mojom::RESIZE_BEHAVIOR_NONE;
+}

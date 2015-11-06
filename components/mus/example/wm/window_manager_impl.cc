@@ -85,10 +85,13 @@ void WindowManagerImpl::SetPreferredSize(
     mus::Id window_id,
     mojo::SizePtr size,
     const WindowManagerErrorCodeCallback& callback) {
-  SetWindowPreferredSize(state_->GetWindowById(window_id),
-                         size.To<gfx::Size>());
+  mus::Window* window = state_->GetWindowById(window_id);
+  if (window)
+    SetWindowPreferredSize(window, size.To<gfx::Size>());
 
-  callback.Run(mus::mojom::WINDOW_MANAGER_ERROR_CODE_SUCCESS);
+  callback.Run(window
+                   ? mus::mojom::WINDOW_MANAGER_ERROR_CODE_SUCCESS
+                   : mus::mojom::WINDOW_MANAGER_ERROR_CODE_ERROR_ACCESS_DENIED);
 }
 
 void WindowManagerImpl::SetBounds(
@@ -96,8 +99,11 @@ void WindowManagerImpl::SetBounds(
     mojo::RectPtr bounds,
     const WindowManagerErrorCodeCallback& callback) {
   mus::Window* window = state_->root()->GetChildById(window_id);
-  window->SetBounds(bounds->To<gfx::Rect>());
-  callback.Run(mus::mojom::WINDOW_MANAGER_ERROR_CODE_SUCCESS);
+  if (window)
+    window->SetBounds(bounds->To<gfx::Rect>());
+  callback.Run(window
+                   ? mus::mojom::WINDOW_MANAGER_ERROR_CODE_SUCCESS
+                   : mus::mojom::WINDOW_MANAGER_ERROR_CODE_ERROR_ACCESS_DENIED);
 }
 
 void WindowManagerImpl::SetShowState(
@@ -105,9 +111,23 @@ void WindowManagerImpl::SetShowState(
     mus::mojom::ShowState show_state,
     const WindowManagerErrorCodeCallback& callback){
   mus::Window* window = state_->GetWindowById(window_id);
-  window->SetSharedProperty<int32_t>(
-      mus::mojom::WindowManager::kShowState_Property, show_state);
-  callback.Run(mus::mojom::WINDOW_MANAGER_ERROR_CODE_SUCCESS);
+  if (window) {
+    window->SetSharedProperty<int32_t>(
+        mus::mojom::WindowManager::kShowState_Property, show_state);
+  }
+  callback.Run(window
+                   ? mus::mojom::WINDOW_MANAGER_ERROR_CODE_SUCCESS
+                   : mus::mojom::WINDOW_MANAGER_ERROR_CODE_ERROR_ACCESS_DENIED);
+}
+
+void WindowManagerImpl::SetResizeBehavior(
+    uint32_t window_id,
+    mus::mojom::ResizeBehavior resize_behavior) {
+  mus::Window* window = state_->GetWindowById(window_id);
+  if (window) {
+    window->SetSharedProperty<int32_t>(
+        mus::mojom::WindowManager::kResizeBehavior_Property, resize_behavior);
+  }
 }
 
 void WindowManagerImpl::GetConfig(const GetConfigCallback& callback) {

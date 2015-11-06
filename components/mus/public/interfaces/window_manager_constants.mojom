@@ -26,6 +26,13 @@ enum Rotation {
   VALUE_270,
 };
 
+enum ResizeBehavior {
+  NONE = 0,
+  CAN_RESIZE = 1,
+  CAN_MAXIMIZE = 2,
+  CAN_MINIMIZE = 4,
+};
+
 struct Display {
   int64 id;
   mojo.Rect bounds;

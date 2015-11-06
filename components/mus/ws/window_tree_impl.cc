@@ -739,22 +739,27 @@ void WindowTreeImpl::SetPreferredSize(
     uint32_t window_id,
     mojo::SizePtr size,
     const SetPreferredSizeCallback& callback) {
-  if (!GetHost() || !GetHost()->window_manager())
-    return;
-
-  // TODO(sky): verify window_id is valid for the client.
-  GetHost()->window_manager()->SetPreferredSize(window_id, size.Pass(),
-                                                callback);
+  ServerWindow* window = GetWindow(WindowIdFromTransportId(window_id));
+  if (window && ShouldRouteToWindowManager(window)) {
+    GetHost()->window_manager()->SetPreferredSize(window_id, size.Pass(),
+                                                  callback);
+  }
 }
 
 void WindowTreeImpl::SetShowState(uint32_t window_id,
                                   mojom::ShowState show_state,
                                   const SetShowStateCallback& callback) {
-  if (!GetHost() || !GetHost()->window_manager())
-    return;
+  ServerWindow* window = GetWindow(WindowIdFromTransportId(window_id));
+  if (window && ShouldRouteToWindowManager(window))
+    GetHost()->window_manager()->SetShowState(window_id, show_state, callback);
+}
 
-  // TODO(sky): verify window_id is valid for the client.
-  GetHost()->window_manager()->SetShowState(window_id, show_state, callback);
+void WindowTreeImpl::SetResizeBehavior(
+    uint32_t window_id,
+    mus::mojom::ResizeBehavior resize_behavior) {
+  ServerWindow* window = GetWindow(WindowIdFromTransportId(window_id));
+  if (window && ShouldRouteToWindowManager(window))
+    GetHost()->window_manager()->SetResizeBehavior(window_id, resize_behavior);
 }
 
 bool WindowTreeImpl::IsRootForAccessPolicy(const WindowId& id) const {

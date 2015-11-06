@@ -8,6 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "components/mus/public/cpp/window_tree_delegate.h"
 #include "components/mus/public/interfaces/window_manager.mojom.h"
+#include "ui/views/widget/widget.h"
 
 namespace mojo {
 class ApplicationImpl;
@@ -49,7 +50,8 @@ class WindowManagerConnection : public mus::WindowTreeDelegate {
   void OnEmbed(mus::Window* root) override;
   void OnConnectionLost(mus::WindowTreeConnection* connection) override;
 
-  NativeWidget* CreateNativeWidget(internal::NativeWidgetDelegate* delegate);
+  NativeWidget* CreateNativeWidget(const Widget::InitParams& init_params,
+                                   internal::NativeWidgetDelegate* delegate);
 
   mojo::ApplicationImpl* app_;
   mus::mojom::WindowManagerPtr window_manager_;
