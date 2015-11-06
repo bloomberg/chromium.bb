@@ -28,7 +28,6 @@
 #include "ui/views/controls/link.h"
 #include "ui/views/controls/link_listener.h"
 #include "ui/views/layout/box_layout.h"
-#include "ui/views/layout/grid_layout.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 #include "url/gurl.h"
@@ -52,9 +51,6 @@ class ButtonView : public views::View {
  public:
   ButtonView(views::ButtonListener* listener, int between_button_spacing);
   ~ButtonView() override;
-
-  // Returns an empty size when the view is not visible.
-  gfx::Size GetPreferredSize() const override;
 
   views::LabelButton* accept_button() const { return accept_button_; }
   views::LabelButton* deny_button() const { return deny_button_; }
@@ -83,10 +79,6 @@ ButtonView::ButtonView(views::ButtonListener* listener,
 }
 
 ButtonView::~ButtonView() {
-}
-
-gfx::Size ButtonView::GetPreferredSize() const {
-  return visible() ? views::View::GetPreferredSize() : gfx::Size();
 }
 
 }  // namespace
@@ -178,13 +170,10 @@ ExclusiveAccessBubbleViews::ExclusiveAccessView::ExclusiveAccessView(
 
   exit_instruction_ =
       new views::Label(bubble_->GetInstructionText(), medium_font_list);
-  exit_instruction_->set_collapse_when_hidden(true);
-
   exit_instruction_->SetEnabledColor(foreground_color);
   exit_instruction_->SetBackgroundColor(background_color);
 
   link_ = new views::Link();
-  link_->set_collapse_when_hidden(true);
   link_->SetFocusable(false);
 #if defined(OS_CHROMEOS)
   // On CrOS, the link text doesn't change, since it doesn't show the shortcut.
@@ -199,34 +188,16 @@ ExclusiveAccessBubbleViews::ExclusiveAccessView::ExclusiveAccessView(
 
   button_view_ = new ButtonView(this, kPaddingPx);
 
-  views::GridLayout* layout = new views::GridLayout(this);
-  views::ColumnSet* columns = layout->AddColumnSet(0);
-  if (!ExclusiveAccessManager::IsSimplifiedFullscreenUIEnabled()) {
-    // In the simplified UI, do not show the message label, only the exit
-    // instruction.
-    columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER, 0,
-                       views::GridLayout::USE_PREF, 0, 0);
-    columns->AddPaddingColumn(1, kMiddlePaddingPx);
-  }
-  columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER, 0,
-                     views::GridLayout::USE_PREF, 0, 0);
-  columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER, 0,
-                     views::GridLayout::USE_PREF, 0, 0);
-  columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER, 0,
-                     views::GridLayout::USE_PREF, 0, 0);
-
-  layout->StartRow(0, 0);
   if (!ExclusiveAccessManager::IsSimplifiedFullscreenUIEnabled()) {
     DCHECK(message_label_);
-    layout->AddView(message_label_);
+    AddChildView(message_label_);
   }
-  layout->AddView(button_view_);
-  layout->AddView(exit_instruction_);
-  layout->AddView(link_);
+  AddChildView(button_view_);
+  AddChildView(exit_instruction_);
+  AddChildView(link_);
 
-  gfx::Insets padding(kPaddingPx, kPaddingPx, kPaddingPx, kPaddingPx);
-  padding += GetInsets();
-  layout->SetInsets(padding);
+  views::BoxLayout* layout = new views::BoxLayout(
+      views::BoxLayout::kHorizontal, kPaddingPx, kPaddingPx, kMiddlePaddingPx);
   SetLayoutManager(layout);
 
   UpdateContent(url, bubble_type);
