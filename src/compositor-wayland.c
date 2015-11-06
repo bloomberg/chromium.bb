@@ -177,7 +177,8 @@ struct wayland_input {
 	enum weston_key_state_update keyboard_state_update;
 	uint32_t key_serial;
 	uint32_t enter_serial;
-	int focus;
+	bool has_focus;
+
 	struct wayland_output *output;
 	struct wayland_output *keyboard_focus;
 };
@@ -1296,12 +1297,12 @@ input_handle_pointer_enter(void *data, struct wl_pointer *pointer,
 	weston_output_transform_coordinate(&input->output->base, x, y, &x, &y);
 
 	if (location == THEME_LOCATION_CLIENT_AREA) {
-		input->focus = 1;
+		input->has_focus = true;
 		notify_pointer_focus(&input->base, &input->output->base, x, y);
 		wl_pointer_set_cursor(input->parent.pointer,
 				      input->enter_serial, NULL, 0, 0);
 	} else {
-		input->focus = 0;
+		input->has_focus = false;
 		notify_pointer_focus(&input->base, NULL, 0, 0);
 		input_set_cursor(input);
 	}
@@ -1325,7 +1326,7 @@ input_handle_pointer_leave(void *data, struct wl_pointer *pointer,
 
 	notify_pointer_focus(&input->base, NULL, 0, 0);
 	input->output = NULL;
-	input->focus = 0;
+	input->has_focus = false;
 }
 
 static void
@@ -1355,15 +1356,16 @@ input_handle_motion(void *data, struct wl_pointer *pointer,
 
 	weston_output_transform_coordinate(&input->output->base, x, y, &x, &y);
 
-	if (input->focus && location != THEME_LOCATION_CLIENT_AREA) {
+	if (input->has_focus && location != THEME_LOCATION_CLIENT_AREA) {
 		input_set_cursor(input);
 		notify_pointer_focus(&input->base, NULL, 0, 0);
-		input->focus = 0;
-	} else if (!input->focus && location == THEME_LOCATION_CLIENT_AREA) {
+		input->has_focus = false;
+	} else if (!input->has_focus &&
+		   location == THEME_LOCATION_CLIENT_AREA) {
 		wl_pointer_set_cursor(input->parent.pointer,
 				      input->enter_serial, NULL, 0, 0);
 		notify_pointer_focus(&input->base, &input->output->base, x, y);
-		input->focus = 1;
+		input->has_focus = true;
 	}
 
 	if (location == THEME_LOCATION_CLIENT_AREA)
