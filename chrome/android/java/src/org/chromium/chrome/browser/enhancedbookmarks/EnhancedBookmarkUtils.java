@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.Browser;
 
@@ -104,48 +105,75 @@ public class EnhancedBookmarkUtils {
                 createAddBookmarkCallback(bookmarkModel, snackbarManager, activity));
     }
 
+    private static void showSnackbarForAddingBookmark(final EnhancedBookmarksModel bookmarkModel,
+            final SnackbarManager snackbarManager, final Activity activity,
+            final BookmarkId bookmarkId, final int saveResult, boolean isStorageAlmostFull) {
+        SnackbarController snackbarController = null;
+        int messageId;
+        int buttonId = 0;
+
+        OfflinePageBridge offlinePageBridge = bookmarkModel.getOfflinePageBridge();
+        if (offlinePageBridge == null) {
+            messageId = R.string.enhanced_bookmark_page_saved;
+        } else if (saveResult == AddBookmarkCallback.SKIPPED) {
+            messageId = R.string.offline_pages_page_skipped;
+        } else if (isStorageAlmostFull) {
+            messageId = saveResult == AddBookmarkCallback.SAVED
+                    ? R.string.offline_pages_page_saved_storage_near_full
+                    : R.string.offline_pages_page_failed_to_save_storage_near_full;
+            // Show "Free up space" button.
+            buttonId = R.string.offline_pages_free_up_space_title;
+            snackbarController = createSnackbarControllerForFreeUpSpaceButton(
+                    bookmarkModel, snackbarManager, activity);
+        } else {
+            messageId = saveResult == AddBookmarkCallback.SAVED
+                    ? R.string.offline_pages_page_saved
+                    : R.string.offline_pages_page_failed_to_save;
+        }
+
+        // Show "Edit" button when "Free up space" button is not desired, regardless
+        // whether the offline page was saved successfuly, because a bookmark was
+        // created and user might want to edit title.
+        if (buttonId == 0) {
+            buttonId = R.string.enhanced_bookmark_item_edit;
+            snackbarController = createSnackbarControllerForEditButton(
+                    bookmarkModel, activity, bookmarkId);
+        }
+
+        snackbarManager.showSnackbar(
+                Snackbar.make(activity.getString(messageId), snackbarController)
+                        .setAction(activity.getString(buttonId), null)
+                        .setSingleLine(false));
+    }
+
     private static AddBookmarkCallback createAddBookmarkCallback(
             final EnhancedBookmarksModel bookmarkModel, final SnackbarManager snackbarManager,
             final Activity activity) {
         return new AddBookmarkCallback() {
             @Override
-            public void onBookmarkAdded(BookmarkId bookmarkId, int saveResult) {
-                SnackbarController snackbarController = null;
-                int messageId;
-                int buttonId = 0;
-
-                OfflinePageBridge offlinePageBridge = bookmarkModel.getOfflinePageBridge();
-                if (offlinePageBridge == null) {
-                    messageId = R.string.enhanced_bookmark_page_saved;
-                } else if (saveResult == AddBookmarkCallback.SKIPPED) {
-                    messageId = R.string.offline_pages_page_skipped;
-                } else if (OfflinePageUtils.isStorageAlmostFull()) {
-                    messageId = saveResult == AddBookmarkCallback.SAVED
-                            ? R.string.offline_pages_page_saved_storage_near_full
-                            : R.string.offline_pages_page_failed_to_save_storage_near_full;
-                    // Show "Free up space" button.
-                    buttonId = R.string.offline_pages_free_up_space_title;
-                    snackbarController = createSnackbarControllerForFreeUpSpaceButton(
-                            bookmarkModel, snackbarManager, activity);
-                } else {
-                    messageId = saveResult == AddBookmarkCallback.SAVED
-                            ? R.string.offline_pages_page_saved
-                            : R.string.offline_pages_page_failed_to_save;
+            public void onBookmarkAdded(final BookmarkId bookmarkId, final int saveResult) {
+                // Shows the snackbar right away when offline pages feature is not enabled since
+                // there is no need to wait to get the storage info.
+                if (bookmarkModel.getOfflinePageBridge() == null) {
+                    showSnackbarForAddingBookmark(bookmarkModel, snackbarManager, activity,
+                                bookmarkId, saveResult, false);
+                    return;
                 }
 
-                // Show "Edit" button when "Free up space" button is not desired, regardless whether
-                // the offline page was saved successfuly, because a bookmark was created and user
-                // might want to edit title.
-                if (buttonId == 0) {
-                    buttonId = R.string.enhanced_bookmark_item_edit;
-                    snackbarController = createSnackbarControllerForEditButton(
-                            bookmarkModel, activity, bookmarkId);
-                }
+                // Gets the storage info asynchronously which is needed to produce the message for
+                // the snackbar.
+                new AsyncTask<Void, Void, Boolean>() {
+                    @Override
+                    protected Boolean doInBackground(Void... params) {
+                        return OfflinePageUtils.isStorageAlmostFull();
+                    }
 
-                snackbarManager.showSnackbar(
-                        Snackbar.make(activity.getString(messageId), snackbarController)
-                                .setAction(activity.getString(buttonId), null)
-                                .setSingleLine(false));
+                    @Override
+                    protected void onPostExecute(Boolean isStorageAlmostFull) {
+                        showSnackbarForAddingBookmark(bookmarkModel, snackbarManager, activity,
+                                bookmarkId, saveResult, isStorageAlmostFull);
+                    }
+                }.execute();
             }
         };
     }

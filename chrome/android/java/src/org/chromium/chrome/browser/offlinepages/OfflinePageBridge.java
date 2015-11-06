@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.offlinepages;
 
 import android.content.pm.PackageManager;
+import android.os.AsyncTask;
 
 import org.chromium.base.ObserverList;
 import org.chromium.base.ThreadUtils;
@@ -93,13 +94,19 @@ public final class OfflinePageBridge {
         public void offlinePageDeleted(BookmarkId bookmarkId) {}
     }
 
-    private static int getFreeSpacePercentage() {
-        return (int) (1.0 * OfflinePageUtils.getFreeSpaceInBytes()
-                / OfflinePageUtils.getTotalSpaceInBytes() * 100);
-    }
-
-    private static int getFreeSpaceMB() {
-        return (int) (OfflinePageUtils.getFreeSpaceInBytes() / (1024 * 1024));
+    private static void recordFreeSpaceHistograms(
+            final String percentageName, final String bytesName) {
+        new AsyncTask<Void, Void, Void>() {
+            @Override
+            protected Void doInBackground(Void... params) {
+                int percentage = (int) (1.0 * OfflinePageUtils.getFreeSpaceInBytes()
+                        / OfflinePageUtils.getTotalSpaceInBytes() * 100);
+                RecordHistogram.recordEnumeratedHistogram(percentageName, percentage, 101);
+                int bytesInMB = (int) (OfflinePageUtils.getFreeSpaceInBytes() / (1024 * 1024));
+                RecordHistogram.recordCustomCountHistogram(bytesName, bytesInMB, 1, 500000, 50);
+                return null;
+            }
+        }.execute();
     }
 
     /**
@@ -195,23 +202,18 @@ public final class OfflinePageBridge {
     public void savePage(final WebContents webContents, final BookmarkId bookmarkId,
             WindowAndroid windowAndroid, final SavePageCallback callback) {
         assert mIsNativeOfflinePageModelLoaded;
-        RecordHistogram.recordEnumeratedHistogram(
-                "OfflinePages.SavePage.FreeSpacePercentage", getFreeSpacePercentage(), 101);
-        RecordHistogram.recordCustomCountHistogram(
-                "OfflinePages.SavePage.FreeSpaceMB", getFreeSpaceMB(), 1, 500000, 50);
 
         if (windowAndroid == null) {
             callback.onSavePageDone(SavePageResult.CONTENT_UNAVAILABLE, webContents.getUrl());
         } else if (OfflinePageUtils.hasFileAccessPermission(windowAndroid)) {
-            nativeSavePage(mNativeOfflinePageBridge, callback, webContents, bookmarkId.getId());
+            doSavePage(callback, webContents, bookmarkId);
         } else {
             PermissionCallback permissionCallback = new PermissionCallback() {
                 @Override
                 public void onRequestPermissionsResult(String[] permission, int[] grantResults) {
                     if (grantResults.length > 0
                             && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                        nativeSavePage(mNativeOfflinePageBridge, callback, webContents,
-                                bookmarkId.getId());
+                        doSavePage(callback, webContents, bookmarkId);
                     } else {
                         callback.onSavePageDone(SavePageResult.CANCELLED, webContents.getUrl());
                     }
@@ -220,6 +222,13 @@ public final class OfflinePageBridge {
 
             OfflinePageUtils.requestFileAccessPermission(windowAndroid, permissionCallback);
         }
+    }
+
+    private void doSavePage(SavePageCallback callback, WebContents webContents,
+            BookmarkId bookmarkId) {
+        recordFreeSpaceHistograms(
+                "OfflinePages.SavePage.FreeSpacePercentage", "OfflinePages.SavePage.FreeSpaceMB");
+        nativeSavePage(mNativeOfflinePageBridge, callback, webContents, bookmarkId.getId());
     }
 
     /**
@@ -245,20 +254,16 @@ public final class OfflinePageBridge {
             final DeletePageCallback callback) {
         assert mIsNativeOfflinePageModelLoaded;
         assert windowAndroid != null;
-        RecordHistogram.recordEnumeratedHistogram(
-                "OfflinePages.DeletePage.FreeSpacePercentage", getFreeSpacePercentage(), 101);
-        RecordHistogram.recordCustomCountHistogram(
-                "OfflinePages.DeletePage.FreeSpaceMB", getFreeSpaceMB(), 1, 500000, 50);
 
         if (OfflinePageUtils.hasFileAccessPermission(windowAndroid)) {
-            nativeDeletePage(mNativeOfflinePageBridge, callback, bookmarkId.getId());
+            doDeletePage(callback, bookmarkId);
         } else {
             PermissionCallback permissionCallback = new PermissionCallback() {
                 @Override
                 public void onRequestPermissionsResult(String[] permission, int[] grantResults) {
                     if (grantResults.length > 0
                             && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                        nativeDeletePage(mNativeOfflinePageBridge, callback, bookmarkId.getId());
+                        doDeletePage(callback, bookmarkId);
                     } else {
                         callback.onDeletePageDone(DeletePageResult.DEVICE_FAILURE);
                     }
@@ -267,6 +272,12 @@ public final class OfflinePageBridge {
 
             OfflinePageUtils.requestFileAccessPermission(windowAndroid, permissionCallback);
         }
+    }
+
+    private void doDeletePage(DeletePageCallback callback, BookmarkId bookmarkId) {
+        recordFreeSpaceHistograms("OfflinePages.DeletePage.FreeSpacePercentage",
+                "OfflinePages.DeletePage.FreeSpaceMB");
+        nativeDeletePage(mNativeOfflinePageBridge, callback, bookmarkId.getId());
     }
 
     /**
