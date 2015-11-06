@@ -29,7 +29,6 @@
 <translation id="1036511912703768636">Az alábbi USB-eszközök bármelyikének elérése</translation>
 <translation id="1038168778161626396">Csak titkosítás</translation>
 <translation id="1038842779957582377">Ismeretlen név</translation>
-<translation id="1040931876666128942">WebUsb-értesítések.</translation>
 <translation id="1042174272890264476">Számítógépe a <ph name="SHORT_PRODUCT_NAME" /> RLZ-könyvtárát is tartalmazza beépítve. Az RLZ egy nem egyedi, személy szerinti azonosításra nem alkalmas címkét rendel hozzá a keresések és a <ph name="SHORT_PRODUCT_NAME" /> használatának egy adott promóciós kampány keretein belüli felméréséhez. Ezek a címkék időnként a <ph name="PRODUCT_NAME" /> Google-keresési lekérdezéseiben is feltűnnek.</translation>
 <translation id="1042574203789536285">A(z) <ph name="URL" /> webhely állandó jelleggel nagyméretű adatokat akar tárolni az eszközén.</translation>
 <translation id="1045157690796831147">Átírás (namaskar → നമസ്കാരം)</translation>
@@ -328,7 +327,6 @@
 <translation id="1470719357688513792">Az új cookie-beállítások az oldal ismételt betöltése után lépnek életbe.</translation>
 <translation id="14720830734893704">Virtuális billentyűzet támogatásának engedélyezése.</translation>
 <translation id="1474339897586437869">A(z) „<ph name="FILENAME" />” feltöltése nem történt meg. Nincs elegendő szabad terület a Google Drive-on.</translation>
-<translation id="1476503841242751994">{COUNT,plural, =1{1 jelszó}other{# jelszó}}</translation>
 <translation id="1476949146811612304">Állítsa be, hogy a böngésző melyik keresőmotort használja, amikor Ön a <ph name="BEGIN_LINK" />cím- és keresősávból<ph name="END_LINK" /> keres.</translation>
 <translation id="1477301030751268706">Azonosítási API token-gyorsítótára</translation>
 <translation id="1478340334823509079">Részletek: <ph name="FILE_NAME" /></translation>
@@ -575,7 +573,7 @@
 <translation id="1793119619663054394">Biztosan törli a(z) „<ph name="PROFILE_NAME" />” profilt és annak összes Chrome-adatát erről a számítógépről? A művelet nem vonható vissza.</translation>
 <translation id="179767530217573436">elmúlt 4 hét</translation>
 <translation id="180035236176489073">Online kell lennie a fájlok eléréséhez.</translation>
-<translation id="1801298019027379214">Helytelen PIN kód, kérjük, próbálja meg újra. Fennmaradó próbálkozások száma: <ph name="TRIES_COUNT" /></translation>
+<translation id="1801298019027379214">Helytelen PIN-kód, kérjük, próbálja meg újra. Fennmaradó próbálkozások száma: <ph name="TRIES_COUNT" /></translation>
 <translation id="1801827354178857021">Időszak</translation>
 <translation id="1803133642364907127">Bővítménytartalom ellenőrzése</translation>
 <translation id="1804251416207250805">Hiperlink-ellenőrző pingek küldésének letiltása.</translation>
@@ -922,6 +920,7 @@ Miután létrehozott egy új felügyelt felhasználót, bármikor és bármilyen
 <translation id="2326606747676847821">Váltás inkognitóra</translation>
 <translation id="2326931316514688470">Alkalmazás új&amp;ratöltése</translation>
 <translation id="2327492829706409234">Alkalmazás engedélyezése</translation>
+<translation id="2329597144923131178">Jelentkezzen be, hogy könyvjelzőit, előzményeit, jelszavait és más beállításait az összes eszközén elérje.</translation>
 <translation id="2332131598580221120">Megtekintés az áruházban</translation>
 <translation id="2332742915001411729">Visszaállítás az alapértékre</translation>
 <translation id="2335122562899522968">Ez az oldal cookie-kat állít be.</translation>
@@ -945,7 +944,6 @@ Miután létrehozott egy új felügyelt felhasználót, bármikor és bármilyen
 <translation id="2359808026110333948">Folytatás</translation>
 <translation id="236128817791440714">Ajánlott: a Smart Lock beállítása Androidon</translation>
 <translation id="236141728043665931">Mikrofon elérésének állandó tiltása</translation>
-<translation id="2365626167708453863">Fiók kiválasztása a Google Smart Lock funkcióból</translation>
 <translation id="2367972762794486313">Alkalmazások megjelenítése</translation>
 <translation id="2368075211218459617">A Kontextusfüggő keresés engedélyezése.</translation>
 <translation id="2370882663124746154">A dupla pinjin beviteli mód engedélyezése</translation>
@@ -1702,7 +1700,7 @@ Miután létrehozott egy új felügyelt felhasználót, bármikor és bármilyen
 <translation id="3382073616108123819">Hoppá! A rendszer nem tudta megállapítani az eszközazonosítókat ehhez az eszközhöz.</translation>
 <translation id="3384773155383850738">Maximális javaslatszám</translation>
 <translation id="338583716107319301">Elválasztó</translation>
-<translation id="3391392691301057522">Régi PIN kód:</translation>
+<translation id="3391392691301057522">Régi PIN-kód:</translation>
 <translation id="3391716558283801616">7. lap</translation>
 <translation id="3392020134425442298">Rosszindulatú fájl helyreállítása</translation>
 <translation id="3393716657345709557">A kért bejegyzés nem található a gyorsítótárban.</translation>
@@ -2232,7 +2230,7 @@ Elindítja a következőt: <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation
 <translation id="4110559665646603267">Fókuszálás a polcra</translation>
 <translation id="4112917766894695549">Ezeket a beállításokat a rendszergazdája kényszeríti ki.</translation>
 <translation id="4114360727879906392">Előző ablak</translation>
-<translation id="4114470632216071239">SIM-kártya zárolása (PIN kód bekérése mobiladatok használatához)</translation>
+<translation id="4114470632216071239">SIM-kártya zárolása (PIN-kód bekérése mobiladatok használatához)</translation>
 <translation id="4114955900795884390">Nincs megfelelő beépülő modul a tartalom megjelenítéséhez.</translation>
 <translation id="4116663294526079822">Mindig engedélyezze ezen az oldalon</translation>
 <translation id="411666854932687641">Saját memória</translation>
@@ -2651,7 +2649,6 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="4780374166989101364">Engedélyezi a kísérleti bővítmény-API-kat. Figyelem! A bővítménygaléria nem teszi lehetővé, hogy kísérleti API-kat használó bővítményeket töltsön fel.</translation>
 <translation id="4781787911582943401">Képernyő nagyítása</translation>
 <translation id="4782449893814226250">Megkérdezted a szüleidet, hogy meg szabad-e látogatnod ezt az oldalt.</translation>
-<translation id="4784085458903013712">{COUNT,plural, =1{1 kB}other{# kB}}</translation>
 <translation id="4784330909746505604">PowerPoint-bemutató</translation>
 <translation id="4785040501822872973">Ez a számítógép <ph name="LOGOUT_TIME_LEFT" /> másodperc múlva újraindul. Bármely gomb lenyomásával folytathatja a felfedezését.</translation>
 <translation id="4786993863723020412">Gyorsítótár-olvasási hiba</translation>
@@ -2838,7 +2835,7 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="5061188462607594407">Tegye biztonságossá <ph name="PHONE_TYPE" /> telefonját a folytatáshoz</translation>
 <translation id="5061708541166515394">Kontraszt</translation>
 <translation id="5062930723426326933">A bejelentkezés nem sikerült. Kérjük, kapcsolódjon az internethez, majd próbálja újra.</translation>
-<translation id="5063180925553000800">Új PIN kód:</translation>
+<translation id="5063180925553000800">Új PIN-kód:</translation>
 <translation id="5067867186035333991">Kérdezzen rá, ha a(z) <ph name="HOST" /> hozzá szeretne férni a mikrofonhoz</translation>
 <translation id="5068787915627988398">Ha be van kapcsolva, bármilyen eredet a felhasználó megkérdezése nélkül használhat csatlakoztatott WebUSB-eszközöket.</translation>
 <translation id="507075806566596212">A <ph name="DEVICE_TYPE" /> Google-regisztrációjára készül, amivel engedélyezi az eszköz távoli helymeghatározásának, törlésének és zárolásának lehetőségét. A művelet végrehajtásához újra kell indítania az eszközt. Folytatja?</translation>
@@ -2846,7 +2843,7 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="5074318175948309511">Előfordulhat, hogy az új beállítások életbe lépéséhez az oldal újratöltése szükséges.</translation>
 <translation id="5075306601479391924">Felhasználói kézmozdulatok megkövetelésének kikapcsolása a médiaelemek lejátszásához. Ennek aktiválásával engedélyezi az automatikus lejátszás működését.</translation>
 <translation id="5078638979202084724">Összes lap hozzáadása a könyvjelzőkhöz</translation>
-<translation id="5078796286268621944">Helytelen PIN kód</translation>
+<translation id="5078796286268621944">Helytelen PIN-kód</translation>
 <translation id="5081055027309504756">Seccomp-BPF sandbox</translation>
 <translation id="5085162214018721575">Frissítések keresése</translation>
 <translation id="5086082738160935172">HID</translation>
@@ -3181,7 +3178,6 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="5527474464531963247">Másik hálózatot is választhat.</translation>
 <translation id="5527963985407842218">Olvasási mód aktiválása</translation>
 <translation id="5528368756083817449">Könyvjelzőkezelő</translation>
-<translation id="5529098031581368697">Az aktuális háttérképet a(z) „<ph name="APP_NAME" />” állította be</translation>
 <translation id="5531274207066050939">Google Payments</translation>
 <translation id="5532223876348815659">Általános</translation>
 <translation id="5533555070048896610">Átírás (namaste → नमस्ते)</translation>
@@ -3197,7 +3193,7 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
         Engedélyezés esetén a document.scrollingElement értéke document.documentElement; letiltása esetén pedig document.body (szigorú módú oldalaknál).</translation>
 <translation id="5550431144454300634">Bevitel automatikus javítása</translation>
 <translation id="5553089923092577885">Tanúsítvány-irányelv leképezések</translation>
-<translation id="5553784454066145694">Új PIN kód választása</translation>
+<translation id="5553784454066145694">Új PIN-kód választása</translation>
 <translation id="5554489410841842733">Ez az ikon akkor látható, ha a bővítmény tehet valamit az aktuális oldalon.</translation>
 <translation id="5554573843028719904">Egyéb Wi-Fi hálózat...</translation>
 <translation id="5554720593229208774">E-mail tanúsítványkibocsátó</translation>
@@ -3298,7 +3294,6 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="5702898740348134351">&amp;Keresők szerkesztése...</translation>
 <translation id="5703594190584829406">Az Automatikus kitöltés javaslatait a billentyűzet tetején jeleníti meg, nem pedig egy legördülő menüben.</translation>
 <translation id="5704272569086782895">Több szálon futó GPU-raszterizálás engedélyezése.</translation>
-<translation id="570544101664452060">Kísérleti WebUsb-értesítések.</translation>
 <translation id="5706551819490830015">Számlázási címek kezelése...</translation>
 <translation id="5707185214361380026">Nem sikerült a bővítmény betöltése innen:</translation>
 <translation id="5707604204219538797">Következő szó</translation>
@@ -3445,7 +3440,6 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="5900302528761731119">Google-profil fotó</translation>
 <translation id="5900623698597156974">Egy TLS 1.0-tartalék fel tudta venni a kapcsolatot a szerverrel, de már nem fogadjuk el a TLS 1.0-tartalékokat. A szervert frissíteni kell, hogy megfelelően hajthassa végre a verzió egyeztetést és ideális esetben a TLS 1.2 verziót támogassa</translation>
 <translation id="590253956165195626">Kínálja fel az Ön által nem ismert nyelven írt oldalak fordítását.</translation>
-<translation id="5902659428109355177">{COUNT,plural, =1{1 elem}other{# elem}}</translation>
 <translation id="5904093760909470684">Proxykonfiguráció</translation>
 <translation id="5906065664303289925">Hardvercím:</translation>
 <translation id="5910363049092958439">Ké&amp;p mentése másként...</translation>
@@ -3636,7 +3630,7 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="6196207969502475924">Hangalapú keresés</translation>
 <translation id="6196854373336333322">A(z) <ph name="EXTENSION_NAME" /> bővítmény átvette az irányítást proxybeállításai felett, ami azt jelenti, hogy a bővítmény minden internetes tevékenységét módosíthatja, feltörheti vagy lehallgathatja. Ha nem biztos benne, hogy miért történt a változás, akkor valószínűleg nem is akarja azt.</translation>
 <translation id="6198102561359457428">Jelentkezzen ki, majd jelentkezzen be újra...</translation>
-<translation id="6198252989419008588">PIN kód megváltoztatása</translation>
+<translation id="6198252989419008588">PIN-kód megváltoztatása</translation>
 <translation id="6199801702437275229">Várakozás a helyinformációkra...</translation>
 <translation id="6200903742087665630">Folyamaton kívüli iframe-ek engedélyezése</translation>
 <translation id="6203231073485539293">Ellenőrizze az internetkapcsolatot</translation>

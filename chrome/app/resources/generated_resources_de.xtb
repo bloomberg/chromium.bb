@@ -29,7 +29,6 @@
 <translation id="1036511912703768636">Auf alle diese USB-Geräte zugreifen</translation>
 <translation id="1038168778161626396">Nur verschlüsseln</translation>
 <translation id="1038842779957582377">Unbekannter Name</translation>
-<translation id="1040931876666128942">WebUsb-Benachrichtigungen.</translation>
 <translation id="1042174272890264476">Auch die RLZ-Bibliothek von <ph name="SHORT_PRODUCT_NAME" /> ist auf Ihrem Computer vorinstalliert. RLZ sorgt für die Zuweisung von Tags, anhand derer gemessen wird, wie sich einzelne Werbekampagnen auf die Suchanfragen und die Nutzung von <ph name="SHORT_PRODUCT_NAME" /> auswirken. Die Tags sind weder eindeutig, noch personenbezogen und kommen manchmal in Google-Suchanfragen in <ph name="PRODUCT_NAME" /> vor.</translation>
 <translation id="1042574203789536285"><ph name="URL" /> möchte dauerhaft umfangreiche Daten auf Ihrem Gerät speichern.</translation>
 <translation id="1045157690796831147">Transliteration (namaskar → നമസ്കാരം)</translation>
@@ -326,7 +325,6 @@
 <translation id="1470719357688513792">Neue Cookie-Einstellungen werden nach erneutem Laden der Seite wirksam.</translation>
 <translation id="14720830734893704">Aktiviert die Unterstützung für die Bildschirmtastatur.</translation>
 <translation id="1474339897586437869">"<ph name="FILENAME" />" konnte nicht hochgeladen werden. In Ihrem Google Drive-Konto ist nicht genügend Speicherplatz frei.</translation>
-<translation id="1476503841242751994">{COUNT,plural, =1{1 Passwort}other{# Passwörter}}</translation>
 <translation id="1476949146811612304">Legen Sie fest, welche Suchmaschine bei einer Suche über die <ph name="BEGIN_LINK" />Omnibox<ph name="END_LINK" /> verwendet werden soll.</translation>
 <translation id="1477301030751268706">Token-Cache für die Identity API</translation>
 <translation id="1478340334823509079">Details: <ph name="FILE_NAME" /></translation>
@@ -914,6 +912,7 @@ Nach der Erstellung eines neuen betreuten Nutzers können Sie die Einstellungen 
 <translation id="2326606747676847821">Zum Inkognitomodus wechseln</translation>
 <translation id="2326931316514688470">App &amp;neu laden</translation>
 <translation id="2327492829706409234">App aktivieren</translation>
+<translation id="2329597144923131178">Melden Sie sich an, um Ihre Lesezeichen, Ihren Verlauf, Ihre Passwörter und andere Einstellungen auf allen Ihren Geräten aufzurufen.</translation>
 <translation id="2332131598580221120">Im Store ansehen</translation>
 <translation id="2332742915001411729">Auf Standardeinstellungen zurücksetzen</translation>
 <translation id="2335122562899522968">Diese Seite hat Cookies gesetzt.</translation>
@@ -937,7 +936,6 @@ Nach der Erstellung eines neuen betreuten Nutzers können Sie die Einstellungen 
 <translation id="2359808026110333948">Weiter</translation>
 <translation id="236128817791440714">Empfehlung: Smart Lock für Android einrichten</translation>
 <translation id="236141728043665931">Zugriff auf das Mikrofon immer blockieren</translation>
-<translation id="2365626167708453863">Konto aus Google Smart Lock auswählen</translation>
 <translation id="2367972762794486313">Apps anzeigen</translation>
 <translation id="2368075211218459617">Kontextsuche aktivieren</translation>
 <translation id="2370882663124746154">Double-Pinyin-Modus aktivieren</translation>
@@ -2648,7 +2646,6 @@ Drücken Sie eine beliebige Taste, um fortzufahren.</translation>
 <translation id="4780374166989101364">Aktiviert experimentelle Erweiterungs-APIs. Beachten Sie, dass Sie in die Erweiterungsgalerie keine Erweiterungen hochladen können, die experimentelle APIs verwenden.</translation>
 <translation id="4781787911582943401">Bildschirm heranzoomen</translation>
 <translation id="4782449893814226250">Du hast deine Eltern gefragt, ob du diese Seite besuchen darfst.</translation>
-<translation id="4784085458903013712">{COUNT,plural, =1{1 KB}other{# KB}}</translation>
 <translation id="4784330909746505604">PowerPoint-Präsentation</translation>
 <translation id="4785040501822872973">Dieser Computer wird in <ph name="LOGOUT_TIME_LEFT" /> Sekunden zurückgesetzt.
 Drücken Sie eine beliebige Taste, um fortzufahren.</translation>
@@ -3177,7 +3174,6 @@ Drücken Sie eine beliebige Taste, um fortzufahren.</translation>
 <translation id="5527474464531963247">Sie können auch ein anderes Netzwerk auswählen.</translation>
 <translation id="5527963985407842218">Aktivierung des Lesemodus</translation>
 <translation id="5528368756083817449">Lesezeichenmanager</translation>
-<translation id="5529098031581368697">Der aktuelle Hintergrund wurde von "<ph name="APP_NAME" />" festgelegt.</translation>
 <translation id="5531274207066050939">Google Payments</translation>
 <translation id="5532223876348815659">Global</translation>
 <translation id="5533555070048896610">Transliteration (namaste → नमस्ते)</translation>
@@ -3293,7 +3289,6 @@ Drücken Sie eine beliebige Taste, um fortzufahren.</translation>
 <translation id="5702898740348134351">Suchmaschin&amp;en bearbeiten...</translation>
 <translation id="5703594190584829406">AutoFill-Vorschläge werden über der Tastatur statt in einem Drop-down-Menü angezeigt.</translation>
 <translation id="5704272569086782895">GPU-Rasterung mit Threads aktivieren</translation>
-<translation id="570544101664452060">Experimentelle WebUsb-Benachrichtigungen.</translation>
 <translation id="5706551819490830015">Rechnungsadressen verwalten...</translation>
 <translation id="5707185214361380026">Fehler beim Laden der Erweiterung aus:</translation>
 <translation id="5707604204219538797">Nächstes Wort</translation>
@@ -3438,7 +3433,6 @@ Drücken Sie eine beliebige Taste, um fortzufahren.</translation>
 <translation id="5900302528761731119">Google Profile-Foto</translation>
 <translation id="5900623698597156974">Ein TLS-1.0-Fallback konnte einen Handshake mit dem Server durchführen, TLS-1.0-Fallbacks werden jedoch nicht mehr akzeptiert. Der Server muss aktualisiert werden, um die Versionsaushandlung korrekt zu implementieren, und sollte vorzugsweise TLS 1.2 unterstützen.</translation>
 <translation id="590253956165195626">Übersetzung von fremdsprachigen Seiten anbieten</translation>
-<translation id="5902659428109355177">{COUNT,plural, =1{1 Eintrag}other{# Einträge}}</translation>
 <translation id="5904093760909470684">Konfiguration</translation>
 <translation id="5906065664303289925">Hardware-Adresse:</translation>
 <translation id="5910363049092958439">Bi&amp;ld speichern unter...</translation>
@@ -5147,7 +5141,7 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="8452588990572106089">Ungültige Kartennummer. Bitte überprüfen Sie Ihre Angaben und versuchen Sie es erneut.</translation>
 <translation id="8453482423012550001">$1-Elemente werden kopiert...</translation>
 <translation id="8454189779191516805">Gibt die Anzahl an MSAA-Beispielen für die GPU-Rasterung an</translation>
-<translation id="8454288007744638700">Sie können auch ein anderes Netzwerk auswählen.</translation>
+<translation id="8454288007744638700">Sie können auch ein anderes Netzwerk auswählen:</translation>
 <translation id="845627346958584683">Ablaufzeit</translation>
 <translation id="8456681095658380701">Ungültiger Name</translation>
 <translation id="8457625695411745683">gut</translation>

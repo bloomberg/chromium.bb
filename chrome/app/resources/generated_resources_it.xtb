@@ -29,7 +29,6 @@
 <translation id="1036511912703768636">Accedi a tutti questi dispositivi USB</translation>
 <translation id="1038168778161626396">Solo crittografia</translation>
 <translation id="1038842779957582377">nome sconosciuto</translation>
-<translation id="1040931876666128942">Notifiche WebUsb.</translation>
 <translation id="1042174272890264476">Sul computer è integrata anche la libreria RLZ di <ph name="SHORT_PRODUCT_NAME" />. RLZ assegna un tag non univoco che non consente l'identificazione personale per valutare le ricerche e l'utilizzo di <ph name="SHORT_PRODUCT_NAME" /> promosso da una determinata campagna promozionale. Talvolta queste etichette vengono visualizzate in query della Ricerca Google in <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1042574203789536285"><ph name="URL" /> vuole memorizzare in modo permanente grandi quantità di dati sul dispositivo.</translation>
 <translation id="1045157690796831147">Traslitterazione (namaskar → നമസ്കാരം)</translation>
@@ -328,7 +327,6 @@ Tieni presente che il Bluetooth verrà attivato per tutti i dispositivi compatib
 <translation id="1470719357688513792">Le nuove impostazioni dei cookie avranno effetto una volta ricaricata la pagina.</translation>
 <translation id="14720830734893704">Attiva il supporto della tastiera virtuale.</translation>
 <translation id="1474339897586437869">Impossibile caricare "<ph name="FILENAME" />". Lo spazio disponibile su Google Drive non è sufficiente.</translation>
-<translation id="1476503841242751994">{COUNT,plural, =1{1 password}other{# password}}</translation>
 <translation id="1476949146811612304">Imposta il motore di ricerca da utilizzare per le ricerche dalla <ph name="BEGIN_LINK" />omnibox<ph name="END_LINK" />.</translation>
 <translation id="1477301030751268706">Cache token dell'API Identity</translation>
 <translation id="1478340334823509079">Dettagli: <ph name="FILE_NAME" /></translation>
@@ -921,6 +919,7 @@ Dopo avere creato un nuovo utente supervisionato, puoi gestirne le impostazioni 
 <translation id="2326606747676847821">Naviga in incognito</translation>
 <translation id="2326931316514688470">&amp;Ricarica app</translation>
 <translation id="2327492829706409234">Attiva applicazione</translation>
+<translation id="2329597144923131178">Accedi per visualizzare i tuoi Preferiti, la cronologia, le password e altre impostazioni su tutti i tuoi dispositivi.</translation>
 <translation id="2332131598580221120">Visualizza nello store</translation>
 <translation id="2332742915001411729">Ripristina impostazioni predefinite</translation>
 <translation id="2335122562899522968">Questa pagina ha impostato dei cookie.</translation>
@@ -944,7 +943,6 @@ Dopo avere creato un nuovo utente supervisionato, puoi gestirne le impostazioni 
 <translation id="2359808026110333948">Continua</translation>
 <translation id="236128817791440714">Consigliato: configura Smart Lock per Android</translation>
 <translation id="236141728043665931">Impedisci sempre l'accesso al microfono</translation>
-<translation id="2365626167708453863">Scegli un account da Google Smart Lock</translation>
 <translation id="2367972762794486313">Mostra app</translation>
 <translation id="2368075211218459617">Attiva ricerca contestuale.</translation>
 <translation id="2370882663124746154">Abilita modalità Double pinyin</translation>
@@ -2631,7 +2629,6 @@ Premi un tasto qualsiasi per continuare a esplorare.</translation>
 <translation id="4780374166989101364">Attiva le API sperimentali di estensione. Tieni presente che la galleria di estensione non consente tale utilizzo di API sperimentali.</translation>
 <translation id="4781787911582943401">Ingrandimento dello schermo</translation>
 <translation id="4782449893814226250">Hai chiesto ai tuoi genitori se puoi visitare questa pagina.</translation>
-<translation id="4784085458903013712">{COUNT,plural, =1{1 kB}other{# kB}}</translation>
 <translation id="4784330909746505604">Presentazione PowerPoint</translation>
 <translation id="4785040501822872973">Il computer verrà reimpostato tra <ph name="LOGOUT_TIME_LEFT" /> secondi.
 Premi un tasto qualsiasi per continuare a esplorare.</translation>
@@ -3162,7 +3159,6 @@ Premi un tasto qualsiasi per continuare a esplorare.</translation>
 <translation id="5527474464531963247">Potresti inoltre selezionare un'altra rete.</translation>
 <translation id="5527963985407842218">Attivazione della Modalità Reader</translation>
 <translation id="5528368756083817449">Bookmark Manager</translation>
-<translation id="5529098031581368697">Lo sfondo attuale è stato impostato da "<ph name="APP_NAME" />"</translation>
 <translation id="5531274207066050939">Google Payments</translation>
 <translation id="5532223876348815659">Generali</translation>
 <translation id="5533555070048896610">Traslitterazione (namaste → नमस्ते)</translation>
@@ -3278,7 +3274,6 @@ Premi un tasto qualsiasi per continuare a esplorare.</translation>
 <translation id="5702898740348134351">Modifica motori di ric&amp;erca...</translation>
 <translation id="5703594190584829406">Consente di visualizzare i suggerimenti di Compilazione automatica sopra la tastiera, anziché in un menu a discesa.</translation>
 <translation id="5704272569086782895">Attiva rasterizzazione GPU con thread.</translation>
-<translation id="570544101664452060">Notifiche WebUsb sperimentali.</translation>
 <translation id="5706551819490830015">Gestisci indirizzi di fatturazione...</translation>
 <translation id="5707185214361380026">Impossibile caricare l'estensione da:</translation>
 <translation id="5707604204219538797">Parola successiva</translation>
@@ -3427,7 +3422,6 @@ Premi un tasto qualsiasi per continuare a esplorare.</translation>
 <translation id="5900302528761731119">Foto profilo Google</translation>
 <translation id="5900623698597156974">Un fallback TLS 1.0 è riuscito a eseguire l'handshake con il server, ma i fallback TLS 1.0 non sono più accettati. Il server deve essere aggiornato per implementare correttamente la negoziazione della versione e supportare preferibilmente TLS 1.2.</translation>
 <translation id="590253956165195626">Consenti di tradurre pagine in lingue che non conosci.</translation>
-<translation id="5902659428109355177">{COUNT,plural, =1{1 elemento}other{# elementi}}</translation>
 <translation id="5904093760909470684">Configurazione proxy</translation>
 <translation id="5906065664303289925">Indirizzo hardware:</translation>
 <translation id="5910363049092958439">Sal&amp;va immagine con nome...</translation>

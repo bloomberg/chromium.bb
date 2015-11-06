@@ -29,7 +29,6 @@
 <translation id="1036511912703768636">Uzyskaj dostęp do dowolnego z tych urządzeń USB</translation>
 <translation id="1038168778161626396">Tylko szyfrowanie</translation>
 <translation id="1038842779957582377">nieznana nazwa</translation>
-<translation id="1040931876666128942">Powiadomienia WebUsb.</translation>
 <translation id="1042174272890264476">Twój komputer zawiera również wbudowaną bibliotekę RLZ <ph name="SHORT_PRODUCT_NAME" />. Przypisuje ona powtarzalny, nieumożliwiający identyfikacji użytkownika tag służący do monitorowania wyszukiwań i używania <ph name="SHORT_PRODUCT_NAME" /> w ramach określonej kampanii promocyjnej. Etykiety te czasami pojawiają się w zapytaniach wyszukiwarki Google w <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1042574203789536285">Witryna <ph name="URL" /> chce na stałe przechowywać dużą ilość danych na Twoim urządzeniu.</translation>
 <translation id="1045157690796831147">Transliteracja (namaskar → നമസ്കാരം)</translation>
@@ -328,7 +327,6 @@
 <translation id="1470719357688513792">Nowe ustawienia plików cookie zostaną zastosowane po ponownym załadowaniu strony.</translation>
 <translation id="14720830734893704">Włącz obsługę klawiatury wirtualnej.</translation>
 <translation id="1474339897586437869">Plik „<ph name="FILENAME" />” nie został przesłany. Za mało wolnego miejsca na Dysku Google.</translation>
-<translation id="1476503841242751994">{COUNT,plural, =1{1 hasło}few{# hasła}many{# haseł}other{# hasła}}</translation>
 <translation id="1476949146811612304">Wybierz wyszukiwarkę używaną w <ph name="BEGIN_LINK" />omniboksie<ph name="END_LINK" />.</translation>
 <translation id="1477301030751268706">Pamięć podręczna tokenów interfejsu API Identity</translation>
 <translation id="1478340334823509079">Szczegóły: <ph name="FILE_NAME" /></translation>
@@ -922,6 +920,7 @@ Po utworzeniu nadzorowanego użytkownika możesz w dowolnym czasie i z dowolnego
 <translation id="2326606747676847821">Włącz tryb incognito</translation>
 <translation id="2326931316514688470">P&amp;rzeładuj aplikację</translation>
 <translation id="2327492829706409234">Włącz aplikację</translation>
+<translation id="2329597144923131178">Zaloguj się, by korzystać z zakładek, historii, haseł i innych ustawień na wszystkich swoich urządzeniach.</translation>
 <translation id="2332131598580221120">Wyświetl w sklepie</translation>
 <translation id="2332742915001411729">Przywróć domyślne</translation>
 <translation id="2335122562899522968">Ta strona ustawia pliki cookie.</translation>
@@ -945,7 +944,6 @@ Po utworzeniu nadzorowanego użytkownika możesz w dowolnym czasie i z dowolnego
 <translation id="2359808026110333948">Kontynuuj</translation>
 <translation id="236128817791440714">Zalecane: skonfiguruj Smart Lock na Androida</translation>
 <translation id="236141728043665931">Zawsze blokuj dostęp do mikrofonu</translation>
-<translation id="2365626167708453863">Wybierz konto w Google Smart Lock</translation>
 <translation id="2367972762794486313">Pokaż aplikacje</translation>
 <translation id="2368075211218459617">Włącz Wyszukiwanie kontekstowe.</translation>
 <translation id="2370882663124746154">Włącz tryb „podwójny pinyin”</translation>
@@ -1444,7 +1442,7 @@ Ta strona nie powinna być zablokowana.</translation>
 <translation id="3031417829280473749">Agentka X</translation>
 <translation id="3031557471081358569">Wybierz elementy do zaimportowania:</translation>
 <translation id="3033332627063280038">Włącz eksperymentalną implementację dyrektywy stale-while-revalidate funkcji Cache-Control. Pozwala to serwerom na określenie, że w tle może być przeprowadzane przywracanie ważności w przypadku niektórych zasobów, by zmniejszyć czas oczekiwania.</translation>
-<translation id="3037605927509011580">Niedobrze!</translation>
+<translation id="3037605927509011580">Kurza twarz!</translation>
 <translation id="3039828483675273919">Przenoszę $1 elementy(ów)...</translation>
 <translation id="304009983491258911">Zmień PIN karty SIM</translation>
 <translation id="3041612393474885105">Informacje o certyfikacie</translation>
@@ -2652,7 +2650,6 @@ Naciśnij dowolny klawisz, by kontynuować przeglądanie.</translation>
 <translation id="4780374166989101364">Włącza eksperymentalne interfejsy API rozszerzeń. Należy pamiętać, że galeria rozszerzeń nie dopuszcza przesyłania rozszerzeń korzystających z eksperymentalnych interfejsów API.</translation>
 <translation id="4781787911582943401">Powiększ ekran</translation>
 <translation id="4782449893814226250">Zapytałeś rodziców, czy możesz wejść na tę stronę.</translation>
-<translation id="4784085458903013712">{COUNT,plural, =1{1 kB}few{# kB}many{# kB}other{# kB}}</translation>
 <translation id="4784330909746505604">Prezentacja PowerPoint</translation>
 <translation id="4785040501822872973">Ten komputer zostanie zresetowany za <ph name="LOGOUT_TIME_LEFT" /> s.
 Naciśnij dowolny klawisz, by kontynuować przeglądanie.</translation>
@@ -3184,7 +3181,6 @@ Naciśnij dowolny klawisz, by kontynuować przeglądanie.</translation>
 <translation id="5527474464531963247">Możesz także wybrać inną sieć.</translation>
 <translation id="5527963985407842218">Włączanie trybu czytnika</translation>
 <translation id="5528368756083817449">Menedżer zakładek</translation>
-<translation id="5529098031581368697">Aktualna tapeta została ustawiona przez aplikację „<ph name="APP_NAME" />”</translation>
 <translation id="5531274207066050939">Google Payments</translation>
 <translation id="5532223876348815659">Globalne</translation>
 <translation id="5533555070048896610">Transliteracja (namaste → नमस्ते)</translation>
@@ -3300,7 +3296,6 @@ Naciśnij dowolny klawisz, by kontynuować przeglądanie.</translation>
 <translation id="5702898740348134351">&amp;Edytuj wyszukiwarki...</translation>
 <translation id="5703594190584829406">Pokazuje sugestie autouzupełniania nad klawiaturą, a nie na liście.</translation>
 <translation id="5704272569086782895">Włącz rasteryzację GPU w wątkach.</translation>
-<translation id="570544101664452060">Eksperymentalne powiadomienia WebUsb.</translation>
 <translation id="5706551819490830015">Zarządzaj adresami rozliczeniowymi...</translation>
 <translation id="5707185214361380026">Nie udało się wczytać rozszerzenia z:</translation>
 <translation id="5707604204219538797">Następne słowo</translation>
@@ -3449,7 +3444,6 @@ Naciśnij dowolny klawisz, by kontynuować przeglądanie.</translation>
 <translation id="5900302528761731119">Zdjęcie z profilu Google</translation>
 <translation id="5900623698597156974">Udało się skontaktować z serwerem przy użyciu starszej wersji protokołu TLS (1.0), ale nie akceptujemy już połączeń z tą wersją. Serwer wymaga aktualizacji, by prawidłowo negocjował wersje i (optymalnie) obsługiwał TLS 1.2.</translation>
 <translation id="590253956165195626">Proponuj tłumaczenie stron w obcych językach.</translation>
-<translation id="5902659428109355177">{COUNT,plural, =1{1 element}few{# elementy}many{# elementów}other{# elementu}}</translation>
 <translation id="5904093760909470684">Konfiguracja serwera proxy</translation>
 <translation id="5906065664303289925">Adres sprzętowy:</translation>
 <translation id="5910363049092958439">Zapisz gra&amp;fikę jako...</translation>
@@ -3991,7 +3985,7 @@ Naciśnij dowolny klawisz, by kontynuować przeglądanie.</translation>
 <translation id="6736045498964449756">Ups, hasła nie pasują do siebie.</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />]</translation>
 <translation id="6739254200873843030">Ważność karty wygasła. Sprawdź datę lub podaj nową kartę.</translation>
-<translation id="6740234557573873150">Wstrzymano – <ph name="FILE_NAME" /></translation>
+<translation id="6740234557573873150">Wstrzymano pobieranie <ph name="FILE_NAME" /></translation>
 <translation id="6740369132746915122">Jeśli rozumiesz zagrożenie, możesz <ph name="BEGIN_LINK" />wejść na tę niebezpieczną stronę<ph name="END_LINK" />.</translation>
 <translation id="6745592621698551453">Aktualizuj teraz</translation>
 <translation id="6745994589677103306">Nic nie rób</translation>

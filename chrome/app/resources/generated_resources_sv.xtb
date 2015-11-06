@@ -29,7 +29,6 @@
 <translation id="1036511912703768636">Komma åt någon av dessa USB-enheter</translation>
 <translation id="1038168778161626396">Endast chiffrering</translation>
 <translation id="1038842779957582377">okänt namn</translation>
-<translation id="1040931876666128942">WebUsb-aviseringar.</translation>
 <translation id="1042174272890264476">Datorn har även RLZ-biblioteket för <ph name="SHORT_PRODUCT_NAME" /> inbyggt. RLZ tilldelar en icke-unik, icke-personligt identifierbar tagg för att mäta antalet sökningar och användningen av <ph name="SHORT_PRODUCT_NAME" /> som drivs av en viss reklamkampanj. Dessa etiketter visas ibland vid sökningar på Google i <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1042574203789536285"><ph name="URL" /> vill lagra stora mängder data på din enhet.</translation>
 <translation id="1045157690796831147">Translitterering (namaskar → നമസ്കാരം)</translation>
@@ -329,7 +328,6 @@
 <translation id="1470719357688513792">De nya cookie-inställningarna börjar gälla när sidan uppdateras.</translation>
 <translation id="14720830734893704">Aktivera stöd för virtuellt tangentbord.</translation>
 <translation id="1474339897586437869"><ph name="FILENAME" /> laddades inte upp. Det fanns inte tillräckligt mycket ledigt utrymme på Google Drive.</translation>
-<translation id="1476503841242751994">{COUNT,plural, =1{1 lösenord}other{# lösenord}}</translation>
 <translation id="1476949146811612304">Ange vilken sökmotor som används när du söker från <ph name="BEGIN_LINK" />adressfältet<ph name="END_LINK" />.</translation>
 <translation id="1477301030751268706">Tokencacheminne för identitets-API</translation>
 <translation id="1478340334823509079">Detaljer: <ph name="FILE_NAME" /></translation>
@@ -923,6 +921,7 @@ När du har skapat en ny kontrollerad användare kan du hantera inställningarna
 <translation id="2326606747676847821">Surfa inkognito</translation>
 <translation id="2326931316514688470">&amp;Läs in appen igen</translation>
 <translation id="2327492829706409234">Aktivera app</translation>
+<translation id="2329597144923131178">Logga in så blir bokmärken, historik, lösenord med mera tillgängligt på alla dina enheter.</translation>
 <translation id="2332131598580221120">Visa i butik</translation>
 <translation id="2332742915001411729">Återställ standardvärden</translation>
 <translation id="2335122562899522968">Den här sidan angav cookies.</translation>
@@ -946,7 +945,6 @@ När du har skapat en ny kontrollerad användare kan du hantera inställningarna
 <translation id="2359808026110333948">Fortsätt</translation>
 <translation id="236128817791440714">Rekommenderas: Konfigurera Smart Lock för Android</translation>
 <translation id="236141728043665931">Blockera alltid mikrofonåtkomsten</translation>
-<translation id="2365626167708453863">Välj ett konto från Google Smart Lock</translation>
 <translation id="2367972762794486313">Visa appar</translation>
 <translation id="2368075211218459617">Aktivera kontextsökning.</translation>
 <translation id="2370882663124746154">Aktivera Double-Pinyin-läge</translation>
@@ -2666,7 +2664,6 @@ Tryck på någon tangent om du vill fortsätta utforska.</translation>
 <translation id="4780374166989101364">Aktiverar tillägg med experimentella programmeringsgränssnitt. Observera att tilläggsgalleriet inte tillåter att du laddar upp tillägg med experimentella programmeringsgränssnitt.</translation>
 <translation id="4781787911582943401">Zooma in skärmen</translation>
 <translation id="4782449893814226250">Du har frågat dina föräldrar om lov att besöka den här sidan.</translation>
-<translation id="4784085458903013712">{COUNT,plural, =1{1 kB}other{# kB}}</translation>
 <translation id="4784330909746505604">PowerPoint-presentation</translation>
 <translation id="4785040501822872973">Den här datorn återställs om <ph name="LOGOUT_TIME_LEFT" /> sekunder.
 Tryck på någon tangent om du vill fortsätta utforska.</translation>
@@ -3197,7 +3194,6 @@ Tryck på någon tangent om du vill fortsätta utforska.</translation>
 <translation id="5527474464531963247">Du kan också välja ett annat nätverk.</translation>
 <translation id="5527963985407842218">Utlöser läsläget</translation>
 <translation id="5528368756083817449">Bokmärkshanteraren</translation>
-<translation id="5529098031581368697">Den aktuella bakgrunden har angetts av <ph name="APP_NAME" /></translation>
 <translation id="5531274207066050939">Google Payments</translation>
 <translation id="5532223876348815659">Globalt</translation>
 <translation id="5533555070048896610">Translitterering (namaste → नमस्ते)</translation>
@@ -3313,7 +3309,6 @@ Tryck på någon tangent om du vill fortsätta utforska.</translation>
 <translation id="5702898740348134351">&amp;Redigera sökmotorer...</translation>
 <translation id="5703594190584829406">Visar förslag från Autofyll ovanför tangentbordet i stället för i en rullgardinsmeny.</translation>
 <translation id="5704272569086782895">Aktivera trådad GPU-rastrering.</translation>
-<translation id="570544101664452060">Experiment med WebUsb-aviseringar.</translation>
 <translation id="5706551819490830015">Hantera faktureringsadresser ...</translation>
 <translation id="5707185214361380026">Det gick inte att läsa in tillägget från:</translation>
 <translation id="5707604204219538797">Nästa ord</translation>
@@ -3462,7 +3457,6 @@ Tryck på någon tangent om du vill fortsätta utforska.</translation>
 <translation id="5900302528761731119">Profilfoto i Google Profiler</translation>
 <translation id="5900623698597156974">Ett alternativ för TLS 1.0 kunde utföra en handskakning med servern, men vi godkänner inte längre alternativ för TLS 1.0. Servern måste uppdateras så att den korrekt implementerar versionsförhandling och helst har stöd för TLS 1.2.</translation>
 <translation id="590253956165195626">Erbjud att översätta sidor som inte är på ett språk du kan läsa.</translation>
-<translation id="5902659428109355177">{COUNT,plural, =1{1 objekt}other{# objekt}}</translation>
 <translation id="5904093760909470684">Proxykonfiguration</translation>
 <translation id="5906065664303289925">Maskinvaruadress:</translation>
 <translation id="5910363049092958439">S&amp;para bild som...</translation>

@@ -179,6 +179,7 @@
 <translation id="5019198164206649151">L'emmagatzematge de la còpia de seguretat està en mal estat</translation>
 <translation id="5031870354684148875">Sobre el Traductor de Google</translation>
 <translation id="5045550434625856497">Contrasenya incorrecta</translation>
+<translation id="5065199687811594072">Voleu que Chromium desi la informació d'aquesta targeta de crèdit per completar formularis web?</translation>
 <translation id="5087286274860437796">En aquest moment el certificat del servidor no és vàlid.</translation>
 <translation id="5089810972385038852">Estat</translation>
 <translation id="5094747076828555589">Aquest servidor no ha pogut comprovar que sigui <ph name="DOMAIN" /> perquè Chromium considera que el seu certificat de seguretat no és de confiança. Això pot ser a causa d'una configuració incorrecta o d'un atacant que intercepta la vostra connexió.</translation>

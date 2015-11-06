@@ -179,6 +179,7 @@
 <translation id="5019198164206649151">后备存储状态不佳</translation>
 <translation id="5031870354684148875">关于 Google 翻译</translation>
 <translation id="5045550434625856497">密码不正确</translation>
+<translation id="5065199687811594072">您希望 Chromium 保存该信用卡信息以便填写网络表单吗？</translation>
 <translation id="5087286274860437796">服务器的证书目前无效。</translation>
 <translation id="5089810972385038852">州</translation>
 <translation id="5094747076828555589">此服务器无法证明它是<ph name="DOMAIN" />；Chromium不信任其安全证书。出现此问题的原因可能是配置有误或您的连接被拦截了。</translation>

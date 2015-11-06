@@ -153,8 +153,8 @@
       La política s'ha de definir en un URL del qual <ph name="PRODUCT_OS_NAME" /> pugui baixar els Termes i condicions, que han de trobar-se com a text sense format proporcionat com a text/sense format de tipus MIME. No es permet el marcatge.</translation>
 <translation id="1757339646969878244">Configureu les opcions d'accés remot a l'amfitrió d'Escriptori remot de Chrome.
 
-      L'amfitrió d'Escriptori remot de Chrome és un servei natiu que s'executa al
-      dispositiu de destinació que un usuari pot connectar mitjançant aquesta
+      L'amfitrió d'Escriptori remot de Chrome és un servei natiu que s'executa a
+      l'ordinador de destinació, al qual un usuari es pot connectar mitjançant aquesta
       aplicació. El servei natiu s'empaqueta i s'executa per separat
       del navegador <ph name="PRODUCT_NAME" />.
 

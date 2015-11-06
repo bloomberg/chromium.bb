@@ -29,7 +29,6 @@
 <translation id="1036511912703768636">Truy cập bất kỳ trong số các thiết bị USB này</translation>
 <translation id="1038168778161626396">Chỉ Mã hóa</translation>
 <translation id="1038842779957582377">tên không biết</translation>
-<translation id="1040931876666128942">Thông báo WebUsb.</translation>
 <translation id="1042174272890264476">Máy tính của bạn cũng đi kèm với thư viện RLZ của <ph name="SHORT_PRODUCT_NAME" /> được tích hợp sẵn. RLZ chỉ định thẻ không thể nhận dạng cá nhân, không duy nhất để đo lường các tìm kiếm và mức độ sử dụng <ph name="SHORT_PRODUCT_NAME" /> mà một chiến dịch quảng cáo cụ thể mang lại. Đôi khi các nhãn này xuất hiện trong truy vấn Google Tìm kiếm trong <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1042574203789536285"><ph name="URL" /> muốn lưu trữ vĩnh viễn một lượng lớn dữ liệu trên thiết bị của bạn.</translation>
 <translation id="1045157690796831147">Chuyển ngữ (namaskar → നമസ്കാരം)</translation>
@@ -329,7 +328,6 @@
 <translation id="1470719357688513792">Cài đặt cookie mới sẽ có hiệu lực sau khi tải lại trang.</translation>
 <translation id="14720830734893704">Bật hỗ trợ bàn phím ảo.</translation>
 <translation id="1474339897586437869">"<ph name="FILENAME" />" không được tải lên. Không có đủ dung lượng trống trong Google Drive của bạn.</translation>
-<translation id="1476503841242751994">{COUNT,plural, =1{1 mật khẩu}other{# mật khẩu}}</translation>
 <translation id="1476949146811612304">Đặt công cụ tìm kiếm được sử dụng khi tìm kiếm từ
         <ph name="BEGIN_LINK" />thanh địa chỉ<ph name="END_LINK" />.</translation>
 <translation id="1477301030751268706">Lưu bộ nhớ cache mã thông báo API nhận dạng</translation>
@@ -925,6 +923,7 @@ Sau khi tạo người dùng được giám sát mới, bạn có thể quản l
 <translation id="2326606747676847821">Truy cập ẩn danh</translation>
 <translation id="2326931316514688470">Tải &amp;lại ứng dụng</translation>
 <translation id="2327492829706409234">Bật ứng dụng</translation>
+<translation id="2329597144923131178">Đăng nhập để nhận dấu trang, lịch sử, mật khẩu và các cài đặt khác trên tất cả các thiết bị của bạn.</translation>
 <translation id="2332131598580221120">Xem trong cửa hàng</translation>
 <translation id="2332742915001411729">Đặt lại về mặc định</translation>
 <translation id="2335122562899522968">Trang này đã đặt các cookie.</translation>
@@ -948,7 +947,6 @@ Sau khi tạo người dùng được giám sát mới, bạn có thể quản l
 <translation id="2359808026110333948">Tiếp tục</translation>
 <translation id="236128817791440714">Khuyến nghị: Thiết lập Smart Lock dành cho Android</translation>
 <translation id="236141728043665931">Luôn chặn quyền truy cập micrô</translation>
-<translation id="2365626167708453863">Chọn tài khoản từ Google Smart Lock của bạn</translation>
 <translation id="2367972762794486313">Hiển thị ứng dụng</translation>
 <translation id="2368075211218459617">Bật tìm kiếm theo ngữ cảnh.</translation>
 <translation id="2370882663124746154">Bật chế độ Double-Pinyin</translation>
@@ -1007,7 +1005,7 @@ Tôi không cho rằng nên chặn trang web này!</translation>
 <translation id="2448046586580826824">Proxy HTTP bảo mật</translation>
 <translation id="2448312741937722512">Loại</translation>
 <translation id="2449267011068443460">Không cho phép</translation>
-<translation id="2450223707519584812">Bạn không thể thêm người dùng vì thiếu khóa API của Google. Xem <ph name="DETAILS_URL" /> để biết thông tin chi tiết.</translation>
+<translation id="2450223707519584812">Bạn không thể thêm người dùng vì thiếu khóa Google API. Xem <ph name="DETAILS_URL" /> để biết thông tin chi tiết.</translation>
 <translation id="2450531422290975480">Nếu bạn hiểu các rủi ro bảo mật, bạn có thể <ph name="BEGIN_LINK" />truy cập trang web không an toàn này<ph name="END_LINK" /> (không được đề xuất) trước khi các chương trình nguy hiểm bị xóa.</translation>
 <translation id="2452539774207938933">Chuyển sang người dùng: <ph name="PROFILE_NAME" /></translation>
 <translation id="2453021845418314664">Cài đặt đồng bộ hóa nâng cao</translation>
@@ -1527,7 +1525,7 @@ Vui lòng kiểm tra email của bạn tại <ph name="ACCOUNT_EMAIL" /> để b
 <translation id="3140353188828248647">Thanh địa chỉ chính</translation>
 <translation id="3144126448740580210">XONG</translation>
 <translation id="3144135466825225871">Không thể thay thế tệp crx. Kiểm tra để xem tệp có đang được sử dụng hay không.</translation>
-<translation id="3144647712221361880">Mở liên kết dưới dạng</translation>
+<translation id="3144647712221361880">Mở liên kết bằng tài khoản</translation>
 <translation id="31454997771848827">Miền nhóm</translation>
 <translation id="3147485256806412701">Trang web này đang sử dụng miền chung mới cấp cao nhất.</translation>
 <translation id="3149510190863420837">Ứng dụng Chrome</translation>
@@ -2668,7 +2666,6 @@ Nhấn phím bất kỳ để tiếp tục khám phá.</translation>
 <translation id="4780374166989101364">Bật API tiện ích thử nghiệm. Xin lưu ý rằng thư viện tiện ích không cho phép bạn tải lên tiện ích sử dụng API thử nghiệm.</translation>
 <translation id="4781787911582943401">Phóng to màn hình</translation>
 <translation id="4782449893814226250">Bạn đã hỏi cha mẹ mình xem có thể truy cập vào trang này hay không.</translation>
-<translation id="4784085458903013712">{COUNT,plural, =1{1 kB}other{# kB}}</translation>
 <translation id="4784330909746505604">Bản trình bày PowerPoint</translation>
 <translation id="4785040501822872973">Máy tính này sẽ đặt lại trong <ph name="LOGOUT_TIME_LEFT" /> giây.
 Nhấn phím bất kỳ để tiếp tục khám phá.</translation>
@@ -3199,7 +3196,6 @@ Nhấn phím bất kỳ để tiếp tục khám phá.</translation>
 <translation id="5527474464531963247">Bạn cũng có thể chọn một mạng khác.</translation>
 <translation id="5527963985407842218">Kích hoạt Chế độ đọc</translation>
 <translation id="5528368756083817449">Trình quản lý dấu trang</translation>
-<translation id="5529098031581368697">Hình nền hiện tại do '<ph name="APP_NAME" />' đặt</translation>
 <translation id="5531274207066050939">Google Payments</translation>
 <translation id="5532223876348815659">Toàn cầu</translation>
 <translation id="5533555070048896610">Chuyển ngữ (namaste → नमस्ते)</translation>
@@ -3315,7 +3311,6 @@ Nhấn phím bất kỳ để tiếp tục khám phá.</translation>
 <translation id="5702898740348134351">&amp;Chỉnh sửa Công cụ Tìm kiếm...</translation>
 <translation id="5703594190584829406">Hiển thị các đề xuất Tự động điền ở trên cùng của bàn phím chứ không ở trong menu thả xuống.</translation>
 <translation id="5704272569086782895">Bật tạo điểm ảnh GPU theo chuỗi.</translation>
-<translation id="570544101664452060">Thông báo WebUsb thử nghiệm.</translation>
 <translation id="5706551819490830015">Quản lý địa chỉ thanh toán...</translation>
 <translation id="5707185214361380026">Không tải được tiện ích từ:</translation>
 <translation id="5707604204219538797">Từ tiếp theo</translation>
@@ -3464,7 +3459,6 @@ Nhấn phím bất kỳ để tiếp tục khám phá.</translation>
 <translation id="5900302528761731119">Ảnh hồ sơ trên Google</translation>
 <translation id="5900623698597156974">Giao thức dự phòng TLS 1.0 có thể kết hợp với máy chủ nhưng chúng tôi không chấp nhận giao thức dự phòng TLS 1.0 nữa. Cần cập nhật máy chủ để triển khai đúng cách việc dàn xếp phiên bản và hỗ trợ tốt nhất cho TLS 1.2.</translation>
 <translation id="590253956165195626">Đề xuất dịch các trang tiếng nước ngoài mà bạn không hiểu </translation>
-<translation id="5902659428109355177">{COUNT,plural, =1{1 mục}other{# mục}}</translation>
 <translation id="5904093760909470684">Cấu hình Proxy</translation>
 <translation id="5906065664303289925">Địa chỉ phần cứng:</translation>
 <translation id="5910363049092958439">Lưu &amp;Hình ảnh Dưới dạng...</translation>
@@ -4104,7 +4098,7 @@ Một số tính năng có thể không có sẵn. Hãy kiểm tra xem hồ sơ 
 <translation id="6880587130513028875">Hình ảnh đã bị chặn trên trang này.</translation>
 <translation id="6883209331334683549">Trợ giúp của <ph name="PRODUCT_NAME" /></translation>
 <translation id="6886871292305414135">Mở liên kết trong &amp;tab mới</translation>
-<translation id="6892812721183419409">Mở liên kết dưới dạng <ph name="USER" /></translation>
+<translation id="6892812721183419409">Mở liên kết bằng tài khoản <ph name="USER" /></translation>
 <translation id="6896758677409633944">Sao chép</translation>
 <translation id="6898440773573063262">Ứng dụng kiosk giờ đây có thể được định cấu hình để tự động chạy trên thiết bị này.</translation>
 <translation id="6898699227549475383">Tổ chức (O)</translation>
@@ -5677,7 +5671,7 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="9137013805542155359">Hiển thị văn bản gốc</translation>
 <translation id="9137356749601179867">Hiển thị hộp kiểm để lưu cục bộ thẻ tín dụng được tải xuống từ máy chủ.</translation>
 <translation id="913758436357682283">Bàn phím tiếng Myansan của Myanmar</translation>
-<translation id="9137916601698928395">Mở liên kết dưới dạng <ph name="USER" /></translation>
+<translation id="9137916601698928395">Mở liên kết bằng tài khoản <ph name="USER" /></translation>
 <translation id="914566504855049417">Bật dàn xếp với DTLS 1.2 cho WebRTC.</translation>
 <translation id="9147392381910171771">&amp;Tuỳ chọn</translation>
 <translation id="9148058034647219655">Thoát</translation>

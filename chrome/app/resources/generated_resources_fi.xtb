@@ -29,7 +29,6 @@
 <translation id="1036511912703768636">Käyttää kaikkia näitä USB-laitteita</translation>
 <translation id="1038168778161626396">Vain salakoodaus</translation>
 <translation id="1038842779957582377">tuntematon nimi</translation>
-<translation id="1040931876666128942">WebUsb-ilmoitukset</translation>
 <translation id="1042174272890264476"><ph name="SHORT_PRODUCT_NAME" /> sisältää sisäänrakennetun RLZ-kirjaston. RLZ tuottaa ei-yksilöivän tagin, jolla voidaan mitata tietyn kampanjan aiheuttamia hakuja ja tuotteen <ph name="SHORT_PRODUCT_NAME" /> käyttöä. <ph name="PRODUCT_NAME" /> näyttää ajoittain näitä tunnisteita Google-hakujen kyselyissä.</translation>
 <translation id="1042574203789536285"><ph name="URL" /> haluaa tallentaa suuria tietomääriä pysyvästi laitteellesi.</translation>
 <translation id="1045157690796831147">Translitterointi (namaskar → നമസ്കാരം)</translation>
@@ -328,7 +327,6 @@
 <translation id="1470719357688513792">Uudet evästeasetukset tulevat voimaan päivitettyäsi sivun.</translation>
 <translation id="14720830734893704">Ota virtuaalinäppäimistön tuki käyttöön.</translation>
 <translation id="1474339897586437869">Tiedostoa <ph name="FILENAME" /> ei lähetetty. Google Drivessasi ei ole riittävästi vapaata tallennustilaa.</translation>
-<translation id="1476503841242751994">{COUNT,plural, =1{1 salasana}other{# salasanaa}}</translation>
 <translation id="1476949146811612304">Valitse <ph name="BEGIN_LINK" />omniboxissa<ph name="END_LINK" /> käytettävä hakukone.</translation>
 <translation id="1477301030751268706">Henkilöllisyyssovellusliittymän tunnuksen välimuisti</translation>
 <translation id="1478340334823509079">Lisätiedot: <ph name="FILE_NAME" /></translation>
@@ -919,6 +917,7 @@ Luotuasi uuden valvotun käyttäjän voit hallinnoida käyttäjän asetuksia mil
 <translation id="2326606747676847821">Siirry incognito-tilaan</translation>
 <translation id="2326931316514688470">&amp;Lataa sovellus uudelleen</translation>
 <translation id="2327492829706409234">Ota sovellus käyttöön</translation>
+<translation id="2329597144923131178">Kirjaudu ja käytä kirjanm., historiaa, salasan. ja muita asetuksia kaikissa laitteissasi.</translation>
 <translation id="2332131598580221120">Näytä Web Storessa</translation>
 <translation id="2332742915001411729">Palauta oletusarvo</translation>
 <translation id="2335122562899522968">Tämä sivu asettaa evästeitä.</translation>
@@ -942,7 +941,6 @@ Luotuasi uuden valvotun käyttäjän voit hallinnoida käyttäjän asetuksia mil
 <translation id="2359808026110333948">Jatka</translation>
 <translation id="236128817791440714">Suositus: ota käyttöön Androidin Smart Lock</translation>
 <translation id="236141728043665931">Estä aina mikrofonin käyttö</translation>
-<translation id="2365626167708453863">Valitse tili Google Smart Lockista</translation>
 <translation id="2367972762794486313">Näytä sovellukset</translation>
 <translation id="2368075211218459617">Ota kontekstihaku käyttöön.</translation>
 <translation id="2370882663124746154">Ota Double-Pinyin-tila käyttöön</translation>
@@ -2642,7 +2640,6 @@ Kaikkien käyttäjien täytyy kirjautua ulos jatkaakseen käyttöä.</translatio
 <translation id="4780374166989101364">Ottaa kokeelliset laajennussovellusliittymät käyttöön. Huomaa, että laajennusgalleria ei anna lähettää laajennuksia, jotka käyttävät kokeellisia sovellusliittymiä.</translation>
 <translation id="4781787911582943401">Zoomaa lähemmäs</translation>
 <translation id="4782449893814226250">Pyysit vanhemmiltasi lupaa käydä tällä sivulla.</translation>
-<translation id="4784085458903013712">{COUNT,plural, =1{1 Kt}other{# Kt}}</translation>
 <translation id="4784330909746505604">PowerPoint-esitys</translation>
 <translation id="4785040501822872973">Tämä tietokone nollataan <ph name="LOGOUT_TIME_LEFT" /> sekunnin kuluttua. Paina mitä tahansa näppäintä jatkaaksesi käyttöä.</translation>
 <translation id="4786993863723020412">Välimuistin lukuvirhe</translation>
@@ -3170,7 +3167,6 @@ Kaikkien käyttäjien täytyy kirjautua ulos jatkaakseen käyttöä.</translatio
 <translation id="5527474464531963247">Voit myös valita muun verkon.</translation>
 <translation id="5527963985407842218">Lukutilan painikkeen näyttäminen</translation>
 <translation id="5528368756083817449">Kirjanmerkkien hallinta</translation>
-<translation id="5529098031581368697"><ph name="APP_NAME" /> asensi nykyisen taustakuvan</translation>
 <translation id="5531274207066050939">Google Payments</translation>
 <translation id="5532223876348815659">Maailmanlaajuinen</translation>
 <translation id="5533555070048896610">Translitterointi (namaste → नमस्ते)</translation>
@@ -3286,7 +3282,6 @@ Kaikkien käyttäjien täytyy kirjautua ulos jatkaakseen käyttöä.</translatio
 <translation id="5702898740348134351">Muokkaa hakukon&amp;eita...</translation>
 <translation id="5703594190584829406">Näyttää automaattisen täytön ehdotukset näppäimistön yläosassa, ei avattavassa valikossa.</translation>
 <translation id="5704272569086782895">Ota käyttöön monisäikeinen grafiikkasuorittimella rasterointi.</translation>
-<translation id="570544101664452060">Kokeelliset WebUsb-ilmoitukset</translation>
 <translation id="5706551819490830015">Hallinnoi laskutusosoitteita…</translation>
 <translation id="5707185214361380026">Laajennuksen lataaminen seuraavasta kohteesta epäonnistui:</translation>
 <translation id="5707604204219538797">Seuraava sana</translation>
@@ -3433,7 +3428,6 @@ ei saa yhteyttä sivustoon. Syynä on yleensä verkon ongelma, mutta ongelma saa
 <translation id="5900302528761731119">Google-profiilin valokuva</translation>
 <translation id="5900623698597156974">TLS 1.0 -varatoiminto onnistui kättelemään palvelimen kanssa, mutta emme enää hyväksy TLS 1.0 -varatoimintoja. Palvelin täytyy päivittää, jotta versiontarkistus ja mahdollisesti myös suositeltava TLS 1.2 -tuki voidaan ottaa käyttöön.</translation>
 <translation id="590253956165195626">Tarjoa käännöstä muunkielisille sivuille.</translation>
-<translation id="5902659428109355177">{COUNT,plural, =1{1 kohde}other{# kohdetta}}</translation>
 <translation id="5904093760909470684">Välityspalvelimen määritykset</translation>
 <translation id="5906065664303289925">Laitteiston osoite:</translation>
 <translation id="5910363049092958439">T&amp;allenna kuva nimellä...</translation>

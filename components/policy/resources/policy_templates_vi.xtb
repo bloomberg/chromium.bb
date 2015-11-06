@@ -176,8 +176,8 @@
       Desktop.  Dịch vụ gốc được đóng gói và thực hiện riêng từ
       trình duyệt <ph name="PRODUCT_NAME" />.
 
-      Có thể bỏ qua các chính sách này trừ khi
-      bạn cài đặt máy chủ Chrome Remote Desktop.</translation>
+      Bạn có thể bỏ qua các chính sách này nếu
+      bạn chưa cài đặt máy chủ Chrome Remote Desktop.</translation>
 <translation id="1757688868319862958">Cho phép <ph name="PRODUCT_NAME" /> chạy plugin yêu cầu ủy quyền.
 
       Nếu bạn bật cài đặt này, plugin không bị lỗi thời sẽ luôn chạy.

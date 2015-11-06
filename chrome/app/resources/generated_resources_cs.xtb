@@ -29,7 +29,6 @@
 <translation id="1036511912703768636">Přístup ke kterýmkoliv z těchto zařízení USB</translation>
 <translation id="1038168778161626396">Pouze šifrování</translation>
 <translation id="1038842779957582377">neznámé jméno</translation>
-<translation id="1040931876666128942">Oznámení WebUsb</translation>
 <translation id="1042174272890264476">Počítač je dodáván s integrovanou knihovnou RLZ prohlížeče <ph name="SHORT_PRODUCT_NAME" />. RLZ přiřadí značku, která slouží k vyhodnocení vyhledávání a využití prohlížečů <ph name="SHORT_PRODUCT_NAME" />, které pocházejí z konkrétní propagační kampaně. Tato značka není jedinečná a neumožňuje osobní identifikaci. Tyto značky jsou někdy v prohlížeči <ph name="PRODUCT_NAME" /> uváděny v dotazech ve Vyhledávání Google.</translation>
 <translation id="1042574203789536285">Stránka <ph name="URL" /> chce v zařízení trvale ukládat velké množství dat.</translation>
 <translation id="1045157690796831147">Přepis (namaskar → നമസ്കാരം)</translation>
@@ -328,7 +327,6 @@
 <translation id="1470719357688513792">Nové nastavení souborů cookie se projeví po opětovném načtení stránky.</translation>
 <translation id="14720830734893704">Aktivuje podporu virtuální klávesnice.</translation>
 <translation id="1474339897586437869">Soubor <ph name="FILENAME" /> nelze nahrát. Na Disku Google je nedostatek místa.</translation>
-<translation id="1476503841242751994">{COUNT,plural, =1{1 heslo}few{# hesla}many{# hesla}other{# hesel}}</translation>
 <translation id="1476949146811612304">Nastavit vyhledávač, který se používá při vyhledávání v
         <ph name="BEGIN_LINK" />omniboxu<ph name="END_LINK" />.</translation>
 <translation id="1477301030751268706">Mezipaměť tokenů rozhraní Identity API</translation>
@@ -920,6 +918,7 @@ Po vytvoření nového dozorovaného uživatele můžete jeho nastavení spravov
 <translation id="2326606747676847821">Anonymní režim</translation>
 <translation id="2326931316514688470">Znovu načíst &amp;aplikaci</translation>
 <translation id="2327492829706409234">Aktivovat aplikaci</translation>
+<translation id="2329597144923131178">Přihlaste se a synchronizujte záložky, historii, hesla a další nastavení do všech svých zařízení.</translation>
 <translation id="2332131598580221120">Zobrazit v obchodu</translation>
 <translation id="2332742915001411729">Výchozí nastavení</translation>
 <translation id="2335122562899522968">Tato stránka nastavila soubory cookie.</translation>
@@ -943,7 +942,6 @@ Po vytvoření nového dozorovaného uživatele můžete jeho nastavení spravov
 <translation id="2359808026110333948">Pokračovat</translation>
 <translation id="236128817791440714">Doporučujeme: Nastavte si funkci Smart Lock pro Android</translation>
 <translation id="236141728043665931">Vždy blokovat přístup k mikrofonu</translation>
-<translation id="2365626167708453863">Zvolte účet z funkce Google Smart Lock</translation>
 <translation id="2367972762794486313">Zobrazit aplikace</translation>
 <translation id="2368075211218459617">Aktivovat kontextové vyhledávání</translation>
 <translation id="2370882663124746154">Aktivovat režim Double-Pinyin</translation>
@@ -2645,7 +2643,6 @@ Chcete-li pokračovat v práci, stiskněte libovolnou klávesu.</translation>
 <translation id="4780374166989101364">Umožňuje aktivovat experimentální rozhraní API rozšíření. Upozornění: Galerie rozšíření neumožňuje nahrávat rozšíření, která používají experimentální rozhraní API.</translation>
 <translation id="4781787911582943401">Přiblíží obrazovku</translation>
 <translation id="4782449893814226250">Požádali jste rodiče o povolení návštěvy této stránky.</translation>
-<translation id="4784085458903013712">{COUNT,plural, =1{1 kB}few{# kB}many{# kB}other{# kB}}</translation>
 <translation id="4784330909746505604">Prezentace aplikace PowerPoint</translation>
 <translation id="4785040501822872973">Počítač se za <ph name="LOGOUT_TIME_LEFT" /> sekund restartuje.
 Chcete-li pokračovat v práci, stiskněte libovolnou klávesu.</translation>
@@ -3174,7 +3171,6 @@ Chcete-li pokračovat v práci, stiskněte libovolnou klávesu.</translation>
 <translation id="5527474464531963247">Můžete také vybrat jinou síť</translation>
 <translation id="5527963985407842218">Aktivace režimu čtečky</translation>
 <translation id="5528368756083817449">Správce záložek</translation>
-<translation id="5529098031581368697">Aktuální tapetu nastavila aplikace <ph name="APP_NAME" /></translation>
 <translation id="5531274207066050939">Google Payments</translation>
 <translation id="5532223876348815659">Globální</translation>
 <translation id="5533555070048896610">Přepis (namaste → नमस्ते)</translation>
@@ -3290,7 +3286,6 @@ Když je tato možnost aktivována, element document.scrollingElement odpovídá
 <translation id="5702898740348134351">Upravit vyhl&amp;edávače...</translation>
 <translation id="5703594190584829406">Zobrazuje návrhy Automatického vyplňování nad klávesnicí (namísto rozbalovacího seznamu).</translation>
 <translation id="5704272569086782895">Aktivovat rastrování prostřednictvím GPU v podprocesu</translation>
-<translation id="570544101664452060">Experimentální Oznámení WebUsb</translation>
 <translation id="5706551819490830015">Spravovat fakturační adresy...</translation>
 <translation id="5707185214361380026">Načtení rozšíření z následujícího umístění se nezdařilo:</translation>
 <translation id="5707604204219538797">Další slovo</translation>
@@ -3440,7 +3435,6 @@ Když je tato možnost aktivována, element document.scrollingElement odpovídá
 <translation id="5900302528761731119">Profilová fotka Google</translation>
 <translation id="5900623698597156974">Záloha TLS 1.0 byla schopna komunikovat se serverem pomocí metody handshake, avšak zálohy TLS 1.0 již nepodporujeme. Server je nutné aktualizovat, aby v něm byla správně implementována komunikace podle verzí a aby pokud možno podporoval protokol TLS 1.2.</translation>
 <translation id="590253956165195626">Nabízet překlad stránek v jazycích, kterým byste nemuseli rozumět.</translation>
-<translation id="5902659428109355177">{COUNT,plural, =1{1 položka}few{# položky}many{# položky}other{# položek}}</translation>
 <translation id="5904093760909470684">Nastavení proxy serveru</translation>
 <translation id="5906065664303289925">Hardwarová adresa:</translation>
 <translation id="5910363049092958439">Uložit o&amp;brázek jako...</translation>

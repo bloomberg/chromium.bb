@@ -29,7 +29,6 @@
 <translation id="1036511912703768636">ఈ USB పరికరాల్లో వేటికైనా ప్రాప్యత</translation>
 <translation id="1038168778161626396">కోడ్ మాత్రమే</translation>
 <translation id="1038842779957582377">తెలియని పేరు</translation>
-<translation id="1040931876666128942">WebUsb నోటిఫికేషన్‌లు.</translation>
 <translation id="1042174272890264476">మీ కంప్యూటర్‌‍లో కూడా <ph name="SHORT_PRODUCT_NAME" /> యొక్క అంతర్నిర్మిత RLZ లైబ్రరీ ఉంటుంది. RLZ శోధనలను మరియు నిర్దిష్ట ప్రమోషనల్ ప్రచారం ద్వారా ఉపయోగించబడిన <ph name="SHORT_PRODUCT_NAME" /> వినియోగాన్ని లెక్కించడానికి ప్రత్యేకం కాని, వ్యక్తిగతంగా గుర్తించలేని ట్యాగ్‌ను సమర్పిస్తుంది. ఈ లేబుల్‌లు కొన్నిసార్లు <ph name="PRODUCT_NAME" />లోని Google శోధన ప్రశ్నల్లో కనిపిస్తాయి.</translation>
 <translation id="1042574203789536285"><ph name="URL" /> శాశ్వతంగా అధిక డేటాను మీ పరికరంలో నిల్వ చేయాలనుకుంటోంది.</translation>
 <translation id="1045157690796831147">లిప్యంతరీకరణ (namaskar → നമസ്കാരം)</translation>
@@ -328,7 +327,6 @@
 <translation id="1470719357688513792">పేజీ లోడ్ అయిన తర్వాత క్రొత్త కుకీ సెట్టింగ్‌లు ప్రభావం చూపుతాయి.</translation>
 <translation id="14720830734893704">వర్చువల్ కీబోర్డ్ మద్దతును ప్రారంభించండి.</translation>
 <translation id="1474339897586437869">"<ph name="FILENAME" />" అప్‌లోడ్ కాలేదు. మీ Google డిస్క్‌లో తగినంత ఖాళీ స్థలం లేదు.</translation>
-<translation id="1476503841242751994">{COUNT,plural, =1{1 పాస్‌వర్డ్}other{# పాస్‌వర్డ్‌లు}}</translation>
 <translation id="1476949146811612304"><ph name="BEGIN_LINK" />ఓమ్నిపెట్టె<ph name="END_LINK" /> నుండి శోధించినప్పుడు ఉపయోగించవల్సిన శోధన ఇంజిన్‌ను సెట్ చేయండి.</translation>
 <translation id="1477301030751268706">గుర్తింపు API టోకెన్ కాష్</translation>
 <translation id="1478340334823509079">వివరాలు: <ph name="FILE_NAME" /></translation>
@@ -928,6 +926,7 @@
 <translation id="2326606747676847821">అజ్ఞాతంలోకి వెళ్లు</translation>
 <translation id="2326931316514688470">అనువర్తనాన్ని &amp;మళ్లీ లోడ్ చేయి</translation>
 <translation id="2327492829706409234">అనువర్తనాన్ని ప్రారంభించు</translation>
+<translation id="2329597144923131178">మీ బుక్‌మార్క్‌లు, చరిత్ర, పాస్‌వర్డ్‌లు, ఇతర సెట్టింగ్‌లను మీ అన్ని పరికరాల్లో పొందడానికి సైన్ ఇన్ చేయండి.</translation>
 <translation id="2332131598580221120">స్టోర్‌లో వీక్షించండి</translation>
 <translation id="2332742915001411729">డిఫాల్ట్‌కు రీసెట్ చేయి</translation>
 <translation id="2335122562899522968">ఈ పేజీ కుక్కీలను సెట్ చేస్తుంది.</translation>
@@ -951,7 +950,6 @@
 <translation id="2359808026110333948">కొనసాగు</translation>
 <translation id="236128817791440714">సిఫార్సు చేయబడింది: Android కోసం Smart Lockను సెటప్ చేయండి</translation>
 <translation id="236141728043665931">ఎల్లప్పుడూ మైక్రోఫోన్ ప్రాప్యతను బ్లాక్ చేయి</translation>
-<translation id="2365626167708453863">మీ Google Smart Lock నుండి ఖాతాను ఎంచుకోండి</translation>
 <translation id="2367972762794486313">అనువర్తనాలను చూపు</translation>
 <translation id="2368075211218459617">సందర్భోచిత శోధనను ప్రారంభించండి.</translation>
 <translation id="2370882663124746154">Double-Pinyin మోడ్‌ను అనుమతించండి</translation>
@@ -2661,7 +2659,6 @@
 <translation id="4780374166989101364">ప్రయోగాత్మక పొడిగింపు APIలను ప్రారంభిస్తుంది. ప్రయోగాత్మక APIలని ఉపయోగించే పొడిగింపులను అప్‌లోడ్ చెయ్యడానికి మిమ్మల్ని పొడిగింపు గ్యాలరీ అనుమతించదని గుర్తుంచుకోండి.</translation>
 <translation id="4781787911582943401">స్క్రీన్‌ను దగ్గరకు జూమ్ చేయి</translation>
 <translation id="4782449893814226250">మీరు ఈ పేజీని సందర్శించడానికి అనుమతించమని కోరుతూ మీ తల్లిదండ్రులకు అభ్యర్థన పంపారు.</translation>
-<translation id="4784085458903013712">{COUNT,plural, =1{1 kB}other{# kB}}</translation>
 <translation id="4784330909746505604">PowerPoint ప్రెజెంటేషన్</translation>
 <translation id="4785040501822872973">ఈ కంప్యూటర్ <ph name="LOGOUT_TIME_LEFT" /> సెకన్లలో రీసెట్ చేయబడుతుంది.
 విశ్లేషించడాన్ని కొనసాగించడానికి ఏదైనా కీని నొక్కండి.</translation>
@@ -3192,7 +3189,6 @@
 <translation id="5527474464531963247">మీరు మరొక నెట్‌వర్క్‌ను కూడా ఎంచుకోవచ్చు.</translation>
 <translation id="5527963985407842218">రీడర్ మోడ్ ప్రారంభం</translation>
 <translation id="5528368756083817449">బుక్‌మార్క్ నిర్వాహికి</translation>
-<translation id="5529098031581368697">ప్రస్తుత వాల్‌పేపర్ '<ph name="APP_NAME" />' ద్వారా సెట్ చేయబడింది</translation>
 <translation id="5531274207066050939">Google Payments</translation>
 <translation id="5532223876348815659">సార్వజనీనం</translation>
 <translation id="5533555070048896610">లిప్యంతరీకరణ (namaste → नमस्ते)</translation>
@@ -3307,7 +3303,6 @@
 <translation id="5702898740348134351">శోధన ఇంజిన్లను &amp;సవరించు...</translation>
 <translation id="5703594190584829406">స్వీయ పూరింపు సూచనలను డ్రాప్‌డౌన్‌లో కాకుండా కీబోర్డ్ పైన చూపుతుంది.</translation>
 <translation id="5704272569086782895">థ్రెడెడ్ GPU రాస్టరైజేషన్‌ను ప్రారంభించండి.</translation>
-<translation id="570544101664452060">ప్రయోగాత్మక WebUsb నోటిఫికేషన్‌లు.</translation>
 <translation id="5706551819490830015">బిల్లింగ్ చిరునామాలను నిర్వహించండి...</translation>
 <translation id="5707185214361380026">దీని నుండి పొడిగింపుని లోడ్ చేయడంలో విఫలమైంది:</translation>
 <translation id="5707604204219538797">తదుపరి పదం</translation>
@@ -3456,7 +3451,6 @@
 <translation id="5900302528761731119">Google ప్రొఫైల్ ఫోటో</translation>
 <translation id="5900623698597156974">TLS 1.0 ఫాల్‌బ్యాక్ సర్వర్‌తో కనెక్షన్‌ను ఏర్పాటు చేయగలదు, కానీ మేము TLS 1.0 ఫాల్‌బ్యాక్‌లను ఆమోదించము. సంస్కరణ సంధానాన్ని సరైన రీతిలో అమలు చేయడానికి మరియు ముఖ్యంగా TLS 1.2కి మద్దతివ్వడానికి సర్వర్‌‌ను నవీకరించాలి.</translation>
 <translation id="590253956165195626">మీరు చదివే భాషలో లేని పేజీలకు అనువాదాన్ని ఆఫర్ చేయాలి.</translation>
-<translation id="5902659428109355177">{COUNT,plural, =1{1 అంశం}other{# అంశాలు}}</translation>
 <translation id="5904093760909470684">ప్రాక్సీ కాన్ఫిగరేషన్</translation>
 <translation id="5906065664303289925">హార్డ్‌వేర్ చిరునామా:</translation>
 <translation id="5910363049092958439">చిత్రాన్ని ఇలా సే&amp;వ్ చెయ్యి...</translation>

@@ -179,6 +179,7 @@
 <translation id="5019198164206649151">Sikkerhedskopien er fejlbehæftet</translation>
 <translation id="5031870354684148875">Om Google Oversæt</translation>
 <translation id="5045550434625856497">Ugyldig adgangskode</translation>
+<translation id="5065199687811594072">Er du sikker på, at Chromium skal gemme disse kreditkortoplysninger til udfyldning af webformularer?</translation>
 <translation id="5087286274860437796">Serverens certifikatet er ikke gyldigt i øjeblikket.</translation>
 <translation id="5089810972385038852">Delstat</translation>
 <translation id="5094747076828555589">Denne server kunne ikke bevise, at den er <ph name="DOMAIN" />, da Chromium ikke har tillid til sikkerhedscertifikatet. Dette kan skyldes en fejlkonfiguration, eller at en hacker har opfanget din forbindelse.</translation>

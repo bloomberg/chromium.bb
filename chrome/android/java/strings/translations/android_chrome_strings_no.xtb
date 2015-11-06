@@ -82,7 +82,7 @@
 <translation id="2206488550163399966"><ph name="APP_NAME" />, nettprogram. <ph name="APP_URL" /></translation>
 <translation id="2268044343513325586">Finstem</translation>
 <translation id="2315043854645842844">Operativsystemet har ikke støtte for sertifikatvalg på klientsiden.</translation>
-<translation id="2316129865977710310">Nei takk</translation>
+<translation id="2316129865977710310">Nei, takk</translation>
 <translation id="2321958826496381788">Dra glidebryteren til du kan lese dette uten problemer. Når du har dobbelttrykket på et avsnitt, bør teksten være minst like stor som dette.</translation>
 <translation id="2343328333327081434">Installerer …</translation>
 <translation id="2351097562818989364">Oversettelsesinnstillingene dine er tilbakestilt.</translation>
@@ -434,12 +434,12 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="7363354739009474003">Laster inn <ph name="VIDEO_TITLE" /> ...</translation>
 <translation id="7366340029385295517">Caster til <ph name="SCREEN_NAME" /></translation>
 <translation id="7375125077091615385">Type:</translation>
-<translation id="7378627244592794276">Nei takk</translation>
+<translation id="7378627244592794276">Nei, takk</translation>
 <translation id="7400418766976504921">Nettadresse</translation>
 <translation id="7400448254438078120">Videoen kan ikke castes på grunn av restriksjoner på nettstedet.</translation>
 <translation id="7423098979219808738">Spør først.</translation>
 <translation id="7437998757836447326">Logg av Chrome</translation>
-<translation id="7473891865547856676">Nei takk</translation>
+<translation id="7473891865547856676">Nei, takk</translation>
 <translation id="748127970106343339">Bekreft sletting av enhetslegitimasjon</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (oppdatert <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7498271377022651285">Vent litt</translation>
@@ -465,7 +465,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="7784213092572143271">Siden er lagret</translation>
 <translation id="7788788617745289808">Chrome må ha tilgang til kameraet for å kunne dele det med dette nettstedet.</translation>
 <translation id="7791543448312431591">Legg til</translation>
-<translation id="780301667611848630">Nei takk</translation>
+<translation id="780301667611848630">Nei, takk</translation>
 <translation id="7811044698839470685">De krypterte dataene dine kan ikke leses av andre enn de som har passordfrasen din. Denne frasen verken sendes til eller lagres av Google, og hvis du glemmer den, må du tilbakestille synkroniseringen.</translation>
 <translation id="7829298379596169484">Åpner lydinngang</translation>
 <translation id="7846076177841592234">Opphev valget</translation>

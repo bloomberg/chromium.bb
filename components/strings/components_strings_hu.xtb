@@ -179,6 +179,7 @@
 <translation id="5019198164206649151">A háttértároló állapota nem megfelelő</translation>
 <translation id="5031870354684148875">A Google Fordító leírása</translation>
 <translation id="5045550434625856497">Téves jelszó</translation>
+<translation id="5065199687811594072">Szeretné, hogy a Chromium mentse ezt a bankkártya-információt az internetes űrlapok kitöltéséhez?</translation>
 <translation id="5087286274860437796">A szerver tanúsítványa jelenleg nem érvényes.</translation>
 <translation id="5089810972385038852">Állam</translation>
 <translation id="5094747076828555589">A szerver nem tudta bizonyítani, hogy valóban a(z) <ph name="DOMAIN" /> domainbe tartozik; biztonsági tanúsítványa a Chromium szerint nem megbízható. Ennek oka lehet konfigurációs hiba, vagy hogy egy támadó eltérítette az Ön kapcsolódását.</translation>

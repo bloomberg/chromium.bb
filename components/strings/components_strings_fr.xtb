@@ -179,6 +179,7 @@
 <translation id="5019198164206649151">L'espace de stockage destiné à la sauvegarde est en mauvais état.</translation>
 <translation id="5031870354684148875">À propos de Google Traduction</translation>
 <translation id="5045550434625856497">Mot de passe incorrect.</translation>
+<translation id="5065199687811594072">Voulez-vous que les informations de carte de paiement soient enregistrées dans Chromium pour le remplissage de formulaires Web ?</translation>
 <translation id="5087286274860437796">Le certificat actuel du serveur n'est pas valide.</translation>
 <translation id="5089810972385038852">État</translation>
 <translation id="5094747076828555589">Impossible de vérifier sur le serveur qu'il s'agit bien du domaine <ph name="DOMAIN" />, car son certificat de sécurité n'est pas considéré comme fiable par Chromium. Cela peut être dû à une mauvaise configuration ou bien à l'interception de votre connexion par un pirate informatique.</translation>

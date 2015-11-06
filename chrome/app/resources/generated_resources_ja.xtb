@@ -29,7 +29,6 @@
 <translation id="1036511912703768636">これらの USB デバイスへのアクセス</translation>
 <translation id="1038168778161626396">暗号化のみ</translation>
 <translation id="1038842779957582377">不明な名前</translation>
-<translation id="1040931876666128942">WebUsb の通知</translation>
 <translation id="1042174272890264476">お使いのパソコンには <ph name="SHORT_PRODUCT_NAME" /> の RLZ ライブラリも組み込まれています。RLZ は、個人を特定できないタグを割り当てて、特定の販促キャンペーンで生じた検索や <ph name="SHORT_PRODUCT_NAME" /> の利用状況を計測します。これらのラベルは <ph name="PRODUCT_NAME" /> で Google 検索キーワード内に表示されることがあります。</translation>
 <translation id="1042574203789536285"><ph name="URL" /> がこの端末に大量のデータを永続的に保存しようとしています。</translation>
 <translation id="1045157690796831147">文字変換（namaskar → നമസ്കാരം）</translation>
@@ -329,7 +328,6 @@
 <translation id="1470719357688513792">新しい Cookie 設定はページの再読み込み後に有効になります。</translation>
 <translation id="14720830734893704">仮想キーボードのサポートを有効にします。</translation>
 <translation id="1474339897586437869">「<ph name="FILENAME" />」はアップロードされていません。Google ドライブに十分な空き容量がありません。</translation>
-<translation id="1476503841242751994">{COUNT,plural, =1{1 個のパスワード}other{# 個のパスワード}}</translation>
 <translation id="1476949146811612304">        <ph name="BEGIN_LINK" />アドレスバー<ph name="END_LINK" />
 から検索するときに使用する検索エンジンを設定します。</translation>
 <translation id="1477301030751268706">Identity API トークン キャッシュ</translation>
@@ -924,6 +922,7 @@
 <translation id="2326606747676847821">シークレット モード</translation>
 <translation id="2326931316514688470">アプリを再読み込み(&amp;R)</translation>
 <translation id="2327492829706409234">アプリを有効にする</translation>
+<translation id="2329597144923131178">ログインすると、お使いのどのデバイスでも同じブックマーク、履歴、パスワード、その他の設定を利用できるようになります。</translation>
 <translation id="2332131598580221120">ストアで見る</translation>
 <translation id="2332742915001411729">デフォルトに戻す</translation>
 <translation id="2335122562899522968">このページの Cookie が設定されました。</translation>
@@ -947,7 +946,6 @@
 <translation id="2359808026110333948">続行</translation>
 <translation id="236128817791440714">推奨: Smart Lock for Android を設定してください</translation>
 <translation id="236141728043665931">マイクのアクセスを常にブロックする</translation>
-<translation id="2365626167708453863">Google Smart Lock からアカウントを選択</translation>
 <translation id="2367972762794486313">アプリを表示</translation>
 <translation id="2368075211218459617">コンテキスト検索を有効にする</translation>
 <translation id="2370882663124746154">ダブルピンイン モードを有効にする</translation>
@@ -2657,7 +2655,6 @@
 <translation id="4780374166989101364">試験運用版の拡張機能 API を有効にします。試験運用版の API を使用した拡張機能は、拡張機能ギャラリーにはアップロードできませんのでご注意ください。</translation>
 <translation id="4781787911582943401">画面を拡大</translation>
 <translation id="4782449893814226250">このページを開いてもよいか保護者にたずねました。</translation>
-<translation id="4784085458903013712">{COUNT,plural, =1{1 kB}other{# kB}}</translation>
 <translation id="4784330909746505604">PowerPoint プレゼンテーション</translation>
 <translation id="4785040501822872973">このパソコンは <ph name="LOGOUT_TIME_LEFT" /> 秒後にリセットされます。
 操作を続ける場合は、何かキーを押してください。</translation>
@@ -3188,7 +3185,6 @@
 <translation id="5527474464531963247">別のネットワークも選択できます。</translation>
 <translation id="5527963985407842218">リーダーモードの起動</translation>
 <translation id="5528368756083817449">ブックマーク マネージャ</translation>
-<translation id="5529098031581368697">現在の壁紙は「<ph name="APP_NAME" />」により設定されています</translation>
 <translation id="5531274207066050939">Google ペイメント</translation>
 <translation id="5532223876348815659">グローバル</translation>
 <translation id="5533555070048896610">文字変換（namaste → नमस्ते）</translation>
@@ -3304,7 +3300,6 @@
 <translation id="5702898740348134351">検索エンジンの編集(&amp;E)...</translation>
 <translation id="5703594190584829406">自動入力の候補をプルダウンではなくキーボードの上部に表示します。</translation>
 <translation id="5704272569086782895">スレッド GPU のラスター化を有効にする</translation>
-<translation id="570544101664452060">試験運用版の WebUsb 通知を有効にします。</translation>
 <translation id="5706551819490830015">請求先住所を管理...</translation>
 <translation id="5707185214361380026">次の場所から拡張機能を読み込むことができませんでした:</translation>
 <translation id="5707604204219538797">次の単語</translation>
@@ -3453,7 +3448,6 @@
 <translation id="5900302528761731119">Google プロフィール写真</translation>
 <translation id="5900623698597156974">TLS 1.0 フォールバックでサーバーとハンドシェイクすることができましたが、現在、TLS 1.0 フォールバックは承認されなくなりました。バージョン ネゴシエーションを正しく実装し、できれば TLS 1.2 をサポートするように、サーバーを更新する必要があります。</translation>
 <translation id="590253956165195626">母国語以外のページで翻訳ツールを表示する</translation>
-<translation id="5902659428109355177">{COUNT,plural, =1{1 個のアイテム}other{# 個のアイテム}}</translation>
 <translation id="5904093760909470684">プロキシ設定</translation>
 <translation id="5906065664303289925">ハードウェアのアドレス:</translation>
 <translation id="5910363049092958439">名前を付けて画像を保存(&amp;V)...</translation>

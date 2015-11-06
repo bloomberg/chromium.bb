@@ -37,7 +37,7 @@
 <translation id="2233513990531887259">Start på nytt i maksimert modus for Chromium</translation>
 <translation id="2241627712206172106">Hvis du deler en datamaskin med andre, kan venner og familie surfe hver for seg og konfigurere Chromium akkurat slik de vil.</translation>
 <translation id="225614027745146050">Velkommen</translation>
-<translation id="2316129865977710310">Nei takk</translation>
+<translation id="2316129865977710310">Nei, takk</translation>
 <translation id="2347108572062610441">Denne utvidelsen har endret hvilken side som vises når du starter Chromium.</translation>
 <translation id="2389622953163669926">{NUM_DOWNLOAD,plural, =1{En nedlasting pågår for øyeblikket. Vil du avbryte nedlastingen og avslutte Chromium?}other{# nedlastinger pågår for øyeblikket. Vil du avbryte nedlastingene og avslutte Chromium?}}</translation>
 <translation id="2396765026452590966">Utvidelsen «<ph name="EXTENSION_NAME" />» har endret hvilken side som vises når du starter Chromium.</translation>
@@ -205,7 +205,7 @@ Chromium kan ikke gjenopprette innstillingen dine.</translation>
 <translation id="7419987137528340081">Hvis du foretrekker å holde eksisterende Chromium-data separat, kan du opprette en ny Chromium-bruker for <ph name="USER_NAME" />.</translation>
 <translation id="7421823331379285070">Chromium krever Windows XP eller nyere. Enkelte funksjoner vil kanskje ikke fungere.</translation>
 <translation id="7463979740390522693">Chromium – varsler (<ph name="QUANTITY" /> uleste)</translation>
-<translation id="7473891865547856676">Nei takk</translation>
+<translation id="7473891865547856676">Nei, takk</translation>
 <translation id="7483335560992089831">Kan ikke installere den samme Chromium-versjonen som kjører. Lukk Chromium og prøv på nytt.</translation>
 <translation id="750717762378961310">Denne filen er skadelig, og Chromium har blokkert den.</translation>
 <translation id="7549178288319965365">Om Chromium OS</translation>

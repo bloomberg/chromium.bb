@@ -29,7 +29,6 @@
 <translation id="1036511912703768636">Приступ било ком од ових USB уређаја</translation>
 <translation id="1038168778161626396">Само шифруј</translation>
 <translation id="1038842779957582377">непознато име</translation>
-<translation id="1040931876666128942">WebUsb обавештења.</translation>
 <translation id="1042174272890264476">Уз рачунар такође добијате уграђену RLZ библиотеку производа <ph name="SHORT_PRODUCT_NAME" />. RLZ додељује нејединствену ознаку помоћу које вас није могуће лично идентификовати да би измерио претраге и коришћење производа <ph name="SHORT_PRODUCT_NAME" /> који су подстакнути одређеном промотивном кампањом. Те ознаке се понекад приказују у упитима Google претраге у производу <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1042574203789536285"><ph name="URL" /> жели трајно да складишти велике количине података на уређају.</translation>
 <translation id="1045157690796831147">Транслитерација (namaskar → നമസ്കാരം)</translation>
@@ -328,7 +327,6 @@
 <translation id="1470719357688513792">Ново подешавање колачића биће примењено након поновног учитавања странице.</translation>
 <translation id="14720830734893704">Омогућите подршку за виртуелну тастатуру.</translation>
 <translation id="1474339897586437869">Датотека „<ph name="FILENAME" />“ није отпремљена. Није било довољно слободног места на Google диску.</translation>
-<translation id="1476503841242751994">{COUNT,plural, =1{1 лозинка}one{# лозинка}few{# лозинке}other{# лозинки}}</translation>
 <translation id="1476949146811612304">Подесите претраживач који ће се користити када претражујете из <ph name="BEGIN_LINK" />омнибокса<ph name="END_LINK" />.</translation>
 <translation id="1477301030751268706">Кеш токена API-ја за идентитет</translation>
 <translation id="1478340334823509079">Детаљи: <ph name="FILE_NAME" /></translation>
@@ -923,6 +921,7 @@
 <translation id="2326606747676847821">Пређи у режим без архивирања</translation>
 <translation id="2326931316514688470">&amp;Поново учитај апликацију</translation>
 <translation id="2327492829706409234">Омогући апликацију</translation>
+<translation id="2329597144923131178">Пријавите се да би вам обележивачи, историја, лозинке и друга подешавања били доступни на свим уређајима.</translation>
 <translation id="2332131598580221120">Прикажи у продавници</translation>
 <translation id="2332742915001411729">Врати на подразумевану вредност</translation>
 <translation id="2335122562899522968">Ова страница поставља колачиће.</translation>
@@ -946,7 +945,6 @@
 <translation id="2359808026110333948">Настави</translation>
 <translation id="236128817791440714">Препоручено: Подесите Smart Lock за Android</translation>
 <translation id="236141728043665931">Увек блокирај приступ микрофону</translation>
-<translation id="2365626167708453863">Изаберите налог из Google Smart Lock-а</translation>
 <translation id="2367972762794486313">Прикажите апликације</translation>
 <translation id="2368075211218459617">Омогући Контекстуалну претрагу.</translation>
 <translation id="2370882663124746154">Омогући Double-Pinyin режим</translation>
@@ -2662,7 +2660,6 @@
 <translation id="4780374166989101364">Омогућава експерименталне API-је додатка. Имајте на уму да галерија додатака не дозвољава да отпремате додатке који користе експерименталне API-је.</translation>
 <translation id="4781787911582943401">Увећавање екрана</translation>
 <translation id="4782449893814226250">Питао/ла си родитеље да ли смеш да посетиш ову страницу.</translation>
-<translation id="4784085458903013712">{COUNT,plural, =1{1 kB}one{# kB}few{# kB}other{# kB}}</translation>
 <translation id="4784330909746505604">PowerPoint презентација</translation>
 <translation id="4785040501822872973">Овај рачунар ће се поново покренути за <ph name="LOGOUT_TIME_LEFT" /> секунда.
 Притисните било који тастер да бисте наставили да истражујете.</translation>
@@ -3193,7 +3190,6 @@
 <translation id="5527474464531963247">Можете и да изаберете неку другу мрежу.</translation>
 <translation id="5527963985407842218">Покретање Режима читаоца</translation>
 <translation id="5528368756083817449">Менаџер обележивача</translation>
-<translation id="5529098031581368697">Актуелну позадину подешава „<ph name="APP_NAME" />“</translation>
 <translation id="5531274207066050939">Google Payments</translation>
 <translation id="5532223876348815659">Опште</translation>
 <translation id="5533555070048896610">Транслитерација (namaste → नमस्ते)</translation>
@@ -3311,7 +3307,6 @@
 <translation id="5702898740348134351">&amp;Измени претраживаче...</translation>
 <translation id="5703594190584829406">Приказује предлоге за Аутоматско попуњавање изнад тастатуре уместо у падајућем менију.</translation>
 <translation id="5704272569086782895">Омогући GPU растеризацију са нитима.</translation>
-<translation id="570544101664452060">Експериментална WebUsb обавештења.</translation>
 <translation id="5706551819490830015">Управљај адресама за обрачун...</translation>
 <translation id="5707185214361380026">Није успело учитавање додатка из:</translation>
 <translation id="5707604204219538797">Следећа реч</translation>
@@ -3459,7 +3454,6 @@
 <translation id="5900302528761731119">Слика Google профила</translation>
 <translation id="5900623698597156974">Резервни TLS протокол верзије 1.0 је успео да потврди спремност за пренос података на серверу, али више не прихватамо резервне TLS протоколе верзије 1.0. Сервер мора да буде ажуриран тако да исправно примени прилагођавање верзије, а пожељно би било да подржава TLS верзију 1.2.</translation>
 <translation id="590253956165195626">Нуди превод страница које нису на језику који читам.</translation>
-<translation id="5902659428109355177">{COUNT,plural, =1{1 ставка}one{# ставка}few{# ставке}other{# ставки}}</translation>
 <translation id="5904093760909470684">Конфигурација проксија</translation>
 <translation id="5906065664303289925">Хардверска адреса:</translation>
 <translation id="5910363049092958439">Са&amp;чувај слику као...</translation>

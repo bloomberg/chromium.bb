@@ -72,7 +72,7 @@
 <translation id="2077711166702792587">Se dine faner med andre nye apps på oversigtsskærmen på din telefon.</translation>
 <translation id="2079545284768500474">Fortryd</translation>
 <translation id="2082238445998314030">Resultat <ph name="RESULT_NUMBER" /> af <ph name="TOTAL_RESULTS" /></translation>
-<translation id="2095887075102408547">Når denne funktion er aktiveret, anvender Chrome Googles servere til at komprimere de sider, du besøger, før de downloades. Google optimerer og viser ikke sider, der besøges via private forbindelser (HTTPS) eller inkognitofaner.</translation>
+<translation id="2095887075102408547">Når denne funktion er aktiveret, anvender Chrome Googles servere til at komprimere de sider, du besøger, før de downloades. Google optimerer og ser ikke sider, der besøges via private forbindelser (HTTPS) eller inkognitofaner.</translation>
 <translation id="2100273922101894616">Automatisk login</translation>
 <translation id="2126426811489709554">Leveret af Chrome</translation>
 <translation id="213279576345780926">Lukkede <ph name="TAB_TITLE" /></translation>
@@ -148,7 +148,7 @@
 <translation id="3254409185687681395">Tilføj denne side som bogmærke</translation>
 <translation id="326254929494722411">Du har endnu ikke oprettet en Google-konto på denne enhed</translation>
 <translation id="3269093882174072735">Indlæs billede</translation>
-<translation id="3278850099957560514">Brug færre penge på data ved at bruge Google til at optimere de sider, du besøger. Google optimerer og viser ikke sider, der besøges via private forbindelser (HTTPS) eller inkognitofaner.</translation>
+<translation id="3278850099957560514">Brug færre penge på data ved at bruge Google til at optimere de sider, du besøger. Google optimerer og ser ikke sider, der besøges via private forbindelser (HTTPS) eller inkognitofaner.</translation>
 <translation id="3282568296779691940">Log ind på Chrome</translation>
 <translation id="3287852534598822456">Bogmærket eksisterer ikke længere. Opdater.</translation>
 <translation id="3303414029551471755">Vil du fortsætte og downloade indholdet?</translation>

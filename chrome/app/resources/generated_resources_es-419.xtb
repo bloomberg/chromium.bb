@@ -29,7 +29,6 @@
 <translation id="1036511912703768636">Acceder a cualquiera de estos dispositivos USB</translation>
 <translation id="1038168778161626396">Sólo cifrar</translation>
 <translation id="1038842779957582377">nombre desconocido</translation>
-<translation id="1040931876666128942">Notificaciones de WebUsb.</translation>
 <translation id="1042174272890264476">Tu computadora también tiene la biblioteca RLZ de <ph name="SHORT_PRODUCT_NAME" /> incorporada. RLZ asigna una etiqueta identificable, no exclusiva y no personal para medir las búsquedas y el uso de <ph name="SHORT_PRODUCT_NAME" /> impulsados por una determinada campaña de promoción. Estas etiquetas aparecen a veces en las consultas de la Búsqueda de Google en <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1042574203789536285"><ph name="URL" /> quiere almacenar datos de gran tamaño de forma permanente en tu dispositivo.</translation>
 <translation id="1045157690796831147">Transliteración (namaskar → നമസ്കാരം)</translation>
@@ -328,7 +327,6 @@
 <translation id="1470719357688513792">La nueva configuración de cookie se hará efectiva cuando vuelvas a cargar la página.</translation>
 <translation id="14720830734893704">Permite habilitar la compatibilidad con el teclado virtual.</translation>
 <translation id="1474339897586437869">No se cargó "<ph name="FILENAME" />". No hay suficiente espacio libre en Google Drive.</translation>
-<translation id="1476503841242751994">{COUNT,plural, =1{1 contraseña}other{# contraseñas}}</translation>
 <translation id="1476949146811612304">Establece el motor de búsqueda que se utiliza cuando se realiza una búsqueda en el <ph name="BEGIN_LINK" />cuadro multifunción<ph name="END_LINK" />.</translation>
 <translation id="1477301030751268706">Caché del token de la API de identidad</translation>
 <translation id="1478340334823509079">Detalles: <ph name="FILE_NAME" /></translation>
@@ -919,6 +917,7 @@ Después de crear un usuario supervisado nuevo, puedes administrar las opciones 
 <translation id="2326606747676847821">Modo de navegación de incógnito</translation>
 <translation id="2326931316514688470">&amp;Volver a cargar la aplicación</translation>
 <translation id="2327492829706409234">Habilitar aplicación</translation>
+<translation id="2329597144923131178">Accede a tu cuenta para ver los marcadores, el historial, las contraseñas y otras opciones de configuración en todos los dispositivos.</translation>
 <translation id="2332131598580221120">Ver en Chrome Web Store</translation>
 <translation id="2332742915001411729">Restablecer configuración de zoom predeterminada</translation>
 <translation id="2335122562899522968">Esta página establece cookies.</translation>
@@ -942,7 +941,6 @@ Después de crear un usuario supervisado nuevo, puedes administrar las opciones 
 <translation id="2359808026110333948">Continuar</translation>
 <translation id="236128817791440714">Recomendado: configurar Smart Lock para Android</translation>
 <translation id="236141728043665931">Bloquear siempre el acceso al micrófono</translation>
-<translation id="2365626167708453863">Selecciona una cuenta desde tu Google Smart Lock.</translation>
 <translation id="2367972762794486313">Mostrar aplicaciones</translation>
 <translation id="2368075211218459617">Habilitar búsqueda contextual</translation>
 <translation id="2370882663124746154">Habilitar modo Doble pinyin</translation>
@@ -2651,7 +2649,6 @@ Presiona cualquier tecla para seguir navegando.</translation>
 <translation id="4780374166989101364">Habilita una extensión experimental API. Nota que la galería de extensión no te permite cargar extensiones que usen las API experimentales.</translation>
 <translation id="4781787911582943401">Acercar pantalla</translation>
 <translation id="4782449893814226250">Les preguntaste a tus padres si puedes visitar esta página.</translation>
-<translation id="4784085458903013712">{COUNT,plural, =1{1 Kb}other{# Kb}}</translation>
 <translation id="4784330909746505604">Presentación de PowerPoint</translation>
 <translation id="4785040501822872973">Esta computadora se reiniciará en <ph name="LOGOUT_TIME_LEFT" /> segundos.
 Presiona cualquier tecla para seguir con navegando.</translation>
@@ -3182,7 +3179,6 @@ Presiona cualquier tecla para seguir con navegando.</translation>
 <translation id="5527474464531963247">También puedes seleccionar otra red.</translation>
 <translation id="5527963985407842218">Activación del modo de lectura</translation>
 <translation id="5528368756083817449">Administrador de marcadores</translation>
-<translation id="5529098031581368697">"<ph name="APP_NAME" />" estableció el fondo de pantalla actual.</translation>
 <translation id="5531274207066050939">Google Payments</translation>
 <translation id="5532223876348815659">Global</translation>
 <translation id="5533555070048896610">Transliteración (namaste → नमस्ते)</translation>
@@ -3298,7 +3294,6 @@ Presiona cualquier tecla para seguir con navegando.</translation>
 <translation id="5702898740348134351">&amp;Modificar los motores de búsqueda...</translation>
 <translation id="5703594190584829406">Muestra las sugerencias de Autocompletar sobre el teclado en lugar de una lista desplegable.</translation>
 <translation id="5704272569086782895">Habilitar rasterización por subprocesos de GPU</translation>
-<translation id="570544101664452060">Notificaciones de WebUsb experimentales.</translation>
 <translation id="5706551819490830015">Administrar direcciones de facturación...</translation>
 <translation id="5707185214361380026">Error al cargar la extensión desde:</translation>
 <translation id="5707604204219538797">Siguiente palabra</translation>
@@ -3448,7 +3443,6 @@ Presiona cualquier tecla para seguir con navegando.</translation>
 <translation id="5900302528761731119">Foto de perfil de Google</translation>
 <translation id="5900623698597156974">Un resguardo TLS 1.0 pudo establecer un protocolo de enlace con el servidor, pero ya no aceptamos resguardos TLS 1.0. El servidor debe actualizarse para implementar correctamente la negociación de versión y admitir preferiblemente TLS 1.2.</translation>
 <translation id="590253956165195626">Preguntarme si quiero traducir páginas que no estén en un idioma que puedo leer</translation>
-<translation id="5902659428109355177">{COUNT,plural, =1{1 elemento}other{# elementos}}</translation>
 <translation id="5904093760909470684">Configuración de proxy</translation>
 <translation id="5906065664303289925">Dirección de hardware:</translation>
 <translation id="5910363049092958439">Gu&amp;ardar imagen como...</translation>
@@ -5168,7 +5162,7 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="8452588990572106089">El número de tarjeta no es válido. Compruébalo y vuelve a intentarlo.</translation>
 <translation id="8453482423012550001">Copiando $1 elementos…</translation>
 <translation id="8454189779191516805">Especifica el número de muestras de MSAA correspondientes a la rasterización de la GPU.</translation>
-<translation id="8454288007744638700">O bien, seleccionar una nueva red:</translation>
+<translation id="8454288007744638700">O bien, selecciona una nueva red:</translation>
 <translation id="845627346958584683">Hora de vencimiento</translation>
 <translation id="8456681095658380701">Nombre no válido</translation>
 <translation id="8457625695411745683">buena</translation>

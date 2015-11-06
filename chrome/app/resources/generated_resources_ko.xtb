@@ -29,7 +29,6 @@
 <translation id="1036511912703768636">이 USB 기기에 액세스</translation>
 <translation id="1038168778161626396">암호화만</translation>
 <translation id="1038842779957582377">알 수 없는 이름</translation>
-<translation id="1040931876666128942">WebUsb 알림</translation>
 <translation id="1042174272890264476">또한 컴퓨터에는 <ph name="SHORT_PRODUCT_NAME" /> RLZ 라이브러리가 내장되어 있습니다. RLZ는 고유하지 않고 개인 식별이 불가능한 태그를 할당하여 특정 홍보 캠페인을 통한 검색 및 <ph name="SHORT_PRODUCT_NAME" /> 사용 실태를 측정합니다. 이러한 라벨은 <ph name="PRODUCT_NAME" />의 Google 검색어에 표시되기도 합니다.</translation>
 <translation id="1042574203789536285"><ph name="URL" />에서 내 기기에 대용량 데이터를 영구적으로 저장하려고 합니다.</translation>
 <translation id="1045157690796831147">음역(namaskar → നമസ്കാരം)</translation>
@@ -329,7 +328,6 @@
 <translation id="1470719357688513792">새 쿠키 설정은 페이지를 새로고침한 다음에 적용됩니다.</translation>
 <translation id="14720830734893704">가상 키보드 지원을 사용합니다.</translation>
 <translation id="1474339897586437869">'<ph name="FILENAME" />'이(가) 업로드되지 않았습니다. Google 드라이브에 충분한 여유 공간이 없습니다.</translation>
-<translation id="1476503841242751994">{COUNT,plural, =1{비밀번호 1개}other{비밀번호 #개}}</translation>
 <translation id="1476949146811612304"><ph name="BEGIN_LINK" />검색주소창<ph name="END_LINK" />에서 검색할 때 사용할 검색엔진을
         설정합니다.</translation>
 <translation id="1477301030751268706">Identity API 토큰 캐시</translation>
@@ -925,6 +923,7 @@
 <translation id="2326606747676847821">시크릿 탭 열기</translation>
 <translation id="2326931316514688470">앱 새로고침(&amp;R)</translation>
 <translation id="2327492829706409234">앱 사용</translation>
+<translation id="2329597144923131178">로그인하면 모든 기기에서 북마크, 방문 기록, 비밀번호, 기타 설정을 사용할 수 있습니다.</translation>
 <translation id="2332131598580221120">스토어에서 보기</translation>
 <translation id="2332742915001411729">기본 설정으로 돌아가기</translation>
 <translation id="2335122562899522968">이 페이지에서 쿠키를 설정합니다.</translation>
@@ -948,7 +947,6 @@
 <translation id="2359808026110333948">계속</translation>
 <translation id="236128817791440714">추천: Android용 Smart Lock 설정</translation>
 <translation id="236141728043665931">마이크 액세스 항상 차단</translation>
-<translation id="2365626167708453863">Google Smart Lock에서 계정 선택</translation>
 <translation id="2367972762794486313">앱 표시</translation>
 <translation id="2368075211218459617">문맥 검색을 사용합니다.</translation>
 <translation id="2370882663124746154">이중 병음 모드 사용</translation>
@@ -2667,7 +2665,6 @@
 <translation id="4780374166989101364">실험실 확장 프로그램 API를 사용합니다. 확장 프로그램 갤러리에서는 실험실 API를 사용하는 확장 프로그램을 업로드할 수 없습니다.</translation>
 <translation id="4781787911582943401">화면 확대</translation>
 <translation id="4782449893814226250">이 페이지를 방문해도 괜찮은지 부모님께 문의했습니다.</translation>
-<translation id="4784085458903013712">{COUNT,plural, =1{1kB}other{#kB}}</translation>
 <translation id="4784330909746505604">PowerPoint 프레젠테이션</translation>
 <translation id="4785040501822872973">이 컴퓨터는 <ph name="LOGOUT_TIME_LEFT" />초 후에 재설정됩니다.
 계속하려면 아무 키나 누르세요.</translation>
@@ -3198,7 +3195,6 @@
 <translation id="5527474464531963247">다른 네트워크를 선택할 수도 있습니다.</translation>
 <translation id="5527963985407842218">리더 모드 실행 중</translation>
 <translation id="5528368756083817449">북마크 관리자</translation>
-<translation id="5529098031581368697">현재 배경화면은 '<ph name="APP_NAME" />'에서 설정했습니다.</translation>
 <translation id="5531274207066050939">Google Payments</translation>
 <translation id="5532223876348815659">전체</translation>
 <translation id="5533555070048896610">음역(namaste → नमस्ते)</translation>
@@ -3314,7 +3310,6 @@
 <translation id="5702898740348134351">검색 엔진 변경(&amp;E)...</translation>
 <translation id="5703594190584829406">드롭다운이 아니라 키보드 상단에 자동완성 제안을 표시합니다.</translation>
 <translation id="5704272569086782895">스레드된 GPU 래스터화를 사용합니다.</translation>
-<translation id="570544101664452060">실험용 WebUsb 알림</translation>
 <translation id="5706551819490830015">청구지 주소 관리</translation>
 <translation id="5707185214361380026">다음 위치에서 확장 프로그램을 로드하지 못했습니다.</translation>
 <translation id="5707604204219538797">다음 글자</translation>
@@ -3463,7 +3458,6 @@
 <translation id="5900302528761731119">Google 프로필 사진</translation>
 <translation id="5900623698597156974">TLS 1.0 대체에서 서버와 연결할 수 있었지만 Google에서는 더 이상 TLS 1.0 대체를 허용하지 않습니다. 서버가 제대로 버전 협상을 구현하고 TLS 1.2를 지원하도록 업데이트되어야 합니다.</translation>
 <translation id="590253956165195626">사용 언어가 다른 페이지에 대한 번역 옵션 제공</translation>
-<translation id="5902659428109355177">{COUNT,plural, =1{항목 1개}other{항목 #개}}</translation>
 <translation id="5904093760909470684">프록시 설정</translation>
 <translation id="5906065664303289925">하드웨어 주소:</translation>
 <translation id="5910363049092958439">이미지를 다른 이름으로 저장(&amp;V)...</translation>

@@ -154,7 +154,7 @@
       Politikken skal indstilles til en webadresse, hvorfra <ph name="PRODUCT_OS_NAME" /> kan downloade servicevilkårene. Servicevilkårene skal være almindelig tekst vist som MIME-tekst. Markering er ikke tilladt.</translation>
 <translation id="1757339646969878244">Konfigurerer muligheder for fjernadgang via hosten for Chrome Fjernskrivebord.
 
-      Hosten for Chrome Fjernskrivebord er en indbygget tjeneste, der kører på den målrettede
+      Hosten for Chrome Fjernskrivebord er en indbygget tjeneste, der kører på den 
       maskine, som en bruger kan oprette forbindelse til vha. appen Chrome
       Fjernskrivebord. Den indbyggede tjeneste pakkes og udføres afskilt fra 
       browseren <ph name="PRODUCT_NAME" />.
@@ -546,17 +546,17 @@
         "type": "object",
         "properties": {
           "kind": {
-            "description": "Whether to limit the search of the matching printer to a specific set of printers.",
+            "description": "Hvorvidt søgningen efter en printer, der opfylder attributten skal begrænses til en specifik printeropsætning.",
             "type": {
               "enum": [ "local", "cloud" ]
             }
           },
           "idPattern": {
-            "description": "Regular expression to match printer id.",
+            "description": "Regulært udtryk, som matcher printer-id.",
             "type": "string"
           },
           "namePattern": {
-            "description": "Regular expression to match printer display name.",
+            "description": "Regulært udtryk, som matcher printerens viste navn.",
             "type": "string"
           }
         }

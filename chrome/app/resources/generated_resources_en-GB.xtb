@@ -29,7 +29,6 @@
 <translation id="1036511912703768636">Access any of these USB devices</translation>
 <translation id="1038168778161626396">Encipher Only</translation>
 <translation id="1038842779957582377">unknown name</translation>
-<translation id="1040931876666128942">WebUsb notifications.</translation>
 <translation id="1042174272890264476">Your computer also comes with <ph name="SHORT_PRODUCT_NAME" />'s RLZ library built in. RLZ assigns a non-unique, non-personally identifiable tag to measure the searches and <ph name="SHORT_PRODUCT_NAME" /> usage driven by a particular promotional campaign. These labels sometimes appear in Google Search queries in <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1042574203789536285"><ph name="URL" /> wants to permanently store large data on your device.</translation>
 <translation id="1045157690796831147">Transliteration (namaskar → നമസ്കാരം)</translation>
@@ -329,7 +328,6 @@
 <translation id="1470719357688513792">New cookie settings will take effect after reloading the page.</translation>
 <translation id="14720830734893704">Enable virtual keyboard support.</translation>
 <translation id="1474339897586437869">"<ph name="FILENAME" />" was not uploaded. There is not enough free space in your Google Drive.</translation>
-<translation id="1476503841242751994">{COUNT,plural, =1{1 password}other{# passwords}}</translation>
 <translation id="1476949146811612304">Set which search engine is used when searching from the
         <ph name="BEGIN_LINK" />omnibox<ph name="END_LINK" />.</translation>
 <translation id="1477301030751268706">Identity API Token Cache</translation>
@@ -925,6 +923,7 @@ After you create a new supervised user, you can manage their settings at any tim
 <translation id="2326606747676847821">Go incognito</translation>
 <translation id="2326931316514688470">&amp;Reload app</translation>
 <translation id="2327492829706409234">Enable app</translation>
+<translation id="2329597144923131178">Sign in to get your bookmarks, history, passwords and other settings on all your devices</translation>
 <translation id="2332131598580221120">View in store</translation>
 <translation id="2332742915001411729">Reset to default</translation>
 <translation id="2335122562899522968">This page has set cookies.</translation>
@@ -948,7 +947,6 @@ After you create a new supervised user, you can manage their settings at any tim
 <translation id="2359808026110333948">Continue</translation>
 <translation id="236128817791440714">Recommended: Set up Smart Lock for Android</translation>
 <translation id="236141728043665931">Always block microphone access</translation>
-<translation id="2365626167708453863">Choose an account from your Google Smart Lock</translation>
 <translation id="2367972762794486313">Show apps</translation>
 <translation id="2368075211218459617">Enable Contextual Search.</translation>
 <translation id="2370882663124746154">Enable Double-Pinyin mode</translation>
@@ -2664,7 +2662,6 @@ Press any key to continue exploring.</translation>
 <translation id="4780374166989101364">Enables experimental extension APIs. Note that the extension gallery doesn't allow you to upload extensions that use experimental APIs.</translation>
 <translation id="4781787911582943401">Zoom screen in</translation>
 <translation id="4782449893814226250">You asked your parents if it's OK to visit this page.</translation>
-<translation id="4784085458903013712">{COUNT,plural, =1{1 kB}other{# kB}}</translation>
 <translation id="4784330909746505604">PowerPoint presentation</translation>
 <translation id="4785040501822872973">This computer will reset in <ph name="LOGOUT_TIME_LEFT" /> seconds.
 Press any key to continue exploring.</translation>
@@ -3195,7 +3192,6 @@ Press any key to continue exploring.</translation>
 <translation id="5527474464531963247">You may also select another network.</translation>
 <translation id="5527963985407842218">Reader Mode triggering</translation>
 <translation id="5528368756083817449">Bookmark Manager</translation>
-<translation id="5529098031581368697">Current wallpaper is set by '<ph name="APP_NAME" />'</translation>
 <translation id="5531274207066050939">Google Payments</translation>
 <translation id="5532223876348815659">Global</translation>
 <translation id="5533555070048896610">Transliteration (namaste → नमस्ते)</translation>
@@ -3311,7 +3307,6 @@ Press any key to continue exploring.</translation>
 <translation id="5702898740348134351">&amp;Edit Search Engines...</translation>
 <translation id="5703594190584829406">Shows auto-fill suggestions on top of the keyboard rather than in a dropdown.</translation>
 <translation id="5704272569086782895">Enable threaded GPU rasterisation.</translation>
-<translation id="570544101664452060">Experimental WebUsb notifications.</translation>
 <translation id="5706551819490830015">Manage billing addresses...</translation>
 <translation id="5707185214361380026">Failed to load extension from:</translation>
 <translation id="5707604204219538797">Next word</translation>
@@ -3460,7 +3455,6 @@ Press any key to continue exploring.</translation>
 <translation id="5900302528761731119">Google Profile photo</translation>
 <translation id="5900623698597156974">A TLS 1.0 fallback was able to handshake with the server, but we no longer accept TLS 1.0 fallbacks. The server needs to be updated to correctly implement version negotiation and preferably support TLS 1.2.</translation>
 <translation id="590253956165195626">Offer to translate pages that aren't in a language you read.</translation>
-<translation id="5902659428109355177">{COUNT,plural, =1{1 item}other{# items}}</translation>
 <translation id="5904093760909470684">Proxy Configuration</translation>
 <translation id="5906065664303289925">Hardware address:</translation>
 <translation id="5910363049092958439">Sa&amp;ve Image As...</translation>

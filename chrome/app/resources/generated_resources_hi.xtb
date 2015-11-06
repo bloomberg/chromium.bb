@@ -29,7 +29,6 @@
 <translation id="1036511912703768636">इनमें से कोई भी USB डिवाइस ऐक्‍सेस करें</translation>
 <translation id="1038168778161626396">केवल कूटलेखन</translation>
 <translation id="1038842779957582377">अज्ञात नाम</translation>
-<translation id="1040931876666128942">WebUsb नोटिफिकेशन.</translation>
 <translation id="1042174272890264476">आपके कंप्यूटर में <ph name="SHORT_PRODUCT_NAME" /> की RLZ लाइब्रेरी भी अंतर्निहित आती है. RLZ एक गैर-अद्वितीय, गैर-व्यक्तिगत रूप से पहचाने जाने योग्य टैग असाइन करता है ताकि खोजों तथा किसी विशिष्ट प्रचार अभियान द्वारा संचालित <ph name="SHORT_PRODUCT_NAME" /> उपयोग को मापा जा सके. कभी-कभी ये लेबल <ph name="PRODUCT_NAME" /> में Google खोज क्वेरी में दिखाई देते हैं.</translation>
 <translation id="1042574203789536285"><ph name="URL" /> स्थायी रूप से आपके डिवाइस पर बड़ा डेटा संगृहीत करना चाहता है.</translation>
 <translation id="1045157690796831147">लिप्यंतरण (namaskar → നമസ്കാരം)</translation>
@@ -329,7 +328,6 @@
 <translation id="1470719357688513792">पृष्ठ के फिर से लोड होने के बाद नई कुकी सेटिंग प्रभावी होगी.</translation>
 <translation id="14720830734893704">आभासी कीबोर्ड सहायता सक्षम करें.</translation>
 <translation id="1474339897586437869">"<ph name="FILENAME" />" को अपलोड नहीं किया गया. आपकी Google डिस्क में पर्याप्त जगह नहीं है.</translation>
-<translation id="1476503841242751994">{COUNT,plural, =1{1 पासवर्ड}one{# पासवर्ड}other{# पासवर्ड}}</translation>
 <translation id="1476949146811612304"><ph name="BEGIN_LINK" />ऑम्निबॉक्‍स<ph name="END_LINK" /> से खोजते समय उपयोग किया जाने वाला खोज इंजन सेट करें.</translation>
 <translation id="1477301030751268706">पहचान API टोकन संचय</translation>
 <translation id="1478340334823509079">विवरण: <ph name="FILE_NAME" /></translation>
@@ -932,6 +930,7 @@
 <translation id="2326606747676847821">गुप्त मोड में जाएं</translation>
 <translation id="2326931316514688470">&amp;ऐप पुन: लोड करें</translation>
 <translation id="2327492829706409234">ऐप्स  सक्षम करें</translation>
+<translation id="2329597144923131178">सभी डिवाइसों पर बुकमार्क, इतिहास, पासवर्ड और अन्‍य सेटिंग प्राप्‍त करने हेतु प्रवेश करें.</translation>
 <translation id="2332131598580221120">स्टोर में देखें</translation>
 <translation id="2332742915001411729">डिफ़ॉल्ट पर रीसेट करें</translation>
 <translation id="2335122562899522968">यह पृष्ठ कुकी सेट करता है.</translation>
@@ -955,7 +954,6 @@
 <translation id="2359808026110333948">जारी रखें</translation>
 <translation id="236128817791440714">अनुशंसित: Android के लिए Smart Lock सेट करें</translation>
 <translation id="236141728043665931">माइक्रोफ़ोन एक्सेस हमेशा अवरुद्ध करें</translation>
-<translation id="2365626167708453863">अपने Google Smart Lock से कोई खाता चुनें</translation>
 <translation id="2367972762794486313">ऐप्स  दिखाएं</translation>
 <translation id="2368075211218459617">प्रासंगिक खोज सक्षम करें.</translation>
 <translation id="2370882663124746154">डबल-पिनयिन मोड सक्षम करें</translation>
@@ -2669,7 +2667,6 @@
 <translation id="4780374166989101364">प्रायोगिक एक्सटेंशन API सक्षम करता है. ध्यान दें कि एक्सटेंशन गैलरी आपको उन एक्सटेशन को अपलोड करने की अनुमति नहीं देत्ती है, जो प्रायोगिक API का उपयोग करते हैं.</translation>
 <translation id="4781787911582943401">स्क्रीन ज़ूम इन करें</translation>
 <translation id="4782449893814226250">आपने अपने अभिभावकों से पूछा था कि इस पृष्‍ठ पर जाना ठीक है या नहीं.</translation>
-<translation id="4784085458903013712">{COUNT,plural, =1{1 kB}one{# kB}other{# kB}}</translation>
 <translation id="4784330909746505604">PowerPoint प्रस्तुतिकरण</translation>
 <translation id="4785040501822872973">यह कंप्यूटर <ph name="LOGOUT_TIME_LEFT" /> सेकंड में रीसेट हो जाएगा.
 अन्वेषण जारी रखने के लिए कोई भी कुंजी दबाएं.</translation>
@@ -3200,7 +3197,6 @@
 <translation id="5527474464531963247">आप किसी दूसरे नेटवर्क का चयन भी कर सकते हैं.</translation>
 <translation id="5527963985407842218">रीडर मोड ट्रिगर करना</translation>
 <translation id="5528368756083817449">Bookmark manager</translation>
-<translation id="5529098031581368697">वर्तमान वॉलपेपर '<ph name="APP_NAME" />' द्वारा सेट किया गया है</translation>
 <translation id="5531274207066050939">Google पेमेंट्स</translation>
 <translation id="5532223876348815659">वैश्विक</translation>
 <translation id="5533555070048896610">लिप्यंतरण (namaste → नमस्ते)</translation>
@@ -3315,7 +3311,6 @@
 <translation id="5702898740348134351">खोज इंजन &amp;संपादित करें...</translation>
 <translation id="5703594190584829406">किसी ड्रॉपडाउन के बजाय कीबोर्ड के शीर्ष पर स्वतः-भरण सुझाव दिखाता है.</translation>
 <translation id="5704272569086782895">थ्रेड किया गया GPU रेस्‍टराइज़ेशन सक्षम करें.</translation>
-<translation id="570544101664452060">प्रयोगात्‍मक WebUsb नोटिफिकेशन.</translation>
 <translation id="5706551819490830015">बिलिंग पते प्रबंधित करें...</translation>
 <translation id="5707185214361380026">इससे एक्सटेंशन लोड करने में विफल:</translation>
 <translation id="5707604204219538797">अगला शब्‍द</translation>
@@ -3464,7 +3459,6 @@
 <translation id="5900302528761731119">Google प्रोफ़ाइल फ़ोटो</translation>
 <translation id="5900623698597156974">एक TLS 1.0 फ़ॉलबैक सर्वर से संपर्क कर सका था, लेकिन अब हम TLS 1.0 फ़ॉलबैक स्‍वीकार नहीं करते. वर्शन निर्धारण को सही तरीके से क्रियान्‍वित करने और संभावित रूप से TLS 1.2 का समर्थन करने के लिए सर्वर को अपडेट किया जाना आवश्‍यक है.</translation>
 <translation id="590253956165195626">ऐसे पृष्ठों का अनुवाद करना ऑफ़र करें जो आपके द्वारा पढ़ी जाने वाली भाषा में नहीं हैं.</translation>
-<translation id="5902659428109355177">{COUNT,plural, =1{1 आइटम}one{# आइटम}other{# आइटम}}</translation>
 <translation id="5904093760909470684">प्रॉक्सी कॉन्फ़िगरेशन</translation>
 <translation id="5906065664303289925">हार्डवेयर पता:</translation>
 <translation id="5910363049092958439">इस रूप में चित्र स&amp;हेजें...</translation>

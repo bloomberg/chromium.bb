@@ -29,7 +29,6 @@
 <translation id="1036511912703768636">এই USB ডিভাইসগুলির মধ্যে যে কোনোটি অ্যাক্সেস করুন</translation>
 <translation id="1038168778161626396">কেবলমাত্র চিহ্ন প্রদান</translation>
 <translation id="1038842779957582377">অজানা নাম</translation>
-<translation id="1040931876666128942">WebUsb বিজ্ঞপ্তিগুলি।</translation>
 <translation id="1042174272890264476">আপনার কম্পিউটারও <ph name="SHORT_PRODUCT_NAME" /> এর RLZ লাইব্রেরি বিল্ট ইনের সাথে আসে৷ RLZ অনুসন্ধানগুলি পরিমাপ করার জন্য একটি সাধারণ, ব্যক্তিগতভাবে সনাক্তকরণযোগ্য নয় এমন ট্যাগ নির্ধারণ করে এবং <ph name="SHORT_PRODUCT_NAME" /> এর ব্যবহার একটি নির্দিষ্ট প্রচারাভিযানের মাধ্যমে চালিত হয়৷ এই লেবেলগুলি কখনো কখনো <ph name="PRODUCT_NAME" /> এ Google অনুসন্ধান ক্যোয়ারিগুলিতে প্রদর্শিত হয়৷</translation>
 <translation id="1042574203789536285"><ph name="URL" /> আপনার ডিভাইসে স্থায়ীভাবে বিপুল ডেটা জমা করতে চায়৷</translation>
 <translation id="1045157690796831147">লিপ্যন্তরকরণ (namaskar → നമസ്കാരം)</translation>
@@ -329,7 +328,6 @@
 <translation id="1470719357688513792">পৃষ্ঠা পুনরায় লোড হওয়ার পরে নতুন কুকি সেটিংস প্রভাবিত হবে৷</translation>
 <translation id="14720830734893704">ভার্চুয়াল কীবোর্ড সহায়তা সক্ষম করুন৷</translation>
 <translation id="1474339897586437869">"<ph name="FILENAME" />" আপলোড করা হয়নি। আপনার Google ড্রাইভে পর্যাপ্ত ফাঁকা স্থান নেই।</translation>
-<translation id="1476503841242751994">{COUNT,plural, =1{১টি পাসওয়ার্ড}one{#টি পাসওয়ার্ড}other{#টি পাসওয়ার্ড}}</translation>
 <translation id="1476949146811612304"><ph name="BEGIN_LINK" />বহূউপযোগী ক্ষেত্র<ph name="END_LINK" />.
 থেকে অনুসন্ধানের সময় কোন অনুসন্ধান ইঞ্জিন ব্যবহার করা হবে তা সেট করুন৷</translation>
 <translation id="1477301030751268706">পরিচয় API টোকেন ক্যাশে</translation>
@@ -928,6 +926,7 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="2326606747676847821">ছদ্মবেশে যান</translation>
 <translation id="2326931316514688470">&amp;অ্যাপ্লিকেশান পুনরায় লোড করুন</translation>
 <translation id="2327492829706409234">অ্যাপ্লিকেশন সক্ষম করুন</translation>
+<translation id="2329597144923131178">আপনার সকল ডিভাইসে আপনার বুকমার্ক, ইতিহাস, পাসওয়ার্ড এবং অন্যান্য সেটিংস পেতে সাইন ইন করুন।</translation>
 <translation id="2332131598580221120">দোকানে দেখুন</translation>
 <translation id="2332742915001411729">ডিফল্টে পুনরায় সেট করুন</translation>
 <translation id="2335122562899522968">এই পৃষ্ঠাটি কুকি সেট করে৷</translation>
@@ -951,7 +950,6 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="2359808026110333948">অবিরত</translation>
 <translation id="236128817791440714">প্রস্তাবিত: Android এর জন্য Smart Lock সেট আপ করুন</translation>
 <translation id="236141728043665931">মাইক্রোফোনের অ্যাক্সেস সর্বদা অবরুদ্ধ রাখুন</translation>
-<translation id="2365626167708453863">আপনার Google Smart Lock থেকে একটি অ্যাকাউন্ট চয়ন করুন</translation>
 <translation id="2367972762794486313">অ্যাপ্লিকেশানগুলি দেখান</translation>
 <translation id="2368075211218459617">প্রাসঙ্গিক অনুসন্ধান সক্ষম করুন৷</translation>
 <translation id="2370882663124746154">Double-Pinyin মোড সক্ষম করুন</translation>
@@ -2658,7 +2656,6 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="4780374166989101364">পরীক্ষামূলক এক্সটেনশন APIগুলি সক্ষম করে৷ নোট করুন যে এক্সটেনশন গ্যালারীটি আপনাকে পরীক্ষামূলক APIগুলি ব্যবহার করে এমন এক্সটেনশনগুলি আপলোড করার অনুমতি দেয় না৷</translation>
 <translation id="4781787911582943401">স্ক্রিন জুম করুন</translation>
 <translation id="4782449893814226250">এই পৃষ্ঠাটি দেখার জন্য উপযুক্ত কিনা তা আপনি আপনার মাতাপিতাকে জিজ্ঞাসা করেছেন৷</translation>
-<translation id="4784085458903013712">{COUNT,plural, =1{১ kB}one{# kB}other{# kB}}</translation>
 <translation id="4784330909746505604">PowerPoint presentation</translation>
 <translation id="4785040501822872973">এই কম্পিউটার <ph name="LOGOUT_TIME_LEFT" /> সেকেন্ডে পুনঃসেট হবে৷ অনুসন্ধান চালাতে যে কোনো একটি কী টিপুন৷</translation>
 <translation id="4786993863723020412">ক্যাশে পঠনে ত্রুটি</translation>
@@ -3187,7 +3184,6 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="5527474464531963247">আপনি হয়ত অন্য নেটওয়ার্ক নির্বাচন করতে পারেন৷</translation>
 <translation id="5527963985407842218">পাঠক মোডের ট্রিগার করা</translation>
 <translation id="5528368756083817449">বুকমার্ক পরিচালক</translation>
-<translation id="5529098031581368697"><ph name="APP_NAME" /> দ্বারা বর্তমান ওয়ালপেপার সেট করা হয়েছে</translation>
 <translation id="5531274207066050939">Google Payments</translation>
 <translation id="5532223876348815659">সার্বিক</translation>
 <translation id="5533555070048896610">লিপ্যন্তরকরণ (namaste → नमस्ते)</translation>
@@ -3302,7 +3298,6 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="5702898740348134351">&amp;সার্চ ইঞ্জিন সম্পাদনা...</translation>
 <translation id="5703594190584829406">কোনো ড্রপডাউনের পরিবর্তে কীবোর্ডের শীর্ষে স্বতঃপূর্ণ প্রস্তাবনাগুলি দেখায়৷</translation>
 <translation id="5704272569086782895">থ্রেড করা GPU রাস্টারাইজেশান সক্ষম করুন৷</translation>
-<translation id="570544101664452060">পরীক্ষামূলক WebUsb বিজ্ঞপ্তিগুলি।</translation>
 <translation id="5706551819490830015">বিলিং ঠিকানাগুলি পরিচালনা করুন...</translation>
 <translation id="5707185214361380026">এর থেকে এক্সটেনশান লোড করতে ব্যর্থ হয়েছে:</translation>
 <translation id="5707604204219538797">পরবর্তী শব্দ </translation>
@@ -3450,7 +3445,6 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="5900302528761731119">Google প্রোফাইল ফটো </translation>
 <translation id="5900623698597156974">একটি TLS 1.0 ফলব্যাক সার্ভারের সাথে হ্যান্ডশেক করতে সক্ষম হয়েছে, কিন্তু আমরা TLS 1.0 ফলব্যাক আর গ্রহণ করছি না। সংস্করণ সমঝোতাটি সঠিকভাবে কার্যকর করার জন্য সার্ভারকে আপডেট করতে হবে এবং সম্ভব হলে TLS 1.2 সমর্থন করার মত আপডেট করা প্রয়োজন।</translation>
 <translation id="590253956165195626">আপনি যে ভাষাতে পড়েন সেই ভাষাতে না থাকা পৃষ্ঠাগুলি অনুবাদ করার প্রস্তব দিন৷</translation>
-<translation id="5902659428109355177">{COUNT,plural, =1{১টি আইটেম}one{#টি আইটেম}other{#টি আইটেম}}</translation>
 <translation id="5904093760909470684">পক্সি কনফিগারেশন</translation>
 <translation id="5906065664303289925">হার্ডওয়্যার ঠিকানা:</translation>
 <translation id="5910363049092958439">এই রূপে চিত্র সং&amp;রক্ষণ করুন...</translation>

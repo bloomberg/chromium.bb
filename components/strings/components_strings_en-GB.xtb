@@ -179,6 +179,7 @@
 <translation id="5019198164206649151">Backing store in bad state</translation>
 <translation id="5031870354684148875">About Google Translate</translation>
 <translation id="5045550434625856497">Incorrect password</translation>
+<translation id="5065199687811594072">Do you want Chromium to save this credit card information for completing web forms?</translation>
 <translation id="5087286274860437796">Server's certificate is not valid at this time.</translation>
 <translation id="5089810972385038852">County</translation>
 <translation id="5094747076828555589">This server could not prove that it is <ph name="DOMAIN" />; its security certificate is not trusted by Chromium. This may be caused by a misconfiguration or an attacker intercepting your connection.</translation>

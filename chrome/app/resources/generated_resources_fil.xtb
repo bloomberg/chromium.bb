@@ -29,7 +29,6 @@
 <translation id="1036511912703768636">I-access ang anuman sa mga USB device na ito</translation>
 <translation id="1038168778161626396">Encipher Lamang</translation>
 <translation id="1038842779957582377">Hindi kilalang pangalan</translation>
-<translation id="1040931876666128942">Mga notification ng WebUsb.</translation>
 <translation id="1042174272890264476">Ang iyong computer ay may naka-built in din na RLZ library ng <ph name="SHORT_PRODUCT_NAME" />. Nagtatalaga ang RLZ ng hindi natatangi at hindi personal na nakakapagpakilalang tag upang sukatin ang mga paghahanap at paggamit ng <ph name="SHORT_PRODUCT_NAME" /> na nahimok ng isang partikular na kampanya sa pag-promote. Lumalabas minsan ang mga label na ito sa mga query sa Paghahanap sa Google sa <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1042574203789536285">Gustong ng <ph name="URL" /> na permanenteng mag-imbak ng malaking data sa iyong device.</translation>
 <translation id="1045157690796831147">Transliteration (namaskar → നമസ്കാരം)</translation>
@@ -330,7 +329,6 @@
 <translation id="1470719357688513792">Magkakabisa ang mga bagong setting ng cookie pagkatapos i-reload ang pahina.</translation>
 <translation id="14720830734893704">I-enable ang suporta sa virtual keyboard.</translation>
 <translation id="1474339897586437869">Hindi na-upload ang "<ph name="FILENAME" />." Walang sapat na bakanteng espasyo sa iyong Google Drive.</translation>
-<translation id="1476503841242751994">{COUNT,plural, =1{1 password}one{# password}other{# na password}}</translation>
 <translation id="1476949146811612304">Itakda kung aling search engine ang gagamitin kapag naghahanap mula sa <ph name="BEGIN_LINK" />omnibox<ph name="END_LINK" />.</translation>
 <translation id="1477301030751268706">Identity API Token Cache</translation>
 <translation id="1478340334823509079">Mga detalye: <ph name="FILE_NAME" /></translation>
@@ -926,6 +924,7 @@ Pagkatapos mong gumawa ng bagong pinangangasiwaang user, maaari mong pamahalaan 
 <translation id="2326606747676847821">Maging Incognito</translation>
 <translation id="2326931316514688470">I-&amp;reload ang app</translation>
 <translation id="2327492829706409234">Paganahin ang app</translation>
+<translation id="2329597144923131178">Mag-sign in upang makuha ang iyong mga bookmark, history, password at ibang mga setting sa lahat ng iyong device.</translation>
 <translation id="2332131598580221120">Tingnan sa store</translation>
 <translation id="2332742915001411729">I-reset sa default</translation>
 <translation id="2335122562899522968">Nagtatakda ang pahinang ito ng cookies.</translation>
@@ -949,7 +948,6 @@ Pagkatapos mong gumawa ng bagong pinangangasiwaang user, maaari mong pamahalaan 
 <translation id="2359808026110333948">Magpatuloy</translation>
 <translation id="236128817791440714">Inirerekomenda: I-set up ang Smart Lock para sa Android</translation>
 <translation id="236141728043665931">Palaging i-block ang pag-access sa mikropono</translation>
-<translation id="2365626167708453863">Pumili ng account mula sa iyong Google Smart Lock</translation>
 <translation id="2367972762794486313">Ipakita ang apps</translation>
 <translation id="2368075211218459617">I-enable ang Paghahanap ayon sa Konteksto.</translation>
 <translation id="2370882663124746154">Paganahin ang Double-Pinyin mode</translation>
@@ -2668,7 +2666,6 @@ Pumindot ng anumang key upang magpatuloy sa pagtuklas.</translation>
 <translation id="4780374166989101364">Pinapagana ang mga API ng extension na pang-eksperimento. Tandaan na hindi ka pinapayagan ng gallery ng extension upang mag-upload ng mga extension na gumagamit ng mga API na pang-eksperimento.</translation>
 <translation id="4781787911582943401">Mag-zoom in sa screen</translation>
 <translation id="4782449893814226250">Tinanong mo sa iyong mga magulang kung maaari mong bisitahin ang page na ito.</translation>
-<translation id="4784085458903013712">{COUNT,plural, =1{1 kilobyte}one{# kilobyte}other{# na kilobyte}}</translation>
 <translation id="4784330909746505604">Presentation ng PowerPoint</translation>
 <translation id="4785040501822872973">Ang computer na ito ay magre-reset sa loob ng <ph name="LOGOUT_TIME_LEFT" /> (na) mga segundo.
 Pumindot ng anumang key upang magpatuloy sa pagtuklas.</translation>
@@ -3199,7 +3196,6 @@ Pumindot ng anumang key upang magpatuloy sa pagtuklas.</translation>
 <translation id="5527474464531963247">Maaari ka ring pumili ng isa pang network.</translation>
 <translation id="5527963985407842218">Pagti-trigger sa Reader Mode</translation>
 <translation id="5528368756083817449">Manager ng bookmark </translation>
-<translation id="5529098031581368697">Ang kasalukuyang wallpaper ay itinakda ng '<ph name="APP_NAME" />'</translation>
 <translation id="5531274207066050939">Google Payments</translation>
 <translation id="5532223876348815659">Pandaigdigan</translation>
 <translation id="5533555070048896610">Transliteration (namaste → नमस्ते)</translation>
@@ -3315,7 +3311,6 @@ Pumindot ng anumang key upang magpatuloy sa pagtuklas.</translation>
 <translation id="5702898740348134351">I-&amp;edit ang Mga Search Engine...</translation>
 <translation id="5703594190584829406">Ipinapakita ang mga suhestyon ng Autofill sa itaas ng keyboard sa halip ng isang dropdown.</translation>
 <translation id="5704272569086782895">I-enable ang threaded GPU rasterization.</translation>
-<translation id="570544101664452060">Mga pang-eksperimentong notification ng WebUsb.</translation>
 <translation id="5706551819490830015">Pamahalaan ang mga billing address...</translation>
 <translation id="5707185214361380026">Hindi na-load ang extension mula sa:</translation>
 <translation id="5707604204219538797">Susunod na salita</translation>
@@ -3464,7 +3459,6 @@ Pumindot ng anumang key upang magpatuloy sa pagtuklas.</translation>
 <translation id="5900302528761731119">Larawan sa Profile sa Google</translation>
 <translation id="5900623698597156974">Nagawa ng isang TLS 1.0 fallback na mag-handshake sa server, ngunit hindi na kami tumatanggap ng mga TLS 1.0 fallback. Dapat ma-update ang server upang wastong maipatupad ang negosasyon ng bersyon at mas mabuti kung sinusuportahan ang TLS 1.2.</translation>
 <translation id="590253956165195626">Mag-alok na isalin ang mga page na wala sa wikang nababasa mo.</translation>
-<translation id="5902659428109355177">{COUNT,plural, =1{1 item}one{# item}other{# na item}}</translation>
 <translation id="5904093760909470684">Configuration ng Proxy</translation>
 <translation id="5906065664303289925">Address ng hardware:</translation>
 <translation id="5910363049092958439">I-sa&amp;ve ang Imahe Bilang...</translation>

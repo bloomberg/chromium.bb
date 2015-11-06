@@ -29,7 +29,6 @@
 <translation id="1036511912703768636">Accéder à n'importe lequel de ces appareils USB</translation>
 <translation id="1038168778161626396">Chiffrer seulement</translation>
 <translation id="1038842779957582377">Nom inconnu</translation>
-<translation id="1040931876666128942">Notifications WebUsb</translation>
 <translation id="1042174272890264476">Votre ordinateur est fourni avec la bibliothèque RLZ de <ph name="SHORT_PRODUCT_NAME" />. RLZ attribue un tag non unique (et qui n'identifie pas personnellement les internautes) afin de mesurer les recherches et l'utilisation de <ph name="SHORT_PRODUCT_NAME" /> générées par une campagne de promotion spécifique. Ces libellés s'affichent parfois dans les requêtes de recherche Google dans <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1042574203789536285">Une demande de stockage permanent de données volumineuses sur votre appareil a été envoyée à partir de <ph name="URL" />.</translation>
 <translation id="1045157690796831147">Translittération (namaskar → നമസ്കാരം)</translation>
@@ -329,7 +328,6 @@
 <translation id="1470719357688513792">Les nouveaux paramètres des cookies seront appliqués quand vous aurez actualisé la page.</translation>
 <translation id="14720830734893704">Activer la compatibilité avec le clavier virtuel</translation>
 <translation id="1474339897586437869">Le fichier "<ph name="FILENAME" />" n'a pas été importé, car l'espace disponible sur Google Drive est insuffisant.</translation>
-<translation id="1476503841242751994">{COUNT,plural, =1{1 mot de passe}one{# mot de passe}other{# mots de passe}}</translation>
 <translation id="1476949146811612304">Définir le moteur de recherche à utiliser pour les recherches effectuées depuis l'<ph name="BEGIN_LINK" />Omnibox<ph name="END_LINK" /> (barre d'adresse et de recherche)</translation>
 <translation id="1477301030751268706">Cache du jeton de l'API Identity</translation>
 <translation id="1478340334823509079">Détails : <ph name="FILE_NAME" /></translation>
@@ -926,6 +924,7 @@ Sinon, vous devrez en obtenir un nouveau d'un autre émetteur.</translation>
 <translation id="2326606747676847821">Navigation privée</translation>
 <translation id="2326931316514688470">&amp;Actualiser l'application</translation>
 <translation id="2327492829706409234">Activer l'application</translation>
+<translation id="2329597144923131178">Connectez-vous pour synchroniser favoris, historique, mots de passe et autres sur vos appareils. </translation>
 <translation id="2332131598580221120">Afficher dans la boutique</translation>
 <translation id="2332742915001411729">Rétablir le niveau de zoom par défaut</translation>
 <translation id="2335122562899522968">Cette page place des cookies.</translation>
@@ -949,7 +948,6 @@ Sinon, vous devrez en obtenir un nouveau d'un autre émetteur.</translation>
 <translation id="2359808026110333948">Continuer</translation>
 <translation id="236128817791440714">Recommandé : Configurer Smart Lock pour Android</translation>
 <translation id="236141728043665931">Toujours bloquer l'accès au micro</translation>
-<translation id="2365626167708453863">Choisir un compte de votre Google Smart Lock</translation>
 <translation id="2367972762794486313">Afficher les applications</translation>
 <translation id="2368075211218459617">Activer la recherche contextuelle</translation>
 <translation id="2370882663124746154">Activer le mode Pinyin double</translation>
@@ -2661,7 +2659,6 @@ puis cliquez sur <ph name="BEGIN_BOLD" />OK<ph name="END_BOLD" />.</translation>
 <translation id="4780374166989101364">Cette fonctionnalité active les API des extensions expérimentales. Notez que vous ne pouvez pas mettre en ligne des extensions qui font appel aux API expérimentales dans la galerie d'extensions.</translation>
 <translation id="4781787911582943401">Zoom avant</translation>
 <translation id="4782449893814226250">Une demande d'autorisation a été envoyée à tes parents pour la consultation de cette page.</translation>
-<translation id="4784085458903013712">{COUNT,plural, =1{1 Ko}one{# Ko}other{# Ko}}</translation>
 <translation id="4784330909746505604">Présentation PowerPoint</translation>
 <translation id="4785040501822872973">Cet ordinateur va être réinitialisé dans <ph name="LOGOUT_TIME_LEFT" /> secondes.
 Pour poursuivre l'exploration, appuyez sur n'importe quelle touche.</translation>
@@ -3192,7 +3189,6 @@ Pour poursuivre l'exploration, appuyez sur n'importe quelle touche.</translation
 <translation id="5527474464531963247">Vous pouvez également sélectionner un autre réseau.</translation>
 <translation id="5527963985407842218">Déclencher le mode lecteur</translation>
 <translation id="5528368756083817449">Gestionnaire de favoris</translation>
-<translation id="5529098031581368697">Le fond d'écran actuel a été défini par <ph name="APP_NAME" />.</translation>
 <translation id="5531274207066050939">Google Payments</translation>
 <translation id="5532223876348815659">Raccourcis globaux</translation>
 <translation id="5533555070048896610">Translittération (namaste → नमस्ते)</translation>
@@ -3309,7 +3305,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="5702898740348134351">Modifi&amp;er les moteurs de recherche...</translation>
 <translation id="5703594190584829406">Affiche les suggestions de saisie automatique au-dessus du clavier, plutôt que dans une liste déroulante.</translation>
 <translation id="5704272569086782895">Activer la rastérisation GPU par thread</translation>
-<translation id="570544101664452060">Notifications WebUsb expérimentales</translation>
 <translation id="5706551819490830015">Gérer les adresses de facturation…</translation>
 <translation id="5707185214361380026">Échec du chargement de l'extension depuis :</translation>
 <translation id="5707604204219538797">Mot suivant</translation>
@@ -3458,7 +3453,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="5900302528761731119">Photo du profil Google</translation>
 <translation id="5900623698597156974">Une requête de secours TLS 1.0 a permis d'établir une liaison avec le serveur. Cependant, nous n'acceptons plus les requêtes de secours TLS 1.0. Le serveur doit être mis à jour pour correctement mettre en œuvre la négociation des versions et pour assurer la compatibilité dans l'idéal avec TLS 1.2.</translation>
 <translation id="590253956165195626">Me proposer de traduire les pages qui sont écrites dans une langue que je ne connais pas</translation>
-<translation id="5902659428109355177">{COUNT,plural, =1{1 élément}one{# élément}other{# éléments}}</translation>
 <translation id="5904093760909470684">Configuration du proxy</translation>
 <translation id="5906065664303289925">Adresse du matériel :</translation>
 <translation id="5910363049092958439">En&amp;registrer l'image sous...</translation>

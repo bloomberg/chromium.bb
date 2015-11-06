@@ -29,7 +29,6 @@
 <translation id="1036511912703768636">Juurdepääs ükskõik millisele nimetatud USB-seadmele</translation>
 <translation id="1038168778161626396">Ainult šifreerimine</translation>
 <translation id="1038842779957582377">tundmatu nimi</translation>
-<translation id="1040931876666128942">WebUsb-märguanded.</translation>
 <translation id="1042174272890264476">Teie arvutil on ka toote <ph name="SHORT_PRODUCT_NAME" /> sisseehitatud RLZ-teek. RLZ määrab korduva ja isikut mittetuvastava ID-tunnuse, et mõõta konkreetse reklaamikampaania tekitatud otsinguid ja toote <ph name="SHORT_PRODUCT_NAME" /> kasutust. Need sildid kuvatakse vahel ka tootes <ph name="PRODUCT_NAME" /> Google'i otsingupäringutes.</translation>
 <translation id="1042574203789536285"><ph name="URL" /> soovib suure andmekoguse alaliselt teie seadmesse talletada.</translation>
 <translation id="1045157690796831147">Transliteratsioon (namaskar → നമസ്കാരം)</translation>
@@ -329,7 +328,6 @@
 <translation id="1470719357688513792">Uued küpsiste seaded rakenduvad pärast lehe uuesti laadimist.</translation>
 <translation id="14720830734893704">Virtuaalse klaviatuuri toe lubamine.</translation>
 <translation id="1474339897586437869">Faili „<ph name="FILENAME" />” ei laaditud üles. Teie Google Drive’is ei ole piisavalt vaba ruumi.</translation>
-<translation id="1476503841242751994">{COUNT,plural, =1{1 parool}other{# parooli}}</translation>
 <translation id="1476949146811612304">Määrake, millist otsingumootorit <ph name="BEGIN_LINK" />omnikastikeses<ph name="END_LINK" /> otsides kasutatakse.</translation>
 <translation id="1477301030751268706">Identiteedi API loa vahemälu</translation>
 <translation id="1478340334823509079">Üksikasjad: <ph name="FILE_NAME" /></translation>
@@ -922,6 +920,7 @@ Proovige uuesti mõne muu sertifikaadiga (kui teil on teisi sertifikaate). Kui t
 <translation id="2326606747676847821">Ava inkognito režiim</translation>
 <translation id="2326931316514688470">&amp;Laadi rakendus uuesti</translation>
 <translation id="2327492829706409234">Luba rakendus</translation>
+<translation id="2329597144923131178">Logige sisse, et tuua kõikidesse seadmetesse järjehoidjad, ajalugu, paroolid ja muud seaded.</translation>
 <translation id="2332131598580221120">Poes kuvamine</translation>
 <translation id="2332742915001411729">Lähtesta vaikeseadetele</translation>
 <translation id="2335122562899522968">See leht lisas küpsisefaile.</translation>
@@ -945,7 +944,6 @@ Proovige uuesti mõne muu sertifikaadiga (kui teil on teisi sertifikaate). Kui t
 <translation id="2359808026110333948">Jätka</translation>
 <translation id="236128817791440714">Soovitatav: seadistage funktsioon Smart Lock Androidile</translation>
 <translation id="236141728043665931">Blokeeri alati juurdepääs mikrofonile</translation>
-<translation id="2365626167708453863">Google Smart Lockist konto valimine</translation>
 <translation id="2367972762794486313">Rakenduste kuvamine</translation>
 <translation id="2368075211218459617">Kontekstipõhise otsingu lubamine.</translation>
 <translation id="2370882663124746154">Luba topelt-pinyini režiim</translation>
@@ -2664,7 +2662,6 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="4780374166989101364">Lubab katselise laienduse APIs-e. Pange tähele, et laienduste galerii ei luba teil üles laadida laiendusi, mis kasutavad katselist APIs-t.</translation>
 <translation id="4781787911582943401">Suumi ekraanil sisse</translation>
 <translation id="4782449893814226250">Küsisite oma vanemalt, kas võite seda lehte külastada.</translation>
-<translation id="4784085458903013712">{COUNT,plural, =1{1 kB}other{# kB}}</translation>
 <translation id="4784330909746505604">PowerPointi esitlus</translation>
 <translation id="4785040501822872973">Arvuti taaskäivitub <ph name="LOGOUT_TIME_LEFT" /> sekundi pärast.
 Uurimise jätkamiseks vajutage mis tahes klahvi.</translation>
@@ -3195,7 +3192,6 @@ Uurimise jätkamiseks vajutage mis tahes klahvi.</translation>
 <translation id="5527474464531963247">Samuti võite valida mõne teise ​​võrgu.</translation>
 <translation id="5527963985407842218">Lugejarežiimi käivitamine</translation>
 <translation id="5528368756083817449">Järjehoidjate haldur</translation>
-<translation id="5529098031581368697">Praeguse taustapildi määras „<ph name="APP_NAME" />”</translation>
 <translation id="5531274207066050939">Google Payments</translation>
 <translation id="5532223876348815659">Üldine</translation>
 <translation id="5533555070048896610">Transliteratsioon (namaste → नमस्ते)</translation>
@@ -3311,7 +3307,6 @@ Uurimise jätkamiseks vajutage mis tahes klahvi.</translation>
 <translation id="5702898740348134351">&amp;Muuda otsingumootoreid...</translation>
 <translation id="5703594190584829406">Automaattäite soovitused kuvatakse klaviatuuri kohal, mitte rippmenüüs.</translation>
 <translation id="5704272569086782895">GPU lõimepõhise rasterdamise lubamine.</translation>
-<translation id="570544101664452060">Katselised WebUsb-märguanded.</translation>
 <translation id="5706551819490830015">Halda arveldusaadresse ...</translation>
 <translation id="5707185214361380026">Laienduse laadimine järgmisest asukohast ebaõnnestus:</translation>
 <translation id="5707604204219538797">Järgmine sõna</translation>
@@ -3460,7 +3455,6 @@ Uurimise jätkamiseks vajutage mis tahes klahvi.</translation>
 <translation id="5900302528761731119">Google'i profiilifoto</translation>
 <translation id="5900623698597156974">TLS 1.0 taanderežiimi ja serveri vaheline käepigistus õnnestus, kuid TLS 1.0 taanderežiimid ei ole enam toetatud. Serverit tuleb värskendada, et juurutada õigesti versiooniläbirääkimised ja soovitatavalt ka TLS 1.2 tugi.</translation>
 <translation id="590253956165195626">Paku lehtede tõlkimist, mis ei ole teie loetavas keeles.</translation>
-<translation id="5902659428109355177">{COUNT,plural, =1{1 üksus}other{# üksust}}</translation>
 <translation id="5904093760909470684">Puhverserveri konfigureerimine</translation>
 <translation id="5906065664303289925">Riistvara aadress:</translation>
 <translation id="5910363049092958439">Sal&amp;vesta pilt nimega...</translation>

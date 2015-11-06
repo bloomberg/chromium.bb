@@ -179,6 +179,7 @@
 <translation id="5019198164206649151">備份儲存狀態不佳</translation>
 <translation id="5031870354684148875">關於「Google 翻譯」</translation>
 <translation id="5045550434625856497">密碼不正確</translation>
+<translation id="5065199687811594072">您希望 Chromium 儲存此信用卡資訊，方便您填妥網路表單嗎？</translation>
 <translation id="5087286274860437796">伺服器憑證目前無效。</translation>
 <translation id="5089810972385038852">州</translation>
 <translation id="5094747076828555589">伺服器無法證明其屬於 <ph name="DOMAIN" /> 網域；其安全性憑證未取得 Chromium 的信任。這可能是因為設定錯誤，或有攻擊者攔截您的連線所致。</translation>

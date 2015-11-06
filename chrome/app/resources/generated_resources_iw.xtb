@@ -29,7 +29,6 @@
 <translation id="1036511912703768636">‏גש לכל אחד מהתקני ה-USB האלה</translation>
 <translation id="1038168778161626396">הצפן בלבד</translation>
 <translation id="1038842779957582377">שם לא ידוע</translation>
-<translation id="1040931876666128942">‏הודעות WebUsb.</translation>
 <translation id="1042174272890264476">‏המחשב שלך מגיע גם עם ספריית ה-RLZ המובנה של <ph name="SHORT_PRODUCT_NAME" />‏. RLZ מקצה תג שאינו ייחודי ואינו ניתן לזיהוי על מנת למדוד את החיפוש ואת השימוש ב-<ph name="SHORT_PRODUCT_NAME" /> המונעים על ידי קמפיין ספציפי לקידום מכירות. התוויות האלה מופיעות לעתים בשאילתות החיפוש של Google ב-<ph name="PRODUCT_NAME" />.</translation>
 <translation id="1042574203789536285"><ph name="URL" /> רוצה לאחסן באופן קבוע כמות גדולה של נתונים במכשיר שלך.</translation>
 <translation id="1045157690796831147">‏תעתוק (namaskar → നമസ്കാരം)</translation>
@@ -327,7 +326,6 @@
 <translation id="1470719357688513792">‏הגדרות חדשות של קובצי Cookie ייכנסו לתוקף לאחר הטעינה מחדש של הדף.</translation>
 <translation id="14720830734893704">הפעל תמיכה במקלדת וירטואלית.</translation>
 <translation id="1474339897586437869">‏הקובץ "<ph name="FILENAME" />" לא הועלה. אין לך מספיק שטח פנוי ב-Google Drive.</translation>
-<translation id="1476503841242751994">{COUNT,plural, =1{סיסמה אחת}two{# סיסמאות}many{# סיסמאות}other{# סיסמאות}}</translation>
 <translation id="1476949146811612304">הגדר איזה מנוע חיפוש יופעל בעת חיפוש ב<ph name="BEGIN_LINK" />‏סרגל הכתובות<ph name="END_LINK" />.</translation>
 <translation id="1477301030751268706">‏קובץ שמור של אסימון ממשק API של זהות</translation>
 <translation id="1478340334823509079">פרטים: <ph name="FILE_NAME" /></translation>
@@ -912,6 +910,7 @@
 <translation id="2326606747676847821">עבור למצב גלישה בסתר</translation>
 <translation id="2326931316514688470">&amp;טען אפליקציה מחדש</translation>
 <translation id="2327492829706409234">הפעל יישום</translation>
+<translation id="2329597144923131178">היכנס כדי לקבל גישה אל הסימניות, ההיסטוריה, הסיסמאות והגדרות נוספות בכל המכשירים שברשותך.</translation>
 <translation id="2332131598580221120">הצג בחנות</translation>
 <translation id="2332742915001411729">אפס לברירת המחדל</translation>
 <translation id="2335122562899522968">‏דף זה מגדיר קובצי Cookie.</translation>
@@ -935,7 +934,6 @@
 <translation id="2359808026110333948">המשך</translation>
 <translation id="236128817791440714">‏מומלץ: הגדר את Smart Lock ל-Android</translation>
 <translation id="236141728043665931">חסום תמיד גישה למיקרופון</translation>
-<translation id="2365626167708453863">‏בחר חשבון ממערכת Google Smart Lock</translation>
 <translation id="2367972762794486313">הצג יישומים</translation>
 <translation id="2368075211218459617">הפעל חיפוש קולי לפי הקשר</translation>
 <translation id="2370882663124746154">‏הפוך מצב Double-Pinyin לפעיל</translation>
@@ -2648,7 +2646,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="4780374166989101364">‏מאפשרת ממשקי API ניסיוניים של תוספים. שים לב שגלריית התוספים לא מאפשרת לך לטעון תוספים שמשתמשים בממשקי API ניסיוניים.</translation>
 <translation id="4781787911582943401">התקרב לתצוגה</translation>
 <translation id="4782449893814226250">שאלת את הוריך אם זה בסדר לבקר בדף זה.</translation>
-<translation id="4784085458903013712">{COUNT,plural, =1{‎1 kB}two{‎# kB}many{‎# kB}other{‎# kB}}</translation>
 <translation id="4784330909746505604">‏מצגת PowerPoint</translation>
 <translation id="4785040501822872973">מחשב זה יופעל מחדש בעוד <ph name="LOGOUT_TIME_LEFT" /> שניות.
 הקש על מקש כלשהו כדי להמשיך בסיור.</translation>
@@ -3179,7 +3176,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="5527474464531963247">תוכל גם לבחור רשת אחרת.</translation>
 <translation id="5527963985407842218">הפעלת מצב קורא</translation>
 <translation id="5528368756083817449">מנהל הסימניות</translation>
-<translation id="5529098031581368697">הטפט הנוכחי נקבע על ידי '<ph name="APP_NAME" />'</translation>
 <translation id="5531274207066050939">Google Payments</translation>
 <translation id="5532223876348815659">גלובלי</translation>
 <translation id="5533555070048896610">‏תעתוק (namaste → नमस्ते)</translation>
@@ -3295,7 +3291,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="5702898740348134351">&amp;ערוך מנועי חיפוש...</translation>
 <translation id="5703594190584829406">הצגת הצעות למילוי אוטומטי מעל למקלדת, במקום בתפריט נפתח.</translation>
 <translation id="5704272569086782895">‏הפעל עיבוד תוכן בשיטת Threaded GPU rasterization.</translation>
-<translation id="570544101664452060">‏הודעות WebUsb ניסיוניות.</translation>
 <translation id="5706551819490830015">ניהול כתובות לחיוב...</translation>
 <translation id="5707185214361380026">כשל בטעינת תוסף מ:</translation>
 <translation id="5707604204219538797">המילה הבאה</translation>
@@ -3442,7 +3437,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="5900302528761731119">‏תמונת פרופיל Google</translation>
 <translation id="5900623698597156974">‏גיבוי מסוג TLS 1.0 הצליח לבצע לחיצת יד עם השרת, אך אנו כבר לא מקבלים גיבויי TLS 1.0. יש לעדכן את השרת כך שיטפל כראוי בסתירות בין גרסאות, עם עדיפות לתמיכה ב-TLS 1.2.</translation>
 <translation id="590253956165195626">הצע לתרגם דפים שאינם בשפה שאתה קורא.</translation>
-<translation id="5902659428109355177">{COUNT,plural, =1{פריט אחד}two{# פריטים}many{# פריטים}other{# פריטים}}</translation>
 <translation id="5904093760909470684">‏תצורת שרת proxy</translation>
 <translation id="5906065664303289925">כתובת חומרה:</translation>
 <translation id="5910363049092958439">שמ&amp;ור תמונה כ...</translation>

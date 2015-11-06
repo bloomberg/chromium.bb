@@ -179,6 +179,7 @@
 <translation id="5019198164206649151">Tallennustila on virheellisessä tilassa</translation>
 <translation id="5031870354684148875">Tietoja Google-kääntäjästä</translation>
 <translation id="5045550434625856497">Väärä salasana</translation>
+<translation id="5065199687811594072">Haluatko Chromiumin tallentavan nämä luottokortin tiedot verkkolomakkeiden täydentämistä varten?</translation>
 <translation id="5087286274860437796">Palvelimen varmenne ei ole tällä hetkellä kelvollinen.</translation>
 <translation id="5089810972385038852">Osavaltio/alue</translation>
 <translation id="5094747076828555589">Palvelin ei voinut todistaa olevansa <ph name="DOMAIN" />; Chromium ei luota sen suojausvarmenteeseen. Tämä voi johtua määritysvirheestä tai verkkoyhteytesi siepanneesta hyökkääjästä.</translation>

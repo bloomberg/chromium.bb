@@ -179,6 +179,7 @@
 <translation id="5019198164206649151">代替ストアの状態が不適切です</translation>
 <translation id="5031870354684148875">Google 翻訳について</translation>
 <translation id="5045550434625856497">パスワードが正しくありません</translation>
+<translation id="5065199687811594072">このクレジット カード情報を Chromium に保存してウェブ フォームの自動入力に使用しますか？</translation>
 <translation id="5087286274860437796">サーバーの証明書が現在有効ではありません。</translation>
 <translation id="5089810972385038852">都道府県 / 州</translation>
 <translation id="5094747076828555589">このサーバーが <ph name="DOMAIN" /> であることを確認できませんでした。このサーバーのセキュリティ証明書は Chromium によって信頼されているものではありません。原因としては、不適切な設定や、悪意のあるユーザーによる接続妨害が考えられます。</translation>

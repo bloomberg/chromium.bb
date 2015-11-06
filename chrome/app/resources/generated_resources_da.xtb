@@ -29,7 +29,6 @@
 <translation id="1036511912703768636">Få adgang til alle disse USB-enheder</translation>
 <translation id="1038168778161626396">Kun omsætning til kode</translation>
 <translation id="1038842779957582377">ukendt navn</translation>
-<translation id="1040931876666128942">WebUsb-underretninger.</translation>
 <translation id="1042174272890264476">Computeren leveres også med <ph name="SHORT_PRODUCT_NAME" />s RLZ-samling indbygget. RLZ tildeler et ikke-unikt, ikke-personligt identificerbart tag til at måle søgninger og <ph name="SHORT_PRODUCT_NAME" />-brug, der er drevet af en bestemt kampagne. Disse etiketter vises nogle gange i Googles søgeforespørgsler i <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1042574203789536285"><ph name="URL" /> vil gemme store datamængder permanent på din enhed.</translation>
 <translation id="1045157690796831147">Translitteration (namaskar → നമസ്കാരം)</translation>
@@ -328,7 +327,6 @@
 <translation id="1470719357688513792">De nye indstillinger for cookies træder i kraft, når siden genindlæses.</translation>
 <translation id="14720830734893704">Aktivér understøttelse af virtuelt tastatur.</translation>
 <translation id="1474339897586437869">"<ph name="FILENAME" />" blev ikke uploadet. Der er ikke plads nok i Google Drev.</translation>
-<translation id="1476503841242751994">{COUNT,plural, =1{1 adgangskode}one{# adgangskoder}other{# adgangskoder}}</translation>
 <translation id="1476949146811612304">Angiv, hvilken søgemaskine der skal bruges, når du søger via <ph name="BEGIN_LINK" />omnifeltet<ph name="END_LINK" />.</translation>
 <translation id="1477301030751268706">Tokencache for Identity API</translation>
 <translation id="1478340334823509079">Detaljer: <ph name="FILE_NAME" /></translation>
@@ -919,6 +917,7 @@ Når du har oprettet en ny administreret bruger, kan du til enhver tid administr
 <translation id="2326606747676847821">Vær inkognito</translation>
 <translation id="2326931316514688470">&amp;Genindlæs app</translation>
 <translation id="2327492829706409234">Aktivér app</translation>
+<translation id="2329597144923131178">Log ind for at hente bogmærker, historik, adgangskoder og andre indstillinger på alle dine enheder.</translation>
 <translation id="2332131598580221120">Vis i Webshop</translation>
 <translation id="2332742915001411729">Nulstil til standard</translation>
 <translation id="2335122562899522968">Denne side indstiller cookies.</translation>
@@ -942,7 +941,6 @@ Når du har oprettet en ny administreret bruger, kan du til enhver tid administr
 <translation id="2359808026110333948">Fortsæt</translation>
 <translation id="236128817791440714">Anbefalet: Konfigurer Smart Lock til Android</translation>
 <translation id="236141728043665931">Bloker altid mikrofonadgang</translation>
-<translation id="2365626167708453863">Vælg en konto fra din Google Smart Lock</translation>
 <translation id="2367972762794486313">Vis apps</translation>
 <translation id="2368075211218459617">Aktivér Kontekstuel søgning.</translation>
 <translation id="2370882663124746154">Aktiver tilstanden Dobbelt pinyin</translation>
@@ -1376,7 +1374,7 @@ Jeg synes ikke, dette website skal blokeres.</translation>
 <translation id="2932883381142163287">Rapportér misbrug</translation>
 <translation id="2934522647674136521">Brug GPU til at rasterisere webindhold. Kræver flertrådet rasterisering.</translation>
 <translation id="2937174152333875430">Aktivér synkronisering af applisten</translation>
-<translation id="2938225289965773019">Åbn <ph name="PROTOCOL" />-links</translation>
+<translation id="2938225289965773019">Åbne <ph name="PROTOCOL" />-links</translation>
 <translation id="2938685643439809023">Mongolsk</translation>
 <translation id="2942290791863759244">Tysk NEO 2-tastatur</translation>
 <translation id="2943400156390503548">Slides</translation>
@@ -2658,7 +2656,6 @@ Tryk på en vilkårlig tast for at fortsætte udforskningen.</translation>
 <translation id="4780374166989101364">Aktiverer eksperimentelle udvidelses-API'er. Bemærk, at galleriet over udvidelser ikke tillader upload af udvidelser, der bruger eksperimentelle API'er.</translation>
 <translation id="4781787911582943401">Zoom ind på skærmen</translation>
 <translation id="4782449893814226250">Du har spurgt dine forældre, om det er i orden at besøge denne side.</translation>
-<translation id="4784085458903013712">{COUNT,plural, =1{1 kB}one{# kB}other{# kB}}</translation>
 <translation id="4784330909746505604">PowerPoint-præsentation</translation>
 <translation id="4785040501822872973">Denne computer nulstilles om <ph name="LOGOUT_TIME_LEFT" /> sekunder.
 Tryk på en vilkårlig tast for at fortsætte udforskningen.</translation>
@@ -3188,7 +3185,6 @@ Tryk på en vilkårlig tast for at fortsætte udforskningen.</translation>
 <translation id="5527474464531963247">Du kan også vælge et andet netværk.</translation>
 <translation id="5527963985407842218">Udløsning af Læser-tilstand</translation>
 <translation id="5528368756083817449">Bogmærkeadministrator</translation>
-<translation id="5529098031581368697">Den nuværende baggrund er angivet af "<ph name="APP_NAME" />"</translation>
 <translation id="5531274207066050939">Google Payments</translation>
 <translation id="5532223876348815659">Global</translation>
 <translation id="5533555070048896610">Translitteration (namaste → नमस्ते)</translation>
@@ -3304,7 +3300,6 @@ Tryk på en vilkårlig tast for at fortsætte udforskningen.</translation>
 <translation id="5702898740348134351">&amp;Rediger søgemaskiner...</translation>
 <translation id="5703594190584829406">Viser forslag til autofyld øverst på tastaturet i stedet for i en rullemenu.</translation>
 <translation id="5704272569086782895">Aktivér trådet GPU-rasterisering.</translation>
-<translation id="570544101664452060">Eksperimentelle WebUsb-underretninger.</translation>
 <translation id="5706551819490830015">Administrer faktureringsadresser...</translation>
 <translation id="5707185214361380026">Det var ikke muligt at indlæse udvidelsen fra:</translation>
 <translation id="5707604204219538797">Næste ord</translation>
@@ -3453,7 +3448,6 @@ Tryk på en vilkårlig tast for at fortsætte udforskningen.</translation>
 <translation id="5900302528761731119">Google-profilbillede</translation>
 <translation id="5900623698597156974">Et TLS 1.0-alternativ kunne udveksle data med serveren. Vi accepterer dog ikke længere TLS 1.0-alternativer. Serveren skal opdateres, før den kan implementere versionsforhandling korrekt og så vidt muligt understøtte TLS 1.2.</translation>
 <translation id="590253956165195626">Tilbyd at oversætte sider, der ikke er på et sprog, du kan læse.</translation>
-<translation id="5902659428109355177">{COUNT,plural, =1{1 element}one{# elementer}other{# elementer}}</translation>
 <translation id="5904093760909470684">Proxykonfiguration</translation>
 <translation id="5906065664303289925">Hardwareadresse:</translation>
 <translation id="5910363049092958439">Ge&amp;m billede som...</translation>
@@ -3587,7 +3581,7 @@ Tryk på en vilkårlig tast for at fortsætte udforskningen.</translation>
 <translation id="6102473941787693058">Aktivér tilvalg af rapportering af ugyldige TLS/SSL-certifikatkæder</translation>
 <translation id="6102988872254107946">Selvom du har besøgt dette website før, er det ikke sikkert lige nu. Google Beskyttet browsing <ph name="BEGIN_LINK" />registrerede malware<ph name="END_LINK" /> på <ph name="SITE" /> for nylig. Websites, der normalt er sikre, inficeres undertiden med malware.</translation>
 <translation id="6103681770816982672">Advarsel! Du er ved at skifte til udviklerkanal</translation>
-<translation id="6105158702728922449">Brug dit kamera og din mikrofon</translation>
+<translation id="6105158702728922449">Bruge dit kamera og din mikrofon</translation>
 <translation id="6105366316359454748">En proxyserver er en server, der agerer som et mellemled mellem din enhed og andre servere. Dit system er nu konfigureret til brug som proxy, men
           <ph name="PRODUCT_NAME" />
           kan ikke oprette forbindelse til det.</translation>
@@ -4309,7 +4303,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7219179957768738017">Forbindelsen bruger <ph name="SSL_VERSION" />.</translation>
 <translation id="7219357088166514551">Søg på <ph name="ENGINE" />, eller indtast webadressen</translation>
 <translation id="7221155467930685510">$1 GB</translation>
-<translation id="7221855153210829124">Vis underretninger</translation>
+<translation id="7221855153210829124">Vise underretninger</translation>
 <translation id="7221869452894271364">Genindlæs denne side</translation>
 <translation id="7222232353993864120">E-mailadresse</translation>
 <translation id="7222245588540287464">Uanset om Kontekstuel søgning er aktiveret.</translation>
@@ -4615,7 +4609,7 @@ Psst! Prøv at bruge Inkognitotilstand <ph name="SHORTCUT_KEY" /> næste gang.</
 <translation id="7646821968331713409">Antallet af rastertråde</translation>
 <translation id="7648048654005891115">Tastaturoversigt</translation>
 <translation id="7648595706644580203">Bevægelsesredigering på det virtuelle tastatur.</translation>
-<translation id="7648992873808071793">Gem filer på denne enhed</translation>
+<translation id="7648992873808071793">Gemme filer på denne enhed</translation>
 <translation id="7649070708921625228">Hjælp</translation>
 <translation id="7650511557061837441">"<ph name="TRIGGERING_EXTENSION_NAME" />" vil gerne fjerne "<ph name="EXTENSION_NAME" />".</translation>
 <translation id="7650701856438921772"><ph name="PRODUCT_NAME" /> vises på dette sprog</translation>
@@ -5375,7 +5369,7 @@ Beregner resterende tid</translation>
 <translation id="8734073480934656039">Ved at aktivere denne indstilling tillader du, at terminalapplikationer åbnes automatisk under opstart.</translation>
 <translation id="8736288397686080465">Dette website er blevet opdateret i baggrunden.</translation>
 <translation id="8737260648576902897">Installer Adobe Reader</translation>
-<translation id="8737685506611670901">Åbn <ph name="PROTOCOL" />-links i stedet for <ph name="REPLACED_HANDLER_TITLE" /></translation>
+<translation id="8737685506611670901">Åbne <ph name="PROTOCOL" />-links i stedet for <ph name="REPLACED_HANDLER_TITLE" /></translation>
 <translation id="8737709691285775803">Shill</translation>
 <translation id="87377425248837826">Aktiver paneler</translation>
 <translation id="874420130893181774">Traditionel Pinyin-indtastningsmetode</translation>

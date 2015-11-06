@@ -29,7 +29,6 @@
 <translation id="1036511912703768636">Piekļūt jebkurai no šīm USB ierīcēm</translation>
 <translation id="1038168778161626396">Tikai šifrēt</translation>
 <translation id="1038842779957582377">nezināms nosaukums</translation>
-<translation id="1040931876666128942">WebUsb paziņojumi</translation>
 <translation id="1042174272890264476">Jūsu datorā ir iebūvēta arī pārlūka <ph name="SHORT_PRODUCT_NAME" /> RLZ bibliotēka. RLZ piešķir neunikālu, personu neidentificējošu atzīmi, lai novērtētu noteiktas reklāmas kampaņas ietvaros ievadītos meklēšanas vienumus un pārlūka <ph name="SHORT_PRODUCT_NAME" /> lietojumu. Šīs atzīmes pārlūkā <ph name="PRODUCT_NAME" /> dažkārt tiek rādītas Google meklēšanas vaicājumos.</translation>
 <translation id="1042574203789536285"><ph name="URL" /> vēlas jūsu ierīcē neatgriezeniski glabāt lielu datu apjomu.</translation>
 <translation id="1045157690796831147">Transliterācija (namaskar → നമസ്കാരം)</translation>
@@ -328,7 +327,6 @@
 <translation id="1470719357688513792">Jaunie sīkfailu iestatījumi stāsies spēkā pēc šīs lapas atkārtotas ielādes.</translation>
 <translation id="14720830734893704">Iespējo virtuālās tastatūras atbalstu.</translation>
 <translation id="1474339897586437869">Fails “<ph name="FILENAME" />” netika augšupielādēts. Jūsu Google diskā nepietiek vietas.</translation>
-<translation id="1476503841242751994">{COUNT,plural, =1{1 parole}zero{# paroļu}one{# parole}other{# paroles}}</translation>
 <translation id="1476949146811612304">Iestatīt, kura meklētājprogramma tiek izmantota, kad tiek meklēts no <ph name="BEGIN_LINK" />universālā lodziņa<ph name="END_LINK" />.</translation>
 <translation id="1477301030751268706">Identifikācijas datu API pilnvaru kešatmiņa</translation>
 <translation id="1478340334823509079">Detalizēta informācija: <ph name="FILE_NAME" /></translation>
@@ -923,6 +921,7 @@ Pēc jauna uzraudzīta lietotāja izveides varat pārvaldīt viņa iestatījumus
 <translation id="2326606747676847821">Pārlūkojiet inkognito režīmā</translation>
 <translation id="2326931316514688470">&amp;Atkārtoti ielādēt lietotni</translation>
 <translation id="2327492829706409234">Iespējot lietotni</translation>
+<translation id="2329597144923131178">Pierakstieties, lai grāmatzīmes, vēsture, paroles u.c. būtu pieejamas visās jūsu ierīcēs.</translation>
 <translation id="2332131598580221120">Skatīt veikalā</translation>
 <translation id="2332742915001411729">Atiestatīt noklusējuma iestatījumus</translation>
 <translation id="2335122562899522968">Šī lapa iestatīja sīkfailus.</translation>
@@ -946,7 +945,6 @@ Pēc jauna uzraudzīta lietotāja izveides varat pārvaldīt viņa iestatījumus
 <translation id="2359808026110333948">Turpināt</translation>
 <translation id="236128817791440714">Ieteicams iestatīt sistēmu Smart Lock Android ierīcēm</translation>
 <translation id="236141728043665931">Vienmēr bloķēt piekļuvi mikrofonam</translation>
-<translation id="2365626167708453863">Izvēlieties kontu no savas sistēmas Google Smart Lock</translation>
 <translation id="2367972762794486313">Rādīt lietotnes</translation>
 <translation id="2368075211218459617">Iespējot kontekstuālo meklēšanu</translation>
 <translation id="2370882663124746154">Iespējot Double-Pinyin režīmu</translation>
@@ -2664,7 +2662,6 @@ Lai turpinātu skatīšanu, nospiediet jebkuru taustiņu.</translation>
 <translation id="4780374166989101364">Iespējo eksperimentālo paplašinājumu API. Ņemiet vērā, ka paplašinājumu galerija neļauj augšupielādēt paplašinājumus, kas izmanto eksperimentālos API.</translation>
 <translation id="4781787911582943401">Tuvināt ekrānu</translation>
 <translation id="4782449893814226250">Jūs lūdzāt vecākiem atļauju apmeklēt šo lapu.</translation>
-<translation id="4784085458903013712">{COUNT,plural, =1{1 kB}zero{# kB}one{# kB}other{# kB}}</translation>
 <translation id="4784330909746505604">PowerPoint prezentācija</translation>
 <translation id="4785040501822872973">Šis dators tiks atiestatīts pēc <ph name="LOGOUT_TIME_LEFT" /> sekundes(-ēm).
 Lai turpinātu skatīšanu, nospiediet jebkuru taustiņu.</translation>
@@ -3195,7 +3192,6 @@ Lai turpinātu skatīšanu, nospiediet jebkuru taustiņu.</translation>
 <translation id="5527474464531963247">Varat arī atlasīt citu tīklu.</translation>
 <translation id="5527963985407842218">Lasīšanas režīma aktivizēšana</translation>
 <translation id="5528368756083817449">Grāmatzīmju pārvaldnieks</translation>
-<translation id="5529098031581368697">Pašreizējo fona tapeti iestatīja <ph name="APP_NAME" /></translation>
 <translation id="5531274207066050939">Google Payments</translation>
 <translation id="5532223876348815659">Visā pasaulē</translation>
 <translation id="5533555070048896610">Transliterācija (namaste → नमस्ते)</translation>
@@ -3311,7 +3307,6 @@ Lai turpinātu skatīšanu, nospiediet jebkuru taustiņu.</translation>
 <translation id="5702898740348134351">R&amp;ediģēt meklētājprogrammas...</translation>
 <translation id="5703594190584829406">Rāda automātiskās aizpildes ieteikumus virs tastatūras, nevis nolaižamajā izvēlnē.</translation>
 <translation id="5704272569086782895">Iespējot pavedienu GPU rastrēšanu.</translation>
-<translation id="570544101664452060">Eksperimentāli WebUsb paziņojumi</translation>
 <translation id="5706551819490830015">Pārvaldīt norēķinu adreses...</translation>
 <translation id="5707185214361380026">Neizdevās ielādēt paplašinājumu no:</translation>
 <translation id="5707604204219538797">Nākamais vārds</translation>
@@ -3460,7 +3455,6 @@ Lai turpinātu skatīšanu, nospiediet jebkuru taustiņu.</translation>
 <translation id="5900302528761731119">Google profila fotoattēls</translation>
 <translation id="5900623698597156974">Izmantojot TLS 1.0 atkāpšanās protokolu, izdevās izveidot savienojumu ar serveri, taču TLS 1.0 atkāpšanās protokoli vairs netiek pieņemti. Lai pareizi veiktu versiju saskaņošanu, serveris ir jāatjaunina (ieteicams nodrošināt protokola TLS versijas 1.2 atbalstu).</translation>
 <translation id="590253956165195626">Piedāvāt tulkot lapas, kas nav manā valodā</translation>
-<translation id="5902659428109355177">{COUNT,plural, =1{1 vienums}zero{# vienumu}one{# vienums}other{# vienumi}}</translation>
 <translation id="5904093760909470684">Starpniekservera konfigurācija</translation>
 <translation id="5906065664303289925">Aparatūras adrese:</translation>
 <translation id="5910363049092958439">Saglabāt attēlu &amp;kā...</translation>

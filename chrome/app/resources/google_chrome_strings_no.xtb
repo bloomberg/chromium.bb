@@ -41,7 +41,7 @@
 <translation id="2286950485307333924">Nå er du logget på Chrome</translation>
 <translation id="2290014774651636340">API-nøkler for Google mangler. Noe funksjonalitet i Google Chrome blir deaktivert.</translation>
 <translation id="2290095356545025170">Er du sikker på at du vil avinstallere Google Chrome?</translation>
-<translation id="2316129865977710310">Nei takk</translation>
+<translation id="2316129865977710310">Nei, takk</translation>
 <translation id="2334084861041072223">Copyright <ph name="YEAR" /> Google Inc. Med enerett.</translation>
 <translation id="2346876346033403680">Noen har tidligere logget seg på Chrome på denne datamaskinen som <ph name="ACCOUNT_EMAIL_LAST" />. Hvis det ikke er kontoen din, må du opprette en ny Chrome-bruker for å holde informasjonen din atskilt.
 
@@ -213,7 +213,7 @@ og feil legitimasjon. Dette kan skje når en angriper prøver å utgi seg for å
 <translation id="7436949144778751379">Google Chrome krever Windows XP eller nyere. Enkelte funksjoner vil kanskje ikke fungere.</translation>
 <translation id="7459554271817304652">Konfigurer Synkronisering til å lagre de personlig tilpassede nettleserfunksjonene dine på nettet slik at du kan bruke dem fra Google Chrome på enhver datamaskin.</translation>
 <translation id="7473136999113284234">Chrome oppdateres automatisk, sånn at du alltid har den nyeste versjonen.</translation>
-<translation id="7473891865547856676">Nei takk</translation>
+<translation id="7473891865547856676">Nei, takk</translation>
 <translation id="7494905215383356681">Åpen kildekode-lisenser for Chrome</translation>
 <translation id="7592736734348559088">Google Chrome kunne ikke synkronisere dataene dine. Dette skyldes at påloggingsopplysningene for kontoen din er foreldede.</translation>
 <translation id="7626032353295482388">Velkommen til Chrome</translation>

@@ -29,7 +29,6 @@
 <translation id="1036511912703768636">Les enhver av disse USB-enhetene</translation>
 <translation id="1038168778161626396">Kun chiffrering</translation>
 <translation id="1038842779957582377">ukjent navn</translation>
-<translation id="1040931876666128942">WebUsb-varsler.</translation>
 <translation id="1042174272890264476">Datamaskinen din har <ph name="SHORT_PRODUCT_NAME" />s RLZ-bibliotek innebygget. RLZ tildeler en ikke-unik, ikke-personlig tagg for å måle søk og <ph name="SHORT_PRODUCT_NAME" />-bruk drevet av en bestemt markedsføringskampanje. Disse etikettene vises noen ganger i Google-søk i <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1042574203789536285"><ph name="URL" /> ønsker å lagre store datamengder på enheten din permanent.</translation>
 <translation id="1045157690796831147">Translitterasjon (namaskar → നമസ്കാരം)</translation>
@@ -328,7 +327,6 @@
 <translation id="1470719357688513792">Nye innstillinger for informasjonskapsler trer i kraft etter siden er lastet inn på nytt.</translation>
 <translation id="14720830734893704">Aktiver støtte for virtuelt tastatur.</translation>
 <translation id="1474339897586437869">«<ph name="FILENAME" />» ble ikke lastet opp. Det er ikke nok ledig plass på Google Disk.</translation>
-<translation id="1476503841242751994">{COUNT,plural, =1{1 passord}other{# passord}}</translation>
 <translation id="1476949146811612304">Angi hvilken søkemotor som brukes når du søker i <ph name="BEGIN_LINK" />søkefeltet<ph name="END_LINK" />.</translation>
 <translation id="1477301030751268706">Tokenbuffer for identitets-API</translation>
 <translation id="1478340334823509079">Detaljer: <ph name="FILE_NAME" /></translation>
@@ -910,7 +908,7 @@ Når du har opprettet en ny administrert bruker, kan du når som helst – og fr
 <translation id="2309760508720442723">Det finnes problemer med nettstedets sertifikatkjede (<ph name="CERT_ERROR_DESCRIPTION" />).</translation>
 <translation id="2312980885338881851">Ojsann! Det ser ut til at du ikke har noen eksisterende overvåkende brukere å importere. Opprett én eller flere fra en annen enhet, og så kan du importere dem hit etterpå.</translation>
 <translation id="2314244639364647639">{NUM_ITEMS,plural, =1{Dette sletter minst $1 element permanent fra denne enheten, men fjerner ikke synkroniserte elementer fra andre enheter.}other{Dette sletter minst $1 elementer permanent fra denne enheten, men fjerner ikke synkroniserte elementer fra andre enheter.}}</translation>
-<translation id="2316129865977710310">Nei takk</translation>
+<translation id="2316129865977710310">Nei, takk</translation>
 <translation id="2317031807364506312">AVBRYT</translation>
 <translation id="2318143611928805047">Papirstørrelse</translation>
 <translation id="2320435940785160168">Tjeneren krever et autentiseringssertifikat og godkjente ikke sertifikatet som ble sendt av         nettleseren.
@@ -922,6 +920,7 @@ annet sertifikat, kan du prøve å bruke dette. Ellers kan du forsøke å
 <translation id="2326606747676847821">Start inkognitomodus</translation>
 <translation id="2326931316514688470">&amp;Last inn appen på nytt</translation>
 <translation id="2327492829706409234">Aktiver appen</translation>
+<translation id="2329597144923131178">Logg på for å få bokmerkene, loggen, passordene og de andre innstillingene dine på alle enhetene du bruker.</translation>
 <translation id="2332131598580221120">Se i Nettmarked</translation>
 <translation id="2332742915001411729">Tilbakestill til standard</translation>
 <translation id="2335122562899522968">Denne siden plasserer informasjonskapsler på datamaskinen.</translation>
@@ -945,7 +944,6 @@ annet sertifikat, kan du prøve å bruke dette. Ellers kan du forsøke å
 <translation id="2359808026110333948">Fortsett</translation>
 <translation id="236128817791440714">Anbefalt: Konfigurer Smart Lock for Android</translation>
 <translation id="236141728043665931">Blokkér alltid bruk av mikrofonen</translation>
-<translation id="2365626167708453863">Velg en konto fra Google Smart Lock</translation>
 <translation id="2367972762794486313">Vis apper</translation>
 <translation id="2368075211218459617">Aktiver kontekstbasert søk.</translation>
 <translation id="2370882663124746154">Aktiver modusen Dobbel pinyin</translation>
@@ -2653,7 +2651,6 @@ Trykk på en tast for å fortsette økten.</translation>
 <translation id="4780374166989101364">Aktiverer grensesnitt for eksperimentelle utvidelser. Merk at dette utvidelsesgalleriet ikke tillater deg å laste opp utvidelser som bruker eksperimentelle grensesnitt.</translation>
 <translation id="4781787911582943401">Zoom på skjermen</translation>
 <translation id="4782449893814226250">Du spurte foreldrene dine om det er greit å besøke denne siden.</translation>
-<translation id="4784085458903013712">{COUNT,plural, =1{1 kB}other{# kB}}</translation>
 <translation id="4784330909746505604">PowerPoint-presentasjon</translation>
 <translation id="4785040501822872973">Denne datamaskinen starter på nytt om <ph name="LOGOUT_TIME_LEFT" /> sekunder.
 Trykk på en tast for å fortsette økten.</translation>
@@ -3181,7 +3178,6 @@ Trykk på en tast for å fortsette økten.</translation>
 <translation id="5527474464531963247">Du kan også velge et annet nettverk.</translation>
 <translation id="5527963985407842218">Utløsing av lesermodus</translation>
 <translation id="5528368756083817449">Bokmerkebehandling</translation>
-<translation id="5529098031581368697">Gjeldende bakgrunn er angitt av «<ph name="APP_NAME" />»</translation>
 <translation id="5531274207066050939">Google Payments</translation>
 <translation id="5532223876348815659">Overordnet</translation>
 <translation id="5533555070048896610">Translitterasjon (namaste → नमस्ते)</translation>
@@ -3297,7 +3293,6 @@ Trykk på en tast for å fortsette økten.</translation>
 <translation id="5702898740348134351">R&amp;ediger søkemotorer</translation>
 <translation id="5703594190584829406">Viser autofyll-forslag over tastaturet i stedet for i en rullegardinmeny.</translation>
 <translation id="5704272569086782895">Slå på trådbasert GPU-rastering.</translation>
-<translation id="570544101664452060">Eksperimentelle WebUsb-varsler.</translation>
 <translation id="5706551819490830015">Administrer faktureringsadresser</translation>
 <translation id="5707185214361380026">Kunne ikke laste inn utvidelse fra:</translation>
 <translation id="5707604204219538797">Neste ord</translation>
@@ -3443,7 +3438,6 @@ Trykk på en tast for å fortsette økten.</translation>
 <translation id="5900302528761731119">Google-profilbilde</translation>
 <translation id="5900623698597156974">En TLS 1.0-reserve greide å utveksle håndtrykk med tjeneren, men vi godtar ikke TLS 1.0-reserver lenger. Tjeneren må oppdateres slik at den implementerer versjonsbehandling riktig, og den bør støtte TLS 1.2.</translation>
 <translation id="590253956165195626">Tilby oversettelse av nettsider på språk du ikke kan lese.</translation>
-<translation id="5902659428109355177">{COUNT,plural, =1{1 vare}other{# varer}}</translation>
 <translation id="5904093760909470684">Konfigurasjon av mellomtjener</translation>
 <translation id="5906065664303289925">Maskinvareadresse:</translation>
 <translation id="5910363049092958439">Lagre &amp;bildet som</translation>
@@ -4406,7 +4400,7 @@ Trykk på en tast for å fortsette økten.</translation>
 <translation id="7375125077091615385">Type:</translation>
 <translation id="7377169924702866686">Caps Lock er på.</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> – <ph name="FULL_DATE" /></translation>
-<translation id="7378627244592794276">Nei takk</translation>
+<translation id="7378627244592794276">Nei, takk</translation>
 <translation id="7378810950367401542">/</translation>
 <translation id="7382160026931194400">Lagrede |innholdsinnstillinger| og #søkemotorer# fjernes ikke, og disse kan inneholde informasjon om surfevanene dine.</translation>
 <translation id="7385854874724088939">Det oppstod en feil under forsøket på å skrive ut. Kontroller skriveren og prøv igjen.</translation>
@@ -4475,7 +4469,7 @@ Forresten: Inkognitomodus (<ph name="SHORTCUT_KEY" />) kan være kjekt neste gan
 <translation id="7469894403370665791">Koble til dette nettverket automatisk</translation>
 <translation id="747114903913869239">Feil: Kan ikke avkode etternavnet</translation>
 <translation id="7472639616520044048">MIME-typer:</translation>
-<translation id="7473891865547856676">Nei takk</translation>
+<translation id="7473891865547856676">Nei, takk</translation>
 <translation id="747459581954555080">Gjenopprett alt</translation>
 <translation id="7474669101120914750">Denne innstillingen styres av utvidelsen <ph name="NAME" /></translation>
 <translation id="7474889694310679759">Engelsk tastatur (Canada)</translation>
@@ -4701,7 +4695,7 @@ Forresten: Inkognitomodus (<ph name="SHORTCUT_KEY" />) kan være kjekt neste gan
 <translation id="7800304661137206267">Tilkoblingen er kryptert ved hjelp av <ph name="CIPHER" />, med <ph name="MAC" /> for autentisering av meldinger og <ph name="KX" /> som nøkkelutvekslingsmekanisme.</translation>
 <translation id="7800518121066352902">Rotér m&amp;ot klokken</translation>
 <translation id="7801746894267596941">Bare folk som har passordfrasen din kan lese de krypterte dataene dine – passordfrasen hverken sendes til eller lagres av Google. Hvis du glemmer den, må du</translation>
-<translation id="780301667611848630">Nei takk</translation>
+<translation id="780301667611848630">Nei, takk</translation>
 <translation id="7805768142964895445">Status</translation>
 <translation id="7806513705704909664">Aktivér autofyll for å fylle ut nettskjemaer med ett enkelt klikk.</translation>
 <translation id="7807711621188256451">Tillat alltid at <ph name="HOST" /> bruker kameraet ditt</translation>

@@ -179,6 +179,7 @@
 <translation id="5019198164206649151">Depozit de fundal în stare nevalidă</translation>
 <translation id="5031870354684148875">Despre Google Traducere</translation>
 <translation id="5045550434625856497">Parolă incorectă</translation>
+<translation id="5065199687811594072">Doriți ca Chromium să salveze informațiile privind cardul de credit pentru completarea formularelor web?</translation>
 <translation id="5087286274860437796">Momentan, certificatul serverului este nevalid.</translation>
 <translation id="5089810972385038852">Stat</translation>
 <translation id="5094747076828555589">Acest server nu a putut dovedi că este <ph name="DOMAIN" />; Chromium nu consideră că certificatul său de securitate este de încredere. Cauza poate fi o configurare greșită sau interceptarea conexiunii de către un atacator.</translation>

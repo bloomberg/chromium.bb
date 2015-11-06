@@ -29,7 +29,6 @@
 <translation id="1036511912703768636">Akses salah satu perangkat USB ini</translation>
 <translation id="1038168778161626396">Khusus Penyandi</translation>
 <translation id="1038842779957582377">nama tidak diketahui</translation>
-<translation id="1040931876666128942">Notifikasi WebUsb</translation>
 <translation id="1042174272890264476">Komputer Anda juga dilengkapi dengan perpustakaan RLZ <ph name="SHORT_PRODUCT_NAME" /> yang tertanam di dalamnya. RLZ menetapkan tag tak unik dan tidak dapat diidentifikasi secara pribadi untuk mengukur penelusuran dan penggunaan <ph name="SHORT_PRODUCT_NAME" /> yang didorong oleh kampanye promosi tertentu. Biasanya label ini muncul di kueri Google Penelusuran di <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1042574203789536285"><ph name="URL" /> ingin menyimpan data berukuran besar pada perangkat Anda secara permanen.</translation>
 <translation id="1045157690796831147">Transliterasi (namaskar → നമസ്കാരം)</translation>
@@ -329,7 +328,6 @@
 <translation id="1470719357688513792">Setelan cookie baru akan berlaku setelah laman dimuat ulang.</translation>
 <translation id="14720830734893704">Mengaktifkan dukungan keyboard virtual.</translation>
 <translation id="1474339897586437869">"<ph name="FILENAME" />" tidak diunggah. Ruang di Google Drive Anda tidak cukup.</translation>
-<translation id="1476503841242751994">{COUNT,plural, =1{1 sandi}other{# sandi}}</translation>
 <translation id="1476949146811612304">Menyetel mesin telusur yang digunakan ketika menelusuri dari <ph name="BEGIN_LINK" />omnibox<ph name="END_LINK" />.</translation>
 <translation id="1477301030751268706">Cache Token API Identitas</translation>
 <translation id="1478340334823509079">Detail: <ph name="FILE_NAME" /></translation>
@@ -923,6 +921,7 @@ Setelah membuat pengguna yang dilindungi, Anda dapat mengelola setelannya kapan 
 <translation id="2326606747676847821">Buka Mode Penyamaran</translation>
 <translation id="2326931316514688470">&amp;Muat ulang aplikasi</translation>
 <translation id="2327492829706409234">Aktifkan aplikasi</translation>
+<translation id="2329597144923131178">Masuk untuk mendapatkan bookmark, riwayat, sandi, dan setelan Anda lainnya di semua perangkat.</translation>
 <translation id="2332131598580221120">Lihat di toko</translation>
 <translation id="2332742915001411729">Setel ulang ke default</translation>
 <translation id="2335122562899522968">Laman ini menyetel cookie.</translation>
@@ -946,7 +945,6 @@ Setelah membuat pengguna yang dilindungi, Anda dapat mengelola setelannya kapan 
 <translation id="2359808026110333948">Lanjut</translation>
 <translation id="236128817791440714">Saran: Siapkan Smart Lock untuk Android</translation>
 <translation id="236141728043665931">Selalu blokir akses mikrofon</translation>
-<translation id="2365626167708453863">Pilih akun dari Google Smart Lock</translation>
 <translation id="2367972762794486313">Tampilkan aplikasi</translation>
 <translation id="2368075211218459617">Aktifkan Penelusuran Kontekstual.</translation>
 <translation id="2370882663124746154">Aktifkan Mode Pinyin Ganda</translation>
@@ -2657,7 +2655,6 @@ Tekan sembarang tombol untuk melanjutkan penjelajahan.</translation>
 <translation id="4780374166989101364">Aktifkan API ekstensi eksperimental. Perlu diingat bahwa galeri ekstensi tidak mengizinkan Anda mengunggah ekstensi yang menggunakan API eksperimental.</translation>
 <translation id="4781787911582943401">Memperbesar layar</translation>
 <translation id="4782449893814226250">Anda telah meminta izin kepada orang tua untuk mengunjungi laman ini.</translation>
-<translation id="4784085458903013712">{COUNT,plural, =1{1 KB}other{# KB}}</translation>
 <translation id="4784330909746505604">Presentasi PowerPoint</translation>
 <translation id="4785040501822872973">Komputer ini akan disetel ulang dalam waktu <ph name="LOGOUT_TIME_LEFT" /> detik.
 Tekan sembarang tombol untuk melanjutkan penjelajahan.</translation>
@@ -3188,7 +3185,6 @@ Tekan sembarang tombol untuk melanjutkan penjelajahan.</translation>
 <translation id="5527474464531963247">Anda juga dapat memilih jaringan lain.</translation>
 <translation id="5527963985407842218">Pemicu Mode Pembaca</translation>
 <translation id="5528368756083817449">Pengelola Bookmark</translation>
-<translation id="5529098031581368697">Wallpaper saat ini disetel dengan '<ph name="APP_NAME" />'</translation>
 <translation id="5531274207066050939">Google Payments</translation>
 <translation id="5532223876348815659">Global</translation>
 <translation id="5533555070048896610">Transliterasi (namaste → नमस्ते)</translation>
@@ -3304,7 +3300,6 @@ Tekan sembarang tombol untuk melanjutkan penjelajahan.</translation>
 <translation id="5702898740348134351">&amp;Edit Mesin Telusur...</translation>
 <translation id="5703594190584829406">Menampilkan saran IsiOtomatis di bagian atas keyboard, bukan di menu tarik-turun.</translation>
 <translation id="5704272569086782895">Aktifkan untaian rasterisasi GPU.</translation>
-<translation id="570544101664452060">Notifikasi eksperimental WebUsb.</translation>
 <translation id="5706551819490830015">Kelola alamat penagihan...</translation>
 <translation id="5707185214361380026">Gagal memuat ekstensi dari:</translation>
 <translation id="5707604204219538797">Kata berikutnya</translation>
@@ -3453,7 +3448,6 @@ Tekan sembarang tombol untuk melanjutkan penjelajahan.</translation>
 <translation id="5900302528761731119">Foto Google profil</translation>
 <translation id="5900623698597156974">TLS 1.0 fallback dapat menghubungi server, namun kami tidak lagi menerima TLS 1.0 fallback. Server perlu diperbarui agar dapat menerapkan versi negosiasi dengan benar dan lebih mendukung TLS 1.2.</translation>
 <translation id="590253956165195626">Tanya apakah laman yang tidak saya pahami ingin diterjemahkan</translation>
-<translation id="5902659428109355177">{COUNT,plural, =1{1 item}other{# item}}</translation>
 <translation id="5904093760909470684">Konfigurasi Proxy</translation>
 <translation id="5906065664303289925">Alamat perangkat keras:</translation>
 <translation id="5910363049092958439">Sim&amp;pan Gambar Sebagai...</translation>
@@ -3952,7 +3946,7 @@ Tekan sembarang tombol untuk melanjutkan penjelajahan.</translation>
 <translation id="666541661050183336">Mengurangi prioritas beban sumber daya iframe.</translation>
 <translation id="6666647326143344290">dengan Akun Google Anda</translation>
 <translation id="6667102209320924827">Nonaktifkan kalibrasi warna layar.</translation>
-<translation id="6675665718701918026">Perangkat yang ditunjuk tersambung</translation>
+<translation id="6675665718701918026">Perangkat penunjuk telah tersambung</translation>
 <translation id="6677037229676347494">ID yang diharapkan "<ph name="EXPECTED_ID" />", tapi ID-nya adalah "<ph name="NEW_ID" />".</translation>
 <translation id="6680028776254050810">Alihkan Pengguna</translation>
 <translation id="6681668084120808868">Ambil foto</translation>

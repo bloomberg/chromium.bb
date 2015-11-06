@@ -29,7 +29,6 @@
 <translation id="1036511912703768636">Accesează oricare dintre aceste dispozitive USB</translation>
 <translation id="1038168778161626396">Numai cifrare</translation>
 <translation id="1038842779957582377">nume necunoscut</translation>
-<translation id="1040931876666128942">Notificări WebUsb.</translation>
 <translation id="1042174272890264476">Computerul este dotat, de asemenea, cu o bibliotecă RLZ încorporată, oferită de <ph name="SHORT_PRODUCT_NAME" />. Biblioteca RLZ atribuie o etichetă non-unică și care nu vă identifică în mod personal, pentru a măsura căutările și modul în care este utilizat <ph name="SHORT_PRODUCT_NAME" /> în funcție de o anumită campanie promoțională. Aceste etichete pot apărea uneori în interogările Căutării Google din <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1042574203789536285"><ph name="URL" /> dorește să stocheze permanent cantități mari de date pe dispozitivul dvs.</translation>
 <translation id="1045157690796831147">Transliterație (namaskar → നമസ്കാരം)</translation>
@@ -328,7 +327,6 @@
 <translation id="1470719357688513792">Noile setări pentru cookie-uri se vor aplica după reîncărcarea paginii.</translation>
 <translation id="14720830734893704">Activați compatibilitatea cu tastatura virtuală.</translation>
 <translation id="1474339897586437869">„<ph name="FILENAME" />” nu s-a încărcat. Nu există spațiu liber suficient în Google Drive.</translation>
-<translation id="1476503841242751994">{COUNT,plural, =1{O parolă}few{# parole}other{# de parole}}</translation>
 <translation id="1476949146811612304">Setați ce motor de căutare este utilizat atunci când se caută din <ph name="BEGIN_LINK" />caseta polivalentă<ph name="END_LINK" />.</translation>
 <translation id="1477301030751268706">Memorie cache pentru indicativele API-ului Identity</translation>
 <translation id="1478340334823509079">Detalii: <ph name="FILE_NAME" /></translation>
@@ -933,6 +931,7 @@ După ce creezi un utilizator monitorizat, poți gestiona setările oricând și
 <translation id="2326606747676847821">Treci în incognito</translation>
 <translation id="2326931316514688470">&amp;Reîncarcă aplicația</translation>
 <translation id="2327492829706409234">Activați aplicația</translation>
+<translation id="2329597144923131178">Conectează-te și accesează marcajele, istoricul, parolele și alte setări pe toate dispozitivele.</translation>
 <translation id="2332131598580221120">Vedeți în magazin</translation>
 <translation id="2332742915001411729">Resetați la valorile prestabilite</translation>
 <translation id="2335122562899522968">Această pagină a setat cookie-uri.</translation>
@@ -956,7 +955,6 @@ După ce creezi un utilizator monitorizat, poți gestiona setările oricând și
 <translation id="2359808026110333948">Continuă</translation>
 <translation id="236128817791440714">Se recomandă: configurează Smart Lock pentru Android</translation>
 <translation id="236141728043665931">Blocați întotdeauna accesul la microfon</translation>
-<translation id="2365626167708453863">Alege un cont din Google Smart Lock</translation>
 <translation id="2367972762794486313">Afișați aplicații</translation>
 <translation id="2368075211218459617">Activați Căutarea contextuală.</translation>
 <translation id="2370882663124746154">Activează modul Pinyin dublu</translation>
@@ -2670,7 +2668,6 @@ Apăsați pe orice tastă pentru a continua explorarea.</translation>
 <translation id="4780374166989101364">Activează API-uri cu extensii experimentale. Reține că galeria de extensii nu îți permite să încarci extensii care utilizează API-uri experimentale.</translation>
 <translation id="4781787911582943401">Mărește ecranul</translation>
 <translation id="4782449893814226250">Ai întrebat părinții dacă poți accesa această pagină.</translation>
-<translation id="4784085458903013712">{COUNT,plural, =1{1 kB}few{# kB}other{# kB}}</translation>
 <translation id="4784330909746505604">Prezentare PowerPoint</translation>
 <translation id="4785040501822872973">Acest computer se va reseta în <ph name="LOGOUT_TIME_LEFT" /> (de) secunde.
 Apăsați pe orice tastă pentru a continua explorarea.</translation>
@@ -3201,7 +3198,6 @@ Apăsați pe orice tastă pentru a continua explorarea.</translation>
 <translation id="5527474464531963247">De asemenea, puteți selecta altă rețea.</translation>
 <translation id="5527963985407842218">Declanșarea modului Cititor</translation>
 <translation id="5528368756083817449">Manager de marcaje</translation>
-<translation id="5529098031581368697">Fundalul actual este setat de „<ph name="APP_NAME" />”</translation>
 <translation id="5531274207066050939">Google Payments</translation>
 <translation id="5532223876348815659">Global</translation>
 <translation id="5533555070048896610">Transliterație (namaste → नमस्ते)</translation>
@@ -3317,7 +3313,6 @@ Apăsați pe orice tastă pentru a continua explorarea.</translation>
 <translation id="5702898740348134351">&amp;Editează motoarele de căutare...</translation>
 <translation id="5703594190584829406">Afișează sugestiile de completare automată deasupra tastaturii, și nu într-o listă drop-down.</translation>
 <translation id="5704272569086782895">Activează rasterizarea cu fire de execuție la nivel de GPU.</translation>
-<translation id="570544101664452060">Notificări WebUsb experimentale.</translation>
 <translation id="5706551819490830015">Gestionați adresele de facturare...</translation>
 <translation id="5707185214361380026">Nu s-a încărcat extensia de la:</translation>
 <translation id="5707604204219538797">Cuvântul următor</translation>
@@ -3466,7 +3461,6 @@ Apăsați pe orice tastă pentru a continua explorarea.</translation>
 <translation id="5900302528761731119">Fotografie de profil Google</translation>
 <translation id="5900623698597156974">Prin revenirea la TLS 1.0, dialogul de confirmare cu serverul a fost a efectuat, dar alternativele TLS 1.0 nu mai sunt acceptate. Serverul trebuie să fie actualizat pentru a implementa corect negocierea versiunilor și, de preferință, pentru a fi compatibil cu TLS 1.2.</translation>
 <translation id="590253956165195626">Oferă traducerea paginilor care nu sunt în limba în care citesc.</translation>
-<translation id="5902659428109355177">{COUNT,plural, =1{Un element}few{# elemente}other{# de elemente}}</translation>
 <translation id="5904093760909470684">Configurare proxy</translation>
 <translation id="5906065664303289925">Adresă hardware:</translation>
 <translation id="5910363049092958439">Sal&amp;vează imaginea ca...</translation>

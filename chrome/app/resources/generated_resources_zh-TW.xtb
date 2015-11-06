@@ -29,7 +29,6 @@
 <translation id="1036511912703768636">存取下列任一 USB 裝置</translation>
 <translation id="1038168778161626396">只有 Encipher</translation>
 <translation id="1038842779957582377">不明名稱</translation>
-<translation id="1040931876666128942">WebUsb 通知。</translation>
 <translation id="1042174272890264476">您的電腦也內建了 <ph name="SHORT_PRODUCT_NAME" /> 的 RLZ 程式庫。RLZ 可指定非重複、非個人的可辨識標記，以評估特定宣傳廣告活動所提升的搜尋數與 <ph name="SHORT_PRODUCT_NAME" /> 使用量。這些標籤有時也會顯示在 <ph name="PRODUCT_NAME" /> 的 Google 搜尋查詢中。</translation>
 <translation id="1042574203789536285"><ph name="URL" /> 要求在您的裝置上永久儲存大量資料。</translation>
 <translation id="1045157690796831147">音譯 (namaskar → നമസ്കാരം)</translation>
@@ -328,7 +327,6 @@
 <translation id="1470719357688513792">新的 Cookie 設定會在重新載入網頁後生效。</translation>
 <translation id="14720830734893704">啟用虛擬鍵盤支援。</translation>
 <translation id="1474339897586437869">您的 Google 雲端硬碟的可用空間不足，因此無法上傳「<ph name="FILENAME" />」。</translation>
-<translation id="1476503841242751994">{COUNT,plural, =1{1 組密碼}other{# 組密碼}}</translation>
 <translation id="1476949146811612304">設定透過<ph name="BEGIN_LINK" />網址列<ph name="END_LINK" />進行搜尋時要使用哪個搜尋引擎。</translation>
 <translation id="1477301030751268706">Identity API 憑證快取</translation>
 <translation id="1478340334823509079">詳細資料：<ph name="FILE_NAME" /></translation>
@@ -922,6 +920,7 @@
 <translation id="2326606747676847821">進入無痕模式</translation>
 <translation id="2326931316514688470">重新載入應用程式(&amp;R)</translation>
 <translation id="2327492829706409234">啟用應用程式</translation>
+<translation id="2329597144923131178">登入後，即可從您使用的任何裝置取得自己的書籤、歷史紀錄、密碼和其他設定。</translation>
 <translation id="2332131598580221120">前往商店查看</translation>
 <translation id="2332742915001411729">重設為預設值</translation>
 <translation id="2335122562899522968">這個網頁會設定 Cookie。</translation>
@@ -945,7 +944,6 @@
 <translation id="2359808026110333948">繼續</translation>
 <translation id="236128817791440714">建議操作：設定 Android Smart Lock</translation>
 <translation id="236141728043665931">一律封鎖存取麥克風</translation>
-<translation id="2365626167708453863">從您的 Google Smart Lock 選擇帳戶</translation>
 <translation id="2367972762794486313">顯示應用程式</translation>
 <translation id="2368075211218459617">啟用內容比對搜尋。</translation>
 <translation id="2370882663124746154">啟用雙拼輸入模式</translation>
@@ -2650,7 +2648,6 @@
 <translation id="4780374166989101364">啟用實驗性擴充功能 API。請注意，任何使用了實驗性 API 的擴充功能都無法上傳到擴充功能庫。</translation>
 <translation id="4781787911582943401">放大畫面</translation>
 <translation id="4782449893814226250">您已詢問家長是否同意您造訪這個網頁。</translation>
-<translation id="4784085458903013712">{COUNT,plural, =1{1 KB}other{# KB}}</translation>
 <translation id="4784330909746505604">PowerPoint 簡報</translation>
 <translation id="4785040501822872973">這台電腦將在 <ph name="LOGOUT_TIME_LEFT" /> 秒後重設。
 按下任何按鍵即可繼續瀏覽。</translation>
@@ -3179,7 +3176,6 @@
 <translation id="5527474464531963247">您也可以選取其他網路。</translation>
 <translation id="5527963985407842218">閱讀器模式觸發</translation>
 <translation id="5528368756083817449">書籤管理員</translation>
-<translation id="5529098031581368697">目前使用的桌布是由「<ph name="APP_NAME" />」設定</translation>
 <translation id="5531274207066050939">Google Payments</translation>
 <translation id="5532223876348815659">通用</translation>
 <translation id="5533555070048896610">音譯 (namaste → नमस्ते)</translation>
@@ -3295,7 +3291,6 @@
 <translation id="5702898740348134351">編輯搜尋引擎(&amp;E)...</translation>
 <translation id="5703594190584829406">在鍵盤最上方顯示自動填入建議，而不要以下拉式選單顯示。</translation>
 <translation id="5704272569086782895">啟用執行緒 GPU 點陣化。</translation>
-<translation id="570544101664452060">實驗性 WebUsb 通知。</translation>
 <translation id="5706551819490830015">編輯帳單地址...</translation>
 <translation id="5707185214361380026">無法載入下列來源的擴充功能：</translation>
 <translation id="5707604204219538797">下一個字詞</translation>
@@ -3443,7 +3438,6 @@
 <translation id="5900302528761731119">Google 個人資料相片</translation>
 <translation id="5900623698597156974">TLS 1.0 候補可與伺服器進行交握，但我們已不再接受 TLS 1.0 候補。請更新伺服器，讓伺服器正確實作版本交涉 (建議更新至支援 TLS 1.2)。</translation>
 <translation id="590253956165195626">詢問是否將網頁翻譯成您所用的語言。</translation>
-<translation id="5902659428109355177">{COUNT,plural, =1{1 個項目}other{# 個項目}}</translation>
 <translation id="5904093760909470684">Proxy 設定</translation>
 <translation id="5906065664303289925">硬體位址：</translation>
 <translation id="5910363049092958439">另存圖片(&amp;V)...</translation>

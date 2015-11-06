@@ -29,7 +29,6 @@
 <translation id="1036511912703768636">Toegang verkrijgen tot een van deze USB-apparaten</translation>
 <translation id="1038168778161626396">Alleen coderen</translation>
 <translation id="1038842779957582377">onbekende naam</translation>
-<translation id="1040931876666128942">WebUSB-meldingen.</translation>
 <translation id="1042174272890264476">Je computer is ook uitgerust met de RLZ-bibliotheek van <ph name="SHORT_PRODUCT_NAME" />. RLZ wijst een niet-unieke, niet-persoonlijke tag toe om de zoekopdrachten en het gebruik van <ph name="SHORT_PRODUCT_NAME" /> te meten als gevolg van een bepaalde promotiecampagne. Deze labels worden soms weergegeven in Google-zoekopdrachten in <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1042574203789536285"><ph name="URL" /> wil grote gegevens permanent op je apparaat opslaan.</translation>
 <translation id="1045157690796831147">Transliteratie (namaskar → നമസ്കാരം)</translation>
@@ -175,7 +174,7 @@
 <translation id="1227507814927581609">Verificatie mislukt tijdens verbinden met '<ph name="DEVICE_NAME" />'.</translation>
 <translation id="1231728991993914119">Melding bij sluiten inschakelen voor gehoste apps.</translation>
 <translation id="1232569758102978740">Naamloos</translation>
-<translation id="1233721473400465416">Taal</translation>
+<translation id="1233721473400465416">Landinstelling</translation>
 <translation id="1234808891666923653">Service Workers</translation>
 <translation id="123578888592755962">Schijf is vol</translation>
 <translation id="1240892293903523606">DOM Inspector</translation>
@@ -328,7 +327,6 @@
 <translation id="1470719357688513792">De nieuwe cookie-instellingen worden van kracht nadat de pagina opnieuw is geladen.</translation>
 <translation id="14720830734893704">Hiermee schakel je ondersteuning voor een virtueel toetsenbord in.</translation>
 <translation id="1474339897586437869">'<ph name="FILENAME" />' is niet geüpload. Er is onvoldoende ruimte beschikbaar in je Google Drive.</translation>
-<translation id="1476503841242751994">{COUNT,plural, =1{1 wachtwoord}other{# wachtwoorden}}</translation>
 <translation id="1476949146811612304">Instellen welke zoekmachine wordt gebruikt bij het zoeken via de <ph name="BEGIN_LINK" />omnibox<ph name="END_LINK" />.</translation>
 <translation id="1477301030751268706">Tokencache van Identity API</translation>
 <translation id="1478340334823509079">Details: <ph name="FILE_NAME" /></translation>
@@ -920,6 +918,7 @@ Nadat je een nieuwe gebruiker met beperkte rechten hebt gemaakt, kun je zijn ins
 <translation id="2326606747676847821">Incognito gaan</translation>
 <translation id="2326931316514688470">App opnieuw &amp;laden</translation>
 <translation id="2327492829706409234">App inschakelen</translation>
+<translation id="2329597144923131178">Log in om je bladwijzers, geschiedenis, wachtwoorden en andere instellingen op al je apparaten te gebruiken.</translation>
 <translation id="2332131598580221120">Bekijken in de Web Store</translation>
 <translation id="2332742915001411729">Terugzetten naar standaardinstelling</translation>
 <translation id="2335122562899522968">Deze pagina stelt cookies in.</translation>
@@ -943,7 +942,6 @@ Nadat je een nieuwe gebruiker met beperkte rechten hebt gemaakt, kun je zijn ins
 <translation id="2359808026110333948">Doorgaan</translation>
 <translation id="236128817791440714">Aanbevolen: stel Smart Lock voor Android in</translation>
 <translation id="236141728043665931">Microfoontoegang altijd blokkeren</translation>
-<translation id="2365626167708453863">Een account kiezen uit je Google Smart Lock</translation>
 <translation id="2367972762794486313">Apps weergeven</translation>
 <translation id="2368075211218459617">Contextueel zoeken inschakelen.</translation>
 <translation id="2370882663124746154">Double-pinyinmethode inschakelen</translation>
@@ -2659,7 +2657,6 @@ Druk op een toets om door te gaan met verkennen.</translation>
 <translation id="4780374166989101364">Hiermee worden experimentele extensie-API's ingeschakeld. Je kunt geen extensies naar de extensiegalerij uploaden die gebruikmaken van experimentele API's.</translation>
 <translation id="4781787911582943401">Scherm inzoomen</translation>
 <translation id="4782449893814226250">Je hebt je ouders gevraagd of je deze pagina mag bezoeken.</translation>
-<translation id="4784085458903013712">{COUNT,plural, =1{1 KB}other{# KB}}</translation>
 <translation id="4784330909746505604">PowerPoint-presentatie</translation>
 <translation id="4785040501822872973">Deze computer wordt over <ph name="LOGOUT_TIME_LEFT" /> seconden opnieuw ingesteld.
 Druk op een toets om door te gaan met verkennen.</translation>
@@ -3189,7 +3186,6 @@ Druk op een toets om door te gaan met verkennen.</translation>
 <translation id="5527474464531963247">Je kunt ook een ander netwerk selecteren.</translation>
 <translation id="5527963985407842218">Activering van knop 'Lezermodus'Reader Mode triggering</translation>
 <translation id="5528368756083817449">Bladwijzerbeheer</translation>
-<translation id="5529098031581368697">Huidige achtergrond is ingesteld door '<ph name="APP_NAME" />'</translation>
 <translation id="5531274207066050939">Google Payments</translation>
 <translation id="5532223876348815659">Algemeen</translation>
 <translation id="5533555070048896610">Transliteratie (namaste → नमस्ते)</translation>
@@ -3305,7 +3301,6 @@ Druk op een toets om door te gaan met verkennen.</translation>
 <translation id="5702898740348134351">Zo&amp;ekmachines bewerken...</translation>
 <translation id="5703594190584829406">Geeft suggesties van Automatisch aanvullen boven op het toetsenbord weer in plaats van in een dropdown-menu.</translation>
 <translation id="5704272569086782895">Threaded GPU-rasterfunctie inschakelen.</translation>
-<translation id="570544101664452060">Experimentele WebUSB-meldingen.</translation>
 <translation id="5706551819490830015">Factureringsadressen beheren...</translation>
 <translation id="5707185214361380026">Laden van extensie mislukt vanuit:</translation>
 <translation id="5707604204219538797">Volgend woord</translation>
@@ -3454,7 +3449,6 @@ Druk op een toets om door te gaan met verkennen.</translation>
 <translation id="5900302528761731119">Google-profielfoto</translation>
 <translation id="5900623698597156974">Een TLS 1.0 fallback kan communiceren met de server, maar we accepteren geen TLS 1.0 fallbacks meer. De server moet worden geüpdatet zodat de versieonderhandeling correct wordt geïmplementeerd en bij voorkeur TLS 1.2 wordt ondersteund.</translation>
 <translation id="590253956165195626">Aanbieden om pagina’s te vertalen die in een voor jou onbekende taal zijn.</translation>
-<translation id="5902659428109355177">{COUNT,plural, =1{1 item}other{# items}}</translation>
 <translation id="5904093760909470684">Proxyconfiguratie</translation>
 <translation id="5906065664303289925">Hardware-adres:</translation>
 <translation id="5910363049092958439">Af&amp;beelding opslaan als...</translation>

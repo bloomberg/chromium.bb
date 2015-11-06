@@ -179,6 +179,7 @@
 <translation id="5019198164206649151">El almacén secundario está en mal estado.</translation>
 <translation id="5031870354684148875">Informacion del Traductor de Google</translation>
 <translation id="5045550434625856497">Contraseña incorrecta</translation>
+<translation id="5065199687811594072">¿Quieres que Chromium guarde la información de esta tarjeta de crédito para completar formularios web?</translation>
 <translation id="5087286274860437796">El certificado del servidor no es válido en este momento.</translation>
 <translation id="5089810972385038852">Estado</translation>
 <translation id="5094747076828555589">Este servidor no ha podido probar que su dominio es <ph name="DOMAIN" />, Chromium no confía en su certificado de seguridad. Este problema puede deberse a una configuración incorrecta o a que un atacante haya interceptado la conexión.</translation>

@@ -29,7 +29,6 @@
 <translation id="1036511912703768636">访问其中的任意 USB 设备</translation>
 <translation id="1038168778161626396">仅加密</translation>
 <translation id="1038842779957582377">未知名称</translation>
-<translation id="1040931876666128942">WebUsb 通知。</translation>
 <translation id="1042174272890264476">您的计算机还内置了 <ph name="SHORT_PRODUCT_NAME" /> 的 RLZ 库。RLZ 会指定非唯一、非个人身份识别代码来衡量某推广活动所带来的搜索量和 <ph name="SHORT_PRODUCT_NAME" /> 使用量。这些标签有时会显示在 <ph name="PRODUCT_NAME" /> 的 Google 搜索查询中。</translation>
 <translation id="1042574203789536285"><ph name="URL" /> 想在您的设备上永久存储大量数据。</translation>
 <translation id="1045157690796831147">音译(namaskar → നമസ്കാരം)</translation>
@@ -327,7 +326,6 @@
 <translation id="1470719357688513792">新的 Cookie 设置会在重新加载网页后生效。</translation>
 <translation id="14720830734893704">启用虚拟键盘支持。</translation>
 <translation id="1474339897586437869">未上传“<ph name="FILENAME" />”，因为您的 Google 云端硬盘没有足够的可用空间。</translation>
-<translation id="1476503841242751994">{COUNT,plural, =1{1 个密码}other{# 个密码}}</translation>
 <translation id="1476949146811612304">设置在通过<ph name="BEGIN_LINK" />多功能框<ph name="END_LINK" />搜索时所用的搜索引擎。</translation>
 <translation id="1477301030751268706">Identity API 令牌缓存</translation>
 <translation id="1478340334823509079">详细信息：<ph name="FILE_NAME" /></translation>
@@ -775,7 +773,7 @@
 <translation id="2135787500304447609">继续(&amp;R)</translation>
 <translation id="2136953289241069843">音译(namaste → नमस्कार)</translation>
 <translation id="2137808486242513288">添加用户</translation>
-<translation id="2142328300403846845">将链接打开为</translation>
+<translation id="2142328300403846845">以其他身份打开链接</translation>
 <translation id="214353449635805613">截取所选区域的屏幕截图</translation>
 <translation id="2143778271340628265">手动配置代理</translation>
 <translation id="2143915448548023856">显示设备设置</translation>
@@ -920,6 +918,7 @@
 <translation id="2326606747676847821">进入隐身模式</translation>
 <translation id="2326931316514688470">重新加载应用(&amp;R)</translation>
 <translation id="2327492829706409234">启用应用</translation>
+<translation id="2329597144923131178">登录后可获取您所有设备上保存的书签、历史记录、密码和其他设置。</translation>
 <translation id="2332131598580221120">在应用店中查看</translation>
 <translation id="2332742915001411729">重置为默认设置</translation>
 <translation id="2335122562899522968">该页用于设置 Cookie。</translation>
@@ -943,7 +942,6 @@
 <translation id="2359808026110333948">继续</translation>
 <translation id="236128817791440714">推荐：设置 Smart Lock（Android 版）</translation>
 <translation id="236141728043665931">始终禁止使用麦克风</translation>
-<translation id="2365626167708453863">从 Google Smart Lock 中选择帐户</translation>
 <translation id="2367972762794486313">显示应用</translation>
 <translation id="2368075211218459617">启用环境相关搜索。</translation>
 <translation id="2370882663124746154">启用双拼模式</translation>
@@ -1517,7 +1515,7 @@
 <translation id="3140353188828248647">将地址栏设为焦点</translation>
 <translation id="3144126448740580210">完成</translation>
 <translation id="3144135466825225871">未能替换 CRX 文件。请检查该文件是否正在使用。</translation>
-<translation id="3144647712221361880">将链接打开为</translation>
+<translation id="3144647712221361880">以其他身份打开链接</translation>
 <translation id="31454997771848827">按域分组</translation>
 <translation id="3147485256806412701">此网站使用的是新的通用顶级域名。</translation>
 <translation id="3149510190863420837">Chrome 应用</translation>
@@ -2635,7 +2633,6 @@
 <translation id="4780374166989101364">启用实验性扩展程序 API。请注意，扩展程序库不允许上传使用实验性 API 的扩展程序。</translation>
 <translation id="4781787911582943401">放大屏幕</translation>
 <translation id="4782449893814226250">已向您父母提出允许您访问此网页的请求。</translation>
-<translation id="4784085458903013712">{COUNT,plural, =1{1 KB}other{# KB}}</translation>
 <translation id="4784330909746505604">PowerPoint 演示文稿</translation>
 <translation id="4785040501822872973">此计算机将在 <ph name="LOGOUT_TIME_LEFT" /> 秒后重置。
 按任意键以继续浏览。</translation>
@@ -3163,7 +3160,6 @@
 <translation id="5527474464531963247">您也可以选择其他网络。</translation>
 <translation id="5527963985407842218">“阅读器模式”触发条件</translation>
 <translation id="5528368756083817449">书签管理器</translation>
-<translation id="5529098031581368697">当前壁纸是由“<ph name="APP_NAME" />”设置的</translation>
 <translation id="5531274207066050939">Google Payments</translation>
 <translation id="5532223876348815659">全局</translation>
 <translation id="5533555070048896610">音译(namaste → नमस्ते)</translation>
@@ -3278,7 +3274,6 @@
 <translation id="5702898740348134351">修改搜索引擎(&amp;E)...</translation>
 <translation id="5703594190584829406">在键盘顶部（而非下拉菜单中）显示自动填充建议。</translation>
 <translation id="5704272569086782895">启用线程式 GPU 栅格化。</translation>
-<translation id="570544101664452060">WebUsb 通知（实验性功能）。</translation>
 <translation id="5706551819490830015">管理帐单邮寄地址…</translation>
 <translation id="5707185214361380026">无法加载以下来源的扩展程序：</translation>
 <translation id="5707604204219538797">下一个字</translation>
@@ -3424,7 +3419,6 @@
 <translation id="5900302528761731119">Google 个人资料照片</translation>
 <translation id="5900623698597156974">TLS 1.0 回退能够与服务器握手，但我们已不再接受 TLS 1.0 回退。服务器需要更新，以便正确实现版本协商（最好能支持 TLS 1.2）。</translation>
 <translation id="590253956165195626">询问是否翻译非您所用语言的网页。</translation>
-<translation id="5902659428109355177">{COUNT,plural, =1{1 项内容}other{# 项内容}}</translation>
 <translation id="5904093760909470684">代理配置</translation>
 <translation id="5906065664303289925">硬件地址：</translation>
 <translation id="5910363049092958439">图片存储为(&amp;V)...</translation>
@@ -3920,7 +3914,7 @@
 <translation id="666541661050183336">降低 iframe 资源的加载优先级。</translation>
 <translation id="6666647326143344290">使用您的 Google 帐户</translation>
 <translation id="6667102209320924827">停用显示器颜色校准。</translation>
-<translation id="6675665718701918026">定点设备已连接</translation>
+<translation id="6675665718701918026">已连接指针设备</translation>
 <translation id="6677037229676347494">正确 ID 应为“<ph name="EXPECTED_ID" />”，但实际 ID 为“<ph name="NEW_ID" />”。</translation>
 <translation id="6680028776254050810">切换用户</translation>
 <translation id="6681668084120808868">拍照</translation>
@@ -4057,7 +4051,7 @@
 <translation id="6880587130513028875">已拦截此网页上的图片。</translation>
 <translation id="6883209331334683549"><ph name="PRODUCT_NAME" />帮助</translation>
 <translation id="6886871292305414135">在新标签页中打开链接(&amp;T)</translation>
-<translation id="6892812721183419409">将链接打开为 <ph name="USER" /></translation>
+<translation id="6892812721183419409">以 <ph name="USER" /> 身份打开链接</translation>
 <translation id="6896758677409633944">复制</translation>
 <translation id="6898440773573063262">信息亭模式下的应用现在可配置为在此设备上自动启动。</translation>
 <translation id="6898699227549475383">组织 (O)</translation>
@@ -5608,7 +5602,7 @@
 <translation id="9137013805542155359">显示原始网页</translation>
 <translation id="9137356749601179867">显示相应复选框，以便指定是否在本地保存从服务器下载的信用卡数据。</translation>
 <translation id="913758436357682283">缅甸语Myansan键盘</translation>
-<translation id="9137916601698928395">将链接打开为 <ph name="USER" /></translation>
+<translation id="9137916601698928395">以 <ph name="USER" /> 身份打开链接</translation>
 <translation id="914566504855049417">为 WebRTC 启用 DTLS 1.2 协商。</translation>
 <translation id="9147392381910171771">选项(&amp;O)</translation>
 <translation id="9148058034647219655">退出</translation>

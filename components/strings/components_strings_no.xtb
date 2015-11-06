@@ -179,6 +179,7 @@
 <translation id="5019198164206649151">Ugyldig funksjonalitet for sikkerhetskopiering</translation>
 <translation id="5031870354684148875">Om Google Oversett</translation>
 <translation id="5045550434625856497">Feil passord</translation>
+<translation id="5065199687811594072">Vil du at Chromium skal lagre denne kredittkortinformasjonen for utfylling av nettskjemaer?</translation>
 <translation id="5087286274860437796">Sertifikatet til tjeneren er ikke gyldig for øyeblikket.</translation>
 <translation id="5089810972385038852">Fylke / delstat</translation>
 <translation id="5094747076828555589">Denne tjeneren kunne ikke bevise at den er <ph name="DOMAIN" />. Sikkerhetssertifikatet til tjeneren er ikke klarert av Chromium. Dette kan være forårsaket av en feilkonfigurering eller en angriper som avskjærer tilkoblingen din.</translation>
@@ -269,7 +270,7 @@
 <translation id="7298195798382681320">Anbefalt</translation>
 <translation id="7334320624316649418">&amp;Omorganiser likevel</translation>
 <translation id="7353601530677266744">Kommandolinje </translation>
-<translation id="7378627244592794276">Nei takk</translation>
+<translation id="7378627244592794276">Nei, takk</translation>
 <translation id="7400418766976504921">Nettadresse</translation>
 <translation id="7419106976560586862">Profilbane</translation>
 <translation id="7441627299479586546">Feil emne for innstillinger</translation>
@@ -288,7 +289,7 @@
 <translation id="7761701407923456692">Tjenerens sertifikat samsvarer ikke med nettadressen.</translation>
 <translation id="777702478322588152">Prefektur</translation>
 <translation id="7791543448312431591">Legg til</translation>
-<translation id="780301667611848630">Nei takk</translation>
+<translation id="780301667611848630">Nei, takk</translation>
 <translation id="7805768142964895445">Status</translation>
 <translation id="7813600968533626083">Vil du fjerne skjemaforslaget fra Chrome?</translation>
 <translation id="7887683347370398519">Kontrollér CVC-koden din, og prøv igjen.</translation>

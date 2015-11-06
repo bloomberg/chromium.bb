@@ -29,7 +29,6 @@
 <translation id="1036511912703768636">Bu USB cihazların herhangi birine erişme</translation>
 <translation id="1038168778161626396">Yalnızca Şifrele</translation>
 <translation id="1038842779957582377">bilinmeyen ad</translation>
-<translation id="1040931876666128942">WebUsb bildirimleri.</translation>
 <translation id="1042174272890264476">Bilgisayarınızda aynı zamanda yerleşik <ph name="SHORT_PRODUCT_NAME" /> RLZ kitaplığı da bulunur. RLZ, aramaları ve belirli bir promosyon kampanyasının sağladığı <ph name="SHORT_PRODUCT_NAME" /> kullanımını ölçmek için benzersiz olmayan ve kimlik bilgileri içermeyen bir etiket atar. Bu etiketler bazen <ph name="PRODUCT_NAME" /> içindeki Google Arama sorgularında görünür.</translation>
 <translation id="1042574203789536285"><ph name="URL" /> büyük miktarda veriyi cihazınızda kalıcı olarak depolamak istiyor.</translation>
 <translation id="1045157690796831147">Harf çevirisi (namaskar → നമസ്കാരം)</translation>
@@ -328,7 +327,6 @@
 <translation id="1470719357688513792">Yeni çerez ayarları sayfa yeniden yüklendikten sonra etkinleşecek.</translation>
 <translation id="14720830734893704">Sanal klavye desteğini etkinleştirin.</translation>
 <translation id="1474339897586437869">"<ph name="FILENAME" />" yüklenmedi. Google Drive'ınızda yeterli boş alan yok.</translation>
-<translation id="1476503841242751994">{COUNT,plural, =1{1 şifre}other{# şifre}}</translation>
 <translation id="1476949146811612304"><ph name="BEGIN_LINK" />Çok amaçlı adres çubuğundan<ph name="END_LINK" /> arama yaparken hangi arama motorunun kullanılacağını ayarlayın.</translation>
 <translation id="1477301030751268706">Kimlik API'sı Jeton Önbelleği</translation>
 <translation id="1478340334823509079">Ayrıntılar: <ph name="FILE_NAME" /></translation>
@@ -923,6 +921,7 @@ Yeni bir denetlenen kullanıcı oluşturduktan sonra, istediğiniz zaman herhang
 <translation id="2326606747676847821">Gizli mod</translation>
 <translation id="2326931316514688470">&amp;Uygulamayı yeniden yükle</translation>
 <translation id="2327492829706409234">Uygulamayı etkinleştir</translation>
+<translation id="2329597144923131178">Yer işaretlerinize, geçmişinize ve diğer ayarlarınıza tüm cihazlarınızdan erişmek için oturum açın.</translation>
 <translation id="2332131598580221120">Mağazada görüntüle</translation>
 <translation id="2332742915001411729">Varsayılana sıfırla</translation>
 <translation id="2335122562899522968">Bu sayfa çerez ayarlar.</translation>
@@ -946,7 +945,6 @@ Yeni bir denetlenen kullanıcı oluşturduktan sonra, istediğiniz zaman herhang
 <translation id="2359808026110333948">Devam Et</translation>
 <translation id="236128817791440714">Önerilen: Android için Smart Lock özelliğini kurun</translation>
 <translation id="236141728043665931">Mikrofon erişimini her zaman engelle</translation>
-<translation id="2365626167708453863">Google Smart Lock'unuzdan bir hesap seçin</translation>
 <translation id="2367972762794486313">Uygulamaları göster</translation>
 <translation id="2368075211218459617">Bağlama Dayalı Arama'yı etkinleştir.</translation>
 <translation id="2370882663124746154">Çift-Pinyin modunu etkinleştir</translation>
@@ -2663,7 +2661,6 @@ Keşfetmeye devam etmek için herhangi bir tuşa basın.</translation>
 <translation id="4780374166989101364">Deneysel uzantı API'larını etkinleştirir. Uzantı galerisinin deneysel API'lar kullanan uzantıları yüklemenize izin vermeyeceğini unutmayın.</translation>
 <translation id="4781787911582943401">Ekranı yakınlaştır</translation>
 <translation id="4782449893814226250">Ebeveynlerinize, bu sayfayı ziyaret etmenizin uygun olup olmadığını sordunuz.</translation>
-<translation id="4784085458903013712">{COUNT,plural, =1{1 kB}other{# kB}}</translation>
 <translation id="4784330909746505604">PowerPoint sunusu</translation>
 <translation id="4785040501822872973">Bu bilgisayar <ph name="LOGOUT_TIME_LEFT" /> saniye içinde sıfırlanacak.
 Keşfetmeye devam etmek için herhangi bir tuşa basın.</translation>
@@ -3194,7 +3191,6 @@ Keşfetmeye devam etmek için herhangi bir tuşa basın.</translation>
 <translation id="5527474464531963247">Başka bir ağ da seçebilirsiniz.</translation>
 <translation id="5527963985407842218">Okuyucu Modu'nun tetiklenmesi</translation>
 <translation id="5528368756083817449">Yer İşareti Yöneticisi</translation>
-<translation id="5529098031581368697">Geçerli duvar kağıdı "<ph name="APP_NAME" />" tarafından ayarlandı</translation>
 <translation id="5531274207066050939">Google Payments</translation>
 <translation id="5532223876348815659">Evrensel</translation>
 <translation id="5533555070048896610">Harf çevirisi (namaste → नमस्ते)</translation>
@@ -3310,7 +3306,6 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="5702898740348134351">&amp;Arama Motorlarını Düzenle...</translation>
 <translation id="5703594190584829406">Otomatik Doldur önerilerini bir açılır liste yerine klavyenin üstünde gösterir.</translation>
 <translation id="5704272569086782895">Dizi halinde GPU pikselleştirmesini etkinleştirin.</translation>
-<translation id="570544101664452060">Deneysel WebUsb bildirimleri.</translation>
 <translation id="5706551819490830015">Faturalandırma adreslerini yönet...</translation>
 <translation id="5707185214361380026">Uzantı şuradan yüklenemedi:</translation>
 <translation id="5707604204219538797">Sonraki kelime</translation>
@@ -3459,7 +3454,6 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="5900302528761731119">Google Profil fotoğrafı</translation>
 <translation id="5900623698597156974">Bir TLS 1.0 yedeği, sunucu ile anlaşabildi, ancak artık TLS 1.0 yedeklerini kabul etmiyoruz. Sunucunun sürüm anlaşmasını doğru şekilde yapabilmesi ve tercihen TLS 1.2'yi desteklemesi için güncellenmesi gerekiyor.</translation>
 <translation id="590253956165195626">Okuduğum dilde olmayan sayfaları çevirmeyi öner.</translation>
-<translation id="5902659428109355177">{COUNT,plural, =1{1 öğe}other{# öğe}}</translation>
 <translation id="5904093760909470684">Proxy yapılandırması</translation>
 <translation id="5906065664303289925">Donanım adresi:</translation>
 <translation id="5910363049092958439">Resmi Farklı Ka&amp;ydet...</translation>

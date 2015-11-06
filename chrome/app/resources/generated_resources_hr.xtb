@@ -29,7 +29,6 @@
 <translation id="1036511912703768636">pristupiti bilo kojem od ovih USB uređaja</translation>
 <translation id="1038168778161626396">Samo za šifriranje</translation>
 <translation id="1038842779957582377">nepoznati naziv</translation>
-<translation id="1040931876666128942">Obavijesti WebUsba.</translation>
 <translation id="1042174272890264476">Vaše računalo ima ugrađenu RLZ biblioteku preglednika <ph name="SHORT_PRODUCT_NAME" />. RLZ dodjeljuje nejedinstvenu oznaku koja ne može poslužiti za osobnu identifikaciju za mjerenje pretraživanja i upotrebu proizvoda <ph name="SHORT_PRODUCT_NAME" /> potaknutu određenom promotivnom kampanjom. Te se oznake ponekad prikazuju u upitima Google pretraživanja u pregledniku <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1042574203789536285"><ph name="URL" /> želi trajno pohraniti veliku količinu podataka na vaš uređaj.</translation>
 <translation id="1045157690796831147">transliteracija (namaskar → നമസ്കാരം)</translation>
@@ -328,7 +327,6 @@
 <translation id="1470719357688513792">Nove postavke kolačića postat će aktivne nakon ponovnog učitavanja stranice.</translation>
 <translation id="14720830734893704">Omogućuje podršku za virtualnu tipkovnicu.</translation>
 <translation id="1474339897586437869">Datoteka "<ph name="FILENAME" />" nije prenesena. Nema dovoljno slobodnog prostora na Google disku.</translation>
-<translation id="1476503841242751994">{COUNT,plural, =1{1 zaporka}one{# zaporka}few{# zaporke}other{# zaporki}}</translation>
 <translation id="1476949146811612304">Postavljanje odabira tražilica koje će se upotrebljavati kod pretraživanja iz <ph name="BEGIN_LINK" />višenamjenskog okvira<ph name="END_LINK" />.</translation>
 <translation id="1477301030751268706">Predmemoriranje oznake API-ja Identity</translation>
 <translation id="1478340334823509079">Pojedinosti: <ph name="FILE_NAME" /></translation>
@@ -919,6 +917,7 @@ Nakon izrade novog nadziranog korisnika možete upravljati njegovim postavkama u
 <translation id="2326606747676847821">Anonimni način</translation>
 <translation id="2326931316514688470">&amp;Ponovo učitaj aplikaciju</translation>
 <translation id="2327492829706409234">Omogući aplikaciju</translation>
+<translation id="2329597144923131178">Prijavite se da biste imali svoje oznake, povijest, zaporke i druge postavke na svim svojim uređajima.</translation>
 <translation id="2332131598580221120">Prikaži u Web-trgovini</translation>
 <translation id="2332742915001411729">Vrati na zadano</translation>
 <translation id="2335122562899522968">Ova stranica postavila je kolačiće.</translation>
@@ -942,7 +941,6 @@ Nakon izrade novog nadziranog korisnika možete upravljati njegovim postavkama u
 <translation id="2359808026110333948">Nastavi</translation>
 <translation id="236128817791440714">Preporučeno: postavite Smart Lock za Android</translation>
 <translation id="236141728043665931">Uvijek blokiraj pristup mikrofonu</translation>
-<translation id="2365626167708453863">Odaberite račun sa svojeg Google Smart Locka</translation>
 <translation id="2367972762794486313">Prikaz aplikacija</translation>
 <translation id="2368075211218459617">Omogućite kontekstualno pretraživanje.</translation>
 <translation id="2370882663124746154">Omogući način Double-Pinyin</translation>
@@ -2651,7 +2649,6 @@ Pritisnite bilo koju tipku da biste nastavili istraživati.</translation>
 <translation id="4780374166989101364">Omogućuje API-je eksperimentalnih proširenja. Napominjemo da galerija proširenja ne dopušta prijenos proširenja koja upotrebljavaju eksperimentalne API-je.</translation>
 <translation id="4781787911582943401">Uvećavanje zaslona</translation>
 <translation id="4782449893814226250">Pitao si roditelje smiješ li otvoriti tu stranicu.</translation>
-<translation id="4784085458903013712">{COUNT,plural, =1{1 KB}one{# KB}few{# KB}other{# KB}}</translation>
 <translation id="4784330909746505604">PowerPointova prezentacija</translation>
 <translation id="4785040501822872973">Ovo će se računalo poništiti za <ph name="LOGOUT_TIME_LEFT" /> s.
 Pritisnite bilo koju tipku da biste nastavili istraživati.</translation>
@@ -3182,7 +3179,6 @@ Pritisnite bilo koju tipku da biste nastavili istraživati.</translation>
 <translation id="5527474464531963247">Također možete odabrati neku drugu mrežu.</translation>
 <translation id="5527963985407842218">Pokretanje načina čitača</translation>
 <translation id="5528368756083817449">Upravitelj oznaka</translation>
-<translation id="5529098031581368697">Trenutačnu pozadinu postavila je aplikacija "<ph name="APP_NAME" />"</translation>
 <translation id="5531274207066050939">Google Payments</translation>
 <translation id="5532223876348815659">Globalno</translation>
 <translation id="5533555070048896610">transliteracija (namaste → नमस्ते)</translation>
@@ -3298,7 +3294,6 @@ Pritisnite bilo koju tipku da biste nastavili istraživati.</translation>
 <translation id="5702898740348134351">&amp;Uredi tražilice...</translation>
 <translation id="5703594190584829406">Prikazuje prijedloge Automatskog popunjavanja pri vrhu tipkovnice, a ne na padajućem izborniku.</translation>
 <translation id="5704272569086782895">Omogući GPU rasterizaciju u nizovima.</translation>
-<translation id="570544101664452060">Eksperimentalne obavijesti WebUsb-a.</translation>
 <translation id="5706551819490830015">Upravljanje adresama za naplatu...</translation>
 <translation id="5707185214361380026">Nije učitano proširenje s lokacije:</translation>
 <translation id="5707604204219538797">Sljedeća riječ</translation>
@@ -3445,7 +3440,6 @@ Pritisnite bilo koju tipku da biste nastavili istraživati.</translation>
 <translation id="5900302528761731119">Fotografija Google profila</translation>
 <translation id="5900623698597156974">Rezervni TLS 1.0 uspio se rukovati s poslužiteljem, ali više ne prihvaćamo rezervne protokole TLS 1.0. Poslužitelj se mora ažurirati da bi pravilno primjenjivao pregovaranje o verziji i po mogućnosti podržavao TLS 1.2.</translation>
 <translation id="590253956165195626">Ponudi prijevod stranica koje nisu na jeziku koji čitam.</translation>
-<translation id="5902659428109355177">{COUNT,plural, =1{1 stavka}one{# stavka}few{# stavke}other{# stavki}}</translation>
 <translation id="5904093760909470684">Konfiguracija proxyja</translation>
 <translation id="5906065664303289925">Hardverska adresa:</translation>
 <translation id="5910363049092958439">Sp&amp;remi sliku kao...</translation>

@@ -29,7 +29,6 @@
 <translation id="1036511912703768636">‏الدخول إلى أي من أجهزة USB هذه</translation>
 <translation id="1038168778161626396">التشفير فقط</translation>
 <translation id="1038842779957582377">اسم غير معروف</translation>
-<translation id="1040931876666128942">‏إشعارات WebUsb.</translation>
 <translation id="1042174272890264476">‏يأتي جهاز الكمبيوتر أيضًا مزودًا بمكتبة RLZ مضمنة للمنتج <ph name="SHORT_PRODUCT_NAME" />. تعيّن RLZ علامة غير فريدة وغير متعلقة بتحديد الشخصية من أجل قياس عمليات البحث ومعدل استخدام <ph name="SHORT_PRODUCT_NAME" /> الذي تؤثر فيه حملة ترويجية محددة. تظهر هذه التصنيفات أحيانًا في طلبات بحث Google في <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1042574203789536285">يريد <ph name="URL" /> تخزين البيانات الكبيرة بشكل دائم على جهازك.</translation>
 <translation id="1045157690796831147">‏التحويل الصوتي (ناماسكار ← നമസ്കാരം)</translation>
@@ -328,7 +327,6 @@
 <translation id="1470719357688513792">ستسري إعدادات ملفات تعريف الارتباط بعد إعادة تحميل الصفحة.</translation>
 <translation id="14720830734893704">تمكين إتاحة لوحة المفاتيح الظاهرية.</translation>
 <translation id="1474339897586437869">‏لم يتم تحميل "<ph name="FILENAME" />". حيث لا توجد لديك مساحة فارغة كافية في Google Drive.</translation>
-<translation id="1476503841242751994">{COUNT,plural, =1{كلمة مرور واحدة}zero{# كلمات مرور}two{ # كلمتا مرور}few{# كلمات مرور}many{# كلمة مرور}other{# من كلمات المرور}}</translation>
 <translation id="1476949146811612304">تعيين محرك البحث الذي يتم استخدامه عند البحث في
         <ph name="BEGIN_LINK" />المربع متعدد الاستخدامات<ph name="END_LINK" />.</translation>
 <translation id="1477301030751268706">ذاكرة التخزين المؤقت للرمز المميز لواجهة برمجة تطبيقات الهوية</translation>
@@ -920,6 +918,7 @@
 <translation id="2326606747676847821">الانتقال إلى وضع التصفُّح المتخفّي</translation>
 <translation id="2326931316514688470">&amp;إعادة تحميل التطبيق</translation>
 <translation id="2327492829706409234">تمكين التطبيق</translation>
+<translation id="2329597144923131178">سجّل الدخول للحصول على الإشارات المرجعية، والسجل، وكلمات المرور، والإعدادات الأخرى على كل أجهزتك.</translation>
 <translation id="2332131598580221120">عرض في المتجر</translation>
 <translation id="2332742915001411729">إعادة تعيين على الإعدادات الافتراضية</translation>
 <translation id="2335122562899522968">تُعين هذه الصفحة ملفات تعريف الارتباط.</translation>
@@ -943,7 +942,6 @@
 <translation id="2359808026110333948">المتابعة</translation>
 <translation id="236128817791440714">‏مُقترح: إعداد Smart Lock لجهاز Android</translation>
 <translation id="236141728043665931">حظر الدخول إلى الميكروفون دومًا</translation>
-<translation id="2365626167708453863">‏اختيار حساب من Smart Lock من Google</translation>
 <translation id="2367972762794486313">إظهار التطبيقات</translation>
 <translation id="2368075211218459617">تمكين البحث السياقي.</translation>
 <translation id="2370882663124746154">تمكين وضع "بين ين" المزدوج</translation>
@@ -2650,7 +2648,6 @@
 <translation id="4780374166989101364">لتمكين واجهات برمجة التطبيقات التجريبية للإضافة. لاحظ أن معرض الإضافات لا يسمح لك بتحميل الإضافات التي تستخدم واجهات برمجة تطبيقات تجريبية.</translation>
 <translation id="4781787911582943401">تكبير الشاشة</translation>
 <translation id="4782449893814226250">لقد سألت والديك ما إذا كان مناسبًا لك زيارة هذه الصفحة.</translation>
-<translation id="4784085458903013712">{COUNT,plural, =1{كيلوبايت واحد}zero{# كيلو بايت}two{كيلوبايتان اثنان #}few{# كيلوبايتات}many{# كيلوبايتًا}other{# من الكيلوبايتات}}</translation>
 <translation id="4784330909746505604">‏عرض تقديمي من PowerPoint</translation>
 <translation id="4785040501822872973">ستتم إعادة تعيين هذا الكمبيوتر في خلال <ph name="LOGOUT_TIME_LEFT" /> ثانية.
 اضغط على أي مفتاح لمتابعة الاستكشاف.</translation>
@@ -3180,7 +3177,6 @@
 <translation id="5527474464531963247">يمكنك أيضا تحديد شبكة أخرى.</translation>
 <translation id="5527963985407842218">تشغيل وضع القارئ</translation>
 <translation id="5528368756083817449">مدير الإشارات</translation>
-<translation id="5529098031581368697">الخلفية الحالية من إعداد "<ph name="APP_NAME" />"</translation>
 <translation id="5531274207066050939">Google Payments</translation>
 <translation id="5532223876348815659">عام</translation>
 <translation id="5533555070048896610">‏التحويل الصوتي (ناماستي ← नमस्ते)</translation>
@@ -3296,7 +3292,6 @@
 <translation id="5702898740348134351">&amp;تعديل محركات البحث...</translation>
 <translation id="5703594190584829406">تظهر اقتراحات الملء التلقائي في أعلى لوحة المفاتيح بدلاً من القائمة المنسدلة.</translation>
 <translation id="5704272569086782895">تمكين المسح المجالي لوحدة معالجة الرسومات التي تتضمن سلسلة من المحادثات</translation>
-<translation id="570544101664452060">‏إشعارات WebUsb التجريبية.</translation>
 <translation id="5706551819490830015">إدارة عناوين إرسال الفواتير...</translation>
 <translation id="5707185214361380026">فشل تحميل الإضافة من:</translation>
 <translation id="5707604204219538797">الكلمة التالية</translation>
@@ -3443,7 +3438,6 @@
 <translation id="5900302528761731119">‏صورة الملف الشخصي في Google</translation>
 <translation id="5900623698597156974">تُمكن طبقة النقل الآمنة 1.0 الاحتياطية من تأكيد الاتصال بالخادم، لكننا لم نعد نقبل طبقة النقل الآمنة 1.0 الاحتياطية. يلزم تحديث الخادم لتنفيذ تفاوض الإصدار بشكل صحيح ودعم طبقة النقل الآمنة 1.2 بشكل أفضل.</translation>
 <translation id="590253956165195626">عرض ترجمة الصفحات المكتوبة بلغة بخلاف لغتك.</translation>
-<translation id="5902659428109355177">{COUNT,plural, =1{عنصر واحد}zero{# عناصر}two{عنصران #}few{# عناصر}many{# عنصرًا}other{# من العناصر}}</translation>
 <translation id="5904093760909470684">تهيئة الخادم الوكيل</translation>
 <translation id="5906065664303289925">عنوان الأجهزة:</translation>
 <translation id="5910363049092958439">حفظ ال&amp;صورة باسم...</translation>

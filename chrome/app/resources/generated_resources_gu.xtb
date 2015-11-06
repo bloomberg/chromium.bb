@@ -29,7 +29,6 @@
 <translation id="1036511912703768636">આ USB ઉપકરણોમાંથી કોઈપણ ઍક્સેસ કરો</translation>
 <translation id="1038168778161626396">ફક્ત ચિહ્નિત કરો</translation>
 <translation id="1038842779957582377">અજ્ઞાત નામ</translation>
-<translation id="1040931876666128942">WebUsb સૂચનાઓ.</translation>
 <translation id="1042174272890264476">તમારા કમ્પ્યુટરની સાથે <ph name="SHORT_PRODUCT_NAME" /> ની RLZ લાઇબ્રેરી બિલ્ટ ઇન પણ આવે છે. RLZ વિશેષ પ્રચારાત્મક ઝુંબેશ દ્વારા ચલાવવામાં આવતી શોધ અને <ph name="SHORT_PRODUCT_NAME" /> ઉપયોગને માપવા માટે બિન-અદ્વિતીય, બિન-વ્યક્તિગત રૂપે ઓળખી શકાય તેવા ટૅગ સોંપે છે. આ લેબલ્સ કેટલીકવાર <ph name="PRODUCT_NAME" /> માં Google શોધ ક્વેરીઝમાં દેખાય છે.</translation>
 <translation id="1042574203789536285"><ph name="URL" /> તમારા ઉપકરણ પર કાયમી ધોરણે વિશાળ ડેટા સ્ટોર કરવા માંગે છે.</translation>
 <translation id="1045157690796831147">લિવ્યંતરણ (namaskar → നമസ്കാരം)</translation>
@@ -328,7 +327,6 @@
 <translation id="1470719357688513792">નવી કૂકી સેટિંગ્સ પૃષ્ઠ ફરીથી લોડ કર્યા પછી પ્રભાવમાં આવશે.</translation>
 <translation id="14720830734893704">વર્ચ્યુઅલ કીબોર્ડ સમર્થનને સક્ષમ કરો</translation>
 <translation id="1474339897586437869">"<ph name="FILENAME" />" ને અપલોડ કરવામાં આવી ન હતી. તમારી Google ડ્રાઇવમાં પૂરતી ખાલી જગ્યા નથી.</translation>
-<translation id="1476503841242751994">{COUNT,plural, =1{1 પાસવર્ડ}one{# પાસવર્ડ}other{# પાસવર્ડ}}</translation>
 <translation id="1476949146811612304"><ph name="BEGIN_LINK" />omnibox<ph name="END_LINK" /> થી શોધ કરતી વખતે કયા શોધ એંજીનનો ઉપયોગ કરવો તે સેટ કરો.</translation>
 <translation id="1477301030751268706">ઓળખ API ટોકન કેશ</translation>
 <translation id="1478340334823509079">વિગતો: <ph name="FILE_NAME" /></translation>
@@ -924,6 +922,7 @@
 <translation id="2326606747676847821">છુપામાં જાઓ</translation>
 <translation id="2326931316514688470">એપ્લિકેશન &amp;ફરીથી લોડ કરો</translation>
 <translation id="2327492829706409234">એપ્લિકેશન સક્ષમ કરો</translation>
+<translation id="2329597144923131178">તમારા તમામ ઉપકરણો પર તમારા બુકમાર્ક્સ, ઇતિહાસ, પાસવર્ડ્સ અને અન્ય સેટિંગ્સ મેળવવા માટે સાઇન ઇન કરો.</translation>
 <translation id="2332131598580221120">દુકાનમાં જુઓ</translation>
 <translation id="2332742915001411729">ડિફોલ્ટ પર ફરીથી સેટ કરો</translation>
 <translation id="2335122562899522968">આ પૃષ્ઠ કૂકીઝ સેટ કરે છે.</translation>
@@ -947,7 +946,6 @@
 <translation id="2359808026110333948">ચાલુ રાખો</translation>
 <translation id="236128817791440714">ભલામણ કરેલ: Android માટે Smart Lock સેટ કરો</translation>
 <translation id="236141728043665931">માઇક્રોફોનની ઍક્સેસને હંમેશા અવરોધિત કરો</translation>
-<translation id="2365626167708453863">તમારા Google Smart Lock થી એક એકાઉન્ટ પસંદ કરો</translation>
 <translation id="2367972762794486313">એપ્લિકેશનો બતાવો</translation>
 <translation id="2368075211218459617">સાંદર્ભિક શોધને સક્ષમ કરો.</translation>
 <translation id="2370882663124746154">Double-Pinyin મોડને સક્ષમ કરો </translation>
@@ -2663,7 +2661,6 @@
 <translation id="4780374166989101364">પ્રાયોગિક એક્સ્ટેંશન્સ API ને સક્ષમ કરે છે. નોંધ રાખો કે એક્સ્ટેંશન ગેલેરીથી તમે પ્રાયોગિક API નો ઉપયોગ કરતા એક્સ્ટેંશન્સને અપલોડ કરી શકતા નથી.</translation>
 <translation id="4781787911582943401">સ્ક્રીનનું ઝૂમ વધારો</translation>
 <translation id="4782449893814226250">તમે આ પૃષ્ઠની મુલાકાત લો તે ઠીક છે કે કેમ તેવું તમે તમારા માતાપિતાને પૂછ્યું.</translation>
-<translation id="4784085458903013712">{COUNT,plural, =1{1 kB}one{# kB}other{# kB}}</translation>
 <translation id="4784330909746505604">PowerPoint પ્રસ્તુતિ</translation>
 <translation id="4785040501822872973">આ કમ્પ્યુટર <ph name="LOGOUT_TIME_LEFT" /> સેકંડમાં ફરીથી સેટ થશે.
 અન્વેષણ ચાલુ રાખવા માટે કોઈપણ કી દબાવો.</translation>
@@ -3192,7 +3189,6 @@
 <translation id="5527474464531963247">તમે બીજું નેટવર્ક પણ પસંદ કરી શકો છો. </translation>
 <translation id="5527963985407842218">રીડર મોડ ટ્રિગર કરી રહ્યું છે</translation>
 <translation id="5528368756083817449">બુકમાર્ક વ્યવસ્થાપક</translation>
-<translation id="5529098031581368697">'<ph name="APP_NAME" />' દ્વારા વર્તમાન વૉલપેપર સેટ કરવામાં આવ્યું છે</translation>
 <translation id="5531274207066050939">Google Payments</translation>
 <translation id="5532223876348815659">વૈશ્વિક</translation>
 <translation id="5533555070048896610">લિવ્યંતરણ (namaste → नमस्ते)</translation>
@@ -3308,7 +3304,6 @@
 <translation id="5702898740348134351">&amp;શોધ એન્જિન્સ સંપાદિત કરો...</translation>
 <translation id="5703594190584829406">ડ્રોપડાઉનને બદલે કીબોર્ડની ટોચ પર સ્વતઃભરણ સૂચનો દર્શાવે છે.</translation>
 <translation id="5704272569086782895">GPU રાસ્ટરાઇઝેશનને સક્ષમ કરો.</translation>
-<translation id="570544101664452060">પ્રાયોગિક WebUsb સૂચનાઓ.</translation>
 <translation id="5706551819490830015">બિલિંગ સરનામાં સંચાલિત કરો...</translation>
 <translation id="5707185214361380026">અહીંથી એક્સ્ટેન્શનને લોડ કરવામાં નિષ્ફળ:</translation>
 <translation id="5707604204219538797">આગલો શબ્દ</translation>
@@ -3457,7 +3452,6 @@
 <translation id="5900302528761731119">Google પ્રોફાઇલ ફોટો</translation>
 <translation id="5900623698597156974">TLS 1.0 ફૉલબેક સર્વર સાથે હેન્ડશેક કરવામાં સમર્થ હતું, પરંતુ અમે હવે TLS 1.0 ફૉલબેક્સ સ્વીકારતાં નથી. સંસ્કરણ નિગોશિએશનને ઠીકથી લાગુ કરવા તથા TLS 1.2 ને અગ્રીમપણે સમર્થિત કરવા માટે સર્વરને અપડેટ કરવાની જરૂર છે.</translation>
 <translation id="590253956165195626">તમે વાંચો છો તે ભાષામાં ન હોય તેવા પૃષ્ઠોના અનુવાદની ઓફર કરો.</translation>
-<translation id="5902659428109355177">{COUNT,plural, =1{1 આઇટમ}one{# આઇટમ}other{# આઇટમ}}</translation>
 <translation id="5904093760909470684">પ્રોક્સી ગોઠવણી</translation>
 <translation id="5906065664303289925">હાર્ડવેર સરનામું:</translation>
 <translation id="5910363049092958439">છબીને આ રૂપે સા&amp;ચવો...</translation>

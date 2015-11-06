@@ -29,7 +29,6 @@
 <translation id="1036511912703768636">Достъп до всяко от тези USB устройства</translation>
 <translation id="1038168778161626396">Само шифроване</translation>
 <translation id="1038842779957582377">неизвестно име</translation>
-<translation id="1040931876666128942">Известия от WebUsb.</translation>
 <translation id="1042174272890264476">Компютърът ви също се предлага с библиотеката RLZ на <ph name="SHORT_PRODUCT_NAME" />, която е вградена. Тя задава неуникален и непозволяващ лично идентифициране маркер за измерване на търсенията и използването на <ph name="SHORT_PRODUCT_NAME" />, стимулирани от определена промоционална кампания. Тези етикети понякога се показват в заявките за търсене с Google в <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1042574203789536285"><ph name="URL" /> иска да съхранява за постоянно голямо количество данни на устройството ви.</translation>
 <translation id="1045157690796831147">Транслитерация (namaskar → നമസ്കാരം)</translation>
@@ -327,7 +326,6 @@
 <translation id="1470719357688513792">Новите настройки за „бисквитките“ ще влязат в сила след презареждането на страницата.</translation>
 <translation id="14720830734893704">Активирайте поддръжката за виртуална клавиатура.</translation>
 <translation id="1474339897586437869">Файлът „<ph name="FILENAME" />“ не бе качен. Нямате достатъчно свободно място в Google Диск.</translation>
-<translation id="1476503841242751994">{COUNT,plural, =1{1 парола}other{# пароли}}</translation>
 <translation id="1476949146811612304">Задайте коя търсеща машина да се използва при търсене от <ph name="BEGIN_LINK" />полето за всичко<ph name="END_LINK" />.</translation>
 <translation id="1477301030751268706">Кеш на означенията за приложния програмен интерфейс (API) за самоличност</translation>
 <translation id="1478340334823509079">Подробности: <ph name="FILE_NAME" /></translation>
@@ -915,6 +913,7 @@
 <translation id="2326606747676847821">„Инкогнито“</translation>
 <translation id="2326931316514688470">&amp;Презареждане на приложението</translation>
 <translation id="2327492829706409234">Активиране на приложението</translation>
+<translation id="2329597144923131178">Влезте в профила си и получете своите отметки, история, пароли и др. настройки на всички у-ва.</translation>
 <translation id="2332131598580221120">Преглед в магазина</translation>
 <translation id="2332742915001411729">Възстановяване на настройката по подразбиране</translation>
 <translation id="2335122562899522968">Тази страница задава „бисквитки“.</translation>
@@ -938,7 +937,6 @@
 <translation id="2359808026110333948">Напред</translation>
 <translation id="236128817791440714">Препоръчително: Настройте Smart Lock за Android</translation>
 <translation id="236141728043665931">Достъпът до микрофона да се блокира винаги</translation>
-<translation id="2365626167708453863">Изберете профил от Google Smart Lock</translation>
 <translation id="2367972762794486313">Показване на приложенията</translation>
 <translation id="2368075211218459617">Активиране на контекстното търсене.</translation>
 <translation id="2370882663124746154">Активиране на режим „двоен пинин“</translation>
@@ -2639,7 +2637,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="4780374166989101364">Активира експериментални приложни програмни интерфейси (API) за разширения. Обърнете внимание, че галерията с разширения не ви позволява да качвате такива, които използват експериментални приложни програмни интерфейси.</translation>
 <translation id="4781787911582943401">Увеличаване на мащаба на екрана</translation>
 <translation id="4782449893814226250">Попитахте родителите си дали може да посетите тази страница.</translation>
-<translation id="4784085458903013712">{COUNT,plural, =1{1 КБ}other{# КБ}}</translation>
 <translation id="4784330909746505604">Презентация в PowerPoint</translation>
 <translation id="4785040501822872973">Този компютър ще се рестартира след <ph name="LOGOUT_TIME_LEFT" /> секунди.
 Натиснете който и да е клавиш, за да продължите да разглеждате.</translation>
@@ -3170,7 +3167,6 @@ PDF файл или в Google Диск.</translation>
 <translation id="5527474464531963247">Можете също да изберете друга мрежа.</translation>
 <translation id="5527963985407842218">Задействане на режима за четене</translation>
 <translation id="5528368756083817449">Диспечер на отметките</translation>
-<translation id="5529098031581368697">Текущият тапет е зададен от <ph name="APP_NAME" /></translation>
 <translation id="5531274207066050939">Google Payments</translation>
 <translation id="5532223876348815659">Глобално</translation>
 <translation id="5533555070048896610">Транслитерация (namaste → नमस्ते)</translation>
@@ -3287,7 +3283,6 @@ PDF файл или в Google Диск.</translation>
 <translation id="5702898740348134351">&amp;Редактиране на търсещите машини...</translation>
 <translation id="5703594190584829406">Предложенията за автоматично попълване се показват в горната част на клавиатурата вместо в падащо меню.</translation>
 <translation id="5704272569086782895">Активиране на растеризиране с графичния процесор в отделна нишка.</translation>
-<translation id="570544101664452060">Експериментални известия от WebUsb.</translation>
 <translation id="5706551819490830015">Управление на адресите за фактуриране...</translation>
 <translation id="5707185214361380026">Неуспешно зареждане на разширение от:</translation>
 <translation id="5707604204219538797">Следващата дума</translation>
@@ -3434,7 +3429,6 @@ PDF файл или в Google Диск.</translation>
 <translation id="5900302528761731119">Снимка на потребителския профил в Google</translation>
 <translation id="5900623698597156974">TLS 1.0 успя да осъществи диалог със сървъра, но вече не приемаме използването на този протокол като резервна опция. Трябва да актуализирате сървъра (предпочита се да поддържа TLS 1.2), така че да внедрите правилно съгласуването на версията.</translation>
 <translation id="590253956165195626">Извеждане на предложение за превод на страниците, които не са на четим от вас език.</translation>
-<translation id="5902659428109355177">{COUNT,plural, =1{1 елемент}other{# елемента}}</translation>
 <translation id="5904093760909470684">Конфигурация на прокси сървър</translation>
 <translation id="5906065664303289925">Хардуерен адрес:</translation>
 <translation id="5910363049092958439">&amp;Запазване на изображението като...</translation>

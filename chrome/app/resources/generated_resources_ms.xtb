@@ -29,7 +29,6 @@
 <translation id="1036511912703768636">Akses mana-mana peranti USB ini</translation>
 <translation id="1038168778161626396">Encipher Sahaja</translation>
 <translation id="1038842779957582377">nama tidak diketahui</translation>
-<translation id="1040931876666128942">Pemberitahuan WebUsb.</translation>
 <translation id="1042174272890264476">Komputer anda juga disertakan dengan pustaka RLZ <ph name="SHORT_PRODUCT_NAME" /> terbina dalam. RLZ memperuntukkan tanda nama tidak unik yang tidak boleh mengenal pasti secara peribadi untuk mengukur carian dan penggunaan <ph name="SHORT_PRODUCT_NAME" /> yang didorong oleh kempen galakan tertentu. Label ini kadangkala dipaparkan dalam pertanyaan Carian Google dalam <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1042574203789536285"><ph name="URL" /> mahu menyimpan data yang besar pada peranti anda secara kekal.</translation>
 <translation id="1045157690796831147">Pengalihan huruf (namaskar → നമസ്കാരം)</translation>
@@ -328,7 +327,6 @@
 <translation id="1470719357688513792">Tetapan kuki baharu akan berkesan selepas memuatkan semula halaman.</translation>
 <translation id="14720830734893704">Dayakan sokongan papan kekunci maya.</translation>
 <translation id="1474339897586437869">"<ph name="FILENAME" />" tidak dimuat naik. Ruang kosong tidak mencukupi dalam Google Drive anda.</translation>
-<translation id="1476503841242751994">{COUNT,plural, =1{1 kata laluan}other{# kata laluan}}</translation>
 <translation id="1476949146811612304">Tetapkan enjin carian mana digunakan ketika mencari dari <ph name="BEGIN_LINK" />kotak omni<ph name="END_LINK" /> .</translation>
 <translation id="1477301030751268706">Cache Token API Identiti</translation>
 <translation id="1478340334823509079">Butiran: <ph name="FILE_NAME" /></translation>
@@ -933,6 +931,7 @@ Selepas anda membuat pengguna di bawah seliaan yang baharu, anda boleh mengurus 
 <translation id="2326606747676847821">Gunakan Inkognito</translation>
 <translation id="2326931316514688470">&amp;Muat semula apl</translation>
 <translation id="2327492829706409234">Dayakan apl</translation>
+<translation id="2329597144923131178">Log masuk untuk mendapatkan penanda halaman, sejarah, kata laluan dan tetapan lain pada semua peranti anda.</translation>
 <translation id="2332131598580221120">Lihat di gedung</translation>
 <translation id="2332742915001411729">Tetapkan semula kepada lalai</translation>
 <translation id="2335122562899522968">Halaman ini menetapkan kuki.</translation>
@@ -956,7 +955,6 @@ Selepas anda membuat pengguna di bawah seliaan yang baharu, anda boleh mengurus 
 <translation id="2359808026110333948">Teruskan</translation>
 <translation id="236128817791440714">Disyorkan: Sediakan Smart Lock untuk Android</translation>
 <translation id="236141728043665931">Sentiasa sekat akses mikrofon</translation>
-<translation id="2365626167708453863">Pilih akaun daripada Google Smart Lock anda</translation>
 <translation id="2367972762794486313">Paparkan apl</translation>
 <translation id="2368075211218459617">Dayakan Carian Kontekstual.</translation>
 <translation id="2370882663124746154">Dayakan mod Pinyin Ganda</translation>
@@ -2674,7 +2672,6 @@ Tekan sebarang kekunci untuk terus meneroka.</translation>
 <translation id="4780374166989101364">Mendayakan sambungan percubaan API. Perhatikan bahawa galeri sambungan tidak membenarkan anda untuk memuat naik sambungan yang menggunakan API percubaan.</translation>
 <translation id="4781787911582943401">Zum masuk skrin</translation>
 <translation id="4782449893814226250">Anda telah bertanya kepada ibu bapa anda sama ada ok untuk melawat halaman ini.</translation>
-<translation id="4784085458903013712">{COUNT,plural, =1{1 kB}other{# kB}}</translation>
 <translation id="4784330909746505604">Persembahan PowerPoint</translation>
 <translation id="4785040501822872973">Komputer ini akan ditetapkan semula dalam <ph name="LOGOUT_TIME_LEFT" /> saat.
 Tekan sebarang kekunci untuk terus meneroka.</translation>
@@ -3205,7 +3202,6 @@ Tekan sebarang kekunci untuk terus meneroka.</translation>
 <translation id="5527474464531963247">Anda juga boleh memilih rangkaian lain.</translation>
 <translation id="5527963985407842218">Pencetusan Mod Pembaca</translation>
 <translation id="5528368756083817449">Pengurus Penanda Halaman</translation>
-<translation id="5529098031581368697">Kertas dinding semasa ditetapkan oleh '<ph name="APP_NAME" />'</translation>
 <translation id="5531274207066050939">Google Payments</translation>
 <translation id="5532223876348815659">Global</translation>
 <translation id="5533555070048896610">Pengalihan huruf (namaste → नमस्ते)</translation>
@@ -3321,7 +3317,6 @@ Tekan sebarang kekunci untuk terus meneroka.</translation>
 <translation id="5702898740348134351">&amp;Edit Enjin Carian...</translation>
 <translation id="5703594190584829406">Tunjukkan cadangan Autolengkap di atas papan kekunci bukannya dalam menu lungsur.</translation>
 <translation id="5704272569086782895">Dayakan proses raster GPU berurutan.</translation>
-<translation id="570544101664452060">Pemberitahuan WebUsb percubaan.</translation>
 <translation id="5706551819490830015">Mengurus alamat pengebilan...</translation>
 <translation id="5707185214361380026">Gagal memuatkan sambungan daripada:</translation>
 <translation id="5707604204219538797">Perkataan seterusnya</translation>
@@ -3470,7 +3465,6 @@ Tekan sebarang kekunci untuk terus meneroka.</translation>
 <translation id="5900302528761731119">Foto Profil Google</translation>
 <translation id="5900623698597156974">Jatuh balik TLS 1.0 dapat berjabat tangan dengan pelayan tetapi kami tidak lagi menerima jatuh balik TLS 1.0. Pelayan perlu dikemaskinikan untuk melaksanakan rundingan versi dengan betul dan sebaik-baiknya menyokong TLS 1.2.</translation>
 <translation id="590253956165195626">Tawaran untuk menterjemah halaman yang bukan dalam bahasa yang anda baca.</translation>
-<translation id="5902659428109355177">{COUNT,plural, =1{1 item}other{# item}}</translation>
 <translation id="5904093760909470684">Konfigurasi Proksi</translation>
 <translation id="5906065664303289925">Alamat perkakasan:</translation>
 <translation id="5910363049092958439">Si&amp;mpan Imej Sebagai...</translation>

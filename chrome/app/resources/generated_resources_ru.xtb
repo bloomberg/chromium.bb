@@ -29,7 +29,6 @@
 <translation id="1036511912703768636">Доступ к этим USB-устройствам</translation>
 <translation id="1038168778161626396">Только расшифровка</translation>
 <translation id="1038842779957582377">неизвестное имя</translation>
-<translation id="1040931876666128942">Оповещения WebUsb</translation>
 <translation id="1042174272890264476">В ваш компьютер встроена библиотека RLZ <ph name="SHORT_PRODUCT_NAME" />. RLZ присваивает компьютеру неуникальную и не позволяющую идентифицировать пользователя метку, с помощью которой мы можем оценить количество запросов и статистику использования этого продукта (<ph name="SHORT_PRODUCT_NAME" />) по результатам рекламных кампаний. Иногда метки могут включаться в поисковые запросы, сделанные в этом продукте (<ph name="PRODUCT_NAME" />).</translation>
 <translation id="1042574203789536285">От <ph name="URL" /> поступил запрос на постоянное хранение большого объема данных на вашем мобильном устройстве.</translation>
 <translation id="1045157690796831147">Транслитерация (namaskar → നമസ്കാരം)</translation>
@@ -328,7 +327,6 @@
 <translation id="1470719357688513792">Новые настройки файлов cookie вступят в силу после обновления страницы.</translation>
 <translation id="14720830734893704">Включает поддержку виртуальной клавиатуры.</translation>
 <translation id="1474339897586437869">Не удалось загрузить <ph name="FILENAME" />. Не хватает пространства на Google Диске.</translation>
-<translation id="1476503841242751994">{COUNT,plural, =1{1 пароль}one{# пароль}few{# пароля}many{# паролей}other{# пароля}}</translation>
 <translation id="1476949146811612304">Выберите <ph name="BEGIN_LINK" />поисковую систему по умолчанию<ph name="END_LINK" />.</translation>
 <translation id="1477301030751268706">Кеш токенов API идентификационных данных</translation>
 <translation id="1478340334823509079">Подробные сведения: <ph name="FILE_NAME" /></translation>
@@ -920,6 +918,7 @@
 <translation id="2326606747676847821">Режим инкогнито</translation>
 <translation id="2326931316514688470">Пере&amp;загрузить приложение</translation>
 <translation id="2327492829706409234">Включить приложение</translation>
+<translation id="2329597144923131178">Войдите, чтобы синхронизировать закладки, пароли, историю и т. д. на всех устройствах.</translation>
 <translation id="2332131598580221120">Открыть в Интернет-магазине</translation>
 <translation id="2332742915001411729">Масштаб по умолчанию</translation>
 <translation id="2335122562899522968">Эта страница установила файлы cookie.</translation>
@@ -943,7 +942,6 @@
 <translation id="2359808026110333948">Далее</translation>
 <translation id="236128817791440714">Рекомендуем настроить Smart Lock для Android</translation>
 <translation id="236141728043665931">Всегда блокировать доступ к микрофону</translation>
-<translation id="2365626167708453863">Выбор аккаунта для Google Smart Lock</translation>
 <translation id="2367972762794486313">Показать сервисы</translation>
 <translation id="2368075211218459617">Включить Контекстный поиск</translation>
 <translation id="2370882663124746154">Включить режим Double-Pinyin</translation>
@@ -2654,7 +2652,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="4780374166989101364">Активирует API экспериментальных расширений. Обратите внимание, что вы не сможете выполнять загрузку в галереи расширения, где используются экспериментальные API.</translation>
 <translation id="4781787911582943401">Увеличить масштаб экрана</translation>
 <translation id="4782449893814226250">Вашим родителям отправлен запрос на просмотр страницы.</translation>
-<translation id="4784085458903013712">{COUNT,plural, =1{1 КБ}one{# КБ}few{# КБ}many{# КБ}other{# КБ}}</translation>
 <translation id="4784330909746505604">Презентация PowerPoint</translation>
 <translation id="4785040501822872973">Компьютер перезагрузится через <ph name="LOGOUT_TIME_LEFT" /> сек.
 Чтобы продолжить работу, нажмите любую клавишу.</translation>
@@ -3185,7 +3182,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="5527474464531963247">Можно выбрать другую сеть.</translation>
 <translation id="5527963985407842218">Активация кнопки "Режим чтения"</translation>
 <translation id="5528368756083817449">Диспетчер закладок</translation>
-<translation id="5529098031581368697">Эти обои установлены приложением <ph name="APP_NAME" /></translation>
 <translation id="5531274207066050939">Google Payments</translation>
 <translation id="5532223876348815659">Глобально</translation>
 <translation id="5533555070048896610">Транслитерация (namaste → नमस्ते)</translation>
@@ -3301,7 +3297,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="5702898740348134351">&amp;Изменить поисковые системы...</translation>
 <translation id="5703594190584829406">Показывает варианты автозаполнения над клавиатурой, а не в раскрывающемся меню.</translation>
 <translation id="5704272569086782895">Включить аппаратную растеризацию</translation>
-<translation id="570544101664452060">Экспериментальные оповещения WebUsb.</translation>
 <translation id="5706551819490830015">Настроить платежные адреса...</translation>
 <translation id="5707185214361380026">Не удалось загрузить расширение из:</translation>
 <translation id="5707604204219538797">К следующему слову</translation>
@@ -3449,7 +3444,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="5900302528761731119">Фотография профиля Google</translation>
 <translation id="5900623698597156974">Мы запретили подтверждение защищенного соединения с помощью отката протокола до TLS 1.0. Обновите сервер, чтобы он поддерживал протокол TLS 1.2.</translation>
 <translation id="590253956165195626">Предлагать перевод страниц, если их язык отличается от используемого в браузере.</translation>
-<translation id="5902659428109355177">{COUNT,plural, =1{1 запись}one{# запись}few{# записи}many{# записей}other{# записи}}</translation>
 <translation id="5904093760909470684">Основные</translation>
 <translation id="5906065664303289925">Аппаратный адрес:</translation>
 <translation id="5910363049092958439">Сохранить изображение как...</translation>

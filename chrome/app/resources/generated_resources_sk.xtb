@@ -29,7 +29,6 @@
 <translation id="1036511912703768636">Prístup ku ktorýmkoľvek z týchto zariadení USB</translation>
 <translation id="1038168778161626396">Len zašifrovanie</translation>
 <translation id="1038842779957582377">neznámy názov</translation>
-<translation id="1040931876666128942">Upozornenia WebUsb</translation>
 <translation id="1042174272890264476">Váš počítač má tiež vstavanú knižnicu RLZ prehliadača <ph name="SHORT_PRODUCT_NAME" />. Knižnica RLZ priradí nejedinečnú značku, pomocou ktorej sa nedá zistiť totožnosť, na meranie výsledkov a použitia prehliadača <ph name="SHORT_PRODUCT_NAME" /> vyplývajúceho z konkrétnej propagačnej kampane. Tieto menovky sa niekedy zobrazujú v dopytoch Vyhľadávania Google v prehliadači <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1042574203789536285">Stránky <ph name="URL" /> chcú natrvalo ukladať veľké množstvo údajov vo vašom zariadení.</translation>
 <translation id="1045157690796831147">Prepis (namaskar → നമസ്കാരം)</translation>
@@ -329,7 +328,6 @@
 <translation id="1470719357688513792">Nové nastavenia súborov cookie sa použijú po obnovení stránky.</translation>
 <translation id="14720830734893704">Povolí podporu virtuálnej klávesnice.</translation>
 <translation id="1474339897586437869">Súbor <ph name="FILENAME" /> nebol nahraný. Na Disku Google nemáte dostatok voľného miesta.</translation>
-<translation id="1476503841242751994">{COUNT,plural, =1{1 heslo}few{# heslá}many{# hesla}other{# hesiel}}</translation>
 <translation id="1476949146811612304">Nastavte, ktorý vyhľadávač sa použije pri vyhľadávaní vo <ph name="BEGIN_LINK" />všeobecnom poli<ph name="END_LINK" />.</translation>
 <translation id="1477301030751268706">Vyrovnávacia pamäť tokenu rozhrania Identity API</translation>
 <translation id="1478340334823509079">Podrobnosti: <ph name="FILE_NAME" /></translation>
@@ -925,6 +923,7 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translation>
 <translation id="2326606747676847821">Režim inkognito</translation>
 <translation id="2326931316514688470">&amp;Znova načítať aplikáciu</translation>
 <translation id="2327492829706409234">Povoliť aplikáciu</translation>
+<translation id="2329597144923131178">Prihláste sa a získajte tak svoje záložky, históriu, heslá a ďalšie nastavenia na všetkých svojich zariadeniach.</translation>
 <translation id="2332131598580221120">Zobraziť v obchode</translation>
 <translation id="2332742915001411729">Obnoviť na predvolené hodnoty</translation>
 <translation id="2335122562899522968">Táto stránka nastavila súbory cookie.</translation>
@@ -948,7 +947,6 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translation>
 <translation id="2359808026110333948">Pokračovať</translation>
 <translation id="236128817791440714">Odporúčané: Nastavte si funkciu Smart Lock pre Android</translation>
 <translation id="236141728043665931">Vždy blokovať prístup k mikrofónu</translation>
-<translation id="2365626167708453863">Zvoľte účet zo svojej funkcie Google Smart Lock</translation>
 <translation id="2367972762794486313">Zobraziť aplikácie</translation>
 <translation id="2368075211218459617">Aktivácia kontextového vyhľadávania.</translation>
 <translation id="2370882663124746154">Povoliť režim dvojitého vstupu pinyin</translation>
@@ -2665,7 +2663,6 @@ Ak chcete pokračovať v práci, stlačte ľubovoľný kláves.</translation>
 <translation id="4780374166989101364">Povolí experimentálne rozhrania API rozšírení. Upozorňujeme, že do galérie rozšírení nie je povolené nahrávať rozšírenia, ktoré používajú experimentálne rozhrania API.</translation>
 <translation id="4781787911582943401">Priblížiť obrazovku</translation>
 <translation id="4782449893814226250">Požiadali ste rodičov o povolenie návštevy tejto stránky.</translation>
-<translation id="4784085458903013712">{COUNT,plural, =1{1 kB}few{# kB}many{# kB}other{# kB}}</translation>
 <translation id="4784330909746505604">Prezentácia aplikácie PowerPoint</translation>
 <translation id="4785040501822872973">Počítač sa o <ph name="LOGOUT_TIME_LEFT" /> sekúnd reštartuje.
 Ak chcete pokračovať v práci, stlačte ľubovoľný kláves.</translation>
@@ -3196,7 +3193,6 @@ Ak chcete pokračovať v práci, stlačte ľubovoľný kláves.</translation>
 <translation id="5527474464531963247">Môžete tiež vybrať inú sieť.</translation>
 <translation id="5527963985407842218">Aktivácia režimu čítačky</translation>
 <translation id="5528368756083817449">Správca záložiek</translation>
-<translation id="5529098031581368697">Aktuálnu tapetu nastavila aplikácia <ph name="APP_NAME" /></translation>
 <translation id="5531274207066050939">Google Payments</translation>
 <translation id="5532223876348815659">Globálne</translation>
 <translation id="5533555070048896610">Prepis (namaste → नमस्ते)</translation>
@@ -3312,7 +3308,6 @@ Ak chcete pokračovať v práci, stlačte ľubovoľný kláves.</translation>
 <translation id="5702898740348134351">Upraviť vyhľadávaci&amp;e nástroje...</translation>
 <translation id="5703594190584829406">Zobrazí návrhy automatického dopĺňania v hornej časti klávesnice, a nie v rozbaľovacom zozname.</translation>
 <translation id="5704272569086782895">Povoliť rastrovanie prostredníctvom jednotky GPU</translation>
-<translation id="570544101664452060">Experimentálne upozornenia WebUsb</translation>
 <translation id="5706551819490830015">Správa fakturačných adries...</translation>
 <translation id="5707185214361380026">Nepodarilo sa načítať rozšírenie zo zdroja</translation>
 <translation id="5707604204219538797">Ďalšie slovo</translation>
@@ -3461,7 +3456,6 @@ Ak chcete pokračovať v práci, stlačte ľubovoľný kláves.</translation>
 <translation id="5900302528761731119">Fotografia profilu Google</translation>
 <translation id="5900623698597156974">Záložný protokol TLS 1.0 dokázal nadviazať spojenie so serverom, ale protokoly TLS 1.0 už neakceptujeme. Server musíte aktualizovať, aby správne implementoval vyjednávanie verzie a radšej podporoval protokol TLS 1.2.</translation>
 <translation id="590253956165195626">Ponúkať preklad stránok, ktorým by ste nemuseli rozumieť.</translation>
-<translation id="5902659428109355177">{COUNT,plural, =1{1 položka}few{# položky}many{# položky}other{# položiek}}</translation>
 <translation id="5904093760909470684">Konfigurácia servera proxy</translation>
 <translation id="5906065664303289925">Hardvérová adresa:</translation>
 <translation id="5910363049092958439">Uložiť &amp;obrázok ako...</translation>
@@ -4129,7 +4123,7 @@ Niektoré funkcie nemusia byť k dispozícii.  Skontrolujte, či profil existuje
 <translation id="6941937518557314510">Ak chcete vykonať overenie pre hostiteľa <ph name="HOST_NAME" /> pomocou svojho certifikátu, prihláste sa do <ph name="TOKEN_NAME" />.</translation>
 <translation id="6945221475159498467">Vybrať</translation>
 <translation id="6948142510520900350">Prístup na túto webovú stránku zablokoval váš &lt;strong&gt;správca systému&lt;/strong&gt;.</translation>
-<translation id="6948736568813450284">Pre vývojárov: použite službu karantény pre volania prostredníctvom rozhrania Google Payments API.</translation>
+<translation id="6948736568813450284">Pre vývojárov: Použite službu karantény pre volania prostredníctvom rozhrania Google Payments API.</translation>
 <translation id="6949306908218145636">Pridať otvorené stránky medzi záložky...</translation>
 <translation id="695164542422037736">Ak je táto možnosť povolená a ak je hlavná časť štylizovaná s pevne fixovaným pozadím, bude mať pozadie vlastnú zloženú vrstvu.</translation>
 <translation id="6954850746343724854">Povoliť technológiu Native client pre všetky webové aplikácie (aj tie, ktoré nie sú nainštalované z Internetového obchodu Chrome).</translation>

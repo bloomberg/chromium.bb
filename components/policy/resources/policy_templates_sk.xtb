@@ -171,7 +171,7 @@
 <translation id="1757339646969878244">Konfigurácia možností vzdialeného prístupu v hostiteľovi Vzdialenej plochy Chrome.
 
       Hostiteľ Vzdialenej plochy Chrome je natívna služba spustená na cieľovom
-      zariadení, ku ktorému sa môže používateľ prihlásiť, aby mohol používať
+      zariadení, na ktorom sa môže používateľ prihlásiť, aby mohol používať
       aplikáciu Vzdialená plocha Chrome. Táto natívna služba je súčasťou
       samostatného balíka a spúšťa sa oddelene od prehliadača <ph name="PRODUCT_NAME" />.
 

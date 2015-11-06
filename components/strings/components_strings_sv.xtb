@@ -179,6 +179,7 @@
 <translation id="5019198164206649151">Säkerhetskopian har dålig status</translation>
 <translation id="5031870354684148875">Om Google Översätt</translation>
 <translation id="5045550434625856497">Felaktigt lösenord</translation>
+<translation id="5065199687811594072">Vill du att Chromium ska spara kreditkortsuppgifterna vid automatisk ifyllning av webbformulär?</translation>
 <translation id="5087286274860437796">Servercertifikatet är inte giltigt för närvarande.</translation>
 <translation id="5089810972385038852">Delstat</translation>
 <translation id="5094747076828555589">Servern kunde inte bevisa att den är <ph name="DOMAIN" /> eftersom Chromium inte litar på dess säkerhetscertifikat. Detta kan orsakas av en felaktig konfigurering eller att någon spärrar anslutningen.</translation>

@@ -29,7 +29,6 @@
 <translation id="1036511912703768636">Dostop do katere koli od teh naprav USB</translation>
 <translation id="1038168778161626396">Le šifriranje</translation>
 <translation id="1038842779957582377">neznano ime</translation>
-<translation id="1040931876666128942">Obvestila WebUsb.</translation>
 <translation id="1042174272890264476">V vašem računalniku je tudi vgrajena knjižnica RLZ izdelka <ph name="SHORT_PRODUCT_NAME" />. RLZ za merjenje iskanj in uporabe izdelka <ph name="SHORT_PRODUCT_NAME" /> v okviru določene promocijske akcije dodeli neenolično oznako, ki ne omogoča osebne prepoznave. Te oznake so včasih v izdelku <ph name="PRODUCT_NAME" /> prikazane v iskalnih poizvedbah v Googlu.</translation>
 <translation id="1042574203789536285"><ph name="URL" /> želi trajno shranjevati velike količine podatkov v vaši napravi.</translation>
 <translation id="1045157690796831147">Prečrkovanje (namaskar → നമസ്കാരം)</translation>
@@ -328,7 +327,6 @@
 <translation id="1470719357688513792">Nove nastavitve za piškotke bodo začele veljati, ko znova naložite stran.</translation>
 <translation id="14720830734893704">Omogočanje podpore za virtualno tipkovnico.</translation>
 <translation id="1474339897586437869">Datoteka »<ph name="FILENAME" />« ni bila naložena. V Googlu Drive nimate dovolj razpoložljivega prostora.</translation>
-<translation id="1476503841242751994">{COUNT,plural, =1{1 geslo}one{# geslo}two{# gesli}few{# gesla}other{# gesel}}</translation>
 <translation id="1476949146811612304">Nastavite, kateri iskalnik boste uporabljali pri iskanju v
         <ph name="BEGIN_LINK" />naslovni vrstici<ph name="END_LINK" />.</translation>
 <translation id="1477301030751268706">Predpomnilnik žetonov za API za identiteto</translation>
@@ -925,6 +923,7 @@ Ko ustvarite novega zaščitenega uporabnika, lahko na <ph name="DISPLAY_LINK" /
 <translation id="2326606747676847821">Brskaj brez beleženja zgodovine</translation>
 <translation id="2326931316514688470">&amp;Znova naloži aplikacijo</translation>
 <translation id="2327492829706409234">Omogoči aplikacijo</translation>
+<translation id="2329597144923131178">Prijavite se, da boste lahko dostopali do zaznamkov, zgodovine, gesel in drugih nastavitev v vseh napravah.</translation>
 <translation id="2332131598580221120">Ogled v trgovini</translation>
 <translation id="2332742915001411729">Ponastavi na privzeto</translation>
 <translation id="2335122562899522968">Ta stran je nastavila piškotke.</translation>
@@ -948,7 +947,6 @@ Ko ustvarite novega zaščitenega uporabnika, lahko na <ph name="DISPLAY_LINK" /
 <translation id="2359808026110333948">Nadaljuj</translation>
 <translation id="236128817791440714">Priporočeno: Nastavite Smart Lock za Android</translation>
 <translation id="236141728043665931">Vedno prepreči dostop do mikrofona</translation>
-<translation id="2365626167708453863">Izbira računa v storitvi Google Smart Lock</translation>
 <translation id="2367972762794486313">Pokaži aplikacije</translation>
 <translation id="2368075211218459617">Omogočanje sobesedilnega iskanja.</translation>
 <translation id="2370882663124746154">Omogoči način večglasniškega pinjina</translation>
@@ -2665,7 +2663,6 @@ Pritisnite katero koli tipko, če želite še naprej raziskovati.</translation>
 <translation id="4780374166989101364">Omogoča poskusno razširitev API-jev. Galerija razširitev ne omogoča nalaganje razširitev, ki uporabljajo poskusne API-je.</translation>
 <translation id="4781787911582943401">Povečava zaslona</translation>
 <translation id="4782449893814226250">Starše si vprašal, ali smeš obiskati to stran.</translation>
-<translation id="4784085458903013712">{COUNT,plural, =1{1 KB}one{# KB}two{# KB}few{# KB}other{# KB}}</translation>
 <translation id="4784330909746505604">PowerPointova predstavitev</translation>
 <translation id="4785040501822872973">Računalnik se bo ponastavil čez <ph name="LOGOUT_TIME_LEFT" /> s.
 Pritisnite katero koli tipko, če želite še naprej raziskovati.</translation>
@@ -3196,7 +3193,6 @@ Pritisnite katero koli tipko, če želite še naprej raziskovati.</translation>
 <translation id="5527474464531963247">Izberete lahko tudi drugo omrežje.</translation>
 <translation id="5527963985407842218">Sprožitev načina bralnika</translation>
 <translation id="5528368756083817449">Upravitelj zaznamkov</translation>
-<translation id="5529098031581368697">Trenutno ozadje je nastavila aplikacija »<ph name="APP_NAME" />«</translation>
 <translation id="5531274207066050939">Google Payments</translation>
 <translation id="5532223876348815659">Globalno</translation>
 <translation id="5533555070048896610">Prečrkovanje (namaste → नमस्ते)</translation>
@@ -3313,7 +3309,6 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="5702898740348134351">&amp;Urejanje iskalnikov ...</translation>
 <translation id="5703594190584829406">Pokaže predloge samodejnega izpolnjevanja na vrhu tipkovnice, ne v spustnem meniju.</translation>
 <translation id="5704272569086782895">Omogočanje nitne rasterizacije z GPE.</translation>
-<translation id="570544101664452060">Poskusna obvestila WebUsb.</translation>
 <translation id="5706551819490830015">Upravljanje naslovov za izstavitev računa ...</translation>
 <translation id="5707185214361380026">Ni bilo mogoče naložiti razširitve z mesta:</translation>
 <translation id="5707604204219538797">Naslednja beseda</translation>
@@ -3462,7 +3457,6 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="5900302528761731119">Fotografija profila Google</translation>
 <translation id="5900623698597156974">Preklop na TLS 1.0 je omogočil začetek povezave s strežnikom, vendar preklopa na TLS 1.0 ne podpiramo več. Strežnik je treba posodobiti, da bo pravilno izvedel pogajanja glede različice in podpiral TLS 1.2, če je mogoče.</translation>
 <translation id="590253956165195626">Ponudi prevajanje strani, ki niso v vašem jeziku.</translation>
-<translation id="5902659428109355177">{COUNT,plural, =1{1 element}one{# element}two{# elementa}few{# elementi}other{# elementov}}</translation>
 <translation id="5904093760909470684">Konfiguracija strežnika proxy</translation>
 <translation id="5906065664303289925">Naslov strojne opreme:</translation>
 <translation id="5910363049092958439">Sh&amp;rani sliko kot ...</translation>

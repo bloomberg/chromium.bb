@@ -29,7 +29,6 @@
 <translation id="1036511912703768636">เข้าถึงอุปกรณ์ USB ใดๆ ก็ได้เหล่านี้</translation>
 <translation id="1038168778161626396">เข้ารหัสเท่านั้น</translation>
 <translation id="1038842779957582377">ไม่ทราบชื่อ</translation>
-<translation id="1040931876666128942">การแจ้งเตือน WebUsb</translation>
 <translation id="1042174272890264476">คอมพิวเตอร์ของคุณมาพร้อมกับไลบรารี RLZ ของ <ph name="SHORT_PRODUCT_NAME" /> ในตัว โดย RLZ จะระบุแท็กที่ซ้ำกันได้และไม่สามารถระบุตัวบุคคลเพื่อวัดการค้นหาและการใช้งาน <ph name="SHORT_PRODUCT_NAME" /> ที่ทำงานโดยแคมเปญส่งเสริมการขายบางรายการ บางครั้งป้ายกำกับจะปรากฏในคำค้นหาของ Google Search ใน <ph name="PRODUCT_NAME" /></translation>
 <translation id="1042574203789536285"><ph name="URL" /> ต้องการจัดเก็บข้อมูลขนาดใหญ่อย่างถาวรในอุปกรณ์ของคุณ</translation>
 <translation id="1045157690796831147">การทับศัพท์ (namaskar → നമസ്കാരം)</translation>
@@ -329,7 +328,6 @@
 <translation id="1470719357688513792">การตั้งค่าคุกกี้ใหม่จะแสดงผลหลังจากการโหลดหน้านี้อีกครั้ง</translation>
 <translation id="14720830734893704">เปิดใช้งานการสนับสนุนแป้นพิมพ์เสมือน</translation>
 <translation id="1474339897586437869">ไม่ได้อัปโหลด "<ph name="FILENAME" />" มีพื้นที่ว่างไม่เพียงพอใน Google ไดรฟ์ของคุณ</translation>
-<translation id="1476503841242751994">{COUNT,plural, =1{รหัสผ่าน 1 รายการ}other{รหัสผ่าน # รายการ}}</translation>
 <translation id="1476949146811612304">ตั้งค่าว่าจะใช้เครื่องมือค้นหาใดเมื่อค้นหาจาก<ph name="BEGIN_LINK" />แถบอเนกประสงค์<ph name="END_LINK" /></translation>
 <translation id="1477301030751268706">แคชโทเค็น API ข้อมูลประจำตัว</translation>
 <translation id="1478340334823509079">รายละเอียด: <ph name="FILE_NAME" /></translation>
@@ -920,6 +918,7 @@
 <translation id="2326606747676847821">เข้าโหมดไม่ระบุตัวตน</translation>
 <translation id="2326931316514688470">โ&amp;หลดแอปซ้ำ</translation>
 <translation id="2327492829706409234">เปิดใช้งานแอปพลิเคชัน</translation>
+<translation id="2329597144923131178">ลงชื่อเข้าใช้เพื่อรับบุ๊กมาร์ก ประวัติ รหัสผ่าน และการตั้งค่าอื่นๆ ในอุปกรณ์ทั้งหมด</translation>
 <translation id="2332131598580221120">ดูในสโตร์</translation>
 <translation id="2332742915001411729">รีเซ็ตเป็นค่าเริ่มต้น</translation>
 <translation id="2335122562899522968">หน้าเว็บนี้ได้บันทึกคุกกี้แล้ว</translation>
@@ -943,7 +942,6 @@
 <translation id="2359808026110333948">ดำเนินการต่อ</translation>
 <translation id="236128817791440714">แนะนำ: ตั้งค่า Smart Lock สำหรับ Android</translation>
 <translation id="236141728043665931">บล็อกการเข้าถึงไมโครโฟนเสมอ</translation>
-<translation id="2365626167708453863">เลือกบัญชีจาก Google Smart Lock</translation>
 <translation id="2367972762794486313">แสดงแอป</translation>
 <translation id="2368075211218459617">เปิดใช้ค้นหาตามบริบท</translation>
 <translation id="2370882663124746154">เปิดการใช้งานโหมด Double-Pinyin</translation>
@@ -1043,7 +1041,7 @@
 <translation id="2501173422421700905">ใบรับรองถูกระงับไว้</translation>
 <translation id="2501278716633472235">ย้อนกลับ</translation>
 <translation id="2501797496290880632">พิมพ์แป้นพิมพ์ลัด</translation>
-<translation id="2502441965851148920">เปิดใช้การอัปเดตอัตโนมัติอยู่ ผู้ดูแลระบบปิดใช้การอัปเดตด้วยตนเอง</translation>
+<translation id="2502441965851148920">เปิดใช้การอัปเดตอัตโนมัติอยู่ ผู้ดูแลระบบได้ปิดใช้การอัปเดตด้วยตนเอง</translation>
 <translation id="2504775205691825589">เซิร์ฟเวอร์ที่โฮสต์หน้าเว็บนี้อาจโหลดมากเกินไปหรืออยู่ระหว่างการซ่อมบำรุง
         ทั้งนี้เพื่อหลีกเลี่ยงการเพิ่มการจราจรข้อมูลมากเกินไปและทำให้สถานการณ์แย่ลง
         ระบบจะไม่อนุญาตให้ส่งคำขอไปยัง URL นี้ชั่วคราว</translation>
@@ -2652,7 +2650,6 @@
 <translation id="4780374166989101364">เปิดใช้งาน API ส่วนขยายที่อยู่ในช่วงทดลอง โปรดทราบว่าแกลเลอรีส่วนขยายไม่อนุญาตให้คุณอัปโหลดส่วนขยายที่ใช้ API ที่อยู่ในช่วงทดลอง</translation>
 <translation id="4781787911582943401">ขยายหน้าจอ</translation>
 <translation id="4782449893814226250">คุณถามผู้ปกครองว่าสามารถเข้าชมหน้านี้ได้ไหมแล้ว</translation>
-<translation id="4784085458903013712">{COUNT,plural, =1{1 kB}other{# kB}}</translation>
 <translation id="4784330909746505604">งานนำเสนอ PowerPoint</translation>
 <translation id="4785040501822872973">คอมพิวเตอร์นี้จะรีเซ็ตภายใน <ph name="LOGOUT_TIME_LEFT" /> วินาที
 กดแป้นใดก็ได้เพื่อสำรวจต่อ</translation>
@@ -3183,7 +3180,6 @@
 <translation id="5527474464531963247">คุณสามารถเลือกเครือข่ายอื่นได้ด้วย</translation>
 <translation id="5527963985407842218">การทริกเกอร์โหมดนักอ่าน</translation>
 <translation id="5528368756083817449">ตัวจัดการบุ๊กมาร์ก</translation>
-<translation id="5529098031581368697">วอลเปเปอร์ปัจจุบันตั้งโดย "<ph name="APP_NAME" />"</translation>
 <translation id="5531274207066050939">Google Payments</translation>
 <translation id="5532223876348815659">ทั่วโลก</translation>
 <translation id="5533555070048896610">การทับศัพท์ (namaste → नमस्ते)</translation>
@@ -3299,7 +3295,6 @@
 <translation id="5702898740348134351">แ&amp;ก้ไขเครื่องมือค้นหา...</translation>
 <translation id="5703594190584829406">แสดงคำแนะนำการป้อนข้อความอัตโนมัติที่ด้านบนของแป้นพิมพ์แทนที่จะแสดงในรายการแบบเลื่อนลง</translation>
 <translation id="5704272569086782895">เปิดใช้การแรสเตอร์ GPU แบบเธร็ด</translation>
-<translation id="570544101664452060">การแจ้งเตือน WebUsb แบบทดลอง</translation>
 <translation id="5706551819490830015">จัดการที่อยู่สำหรับการเรียกเก็บเงิน...</translation>
 <translation id="5707185214361380026">ไม่สามารถโหลดส่วนขยายจาก:</translation>
 <translation id="5707604204219538797">คำถัดไป</translation>
@@ -3447,7 +3442,6 @@
 <translation id="5900302528761731119">รูปภาพ Google โปรไฟล์</translation>
 <translation id="5900623698597156974">การกลับไปใช้ TLS 1.0 สามารถทำงานกับเซิร์ฟเวอร์ได้ แต่เราไม่ยอมรับการกลับไปใช้ TLS 1.0 อีกแล้ว ต้องมีการอัปเดตเซิร์ฟเวอร์เพื่อใช้การจัดการเวอร์ชันได้อย่างถูกต้อง และเซิร์ฟเวอร์ควรจะรองรับ TLS 1.2</translation>
 <translation id="590253956165195626">ข้อเสนอในการแปลหน้าที่ไม่ได้อยู่ในภาษาที่คุณอ่านได้</translation>
-<translation id="5902659428109355177">{COUNT,plural, =1{1 รายการ}other{# รายการ}}</translation>
 <translation id="5904093760909470684">การกำหนดค่าพร็อกซี</translation>
 <translation id="5906065664303289925">ที่อยู่ฮาร์ดแวร์:</translation>
 <translation id="5910363049092958439">&amp;บันทึกรูปภาพเป็น...</translation>

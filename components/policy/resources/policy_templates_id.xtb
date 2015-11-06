@@ -155,7 +155,7 @@
 <translation id="1757339646969878244">Konfigurasi opsi akses jarak jauh di host Chrome Desktop Jarak Jauh
 
       Host Chrome Desktop Jarak Jauh adalah layanan bawaan yang berjalan di
-      mesin target tempat pengguna tersambung menggunakan 
+      mesin target, tempat pengguna dapat tersambung untuk menggunakan 
       aplikasi Chrome Desktop Jarak Jauh.  Layanan bawaan dimasukkan dalam paket dan 
       dijalankan secara terpisah dari browser <ph name="PRODUCT_NAME" />.
 
