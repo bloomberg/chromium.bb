@@ -3095,6 +3095,7 @@ interface NodeList
     method constructor
     method item
 interface Notification : EventTarget
+    static getter maxActions
     static getter permission
     static method requestPermission
     getter body

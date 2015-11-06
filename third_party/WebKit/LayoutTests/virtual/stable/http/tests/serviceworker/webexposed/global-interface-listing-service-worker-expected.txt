@@ -381,6 +381,7 @@ interface MessagePort : EventTarget
     method start
     setter onmessage
 interface Notification : EventTarget
+    static getter maxActions
     static getter permission
     getter body
     getter data

@@ -53,7 +53,7 @@ enum NotificationPermission {
 
     [CallWith=ScriptState, Exposed=Window, MeasureAs=NotificationPermissionRequested] static Promise<NotificationPermission> requestPermission(optional NotificationPermissionCallback deprecatedCallback);
 
-    [RuntimeEnabled=NotificationExperimental] static readonly attribute unsigned long maxActions;
+    static readonly attribute unsigned long maxActions;
 
     attribute EventHandler onclick;
     [MeasureAs=NotificationShowEvent] attribute EventHandler onshow;
@@ -72,7 +72,9 @@ enum NotificationPermission {
     readonly attribute boolean requireInteraction;
     [CallWith=ScriptState, SameObject] readonly attribute any data;
 
-    // TODO(johnme): The spec requires a FrozenArray, but sequence seems to behave like one already?! https://crbug.com/515920
+    // TODO(johnme): Ship once Blink supports FrozenArray (https://crbug.com/515920)
+    // and we've implemented the additional Object.freeze described in
+    // https://notifications.spec.whatwg.org/#dom-notification-actions
     [RuntimeEnabled=NotificationExperimental] readonly attribute sequence<NotificationAction> actions;
 
     [MeasureAs=NotificationClosed] void close();
