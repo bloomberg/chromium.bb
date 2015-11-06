@@ -179,6 +179,9 @@ static_library("common") {
 
   # Printing.
   if (enable_basic_printing || enable_print_preview) {
+    sources +=
+        rebase_path(gypi_values.chrome_common_printing_sources, ".", "//chrome")
+
     public_deps += [
       "//components/printing/common",
       "//printing",
