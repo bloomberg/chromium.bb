@@ -1,6 +1,3 @@
-# The files DEPS and .DEPS.git need to be manually kept in sync. Depending on
-# whether buildtools is used from a svn or git project one or the other is used.
-
 recursion = 1
 use_relative_paths = True
 
