@@ -47,6 +47,11 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
 
+#if defined(OS_MACOSX)
+#include "base/mac/mac_util.h"
+#include "ui/base/test/scoped_fake_nswindow_fullscreen.h"
+#endif
+
 namespace extensions {
 
 namespace keys = tabs_constants;
@@ -1049,6 +1054,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionWindowLastFocusedTest,
 #endif  // !defined(OS_MACOSX)
 
 IN_PROC_BROWSER_TEST_F(ExtensionWindowCreateTest, AcceptState) {
+#if defined(OS_MACOSX)
+  // ScopedFakeNSWindowFullscreen works on MacOS 10.7+.
+  if (base::mac::IsOSSnowLeopard())
+    return;
+
+  ui::test::ScopedFakeNSWindowFullscreen fake_fullscreen;
+#endif
+
   scoped_refptr<WindowsCreateFunction> function(new WindowsCreateFunction());
   scoped_refptr<Extension> extension(test_util::CreateEmptyExtension());
   function->set_extension(extension.get());
@@ -1068,8 +1081,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionWindowCreateTest, AcceptState) {
   EXPECT_TRUE(new_window->window()->IsMinimized());
 #endif
 
-// TODO(limasdf): Flaky on mac. See http://crbug.com/482433.
-#if !defined(OS_MACOSX)
   function = new WindowsCreateFunction();
   function->set_extension(extension.get());
   result.reset(utils::ToDictionary(utils::RunFunctionAndReturnSingleResult(
@@ -1080,7 +1091,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionWindowCreateTest, AcceptState) {
                                                         window_id, &error);
   EXPECT_TRUE(error.empty());
   EXPECT_TRUE(new_window->window()->IsFullscreen());
-#endif  // !defined(OS_MACOSX)
+
+  // Let the message loop run so that |fake_fullscreen| finishes transition.
+  content::RunAllPendingInMessageLoop();
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionWindowCreateTest, ValidateCreateWindowState) {
