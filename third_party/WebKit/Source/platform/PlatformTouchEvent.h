@@ -31,6 +31,7 @@ public:
     PlatformTouchEvent()
         : PlatformEvent(PlatformEvent::TouchStart)
         , m_cancelable(true)
+        , m_causesScrollingIfUncanceled(false)
     {
     }
 
