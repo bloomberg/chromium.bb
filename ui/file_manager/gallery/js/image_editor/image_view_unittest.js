@@ -54,6 +54,15 @@ function testImageView() {
       ImageView.getLoadTarget(
           itemWithExternalThumbnailSlide, new ImageView.Effect.Slide(1)));
 
+  // Item with external thumbnail shown by zoom to screen effect.
+  var itemWithExternalThumbnailZoomToScreen = new GalleryItem(
+      mockEntry, null, {external: {thumbnailUrl: 'url'}}, null, false);
+  assertEquals(
+      ImageView.LoadTarget.THUMBNAIL,
+      ImageView.getLoadTarget(
+          itemWithExternalThumbnailZoomToScreen,
+          new ImageView.Effect.ZoomToScreen(new ImageRect(0, 0, 100, 100))));
+
   // Item with external thumbnail shown by zoom effect.
   var itemWithExternalThumbnailZoom = new GalleryItem(
       mockEntry, null, {external: {thumbnailUrl: 'url'}}, null, false);

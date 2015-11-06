@@ -151,13 +151,15 @@ ImageView.getLoadTarget = function(item, effect) {
   if (item.screenImage)
     return ImageView.LoadTarget.CACHED_THUMBNAIL;
 
-  // Only show thumbnails if there is no effect or the effect is Slide.
+  // Only show thumbnails if there is no effect or the effect is Slide or
+  // ZoomToScreen.
   var thumbnailLoader = new ThumbnailLoader(
       item.getEntry(),
       ThumbnailLoader.LoaderType.CANVAS,
       item.getThumbnailMetadataItem());
   if ((effect instanceof ImageView.Effect.None ||
-       effect instanceof ImageView.Effect.Slide) &&
+       effect instanceof ImageView.Effect.Slide ||
+       effect instanceof ImageView.Effect.ZoomToScreen) &&
       thumbnailLoader.getLoadTarget() !==
       ThumbnailLoader.LoadTarget.FILE_ENTRY) {
     return ImageView.LoadTarget.THUMBNAIL;

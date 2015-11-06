@@ -561,8 +561,6 @@ Gallery.prototype.changeCurrentMode_ = function(mode, opt_event) {
           }.bind(this));
       this.bottomToolbar_.hidden = true;
     } else {
-      // TODO(yawano): Make animation smooth. With this implementation,
-      //     animation starts after the image is fully loaded.
       this.setCurrentMode_(this.slideMode_);
       this.slideMode_.enter(
           thumbnailRect,
