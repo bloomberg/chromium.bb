@@ -149,6 +149,7 @@ def IsGitRepositoryCorrupted(cwd):
   """
   cmd = ['fsck', '--no-progress', '--no-dangling']
   try:
+    GarbageCollection(cwd)
     RunGit(cwd, cmd)
     return False
   except cros_build_lib.RunCommandError as ex:
