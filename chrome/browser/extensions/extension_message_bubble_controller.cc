@@ -155,7 +155,9 @@ const ExtensionIdList& ExtensionMessageBubbleController::GetExtensionIdList() {
   return *GetOrCreateExtensionList();
 }
 
-bool ExtensionMessageBubbleController::CloseOnDeactivate() { return false; }
+bool ExtensionMessageBubbleController::CloseOnDeactivate() {
+  return delegate_->ShouldCloseOnDeactivate();
+}
 
 void ExtensionMessageBubbleController::HighlightExtensionsIfNecessary() {
   if (delegate_->ShouldHighlightExtensions() && !did_highlight_) {

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/suspicious_extension_bubble_controller.h"
+#include "chrome/browser/extensions/suspicious_extension_bubble_delegate.h"
 
 #include "base/lazy_instance.h"
 #include "base/metrics/histogram.h"
@@ -29,40 +29,9 @@ const char kWipeoutAcknowledged[] = "ack_wiped";
 base::LazyInstance<std::set<Profile*> > g_shown_for_profiles =
   LAZY_INSTANCE_INITIALIZER;
 
-////////////////////////////////////////////////////////////////////////////////
-// SuspiciousExtensionBubbleDelegate
+}  // namespace
 
-class SuspiciousExtensionBubbleDelegate
-    : public ExtensionMessageBubbleController::Delegate {
- public:
-  explicit SuspiciousExtensionBubbleDelegate(Profile* profile);
-  ~SuspiciousExtensionBubbleDelegate() override;
-
-  // ExtensionMessageBubbleController::Delegate methods.
-  bool ShouldIncludeExtension(const extensions::Extension* extension) override;
-  void AcknowledgeExtension(
-      const std::string& extension_id,
-      ExtensionMessageBubbleController::BubbleAction user_action) override;
-  void PerformAction(const extensions::ExtensionIdList& list) override;
-  base::string16 GetTitle() const override;
-  base::string16 GetMessageBody(bool anchored_to_browser_action,
-                                int extension_count) const override;
-  base::string16 GetOverflowText(
-      const base::string16& overflow_count) const override;
-  GURL GetLearnMoreUrl() const override;
-  base::string16 GetActionButtonLabel() const override;
-  base::string16 GetDismissButtonLabel() const override;
-  bool ShouldShowExtensionList() const override;
-  bool ShouldHighlightExtensions() const override;
-  bool ShouldLimitToEnabledExtensions() const override;
-  void LogExtensionCount(size_t count) override;
-  void LogAction(
-      ExtensionMessageBubbleController::BubbleAction action) override;
-  std::set<Profile*>* GetProfileSet() override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(SuspiciousExtensionBubbleDelegate);
-};
+namespace extensions {
 
 SuspiciousExtensionBubbleDelegate::SuspiciousExtensionBubbleDelegate(
     Profile* profile)
@@ -134,6 +103,10 @@ SuspiciousExtensionBubbleDelegate::GetDismissButtonLabel() const {
   return l10n_util::GetStringUTF16(IDS_EXTENSIONS_UNSUPPORTED_DISABLED_BUTTON);
 }
 
+bool SuspiciousExtensionBubbleDelegate::ShouldCloseOnDeactivate() const {
+  return false;
+}
+
 bool SuspiciousExtensionBubbleDelegate::ShouldShowExtensionList() const {
   return true;
 }
@@ -163,25 +136,9 @@ std::set<Profile*>* SuspiciousExtensionBubbleDelegate::GetProfileSet() {
   return g_shown_for_profiles.Pointer();
 }
 
-}  // namespace
-
-namespace extensions {
-
-////////////////////////////////////////////////////////////////////////////////
-// SuspiciousExtensionBubbleController
-
 // static
-void SuspiciousExtensionBubbleController::ClearProfileListForTesting() {
+void SuspiciousExtensionBubbleDelegate::ClearProfileListForTesting() {
   g_shown_for_profiles.Get().clear();
-}
-
-SuspiciousExtensionBubbleController::SuspiciousExtensionBubbleController(
-    Browser* browser)
-    : ExtensionMessageBubbleController(
-          new SuspiciousExtensionBubbleDelegate(browser->profile()),
-          browser) {}
-
-SuspiciousExtensionBubbleController::~SuspiciousExtensionBubbleController() {
 }
 
 }  // namespace extensions

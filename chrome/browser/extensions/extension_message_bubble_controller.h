@@ -57,6 +57,9 @@ class ExtensionMessageBubbleController {
     virtual base::string16 GetActionButtonLabel() const = 0;
     virtual base::string16 GetDismissButtonLabel() const = 0;
 
+    // Returns true if the bubble should close when the widget deactivates.
+    virtual bool ShouldCloseOnDeactivate() const = 0;
+
     // Whether to show a list of extensions in the bubble.
     virtual bool ShouldShowExtensionList() const = 0;
 
@@ -126,7 +129,7 @@ class ExtensionMessageBubbleController {
   const ExtensionIdList& GetExtensionIdList();
 
   // Whether to close the bubble when it loses focus.
-  virtual bool CloseOnDeactivate();
+  bool CloseOnDeactivate();
 
   // Highlights the affected extensions if appropriate. Safe to call multiple
   // times.

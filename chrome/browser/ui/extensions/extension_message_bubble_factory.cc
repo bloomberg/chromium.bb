@@ -8,13 +8,13 @@
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/metrics/field_trial.h"
-#include "chrome/browser/extensions/dev_mode_bubble_controller.h"
+#include "chrome/browser/extensions/dev_mode_bubble_delegate.h"
 #include "chrome/browser/extensions/extension_message_bubble_controller.h"
 #include "chrome/browser/extensions/install_verifier.h"
-#include "chrome/browser/extensions/proxy_overridden_bubble_controller.h"
-#include "chrome/browser/extensions/settings_api_bubble_controller.h"
+#include "chrome/browser/extensions/proxy_overridden_bubble_delegate.h"
+#include "chrome/browser/extensions/settings_api_bubble_delegate.h"
 #include "chrome/browser/extensions/settings_api_helpers.h"
-#include "chrome/browser/extensions/suspicious_extension_bubble_controller.h"
+#include "chrome/browser/extensions/suspicious_extension_bubble_delegate.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/channel_info.h"
@@ -108,8 +108,10 @@ ExtensionMessageBubbleFactory::GetController() {
   bool is_initial_check = profiles_evaluated.count(original_profile) == 0;
   profiles_evaluated.insert(original_profile);
 
+  scoped_ptr<extensions::ExtensionMessageBubbleController> controller;
+
   if (g_override_for_testing == OVERRIDE_DISABLED)
-    return scoped_ptr<extensions::ExtensionMessageBubbleController>();
+    return controller.Pass();
 
   // The list of suspicious extensions takes priority over the dev mode bubble
   // and the settings API bubble, since that needs to be shown as soon as we
@@ -120,8 +122,11 @@ ExtensionMessageBubbleFactory::GetController() {
   // the dev mode extensions on the next startup/next window that opens. That
   // way, we're not too spammy with the bubbles.
   if (EnableSuspiciousExtensionsBubble()) {
-    scoped_ptr<extensions::SuspiciousExtensionBubbleController> controller(
-        new extensions::SuspiciousExtensionBubbleController(browser_));
+    controller.reset(
+        new extensions::ExtensionMessageBubbleController(
+            new extensions::SuspiciousExtensionBubbleDelegate(
+                browser_->profile()),
+            browser_));
     if (controller->ShouldShow())
       return controller.Pass();
   }
@@ -129,29 +134,37 @@ ExtensionMessageBubbleFactory::GetController() {
   if (EnableSettingsApiBubble()) {
     // No use showing this if it's not the startup of the profile.
     if (is_initial_check) {
-      scoped_ptr<extensions::SettingsApiBubbleController> controller(
-          new extensions::SettingsApiBubbleController(
-              browser_, extensions::BUBBLE_TYPE_STARTUP_PAGES));
+      controller.reset(new extensions::ExtensionMessageBubbleController(
+              new extensions::SettingsApiBubbleDelegate(
+                  browser_->profile(), extensions::BUBBLE_TYPE_STARTUP_PAGES),
+                  browser_));
       if (controller->ShouldShow())
         return controller.Pass();
     }
   }
 
   if (EnableProxyOverrideBubble()) {
-    scoped_ptr<extensions::ProxyOverriddenBubbleController> controller(
-        new extensions::ProxyOverriddenBubbleController(browser_));
+    controller.reset(
+        new extensions::ExtensionMessageBubbleController(
+            new extensions::ProxyOverriddenBubbleDelegate(
+                browser_->profile()),
+            browser_));
     if (controller->ShouldShow())
       return controller.Pass();
   }
 
   if (EnableDevModeBubble()) {
-    scoped_ptr<extensions::DevModeBubbleController> controller(
-        new extensions::DevModeBubbleController(browser_));
+    controller.reset(
+        new extensions::ExtensionMessageBubbleController(
+            new extensions::DevModeBubbleDelegate(
+                browser_->profile()),
+            browser_));
     if (controller->ShouldShow())
       return controller.Pass();
   }
 
-  return scoped_ptr<extensions::ExtensionMessageBubbleController>();
+  controller.reset();
+  return controller.Pass();
 }
 
 // static

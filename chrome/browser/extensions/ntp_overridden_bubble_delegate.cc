@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/ntp_overridden_bubble_controller.h"
+#include "chrome/browser/extensions/ntp_overridden_bubble_delegate.h"
 
 #include "base/metrics/histogram.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -16,52 +16,15 @@
 #include "grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
-using extensions::ExtensionMessageBubbleController;
-using extensions::NtpOverriddenBubbleController;
-
 namespace {
 
 // Whether the user has been notified about extension overriding the new tab
 // page.
 const char kNtpBubbleAcknowledged[] = "ack_ntp_bubble";
 
-////////////////////////////////////////////////////////////////////////////////
-// NtpOverriddenBubbleDelegate
+}  // namespace
 
-class NtpOverriddenBubbleDelegate
-    : public extensions::ExtensionMessageBubbleController::Delegate {
- public:
-  explicit NtpOverriddenBubbleDelegate(Profile* profile);
-  ~NtpOverriddenBubbleDelegate() override;
-
-  // ExtensionMessageBubbleController::Delegate methods.
-  bool ShouldIncludeExtension(const extensions::Extension* extension) override;
-  void AcknowledgeExtension(
-      const std::string& extension_id,
-      extensions::ExtensionMessageBubbleController::BubbleAction user_action)
-      override;
-  void PerformAction(const extensions::ExtensionIdList& list) override;
-  base::string16 GetTitle() const override;
-  base::string16 GetMessageBody(bool anchored_to_browser_action,
-                                int extension_count) const override;
-  base::string16 GetOverflowText(
-      const base::string16& overflow_count) const override;
-  GURL GetLearnMoreUrl() const override;
-  base::string16 GetActionButtonLabel() const override;
-  base::string16 GetDismissButtonLabel() const override;
-  bool ShouldShowExtensionList() const override;
-  bool ShouldHighlightExtensions() const override;
-  bool ShouldLimitToEnabledExtensions() const override;
-  void LogExtensionCount(size_t count) override;
-  void LogAction(extensions::ExtensionMessageBubbleController::BubbleAction
-                     action) override;
-
- private:
-  // The ID of the extension we are showing the bubble for.
-  std::string extension_id_;
-
-  DISALLOW_COPY_AND_ASSIGN(NtpOverriddenBubbleDelegate);
-};
+namespace extensions {
 
 NtpOverriddenBubbleDelegate::NtpOverriddenBubbleDelegate(
     Profile* profile)
@@ -139,6 +102,10 @@ base::string16 NtpOverriddenBubbleDelegate::GetDismissButtonLabel() const {
   return l10n_util::GetStringUTF16(IDS_EXTENSION_CONTROLLED_KEEP_CHANGES);
 }
 
+bool NtpOverriddenBubbleDelegate::ShouldCloseOnDeactivate() const {
+  return true;
+}
+
 bool NtpOverriddenBubbleDelegate::ShouldShowExtensionList() const {
   return false;
 }
@@ -160,24 +127,6 @@ void NtpOverriddenBubbleDelegate::LogAction(
       "ExtensionOverrideBubble.NtpOverriddenUserSelection",
       action,
       ExtensionMessageBubbleController::ACTION_BOUNDARY);
-}
-
-}  // namespace
-
-namespace extensions {
-
-////////////////////////////////////////////////////////////////////////////////
-// NtpOverriddenBubbleController
-
-NtpOverriddenBubbleController::NtpOverriddenBubbleController(Browser* browser)
-    : ExtensionMessageBubbleController(
-          new NtpOverriddenBubbleDelegate(browser->profile()),
-          browser) {}
-
-NtpOverriddenBubbleController::~NtpOverriddenBubbleController() {}
-
-bool NtpOverriddenBubbleController::CloseOnDeactivate() {
-  return true;
 }
 
 }  // namespace extensions

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/proxy_overridden_bubble_controller.h"
+#include "chrome/browser/extensions/proxy_overridden_bubble_delegate.h"
 
 #include "base/metrics/histogram.h"
 #include "base/strings/utf_string_conversions.h"
@@ -29,42 +29,7 @@ const int kDaysSinceInstallMin = 7;
 // Whether the user has been notified about extension overriding the proxy.
 const char kProxyBubbleAcknowledged[] = "ack_proxy_bubble";
 
-////////////////////////////////////////////////////////////////////////////////
-// ProxyOverriddenBubbleDelegate
-
-class ProxyOverriddenBubbleDelegate
-    : public ExtensionMessageBubbleController::Delegate {
- public:
-  explicit ProxyOverriddenBubbleDelegate(Profile* profile);
-  ~ProxyOverriddenBubbleDelegate() override;
-
-  // ExtensionMessageBubbleController::Delegate methods.
-  bool ShouldIncludeExtension(const Extension* extension) override;
-  void AcknowledgeExtension(
-      const std::string& extension_id,
-      ExtensionMessageBubbleController::BubbleAction user_action) override;
-  void PerformAction(const ExtensionIdList& list) override;
-  base::string16 GetTitle() const override;
-  base::string16 GetMessageBody(bool anchored_to_browser_action,
-                                int extension_count) const override;
-  base::string16 GetOverflowText(
-      const base::string16& overflow_count) const override;
-  GURL GetLearnMoreUrl() const override;
-  base::string16 GetActionButtonLabel() const override;
-  base::string16 GetDismissButtonLabel() const override;
-  bool ShouldShowExtensionList() const override;
-  bool ShouldHighlightExtensions() const override;
-  bool ShouldLimitToEnabledExtensions() const override;
-  void LogExtensionCount(size_t count) override;
-  void LogAction(
-      ExtensionMessageBubbleController::BubbleAction action) override;
-
- private:
-  // The ID of the extension we are showing the bubble for.
-  std::string extension_id_;
-
-  DISALLOW_COPY_AND_ASSIGN(ProxyOverriddenBubbleDelegate);
-};
+}  // namespace
 
 ProxyOverriddenBubbleDelegate::ProxyOverriddenBubbleDelegate(
     Profile* profile)
@@ -151,6 +116,10 @@ base::string16 ProxyOverriddenBubbleDelegate::GetDismissButtonLabel() const {
   return l10n_util::GetStringUTF16(IDS_EXTENSION_CONTROLLED_KEEP_CHANGES);
 }
 
+bool ProxyOverriddenBubbleDelegate::ShouldCloseOnDeactivate() const {
+  return false;
+}
+
 bool ProxyOverriddenBubbleDelegate::ShouldShowExtensionList() const {
   return false;
 }
@@ -172,23 +141,6 @@ void ProxyOverriddenBubbleDelegate::LogAction(
   UMA_HISTOGRAM_ENUMERATION("ProxyOverriddenBubble.UserSelection",
                             action,
                             ExtensionMessageBubbleController::ACTION_BOUNDARY);
-}
-
-}  // namespace
-
-////////////////////////////////////////////////////////////////////////////////
-// ProxyOverriddenBubbleController
-
-ProxyOverriddenBubbleController::ProxyOverriddenBubbleController(
-    Browser* browser)
-    : ExtensionMessageBubbleController(
-          new ProxyOverriddenBubbleDelegate(browser->profile()),
-          browser) {}
-
-ProxyOverriddenBubbleController::~ProxyOverriddenBubbleController() {}
-
-bool ProxyOverriddenBubbleController::CloseOnDeactivate() {
-  return false;
 }
 
 }  // namespace extensions

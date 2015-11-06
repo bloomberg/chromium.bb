@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/settings_api_bubble_controller.h"
+#include "chrome/browser/extensions/settings_api_bubble_delegate.h"
 
 #include "base/metrics/histogram.h"
 #include "base/strings/utf_string_conversions.h"
@@ -29,47 +29,7 @@ namespace {
 // the user's settings (homepage, startup pages, or search engine).
 const char kSettingsBubbleAcknowledged[] = "ack_settings_bubble";
 
-////////////////////////////////////////////////////////////////////////////////
-// SettingsApiBubbleDelegate
-
-class SettingsApiBubbleDelegate
-    : public ExtensionMessageBubbleController::Delegate {
- public:
-  SettingsApiBubbleDelegate(Profile* profile, SettingsApiOverrideType type);
-  ~SettingsApiBubbleDelegate() override;
-
-  // ExtensionMessageBubbleController::Delegate methods.
-  bool ShouldIncludeExtension(const Extension* extension) override;
-  void AcknowledgeExtension(
-      const std::string& extension_id,
-      ExtensionMessageBubbleController::BubbleAction user_action) override;
-  void PerformAction(const ExtensionIdList& list) override;
-  base::string16 GetTitle() const override;
-  base::string16 GetMessageBody(bool anchored_to_browser_action,
-                                int extension_count) const override;
-  base::string16 GetOverflowText(
-      const base::string16& overflow_count) const override;
-  GURL GetLearnMoreUrl() const override;
-  base::string16 GetActionButtonLabel() const override;
-  base::string16 GetDismissButtonLabel() const override;
-  bool ShouldShowExtensionList() const override;
-  bool ShouldHighlightExtensions() const override;
-  bool ShouldLimitToEnabledExtensions() const override;
-  void LogExtensionCount(size_t count) override;
-  void LogAction(
-      ExtensionMessageBubbleController::BubbleAction action) override;
-
- private:
-  // The type of settings override this bubble will report on. This can be, for
-  // example, a bubble to notify the user that the search engine has been
-  // changed by an extension (or homepage/startup pages/etc).
-  SettingsApiOverrideType type_;
-
-  // The ID of the extension we are showing the bubble for.
-  std::string extension_id_;
-
-  DISALLOW_COPY_AND_ASSIGN(SettingsApiBubbleDelegate);
-};
+}  // namespace
 
 SettingsApiBubbleDelegate::SettingsApiBubbleDelegate(
     Profile* profile,
@@ -233,6 +193,12 @@ base::string16 SettingsApiBubbleDelegate::GetDismissButtonLabel() const {
   return l10n_util::GetStringUTF16(IDS_EXTENSION_CONTROLLED_KEEP_CHANGES);
 }
 
+bool SettingsApiBubbleDelegate::ShouldCloseOnDeactivate() const {
+  // Startup bubbles tend to get lost in the focus storm that happens on
+  // startup. Other types should dismiss on focus loss.
+  return type_ != BUBBLE_TYPE_STARTUP_PAGES;
+}
+
 bool SettingsApiBubbleDelegate::ShouldShowExtensionList() const {
   return false;
 }
@@ -270,27 +236,6 @@ void SettingsApiBubbleDelegate::LogAction(
           ExtensionMessageBubbleController::ACTION_BOUNDARY);
       break;
   }
-}
-
-}  // namespace
-
-////////////////////////////////////////////////////////////////////////////////
-// SettingsApiBubbleController
-
-SettingsApiBubbleController::SettingsApiBubbleController(
-    Browser* browser,
-    SettingsApiOverrideType type)
-    : ExtensionMessageBubbleController(
-          new SettingsApiBubbleDelegate(browser->profile(), type),
-          browser),
-      type_(type) {}
-
-SettingsApiBubbleController::~SettingsApiBubbleController() {}
-
-bool SettingsApiBubbleController::CloseOnDeactivate() {
-  // Startup bubbles tend to get lost in the focus storm that happens on
-  // startup. Other types should dismiss on focus loss.
-  return type_ != BUBBLE_TYPE_STARTUP_PAGES;
 }
 
 }  // namespace extensions
