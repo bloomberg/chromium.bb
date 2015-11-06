@@ -26,4 +26,4 @@ class AndroidScreenRestorationSharedState(shared_page_state.SharedPageState):
     return True
 
   def _EnsureScreenOn(self):
-    self.platform.android_action_runner.EnsureScreenOn()
+    self.platform.android_action_runner.TurnScreenOn()
