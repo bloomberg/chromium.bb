@@ -7,25 +7,33 @@
 
 #include <string>
 
-#include "base/files/file_path.h"
 #include "base/macros.h"
+#include "base/scoped_observer.h"
 #include "chrome/browser/extensions/extension_service_test_base.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
+#include "extensions/browser/extension_registry_observer.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/feature_switch.h"
 
+namespace base {
+class FilePath;
+}
+
 namespace extensions {
+
+class ExtensionRegistry;
 
 // An enhancement of ExtensionServiceTestBase that provides helpers to install,
 // update, and uninstall extensions.
 class ExtensionServiceTestWithInstall : public ExtensionServiceTestBase,
-                                        public content::NotificationObserver {
+                                        public ExtensionRegistryObserver {
  public:
   ExtensionServiceTestWithInstall();
   ~ExtensionServiceTestWithInstall() override;
 
  protected:
+  void InitializeExtensionService(
+      const ExtensionServiceInitParams& params) override;
+
   static std::vector<base::string16> GetErrors();
 
   void PackCRX(const base::FilePath& dir_path,
@@ -105,6 +113,18 @@ class ExtensionServiceTestWithInstall : public ExtensionServiceTestBase,
 
   void TerminateExtension(const std::string& id);
 
+  // ExtensionRegistryObserver:
+  void OnExtensionLoaded(content::BrowserContext* browser_context,
+                         const Extension* extension) override;
+  void OnExtensionUnloaded(content::BrowserContext* browser_context,
+                           const Extension* extension,
+                           UnloadedExtensionInfo::Reason reason) override;
+  void OnExtensionWillBeInstalled(content::BrowserContext* browser_context,
+                                  const Extension* extension,
+                                  bool is_update,
+                                  bool from_ephemeral,
+                                  const std::string& old_name) override;
+
   // TODO(treib,devlin): Make these private and add accessors as needed.
   extensions::ExtensionList loaded_;
   const Extension* installed_;
@@ -114,16 +134,14 @@ class ExtensionServiceTestWithInstall : public ExtensionServiceTestBase,
   UnloadedExtensionInfo::Reason unloaded_reason_;
 
  private:
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
-
   void InstallCRXInternal(const base::FilePath& crx_path, int creation_flags);
 
-  content::NotificationRegistrar registrar_;
   size_t expected_extensions_count_;
 
   FeatureSwitch::ScopedOverride override_external_install_prompt_;
+
+  ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
+      registry_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionServiceTestWithInstall);
 };

@@ -9,7 +9,6 @@
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_creator.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
-#include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/notification_service.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/notification_types.h"
@@ -43,22 +42,17 @@ ExtensionServiceTestWithInstall::ExtensionServiceTestWithInstall()
       unloaded_reason_(UnloadedExtensionInfo::REASON_UNDEFINED),
       expected_extensions_count_(0),
       override_external_install_prompt_(
-          FeatureSwitch::prompt_for_external_extensions(),
-          false) {
-  // TODO(treib,devlin): This should use ExtensionRegistryObserver instead.
-  registrar_.Add(this,
-                 extensions::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
-                 content::NotificationService::AllSources());
-  registrar_.Add(this,
-                 extensions::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
-                 content::NotificationService::AllSources());
-  registrar_.Add(
-      this,
-      extensions::NOTIFICATION_EXTENSION_WILL_BE_INSTALLED_DEPRECATED,
-      content::NotificationService::AllSources());
-}
+          FeatureSwitch::prompt_for_external_extensions(), false),
+      registry_observer_(this) {}
 
 ExtensionServiceTestWithInstall::~ExtensionServiceTestWithInstall() {}
+
+void ExtensionServiceTestWithInstall::InitializeExtensionService(
+    const ExtensionServiceInitParams& params) {
+  ExtensionServiceTestBase::InitializeExtensionService(params);
+
+  registry_observer_.Add(registry());
+}
 
 // static
 std::vector<base::string16> ExtensionServiceTestWithInstall::GetErrors() {
@@ -201,7 +195,7 @@ const Extension* ExtensionServiceTestWithInstall::VerifyCrxInstall(
     InstallState install_state,
     const std::string& expected_old_name) {
   std::vector<base::string16> errors = GetErrors();
-  const Extension* extension = NULL;
+  const Extension* extension = nullptr;
   if (install_state != INSTALL_FAILED) {
     if (install_state == INSTALL_NEW)
       ++expected_extensions_count_;
@@ -239,7 +233,7 @@ const Extension* ExtensionServiceTestWithInstall::VerifyCrxInstall(
     EXPECT_EQ(1u, errors.size()) << path.value();
   }
 
-  installed_ = NULL;
+  installed_ = nullptr;
   was_update_ = false;
   old_name_ = "";
   loaded_.clear();
@@ -278,7 +272,7 @@ void ExtensionServiceTestWithInstall::UpdateExtension(
       previous_enabled_extension_count +
       registry()->disabled_extensions().size();
 
-  extensions::CrxInstaller* installer = NULL;
+  extensions::CrxInstaller* installer = nullptr;
   content::WindowedNotificationObserver observer(
       extensions::NOTIFICATION_CRX_INSTALLER_DONE,
       base::Bind(&IsCrxInstallerDone, &installer));
@@ -341,10 +335,8 @@ void ExtensionServiceTestWithInstall::UninstallExtension(
         service(), id, extensions::UNINSTALL_REASON_FOR_TESTING));
   } else {
     EXPECT_TRUE(service()->UninstallExtension(
-        id,
-        extensions::UNINSTALL_REASON_FOR_TESTING,
-        base::Bind(&base::DoNothing),
-        NULL));
+        id, extensions::UNINSTALL_REASON_FOR_TESTING,
+        base::Bind(&base::DoNothing), nullptr));
   }
   --expected_extensions_count_;
 
@@ -379,49 +371,39 @@ void ExtensionServiceTestWithInstall::TerminateExtension(
   service()->TrackTerminatedExtensionForTest(extension);
 }
 
-void ExtensionServiceTestWithInstall::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  switch (type) {
-    case extensions::NOTIFICATION_EXTENSION_LOADED_DEPRECATED: {
-      const Extension* extension =
-          content::Details<const Extension>(details).ptr();
-      loaded_.push_back(make_scoped_refptr(extension));
-      // The tests rely on the errors being in a certain order, which can vary
-      // depending on how filesystem iteration works.
-      std::stable_sort(loaded_.begin(), loaded_.end(), ExtensionsOrder());
-      break;
-    }
+void ExtensionServiceTestWithInstall::OnExtensionLoaded(
+    content::BrowserContext* browser_context,
+    const Extension* extension) {
+  loaded_.push_back(make_scoped_refptr(extension));
+  // The tests rely on the errors being in a certain order, which can vary
+  // depending on how filesystem iteration works.
+  std::stable_sort(loaded_.begin(), loaded_.end(), ExtensionsOrder());
+}
 
-    case extensions::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED: {
-      UnloadedExtensionInfo* unloaded_info =
-          content::Details<UnloadedExtensionInfo>(details).ptr();
-      const Extension* e = unloaded_info->extension;
-      unloaded_id_ = e->id();
-      unloaded_reason_ = unloaded_info->reason;
-      extensions::ExtensionList::iterator i =
-          std::find(loaded_.begin(), loaded_.end(), e);
+void ExtensionServiceTestWithInstall::OnExtensionUnloaded(
+    content::BrowserContext* browser_context,
+    const Extension* extension,
+    UnloadedExtensionInfo::Reason reason) {
+  unloaded_id_ = extension->id();
+  unloaded_reason_ = reason;
+  extensions::ExtensionList::iterator i =
+      std::find(loaded_.begin(), loaded_.end(), extension);
       // TODO(erikkay) fix so this can be an assert.  Right now the tests
       // are manually calling clear() on loaded_, so this isn't doable.
       if (i == loaded_.end())
         return;
       loaded_.erase(i);
-      break;
-    }
-    case extensions::NOTIFICATION_EXTENSION_WILL_BE_INSTALLED_DEPRECATED: {
-      const extensions::InstalledExtensionInfo* installed_info =
-          content::Details<const extensions::InstalledExtensionInfo>(details)
-              .ptr();
-      installed_ = installed_info->extension;
-      was_update_ = installed_info->is_update;
-      old_name_ = installed_info->old_name;
-      break;
-    }
+}
 
-    default:
-      DCHECK(false);
-  }
+void ExtensionServiceTestWithInstall::OnExtensionWillBeInstalled(
+    content::BrowserContext* browser_context,
+    const Extension* extension,
+    bool is_update,
+    bool from_ephemeral,
+    const std::string& old_name) {
+  installed_ = extension;
+  was_update_ = is_update;
+  old_name_ = old_name;
 }
 
 // Create a CrxInstaller and install the CRX file.

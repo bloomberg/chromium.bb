@@ -72,7 +72,8 @@ class ExtensionServiceTestBase : public testing::Test {
   ExtensionServiceInitParams CreateDefaultInitParams();
 
   // Initialize an ExtensionService according to the given |params|.
-  void InitializeExtensionService(const ExtensionServiceInitParams& params);
+  virtual void InitializeExtensionService(
+      const ExtensionServiceInitParams& params);
 
   // Initialize an empty ExtensionService using the default init params.
   void InitializeEmptyExtensionService();
