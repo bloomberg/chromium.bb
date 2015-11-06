@@ -57,11 +57,15 @@ if (is_linux) {
   }
 
   group("blimp_engine") {
-    data_deps = [
+    deps = [
       ":blimp_engine_app",
       ":pak",
       "//sandbox/linux:chrome_sandbox",
     ]
+
+    # List dependencies as both deps and data_deps to ensure changes trigger a
+    # rebuild and "gn desc ... runtime_deps" correctly prints the data_deps.
+    data_deps = deps
   }
 
   # Builds and bundles the engine into a tarball that can be used to build a
