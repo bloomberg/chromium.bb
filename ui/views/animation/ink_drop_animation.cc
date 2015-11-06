@@ -9,16 +9,15 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "third_party/skia/include/core/SkPaint.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/compositor/callback_layer_animation_observer.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_sequence.h"
-#include "ui/compositor/paint_recorder.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
-#include "ui/gfx/canvas.h"
+#include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/transform_util.h"
 #include "ui/views/animation/ink_drop_animation_observer.h"
+#include "ui/views/animation/ink_drop_painted_layer_delegates.h"
 #include "ui/views/view.h"
 
 namespace {
@@ -122,116 +121,6 @@ gfx::Transform CalculateRectTransform(const gfx::Point& drawn_center_point,
 }  // namespace
 
 namespace views {
-
-// Base ui::LayerDelegate stub that can be extended to paint shapes of a
-// specific color.
-class BasePaintedLayerDelegate : public ui::LayerDelegate {
- public:
-  ~BasePaintedLayerDelegate() override;
-
-  SkColor color() const { return color_; }
-
-  // ui::LayerDelegate:
-  void OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) override;
-  void OnDeviceScaleFactorChanged(float device_scale_factor) override;
-  base::Closure PrepareForLayerBoundsChange() override;
-
- protected:
-  explicit BasePaintedLayerDelegate(SkColor color);
-
- private:
-  // The color to paint.
-  SkColor color_;
-
-  DISALLOW_COPY_AND_ASSIGN(BasePaintedLayerDelegate);
-};
-
-BasePaintedLayerDelegate::BasePaintedLayerDelegate(SkColor color)
-    : color_(color) {}
-
-BasePaintedLayerDelegate::~BasePaintedLayerDelegate() {}
-
-void BasePaintedLayerDelegate::OnDelegatedFrameDamage(
-    const gfx::Rect& damage_rect_in_dip) {}
-
-void BasePaintedLayerDelegate::OnDeviceScaleFactorChanged(
-    float device_scale_factor) {}
-
-base::Closure BasePaintedLayerDelegate::PrepareForLayerBoundsChange() {
-  return base::Closure();
-}
-
-// A BasePaintedLayerDelegate that paints a circle of a specified color and
-// radius.
-class CircleLayerDelegate : public BasePaintedLayerDelegate {
- public:
-  CircleLayerDelegate(SkColor color, int radius);
-  ~CircleLayerDelegate() override;
-
-  int radius() const { return radius_; }
-
-  // ui::LayerDelegate:
-  void OnPaintLayer(const ui::PaintContext& context) override;
-
- private:
-  // The radius of the circle.
-  int radius_;
-
-  DISALLOW_COPY_AND_ASSIGN(CircleLayerDelegate);
-};
-
-CircleLayerDelegate::CircleLayerDelegate(SkColor color, int radius)
-    : BasePaintedLayerDelegate(color), radius_(radius) {}
-
-CircleLayerDelegate::~CircleLayerDelegate() {}
-
-void CircleLayerDelegate::OnPaintLayer(const ui::PaintContext& context) {
-  SkPaint paint;
-  paint.setColor(color());
-  paint.setFlags(SkPaint::kAntiAlias_Flag);
-  paint.setStyle(SkPaint::kFill_Style);
-
-  ui::PaintRecorder recorder(context, gfx::Size(radius_, radius_));
-  gfx::Canvas* canvas = recorder.canvas();
-
-  gfx::Point center_point = gfx::Point(radius_, radius_);
-  canvas->DrawCircle(center_point, radius_, paint);
-}
-
-// A BasePaintedLayerDelegate that paints a rectangle of a specified color and
-// size.
-class RectangleLayerDelegate : public BasePaintedLayerDelegate {
- public:
-  RectangleLayerDelegate(SkColor color, gfx::Size size);
-  ~RectangleLayerDelegate() override;
-
-  const gfx::Size& size() const { return size_; }
-
-  // ui::LayerDelegate:
-  void OnPaintLayer(const ui::PaintContext& context) override;
-
- private:
-  // The size of the rectangle.
-  gfx::Size size_;
-
-  DISALLOW_COPY_AND_ASSIGN(RectangleLayerDelegate);
-};
-
-RectangleLayerDelegate::RectangleLayerDelegate(SkColor color, gfx::Size size)
-    : BasePaintedLayerDelegate(color), size_(size) {}
-
-RectangleLayerDelegate::~RectangleLayerDelegate() {}
-
-void RectangleLayerDelegate::OnPaintLayer(const ui::PaintContext& context) {
-  SkPaint paint;
-  paint.setColor(color());
-  paint.setFlags(SkPaint::kAntiAlias_Flag);
-  paint.setStyle(SkPaint::kFill_Style);
-
-  ui::PaintRecorder recorder(context, size_);
-  gfx::Canvas* canvas = recorder.canvas();
-  canvas->DrawRect(gfx::Rect(size_), paint);
-}
 
 InkDropAnimation::InkDropAnimation(const gfx::Size& large_size,
                                    int large_corner_radius,
@@ -441,19 +330,19 @@ void InkDropAnimation::CalculateRectTransforms(
   const float circle_target_y_offset = size.height() / 2.0f - corner_radius;
 
   (*transforms_out)[TOP_LEFT_CIRCLE] = CalculateCircleTransform(
-      painted_layers_[TOP_LEFT_CIRCLE]->bounds().CenterPoint(), circle_scale,
+      ToRoundedPoint(circle_layer_delegate_->GetCenterPoint()), circle_scale,
       -circle_target_x_offset, -circle_target_y_offset);
 
   (*transforms_out)[TOP_RIGHT_CIRCLE] = CalculateCircleTransform(
-      painted_layers_[TOP_RIGHT_CIRCLE]->bounds().CenterPoint(), circle_scale,
+      ToRoundedPoint(circle_layer_delegate_->GetCenterPoint()), circle_scale,
       circle_target_x_offset, -circle_target_y_offset);
 
   (*transforms_out)[BOTTOM_RIGHT_CIRCLE] = CalculateCircleTransform(
-      painted_layers_[BOTTOM_RIGHT_CIRCLE]->bounds().CenterPoint(),
-      circle_scale, circle_target_x_offset, circle_target_y_offset);
+      ToRoundedPoint(circle_layer_delegate_->GetCenterPoint()), circle_scale,
+      circle_target_x_offset, circle_target_y_offset);
 
   (*transforms_out)[BOTTOM_LEFT_CIRCLE] = CalculateCircleTransform(
-      painted_layers_[BOTTOM_LEFT_CIRCLE]->bounds().CenterPoint(), circle_scale,
+      ToRoundedPoint(circle_layer_delegate_->GetCenterPoint()), circle_scale,
       -circle_target_x_offset, circle_target_y_offset);
 
   const float rect_delegate_width =
@@ -462,13 +351,13 @@ void InkDropAnimation::CalculateRectTransforms(
       static_cast<float>(rect_layer_delegate_->size().height());
 
   (*transforms_out)[HORIZONTAL_RECT] = CalculateRectTransform(
-      painted_layers_[HORIZONTAL_RECT]->bounds().CenterPoint(),
+      ToRoundedPoint(rect_layer_delegate_->GetCenterPoint()),
       std::max(kMinimumRectScale, size.width() / rect_delegate_width),
       std::max(kMinimumRectScale,
                (size.height() - 2.0f * corner_radius) / rect_delegate_height));
 
   (*transforms_out)[VERTICAL_RECT] = CalculateRectTransform(
-      painted_layers_[VERTICAL_RECT]->bounds().CenterPoint(),
+      ToRoundedPoint(rect_layer_delegate_->GetCenterPoint()),
       std::max(kMinimumRectScale,
                (size.width() - 2.0f * corner_radius) / rect_delegate_width),
       std::max(kMinimumRectScale, size.height() / rect_delegate_height));
