@@ -490,8 +490,6 @@
         'cdm/aes_decryptor.h',
         'cdm/cdm_adapter.cc',
         'cdm/cdm_adapter.h',
-        'cdm/cdm_adapter_impl.cc',
-        'cdm/cdm_adapter_impl.h',
         'cdm/default_cdm_factory.cc',
         'cdm/default_cdm_factory.h',
         'cdm/json_web_key.cc',
