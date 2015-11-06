@@ -1516,7 +1516,6 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeMotionPath(CSSParserTokenRange& r
     CSSValueID id = range.peek().id();
     if (id == CSSValueNone)
         return consumeIdent(range);
-
     // FIXME: Add support for <url>, <basic-shape>, <geometry-box>.
     if (range.peek().functionId() != CSSValuePath)
         return nullptr;
@@ -1552,6 +1551,32 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeMotionRotation(CSSParserTokenRang
     if (angle)
         list->append(angle.release());
     return list.release();
+}
+
+static PassRefPtrWillBeRawPtr<CSSValue> consumeTextEmphasisStyle(CSSParserTokenRange& range)
+{
+    CSSValueID id = range.peek().id();
+    if (id == CSSValueNone)
+        return consumeIdent(range);
+
+    if (RefPtrWillBeRawPtr<CSSValue> textEmphasisStyle = consumeString(range))
+        return textEmphasisStyle.release();
+
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> fill = consumeIdent<CSSValueFilled, CSSValueOpen>(range);
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> shape = consumeIdent<CSSValueDot, CSSValueCircle, CSSValueDoubleCircle, CSSValueTriangle, CSSValueSesame>(range);
+    if (!fill)
+        fill = consumeIdent<CSSValueFilled, CSSValueOpen>(range);
+    if (fill && shape) {
+        RefPtrWillBeRawPtr<CSSValueList> parsedValues = CSSValueList::createSpaceSeparated();
+        parsedValues->append(fill.release());
+        parsedValues->append(shape.release());
+        return parsedValues.release();
+    }
+    if (fill)
+        return fill.release();
+    if (shape)
+        return shape.release();
+    return nullptr;
 }
 
 PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSPropertyID unresolvedProperty)
@@ -1656,6 +1681,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSProperty
         return consumeColor(m_range, m_context);
     case CSSPropertyWebkitTextFillColor:
     case CSSPropertyWebkitTapHighlightColor:
+    case CSSPropertyWebkitTextEmphasisColor:
         return consumeColor(m_range, m_context);
     case CSSPropertyColor:
         return consumeColor(m_range, m_context, inQuirksMode());
@@ -1679,6 +1705,8 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSProperty
     case CSSPropertyMotionRotation:
         ASSERT(RuntimeEnabledFeatures::cssMotionPathEnabled());
         return consumeMotionRotation(m_range, m_context.mode());
+    case CSSPropertyWebkitTextEmphasisStyle:
+        return consumeTextEmphasisStyle(m_range);
     default:
         return nullptr;
     }
@@ -2155,6 +2183,8 @@ bool CSSPropertyParser::parseShorthand(CSSPropertyID unresolvedProperty, bool im
     case CSSPropertyMotion:
         ASSERT(RuntimeEnabledFeatures::cssMotionPathEnabled());
         return consumeShorthandGreedily(motionShorthand(), important);
+    case CSSPropertyWebkitTextEmphasis:
+        return consumeShorthandGreedily(webkitTextEmphasisShorthand(), important);
     default:
         m_currentShorthand = oldShorthand;
         return false;

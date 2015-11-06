@@ -437,7 +437,6 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     case CSSPropertyWebkitBorderBeforeColor:
     case CSSPropertyWebkitBorderAfterColor:
     case CSSPropertyWebkitColumnRuleColor:
-    case CSSPropertyWebkitTextEmphasisColor:
     case CSSPropertyWebkitTextStrokeColor:
         parsedValue = parseColor(m_valueList->current(), acceptQuirkyColors(propId));
         if (parsedValue)
@@ -1051,13 +1050,6 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     case CSSPropertyInvalid:
         return false;
     // CSS Text Layout Module Level 3: Vertical writing support
-    case CSSPropertyWebkitTextEmphasis:
-        return parseShorthand(propId, webkitTextEmphasisShorthand(), important);
-
-    case CSSPropertyWebkitTextEmphasisStyle:
-        parsedValue = parseTextEmphasisStyle();
-        break;
-
     case CSSPropertyWebkitTextOrientation:
         // FIXME: For now just support sideways, sideways-right, upright and vertical-right.
         if (id == CSSValueSideways || id == CSSValueSidewaysRight || id == CSSValueVerticalRight || id == CSSValueUpright)
@@ -1193,6 +1185,9 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     case CSSPropertyMotionOffset:
     case CSSPropertyMotionRotation:
     case CSSPropertyMotion:
+    case CSSPropertyWebkitTextEmphasisColor:
+    case CSSPropertyWebkitTextEmphasisStyle:
+    case CSSPropertyWebkitTextEmphasis:
         validPrimitive = false;
         break;
 
@@ -5374,53 +5369,6 @@ PassRefPtrWillBeRawPtr<CSSValueList> CSSPropertyParser::parseTransformOrigin()
     if (zValue)
         list->append(zValue.release());
     return list.release();
-}
-
-PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseTextEmphasisStyle()
-{
-    RefPtrWillBeRawPtr<CSSPrimitiveValue> fill = nullptr;
-    RefPtrWillBeRawPtr<CSSPrimitiveValue> shape = nullptr;
-
-    for (CSSParserValue* value = m_valueList->current(); value; value = m_valueList->next()) {
-        if (value->m_unit == CSSParserValue::String) {
-            if (fill || shape)
-                return nullptr;
-            m_valueList->next();
-            return createPrimitiveStringValue(value);
-        }
-
-        if (value->id == CSSValueNone) {
-            if (fill || shape)
-                return nullptr;
-            m_valueList->next();
-            return cssValuePool().createIdentifierValue(CSSValueNone);
-        }
-
-        if (value->id == CSSValueOpen || value->id == CSSValueFilled) {
-            if (fill)
-                return nullptr;
-            fill = cssValuePool().createIdentifierValue(value->id);
-        } else if (value->id == CSSValueDot || value->id == CSSValueCircle || value->id == CSSValueDoubleCircle || value->id == CSSValueTriangle || value->id == CSSValueSesame) {
-            if (shape)
-                return nullptr;
-            shape = cssValuePool().createIdentifierValue(value->id);
-        } else {
-            break;
-        }
-    }
-
-    if (fill && shape) {
-        RefPtrWillBeRawPtr<CSSValueList> parsedValues = CSSValueList::createSpaceSeparated();
-        parsedValues->append(fill.release());
-        parsedValues->append(shape.release());
-        return parsedValues.release();
-    }
-    if (fill)
-        return fill.release();
-    if (shape)
-        return shape.release();
-
-    return nullptr;
 }
 
 bool CSSPropertyParser::parseCalculation(CSSParserValue* value, ValueRange range)
