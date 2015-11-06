@@ -49606,6 +49606,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="V8.ErrorsThrownPerContext" units="errors">
+  <owner>hablich@chromium.org</owner>
+  <summary>
+    The amount of JavaScript errors thrown by V8 per context. It does not count
+    custom errors and ignores catched errors thrown by V8. This is collected
+    after the context is detached.
+  </summary>
+</histogram>
+
 <histogram name="V8.ExecutableMemoryMax" units="bytes">
   <obsolete>
     This histogram is no longer present in V8
