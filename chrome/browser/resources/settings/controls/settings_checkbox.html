@@ -6,6 +6,7 @@
 <link rel="import" href="chrome://md-settings/pref_tracker/pref_tracker.html">
 
 <dom-module id="settings-checkbox">
+  <link rel="import" type="css" href="chrome://resources/cr_elements/shared.css">
   <link rel="import" type="css" href="settings_checkbox.css">
   <template>
     <cr-events id="events"></cr-events>
@@ -14,8 +15,8 @@
     <div id="outerDiv" class="layout horizontal center">
       <paper-checkbox id="checkbox" checked="{{checked}}"
           disabled="[[checkboxDisabled_(disabled, pref)]]">
-        <span id="mainLabel">{{label}}</span>
-        <span id="subLabel">{{subLabel}}</span>
+        <div id="mainLabel">{{label}}</div>
+        <div id="subLabel">{{subLabel}}</div>
       </paper-checkbox>
       <cr-policy-pref-indicator pref="[[pref]]"></cr-policy-pref-indicator>
     </div>

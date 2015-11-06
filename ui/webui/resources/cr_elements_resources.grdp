@@ -126,4 +126,7 @@
   <structure name="IDR_CR_ELEMENTS_CR_SEARCH_FIELD_JS"
              file="../../webui/resources/cr_elements/cr_search_field/cr_search_field.js"
              type="chrome_html" />
+  <structure name="IDR_CR_ELEMENTS_SHARED_CSS"
+             file="../../webui/resources/cr_elements/shared.css"
+             type="chrome_html" />
 </grit-part>
