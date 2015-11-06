@@ -181,6 +181,7 @@ public abstract class CronetEngine {
          * @deprecated Marked as deprecated because @hide doesn't properly hide but
          *         javadocs are built with nodeprecated="yes".
          */
+        @SuppressWarnings("DepAnn")
         public Builder setDataReductionProxyOptions(
                 String primaryProxy, String fallbackProxy, String secureProxyCheckUrl) {
             if (primaryProxy.isEmpty() || fallbackProxy.isEmpty()
@@ -200,6 +201,7 @@ public abstract class CronetEngine {
                 HTTP_CACHE_DISABLED, HTTP_CACHE_IN_MEMORY, HTTP_CACHE_DISK_NO_HTTP, HTTP_CACHE_DISK,
         })
         @Retention(RetentionPolicy.SOURCE)
+        @SuppressWarnings("DepAnn")
         public @interface HttpCacheSetting {}
 
         /**
@@ -611,7 +613,7 @@ public abstract class CronetEngine {
      *         javadocs are built with nodeprecated="yes".
      *         TODO(pauljensen): Expose once implemented, http://crbug.com/418111
      */
-    public abstract URLConnection openConnection(URL url, Proxy proxy);
+    @SuppressWarnings("DepAnn") public abstract URLConnection openConnection(URL url, Proxy proxy);
 
     /**
      * Creates a {@link URLStreamHandlerFactory} to handle HTTP and HTTPS

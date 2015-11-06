@@ -132,6 +132,7 @@ public interface UrlRequest {
                 REQUEST_PRIORITY_MEDIUM, REQUEST_PRIORITY_HIGHEST,
         })
         @Retention(RetentionPolicy.SOURCE)
+        @SuppressWarnings("DepAnn")
         public @interface RequestPriority {}
 
         /**
@@ -336,6 +337,7 @@ public interface UrlRequest {
                 READING_RESPONSE,
         })
         @Retention(RetentionPolicy.SOURCE)
+        @SuppressWarnings("DepAnn")
         public @interface StatusValues {}
 
         /**

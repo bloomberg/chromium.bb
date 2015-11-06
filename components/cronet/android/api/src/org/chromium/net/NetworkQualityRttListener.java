@@ -11,6 +11,7 @@ package org.chromium.net;
  * the first byte of the response is received.
  * @deprecated not really deprecated but hidden for now as it's a prototype.
  */
+@SuppressWarnings("DepAnn")
 public interface NetworkQualityRttListener {
     /**
      * Reports a new round trip time observation.

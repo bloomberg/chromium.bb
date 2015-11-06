@@ -9,6 +9,7 @@ package org.chromium.net;
  * CronetEngine.
  * @deprecated use {@link CronetEngine.Builder} instead.
  */
+@Deprecated
 public class UrlRequestContextConfig extends CronetEngine.Builder {
     public UrlRequestContextConfig() {
         // Context will be passed in later when the ChromiumUrlRequestFactory

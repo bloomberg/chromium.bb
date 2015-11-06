@@ -39,8 +39,8 @@ import java.net.URLStreamHandlerFactory;
  *
  * @deprecated use {@link CronetEngine#createURLStreamHandlerFactory}.
  */
-public class CronetURLStreamHandlerFactory
-        implements URLStreamHandlerFactory {
+@Deprecated
+public class CronetURLStreamHandlerFactory implements URLStreamHandlerFactory {
     private final CronetEngine mCronetEngine;
 
     /**

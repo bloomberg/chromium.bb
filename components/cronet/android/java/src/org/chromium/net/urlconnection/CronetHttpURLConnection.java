@@ -32,6 +32,7 @@ import java.util.TreeMap;
  * requests and receive responses.
  * @deprecated use {@link CronetEngine#openConnection}.
  */
+@Deprecated
 public class CronetHttpURLConnection extends HttpURLConnection {
     private static final String TAG = "cr.CronetHttpURLConn";
     private static final String CONTENT_LENGTH = "Content-Length";
