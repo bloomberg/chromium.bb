@@ -3,11 +3,13 @@
  * found in the LICENSE file.
  *
  * Exported function:
- *  - assertAttributeInterpolation({property, from, to, [fromComposite], [toComposite], [underlying]}, [{at: fraction, is: value}])
+ *  - assertAttributeInterpolation({property, [from], [to], [fromComposite], [toComposite], [underlying]}, [{at: fraction, is: value}])
  *        Constructs a test case for each fraction that asserts the expected value
  *        equals the value produced by interpolation between from and to composited
  *        onto underlying by fromComposite and toComposite respectively using
  *        SMIL and Web Animations.
+ *        If from or to are missing then a neutral keyframe will be used and the
+ *        composite mode will be forced to be 'add'.
  *        SMIL will only be tested with equal fromComposite and toComposite values.
 */
 'use strict';
@@ -317,16 +319,26 @@
       case 'Web Animations':
         // Replace 'transform' with 'svgTransform', etc. This avoids collisions with CSS properties or the Web Animations API (offset).
         var prefixedProperty = 'svg' + params.property[0].toUpperCase() + params.property.slice(1);
-        target.animate([
-          {
+        var keyframes = [];
+        if ('from' in params) {
+          keyframes.push({
+            offset: 0,
             [prefixedProperty]: params.from,
             composite: params.fromComposite,
-          },
-          {
+          });
+        } else {
+          console.assert(params.fromComposite === 'add');
+        }
+        if ('to' in params) {
+          keyframes.push({
+            offset: 1,
             [prefixedProperty]: params.to,
             composite: params.toComposite,
-          },
-        ], {
+          });
+        } else {
+          console.assert(params.toComposite === 'add');
+        }
+        target.animate(keyframes, {
           fill: 'forwards',
           duration: 1,
           easing: createEasing(expectation.at),
@@ -356,14 +368,20 @@
     return target;
   }
 
+  function reprKeyframe(x) {
+    return (typeof x === 'string') ? "'" + x + "'" : null;
+  }
+
   function createTestTargets(interpolationTests, container, rebaselineContainer) {
     var targets = [];
     for (var interpolationTest of interpolationTests) {
       var params = interpolationTest.params;
-      params.fromComposite = params.fromComposite || 'replace';
-      params.toComposite = params.toComposite || 'replace';
+      params.fromComposite = 'from' in params ? (params.fromComposite || 'replace') : 'add';
+      params.toComposite = 'to' in params ? (params.toComposite || 'replace') : 'add';
       var underlyingText = params.underlying ? `with underlying [${params.underlying}] ` : '';
-      var description = `Interpolate attribute <${params.property}> ${underlyingText}from ${params.fromComposite} [${params.from}] to ${params.toComposite} [${params.to}]`;
+      var fromText = 'from' in params ? `${params.fromComposite} [${params.from}]` : 'neutral';
+      var toText = 'to' in params ? `${params.toComposite} [${params.to}]` : 'neutral';
+      var description = `Interpolate attribute <${params.property}> ${underlyingText}from ${fromText} to ${toText}`;
 
     if (rebaselineTests) {
         var rebaseline = createElement('pre', rebaselineContainer);
@@ -371,9 +389,9 @@
 assertAttributeInterpolation({
   property: '${params.property}',
   underlying: '${params.underlying}',
-  from: '${params.from}',
+  from: ${reprKeyframe(params.from)},
   fromComposite: '${params.fromComposite}',
-  to: '${params.to}',
+  to: ${reprKeyframe(params.to)},
   toComposite: '${params.toComposite}',
 }, [\n`));
         var rebaselineExpectation;

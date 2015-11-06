@@ -543,7 +543,7 @@ PassOwnPtr<Keyframe::PropertySpecificKeyframe> SVGPropertySpecificKeyframe::clon
 
 PassOwnPtr<Keyframe::PropertySpecificKeyframe> SVGPropertySpecificKeyframe::neutralKeyframe(double offset, PassRefPtr<TimingFunction> easing) const
 {
-    return adoptPtr(new SVGPropertySpecificKeyframe(offset, easing, "", EffectModel::CompositeAdd));
+    return adoptPtr(new SVGPropertySpecificKeyframe(offset, easing, String(), EffectModel::CompositeAdd));
 }
 
 namespace {
