@@ -174,6 +174,10 @@ struct NewWindowInfo {
 // Handles cancelled load in WKWebView (error with NSURLErrorCancelled code).
 - (void)handleCancelledError:(NSError*)error;
 
+// Called when a load completes, to perform any final actions before informing
+// delegates.
+- (void)loadCompletedForURL:(const GURL&)loadedURL;
+
 #pragma mark - Optional methods for subclasses
 // Subclasses may overwrite methods in this section.
 

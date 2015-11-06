@@ -881,6 +881,16 @@ const size_t kMaxMessageQueueSize = 262144;
   }
 }
 
+- (void)loadCompletedForURL:(const GURL&)loadedURL {
+  // This is not actually the right place to call this, and is here to preserve
+  // the existing UIWebView behavior during the WKWebView transition. This
+  // should actually be called at the point where the web view URL is known to
+  // have actually changed, but currently there's not a clear way of knowing
+  // when that happens as a result of a load (vs. an in-page navigation), and
+  // over-calling this would regress other behavior.
+  self.webStateImpl->OnNavigationCommitted(loadedURL);
+}
+
 #pragma mark - JS to ObjC messaging
 
 - (void)respondToJSInvoke {

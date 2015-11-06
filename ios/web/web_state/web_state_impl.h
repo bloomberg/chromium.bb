@@ -77,6 +77,9 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
   // Notifies the observers that a provisional navigation has started.
   void OnProvisionalNavigationStarted(const GURL& url);
 
+  // Called when a navigation is committed.
+  void OnNavigationCommitted(const GURL& url);
+
   // Notifies the observers that the URL hash of the current page changed.
   void OnUrlHashChanged();
 

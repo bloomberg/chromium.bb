@@ -139,9 +139,6 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
   // Referrer for the current page.
   base::scoped_nsobject<NSString> _currentReferrerString;
 
-  // Backs the property of the same name.
-  base::scoped_nsobject<NSString> _documentMIMEType;
-
   // Navigation type of the pending navigation action of the main frame. This
   // value is assigned at |decidePolicyForNavigationAction| where the navigation
   // type is extracted from the request and associated with a committed
@@ -180,9 +177,6 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
   // change.
   BOOL _interactionRegisteredSinceLastURLChange;
 }
-
-// Response's MIME type of the last known navigation.
-@property(nonatomic, copy) NSString* documentMIMEType;
 
 // Dictionary where keys are the names of WKWebView properties and values are
 // selector names which should be called when a corresponding property has
@@ -510,13 +504,13 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
     return web::WEB_VIEW_DOCUMENT_TYPE_GENERIC;
   }
 
-  if (!self.documentMIMEType) {
+  std::string mimeType = self.webState->GetContentsMimeType();
+  if (mimeType.empty()) {
     return web::WEB_VIEW_DOCUMENT_TYPE_UNKNOWN;
   }
 
-  if ([self.documentMIMEType isEqualToString:@"text/html"] ||
-      [self.documentMIMEType isEqualToString:@"application/xhtml+xml"] ||
-      [self.documentMIMEType isEqualToString:@"application/xml"]) {
+  if (mimeType == "text/html" || mimeType == "application/xhtml+xml" ||
+      mimeType == "application/xml") {
     return web::WEB_VIEW_DOCUMENT_TYPE_HTML;
   }
 
@@ -670,15 +664,11 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
   }
 }
 
+- (void)loadCompletedForURL:(const GURL&)loadedURL {
+  // Nothing to do.
+}
+
 #pragma mark Private methods
-
-- (NSString*)documentMIMEType {
-  return _documentMIMEType.get();
-}
-
-- (void)setDocumentMIMEType:(NSString*)type {
-  _documentMIMEType.reset([type copy]);
-}
 
 - (NSDictionary*)wkWebViewObservers {
   return @{
@@ -1517,9 +1507,6 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
   [self updatePendingNavigationTypeForMainFrameFromNavigationAction:
             navigationAction];
 
-  if (navigationAction.sourceFrame.mainFrame)
-    self.documentMIMEType = nil;
-
   web::FrameInfo targetFrame(navigationAction.targetFrame.mainFrame);
   BOOL isLinkClick = [self isLinkNavigation:navigationAction.navigationType];
   BOOL allowLoad = [self shouldAllowLoadWithRequest:request
@@ -1552,8 +1539,6 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
     self.webStateImpl->OnHttpResponseHeadersReceived(
         HTTPHeaders.get(), net::GURLWithNSURL(navigationResponse.response.URL));
   }
-  if (navigationResponse.isForMainFrame)
-    self.documentMIMEType = navigationResponse.response.MIMEType;
 
   BOOL allowNavigation = navigationResponse.canShowMIMEType;
   if (allowNavigation) {
@@ -1663,6 +1648,7 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
   // This is the point where the document's URL has actually changed.
   [self setDocumentURL:net::GURLWithNSURL([_wkWebView URL])];
   DCHECK(_documentURL == self.lastRegisteredRequestURL);
+  self.webStateImpl->OnNavigationCommitted(_documentURL);
   [self webPageChanged];
 
   [self updateCurrentBackForwardListItemHolder];

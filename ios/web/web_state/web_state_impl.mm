@@ -109,6 +109,10 @@ WebStateImpl* WebStateImpl::CopyForSessionWindow() {
   return copy;
 }
 
+void WebStateImpl::OnNavigationCommitted(const GURL& url) {
+  UpdateHttpResponseHeaders(url);
+}
+
 void WebStateImpl::OnUrlHashChanged() {
   FOR_EACH_OBSERVER(WebStateObserver, observers_, UrlHashChanged());
 }
@@ -157,7 +161,6 @@ bool WebStateImpl::IsBeingDestroyed() const {
 }
 
 void WebStateImpl::OnPageLoaded(const GURL& url, bool load_success) {
-  UpdateHttpResponseHeaders(url);
   if (facade_delegate_)
     facade_delegate_->OnPageLoaded();
 
@@ -315,6 +318,8 @@ void WebStateImpl::OnHttpResponseHeadersReceived(
   // Store the headers in a map until the page finishes loading, as we do not
   // know which URL corresponds to the main page yet.
   // Remove the hash (if any) as it is sometimes altered by in-page navigations.
+  // TODO(crbug/551677): Simplify all this logic once UIWebView is no longer
+  // supported.
   const GURL& url = GURLByRemovingRefFromGURL(resource_url);
   response_headers_map_[url] = response_headers;
 }
