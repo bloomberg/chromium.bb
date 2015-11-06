@@ -91,6 +91,9 @@ public class CleanupReferenceTest extends InstrumentationTestCase {
         instances = null;
         // Ensure compiler / instrumentation does not strip out the assignment.
         assertTrue(instances == null);
+        // Calling sObjectCount.get() before collectGarbage() seems to be required for the objects
+        // to be GC'ed only when building using GN.
+        assertTrue(sObjectCount.get() != -1);
         collectGarbage();
         assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
             @Override
