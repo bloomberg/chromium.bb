@@ -39,6 +39,13 @@ void CalculateVisibleRects(const std::vector<LayerType*>& visible_layer_list,
     const TransformNode* transform_node =
         transform_tree.Node(layer->transform_tree_index());
     if (!is_unclipped && !fully_visible) {
+      // The entire layer is visible if it has copy requests.
+      if (layer->HasCopyRequest()) {
+        layer->set_visible_rect_from_property_trees(gfx::Rect(layer_bounds));
+        layer->set_clip_rect_in_target_space_from_property_trees(gfx::Rect());
+        continue;
+      }
+
       const TransformNode* target_node =
           non_root_surfaces_enabled
               ? transform_tree.Node(transform_node->data.content_target_id)

@@ -489,6 +489,10 @@ static gfx::Rect CalculateVisibleLayerRect(
       layer->drawable_content_rect().IsEmpty())
     return gfx::Rect();
 
+  // The layer is fully visible if it has copy requests.
+  if (layer->HasCopyRequest())
+    return gfx::Rect(layer->bounds());
+
   // Compute visible bounds in target surface space.
   gfx::Rect visible_rect_in_target_surface_space =
       layer->drawable_content_rect();
@@ -2050,8 +2054,8 @@ static void CalculateDrawPropertiesInternal(
     gfx::Rect clipped_content_rect = local_drawable_content_rect_of_subtree;
 
     // Don't clip if the layer is reflected as the reflection shouldn't be
-    // clipped.
-    if (!layer->replica_layer()) {
+    // clipped. Also, don't clip if the layer has copy requests.
+    if (!layer->replica_layer() && !layer->HasCopyRequest()) {
       // Note, it is correct to use data_from_ancestor.ancestor_clips_subtree
       // here, because we are looking at this layer's render_surface, not the
       // layer itself.
@@ -2596,7 +2600,8 @@ void CalculateRenderSurfaceLayerListInternal(
         if (layer->DrawsContent())
           surface_content_rect.Union(layer->drawable_content_rect());
 
-        if (!layer->replica_layer() && layer->render_surface()->is_clipped()) {
+        if (!layer->replica_layer() && !layer->HasCopyRequest() &&
+            layer->render_surface()->is_clipped()) {
           // Here, we clip the render surface's content rect with its clip rect.
           // As the clip rect of render surface is in the surface's target
           // space, we first map the content rect into the target space,
