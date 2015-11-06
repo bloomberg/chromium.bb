@@ -14,6 +14,7 @@ import android.view.ViewGroup;
 
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.UrlConstants;
+import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelContentViewDelegate;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel;
 import org.chromium.chrome.browser.compositor.layouts.components.LayoutTab;
 import org.chromium.chrome.browser.compositor.layouts.components.VirtualView;
@@ -29,7 +30,6 @@ import org.chromium.chrome.browser.compositor.layouts.eventfilter.GestureHandler
 import org.chromium.chrome.browser.compositor.layouts.phone.ContextualSearchLayout;
 import org.chromium.chrome.browser.compositor.overlays.SceneOverlay;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchManagementDelegate;
-import org.chromium.chrome.browser.contextualsearch.ContextualSearchManager.ContextualSearchContentViewDelegate;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchStaticEventFilter;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchStaticEventFilter.ContextualSearchTapHandler;
 import org.chromium.chrome.browser.device.DeviceClassManager;
@@ -58,7 +58,7 @@ import java.util.List;
  * driving all {@link Layout}s that get shown via the {@link LayoutManager}.
  */
 public class LayoutManagerDocument extends LayoutManager
-        implements ContextualSearchTapHandler, ContextualSearchContentViewDelegate,
+        implements ContextualSearchTapHandler, OverlayPanelContentViewDelegate,
                 ReaderModeTapHandler {
     // Layouts
     /** A {@link Layout} used for showing a normal web page. */
@@ -331,12 +331,12 @@ public class LayoutManagerDocument extends LayoutManager
     }
 
     @Override
-    public void setContextualSearchContentViewCore(ContentViewCore contentViewCore) {
+    public void setOverlayPanelContentViewCore(ContentViewCore contentViewCore) {
         mHost.onContentViewCoreAdded(contentViewCore);
     }
 
     @Override
-    public void releaseContextualSearchContentViewCore() {
+    public void releaseOverlayPanelContentViewCore() {
         if (getTabModelSelector() == null) return;
         Tab tab = getTabModelSelector().getCurrentTab();
         if (tab != null) tab.updateFullscreenEnabledState();

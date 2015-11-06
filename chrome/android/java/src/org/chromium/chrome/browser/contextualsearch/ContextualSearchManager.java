@@ -22,6 +22,7 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayContentDelegate;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.PanelState;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChangeReason;
+import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelContentViewDelegate;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchSelectionController.SelectionType;
 import org.chromium.chrome.browser.device.DeviceClassManager;
@@ -95,7 +96,7 @@ public class ContextualSearchManager extends ContextualSearchObservable
 
     private final WindowAndroid mWindowAndroid;
     private WebContentsObserver mSearchWebContentsObserver;
-    private ContextualSearchContentViewDelegate mSearchContentViewDelegate;
+    private OverlayPanelContentViewDelegate mSearchContentViewDelegate;
     private final ContextualSearchTabPromotionDelegate mTabPromotionDelegate;
     private TabModelSelectorTabObserver mTabModelSelectorTabObserver;
     private TabModelObserver mTabModelObserver;
@@ -143,22 +144,6 @@ public class ContextualSearchManager extends ContextualSearchObservable
     private long mNativeContextualSearchManagerPtr;
 
     private TabRedirectHandler mTabRedirectHandler;
-
-    /**
-     * The delegate that is notified when the Search Panel ContentViewCore is ready to be rendered.
-     */
-    public interface ContextualSearchContentViewDelegate {
-        /**
-         * Sets the {@code ContentViewCore} associated to the Contextual Search Panel.
-         * @param contentViewCore Reference to the ContentViewCore.
-         */
-        void setContextualSearchContentViewCore(ContentViewCore contentViewCore);
-
-        /**
-         * Releases the {@code ContentViewCore} associated to the Contextual Search Panel.
-         */
-        void releaseContextualSearchContentViewCore();
-    }
 
     /**
      * The delegate that is responsible for promoting a {@link ContentViewCore} to a {@link Tab}
@@ -947,13 +932,13 @@ public class ContextualSearchManager extends ContextualSearchObservable
         @Override
         public void onContentViewCreated(ContentViewCore contentViewCore) {
             // TODO(mdjones): Move SearchContentViewDelegate ownership to panel.
-            mSearchContentViewDelegate.setContextualSearchContentViewCore(contentViewCore);
+            mSearchContentViewDelegate.setOverlayPanelContentViewCore(contentViewCore);
         }
 
         @Override
         public void onContentViewDestroyed() {
             if (mSearchContentViewDelegate != null) {
-                mSearchContentViewDelegate.releaseContextualSearchContentViewCore();
+                mSearchContentViewDelegate.releaseOverlayPanelContentViewCore();
             }
         }
 
@@ -994,10 +979,10 @@ public class ContextualSearchManager extends ContextualSearchObservable
     // --------------------------------------------------------------------------------------------
 
     /**
-     * Sets the {@code ContextualSearchContentViewDelegate} associated with the Content View.
+     * Sets the {@code OverlayPanelContentViewDelegate} associated with the Content View.
      * @param delegate
      */
-    public void setSearchContentViewDelegate(ContextualSearchContentViewDelegate delegate) {
+    public void setSearchContentViewDelegate(OverlayPanelContentViewDelegate delegate) {
         mSearchContentViewDelegate = delegate;
     }
 
