@@ -16,7 +16,7 @@ static const float coplanar_dot_epsilon = 0.001f;
 // This threshold controls how "thick" a plane is. If a point's distance is
 // <= |compare_threshold|, then it is considered on the plane. Only when this
 // boundary is crossed do we consider doing splitting.
-static const float compare_threshold = 1.0f;
+static const float compare_threshold = 0.1f;
 // |split_threshold| is lower in this case because we want the points created
 // during splitting to be well within the range of |compare_threshold| for
 // comparison purposes. The splitting operation will produce intersection points
@@ -27,7 +27,7 @@ static const float compare_threshold = 1.0f;
 // this range.
 // This is really supposd to be compare_threshold / 2.0f, but that would
 // create another static initializer.
-static const float split_threshold = 0.5f;
+static const float split_threshold = 0.05f;
 
 static const float normalized_threshold = 0.001f;
 }  // namespace

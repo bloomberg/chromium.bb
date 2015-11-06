@@ -32,6 +32,27 @@ static void ValidatePoints(const DrawPolygon& polygon,
   }
 }
 
+// Two quads are nearly touching but definitely ordered. Second one should
+// compare in front.
+TEST(DrawPolygonSplitTest, NearlyTouchingOrder) {
+  std::vector<gfx::Point3F> vertices_a;
+  vertices_a.push_back(gfx::Point3F(0.0f, 10.0f, 0.0f));
+  vertices_a.push_back(gfx::Point3F(0.0f, 0.0f, 0.0f));
+  vertices_a.push_back(gfx::Point3F(10.0f, 0.0f, 0.0f));
+  vertices_a.push_back(gfx::Point3F(10.0f, 10.0f, 0.0f));
+  std::vector<gfx::Point3F> vertices_b;
+  vertices_b.push_back(gfx::Point3F(0.0f, 10.0f, -1.0f));
+  vertices_b.push_back(gfx::Point3F(0.0f, 0.0f, -1.0f));
+  vertices_b.push_back(gfx::Point3F(10.0f, 0.0f, -1.0f));
+  vertices_b.push_back(gfx::Point3F(10.0f, 10.0f, -1.0f));
+  gfx::Vector3dF normal(0.0f, 0.0f, 1.0f);
+
+  CREATE_NEW_DRAW_POLYGON(polygon_a, vertices_a, normal, 0);
+  CREATE_NEW_DRAW_POLYGON(polygon_b, vertices_b, normal, 1);
+
+  EXPECT_EQ(BSP_BACK, DrawPolygon::SideCompare(polygon_b, polygon_a));
+}
+
 // Two quads are definitely not touching and so no split should occur.
 TEST(DrawPolygonSplitTest, NotTouchingNoSplit) {
   std::vector<gfx::Point3F> vertices_a;
