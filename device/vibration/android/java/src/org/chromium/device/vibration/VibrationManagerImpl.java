@@ -10,6 +10,7 @@ import android.media.AudioManager;
 import android.os.Vibrator;
 import android.util.Log;
 
+import org.chromium.base.VisibleForTesting;
 import org.chromium.mojo.system.MojoException;
 import org.chromium.mojom.device.VibrationManager;
 
@@ -27,9 +28,35 @@ public class VibrationManagerImpl implements VibrationManager {
     private final Vibrator mVibrator;
     private final boolean mHasVibratePermission;
 
+    private static AndroidVibratorWrapper sVibratorWrapper;
+
+    /**
+     * Android Vibrator wrapper class provided to test code to extend.
+     */
+    @VisibleForTesting
+    public static class AndroidVibratorWrapper {
+        protected AndroidVibratorWrapper() {}
+
+        public void vibrate(Vibrator vibrator, long milliseconds) {
+            vibrator.vibrate(milliseconds);
+        }
+
+        public void cancel(Vibrator vibrator) {
+            vibrator.cancel();
+        }
+    }
+
+    // Test code can use this function to inject other wrapper for testing.
+    public static void setVibratorWrapperForTesting(AndroidVibratorWrapper wrapper) {
+        sVibratorWrapper = wrapper;
+    }
+
     public VibrationManagerImpl(Context context) {
         mAudioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
         mVibrator = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
+        if (sVibratorWrapper == null) {
+            sVibratorWrapper = new AndroidVibratorWrapper();
+        }
         mHasVibratePermission =
                 context.checkCallingOrSelfPermission(android.Manifest.permission.VIBRATE)
                 == PackageManager.PERMISSION_GRANTED;
@@ -53,12 +80,12 @@ public class VibrationManagerImpl implements VibrationManager {
 
         if (mAudioManager.getRingerMode() != AudioManager.RINGER_MODE_SILENT
                 && mHasVibratePermission) {
-            mVibrator.vibrate(sanitizedMilliseconds);
+            sVibratorWrapper.vibrate(mVibrator, sanitizedMilliseconds);
         }
     }
 
     @Override
     public void cancel() {
-        if (mHasVibratePermission) mVibrator.cancel();
+        if (mHasVibratePermission) sVibratorWrapper.cancel(mVibrator);
     }
 }

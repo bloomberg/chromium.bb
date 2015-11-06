@@ -172,6 +172,8 @@ android_library("content_javatests") {
     "//content/shell/android:content_shell_java_resources",
     "//content/shell/android:content_shell_apk_java",
     "//content/shell/android:content_shell_test_java",
+    "//device/vibration/android:vibration_manager_android",
+    "//device/vibration:mojo_bindings_java",
     "//media/base/android:media_java",
     "//mojo/android:system_java",
     "//net/android:net_java",
