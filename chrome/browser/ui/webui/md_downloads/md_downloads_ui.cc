@@ -111,6 +111,7 @@ content::WebUIDataSource* CreateDownloadsUIHTMLSource(Profile* profile) {
   source->AddResourcePath("crisper.js", IDR_MD_DOWNLOADS_CRISPER_JS);
   source->AddResourcePath("dev.html", IDR_MD_DOWNLOADS_DOWNLOADS_HTML);
   source->AddResourcePath("downloads.js", IDR_MD_DOWNLOADS_DOWNLOADS_JS);
+  source->AddResourcePath("i18n.html", IDR_MD_DOWNLOADS_I18N_HTML);
   source->AddResourcePath("item.css", IDR_MD_DOWNLOADS_ITEM_CSS);
   source->AddResourcePath("item.html", IDR_MD_DOWNLOADS_ITEM_HTML);
   source->AddResourcePath("item.js", IDR_MD_DOWNLOADS_ITEM_JS);
@@ -119,7 +120,6 @@ content::WebUIDataSource* CreateDownloadsUIHTMLSource(Profile* profile) {
   source->AddResourcePath("manager.js", IDR_MD_DOWNLOADS_MANAGER_JS);
   source->AddResourcePath("shared_style.css",
                           IDR_MD_DOWNLOADS_SHARED_STYLE_CSS);
-  source->AddResourcePath("strings.html", IDR_MD_DOWNLOADS_STRINGS_HTML);
   source->AddResourcePath("toolbar.css", IDR_MD_DOWNLOADS_TOOLBAR_CSS);
   source->AddResourcePath("toolbar.html", IDR_MD_DOWNLOADS_TOOLBAR_HTML);
   source->AddResourcePath("toolbar.js", IDR_MD_DOWNLOADS_TOOLBAR_JS);

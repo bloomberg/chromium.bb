@@ -130,6 +130,7 @@
         <include name="IDR_MD_DOWNLOADS_CONSTANTS_JS" file="resources\md_downloads\constants.js" type="BINDATA" />
         <include name="IDR_MD_DOWNLOADS_CRISPER_JS" file="resources\md_downloads\crisper.js" flattenhtml="true" type="BINDATA" />
         <include name="IDR_MD_DOWNLOADS_DOWNLOADS_JS" file="resources\md_downloads\downloads.js" type="BINDATA" />
+        <include name="IDR_MD_DOWNLOADS_I18N_HTML" file="resources\md_downloads\i18n.html" type="BINDATA" />
         <include name="IDR_MD_DOWNLOADS_ITEM_CSS" file="resources\md_downloads\item.css" type="BINDATA" flattenhtml="true" />
         <include name="IDR_MD_DOWNLOADS_ITEM_HTML" file="resources\md_downloads\item.html" type="BINDATA" />
         <include name="IDR_MD_DOWNLOADS_ITEM_JS" file="resources\md_downloads\item.js" type="BINDATA" />
@@ -137,7 +138,6 @@
         <include name="IDR_MD_DOWNLOADS_MANAGER_HTML" file="resources\md_downloads\manager.html" type="BINDATA" />
         <include name="IDR_MD_DOWNLOADS_MANAGER_JS" file="resources\md_downloads\manager.js" type="BINDATA" />
         <include name="IDR_MD_DOWNLOADS_SHARED_STYLE_CSS" file="resources\md_downloads\shared_style.css" type="BINDATA" />
-        <include name="IDR_MD_DOWNLOADS_STRINGS_HTML" file="resources\md_downloads\strings.html" type="BINDATA" />
         <include name="IDR_MD_DOWNLOADS_TOOLBAR_CSS" file="resources\md_downloads\toolbar.css" type="BINDATA" />
         <include name="IDR_MD_DOWNLOADS_TOOLBAR_HTML" file="resources\md_downloads\toolbar.html" type="BINDATA" />
         <include name="IDR_MD_DOWNLOADS_TOOLBAR_JS" file="resources\md_downloads\toolbar.js" type="BINDATA" />
