@@ -14,6 +14,7 @@
 #include "cc/resources/shared_bitmap_manager.h"
 #include "content/common/content_export.h"
 #include "content/common/host_discardable_shared_memory_manager.h"
+#include "gpu/command_buffer/common/sync_token.h"
 #include "ipc/ipc_message_macros.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gfx/ipc/gfx_param_traits.h"
@@ -210,7 +211,7 @@ IPC_SYNC_MESSAGE_CONTROL5_1(ChildProcessHostMsg_SyncAllocateGpuMemoryBuffer,
 // Informs the browser that the child deleted a gpu memory buffer.
 IPC_MESSAGE_CONTROL2(ChildProcessHostMsg_DeletedGpuMemoryBuffer,
                      gfx::GpuMemoryBufferId,
-                     uint32 /* sync_point */)
+                     gpu::SyncToken /* sync_token */)
 
 // Asks the browser to create a block of discardable shared memory for the
 // child process.

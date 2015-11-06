@@ -44,6 +44,8 @@ class SubscriptionRefSet;
 }
 }
 
+struct GpuCommandBufferMsg_CreateImage_Params;
+
 namespace content {
 
 class GpuChannel;
@@ -214,11 +216,7 @@ class GpuCommandBufferStub
                                 uint64_t command_buffer_id,
                                 uint64_t release);
 
-  void OnCreateImage(int32 id,
-                     gfx::GpuMemoryBufferHandle handle,
-                     gfx::Size size,
-                     gfx::BufferFormat format,
-                     uint32 internalformat);
+  void OnCreateImage(const GpuCommandBufferMsg_CreateImage_Params& params);
   void OnDestroyImage(int32 id);
   void OnCreateStreamTexture(uint32 texture_id,
                              int32 stream_id,

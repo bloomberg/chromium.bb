@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
+#include "gpu/command_buffer/common/sync_token.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 
@@ -16,7 +17,7 @@ namespace content {
 // Provides common implementation of a GPU memory buffer.
 class CONTENT_EXPORT GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
  public:
-  typedef base::Callback<void(uint32 sync_point)> DestructionCallback;
+  typedef base::Callback<void(const gpu::SyncToken& sync)> DestructionCallback;
 
   ~GpuMemoryBufferImpl() override;
 
@@ -40,8 +41,8 @@ class CONTENT_EXPORT GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
   gfx::GpuMemoryBufferId GetId() const override;
   ClientBuffer AsClientBuffer() override;
 
-  void set_destruction_sync_point(uint32 sync_point) {
-    destruction_sync_point_ = sync_point;
+  void set_destruction_sync_token(const gpu::SyncToken& sync_token) {
+    destruction_sync_token_ = sync_token;
   }
 
  protected:
@@ -55,7 +56,7 @@ class CONTENT_EXPORT GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
   const gfx::BufferFormat format_;
   const DestructionCallback callback_;
   bool mapped_;
-  uint32 destruction_sync_point_;
+  gpu::SyncToken destruction_sync_token_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GpuMemoryBufferImpl);

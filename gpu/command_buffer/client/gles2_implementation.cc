@@ -5522,6 +5522,10 @@ GLuint GLES2Implementation::CreateImageCHROMIUMHelper(ClientBuffer buffer,
     return 0;
   }
 
+  // CreateImage creates a fence sync so we must flush first to ensure all
+  // previously created fence syncs are flushed first.
+  FlushHelper();
+
   int32_t image_id =
       gpu_control_->CreateImage(buffer, width, height, internalformat);
   if (image_id < 0) {

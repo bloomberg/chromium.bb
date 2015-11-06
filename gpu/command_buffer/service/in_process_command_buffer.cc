@@ -65,6 +65,21 @@ static void RunTaskWithResult(base::Callback<T(void)> task,
   completion->Signal();
 }
 
+struct ScopedOrderNumberProcessor {
+  ScopedOrderNumberProcessor(SyncPointOrderData* order_data, uint32_t order_num)
+      : order_data_(order_data), order_num_(order_num) {
+    order_data_->BeginProcessingOrderNumber(order_num_);
+  }
+
+  ~ScopedOrderNumberProcessor() {
+    order_data_->FinishProcessingOrderNumber(order_num_);
+  }
+
+ private:
+  SyncPointOrderData* order_data_;
+  uint32_t order_num_;
+};
+
 struct GpuInProcessThreadHolder {
   GpuInProcessThreadHolder()
       : sync_point_manager(new SyncPointManager(false)),
@@ -497,22 +512,24 @@ void InProcessCommandBuffer::FlushOnGpuThread(int32 put_offset,
   ScopedEvent handle_flush(&flush_event_);
   base::AutoLock lock(command_buffer_lock_);
 
-  sync_point_order_data_->BeginProcessingOrderNumber(order_num);
-  command_buffer_->Flush(put_offset);
   {
-    // Update state before signaling the flush event.
-    base::AutoLock lock(state_after_last_flush_lock_);
-    state_after_last_flush_ = command_buffer_->GetLastState();
-  }
-  DCHECK((!error::IsError(state_after_last_flush_.error) && !context_lost_) ||
-         (error::IsError(state_after_last_flush_.error) && context_lost_));
+    ScopedOrderNumberProcessor scoped_order_num(sync_point_order_data_.get(),
+                                                order_num);
+    command_buffer_->Flush(put_offset);
+    {
+      // Update state before signaling the flush event.
+      base::AutoLock lock(state_after_last_flush_lock_);
+      state_after_last_flush_ = command_buffer_->GetLastState();
+    }
+    DCHECK((!error::IsError(state_after_last_flush_.error) && !context_lost_) ||
+           (error::IsError(state_after_last_flush_.error) && context_lost_));
 
-  // Currently the in process command buffer does not support being descheduled,
-  // if it does we would need to back off on calling the finish processing
-  // order number function until the message is rescheduled and finished
-  // processing. This DCHECK is to enforce this.
-  DCHECK(context_lost_ || put_offset == state_after_last_flush_.get_offset);
-  sync_point_order_data_->FinishProcessingOrderNumber(order_num);
+    // Currently the in process command buffer does not support being
+    // descheduled, if it does we would need to back off on calling the finish
+    // processing number function until the message is rescheduled and finished
+    // processing. This DCHECK is to enforce this.
+    DCHECK(context_lost_ || put_offset == state_after_last_flush_.get_offset);
+  }
 
   // If we've processed all pending commands but still have pending queries,
   // pump idle work until the query is passed.
@@ -668,17 +685,29 @@ int32 InProcessCommandBuffer::CreateImage(ClientBuffer buffer,
       ShareGpuMemoryBufferToGpuThread(gpu_memory_buffer->GetHandle(),
                                       &requires_sync_point);
 
-  QueueTask(base::Bind(&InProcessCommandBuffer::CreateImageOnGpuThread,
-                       base::Unretained(this),
-                       new_id,
-                       handle,
-                       gfx::Size(width, height),
-                       gpu_memory_buffer->GetFormat(),
-                       internalformat));
+  SyncPointManager* sync_manager = service_->sync_point_manager();
+  const uint32_t order_num =
+      sync_point_order_data_->GenerateUnprocessedOrderNumber(sync_manager);
 
+  uint64_t fence_sync = 0;
   if (requires_sync_point) {
-    gpu_memory_buffer_manager_->SetDestructionSyncPoint(gpu_memory_buffer,
-                                                        InsertSyncPoint());
+    fence_sync = GenerateFenceSyncRelease();
+
+    // Previous fence syncs should be flushed already.
+    DCHECK_EQ(fence_sync - 1, flushed_fence_sync_release_);
+  }
+
+  QueueTask(base::Bind(&InProcessCommandBuffer::CreateImageOnGpuThread,
+                       base::Unretained(this), new_id, handle,
+                       gfx::Size(width, height), gpu_memory_buffer->GetFormat(),
+                       internalformat, order_num, fence_sync));
+
+  if (fence_sync) {
+    flushed_fence_sync_release_ = fence_sync;
+    SyncToken sync_token(GetNamespaceID(), GetCommandBufferID(), fence_sync);
+    sync_token.SetVerifyFlush();
+    gpu_memory_buffer_manager_->SetDestructionSyncToken(gpu_memory_buffer,
+                                                        sync_token);
   }
 
   return new_id;
@@ -689,7 +718,11 @@ void InProcessCommandBuffer::CreateImageOnGpuThread(
     const gfx::GpuMemoryBufferHandle& handle,
     const gfx::Size& size,
     gfx::BufferFormat format,
-    uint32 internalformat) {
+    uint32 internalformat,
+    uint32_t order_num,
+    uint64_t fence_sync) {
+  ScopedOrderNumberProcessor scoped_order_num(sync_point_order_data_.get(),
+                                              order_num);
   if (!decoder_)
     return;
 
@@ -732,6 +765,10 @@ void InProcessCommandBuffer::CreateImageOnGpuThread(
       image_manager->AddImage(image.get(), id);
       break;
     }
+  }
+
+  if (fence_sync) {
+    sync_point_client_->ReleaseFenceSync(fence_sync);
   }
 }
 

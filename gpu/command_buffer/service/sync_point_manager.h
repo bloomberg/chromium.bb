@@ -13,6 +13,7 @@
 #include "base/callback.h"
 #include "base/containers/hash_tables.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/condition_variable.h"
@@ -137,6 +138,7 @@ class GPU_EXPORT SyncPointClientState
  private:
   friend class base::RefCountedThreadSafe<SyncPointClientState>;
   friend class SyncPointClient;
+  friend class SyncPointClientWaiter;
   friend class SyncPointOrderData;
 
   struct ReleaseCallback {
@@ -230,6 +232,32 @@ class GPU_EXPORT SyncPointClient {
   const uint64_t client_id_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncPointClient);
+};
+
+// A SyncPointClientWaiter is a Sync Point Client which can only wait and on
+// fence syncs and not release any fence syncs itself. Because they cannot
+// release any fence syncs they do not need an associated order number since
+// deadlocks cannot happen. Note that it is important that this class does
+// not exist in the same execution context as a SyncPointClient, or else a
+// deadlock could occur. Basically, SyncPointClientWaiter::Wait() should never
+// be called between SyncPointOrderData::BeginProcessingOrderNumber() and
+// SyncPointOrderData::FinishProcessingOrderNumber() on the same thread.
+class GPU_EXPORT SyncPointClientWaiter {
+ public:
+  SyncPointClientWaiter() {}
+  ~SyncPointClientWaiter() {}
+
+  bool Wait(SyncPointClientState* release_state,
+            uint64_t release_count,
+            const base::Closure& wait_complete_callback);
+
+  bool WaitNonThreadSafe(SyncPointClientState* release_state,
+                         uint64_t release_count,
+                         scoped_refptr<base::SingleThreadTaskRunner> runner,
+                         const base::Closure& wait_complete_callback);
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SyncPointClientWaiter);
 };
 
 // This class manages the sync points, which allow cross-channel

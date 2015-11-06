@@ -40,6 +40,10 @@ namespace IPC {
 struct ChannelHandle;
 }
 
+namespace gpu {
+struct SyncToken;
+}
+
 namespace content {
 class BrowserChildProcessHostImpl;
 class GpuMainThread;
@@ -148,7 +152,7 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   // Tells the GPU process to destroy GPU memory buffer.
   void DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
                               int client_id,
-                              int sync_point);
+                              const gpu::SyncToken& sync_token);
 
   // What kind of GPU process, e.g. sandboxed or unsandboxed.
   GpuProcessKind kind();

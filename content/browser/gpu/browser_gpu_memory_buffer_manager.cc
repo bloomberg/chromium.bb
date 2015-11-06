@@ -67,9 +67,9 @@ void HostCreateGpuMemoryBufferFromHandle(
 void GpuMemoryBufferDeleted(
     scoped_refptr<base::SingleThreadTaskRunner> destruction_task_runner,
     const GpuMemoryBufferImpl::DestructionCallback& destruction_callback,
-    uint32 sync_point) {
+    const gpu::SyncToken& sync_token) {
   destruction_task_runner->PostTask(
-      FROM_HERE, base::Bind(destruction_callback, sync_point));
+      FROM_HERE, base::Bind(destruction_callback, sync_token));
 }
 
 bool IsNativeGpuMemoryBufferFactoryConfigurationSupported(
@@ -342,11 +342,11 @@ BrowserGpuMemoryBufferManager::GpuMemoryBufferFromClientBuffer(
   return GpuMemoryBufferImpl::FromClientBuffer(buffer);
 }
 
-void BrowserGpuMemoryBufferManager::SetDestructionSyncPoint(
+void BrowserGpuMemoryBufferManager::SetDestructionSyncToken(
     gfx::GpuMemoryBuffer* buffer,
-    uint32 sync_point) {
+    const gpu::SyncToken& sync_token) {
   static_cast<GpuMemoryBufferImpl*>(buffer)
-      ->set_destruction_sync_point(sync_point);
+      ->set_destruction_sync_token(sync_token);
 }
 
 bool BrowserGpuMemoryBufferManager::OnMemoryDump(
@@ -395,10 +395,10 @@ void BrowserGpuMemoryBufferManager::ChildProcessDeletedGpuMemoryBuffer(
     gfx::GpuMemoryBufferId id,
     base::ProcessHandle child_process_handle,
     int child_client_id,
-    uint32 sync_point) {
+    const gpu::SyncToken& sync_token) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  DestroyGpuMemoryBufferOnIO(id, child_client_id, sync_point);
+  DestroyGpuMemoryBufferOnIO(id, child_client_id, sync_token);
 }
 
 void BrowserGpuMemoryBufferManager::ProcessRemoved(
@@ -419,7 +419,7 @@ void BrowserGpuMemoryBufferManager::ProcessRemoved(
 
     GpuProcessHost* host = GpuProcessHost::FromID(buffer.second.gpu_host_id);
     if (host)
-      host->DestroyGpuMemoryBuffer(buffer.first, client_id, 0);
+      host->DestroyGpuMemoryBuffer(buffer.first, client_id, gpu::SyncToken());
   }
 
   clients_.erase(client_it);
@@ -654,7 +654,7 @@ void BrowserGpuMemoryBufferManager::GpuMemoryBufferCreatedOnIO(
     if (!handle.is_null()) {
       GpuProcessHost* host = GpuProcessHost::FromID(gpu_host_id);
       if (host)
-        host->DestroyGpuMemoryBuffer(handle.id, client_id, 0);
+        host->DestroyGpuMemoryBuffer(handle.id, client_id, gpu::SyncToken());
     }
     callback.Run(gfx::GpuMemoryBufferHandle());
     return;
@@ -706,7 +706,7 @@ void BrowserGpuMemoryBufferManager::GpuMemoryBufferCreatedOnIO(
 void BrowserGpuMemoryBufferManager::DestroyGpuMemoryBufferOnIO(
     gfx::GpuMemoryBufferId id,
     int client_id,
-    uint32 sync_point) {
+    const gpu::SyncToken& sync_token) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(clients_.find(client_id) != clients_.end());
 
@@ -727,7 +727,7 @@ void BrowserGpuMemoryBufferManager::DestroyGpuMemoryBufferOnIO(
 
   GpuProcessHost* host = GpuProcessHost::FromID(buffer_it->second.gpu_host_id);
   if (host)
-    host->DestroyGpuMemoryBuffer(id, client_id, sync_point);
+    host->DestroyGpuMemoryBuffer(id, client_id, sync_token);
 
   buffers.erase(buffer_it);
 }

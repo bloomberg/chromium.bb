@@ -59,6 +59,10 @@ namespace gfx {
 struct GpuMemoryBufferHandle;
 }
 
+namespace gpu {
+struct SyncToken;
+}
+
 namespace media {
 class AudioManager;
 struct MediaLogEvent;
@@ -210,7 +214,7 @@ class CONTENT_EXPORT RenderMessageFilter : public BrowserMessageFilter {
   void GpuMemoryBufferAllocated(IPC::Message* reply,
                                 const gfx::GpuMemoryBufferHandle& handle);
   void OnDeletedGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
-                                uint32 sync_point);
+                                const gpu::SyncToken& sync_token);
 
   // Cached resource request dispatcher host, guaranteed to be non-null. We do
   // not own it; it is managed by the BrowserProcess, which has a wider scope

@@ -80,7 +80,7 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   class SyncTokenClient {
    public:
     SyncTokenClient() {}
-    virtual uint32 InsertSyncPoint() = 0;
+    virtual void GenerateSyncToken(gpu::SyncToken* sync_token) = 0;
     virtual void WaitSyncToken(const gpu::SyncToken& sync_token) = 0;
 
    protected:

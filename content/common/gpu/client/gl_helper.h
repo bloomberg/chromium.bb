@@ -247,6 +247,9 @@ class CONTENT_EXPORT GLHelper {
   // Insert a sync point into the GL command buffer.
   uint32 InsertSyncPoint();
 
+  // Inserts a fence sync, flushes, and generates a sync token.
+  void GenerateSyncToken(gpu::SyncToken* sync_token);
+
   // Wait for the sync token before executing further GL commands.
   void WaitSyncToken(const gpu::SyncToken& sync_token);
 

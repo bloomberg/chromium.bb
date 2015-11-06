@@ -63,7 +63,11 @@ class SyncTokenClientImpl : public VideoFrame::SyncTokenClient {
  public:
   explicit SyncTokenClientImpl(gpu::gles2::GLES2Interface* gl) : gl_(gl) {}
   ~SyncTokenClientImpl() override {}
-  uint32 InsertSyncPoint() override { return gl_->InsertSyncPointCHROMIUM(); }
+  void GenerateSyncToken(gpu::SyncToken* sync_token) override {
+    const uint64_t fence_sync = gl_->InsertFenceSyncCHROMIUM();
+    gl_->ShallowFlushCHROMIUM();
+    gl_->GenSyncTokenCHROMIUM(fence_sync, sync_token->GetData());
+  }
   void WaitSyncToken(const gpu::SyncToken& sync_token) override {
     gl_->WaitSyncTokenCHROMIUM(sync_token.GetConstData());
   }

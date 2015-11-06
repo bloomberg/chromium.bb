@@ -184,7 +184,16 @@ IPC_STRUCT_BEGIN(GpuStreamTextureMsg_MatrixChanged_Params)
 IPC_STRUCT_END()
 #endif
 
-  IPC_STRUCT_TRAITS_BEGIN(gpu::DxDiagNode)
+IPC_STRUCT_BEGIN(GpuCommandBufferMsg_CreateImage_Params)
+  IPC_STRUCT_MEMBER(int32, id)
+  IPC_STRUCT_MEMBER(gfx::GpuMemoryBufferHandle, gpu_memory_buffer)
+  IPC_STRUCT_MEMBER(gfx::Size, size)
+  IPC_STRUCT_MEMBER(gfx::BufferFormat, format)
+  IPC_STRUCT_MEMBER(uint32, internal_format)
+  IPC_STRUCT_MEMBER(uint64, image_release_count)
+IPC_STRUCT_END()
+
+IPC_STRUCT_TRAITS_BEGIN(gpu::DxDiagNode)
   IPC_STRUCT_TRAITS_MEMBER(values)
   IPC_STRUCT_TRAITS_MEMBER(children)
 IPC_STRUCT_TRAITS_END()
@@ -331,8 +340,8 @@ IPC_MESSAGE_CONTROL1(GpuMsg_CreateGpuMemoryBufferFromHandle,
 // Tells the GPU process to destroy buffer.
 IPC_MESSAGE_CONTROL3(GpuMsg_DestroyGpuMemoryBuffer,
                      gfx::GpuMemoryBufferId, /* id */
-                     int32, /* client_id */
-                     int32 /* sync_point */)
+                     int32,                  /* client_id */
+                     gpu::SyncToken /* sync_token */)
 
 // Create and initialize a hardware jpeg decoder using the specified route_id.
 // Created decoders should be freed with AcceleratedJpegDecoderMsg_Destroy when
@@ -652,12 +661,8 @@ IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_SignalAck,
 
 // Create an image from an existing gpu memory buffer. The id that can be
 // used to identify the image from a command buffer.
-IPC_MESSAGE_ROUTED5(GpuCommandBufferMsg_CreateImage,
-                    int32 /* id */,
-                    gfx::GpuMemoryBufferHandle /* gpu_memory_buffer */,
-                    gfx::Size /* size */,
-                    gfx::BufferFormat /* format */,
-                    uint32 /* internalformat */)
+IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_CreateImage,
+                    GpuCommandBufferMsg_CreateImage_Params /* params */)
 
 // Destroy a previously created image.
 IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_DestroyImage,

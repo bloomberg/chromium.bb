@@ -400,7 +400,7 @@ gpu::Capabilities CommandBufferProxyImpl::GetCapabilities() {
 int32_t CommandBufferProxyImpl::CreateImage(ClientBuffer buffer,
                                             size_t width,
                                             size_t height,
-                                            unsigned internalformat) {
+                                            unsigned internal_format) {
   CheckLock();
   if (last_state_.error != gpu::error::kNoError)
     return -1;
@@ -416,29 +416,47 @@ int32_t CommandBufferProxyImpl::CreateImage(ClientBuffer buffer,
   // This handle is owned by the GPU process and must be passed to it or it
   // will leak. In otherwords, do not early out on error between here and the
   // sending of the CreateImage IPC below.
-  bool requires_sync_point = false;
+  bool requires_sync_token = false;
   gfx::GpuMemoryBufferHandle handle =
       channel_->ShareGpuMemoryBufferToGpuProcess(gpu_memory_buffer->GetHandle(),
-                                                 &requires_sync_point);
+                                                 &requires_sync_token);
+
+  uint64_t image_fence_sync = 0;
+  if (requires_sync_token) {
+    image_fence_sync = GenerateFenceSyncRelease();
+
+    // Make sure fence syncs were flushed before CreateImage() was called.
+    DCHECK_LE(image_fence_sync - 1, flushed_fence_sync_release_);
+  }
 
   DCHECK(gpu::ImageFactory::IsGpuMemoryBufferFormatSupported(
       gpu_memory_buffer->GetFormat(), capabilities_));
   DCHECK(gpu::ImageFactory::IsImageSizeValidForGpuMemoryBufferFormat(
       gfx::Size(width, height), gpu_memory_buffer->GetFormat()));
   DCHECK(gpu::ImageFactory::IsImageFormatCompatibleWithGpuMemoryBufferFormat(
-      internalformat, gpu_memory_buffer->GetFormat()));
-  if (!Send(new GpuCommandBufferMsg_CreateImage(route_id_,
-                                                new_id,
-                                                handle,
-                                                gfx::Size(width, height),
-                                                gpu_memory_buffer->GetFormat(),
-                                                internalformat))) {
-    return -1;
-  }
+      internal_format, gpu_memory_buffer->GetFormat()));
 
-  if (requires_sync_point) {
-    gpu_memory_buffer_manager->SetDestructionSyncPoint(gpu_memory_buffer,
-                                                       InsertSyncPoint());
+  GpuCommandBufferMsg_CreateImage_Params params;
+  params.id = new_id;
+  params.gpu_memory_buffer = handle;
+  params.size = gfx::Size(width, height);
+  params.format = gpu_memory_buffer->GetFormat();
+  params.internal_format = internal_format;
+  params.image_release_count = image_fence_sync;
+
+  if (!Send(new GpuCommandBufferMsg_CreateImage(route_id_, params)))
+    return -1;
+
+  if (image_fence_sync) {
+    gpu::SyncToken sync_token(GetNamespaceID(), GetCommandBufferID(),
+                              image_fence_sync);
+
+    // Force a synchronous IPC to validate sync token.
+    channel_->ValidateFlushIDReachedServer(stream_id_, true);
+    sync_token.SetVerifyFlush();
+
+    gpu_memory_buffer_manager->SetDestructionSyncToken(gpu_memory_buffer,
+                                                       sync_token);
   }
 
   return new_id;
@@ -455,18 +473,18 @@ void CommandBufferProxyImpl::DestroyImage(int32 id) {
 int32_t CommandBufferProxyImpl::CreateGpuMemoryBufferImage(
     size_t width,
     size_t height,
-    unsigned internalformat,
+    unsigned internal_format,
     unsigned usage) {
   CheckLock();
   scoped_ptr<gfx::GpuMemoryBuffer> buffer(
       channel_->gpu_memory_buffer_manager()->AllocateGpuMemoryBuffer(
           gfx::Size(width, height),
-          gpu::ImageFactory::DefaultBufferFormatForImageFormat(internalformat),
+          gpu::ImageFactory::DefaultBufferFormatForImageFormat(internal_format),
           gfx::BufferUsage::SCANOUT));
   if (!buffer)
     return -1;
 
-  return CreateImage(buffer->AsClientBuffer(), width, height, internalformat);
+  return CreateImage(buffer->AsClientBuffer(), width, height, internal_format);
 }
 
 uint32 CommandBufferProxyImpl::CreateStreamTexture(uint32 texture_id) {
@@ -530,7 +548,8 @@ bool CommandBufferProxyImpl::IsFenceSyncFlushReceived(uint64_t release) {
       return true;
 
     // Has not been validated, validate it now.
-    UpdateVerifiedReleases(channel_->ValidateFlushIDReachedServer(stream_id_));
+    UpdateVerifiedReleases(
+        channel_->ValidateFlushIDReachedServer(stream_id_, false));
     return release <= verified_fence_sync_release_;
   }
 
