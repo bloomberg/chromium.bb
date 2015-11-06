@@ -236,9 +236,6 @@ private:
     PassRefPtrWillBeRawPtr<CSSValueList> parseTransform(bool useLegacyParsing);
     PassRefPtrWillBeRawPtr<CSSValue> parseTransformValue(bool useLegacyParsing, CSSParserValue*);
 
-    PassRefPtrWillBeRawPtr<CSSValue> parseMotionPath();
-    PassRefPtrWillBeRawPtr<CSSValue> parseMotionRotation();
-
     PassRefPtrWillBeRawPtr<CSSValue> parseTextEmphasisStyle();
 
     bool parseCalculation(CSSParserValue*, ValueRange);

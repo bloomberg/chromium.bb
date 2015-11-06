@@ -39,7 +39,6 @@
 #include "core/css/CSSGridLineNamesValue.h"
 #include "core/css/CSSImageSetValue.h"
 #include "core/css/CSSImageValue.h"
-#include "core/css/CSSPathValue.h"
 #include "core/css/CSSPrimitiveValueMappings.h"
 #include "core/css/CSSProperty.h"
 #include "core/css/CSSPropertyMetadata.h"
@@ -57,7 +56,6 @@
 #include "core/css/parser/CSSParserValues.h"
 #include "core/frame/UseCounter.h"
 #include "core/style/GridCoordinate.h"
-#include "core/svg/SVGPathUtilities.h"
 #include "platform/RuntimeEnabledFeatures.h"
 
 namespace blink {
@@ -901,26 +899,6 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
         return true;
     }
 
-    case CSSPropertyMotion:
-        // <motion-path> && <motion-offset> && <motion-rotation>
-        ASSERT(RuntimeEnabledFeatures::cssMotionPathEnabled());
-        return parseShorthand(propId, motionShorthand(), important);
-    case CSSPropertyMotionPath:
-        ASSERT(RuntimeEnabledFeatures::cssMotionPathEnabled());
-        if (id == CSSValueNone)
-            validPrimitive = true;
-        else
-            parsedValue = parseMotionPath();
-        break;
-    case CSSPropertyMotionOffset:
-        ASSERT(RuntimeEnabledFeatures::cssMotionPathEnabled());
-        validPrimitive = validUnit(value, FLength | FPercent);
-        break;
-    case CSSPropertyMotionRotation:
-        ASSERT(RuntimeEnabledFeatures::cssMotionPathEnabled());
-        parsedValue = parseMotionRotation();
-        break;
-
     case CSSPropertyJustifyContent:
         ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
         parsedValue = parseContentDistributionOverflowPosition();
@@ -1211,6 +1189,10 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     case CSSPropertyWebkitTextDecorationsInEffect:
     case CSSPropertyTextDecorationLine:
     case CSSPropertyTextDecoration:
+    case CSSPropertyMotionPath:
+    case CSSPropertyMotionOffset:
+    case CSSPropertyMotionRotation:
+    case CSSPropertyMotion:
         validPrimitive = false;
         break;
 
@@ -5967,56 +5949,6 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseTransformValue(bool use
     }
 
     return transformValue.release();
-}
-
-PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseMotionPath()
-{
-    CSSParserValue* value = m_valueList->current();
-
-    // FIXME: Add support for <url>, <basic-shape>, <geometry-box>.
-    if (value->m_unit != CSSParserValue::Function || value->function->id != CSSValuePath)
-        return nullptr;
-
-    // FIXME: Add support for <fill-rule>.
-    CSSParserValueList* functionArgs = value->function->args.get();
-    if (!functionArgs || functionArgs->size() != 1 || !functionArgs->current())
-        return nullptr;
-
-    CSSParserValue* arg = functionArgs->current();
-    if (arg->m_unit != CSSParserValue::String)
-        return nullptr;
-
-    String pathString = arg->string;
-    Path path;
-    if (!buildPathFromString(pathString, path))
-        return nullptr;
-
-    m_valueList->next();
-    return CSSPathValue::create(pathString);
-}
-
-PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseMotionRotation()
-{
-    RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
-    bool hasAutoOrReverse = false;
-    bool hasAngle = false;
-
-    for (CSSParserValue* value = m_valueList->current(); value; value = m_valueList->next()) {
-        if ((value->id == CSSValueAuto || value->id == CSSValueReverse) && !hasAutoOrReverse) {
-            list->append(cssValuePool().createIdentifierValue(value->id));
-            hasAutoOrReverse = true;
-        } else if (!hasAngle && validUnit(value, FAngle)) {
-            list->append(createPrimitiveNumericValue(value));
-            hasAngle = true;
-        } else {
-            break;
-        }
-    }
-
-    if (!list->length())
-        return nullptr;
-
-    return list.release();
 }
 
 } // namespace blink
