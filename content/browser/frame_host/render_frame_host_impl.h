@@ -17,7 +17,6 @@
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/site_instance_impl.h"
-#include "content/browser/webui/web_ui_impl.h"
 #include "content/common/accessibility_mode_enums.h"
 #include "content/common/ax_content_node_data.h"
 #include "content/common/content_export.h"
@@ -218,12 +217,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   RenderViewHostImpl* render_view_host() { return render_view_host_; }
   RenderFrameHostDelegate* delegate() { return delegate_; }
   FrameTreeNode* frame_tree_node() { return frame_tree_node_; }
-
-  // Returns the associated WebUI or null if none applies.
-  WebUIImpl* web_ui() const { return web_ui_.get(); }
-
-  // Returns the associated WebUI type.
-  WebUI::TypeID web_ui_type() const { return web_ui_type_; }
 
   // Returns this RenderFrameHost's loading state. This method is only used by
   // FrameTreeNode. The proper way to check whether a frame is loading is to
@@ -485,15 +478,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // addition, its associated RenderWidgetHost has to be focused.
   bool IsFocused();
 
-  // Updates the WebUI of this RenderFrameHost based on the provided |dest_url|,
-  // setting it to either none, a new instance or simply reuses the currently
-  // existing one. Returns true if a WebUI change occurred.
-  // If this is a history navigation its NavigationEntry bindings should be
-  // provided through |entry_bindings| to allow verifying that they are not
-  // being set differently this time around. Otherwise |entry_bindings| should
-  // be set to NavigationEntryImpl::kInvalidBindings so that no checks are done.
-  bool UpdateWebUI(const GURL& dest_url, int entry_bindings);
-
   // Returns the Mojo ImageDownloader service.
   const image_downloader::ImageDownloaderPtr& GetMojoImageDownloader();
 
@@ -663,9 +647,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // FrameTreeNode that is not a child of this node.
   FrameTreeNode* FindAndVerifyChild(
       int32 child_frame_routing_id, bad_message::BadMessageReason reason);
-
-  // Resets all WebUI related fields.
-  void ResetWebUI();
 
   // For now, RenderFrameHosts indirectly keep RenderViewHosts alive via a
   // refcount that calls Shutdown when it reaches zero.  This allows each
@@ -841,12 +822,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // PlzNavigate: before the navigation is ready to be committed, the
   // NavigationHandle for it is owned by the NavigationRequest.
   scoped_ptr<NavigationHandleImpl> navigation_handle_;
-
-  // The associated WebUIImpl and its type. They will be set if the current
-  // document or the one being navigated to is from WebUI source. Otherwise they
-  // will be null and WebUI::kNoWebUI, respectively.
-  scoped_ptr<WebUIImpl> web_ui_;
-  WebUI::TypeID web_ui_type_;
 
   // NOTE: This must be the last member.
   base::WeakPtrFactory<RenderFrameHostImpl> weak_ptr_factory_;

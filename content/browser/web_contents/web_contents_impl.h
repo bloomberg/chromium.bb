@@ -439,7 +439,6 @@ class CONTENT_EXPORT WebContentsImpl
       RenderFrameHost* target_rfh,
       SiteInstance* source_site_instance) const override;
   void EnsureOpenerProxiesExist(RenderFrameHost* source_rfh) override;
-  scoped_ptr<WebUIImpl> CreateWebUIForRenderFrameHost(const GURL& url) override;
 #if defined(OS_WIN)
   gfx::NativeViewAccessible GetParentNativeViewAccessible() override;
 #endif
@@ -628,6 +627,7 @@ class CONTENT_EXPORT WebContentsImpl
       RenderViewHost* old_host,
       RenderViewHost* new_host) override;
   NavigationControllerImpl& GetControllerForRenderManager() override;
+  scoped_ptr<WebUIImpl> CreateWebUIForRenderManager(const GURL& url) override;
   NavigationEntry* GetLastCommittedNavigationEntryForRenderManager() override;
   bool FocusLocationBarByDefault() override;
   void SetFocusToLocationBar(bool select_all) override;
