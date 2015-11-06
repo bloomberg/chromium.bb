@@ -8,14 +8,7 @@ config("gles2_config") {
   defines = [ "GLES2_USE_MOJO" ]
 }
 
-group("gles2") {
-  public_configs = [ "//third_party/khronos:khronos_headers" ]
-  public_deps = [
-    ":headers",
-  ]
-}
-
-mojo_sdk_source_set("headers") {
+mojo_sdk_source_set("gles2") {
   sources = [
     "chromium_extension.h",
     "gles2.h",

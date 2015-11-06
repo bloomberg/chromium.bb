@@ -12,7 +12,7 @@
 namespace mojo {
 namespace common {
 
-std::string GetUserAgent();
+std::string MOJO_COMMON_EXPORT GetUserAgent();
 
 }  // namespace common
 }  // namespace mojo

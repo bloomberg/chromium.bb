@@ -19,7 +19,7 @@ source_set("cpp") {
     "//mojo/application/public/interfaces",
     "//mojo/common",
     "//mojo/message_pump",
-    "//mojo/platform_handle:defs",
+    "//mojo/platform_handle",
     "//skia",
     "//third_party/mojo/src/mojo/public/cpp/bindings",
     "//third_party/mojo/src/mojo/public/cpp/system",

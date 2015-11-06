@@ -61,6 +61,7 @@ source_set("mus") {
     "//ui/gl",
     "//ui/mojo/ime:interfaces_cpp_sources",
     "//ui/mojo/init",
+    "//ui/native_theme",
     "//ui/views",
     "//ui/wm",
   ]

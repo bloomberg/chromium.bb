@@ -39,7 +39,7 @@ mojo_sdk_source_set("gles2") {
   configs = [ "//third_party/khronos:khronos_headers" ]
 
   mojo_sdk_deps = [
-    "mojo/public/c/gles2:headers",
+    "mojo/public/c/gles2",
     "mojo/public/c/environment",
     "mojo/public/c/system",
   ]

@@ -36,6 +36,7 @@ if (is_android) {
       "//build/config/sanitizers:deps",
       "//components/resource_provider/public/interfaces",
       "//mojo/environment:chromium",
+      "//mojo/platform_handle:for_shared_library",
       "//third_party/mojo/src/mojo/public/c/system:for_shared_library",
       "//url",
     ]
@@ -97,7 +98,6 @@ source_set("lib") {
     "//components/resource_provider/public/interfaces",
     "//mojo/application/public/cpp",
     "//mojo/common:common_base",
-    "//mojo/platform_handle",
     "//url",
   ]
 }
@@ -113,6 +113,7 @@ test("resource_provider_unittests") {
     "//base/test:test_config",
     "//components/resource_provider/public/interfaces",
     "//mojo/environment:chromium",
+    "//mojo/platform_handle:for_shared_library",
     "//testing/gtest",
     "//third_party/mojo/src/mojo/edk/test:run_all_unittests",
     "//url",
@@ -138,7 +139,6 @@ mojo_native_application("apptests") {
     "//components/resource_provider/public/cpp",
     "//components/resource_provider/public/interfaces",
     "//mojo/application/public/cpp:test_support",
-    "//mojo/platform_handle",
   ]
 
   data_deps = [

@@ -39,10 +39,12 @@ repack("pak") {
     "$root_gen_dir/blink/public/resources/blink_image_resources_100_percent.pak",
     "$root_gen_dir/blink/public/resources/blink_resources.pak",
     "$root_gen_dir/components/html_viewer/html_viewer_resources.pak",
-    "$root_gen_dir/ui/resources/ui_resources_100_percent.pak",
     "$root_gen_dir/ui/strings/app_locale_settings_en-US.pak",
     "$root_gen_dir/ui/strings/ui_strings_en-US.pak",
   ]
+  if (!is_component_build) {
+    sources += [ "$root_gen_dir/ui/resources/ui_resources_100_percent.pak" ]
+  }
   output = "$root_out_dir/html_viewer.pak"
   deps = [
     ":copy_html_viewer_resources",
@@ -171,6 +173,7 @@ source_set("lib") {
     "//media",
     "//media/blink",
     "//media/mojo",
+    "//media:shared_memory_support",
     "//mojo/application/public/cpp",
     "//mojo/application/public/interfaces",
     "//mojo/common",
@@ -238,7 +241,6 @@ mojo_native_application("html_viewer") {
     ":pak",
     "//base",
     "//mojo/application/public/cpp:sources",
-    "//third_party/mojo/src/mojo/public/c/system:for_shared_library",
   ]
   resources = [ "$root_out_dir/html_viewer.pak" ]
 

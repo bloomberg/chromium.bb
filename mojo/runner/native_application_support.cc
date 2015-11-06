@@ -56,6 +56,9 @@ bool RunNativeApplication(base::NativeLibrary app_library,
   if (!app_library)
     return false;
 
+// Thunks aren't needed/used in component build, since the thunked methods
+// just live in their own dynamically loaded library.
+#if !defined(COMPONENT_BUILD)
   if (!SetThunks(&MojoMakeSystemThunks, "MojoSetSystemThunks", app_library)) {
     LOG(ERROR) << "MojoSetSystemThunks not found";
     return false;
@@ -104,6 +107,7 @@ bool RunNativeApplication(base::NativeLibrary app_library,
   // Apps need not include platform handle thunks.
   SetThunks(&MojoMakePlatformHandlePrivateThunks,
             "MojoSetPlatformHandlePrivateThunks", app_library);
+#endif
 
   typedef MojoResult (*MojoMainFunction)(MojoHandle);
   MojoMainFunction main_function = reinterpret_cast<MojoMainFunction>(

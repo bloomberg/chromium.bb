@@ -11,11 +11,9 @@ group("services") {
     "//mojo/services/network/public/interfaces",
   ]
 
-  if (!is_component_build) {
-    deps += [
-      "//mojo/services/network",
-      "//mojo/services/test_service",
-      "//mojo/services/tracing",
-    ]
-  }
+  deps += [
+    "//mojo/services/network",
+    "//mojo/services/test_service",
+    "//mojo/services/tracing",
+  ]
 }

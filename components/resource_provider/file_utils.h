@@ -7,8 +7,6 @@
 
 #include <string>
 
-class GURL;
-
 namespace base {
 class FilePath;
 }
@@ -17,7 +15,7 @@ namespace resource_provider {
 
 // Returns the path to the resources for |application_url|, or an empty
 // path if |application_url| is not valid.
-base::FilePath GetPathForApplicationUrl(const GURL& application_url);
+base::FilePath GetPathForApplicationUrl(const std::string& application_url);
 
 // Returns the path to the specified resource. |app_path| was previously
 // obtained by way of GetPathForApplicationUrl().

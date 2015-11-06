@@ -83,4 +83,11 @@ source_set("lib") {
     "//ui/platform_window:platform_impls",
     "//ui/platform_window:platform_window",
   ]
+
+  if (use_x11) {
+    public_configs = [ "//build/config/linux:x11" ]
+    public_deps = [
+      "//ui/events/platform/x11",
+    ]
+  }
 }

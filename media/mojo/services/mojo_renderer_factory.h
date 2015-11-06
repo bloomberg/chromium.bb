@@ -17,7 +17,7 @@ class ServiceFactory;
 }
 
 // The default factory class for creating MojoRendererImpl.
-class MEDIA_EXPORT MojoRendererFactory : public RendererFactory {
+class MojoRendererFactory : public RendererFactory {
  public:
   explicit MojoRendererFactory(interfaces::ServiceFactory* service_factory);
   ~MojoRendererFactory() final;

@@ -33,7 +33,7 @@ struct GPU_EXPORT Capabilities {
     int precision;
   };
 
-  struct PerStagePrecisions {
+  struct GPU_EXPORT PerStagePrecisions {
     PerStagePrecisions();
 
     ShaderPrecision low_int;

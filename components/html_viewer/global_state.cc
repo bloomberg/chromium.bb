@@ -143,28 +143,34 @@ void GlobalState::InitIfNecessary(const gfx::Size& screen_size_in_pixels,
       0u);
 #endif
   blink::initialize(blink_platform_.get());
-  base::i18n::InitializeICUWithFileDescriptor(
-      resource_loader_.GetICUFile().TakePlatformFile(),
-      base::MemoryMappedFile::Region::kWholeFile);
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  base::File pak_file = resource_loader_.ReleaseFile(kResourceResourcesPak);
 
-  ui::RegisterPathProvider();
+  bool initialize_icu_and_ui = true;
+#if defined(COMPONENT_BUILD)
+  if (command_line->HasSwitch("single-process"))
+    initialize_icu_and_ui = false;
+#endif
+  if (initialize_icu_and_ui) {
+    base::i18n::InitializeICUWithFileDescriptor(
+        resource_loader_.GetICUFile().TakePlatformFile(),
+        base::MemoryMappedFile::Region::kWholeFile);
+    ui::RegisterPathProvider();
+    base::File pak_file_2 = pak_file.Duplicate();
+    ui::ResourceBundle::InitSharedInstanceWithPakFileRegion(
+      pak_file_2.Pass(), base::MemoryMappedFile::Region::kWholeFile);
+  }
 
   mojo::logging::InitLogging();
-
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
 
   if (command_line->HasSwitch(kDisableEncryptedMedia))
     blink::WebRuntimeFeatures::enableEncryptedMedia(false);
 
   blink_settings_->Init();
 
-  base::File pak_file = resource_loader_.ReleaseFile(kResourceResourcesPak);
-  base::File pak_file_2 = pak_file.Duplicate();
-  ui::ResourceBundle::InitSharedInstanceWithPakFileRegion(
-      pak_file.Pass(), base::MemoryMappedFile::Region::kWholeFile);
   // TODO(sky): why is this always using 100?
   ui::ResourceBundle::GetSharedInstance().AddDataPackFromFile(
-      pak_file_2.Pass(), ui::SCALE_FACTOR_100P);
+      pak_file.Pass(), ui::SCALE_FACTOR_100P);
 
   compositor_thread_.Start();
 

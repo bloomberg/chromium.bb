@@ -25,7 +25,7 @@ source_set("lib") {
     "//mojo/application/public/interfaces",
     "//mojo/gles2",
     "//mojo/message_pump",
-    "//mojo/runner:platform_handle",
+    "//mojo/platform_handle:for_shared_library",
     "//third_party/mojo/src/mojo/edk/system",
   ]
 }
@@ -90,12 +90,13 @@ executable("native_target") {
     ":apptest_interfaces",
     ":lib",
     "//base",
+    "//base:base_static",
     "//mojo/application/public/cpp",
     "//mojo/application/public/interfaces",
     "//mojo/common:common_base",
     "//mojo/gles2",
     "//mojo/message_pump",
     "//mojo/runner:init",
-    "//third_party/mojo/src/mojo/edk/embedder:embedder",
+    "//third_party/mojo/src/mojo/edk/system",
   ]
 }

@@ -20,6 +20,7 @@ executable("window_type_launcher") {
   deps = [
     ":window_type_launcher_resources",
     "//base",
+    "//base:base_static",
     "//mojo/application/public/cpp",
     "//mojo/application/public/interfaces",
     "//mojo/common:common_base",
@@ -29,7 +30,7 @@ executable("window_type_launcher") {
     "//mojo/runner/child:lib",
     "//mojo/runner:init",
     "//skia",
-    "//third_party/mojo/src/mojo/edk/embedder",
+    "//third_party/mojo/src/mojo/edk/system",
     "//third_party/mojo/src/mojo/public/cpp/bindings",
     "//ui/aura",
     "//ui/gfx",

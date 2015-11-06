@@ -8,7 +8,6 @@
 #include "base/path_service.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
-#include "url/gurl.h"
 
 namespace resource_provider {
 namespace {
@@ -27,18 +26,30 @@ bool IsPathNameValid(const std::string& name) {
 
 }  // namespace
 
-base::FilePath GetPathForApplicationUrl(const GURL& application_url) {
-  if (application_url.scheme() != "mojo" && application_url.scheme() != "exe")
+base::FilePath GetPathForApplicationUrl(const std::string& application_url) {
+// We don't want to use GURL because it can behave differently depending on
+  // whether mojo:// has been registered as a standard scheme or not. Also, we
+  // can get mojo:foo or mojo://foo urls here.
+  std::string path = application_url;
+  if (!base::StartsWith(path, "mojo:", base::CompareCase::INSENSITIVE_ASCII) &&
+      !base::StartsWith(path, "exe:", base::CompareCase::INSENSITIVE_ASCII))
     return base::FilePath();
-
-  std::string path = application_url.path();
+  if (path.find('.') != std::string::npos)
+    return base::FilePath();
+  if (base::StartsWith(path, "mojo:", base::CompareCase::INSENSITIVE_ASCII))
+    path.erase(path.begin(), path.begin() + 5);
+  else
+    path.erase(path.begin(), path.begin() + 4);
   base::TrimString(path, "/", &path);
+  size_t end_of_name = path.find('/');
+  if (end_of_name != std::string::npos)
+    path.erase(path.begin() + end_of_name, path.end());
 
   // TODO(beng): I'm adding this because there is a collision between the
   //             executable name in the exe dir and the resource package dir on
   //             non-Windows systems. Arbitrary exes should probably load their
   //             resources themselves rather than use resource provider.
-  if (application_url.SchemeIs("exe"))
+  if (base::StartsWith(path, "exe:", base::CompareCase::INSENSITIVE_ASCII))
     path += "_res";
 
   if (!IsPathNameValid(path))

@@ -95,13 +95,12 @@ template("mojo_native_application") {
       }
 
       deps = rebase_path([
-                           "mojo/public/c/system",
-                           "mojo/public/platform/native:gles2",
-                           "mojo/public/platform/native:system",
+                           "mojo/public/gles2:for_shared_library",
+                           "mojo/public/c/system:for_shared_library",
                          ],
                          ".",
                          mojo_root)
-      deps += [ "//mojo/platform_handle" ]
+      deps += [ "//mojo/platform_handle:for_shared_library" ]
 
       deps += mojo_deps
       if (defined(invoker.public_deps)) {

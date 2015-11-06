@@ -33,14 +33,19 @@ mojo_sdk_source_set("system") {
 # For shared_library targets (e.g., a Mojo App), add
 # //mojo/public/c/system:for_shared_library to your deps
 
-# TODO(jamesr): Eliminate the need for these targets. crbug.com/438701
 group("for_shared_library") {
   public_deps = [
     ":system",
   ]
-  deps = [
-    "../../platform/native:system",
-  ]
+  if (is_component_build) {
+    deps = [
+      "../../../edk/system",
+    ]
+  } else {
+    deps = [
+      "../../platform/native:system",
+    ]
+  }
 }
 
 group("for_component") {

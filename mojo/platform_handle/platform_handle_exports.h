@@ -5,7 +5,7 @@
 #ifndef MOJO_PLATFORM_HANDLE_PLATFORM_HANDLE_EXPORTS_H_
 #define MOJO_PLATFORM_HANDLE_PLATFORM_HANDLE_EXPORTS_H_
 
-#if defined(COMPONENT_BUILD) && defined(MOJO_USE_SYSTEM_IMPL)
+#if defined(COMPONENT_BUILD)
 #if defined(WIN32)
 
 #if defined(PLATFORM_HANDLE_IMPLEMENTATION)
@@ -24,10 +24,10 @@
 
 #endif  // defined(WIN32)
 
-#else  // !defined(COMPONENT_BUILD) || !defined(MOJO_USE_SYSTEM_IMPL)
+#else  // !defined(COMPONENT_BUILD)
 
 #define PLATFORM_HANDLE_EXPORT
 
-#endif  // defined(COMPONENT_BUILD) && defined(MOJO_USE_SYSTEM_IMPL)
+#endif  // defined(COMPONENT_BUILD)
 
 #endif  // MOJO_PLATFORM_HANDLE_PLATFORM_HANDLE_EXPORTS_H_

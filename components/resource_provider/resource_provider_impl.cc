@@ -70,7 +70,7 @@ void ResourceProviderImpl::GetResources(mojo::Array<mojo::String> paths,
 
 void ResourceProviderImpl::GetICUHandle(const GetICUHandleCallback& callback) {
   const base::FilePath resource_app_path(
-      GetPathForApplicationUrl(GURL(resource_provider_app_url_)));
+      GetPathForApplicationUrl(resource_provider_app_url_));
   mojo::ScopedHandle handle = GetHandleForPath(
       GetPathForResourceNamed(resource_app_path, kResourceIcudtl));
   callback.Run(handle.Pass());

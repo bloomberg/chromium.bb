@@ -22,12 +22,13 @@ source_set("headers") {
     "//gpu/command_buffer/client",
     "//gpu/command_buffer/client:gles2_implementation",
     "//gpu/command_buffer/common",
-    "//third_party/mojo/src/mojo/public/c/gles2:headers",
+    "//third_party/mojo/src/mojo/public/c/gles2",
     "//third_party/mojo/src/mojo/public/cpp/bindings",
   ]
 }
 
-source_set("gles2") {
+component("gles2") {
+  output_name = "mojo_gles2_impl"
   sources = [
     "command_buffer_client_impl.cc",
     "command_buffer_client_impl.h",
@@ -57,15 +58,18 @@ source_set("gles2") {
     "//gpu/command_buffer/client:gles2_cmd_helper",
     "//gpu/command_buffer/client:gles2_implementation",
     "//gpu/command_buffer/client:gles2_interface",
-    "//gpu/command_buffer/service:service_sources",
     "//gpu/command_buffer/common",
     "//mojo/environment:chromium",
-    "//mojo/platform_handle:defs",
-    "//third_party/mojo/src/mojo/public/c/gles2:headers",
-    "//third_party/mojo/src/mojo/public/c/system",
+    "//mojo/platform_handle:for_component",
+    "//third_party/mojo/src/mojo/public/c/gles2",
+    "//third_party/mojo/src/mojo/public/c/system:for_component",
     "//third_party/mojo/src/mojo/public/cpp/bindings",
     "//third_party/mojo/src/mojo/public/cpp/system",
   ]
+
+  if (!is_component_build) {
+    deps += [ "//gpu/command_buffer/service:service_sources" ]
+  }
 
   include_dirs = [ ".." ]
 }

@@ -7,12 +7,13 @@
 
 #include "base/macros.h"
 #include "media/base/cdm_factory.h"
+#include "media/base/media_export.h"
 
 namespace media {
 
 struct CdmConfig;
 
-class DefaultCdmFactory : public CdmFactory {
+class MEDIA_EXPORT DefaultCdmFactory : public CdmFactory {
  public:
   DefaultCdmFactory();
   ~DefaultCdmFactory() final;

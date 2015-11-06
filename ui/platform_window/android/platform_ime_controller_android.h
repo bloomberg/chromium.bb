@@ -7,11 +7,13 @@
 
 #include "base/android/jni_weak_ref.h"
 #include "base/macros.h"
+#include "ui/platform_window/android/android_window_export.h"
 #include "ui/platform_window/platform_ime_controller.h"
 
 namespace ui {
 
-class PlatformImeControllerAndroid : public PlatformImeController {
+class ANDROID_WINDOW_EXPORT PlatformImeControllerAndroid :
+    public PlatformImeController {
  public:
   static bool Register(JNIEnv* env);
 

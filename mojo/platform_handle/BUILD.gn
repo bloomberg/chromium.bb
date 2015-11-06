@@ -2,42 +2,76 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+# See comments in third_party/mojo/src/mojo/public/c/system/BUILD.gn which this
+# is based on.
+# Summary: depend on this target to use the platform handle functions without
+# linking against a specific implementation.
+# For component targets, add //mojo/platform_handle:for_component to your deps
+# section.
+# For shared_library targets (e.g., a Mojo App), add
+# //mojo/platform_handle:for_shared_library to your deps.
 source_set("platform_handle") {
+  sources = [
+    "platform_handle.h",
+    "platform_handle_functions.h",
+  ]
+  deps = [
+    "//third_party/mojo/src/mojo/public/c/system",
+  ]
+}
+
+component("platform_handle_impl") {
+  output_name = "platform_handle_impl"
+  public_deps = [
+    ":platform_handle",
+  ]
+  sources = [
+    "platform_handle_functions.cc",
+  ]
+  defines = [ "PLATFORM_HANDLE_IMPLEMENTATION" ]
+  deps = [
+    "//base",
+    "//third_party/mojo/src/mojo/edk/embedder:headers",
+    "//third_party/mojo/src/mojo/public/c/system:for_component",
+  ]
+}
+
+source_set("platform_handle_thunks") {
+  public_deps = [
+    ":platform_handle",
+  ]
   sources = [
     "platform_handle_private_thunks.cc",
     "platform_handle_private_thunks.h",
   ]
-
+  defines = [ "PLATFORM_HANDLE_IMPLEMENTATION" ]
   deps = [
     "//third_party/mojo/src/mojo/public/c/system",
   ]
-
-  public_deps = [
-    ":defs",
-  ]
-
-  defines = [ "PLATFORM_HANDLE_IMPLEMENTATION" ]
 }
 
-# Only targets that are registering the thunks or get linked into the runner
-# depend upon this target. The rest should use the |platform_handle| target
-# above.
-source_set("defs") {
-  visibility = [
+group("for_shared_library") {
+  public_deps = [
     ":platform_handle",
-    "//components/font_service/public/cpp",
-    "//components/mus/gles2",
-    "//mojo/gles2",
-    "//mojo/runner:platform_handle",
   ]
+  if (is_component_build) {
+    deps = [
+      ":platform_handle_impl",
+    ]
+  } else {
+    deps = [
+      ":platform_handle_thunks",
+    ]
+  }
+}
 
-  sources = [
-    "platform_handle.h",
-    "platform_handle_exports.h",
-    "platform_handle_functions.h",
+group("for_component") {
+  public_deps = [
+    ":platform_handle",
   ]
-
-  deps = [
-    "//third_party/mojo/src/mojo/public/c/system",
-  ]
+  if (is_component_build) {
+    deps = [
+      ":platform_handle_impl",
+    ]
+  }
 }

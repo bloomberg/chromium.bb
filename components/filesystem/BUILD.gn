@@ -40,7 +40,7 @@ mojo_native_application("filesystem") {
     "//mojo/application/public/cpp",
     "//mojo/common",
     "//mojo/environment:chromium",
-    "//mojo/platform_handle",
+    "//mojo/platform_handle:for_shared_library",
     "//third_party/mojo/src/mojo/public/cpp/bindings",
     "//third_party/mojo/src/mojo/public/cpp/system",
   ]
@@ -62,7 +62,7 @@ mojo_native_application("apptests") {
     "//base",
     "//components/filesystem/public/interfaces",
     "//mojo/application/public/cpp:test_support",
-    "//mojo/platform_handle",
+    "//mojo/platform_handle:for_shared_library",
     "//third_party/mojo/src/mojo/public/cpp/bindings",
   ]
 

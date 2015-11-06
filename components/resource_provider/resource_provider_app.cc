@@ -25,7 +25,7 @@ void ResourceProviderApp::Initialize(mojo::ApplicationImpl* app) {
 bool ResourceProviderApp::ConfigureIncomingConnection(
     mojo::ApplicationConnection* connection) {
   const base::FilePath app_path(
-      GetPathForApplicationUrl(GURL(connection->GetRemoteApplicationURL())));
+      GetPathForApplicationUrl(connection->GetRemoteApplicationURL()));
   if (app_path.empty())
     return false;  // The specified app has no resources.
 
@@ -37,7 +37,7 @@ void ResourceProviderApp::Create(
     mojo::ApplicationConnection* connection,
     mojo::InterfaceRequest<ResourceProvider> request) {
   const base::FilePath app_path(
-      GetPathForApplicationUrl(GURL(connection->GetRemoteApplicationURL())));
+      GetPathForApplicationUrl(connection->GetRemoteApplicationURL()));
   // We validated path at ConfigureIncomingConnection() time, so it should still
   // be valid.
   CHECK(!app_path.empty());

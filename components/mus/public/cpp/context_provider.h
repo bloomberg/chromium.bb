@@ -9,7 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "cc/output/context_provider.h"
-#include "third_party/mojo/src/mojo/public/c/gles2/gles2.h"
+#include "third_party/mojo/src/mojo/public/c/gles2/gles2_types.h"
 #include "third_party/mojo/src/mojo/public/cpp/system/core.h"
 
 namespace mus {

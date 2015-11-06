@@ -4,10 +4,6 @@
 
 import("//mojo/public/mojo_application.gni")
 
-# We don't support building mojo apps in the component build.
-# Currently this app is used by Mandoline only.
-assert(!is_component_build)
-
 source_set("lib") {
   sources = [
     "devtools_agent_host.cc",

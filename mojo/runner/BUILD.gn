@@ -7,10 +7,6 @@ import("//mojo/public/mojo_application.gni")
 import("//testing/test.gni")
 import("//third_party/mojo/src/mojo/public/tools/bindings/mojom.gni")
 
-# We don't support building in the component build since mojo apps are
-# inherently components.
-assert(!is_component_build)
-
 group("runner") {
   testonly = true
 
@@ -200,21 +196,6 @@ source_set("lib") {
   check_includes = false
 }
 
-source_set("platform_handle") {
-  sources = [
-    "platform_handle_impl.cc",
-  ]
-
-  public_deps = [
-    "//third_party/mojo/src/mojo/public/cpp/bindings",
-  ]
-
-  deps = [
-    "//mojo/platform_handle:defs",
-    "//third_party/mojo/src/mojo/edk/embedder:embedder",
-  ]
-}
-
 source_set("native_application_support") {
   sources = [
     "native_application_support.cc",
@@ -222,9 +203,9 @@ source_set("native_application_support") {
   ]
 
   deps = [
-    ":platform_handle",
     "//base",
     "//mojo/gles2",
+    "//mojo/platform_handle:platform_handle_impl",
     "//mojo/shell",
   ]
 

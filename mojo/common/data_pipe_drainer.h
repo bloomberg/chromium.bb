@@ -7,13 +7,14 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "mojo/common/mojo_common_export.h"
 #include "mojo/message_pump/handle_watcher.h"
 #include "third_party/mojo/src/mojo/public/cpp/system/core.h"
 
 namespace mojo {
 namespace common {
 
-class DataPipeDrainer {
+class MOJO_COMMON_EXPORT DataPipeDrainer {
  public:
   class Client {
    public:

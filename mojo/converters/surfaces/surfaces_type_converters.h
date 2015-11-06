@@ -198,7 +198,7 @@ struct MOJO_SURFACES_EXPORT
       const mus::mojom::CompositorFrameMetadataPtr& input);
 };
 
-scoped_ptr<cc::CompositorFrame> ConvertToCompositorFrame(
+MOJO_SURFACES_EXPORT scoped_ptr<cc::CompositorFrame> ConvertToCompositorFrame(
     const mus::mojom::CompositorFramePtr& input,
     CustomSurfaceConverter* custom_converter);
 

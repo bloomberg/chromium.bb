@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/platform_handle/platform_handle.h"
+#include "mojo/platform_handle/platform_handle_functions.h"
+
 #include "third_party/mojo/src/mojo/edk/embedder/embedder.h"
 
 extern "C" {

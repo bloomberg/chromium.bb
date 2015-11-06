@@ -49,7 +49,7 @@ test("mojo_view_manager_lib_unittests") {
     "//components/mus/public/cpp",
     "//mojo/application/public/cpp",
     "//mojo/gles2",
-    "//mojo/runner:platform_handle",
+    "//mojo/platform_handle:platform_handle_impl",
     "//testing/gtest",
     "//third_party/mojo/src/mojo/public/cpp/system",
     "//third_party/mojo/src/mojo/edk/system",
