@@ -75,9 +75,12 @@ An unstable protocol has at least two versions; the major version which
 represents backward incompatible changes, and the minor versions which
 represents backward compatible changes to the interfaces in the protocol.
 
-The major version is part of the XML file name and the protocol name in
-the XML, while a minor version is the version attribute of the interfaces
-in the protocol.
+The major version is part of the XML file name, the protocol name in the
+XML, and interface names in the protocol.
+
+Minor versions are the version attributes of the interfaces in the XML.
+There may be more than one minor version per protocol, if there are more
+than one global.
 
 The XML file and protocol name also has the word 'unstable' in them, and
 all of the interfaces in the protocol are prefixed with +z+ and
