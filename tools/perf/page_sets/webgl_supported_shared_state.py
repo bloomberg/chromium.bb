@@ -38,5 +38,7 @@ class WebGLSupportedSharedState(shared_page_state.SharedPageState):
           return 'amd'
         elif vendor_id == 0x8086:
           return 'intel'
+        elif vendor_id == 0x15AD:
+          return 'vmware'
 
     return 'unknown_gpu'
