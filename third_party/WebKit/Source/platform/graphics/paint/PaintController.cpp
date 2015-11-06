@@ -99,6 +99,11 @@ void PaintController::updateCurrentPaintChunkProperties(const PaintChunkProperti
     m_newPaintChunks.updateCurrentPaintChunkProperties(newProperties);
 }
 
+const PaintChunkProperties& PaintController::currentPaintChunkProperties() const
+{
+    return m_newPaintChunks.currentPaintChunkProperties();
+}
+
 void PaintController::beginScope()
 {
     ASSERT_WITH_SECURITY_IMPLICATION(m_nextScope < UINT_MAX);

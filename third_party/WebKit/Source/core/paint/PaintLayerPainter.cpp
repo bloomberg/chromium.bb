@@ -16,6 +16,7 @@
 #include "core/paint/FilterPainter.h"
 #include "core/paint/LayerClipRecorder.h"
 #include "core/paint/LayerFixedPositionRecorder.h"
+#include "core/paint/ObjectPaintProperties.h"
 #include "core/paint/PaintInfo.h"
 #include "core/paint/PaintLayer.h"
 #include "core/paint/SVGClipPainter.h"
@@ -23,11 +24,14 @@
 #include "core/paint/ScrollRecorder.h"
 #include "core/paint/ScrollableAreaPainter.h"
 #include "core/paint/Transform3DRecorder.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/geometry/FloatPoint3D.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/paint/ClipPathRecorder.h"
 #include "platform/graphics/paint/ClipRecorder.h"
 #include "platform/graphics/paint/CompositingDisplayItem.h"
+#include "platform/graphics/paint/PaintChunkProperties.h"
+#include "platform/graphics/paint/ScopedPaintChunkProperties.h"
 #include "platform/graphics/paint/SubsequenceRecorder.h"
 #include "platform/graphics/paint/Transform3DDisplayItem.h"
 #include "wtf/Optional.h"
@@ -308,6 +312,18 @@ PaintLayerPainter::PaintResult PaintLayerPainter::paintLayerContents(GraphicsCon
     { // Begin block for the lifetime of any filter.
         FilterPainter filterPainter(m_paintLayer, context, offsetFromRoot, layerFragments.isEmpty() ? ClipRect() : layerFragments[0].backgroundRect, localPaintingInfo, paintFlags,
             rootRelativeBounds, rootRelativeBoundsComputed);
+
+        Optional<ScopedPaintChunkProperties> scopedPaintChunkProperties;
+        if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+            if (const auto* objectProperties = m_paintLayer.layoutObject()->objectPaintProperties()) {
+                PaintChunkProperties properties(context->paintController().currentPaintChunkProperties());
+                if (TransformPaintPropertyNode* transform = objectProperties->transformForLayerContents())
+                    properties.transform = transform;
+                if (EffectPaintPropertyNode* effect = objectProperties->effect())
+                    properties.effect = effect;
+                scopedPaintChunkProperties.emplace(context->paintController(), properties);
+            }
+        }
 
         bool shouldPaintBackground = isPaintingCompositedBackground && shouldPaintContent && !selectionOnly;
         bool shouldPaintNegZOrderList = (isPaintingScrollingContent && isPaintingOverflowContents) || (!isPaintingScrollingContent && isPaintingCompositedBackground);

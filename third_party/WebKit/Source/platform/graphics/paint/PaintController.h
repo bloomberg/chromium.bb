@@ -63,6 +63,9 @@ public:
     // items, for Slimming Paint v2.
     void updateCurrentPaintChunkProperties(const PaintChunkProperties&);
 
+    // Retrieve the current paint properties.
+    const PaintChunkProperties& currentPaintChunkProperties() const;
+
     template <typename DisplayItemClass, typename... Args>
     void createAndAppend(Args&&... args)
     {

@@ -7,6 +7,7 @@
 
 #include "platform/graphics/paint/EffectPaintPropertyNode.h"
 #include "platform/graphics/paint/TransformPaintPropertyNode.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
 
@@ -41,12 +42,16 @@ public:
     // +---[ transform ]                    The space created by CSS transform.
     //     +---[ perspective ]              The space created by CSS perspective.
     //         +---[ scrollTranslation ]    The space created by overflow clip.
-    const TransformPaintPropertyNode* paintOffsetTranslation() const { return m_paintOffsetTranslation.get(); }
-    const TransformPaintPropertyNode* transform() const { return m_transform.get(); }
-    const TransformPaintPropertyNode* perspective() const { return m_perspective.get(); }
-    const TransformPaintPropertyNode* scrollTranslation() const { return m_scrollTranslation.get(); }
+    TransformPaintPropertyNode* paintOffsetTranslation() const { return m_paintOffsetTranslation.get(); }
+    TransformPaintPropertyNode* transform() const { return m_transform.get(); }
+    TransformPaintPropertyNode* perspective() const { return m_perspective.get(); }
+    TransformPaintPropertyNode* scrollTranslation() const { return m_scrollTranslation.get(); }
 
-    const EffectPaintPropertyNode* effect() const { return m_effect.get(); }
+    // Transform that applies to layer contents, or nullptr if this object
+    // doesn't define one.
+    TransformPaintPropertyNode* transformForLayerContents() const;
+
+    EffectPaintPropertyNode* effect() const { return m_effect.get(); }
 
 private:
     ObjectPaintProperties(

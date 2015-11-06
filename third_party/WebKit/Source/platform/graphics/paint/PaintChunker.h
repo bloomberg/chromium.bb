@@ -22,6 +22,7 @@ public:
 
     bool isInInitialState() const { return m_chunks.isEmpty() && m_currentProperties == PaintChunkProperties(); }
 
+    const PaintChunkProperties& currentPaintChunkProperties() const { return m_currentProperties; }
     void updateCurrentPaintChunkProperties(const PaintChunkProperties&);
 
     void incrementDisplayItemIndex();

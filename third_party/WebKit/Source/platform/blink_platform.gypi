@@ -697,6 +697,7 @@
       'graphics/paint/PaintChunker.h',
       'graphics/paint/PaintController.cpp',
       'graphics/paint/PaintController.h',
+      'graphics/paint/ScopedPaintChunkProperties.h',
       'graphics/paint/ScrollDisplayItem.cpp',
       'graphics/paint/ScrollDisplayItem.h',
       'graphics/paint/SkPictureBuilder.h',
