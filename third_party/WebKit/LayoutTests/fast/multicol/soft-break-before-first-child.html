@@ -1,0 +1,10 @@
+<!DOCTYPE html>
+<script src="../../resources/check-layout.js"></script>
+<p>Test that the pagination strut isn't lost when it happens on the first block in a multicol container.</p>
+<p>There should be a blue square below.</p>
+<div id="multicol" style="position:relative; -webkit-columns:2; -webkit-column-gap:0; column-fill:auto; width:60px; height:40px; line-height:30px;">
+    <div data-offset-y="0" data-offset-x="30" style="margin-top:25px; background:blue;"><br></div>
+</div>
+<script>
+    checkLayout("#multicol");
+</script>

@@ -1,0 +1,6 @@
+Test that the pagination strut isn't lost when it happens on the first block in a multicol container.
+
+There should be a blue square below.
+
+
+PASS

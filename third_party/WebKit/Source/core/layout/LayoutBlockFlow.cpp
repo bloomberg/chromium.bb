@@ -2874,6 +2874,14 @@ bool LayoutBlockFlow::allowsPaginationStrut() const
     // TODO(mstensho): But we *should*.
     if (isOutOfFlowPositioned())
         return false;
+    if (isLayoutFlowThread()) {
+        // Don't let the strut escape the fragmentation context and get lost.
+        // TODO(mstensho): If we're in a nested fragmentation context, we should ideally convert
+        // and propagate the strut to the outer fragmentation context, so that the inner one is
+        // fully pushed to the next outer fragmentainer, instead of taking up unusable space in the
+        // previous one. But currently we have no mechanism in place to handle this.
+        return false;
+    }
     LayoutBlock* containingBlock = this->containingBlock();
     return containingBlock && containingBlock->isLayoutBlockFlow();
 }
