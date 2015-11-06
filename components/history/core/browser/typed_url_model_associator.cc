@@ -211,19 +211,23 @@ syncer::SyncError TypedUrlModelAssociator::DoAssociateModels(
 
     // Get all the visits.
     std::map<history::URLID, history::VisitVector> visit_vectors;
+    history::URLRows::iterator new_end = typed_urls.end();
     for (history::URLRows::iterator ix = typed_urls.begin();
-         ix != typed_urls.end();) {
+         ix != new_end;) {
       DCHECK_EQ(0U, visit_vectors.count(ix->id()));
       if (!FixupURLAndGetVisits(&(*ix), &(visit_vectors[ix->id()])) ||
           ShouldIgnoreUrl(ix->url()) ||
           ShouldIgnoreVisits(visit_vectors[ix->id()])) {
         // Ignore this URL if we couldn't load the visits or if there's some
         // other problem with it (it was empty, or imported and never visited).
-        ix = typed_urls.erase(ix);
+        --new_end;
+        if (ix != new_end)
+          *ix = *new_end;
       } else {
         ++ix;
       }
     }
+    typed_urls.erase(new_end, typed_urls.end());
 
     syncer::WriteTransaction trans(FROM_HERE, sync_service_->GetUserShare());
     syncer::ReadNode typed_url_root(&trans);

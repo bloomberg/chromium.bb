@@ -28,6 +28,8 @@ URLRow::~URLRow() {
 }
 
 URLRow& URLRow::operator=(const URLRow& other) {
+  if (this == &other)
+    return *this;
   id_ = other.id_;
   url_ = other.url_;
   title_ = other.title_;
