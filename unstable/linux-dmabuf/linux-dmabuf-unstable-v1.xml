@@ -26,7 +26,7 @@
     THIS SOFTWARE.
   </copyright>
 
-  <interface name="zlinux_dmabuf_v1" version="1">
+  <interface name="zwp_linux_dmabuf_v1" version="1">
     <description summary="factory for creating dmabuf-based wl_buffers">
       Following the interfaces from:
       https://www.khronos.org/registry/egl/extensions/EXT/EGL_EXT_image_dma_buf_import.txt
@@ -56,7 +56,7 @@
         sub-system that might accept it.
 
       To create a wl_buffer from one or more dmabufs, a client creates a
-      zlinux_dmabuf_params object with zlinux_dmabuf.create_params
+      zwp_linux_dmabuf_params_v1 object with zwp_linux_dmabuf_v1.create_params
       request. All planes required by the intended format are added with
       the 'add' request. Finally, 'create' request is issued. The server
       will reply with either 'created' event which provides the final
@@ -87,7 +87,7 @@
         should be destroyed after an 'created' or 'failed' event has been
         received.
       </description>
-      <arg name="params_id" type="new_id" interface="zlinux_buffer_params_v1"
+      <arg name="params_id" type="new_id" interface="zwp_linux_buffer_params_v1"
            summary="the new temporary"/>
     </request>
 
@@ -107,7 +107,7 @@
 
   </interface>
 
-  <interface name="zlinux_buffer_params_v1" version="1">
+  <interface name="zwp_linux_buffer_params_v1" version="1">
     <description summary="parameters for creating a dmabuf-based wl_buffer">
       This temporary object is a collection of dmabufs and other
       parameters that together form a single logical buffer. The temporary
@@ -157,7 +157,8 @@
 
     <request name="add">
       <description summary="add a dmabuf to the temporary set">
-        This request adds one dmabuf to the set in this zlinux_buffer_params.
+        This request adds one dmabuf to the set in this
+        zwp_linux_buffer_params_v1.
 
         The 64-bit unsigned value combined from modifier_hi and modifier_lo
         is the dmabuf layout modifier. DRM AddFB2 ioctl calls this the
