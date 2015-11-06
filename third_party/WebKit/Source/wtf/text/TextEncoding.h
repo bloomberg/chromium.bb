@@ -52,11 +52,7 @@ public:
     }
     String decode(const char*, size_t length, bool stopOnError, bool& sawError) const;
 
-    // Encodes the string, but does *not* normalize first.
     CString encode(const String&, UnencodableHandling) const;
-
-    // Applies Unicode NFC normalization, then encodes the normalized string.
-    CString normalizeAndEncode(const String&, UnencodableHandling) const;
 
 private:
     bool isNonByteBasedEncoding() const;

@@ -34,7 +34,6 @@
 #include "wtf/text/CString.h"
 #include "wtf/text/TextEncodingRegistry.h"
 #include "wtf/text/WTFString.h"
-#include <unicode/unorm.h>
 
 namespace WTF {
 
@@ -83,45 +82,6 @@ CString TextEncoding::encode(const String& string, UnencodableHandling handling)
     else
         encodedString = textCodec->encode(string.characters16(), string.length(), handling);
     return encodedString;
-}
-
-CString TextEncoding::normalizeAndEncode(const String& string, UnencodableHandling handling) const
-{
-    if (!m_name)
-        return CString();
-
-    if (string.isEmpty())
-        return "";
-
-    // Text exclusively containing Latin-1 characters (U+0000..U+00FF) is left
-    // unaffected by NFC. This is effectively the same as saying that all
-    // Latin-1 text is already normalized to NFC.
-    // Source: http://unicode.org/reports/tr15/
-    if (string.is8Bit())
-        return newTextCodec(*this)->encode(string.characters8(), string.length(), handling);
-
-    const UChar* source = string.characters16();
-    size_t length = string.length();
-
-    Vector<UChar> normalizedCharacters;
-
-    UErrorCode err = U_ZERO_ERROR;
-    if (unorm_quickCheck(source, length, UNORM_NFC, &err) != UNORM_YES) {
-        // First try using the length of the original string, since normalization to NFC rarely increases length.
-        normalizedCharacters.grow(length);
-        int32_t normalizedLength = unorm_normalize(source, length, UNORM_NFC, 0, normalizedCharacters.data(), length, &err);
-        if (err == U_BUFFER_OVERFLOW_ERROR) {
-            err = U_ZERO_ERROR;
-            normalizedCharacters.resize(normalizedLength);
-            normalizedLength = unorm_normalize(source, length, UNORM_NFC, 0, normalizedCharacters.data(), normalizedLength, &err);
-        }
-        ASSERT(U_SUCCESS(err));
-
-        source = normalizedCharacters.data();
-        length = normalizedLength;
-    }
-
-    return newTextCodec(*this)->encode(source, length, handling);
 }
 
 bool TextEncoding::usesVisualOrdering() const
