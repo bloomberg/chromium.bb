@@ -146,6 +146,11 @@ void TabLoader::LoadNextTab() {
   // LoadNextTab should only get called after we have started the tab
   // loading.
   CHECK(delegate_);
+
+  // Abort if loading is not enabled.
+  if (!loading_enabled_)
+    return;
+
   if (!tabs_to_load_.empty()) {
     // Check the memory pressure before restoring the next tab, and abort if
     // there is pressure. This is important on the Mac because of the sometimes
@@ -231,7 +236,7 @@ void TabLoader::RegisterForNotifications(NavigationController* controller) {
 
 void TabLoader::HandleTabClosedOrLoaded(NavigationController* controller) {
   RemoveTab(controller);
-  if (delegate_ && loading_enabled_)
+  if (delegate_)
     LoadNextTab();
 }
 
