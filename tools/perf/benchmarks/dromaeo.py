@@ -266,6 +266,7 @@ class DromaeoJslibModifyPrototype(_DromaeoBenchmark):
     return 'dromaeo.jslibmodifyprototype'
 
 
+@benchmark.Disabled('win')  # crbug.com/523276
 class DromaeoJslibStyleJquery(_DromaeoBenchmark):
   """Dromaeo JSLib style jquery JavaScript benchmark.
 
