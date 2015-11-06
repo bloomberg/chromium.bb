@@ -1807,6 +1807,15 @@ notify_touch_frame(struct weston_seat *seat)
 	grab->interface->frame(grab);
 }
 
+WL_EXPORT void
+notify_touch_cancel(struct weston_seat *seat)
+{
+	struct weston_touch *touch = weston_seat_get_touch(seat);
+	struct weston_touch_grab *grab = touch->grab;
+
+	grab->interface->cancel(grab);
+}
+
 static int
 pointer_cursor_surface_get_label(struct weston_surface *surface,
 				 char *buf, size_t len)

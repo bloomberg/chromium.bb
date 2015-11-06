@@ -1159,6 +1159,9 @@ void
 notify_touch_frame(struct weston_seat *seat);
 
 void
+notify_touch_cancel(struct weston_seat *seat);
+
+void
 weston_layer_entry_insert(struct weston_layer_entry *list,
 			  struct weston_layer_entry *entry);
 void
