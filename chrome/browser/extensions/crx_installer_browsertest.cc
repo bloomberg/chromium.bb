@@ -22,6 +22,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/web_application_info.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/browser_thread.h"
@@ -43,6 +44,7 @@
 #include "extensions/common/permissions/permission_set.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/switches.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_CHROMEOS)
@@ -53,6 +55,14 @@
 #endif
 
 class SkBitmap;
+
+namespace {
+
+const char kAppUrl[] = "http://www.google.com";
+const char kAppTitle[] = "Test title";
+const char kAppDescription[] = "Test description";
+
+}  // anonymous namespace
 
 namespace extensions {
 
@@ -97,6 +107,35 @@ class MockPromptProxy : public base::RefCountedThreadSafe<MockPromptProxy> {
   std::string extension_id_;
   base::string16 error_;
 };
+
+SkBitmap CreateSquareBitmap(int size) {
+  SkBitmap bitmap;
+  bitmap.allocN32Pixels(size, size);
+  bitmap.eraseColor(SK_ColorRED);
+  return bitmap;
+}
+
+WebApplicationInfo::IconInfo CreateIconInfoWithBitmap(int size) {
+  WebApplicationInfo::IconInfo icon_info;
+  icon_info.width = size;
+  icon_info.height = size;
+  icon_info.data = CreateSquareBitmap(size);
+  return icon_info;
+}
+
+WebApplicationInfo CreateWebAppInfo(const char* title,
+                                    const char* description,
+                                    const char* app_url,
+                                    int size) {
+  WebApplicationInfo web_app_info;
+  web_app_info.title = base::UTF8ToUTF16(title);
+  web_app_info.description = base::UTF8ToUTF16(description);
+  web_app_info.app_url = GURL(app_url);
+
+  web_app_info.icons.push_back(CreateIconInfoWithBitmap(size));
+
+  return web_app_info;
+}
 
 class MockInstallPrompt : public ExtensionInstallPrompt {
  public:
@@ -265,6 +304,29 @@ class ExtensionCrxInstallerTest : public ExtensionBrowserTest {
     base::FilePath crx_path = PackExtension(test_path);
     CHECK(!crx_path.empty()) << "Extension not found at " << test_path.value();
     return crx_path;
+  }
+
+  void InstallWebAppAndVerifyNoErrors() {
+    ExtensionService* service =
+        extensions::ExtensionSystem::Get(browser()->profile())
+            ->extension_service();
+    scoped_refptr<CrxInstaller> crx_installer(
+        CrxInstaller::CreateSilent(service));
+    crx_installer->set_error_on_unsupported_requirements(true);
+    crx_installer->InstallWebApp(
+        CreateWebAppInfo(kAppTitle, kAppDescription, kAppUrl, 64));
+    EXPECT_TRUE(WaitForCrxInstallerDone());
+    ASSERT_TRUE(crx_installer->extension());
+    ASSERT_FALSE(HasRequirementErrors(crx_installer.get()));
+    ASSERT_FALSE(HasPolicyErrors(crx_installer.get()));
+  }
+
+  bool HasRequirementErrors(CrxInstaller* crx_installer) {
+    return !crx_installer->install_checker_.requirement_errors().empty();
+  }
+
+  bool HasPolicyErrors(CrxInstaller* crx_installer) {
+    return !crx_installer->install_checker_.policy_error().empty();
   }
 };
 
@@ -596,6 +658,23 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, ManagementPolicy) {
 
   base::FilePath crx_path = test_data_dir_.AppendASCII("crx_installer/v1.crx");
   EXPECT_FALSE(InstallExtension(crx_path, 0));
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, InstallWebApp) {
+  InstallWebAppAndVerifyNoErrors();
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest,
+                       InstallWebAppSucceedsWithBlockPolicy) {
+  // Verify that the install still works when a management policy blocking
+  // extension installation is in force. Bookmark apps are special-cased to skip
+  // these checks (see https://crbug.com/545541).
+  ManagementPolicyMock policy;
+  extensions::ExtensionSystem::Get(profile())
+      ->management_policy()
+      ->RegisterProvider(&policy);
+
+  InstallWebAppAndVerifyNoErrors();
 }
 
 }  // namespace extensions
