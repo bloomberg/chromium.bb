@@ -129,6 +129,7 @@
         <include name="IDR_MD_DOWNLOADS_CONSTANTS_HTML" file="resources\md_downloads\constants.html" type="BINDATA" />
         <include name="IDR_MD_DOWNLOADS_CONSTANTS_JS" file="resources\md_downloads\constants.js" type="BINDATA" />
         <include name="IDR_MD_DOWNLOADS_CRISPER_JS" file="resources\md_downloads\crisper.js" flattenhtml="true" type="BINDATA" />
+        <include name="IDR_MD_DOWNLOADS_DOWNLOADS_JS" file="resources\md_downloads\downloads.js" type="BINDATA" />
         <include name="IDR_MD_DOWNLOADS_ITEM_CSS" file="resources\md_downloads\item.css" type="BINDATA" flattenhtml="true" />
         <include name="IDR_MD_DOWNLOADS_ITEM_HTML" file="resources\md_downloads\item.html" type="BINDATA" />
         <include name="IDR_MD_DOWNLOADS_ITEM_JS" file="resources\md_downloads\item.js" type="BINDATA" />

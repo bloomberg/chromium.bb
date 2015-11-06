@@ -110,6 +110,7 @@ content::WebUIDataSource* CreateDownloadsUIHTMLSource(Profile* profile) {
   source->AddResourcePath("constants.js", IDR_MD_DOWNLOADS_CONSTANTS_JS);
   source->AddResourcePath("crisper.js", IDR_MD_DOWNLOADS_CRISPER_JS);
   source->AddResourcePath("dev.html", IDR_MD_DOWNLOADS_DOWNLOADS_HTML);
+  source->AddResourcePath("downloads.js", IDR_MD_DOWNLOADS_DOWNLOADS_JS);
   source->AddResourcePath("item.css", IDR_MD_DOWNLOADS_ITEM_CSS);
   source->AddResourcePath("item.html", IDR_MD_DOWNLOADS_ITEM_HTML);
   source->AddResourcePath("item.js", IDR_MD_DOWNLOADS_ITEM_JS);

@@ -1,7 +1,7 @@
 <link rel="import" href="chrome://resources/html/cr.html">
-<link rel="import" href="chrome://resources/html/load_time_data.html">
 <link rel="import" href="chrome://resources/html/cr/ui.html">
 <link rel="import" href="chrome://resources/html/cr/ui/command.html">
+<link rel="import" href="chrome://resources/html/load_time_data.html">
 <link rel="import" href="chrome://resources/html/util.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-list/iron-list.html">
@@ -10,6 +10,12 @@
 <link rel="import" href="chrome://downloads/constants.html">
 <link rel="import" href="chrome://downloads/item.html">
 <link rel="import" href="chrome://downloads/toolbar.html">
+
+<!-- Must be after load_time_data.html. -->
+<link rel="import" href="chrome://downloads/strings.html">
+
+<!-- Must be after strings.html. -->
+<link rel="import" href="chrome://resources/html/i18n_template.html">
 
 <dom-module id="downloads-manager">
   <template>

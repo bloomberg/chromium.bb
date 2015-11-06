@@ -131,5 +131,3 @@ cr.define('downloads', function() {
 
   return {Manager: Manager};
 });
-
-window.addEventListener('load', downloads.Manager.onLoad);

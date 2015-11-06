@@ -48,7 +48,25 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 </style>
   <link rel="stylesheet" href="chrome://resources/css/text_defaults.css">
-  <script src="chrome://resources/js/load_time_data.js"></script>
+  <style>
+    html {
+      background: #f2f2f2;
+    }
+
+    html,
+    body {
+      height: 100%;
+    }
+
+    body {
+      display: flex;
+      font-family: Roboto;
+      font-size: 81.25%;
+      margin: 0;
+    }
+  </style>
+<script src="chrome://resources/js/load_time_data.js"></script>
+<script src="chrome://downloads/strings.js"></script>
 <style>
   /* IE 10 support for HTML5 hidden attr */
   [hidden] {
@@ -1603,24 +1621,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 
 
-<style>
-    html {
-      background: #f2f2f2;
-    }
-
-    html,
-    body {
-      height: 100%;
-    }
-
-    body {
-      display: flex;
-      font-family: Roboto;
-      font-size: 81.25%;
-      margin: 0;
-    }
-  </style>
-<script src="chrome://downloads/strings.js"></script>
 </head>
 <body><div hidden="" by-vulcanize=""><dom-module id="iron-list" assetpath="chrome://resources/polymer/v1_0/iron-list/">
   <template>
