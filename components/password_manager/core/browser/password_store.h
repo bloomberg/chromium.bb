@@ -205,7 +205,7 @@ class PasswordStore : protected PasswordStoreSync,
     void NotifyConsumerWithResults(
         ScopedVector<autofill::PasswordForm> results);
 
-    void NotifyWithSiteStatistics(scoped_ptr<InteractionsStats> stats);
+    void NotifyWithSiteStatistics(ScopedVector<InteractionsStats> stats);
 
     void set_ignore_logins_cutoff(base::Time cutoff) {
       ignore_logins_cutoff_ = cutoff;
@@ -283,7 +283,7 @@ class PasswordStore : protected PasswordStoreSync,
   virtual void AddSiteStatsImpl(const InteractionsStats& stats) = 0;
   virtual void RemoveSiteStatsImpl(const GURL& origin_domain) = 0;
   // Returns a raw pointer so that InteractionsStats can be forward declared.
-  virtual scoped_ptr<InteractionsStats> GetSiteStatsImpl(
+  virtual ScopedVector<InteractionsStats> GetSiteStatsImpl(
       const GURL& origin_domain) WARN_UNUSED_RESULT = 0;
 
   // Log UMA stats for number of bulk deletions.

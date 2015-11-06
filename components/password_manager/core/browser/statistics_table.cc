@@ -13,31 +13,47 @@ namespace {
 // Convenience enum for interacting with SQL queries that use all the columns.
 enum LoginTableColumns {
   COLUMN_ORIGIN_DOMAIN = 0,
-  COLUMN_NOPES,
+  COLUMN_USERNAME,
   COLUMN_DISMISSALS,
   COLUMN_DATE,
 };
 
 }  // namespace
 
+InteractionsStats::InteractionsStats() = default;
+
 StatisticsTable::StatisticsTable() : db_(nullptr) {
 }
 
-StatisticsTable::~StatisticsTable() {
+StatisticsTable::~StatisticsTable() = default;
+
+void StatisticsTable::Init(sql::Connection* db) {
+  db_ = db;
 }
 
-bool StatisticsTable::Init(sql::Connection* db) {
-  db_ = db;
+bool StatisticsTable::CreateTableIfNecessary() {
   if (!db_->DoesTableExist("stats")) {
     const char query[] =
         "CREATE TABLE stats ("
-        "origin_domain VARCHAR NOT NULL PRIMARY KEY, "
-        "nopes_count INTEGER, "
+        "origin_domain VARCHAR NOT NULL, "
+        "username_value VARCHAR, "
         "dismissal_count INTEGER, "
-        "start_date INTEGER NOT NULL)";
+        "update_time INTEGER NOT NULL, "
+        "UNIQUE(origin_domain, username_value))";
     if (!db_->Execute(query))
       return false;
+    const char index[] = "CREATE INDEX stats_origin ON stats(origin_domain)";
+    if (!db_->Execute(index))
+      return false;
   }
+  return true;
+}
+
+bool StatisticsTable::MigrateToVersion(int version) {
+  if (!db_->DoesTableExist("stats"))
+    return true;
+  if (version == 16)
+    return db_->Execute("DROP TABLE stats");
   return true;
 }
 
@@ -45,12 +61,12 @@ bool StatisticsTable::AddRow(const InteractionsStats& stats) {
   sql::Statement s(db_->GetCachedStatement(
       SQL_FROM_HERE,
       "INSERT OR REPLACE INTO stats "
-      "(origin_domain, nopes_count, dismissal_count, start_date) "
+      "(origin_domain, username_value, dismissal_count, update_time) "
       "VALUES (?, ?, ?, ?)"));
   s.BindString(COLUMN_ORIGIN_DOMAIN, stats.origin_domain.spec());
-  s.BindInt(COLUMN_NOPES, stats.nopes_count);
+  s.BindString16(COLUMN_USERNAME, stats.username_value);
   s.BindInt(COLUMN_DISMISSALS, stats.dismissal_count);
-  s.BindInt64(COLUMN_DATE, stats.start_date.ToInternalValue());
+  s.BindInt64(COLUMN_DATE, stats.update_time.ToInternalValue());
   return s.Run();
 }
 
@@ -62,22 +78,33 @@ bool StatisticsTable::RemoveRow(const GURL& domain) {
   return s.Run();
 }
 
-scoped_ptr<InteractionsStats> StatisticsTable::GetRow(const GURL& domain) {
+ScopedVector<InteractionsStats> StatisticsTable::GetRows(const GURL& domain) {
   const char query[] =
-      "SELECT origin_domain, nopes_count, "
-      "dismissal_count, start_date FROM stats WHERE origin_domain == ?";
+      "SELECT origin_domain, username_value, "
+      "dismissal_count, update_time FROM stats WHERE origin_domain == ?";
   sql::Statement s(db_->GetCachedStatement(SQL_FROM_HERE, query));
   s.BindString(0, domain.spec());
-  if (s.Step()) {
-    scoped_ptr<InteractionsStats> stats(new InteractionsStats);
-    stats->origin_domain = GURL(s.ColumnString(COLUMN_ORIGIN_DOMAIN));
-    stats->nopes_count = s.ColumnInt(COLUMN_NOPES);
-    stats->dismissal_count = s.ColumnInt(COLUMN_DISMISSALS);
-    stats->start_date =
+  ScopedVector<InteractionsStats> result;
+  while (s.Step()) {
+    result.push_back(new InteractionsStats);
+    result.back()->origin_domain = GURL(s.ColumnString(COLUMN_ORIGIN_DOMAIN));
+    result.back()->username_value = s.ColumnString16(COLUMN_USERNAME);
+    result.back()->dismissal_count = s.ColumnInt(COLUMN_DISMISSALS);
+    result.back()->update_time =
         base::Time::FromInternalValue(s.ColumnInt64(COLUMN_DATE));
-    return stats.Pass();
   }
-  return scoped_ptr<InteractionsStats>();
+  return result.Pass();
+}
+
+bool StatisticsTable::RemoveStatsBetween(base::Time delete_begin,
+                                         base::Time delete_end) {
+  sql::Statement s(db_->GetCachedStatement(
+      SQL_FROM_HERE,
+      "DELETE FROM stats WHERE update_time >= ? AND update_time < ?"));
+  s.BindInt64(0, delete_begin.ToInternalValue());
+  s.BindInt64(1, delete_end.is_null() ? std::numeric_limits<int64>::max()
+                                      : delete_end.ToInternalValue());
+  return s.Run();
 }
 
 }  // namespace password_manager

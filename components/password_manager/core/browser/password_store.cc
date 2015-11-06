@@ -62,7 +62,7 @@ void PasswordStore::GetLoginsRequest::NotifyConsumerWithResults(
 }
 
 void PasswordStore::GetLoginsRequest::NotifyWithSiteStatistics(
-    scoped_ptr<InteractionsStats> stats) {
+    ScopedVector<InteractionsStats> stats) {
   origin_task_runner_->PostTask(
       FROM_HERE, base::Bind(&PasswordStoreConsumer::OnGetSiteStatistics,
                             consumer_weak_, base::Passed(&stats)));

@@ -49,9 +49,9 @@ class MockPasswordStore : public PasswordStore {
   MOCK_METHOD1(NotifyLoginsChanged, void(const PasswordStoreChangeList&));
   void AddSiteStatsImpl(const InteractionsStats& stats) override {}
   void RemoveSiteStatsImpl(const GURL& origin_domain) override {}
-  scoped_ptr<InteractionsStats> GetSiteStatsImpl(
+  ScopedVector<InteractionsStats> GetSiteStatsImpl(
       const GURL& origin_domain) override {
-    return scoped_ptr<InteractionsStats>();
+    return ScopedVector<InteractionsStats>();
   }
 
   PasswordStoreSync* GetSyncInterface() { return this; }

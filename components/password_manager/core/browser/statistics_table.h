@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "base/time/time.h"
 #include "url/gurl.h"
 
@@ -18,29 +19,40 @@ namespace password_manager {
 
 // The statistics containing user interactions with a site.
 struct InteractionsStats {
+  InteractionsStats();
+
   // The domain of the site.
   GURL origin_domain;
 
-  // Number of times the user clicked "Don't save the password".
-  int nopes_count;
+  // The value of the username.
+  base::string16 username_value;
 
   // Number of times the user dismissed the bubble.
-  int dismissal_count;
+  int dismissal_count = 0;
 
-  // The beginning date of the measurements.
-  base::Time start_date;
+  // The date when the row was updated.
+  base::Time update_time;
 };
 
-// Represents 'stats' table in the Login Database.
+// Represents the 'stats' table in the Login Database.
 class StatisticsTable {
  public:
   StatisticsTable();
   ~StatisticsTable();
 
-  // Initializes |db_| and creates the statistics table if it doesn't exist.
-  bool Init(sql::Connection* db);
+  // Initializes |db_|.
+  void Init(sql::Connection* db);
 
-  // Adds or replaces the statistics about |stats.origin_domain|.
+  // Creates the statistics table if it doesn't exist.
+  bool CreateTableIfNecessary();
+
+  // Migrates this table to |version|. The current version should be less than
+  // |version|. Returns false if there was migration work to do and it failed,
+  // true otherwise.
+  bool MigrateToVersion(int version);
+
+  // Adds or replaces the statistics about |stats.origin_domain| and
+  // |stats.username_value|.
   bool AddRow(const InteractionsStats& stats);
 
   // Removes the statistics for |domain|. Returns true if the SQL completed
@@ -48,7 +60,11 @@ class StatisticsTable {
   bool RemoveRow(const GURL& domain);
 
   // Returns the statistics for |domain| if it exists.
-  scoped_ptr<InteractionsStats> GetRow(const GURL& domain);
+  ScopedVector<InteractionsStats> GetRows(const GURL& domain);
+
+  // Removes the statistics between the dates. Returns true if the SQL completed
+  // successfully.
+  bool RemoveStatsBetween(base::Time delete_begin, base::Time delete_end);
 
  private:
   sql::Connection* db_;

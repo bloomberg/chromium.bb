@@ -127,9 +127,9 @@ void TestPasswordStore::AddSiteStatsImpl(const InteractionsStats& stats) {
 void TestPasswordStore::RemoveSiteStatsImpl(const GURL& origin_domain) {
 }
 
-scoped_ptr<InteractionsStats> TestPasswordStore::GetSiteStatsImpl(
+ScopedVector<InteractionsStats> TestPasswordStore::GetSiteStatsImpl(
     const GURL& origin_domain) {
-  return scoped_ptr<InteractionsStats>();
+  return ScopedVector<InteractionsStats>();
 }
 
 }  // namespace password_manager

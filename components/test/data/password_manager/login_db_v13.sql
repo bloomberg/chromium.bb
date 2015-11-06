@@ -79,4 +79,9 @@ X'18000000020000000000000000000000000000000000000000000000', /* form_data */
 0  /* generation_upload_status */
 );
 CREATE INDEX logins_signon ON logins (signon_realm);
+CREATE TABLE stats (
+origin_domain VARCHAR NOT NULL PRIMARY KEY, 
+nopes_count INTEGER,
+dismissal_count INTEGER, 
+start_date INTEGER NOT NULL);
 COMMIT;

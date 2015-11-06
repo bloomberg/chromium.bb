@@ -93,7 +93,7 @@ class PasswordStoreMac : public password_manager::PasswordStore {
   void AddSiteStatsImpl(
       const password_manager::InteractionsStats& stats) override;
   void RemoveSiteStatsImpl(const GURL& origin_domain) override;
-  scoped_ptr<password_manager::InteractionsStats> GetSiteStatsImpl(
+  ScopedVector<password_manager::InteractionsStats> GetSiteStatsImpl(
       const GURL& origin_domain) override;
 
   // Adds the given form to the Keychain if it's something we want to store

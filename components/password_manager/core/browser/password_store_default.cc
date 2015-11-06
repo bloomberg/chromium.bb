@@ -170,11 +170,11 @@ void PasswordStoreDefault::RemoveSiteStatsImpl(const GURL& origin_domain) {
     login_db_->stats_table().RemoveRow(origin_domain);
 }
 
-scoped_ptr<InteractionsStats> PasswordStoreDefault::GetSiteStatsImpl(
+ScopedVector<InteractionsStats> PasswordStoreDefault::GetSiteStatsImpl(
     const GURL& origin_domain) {
   DCHECK(GetBackgroundTaskRunner()->BelongsToCurrentThread());
-  return login_db_ ? login_db_->stats_table().GetRow(origin_domain)
-                   : scoped_ptr<InteractionsStats>();
+  return login_db_ ? login_db_->stats_table().GetRows(origin_domain)
+                   : ScopedVector<InteractionsStats>();
 }
 
 void PasswordStoreDefault::ResetLoginDB() {

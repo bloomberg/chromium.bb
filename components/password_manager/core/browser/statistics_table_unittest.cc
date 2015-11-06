@@ -5,20 +5,29 @@
 #include "components/password_manager/core/browser/statistics_table.h"
 
 #include "base/files/scoped_temp_dir.h"
+#include "base/strings/utf_string_conversions.h"
 #include "sql/connection.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace password_manager {
 namespace {
 
 const char kTestDomain[] = "http://google.com";
+const char kTestDomain2[] = "http://example.com";
+const char kUsername1[] = "user1";
+const char kUsername2[] = "user2";
 
-void CheckStatsAreEqual(const InteractionsStats& left,
-                        const InteractionsStats& right) {
-  EXPECT_EQ(left.origin_domain, right.origin_domain);
-  EXPECT_EQ(left.nopes_count, right.nopes_count);
-  EXPECT_EQ(left.dismissal_count, right.dismissal_count);
-  EXPECT_EQ(left.start_date, right.start_date);
+using ::testing::ElementsAre;
+using ::testing::IsEmpty;
+using ::testing::Pointee;
+using ::testing::UnorderedElementsAre;
+
+MATCHER_P(StatsIs, stats, "") {
+  return arg.origin_domain == stats.origin_domain &&
+         arg.username_value == stats.username_value &&
+         arg.dismissal_count == stats.dismissal_count &&
+         arg.update_time == stats.update_time;
 }
 
 class StatisticsTableTest : public testing::Test {
@@ -28,9 +37,9 @@ class StatisticsTableTest : public testing::Test {
     ReloadDatabase();
 
     test_data_.origin_domain = GURL(kTestDomain);
-    test_data_.nopes_count = 5;
+    test_data_.username_value = base::ASCIIToUTF16(kUsername1);
     test_data_.dismissal_count = 10;
-    test_data_.start_date = base::Time::FromTimeT(1);
+    test_data_.update_time = base::Time::FromTimeT(1);
   }
 
   void ReloadDatabase() {
@@ -39,7 +48,8 @@ class StatisticsTableTest : public testing::Test {
     connection_.reset(new sql::Connection);
     connection_->set_exclusive_locking();
     ASSERT_TRUE(connection_->Open(file));
-    ASSERT_TRUE(db_->Init(connection_.get()));
+    db_->Init(connection_.get());
+    ASSERT_TRUE(db_->CreateTableIfNecessary());
   }
 
   InteractionsStats& test_data() { return test_data_; }
@@ -54,37 +64,72 @@ class StatisticsTableTest : public testing::Test {
 
 TEST_F(StatisticsTableTest, Sanity) {
   EXPECT_TRUE(db()->AddRow(test_data()));
-  scoped_ptr<InteractionsStats> stats = db()->GetRow(test_data().origin_domain);
-  ASSERT_TRUE(stats);
-  CheckStatsAreEqual(test_data(), *stats);
+  EXPECT_THAT(db()->GetRows(test_data().origin_domain),
+              ElementsAre(Pointee(StatsIs(test_data()))));
   EXPECT_TRUE(db()->RemoveRow(test_data().origin_domain));
-  EXPECT_FALSE(db()->GetRow(test_data().origin_domain));
+  EXPECT_THAT(db()->GetRows(test_data().origin_domain), IsEmpty());
 }
 
 TEST_F(StatisticsTableTest, Reload) {
   EXPECT_TRUE(db()->AddRow(test_data()));
-  EXPECT_TRUE(db()->GetRow(test_data().origin_domain));
 
   ReloadDatabase();
 
-  scoped_ptr<InteractionsStats> stats = db()->GetRow(test_data().origin_domain);
-  ASSERT_TRUE(stats);
-  CheckStatsAreEqual(test_data(), *stats);
+  EXPECT_THAT(db()->GetRows(test_data().origin_domain),
+              ElementsAre(Pointee(StatsIs(test_data()))));
 }
 
 TEST_F(StatisticsTableTest, DoubleOperation) {
   EXPECT_TRUE(db()->AddRow(test_data()));
-  test_data().nopes_count++;
+  test_data().dismissal_count++;
   EXPECT_TRUE(db()->AddRow(test_data()));
 
-  scoped_ptr<InteractionsStats> stats = db()->GetRow(test_data().origin_domain);
-  ASSERT_TRUE(stats);
-  CheckStatsAreEqual(test_data(), *stats);
+  EXPECT_THAT(db()->GetRows(test_data().origin_domain),
+              ElementsAre(Pointee(StatsIs(test_data()))));
 
   EXPECT_TRUE(db()->RemoveRow(test_data().origin_domain));
-  EXPECT_FALSE(db()->GetRow(test_data().origin_domain));
+  EXPECT_THAT(db()->GetRows(test_data().origin_domain), IsEmpty());
   EXPECT_TRUE(db()->RemoveRow(test_data().origin_domain));
-  EXPECT_FALSE(db()->GetRow(test_data().origin_domain));
+}
+
+TEST_F(StatisticsTableTest, DifferentUsernames) {
+  InteractionsStats stats1 = test_data();
+  InteractionsStats stats2 = test_data();
+  stats2.username_value = base::ASCIIToUTF16(kUsername2);
+
+  EXPECT_TRUE(db()->AddRow(stats1));
+  EXPECT_TRUE(db()->AddRow(stats2));
+  EXPECT_THAT(
+      db()->GetRows(test_data().origin_domain),
+      UnorderedElementsAre(Pointee(StatsIs(stats1)), Pointee(StatsIs(stats2))));
+  EXPECT_TRUE(db()->RemoveRow(test_data().origin_domain));
+  EXPECT_THAT(db()->GetRows(test_data().origin_domain), IsEmpty());
+}
+
+TEST_F(StatisticsTableTest, RemoveBetween) {
+  InteractionsStats stats1 = test_data();
+  stats1.update_time = base::Time::FromTimeT(1);
+  InteractionsStats stats2 = test_data();
+  stats2.update_time = base::Time::FromTimeT(2);
+  stats2.origin_domain = GURL(kTestDomain2);
+
+  EXPECT_TRUE(db()->AddRow(stats1));
+  EXPECT_TRUE(db()->AddRow(stats2));
+  EXPECT_THAT(db()->GetRows(stats1.origin_domain),
+              ElementsAre(Pointee(StatsIs(stats1))));
+  EXPECT_THAT(db()->GetRows(stats2.origin_domain),
+              ElementsAre(Pointee(StatsIs(stats2))));
+
+  // Remove the first one only.
+  EXPECT_TRUE(db()->RemoveStatsBetween(base::Time(), base::Time::FromTimeT(2)));
+  EXPECT_THAT(db()->GetRows(stats1.origin_domain), IsEmpty());
+  EXPECT_THAT(db()->GetRows(stats2.origin_domain),
+              ElementsAre(Pointee(StatsIs(stats2))));
+
+  // Remove the second one only.
+  EXPECT_TRUE(db()->RemoveStatsBetween(base::Time::FromTimeT(2), base::Time()));
+  EXPECT_THAT(db()->GetRows(stats1.origin_domain), IsEmpty());
+  EXPECT_THAT(db()->GetRows(stats2.origin_domain), IsEmpty());
 }
 
 }  // namespace

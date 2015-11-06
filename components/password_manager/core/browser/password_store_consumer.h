@@ -32,7 +32,7 @@ class PasswordStoreConsumer {
   virtual void OnGetPasswordStoreResults(
       ScopedVector<autofill::PasswordForm> results) = 0;
 
-  virtual void OnGetSiteStatistics(scoped_ptr<InteractionsStats> stats);
+  virtual void OnGetSiteStatistics(ScopedVector<InteractionsStats> stats);
 
   // The base::CancelableTaskTracker can be used for cancelling the
   // tasks associated with the consumer.

@@ -33,7 +33,7 @@ using autofill::PasswordForm;
 namespace password_manager {
 
 // The current version number of the login database schema.
-const int kCurrentVersionNumber = 15;
+const int kCurrentVersionNumber = 16;
 // The oldest version of the schema such that a legacy Chrome client using that
 // version can still read/write the current database.
 const int kCompatibleVersionNumber = 14;
@@ -420,13 +420,7 @@ bool LoginDatabase::Init() {
     db_.Close();
     return false;
   }
-
-  if (!stats_table_.Init(&db_)) {
-    LogDatabaseInitError(INIT_STATS_ERROR);
-    LOG(ERROR) << "Unable to initialize the stats table.";
-    db_.Close();
-    return false;
-  }
+  stats_table_.Init(&db_);
 
   // If the file on disk is an older database version, bring it up to date.
   if (meta_table_.GetVersionNumber() < kCurrentVersionNumber &&
@@ -437,6 +431,13 @@ bool LoginDatabase::Init() {
     LOG(ERROR) << "Unable to migrate database from "
                << meta_table_.GetVersionNumber() << " to "
                << kCurrentVersionNumber;
+    db_.Close();
+    return false;
+  }
+
+  if (!stats_table_.CreateTableIfNecessary()) {
+    LogDatabaseInitError(INIT_STATS_ERROR);
+    LOG(ERROR) << "Unable to create the stats table.";
     db_.Close();
     return false;
   }
@@ -607,7 +608,11 @@ bool LoginDatabase::MigrateOldVersionsAsNeeded() {
       // through an otherwise no-op migration process that will, however, now
       // correctly set the 'compatible version number'. Previously, it was
       // always being set to (and forever left at) version 1.
-      // Fall through.
+      meta_table_.SetCompatibleVersionNumber(kCompatibleVersionNumber);
+    case 15:
+      // Recreate the statistics.
+      if (!stats_table_.MigrateToVersion(16))
+        return false;
 
     // -------------------------------------------------------------------------
     // DO NOT FORGET to update |kCompatibleVersionNumber| if you add a migration
@@ -618,7 +623,6 @@ bool LoginDatabase::MigrateOldVersionsAsNeeded() {
     case kCurrentVersionNumber:
       // Already up to date.
       meta_table_.SetVersionNumber(kCurrentVersionNumber);
-      meta_table_.SetCompatibleVersionNumber(kCompatibleVersionNumber);
       return true;
     default:
       NOTREACHED();
