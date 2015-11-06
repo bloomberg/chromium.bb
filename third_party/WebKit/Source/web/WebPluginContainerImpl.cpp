@@ -55,6 +55,7 @@
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutBox.h"
 #include "core/layout/LayoutPart.h"
+#include "core/layout/LayoutView.h"
 #include "core/loader/FrameLoadRequest.h"
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
@@ -420,7 +421,6 @@ void WebPluginContainerImpl::reportGeometry()
     IntRect windowRect, clipRect, unobscuredRect;
     Vector<IntRect> cutOutRects;
     calculateGeometry(windowRect, clipRect, unobscuredRect, cutOutRects);
-
     m_webPlugin->updateGeometry(windowRect, clipRect, unobscuredRect, cutOutRects, isVisible());
 }
 
@@ -944,33 +944,55 @@ void WebPluginContainerImpl::issuePaintInvalidations()
     m_pendingInvalidationRect = IntRect();
 }
 
+void WebPluginContainerImpl::computeClipRectsForPlugin(
+    const HTMLFrameOwnerElement* ownerElement, IntRect& windowRect, IntRect& clippedLocalRect, IntRect& unclippedIntLocalRect) const
+{
+    ASSERT(ownerElement);
+
+    if (!ownerElement->layoutObject()) {
+        clippedLocalRect = IntRect();
+        unclippedIntLocalRect = IntRect();
+        return;
+    }
+
+    LayoutView* rootView = m_element->document().view()->layoutView();
+    while (rootView->frame()->ownerLayoutObject())
+        rootView = rootView->frame()->ownerLayoutObject()->view();
+
+    LayoutBox* box = toLayoutBox(ownerElement->layoutObject());
+
+    // Plugin frameRects are in absolute screen space.
+    IntRect frameRectInOwnerElementSpace = box->absoluteToLocalQuad(FloatRect(frameRect()), UseTransforms).enclosingBoundingBox();
+
+    LayoutRect unclippedAbsoluteRect(frameRectInOwnerElementSpace);
+    box->mapRectToPaintInvalidationBacking(rootView, unclippedAbsoluteRect, nullptr);
+
+    // The frameRect is already in absolute space.
+    windowRect = frameRect();
+
+    clippedLocalRect = enclosingIntRect(unclippedAbsoluteRect);
+    unclippedIntLocalRect = clippedLocalRect;
+    clippedLocalRect.intersect(rootView->frameView()->visibleContentRect());
+
+    // TODO(chrishtr): intentionally ignore transform, because the positioning of frameRect() does also. This is probably wrong.
+    unclippedIntLocalRect = box->absoluteToLocalQuad(FloatRect(unclippedIntLocalRect)).enclosingBoundingBox();
+    clippedLocalRect = box->absoluteToLocalQuad(FloatRect(clippedLocalRect)).enclosingBoundingBox();
+}
+
 void WebPluginContainerImpl::calculateGeometry(IntRect& windowRect, IntRect& clipRect, IntRect& unobscuredRect, Vector<IntRect>& cutOutRects)
 {
-    windowRect = toFrameView(parent())->contentsToRootFrame(frameRect());
-
-    // Calculate a clip-rect so that we don't overlap the scrollbars, etc.
-    clipRect = convertToContainingWindow(IntRect(0, 0, width(), height()));
-    unobscuredRect = clipRect;
-
     // document().layoutView() can be 0 when we receive messages from the
     // plugins while we are destroying a frame.
     // FIXME: Can we just check m_element->document().isActive() ?
     if (m_element->layoutObject()->document().layoutView()) {
         // Take our element and get the clip rect from the enclosing layer and
         // frame view.
-        IntRect elementUnobscuredRect;
-        IntRect elementWindowClipRect = m_element->document().view()->clipRectsForFrameOwner(m_element, &elementUnobscuredRect);
-        clipRect.intersect(elementWindowClipRect);
-        unobscuredRect.intersect(elementUnobscuredRect);
+        computeClipRectsForPlugin(m_element, windowRect, clipRect, unobscuredRect);
     }
-
-    clipRect.move(-windowRect.x(), -windowRect.y());
-    unobscuredRect.move(-windowRect.x(), -windowRect.y());
-
     getPluginOcclusions(m_element, this->parent(), frameRect(), cutOutRects);
     // Convert to the plugin position.
     for (size_t i = 0; i < cutOutRects.size(); i++)
         cutOutRects[i].move(-frameRect().x(), -frameRect().y());
 }
 
-} // namespace blink
+} // namespace blinkf

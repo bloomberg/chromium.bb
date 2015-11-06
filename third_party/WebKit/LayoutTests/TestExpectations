@@ -39,6 +39,8 @@ crbug.com/546730 virtual/syncpaint/paint/invalidation/composited-table-cell-cont
 
 crbug.com/536138 virtual/spv2/paint/invalidation/repaint-subsequence-on-ancestor-clip-change.html [ Failure ]
 
+crbug.com/549788 plugins/plugin-clip-subframe.html [ NeedsRebaseline ]
+
 crbug.com/537172 [ Mac10.6 XP Win10 ] virtual/spv2/paint/invalidation/spv2/background-image-paint-invalidation.html [ Failure ]
 
 crbug.com/504613 crbug.com/524248 paint/images/image-backgrounds-not-antialiased.html [ Skip ]

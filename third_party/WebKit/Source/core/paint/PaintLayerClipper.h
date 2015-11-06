@@ -147,7 +147,7 @@ private:
 // #container and #fixed are siblings in the paint tree but #container does
 // clip #fixed. This is the reason why we compute the painting clip rects during
 // a layout tree walk and cache them for painting.
-class PaintLayerClipper {
+class CORE_EXPORT PaintLayerClipper {
     DISALLOW_NEW();
     WTF_MAKE_NONCOPYABLE(PaintLayerClipper);
 public:
@@ -155,8 +155,6 @@ public:
 
     void clearClipRectsIncludingDescendants();
     void clearClipRectsIncludingDescendants(ClipRectsCacheSlot);
-
-    LayoutRect childrenClipRect() const; // Returns the foreground clip rect of the layer in the document's coordinate space.
 
     // Returns the background clip rect of the layer in the local coordinate space. Only looks for clips up to the given ancestor.
     LayoutRect localClipRect(const PaintLayer* ancestorLayer) const;
@@ -183,8 +181,6 @@ private:
         return m_cache ? m_cache->get(context.cacheSlot()).clipRects.get() : 0;
     }
     void getOrCalculateClipRects(const ClipRectsContext&, ClipRects&) const;
-
-    PaintLayer* clippingRootForPainting() const;
 
     ClipRectsCache& cache() const
     {

@@ -315,7 +315,7 @@ bool LayoutPart::updateWidgetGeometry()
         contentBox.setLocation(absoluteContentBox.location());
         return setWidgetGeometry(contentBox);
     }
-
+    // TODO(chrishtr): why are these widgets using an absolute rect for their frameRect?
     return setWidgetGeometry(absoluteContentBox);
 }
 

@@ -2035,54 +2035,9 @@ IntRect FrameView::windowClipRect(IncludeScrollbarsInRect scrollbarInclusion) co
 {
     ASSERT(m_frame->view() == this);
 
-    // Set our clip rect to be our contents.
-    IntRect clipRect = contentsToRootFrame(visibleContentRect(scrollbarInclusion));
-    if (!m_frame->deprecatedLocalOwner())
-        return clipRect;
-
-    // Take our owner element and get its clip rect.
-    // FIXME: Do we need to do this for remote frames?
-    HTMLFrameOwnerElement* ownerElement = m_frame->deprecatedLocalOwner();
-    FrameView* parentView = ownerElement->document().view();
-    if (parentView)
-        clipRect.intersect(parentView->clipRectsForFrameOwner(ownerElement, nullptr));
-    return clipRect;
-}
-
-IntRect FrameView::clipRectsForFrameOwner(const HTMLFrameOwnerElement* ownerElement, IntRect* unobscuredRect) const
-{
-    ASSERT(ownerElement);
-
-    if (unobscuredRect)
-        *unobscuredRect = IntRect();
-
-    // The layoutObject can sometimes be null when style="display:none" interacts
-    // with external content and plugins.
-    if (!ownerElement->layoutObject())
-        return windowClipRect();
-
-    // If we have no layer, just return our window clip rect.
-    const PaintLayer* enclosingLayer = ownerElement->layoutObject()->enclosingLayer();
-    if (!enclosingLayer)
-        return windowClipRect();
-
-    // FIXME: childrenClipRect relies on compositingState, which is not necessarily up to date.
-    // https://code.google.com/p/chromium/issues/detail?id=343769
-    DisableCompositingQueryAsserts disabler;
-
-    // Apply the clip from the layer.
-    IntRect elementRect = contentsToRootFrame(pixelSnappedIntRect(enclosingLayer->clipper().childrenClipRect()));
-
-    if (unobscuredRect) {
-        *unobscuredRect = elementRect;
-
-        // If element is not in root frame, clip to the local frame.
-        // FIXME: Do we need to do this for remote frames?
-        if (m_frame->deprecatedLocalOwner())
-            unobscuredRect->intersect(contentsToRootFrame(visibleContentRect()));
-    }
-
-    return intersection(elementRect, windowClipRect());
+    LayoutRect clipRect(LayoutPoint(), LayoutSize(visibleContentSize(scrollbarInclusion)));
+    layoutView()->mapRectToPaintInvalidationBacking(layoutView()->containerForPaintInvalidation(), clipRect, nullptr);
+    return enclosingIntRect(clipRect);
 }
 
 bool FrameView::shouldUseIntegerScrollOffset() const

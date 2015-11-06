@@ -165,6 +165,12 @@ public:
 #endif
 
 private:
+    // Sets |windowRect| to the content rect of the plugin in screen space.
+    // Sets |clippedAbsoluteRect| to the visible rect for the plugin, clipped to the visible screen of the root frame, in local space of the plugin.
+    // Sets |unclippedAbsoluteRect| to the visible rect for the plugin (but without also clipping to the screen), in local space of the plugin.
+    void computeClipRectsForPlugin(
+        const HTMLFrameOwnerElement* pluginOwnerElement, IntRect& windowRect, IntRect& clippedLocalRect, IntRect& unclippedIntLocalRect) const;
+
     WebPluginContainerImpl(HTMLPlugInElement*, WebPlugin*);
     ~WebPluginContainerImpl() override;
 

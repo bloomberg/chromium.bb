@@ -167,9 +167,6 @@ public:
 
     void adjustViewSize();
 
-    // |unobscuredRect| receives the clip rect that is not clipped to the root window. It may be nullptr.
-    IntRect clipRectsForFrameOwner(const HTMLFrameOwnerElement*, IntRect* unobscuredRect) const;
-
     // Scale used to convert incoming input events.
     float inputEventsScaleFactor() const;
 
@@ -367,6 +364,7 @@ public:
     bool isScrollCornerVisible() const override;
     bool userInputScrollable(ScrollbarOrientation) const override;
     bool shouldPlaceVerticalScrollbarOnLeft() const override;
+
     LayoutRect scrollIntoView(
         const LayoutRect& rectInContent,
         const ScrollAlignment& alignX,
