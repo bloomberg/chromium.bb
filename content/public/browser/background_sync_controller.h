@@ -22,14 +22,14 @@ class CONTENT_EXPORT BackgroundSyncController {
   // registered a background sync event.
   virtual void NotifyBackgroundSyncRegistered(const GURL& origin) {}
 
-  // Register the |registrant|'s interest (or disinterest) in starting the
-  // browser the next time the device goes online after the browser has closed.
-  // This only needs to be implemented by browsers; WebView and other embedders
-  // which should not have their application relaunched by Background Sync can
-  // use the default implentation.
-  virtual void LaunchBrowserWhenNextOnline(
-      const BackgroundSyncManager* registrant,
-      bool launch_when_next_online) {}
+  // If |enabled|, ensures that the browser is running when the device next goes
+  // online. The behavior is platform dependent:
+  // * Android: Registers a GCM task which verifies that the browser is running
+  // the next time the device goes online. If it's not, it starts it.
+  //
+  // * Other Platforms: (UNIMPLEMENTED) Keeps the browser alive via
+  // BackgroundModeManager until called with |enabled| = false.
+  virtual void RunInBackground(bool enabled) {}
 };
 
 }  // namespace content

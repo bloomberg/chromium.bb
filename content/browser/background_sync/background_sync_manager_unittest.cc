@@ -22,6 +22,9 @@
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_storage.h"
+#include "content/browser/storage_partition_impl.h"
+#include "content/public/browser/background_sync_controller.h"
+#include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/network_change_notifier.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -34,7 +37,6 @@ const char kPattern1[] = "https://example.com/a";
 const char kPattern2[] = "https://example.com/b";
 const char kScript1[] = "https://example.com/a/script.js";
 const char kScript2[] = "https://example.com/b/script.js";
-const int kRenderProcessId = 99;
 const int kProviderId1 = 1;
 const int kProviderId2 = 2;
 
@@ -107,6 +109,35 @@ class TestPowerSource : public base::PowerMonitorSource {
  private:
   bool IsOnBatteryPowerImpl() final { return test_on_battery_power_; }
   bool test_on_battery_power_ = false;
+};
+
+class CountingBackgroundSyncController : public BackgroundSyncController {
+ public:
+  CountingBackgroundSyncController() = default;
+
+  // BackgroundSyncController Overrides
+  void NotifyBackgroundSyncRegistered(const GURL& origin) override {
+    registration_count_ += 1;
+    registration_origin_ = origin;
+  }
+  void RunInBackground(bool enabled) override {
+    run_in_background_count_ += 1;
+    run_in_background_enabled_ = enabled;
+  }
+
+  int registration_count() const { return registration_count_; }
+  GURL registration_origin() const { return registration_origin_; }
+  int run_in_background_count() const { return run_in_background_count_; }
+  bool run_in_background_enabled() const { return run_in_background_enabled_; }
+
+ private:
+  int registration_count_ = 0;
+  GURL registration_origin_;
+
+  int run_in_background_count_ = 0;
+  bool run_in_background_enabled_ = true;
+
+  DISALLOW_COPY_AND_ASSIGN(CountingBackgroundSyncController);
 };
 
 }  // namespace
@@ -221,6 +252,7 @@ class BackgroundSyncManagerTest : public testing::Test {
       : browser_thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP),
         network_change_notifier_(net::NetworkChangeNotifier::CreateMock()),
         test_background_sync_manager_(nullptr),
+        counting_controller_(nullptr),
         callback_status_(BACKGROUND_SYNC_STATUS_OK),
         callback_sw_status_code_(SERVICE_WORKER_OK),
         sync_events_called_(0) {
@@ -239,8 +271,19 @@ class BackgroundSyncManagerTest : public testing::Test {
     // Don't let the tests be confused by the real-world device connectivity
     BackgroundSyncNetworkObserver::SetIgnoreNetworkChangeNotifierForTests(true);
 
-    helper_.reset(
-        new EmbeddedWorkerTestHelper(base::FilePath(), kRenderProcessId));
+    // TODO(jkarlin): Create a new object with all of the necessary SW calls
+    // so that we can inject test versions instead of bringing up all of this
+    // extra SW stuff.
+    helper_.reset(new EmbeddedWorkerTestHelper(base::FilePath()));
+
+    // Create a StoragePartition with the correct BrowserContext so that the
+    // BackgroundSyncManager can find the BrowserContext through it.
+    storage_partition_impl_.reset(new StoragePartitionImpl(
+        helper_->browser_context(), base::FilePath(), nullptr, nullptr, nullptr,
+        nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
+        nullptr, nullptr, nullptr, nullptr));
+    helper_->context_wrapper()->set_storage_partition(
+        storage_partition_impl_.get());
 
     power_monitor_source_ = new TestPowerSource();
     // power_monitor_ takes ownership of power_monitor_source.
@@ -250,6 +293,12 @@ class BackgroundSyncManagerTest : public testing::Test {
     SetOnBatteryPower(false);
 
     SetupBackgroundSyncManager();
+
+    scoped_ptr<CountingBackgroundSyncController> background_sync_controller(
+        new CountingBackgroundSyncController());
+    counting_controller_ = background_sync_controller.get();
+    helper_->browser_context()->SetBackgroundSyncController(
+        background_sync_controller.Pass());
 
     // Wait for storage to finish initializing before registering service
     // workers.
@@ -281,13 +330,14 @@ class BackgroundSyncManagerTest : public testing::Test {
 
     // Register window clients for the service workers
     ServiceWorkerProviderHost* host_1 = new ServiceWorkerProviderHost(
-        kRenderProcessId, MSG_ROUTING_NONE /* render_frame_id */, kProviderId1,
+        helper_->mock_render_process_id(),
+        MSG_ROUTING_NONE /* render_frame_id */, kProviderId1,
         SERVICE_WORKER_PROVIDER_FOR_WINDOW, helper_->context()->AsWeakPtr(),
         nullptr);
     host_1->SetDocumentUrl(GURL(kPattern1));
 
     ServiceWorkerProviderHost* host_2 = new ServiceWorkerProviderHost(
-        kRenderProcessId /* dummy render proces id */,
+        helper_->mock_render_process_id(),
         MSG_ROUTING_NONE /* render_frame_id */, kProviderId2,
         SERVICE_WORKER_PROVIDER_FOR_WINDOW, helper_->context()->AsWeakPtr(),
         nullptr);
@@ -311,7 +361,8 @@ class BackgroundSyncManagerTest : public testing::Test {
   }
 
   void RemoveWindowClients() {
-    helper_->context()->RemoveAllProviderHostsForProcess(kRenderProcessId);
+    helper_->context()->RemoveAllProviderHostsForProcess(
+        helper_->mock_render_process_id());
   }
 
   void SetNetwork(net::NetworkChangeNotifier::ConnectionType connection_type) {
@@ -562,7 +613,9 @@ class BackgroundSyncManagerTest : public testing::Test {
   scoped_ptr<base::PowerMonitor> power_monitor_;
   scoped_ptr<EmbeddedWorkerTestHelper> helper_;
   scoped_ptr<BackgroundSyncManager> background_sync_manager_;
+  scoped_ptr<StoragePartitionImpl> storage_partition_impl_;
   TestBackgroundSyncManager* test_background_sync_manager_;
+  CountingBackgroundSyncController* counting_controller_;
 
   int64 sw_registration_id_1_;
   int64 sw_registration_id_2_;
@@ -1688,9 +1741,9 @@ TEST_F(BackgroundSyncManagerTest, KillManagerMidSync) {
 TEST_F(BackgroundSyncManagerTest, RegisterWithClientWindowForWrongOrigin) {
   RemoveWindowClients();
   ServiceWorkerProviderHost* host = new ServiceWorkerProviderHost(
-      kRenderProcessId, MSG_ROUTING_NONE /* render_frame_id */, kProviderId1,
-      SERVICE_WORKER_PROVIDER_FOR_WINDOW, helper_->context()->AsWeakPtr(),
-      nullptr);
+      helper_->mock_render_process_id(), MSG_ROUTING_NONE /* render_frame_id */,
+      kProviderId1, SERVICE_WORKER_PROVIDER_FOR_WINDOW,
+      helper_->context()->AsWeakPtr(), nullptr);
   host->SetDocumentUrl(GURL("http://example.com:9999"));
   helper_->context()->AddProviderHost(make_scoped_ptr(host));
   EXPECT_FALSE(Register(sync_options_1_));
@@ -1739,6 +1792,42 @@ TEST_F(BackgroundSyncManagerTest, FieldTrialDisablesManager) {
 
   EXPECT_FALSE(GetRegistrations(SYNC_ONE_SHOT));
   EXPECT_EQ(BACKGROUND_SYNC_STATUS_STORAGE_ERROR, callback_status_);
+}
+
+TEST_F(BackgroundSyncManagerTest, NotifyBackgroundSyncRegistered) {
+  // Verify that the BackgroundSyncController is informed of registrations.
+  EXPECT_EQ(0, counting_controller_->registration_count());
+  EXPECT_TRUE(Register(sync_options_1_));
+  EXPECT_EQ(1, counting_controller_->registration_count());
+  EXPECT_EQ(GURL(kPattern1).GetOrigin().spec(),
+            counting_controller_->registration_origin().spec());
+}
+
+TEST_F(BackgroundSyncManagerTest, WakeBrowserCalled) {
+  InitDelayedSyncEventTest();
+
+  // The BackgroundSyncManager should declare in initialization
+  // that it doesn't need to be woken up since it has no registrations.
+  EXPECT_LT(0, counting_controller_->run_in_background_count());
+  EXPECT_FALSE(counting_controller_->run_in_background_enabled());
+
+  SetNetwork(net::NetworkChangeNotifier::CONNECTION_NONE);
+  EXPECT_FALSE(counting_controller_->run_in_background_enabled());
+
+  // Register a one-shot but it can't fire due to lack of network, wake up is
+  // required.
+  Register(sync_options_1_);
+  EXPECT_TRUE(counting_controller_->run_in_background_enabled());
+
+  // Start the event but it will pause mid-sync due to
+  // InitDelayedSyncEventTest() above.
+  SetNetwork(net::NetworkChangeNotifier::CONNECTION_WIFI);
+  EXPECT_FALSE(counting_controller_->run_in_background_enabled());
+
+  // Finish the sync.
+  sync_fired_callback_.Run(SERVICE_WORKER_OK);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(counting_controller_->run_in_background_enabled());
 }
 
 }  // namespace content

@@ -91,6 +91,18 @@ void NotifyBackgroundSyncRegisteredOnUIThread(
   background_sync_controller->NotifyBackgroundSyncRegistered(origin);
 }
 
+void RunInBackgroundOnUIThread(
+    const scoped_refptr<ServiceWorkerContextWrapper>& sw_context_wrapper,
+    bool enabled) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  BackgroundSyncController* background_sync_controller =
+      GetBackgroundSyncControllerOnUIThread(sw_context_wrapper);
+  if (background_sync_controller) {
+    background_sync_controller->RunInBackground(enabled);
+  }
+}
+
 }  // namespace
 
 BackgroundSyncManager::BackgroundSyncRegistrations::
@@ -973,7 +985,6 @@ bool BackgroundSyncManager::IsRegistrationReadyToFire(
 }
 
 void BackgroundSyncManager::SchedulePendingRegistrations() {
-#if defined(OS_ANDROID)
   bool keep_browser_alive_for_one_shot = false;
 
   for (const auto& sw_id_and_registrations : active_registrations_) {
@@ -994,26 +1005,8 @@ void BackgroundSyncManager::SchedulePendingRegistrations() {
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&BackgroundSyncManager::SchedulePendingRegistrationsOnUIThread,
-                 base::Unretained(this), keep_browser_alive_for_one_shot));
-
-#else
-// TODO(jkarlin): Toggle Chrome's background mode.
-#endif
-}
-
-void BackgroundSyncManager::SchedulePendingRegistrationsOnUIThread(
-    bool keep_browser_alive_for_one_shot) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  BackgroundSyncController* background_sync_controller =
-      GetBackgroundSyncControllerOnUIThread(service_worker_context_);
-  if (background_sync_controller) {
-    // TODO(jkarlin): Use the context's path instead of the 'this' pointer as an
-    // identifier. See crbug.com/489705.
-    background_sync_controller->LaunchBrowserWhenNextOnline(
-        this, keep_browser_alive_for_one_shot);
-  }
+      base::Bind(RunInBackgroundOnUIThread, service_worker_context_,
+                 keep_browser_alive_for_one_shot));
 }
 
 void BackgroundSyncManager::FireReadyEvents() {
@@ -1058,7 +1051,7 @@ void BackgroundSyncManager::FireReadyEventsImpl(const base::Closure& callback) {
 
   // If there are no registrations currently ready, then just run |callback|.
   // Otherwise, fire them all, and record the result when done.
-  if (sw_id_and_keys_to_fire.size() == 0) {
+  if (sw_id_and_keys_to_fire.empty()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
                                                   base::Bind(callback));
   } else {

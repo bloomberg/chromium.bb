@@ -82,6 +82,7 @@ class StoragePartitionImpl : public StoragePartition {
   struct QuotaManagedDataDeletionHelper;
 
  private:
+  friend class BackgroundSyncManagerTest;
   friend class StoragePartitionImplMap;
   FRIEND_TEST_ALL_PREFIXES(StoragePartitionShaderClearTest, ClearShaderCache);
   FRIEND_TEST_ALL_PREFIXES(StoragePartitionImplTest,

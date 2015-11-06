@@ -84,6 +84,8 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
     return render_process_host_.get();
   }
 
+  TestBrowserContext* browser_context() { return browser_context_.get(); }
+
  protected:
   // Called when StartWorker, StopWorker and SendMessageToWorker message
   // is sent to the embedded worker. Override if necessary. By default

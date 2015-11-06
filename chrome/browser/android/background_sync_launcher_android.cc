@@ -23,32 +23,20 @@ BackgroundSyncLauncherAndroid* BackgroundSyncLauncherAndroid::Get() {
 
 // static
 void BackgroundSyncLauncherAndroid::LaunchBrowserWhenNextOnline(
-    const content::BackgroundSyncManager* registrant,
     bool launch_when_next_online) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  Get()->LaunchBrowserWhenNextOnlineImpl(registrant, launch_when_next_online);
+  Get()->LaunchBrowserWhenNextOnlineImpl(launch_when_next_online);
 }
 
 void BackgroundSyncLauncherAndroid::LaunchBrowserWhenNextOnlineImpl(
-    const content::BackgroundSyncManager* registrant,
     bool launch_when_next_online) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  bool was_launching = !launch_when_next_online_registrants_.empty();
-
-  if (launch_when_next_online)
-    launch_when_next_online_registrants_.insert(registrant);
-  else
-    launch_when_next_online_registrants_.erase(registrant);
-
-  bool now_launching = !launch_when_next_online_registrants_.empty();
-  if (was_launching != now_launching) {
-    JNIEnv* env = base::android::AttachCurrentThread();
-    Java_BackgroundSyncLauncher_launchBrowserWhenNextOnlineIfStopped(
-        env, java_launcher_.obj(), base::android::GetApplicationContext(),
-        now_launching);
-  }
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_BackgroundSyncLauncher_launchBrowserWhenNextOnlineIfStopped(
+      env, java_launcher_.obj(), base::android::GetApplicationContext(),
+      launch_when_next_online);
 }
 
 // static

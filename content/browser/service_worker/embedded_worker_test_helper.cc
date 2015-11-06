@@ -70,7 +70,7 @@ EmbeddedWorkerTestHelper::EmbeddedWorkerTestHelper(
     const base::FilePath& user_data_directory)
     : browser_context_(new TestBrowserContext),
       render_process_host_(new MockRenderProcessHost(browser_context_.get())),
-      wrapper_(new ServiceWorkerContextWrapper(nullptr)),
+      wrapper_(new ServiceWorkerContextWrapper(browser_context_.get())),
       next_thread_id_(0),
       mock_render_process_id_(render_process_host_->GetID()),
       weak_factory_(this) {

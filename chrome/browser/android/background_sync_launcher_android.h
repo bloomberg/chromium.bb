@@ -25,15 +25,7 @@ class BackgroundSyncLauncherAndroid {
  public:
   static BackgroundSyncLauncherAndroid* Get();
 
-  // Register the |registrant|'s interest (or disinterest) in starting the
-  // browser the next time the device goes online after the browser has closed.
-  // |registrant| is used to count the number of interested objects and is not
-  // accessed, therefore it is okay for |registrant| to be deleted before this
-  // class. Interest is reset the next time the BackgroundSyncLauncherAndroid is
-  // created (browser restart). The caller can remove interest in launching the
-  // browser by calling with |launch_when_next_online| set to false.
   static void LaunchBrowserWhenNextOnline(
-      const content::BackgroundSyncManager* registrant,
       bool launch_when_next_online);
 
   static bool RegisterLauncher(JNIEnv* env);
@@ -46,11 +38,8 @@ class BackgroundSyncLauncherAndroid {
   ~BackgroundSyncLauncherAndroid();
 
   void LaunchBrowserWhenNextOnlineImpl(
-      const content::BackgroundSyncManager* registrant,
       bool launch_when_next_online);
 
-  std::set<const content::BackgroundSyncManager*>
-      launch_when_next_online_registrants_;
   base::android::ScopedJavaGlobalRef<jobject> java_launcher_;
   DISALLOW_COPY_AND_ASSIGN(BackgroundSyncLauncherAndroid);
 };

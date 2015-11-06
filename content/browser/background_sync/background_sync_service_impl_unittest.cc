@@ -26,7 +26,6 @@ namespace {
 
 const char kServiceWorkerPattern[] = "https://example.com/a";
 const char kServiceWorkerScript[] = "https://example.com/a/script.js";
-const int kRenderProcessId = 99;
 const int kProviderId = 1;
 
 // Callbacks from SetUp methods
@@ -133,7 +132,7 @@ class BackgroundSyncServiceImplTest : public testing::Test {
   // SetUp helper methods
   void CreateTestHelper() {
     embedded_worker_helper_.reset(
-        new EmbeddedWorkerTestHelper(base::FilePath(), kRenderProcessId));
+        new EmbeddedWorkerTestHelper(base::FilePath()));
   }
 
   void CreateBackgroundSyncContext() {
@@ -175,7 +174,8 @@ class BackgroundSyncServiceImplTest : public testing::Test {
 
     // Register window client for the service worker
     ServiceWorkerProviderHost* provider_host = new ServiceWorkerProviderHost(
-        kRenderProcessId, MSG_ROUTING_NONE /* render_frame_id */, kProviderId,
+        embedded_worker_helper_->mock_render_process_id(),
+        MSG_ROUTING_NONE /* render_frame_id */, kProviderId,
         SERVICE_WORKER_PROVIDER_FOR_WINDOW,
         embedded_worker_helper_->context()->AsWeakPtr(), nullptr);
     provider_host->SetDocumentUrl(GURL(kServiceWorkerPattern));
@@ -185,7 +185,7 @@ class BackgroundSyncServiceImplTest : public testing::Test {
 
   void RemoveWindowClient() {
     embedded_worker_helper_->context()->RemoveAllProviderHostsForProcess(
-        kRenderProcessId);
+        embedded_worker_helper_->mock_render_process_id());
   }
 
   void CreateBackgroundSyncServiceImpl() {

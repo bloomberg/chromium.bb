@@ -33,12 +33,15 @@ void BackgroundSyncControllerImpl::NotifyBackgroundSyncRegistered(
       GetRapporService(), "BackgroundSync.Register.Origin", origin);
 }
 
-#if defined(OS_ANDROID)
-void BackgroundSyncControllerImpl::LaunchBrowserWhenNextOnline(
-    const content::BackgroundSyncManager* registrant,
-    bool launch_when_next_online) {
+void BackgroundSyncControllerImpl::RunInBackground(bool enabled) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  BackgroundSyncLauncherAndroid::LaunchBrowserWhenNextOnline(
-      registrant, launch_when_next_online);
-}
+
+  if (profile_->IsOffTheRecord())
+    return;
+#if defined(OS_ANDROID)
+  BackgroundSyncLauncherAndroid::LaunchBrowserWhenNextOnline(enabled);
+#else
+// TODO(jkarlin): Use BackgroundModeManager to enter background mode. See
+// https://crbug.com/484201.
 #endif
+}
