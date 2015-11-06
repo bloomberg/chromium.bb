@@ -644,9 +644,6 @@
       # Supervised users are enabled by default.
       'enable_supervised_users%': 1,
 
-      # Platform sends memory pressure signals natively.
-      'native_memory_pressure_signals%': 0,
-
       'enable_mdns%' : 0,
       'enable_service_discovery%': 0,
       'enable_hangout_services_extension%': 0,
@@ -812,7 +809,6 @@
           'remoting%': 0,
           'arm_neon%': 0,
           'arm_neon_optional%': 1,
-          'native_memory_pressure_signals%': 1,
           'enable_basic_printing%': 1,
           'enable_print_preview%': 0,
           'enable_task_manager%':0,
@@ -831,10 +827,6 @@
           'proprietary_codecs%': 1,
         }, {
           'proprietary_codecs%': 0,
-        }],
-
-        ['OS=="mac" or OS=="ios"', {
-          'native_memory_pressure_signals%': 1,
         }],
 
         # Enable autofill dialog when not on iOS.
@@ -1233,7 +1225,6 @@
     'google_default_client_id%': '<(google_default_client_id)',
     'google_default_client_secret%': '<(google_default_client_secret)',
     'enable_supervised_users%': '<(enable_supervised_users)',
-    'native_memory_pressure_signals%': '<(native_memory_pressure_signals)',
     'enable_mdns%' : '<(enable_mdns)',
     'enable_service_discovery%' : '<(enable_service_discovery)',
     'enable_hangout_services_extension%' : '<(enable_hangout_services_extension)',
@@ -2760,9 +2751,6 @@
       }],
       ['enable_topchrome_md==1', {
         'defines': ['ENABLE_TOPCHROME_MD=1'],
-      }],
-      ['native_memory_pressure_signals==1', {
-        'defines': ['SYSTEM_NATIVELY_SIGNALS_MEMORY_PRESSURE'],
       }],
       ['use_udev==1', {
         'defines': ['USE_UDEV'],
