@@ -1,3 +1,4 @@
+
 // Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
@@ -28,7 +29,7 @@ bool MockInputMethodEngine::SetComposition(
 }
 
 bool MockInputMethodEngine::ClearComposition(int context_id,
-                                             std::string* error)  {
+                                             std::string* error) {
   return true;
 }
 
@@ -50,8 +51,7 @@ MockInputMethodEngine::GetCandidateWindowProperty() const {
 }
 
 void MockInputMethodEngine::SetCandidateWindowProperty(
-    const CandidateWindowProperty& property) {
-}
+    const CandidateWindowProperty& property) {}
 
 bool MockInputMethodEngine::SetCandidateWindowVisible(bool visible,
                                                       std::string* error) {
@@ -91,15 +91,12 @@ bool MockInputMethodEngine::DeleteSurroundingText(int context_id,
   return true;
 }
 
-void MockInputMethodEngine::HideInputView() {
-}
+void MockInputMethodEngine::HideInputView() {}
 
 void MockInputMethodEngine::FocusIn(
-    const IMEEngineHandlerInterface::InputContext& input_context) {
-}
+    const IMEEngineHandlerInterface::InputContext& input_context) {}
 
-void MockInputMethodEngine::FocusOut() {
-}
+void MockInputMethodEngine::FocusOut() {}
 
 void MockInputMethodEngine::Enable(const std::string& component_id) {
   active_component_id_ = component_id;
@@ -113,20 +110,16 @@ void MockInputMethodEngine::PropertyActivate(const std::string& property_name) {
   last_activated_property_ = property_name;
 }
 
-void MockInputMethodEngine::Reset() {
-}
+void MockInputMethodEngine::Reset() {}
 
 bool MockInputMethodEngine::IsInterestedInKeyEvent() const {
   return true;
 }
 
-void MockInputMethodEngine::ProcessKeyEvent(
-    const ui::KeyEvent& key_event,
-    const KeyEventDoneCallback& callback) {
-}
+void MockInputMethodEngine::ProcessKeyEvent(const ui::KeyEvent& key_event,
+                                            KeyEventDoneCallback& callback) {}
 
-void MockInputMethodEngine::CandidateClicked(uint32 index) {
-}
+void MockInputMethodEngine::CandidateClicked(uint32 index) {}
 
 void MockInputMethodEngine::SetSurroundingText(const std::string& text,
                                                uint32 cursor_pos,
@@ -134,7 +127,6 @@ void MockInputMethodEngine::SetSurroundingText(const std::string& text,
                                                uint32 offset_pos) {}
 
 void MockInputMethodEngine::SetCompositionBounds(
-    const std::vector<gfx::Rect>& bounds) {
-}
+    const std::vector<gfx::Rect>& bounds) {}
 
 }  // namespace chromeos

@@ -23,7 +23,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/input_method/candidate_window_controller.h"
 #include "chrome/browser/chromeos/input_method/component_extension_ime_manager_impl.h"
-#include "chrome/browser/chromeos/input_method/input_method_engine.h"
 #include "chrome/browser/chromeos/input_method/input_method_switch_recorder.h"
 #include "chrome/browser/chromeos/language_preferences.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
@@ -446,7 +445,7 @@ bool InputMethodManagerImpl::StateImpl::MethodAwaitsExtensionLoad(
 void InputMethodManagerImpl::StateImpl::AddInputMethodExtension(
     const std::string& extension_id,
     const InputMethodDescriptors& descriptors,
-    InputMethodEngineInterface* engine) {
+    ui::IMEEngineHandlerInterface* engine) {
   if (manager_->ui_session_ == STATE_TERMINATING)
     return;
 
@@ -975,7 +974,7 @@ void InputMethodManagerImpl::ChangeInputMethodInternal(
 
   if (notify_menu) {
     // Clear property list.  Property list would be updated by
-    // extension IMEs via InputMethodEngine::(Set|Update)MenuItems.
+    // extension IMEs via IMEEngineHandlerInterface::(Set|Update)MenuItems.
     // If the current input method is a keyboard layout, empty
     // properties are sufficient.
     const ui::ime::InputMethodMenuItemList empty_menu_item_list;

@@ -116,8 +116,7 @@ void MockInputMethodManager::ActivateInputMethodMenuItem(
 void MockInputMethodManager::State::AddInputMethodExtension(
     const std::string& extension_id,
     const InputMethodDescriptors& descriptors,
-    InputMethodEngineInterface* instance) {
-}
+    ui::IMEEngineHandlerInterface* instance) {}
 
 void MockInputMethodManager::State::RemoveInputMethodExtension(
     const std::string& extension_id) {

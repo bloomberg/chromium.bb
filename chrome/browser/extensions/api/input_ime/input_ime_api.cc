@@ -24,6 +24,8 @@
 #include "ui/base/ime/chromeos/component_extension_ime_manager.h"
 #include "ui/base/ime/chromeos/extension_ime_util.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
+#include "ui/base/ime/ime_engine_handler_interface.h"
+#include "ui/base/ime/text_input_flags.h"
 
 namespace input_ime = extensions::api::input_ime;
 namespace KeyEventHandled = extensions::api::input_ime::KeyEventHandled;
@@ -40,7 +42,7 @@ namespace SetCandidateWindowProperties =
 namespace CommitText = extensions::api::input_ime::CommitText;
 namespace ClearComposition = extensions::api::input_ime::ClearComposition;
 namespace SetComposition = extensions::api::input_ime::SetComposition;
-using chromeos::InputMethodEngineInterface;
+using ui::IMEEngineHandlerInterface;
 
 namespace {
 
@@ -51,39 +53,31 @@ const char kOnCompositionBoundsChangedEventName[] =
     "inputMethodPrivate.onCompositionBoundsChanged";
 
 void SetMenuItemToMenu(const input_ime::MenuItem& input,
-                       InputMethodEngineInterface::MenuItem* out) {
+                       IMEEngineHandlerInterface::MenuItem* out) {
   out->modified = 0;
   out->id = input.id;
   if (input.label) {
-    out->modified |= InputMethodEngineInterface::MENU_ITEM_MODIFIED_LABEL;
+    out->modified |= IMEEngineHandlerInterface::MENU_ITEM_MODIFIED_LABEL;
     out->label = *input.label;
   }
 
   if (input.style != input_ime::MENU_ITEM_STYLE_NONE) {
-    out->modified |= InputMethodEngineInterface::MENU_ITEM_MODIFIED_STYLE;
-    out->style = static_cast<InputMethodEngineInterface::MenuItemStyle>(
-        input.style);
+    out->modified |= IMEEngineHandlerInterface::MENU_ITEM_MODIFIED_STYLE;
+    out->style =
+        static_cast<IMEEngineHandlerInterface::MenuItemStyle>(input.style);
   }
 
   if (input.visible)
-    out->modified |= InputMethodEngineInterface::MENU_ITEM_MODIFIED_VISIBLE;
+    out->modified |= IMEEngineHandlerInterface::MENU_ITEM_MODIFIED_VISIBLE;
   out->visible = input.visible ? *input.visible : true;
 
   if (input.checked)
-    out->modified |= InputMethodEngineInterface::MENU_ITEM_MODIFIED_CHECKED;
+    out->modified |= IMEEngineHandlerInterface::MENU_ITEM_MODIFIED_CHECKED;
   out->checked = input.checked ? *input.checked : false;
 
   if (input.enabled)
-    out->modified |= InputMethodEngineInterface::MENU_ITEM_MODIFIED_ENABLED;
+    out->modified |= IMEEngineHandlerInterface::MENU_ITEM_MODIFIED_ENABLED;
   out->enabled = input.enabled ? *input.enabled : true;
-}
-
-void CallbackKeyEventHandle(chromeos::input_method::KeyEventHandle* key_data,
-                            bool handled) {
-  base::Callback<void(bool consumed)>* callback =
-      reinterpret_cast<base::Callback<void(bool consumed)>*>(key_data);
-  callback->Run(handled);
-  delete callback;
 }
 
 extensions::InputImeEventRouter* GetInputImeEventRouter(Profile* profile) {
@@ -96,7 +90,7 @@ extensions::InputImeEventRouter* GetInputImeEventRouter(Profile* profile) {
 }  // namespace
 
 namespace chromeos {
-class ImeObserver : public InputMethodEngineInterface::Observer {
+class ImeObserver : public ui::IMEEngineObserver {
  public:
   explicit ImeObserver(const std::string& extension_id, Profile* profile)
       : extension_id_(extension_id), profile_(profile) {}
@@ -129,16 +123,17 @@ class ImeObserver : public InputMethodEngineInterface::Observer {
   }
 
   void OnFocus(
-      const InputMethodEngineInterface::InputContext& context) override {
+      const IMEEngineHandlerInterface::InputContext& context) override {
     if (extension_id_.empty() || !HasListener(input_ime::OnFocus::kEventName))
       return;
 
     input_ime::InputContext context_value;
     context_value.context_id = context.id;
-    context_value.type = input_ime::ParseInputContextType(context.type);
-    context_value.auto_correct = context.auto_correct;
-    context_value.auto_complete = context.auto_complete;
-    context_value.spell_check = context.spell_check;
+    context_value.type =
+        input_ime::ParseInputContextType(ConvertInputContextType(context));
+    context_value.auto_correct = ConvertInputContextAutoCorrect(context);
+    context_value.auto_complete = ConvertInputContextAutoComplete(context);
+    context_value.spell_check = ConvertInputContextSpellCheck(context);
 
     scoped_ptr<base::ListValue> args(input_ime::OnFocus::Create(context_value));
 
@@ -157,14 +152,15 @@ class ImeObserver : public InputMethodEngineInterface::Observer {
   }
 
   void OnInputContextUpdate(
-      const InputMethodEngineInterface::InputContext& context) override {
+      const IMEEngineHandlerInterface::InputContext& context) override {
     if (extension_id_.empty() ||
         !HasListener(input_ime::OnInputContextUpdate::kEventName))
       return;
 
     input_ime::InputContext context_value;
     context_value.context_id = context.id;
-    context_value.type = input_ime::ParseInputContextType(context.type);
+    context_value.type =
+        input_ime::ParseInputContextType(ConvertInputContextType(context));
 
     scoped_ptr<base::ListValue> args(
         input_ime::OnInputContextUpdate::Create(context_value));
@@ -178,9 +174,10 @@ class ImeObserver : public InputMethodEngineInterface::Observer {
     return ShouldForwardKeyEvent();
   }
 
-  void OnKeyEvent(const std::string& component_id,
-                  const InputMethodEngineInterface::KeyboardEvent& event,
-                  chromeos::input_method::KeyEventHandle* key_data) override {
+  void OnKeyEvent(
+      const std::string& component_id,
+      const IMEEngineHandlerInterface::KeyboardEvent& event,
+      IMEEngineHandlerInterface::KeyEventDoneCallback& key_data) override {
     if (extension_id_.empty())
       return;
 
@@ -189,7 +186,7 @@ class ImeObserver : public InputMethodEngineInterface::Observer {
     if (!ShouldForwardKeyEvent()) {
       // Continue processing the key event so that the physical keyboard can
       // still work.
-      CallbackKeyEventHandle(key_data, false);
+      key_data.Run(false);
       return;
     }
 
@@ -218,22 +215,22 @@ class ImeObserver : public InputMethodEngineInterface::Observer {
   void OnCandidateClicked(
       const std::string& component_id,
       int candidate_id,
-      InputMethodEngineInterface::MouseButtonEvent button) override {
+      ui::IMEEngineObserver::MouseButtonEvent button) override {
     if (extension_id_.empty() ||
         !HasListener(input_ime::OnCandidateClicked::kEventName))
       return;
 
     input_ime::MouseButton button_enum = input_ime::MOUSE_BUTTON_NONE;
     switch (button) {
-      case InputMethodEngineInterface::MOUSE_BUTTON_MIDDLE:
+      case ui::IMEEngineObserver::MOUSE_BUTTON_MIDDLE:
         button_enum = input_ime::MOUSE_BUTTON_MIDDLE;
         break;
 
-      case InputMethodEngineInterface::MOUSE_BUTTON_RIGHT:
+      case ui::IMEEngineObserver::MOUSE_BUTTON_RIGHT:
         button_enum = input_ime::MOUSE_BUTTON_RIGHT;
         break;
 
-      case InputMethodEngineInterface::MOUSE_BUTTON_LEFT:
+      case ui::IMEEngineObserver::MOUSE_BUTTON_LEFT:
       // Default to left.
       default:
         button_enum = input_ime::MOUSE_BUTTON_LEFT;
@@ -325,6 +322,50 @@ class ImeObserver : public InputMethodEngineInterface::Observer {
 
     DispatchEventToExtension(extensions::events::INPUT_IME_ON_RESET,
                              input_ime::OnReset::kEventName, args.Pass());
+  }
+
+  std::string ConvertInputContextType(
+      ui::IMEEngineHandlerInterface::InputContext input_context) {
+    std::string input_context_type = "text";
+    switch (input_context.type) {
+      case ui::TEXT_INPUT_TYPE_SEARCH:
+        input_context_type = "search";
+        break;
+      case ui::TEXT_INPUT_TYPE_TELEPHONE:
+        input_context_type = "tel";
+        break;
+      case ui::TEXT_INPUT_TYPE_URL:
+        input_context_type = "url";
+        break;
+      case ui::TEXT_INPUT_TYPE_EMAIL:
+        input_context_type = "email";
+        break;
+      case ui::TEXT_INPUT_TYPE_NUMBER:
+        input_context_type = "number";
+        break;
+      case ui::TEXT_INPUT_TYPE_PASSWORD:
+        input_context_type = "password";
+        break;
+      default:
+        input_context_type = "text";
+        break;
+    }
+    return input_context_type;
+  }
+
+  bool ConvertInputContextAutoCorrect(
+      ui::IMEEngineHandlerInterface::InputContext input_context) {
+    return !(input_context.flags & ui::TEXT_INPUT_FLAG_AUTOCORRECT_OFF);
+  }
+
+  bool ConvertInputContextAutoComplete(
+      ui::IMEEngineHandlerInterface::InputContext input_context) {
+    return !(input_context.flags & ui::TEXT_INPUT_FLAG_AUTOCOMPLETE_OFF);
+  }
+
+  bool ConvertInputContextSpellCheck(
+      ui::IMEEngineHandlerInterface::InputContext input_context) {
+    return !(input_context.flags & ui::TEXT_INPUT_FLAG_SPELLCHECK_OFF);
   }
 
  private:
@@ -488,7 +529,7 @@ bool InputImeEventRouter::RegisterImeExtension(
     }
   }
 
-  scoped_ptr<chromeos::InputMethodEngineInterface::Observer> observer(
+  scoped_ptr<ui::IMEEngineObserver> observer(
       new chromeos::ImeObserver(extension_id, profile_));
   chromeos::InputMethodEngine* engine = new chromeos::InputMethodEngine();
   engine->Initialize(observer.Pass(), extension_id.c_str(), profile_);
@@ -501,7 +542,7 @@ bool InputImeEventRouter::RegisterImeExtension(
 }
 
 void InputImeEventRouter::UnregisterAllImes(const std::string& extension_id) {
-  std::map<std::string, InputMethodEngineInterface*>::iterator it =
+  std::map<std::string, IMEEngineHandlerInterface*>::iterator it =
       engine_map_.find(extension_id);
   if (it != engine_map_.end()) {
     chromeos::input_method::InputMethodManager::Get()
@@ -512,19 +553,19 @@ void InputImeEventRouter::UnregisterAllImes(const std::string& extension_id) {
   }
 }
 
-InputMethodEngineInterface* InputImeEventRouter::GetEngine(
+IMEEngineHandlerInterface* InputImeEventRouter::GetEngine(
     const std::string& extension_id,
     const std::string& component_id) {
-  std::map<std::string, InputMethodEngineInterface*>::iterator it =
+  std::map<std::string, IMEEngineHandlerInterface*>::iterator it =
       engine_map_.find(extension_id);
   if (it != engine_map_.end())
     return it->second;
   return NULL;
 }
 
-InputMethodEngineInterface* InputImeEventRouter::GetActiveEngine(
+IMEEngineHandlerInterface* InputImeEventRouter::GetActiveEngine(
     const std::string& extension_id) {
-  std::map<std::string, InputMethodEngineInterface*>::iterator it =
+  std::map<std::string, IMEEngineHandlerInterface*>::iterator it =
       engine_map_.find(extension_id);
   if (it != engine_map_.end() && it->second->IsActive())
     return it->second;
@@ -542,15 +583,13 @@ void InputImeEventRouter::OnKeyEventHandled(
   }
 
   std::string component_id = request->second.first;
-  chromeos::input_method::KeyEventHandle* key_data = request->second.second;
+  (request->second.second).Run(handled);
   request_map_.erase(request);
-
-  CallbackKeyEventHandle(key_data, handled);
 }
 
 std::string InputImeEventRouter::AddRequest(
     const std::string& component_id,
-    chromeos::input_method::KeyEventHandle* key_data) {
+    IMEEngineHandlerInterface::KeyEventDoneCallback& key_data) {
   std::string request_id = base::IntToString(next_request_id_);
   ++next_request_id_;
 
@@ -560,7 +599,7 @@ std::string InputImeEventRouter::AddRequest(
 }
 
 bool InputImeSetCompositionFunction::RunSync() {
-  InputMethodEngineInterface* engine =
+  IMEEngineHandlerInterface* engine =
       GetInputImeEventRouter(Profile::FromBrowserContext(browser_context()))
           ->GetActiveEngine(extension_id());
   if (!engine) {
@@ -571,7 +610,7 @@ bool InputImeSetCompositionFunction::RunSync() {
   scoped_ptr<SetComposition::Params> parent_params(
       SetComposition::Params::Create(*args_));
   const SetComposition::Params::Parameters& params = parent_params->parameters;
-  std::vector<InputMethodEngineInterface::SegmentInfo> segments;
+  std::vector<IMEEngineHandlerInterface::SegmentInfo> segments;
   if (params.segments) {
     const std::vector<linked_ptr<
         SetComposition::Params::Parameters::SegmentsType> >&
@@ -580,20 +619,20 @@ bool InputImeSetCompositionFunction::RunSync() {
       EXTENSION_FUNCTION_VALIDATE(
           segments_args[i]->style !=
           input_ime::UNDERLINE_STYLE_NONE);
-      segments.push_back(InputMethodEngineInterface::SegmentInfo());
+      segments.push_back(IMEEngineHandlerInterface::SegmentInfo());
       segments.back().start = segments_args[i]->start;
       segments.back().end = segments_args[i]->end;
       if (segments_args[i]->style ==
           input_ime::UNDERLINE_STYLE_UNDERLINE) {
         segments.back().style =
-            InputMethodEngineInterface::SEGMENT_STYLE_UNDERLINE;
+            IMEEngineHandlerInterface::SEGMENT_STYLE_UNDERLINE;
       } else if (segments_args[i]->style ==
                  input_ime::UNDERLINE_STYLE_DOUBLEUNDERLINE) {
         segments.back().style =
-            InputMethodEngineInterface::SEGMENT_STYLE_DOUBLE_UNDERLINE;
+            IMEEngineHandlerInterface::SEGMENT_STYLE_DOUBLE_UNDERLINE;
       } else {
         segments.back().style =
-            InputMethodEngineInterface::SEGMENT_STYLE_NO_UNDERLINE;
+            IMEEngineHandlerInterface::SEGMENT_STYLE_NO_UNDERLINE;
       }
     }
   }
@@ -611,7 +650,7 @@ bool InputImeSetCompositionFunction::RunSync() {
 }
 
 bool InputImeClearCompositionFunction::RunSync() {
-  InputMethodEngineInterface* engine =
+  IMEEngineHandlerInterface* engine =
       GetInputImeEventRouter(Profile::FromBrowserContext(browser_context()))
           ->GetActiveEngine(extension_id());
   if (!engine) {
@@ -630,7 +669,7 @@ bool InputImeClearCompositionFunction::RunSync() {
 }
 
 bool InputImeCommitTextFunction::RunSync() {
-  InputMethodEngineInterface* engine =
+  IMEEngineHandlerInterface* engine =
       GetInputImeEventRouter(Profile::FromBrowserContext(browser_context()))
           ->GetActiveEngine(extension_id());
   if (!engine) {
@@ -649,7 +688,7 @@ bool InputImeCommitTextFunction::RunSync() {
 }
 
 bool InputImeHideInputViewFunction::RunAsync() {
-  InputMethodEngineInterface* engine =
+  IMEEngineHandlerInterface* engine =
       GetInputImeEventRouter(Profile::FromBrowserContext(browser_context()))
           ->GetActiveEngine(extension_id());
   if (!engine) {
@@ -664,7 +703,7 @@ bool InputImeSendKeyEventsFunction::RunAsync() {
       SendKeyEvents::Params::Create(*args_));
   const SendKeyEvents::Params::Parameters& params =
       parent_params->parameters;
-  InputMethodEngineInterface* engine =
+  IMEEngineHandlerInterface* engine =
       GetInputImeEventRouter(Profile::FromBrowserContext(browser_context()))
           ->GetActiveEngine(extension_id());
   if (!engine) {
@@ -674,10 +713,10 @@ bool InputImeSendKeyEventsFunction::RunAsync() {
 
   const std::vector<linked_ptr<input_ime::KeyboardEvent> >& key_data =
       params.key_data;
-  std::vector<chromeos::InputMethodEngineInterface::KeyboardEvent> key_data_out;
+  std::vector<IMEEngineHandlerInterface::KeyboardEvent> key_data_out;
 
   for (size_t i = 0; i < key_data.size(); ++i) {
-    chromeos::InputMethodEngineInterface::KeyboardEvent event;
+    IMEEngineHandlerInterface::KeyboardEvent event;
     event.type = input_ime::ToString(key_data[i]->type);
     event.key = key_data[i]->key;
     event.code = key_data[i]->code;
@@ -703,7 +742,7 @@ bool InputImeSetCandidateWindowPropertiesFunction::RunSync() {
   const SetCandidateWindowProperties::Params::Parameters&
       params = parent_params->parameters;
 
-  InputMethodEngineInterface* engine =
+  IMEEngineHandlerInterface* engine =
       GetInputImeEventRouter(Profile::FromBrowserContext(browser_context()))
           ->GetEngine(extension_id(), params.engine_id);
   if (!engine) {
@@ -720,8 +759,8 @@ bool InputImeSetCandidateWindowPropertiesFunction::RunSync() {
     return true;
   }
 
-  InputMethodEngineInterface::CandidateWindowProperty properties_out =
-    engine->GetCandidateWindowProperty();
+  IMEEngineHandlerInterface::CandidateWindowProperty properties_out =
+      engine->GetCandidateWindowProperty();
   bool modified = false;
 
   if (properties.cursor_visible) {
@@ -768,7 +807,7 @@ bool InputImeSetCandidateWindowPropertiesFunction::RunSync() {
 }
 
 bool InputImeSetCandidatesFunction::RunSync() {
-  InputMethodEngineInterface* engine =
+  IMEEngineHandlerInterface* engine =
       GetInputImeEventRouter(Profile::FromBrowserContext(browser_context()))
           ->GetActiveEngine(extension_id());
   if (!engine) {
@@ -781,12 +820,12 @@ bool InputImeSetCandidatesFunction::RunSync() {
   const SetCandidates::Params::Parameters& params =
       parent_params->parameters;
 
-  std::vector<InputMethodEngineInterface::Candidate> candidates_out;
+  std::vector<IMEEngineHandlerInterface::Candidate> candidates_out;
   const std::vector<linked_ptr<
       SetCandidates::Params::Parameters::CandidatesType> >& candidates_in =
           params.candidates;
   for (size_t i = 0; i < candidates_in.size(); ++i) {
-    candidates_out.push_back(InputMethodEngineInterface::Candidate());
+    candidates_out.push_back(IMEEngineHandlerInterface::Candidate());
     candidates_out.back().value = candidates_in[i]->candidate;
     candidates_out.back().id = candidates_in[i]->id;
     if (candidates_in[i]->label)
@@ -805,7 +844,7 @@ bool InputImeSetCandidatesFunction::RunSync() {
 }
 
 bool InputImeSetCursorPositionFunction::RunSync() {
-  InputMethodEngineInterface* engine =
+  IMEEngineHandlerInterface* engine =
       GetInputImeEventRouter(Profile::FromBrowserContext(browser_context()))
           ->GetActiveEngine(extension_id());
   if (!engine) {
@@ -830,7 +869,7 @@ bool InputImeSetMenuItemsFunction::RunSync() {
   const SetMenuItems::Params::Parameters& params =
       parent_params->parameters;
 
-  InputMethodEngineInterface* engine =
+  IMEEngineHandlerInterface* engine =
       GetInputImeEventRouter(Profile::FromBrowserContext(browser_context()))
           ->GetEngine(extension_id(), params.engine_id);
   if (!engine) {
@@ -839,10 +878,10 @@ bool InputImeSetMenuItemsFunction::RunSync() {
   }
 
   const std::vector<linked_ptr<input_ime::MenuItem> >& items = params.items;
-  std::vector<InputMethodEngineInterface::MenuItem> items_out;
+  std::vector<IMEEngineHandlerInterface::MenuItem> items_out;
 
   for (size_t i = 0; i < items.size(); ++i) {
-    items_out.push_back(InputMethodEngineInterface::MenuItem());
+    items_out.push_back(IMEEngineHandlerInterface::MenuItem());
     SetMenuItemToMenu(*items[i], &items_out.back());
   }
 
@@ -857,7 +896,7 @@ bool InputImeUpdateMenuItemsFunction::RunSync() {
   const UpdateMenuItems::Params::Parameters& params =
       parent_params->parameters;
 
-  InputMethodEngineInterface* engine =
+  IMEEngineHandlerInterface* engine =
       GetInputImeEventRouter(Profile::FromBrowserContext(browser_context()))
           ->GetEngine(extension_id(), params.engine_id);
   if (!engine) {
@@ -866,10 +905,10 @@ bool InputImeUpdateMenuItemsFunction::RunSync() {
   }
 
   const std::vector<linked_ptr<input_ime::MenuItem> >& items = params.items;
-  std::vector<InputMethodEngineInterface::MenuItem> items_out;
+  std::vector<IMEEngineHandlerInterface::MenuItem> items_out;
 
   for (size_t i = 0; i < items.size(); ++i) {
-    items_out.push_back(InputMethodEngineInterface::MenuItem());
+    items_out.push_back(IMEEngineHandlerInterface::MenuItem());
     SetMenuItemToMenu(*items[i], &items_out.back());
   }
 
@@ -884,7 +923,7 @@ bool InputImeDeleteSurroundingTextFunction::RunSync() {
   const DeleteSurroundingText::Params::Parameters& params =
       parent_params->parameters;
 
-  InputMethodEngineInterface* engine =
+  IMEEngineHandlerInterface* engine =
       GetInputImeEventRouter(Profile::FromBrowserContext(browser_context()))
           ->GetEngine(extension_id(), params.engine_id);
   if (!engine) {
@@ -950,7 +989,7 @@ void InputImeAPI::OnExtensionUnloaded(content::BrowserContext* browser_context,
 void InputImeAPI::OnListenerAdded(const EventListenerInfo& details) {
   if (!details.browser_context)
     return;
-  InputMethodEngineInterface* engine =
+  IMEEngineHandlerInterface* engine =
       GetInputImeEventRouter(
           Profile::FromBrowserContext(details.browser_context))
           ->GetActiveEngine(details.extension_id);

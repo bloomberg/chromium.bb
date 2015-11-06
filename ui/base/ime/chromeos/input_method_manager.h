@@ -18,6 +18,7 @@ class Profile;
 
 namespace ui {
 class Accelerator;
+class IMEEngineHandlerInterface;
 }  // namespace ui
 
 namespace user_manager {
@@ -26,7 +27,6 @@ class User;
 
 namespace chromeos {
 class ComponentExtensionIMEManager;
-class InputMethodEngineInterface;
 namespace input_method {
 class InputMethodUtil;
 class ImeKeyboard;
@@ -77,7 +77,7 @@ class UI_BASE_IME_EXPORT InputMethodManager {
     virtual void AddInputMethodExtension(
         const std::string& extension_id,
         const InputMethodDescriptors& descriptors,
-        InputMethodEngineInterface* instance) = 0;
+        ui::IMEEngineHandlerInterface* instance) = 0;
 
     // Removes an input method extension.
     virtual void RemoveInputMethodExtension(

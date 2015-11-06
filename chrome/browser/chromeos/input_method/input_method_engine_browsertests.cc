@@ -185,9 +185,9 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
   KeyEventDoneCallback callback(false);  // EchoBackIME doesn't consume keys.
   ExtensionTestMessageListener keyevent_listener("onKeyEvent", false);
   ui::KeyEvent key_event(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::EF_NONE);
-  engine_handler->ProcessKeyEvent(key_event,
-                                  base::Bind(&KeyEventDoneCallback::Run,
-                                             base::Unretained(&callback)));
+  ui::IMEEngineHandlerInterface::KeyEventDoneCallback keyevent_callback =
+      base::Bind(&KeyEventDoneCallback::Run, base::Unretained(&callback));
+  engine_handler->ProcessKeyEvent(key_event, keyevent_callback);
   ASSERT_TRUE(keyevent_listener.WaitUntilSatisfied());
   ASSERT_TRUE(keyevent_listener.was_satisfied());
   callback.WaitUntilCalled();
@@ -269,9 +269,9 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
 
     ui::KeyEvent key_event(
         ui::ET_KEY_PRESSED, ui::VKEY_A, ui::DomCode::KEY_A, ui::EF_NONE);
-    engine_handler->ProcessKeyEvent(key_event,
-                                    base::Bind(&KeyEventDoneCallback::Run,
-                                               base::Unretained(&callback)));
+    ui::IMEEngineHandlerInterface::KeyEventDoneCallback keyevent_callback =
+        base::Bind(&KeyEventDoneCallback::Run, base::Unretained(&callback));
+    engine_handler->ProcessKeyEvent(key_event, keyevent_callback);
     ASSERT_TRUE(keyevent_listener.WaitUntilSatisfied());
     EXPECT_TRUE(keyevent_listener.was_satisfied());
     callback.WaitUntilCalled();
@@ -287,9 +287,9 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
                            ui::VKEY_A,
                            ui::DomCode::KEY_A,
                            ui::EF_CONTROL_DOWN);
-    engine_handler->ProcessKeyEvent(key_event,
-                                    base::Bind(&KeyEventDoneCallback::Run,
-                                               base::Unretained(&callback)));
+    ui::IMEEngineHandlerInterface::KeyEventDoneCallback keyevent_callback =
+        base::Bind(&KeyEventDoneCallback::Run, base::Unretained(&callback));
+    engine_handler->ProcessKeyEvent(key_event, keyevent_callback);
     ASSERT_TRUE(keyevent_listener.WaitUntilSatisfied());
     EXPECT_TRUE(keyevent_listener.was_satisfied());
     callback.WaitUntilCalled();
@@ -305,9 +305,9 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
                            ui::VKEY_A,
                            ui::DomCode::KEY_A,
                            ui::EF_ALT_DOWN);
-    engine_handler->ProcessKeyEvent(key_event,
-                                    base::Bind(&KeyEventDoneCallback::Run,
-                                               base::Unretained(&callback)));
+    ui::IMEEngineHandlerInterface::KeyEventDoneCallback keyevent_callback =
+        base::Bind(&KeyEventDoneCallback::Run, base::Unretained(&callback));
+    engine_handler->ProcessKeyEvent(key_event, keyevent_callback);
     ASSERT_TRUE(keyevent_listener.WaitUntilSatisfied());
     EXPECT_TRUE(keyevent_listener.was_satisfied());
     callback.WaitUntilCalled();
@@ -323,9 +323,9 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
                            ui::VKEY_A,
                            ui::DomCode::KEY_A,
                            ui::EF_SHIFT_DOWN);
-    engine_handler->ProcessKeyEvent(key_event,
-                                    base::Bind(&KeyEventDoneCallback::Run,
-                                               base::Unretained(&callback)));
+    ui::IMEEngineHandlerInterface::KeyEventDoneCallback keyevent_callback =
+        base::Bind(&KeyEventDoneCallback::Run, base::Unretained(&callback));
+    engine_handler->ProcessKeyEvent(key_event, keyevent_callback);
     ASSERT_TRUE(keyevent_listener.WaitUntilSatisfied());
     EXPECT_TRUE(keyevent_listener.was_satisfied());
     callback.WaitUntilCalled();
@@ -341,9 +341,9 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
                            ui::VKEY_A,
                            ui::DomCode::KEY_A,
                            ui::EF_CAPS_LOCK_DOWN);
-    engine_handler->ProcessKeyEvent(key_event,
-                                    base::Bind(&KeyEventDoneCallback::Run,
-                                               base::Unretained(&callback)));
+    ui::IMEEngineHandlerInterface::KeyEventDoneCallback keyevent_callback =
+        base::Bind(&KeyEventDoneCallback::Run, base::Unretained(&callback));
+    engine_handler->ProcessKeyEvent(key_event, keyevent_callback);
     ASSERT_TRUE(keyevent_listener.WaitUntilSatisfied());
     EXPECT_TRUE(keyevent_listener.was_satisfied());
     callback.WaitUntilCalled();
@@ -359,9 +359,9 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
                            ui::VKEY_A,
                            ui::DomCode::KEY_A,
                            ui::EF_ALT_DOWN | ui::EF_CONTROL_DOWN);
-    engine_handler->ProcessKeyEvent(key_event,
-                                    base::Bind(&KeyEventDoneCallback::Run,
-                                               base::Unretained(&callback)));
+    ui::IMEEngineHandlerInterface::KeyEventDoneCallback keyevent_callback =
+        base::Bind(&KeyEventDoneCallback::Run, base::Unretained(&callback));
+    engine_handler->ProcessKeyEvent(key_event, keyevent_callback);
     ASSERT_TRUE(keyevent_listener.WaitUntilSatisfied());
     EXPECT_TRUE(keyevent_listener.was_satisfied());
     callback.WaitUntilCalled();
@@ -377,9 +377,9 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
                            ui::VKEY_A,
                            ui::DomCode::KEY_A,
                            ui::EF_SHIFT_DOWN | ui::EF_CAPS_LOCK_DOWN);
-    engine_handler->ProcessKeyEvent(key_event,
-                                    base::Bind(&KeyEventDoneCallback::Run,
-                                               base::Unretained(&callback)));
+    ui::IMEEngineHandlerInterface::KeyEventDoneCallback keyevent_callback =
+        base::Bind(&KeyEventDoneCallback::Run, base::Unretained(&callback));
+    engine_handler->ProcessKeyEvent(key_event, keyevent_callback);
     ASSERT_TRUE(keyevent_listener.WaitUntilSatisfied());
     EXPECT_TRUE(keyevent_listener.was_satisfied());
     callback.WaitUntilCalled();
@@ -425,9 +425,9 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
         kMediaKeyCases[i].keycode,
         ui::KeycodeConverter::CodeStringToDomCode(kMediaKeyCases[i].code),
         ui::EF_NONE);
-    engine_handler->ProcessKeyEvent(key_event,
-                                    base::Bind(&KeyEventDoneCallback::Run,
-                                               base::Unretained(&callback)));
+    ui::IMEEngineHandlerInterface::KeyEventDoneCallback keyevent_callback =
+        base::Bind(&KeyEventDoneCallback::Run, base::Unretained(&callback));
+    engine_handler->ProcessKeyEvent(key_event, keyevent_callback);
     ASSERT_TRUE(keyevent_listener.WaitUntilSatisfied());
     EXPECT_TRUE(keyevent_listener.was_satisfied());
     callback.WaitUntilCalled();

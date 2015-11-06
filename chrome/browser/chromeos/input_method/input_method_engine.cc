@@ -53,8 +53,8 @@ void UpdateComposition(const ui::CompositionText& composition_text,
   ui::IMEInputContextHandlerInterface* input_context =
       ui::IMEBridge::Get()->GetInputContextHandler();
   if (input_context)
-    input_context->UpdateCompositionText(
-        composition_text, cursor_pos, is_visible);
+    input_context->UpdateCompositionText(composition_text, cursor_pos,
+                                         is_visible);
 }
 
 // Returns the length of characters of a UTF-8 string with unknown string
@@ -82,9 +82,8 @@ std::string GetKeyFromEvent(const ui::KeyEvent& event) {
     return code.substr(5);
   if (code == "Escape")
     return "Esc";
-  if (code == "Backspace" || code == "Tab" ||
-      code == "Enter" || code == "CapsLock" ||
-      code == "Power")
+  if (code == "Backspace" || code == "Tab" || code == "Enter" ||
+      code == "CapsLock" || code == "Power")
     return code;
   // Cases for media keys.
   switch (event.key_code()) {
@@ -124,8 +123,7 @@ std::string GetKeyFromEvent(const ui::KeyEvent& event) {
   uint16 ch = 0;
   // Ctrl+? cases, gets key value for Ctrl is not down.
   if (event.flags() & ui::EF_CONTROL_DOWN) {
-    ui::KeyEvent event_no_ctrl(event.type(),
-                               event.key_code(),
+    ui::KeyEvent event_no_ctrl(event.type(), event.key_code(),
                                event.flags() ^ ui::EF_CONTROL_DOWN);
     ch = event_no_ctrl.GetCharacter();
   } else {
@@ -167,13 +165,11 @@ InputMethodEngine::InputMethodEngine()
       sent_key_event_(NULL),
       profile_(NULL) {}
 
-InputMethodEngine::~InputMethodEngine() {
-}
+InputMethodEngine::~InputMethodEngine() {}
 
-void InputMethodEngine::Initialize(
-    scoped_ptr<InputMethodEngineInterface::Observer> observer,
-    const char* extension_id,
-    Profile* profile) {
+void InputMethodEngine::Initialize(scoped_ptr<ui::IMEEngineObserver> observer,
+                                   const char* extension_id,
+                                   Profile* profile) {
   DCHECK(observer) << "Observer must not be null.";
 
   // TODO(komatsu): It is probably better to set observer out of Initialize.
@@ -240,8 +236,7 @@ bool InputMethodEngine::SetComposition(
   return true;
 }
 
-bool InputMethodEngine::ClearComposition(int context_id,
-                                         std::string* error)  {
+bool InputMethodEngine::ClearComposition(int context_id, std::string* error) {
   if (!IsActive()) {
     *error = kErrorNotActive;
     return false;
@@ -257,7 +252,8 @@ bool InputMethodEngine::ClearComposition(int context_id,
   return true;
 }
 
-bool InputMethodEngine::CommitText(int context_id, const char* text,
+bool InputMethodEngine::CommitText(int context_id,
+                                   const char* text,
                                    std::string* error) {
   if (!IsActive()) {
     // TODO: Commit the text anyways.
@@ -305,9 +301,9 @@ bool InputMethodEngine::SendKeyEvents(
       key_code = ui::DomKeycodeToKeyboardCode(event.code);
 
     int flags = ui::EF_NONE;
-    flags |= event.alt_key   ? ui::EF_ALT_DOWN       : ui::EF_NONE;
-    flags |= event.ctrl_key  ? ui::EF_CONTROL_DOWN   : ui::EF_NONE;
-    flags |= event.shift_key ? ui::EF_SHIFT_DOWN     : ui::EF_NONE;
+    flags |= event.alt_key ? ui::EF_ALT_DOWN : ui::EF_NONE;
+    flags |= event.ctrl_key ? ui::EF_CONTROL_DOWN : ui::EF_NONE;
+    flags |= event.shift_key ? ui::EF_SHIFT_DOWN : ui::EF_NONE;
     flags |= event.caps_lock ? ui::EF_CAPS_LOCK_DOWN : ui::EF_NONE;
 
     ui::KeyEvent ui_event(
@@ -332,7 +328,7 @@ InputMethodEngine::GetCandidateWindowProperty() const {
 
 void InputMethodEngine::SetCandidateWindowProperty(
     const CandidateWindowProperty& property) {
-  // Type conversion from InputMethodEngineInterface::CandidateWindowProperty to
+  // Type conversion from IMEEngineHandlerInterface::CandidateWindowProperty to
   // CandidateWindow::CandidateWindowProperty defined in chromeos/ime/.
   ui::CandidateWindow::CandidateWindowProperty dest_property;
   dest_property.page_size = property.page_size;
@@ -412,7 +408,8 @@ bool InputMethodEngine::SetCandidates(
   return true;
 }
 
-bool InputMethodEngine::SetCursorPosition(int context_id, int candidate_id,
+bool InputMethodEngine::SetCursorPosition(int context_id,
+                                          int candidate_id,
                                           std::string* error) {
   if (!IsActive()) {
     *error = kErrorNotActive;
@@ -455,9 +452,8 @@ bool InputMethodEngine::UpdateMenuItems(
     menu_item_list.push_back(property);
   }
 
-  ui::ime::InputMethodMenuManager::GetInstance()->
-      SetCurrentInputMethodMenuItemList(
-          menu_item_list);
+  ui::ime::InputMethodMenuManager::GetInstance()
+      ->SetCurrentInputMethodMenuItemList(menu_item_list);
   return true;
 }
 
@@ -490,7 +486,7 @@ bool InputMethodEngine::DeleteSurroundingText(int context_id,
 
 void InputMethodEngine::HideInputView() {
   keyboard::KeyboardController* keyboard_controller =
-    keyboard::KeyboardController::GetInstance();
+      keyboard::KeyboardController::GetInstance();
   if (keyboard_controller) {
     keyboard_controller->HideKeyboard(
         keyboard::KeyboardController::HIDE_REASON_MANUAL);
@@ -527,40 +523,9 @@ void InputMethodEngine::FocusIn(
   context_id_ = next_context_id_;
   ++next_context_id_;
 
-  InputMethodEngineInterface::InputContext context;
-  context.id = context_id_;
-  switch (current_input_type_) {
-    case ui::TEXT_INPUT_TYPE_SEARCH:
-      context.type = "search";
-      break;
-    case ui::TEXT_INPUT_TYPE_TELEPHONE:
-      context.type = "tel";
-      break;
-    case ui::TEXT_INPUT_TYPE_URL:
-      context.type = "url";
-      break;
-    case ui::TEXT_INPUT_TYPE_EMAIL:
-      context.type = "email";
-      break;
-    case ui::TEXT_INPUT_TYPE_NUMBER:
-      context.type = "number";
-      break;
-    case ui::TEXT_INPUT_TYPE_PASSWORD:
-      context.type = "password";
-      break;
-    default:
-      context.type = "text";
-      break;
-  }
-
-  context.auto_correct =
-      !(input_context.flags & ui::TEXT_INPUT_FLAG_AUTOCORRECT_OFF);
-  context.auto_complete =
-      !(input_context.flags & ui::TEXT_INPUT_FLAG_AUTOCOMPLETE_OFF);
-  context.spell_check =
-      !(input_context.flags & ui::TEXT_INPUT_FLAG_SPELLCHECK_OFF);
-
-  observer_->OnFocus(context);
+  observer_->OnFocus(ui::IMEEngineHandlerInterface::InputContext(
+      context_id_, input_context.type, input_context.mode,
+      input_context.flags));
 }
 
 void InputMethodEngine::FocusOut() {
@@ -616,14 +581,10 @@ bool InputMethodEngine::IsInterestedInKeyEvent() const {
   return observer_->IsInterestedInKeyEvent();
 }
 
-void InputMethodEngine::ProcessKeyEvent(
-    const ui::KeyEvent& key_event,
-    const KeyEventDoneCallback& callback) {
+void InputMethodEngine::ProcessKeyEvent(const ui::KeyEvent& key_event,
+                                        KeyEventDoneCallback& callback) {
   if (!CheckProfile())
     return;
-
-  KeyEventDoneCallback* handler = new KeyEventDoneCallback();
-  *handler = callback;
 
   KeyboardEvent ext_event;
   GetExtensionKeyboardEventFromKeyEvent(key_event, &ext_event);
@@ -635,10 +596,7 @@ void InputMethodEngine::ProcessKeyEvent(
   if (&key_event == sent_key_event_)
     ext_event.extension_id = extension_id_;
 
-  observer_->OnKeyEvent(
-      active_component_id_,
-      ext_event,
-      reinterpret_cast<input_method::KeyEventHandle*>(handler));
+  observer_->OnKeyEvent(active_component_id_, ext_event, callback);
 }
 
 void InputMethodEngine::CandidateClicked(uint32 index) {
@@ -649,8 +607,8 @@ void InputMethodEngine::CandidateClicked(uint32 index) {
   }
 
   // Only left button click is supported at this moment.
-  observer_->OnCandidateClicked(
-      active_component_id_, candidate_ids_.at(index), MOUSE_BUTTON_LEFT);
+  observer_->OnCandidateClicked(active_component_id_, candidate_ids_.at(index),
+                                ui::IMEEngineObserver::MOUSE_BUTTON_LEFT);
 }
 
 void InputMethodEngine::SetSurroundingText(const std::string& text,

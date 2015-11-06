@@ -9,8 +9,9 @@
 #include <string>
 #include <vector>
 #include "base/time/time.h"
-#include "chrome/browser/chromeos/input_method/input_method_engine_interface.h"
 #include "ui/base/ime/chromeos/input_method_descriptor.h"
+#include "ui/base/ime/ime_engine_handler_interface.h"
+#include "ui/base/ime/ime_engine_observer.h"
 #include "url/gurl.h"
 
 class Profile;
@@ -18,6 +19,8 @@ class Profile;
 namespace ui {
 class CandidateWindow;
 struct CompositionText;
+class IMEEngineHandlerInterface;
+class IMEEngineObserver;
 class KeyEvent;
 
 namespace ime {
@@ -27,21 +30,17 @@ struct InputMethodMenuItem;
 
 namespace chromeos {
 
-namespace input_method {
-struct KeyEventHandle;
-}  // namespace input_method
-
-class InputMethodEngine : public InputMethodEngineInterface {
+class InputMethodEngine : public ui::IMEEngineHandlerInterface {
  public:
   InputMethodEngine();
 
   ~InputMethodEngine() override;
 
-  void Initialize(scoped_ptr<InputMethodEngineInterface::Observer> observer,
+  void Initialize(scoped_ptr<ui::IMEEngineObserver> observer,
                   const char* extension_id,
                   Profile* profile);
 
-  // InputMethodEngineInterface overrides.
+  // IMEEngineHandlerInterface overrides.
   const std::string& GetActiveComponentId() const override;
   bool SetComposition(int context_id,
                       const char* text,
@@ -83,7 +82,7 @@ class InputMethodEngine : public InputMethodEngineInterface {
   void PropertyActivate(const std::string& property_name) override;
   void Reset() override;
   void ProcessKeyEvent(const ui::KeyEvent& key_event,
-                       const KeyEventDoneCallback& callback) override;
+                       KeyEventDoneCallback& callback) override;
   void CandidateClicked(uint32 index) override;
   void SetSurroundingText(const std::string& text,
                           uint32 cursor_pos,
@@ -120,7 +119,7 @@ class InputMethodEngine : public InputMethodEngineInterface {
   std::string extension_id_;
 
   // The observer object recieving events for this IME.
-  scoped_ptr<InputMethodEngineInterface::Observer> observer_;
+  scoped_ptr<ui::IMEEngineObserver> observer_;
 
   // The current preedit text, and it's cursor position.
   scoped_ptr<ui::CompositionText> composition_text_;

@@ -25,7 +25,7 @@ class UI_BASE_IME_EXPORT MockIMEEngineHandler
   void Reset() override;
   bool IsInterestedInKeyEvent() const override;
   void ProcessKeyEvent(const ui::KeyEvent& key_event,
-                       const KeyEventDoneCallback& callback) override;
+                       KeyEventDoneCallback& callback) override;
   void CandidateClicked(uint32 index) override;
   void SetSurroundingText(const std::string& text,
                           uint32 cursor_pos,
@@ -71,6 +71,53 @@ class UI_BASE_IME_EXPORT MockIMEEngineHandler
     return last_passed_callback_;
   }
 
+  bool SetComposition(int context_id,
+                      const char* text,
+                      int selection_start,
+                      int selection_end,
+                      int cursor,
+                      const std::vector<SegmentInfo>& segments,
+                      std::string* error) override;
+
+  bool ClearComposition(int context_id, std::string* error) override;
+
+  bool CommitText(int context_id,
+                  const char* text,
+                  std::string* error) override;
+
+  bool SendKeyEvents(int context_id,
+                     const std::vector<KeyboardEvent>& events) override;
+
+  bool IsActive() const override;
+
+  const std::string& GetActiveComponentId() const override;
+
+  bool DeleteSurroundingText(int context_id,
+                             int offset,
+                             size_t number_of_chars,
+                             std::string* error) override;
+
+  const CandidateWindowProperty& GetCandidateWindowProperty() const override;
+
+  void SetCandidateWindowProperty(
+      const CandidateWindowProperty& property) override {}
+
+  bool SetCandidateWindowVisible(bool visible, std::string* error) override;
+
+  bool SetCandidates(int context_id,
+                     const std::vector<Candidate>& candidates,
+                     std::string* error) override;
+
+  bool SetCursorPosition(int context_id,
+                         int candidate_id,
+                         std::string* error) override;
+
+  bool SetMenuItems(const std::vector<MenuItem>& items) override;
+
+  bool UpdateMenuItems(const std::vector<MenuItem>& items) override;
+
+  void HideInputView() override {}
+
  private:
   int focus_in_call_count_;
   int focus_out_call_count_;
@@ -84,6 +131,8 @@ class UI_BASE_IME_EXPORT MockIMEEngineHandler
   uint32 last_set_surrounding_anchor_pos_;
   scoped_ptr<ui::KeyEvent> last_processed_key_event_;
   KeyEventDoneCallback last_passed_callback_;
+  std::string active_component_id_;
+  CandidateWindowProperty candidate_window_property_;
 };
 
 }  // namespace chromeos

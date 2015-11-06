@@ -138,12 +138,12 @@ void InputMethodChromeOS::DispatchKeyEvent(ui::KeyEvent* event) {
 
   handling_key_event_ = true;
   if (GetEngine()->IsInterestedInKeyEvent()) {
-    GetEngine()->ProcessKeyEvent(
-        *event,
+    ui::IMEEngineHandlerInterface::KeyEventDoneCallback callback =
         base::Bind(&InputMethodChromeOS::ProcessKeyEventDone,
                    weak_ptr_factory_.GetWeakPtr(),
                    // Pass the ownership of the new copied event.
-                   base::Owned(new ui::KeyEvent(*event))));
+                   base::Owned(new ui::KeyEvent(*event)));
+    GetEngine()->ProcessKeyEvent(*event, callback);
   } else {
     ProcessKeyEventDone(event, false);
   }

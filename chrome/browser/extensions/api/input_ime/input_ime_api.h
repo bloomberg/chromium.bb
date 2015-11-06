@@ -12,7 +12,6 @@
 #include "base/memory/singleton.h"
 #include "base/scoped_observer.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/input_method/input_method_engine_interface.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
@@ -20,13 +19,15 @@
 #include "extensions/browser/extension_function.h"
 #include "extensions/browser/extension_registry_observer.h"
 #include "extensions/common/extension.h"
+#include "ui/base/ime/ime_engine_handler_interface.h"
+#include "ui/base/ime/ime_engine_observer.h"
 
 class Profile;
 
-namespace chromeos {
-class InputMethodEngineInterface;
-class ImeObserver;
-}  // namespace chromeos
+namespace ui {
+class IMEEngineHandlerInterface;
+class IMEEngineObserver;
+}  // namespace ui
 
 namespace extensions {
 class ExtensionRegistry;
@@ -42,27 +43,29 @@ class InputImeEventRouter {
       const std::vector<extensions::InputComponentInfo>& input_components);
   void UnregisterAllImes(const std::string& extension_id);
 
-  chromeos::InputMethodEngineInterface* GetEngine(
-      const std::string& extension_id,
-      const std::string& component_id);
-  chromeos::InputMethodEngineInterface* GetActiveEngine(
+  ui::IMEEngineHandlerInterface* GetEngine(const std::string& extension_id,
+                                           const std::string& component_id);
+  ui::IMEEngineHandlerInterface* GetActiveEngine(
       const std::string& extension_id);
-
 
   // Called when a key event was handled.
   void OnKeyEventHandled(const std::string& extension_id,
                          const std::string& request_id,
                          bool handled);
 
-  std::string AddRequest(const std::string& component_id,
-                         chromeos::input_method::KeyEventHandle* key_data);
+  std::string AddRequest(
+      const std::string& component_id,
+      ui::IMEEngineHandlerInterface::KeyEventDoneCallback& key_data);
 
  private:
-  typedef std::map<std::string, std::pair<std::string,
-          chromeos::input_method::KeyEventHandle*> > RequestMap;
+  typedef std::map<
+      std::string,
+      std::pair<std::string,
+                ui::IMEEngineHandlerInterface::KeyEventDoneCallback>>
+      RequestMap;
 
   // The engine map from extension_id to an engine.
-  std::map<std::string, chromeos::InputMethodEngineInterface*> engine_map_;
+  std::map<std::string, ui::IMEEngineHandlerInterface*> engine_map_;
 
   unsigned int next_request_id_;
   RequestMap request_map_;
