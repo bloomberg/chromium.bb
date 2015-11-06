@@ -1,5 +1,5 @@
 <protocol name="pointer_gestures_unstable_v1">
-  <interface name="zwp_pointer_gestures1" version="1">
+  <interface name="zwp_pointer_gestures_v1" version="1">
     <description summary="touchpad gestures">
       A global interface to provide semantic touchpad gestures for a given
       pointer.
@@ -23,7 +23,7 @@
 	Create a swipe gesture object. See the
 	wl_pointer_gesture_swipe interface for details.
       </description>
-      <arg name="id" type="new_id" interface="zwp_pointer_gesture_swipe1"/>
+      <arg name="id" type="new_id" interface="zwp_pointer_gesture_swipe_v1"/>
       <arg name="pointer" type="object" interface="wl_pointer"/>
     </request>
 
@@ -32,12 +32,12 @@
 	Create a pinch gesture object. See the
 	wl_pointer_gesture_pinch interface for details.
       </description>
-      <arg name="id" type="new_id" interface="zwp_pointer_gesture_pinch1"/>
+      <arg name="id" type="new_id" interface="zwp_pointer_gesture_pinch_v1"/>
       <arg name="pointer" type="object" interface="wl_pointer"/>
     </request>
   </interface>
 
-  <interface name="zwp_pointer_gesture_swipe1" version="1">
+  <interface name="zwp_pointer_gesture_swipe_v1" version="1">
     <description summary="a swipe gesture object">
       A swipe gesture object notifies a client about a multi-finger swipe
       gesture detected on an indirect input device such as a touchpad.
@@ -100,7 +100,7 @@
     </event>
   </interface>
 
-  <interface name="zwp_pointer_gesture_pinch1" version="1">
+  <interface name="zwp_pointer_gesture_pinch_v1" version="1">
     <description summary="a pinch gesture object">
       A pinch gesture object notifies a client about a multi-finger pinch
       gesture detected on an indirect input device such as a touchpad.

@@ -26,7 +26,7 @@
     THIS SOFTWARE.
   </copyright>
 
-  <interface name="zlinux_dmabuf1" version="1">
+  <interface name="zlinux_dmabuf_v1" version="1">
     <description summary="factory for creating dmabuf-based wl_buffers">
       Following the interfaces from:
       https://www.khronos.org/registry/egl/extensions/EXT/EGL_EXT_image_dma_buf_import.txt
@@ -87,7 +87,7 @@
         should be destroyed after an 'created' or 'failed' event has been
         received.
       </description>
-      <arg name="params_id" type="new_id" interface="zlinux_buffer_params1"
+      <arg name="params_id" type="new_id" interface="zlinux_buffer_params_v1"
            summary="the new temporary"/>
     </request>
 
@@ -107,7 +107,7 @@
 
   </interface>
 
-  <interface name="zlinux_buffer_params1" version="1">
+  <interface name="zlinux_buffer_params_v1" version="1">
     <description summary="parameters for creating a dmabuf-based wl_buffer">
       This temporary object is a collection of dmabufs and other
       parameters that together form a single logical buffer. The temporary
