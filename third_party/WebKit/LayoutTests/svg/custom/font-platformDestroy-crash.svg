@@ -29,7 +29,7 @@
         var parent = style.parentNode;
 
         for (var t = 0; t < 50; t++) {
-            parent.offsetTop;
+            parent.clientTop;
             parent.removeChild(style);
             parent.appendChild(style);
         }

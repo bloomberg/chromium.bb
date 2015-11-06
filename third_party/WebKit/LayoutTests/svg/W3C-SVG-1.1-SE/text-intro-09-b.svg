@@ -71,7 +71,7 @@
   </g>
   <rect id="test-frame" x="1" y="1" width="478" height="358" fill="none" stroke="#000000"/>
   <script>
-    document.documentElement.offsetLeft;
+    document.documentElement.clientLeft;
   </script>
   <!-- comment out this watermark once the test is approved -->
   <!--<g id="draft-watermark">

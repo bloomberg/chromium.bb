@@ -921,6 +921,7 @@ String UseCounter::deprecationMessage(Feature feature)
     case SVGSMILElementInDocument:
     case SVGSMILAnimationInImageRegardlessOfCache:
         return "SVG's SMIL animations (<animate>, <set>, etc.) are deprecated and will be removed. Please use CSS animations or Web animations instead.";
+
     case PrefixedPerformanceClearResourceTimings:
         return replacedBy("Performance.webkitClearResourceTimings", "Performance.clearResourceTimings");
 
@@ -938,6 +939,21 @@ String UseCounter::deprecationMessage(Feature feature)
 
     case BluetoothDeviceInstanceId:
         return replacedBy("BluetoothDevice.instanceID", "BluetoothDevice.id");
+
+    case V8SVGElement_OffsetParent_AttributeGetter:
+        return "'SVGElement.offsetParent' is deprecated and will be removed in M50, around April 2016. See https://www.chromestatus.com/features/5724912467574784 for more details.";
+
+    case V8SVGElement_OffsetTop_AttributeGetter:
+        return "'SVGElement.offsetTop' is deprecated and will be removed in M50, around April 2016. See https://www.chromestatus.com/features/5724912467574784 for more details.";
+
+    case V8SVGElement_OffsetLeft_AttributeGetter:
+        return "'SVGElement.offsetLeft' is deprecated and will be removed in M50, around April 2016. See https://www.chromestatus.com/features/5724912467574784 for more details.";
+
+    case V8SVGElement_OffsetWidth_AttributeGetter:
+        return "'SVGElement.offsetWidth' is deprecated and will be removed in M50, around April 2016. See https://www.chromestatus.com/features/5724912467574784 for more details.";
+
+    case V8SVGElement_OffsetHeight_AttributeGetter:
+        return "'SVGElement.offsetHeight' is deprecated and will be removed in M50, around April 2016. See https://www.chromestatus.com/features/5724912467574784 for more details.";
 
     // Features that aren't deprecated don't have a deprecation message.
     default:

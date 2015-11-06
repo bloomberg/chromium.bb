@@ -1,7 +1,7 @@
 <svg version="1.1" xmlns="http://www.w3.org/2000/svg">
 <script>
 function runTest() {
-    g.offsetTop;
+    g.clientTop;
     g.removeChild(g.firstChild);
     if (g.firstChild)
         setTimeout(runTest(),0);
@@ -14,7 +14,7 @@ window.onload = function() {
         testRunner.dumpAsText();
         testRunner.waitUntilDone();
     }
-    
+
     g = document.getElementById("g1");
     if (location.hash != "#2") {
         if (location.hash)

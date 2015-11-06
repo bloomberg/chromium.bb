@@ -34,8 +34,8 @@ document.addEventListener('focus', handleFocus, true);
 if (window.testRunner) {
     var testAnchors = document.querySelectorAll('p > a, svg > a > text');
     for (var i = 0; i < testAnchors.length; i++) {
-        var aElement = testAnchors[i];
-        eventSender.mouseMoveTo(aElement.offsetLeft + 2, aElement.offsetTop + 2);
+        var clientRect = testAnchors[i].getBoundingClientRect();
+        eventSender.mouseMoveTo(clientRect.left + 2, clientRect.top + 2);
         eventSender.mouseDown();
         eventSender.mouseUp();
     }

@@ -1,1 +1,6 @@
+CONSOLE WARNING: 'SVGElement.offsetParent' is deprecated and will be removed in M50, around April 2016. See https://www.chromestatus.com/features/5724912467574784 for more details.
+CONSOLE WARNING: 'SVGElement.offsetTop' is deprecated and will be removed in M50, around April 2016. See https://www.chromestatus.com/features/5724912467574784 for more details.
+CONSOLE WARNING: 'SVGElement.offsetLeft' is deprecated and will be removed in M50, around April 2016. See https://www.chromestatus.com/features/5724912467574784 for more details.
+CONSOLE WARNING: 'SVGElement.offsetWidth' is deprecated and will be removed in M50, around April 2016. See https://www.chromestatus.com/features/5724912467574784 for more details.
+CONSOLE WARNING: 'SVGElement.offsetHeight' is deprecated and will be removed in M50, around April 2016. See https://www.chromestatus.com/features/5724912467574784 for more details.
 PASSED -- webkit did not crash in SVGSVGElement::isOutermostSVG(). See https://bugs.webkit.org/show_bug.cgi?id=25105

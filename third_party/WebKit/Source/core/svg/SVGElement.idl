@@ -35,11 +35,11 @@ interface SVGElement : Element {
     void blur();
 
     // TODO(tanay.c): SVGElement.offset* are non-standard. crbug.com/463116
-    [Measure, PerWorldBindings] readonly attribute Element? offsetParent;
-    [Measure] readonly attribute long offsetTop;
-    [Measure] readonly attribute long offsetLeft;
-    [Measure] readonly attribute long offsetWidth;
-    [Measure] readonly attribute long offsetHeight;
+    [DeprecateAs=V8SVGElement_OffsetParent_AttributeGetter, PerWorldBindings] readonly attribute Element? offsetParent;
+    [DeprecateAs=V8SVGElement_OffsetTop_AttributeGetter] readonly attribute long offsetTop;
+    [DeprecateAs=V8SVGElement_OffsetLeft_AttributeGetter] readonly attribute long offsetLeft;
+    [DeprecateAs=V8SVGElement_OffsetWidth_AttributeGetter] readonly attribute long offsetWidth;
+    [DeprecateAs=V8SVGElement_OffsetHeight_AttributeGetter] readonly attribute long offsetHeight;
 };
 
 SVGElement implements GlobalEventHandlers;

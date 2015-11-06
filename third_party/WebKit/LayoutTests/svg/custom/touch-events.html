@@ -34,8 +34,9 @@
       document.write('This test does not work in manual mode.');
     } else {
       var svg = document.getElementById('svg');
-      var positionX = svg.offsetLeft + 30;
-      var positionY = svg.offsetTop + 30;
+      var clientRect = svg.getBoundingClientRect();
+      var positionX = clientRect.left + 30;
+      var positionY = clientRect.top + 30;
 
       // Touch, move, end.
       eventSender.addTouchPoint(positionX, positionY);

@@ -55,9 +55,9 @@ function runRepaintAndPixelTest()
 function forceStyleRecalc()
 {
     if (document.body)
-        document.body.offsetTop;
+        document.body.clientTop;
     else if (document.documentElement)
-        document.documentElement.offsetTop;
+        document.documentElement.clientTop;
 }
 
 function finishRepaintTest()

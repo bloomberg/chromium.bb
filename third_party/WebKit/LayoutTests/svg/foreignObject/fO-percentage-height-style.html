@@ -10,12 +10,12 @@
   description("Test use of percentages inside foreignObject");
 
   var nestedSvg = document.querySelectorAll('svg')[1];
-  shouldBe("nestedSvg.offsetHeight", "250");
+  shouldBe("getComputedStyle(nestedSvg).height", "'250px'");
 
   nestedSvg.style.height = "50%";
-  shouldBe("nestedSvg.offsetHeight", "125");
+  shouldBe("getComputedStyle(nestedSvg).height", "'125px'");
 
   var foreignObject = nestedSvg.parentNode;
   foreignObject.height.baseVal.value = 400;
-  shouldBe("nestedSvg.offsetHeight", "200");
+  shouldBe("getComputedStyle(nestedSvg).height", "'200px'");
 </script>
