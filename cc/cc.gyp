@@ -200,6 +200,8 @@
         'layers/layer_lists.h',
         'layers/layer_position_constraint.cc',
         'layers/layer_position_constraint.h',
+        'layers/layer_proto_converter.cc',
+        'layers/layer_proto_converter.h',
         'layers/layer_utils.cc',
         'layers/layer_utils.h',
         'layers/nine_patch_layer.cc',
@@ -584,6 +586,7 @@
       'type': '<(component)',
       'sources': [
         'proto/display_item.proto',
+        'proto/layer.proto',
         'proto/point.proto',
         'proto/pointf.proto',
         'proto/rect.proto',

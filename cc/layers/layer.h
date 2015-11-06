@@ -67,6 +67,10 @@ class ScrollbarLayerInterface;
 class SimpleEnclosedRegion;
 struct AnimationEvent;
 
+namespace proto {
+class LayerNode;
+}  // namespace proto
+
 // Base class for composited layers. Special layer types are derived from
 // this class.
 class CC_EXPORT Layer : public base::RefCounted<Layer>,
@@ -74,6 +78,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
                         public LayerAnimationValueProvider {
  public:
   typedef LayerList LayerListType;
+  typedef base::hash_map<int, scoped_refptr<Layer>> LayerIdMap;
 
   enum LayerIdLabels {
     INVALID_ID = -1,
@@ -357,6 +362,30 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   void SetLayerClient(LayerClient* client) { client_ = client; }
 
   virtual void PushPropertiesTo(LayerImpl* layer);
+
+  // Sets the type proto::LayerType that should be used for serialization
+  // of the current layer by calling LayerNode::set_type(proto::LayerType).
+  // TODO(nyquist): Start using a forward declared enum class when
+  // https://github.com/google/protobuf/issues/67 has been fixed and rolled in.
+  // This function would preferably instead return a proto::LayerType, but
+  // since that is an enum (the protobuf library does not generate enum
+  // classes), it can't be forward declared. We don't want to include
+  // //cc/proto/layer.pb.h in this header file, as it requires that all
+  // dependent targets would have to be given the config for how to include it.
+  virtual void SetTypeForProtoSerialization(proto::LayerNode* proto) const;
+
+  // Recursively iterate over this layer and all children and write the
+  // hierarchical structure to the given LayerNode proto. In addition to the
+  // structure itself, the Layer id and type is also written to facilitate
+  // construction of the correct layer on the client.
+  void ToLayerNodeProto(proto::LayerNode* proto) const;
+
+  // Recursively iterate over the given LayerNode proto and read the structure
+  // into this node and its children. The |layer_map| should be used to look
+  // for previously existing Layers, since they should be re-used between each
+  // hierarchy update.
+  void FromLayerNodeProto(const proto::LayerNode& proto,
+                          const LayerIdMap& layer_map);
 
   LayerTreeHost* layer_tree_host() { return layer_tree_host_; }
   const LayerTreeHost* layer_tree_host() const { return layer_tree_host_; }

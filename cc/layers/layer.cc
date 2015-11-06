@@ -21,9 +21,11 @@
 #include "cc/debug/frame_viewer_instrumentation.h"
 #include "cc/layers/layer_client.h"
 #include "cc/layers/layer_impl.h"
+#include "cc/layers/layer_proto_converter.h"
 #include "cc/layers/scrollbar_layer_interface.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/output/copy_output_result.h"
+#include "cc/proto/layer.pb.h"
 #include "cc/trees/draw_property_utils.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_impl.h"
@@ -1347,6 +1349,73 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
 
   needs_push_properties_ = false;
   num_dependents_need_push_properties_ = 0;
+}
+
+void Layer::SetTypeForProtoSerialization(proto::LayerNode* proto) const {
+  proto->set_type(proto::LayerType::Base);
+}
+
+void Layer::ToLayerNodeProto(proto::LayerNode* proto) const {
+  proto->set_id(layer_id_);
+  SetTypeForProtoSerialization(proto);
+
+  if (parent_)
+    proto->set_parent_id(parent_->id());
+
+  DCHECK_EQ(0, proto->children_size());
+  for (const auto& child : children_) {
+    child->ToLayerNodeProto(proto->add_children());
+  }
+
+  if (mask_layer_)
+    mask_layer_->ToLayerNodeProto(proto->mutable_mask_layer());
+  if (replica_layer_)
+    replica_layer_->ToLayerNodeProto(proto->mutable_replica_layer());
+}
+
+void Layer::FromLayerNodeProto(const proto::LayerNode& proto,
+                               const LayerIdMap& layer_map) {
+  DCHECK(proto.has_id());
+  layer_id_ = proto.id();
+
+  // Recursively remove all children. In the case of when the updated
+  // hierarchy has no children, or the children has changed, the old list
+  // of children must be removed. The whole hierarchy is always sent, so
+  // if there were no change in the children, they will be correctly added back
+  // below.
+  RemoveAllChildren();
+  for (int i = 0; i < proto.children_size(); ++i) {
+    const proto::LayerNode& child_proto = proto.children(i);
+    DCHECK(child_proto.has_type());
+    scoped_refptr<Layer> child =
+        LayerProtoConverter::FindOrAllocateAndConstruct(child_proto, layer_map);
+    child->FromLayerNodeProto(child_proto, layer_map);
+    AddChild(child);
+  }
+
+  if (mask_layer_)
+    mask_layer_->RemoveFromParent();
+  if (proto.has_mask_layer()) {
+    mask_layer_ = LayerProtoConverter::FindOrAllocateAndConstruct(
+        proto.mask_layer(), layer_map);
+    mask_layer_->FromLayerNodeProto(proto.mask_layer(), layer_map);
+    mask_layer_->SetParent(this);
+    // SetIsMask() is only ever called with true, so no need to reset flag.
+    mask_layer_->SetIsMask(true);
+  } else {
+    mask_layer_ = nullptr;
+  }
+
+  if (replica_layer_)
+    replica_layer_->RemoveFromParent();
+  if (proto.has_replica_layer()) {
+    replica_layer_ = LayerProtoConverter::FindOrAllocateAndConstruct(
+        proto.replica_layer(), layer_map);
+    replica_layer_->FromLayerNodeProto(proto.replica_layer(), layer_map);
+    replica_layer_->SetParent(this);
+  } else {
+    replica_layer_ = nullptr;
+  }
 }
 
 scoped_ptr<LayerImpl> Layer::CreateLayerImpl(LayerTreeImpl* tree_impl) {

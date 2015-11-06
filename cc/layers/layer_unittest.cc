@@ -10,6 +10,7 @@
 #include "cc/layers/layer_impl.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/output/copy_output_result.h"
+#include "cc/proto/layer.pb.h"
 #include "cc/test/animation_test_common.h"
 #include "cc/test/fake_impl_task_runner_provider.h"
 #include "cc/test/fake_layer_tree_host_client.h"
@@ -1347,6 +1348,223 @@ TEST_F(LayerTest, AnimationSchedulesLayerUpdate) {
   EXPECT_CALL(*layer_tree_host_, SetNeedsUpdateLayers()).Times(0);
   layer->OnScrollOffsetAnimated(gfx::ScrollOffset(10, 10));
   Mock::VerifyAndClearExpectations(layer_tree_host_.get());
+}
+
+TEST_F(LayerTest, RecursiveHierarchySerialization) {
+  /* Testing serialization and deserialization of a tree that looks like this:
+          root
+          /  \
+         a    b
+               \
+                c
+     Layer c also has a mask layer and a replica layer.
+  */
+  scoped_refptr<Layer> layer_src_root = Layer::Create(LayerSettings());
+  scoped_refptr<Layer> layer_src_a = Layer::Create(LayerSettings());
+  scoped_refptr<Layer> layer_src_b = Layer::Create(LayerSettings());
+  scoped_refptr<Layer> layer_src_c = Layer::Create(LayerSettings());
+  scoped_refptr<Layer> layer_src_c_mask = Layer::Create(LayerSettings());
+  scoped_refptr<Layer> layer_src_c_replica = Layer::Create(LayerSettings());
+  layer_src_root->AddChild(layer_src_a);
+  layer_src_root->AddChild(layer_src_b);
+  layer_src_b->AddChild(layer_src_c);
+  layer_src_c->SetMaskLayer(layer_src_c_mask.get());
+  layer_src_c->SetReplicaLayer(layer_src_c_replica.get());
+
+  proto::LayerNode proto;
+  layer_src_root->ToLayerNodeProto(&proto);
+
+  Layer::LayerIdMap empty_dest_layer_map;
+  scoped_refptr<Layer> layer_dest_root = Layer::Create(LayerSettings());
+  layer_dest_root->FromLayerNodeProto(proto, empty_dest_layer_map);
+
+  EXPECT_EQ(layer_src_root->id(), layer_dest_root->id());
+  EXPECT_EQ(nullptr, layer_dest_root->parent());
+  ASSERT_EQ(2u, layer_dest_root->children().size());
+
+  scoped_refptr<Layer> layer_dest_a = layer_dest_root->children()[0];
+  EXPECT_EQ(layer_src_a->id(), layer_dest_a->id());
+  EXPECT_EQ(layer_src_root->id(), layer_dest_a->parent()->id());
+  EXPECT_EQ(0u, layer_dest_a->children().size());
+
+  scoped_refptr<Layer> layer_dest_b = layer_dest_root->children()[1];
+  EXPECT_EQ(layer_src_b->id(), layer_dest_b->id());
+  EXPECT_EQ(layer_src_root->id(), layer_dest_b->parent()->id());
+  ASSERT_EQ(1u, layer_dest_b->children().size());
+
+  scoped_refptr<Layer> layer_dest_c = layer_dest_b->children()[0];
+  EXPECT_EQ(layer_src_c->id(), layer_dest_c->id());
+  EXPECT_EQ(layer_src_b->id(), layer_dest_c->parent()->id());
+  EXPECT_EQ(0u, layer_dest_c->children().size());
+  EXPECT_EQ(layer_src_c_mask->id(), layer_dest_c->mask_layer()->id());
+  EXPECT_EQ(layer_src_c_replica->id(), layer_dest_c->replica_layer()->id());
+}
+
+TEST_F(LayerTest, RecursiveHierarchySerializationWithNodeReuse) {
+  /* Testing serialization and deserialization of a tree that initially looks
+     like this:
+          root
+          /
+         a
+     The source tree is then updated by adding layer |b|:
+          root
+          /  \
+         a    b
+     The deserialization should then re-use the Layers from last
+     deserialization.
+  */
+  scoped_refptr<Layer> layer_src_root = Layer::Create(LayerSettings());
+  scoped_refptr<Layer> layer_src_a = Layer::Create(LayerSettings());
+  layer_src_root->AddChild(layer_src_a);
+
+  proto::LayerNode root_proto_1;
+  layer_src_root->ToLayerNodeProto(&root_proto_1);
+
+  Layer::LayerIdMap dest_layer_map_1;
+  scoped_refptr<Layer> layer_dest_root = Layer::Create(LayerSettings());
+  layer_dest_root->FromLayerNodeProto(root_proto_1, dest_layer_map_1);
+
+  EXPECT_EQ(layer_src_root->id(), layer_dest_root->id());
+  ASSERT_EQ(1u, layer_dest_root->children().size());
+  scoped_refptr<Layer> layer_dest_a_1 = layer_dest_root->children()[0];
+  EXPECT_EQ(layer_src_a->id(), layer_dest_a_1->id());
+
+  // Setup new destination layer map.
+  Layer::LayerIdMap dest_layer_map_2;
+  dest_layer_map_2[layer_dest_root->id()] = layer_dest_root;
+  dest_layer_map_2[layer_dest_a_1->id()] = layer_dest_a_1;
+
+  // Add Layer |b|.
+  scoped_refptr<Layer> layer_src_b = Layer::Create(LayerSettings());
+  layer_src_root->AddChild(layer_src_b);
+
+  // Second serialization.
+  proto::LayerNode root_proto_2;
+  layer_src_root->ToLayerNodeProto(&root_proto_2);
+
+  // Second deserialization.
+  layer_dest_root->FromLayerNodeProto(root_proto_2, dest_layer_map_2);
+
+  EXPECT_EQ(layer_src_root->id(), layer_dest_root->id());
+  ASSERT_EQ(2u, layer_dest_root->children().size());
+
+  scoped_refptr<Layer> layer_dest_a_2 = layer_dest_root->children()[0];
+  EXPECT_EQ(layer_src_a->id(), layer_dest_a_2->id());
+  EXPECT_EQ(layer_src_root->id(), layer_dest_a_2->parent()->id());
+  EXPECT_EQ(0u, layer_dest_a_2->children().size());
+
+  scoped_refptr<Layer> layer_dest_b_2 = layer_dest_root->children()[1];
+  EXPECT_EQ(layer_src_b->id(), layer_dest_b_2->id());
+  EXPECT_EQ(layer_src_root->id(), layer_dest_b_2->parent()->id());
+  EXPECT_EQ(0u, layer_dest_b_2->children().size());
+
+  // Layer |a| should be the same.
+  EXPECT_EQ(layer_dest_a_1.get(), layer_dest_a_2.get());
+}
+
+TEST_F(LayerTest, DeletingSubtreeDeletesLayers) {
+  /* Testing serialization and deserialization of a tree that initially
+     looks like this:
+          root
+          /  \
+         a    b
+               \
+                c
+                 \
+                  d
+     Then the subtree rooted at node |b| is deleted in the next update.
+  */
+  scoped_refptr<Layer> layer_src_root = Layer::Create(LayerSettings());
+  scoped_refptr<Layer> layer_src_a = Layer::Create(LayerSettings());
+  scoped_refptr<Layer> layer_src_b = Layer::Create(LayerSettings());
+  scoped_refptr<Layer> layer_src_c = Layer::Create(LayerSettings());
+  scoped_refptr<Layer> layer_src_d = Layer::Create(LayerSettings());
+  layer_src_root->AddChild(layer_src_a);
+  layer_src_root->AddChild(layer_src_b);
+  layer_src_b->AddChild(layer_src_c);
+  layer_src_c->AddChild(layer_src_d);
+
+  // Serialization 1.
+  proto::LayerNode proto1;
+  layer_src_root->ToLayerNodeProto(&proto1);
+
+  // Deserialization 1.
+  Layer::LayerIdMap empty_dest_layer_map;
+  scoped_refptr<Layer> layer_dest_root = Layer::Create(LayerSettings());
+  layer_dest_root->FromLayerNodeProto(proto1, empty_dest_layer_map);
+
+  EXPECT_EQ(layer_src_root->id(), layer_dest_root->id());
+  ASSERT_EQ(2u, layer_dest_root->children().size());
+  scoped_refptr<Layer> layer_dest_a = layer_dest_root->children()[0];
+  scoped_refptr<Layer> layer_dest_b = layer_dest_root->children()[1];
+  ASSERT_EQ(1u, layer_dest_b->children().size());
+  scoped_refptr<Layer> layer_dest_c = layer_dest_b->children()[0];
+  ASSERT_EQ(1u, layer_dest_c->children().size());
+  scoped_refptr<Layer> layer_dest_d = layer_dest_c->children()[0];
+
+  // Delete the Layer |b| subtree.
+  layer_src_b->RemoveAllChildren();
+
+  // Serialization 2.
+  proto::LayerNode proto2;
+  layer_src_root->ToLayerNodeProto(&proto2);
+
+  // Deserialization 2.
+  Layer::LayerIdMap dest_layer_map_2;
+  dest_layer_map_2[layer_dest_root->id()] = layer_dest_root;
+  dest_layer_map_2[layer_dest_a->id()] = layer_dest_a;
+  dest_layer_map_2[layer_dest_b->id()] = layer_dest_b;
+  layer_dest_root->FromLayerNodeProto(proto2, dest_layer_map_2);
+
+  EXPECT_EQ(0u, layer_dest_a->children().size());
+  EXPECT_EQ(0u, layer_dest_b->children().size());
+}
+
+TEST_F(LayerTest, DeleteMaskAndReplicaLayer) {
+  scoped_refptr<Layer> layer_src_root = Layer::Create(LayerSettings());
+  scoped_refptr<Layer> layer_src_mask = Layer::Create(LayerSettings());
+  scoped_refptr<Layer> layer_src_replica = Layer::Create(LayerSettings());
+  layer_src_root->SetMaskLayer(layer_src_mask.get());
+  layer_src_root->SetReplicaLayer(layer_src_replica.get());
+
+  // Serialization 1.
+  proto::LayerNode proto1;
+  layer_src_root->ToLayerNodeProto(&proto1);
+
+  // Deserialization 1.
+  Layer::LayerIdMap dest_layer_map;
+  scoped_refptr<Layer> layer_dest_root = Layer::Create(LayerSettings());
+  layer_dest_root->FromLayerNodeProto(proto1, dest_layer_map);
+
+  EXPECT_EQ(layer_src_root->id(), layer_dest_root->id());
+  ASSERT_TRUE(layer_dest_root->mask_layer());
+  ASSERT_TRUE(layer_dest_root->replica_layer());
+  EXPECT_EQ(layer_src_root->mask_layer()->id(),
+            layer_dest_root->mask_layer()->id());
+  // TODO(nyquist): Add test for is_mask_ when PictureLayer is supported.
+  EXPECT_EQ(layer_src_root->replica_layer()->id(),
+            layer_dest_root->replica_layer()->id());
+
+  // Store the newly constructed layer structure in the id map.
+  dest_layer_map[layer_dest_root->id()] = layer_dest_root;
+  dest_layer_map[layer_dest_root->mask_layer()->id()] =
+      layer_dest_root->mask_layer();
+  dest_layer_map[layer_dest_root->replica_layer()->id()] =
+      layer_dest_root->replica_layer();
+
+  // Clear mask and replica layers.
+  layer_src_root->mask_layer()->RemoveFromParent();
+  layer_src_root->replica_layer()->RemoveFromParent();
+
+  // Serialization 2.
+  proto::LayerNode proto2;
+  layer_src_root->ToLayerNodeProto(&proto2);
+
+  // Deserialization 2.
+  layer_dest_root->FromLayerNodeProto(proto2, dest_layer_map);
+
+  EXPECT_EQ(nullptr, layer_dest_root->mask_layer());
+  EXPECT_EQ(nullptr, layer_dest_root->replica_layer());
 }
 
 }  // namespace

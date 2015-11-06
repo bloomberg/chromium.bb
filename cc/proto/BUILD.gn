@@ -30,6 +30,7 @@ proto_library("proto_internal") {
     # TODO(dtrainor): Move protos to their correct packages once it's possible
     # to include protos from other directories/targets (crbug.com/542423).
     "display_item.proto",
+    "layer.proto",
     "point.proto",
     "pointf.proto",
     "rect.proto",
