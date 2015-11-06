@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/metrics/field_trial.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
 #include "chrome/browser/search/search.h"
@@ -20,9 +21,10 @@
 #include "components/toolbar/toolbar_model.h"
 #include "components/variations/entropy_provider.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/common/content_constants.h"
 #include "content/public/common/ssl_status.h"
 #include "content/public/common/url_constants.h"
-
+#include "ui/gfx/text_elider.h"
 
 // Test data ------------------------------------------------------------------
 
@@ -153,6 +155,7 @@ class ToolbarModelTest : public BrowserWithTestWindowTest {
                             const base::string16& expected_text,
                             bool would_perform_search_term_replacement,
                             bool should_display_url);
+  void NavigateAndCheckElided(const GURL& https_url);
 
  private:
   scoped_ptr<base::FieldTrialList> field_trial_list_;
@@ -222,6 +225,27 @@ void ToolbarModelTest::NavigateAndCheckText(
   // Tell the ToolbarModel that the user has stopped editing.  This prevents
   // this function from having side effects.
   toolbar_model->set_input_in_progress(false);
+}
+
+void ToolbarModelTest::NavigateAndCheckElided(const GURL& url) {
+  // Check while loading.
+  content::NavigationController* controller =
+      &browser()->tab_strip_model()->GetWebContentsAt(0)->GetController();
+  controller->LoadURL(url, content::Referrer(), ui::PAGE_TRANSITION_LINK,
+                      std::string());
+  ToolbarModel* toolbar_model = browser()->toolbar_model();
+  const base::string16 toolbar_text_before(toolbar_model->GetText());
+  EXPECT_LT(toolbar_text_before.size(), url.spec().size());
+  EXPECT_TRUE(base::EndsWith(toolbar_text_before,
+                             base::string16(gfx::kEllipsisUTF16),
+                             base::CompareCase::SENSITIVE));
+  // Check after commit.
+  CommitPendingLoad(controller);
+  const base::string16 toolbar_text_after(toolbar_model->GetText());
+  EXPECT_LT(toolbar_text_after.size(), url.spec().size());
+  EXPECT_TRUE(base::EndsWith(toolbar_text_after,
+                             base::string16(gfx::kEllipsisUTF16),
+                             base::CompareCase::SENSITIVE));
 }
 
 class PopupToolbarModelTest : public ToolbarModelTest {
@@ -326,6 +350,14 @@ TEST_F(ToolbarModelTest, GoogleBaseURL) {
   NavigateAndCheckText(
       GURL("http://www.foo.com/search?q=tractor+supply&espv=1"),
       base::ASCIIToUTF16("tractor supply"), true, true);
+}
+
+TEST_F(ToolbarModelTest, ShouldElideLongURLs) {
+  AddTab(browser(), GURL(url::kAboutBlankURL));
+  const std::string long_text(content::kMaxURLDisplayChars + 1024, '0');
+  NavigateAndCheckElided(
+      GURL(std::string("https://www.foo.com/?") + long_text));
+  NavigateAndCheckElided(GURL(std::string("data:abc") + long_text));
 }
 
 // Test that URL display in a popup respects the query extraction flag.
