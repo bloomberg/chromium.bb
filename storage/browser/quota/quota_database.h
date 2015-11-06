@@ -36,6 +36,20 @@ class SpecialStoragePolicy;
 // All the methods of this class must run on the DB thread.
 class STORAGE_EXPORT_PRIVATE QuotaDatabase {
  public:
+  struct STORAGE_EXPORT_PRIVATE OriginInfoTableEntry {
+    OriginInfoTableEntry();
+    OriginInfoTableEntry(const GURL& origin,
+                         StorageType type,
+                         int used_count,
+                         const base::Time& last_access_time,
+                         const base::Time& last_modified_time);
+    GURL origin;
+    StorageType type;
+    int used_count;
+    base::Time last_access_time;
+    base::Time last_modified_time;
+  };
+
   // Constants for {Get,Set}QuotaConfigValue keys.
   static const char kDesiredAvailableSpaceKey[];
   static const char kTemporaryQuotaOverrideKey[];
@@ -46,7 +60,10 @@ class STORAGE_EXPORT_PRIVATE QuotaDatabase {
 
   void CloseConnection();
 
+  // Returns whether the record could be found.
   bool GetHostQuota(const std::string& host, StorageType type, int64* quota);
+
+  // Returns whether the operation succeeded.
   bool SetHostQuota(const std::string& host, StorageType type, int64 quota);
   bool DeleteHostQuota(const std::string& host, StorageType type);
 
@@ -58,9 +75,14 @@ class STORAGE_EXPORT_PRIVATE QuotaDatabase {
                                  StorageType type,
                                  base::Time last_modified_time);
 
+  // Gets the time |origin| was last evicted. Returns whether the record could
+  // be found.
   bool GetOriginLastEvictionTime(const GURL& origin,
                                  StorageType type,
                                  base::Time* last_eviction_time);
+
+  // Sets the time the origin was last evicted. Returns whether the operation
+  // succeeded.
   bool SetOriginLastEvictionTime(const GURL& origin,
                                  StorageType type,
                                  base::Time last_eviction_time);
@@ -71,6 +93,12 @@ class STORAGE_EXPORT_PRIVATE QuotaDatabase {
   // the database schema reset.
   bool RegisterInitialOriginInfo(
       const std::set<GURL>& origins, StorageType type);
+
+  // Gets the OriginInfoTableEntry for |origin|. Returns whether the record
+  // could be found.
+  bool GetOriginInfo(const GURL& origin,
+                     StorageType type,
+                     OriginInfoTableEntry* entry);
 
   bool DeleteOriginInfo(const GURL& origin, StorageType type);
 
@@ -87,7 +115,7 @@ class STORAGE_EXPORT_PRIVATE QuotaDatabase {
                     GURL* origin);
 
   // Populates |origins| with the ones that have been modified since
-  // the |modified_since|.
+  // the |modified_since|. Returns whether the operation succeeded.
   bool GetOriginsModifiedSince(StorageType type,
                                std::set<GURL>* origins,
                                base::Time modified_since);
@@ -111,21 +139,6 @@ class STORAGE_EXPORT_PRIVATE QuotaDatabase {
   };
   friend STORAGE_EXPORT_PRIVATE bool operator <(
       const QuotaTableEntry& lhs, const QuotaTableEntry& rhs);
-
-  struct STORAGE_EXPORT_PRIVATE OriginInfoTableEntry {
-    OriginInfoTableEntry();
-    OriginInfoTableEntry(
-        const GURL& origin,
-        StorageType type,
-        int used_count,
-        const base::Time& last_access_time,
-        const base::Time& last_modified_time);
-    GURL origin;
-    StorageType type;
-    int used_count;
-    base::Time last_access_time;
-    base::Time last_modified_time;
-  };
   friend STORAGE_EXPORT_PRIVATE bool operator <(
       const OriginInfoTableEntry& lhs, const OriginInfoTableEntry& rhs);
 

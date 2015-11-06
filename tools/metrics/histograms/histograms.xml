@@ -36986,9 +36986,25 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Quota.EvictedOriginAccessCount">
+  <owner>calamity@chromium.org</owner>
+  <summary>
+    The number of times the evicted origin was accessed. Logged when the origin
+    is evicted.
+  </summary>
+</histogram>
+
 <histogram name="Quota.EvictedOriginsPerHour">
   <owner>tzik@chromium.org</owner>
   <summary>Number of evicted origins in an hour.</summary>
+</histogram>
+
+<histogram name="Quota.EvictedOriginTimeSinceAccess">
+  <owner>calamity@chromium.org</owner>
+  <summary>
+    The time since the evicted origin was last accessed. Logged when the origin
+    is evicted.
+  </summary>
 </histogram>
 
 <histogram name="Quota.EvictionRoundsPerHour">

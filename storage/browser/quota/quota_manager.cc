@@ -76,6 +76,10 @@ const int QuotaManager::kEvictionIntervalInMilliSeconds =
 
 const char QuotaManager::kTimeBetweenRepeatedOriginEvictionsHistogram[] =
     "Quota.TimeBetweenRepeatedOriginEvictions";
+const char QuotaManager::kEvictedOriginAccessedCountHistogram[] =
+    "Quota.EvictedOriginAccessCount";
+const char QuotaManager::kEvictedOriginTimeSinceAccessHistogram[] =
+    "Quota.EvictedOriginTimeSinceAccess";
 
 // Heuristics: assuming average cloud server allows a few Gigs storage
 // on the server side and the storage needs to be shared for user data
@@ -159,6 +163,19 @@ bool DeleteOriginInfoOnDBThread(const GURL& origin,
                                 bool is_eviction,
                                 QuotaDatabase* database) {
   DCHECK(database);
+
+  base::Time now = base::Time::Now();
+
+  if (is_eviction) {
+    QuotaDatabase::OriginInfoTableEntry entry;
+    database->GetOriginInfo(origin, type, &entry);
+    UMA_HISTOGRAM_COUNTS(QuotaManager::kEvictedOriginAccessedCountHistogram,
+                         entry.used_count);
+    UMA_HISTOGRAM_LONG_TIMES(
+        QuotaManager::kEvictedOriginTimeSinceAccessHistogram,
+        now - entry.last_access_time);
+  }
+
   if (!database->DeleteOriginInfo(origin, type))
     return false;
 
@@ -168,10 +185,8 @@ bool DeleteOriginInfoOnDBThread(const GURL& origin,
     return database->DeleteOriginLastEvictionTime(origin, type);
 
   base::Time last_eviction_time;
-  if (!database->GetOriginLastEvictionTime(origin, type, &last_eviction_time))
-    return false;
+  database->GetOriginLastEvictionTime(origin, type, &last_eviction_time);
 
-  base::Time now = base::Time::Now();
   if (last_eviction_time != base::Time()) {
     UMA_HISTOGRAM_LONG_TIMES(
         QuotaManager::kTimeBetweenRepeatedOriginEvictionsHistogram,

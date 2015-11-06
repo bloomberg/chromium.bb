@@ -275,7 +275,7 @@ bool QuotaDatabase::GetOriginLastEvictionTime(const GURL& origin,
   statement.BindInt(1, static_cast<int>(type));
 
   if (!statement.Step())
-    return statement.Succeeded();
+    return false;
 
   *last_modified_time = base::Time::FromInternalValue(statement.ColumnInt64(0));
   return true;
@@ -343,6 +343,31 @@ bool QuotaDatabase::RegisterInitialOriginInfo(
   }
 
   ScheduleCommit();
+  return true;
+}
+
+bool QuotaDatabase::GetOriginInfo(const GURL& origin,
+                                  StorageType type,
+                                  QuotaDatabase::OriginInfoTableEntry* entry) {
+  if (!LazyOpen(false))
+    return false;
+
+  const char* kSql =
+      "SELECT * FROM OriginInfoTable"
+      " WHERE origin = ? AND type = ?";
+  sql::Statement statement(db_->GetCachedStatement(SQL_FROM_HERE, kSql));
+  statement.BindString(0, origin.spec());
+  statement.BindInt(1, static_cast<int>(type));
+
+  if (!statement.Step())
+    return false;
+
+  *entry = OriginInfoTableEntry(
+      GURL(statement.ColumnString(0)),
+      static_cast<StorageType>(statement.ColumnInt(1)), statement.ColumnInt(2),
+      base::Time::FromInternalValue(statement.ColumnInt64(3)),
+      base::Time::FromInternalValue(statement.ColumnInt64(4)));
+
   return true;
 }
 

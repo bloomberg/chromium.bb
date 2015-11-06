@@ -277,6 +277,8 @@ class STORAGE_EXPORT QuotaManager
   static const int kEvictionIntervalInMilliSeconds;
 
   static const char kTimeBetweenRepeatedOriginEvictionsHistogram[];
+  static const char kEvictedOriginAccessedCountHistogram[];
+  static const char kEvictedOriginTimeSinceAccessHistogram[];
 
   // These are kept non-const so that test code can change the value.
   // TODO(kinuko): Make this a real const value and add a proper way to set

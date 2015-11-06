@@ -306,8 +306,8 @@ class QuotaDatabaseTest : public testing::Test {
     const GURL kOrigin3("http://c/");
 
     base::Time last_eviction_time;
-    EXPECT_TRUE(db.GetOriginLastEvictionTime(kOrigin1, kStorageTypeTemporary,
-                                             &last_eviction_time));
+    EXPECT_FALSE(db.GetOriginLastEvictionTime(kOrigin1, kStorageTypeTemporary,
+                                              &last_eviction_time));
     EXPECT_EQ(base::Time(), last_eviction_time);
 
     // Report last eviction time for the test origins.
@@ -337,14 +337,14 @@ class QuotaDatabaseTest : public testing::Test {
         db.DeleteOriginLastEvictionTime(kOrigin3, kStorageTypeTemporary));
 
     last_eviction_time = base::Time();
-    EXPECT_TRUE(db.GetOriginLastEvictionTime(kOrigin1, kStorageTypeTemporary,
-                                             &last_eviction_time));
+    EXPECT_FALSE(db.GetOriginLastEvictionTime(kOrigin1, kStorageTypeTemporary,
+                                              &last_eviction_time));
     EXPECT_EQ(base::Time(), last_eviction_time);
-    EXPECT_TRUE(db.GetOriginLastEvictionTime(kOrigin2, kStorageTypeTemporary,
-                                             &last_eviction_time));
+    EXPECT_FALSE(db.GetOriginLastEvictionTime(kOrigin2, kStorageTypeTemporary,
+                                              &last_eviction_time));
     EXPECT_EQ(base::Time(), last_eviction_time);
-    EXPECT_TRUE(db.GetOriginLastEvictionTime(kOrigin3, kStorageTypeTemporary,
-                                             &last_eviction_time));
+    EXPECT_FALSE(db.GetOriginLastEvictionTime(kOrigin3, kStorageTypeTemporary,
+                                              &last_eviction_time));
     EXPECT_EQ(base::Time(), last_eviction_time);
 
     // Deleting an origin that is not present should not fail.
@@ -443,6 +443,36 @@ class QuotaDatabaseTest : public testing::Test {
     EXPECT_TRUE(db.DumpOriginInfoTable(
         base::Bind(&Verifier::Run, base::Unretained(&verifier))));
     EXPECT_TRUE(verifier.table.empty());
+  }
+
+  void GetOriginInfo(const base::FilePath& kDbFile) {
+    const GURL kOrigin = GURL("http://go/");
+    typedef QuotaDatabase::OriginInfoTableEntry Entry;
+    Entry kTableEntries[] = {
+        Entry(kOrigin, kStorageTypeTemporary, 100, base::Time(), base::Time())};
+    Entry* begin = kTableEntries;
+    Entry* end = kTableEntries + arraysize(kTableEntries);
+
+    QuotaDatabase db(kDbFile);
+    EXPECT_TRUE(db.LazyOpen(true));
+    AssignOriginInfoTable(db.db_.get(), begin, end);
+    db.Commit();
+
+    {
+      Entry entry;
+      EXPECT_TRUE(db.GetOriginInfo(kOrigin, kStorageTypeTemporary, &entry));
+      EXPECT_EQ(kTableEntries[0].type, entry.type);
+      EXPECT_EQ(kTableEntries[0].origin, entry.origin);
+      EXPECT_EQ(kTableEntries[0].used_count, entry.used_count);
+      EXPECT_EQ(kTableEntries[0].last_access_time, entry.last_access_time);
+      EXPECT_EQ(kTableEntries[0].last_modified_time, entry.last_modified_time);
+    }
+
+    {
+      Entry entry;
+      EXPECT_FALSE(db.GetOriginInfo(GURL("http://notpresent.org/"),
+                                    kStorageTypeTemporary, &entry));
+    }
   }
 
  private:
@@ -643,6 +673,10 @@ TEST_F(QuotaDatabaseTest, DumpOriginInfoTable) {
   const base::FilePath kDbFile = data_dir.path().AppendASCII(kDBFileName);
   DumpOriginInfoTable(kDbFile);
   DumpOriginInfoTable(base::FilePath());
+}
+
+TEST_F(QuotaDatabaseTest, GetOriginInfo) {
+  GetOriginInfo(base::FilePath());
 }
 
 TEST_F(QuotaDatabaseTest, OpenCorruptedDatabase) {

@@ -1361,7 +1361,7 @@ TEST_F(QuotaManagerTest, EvictOriginData) {
 }
 
 TEST_F(QuotaManagerTest, EvictOriginDataHistogram) {
-  const GURL kOrigin = GURL("http://foo.com");
+  const GURL kOrigin = GURL("http://foo.com/");
   static const MockOriginData kData[] = {
       {"http://foo.com/", kTemp, 1},
   };
@@ -1374,31 +1374,52 @@ TEST_F(QuotaManagerTest, EvictOriginDataHistogram) {
   GetGlobalUsage(kTemp);
   base::RunLoop().RunUntilIdle();
 
-  EvictOriginData(GURL("http://foo.com/"), kTemp);
+  EvictOriginData(kOrigin, kTemp);
   base::RunLoop().RunUntilIdle();
+
+  // Ensure used count and time since access are recorded.
+  histograms.ExpectTotalCount(
+      QuotaManager::kEvictedOriginAccessedCountHistogram, 1);
+  histograms.ExpectBucketCount(
+      QuotaManager::kEvictedOriginAccessedCountHistogram, 0, 1);
+  histograms.ExpectTotalCount(
+      QuotaManager::kEvictedOriginTimeSinceAccessHistogram, 1);
 
   // First eviction has no 'last' time to compare to.
   histograms.ExpectTotalCount(
       QuotaManager::kTimeBetweenRepeatedOriginEvictionsHistogram, 0);
 
-  client->AddOriginAndNotify(GURL("http://foo.com"), kTemp, 100);
+  client->AddOriginAndNotify(kOrigin, kTemp, 100);
+
+  // Change the used count of the origin.
+  quota_manager()->NotifyStorageAccessed(QuotaClient::kUnknown, GURL(kOrigin),
+                                         kTemp);
+  base::RunLoop().RunUntilIdle();
 
   GetGlobalUsage(kTemp);
   base::RunLoop().RunUntilIdle();
 
-  EvictOriginData(GURL("http://foo.com/"), kTemp);
+  EvictOriginData(kOrigin, kTemp);
   base::RunLoop().RunUntilIdle();
 
-  // Second eviction should log a histogram sample.
+  // The new used count should be logged.
+  histograms.ExpectTotalCount(
+      QuotaManager::kEvictedOriginAccessedCountHistogram, 2);
+  histograms.ExpectBucketCount(
+      QuotaManager::kEvictedOriginAccessedCountHistogram, 1, 1);
+  histograms.ExpectTotalCount(
+      QuotaManager::kEvictedOriginTimeSinceAccessHistogram, 2);
+
+  // Second eviction should log a 'time between repeated eviction' sample.
   histograms.ExpectTotalCount(
       QuotaManager::kTimeBetweenRepeatedOriginEvictionsHistogram, 1);
 
-  client->AddOriginAndNotify(GURL("http://foo.com"), kTemp, 100);
+  client->AddOriginAndNotify(kOrigin, kTemp, 100);
 
   GetGlobalUsage(kTemp);
   base::RunLoop().RunUntilIdle();
 
-  DeleteOriginFromDatabase(GURL("http://foo.com"), kTemp);
+  DeleteOriginFromDatabase(kOrigin, kTemp);
 
   // Deletion from non-eviction source should not log a histogram sample.
   histograms.ExpectTotalCount(
