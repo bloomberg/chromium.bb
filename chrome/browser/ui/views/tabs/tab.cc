@@ -625,6 +625,17 @@ int Tab::GetImmersiveHeight() {
   return kImmersiveTabHeight;
 }
 
+// static
+int Tab::GetYOffsetForActiveTabBackground() {
+  // The computed value here is strangely less than the height of the area atop
+  // the tab that doesn't get a background painted; otherwise, we could compute
+  // the value by simply using GetLayoutInsets(TAB).top().  My suspicion is that
+  // originally there was some sort of off-by-one error in how this background
+  // was painted, and theme authors compensated; now we're stuck perpetuating it
+  // as a result.
+  return -GetLayoutConstant(TAB_TOP_EXCLUSION_HEIGHT) - 1;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Tab, AnimationDelegate overrides:
 
@@ -1130,9 +1141,10 @@ void Tab::PaintTabBackground(gfx::Canvas* canvas) {
   const int kActiveTabFillId = IDR_THEME_TOOLBAR;
   const bool has_custom_image =
       GetThemeProvider()->HasCustomImage(kActiveTabFillId);
+  const int y_offset = GetYOffsetForActiveTabBackground();
   if (IsActive()) {
     PaintTabBackgroundUsingFillId(canvas, true, kActiveTabFillId,
-                                  has_custom_image, 0);
+                                  has_custom_image, y_offset);
   } else {
     if (pinned_title_change_animation_ &&
         pinned_title_change_animation_->is_animating())
@@ -1145,7 +1157,7 @@ void Tab::PaintTabBackground(gfx::Canvas* canvas) {
       canvas->SaveLayerAlpha(gfx::ToRoundedInt(throb_value * 0xff),
                              GetLocalBounds());
       PaintTabBackgroundUsingFillId(canvas, true, kActiveTabFillId,
-                                    has_custom_image, 0);
+                                    has_custom_image, y_offset);
       canvas->Restore();
     }
   }
@@ -1187,7 +1199,7 @@ void Tab::PaintInactiveTabBackground(gfx::Canvas* canvas) {
   // should be at the top of the tab. Otherwise, we assume that the background
   // image is a composited foreground + frame image.
   const int y_offset = GetThemeProvider()->HasCustomImage(fill_id) ?
-      0 : background_offset_.y();
+      -GetLayoutConstant(TAB_TOP_EXCLUSION_HEIGHT) : background_offset_.y();
 
   // We only cache the image when it's the default image and we're not hovered,
   // to avoid caching a background image that isn't the same for all tabs.

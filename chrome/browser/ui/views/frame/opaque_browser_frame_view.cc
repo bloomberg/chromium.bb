@@ -686,10 +686,10 @@ void OpaqueBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) {
   // Tile the toolbar image starting at the frame edge on the left and where the
   // horizontal tabstrip is (or would be) on the top.
   gfx::ImageSkia* theme_toolbar = tp->GetImageSkiaNamed(IDR_THEME_TOOLBAR);
-  canvas->TileImageInt(*theme_toolbar,
-                       x + GetThemeBackgroundXInset(),
-                       bottom_y - GetTopInset(),
-                       x, bottom_y, w, theme_toolbar->height());
+  canvas->TileImageInt(
+      *theme_toolbar, x + GetThemeBackgroundXInset(),
+      bottom_y - GetTopInset() + Tab::GetYOffsetForActiveTabBackground(),
+      x, bottom_y, w, theme_toolbar->height());
 
   // Draw rounded corners for the tab.
   gfx::ImageSkia* toolbar_left_mask =

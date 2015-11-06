@@ -154,6 +154,15 @@ class Tab : public gfx::AnimationDelegate,
   // Returns the height for immersive mode tabs.
   static int GetImmersiveHeight();
 
+  // Returns the Y offset within the tab background image to begin drawing at
+  // the top of the active tab bounds.  This is a negative value, which will
+  // result in the top of the tab background image being drawn below the top of
+  // the tab.  None of this offset area is actually visible.
+  //
+  // This is necessary for correct vertical alignment of the frame, tab, and
+  // toolbar images with custom themes.
+  static int GetYOffsetForActiveTabBackground();
+
  private:
   friend class TabTest;
   FRIEND_TEST_ALL_PREFIXES(TabTest, CloseButtonLayout);

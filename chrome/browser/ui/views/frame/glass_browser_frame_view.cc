@@ -365,9 +365,10 @@ void GlassBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) {
   const int kPreMDToolbarTopEdgeExclusion = 2;
   if (browser_view()->IsTabStripVisible())
     dest_y += kPreMDToolbarTopEdgeExclusion;
-  canvas->TileImageInt(*theme_toolbar, x + GetThemeBackgroundXInset(),
-                       dest_y - GetTopInset(), x, dest_y, w,
-                       theme_toolbar->height());
+  canvas->TileImageInt(
+      *theme_toolbar, x + GetThemeBackgroundXInset(),
+      dest_y - GetTopInset() + Tab::GetYOffsetForActiveTabBackground(),
+      x, dest_y, w, theme_toolbar->height());
 
   // Toolbar edges.
   if (browser_view()->IsTabStripVisible()) {
