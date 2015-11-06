@@ -17,6 +17,7 @@ class Profile;
 
 namespace ui {
 class CandidateWindow;
+struct CompositionText;
 class KeyEvent;
 
 namespace ime {
@@ -25,8 +26,6 @@ struct InputMethodMenuItem;
 }  // namespace ui
 
 namespace chromeos {
-
-class CompositionText;
 
 namespace input_method {
 struct KeyEventHandle;
@@ -124,7 +123,7 @@ class InputMethodEngine : public InputMethodEngineInterface {
   scoped_ptr<InputMethodEngineInterface::Observer> observer_;
 
   // The current preedit text, and it's cursor position.
-  scoped_ptr<CompositionText> composition_text_;
+  scoped_ptr<ui::CompositionText> composition_text_;
   int composition_cursor_;
 
   // The current candidate window.

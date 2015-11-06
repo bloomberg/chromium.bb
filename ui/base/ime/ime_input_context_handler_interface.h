@@ -7,11 +7,8 @@
 
 #include <string>
 #include "base/basictypes.h"
+#include "ui/base/ime/composition_text.h"
 #include "ui/base/ime/ui_base_ime_export.h"
-
-namespace chromeos {
-class CompositionText;
-}
 
 namespace ui {
 
@@ -21,7 +18,7 @@ class UI_BASE_IME_EXPORT IMEInputContextHandlerInterface {
   virtual void CommitText(const std::string& text) = 0;
 
   // Called when the engine updates composition text.
-  virtual void UpdateCompositionText(const chromeos::CompositionText& text,
+  virtual void UpdateCompositionText(const CompositionText& text,
                                      uint32 cursor_pos,
                                      bool visible) = 0;
 

@@ -36,8 +36,6 @@
         'chromeos/character_composer.h',
         'chromeos/component_extension_ime_manager.cc',
         'chromeos/component_extension_ime_manager.h',
-        'chromeos/composition_text_chromeos.cc',
-        'chromeos/composition_text_chromeos.h',
         'chromeos/extension_ime_util.cc',
         'chromeos/extension_ime_util.h',
         'chromeos/fake_ime_keyboard.cc',

@@ -42,7 +42,7 @@ class UI_BASE_IME_EXPORT InputMethodChromeOS
 
  protected:
   // Converts |text| into CompositionText.
-  void ExtractCompositionText(const chromeos::CompositionText& text,
+  void ExtractCompositionText(const CompositionText& text,
                               uint32 cursor_position,
                               CompositionText* out_composition) const;
 
@@ -99,7 +99,7 @@ class UI_BASE_IME_EXPORT InputMethodChromeOS
 
   // ui::IMEInputContextHandlerInterface overrides:
   void CommitText(const std::string& text) override;
-  void UpdateCompositionText(const chromeos::CompositionText& text,
+  void UpdateCompositionText(const CompositionText& text,
                              uint32 cursor_pos,
                              bool visible) override;
   void DeleteSurroundingText(int32 offset, uint32 length) override;

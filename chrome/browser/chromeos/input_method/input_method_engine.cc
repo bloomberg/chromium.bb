@@ -22,10 +22,10 @@
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/ime/candidate_window.h"
 #include "ui/base/ime/chromeos/component_extension_ime_manager.h"
-#include "ui/base/ime/chromeos/composition_text_chromeos.h"
 #include "ui/base/ime/chromeos/extension_ime_util.h"
 #include "ui/base/ime/chromeos/ime_keymap.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
+#include "ui/base/ime/composition_text.h"
 #include "ui/base/ime/ime_bridge.h"
 #include "ui/base/ime/text_input_flags.h"
 #include "ui/chromeos/ime/input_method_menu_item.h"
@@ -47,7 +47,7 @@ const char kErrorWrongContext[] = "Context is not active";
 const char kCandidateNotFound[] = "Candidate not found";
 
 // Notifies InputContextHandler that the composition is changed.
-void UpdateComposition(const CompositionText& composition_text,
+void UpdateComposition(const ui::CompositionText& composition_text,
                        uint32 cursor_pos,
                        bool is_visible) {
   ui::IMEInputContextHandlerInterface* input_context =
@@ -160,13 +160,12 @@ InputMethodEngine::InputMethodEngine()
     : current_input_type_(ui::TEXT_INPUT_TYPE_NONE),
       context_id_(0),
       next_context_id_(1),
-      composition_text_(new CompositionText()),
+      composition_text_(new ui::CompositionText()),
       composition_cursor_(0),
       candidate_window_(new ui::CandidateWindow()),
       window_visible_(false),
       sent_key_event_(NULL),
-      profile_(NULL) {
-}
+      profile_(NULL) {}
 
 InputMethodEngine::~InputMethodEngine() {
 }
@@ -205,34 +204,35 @@ bool InputMethodEngine::SetComposition(
   }
 
   composition_cursor_ = cursor;
-  composition_text_.reset(new CompositionText());
-  composition_text_->set_text(base::UTF8ToUTF16(text));
+  composition_text_.reset(new ui::CompositionText());
+  composition_text_->text = base::UTF8ToUTF16(text);
 
-  composition_text_->set_selection_start(selection_start);
-  composition_text_->set_selection_end(selection_end);
+  composition_text_->selection.set_start(selection_start);
+  composition_text_->selection.set_end(selection_end);
 
   // TODO: Add support for displaying selected text in the composition string.
   for (std::vector<SegmentInfo>::const_iterator segment = segments.begin();
        segment != segments.end(); ++segment) {
-    CompositionText::UnderlineAttribute underline;
+    ui::CompositionUnderline underline;
 
     switch (segment->style) {
       case SEGMENT_STYLE_UNDERLINE:
-        underline.type = CompositionText::COMPOSITION_TEXT_UNDERLINE_SINGLE;
+        underline.color = SK_ColorBLACK;
         break;
       case SEGMENT_STYLE_DOUBLE_UNDERLINE:
-        underline.type = CompositionText::COMPOSITION_TEXT_UNDERLINE_DOUBLE;
+        underline.color = SK_ColorBLACK;
+        underline.thick = true;
         break;
       case SEGMENT_STYLE_NO_UNDERLINE:
-        underline.type = CompositionText::COMPOSITION_TEXT_UNDERLINE_NONE;
+        underline.color = SK_ColorTRANSPARENT;
         break;
       default:
         continue;
     }
 
-    underline.start_index = segment->start;
-    underline.end_index = segment->end;
-    composition_text_->mutable_underline_attributes()->push_back(underline);
+    underline.start_offset = segment->start;
+    underline.end_offset = segment->end;
+    composition_text_->underlines.push_back(underline);
   }
 
   // TODO(nona): Makes focus out mode configuable, if necessary.
@@ -252,7 +252,7 @@ bool InputMethodEngine::ClearComposition(int context_id,
   }
 
   composition_cursor_ = 0;
-  composition_text_.reset(new CompositionText());
+  composition_text_.reset(new ui::CompositionText());
   UpdateComposition(*composition_text_, composition_cursor_, false);
   return true;
 }
@@ -272,11 +272,11 @@ bool InputMethodEngine::CommitText(int context_id, const char* text,
   ui::IMEBridge::Get()->GetInputContextHandler()->CommitText(text);
 
   // Records histograms for committed characters.
-  if (!composition_text_->text().empty()) {
+  if (!composition_text_->text.empty()) {
     size_t len = GetUtf8StringLength(text);
     UMA_HISTOGRAM_CUSTOM_COUNTS("InputMethod.CommitLength",
                                 len, 1, 25, 25);
-    composition_text_.reset(new CompositionText());
+    composition_text_.reset(new ui::CompositionText());
   }
   return true;
 }
@@ -594,8 +594,8 @@ void InputMethodEngine::Disable() {
     return;
   active_component_id_.clear();
   ui::IMEBridge::Get()->GetInputContextHandler()->CommitText(
-      base::UTF16ToUTF8(composition_text_->text()));
-  composition_text_.reset(new CompositionText());
+      base::UTF16ToUTF8(composition_text_->text));
+  composition_text_.reset(new ui::CompositionText());
   observer_->OnDeactivated(active_component_id_);
 }
 
@@ -608,7 +608,7 @@ void InputMethodEngine::PropertyActivate(const std::string& property_name) {
 void InputMethodEngine::Reset() {
   if (!CheckProfile())
     return;
-  composition_text_.reset(new CompositionText());
+  composition_text_.reset(new ui::CompositionText());
   observer_->OnReset(active_component_id_);
 }
 
