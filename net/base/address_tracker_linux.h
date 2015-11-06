@@ -138,6 +138,10 @@ class NET_EXPORT_PRIVATE AddressTrackerLinux :
   // Updates current_connection_type_ based on the network list.
   void UpdateCurrentConnectionType();
 
+  // Used by AddressTrackerLinuxTest, returns the number of threads waiting
+  // for |connection_type_initialized_cv_|.
+  int GetThreadsWaitingForConnectionTypeInitForTesting();
+
   // Gets the name of an interface given the interface index |interface_index|.
   // May return empty string if it fails but should not return NULL. This is
   // overridden by tests.
@@ -165,6 +169,7 @@ class NET_EXPORT_PRIVATE AddressTrackerLinux :
   base::ConditionVariable connection_type_initialized_cv_;
   NetworkChangeNotifier::ConnectionType current_connection_type_;
   bool tracking_;
+  int threads_waiting_for_connection_type_initialization_;
 
   // Used to verify single-threaded access in non-tracking mode.
   base::ThreadChecker thread_checker_;

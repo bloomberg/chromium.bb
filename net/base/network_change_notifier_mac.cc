@@ -157,7 +157,7 @@ void NetworkChangeNotifierMac::SetInitialConnectionType() {
     base::AutoLock lock(connection_type_lock_);
     connection_type_ = connection_type;
     connection_type_initialized_ = true;
-    initial_connection_type_cv_.Signal();
+    initial_connection_type_cv_.Broadcast();
   }
 }
 

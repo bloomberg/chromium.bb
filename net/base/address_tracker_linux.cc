@@ -119,7 +119,8 @@ AddressTrackerLinux::AddressTrackerLinux()
       connection_type_initialized_(false),
       connection_type_initialized_cv_(&connection_type_lock_),
       current_connection_type_(NetworkChangeNotifier::CONNECTION_NONE),
-      tracking_(false) {
+      tracking_(false),
+      threads_waiting_for_connection_type_initialization_(0) {
 }
 
 AddressTrackerLinux::AddressTrackerLinux(
@@ -136,7 +137,8 @@ AddressTrackerLinux::AddressTrackerLinux(
       connection_type_initialized_(false),
       connection_type_initialized_cv_(&connection_type_lock_),
       current_connection_type_(NetworkChangeNotifier::CONNECTION_NONE),
-      tracking_(true) {
+      tracking_(true),
+      threads_waiting_for_connection_type_initialization_(0) {
   DCHECK(!address_callback.is_null());
   DCHECK(!link_callback.is_null());
 }
@@ -221,7 +223,7 @@ void AddressTrackerLinux::Init() {
   {
     AddressTrackerAutoLock lock(*this, connection_type_lock_);
     connection_type_initialized_ = true;
-    connection_type_initialized_cv_.Signal();
+    connection_type_initialized_cv_.Broadcast();
   }
 
   if (tracking_) {
@@ -240,7 +242,7 @@ void AddressTrackerLinux::AbortAndForceOnline() {
   AddressTrackerAutoLock lock(*this, connection_type_lock_);
   current_connection_type_ = NetworkChangeNotifier::CONNECTION_UNKNOWN;
   connection_type_initialized_ = true;
-  connection_type_initialized_cv_.Signal();
+  connection_type_initialized_cv_.Broadcast();
 }
 
 AddressTrackerLinux::AddressMap AddressTrackerLinux::GetAddressMap() const {
@@ -268,9 +270,11 @@ AddressTrackerLinux::GetCurrentConnectionType() {
   base::ThreadRestrictions::ScopedAllowWait allow_wait;
   AddressTrackerAutoLock lock(*this, connection_type_lock_);
   // Make sure the initial connection type is set before returning.
+  threads_waiting_for_connection_type_initialization_++;
   while (!connection_type_initialized_) {
     connection_type_initialized_cv_.Wait();
   }
+  threads_waiting_for_connection_type_initialization_--;
   return current_connection_type_;
 }
 
@@ -465,6 +469,12 @@ void AddressTrackerLinux::UpdateCurrentConnectionType() {
 
   AddressTrackerAutoLock lock(*this, connection_type_lock_);
   current_connection_type_ = type;
+}
+
+int AddressTrackerLinux::GetThreadsWaitingForConnectionTypeInitForTesting()
+{
+  AddressTrackerAutoLock lock(*this, connection_type_lock_);
+  return threads_waiting_for_connection_type_initialization_;
 }
 
 AddressTrackerLinux::AddressTrackerAutoLock::AddressTrackerAutoLock(

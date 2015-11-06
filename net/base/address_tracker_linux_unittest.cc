@@ -3,6 +3,9 @@
 // found in the LICENSE file.
 
 #include "base/memory/scoped_ptr.h"
+#include "base/synchronization/spin_wait.h"
+#include "base/synchronization/waitable_event.h"
+#include "base/threading/simple_thread.h"
 #include "net/base/address_tracker_linux.h"
 
 #include <linux/if.h>
@@ -103,6 +106,10 @@ class AddressTrackerLinuxTest : public testing::Test {
 
   void IgnoreInterface(const std::string& interface_name) {
     ignored_interfaces_.insert(interface_name);
+  }
+
+  int GetThreadsWaitingForConnectionTypeInit() {
+    return tracker_->GetThreadsWaitingForConnectionTypeInitForTesting();
   }
 
   base::hash_set<std::string> ignored_interfaces_;
@@ -676,6 +683,53 @@ TEST_F(AddressTrackerLinuxTest, NonTrackingMode) {
 TEST_F(AddressTrackerLinuxTest, NonTrackingModeInit) {
   AddressTrackerLinux tracker;
   tracker.Init();
+}
+
+class GetCurrentConnectionTypeRunner
+    : public base::DelegateSimpleThread::Delegate {
+ public:
+  explicit GetCurrentConnectionTypeRunner(AddressTrackerLinux* tracker,
+      const std::string& thread_name)
+      : tracker_(tracker), done_(true, false), thread_(this, thread_name) {
+  }
+  ~GetCurrentConnectionTypeRunner() override {}
+
+  void Run() override {
+    tracker_->GetCurrentConnectionType();
+    done_.Signal();
+  }
+
+  void Start() {
+    thread_.Start();
+  }
+
+  void VerifyCompletes() {
+    EXPECT_TRUE(done_.TimedWait(base::TimeDelta::FromSeconds(5)));
+    thread_.Join();
+  }
+
+ private:
+  AddressTrackerLinux* const tracker_;
+  base::WaitableEvent done_;
+  base::DelegateSimpleThread thread_;
+};
+
+TEST_F(AddressTrackerLinuxTest, BroadcastInit) {
+  InitializeAddressTracker(true);
+
+  GetCurrentConnectionTypeRunner runner1(tracker_.get(), "waiter_thread_1");
+  GetCurrentConnectionTypeRunner runner2(tracker_.get(), "waiter_thread_2");
+
+  runner1.Start();
+  runner2.Start();
+
+  SPIN_FOR_1_SECOND_OR_UNTIL_TRUE(
+      GetThreadsWaitingForConnectionTypeInit() == 2);
+
+  tracker_->Init();
+
+  runner1.VerifyCompletes();
+  runner2.VerifyCompletes();
 }
 
 }  // namespace
