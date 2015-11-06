@@ -21,7 +21,7 @@ namespace url_formatter {
 
 // ElideUrl and Elide host require
 // gfx::GetStringWidthF which is not implemented in Android
-#if !defined(OS_ANDROID)
+#if !defined(OS_ANDROID) || defined(USE_AURA)
 // This function takes a GURL object and elides it. It returns a string
 // which composed of parts from subdomain, domain, path, filename and query.
 // A "..." is added automatically at the end if the elided string is bigger
@@ -49,7 +49,7 @@ base::string16 ElideUrl(const GURL& url,
 base::string16 ElideHost(const GURL& host_url,
                          const gfx::FontList& font_list,
                          float available_pixel_width);
-#endif  // !defined(OS_ANDROID)
+#endif  // !defined(OS_ANDROID) || defined(USE_AURA)
 
 // This is a convenience function for formatting a URL in a concise and
 // human-friendly way, to help users make security-related decisions (or in

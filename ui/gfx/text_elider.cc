@@ -39,7 +39,7 @@ namespace gfx {
 
 namespace {
 
-#if defined(OS_ANDROID) || defined(OS_IOS)
+#if defined(OS_ANDROID) && !defined(USE_AURA) || defined(OS_IOS)
 // The returned string will have at least one character besides the ellipsis
 // on either side of '@'; if that's impossible, a single ellipsis is returned.
 // If possible, only the username is elided. Otherwise, the domain is elided
@@ -194,21 +194,7 @@ base::string16 ElideText(const base::string16& text,
                          const FontList& font_list,
                          float available_pixel_width,
                          ElideBehavior behavior) {
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
-  DCHECK_NE(behavior, FADE_TAIL);
-  scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
-  render_text->SetCursorEnabled(false);
-  // Do not bother accurately sizing strings over 5000 characters here, for
-  // performance purposes. This matches the behavior of Canvas::SizeStringFloat.
-  render_text->set_truncate_length(5000);
-  render_text->SetFontList(font_list);
-  available_pixel_width = std::ceil(available_pixel_width);
-  render_text->SetDisplayRect(
-      gfx::ToEnclosingRect(gfx::RectF(gfx::SizeF(available_pixel_width, 1))));
-  render_text->SetElideBehavior(behavior);
-  render_text->SetText(text);
-  return render_text->GetDisplayText();
-#else
+#if defined(OS_ANDROID) && !defined(USE_AURA) || defined(OS_IOS)
   DCHECK_NE(behavior, FADE_TAIL);
   if (text.empty() || behavior == FADE_TAIL || behavior == NO_ELIDE ||
       GetStringWidthF(text, font_list) <= available_pixel_width) {
@@ -252,6 +238,21 @@ base::string16 ElideText(const base::string16& text,
   }
 
   return cut;
+#else
+  DCHECK_NE(behavior, FADE_TAIL);
+  scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
+  render_text->SetCursorEnabled(false);
+  // TODO(bshe): 5000 is out dated. We should remove it. See crbug.com/551660.
+  // Do not bother accurately sizing strings over 5000 characters here, for
+  // performance purposes. This matches the behavior of Canvas::SizeStringFloat.
+  render_text->set_truncate_length(5000);
+  render_text->SetFontList(font_list);
+  available_pixel_width = std::ceil(available_pixel_width);
+  render_text->SetDisplayRect(
+      gfx::ToEnclosingRect(gfx::RectF(gfx::SizeF(available_pixel_width, 1))));
+  render_text->SetElideBehavior(behavior);
+  render_text->SetText(text);
+  return render_text->GetDisplayText();
 #endif
 }
 
