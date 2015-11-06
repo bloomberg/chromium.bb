@@ -59,4 +59,8 @@ mocha.setup({
   ui: 'tdd',
   // Use custom reporter to interface with BrowserTests.
   reporter: BrowserTestReporter,
+  // Mocha timeouts are set to 2 seconds initially. This isn't nearly enough for
+  // slower bots (e.g., Dr. Memory). Disable timeouts globally, because the C++
+  // will handle it (and has scaled timeouts for slower bots).
+  enableTimeouts: false,
 });
