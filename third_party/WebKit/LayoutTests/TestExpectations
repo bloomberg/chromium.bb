@@ -920,7 +920,7 @@ crbug.com/546538 svg/clip-path/clip-path-nonzero-evenodd.svg [ NeedsManualRebase
 crbug.com/425113 svg/clip-path/clip-path-multiple-children.svg [ Failure ]
 
 crbug.com/480769 http/tests/inspector/service-workers/service-workers-redundant.html [ Crash Pass Slow Failure ]
-crbug.com/528198 http/tests/inspector/service-workers/service-worker-agents.html [ Crash Pass Slow ]
+crbug.com/480769 http/tests/inspector/service-workers/service-worker-agents.html [ Crash Pass Timeout Slow ]
 
 crbug.com/472330 fast/borders/border-image-outset-split-inline-vertical-lr.html [ Failure ]
 crbug.com/472330 fast/writing-mode/box-shadow-vertical-lr.html [ Failure ]
