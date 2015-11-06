@@ -19,9 +19,6 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
-#include "base/process/kill.h"
-#include "base/process/launch.h"
-#include "base/process/process_handle.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/version.h"
@@ -29,13 +26,10 @@
 #include "base/win/windows_version.h"
 #include "chrome/installer/setup/setup_constants.h"
 #include "chrome/installer/util/app_registration_data.h"
-#include "chrome/installer/util/copy_tree_work_item.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/installation_state.h"
 #include "chrome/installer/util/installer_state.h"
-#include "chrome/installer/util/master_preferences.h"
 #include "chrome/installer/util/util_constants.h"
-#include "chrome/installer/util/work_item.h"
 #include "courgette/courgette.h"
 #include "courgette/third_party/bsdiff.h"
 #include "third_party/bspatch/mbspatch.h"
@@ -43,53 +37,6 @@
 namespace installer {
 
 namespace {
-
-// Launches |setup_exe| with |command_line|, save --install-archive and its
-// value if present. Returns false if the process failed to launch. Otherwise,
-// waits indefinitely for it to exit and populates |exit_code| as expected. On
-// the off chance that waiting itself fails, |exit_code| is set to
-// WAIT_FOR_EXISTING_FAILED.
-bool LaunchAndWaitForExistingInstall(const base::FilePath& setup_exe,
-                                     const base::CommandLine& command_line,
-                                     int* exit_code) {
-  DCHECK(exit_code);
-  base::CommandLine new_cl(setup_exe);
-
-  // Copy over all switches but --install-archive.
-  base::CommandLine::SwitchMap switches(command_line.GetSwitches());
-  switches.erase(switches::kInstallArchive);
-  for (base::CommandLine::SwitchMap::const_iterator i = switches.begin();
-       i != switches.end(); ++i) {
-    if (i->second.empty())
-      new_cl.AppendSwitch(i->first);
-    else
-      new_cl.AppendSwitchNative(i->first, i->second);
-  }
-
-  // Copy over all arguments.
-  base::CommandLine::StringVector args(command_line.GetArgs());
-  for (base::CommandLine::StringVector::const_iterator i = args.begin();
-       i != args.end(); ++i) {
-    new_cl.AppendArgNative(*i);
-  }
-
-  // Launch the process and wait for it to exit.
-  VLOG(1) << "Launching existing installer with command: "
-          << new_cl.GetCommandLineString();
-  base::Process process = base::LaunchProcess(new_cl, base::LaunchOptions());
-  if (!process.IsValid()) {
-    PLOG(ERROR) << "Failed to launch existing installer with command: "
-                << new_cl.GetCommandLineString();
-    return false;
-  }
-  if (!process.WaitForExit(exit_code)) {
-    PLOG(DFATAL) << "Failed to get exit code from existing installer";
-    *exit_code = WAIT_FOR_EXISTING_FAILED;
-  } else {
-    VLOG(1) << "Existing installer returned exit code " << *exit_code;
-  }
-  return true;
-}
 
 // Returns true if product |type| cam be meaningfully installed without the
 // --multi-install flag.
@@ -263,65 +210,6 @@ bool DeleteFileFromTempProcess(const base::FilePath& path,
   }
 
   return ok != FALSE;
-}
-
-bool GetExistingHigherInstaller(
-    const InstallationState& original_state,
-    bool system_install,
-    const Version& installer_version,
-    base::FilePath* setup_exe) {
-  DCHECK(setup_exe);
-  bool trying_single_browser = false;
-  const ProductState* existing_state =
-      original_state.GetProductState(system_install,
-                                     BrowserDistribution::CHROME_BINARIES);
-  if (!existing_state) {
-    // The binaries aren't installed, but perhaps a single-install Chrome is.
-    trying_single_browser = true;
-    existing_state =
-        original_state.GetProductState(system_install,
-                                       BrowserDistribution::CHROME_BROWSER);
-  }
-
-  if (!existing_state ||
-      existing_state->version().CompareTo(installer_version) <= 0) {
-    return false;
-  }
-
-  *setup_exe = existing_state->GetSetupPath();
-
-  VLOG_IF(1, !setup_exe->empty()) << "Found a higher version of "
-      << (trying_single_browser ? "single-install Chrome."
-          : "multi-install Chrome binaries.");
-
-  return !setup_exe->empty();
-}
-
-bool DeferToExistingInstall(const base::FilePath& setup_exe,
-                            const base::CommandLine& command_line,
-                            const InstallerState& installer_state,
-                            const base::FilePath& temp_path,
-                            InstallStatus* install_status) {
-  // Copy a master_preferences file if there is one.
-  base::FilePath prefs_source_path(command_line.GetSwitchValueNative(
-      switches::kInstallerData));
-  base::FilePath prefs_dest_path(installer_state.target_path().AppendASCII(
-      kDefaultMasterPrefs));
-  scoped_ptr<WorkItem> copy_prefs(WorkItem::CreateCopyTreeWorkItem(
-      prefs_source_path, prefs_dest_path, temp_path, WorkItem::ALWAYS,
-      base::FilePath()));
-  // There's nothing to rollback if the copy fails, so punt if so.
-  if (!copy_prefs->Do())
-    copy_prefs.reset();
-
-  int exit_code = 0;
-  if (!LaunchAndWaitForExistingInstall(setup_exe, command_line, &exit_code)) {
-    if (copy_prefs)
-      copy_prefs->Rollback();
-    return false;
-  }
-  *install_status = static_cast<InstallStatus>(exit_code);
-  return true;
 }
 
 // There are 4 disjoint cases => return values {false,true}:

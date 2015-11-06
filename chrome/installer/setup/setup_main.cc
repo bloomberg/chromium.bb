@@ -829,7 +829,6 @@ installer::InstallStatus InstallProducts(
   const bool system_install = installer_state->system_install();
   installer::InstallStatus install_status = installer::UNKNOWN_STATUS;
   installer::ArchiveType archive_type = installer::UNKNOWN_ARCHIVE_TYPE;
-  bool delegated_to_existing = false;
   installer_state->UpdateStage(installer::PRECONDITIONS);
   // The stage provides more fine-grained information than -multifail, so remove
   // the -multifail suffix from the Google Update "ap" value.
@@ -840,7 +839,7 @@ installer::InstallStatus InstallProducts(
     VLOG(1) << "Installing to " << installer_state->target_path().value();
     install_status = InstallProductsHelper(
         original_state, setup_exe, cmd_line, prefs, *installer_state,
-        installer_directory, &archive_type, &delegated_to_existing);
+        installer_directory, &archive_type);
   } else {
     // CheckPreInstallConditions must set the status on failure.
     DCHECK_NE(install_status, installer::UNKNOWN_STATUS);
@@ -859,11 +858,6 @@ installer::InstallStatus InstallProducts(
       ScheduleFileSystemEntityForDeletion(prefs_path);
     }
   }
-
-  // Early exit if this setup.exe delegated to another, since that one would
-  // have taken care of UpdateInstallStatus and UpdateStage.
-  if (delegated_to_existing)
-    return install_status;
 
   const Products& products = installer_state->products();
   for (Products::const_iterator it = products.begin(); it < products.end();
@@ -1408,10 +1402,8 @@ InstallStatus InstallProductsHelper(const InstallationState& original_state,
                                     const MasterPreferences& prefs,
                                     const InstallerState& installer_state,
                                     base::FilePath* installer_directory,
-                                    ArchiveType* archive_type,
-                                    bool* delegated_to_existing) {
+                                    ArchiveType* archive_type) {
   DCHECK(archive_type);
-  DCHECK(delegated_to_existing);
   const bool system_install = installer_state.system_install();
   InstallStatus install_status = UNKNOWN_STATUS;
 
@@ -1505,26 +1497,6 @@ InstallStatus InstallProductsHelper(const InstallationState& original_state,
   } else {
     VLOG(1) << "version to install: " << installer_version->GetString();
     bool proceed_with_installation = true;
-
-    if (installer_state.operation() == InstallerState::MULTI_INSTALL) {
-      // This is a new install of a multi-install product. Rather than give up
-      // in case a higher version of the binaries (including a single-install
-      // of Chrome, which can safely be migrated to multi-install by way of
-      // CheckMultiInstallConditions) is already installed, delegate to the
-      // installed setup.exe to install the product at hand.
-      base::FilePath existing_setup_exe;
-      if (GetExistingHigherInstaller(original_state, system_install,
-                                     *installer_version, &existing_setup_exe)) {
-        VLOG(1) << "Deferring to existing installer.";
-        installer_state.UpdateStage(DEFERRING_TO_HIGHER_VERSION);
-        if (DeferToExistingInstall(existing_setup_exe, cmd_line,
-                                   installer_state, temp_path.path(),
-                                   &install_status)) {
-          *delegated_to_existing = true;
-          return install_status;
-        }
-      }
-    }
 
     uint32 higher_products = 0;
     COMPILE_ASSERT(

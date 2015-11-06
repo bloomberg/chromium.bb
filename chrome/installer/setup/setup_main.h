@@ -31,8 +31,7 @@ InstallStatus InstallProductsHelper(const InstallationState& original_state,
                                     const MasterPreferences& prefs,
                                     const InstallerState& installer_state,
                                     base::FilePath* installer_directory,
-                                    ArchiveType* archive_type,
-                                    bool* delegated_to_existing);
+                                    ArchiveType* archive_type);
 
 }  // namespace installer
 

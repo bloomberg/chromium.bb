@@ -70,25 +70,6 @@ base::FilePath FindArchiveToPatch(const InstallationState& original_state,
 bool DeleteFileFromTempProcess(const base::FilePath& path,
                                uint32 delay_before_delete_ms);
 
-// Returns true and populates |setup_exe| with the path to an existing product
-// installer if one is found that is newer than the currently running installer
-// (|installer_version|).
-bool GetExistingHigherInstaller(const InstallationState& original_state,
-                                bool system_install,
-                                const base::Version& installer_version,
-                                base::FilePath* setup_exe);
-
-// Invokes the pre-existing |setup_exe| to handle the current operation (as
-// dictated by |command_line|). An installerdata file, if specified, is first
-// unconditionally copied into place so that it will be in effect in case the
-// invoked |setup_exe| runs the newly installed product prior to exiting.
-// Returns true if |setup_exe| was launched, false otherwise.
-bool DeferToExistingInstall(const base::FilePath& setup_exe,
-                            const base::CommandLine& command_line,
-                            const InstallerState& installer_state,
-                            const base::FilePath& temp_path,
-                            InstallStatus* install_status);
-
 // Returns true if the product |type| will be installed after the current
 // setup.exe instance have carried out installation / uninstallation, at
 // the level specified by |installer_state|.

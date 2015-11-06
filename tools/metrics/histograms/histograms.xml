@@ -64152,7 +64152,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="33" label="SXS_OPTION_NOT_SUPPORTED"/>
   <int value="42" label="APPLY_DIFF_PATCH_FAILED"/>
   <int value="47" label="INVALID_STATE_FOR_OPTION"/>
-  <int value="48" label="WAIT_FOR_EXISTING_FAILED"/>
   <int value="49" label="PATCH_INVALID_ARGUMENTS"/>
   <int value="50" label="DIFF_PATCH_SOURCE_MISSING"/>
   <int value="51" label="UNUSED_BINARIES"/>
