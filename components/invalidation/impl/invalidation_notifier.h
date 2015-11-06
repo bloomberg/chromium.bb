@@ -34,7 +34,7 @@ class PushClient;
 namespace syncer {
 
 // This class must live on the IO thread.
-class INVALIDATION_EXPORT_PRIVATE InvalidationNotifier
+class INVALIDATION_EXPORT InvalidationNotifier
     : public Invalidator,
       public SyncInvalidationListener::Delegate,
       public base::NonThreadSafe {

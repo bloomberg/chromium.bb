@@ -32,8 +32,7 @@ using ::invalidation::InvalidationListener;
 // implementations include the syncer thread (both versions) and XMPP
 // retries.  The most sophisticated one is URLRequestThrottler; making
 // that generic should work for everyone.
-class INVALIDATION_EXPORT_PRIVATE RegistrationManager
-    : public base::NonThreadSafe {
+class INVALIDATION_EXPORT RegistrationManager : public base::NonThreadSafe {
  public:
   // Constants for exponential backoff (used by tests).
   static const int kInitialRegistrationDelaySeconds;

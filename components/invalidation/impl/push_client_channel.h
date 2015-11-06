@@ -22,7 +22,7 @@ namespace syncer {
 
 // A PushClientChannel is an implementation of NetworkChannel that
 // routes messages through a PushClient.
-class INVALIDATION_EXPORT_PRIVATE PushClientChannel
+class INVALIDATION_EXPORT PushClientChannel
     : public SyncNetworkChannel,
       public NON_EXPORTED_BASE(notifier::PushClientObserver) {
  public:

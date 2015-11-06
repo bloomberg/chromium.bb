@@ -43,8 +43,7 @@ std::string HistogramTypeToString(HistogramType type);
 
 // Create or find existing histogram that matches the pickled info.
 // Returns NULL if the pickled data has problems.
-BASE_EXPORT_PRIVATE HistogramBase* DeserializeHistogramInfo(
-    base::PickleIterator* iter);
+BASE_EXPORT HistogramBase* DeserializeHistogramInfo(base::PickleIterator* iter);
 
 ////////////////////////////////////////////////////////////////////////////////
 

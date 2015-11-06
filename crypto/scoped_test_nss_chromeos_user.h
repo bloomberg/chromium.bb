@@ -16,7 +16,7 @@ namespace crypto {
 // Opens a persistent NSS software database in a temporary directory for the
 // user with |username_hash|. This database will be used for both the user's
 // public and private slot.
-class CRYPTO_EXPORT_PRIVATE ScopedTestNSSChromeOSUser {
+class CRYPTO_EXPORT ScopedTestNSSChromeOSUser {
  public:
   // Opens the software database and sets the public slot for the user. The
   // private slot will not be initialized until FinishInit() is called.

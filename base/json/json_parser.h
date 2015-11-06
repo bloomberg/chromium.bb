@@ -40,7 +40,7 @@ class JSONParserTest;
 // of a token, such that the next iteration of the parser will be at the byte
 // immediately following the token, which would likely be the first byte of the
 // next token.
-class BASE_EXPORT_PRIVATE JSONParser {
+class BASE_EXPORT JSONParser {
  public:
   explicit JSONParser(int options);
   ~JSONParser();

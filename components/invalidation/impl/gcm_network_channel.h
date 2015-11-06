@@ -46,7 +46,7 @@ struct GCMNetworkChannelDiagnostic {
 
 // GCMNetworkChannel is an implementation of SyncNetworkChannel that routes
 // messages through GCMService.
-class INVALIDATION_EXPORT_PRIVATE GCMNetworkChannel
+class INVALIDATION_EXPORT GCMNetworkChannel
     : public SyncNetworkChannel,
       public net::URLFetcherDelegate,
       public net::NetworkChangeNotifier::NetworkChangeObserver,

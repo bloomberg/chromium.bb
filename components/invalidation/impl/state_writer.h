@@ -13,7 +13,7 @@
 
 namespace syncer {
 
-class INVALIDATION_EXPORT_PRIVATE StateWriter {
+class INVALIDATION_EXPORT StateWriter {
  public:
   virtual ~StateWriter() {}
 

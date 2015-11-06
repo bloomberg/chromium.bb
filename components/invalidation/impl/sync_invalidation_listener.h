@@ -40,7 +40,7 @@ class RegistrationManager;
 
 // SyncInvalidationListener is not thread-safe and lives on the sync
 // thread.
-class INVALIDATION_EXPORT_PRIVATE SyncInvalidationListener
+class INVALIDATION_EXPORT SyncInvalidationListener
     : public NON_EXPORTED_BASE(invalidation::InvalidationListener),
       public StateWriter,
       public SyncNetworkChannel::Observer,
@@ -54,7 +54,7 @@ class INVALIDATION_EXPORT_PRIVATE SyncInvalidationListener
       const invalidation::string&,
       invalidation::InvalidationListener*)> CreateInvalidationClientCallback;
 
-  class INVALIDATION_EXPORT_PRIVATE Delegate {
+  class INVALIDATION_EXPORT Delegate {
    public:
     virtual ~Delegate();
 

@@ -43,16 +43,16 @@ enum P2PNotificationTarget {
   LAST_NOTIFICATION_TARGET = NOTIFY_ALL
 };
 
-INVALIDATION_EXPORT_PRIVATE std::string P2PNotificationTargetToString(
+INVALIDATION_EXPORT std::string P2PNotificationTargetToString(
     P2PNotificationTarget target);
 
 // If |target_str| can't be parsed, assumes NOTIFY_SELF.
-INVALIDATION_EXPORT_PRIVATE P2PNotificationTarget
+INVALIDATION_EXPORT P2PNotificationTarget
 P2PNotificationTargetFromString(const std::string& target_str);
 
 // Helper notification data class that can be serialized to and
 // deserialized from a string.
-class INVALIDATION_EXPORT_PRIVATE P2PNotificationData {
+class INVALIDATION_EXPORT P2PNotificationData {
  public:
   // Initializes with an empty sender ID, target set to NOTIFY_SELF,
   // and empty changed types.
@@ -85,7 +85,7 @@ class INVALIDATION_EXPORT_PRIVATE P2PNotificationData {
   ObjectIdInvalidationMap invalidation_map_;
 };
 
-class INVALIDATION_EXPORT_PRIVATE P2PInvalidator
+class INVALIDATION_EXPORT P2PInvalidator
     : public Invalidator,
       public NON_EXPORTED_BASE(notifier::PushClientObserver) {
  public:

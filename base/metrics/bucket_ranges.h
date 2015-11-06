@@ -71,7 +71,7 @@ class BASE_EXPORT BucketRanges {
 
 //////////////////////////////////////////////////////////////////////////////
 // Expose only for test.
-BASE_EXPORT_PRIVATE extern const uint32 kCrcTable[256];
+BASE_EXPORT extern const uint32 kCrcTable[256];
 
 }  // namespace base
 

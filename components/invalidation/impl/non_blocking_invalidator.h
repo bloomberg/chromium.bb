@@ -36,7 +36,7 @@ class GCMNetworkChannelDelegate;
 typedef base::Callback<scoped_ptr<SyncNetworkChannel>(void)>
     NetworkChannelCreator;
 
-class INVALIDATION_EXPORT_PRIVATE NonBlockingInvalidator
+class INVALIDATION_EXPORT NonBlockingInvalidator
     : public Invalidator,
       public InvalidationStateTracker {
  public:

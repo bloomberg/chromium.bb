@@ -24,7 +24,7 @@ class ScopedTestNSSDB;
 // |InitializeTPMTokenAndSystemSlot|, which triggers the TPM initialization,
 // does not have to be called if this helper is used.
 // At most one instance of this helper must be used at a time.
-class CRYPTO_EXPORT_PRIVATE ScopedTestSystemNSSKeySlot {
+class CRYPTO_EXPORT ScopedTestSystemNSSKeySlot {
  public:
   explicit ScopedTestSystemNSSKeySlot();
   ~ScopedTestSystemNSSKeySlot();

@@ -16,7 +16,7 @@ class SerializedNavigationEntry;
 // The SerializedNavigationDriver interface allows SerializedNavigationEntry to
 // obtain information from a singleton driver object. A concrete implementation
 // must be provided by the driver on each platform.
-class SESSIONS_EXPORT_PRIVATE SerializedNavigationDriver {
+class SESSIONS_EXPORT SerializedNavigationDriver {
  public:
   virtual ~SerializedNavigationDriver() {}
 

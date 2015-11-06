@@ -16,6 +16,5 @@
 // For now, we provide dummy definitions of these tags.
 
 #define INVALIDATION_EXPORT
-#define INVALIDATION_EXPORT_PRIVATE
 
 #endif  // COMPONENTS_INVALIDATION_PUBLIC_INVALIDATION_EXPORT_H_

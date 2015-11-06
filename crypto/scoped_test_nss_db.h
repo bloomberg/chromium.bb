@@ -15,7 +15,7 @@ namespace crypto {
 // Opens a persistent NSS database in a temporary directory.
 // Prior NSS version 3.15.1, because of http://bugzil.la/875601 , the opened DB
 // will not be closed automatically.
-class CRYPTO_EXPORT_PRIVATE ScopedTestNSSDB {
+class CRYPTO_EXPORT ScopedTestNSSDB {
  public:
   ScopedTestNSSDB();
   ~ScopedTestNSSDB();
