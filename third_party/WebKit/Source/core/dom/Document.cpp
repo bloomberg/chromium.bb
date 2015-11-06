@@ -2907,6 +2907,7 @@ void Document::setURL(const KURL& url)
         return;
 
     m_url = newURL;
+    m_accessEntryFromURL = nullptr;
     updateBaseURL();
     contextFeatures().urlDidChange(this);
 }
@@ -3832,6 +3833,14 @@ Document::EventFactorySet& Document::eventFactories()
     return s_eventFactory;
 }
 
+const OriginAccessEntry& Document::accessEntryFromURL()
+{
+    if (!m_accessEntryFromURL) {
+        m_accessEntryFromURL = adoptPtr(new OriginAccessEntry(url().protocol(), url().host(), OriginAccessEntry::AllowRegisterableDomains));
+    }
+    return *m_accessEntryFromURL;
+}
+
 void Document::registerEventFactory(PassOwnPtr<EventFactoryBase> eventFactory)
 {
     ASSERT(!eventFactories().contains(eventFactory.get()));
@@ -4040,7 +4049,7 @@ const KURL& Document::firstPartyForCookies() const
     // We're intentionally using the URL of each document rather than the document's SecurityOrigin.
     // Sandboxing a document into a unique origin shouldn't effect first-/third-party status for
     // cookies and site data.
-    OriginAccessEntry accessEntry(topDocument().url().protocol(), topDocument().url().host(), OriginAccessEntry::AllowRegisterableDomains);
+    const OriginAccessEntry& accessEntry = topDocument().accessEntryFromURL();
     const Document* currentDocument = this;
     while (currentDocument) {
         // Skip over srcdoc documents, as they are always same-origin with their closest non-srcdoc parent.

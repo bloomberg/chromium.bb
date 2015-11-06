@@ -137,6 +137,7 @@ class MediaQueryMatcher;
 class NodeFilter;
 class NodeIterator;
 class NthIndexCache;
+class OriginAccessEntry;
 class Page;
 class PlatformMouseEvent;
 class ProcessingInstruction;
@@ -1150,6 +1151,8 @@ private:
 
     void setNthIndexCache(NthIndexCache* nthIndexCache) { ASSERT(!m_nthIndexCache || !nthIndexCache); m_nthIndexCache = nthIndexCache; }
 
+    const OriginAccessEntry& accessEntryFromURL();
+
     // TODO(bokan): Temporarily moved this to the top of memebers so it's likely
     // to be included in a minidump memory region. crbug.com/519752
     LoadEventProgress m_loadEventProgress;
@@ -1184,6 +1187,7 @@ private:
     KURL m_baseURLOverride; // An alternative base URL that takes precedence over m_baseURL (but not m_baseElementURL).
     KURL m_baseElementURL; // The URL set by the <base> element.
     KURL m_cookieURL; // The URL to use for cookie access.
+    OwnPtr<OriginAccessEntry> m_accessEntryFromURL;
 
     AtomicString m_baseTarget;
 
