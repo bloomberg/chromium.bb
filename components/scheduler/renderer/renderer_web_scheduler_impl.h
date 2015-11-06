@@ -9,11 +9,11 @@
 
 namespace scheduler {
 
-class RendererScheduler;
+class RendererSchedulerImpl;
 
 class SCHEDULER_EXPORT RendererWebSchedulerImpl : public WebSchedulerImpl {
  public:
-  explicit RendererWebSchedulerImpl(RendererScheduler* child_scheduler);
+  explicit RendererWebSchedulerImpl(RendererSchedulerImpl* renderer_scheduler);
 
   ~RendererWebSchedulerImpl() override;
 
@@ -27,7 +27,7 @@ class SCHEDULER_EXPORT RendererWebSchedulerImpl : public WebSchedulerImpl {
   void onNavigationStarted() override;
 
  private:
-  RendererScheduler* renderer_scheduler_;  // NOT OWNED
+  RendererSchedulerImpl* renderer_scheduler_;  // NOT OWNED
 };
 
 }  // namespace scheduler

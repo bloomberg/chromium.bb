@@ -58,7 +58,7 @@ class CurrentThreadMock : public blink::WebThread {
 
  private:
   scoped_refptr<scheduler::SchedulerTqmDelegate> task_runner_delegate_;
-  scoped_ptr<scheduler::RendererScheduler> scheduler_;
+  scoped_ptr<scheduler::RendererSchedulerImpl> scheduler_;
   scoped_ptr<blink::WebScheduler> web_scheduler_;
   scoped_ptr<blink::WebTaskRunner> web_task_runner_;
 };

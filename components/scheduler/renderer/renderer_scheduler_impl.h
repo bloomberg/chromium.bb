@@ -37,6 +37,7 @@ class SCHEDULER_EXPORT RendererSchedulerImpl
   ~RendererSchedulerImpl() override;
 
   // RendererScheduler implementation:
+  scoped_ptr<blink::WebThread> CreateMainThread() override;
   scoped_refptr<TaskQueue> DefaultTaskRunner() override;
   scoped_refptr<SingleThreadIdleTaskRunner> IdleTaskRunner() override;
   scoped_refptr<base::SingleThreadTaskRunner> CompositorTaskRunner() override;

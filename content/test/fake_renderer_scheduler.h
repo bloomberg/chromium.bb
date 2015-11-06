@@ -15,6 +15,7 @@ class FakeRendererScheduler : public scheduler::RendererScheduler {
   ~FakeRendererScheduler() override;
 
   // RendererScheduler implementation.
+  scoped_ptr<blink::WebThread> CreateMainThread() override;
   scoped_refptr<scheduler::TaskQueue> DefaultTaskRunner() override;
   scoped_refptr<base::SingleThreadTaskRunner> CompositorTaskRunner() override;
   scoped_refptr<base::SingleThreadTaskRunner> LoadingTaskRunner() override;

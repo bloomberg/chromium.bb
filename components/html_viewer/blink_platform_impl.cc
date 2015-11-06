@@ -75,8 +75,7 @@ BlinkPlatformImpl::BlinkPlatformImpl(
     : global_state_(global_state),
       app_(app),
       main_thread_task_runner_(renderer_scheduler->DefaultTaskRunner()),
-      main_thread_(new scheduler::WebThreadImplForRendererScheduler(
-          renderer_scheduler)) {
+      main_thread_(renderer_scheduler->CreateMainThread()) {
   if (app) {
     mojo::URLRequestPtr request(mojo::URLRequest::New());
     request->url = mojo::String::From("mojo:network_service");

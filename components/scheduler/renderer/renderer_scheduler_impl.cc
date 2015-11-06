@@ -13,6 +13,7 @@
 #include "components/scheduler/base/task_queue_impl.h"
 #include "components/scheduler/base/task_queue_selector.h"
 #include "components/scheduler/child/scheduler_tqm_delegate.h"
+#include "components/scheduler/renderer/webthread_impl_for_renderer_scheduler.h"
 
 namespace scheduler {
 namespace {
@@ -143,6 +144,10 @@ RendererSchedulerImpl::CompositorThreadOnly::~CompositorThreadOnly() {}
 void RendererSchedulerImpl::Shutdown() {
   helper_.Shutdown();
   MainThreadOnly().was_shutdown = true;
+}
+
+scoped_ptr<blink::WebThread> RendererSchedulerImpl::CreateMainThread() {
+  return make_scoped_ptr(new WebThreadImplForRendererScheduler(this)).Pass();
 }
 
 scoped_refptr<TaskQueue> RendererSchedulerImpl::DefaultTaskRunner() {

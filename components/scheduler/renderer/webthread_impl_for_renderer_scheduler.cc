@@ -6,14 +6,14 @@
 
 #include "components/scheduler/base/task_queue.h"
 #include "components/scheduler/child/web_task_runner_impl.h"
-#include "components/scheduler/renderer/renderer_scheduler.h"
+#include "components/scheduler/renderer/renderer_scheduler_impl.h"
 #include "components/scheduler/renderer/renderer_web_scheduler_impl.h"
 #include "third_party/WebKit/public/platform/WebTraceLocation.h"
 
 namespace scheduler {
 
 WebThreadImplForRendererScheduler::WebThreadImplForRendererScheduler(
-    RendererScheduler* scheduler)
+    RendererSchedulerImpl* scheduler)
     : web_scheduler_(new RendererWebSchedulerImpl(scheduler)),
       task_runner_(scheduler->DefaultTaskRunner()),
       idle_task_runner_(scheduler->IdleTaskRunner()),

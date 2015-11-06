@@ -18,14 +18,14 @@ class SingleThreadTaskRunner;
 
 namespace scheduler {
 
-class RendererScheduler;
+class RendererSchedulerImpl;
 class TaskQueue;
 class WebTaskRunnerImpl;
 class WebViewSchedulerImpl;
 
 class SCHEDULER_EXPORT WebFrameSchedulerImpl : public blink::WebFrameScheduler {
  public:
-  WebFrameSchedulerImpl(RendererScheduler* render_scheduler,
+  WebFrameSchedulerImpl(RendererSchedulerImpl* renderer_scheduler,
                         WebViewSchedulerImpl* parent_web_view_scheduler);
 
   ~WebFrameSchedulerImpl() override;
@@ -45,7 +45,7 @@ class SCHEDULER_EXPORT WebFrameSchedulerImpl : public blink::WebFrameScheduler {
   scoped_refptr<TaskQueue> timer_task_queue_;
   scoped_ptr<WebTaskRunnerImpl> loading_web_task_runner_;
   scoped_ptr<WebTaskRunnerImpl> timer_web_task_runner_;
-  RendererScheduler* render_scheduler_;              // NOT OWNED
+  RendererSchedulerImpl* renderer_scheduler_;        // NOT OWNED
   WebViewSchedulerImpl* parent_web_view_scheduler_;  // NOT OWNED
   blink::WebSecurityOrigin origin_;
   bool visible_;

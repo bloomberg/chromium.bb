@@ -5,20 +5,19 @@
 #include "components/scheduler/renderer/renderer_web_scheduler_impl.h"
 
 #include "components/scheduler/base/task_queue.h"
-#include "components/scheduler/renderer/renderer_scheduler.h"
+#include "components/scheduler/renderer/renderer_scheduler_impl.h"
 #include "components/scheduler/renderer/web_view_scheduler_impl.h"
 #include "third_party/WebKit/public/platform/WebPassOwnPtr.h"
 
 namespace scheduler {
 
 RendererWebSchedulerImpl::RendererWebSchedulerImpl(
-    RendererScheduler* renderer_scheduler)
+    RendererSchedulerImpl* renderer_scheduler)
     : WebSchedulerImpl(renderer_scheduler,
                        renderer_scheduler->IdleTaskRunner(),
                        renderer_scheduler->LoadingTaskRunner(),
                        renderer_scheduler->TimerTaskRunner()),
-      renderer_scheduler_(renderer_scheduler) {
-}
+      renderer_scheduler_(renderer_scheduler) {}
 
 RendererWebSchedulerImpl::~RendererWebSchedulerImpl() {
 }

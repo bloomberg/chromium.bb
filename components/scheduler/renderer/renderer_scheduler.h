@@ -16,6 +16,10 @@ namespace cc {
 struct BeginFrameArgs;
 }
 
+namespace blink {
+class WebThread;
+}
+
 namespace scheduler {
 
 class RenderWidgetSchedulingState;
@@ -42,6 +46,9 @@ class SCHEDULER_EXPORT RendererScheduler : public ChildScheduler {
     FIRST_USE_CASE = NONE,
   };
   static const char* UseCaseToString(UseCase use_case);
+
+  // Creates a WebThread implementation for the renderer main thread.
+  virtual scoped_ptr<blink::WebThread> CreateMainThread() = 0;
 
   // Returns the loading task runner.  This queue is intended for tasks related
   // to resource dispatch, foreground HTML parsing, etc...

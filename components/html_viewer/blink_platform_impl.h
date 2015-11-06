@@ -104,7 +104,7 @@ class BlinkPlatformImpl : public blink::Platform {
   GlobalState* global_state_;
   mojo::ApplicationImpl* app_;
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
-  scoped_ptr<scheduler::WebThreadImplForRendererScheduler> main_thread_;
+  scoped_ptr<blink::WebThread> main_thread_;
   base::ThreadLocalStorage::Slot current_thread_slot_;
   cc_blink::WebCompositorSupportImpl compositor_support_;
   WebThemeEngineImpl theme_engine_;

@@ -21,13 +21,13 @@ class WebView;
 
 namespace scheduler {
 
-class RendererScheduler;
+class RendererSchedulerImpl;
 class WebFrameSchedulerImpl;
 
 class SCHEDULER_EXPORT WebViewSchedulerImpl : public blink::WebViewScheduler {
  public:
-  explicit WebViewSchedulerImpl(blink::WebView* web_view,
-                                RendererScheduler* render_scheduler);
+  WebViewSchedulerImpl(blink::WebView* web_view,
+                       RendererSchedulerImpl* renderer_scheduler);
 
   ~WebViewSchedulerImpl() override;
 
@@ -45,7 +45,7 @@ class SCHEDULER_EXPORT WebViewSchedulerImpl : public blink::WebViewScheduler {
 
   std::set<WebFrameSchedulerImpl*> frame_schedulers_;
   blink::WebView* web_view_;
-  RendererScheduler* renderer_scheduler_;
+  RendererSchedulerImpl* renderer_scheduler_;
   bool background_;
 
   DISALLOW_COPY_AND_ASSIGN(WebViewSchedulerImpl);

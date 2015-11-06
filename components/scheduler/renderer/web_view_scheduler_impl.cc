@@ -12,7 +12,7 @@ namespace scheduler {
 
 WebViewSchedulerImpl::WebViewSchedulerImpl(
     blink::WebView* web_view,
-    RendererScheduler* renderer_scheduler)
+    RendererSchedulerImpl* renderer_scheduler)
     : web_view_(web_view),
       renderer_scheduler_(renderer_scheduler),
       background_(false) {}

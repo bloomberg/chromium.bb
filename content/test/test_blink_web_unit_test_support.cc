@@ -110,8 +110,7 @@ TestBlinkWebUnitTestSupport::TestBlinkWebUnitTestSupport() {
   }
   renderer_scheduler_ = make_scoped_ptr(new scheduler::RendererSchedulerImpl(
       scheduler::LazySchedulerMessageLoopDelegateForTests::Create()));
-  web_thread_.reset(new scheduler::WebThreadImplForRendererScheduler(
-      renderer_scheduler_.get()));
+  web_thread_ = renderer_scheduler_->CreateMainThread();
 
   blink::initialize(this);
   blink::setLayoutTestMode(true);

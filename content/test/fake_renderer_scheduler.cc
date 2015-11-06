@@ -4,12 +4,18 @@
 
 #include "content/test/fake_renderer_scheduler.h"
 
+#include "third_party/WebKit/public/platform/WebThread.h"
+
 namespace content {
 
 FakeRendererScheduler::FakeRendererScheduler() {
 }
 
 FakeRendererScheduler::~FakeRendererScheduler() {
+}
+
+scoped_ptr<blink::WebThread> FakeRendererScheduler::CreateMainThread() {
+  return nullptr;
 }
 
 scoped_refptr<scheduler::TaskQueue> FakeRendererScheduler::DefaultTaskRunner() {

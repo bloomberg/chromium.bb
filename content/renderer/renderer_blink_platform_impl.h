@@ -223,7 +223,7 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   void SendFakeDeviceEventDataForTesting(blink::WebPlatformEventType type);
   device::VibrationManagerPtr& GetConnectedVibrationManagerService();
 
-  scoped_ptr<scheduler::WebThreadImplForRendererScheduler> main_thread_;
+  scoped_ptr<blink::WebThread> main_thread_;
 
   scoped_ptr<RendererClipboardDelegate> clipboard_delegate_;
   scoped_ptr<WebClipboardImpl> clipboard_;
