@@ -43,7 +43,7 @@ net::NetLog::ParametersCallback CreateNetLogReadWriteCompleteCallback(
 // operation is started.
 net::NetLog::ParametersCallback CreateNetLogSparseOperationCallback(
     int64 offset,
-    int buff_len);
+    int buf_len);
 
 // Creates a NetLog callback that returns parameters for when a read or write
 // for a sparse entry's child is started.

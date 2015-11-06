@@ -188,14 +188,16 @@ MockRead CreateMockRead(const SpdyFrame& resp, int seq, IoMode mode) {
 
 // Combines the given SpdyFrames into the given char array and returns
 // the total length.
-int CombineFrames(const SpdyFrame** frames, int num_frames,
-                  char* buff, int buff_len) {
+int CombineFrames(const SpdyFrame** frames,
+                  int num_frames,
+                  char* buf,
+                  int buf_len) {
   int total_len = 0;
   for (int i = 0; i < num_frames; ++i) {
     total_len += frames[i]->size();
   }
-  DCHECK_LE(total_len, buff_len);
-  char* ptr = buff;
+  DCHECK_LE(total_len, buf_len);
+  char* ptr = buf;
   for (int i = 0; i < num_frames; ++i) {
     int len = frames[i]->size();
     memcpy(ptr, frames[i]->data(), len);

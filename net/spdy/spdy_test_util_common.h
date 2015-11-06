@@ -101,8 +101,10 @@ MockRead CreateMockRead(const SpdyFrame& resp, int seq, IoMode mode);
 
 // Combines the given SpdyFrames into the given char array and returns
 // the total length.
-int CombineFrames(const SpdyFrame** frames, int num_frames,
-                  char* buff, int buff_len);
+int CombineFrames(const SpdyFrame** frames,
+                  int num_frames,
+                  char* buf,
+                  int buf_len);
 
 // Returns the SpdyPriority embedded in the given frame.  Returns true
 // and fills in |priority| on success.

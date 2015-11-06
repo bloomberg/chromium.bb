@@ -53,13 +53,13 @@ scoped_ptr<base::Value> NetLogReadWriteCompleteCallback(
 
 scoped_ptr<base::Value> NetLogSparseOperationCallback(
     int64 offset,
-    int buff_len,
+    int buf_len,
     net::NetLogCaptureMode /* capture_mode */) {
   scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   // Values can only be created with at most 32-bit integers.  Using a string
   // instead circumvents that restriction.
   dict->SetString("offset", base::Int64ToString(offset));
-  dict->SetInteger("buff_len", buff_len);
+  dict->SetInteger("buf_len", buf_len);
   return dict.Pass();
 }
 
@@ -114,8 +114,8 @@ net::NetLog::ParametersCallback CreateNetLogReadWriteCompleteCallback(
 
 net::NetLog::ParametersCallback CreateNetLogSparseOperationCallback(
     int64 offset,
-    int buff_len) {
-  return base::Bind(&NetLogSparseOperationCallback, offset, buff_len);
+    int buf_len) {
+  return base::Bind(&NetLogSparseOperationCallback, offset, buf_len);
 }
 
 net::NetLog::ParametersCallback CreateNetLogSparseReadWriteCallback(

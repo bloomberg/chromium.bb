@@ -926,7 +926,7 @@ EVENT_TYPE(ENTRY_WRITE_DATA)
 // For the BEGIN phase, the following parameters are attached:
 //   {
 //     "offset": <Offset at which to start reading>,
-//     "buff_len": <Bytes to read/write>,
+//     "buf_len": <Bytes to read/write>,
 //   }
 EVENT_TYPE(SPARSE_READ)
 EVENT_TYPE(SPARSE_WRITE)
@@ -945,7 +945,7 @@ EVENT_TYPE(SPARSE_WRITE_CHILD_DATA)
 //
 // For the BEGIN phase, the following parameters are attached:
 //   {
-//     "buff_len": <Bytes to read/write>,
+//     "buf_len": <Bytes to read/write>,
 //     "offset": <Offset at which to start reading>,
 //   }
 //
