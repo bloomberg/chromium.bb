@@ -66,8 +66,6 @@ public:
 
     void resize(int w, int h) { setFrameRect(IntRect(x(), y(), w, h)); }
     void resize(const IntSize& s) { setFrameRect(IntRect(location(), s)); }
-    void move(int x, int y) { setFrameRect(IntRect(x, y, width(), height())); }
-    void move(const IntPoint& p) { setFrameRect(IntRect(p, size())); }
 
     virtual void paint(GraphicsContext*, const CullRect&) const { }
     void invalidate() { invalidateRect(boundsRect()); }
@@ -89,7 +87,6 @@ public:
     virtual bool isPluginContainer() const { return false; }
     virtual bool isScrollbar() const { return false; }
 
-    virtual HostWindow* hostWindow() const { ASSERT_NOT_REACHED(); return 0; }
     virtual void setParent(Widget*);
     Widget* parent() const { return m_parent; }
     Widget* root() const;
