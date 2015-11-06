@@ -124,7 +124,7 @@ private:
 
         if (m_popup->isAcceleratedCompositingActive()) {
             ASSERT(m_popup->m_layerTreeView);
-            m_popup->m_layerTreeView->setNeedsCompositorUpdate();
+            m_popup->m_layerTreeView->setNeedsBeginFrame();
             return;
         }
         m_popup->m_widgetClient->scheduleAnimation();
