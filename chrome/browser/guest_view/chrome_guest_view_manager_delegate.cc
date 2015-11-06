@@ -6,6 +6,11 @@
 
 #include "chrome/browser/task_management/web_contents_tags.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/app_mode/app_session.h"
+#include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
+#endif
+
 namespace extensions {
 
 ChromeGuestViewManagerDelegate::ChromeGuestViewManagerDelegate(
@@ -16,9 +21,20 @@ ChromeGuestViewManagerDelegate::ChromeGuestViewManagerDelegate(
 ChromeGuestViewManagerDelegate::~ChromeGuestViewManagerDelegate() {
 }
 
-void ChromeGuestViewManagerDelegate::AttachTaskManagerGuestTag(
+void ChromeGuestViewManagerDelegate::OnGuestAdded(
     content::WebContents* guest_web_contents) const {
+  // Attaches the task-manager-specific tag for the GuestViews to its
+  // |guest_web_contents| so that their corresponding tasks show up in the task
+  // manager.
   task_management::WebContentsTags::CreateForGuestContents(guest_web_contents);
+
+#if defined(OS_CHROMEOS)
+  // Notifies kiosk session about the added guest.
+  chromeos::AppSession* app_session =
+      chromeos::KioskAppManager::Get()->app_session();
+  if (app_session)
+    app_session->OnGuestAdded(guest_web_contents);
+#endif
 }
 
 }  // namespace extensions

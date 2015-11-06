@@ -240,8 +240,7 @@ void GuestViewManager::AddGuest(int guest_instance_id,
   CHECK(CanUseGuestInstanceID(guest_instance_id));
   guest_web_contents_by_instance_id_[guest_instance_id] = guest_web_contents;
 
-  // Make |guest_web_contents| show up in the task manager.
-  delegate_->AttachTaskManagerGuestTag(guest_web_contents);
+  delegate_->OnGuestAdded(guest_web_contents);
 }
 
 void GuestViewManager::RemoveGuest(int guest_instance_id) {

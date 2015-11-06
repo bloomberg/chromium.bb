@@ -10,7 +10,6 @@
 #include "base/logging.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/app_mode/app_session_lifetime.h"
 #include "chrome/browser/chromeos/app_mode/certificate_manager_dialog.h"
 #include "chrome/browser/chromeos/login/auth/chrome_login_performer.h"
 #include "chrome/browser/chromeos/login/chrome_restart_request.h"
@@ -281,7 +280,7 @@ void ErrorScreen::OnDiagnoseButtonClicked() {
   OpenApplication(
       AppLaunchParams(profile, extension, extensions::LAUNCH_CONTAINER_WINDOW,
                       NEW_WINDOW, extensions::SOURCE_CHROME_INTERNAL));
-  InitAppSession(profile, extension_id);
+  KioskAppManager::Get()->InitSession(profile, extension_id);
 
   user_manager::UserManager::Get()->SessionStarted();
 

@@ -20,8 +20,7 @@ class ChromeGuestViewManagerDelegate
   ~ChromeGuestViewManagerDelegate() override;
 
   // GuestViewManagerDelegate:
-  void AttachTaskManagerGuestTag(
-      content::WebContents* guest_web_contents) const override;
+  void OnGuestAdded(content::WebContents* guest_web_contents) const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeGuestViewManagerDelegate);

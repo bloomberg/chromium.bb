@@ -34,6 +34,7 @@ class ExternalLoader;
 
 namespace chromeos {
 
+class AppSession;
 class KioskAppData;
 class KioskAppExternalLoader;
 class KioskAppManagerObserver;
@@ -220,6 +221,11 @@ class KioskAppManager : public KioskAppDataDelegate,
   // kiosk apps that are immediately auto-launched on startup.
   void SetAppWasAutoLaunchedWithZeroDelay(const std::string& app_id);
 
+  // Initialize |app_session_|.
+  void InitSession(Profile* profile, const std::string& app_id);
+
+  AppSession* app_session() { return app_session_.get(); }
+
  private:
   friend struct base::DefaultLazyInstanceTraits<KioskAppManager>;
   friend struct base::DefaultDeleter<KioskAppManager>;
@@ -305,6 +311,8 @@ class KioskAppManager : public KioskAppDataDelegate,
   // The extension external loader for deploying secondary apps.
   bool secondary_app_external_loader_created_;
   base::WeakPtr<KioskAppExternalLoader> secondary_app_external_loader_;
+
+  scoped_ptr<AppSession> app_session_;
 
   DISALLOW_COPY_AND_ASSIGN(KioskAppManager);
 };

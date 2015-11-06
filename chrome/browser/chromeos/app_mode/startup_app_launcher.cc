@@ -11,7 +11,6 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/app_mode/app_session_lifetime.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_diagnosis_runner.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
@@ -409,7 +408,7 @@ void StartupAppLauncher::LaunchApp() {
   OpenApplication(AppLaunchParams(profile_, extension,
                                   extensions::LAUNCH_CONTAINER_WINDOW,
                                   NEW_WINDOW, extensions::SOURCE_KIOSK));
-  InitAppSession(profile_, app_id_);
+  KioskAppManager::Get()->InitSession(profile_, app_id_);
 
   user_manager::UserManager::Get()->SessionStarted();
 

@@ -19,6 +19,7 @@
 #include "base/stl_util.h"
 #include "base/sys_info.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/app_mode/app_session.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_data.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_external_loader.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager_observer.h"
@@ -205,6 +206,14 @@ void KioskAppManager::SetAppWasAutoLaunchedWithZeroDelay(
     const std::string& app_id) {
   DCHECK_EQ(auto_launch_app_id_, app_id);
   currently_auto_launched_with_zero_delay_app_ = app_id;
+}
+
+void KioskAppManager::InitSession(Profile* profile,
+                                   const std::string& app_id) {
+  LOG_IF(FATAL, app_session_) << "Kiosk session is already initialized.";
+
+  app_session_.reset(new AppSession);
+  app_session_->Init(profile, app_id);
 }
 
 void KioskAppManager::EnableConsumerKioskAutoLaunch(

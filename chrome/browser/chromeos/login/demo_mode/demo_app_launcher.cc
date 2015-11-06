@@ -7,7 +7,6 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
-#include "chrome/browser/chromeos/app_mode/app_session_lifetime.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
 #include "chrome/browser/extensions/component_loader.h"
@@ -98,7 +97,7 @@ void DemoAppLauncher::OnProfileLoaded(Profile* profile) {
   OpenApplication(
       AppLaunchParams(profile, extension, extensions::LAUNCH_CONTAINER_WINDOW,
                       NEW_WINDOW, extensions::SOURCE_CHROME_INTERNAL));
-  InitAppSession(profile, extension_id);
+  KioskAppManager::Get()->InitSession(profile, extension_id);
 
   user_manager::UserManager::Get()->SessionStarted();
 

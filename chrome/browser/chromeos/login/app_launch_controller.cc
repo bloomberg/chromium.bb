@@ -15,7 +15,6 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/app_mode/app_session_lifetime.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/app_mode/startup_app_launcher.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
