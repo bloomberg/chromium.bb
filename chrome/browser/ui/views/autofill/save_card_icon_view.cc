@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/location_bar/save_credit_card_icon_view.h"
+#include "chrome/browser/ui/views/autofill/save_card_icon_view.h"
 
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/ui/autofill/save_card_bubble_controller_impl.h"
@@ -14,8 +14,10 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/vector_icons_public.h"
 
-SaveCreditCardIconView::SaveCreditCardIconView(CommandUpdater* command_updater,
-                                               Browser* browser)
+namespace autofill {
+
+SaveCardIconView::SaveCardIconView(CommandUpdater* command_updater,
+                                   Browser* browser)
     : BubbleIconView(command_updater, IDC_SAVE_CREDIT_CARD_FOR_PAGE),
       browser_(browser) {
   set_id(VIEW_ID_SAVE_CREDIT_CARD_BUTTON);
@@ -23,16 +25,16 @@ SaveCreditCardIconView::SaveCreditCardIconView(CommandUpdater* command_updater,
   SetToggled(false);
 }
 
-SaveCreditCardIconView::~SaveCreditCardIconView() {}
+SaveCardIconView::~SaveCardIconView() {}
 
-void SaveCreditCardIconView::SetToggled(bool on) {
+void SaveCardIconView::SetToggled(bool on) {
   SetActiveInternal(on);
 }
 
-void SaveCreditCardIconView::OnExecuting(
+void SaveCardIconView::OnExecuting(
     BubbleIconView::ExecuteSource execute_source) {}
 
-views::BubbleDelegateView* SaveCreditCardIconView::GetBubble() const {
+views::BubbleDelegateView* SaveCardIconView::GetBubble() const {
   if (!browser_)
     return nullptr;
   content::WebContents* web_contents =
@@ -48,6 +50,8 @@ views::BubbleDelegateView* SaveCreditCardIconView::GetBubble() const {
       controller->save_card_bubble_view());
 }
 
-gfx::VectorIconId SaveCreditCardIconView::GetVectorIcon() const {
+gfx::VectorIconId SaveCardIconView::GetVectorIcon() const {
   return gfx::VectorIconId::AUTOFILL;
 }
+
+}  // namespace autofill

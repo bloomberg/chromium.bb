@@ -44,12 +44,15 @@ class ManagePasswordsIconViews;
 class PageActionWithBadgeView;
 class PageActionImageView;
 class Profile;
-class SaveCreditCardIconView;
 class SelectedKeywordView;
 class StarView;
 class TemplateURLService;
 class TranslateIconView;
 class ZoomView;
+
+namespace autofill {
+class SaveCardIconView;
+}
 
 namespace views {
 class BubbleDelegateView;
@@ -177,7 +180,7 @@ class LocationBarView : public LocationBar,
   StarView* star_view() { return star_view_; }
 
   // The save credit card icon. It may not be visible.
-  SaveCreditCardIconView* save_credit_card_icon_view() {
+  autofill::SaveCardIconView* save_credit_card_icon_view() {
     return save_credit_card_icon_view_;
   }
 
@@ -463,7 +466,7 @@ class LocationBarView : public LocationBar,
   PageActionViews page_action_views_;
 
   // The save credit card icon.
-  SaveCreditCardIconView* save_credit_card_icon_view_;
+  autofill::SaveCardIconView* save_credit_card_icon_view_;
 
   // The icon for Translate.
   TranslateIconView* translate_icon_view_;

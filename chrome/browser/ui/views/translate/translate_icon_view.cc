@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/location_bar/translate_icon_view.h"
+#include "chrome/browser/ui/views/translate/translate_icon_view.h"
 
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -21,16 +21,14 @@ TranslateIconView::TranslateIconView(CommandUpdater* command_updater)
   SetTooltipText(l10n_util::GetStringUTF16(IDS_TOOLTIP_TRANSLATE));
 }
 
-TranslateIconView::~TranslateIconView() {
-}
+TranslateIconView::~TranslateIconView() {}
 
 void TranslateIconView::SetToggled(bool on) {
   SetActiveInternal(on);
 }
 
 void TranslateIconView::OnExecuting(
-  BubbleIconView::ExecuteSource execute_source) {
-}
+    BubbleIconView::ExecuteSource execute_source) {}
 
 views::BubbleDelegateView* TranslateIconView::GetBubble() const {
   return TranslateBubbleView::GetCurrentBubble();

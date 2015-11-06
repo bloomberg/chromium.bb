@@ -36,6 +36,7 @@
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/view_ids.h"
+#include "chrome/browser/ui/views/autofill/save_card_icon_view.h"
 #include "chrome/browser/ui/views/browser_dialogs.h"
 #include "chrome/browser/ui/views/layout_constants.h"
 #include "chrome/browser/ui/views/location_bar/background_with_1_px_border.h"
@@ -47,15 +48,14 @@
 #include "chrome/browser/ui/views/location_bar/open_pdf_in_reader_view.h"
 #include "chrome/browser/ui/views/location_bar/page_action_image_view.h"
 #include "chrome/browser/ui/views/location_bar/page_action_with_badge_view.h"
-#include "chrome/browser/ui/views/location_bar/save_credit_card_icon_view.h"
 #include "chrome/browser/ui/views/location_bar/selected_keyword_view.h"
 #include "chrome/browser/ui/views/location_bar/star_view.h"
-#include "chrome/browser/ui/views/location_bar/translate_icon_view.h"
 #include "chrome/browser/ui/views/location_bar/zoom_bubble_view.h"
 #include "chrome/browser/ui/views/location_bar/zoom_view.h"
 #include "chrome/browser/ui/views/passwords/manage_passwords_bubble_view.h"
 #include "chrome/browser/ui/views/passwords/manage_passwords_icon_views.h"
 #include "chrome/browser/ui/views/translate/translate_bubble_view.h"
+#include "chrome/browser/ui/views/translate/translate_icon_view.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/favicon/content/content_favicon_driver.h"
@@ -315,7 +315,7 @@ void LocationBarView::Init() {
   AddChildView(manage_passwords_icon_view_);
 
   save_credit_card_icon_view_ =
-      new SaveCreditCardIconView(command_updater(), browser_);
+      new autofill::SaveCardIconView(command_updater(), browser_);
   save_credit_card_icon_view_->SetVisible(false);
   AddChildView(save_credit_card_icon_view_);
 
