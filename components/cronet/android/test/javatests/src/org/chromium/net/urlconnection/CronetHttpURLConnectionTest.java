@@ -101,23 +101,6 @@ public class CronetHttpURLConnectionTest extends CronetTestBase {
 
     @SmallTest
     @Feature({"Cronet"})
-    @OnlyRunCronetHttpURLConnection
-    // TODO(xunjieli): Change the test after chunked support is added.
-    public void testPostChunked() throws Exception {
-        URL url = new URL(NativeTestServer.getEchoBodyURL());
-        HttpURLConnection connection =
-                (HttpURLConnection) url.openConnection();
-        connection.setDoOutput(true);
-        connection.setRequestMethod("POST");
-        try {
-            connection.setChunkedStreamingMode(0);
-        } catch (UnsupportedOperationException e) {
-            assertEquals("Chunked mode not supported yet", e.getMessage());
-        }
-    }
-
-    @SmallTest
-    @Feature({"Cronet"})
     @CompareDefaultWithCronet
     public void testNotFoundURLRequest() throws Exception {
         URL url = new URL(NativeTestServer.getFileURL("/notfound.html"));
