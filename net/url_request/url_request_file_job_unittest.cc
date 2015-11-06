@@ -182,51 +182,55 @@ void URLRequestFileJobEventsTest::RunRequest(const std::string& content,
   ASSERT_TRUE(directory.CreateUniqueTempDir());
   base::FilePath path;
   ASSERT_TRUE(CreateTempFileWithContent(content, directory, &path));
-  CallbacksJobFactory factory(path, &observer_);
-  context_.set_job_factory(&factory);
 
-  scoped_ptr<URLRequest> request(context_.CreateRequest(
-      FilePathToFileURL(path), DEFAULT_PRIORITY, &delegate_));
-  if (range) {
-    ASSERT_GE(range->start, 0);
-    ASSERT_GE(range->end, 0);
-    ASSERT_LE(range->start, range->end);
-    ASSERT_LT(static_cast<unsigned int>(range->end), content.length());
-    std::string range_value =
-        base::StringPrintf("bytes=%d-%d", range->start, range->end);
-    request->SetExtraRequestHeaderByName(
-        HttpRequestHeaders::kRange, range_value, true /*overwrite*/);
+  {
+    CallbacksJobFactory factory(path, &observer_);
+    context_.set_job_factory(&factory);
+
+    scoped_ptr<URLRequest> request(context_.CreateRequest(
+        FilePathToFileURL(path), DEFAULT_PRIORITY, &delegate_));
+    if (range) {
+      ASSERT_GE(range->start, 0);
+      ASSERT_GE(range->end, 0);
+      ASSERT_LE(range->start, range->end);
+      ASSERT_LT(static_cast<unsigned int>(range->end), content.length());
+      std::string range_value =
+          base::StringPrintf("bytes=%d-%d", range->start, range->end);
+      request->SetExtraRequestHeaderByName(HttpRequestHeaders::kRange,
+                                           range_value, true /*overwrite*/);
+    }
+    request->Start();
+
+    base::RunLoop().Run();
+
+    EXPECT_FALSE(delegate_.request_failed());
+    int expected_length =
+        range ? (range->end - range->start + 1) : content.length();
+    EXPECT_EQ(delegate_.bytes_received(), expected_length);
+
+    std::string expected_content;
+    if (range) {
+      expected_content.insert(0, content, range->start, expected_length);
+    } else {
+      expected_content = content;
+    }
+    EXPECT_TRUE(delegate_.data_received() == expected_content);
+
+    ASSERT_EQ(observer_.jobs().size(), 1u);
+    ASSERT_EQ(observer_.jobs().at(0)->seek_position(),
+              range ? range->start : 0);
+
+    std::string observed_content;
+    const std::vector<std::string>& chunks =
+        observer_.jobs().at(0)->data_chunks();
+    for (std::vector<std::string>::const_iterator i = chunks.begin();
+         i != chunks.end(); ++i) {
+      observed_content.append(*i);
+    }
+    EXPECT_EQ(expected_content, observed_content);
   }
-  request->Start();
 
-  base::RunLoop loop;
-  loop.Run();
-
-  EXPECT_FALSE(delegate_.request_failed());
-  int expected_length =
-      range ? (range->end - range->start + 1) : content.length();
-  EXPECT_EQ(delegate_.bytes_received(), expected_length);
-
-  std::string expected_content;
-  if (range) {
-    expected_content.insert(0, content, range->start, expected_length);
-  } else {
-    expected_content = content;
-  }
-  EXPECT_TRUE(delegate_.data_received() == expected_content);
-
-  ASSERT_EQ(observer_.jobs().size(), 1u);
-  ASSERT_EQ(observer_.jobs().at(0)->seek_position(), range ? range->start : 0);
-
-  std::string observed_content;
-  const std::vector<std::string>& chunks =
-      observer_.jobs().at(0)->data_chunks();
-  for (std::vector<std::string>::const_iterator i = chunks.begin();
-       i != chunks.end();
-       ++i) {
-    observed_content.append(*i);
-  }
-  EXPECT_EQ(expected_content, observed_content);
+  base::RunLoop().RunUntilIdle();
 }
 
 // Helper function to make a character array filled with |size| bytes of

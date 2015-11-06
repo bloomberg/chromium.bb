@@ -146,15 +146,14 @@ TEST(HttpStreamParser, ShouldMergeRequestHeadersAndBody_ChunkedBody) {
 }
 
 TEST(HttpStreamParser, ShouldMergeRequestHeadersAndBody_FileBody) {
+  // Create an empty temporary file.
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  base::FilePath temp_file_path;
+  ASSERT_TRUE(base::CreateTemporaryFileInDir(temp_dir.path(), &temp_file_path));
+
   {
     ScopedVector<UploadElementReader> element_readers;
-
-    // Create an empty temporary file.
-    base::ScopedTempDir temp_dir;
-    ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-    base::FilePath temp_file_path;
-    ASSERT_TRUE(base::CreateTemporaryFileInDir(temp_dir.path(),
-                                               &temp_file_path));
 
     element_readers.push_back(
         new UploadFileElementReader(base::ThreadTaskRunnerHandle::Get().get(),
@@ -169,6 +168,7 @@ TEST(HttpStreamParser, ShouldMergeRequestHeadersAndBody_FileBody) {
     ASSERT_FALSE(HttpStreamParser::ShouldMergeRequestHeadersAndBody(
         "some header", body.get()));
   }
+
   // UploadFileElementReaders may post clean-up tasks on destruction.
   base::RunLoop().RunUntilIdle();
 }
