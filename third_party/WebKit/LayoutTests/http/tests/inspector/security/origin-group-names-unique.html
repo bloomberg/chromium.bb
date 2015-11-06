@@ -1,0 +1,29 @@
+<html>
+<head>
+<script src="../inspector-test.js"></script>
+<script>
+var initialize_SecurityTest = function()
+{
+    InspectorTest.preloadPanel("security");
+}
+
+function test()
+{
+    var originGroupNameSize = Object.keys(WebInspector.SecurityPanelSidebarTree.OriginGroupName).length;
+
+    var deduplicatedNames = new Set();
+    for (var key in WebInspector.SecurityPanelSidebarTree.OriginGroupName) {
+        var name = WebInspector.SecurityPanelSidebarTree.OriginGroupName[key];
+        deduplicatedNames.add(name);
+    }
+
+    InspectorTest.addResult("Number of names (" + originGroupNameSize + ") == number of unique names (" + deduplicatedNames.size + "): " + (originGroupNameSize == deduplicatedNames.size) + " (expected: true)");
+
+    InspectorTest.completeTest();
+}
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests that origin group names in the Security panel are distinct.</p>
+</body>
+</html>
