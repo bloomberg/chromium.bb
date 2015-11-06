@@ -526,38 +526,38 @@ class MasterCQSyncTest(MasterCQSyncTestCase):
   def testCommitNonManifestChange(self):
     """See MasterCQSyncTestCase"""
     changes = self._testCommitNonManifestChange()
-    self.assertItemsEqual(self.sync_stage.pool.changes, changes)
+    self.assertItemsEqual(self.sync_stage.pool.candidates, changes)
     self.assertItemsEqual(self.sync_stage.pool.non_manifest_changes, [])
 
   def testFailedCommitOfNonManifestChange(self):
     """See MasterCQSyncTestCase"""
     changes = self._testFailedCommitOfNonManifestChange()
-    self.assertItemsEqual(self.sync_stage.pool.changes, changes)
+    self.assertItemsEqual(self.sync_stage.pool.candidates, changes)
     self.assertItemsEqual(self.sync_stage.pool.non_manifest_changes, [])
 
   def testCommitManifestChange(self):
     """See MasterCQSyncTestCase"""
     changes = self._testCommitManifestChange()
-    self.assertItemsEqual(self.sync_stage.pool.changes, changes)
+    self.assertItemsEqual(self.sync_stage.pool.candidates, changes)
     self.assertItemsEqual(self.sync_stage.pool.non_manifest_changes, [])
 
   def testCommitManifestChangeWithoutPreCQ(self):
     """Changes get ignored if they aren't approved by pre-cq."""
     self._testCommitManifestChange(pre_cq_status=None)
-    self.assertItemsEqual(self.sync_stage.pool.changes, [])
+    self.assertItemsEqual(self.sync_stage.pool.candidates, [])
     self.assertItemsEqual(self.sync_stage.pool.non_manifest_changes, [])
 
   def testCommitManifestChangeWithoutPreCQAndOldPatches(self):
     """Changes get tested without pre-cq if the approval_timestamp is old."""
     changes = self._testCommitManifestChange(pre_cq_status=None,
                                              approval_timestamp=0)
-    self.assertItemsEqual(self.sync_stage.pool.changes, changes)
+    self.assertItemsEqual(self.sync_stage.pool.candidates, changes)
     self.assertItemsEqual(self.sync_stage.pool.non_manifest_changes, [])
 
   def testDefaultSync(self):
     """See MasterCQSyncTestCase"""
     changes = self._testDefaultSync()
-    self.assertItemsEqual(self.sync_stage.pool.changes, changes)
+    self.assertItemsEqual(self.sync_stage.pool.candidates, changes)
     self.assertItemsEqual(self.sync_stage.pool.non_manifest_changes, [])
 
   def testReload(self):
@@ -565,7 +565,7 @@ class MasterCQSyncTest(MasterCQSyncTestCase):
     # Use zero patches because mock patches can't be pickled.
     changes = self.PerformSync(num_patches=0, runs=0)
     self.ReloadPool()
-    self.assertItemsEqual(self.sync_stage.pool.changes, changes)
+    self.assertItemsEqual(self.sync_stage.pool.candidates, changes)
     self.assertItemsEqual(self.sync_stage.pool.non_manifest_changes, [])
 
   def testTreeClosureBlocksCommit(self):
@@ -579,7 +579,7 @@ class MasterCQSyncTest(MasterCQSyncTestCase):
     gerrit.GerritHelper.Query.assert_called_with(
         mock.ANY, constants.THROTTLED_CQ_READY_QUERY[0],
         sort='lastUpdated')
-    self.assertItemsEqual(self.sync_stage.pool.changes, changes)
+    self.assertItemsEqual(self.sync_stage.pool.candidates, changes)
     self.assertItemsEqual(self.sync_stage.pool.non_manifest_changes, [])
 
 

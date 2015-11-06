@@ -652,7 +652,7 @@ def MakePool(overlays=constants.PUBLIC_OVERLAYS, build_number=1,
              builder_name='foon', is_master=True, dryrun=True,
              fake_db=None, **kwargs):
   """Helper for creating ValidationPool objects for tests."""
-  kwargs.setdefault('changes', [])
+  kwargs.setdefault('candidates', [])
   build_root = kwargs.pop('build_root', '/fake_root')
 
   builder_run = FakeBuilderRun(fake_db)
@@ -785,7 +785,7 @@ class ValidationFailureOrTimeout(MoxBase):
 
   def setUp(self):
     self._patches = self.GetPatches(3)
-    self._pool = MakePool(changes=self._patches, fake_db=self.fake_db)
+    self._pool = MakePool(applied=self._patches, fake_db=self.fake_db)
 
     self.PatchObject(
         triage_lib.CalculateSuspects, 'FindSuspects',
@@ -878,8 +878,8 @@ class TestCoreLogic(MoxBase):
     return cros_patch.ApplyPatchException(patch, inflight=inflight)
 
   def GetPool(self, changes, applied=(), tot=(), inflight=(), **kwargs):
-
-    pool = self.MakePool(changes=changes, fake_db=self.fake_db, **kwargs)
+    pool = self.MakePool(
+        candidates=changes, applied=[], fake_db=self.fake_db, **kwargs)
     applied = list(applied)
     tot = [self.MakeFailure(x, inflight=False) for x in tot]
     inflight = [self.MakeFailure(x, inflight=True) for x in inflight]
@@ -909,7 +909,7 @@ class TestCoreLogic(MoxBase):
     """Verifies that slave calls ApplyChange() directly for each patch."""
     slave_pool = self.MakePool(is_master=False)
     patches = self.GetPatches(3)
-    slave_pool.changes = patches
+    slave_pool.candidates = patches
     for patch in patches:
       # pylint: disable=E1120, E1123
       validation_pool.PatchSeries.ApplyChange(patch, manifest=mox.IgnoreArg())
@@ -920,15 +920,13 @@ class TestCoreLogic(MoxBase):
 
   def runApply(self, pool, result):
     self.assertEqual(result, pool.ApplyPoolIntoRepo())
-    self.assertEqual(pool.changes, pool._test_data[1])
+    self.assertEqual(pool.applied, pool._test_data[1])
     failed_inflight = pool.changes_that_failed_to_apply_earlier
     expected_inflight = set(pool._test_data[3])
     # Intersect the results, since it's possible there were results failed
     # results that weren't related to the ApplyPoolIntoRepo call.
     self.assertEqual(set(failed_inflight).intersection(expected_inflight),
                      expected_inflight)
-
-    self.assertEqual(pool.changes, pool._test_data[1])
 
   def testPatchSeriesInteraction(self):
     """Verify the interaction between PatchSeries and ValidationPool.
@@ -991,7 +989,7 @@ class TestCoreLogic(MoxBase):
     pool = self.MakePool(dryrun=False, handlers=True)
     patches = self.GetPatches(3)
     failed = self.GetPatches(3)
-    pool.changes = patches[:]
+    pool.applied = patches[:]
     # While we don't do anything w/ these patches, that's
     # intentional; we're verifying that it isn't submitted
     # if there is a failure.
@@ -1123,6 +1121,9 @@ class TestCoreLogic(MoxBase):
   def testUnhandledExceptions(self):
     """Test that CQ doesn't loop due to unhandled Exceptions."""
     pool, patches, _failed = self._setUpSubmit()
+
+    pool.candidates = pool.applied
+    pool.applied = []
 
     class MyException(Exception):
       """"Unique Exception used for testing."""
@@ -1371,11 +1372,11 @@ class TestCoreLogic(MoxBase):
     self.mox.ReplayAll()
 
     # Perform test.
-    slave_pool = self.MakePool(changes=patches, tree_was_open=True)
+    slave_pool = self.MakePool(candidates=patches, tree_was_open=True)
     slave_pool.FilterChangesForThrottledTree()
 
     # Validate results.
-    self.assertEqual(len(slave_pool.changes), 4)
+    self.assertEqual(len(slave_pool.candidates), 4)
     self.mox.VerifyAll()
     self.mox.ResetAll()
 
@@ -1388,11 +1389,11 @@ class TestCoreLogic(MoxBase):
     self.mox.ReplayAll()
 
     # Perform test.
-    slave_pool = self.MakePool(changes=patches, tree_was_open=False)
+    slave_pool = self.MakePool(candidates=patches, tree_was_open=False)
     slave_pool.FilterChangesForThrottledTree()
 
     # Validate results.
-    self.assertEqual(len(slave_pool.changes), 2)
+    self.assertEqual(len(slave_pool.candidates), 2)
     self.mox.VerifyAll()
     self.mox.ResetAll()
 
@@ -1405,11 +1406,11 @@ class TestCoreLogic(MoxBase):
     self.mox.ReplayAll()
 
     # Perform test.
-    slave_pool = self.MakePool(changes=patches, tree_was_open=False)
+    slave_pool = self.MakePool(candidates=patches, tree_was_open=False)
     slave_pool.FilterChangesForThrottledTree()
 
     # Validate results.
-    self.assertEqual(len(slave_pool.changes), 1)
+    self.assertEqual(len(slave_pool.candidates), 1)
     self.mox.VerifyAll()
     self.mox.ResetAll()
 
@@ -1422,11 +1423,11 @@ class TestCoreLogic(MoxBase):
     self.mox.ReplayAll()
 
     # Perform test.
-    slave_pool = self.MakePool(changes=patches, tree_was_open=False)
+    slave_pool = self.MakePool(candidates=patches, tree_was_open=False)
     slave_pool.FilterChangesForThrottledTree()
 
     # Validate results.
-    self.assertEqual(len(slave_pool.changes), 1)
+    self.assertEqual(len(slave_pool.candidates), 1)
     self.mox.VerifyAll()
 
 
@@ -1495,7 +1496,7 @@ sys.stdout.write(validation_pool_unittest.TestPickling.%s)
         constants.PUBLIC_OVERLAYS,
         '/fake/pathway', 1,
         'testing', True, True,
-        changes=changes, non_os_changes=non_os,
+        candidates=changes, non_os_changes=non_os,
         conflicting_changes=conflicting)
     return pickle.dumps([pool, changes, non_os, conflicting])
 
@@ -1510,7 +1511,7 @@ sys.stdout.write(validation_pool_unittest.TestPickling.%s)
       for s_item, v_item in zip(source, value):
         assert getter(s_item).id == getter(v_item).id
         assert getter(s_item).remote == getter(v_item).remote
-    _f(pool.changes, changes)
+    _f(pool.candidates, changes)
     _f(pool.non_manifest_changes, non_os)
     _f(pool.changes_that_failed_to_apply_earlier, conflicting,
        getter=lambda s: getattr(s, 'patch', s))
@@ -1640,8 +1641,8 @@ class TestCreateDisjointTransactions(MoxBase):
       # the specified length, ignoring any remaining patches.
       expected_plans = [txn[:max_txn_length] for txn in txns]
 
-    pool = MakePool(changes=patches)
-    plans = pool.CreateDisjointTransactions(None, pool.changes,
+    pool = MakePool(candidates=patches)
+    plans = pool.CreateDisjointTransactions(None, pool.candidates,
                                             max_txn_length=max_txn_length)
 
     # If the dependencies are circular, the order of the patches is not
@@ -1665,7 +1666,7 @@ class TestCreateDisjointTransactions(MoxBase):
     notify = self.PatchObject(validation_pool.ValidationPool,
                               'SendNotification')
     remove = self.PatchObject(gerrit.GerritHelper, 'RemoveReady')
-    pool = MakePool(changes=changes)
+    pool = MakePool(candidates=changes)
     plans = pool.CreateDisjointTransactions(None, changes,
                                             max_txn_length=max_txn_length)
     self.assertEqual(plans, [])
@@ -1764,7 +1765,7 @@ class BaseSubmitPoolTestCase(MoxBase):
     self.patches = self.GetPatches(2)
 
   def SetUpPatchPool(self, failed_to_apply=False):
-    pool = MakePool(changes=self.patches, dryrun=False)
+    pool = MakePool(candidates=self.patches, dryrun=False)
     if failed_to_apply:
       # Create some phony errors and add them to the pool.
       errors = []
@@ -1788,7 +1789,7 @@ class BaseSubmitPoolTestCase(MoxBase):
     with mock.patch.object(git.ManifestCheckout, 'Cached', new=mock_manifest):
       if not self.ALL_BUILDS_PASSED:
         actually_rejected = sorted(pool.SubmitPartialPool(
-            pool.changes, mock.ANY, dict(), [], [], [], reason=reason))
+            pool.candidates, mock.ANY, dict(), [], [], [], reason=reason))
       else:
         _, actually_rejected = pool.SubmitChanges(self.patches, reason=reason)
 
@@ -2027,17 +2028,17 @@ class LoadManifestTest(cros_test_lib.TempDirTestCase):
       f.flush()
       self.pool.AddPendingCommitsIntoPool(f.name)
 
-    self.assertEqual(self.pool.changes[0].owner_email, 'foo@chromium.org')
-    self.assertEqual(self.pool.changes[0].tracking_branch, 'master')
-    self.assertEqual(self.pool.changes[0].remote, 'cros')
-    self.assertEqual(self.pool.changes[0].gerrit_number, '17000')
-    self.assertEqual(self.pool.changes[0].project, 'chromiumos/taco/bar')
-    self.assertEqual(self.pool.changes[0].project_url,
+    self.assertEqual(self.pool.candidates[0].owner_email, 'foo@chromium.org')
+    self.assertEqual(self.pool.candidates[0].tracking_branch, 'master')
+    self.assertEqual(self.pool.candidates[0].remote, 'cros')
+    self.assertEqual(self.pool.candidates[0].gerrit_number, '17000')
+    self.assertEqual(self.pool.candidates[0].project, 'chromiumos/taco/bar')
+    self.assertEqual(self.pool.candidates[0].project_url,
                      'https://base_url/chromiumos/taco/bar')
-    self.assertEqual(self.pool.changes[0].change_id,
+    self.assertEqual(self.pool.candidates[0].change_id,
                      'Ieeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee1')
-    self.assertEqual(self.pool.changes[0].commit,
+    self.assertEqual(self.pool.candidates[0].commit,
                      '1ddddddddddddddddddddddddddddddddddddddd')
-    self.assertEqual(self.pool.changes[0].fail_count, 2)
-    self.assertEqual(self.pool.changes[0].pass_count, 0)
-    self.assertEqual(self.pool.changes[0].total_fail_count, 3)
+    self.assertEqual(self.pool.candidates[0].fail_count, 2)
+    self.assertEqual(self.pool.candidates[0].pass_count, 0)
+    self.assertEqual(self.pool.candidates[0].total_fail_count, 3)
