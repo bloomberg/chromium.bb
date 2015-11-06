@@ -9,6 +9,8 @@ import android.os.AsyncTask;
 
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
+import org.chromium.chrome.GoogleAPIKeys;
+import org.chromium.chrome.browser.ChromeVersionInfo;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -23,7 +25,8 @@ import java.util.Collection;
  */
 class PwsClient {
     private static final String TAG = "PhysicalWeb";
-    private static final String ENDPOINT_URL = "https://url-caster.appspot.com/resolve-scan";
+    private static final String ENDPOINT_URL =
+            "https://physicalweb.googleapis.com/v1alpha1/urls:resolve";
 
     /**
      * Callback that is run after the PWS sends a response to a resolve-scan request.
@@ -48,6 +51,14 @@ class PwsClient {
         public void onIconReceived(String iconUrl, Bitmap iconBitmap);
     }
 
+    private String getApiKey() {
+        if (ChromeVersionInfo.isStableBuild()) {
+            return GoogleAPIKeys.GOOGLE_API_KEY;
+        } else {
+            return GoogleAPIKeys.GOOGLE_API_KEY_PHYSICAL_WEB_TEST;
+        }
+    }
+
     private static JSONObject createResolveScanPayload(Collection<String> urls)
             throws JSONException {
         // Encode the urls.
@@ -60,7 +71,7 @@ class PwsClient {
 
         // Organize the data into a single object.
         JSONObject jsonObject = new JSONObject();
-        jsonObject.put("objects", objects);
+        jsonObject.put("urls", objects);
         return jsonObject;
     }
 
@@ -69,9 +80,9 @@ class PwsClient {
         Collection<PwsResult> pwsResults = new ArrayList<>();
         JSONArray metadata;
         try {
-            metadata = result.getJSONArray("metadata");
+            metadata = result.getJSONArray("results");
         } catch (JSONException e) {
-            Log.e(TAG, "PWS returned invalid metadata", e);
+            Log.e(TAG, "PWS returned invalid data", e);
             return pwsResults;
         }
 
@@ -79,14 +90,15 @@ class PwsClient {
         for (int i = 0; i < metadata.length(); i++) {
             try {
                 JSONObject obj = metadata.getJSONObject(i);
-                String requestUrl = obj.getString("id");
-                String siteUrl = obj.getString("url");
-                String iconUrl = obj.optString("icon", null);
-                String title = obj.optString("title", "");
-                String description = obj.optString("description", "");
-                pwsResults.add(new PwsResult(requestUrl, siteUrl, iconUrl, title, description));
+                JSONObject pageInfo = obj.getJSONObject("pageInfo");
+                String scannedUrl = obj.getString("scannedUrl");
+                String resolvedUrl = obj.getString("resolvedUrl");
+                String iconUrl = pageInfo.optString("icon", null);
+                String title = pageInfo.optString("title", "");
+                String description = pageInfo.optString("description", "");
+                pwsResults.add(new PwsResult(scannedUrl, resolvedUrl, iconUrl, title, description));
             } catch (JSONException e) {
-                Log.e(TAG, "PWS returned invalid metadata", e);
+                Log.e(TAG, "PWS returned invalid data", e);
                 continue;
             }
         }
@@ -126,7 +138,8 @@ class PwsClient {
         HttpRequest request = null;
         try {
             JSONObject payload = createResolveScanPayload(broadcastUrls);
-            request = new JsonObjectHttpRequest(ENDPOINT_URL, payload, requestCallback);
+            String url = ENDPOINT_URL + "?key=" + getApiKey();
+            request = new JsonObjectHttpRequest(url, payload, requestCallback);
         } catch (MalformedURLException e) {
             Log.e(TAG, "Error creating PWS HTTP request", e);
             return;

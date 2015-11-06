@@ -70,6 +70,11 @@ def GetAPIKey():
   return _GetToken('GOOGLE_API_KEY')
 
 
+def GetAPIKeyPhysicalWebTest():
+  """Returns the API key to test Physical Web service."""
+  return _GetToken('GOOGLE_API_KEY_PHYSICAL_WEB_TEST')
+
+
 def GetAPIKeyRemoting():
   """Returns the simple API key."""
   return _GetToken('GOOGLE_API_KEY_REMOTING')
