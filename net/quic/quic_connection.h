@@ -916,6 +916,10 @@ class NET_EXPORT_PRIVATE QuicConnection
   // packet.
   QuicTime time_of_last_sent_new_packet_;
 
+  // The the send time of the first retransmittable packet sent after
+  // |time_of_last_received_packet_|.
+  QuicTime last_send_for_timeout_;
+
   // packet number of the last sent packet.  Packets are guaranteed to be sent
   // in packet number order.
   QuicPacketNumber packet_number_of_last_sent_packet_;

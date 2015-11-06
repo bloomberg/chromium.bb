@@ -301,6 +301,7 @@ QuicConnection::QuicConnection(QuicConnectionId connection_id,
       overall_connection_timeout_(QuicTime::Delta::Infinite()),
       time_of_last_received_packet_(clock_->ApproximateNow()),
       time_of_last_sent_new_packet_(clock_->ApproximateNow()),
+      last_send_for_timeout_(clock_->ApproximateNow()),
       packet_number_of_last_sent_packet_(0),
       sent_packet_manager_(
           perspective,
@@ -1002,6 +1003,7 @@ void QuicConnection::OnPacketComplete() {
 
   ClearLastFrames();
   MaybeCloseIfTooManyOutstandingPackets();
+  MaybeProcessRevivedPacket();
 }
 
 void QuicConnection::MaybeQueueAck() {
@@ -1256,7 +1258,6 @@ void QuicConnection::ProcessUdpPacket(const IPEndPoint& self_address,
 
   ++stats_.packets_processed;
   MaybeProcessUndecryptablePackets();
-  MaybeProcessRevivedPacket();
   MaybeSendInResponseToPacket();
   SetPingAlarm();
 }
@@ -1582,6 +1583,10 @@ bool QuicConnection::WritePacketInner(QueuedPacket* packet) {
   }
   if (packet->transmission_type == NOT_RETRANSMISSION) {
     time_of_last_sent_new_packet_ = packet_send_time;
+    if (IsRetransmittable(*packet) == HAS_RETRANSMITTABLE_DATA &&
+        last_send_for_timeout_ <= time_of_last_received_packet_) {
+      last_send_for_timeout_ = packet_send_time;
+    }
   }
   SetPingAlarm();
   MaybeSetFecAlarm(packet_number);
@@ -2083,8 +2088,14 @@ void QuicConnection::SetNetworkTimeouts(QuicTime::Delta overall_timeout,
 
 void QuicConnection::CheckForTimeout() {
   QuicTime now = clock_->ApproximateNow();
-  QuicTime time_of_last_packet = max(time_of_last_received_packet_,
-                                     time_of_last_sent_new_packet_);
+  QuicTime time_of_last_packet = QuicTime::Zero();
+  if (!FLAGS_quic_use_new_idle_timeout) {
+    time_of_last_packet =
+        max(time_of_last_received_packet_, time_of_last_sent_new_packet_);
+  } else {
+    time_of_last_packet =
+        max(time_of_last_received_packet_, last_send_for_timeout_);
+  }
 
   // |delta| can be < 0 as |now| is approximate time but |time_of_last_packet|
   // is accurate time. However, this should not change the behavior of

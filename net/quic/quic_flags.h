@@ -36,5 +36,6 @@ NET_EXPORT_PRIVATE extern bool FLAGS_quic_no_ack_notifier;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_count_unfinished_as_open_streams;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_packet_creator_prefetch;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_disable_non_nat_address_migration;
+NET_EXPORT_PRIVATE extern bool FLAGS_quic_use_new_idle_timeout;
 
 #endif  // NET_QUIC_QUIC_FLAGS_H_

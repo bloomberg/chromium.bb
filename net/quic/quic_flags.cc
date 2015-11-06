@@ -115,3 +115,7 @@ bool FLAGS_quic_packet_creator_prefetch = false;
 // If true, only migrate QUIC connections when client address changes are
 // considered to be caused by NATs.
 bool FLAGS_quic_disable_non_nat_address_migration = true;
+
+// If true, QUIC connections will timeout when packets are not being recieved,
+// even if they are being sent.
+bool FLAGS_quic_use_new_idle_timeout = true;
