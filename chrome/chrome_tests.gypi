@@ -3191,7 +3191,7 @@
           'conditions': [
             ['OS=="linux" or OS=="mac"', {
               'dependencies': [
-                '../breakpad/breakpad.gyp:dump_syms',
+                '../breakpad/breakpad.gyp:dump_syms#host',
               ],
             }],
             ['OS=="mac"', {
