@@ -11,6 +11,7 @@
     # These files must not depend on files listed in sources list in the net
     # target.
     'net_nacl_common_sources' : [
+      'base/address_family.cc',
       'base/address_family.h',
       'base/address_list.cc',
       'base/address_list.h',
@@ -1260,6 +1261,7 @@
       'android/keystore_unittest.cc',
       'android/network_change_notifier_android_unittest.cc',
       'android/traffic_stats_unittest.cc',
+      'base/address_family_unittest.cc',
       'base/address_list_unittest.cc',
       'base/address_tracker_linux_unittest.cc',
       'base/backoff_entry_serializer_unittest.cc',

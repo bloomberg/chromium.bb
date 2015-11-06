@@ -481,30 +481,6 @@ bool HaveOnlyLoopbackAddresses() {
 #endif  // defined(various platforms)
 }
 
-AddressFamily GetAddressFamily(const IPAddressNumber& address) {
-  switch (address.size()) {
-    case kIPv4AddressSize:
-      return ADDRESS_FAMILY_IPV4;
-    case kIPv6AddressSize:
-      return ADDRESS_FAMILY_IPV6;
-    default:
-      return ADDRESS_FAMILY_UNSPECIFIED;
-  }
-}
-
-int ConvertAddressFamily(AddressFamily address_family) {
-  switch (address_family) {
-    case ADDRESS_FAMILY_UNSPECIFIED:
-      return AF_UNSPEC;
-    case ADDRESS_FAMILY_IPV4:
-      return AF_INET;
-    case ADDRESS_FAMILY_IPV6:
-      return AF_INET6;
-  }
-  NOTREACHED();
-  return AF_UNSPEC;
-}
-
 const uint16_t* GetPortFieldFromSockaddr(const struct sockaddr* address,
                                          socklen_t address_len) {
   if (address->sa_family == AF_INET) {

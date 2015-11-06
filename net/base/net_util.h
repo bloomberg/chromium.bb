@@ -21,9 +21,7 @@
 #include "base/basictypes.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_offset_string_conversions.h"
-#include "net/base/address_family.h"
 #include "net/base/escape.h"
-#include "net/base/net_export.h"
 #include "net/base/network_change_notifier.h"
 
 class GURL;
@@ -175,13 +173,6 @@ NET_EXPORT_PRIVATE GURL SimplifyUrlForRequest(const GURL& url);
 // i.e. if only 127.0.0.1 and ::1 are routable.
 // Also returns false if it cannot determine this.
 bool HaveOnlyLoopbackAddresses();
-
-// Returns AddressFamily of the address.
-NET_EXPORT_PRIVATE AddressFamily GetAddressFamily(
-    const IPAddressNumber& address);
-
-// Maps the given AddressFamily to either AF_INET, AF_INET6 or AF_UNSPEC.
-NET_EXPORT_PRIVATE int ConvertAddressFamily(AddressFamily address_family);
 
 // Retuns the port field of the |sockaddr|.
 const uint16_t* GetPortFieldFromSockaddr(const struct sockaddr* address,
