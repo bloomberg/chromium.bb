@@ -177,10 +177,13 @@ struct wayland_input {
 	enum weston_key_state_update keyboard_state_update;
 	uint32_t key_serial;
 	uint32_t enter_serial;
+	uint32_t touch_points;
+	bool touch_active;
 	bool has_focus;
 	int seat_version;
 
 	struct wayland_output *output;
+	struct wayland_output *touch_focus;
 	struct wayland_output *keyboard_focus;
 };
 
@@ -1619,6 +1622,148 @@ static const struct wl_keyboard_listener keyboard_listener = {
 };
 
 static void
+input_handle_touch_down(void *data, struct wl_touch *wl_touch,
+			uint32_t serial, uint32_t time,
+			struct wl_surface *surface, int32_t id, wl_fixed_t x,
+			wl_fixed_t y)
+{
+	struct wayland_input *input = data;
+	struct wayland_output *output;
+	enum theme_location location;
+	bool first_touch;
+	int32_t fx, fy;
+
+	first_touch = (input->touch_points == 0);
+	input->touch_points++;
+
+	input->touch_focus = wl_surface_get_user_data(surface);
+	output = input->touch_focus;
+	if (!first_touch && !input->touch_active)
+		return;
+
+	if (output->frame) {
+		location = frame_touch_down(output->frame, input, id,
+					    wl_fixed_to_int(x),
+					    wl_fixed_to_int(y));
+
+		frame_interior(output->frame, &fx, &fy, NULL, NULL);
+		x -= wl_fixed_from_int(fx);
+		y -= wl_fixed_from_int(fy);
+
+		if (frame_status(output->frame) & FRAME_STATUS_REPAINT)
+			weston_output_schedule_repaint(&output->base);
+
+		if (first_touch && (frame_status(output->frame) & FRAME_STATUS_MOVE)) {
+			input->touch_points--;
+			wl_shell_surface_move(output->parent.shell_surface,
+					      input->parent.seat, serial);
+			frame_status_clear(output->frame,
+					   FRAME_STATUS_MOVE);
+			return;
+		}
+
+		if (first_touch && location != THEME_LOCATION_CLIENT_AREA)
+			return;
+	}
+
+	weston_output_transform_coordinate(&output->base, x, y, &x, &y);
+
+	notify_touch(&input->base, time, id, x, y, WL_TOUCH_DOWN);
+	input->touch_active = true;
+}
+
+static void
+input_handle_touch_up(void *data, struct wl_touch *wl_touch,
+		      uint32_t serial, uint32_t time, int32_t id)
+{
+	struct wayland_input *input = data;
+	struct wayland_output *output = input->touch_focus;
+	bool active = input->touch_active;
+
+	input->touch_points--;
+	if (input->touch_points == 0) {
+		input->touch_focus = NULL;
+		input->touch_active = false;
+	}
+
+	if (!output)
+		return;
+
+	if (output->frame) {
+		frame_touch_up(output->frame, input, id);
+
+		if (frame_status(output->frame) & FRAME_STATUS_CLOSE) {
+			wayland_output_destroy(&output->base);
+			input->touch_focus = NULL;
+			input->keyboard_focus = NULL;
+			if (wl_list_empty(&input->backend->compositor->output_list))
+				weston_compositor_exit(input->backend->compositor);
+
+			return;
+		}
+		if (frame_status(output->frame) & FRAME_STATUS_REPAINT)
+			weston_output_schedule_repaint(&output->base);
+	}
+
+	if (active)
+		notify_touch(&input->base, time, id, 0, 0, WL_TOUCH_UP);
+}
+
+static void
+input_handle_touch_motion(void *data, struct wl_touch *wl_touch,
+                        uint32_t time, int32_t id, wl_fixed_t x,
+                        wl_fixed_t y)
+{
+	struct wayland_input *input = data;
+	struct wayland_output *output = input->touch_focus;
+	int32_t fx, fy;
+
+	if (!output || !input->touch_active)
+		return;
+
+	if (output->frame) {
+		frame_interior(output->frame, &fx, &fy, NULL, NULL);
+		x -= wl_fixed_from_int(fx);
+		y -= wl_fixed_from_int(fy);
+	}
+
+	weston_output_transform_coordinate(&output->base, x, y, &x, &y);
+
+	notify_touch(&input->base, time, id, x, y, WL_TOUCH_MOTION);
+}
+
+static void
+input_handle_touch_frame(void *data, struct wl_touch *wl_touch)
+{
+	struct wayland_input *input = data;
+
+	if (!input->touch_focus || !input->touch_active)
+		return;
+
+	notify_touch_frame(&input->base);
+}
+
+static void
+input_handle_touch_cancel(void *data, struct wl_touch *wl_touch)
+{
+	struct wayland_input *input = data;
+
+	if (!input->touch_focus || !input->touch_active)
+		return;
+
+	notify_touch_cancel(&input->base);
+}
+
+static const struct wl_touch_listener touch_listener = {
+	input_handle_touch_down,
+	input_handle_touch_up,
+	input_handle_touch_motion,
+	input_handle_touch_frame,
+	input_handle_touch_cancel,
+};
+
+
+static void
 input_handle_capabilities(void *data, struct wl_seat *seat,
 		          enum wl_seat_capability caps)
 {
@@ -1651,6 +1796,21 @@ input_handle_capabilities(void *data, struct wl_seat *seat,
 			wl_keyboard_destroy(input->parent.keyboard);
 		input->parent.keyboard = NULL;
 		weston_seat_release_keyboard(&input->base);
+	}
+
+	if ((caps & WL_SEAT_CAPABILITY_TOUCH) && !input->parent.touch) {
+		input->parent.touch = wl_seat_get_touch(seat);
+		wl_touch_set_user_data(input->parent.touch, input);
+		wl_touch_add_listener(input->parent.touch,
+				      &touch_listener, input);
+		weston_seat_init_touch(&input->base);
+	} else if (!(caps & WL_SEAT_CAPABILITY_TOUCH) && input->parent.touch) {
+		if (input->seat_version >= WL_TOUCH_RELEASE_SINCE_VERSION)
+			wl_touch_release(input->parent.touch);
+		else
+			wl_touch_destroy(input->parent.touch);
+		input->parent.touch = NULL;
+		weston_seat_release_touch(&input->base);
 	}
 }
 
