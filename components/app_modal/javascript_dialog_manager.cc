@@ -14,6 +14,7 @@
 #include "components/app_modal/javascript_native_dialog_factory.h"
 #include "components/app_modal/native_app_modal_dialog.h"
 #include "components/url_formatter/elide_url.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/javascript_message_type.h"
 #include "grit/components_strings.h"
 #include "net/base/net_util.h"
@@ -198,15 +199,24 @@ base::string16 JavaScriptDialogManager::GetTitle(
   if (extensions_client_->GetExtensionName(web_contents, origin_url, &name))
     return base::UTF8ToUTF16(name);
 
-  // Otherwise, return the formatted URL.
-  base::string16 url_string =
-      url_formatter::FormatUrlForSecurityDisplayOmitScheme(origin_url,
-                                                           accept_lang);
-
-  return l10n_util::GetStringFUTF16(
-      is_alert ? IDS_JAVASCRIPT_ALERT_TITLE
-      : IDS_JAVASCRIPT_MESSAGEBOX_TITLE,
-      base::i18n::GetDisplayStringInLTRDirectionality(url_string));
+  // Otherwise, return the formatted URL. For non-standard URLs such as |data:|,
+  // just say "This page".
+  bool is_same_origin_as_main_frame =
+      (web_contents->GetURL().GetOrigin() == origin_url.GetOrigin());
+  if (origin_url.IsStandard() && !origin_url.SchemeIsFile() &&
+      !origin_url.SchemeIsFileSystem()) {
+    base::string16 url_string =
+        url_formatter::FormatUrlForSecurityDisplayOmitScheme(origin_url,
+                                                             accept_lang);
+    return l10n_util::GetStringFUTF16(
+        is_same_origin_as_main_frame ? IDS_JAVASCRIPT_MESSAGEBOX_TITLE
+                                     : IDS_JAVASCRIPT_MESSAGEBOX_TITLE_IFRAME,
+        base::i18n::GetDisplayStringInLTRDirectionality(url_string));
+  }
+  return l10n_util::GetStringUTF16(
+      is_same_origin_as_main_frame
+          ? IDS_JAVASCRIPT_MESSAGEBOX_TITLE_NONSTANDARD_URL
+          : IDS_JAVASCRIPT_MESSAGEBOX_TITLE_NONSTANDARD_URL_IFRAME);
 }
 
 void JavaScriptDialogManager::CancelActiveAndPendingDialogs(
