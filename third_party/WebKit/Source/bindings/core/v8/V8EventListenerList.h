@@ -64,7 +64,7 @@ public:
     static void clearWrapper(v8::Local<v8::Object> listenerObject, bool isAttribute, v8::Isolate* isolate)
     {
         v8::Local<v8::String> wrapperProperty = getHiddenProperty(isAttribute, isolate);
-        listenerObject->DeleteHiddenValue(wrapperProperty);
+        V8HiddenValue::deleteHiddenValue(isolate, listenerObject, wrapperProperty);
     }
 
     CORE_EXPORT static PassRefPtrWillBeRawPtr<EventListener> getEventListener(ScriptState*, v8::Local<v8::Value>, bool isAttribute, ListenerLookupType);
@@ -74,7 +74,7 @@ private:
     {
         v8::HandleScope scope(scriptState->isolate());
         ASSERT(scriptState->isolate()->InContext());
-        v8::Local<v8::Value> listener = object->GetHiddenValue(wrapperProperty);
+        v8::Local<v8::Value> listener = V8HiddenValue::getHiddenValue(scriptState->isolate(), object, wrapperProperty);
         if (listener.IsEmpty())
             return 0;
         return static_cast<V8EventListener*>(v8::External::Cast(*listener)->Value());
@@ -103,7 +103,7 @@ PassRefPtrWillBeRawPtr<V8EventListener> V8EventListenerList::findOrCreateWrapper
 
     RefPtrWillBeRawPtr<V8EventListener> wrapperPtr = WrapperType::create(object, isAttribute, scriptState);
     if (wrapperPtr)
-        object->SetHiddenValue(wrapperProperty, v8::External::New(isolate, wrapperPtr.get()));
+        V8HiddenValue::setHiddenValue(isolate, object, wrapperProperty, v8::External::New(isolate, wrapperPtr.get()));
 
     return wrapperPtr;
 }

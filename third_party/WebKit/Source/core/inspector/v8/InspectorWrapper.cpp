@@ -51,7 +51,7 @@ v8::Local<v8::Object> InspectorWrapperBase::createWrapper(v8::Local<v8::Function
 void* InspectorWrapperBase::unwrap(v8::Local<v8::Object> object, const char* name)
 {
     v8::Isolate* isolate = object->GetIsolate();
-    v8::Local<v8::Value> value = object->GetHiddenValue(v8InternalizedString(isolate, name));
+    v8::Local<v8::Value> value = V8HiddenValue::getHiddenValue(isolate, object, v8InternalizedString(isolate, name));
     if (value.IsEmpty())
         return nullptr;
     if (!value->IsExternal())

@@ -159,8 +159,8 @@ void ScriptPromisePropertyBase::clearWrappers()
     for (WeakPersistentSet::iterator i = m_wrappers.begin(); i != m_wrappers.end(); ++i) {
         v8::Local<v8::Object> wrapper = (*i)->newLocal(m_isolate);
         if (!wrapper.IsEmpty()) {
-            wrapper->DeleteHiddenValue(resolverName());
-            wrapper->DeleteHiddenValue(promiseName());
+            V8HiddenValue::deleteHiddenValue(m_isolate, wrapper, resolverName());
+            V8HiddenValue::deleteHiddenValue(m_isolate, wrapper, promiseName());
         }
     }
     m_wrappers.clear();
