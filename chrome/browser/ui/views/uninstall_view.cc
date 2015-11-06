@@ -80,8 +80,10 @@ void UninstallView::SetupControls() {
   if (dist->GetDefaultBrowserControlPolicy() !=
           BrowserDistribution::DEFAULT_BROWSER_UNSUPPORTED &&
       ShellIntegration::GetDefaultBrowser() == ShellIntegration::IS_DEFAULT &&
-      (ShellIntegration::CanSetAsDefaultBrowser() !=
-          ShellIntegration::SET_DEFAULT_INTERACTIVE)) {
+      (ShellIntegration::CanSetAsDefaultBrowser() ==
+          ShellIntegration::SET_DEFAULT_NOT_ALLOWED ||
+       ShellIntegration::CanSetAsDefaultBrowser() ==
+          ShellIntegration::SET_DEFAULT_UNATTENDED)) {
     browsers_.reset(new BrowsersMap());
     ShellUtil::GetRegisteredBrowsers(dist, browsers_.get());
     if (!browsers_->empty()) {
