@@ -5,12 +5,12 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "base/message_loop/message_loop.h"
+#include "mojo/message_pump/message_pump_mojo.h"
 #include "mojo/public/cpp/bindings/lib/connector.h"
 #include "mojo/public/cpp/bindings/lib/message_builder.h"
 #include "mojo/public/cpp/bindings/tests/message_queue.h"
-#include "mojo/public/cpp/environment/environment.h"
 #include "mojo/public/cpp/system/macros.h"
-#include "mojo/public/cpp/utility/run_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
@@ -73,7 +73,7 @@ class ReentrantMessageAccumulator : public MessageAccumulator {
 
 class ConnectorTest : public testing::Test {
  public:
-  ConnectorTest() {}
+  ConnectorTest() : loop_(common::MessagePumpMojo::Create()) {}
 
   void SetUp() override {
     CreateMessagePipe(nullptr, &handle0_, &handle1_);
@@ -96,8 +96,7 @@ class ConnectorTest : public testing::Test {
   ScopedMessagePipeHandle handle1_;
 
  private:
-  Environment env_;
-  RunLoop loop_;
+  base::MessageLoop loop_;
 };
 
 TEST_F(ConnectorTest, Basic) {
@@ -249,7 +248,7 @@ TEST_F(ConnectorTest, WriteToClosedPipe) {
   // Close the other end of the pipe.
   handle1_.reset();
 
-  // Not observed yet because we haven't spun the RunLoop yet.
+  // Not observed yet because we haven't spun the message loop yet.
   EXPECT_FALSE(connector0.encountered_error());
 
   // Write failures are not reported.
@@ -259,7 +258,7 @@ TEST_F(ConnectorTest, WriteToClosedPipe) {
   // Still not observed.
   EXPECT_FALSE(connector0.encountered_error());
 
-  // Spin the RunLoop, and then we should start observing the closed pipe.
+  // Spin the message loop, and then we should start observing the closed pipe.
   PumpMessages();
 
   EXPECT_TRUE(connector0.encountered_error());

@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "mojo/public/cpp/bindings/lib/value_traits.h"
-#include "mojo/public/cpp/environment/environment.h"
 #include "mojo/public/interfaces/bindings/tests/test_structs.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -21,14 +20,9 @@ RectPtr CreateRect() {
   return r.Pass();
 }
 
-class EqualsTest : public testing::Test {
- public:
-  ~EqualsTest() override {}
+using EqualsTest = testing::Test;
 
- private:
-  Environment env_;
-};
-}
+}  // namespace
 
 TEST_F(EqualsTest, NullStruct) {
   RectPtr r1;

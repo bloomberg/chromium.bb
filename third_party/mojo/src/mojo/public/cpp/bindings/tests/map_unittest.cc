@@ -10,7 +10,6 @@
 #include "mojo/public/cpp/bindings/map.h"
 #include "mojo/public/cpp/bindings/string.h"
 #include "mojo/public/cpp/bindings/tests/container_test_util.h"
-#include "mojo/public/cpp/environment/environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
@@ -36,13 +35,7 @@ struct StringIntData {
 
 const size_t kStringIntDataSize = 4;
 
-class MapTest : public testing::Test {
- public:
-  ~MapTest() override {}
-
- private:
-  Environment env_;
-};
+using MapTest = testing::Test;
 
 // Tests that basic Map operations work.
 TEST_F(MapTest, InsertWorks) {

@@ -5,7 +5,6 @@
 #include <string.h>
 
 #include "mojo/public/cpp/bindings/lib/fixed_buffer.h"
-#include "mojo/public/cpp/environment/environment.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "mojo/public/interfaces/bindings/tests/test_structs.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -72,13 +71,7 @@ U SerializeAndDeserialize(T input) {
   return output.Pass();
 }
 
-class StructTest : public testing::Test {
- public:
-  ~StructTest() override {}
-
- private:
-  Environment env_;
-};
+using StructTest = testing::Test;
 
 }  // namespace
 

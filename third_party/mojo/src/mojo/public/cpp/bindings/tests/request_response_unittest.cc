@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/message_loop/message_loop.h"
+#include "mojo/message_pump/message_pump_mojo.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/environment/environment.h"
 #include "mojo/public/cpp/test_support/test_utils.h"
-#include "mojo/public/cpp/utility/run_loop.h"
 #include "mojo/public/interfaces/bindings/tests/sample_import.mojom.h"
 #include "mojo/public/interfaces/bindings/tests/sample_interfaces.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -85,13 +85,13 @@ class MessagePipeWriter {
 
 class RequestResponseTest : public testing::Test {
  public:
+  RequestResponseTest() : loop_(common::MessagePumpMojo::Create()) {}
   ~RequestResponseTest() override { loop_.RunUntilIdle(); }
 
   void PumpMessages() { loop_.RunUntilIdle(); }
 
  private:
-  Environment env_;
-  RunLoop loop_;
+  base::MessageLoop loop_;
 };
 
 TEST_F(RequestResponseTest, EchoString) {

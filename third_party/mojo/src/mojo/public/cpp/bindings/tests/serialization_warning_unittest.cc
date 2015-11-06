@@ -11,7 +11,6 @@
 #include "mojo/public/cpp/bindings/lib/fixed_buffer.h"
 #include "mojo/public/cpp/bindings/lib/validation_errors.h"
 #include "mojo/public/cpp/bindings/string.h"
-#include "mojo/public/cpp/environment/environment.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "mojo/public/interfaces/bindings/tests/serialization_test_structs.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -80,7 +79,6 @@ class SerializationWarningTest : public testing::Test {
   }
 
   mojo::internal::SerializationWarningObserverForTesting warning_observer_;
-  Environment env_;
 };
 
 TEST_F(SerializationWarningTest, HandleInStruct) {

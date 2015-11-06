@@ -3,6 +3,9 @@
 // found in the LICENSE file.
 
 #include <vector>
+
+#include "base/message_loop/message_loop.h"
+#include "mojo/message_pump/message_pump_mojo.h"
 #include "mojo/public/cpp/bindings/array.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/lib/array_internal.h"
@@ -10,9 +13,7 @@
 #include "mojo/public/cpp/bindings/lib/bounds_checker.h"
 #include "mojo/public/cpp/bindings/lib/fixed_buffer.h"
 #include "mojo/public/cpp/bindings/string.h"
-#include "mojo/public/cpp/environment/environment.h"
 #include "mojo/public/cpp/test_support/test_utils.h"
-#include "mojo/public/cpp/utility/run_loop.h"
 #include "mojo/public/interfaces/bindings/tests/test_structs.mojom.h"
 #include "mojo/public/interfaces/bindings/tests/test_unions.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -220,7 +221,6 @@ TEST(UnionTest, NullValidation) {
 }
 
 TEST(UnionTest, OutOfAlignmentValidation) {
-  Environment environment;
   size_t size = sizeof(internal::PodUnion_Data);
   // Get an aligned object and shift the alignment.
   mojo::internal::FixedBufferForTesting aligned_buf(size + 1);
@@ -236,7 +236,6 @@ TEST(UnionTest, OutOfAlignmentValidation) {
 }
 
 TEST(UnionTest, OOBValidation) {
-  Environment environment;
   size_t size = sizeof(internal::PodUnion_Data) - 1;
   mojo::internal::FixedBufferForTesting buf(size);
   internal::PodUnion_Data* data = internal::PodUnion_Data::New(&buf);
@@ -249,7 +248,6 @@ TEST(UnionTest, OOBValidation) {
 }
 
 TEST(UnionTest, UnknownTagValidation) {
-  Environment environment;
   size_t size = sizeof(internal::PodUnion_Data);
   mojo::internal::FixedBufferForTesting buf(size);
   internal::PodUnion_Data* data = internal::PodUnion_Data::New(&buf);
@@ -318,7 +316,6 @@ TEST(UnionTest, StringSerialization) {
 }
 
 TEST(UnionTest, NullStringValidation) {
-  Environment environment;
   size_t size = sizeof(internal::ObjectUnion_Data);
   mojo::internal::FixedBufferForTesting buf(size);
   internal::ObjectUnion_Data* data = internal::ObjectUnion_Data::New(&buf);
@@ -333,7 +330,6 @@ TEST(UnionTest, NullStringValidation) {
 }
 
 TEST(UnionTest, StringPointerOverflowValidation) {
-  Environment environment;
   size_t size = sizeof(internal::ObjectUnion_Data);
   mojo::internal::FixedBufferForTesting buf(size);
   internal::ObjectUnion_Data* data = internal::ObjectUnion_Data::New(&buf);
@@ -348,7 +344,6 @@ TEST(UnionTest, StringPointerOverflowValidation) {
 }
 
 TEST(UnionTest, StringValidateOOB) {
-  Environment environment;
   size_t size = 32;
   mojo::internal::FixedBufferForTesting buf(size);
   internal::ObjectUnion_Data* data = internal::ObjectUnion_Data::New(&buf);
@@ -383,7 +378,6 @@ TEST(UnionTest, PodUnionInArray) {
 }
 
 TEST(UnionTest, PodUnionInArraySerialization) {
-  Environment environment;
   Array<PodUnionPtr> array(2);
   array[0] = PodUnion::New();
   array[1] = PodUnion::New();
@@ -410,7 +404,6 @@ TEST(UnionTest, PodUnionInArraySerialization) {
 }
 
 TEST(UnionTest, PodUnionInArraySerializationWithNull) {
-  Environment environment;
   Array<PodUnionPtr> array(2);
   array[0] = PodUnion::New();
 
@@ -437,7 +430,6 @@ TEST(UnionTest, PodUnionInArraySerializationWithNull) {
 // TODO(azani): Move back in struct_unittest.cc when possible.
 // Struct tests
 TEST(UnionTest, Clone_Union) {
-  Environment environment;
   SmallStructPtr small_struct(SmallStruct::New());
   small_struct->pod_union = PodUnion::New();
   small_struct->pod_union->set_f_int8(10);
@@ -448,7 +440,6 @@ TEST(UnionTest, Clone_Union) {
 
 // Serialization test of a struct with a union of plain old data.
 TEST(UnionTest, Serialization_UnionOfPods) {
-  Environment environment;
   SmallStructPtr small_struct(SmallStruct::New());
   small_struct->pod_union = PodUnion::New();
   small_struct->pod_union->set_f_int32(10);
@@ -467,7 +458,6 @@ TEST(UnionTest, Serialization_UnionOfPods) {
 
 // Serialization test of a struct with a union of structs.
 TEST(UnionTest, Serialization_UnionOfObjects) {
-  Environment environment;
   SmallObjStructPtr obj_struct(SmallObjStruct::New());
   obj_struct->obj_union = ObjectUnion::New();
   String hello("hello world");
@@ -491,7 +481,6 @@ TEST(UnionTest, Serialization_UnionOfObjects) {
 
 // Validation test of a struct with a union.
 TEST(UnionTest, Validation_UnionsInStruct) {
-  Environment environment;
   SmallStructPtr small_struct(SmallStruct::New());
   small_struct->pod_union = PodUnion::New();
   small_struct->pod_union->set_f_int32(10);
@@ -515,7 +504,6 @@ TEST(UnionTest, Validation_UnionsInStruct) {
 
 // Validation test of a struct union fails due to unknown union tag.
 TEST(UnionTest, Validation_PodUnionInStruct_Failure) {
-  Environment environment;
   SmallStructPtr small_struct(SmallStruct::New());
   small_struct->pod_union = PodUnion::New();
   small_struct->pod_union->set_f_int32(10);
@@ -540,7 +528,6 @@ TEST(UnionTest, Validation_PodUnionInStruct_Failure) {
 
 // Validation fails due to non-nullable null union in struct.
 TEST(UnionTest, Validation_NullUnion_Failure) {
-  Environment environment;
   SmallStructNonNullableUnionPtr small_struct(
       SmallStructNonNullableUnion::New());
 
@@ -560,7 +547,6 @@ TEST(UnionTest, Validation_NullUnion_Failure) {
 
 // Validation passes with nullable null union.
 TEST(UnionTest, Validation_NullableUnion) {
-  Environment environment;
   SmallStructPtr small_struct(SmallStruct::New());
 
   size_t size = GetSerializedSize_(small_struct);
@@ -596,7 +582,6 @@ TEST(UnionTest, PodUnionInMap) {
 }
 
 TEST(UnionTest, PodUnionInMapSerialization) {
-  Environment environment;
   Map<String, PodUnionPtr> map;
   map.insert("one", PodUnion::New());
   map.insert("two", PodUnion::New());
@@ -621,7 +606,6 @@ TEST(UnionTest, PodUnionInMapSerialization) {
 }
 
 TEST(UnionTest, PodUnionInMapSerializationWithNull) {
-  Environment environment;
   Map<String, PodUnionPtr> map;
   map.insert("one", PodUnion::New());
   map.insert("two", nullptr);
@@ -655,7 +639,6 @@ TEST(UnionTest, StructInUnionGetterSetterPasser) {
 }
 
 TEST(UnionTest, StructInUnionSerialization) {
-  Environment environment;
   DummyStructPtr dummy(DummyStruct::New());
   dummy->f_int8 = 8;
 
@@ -679,7 +662,6 @@ TEST(UnionTest, StructInUnionSerialization) {
 }
 
 TEST(UnionTest, StructInUnionValidation) {
-  Environment environment;
   DummyStructPtr dummy(DummyStruct::New());
   dummy->f_int8 = 8;
 
@@ -705,7 +687,6 @@ TEST(UnionTest, StructInUnionValidation) {
 }
 
 TEST(UnionTest, StructInUnionValidationNonNullable) {
-  Environment environment;
   DummyStructPtr dummy(nullptr);
 
   ObjectUnionPtr obj(ObjectUnion::New());
@@ -730,7 +711,6 @@ TEST(UnionTest, StructInUnionValidationNonNullable) {
 }
 
 TEST(UnionTest, StructInUnionValidationNullable) {
-  Environment environment;
   DummyStructPtr dummy(nullptr);
 
   ObjectUnionPtr obj(ObjectUnion::New());
@@ -755,8 +735,6 @@ TEST(UnionTest, StructInUnionValidationNullable) {
 }
 
 TEST(UnionTest, ArrayInUnionGetterSetter) {
-  Environment environment;
-
   Array<int8_t> array(2);
   array[0] = 8;
   array[1] = 9;
@@ -769,8 +747,6 @@ TEST(UnionTest, ArrayInUnionGetterSetter) {
 }
 
 TEST(UnionTest, ArrayInUnionSerialization) {
-  Environment environment;
-
   Array<int8_t> array(2);
   array[0] = 8;
   array[1] = 9;
@@ -797,8 +773,6 @@ TEST(UnionTest, ArrayInUnionSerialization) {
 }
 
 TEST(UnionTest, ArrayInUnionValidation) {
-  Environment environment;
-
   Array<int8_t> array(2);
   array[0] = 8;
   array[1] = 9;
@@ -824,7 +798,6 @@ TEST(UnionTest, ArrayInUnionValidation) {
 }
 
 TEST(UnionTest, MapInUnionGetterSetter) {
-  Environment environment;
   Map<String, int8_t> map;
   map.insert("one", 1);
   map.insert("two", 2);
@@ -837,7 +810,6 @@ TEST(UnionTest, MapInUnionGetterSetter) {
 }
 
 TEST(UnionTest, MapInUnionSerialization) {
-  Environment environment;
   Map<String, int8_t> map;
   map.insert("one", 1);
   map.insert("two", 2);
@@ -864,7 +836,6 @@ TEST(UnionTest, MapInUnionSerialization) {
 }
 
 TEST(UnionTest, MapInUnionValidation) {
-  Environment environment;
   Map<String, int8_t> map;
   map.insert("one", 1);
   map.insert("two", 2);
@@ -903,7 +874,6 @@ TEST(UnionTest, UnionInUnionGetterSetter) {
 }
 
 TEST(UnionTest, UnionInUnionSerialization) {
-  Environment environment;
   PodUnionPtr pod(PodUnion::New());
   pod->set_f_int8(10);
 
@@ -927,7 +897,6 @@ TEST(UnionTest, UnionInUnionSerialization) {
 }
 
 TEST(UnionTest, UnionInUnionValidation) {
-  Environment environment;
   PodUnionPtr pod(PodUnion::New());
   pod->set_f_int8(10);
 
@@ -954,7 +923,6 @@ TEST(UnionTest, UnionInUnionValidation) {
 }
 
 TEST(UnionTest, UnionInUnionValidationNonNullable) {
-  Environment environment;
   PodUnionPtr pod(nullptr);
 
   ObjectUnionPtr obj(ObjectUnion::New());
@@ -1028,7 +996,6 @@ TEST(UnionTest, HandleInUnionSerialization) {
 }
 
 TEST(UnionTest, HandleInUnionValidation) {
-  Environment environment;
   ScopedMessagePipeHandle pipe0;
   ScopedMessagePipeHandle pipe1;
 
@@ -1056,7 +1023,6 @@ TEST(UnionTest, HandleInUnionValidation) {
 }
 
 TEST(UnionTest, HandleInUnionValidationNull) {
-  Environment environment;
   ScopedMessagePipeHandle pipe;
   HandleUnionPtr handle(HandleUnion::New());
   handle->set_f_message_pipe(pipe.Pass());
@@ -1095,8 +1061,7 @@ class SmallCacheImpl : public SmallCache {
 };
 
 TEST(UnionTest, InterfaceInUnion) {
-  Environment env;
-  RunLoop run_loop;
+  base::MessageLoop run_loop(common::MessagePumpMojo::Create());
   SmallCacheImpl impl;
   SmallCachePtr ptr;
   Binding<SmallCache> bindings(&impl, GetProxy(&ptr));
@@ -1110,8 +1075,7 @@ TEST(UnionTest, InterfaceInUnion) {
 }
 
 TEST(UnionTest, InterfaceInUnionSerialization) {
-  Environment env;
-  RunLoop run_loop;
+  base::MessageLoop run_loop(common::MessagePumpMojo::Create());
   SmallCacheImpl impl;
   SmallCachePtr ptr;
   Binding<SmallCache> bindings(&impl, GetProxy(&ptr));
@@ -1150,8 +1114,7 @@ class UnionInterfaceImpl : public UnionInterface {
 };
 
 TEST(UnionTest, UnionInInterface) {
-  Environment env;
-  RunLoop run_loop;
+  base::MessageLoop run_loop(common::MessagePumpMojo::Create());
   UnionInterfaceImpl impl;
   UnionInterfacePtr ptr;
   Binding<UnionInterface> bindings(&impl, GetProxy(&ptr));
