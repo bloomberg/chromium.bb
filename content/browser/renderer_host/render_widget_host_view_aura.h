@@ -667,6 +667,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   // the current view has focus. Defaults to false.
   bool set_focus_on_mouse_down_;
 
+  float device_scale_factor_;
+
   base::WeakPtrFactory<RenderWidgetHostViewAura> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewAura);

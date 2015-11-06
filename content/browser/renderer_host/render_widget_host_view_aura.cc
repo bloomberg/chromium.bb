@@ -80,6 +80,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_profile.h"
 #include "ui/gfx/display.h"
+#include "ui/gfx/geometry/dip_util.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/screen.h"
@@ -475,6 +476,7 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host,
       is_guest_view_hack_(is_guest_view_hack),
       begin_frame_observer_proxy_(this),
       set_focus_on_mouse_down_(false),
+      device_scale_factor_(0.0f),
       weak_ptr_factory_(this) {
   if (!is_guest_view_hack_)
     host_->SetView(this);
@@ -524,6 +526,13 @@ void RenderWidgetHostViewAura::InitAsChild(
   window_->Init(ui::LAYER_SOLID_COLOR);
   window_->SetName("RenderWidgetHostViewAura");
   window_->layer()->SetColor(background_color_);
+
+  if (parent_view)
+    parent_view->AddChild(GetNativeView());
+
+  const gfx::Display display =
+      gfx::Screen::GetScreenFor(window_)->GetDisplayNearestWindow(window_);
+  device_scale_factor_ = display.device_scale_factor();
 }
 
 void RenderWidgetHostViewAura::InitAsPopup(
@@ -572,6 +581,10 @@ void RenderWidgetHostViewAura::InitAsPopup(
     window_->SetCapture();
 
   event_filter_for_popup_exit_.reset(new EventFilterForPopupExit(this));
+
+  const gfx::Display display =
+      gfx::Screen::GetScreenFor(window_)->GetDisplayNearestWindow(window_);
+  device_scale_factor_ = display.device_scale_factor();
 }
 
 void RenderWidgetHostViewAura::InitAsFullscreen(
@@ -600,6 +613,10 @@ void RenderWidgetHostViewAura::InitAsFullscreen(
   aura::client::ParentWindowWithContext(window_, parent, bounds);
   Show();
   Focus();
+
+  const gfx::Display display =
+      gfx::Screen::GetScreenFor(window_)->GetDisplayNearestWindow(window_);
+  device_scale_factor_ = display.device_scale_factor();
 }
 
 RenderWidgetHost* RenderWidgetHostViewAura::GetRenderWidgetHost() const {
@@ -1883,6 +1900,7 @@ void RenderWidgetHostViewAura::OnDeviceScaleFactorChanged(
 
   UpdateScreenInfo(window_);
 
+  device_scale_factor_ = device_scale_factor;
   const gfx::Display display = gfx::Screen::GetScreenFor(window_)->
       GetDisplayNearestWindow(window_);
   DCHECK_EQ(device_scale_factor, display.device_scale_factor());
@@ -2174,8 +2192,17 @@ void RenderWidgetHostViewAura::OnMouseEvent(ui::MouseEvent* event) {
 uint32_t RenderWidgetHostViewAura::SurfaceIdNamespaceAtPoint(
     const gfx::Point& point,
     gfx::Point* transformed_point) {
-  cc::SurfaceId id =
-      delegated_frame_host_->SurfaceIdAtPoint(point, transformed_point);
+  DCHECK(device_scale_factor_ != 0.0f);
+
+  // The surface hittest happens in device pixels, so we need to convert the
+  // |point| from DIPs to pixels before hittesting.
+  gfx::Point point_in_pixels =
+      gfx::ConvertPointToPixel(device_scale_factor_, point);
+  cc::SurfaceId id = delegated_frame_host_->SurfaceIdAtPoint(point_in_pixels,
+                                                             transformed_point);
+  *transformed_point =
+      gfx::ConvertPointToDIP(device_scale_factor_, *transformed_point);
+
   // It is possible that the renderer has not yet produced a surface, in which
   // case we return our current namespace.
   if (id.is_null())
