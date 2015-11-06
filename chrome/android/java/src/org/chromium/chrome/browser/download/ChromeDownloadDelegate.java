@@ -162,6 +162,7 @@ public class ChromeDownloadDelegate
             // Query the package manager to see if there's a registered handler that matches.
             Intent intent = new Intent(Intent.ACTION_VIEW);
             intent.setDataAndType(Uri.parse(downloadInfo.getUrl()), downloadInfo.getMimeType());
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             // If the intent is resolved to ourselves, we don't want to attempt to load the url
             // only to try and download it again.
             if (DownloadManagerService.openIntent(mContext, intent, false)) {
