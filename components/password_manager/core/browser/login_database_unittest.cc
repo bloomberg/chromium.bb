@@ -1521,7 +1521,7 @@ TEST_P(LoginDatabaseMigrationTestBroken, Broken) {
 
 INSTANTIATE_TEST_CASE_P(MigrationToVCurrent,
                         LoginDatabaseMigrationTest,
-                        testing::Range(1, kCurrentVersionNumber));
+                        testing::Range(1, kCurrentVersionNumber + 1));
 INSTANTIATE_TEST_CASE_P(MigrationToVCurrent,
                         LoginDatabaseMigrationTestV9,
                         testing::Values(9));
