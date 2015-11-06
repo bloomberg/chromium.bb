@@ -50,6 +50,7 @@ public class FirstRunFlowSequencerTest {
         public boolean shouldSkipFirstUseHints;
         public boolean isStableBuild;
         public boolean isFirstRunEulaAccepted;
+        public boolean shouldShowDataReductionPage;
 
         public TestFirstRunFlowSequencer(Activity activity, Bundle launcherProvidedProperties) {
             super(activity, launcherProvidedProperties);
@@ -102,6 +103,11 @@ public class FirstRunFlowSequencerTest {
         }
 
         @Override
+        public boolean shouldShowDataReductionPage() {
+            return shouldShowDataReductionPage;
+        }
+
+        @Override
         public void enableCrashUpload() {
             calledEnableCrashUpload = true;
         }
@@ -149,14 +155,17 @@ public class FirstRunFlowSequencerTest {
         mSequencer.hasAnyUserSeenToS = false;
         mSequencer.shouldSkipFirstUseHints = false;
         mSequencer.isStableBuild = true;
+        mSequencer.shouldShowDataReductionPage = false;
         mSequencer.processFreEnvironment(
                 false, // androidEduDevice
                 false); // hasChildAccount
         assertTrue(mSequencer.calledOnFlowIsKnown);
         assertTrue(mSequencer.returnedBundle.getBoolean(FirstRunActivity.SHOW_WELCOME_PAGE));
         assertTrue(mSequencer.returnedBundle.getBoolean(FirstRunActivity.SHOW_SIGNIN_PAGE));
+        assertFalse(mSequencer.returnedBundle.getBoolean(
+                FirstRunActivity.SHOW_DATA_REDUCTION_PAGE));
         assertFalse(mSequencer.returnedBundle.getBoolean(AccountFirstRunFragment.IS_CHILD_ACCOUNT));
-        assertEquals(3, mSequencer.returnedBundle.size());
+        assertEquals(4, mSequencer.returnedBundle.size());
         assertFalse(mSequencer.calledEnableCrashUpload);
         assertFalse(mSequencer.calledSetFirstRunFlowSignInComplete);
     }
@@ -173,18 +182,21 @@ public class FirstRunFlowSequencerTest {
         mSequencer.hasAnyUserSeenToS = true;
         mSequencer.shouldSkipFirstUseHints = false;
         mSequencer.isStableBuild = true;
+        mSequencer.shouldShowDataReductionPage = false;
         mSequencer.processFreEnvironment(
                 false, // androidEduDevice
                 false); // hasChildAccount
         assertTrue(mSequencer.calledOnFlowIsKnown);
         assertTrue(mSequencer.returnedBundle.getBoolean(FirstRunActivity.SHOW_WELCOME_PAGE));
         assertTrue(mSequencer.returnedBundle.getBoolean(FirstRunActivity.SHOW_SIGNIN_PAGE));
+        assertFalse(mSequencer.returnedBundle.getBoolean(
+                FirstRunActivity.SHOW_DATA_REDUCTION_PAGE));
         assertFalse(mSequencer.returnedBundle.getBoolean(AccountFirstRunFragment.IS_CHILD_ACCOUNT));
         assertTrue(mSequencer.returnedBundle.getBoolean(
                 AccountFirstRunFragment.PRESELECT_BUT_ALLOW_TO_CHANGE));
         assertEquals(DEFAULT_ACCOUNT, mSequencer.returnedBundle.getString(
                 AccountFirstRunFragment.FORCE_SIGNIN_ACCOUNT_TO));
-        assertEquals(5, mSequencer.returnedBundle.size());
+        assertEquals(6, mSequencer.returnedBundle.size());
         assertFalse(mSequencer.calledEnableCrashUpload);
         assertFalse(mSequencer.calledSetFirstRunFlowSignInComplete);
     }
@@ -199,14 +211,17 @@ public class FirstRunFlowSequencerTest {
         mSequencer.hasAnyUserSeenToS = false;
         mSequencer.shouldSkipFirstUseHints = false;
         mSequencer.isStableBuild = false;
+        mSequencer.shouldShowDataReductionPage = false;
         mSequencer.processFreEnvironment(
                 false, // androidEduDevice
                 false); // hasChildAccount
         assertTrue(mSequencer.calledOnFlowIsKnown);
         assertTrue(mSequencer.returnedBundle.getBoolean(FirstRunActivity.SHOW_WELCOME_PAGE));
         assertTrue(mSequencer.returnedBundle.getBoolean(FirstRunActivity.SHOW_SIGNIN_PAGE));
+        assertFalse(mSequencer.returnedBundle.getBoolean(
+                FirstRunActivity.SHOW_DATA_REDUCTION_PAGE));
         assertFalse(mSequencer.returnedBundle.getBoolean(AccountFirstRunFragment.IS_CHILD_ACCOUNT));
-        assertEquals(3, mSequencer.returnedBundle.size());
+        assertEquals(4, mSequencer.returnedBundle.size());
         assertTrue(mSequencer.calledEnableCrashUpload);
         assertFalse(mSequencer.calledSetFirstRunFlowSignInComplete);
     }
@@ -223,19 +238,46 @@ public class FirstRunFlowSequencerTest {
         mSequencer.hasAnyUserSeenToS = false;
         mSequencer.shouldSkipFirstUseHints = false;
         mSequencer.isStableBuild = true;
+        mSequencer.shouldShowDataReductionPage = false;
         mSequencer.processFreEnvironment(
                 false, // androidEduDevice
                 true); // hasChildAccount
         assertTrue(mSequencer.calledOnFlowIsKnown);
         assertTrue(mSequencer.returnedBundle.getBoolean(FirstRunActivity.SHOW_WELCOME_PAGE));
         assertTrue(mSequencer.returnedBundle.getBoolean(FirstRunActivity.SHOW_SIGNIN_PAGE));
+        assertFalse(mSequencer.returnedBundle.getBoolean(
+                FirstRunActivity.SHOW_DATA_REDUCTION_PAGE));
         assertTrue(mSequencer.returnedBundle.getBoolean(AccountFirstRunFragment.IS_CHILD_ACCOUNT));
         assertFalse(mSequencer.returnedBundle.getBoolean(
                 AccountFirstRunFragment.PRESELECT_BUT_ALLOW_TO_CHANGE));
         assertEquals(DEFAULT_ACCOUNT, mSequencer.returnedBundle.getString(
                 AccountFirstRunFragment.FORCE_SIGNIN_ACCOUNT_TO));
-        assertEquals(5, mSequencer.returnedBundle.size());
+        assertEquals(6, mSequencer.returnedBundle.size());
         assertFalse(mSequencer.calledEnableCrashUpload);
         assertTrue(mSequencer.calledSetFirstRunFlowSignInComplete);
+    }
+
+    @Test
+    @Feature({"FirstRun"})
+    public void testStandardFlowShowDataReductionPage() {
+        mSequencer.isFirstRunFlowComplete = false;
+        mSequencer.isSignedIn = false;
+        mSequencer.isSyncAllowed = true;
+        mSequencer.googleAccounts = new Account[0];
+        mSequencer.hasAnyUserSeenToS = false;
+        mSequencer.shouldSkipFirstUseHints = false;
+        mSequencer.isStableBuild = true;
+        mSequencer.shouldShowDataReductionPage = true;
+        mSequencer.processFreEnvironment(
+                false, // androidEduDevice
+                false); // hasChildAccount
+        assertTrue(mSequencer.calledOnFlowIsKnown);
+        assertTrue(mSequencer.returnedBundle.getBoolean(FirstRunActivity.SHOW_WELCOME_PAGE));
+        assertTrue(mSequencer.returnedBundle.getBoolean(FirstRunActivity.SHOW_SIGNIN_PAGE));
+        assertTrue(mSequencer.returnedBundle.getBoolean(FirstRunActivity.SHOW_DATA_REDUCTION_PAGE));
+        assertFalse(mSequencer.returnedBundle.getBoolean(AccountFirstRunFragment.IS_CHILD_ACCOUNT));
+        assertEquals(4, mSequencer.returnedBundle.size());
+        assertFalse(mSequencer.calledEnableCrashUpload);
+        assertFalse(mSequencer.calledSetFirstRunFlowSignInComplete);
     }
 }

@@ -14,7 +14,6 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import org.chromium.base.ApplicationStatus;
-import org.chromium.base.FieldTrialList;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.metrics.RecordHistogram;
@@ -48,8 +47,9 @@ public class FirstRunActivity extends AppCompatActivity implements FirstRunPageD
     public static final String COMING_FROM_CHROME_ICON = "ComingFromChromeIcon";
     public static final String USE_FRE_FLOW_SEQUENCER = "UseFreFlowSequencer";
 
-    public static final String SHOW_WELCOME_PAGE = "ShowWelcome";
-    public static final String SHOW_SIGNIN_PAGE = "ShowSignIn";
+    static final String SHOW_WELCOME_PAGE = "ShowWelcome";
+    static final String SHOW_SIGNIN_PAGE = "ShowSignIn";
+    static final String SHOW_DATA_REDUCTION_PAGE = "ShowDataReduction";
 
     // Outcoming results:
     public static final String RESULT_CLOSE_APP = "Close App";
@@ -102,7 +102,7 @@ public class FirstRunActivity extends AppCompatActivity implements FirstRunPageD
         if (mShowWelcomePage) mPages.add(pageOf(ToSAndUMAFirstRunFragment.class));
 
         // An optional Data Saver page.
-        if (FieldTrialList.findFullName("DataReductionProxyFREPromo").startsWith("Enabled")) {
+        if (mFreProperties.getBoolean(SHOW_DATA_REDUCTION_PAGE)) {
             mPages.add(pageOf(DataReductionProxyFirstRunFragment.class));
         }
 

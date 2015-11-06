@@ -12,6 +12,7 @@ import android.os.Bundle;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.CommandLine;
+import org.chromium.base.FieldTrialList;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeVersionInfo;
@@ -111,6 +112,10 @@ public abstract class FirstRunFlowSequencer  {
         return PrefServiceBridge.getInstance().isFirstRunEulaAccepted();
     }
 
+    protected boolean shouldShowDataReductionPage() {
+        return FieldTrialList.findFullName("DataReductionProxyFREPromo").startsWith("Enabled");
+    }
+
     @VisibleForTesting
     protected void enableCrashUpload() {
         PrivacyPreferencesManager.getInstance(mActivity.getApplicationContext())
@@ -175,6 +180,9 @@ public abstract class FirstRunFlowSequencer  {
         }
 
         freProperties.putBoolean(AccountFirstRunFragment.IS_CHILD_ACCOUNT, hasChildAccount);
+
+        freProperties.putBoolean(FirstRunActivity.SHOW_DATA_REDUCTION_PAGE,
+                shouldShowDataReductionPage());
 
         onFlowIsKnown(freProperties);
         if (hasChildAccount || forceEduSignIn) {
