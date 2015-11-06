@@ -294,6 +294,11 @@ class Wrappers {
             return mGatt.readCharacteristic(characteristic.mCharacteristic);
         }
 
+        boolean setCharacteristicNotification(
+                BluetoothGattCharacteristicWrapper characteristic, boolean enable) {
+            return mGatt.setCharacteristicNotification(characteristic.mCharacteristic, enable);
+        }
+
         boolean writeCharacteristic(BluetoothGattCharacteristicWrapper characteristic) {
             return mGatt.writeCharacteristic(characteristic.mCharacteristic);
         }

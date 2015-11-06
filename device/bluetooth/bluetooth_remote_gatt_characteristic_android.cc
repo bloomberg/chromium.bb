@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
+#include "device/bluetooth/bluetooth_gatt_notify_session_android.h"
 #include "device/bluetooth/bluetooth_remote_gatt_service_android.h"
 #include "jni/ChromeBluetoothRemoteGattCharacteristic_jni.h"
 
@@ -54,7 +55,7 @@ BluetoothRemoteGattCharacteristicAndroid::GetJavaObject() {
 }
 
 std::string BluetoothRemoteGattCharacteristicAndroid::GetIdentifier() const {
-  return instanceId_;
+  return instance_id_;
 }
 
 BluetoothUUID BluetoothRemoteGattCharacteristicAndroid::GetUUID() const {
@@ -123,7 +124,20 @@ bool BluetoothRemoteGattCharacteristicAndroid::UpdateValue(
 void BluetoothRemoteGattCharacteristicAndroid::StartNotifySession(
     const NotifySessionCallback& callback,
     const ErrorCallback& error_callback) {
-  NOTIMPLEMENTED();
+  // TODO(crbug.com/551634): Check characteristic properties and return a better
+  // error code if notifications aren't permitted.
+  if (Java_ChromeBluetoothRemoteGattCharacteristic_startNotifySession(
+          AttachCurrentThread(), j_characteristic_.obj())) {
+    scoped_ptr<device::BluetoothGattNotifySession> notify_session(
+        new BluetoothGattNotifySessionAndroid(instance_id_));
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE, base::Bind(callback, base::Passed(&notify_session)));
+  } else {
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(error_callback,
+                   BluetoothRemoteGattServiceAndroid::GATT_ERROR_FAILED));
+  }
 }
 
 void BluetoothRemoteGattCharacteristicAndroid::ReadRemoteCharacteristic(
@@ -215,6 +229,6 @@ void BluetoothRemoteGattCharacteristicAndroid::OnWrite(JNIEnv* env,
 
 BluetoothRemoteGattCharacteristicAndroid::
     BluetoothRemoteGattCharacteristicAndroid(const std::string& instanceId)
-    : instanceId_(instanceId) {}
+    : instance_id_(instanceId) {}
 
 }  // namespace device

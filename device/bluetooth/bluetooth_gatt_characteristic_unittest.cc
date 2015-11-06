@@ -561,4 +561,75 @@ TEST_F(BluetoothGattCharacteristicTest, WriteRemoteCharacteristic_ReadPending) {
 }
 #endif  // defined(OS_ANDROID)
 
+#if defined(OS_ANDROID)
+// Tests StartNotifySession success.
+TEST_F(BluetoothGattCharacteristicTest, StartNotifySession) {
+  ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate());
+
+  characteristic1_->StartNotifySession(GetNotifyCallback(),
+                                       GetGattErrorCallback());
+  EXPECT_EQ(1, gatt_notify_characteristic_attempts_);
+  EXPECT_EQ(0, callback_count_);
+  SimulateGattNotifySessionStarted(characteristic1_);
+  EXPECT_EQ(1, callback_count_);
+  EXPECT_EQ(0, error_callback_count_);
+  ASSERT_EQ(1u, notify_sessions_.size());
+  ASSERT_TRUE(notify_sessions_[0]);
+  EXPECT_EQ(characteristic1_->GetIdentifier(),
+            notify_sessions_[0]->GetCharacteristicIdentifier());
+  EXPECT_TRUE(notify_sessions_[0]->IsActive());
+}
+#endif  // defined(OS_ANDROID)
+
+#if defined(OS_ANDROID)
+// Tests StartNotifySession synchronous failure.
+TEST_F(BluetoothGattCharacteristicTest, StartNotifySession_SynchronousError) {
+  ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate());
+
+  SimulateGattCharacteristicSetNotifyWillFailSynchronouslyOnce(
+      characteristic1_);
+  characteristic1_->StartNotifySession(GetNotifyCallback(),
+                                       GetGattErrorCallback());
+  EXPECT_EQ(0, error_callback_count_);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(0, gatt_notify_characteristic_attempts_);
+  EXPECT_EQ(0, callback_count_);
+  EXPECT_EQ(1, error_callback_count_);
+  ASSERT_EQ(0u, notify_sessions_.size());
+}
+#endif  // defined(OS_ANDROID)
+
+#if defined(OS_ANDROID)
+// Tests multiple StartNotifySession success.
+TEST_F(BluetoothGattCharacteristicTest, StartNotifySession_Multiple) {
+  ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate());
+
+  characteristic1_->StartNotifySession(GetNotifyCallback(),
+                                       GetGattErrorCallback());
+  characteristic1_->StartNotifySession(GetNotifyCallback(),
+                                       GetGattErrorCallback());
+#if defined(OS_ANDROID)
+  // TODO(crbug.com/551634): Decide when implementing IsNotifying if Android
+  // should trust the notification request always worked, or if we should always
+  // redundantly set the value to the OS.
+  EXPECT_EQ(2, gatt_notify_characteristic_attempts_);
+#else
+  EXPECT_EQ(1, gatt_notify_characteristic_attempts_);
+#endif
+  EXPECT_EQ(0, callback_count_);
+  SimulateGattNotifySessionStarted(characteristic1_);
+  EXPECT_EQ(2, callback_count_);
+  EXPECT_EQ(0, error_callback_count_);
+  ASSERT_EQ(2u, notify_sessions_.size());
+  ASSERT_TRUE(notify_sessions_[0]);
+  ASSERT_TRUE(notify_sessions_[1]);
+  EXPECT_EQ(characteristic1_->GetIdentifier(),
+            notify_sessions_[0]->GetCharacteristicIdentifier());
+  EXPECT_EQ(characteristic1_->GetIdentifier(),
+            notify_sessions_[1]->GetCharacteristicIdentifier());
+  EXPECT_TRUE(notify_sessions_[0]->IsActive());
+  EXPECT_TRUE(notify_sessions_[1]->IsActive());
+}
+#endif  // defined(OS_ANDROID)
+
 }  // namespace device

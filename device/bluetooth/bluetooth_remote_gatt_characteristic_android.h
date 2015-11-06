@@ -14,6 +14,9 @@ namespace device {
 // BluetoothRemoteGattCharacteristicAndroid along with its owned Java class
 // org.chromium.device.bluetooth.ChromeBluetoothRemoteGattCharacteristic
 // implement BluetootGattCharacteristic.
+//
+// TODO(crbug.com/551634): When notifications are enabled characteristic updates
+// should call observers' GattCharacteristicValueChanged.
 class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristicAndroid
     : public BluetoothGattCharacteristic {
  public:
@@ -75,7 +78,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristicAndroid
   base::android::ScopedJavaGlobalRef<jobject> j_characteristic_;
 
   // Adapter unique instance ID.
-  std::string instanceId_;
+  std::string instance_id_;
 
   // ReadRemoteCharacteristic callbacks and pending state.
   bool read_pending_ = false;

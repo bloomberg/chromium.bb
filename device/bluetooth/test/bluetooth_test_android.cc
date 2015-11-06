@@ -10,6 +10,7 @@
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/logging.h"
+#include "base/run_loop.h"
 #include "device/bluetooth/android/wrappers.h"
 #include "device/bluetooth/bluetooth_adapter_android.h"
 #include "device/bluetooth/bluetooth_device_android.h"
@@ -156,6 +157,25 @@ void BluetoothTestAndroid::SimulateGattCharacteristic(
       base::android::ConvertUTF8ToJavaString(env, uuid).obj(), properties);
 }
 
+void BluetoothTestAndroid::SimulateGattNotifySessionStarted(
+    BluetoothGattCharacteristic* characteristic) {
+  // Android doesn't provide any sort of callback for when notifications have
+  // been enabled. So, just run the message loop to process the success
+  // callback.
+  base::RunLoop().RunUntilIdle();
+}
+
+void BluetoothTestAndroid::
+    SimulateGattCharacteristicSetNotifyWillFailSynchronouslyOnce(
+        BluetoothGattCharacteristic* characteristic) {
+  BluetoothRemoteGattCharacteristicAndroid* characteristic_android =
+      static_cast<BluetoothRemoteGattCharacteristicAndroid*>(characteristic);
+  JNIEnv* env = base::android::AttachCurrentThread();
+
+  Java_FakeBluetoothGattCharacteristic_setCharacteristicNotificationWillFailSynchronouslyOnce(
+      env, characteristic_android->GetJavaObject().obj());
+}
+
 void BluetoothTestAndroid::SimulateGattCharacteristicRead(
     BluetoothGattCharacteristic* characteristic,
     const std::vector<uint8>& value) {
@@ -239,6 +259,12 @@ void BluetoothTestAndroid::OnFakeBluetoothGattDisconnect(JNIEnv* env,
 void BluetoothTestAndroid::OnFakeBluetoothGattDiscoverServices(JNIEnv* env,
                                                                jobject caller) {
   gatt_discovery_attempts_++;
+}
+
+void BluetoothTestAndroid::OnFakeBluetoothGattSetCharacteristicNotification(
+    JNIEnv* env,
+    jobject caller) {
+  gatt_notify_characteristic_attempts_++;
 }
 
 void BluetoothTestAndroid::OnFakeBluetoothGattReadCharacteristic(

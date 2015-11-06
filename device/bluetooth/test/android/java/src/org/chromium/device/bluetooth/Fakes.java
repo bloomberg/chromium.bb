@@ -277,6 +277,7 @@ class Fakes {
         final FakeBluetoothDevice mDevice;
         final ArrayList<Wrappers.BluetoothGattServiceWrapper> mServices;
         boolean mReadCharacteristicWillFailSynchronouslyOnce = false;
+        boolean mSetCharacteristicNotificationWillFailSynchronouslyOnce = false;
         boolean mWriteCharacteristicWillFailSynchronouslyOnce = false;
 
         public FakeBluetoothGatt(FakeBluetoothDevice device) {
@@ -307,6 +308,18 @@ class Fakes {
                 return false;
             }
             nativeOnFakeBluetoothGattReadCharacteristic(
+                    mDevice.mAdapter.mNativeBluetoothTestAndroid);
+            return true;
+        }
+
+        @Override
+        boolean setCharacteristicNotification(
+                Wrappers.BluetoothGattCharacteristicWrapper characteristic, boolean enable) {
+            if (mSetCharacteristicNotificationWillFailSynchronouslyOnce) {
+                mSetCharacteristicNotificationWillFailSynchronouslyOnce = false;
+                return false;
+            }
+            nativeOnFakeBluetoothGattSetCharacteristicNotification(
                     mDevice.mAdapter.mNativeBluetoothTestAndroid);
             return true;
         }
@@ -424,6 +437,17 @@ class Fakes {
 
         // Cause subsequent value reads of a characteristic to fail synchronously.
         @CalledByNative("FakeBluetoothGattCharacteristic")
+        private static void setCharacteristicNotificationWillFailSynchronouslyOnce(
+                ChromeBluetoothRemoteGattCharacteristic chromeCharacteristic) {
+            FakeBluetoothGattCharacteristic fakeCharacteristic =
+                    (FakeBluetoothGattCharacteristic) chromeCharacteristic.mCharacteristic;
+
+            fakeCharacteristic.mService.mDevice.mGatt
+                    .mSetCharacteristicNotificationWillFailSynchronouslyOnce = true;
+        }
+
+        // Cause subsequent value reads of a characteristic to fail synchronously.
+        @CalledByNative("FakeBluetoothGattCharacteristic")
         private static void setReadCharacteristicWillFailSynchronouslyOnce(
                 ChromeBluetoothRemoteGattCharacteristic chromeCharacteristic) {
             FakeBluetoothGattCharacteristic fakeCharacteristic =
@@ -477,22 +501,26 @@ class Fakes {
     // ---------------------------------------------------------------------------------------------
     // BluetoothTestAndroid C++ methods declared for access from java:
 
-    // Binds to BluetoothAdapterAndroid::OnFakeBluetoothDeviceConnectGattCalled.
+    // Binds to BluetoothTestAndroid::OnFakeBluetoothDeviceConnectGattCalled.
     private static native void nativeOnFakeBluetoothDeviceConnectGattCalled(
             long nativeBluetoothTestAndroid);
 
-    // Binds to BluetoothAdapterAndroid::OnFakeBluetoothGattDisconnect.
+    // Binds to BluetoothTestAndroid::OnFakeBluetoothGattDisconnect.
     private static native void nativeOnFakeBluetoothGattDisconnect(long nativeBluetoothTestAndroid);
 
-    // Binds to BluetoothAdapterAndroid::OnFakeBluetoothGattDiscoverServices.
+    // Binds to BluetoothTestAndroid::OnFakeBluetoothGattDiscoverServices.
     private static native void nativeOnFakeBluetoothGattDiscoverServices(
             long nativeBluetoothTestAndroid);
 
-    // Binds to BluetoothAdapterAndroid::OnFakeBluetoothGattReadCharacteristic.
+    // Binds to BluetoothTestAndroid::OnFakeBluetoothGattSetCharacteristicNotification.
+    private static native void nativeOnFakeBluetoothGattSetCharacteristicNotification(
+            long nativeBluetoothTestAndroid);
+
+    // Binds to BluetoothTestAndroid::OnFakeBluetoothGattReadCharacteristic.
     private static native void nativeOnFakeBluetoothGattReadCharacteristic(
             long nativeBluetoothTestAndroid);
 
-    // Binds to BluetoothAdapterAndroid::OnFakeBluetoothGattWriteCharacteristic.
+    // Binds to BluetoothTestAndroid::OnFakeBluetoothGattWriteCharacteristic.
     private static native void nativeOnFakeBluetoothGattWriteCharacteristic(
             long nativeBluetoothTestAndroid, byte[] value);
 }

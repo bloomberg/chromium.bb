@@ -81,6 +81,8 @@
         'bluetooth_gatt_descriptor.h',
         'bluetooth_gatt_notify_session.cc',
         'bluetooth_gatt_notify_session.h',
+        'bluetooth_gatt_notify_session_android.cc',
+        'bluetooth_gatt_notify_session_android.h',
         'bluetooth_gatt_notify_session_chromeos.cc',
         'bluetooth_gatt_notify_session_chromeos.h',
         'bluetooth_gatt_service.cc',
