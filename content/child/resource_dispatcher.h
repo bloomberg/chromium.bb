@@ -176,6 +176,7 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
 
     // TODO(erikchen): Temporary debugging for http://crbug.com/550938.
     bool has_received_buffer;
+    bool has_processed_buffer;
     bool has_destroyed_buffer;
   };
   typedef base::hash_map<int, PendingRequestInfo> PendingRequestList;
