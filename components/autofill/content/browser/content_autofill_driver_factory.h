@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/containers/scoped_ptr_map.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/supports_user_data.h"
 #include "components/autofill/content/browser/request_autocomplete_manager.h"
@@ -75,8 +74,7 @@ class ContentAutofillDriverFactory : public content::WebContentsObserver,
   std::string app_locale_;
   AutofillManager::AutofillDownloadManagerState enable_download_manager_;
 
-  base::ScopedPtrMap<content::RenderFrameHost*,
-                     scoped_ptr<ContentAutofillDriver>> frame_driver_map_;
+  std::map<content::RenderFrameHost*, ContentAutofillDriver*> frame_driver_map_;
 };
 
 }  // namespace autofill
