@@ -41,7 +41,7 @@ class ConfirmBubbleModel;
 - (BOOL)hasOkButton;
 - (BOOL)hasCancelButton;
 
-// Handle actions from the ConfirmBubbleCocoa objet.
+// Handle actions from the ConfirmBubbleCocoa object.
 - (void)accept;
 - (void)cancel;
 - (void)linkClicked;
