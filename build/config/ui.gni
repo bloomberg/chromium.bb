@@ -42,6 +42,9 @@ declare_args() {
 
   # Optional system libraries.
   use_xkbcommon = false
+
+  # Whether we should use glib, a low level C utility library.
+  use_glib = is_linux
 }
 
 # Additional dependent variables -----------------------------------------------
@@ -57,10 +60,12 @@ use_default_render_theme = use_aura && !is_android
 # Indicates if the UI toolkit depends on X11.
 use_x11 = is_linux && !use_ozone
 
-# Whether we should use glib, a low level C utility library.
-use_glib = is_linux && !use_ozone
+# Turn off glib if Ozone is enabled.
+if (use_ozone) {
+  use_glib = false
+}
 
-if (is_linux && use_glib) {
+if (is_linux && !use_ozone) {
   use_cairo = true
   use_pango = true
 } else {
