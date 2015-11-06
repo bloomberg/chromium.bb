@@ -112,7 +112,7 @@ NavigatorConnect status=experimental
 NavigatorContentUtils
 WebNFC status=experimental
 NetworkInformation status=stable
-NetInfoDownlinkMax status=experimental
+NetInfoDownlinkMax status=stable
 NewMediaPlaybackUi
 NotificationConstructor status=stable
 NotificationExperimental status=test
