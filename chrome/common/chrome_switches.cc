@@ -436,9 +436,6 @@ const char kEnableMaterialDesignExtensions[] = "enable-md-extensions";
 // Enables the Material Design policy page at chrome://md-policy.
 const char kEnableMaterialDesignPolicyPage[]  = "enable-md-policy-page";
 
-// Enables Media Router.
-const char kEnableMediaRouter[]             = "enable-media-router";
-
 // Runs the Native Client inside the renderer process and enables GPU plugin
 // (internally adds lEnableGpuPlugin to the command line).
 const char kEnableNaCl[]                    = "enable-nacl";
@@ -719,6 +716,9 @@ const char kMarkNonSecureAsNonSecure[]      = "non-secure";
 
 // Forces the maximum disk space to be used by the media cache, in bytes.
 const char kMediaCacheSize[]                = "media-cache-size";
+
+// Enables Media Router.
+const char kMediaRouter[]                   = "media-router";
 
 // Enables histograming of tasks served by MessageLoop. See
 // about:histograms/Loop for results, which show frequency of messages on each

@@ -29,7 +29,7 @@
 //   --enable-logging=stderr
 //   --whitelisted-extension-id=enhhojjnijigcajfphajepfemndkmdlo
 //   --ui-test-action-timeout=200000
-//   --enable-media-router
+//   --media-router=1
 
 namespace {
 // Command line argument to specify receiver,

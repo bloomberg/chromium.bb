@@ -48,7 +48,7 @@ class CommonSwitches {
                                    FeatureSwitch::DEFAULT_DISABLED),
         trace_app_source(switches::kTraceAppSource,
                          FeatureSwitch::DEFAULT_ENABLED),
-        // The switch enable-media-router is defined in
+        // The switch media-router is defined in
         // chrome/common/chrome_switches.cc, but we can't depend on chrome here.
         media_router("media-router",
                      kEnableMediaRouterExperiment,

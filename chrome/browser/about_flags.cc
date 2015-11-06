@@ -1880,11 +1880,12 @@ const FeatureEntry kFeatureEntries[] = {
      ENABLE_DISABLE_VALUE_TYPE(switches::kV8PacMojoOutOfProcess,
                                switches::kDisableOutOfProcessPac)},
 #if defined(ENABLE_MEDIA_ROUTER) && !defined(OS_ANDROID)
-    {"enable-media-router",
+    {"media-router",
      IDS_FLAGS_ENABLE_MEDIA_ROUTER_NAME,
      IDS_FLAGS_ENABLE_MEDIA_ROUTER_DESCRIPTION,
      kOsDesktop,
-     SINGLE_VALUE_TYPE(switches::kEnableMediaRouter)},
+     ENABLE_DISABLE_VALUE_TYPE_AND_VALUE(
+         switches::kMediaRouter, "1", switches::kMediaRouter, "0")},
 #endif  // defined(ENABLE_MEDIA_ROUTER) && !defined(OS_ANDROID)
 // Since Drive Search is not available when app list is disabled, flag guard
 // enable-drive-search-in-chrome-launcher flag.

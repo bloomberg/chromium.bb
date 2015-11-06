@@ -25,7 +25,7 @@ MediaRouterElementsBrowserTest.prototype = {
   browsePreload: 'chrome://media-router/',
 
   commandLineSwitches: [{
-    switchName: 'enable-media-router',
+    switchName: 'media-router', switchValue: '1'
   }],
 
   // List tests for individual elements.
