@@ -12,6 +12,7 @@
       ],
       'dependencies': [
         'battor_agent_lib',
+        '../../device/serial/serial.gyp:device_serial',
       ],
       'sources': [
         'battor_agent_bin.cc',
@@ -29,6 +30,7 @@
       ],
       'dependencies': [
         '../../base/base.gyp:base',
+        '../../device/serial/serial.gyp:device_serial',
       ]
     },
   ],
