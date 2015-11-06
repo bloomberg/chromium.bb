@@ -756,7 +756,7 @@ static inline bool shouldSetStrutOnBlock(const LayoutBlockFlow& block, const Roo
         LayoutUnit pageLogicalHeightAtNewOffset = block.pageLogicalHeightForOffset(lineLogicalOffset + remainingLogicalHeight);
         // It's rather pointless to break before the block if the current line isn't going to
         // fit in the same column or page, so check that as well.
-        if (totalLogicalHeight < pageLogicalHeightAtNewOffset)
+        if (totalLogicalHeight <= pageLogicalHeightAtNewOffset)
             wantsStrutOnBlock = true;
     }
     return wantsStrutOnBlock && block.allowsPaginationStrut();
