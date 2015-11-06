@@ -5,6 +5,8 @@
 #include "chrome/installer/util/channel_info.h"
 
 #include "base/logging.h"
+#include "base/strings/string_piece.h"
+#include "base/strings/string_util.h"
 #include "base/win/registry.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/util_constants.h"
@@ -23,12 +25,6 @@ const wchar_t kModStage[] = L"-stage:";
 const wchar_t kSfxFull[] = L"-full";
 const wchar_t kSfxMigrating[] = L"-migrating";
 const wchar_t kSfxMultiFail[] = L"-multifail";
-
-const wchar_t* const kChannels[] = {
-  installer::kChromeChannelBeta,
-  installer::kChromeChannelDev,
-  installer::kChromeChannelStableExplicit
-};
 
 const wchar_t* const kModifiers[] = {
   kModStage,
@@ -135,6 +131,31 @@ bool SetModifier(ModifierIndex index, bool set, base::string16* ap_value) {
   return false;
 }
 
+// Returns the position of the first case-insensitive match of |pattern| found
+// in |str|, or base::string16::npos if none found. |pattern| must be non-empty
+// lower-case ASCII, and may contain any number of '.' wildcard characters.
+size_t FindSubstringMatch(const base::string16& str,
+                          base::StringPiece16 pattern) {
+  DCHECK(!pattern.empty());
+  DCHECK(base::IsStringASCII(pattern));
+  DCHECK(pattern == base::StringPiece16(base::ToLowerASCII(pattern)));
+
+  if (str.size() < pattern.size())
+    return base::string16::npos;
+
+  for (size_t i = 0; i < str.size() - pattern.size() + 1; ++i) {
+    size_t j = 0;
+    while (j < pattern.size() &&
+           (pattern[j] == L'.' ||
+            pattern[j] == base::ToLowerASCII(str[i+j]))) {
+      ++j;
+    }
+    if (j == pattern.size())
+      return i;
+  }
+  return base::string16::npos;
+}
+
 }  // namespace
 
 namespace installer {
@@ -159,33 +180,49 @@ bool ChannelInfo::Write(RegKey* key) const {
 }
 
 bool ChannelInfo::GetChannelName(base::string16* channel_name) const {
+  static const wchar_t kChromeChannelBetaPattern[] = L"1.1-";
+  static const wchar_t kChromeChannelBetaX64Pattern[] = L"x64-beta";
+  static const wchar_t kChromeChannelDevPattern[] = L"2.0-d";
+  static const wchar_t kChromeChannelDevX64Pattern[] = L"x64-dev";
+
   DCHECK(channel_name);
-  if (value_.empty()) {
+  // Report channels that are empty string or contain "stable" as stable
+  // (empty string).
+  if (value_.empty() || value_.find(installer::kChromeChannelStableExplicit) !=
+      base::string16::npos) {
     channel_name->erase();
     return true;
-  } else {
-    for (const wchar_t* const* scan = &kChannels[0],
-             *const* end = &kChannels[arraysize(kChannels)]; scan != end;
-         ++scan) {
-      if (value_.find(*scan) != base::string16::npos) {
-        // Report channels with "stable" in them as stable (empty string).
-        if (*scan == installer::kChromeChannelStableExplicit)
-          channel_name->erase();
-        else
-          channel_name->assign(*scan);
-        return true;
-      }
-    }
-    // There may be modifiers present.  Strip them off and see if we're left
-    // with the empty string (stable channel).
-    base::string16 tmp_value = value_;
-    for (int i = 0; i != NUM_MODIFIERS; ++i) {
-      SetModifier(static_cast<ModifierIndex>(i), false, &tmp_value);
-    }
-    if (tmp_value.empty()) {
-      channel_name->erase();
-      return true;
-    }
+  }
+  // Report channels that match "/^2.0-d.*/i" as dev.
+  if (FindSubstringMatch(value_, kChromeChannelDevPattern) == 0) {
+    channel_name->assign(installer::kChromeChannelDev);
+    return true;
+  }
+  // Report channels that match "/.*x64-dev.*/" as dev.
+  if (value_.find(kChromeChannelDevX64Pattern) != base::string16::npos) {
+    channel_name->assign(installer::kChromeChannelDev);
+    return true;
+  }
+  // Report channels that match "/^1.1-.*/i" as beta.
+  if (FindSubstringMatch(value_, kChromeChannelBetaPattern) == 0) {
+    channel_name->assign(installer::kChromeChannelBeta);
+    return true;
+  }
+  // Report channels that match "/.*x64-beta.*/" as beta.
+  if (value_.find(kChromeChannelBetaX64Pattern) != base::string16::npos) {
+    channel_name->assign(installer::kChromeChannelBeta);
+    return true;
+  }
+
+  // There may be modifiers present. Strip them off and see if we're left
+  // with the empty string (stable channel).
+  base::string16 tmp_value = value_;
+  for (int i = 0; i != NUM_MODIFIERS; ++i) {
+    SetModifier(static_cast<ModifierIndex>(i), false, &tmp_value);
+  }
+  if (tmp_value.empty()) {
+    channel_name->erase();
+    return true;
   }
 
   return false;

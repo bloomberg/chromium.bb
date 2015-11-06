@@ -31,37 +31,73 @@ TEST(ChannelInfoTest, Channels) {
   EXPECT_TRUE(ci.GetChannelName(&channel));
   EXPECT_EQ(kChannelStable, channel);
 
+  ci.set_value(L"1.1-beta");
+  EXPECT_TRUE(ci.GetChannelName(&channel));
+  EXPECT_EQ(kChannelBeta, channel);
+  ci.set_value(L"1.1-beta-foo");
+  EXPECT_TRUE(ci.GetChannelName(&channel));
+  EXPECT_EQ(kChannelBeta, channel);
+  ci.set_value(L"1.1-bar");
+  EXPECT_TRUE(ci.GetChannelName(&channel));
+  EXPECT_EQ(kChannelBeta, channel);
+  ci.set_value(L"1n1-foobar");
+  EXPECT_TRUE(ci.GetChannelName(&channel));
+  EXPECT_EQ(kChannelBeta, channel);
+  ci.set_value(L"foo-1.1-beta");
+  EXPECT_FALSE(ci.GetChannelName(&channel));
   ci.set_value(L"2.0-beta");
-  EXPECT_TRUE(ci.GetChannelName(&channel));
-  EXPECT_EQ(kChannelBeta, channel);
-  ci.set_value(L"2.0-beta-spam");
-  EXPECT_TRUE(ci.GetChannelName(&channel));
-  EXPECT_EQ(kChannelBeta, channel);
-  ci.set_value(L"2.0-spam-beta");
-  EXPECT_TRUE(ci.GetChannelName(&channel));
-  EXPECT_EQ(kChannelBeta, channel);
+  EXPECT_FALSE(ci.GetChannelName(&channel));
 
   ci.set_value(L"2.0-dev");
   EXPECT_TRUE(ci.GetChannelName(&channel));
   EXPECT_EQ(kChannelDev, channel);
-  ci.set_value(L"2.0-kinda-dev");
+  ci.set_value(L"2.0-DEV");
   EXPECT_TRUE(ci.GetChannelName(&channel));
   EXPECT_EQ(kChannelDev, channel);
   ci.set_value(L"2.0-dev-eloper");
   EXPECT_TRUE(ci.GetChannelName(&channel));
   EXPECT_EQ(kChannelDev, channel);
+  ci.set_value(L"2.0-doom");
+  EXPECT_TRUE(ci.GetChannelName(&channel));
+  EXPECT_EQ(kChannelDev, channel);
+  ci.set_value(L"250-doom");
+  EXPECT_TRUE(ci.GetChannelName(&channel));
+  EXPECT_EQ(kChannelDev, channel);
+  ci.set_value(L"bar-2.0-dev");
+  EXPECT_FALSE(ci.GetChannelName(&channel));
+  ci.set_value(L"1.0-dev");
+  EXPECT_FALSE(ci.GetChannelName(&channel));
 
   ci.set_value(L"x64-dev");
   EXPECT_TRUE(ci.GetChannelName(&channel));
   EXPECT_EQ(kChannelDev, channel);
+  ci.set_value(L"foo-x64-dev");
+  EXPECT_TRUE(ci.GetChannelName(&channel));
+  EXPECT_EQ(kChannelDev, channel);
+  ci.set_value(L"x64-Dev");
+  EXPECT_FALSE(ci.GetChannelName(&channel));
+
   ci.set_value(L"x64-beta");
   EXPECT_TRUE(ci.GetChannelName(&channel));
   EXPECT_EQ(kChannelBeta, channel);
+  ci.set_value(L"bar-x64-beta");
+  EXPECT_TRUE(ci.GetChannelName(&channel));
+  EXPECT_EQ(kChannelBeta, channel);
+  ci.set_value(L"x64-Beta");
+  EXPECT_FALSE(ci.GetChannelName(&channel));
+
   ci.set_value(L"x64-stable");
   EXPECT_TRUE(ci.GetChannelName(&channel));
   EXPECT_EQ(kChannelStable, channel);
+  ci.set_value(L"baz-x64-stable");
+  EXPECT_TRUE(ci.GetChannelName(&channel));
+  EXPECT_EQ(kChannelStable, channel);
+  ci.set_value(L"x64-Stable");
+  EXPECT_FALSE(ci.GetChannelName(&channel));
 
   ci.set_value(L"fuzzy");
+  EXPECT_FALSE(ci.GetChannelName(&channel));
+  ci.set_value(L"foo");
   EXPECT_FALSE(ci.GetChannelName(&channel));
 }
 

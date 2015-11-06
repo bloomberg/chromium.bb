@@ -96,20 +96,20 @@ class GoogleUpdateSettingsTest : public testing::Test {
   }
 
   // Tests setting the ap= value to various combinations of values with
-  // prefixes and suffixes, while asserting on the correct channel value.
-  // Note that any non-empty ap= value that doesn't match ".*-{dev|beta}.*"
-  // will return the "unknown" channel.
+  // suffixes, while asserting on the correct channel value.
+  // Note that ap= value has to match "^2.0-d.*" or ".*x64-dev.*" and "^1.1-.*"
+  // or ".*x64-beta.*" for dev and beta channels respectively.
   void TestCurrentChromeChannelWithVariousApValues(SystemUserInstall install) {
     static struct Expectations {
       const wchar_t* ap_value;
       const wchar_t* channel;
+      bool supports_prefixes;
     } expectations[] = {
-      { L"dev", installer::kChromeChannelDev },
-      { L"-dev", installer::kChromeChannelDev },
-      { L"-developer", installer::kChromeChannelDev },
-      { L"beta", installer::kChromeChannelBeta },
-      { L"-beta", installer::kChromeChannelBeta },
-      { L"-betamax", installer::kChromeChannelBeta },
+      { L"2.0-dev", installer::kChromeChannelDev, false},
+      { L"1.1-beta", installer::kChromeChannelBeta, false},
+      { L"x64-dev", installer::kChromeChannelDev, true},
+      { L"x64-beta", installer::kChromeChannelBeta, true},
+      { L"x64-stable", installer::kChromeChannelStable, true},
     };
     bool is_system = install == SYSTEM_INSTALL;
     const wchar_t* prefixes[] = {
@@ -135,10 +135,19 @@ class GoogleUpdateSettingsTest : public testing::Test {
           base::string16 ret_channel;
 
           EXPECT_TRUE(GoogleUpdateSettings::GetChromeChannelAndModifiers(
-              is_system, &ret_channel));
-          EXPECT_STREQ(channel, ret_channel.c_str())
-              << "Expecting channel \"" << channel
-              << "\" for ap=\"" << ap << "\"";
+            is_system, &ret_channel));
+
+          // If prefixes are not supported for a channel, we expect the channel
+          // to be "unknown" if a non-empty prefix is present in ap_value.
+          if (!expectations[j].supports_prefixes && wcslen(prefixes[i]) > 0) {
+            EXPECT_STREQ(installer::kChromeChannelUnknown, ret_channel.c_str())
+                << "Expecting channel \"" << installer::kChromeChannelUnknown
+                << "\" for ap=\"" << ap << "\"";
+          } else {
+            EXPECT_STREQ(channel, ret_channel.c_str())
+                << "Expecting channel \"" << channel
+                << "\" for ap=\"" << ap << "\"";
+          }
         }
       }
     }
