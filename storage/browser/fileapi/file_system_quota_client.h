@@ -31,7 +31,7 @@ class FileSystemContext;
 // is called.
 // All of the public methods of this class are called by the quota manager
 // (except for the constructor/destructor).
-class STORAGE_EXPORT_PRIVATE FileSystemQuotaClient
+class STORAGE_EXPORT FileSystemQuotaClient
     : public NON_EXPORTED_BASE(storage::QuotaClient) {
  public:
   FileSystemQuotaClient(

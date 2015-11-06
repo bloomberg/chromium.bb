@@ -10,25 +10,20 @@
 
 #if defined(STORAGE_BROWSER_IMPLEMENTATION)
 #define STORAGE_EXPORT __declspec(dllexport)
-#define STORAGE_EXPORT_PRIVATE __declspec(dllexport)
 #else
 #define STORAGE_EXPORT __declspec(dllimport)
-#define STORAGE_EXPORT_PRIVATE __declspec(dllimport)
 #endif  // defined(STORAGE_BROWSER_IMPLEMENTATION)
 
 #else // defined(WIN32)
 #if defined(STORAGE_BROWSER_IMPLEMENTATION)
 #define STORAGE_EXPORT __attribute__((visibility("default")))
-#define STORAGE_EXPORT_PRIVATE __attribute__((visibility("default")))
 #else
 #define STORAGE_EXPORT
-#define STORAGE_EXPORT_PRIVATE
 #endif
 #endif
 
 #else // defined(COMPONENT_BUILD)
 #define STORAGE_EXPORT
-#define STORAGE_EXPORT_PRIVATE
 #endif
 
 #endif  // STORAGE_BROWSER_STORAGE_BROWSER_EXPORT_H__

@@ -26,7 +26,7 @@ class FileSystemContext;
 // the same context (e.g. use the same task runner, share the quota etc).
 // Note that the remaining quota bytes (allowed_bytes_growth) may be
 // updated during the execution of write operations.
-class STORAGE_EXPORT_PRIVATE FileSystemOperationContext
+class STORAGE_EXPORT FileSystemOperationContext
     : public base::SupportsUserData {
  public:
   explicit FileSystemOperationContext(FileSystemContext* context);

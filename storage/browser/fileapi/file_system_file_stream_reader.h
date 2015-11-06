@@ -32,7 +32,7 @@ class FileSystemContext;
 // remote filesystem should implement its own reader rather than relying
 // on FileSystemOperation::GetSnapshotFile() which may force downloading
 // the entire contents for remote files.
-class STORAGE_EXPORT_PRIVATE FileSystemFileStreamReader
+class STORAGE_EXPORT FileSystemFileStreamReader
     : public NON_EXPORTED_BASE(storage::FileStreamReader) {
  public:
   ~FileSystemFileStreamReader() override;

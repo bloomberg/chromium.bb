@@ -25,8 +25,7 @@ namespace storage {
 class QuotaEvictionHandler;
 struct UsageAndQuota;
 
-class STORAGE_EXPORT_PRIVATE QuotaTemporaryStorageEvictor
-    : public base::NonThreadSafe {
+class STORAGE_EXPORT QuotaTemporaryStorageEvictor : public base::NonThreadSafe {
  public:
   struct Statistics {
     Statistics()

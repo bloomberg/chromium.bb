@@ -21,8 +21,7 @@ class DatabaseTracker;
 // A QuotaClient implementation to integrate WebSQLDatabases
 // with the quota  management system. This interface is used
 // on the IO thread by the quota manager.
-class STORAGE_EXPORT_PRIVATE DatabaseQuotaClient
-    : public storage::QuotaClient {
+class STORAGE_EXPORT DatabaseQuotaClient : public storage::QuotaClient {
  public:
   DatabaseQuotaClient(
       base::SingleThreadTaskRunner* tracker_thread,

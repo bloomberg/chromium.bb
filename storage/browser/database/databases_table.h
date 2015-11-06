@@ -16,7 +16,7 @@ class Connection;
 
 namespace storage {
 
-struct STORAGE_EXPORT_PRIVATE DatabaseDetails {
+struct STORAGE_EXPORT DatabaseDetails {
   DatabaseDetails();
   ~DatabaseDetails();
 
@@ -26,7 +26,7 @@ struct STORAGE_EXPORT_PRIVATE DatabaseDetails {
   int64 estimated_size;
 };
 
-class STORAGE_EXPORT_PRIVATE DatabasesTable {
+class STORAGE_EXPORT DatabasesTable {
  public:
   explicit DatabasesTable(sql::Connection* db) : db_(db) { }
 

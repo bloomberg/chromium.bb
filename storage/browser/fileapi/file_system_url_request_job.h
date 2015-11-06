@@ -31,8 +31,7 @@ namespace storage {
 class FileSystemContext;
 
 // A request job that handles reading filesystem: URLs
-class STORAGE_EXPORT_PRIVATE FileSystemURLRequestJob
-    : public net::URLRequestJob {
+class STORAGE_EXPORT FileSystemURLRequestJob : public net::URLRequestJob {
  public:
   FileSystemURLRequestJob(
       net::URLRequest* request,

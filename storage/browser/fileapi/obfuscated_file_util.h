@@ -68,8 +68,7 @@ class TimedTaskHelper;
 //
 // This class must be deleted on the FILE thread, because that's where
 // DropDatabases needs to be called.
-class STORAGE_EXPORT_PRIVATE ObfuscatedFileUtil
-    : public FileSystemFileUtil {
+class STORAGE_EXPORT ObfuscatedFileUtil : public FileSystemFileUtil {
  public:
   // Origin enumerator interface.
   // An instance of this interface is assumed to be called on the file thread.

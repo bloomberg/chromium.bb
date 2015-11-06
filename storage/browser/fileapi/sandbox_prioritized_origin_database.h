@@ -22,7 +22,7 @@ class ObfuscatedFileUtil;
 class SandboxIsolatedOriginDatabase;
 class SandboxOriginDatabase;
 
-class STORAGE_EXPORT_PRIVATE SandboxPrioritizedOriginDatabase
+class STORAGE_EXPORT SandboxPrioritizedOriginDatabase
     : public SandboxOriginDatabaseInterface {
  public:
   static const base::FilePath::CharType* kPrimaryDirectory;

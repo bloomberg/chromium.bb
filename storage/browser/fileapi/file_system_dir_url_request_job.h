@@ -21,8 +21,7 @@ class FileSystemContext;
 struct DirectoryEntry;
 
 // A request job that handles reading filesystem: URLs for directories.
-class STORAGE_EXPORT_PRIVATE FileSystemDirURLRequestJob
-    : public net::URLRequestJob {
+class STORAGE_EXPORT FileSystemDirURLRequestJob : public net::URLRequestJob {
  public:
   FileSystemDirURLRequestJob(
       net::URLRequest* request,

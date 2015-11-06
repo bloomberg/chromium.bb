@@ -13,8 +13,7 @@ namespace storage {
 
 class FileSystemOperationContext;
 
-class STORAGE_EXPORT_PRIVATE TransientFileUtil
-    : public LocalFileUtil {
+class STORAGE_EXPORT TransientFileUtil : public LocalFileUtil {
  public:
   TransientFileUtil() {}
   ~TransientFileUtil() override {}

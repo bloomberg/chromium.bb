@@ -23,7 +23,7 @@ class FileSystemContext;
 class FileSystemQuotaUtil;
 class FileStreamWriter;
 
-class STORAGE_EXPORT_PRIVATE SandboxFileStreamWriter
+class STORAGE_EXPORT SandboxFileStreamWriter
     : public NON_EXPORTED_BASE(FileStreamWriter) {
  public:
   SandboxFileStreamWriter(FileSystemContext* file_system_context,

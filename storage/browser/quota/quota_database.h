@@ -34,9 +34,9 @@ namespace storage {
 class SpecialStoragePolicy;
 
 // All the methods of this class must run on the DB thread.
-class STORAGE_EXPORT_PRIVATE QuotaDatabase {
+class STORAGE_EXPORT QuotaDatabase {
  public:
-  struct STORAGE_EXPORT_PRIVATE OriginInfoTableEntry {
+  struct STORAGE_EXPORT OriginInfoTableEntry {
     OriginInfoTableEntry();
     OriginInfoTableEntry(const GURL& origin,
                          StorageType type,
@@ -127,7 +127,7 @@ class STORAGE_EXPORT_PRIVATE QuotaDatabase {
   bool SetOriginDatabaseBootstrapped(bool bootstrap_flag);
 
  private:
-  struct STORAGE_EXPORT_PRIVATE QuotaTableEntry {
+  struct STORAGE_EXPORT QuotaTableEntry {
     QuotaTableEntry();
     QuotaTableEntry(
         const std::string& host,
@@ -137,9 +137,9 @@ class STORAGE_EXPORT_PRIVATE QuotaDatabase {
     StorageType type;
     int64 quota;
   };
-  friend STORAGE_EXPORT_PRIVATE bool operator <(
+  friend STORAGE_EXPORT bool operator <(
       const QuotaTableEntry& lhs, const QuotaTableEntry& rhs);
-  friend STORAGE_EXPORT_PRIVATE bool operator <(
+  friend STORAGE_EXPORT bool operator <(
       const OriginInfoTableEntry& lhs, const OriginInfoTableEntry& rhs);
 
   // Structures used for CreateSchema.

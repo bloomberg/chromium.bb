@@ -19,7 +19,7 @@ namespace storage {
 
 class TimedTaskHelper;
 
-class STORAGE_EXPORT_PRIVATE FileSystemUsageCache {
+class STORAGE_EXPORT FileSystemUsageCache {
  public:
   explicit FileSystemUsageCache(base::SequencedTaskRunner* task_runner);
   ~FileSystemUsageCache();

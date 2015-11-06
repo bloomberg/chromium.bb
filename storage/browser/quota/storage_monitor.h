@@ -22,7 +22,7 @@ class QuotaManager;
 
 // This class dispatches storage events to observers of a common
 // StorageObserver::Filter.
-class STORAGE_EXPORT_PRIVATE StorageObserverList {
+class STORAGE_EXPORT StorageObserverList {
  public:
   StorageObserverList();
   virtual ~StorageObserverList();
@@ -47,7 +47,7 @@ class STORAGE_EXPORT_PRIVATE StorageObserverList {
   void ScheduleUpdateForObserver(StorageObserver* observer);
 
  private:
-  struct STORAGE_EXPORT_PRIVATE ObserverState {
+  struct STORAGE_EXPORT ObserverState {
     GURL origin;
     base::TimeTicks last_notification_time;
     base::TimeDelta rate;
@@ -71,7 +71,7 @@ class STORAGE_EXPORT_PRIVATE StorageObserverList {
 
 // Manages the storage observers of a common host. Caches the usage and quota of
 // the host to avoid accumulating for every change.
-class STORAGE_EXPORT_PRIVATE HostStorageObservers {
+class STORAGE_EXPORT HostStorageObservers {
  public:
   explicit HostStorageObservers(QuotaManager* quota_manager);
   virtual ~HostStorageObservers();
@@ -118,7 +118,7 @@ class STORAGE_EXPORT_PRIVATE HostStorageObservers {
 
 
 // Manages the observers of a common storage type.
-class STORAGE_EXPORT_PRIVATE StorageTypeObservers {
+class STORAGE_EXPORT StorageTypeObservers {
  public:
   explicit StorageTypeObservers(QuotaManager* quota_manager);
   virtual ~StorageTypeObservers();
@@ -147,7 +147,7 @@ class STORAGE_EXPORT_PRIVATE StorageTypeObservers {
 
 
 // Storage monitor manages observers and dispatches storage events to them.
-class STORAGE_EXPORT_PRIVATE StorageMonitor {
+class STORAGE_EXPORT StorageMonitor {
  public:
   explicit StorageMonitor(QuotaManager* quota_manager);
   virtual ~StorageMonitor();

@@ -40,11 +40,11 @@ namespace storage {
 // TODO(ericu): Safe mode, which does more checks such as the above on debug
 // builds.
 // TODO(ericu): Add a method that will give a unique filename for a data file.
-class STORAGE_EXPORT_PRIVATE SandboxDirectoryDatabase {
+class STORAGE_EXPORT SandboxDirectoryDatabase {
  public:
   typedef int64 FileId;
 
-  struct STORAGE_EXPORT_PRIVATE FileInfo {
+  struct STORAGE_EXPORT FileInfo {
     FileInfo();
     ~FileInfo();
 

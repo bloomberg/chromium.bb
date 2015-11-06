@@ -13,9 +13,9 @@
 
 namespace storage {
 
-class STORAGE_EXPORT_PRIVATE SandboxOriginDatabaseInterface {
+class STORAGE_EXPORT SandboxOriginDatabaseInterface {
  public:
-  struct STORAGE_EXPORT_PRIVATE OriginRecord {
+  struct STORAGE_EXPORT OriginRecord {
     std::string origin;
     base::FilePath path;
 

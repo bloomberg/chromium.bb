@@ -28,7 +28,7 @@ namespace storage {
 //
 // Note that all the methods of this class are static and this does NOT
 // inherit from FileSystemFileUtil.
-class STORAGE_EXPORT_PRIVATE NativeFileUtil {
+class STORAGE_EXPORT NativeFileUtil {
  public:
   enum CopyOrMoveMode {
     COPY_NOSYNC,
