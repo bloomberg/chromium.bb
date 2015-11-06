@@ -3,16 +3,25 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
-<LinearLayout
+<RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
     <ListView
         android:id="@android:id/list"
         android:layout_height="match_parent"
-        android:layout_width="match_parent">
-    </ListView>
+        android:layout_width="match_parent"
+        android:divider="@null"/>
+    <TextView
+        android:id="@android:id/empty"
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:text="@string/physical_web_empty_list_scanning"
+        android:textSize="16sp"
+        android:textColor="@color/physical_web_no_urls_text_color"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="260dp"
+        android:layout_centerHorizontal="true"/>
 
-</LinearLayout>
+</RelativeLayout>

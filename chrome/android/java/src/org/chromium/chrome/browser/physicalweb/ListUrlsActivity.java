@@ -4,14 +4,17 @@
 
 package org.chromium.chrome.browser.physicalweb;
 
-import android.app.ListActivity;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.SystemClock;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import org.chromium.chrome.R;
 
@@ -22,10 +25,15 @@ import java.util.HashSet;
  * This activity displays a list of nearby URLs as stored in the {@link UrlManager}.
  * This activity does not and should not rely directly or indirectly on the native library.
  */
-public class ListUrlsActivity extends ListActivity {
+public class ListUrlsActivity extends AppCompatActivity implements AdapterView.OnItemClickListener {
     private static final String TAG = "PhysicalWeb";
+    private static final long SCAN_TIMEOUT_MILLIS = 5000; // 5 seconds
     private NearbyUrlsAdapter mAdapter;
     private PwsClient mPwsClient;
+    private Handler mTimerHandler;
+    private Runnable mTimerCallback;
+    private ListView mListView;
+    private TextView mEmptyView;
     private boolean mDisplayRecorded;
 
     @Override
@@ -34,7 +42,12 @@ public class ListUrlsActivity extends ListActivity {
         setContentView(R.layout.physical_web_list_urls_activity);
 
         mAdapter = new NearbyUrlsAdapter(this);
-        setListAdapter(mAdapter);
+
+        mListView = (ListView) findViewById(android.R.id.list);
+        mEmptyView = (TextView) findViewById(android.R.id.empty);
+        mListView.setEmptyView(mEmptyView);
+        mListView.setAdapter(mAdapter);
+        mListView.setOnItemClickListener(this);
 
         mPwsClient = new PwsClient();
         int referer = getIntent().getIntExtra(UrlManager.REFERER_KEY, 0);
@@ -43,6 +56,14 @@ public class ListUrlsActivity extends ListActivity {
             PhysicalWebUma.onNotificationPressed();
         }
         mDisplayRecorded = false;
+
+        mTimerHandler = new Handler();
+        mTimerCallback = new Runnable() {
+            @Override
+            public void run() {
+                updateEmptyListMessage(false);
+            }
+        };
     }
 
     @Override
@@ -80,17 +101,23 @@ public class ListUrlsActivity extends ListActivity {
                 }
             }
         });
+
+        // Nearby doesn't tell us when it's finished but it usually only
+        // takes a few seconds.
+        updateEmptyListMessage(true);
+        mTimerHandler.removeCallbacks(mTimerCallback);
+        mTimerHandler.postDelayed(mTimerCallback, SCAN_TIMEOUT_MILLIS);
     }
 
     /**
      * Handle a click event.
-     * @param l The ListView.
-     * @param v The View that was clicked inside the ListView.
+     * @param adapterView The AdapterView where the click happened.
+     * @param view The View that was clicked inside the AdapterView.
      * @param position The position of the clicked element in the list.
      * @param id The row id of the clicked element in the list.
      */
     @Override
-    public void onListItemClick(ListView l, View v, int position, long id) {
+    public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
         PhysicalWebUma.onUrlSelected();
         PwsResult pwsResult = mAdapter.getItem(position);
         Intent intent = createNavigateToUrlIntent(pwsResult);
@@ -104,6 +131,15 @@ public class ListUrlsActivity extends ListActivity {
                 mAdapter.setIcon(url, bitmap);
             }
         });
+    }
+
+    private void updateEmptyListMessage(boolean isScanning) {
+        int messageId = R.string.physical_web_empty_list;
+        if (isScanning) {
+            messageId = R.string.physical_web_empty_list_scanning;
+        }
+
+        mEmptyView.setText(messageId);
     }
 
     private static Intent createNavigateToUrlIntent(PwsResult pwsResult) {
