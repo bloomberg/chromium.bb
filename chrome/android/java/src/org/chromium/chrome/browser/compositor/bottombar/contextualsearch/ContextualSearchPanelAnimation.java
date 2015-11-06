@@ -255,7 +255,7 @@ public abstract class ContextualSearchPanelAnimation extends ContextualSearchPan
         // maximized so this project state change is not needed.
         if (projectedState == PanelState.MAXIMIZED
                 && getPanelState() == PanelState.PEEKED
-                && isPromoVisible() && supportsExpandedState()) {
+                && isPromoVisible()) {
             projectedState = PanelState.EXPANDED;
         }
 

@@ -77,6 +77,7 @@ public class ContextualSearchPanel extends OverlayPanel {
     /**
      * Destroy the panel's components.
      */
+    @Override
     public void destroy() {
         super.destroy();
         destroyPromoView();
@@ -297,15 +298,6 @@ public class ContextualSearchPanel extends OverlayPanel {
             return true;
         }
         return false;
-    }
-
-    // ============================================================================================
-    // Panel base methods
-    // ============================================================================================
-
-    @Override
-    protected boolean supportsExpandedState() {
-        return isFullscreenSizePanel();
     }
 
     // ============================================================================================

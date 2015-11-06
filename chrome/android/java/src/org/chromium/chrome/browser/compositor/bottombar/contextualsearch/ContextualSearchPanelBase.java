@@ -46,18 +46,6 @@ abstract class ContextualSearchPanelBase implements ContextualSearchPromoHost {
     private static final float EXPANDED_PANEL_HEIGHT_PERCENTAGE = .7f;
 
     /**
-     * The height of the expanded Search Panel relative to the height of the screen when
-     * the panel is in the narrow width mode.
-     */
-    private static final float NARROW_EXPANDED_PANEL_HEIGHT_PERCENTAGE = .6f;
-
-    /**
-     * The height of the maximized Search Panel relative to the height of the screen when
-     * the panel is in the narrow width mode.
-     */
-    private static final float NARROW_MAXIMIZED_PANEL_HEIGHT_PERCENTAGE = .9f;
-
-    /**
      * The width of the small version of the Search Panel in dps.
      */
     private static final float SMALL_PANEL_WIDTH_DP = 600.f;
@@ -544,14 +532,6 @@ abstract class ContextualSearchPanelBase implements ContextualSearchPromoHost {
         return mIsMaximized;
     }
 
-    /**
-     * Get if the panel supports an expanded state. This should be overridden in child classes.
-     * @return True if the panel supports an EXPANDED state.
-     */
-    protected boolean supportsExpandedState() {
-        return false;
-    }
-
     // --------------------------------------------------------------------------------------------
     // Contextual Search Bar states
     // --------------------------------------------------------------------------------------------
@@ -813,8 +793,7 @@ abstract class ContextualSearchPanelBase implements ContextualSearchPromoHost {
         if (state == PanelState.CLOSED) {
             mIsShowing = false;
             onClosed(reason);
-        } else if (state == PanelState.EXPANDED && isFullscreenSizePanel()
-                || (state == PanelState.MAXIMIZED && !isFullscreenSizePanel())) {
+        } else if (state == PanelState.EXPANDED) {
             showPromoViewAtYPosition(getPromoYPx());
         }
 
@@ -889,13 +868,14 @@ abstract class ContextualSearchPanelBase implements ContextualSearchPromoHost {
             if (isFullscreenSizePanel()) {
                 panelHeight = fullscreenHeight * EXPANDED_PANEL_HEIGHT_PERCENTAGE;
             } else {
-                panelHeight = mLayoutHeight * NARROW_EXPANDED_PANEL_HEIGHT_PERCENTAGE;
+                panelHeight = (fullscreenHeight - mToolbarHeight)
+                        * EXPANDED_PANEL_HEIGHT_PERCENTAGE;
             }
         } else if (state == PanelState.MAXIMIZED) {
             if (isFullscreenSizePanel()) {
                 panelHeight = fullscreenHeight;
             } else {
-                panelHeight = mLayoutHeight * NARROW_MAXIMIZED_PANEL_HEIGHT_PERCENTAGE;
+                panelHeight = fullscreenHeight - mToolbarHeight;
             }
         }
 
@@ -917,9 +897,6 @@ abstract class ContextualSearchPanelBase implements ContextualSearchPromoHost {
         // height.
         for (PanelState state : PanelState.values()) {
             if (!isValidState(state)) {
-                continue;
-            }
-            if (!isFullscreenSizePanel() && state == PanelState.EXPANDED) {
                 continue;
             }
 
@@ -1170,8 +1147,7 @@ abstract class ContextualSearchPanelBase implements ContextualSearchPromoHost {
      */
     protected void updatePanelForMaximization(float percentage) {
         // Update the opt out promo.
-        float promoVisibilityPercentage = isFullscreenSizePanel() ? 1.f - percentage : 1.f;
-        updatePromoVisibility(promoVisibilityPercentage);
+        updatePromoVisibility(1.f - percentage);
 
         // Base page offset.
         mBasePageY = getBasePageTargetY();

@@ -13,6 +13,7 @@ import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
 import org.chromium.chrome.browser.compositor.scene_layer.SceneLayer;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.content.browser.ContentViewCore;
+import org.chromium.content_public.common.TopControlsState;
 import org.chromium.ui.resources.ResourceManager;
 
 /**
@@ -186,6 +187,7 @@ public class OverlayPanel extends ContextualSearchPanelAnimation
      * Create a new OverlayPanelContent object. This can be overridden for tests.
      * @return A new OverlayPanelContent object.
      */
+    @Override
     public OverlayPanelContent createNewOverlayPanelContent() {
         return new OverlayPanelContent(new OverlayContentDelegate(),
                 new OverlayContentProgressObserver(), mActivity);
@@ -413,11 +415,7 @@ public class OverlayPanel extends ContextualSearchPanelAnimation
      */
     protected void handleBarClick(long time, float x, float y) {
         if (isPeeking()) {
-            if (supportsExpandedState()) {
-                expandPanel(StateChangeReason.SEARCH_BAR_TAP);
-            } else {
-                maximizePanel(StateChangeReason.SEARCH_BAR_TAP);
-            }
+            expandPanel(StateChangeReason.SEARCH_BAR_TAP);
         }
     }
 
