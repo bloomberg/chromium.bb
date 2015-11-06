@@ -462,14 +462,20 @@ ui::EventDispatchDetails WindowEventDispatcher::PreDispatchEvent(
     }
   }
 
+  DispatchDetails details;
   if (event->IsMouseEvent()) {
-    PreDispatchMouseEvent(target_window, static_cast<ui::MouseEvent*>(event));
+    details = PreDispatchMouseEvent(target_window,
+                                    static_cast<ui::MouseEvent*>(event));
   } else if (event->IsScrollEvent()) {
-    PreDispatchLocatedEvent(target_window,
-                            static_cast<ui::ScrollEvent*>(event));
+    details = PreDispatchLocatedEvent(target_window,
+                                      static_cast<ui::ScrollEvent*>(event));
   } else if (event->IsTouchEvent()) {
-    PreDispatchTouchEvent(target_window, static_cast<ui::TouchEvent*>(event));
+    details = PreDispatchTouchEvent(target_window,
+                                    static_cast<ui::TouchEvent*>(event));
   }
+  if (details.dispatcher_destroyed || details.target_destroyed)
+    return details;
+
   old_dispatch_target_ = event_dispatch_target_;
   event_dispatch_target_ = target_window;
   return DispatchDetails();
@@ -729,8 +735,9 @@ ui::EventDispatchDetails WindowEventDispatcher::SynthesizeMouseMoveEvent() {
   return OnEventFromSource(&event);
 }
 
-void WindowEventDispatcher::PreDispatchLocatedEvent(Window* target,
-                                                    ui::LocatedEvent* event) {
+DispatchDetails WindowEventDispatcher::PreDispatchLocatedEvent(
+    Window* target,
+    ui::LocatedEvent* event) {
   int flags = event->flags();
   if (IsNonClientLocation(target, event->location()))
     flags |= ui::EF_IS_NON_CLIENT;
@@ -743,10 +750,13 @@ void WindowEventDispatcher::PreDispatchLocatedEvent(Window* target,
       SetLastMouseLocation(window(), event->root_location());
     synthesize_mouse_move_ = false;
   }
+
+  return DispatchDetails();
 }
 
-void WindowEventDispatcher::PreDispatchMouseEvent(Window* target,
-                                                  ui::MouseEvent* event) {
+DispatchDetails WindowEventDispatcher::PreDispatchMouseEvent(
+    Window* target,
+    ui::MouseEvent* event) {
   client::CursorClient* cursor_client = client::GetCursorClient(window());
   // We allow synthesized mouse exit events through even if mouse events are
   // disabled. This ensures that hover state, etc on controls like buttons is
@@ -756,7 +766,7 @@ void WindowEventDispatcher::PreDispatchMouseEvent(Window* target,
       (event->flags() & ui::EF_IS_SYNTHESIZED) &&
       (event->type() != ui::ET_MOUSE_EXITED)) {
     event->SetHandled();
-    return;
+    return DispatchDetails();
   }
 
   if (IsEventCandidateForHold(*event) && !dispatching_held_event_) {
@@ -767,7 +777,7 @@ void WindowEventDispatcher::PreDispatchMouseEvent(Window* target,
       }
       held_move_event_.reset(new ui::MouseEvent(*event, target, window()));
       event->SetHandled();
-      return;
+      return DispatchDetails();
     } else {
       // We may have a held event for a period between the time move_hold_count_
       // fell to 0 and the DispatchHeldEvents executes. Since we're going to
@@ -788,7 +798,7 @@ void WindowEventDispatcher::PreDispatchMouseEvent(Window* target,
             DispatchMouseEnterOrExit(target, *event, ui::ET_MOUSE_EXITED);
         if (details.dispatcher_destroyed) {
           event->SetHandled();
-          return;
+          return details;
         }
         mouse_moved_handler_ = NULL;
       }
@@ -803,20 +813,25 @@ void WindowEventDispatcher::PreDispatchMouseEvent(Window* target,
         live_window.Add(target);
         DispatchDetails details =
             DispatchMouseEnterOrExit(target, *event, ui::ET_MOUSE_EXITED);
+        // |details| contains information about |mouse_moved_handler_| being
+        // destroyed which is not our |target|. Return value of this function
+        // should be about our |target|.
+        DispatchDetails target_details = details;
+        target_details.target_destroyed = !live_window.Contains(target);
         if (details.dispatcher_destroyed) {
           event->SetHandled();
-          return;
+          return target_details;
         }
         // If the |mouse_moved_handler_| changes out from under us, assume a
         // nested message loop ran and we don't need to do anything.
         if (mouse_moved_handler_ != old_mouse_moved_handler) {
           event->SetHandled();
-          return;
+          return target_details;
         }
-        if (!live_window.Contains(target) || details.target_destroyed) {
+        if (details.target_destroyed || target_details.target_destroyed) {
           mouse_moved_handler_ = NULL;
           event->SetHandled();
-          return;
+          return target_details;
         }
         live_window.Remove(target);
 
@@ -825,7 +840,7 @@ void WindowEventDispatcher::PreDispatchMouseEvent(Window* target,
             DispatchMouseEnterOrExit(target, *event, ui::ET_MOUSE_ENTERED);
         if (details.dispatcher_destroyed || details.target_destroyed) {
           event->SetHandled();
-          return;
+          return details;
         }
       }
       break;
@@ -848,11 +863,12 @@ void WindowEventDispatcher::PreDispatchMouseEvent(Window* target,
       break;
   }
 
-  PreDispatchLocatedEvent(target, event);
+  return PreDispatchLocatedEvent(target, event);
 }
 
-void WindowEventDispatcher::PreDispatchTouchEvent(Window* target,
-                                                  ui::TouchEvent* event) {
+DispatchDetails WindowEventDispatcher::PreDispatchTouchEvent(
+    Window* target,
+    ui::TouchEvent* event) {
   switch (event->type()) {
     case ui::ET_TOUCH_PRESSED:
       touch_ids_down_ |= (1 << event->touch_id());
@@ -874,7 +890,7 @@ void WindowEventDispatcher::PreDispatchTouchEvent(Window* target,
       if (move_hold_count_ && !dispatching_held_event_) {
         held_move_event_.reset(new ui::TouchEvent(*event, target, window()));
         event->SetHandled();
-        return;
+        return DispatchDetails();
       }
       break;
 
@@ -889,14 +905,14 @@ void WindowEventDispatcher::PreDispatchTouchEvent(Window* target,
     // The event is invalid - ignore it.
     event->StopPropagation();
     event->DisableSynchronousHandling();
-    return;
+    return DispatchDetails();
   }
 
   // This flag is set depending on the gestures recognized in the call above,
   // and needs to propagate with the forwarded event.
   event->set_may_cause_scrolling(orig_event.may_cause_scrolling());
 
-  PreDispatchLocatedEvent(target, event);
+  return PreDispatchLocatedEvent(target, event);
 }
 
 }  // namespace aura

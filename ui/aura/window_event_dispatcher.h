@@ -234,9 +234,12 @@ class AURA_EXPORT WindowEventDispatcher : public ui::EventProcessor,
   // the mouse cursor.
   void SynthesizeMouseMoveAfterChangeToWindow(Window* window);
 
-  void PreDispatchLocatedEvent(Window* target, ui::LocatedEvent* event);
-  void PreDispatchMouseEvent(Window* target, ui::MouseEvent* event);
-  void PreDispatchTouchEvent(Window* target, ui::TouchEvent* event);
+  ui::EventDispatchDetails PreDispatchLocatedEvent(Window* target,
+                                                   ui::LocatedEvent* event);
+  ui::EventDispatchDetails PreDispatchMouseEvent(Window* target,
+                                                 ui::MouseEvent* event);
+  ui::EventDispatchDetails PreDispatchTouchEvent(Window* target,
+                                                 ui::TouchEvent* event);
 
   WindowTreeHost* host_;
 
