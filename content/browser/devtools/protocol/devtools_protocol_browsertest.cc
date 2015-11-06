@@ -470,4 +470,16 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, InspectDuringFrameSwap) {
   EXPECT_TRUE(success);
 }
 
+IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, ReloadBlankPage) {
+  Shell* window =  Shell::CreateNewWindow(
+      shell()->web_contents()->GetBrowserContext(),
+      GURL("javascript:x=1"),
+      nullptr,
+      gfx::Size());
+  WaitForLoadStop(window->web_contents());
+  Attach();
+  SendCommand("Page.reload", nullptr, false);
+  // Should not crash at this point.
+}
+
 }  // namespace content

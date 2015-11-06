@@ -214,7 +214,8 @@ Response PageHandler::Reload(const bool* ignoreCache,
     return Response::InternalError("Could not connect to view");
 
   if (web_contents->IsCrashed() ||
-      web_contents->GetController().GetVisibleEntry()->IsViewSourceMode()) {
+      (web_contents->GetController().GetVisibleEntry() &&
+       web_contents->GetController().GetVisibleEntry()->IsViewSourceMode())) {
     web_contents->GetController().Reload(false);
     return Response::OK();
   } else {
