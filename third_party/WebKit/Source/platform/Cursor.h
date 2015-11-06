@@ -84,8 +84,6 @@ public:
         Custom
     };
 
-    static const Cursor& fromType(Cursor::Type);
-
     Cursor()
         // This is an invalid Cursor and should never actually get used.
         : m_type(static_cast<Type>(-1))

@@ -314,11 +314,6 @@ PassRefPtr<const SkPicture> GraphicsContext::endRecording()
     return picture.release();
 }
 
-bool GraphicsContext::isRecording() const
-{
-    return m_canvas != m_originalCanvas;
-}
-
 void GraphicsContext::drawPicture(const SkPicture* picture)
 {
     if (contextDisabled() || !picture || picture->cullRect().isEmpty())
@@ -1030,11 +1025,6 @@ void GraphicsContext::strokePath(const Path& pathToStroke)
     drawPath(pathToStroke.skPath(), immutableState()->strokePaint());
 }
 
-void GraphicsContext::strokeRect(const FloatRect& rect)
-{
-    strokeRect(rect, strokeThickness());
-}
-
 void GraphicsContext::strokeRect(const FloatRect& rect, float lineWidth)
 {
     if (contextDisabled())
@@ -1206,16 +1196,6 @@ void GraphicsContext::fillRectWithRoundedHole(const FloatRect& rect, const Float
     SkPaint paint(immutableState()->fillPaint());
     paint.setColor(color.rgb());
     m_canvas->drawDRRect(SkRRect::MakeRect(rect), roundedHoleRect, paint);
-}
-
-void GraphicsContext::clearRect(const FloatRect& rect)
-{
-    if (contextDisabled())
-        return;
-
-    SkPaint paint(immutableState()->fillPaint());
-    paint.setXfermodeMode(SkXfermode::kClear_Mode);
-    drawRect(rect, paint);
 }
 
 void GraphicsContext::adjustLineToPixelBoundaries(FloatPoint& p1, FloatPoint& p2, float strokeWidth, StrokeStyle penStyle)

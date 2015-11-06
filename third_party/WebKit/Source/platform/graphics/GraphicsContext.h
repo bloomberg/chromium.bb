@@ -154,9 +154,6 @@ public:
     void fillRoundedRect(const FloatRoundedRect&, const Color&);
     void fillDRRect(const FloatRoundedRect&, const FloatRoundedRect&, const Color&);
 
-    void clearRect(const FloatRect&);
-
-    void strokeRect(const FloatRect&);
     void strokeRect(const FloatRect&, float lineWidth);
 
     void drawPicture(const SkPicture*);
@@ -331,8 +328,6 @@ private:
     }
 
     void fillRectWithRoundedHole(const FloatRect&, const FloatRoundedRect& roundedHoleRect, const Color&);
-
-    bool isRecording() const;
 
     const SkMetaData& metaData() const { return m_metaData; }
 
