@@ -2561,10 +2561,9 @@ void FlagsState::GetFlagFeatureEntries(flags_ui::FlagsStorage* flags_storage,
         break;
       case FeatureEntry::MULTI_VALUE:
       case FeatureEntry::ENABLE_DISABLE_VALUE:
+      case FeatureEntry::FEATURE_VALUE:
         data->Set("choices", CreateChoiceData(entry, enabled_entries));
         break;
-      default:
-        NOTREACHED();
     }
 
     bool supported = (entry.supported_platforms & current_platform) != 0;
