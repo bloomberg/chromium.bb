@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/bluetooth/bluetooth_gatt_notify_session_chromeos.h"
+#include "device/bluetooth/bluetooth_gatt_notify_session_bluez.h"
 
 #include "base/bind.h"
 #include "base/logging.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_gatt_service.h"
-#include "device/bluetooth/bluetooth_remote_gatt_characteristic_chromeos.h"
+#include "device/bluetooth/bluetooth_remote_gatt_characteristic_bluez.h"
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
 
-namespace chromeos {
+namespace bluez {
 
-BluetoothGattNotifySessionChromeOS::BluetoothGattNotifySessionChromeOS(
+BluetoothGattNotifySessionBlueZ::BluetoothGattNotifySessionBlueZ(
     scoped_refptr<device::BluetoothAdapter> adapter,
     const std::string& device_address,
     const std::string& service_identifier,
@@ -37,19 +37,19 @@ BluetoothGattNotifySessionChromeOS::BluetoothGattNotifySessionChromeOS(
       ->AddObserver(this);
 }
 
-BluetoothGattNotifySessionChromeOS::~BluetoothGattNotifySessionChromeOS() {
+BluetoothGattNotifySessionBlueZ::~BluetoothGattNotifySessionBlueZ() {
   bluez::BluezDBusManager::Get()
       ->GetBluetoothGattCharacteristicClient()
       ->RemoveObserver(this);
   Stop(base::Bind(&base::DoNothing));
 }
 
-std::string BluetoothGattNotifySessionChromeOS::GetCharacteristicIdentifier()
+std::string BluetoothGattNotifySessionBlueZ::GetCharacteristicIdentifier()
     const {
   return characteristic_id_;
 }
 
-bool BluetoothGattNotifySessionChromeOS::IsActive() {
+bool BluetoothGattNotifySessionBlueZ::IsActive() {
   // Determine if the session is active. If |active_| is false, then it's
   // been explicitly marked, so return false.
   if (!active_)
@@ -73,7 +73,7 @@ bool BluetoothGattNotifySessionChromeOS::IsActive() {
   return active_;
 }
 
-void BluetoothGattNotifySessionChromeOS::Stop(const base::Closure& callback) {
+void BluetoothGattNotifySessionBlueZ::Stop(const base::Closure& callback) {
   if (!active_) {
     VLOG(1) << "Notify session already inactive.";
     callback.Run();
@@ -91,8 +91,8 @@ void BluetoothGattNotifySessionChromeOS::Stop(const base::Closure& callback) {
   if (!service)
     return;
 
-  BluetoothRemoteGattCharacteristicChromeOS* chrc =
-      static_cast<BluetoothRemoteGattCharacteristicChromeOS*>(
+  BluetoothRemoteGattCharacteristicBlueZ* chrc =
+      static_cast<BluetoothRemoteGattCharacteristicBlueZ*>(
           service->GetCharacteristic(characteristic_id_));
   if (!chrc)
     return;
@@ -100,7 +100,7 @@ void BluetoothGattNotifySessionChromeOS::Stop(const base::Closure& callback) {
   chrc->RemoveNotifySession(callback);
 }
 
-void BluetoothGattNotifySessionChromeOS::GattCharacteristicRemoved(
+void BluetoothGattNotifySessionBlueZ::GattCharacteristicRemoved(
     const dbus::ObjectPath& object_path) {
   if (object_path != object_path_)
     return;
@@ -108,7 +108,7 @@ void BluetoothGattNotifySessionChromeOS::GattCharacteristicRemoved(
   active_ = false;
 }
 
-void BluetoothGattNotifySessionChromeOS::GattCharacteristicPropertyChanged(
+void BluetoothGattNotifySessionBlueZ::GattCharacteristicPropertyChanged(
     const dbus::ObjectPath& object_path,
     const std::string& property_name) {
   if (object_path != object_path_)
@@ -131,4 +131,4 @@ void BluetoothGattNotifySessionChromeOS::GattCharacteristicPropertyChanged(
     active_ = false;
 }
 
-}  // namespace chromeos
+}  // namespace bluez

@@ -12,7 +12,7 @@
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/bluetooth_advertisement.h"
-#include "device/bluetooth/bluetooth_advertisement_chromeos.h"
+#include "device/bluetooth/bluetooth_advertisement_bluez.h"
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
 #include "device/bluetooth/dbus/fake_bluetooth_le_advertisement_service_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -21,7 +21,7 @@ using device::BluetoothAdapter;
 using device::BluetoothAdapterFactory;
 using device::BluetoothAdvertisement;
 
-namespace chromeos {
+namespace bluez {
 
 class TestAdvertisementObserver : public BluetoothAdvertisement::Observer {
  public:
@@ -49,7 +49,7 @@ class TestAdvertisementObserver : public BluetoothAdvertisement::Observer {
   DISALLOW_COPY_AND_ASSIGN(TestAdvertisementObserver);
 };
 
-class BluetoothAdvertisementChromeOSTest : public testing::Test {
+class BluetoothAdvertisementBlueZTest : public testing::Test {
  public:
   void SetUp() override {
     bluez::BluezDBusManager::Initialize(NULL, true);
@@ -76,7 +76,7 @@ class BluetoothAdvertisementChromeOSTest : public testing::Test {
   // Gets the existing Bluetooth adapter.
   void GetAdapter() {
     BluetoothAdapterFactory::GetAdapter(
-        base::Bind(&BluetoothAdvertisementChromeOSTest::GetAdapterCallback,
+        base::Bind(&BluetoothAdvertisementBlueZTest::GetAdapterCallback,
                    base::Unretained(this)));
   }
 
@@ -109,11 +109,10 @@ class BluetoothAdvertisementChromeOSTest : public testing::Test {
 
     adapter_->RegisterAdvertisement(
         CreateAdvertisementData().Pass(),
-        base::Bind(&BluetoothAdvertisementChromeOSTest::RegisterCallback,
+        base::Bind(&BluetoothAdvertisementBlueZTest::RegisterCallback,
                    base::Unretained(this)),
-        base::Bind(
-            &BluetoothAdvertisementChromeOSTest::AdvertisementErrorCallback,
-            base::Unretained(this)));
+        base::Bind(&BluetoothAdvertisementBlueZTest::AdvertisementErrorCallback,
+                   base::Unretained(this)));
 
     message_loop_.RunUntilIdle();
     return advertisement_;
@@ -122,18 +121,17 @@ class BluetoothAdvertisementChromeOSTest : public testing::Test {
   void UnregisterAdvertisement(
       scoped_refptr<BluetoothAdvertisement> advertisement) {
     advertisement->Unregister(
-        base::Bind(&BluetoothAdvertisementChromeOSTest::Callback,
+        base::Bind(&BluetoothAdvertisementBlueZTest::Callback,
                    base::Unretained(this)),
-        base::Bind(
-            &BluetoothAdvertisementChromeOSTest::AdvertisementErrorCallback,
-            base::Unretained(this)));
+        base::Bind(&BluetoothAdvertisementBlueZTest::AdvertisementErrorCallback,
+                   base::Unretained(this)));
 
     message_loop_.RunUntilIdle();
   }
 
   void TriggerReleased(scoped_refptr<BluetoothAdvertisement> advertisement) {
-    BluetoothAdvertisementChromeOS* adv =
-        static_cast<BluetoothAdvertisementChromeOS*>(advertisement.get());
+    BluetoothAdvertisementBlueZ* adv =
+        static_cast<BluetoothAdvertisementBlueZ*>(advertisement.get());
     bluez::FakeBluetoothLEAdvertisementServiceProvider* provider =
         static_cast<bluez::FakeBluetoothLEAdvertisementServiceProvider*>(
             adv->provider());
@@ -190,7 +188,7 @@ class BluetoothAdvertisementChromeOSTest : public testing::Test {
   scoped_refptr<BluetoothAdvertisement> advertisement_;
 };
 
-TEST_F(BluetoothAdvertisementChromeOSTest, RegisterSucceeded) {
+TEST_F(BluetoothAdvertisementBlueZTest, RegisterSucceeded) {
   scoped_refptr<BluetoothAdvertisement> advertisement = CreateAdvertisement();
   ExpectSuccess();
   EXPECT_NE(nullptr, advertisement);
@@ -199,7 +197,7 @@ TEST_F(BluetoothAdvertisementChromeOSTest, RegisterSucceeded) {
   ExpectSuccess();
 }
 
-TEST_F(BluetoothAdvertisementChromeOSTest, DoubleRegisterFailed) {
+TEST_F(BluetoothAdvertisementBlueZTest, DoubleRegisterFailed) {
   scoped_refptr<BluetoothAdvertisement> advertisement = CreateAdvertisement();
   ExpectSuccess();
   EXPECT_NE(nullptr, advertisement);
@@ -210,7 +208,7 @@ TEST_F(BluetoothAdvertisementChromeOSTest, DoubleRegisterFailed) {
   EXPECT_EQ(nullptr, advertisement2);
 }
 
-TEST_F(BluetoothAdvertisementChromeOSTest, DoubleUnregisterFailed) {
+TEST_F(BluetoothAdvertisementBlueZTest, DoubleUnregisterFailed) {
   scoped_refptr<BluetoothAdvertisement> advertisement = CreateAdvertisement();
   ExpectSuccess();
   EXPECT_NE(nullptr, advertisement);
@@ -224,7 +222,7 @@ TEST_F(BluetoothAdvertisementChromeOSTest, DoubleUnregisterFailed) {
   ExpectError(BluetoothAdvertisement::ERROR_ADVERTISEMENT_DOES_NOT_EXIST);
 }
 
-TEST_F(BluetoothAdvertisementChromeOSTest, UnregisterAfterReleasedFailed) {
+TEST_F(BluetoothAdvertisementBlueZTest, UnregisterAfterReleasedFailed) {
   scoped_refptr<BluetoothAdvertisement> advertisement = CreateAdvertisement();
   ExpectSuccess();
   EXPECT_NE(nullptr, advertisement);
@@ -239,4 +237,4 @@ TEST_F(BluetoothAdvertisementChromeOSTest, UnregisterAfterReleasedFailed) {
   ExpectError(BluetoothAdvertisement::ERROR_ADVERTISEMENT_DOES_NOT_EXIST);
 }
 
-}  // namespace chromeos
+}  // namespace bluez

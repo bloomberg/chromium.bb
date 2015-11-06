@@ -95,7 +95,7 @@ class BluetoothGattServiceClientImpl : public BluetoothGattServiceClient,
   }
 
  protected:
-  // chromeos::DBusClient override.
+  // bluez::DBusClient override.
   void Init(dbus::Bus* bus) override {
     object_manager_ = bus->GetObjectManager(
         bluetooth_object_manager::kBluetoothObjectManagerServiceName,

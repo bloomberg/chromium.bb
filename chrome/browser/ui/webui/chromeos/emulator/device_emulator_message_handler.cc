@@ -13,7 +13,6 @@
 #include "chromeos/dbus/fake_cras_audio_client.h"
 #include "chromeos/dbus/fake_power_manager_client.h"
 #include "content/public/browser/web_ui.h"
-#include "device/bluetooth/bluetooth_device_chromeos.h"
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
 #include "device/bluetooth/dbus/fake_bluetooth_adapter_client.h"
 #include "device/bluetooth/dbus/fake_bluetooth_device_client.h"

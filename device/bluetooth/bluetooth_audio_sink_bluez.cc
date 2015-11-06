@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/bluetooth/bluetooth_audio_sink_chromeos.h"
+#include "device/bluetooth/bluetooth_audio_sink_bluez.h"
 
 #include <unistd.h>
 
@@ -15,7 +15,7 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "dbus/message.h"
-#include "device/bluetooth/bluetooth_adapter_chromeos.h"
+#include "device/bluetooth/bluetooth_adapter_bluez.h"
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
 
 using dbus::ObjectPath;
@@ -71,17 +71,16 @@ std::string ErrorCodeToString(const BluetoothAudioSink::ErrorCode& error_code) {
 }
 
 // A dummy error callback for calling Unregister() in destructor.
-void UnregisterErrorCallback(
-    device::BluetoothAudioSink::ErrorCode error_code) {
+void UnregisterErrorCallback(device::BluetoothAudioSink::ErrorCode error_code) {
   VLOG(1) << "UnregisterErrorCallback - " << ErrorCodeToString(error_code)
           << "(" << error_code << ")";
 }
 
 }  // namespace
 
-namespace chromeos {
+namespace bluez {
 
-BluetoothAudioSinkChromeOS::BluetoothAudioSinkChromeOS(
+BluetoothAudioSinkBlueZ::BluetoothAudioSinkBlueZ(
     scoped_refptr<device::BluetoothAdapter> adapter)
     : state_(BluetoothAudioSink::STATE_INVALID),
       volume_(BluetoothAudioSink::kInvalidVolume),
@@ -90,7 +89,7 @@ BluetoothAudioSinkChromeOS::BluetoothAudioSinkChromeOS(
       read_has_failed_(false),
       adapter_(adapter),
       weak_ptr_factory_(this) {
-  VLOG(1) << "BluetoothAudioSinkChromeOS created";
+  VLOG(1) << "BluetoothAudioSinkBlueZ created";
 
   CHECK(adapter_.get());
   CHECK(adapter_->IsPresent());
@@ -111,8 +110,8 @@ BluetoothAudioSinkChromeOS::BluetoothAudioSinkChromeOS(
   StateChanged(device::BluetoothAudioSink::STATE_DISCONNECTED);
 }
 
-BluetoothAudioSinkChromeOS::~BluetoothAudioSinkChromeOS() {
-  VLOG(1) << "BluetoothAudioSinkChromeOS destroyed";
+BluetoothAudioSinkBlueZ::~BluetoothAudioSinkBlueZ() {
+  VLOG(1) << "BluetoothAudioSinkBlueZ destroyed";
 
   DCHECK(adapter_.get());
 
@@ -134,7 +133,7 @@ BluetoothAudioSinkChromeOS::~BluetoothAudioSinkChromeOS() {
   transport->RemoveObserver(this);
 }
 
-void BluetoothAudioSinkChromeOS::Unregister(
+void BluetoothAudioSinkBlueZ::Unregister(
     const base::Closure& callback,
     const device::BluetoothAudioSink::ErrorCallback& error_callback) {
   VLOG(1) << "Unregister";
@@ -147,35 +146,34 @@ void BluetoothAudioSinkChromeOS::Unregister(
   CHECK(media);
 
   media->UnregisterEndpoint(
-      media_path_,
-      endpoint_path_,
-      base::Bind(&BluetoothAudioSinkChromeOS::OnUnregisterSucceeded,
+      media_path_, endpoint_path_,
+      base::Bind(&BluetoothAudioSinkBlueZ::OnUnregisterSucceeded,
                  weak_ptr_factory_.GetWeakPtr(), callback),
-      base::Bind(&BluetoothAudioSinkChromeOS::OnUnregisterFailed,
+      base::Bind(&BluetoothAudioSinkBlueZ::OnUnregisterFailed,
                  weak_ptr_factory_.GetWeakPtr(), error_callback));
 }
 
-void BluetoothAudioSinkChromeOS::AddObserver(
+void BluetoothAudioSinkBlueZ::AddObserver(
     BluetoothAudioSink::Observer* observer) {
   CHECK(observer);
   observers_.AddObserver(observer);
 }
 
-void BluetoothAudioSinkChromeOS::RemoveObserver(
+void BluetoothAudioSinkBlueZ::RemoveObserver(
     BluetoothAudioSink::Observer* observer) {
   CHECK(observer);
   observers_.RemoveObserver(observer);
 }
 
-BluetoothAudioSink::State BluetoothAudioSinkChromeOS::GetState() const {
+BluetoothAudioSink::State BluetoothAudioSinkBlueZ::GetState() const {
   return state_;
 }
 
-uint16_t BluetoothAudioSinkChromeOS::GetVolume() const {
+uint16_t BluetoothAudioSinkBlueZ::GetVolume() const {
   return volume_;
 }
 
-void BluetoothAudioSinkChromeOS::Register(
+void BluetoothAudioSinkBlueZ::Register(
     const BluetoothAudioSink::Options& options,
     const base::Closure& callback,
     const BluetoothAudioSink::ErrorCallback& error_callback) {
@@ -202,29 +200,28 @@ void BluetoothAudioSinkChromeOS::Register(
   endpoint_properties.codec = options_.codec;
   endpoint_properties.capabilities = options_.capabilities;
 
-  media_path_ = static_cast<BluetoothAdapterChromeOS*>(
-      adapter_.get())->object_path();
+  media_path_ =
+      static_cast<BluetoothAdapterBlueZ*>(adapter_.get())->object_path();
 
   bluez::BluetoothMediaClient* media =
       bluez::BluezDBusManager::Get()->GetBluetoothMediaClient();
   CHECK(media);
   media->RegisterEndpoint(
-      media_path_,
-      endpoint_path_,
-      endpoint_properties,
-      base::Bind(&BluetoothAudioSinkChromeOS::OnRegisterSucceeded,
+      media_path_, endpoint_path_, endpoint_properties,
+      base::Bind(&BluetoothAudioSinkBlueZ::OnRegisterSucceeded,
                  weak_ptr_factory_.GetWeakPtr(), callback),
-      base::Bind(&BluetoothAudioSinkChromeOS::OnRegisterFailed,
+      base::Bind(&BluetoothAudioSinkBlueZ::OnRegisterFailed,
                  weak_ptr_factory_.GetWeakPtr(), error_callback));
 }
 
 bluez::BluetoothMediaEndpointServiceProvider*
-BluetoothAudioSinkChromeOS::GetEndpointServiceProvider() {
+BluetoothAudioSinkBlueZ::GetEndpointServiceProvider() {
   return media_endpoint_.get();
 }
 
-void BluetoothAudioSinkChromeOS::AdapterPresentChanged(
-    device::BluetoothAdapter* adapter, bool present) {
+void BluetoothAudioSinkBlueZ::AdapterPresentChanged(
+    device::BluetoothAdapter* adapter,
+    bool present) {
   VLOG(1) << "AdapterPresentChanged: " << present;
 
   if (adapter != adapter_.get())
@@ -238,8 +235,9 @@ void BluetoothAudioSinkChromeOS::AdapterPresentChanged(
   }
 }
 
-void BluetoothAudioSinkChromeOS::AdapterPoweredChanged(
-    device::BluetoothAdapter* adapter, bool powered) {
+void BluetoothAudioSinkBlueZ::AdapterPoweredChanged(
+    device::BluetoothAdapter* adapter,
+    bool powered) {
   VLOG(1) << "AdapterPoweredChanged: " << powered;
 
   if (adapter != adapter_.get())
@@ -253,14 +251,14 @@ void BluetoothAudioSinkChromeOS::AdapterPoweredChanged(
     StateChanged(BluetoothAudioSink::STATE_DISCONNECTED);
 }
 
-void BluetoothAudioSinkChromeOS::MediaRemoved(const ObjectPath& object_path) {
+void BluetoothAudioSinkBlueZ::MediaRemoved(const ObjectPath& object_path) {
   if (object_path == media_path_) {
     VLOG(1) << "MediaRemoved: " << object_path.value();
     StateChanged(BluetoothAudioSink::STATE_INVALID);
   }
 }
 
-void BluetoothAudioSinkChromeOS::MediaTransportRemoved(
+void BluetoothAudioSinkBlueZ::MediaTransportRemoved(
     const ObjectPath& object_path) {
   // Whenever powered of |adapter_| turns false while present stays true, media
   // transport object should be removed accordingly, and the state should be
@@ -271,7 +269,7 @@ void BluetoothAudioSinkChromeOS::MediaTransportRemoved(
   }
 }
 
-void BluetoothAudioSinkChromeOS::MediaTransportPropertyChanged(
+void BluetoothAudioSinkBlueZ::MediaTransportPropertyChanged(
     const ObjectPath& object_path,
     const std::string& property_name) {
   if (object_path != transport_path_)
@@ -302,7 +300,7 @@ void BluetoothAudioSinkChromeOS::MediaTransportPropertyChanged(
   }
 }
 
-void BluetoothAudioSinkChromeOS::SetConfiguration(
+void BluetoothAudioSinkBlueZ::SetConfiguration(
     const ObjectPath& transport_path,
     const TransportProperties& properties) {
   VLOG(1) << "SetConfiguration";
@@ -322,14 +320,14 @@ void BluetoothAudioSinkChromeOS::SetConfiguration(
   StateChanged(BluetoothAudioSink::STATE_IDLE);
 }
 
-void BluetoothAudioSinkChromeOS::SelectConfiguration(
+void BluetoothAudioSinkBlueZ::SelectConfiguration(
     const std::vector<uint8_t>& capabilities,
     const SelectConfigurationCallback& callback) {
   VLOG(1) << "SelectConfiguration";
   callback.Run(options_.capabilities);
 }
 
-void BluetoothAudioSinkChromeOS::ClearConfiguration(
+void BluetoothAudioSinkBlueZ::ClearConfiguration(
     const ObjectPath& transport_path) {
   if (transport_path != transport_path_)
     return;
@@ -338,33 +336,32 @@ void BluetoothAudioSinkChromeOS::ClearConfiguration(
   StateChanged(BluetoothAudioSink::STATE_DISCONNECTED);
 }
 
-void BluetoothAudioSinkChromeOS::Released() {
+void BluetoothAudioSinkBlueZ::Released() {
   VLOG(1) << "Released";
   StateChanged(BluetoothAudioSink::STATE_INVALID);
 }
 
-void BluetoothAudioSinkChromeOS::OnFileCanReadWithoutBlocking(int fd) {
+void BluetoothAudioSinkBlueZ::OnFileCanReadWithoutBlocking(int fd) {
   ReadFromFile();
 }
 
-void BluetoothAudioSinkChromeOS::OnFileCanWriteWithoutBlocking(int fd) {
+void BluetoothAudioSinkBlueZ::OnFileCanWriteWithoutBlocking(int fd) {
   // Do nothing for now.
 }
 
-void BluetoothAudioSinkChromeOS::AcquireFD() {
+void BluetoothAudioSinkBlueZ::AcquireFD() {
   VLOG(1) << "AcquireFD - transport path: " << transport_path_.value();
 
   read_has_failed_ = false;
 
   bluez::BluezDBusManager::Get()->GetBluetoothMediaTransportClient()->Acquire(
-      transport_path_,
-      base::Bind(&BluetoothAudioSinkChromeOS::OnAcquireSucceeded,
-                 weak_ptr_factory_.GetWeakPtr()),
-      base::Bind(&BluetoothAudioSinkChromeOS::OnAcquireFailed,
+      transport_path_, base::Bind(&BluetoothAudioSinkBlueZ::OnAcquireSucceeded,
+                                  weak_ptr_factory_.GetWeakPtr()),
+      base::Bind(&BluetoothAudioSinkBlueZ::OnAcquireFailed,
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
-void BluetoothAudioSinkChromeOS::WatchFD() {
+void BluetoothAudioSinkBlueZ::WatchFD() {
   CHECK(file_.get() && file_->IsValid());
 
   VLOG(1) << "WatchFD - file: " << file_->GetPlatformFile()
@@ -375,7 +372,7 @@ void BluetoothAudioSinkChromeOS::WatchFD() {
       &fd_read_watcher_, this);
 }
 
-void BluetoothAudioSinkChromeOS::StopWatchingFD() {
+void BluetoothAudioSinkBlueZ::StopWatchingFD() {
   if (!file_.get()) {
     VLOG(1) << "StopWatchingFD - skip";
     return;
@@ -390,7 +387,7 @@ void BluetoothAudioSinkChromeOS::StopWatchingFD() {
   file_.reset();  // This will close the file descriptor.
 }
 
-void BluetoothAudioSinkChromeOS::ReadFromFile() {
+void BluetoothAudioSinkBlueZ::ReadFromFile() {
   DCHECK(file_.get() && file_->IsValid());
   DCHECK(data_.get());
 
@@ -411,8 +408,7 @@ void BluetoothAudioSinkChromeOS::ReadFromFile() {
       BluetoothAudioSinkDataAvailable(this, data_.get(), size, read_mtu_));
 }
 
-void BluetoothAudioSinkChromeOS::StateChanged(
-    BluetoothAudioSink::State state) {
+void BluetoothAudioSinkBlueZ::StateChanged(BluetoothAudioSink::State state) {
   if (state == state_)
     return;
 
@@ -443,7 +439,7 @@ void BluetoothAudioSinkChromeOS::StateChanged(
                     BluetoothAudioSinkStateChanged(this, state_));
 }
 
-void BluetoothAudioSinkChromeOS::VolumeChanged(uint16_t volume) {
+void BluetoothAudioSinkBlueZ::VolumeChanged(uint16_t volume) {
   if (volume == volume_)
     return;
 
@@ -454,7 +450,7 @@ void BluetoothAudioSinkChromeOS::VolumeChanged(uint16_t volume) {
                     BluetoothAudioSinkVolumeChanged(this, volume_));
 }
 
-void BluetoothAudioSinkChromeOS::OnRegisterSucceeded(
+void BluetoothAudioSinkBlueZ::OnRegisterSucceeded(
     const base::Closure& callback) {
   DCHECK(media_endpoint_.get());
   VLOG(1) << "OnRegisterSucceeded";
@@ -463,7 +459,7 @@ void BluetoothAudioSinkChromeOS::OnRegisterSucceeded(
   callback.Run();
 }
 
-void BluetoothAudioSinkChromeOS::OnRegisterFailed(
+void BluetoothAudioSinkBlueZ::OnRegisterFailed(
     const BluetoothAudioSink::ErrorCallback& error_callback,
     const std::string& error_name,
     const std::string& error_message) {
@@ -474,7 +470,7 @@ void BluetoothAudioSinkChromeOS::OnRegisterFailed(
   error_callback.Run(BluetoothAudioSink::ERROR_NOT_REGISTERED);
 }
 
-void BluetoothAudioSinkChromeOS::OnUnregisterSucceeded(
+void BluetoothAudioSinkBlueZ::OnUnregisterSucceeded(
     const base::Closure& callback) {
   VLOG(1) << "Unregistered - endpoint: " << endpoint_path_.value();
 
@@ -484,7 +480,7 @@ void BluetoothAudioSinkChromeOS::OnUnregisterSucceeded(
   callback.Run();
 }
 
-void BluetoothAudioSinkChromeOS::OnUnregisterFailed(
+void BluetoothAudioSinkBlueZ::OnUnregisterFailed(
     const device::BluetoothAudioSink::ErrorCallback& error_callback,
     const std::string& error_name,
     const std::string& error_message) {
@@ -494,10 +490,9 @@ void BluetoothAudioSinkChromeOS::OnUnregisterFailed(
   error_callback.Run(BluetoothAudioSink::ERROR_NOT_UNREGISTERED);
 }
 
-void BluetoothAudioSinkChromeOS::OnAcquireSucceeded(
-    dbus::FileDescriptor* fd,
-    const uint16_t read_mtu,
-    const uint16_t write_mtu) {
+void BluetoothAudioSinkBlueZ::OnAcquireSucceeded(dbus::FileDescriptor* fd,
+                                                 const uint16_t read_mtu,
+                                                 const uint16_t write_mtu) {
   CHECK(fd);
   fd->CheckValidity();
   CHECK(fd->is_valid() && fd->value() != kInvalidFd);
@@ -526,31 +521,31 @@ void BluetoothAudioSinkChromeOS::OnAcquireSucceeded(
           << ", read MTU: " << read_mtu_ << ", write MTU: " << write_mtu_;
 }
 
-void BluetoothAudioSinkChromeOS::OnAcquireFailed(
+void BluetoothAudioSinkBlueZ::OnAcquireFailed(
     const std::string& error_name,
     const std::string& error_message) {
   VLOG(1) << "OnAcquireFailed - error name: " << error_name
           << ", error message: " << error_message;
 }
 
-void BluetoothAudioSinkChromeOS::OnReleaseFDSucceeded() {
+void BluetoothAudioSinkBlueZ::OnReleaseFDSucceeded() {
   VLOG(1) << "OnReleaseFDSucceeded";
 }
 
-void BluetoothAudioSinkChromeOS::OnReleaseFDFailed(
+void BluetoothAudioSinkBlueZ::OnReleaseFDFailed(
     const std::string& error_name,
     const std::string& error_message) {
   VLOG(1) << "OnReleaseFDFailed - error name: " << error_name
           << ", error message: " << error_message;
 }
 
-void BluetoothAudioSinkChromeOS::ResetMedia() {
+void BluetoothAudioSinkBlueZ::ResetMedia() {
   VLOG(1) << "ResetMedia";
 
   media_path_ = dbus::ObjectPath("");
 }
 
-void BluetoothAudioSinkChromeOS::ResetTransport() {
+void BluetoothAudioSinkBlueZ::ResetTransport() {
   if (!transport_path_.IsValid()) {
     VLOG(1) << "ResetTransport - skip";
     return;
@@ -565,11 +560,11 @@ void BluetoothAudioSinkChromeOS::ResetTransport() {
   file_.reset();
 }
 
-void BluetoothAudioSinkChromeOS::ResetEndpoint() {
+void BluetoothAudioSinkBlueZ::ResetEndpoint() {
   VLOG(1) << "ResetEndpoint";
 
   endpoint_path_ = ObjectPath("");
   media_endpoint_ = nullptr;
 }
 
-}  // namespace chromeos
+}  // namespace bluez

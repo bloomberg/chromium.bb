@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/bluetooth/bluetooth_gatt_connection_chromeos.h"
+#include "device/bluetooth/bluetooth_gatt_connection_bluez.h"
 
 #include "base/bind.h"
 #include "base/logging.h"
@@ -10,9 +10,9 @@
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
 
-namespace chromeos {
+namespace bluez {
 
-BluetoothGattConnectionChromeOS::BluetoothGattConnectionChromeOS(
+BluetoothGattConnectionBlueZ::BluetoothGattConnectionBlueZ(
     scoped_refptr<device::BluetoothAdapter> adapter,
     const std::string& device_address,
     const dbus::ObjectPath& object_path)
@@ -26,13 +26,13 @@ BluetoothGattConnectionChromeOS::BluetoothGattConnectionChromeOS(
   bluez::BluezDBusManager::Get()->GetBluetoothDeviceClient()->AddObserver(this);
 }
 
-BluetoothGattConnectionChromeOS::~BluetoothGattConnectionChromeOS() {
+BluetoothGattConnectionBlueZ::~BluetoothGattConnectionBlueZ() {
   bluez::BluezDBusManager::Get()->GetBluetoothDeviceClient()->RemoveObserver(
       this);
   Disconnect();
 }
 
-bool BluetoothGattConnectionChromeOS::IsConnected() {
+bool BluetoothGattConnectionBlueZ::IsConnected() {
   // Lazily determine the activity state of the connection. If already
   // marked as inactive, then return false. Otherwise, explicitly mark
   // |connected_| as false if the device is removed or disconnected. We do this,
@@ -50,7 +50,7 @@ bool BluetoothGattConnectionChromeOS::IsConnected() {
   return connected_;
 }
 
-void BluetoothGattConnectionChromeOS::Disconnect() {
+void BluetoothGattConnectionBlueZ::Disconnect() {
   if (!connected_) {
     VLOG(1) << "Connection already inactive.";
     return;
@@ -66,7 +66,7 @@ void BluetoothGattConnectionChromeOS::Disconnect() {
   connected_ = false;
 }
 
-void BluetoothGattConnectionChromeOS::DeviceRemoved(
+void BluetoothGattConnectionBlueZ::DeviceRemoved(
     const dbus::ObjectPath& object_path) {
   if (object_path != object_path_)
     return;
@@ -74,7 +74,7 @@ void BluetoothGattConnectionChromeOS::DeviceRemoved(
   connected_ = false;
 }
 
-void BluetoothGattConnectionChromeOS::DevicePropertyChanged(
+void BluetoothGattConnectionBlueZ::DevicePropertyChanged(
     const dbus::ObjectPath& object_path,
     const std::string& property_name) {
   if (object_path != object_path_)
@@ -102,4 +102,4 @@ void BluetoothGattConnectionChromeOS::DevicePropertyChanged(
     device_address_ = properties->address.value();
 }
 
-}  // namespace chromeos
+}  // namespace bluez

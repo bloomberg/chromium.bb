@@ -19,7 +19,7 @@ BluetoothAdapter::ServiceOptions::~ServiceOptions() {
 }
 
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS) && !defined(OS_MACOSX) && \
-    !defined(OS_WIN)
+    !defined(OS_WIN) && !defined(OS_LINUX)
 // static
 base::WeakPtr<BluetoothAdapter> BluetoothAdapter::CreateAdapter(
     const InitCallback& init_callback) {
@@ -31,7 +31,7 @@ base::WeakPtr<BluetoothAdapter> BluetoothAdapter::GetWeakPtrForTesting() {
   return weak_ptr_factory_.GetWeakPtr();
 }
 
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) || defined(OS_LINUX)
 void BluetoothAdapter::Shutdown() {
   NOTIMPLEMENTED();
 }
