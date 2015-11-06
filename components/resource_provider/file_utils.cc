@@ -27,16 +27,20 @@ bool IsPathNameValid(const std::string& name) {
 }  // namespace
 
 base::FilePath GetPathForApplicationUrl(const std::string& application_url) {
-// We don't want to use GURL because it can behave differently depending on
+  // We don't want to use GURL because it can behave differently depending on
   // whether mojo:// has been registered as a standard scheme or not. Also, we
   // can get mojo:foo or mojo://foo urls here.
   std::string path = application_url;
-  if (!base::StartsWith(path, "mojo:", base::CompareCase::INSENSITIVE_ASCII) &&
-      !base::StartsWith(path, "exe:", base::CompareCase::INSENSITIVE_ASCII))
+  const bool is_mojo =
+      base::StartsWith(path, "mojo:", base::CompareCase::INSENSITIVE_ASCII);
+  const bool is_exe =
+      !is_mojo &&
+      base::StartsWith(path, "exe:", base::CompareCase::INSENSITIVE_ASCII);
+  if (!is_mojo && !is_exe)
     return base::FilePath();
   if (path.find('.') != std::string::npos)
     return base::FilePath();
-  if (base::StartsWith(path, "mojo:", base::CompareCase::INSENSITIVE_ASCII))
+  if (is_mojo)
     path.erase(path.begin(), path.begin() + 5);
   else
     path.erase(path.begin(), path.begin() + 4);
@@ -49,7 +53,7 @@ base::FilePath GetPathForApplicationUrl(const std::string& application_url) {
   //             executable name in the exe dir and the resource package dir on
   //             non-Windows systems. Arbitrary exes should probably load their
   //             resources themselves rather than use resource provider.
-  if (base::StartsWith(path, "exe:", base::CompareCase::INSENSITIVE_ASCII))
+  if (is_exe)
     path += "_res";
 
   if (!IsPathNameValid(path))
