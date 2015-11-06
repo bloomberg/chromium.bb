@@ -361,57 +361,99 @@ static struct tag *find_tag(struct tag_index index, uint32_t tag_id)
 #define MMOD_TYPE 0x6D6D6F64 // 'mmod'
 #define VCGT_TYPE 0x76636774 // 'vcgt'
 
+enum {
+	VCGT_TYPE_TABLE,
+	VCGT_TYPE_FORMULA,
+	VCGT_TYPE_LAST = VCGT_TYPE_FORMULA
+};
+
 static qcms_bool read_tag_vcgtType(qcms_profile *profile, struct mem_source *src, struct tag_index index)
 {
 	size_t tag_offset = find_tag(index, TAG_vcgt)->offset;
 	uint32_t tag_type = read_u32(src, tag_offset);
 	uint32_t vcgt_type = read_u32(src, tag_offset + 8);
-	uint16_t channels = read_u16(src, tag_offset + 12);
-	uint16_t elements = read_u16(src, tag_offset + 14);
-	uint16_t byte_depth = read_u16(src, tag_offset + 16);
-	size_t table_offset = tag_offset + 18;
-	uint32_t i;
-	uint16_t *dest;
 
 	if (!src->valid || tag_type != VCGT_TYPE)
 		goto invalid_vcgt_tag;
 
-	// Only support 3 channels.
-	if (channels != 3)
-		return true;
-	// Only support single or double byte values.
-	if (byte_depth != 1 && byte_depth != 2)
-		return true;
-	// Only support table data, not equation.
-	if (vcgt_type != 0)
-		return true;
-	// Limit the table to a sensible size; 10-bit gamma is a reasonable
-	// maximum for hardware correction.
-	if (elements > 1024)
+	// Only support table and equation types.
+	if (vcgt_type > VCGT_TYPE_LAST)
 		return true;
 
-	// Empty table is invalid.
-	if (!elements)
-		goto invalid_vcgt_tag;
-
-	profile->vcgt.length = elements;
-	profile->vcgt.data = malloc(3 * elements * sizeof(uint16_t));
-	if (!profile->vcgt.data)
-		return false;
-
-	dest = profile->vcgt.data;
-
-	for (i = 0; i < 3 * elements; ++i) {
-		if (byte_depth == 1) {
-			*dest++ = read_u8(src, table_offset) * 256;
-		} else {
-			*dest++ = read_u16(src, table_offset);
-		}
-
-		table_offset += byte_depth;
+	if (vcgt_type == VCGT_TYPE_TABLE) {
+		uint16_t channels = read_u16(src, tag_offset + 12);
+		uint16_t elements = read_u16(src, tag_offset + 14);
+		uint16_t byte_depth = read_u16(src, tag_offset + 16);
+		size_t table_offset = tag_offset + 18;
+		uint32_t i;
+		uint16_t *dest;
 
 		if (!src->valid)
 			goto invalid_vcgt_tag;
+
+		// Only support 3 channels.
+		if (channels != 3)
+			return true;
+		// Only support single or double byte values.
+		if (byte_depth != 1 && byte_depth != 2)
+			return true;
+		// Limit the table to a sensible size; 10-bit gamma is a reasonable
+		// maximum for hardware correction.
+		if (elements > 1024)
+			return true;
+
+		// Empty table is invalid.
+		if (!elements)
+			goto invalid_vcgt_tag;
+
+		profile->vcgt.length = elements;
+		profile->vcgt.data = malloc(3 * elements * sizeof(uint16_t));
+		if (!profile->vcgt.data)
+			return false;
+
+		dest = profile->vcgt.data;
+
+		for (i = 0; i < 3 * elements; ++i) {
+			if (byte_depth == 1) {
+				*dest++ = read_u8(src, table_offset) * 256;
+			} else {
+				*dest++ = read_u16(src, table_offset);
+			}
+
+			table_offset += byte_depth;
+
+			if (!src->valid)
+				goto invalid_vcgt_tag;
+		}
+	} else {
+		size_t formula_offset = tag_offset + 12;
+		int i, j;
+		uint16_t *dest;
+
+		// For formula always provide an 8-bit lut.
+		profile->vcgt.length = 256;
+		profile->vcgt.data = malloc(3 * profile->vcgt.length * sizeof(uint16_t));
+		if (!profile->vcgt.data)
+			return false;
+
+		dest = profile->vcgt.data;
+		for (i = 0; i < 3; ++i) {
+			float gamma = s15Fixed16Number_to_float(
+					read_s15Fixed16Number(src, formula_offset + 12 * i));
+			float min = s15Fixed16Number_to_float(
+					read_s15Fixed16Number(src, formula_offset + 4 + 12 * i));
+			float max = s15Fixed16Number_to_float(
+					read_s15Fixed16Number(src, formula_offset + 8 + 12 * i));
+			float range = max - min;
+
+			if (!src->valid)
+				goto invalid_vcgt_tag;
+
+			for (j = 0; j < profile->vcgt.length; ++j) {
+				*dest++ = 65535.f *
+					(min + range * pow((float)j / (profile->vcgt.length - 1), gamma));
+			}
+		}
 	}
 
 	return true;

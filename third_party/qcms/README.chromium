@@ -113,6 +113,8 @@ The following changes have been made since qcms was imported:
    - https://code.google.com/p/chromium/issues/detail?id=532910
  - Store color profile version and add a version read API
    - https://code.google.com/p/chromium/issues/detail?id=532258
+ - Add support for VCGT tag formula gamma
+   - https://code.google.com/p/chromium/issues/detail?id=551568
 
 For the Chromium changes, since the import, in a patch format run:
   git diff b8456f38 src
