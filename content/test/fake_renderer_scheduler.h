@@ -51,6 +51,8 @@ class FakeRendererScheduler : public scheduler::RendererScheduler {
   void SuspendTimerQueue() override;
   void ResumeTimerQueue() override;
   void SetTimerQueueSuspensionWhenBackgroundedEnabled(bool enabled) override;
+  double CurrentTimeSeconds() const override;
+  double MonotonicallyIncreasingTimeSeconds() const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FakeRendererScheduler);

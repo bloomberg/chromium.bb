@@ -49,7 +49,8 @@ RendererSchedulerImpl::RendererSchedulerImpl(
           base::Bind(&RendererSchedulerImpl::UpdatePolicy,
                      base::Unretained(this)),
           helper_.ControlTaskRunner()),
-      main_thread_only_(compositor_task_runner_, helper_.tick_clock()),
+      main_thread_only_(compositor_task_runner_,
+                        helper_.scheduler_tqm_delegate().get()),
       policy_may_need_update_(&any_thread_lock_),
       weak_factory_(this) {
   update_policy_closure_ = base::Bind(&RendererSchedulerImpl::UpdatePolicy,
@@ -252,7 +253,7 @@ void RendererSchedulerImpl::DidCommitFrameToCompositor() {
   if (helper_.IsShutdown())
     return;
 
-  base::TimeTicks now(helper_.tick_clock()->NowTicks());
+  base::TimeTicks now(helper_.scheduler_tqm_delegate()->NowTicks());
   if (now < MainThreadOnly().estimated_next_frame_begin) {
     // TODO(rmcilroy): Consider reducing the idle period based on the runtime of
     // the next pending delayed tasks (as currently done in for long idle times)
@@ -309,7 +310,7 @@ void RendererSchedulerImpl::SetAllRenderWidgetsHidden(bool hidden) {
   // TODO(alexclarke): Should we update policy here?
   TRACE_EVENT_OBJECT_SNAPSHOT_WITH_ID(
       TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"), "RendererScheduler",
-      this, AsValue(helper_.tick_clock()->NowTicks()));
+      this, AsValue(helper_.scheduler_tqm_delegate()->NowTicks()));
 }
 
 void RendererSchedulerImpl::SetHasVisibleRenderWidgetWithTouchHandler(
@@ -402,7 +403,7 @@ void RendererSchedulerImpl::DidAnimateForInputOnCompositorThread() {
                "RendererSchedulerImpl::DidAnimateForInputOnCompositorThread");
   base::AutoLock lock(any_thread_lock_);
   AnyThread().fling_compositor_escalation_deadline =
-      helper_.tick_clock()->NowTicks() +
+      helper_.scheduler_tqm_delegate()->NowTicks() +
       base::TimeDelta::FromMilliseconds(kFlingEscalationLimitMillis);
 }
 
@@ -410,7 +411,7 @@ void RendererSchedulerImpl::UpdateForInputEventOnCompositorThread(
     blink::WebInputEvent::Type type,
     InputEventState input_event_state) {
   base::AutoLock lock(any_thread_lock_);
-  base::TimeTicks now = helper_.tick_clock()->NowTicks();
+  base::TimeTicks now = helper_.scheduler_tqm_delegate()->NowTicks();
 
   // TODO(alexclarke): Move WebInputEventTraits where we can access it from here
   // and record the name rather than the integer representation.
@@ -492,7 +493,7 @@ void RendererSchedulerImpl::DidHandleInputEventOnMainThread(
   if (ShouldPrioritizeInputEvent(web_input_event)) {
     base::AutoLock lock(any_thread_lock_);
     AnyThread().user_model.DidFinishProcessingInputEvent(
-        helper_.tick_clock()->NowTicks());
+        helper_.scheduler_tqm_delegate()->NowTicks());
   }
 }
 
@@ -583,7 +584,7 @@ void RendererSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
   if (helper_.IsShutdown())
     return;
 
-  base::TimeTicks now = helper_.tick_clock()->NowTicks();
+  base::TimeTicks now = helper_.scheduler_tqm_delegate()->NowTicks();
   policy_may_need_update_.SetWhileLocked(false);
 
   base::TimeDelta expected_use_case_duration;
@@ -885,7 +886,7 @@ RendererSchedulerImpl::AsValueLocked(base::TimeTicks optional_now) const {
   any_thread_lock_.AssertAcquired();
 
   if (optional_now.is_null())
-    optional_now = helper_.tick_clock()->NowTicks();
+    optional_now = helper_.scheduler_tqm_delegate()->NowTicks();
   scoped_refptr<base::trace_event::TracedValue> state =
       new base::trace_event::TracedValue();
 
@@ -965,7 +966,8 @@ void RendererSchedulerImpl::OnIdlePeriodStarted() {
 
 void RendererSchedulerImpl::OnIdlePeriodEnded() {
   base::AutoLock lock(any_thread_lock_);
-  AnyThread().last_idle_period_end_time = helper_.tick_clock()->NowTicks();
+  AnyThread().last_idle_period_end_time =
+      helper_.scheduler_tqm_delegate()->NowTicks();
   AnyThread().in_idle_period = false;
   UpdatePolicyLocked(UpdateType::MAY_EARLY_OUT_IF_POLICY_UNCHANGED);
 }
@@ -989,7 +991,7 @@ void RendererSchedulerImpl::OnNavigationStarted() {
                "RendererSchedulerImpl::OnNavigationStarted");
   base::AutoLock lock(any_thread_lock_);
   AnyThread().rails_loading_priority_deadline =
-      helper_.tick_clock()->NowTicks() +
+      helper_.scheduler_tqm_delegate()->NowTicks() +
       base::TimeDelta::FromMilliseconds(
           kRailsInitialLoadingPrioritizationMillis);
   ResetForNavigationLocked();
@@ -1025,9 +1027,18 @@ void RendererSchedulerImpl::ResetForNavigationLocked() {
   MainThreadOnly().loading_task_cost_estimator.Clear();
   MainThreadOnly().timer_task_cost_estimator.Clear();
   MainThreadOnly().idle_time_estimator.Clear();
-  AnyThread().user_model.Reset(helper_.tick_clock()->NowTicks());
+  AnyThread().user_model.Reset(helper_.scheduler_tqm_delegate()->NowTicks());
   MainThreadOnly().have_seen_a_begin_main_frame = false;
   UpdatePolicyLocked(UpdateType::MAY_EARLY_OUT_IF_POLICY_UNCHANGED);
+}
+
+double RendererSchedulerImpl::CurrentTimeSeconds() const {
+  return helper_.scheduler_tqm_delegate()->CurrentTimeSeconds();
+}
+
+double RendererSchedulerImpl::MonotonicallyIncreasingTimeSeconds() const {
+  return helper_.scheduler_tqm_delegate()->NowTicks().ToInternalValue() /
+         static_cast<double>(base::Time::kMicrosecondsPerSecond);
 }
 
 }  // namespace scheduler

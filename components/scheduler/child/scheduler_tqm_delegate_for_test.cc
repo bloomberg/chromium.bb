@@ -62,6 +62,10 @@ base::TimeTicks SchedulerTqmDelegateForTest::NowTicks() {
   return task_runner_->NowTicks();
 }
 
+double SchedulerTqmDelegateForTest::CurrentTimeSeconds() const {
+  return base::Time::Now().ToDoubleT();
+}
+
 void SchedulerTqmDelegateForTest::OnNoMoreImmediateWork() {}
 
 }  // namespace scheduler

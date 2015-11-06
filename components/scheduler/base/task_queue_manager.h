@@ -100,8 +100,8 @@ class SCHEDULER_EXPORT TaskQueueManager
   // Note |observer| is expected to outlive the SchedulerHelper.
   void SetObserver(Observer* observer);
 
-  // Returns the TickClock used by the TaskQueueManager.
-  base::TickClock* tick_clock() const;
+  // Returns the delegate used by the TaskQueueManager.
+  const scoped_refptr<TaskQueueManagerDelegate>& delegate() const;
 
  private:
   friend class internal::LazyNow;

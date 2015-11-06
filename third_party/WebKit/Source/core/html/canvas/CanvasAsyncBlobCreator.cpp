@@ -26,7 +26,7 @@ const int NumChannelsPng = 4;
 
 bool isDeadlineNearOrPassed(double deadlineSeconds)
 {
-    return (deadlineSeconds - SlackBeforeDeadline - Platform::current()->monotonicallyIncreasingTime() <= 0);
+    return (deadlineSeconds - SlackBeforeDeadline - Platform::current()->monotonicallyIncreasingTimeSeconds() <= 0);
 }
 
 } // anonymous namespace

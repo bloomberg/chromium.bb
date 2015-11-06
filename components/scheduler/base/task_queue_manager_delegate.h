@@ -29,6 +29,10 @@ class SCHEDULER_EXPORT TaskQueueManagerDelegate
   // this.
   virtual void OnNoMoreImmediateWork() = 0;
 
+  // Returns the time as a double which is the number of seconds since epoch
+  // (Jan 1, 1970).  Blink uses this format to represent time.
+  virtual double CurrentTimeSeconds() const = 0;
+
  protected:
   ~TaskQueueManagerDelegate() override {}
 

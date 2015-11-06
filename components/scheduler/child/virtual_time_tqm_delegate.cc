@@ -65,6 +65,10 @@ base::TimeTicks VirtualTimeTqmDelegate::NowTicks() {
   return now_;
 }
 
+double VirtualTimeTqmDelegate::CurrentTimeSeconds() const {
+  return (now_ - base::TimeTicks::UnixEpoch()).InSecondsF();
+}
+
 void VirtualTimeTqmDelegate::AdvancedTimeTo(base::TimeTicks now) {
   now_ = now;
   DCHECK_GE(now, now_);

@@ -49,8 +49,8 @@ class BlinkPlatformImpl : public blink::Platform {
   virtual blink::WebThemeEngine* themeEngine();
   virtual blink::WebString defaultLocale();
   virtual blink::WebBlobRegistry* blobRegistry();
-  virtual double currentTime();
-  virtual double monotonicallyIncreasingTime();
+  virtual double currentTimeSeconds();
+  virtual double monotonicallyIncreasingTimeSeconds();
   virtual void cryptographicallyRandomValues(unsigned char* buffer,
                                              size_t length);
   virtual bool isThreadedCompositingEnabled();

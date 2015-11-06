@@ -34,6 +34,7 @@ class SCHEDULER_EXPORT SchedulerTqmDelegateImpl : public SchedulerTqmDelegate {
   bool IsNested() const override;
   base::TimeTicks NowTicks() override;
   void OnNoMoreImmediateWork() override;
+  double CurrentTimeSeconds() const override;
 
  protected:
   ~SchedulerTqmDelegateImpl() override;

@@ -1074,11 +1074,11 @@ WebString BlinkPlatformImpl::queryLocalizedString(
       GetContentClient()->GetLocalizedString(message_id), values, NULL);
 }
 
-double BlinkPlatformImpl::currentTime() {
+double BlinkPlatformImpl::currentTimeSeconds() {
   return base::Time::Now().ToDoubleT();
 }
 
-double BlinkPlatformImpl::monotonicallyIncreasingTime() {
+double BlinkPlatformImpl::monotonicallyIncreasingTimeSeconds() {
   return base::TimeTicks::Now().ToInternalValue() /
       static_cast<double>(base::Time::kMicrosecondsPerSecond);
 }

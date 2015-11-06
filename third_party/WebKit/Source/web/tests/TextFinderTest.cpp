@@ -414,7 +414,7 @@ protected:
             // Check that the proxy wasn't installed yet.
             ASSERT_NE(Platform::current(), this);
             m_fallbackPlatform = Platform::current();
-            m_timeCounter = m_fallbackPlatform->currentTime();
+            m_timeCounter = m_fallbackPlatform->currentTimeSeconds();
             Platform::initialize(this);
             ASSERT_EQ(Platform::current(), this);
         }
@@ -436,7 +436,7 @@ protected:
         }
 
         // From blink::Platform:
-        double currentTime() override
+        double currentTimeSeconds() override
         {
             return ++m_timeCounter;
         }
@@ -453,9 +453,9 @@ protected:
         }
 
         // These two methods allow timers to work correctly.
-        double monotonicallyIncreasingTime() override
+        double monotonicallyIncreasingTimeSeconds() override
         {
-            return ensureFallback().monotonicallyIncreasingTime();
+            return ensureFallback().monotonicallyIncreasingTimeSeconds();
         }
 
         WebThread* currentThread() override { return ensureFallback().currentThread(); }

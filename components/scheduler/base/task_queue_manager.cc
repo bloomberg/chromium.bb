@@ -171,7 +171,7 @@ void TaskQueueManager::UpdateWorkQueues(
   DCHECK(main_thread_checker_.CalledOnValidThread());
   TRACE_EVENT0(disabled_by_default_tracing_category_,
                "TaskQueueManager::UpdateWorkQueues");
-  internal::LazyNow lazy_now(tick_clock());
+  internal::LazyNow lazy_now(delegate().get());
 
   // Move any ready delayed tasks into the incomming queues.
   WakeupReadyDelayedQueues(&lazy_now);
@@ -192,7 +192,7 @@ void TaskQueueManager::UpdateWorkQueues(
 void TaskQueueManager::ScheduleDelayedWorkTask(
     scoped_refptr<internal::TaskQueueImpl> queue,
     base::TimeTicks delayed_run_time) {
-  internal::LazyNow lazy_now(tick_clock());
+  internal::LazyNow lazy_now(delegate().get());
   ScheduleDelayedWork(queue.get(), delayed_run_time, &lazy_now);
 }
 
@@ -400,8 +400,9 @@ bool TaskQueueManager::GetAndClearSystemIsQuiescentBit() {
   return !task_was_run;
 }
 
-base::TickClock* TaskQueueManager::tick_clock() const {
-  return delegate_.get();
+const scoped_refptr<TaskQueueManagerDelegate>& TaskQueueManager::delegate()
+    const {
+  return delegate_;
 }
 
 int TaskQueueManager::GetNextSequenceNumber() {

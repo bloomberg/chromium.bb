@@ -329,7 +329,7 @@ void BaseHeap::sweepUnsweptPage()
 
 bool BaseHeap::lazySweepWithDeadline(double deadlineSeconds)
 {
-    // It might be heavy to call Platform::current()->monotonicallyIncreasingTime()
+    // It might be heavy to call Platform::current()->monotonicallyIncreasingTimeSeconds()
     // per page (i.e., 128 KB sweep or one LargeObject sweep), so we check
     // the deadline per 10 pages.
     static const int deadlineCheckInterval = 10;
@@ -342,7 +342,7 @@ bool BaseHeap::lazySweepWithDeadline(double deadlineSeconds)
     while (m_firstUnsweptPage) {
         sweepUnsweptPage();
         if (pageCount % deadlineCheckInterval == 0) {
-            if (deadlineSeconds <= Platform::current()->monotonicallyIncreasingTime()) {
+            if (deadlineSeconds <= Platform::current()->monotonicallyIncreasingTimeSeconds()) {
                 // Deadline has come.
                 Heap::reportMemoryUsageForTracing();
                 return !m_firstUnsweptPage;

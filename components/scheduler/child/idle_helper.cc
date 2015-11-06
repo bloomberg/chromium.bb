@@ -10,6 +10,7 @@
 #include "components/scheduler/base/task_queue.h"
 #include "components/scheduler/base/task_queue_manager.h"
 #include "components/scheduler/child/scheduler_helper.h"
+#include "components/scheduler/child/scheduler_tqm_delegate.h"
 
 namespace scheduler {
 
@@ -139,7 +140,7 @@ void IdleHelper::EnableLongIdlePeriod() {
     return;
   }
 
-  base::TimeTicks now(helper_->tick_clock()->NowTicks());
+  base::TimeTicks now(helper_->scheduler_tqm_delegate()->NowTicks());
   base::TimeDelta next_long_idle_period_delay;
   IdlePeriodState new_idle_period_state =
       ComputeNewLongIdlePeriodState(now, &next_long_idle_period_delay);
@@ -203,7 +204,8 @@ void IdleHelper::DidProcessTask(const base::PendingTask& pending_task) {
   if (IsInIdlePeriod(state_.idle_period_state()) &&
       state_.idle_period_state() !=
           IdlePeriodState::IN_LONG_IDLE_PERIOD_PAUSED &&
-      helper_->tick_clock()->NowTicks() >= state_.idle_period_deadline()) {
+      helper_->scheduler_tqm_delegate()->NowTicks() >=
+          state_.idle_period_deadline()) {
     // If the idle period deadline has now been reached, either end the idle
     // period or trigger a new long-idle period.
     if (IsInLongIdlePeriod(state_.idle_period_state())) {
@@ -238,9 +240,9 @@ void IdleHelper::UpdateLongIdlePeriodStateAfterIdleTask() {
     } else {
       // Otherwise ensure that we kick the scheduler at the right time to
       // initiate the next idle period.
-      next_long_idle_period_delay =
-          std::max(base::TimeDelta(), state_.idle_period_deadline() -
-                                          helper_->tick_clock()->NowTicks());
+      next_long_idle_period_delay = std::max(
+          base::TimeDelta(), state_.idle_period_deadline() -
+                                 helper_->scheduler_tqm_delegate()->NowTicks());
     }
     if (next_long_idle_period_delay == base::TimeDelta()) {
       EnableLongIdlePeriod();
@@ -360,7 +362,7 @@ void IdleHelper::State::UpdateState(IdlePeriodState new_state,
   TRACE_EVENT_CATEGORY_GROUP_ENABLED(tracing_category_, &is_tracing);
   if (is_tracing) {
     base::TimeTicks now(optional_now.is_null()
-                            ? helper_->tick_clock()->NowTicks()
+                            ? helper_->scheduler_tqm_delegate()->NowTicks()
                             : optional_now);
     TraceEventIdlePeriodStateChange(
         new_state, running_idle_task_for_tracing_, idle_period_deadline_, now);

@@ -44,6 +44,7 @@ SchedulerHelper::SchedulerHelper(
 
   task_queue_manager_->SetWorkBatchSize(4);
 
+  DCHECK(task_queue_manager_delegate_);
   task_queue_manager_delegate_->SetDefaultTaskRunner(
       default_task_runner_.get());
 }
@@ -90,8 +91,9 @@ TaskQueueManager* SchedulerHelper::GetTaskQueueManagerForTesting() {
   return task_queue_manager_.get();
 }
 
-base::TickClock* SchedulerHelper::tick_clock() const {
-  return task_queue_manager_->tick_clock();
+const scoped_refptr<SchedulerTqmDelegate>&
+SchedulerHelper::scheduler_tqm_delegate() const {
+  return task_queue_manager_delegate_;
 }
 
 base::TimeTicks SchedulerHelper::NextPendingDelayedTaskRunTime() const {

@@ -62,6 +62,10 @@ base::TimeTicks SchedulerTqmDelegateImpl::NowTicks() {
   return time_source_->NowTicks();
 }
 
+double SchedulerTqmDelegateImpl::CurrentTimeSeconds() const {
+  return base::Time::Now().ToDoubleT();
+}
+
 void SchedulerTqmDelegateImpl::OnNoMoreImmediateWork() {}
 
 }  // namespace scheduler

@@ -33,6 +33,7 @@ class SchedulerTqmDelegateForTest : public SchedulerTqmDelegate {
   bool IsNested() const override;
   base::TimeTicks NowTicks() override;
   void OnNoMoreImmediateWork() override;
+  double CurrentTimeSeconds() const override;
 
   base::SingleThreadTaskRunner* default_task_runner() const {
     return default_task_runner_.get();

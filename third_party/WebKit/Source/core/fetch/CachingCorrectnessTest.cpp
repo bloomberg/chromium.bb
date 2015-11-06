@@ -141,7 +141,7 @@ private:
 
     private:
         // From blink::Platform:
-        virtual double currentTime()
+        double currentTimeSeconds() override
         {
             return kOriginalRequestDateAsDouble + m_elapsedSeconds;
         }

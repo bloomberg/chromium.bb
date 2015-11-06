@@ -36,6 +36,7 @@ class SCHEDULER_EXPORT VirtualTimeTqmDelegate : public SchedulerTqmDelegate {
   bool IsNested() const override;
   base::TimeTicks NowTicks() override;
   void OnNoMoreImmediateWork() override;
+  double CurrentTimeSeconds() const override;
 
  protected:
   ~VirtualTimeTqmDelegate() override;

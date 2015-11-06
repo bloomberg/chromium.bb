@@ -134,12 +134,12 @@ v8::Isolate* mainThreadIsolate()
 
 static double currentTimeFunction()
 {
-    return Platform::current()->currentTime();
+    return Platform::current()->currentTimeSeconds();
 }
 
 static double monotonicallyIncreasingTimeFunction()
 {
-    return Platform::current()->monotonicallyIncreasingTime();
+    return Platform::current()->monotonicallyIncreasingTimeSeconds();
 }
 
 static double systemTraceTimeFunction()

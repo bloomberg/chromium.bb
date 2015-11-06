@@ -426,12 +426,12 @@ public:
     virtual WebString defaultLocale() { return WebString(); }
 
     // Wall clock time in seconds since the epoch.
-    virtual double currentTime() { return 0; }
+    virtual double currentTimeSeconds() { return 0; }
 
     // Monotonically increasing time in seconds from an arbitrary fixed point in the past.
     // This function is expected to return at least millisecond-precision values. For this reason,
     // it is recommended that the fixed point be no further in the past than the epoch.
-    virtual double monotonicallyIncreasingTime() { return 0; }
+    virtual double monotonicallyIncreasingTimeSeconds() { return 0; }
 
     // System trace time in seconds. For example, on Chrome OS, this timestamp should be
     // synchronized with ftrace timestamps.

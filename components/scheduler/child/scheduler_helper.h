@@ -83,7 +83,7 @@ class SCHEDULER_EXPORT SchedulerHelper : public TaskQueueManager::Observer {
   void SetObserver(Observer* observer);
 
   // Accessor methods.
-  base::TickClock* tick_clock() const;
+  const scoped_refptr<SchedulerTqmDelegate>& scheduler_tqm_delegate() const;
   base::TimeTicks NextPendingDelayedTaskRunTime() const;
   bool GetAndClearSystemIsQuiescentBit();
 

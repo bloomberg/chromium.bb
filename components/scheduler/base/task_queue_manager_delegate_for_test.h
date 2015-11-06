@@ -28,6 +28,7 @@ class TaskQueueManagerDelegateForTest : public TaskQueueManagerDelegate {
   bool IsNested() const override;
   base::TimeTicks NowTicks() override;
   void OnNoMoreImmediateWork() override;
+  double CurrentTimeSeconds() const override;
 
  protected:
   ~TaskQueueManagerDelegateForTest() override;

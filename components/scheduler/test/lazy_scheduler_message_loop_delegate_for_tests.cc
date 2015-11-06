@@ -89,6 +89,10 @@ base::TimeTicks LazySchedulerMessageLoopDelegateForTests::NowTicks() {
   return time_source_->NowTicks();
 }
 
+double LazySchedulerMessageLoopDelegateForTests::CurrentTimeSeconds() const {
+  return base::Time::Now().ToDoubleT();
+}
+
 void LazySchedulerMessageLoopDelegateForTests::OnNoMoreImmediateWork() {}
 
 }  // namespace scheduler

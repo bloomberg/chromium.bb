@@ -118,4 +118,12 @@ void FakeRendererScheduler::ResumeTimerQueue() {
 void FakeRendererScheduler::SetTimerQueueSuspensionWhenBackgroundedEnabled(
     bool enabled) {}
 
+double FakeRendererScheduler::CurrentTimeSeconds() const {
+  return 0.0;
+}
+
+double FakeRendererScheduler::MonotonicallyIncreasingTimeSeconds() const {
+  return 0.0;
+}
+
 }  // namespace content

@@ -242,7 +242,8 @@ RendererBlinkPlatformImpl::RendererBlinkPlatformImpl(
       plugin_refresh_allowed_(true),
       default_task_runner_(renderer_scheduler->DefaultTaskRunner()),
       loading_task_runner_(renderer_scheduler->LoadingTaskRunner()),
-      web_scrollbar_behavior_(new WebScrollbarBehaviorImpl) {
+      web_scrollbar_behavior_(new WebScrollbarBehaviorImpl),
+      renderer_scheduler_(renderer_scheduler) {
 #if !defined(OS_ANDROID) && !defined(OS_WIN)
   if (g_sandbox_enabled && sandboxEnabled()) {
     sandbox_support_.reset(new RendererBlinkPlatformImpl::SandboxSupport);
@@ -274,6 +275,16 @@ void RendererBlinkPlatformImpl::Shutdown() {
   // need to clear that map now, just before blink::shutdown() is called.
   sandbox_support_.reset();
 #endif
+}
+
+//------------------------------------------------------------------------------
+
+double RendererBlinkPlatformImpl::currentTimeSeconds() {
+  return renderer_scheduler_->CurrentTimeSeconds();
+}
+
+double RendererBlinkPlatformImpl::monotonicallyIncreasingTimeSeconds() {
+  return renderer_scheduler_->MonotonicallyIncreasingTimeSeconds();
 }
 
 //------------------------------------------------------------------------------

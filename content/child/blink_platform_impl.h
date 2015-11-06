@@ -165,8 +165,8 @@ class CONTENT_EXPORT BlinkPlatformImpl
       const blink::WebString& value1,
       const blink::WebString& value2) override;
   void suddenTerminationChanged(bool enabled) override {}
-  double currentTime() override;
-  double monotonicallyIncreasingTime() override;
+  double currentTimeSeconds() override;
+  double monotonicallyIncreasingTimeSeconds() override;
   double systemTraceTime() override;
   void cryptographicallyRandomValues(unsigned char* buffer,
                                      size_t length) override;
