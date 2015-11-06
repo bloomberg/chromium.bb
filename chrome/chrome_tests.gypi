@@ -61,6 +61,7 @@
       'browser/apps/guest_view/app_view_browsertest.cc',
       'browser/apps/guest_view/extension_view/extension_view_browsertest.cc',
       'browser/apps/guest_view/web_view_browsertest.cc',
+      'browser/apps/service_worker_browsertest.cc',
       'browser/apps/window_controls_browsertest.cc',
       'browser/autocomplete/autocomplete_browsertest.cc',
       'browser/autofill/autofill_browsertest.cc',
