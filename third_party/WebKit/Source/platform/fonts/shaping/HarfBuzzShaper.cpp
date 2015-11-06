@@ -33,9 +33,7 @@
 #include "platform/fonts/shaping/HarfBuzzShaper.h"
 
 #include "hb.h"
-#include "platform/LayoutUnit.h"
 #include "platform/Logging.h"
-#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/fonts/Character.h"
 #include "platform/fonts/Font.h"
 #include "platform/fonts/FontFallbackIterator.h"
@@ -49,9 +47,6 @@
 #include "wtf/text/Unicode.h"
 
 #include <algorithm>
-#include <list>
-#include <map>
-#include <string>
 #include <unicode/normlzr.h>
 #include <unicode/uchar.h>
 #include <unicode/uscript.h>
