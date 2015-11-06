@@ -405,9 +405,11 @@ unsigned long CrashService::AsyncSendDump(void* context) {
       // termination of the service object.
       base::AutoLock lock(info->self->sending_);
       VLOG(1) << "trying to send report for pid = " << info->pid;
-      google_breakpad::ReportResult send_result
-          = info->self->sender_->SendCrashReport(kCrashReportURL, info->map,
-                                                 info->dump_path, &report_id);
+      std::map<std::wstring, std::wstring> file_map;
+      file_map[L"upload_file_minidump"] = info->dump_path;
+      google_breakpad::ReportResult send_result =
+          info->self->sender_->SendCrashReport(kCrashReportURL, info->map,
+                                               file_map, &report_id);
       switch (send_result) {
         case google_breakpad::RESULT_FAILED:
           report_id = L"<network issue>";
