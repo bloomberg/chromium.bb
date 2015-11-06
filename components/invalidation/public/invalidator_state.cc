@@ -16,6 +16,8 @@ const char* InvalidatorStateToString(InvalidatorState state) {
       return "INVALIDATION_CREDENTIALS_REJECTED";
     case INVALIDATIONS_ENABLED:
       return "INVALIDATIONS_ENABLED";
+    case INVALIDATOR_SHUTTING_DOWN:
+      return "INVALIDATOR_SHUTTING_DOWN";
     default:
       NOTREACHED();
       return "UNKNOWN_INVALIDATOR_STATE";
