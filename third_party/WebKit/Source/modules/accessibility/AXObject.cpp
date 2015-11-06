@@ -1357,29 +1357,30 @@ void AXObject::selectionChanged()
         parent->selectionChanged();
 }
 
-int AXObject::lineForPosition(const VisiblePosition& visiblePos) const
+int AXObject::lineForPosition(const VisiblePosition& position) const
 {
-    if (visiblePos.isNull() || !node())
+    if (position.isNull() || !node())
         return -1;
 
     // If the position is not in the same editable region as this AX object, return -1.
-    Node* containerNode = visiblePos.deepEquivalent().computeContainerNode();
+    Node* containerNode = position.deepEquivalent().computeContainerNode();
     if (!containerNode->containsIncludingShadowDOM(node()) && !node()->containsIncludingShadowDOM(containerNode))
         return -1;
 
     int lineCount = -1;
-    VisiblePosition currentVisiblePos = visiblePos;
-    VisiblePosition savedVisiblePos;
+    VisiblePosition currentPosition = position;
+    VisiblePosition previousPosition;
 
     // move up until we get to the top
     // FIXME: This only takes us to the top of the rootEditableElement, not the top of the
     // top document.
     do {
-        savedVisiblePos = currentVisiblePos;
-        VisiblePosition prevVisiblePos = previousLinePosition(currentVisiblePos, 0, HasEditableAXRole);
-        currentVisiblePos = prevVisiblePos;
+        previousPosition = currentPosition;
+        currentPosition = previousLinePosition(
+            currentPosition, 0, HasEditableAXRole);
         ++lineCount;
-    } while (currentVisiblePos.isNotNull() && !(inSameLine(currentVisiblePos, savedVisiblePos)));
+    } while (currentPosition.isNotNull()
+        && !inSameLine(currentPosition, previousPosition));
 
     return lineCount;
 }

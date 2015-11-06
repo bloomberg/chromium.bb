@@ -401,6 +401,8 @@ bool AXLayoutObject::isEditable() const
     return AXNodeObject::isEditable();
 }
 
+// Requires layoutObject to be present because it relies on style
+// user-modify. Don't move this logic to AXNodeObject.
 bool AXLayoutObject::isRichlyEditable() const
 {
     if (node() && node()->isContentRichlyEditable())
@@ -1827,19 +1829,16 @@ AXObject::AXRange AXLayoutObject::selection() const
         return AXRange();
 
     VisibleSelection selection = layoutObject()->frame()->selection().selection();
-    RefPtrWillBeRawPtr<Range> selectionRange = firstRangeOf(selection);
-    if (!selectionRange)
+    if (selection.isNone())
         return AXRange();
 
-    int anchorOffset = selectionRange->startOffset();
-    ASSERT(anchorOffset >= 0);
-    int focusOffset = selectionRange->endOffset();
-    ASSERT(focusOffset >= 0);
+    Position visibleStart = selection.visibleStart().toParentAnchoredPosition();
+    Position visibleEnd = selection.visibleEnd().toParentAnchoredPosition();
 
-    Node* anchorNode = selectionRange->startContainer();
+    Node* anchorNode = visibleStart.anchorNode();
     ASSERT(anchorNode);
 
-    AXObject* anchorObject = nullptr;
+    AXLayoutObject* anchorObject = nullptr;
     // Find the closest node that has a corresponding AXObject.
     // This is because some nodes may be aria hidden or might not even have
     // a layout object if they are part of the shadow DOM.
@@ -1853,13 +1852,11 @@ AXObject::AXRange AXLayoutObject::selection() const
         else
             anchorNode = anchorNode->parentNode();
     }
-    if (anchorNode != selectionRange->startContainer())
-        anchorOffset = 0;
 
-    Node* focusNode = selectionRange->endContainer();
+    Node* focusNode = visibleEnd.anchorNode();
     ASSERT(focusNode);
 
-    AXObject* focusObject = nullptr;
+    AXLayoutObject* focusObject = nullptr;
     while (focusNode) {
         focusObject = getUnignoredObjectFromNode(*focusNode);
         if (focusObject)
@@ -1870,12 +1867,16 @@ AXObject::AXRange AXLayoutObject::selection() const
         else
             focusNode = focusNode->parentNode();
     }
-    if (focusNode != selectionRange->endContainer())
-        focusOffset = 0;
 
     if (!anchorObject || !focusObject)
         return AXRange();
 
+    int anchorOffset = anchorObject->indexForVisiblePosition(
+        selection.visibleStart());
+    ASSERT(anchorOffset >= 0);
+    int focusOffset = focusObject->indexForVisiblePosition(
+        selection.visibleEnd());
+    ASSERT(focusOffset >= 0);
     return AXRange(
         anchorObject, anchorOffset,
         focusObject, focusOffset);
@@ -2159,9 +2160,6 @@ VisiblePosition AXLayoutObject::visiblePositionForIndex(int index) const
 
     if (m_layoutObject->isTextControl())
         return toLayoutTextControl(m_layoutObject)->textFormControlElement()->visiblePositionForIndex(index);
-
-    if (!allowsTextRanges() && !m_layoutObject->isText())
-        return VisiblePosition();
 
     Node* node = m_layoutObject->node();
     if (!node)
