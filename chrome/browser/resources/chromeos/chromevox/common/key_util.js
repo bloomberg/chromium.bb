@@ -11,6 +11,7 @@
 goog.provide('cvox.KeyUtil');
 goog.provide('cvox.SimpleKeyEvent');
 
+goog.require('Msgs');
 goog.require('cvox.ChromeVox');
 goog.require('cvox.KeySequence');
 
@@ -243,6 +244,8 @@ cvox.KeyUtil.isSequenceSwitchKeyCode = function(rhKeySeq) {
  * @return {string} Returns a string description.
  */
 cvox.KeyUtil.getReadableNameForKeyCode = function(keyCode) {
+  var msg = Msgs.getMsg.bind(Msgs);
+  var cros = cvox.ChromeVox.isChromeOS;
   if (keyCode == 0) {
     return 'Power button';
   } else if (keyCode == 17) {
@@ -254,7 +257,7 @@ cvox.KeyUtil.getReadableNameForKeyCode = function(keyCode) {
   } else if (keyCode == 9) {
     return 'Tab';
   } else if ((keyCode == 91) || (keyCode == 93)) {
-    if (cvox.ChromeVox.isChromeOS) {
+    if (cros) {
       return 'Search';
     } else if (cvox.ChromeVox.isMac) {
       return 'Cmd';
@@ -284,25 +287,25 @@ cvox.KeyUtil.getReadableNameForKeyCode = function(keyCode) {
   } else if (keyCode == 27) {
     return 'Escape';
   } else if (keyCode == 112) {
-    return cvox.ChromeVox.isChromeOS ? 'Back' : 'F1';
+    return cros ? msg('back_key') : 'F1';
   } else if (keyCode == 113) {
-    return cvox.ChromeVox.isChromeOS ? 'Forward' : 'F2';
+    return cros ? msg('forward_key') : 'F2';
   } else if (keyCode == 114) {
-    return cvox.ChromeVox.isChromeOS ? 'Refresh' : 'F3';
+    return cros ? msg('refresh_key') : 'F3';
   } else if (keyCode == 115) {
-    return cvox.ChromeVox.isChromeOS ? 'Toggle full screen' : 'F4';
+    return cros ? msg('toggle_full_screen_key') : 'F4';
   } else if (keyCode == 116) {
-    return 'F5';
+    return cros ? msg('window_overview_key') : 'F5';
   } else if (keyCode == 117) {
-    return 'F6';
+    return cros ? msg('brightness_down_key') : 'F6';
   } else if (keyCode == 118) {
-    return 'F7';
+    return cros ? msg('brightness_up_key') : 'F7';
   } else if (keyCode == 119) {
-    return 'F8';
+    return cros ? msg('volume_mute_key') : 'F8';
   } else if (keyCode == 120) {
-    return 'F9';
+    return cros ? msg('volume_down_key') : 'F9';
   } else if (keyCode == 121) {
-    return 'F10';
+    return cros ? msg('volume_up_key') : 'F10';
   } else if (keyCode == 122) {
     return 'F11';
   } else if (keyCode == 123) {

@@ -2365,6 +2365,38 @@
       <message desc="Message spoken to user when switching to a mode where searching is case-sensitive." name="IDS_CHROMEVOX_CASE_SENSITIVE">
         Case sensitive.
       </message>
+
+      <!-- Keyboard Explorer -->
+      <message desc="Describes the back key in the ChromeVox keyboard explorer." name="IDS_CHROMEVOX_BACK_KEY">
+        back
+      </message>
+      <message desc="Describes the forward key in the ChromeVox keyboard explorer." name="IDS_CHROMEVOX_FORWARD_KEY">
+        forward
+      </message>
+      <message desc="Describes the refresh key in the ChromeVox keyboard explorer." name="IDS_CHROMEVOX_REFRESH_KEY">
+        refresh
+      </message>
+      <message desc="Describes the key to toggle full screen  in the ChromeVox keyboard explorer." name="IDS_CHROMEVOX_TOGGLE_FULL_SCREEN_KEY">
+        toggle full screen
+      </message>
+      <message desc="Describes the key to toggle window overview in the ChromeVox keyboard explorer." name="IDS_CHROMEVOX_WINDOW_OVERVIEW_KEY">
+        window overview
+      </message>
+      <message desc="Describes the brightness down key in the ChromeVox keyboard explorer." name="IDS_CHROMEVOX_BRIGHTNESS_DOWN_KEY">
+        Brightness down
+      </message>
+      <message desc="Describes the brightness up key in the ChromeVox keyboard explorer." name="IDS_CHROMEVOX_BRIGHTNESS_UP_KEY">
+        Brightness up
+      </message>
+      <message desc="Describes the volume mute key in the ChromeVox keyboard explorer." name="IDS_CHROMEVOX_VOLUME_MUTE_KEY">
+        volume mute
+      </message>
+      <message desc="Describes the volume down key in the ChromeVox keyboard explorer." name="IDS_CHROMEVOX_VOLUME_DOWN_KEY">
+        volume down
+      </message>
+      <message desc="Describes the volume up key in the ChromeVox keyboard explorer." name="IDS_CHROMEVOX_VOLUME_UP_KEY">
+        volume up
+      </message>
     </messages>
   </release>
 </grit>
