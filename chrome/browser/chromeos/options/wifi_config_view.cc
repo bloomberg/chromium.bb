@@ -900,8 +900,10 @@ void WifiConfigView::Init(bool show_8021x) {
   const NetworkState* network = GetNetworkState();
   if (network) {
     if (network->type() == shill::kTypeWifi) {
-      if (network->security_class() == shill::kSecurity8021x)
+      if (network->security_class() == shill::kSecurity8021x ||
+          network->IsDynamicWep()) {
         show_8021x = true;
+      }
     } else if (network->type() == shill::kTypeEthernet) {
       show_8021x = true;
     } else {

@@ -126,6 +126,8 @@ bool NetworkState::PropertyChanged(const std::string& key,
     return GetStringValue(key, value, &security_class_);
   } else if (key == shill::kEapMethodProperty) {
     return GetStringValue(key, value, &eap_method_);
+  } else if (key == shill::kEapKeyMgmtProperty) {
+    return GetStringValue(key, value, &eap_key_mgmt_);
   } else if (key == shill::kNetworkTechnologyProperty) {
     return GetStringValue(key, value, &network_technology_);
   } else if (key == shill::kDeviceProperty) {
@@ -334,6 +336,11 @@ std::string NetworkState::connection_state() const {
   if (!visible())
     return shill::kStateDisconnect;
   return connection_state_;
+}
+
+bool NetworkState::IsDynamicWep() const {
+  return security_class_ == shill::kSecurityWep &&
+         eap_key_mgmt_ == shill::kKeyManagementIEEE8021X;
 }
 
 bool NetworkState::IsConnectedState() const {

@@ -29,9 +29,6 @@ namespace onc {
 
 namespace {
 
-// TODO(pstew): Remove once crosreview.com/310644 lands and merges to Chrome.
-const char kKeyManagementIEEE8021X[] = "IEEE8021X";
-
 scoped_ptr<base::StringValue> ConvertValueToString(const base::Value& value) {
   std::string str;
   if (!value.GetAsString(&str))
@@ -225,7 +222,7 @@ void LocalTranslator::TranslateWiFi() {
                              shill::kSecurityClassProperty);
     if (security == ::onc::wifi::kWEP_8021X) {
       shill_dictionary_->SetStringWithoutPathExpansion(
-          shill::kEapKeyMgmtProperty, kKeyManagementIEEE8021X);
+          shill::kEapKeyMgmtProperty, shill::kKeyManagementIEEE8021X);
     }
   }
 

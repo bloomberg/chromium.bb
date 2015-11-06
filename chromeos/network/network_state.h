@@ -99,6 +99,9 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
     return third_party_vpn_provider_extension_id_;
   }
 
+  // Returns true if the network securty is WEP_8021x (Dynamic WEP)
+  bool IsDynamicWep() const;
+
   // Returns true if |connection_state_| is a connected/connecting state.
   bool IsConnectedState() const;
   bool IsConnectingState() const;
@@ -153,6 +156,7 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
   // request properties from Shill.
   std::string security_class_;
   std::string eap_method_;  // Needed for WiFi EAP networks
+  std::string eap_key_mgmt_;  // Needed for identifying Dynamic WEP networks
   std::string device_path_;
   std::string guid_;
   std::string connection_state_;

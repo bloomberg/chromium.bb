@@ -37,6 +37,9 @@ namespace {
 int s_tdls_busy_count = 0;
 int s_extra_wifi_networks = 0;
 
+// For testing dynamic WEP networks (uses wifi2).
+bool s_dynamic_wep = false;
+
 // Used to compare values for finding entries to erase in a ListValue.
 // (ListValue only implements a const_iterator version of Find).
 struct ValueEquals {
@@ -694,15 +697,23 @@ void FakeShillManagerClient::SetupDefaultEnvironment() {
     profiles->AddService(shared_profile, kWifi1Path);
 
     const std::string kWifi2Path = "/service/wifi2";
-    services->AddService(kWifi2Path,
-                         "wifi2_PSK_guid",
-                         "wifi2_PSK" /* name */,
-                         shill::kTypeWifi,
-                         shill::kStateIdle,
-                         add_to_visible);
-    services->SetServiceProperty(kWifi2Path,
-                                 shill::kSecurityClassProperty,
-                                 base::StringValue(shill::kSecurityPsk));
+    services->AddService(kWifi2Path, "wifi2_guid",
+                         s_dynamic_wep ? "wifi2_WEP" : "wifi2_PSK" /* name */,
+                         shill::kTypeWifi, shill::kStateIdle, add_to_visible);
+    if (s_dynamic_wep) {
+      services->SetServiceProperty(kWifi2Path, shill::kSecurityClassProperty,
+                                   base::StringValue(shill::kSecurityWep));
+      services->SetServiceProperty(
+          kWifi2Path, shill::kEapKeyMgmtProperty,
+          base::StringValue(shill::kKeyManagementIEEE8021X));
+      services->SetServiceProperty(kWifi2Path, shill::kEapMethodProperty,
+                                   base::StringValue(shill::kEapMethodPEAP));
+      services->SetServiceProperty(kWifi2Path, shill::kEapIdentityProperty,
+                                   base::StringValue("John Doe"));
+    } else {
+      services->SetServiceProperty(kWifi2Path, shill::kSecurityClassProperty,
+                                   base::StringValue(shill::kSecurityPsk));
+    }
     services->SetServiceProperty(
         kWifi2Path, shill::kSignalStrengthProperty, base::FundamentalValue(80));
     profiles->AddService(shared_profile, kWifi2Path);
@@ -1110,6 +1121,9 @@ bool FakeShillManagerClient::ParseOption(const std::string& arg0,
   } else if (arg0 == "roaming") {
     // "home", "roaming", or "required"
     roaming_state_ = arg1;
+    return true;
+  } else if (arg0 == "dynamic_wep" && arg1 == "1") {
+    s_dynamic_wep = true;
     return true;
   }
   return SetInitialNetworkState(arg0, arg1);
