@@ -1162,69 +1162,6 @@ TEST_F(TransportSecurityStateTest, OverrideBuiltins) {
   EXPECT_TRUE(state.ShouldUpgradeToSSL("www.google.com"));
 }
 
-TEST_F(TransportSecurityStateTest, GooglePinnedProperties) {
-  EXPECT_FALSE(TransportSecurityState::IsGooglePinnedProperty(
-      "www.example.com"));
-  EXPECT_FALSE(TransportSecurityState::IsGooglePinnedProperty(
-      "www.paypal.com"));
-  EXPECT_FALSE(TransportSecurityState::IsGooglePinnedProperty(
-      "mail.twitter.com"));
-  EXPECT_FALSE(TransportSecurityState::IsGooglePinnedProperty(
-      "www.google.com.int"));
-  EXPECT_FALSE(TransportSecurityState::IsGooglePinnedProperty(
-      "jottit.com"));
-  // learn.doubleclick.net has a more specific match than
-  // *.doubleclick.com, and has 0 or NULL for its required certs.
-  // This test ensures that the exact-match-preferred behavior
-  // works.
-  EXPECT_FALSE(TransportSecurityState::IsGooglePinnedProperty(
-      "learn.doubleclick.net"));
-
-  EXPECT_TRUE(TransportSecurityState::IsGooglePinnedProperty(
-      "encrypted.google.com"));
-  EXPECT_TRUE(TransportSecurityState::IsGooglePinnedProperty(
-      "mail.google.com"));
-  EXPECT_TRUE(TransportSecurityState::IsGooglePinnedProperty(
-      "accounts.google.com"));
-  EXPECT_TRUE(TransportSecurityState::IsGooglePinnedProperty(
-      "doubleclick.net"));
-  EXPECT_TRUE(TransportSecurityState::IsGooglePinnedProperty(
-      "ad.doubleclick.net"));
-  EXPECT_TRUE(TransportSecurityState::IsGooglePinnedProperty(
-      "youtube.com"));
-  EXPECT_TRUE(TransportSecurityState::IsGooglePinnedProperty(
-      "www.profiles.google.com"));
-  EXPECT_TRUE(TransportSecurityState::IsGooglePinnedProperty(
-      "checkout.google.com"));
-  EXPECT_TRUE(TransportSecurityState::IsGooglePinnedProperty(
-      "googleadservices.com"));
-
-  EXPECT_FALSE(TransportSecurityState::IsGooglePinnedProperty(
-      "www.example.com"));
-  EXPECT_FALSE(TransportSecurityState::IsGooglePinnedProperty(
-      "www.paypal.com"));
-  EXPECT_TRUE(TransportSecurityState::IsGooglePinnedProperty(
-      "checkout.google.com"));
-  EXPECT_TRUE(TransportSecurityState::IsGooglePinnedProperty(
-      "googleadservices.com"));
-
-  // Test some SNI hosts:
-  EXPECT_TRUE(TransportSecurityState::IsGooglePinnedProperty(
-      "gmail.com"));
-  EXPECT_TRUE(TransportSecurityState::IsGooglePinnedProperty(
-      "googlegroups.com"));
-  EXPECT_TRUE(TransportSecurityState::IsGooglePinnedProperty(
-      "www.googlegroups.com"));
-
-  // These hosts used to only be HSTS when SNI was available.
-  EXPECT_TRUE(TransportSecurityState::IsGooglePinnedProperty(
-      "gmail.com"));
-  EXPECT_TRUE(TransportSecurityState::IsGooglePinnedProperty(
-      "googlegroups.com"));
-  EXPECT_TRUE(TransportSecurityState::IsGooglePinnedProperty(
-      "www.googlegroups.com"));
-}
-
 TEST_F(TransportSecurityStateTest, HPKPReporting) {
   HostPortPair host_port_pair(kHost, kPort);
   HostPortPair subdomain_host_port_pair(kSubdomain, kPort);
@@ -1446,14 +1383,13 @@ TEST_F(TransportSecurityStateTest, PreloadedPKPReportUri) {
   MockCertificateReportSender mock_report_sender;
   state.SetReportSender(&mock_report_sender);
 
-  ASSERT_TRUE(
-      TransportSecurityState::IsGooglePinnedProperty(kPreloadedPinDomain));
   EnableStaticPins(&state);
 
   TransportSecurityState::PKPState pkp_state;
   TransportSecurityState::STSState unused_sts_state;
   ASSERT_TRUE(state.GetStaticDomainState(kPreloadedPinDomain, &unused_sts_state,
                                          &pkp_state));
+  ASSERT_TRUE(pkp_state.HasPublicKeyPins());
 
   GURL report_uri = pkp_state.report_uri;
   ASSERT_TRUE(report_uri.is_valid());

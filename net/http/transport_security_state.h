@@ -307,14 +307,6 @@ class NET_EXPORT TransportSecurityState
                                    const HostPortPair& host_port_pair,
                                    const SSLInfo& ssl_info);
 
-  // Returns true iff we have any static public key pins for the |host| and
-  // iff its set of required pins is the set we expect for Google
-  // properties.
-  //
-  // If |host| matches both an exact entry and is a subdomain of another
-  // entry, the exact match determines the return value.
-  static bool IsGooglePinnedProperty(const std::string& host);
-
   // The maximum number of seconds for which we'll cache an HSTS request.
   static const long int kMaxHSTSAgeSecs;
 

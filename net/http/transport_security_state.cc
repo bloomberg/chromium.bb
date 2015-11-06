@@ -956,13 +956,6 @@ bool TransportSecurityState::ProcessHPKPReportOnlyHeader(
 }
 
 // static
-bool TransportSecurityState::IsGooglePinnedProperty(const std::string& host) {
-  PreloadResult result;
-  return DecodeHSTSPreload(host, &result) && result.has_pins &&
-         kPinsets[result.pinset_id].accepted_pins == kGoogleAcceptableCerts;
-}
-
-// static
 void TransportSecurityState::ReportUMAOnPinFailure(const std::string& host) {
   PreloadResult result;
   if (!DecodeHSTSPreload(host, &result) ||

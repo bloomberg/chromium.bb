@@ -54,9 +54,7 @@ bool StartsWithCommandLineGoogleBaseURL(const GURL& url);
 
 // WARNING: The following IsGoogleXXX() functions use heuristics to rule out
 // "obviously false" answers.  They do NOT guarantee that the string in question
-// is actually on a Google-owned domain, just that it looks plausible.  If you
-// need to restrict some behavior to only happen on Google's officially-owned
-// domains, use TransportSecurityState::IsGooglePinnedProperty() instead.
+// is actually on a Google-owned domain, just that it looks plausible.
 
 // Designate whether or not a URL checking function also checks for specific
 // subdomains, or only "www" and empty subdomains.
