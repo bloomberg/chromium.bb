@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
-#include "components/startup_metric_utils/browser/startup_metric_utils.h"
+#include "components/startup_metric_utils/startup_metric_utils.h"
 
 // static
 MacStartupProfiler* MacStartupProfiler::GetInstance() {

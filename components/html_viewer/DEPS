@@ -10,7 +10,7 @@ include_rules = [
   "+components/mus",
   "+components/resource_provider/public",
   "+components/scheduler",
-  "+components/startup_metric_utils/browser",
+  "+components/startup_metric_utils",
   "+components/webcrypto",
   "+components/web_view/public/interfaces",
   "+components/web_view/test_runner/public/interfaces",

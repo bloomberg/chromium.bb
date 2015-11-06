@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/startup_metric_utils/browser/startup_metric_utils.h"
+#include "components/startup_metric_utils/startup_metric_utils.h"
 
 #include "base/containers/hash_tables.h"
 #include "base/environment.h"
@@ -183,11 +183,11 @@ bool GetHardFaultCountForCurrentProcess(uint32_t* hard_fault_count,
                                            end_time - begin_time)              \
     TRACE_EVENT_ASYNC_BEGIN_WITH_TIMESTAMP1(                                   \
         "startup", basename, 0,                                                \
-        StartupTimeToTimeTicks(begin_time).ToInternalValue(), "Temperature",  \
+        StartupTimeToTimeTicks(begin_time).ToInternalValue(), "Temperature",   \
         g_startup_temperature);                                                \
     TRACE_EVENT_ASYNC_END_WITH_TIMESTAMP1(                                     \
         "startup", basename, 0,                                                \
-        StartupTimeToTimeTicks(end_time).ToInternalValue(), "Temperature",    \
+        StartupTimeToTimeTicks(end_time).ToInternalValue(), "Temperature",     \
         g_startup_temperature);                                                \
   }
 

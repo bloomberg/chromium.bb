@@ -220,7 +220,7 @@ if (!is_android) {
         ":packed_resources",
       ]
       deps += [
-        "//components/startup_metric_utils/browser",
+        "//components/startup_metric_utils",
 
         # Precompiled plugins that need to get copied to the output directory.
         # On Mac, internal plugins go inside the framework, so these

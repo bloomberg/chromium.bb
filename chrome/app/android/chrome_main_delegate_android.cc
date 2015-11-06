@@ -16,7 +16,7 @@
 #include "chrome/browser/android/metrics/uma_utils.h"
 #include "chrome/browser/media/android/remote/remote_media_player_manager.h"
 #include "components/policy/core/browser/android/android_combined_policy_provider.h"
-#include "components/startup_metric_utils/browser/startup_metric_utils.h"
+#include "components/startup_metric_utils/startup_metric_utils.h"
 #include "content/browser/media/android/browser_media_player_manager.h"
 #include "content/public/browser/browser_main_runner.h"
 

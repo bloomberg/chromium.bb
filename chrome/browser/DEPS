@@ -96,7 +96,7 @@ include_rules = [
   "+components/signin",
   "+components/ssl_config",
   "+components/ssl_errors",
-  "+components/startup_metric_utils/browser",
+  "+components/startup_metric_utils",
   "+components/storage_monitor",
   "+components/suggestions",
   "+components/sync_bookmarks",

@@ -17,7 +17,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "components/metrics/profiler/tracking_synchronizer.h"
 #include "components/metrics/proto/profiler_event.pb.h"
-#include "components/startup_metric_utils/browser/startup_metric_utils.h"
+#include "components/startup_metric_utils/startup_metric_utils.h"
 #include "content/public/browser/navigation_handle.h"
 
 scoped_ptr<FirstWebContentsProfiler>

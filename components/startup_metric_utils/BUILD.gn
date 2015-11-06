@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-source_set("browser") {
+source_set("startup_metric_utils") {
   sources = [
     "startup_metric_utils.cc",
     "startup_metric_utils.h",

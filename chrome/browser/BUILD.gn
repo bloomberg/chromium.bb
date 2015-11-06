@@ -159,7 +159,7 @@ source_set("browser") {
     "//components/security_interstitials/core",
     "//components/signin/core/browser",
     "//components/ssl_errors",
-    "//components/startup_metric_utils/browser",
+    "//components/startup_metric_utils",
     "//components/strings",
     "//components/suggestions",
     "//components/sync_bookmarks",

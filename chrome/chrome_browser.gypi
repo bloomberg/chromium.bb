@@ -3119,7 +3119,7 @@
         '../components/components.gyp:ssl_errors',
         '../components/components.gyp:suggestions',
         '../components/components.gyp:signin_core_browser',
-        '../components/components.gyp:startup_metric_utils_browser',
+        '../components/components.gyp:startup_metric_utils',
         '../components/components.gyp:sync_bookmarks',
         '../components/components.gyp:sync_driver',
         '../components/components.gyp:sync_sessions',
