@@ -13,6 +13,8 @@
 namespace base {
 namespace trace_event {
 
+class TraceEventMemoryOverhead;
+
 // The allocation register keeps track of all allocations that have not been
 // freed. It is a memory map-backed hash table that stores size and context
 // indexed by address. The hash table is tailored specifically for this use
@@ -71,6 +73,9 @@ class BASE_EXPORT AllocationRegister {
 
   ConstIterator begin() const;
   ConstIterator end() const;
+
+  // Estimates memory overhead including |sizeof(AllocationRegister)|.
+  void EstimateTraceMemoryOverhead(TraceEventMemoryOverhead* overhead) const;
 
  private:
   friend class AllocationRegisterTest;

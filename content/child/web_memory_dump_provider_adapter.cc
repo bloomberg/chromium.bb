@@ -10,6 +10,7 @@
 #include "base/trace_event/memory_profiler_heap_dump_writer.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/trace_event_argument.h"
+#include "base/trace_event/trace_event_memory_overhead.h"
 #include "content/child/web_process_memory_dump_impl.h"
 #include "third_party/WebKit/public/platform/WebMemoryDumpProvider.h"
 
@@ -74,14 +75,18 @@ bool WebMemoryDumpProviderAdapter::OnMemoryDump(
       web_memory_dump_provider_->supportsHeapProfiling() &&
       g_heap_profiling_enabled) {
     HeapDumpWriter writer(pmd->session_state()->stack_frame_deduplicator());
+    TraceEventMemoryOverhead overhead;
 
     {
       AutoLock lock(g_allocation_register_lock.Get());
       for (const auto& alloc_size : *g_allocation_register)
         writer.InsertAllocation(alloc_size.context, alloc_size.size);
+
+      g_allocation_register->EstimateTraceMemoryOverhead(&overhead);
     }
 
     pmd->AddHeapDump("partition_alloc", writer.WriteHeapDump());
+    overhead.DumpInto("tracing/heap_profiler", pmd);
   }
 
   return web_memory_dump_provider_->onMemoryDump(level, &web_pmd_impl);

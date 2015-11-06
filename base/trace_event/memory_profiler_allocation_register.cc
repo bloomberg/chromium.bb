@@ -4,6 +4,8 @@
 
 #include "base/trace_event/memory_profiler_allocation_register.h"
 
+#include "base/trace_event/trace_event_memory_overhead.h"
+
 namespace base {
 namespace trace_event {
 
@@ -160,6 +162,20 @@ uint32_t AllocationRegister::Hash(void* address) {
   const uintptr_t shift = 14;
   const uintptr_t h = (key * a) >> shift;
   return static_cast<uint32_t>(h) & kNumBucketsMask;
+}
+
+void AllocationRegister::EstimateTraceMemoryOverhead(
+    TraceEventMemoryOverhead* overhead) const {
+  // Estimate memory overhead by counting all of the cells that have ever been
+  // touched. Don't report mmapped memory as allocated, because it has not been
+  // allocated by malloc.
+  size_t allocated = sizeof(AllocationRegister);
+  size_t resident = sizeof(AllocationRegister)
+                    // Include size of touched cells (size of |*cells_|).
+                    + sizeof(Cell) * next_unused_cell_
+                    // Size of |*buckets_|.
+                    + sizeof(CellIndex) * kNumBuckets;
+  overhead->Add("AllocationRegister", allocated, resident);
 }
 
 }  // namespace trace_event
