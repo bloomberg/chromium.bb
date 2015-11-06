@@ -238,11 +238,21 @@ def _OnStaleMd5(changes, options, javac_cmd, java_files, classpath_inputs,
       if md5_check.PRINT_EXPLANATIONS:
         stdout_filter = None
 
-      build_utils.CheckOutput(
+      attempt_build = lambda: build_utils.CheckOutput(
           cmd,
           print_stdout=options.chromium_code,
           stdout_filter=stdout_filter,
           stderr_filter=ColorJavacOutput)
+      try:
+        attempt_build()
+      except build_utils.CalledProcessError as e:
+        # Work-around for a bug in jmake (http://crbug.com/551449).
+        if 'project database corrupted' not in e.output:
+          raise
+        print ('Applying work-around for jmake project database corrupted '
+               '(http://crbug.com/551449).')
+        os.unlink(pdb_path)
+        attempt_build()
 
     if options.main_class or options.manifest_entry:
       entries = []
