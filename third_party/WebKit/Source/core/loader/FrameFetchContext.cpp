@@ -309,10 +309,13 @@ bool FrameFetchContext::shouldLoadNewResource(Resource::Type type) const
     return m_documentLoader == frame()->loader().documentLoader();
 }
 
-void FrameFetchContext::willStartLoadingResource(ResourceRequest& request)
+void FrameFetchContext::willStartLoadingResource(ResourceRequest& request, FetchResourceType type)
 {
-    if (m_documentLoader)
-        m_documentLoader->applicationCacheHost()->willStartLoadingResource(request);
+    if (!m_documentLoader)
+        return;
+    if (type == FetchMainResource)
+        m_documentLoader->applicationCacheHost()->willStartLoadingMainResource(request);
+    m_documentLoader->applicationCacheHost()->willStartLoadingResource(request);
 }
 
 void FrameFetchContext::didLoadResource()

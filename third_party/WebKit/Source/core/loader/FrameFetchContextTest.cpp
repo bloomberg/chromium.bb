@@ -96,8 +96,8 @@ protected:
     {
         dummyPageHolder = DummyPageHolder::create(IntSize(500, 500));
         dummyPageHolder->page().setDeviceScaleFactor(1.0);
-        documentLoader = DocumentLoader::create(&dummyPageHolder->frame(), ResourceRequest("http://www.example.com"), SubstituteData());
         document = toHTMLDocument(&dummyPageHolder->document());
+        documentLoader = document->loader();
         fetchContext = static_cast<FrameFetchContext*>(&documentLoader->fetcher()->context());
         owner = StubFrameOwner::create();
         FrameFetchContext::provideDocumentToContext(*fetchContext, document.get());
@@ -105,11 +105,9 @@ protected:
 
     void TearDown() override
     {
-        documentLoader->detachFromFrame();
         documentLoader.clear();
 
         if (childFrame) {
-            childDocumentLoader->detachFromFrame();
             childDocumentLoader.clear();
             childFrame->detach(FrameDetachType::Remove);
         }
@@ -121,8 +119,8 @@ protected:
         childFrame = LocalFrame::create(childClient.get(), document->frame()->host(), owner.get());
         childFrame->setView(FrameView::create(childFrame.get(), IntSize(500, 500)));
         childFrame->init();
-        childDocumentLoader = DocumentLoader::create(childFrame.get(), ResourceRequest("http://www.example.com"), SubstituteData());
         childDocument = childFrame->document();
+        childDocumentLoader = childDocument->loader();
         FrameFetchContext* childFetchContext = static_cast<FrameFetchContext*>(&childDocumentLoader->fetcher()->context());
         FrameFetchContext::provideDocumentToContext(*childFetchContext, childDocument.get());
         return childFetchContext;

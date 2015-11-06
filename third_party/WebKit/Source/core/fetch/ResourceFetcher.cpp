@@ -472,6 +472,8 @@ void ResourceFetcher::initializeResourceRequest(ResourceRequest& request, Resour
     if (type == Resource::LinkPrefetch || type == Resource::LinkSubresource)
         request.setHTTPHeaderField("Purpose", "prefetch");
 
+    request.setURL(MemoryCache::removeFragmentIdentifierIfNeeded(request.url()));
+
     context().addAdditionalRequestHeaders(request, (type == Resource::MainResource) ? FetchMainResource : FetchSubresource);
 }
 
@@ -977,7 +979,7 @@ void ResourceFetcher::willTerminateResourceLoader(ResourceLoader* loader)
 
 void ResourceFetcher::willStartLoadingResource(Resource* resource, ResourceRequest& request)
 {
-    context().willStartLoadingResource(request);
+    context().willStartLoadingResource(request, resource->type() == Resource::MainResource ? FetchMainResource : FetchSubresource);
     storeResourceTimingInitiatorInformation(resource);
     TRACE_EVENT_ASYNC_BEGIN2("blink.net", "Resource", resource, "url", resource->url().string().ascii(), "priority", resource->resourceRequest().priority());
 }

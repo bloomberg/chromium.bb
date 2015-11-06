@@ -95,10 +95,11 @@ DocumentLoader::DocumentLoader(LocalFrame* frame, const ResourceRequest& req, co
     , m_documentLoadTiming(*this)
     , m_timeOfLastDataReceived(0.0)
     , m_applicationCacheHost(ApplicationCacheHost::create(this))
-    , m_state(NotStarted)
+    , m_state(Provisional)
     , m_inDataReceived(false)
     , m_dataBuffer(SharedBuffer::create())
 {
+    timing().markNavigationStart();
 }
 
 FrameLoader* DocumentLoader::frameLoader() const
@@ -250,7 +251,7 @@ bool DocumentLoader::isLoading() const
     if (document() && document()->hasActiveParser())
         return true;
 
-    return (m_state > NotStarted && m_state < MainResourceDone) || m_fetcher->isFetching();
+    return m_state < MainResourceDone || m_fetcher->isFetching();
 }
 
 void DocumentLoader::notifyFinished(Resource* resource)
@@ -312,60 +313,38 @@ bool DocumentLoader::isRedirectAfterPost(const ResourceRequest& newRequest, cons
 void DocumentLoader::redirectReceived(Resource* resource, ResourceRequest& request, const ResourceResponse& redirectResponse)
 {
     ASSERT_UNUSED(resource, resource == m_mainResource);
-    willSendRequest(request, redirectResponse);
-}
-
-void DocumentLoader::updateRequest(Resource* resource, const ResourceRequest& request)
-{
-    ASSERT_UNUSED(resource, resource == m_mainResource);
-    m_request = request;
-}
-
-static bool isFormSubmission(NavigationType type)
-{
-    return type == NavigationTypeFormSubmitted || type == NavigationTypeFormResubmitted;
-}
-
-void DocumentLoader::willSendRequest(ResourceRequest& newRequest, const ResourceResponse& redirectResponse)
-{
-    // Note that there are no asserts here as there are for the other callbacks. This is due to the
-    // fact that this "callback" is sent when starting every load, and the state of callback
-    // deferrals plays less of a part in this function in preventing the bad behavior deferring
-    // callbacks is meant to prevent.
-    ASSERT(!newRequest.isNull());
-    if (isFormSubmission(m_navigationType) && !m_frame->document()->contentSecurityPolicy()->allowFormAction(newRequest.url())) {
-        cancelMainResourceLoad(ResourceError::cancelledError(newRequest.url()));
-        return;
-    }
-
-    ASSERT(timing().fetchStart());
-    if (!redirectResponse.isNull()) {
-        // If the redirecting url is not allowed to display content from the target origin,
-        // then block the redirect.
-        RefPtr<SecurityOrigin> redirectingOrigin = SecurityOrigin::create(redirectResponse.url());
-        if (!redirectingOrigin->canDisplay(newRequest.url())) {
-            FrameLoader::reportLocalLoadFailed(m_frame, newRequest.url().string());
-            cancelMainResourceLoad(ResourceError::cancelledError(newRequest.url()));
-            return;
-        }
-        timing().addRedirect(redirectResponse.url(), newRequest.url());
-    }
 
     // If we're fielding a redirect in response to a POST, force a load from origin, since
     // this is a common site technique to return to a page viewing some data that the POST
     // just modified.
-    if (newRequest.cachePolicy() == UseProtocolCachePolicy && isRedirectAfterPost(newRequest, redirectResponse))
-        newRequest.setCachePolicy(ReloadBypassingCache);
+    if (request.cachePolicy() == UseProtocolCachePolicy && isRedirectAfterPost(request, redirectResponse))
+        request.setCachePolicy(ReloadBypassingCache);
 
-    m_request = newRequest;
+    m_request = request;
 
-    if (redirectResponse.isNull())
+    // Add the fragment to the new request url. Note that this is only done on m_request,
+    // not on the request that will be passed back out of blink. The network stack doesn't care
+    // about the fragment, and doesn't expect the URL to change unless it is invalidated.
+    KURL url = request.url();
+    if (m_originalRequest.url().hasFragmentIdentifier()) {
+        url.setFragmentIdentifier(m_originalRequest.url().fragmentIdentifier());
+        m_request.setURL(url);
+    }
+
+    // If the redirecting url is not allowed to display content from the target origin,
+    // then block the redirect.
+    RefPtr<SecurityOrigin> redirectingOrigin = SecurityOrigin::create(redirectResponse.url());
+    if (!redirectingOrigin->canDisplay(url)) {
+        FrameLoader::reportLocalLoadFailed(m_frame, url.string());
+        cancelMainResourceLoad(ResourceError::cancelledError(url));
         return;
+    }
 
-    appendRedirect(newRequest.url());
+    timing().addRedirect(redirectResponse.url(), url);
+    appendRedirect(url);
     frameLoader()->receivedMainResourceRedirect(m_request.url());
-    if (!frameLoader()->shouldContinueForNavigationPolicy(newRequest, SubstituteData(), this, CheckContentSecurityPolicy, m_navigationType, NavigationPolicyCurrentTab, replacesCurrentHistoryItem()))
-        cancelMainResourceLoad(ResourceError::cancelledError(m_request.url()));
+    if (!frameLoader()->shouldContinueForNavigationPolicy(request, SubstituteData(), this, CheckContentSecurityPolicy, m_navigationType, NavigationPolicyCurrentTab, replacesCurrentHistoryItem()))
+        cancelMainResourceLoad(ResourceError::cancelledError(url));
 }
 
 static bool canShowMIMEType(const String& mimeType, Page* page)
@@ -722,53 +701,35 @@ bool DocumentLoader::maybeLoadEmpty()
 void DocumentLoader::startLoadingMainResource()
 {
     RefPtrWillBeRawPtr<DocumentLoader> protect(this);
-    m_mainDocumentError = ResourceError();
-    timing().markNavigationStart();
-    ASSERT(!m_mainResource);
-    ASSERT(m_state == NotStarted);
-    m_state = Provisional;
+    ASSERT(m_state == Provisional);
 
     if (maybeLoadEmpty())
         return;
 
-    ASSERT(timing().navigationStart());
     ASSERT(!timing().fetchStart());
     timing().markFetchStart();
-    willSendRequest(m_request, ResourceResponse());
-
-    // willSendRequest() may lead to our LocalFrame being detached or cancelling the load via nulling the ResourceRequest.
-    if (!m_frame || m_request.isNull())
-        return;
-
-    m_applicationCacheHost->willStartLoadingMainResource(m_request);
     prepareSubframeArchiveLoadIfNeeded();
 
-    ResourceRequest request(m_request);
     DEFINE_STATIC_LOCAL(ResourceLoaderOptions, mainResourceLoadOptions,
         (DoNotBufferData, AllowStoredCredentials, ClientRequestedCredentials, CheckContentSecurityPolicy, DocumentContext));
-    FetchRequest cachedResourceRequest(request, FetchInitiatorTypeNames::document, mainResourceLoadOptions);
-    m_mainResource = RawResource::fetchMainResource(cachedResourceRequest, fetcher(), m_substituteData);
+    FetchRequest fetchRequest(m_request, FetchInitiatorTypeNames::document, mainResourceLoadOptions);
+
+    m_mainResource = RawResource::fetchMainResource(fetchRequest, fetcher(), m_substituteData);
     if (!m_mainResource) {
         m_request = ResourceRequest();
-        // If the load was aborted by clearing m_request, it's possible the ApplicationCacheHost
-        // is now in a state where starting an empty load will be inconsistent. Replace it with
-        // a new ApplicationCacheHost.
-        if (m_applicationCacheHost)
-            m_applicationCacheHost->detachFromDocumentLoader();
-        m_applicationCacheHost = ApplicationCacheHost::create(this);
         maybeLoadEmpty();
         return;
     }
+
     m_mainResource->addClient(this);
+    if (!m_mainResource)
+        return;
 
     // A bunch of headers are set when the underlying ResourceLoader is created, and m_request needs to include those.
-    if (mainResourceLoader())
-        request = mainResourceLoader()->originalRequest();
-    // If there was a fragment identifier on m_request, the cache will have stripped it. m_request should include
-    // the fragment identifier, so add that back in.
-    if (equalIgnoringFragmentIdentifier(m_request.url(), request.url()))
-        request.setURL(m_request.url());
-    m_request = request;
+    // However, if there was a fragment identifier on m_request, the cache will have stripped it. m_request should include
+    // the fragment identifier, so reset the url.
+    m_request = m_mainResource->resourceRequest();
+    m_request.setURL(m_originalRequest.url());
 }
 
 void DocumentLoader::cancelMainResourceLoad(const ResourceError& resourceError)

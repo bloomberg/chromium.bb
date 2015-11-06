@@ -90,7 +90,7 @@ void FetchContext::dispatchDidFail(unsigned long, const ResourceError&, bool)
 {
 }
 
-void FetchContext::willStartLoadingResource(ResourceRequest&)
+void FetchContext::willStartLoadingResource(ResourceRequest&, FetchResourceType)
 {
 }
 

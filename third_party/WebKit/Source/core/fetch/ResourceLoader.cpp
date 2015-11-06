@@ -51,7 +51,7 @@
 
 namespace blink {
 
-ResourceLoader* ResourceLoader::create(ResourceFetcher* fetcher, Resource* resource, const ResourceRequest& request, const ResourceLoaderOptions& options)
+ResourceLoader* ResourceLoader::create(ResourceFetcher* fetcher, Resource* resource, ResourceRequest& request, const ResourceLoaderOptions& options)
 {
     ResourceLoader* loader = new ResourceLoader(fetcher, resource, options);
     loader->init(request);
@@ -103,15 +103,13 @@ void ResourceLoader::releaseResources()
     m_fetcher.clear();
 }
 
-void ResourceLoader::init(const ResourceRequest& passedRequest)
+void ResourceLoader::init(ResourceRequest& request)
 {
     ASSERT(m_state != Terminated);
-    ResourceRequest request(passedRequest);
     m_fetcher->willSendRequest(m_resource->identifier(), request, ResourceResponse(), m_options.initiatorInfo);
     ASSERT(m_state != Terminated);
     ASSERT(!request.isNull());
-    m_originalRequest = m_request = applyOptions(request);
-    m_resource->updateRequest(request);
+    m_request = applyOptions(request);
     ASSERT(m_state != Terminated);
     m_fetcher->didInitializeResourceLoader(this);
 }
@@ -276,15 +274,10 @@ void ResourceLoader::willFollowRedirect(WebURLLoader*, WebURLRequest& passedNewR
 
     applyOptions(newRequest); // canAccessRedirect() can modify m_options so we should re-apply it.
     m_fetcher->redirectReceived(m_resource, redirectResponse);
-    ASSERT(m_state != Terminated);
+    m_fetcher->willSendRequest(m_resource->identifier(), newRequest, redirectResponse, m_options.initiatorInfo);
     m_resource->willFollowRedirect(newRequest, redirectResponse);
     if (newRequest.isNull() || m_state == Terminated)
         return;
-
-    m_fetcher->willSendRequest(m_resource->identifier(), newRequest, redirectResponse, m_options.initiatorInfo);
-    ASSERT(m_state != Terminated);
-    ASSERT(!newRequest.isNull());
-    m_resource->updateRequest(newRequest);
     m_request = newRequest;
 }
 

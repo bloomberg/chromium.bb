@@ -198,7 +198,6 @@ public:
 
     virtual void willFollowRedirect(ResourceRequest&, const ResourceResponse&);
 
-    virtual void updateRequest(const ResourceRequest&) { }
     virtual void responseReceived(const ResourceResponse&, PassOwnPtr<WebDataConsumerHandle>);
     void setResponse(const ResourceResponse& response) { m_response = response; }
     const ResourceResponse& response() const { return m_response; }
@@ -380,8 +379,6 @@ private:
     void setCachedMetadata(unsigned dataTypeID, const char*, size_t, CachedMetadataHandler::CacheType);
     void clearCachedMetadata(CachedMetadataHandler::CacheType);
     CachedMetadata* cachedMetadata(unsigned dataTypeID) const;
-
-    String m_fragmentIdentifierForRequest;
 
     RefPtr<CachedMetadata> m_cachedMetadata;
     OwnPtrWillBeMember<CacheHandler> m_cacheHandler;
