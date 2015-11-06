@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/drive/download_handler.h"
 
 #include "base/files/scoped_temp_dir.h"
+#include "base/run_loop.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/drive/dummy_file_system.h"
@@ -42,8 +43,42 @@ class DownloadHandlerTestFileSystem : public DummyFileSystem {
     callback.Run(error_);
   }
 
+  void FreeDiskSpaceIfNeededFor(
+      int64 num_bytes,
+      const FreeDiskSpaceCallback& callback) override {
+    free_disk_space_if_needed_for_num_bytes_.push_back(num_bytes);
+    callback.Run(true);
+  }
+
+  std::vector<int64> free_disk_space_if_needed_for_num_bytes_;
+
  private:
   FileError error_;
+};
+
+class DownloadHandlerTestDownloadManager : public content::MockDownloadManager {
+ public:
+  void GetAllDownloads(
+      content::DownloadManager::DownloadVector* downloads) override {
+    for (auto* test_download : test_downloads_) {
+      downloads->push_back(test_download);
+    }
+  }
+
+  content::DownloadManager::DownloadVector test_downloads_;
+};
+
+class DownloadHandlerTestDownloadItem : public content::MockDownloadItem {
+ public:
+  bool IsDone() const override { return is_done_; }
+
+  int64 GetTotalBytes() const override { return total_bytes_; }
+
+  int64 GetReceivedBytes() const override { return received_bytes_; }
+
+  bool is_done_ = false;
+  int64 total_bytes_ = 0;
+  int64 received_bytes_ = 0;
 };
 
 }  // namespace
@@ -51,7 +86,7 @@ class DownloadHandlerTestFileSystem : public DummyFileSystem {
 class DownloadHandlerTest : public testing::Test {
  public:
   DownloadHandlerTest()
-      : download_manager_(new content::MockDownloadManager) {}
+      : download_manager_(new DownloadHandlerTestDownloadManager) {}
 
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
@@ -62,13 +97,16 @@ class DownloadHandlerTest : public testing::Test {
 
     download_handler_.reset(new DownloadHandler(&test_file_system_));
     download_handler_->Initialize(download_manager_.get(), temp_dir_.path());
+    download_handler_->SetFreeDiskSpaceDelayForTesting(
+        base::TimeDelta::FromMilliseconds(0));
   }
 
  protected:
   base::ScopedTempDir temp_dir_;
   content::TestBrowserThreadBundle thread_bundle_;
   TestingProfile profile_;
-  scoped_ptr<content::MockDownloadManager> download_manager_;
+  scoped_ptr<DownloadHandlerTestDownloadManager> download_manager_;
+  scoped_ptr<DownloadHandlerTestDownloadManager> incognito_download_manager_;
   DownloadHandlerTestFileSystem test_file_system_;
   scoped_ptr<DownloadHandler> download_handler_;
   content::MockDownloadItem download_item_;
@@ -194,6 +232,122 @@ TEST_F(DownloadHandlerTest, CheckForFileExistence) {
 
   // Check the result.
   EXPECT_FALSE(file_exists);
+}
+
+TEST_F(DownloadHandlerTest, FreeDiskSpace) {
+  // Add a download item to download manager.
+  DownloadHandlerTestDownloadItem download_item_a;
+  download_item_a.is_done_ = false;
+  download_item_a.total_bytes_ = 100;
+  download_item_a.received_bytes_ = 10;
+  download_manager_->test_downloads_.push_back(&download_item_a);
+
+  // Free disk space for download_item_a.
+  download_handler_->FreeDiskSpaceIfNeededImmediately();
+  ASSERT_EQ(1u,
+            test_file_system_.free_disk_space_if_needed_for_num_bytes_.size());
+  ASSERT_EQ(download_item_a.total_bytes_ - download_item_a.received_bytes_,
+            test_file_system_.free_disk_space_if_needed_for_num_bytes_[0]);
+
+  // Confirm that FreeDiskSpaceIfNeeded is rate limited by calling it twice.
+  download_handler_->FreeDiskSpaceIfNeeded();
+  download_handler_->FreeDiskSpaceIfNeeded();
+  ASSERT_EQ(1u,
+            test_file_system_.free_disk_space_if_needed_for_num_bytes_.size());
+
+  download_item_a.received_bytes_ = 20;
+
+  base::RunLoop().RunUntilIdle();
+  ASSERT_EQ(2u,
+            test_file_system_.free_disk_space_if_needed_for_num_bytes_.size());
+  ASSERT_EQ(download_item_a.total_bytes_ - download_item_a.received_bytes_,
+            test_file_system_.free_disk_space_if_needed_for_num_bytes_[1]);
+
+  // Observe incognito download manager and add another download item.
+  // FreeDiskSpace should be called with considering both download items.
+  incognito_download_manager_.reset(new DownloadHandlerTestDownloadManager);
+  download_handler_->ObserveIncognitoDownloadManager(
+      incognito_download_manager_.get());
+
+  DownloadHandlerTestDownloadItem download_item_b;
+  download_item_b.is_done_ = false;
+  download_item_b.total_bytes_ = 200;
+  download_item_b.received_bytes_ = 0;
+  incognito_download_manager_->test_downloads_.push_back(&download_item_b);
+
+  download_item_a.received_bytes_ = 30;
+
+  download_handler_->FreeDiskSpaceIfNeededImmediately();
+  ASSERT_EQ(3u,
+            test_file_system_.free_disk_space_if_needed_for_num_bytes_.size());
+  ASSERT_EQ(download_item_a.total_bytes_ - download_item_a.received_bytes_ +
+                download_item_b.total_bytes_ - download_item_b.received_bytes_,
+            test_file_system_.free_disk_space_if_needed_for_num_bytes_[2]);
+
+  // Free disk space after making both items completed. In this case
+  // FreeDiskSpace should be called with 0 byte to keep
+  // drive::internal::kMinFreeSpaceInBytes.
+  download_item_a.is_done_ = true;
+  download_item_b.is_done_ = true;
+
+  download_handler_->FreeDiskSpaceIfNeeded();
+  base::RunLoop().RunUntilIdle();
+
+  ASSERT_EQ(4u,
+            test_file_system_.free_disk_space_if_needed_for_num_bytes_.size());
+  ASSERT_EQ(0, test_file_system_.free_disk_space_if_needed_for_num_bytes_[3]);
+}
+
+TEST_F(DownloadHandlerTest, CalculateRequestSpace) {
+  DownloadHandlerTestDownloadItem download_item_a;
+  download_item_a.is_done_ = false;
+  download_item_a.total_bytes_ = 100;
+  download_item_a.received_bytes_ = 0;
+
+  DownloadHandlerTestDownloadItem download_item_b;
+  download_item_b.is_done_ = false;
+  download_item_b.total_bytes_ = 200;
+  download_item_b.received_bytes_ = 10;
+
+  content::DownloadManager::DownloadVector downloads;
+  downloads.push_back(&download_item_a);
+  downloads.push_back(&download_item_b);
+
+  ASSERT_EQ(download_item_a.total_bytes_ - download_item_a.received_bytes_ +
+                download_item_b.total_bytes_ - download_item_b.received_bytes_,
+            download_handler_->CalculateRequestSpace(downloads));
+
+  download_item_a.received_bytes_ = 10;
+
+  ASSERT_EQ(download_item_a.total_bytes_ - download_item_a.received_bytes_ +
+                download_item_b.total_bytes_ - download_item_b.received_bytes_,
+            download_handler_->CalculateRequestSpace(downloads));
+
+  download_item_b.is_done_ = true;
+
+  // Since download_item_b is completed, it shouldn't be counted.
+  ASSERT_EQ(download_item_a.total_bytes_ - download_item_a.received_bytes_,
+            download_handler_->CalculateRequestSpace(downloads));
+
+  // Add unknown size download item.
+  DownloadHandlerTestDownloadItem download_item_c;
+  download_item_c.is_done_ = false;
+  download_item_c.total_bytes_ = 0;
+  downloads.push_back(&download_item_c);
+
+  // Unknown size download should be counted as 0 byte.
+  ASSERT_EQ(download_item_a.total_bytes_ - download_item_a.received_bytes_,
+            download_handler_->CalculateRequestSpace(downloads));
+
+  // Add another unknown size download item.
+  DownloadHandlerTestDownloadItem download_item_d;
+  download_item_d.is_done_ = false;
+  download_item_d.total_bytes_ = 0;
+  downloads.push_back(&download_item_d);
+
+  // Unknown size downloads should be counted as 0 byte.
+  ASSERT_EQ(download_item_a.total_bytes_ - download_item_a.received_bytes_,
+            download_handler_->CalculateRequestSpace(downloads));
 }
 
 }  // namespace drive

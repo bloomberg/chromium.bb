@@ -8,6 +8,7 @@
 #include "base/files/file_util.h"
 #include "base/strings/string_util.h"
 #include "base/supports_user_data.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
@@ -33,6 +34,11 @@ const char kDrivePathKey[] = "DrivePath";
 // mime types, while uploading to Drive we ignore it at guess by our own logic.
 const char* kGenericMimeTypes[] = {"text/html", "text/plain",
                                    "application/octet-stream"};
+
+// Longer is better. But at the same time, this value should be short enough as
+// drive::internal::kMinFreeSpaceInBytes is not used up by file download in this
+// interval.
+const base::TimeDelta kFreeDiskSpaceDelay = base::TimeDelta::FromSeconds(3);
 
 // User Data stored in DownloadItem for drive path.
 class DriveUserData : public base::SupportsUserData::Data {
@@ -125,12 +131,15 @@ std::string FilterOutGenericMimeType(const std::string& mime_type) {
   return mime_type;
 }
 
+void IgnoreFreeDiskSpaceIfNeededForCallback(bool /*result*/) {}
+
 }  // namespace
 
 DownloadHandler::DownloadHandler(FileSystemInterface* file_system)
     : file_system_(file_system),
-      weak_ptr_factory_(this) {
-}
+      has_pending_free_disk_space_(false),
+      free_disk_space_delay_(kFreeDiskSpaceDelay),
+      weak_ptr_factory_(this) {}
 
 DownloadHandler::~DownloadHandler() {
 }
@@ -237,8 +246,69 @@ void DownloadHandler::CheckForFileExistence(
                  callback));
 }
 
+void DownloadHandler::SetFreeDiskSpaceDelayForTesting(
+    const base::TimeDelta& delay) {
+  free_disk_space_delay_ = delay;
+}
+
+int64 DownloadHandler::CalculateRequestSpace(
+    const DownloadManager::DownloadVector& downloads) {
+  int64 request_space = 0;
+
+  for (const auto* download : downloads) {
+    if (download->IsDone())
+      continue;
+
+    const int64 total_bytes = download->GetTotalBytes();
+    // Skip unknown size download. Since drive cache tries to keep
+    // drive::internal::kMinFreeSpaceInBytes, we can continue download with
+    // using the space temporally.
+    if (total_bytes == 0)
+      continue;
+
+    request_space += total_bytes - download->GetReceivedBytes();
+  }
+
+  return request_space;
+}
+
+void DownloadHandler::FreeDiskSpaceIfNeeded() {
+  if (has_pending_free_disk_space_)
+    return;
+
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::Bind(&DownloadHandler::FreeDiskSpaceIfNeededImmediately,
+                            weak_ptr_factory_.GetWeakPtr()),
+      free_disk_space_delay_);
+
+  has_pending_free_disk_space_ = true;
+}
+
+void DownloadHandler::FreeDiskSpaceIfNeededImmediately() {
+  DownloadManager::DownloadVector downloads;
+
+  // Get all downloads of current profile and its off-the-record profile.
+  // TODO(yawano): support multi profiles.
+  if (notifier_ && notifier_->GetManager()) {
+    notifier_->GetManager()->GetAllDownloads(&downloads);
+  }
+  if (notifier_incognito_ && notifier_incognito_->GetManager()) {
+    notifier_incognito_->GetManager()->GetAllDownloads(&downloads);
+  }
+
+  // Free disk space even if request size is 0 byte in order to make drive cache
+  // keep drive::internal::kMinFreeSpaceInBytes.
+  file_system_->FreeDiskSpaceIfNeededFor(
+      CalculateRequestSpace(downloads),
+      base::Bind(&IgnoreFreeDiskSpaceIfNeededForCallback));
+
+  has_pending_free_disk_space_ = false;
+}
+
 void DownloadHandler::OnDownloadCreated(DownloadManager* manager,
                                         DownloadItem* download) {
+  FreeDiskSpaceIfNeededImmediately();
+
   // Remove any persisted Drive DownloadItem. crbug.com/171384
   if (IsPersistedDriveDownload(drive_tmp_download_path_, download)) {
     // Remove download later, since doing it here results in a crash.
@@ -264,6 +334,8 @@ void DownloadHandler::RemoveDownload(void* manager_id, int id) {
 void DownloadHandler::OnDownloadUpdated(
     DownloadManager* manager, DownloadItem* download) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  FreeDiskSpaceIfNeeded();
 
   // Only accept downloads that have the Drive meta data associated with them.
   DriveUserData* data = GetDriveUserData(download);
