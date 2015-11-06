@@ -45,9 +45,6 @@ class DownloadsDOMHandler : public content::WebUIMessageHandler,
   void OnDownloadRemoved(content::DownloadManager* manager,
                          content::DownloadItem* download_item) override;
 
-  // Callback for the "onPageLoaded" message.
-  void OnPageLoaded(const base::ListValue* args);
-
   // Callback for the "getDownloads" message.
   void HandleGetDownloads(const base::ListValue* args);
 
