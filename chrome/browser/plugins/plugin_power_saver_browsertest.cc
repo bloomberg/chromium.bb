@@ -249,7 +249,9 @@ void CompareSnapshotToReference(const base::FilePath& reference,
 class PluginPowerSaverBrowserTest : public InProcessBrowserTest {
  public:
   void SetUp() override {
-    EnablePixelOutput();
+    if (PixelTestsEnabled())
+      EnablePixelOutput();
+
     InProcessBrowserTest::SetUp();
   }
 
@@ -281,12 +283,14 @@ class PluginPowerSaverBrowserTest : public InProcessBrowserTest {
 
  protected:
   void LoadHTML(const std::string& html) {
-    gfx::Rect bounds(gfx::Rect(0, 0, kBrowserWidth, kBrowserHeight));
-    gfx::Rect screen_bounds =
-        gfx::Screen::GetNativeScreen()->GetPrimaryDisplay().bounds();
-    ASSERT_GT(screen_bounds.width(), kBrowserWidth);
-    ASSERT_GT(screen_bounds.height(), kBrowserHeight);
-    browser()->window()->SetBounds(bounds);
+    if (PixelTestsEnabled()) {
+      gfx::Rect bounds(gfx::Rect(0, 0, kBrowserWidth, kBrowserHeight));
+      gfx::Rect screen_bounds =
+          gfx::Screen::GetNativeScreen()->GetPrimaryDisplay().bounds();
+      ASSERT_GT(screen_bounds.width(), kBrowserWidth);
+      ASSERT_GT(screen_bounds.height(), kBrowserHeight);
+      browser()->window()->SetBounds(bounds);
+    }
 
     ASSERT_TRUE(embedded_test_server()->Started());
     embedded_test_server()->RegisterRequestHandler(
@@ -323,12 +327,8 @@ class PluginPowerSaverBrowserTest : public InProcessBrowserTest {
   }
 
   bool VerifySnapshot(const base::FilePath::StringType& expected_filename) {
-#if defined(OS_CHROMEOS) && defined(MEMORY_SANITIZER)
-    // Because we cannot use hardware OpenGL under MSan, but also cannot use
-    // software rendering under ChromeOS, we skip this portion of the test.
-    // See crbug.com/512140
-    return true;
-#endif
+    if (!PixelTestsEnabled())
+      return true;
 
     base::FilePath reference = ui_test_utils::GetTestFilePath(
         base::FilePath(FILE_PATH_LITERAL("plugin_power_saver")),
@@ -357,6 +357,21 @@ class PluginPowerSaverBrowserTest : public InProcessBrowserTest {
     content::RunMessageLoop();
 
     return snapshot_matches;
+  }
+
+  // TODO(tommycli): Remove this once all flakiness resolved.
+  bool PixelTestsEnabled() {
+#if defined(OS_WIN) || defined(ADDRESS_SANITIZER)
+    // Flaky on Windows and Asan bots. See crbug.com/549285.
+    return false;
+#elif defined(OS_CHROMEOS) && defined(MEMORY_SANITIZER)
+    // Because we cannot use hardware OpenGL under MSan, but also cannot use
+    // software rendering under ChromeOS, we skip this portion of the test.
+    // See crbug.com/512140
+    return false;
+#else
+    return true;
+#endif
   }
 };
 
