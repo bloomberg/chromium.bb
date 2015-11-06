@@ -7,8 +7,8 @@ layer at (0,0) size 800x600
         LayoutTableSection {TBODY} at (1,1) size 487x350
           LayoutTableRow {TR} at (0,2) size 487x30
             LayoutTableCell {TH} at (2,2) size 483x30 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=5]
-              LayoutText {#text} at (164,6) size 155x17
-                text run at (164,6) width 155: "text-align not specified"
+              LayoutText {#text} at (193,6) size 97x17
+                text run at (193,6) width 97: "text-align: left"
           LayoutTableRow {TR} at (0,34) size 487x30
             LayoutTableCell {TH} at (2,50) size 105x30 [border: (1px inset #808080)] [r=1 c=0 rs=2 cs=2]
               LayoutText {#text} at (50,6) size 5x17
@@ -80,38 +80,38 @@ layer at (0,0) size 800x600
               LayoutBlockFlow {DIV} at (2,2) size 120x120
                 LayoutBlockFlow {DETAILS} at (0,0) size 120x18
                   LayoutBlockFlow {SUMMARY} at (0,0) size 120x18
-                    LayoutDetailsMarker {DIV} at (109.45,4) size 10.55x10.55: left
-                    LayoutText {#text} at (43,0) size 61x17
-                      text run at (43,0) width 61: "summary"
+                    LayoutDetailsMarker {DIV} at (65.94,4) size 10.55x10.55: left
+                    LayoutText {#text} at (0,0) size 60x17
+                      text run at (0,0) width 60: "summary"
                 LayoutBlockFlow {DETAILS} at (0,18) size 120x18
                   LayoutBlockFlow {SUMMARY} at (0,0) size 120x18
-                    LayoutDetailsMarker {DIV} at (109.45,4) size 10.55x10.55: down
-                    LayoutText {#text} at (43,0) size 61x17
-                      text run at (43,0) width 61: "summary"
+                    LayoutDetailsMarker {DIV} at (65.94,4) size 10.55x10.55: down
+                    LayoutText {#text} at (0,0) size 60x17
+                      text run at (0,0) width 60: "summary"
                   LayoutBlockFlow {DIV} at (0,18) size 120x0
             LayoutTableCell {TD} at (235,224) size 124x124 [border: (1px solid #000000)] [r=4 c=3 rs=1 cs=1]
               LayoutBlockFlow {DIV} at (2,2) size 120x120
                 LayoutBlockFlow {DETAILS} at (0,0) size 18x120
                   LayoutBlockFlow {SUMMARY} at (0,0) size 18x120
-                    LayoutDetailsMarker {DIV} at (2.45,109.45) size 10.55x10.55: up
-                    LayoutText {#text} at (0,43) size 17x61
-                      text run at (0,43) width 60: "summary"
+                    LayoutDetailsMarker {DIV} at (2.45,65.94) size 10.55x10.55: up
+                    LayoutText {#text} at (0,0) size 17x60
+                      text run at (0,0) width 60: "summary"
                 LayoutBlockFlow {DETAILS} at (18,0) size 18x120
                   LayoutBlockFlow {SUMMARY} at (0,0) size 18x120
-                    LayoutDetailsMarker {DIV} at (2.45,109.45) size 10.55x10.55: right
-                    LayoutText {#text} at (0,43) size 17x61
-                      text run at (0,43) width 60: "summary"
+                    LayoutDetailsMarker {DIV} at (2.45,65.94) size 10.55x10.55: right
+                    LayoutText {#text} at (0,0) size 17x60
+                      text run at (0,0) width 60: "summary"
                   LayoutBlockFlow {DIV} at (18,0) size 0x120
             LayoutTableCell {TD} at (361,224) size 124x124 [border: (1px solid #000000)] [r=4 c=4 rs=1 cs=1]
               LayoutBlockFlow {DIV} at (2,2) size 120x120
                 LayoutBlockFlow {DETAILS} at (0,0) size 18x120
                   LayoutBlockFlow {SUMMARY} at (0,0) size 18x120
-                    LayoutDetailsMarker {DIV} at (4,109.45) size 10.55x10.55: up
-                    LayoutText {#text} at (0,43) size 17x61
-                      text run at (0,43) width 60: "summary"
+                    LayoutDetailsMarker {DIV} at (4,65.94) size 10.55x10.55: up
+                    LayoutText {#text} at (0,0) size 17x60
+                      text run at (0,0) width 60: "summary"
                 LayoutBlockFlow {DETAILS} at (18,0) size 18x120
                   LayoutBlockFlow {SUMMARY} at (0,0) size 18x120
-                    LayoutDetailsMarker {DIV} at (4,109.45) size 10.55x10.55: left
-                    LayoutText {#text} at (0,43) size 17x61
-                      text run at (0,43) width 60: "summary"
+                    LayoutDetailsMarker {DIV} at (4,65.94) size 10.55x10.55: left
+                    LayoutText {#text} at (0,0) size 17x60
+                      text run at (0,0) width 60: "summary"
                   LayoutBlockFlow {DIV} at (18,0) size 0x120
