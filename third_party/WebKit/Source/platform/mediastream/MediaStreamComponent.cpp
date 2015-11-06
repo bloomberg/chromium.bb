@@ -58,6 +58,11 @@ MediaStreamComponent::MediaStreamComponent(const String& id, MediaStreamSource* 
     ASSERT(m_id.length());
 }
 
+void MediaStreamComponent::dispose()
+{
+    m_extraData.clear();
+}
+
 #if ENABLE(WEB_AUDIO)
 void MediaStreamComponent::AudioSourceProviderImpl::wrap(WebAudioSourceProvider* provider)
 {

@@ -46,6 +46,7 @@ class MediaStreamSource;
 class WebAudioSourceProvider;
 
 class PLATFORM_EXPORT MediaStreamComponent final : public GarbageCollectedFinalized<MediaStreamComponent> {
+    USING_PRE_FINALIZER(MediaStreamComponent, dispose);
 public:
     class ExtraData {
     public:
@@ -54,6 +55,11 @@ public:
 
     static MediaStreamComponent* create(MediaStreamSource*);
     static MediaStreamComponent* create(const String& id, MediaStreamSource*);
+
+    // |m_extraData| may hold pointers to GC objects indirectly, and it may touch
+    // eagerly finalized objects in destruction.
+    // So this class runs pre-finalizer to finalize |m_extraData| promptly.
+    void dispose();
 
     MediaStreamSource* source() const { return m_source.get(); }
 
@@ -71,9 +77,6 @@ public:
     ExtraData* extraData() const { return m_extraData.get(); }
     void setExtraData(PassOwnPtr<ExtraData> extraData) { m_extraData = extraData; }
 
-    // |m_extraData| may hold pointers GC objects, and it may touch them in destruction.
-    // So this class is eagerly finalized to finalize |m_extraData| promptly.
-    EAGERLY_FINALIZE();
     DECLARE_TRACE();
 
 private:
