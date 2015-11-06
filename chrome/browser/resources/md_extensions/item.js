@@ -7,9 +7,7 @@ cr.define('extensions', function() {
   var ItemDelegate = function() {};
 
   ItemDelegate.prototype = {
-    /**
-     * @param {string} id
-     */
+    /** @param {string} id */
     deleteItem: assertNotReached,
 
     /**
@@ -18,9 +16,7 @@ cr.define('extensions', function() {
      */
     setItemEnabled: assertNotReached,
 
-    /**
-     * @param {string} id
-     */
+    /** @param {string} id */
     showItemDetails: assertNotReached,
 
     /**
@@ -28,6 +24,9 @@ cr.define('extensions', function() {
      * @param {boolean} isAllowedIncognito
      */
     setItemAllowedIncognito: assertNotReached,
+
+    /** @return {boolean} */
+    isInDevMode: assertNotReached,
   };
 
   var Item = Polymer({
@@ -73,7 +72,9 @@ cr.define('extensions', function() {
      */
     factoryImpl: function(data, delegate) {
       this.data = data;
+      this.id = data.id;
       this.delegate_ = delegate;
+      this.inDevMode = delegate.isInDevMode();
     },
 
     /** @private */
