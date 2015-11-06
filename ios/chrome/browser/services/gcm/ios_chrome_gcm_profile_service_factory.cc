@@ -1,0 +1,67 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "ios/chrome/browser/services/gcm/ios_chrome_gcm_profile_service_factory.h"
+
+#include "base/memory/ref_counted.h"
+#include "base/memory/singleton.h"
+#include "base/threading/sequenced_worker_pool.h"
+#include "components/gcm_driver/gcm_client_factory.h"
+#include "components/gcm_driver/gcm_profile_service.h"
+#include "components/keyed_service/ios/browser_state_dependency_manager.h"
+#include "components/signin/core/browser/profile_identity_provider.h"
+#include "components/signin/core/browser/signin_manager.h"
+#include "ios/chrome/browser/signin/oauth2_token_service_factory.h"
+#include "ios/chrome/browser/signin/signin_manager_factory.h"
+#include "ios/chrome/common/channel_info.h"
+#include "ios/public/provider/chrome/browser/browser_state/chrome_browser_state.h"
+#include "ios/web/public/web_thread.h"
+
+// static
+gcm::GCMProfileService* IOSChromeGCMProfileServiceFactory::GetForBrowserState(
+    ios::ChromeBrowserState* browser_state) {
+  return static_cast<gcm::GCMProfileService*>(
+      GetInstance()->GetServiceForBrowserState(browser_state, true));
+}
+
+// static
+IOSChromeGCMProfileServiceFactory*
+IOSChromeGCMProfileServiceFactory::GetInstance() {
+  return base::Singleton<IOSChromeGCMProfileServiceFactory>::get();
+}
+
+IOSChromeGCMProfileServiceFactory::IOSChromeGCMProfileServiceFactory()
+    : BrowserStateKeyedServiceFactory(
+          "GCMProfileService",
+          BrowserStateDependencyManager::GetInstance()) {
+  DependsOn(ios::SigninManagerFactory::GetInstance());
+  DependsOn(OAuth2TokenServiceFactory::GetInstance());
+}
+
+IOSChromeGCMProfileServiceFactory::~IOSChromeGCMProfileServiceFactory() {}
+
+scoped_ptr<KeyedService>
+IOSChromeGCMProfileServiceFactory::BuildServiceInstanceFor(
+    web::BrowserState* context) const {
+  DCHECK(!context->IsOffTheRecord());
+
+  base::SequencedWorkerPool* worker_pool = web::WebThread::GetBlockingPool();
+  scoped_refptr<base::SequencedTaskRunner> blocking_task_runner(
+      worker_pool->GetSequencedTaskRunnerWithShutdownBehavior(
+          worker_pool->GetSequenceToken(),
+          base::SequencedWorkerPool::SKIP_ON_SHUTDOWN));
+  ios::ChromeBrowserState* browser_state =
+      ios::ChromeBrowserState::FromBrowserState(context);
+  return make_scoped_ptr(new gcm::GCMProfileService(
+      browser_state->GetPrefs(), browser_state->GetStatePath(),
+      browser_state->GetRequestContext(), ::GetChannel(),
+      make_scoped_ptr(new ProfileIdentityProvider(
+          ios::SigninManagerFactory::GetForBrowserState(browser_state),
+          OAuth2TokenServiceFactory::GetForBrowserState(browser_state),
+          base::Closure())),
+      make_scoped_ptr(new gcm::GCMClientFactory),
+      web::WebThread::GetTaskRunnerForThread(web::WebThread::UI),
+      web::WebThread::GetTaskRunnerForThread(web::WebThread::IO),
+      blocking_task_runner));
+}

@@ -369,6 +369,8 @@
         'browser/search_engines/template_url_service_factory.h',
         'browser/search_engines/ui_thread_search_terms_data.cc',
         'browser/search_engines/ui_thread_search_terms_data.h',
+        'browser/services/gcm/ios_chrome_gcm_profile_service_factory.cc',
+        'browser/services/gcm/ios_chrome_gcm_profile_service_factory.h',
         'browser/sessions/ios_chrome_session_tab_helper.cc',
         'browser/sessions/ios_chrome_session_tab_helper.h',
         'browser/sessions/ios_chrome_tab_restore_service_client.cc',

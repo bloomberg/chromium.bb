@@ -25,6 +25,7 @@
 #include "ios/chrome/browser/history/web_history_service_factory.h"
 #include "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
+#include "ios/chrome/browser/services/gcm/ios_chrome_gcm_profile_service_factory.h"
 #include "ios/chrome/browser/signin/about_signin_internals_factory.h"
 #include "ios/chrome/browser/signin/account_consistency_service_factory.h"
 #include "ios/chrome/browser/signin/account_fetcher_service_factory.h"
@@ -78,6 +79,7 @@ void EnsureBrowserStateKeyedServiceFactoriesBuilt() {
   ios::TopSitesFactory::GetInstance();
   ios::WebDataServiceFactory::GetInstance();
   ios::WebHistoryServiceFactory::GetInstance();
+  IOSChromeGCMProfileServiceFactory::GetInstance();
   IOSChromeLargeIconCacheFactory::GetInstance();
   IOSChromeLargeIconServiceFactory::GetInstance();
   IOSChromeFaviconLoaderFactory::GetInstance();
