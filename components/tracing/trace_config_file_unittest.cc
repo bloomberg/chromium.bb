@@ -146,6 +146,37 @@ TEST(TraceConfigFileTest, ValidContentWithOnlyTraceConfig) {
             TraceConfigFile::GetInstance()->GetResultFile());
 }
 
+TEST(TraceConfigFileTest, ContentWithAbsoluteResultFilePath) {
+  base::ShadowingAtExitManager sem;
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+
+  const base::FilePath result_file_path =
+      temp_dir.path().Append(FILE_PATH_LITERAL("trace_result_file.log"));
+  ASSERT_TRUE(result_file_path.IsAbsolute());
+
+  std::string result_file_path_str = result_file_path.AsUTF8Unsafe();
+  auto it = std::find(
+      result_file_path_str.begin(), result_file_path_str.end(), '\\');
+  while (it != result_file_path_str.end()) {
+    auto it2 = result_file_path_str.insert(it, '\\');
+    it = std::find(it2+2, result_file_path_str.end(), '\\');
+  }
+  std::string content = GetTraceConfigFileContent(
+      kTraceConfig, "10", result_file_path_str);
+
+  base::FilePath trace_config_file;
+  ASSERT_TRUE(
+      base::CreateTemporaryFileInDir(temp_dir.path(), &trace_config_file));
+  ASSERT_NE(-1, base::WriteFile(
+      trace_config_file, content.c_str(), (int)content.length()));
+  base::CommandLine::ForCurrentProcess()->AppendSwitchPath(
+      switches::kTraceConfigFile, trace_config_file);
+
+  ASSERT_TRUE(TraceConfigFile::GetInstance()->IsEnabled());
+  EXPECT_EQ(result_file_path, TraceConfigFile::GetInstance()->GetResultFile());
+}
+
 TEST(TraceConfigFileTest, ContentWithNegtiveDuration) {
   base::ShadowingAtExitManager sem;
   std::string content = GetTraceConfigFileContent(kTraceConfig, "-1", "");

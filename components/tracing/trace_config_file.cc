@@ -109,9 +109,9 @@ bool TraceConfigFile::ParseTraceConfigFileContent(const std::string& content) {
   if (startup_duration_ < 0)
       startup_duration_ = 0;
 
-  std::string result_file_str;
+  base::FilePath::StringType result_file_str;
   if (dict->GetString(kResultFileParam, &result_file_str))
-    result_file_ = base::FilePath().AppendASCII(result_file_str);
+    result_file_ = base::FilePath(result_file_str);
 
   return true;
 }
