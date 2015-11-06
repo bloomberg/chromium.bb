@@ -124,6 +124,9 @@ class AudioStreamHandler::AudioStreamContainer
 
   void OnError(AudioOutputStream* /* stream */) override {
     LOG(ERROR) << "Error during system sound reproduction.";
+    AudioManager::Get()->GetTaskRunner()->PostTask(
+        FROM_HERE,
+        base::Bind(&AudioStreamContainer::Stop, base::Unretained(this)));
   }
 
   void StopStream() {
