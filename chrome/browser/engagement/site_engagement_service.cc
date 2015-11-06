@@ -35,6 +35,8 @@ bool g_updated_from_variations = false;
 const char kMaxPointsPerDayParam[] = "max_points_per_day";
 const char kNavigationPointsParam[] = "navigation_points";
 const char kUserInputPointsParam[] = "user_input_points";
+const char kVisibleMediaPlayingPointsParam[] = "visible_media_playing_points";
+const char kHiddenMediaPlayingPointsParam[] = "hidden_media_playing_points";
 const char kDecayPeriodInDaysParam[] = "decay_period_in_days";
 const char kDecayPointsParam[] = "decay_points";
 
@@ -102,6 +104,8 @@ const double SiteEngagementScore::kMaxPoints = 100;
 double SiteEngagementScore::g_max_points_per_day = 5;
 double SiteEngagementScore::g_navigation_points = 0.5;
 double SiteEngagementScore::g_user_input_points = 0.05;
+double SiteEngagementScore::g_visible_media_playing_points = 0.02;
+double SiteEngagementScore::g_hidden_media_playing_points = 0.01;
 int SiteEngagementScore::g_decay_period_in_days = 7;
 double SiteEngagementScore::g_decay_points = 5;
 
@@ -116,23 +120,39 @@ void SiteEngagementScore::UpdateFromVariations() {
       SiteEngagementService::kEngagementParams, kNavigationPointsParam);
   std::string user_input_points_param = variations::GetVariationParamValue(
       SiteEngagementService::kEngagementParams, kUserInputPointsParam);
+  std::string visible_media_playing_points_param =
+      variations::GetVariationParamValue(
+          SiteEngagementService::kEngagementParams,
+          kVisibleMediaPlayingPointsParam);
+  std::string hidden_media_playing_points_param =
+      variations::GetVariationParamValue(
+          SiteEngagementService::kEngagementParams,
+          kHiddenMediaPlayingPointsParam);
   std::string decay_period_in_days_param = variations::GetVariationParamValue(
       SiteEngagementService::kEngagementParams, kDecayPeriodInDaysParam);
   std::string decay_points_param = variations::GetVariationParamValue(
       SiteEngagementService::kEngagementParams, kDecayPointsParam);
 
   if (!max_points_per_day_param.empty() && !navigation_points_param.empty() &&
-      !user_input_points_param.empty() && !decay_period_in_days_param.empty() &&
-      !decay_points_param.empty()) {
+      !user_input_points_param.empty() &&
+      !visible_media_playing_points_param.empty() &&
+      !hidden_media_playing_points_param.empty() &&
+      !decay_period_in_days_param.empty() && !decay_points_param.empty()) {
     double max_points_per_day = 0;
     double navigation_points = 0;
     double user_input_points = 0;
+    double visible_media_playing_points = 0;
+    double hidden_media_playing_points = 0;
     int decay_period_in_days = 0;
     double decay_points = 0;
 
     if (base::StringToDouble(max_points_per_day_param, &max_points_per_day) &&
         base::StringToDouble(navigation_points_param, &navigation_points) &&
         base::StringToDouble(user_input_points_param, &user_input_points) &&
+        base::StringToDouble(visible_media_playing_points_param,
+                             &visible_media_playing_points) &&
+        base::StringToDouble(hidden_media_playing_points_param,
+                             &hidden_media_playing_points) &&
         base::StringToInt(decay_period_in_days_param, &decay_period_in_days) &&
         base::StringToDouble(decay_points_param, &decay_points) &&
         max_points_per_day >= navigation_points &&
@@ -142,6 +162,8 @@ void SiteEngagementScore::UpdateFromVariations() {
       g_max_points_per_day = max_points_per_day;
       g_navigation_points = navigation_points;
       g_user_input_points = user_input_points;
+      g_visible_media_playing_points = visible_media_playing_points;
+      g_hidden_media_playing_points = hidden_media_playing_points;
       g_decay_period_in_days = decay_period_in_days;
       g_decay_points = decay_points;
     }
@@ -321,6 +343,17 @@ void SiteEngagementService::HandleUserInput(
     SiteEngagementMetrics::EngagementType type) {
   SiteEngagementMetrics::RecordEngagement(type);
   AddPoints(url, SiteEngagementScore::g_user_input_points);
+  RecordMetrics();
+}
+
+void SiteEngagementService::HandleMediaPlaying(const GURL& url,
+                                               bool is_hidden) {
+  SiteEngagementMetrics::RecordEngagement(
+      is_hidden ? SiteEngagementMetrics::ENGAGEMENT_MEDIA_HIDDEN
+                : SiteEngagementMetrics::ENGAGEMENT_MEDIA_VISIBLE);
+  AddPoints(url, is_hidden
+                     ? SiteEngagementScore::g_hidden_media_playing_points
+                     : SiteEngagementScore::g_visible_media_playing_points);
   RecordMetrics();
 }
 

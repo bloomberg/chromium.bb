@@ -506,6 +506,13 @@ TEST_F(SiteEngagementServiceTest, GetTotalUserInputPoints) {
   service->HandleUserInput(url1, SiteEngagementMetrics::ENGAGEMENT_MOUSE);
   EXPECT_DOUBLE_EQ(0.15, service->GetScore(url1));
   EXPECT_DOUBLE_EQ(0.3, service->GetTotalEngagementPoints());
+
+  service->HandleUserInput(url2, SiteEngagementMetrics::ENGAGEMENT_WHEEL);
+  service->HandleUserInput(url3,
+                           SiteEngagementMetrics::ENGAGEMENT_TOUCH_GESTURE);
+  EXPECT_DOUBLE_EQ(0.15, service->GetScore(url2));
+  EXPECT_DOUBLE_EQ(0.1, service->GetScore(url3));
+  EXPECT_DOUBLE_EQ(0.4, service->GetTotalEngagementPoints());
 }
 
 TEST_F(SiteEngagementServiceTest, CheckHistograms) {
@@ -546,6 +553,7 @@ TEST_F(SiteEngagementServiceTest, CheckHistograms) {
   service->HandleNavigation(url1, ui::PAGE_TRANSITION_TYPED);
   service->HandleUserInput(url1, SiteEngagementMetrics::ENGAGEMENT_KEYPRESS);
   service->HandleUserInput(url1, SiteEngagementMetrics::ENGAGEMENT_MOUSE);
+  service->HandleMediaPlaying(url2, true);
 
   histograms.ExpectTotalCount(SiteEngagementMetrics::kTotalEngagementHistogram,
                               1);
@@ -565,13 +573,16 @@ TEST_F(SiteEngagementServiceTest, CheckHistograms) {
   histograms.ExpectUniqueSample(
       SiteEngagementMetrics::kPercentOriginsWithMaxEngagementHistogram, 0, 1);
   histograms.ExpectTotalCount(SiteEngagementMetrics::kEngagementTypeHistogram,
-                              3);
+                              4);
   histograms.ExpectBucketCount(SiteEngagementMetrics::kEngagementTypeHistogram,
                                SiteEngagementMetrics::ENGAGEMENT_NAVIGATION, 1);
   histograms.ExpectBucketCount(SiteEngagementMetrics::kEngagementTypeHistogram,
                                SiteEngagementMetrics::ENGAGEMENT_KEYPRESS, 1);
   histograms.ExpectBucketCount(SiteEngagementMetrics::kEngagementTypeHistogram,
                                SiteEngagementMetrics::ENGAGEMENT_MOUSE, 1);
+  histograms.ExpectBucketCount(SiteEngagementMetrics::kEngagementTypeHistogram,
+                               SiteEngagementMetrics::ENGAGEMENT_MEDIA_HIDDEN,
+                               1);
 
   clock->SetNow(GetReferenceTime() + base::TimeDelta::FromMinutes(59));
 
@@ -579,18 +590,23 @@ TEST_F(SiteEngagementServiceTest, CheckHistograms) {
   service->HandleNavigation(url2, ui::PAGE_TRANSITION_AUTO_BOOKMARK);
 
   histograms.ExpectTotalCount(SiteEngagementMetrics::kEngagementTypeHistogram,
-                              5);
+                              6);
   histograms.ExpectBucketCount(SiteEngagementMetrics::kEngagementTypeHistogram,
                                SiteEngagementMetrics::ENGAGEMENT_NAVIGATION, 3);
   histograms.ExpectBucketCount(SiteEngagementMetrics::kEngagementTypeHistogram,
                                SiteEngagementMetrics::ENGAGEMENT_KEYPRESS, 1);
   histograms.ExpectBucketCount(SiteEngagementMetrics::kEngagementTypeHistogram,
                                SiteEngagementMetrics::ENGAGEMENT_MOUSE, 1);
+  histograms.ExpectBucketCount(SiteEngagementMetrics::kEngagementTypeHistogram,
+                               SiteEngagementMetrics::ENGAGEMENT_MEDIA_HIDDEN,
+                               1);
 
   clock->SetNow(GetReferenceTime() + base::TimeDelta::FromMinutes(60));
 
   service->HandleNavigation(url3, ui::PAGE_TRANSITION_TYPED);
-  service->HandleUserInput(url2, SiteEngagementMetrics::ENGAGEMENT_MOUSE);
+  service->HandleUserInput(url2,
+                           SiteEngagementMetrics::ENGAGEMENT_TOUCH_GESTURE);
+  service->HandleMediaPlaying(url3, false);
 
   histograms.ExpectTotalCount(SiteEngagementMetrics::kTotalEngagementHistogram,
                               2);
@@ -612,28 +628,42 @@ TEST_F(SiteEngagementServiceTest, CheckHistograms) {
   histograms.ExpectUniqueSample(
       SiteEngagementMetrics::kPercentOriginsWithMaxEngagementHistogram, 0, 2);
   histograms.ExpectTotalCount(SiteEngagementMetrics::kEngagementTypeHistogram,
-                              7);
+                              9);
   histograms.ExpectBucketCount(SiteEngagementMetrics::kEngagementTypeHistogram,
                                SiteEngagementMetrics::ENGAGEMENT_NAVIGATION, 4);
   histograms.ExpectBucketCount(SiteEngagementMetrics::kEngagementTypeHistogram,
                                SiteEngagementMetrics::ENGAGEMENT_KEYPRESS, 1);
   histograms.ExpectBucketCount(SiteEngagementMetrics::kEngagementTypeHistogram,
-                               SiteEngagementMetrics::ENGAGEMENT_MOUSE, 2);
+                               SiteEngagementMetrics::ENGAGEMENT_MOUSE, 1);
+  histograms.ExpectBucketCount(SiteEngagementMetrics::kEngagementTypeHistogram,
+                               SiteEngagementMetrics::ENGAGEMENT_TOUCH_GESTURE,
+                               1);
+  histograms.ExpectBucketCount(SiteEngagementMetrics::kEngagementTypeHistogram,
+                               SiteEngagementMetrics::ENGAGEMENT_MEDIA_VISIBLE,
+                               1);
+  histograms.ExpectBucketCount(SiteEngagementMetrics::kEngagementTypeHistogram,
+                               SiteEngagementMetrics::ENGAGEMENT_MEDIA_HIDDEN,
+                               1);
 
   service->HandleNavigation(url1, ui::PAGE_TRANSITION_GENERATED);
   service->HandleNavigation(url1, ui::PAGE_TRANSITION_TYPED);
-  service->HandleUserInput(url2, SiteEngagementMetrics::ENGAGEMENT_KEYPRESS);
+  service->HandleUserInput(url2, SiteEngagementMetrics::ENGAGEMENT_WHEEL);
   service->HandleUserInput(url1, SiteEngagementMetrics::ENGAGEMENT_KEYPRESS);
   service->HandleUserInput(url3, SiteEngagementMetrics::ENGAGEMENT_MOUSE);
 
   histograms.ExpectTotalCount(SiteEngagementMetrics::kEngagementTypeHistogram,
-                              12);
+                              14);
   histograms.ExpectBucketCount(SiteEngagementMetrics::kEngagementTypeHistogram,
                                SiteEngagementMetrics::ENGAGEMENT_NAVIGATION, 6);
   histograms.ExpectBucketCount(SiteEngagementMetrics::kEngagementTypeHistogram,
-                               SiteEngagementMetrics::ENGAGEMENT_KEYPRESS, 3);
+                               SiteEngagementMetrics::ENGAGEMENT_KEYPRESS, 2);
   histograms.ExpectBucketCount(SiteEngagementMetrics::kEngagementTypeHistogram,
-                               SiteEngagementMetrics::ENGAGEMENT_MOUSE, 3);
+                               SiteEngagementMetrics::ENGAGEMENT_MOUSE, 2);
+  histograms.ExpectBucketCount(SiteEngagementMetrics::kEngagementTypeHistogram,
+                               SiteEngagementMetrics::ENGAGEMENT_TOUCH_GESTURE,
+                               1);
+  histograms.ExpectBucketCount(SiteEngagementMetrics::kEngagementTypeHistogram,
+                               SiteEngagementMetrics::ENGAGEMENT_WHEEL, 1);
 
   // Advance an origin to the max for a day and advance the clock an hour before
   // the last increment before max. Expect the histogram to be updated.
@@ -664,14 +694,10 @@ TEST_F(SiteEngagementServiceTest, CheckHistograms) {
   histograms.ExpectUniqueSample(
       SiteEngagementMetrics::kPercentOriginsWithMaxEngagementHistogram, 0, 3);
   histograms.ExpectTotalCount(SiteEngagementMetrics::kEngagementTypeHistogram,
-                              19);
+                              21);
   histograms.ExpectBucketCount(SiteEngagementMetrics::kEngagementTypeHistogram,
                                SiteEngagementMetrics::ENGAGEMENT_NAVIGATION,
                                13);
-  histograms.ExpectBucketCount(SiteEngagementMetrics::kEngagementTypeHistogram,
-                               SiteEngagementMetrics::ENGAGEMENT_KEYPRESS, 3);
-  histograms.ExpectBucketCount(SiteEngagementMetrics::kEngagementTypeHistogram,
-                               SiteEngagementMetrics::ENGAGEMENT_MOUSE, 3);
 }
 
 // Expect that sites that have reached zero engagement are cleaned up.

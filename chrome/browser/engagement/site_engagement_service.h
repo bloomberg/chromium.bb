@@ -38,6 +38,14 @@ class SiteEngagementScore {
   // The number of points given for user input (indicating time-on-site).
   static double g_user_input_points;
 
+  // The number of points given for media playing. Initially calibrated such
+  // that at least 30 minutes of video watching or audio listening would be
+  // required to allow a site to reach the daily engagement maximum.
+  static double g_visible_media_playing_points;
+
+  // The number of points given for media playing in a non-visible tab.
+  static double g_hidden_media_playing_points;
+
   // Decaying works by removing a portion of the score periodically. This
   // constant determines how often that happens.
   static int g_decay_period_in_days;
@@ -148,6 +156,11 @@ class SiteEngagementService : public KeyedService,
   // on user input.
   void HandleUserInput(const GURL& url,
                        SiteEngagementMetrics::EngagementType type);
+
+  // Update the karma score of the origin matching |url| for media playing. The
+  // points awarded are discounted if the media is being played in a non-visible
+  // tab.
+  void HandleMediaPlaying(const GURL& url, bool is_hidden);
 
   // Overridden from SiteEngagementScoreProvider:
   double GetScore(const GURL& url) override;
