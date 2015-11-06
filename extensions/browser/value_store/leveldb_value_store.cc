@@ -8,9 +8,13 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
+#include "base/trace_event/memory_dump_manager.h"
+#include "base/trace_event/process_memory_dump.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/value_store/value_store_util.h"
 #include "third_party/leveldatabase/env_chromium.h"
@@ -59,10 +63,14 @@ LeveldbValueStore::LeveldbValueStore(const std::string& uma_client_name,
       "Extensions.Database.Open." + uma_client_name, 1,
       leveldb_env::LEVELDB_STATUS_MAX, leveldb_env::LEVELDB_STATUS_MAX + 1,
       base::Histogram::kUmaTargetedHistogramFlag);
+  base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
+      this, "LeveldbValueStore", base::ThreadTaskRunnerHandle::Get());
 }
 
 LeveldbValueStore::~LeveldbValueStore() {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+  base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
+      this);
 
   // Delete the database from disk if it's empty (but only if we managed to
   // open it!). This is safe on destruction, assuming that we have exclusive
@@ -323,6 +331,38 @@ bool LeveldbValueStore::RestoreKey(const std::string& key) {
 
 bool LeveldbValueStore::WriteToDbForTest(leveldb::WriteBatch* batch) {
   return !WriteToDb(batch).get();
+}
+
+bool LeveldbValueStore::OnMemoryDump(
+    const base::trace_event::MemoryDumpArgs& args,
+    base::trace_event::ProcessMemoryDump* pmd) {
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+
+  // Return true so that the provider is not disabled.
+  if (!db_)
+    return true;
+
+  std::string value;
+  uint64 size;
+  bool res = db_->GetProperty("leveldb.approximate-memory-usage", &value);
+  DCHECK(res);
+  res = base::StringToUint64(value, &size);
+  DCHECK(res);
+
+  auto dump = pmd->CreateAllocatorDump(
+      base::StringPrintf("leveldb/value_store/%s/%p",
+                         open_histogram_->histogram_name().c_str(), this));
+  dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
+                  base::trace_event::MemoryAllocatorDump::kUnitsBytes, size);
+
+  // Memory is allocated from system allocator (malloc).
+  const char* system_allocator_name =
+      base::trace_event::MemoryDumpManager::GetInstance()
+          ->system_allocator_pool_name();
+  if (system_allocator_name)
+    pmd->AddSuballocation(dump->guid(), system_allocator_name);
+
+  return true;
 }
 
 scoped_ptr<ValueStore::Error> LeveldbValueStore::EnsureDbIsOpen() {

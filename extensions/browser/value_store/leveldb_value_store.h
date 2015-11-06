@@ -11,6 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/trace_event/memory_dump_provider.h"
 #include "extensions/browser/value_store/value_store.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 
@@ -20,7 +21,8 @@ class HistogramBase;
 
 // Value store area, backed by a leveldb database.
 // All methods must be run on the FILE thread.
-class LeveldbValueStore : public ValueStore {
+class LeveldbValueStore : public ValueStore,
+                          public base::trace_event::MemoryDumpProvider {
  public:
   // Creates a database bound to |path|. The underlying database won't be
   // opened (i.e. may not be created) until one of the get/set/etc methods are
@@ -55,6 +57,10 @@ class LeveldbValueStore : public ValueStore {
   // Write directly to the backing levelDB. Only used for testing to cause
   // corruption in the database.
   bool WriteToDbForTest(leveldb::WriteBatch* batch);
+
+  // base::trace_event::MemoryDumpProvider implementation.
+  bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
+                    base::trace_event::ProcessMemoryDump* pmd) override;
 
  private:
   // Tries to open the database if it hasn't been opened already.
