@@ -2319,7 +2319,7 @@ class LayerTreeHostTestIOSurfaceDrawing : public LayerTreeHostTest {
     EXPECT_EQ(io_surface_size_, io_surface_draw_quad->io_surface_size);
     EXPECT_NE(0u, io_surface_draw_quad->io_surface_resource_id());
     EXPECT_EQ(static_cast<GLenum>(GL_TEXTURE_RECTANGLE_ARB),
-              resource_provider->TargetForTesting(
+              resource_provider->GetResourceTextureTarget(
                   io_surface_draw_quad->io_surface_resource_id()));
 
     if (delegating_renderer()) {

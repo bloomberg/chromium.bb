@@ -49,7 +49,7 @@ void FakeDelegatedRendererLayerImpl::SetFrameDataForRenderPasses(
         TransferableResource resource;
         resource.id = resource_id;
         resource.mailbox_holder.texture_target =
-            resource_provider->TargetForTesting(resource_id);
+            resource_provider->GetResourceTextureTarget(resource_id);
         delegated_frame->resource_list.push_back(resource);
       }
     }

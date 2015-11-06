@@ -117,6 +117,7 @@ class CC_EXPORT ResourceProvider
 
   ResourceType default_resource_type() const { return default_resource_type_; }
   ResourceType GetResourceType(ResourceId id);
+  GLenum GetResourceTextureTarget(ResourceId id);
 
   // Creates a resource of the default resource type.
   ResourceId CreateResource(const gfx::Size& size,
@@ -396,8 +397,6 @@ class CC_EXPORT ResourceProvider
 
   // For tests only!
   void CreateForTesting(ResourceId id);
-
-  GLenum TargetForTesting(ResourceId id);
 
   // Sets the current read fence. If a resource is locked for read
   // and has read fences enabled, the resource will not allow writes

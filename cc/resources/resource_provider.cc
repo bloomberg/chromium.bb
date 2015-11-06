@@ -613,6 +613,10 @@ ResourceProvider::ResourceType ResourceProvider::GetResourceType(
   return GetResource(id)->type;
 }
 
+GLenum ResourceProvider::GetResourceTextureTarget(ResourceId id) {
+  return GetResource(id)->target;
+}
+
 void ResourceProvider::CopyToResource(ResourceId id,
                                       const uint8_t* image,
                                       const gfx::Size& image_size) {
@@ -1446,11 +1450,6 @@ GLenum ResourceProvider::BindForSampling(ResourceId resource_id,
 
 void ResourceProvider::CreateForTesting(ResourceId id) {
   LazyCreate(GetResource(id));
-}
-
-GLenum ResourceProvider::TargetForTesting(ResourceId id) {
-  Resource* resource = GetResource(id);
-  return resource->target;
 }
 
 void ResourceProvider::LazyCreate(Resource* resource) {
