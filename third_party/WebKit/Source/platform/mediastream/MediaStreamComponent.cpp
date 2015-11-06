@@ -56,6 +56,7 @@ MediaStreamComponent::MediaStreamComponent(const String& id, MediaStreamSource* 
     , m_muted(false)
 {
     ASSERT(m_id.length());
+    ThreadState::current()->registerPreFinalizer(this);
 }
 
 void MediaStreamComponent::dispose()
