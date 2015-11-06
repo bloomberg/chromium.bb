@@ -499,13 +499,16 @@ _brillo_boards = frozenset([
     'arkham',
     'gizmo',
     'kayle',
-    'lakitu',
-    'lakitu_mobbuild',
-    'lakitu_next',
     'panther_embedded',
     'purin',
     'storm',
     'whirlwind',
+])
+
+_lakitu_boards = frozenset([
+    'lakitu',
+    'lakitu_mobbuild',
+    'lakitu_next',
 ])
 
 _moblab_boards = frozenset([
@@ -527,41 +530,25 @@ _toolchains_from_source = frozenset([
     'x32-generic',
 ])
 
-_noimagetest_boards = frozenset([
-    'lakitu',
-    'lakitu_mobbuild',
-    'lakitu_next',
-])
+_noimagetest_boards = _lakitu_boards
 
-_nohwqual_boards = frozenset([
+_nohwqual_boards = _lakitu_boards | frozenset([
     'kayle',
-    'lakitu',
-    'lakitu_mobbuild',
-    'lakitu_next',
 ])
 
 _norootfs_verification_boards = frozenset([
 ])
 
-_base_layout_boards = frozenset([
-    'lakitu',
-    'lakitu_mobbuild',
-    'lakitu_next',
-])
+_base_layout_boards = _lakitu_boards
 
 _no_unittest_boards = frozenset((
 ))
 
-_upload_gce_images_boards = frozenset([
-    'lakitu',
-    'lakitu_mobbuild',
-    'lakitu_next',
-])
+_upload_gce_images_boards = _lakitu_boards
 
 _no_vmtest_boards = _arm_boards | _brillo_boards | frozenset((
     'cyan-cheets',
 ))
-
 
 # This is a list of configs that should be included on the main waterfall, but
 # aren't included by default (see IsDefaultMainWaterfall). This loosely
@@ -902,6 +889,16 @@ def GetConfig():
       vm_tests=[],
   )
 
+  lakitu = config_lib.BuildConfig(
+      sync_chrome=False,
+      chrome_sdk=False,
+      afdo_use=False,
+      dev_installer_prebuilts=False,
+      vm_tests=[],
+      vm_tests_override=None,
+      hw_tests=[],
+  )
+
   moblab = config_lib.BuildConfig(
       image_test=False,
       vm_tests=[],
@@ -1068,6 +1065,8 @@ def GetConfig():
         base.update(manifest=constants.OFFICIAL_MANIFEST)
       if board in _brillo_boards:
         base.update(brillo)
+      if board in _lakitu_boards:
+        base.update(lakitu)
       if board in _moblab_boards:
         base.update(moblab)
       if board in _minimal_profile_boards:
@@ -1301,7 +1300,6 @@ def GetConfig():
       trybot_list=True,
   )
 
-
   site_config.AddConfig(
       tot_asan_info, 'amd64-generic-tot-asan-informational',
       boards=['amd64-generic'],
@@ -1375,7 +1373,6 @@ def GetConfig():
 
   _CreateConfigsForBoards(chrome_perf, _chrome_perf_boards, 'chrome-perf',
                           trybot_list=True)
-
 
   _CreateConfigsForBoards(chromium_info,
                           ['x86-generic', 'amd64-generic'],
@@ -1764,9 +1761,7 @@ def GetConfig():
           customizations,
           base_config)
 
-
   _CreatePaladinConfigs()
-
 
   site_config.AddConfig(
       internal_paladin, 'lumpy-incremental-paladin',
@@ -1777,8 +1772,8 @@ def GetConfig():
       unittests=False,
   )
 
-  ### Paladins (CQ builders) which do not run VM or Unit tests on the builder
-  ### itself.
+  # Paladins (CQ builders) which do not run VM or Unit tests on the builder
+  # itself.
   external_brillo_paladin = paladin.derive(brillo)
 
   site_config.AddConfig(
@@ -1840,7 +1835,6 @@ def GetConfig():
 
   # Add a pre-cq config for every board.
   _CreateConfigsForBoards(pre_cq, _all_boards, 'pre-cq')
-  # Override 'lakitu-pre-cq' - it's in _brillo_boards, but should run vmtests.
   site_config.AddConfig(
       pre_cq, 'lakitu-pre-cq',
       _base_configs['lakitu'],
