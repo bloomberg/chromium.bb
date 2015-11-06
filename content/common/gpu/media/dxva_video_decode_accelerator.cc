@@ -739,7 +739,7 @@ bool DXVAVideoDecodeAccelerator::CreateD3DDevManager() {
     present_params.BackBufferFormat = D3DFMT_UNKNOWN;
     present_params.BackBufferCount = 1;
     present_params.SwapEffect = D3DSWAPEFFECT_DISCARD;
-    present_params.hDeviceWindow = ::GetShellWindow();
+    present_params.hDeviceWindow = NULL;
     present_params.Windowed = TRUE;
     present_params.Flags = D3DPRESENTFLAG_VIDEO;
     present_params.FullScreen_RefreshRateInHz = 0;
@@ -747,7 +747,7 @@ bool DXVAVideoDecodeAccelerator::CreateD3DDevManager() {
 
     hr = d3d9_->CreateDeviceEx(D3DADAPTER_DEFAULT,
                                D3DDEVTYPE_HAL,
-                               ::GetShellWindow(),
+                               NULL,
                                D3DCREATE_FPU_PRESERVE |
                                D3DCREATE_HARDWARE_VERTEXPROCESSING |
                                D3DCREATE_DISABLE_PSGP_THREADING |
