@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync/glue/sync_backend_host_mock.h"
+#include "components/sync_driver/glue/sync_backend_host_mock.h"
 
 #include "components/sync_driver/sync_frontend.h"
 #include "sync/internal_api/public/activation_context.h"
@@ -104,7 +104,7 @@ bool SyncBackendHostMock::HasUnsyncedItems() const {
 }
 
 bool SyncBackendHostMock::IsNigoriEnabled() const {
- return true;
+  return true;
 }
 
 syncer::PassphraseType SyncBackendHostMock::GetPassphraseType() const {

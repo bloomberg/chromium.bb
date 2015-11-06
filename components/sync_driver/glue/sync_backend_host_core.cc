@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync/glue/sync_backend_host_core.h"
+#include "components/sync_driver/glue/sync_backend_host_core.h"
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
@@ -194,7 +194,7 @@ void SyncBackendHostCore::OnInitializationComplete(
     backend_init_state = SETUP_COMPLETED_NO_RESTORED_TYPES;
   } else if (!has_sync_setup_completed_ && restored_types.Empty()) {
     backend_init_state = FIRST_SETUP_NO_RESTORED_TYPES;
-  } else { // (!has_sync_setup_completed_ && !restored_types.Empty())
+  } else {  // (!has_sync_setup_completed_ && !restored_types.Empty())
     backend_init_state = FIRST_SETUP_RESTORED_TYPES;
   }
 

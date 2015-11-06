@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYNC_GLUE_SYNC_BACKEND_HOST_CORE_H_
-#define CHROME_BROWSER_SYNC_GLUE_SYNC_BACKEND_HOST_CORE_H_
+#ifndef COMPONENTS_SYNC_DRIVER_GLUE_SYNC_BACKEND_HOST_CORE_H_
+#define COMPONENTS_SYNC_DRIVER_GLUE_SYNC_BACKEND_HOST_CORE_H_
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
-
 #include "base/timer/timer.h"
-#include "chrome/browser/sync/glue/sync_backend_host_impl.h"
 #include "components/invalidation/public/invalidation.h"
+#include "components/sync_driver/glue/sync_backend_host_impl.h"
 #include "components/sync_driver/system_encryptor.h"
 #include "sync/internal_api/public/base/cancelation_signal.h"
 #include "sync/internal_api/public/sessions/type_debug_info_observer.h"
@@ -329,4 +329,4 @@ class SyncBackendHostCore
 
 }  // namespace browser_sync
 
-#endif  // CHROME_BROWSER_SYNC_GLUE_SYNC_BACKEND_HOST_CORE_H_
+#endif  // COMPONENTS_SYNC_DRIVER_GLUE_SYNC_BACKEND_HOST_CORE_H_

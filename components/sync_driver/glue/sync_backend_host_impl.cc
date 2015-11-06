@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync/glue/sync_backend_host_impl.h"
+#include "components/sync_driver/glue/sync_backend_host_impl.h"
 
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
-#include "chrome/browser/sync/glue/sync_backend_host_core.h"
 #include "components/invalidation/public/invalidation_service.h"
 #include "components/invalidation/public/object_id_invalidation_map.h"
 #include "components/signin/core/browser/signin_client.h"
+#include "components/sync_driver/glue/sync_backend_host_core.h"
 #include "components/sync_driver/glue/sync_backend_registrar.h"
 #include "components/sync_driver/invalidation_helper.h"
 #include "components/sync_driver/sync_client.h"

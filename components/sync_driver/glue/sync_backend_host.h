@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYNC_GLUE_SYNC_BACKEND_HOST_H_
-#define CHROME_BROWSER_SYNC_GLUE_SYNC_BACKEND_HOST_H_
+#ifndef COMPONENTS_SYNC_DRIVER_GLUE_SYNC_BACKEND_HOST_H_
+#define COMPONENTS_SYNC_DRIVER_GLUE_SYNC_BACKEND_HOST_H_
 
 #include <string>
 
@@ -227,9 +227,10 @@ class SyncBackendHost : public sync_driver::BackendDataTypeConfigurer {
   virtual void ClearServerData(
       const syncer::SyncManager::ClearServerDataCallback& callback) = 0;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(SyncBackendHost);
 };
 
 }  // namespace browser_sync
 
-#endif  // CHROME_BROWSER_SYNC_GLUE_SYNC_BACKEND_HOST_H_
+#endif  // COMPONENTS_SYNC_DRIVER_GLUE_SYNC_BACKEND_HOST_H_

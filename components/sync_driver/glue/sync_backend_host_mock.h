@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYNC_GLUE_SYNC_BACKEND_HOST_MOCK_H_
-#define CHROME_BROWSER_SYNC_GLUE_SYNC_BACKEND_HOST_MOCK_H_
+#ifndef COMPONENTS_SYNC_DRIVER_GLUE_SYNC_BACKEND_HOST_MOCK_H_
+#define COMPONENTS_SYNC_DRIVER_GLUE_SYNC_BACKEND_HOST_MOCK_H_
 
 #include <string>
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
-#include "chrome/browser/sync/glue/sync_backend_host.h"
+#include "components/sync_driver/glue/sync_backend_host.h"
 #include "sync/internal_api/public/util/weak_handle.h"
 
 namespace browser_sync {
@@ -128,4 +128,4 @@ class SyncBackendHostMock : public SyncBackendHost {
 
 }  // namespace browser_sync
 
-#endif  // CHROME_BROWSER_SYNC_GLUE_SYNC_BACKEND_HOST_MOCK_H_
+#endif  // COMPONENTS_SYNC_DRIVER_GLUE_SYNC_BACKEND_HOST_MOCK_H_
