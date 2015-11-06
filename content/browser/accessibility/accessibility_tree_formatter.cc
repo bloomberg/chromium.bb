@@ -98,10 +98,7 @@ void AccessibilityTreeFormatter::RecursiveFormatAccessibilityTree(
   }
 }
 
-#if !defined(OS_WIN) && \
-    !defined(OS_MACOSX) && \
-    !defined(OS_ANDROID) && \
-    !(defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_X11))
+#if !defined(PLATFORM_HAS_NATIVE_ACCESSIBILITY_IMPL)
 void AccessibilityTreeFormatter::AddProperties(const BrowserAccessibility& node,
                                                base::DictionaryValue* dict) {
   dict->SetInteger("id", node.GetId());
@@ -142,7 +139,7 @@ const std::string AccessibilityTreeFormatter::GetAllowString() {
 const std::string AccessibilityTreeFormatter::GetDenyString() {
   return std::string();
 }
-#endif
+#endif  // PLATFORM_HAS_NATIVE_ACCESSIBILITY_IMPL
 
 void AccessibilityTreeFormatter::SetFilters(
     const std::vector<Filter>& filters) {

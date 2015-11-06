@@ -87,12 +87,7 @@ BrowserAccessibilityFindInPageInfo::BrowserAccessibilityFindInPageInfo()
       end_offset(-1),
       active_request_id(-1) {}
 
-#if !defined(OS_WIN) && \
-    !defined(OS_MACOSX) && \
-    !defined(OS_ANDROID) && \
-    !(defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_X11))
-// We have subclassess of BrowserAccessibility on some platforms.
-// For other platforms, instantiate the base class.
+#if !defined(PLATFORM_HAS_NATIVE_ACCESSIBILITY_IMPL)
 // static
 BrowserAccessibilityManager* BrowserAccessibilityManager::Create(
     const ui::AXTreeUpdate& initial_tree,

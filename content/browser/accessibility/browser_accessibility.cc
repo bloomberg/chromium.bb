@@ -16,12 +16,7 @@
 
 namespace content {
 
-#if !defined(OS_WIN) && \
-    !defined(OS_MACOSX) && \
-    !defined(OS_ANDROID) && \
-    !(defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_X11))
-// We have subclassess of BrowserAccessibility on some platforms.
-// On other platforms, instantiate the base class.
+#if !defined(PLATFORM_HAS_NATIVE_ACCESSIBILITY_IMPL)
 // static
 BrowserAccessibility* BrowserAccessibility::Create() {
   return new BrowserAccessibility();

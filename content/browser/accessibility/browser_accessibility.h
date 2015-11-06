@@ -19,6 +19,27 @@
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/ax_text_utils.h"
 
+// Set PLATFORM_HAS_NATIVE_ACCESSIBILITY_IMPL if this platform has
+// a platform-specific subclass of BrowserAccessibility and
+// BrowserAccessibilityManager.
+#undef PLATFORM_HAS_NATIVE_ACCESSIBILITY_IMPL
+
+#if defined(OS_WIN)
+#define PLATFORM_HAS_NATIVE_ACCESSIBILITY_IMPL 1
+#endif
+
+#if defined(OS_MACOSX)
+#define PLATFORM_HAS_NATIVE_ACCESSIBILITY_IMPL 1
+#endif
+
+#if defined(OS_ANDROID) && !defined(USE_AURA)
+#define PLATFORM_HAS_NATIVE_ACCESSIBILITY_IMPL 1
+#endif
+
+#if defined(OS_LINUX) && defined(USE_X11) && !defined(OS_CHROMEOS)
+#define PLATFORM_HAS_NATIVE_ACCESSIBILITY_IMPL 1
+#endif
+
 #if defined(OS_MACOSX) && __OBJC__
 @class BrowserAccessibilityCocoa;
 #endif
