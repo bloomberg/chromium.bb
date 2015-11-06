@@ -12,8 +12,8 @@ namespace gin {
 
 namespace {
 
-v8::Local<v8::String> GetHiddenPropertyName(v8::Isolate* isolate) {
-  return gin::StringToSymbol(isolate, "::gin::Timer");
+v8::Local<v8::Private> GetHiddenPropertyName(v8::Isolate* isolate) {
+  return v8::Private::ForApi(isolate, gin::StringToV8(isolate, "::gin::Timer"));
 }
 
 }  // namespace
@@ -45,8 +45,10 @@ Timer::Timer(v8::Isolate* isolate, bool repeating, int delay_ms,
       runner_(PerContextData::From(
           isolate->GetCurrentContext())->runner()->GetWeakPtr()),
       weak_factory_(this) {
-  GetWrapper(runner_->GetContextHolder()->isolate())->SetHiddenValue(
-      GetHiddenPropertyName(isolate), function);
+  GetWrapper(runner_->GetContextHolder()->isolate())
+      ->SetPrivate(isolate->GetCurrentContext(), GetHiddenPropertyName(isolate),
+                   function)
+      .FromJust();
   timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(delay_ms),
                base::Bind(&Timer::OnTimerFired, weak_factory_.GetWeakPtr()));
 }
@@ -65,7 +67,10 @@ void Timer::OnTimerFired() {
   Runner::Scope scope(runner_.get());
   v8::Isolate* isolate = runner_->GetContextHolder()->isolate();
   v8::Local<v8::Function> function = v8::Local<v8::Function>::Cast(
-      GetWrapper(isolate)->GetHiddenValue(GetHiddenPropertyName(isolate)));
+      GetWrapper(isolate)
+          ->GetPrivate(runner_->GetContextHolder()->context(),
+                       GetHiddenPropertyName(isolate))
+          .ToLocalChecked());
   runner_->Call(function, v8::Undefined(isolate), 0, NULL);
 }
 
