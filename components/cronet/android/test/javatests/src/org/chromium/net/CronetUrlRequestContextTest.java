@@ -18,6 +18,7 @@ import org.chromium.net.TestUrlRequestCallback.ResponseStep;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.NoSuchElementException;
 import java.util.concurrent.Executor;
@@ -772,5 +773,22 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         firstEngine.shutdown();
         secondEngine.shutdown();
         thirdEngine.shutdown();
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    public void testGetGlobalMetricsDeltas() throws Exception {
+        mTestFramework = startCronetTestFramework();
+
+        byte delta1[] = mTestFramework.mCronetEngine.getGlobalMetricsDeltas();
+
+        TestUrlRequestCallback callback = new TestUrlRequestCallback();
+        UrlRequest.Builder builder = new UrlRequest.Builder(
+                TEST_URL, callback, callback.getExecutor(), mTestFramework.mCronetEngine);
+        builder.build().start();
+        callback.blockForDone();
+        byte delta2[] = mTestFramework.mCronetEngine.getGlobalMetricsDeltas();
+        assertTrue(delta2.length != 0);
+        assertFalse(Arrays.equals(delta1, delta2));
     }
 }

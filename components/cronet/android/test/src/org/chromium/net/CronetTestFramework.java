@@ -66,7 +66,6 @@ public class CronetTestFramework {
     public URLStreamHandlerFactory mStreamHandlerFactory;
     public CronetEngine mCronetEngine;
     @SuppressWarnings("deprecation") HttpUrlRequestFactory mRequestFactory;
-    @SuppressFBWarnings("URF_UNREAD_FIELD") HistogramManager mHistogramManager;
 
     private final String[] mCommandLine;
     private final Context mContext;
@@ -129,7 +128,8 @@ public class CronetTestFramework {
             mStreamHandlerFactory = mCronetEngine.createURLStreamHandlerFactory();
         }
 
-        mHistogramManager = HistogramManager.createHistogramManager();
+        // Start collecting metrics.
+        mCronetEngine.getGlobalMetricsDeltas();
 
         if (LIBRARY_INIT_CRONET_ONLY.equals(initString)) {
             return;

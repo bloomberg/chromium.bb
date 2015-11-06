@@ -7,6 +7,7 @@
 #include <map>
 
 #include "base/android/jni_android.h"
+#include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/bind.h"
 #include "base/files/file_util.h"
@@ -14,6 +15,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/statistics_recorder.h"
 #include "base/prefs/pref_filter.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
@@ -21,6 +23,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "components/cronet/histogram_manager.h"
 #include "components/cronet/url_request_context_config.h"
 #include "jni/CronetUrlRequestContext_jni.h"
 #include "net/base/external_estimate_provider.h"
@@ -536,6 +539,16 @@ static jint SetMinLogLevel(JNIEnv* env,
   // MinLogLevel is global, shared by all URLRequestContexts.
   logging::SetMinLogLevel(static_cast<int>(jlog_level));
   return old_log_level;
+}
+
+static ScopedJavaLocalRef<jbyteArray> GetHistogramDeltas(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& jcaller) {
+  base::StatisticsRecorder::Initialize();
+  std::vector<uint8> data;
+  if (!HistogramManager::GetInstance()->GetDeltas(&data))
+    return ScopedJavaLocalRef<jbyteArray>();
+  return base::android::ToJavaByteArray(env, &data[0], data.size());
 }
 
 }  // namespace cronet

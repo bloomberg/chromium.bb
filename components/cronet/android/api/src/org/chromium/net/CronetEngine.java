@@ -486,6 +486,30 @@ public abstract class CronetEngine {
     public abstract void stopNetLog();
 
     /**
+     * Returns differences in metrics collected by Cronet since the last call to
+     * {@link #getGlobalMetricsDeltas}.
+     * <p>
+     * Cronet collects these metrics globally. This means deltas returned by
+     * {@code getGlobalMetricsDeltas()} will include measurements of requests
+     * processed by other {@link CronetEngine} instances. Since this function
+     * returns differences in metrics collected since the last call, and these
+     * metrics are collected globally, a call to any {@code CronetEngine}
+     * instance's {@code getGlobalMetricsDeltas()} method will affect the deltas
+     * returned by any other {@code CronetEngine} instance's
+     * {@code getGlobalMetricsDeltas()}.
+     * <p>
+     * Cronet starts collecting these metrics after the first call to
+     * {@code getGlobalMetricsDeltras()}, so the first call returns no
+     * useful data as no metrics have yet been collected.
+     *
+     * @return differences in metrics collected by Cronet, since the last call
+     *         to {@code getGlobalMetricsDeltas()}, serialized as a
+     *         <a href=https://developers.google.com/protocol-buffers>protobuf
+     *         </a>.
+     */
+    public abstract byte[] getGlobalMetricsDeltas();
+
+    /**
      * Enables the network quality estimator, which collects and reports
      * measurements of round trip time (RTT) and downstream throughput at
      * various layers of the network stack. After enabling the estimator,

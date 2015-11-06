@@ -11,7 +11,6 @@
           'target_name': 'cronet_jni_headers',
           'type': 'none',
           'sources': [
-            'cronet/android/java/src/org/chromium/net/CronetHistogramManager.java',
             'cronet/android/java/src/org/chromium/net/CronetLibraryLoader.java',
             'cronet/android/java/src/org/chromium/net/CronetUploadDataStream.java',
             'cronet/android/java/src/org/chromium/net/CronetUrlRequest.java',
@@ -247,7 +246,6 @@
               '**/ChromiumUrlRequestError.java',
               '**/ChromiumUrlRequestFactory.java',
               '**/ChromiumUrlRequestPriority.java',
-              '**/CronetHistogramManager.java',
               '**/CronetResponseInfo.java',
               '**/CronetLibraryLoader.java',
               '**/CronetUploadDataStream.java',

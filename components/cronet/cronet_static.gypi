@@ -21,8 +21,6 @@
     'android/chromium_url_request_context.h',
     'android/chromium_url_request_error_list.h',
     'android/chromium_url_request_priority_list.h',
-    'android/cronet_histogram_manager.cc',
-    'android/cronet_histogram_manager.h',
     'android/cronet_in_memory_pref_store.cc',
     'android/cronet_in_memory_pref_store.h',
     'android/cronet_library_loader.cc',

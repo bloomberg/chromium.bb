@@ -179,6 +179,13 @@ class CronetUrlRequestContext extends CronetEngine {
         }
     }
 
+    // This method is intentionally non-static to ensure Cronet native library
+    // is loaded by class constructor.
+    @Override
+    public byte[] getGlobalMetricsDeltas() {
+        return nativeGetHistogramDeltas();
+    }
+
     @Override
     public void enableNetworkQualityEstimator(Executor executor) {
         enableNetworkQualityEstimatorForTesting(false, false, executor);
@@ -396,6 +403,8 @@ class CronetUrlRequestContext extends CronetEngine {
     private static native long nativeCreateRequestContextAdapter(String config);
 
     private static native int nativeSetMinLogLevel(int loggingLevel);
+
+    private static native byte[] nativeGetHistogramDeltas();
 
     @NativeClassQualifiedName("CronetURLRequestContextAdapter")
     private native void nativeDestroy(long nativePtr);
