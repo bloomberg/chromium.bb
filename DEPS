@@ -540,13 +540,15 @@ hooks = [
   },
   {
     # This downloads SDK extras and puts them in the
-    # third_party/android_tools/sdk/extras directory on the bots. Developers
-    # need to manually install these packages and accept the ToS.
+    # third_party/android_tools/sdk/extras directory.
     'name': 'sdkextras',
     'pattern': '.',
     # When adding a new sdk extras package to download, add the package
     # directory and zip file to .gitignore in third_party/android_tools.
-    'action': ['python', 'src/build/download_sdk_extras.py'],
+    'action': ['python',
+               'src/build/android/play_services/update.py',
+               'download'
+    ],
   },
   {
     # Downloads the current stable linux sysroot to build/linux/ if needed.
