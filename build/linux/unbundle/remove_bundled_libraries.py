@@ -68,6 +68,10 @@ def DoMain(argv):
       if f.endswith('.gyp') or f.endswith('.gypi'):
         continue
 
+      # Same about GN files.
+      if f.endswith('.gn') or f.endswith('.gni'):
+        continue
+
       # Deleting .isolate files leads to gyp failures. They are usually
       # not used by a distro build anyway.
       # See http://www.chromium.org/developers/testing/isolated-testing
