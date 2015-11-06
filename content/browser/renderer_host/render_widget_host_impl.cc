@@ -92,6 +92,13 @@ using blink::WebTextDirection;
 namespace content {
 namespace {
 
+// The amount of time after a mouse wheel event is sent to the delegate
+// OnUserInteraction method before another mouse wheel event will be sent. This
+// interval is used by the Blink EventHandler in its orthogonal heuristic for
+// detecting the end of a scroll event (if no event has been seen in 0.1
+// seconds, send an end scroll).
+const double kMouseWheelCoalesceIntervalInSeconds = 0.1;
+
 bool g_check_for_pending_resize_ack = true;
 
 // <process id, routing id>
@@ -204,6 +211,7 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
           base::TimeDelta::FromMilliseconds(kHungRendererDelayMs)),
       new_content_rendering_delay_(
           base::TimeDelta::FromMilliseconds(kNewContentRenderingDelayMs)),
+      mouse_wheel_coalesce_timer_(new base::ElapsedTimer()),
       weak_factory_(this) {
   CHECK(delegate_);
   CHECK_NE(MSG_ROUTING_NONE, routing_id_);
@@ -1860,6 +1868,13 @@ InputEventAckState RenderWidgetHostImpl::FilterInputEvent(
         event.type == WebInputEvent::GestureTapDown ||
         event.type == WebInputEvent::RawKeyDown) {
       delegate_->OnUserInteraction(event.type);
+    } else if (event.type == WebInputEvent::MouseWheel) {
+      if (mouse_wheel_coalesce_timer_->Elapsed().InSecondsF() >
+          kMouseWheelCoalesceIntervalInSeconds) {
+        delegate_->OnUserInteraction(event.type);
+      }
+
+      mouse_wheel_coalesce_timer_.reset(new base::ElapsedTimer());
     }
   }
 

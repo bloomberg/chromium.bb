@@ -18,7 +18,7 @@
 #include "base/process/kill.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
-#include "base/timer/timer.h"
+#include "base/timer/elapsed_timer.h"
 #include "build/build_config.h"
 #include "cc/resources/shared_bitmap.h"
 #include "content/browser/renderer_host/event_with_latency_info.h"
@@ -852,6 +852,11 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
   // This value indicates how long to wait for a new compositor frame from a
   // renderer process before clearing any previously displayed content.
   base::TimeDelta new_content_rendering_delay_;
+
+  // Timer used to batch together mouse wheel events for the delegate
+  // OnUserInteraction method. A wheel event is only dispatched when a wheel
+  // event has not been seen for kMouseWheelCoalesceInterval seconds prior.
+  scoped_ptr<base::ElapsedTimer> mouse_wheel_coalesce_timer_;
 
   base::WeakPtrFactory<RenderWidgetHostImpl> weak_factory_;
 

@@ -118,8 +118,12 @@ TEST_F(SiteEngagementHelperTest, KeyPressEngagementAccumulation) {
   UserInputAccumulation(blink::WebInputEvent::RawKeyDown);
 }
 
-TEST_F(SiteEngagementHelperTest, MouseEventEngagementAccumulation) {
+TEST_F(SiteEngagementHelperTest, MouseDownEventEngagementAccumulation) {
   UserInputAccumulation(blink::WebInputEvent::MouseDown);
+}
+
+TEST_F(SiteEngagementHelperTest, MouseWheelEventEngagementAccumulation) {
+  UserInputAccumulation(blink::WebInputEvent::MouseWheel);
 }
 
 TEST_F(SiteEngagementHelperTest, GestureEngagementAccumulation) {
@@ -180,7 +184,7 @@ TEST_F(SiteEngagementHelperTest, MixedInputEngagementAccumulation) {
                                2);
 
   HandleUserInputAndRestartTracking(helper.get(),
-                                    blink::WebInputEvent::MouseDown);
+                                    blink::WebInputEvent::MouseWheel);
   HandleUserInputAndRestartTracking(helper.get(),
                                     blink::WebInputEvent::MouseDown);
   HandleUserInputAndRestartTracking(helper.get(),
@@ -191,7 +195,9 @@ TEST_F(SiteEngagementHelperTest, MixedInputEngagementAccumulation) {
   histograms.ExpectTotalCount(SiteEngagementMetrics::kEngagementTypeHistogram,
                               9);
   histograms.ExpectBucketCount(SiteEngagementMetrics::kEngagementTypeHistogram,
-                               SiteEngagementMetrics::ENGAGEMENT_MOUSE, 3);
+                               SiteEngagementMetrics::ENGAGEMENT_MOUSE, 2);
+  histograms.ExpectBucketCount(SiteEngagementMetrics::kEngagementTypeHistogram,
+                               SiteEngagementMetrics::ENGAGEMENT_WHEEL, 1);
   histograms.ExpectBucketCount(SiteEngagementMetrics::kEngagementTypeHistogram,
                                SiteEngagementMetrics::ENGAGEMENT_TOUCH_GESTURE,
                                3);
