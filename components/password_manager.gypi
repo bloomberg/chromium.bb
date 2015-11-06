@@ -68,6 +68,7 @@
         'password_manager/core/browser/log_router.h',
         'password_manager/core/browser/login_database.cc',
         'password_manager/core/browser/login_database.h',
+        'password_manager/core/browser/login_database_ios.cc',
         'password_manager/core/browser/login_database_mac.cc',
         'password_manager/core/browser/login_database_posix.cc',
         'password_manager/core/browser/login_database_win.cc',
@@ -125,10 +126,13 @@
         'password_manager/core/browser/webdata/password_web_data_service_win.h',
       ],
       'conditions': [
+        ['OS=="ios"', {
+          'sources!': [
+            'password_manager/core/browser/login_database_posix.cc',
+          ],
+        }],
         ['OS=="mac"', {
           'sources!': [
-            # TODO(blundell): Provide the iOS login DB implementation and then
-            # also exclude the POSIX one from iOS. http://crbug.com/341429
             'password_manager/core/browser/login_database_posix.cc',
           ],
         }],
