@@ -93,9 +93,6 @@ antialiased2dCanvasEnabled initial=true
 antialiasedClips2dCanvasEnabled initial=false
 accelerated2dCanvasMSAASampleCount type=int, initial=0
 
-# Indicate if scheduling png image encoder of canvas toBlob on idle periods is enabled
-idleCanvasImageEncodingEnabled initial=true
-
 # WebAudio support.
 webAudioEnabled initial=false
 

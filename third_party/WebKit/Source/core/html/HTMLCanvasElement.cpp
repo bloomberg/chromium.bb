@@ -558,7 +558,7 @@ void HTMLCanvasElement::toBlob(FileCallback* callback, const String& mimeType, c
     RefPtr<DOMUint8ClampedArray> imageDataRef(imageData->data());
 
     RefPtr<CanvasAsyncBlobCreator> asyncCreatorRef = CanvasAsyncBlobCreator::create(imageDataRef.release(), encodingMimeType, imageData->size(), callback);
-    if (document().settings()->idleCanvasImageEncodingEnabled() && Platform::current()->isThreadedCompositingEnabled() && (encodingMimeType == DefaultMimeType)) {
+    if (Platform::current()->isThreadedCompositingEnabled() && (encodingMimeType == DefaultMimeType)) {
         asyncCreatorRef->scheduleAsyncBlobCreation(true);
     } else {
         asyncCreatorRef->scheduleAsyncBlobCreation(false, quality);
