@@ -130,6 +130,8 @@ class DevToolsUIBindings : public DevToolsEmbedderMessageDispatcher::Delegate,
   void SetDevicesUpdatesEnabled(bool enabled) override;
   void PerformActionOnRemotePage(const std::string& page_id,
                                  const std::string& action) override;
+  void OpenRemotePage(const std::string& browser_id,
+                      const std::string& url) override;
   void DispatchProtocolMessageFromDevToolsFrontend(
       const std::string& message) override;
   void RecordEnumeratedHistogram(const std::string& name,

@@ -192,6 +192,7 @@ DevToolsEmbedderMessageDispatcher::CreateForDevToolsFrontend(
                      &Delegate::SetDevicesUpdatesEnabled, delegate);
   d->RegisterHandler("performActionOnRemotePage",
                      &Delegate::PerformActionOnRemotePage, delegate);
+  d->RegisterHandler("openRemotePage", &Delegate::OpenRemotePage, delegate);
   d->RegisterHandler("dispatchProtocolMessage",
                      &Delegate::DispatchProtocolMessageFromDevToolsFrontend,
                      delegate);

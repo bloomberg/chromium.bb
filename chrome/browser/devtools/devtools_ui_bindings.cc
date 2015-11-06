@@ -848,6 +848,13 @@ void DevToolsUIBindings::PerformActionOnRemotePage(const std::string& page_id,
     target->Close();
 }
 
+void DevToolsUIBindings::OpenRemotePage(const std::string& browser_id,
+                                        const std::string& url) {
+  if (!remote_targets_handler_)
+    return;
+  remote_targets_handler_->Open(browser_id, url);
+}
+
 void DevToolsUIBindings::GetPreferences(const DispatchCallback& callback) {
   const DictionaryValue* prefs =
       profile_->GetPrefs()->GetDictionary(prefs::kDevToolsPreferences);

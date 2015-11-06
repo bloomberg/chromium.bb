@@ -72,6 +72,8 @@ class DevToolsEmbedderMessageDispatcher {
         const std::string& port_forwarding_config) = 0;
     virtual void PerformActionOnRemotePage(const std::string& page_id,
                                            const std::string& action) = 0;
+    virtual void OpenRemotePage(const std::string& browser_id,
+                                const std::string& url) = 0;
     virtual void GetPreferences(const DispatchCallback& callback) = 0;
     virtual void SetPreference(const std::string& name,
                                const std::string& value) = 0;
