@@ -186,7 +186,7 @@ template<> inline CSSPrimitiveValue::CSSPrimitiveValue(ColumnSpan columnSpan)
 template<> inline ColumnSpan CSSPrimitiveValue::convertTo() const
 {
     // Map 1 to none for compatibility reasons.
-    if (type() == UnitType::Number && m_value.num == 1)
+    if (type() == UnitType::Integer && m_value.num == 1)
         return ColumnSpanNone;
 
     ASSERT(isValueID());
