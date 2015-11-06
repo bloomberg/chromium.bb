@@ -890,7 +890,8 @@ void RenderViewContextMenu::AppendLinkItems() {
             profile_info_cache.GetPathOfProfileAtIndex(profile_index);
         Profile* profile = profile_manager->GetProfileByPath(profile_path);
         if ((profile != GetProfile()) &&
-            !profile_info_cache.IsOmittedProfileAtIndex(profile_index)) {
+            !profile_info_cache.IsOmittedProfileAtIndex(profile_index) &&
+            !profile_info_cache.ProfileIsSigninRequiredAtIndex(profile_index)) {
           target_profiles.push_back(profile_index);
         }
       }
