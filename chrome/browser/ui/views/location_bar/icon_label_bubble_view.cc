@@ -6,6 +6,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/views/layout_constants.h"
+#include "chrome/browser/ui/views/location_bar/background_with_1_px_border.h"
 #include "ui/base/resource/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
@@ -69,16 +70,6 @@ void IconLabelBubbleView::SetBackgroundImageGrid(
   SetLabelBackgroundColor(CalculateImageColor(background_image));
 }
 
-void IconLabelBubbleView::SetBackgroundImageWithInsets(int background_image_id,
-                                                       gfx::Insets& insets) {
-  gfx::ImageSkia* background_image =
-      ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-          background_image_id);
-  background_painter_.reset(
-      views::Painter::CreateImagePainter(*background_image, insets));
-  SetLabelBackgroundColor(CalculateImageColor(background_image));
-}
-
 void IconLabelBubbleView::SetLabel(const base::string16& label) {
   label_->SetText(label);
 }
@@ -119,6 +110,19 @@ void IconLabelBubbleView::Layout() {
                     height());
 }
 
+void IconLabelBubbleView::OnNativeThemeChanged(
+    const ui::NativeTheme* native_theme) {
+  if (!ui::MaterialDesignController::IsModeMaterial())
+    return;
+
+  label_->SetEnabledColor(GetTextColor());
+  SkColor border_color = GetBorderColor();
+  SkColor background_color = SkColorSetA(border_color, 0x13);
+  set_background(
+      new BackgroundWith1PxBorder(background_color, border_color, false));
+  SetLabelBackgroundColor(background_color);
+}
+
 gfx::Size IconLabelBubbleView::GetSizeForLabelWidth(int width) const {
   gfx::Size size(image_->GetPreferredSize());
   if (ShouldShowBackground()) {
@@ -129,7 +133,8 @@ gfx::Size IconLabelBubbleView::GetSizeForLabelWidth(int width) const {
         (image_width ? (image_width + padding) : 0) +
         GetBubbleOuterPadding(false);
     size = gfx::Size(WidthMultiplier() * (width + non_label_width), 0);
-    size.SetToMax(background_painter_->GetMinimumSize());
+    if (!ui::MaterialDesignController::IsModeMaterial())
+      size.SetToMax(background_painter_->GetMinimumSize());
   }
 
   return size;
@@ -164,4 +169,6 @@ void IconLabelBubbleView::OnPaint(gfx::Canvas* canvas) {
     return;
   if (background_painter_)
     background_painter_->Paint(canvas, size());
+  if (background())
+    background()->Paint(canvas, this);
 }

@@ -31,6 +31,10 @@ class SelectedKeywordView : public IconLabelBubbleView {
   void ResetImage();
 
   // IconLabelBubbleView:
+  SkColor GetTextColor() const override;
+  SkColor GetBorderColor() const override;
+
+  // views::View:
   gfx::Size GetPreferredSize() const override;
   gfx::Size GetMinimumSize() const override;
   void Layout() override;

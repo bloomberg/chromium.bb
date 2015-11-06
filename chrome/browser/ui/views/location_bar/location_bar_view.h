@@ -125,7 +125,6 @@ class LocationBarView : public LocationBar,
     SELECTED_TEXT,
     DEEMPHASIZED_TEXT,
     SECURITY_TEXT,
-    KEYWORD_SEARCH_TEXT,
   };
 
   LocationBarView(Browser* browser,

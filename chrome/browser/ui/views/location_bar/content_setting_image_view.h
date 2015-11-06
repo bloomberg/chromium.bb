@@ -37,6 +37,7 @@ class ContentSettingImageView : public IconLabelBubbleView,
                                 public gfx::AnimationDelegate,
                                 public views::WidgetObserver {
  public:
+  // TODO(estade): remove |text_color| because it isn't necessary for MD.
   ContentSettingImageView(ContentSettingsType content_type,
                           LocationBarView* parent,
                           const gfx::FontList& font_list,
@@ -56,7 +57,9 @@ class ContentSettingImageView : public IconLabelBubbleView,
   // intervening "stay open" period.
   static const int kAnimationDurationMS;
 
-  // IconLabelBubbleView::
+  // IconLabelBubbleView:
+  SkColor GetTextColor() const override;
+  SkColor GetBorderColor() const override;
   bool ShouldShowBackground() const override;
   double WidthMultiplier() const override;
 

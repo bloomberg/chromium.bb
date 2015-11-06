@@ -32,13 +32,7 @@ SelectedKeywordView::SelectedKeywordView(const gfx::FontList& font_list,
                           parent_background_color,
                           false),
       profile_(profile) {
-  if (ui::MaterialDesignController::IsModeMaterial()) {
-    // The inset for IDR_OMNIBOX_SELECTED_KEYWORD_BUBBLE for which to perfom
-    // nine-slicing.
-    static const int kImageInset = 4;
-    gfx::Insets insets(kImageInset, kImageInset, kImageInset, kImageInset);
-    SetBackgroundImageWithInsets(IDR_OMNIBOX_SELECTED_KEYWORD_BUBBLE, insets);
-  } else {
+  if (!ui::MaterialDesignController::IsModeMaterial()) {
     static const int kBackgroundImages[] =
         IMAGE_GRID(IDR_OMNIBOX_SELECTED_KEYWORD_BUBBLE);
     SetBackgroundImageGrid(kBackgroundImages);
@@ -54,13 +48,20 @@ SelectedKeywordView::~SelectedKeywordView() {
 
 void SelectedKeywordView::ResetImage() {
   if (ui::MaterialDesignController::IsModeMaterial()) {
-    SkColor link_color =
-        GetNativeTheme()->GetSystemColor(ui::NativeTheme::kColorId_LinkEnabled);
     SetImage(gfx::CreateVectorIcon(gfx::VectorIconId::KEYWORD_SEARCH, 16,
-                                   link_color));
+                                   GetTextColor()));
   } else {
     SetImage(*GetThemeProvider()->GetImageSkiaNamed(IDR_OMNIBOX_SEARCH));
   }
+}
+
+SkColor SelectedKeywordView::GetTextColor() const {
+  return GetNativeTheme()->GetSystemColor(
+      ui::NativeTheme::kColorId_LinkEnabled);
+}
+
+SkColor SelectedKeywordView::GetBorderColor() const {
+  return GetTextColor();
 }
 
 gfx::Size SelectedKeywordView::GetPreferredSize() const {

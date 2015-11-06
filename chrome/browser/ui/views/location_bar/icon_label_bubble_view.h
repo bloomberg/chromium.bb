@@ -30,6 +30,7 @@ class Painter;
 // content settings.
 class IconLabelBubbleView : public views::View {
  public:
+  // TODO(estade): remove |text_color| which is not used for MD.
   IconLabelBubbleView(int contained_image,
                       const gfx::FontList& font_list,
                       SkColor text_color,
@@ -42,13 +43,6 @@ class IconLabelBubbleView : public views::View {
   // construction.
   void SetBackgroundImageGrid(const int background_images[]);
 
-  // Divides the image designated by |background_image_id| into nine regions.
-  // The four corners are specified by |insets|, the remainder are stretched to
-  // fill the background. Subclasses are required to call this or
-  // SetBackgroundImageGrid during construction.
-  void SetBackgroundImageWithInsets(int background_image_id,
-                                    gfx::Insets& insets);
-
   void SetLabel(const base::string16& label);
   void SetImage(const gfx::ImageSkia& image);
   void set_is_extension_icon(bool is_extension_icon) {
@@ -58,6 +52,13 @@ class IconLabelBubbleView : public views::View {
  protected:
   views::ImageView* image() { return image_; }
   views::Label* label() { return label_; }
+
+  // Gets the color for displaying text.
+  virtual SkColor GetTextColor() const = 0;
+
+  // Gets the color for the border (a more transparent version of
+  // which is used for the background).
+  virtual SkColor GetBorderColor() const = 0;
 
   // Returns true when the background should be rendered.
   virtual bool ShouldShowBackground() const;
@@ -70,6 +71,7 @@ class IconLabelBubbleView : public views::View {
   // views::View:
   gfx::Size GetPreferredSize() const override;
   void Layout() override;
+  void OnNativeThemeChanged(const ui::NativeTheme* native_theme) override;
 
   const gfx::FontList& font_list() const { return label_->font_list(); }
 
@@ -91,7 +93,7 @@ class IconLabelBubbleView : public views::View {
   const char* GetClassName() const override;
   void OnPaint(gfx::Canvas* canvas) override;
 
-  // For painting the background.
+  // For painting the background. TODO(estade): remove post MD launch.
   scoped_ptr<views::Painter> background_painter_;
 
   // The contents of the bubble.

@@ -20,6 +20,10 @@ class EVBubbleView : public IconLabelBubbleView {
   ~EVBubbleView() override;
 
   // IconLabelBubbleView:
+  SkColor GetTextColor() const override;
+  SkColor GetBorderColor() const override;
+
+  // views::View:
   gfx::Size GetMinimumSize() const override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
   void OnMouseReleased(const ui::MouseEvent& event) override;
@@ -31,6 +35,10 @@ class EVBubbleView : public IconLabelBubbleView {
  private:
   // Returns what the minimum size would be if the preferred size were |size|.
   gfx::Size GetMinimumSizeForPreferredSize(gfx::Size size) const;
+
+  // TODO(estade): this should be gleaned from the theme instead of hardcoded in
+  // location_bar_view.cc and cached here.
+  SkColor text_color_;
 
   PageInfoHelper page_info_helper_;
 

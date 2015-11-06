@@ -82,6 +82,7 @@
 #include "ui/events/event.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia_operations.h"
@@ -259,10 +260,7 @@ void LocationBarView::Init() {
   ime_inline_autocomplete_view_->SetVisible(false);
   AddChildView(ime_inline_autocomplete_view_);
 
-  const SkColor selected_text_color = GetColor(
-      SecurityStateModel::NONE, ui::MaterialDesignController::IsModeMaterial()
-                                    ? KEYWORD_SEARCH_TEXT
-                                    : TEXT);
+  const SkColor selected_text_color = GetColor(SecurityStateModel::NONE, TEXT);
   selected_keyword_view_ = new SelectedKeywordView(
       bubble_font_list, selected_text_color, background_color, profile());
   AddChildView(selected_keyword_view_);
@@ -366,10 +364,8 @@ SkColor LocationBarView::GetColor(
       switch (security_level) {
         case SecurityStateModel::EV_SECURE:
         case SecurityStateModel::SECURE:
-          if (ui::MaterialDesignController::IsModeMaterial())
-            color = SkColorSetRGB(11, 128, 67);
-          else
-            color = SkColorSetRGB(7, 149, 0);
+          color = ui::MaterialDesignController::IsModeMaterial() ?
+              gfx::kGoogleGreen700 : SkColorSetRGB(7, 149, 0);
           break;
 
         case SecurityStateModel::SECURITY_POLICY_WARNING:
@@ -377,7 +373,8 @@ SkColor LocationBarView::GetColor(
           break;
 
         case SecurityStateModel::SECURITY_ERROR:
-          color = SkColorSetRGB(162, 0, 0);
+          color = ui::MaterialDesignController::IsModeMaterial() ?
+              gfx::kGoogleRed700 : SkColorSetRGB(162, 0, 0);
           break;
 
         case SecurityStateModel::SECURITY_WARNING:
@@ -391,9 +388,6 @@ SkColor LocationBarView::GetColor(
       return color_utils::GetReadableColor(
           color, GetColor(security_level, BACKGROUND));
     }
-
-    case KEYWORD_SEARCH_TEXT:
-      return SkColorSetRGB(51, 103, 214);
 
     default:
       NOTREACHED();

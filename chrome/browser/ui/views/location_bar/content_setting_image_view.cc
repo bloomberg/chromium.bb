@@ -15,6 +15,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/material_design/material_design_controller.h"
 #include "ui/base/theme_provider.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
@@ -51,13 +52,7 @@ ContentSettingImageView::ContentSettingImageView(
       pause_animation_(false),
       pause_animation_state_(0.0),
       bubble_widget_(NULL) {
-  if (ui::MaterialDesignController::IsModeMaterial()) {
-    // The insets for IDR_OMNIBOX_CONTENT_SETTING_BUBBLE for which to perfom
-    // nine-slicing.
-    static const int kImageInset = 4;
-    gfx::Insets insets(kImageInset, kImageInset, kImageInset, kImageInset);
-    SetBackgroundImageWithInsets(IDR_OMNIBOX_CONTENT_SETTING_BUBBLE, insets);
-  } else {
+  if (!ui::MaterialDesignController::IsModeMaterial()) {
     static const int kBackgroundImages[] =
         IMAGE_GRID(IDR_OMNIBOX_CONTENT_SETTING_BUBBLE);
     SetBackgroundImageGrid(kBackgroundImages);
@@ -111,6 +106,15 @@ void ContentSettingImageView::Update(content::WebContents* web_contents) {
 
   content_settings->SetBlockageHasBeenIndicated(
       content_setting_image_model_->get_content_settings_type());
+}
+
+SkColor ContentSettingImageView::GetTextColor() const {
+  return GetNativeTheme()->GetSystemColor(
+      ui::NativeTheme::kColorId_TextfieldDefaultColor);
+}
+
+SkColor ContentSettingImageView::GetBorderColor() const {
+  return gfx::kGoogleYellow700;
 }
 
 bool ContentSettingImageView::ShouldShowBackground() const {

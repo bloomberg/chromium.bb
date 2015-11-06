@@ -17,19 +17,23 @@ EVBubbleView::EVBubbleView(const gfx::FontList& font_list,
                           text_color,
                           parent_background_color,
                           true),
+      text_color_(text_color),
       page_info_helper_(this, location_bar) {
-  if (ui::MaterialDesignController::IsModeMaterial()) {
-    // The insets for IDR_OMNIBOX_EV_BUBBLE for which to perfom nine-slicing.
-    static const int kImageInset = 4;
-    gfx::Insets insets(kImageInset, kImageInset, kImageInset, kImageInset);
-    SetBackgroundImageWithInsets(IDR_OMNIBOX_EV_BUBBLE, insets);
-  } else {
+  if (!ui::MaterialDesignController::IsModeMaterial()) {
     static const int kBackgroundImages[] = IMAGE_GRID(IDR_OMNIBOX_EV_BUBBLE);
     SetBackgroundImageGrid(kBackgroundImages);
   }
 }
 
 EVBubbleView::~EVBubbleView() {
+}
+
+SkColor EVBubbleView::GetTextColor() const {
+  return text_color_;
+}
+
+SkColor EVBubbleView::GetBorderColor() const {
+  return GetTextColor();
 }
 
 gfx::Size EVBubbleView::GetMinimumSize() const {
