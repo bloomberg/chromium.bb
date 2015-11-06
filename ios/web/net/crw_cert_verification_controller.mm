@@ -8,6 +8,8 @@
 #include "base/mac/bind_objc_block.h"
 #import "base/memory/ref_counted.h"
 #import "base/memory/scoped_ptr.h"
+#include "base/metrics/histogram_macros.h"
+#include "base/rand_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/threading/worker_pool.h"
 #include "ios/web/net/cert_verifier_block_adapter.h"
@@ -21,6 +23,30 @@
 #include "net/url_request/url_request_context_getter.h"
 
 namespace {
+
+// Enum for Web.CertVerifyAgreement UMA metric to report certificate
+// verification mismatch between SecTrust API and CertVerifier. SecTrust API is
+// used for making load/no-load decision and CertVerifier is used for getting
+// the reason of verification failure. It is expected that mismatches will
+// happen for those 2 approaches (e.g. SecTrust API accepts the cert but
+// CertVerifier rejects it). This metric helps to understand how common
+// mismatches are.
+// Note: This enum is used to back an UMA histogram, and should be treated as
+// append-only.
+enum CertVerifyAgreement {
+  // There is no mismach. Both SecTrust API and CertVerifier accepted this cert.
+  CERT_VERIFY_AGREEMENT_ACCEPTED_BY_BOTH = 0,
+  // There is no mismach. Both SecTrust API and CertVerifier rejected this cert.
+  CERT_VERIFY_AGREEMENT_REJECTED_BY_BOTH,
+  // SecTrust API accepted the cert, but CertVerifier rejected it (e.g. MDM cert
+  // or CertVerifier was more strict during verification), this mismach is
+  // expected to be common because of MDM certs.
+  CERT_VERIFY_AGREEMENT_ACCEPTED_ONLY_BY_IOS,
+  // SecTrust API rejected the cert, but CertVerifier accepted it. This mismatch
+  // is expected to be uncommon.
+  CERT_VERIFY_AGREEMENT_ACCEPTED_ONLY_BY_NSS,
+  CERT_VERIFY_AGREEMENT_COUNT,
+};
 
 // This class takes ownership of block and releases it on UI thread, even if
 // |BlockHolder| is destructed on a background thread.
@@ -59,6 +85,9 @@ class BlockHolder : public base::RefCountedThreadSafe<BlockHolder<T>> {
   T block_;
 };
 
+typedef scoped_refptr<BlockHolder<web::PolicyDecisionHandler>>
+    PolicyDecisionHandlerHolder;
+
 }  // namespace
 
 @interface CRWCertVerificationController () {
@@ -76,8 +105,32 @@ class BlockHolder : public base::RefCountedThreadSafe<BlockHolder<T>> {
 // Cert verification flags. Must be used on IO Thread.
 @property(nonatomic, readonly) int certVerifyFlags;
 
+// Returns YES if CertVerifier should be run (even if SecTrust API considers
+// cert as valid) and Web.CertVerifyAgreement UMA metric should be reported.
+// The result of this method is random and undeterministic.
+- (BOOL)shouldReportCertVerifyAgreement;
+
+// Reports Web.CertVerifyAgreement UMA metric.
+- (void)reportUMAForCertVerifyAgreement:(CertVerifyAgreement)agreement;
+
 // Creates _certVerifier object on IO thread.
 - (void)createCertVerifier;
+
+// Decides the policy for the given |trust| which was rejected by iOS and the
+// given |host| and calls |handler| on completion.
+- (void)
+decideLoadPolicyForRejectedTrustResult:(SecTrustResultType)trustResult
+                           serverTrust:(base::ScopedCFTypeRef<SecTrustRef>)trust
+                                  host:(NSString*)host
+                     completionHandler:(PolicyDecisionHandlerHolder)handler;
+
+// Decides the policy for the given |trust| which was accepted by iOS and the
+// given |host| and calls |handler| on completion.
+- (void)
+decideLoadPolicyForAcceptedTrustResult:(SecTrustResultType)trustResult
+                           serverTrust:(base::ScopedCFTypeRef<SecTrustRef>)trust
+                                  host:(NSString*)host
+                     completionHandler:(PolicyDecisionHandlerHolder)handler;
 
 // Verifies the given |cert| for the given |host| using |net::CertVerifier| and
 // calls |completionHandler| on completion. This method can be called on any
@@ -98,10 +151,10 @@ class BlockHolder : public base::RefCountedThreadSafe<BlockHolder<T>> {
 // Returns cert accept policy for the given SecTrust result. |trustResult| must
 // not be for a valid cert. Must be called on IO thread.
 - (web::CertAcceptPolicy)
-    loadPolicyForBadTrustResult:(SecTrustResultType)trustResult
-             certVerifierResult:(net::CertVerifyResult)certVerifierResult
-                    serverTrust:(SecTrustRef)trust
-                           host:(NSString*)host;
+    loadPolicyForRejectedTrustResult:(SecTrustResultType)trustResult
+                  certVerifierResult:(net::CertVerifyResult)certVerifierResult
+                         serverTrust:(SecTrustRef)trust
+                                host:(NSString*)host;
 
 @end
 
@@ -146,7 +199,7 @@ class BlockHolder : public base::RefCountedThreadSafe<BlockHolder<T>> {
   // Since |completionHandler| can potentially capture multiple thread unsafe
   // objects (like Web Controller) |completionHandler| itself should never be
   // released on background thread and |BlockHolder| ensures that.
-  __block scoped_refptr<BlockHolder<web::PolicyDecisionHandler>> handlerHolder(
+  __block PolicyDecisionHandlerHolder handlerHolder(
       new BlockHolder<web::PolicyDecisionHandler>(completionHandler));
   [self verifyTrust:trust
       completionHandler:^(SecTrustResultType trustResult, BOOL dispatched) {
@@ -161,42 +214,16 @@ class BlockHolder : public base::RefCountedThreadSafe<BlockHolder<T>> {
 
         if (web::GetSecurityStyleFromTrustResult(trustResult) ==
             web::SECURITY_STYLE_AUTHENTICATED) {
-          // SecTrust API considers this cert as valid.
-          dispatch_async(dispatch_get_main_queue(), ^{
-            handlerHolder->call(web::CERT_ACCEPT_POLICY_ALLOW,
-                                net::CertStatus());
-          });
-          return;
+          [self decideLoadPolicyForAcceptedTrustResult:trustResult
+                                           serverTrust:trust
+                                                  host:host
+                                     completionHandler:handlerHolder];
+        } else {
+          [self decideLoadPolicyForRejectedTrustResult:trustResult
+                                           serverTrust:trust
+                                                  host:host
+                                     completionHandler:handlerHolder];
         }
-
-        // SecTrust API considers this cert as invalid. Check the reason and
-        // whether or not user has decided to proceed with this bad cert.
-        scoped_refptr<net::X509Certificate> cert(
-            web::CreateCertFromTrust(trust));
-        [self verifyCert:cert
-                      forHost:host
-            completionHandler:^(net::CertVerifyResult certVerifierResult,
-                                BOOL dispatched) {
-              if (!dispatched) {
-                // Cert verification task did not start.
-                dispatch_async(dispatch_get_main_queue(), ^{
-                  handlerHolder->call(
-                      web::CERT_ACCEPT_POLICY_NON_RECOVERABLE_ERROR,
-                      net::CertStatus());
-                });
-                return;
-              }
-
-              web::CertAcceptPolicy policy =
-                  [self loadPolicyForBadTrustResult:trustResult
-                                 certVerifierResult:certVerifierResult
-                                        serverTrust:trust.get()
-                                               host:host];
-
-              dispatch_async(dispatch_get_main_queue(), ^{
-                handlerHolder->call(policy, certVerifierResult.cert_status);
-              });
-            }];
       }];
 }
 
@@ -234,8 +261,6 @@ class BlockHolder : public base::RefCountedThreadSafe<BlockHolder<T>> {
         // Retrieve the net::CertStatus for invalid certificates to determine
         // the rejection reason, it is possible that rejection reason could not
         // be determined and |cert_status| will be empty.
-        // TODO(eugenebut): Add UMA for CertVerifier and SecTrust verification
-        // mismatch (crbug.com/535699).
         scoped_refptr<net::X509Certificate> cert(
             web::CreateCertFromTrust(trust));
         [self verifyCert:cert
@@ -295,12 +320,97 @@ class BlockHolder : public base::RefCountedThreadSafe<BlockHolder<T>> {
   return config.GetCertVerifyFlags();
 }
 
+- (BOOL)shouldReportCertVerifyAgreement {
+  // Cert verification is an expensive operation. Since extra verification will
+  // be used only for UMA reporting purposes, do that only for 1% of cases.
+  return base::RandGenerator(100) == 0;
+}
+
+- (void)reportUMAForCertVerifyAgreement:(CertVerifyAgreement)agreement {
+  UMA_HISTOGRAM_ENUMERATION("Web.CertVerifyAgreement", agreement,
+                            CERT_VERIFY_AGREEMENT_COUNT);
+}
+
 - (void)createCertVerifier {
   web::WebThread::PostTask(web::WebThread::IO, FROM_HERE, base::BindBlock(^{
     net::URLRequestContext* context = _contextGetter->GetURLRequestContext();
     _certVerifier.reset(new web::CertVerifierBlockAdapter(
         context->cert_verifier(), context->net_log()));
   }));
+}
+
+- (void)
+decideLoadPolicyForRejectedTrustResult:(SecTrustResultType)trustResult
+                           serverTrust:(base::ScopedCFTypeRef<SecTrustRef>)trust
+                                  host:(NSString*)host
+                     completionHandler:(PolicyDecisionHandlerHolder)handler {
+  // SecTrust API considers this cert as invalid. Check the reason and
+  // whether or not user has decided to proceed with this bad cert.
+  scoped_refptr<net::X509Certificate> cert(web::CreateCertFromTrust(trust));
+  [self verifyCert:cert
+                forHost:host
+      completionHandler:^(net::CertVerifyResult certVerifierResult,
+                          BOOL dispatched) {
+        if (!dispatched) {
+          // Cert verification task did not start.
+          dispatch_async(dispatch_get_main_queue(), ^{
+            handler->call(web::CERT_ACCEPT_POLICY_NON_RECOVERABLE_ERROR,
+                          net::CertStatus());
+          });
+          return;
+        }
+
+        web::CertAcceptPolicy policy =
+            [self loadPolicyForRejectedTrustResult:trustResult
+                                certVerifierResult:certVerifierResult
+                                       serverTrust:trust.get()
+                                              host:host];
+
+        dispatch_async(dispatch_get_main_queue(), ^{
+          if ([self shouldReportCertVerifyAgreement]) {
+            CertVerifyAgreement agreement =
+                net::IsCertStatusError(certVerifierResult.cert_status)
+                    ? CERT_VERIFY_AGREEMENT_REJECTED_BY_BOTH
+                    : CERT_VERIFY_AGREEMENT_ACCEPTED_ONLY_BY_NSS;
+            [self reportUMAForCertVerifyAgreement:agreement];
+          }
+          handler->call(policy, certVerifierResult.cert_status);
+        });
+      }];
+}
+
+- (void)
+decideLoadPolicyForAcceptedTrustResult:(SecTrustResultType)trustResult
+                           serverTrust:(base::ScopedCFTypeRef<SecTrustRef>)trust
+                                  host:(NSString*)host
+                     completionHandler:(PolicyDecisionHandlerHolder)handler {
+  // SecTrust API considers this cert as valid.
+  dispatch_async(dispatch_get_main_queue(), ^{
+    handler->call(web::CERT_ACCEPT_POLICY_ALLOW, net::CertStatus());
+  });
+
+  if ([self shouldReportCertVerifyAgreement]) {
+    // Execute CertVerifier::Verify to collect CertVerifyAgreement UMA.
+    scoped_refptr<net::X509Certificate> cert(web::CreateCertFromTrust(trust));
+    [self verifyCert:cert
+                  forHost:host
+        completionHandler:^(net::CertVerifyResult certVerifierResult,
+                            BOOL dispatched) {
+          if (!dispatched) {
+            return;
+          }
+          // SecTrust API accepted this cert and |PolicyDecisionHandler| has
+          // been called already. |CertVerifier| verification is executed only
+          // to collect CertVerifyAgreement UMA.
+          dispatch_async(dispatch_get_main_queue(), ^{
+            CertVerifyAgreement agreement =
+                net::IsCertStatusError(certVerifierResult.cert_status)
+                    ? CERT_VERIFY_AGREEMENT_ACCEPTED_ONLY_BY_IOS
+                    : CERT_VERIFY_AGREEMENT_ACCEPTED_BY_BOTH;
+            [self reportUMAForCertVerifyAgreement:agreement];
+          });
+        }];
+  }
 }
 
 - (void)verifyCert:(const scoped_refptr<net::X509Certificate>&)cert
@@ -351,10 +461,10 @@ class BlockHolder : public base::RefCountedThreadSafe<BlockHolder<T>> {
 }
 
 - (web::CertAcceptPolicy)
-    loadPolicyForBadTrustResult:(SecTrustResultType)trustResult
-             certVerifierResult:(net::CertVerifyResult)certVerifierResult
-                    serverTrust:(SecTrustRef)trust
-                           host:(NSString*)host {
+    loadPolicyForRejectedTrustResult:(SecTrustResultType)trustResult
+                  certVerifierResult:(net::CertVerifyResult)certVerifierResult
+                         serverTrust:(SecTrustRef)trust
+                                host:(NSString*)host {
   DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::IO);
   DCHECK_NE(web::SECURITY_STYLE_AUTHENTICATED,
             web::GetSecurityStyleFromTrustResult(trustResult));

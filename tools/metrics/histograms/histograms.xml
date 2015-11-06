@@ -50585,6 +50585,18 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>HTTP response codes seen by Wallet client.</summary>
 </histogram>
 
+<histogram name="Web.CertVerifyAgreement" enum="WebCertVerifyAgreement">
+  <owner>eugenebut@chromium.com</owner>
+  <summary>
+    [iOS] Reports certificate verification mismatch between SecTrust API and
+    CertVerifier. SecTrust API is used for making load/no-load decision and
+    CertVerifier is used for getting the reason of verification failure. It is
+    expected that mismatches will happen for those 2 approaches (e.g. SecTrust
+    API considers cert as good, but CertVerifier considers same cert as bad).
+    This metric helps to understand how common mismatches are.
+  </summary>
+</histogram>
+
 <histogram name="Webapp.Splashscreen.BackgroundColor"
     enum="SplashscreenColorStatus">
   <owner>mlamouri@chromium.org</owner>
@@ -75843,6 +75855,13 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="8"
       label="Chosen device vanished between discovery and user selection"/>
   <int value="9" label="Chooser cancelled"/>
+</enum>
+
+<enum name="WebCertVerifyAgreement" type="int">
+  <int value="0" label="Accepted by both iOS and NSS."/>
+  <int value="1" label="Rejected by both iOS and NSS."/>
+  <int value="2" label="Accepted only by iOS (rejected by NSS)."/>
+  <int value="3" label="Accepted only by NSS (rejected by iOS)."/>
 </enum>
 
 <enum name="WebFontCacheHit" type="int">
