@@ -358,7 +358,7 @@ class BaseCommitQueueCompletionStageTest(
     """
     sync_stage = sync_stages.CommitQueueSyncStage(self._run)
     sync_stage.pool = mock.MagicMock()
-    sync_stage.pool.changes = self.changes
+    sync_stage.pool.applied = self.changes
     sync_stage.pool.tree_was_open = tree_was_open
 
     sync_stage.pool.handle_failure_mock = self.PatchObject(

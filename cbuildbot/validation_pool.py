@@ -1120,9 +1120,9 @@ class ValidationPool(object):
 
 
   def __init__(self, overlays, build_root, build_number, builder_name,
-               is_master, dryrun, changes=None, non_os_changes=None,
+               is_master, dryrun, candidates=None, non_os_changes=None,
                conflicting_changes=None, pre_cq_trybot=False,
-               tree_was_open=True, _applied=None, builder_run=None):
+               tree_was_open=True, applied=None, builder_run=None):
     """Initializes an instance by setting default variables to instance vars.
 
     Generally use AcquirePool as an entry pool to a pool rather than this
@@ -1136,7 +1136,7 @@ class ValidationPool(object):
       is_master: True if this is the master builder for the Commit Queue.
       dryrun: If set to True, do not submit anything to Gerrit.
     Optional Args:
-      changes: List of changes for this validation pool.
+      candidates: List of changes to consider validating.
       non_os_changes: List of changes that are part of this validation
         pool but aren't part of the cros checkout.
       conflicting_changes: Changes that failed to apply but we're keeping around
@@ -1144,8 +1144,7 @@ class ValidationPool(object):
       pre_cq_trybot: If set to True, this is a Pre-CQ trybot. (Note: The Pre-CQ
         launcher is NOT considered a Pre-CQ trybot.)
       tree_was_open: Whether the tree was open when the pool was created.
-      applied: List of CLs that have been applied to the current repo. Not
-        yet used, but needs to be here for pickling compatibility.
+      applied: List of CLs that have been applied to the current repo.
       builder_run: BuilderRun instance used to fetch cidb handle and metadata
         instance. Please note due to the pickling logic, this MUST be the last
         kwarg listed.
@@ -1167,7 +1166,9 @@ class ValidationPool(object):
       raise ValueError("Invalid builder_name: %r" % (builder_name,))
 
     for changes_name, changes_value in (
-        ('changes', changes), ('non_os_changes', non_os_changes)):
+        ('candidates', candidates),
+        ('non_os_changes', non_os_changes),
+        ('applied', applied)):
       if not changes_value:
         continue
       if not all(isinstance(x, cros_patch.GitRepoPatch) for x in changes_value):
@@ -1195,8 +1196,18 @@ class ValidationPool(object):
       self.queue = 'The Commit Queue'
 
     # See optional args for types of changes.
-    self.changes = changes or []
+    self.candidates = candidates or []
     self.non_manifest_changes = non_os_changes or []
+
+    # TODO(dgarrett): Remove this if block after pickle changes settle down.
+    if applied is None:
+      # If we received a pickle from an older version, it will use the
+      # default applied value. All candidates were already applied. Also remove
+      # applied=[] from constructor callers.
+      applied = self.candidates[:]
+
+    self.applied = applied or []
+
     # Note, we hold onto these CLs since they conflict against our current CLs
     # being tested; if our current ones succeed, we notify the user to deal
     # w/ the conflict.  If the CLs we're testing fail, then there is no
@@ -1241,11 +1252,12 @@ class ValidationPool(object):
         (
             self._overlays,
             self.build_root, self._build_number, self._builder_name,
-            self.is_master, self.dryrun, self.changes,
+            self.is_master, self.dryrun, self.candidates,
             self.non_manifest_changes,
             self.changes_that_failed_to_apply_earlier,
             self.pre_cq_trybot,
-            self.tree_was_open))
+            self.tree_was_open,
+            self.applied))
 
   @classmethod
   @failures_lib.SetFailureType(failures_lib.BuilderFailure)
@@ -1254,6 +1266,7 @@ class ValidationPool(object):
     kwargs.setdefault('tree_was_open', True)
     kwargs.setdefault('pre_cq_trybot', True)
     kwargs.setdefault('is_master', True)
+    kwargs.setdefault('applied', [])
     pool = cls(*args, **kwargs)
     return pool
 
@@ -1298,19 +1311,19 @@ class ValidationPool(object):
 
       changes, non_manifest_changes = ValidationPool._FilterNonCrosProjects(
           changes, git.ManifestCheckout.Cached(self.build_root))
-      self.changes.extend(changes)
+      self.candidates.extend(changes)
       self.non_manifest_changes.extend(non_manifest_changes)
 
     # Filter out unwanted changes.
-    unfiltered_str = cros_patch.GetChangesAsString(self.changes)
-    self.changes, self.non_manifest_changes = change_filter(
-        self, self.changes, self.non_manifest_changes)
-    if self.changes:
-      filtered_str = cros_patch.GetChangesAsString(self.changes)
+    unfiltered_str = cros_patch.GetChangesAsString(self.candidates)
+    self.candidates, self.non_manifest_changes = change_filter(
+        self, self.candidates, self.non_manifest_changes)
+    if self.candidates:
+      filtered_str = cros_patch.GetChangesAsString(self.candidates)
       logging.info('Raw changes: %s', unfiltered_str)
       logging.info('Filtered changes: %s', filtered_str)
 
-    return self.changes or self.non_manifest_changes
+    return self.candidates or self.non_manifest_changes
 
   @classmethod
   def AcquirePool(cls, overlays, repo, build_number, builder_name, query,
@@ -1402,7 +1415,7 @@ class ValidationPool(object):
 
       pool = ValidationPool(overlays, repo.directory, build_number,
                             builder_name, True, dryrun, builder_run=builder_run,
-                            tree_was_open=tree_was_open)
+                            tree_was_open=tree_was_open, applied=[])
 
       if pool.AcquireChanges(gerrit_query, ready_fn, change_filter):
         break
@@ -1459,7 +1472,7 @@ class ValidationPool(object):
         attr_dict[name] = pc.getAttribute(name)
       patch = cros_patch.GerritFetchOnlyPatch.FromAttrDict(attr_dict)
 
-      self.changes.append(patch)
+      self.candidates.append(patch)
 
   @classmethod
   def AcquirePoolFromManifest(cls, manifest, overlays, repo, build_number,
@@ -1485,7 +1498,8 @@ class ValidationPool(object):
       ValidationPool object.
     """
     pool = ValidationPool(overlays, repo.directory, build_number, builder_name,
-                          is_master, dryrun, builder_run=builder_run)
+                          is_master, dryrun, builder_run=builder_run,
+                          applied=[])
     pool.AddPendingCommitsIntoPool(manifest)
     return pool
 
@@ -1624,6 +1638,8 @@ class ValidationPool(object):
   def FilterChangesForThrottledTree(self):
     """Apply Throttled Tree logic to select patch candidates.
 
+    This should be called before any CLs are applied.
+
     If the tree is throttled, we only test a random subset of our candidate
     changes. Call this to select that subset, and throw away unrelated changes.
 
@@ -1632,22 +1648,27 @@ class ValidationPool(object):
     if self.tree_was_open:
       return
 
+    # By filtering the candidates before any calls to Apply, we can make sure
+    # that repeated calls to Apply always consider the same list of candidates.
     fail_streak = self._GetFailStreak()
-    test_pool_size = max(1, len(self.changes) / (2**fail_streak))
-    random.shuffle(self.changes)
-    filtered = cros_patch.GetChangesAsString(self.changes[test_pool_size:])
-    logging.info('Skipped random changes for throttled tree: %s', filtered)
-    self.changes = self.changes[:test_pool_size]
-    remaining = cros_patch.GetChangesAsString(self.changes)
-    logging.info('Remaining changes: %s', remaining)
+    test_pool_size = max(1, len(self.candidates) / (2**fail_streak))
+    random.shuffle(self.candidates)
+    self.candidates = self.candidates[:test_pool_size]
 
-  def ApplyPoolIntoRepo(self, manifest=None):
+  def ApplyPoolIntoRepo(self, manifest=None, filter_fn=lambda p: True):
     """Applies changes from pool into the directory specified by the buildroot.
 
     This method applies changes in the order specified. If the build
     is running as the master, it also respects the dependency
     order. Otherwise, the changes should already be listed in an order
     that will not break the dependency order.
+
+    It is safe to call this method more than once, probably with different
+    filter functions. A given patch will never be applied more than  once.
+
+    Args:
+      manifest: A manifest object to use for mapping projects to repositories.
+      filter_fn: Takes a patch argument, returns bool for 'should apply'.
 
     Returns:
       True if we managed to apply any changes.
@@ -1661,9 +1682,12 @@ class ValidationPool(object):
 
     if self.is_master:
       try:
+        candidates = [c for c in self.candidates if
+                      c not in self.applied and filter_fn(c)]
+
         # pylint: disable=E1123
         applied, failed_tot, failed_inflight = patch_series.Apply(
-            self.changes, manifest=manifest)
+            candidates, manifest=manifest)
       except (KeyboardInterrupt, RuntimeError, SystemExit):
         raise
       except Exception as e:
@@ -1676,9 +1700,9 @@ class ValidationPool(object):
             'commit queue does not go into an infinite loop retrying '
             'patches.' % (e,)
         )
-        links = cros_patch.GetChangesAsString(self.changes)
+        links = cros_patch.GetChangesAsString(self.candidates)
         logging.error('%s\nAffected Patches are: %s', msg, links)
-        errors = [InternalCQError(patch, msg) for patch in self.changes]
+        errors = [InternalCQError(patch, msg) for patch in self.candidates]
         self._HandleApplyFailure(errors)
         raise
 
@@ -1700,7 +1724,7 @@ class ValidationPool(object):
       # Slaves do not need to create transactions and should simply
       # apply the changes serially, based on the order that the
       # changes were listed on the manifest.
-      for change in self.changes:
+      for change in self.candidates:
         try:
           # pylint: disable=E1123
           patch_series.ApplyChange(change, manifest=manifest)
@@ -1742,9 +1766,9 @@ class ValidationPool(object):
         self._HandleFailedToApplyDueToInflightConflict(x.patch)
 
     self.changes_that_failed_to_apply_earlier.extend(failed_inflight)
-    self.changes = applied
+    self.applied.extend(applied)
 
-    return bool(self.changes)
+    return bool(self.applied)
 
   @staticmethod
   def Load(filename, builder_run=None):
@@ -2332,7 +2356,7 @@ class ValidationPool(object):
     # a CQ run (since the submit state has changed, we have no way of
     # knowing).  They *likely* will still fail, but this approach tries
     # to minimize wasting the developers time.
-    submitted, errors = self.SubmitChanges(self.changes,
+    submitted, errors = self.SubmitChanges(self.applied,
                                            check_tree_open=check_tree_open,
                                            throttled_ok=throttled_ok,
                                            reason=reason)
@@ -2462,7 +2486,7 @@ class ValidationPool(object):
         not sane, none of the changes will have their CommitReady bit modified.
     """
     if changes is None:
-      changes = self.changes
+      changes = self.applied
 
     logging.info('Validation timed out for all changes.')
     base_msg = ('%(queue)s timed out while verifying your change in '
@@ -2527,7 +2551,7 @@ class ValidationPool(object):
         self._InsertCLActionToDatabase(change, constants.CL_ACTION_VERIFIED)
 
     # Process the changes in parallel.
-    inputs = [[change] for change in self.changes]
+    inputs = [[change] for change in self.applied]
     parallel.RunTasksInProcessPool(ProcessChange, inputs)
 
   def _HandleCouldNotSubmit(self, change, error=''):
@@ -2684,7 +2708,7 @@ class ValidationPool(object):
         status. If not None, this implies there were infrastructure issues.
     """
     if changes is None:
-      changes = self.changes
+      changes = self.applied
 
     candidates = []
 

@@ -1055,7 +1055,7 @@ class CommitQueueSyncStage(MasterSlaveLKGMSyncStage):
     else:
       ManifestVersionedSyncStage.PerformStage(self)
 
-    self.WriteChangesToMetadata(self.pool.changes)
+    self.WriteChangesToMetadata(self.pool.applied)
 
 
 class PreCQSyncStage(SyncStage):
@@ -1088,14 +1088,14 @@ class PreCQSyncStage(SyncStage):
     self.pool = validation_pool.ValidationPool.AcquirePreCQPool(
         self._run.config.overlays, self._build_root,
         self._run.buildnumber, self._run.config.name,
-        dryrun=self._run.options.debug_forced, changes=self.patches,
+        dryrun=self._run.options.debug_forced, candidates=self.patches,
         builder_run=self._run)
     self.pool.ApplyPoolIntoRepo()
 
-    if len(self.pool.changes) == 0 and self.patches:
+    if len(self.pool.applied) == 0 and self.patches:
       cros_build_lib.Die('No changes have been applied.')
 
-    changes = self.pool.changes or self.patches
+    changes = self.pool.applied or self.patches
     self.WriteChangesToMetadata(changes)
 
 class PreCQLauncherStage(SyncStage):
