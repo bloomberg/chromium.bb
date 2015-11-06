@@ -46,7 +46,7 @@ class TestNetworkQualityEstimator : public net::NetworkQualityEstimator {
     // Set up embedded test server.
     embedded_test_server_.ServeFilesFromDirectory(
         base::FilePath(FILE_PATH_LITERAL("net/data/url_request_unittest")));
-    EXPECT_TRUE(embedded_test_server_.InitializeAndWaitUntilReady());
+    EXPECT_TRUE(embedded_test_server_.Start());
     embedded_test_server_.RegisterRequestHandler(base::Bind(
         &TestNetworkQualityEstimator::HandleRequest, base::Unretained(this)));
   }
@@ -99,7 +99,7 @@ class TestNetworkQualityEstimator : public net::NetworkQualityEstimator {
   std::string current_network_id_;
 
   // Embedded server used for testing.
-  net::test_server::EmbeddedTestServer embedded_test_server_;
+  net::EmbeddedTestServer embedded_test_server_;
 
   DISALLOW_COPY_AND_ASSIGN(TestNetworkQualityEstimator);
 };
