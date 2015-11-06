@@ -29,7 +29,8 @@
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8BindingForTesting.h"
-#include "core/dom/DOMError.h"
+#include "core/dom/DOMException.h"
+#include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/testing/NullExecutionContext.h"
 #include "modules/indexeddb/IDBDatabaseCallbacks.h"
@@ -85,7 +86,7 @@ TEST_F(IDBRequestTest, EventsAfterStopping)
     executionContext()->stopActiveDOMObjects();
 
     // Ensure none of the following raise assertions in stopped state:
-    request->onError(DOMError::create(AbortError, "Description goes here."));
+    request->onError(DOMException::create(AbortError, "Description goes here."));
     request->onSuccess(Vector<String>());
     request->onSuccess(nullptr, IDBKey::createInvalid(), IDBKey::createInvalid(), IDBValue::create());
     request->onSuccess(IDBKey::createInvalid());
@@ -106,7 +107,7 @@ TEST_F(IDBRequestTest, AbortErrorAfterAbort)
 
     // Now simulate the back end having fired an abort error at the request to clear up any intermediaries.
     // Ensure an assertion is not raised.
-    request->onError(DOMError::create(AbortError, "Description goes here."));
+    request->onError(DOMException::create(AbortError, "Description goes here."));
 
     // Stop the request lest it be GCed and its destructor
     // finds the object in a pending state (and asserts.)

@@ -27,6 +27,7 @@
 #include "modules/indexeddb/IDBOpenDBRequest.h"
 
 #include "bindings/core/v8/Nullable.h"
+#include "core/dom/DOMException.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
 #include "modules/indexeddb/IDBDatabase.h"
@@ -169,7 +170,7 @@ bool IDBOpenDBRequest::dispatchEventInternal(PassRefPtrWillBeRawPtr<Event> event
     if (event->type() == EventTypeNames::success && resultAsAny()->type() == IDBAny::IDBDatabaseType && resultAsAny()->idbDatabase()->isClosePending()) {
         dequeueEvent(event.get());
         setResult(nullptr);
-        onError(DOMError::create(AbortError, "The connection was closed."));
+        onError(DOMException::create(AbortError, "The connection was closed."));
         return false;
     }
 

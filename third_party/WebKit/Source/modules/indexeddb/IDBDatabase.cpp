@@ -31,6 +31,7 @@
 #include "bindings/core/v8/Nullable.h"
 #include "bindings/core/v8/SerializedScriptValue.h"
 #include "bindings/modules/v8/V8BindingForModules.h"
+#include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/events/EventQueue.h"
 #include "core/inspector/ScriptCallStack.h"
@@ -149,7 +150,7 @@ void IDBDatabase::transactionFinished(const IDBTransaction* transaction)
         closeConnection();
 }
 
-void IDBDatabase::onAbort(int64_t transactionId, DOMError* error)
+void IDBDatabase::onAbort(int64_t transactionId, DOMException* error)
 {
     ASSERT(m_transactions.contains(transactionId));
     m_transactions.get(transactionId)->onAbort(error);

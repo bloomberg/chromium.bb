@@ -32,7 +32,6 @@
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "core/dom/ActiveDOMObject.h"
-#include "core/dom/DOMError.h"
 #include "core/dom/DOMStringList.h"
 #include "core/events/EventListener.h"
 #include "core/events/EventTarget.h"
@@ -49,6 +48,7 @@
 
 namespace blink {
 
+class DOMException;
 class ExceptionState;
 class IDBCursor;
 struct IDBDatabaseMetadata;
@@ -67,7 +67,7 @@ public:
 
     ScriptState* scriptState() { return m_scriptState.get(); }
     ScriptValue result(ExceptionState&);
-    DOMError* error(ExceptionState&) const;
+    DOMException* error(ExceptionState&) const;
     ScriptValue source() const;
     IDBTransaction* transaction() const { return m_transaction.get(); }
 
@@ -94,7 +94,7 @@ public:
     void setPendingCursor(IDBCursor*);
     void abort();
 
-    virtual void onError(DOMError*);
+    virtual void onError(DOMException*);
     virtual void onSuccess(const Vector<String>&);
     virtual void onSuccess(PassOwnPtr<WebIDBCursor>, IDBKey*, IDBKey* primaryKey, PassRefPtr<IDBValue>);
     virtual void onSuccess(IDBKey*);
@@ -149,7 +149,7 @@ private:
     RefPtr<ScriptState> m_scriptState;
     Member<IDBAny> m_source;
     Member<IDBAny> m_result;
-    Member<DOMError> m_error;
+    Member<DOMException> m_error;
 
     bool m_hasPendingActivity = true;
     WillBeHeapVector<RefPtrWillBeMember<Event>> m_enqueuedEvents;

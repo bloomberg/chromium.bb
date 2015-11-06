@@ -28,7 +28,6 @@
 
 #include "bindings/core/v8/ScriptState.h"
 #include "core/dom/ActiveDOMObject.h"
-#include "core/dom/DOMError.h"
 #include "core/events/EventListener.h"
 #include "modules/EventModules.h"
 #include "modules/EventTargetModules.h"
@@ -42,7 +41,7 @@
 
 namespace blink {
 
-class DOMError;
+class DOMException;
 class ExceptionState;
 class IDBDatabase;
 class IDBObjectStore;
@@ -77,7 +76,7 @@ public:
     const String& mode() const;
     PassRefPtrWillBeRawPtr<DOMStringList> objectStoreNames() const;
     IDBDatabase* db() const { return m_database.get(); }
-    DOMError* error() const { return m_error; }
+    DOMException* error() const { return m_error; }
     IDBObjectStore* objectStore(const String& name, ExceptionState&);
     void abort(ExceptionState&);
 
@@ -86,13 +85,13 @@ public:
     void objectStoreCreated(const String&, IDBObjectStore*);
     void objectStoreDeleted(const String&);
     void setActive(bool);
-    void setError(DOMError*);
+    void setError(DOMException*);
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(abort);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(complete);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(error);
 
-    void onAbort(DOMError*);
+    void onAbort(DOMException*);
     void onComplete();
 
     // EventTarget
@@ -127,7 +126,7 @@ private:
     State m_state = Active;
     bool m_hasPendingActivity = true;
     bool m_contextStopped = false;
-    Member<DOMError> m_error;
+    Member<DOMException> m_error;
 
     HeapListHashSet<Member<IDBRequest>> m_requestList;
 

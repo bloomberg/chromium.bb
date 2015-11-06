@@ -33,6 +33,8 @@
 #include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "bindings/modules/v8/ToV8ForModules.h"
 #include "bindings/modules/v8/V8BindingForModules.h"
+#include "core/dom/DOMException.h"
+#include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/events/EventQueue.h"
 #include "modules/IndexedDBNames.h"
@@ -98,7 +100,7 @@ ScriptValue IDBRequest::result(ExceptionState& exceptionState)
     return value;
 }
 
-DOMError* IDBRequest::error(ExceptionState& exceptionState) const
+DOMException* IDBRequest::error(ExceptionState& exceptionState) const
 {
     if (m_readyState != DONE) {
         exceptionState.throwDOMException(InvalidStateError, IDBDatabase::requestNotFinishedErrorMessage);
@@ -143,7 +145,7 @@ void IDBRequest::abort()
 
     m_error.clear();
     m_result.clear();
-    onError(DOMError::create(AbortError, "The transaction was aborted, so the request cannot be fulfilled."));
+    onError(DOMException::create(AbortError, "The transaction was aborted, so the request cannot be fulfilled."));
     m_requestAborted = true;
 }
 
@@ -220,7 +222,7 @@ bool IDBRequest::shouldEnqueueEvent() const
     return true;
 }
 
-void IDBRequest::onError(DOMError* error)
+void IDBRequest::onError(DOMException* error)
 {
     IDB_TRACE("IDBRequest::onError()");
     if (!shouldEnqueueEvent())
@@ -488,7 +490,7 @@ bool IDBRequest::dispatchEventInternal(PassRefPtrWillBeRawPtr<Event> event)
 void IDBRequest::uncaughtExceptionInEventHandler()
 {
     if (m_transaction && !m_requestAborted) {
-        m_transaction->setError(DOMError::create(AbortError, "Uncaught exception in event handler."));
+        m_transaction->setError(DOMException::create(AbortError, "Uncaught exception in event handler."));
         m_transaction->abort(IGNORE_EXCEPTION);
     }
 }

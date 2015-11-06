@@ -48,7 +48,7 @@
 
 namespace blink {
 
-class DOMError;
+class DOMException;
 class ExceptionState;
 class ExecutionContext;
 
@@ -86,7 +86,7 @@ public:
 
     // IDBDatabaseCallbacks
     void onVersionChange(int64_t oldVersion, int64_t newVersion);
-    void onAbort(int64_t, DOMError*);
+    void onAbort(int64_t, DOMException*);
     void onComplete(int64_t);
 
     // ActiveDOMObject

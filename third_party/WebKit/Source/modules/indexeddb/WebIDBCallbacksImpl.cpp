@@ -29,7 +29,7 @@
 #include "config.h"
 #include "modules/indexeddb/WebIDBCallbacksImpl.h"
 
-#include "core/dom/DOMError.h"
+#include "core/dom/DOMException.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "modules/indexeddb/IDBMetadata.h"
 #include "modules/indexeddb/IDBRequest.h"
@@ -72,7 +72,7 @@ WebIDBCallbacksImpl::~WebIDBCallbacksImpl()
 void WebIDBCallbacksImpl::onError(const WebIDBDatabaseError& error)
 {
     InspectorInstrumentationCookie cookie = InspectorInstrumentation::traceAsyncCallbackStarting(m_request->executionContext(), m_asyncOperationId);
-    m_request->onError(DOMError::create(error.code(), error.message()));
+    m_request->onError(DOMException::create(error.code(), error.message()));
     InspectorInstrumentation::traceAsyncCallbackCompleted(cookie);
 }
 

@@ -1,4 +1,4 @@
- /*
+/*
  * Copyright (C) 2010 Google Inc. All rights reserved.
  * Copyright (C) 2011 Apple Inc. All rights reserved.
  *
@@ -44,7 +44,7 @@ enum IDBTransactionMode {
     [Measure] readonly attribute DOMStringList objectStoreNames;
     readonly attribute IDBTransactionMode mode;
     readonly attribute IDBDatabase db;
-    [Measure] readonly attribute DOMError error;
+    readonly attribute DOMException error;
 
     // Methods
     [RaisesException] IDBObjectStore objectStore (DOMString name);
