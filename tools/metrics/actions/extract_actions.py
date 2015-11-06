@@ -31,6 +31,7 @@ import shutil
 import sys
 from xml.dom import minidom
 
+import action_utils
 import print_style
 
 sys.path.insert(1, os.path.join(sys.path[0], '..', '..', 'python'))
@@ -555,16 +556,6 @@ def _ExtractText(parent_dom, tag_name):
   return texts
 
 
-class Action(object):
-  def __init__(self, name, description, owners,
-               not_user_triggered=False, obsolete=None):
-    self.name = name
-    self.description = description
-    self.owners = owners
-    self.not_user_triggered = not_user_triggered
-    self.obsolete = obsolete
-
-
 def ParseActionFile(file_content):
   """Parse the XML data currently stored in the file.
 
@@ -579,7 +570,7 @@ def ParseActionFile(file_content):
 
   comment_nodes = []
   # Get top-level comments. It is assumed that all comments are placed before
-  # <acionts> tag. Therefore the loop will stop if it encounters a non-comment
+  # <actions> tag. Therefore the loop will stop if it encounters a non-comment
   # node.
   for node in dom.childNodes:
     if node.nodeType == minidom.Node.COMMENT_NODE:
@@ -587,13 +578,11 @@ def ParseActionFile(file_content):
     else:
       break
 
-  actions = set()
   actions_dict = {}
   # Get each user action data.
   for action_dom in dom.getElementsByTagName('action'):
     action_name = action_dom.getAttribute('name')
     not_user_triggered = bool(action_dom.getAttribute('not_user_triggered'))
-    actions.add(action_name)
 
     owners = _ExtractText(action_dom, 'owner')
     # There is only one description for each user action. Get the first element
@@ -613,9 +602,16 @@ def ParseActionFile(file_content):
                     ' fix.', action_name)
       sys.exit(1)
     obsolete = obsolete_list[0] if obsolete_list else None
-    actions_dict[action_name] = Action(action_name, description, owners,
-                                       not_user_triggered, obsolete)
-  return actions, actions_dict, comment_nodes
+    actions_dict[action_name] = action_utils.Action(action_name, description,
+        owners, not_user_triggered, obsolete)
+
+  try:
+    action_utils.CreateActionsFromSuffixes(actions_dict,
+        dom.getElementsByTagName('action-suffix'))
+  except action_utils.Error as e:
+    sys.exit(1)
+
+  return set(actions_dict.keys()), actions_dict, comment_nodes
 
 
 def _CreateActionTag(doc, action_name, action_object):

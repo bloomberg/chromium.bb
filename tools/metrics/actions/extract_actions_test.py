@@ -126,6 +126,113 @@ NOT_USER_TRIGGERED_EXPECTED_XML = (
     '</actions>\n'
 )
 
+BASIC_SUFFIX_EXPECTED_XML = (
+    '<actions>\n\n'
+    '<action name="action1">\n'
+    '  <owner>name1@chromium.org</owner>\n'
+    '  <description>Description.</description>\n'
+    '</action>\n\n'
+    '<action name="action1_suffix1">\n'
+    '  <owner>name1@chromium.org</owner>\n'
+    '  <description>Description. Suffix Description 1.</description>\n'
+    '</action>\n\n'
+    '</actions>\n'
+)
+
+MULTI_ACTION_MULTI_SUFFIX_CHAIN = (
+    '<actions>\n\n'
+    '<action name="action1">\n'
+    '  <owner>name1@chromium.org</owner>\n'
+    '  <description>Description.</description>\n'
+    '</action>\n\n'
+    '<action name="action1_suffix1">\n'
+    '  <owner>name1@chromium.org</owner>\n'
+    '  <description>Description. Suffix Description 1.</description>\n'
+    '</action>\n\n'
+    '<action name="action1_suffix2">\n'
+    '  <owner>name1@chromium.org</owner>\n'
+    '  <description>Description. Suffix Description 2.</description>\n'
+    '</action>\n\n'
+    '<action name="action1_suffix2_suffix3">\n'
+    '  <owner>name1@chromium.org</owner>\n'
+    '  <description>\n'
+    '    Description. Suffix Description 2. Suffix Description 3.\n'
+    '  </description>\n'
+    '</action>\n\n'
+    '<action name="action1_suffix2_suffix3_suffix4">\n'
+    '  <owner>name1@chromium.org</owner>\n'
+    '  <description>\n'
+    '    Description. Suffix Description 2. Suffix Description 3. '
+    'Suffix Description\n'
+    '    4.\n'
+    '  </description>\n'
+    '</action>\n\n'
+    '<action name="action2">\n'
+    '  <owner>name2@chromium.org</owner>\n'
+    '  <description>Description.</description>\n'
+    '</action>\n\n'
+    '<action name="action2_suffix1">\n'
+    '  <owner>name2@chromium.org</owner>\n'
+    '  <description>Description. Suffix Description 1.</description>\n'
+    '</action>\n\n'
+    '<action name="action2_suffix2">\n'
+    '  <owner>name2@chromium.org</owner>\n'
+    '  <description>Description. Suffix Description 2.</description>\n'
+    '</action>\n\n'
+    '</actions>\n'
+)
+
+SUFFIX_CUSTOM_SEPARATOR = (
+    '<actions>\n\n'
+    '<action name="action1">\n'
+    '  <owner>name1@chromium.org</owner>\n'
+    '  <description>Description.</description>\n'
+    '</action>\n\n'
+    '<action name="action1.suffix1">\n'
+    '  <owner>name1@chromium.org</owner>\n'
+    '  <description>Description. Suffix Description 1.</description>\n'
+    '</action>\n\n'
+    '</actions>\n'
+)
+
+SUFFIX_OREDERING_PREFIX = (
+    '<actions>\n\n'
+    '<action name="action1.prefix1_remainder">\n'
+    '  <owner>name1@chromium.org</owner>\n'
+    '  <description>Description. Prefix Description 1.</description>\n'
+    '</action>\n\n'
+    '<action name="action1.remainder">\n'
+    '  <owner>name1@chromium.org</owner>\n'
+    '  <description>Description.</description>\n'
+    '</action>\n\n'
+    '</actions>\n'
+)
+
+AFFECTED_ACTION_WITH_SUFFIX_TAG = (
+    '<actions>\n\n'
+    '<action name="action1">\n'
+    '  <owner>name1@chromium.org</owner>\n'
+    '  <description>Description.</description>\n'
+    '</action>\n\n'
+    '<action name="action1_suffix1">\n'
+    '  <owner>name1@chromium.org</owner>\n'
+    '  <description>Description. Suffix Description 1.</description>\n'
+    '</action>\n\n'
+    '<action name="action1_suffix2">\n'
+    '  <owner>name1@chromium.org</owner>\n'
+    '  <description>Description. Suffix Description 2.</description>\n'
+    '</action>\n\n'
+    '<action name="action2">\n'
+    '  <owner>name2@chromium.org</owner>\n'
+    '  <description>Description.</description>\n'
+    '</action>\n\n'
+    '<action name="action2_suffix2">\n'
+    '  <owner>name2@chromium.org</owner>\n'
+    '  <description>Description. Suffix Description 2.</description>\n'
+    '</action>\n\n'
+    '</actions>\n'
+)
+
 class ActionXmlTest(unittest.TestCase):
 
   def _GetProcessedAction(self, owner, description, obsolete,
@@ -155,6 +262,19 @@ class ActionXmlTest(unittest.TestCase):
         current_xml)
     for new_action in new_actions:
       actions.add(new_action)
+    return extract_actions.PrettyPrint(actions, actions_dict, comments)
+
+  def _GetProcessedActionFromActionsXMLString(self, actions_xml):
+    """parses the given actions XML string and pretty prints it.
+
+    Args:
+      actions_xml: actions XML string.
+
+    Returns:
+      An updated and pretty-printed actions XML string.
+    """
+    actions, actions_dict, comments = extract_actions.ParseActionFile(
+        actions_xml)
     return extract_actions.PrettyPrint(actions, actions_dict, comments)
 
   def testNoOwner(self):
@@ -214,6 +334,176 @@ class ActionXmlTest(unittest.TestCase):
     xml_result = self._GetProcessedAction(NO_VALUE, DESCRIPTION, NO_VALUE,
                                           NOT_USER_TRIGGERED)
     self.assertEqual(NOT_USER_TRIGGERED_EXPECTED_XML, xml_result)
+
+  def testBasicSuffix(self):
+    original_xml = """
+    <actions>
+    <action name="action1">
+      <owner>name1@chromium.org</owner>
+      <description>Description.</description>
+    </action>
+    <actions-suffixes>
+    <action-suffix>
+      <suffix name="suffix1" label="Suffix Description 1." />
+      <affected-action name="action1" />
+    </action-suffix>
+    </actions-suffixes>
+    </actions>
+    """
+    xml_result = self._GetProcessedActionFromActionsXMLString(original_xml)
+    self.assertEqual(BASIC_SUFFIX_EXPECTED_XML, xml_result)
+
+  def testMultiActionMultiSuffixChain(self):
+    original_xml = """
+    <actions>
+    <action name="action1">
+      <owner>name1@chromium.org</owner>
+      <description>Description.</description>
+    </action>
+      <action name="action2">
+      <owner>name2@chromium.org</owner>
+      <description>Description.</description>
+    </action>
+    <actions-suffixes>
+    <action-suffix>
+      <suffix name="suffix1" label="Suffix Description 1." />
+      <suffix name="suffix2" label="Suffix Description 2." />
+      <affected-action name="action1" />
+      <affected-action name="action2" />
+    </action-suffix>
+    <action-suffix>
+      <suffix name="suffix3" label="Suffix Description 3." />
+      <affected-action name="action1_suffix2" />
+    </action-suffix>
+    <action-suffix>
+      <suffix name="suffix4" label="Suffix Description 4." />
+      <affected-action name="action1_suffix2_suffix3" />
+    </action-suffix>
+    </actions-suffixes>
+    </actions>
+    """
+    xml_result = self._GetProcessedActionFromActionsXMLString(original_xml)
+    self.assertEqual(MULTI_ACTION_MULTI_SUFFIX_CHAIN, xml_result)
+
+  def testSuffixCustomSeparator(self):
+    original_xml = """
+    <actions>
+    <action name="action1">
+      <owner>name1@chromium.org</owner>
+      <description>Description.</description>
+    </action>
+    <actions-suffixes>
+    <action-suffix separator='.'>
+      <suffix name="suffix1" label="Suffix Description 1." />
+      <affected-action name="action1" />
+    </action-suffix>
+    </actions-suffixes>
+    </actions>
+    """
+    xml_result = self._GetProcessedActionFromActionsXMLString(original_xml)
+    self.assertEqual(SUFFIX_CUSTOM_SEPARATOR, xml_result)
+
+  def testSuffixOrderingPrefix(self):
+    original_xml = """
+    <actions>
+    <action name="action1.remainder">
+      <owner>name1@chromium.org</owner>
+      <description>Description.</description>
+    </action>
+    <actions-suffixes>
+    <action-suffix ordering='prefix'>
+      <suffix name="prefix1" label="Prefix Description 1." />
+      <affected-action name="action1.remainder" />
+    </action-suffix>
+    </actions-suffixes>
+    </actions>
+    """
+    xml_result = self._GetProcessedActionFromActionsXMLString(original_xml)
+    self.assertEqual(SUFFIX_OREDERING_PREFIX, xml_result)
+
+  def testAffectedActionWithSuffixTag(self):
+    original_xml = """
+    <actions>
+    <action name="action1">
+      <owner>name1@chromium.org</owner>
+      <description>Description.</description>
+    </action>
+      <action name="action2">
+      <owner>name2@chromium.org</owner>
+      <description>Description.</description>
+    </action>
+    <actions-suffixes>
+    <action-suffix>
+      <suffix name="suffix1" label="Suffix Description 1." />
+      <suffix name="suffix2" label="Suffix Description 2." />
+      <affected-action name="action1" />
+      <affected-action name="action2" >
+        <with-suffix name="suffix2" />
+      </affected-action>
+    </action-suffix>
+    </actions-suffixes>
+    </actions>
+    """
+    xml_result = self._GetProcessedActionFromActionsXMLString(original_xml)
+    self.assertEqual(AFFECTED_ACTION_WITH_SUFFIX_TAG, xml_result)
+
+  def testErrorActionMissing(self):
+    original_xml = """
+    <actions>
+    <action name="action1">
+      <owner>name1@chromium.org</owner>
+      <description>Description.</description>
+    </action>
+    <actions-suffixes>
+    <action-suffix>
+      <suffix name="suffix1" label="Suffix Description 1." />
+      <affected-action name="action1" />
+      <affected-action name="action2" />
+    </action-suffix>
+    </actions-suffixes>
+    </actions>
+    """
+    with self.assertRaises(SystemExit) as cm:
+      extract_actions.ParseActionFile(original_xml)
+    self.assertEqual(cm.exception.code, 1)
+
+  def testErrorSuffixNameMissing(self):
+    original_xml = """
+    <actions>
+    <action name="action1">
+      <owner>name1@chromium.org</owner>
+      <description>Description.</description>
+    </action>
+    <actions-suffixes>
+    <action-suffix>
+      <suffix label="Suffix Description 1." />
+      <affected-action name="action1" />
+    </action-suffix>
+    </actions-suffixes>
+    </actions>
+    """
+    with self.assertRaises(SystemExit) as cm:
+      extract_actions.ParseActionFile(original_xml)
+    self.assertEqual(cm.exception.code, 1)
+
+  def testErrorBadActionName(self):
+    original_xml = """
+    <actions>
+    <action name="action1">
+      <owner>name1@chromium.org</owner>
+      <description>Description.</description>
+    </action>
+    <actions-suffixes>
+    <action-suffix ordering='prefix'>
+      <suffix name="prefix1" label="Prefix Description 1." />
+      <affected-action name="action1" />
+    </action-suffix>
+    </actions-suffixes>
+    </actions>
+    """
+    with self.assertRaises(SystemExit) as cm:
+      extract_actions.ParseActionFile(original_xml)
+    self.assertEqual(cm.exception.code, 1)
 
   def testUserMetricsActionSpanningTwoLines(self):
     code = 'base::UserMetricsAction(\n"Foo.Bar"));'
