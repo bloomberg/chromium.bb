@@ -28,7 +28,7 @@ base::LazyInstance<WidgetToLayerMap> g_widget_to_layer_map;
 
 bool ValidInternalFormat(unsigned internalformat) {
   switch (internalformat) {
-    case GL_R8:
+    case GL_RED:
     case GL_BGRA_EXT:
     case GL_RGB:
     case GL_RGB_YCBCR_422_CHROMIUM:

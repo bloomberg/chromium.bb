@@ -5486,7 +5486,7 @@ bool ValidImageFormat(GLenum internalformat,
       return capabilities.texture_format_dxt5;
     case GL_ETC1_RGB8_OES:
       return capabilities.texture_format_etc1;
-    case GL_R8:
+    case GL_RED:
     case GL_RGB:
     case GL_RGBA:
     case GL_RGB_YCBCR_422_CHROMIUM:

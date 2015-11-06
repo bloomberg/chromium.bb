@@ -127,7 +127,7 @@ void SetRow(gfx::BufferFormat format,
 GLenum InternalFormat(gfx::BufferFormat format) {
   switch (format) {
     case gfx::BufferFormat::R_8:
-      return GL_R8;
+      return GL_RED;
     case gfx::BufferFormat::RGBA_4444:
     case gfx::BufferFormat::RGBA_8888:
       return GL_RGBA;

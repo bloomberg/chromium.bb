@@ -1502,7 +1502,7 @@ void ResourceProvider::LazyAllocate(Resource* resource) {
     resource->gpu_memory_buffer =
         gpu_memory_buffer_manager_->AllocateGpuMemoryBuffer(
                                       size, BufferFormat(format),
-                                      gfx::BufferUsage::SCANOUT)
+                                      gfx::BufferUsage::GPU_READ_CPU_READ_WRITE)
             .release();
     LazyCreateImage(resource);
     resource->dirty_image = true;

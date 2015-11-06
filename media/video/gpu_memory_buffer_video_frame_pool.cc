@@ -183,7 +183,7 @@ unsigned ImageInternalFormat(VideoPixelFormat format, size_t plane) {
   switch (format) {
     case PIXEL_FORMAT_I420:
       DCHECK_LE(plane, 2u);
-      return GL_R8_EXT;
+      return GL_RED_EXT;
     case PIXEL_FORMAT_NV12:
       DCHECK_LE(plane, 1u);
       DLOG(WARNING) << "NV12 format not supported yet";

@@ -46,7 +46,7 @@ New Procedures and Functions
     INVALID_VALUE is generated if <width> or <height> is nonpositive.
 
     INVALID_VALUE is generated if <internalformat> is not one of
-    R8, RGB, RGBA, BGRA_EXT, ATC_RGB_AMD, ATC_RGBA_INTERPOLATED_ALPHA_AMD,
+    RED, RGB, RGBA, BGRA_EXT, ATC_RGB_AMD, ATC_RGBA_INTERPOLATED_ALPHA_AMD,
     COMPRESSED_RGB_S3TC_DXT1_EXT, COMPRESSED_RGBA_S3TC_DXT5_EXT or
     ETC1_RGB8_OES.
 
@@ -64,7 +64,7 @@ Dependencies on EXT_texture_format_BGRA8888
 Dependencies on ARB_texture_rg
 
     If ARB_texture_rg is not supported:
-     * delete any reference to the R8 format.
+     * delete any reference to the RED format.
 
 Dependencies on AMD_compressed_ATC_texture
 
@@ -99,3 +99,4 @@ Revision History
     4/6/2015    Add BGRA_EXT format.
     2/7/2015    Add R8 format.
     5/13/2015   Add compressed formats.
+    11/5/2015   Change R8 format to RED.

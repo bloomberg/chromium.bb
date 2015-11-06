@@ -23,7 +23,7 @@ bool ValidInternalFormat(unsigned internalformat) {
     case GL_COMPRESSED_RGB_S3TC_DXT1_EXT:
     case GL_COMPRESSED_RGBA_S3TC_DXT5_EXT:
     case GL_ETC1_RGB8_OES:
-    case GL_R8:
+    case GL_RED:
     case GL_RGB:
     case GL_RGBA:
     case GL_BGRA_EXT:
