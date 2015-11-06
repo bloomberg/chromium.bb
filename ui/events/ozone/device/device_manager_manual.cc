@@ -17,10 +17,9 @@ namespace ui {
 namespace {
 
 void ScanDevicesOnWorkerThread(std::vector<base::FilePath>* result) {
-  base::FileEnumerator file_enum(base::FilePath("/dev/input"),
-                                 false,
-                                 base::FileEnumerator::FILES,
-                                 "event*[0-9]");
+  base::FileEnumerator file_enum(
+      base::FilePath(FILE_PATH_LITERAL("/dev/input")), false,
+      base::FileEnumerator::FILES, FILE_PATH_LITERAL("event*[0-9]"));
   for (base::FilePath path = file_enum.Next(); !path.empty();
        path = file_enum.Next()) {
     result->push_back(path);
