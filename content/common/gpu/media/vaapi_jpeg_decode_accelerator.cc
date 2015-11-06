@@ -21,7 +21,8 @@ namespace {
 // UMA errors that the VaapiJpegDecodeAccelerator class reports.
 enum VAJDADecoderFailure {
   VAAPI_ERROR = 0,
-  VAJDA_DECODER_FAILURES_MAX,
+  // UMA requires that max must be greater than 1.
+  VAJDA_DECODER_FAILURES_MAX = 2,
 };
 
 static void ReportToUMA(VAJDADecoderFailure failure) {

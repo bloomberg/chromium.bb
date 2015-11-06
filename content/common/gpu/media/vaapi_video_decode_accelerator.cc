@@ -29,7 +29,8 @@ namespace {
 // UMA errors that the VaapiVideoDecodeAccelerator class reports.
 enum VAVDADecoderFailure {
   VAAPI_ERROR = 0,
-  VAVDA_DECODER_FAILURES_MAX,
+  // UMA requires that max must be greater than 1.
+  VAVDA_DECODER_FAILURES_MAX = 2,
 };
 }
 

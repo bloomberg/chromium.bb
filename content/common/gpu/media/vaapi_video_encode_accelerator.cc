@@ -67,7 +67,8 @@ const int kCPBWindowSizeMs = 1500;
 // UMA errors that the VaapiVideoEncodeAccelerator class reports.
 enum VAVEAEncoderFailure {
   VAAPI_ERROR = 0,
-  VAVEA_ENCODER_FAILURES_MAX,
+  // UMA requires that max must be greater than 1.
+  VAVEA_ENCODER_FAILURES_MAX = 2,
 };
 
 }
