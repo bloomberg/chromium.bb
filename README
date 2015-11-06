@@ -51,6 +51,21 @@ describe above.
 If the changes are backward incompatible changes to an unstable protocol,
 see <<Unstable protocol changes>>.
 
+Interface naming convention
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+All protocols should avoid using generic namespaces or no namespaces in
+the protocol interface names in order to minimize risk that the generated
+C API collides with other C API. Interface names that may collide with
+interface names from other protocols should also be avoided.
+
+For generic protocols not limited to certain configurations (such as
+specific desktop environment or operating system) the +wp_+ prefix
+should be used on all interfaces in the protocol.
+
+For operating system specific protocols, the interfaces should be
+prefixed with both +wp_+ and the operating system, for example
++wp_linux_+, or +wp_freebsd_+, etc.
+
 Unstable naming convention
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 Unstable protocols have a special naming convention in order to make it
