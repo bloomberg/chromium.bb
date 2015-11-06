@@ -1248,6 +1248,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
     /**
      * Tests that a Tap gesture followed by tapping a non-text character doesn't select.
      */
+    @DisabledTest // https://crbug.com/552107
     @SmallTest
     @Feature({"ContextualSearch"})
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
