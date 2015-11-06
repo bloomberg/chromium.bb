@@ -8,13 +8,10 @@
 #include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/sys_info.h"
 #include "cc/base/switches.h"
 #include "cc/trees/layer_tree_settings.h"
 #include "content/public/browser/android/compositor.h"
-#include "content/public/browser/render_process_host.h"
-#include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "ui/base/ui_base_switches.h"
@@ -33,23 +30,7 @@ void SetContentCommandLineFlags(bool single_process,
   base::CommandLine* parsed_command_line =
       base::CommandLine::ForCurrentProcess();
 
-  int command_line_renderer_limit = -1;
-  if (parsed_command_line->HasSwitch(switches::kRendererProcessLimit)) {
-    std::string limit = parsed_command_line->GetSwitchValueASCII(
-        switches::kRendererProcessLimit);
-    int value;
-    if (base::StringToInt(limit, &value)) {
-      command_line_renderer_limit = std::max(0, value);
-    }
-  }
-
-  if (command_line_renderer_limit > 0) {
-    int limit = std::min(command_line_renderer_limit,
-                         static_cast<int>(kMaxRendererProcessCount));
-    RenderProcessHost::SetMaxRendererProcessCount(limit);
-  }
-
-  if (single_process || command_line_renderer_limit == 0) {
+  if (single_process) {
     // Need to ensure the command line flag is consistent as a lot of chrome
     // internal code checks this directly, but it wouldn't normally get set when
     // we are implementing an embedded WebView.
