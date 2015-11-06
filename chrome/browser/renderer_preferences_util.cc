@@ -11,6 +11,7 @@
 #include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/renderer_preferences.h"
+#include "content/public/common/webrtc_ip_handling_policy.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 #if defined(OS_LINUX) || defined(OS_ANDROID)
@@ -42,10 +43,22 @@ void UpdateFromSystemSettings(content::RendererPreferences* prefs,
   prefs->enable_do_not_track =
       pref_service->GetBoolean(prefs::kEnableDoNotTrack);
 #if defined(ENABLE_WEBRTC)
-  prefs->enable_webrtc_multiple_routes =
-      pref_service->GetBoolean(prefs::kWebRTCMultipleRoutesEnabled);
-  prefs->enable_webrtc_nonproxied_udp =
-      pref_service->GetBoolean(prefs::kWebRTCNonProxiedUdpEnabled);
+  prefs->webrtc_ip_handling_policy = std::string();
+  // Handling the backward compatibility of previous boolean verions of policy
+  // controls.
+  if (!pref_service->HasPrefPath(prefs::kWebRTCIPHandlingPolicy)) {
+    if (!pref_service->GetBoolean(prefs::kWebRTCNonProxiedUdpEnabled)) {
+      prefs->webrtc_ip_handling_policy =
+          content::kWebRTCIPHandlingDisableNonProxiedUdp;
+    } else if (!pref_service->GetBoolean(prefs::kWebRTCMultipleRoutesEnabled)) {
+      prefs->webrtc_ip_handling_policy =
+          content::kWebRTCIPHandlingDefaultPublicInterfaceOnly;
+    }
+  }
+  if (prefs->webrtc_ip_handling_policy.empty()) {
+    prefs->webrtc_ip_handling_policy =
+        pref_service->GetString(prefs::kWebRTCIPHandlingPolicy);
+  }
 #endif
 
   double default_zoom_level = 0;

@@ -3,8 +3,9 @@
 // found in the LICENSE file.
 
 // Preferences API test
-// Run with browser_tests --gtest_filter=ExtensionApiTest.PreferenceApi
+// Run with browser_tests --gtest_filter=ExtensionPreferenceApiTest.Standard
 
+var pn = chrome.privacy.network;
 var preferences_to_test = [
   {
     root: chrome.privacy.network,
@@ -86,5 +87,28 @@ chrome.test.runTests([
       preferences_to_test[i].preferences.forEach(
           prefSetter.bind(preferences_to_test[i].root));
     }
+  },
+  // Set the WebRTCIPHhandlingPolicy and verify it in the get function.
+  function testWebRTCIPHandlingPolicy() {
+    if (pn.webRTCIPHandlingPolicy == undefined) {
+      chrome.test.callbackPass();
+      return;
+    }
+    pn.webRTCIPHandlingPolicy.get(
+      {},
+      expect(
+        {value: chrome.privacy.IPHandlingPolicy.DEFAULT_PUBLIC_INTERFACE_ONLY,
+         levelOfControl: 'controllable_by_this_extension'},
+        'should receive default_public_interface_only.'));
+
+    pn.webRTCIPHandlingPolicy.set(
+      {value: chrome.privacy.IPHandlingPolicy.DISABLE_NON_PROXIED_UDP});
+
+    pn.webRTCIPHandlingPolicy.get(
+      {},
+      expect(
+        {value: chrome.privacy.IPHandlingPolicy.DISABLE_NON_PROXIED_UDP,
+         levelOfControl: 'controlled_by_this_extension'},
+        'should receive disable_non_proxied_udp.'));
   }
 ]);

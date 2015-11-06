@@ -6,6 +6,14 @@
   {
     "namespace": "privacy",
     "description": "Use the <code>chrome.privacy</code> API to control usage of the features in Chrome that can affect a user's privacy. This API relies on the <a href='types#ChromeSetting'>ChromeSetting prototype of the type API</a> for getting and setting Chrome's configuration.",
+    "types": [
+      {
+        "id": "IPHandlingPolicy",
+        "type": "string",
+        "enum": ["default", "default_public_and_private_interfaces", "default_public_interface_only", "disable_non_proxied_udp"],
+        "description": "The IP handling policy of WebRTC."
+      }
+    ],
     "properties": {
       "network": {
         "type": "object",
@@ -20,12 +28,19 @@
           "webRTCMultipleRoutesEnabled": {
             "$ref": "types.ChromeSetting",
             "value": ["webRTCMultipleRoutesEnabled", {"type":"boolean"}],
+            "deprecated": "Please use privacy.network.webRTCIPHandlingPolicy. This remains for backward compatibility in this release and will be removed in the future.",
             "description": "If enabled, Chrome will explore all possible routing options when using WebRTC to find the most performant path, possibly exposing user's private IP address. Otherwise, WebRTC traffic will be routed the same way as regular HTTP. This preference's value is a boolean, defaulting to <code>true</code>."
           },
           "webRTCNonProxiedUdpEnabled": {
             "$ref": "types.ChromeSetting",
             "value": ["webRTCNonProxiedUdpEnabled", {"type":"boolean"}],
+            "deprecated": "Please use privacy.network.webRTCIPHandlingPolicy. This remains for backward compatibility in this release and will be removed in the future.",
             "description": "If enabled, Chrome is allowed to use non-proxied UDP to connect to peers or TURN servers when using WebRTC. Since most proxy servers don't handle UDP, using UDP possibly exposes user's IP address. Turning this off effectively forces WebRTC to only use TCP for now, until UDP proxy support is available in Chrome and such proxies are widely deployed. As a result, it also might hurt media performance and increase the load for proxy servers. This preference's value is a boolean, defaulting to <code>true</code>."
+          },
+          "webRTCIPHandlingPolicy": {
+            "$ref": "types.ChromeSetting",
+            "value": ["webRTCIPHandlingPolicy", {"$ref":"IPHandlingPolicy"}],
+            "description": "Allow users to specify the media performance/privacy tradeoffs which impacts how WebRTC traffic will be routed and how much local address information is exposed. This preference's value is of type IPHandlingPolicy, defaulting to <code>default</code>."
           }
         }
       },

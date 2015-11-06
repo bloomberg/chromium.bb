@@ -119,9 +119,14 @@ PrefMappingEntry kPrefMapping[] = {
     {"translationServiceEnabled", prefs::kEnableTranslate,
      APIPermission::kPrivacy, APIPermission::kPrivacy},
 #if defined(ENABLE_WEBRTC)
+    // webRTCMultipleRoutesEnabled and webRTCNonProxiedUdpEnabled have been
+    // replaced by webRTCIPHandlingPolicy. Leaving it for backward
+    // compatibility. TODO(guoweis): Remove this in M50.
     {"webRTCMultipleRoutesEnabled", prefs::kWebRTCMultipleRoutesEnabled,
      APIPermission::kPrivacy, APIPermission::kPrivacy},
     {"webRTCNonProxiedUdpEnabled", prefs::kWebRTCNonProxiedUdpEnabled,
+     APIPermission::kPrivacy, APIPermission::kPrivacy},
+    {"webRTCIPHandlingPolicy", prefs::kWebRTCIPHandlingPolicy,
      APIPermission::kPrivacy, APIPermission::kPrivacy},
 #endif
     // accessibilityFeatures.animationPolicy is available for

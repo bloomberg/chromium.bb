@@ -93,14 +93,10 @@ struct CONTENT_EXPORT RendererPreferences {
   // Set to true to indicate that the preference to set DNT to 1 is enabled.
   bool enable_do_not_track;
 
-  // Set to false to indicate that WebRTC should use the OS default routing.
-  bool enable_webrtc_multiple_routes;
-
-  // Set to false to indicate that WebRTC should not use non-proxied UDP to
-  // connect to peers and TURN servers, which effectively disables all WebRTC's
-  // UDP traffic for now, until UDP-based proxy support is available in
-  // Chromium. Default is true.
-  bool enable_webrtc_nonproxied_udp;
+  // This is the IP handling policy override for WebRTC. The value must be one
+  // of the strings defined in privacy.json. The allowed values are specified
+  // in webrtc_ip_handling_policy.h.
+  std::string webrtc_ip_handling_policy;
 
   // Default page zoom level.
   double default_zoom_level;

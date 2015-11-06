@@ -92,6 +92,13 @@ source_set("common_sources") {
       "pepper_plugin_info.h",
     ]
   }
+
+  if (enable_webrtc) {
+    sources += [
+      "webrtc_ip_handling_policy.cc",
+      "webrtc_ip_handling_policy.h",
+    ]
+  }
 }
 
 mojom("mojo_bindings") {

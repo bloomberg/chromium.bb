@@ -1197,14 +1197,19 @@ const char kToolbarIconSurfacingBubbleLastShowTime[] =
 
 #if defined(ENABLE_WEBRTC)
 // Whether WebRTC should bind to individual NICs to explore all possible routing
-// options. Default is true.
+// options. Default is true. This has become obsoleted and replaced by
+// kWebRTCIPHandlingPolicy. TODO(guoweis): Remove this at M50.
 const char kWebRTCMultipleRoutesEnabled[] = "webrtc.multiple_routes_enabled";
 // Whether WebRTC should use non-proxied UDP. If false, WebRTC will not send UDP
 // unless it goes through a proxy (i.e RETURN when it's available).  If no UDP
 // proxy is configured, it will not send UDP.  If true, WebRTC will send UDP
-// regardless of whether or not a proxy is configured.
+// regardless of whether or not a proxy is configured. TODO(guoweis): Remove
+// this at M50.
 const char kWebRTCNonProxiedUdpEnabled[] =
     "webrtc.nonproxied_udp_enabled";
+// Define the IP handling policy override that WebRTC should follow. When not
+// set, it defaults to "default".
+const char kWebRTCIPHandlingPolicy[] = "webrtc.ip_handling_policy";
 #endif
 
 // *************** LOCAL STATE ***************

@@ -407,6 +407,7 @@ extern const char kToolbarIconSurfacingBubbleLastShowTime[];
 #if defined(ENABLE_WEBRTC)
 extern const char kWebRTCMultipleRoutesEnabled[];
 extern const char kWebRTCNonProxiedUdpEnabled[];
+extern const char kWebRTCIPHandlingPolicy[];
 #endif
 
 extern const char kGLVendorString[];

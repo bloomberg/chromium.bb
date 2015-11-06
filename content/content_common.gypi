@@ -816,6 +816,10 @@
       'dependencies': [
         '../third_party/libjingle/libjingle.gyp:libjingle',
       ],
+      'sources': [
+        'public/common/webrtc_ip_handling_policy.cc',
+        'public/common/webrtc_ip_handling_policy.h',
+      ],
     }],
     ['use_v4lplugin==1 and chromeos==1', {
       'defines': [

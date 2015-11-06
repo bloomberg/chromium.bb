@@ -17,6 +17,7 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/renderer_preferences.h"
+#include "content/public/common/webrtc_ip_handling_policy.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/renderer/media/media_stream.h"
 #include "content/renderer/media/media_stream_audio_processor.h"
@@ -63,6 +64,28 @@
 #endif
 
 namespace content {
+
+namespace {
+
+enum WebRTCIPHandlingPolicy {
+  DEFAULT,
+  DEFAULT_PUBLIC_AND_PRIVATE_INTERFACES,
+  DEFAULT_PUBLIC_INTERFACE_ONLY,
+  DISABLE_NON_PROXIED_UDP,
+};
+
+WebRTCIPHandlingPolicy GetWebRTCIPHandlingPolicy(
+    const std::string& preference) {
+  if (preference == kWebRTCIPHandlingDefaultPublicAndPrivateInterfaces)
+    return DEFAULT_PUBLIC_AND_PRIVATE_INTERFACES;
+  if (preference == kWebRTCIPHandlingDefaultPublicInterfaceOnly)
+    return DEFAULT_PUBLIC_INTERFACE_ONLY;
+  if (preference == kWebRTCIPHandlingDisableNonProxiedUdp)
+    return DISABLE_NON_PROXIED_UDP;
+  return DEFAULT;
+}
+
+}  // namespace
 
 // Map of corresponding media constraints and platform effects.
 struct {
@@ -456,14 +479,32 @@ PeerConnectionDependencyFactory::CreatePeerConnection(
         // |request_multiple_routes|. Whether local IP addresses could be
         // collected depends on if mic/camera permission is granted for this
         // origin.
-        port_config.enable_multiple_routes =
-            renderer_view_impl->renderer_preferences()
-                .enable_webrtc_multiple_routes;
-        port_config.enable_nonproxied_udp =
-            renderer_view_impl->renderer_preferences()
-                .enable_webrtc_nonproxied_udp;
-        VLOG(3) << "WebRTC routing preferences: multiple_routes: "
-                << port_config.enable_multiple_routes
+        std::string mode = renderer_view_impl->renderer_preferences()
+                               .webrtc_ip_handling_policy;
+        switch (GetWebRTCIPHandlingPolicy(mode)) {
+          // TODO(guoweis): specify the flag of disabling local candidate
+          // collection when webrtc is updated.
+          case DEFAULT_PUBLIC_INTERFACE_ONLY:
+          case DEFAULT_PUBLIC_AND_PRIVATE_INTERFACES:
+            port_config.enable_multiple_routes = false;
+            port_config.enable_nonproxied_udp = true;
+            break;
+          case DISABLE_NON_PROXIED_UDP:
+            port_config.enable_multiple_routes = false;
+            port_config.enable_nonproxied_udp = false;
+            break;
+          case DEFAULT:
+            port_config.enable_multiple_routes = true;
+            port_config.enable_nonproxied_udp = true;
+            break;
+          default:
+            NOTREACHED();
+            break;
+        }
+
+        VLOG(3) << "WebRTC routing preferences: "
+                << "policy: " << mode
+                << ", multiple_routes: " << port_config.enable_multiple_routes
                 << ", nonproxied_udp: " << port_config.enable_nonproxied_udp;
       }
     }

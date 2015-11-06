@@ -22,6 +22,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/renderer_preferences.h"
+#include "content/public/common/webrtc_ip_handling_policy.h"
 #include "content/shell/browser/blink_test_controller.h"
 #include "content/shell/browser/layout_test/layout_test_bluetooth_chooser_factory.h"
 #include "content/shell/browser/layout_test/layout_test_devtools_frontend.h"
@@ -120,8 +121,8 @@ Shell* Shell::CreateShell(WebContents* web_contents,
 #if defined(ENABLE_WEBRTC)
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableWebRtcMultipleRoutes)) {
-    web_contents->GetMutableRendererPrefs()->enable_webrtc_multiple_routes =
-        false;
+    web_contents->GetMutableRendererPrefs()->webrtc_ip_handling_policy =
+        kWebRTCIPHandlingDefaultPublicInterfaceOnly;
   }
 #endif
 
