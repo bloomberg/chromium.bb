@@ -12,6 +12,7 @@ vars = {
   "build_rev": "e9847c616c8bfcce336c6679c01d8ea1f420602b", # from cr commit position 357098
   "build_overrides_rev": "dad7f351731a2925f5d02fef239a101a7332d1f0", # from cr commit position 356707
   "binutils_rev": "c485984110688e490052a3ef60218a26b71e207a", # from cr commit position 354325
+  "libcxx_static_rev": "17acece915b87b2d53da5e8cbc2028b1300783e2", # from cr commit position 356325
   "valgrind_rev": "3a97aa8142b6e63f16789b22daafb42d202f91dc",
   "tools_valgrind_rev": "f3917bc040756ff23cde309a2011700fe2dbc29d", # from cr commit position 356825
   # NOTE: be sure to update clang_lib_version in SConstruct whenever
@@ -76,6 +77,9 @@ deps = {
   "third_party/lcov":
     Var("chromium_git") + "/chromium/src/third_party/lcov.git@" +
     Var("lcov_rev"),
+  "third_party/libc++-static":
+    Var("chromium_git") + "/chromium/src/third_party/libc++-static.git@" +
+    Var("libcxx_static_rev"),
   "third_party/lss":
     Var("chromium_git") + "/external/linux-syscall-support/lss.git@" +
     Var("lss_revision"),
