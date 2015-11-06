@@ -24,6 +24,10 @@
 #define USE_ATTACHMENT_BROKER 0
 #endif  // defined(OS_WIN)
 
+namespace base {
+class SequencedTaskRunner;
+};
+
 namespace IPC {
 
 class AttachmentBroker;
@@ -77,7 +81,10 @@ class IPC_EXPORT AttachmentBroker : public Listener {
                            scoped_refptr<BrokerableAttachment>* attachment);
 
   // Any given observer should only ever add itself once to the observer list.
-  void AddObserver(Observer* observer);
+  // Notifications to |observer| will be posted to |runner|.
+  // The |observer| is expected to call RemoveObserver() before being destroyed.
+  void AddObserver(Observer* observer,
+                   const scoped_refptr<base::SequencedTaskRunner>& runner);
   void RemoveObserver(Observer* observer);
 
   // These two methods should only be called by the broker process.
@@ -99,6 +106,11 @@ class IPC_EXPORT AttachmentBroker : public Listener {
   // Informs the observers that a new BrokerableAttachment has been received.
   void NotifyObservers(const BrokerableAttachment::AttachmentId& id);
 
+  // Informs the observer identified by |unique_id| that a new
+  // BrokerableAttachment has been received.
+  void NotifyObserver(int unique_id,
+                      const BrokerableAttachment::AttachmentId& id);
+
   // This method is exposed for testing only.
   AttachmentVector* get_attachments() { return &attachments_; }
 
@@ -119,7 +131,20 @@ class IPC_EXPORT AttachmentBroker : public Listener {
   // better performance.
   AttachmentVector attachments_;
 
-  std::vector<Observer*> observers_;
+  struct ObserverInfo {
+    ObserverInfo();
+    ~ObserverInfo();
+
+    Observer* observer;
+    int unique_id;
+
+    // Notifications must be dispatched onto |runner|.
+    scoped_refptr<base::SequencedTaskRunner> runner;
+  };
+  std::vector<ObserverInfo> observers_;
+
+  // This member holds the last id given to an ObserverInfo.
+  int last_unique_id_;
 
   // The AttachmentBroker can be accessed from any thread, so modifications to
   // internal state must be guarded by a lock.

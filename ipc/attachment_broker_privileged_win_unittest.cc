@@ -225,7 +225,7 @@ class IPCAttachmentBrokerPrivilegedWinTest : public IPCTestBase {
   void CommonSetUp() {
     if (!broker_.get())
       set_broker(new IPC::AttachmentBrokerUnprivilegedWin);
-    broker_->AddObserver(&observer_);
+    broker_->AddObserver(&observer_, task_runner());
     CreateChannel(&proxy_listener_);
     broker_->DesignateBrokerCommunicationChannel(channel());
     ASSERT_TRUE(ConnectChannel());

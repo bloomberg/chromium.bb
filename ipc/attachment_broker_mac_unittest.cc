@@ -395,7 +395,7 @@ class IPCAttachmentBrokerMacTest : public IPCTestBase {
     if (!broker_.get())
       SetBroker(new IPC::AttachmentBrokerUnprivilegedMac);
 
-    broker_->AddObserver(&observer_);
+    broker_->AddObserver(&observer_, task_runner());
     CreateChannel(&proxy_listener_);
     broker_->DesignateBrokerCommunicationChannel(channel());
     ASSERT_TRUE(ConnectChannel());
@@ -856,10 +856,16 @@ TEST_F(IPCAttachmentBrokerMacTest, SendSharedMemoryHandleToSelf) {
     IPC::Message* message =
         new TestSharedMemoryHandleMsg1(100, shared_memory->handle(), 200);
     sender()->Send(message);
+
+    // Wait until the child process has sent this process a message.
     base::MessageLoop::current()->Run();
+
+    // Wait for any asynchronous activity to complete.
+    base::MessageLoop::current()->RunUntilIdle();
 
     // Get the received attachment.
     IPC::BrokerableAttachment::AttachmentId* id = get_observer()->get_id();
+    ASSERT_TRUE(id);
     scoped_refptr<IPC::BrokerableAttachment> received_attachment;
     get_broker()->GetAttachmentWithId(*id, &received_attachment);
     ASSERT_NE(received_attachment.get(), nullptr);
@@ -898,7 +904,7 @@ TEST_F(IPCAttachmentBrokerMacTest, SendSharedMemoryHandleChannelProxy) {
   MachPreForkSetUp();
 
   SetBroker(new IPC::AttachmentBrokerUnprivilegedMac);
-  get_broker()->AddObserver(get_observer());
+  get_broker()->AddObserver(get_observer(), task_runner());
 
   scoped_ptr<base::Thread> thread(
       new base::Thread("ChannelProxyTestServerThread"));

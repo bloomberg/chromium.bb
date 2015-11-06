@@ -7,6 +7,7 @@
 #include <limits>
 #include <set>
 
+#include "base/run_loop.h"
 #include "ipc/attachment_broker.h"
 #include "ipc/brokerable_attachment.h"
 #include "ipc/ipc_channel_reader.h"
@@ -151,6 +152,8 @@ TEST(ChannelReaderTest, AttachmentAlreadyBrokered) {
 }
 
 TEST(ChannelReaderTest, AttachmentNotYetBrokered) {
+  scoped_ptr<base::MessageLoop> message_loop(new base::MessageLoopForIO());
+
   MockAttachmentBroker broker;
   MockChannelReader reader;
   reader.set_broker(&broker);
@@ -166,6 +169,9 @@ TEST(ChannelReaderTest, AttachmentNotYetBrokered) {
   EXPECT_EQ(nullptr, reader.get_last_dispatched_message());
 
   broker.AddAttachment(attachment);
+  base::RunLoop run_loop;
+  run_loop.RunUntilIdle();
+
   EXPECT_EQ(m, reader.get_last_dispatched_message());
 }
 
