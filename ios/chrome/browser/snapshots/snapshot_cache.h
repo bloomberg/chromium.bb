@@ -10,6 +10,7 @@
 #include "base/mac/objc_property_releaser.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/time/time.h"
+#import "ios/chrome/browser/snapshots/lru_cache.h"
 
 typedef void (^GreyBlock)(UIImage*);
 
@@ -23,6 +24,12 @@ typedef void (^GreyBlock)(UIImage*);
   // Dictionary to hold color snapshots in memory. n.b. Color snapshots are not
   // kept in memory on tablets.
   base::scoped_nsobject<NSMutableDictionary> imageDictionary_;
+
+  // Cache to hold color snapshots in memory. n.b. Color snapshots are not
+  // kept in memory on tablets. It is used in place of the imageDictionary_ when
+  // the LRU cache snapshot experiment is enabled.
+  base::scoped_nsobject<LRUCache> lruCache_;
+
   // Temporary dictionary to hold grey snapshots for tablet side swipe. This
   // will be nil before -createGreyCache is called and after -removeGreyCache
   // is called.
@@ -88,6 +95,13 @@ typedef void (^GreyBlock)(UIImage*);
 // Write a grey copy of the snapshot for |sessionID| to disk, but if and only if
 // a color version of the snapshot already exists in memory or on disk.
 - (void)saveGreyInBackgroundForSessionID:(NSString*)sessionID;
+@end
+
+// Additionnal methods that should only be used for tests.
+@interface SnapshotCache (TestingAdditions)
+- (BOOL)hasImageInMemory:(NSString*)sessionID;
+- (BOOL)hasGreyImageInMemory:(NSString*)sessionID;
+- (NSUInteger)lruCacheMaxSize;
 @end
 
 #endif  // IOS_CHROME_BROWSER_SNAPSHOTS_SNAPSHOT_CACHE_H_

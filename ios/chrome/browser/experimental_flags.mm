@@ -54,6 +54,22 @@ void SetWKWebViewTrialEligibility(bool eligible) {
                                            : WKWebViewEligibility::INELIGIBLE;
 }
 
+bool IsLRUSnapshotCacheEnabled() {
+  // Check if the experimental flag is forced on or off.
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kEnableLRUSnapshotCache)) {
+    return true;
+  } else if (command_line->HasSwitch(switches::kDisableLRUSnapshotCache)) {
+    return false;
+  }
+
+  // Check if the finch experiment is turned on.
+  std::string group_name =
+      base::FieldTrialList::FindFullName("IOSLRUSnapshotCache");
+  return base::StartsWith(group_name, "Enabled",
+                          base::CompareCase::INSENSITIVE_ASCII);
+}
+
 bool IsWKWebViewEnabled() {
   // If g_wkwebview_trial_eligibility hasn't been set, default it to
   // ineligibile. This ensures future calls to try to set it will DCHECK.

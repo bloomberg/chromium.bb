@@ -17,6 +17,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread_restrictions.h"
+#include "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/web/public/web_thread.h"
@@ -51,6 +52,9 @@ const NSUInteger kGreyInitialCapacity = 8;
 const CGFloat kJPEGImageQuality = 1.0;  // Highest quality. No compression.
 // Sequence token to make sure creation/deletion of snapshots don't overlap.
 const char kSequenceToken[] = "SnapshotCacheSequenceToken";
+// Maximum size in number of elements that the LRU cache can hold before
+// starting to evict elements.
+const NSUInteger kLRUCacheMaxCapacity = 6;
 
 // The paths of the images saved to disk, given a cache directory.
 base::FilePath FilePathForSessionID(NSString* sessionID,
@@ -141,10 +145,14 @@ void ConvertAndSaveGreyImage(
     propertyReleaser_SnapshotCache_.Init(self, [SnapshotCache class]);
 
     if (!IsIPadIdiom()) {
-      // TODO(jbbegue): In the case where the cache grows, it is expensive.
-      // Make sure this doesn't suck when there are more than ten tabs.
-      imageDictionary_.reset(
-          [[NSMutableDictionary alloc] initWithCapacity:kCacheInitialCapacity]);
+      if (experimental_flags::IsLRUSnapshotCacheEnabled()) {
+        lruCache_.reset(
+            [[LRUCache alloc] initWithCacheSize:kLRUCacheMaxCapacity]);
+      } else {
+        imageDictionary_.reset([[NSMutableDictionary alloc]
+            initWithCapacity:kCacheInitialCapacity]);
+      }
+
       [[NSNotificationCenter defaultCenter]
           addObserver:self
              selector:@selector(handleLowMemory)
@@ -204,7 +212,12 @@ void ConvertAndSaveGreyImage(
   if (IsIPadIdiom() && !callback)
     return;
 
-  UIImage* img = [imageDictionary_ objectForKey:sessionID];
+  UIImage* img = nil;
+  if (lruCache_)
+    img = [lruCache_ objectForKey:sessionID];
+  else
+    img = [imageDictionary_ objectForKey:sessionID];
+
   if (img) {
     if (callback)
       callback(img);
@@ -223,8 +236,12 @@ void ConvertAndSaveGreyImage(
         // The iPad tab switcher is currently using its own memory cache so the
         // image is not stored in memory here if running on iPad.
         // The same logic is used on image writes (code below).
-        if (!IsIPadIdiom() && image)
-          [imageDictionary_ setObject:image forKey:sessionID];
+        if (!IsIPadIdiom() && image) {
+          if (lruCache_)
+            [lruCache_ setObject:image forKey:sessionID];
+          else
+            [imageDictionary_ setObject:image forKey:sessionID];
+        }
         if (callback)
           callback(image);
       }));
@@ -239,7 +256,10 @@ void ConvertAndSaveGreyImage(
   // is not stored in memory here if running on iPad.
   // The same logic is used on image reads (code above).
   if (!IsIPadIdiom()) {
-    [imageDictionary_ setObject:img forKey:sessionID];
+    if (lruCache_)
+      [lruCache_ setObject:img forKey:sessionID];
+    else
+      [imageDictionary_ setObject:img forKey:sessionID];
   }
   // Save the image to disk.
   web::WebThread::PostBlockingPoolSequencedTask(
@@ -253,7 +273,11 @@ void ConvertAndSaveGreyImage(
 
 - (void)removeImageWithSessionID:(NSString*)sessionID {
   DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
-  [imageDictionary_ removeObjectForKey:sessionID];
+  if (lruCache_)
+    [lruCache_ removeObjectForKey:sessionID];
+  else
+    [imageDictionary_ removeObjectForKey:sessionID];
+
   web::WebThread::PostBlockingPoolSequencedTask(
       kSequenceToken, FROM_HERE,
       base::BindBlock(^{
@@ -354,8 +378,12 @@ void ConvertAndSaveGreyImage(
   if (!sessionID)
     return;
   backgroundingImageSessionId_.reset([sessionID copy]);
-  backgroundingColorImage_.reset(
-      [[imageDictionary_ objectForKey:sessionID] retain]);
+  if (lruCache_) {
+    backgroundingColorImage_.reset([[lruCache_ objectForKey:sessionID] retain]);
+  } else {
+    backgroundingColorImage_.reset(
+        [[imageDictionary_ objectForKey:sessionID] retain]);
+  }
 }
 
 - (void)handleLowMemory {
@@ -364,17 +392,28 @@ void ConvertAndSaveGreyImage(
   NSMutableDictionary* dictionary =
       [[NSMutableDictionary alloc] initWithCapacity:2];
   for (NSString* sessionID in pinnedIDs_) {
-    UIImage* image = [imageDictionary_ objectForKey:sessionID];
+    UIImage* image = nil;
+    if (lruCache_)
+      image = [lruCache_ objectForKey:sessionID];
+    else
+      image = [imageDictionary_ objectForKey:sessionID];
     if (image)
       [dictionary setObject:image forKey:sessionID];
   }
-  imageDictionary_.reset(dictionary);
+  if (lruCache_) {
+    [lruCache_ removeAllObjects];
+    for (NSString* sessionID in pinnedIDs_)
+      [lruCache_ setObject:dictionary[sessionID] forKey:sessionID];
+  } else {
+    imageDictionary_.reset(dictionary);
+  }
 }
 
 - (void)handleEnterBackground {
   DCHECK(!IsIPadIdiom());
   DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
   [imageDictionary_ removeAllObjects];
+  [lruCache_ removeAllObjects];
 }
 
 - (void)handleBecomeActive {
@@ -399,7 +438,12 @@ void ConvertAndSaveGreyImage(
   // Don't call -retrieveImageForSessionID here because it caches the colored
   // image, which we don't need for the grey image cache. But if the image is
   // already in the cache, use it.
-  UIImage* img = [imageDictionary_ objectForKey:sessionID];
+  UIImage* img = nil;
+  if (lruCache_)
+    img = [lruCache_ objectForKey:sessionID];
+  else
+    img = [imageDictionary_ objectForKey:sessionID];
+
   base::PostTaskAndReplyWithResult(
       web::WebThread::GetTaskRunnerForThread(web::WebThread::FILE_USER_BLOCKING)
           .get(),
@@ -517,6 +561,24 @@ void ConvertAndSaveGreyImage(
   web::WebThread::PostBlockingPoolTask(
       FROM_HERE, base::Bind(&ConvertAndSaveGreyImage, colorImagePath,
                             greyImagePath, backgroundingColorImage_));
+}
+
+@end
+
+@implementation SnapshotCache (TestingAdditions)
+
+- (BOOL)hasImageInMemory:(NSString*)sessionID {
+  if (experimental_flags::IsLRUSnapshotCacheEnabled())
+    return [lruCache_ objectForKey:sessionID] != nil;
+  else
+    return [imageDictionary_ objectForKey:sessionID] != nil;
+}
+- (BOOL)hasGreyImageInMemory:(NSString*)sessionID {
+  return [greyImageDictionary_ objectForKey:sessionID] != nil;
+}
+
+- (NSUInteger)lruCacheMaxSize {
+  return [lruCache_ maxCacheSize];
 }
 
 @end

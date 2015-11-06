@@ -23,6 +23,9 @@ bool IsBookmarkCollectionEnabled();
 // only whether the trial state will be checked in the default state.
 void SetWKWebViewTrialEligibility(bool eligible);
 
+// Whether the lru snapshot cache experiment is enabled.
+bool IsLRUSnapshotCacheEnabled();
+
 // Whether the app uses WKWebView instead of UIWebView.
 // The returned value will not change within a given session.
 bool IsWKWebViewEnabled();

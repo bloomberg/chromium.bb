@@ -42,6 +42,9 @@ const char kDisableOfflineAutoReload[] = "disable-offline-auto-reload";
 // Disables the tab switcher.
 const char kDisableTabSwitcher[] = "disable-tab-switcher";
 
+// Disable the snapshots lru cache.
+const char kDisableLRUSnapshotCache[] = "disable-lru-snapshot-cache";
+
 // Enables Contextual Search.
 const char kEnableContextualSearch[] = "enable-contextual-search";
 
@@ -74,6 +77,9 @@ const char kEnableReaderModeToolbarIcon[] = "enable-reader-mode-toolbar-icon";
 
 // Enables the tab switcher.
 const char kEnableTabSwitcher[] = "enable-tab-switcher";
+
+// Enables the snapshot lru cache.
+const char kEnableLRUSnapshotCache[] = "enable-lru-snapshot-cache";
 
 // Enables the recording of metrics reports but disables reporting. In contrast
 // to kDisableMetrics, this executes all the code that a normal client would

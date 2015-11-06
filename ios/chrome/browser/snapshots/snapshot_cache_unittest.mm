@@ -16,6 +16,7 @@
 #include "base/run_loop.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/time/time.h"
+#include "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
 #include "ios/web/public/web_thread.h"
@@ -31,20 +32,6 @@ static const NSUInteger kSnapshotPixelSize = 8;
 + (base::FilePath)imagePathForSessionID:(NSString*)sessionID;
 + (base::FilePath)greyImagePathForSessionID:(NSString*)sessionID;
 - (void)handleLowMemory;
-@end
-
-@interface SnapshotCache (TestingAdditions)
-- (BOOL)hasImageInMemory:(NSString*)sessionID;
-- (BOOL)hasGreyImageInMemory:(NSString*)sessionID;
-@end
-
-@implementation SnapshotCache (TestingAdditions)
-- (BOOL)hasImageInMemory:(NSString*)sessionID {
-  return [imageDictionary_ objectForKey:sessionID] != nil;
-}
-- (BOOL)hasGreyImageInMemory:(NSString*)sessionID {
-  return [greyImageDictionary_ objectForKey:sessionID] != nil;
-}
 @end
 
 namespace {
@@ -235,8 +222,12 @@ TEST_F(SnapshotCacheTest, Cache) {
 
   SnapshotCache* cache = GetSnapshotCache();
 
+  NSUInteger expectedCacheSize = kSessionCount;
+  if (experimental_flags::IsLRUSnapshotCacheEnabled())
+    expectedCacheSize = MIN(kSessionCount, [cache lruCacheMaxSize]);
+
   // Put all images in the cache.
-  for (NSUInteger i = 0; i < kSessionCount; ++i) {
+  for (NSUInteger i = 0; i < expectedCacheSize; ++i) {
     UIImage* image = [testImages_ objectAtIndex:i];
     NSString* sessionID = [testSessions_ objectAtIndex:i];
     [cache setImage:image withSessionID:sessionID];
@@ -244,7 +235,7 @@ TEST_F(SnapshotCacheTest, Cache) {
 
   // Get images back.
   __block NSUInteger numberOfCallbacks = 0;
-  for (NSUInteger i = 0; i < kSessionCount; ++i) {
+  for (NSUInteger i = 0; i < expectedCacheSize; ++i) {
     NSString* sessionID = [testSessions_ objectAtIndex:i];
     UIImage* expectedImage = [testImages_ objectAtIndex:i];
     EXPECT_TRUE(expectedImage != nil);
@@ -256,7 +247,7 @@ TEST_F(SnapshotCacheTest, Cache) {
                               ++numberOfCallbacks;
                             }];
   }
-  EXPECT_EQ(kSessionCount, numberOfCallbacks);
+  EXPECT_EQ(expectedCacheSize, numberOfCallbacks);
 }
 
 // This test puts all the snapshots in the cache and flushes them to disk.
