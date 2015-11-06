@@ -47,4 +47,10 @@ RenderWidgetHostDelegate::GetInputEventRouter() {
   return nullptr;
 }
 
+// If a delegate does not override this, the RenderWidgetHostView will
+// assume its own RenderWidgetHost should consume keyboard events.
+RenderWidgetHostImpl* RenderWidgetHostDelegate::GetFocusedRenderWidgetHost() {
+  return nullptr;
+}
+
 }  // namespace content

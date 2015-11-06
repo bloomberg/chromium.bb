@@ -1687,8 +1687,21 @@ void RenderWidgetHostViewAndroid::UnlockMouse() {
 
 void RenderWidgetHostViewAndroid::SendKeyEvent(
     const NativeWebKeyboardEvent& event) {
-  if (host_)
-    host_->ForwardKeyboardEvent(event);
+  if (!host_)
+    return;
+
+  RenderWidgetHostImpl* target_host = host_;
+
+  // If there are multiple widgets on the page (such as when there are
+  // out-of-process iframes), pick the one that should process this event.
+  if (host_->delegate()) {
+    RenderWidgetHostImpl* focused_host =
+        host_->delegate()->GetFocusedRenderWidgetHost();
+    if (focused_host)
+      target_host = focused_host;
+  }
+
+  target_host->ForwardKeyboardEvent(event);
 }
 
 void RenderWidgetHostViewAndroid::SendMouseEvent(

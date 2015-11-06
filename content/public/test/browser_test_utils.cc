@@ -227,7 +227,9 @@ void InjectRawKeyEvent(WebContents* web_contents,
                        int modifiers) {
   NativeWebKeyboardEvent event;
   BuildSimpleWebKeyEvent(type, key_code, native_key_code, modifiers, &event);
-  web_contents->GetRenderViewHost()->GetWidget()->ForwardKeyboardEvent(event);
+  static_cast<WebContentsImpl*>(web_contents)
+      ->GetFocusedRenderWidgetHost()
+      ->ForwardKeyboardEvent(event);
 }
 
 void GetCookiesCallback(std::string* cookies_out,

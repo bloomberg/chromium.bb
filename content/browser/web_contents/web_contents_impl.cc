@@ -1588,6 +1588,18 @@ void WebContentsImpl::ReplicatePageFocus(bool is_focused) {
   frame_tree_.ReplicatePageFocus(is_focused);
 }
 
+RenderWidgetHostImpl* WebContentsImpl::GetFocusedRenderWidgetHost() {
+  if (!SiteIsolationPolicy::AreCrossProcessFramesPossible())
+    return GetMainFrame()->GetRenderWidgetHost();
+
+  FrameTreeNode* focused_frame = frame_tree_.GetFocusedFrame();
+  if (!focused_frame)
+    return GetMainFrame()->GetRenderWidgetHost();
+
+  return RenderWidgetHostImpl::From(
+      focused_frame->current_frame_host()->GetView()->GetRenderWidgetHost());
+}
+
 void WebContentsImpl::EnterFullscreenMode(const GURL& origin) {
   // This method is being called to enter renderer-initiated fullscreen mode.
   // Make sure any existing fullscreen widget is shut down first.
