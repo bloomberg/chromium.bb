@@ -174,6 +174,9 @@ const int kExcessButtonPadding = 6;
   [[self window] setContentMinSize:
       NSMakeSize(kMinimumContentWidth, kMinimumContentHeight)];
   [[[self window] contentView] setAutoresizesSubviews:YES];
+
+  // Make sourceBrowser_ get keyboard focus.
+  [[self window] makeFirstResponder:sourceBrowser_];
 }
 
 - (void)showWindow:(id)sender {
