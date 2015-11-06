@@ -723,12 +723,9 @@ private:
 #endif
 };
 
-// Override the standard error method in the IJG JPEG decoder code.
-void error_exit(j_common_ptr cinfo)
+void error_exit(j_common_ptr cinfo) // Decoding failed: return control to the setjmp point.
 {
-    // Return control to the setjmp point.
-    decoder_error_mgr* err = reinterpret_cast_ptr<decoder_error_mgr*>(cinfo->err);
-    longjmp(err->setjmp_buffer, -1);
+    longjmp(reinterpret_cast_ptr<decoder_error_mgr*>(cinfo->err)->setjmp_buffer, -1);
 }
 
 void emit_message(j_common_ptr cinfo, int msg_level)
