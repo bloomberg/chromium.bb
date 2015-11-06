@@ -1060,7 +1060,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
      * @SmallTest
      * @Feature({"ContextualSearch"})
      */
-    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
+    @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
     @FlakyTest
     public void testTapExpand() throws InterruptedException, TimeoutException {
         assertNoSearchesLoaded();
@@ -1861,7 +1861,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
      * @SmallTest
      * @Feature({"ContextualSearch"})
      */
-    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
+    @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
     @CommandLineFlags.Add({
             ContextualSearchFieldTrial.PROMO_ON_LIMITED_TAPS + "=true",
             ContextualSearchFieldTrial.TAP_TRIGGERED_PROMO_LIMIT + "=2"})
@@ -2256,7 +2256,6 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
     /**
      * Tests that tap followed by expand makes Content visible.
      */
-    @DisabledTest // https://crbug.com/551711
     @SmallTest
     @Feature({"ContextualSearch"})
     @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
@@ -2278,7 +2277,6 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
      * Tests that long press followed by expand creates Content and makes it visible.
      *
      */
-    @DisabledTest // https://crbug.com/551711
     @SmallTest
     @Feature({"ContextualSearch"})
     @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
@@ -2301,10 +2299,9 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
     /**
      * Tests swiping panel up and down after a tap search will only load the Content once.
      */
-    @DisabledTest // https://crbug.com/551711
     @SmallTest
     @Feature({"ContextualSearch"})
-    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
+    @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
     public void testTapMultipleSwipeOnlyLoadsContentOnce()
             throws InterruptedException, TimeoutException {
         // Simulate a tap and make sure Content is not visible.
@@ -2337,10 +2334,9 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
     /**
      * Tests swiping panel up and down after a long press search will only load the Content once.
      */
-    @DisabledTest // https://crbug.com/551711
     @SmallTest
     @Feature({"ContextualSearch"})
-    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
+    @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
     public void testLongPressMultipleSwipeOnlyLoadsContentOnce()
             throws InterruptedException, TimeoutException {
         // Simulate a long press and make sure no Content is created.
@@ -2415,7 +2411,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
     @DisabledTest // https://crbug.com/551711
     @SmallTest
     @Feature({"ContextualSearch"})
-    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
+    @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
     public void testChainedSearchLoadsCorrectSearchTerm()
             throws InterruptedException, TimeoutException {
         // Simulate a tap and make sure Content is not visible.
@@ -2458,7 +2454,6 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
     /**
      * Tests that chained searches make Content visible when opening the Panel.
      */
-    @DisabledTest // https://crbug.com/551711
     @SmallTest
     @Feature({"ContextualSearch"})
     @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
@@ -2513,7 +2508,6 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
     /**
      * Tests that a tap followed by opening the Panel does not remove the loaded URL from history.
      */
-    @DisabledTest // https://crbug.com/551711
     @SmallTest
     @Feature({"ContextualSearch"})
     @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
