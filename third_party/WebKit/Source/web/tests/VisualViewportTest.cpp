@@ -185,12 +185,6 @@ protected:
 
 private:
     FrameTestHelpers::WebViewHelper m_helper;
-
-    // To prevent platform differneces in content layout, use mock
-    // scrollbars. This is especially needed for Mac, where the presence
-    // or absence of a mouse will change frame sizes because of different
-    // scrollbar themes.
-    FrameTestHelpers::UseMockScrollbarSettings m_useMockScrollbars;
 };
 
 typedef void (*SettingOverrideFunction)(WebSettings*);

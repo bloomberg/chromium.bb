@@ -273,7 +273,6 @@ protected:
     std::string m_baseURL;
     std::string m_notBaseURL;
     std::string m_chromeURL;
-    FrameTestHelpers::UseMockScrollbarSettings m_mockScrollbarSettings;
 };
 
 enum ParameterizedWebFrameTestConfig {

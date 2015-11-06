@@ -59,8 +59,6 @@ GestureEventWithHitTestResults getTargetedEvent(WebViewImpl* webViewImpl, WebGes
 
 TEST(LinkHighlightImplTest, verifyWebViewImplIntegration)
 {
-    FrameTestHelpers::UseMockScrollbarSettings mockScrollbarSettings;
-
     const std::string baseURL("http://www.test.com/");
     const std::string fileName("test_touch_link_highlight.html");
 
@@ -131,8 +129,6 @@ WebViewClient* compositingWebViewClient()
 
 TEST(LinkHighlightImplTest, resetDuringNodeRemoval)
 {
-    FrameTestHelpers::UseMockScrollbarSettings m_mockScrollbarSettings;
-
     const std::string baseURL("http://www.test.com/");
     const std::string fileName("test_touch_link_highlight.html");
 
@@ -215,8 +211,6 @@ TEST(LinkHighlightImplTest, resetLayerTreeView)
 
 TEST(LinkHighlightImplTest, multipleHighlights)
 {
-    FrameTestHelpers::UseMockScrollbarSettings m_mockScrollbarSettings;
-
     const std::string baseURL("http://www.test.com/");
     const std::string fileName("test_touch_link_highlight.html");
 

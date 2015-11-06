@@ -108,7 +108,6 @@ private:
     }
 
     FrameTestHelpers::WebViewHelper m_helper;
-    FrameTestHelpers::UseMockScrollbarSettings m_mockScrollbarSettings;
 };
 
 TEST_F(ScrollingCoordinatorTest, fastScrollingByDefault)
@@ -536,8 +535,6 @@ TEST_F(ScrollingCoordinatorTest, setupScrollbarLayerShouldNotCrash)
 
 TEST_F(ScrollingCoordinatorTest, scrollbarsForceMainThreadOrHaveWebScrollbarLayer)
 {
-    blink::FrameTestHelpers::UseMockScrollbarSettings mockScrollbarSettings;
-
     registerMockedHttpURLLoad("trivial-scroller.html");
     navigateTo(m_baseURL + "trivial-scroller.html");
     forceFullCompositingUpdate();

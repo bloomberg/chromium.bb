@@ -130,7 +130,6 @@ private:
     FrameTestHelpers::TestWebViewClient m_webViewClient;
     ExternalPopupMenuWebFrameClient m_webFrameClient;
     FrameTestHelpers::WebViewHelper m_helper;
-    FrameTestHelpers::UseMockScrollbarSettings m_mockScrollbarSettings;
 };
 
 TEST_F(ExternalPopupMenuTest, PopupAccountsForVisualViewportOffset)

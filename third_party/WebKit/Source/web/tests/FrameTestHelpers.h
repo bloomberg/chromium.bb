@@ -72,6 +72,33 @@ public:
     virtual void overrideSettings(WebSettings*) = 0;
 };
 
+// Forces to use mocked overlay scrollbars instead of the default native theme scrollbars to avoid
+// crash in Chromium code when it tries to load UI resources that are not available when running
+// blink unit tests, and to ensure consistent layout regardless of differences between scrollbar themes.
+// WebViewHelper includes this, so this is only needed if a test doesn't use WebViewHelper or the test
+// needs a bigger scope of mock scrollbar settings than the scope of WebViewHelper.
+class UseMockScrollbarSettings {
+public:
+    UseMockScrollbarSettings()
+        : m_originalMockScrollbarEnabled(Settings::mockScrollbarsEnabled())
+        , m_originalOverlayScrollbarsEnabled(RuntimeEnabledFeatures::overlayScrollbarsEnabled())
+    {
+        Settings::setMockScrollbarsEnabled(true);
+        RuntimeEnabledFeatures::setOverlayScrollbarsEnabled(true);
+        EXPECT_TRUE(ScrollbarTheme::theme()->usesOverlayScrollbars());
+    }
+
+    ~UseMockScrollbarSettings()
+    {
+        Settings::setMockScrollbarsEnabled(m_originalMockScrollbarEnabled);
+        RuntimeEnabledFeatures::setOverlayScrollbarsEnabled(m_originalOverlayScrollbarsEnabled);
+    }
+
+private:
+    bool m_originalMockScrollbarEnabled;
+    bool m_originalOverlayScrollbarsEnabled;
+};
+
 // Convenience class for handling the lifetime of a WebView and its associated mainframe in tests.
 class WebViewHelper {
     WTF_MAKE_NONCOPYABLE(WebViewHelper);
@@ -96,6 +123,7 @@ public:
 private:
     WebViewImpl* m_webView;
     SettingOverrider* m_settingOverrider;
+    UseMockScrollbarSettings m_mockScrollbarSettings;
 };
 
 // Minimal implementation of WebFrameClient needed for unit tests that load frames. Tests that load
@@ -144,22 +172,6 @@ public:
 
 private:
     OwnPtr<WebLayerTreeView> m_layerTreeView;
-};
-
-class UseMockScrollbarSettings {
-public:
-    UseMockScrollbarSettings()
-    {
-        Settings::setMockScrollbarsEnabled(true);
-        RuntimeEnabledFeatures::setOverlayScrollbarsEnabled(true);
-        EXPECT_TRUE(ScrollbarTheme::theme()->usesOverlayScrollbars());
-    }
-
-    ~UseMockScrollbarSettings()
-    {
-        Settings::setMockScrollbarsEnabled(false);
-        RuntimeEnabledFeatures::setOverlayScrollbarsEnabled(false);
-    }
 };
 
 } // namespace FrameTestHelpers

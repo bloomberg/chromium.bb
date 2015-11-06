@@ -120,12 +120,6 @@ public:
 private:
     std::string m_baseURL;
     FrameTestHelpers::WebViewHelper m_helper;
-
-    // To prevent platform differences in content layout, use mock
-    // scrollbars. This is especially needed for Mac, where the presence
-    // or absence of a mouse will change frame sizes because of different
-    // scrollbar themes.
-    FrameTestHelpers::UseMockScrollbarSettings m_useMockScrollbars;
 };
 
 #define EXPECT_POINT_EQ(expected, actual)               \
