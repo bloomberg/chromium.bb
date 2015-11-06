@@ -4,6 +4,7 @@
 
 #include "chromecast/base/error_codes.h"
 
+#include <errno.h>
 #include <fcntl.h>
 
 #include <string>

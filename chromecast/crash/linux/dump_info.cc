@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 #include "chromecast/crash/linux/dump_info.h"
 
+#include <errno.h>
 #include <stdlib.h>
 
 #include "base/logging.h"
