@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/command_line.h"
-#include "base/debug/crash_logging.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -3899,36 +3898,13 @@ void WebContentsImpl::UpdateState(RenderViewHost* rvh,
   RenderViewHostImpl* rvhi = static_cast<RenderViewHostImpl*>(rvh);
   NavigationEntryImpl* entry = controller_.GetEntryWithPageID(
       rvhi->GetSiteInstance(), page_id);
-
-  int nav_entry_id =
-      static_cast<RenderFrameHostImpl*>(rvhi->GetMainFrame())->nav_entry_id();
-  NavigationEntryImpl* new_entry =
-      controller_.GetEntryWithUniqueID(nav_entry_id);
-
-  base::debug::SetCrashKeyValue("pageid", base::IntToString(page_id));
-  base::debug::SetCrashKeyValue("navuniqueid", base::IntToString(nav_entry_id));
-  base::debug::SetCrashKeyValue(
-      "oldindex", base::IntToString(controller_.GetIndexOfEntry(entry)));
-  base::debug::SetCrashKeyValue(
-      "newindex", base::IntToString(controller_.GetIndexOfEntry(new_entry)));
-  base::debug::SetCrashKeyValue(
-      "lastcommittedindex",
-      base::IntToString(controller_.GetLastCommittedEntryIndex()));
-  base::debug::SetCrashKeyValue("oldurl",
-                                entry ? entry->GetURL().spec() : "-nullptr-");
-  base::debug::SetCrashKeyValue(
-      "newurl", new_entry ? new_entry->GetURL().spec() : "-nullptr-");
-  base::debug::SetCrashKeyValue(
-      "updatedvalue", page_state.GetTopLevelUrlStringTemporaryForBug369661());
-  base::debug::SetCrashKeyValue(
-      "oldvalue", entry ? entry->GetURL().spec() : "-nullptr-");
-  base::debug::SetCrashKeyValue(
-      "newvalue",
-      new_entry ? new_entry->GetURL().spec() : "-nullptr-");
-  CHECK_EQ(entry, new_entry);
-
   if (!entry)
     return;
+
+  NavigationEntryImpl* new_entry = controller_.GetEntryWithUniqueID(
+      static_cast<RenderFrameHostImpl*>(rvhi->GetMainFrame())->nav_entry_id());
+
+  DCHECK_EQ(entry, new_entry);
 
   if (page_state == entry->GetPageState())
     return;  // Nothing to update.
@@ -4131,31 +4107,9 @@ void WebContentsImpl::UpdateTitle(RenderFrameHost* render_frame_host,
   NavigationEntryImpl* entry = controller_.GetEntryWithPageID(
       render_frame_host->GetSiteInstance(), page_id);
 
-  int nav_entry_id =
-      static_cast<RenderFrameHostImpl*>(render_frame_host)->nav_entry_id();
-  NavigationEntryImpl* new_entry =
-      controller_.GetEntryWithUniqueID(nav_entry_id);
-
-  base::debug::SetCrashKeyValue("pageid", base::IntToString(page_id));
-  base::debug::SetCrashKeyValue("navuniqueid", base::IntToString(nav_entry_id));
-  base::debug::SetCrashKeyValue(
-      "oldindex", base::IntToString(controller_.GetIndexOfEntry(entry)));
-  base::debug::SetCrashKeyValue(
-      "newindex", base::IntToString(controller_.GetIndexOfEntry(new_entry)));
-  base::debug::SetCrashKeyValue(
-      "lastcommittedindex",
-      base::IntToString(controller_.GetLastCommittedEntryIndex()));
-  base::debug::SetCrashKeyValue("oldurl",
-                                entry ? entry->GetURL().spec() : "-nullptr-");
-  base::debug::SetCrashKeyValue(
-      "newurl", new_entry ? new_entry->GetURL().spec() : "-nullptr-");
-  base::debug::SetCrashKeyValue("updatedvalue", base::UTF16ToUTF8(title));
-  base::debug::SetCrashKeyValue(
-      "oldvalue", entry ? base::UTF16ToUTF8(entry->GetTitle()) : "-nullptr-");
-  base::debug::SetCrashKeyValue(
-      "newvalue",
-      new_entry ? base::UTF16ToUTF8(new_entry->GetTitle()) : "-nullptr-");
-  CHECK_EQ(entry, new_entry);
+  NavigationEntryImpl* new_entry = controller_.GetEntryWithUniqueID(
+      static_cast<RenderFrameHostImpl*>(render_frame_host)->nav_entry_id());
+  DCHECK_EQ(entry, new_entry);
 
   // We can handle title updates when we don't have an entry in
   // UpdateTitleForEntry, but only if the update is from the current RVH.
