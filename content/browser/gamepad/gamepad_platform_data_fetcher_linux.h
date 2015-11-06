@@ -35,6 +35,7 @@ class GamepadPlatformDataFetcherLinux : public GamepadDataFetcher {
   void RefreshDevice(udev_device* dev);
   void EnumerateDevices();
   void ReadDeviceData(size_t index);
+  void SanitizeGamepadData(size_t index, blink::WebGamepad* pad);
 
   struct PadState {
     // File descriptor for the /dev/input/js* devices. -1 if not in use.

@@ -50,6 +50,8 @@ const uint32_t kGameUsageNumber = 0x05;
 const uint32_t kMultiAxisUsageNumber = 0x08;
 const uint32_t kAxisMinimumUsageNumber = 0x30;
 
+const float kMinAxisResetValue = 0.1;
+
 }  // namespace
 
 GamepadPlatformDataFetcherMac::GamepadPlatformDataFetcherMac()
@@ -328,6 +330,11 @@ void GamepadPlatformDataFetcherMac::DeviceAdd(IOHIDDeviceRef device) {
   data_.items[slot].connected = true;
   if (slot >= data_.length)
     data_.length = slot + 1;
+
+  for (size_t j = 0; j < blink::WebGamepad::axesLengthCap; ++j)
+    associated_[slot].is_axes_ever_reset[j] = false;
+  for (size_t j = 0; j < blink::WebGamepad::buttonsLengthCap; ++j)
+    associated_[slot].is_buttons_ever_reset[j] = false;
 }
 
 void GamepadPlatformDataFetcherMac::DeviceRemove(IOHIDDeviceRef device) {
@@ -437,6 +444,11 @@ void GamepadPlatformDataFetcherMac::XboxDeviceAdd(XboxController* device) {
   data_.items[slot].timestamp = 0;
   if (slot >= data_.length)
     data_.length = slot + 1;
+
+  for (size_t j = 0; j < blink::WebGamepad::axesLengthCap; ++j)
+    associated_[slot].is_axes_ever_reset[j] = false;
+  for (size_t j = 0; j < blink::WebGamepad::buttonsLengthCap; ++j)
+    associated_[slot].is_buttons_ever_reset[j] = false;
 }
 
 void GamepadPlatformDataFetcherMac::XboxDeviceRemove(XboxController* device) {
@@ -491,6 +503,33 @@ void GamepadPlatformDataFetcherMac::XboxValueChanged(
   pad.timestamp = base::TimeTicks::Now().ToInternalValue();
 }
 
+void GamepadPlatformDataFetcherMac::SanitizeGamepadData(size_t index,
+                                                        WebGamepad* pad) {
+  bool* axes_reset = associated_[index].is_axes_ever_reset;
+  bool* buttons_reset = associated_[index].is_buttons_ever_reset;
+
+  for (size_t axis = 0; axis < pad->axesLength; ++axis) {
+    if (!axes_reset[axis]) {
+      if (fabs(pad->axes[axis]) < kMinAxisResetValue) {
+        axes_reset[axis] = true;
+      } else {
+        pad->axes[axis] = 0.0f;
+      }
+    }
+  }
+
+  for (size_t button = 0; button < pad->buttonsLength; ++button) {
+    if (!buttons_reset[button]) {
+      if (!pad->buttons[button].pressed) {
+        buttons_reset[button] = true;
+      } else {
+        pad->buttons[button].pressed = false;
+        pad->buttons[button].value = 0.0f;
+      }
+    }
+  }
+}
+
 void GamepadPlatformDataFetcherMac::GetGamepadData(WebGamepads* pads, bool) {
   if (!enabled_ && !xbox_fetcher_) {
     pads->length = 0;
@@ -505,6 +544,8 @@ void GamepadPlatformDataFetcherMac::GetGamepadData(WebGamepads* pads, bool) {
       associated_[i].hid.mapper(data_.items[i], &pads->items[i]);
     else
       pads->items[i] = data_.items[i];
+
+    SanitizeGamepadData(i, &pads->items[i]);
   }
 }
 

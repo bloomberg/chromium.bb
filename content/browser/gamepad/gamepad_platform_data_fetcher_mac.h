@@ -72,6 +72,8 @@ class GamepadPlatformDataFetcherMac : public GamepadDataFetcher,
   void RegisterForNotifications();
   void UnregisterFromNotifications();
 
+  void SanitizeGamepadData(size_t index, blink::WebGamepad* pad);
+
   scoped_ptr<XboxDataFetcher> xbox_fetcher_;
 
   blink::WebGamepads data_;
@@ -96,6 +98,8 @@ class GamepadPlatformDataFetcherMac : public GamepadDataFetcher,
         UInt32 location_id;
       } xbox;
     };
+    bool is_axes_ever_reset[blink::WebGamepad::axesLengthCap];
+    bool is_buttons_ever_reset[blink::WebGamepad::buttonsLengthCap];
   };
   AssociatedData associated_[blink::WebGamepads::itemsLengthCap];
 

@@ -65,6 +65,7 @@ class GamepadPlatformDataFetcherWin : public GamepadDataFetcher {
   int FirstAvailableGamepadId() const;
   bool HasXInputGamepad(int index) const;
   bool HasRawInputGamepad(const HANDLE handle) const;
+  void SanitizeGamepadData(size_t index, blink::WebGamepad* pad);
 
   base::ScopedNativeLibrary xinput_dll_;
   bool xinput_available_;
