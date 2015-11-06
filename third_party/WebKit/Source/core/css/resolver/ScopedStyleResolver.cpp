@@ -148,7 +148,7 @@ void ScopedStyleResolver::collectMatchingAuthorRules(ElementRuleCollector& colle
 {
     for (size_t i = 0; i < m_authorStyleSheets.size(); ++i) {
         ASSERT(m_authorStyleSheets[i]->ownerNode());
-        MatchRequest matchRequest(&m_authorStyleSheets[i]->contents()->ruleSet(), collector.includeEmptyRules(), &m_scope->rootNode(), m_authorStyleSheets[i], i);
+        MatchRequest matchRequest(&m_authorStyleSheets[i]->contents()->ruleSet(), &m_scope->rootNode(), m_authorStyleSheets[i], i);
         collector.collectMatchingRules(matchRequest, cascadeOrder);
     }
 }
@@ -157,7 +157,7 @@ void ScopedStyleResolver::collectMatchingShadowHostRules(ElementRuleCollector& c
 {
     for (size_t i = 0; i < m_authorStyleSheets.size(); ++i) {
         ASSERT(m_authorStyleSheets[i]->ownerNode());
-        MatchRequest matchRequest(&m_authorStyleSheets[i]->contents()->ruleSet(), collector.includeEmptyRules(), &m_scope->rootNode(), m_authorStyleSheets[i], i);
+        MatchRequest matchRequest(&m_authorStyleSheets[i]->contents()->ruleSet(), &m_scope->rootNode(), m_authorStyleSheets[i], i);
         collector.collectMatchingShadowHostRules(matchRequest, cascadeOrder);
     }
 }
@@ -165,7 +165,7 @@ void ScopedStyleResolver::collectMatchingShadowHostRules(ElementRuleCollector& c
 void ScopedStyleResolver::collectMatchingTreeBoundaryCrossingRules(ElementRuleCollector& collector, CascadeOrder cascadeOrder)
 {
     for (const auto& rules : *m_treeBoundaryCrossingRuleSet) {
-        MatchRequest request(rules->m_ruleSet.get(), collector.includeEmptyRules(), &treeScope().rootNode(), rules->m_parentStyleSheet, rules->m_parentIndex);
+        MatchRequest request(rules->m_ruleSet.get(), &treeScope().rootNode(), rules->m_parentStyleSheet, rules->m_parentIndex);
         collector.collectMatchingRules(request, cascadeOrder, true);
     }
 }

@@ -451,7 +451,6 @@ void StyleResolver::matchAllRules(StyleResolverState& state, ElementRuleCollecto
         }
     }
 
-    collector.setIncludeEmptyRules(false);
     matchAuthorRules(state.element(), collector);
 
     if (state.element()->isStyledElement()) {
@@ -790,7 +789,6 @@ bool StyleResolver::pseudoStyleForElementInternal(Element& element, const Pseudo
         collector.setPseudoStyleRequest(pseudoStyleRequest);
 
         matchUARules(collector);
-        collector.setIncludeEmptyRules(false);
         matchAuthorRules(state.element(), collector);
         collector.finishAddingAuthorRulesForTreeScope();
 
@@ -1477,8 +1475,9 @@ void StyleResolver::applyCallbackSelectors(StyleResolverState& state)
 
     ElementRuleCollector collector(state.elementContext(), m_selectorFilter, state.style());
     collector.setMode(SelectorChecker::CollectingStyleRules);
+    collector.setIncludeEmptyRules(true);
 
-    MatchRequest matchRequest(m_watchedSelectorsRules.get(), true);
+    MatchRequest matchRequest(m_watchedSelectorsRules.get());
     collector.collectMatchingRules(matchRequest);
     collector.sortAndTransferMatchedRules();
 

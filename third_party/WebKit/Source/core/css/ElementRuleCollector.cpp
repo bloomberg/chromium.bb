@@ -152,7 +152,7 @@ void ElementRuleCollector::collectMatchingRulesForList(const RuleDataListType* r
 
         // If the rule has no properties to apply, then ignore it in the non-debug mode.
         const StylePropertySet& properties = rule->properties();
-        if (properties.isEmpty() && !matchRequest.includeEmptyRules)
+        if (properties.isEmpty() && !m_includeEmptyRules)
             continue;
 
         SelectorChecker::MatchResult result;
