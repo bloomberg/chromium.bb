@@ -48,7 +48,7 @@ public class TranslateAlwaysPanel implements TranslateSubPanel {
      */
     static InfoBarControlLayout createAlwaysToggle(Context context, TranslateOptions options) {
         InfoBarControlLayout controlLayout = new InfoBarControlLayout(context);
-        controlLayout.addSwitch(-1,
+        controlLayout.addSwitch(0,
                 context.getString(R.string.translate_always_text, options.sourceLanguage()),
                 R.id.translate_infobar_always_toggle,
                 options.alwaysTranslateLanguageState());
