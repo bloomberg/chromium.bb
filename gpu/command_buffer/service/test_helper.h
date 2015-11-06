@@ -157,6 +157,7 @@ class TestHelper {
       const AttributeMap* const expected_attrib_map,
       const UniformMap* const expected_uniform_map,
       const VaryingMap* const expected_varying_map,
+      const InterfaceBlockMap* const expected_interface_block_map,
       const NameMap* const expected_name_map);
 
   static void SetShaderStates(

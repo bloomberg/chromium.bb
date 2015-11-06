@@ -26,6 +26,7 @@ namespace gles2 {
 typedef base::hash_map<std::string, sh::Attribute> AttributeMap;
 typedef base::hash_map<std::string, sh::Uniform> UniformMap;
 typedef base::hash_map<std::string, sh::Varying> VaryingMap;
+typedef base::hash_map<std::string, sh::InterfaceBlock> InterfaceBlockMap;
 // Mapping between hashed name and original name.
 typedef base::hash_map<std::string, std::string> NameMap;
 
@@ -56,6 +57,7 @@ class ShaderTranslatorInterface
                          AttributeMap* attrib_map,
                          UniformMap* uniform_map,
                          VaryingMap* varying_map,
+                         InterfaceBlockMap* interface_block_map,
                          NameMap* name_map) const = 0;
 
   // Return a string that is unique for a specfic set of options that would
@@ -106,6 +108,7 @@ class GPU_EXPORT ShaderTranslator
                  AttributeMap* attrib_map,
                  UniformMap* uniform_map,
                  VaryingMap* varying_map,
+                 InterfaceBlockMap* interface_block_map,
                  NameMap* name_map) const override;
 
   std::string GetStringForOptionsThatWouldAffectCompilation() const override;

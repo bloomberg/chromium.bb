@@ -11,12 +11,14 @@
 
 #include "base/basictypes.h"
 #include "base/command_line.h"
+#include "base/containers/hash_tables.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/numerics/safe_math.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
@@ -866,6 +868,7 @@ bool Program::Link(ShaderManager* manager,
   GLint success = 0;
   glGetProgramiv(service_id(), GL_LINK_STATUS, &success);
   if (success == GL_TRUE) {
+    GatherInterfaceBlockInfo();
     Update();
     if (link) {
       if (cache) {
@@ -1110,6 +1113,68 @@ void Program::GetVertexAttribData(
   // TODO(zmo): this path should never be reached unless there is a serious
   // bug in the driver or in ANGLE translator.
   *original_name = name;
+}
+
+template <typename VarT>
+void Program::GetUniformBlockMembers(
+    Shader* shader, const std::vector<VarT>& fields,
+    const std::string& prefix) {
+  for (const VarT& field : fields) {
+    const std::string& full_name =
+        (prefix.empty() ? field.name : prefix + "." + field.name);
+    const std::string& mapped_name = *(shader->GetMappedName(field.name));
+
+    if (field.isStruct()) {
+      for (unsigned int array_element = 0; array_element < field.elementCount();
+           ++array_element) {
+        std::string array_string = base::StringPrintf("[%d]", array_element);
+        const std::string uniform_element_name =
+            full_name + (field.isArray() ? array_string: "");
+        GetUniformBlockMembers(shader, field.fields, uniform_element_name);
+      }
+    } else {
+      sh::Uniform info;
+      info.name = full_name;
+      info.mappedName = mapped_name;
+      info.type = field.type;
+      info.arraySize = field.arraySize;
+      info.precision = field.precision;
+      shader->AddUniformToUniformMap(info);
+    }
+  }
+}
+
+void Program::GetUniformBlockFromInterfaceBlock(
+    Shader* shader, const sh::InterfaceBlock& interface_block) {
+  GLuint program_id = service_id();
+
+  // Don't define this block at all if it's not active in the implementation
+  const std::string* mapped_name = shader->GetMappedName(interface_block.name);
+  GLuint block_index = glGetUniformBlockIndex(program_id, mapped_name->c_str());
+  if (block_index == GL_INVALID_INDEX)
+    return;
+
+  GetUniformBlockMembers(shader, interface_block.fields, "");
+}
+
+void Program::GatherInterfaceBlockInfo() {
+  base::hash_set<std::string> visited_list;
+  for (auto shader : attached_shaders_) {
+    const InterfaceBlockMap& interface_block_map =
+        shader->interface_block_map();
+    for (const auto& key_value : interface_block_map) {
+      const sh::InterfaceBlock& block = key_value.second;
+      // Only 'packed' blocks are allowed to be considered inactive.
+      if (!block.staticUse && block.layout == sh::BLOCKLAYOUT_PACKED)
+        continue;
+
+      if (visited_list.find(block.name) != visited_list.end())
+        continue;
+
+      GetUniformBlockFromInterfaceBlock(shader.get(), block);
+      visited_list.insert(block.name);
+    }
+  }
 }
 
 void Program::AddUniformInfo(

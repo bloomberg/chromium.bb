@@ -76,6 +76,7 @@ void Shader::DoCompile() {
                                          &attrib_map_,
                                          &uniform_map_,
                                          &varying_map_,
+                                         &interface_block_map_,
                                          &name_map_);
     if (!success) {
       return;
@@ -201,11 +202,29 @@ const std::string* Shader::GetVaryingMappedName(
   return NULL;
 }
 
+const std::string* Shader::GetInterfaceBlockMappedName(
+    const std::string& original_name) const {
+  for (const auto& key_value : interface_block_map_) {
+    if (key_value.second.name == original_name)
+      return &(key_value.first);
+  }
+  return NULL;
+}
+
 const std::string* Shader::GetOriginalNameFromHashedName(
     const std::string& hashed_name) const {
   NameMap::const_iterator it = name_map_.find(hashed_name);
   if (it != name_map_.end())
     return &(it->second);
+  return NULL;
+}
+
+const std::string* Shader::GetMappedName(
+    const std::string& original_name) const {
+  for (const auto& key_value : name_map_) {
+    if (key_value.second == original_name)
+      return &(key_value.first);
+  }
   return NULL;
 }
 
@@ -217,6 +236,13 @@ const sh::Uniform* Shader::GetUniformInfo(const std::string& name) const {
 const sh::Varying* Shader::GetVaryingInfo(const std::string& name) const {
   VaryingMap::const_iterator it = varying_map_.find(GetTopVariableName(name));
   return it != varying_map_.end() ? &it->second : NULL;
+}
+
+const sh::InterfaceBlock* Shader::GetInterfaceBlockInfo(
+    const std::string& name) const {
+  InterfaceBlockMap::const_iterator it =
+      interface_block_map_.find(GetTopVariableName(name));
+  return it != interface_block_map_.end() ? &it->second : NULL;
 }
 
 ShaderManager::ShaderManager() {}

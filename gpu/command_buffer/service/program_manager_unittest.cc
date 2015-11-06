@@ -387,11 +387,11 @@ class ProgramManagerWithShaderTest : public ProgramManagerTestBase {
     EXPECT_TRUE(vshader != NULL && fshader != NULL);
     // Set Status
     TestHelper::SetShaderStates(
-        gl_.get(), vshader, true, NULL, NULL, NULL,
-        &vertex_attrib_map, &vertex_uniform_map, &vertex_varying_map, NULL);
+        gl_.get(), vshader, true, NULL, NULL, NULL, &vertex_attrib_map,
+        &vertex_uniform_map, &vertex_varying_map, NULL, NULL);
     TestHelper::SetShaderStates(
         gl_.get(), fshader, true, NULL, NULL, NULL,
-        &frag_attrib_map, &frag_uniform_map, &frag_varying_map, NULL);
+        &frag_attrib_map, &frag_uniform_map, &frag_varying_map, NULL, NULL);
 
     // Set up program
     Program* program =
@@ -828,13 +828,13 @@ TEST_F(ProgramManagerWithShaderTest, GLDriverReturnsWrongTypeInfo) {
   ASSERT_TRUE(vshader != NULL);
   TestHelper::SetShaderStates(
       gl_.get(), vshader, true, NULL, NULL, NULL,
-      &attrib_map, &uniform_map, &varying_map, NULL);
+      &attrib_map, &uniform_map, &varying_map, NULL, NULL);
   Shader* fshader = shader_manager_.CreateShader(
       kFragmentShaderClientId, kFragmentShaderServiceId, GL_FRAGMENT_SHADER);
   ASSERT_TRUE(fshader != NULL);
   TestHelper::SetShaderStates(
       gl_.get(), fshader, true, NULL, NULL, NULL,
-      &attrib_map, &uniform_map, &varying_map, NULL);
+      &attrib_map, &uniform_map, &varying_map, NULL, NULL);
   static ProgramManagerWithShaderTest::AttribInfo kAttribs[] = {
     { kAttrib1Name, kAttrib1Size, kAttrib1Type, kAttrib1Location, },
     { kAttrib2Name, kAttrib2Size, kAttrib2BadType, kAttrib2Location, },
@@ -1499,7 +1499,7 @@ TEST_F(ProgramManagerWithShaderTest, BindAttribLocationConflicts) {
   // Set Status
   TestHelper::SetShaderStates(
       gl_.get(), vshader, true, NULL, NULL, NULL, &attrib_map, NULL, NULL,
-      NULL);
+      NULL, NULL);
   // Check attrib infos got copied.
   for (AttributeMap::const_iterator it = attrib_map.begin();
        it != attrib_map.end(); ++it) {
@@ -1514,7 +1514,7 @@ TEST_F(ProgramManagerWithShaderTest, BindAttribLocationConflicts) {
   }
   TestHelper::SetShaderStates(
       gl_.get(), fshader, true, NULL, NULL, NULL, &attrib_map, NULL, NULL,
-      NULL);
+      NULL, NULL);
 
   // Set up program
   Program* program =
@@ -1583,10 +1583,10 @@ TEST_F(ProgramManagerWithShaderTest, UniformsPrecisionMismatch) {
   // Set Status
   TestHelper::SetShaderStates(
       gl_.get(), vshader, true, NULL, NULL, NULL, NULL,
-      &vertex_uniform_map, NULL, NULL);
+      &vertex_uniform_map, NULL, NULL, NULL);
   TestHelper::SetShaderStates(
       gl_.get(), fshader, true, NULL, NULL, NULL, NULL,
-      &frag_uniform_map, NULL, NULL);
+      &frag_uniform_map, NULL, NULL, NULL);
 
   // Set up program
   Program* program =
@@ -2204,9 +2204,11 @@ TEST_P(ProgramManagerWithPathRenderingTest, BindFragmentInputLocation) {
       kFragmentInput3Type, kFragmentInput3Size, kFragmentInput3Precision,
       kFragmentInput3StaticUse, kFragmentInput3Name);
   TestHelper::SetShaderStates(gl_.get(), vshader, true, nullptr, nullptr,
-                              nullptr, nullptr, nullptr, &varying_map, nullptr);
+                              nullptr, nullptr, nullptr, &varying_map, nullptr,
+                              nullptr);
   TestHelper::SetShaderStates(gl_.get(), fshader, true, nullptr, nullptr,
-                              nullptr, nullptr, nullptr, &varying_map, nullptr);
+                              nullptr, nullptr, nullptr, &varying_map, nullptr,
+                              nullptr);
   Program* program =
       manager_->CreateProgram(kClientProgramId, kServiceProgramId);
   ASSERT_TRUE(program != NULL);

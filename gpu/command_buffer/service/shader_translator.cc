@@ -72,6 +72,19 @@ void GetVaryings(ShHandle compiler, VaryingMap* var_map) {
   }
 }
 
+void GetInterfaceBlocks(ShHandle compiler, InterfaceBlockMap* var_map) {
+  if (!var_map)
+    return;
+  var_map->clear();
+  const std::vector<sh::InterfaceBlock>* interface_blocks =
+      ShGetInterfaceBlocks(compiler);
+  if (interface_blocks) {
+    for (const auto& block : *interface_blocks) {
+      (*var_map)[block.mappedName] = block;
+    }
+  }
+}
+
 void GetNameHashingInfo(ShHandle compiler, NameMap* name_map) {
   if (!name_map)
     return;
@@ -192,6 +205,7 @@ bool ShaderTranslator::Translate(const std::string& shader_source,
                                  AttributeMap* attrib_map,
                                  UniformMap* uniform_map,
                                  VaryingMap* varying_map,
+                                 InterfaceBlockMap* interface_block_map,
                                  NameMap* name_map) const {
   // Make sure this instance is initialized.
   DCHECK(compiler_ != NULL);
@@ -214,6 +228,7 @@ bool ShaderTranslator::Translate(const std::string& shader_source,
     GetAttributes(compiler_, attrib_map);
     GetUniforms(compiler_, uniform_map);
     GetVaryings(compiler_, varying_map);
+    GetInterfaceBlocks(compiler_, interface_block_map);
     // Get info for name hashing.
     GetNameHashingInfo(compiler_, name_map);
   }

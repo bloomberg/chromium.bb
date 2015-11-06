@@ -190,7 +190,7 @@ TEST_F(ShaderManagerTest, DoCompile) {
 
   TestHelper::SetShaderStates(
       gl_.get(), shader1, true, &kLog, &kTranslatedSource, NULL,
-      &attrib_map, &uniform_map, &varying_map, NULL);
+      &attrib_map, &uniform_map, &varying_map, NULL, NULL);
   EXPECT_TRUE(shader1->valid());
   // When compilation succeeds, no log is recorded.
   EXPECT_STREQ("", shader1->log_info().c_str());
@@ -237,7 +237,7 @@ TEST_F(ShaderManagerTest, DoCompile) {
   // Compile failure case.
   TestHelper::SetShaderStates(
       gl_.get(), shader1, false, &kLog, &kTranslatedSource, NULL,
-      &attrib_map, &uniform_map, &varying_map, NULL);
+      &attrib_map, &uniform_map, &varying_map, NULL, NULL);
   EXPECT_FALSE(shader1->valid());
   EXPECT_STREQ(kLog.c_str(), shader1->log_info().c_str());
   EXPECT_STREQ("", shader1->translated_source().c_str());

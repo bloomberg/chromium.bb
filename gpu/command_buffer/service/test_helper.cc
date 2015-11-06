@@ -923,6 +923,7 @@ void TestHelper::SetShaderStates(
       const AttributeMap* const expected_attrib_map,
       const UniformMap* const expected_uniform_map,
       const VaryingMap* const expected_varying_map,
+      const InterfaceBlockMap* const expected_interface_block_map,
       const NameMap* const expected_name_map) {
   const std::string empty_log_info;
   const std::string* log_info = (expected_log_info && !expected_valid) ?
@@ -943,6 +944,10 @@ void TestHelper::SetShaderStates(
   const VaryingMap empty_varying_map;
   const VaryingMap* varying_map = (expected_varying_map && expected_valid) ?
       expected_varying_map : &empty_varying_map;
+  const InterfaceBlockMap empty_interface_block_map;
+  const InterfaceBlockMap* interface_block_map =
+      (expected_interface_block_map && expected_valid) ?
+      expected_interface_block_map : &empty_interface_block_map;
   const NameMap empty_name_map;
   const NameMap* name_map = (expected_name_map && expected_valid) ?
       expected_name_map : &empty_name_map;
@@ -956,6 +961,7 @@ void TestHelper::SetShaderStates(
                                           NotNull(),  // attrib_map
                                           NotNull(),  // uniform_map
                                           NotNull(),  // varying_map
+                                          NotNull(),  // interface_block_map
                                           NotNull()))  // name_map
       .WillOnce(DoAll(SetArgumentPointee<1>(*log_info),
                       SetArgumentPointee<2>(*translated_source),
@@ -963,7 +969,8 @@ void TestHelper::SetShaderStates(
                       SetArgumentPointee<4>(*attrib_map),
                       SetArgumentPointee<5>(*uniform_map),
                       SetArgumentPointee<6>(*varying_map),
-                      SetArgumentPointee<7>(*name_map),
+                      SetArgumentPointee<7>(*interface_block_map),
+                      SetArgumentPointee<8>(*name_map),
                       Return(expected_valid)))
       .RetiresOnSaturation();
   if (expected_valid) {
@@ -986,7 +993,8 @@ void TestHelper::SetShaderStates(
 // static
 void TestHelper::SetShaderStates(
       ::gfx::MockGLInterface* gl, Shader* shader, bool valid) {
-  SetShaderStates(gl, shader, valid, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+  SetShaderStates(
+      gl, shader, valid, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
 }
 
 // static

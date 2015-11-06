@@ -341,6 +341,18 @@ class GPU_EXPORT Program : public base::RefCounted<Program> {
   // Updates the program log info from GL
   void UpdateLogInfo();
 
+  template <typename VarT>
+  void GetUniformBlockMembers(
+      Shader* shader, const std::vector<VarT>& fields,
+      const std::string& prefix);
+
+  // Get UniformBlock from InterfaceBlock
+  void GetUniformBlockFromInterfaceBlock(
+      Shader* shader, const sh::InterfaceBlock& interface_block);
+
+  // Get UniformBlocks info
+  void GatherInterfaceBlockInfo();
+
   // Clears all the uniforms.
   void ClearUniforms(std::vector<uint8>* zero_buffer);
 
