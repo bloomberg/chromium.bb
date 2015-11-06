@@ -12812,12 +12812,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
         <message name="IDS_SHOW_DOWNLOADS_MAC" desc="The Mac menu item to show downloads in the window menu.">
           Downloads
         </message>
-        <message name="IDS_WINDOW_AUDIO_PLAYING_MAC" desc="The emoji to append to the title of a window showing audio is playing.">
-          <ph name="TAB_TITLE">$1<ex>The Title of the Tab</ex></ph> (audio)
-        </message>
-        <message name="IDS_WINDOW_AUDIO_MUTING_MAC" desc="The emoji to append to the title of a window showing audio is muting.">
-          <ph name="TAB_TITLE">$1<ex>The Title of the Tab</ex></ph> (muted)
-        </message>
         <message name="IDS_SHOW_EXTENSIONS_MAC" desc="The Mac menu item to show extensions in the window menu.">
           Extensions
         </message>

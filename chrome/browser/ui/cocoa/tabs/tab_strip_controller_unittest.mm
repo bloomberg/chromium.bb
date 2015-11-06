@@ -9,7 +9,6 @@
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/media_stream_capture_indicator.h"
 #include "chrome/browser/ui/browser_window.h"
-#import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #import "chrome/browser/ui/cocoa/new_tab_button.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_controller.h"
@@ -29,25 +28,6 @@
 
 using content::SiteInstance;
 using content::WebContents;
-
-@interface TabStripControllerForMediaTesting : TabStripController {
-  // Keeps media state of tabs in browser for testing purpose.
-  std::map<content::WebContents*, TabMediaState> contents_media_state_maps;
-}
-@end
-
-@implementation TabStripControllerForMediaTesting
-// Returns the media state of each tab from the map we are keeping.
-- (TabMediaState)mediaStateForContents:(content::WebContents*)contents {
-  return contents_media_state_maps[contents];
-}
-
-- (void)setMediaStateForContents:(content::WebContents*)contents
-                  withMediaState:(TabMediaState)media_state {
-  contents_media_state_maps[contents] = media_state;
-}
-
-@end
 
 @interface TestTabStripControllerDelegate
     : NSObject<TabStripControllerDelegate> {
@@ -122,8 +102,7 @@ class TabStripControllerTest : public CocoaProfileTest {
     NSRect switch_frame = NSMakeRect(0, 0, content_frame.size.width, 500);
     base::scoped_nsobject<NSView> switch_view(
         [[NSView alloc] initWithFrame:switch_frame]);
-    switch_view_ = switch_view;
-    [parent addSubview:switch_view_.get()];
+    [parent addSubview:switch_view.get()];
 
     // Create the tab strip view. It's expected to have a child button in it
     // already as the "new tab" button so create that too.
@@ -156,17 +135,6 @@ class TabStripControllerTest : public CocoaProfileTest {
     CocoaProfileTest::TearDown();
   }
 
-  // Return a derived TabStripController.
-  TabStripControllerForMediaTesting* InitTabStripControllerForMediaTesting() {
-    TabStripControllerForMediaTesting* c =
-        [[TabStripControllerForMediaTesting alloc]
-            initWithView:static_cast<TabStripView*>(tab_strip_.get())
-              switchView:switch_view_.get()
-                 browser:browser()
-                delegate:controller_delegate_.get()];
-    return c;
-  }
-
   TabView* CreateTab() {
     SiteInstance* instance = SiteInstance::Create(profile());
     WebContents* web_contents = WebContents::Create(
@@ -194,7 +162,6 @@ class TabStripControllerTest : public CocoaProfileTest {
   base::scoped_nsobject<TestTabStripControllerDelegate> controller_delegate_;
   base::scoped_nsobject<TabStripController> controller_;
   base::scoped_nsobject<TabStripView> tab_strip_;
-  base::scoped_nsobject<NSView> switch_view_;
 };
 
 // Test adding and removing tabs and making sure that views get added to
@@ -380,89 +347,6 @@ TEST_F(TabStripControllerTest, ViewAccessibility_Value) {
   value =
       [tab_strip_ accessibilityAttributeValue:NSAccessibilityValueAttribute];
   EXPECT_EQ(tab1, value);
-}
-
-TEST_F(TabStripControllerTest, CorrectWindowFromUpdateWindowMediaState) {
-  controller_.reset(InitTabStripControllerForMediaTesting());
-  NSWindow* window = [tab_strip_ window];
-  BrowserWindowController* window_controller =
-      [BrowserWindowController browserWindowControllerForWindow:window];
-  TabStripControllerForMediaTesting* tabStripControllerForTesting =
-      static_cast<TabStripControllerForMediaTesting*>(controller_);
-
-  TabView* const tab1 = CreateTab();
-  TabView* const tab2 = CreateTab();
-
-  // tab2 should be the selected one.
-  EXPECT_FALSE([tab1 controller].selected);
-  EXPECT_TRUE([tab2 controller].selected);
-  WebContents* const contents_at_tab1 = model_->GetActiveWebContents();
-
-  [tabStripControllerForTesting
-      setMediaStateForContents:contents_at_tab1
-                withMediaState:TAB_MEDIA_STATE_AUDIO_PLAYING];
-  // Make sure the overriden from base controller correctly handles media
-  // status of tabs.
-  EXPECT_EQ(TAB_MEDIA_STATE_AUDIO_PLAYING,
-            [controller_ mediaStateForContents:contents_at_tab1]);
-  [controller_ updateWindowMediaState:TAB_MEDIA_STATE_AUDIO_PLAYING
-                                   on:contents_at_tab1];
-  // Because we have one tab playing, and the other one's media state is none,
-  // window media state should be AUDIO_PLAYING.
-  EXPECT_EQ(TAB_MEDIA_STATE_AUDIO_PLAYING, [window_controller mediaState]);
-
-  model_->ActivateTabAt(0, false);
-  // tab1 should be the selected one now.
-  EXPECT_TRUE([tab1 controller].selected);
-  EXPECT_FALSE([tab2 controller].selected);
-  WebContents* const contents_at_tab0 = model_->GetActiveWebContents();
-
-  [tabStripControllerForTesting
-      setMediaStateForContents:contents_at_tab0
-                withMediaState:TAB_MEDIA_STATE_AUDIO_MUTING];
-  [controller_ updateWindowMediaState:TAB_MEDIA_STATE_AUDIO_MUTING
-                                   on:contents_at_tab0];
-  // We have two tabs. One is playing and the other one is muting. The window
-  // media state should be still AUDIO_PLAYING.
-  EXPECT_EQ(TAB_MEDIA_STATE_AUDIO_PLAYING, [window_controller mediaState]);
-
-  [tabStripControllerForTesting
-      setMediaStateForContents:contents_at_tab1
-                withMediaState:TAB_MEDIA_STATE_AUDIO_MUTING];
-  [controller_ updateWindowMediaState:TAB_MEDIA_STATE_AUDIO_MUTING
-                                   on:contents_at_tab1];
-  // Now both tabs are muting, the window media state should be AUDIO_MUTING.
-  EXPECT_EQ(TAB_MEDIA_STATE_AUDIO_MUTING, [window_controller mediaState]);
-
-  [tabStripControllerForTesting
-      setMediaStateForContents:contents_at_tab0
-                withMediaState:TAB_MEDIA_STATE_AUDIO_PLAYING];
-  [controller_ updateWindowMediaState:TAB_MEDIA_STATE_AUDIO_PLAYING
-                                   on:contents_at_tab0];
-  // Among those tabs which were muting, one is started playing, the window
-  // media state should be playing.
-  EXPECT_EQ(TAB_MEDIA_STATE_AUDIO_PLAYING, [window_controller mediaState]);
-
-  // Mute it again for further testing.
-  [tabStripControllerForTesting
-      setMediaStateForContents:contents_at_tab0
-                withMediaState:TAB_MEDIA_STATE_AUDIO_MUTING];
-  [controller_ updateWindowMediaState:TAB_MEDIA_STATE_AUDIO_MUTING
-                                   on:contents_at_tab0];
-
-  [tabStripControllerForTesting setMediaStateForContents:contents_at_tab1
-                                          withMediaState:TAB_MEDIA_STATE_NONE];
-  [controller_ updateWindowMediaState:TAB_MEDIA_STATE_NONE on:contents_at_tab1];
-  // One of the tabs is muting, the other one is none. So window media state
-  // should be MUTING.
-  EXPECT_EQ(TAB_MEDIA_STATE_AUDIO_MUTING, [window_controller mediaState]);
-
-  [tabStripControllerForTesting setMediaStateForContents:contents_at_tab0
-                                          withMediaState:TAB_MEDIA_STATE_NONE];
-  [controller_ updateWindowMediaState:TAB_MEDIA_STATE_NONE on:contents_at_tab0];
-  // Neither of tabs playing nor muting, so the window media state should be
-  // NONE.
-  EXPECT_EQ(TAB_MEDIA_STATE_NONE, [window_controller mediaState]);
 }
 
 }  // namespace

@@ -13,7 +13,6 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_context.h"
 #include "chrome/browser/ui/search/search_model_observer.h"
-#include "chrome/browser/ui/tabs/tab_utils.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "ui/base/ui_base_types.h"
 
@@ -181,19 +180,8 @@ class BrowserWindowCocoa
   // Adds the given FindBar cocoa controller to this browser window.
   void AddFindBar(FindBarCocoaController* find_bar_cocoa_controller);
 
-  // Update window media state to show if one of the tabs within the window is
-  // playing an audio/video or even if it's playing something but it's muted.
-  void UpdateMediaState(TabMediaState media_state);
-
   // Returns the cocoa-world BrowserWindowController
   BrowserWindowController* cocoa_controller() { return controller_; }
-
-  // Returns window title based on the active tab title and window media state.
-  NSString* WindowTitle();
-
-  // Returns current media state, determined by the media state of tabs, set by
-  // UpdateMediaState.
-  TabMediaState media_state() { return media_state_; }
 
  protected:
   void DestroyBrowser() override;
@@ -206,11 +194,6 @@ class BrowserWindowCocoa
   base::scoped_nsobject<NSString> pending_window_title_;
   ui::WindowShowState initial_show_state_;
   NSInteger attention_request_id_;  // identifier from requestUserAttention
-
-  // Preserves window media state to show appropriate icon in the window title
-  // which can be audio playing, muting or none (determined by media state of
-  // tabs.
-  TabMediaState media_state_;
 };
 
 #endif  // CHROME_BROWSER_UI_COCOA_BROWSER_WINDOW_COCOA_H_

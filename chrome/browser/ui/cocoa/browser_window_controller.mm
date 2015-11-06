@@ -1907,15 +1907,6 @@ willAnimateFromState:(BookmarkBar::State)oldState
                                                  command.accelerator());
 }
 
-- (void)setMediaState:(TabMediaState)mediaState {
-  static_cast<BrowserWindowCocoa*>([self browserWindow])
-      ->UpdateMediaState(mediaState);
-}
-
-- (TabMediaState)mediaState {
-  return static_cast<BrowserWindowCocoa*>([self browserWindow])->media_state();
-}
-
 @end  // @implementation BrowserWindowController
 
 @implementation BrowserWindowController(Fullscreen)
