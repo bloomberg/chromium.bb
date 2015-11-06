@@ -178,6 +178,7 @@ struct wayland_input {
 	uint32_t key_serial;
 	uint32_t enter_serial;
 	bool has_focus;
+	int seat_version;
 
 	struct wayland_output *output;
 	struct wayland_output *keyboard_focus;
@@ -1630,8 +1631,12 @@ input_handle_capabilities(void *data, struct wl_seat *seat,
 					&pointer_listener, input);
 		weston_seat_init_pointer(&input->base);
 	} else if (!(caps & WL_SEAT_CAPABILITY_POINTER) && input->parent.pointer) {
-		wl_pointer_destroy(input->parent.pointer);
+		if (input->seat_version >= WL_POINTER_RELEASE_SINCE_VERSION)
+			wl_pointer_release(input->parent.pointer);
+		else
+			wl_pointer_destroy(input->parent.pointer);
 		input->parent.pointer = NULL;
+		weston_seat_release_pointer(&input->base);
 	}
 
 	if ((caps & WL_SEAT_CAPABILITY_KEYBOARD) && !input->parent.keyboard) {
@@ -1640,8 +1645,12 @@ input_handle_capabilities(void *data, struct wl_seat *seat,
 		wl_keyboard_add_listener(input->parent.keyboard,
 					 &keyboard_listener, input);
 	} else if (!(caps & WL_SEAT_CAPABILITY_KEYBOARD) && input->parent.keyboard) {
-		wl_keyboard_destroy(input->parent.keyboard);
+		if (input->seat_version >= WL_KEYBOARD_RELEASE_SINCE_VERSION)
+			wl_keyboard_release(input->parent.keyboard);
+		else
+			wl_keyboard_destroy(input->parent.keyboard);
 		input->parent.keyboard = NULL;
+		weston_seat_release_keyboard(&input->base);
 	}
 }
 
@@ -1657,9 +1666,10 @@ static const struct wl_seat_listener seat_listener = {
 };
 
 static void
-display_add_seat(struct wayland_backend *b, uint32_t id, uint32_t version)
+display_add_seat(struct wayland_backend *b, uint32_t id, uint32_t available_version)
 {
 	struct wayland_input *input;
+	uint32_t version = MIN(available_version, 4);
 
 	input = zalloc(sizeof *input);
 	if (input == NULL)
@@ -1668,7 +1678,8 @@ display_add_seat(struct wayland_backend *b, uint32_t id, uint32_t version)
 	weston_seat_init(&input->base, b->compositor, "default");
 	input->backend = b;
 	input->parent.seat = wl_registry_bind(b->parent.registry, id,
-					      &wl_seat_interface, MIN(version, 4));
+					      &wl_seat_interface, version);
+	input->seat_version = version;
 	wl_list_insert(b->input_list.prev, &input->link);
 
 	wl_seat_add_listener(input->parent.seat, &seat_listener, input);
