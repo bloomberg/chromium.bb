@@ -19,7 +19,8 @@ OverlayStrategyAllOrNothing::~OverlayStrategyAllOrNothing() {}
 
 bool OverlayStrategyAllOrNothing::Attempt(ResourceProvider* resource_provider,
                                           RenderPassList* render_passes,
-                                          OverlayCandidateList* candidates) {
+                                          OverlayCandidateList* candidates,
+                                          gfx::Rect* damage_rect) {
   QuadList& quad_list = render_passes->back()->quad_list;
   OverlayCandidateList new_candidates;
   int next_z_order = -1;

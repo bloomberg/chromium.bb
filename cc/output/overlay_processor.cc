@@ -27,10 +27,13 @@ OverlayProcessor::~OverlayProcessor() {}
 
 void OverlayProcessor::ProcessForOverlays(ResourceProvider* resource_provider,
                                           RenderPassList* render_passes,
-                                          OverlayCandidateList* candidates) {
+                                          OverlayCandidateList* candidates,
+                                          gfx::Rect* damage_rect) {
   for (auto strategy : strategies_) {
-    if (strategy->Attempt(resource_provider, render_passes, candidates))
+    if (strategy->Attempt(resource_provider, render_passes, candidates,
+                          damage_rect)) {
       return;
+    }
   }
 }
 

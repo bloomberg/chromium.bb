@@ -23,7 +23,8 @@ class CC_EXPORT OverlayStrategySandwich : public OverlayProcessor::Strategy {
 
   bool Attempt(ResourceProvider* resource_provider,
                RenderPassList* render_passes,
-               OverlayCandidateList* candidate_list) override;
+               OverlayCandidateList* candidate_list,
+               gfx::Rect* damage_rect) override;
 
  private:
   QuadList::Iterator TryOverlay(RenderPass* render_pass,

@@ -7,6 +7,7 @@
 #include "cc/base/math_util.h"
 #include "cc/output/overlay_candidate_validator.h"
 #include "cc/quads/draw_quad.h"
+#include "ui/gfx/geometry/rect_conversions.h"
 
 namespace cc {
 
@@ -20,12 +21,13 @@ OverlayStrategySingleOnTop::~OverlayStrategySingleOnTop() {}
 
 bool OverlayStrategySingleOnTop::Attempt(ResourceProvider* resource_provider,
                                          RenderPassList* render_passes,
-                                         OverlayCandidateList* candidate_list) {
+                                         OverlayCandidateList* candidate_list,
+                                         gfx::Rect* damage_rect) {
   QuadList* quad_list = &render_passes->back()->quad_list;
   for (auto it = quad_list->begin(); it != quad_list->end(); ++it) {
     OverlayCandidate candidate;
     if (OverlayCandidate::FromDrawQuad(resource_provider, *it, &candidate) &&
-        TryOverlay(quad_list, candidate_list, candidate, it)) {
+        TryOverlay(quad_list, candidate_list, candidate, it, damage_rect)) {
       return true;
     }
   }
@@ -37,7 +39,8 @@ bool OverlayStrategySingleOnTop::TryOverlay(
     QuadList* quad_list,
     OverlayCandidateList* candidate_list,
     const OverlayCandidate& candidate,
-    QuadList::Iterator candidate_iterator) {
+    QuadList::Iterator candidate_iterator,
+    gfx::Rect* damage_rect) {
   // Check that no prior quads overlap it.
   for (auto overlap_iter = quad_list->cbegin();
        overlap_iter != candidate_iterator; ++overlap_iter) {
@@ -57,10 +60,12 @@ bool OverlayStrategySingleOnTop::TryOverlay(
   // Check for support.
   capability_checker_->CheckOverlaySupport(&new_candidate_list);
 
+  const OverlayCandidate& overlay_candidate = new_candidate_list.back();
   // If the candidate can be handled by an overlay, create a pass for it.
-  if (new_candidate_list.back().overlay_handled) {
+  if (overlay_candidate.overlay_handled) {
     quad_list->EraseAndInvalidateAllPointers(candidate_iterator);
     candidate_list->swap(new_candidate_list);
+    damage_rect->Subtract(ToEnclosedRect(overlay_candidate.display_rect));
     return true;
   }
 

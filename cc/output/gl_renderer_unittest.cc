@@ -2014,10 +2014,11 @@ class TestOverlayProcessor : public OverlayProcessor {
    public:
     Strategy() {}
     ~Strategy() override {}
-    MOCK_METHOD3(Attempt,
+    MOCK_METHOD4(Attempt,
                  bool(ResourceProvider* resource_provider,
                       RenderPassList* render_passes,
-                      OverlayCandidateList* candidates));
+                      OverlayCandidateList* candidates,
+                      gfx::Rect* damage_rect));
   };
 
   explicit TestOverlayProcessor(OutputSurface* surface)
@@ -2095,7 +2096,7 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
   // added a fake strategy, so checking for Attempt calls checks if there was
   // any attempt to overlay, which there shouldn't be. We can't use the quad
   // list because the render pass is cleaned up by DrawFrame.
-  EXPECT_CALL(*processor->strategy_, Attempt(_, _, _)).Times(0);
+  EXPECT_CALL(*processor->strategy_, Attempt(_, _, _, _)).Times(0);
   renderer.DrawFrame(&render_passes_in_draw_order_, 1.f, viewport_rect,
                      viewport_rect, false);
   Mock::VerifyAndClearExpectations(processor->strategy_);
@@ -2112,7 +2113,7 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
                        gfx::PointF(1, 1), SK_ColorTRANSPARENT, vertex_opacity,
                        flipped, nearest_neighbor);
 
-  EXPECT_CALL(*processor->strategy_, Attempt(_, _, _)).Times(1);
+  EXPECT_CALL(*processor->strategy_, Attempt(_, _, _, _)).Times(1);
   renderer.DrawFrame(&render_passes_in_draw_order_, 1.f, viewport_rect,
                      viewport_rect, false);
 }

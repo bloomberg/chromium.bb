@@ -42,7 +42,8 @@ OverlayStrategySandwich::~OverlayStrategySandwich() {}
 
 bool OverlayStrategySandwich::Attempt(ResourceProvider* resource_provider,
                                       RenderPassList* render_passes,
-                                      OverlayCandidateList* candidate_list) {
+                                      OverlayCandidateList* candidate_list,
+                                      gfx::Rect* damage_rect) {
   QuadList& quad_list = render_passes->back()->quad_list;
   for (auto it = quad_list.begin(); it != quad_list.end();) {
     OverlayCandidate candidate;

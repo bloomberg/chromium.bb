@@ -23,10 +23,13 @@ class CC_EXPORT OverlayProcessor {
     // Returns false if the strategy cannot be made to work with the
     // current set of render passes. Returns true if the strategy was successful
     // and adds any additional passes necessary to represent overlays to
-    // |render_passes|.
+    // |render_passes|. Strategy can also optimize |damage_rect| as it seems
+    // fit to reduce GL composition, in case |damage_rect| is obscured by
+    // overlays.
     virtual bool Attempt(ResourceProvider* resource_provider,
                          RenderPassList* render_passes,
-                         OverlayCandidateList* candidates) = 0;
+                         OverlayCandidateList* candidates,
+                         gfx::Rect* damage_rect) = 0;
   };
   typedef ScopedPtrVector<Strategy> StrategyList;
 
@@ -37,7 +40,8 @@ class CC_EXPORT OverlayProcessor {
 
   void ProcessForOverlays(ResourceProvider* resource_provider,
                           RenderPassList* render_passes,
-                          OverlayCandidateList* candidates);
+                          OverlayCandidateList* candidates,
+                          gfx::Rect* damage_rect);
 
  protected:
   StrategyList strategies_;
