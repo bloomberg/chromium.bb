@@ -18,7 +18,9 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "gin/array_buffer.h"
 #include "gin/public/gin_embedders.h"
+#include "gin/public/isolate_holder.h"
 #include "pdf/draw_utils.h"
 #include "pdf/pdfium/pdfium_api_string_buffer_adapter.h"
 #include "pdf/pdfium/pdfium_mem_buffer_file_read.h"
@@ -449,9 +451,27 @@ std::string GetDocumentMetadata(FPDF_DOCUMENT doc, const std::string& key) {
   return base::UTF16ToUTF8(value);
 }
 
+gin::IsolateHolder* g_isolate_holder = nullptr;
+
+void SetUpV8() {
+  gin::IsolateHolder::Initialize(gin::IsolateHolder::kNonStrictMode,
+                                 gin::ArrayBufferAllocator::SharedInstance());
+  g_isolate_holder =
+      new gin::IsolateHolder(gin::IsolateHolder::kSingleThread);
+  g_isolate_holder->isolate()->Enter();
+}
+
+void TearDownV8() {
+  g_isolate_holder->isolate()->Exit();
+  delete g_isolate_holder;
+  g_isolate_holder = nullptr;
+}
+
 }  // namespace
 
 bool InitializeSDK() {
+  SetUpV8();
+
   FPDF_LIBRARY_CONFIG config;
   config.version = 2;
   config.m_pUserFontPaths = nullptr;
@@ -470,6 +490,7 @@ bool InitializeSDK() {
 }
 
 void ShutdownSDK() {
+  TearDownV8();
   FPDF_DestroyLibrary();
 }
 
