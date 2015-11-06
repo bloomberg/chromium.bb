@@ -1408,8 +1408,10 @@ void RenderFrameHostImpl::OnDidChangeFrameOwnerProperties(
 void RenderFrameHostImpl::OnUpdateTitle(
     const base::string16& title,
     blink::WebTextDirection title_direction) {
-  // This message is only sent for top-level frames. TODO(avi): when frame tree
-  // mirroring works correctly, add a check here to enforce it.
+  // This message should only be sent for top-level frames.
+  if (frame_tree_node_->parent())
+    return;
+
   if (title.length() > kMaxTitleChars) {
     NOTREACHED() << "Renderer sent too many characters in title.";
     return;
