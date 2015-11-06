@@ -161,10 +161,8 @@ ModuleSystem::ModuleSystem(ScriptContext* context, SourceMap* source_map)
 
   v8::Local<v8::Object> global(context->v8_context()->Global());
   v8::Isolate* isolate = context->isolate();
-  global->SetHiddenValue(ToV8StringUnsafe(isolate, kModulesField),
-                         v8::Object::New(isolate));
-  global->SetHiddenValue(ToV8StringUnsafe(isolate, kModuleSystem),
-                         v8::External::New(isolate, this));
+  SetPrivate(global, kModulesField, v8::Object::New(isolate));
+  SetPrivate(global, kModuleSystem, v8::External::New(isolate, this));
 
   gin::ModuleRegistry::From(context->v8_context())->AddObserver(this);
   if (context_->GetRenderFrame()) {
@@ -182,8 +180,8 @@ void ModuleSystem::Invalidate() {
   {
     v8::HandleScope scope(GetIsolate());
     v8::Local<v8::Object> global = context()->v8_context()->Global();
-    global->DeleteHiddenValue(ToV8StringUnsafe(GetIsolate(), kModulesField));
-    global->DeleteHiddenValue(ToV8StringUnsafe(GetIsolate(), kModuleSystem));
+    DeletePrivate(global, kModulesField);
+    DeletePrivate(global, kModuleSystem);
   }
 
   // Invalidate all active and clobbered NativeHandlers we own.
@@ -244,9 +242,9 @@ v8::Local<v8::Value> ModuleSystem::RequireForJsInner(
   // The module system might have been deleted. This can happen if a different
   // context keeps a reference to us, but our frame is destroyed (e.g.
   // background page keeps reference to chrome object in a closed popup).
-  v8::Local<v8::Value> modules_value = global->GetHiddenValue(
-      ToV8StringUnsafe(GetIsolate(), kModulesField));
-  if (modules_value.IsEmpty() || modules_value->IsUndefined()) {
+  v8::Local<v8::Value> modules_value;
+  if (!GetPrivate(global, kModulesField, &modules_value) ||
+      modules_value->IsUndefined()) {
     Warn(GetIsolate(), "Extension view no longer exists");
     return v8::Undefined(GetIsolate());
   }
@@ -383,17 +381,18 @@ void ModuleSystem::LazyFieldGetterInner(
     RequireFunction require_function) {
   CHECK(!info.Data().IsEmpty());
   CHECK(info.Data()->IsObject());
-  v8::HandleScope handle_scope(info.GetIsolate());
+  v8::Isolate* isolate = info.GetIsolate();
+  v8::HandleScope handle_scope(isolate);
   v8::Local<v8::Object> parameters = v8::Local<v8::Object>::Cast(info.Data());
   // This context should be the same as context()->v8_context().
   v8::Local<v8::Context> context = parameters->CreationContext();
   v8::Local<v8::Object> global(context->Global());
-  v8::Local<v8::Value> module_system_value = global->GetHiddenValue(
-      ToV8StringUnsafe(info.GetIsolate(), kModuleSystem));
-  if (module_system_value.IsEmpty() || !module_system_value->IsExternal()) {
+  v8::Local<v8::Value> module_system_value;
+  if (!GetPrivate(context, global, kModuleSystem, &module_system_value) ||
+      !module_system_value->IsExternal()) {
     // ModuleSystem has been deleted.
     // TODO(kalman): See comment in header file.
-    Warn(info.GetIsolate(),
+    Warn(isolate,
          "Module system has been deleted, does extension view exist?");
     return;
   }
@@ -403,7 +402,7 @@ void ModuleSystem::LazyFieldGetterInner(
 
   v8::Local<v8::Value> v8_module_name;
   if (!GetProperty(context, parameters, kModuleName, &v8_module_name)) {
-    Warn(info.GetIsolate(), "Cannot find module.");
+    Warn(isolate, "Cannot find module.");
     return;
   }
   std::string name = *v8::String::Utf8Value(v8_module_name);
@@ -413,7 +412,7 @@ void ModuleSystem::LazyFieldGetterInner(
   v8::Context::Scope context_scope(context);
   NativesEnabledScope natives_enabled_scope(module_system);
 
-  v8::TryCatch try_catch(info.GetIsolate());
+  v8::TryCatch try_catch(isolate);
   v8::Local<v8::Value> module_value;
   if (!(module_system->*require_function)(name).ToLocal(&module_value)) {
     module_system->HandleException(try_catch);
@@ -611,17 +610,15 @@ void ModuleSystem::Private(const v8::FunctionCallbackInfo<v8::Value>& args) {
     return;
   }
   v8::Local<v8::Object> obj = args[0].As<v8::Object>();
-  v8::Local<v8::String> privates_key =
-      ToV8StringUnsafe(GetIsolate(), "privates");
-  v8::Local<v8::Value> privates = obj->GetHiddenValue(privates_key);
-  if (privates.IsEmpty()) {
+  v8::Local<v8::Value> privates;
+  if (!GetPrivate(obj, "privates", &privates) || !privates->IsObject()) {
     privates = v8::Object::New(args.GetIsolate());
     if (privates.IsEmpty()) {
       GetIsolate()->ThrowException(
           ToV8StringUnsafe(GetIsolate(), "Failed to create privates"));
       return;
     }
-    obj->SetHiddenValue(privates_key, privates);
+    SetPrivate(obj, "privates", privates);
   }
   args.GetReturnValue().Set(privates);
 }

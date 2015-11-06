@@ -115,12 +115,13 @@ v8::Local<v8::Function> WakeEventPage::GetForContext(ScriptContext* context) {
 
   // Cache the imported function as a hidden property on the global object of
   // |v8_context|. Creating it isn't free.
-  v8::Local<v8::String> kWakeEventPageKey =
-      ToV8StringUnsafe(isolate, "WakeEventPage");
-  v8::Local<v8::Value> wake_event_page =
-      v8_context->Global()->GetHiddenValue(kWakeEventPageKey);
-
-  if (wake_event_page.IsEmpty()) {
+  v8::Local<v8::Private> kWakeEventPageKey =
+      v8::Private::ForApi(isolate, ToV8StringUnsafe(isolate, "WakeEventPage"));
+  v8::Local<v8::Value> wake_event_page;
+  if (!v8_context->Global()
+           ->GetPrivate(v8_context, kWakeEventPageKey)
+           .ToLocal(&wake_event_page) ||
+      wake_event_page->IsUndefined()) {
     // Implement this using a NativeHandler, which requires a function name
     // (arbitrary in this case). Handles own lifetime.
     const char* kFunctionName = "WakeEventPage";
@@ -132,7 +133,9 @@ v8::Local<v8::Function> WakeEventPage::GetForContext(ScriptContext* context) {
     // Extract and cache the wake-event-page function from the native handler.
     wake_event_page = GetPropertyUnsafe(
         v8_context, native_handler->NewInstance(), kFunctionName);
-    v8_context->Global()->SetHiddenValue(kWakeEventPageKey, wake_event_page);
+    v8_context->Global()
+        ->SetPrivate(v8_context, kWakeEventPageKey, wake_event_page)
+        .FromJust();
   }
 
   CHECK(wake_event_page->IsFunction());

@@ -125,23 +125,27 @@ const char kScript[] =
     "\n"
     "}());\n";
 
-v8::Local<v8::String> MakeKey(const char* name, v8::Isolate* isolate) {
-  return ToV8StringUnsafe(isolate,
-                          base::StringPrintf("%s::%s", kClassName, name));
+v8::Local<v8::Private> MakeKey(const char* name, v8::Isolate* isolate) {
+  return v8::Private::ForApi(
+      isolate, ToV8StringUnsafe(
+                   isolate, base::StringPrintf("%s::%s", kClassName, name)));
 }
 
 void SaveImpl(const char* name,
               v8::Local<v8::Value> value,
               v8::Local<v8::Context> context) {
   CHECK(!value.IsEmpty() && value->IsObject()) << name;
-  context->Global()->SetHiddenValue(MakeKey(name, context->GetIsolate()),
-                                    value);
+  context->Global()
+      ->SetPrivate(context, MakeKey(name, context->GetIsolate()), value)
+      .FromJust();
 }
 
 v8::Local<v8::Object> Load(const char* name, v8::Local<v8::Context> context) {
   v8::Local<v8::Value> value =
-      context->Global()->GetHiddenValue(MakeKey(name, context->GetIsolate()));
-  CHECK(!value.IsEmpty() && value->IsObject()) << name;
+      context->Global()
+          ->GetPrivate(context, MakeKey(name, context->GetIsolate()))
+          .ToLocalChecked();
+  CHECK(value->IsObject()) << name;
   return v8::Local<v8::Object>::Cast(value);
 }
 
