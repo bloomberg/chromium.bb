@@ -16,7 +16,6 @@
 #include "third_party/WebKit/public/web/WebElement.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebNode.h"
-#include "third_party/WebKit/public/web/WebNodeList.h"
 #include "third_party/WebKit/public/web/WebUserGestureIndicator.h"
 #include "url/gurl.h"
 #include "v8/include/v8.h"
@@ -24,7 +23,6 @@
 using blink::WebDocument;
 using blink::WebElement;
 using blink::WebNode;
-using blink::WebNodeList;
 using blink::WebUserGestureIndicator;
 
 namespace extensions {
@@ -127,9 +125,8 @@ bool WebstoreBindings::GetWebstoreItemIdFromFrame(
 
   GURL webstore_base_url =
       GURL(extension_urls::GetWebstoreItemDetailURLPrefix());
-  WebNodeList children = head.childNodes();
-  for (unsigned i = 0; i < children.length(); ++i) {
-    WebNode child = children.item(i);
+  for (WebNode child = head.firstChild(); !child.isNull();
+       child = child.nextSibling()) {
     if (!child.isElementNode())
       continue;
     WebElement elem = child.to<WebElement>();

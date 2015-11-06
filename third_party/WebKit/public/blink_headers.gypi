@@ -435,7 +435,6 @@
       "web/WebNavigatorContentUtilsClient.h",
       "web/WebNetworkStateNotifier.h",
       "web/WebNode.h",
-      "web/WebNodeList.h",
       "web/WebOptionElement.h",
       "web/WebPagePopup.h",
       "web/WebPageSerializer.h",

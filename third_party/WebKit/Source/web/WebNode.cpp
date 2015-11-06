@@ -55,7 +55,6 @@
 #include "public/web/WebDocument.h"
 #include "public/web/WebElement.h"
 #include "public/web/WebElementCollection.h"
-#include "public/web/WebNodeList.h"
 #include "public/web/WebPluginContainer.h"
 #include "web/FrameLoaderClientImpl.h"
 #include "web/WebLocalFrameImpl.h"
@@ -169,11 +168,6 @@ WebNode WebNode::nextSibling() const
 bool WebNode::hasChildNodes() const
 {
     return m_private->hasChildren();
-}
-
-WebNodeList WebNode::childNodes()
-{
-    return WebNodeList(m_private->childNodes());
 }
 
 bool WebNode::isLink() const

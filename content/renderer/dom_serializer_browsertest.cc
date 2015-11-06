@@ -33,7 +33,6 @@
 #include "third_party/WebKit/public/web/WebElementCollection.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebNode.h"
-#include "third_party/WebKit/public/web/WebNodeList.h"
 #include "third_party/WebKit/public/web/WebPageSerializer.h"
 #include "third_party/WebKit/public/web/WebPageSerializerClient.h"
 #include "third_party/WebKit/public/web/WebView.h"
@@ -46,7 +45,6 @@ using blink::WebElementCollection;
 using blink::WebFrame;
 using blink::WebLocalFrame;
 using blink::WebNode;
-using blink::WebNodeList;
 using blink::WebPageSerializer;
 using blink::WebPageSerializerClient;
 using blink::WebString;
@@ -644,7 +642,6 @@ class DomSerializerTests : public ContentBrowserTest,
     WebElement head_element = doc.head();
     ASSERT_TRUE(!head_element.isNull());
     ASSERT_TRUE(!head_element.hasChildNodes());
-    ASSERT_TRUE(head_element.childNodes().length() == 0);
 
     // Do serialization.
     SerializeDomForURL(file_url);
@@ -659,10 +656,9 @@ class DomSerializerTests : public ContentBrowserTest,
     ASSERT_TRUE(doc.isHTMLDocument());
     head_element = doc.head();
     ASSERT_TRUE(!head_element.isNull());
-    ASSERT_TRUE(head_element.hasChildNodes());
-    ASSERT_TRUE(head_element.childNodes().length() == 1);
     WebNode meta_node = head_element.firstChild();
     ASSERT_TRUE(!meta_node.isNull());
+    ASSERT_TRUE(meta_node.nextSibling().isNull());
     // Get meta charset info.
     std::string charset_info;
     ASSERT_TRUE(IsMetaElement(meta_node, charset_info));

@@ -179,7 +179,6 @@
       'WebMediaStreamRegistry.cpp',
       'WebNetworkStateNotifier.cpp',
       'WebNode.cpp',
-      'WebNodeList.cpp',
       'WebOptionElement.cpp',
       'WebPageImportanceSignals.cpp',
       'WebPagePopupImpl.cpp',

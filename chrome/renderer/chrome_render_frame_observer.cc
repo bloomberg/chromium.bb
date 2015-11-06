@@ -33,7 +33,6 @@
 #include "third_party/WebKit/public/web/WebElement.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebNode.h"
-#include "third_party/WebKit/public/web/WebNodeList.h"
 #include "third_party/WebKit/public/web/WebSecurityPolicy.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/jpeg_codec.h"
@@ -44,7 +43,6 @@ using blink::WebDataSource;
 using blink::WebElement;
 using blink::WebLocalFrame;
 using blink::WebNode;
-using blink::WebNodeList;
 using blink::WebString;
 using content::SSLStatus;
 using content::RenderFrame;

@@ -31,7 +31,6 @@
 #include "third_party/WebKit/public/web/WebElement.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebNode.h"
-#include "third_party/WebKit/public/web/WebNodeList.h"
 #include "third_party/WebKit/public/web/WebScriptSource.h"
 #include "url/gurl.h"
 #include "v8/include/v8.h"
@@ -41,7 +40,6 @@ using blink::WebDocument;
 using blink::WebElement;
 using blink::WebLocalFrame;
 using blink::WebNode;
-using blink::WebNodeList;
 using blink::WebScriptSource;
 using blink::WebSecurityOrigin;
 using blink::WebString;
@@ -95,12 +93,11 @@ bool HasNoTranslateMeta(WebDocument* document) {
   const WebString value(ASCIIToUTF16("value"));
   const WebString content(ASCIIToUTF16("content"));
 
-  WebNodeList children = head.childNodes();
-  for (size_t i = 0; i < children.length(); ++i) {
-    WebNode node = children.item(i);
-    if (!node.isElementNode())
+  for (WebNode child = head.firstChild(); !child.isNull();
+      child = child.nextSibling()) {
+    if (!child.isElementNode())
       continue;
-    WebElement element = node.to<WebElement>();
+    WebElement element = child.to<WebElement>();
     // Check if a tag is <meta>.
     if (!element.hasHTMLTagName(meta))
       continue;

@@ -23,7 +23,6 @@
 #include "third_party/WebKit/public/web/WebElement.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebNode.h"
-#include "third_party/WebKit/public/web/WebNodeList.h"
 #include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
 
@@ -31,7 +30,6 @@ using blink::WebDocument;
 using blink::WebElement;
 using blink::WebFrame;
 using blink::WebNode;
-using blink::WebNodeList;
 using blink::WebString;
 
 namespace web_apps {
@@ -131,9 +129,8 @@ void ParseWebAppFromWebDocument(WebFrame* frame,
     return;
 
   GURL document_url = document.url();
-  WebNodeList children = head.childNodes();
-  for (unsigned i = 0; i < children.length(); ++i) {
-    WebNode child = children.item(i);
+  for (WebNode child = head.firstChild(); !child.isNull();
+      child = child.nextSibling()) {
     if (!child.isElementNode())
       continue;
     WebElement elem = child.to<WebElement>();

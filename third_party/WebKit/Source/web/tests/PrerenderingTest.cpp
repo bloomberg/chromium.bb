@@ -30,6 +30,7 @@
 
 #include "config.h"
 
+#include "core/dom/NodeTraversal.h"
 #include "platform/testing/URLTestHelpers.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebPrerender.h"
@@ -37,15 +38,12 @@
 #include "public/platform/WebString.h"
 #include "public/platform/WebUnitTestSupport.h"
 #include "public/web/WebCache.h"
-#include "public/web/WebDocument.h"
-#include "public/web/WebElement.h"
 #include "public/web/WebFrame.h"
-#include "public/web/WebNode.h"
-#include "public/web/WebNodeList.h"
 #include "public/web/WebPrerendererClient.h"
 #include "public/web/WebScriptSource.h"
 #include "public/web/WebView.h"
 #include "public/web/WebViewClient.h"
+#include "web/WebLocalFrameImpl.h"
 #include "web/tests/FrameTestHelpers.h"
 #include "wtf/OwnPtr.h"
 #include <functional>
@@ -199,31 +197,30 @@ public:
         WebCache::clear();
     }
 
-    WebElement console()
+    Element& console()
     {
-        WebElement console = m_webViewHelper.webView()->mainFrame()->document().getElementById("console");
-        ASSERT(console.hasHTMLTagName("UL"));
-        return console;
+        Document* document = m_webViewHelper.webViewImpl()->mainFrameImpl()->frame()->document();
+        Element* console = document->getElementById("console");
+        ASSERT(isHTMLUListElement(console));
+        return *console;
     }
 
     unsigned consoleLength()
     {
-        return console().childNodes().length() - 1;
+        return console().countChildren() - 1;
     }
 
-    std::string consoleAt(unsigned i)
+    WebString consoleAt(unsigned i)
     {
         ASSERT(consoleLength() > i);
 
-        WebNode consoleListItem = console().childNodes().item(1 + i);
-        ASSERT(consoleListItem.isElementNode());
-        ASSERT(consoleListItem.to<WebElement>().hasHTMLTagName("LI"));
-        ASSERT(consoleListItem.hasChildNodes());
+        Node* item = NodeTraversal::childAt(console(), 1 + i);
 
-        WebNode textNode = consoleListItem.firstChild();
-        ASSERT(textNode.isTextNode());
+        ASSERT(item);
+        ASSERT(isHTMLLIElement(item));
+        ASSERT(item->hasChildren());
 
-        return textNode.nodeValue().utf8().data();
+        return item->textContent();
     }
 
     void executeScript(const char* code)
