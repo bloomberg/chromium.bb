@@ -63,12 +63,17 @@ class ExternalFileURLRequestJob : public net::URLRequestJob {
   void Kill() override;
   bool GetMimeType(std::string* mime_type) const override;
   bool IsRedirectResponse(GURL* location, int* http_status_code) override;
-  bool ReadRawData(net::IOBuffer* buf, int buf_size, int* bytes_read) override;
+  int ReadRawData(net::IOBuffer* buf, int buf_size) override;
 
  protected:
   ~ExternalFileURLRequestJob() override;
 
  private:
+  // Helper method to start the job. Should be called asynchronously because
+  // NotifyStartError() is not legal to call synchronously in
+  // URLRequestJob::Start().
+  void StartAsync();
+
   // Called from an internal helper class defined in drive_url_request_job.cc,
   // which is running on the UI thread.
   void OnHelperResultObtained(
@@ -91,6 +96,7 @@ class ExternalFileURLRequestJob : public net::URLRequestJob {
   void* const profile_id_;
 
   // The range of the file to be returned.
+  net::Error range_parse_result_;
   net::HttpByteRange byte_range_;
   int64 remaining_bytes_;
 

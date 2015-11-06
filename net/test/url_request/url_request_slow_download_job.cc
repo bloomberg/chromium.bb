@@ -179,39 +179,34 @@ URLRequestSlowDownloadJob::FillBufferHelper(IOBuffer* buf,
   return REQUEST_COMPLETE;
 }
 
-bool URLRequestSlowDownloadJob::ReadRawData(IOBuffer* buf,
-                                            int buf_size,
-                                            int* bytes_read) {
+int URLRequestSlowDownloadJob::ReadRawData(IOBuffer* buf, int buf_size) {
   if (base::LowerCaseEqualsASCII(kFinishDownloadUrl,
                                  request_->url().spec().c_str()) ||
       base::LowerCaseEqualsASCII(kErrorDownloadUrl,
                                  request_->url().spec().c_str())) {
     VLOG(10) << __FUNCTION__ << " called w/ kFinish/ErrorDownloadUrl.";
-    *bytes_read = 0;
-    return true;
+    return 0;
   }
 
   VLOG(10) << __FUNCTION__ << " called at position " << bytes_already_sent_
            << " in the stream.";
-  ReadStatus status = FillBufferHelper(buf, buf_size, bytes_read);
+  int bytes_read = 0;
+  ReadStatus status = FillBufferHelper(buf, buf_size, &bytes_read);
   switch (status) {
     case BUFFER_FILLED:
-      return true;
+    case REQUEST_COMPLETE:
+      return bytes_read;
     case REQUEST_BLOCKED:
       buffer_ = buf;
       buffer_size_ = buf_size;
-      SetStatus(URLRequestStatus(URLRequestStatus::IO_PENDING, 0));
       base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
           FROM_HERE, base::Bind(&URLRequestSlowDownloadJob::CheckDoneStatus,
                                 weak_factory_.GetWeakPtr()),
           base::TimeDelta::FromMilliseconds(100));
-      return false;
-    case REQUEST_COMPLETE:
-      *bytes_read = 0;
-      return true;
+      return ERR_IO_PENDING;
   }
   NOTREACHED();
-  return true;
+  return OK;
 }
 
 void URLRequestSlowDownloadJob::CheckDoneStatus() {
@@ -223,12 +218,10 @@ void URLRequestSlowDownloadJob::CheckDoneStatus() {
         FillBufferHelper(buffer_.get(), buffer_size_, &bytes_written);
     DCHECK_EQ(BUFFER_FILLED, status);
     buffer_ = NULL;  // Release the reference.
-    SetStatus(URLRequestStatus());
-    NotifyReadComplete(bytes_written);
+    ReadRawDataComplete(bytes_written);
   } else if (should_error_download_) {
     VLOG(10) << __FUNCTION__ << " called w/ should_finish_ownload_ set.";
-    NotifyDone(
-        URLRequestStatus(URLRequestStatus::FAILED, ERR_CONNECTION_RESET));
+    ReadRawDataComplete(ERR_CONNECTION_RESET);
   } else {
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE, base::Bind(&URLRequestSlowDownloadJob::CheckDoneStatus,

@@ -65,32 +65,20 @@ bool URLRequestSimpleJob::GetCharset(std::string* charset) {
 
 URLRequestSimpleJob::~URLRequestSimpleJob() {}
 
-bool URLRequestSimpleJob::ReadRawData(IOBuffer* buf, int buf_size,
-                                      int* bytes_read) {
-  DCHECK(bytes_read);
-  buf_size = static_cast<int>(
-      std::min(static_cast<int64>(buf_size),
-               byte_range_.last_byte_position() - next_data_offset_ + 1));
-  DCHECK_GE(buf_size, 0);
-  if (buf_size == 0) {
-    *bytes_read = 0;
-    return true;
-  }
+int URLRequestSimpleJob::ReadRawData(IOBuffer* buf, int buf_size) {
+  buf_size = std::min(static_cast<int64>(buf_size),
+                      byte_range_.last_byte_position() - next_data_offset_ + 1);
+  if (buf_size == 0)
+    return 0;
 
   // Do memory copy on a background thread. See crbug.com/422489.
   GetTaskRunner()->PostTaskAndReply(
       FROM_HERE, base::Bind(&CopyData, make_scoped_refptr(buf), buf_size, data_,
                             next_data_offset_),
-      base::Bind(&URLRequestSimpleJob::OnReadCompleted,
+      base::Bind(&URLRequestSimpleJob::ReadRawDataComplete,
                  weak_factory_.GetWeakPtr(), buf_size));
   next_data_offset_ += buf_size;
-  SetStatus(URLRequestStatus(URLRequestStatus::IO_PENDING, 0));
-  return false;
-}
-
-void URLRequestSimpleJob::OnReadCompleted(int bytes_read) {
-  SetStatus(URLRequestStatus());
-  NotifyReadComplete(bytes_read);
+  return ERR_IO_PENDING;
 }
 
 base::TaskRunner* URLRequestSimpleJob::GetTaskRunner() const {
@@ -121,8 +109,8 @@ void URLRequestSimpleJob::StartAsync() {
     return;
 
   if (ranges().size() > 1) {
-    NotifyDone(URLRequestStatus(URLRequestStatus::FAILED,
-                                ERR_REQUEST_RANGE_NOT_SATISFIABLE));
+    NotifyStartError(URLRequestStatus(URLRequestStatus::FAILED,
+                                      ERR_REQUEST_RANGE_NOT_SATISFIABLE));
     return;
   }
 
@@ -142,8 +130,8 @@ void URLRequestSimpleJob::OnGetDataCompleted(int result) {
   if (result == OK) {
     // Notify that the headers are complete
     if (!byte_range_.ComputeBounds(data_->size())) {
-      NotifyDone(URLRequestStatus(URLRequestStatus::FAILED,
-                 ERR_REQUEST_RANGE_NOT_SATISFIABLE));
+      NotifyStartError(URLRequestStatus(URLRequestStatus::FAILED,
+                                        ERR_REQUEST_RANGE_NOT_SATISFIABLE));
       return;
     }
 

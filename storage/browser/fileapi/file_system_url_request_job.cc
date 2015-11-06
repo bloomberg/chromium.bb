@@ -62,8 +62,8 @@ FileSystemURLRequestJob::FileSystemURLRequestJob(
       file_system_context_(file_system_context),
       is_directory_(false),
       remaining_bytes_(0),
-      weak_factory_(this) {
-}
+      range_parse_result_(net::OK),
+      weak_factory_(this) {}
 
 FileSystemURLRequestJob::~FileSystemURLRequestJob() {}
 
@@ -80,39 +80,28 @@ void FileSystemURLRequestJob::Kill() {
   weak_factory_.InvalidateWeakPtrs();
 }
 
-bool FileSystemURLRequestJob::ReadRawData(net::IOBuffer* dest,
-                                          int dest_size,
-                                          int* bytes_read) {
+int FileSystemURLRequestJob::ReadRawData(net::IOBuffer* dest, int dest_size) {
   DCHECK_NE(dest_size, 0);
-  DCHECK(bytes_read);
   DCHECK_GE(remaining_bytes_, 0);
 
   if (reader_.get() == NULL)
-    return false;
+    return net::ERR_FAILED;
 
   if (remaining_bytes_ < dest_size)
-    dest_size = static_cast<int>(remaining_bytes_);
+    dest_size = remaining_bytes_;
 
-  if (!dest_size) {
-    *bytes_read = 0;
-    return true;
-  }
+  if (!dest_size)
+    return 0;
 
   const int rv = reader_->Read(dest, dest_size,
                                base::Bind(&FileSystemURLRequestJob::DidRead,
                                           weak_factory_.GetWeakPtr()));
   if (rv >= 0) {
-    // Data is immediately available.
-    *bytes_read = rv;
     remaining_bytes_ -= rv;
     DCHECK_GE(remaining_bytes_, 0);
-    return true;
   }
-  if (rv == net::ERR_IO_PENDING)
-    SetStatus(URLRequestStatus(URLRequestStatus::IO_PENDING, 0));
-  else
-    NotifyFailed(rv);
-  return false;
+
+  return rv;
 }
 
 bool FileSystemURLRequestJob::GetMimeType(std::string* mime_type) const {
@@ -127,8 +116,12 @@ bool FileSystemURLRequestJob::GetMimeType(std::string* mime_type) const {
 void FileSystemURLRequestJob::SetExtraRequestHeaders(
     const net::HttpRequestHeaders& headers) {
   std::string range_header;
+  // Currently this job only cares about the Range header. Note that validation
+  // is deferred to DidGetMetaData(), because NotifyStartError is not legal to
+  // call since the job has not started.
   if (headers.GetHeader(net::HttpRequestHeaders::kRange, &range_header)) {
     std::vector<net::HttpByteRange> ranges;
+
     if (net::HttpUtil::ParseRangeHeader(range_header, &ranges)) {
       if (ranges.size() == 1) {
         byte_range_ = ranges[0];
@@ -136,7 +129,7 @@ void FileSystemURLRequestJob::SetExtraRequestHeaders(
         // We don't support multiple range requests in one single URL request.
         // TODO(adamk): decide whether we want to support multiple range
         // requests.
-        NotifyFailed(net::ERR_REQUEST_RANGE_NOT_SATISFIABLE);
+        range_parse_result_ = net::ERR_REQUEST_RANGE_NOT_SATISFIABLE;
       }
     }
   }
@@ -168,7 +161,7 @@ void FileSystemURLRequestJob::StartAsync() {
   }
   if (!file_system_context_->CanServeURLRequest(url_)) {
     // In incognito mode the API is not usable and there should be no data.
-    NotifyFailed(net::ERR_FILE_NOT_FOUND);
+    NotifyStartError(URLRequestStatus::FromError(net::ERR_FILE_NOT_FOUND));
     return;
   }
   file_system_context_->operation_runner()->GetMetadata(
@@ -182,7 +175,7 @@ void FileSystemURLRequestJob::DidAttemptAutoMount(base::File::Error result) {
       file_system_context_->CrackURL(request_->url()).is_valid()) {
     StartAsync();
   } else {
-    NotifyFailed(net::ERR_FILE_NOT_FOUND);
+    NotifyStartError(URLRequestStatus::FromError(net::ERR_FILE_NOT_FOUND));
   }
 }
 
@@ -190,8 +183,10 @@ void FileSystemURLRequestJob::DidGetMetadata(
     base::File::Error error_code,
     const base::File::Info& file_info) {
   if (error_code != base::File::FILE_OK) {
-    NotifyFailed(error_code == base::File::FILE_ERROR_INVALID_URL ?
-                 net::ERR_INVALID_URL : net::ERR_FILE_NOT_FOUND);
+    NotifyStartError(URLRequestStatus::FromError(
+        error_code == base::File::FILE_ERROR_INVALID_URL
+            ? net::ERR_INVALID_URL
+            : net::ERR_FILE_NOT_FOUND));
     return;
   }
 
@@ -201,8 +196,14 @@ void FileSystemURLRequestJob::DidGetMetadata(
 
   is_directory_ = file_info.is_directory;
 
+  if (range_parse_result_ != net::OK) {
+    NotifyStartError(URLRequestStatus::FromError(range_parse_result_));
+    return;
+  }
+
   if (!byte_range_.ComputeBounds(file_info.size)) {
-    NotifyFailed(net::ERR_REQUEST_RANGE_NOT_SATISFIABLE);
+    NotifyStartError(
+        URLRequestStatus::FromError(net::ERR_REQUEST_RANGE_NOT_SATISFIABLE));
     return;
   }
 
@@ -226,17 +227,12 @@ void FileSystemURLRequestJob::DidGetMetadata(
 }
 
 void FileSystemURLRequestJob::DidRead(int result) {
-  if (result > 0)
-    SetStatus(URLRequestStatus());  // Clear the IO_PENDING status
-  else if (result == 0)
-    NotifyDone(URLRequestStatus());
-  else
-    NotifyFailed(result);
+  if (result >= 0) {
+    remaining_bytes_ -= result;
+    DCHECK_GE(remaining_bytes_, 0);
+  }
 
-  remaining_bytes_ -= result;
-  DCHECK_GE(remaining_bytes_, 0);
-
-  NotifyReadComplete(result);
+  ReadRawDataComplete(result);
 }
 
 bool FileSystemURLRequestJob::IsRedirectResponse(GURL* location,
@@ -254,10 +250,6 @@ bool FileSystemURLRequestJob::IsRedirectResponse(GURL* location,
   }
 
   return false;
-}
-
-void FileSystemURLRequestJob::NotifyFailed(int rv) {
-  NotifyDone(URLRequestStatus(URLRequestStatus::FAILED, rv));
 }
 
 }  // namespace storage

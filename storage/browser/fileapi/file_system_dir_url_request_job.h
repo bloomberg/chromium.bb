@@ -33,7 +33,7 @@ class STORAGE_EXPORT_PRIVATE FileSystemDirURLRequestJob
   // URLRequestJob methods:
   void Start() override;
   void Kill() override;
-  bool ReadRawData(net::IOBuffer* buf, int buf_size, int* bytes_read) override;
+  int ReadRawData(net::IOBuffer* buf, int buf_size) override;
   bool GetCharset(std::string* charset) override;
 
   // FilterContext methods (via URLRequestJob):

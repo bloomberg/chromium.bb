@@ -46,4 +46,19 @@ URLRequestStatus URLRequestStatus::FromError(int error) {
   }
 }
 
+Error URLRequestStatus::ToNetError() const {
+  switch (status_) {
+    case SUCCESS:
+      return OK;
+    case IO_PENDING:
+      return ERR_IO_PENDING;
+    case CANCELED:
+      return ERR_ABORTED;
+    case FAILED:
+      return static_cast<Error>(error_);
+  }
+  NOTREACHED();
+  return ERR_FAILED;
+}
+
 }  // namespace net

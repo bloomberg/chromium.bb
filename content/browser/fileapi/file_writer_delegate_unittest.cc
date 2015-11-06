@@ -184,17 +184,15 @@ class FileWriterDelegateTestJob : public net::URLRequestJob {
         base::Bind(&FileWriterDelegateTestJob::NotifyHeadersComplete, this));
   }
 
-  bool ReadRawData(net::IOBuffer* buf, int buf_size, int* bytes_read) override {
+  int ReadRawData(net::IOBuffer* buf, int buf_size) override {
     if (remaining_bytes_ < buf_size)
-      buf_size = static_cast<int>(remaining_bytes_);
+      buf_size = remaining_bytes_;
 
     for (int i = 0; i < buf_size; ++i)
       buf->data()[i] = content_[cursor_++];
     remaining_bytes_ -= buf_size;
 
-    SetStatus(net::URLRequestStatus());
-    *bytes_read = buf_size;
-    return true;
+    return buf_size;
   }
 
   int GetResponseCode() const override { return 200; }

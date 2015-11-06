@@ -97,40 +97,20 @@ URLRequestFailedJob::URLRequestFailedJob(URLRequest* request,
 }
 
 void URLRequestFailedJob::Start() {
-  if (phase_ == START) {
-    if (net_error_ != ERR_IO_PENDING) {
-      NotifyStartError(URLRequestStatus(URLRequestStatus::FAILED, net_error_));
-      return;
-    }
-    SetStatus(URLRequestStatus(URLRequestStatus::IO_PENDING, 0));
-    return;
-  }
-  response_info_.headers = new net::HttpResponseHeaders("HTTP/1.1 200 OK");
-  NotifyHeadersComplete();
-}
-
-bool URLRequestFailedJob::ReadRawData(IOBuffer* buf,
-                                      int buf_size,
-                                      int* bytes_read) {
-  CHECK(phase_ == READ_SYNC || phase_ == READ_ASYNC);
-  if (net_error_ != ERR_IO_PENDING && phase_ == READ_SYNC) {
-    NotifyDone(URLRequestStatus(URLRequestStatus::FAILED, net_error_));
-    return false;
-  }
-
-  SetStatus(URLRequestStatus(URLRequestStatus::IO_PENDING, 0));
-
-  if (net_error_ == ERR_IO_PENDING)
-    return false;
-
-  DCHECK_EQ(READ_ASYNC, phase_);
-  DCHECK_NE(ERR_IO_PENDING, net_error_);
-
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(&URLRequestFailedJob::NotifyDone, weak_factory_.GetWeakPtr(),
-                 URLRequestStatus(URLRequestStatus::FAILED, net_error_)));
-  return false;
+      base::Bind(&URLRequestFailedJob::StartAsync, weak_factory_.GetWeakPtr()));
+}
+
+int URLRequestFailedJob::ReadRawData(IOBuffer* buf, int buf_size) {
+  CHECK(phase_ == READ_SYNC || phase_ == READ_ASYNC);
+  if (net_error_ == ERR_IO_PENDING || phase_ == READ_SYNC)
+    return net_error_;
+
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&URLRequestFailedJob::ReadRawDataComplete,
+                            weak_factory_.GetWeakPtr(), net_error_));
+  return ERR_IO_PENDING;
 }
 
 int URLRequestFailedJob::GetResponseCode() const {
@@ -193,6 +173,19 @@ GURL URLRequestFailedJob::GetMockHttpsUrlForHostname(
 }
 
 URLRequestFailedJob::~URLRequestFailedJob() {
+}
+
+void URLRequestFailedJob::StartAsync() {
+  if (phase_ == START) {
+    if (net_error_ != ERR_IO_PENDING) {
+      NotifyStartError(URLRequestStatus(URLRequestStatus::FAILED, net_error_));
+      return;
+    }
+    SetStatus(URLRequestStatus(URLRequestStatus::IO_PENDING, 0));
+    return;
+  }
+  response_info_.headers = new net::HttpResponseHeaders("HTTP/1.1 200 OK");
+  NotifyHeadersComplete();
 }
 
 }  // namespace net

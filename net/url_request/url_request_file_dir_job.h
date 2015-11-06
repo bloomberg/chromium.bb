@@ -10,6 +10,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
 #include "net/base/directory_lister.h"
+#include "net/base/net_errors.h"
 #include "net/url_request/url_request_job.h"
 
 namespace net {
@@ -29,7 +30,7 @@ class URLRequestFileDirJob
   // Overridden from URLRequestJob:
   void Start() override;
   void Kill() override;
-  bool ReadRawData(IOBuffer* buf, int buf_size, int* bytes_read) override;
+  int ReadRawData(IOBuffer* buf, int buf_size) override;
   bool GetMimeType(std::string* mime_type) const override;
   bool GetCharset(std::string* charset) override;
 
@@ -45,10 +46,10 @@ class URLRequestFileDirJob
   // When we have data and a read has been pending, this function
   // will fill the response buffer and notify the request
   // appropriately.
-  void CompleteRead();
+  void CompleteRead(Error error);
 
   // Fills a buffer with the output.
-  bool FillReadBuffer(char *buf, int buf_size, int *bytes_read);
+  bool FillReadBuffer(char* buf, int buf_size, int* bytes_read);
 
   DirectoryLister lister_;
   base::FilePath dir_path_;
@@ -67,6 +68,7 @@ class URLRequestFileDirJob
   bool read_pending_;
   scoped_refptr<IOBuffer> read_buffer_;
   int read_buffer_length_;
+
   base::WeakPtrFactory<URLRequestFileDirJob> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(URLRequestFileDirJob);

@@ -14,7 +14,6 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "net/base/io_buffer.h"
-#include "net/base/net_errors.h"
 #include "net/base/net_util.h"
 #include "net/url_request/url_request.h"
 #include "storage/browser/fileapi/file_system_context.h"
@@ -44,15 +43,14 @@ FileSystemDirURLRequestJob::FileSystemDirURLRequestJob(
 FileSystemDirURLRequestJob::~FileSystemDirURLRequestJob() {
 }
 
-bool FileSystemDirURLRequestJob::ReadRawData(net::IOBuffer* dest, int dest_size,
-                                             int *bytes_read) {
-  int count = std::min(dest_size, static_cast<int>(data_.size()));
+int FileSystemDirURLRequestJob::ReadRawData(net::IOBuffer* dest,
+                                            int dest_size) {
+  int count = std::min(dest_size, base::checked_cast<int>(data_.size()));
   if (count > 0) {
     memcpy(dest->data(), data_.data(), count);
     data_.erase(0, count);
   }
-  *bytes_read = count;
-  return true;
+  return count;
 }
 
 void FileSystemDirURLRequestJob::Start() {
@@ -98,8 +96,7 @@ void FileSystemDirURLRequestJob::StartAsync() {
                        false);
       return;
     }
-    NotifyDone(URLRequestStatus(URLRequestStatus::FAILED,
-                                net::ERR_FILE_NOT_FOUND));
+    NotifyStartError(URLRequestStatus::FromError(net::ERR_FILE_NOT_FOUND));
     return;
   }
   file_system_context_->operation_runner()->ReadDirectory(
@@ -112,8 +109,7 @@ void FileSystemDirURLRequestJob::DidAttemptAutoMount(base::File::Error result) {
       file_system_context_->CrackURL(request_->url()).is_valid()) {
     StartAsync();
   } else {
-    NotifyDone(URLRequestStatus(URLRequestStatus::FAILED,
-                                net::ERR_FILE_NOT_FOUND));
+    NotifyStartError(URLRequestStatus::FromError(net::ERR_FILE_NOT_FOUND));
   }
 }
 
@@ -125,7 +121,7 @@ void FileSystemDirURLRequestJob::DidReadDirectory(
     int rv = net::ERR_FILE_NOT_FOUND;
     if (result == base::File::FILE_ERROR_INVALID_URL)
       rv = net::ERR_INVALID_URL;
-    NotifyDone(URLRequestStatus(URLRequestStatus::FAILED, rv));
+    NotifyStartError(URLRequestStatus::FromError(rv));
     return;
   }
 

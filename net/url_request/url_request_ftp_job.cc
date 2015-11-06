@@ -239,7 +239,7 @@ void URLRequestFtpJob::OnStartCompleted(int result) {
     HandleAuthNeededResponse();
     return;
   } else {
-    NotifyDone(URLRequestStatus(URLRequestStatus::FAILED, result));
+    NotifyStartError(URLRequestStatus(URLRequestStatus::FAILED, result));
   }
 }
 
@@ -251,15 +251,7 @@ void URLRequestFtpJob::OnStartCompletedAsync(int result) {
 
 void URLRequestFtpJob::OnReadCompleted(int result) {
   read_in_progress_ = false;
-  if (result == 0) {
-    NotifyDone(URLRequestStatus());
-  } else if (result < 0) {
-    NotifyDone(URLRequestStatus(URLRequestStatus::FAILED, result));
-  } else {
-    // Clear the IO_PENDING status
-    SetStatus(URLRequestStatus());
-  }
-  NotifyReadComplete(result);
+  ReadRawDataComplete(result);
 }
 
 void URLRequestFtpJob::RestartTransactionWithAuth() {
@@ -352,14 +344,12 @@ UploadProgress URLRequestFtpJob::GetUploadProgress() const {
   return UploadProgress();
 }
 
-bool URLRequestFtpJob::ReadRawData(IOBuffer* buf,
-                                   int buf_size,
-                                   int *bytes_read) {
+int URLRequestFtpJob::ReadRawData(IOBuffer* buf, int buf_size) {
   DCHECK_NE(buf_size, 0);
-  DCHECK(bytes_read);
   DCHECK(!read_in_progress_);
 
   int rv;
+
   if (proxy_info_.is_direct()) {
     rv = ftp_transaction_->Read(buf, buf_size,
                                 base::Bind(&URLRequestFtpJob::OnReadCompleted,
@@ -370,18 +360,9 @@ bool URLRequestFtpJob::ReadRawData(IOBuffer* buf,
                                             base::Unretained(this)));
   }
 
-  if (rv >= 0) {
-    *bytes_read = rv;
-    return true;
-  }
-
-  if (rv == ERR_IO_PENDING) {
+  if (rv == ERR_IO_PENDING)
     read_in_progress_ = true;
-    SetStatus(URLRequestStatus(URLRequestStatus::IO_PENDING, 0));
-  } else {
-    NotifyDone(URLRequestStatus(URLRequestStatus::FAILED, rv));
-  }
-  return false;
+  return rv;
 }
 
 void URLRequestFtpJob::HandleAuthNeededResponse() {

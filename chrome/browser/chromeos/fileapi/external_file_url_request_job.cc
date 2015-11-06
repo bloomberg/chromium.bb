@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
 #include "chrome/browser/chromeos/fileapi/external_file_url_util.h"
@@ -19,7 +20,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/url_constants.h"
-#include "net/base/net_errors.h"
 #include "net/http/http_byte_range.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_info.h"
@@ -163,31 +163,47 @@ ExternalFileURLRequestJob::ExternalFileURLRequestJob(
     net::NetworkDelegate* network_delegate)
     : net::URLRequestJob(request, network_delegate),
       profile_id_(profile_id),
+      range_parse_result_(net::OK),
       remaining_bytes_(0),
-      weak_ptr_factory_(this) {
-}
+      weak_ptr_factory_(this) {}
 
 void ExternalFileURLRequestJob::SetExtraRequestHeaders(
     const net::HttpRequestHeaders& headers) {
   std::string range_header;
   if (headers.GetHeader(net::HttpRequestHeaders::kRange, &range_header)) {
-    // Note: We only support single range requests.
+    // Currently this job only cares about the Range header, and only supports
+    // single range requests. Note that validation is deferred to Start,
+    // because NotifyStartError is not legal to call since the job has not
+    // started.
     std::vector<net::HttpByteRange> ranges;
     if (net::HttpUtil::ParseRangeHeader(range_header, &ranges) &&
         ranges.size() == 1) {
       byte_range_ = ranges[0];
     } else {
-      // Failed to parse Range: header, so notify the error.
-      NotifyDone(net::URLRequestStatus(net::URLRequestStatus::FAILED,
-                                       net::ERR_REQUEST_RANGE_NOT_SATISFIABLE));
+      range_parse_result_ = net::ERR_REQUEST_RANGE_NOT_SATISFIABLE;
     }
   }
 }
 
 void ExternalFileURLRequestJob::Start() {
+  // Post a task to invoke StartAsync asynchronously to avoid re-entering the
+  // delegate, because NotifyStartError is not legal to call synchronously in
+  // Start().
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&ExternalFileURLRequestJob::StartAsync,
+                            weak_ptr_factory_.GetWeakPtr()));
+}
+
+void ExternalFileURLRequestJob::StartAsync() {
   DVLOG(1) << "Starting request";
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!stream_reader_);
+
+  if (range_parse_result_ != net::OK) {
+    NotifyStartError(net::URLRequestStatus(net::URLRequestStatus::FAILED,
+                                           range_parse_result_));
+    return;
+  }
 
   // We only support GET request.
   if (request()->method() != "GET") {
@@ -326,38 +342,23 @@ bool ExternalFileURLRequestJob::IsRedirectResponse(GURL* location,
   return true;
 }
 
-bool ExternalFileURLRequestJob::ReadRawData(net::IOBuffer* buf,
-                                            int buf_size,
-                                            int* bytes_read) {
+int ExternalFileURLRequestJob::ReadRawData(net::IOBuffer* buf, int buf_size) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(stream_reader_);
 
-  if (remaining_bytes_ == 0) {
-    *bytes_read = 0;
-    return true;
-  }
+  if (remaining_bytes_ == 0)
+    return 0;
 
   const int result = stream_reader_->Read(
-      buf,
-      std::min<int64>(buf_size, remaining_bytes_),
+      buf, std::min<int64>(buf_size, remaining_bytes_),
       base::Bind(&ExternalFileURLRequestJob::OnReadCompleted,
                  weak_ptr_factory_.GetWeakPtr()));
 
-  if (result == net::ERR_IO_PENDING) {
-    // The data is not yet available.
-    SetStatus(net::URLRequestStatus(net::URLRequestStatus::IO_PENDING, 0));
-    return false;
-  }
-  if (result < 0) {
-    // An error occurs.
-    NotifyDone(net::URLRequestStatus(net::URLRequestStatus::FAILED, result));
-    return false;
-  }
+  if (result < 0)
+    return result;
 
-  // Reading has been finished immediately.
-  *bytes_read = result;
   remaining_bytes_ -= result;
-  return true;
+  return result;
 }
 
 ExternalFileURLRequestJob::~ExternalFileURLRequestJob() {
@@ -366,15 +367,10 @@ ExternalFileURLRequestJob::~ExternalFileURLRequestJob() {
 void ExternalFileURLRequestJob::OnReadCompleted(int read_result) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  if (read_result < 0) {
-    DCHECK_NE(read_result, net::ERR_IO_PENDING);
-    NotifyDone(
-        net::URLRequestStatus(net::URLRequestStatus::FAILED, read_result));
-  }
+  if (read_result > 0)
+    remaining_bytes_ -= read_result;
 
-  remaining_bytes_ -= read_result;
-  SetStatus(net::URLRequestStatus());  // Clear the IO_PENDING status.
-  NotifyReadComplete(read_result);
+  ReadRawDataComplete(read_result);
 }
 
 }  // namespace chromeos

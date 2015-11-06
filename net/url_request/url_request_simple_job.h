@@ -28,7 +28,7 @@ class NET_EXPORT URLRequestSimpleJob : public URLRangeRequestJob {
 
   void Start() override;
   void Kill() override;
-  bool ReadRawData(IOBuffer* buf, int buf_size, int* bytes_read) override;
+  int ReadRawData(IOBuffer* buf, int buf_size) override;
   bool GetMimeType(std::string* mime_type) const override;
   bool GetCharset(std::string* charset) override;
 
@@ -66,7 +66,6 @@ class NET_EXPORT URLRequestSimpleJob : public URLRangeRequestJob {
 
  private:
   void OnGetDataCompleted(int result);
-  void OnReadCompleted(int bytes_read);
 
   HttpByteRange byte_range_;
   std::string mime_type_;

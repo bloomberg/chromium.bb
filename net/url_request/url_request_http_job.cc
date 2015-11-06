@@ -414,11 +414,6 @@ void URLRequestHttpJob::NotifyHeadersComplete() {
   URLRequestJob::NotifyHeadersComplete();
 }
 
-void URLRequestHttpJob::NotifyDone(const URLRequestStatus& status) {
-  DoneWithRequest(FINISHED);
-  URLRequestJob::NotifyDone(status);
-}
-
 void URLRequestHttpJob::DestroyTransaction() {
   DCHECK(transaction_.get());
 
@@ -998,19 +993,16 @@ void URLRequestHttpJob::OnHeadersReceivedCallback(int result) {
 void URLRequestHttpJob::OnReadCompleted(int result) {
   read_in_progress_ = false;
 
+  DCHECK_NE(ERR_IO_PENDING, result);
+
   if (ShouldFixMismatchedContentLength(result))
     result = OK;
 
-  if (result == OK) {
-    NotifyDone(URLRequestStatus());
-  } else if (result < 0) {
-    NotifyDone(URLRequestStatus(URLRequestStatus::FAILED, result));
-  } else {
-    // Clear the IO_PENDING status
-    SetStatus(URLRequestStatus());
-  }
+  // EOF or error, done with this job.
+  if (result <= 0)
+    DoneWithRequest(FINISHED);
 
-  NotifyReadComplete(result);
+  ReadRawDataComplete(result);
 }
 
 void URLRequestHttpJob::RestartTransactionWithAuth(
@@ -1334,10 +1326,8 @@ bool URLRequestHttpJob::ShouldFixMismatchedContentLength(int rv) const {
   return false;
 }
 
-bool URLRequestHttpJob::ReadRawData(IOBuffer* buf, int buf_size,
-                                    int* bytes_read) {
+int URLRequestHttpJob::ReadRawData(IOBuffer* buf, int buf_size) {
   DCHECK_NE(buf_size, 0);
-  DCHECK(bytes_read);
   DCHECK(!read_in_progress_);
 
   int rv = transaction_->Read(
@@ -1345,23 +1335,15 @@ bool URLRequestHttpJob::ReadRawData(IOBuffer* buf, int buf_size,
       base::Bind(&URLRequestHttpJob::OnReadCompleted, base::Unretained(this)));
 
   if (ShouldFixMismatchedContentLength(rv))
-    rv = 0;
+    rv = OK;
 
-  if (rv >= 0) {
-    *bytes_read = rv;
-    if (!rv)
-      DoneWithRequest(FINISHED);
-    return true;
-  }
+  if (rv == 0 || (rv < 0 && rv != ERR_IO_PENDING))
+    DoneWithRequest(FINISHED);
 
-  if (rv == ERR_IO_PENDING) {
+  if (rv == ERR_IO_PENDING)
     read_in_progress_ = true;
-    SetStatus(URLRequestStatus(URLRequestStatus::IO_PENDING, 0));
-  } else {
-    NotifyDone(URLRequestStatus(URLRequestStatus::FAILED, rv));
-  }
 
-  return false;
+  return rv;
 }
 
 void URLRequestHttpJob::StopCaching() {

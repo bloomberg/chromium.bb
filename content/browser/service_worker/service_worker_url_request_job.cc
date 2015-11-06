@@ -203,49 +203,44 @@ void ServiceWorkerURLRequestJob::SetExtraRequestHeaders(
     byte_range_ = ranges[0];
 }
 
-bool ServiceWorkerURLRequestJob::ReadRawData(
-    net::IOBuffer* buf, int buf_size, int *bytes_read) {
+int ServiceWorkerURLRequestJob::ReadRawData(net::IOBuffer* buf, int buf_size) {
   DCHECK(buf);
   DCHECK_GE(buf_size, 0);
-  DCHECK(bytes_read);
   DCHECK(waiting_stream_url_.is_empty());
+
+  int bytes_read = 0;
+
   if (stream_.get()) {
-    switch (stream_->ReadRawData(buf, buf_size, bytes_read)) {
+    switch (stream_->ReadRawData(buf, buf_size, &bytes_read)) {
       case Stream::STREAM_HAS_DATA:
-        DCHECK_GT(*bytes_read, 0);
-        return true;
+        DCHECK_GT(bytes_read, 0);
+        return bytes_read;
       case Stream::STREAM_COMPLETE:
-        DCHECK(!*bytes_read);
+        DCHECK_EQ(0, bytes_read);
         RecordResult(ServiceWorkerMetrics::REQUEST_JOB_STREAM_RESPONSE);
-        return true;
+        return 0;
       case Stream::STREAM_EMPTY:
         stream_pending_buffer_ = buf;
         stream_pending_buffer_size_ = buf_size;
-        SetStatus(net::URLRequestStatus(net::URLRequestStatus::IO_PENDING, 0));
-        return false;
+        return net::ERR_IO_PENDING;
       case Stream::STREAM_ABORTED:
         // Handle this as connection reset.
         RecordResult(ServiceWorkerMetrics::REQUEST_JOB_ERROR_STREAM_ABORTED);
-        NotifyDone(net::URLRequestStatus(net::URLRequestStatus::FAILED,
-                                         net::ERR_CONNECTION_RESET));
-        return false;
+        return net::ERR_CONNECTION_RESET;
     }
     NOTREACHED();
-    return false;
+    return net::ERR_FAILED;
   }
 
-  if (!blob_request_) {
-    *bytes_read = 0;
-    return true;
-  }
-  blob_request_->Read(buf, buf_size, bytes_read);
+  if (!blob_request_)
+    return 0;
+  blob_request_->Read(buf, buf_size, &bytes_read);
   net::URLRequestStatus status = blob_request_->status();
-  SetStatus(status);
-  if (status.is_io_pending())
-    return false;
-  if (status.is_success() && *bytes_read == 0)
+  if (status.status() != net::URLRequestStatus::SUCCESS)
+    return status.error();
+  if (bytes_read == 0)
     RecordResult(ServiceWorkerMetrics::REQUEST_JOB_BLOB_RESPONSE);
-  return status.is_success();
+  return bytes_read;
 }
 
 // TODO(falken): Refactor Blob and Stream specific handling to separate classes.
@@ -291,29 +286,18 @@ void ServiceWorkerURLRequestJob::OnResponseStarted(net::URLRequest* request) {
 
 void ServiceWorkerURLRequestJob::OnReadCompleted(net::URLRequest* request,
                                                  int bytes_read) {
-  SetStatus(request->status());
   if (!request->status().is_success()) {
     RecordResult(ServiceWorkerMetrics::REQUEST_JOB_ERROR_BLOB_READ);
-    NotifyDone(request->status());
-    return;
-  }
-
-  if (bytes_read == 0) {
-    // Protect because NotifyReadComplete() can destroy |this|.
-    scoped_refptr<ServiceWorkerURLRequestJob> protect(this);
+  } else if (bytes_read == 0) {
     RecordResult(ServiceWorkerMetrics::REQUEST_JOB_BLOB_RESPONSE);
-    NotifyReadComplete(bytes_read);
-    NotifyDone(request->status());
-    return;
   }
-  NotifyReadComplete(bytes_read);
+  net::URLRequestStatus status = request->status();
+  ReadRawDataComplete(status.is_success() ? bytes_read : status.error());
 }
 
 // Overrides for Stream reading -----------------------------------------------
 
 void ServiceWorkerURLRequestJob::OnDataAvailable(Stream* stream) {
-  // Clear the IO_PENDING status.
-  SetStatus(net::URLRequestStatus());
   // Do nothing if stream_pending_buffer_ is empty, i.e. there's no ReadRawData
   // operation waiting for IO completion.
   if (!stream_pending_buffer_.get())
@@ -322,15 +306,15 @@ void ServiceWorkerURLRequestJob::OnDataAvailable(Stream* stream) {
   // stream_pending_buffer_ is set to the IOBuffer instance provided to
   // ReadRawData() by URLRequestJob.
 
-  int bytes_read = 0;
-  switch (stream_->ReadRawData(
-      stream_pending_buffer_.get(), stream_pending_buffer_size_, &bytes_read)) {
+  int result = 0;
+  switch (stream_->ReadRawData(stream_pending_buffer_.get(),
+                               stream_pending_buffer_size_, &result)) {
     case Stream::STREAM_HAS_DATA:
-      DCHECK_GT(bytes_read, 0);
+      DCHECK_GT(result, 0);
       break;
     case Stream::STREAM_COMPLETE:
       // Calling NotifyReadComplete with 0 signals completion.
-      DCHECK(!bytes_read);
+      DCHECK(!result);
       RecordResult(ServiceWorkerMetrics::REQUEST_JOB_STREAM_RESPONSE);
       break;
     case Stream::STREAM_EMPTY:
@@ -338,9 +322,8 @@ void ServiceWorkerURLRequestJob::OnDataAvailable(Stream* stream) {
       break;
     case Stream::STREAM_ABORTED:
       // Handle this as connection reset.
+      result = net::ERR_CONNECTION_RESET;
       RecordResult(ServiceWorkerMetrics::REQUEST_JOB_ERROR_STREAM_ABORTED);
-      NotifyDone(net::URLRequestStatus(net::URLRequestStatus::FAILED,
-                                       net::ERR_CONNECTION_RESET));
       break;
   }
 
@@ -348,7 +331,7 @@ void ServiceWorkerURLRequestJob::OnDataAvailable(Stream* stream) {
   // safe for the observer to read.
   stream_pending_buffer_ = nullptr;
   stream_pending_buffer_size_ = 0;
-  NotifyReadComplete(bytes_read);
+  ReadRawDataComplete(result);
 }
 
 void ServiceWorkerURLRequestJob::OnStreamRegistered(Stream* stream) {
@@ -644,7 +627,7 @@ void ServiceWorkerURLRequestJob::DidDispatchFetchEvent(
   // error.
   if (response.status_code == 0) {
     RecordStatusZeroResponseError(response.error);
-    NotifyDone(
+    NotifyStartError(
         net::URLRequestStatus(net::URLRequestStatus::FAILED, net::ERR_FAILED));
     return;
   }
