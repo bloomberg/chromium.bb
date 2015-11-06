@@ -55,8 +55,6 @@ content/browser/frame_host/navigation_controller_impl.cc
 # Copyright Apple, Inc, Google Inc; BSD license. Not used on Android.
 # Moved from third_party/WebKit/.
 content/browser/renderer_host/input/web_input_event_builders_mac.mm
-# Copyright Alf Watt; BSD license. Not used on Android.
-content/browser/geolocation/osx_wifi.h
 # Copyright Apple Inc and Torch Mobile Inc; BSD license. Moved from
 # third_party/WebKit/.
 content/renderer/history_controller.h
