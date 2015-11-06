@@ -455,28 +455,28 @@ WebURLRequest CreateURLRequestForNavigation(
   return request;
 }
 
-// Sanitizes the navigation_start timestamp for browser-initiated navigations,
-// where the browser possibly has a better notion of start time than the
-// renderer. In the case of cross-process navigations, this carries over the
-// time of finishing the onbeforeunload handler of the previous page.
-// TimeTicks is sometimes not monotonic across processes, and because
-// |browser_navigation_start| is likely before this process existed,
-// InterProcessTimeTicksConverter won't help. The timestamp is sanitized by
-// clamping it to renderer_navigation_start, initialized earlier in the call
-// stack.
-base::TimeTicks SanitizeNavigationTiming(
-    blink::WebFrameLoadType load_type,
-    const base::TimeTicks& browser_navigation_start,
-    const base::TimeTicks& renderer_navigation_start) {
-  if (load_type != blink::WebFrameLoadType::Standard)
-    return base::TimeTicks();
+void UpdateFrameNavigationTiming(WebFrame* frame,
+                                 base::TimeTicks browser_navigation_start,
+                                 base::TimeTicks renderer_navigation_start) {
+  // The browser provides the navigation_start time to bootstrap the
+  // Navigation Timing information for the browser-initiated navigations. In
+  // case of cross-process navigations, this carries over the time of
+  // finishing the onbeforeunload handler of the previous page.
   DCHECK(!browser_navigation_start.is_null());
-  base::TimeTicks navigation_start =
-      std::min(browser_navigation_start, renderer_navigation_start);
-  // TODO(csharrison) Investigate how big a problem the cross process
-  // monotonicity really is and on what platforms. Log UMA for:
-  // |renderer_navigation_start - browser_navigation_start|
-  return navigation_start;
+  if (frame->provisionalDataSource()) {
+    // |browser_navigation_start| is likely before this process existed, so we
+    // can't use InterProcessTimeTicksConverter. We need at least to ensure
+    // that the browser-side navigation start we set is not later than the one
+    // on the renderer side.
+    base::TimeTicks navigation_start = std::min(
+        browser_navigation_start, renderer_navigation_start);
+    double navigation_start_seconds =
+        (navigation_start - base::TimeTicks()).InSecondsF();
+    frame->provisionalDataSource()->setNavigationStartTime(
+        navigation_start_seconds);
+    // TODO(clamy): We need to provide additional timing values for the
+    // Navigation Timing API to work with browser-side navigations.
+  }
 }
 
 // PlzNavigate
@@ -2605,7 +2605,13 @@ void RenderFrameImpl::didCreateDataSource(blink::WebLocalFrame* frame,
 
   // The rest of RenderView assumes that a WebDataSource will always have a
   // non-null NavigationState.
-  UpdateNavigationState(document_state);
+  if (content_initiated) {
+    document_state->set_navigation_state(
+        NavigationStateImpl::CreateContentInitiated());
+  } else {
+    document_state->set_navigation_state(CreateNavigationStateFromPending());
+    pending_navigation_params_.reset();
+  }
 
   // DocumentState::referred_by_prefetcher_ is true if we are
   // navigating from a page that used prefetching using a link on that
@@ -2655,23 +2661,15 @@ void RenderFrameImpl::didCreateDataSource(blink::WebLocalFrame* frame,
     }
   }
 
-  NavigationStateImpl* navigation_state = static_cast<NavigationStateImpl*>(
-      document_state->navigation_state());
-
-  // Set the navigation start time in blink.
-  base::TimeTicks navigation_start =
-      navigation_state->common_params().navigation_start;
-  datasource->setNavigationStartTime(
-      (navigation_start - base::TimeTicks()).InSecondsF());
-  // TODO(clamy) We need to provide additional timing values for the Navigation
-  // Timing API to work with browser-side navigations.
-
   // Create the serviceworker's per-document network observing object if it
   // does not exist (When navigation happens within a page, the provider already
   // exists).
   if (ServiceWorkerNetworkProvider::FromDocumentState(
           DocumentState::FromDataSource(datasource)))
     return;
+
+  NavigationStateImpl* navigation_state = static_cast<NavigationStateImpl*>(
+      DocumentState::FromDataSource(datasource)->navigation_state());
 
   ServiceWorkerNetworkProvider::AttachToDocumentState(
       DocumentState::FromDataSource(datasource),
@@ -3157,10 +3155,11 @@ void RenderFrameImpl::didNavigateWithinPage(blink::WebLocalFrame* frame,
   // ExtraData will get the new NavigationState.  Similarly, if we did not
   // initiate this navigation, then we need to take care to reset any pre-
   // existing navigation state to a content-initiated navigation state.
-  // UpdateNavigationState conveniently takes care of this for us.
+  // didCreateDataSource conveniently takes care of this for us.
+  didCreateDataSource(frame, frame->dataSource());
+
   DocumentState* document_state =
       DocumentState::FromDataSource(frame->dataSource());
-  UpdateNavigationState(document_state);
   static_cast<NavigationStateImpl*>(document_state->navigation_state())
       ->set_was_within_same_page(true);
 
@@ -4658,9 +4657,6 @@ void RenderFrameImpl::NavigateInternal(
   bool browser_side_navigation =
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableBrowserSideNavigation);
-
-  // Lower bound for browser initiated navigation start time.
-  base::TimeTicks renderer_navigation_start = base::TimeTicks::Now();
   bool is_reload = IsReload(common_params.navigation_type);
   bool is_history_navigation = request_params.page_state.IsValid();
   WebURLRequest::CachePolicy cache_policy =
@@ -4690,14 +4686,6 @@ void RenderFrameImpl::NavigateInternal(
 
   pending_navigation_params_.reset(
       new NavigationParams(common_params, start_params, request_params));
-
-  // Unless the load is a WebFrameLoadType::Standard, this should remain
-  // uninitialized. It will be updated when the load type is determined to be
-  // Standard, or after the previous document's unload handler has been
-  // triggered. This occurs in UpdateNavigationState.
-  // TODO(csharrison) See if we can always use the browser timestamp.
-  pending_navigation_params_->common_params.navigation_start =
-      base::TimeTicks();
 
   // Create parameters for a standard navigation.
   blink::WebFrameLoadType load_type = blink::WebFrameLoadType::Standard;
@@ -4823,10 +4811,10 @@ void RenderFrameImpl::NavigateInternal(
   }
 
   if (should_load_request) {
-    // Sanitize navigation start now that we know the load_type.
-    pending_navigation_params_->common_params.navigation_start =
-        SanitizeNavigationTiming(load_type, common_params.navigation_start,
-                                 renderer_navigation_start);
+    // Record this before starting the load. We need a lower bound of this
+    // time to sanitize the navigationStart override set below.
+    base::TimeTicks renderer_navigation_start = base::TimeTicks::Now();
+
     // Perform a navigation to a data url if needed.
     if (!common_params.base_url_for_data_url.is_empty() ||
         (browser_side_navigation &&
@@ -4836,6 +4824,12 @@ void RenderFrameImpl::NavigateInternal(
       // Load the request.
       frame_->toWebLocalFrame()->load(request, load_type,
                                       item_for_history_navigation);
+    }
+
+    if (load_type == blink::WebFrameLoadType::Standard) {
+      UpdateFrameNavigationTiming(frame_,
+                                  common_params.navigation_start,
+                                  renderer_navigation_start);
     }
   }
 
@@ -5204,22 +5198,6 @@ NavigationState* RenderFrameImpl::CreateNavigationStateFromPending() {
         pending_navigation_params_->request_params);
   }
   return NavigationStateImpl::CreateContentInitiated();
-}
-
-void RenderFrameImpl::UpdateNavigationState(DocumentState* document_state) {
-  if (pending_navigation_params_) {
-    // If this is a browser-initiated load that doesn't override
-    // navigation_start, set it here.
-    if (pending_navigation_params_->common_params.navigation_start.is_null()) {
-      pending_navigation_params_->common_params.navigation_start =
-          base::TimeTicks::Now();
-    }
-    document_state->set_navigation_state(CreateNavigationStateFromPending());
-    pending_navigation_params_.reset();
-  } else {
-    document_state->set_navigation_state(
-        NavigationStateImpl::CreateContentInitiated());
-  }
 }
 
 #if defined(OS_ANDROID)

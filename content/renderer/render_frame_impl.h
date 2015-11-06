@@ -870,10 +870,6 @@ class CONTENT_EXPORT RenderFrameImpl
   // saved in OnNavigate().
   NavigationState* CreateNavigationStateFromPending();
 
-  // Sets the NavigationState on the DocumentState based on
-  // the value of |pending_navigation_params_|.
-  void UpdateNavigationState(DocumentState* document_state);
-
 #if defined(OS_ANDROID)
   blink::WebMediaPlayer* CreateAndroidWebMediaPlayer(
       blink::WebMediaPlayerClient* client,
