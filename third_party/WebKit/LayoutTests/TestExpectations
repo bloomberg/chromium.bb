@@ -71,7 +71,6 @@ crbug.com/492664 [ Win ] imported/csswg-test/css-writing-modes-3/bidi-plaintext-
 crbug.com/492664 imported/csswg-test/css-transitions-2/transitioncancel-001.html [ Failure ]
 crbug.com/418091 [ Mac10.6 ] fast/text/aat-morx.html [ Failure ]
 crbug.com/463358 [ Mac Linux ] svg/hixie/perf/005.xml [ Pass Failure ]
-crbug.com/463358 [ Mac Linux ] svg/hixie/perf/006.xml [ Pass Failure ]
 crbug.com/463358 [ Linux Mac ] svg/transforms/text-with-pattern-inside-transformed-html.xhtml [ Failure ]
 crbug.com/463358 [ Mac Linux Debug ] fast/backgrounds/transformed-body-html-background.html [ Failure ]
 crbug.com/463358 [ Mac Linux Debug ] css3/masking/clip-path-polygon-nonzero.html [ Failure ]
@@ -1354,11 +1353,6 @@ crbug.com/548416 [ Mac10.6 ] virtual/syncpaint/compositing/repaint/background-at
 crbug.com/548765 http/tests/inspector/console-fetch-logging.html [ Failure Pass Slow ]
 
 crbug.com/549314 [ XP ] inspector-protocol/layout-fonts/unicode-range-combining-chars-fallback.html [ Failure ]
-
-crbug.com/467464 svg/W3C-SVG-1.1/coords-units-02-b.svg [ NeedsRebaseline ]
-crbug.com/467464 svg/dom/length-list-parser.html [ NeedsRebaseline ]
-crbug.com/467464 svg/transforms/text-with-pattern-with-svg-transform.svg [ NeedsRebaseline ]
-crbug.com/467464 svg/hixie/perf/006.xml [ NeedsRebaseline ]
 
 crbug.com/551272 fast/js/getOwnPropertyDescriptor.html [ NeedsManualRebaseline ]
 crbug.com/551272 fast/js/pic/cached-named-property-getter.html [ NeedsManualRebaseline ]
