@@ -804,7 +804,7 @@ void PaintLayerCompositor::paintContents(const GraphicsLayer* graphicsLayer, Gra
 {
     IntRect defaultClip;
     if (RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled() && !clip) {
-        defaultClip.setSize(m_layoutView.layoutSize(IncludeScrollbars));
+        defaultClip.setSize(expandedIntSize(graphicsLayer->size()));
         clip = &defaultClip;
     }
     ASSERT(clip);

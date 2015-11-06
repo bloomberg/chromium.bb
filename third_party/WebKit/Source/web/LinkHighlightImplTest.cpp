@@ -172,6 +172,8 @@ TEST(LinkHighlightImplTest, resetDuringNodeRemoval)
 // A lifetime test: delete LayerTreeView while running LinkHighlights.
 TEST(LinkHighlightImplTest, resetLayerTreeView)
 {
+    FrameTestHelpers::UseMockScrollbarSettings mockScrollbarSettings;
+
     OwnPtr<FakeCompositingWebViewClient> webViewClient = adoptPtr(new FakeCompositingWebViewClient());
 
     const std::string baseURL("http://www.test.com/");
