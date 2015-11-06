@@ -962,12 +962,13 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
     if (leafCert) {
       auto error = _certVerificationErrors->Get(
           {leafCert, base::SysNSStringToUTF8(host)});
-      if (error != _certVerificationErrors->end()) {
+      bool cacheHit = error != _certVerificationErrors->end();
+      if (cacheHit) {
         status.cert_status = error->second.status;
         recoverable = error->second.is_recoverable;
-      } else {
-        // TODO(eugenebut): Report UMA with cache size (crbug.com/541736).
       }
+      UMA_HISTOGRAM_BOOLEAN("WebController.CertVerificationErrorsCacheHit",
+                            cacheHit);
     }
   }
 

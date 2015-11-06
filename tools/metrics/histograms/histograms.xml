@@ -50627,6 +50627,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="WebController.CertVerificationErrorsCacheHit"
+    enum="BooleanCacheHit">
+  <owner>eugenebut@chromium.org</owner>
+  <summary>
+    [iOS] Report cache hit/miss for WKWebView cert verification. WKWebView Web
+    Controller has a cache of pending cert verification results to avoid extra
+    verifications when presenting SSL interstitial. This metric helps to
+    understand whether or not cache miss is possible.
+  </summary>
+</histogram>
+
 <histogram name="WebController.ExternalURLRequestBlocking"
     enum="IOSExternalURLRequestStatus">
   <owner>jyquinn@chromium.org</owner>
@@ -54353,6 +54364,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <enum name="BooleanBringToForegroundReason" type="int">
   <int value="0" label="Other"/>
   <int value="1" label="Notification click (within last 5 seconds)"/>
+</enum>
+
+<enum name="BooleanCacheHit" type="int">
+  <int value="0" label="Miss"/>
+  <int value="1" label="Hit"/>
 </enum>
 
 <enum name="BooleanCanCheckUrl" type="int">
