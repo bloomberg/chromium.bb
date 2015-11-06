@@ -69,7 +69,6 @@ def MakeChromeVoxManifest():
   in_file_name = os.path.join(_SCRIPT_DIR, os.path.pardir,
                               'manifest.json.jinja2')
   context = {
-    'is_chromevox_classic': '1',
     'is_guest_manifest': '0',
     'is_js_compressed': '1',
     'set_version': GetVersion()

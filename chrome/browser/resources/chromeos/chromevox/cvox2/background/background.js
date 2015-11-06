@@ -8,6 +8,7 @@
  */
 
 goog.provide('Background');
+goog.provide('ChromeVoxMode');
 goog.provide('global');
 
 goog.require('AutomationPredicate');
@@ -33,7 +34,7 @@ var RoleType = chrome.automation.RoleType;
  * All possible modes ChromeVox can run.
  * @enum {string}
  */
-var ChromeVoxMode = {
+ChromeVoxMode = {
   CLASSIC: 'classic',
   COMPAT: 'compat',
   NEXT: 'next',
@@ -79,28 +80,6 @@ Background = function() {
     if (typeof(this[func]) == 'function')
       this[func] = this[func].bind(this);
   }
-
-  /**
-   * Maps an automation event to its listener.
-   * @type {!Object<EventType, function(Object) : void>}
-   */
-  this.listeners_ = {
-    alert: this.onAlert,
-    focus: this.onFocus,
-    hover: this.onEventDefault,
-    loadComplete: this.onLoadComplete,
-    menuStart: this.onEventDefault,
-    menuEnd: this.onEventDefault,
-    textChanged: this.onTextOrTextSelectionChanged,
-    textSelectionChanged: this.onTextOrTextSelectionChanged,
-    valueChanged: this.onValueChanged
-  };
-
-  /**
-   * The object that speaks changes to an editable text field.
-   * @type {?cvox.ChromeVoxEditableTextBase}
-   */
-  this.editableTextHandler_ = null;
 
   chrome.automation.getDesktop(this.onGotDesktop);
 
@@ -156,29 +135,28 @@ Background.prototype = {
     this.setChromeVoxMode(ChromeVoxMode.FORCE_NEXT);
   },
 
+  get mode() {
+    return this.mode_;
+  },
+
+  get currentRange() {
+    return this.currentRange_;
+  },
+
+  set currentRange(value) {
+    if (!value)
+      return;
+
+    this.currentRange_ = value;
+  },
+
   /**
    * Handles all setup once a new automation tree appears.
    * @param {chrome.automation.AutomationNode} desktop
    */
   onGotDesktop: function(desktop) {
-    // Register all automation event listeners.
-    for (var eventType in this.listeners_)
-      desktop.addEventListener(eventType, this.listeners_[eventType], true);
-
     // Register a tree change observer.
     chrome.automation.addTreeChangeObserver(this.onTreeChange);
-
-    // The focused state gets set on the containing webView node.
-    var webView = desktop.find({role: RoleType.webView,
-                                state: {focused: true}});
-    if (webView) {
-      var root = webView.find({role: RoleType.rootWebArea});
-      if (root) {
-        this.onLoadComplete(
-            {target: root,
-             type: chrome.automation.EventType.loadComplete});
-      }
-    }
   },
 
   /**
@@ -475,199 +453,21 @@ Background.prototype = {
   },
 
   /**
-   * Provides all feedback once ChromeVox's focus changes.
-   * @param {Object} evt
+   * Refreshes the current mode based on a url.
+   * @param {string} url
    */
-  onEventDefault: function(evt) {
-    var node = evt.target;
-
-    if (!node)
-      return;
-
-    var prevRange = this.currentRange_;
-
-    this.currentRange_ = cursors.Range.fromNode(node);
-
-    // Check to see if we've crossed roots. Continue if we've crossed roots or
-    // are not within web content.
-    if (node.root.role == 'desktop' ||
-        !prevRange ||
-        prevRange.start.node.root != node.root)
-      this.setupChromeVoxVariants_(node.root.docUrl || '');
-
-    // Don't process nodes inside of web content if ChromeVox Next is inactive.
-    if (node.root.role != RoleType.desktop &&
-        this.mode_ === ChromeVoxMode.CLASSIC) {
-      chrome.accessibilityPrivate.setFocusRing([]);
-      return;
+  refreshMode: function(url) {
+    var mode = this.mode_;
+    if (mode != ChromeVoxMode.FORCE_NEXT) {
+      if (this.isWhitelistedForNext_(url))
+        mode = ChromeVoxMode.NEXT;
+      else if (this.isBlacklistedForClassic_(url))
+        mode = ChromeVoxMode.COMPAT;
+      else
+        mode = ChromeVoxMode.CLASSIC;
     }
 
-    // Don't output if focused node hasn't changed.
-    if (prevRange &&
-        evt.type == 'focus' &&
-        this.currentRange_.equals(prevRange))
-      return;
-
-    new Output().withSpeechAndBraille(
-            this.currentRange_, prevRange, evt.type)
-        .go();
-  },
-
-  /**
-   * Makes an announcement without changing focus.
-   * @param {Object} evt
-   */
-  onAlert: function(evt) {
-    var node = evt.target;
-    if (!node)
-      return;
-
-    // Don't process nodes inside of web content if ChromeVox Next is inactive.
-    if (node.root.role != RoleType.desktop &&
-        this.mode_ === ChromeVoxMode.CLASSIC) {
-      return;
-    }
-
-    var range = cursors.Range.fromNode(node);
-
-    new Output().withSpeechAndBraille(range, null, evt.type).go();
-  },
-
-  /**
-   * Provides all feedback once a focus event fires.
-   * @param {Object} evt
-   */
-  onFocus: function(evt) {
-    // Invalidate any previous editable text handler state.
-    this.editableTextHandler_ = null;
-
-    var node = evt.target;
-
-    // Discard focus events on embeddedObject nodes.
-    if (node.role == RoleType.embeddedObject)
-      return;
-
-    // It almost never makes sense to place focus directly on a rootWebArea.
-    if (node.role == RoleType.rootWebArea) {
-      // Discard focus events for root web areas when focus was previously
-      // placed on a descendant.
-      if (this.currentRange_.start.node.root == node)
-        return;
-
-      // Discard focused root nodes without focused state set.
-      if (!node.state.focused)
-        return;
-
-      // Try to find a focusable descendant.
-      node = node.find({state: {focused: true}}) || node;
-    }
-
-    if (evt.target.state.editable)
-      this.createEditableTextHandlerIfNeeded_(evt.target);
-
-    this.onEventDefault({target: node, type: 'focus'});
-  },
-
-  /**
-   * Provides all feedback once a load complete event fires.
-   * @param {Object} evt
-   */
-  onLoadComplete: function(evt) {
-    this.setupChromeVoxVariants_(evt.target.docUrl);
-
-    // Don't process nodes inside of web content if ChromeVox Next is inactive.
-    if (evt.target.root.role != RoleType.desktop &&
-        this.mode_ === ChromeVoxMode.CLASSIC)
-      return;
-
-    // If initial focus was already placed on this page (e.g. if a user starts
-    // tabbing before load complete), then don't move ChromeVox's position on
-    // the page.
-    if (this.currentRange_ &&
-        this.currentRange_.start.node.role != RoleType.rootWebArea &&
-        this.currentRange_.start.node.root.docUrl == evt.target.docUrl)
-      return;
-
-    var root = evt.target;
-    var webView = root;
-    while (webView && webView.role != RoleType.webView)
-      webView = webView.parent;
-
-    if (!webView || !webView.state.focused)
-      return;
-
-    var node = AutomationUtil.findNodePost(root,
-        Dir.FORWARD,
-        AutomationPredicate.leaf);
-
-    if (node)
-      this.currentRange_ = cursors.Range.fromNode(node);
-
-    if (this.currentRange_)
-      new Output().withSpeechAndBraille(
-              this.currentRange_, null, evt.type)
-          .go();
-  },
-
-  /**
-   * Provides all feedback once a text selection change event fires.
-   * @param {Object} evt
-   */
-  onTextOrTextSelectionChanged: function(evt) {
-    if (!evt.target.state.editable)
-      return;
-
-    // Don't process nodes inside of web content if ChromeVox Next is inactive.
-    if (evt.target.root.role != RoleType.desktop &&
-        this.mode_ === ChromeVoxMode.CLASSIC)
-      return;
-
-    if (!evt.target.state.focused)
-      return;
-
-    if (evt.target.role != RoleType.textField)
-      return;
-
-    if (!this.currentRange_) {
-      this.onEventDefault(evt);
-      this.currentRange_ = cursors.Range.fromNode(evt.target);
-    }
-
-    this.createEditableTextHandlerIfNeeded_(evt.target);
-
-    var textChangeEvent = new cvox.TextChangeEvent(
-        evt.target.value,
-        evt.target.textSelStart,
-        evt.target.textSelEnd,
-        true);  // triggered by user
-
-    this.editableTextHandler_.changed(textChangeEvent);
-
-    new Output().withBraille(
-            this.currentRange_, null, evt.type)
-        .go();
-  },
-
-  /**
-   * Provides all feedback once a value changed event fires.
-   * @param {Object} evt
-   */
-  onValueChanged: function(evt) {
-    // Don't process nodes inside of web content if ChromeVox Next is inactive.
-    if (evt.target.root.role != RoleType.desktop &&
-        this.mode_ === ChromeVoxMode.CLASSIC)
-      return;
-
-    if (!evt.target.state.focused)
-      return;
-
-    // Value change events fire on web text fields and text areas when pressing
-    // enter; suppress them.
-    if (!this.currentRange_ ||
-        evt.target.role != RoleType.textField) {
-      this.onEventDefault(evt);
-      this.currentRange_ = cursors.Range.fromNode(evt.target);
-    }
+    this.setChromeVoxMode(mode);
   },
 
   /**
@@ -745,25 +545,6 @@ Background.prototype = {
   },
 
   /**
-   * Setup ChromeVox variants.
-   * @param {string} url
-   * @private
-   */
-  setupChromeVoxVariants_: function(url) {
-    var mode = this.mode_;
-    if (mode != ChromeVoxMode.FORCE_NEXT) {
-      if (this.isWhitelistedForNext_(url))
-        mode = ChromeVoxMode.NEXT;
-      else if (this.isBlacklistedForClassic_(url))
-        mode = ChromeVoxMode.COMPAT;
-      else
-        mode = ChromeVoxMode.CLASSIC;
-    }
-
-    this.setChromeVoxMode(mode);
-  },
-
-  /**
    * Disables classic ChromeVox in current web content.
    */
   disableClassicChromeVox_: function() {
@@ -784,6 +565,16 @@ Background.prototype = {
       cvox.ChromeVoxKbHandler.handlerKeyMap = cvox.KeyMap.fromDefaults();
     else
       cvox.ChromeVoxKbHandler.handlerKeyMap = cvox.KeyMap.fromNext();
+
+    if (mode == ChromeVoxMode.CLASSIC) {
+      if (chrome.commands &&
+          chrome.commands.onCommand.hasListener(this.onGotCommand))
+        chrome.commands.onCommand.removeListener(this.onGotCommand);
+    } else {
+      if (chrome.commands &&
+          !chrome.commands.onCommand.hasListener(this.onGotCommand))
+        chrome.commands.onCommand.addListener(this.onGotCommand);
+    }
 
     chrome.tabs.query({active: true}, function(tabs) {
       if (mode === ChromeVoxMode.CLASSIC) {
@@ -832,30 +623,6 @@ Background.prototype = {
     if (selectionSpan) {
       var start = text.getSpanStart(selectionSpan);
       actionNode.setSelection(position - start, position - start);
-    }
-  },
-
-  /**
-   * Create an editable text handler for the given node if needed.
-   * @param {Object} node
-   */
-  createEditableTextHandlerIfNeeded_: function(node) {
-    if (!this.editableTextHandler_ || node != this.currentRange_.start.node) {
-      var start = node.textSelStart;
-      var end = node.textSelEnd;
-      if (start > end) {
-        var tempOffset = end;
-        end = start;
-        start = tempOffset;
-      }
-
-      this.editableTextHandler_ =
-          new cvox.ChromeVoxEditableTextBase(
-              node.value,
-              start,
-              end,
-              node.state.protected,
-              cvox.ChromeVox.tts);
     }
   }
 };

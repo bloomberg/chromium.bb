@@ -54,9 +54,6 @@ def main():
       '--is_guest_manifest', default='0', action='store', metavar='NUM',
       help='Whether to generate a guest mode capable manifest')
   parser.add_option(
-      '--is_chromevox_classic', default='0', action='store', metavar='NUM',
-      help='Whether to generate a ChromeVox Classic manifest')
-  parser.add_option(
       '--is_js_compressed', default='1', action='store', metavar='NUM',
       help='Whether compressed JavaScript files are used')
   parser.add_option(

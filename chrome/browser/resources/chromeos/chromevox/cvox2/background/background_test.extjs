@@ -378,11 +378,12 @@ TEST_F('BackgroundTest', 'UseEditableState', function() {
     */},
     function(rootNode) {
       var assertExists = this.newCallback(function (evt) {
-        assertNotNullNorUndefined(global.backgroundObj.editableTextHandler_);
+        assertNotNullNorUndefined(
+            global.desktopAutomationHandler.editableTextHandler_);
         evt.stopPropagation();
       });
       var assertDoesntExist = this.newCallback(function (evt) {
-        assertTrue(!global.backgroundObj.editableTextHandler_);
+        assertTrue(!global.desktopAutomationHandler.editableTextHandler_);
         evt.stopPropagation();
       });
 

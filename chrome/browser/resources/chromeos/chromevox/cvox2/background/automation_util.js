@@ -270,7 +270,7 @@ AutomationUtil.isTraversalRoot = function(node) {
     case RoleType.toolbar:
       return node.root.role == RoleType.desktop;
     case RoleType.rootWebArea:
-      return node.parent.root.role == RoleType.desktop;
+      return !!(node.parent && node.parent.root.role == RoleType.desktop);
     default:
       return false;
   }

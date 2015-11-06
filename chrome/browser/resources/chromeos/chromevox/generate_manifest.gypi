@@ -14,14 +14,12 @@
 #
 # is_guest_manifest: 1 or 0; generates a manifest usable while in guest
 # mode.
-# is_chromevox_classic: 1 or 0; generates a manifest for ChromeVox Classic.
 # chromevox_compress_js: 1 or 0; whether the javascript is compressed.
 
 {
   'variables': {
     'generate_manifest_script_path': 'tools/generate_manifest.py',
     'is_guest_manifest%': 0,
-    'is_chromevox_classic%': 0,
   },
   'includes': [
     '../../../../../build/util/version.gypi',
@@ -42,7 +40,6 @@
         '<(generate_manifest_script_path)',
         '--is_guest_manifest=<(is_guest_manifest)',
         '--key=<(chromevox_extension_key)',
-        '--is_chromevox_classic=<(is_chromevox_classic)',
         '--is_js_compressed=<(chromevox_compress_js)',
         '--set_version=<(version_full)',
         '--output_manifest=<(output_manifest_path)',

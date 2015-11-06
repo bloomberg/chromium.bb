@@ -9,6 +9,7 @@
 
 goog.provide('cvox.TabsApiHandler');
 
+goog.require('TabsAutomationHandler');
 goog.require('cvox.AbstractEarcons');
 goog.require('cvox.AbstractTts');
 goog.require('cvox.BrailleInterface');
@@ -52,6 +53,7 @@ cvox.TabsApiHandler.prototype = {
     cvox.ChromeVox.braille.write(
         cvox.NavBraille.fromText(this.msg_('chrome_tab_created')));
     cvox.ChromeVox.earcons.playEarcon(cvox.Earcon.OBJECT_OPEN);
+    this.refreshAutomationHandler_(tab.id);
   },
 
   /**
@@ -109,6 +111,7 @@ cvox.TabsApiHandler.prototype = {
         this.lastActiveTabLoaded_ = true;
         cvox.ChromeVox.earcons.playEarcon(cvox.Earcon.PAGE_FINISH_LOADING);
       }
+      this.refreshAutomationHandler_(tabId);
     }.bind(this));
   },
 
@@ -135,7 +138,25 @@ cvox.TabsApiHandler.prototype = {
         cvox.ChromeVox.braille.write(
             cvox.NavBraille.fromText(this.msg_(msgId, [title])));
         cvox.ChromeVox.earcons.playEarcon(cvox.Earcon.OBJECT_SELECT);
+        this.refreshAutomationHandler_(tab.id);
       }.bind(this));
+    }.bind(this));
+  },
+
+  /**
+   * Installs a new automation handler for the given tab.
+   * @param {number} tabId
+   * @private
+   */
+  refreshAutomationHandler_: function(tabId) {
+    if (!cvox.ChromeVox.isMac)
+      return;
+
+    chrome.automation.getTree(tabId, function(node) {
+      if (this.handler_)
+        this.handler_.unregister();
+
+      this.handler_ = new TabsAutomationHandler(node);
     }.bind(this));
   }
 };

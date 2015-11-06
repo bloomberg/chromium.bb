@@ -289,7 +289,7 @@ chrome.automation.getTree = function(tabId, callback) {};
 /**
  * Get the automation tree for the whole desktop which consists of all on screen
  * views. Note this API is currently only supported on Chrome OS.
- * @param {function(chrome.automation.AutomationNode):void} callback
+ * @param {function(!chrome.automation.AutomationNode):void} callback
  *     Called when the <code>AutomationNode</code> for the page is available.
  */
 chrome.automation.getDesktop = function(callback) {};
@@ -445,7 +445,7 @@ chrome.automation.AutomationNode.prototype.addEventListener =
 
 /**
  * @param {chrome.automation.EventType} eventType
- * @param {function(chrome.automation.AutomationNode) : void} callback
+ * @param {function(!chrome.automation.AutomationEvent) : void} callback
  * @param {boolean} capture
  */
 chrome.automation.AutomationNode.prototype.removeEventListener =
