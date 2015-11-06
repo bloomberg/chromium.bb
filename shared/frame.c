@@ -786,26 +786,26 @@ frame_pointer_button(struct frame *frame, void *data,
 	return location;
 }
 
-void
+enum theme_location
 frame_touch_down(struct frame *frame, void *data, int32_t id, int x, int y)
 {
 	struct frame_touch *touch = frame_touch_get(frame, data);
 	struct frame_button *button = frame_find_button(frame, x, y);
 	enum theme_location location;
 
-	if (id > 0)
-		return;
-
-	if (touch && button) {
-		touch->button = button;
-		frame_button_press(touch->button);
-		return;
-	}
-
 	location = theme_get_location(frame->theme, x, y,
 				      frame->width, frame->height,
 				      frame->flags & FRAME_FLAG_MAXIMIZED ?
 				      THEME_FRAME_MAXIMIZED : 0);
+
+	if (id > 0)
+		return location;
+
+	if (touch && button) {
+		touch->button = button;
+		frame_button_press(touch->button);
+		return location;
+	}
 
 	switch (location) {
 	case THEME_LOCATION_TITLEBAR:
@@ -824,6 +824,7 @@ frame_touch_down(struct frame *frame, void *data, int32_t id, int x, int y)
 	default:
 		break;
 	}
+	return location;
 }
 
 void

@@ -210,7 +210,7 @@ enum theme_location
 frame_pointer_button(struct frame *frame, void *pointer,
 		     uint32_t button, enum frame_button_state state);
 
-void
+enum theme_location
 frame_touch_down(struct frame *frame, void *data, int32_t id, int x, int y);
 
 void
