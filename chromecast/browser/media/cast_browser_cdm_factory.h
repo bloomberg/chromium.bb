@@ -6,7 +6,7 @@
 #define CHROMECAST_BROWSER_MEDIA_CAST_BROWSER_CDM_FACTORY_H_
 
 #include "chromecast/media/base/key_systems_common.h"
-#include "media/base/browser_cdm_factory.h"
+#include "media/base/cdm_factory.h"
 #include "media/base/media_keys.h"
 
 namespace chromecast {
@@ -14,25 +14,26 @@ namespace media {
 
 class BrowserCdmCast;
 
-class CastBrowserCdmFactory : public ::media::BrowserCdmFactory {
+class CastBrowserCdmFactory : public ::media::CdmFactory {
  public:
   CastBrowserCdmFactory() {}
   ~CastBrowserCdmFactory() override {};
 
-  // ::media::BrowserCdmFactory implementation:
-  scoped_refptr<::media::MediaKeys> CreateBrowserCdm(
+  // ::media::CdmFactory implementation:
+  void Create(
       const std::string& key_system,
-      bool use_hw_secure_codecs,
+      const GURL& security_origin,
+      const ::media::CdmConfig& cdm_config,
       const ::media::SessionMessageCB& session_message_cb,
       const ::media::SessionClosedCB& session_closed_cb,
       const ::media::LegacySessionErrorCB& legacy_session_error_cb,
       const ::media::SessionKeysChangeCB& session_keys_change_cb,
-      const ::media::SessionExpirationUpdateCB& session_expiration_update_cb)
-      override;
+      const ::media::SessionExpirationUpdateCB& session_expiration_update_cb,
+      const ::media::CdmCreatedCB& cdm_created_cb) override;
 
   // Provides a platform-specific BrowserCdm instance.
   virtual scoped_refptr<BrowserCdmCast> CreatePlatformBrowserCdm(
-      const CastKeySystem& key_system);
+      const CastKeySystem& cast_key_system);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CastBrowserCdmFactory);

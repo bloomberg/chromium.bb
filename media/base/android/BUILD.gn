@@ -14,10 +14,10 @@ source_set("android") {
   sources = [
     "access_unit_queue.cc",
     "access_unit_queue.h",
+    "android_cdm_factory.cc",
+    "android_cdm_factory.h",
     "audio_decoder_job.cc",
     "audio_decoder_job.h",
-    "browser_cdm_factory_android.cc",
-    "browser_cdm_factory_android.h",
     "demuxer_android.h",
     "demuxer_stream_player_params.cc",
     "demuxer_stream_player_params.h",

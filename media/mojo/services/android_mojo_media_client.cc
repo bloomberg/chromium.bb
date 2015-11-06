@@ -5,8 +5,8 @@
 #include "media/mojo/services/mojo_media_client.h"
 
 #include "base/memory/scoped_ptr.h"
+#include "media/base/android/android_cdm_factory.h"
 #include "media/base/media.h"
-#include "media/cdm/android_cdm_factory.h"
 
 namespace media {
 namespace internal {

@@ -717,12 +717,6 @@
             'capture/webm_muxer.h',
           ],
         }],
-        ['enable_browser_cdms==1', {
-          'sources': [
-            'base/browser_cdm_factory.cc',
-            'base/browser_cdm_factory.h',
-          ],
-        }],
         ['OS=="android"', {
           'dependencies': [
             'media_android_jni_headers',
@@ -1842,10 +1836,10 @@
           'sources': [
             'base/android/access_unit_queue.cc',
             'base/android/access_unit_queue.h',
+            'base/android/android_cdm_factory.cc',
+            'base/android/android_cdm_factory.h',
             'base/android/audio_decoder_job.cc',
             'base/android/audio_decoder_job.h',
-            'base/android/browser_cdm_factory_android.cc',
-            'base/android/browser_cdm_factory_android.h',
             'base/android/demuxer_android.h',
             'base/android/demuxer_stream_player_params.cc',
             'base/android/demuxer_stream_player_params.h',

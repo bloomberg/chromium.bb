@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/task_runner.h"
@@ -19,12 +20,14 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_process_host_observer.h"
 #include "content/public/browser/web_contents.h"
-#include "media/base/browser_cdm_factory.h"
+#include "media/base/cdm_config.h"
+#include "media/base/cdm_factory.h"
 #include "media/base/cdm_promise.h"
 #include "media/base/limits.h"
 
 #if defined(OS_ANDROID)
 #include "content/public/common/renderer_preferences.h"
+#include "media/base/android/android_cdm_factory.h"
 #endif
 
 namespace content {
@@ -269,6 +272,20 @@ void BrowserCdmManager::RejectPromise(int render_frame_id,
                                 system_code, error_message));
 }
 
+media::CdmFactory* BrowserCdmManager::GetCdmFactory() {
+  if (!cdm_factory_) {
+    // Create a new CdmFactory.
+    cdm_factory_ = GetContentClient()->browser()->CreateCdmFactory();
+
+#if defined(OS_ANDROID)
+    if (!cdm_factory_)
+      cdm_factory_.reset(new media::AndroidCdmFactory());
+#endif
+  }
+
+  return cdm_factory_.get();
+}
+
 void BrowserCdmManager::OnSessionMessage(int render_frame_id,
                                          int cdm_id,
                                          const std::string& session_id,
@@ -327,20 +344,52 @@ void BrowserCdmManager::OnSessionExpirationUpdate(
                                           new_expiry_time));
 }
 
+// Use a weak pointer here instead of |this| to avoid circular references.
+#define BROWSER_CDM_MANAGER_CB(func, ...)                              \
+  base::Bind(&BrowserCdmManager::func, weak_ptr_factory_.GetWeakPtr(), \
+             render_frame_id, cdm_id, ##__VA_ARGS__)
+
 void BrowserCdmManager::OnInitializeCdm(
     int render_frame_id,
     int cdm_id,
     uint32_t promise_id,
     const CdmHostMsg_InitializeCdm_Params& params) {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(!GetCdm(render_frame_id, cdm_id));
+
+  scoped_ptr<SimplePromise> promise(new SimplePromise(
+      weak_ptr_factory_.GetWeakPtr(), render_frame_id, cdm_id, promise_id));
+
   if (params.key_system.size() > media::limits::kMaxKeySystemLength) {
     NOTREACHED() << "Invalid key system: " << params.key_system;
-    RejectPromise(render_frame_id, cdm_id, promise_id,
-                  MediaKeys::INVALID_ACCESS_ERROR, 0, "Invalid key system.");
+    promise->reject(MediaKeys::INVALID_ACCESS_ERROR, 0, "Invalid key system.");
     return;
   }
 
-  AddCdm(render_frame_id, cdm_id, promise_id, params.key_system,
-         params.security_origin, params.use_hw_secure_codecs);
+  if (!GetCdmFactory()) {
+    NOTREACHED() << "CDM not supported.";
+    promise->reject(MediaKeys::INVALID_ACCESS_ERROR, 0, "CDM not supported.");
+    return;
+  }
+
+  // The render process makes sure |allow_distinctive_identifier| and
+  // |allow_persistent_state| are true. See RenderCdmFactory::Create().
+  // TODO(xhwang): Pass |allow_distinctive_identifier| and
+  // |allow_persistent_state| from the render process.
+  media::CdmConfig cdm_config;
+  cdm_config.allow_distinctive_identifier = true;
+  cdm_config.allow_persistent_state = true;
+  cdm_config.use_hw_secure_codecs = params.use_hw_secure_codecs;
+
+  GetCdmFactory()->Create(
+      params.key_system, params.security_origin, cdm_config,
+      BROWSER_CDM_MANAGER_CB(OnSessionMessage),
+      BROWSER_CDM_MANAGER_CB(OnSessionClosed),
+      BROWSER_CDM_MANAGER_CB(OnLegacySessionError),
+      BROWSER_CDM_MANAGER_CB(OnSessionKeysChange),
+      BROWSER_CDM_MANAGER_CB(OnSessionExpirationUpdate),
+      BROWSER_CDM_MANAGER_CB(OnCdmCreated, params.security_origin,
+                             base::Passed(&promise)));
 }
 
 void BrowserCdmManager::OnSetServerCertificate(
@@ -522,34 +571,16 @@ void BrowserCdmManager::OnDestroyCdm(int render_frame_id, int cdm_id) {
   RemoveCdm(GetId(render_frame_id, cdm_id));
 }
 
-// Use a weak pointer here instead of |this| to avoid circular references.
-#define BROWSER_CDM_MANAGER_CB(func)                                   \
-  base::Bind(&BrowserCdmManager::func, weak_ptr_factory_.GetWeakPtr(), \
-             render_frame_id, cdm_id)
-
-void BrowserCdmManager::AddCdm(int render_frame_id,
-                               int cdm_id,
-                               uint32_t promise_id,
-                               const std::string& key_system,
-                               const GURL& security_origin,
-                               bool use_hw_secure_codecs) {
-  DCHECK(task_runner_->RunsTasksOnCurrentThread());
-  DCHECK(!GetCdm(render_frame_id, cdm_id));
-
-  scoped_ptr<SimplePromise> promise(new SimplePromise(
-      weak_ptr_factory_.GetWeakPtr(), render_frame_id, cdm_id, promise_id));
-
-  scoped_refptr<MediaKeys> cdm(media::CreateBrowserCdm(
-      key_system, use_hw_secure_codecs,
-      BROWSER_CDM_MANAGER_CB(OnSessionMessage),
-      BROWSER_CDM_MANAGER_CB(OnSessionClosed),
-      BROWSER_CDM_MANAGER_CB(OnLegacySessionError),
-      BROWSER_CDM_MANAGER_CB(OnSessionKeysChange),
-      BROWSER_CDM_MANAGER_CB(OnSessionExpirationUpdate)));
-
+void BrowserCdmManager::OnCdmCreated(
+    int render_frame_id,
+    int cdm_id,
+    const GURL& security_origin,
+    scoped_ptr<media::SimpleCdmPromise> promise,
+    const scoped_refptr<media::MediaKeys>& cdm,
+    const std::string& error_message) {
   if (!cdm) {
-    DVLOG(1) << "failed to create CDM.";
-    promise->reject(MediaKeys::INVALID_STATE_ERROR, 0, "Failed to create CDM.");
+    DVLOG(1) << "Failed to create CDM: " << error_message;
+    promise->reject(MediaKeys::INVALID_STATE_ERROR, 0, error_message);
     return;
   }
 

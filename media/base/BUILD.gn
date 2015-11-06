@@ -238,13 +238,6 @@ source_set("base") {
     deps += [ "//third_party/ffmpeg" ]
   }
 
-  if (enable_browser_cdms) {
-    sources += [
-      "browser_cdm_factory.cc",
-      "browser_cdm_factory.h",
-    ]
-  }
-
   if (is_android) {
     public_deps = [
       "//media/base/android",

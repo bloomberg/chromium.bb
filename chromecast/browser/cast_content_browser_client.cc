@@ -90,11 +90,6 @@ scoped_refptr<media::CmaMediaPipelineClient>
 CastContentBrowserClient::CreateCmaMediaPipelineClient() {
   return make_scoped_refptr(new media::CmaMediaPipelineClient());
 }
-
-scoped_ptr<::media::BrowserCdmFactory>
-CastContentBrowserClient::CreateBrowserCdmFactory() {
-  return make_scoped_ptr(new media::CastBrowserCdmFactory());
-}
 #endif  // OS_ANDROID
 
 void CastContentBrowserClient::ProcessExiting() {
@@ -364,6 +359,7 @@ void CastContentBrowserClient::RegisterUnsandboxedOutOfProcessMojoApplications(
 }
 
 #if defined(OS_ANDROID)
+
 void CastContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
     const base::CommandLine& command_line,
     int child_process_id,
@@ -389,7 +385,18 @@ void CastContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
     }
   }
 }
+
 #else
+
+scoped_ptr<::media::CdmFactory> CastContentBrowserClient::CreateCdmFactory() {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableCmaMediaPipeline)) {
+    return make_scoped_ptr(new media::CastBrowserCdmFactory());
+  }
+
+  return nullptr;
+}
+
 void CastContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
     const base::CommandLine& command_line,
     int child_process_id,
@@ -399,6 +406,7 @@ void CastContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
     mappings->Share(kCrashDumpSignal, crash_signal_fd);
   }
 }
+
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_ANDROID) && defined(VIDEO_HOLE)

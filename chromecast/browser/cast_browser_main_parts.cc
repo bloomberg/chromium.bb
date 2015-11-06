@@ -45,7 +45,6 @@
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "media/audio/audio_manager.h"
 #include "media/audio/audio_manager_factory.h"
-#include "media/base/browser_cdm_factory.h"
 #include "media/base/media.h"
 #include "ui/compositor/compositor_switches.h"
 
@@ -311,12 +310,6 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
   const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
 #if defined(OS_ANDROID)
   ::media::SetMediaClientAndroid(new media::CastMediaClientAndroid());
-#else
-  if (cmd_line->HasSwitch(switches::kEnableCmaMediaPipeline)) {
-    scoped_ptr<::media::BrowserCdmFactory> cdm_factory =
-        cast_browser_process_->browser_client()->CreateBrowserCdmFactory();
-    ::media::SetBrowserCdmFactory(cdm_factory.release());
-  }
 #endif  // defined(OS_ANDROID)
 
   cast_browser_process_->SetConnectivityChecker(

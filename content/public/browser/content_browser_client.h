@@ -54,6 +54,10 @@ namespace gfx {
 class ImageSkia;
 }
 
+namespace media {
+class CdmFactory;
+}
+
 namespace mojo {
 class ApplicationDelegate;
 }
@@ -708,6 +712,10 @@ class CONTENT_EXPORT ContentBrowserClient {
   // provided.
   virtual ScopedVector<NavigationThrottle> CreateThrottlesForNavigation(
       NavigationHandle* navigation_handle);
+
+  // Creates and returns a factory used for creating CDM instances for playing
+  // protected content.
+  virtual scoped_ptr<media::CdmFactory> CreateCdmFactory();
 
   // Populates |mappings| with all files that need to be mapped before launching
   // a child process.
