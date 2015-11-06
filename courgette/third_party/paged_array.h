@@ -7,13 +7,12 @@
 // PagedArray is a work-around to allow large arrays to be allocated when there
 // is too much address space fragmentation for allocating the large arrays as
 // contigous arrays.
+
 #ifndef COURGETTE_BSDIFF_PAGED_ARRAY_H_
 #define COURGETTE_BSDIFF_PAGED_ARRAY_H_
 
-// For std::nothrow:
-#include <new>
-
 #include "base/basictypes.h"
+#include "base/process/memory.h"
 
 namespace courgette {
 
@@ -44,13 +43,15 @@ class PagedArray {
   bool Allocate(size_t size) {
     clear();
     size_t pages_needed = (size + kPageSize - 1) >> kLogPageSize;
-    pages_ = new(std::nothrow) T*[pages_needed];
-    if (pages_ == NULL)
+    if (!base::UncheckedMalloc(sizeof(T*) * pages_needed,
+                               reinterpret_cast<void**>(&pages_))) {
       return false;
+    }
 
     for (page_count_ = 0; page_count_ < pages_needed; ++page_count_) {
-      T* block = new(std::nothrow) T[kPageSize];
-      if (block == NULL) {
+      T* block = nullptr;
+      if (!base::UncheckedMalloc(sizeof(T) * kPageSize,
+                                 reinterpret_cast<void**>(&block))) {
         clear();
         return false;
       }
@@ -64,9 +65,9 @@ class PagedArray {
     if (pages_ != NULL) {
       while (page_count_ != 0) {
         --page_count_;
-        delete[] pages_[page_count_];
+        free(pages_[page_count_]);
       }
-      delete[] pages_;
+      free(pages_);
       pages_ = NULL;
     }
   }

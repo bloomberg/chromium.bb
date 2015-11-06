@@ -5,12 +5,14 @@
 #ifndef COURGETTE_MEMORY_ALLOCATOR_H_
 #define COURGETTE_MEMORY_ALLOCATOR_H_
 
-#include <memory>
+#include <stdlib.h>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/process/memory.h"
 
 #ifndef NDEBUG
 
@@ -54,6 +56,31 @@ typedef bool CheckBool;
 #endif
 
 namespace courgette {
+
+// Allocates memory for an instance of type T, instantiates an object in that
+// memory with arguments |args| (of type ArgTypes), and returns the constructed
+// instance. Returns null if allocation fails.
+template <class T, class... ArgTypes>
+T* UncheckedNew(ArgTypes... args) {
+  void* ram = nullptr;
+  return base::UncheckedMalloc(sizeof(T), &ram) ? new (ram) T(args...)
+                                                : nullptr;
+}
+
+// Complement of UncheckedNew(): destructs |object| and releases its memory.
+template <class T>
+void UncheckedDelete(T* object) {
+  if (object) {
+    object->T::~T();
+    free(object);
+  }
+}
+
+// A deleter for scoped_ptr that will delete the object via UncheckedDelete().
+template <class T>
+struct UncheckedDeleter {
+  inline void operator()(T* ptr) const { UncheckedDelete(ptr); }
+};
 
 #if defined(OS_WIN)
 
@@ -170,11 +197,10 @@ class MemoryAllocator {
     uint8* mem = reinterpret_cast<uint8*>(ptr);
     mem -= sizeof(T);
     if (mem[0] == HEAP_ALLOCATION) {
-      delete [] mem;
+      free(mem);
     } else {
       DCHECK_EQ(static_cast<uint8>(FILE_ALLOCATION), mem[0]);
-      TempMapping* mapping = TempMapping::GetMappingFromPtr(mem);
-      delete mapping;
+      UncheckedDelete(TempMapping::GetMappingFromPtr(mem));
     }
   }
 
@@ -192,17 +218,20 @@ class MemoryAllocator {
     uint8* mem = NULL;
 
     // First see if we can do this allocation on the heap.
-    if (count < kMaxHeapAllocationSize)
-      mem = new(std::nothrow) uint8[bytes];
-    if (mem != NULL) {
+    if (count < kMaxHeapAllocationSize &&
+        base::UncheckedMalloc(bytes, reinterpret_cast<void**>(&mem))) {
       mem[0] = static_cast<uint8>(HEAP_ALLOCATION);
     } else {
-      // If either the heap allocation failed or the request exceeds the
-      // max heap allocation threshold, we back the allocation with a temp file.
-      TempMapping* mapping = new(std::nothrow) TempMapping();
-      if (mapping && mapping->Initialize(bytes)) {
-        mem = reinterpret_cast<uint8*>(mapping->memory());
-        mem[0] = static_cast<uint8>(FILE_ALLOCATION);
+      // Back the allocation with a temp file if either the request exceeds the
+      // max heap allocation threshold or the heap allocation failed.
+      TempMapping* mapping = UncheckedNew<TempMapping>();
+      if (mapping) {
+        if (mapping->Initialize(bytes)) {
+          mem = reinterpret_cast<uint8*>(mapping->memory());
+          mem[0] = static_cast<uint8>(FILE_ALLOCATION);
+        } else {
+          UncheckedDelete(mapping);
+        }
       }
     }
     return mem ? reinterpret_cast<pointer>(mem + sizeof(T)) : NULL;
@@ -260,15 +289,16 @@ class MemoryAllocator {
   ~MemoryAllocator() {
   }
 
-  void deallocate(pointer ptr, size_type size) {
-    delete [] ptr;
-  }
+  void deallocate(pointer ptr, size_type size) { free(ptr); }
 
   pointer allocate(size_type count) {
     if (count > max_size())
       return NULL;
-    return reinterpret_cast<pointer>(
-        new(std::nothrow) uint8[count * sizeof(T)]);
+    pointer result = nullptr;
+    return base::UncheckedMalloc(count * sizeof(T),
+                                 reinterpret_cast<void**>(&result))
+               ? result
+               : nullptr;
   }
 
   pointer allocate(size_type count, const void* hint) {
