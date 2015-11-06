@@ -21,9 +21,10 @@
 #ifndef FontFallbackList_h
 #define FontFallbackList_h
 
+#include "platform/fonts/FallbackListCompositeKey.h"
+#include "platform/fonts/FontCache.h"
 #include "platform/fonts/FontSelector.h"
 #include "platform/fonts/SimpleFontData.h"
-#include "platform/fonts/shaping/CachingWordShaper.h"
 #include "wtf/Forward.h"
 #include "wtf/MainThread.h"
 
@@ -74,7 +75,13 @@ public:
     unsigned fontSelectorVersion() const { return m_fontSelectorVersion; }
     unsigned generation() const { return m_generation; }
 
-    CachingWordShaper& cachingWordShaper() const { return m_cachingWordShaper; }
+    ShapeCache* shapeCache(const FontDescription& fontDescription) const
+    {
+        FallbackListCompositeKey key = compositeKey(fontDescription);
+        ShapeCache* cache = FontCache::fontCache()->getShapeCache(key);
+        ASSERT(cache);
+        return cache;
+    }
 
     const SimpleFontData* primarySimpleFontData(const FontDescription& fontDescription)
     {
@@ -100,6 +107,8 @@ public:
             m_pageZero = node;
     }
 
+    FallbackListCompositeKey compositeKey(const FontDescription&) const;
+
 private:
     FontFallbackList();
 
@@ -114,7 +123,6 @@ private:
     GlyphPageTreeNodeBase* m_pageZero;
     mutable const SimpleFontData* m_cachedPrimarySimpleFontData;
     RefPtrWillBePersistent<FontSelector> m_fontSelector;
-    mutable CachingWordShaper m_cachingWordShaper;
     unsigned m_fontSelectorVersion;
     mutable int m_familyIndex;
     unsigned short m_generation;

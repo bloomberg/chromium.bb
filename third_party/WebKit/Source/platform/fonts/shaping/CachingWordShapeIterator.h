@@ -34,7 +34,9 @@
 
 namespace blink {
 
-class CachingWordShapeIterator {
+class CachingWordShapeIterator final {
+    WTF_MAKE_NONCOPYABLE(CachingWordShapeIterator);
+    USING_FAST_MALLOC(CachingWordShapeIterator);
 public:
     CachingWordShapeIterator(ShapeCache* cache, const TextRun& run,
         const Font* font)

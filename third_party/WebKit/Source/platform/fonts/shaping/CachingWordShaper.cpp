@@ -34,27 +34,13 @@
 
 namespace blink {
 
-CachingWordShaper::CachingWordShaper()
-    : m_shapeCache(adoptPtr(new ShapeCache))
-{
-}
-
-CachingWordShaper::~CachingWordShaper()
-{
-}
-
-void CachingWordShaper::clear()
-{
-    m_shapeCache->clear();
-}
-
 float CachingWordShaper::width(const Font* font, const TextRun& run,
     HashSet<const SimpleFontData*>* fallbackFonts,
     FloatRect* glyphBounds)
 {
     float width = 0;
     RefPtr<ShapeResult> wordResult;
-    CachingWordShapeIterator iterator(m_shapeCache.get(), run, font);
+    CachingWordShapeIterator iterator(m_shapeCache, run, font);
     while (iterator.next(&wordResult)) {
         if (wordResult) {
             width += wordResult->width();
@@ -89,7 +75,7 @@ static inline float shapeResultsForRun(ShapeCache* shapeCache, const Font* font,
 int CachingWordShaper::offsetForPosition(const Font* font, const TextRun& run, float targetX)
 {
     Vector<RefPtr<ShapeResult>> results;
-    shapeResultsForRun(m_shapeCache.get(), font, run, nullptr, &results);
+    shapeResultsForRun(m_shapeCache, font, run, nullptr, &results);
 
     return ShapeResult::offsetForPosition(results, run, targetX);
 }
@@ -99,7 +85,7 @@ float CachingWordShaper::fillGlyphBuffer(const Font* font, const TextRun& run,
     GlyphBuffer* glyphBuffer, unsigned from, unsigned to)
 {
     Vector<RefPtr<ShapeResult>> results;
-    shapeResultsForRun(m_shapeCache.get(), font, run, fallbackFonts, &results);
+    shapeResultsForRun(m_shapeCache, font, run, fallbackFonts, &results);
 
     return ShapeResult::fillGlyphBuffer(results, glyphBuffer, run, from, to);
 }
@@ -109,7 +95,7 @@ float CachingWordShaper::fillGlyphBufferForTextEmphasis(const Font* font,
     unsigned from, unsigned to)
 {
     Vector<RefPtr<ShapeResult>> results;
-    shapeResultsForRun(m_shapeCache.get(), font, run, nullptr, &results);
+    shapeResultsForRun(m_shapeCache, font, run, nullptr, &results);
 
     return ShapeResult::fillGlyphBufferForTextEmphasis(results, glyphBuffer,
         run, emphasisData, from, to);
@@ -119,7 +105,7 @@ FloatRect CachingWordShaper::selectionRect(const Font* font, const TextRun& run,
     const FloatPoint& point, int height, unsigned from, unsigned to)
 {
     Vector<RefPtr<ShapeResult>> results;
-    float totalWidth = shapeResultsForRun(m_shapeCache.get(), font, run, nullptr,
+    float totalWidth = shapeResultsForRun(m_shapeCache, font, run, nullptr,
         &results);
 
     return ShapeResult::selectionRect(results, run.direction(), totalWidth,

@@ -4,6 +4,8 @@
 
 #include "config.h"
 
+#include "platform/fonts/shaping/CachingWordShaper.h"
+
 #include "platform/fonts/FontCache.h"
 #include "platform/fonts/GlyphBuffer.h"
 #include "platform/fonts/shaping/CachingWordShapeIterator.h"
@@ -19,23 +21,17 @@ protected:
         fontDescription.setScript(USCRIPT_LATIN);
         fontDescription.setGenericFamily(FontDescription::StandardFamily);
 
-        font = new Font(fontDescription);
+        font = adoptPtr(new Font(fontDescription));
         font->update(nullptr);
         ASSERT_TRUE(font->canShapeWordByWord());
         fallbackFonts = nullptr;
-        cache = new ShapeCache();
-    }
-
-    void TearDown() override
-    {
-        delete cache;
-        delete font;
+        cache = adoptPtr(new ShapeCache());
     }
 
     FontCachePurgePreventer fontCachePurgePreventer;
     FontDescription fontDescription;
-    Font* font;
-    ShapeCache* cache;
+    OwnPtr<Font> font;
+    OwnPtr<ShapeCache> cache;
     HashSet<const SimpleFontData*>* fallbackFonts;
     unsigned startIndex = 0;
     unsigned numGlyphs = 0;
@@ -47,7 +43,7 @@ TEST_F(CachingWordShaperTest, LatinLeftToRightByWord)
     TextRun textRun(reinterpret_cast<const LChar*>("ABC DEF."), 8);
 
     RefPtr<ShapeResult> result;
-    CachingWordShapeIterator iterator(cache, textRun, font);
+    CachingWordShapeIterator iterator(cache.get(), textRun, font.get());
     ASSERT_TRUE(iterator.next(&result));
     ASSERT_TRUE(result->runInfoForTesting(0, startIndex, numGlyphs, script));
     EXPECT_EQ(0u, startIndex);
@@ -76,7 +72,7 @@ TEST_F(CachingWordShaperTest, CommonAccentLeftToRightByWord)
 
     unsigned offset = 0;
     RefPtr<ShapeResult> result;
-    CachingWordShapeIterator iterator(cache, textRun, font);
+    CachingWordShapeIterator iterator(cache.get(), textRun, font.get());
     ASSERT_TRUE(iterator.next(&result));
     ASSERT_TRUE(result->runInfoForTesting(0, startIndex, numGlyphs, script));
     EXPECT_EQ(0u, offset + startIndex);
@@ -110,14 +106,15 @@ TEST_F(CachingWordShaperTest, CommonAccentLeftToRightFillGlyphBuffer)
     const UChar str[] = { 0x2F, 0x301, 0x2E, 0x20, 0x2E, 0x0 };
     TextRun textRun(str, 5);
 
-    CachingWordShaper shaper;
+    CachingWordShaper shaper(cache.get());
     GlyphBuffer glyphBuffer;
-    shaper.fillGlyphBuffer(font, textRun, fallbackFonts, &glyphBuffer, 0, 3);
+    shaper.fillGlyphBuffer(font.get(), textRun, fallbackFonts, &glyphBuffer, 0, 3);
 
-    CachingWordShaper referenceShaper;
+    OwnPtr<ShapeCache> referenceCache = adoptPtr(new ShapeCache());
+    CachingWordShaper referenceShaper(referenceCache.get());
     GlyphBuffer referenceGlyphBuffer;
     font->setCanShapeWordByWordForTesting(false);
-    referenceShaper.fillGlyphBuffer(font, textRun, fallbackFonts,
+    referenceShaper.fillGlyphBuffer(font.get(), textRun, fallbackFonts,
         &referenceGlyphBuffer, 0, 3);
 
     ASSERT_EQ(referenceGlyphBuffer.glyphAt(0), glyphBuffer.glyphAt(0));
@@ -134,14 +131,15 @@ TEST_F(CachingWordShaperTest, CommonAccentRightToLeftFillGlyphBuffer)
     TextRun textRun(str, 6);
     textRun.setDirection(RTL);
 
-    CachingWordShaper shaper;
+    CachingWordShaper shaper(cache.get());
     GlyphBuffer glyphBuffer;
-    shaper.fillGlyphBuffer(font, textRun, fallbackFonts, &glyphBuffer, 1, 6);
+    shaper.fillGlyphBuffer(font.get(), textRun, fallbackFonts, &glyphBuffer, 1, 6);
 
-    CachingWordShaper referenceShaper;
+    OwnPtr<ShapeCache> referenceCache = adoptPtr(new ShapeCache());
+    CachingWordShaper referenceShaper(referenceCache.get());
     GlyphBuffer referenceGlyphBuffer;
     font->setCanShapeWordByWordForTesting(false);
-    referenceShaper.fillGlyphBuffer(font, textRun, fallbackFonts,
+    referenceShaper.fillGlyphBuffer(font.get(), textRun, fallbackFonts,
         &referenceGlyphBuffer, 1, 6);
 
     ASSERT_EQ(5u, referenceGlyphBuffer.size());
@@ -164,16 +162,16 @@ TEST_F(CachingWordShaperTest, SubRunWithZeroGlyphs)
     };
     TextRun textRun(str, 9);
 
-    CachingWordShaper shaper;
+    CachingWordShaper shaper(cache.get());
     FloatRect glyphBounds;
-    ASSERT_GT(shaper.width(font, textRun, nullptr, &glyphBounds), 0);
+    ASSERT_GT(shaper.width(font.get(), textRun, nullptr, &glyphBounds), 0);
 
     GlyphBuffer glyphBuffer;
-    shaper.fillGlyphBuffer(font, textRun, fallbackFonts, &glyphBuffer, 0, 8);
+    shaper.fillGlyphBuffer(font.get(), textRun, fallbackFonts, &glyphBuffer, 0, 8);
 
     FloatPoint point;
     int height = 16;
-    shaper.selectionRect(font, textRun, point, height, 0, 8);
+    shaper.selectionRect(font.get(), textRun, point, height, 0, 8);
 }
 
 TEST_F(CachingWordShaperTest, TextOrientationFallbackShouldNotInFallbackList)
@@ -192,7 +190,7 @@ TEST_F(CachingWordShaperTest, TextOrientationFallbackShouldNotInFallbackList)
     verticalMixedFont->update(nullptr);
     ASSERT_TRUE(verticalMixedFont->canShapeWordByWord());
 
-    CachingWordShaper shaper;
+    CachingWordShaper shaper(cache.get());
     FloatRect glyphBounds;
     HashSet<const SimpleFontData*> fallbackFonts;
     ASSERT_GT(shaper.width(verticalMixedFont.get(), textRun, &fallbackFonts, &glyphBounds), 0);

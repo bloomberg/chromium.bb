@@ -144,6 +144,11 @@ public:
         m_shortStringMap.clear();
     }
 
+    unsigned size() const
+    {
+        return m_singleCharMap.size() + m_shortStringMap.size();
+    }
+
 private:
     ShapeCacheEntry* addSlowCase(const TextRun& run, ShapeCacheEntry entry)
     {
@@ -171,14 +176,11 @@ private:
             value = &addResult.storedValue->value;
         }
 
-        // Cache hit: ramp up by sampling the next few words.
-        if (!isNewEntry) {
+        if (!isNewEntry)
             return value;
-        }
 
-        if (m_singleCharMap.size() + m_shortStringMap.size() < s_maxSize) {
+        if (size() < s_maxSize)
             return value;
-        }
 
         // No need to be fancy: we're just trying to avoid pathological growth.
         m_singleCharMap.clear();
@@ -194,8 +196,10 @@ private:
     // cache entries is a lot lower given the average word count for a web page
     // is well below 1,000 and even full length books rarely have over 10,000
     // unique words [1]. 1: http://www.mine-control.com/zack/guttenberg/
-    // 2,500 seems like a resonable number.
-    static const unsigned s_maxSize = 2500;
+    // Our definition of a word is somewhat different from the norm in that we
+    // only segment on space. Thus "foo", "foo-", and "foo)" would count as
+    // three separate words. Given that 10,000 seems like a reasonable maximum.
+    static const unsigned s_maxSize = 10000;
 
     SingleCharMap m_singleCharMap;
     SmallStringMap m_shortStringMap;
