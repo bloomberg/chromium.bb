@@ -24,7 +24,7 @@
 	DEALINGS IN THE SOFTWARE.
   </copyright>
 
-  <interface name="zwl_text_input1" version="1">
+  <interface name="zwp_text_input1" version="1">
     <description summary="text input">
       An object used for text input. Adds support for text input and input
       methods to applications. A text-input object is created from a
@@ -367,7 +367,7 @@
     </event>
   </interface>
 
-  <interface name="zwl_text_input_manager1" version="1">
+  <interface name="zwp_text_input_manager1" version="1">
     <description summary="text input manager">
       A factory for text-input objects. This object is a global singleton.
     </description>
@@ -376,7 +376,7 @@
       <description summary="create text input">
 	Creates a new text-input object.
       </description>
-      <arg name="id" type="new_id" interface="zwl_text_input1"/>
+      <arg name="id" type="new_id" interface="zwp_text_input1"/>
     </request>
   </interface>
 

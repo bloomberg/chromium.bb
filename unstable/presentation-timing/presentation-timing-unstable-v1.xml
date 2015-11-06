@@ -25,7 +25,7 @@
     DEALINGS IN THE SOFTWARE.
   </copyright>
 
-  <interface name="zwl_presentation1" version="1">
+  <interface name="zwp_presentation1" version="1">
     <description summary="timed presentation related wl_surface requests">
 
 <!-- Introduction -->
@@ -97,7 +97,7 @@
 
       <arg name="surface" type="object" interface="wl_surface"
            summary="target surface"/>
-      <arg name="callback" type="new_id" interface="zwl_presentation_feedback1"
+      <arg name="callback" type="new_id" interface="zwp_presentation_feedback1"
            summary="new feedback object"/>
     </request>
 
@@ -141,7 +141,7 @@
 
   </interface>
 
-  <interface name="zwl_presentation_feedback1" version="1">
+  <interface name="zwp_presentation_feedback1" version="1">
     <description summary="presentation time feedback event">
       A presentation_feedback object returns an indication that a
       wl_surface content update has become visible to the user.

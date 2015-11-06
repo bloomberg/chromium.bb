@@ -1,5 +1,5 @@
 <protocol name="fullscreen_shell_unstable_v1">
-  <interface name="zwl_fullscreen_shell1" version="1">
+  <interface name="zwp_fullscreen_shell1" version="1">
     <description summary="Displays a single surface per output">
       Displays a single surface per output.
 
@@ -169,7 +169,7 @@
       <arg name="surface" type="object" interface="wl_surface"/>
       <arg name="output" type="object" interface="wl_output"/>
       <arg name="framerate" type="int"/>
-      <arg name="feedback" type="new_id" interface="zwl_fullscreen_shell_mode_feedback1"/>
+      <arg name="feedback" type="new_id" interface="zwp_fullscreen_shell_mode_feedback1"/>
     </request>
 
     <enum name="error">
@@ -180,7 +180,7 @@
     </enum>
   </interface>
 
-  <interface name="zwl_fullscreen_shell_mode_feedback1" version="1">
+  <interface name="zwp_fullscreen_shell_mode_feedback1" version="1">
     <event name="mode_successful">
       <description summary="mode switch succeeded">
 	This event indicates that the attempted mode switch operation was

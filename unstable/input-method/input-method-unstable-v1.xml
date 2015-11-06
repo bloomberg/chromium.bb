@@ -24,7 +24,7 @@
     DEALINGS IN THE SOFTWARE.
   </copyright>
 
-  <interface name="zwl_input_method_context1" version="1">
+  <interface name="zwp_input_method_context1" version="1">
     <description summary="input method context">
       Corresponds to a text input on input method side. An input method context
       is created on text input activation on the input method side. It allows to
@@ -239,7 +239,7 @@
     </event>
   </interface>
 
-  <interface name="zwl_input_method1" version="1">
+  <interface name="zwp_input_method1" version="1">
     <description summary="input method">
       An input method object is responsible to compose text in response to
       input from hardware or virtual keyboards. There is one input method
@@ -252,7 +252,7 @@
 	A text input was activated. Creates an input method context object
 	which allows communication with the text input.
       </description>
-      <arg name="id" type="new_id" interface="zwl_input_method_context1"/>
+      <arg name="id" type="new_id" interface="zwp_input_method_context1"/>
     </event>
 
     <event name="deactivate">
@@ -261,22 +261,22 @@
 	The input method context should be destroyed after deactivation is
 	handled.
       </description>
-      <arg name="context" type="object" interface="zwl_input_method_context1"/>
+      <arg name="context" type="object" interface="zwp_input_method_context1"/>
     </event>
   </interface>
 
-  <interface name="zwl_input_panel1" version="1">
+  <interface name="zwp_input_panel1" version="1">
     <description summary="interface for implementing keyboards">
       Only one client can bind this interface at a time.
     </description>
 
     <request name="get_input_panel_surface">
-      <arg name="id" type="new_id" interface="zwl_input_panel_surface1"/>
+      <arg name="id" type="new_id" interface="zwp_input_panel_surface1"/>
       <arg name="surface" type="object" interface="wl_surface"/>
     </request>
   </interface>
 
-  <interface name="zwl_input_panel_surface1" version="1">
+  <interface name="zwp_input_panel_surface1" version="1">
     <enum name="position">
       <entry name="center_bottom" value="0"/>
     </enum>
