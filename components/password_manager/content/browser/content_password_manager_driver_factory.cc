@@ -4,7 +4,6 @@
 
 #include "components/password_manager/content/browser/content_password_manager_driver_factory.h"
 
-#include "base/bind.h"
 #include "base/stl_util.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
@@ -52,9 +51,9 @@ ContentPasswordManagerDriverFactory::ContentPasswordManagerDriverFactory(
     : content::WebContentsObserver(web_contents),
       password_client_(password_client),
       autofill_client_(autofill_client) {
-  web_contents->ForEachFrame(
-      base::Bind(&ContentPasswordManagerDriverFactory::CreateDriverForFrame,
-                 base::Unretained(this)));
+  content::RenderFrameHost* main_frame = web_contents->GetMainFrame();
+  if (main_frame->IsRenderFrameLive())
+    CreateDriverForFrame(main_frame);
 }
 
 ContentPasswordManagerDriverFactory::~ContentPasswordManagerDriverFactory() {
@@ -107,8 +106,6 @@ void ContentPasswordManagerDriverFactory::DidNavigateAnyFrame(
 
 void ContentPasswordManagerDriverFactory::CreateDriverForFrame(
     content::RenderFrameHost* render_frame_host) {
-  if (!render_frame_host->IsRenderFrameLive())
-    return;
   DCHECK(!frame_driver_map_[render_frame_host]);
   frame_driver_map_[render_frame_host] = new ContentPasswordManagerDriver(
       render_frame_host, password_client_, autofill_client_);
