@@ -192,18 +192,7 @@
 
       <!-- Custom cursors (which grit cannot inline). -->
       <include name="IDR_FILE_MANAGER_IMG_GALLERY_CURSOR_CROP" file="gallery/images/100/cursor_crop.png" type="BINDATA" />
-      <include name="IDR_FILE_MANAGER_IMG_GALLERY_CURSOR_LEFTRIGHT" file="gallery/images/100/cursor_leftright.png" type="BINDATA" />
-      <include name="IDR_FILE_MANAGER_IMG_GALLERY_CURSOR_MOVE" file="gallery/images/100/cursor_move.png" type="BINDATA" />
-      <include name="IDR_FILE_MANAGER_IMG_GALLERY_CURSOR_NWSE" file="gallery/images/100/cursor_nwse.png" type="BINDATA" />
-      <include name="IDR_FILE_MANAGER_IMG_GALLERY_CURSOR_SWNE" file="gallery/images/100/cursor_swne.png" type="BINDATA" />
-      <include name="IDR_FILE_MANAGER_IMG_GALLERY_CURSOR_UPDOWN" file="gallery/images/100/cursor_updown.png" type="BINDATA" />
-
       <include name="IDR_FILE_MANAGER_IMG_GALLERY_2X_CURSOR_CROP" file="gallery/images/200/cursor_crop.png" type="BINDATA" />
-      <include name="IDR_FILE_MANAGER_IMG_GALLERY_2X_CURSOR_LEFTRIGHT" file="gallery/images/200/cursor_leftright.png" type="BINDATA" />
-      <include name="IDR_FILE_MANAGER_IMG_GALLERY_2X_CURSOR_MOVE" file="gallery/images/200/cursor_move.png" type="BINDATA" />
-      <include name="IDR_FILE_MANAGER_IMG_GALLERY_2X_CURSOR_NWSE" file="gallery/images/200/cursor_nwse.png" type="BINDATA" />
-      <include name="IDR_FILE_MANAGER_IMG_GALLERY_2X_CURSOR_SWNE" file="gallery/images/200/cursor_swne.png" type="BINDATA" />
-      <include name="IDR_FILE_MANAGER_IMG_GALLERY_2X_CURSOR_UPDOWN" file="gallery/images/200/cursor_updown.png" type="BINDATA" />
 
       <!-- Image loader extension manifest and scripts. -->
       <if expr="image_loader_extension">
