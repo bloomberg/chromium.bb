@@ -12017,14 +12017,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
         Your data is encrypted with your sync passphrase. Please enter it below.
       </message>
 
-      <!-- Sync time strings -->
-      <message name="IDS_SYNC_TIME_NEVER" desc="Indicates that the first sync has never completed.">
-        Never
-      </message>
-      <message name="IDS_SYNC_TIME_JUST_NOW" desc="Indicates that a sync cycle just finished.">
-        Just now
-      </message>
-
       <!-- Sync/sign-in error messages -->
       <message name="IDS_SIGNIN_ERROR_BUBBLE_VIEW_TITLE" desc="Title in the sign-in error bubble view/notification.">
         Sign-in Error
