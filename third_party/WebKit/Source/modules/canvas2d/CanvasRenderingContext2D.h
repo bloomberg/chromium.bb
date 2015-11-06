@@ -176,8 +176,8 @@ public:
     ImageData* createImageData(ImageData*) const;
     ImageData* createImageData(float width, float height, ExceptionState&) const;
     ImageData* getImageData(float sx, float sy, float sw, float sh, ExceptionState&) const;
-    void putImageData(ImageData*, float dx, float dy);
-    void putImageData(ImageData*, float dx, float dy, float dirtyX, float dirtyY, float dirtyWidth, float dirtyHeight);
+    void putImageData(ImageData*, float dx, float dy, ExceptionState&);
+    void putImageData(ImageData*, float dx, float dy, float dirtyX, float dirtyY, float dirtyWidth, float dirtyHeight, ExceptionState&);
 
     void reset() override;
 

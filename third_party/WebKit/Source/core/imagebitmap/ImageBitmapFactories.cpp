@@ -93,6 +93,10 @@ ScriptPromise ImageBitmapFactories::createImageBitmap(ScriptState* scriptState, 
         exceptionState.throwDOMException(IndexSizeError, String::format("The source %s provided is 0.", sw ? "height" : "width"));
         return ScriptPromise();
     }
+    if (data->data()->bufferBase()->isNeutered()) {
+        exceptionState.throwDOMException(InvalidStateError, "The source data has been neutered.");
+        return ScriptPromise();
+    }
     // FIXME: make ImageBitmap creation asynchronous crbug.com/258082
     return fulfillImageBitmap(scriptState, ImageBitmap::create(data, IntRect(sx, sy, sw, sh)));
 }

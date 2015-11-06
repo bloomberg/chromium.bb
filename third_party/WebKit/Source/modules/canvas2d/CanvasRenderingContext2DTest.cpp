@@ -326,16 +326,25 @@ TEST_F(CanvasRenderingContext2DTest, detectOverdrawWithDrawImage)
 TEST_F(CanvasRenderingContext2DTest, detectOverdrawWithPutImageData)
 {
     createContext(NonOpaque);
+    NonThrowableExceptionState exceptionState;
 
     // Test putImageData
-    TEST_OVERDRAW_1(1, putImageData(m_fullImageData.get(), 0, 0));
-    TEST_OVERDRAW_1(1, putImageData(m_fullImageData.get(), 0, 0, 0, 0, 10, 10));
-    TEST_OVERDRAW_1(0, putImageData(m_fullImageData.get(), 0, 0, 1, 1, 8, 8));
-    TEST_OVERDRAW_2(1, setGlobalAlpha(0.5f), putImageData(m_fullImageData.get(), 0, 0)); // alpha has no effect
-    TEST_OVERDRAW_1(0, putImageData(m_partialImageData.get(), 0, 0));
-    TEST_OVERDRAW_2(1, translate(1, 1), putImageData(m_fullImageData.get(), 0, 0)); // ignores tranforms
-    TEST_OVERDRAW_1(0, putImageData(m_fullImageData.get(), 1, 0));
-    TEST_OVERDRAW_3(1, rect(0, 0, 5, 5), clip(), putImageData(m_fullImageData.get(), 0, 0)); // ignores clip
+    TEST_OVERDRAW_1(1, putImageData(m_fullImageData.get(), 0, 0, exceptionState));
+    EXPECT_FALSE(exceptionState.hadException());
+    TEST_OVERDRAW_1(1, putImageData(m_fullImageData.get(), 0, 0, 0, 0, 10, 10, exceptionState));
+    EXPECT_FALSE(exceptionState.hadException());
+    TEST_OVERDRAW_1(0, putImageData(m_fullImageData.get(), 0, 0, 1, 1, 8, 8, exceptionState));
+    EXPECT_FALSE(exceptionState.hadException());
+    TEST_OVERDRAW_2(1, setGlobalAlpha(0.5f), putImageData(m_fullImageData.get(), 0, 0, exceptionState)); // alpha has no effect
+    EXPECT_FALSE(exceptionState.hadException());
+    TEST_OVERDRAW_1(0, putImageData(m_partialImageData.get(), 0, 0, exceptionState));
+    EXPECT_FALSE(exceptionState.hadException());
+    TEST_OVERDRAW_2(1, translate(1, 1), putImageData(m_fullImageData.get(), 0, 0, exceptionState)); // ignores tranforms
+    EXPECT_FALSE(exceptionState.hadException());
+    TEST_OVERDRAW_1(0, putImageData(m_fullImageData.get(), 1, 0, exceptionState));
+    EXPECT_FALSE(exceptionState.hadException());
+    TEST_OVERDRAW_3(1, rect(0, 0, 5, 5), clip(), putImageData(m_fullImageData.get(), 0, 0, exceptionState)); // ignores clip
+    EXPECT_FALSE(exceptionState.hadException());
 }
 
 TEST_F(CanvasRenderingContext2DTest, detectOverdrawWithCompositeOperations)

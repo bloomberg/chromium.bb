@@ -1622,13 +1622,17 @@ ImageData* CanvasRenderingContext2D::getImageData(float sx, float sy, float sw, 
         DOMUint8ClampedArray::create(arrayBuffer, 0, arrayBuffer->byteLength()));
 }
 
-void CanvasRenderingContext2D::putImageData(ImageData* data, float dx, float dy)
+void CanvasRenderingContext2D::putImageData(ImageData* data, float dx, float dy, ExceptionState& exceptionState)
 {
-    putImageData(data, dx, dy, 0, 0, data->width(), data->height());
+    putImageData(data, dx, dy, 0, 0, data->width(), data->height(), exceptionState);
 }
 
-void CanvasRenderingContext2D::putImageData(ImageData* data, float dx, float dy, float dirtyX, float dirtyY, float dirtyWidth, float dirtyHeight)
+void CanvasRenderingContext2D::putImageData(ImageData* data, float dx, float dy, float dirtyX, float dirtyY, float dirtyWidth, float dirtyHeight, ExceptionState& exceptionState)
 {
+    if (data->data()->bufferBase()->isNeutered()) {
+        exceptionState.throwDOMException(InvalidStateError, "The source data has been neutered.");
+        return;
+    }
     ImageBuffer* buffer = canvas()->buffer();
     if (!buffer)
         return;

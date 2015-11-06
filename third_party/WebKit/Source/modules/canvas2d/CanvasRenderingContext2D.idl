@@ -121,8 +121,8 @@ enum ImageSmoothingQuality {"low", "medium", "high"};
     ImageData createImageData(ImageData imagedata);
     [RaisesException] ImageData createImageData(float sw, float sh);
     [RaisesException] ImageData getImageData(float sx, float sy, float sw, float sh);
-    void putImageData(ImageData imagedata, float dx, float dy);
-    void putImageData(ImageData imagedata, float dx, float dy, float dirtyX, float dirtyY, float dirtyWidth, float dirtyHeight);
+    [RaisesException] void putImageData(ImageData imagedata, float dx, float dy);
+    [RaisesException] void putImageData(ImageData imagedata, float dx, float dy, float dirtyX, float dirtyY, float dirtyWidth, float dirtyHeight);
 
     // Context state
     // Should be merged with WebGL counterpart in CanvasRenderingContext, once no-longer experimental
