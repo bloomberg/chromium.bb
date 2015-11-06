@@ -438,11 +438,9 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     case CSSPropertyWebkitBorderEndColor:
     case CSSPropertyWebkitBorderBeforeColor:
     case CSSPropertyWebkitBorderAfterColor:
-    case CSSPropertyTextDecorationColor: // CSS3 text decoration colors
     case CSSPropertyWebkitColumnRuleColor:
     case CSSPropertyWebkitTextEmphasisColor:
     case CSSPropertyWebkitTextStrokeColor:
-        ASSERT(propId != CSSPropertyTextDecorationColor || RuntimeEnabledFeatures::css3TextDecorationsEnabled());
         parsedValue = parseColor(m_valueList->current(), acceptQuirkyColors(propId));
         if (parsedValue)
             m_valueList->next();
@@ -665,19 +663,6 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
             validPrimitive = true;
         else
             validPrimitive = validUnit(value, FLength | FPercent | unitless);
-        break;
-
-    case CSSPropertyTextDecoration:
-        // Fall through 'text-decoration-line' parsing if CSS 3 Text Decoration
-        // is disabled to match CSS 2.1 rules for parsing 'text-decoration'.
-        if (RuntimeEnabledFeatures::css3TextDecorationsEnabled()) {
-            // [ <text-decoration-line> || <text-decoration-style> || <text-decoration-color> ] | inherit
-            return parseShorthand(CSSPropertyTextDecoration, textDecorationShorthand(), important);
-        }
-    case CSSPropertyWebkitTextDecorationsInEffect:
-    case CSSPropertyTextDecorationLine:
-        // none | [ underline || overline || line-through || blink ] | inherit
-        parsedValue = parseTextDecoration();
         break;
 
     case CSSPropertyTextUnderlinePosition:
@@ -1222,6 +1207,10 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     case CSSPropertyBoxShadow:
     case CSSPropertyWebkitFilter:
     case CSSPropertyBackdropFilter:
+    case CSSPropertyTextDecorationColor:
+    case CSSPropertyWebkitTextDecorationsInEffect:
+    case CSSPropertyTextDecorationLine:
+    case CSSPropertyTextDecoration:
         validPrimitive = false;
         break;
 
@@ -5403,39 +5392,6 @@ PassRefPtrWillBeRawPtr<CSSValueList> CSSPropertyParser::parseTransformOrigin()
     if (zValue)
         list->append(zValue.release());
     return list.release();
-}
-
-PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseTextDecoration()
-{
-    CSSParserValue* value = m_valueList->current();
-    if (value && value->id == CSSValueNone) {
-        m_valueList->next();
-        return cssValuePool().createIdentifierValue(CSSValueNone);
-    }
-
-    RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
-    bool isValid = true;
-    while (isValid && value) {
-        switch (value->id) {
-        case CSSValueUnderline:
-        case CSSValueOverline:
-        case CSSValueLineThrough:
-        case CSSValueBlink:
-            // TODO(timloh): This will incorrectly accept "blink blink"
-            list->append(cssValuePool().createIdentifierValue(value->id));
-            break;
-        default:
-            isValid = false;
-            break;
-        }
-        if (isValid)
-            value = m_valueList->next();
-    }
-
-    // Values are either valid or in shorthand scope.
-    if (list->length())
-        return list.release();
-    return nullptr;
 }
 
 PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseTextEmphasisStyle()
