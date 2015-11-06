@@ -28,7 +28,7 @@ function test()
     function clickValueLink(record, row)
     {
         var panel = WebInspector.panels.timeline;
-        WebInspector.TimelineUIUtils.buildTraceEventDetails(record.traceEvent(), panel._model, new WebInspector.Linkifier(), onDetailsContentReady);
+        WebInspector.TimelineUIUtils.buildTraceEventDetails(record.traceEvent(), panel._model, new WebInspector.Linkifier(), true, onDetailsContentReady);
 
         function onDetailsContentReady(element)
         {
