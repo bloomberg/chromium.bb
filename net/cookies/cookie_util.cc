@@ -63,8 +63,19 @@ bool GetCookieDomainWithString(const GURL& url,
   const std::string url_scheme(url.scheme());
   const std::string url_domain_and_registry(
       GetEffectiveDomain(url_scheme, url_host));
-  if (url_domain_and_registry.empty())
-    return false;  // IP addresses/intranet hosts can't set domain cookies.
+  if (url_domain_and_registry.empty()) {
+    // We match IE/Firefox by treating an exact match between the domain
+    // attribute and the request host to be treated as a host cookie.
+    if (url_host == domain_string) {
+      *result = url_host;
+      DCHECK(DomainIsHostOnly(*result));
+      return true;
+    }
+
+    // Otherwise, IP addresses/intranet hosts/public suffixes can't set
+    // domain cookies.
+    return false;
+  }
   const std::string cookie_domain_and_registry(
       GetEffectiveDomain(url_scheme, cookie_domain));
   if (url_domain_and_registry != cookie_domain_and_registry)

@@ -515,7 +515,26 @@ TYPED_TEST_P(CookieStoreTest, TestNonDottedAndTLD) {
     // Allow setting on "com", (but only as a host cookie).
     EXPECT_TRUE(this->SetCookie(cs.get(), url, "a=1"));
     EXPECT_FALSE(this->SetCookie(cs.get(), url, "b=2; domain=.com"));
-    EXPECT_FALSE(this->SetCookie(cs.get(), url, "c=3; domain=com"));
+
+    this->MatchCookieLines("a=1", this->GetCookies(cs.get(), url));
+    // Make sure it doesn't show up for a normal .com, it should be a host
+    // not a domain cookie.
+    this->MatchCookieLines(
+        std::string(),
+        this->GetCookies(cs.get(), GURL("http://hopefully-no-cookies.com/")));
+    if (TypeParam::supports_non_dotted_domains) {
+      this->MatchCookieLines(std::string(),
+                             this->GetCookies(cs.get(), GURL("http://.com/")));
+    }
+  }
+
+  {
+    // Exact matches between the domain attribute and the host are treated as
+    // host cookies, not domain cookies.
+    scoped_refptr<CookieStore> cs(this->GetCookieStore());
+    GURL url("http://com/");
+    EXPECT_TRUE(this->SetCookie(cs.get(), url, "a=1; domain=com"));
+
     this->MatchCookieLines("a=1", this->GetCookies(cs.get(), url));
     // Make sure it doesn't show up for a normal .com, it should be a host
     // not a domain cookie.
@@ -575,8 +594,26 @@ TYPED_TEST_P(CookieStoreTest, TestNonDottedAndTLD) {
     GURL url("http://b");
     EXPECT_TRUE(this->SetCookie(cs.get(), url, "a=1"));
     EXPECT_FALSE(this->SetCookie(cs.get(), url, "b=2; domain=.b"));
-    EXPECT_FALSE(this->SetCookie(cs.get(), url, "c=3; domain=b"));
     this->MatchCookieLines("a=1", this->GetCookies(cs.get(), url));
+  }
+
+  {
+    // Exact matches between the domain attribute and an intranet host are
+    // treated as host cookies, not domain cookies.
+    scoped_refptr<CookieStore> cs(this->GetCookieStore());
+    GURL url("http://b/");
+    EXPECT_TRUE(this->SetCookie(cs.get(), url, "a=1; domain=b"));
+
+    this->MatchCookieLines("a=1", this->GetCookies(cs.get(), url));
+    // Make sure it doesn't show up for an intranet subdomain, it should be a
+    // host not a domain cookie.
+    this->MatchCookieLines(
+        std::string(),
+        this->GetCookies(cs.get(), GURL("http://hopefully-no-cookies.b/")));
+    if (TypeParam::supports_non_dotted_domains) {
+      this->MatchCookieLines(std::string(),
+                             this->GetCookies(cs.get(), GURL("http://.b/")));
+    }
   }
 }
 

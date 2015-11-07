@@ -235,6 +235,7 @@ CanonicalCookie* CanonicalCookie::Create(const GURL& url,
 
   std::string cookie_domain;
   if (!GetCookieDomain(url, parsed_cookie, &cookie_domain)) {
+    VLOG(kVlogSetCookies) << "Create() failed to get a cookie domain";
     return NULL;
   }
 
