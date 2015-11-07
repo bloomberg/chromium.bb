@@ -7,8 +7,15 @@
 
 #include <istream>
 
+#include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/trace_event/memory_dump_provider.h"
+#include "build/build_config.h"
+
+#if defined(OS_LINUX) || defined(OS_ANDROID) || \
+    (defined(OS_MACOXS) && !defined(OS_IOS))
+#define SUPPORTS_MALLOC_MEMORY_TRACING
+#endif
 
 namespace base {
 namespace trace_event {

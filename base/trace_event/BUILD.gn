@@ -71,12 +71,15 @@ source_set("trace_event") {
     ]
   }
 
-  if (is_linux || is_android) {
+  if (is_linux || is_android || is_mac) {
     sources += [
       "malloc_dump_provider.cc",
       "malloc_dump_provider.h",
-      "process_memory_maps_dump_provider.cc",
     ]
+  }
+
+  if (is_linux || is_android) {
+    sources += [ "process_memory_maps_dump_provider.cc" ]
   }
 
   configs += [ "//base:base_implementation" ]

@@ -4,7 +4,11 @@
 
 #include "base/trace_event/malloc_dump_provider.h"
 
+#if defined(OS_MACOSX)
+#include <malloc/malloc.h>
+#else
 #include <malloc.h>
+#endif
 
 #include "base/allocator/allocator_extension_thunks.h"
 #include "base/trace_event/process_memory_dump.h"
@@ -21,11 +25,9 @@ MallocDumpProvider* MallocDumpProvider::GetInstance() {
                    LeakySingletonTraits<MallocDumpProvider>>::get();
 }
 
-MallocDumpProvider::MallocDumpProvider() {
-}
+MallocDumpProvider::MallocDumpProvider() {}
 
-MallocDumpProvider::~MallocDumpProvider() {
-}
+MallocDumpProvider::~MallocDumpProvider() {}
 
 // Called at trace dump point time. Creates a snapshot the memory counters for
 // the current process.
@@ -34,7 +36,13 @@ bool MallocDumpProvider::OnMemoryDump(const MemoryDumpArgs& args,
   size_t total_virtual_size = 0;
   size_t resident_size = 0;
   size_t allocated_objects_size = 0;
-
+#if defined(OS_MACOSX) || defined(OS_IOS)
+  malloc_statistics_t stats = {0};
+  malloc_zone_statistics(nullptr, &stats);
+  total_virtual_size = stats.size_allocated;
+  resident_size = stats.size_in_use;
+  allocated_objects_size = stats.size_in_use;
+#else
   allocator::thunks::GetNumericPropertyFunction get_property_function =
       allocator::thunks::GetGetNumericPropertyFunction();
   if (get_property_function) {
@@ -58,6 +66,7 @@ bool MallocDumpProvider::OnMemoryDump(const MemoryDumpArgs& args,
     resident_size = info.uordblks;
     allocated_objects_size = info.uordblks;
   }
+#endif
 
   MemoryAllocatorDump* outer_dump = pmd->CreateAllocatorDump("malloc");
   outer_dump->AddScalar("virtual_size", MemoryAllocatorDump::kUnitsBytes,

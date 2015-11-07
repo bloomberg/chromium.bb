@@ -12,6 +12,7 @@
 #include "base/compiler_specific.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
+#include "base/trace_event/malloc_dump_provider.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "base/trace_event/memory_dump_session_state.h"
 #include "base/trace_event/memory_profiler_allocation_context.h"
@@ -24,7 +25,6 @@
 #endif
 
 #if defined(OS_LINUX) || defined(OS_ANDROID)
-#include "base/trace_event/malloc_dump_provider.h"
 #include "base/trace_event/process_memory_maps_dump_provider.h"
 #endif
 
@@ -96,7 +96,7 @@ const uint64_t MemoryDumpManager::kInvalidTracingProcessId = 0;
 
 // static
 const char* const MemoryDumpManager::kSystemAllocatorPoolName =
-#if defined(OS_LINUX) || defined(OS_ANDROID)
+#if defined(SUPPORTS_MALLOC_MEMORY_TRACING)
     MallocDumpProvider::kAllocatedObjects;
 #elif defined(OS_WIN)
     WinHeapDumpProvider::kAllocatedObjects;
@@ -155,10 +155,13 @@ void MemoryDumpManager::Initialize(MemoryDumpManagerDelegate* delegate,
                        "ProcessMemoryTotals", nullptr);
 #endif
 
+#if defined(SUPPORTS_MALLOC_MEMORY_TRACING)
+  RegisterDumpProvider(MallocDumpProvider::GetInstance(), "Malloc", nullptr);
+#endif
+
 #if defined(OS_LINUX) || defined(OS_ANDROID)
   RegisterDumpProvider(ProcessMemoryMapsDumpProvider::GetInstance(),
                        "ProcessMemoryMaps", nullptr);
-  RegisterDumpProvider(MallocDumpProvider::GetInstance(), "Malloc", nullptr);
 #endif
 
 #if defined(OS_ANDROID)

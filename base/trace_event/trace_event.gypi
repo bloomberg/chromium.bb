@@ -81,10 +81,14 @@
       'trace_event/winheap_dump_provider_win_unittest.cc',
     ],
     'conditions': [
+      ['OS == "linux" or OS=="android" or OS=="mac"', {
+        'trace_event_sources': [
+          'trace_event/malloc_dump_provider.cc',
+          'trace_event/malloc_dump_provider.h',
+        ],
+      }],
       ['OS == "linux" or OS == "android"', {
           'trace_event_sources': [
-            'trace_event/malloc_dump_provider.cc',
-            'trace_event/malloc_dump_provider.h',
             'trace_event/process_memory_maps_dump_provider.cc',
           ],
           'trace_event_test_sources' : [
