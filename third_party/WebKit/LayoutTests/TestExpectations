@@ -259,6 +259,8 @@ crbug.com/524859 transforms/2d/hindi-rotated.html [ NeedsManualRebaseline ]
 
 crbug.com/535408 fast/js/function-bind.html [ NeedsManualRebaseline ]
 
+crbug.com/552574 fast/js/regexp-caching.html [ NeedsManualRebaseline ]
+
 crbug.com/552456 [ Linux ] fast/mediarecorder/MediaRecorder-basic-video.html [ Pass Failure ]
 crbug.com/552456 [ Linux ] fast/mediarecorder/MediaRecorder-creation.html [ Pass Failure ]
 crbug.com/552456 [ Linux ] fast/mediarecorder/MediaRecorder-events-and-exceptions.html [ Pass Failure ]
