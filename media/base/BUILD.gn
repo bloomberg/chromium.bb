@@ -467,6 +467,7 @@ source_set("perftests") {
     "//media",
     "//testing/gmock",
     "//testing/gtest",
+    "//third_party/libyuv",
   ]
 
   if (media_use_ffmpeg) {
