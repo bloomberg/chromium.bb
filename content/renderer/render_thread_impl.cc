@@ -1422,7 +1422,7 @@ media::GpuVideoAcceleratorFactories* RenderThreadImpl::GetGpuFactories() {
         base::StringToUint(image_texture_target_string, &image_texture_target);
     DCHECK(parsed_image_texture_target);
     gpu_factories_ = RendererGpuVideoAcceleratorFactories::Create(
-        gpu_channel_host.get(), main_thread_compositor_task_runner_,
+        gpu_channel_host.get(), base::ThreadTaskRunnerHandle::Get(),
         media_task_runner, shared_context_provider,
         enable_gpu_memory_buffer_video_frames, image_texture_target,
         enable_video_accelerator);
