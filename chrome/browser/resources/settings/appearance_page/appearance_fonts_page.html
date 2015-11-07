@@ -1,6 +1,6 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-slider/paper-slider.html">
-<link rel="import" href="appearance_font_menu.html">
+<link rel="import" href="chrome://md-settings/controls/settings_dropdown_menu.html">
 
 <dom-module id="settings-appearance-fonts-page">
   <link rel="import" type="css"
@@ -18,11 +18,11 @@
       </paper-slider>
     </div>
     <div class="control-row">
-      <settings-appearance-font-menu id="standardFont"
+      <settings-dropdown-menu id="standardFont"
           i18n-values="label:standardFont"
           pref="{{prefs.webkit.webprefs.fonts.standard.Zyyy}}"
           menuOptions="[[fontOptions_]]">
-      </settings-appearance-font-menu>
+      </settings-dropdown-menu>
       <div class="control-column"
           style$="[[computeStyle_(defaultFontSize_,
               prefs.webkit.webprefs.fonts.standard.Zyyy.value)]]">
@@ -31,11 +31,11 @@
       </div>
     </div>
     <div class="control-row">
-      <settings-appearance-font-menu id="serifFont"
+      <settings-dropdown-menu id="serifFont"
           i18n-values="label:serifFont"
           pref="{{prefs.webkit.webprefs.fonts.serif.Zyyy}}"
           menuOptions="[[fontOptions_]]">
-      </settings-appearance-font-menu>
+      </settings-dropdown-menu>
       <div class="control-column"
           style$="[[computeStyle_(defaultFontSize_,
               prefs.webkit.webprefs.fonts.serif.Zyyy.value)]]">
@@ -44,11 +44,11 @@
       </div>
     </div>
     <div class="control-row">
-      <settings-appearance-font-menu id="sansSerifFont"
+      <settings-dropdown-menu id="sansSerifFont"
           i18n-values="label:sansSerifFont"
           pref="{{prefs.webkit.webprefs.fonts.sansserif.Zyyy}}"
           menuOptions="[[fontOptions_]]">
-      </settings-appearance-font-menu>
+      </settings-dropdown-menu>
       <div class="control-column"
           style$="{{computeStyle_(defaultFontSize_,
               prefs.webkit.webprefs.fonts.sansserif.Zyyy.value)}}">
@@ -57,11 +57,11 @@
       </div>
     </div>
     <div class="control-row">
-      <settings-appearance-font-menu id="fixedFont"
+      <settings-dropdown-menu id="fixedFont"
           i18n-values="label:fixedWidthFont"
           pref="{{prefs.webkit.webprefs.fonts.fixed.Zyyy}}"
           menuOptions="[[fontOptions_]]">
-      </settings-appearance-font-menu>
+      </settings-dropdown-menu>
       <div class="control-column"
           style$="[[computeStyle_(defaultFontSize_,
               prefs.webkit.webprefs.fonts.fixed.Zyyy.value)]]">
@@ -85,11 +85,11 @@
       </div>
     </div>
     <div class="control-row">
-      <settings-appearance-font-menu id="encoding"
+      <settings-dropdown-menu id="encoding"
           i18n-values="label:encoding"
           pref="{{prefs.intl.charset_default}}"
           menuOptions="[[encodingOptions_]]">
-      </settings-appearance-font-menu>
+      </settings-dropdown-menu>
     </div>
   </template>
   <script src="appearance_fonts_page.js"></script>

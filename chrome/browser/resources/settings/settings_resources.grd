@@ -43,13 +43,6 @@
       <structure name="IDR_SETTINGS_CR_SETTINGS_ANIMATED_PAGES_JS"
                  file="settings_page/settings_animated_pages.js"
                  type="chrome_html" />
-      <structure name="IDR_SETTINGS_APPEARANCE_FONT_MENU_HTML"
-                 file="appearance_page/appearance_font_menu.html"
-                 type="chrome_html"
-                 allowexternalscript="true" />
-      <structure name="IDR_SETTINGS_APPEARANCE_FONT_MENU_JS"
-                 file="appearance_page/appearance_font_menu.js"
-                 type="chrome_html" />
       <structure name="IDR_SETTINGS_APPEARANCE_FONTS_PAGE_HTML"
                  file="appearance_page/appearance_fonts_page.html"
                  type="chrome_html"
@@ -183,6 +176,12 @@
                  type="chrome_html" />
       <structure name="IDR_SETTINGS_CONTROLS_CHECKBOX_CSS"
                  file="controls/settings_checkbox.css"
+                 type="chrome_html" />
+      <structure name="IDR_SETTINGS_CONTROLS_DROPDOWN_MENU_HTML"
+                 file="controls/settings_dropdown_menu.html"
+                 type="chrome_html" />
+      <structure name="IDR_SETTINGS_CONTROLS_DROPDOWN_MENU_JS"
+                 file="controls/settings_dropdown_menu.js"
                  type="chrome_html" />
       <structure name="IDR_SETTINGS_CONTROLS_INPUT_HTML"
                  file="controls/settings_input.html"

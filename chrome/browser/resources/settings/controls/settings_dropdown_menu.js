@@ -3,19 +3,19 @@
 // found in the LICENSE file.
 
 /**
- * 'settings-appearance-font-menu' is a control for displaying font options
- * in the appearance settings.
+ * 'settings-dropdown-menu' is a control for displaying options
+ * in the settings.
  *
  * Example:
  *
- *   <settings-appearance-font-menu pref="{{prefs.foo}}">
- *   </settings-appearance-font-menu>
+ *   <settings-dropdown-menu pref="{{prefs.foo}}">
+ *   </settings-dropdown-menu>
  *
  * @group Chrome Settings Elements
- * @element settings-appearance-font-menu
+ * @element settings-dropdown-menu
  */
 Polymer({
-  is: 'settings-appearance-font-menu',
+  is: 'settings-dropdown-menu',
 
   properties: {
     /**
@@ -83,7 +83,7 @@ Polymer({
     },
 
     /**
-     * Whether to show the custom font size menu item.
+     * Whether to show the 'custom' item.
      * @private
      */
     showNotFoundValue_: {

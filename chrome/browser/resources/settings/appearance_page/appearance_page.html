@@ -74,10 +74,10 @@
         </div>
         <div class="settings-row">
           <div i18n-content="fontSize"></div>
-          <settings-appearance-font-menu id="defaultFontSize" disabled
+          <settings-dropdown-menu id="defaultFontSize" disabled
               pref="{{prefs.webkit.webprefs.default_font_size}}"
               menuOptions="[[fontSizeOptions_]]">
-          </settings-appearance-font-menu>
+          </settings-dropdown-menu>
         </div>
         <div class="settings-row">
           <div class="flex" i18n-content="customizeFonts"></div>
@@ -86,10 +86,10 @@
         </div>
         <div class="settings-row">
           <div i18n-content="pageZoom"></div>
-          <settings-appearance-font-menu id="pageZoom" disabled
+          <settings-dropdown-menu id="pageZoom" disabled
               pref="{{prefs.partition.default_zoom_level}}"
               menuOptions="[[pageZoomOptions_]]">
-          </settings-appearance-font-menu>
+          </settings-dropdown-menu>
         </div>
       </neon-animatable>
       <neon-animatable id="appearance-fonts">
