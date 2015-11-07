@@ -78,10 +78,13 @@ class IconLabelBubbleView : public views::View {
   gfx::Size GetSizeForLabelWidth(int width) const;
 
  private:
-  // Amount of padding at the edges of the bubble.  If |start| is true, this
+  // Amount of padding at the edges of the bubble.  If |leading| is true, this
   // is the padding at the beginning of the bubble (left in LTR), otherwise it's
   // the end padding.
-  int GetBubbleOuterPadding(bool start) const;
+  int GetBubbleOuterPadding(bool leading) const;
+
+  // As above, but for Material Design. TODO(estade): remove/replace the above.
+  int GetBubbleOuterPaddingMd(bool leading) const;
 
   // Sets a background color on |label_| based on |background_image_color| and
   // |parent_background_color_|.

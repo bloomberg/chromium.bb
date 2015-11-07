@@ -140,15 +140,22 @@ gfx::Size IconLabelBubbleView::GetSizeForLabelWidth(int width) const {
   return size;
 }
 
-int IconLabelBubbleView::GetBubbleOuterPadding(bool start) const {
-  // When the image is empty, leading and trailing padding are equal.
-  const int extra_padding =
-      image_->GetPreferredSize().IsEmpty() || !start
-          ? GetLayoutConstant(ICON_LABEL_VIEW_TRAILING_PADDING)
-          : 0;
+int IconLabelBubbleView::GetBubbleOuterPadding(bool leading) const {
+  if (ui::MaterialDesignController::IsModeMaterial())
+    return GetBubbleOuterPaddingMd(leading);
+
   return GetLayoutConstant(LOCATION_BAR_HORIZONTAL_PADDING) -
          GetLayoutConstant(LOCATION_BAR_BUBBLE_HORIZONTAL_PADDING) +
-         extra_padding;
+         (leading ? 0 : GetLayoutConstant(ICON_LABEL_VIEW_TRAILING_PADDING));
+}
+
+int IconLabelBubbleView::GetBubbleOuterPaddingMd(bool leading) const {
+  // When the image is empty, leading and trailing padding are equal.
+  if (image_->GetPreferredSize().IsEmpty() || !leading)
+    return GetLayoutConstant(ICON_LABEL_VIEW_TRAILING_PADDING);
+
+  // Leading padding is 2dp.
+  return 2;
 }
 
 void IconLabelBubbleView::SetLabelBackgroundColor(
