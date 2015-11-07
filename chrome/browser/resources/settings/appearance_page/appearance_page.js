@@ -30,15 +30,6 @@ Polymer({
     },
 
     /**
-     * Preferences state.
-     */
-    allowResetTheme_: {
-      notify: true,
-      type: Boolean,
-      value: false,
-    },
-
-    /**
      * @private
      */
     allowResetTheme_: {

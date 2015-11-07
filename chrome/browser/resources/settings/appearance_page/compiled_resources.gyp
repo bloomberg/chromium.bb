@@ -4,21 +4,6 @@
 {
   'targets': [
     {
-      'target_name': 'appearance_font_menu',
-      'variables': {
-        'depends': [
-          '../../../../../ui/webui/resources/js/compiled_resources.gyp:load_time_data',
-          '../../../../../ui/webui/resources/js/compiled_resources.gyp:cr',
-          '../../../../../ui/webui/resources/js/cr.js',
-          '../../../../../ui/webui/resources/js/i18n_behavior.js',
-        ],
-        'externs': [
-          '../../../../../third_party/closure_compiler/externs/settings_private.js'
-        ],
-      },
-      'includes': ['../../../../../third_party/closure_compiler/compile_js.gypi'],
-    },
-    {
       'target_name': 'appearance_fonts_page',
       'variables': {
         'depends': [
