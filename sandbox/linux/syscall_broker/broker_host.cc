@@ -4,6 +4,7 @@
 
 #include "sandbox/linux/syscall_broker/broker_host.h"
 
+#include <errno.h>
 #include <fcntl.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
