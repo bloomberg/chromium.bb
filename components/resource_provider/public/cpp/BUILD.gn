@@ -14,7 +14,7 @@ source_set("cpp") {
     "//mojo/application/public/cpp",
     "//mojo/application/public/interfaces",
     "//mojo/common",
-    "//mojo/platform_handle:for_shared_library",
+    "//mojo/platform_handle",
     "//third_party/mojo/src/mojo/public/cpp/bindings",
     "//third_party/mojo/src/mojo/public/cpp/system",
   ]

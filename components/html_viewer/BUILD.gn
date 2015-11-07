@@ -332,6 +332,7 @@ test("html_viewer_unittests") {
     "//gin",
     "//mojo/converters/input_events",
     "//mojo/gles2",
+    "//mojo/platform_handle:platform_handle_impl",
     "//testing/gtest:gtest",
     "//third_party/mojo/src/mojo/edk/system",
     "//ui/base",

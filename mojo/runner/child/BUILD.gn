@@ -25,7 +25,7 @@ source_set("lib") {
     "//mojo/application/public/interfaces",
     "//mojo/gles2",
     "//mojo/message_pump",
-    "//mojo/platform_handle:for_shared_library",
+    "//mojo/platform_handle:platform_handle_impl",
     "//third_party/mojo/src/mojo/edk/system",
   ]
 }

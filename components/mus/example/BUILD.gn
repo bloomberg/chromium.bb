@@ -34,5 +34,6 @@ test("mustash_unittests") {
     "//base/test:test_config",
     "//base/test:test_support",
     "//components/mus/example/wm:unittests",
+    "//mojo/platform_handle:platform_handle_impl",
   ]
 }
