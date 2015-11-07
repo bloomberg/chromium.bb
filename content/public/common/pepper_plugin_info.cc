@@ -17,6 +17,7 @@ PepperPluginInfo::EntryPoints::EntryPoints()
 PepperPluginInfo::PepperPluginInfo()
     : is_internal(false),
       is_out_of_process(false),
+      is_debug(false),
       permissions(0) {
 }
 

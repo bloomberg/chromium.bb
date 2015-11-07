@@ -8,7 +8,6 @@
 
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_vector.h"
 #include "base/strings/string_split.h"
 #include "content/public/common/content_switches.h"
 #include "extensions/common/constants.h"
@@ -91,39 +90,75 @@ TEST(ChromeContentClientTest, Basic) {
 
 #if defined(ENABLE_PLUGINS)
 TEST(ChromeContentClientTest, FindMostRecent) {
-  ScopedVector<content::PepperPluginInfo> vector1;
+  std::vector<content::PepperPluginInfo*> version_vector;
   // Test an empty vector.
-  EXPECT_EQ(ChromeContentClient::FindMostRecentPlugin(vector1.get()), nullptr);
+  EXPECT_EQ(nullptr, ChromeContentClient::FindMostRecentPlugin(version_vector));
 
   // Now test the vector with one element.
-  content::PepperPluginInfo* info1 = new content::PepperPluginInfo();
-  info1->version = "1.0.0.0";
-  vector1.push_back(info1);
-  EXPECT_EQ(ChromeContentClient::FindMostRecentPlugin(vector1.get()), info1);
+  content::PepperPluginInfo info1;
+  info1.version = "1.0.0.0";
+  version_vector.push_back(&info1);
+
+  content::PepperPluginInfo* most_recent =
+      ChromeContentClient::FindMostRecentPlugin(version_vector);
+  EXPECT_EQ("1.0.0.0", most_recent->version);
 
   // Now do the generic test of a complex vector.
-  content::PepperPluginInfo* info2 = new content::PepperPluginInfo();
-  info2->version = "2.0.0.1";
-  content::PepperPluginInfo* info3 = new content::PepperPluginInfo();
-  info3->version = "3.5.6.7";
-  content::PepperPluginInfo* info4 = new content::PepperPluginInfo();
-  info4->version = "4.0.0.153";
-  content::PepperPluginInfo* info5 = new content::PepperPluginInfo();
-  info5->version = "5.0.12.1";
-  content::PepperPluginInfo* info6_12 = new content::PepperPluginInfo();
-  info6_12->version = "6.0.0.12";
-  content::PepperPluginInfo* info6_13 = new content::PepperPluginInfo();
-  info6_13->version = "6.0.0.13";
+  content::PepperPluginInfo info2;
+  info2.version = "2.0.0.1";
+  content::PepperPluginInfo info3;
+  info3.version = "3.5.6.7";
+  content::PepperPluginInfo info4;
+  info4.version = "4.0.0.153";
+  content::PepperPluginInfo info5;
+  info5.version = "5.0.12.1";
+  content::PepperPluginInfo info6_12;
+  info6_12.version = "6.0.0.12";
+  content::PepperPluginInfo info6_13;
+  info6_13.version = "6.0.0.13";
+  content::PepperPluginInfo info6_13_d;
+  info6_13_d.version = "6.0.0.13";
+  info6_13_d.is_debug = true;
 
-  ScopedVector<content::PepperPluginInfo> vector2;
-  vector2.push_back(info4);
-  vector2.push_back(info2);
-  vector2.push_back(info6_13);
-  vector2.push_back(info3);
-  vector2.push_back(info5);
-  vector2.push_back(info6_12);
+  version_vector.clear();
+  version_vector.push_back(&info4);
+  version_vector.push_back(&info2);
+  version_vector.push_back(&info6_13);
+  version_vector.push_back(&info3);
+  version_vector.push_back(&info5);
+  version_vector.push_back(&info6_12);
+  version_vector.push_back(&info6_13_d);
 
-  EXPECT_EQ(ChromeContentClient::FindMostRecentPlugin(vector2.get()), info6_13);
+  most_recent = ChromeContentClient::FindMostRecentPlugin(version_vector);
+  EXPECT_EQ("6.0.0.13", most_recent->version);
+  EXPECT_EQ(true, most_recent->is_debug);
+
+  // Check vector order doesn't matter.
+  version_vector.clear();
+  version_vector.push_back(&info6_13_d);
+  version_vector.push_back(&info6_12);
+  version_vector.push_back(&info5);
+  version_vector.push_back(&info3);
+  version_vector.push_back(&info6_13);
+  version_vector.push_back(&info2);
+  version_vector.push_back(&info4);
+
+  most_recent = ChromeContentClient::FindMostRecentPlugin(version_vector);
+  EXPECT_EQ("6.0.0.13", most_recent->version);
+  EXPECT_EQ(true, most_recent->is_debug);
+
+  // Check higher versions still trump debugger.
+  content::PepperPluginInfo info5_d;
+  info5_d.version = "5.0.12.1";
+  info5_d.is_debug = true;
+
+  version_vector.clear();
+  version_vector.push_back(&info5_d);
+  version_vector.push_back(&info6_12);
+
+  most_recent = ChromeContentClient::FindMostRecentPlugin(version_vector);
+  EXPECT_EQ("6.0.0.12", most_recent->version);
+  EXPECT_EQ(false, most_recent->is_debug);
 }
 #endif  // defined(ENABLE_PLUGINS)
 

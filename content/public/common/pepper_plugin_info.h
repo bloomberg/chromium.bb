@@ -54,6 +54,10 @@ struct CONTENT_EXPORT PepperPluginInfo {
   std::string version;
   std::vector<WebPluginMimeType> mime_types;
 
+  // True when the plugin has been detected as the debug version.
+  // Defaults to false.
+  bool is_debug;
+
   // When is_internal is set, this contains the function pointers to the
   // entry points for the internal plugins.
   EntryPoints internal_entry_points;
