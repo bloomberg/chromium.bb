@@ -165,7 +165,8 @@ class Isolator(object):
         shutil.move(os.path.join(root, filename), paks_dir)
 
     # Move everything in PRODUCT_DIR to top level.
-    deps_product_dir = os.path.join(deps_out_dir, constants.GetBuildType())
+    deps_product_dir = os.path.join(
+        deps_out_dir, os.path.basename(constants.GetOutDirectory()))
     if os.path.isdir(deps_product_dir):
       for p in os.listdir(deps_product_dir):
         shutil.move(os.path.join(deps_product_dir, p), self._isolate_deps_dir)
