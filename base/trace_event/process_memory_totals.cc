@@ -17,6 +17,8 @@ ProcessMemoryTotals::ProcessMemoryTotals()
       is_peak_rss_resetable_(false) {
 }
 
+ProcessMemoryTotals::~ProcessMemoryTotals() {}
+
 void ProcessMemoryTotals::AsValueInto(TracedValue* value) const {
   value->SetString("resident_set_bytes",
                    StringPrintf("%" PRIx64, resident_set_bytes_));
@@ -25,10 +27,20 @@ void ProcessMemoryTotals::AsValueInto(TracedValue* value) const {
                      StringPrintf("%" PRIx64, peak_resident_set_bytes_));
     value->SetBoolean("is_peak_rss_resetable", is_peak_rss_resetable_);
   }
+
+  for (const auto it : extra_fields_) {
+    value->SetString(it.first, StringPrintf("%" PRIx64, it.second));
+  }
 }
 
 void ProcessMemoryTotals::Clear() {
   resident_set_bytes_ = 0;
+}
+
+void ProcessMemoryTotals::SetExtraFieldInBytes(const char* name,
+                                               uint64_t value) {
+  DCHECK_EQ(0u, extra_fields_.count(name));
+  extra_fields_[name] = value;
 }
 
 }  // namespace trace_event

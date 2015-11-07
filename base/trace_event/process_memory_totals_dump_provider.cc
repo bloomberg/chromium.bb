@@ -77,6 +77,13 @@ bool ProcessMemoryTotalsDumpProvider::OnMemoryDump(const MemoryDumpArgs& args,
     }
     close(clear_refs_fd);
   }
+#elif defined(OS_MACOSX)
+  size_t private_bytes;
+  bool res = process_metrics_->GetMemoryBytes(&private_bytes,
+                                              nullptr /* shared_bytes */);
+  if (res) {
+    pmd->process_totals()->SetExtraFieldInBytes("private_bytes", private_bytes);
+  }
 #endif  // defined(OS_LINUX) || defined(OS_ANDROID)
 #endif  // !defined(OS_IOS)
 
