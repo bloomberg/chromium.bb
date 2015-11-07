@@ -167,6 +167,8 @@ private:
     enum RevalidationPolicy { Use, Revalidate, Reload, Load };
     RevalidationPolicy determineRevalidationPolicy(Resource::Type, const FetchRequest&, Resource* existingResource, bool isStaticData) const;
 
+    void moveCachedNonBlockingResourceToBlocking(Resource*);
+
     void initializeResourceRequest(ResourceRequest&, Resource::Type);
 
     static bool resourceNeedsLoad(Resource*, const FetchRequest&, RevalidationPolicy);

@@ -37,6 +37,7 @@ FetchRequest::FetchRequest(const ResourceRequest& resourceRequest, const AtomicS
     , m_options(ResourceFetcher::defaultResourceOptions())
     , m_priority(priority)
     , m_forPreload(false)
+    , m_avoidBlockingOnLoad(false)
     , m_defer(NoDefer)
     , m_originRestriction(UseDefaultOriginRestrictionForType)
 {
@@ -48,6 +49,7 @@ FetchRequest::FetchRequest(const ResourceRequest& resourceRequest, const AtomicS
     , m_options(options)
     , m_priority(ResourceLoadPriorityUnresolved)
     , m_forPreload(false)
+    , m_avoidBlockingOnLoad(false)
     , m_defer(NoDefer)
     , m_originRestriction(UseDefaultOriginRestrictionForType)
 {
@@ -59,6 +61,7 @@ FetchRequest::FetchRequest(const ResourceRequest& resourceRequest, const FetchIn
     , m_options(ResourceFetcher::defaultResourceOptions())
     , m_priority(ResourceLoadPriorityUnresolved)
     , m_forPreload(false)
+    , m_avoidBlockingOnLoad(false)
     , m_defer(NoDefer)
     , m_originRestriction(UseDefaultOriginRestrictionForType)
 {

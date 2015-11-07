@@ -113,6 +113,9 @@ public:
 
     void setNeedsSynchronousCacheHit(bool needsSynchronousCacheHit) { m_needsSynchronousCacheHit = needsSynchronousCacheHit; }
 
+    void setAvoidBlockingOnLoad(bool doNotBlock) { m_avoidBlockingOnLoad = doNotBlock; }
+    bool avoidBlockingOnLoad() { return m_avoidBlockingOnLoad; }
+
     void setResourceError(const ResourceError& error) { m_error = error; }
     const ResourceError& resourceError() const { return m_error; }
 
@@ -171,14 +174,8 @@ public:
     ResourceLoader* loader() const { return m_loader.get(); }
 
     virtual bool isImage() const { return false; }
-    bool shouldBlockLoadEvent() const
-    {
-        return type() != LinkPrefetch
-            && type() != LinkSubresource
-            && type() != Media
-            && type() != Raw
-            && type() != TextTrack;
-    }
+    bool shouldBlockLoadEvent() const;
+    bool isNonBlockingResourceType() const;
 
     // Computes the status of an object after loading.
     // Updates the expire date on the cache entry file
@@ -410,6 +407,7 @@ private:
     unsigned m_wasPurged : 1;
 
     unsigned m_needsSynchronousCacheHit : 1;
+    unsigned m_avoidBlockingOnLoad : 1;
 
 #ifdef ENABLE_RESOURCE_IS_DELETED_CHECK
     bool m_deleted;

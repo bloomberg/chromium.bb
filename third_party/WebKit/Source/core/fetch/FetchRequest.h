@@ -86,6 +86,9 @@ public:
     bool forPreload() const { return m_forPreload; }
     void setForPreload(bool forPreload) { m_forPreload = forPreload; }
 
+    bool avoidBlockingOnLoad() { return m_avoidBlockingOnLoad; }
+    void setAvoidBlockingOnLoad(bool doNotBlock) { m_avoidBlockingOnLoad = doNotBlock; }
+
     void setContentSecurityCheck(ContentSecurityPolicyDisposition contentSecurityPolicyOption) { m_options.contentSecurityPolicyOption = contentSecurityPolicyOption; }
     void setCrossOriginAccessControl(SecurityOrigin*, StoredCredentials, CredentialRequest);
     void setCrossOriginAccessControl(SecurityOrigin*, StoredCredentials);
@@ -101,6 +104,7 @@ private:
     ResourceLoaderOptions m_options;
     ResourceLoadPriority m_priority;
     bool m_forPreload;
+    bool m_avoidBlockingOnLoad;
     DeferOption m_defer;
     OriginRestriction m_originRestriction;
     ResourceWidth m_resourceWidth;

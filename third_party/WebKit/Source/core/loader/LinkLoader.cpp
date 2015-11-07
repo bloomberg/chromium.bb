@@ -205,6 +205,8 @@ static void preloadIfNeeded(const LinkRelAttribute& relAttribute, const KURL& hr
         Settings* settings = document.settings();
         if (settings && settings->logPreload())
             document.addConsoleMessage(ConsoleMessage::create(OtherMessageSource, DebugMessageLevel, String("Preload triggered for " + href.host() + href.path())));
+        linkRequest.setForPreload(true);
+        linkRequest.setAvoidBlockingOnLoad(true);
         document.loader()->startPreload(type, linkRequest);
     }
 }

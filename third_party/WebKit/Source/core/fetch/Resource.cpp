@@ -163,6 +163,7 @@ Resource::Resource(const ResourceRequest& request, Type type)
     , m_status(Pending)
     , m_wasPurged(false)
     , m_needsSynchronousCacheHit(false)
+    , m_avoidBlockingOnLoad(false)
 #ifdef ENABLE_RESOURCE_IS_DELETED_CHECK
     , m_deleted(false)
 #endif
@@ -1020,6 +1021,20 @@ const char* Resource::resourceTypeToString(Type type, const FetchInitiatorInfo& 
     }
     ASSERT_NOT_REACHED();
     return initatorTypeNameToString(initiatorInfo.name);
+}
+
+bool Resource::shouldBlockLoadEvent() const
+{
+    return !m_avoidBlockingOnLoad && isNonBlockingResourceType();
+}
+
+bool Resource::isNonBlockingResourceType() const
+{
+    return type() != LinkPrefetch
+        && type() != LinkSubresource
+        && type() != Media
+        && type() != Raw
+        && type() != TextTrack;
 }
 
 #if !LOG_DISABLED
