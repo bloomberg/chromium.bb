@@ -122,10 +122,6 @@ const char kDisableGpuCompositing[]         = "disable-gpu-compositing";
 // Disable proactive early init of GPU process.
 const char kDisableGpuEarlyInit[]           = "disable-gpu-early-init";
 
-// Do not force that all compositor resources be backed by GPU memory buffers.
-const char kDisableGpuMemoryBufferCompositorResources[] =
-    "disable-gpu-memory-buffer-compositor-resources";
-
 // Disable GpuMemoryBuffer backed VideoFrames.
 const char kDisableGpuMemoryBufferVideoFrames[] =
     "disable-gpu-memory-buffer-video-frames";

@@ -219,24 +219,8 @@ bool IsPartialRasterEnabled() {
 bool IsGpuMemoryBufferCompositorResourcesEnabled() {
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(
-      switches::kEnableGpuMemoryBufferCompositorResources)) {
-    return true;
-  }
-  if (command_line.HasSwitch(
-      switches::kDisableGpuMemoryBufferCompositorResources)) {
-    return false;
-  }
-#if defined(OS_MACOSX)
-  // GPU rasterization does not support GL_TEXTURE_RECTANGLE_ARB, which is
-  // required by GpuMemoryBuffers on Mac.
-  // http://crbug.com/551072
-  if (IsForceGpuRasterizationEnabled() || IsGpuRasterizationEnabled())
-    return false;
-  return true;
-#else
-  return false;
-#endif
+  return command_line.HasSwitch(
+      switches::kEnableGpuMemoryBufferCompositorResources);
 }
 
 bool IsGpuRasterizationEnabled() {
