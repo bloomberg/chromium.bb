@@ -4,6 +4,7 @@
 
 #include "base/process/process_iterator.h"
 
+#include <errno.h>
 #include <sys/types.h>
 #include <sys/sysctl.h>
 #include <unistd.h>

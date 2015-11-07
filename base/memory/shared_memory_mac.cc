@@ -4,6 +4,7 @@
 
 #include "base/memory/shared_memory.h"
 
+#include <errno.h>
 #include <fcntl.h>
 #include <mach/mach_vm.h>
 #include <sys/mman.h>

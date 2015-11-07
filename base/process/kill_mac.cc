@@ -4,6 +4,7 @@
 
 #include "base/process/kill.h"
 
+#include <errno.h>
 #include <signal.h>
 #include <sys/event.h>
 #include <sys/types.h>

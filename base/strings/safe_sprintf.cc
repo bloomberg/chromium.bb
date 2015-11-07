@@ -4,6 +4,9 @@
 
 #include "base/strings/safe_sprintf.h"
 
+#include <errno.h>
+#include <string.h>
+
 #include <limits>
 
 #if !defined(NDEBUG)
