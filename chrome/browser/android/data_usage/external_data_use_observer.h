@@ -9,11 +9,11 @@
 #include <stdint.h>
 
 #include <string>
-#include <unordered_map>
 #include <vector>
 
 #include "base/android/jni_array.h"
 #include "base/android/scoped_java_ref.h"
+#include "base/containers/hash_tables.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -52,6 +52,9 @@ namespace android {
 // TODO(tbansal): Create an inner class that manages the UI and IO threads.
 class ExternalDataUseObserver : public data_usage::DataUseAggregator::Observer {
  public:
+  // External data use observer field trial name.
+  static const char kExternalDataUseObserverFieldTrial[];
+
   ExternalDataUseObserver(
       data_usage::DataUseAggregator* data_use_aggregator,
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
@@ -93,6 +96,10 @@ class ExternalDataUseObserver : public data_usage::DataUseAggregator::Observer {
                            TimestampsMergedCorrectly);
   FRIEND_TEST_ALL_PREFIXES(ExternalDataUseObserverTest, HashFunction);
   FRIEND_TEST_ALL_PREFIXES(ExternalDataUseObserverTest, BufferSize);
+  FRIEND_TEST_ALL_PREFIXES(ExternalDataUseObserverTest,
+                           PeriodicFetchMatchingRules);
+  FRIEND_TEST_ALL_PREFIXES(ExternalDataUseObserverTest, BufferDataUseReports);
+  FRIEND_TEST_ALL_PREFIXES(ExternalDataUseObserverTest, Variations);
 
   // DataUseReportKey is a unique identifier for a data use report.
   struct DataUseReportKey {
@@ -100,11 +107,6 @@ class ExternalDataUseObserver : public data_usage::DataUseAggregator::Observer {
                      net::NetworkChangeNotifier::ConnectionType connection_type,
                      const std::string& mcc_mnc)
         : label(label), connection_type(connection_type), mcc_mnc(mcc_mnc) {}
-
-    DataUseReportKey(const DataUseReportKey& other)
-        : label(other.label),
-          connection_type(other.connection_type),
-          mcc_mnc(other.mcc_mnc) {}
 
     bool operator==(const DataUseReportKey& other) const {
       return (label == other.label &&
@@ -182,9 +184,8 @@ class ExternalDataUseObserver : public data_usage::DataUseAggregator::Observer {
     }
   };
 
-  typedef std::unordered_map<DataUseReportKey,
-                             DataUseReport,
-                             DataUseReportKeyHash> DataUseReports;
+  typedef base::hash_map<DataUseReportKey, DataUseReport, DataUseReportKeyHash>
+      DataUseReports;
 
   // Stores the matching rules.
   class MatchingRule {
@@ -311,6 +312,20 @@ class ExternalDataUseObserver : public data_usage::DataUseAggregator::Observer {
 
   // Time when the data use reports were last received from DataUseAggregator.
   base::Time previous_report_time_;
+
+  // Time when the matching rules were last fetched.
+  base::TimeTicks last_matching_rules_fetch_time_;
+
+  // Total number of bytes transmitted or received across all the buffered
+  // reports.
+  int64_t total_bytes_buffered_;
+
+  // Duration after which matching rules are periodically fetched.
+  const base::TimeDelta fetch_matching_rules_duration_;
+
+  // Minimum number of bytes that should be buffered before a data use report is
+  // submitted.
+  const int64_t data_use_report_min_bytes_;
 
   base::ThreadChecker thread_checker_;
 

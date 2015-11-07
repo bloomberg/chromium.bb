@@ -8,7 +8,10 @@
 
 #include "base/android/jni_string.h"
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/field_trial.h"
+#include "base/strings/string_number_conversions.h"
 #include "components/data_usage/core/data_use.h"
+#include "components/variations/variations_associated_data.h"
 #include "content/public/browser/browser_thread.h"
 #include "jni/ExternalDataUseObserver_jni.h"
 #include "third_party/re2/re2/re2.h"
@@ -17,9 +20,54 @@
 using base::android::ConvertUTF8ToJavaString;
 using base::android::ToJavaArrayOfStrings;
 
+namespace {
+
+// Default duration after which matching rules are periodically fetched. May be
+// overridden by the field trial.
+const int kDefaultFetchMatchingRulesDurationSeconds = 60 * 15;  // 15 minutes.
+
+// Default value of the minimum number of bytes that should be buffered before
+// a data use report is submitted. May be overridden by the field trial.
+const int64_t kDefaultDataUseReportMinBytes = 100 * 1024;  // 100 KB.
+
+// Populates various parameters from the values specified in the field trial.
+int32_t GetFetchMatchingRulesDurationSeconds() {
+  int32_t duration_seconds = -1;
+  std::string variation_value = variations::GetVariationParamValue(
+      chrome::android::ExternalDataUseObserver::
+          kExternalDataUseObserverFieldTrial,
+      "fetch_matching_rules_duration_seconds");
+  if (!variation_value.empty() &&
+      base::StringToInt(variation_value, &duration_seconds)) {
+    DCHECK_LE(0, duration_seconds);
+    return duration_seconds;
+  }
+  return kDefaultFetchMatchingRulesDurationSeconds;
+}
+
+// Populates various parameters from the values specified in the field trial.
+int64_t GetMinBytes() {
+  int64_t min_bytes = -1;
+  std::string variation_value = variations::GetVariationParamValue(
+      chrome::android::ExternalDataUseObserver::
+          kExternalDataUseObserverFieldTrial,
+      "data_use_report_min_bytes");
+  if (!variation_value.empty() &&
+      base::StringToInt64(variation_value, &min_bytes)) {
+    DCHECK_LE(0, min_bytes);
+    return min_bytes;
+  }
+  return kDefaultDataUseReportMinBytes;
+}
+
+}  // namespace
+
 namespace chrome {
 
 namespace android {
+
+const char ExternalDataUseObserver::kExternalDataUseObserverFieldTrial[] =
+    "ExternalDataUseObserver";
 
 ExternalDataUseObserver::ExternalDataUseObserver(
     data_usage::DataUseAggregator* data_use_aggregator,
@@ -32,11 +80,17 @@ ExternalDataUseObserver::ExternalDataUseObserver(
       io_task_runner_(io_task_runner),
       ui_task_runner_(ui_task_runner),
       previous_report_time_(base::Time::Now()),
+      last_matching_rules_fetch_time_(base::TimeTicks::Now()),
+      total_bytes_buffered_(0),
+      fetch_matching_rules_duration_(
+          base::TimeDelta::FromSeconds(GetFetchMatchingRulesDurationSeconds())),
+      data_use_report_min_bytes_(GetMinBytes()),
       io_weak_factory_(this),
       ui_weak_factory_(this) {
   DCHECK(data_use_aggregator_);
   DCHECK(io_task_runner_);
   DCHECK(ui_task_runner_);
+
   ui_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&ExternalDataUseObserver::CreateJavaObjectOnUIThread,
@@ -154,6 +208,17 @@ void ExternalDataUseObserver::OnDataUse(
     const std::vector<const data_usage::DataUse*>& data_use_sequence) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
+  // If the time when the matching rules were last fetched is more than
+  // |fetch_matching_rules_duration_|, fetch them again.
+  if (base::TimeTicks::Now() - last_matching_rules_fetch_time_ >=
+      fetch_matching_rules_duration_) {
+    last_matching_rules_fetch_time_ = base::TimeTicks::Now();
+    ui_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&ExternalDataUseObserver::FetchMatchingRulesOnUIThread,
+                   GetUIWeakPtr()));
+  }
+
   if (matching_rules_fetch_pending_) {
     // TODO(tbansal): Buffer reports.
   }
@@ -199,8 +264,7 @@ void ExternalDataUseObserver::BufferDataUseReport(
     // Limit the buffer size.
     if (buffered_data_reports_.size() == kMaxBufferSize) {
       // TODO(tbansal): Add UMA to track impact of lost reports.
-      // Remove the first entry.
-      buffered_data_reports_.erase(buffered_data_reports_.begin());
+      return;
     }
     buffered_data_reports_.insert(std::make_pair(data_use_report_key, report));
   } else {
@@ -214,9 +278,9 @@ void ExternalDataUseObserver::BufferDataUseReport(
     buffered_data_reports_.insert(
         std::make_pair(data_use_report_key, merged_report));
   }
+  total_bytes_buffered_ += (data_use->rx_bytes + data_use->tx_bytes);
 
-    DCHECK_LE(buffered_data_reports_.size(),
-              static_cast<size_t>(kMaxBufferSize));
+  DCHECK_LE(buffered_data_reports_.size(), static_cast<size_t>(kMaxBufferSize));
 }
 
 void ExternalDataUseObserver::SubmitBufferedDataUseReport() {
@@ -225,7 +289,8 @@ void ExternalDataUseObserver::SubmitBufferedDataUseReport() {
   if (submit_data_report_pending_ || buffered_data_reports_.empty())
     return;
 
-  // TODO(tbansal): Keep buffering until enough data has been received.
+  if (total_bytes_buffered_ < data_use_report_min_bytes_)
+    return;
 
   // Send one data use report.
   DataUseReports::iterator it = buffered_data_reports_.begin();
@@ -234,6 +299,7 @@ void ExternalDataUseObserver::SubmitBufferedDataUseReport() {
 
   // Remove the entry from the map.
   buffered_data_reports_.erase(it);
+  total_bytes_buffered_ -= (report.bytes_downloaded + report.bytes_uploaded);
 
   submit_data_report_pending_ = true;
 

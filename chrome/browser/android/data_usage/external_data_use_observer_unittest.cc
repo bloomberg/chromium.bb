@@ -9,11 +9,13 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
+#include "base/metrics/field_trial.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/thread_task_runner_handle.h"
 #include "components/data_usage/core/data_use.h"
 #include "components/data_usage/core/data_use_aggregator.h"
+#include "components/variations/variations_associated_data.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/network_change_notifier.h"
@@ -35,6 +37,12 @@ class ExternalDataUseObserverTest : public testing::Test {
         content::BrowserThread::UI);
     data_use_aggregator_.reset(new data_usage::DataUseAggregator());
     external_data_use_observer_.reset(new ExternalDataUseObserver(
+        data_use_aggregator_.get(), io_task_runner_.get(),
+        ui_task_runner_.get()));
+  }
+
+  scoped_ptr<ExternalDataUseObserver> Create() const {
+    return scoped_ptr<ExternalDataUseObserver>(new ExternalDataUseObserver(
         data_use_aggregator_.get(), io_task_runner_.get(),
         ui_task_runner_.get()));
   }
@@ -247,11 +255,13 @@ TEST_F(ExternalDataUseObserverTest, AtMostOneDataUseSubmitRequest) {
   std::vector<const data_usage::DataUse*> data_use_sequence;
   data_usage::DataUse data_use_foo(
       GURL("http://www.google.com/#q=abc"), base::TimeTicks::Now(), GURL(), 0,
-      net::NetworkChangeNotifier::CONNECTION_UNKNOWN, "mccmnc_foo", 1, 2);
+      net::NetworkChangeNotifier::CONNECTION_UNKNOWN, "mccmnc_foo",
+      external_data_use_observer()->data_use_report_min_bytes_, 1);
   data_use_sequence.push_back(&data_use_foo);
   data_usage::DataUse data_use_bar(
       GURL("http://www.google.com/#q=abc"), base::TimeTicks::Now(), GURL(), 0,
-      net::NetworkChangeNotifier::CONNECTION_UNKNOWN, "mccmnc_bar", 1, 2);
+      net::NetworkChangeNotifier::CONNECTION_UNKNOWN, "mccmnc_bar",
+      external_data_use_observer()->data_use_report_min_bytes_, 1);
   data_use_sequence.push_back(&data_use_bar);
   external_data_use_observer()->OnDataUse(data_use_sequence);
 
@@ -272,6 +282,8 @@ TEST_F(ExternalDataUseObserverTest, BufferSize) {
       std::vector<std::string>(url_regexes.size(), label));
 
   const size_t max_buffer_size = ExternalDataUseObserver::kMaxBufferSize;
+  const int bytes_downloaded = 1000;
+  const int bytes_uploaded = 100;
 
   ScopedVector<data_usage::DataUse> data_use_vector;
   // Push more entries than the buffer size. Buffer size should not be exceeded.
@@ -279,7 +291,7 @@ TEST_F(ExternalDataUseObserverTest, BufferSize) {
     scoped_ptr<data_usage::DataUse> data_use(new data_usage::DataUse(
         GURL("http://www.google.com/#q=abc"), base::TimeTicks::Now(), GURL(), 0,
         net::NetworkChangeNotifier::CONNECTION_UNKNOWN,
-        "mccmnc" + base::Int64ToString(i), 0, 0));
+        "mccmnc" + base::Int64ToString(i), bytes_downloaded, bytes_uploaded));
     data_use_vector.push_back(data_use.Pass());
   }
 
@@ -287,7 +299,13 @@ TEST_F(ExternalDataUseObserverTest, BufferSize) {
       data_use_vector.begin(), data_use_vector.end());
 
   external_data_use_observer()->OnDataUse(const_sequence);
-  // One report will be consumed.
+  EXPECT_LE(0, external_data_use_observer()->total_bytes_buffered_);
+
+  // One report will be consumed. Verify that total buffered bytes is computed
+  // correctly.
+  EXPECT_EQ(static_cast<int64_t>((max_buffer_size - 1) *
+                                 (bytes_downloaded + bytes_uploaded)),
+            external_data_use_observer()->total_bytes_buffered_);
   EXPECT_EQ(max_buffer_size - 1,
             external_data_use_observer()->buffered_data_reports_.size());
 
@@ -314,17 +332,20 @@ TEST_F(ExternalDataUseObserverTest, ReportsMergedCorrectly) {
   for (size_t i = 0; i < num_iterations; ++i) {
     scoped_ptr<data_usage::DataUse> data_use_foo(new data_usage::DataUse(
         GURL("http://www.google.com/#q=abc"), base::TimeTicks::Now(), GURL(), 0,
-        net::NetworkChangeNotifier::CONNECTION_UNKNOWN, "mccmnc_foo", 1, 2));
+        net::NetworkChangeNotifier::CONNECTION_UNKNOWN, "mccmnc_foo",
+        external_data_use_observer()->data_use_report_min_bytes_, 1));
     data_use_vector.push_back(data_use_foo.Pass());
 
     scoped_ptr<data_usage::DataUse> data_use_bar(new data_usage::DataUse(
         GURL("http://www.google.com/#q=abc"), base::TimeTicks::Now(), GURL(), 0,
-        net::NetworkChangeNotifier::CONNECTION_UNKNOWN, "mccmnc_bar", 1, 2));
+        net::NetworkChangeNotifier::CONNECTION_UNKNOWN, "mccmnc_bar",
+        external_data_use_observer()->data_use_report_min_bytes_, 1));
     data_use_vector.push_back(data_use_bar.Pass());
 
     scoped_ptr<data_usage::DataUse> data_use_baz(new data_usage::DataUse(
         GURL("http://www.google.com/#q=abc"), base::TimeTicks::Now(), GURL(), 0,
-        net::NetworkChangeNotifier::CONNECTION_UNKNOWN, "mccmnc_baz", 1, 2));
+        net::NetworkChangeNotifier::CONNECTION_UNKNOWN, "mccmnc_baz",
+        external_data_use_observer()->data_use_report_min_bytes_, 1));
     data_use_vector.push_back(data_use_baz.Pass());
   }
 
@@ -334,11 +355,13 @@ TEST_F(ExternalDataUseObserverTest, ReportsMergedCorrectly) {
   external_data_use_observer()->OnDataUse(const_sequence);
 
   EXPECT_EQ(2U, external_data_use_observer()->buffered_data_reports_.size());
-  EXPECT_EQ(static_cast<int64_t>(num_iterations * 2),
+  EXPECT_EQ(static_cast<int64_t>(num_iterations * 1),
             external_data_use_observer()
                 ->buffered_data_reports_.begin()
                 ->second.bytes_downloaded);
-  EXPECT_EQ(static_cast<int64_t>(num_iterations * 1),
+  EXPECT_EQ(static_cast<int64_t>(
+                num_iterations *
+                external_data_use_observer()->data_use_report_min_bytes_),
             external_data_use_observer()
                 ->buffered_data_reports_.begin()
                 ->second.bytes_uploaded);
@@ -347,11 +370,13 @@ TEST_F(ExternalDataUseObserverTest, ReportsMergedCorrectly) {
   external_data_use_observer()->buffered_data_reports_.erase(
       external_data_use_observer()->buffered_data_reports_.begin());
   EXPECT_EQ(1U, external_data_use_observer()->buffered_data_reports_.size());
-  EXPECT_EQ(static_cast<int64_t>(num_iterations * 2),
+  EXPECT_EQ(static_cast<int64_t>(num_iterations * 1),
             external_data_use_observer()
                 ->buffered_data_reports_.begin()
                 ->second.bytes_downloaded);
-  EXPECT_EQ(static_cast<int64_t>(num_iterations * 1),
+  EXPECT_EQ(static_cast<int64_t>(
+                num_iterations *
+                external_data_use_observer()->data_use_report_min_bytes_),
             external_data_use_observer()
                 ->buffered_data_reports_.begin()
                 ->second.bytes_uploaded);
@@ -426,10 +451,12 @@ TEST_F(ExternalDataUseObserverTest, MultipleMatchingRules) {
   std::vector<const data_usage::DataUse*> data_use_sequence;
   data_usage::DataUse data_foo_1(
       GURL("http://www.foo.com/#q=abc"), base::TimeTicks::Now(), GURL(), 0,
-      net::NetworkChangeNotifier::CONNECTION_UNKNOWN, "mccmnc_1", 0, 0);
+      net::NetworkChangeNotifier::CONNECTION_UNKNOWN, "mccmnc_1",
+      external_data_use_observer()->data_use_report_min_bytes_, 0);
   data_usage::DataUse data_foo_2(
       GURL("http://www.foo.com/#q=abc"), base::TimeTicks::Now(), GURL(), 0,
-      net::NetworkChangeNotifier::CONNECTION_UNKNOWN, "mccmnc_2", 0, 0);
+      net::NetworkChangeNotifier::CONNECTION_UNKNOWN, "mccmnc_2",
+      external_data_use_observer()->data_use_report_min_bytes_, 0);
   data_use_sequence.push_back(&data_foo_1);
   data_use_sequence.push_back(&data_foo_2);
   external_data_use_observer()->OnDataUse(data_use_sequence);
@@ -482,6 +509,133 @@ TEST_F(ExternalDataUseObserverTest, HashFunction) {
   EXPECT_NE(hash(foo), hash(bar_label));
   EXPECT_NE(hash(foo), hash(bar_network_type));
   EXPECT_NE(hash(foo), hash(bar_mcc_mnc));
+}
+
+// Tests if matching rules are fetched periodically.
+TEST_F(ExternalDataUseObserverTest, PeriodicFetchMatchingRules) {
+  const std::string label("label");
+
+  std::vector<std::string> url_regexes;
+  url_regexes.push_back(
+      "http://www[.]google[.]com/#q=.*|https://www[.]google[.]com/#q=.*");
+
+  external_data_use_observer()->FetchMatchingRulesCallbackOnIOThread(
+      std::vector<std::string>(url_regexes.size(), std::string()), url_regexes,
+      std::vector<std::string>(url_regexes.size(), label));
+
+  EXPECT_FALSE(external_data_use_observer()->matching_rules_fetch_pending_);
+  EXPECT_FALSE(
+      external_data_use_observer()->last_matching_rules_fetch_time_.is_null());
+
+  std::vector<const data_usage::DataUse*> data_use_sequence;
+  data_usage::DataUse data_use_foo(
+      GURL("http://www.google.com/#q=abc"), base::TimeTicks::Now(), GURL(), 0,
+      net::NetworkChangeNotifier::CONNECTION_UNKNOWN, "mccmnc_foo",
+      external_data_use_observer()->data_use_report_min_bytes_, 1);
+  data_use_sequence.push_back(&data_use_foo);
+
+  // Change the time when the fetching rules were fetched.
+  external_data_use_observer()->last_matching_rules_fetch_time_ =
+      base::TimeTicks::Now() -
+      external_data_use_observer()->fetch_matching_rules_duration_;
+  // Matching rules should be expired.
+  EXPECT_GE(base::TimeTicks::Now() -
+                external_data_use_observer()->last_matching_rules_fetch_time_,
+            external_data_use_observer()->fetch_matching_rules_duration_);
+  // OnDataUse should trigger fetching of matching rules.
+  external_data_use_observer()->OnDataUse(data_use_sequence);
+
+  // Matching rules should not be expired.
+  EXPECT_LT(base::TimeTicks::Now() -
+                external_data_use_observer()->last_matching_rules_fetch_time_,
+            external_data_use_observer()->fetch_matching_rules_duration_);
+}
+
+// Tests if data use reports are sent only after the total bytes send/received
+// across all buffered reports have reached the specified threshold.
+TEST_F(ExternalDataUseObserverTest, BufferDataUseReports) {
+  const std::string label("label");
+
+  std::vector<std::string> url_regexes;
+  url_regexes.push_back(
+      "http://www[.]google[.]com/#q=.*|https://www[.]google[.]com/#q=.*");
+
+  external_data_use_observer()->FetchMatchingRulesCallbackOnIOThread(
+      std::vector<std::string>(url_regexes.size(), std::string()), url_regexes,
+      std::vector<std::string>(url_regexes.size(), label));
+
+  // This tests reports 1024 bytes in each loop iteration. For the test to work
+  // properly, |data_use_report_min_bytes_| should be a multiple of 1024.
+  ASSERT_EQ(0, external_data_use_observer()->data_use_report_min_bytes_ % 1024);
+
+  const size_t num_iterations =
+      external_data_use_observer()->data_use_report_min_bytes_ / 1024;
+
+  for (size_t i = 0; i < num_iterations; ++i) {
+    ScopedVector<data_usage::DataUse> data_use_vector;
+
+    scoped_ptr<data_usage::DataUse> data_use_foo(new data_usage::DataUse(
+        GURL("http://www.google.com/#q=abc"), base::TimeTicks::Now(), GURL(), 0,
+        net::NetworkChangeNotifier::CONNECTION_UNKNOWN, "mccmnc_foo", 1024, 0));
+    data_use_vector.push_back(data_use_foo.Pass());
+
+    std::vector<const data_usage::DataUse*> const_sequence(
+        data_use_vector.begin(), data_use_vector.end());
+
+    external_data_use_observer()->OnDataUse(const_sequence);
+    if (i != num_iterations - 1) {
+      // Total buffered bytes is less than the minimum threshold. Data use
+      // report should not be send.
+      EXPECT_FALSE(external_data_use_observer()->submit_data_report_pending_);
+      EXPECT_EQ(static_cast<int64_t>(i + 1),
+                external_data_use_observer()->total_bytes_buffered_ / 1024);
+
+    } else {
+      // Total bytes is at least the minimum threshold. This should trigger
+      // submitting of the buffered data use report.
+      EXPECT_TRUE(external_data_use_observer()->submit_data_report_pending_);
+      EXPECT_EQ(0, external_data_use_observer()->total_bytes_buffered_);
+    }
+  }
+  EXPECT_EQ(0, external_data_use_observer()->total_bytes_buffered_);
+}
+
+// Tests if the parameters from the field trial are populated correctly.
+TEST_F(ExternalDataUseObserverTest, Variations) {
+  EXPECT_EQ(base::TimeDelta::FromSeconds(60 * 15),
+            external_data_use_observer()->fetch_matching_rules_duration_);
+  EXPECT_EQ(100 * 1024,
+            external_data_use_observer()->data_use_report_min_bytes_);
+
+  variations::testing::ClearAllVariationParams();
+  std::map<std::string, std::string> variation_params;
+
+  const int fetch_matching_rules_duration_seconds = 10000;
+  const int64_t data_use_report_min_bytes = 5000;
+  variation_params["fetch_matching_rules_duration_seconds"] =
+      base::Int64ToString(fetch_matching_rules_duration_seconds);
+  variation_params["data_use_report_min_bytes"] =
+      base::Int64ToString(data_use_report_min_bytes);
+
+  ASSERT_TRUE(variations::AssociateVariationParams(
+      ExternalDataUseObserver::kExternalDataUseObserverFieldTrial, "Enabled",
+      variation_params));
+
+  base::FieldTrialList field_trial_list(nullptr);
+
+  base::FieldTrialList::CreateFieldTrial(
+      ExternalDataUseObserver::kExternalDataUseObserverFieldTrial, "Enabled");
+
+  // Create another ExternalDataUseObserver object. This would fetch variation
+  // params.
+  scoped_ptr<ExternalDataUseObserver>
+      external_data_use_obsever_with_variations = Create();
+  EXPECT_EQ(base::TimeDelta::FromSeconds(fetch_matching_rules_duration_seconds),
+            external_data_use_obsever_with_variations
+                ->fetch_matching_rules_duration_);
+  EXPECT_EQ(
+      data_use_report_min_bytes,
+      external_data_use_obsever_with_variations->data_use_report_min_bytes_);
 }
 
 }  // namespace android
