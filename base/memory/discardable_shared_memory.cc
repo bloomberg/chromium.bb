@@ -21,6 +21,10 @@
 #include "third_party/ashmem/ashmem.h"
 #endif
 
+#if defined(OS_WIN)
+#include "base/win/windows_version.h"
+#endif
+
 namespace base {
 namespace {
 
@@ -214,11 +218,20 @@ DiscardableSharedMemory::LockResult DiscardableSharedMemory::Lock(
   DCHECK_EQ(locked_pages_.size(), locked_page_count_);
 #endif
 
+// Pin pages if supported.
 #if defined(OS_ANDROID)
   SharedMemoryHandle handle = shared_memory_.handle();
   if (SharedMemory::IsHandleValid(handle)) {
     if (ashmem_pin_region(
             handle.fd, AlignToPageSize(sizeof(SharedState)) + offset, length)) {
+      return PURGED;
+    }
+  }
+#elif defined(OS_WIN)
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8) {
+    if (!VirtualAlloc(reinterpret_cast<char*>(shared_memory_.memory()) +
+                          AlignToPageSize(sizeof(SharedState)) + offset,
+                      length, MEM_RESET_UNDO, PAGE_READWRITE)) {
       return PURGED;
     }
   }
@@ -240,12 +253,25 @@ void DiscardableSharedMemory::Unlock(size_t offset, size_t length) {
 
   DCHECK(shared_memory_.memory());
 
+// Unpin pages if supported.
 #if defined(OS_ANDROID)
   SharedMemoryHandle handle = shared_memory_.handle();
   if (SharedMemory::IsHandleValid(handle)) {
     if (ashmem_unpin_region(
             handle.fd, AlignToPageSize(sizeof(SharedState)) + offset, length)) {
       DPLOG(ERROR) << "ashmem_unpin_region() failed";
+    }
+  }
+#elif defined(OS_WIN)
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8) {
+    // Note: MEM_RESET is not technically gated on Win8.  However, this Unlock
+    // function needs to match the Lock behaviour (MEM_RESET_UNDO) to properly
+    // implement memory pinning.  It needs to bias towards preserving the
+    // contents of memory between an Unlock and next Lock.
+    if (!VirtualAlloc(reinterpret_cast<char*>(shared_memory_.memory()) +
+                          AlignToPageSize(sizeof(SharedState)) + offset,
+                      length, MEM_RESET, PAGE_READWRITE)) {
+      DPLOG(ERROR) << "VirtualAlloc() MEM_RESET failed in Unlock()";
     }
   }
 #endif
@@ -323,6 +349,12 @@ bool DiscardableSharedMemory::Purge(Time current_time) {
     return false;
   }
 
+// The next section will release as much resource as can be done
+// from the purging process, until the client process notices the
+// purge and releases its own references.
+// Note: this memory will not be accessed again.  The segment will be
+// freed asynchronously at a later time, so just do the best
+// immediately.
 #if defined(OS_POSIX) && !defined(OS_NACL)
 // Linux and Android provide MADV_REMOVE which is preferred as it has a
 // behavior that can be verified in tests. Other POSIX flavors (MacOSX, BSDs),
@@ -339,6 +371,14 @@ bool DiscardableSharedMemory::Purge(Time current_time) {
                   AlignToPageSize(sizeof(SharedState)),
               AlignToPageSize(mapped_size_), MADV_PURGE_ARGUMENT)) {
     DPLOG(ERROR) << "madvise() failed";
+  }
+#elif defined(OS_WIN)
+  // MEM_DECOMMIT the purged pages to release the physical storage,
+  // either in memory or in the paging file on disk.  Pages remain RESERVED.
+  if (!VirtualFree(reinterpret_cast<char*>(shared_memory_.memory()) +
+                       AlignToPageSize(sizeof(SharedState)),
+                   AlignToPageSize(mapped_size_), MEM_DECOMMIT)) {
+    DPLOG(ERROR) << "VirtualFree() MEM_DECOMMIT failed in Purge()";
   }
 #endif
 
