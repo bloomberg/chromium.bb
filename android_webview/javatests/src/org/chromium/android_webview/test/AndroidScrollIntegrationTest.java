@@ -16,6 +16,7 @@ import org.chromium.android_webview.test.util.JavascriptEventObserver;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.parameter.ParameterizedTest;
 import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content_public.browser.GestureStateListener;
 import org.chromium.net.test.util.TestWebServer;
@@ -32,6 +33,8 @@ import java.util.concurrent.atomic.AtomicReference;
  * Integration tests for synchronous scrolling.
  */
 @SuppressFBWarnings("DLS_DEAD_LOCAL_STORE")
+// Run in single-process mode only. Blocked by rendering support crbug.com/526842.
+@ParameterizedTest.Set
 public class AndroidScrollIntegrationTest extends AwTestBase {
     private TestWebServer mWebServer;
 

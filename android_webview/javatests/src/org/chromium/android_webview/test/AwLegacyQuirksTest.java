@@ -11,6 +11,7 @@ import org.chromium.android_webview.AwContentsClient;
 import org.chromium.android_webview.AwSettings;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.parameter.ParameterizedTest;
 import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.ui.gfx.DeviceDisplayInfo;
 
@@ -242,6 +243,8 @@ public class AwLegacyQuirksTest extends AwTestBase {
 
     @MediumTest
     @Feature({"AndroidWebView"})
+    // Run in single-process mode only. Blocked by rendering support crbug.com/526842.
+    @ParameterizedTest.Set
     public void testInitialScaleClobberQuirk() throws Throwable {
         final TestAwContentsClient contentClient = new TestAwContentsClient();
         final AwTestContainerView testContainerView =
@@ -276,6 +279,8 @@ public class AwLegacyQuirksTest extends AwTestBase {
 
     @MediumTest
     @Feature({"AndroidWebView"})
+    // Run in single-process mode only. Blocked by rendering support crbug.com/526842.
+    @ParameterizedTest.Set
     public void testNoUserScalableQuirk() throws Throwable {
         final TestAwContentsClient contentClient = new TestAwContentsClient();
         final AwTestContainerView testContainerView =

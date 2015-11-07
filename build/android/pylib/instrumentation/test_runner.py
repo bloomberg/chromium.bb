@@ -4,6 +4,7 @@
 
 """Class for running instrumentation tests on a single device."""
 
+import collections
 import logging
 import os
 import re
@@ -123,7 +124,7 @@ class TestRunner(base_test_runner.BaseTestRunner):
       self.flags.Restore()
     super(TestRunner, self).TearDown()
 
-  def TestSetup(self, test):
+  def TestSetup(self, test, flag_modifiers):
     """Sets up the test harness for running a particular test.
 
     Args:
@@ -133,8 +134,8 @@ class TestRunner(base_test_runner.BaseTestRunner):
     self._SetupIndividualTestTimeoutScale(test)
     self.tool.SetupEnvironment()
 
-    if self.flags and self._IsFreTest(test):
-      self.flags.RemoveFlags(['--disable-fre'])
+    if self.flags:
+      self.flags.PushFlags(add=flag_modifiers.add, remove=flag_modifiers.remove)
 
     # Make sure the forwarder is still running.
     self._RestartHttpServerForwarderIfNecessary()
@@ -171,6 +172,23 @@ class TestRunner(base_test_runner.BaseTestRunner):
     """
     return _PERF_TEST_ANNOTATION in self.test_pkg.GetTestAnnotations(test)
 
+  def _GetTestCmdlineParameters(self, test):
+    """Determines whether the test is parameterized to be run with different
+       command-line flags.
+
+    Args:
+      test: The name of the test to be checked.
+
+    Returns:
+      The list of parameters.
+    """
+    annotations = self.test_pkg.GetTestAnnotations(test)
+    params = instrumentation_test_instance.ParseCommandLineFlagParameters(
+      annotations)
+    if not params:
+      params = [collections.namedtuple('Dummy', ['add', 'remove'])([], [])]
+    return params
+
   def SetupPerfMonitoringIfNeeded(self, test):
     """Sets up performance monitoring if the specified test requires it.
 
@@ -184,7 +202,7 @@ class TestRunner(base_test_runner.BaseTestRunner):
     self._logcat_monitor = self.device.GetLogcatMonitor()
     self._logcat_monitor.Start()
 
-  def TestTeardown(self, test, result):
+  def TestTeardown(self, test, results):
     """Cleans up the test harness after running a particular test.
 
     Depending on the options of this TestRunner this might handle performance
@@ -192,17 +210,17 @@ class TestRunner(base_test_runner.BaseTestRunner):
 
     Args:
       test: The name of the test that was just run.
-      result: result for this test.
+      results: results for this test.
     """
 
     self.tool.CleanUpEnvironment()
 
-    if self.flags and self._IsFreTest(test):
+    if self.flags:
       self.flags.Restore()
 
-    if not result:
+    if not results:
       return
-    if result.DidRunPass():
+    if results.DidRunPass():
       self.TearDownPerfMonitoring(test)
 
       if self.coverage_dir:
@@ -345,40 +363,57 @@ class TestRunner(base_test_runner.BaseTestRunner):
                self._GetIndividualTestTimeoutScale(test) *
                self.tool.GetTimeoutScale())
 
-    start_ms = 0
-    duration_ms = 0
-    try:
-      self.TestSetup(test)
-
+    cmdline_parameters = self._GetTestCmdlineParameters(test)
+    for flag_modifiers in cmdline_parameters:
+      start_ms = 0
+      duration_ms = 0
       try:
-        self.device.GoHome()
-      except device_errors.CommandTimeoutError:
-        logging.exception('Failed to focus the launcher.')
+        if self._IsFreTest(test):
+          flag_modifiers.remove.append('--disable-fre')
+        self.TestSetup(test, flag_modifiers)
 
-      time_ms = lambda: int(time.time() * 1000)
-      start_ms = time_ms()
-      raw_output = self._RunTest(test, timeout)
-      duration_ms = time_ms() - start_ms
+        try:
+          self.device.GoHome()
+        except device_errors.CommandTimeoutError:
+          logging.exception('Failed to focus the launcher.')
 
-      # Parse the test output
-      result_code, result_bundle, statuses = (
-          instrumentation_test_instance.ParseAmInstrumentRawOutput(raw_output))
-      result = self._GenerateTestResult(
-          test, result_code, result_bundle, statuses, start_ms, duration_ms)
-      if local_device_instrumentation_test_run.DidPackageCrashOnDevice(
-          self.test_pkg.GetPackageName(), self.device):
-        result.SetType(base_test_result.ResultType.CRASH)
-      results.AddResult(result)
-    except device_errors.CommandTimeoutError as e:
-      results.AddResult(test_result.InstrumentationTestResult(
+        time_ms = lambda: int(time.time() * 1000)
+        start_ms = time_ms()
+        raw_output = self._RunTest(test, timeout)
+        duration_ms = time_ms() - start_ms
+
+        # Parse the test output
+        result_code, result_bundle, statuses = (
+            instrumentation_test_instance.ParseAmInstrumentRawOutput(
+              raw_output))
+        result = self._GenerateTestResult(
+            test, result_code, result_bundle, statuses, start_ms, duration_ms)
+        if local_device_instrumentation_test_run.DidPackageCrashOnDevice(
+            self.test_pkg.GetPackageName(), self.device):
+          result.SetType(base_test_result.ResultType.CRASH)
+      except device_errors.CommandTimeoutError as e:
+        result = test_result.InstrumentationTestResult(
           test, base_test_result.ResultType.TIMEOUT, start_ms, duration_ms,
-          log=str(e) or 'No information'))
-      if self.package_info:
-        self.device.ForceStop(self.package_info.package)
-        self.device.ForceStop(self.package_info.test_package)
-    except device_errors.DeviceUnreachableError as e:
-      results.AddResult(test_result.InstrumentationTestResult(
-          test, base_test_result.ResultType.CRASH, start_ms, duration_ms,
-          log=str(e) or 'No information'))
-    self.TestTeardown(test, results)
+          log=str(e) or 'No information')
+        if self.package_info:
+          self.device.ForceStop(self.package_info.package)
+          self.device.ForceStop(self.package_info.test_package)
+      except device_errors.DeviceUnreachableError as e:
+        result = test_result.InstrumentationTestResult(
+            test, base_test_result.ResultType.CRASH, start_ms, duration_ms,
+            log=str(e) or 'No information')
+      if len(cmdline_parameters) > 1:
+        # Specify commandline flag modifications used in the test run
+        result_name = result.GetName()
+        if flag_modifiers.add:
+          result_name = '%s with {%s}' % (
+            result_name, ' '.join(flag_modifiers.add))
+        if flag_modifiers.remove:
+          result_name = '%s without {%s}' % (
+            result_name, ' '.join(flag_modifiers.remove))
+        result.SetName(result_name)
+      results.AddResult(result)
+
+      self.TestTeardown(test, results)
+
     return (results, None if results.DidRunPass() else test)

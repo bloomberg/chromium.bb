@@ -14,6 +14,7 @@ import junit.framework.TestCase;
 import junit.framework.TestResult;
 
 import org.chromium.base.Log;
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.parameter.BaseParameter;
 import org.chromium.base.test.util.parameter.Parameter;
 import org.chromium.base.test.util.parameter.Parameterizable;
@@ -155,6 +156,19 @@ public class BaseTestResult extends TestResult {
         List<ParameterError> errors = new ArrayList<>();
         List<ParameterError> failures = new ArrayList<>();
         Map<String, BaseParameter> availableParameters = testCase.getAvailableParameters();
+
+        // Remove all @ParameterizedTests that contain CommandLineFlags.Parameter -- those
+        // are handled in test_runner.py as it is needed to re-launch the whole test activity
+        // to apply command-line args correctly. Note that this way we will also ignore any
+        // other parameters that may present in these @ParameterizedTests.
+        for (Iterator<ParameterizedTest> iter = parameterizedTests.iterator(); iter.hasNext();) {
+            ParameterizedTest paramTest = iter.next();
+            for (Parameter p: paramTest.parameters()) {
+                if (CommandLineFlags.Parameter.PARAMETER_TAG.equals(p.tag())) {
+                    iter.remove();
+                }
+            }
+        }
 
         if (parameterizedTests.isEmpty()) {
             super.run(test);

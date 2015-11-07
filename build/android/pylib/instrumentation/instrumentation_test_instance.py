@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import collections
+import copy
 import logging
 import os
 import pickle
@@ -25,6 +27,7 @@ import unittest_util # pylint: disable=import-error
 _ACTIVITY_RESULT_CANCELED = 0
 _ACTIVITY_RESULT_OK = -1
 
+_COMMAND_LINE_PARAMETER = 'cmdlinearg-parameter'
 _DEFAULT_ANNOTATIONS = [
     'Smoke', 'SmallTest', 'MediumTest', 'LargeTest',
     'EnormousTest', 'IntegrationTest']
@@ -41,6 +44,8 @@ _EXTRA_DRIVER_TARGET_PACKAGE = (
     'org.chromium.test.driver.OnDeviceInstrumentationDriver.TargetPackage')
 _EXTRA_DRIVER_TARGET_CLASS = (
     'org.chromium.test.driver.OnDeviceInstrumentationDriver.TargetClass')
+_PARAMETERIZED_TEST_ANNOTATION = 'ParameterizedTest'
+_PARAMETERIZED_TEST_SET_ANNOTATION = 'ParameterizedTest$Set'
 _NATIVE_CRASH_RE = re.compile('native crash', re.IGNORECASE)
 _PICKLE_FORMAT_VERSION = 10
 
@@ -132,6 +137,56 @@ def GenerateTestResults(
     results.append(current_result)
 
   return results
+
+
+def ParseCommandLineFlagParameters(annotations):
+  """Determines whether the test is parameterized to be run with different
+     command-line flags.
+
+  Args:
+    annotations: The annotations of the test.
+
+  Returns:
+    If the test is parameterized, returns a list of named tuples
+    with lists of flags, e.g.:
+
+      [(add=['--flag-to-add']), (remove=['--flag-to-remove']), ()]
+
+    That means, the test must be run three times, the first time with
+    "--flag-to-add" added to command-line, the second time with
+    "--flag-to-remove" to be removed from command-line, and the third time
+    with default command-line args. If the same flag is listed both for adding
+    and for removing, it is left unchanged.
+
+    If the test is not parametrized, returns None.
+
+  """
+  ParamsTuple = collections.namedtuple('ParamsTuple', ['add', 'remove'])
+  parameterized_tests = []
+  if _PARAMETERIZED_TEST_ANNOTATION in annotations:
+    parameterized_tests = [annotations[_PARAMETERIZED_TEST_ANNOTATION]]
+  elif _PARAMETERIZED_TEST_SET_ANNOTATION in annotations:
+    if annotations[_PARAMETERIZED_TEST_SET_ANNOTATION]:
+      parameterized_tests = annotations[
+        _PARAMETERIZED_TEST_SET_ANNOTATION].get('tests', [])
+  else:
+    return None
+
+  result = []
+  for pt in parameterized_tests:
+    if not pt:
+      continue
+    for p in pt['parameters']:
+      if p['tag'] == _COMMAND_LINE_PARAMETER:
+        to_add = []
+        to_remove = []
+        for a in p.get('arguments', []):
+          if a['name'] == 'add':
+            to_add = ['--%s' % f for f in a['stringArray']]
+          elif a['name'] == 'remove':
+            to_remove = ['--%s' % f for f in a['stringArray']]
+        result.append(ParamsTuple(to_add, to_remove))
+  return result if result else None
 
 
 class InstrumentationTestInstance(test_instance.TestInstance):
@@ -392,7 +447,8 @@ class InstrumentationTestInstance(test_instance.TestInstance):
       logging.info('Getting tests from JAR via proguard. (%s)', str(e))
       tests = self._GetTestsFromProguard(self.test_jar)
       self._SaveTestsToPickle(pickle_path, self.test_jar, tests)
-    return self._InflateTests(self._FilterTests(tests))
+    return self._ParametrizeTestsWithFlags(
+        self._InflateTests(self._FilterTests(tests)))
 
   class ProguardPickleException(Exception):
     pass
@@ -516,6 +572,18 @@ class InstrumentationTestInstance(test_instance.TestInstance):
             'annotations': a,
         })
     return inflated_tests
+
+  def _ParametrizeTestsWithFlags(self, tests):
+    new_tests = []
+    for t in tests:
+      parameters = ParseCommandLineFlagParameters(t['annotations'])
+      if parameters:
+        t['flags'] = parameters[0]
+        for p in parameters[1:]:
+          parameterized_t = copy.copy(t)
+          parameterized_t['flags'] = p
+          new_tests.append(parameterized_t)
+    return tests + new_tests
 
   @staticmethod
   def GetHttpServerEnvironmentVars():

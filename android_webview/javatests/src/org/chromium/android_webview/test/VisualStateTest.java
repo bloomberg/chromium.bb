@@ -21,6 +21,7 @@ import org.chromium.android_webview.test.util.GraphicsTestUtils;
 import org.chromium.android_webview.test.util.JavascriptEventObserver;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.parameter.ParameterizedTest;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
@@ -39,6 +40,8 @@ import java.util.concurrent.atomic.AtomicReference;
 /**
  * Visual state related tests.
  */
+// Run in single-process mode only. Blocked by rendering support crbug.com/526842.
+@ParameterizedTest.Set
 public class VisualStateTest extends AwTestBase {
     private static final String WAIT_FOR_JS_TEST_URL =
             "file:///android_asset/visual_state_waits_for_js_test.html";

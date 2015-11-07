@@ -17,12 +17,16 @@ import org.chromium.android_webview.AwBrowserProcess;
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwContentsClient;
 import org.chromium.android_webview.AwSettings;
+import org.chromium.android_webview.AwSwitches;
 import org.chromium.android_webview.test.util.GraphicsTestUtils;
 import org.chromium.android_webview.test.util.JSUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.BaseActivityInstrumentationTestCase;
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.InMemorySharedPreferences;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
+import org.chromium.base.test.util.parameter.Parameter;
+import org.chromium.base.test.util.parameter.ParameterizedTest;
 import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -40,8 +44,26 @@ import java.util.concurrent.TimeUnit;
 /**
  * A base class for android_webview tests. WebView only runs on KitKat and later,
  * so make sure no one attempts to run the tests on earlier OS releases.
+ *
+ * By default, all tests run both in single-process mode, and with sandboxed renderer.
+ * If a test doesn't yet work with sandboxed renderer, an entire class, or an individual test
+ * method can be marked for single-process testing only by adding the following annotation:
+ *
+ * @ParameterizedTest.Set
  */
 @MinAndroidSdkLevel(Build.VERSION_CODES.KITKAT)
+@ParameterizedTest.Set(tests = {
+            @ParameterizedTest(parameters = {
+                        @Parameter(
+                                tag = CommandLineFlags.Parameter.PARAMETER_TAG)}),
+            @ParameterizedTest(parameters = {
+                        @Parameter(
+                                tag = CommandLineFlags.Parameter.PARAMETER_TAG,
+                                arguments = {
+                                    @Parameter.Argument(
+                                        name = CommandLineFlags.Parameter.ADD_ARG,
+                                        stringArray = {AwSwitches.WEBVIEW_SANDBOXED_RENDERER})
+            })})})
 public class AwTestBase
         extends BaseActivityInstrumentationTestCase<AwTestRunnerActivity> {
     public static final long WAIT_TIMEOUT_MS = scaleTimeout(15000);

@@ -9,12 +9,15 @@ import android.test.suitebuilder.annotation.SmallTest;
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.parameter.ParameterizedTest;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 
 /**
  * Tests for the WebViewClient.onScaleChanged.
  */
+// Run in single-process mode only. Blocked by rendering support crbug.com/526842.
+@ParameterizedTest.Set
 public class AwContentsClientOnScaleChangedTest extends AwTestBase {
     private TestAwContentsClient mContentsClient;
     private AwContents mAwContents;

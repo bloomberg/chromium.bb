@@ -30,6 +30,7 @@ import org.chromium.android_webview.test.util.JSUtils;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.parameter.ParameterizedTest;
 import org.chromium.content.browser.BindingManager;
 import org.chromium.content.browser.ChildProcessConnection;
 import org.chromium.content.browser.ChildProcessLauncher;
@@ -79,6 +80,8 @@ public class AwContentsTest extends AwTestBase {
 
     @LargeTest
     @Feature({"AndroidWebView"})
+    // Run in single-process mode only. Blocked by rendering support crbug.com/526842.
+    @ParameterizedTest.Set
     public void testCreateLoadDestroyManyTimes() throws Throwable {
         for (int i = 0; i < 10; ++i) {
             AwTestContainerView testView = createAwTestContainerViewOnMainSync(mContentsClient);
@@ -588,11 +591,15 @@ public class AwContentsTest extends AwTestBase {
         public void releaseAllModerateBindings() {}
     }
 
+    /**
+     * Verifies that a child process is actually gets created with WEBVIEW_SANDBOXED_RENDERER flag.
+     */
     @Feature({"AndroidWebView"})
     @SmallTest
     @CommandLineFlags.Add({
             AwSwitches.WEBVIEW_SANDBOXED_RENDERER,
             ContentSwitches.IPC_SYNC_COMPOSITING})
+    @ParameterizedTest.Set
     public void testSandboxedRendererWorks() throws Throwable {
         MockBindingManager bindingManager = new MockBindingManager();
         ChildProcessLauncher.setBindingManagerForTesting(bindingManager);

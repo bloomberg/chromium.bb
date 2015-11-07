@@ -8,6 +8,7 @@ import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.android_webview.test.util.VideoSurfaceViewUtils;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.parameter.ParameterizedTest;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.content_public.browser.WebContents;
@@ -17,6 +18,8 @@ import java.util.concurrent.Callable;
 /**
  * Tests pages with multiple videos.
  */
+// Run in single-process mode only. Blocked by inline video support crbug.com/545618.
+@ParameterizedTest.Set
 public class MultipleVideosTest extends AwTestBase {
     private static final String MULTIPLE_VIDEOS_TEST_URL =
             "file:///android_asset/multiple_videos_test.html";

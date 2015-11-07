@@ -56,9 +56,7 @@ class FlagChanger(object):
     Args:
       flags: A sequence of flags to add on, eg. ['--single-process'].
     """
-    new_flags = self._state_stack[-1].copy()
-    new_flags.update(flags)
-    self.ReplaceFlags(new_flags)
+    self.PushFlags(add=flags)
 
   def RemoveFlags(self, flags):
     """Removes flags from the command line, if they exist.
@@ -74,8 +72,25 @@ class FlagChanger(object):
              to remove a switch with a value, you must use the exact string
              used to add it in the first place.
     """
+    self.PushFlags(remove=flags)
+
+  def PushFlags(self, add=None, remove=None):
+    """Appends and removes flags to/from the command line if they aren't already
+       there. Saves the current flags state on the stack, so a call to Restore
+       will change the state back to the one preceeding the call to PushFlags.
+
+    Args:
+      add: A list of flags to add on, eg. ['--single-process'].
+      remove: A list of flags to remove, eg. ['--single-process'].  Note that we
+              expect a complete match when removing flags; if you want to remove
+              a switch with a value, you must use the exact string used to add
+              it in the first place.
+    """
     new_flags = self._state_stack[-1].copy()
-    new_flags.difference_update(flags)
+    if add:
+      new_flags.update(add)
+    if remove:
+      new_flags.difference_update(remove)
     self.ReplaceFlags(new_flags)
 
   def Restore(self):

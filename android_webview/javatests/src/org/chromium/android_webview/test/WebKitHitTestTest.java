@@ -16,6 +16,7 @@ import org.chromium.android_webview.test.util.AwTestTouchUtils;
 import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.parameter.ParameterizedTest;
 import org.chromium.net.test.util.TestWebServer;
 
 import java.util.concurrent.Callable;
@@ -23,6 +24,8 @@ import java.util.concurrent.Callable;
 /**
  * Test for getHitTestResult, requestFocusNodeHref, and requestImageRef methods
  */
+// Run in single-process mode only. Blocked by software draws support crbug.com/545611.
+@ParameterizedTest.Set
 public class WebKitHitTestTest extends AwTestBase {
     private TestAwContentsClient mContentsClient;
     private AwTestContainerView mTestView;
