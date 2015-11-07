@@ -380,6 +380,39 @@ void RenderFrameHostCreatedObserver::RenderFrameCreated(
   }
 }
 
+// This observer is used to wait for its owner FrameTreeNode to become focused.
+class FrameFocusedObserver : public FrameTreeNode::Observer {
+ public:
+  FrameFocusedObserver(FrameTreeNode* owner)
+      : owner_(owner), message_loop_runner_(new MessageLoopRunner) {
+    owner->AddObserver(this);
+  }
+
+  ~FrameFocusedObserver() override { owner_->RemoveObserver(this); }
+
+  void Wait() { message_loop_runner_->Run(); }
+
+ private:
+  // FrameTreeNode::Observer
+  void OnFrameTreeNodeFocused(FrameTreeNode* node) override {
+    if (node == owner_)
+      message_loop_runner_->Quit();
+  }
+
+  FrameTreeNode* owner_;
+  scoped_refptr<MessageLoopRunner> message_loop_runner_;
+
+  DISALLOW_COPY_AND_ASSIGN(FrameFocusedObserver);
+};
+
+// Helper function to focus a frame by sending it a mouse click and then
+// waiting for it to become focused.
+void FocusFrame(FrameTreeNode* frame) {
+  FrameFocusedObserver focus_observer(frame);
+  SimulateMouseClick(frame->current_frame_host()->GetRenderWidgetHost(), 1, 1);
+  focus_observer.Wait();
+}
+
 // A WebContentsDelegate that catches messages sent to the console.
 class ConsoleObserverDelegate : public WebContentsDelegate {
  public:
@@ -3763,37 +3796,12 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, DocumentActiveElement) {
   // The main frame should be focused to start with.
   EXPECT_EQ(root, root->frame_tree()->GetFocusedFrame());
 
-  DOMMessageQueue msg_queue;
-
-  // Register focus and blur events that will send messages when main frame's
-  // document body gets or loses focus.
-  std::string setup_focus_events =
-      "document.body.onfocus = function() { "
-      "  domAutomationController.setAutomationId(0);"
-      "  domAutomationController.send('got-focus');"
-      "};"
-      "document.body.onblur = function() { "
-      "  domAutomationController.setAutomationId(0);"
-      "  domAutomationController.send('lost-focus');"
-      "};";
-  EXPECT_TRUE(ExecuteScript(shell()->web_contents(), setup_focus_events));
-
-  // Click on the b.com frame.
-  SimulateMouseClick(child->current_frame_host()->GetRenderWidgetHost(), 1, 1);
-
-  // Wait for the main frame to lose focus and fire a blur event on its
-  // document body.
-  std::string status;
-  while (msg_queue.WaitForMessage(&status)) {
-    if (status == "\"lost-focus\"")
-      break;
-  }
-
-  // The b.com frame should now be focused.
+  // Focus the b.com frame.
+  FocusFrame(child);
   EXPECT_EQ(child, root->frame_tree()->GetFocusedFrame());
 
-  // Helper function to check a property of document.activeElement in the main
-  // frame.
+  // Helper function to check a property of document.activeElement in the
+  // specified frame.
   auto verify_active_element_property = [](RenderFrameHost* rfh,
                                            const std::string& property,
                                            const std::string& expected_value) {
@@ -3805,33 +3813,21 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, DocumentActiveElement) {
     EXPECT_EQ(expected_value, base::ToLowerASCII(result));
   };
 
-  // Verify that document.activeElement points to the <iframe> element for the
-  // b.com frame.
+  // Verify that document.activeElement on main frame points to the <iframe>
+  // element for the b.com frame.
   RenderFrameHost* root_rfh = root->current_frame_host();
   verify_active_element_property(root_rfh, "tagName", "iframe");
   verify_active_element_property(root_rfh, "src", child->current_url().spec());
 
-  // Click on the main frame and wait for it to be focused again.
-  SimulateMouseClick(
-      shell()->web_contents()->GetRenderViewHost()->GetWidget(), 1, 1);
-  while (msg_queue.WaitForMessage(&status)) {
-    if (status == "\"got-focus\"")
-      break;
-  }
+  // Focus the a.com main frame again.
+  FocusFrame(root);
   EXPECT_EQ(root, root->frame_tree()->GetFocusedFrame());
 
   // Main frame document's <body> should now be the active element.
   verify_active_element_property(root_rfh, "tagName", "body");
 
-  // Click on the grandchild frame to focus it.
-  SimulateMouseClick(
-      grandchild->current_frame_host()->GetRenderWidgetHost(), 1, 1);
-
-  // Wait for main frame to lose focus.
-  while (msg_queue.WaitForMessage(&status)) {
-    if (status == "\"lost-focus\"")
-      break;
-  }
+  // Now shift focus from main frame to c.com frame.
+  FocusFrame(grandchild);
 
   // Check document.activeElement in main frame.  It should still point to
   // <iframe> for the b.com frame, since Blink computes the focused iframe
@@ -3969,12 +3965,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   NavigateFrameToURL(root->child_at(0), frame_url);
   EXPECT_TRUE(WaitForRenderFrameReady(root->child_at(0)->current_frame_host()));
 
-  // Click on the subframe to focus it.
-  SimulateMouseClick(
-      root->child_at(0)->current_frame_host()->GetRenderWidgetHost(), 1, 1);
-
-  // Focus the input field in the subframe.  The return value "input-focus"
-  // will be sent once the input field's focus event fires.
+  // Focus the subframe and then its input field.  The return value
+  // "input-focus" will be sent once the input field's focus event fires.
+  FocusFrame(root->child_at(0));
   std::string result;
   EXPECT_TRUE(ExecuteScriptAndExtractString(
       root->child_at(0)->current_frame_host(), "focusInputField()", &result));

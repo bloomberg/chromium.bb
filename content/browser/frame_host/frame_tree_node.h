@@ -37,6 +37,9 @@ class CONTENT_EXPORT FrameTreeNode {
     // Invoked when a FrameTreeNode is being destroyed.
     virtual void OnFrameTreeNodeDestroyed(FrameTreeNode* node) {}
 
+    // Invoked when a FrameTreeNode becomes focused.
+    virtual void OnFrameTreeNodeFocused(FrameTreeNode* node) {}
+
     virtual ~Observer() {}
   };
 
@@ -216,9 +219,10 @@ class CONTENT_EXPORT FrameTreeNode {
 
   // Returns the time this frame was last focused.
   base::TimeTicks last_focus_time() const { return last_focus_time_; }
-  void set_last_focus_time(const base::TimeTicks& last_focus_time) {
-    last_focus_time_ = last_focus_time;
-  }
+
+  // Called when this node becomes focused.  Updates the node's last focused
+  // time and notifies observers.
+  void DidFocus();
 
  private:
   class OpenerDestroyedObserver;

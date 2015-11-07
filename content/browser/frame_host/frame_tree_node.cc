@@ -386,4 +386,9 @@ bool FrameTreeNode::StopLoading() {
   return true;
 }
 
+void FrameTreeNode::DidFocus() {
+  last_focus_time_ = base::TimeTicks::Now();
+  FOR_EACH_OBSERVER(Observer, observers_, OnFrameTreeNodeFocused(this));
+}
+
 }  // namespace content

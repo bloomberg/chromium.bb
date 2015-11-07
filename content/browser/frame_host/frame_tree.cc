@@ -287,8 +287,8 @@ void FrameTree::SetFocusedFrame(FrameTreeNode* node) {
     }
   }
 
-  node->set_last_focus_time(base::TimeTicks::Now());
   focused_frame_tree_node_id_ = node->frame_tree_node_id();
+  node->DidFocus();
 }
 
 void FrameTree::SetFrameRemoveListener(
