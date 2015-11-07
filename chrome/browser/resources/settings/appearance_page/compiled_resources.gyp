@@ -26,6 +26,15 @@
           '../../../../../ui/webui/resources/js/compiled_resources.gyp:cr',
           '../../../../../ui/webui/resources/js/cr.js',
           '../../../../../ui/webui/resources/js/i18n_behavior.js',
+          '../../../../../third_party/polymer/v1_0/components-chromium/iron-a11y-keys-behavior/iron-a11y-keys-behavior-extracted.js',
+          '../../../../../third_party/polymer/v1_0/components-chromium/iron-behaviors/iron-button-state-extracted.js',
+          '../../../../../third_party/polymer/v1_0/components-chromium/iron-behaviors/iron-control-state-extracted.js',
+          '../../../../../third_party/polymer/v1_0/components-chromium/iron-form-element-behavior/iron-form-element-behavior-extracted.js',
+          '../../../../../third_party/polymer/v1_0/components-chromium/iron-range-behavior/iron-range-behavior-extracted.js',
+          '../../../../../third_party/polymer/v1_0/components-chromium/paper-behaviors/paper-inky-focus-behavior-extracted.js',
+          '../../../../../third_party/polymer/v1_0/components-chromium/paper-behaviors/paper-ripple-behavior-extracted.js',
+          '../../../../../third_party/polymer/v1_0/components-chromium/paper-ripple/paper-ripple-extracted.js',
+          '../../../../../third_party/polymer/v1_0/components-chromium/paper-slider/paper-slider-extracted.js',
         ],
         'externs': [
           '../../../../../third_party/closure_compiler/externs/settings_private.js'
