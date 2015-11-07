@@ -23,8 +23,8 @@
 
 #define IPC_MESSAGE_START TestMsgStart
 
-IPC_MESSAGE_CONTROL0(TestMsg_Message);
-IPC_MESSAGE_ROUTED1(TestMsg_MessageFromWorker, int);
+IPC_MESSAGE_CONTROL0(TestMsg_Message)
+IPC_MESSAGE_ROUTED1(TestMsg_MessageFromWorker, int)
 
 // ---------------------------------------------------------------------------
 

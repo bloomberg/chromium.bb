@@ -49,21 +49,21 @@ IPC_MESSAGE_CONTROL4(MetroViewerHostMsg_KeyDown,
                      uint32,       /* virtual key */
                      uint32,       /* repeat count */
                      uint32,       /* scan code */
-                     uint32        /* key state */);
+                     uint32        /* key state */)
 // Informs the browser that a key was released.
 IPC_MESSAGE_CONTROL4(MetroViewerHostMsg_KeyUp,
                      uint32,       /* virtual key */
                      uint32,       /* repeat count */
                      uint32,       /* scan code */
-                     uint32        /* key state */);
+                     uint32        /* key state */)
 IPC_MESSAGE_CONTROL4(MetroViewerHostMsg_Character,
                      uint32,       /* virtual key */
                      uint32,       /* repeat count */
                      uint32,       /* scan code */
-                     uint32        /* key state */);
+                     uint32        /* key state */)
 // Informs the browser that the Metro window has been activated.
 IPC_MESSAGE_CONTROL1(MetroViewerHostMsg_WindowActivated,
-                     bool /* Whether the window should be repainted */);
+                     bool /* Whether the window should be repainted */)
 
 // Informs the browser that the user has completed an edge gesture.
 IPC_MESSAGE_CONTROL0(MetroViewerHostMsg_EdgeGesture)
@@ -109,19 +109,19 @@ IPC_MESSAGE_CONTROL2(MetroViewerHostMsg_SelectFolderDone,
 // Requests the viewer to activate desktop mode.
 IPC_MESSAGE_CONTROL2(MetroViewerHostMsg_ActivateDesktop,
                      base::FilePath /* shortcut */,
-                     bool           /* ash exit */);
+                     bool           /* ash exit */)
 
 // Request the viewer to close itself gracefully.
-IPC_MESSAGE_CONTROL0(MetroViewerHostMsg_MetroExit);
+IPC_MESSAGE_CONTROL0(MetroViewerHostMsg_MetroExit)
 
 // Requests the viewer to open a URL in desktop mode.
 IPC_MESSAGE_CONTROL2(MetroViewerHostMsg_OpenURLOnDesktop,
-                     base::FilePath,  /* shortcut */
-                     base::string16         /* url */);
+                     base::FilePath /* shortcut */,
+                     base::string16 /* url */)
 
 // Requests the viewer to change the pointer to a new cursor.
 IPC_MESSAGE_CONTROL1(MetroViewerHostMsg_SetCursor,
-                     int64         /* cursor */);
+                     int64         /* cursor */)
 
 // This structure contains the parameters sent to the viewer process to display
 // the file save dialog.

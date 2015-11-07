@@ -891,7 +891,7 @@ IPC_MESSAGE_CONTROL1(ViewMsg_UpdateScrollbarTheme,
 IPC_MESSAGE_CONTROL3(ViewMsg_SystemColorsChanged,
                      int /* AppleAquaColorVariant */,
                      std::string /* AppleHighlightedTextColor */,
-                     std::string /* AppleHighlightColor */);
+                     std::string /* AppleHighlightColor */)
 #endif
 
 #if defined(OS_ANDROID)
@@ -1399,7 +1399,7 @@ IPC_MESSAGE_ROUTED2(ViewHostMsg_PluginFocusChanged,
 IPC_MESSAGE_ROUTED0(ViewHostMsg_StartPluginIme)
 
 // Receives content of a web page as plain text.
-IPC_MESSAGE_ROUTED1(ViewMsg_GetRenderedTextCompleted, std::string);
+IPC_MESSAGE_ROUTED1(ViewMsg_GetRenderedTextCompleted, std::string)
 #endif
 
 // Adding a new message? Stick to the sort order above: first platform

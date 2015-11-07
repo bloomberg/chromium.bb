@@ -209,7 +209,7 @@ IPC_MESSAGE_ROUTED1(MediaPlayerHostMsg_DestroyMediaPlayer,
 // Initialize a media player object.
 IPC_MESSAGE_ROUTED1(
     MediaPlayerHostMsg_Initialize,
-    MediaPlayerHostMsg_Initialize_Params);
+    MediaPlayerHostMsg_Initialize_Params)
 
 // Pause the player.
 IPC_MESSAGE_ROUTED2(MediaPlayerHostMsg_Pause,
@@ -251,7 +251,7 @@ IPC_MESSAGE_ROUTED1(MediaPlayerHostMsg_RequestRemotePlaybackControl,
 // Requests the player with |player_id| to use the CDM with |cdm_id|.
 IPC_MESSAGE_ROUTED2(MediaPlayerHostMsg_SetCdm,
                     int /* player_id */,
-                    int /* cdm_id */);
+                    int /* cdm_id */)
 
 // Sent after the renderer demuxer has seeked.
 IPC_MESSAGE_CONTROL2(MediaPlayerHostMsg_DemuxerSeekDone,
