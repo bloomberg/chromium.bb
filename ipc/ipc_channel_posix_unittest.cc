@@ -6,8 +6,10 @@
 
 #include "ipc/ipc_channel_posix.h"
 
+#include <errno.h>
 #include <fcntl.h>
 #include <stdint.h>
+#include <string.h>
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <unistd.h>
