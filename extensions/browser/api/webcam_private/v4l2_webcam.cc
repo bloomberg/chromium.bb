@@ -4,6 +4,7 @@
 
 #include "extensions/browser/api/webcam_private/v4l2_webcam.h"
 
+#include <errno.h>
 #include <fcntl.h>
 #include <linux/uvcvideo.h>
 #include <linux/videodev2.h>
