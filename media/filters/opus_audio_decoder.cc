@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,6 +14,7 @@
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/timestamp_constants.h"
+#include "media/filters/opus_constants.h"
 #include "third_party/opus/src/include/opus.h"
 #include "third_party/opus/src/include/opus_multistream.h"
 
@@ -29,142 +30,21 @@ static uint16 ReadLE16(const uint8* data, size_t data_size, int read_offset) {
 // The Opus specification is part of IETF RFC 6716:
 // http://tools.ietf.org/html/rfc6716
 
-// Opus uses Vorbis channel mapping, and Vorbis channel mapping specifies
-// mappings for up to 8 channels. This information is part of the Vorbis I
-// Specification:
-// http://www.xiph.org/vorbis/doc/Vorbis_I_spec.html
-static const int kMaxVorbisChannels = 8;
-
 // Maximum packet size used in Xiph's opusdec and FFmpeg's libopusdec.
 static const int kMaxOpusOutputPacketSizeSamples = 960 * 6;
 
 static void RemapOpusChannelLayout(const uint8* opus_mapping,
                                    int num_channels,
                                    uint8* channel_layout) {
-  DCHECK_LE(num_channels, kMaxVorbisChannels);
-
-  // Opus uses Vorbis channel layout.
-  const int32 num_layouts = kMaxVorbisChannels;
-  const int32 num_layout_values = kMaxVorbisChannels;
-
-  // Vorbis channel ordering for streams with >= 2 channels:
-  // 2 Channels
-  //   L, R
-  // 3 Channels
-  //   L, Center, R
-  // 4 Channels
-  //   Front L, Front R, Back L, Back R
-  // 5 Channels
-  //   Front L, Center, Front R, Back L, Back R
-  // 6 Channels (5.1)
-  //   Front L, Center, Front R, Back L, Back R, LFE
-  // 7 channels (6.1)
-  //   Front L, Front Center, Front R, Side L, Side R, Back Center, LFE
-  // 8 Channels (7.1)
-  //   Front L, Center, Front R, Side L, Side R, Back L, Back R, LFE
-  //
-  // Channel ordering information is taken from section 4.3.9 of the Vorbis I
-  // Specification:
-  // http://xiph.org/vorbis/doc/Vorbis_I_spec.html#x1-800004.3.9
-
-  // These are the FFmpeg channel layouts expressed using the position of each
-  // channel in the output stream from libopus.
-  const uint8 kFFmpegChannelLayouts[num_layouts][num_layout_values] = {
-    { 0 },
-
-    // Stereo: No reorder.
-    { 0, 1 },
-
-    // 3 Channels, from Vorbis order to:
-    //  L, R, Center
-    { 0, 2, 1 },
-
-    // 4 Channels: No reorder.
-    { 0, 1, 2, 3 },
-
-    // 5 Channels, from Vorbis order to:
-    //  Front L, Front R, Center, Back L, Back R
-    { 0, 2, 1, 3, 4 },
-
-    // 6 Channels (5.1), from Vorbis order to:
-    //  Front L, Front R, Center, LFE, Back L, Back R
-    { 0, 2, 1, 5, 3, 4 },
-
-    // 7 Channels (6.1), from Vorbis order to:
-    //  Front L, Front R, Front Center, LFE, Side L, Side R, Back Center
-    { 0, 2, 1, 6, 3, 4, 5 },
-
-    // 8 Channels (7.1), from Vorbis order to:
-    //  Front L, Front R, Center, LFE, Back L, Back R, Side L, Side R
-    { 0, 2, 1, 7, 5, 6, 3, 4 },
-  };
+  DCHECK_LE(num_channels, OPUS_MAX_VORBIS_CHANNELS);
 
   // Reorder the channels to produce the same ordering as FFmpeg, which is
   // what the pipeline expects.
-  const uint8* vorbis_layout_offset = kFFmpegChannelLayouts[num_channels - 1];
+  const uint8* vorbis_layout_offset =
+      kFFmpegChannelDecodingLayouts[num_channels - 1];
   for (int channel = 0; channel < num_channels; ++channel)
     channel_layout[channel] = opus_mapping[vorbis_layout_offset[channel]];
 }
-
-// Opus Extra Data contents:
-// - "OpusHead" (64 bits)
-// - version number (8 bits)
-// - Channels C (8 bits)
-// - Pre-skip (16 bits)
-// - Sampling rate (32 bits)
-// - Gain in dB (16 bits, S7.8)
-// - Mapping (8 bits, 0=single stream (mono/stereo) 1=Vorbis mapping,
-//            2..254: reserved, 255: multistream with no mapping)
-//
-// - if (mapping != 0)
-//    - N = totel number of streams (8 bits)
-//    - M = number of paired streams (8 bits)
-//    - C times channel origin
-//         - if (C<2*M)
-//            - stream = byte/2
-//            - if (byte&0x1 == 0)
-//                - left
-//              else
-//                - right
-//         - else
-//            - stream = byte-M
-
-// Default audio output channel layout. Used to initialize |stream_map| in
-// OpusExtraData, and passed to opus_multistream_decoder_create() when the
-// extra data does not contain mapping information. The values are valid only
-// for mono and stereo output: Opus streams with more than 2 channels require a
-// stream map.
-static const int kMaxChannelsWithDefaultLayout = 2;
-static const uint8 kDefaultOpusChannelLayout[kMaxChannelsWithDefaultLayout] = {
-    0, 1 };
-
-// Size of the Opus extra data excluding optional mapping information.
-static const int kOpusExtraDataSize = 19;
-
-// Offset to the channel count byte in the Opus extra data.
-static const int kOpusExtraDataChannelsOffset = 9;
-
-// Offset to the pre-skip value in the Opus extra data.
-static const int kOpusExtraDataSkipSamplesOffset = 10;
-
-// Offset to the gain value in the Opus extra data.
-static const int kOpusExtraDataGainOffset = 16;
-
-// Offset to the channel mapping byte in the Opus extra data.
-static const int kOpusExtraDataChannelMappingOffset = 18;
-
-// Extra Data contains a stream map. The mapping values are in extra data beyond
-// the always present |kOpusExtraDataSize| bytes of data. The mapping data
-// contains stream count, coupling information, and per channel mapping values:
-//   - Byte 0: Number of streams.
-//   - Byte 1: Number coupled.
-//   - Byte 2: Starting at byte 2 are |extra_data->channels| uint8 mapping
-//             values.
-static const int kOpusExtraDataNumStreamsOffset = kOpusExtraDataSize;
-static const int kOpusExtraDataNumCoupledOffset =
-    kOpusExtraDataNumStreamsOffset + 1;
-static const int kOpusExtraDataStreamMapOffset =
-    kOpusExtraDataNumStreamsOffset + 2;
 
 struct OpusExtraData {
   OpusExtraData()
@@ -175,9 +55,8 @@ struct OpusExtraData {
         num_coupled(0),
         gain_db(0),
         stream_map() {
-    memcpy(stream_map,
-           kDefaultOpusChannelLayout,
-           kMaxChannelsWithDefaultLayout);
+    memcpy(stream_map, kDefaultOpusChannelLayout,
+           OPUS_MAX_CHANNELS_WITH_DEFAULT_LAYOUT);
   }
   int channels;
   uint16 skip_samples;
@@ -185,7 +64,7 @@ struct OpusExtraData {
   int num_streams;
   int num_coupled;
   int16 gain_db;
-  uint8 stream_map[kMaxVorbisChannels];
+  uint8 stream_map[OPUS_MAX_VORBIS_CHANNELS];
 };
 
 // Returns true when able to successfully parse and store Opus extra data in
@@ -194,28 +73,29 @@ struct OpusExtraData {
 static bool ParseOpusExtraData(const uint8* data, int data_size,
                                const AudioDecoderConfig& config,
                                OpusExtraData* extra_data) {
-  if (data_size < kOpusExtraDataSize) {
+  if (data_size < OPUS_EXTRADATA_SIZE) {
     DLOG(ERROR) << "Extra data size is too small:" << data_size;
     return false;
   }
 
-  extra_data->channels = *(data + kOpusExtraDataChannelsOffset);
+  extra_data->channels = *(data + OPUS_EXTRADATA_CHANNELS_OFFSET);
 
-  if (extra_data->channels <= 0 || extra_data->channels > kMaxVorbisChannels) {
+  if (extra_data->channels <= 0 ||
+      extra_data->channels > OPUS_MAX_VORBIS_CHANNELS) {
     DLOG(ERROR) << "invalid channel count in extra data: "
                 << extra_data->channels;
     return false;
   }
 
   extra_data->skip_samples =
-      ReadLE16(data, data_size, kOpusExtraDataSkipSamplesOffset);
-  extra_data->gain_db = static_cast<int16>(
-      ReadLE16(data, data_size, kOpusExtraDataGainOffset));
+      ReadLE16(data, data_size, OPUS_EXTRADATA_SKIP_SAMPLES_OFFSET);
+  extra_data->gain_db =
+      static_cast<int16>(ReadLE16(data, data_size, OPUS_EXTRADATA_GAIN_OFFSET));
 
-  extra_data->channel_mapping = *(data + kOpusExtraDataChannelMappingOffset);
+  extra_data->channel_mapping = *(data + OPUS_EXTRADATA_CHANNEL_MAPPING_OFFSET);
 
   if (!extra_data->channel_mapping) {
-    if (extra_data->channels > kMaxChannelsWithDefaultLayout) {
+    if (extra_data->channels > OPUS_MAX_CHANNELS_WITH_DEFAULT_LAYOUT) {
       DLOG(ERROR) << "Invalid extra data, missing stream map.";
       return false;
     }
@@ -226,20 +106,20 @@ static bool ParseOpusExtraData(const uint8* data, int data_size,
     return true;
   }
 
-  if (data_size < kOpusExtraDataStreamMapOffset + extra_data->channels) {
+  if (data_size < OPUS_EXTRADATA_STREAM_MAP_OFFSET + extra_data->channels) {
     DLOG(ERROR) << "Invalid stream map; insufficient data for current channel "
                 << "count: " << extra_data->channels;
     return false;
   }
 
-  extra_data->num_streams = *(data + kOpusExtraDataNumStreamsOffset);
-  extra_data->num_coupled = *(data + kOpusExtraDataNumCoupledOffset);
+  extra_data->num_streams = *(data + OPUS_EXTRADATA_NUM_STREAMS_OFFSET);
+  extra_data->num_coupled = *(data + OPUS_EXTRADATA_NUM_COUPLED_OFFSET);
 
   if (extra_data->num_streams + extra_data->num_coupled != extra_data->channels)
     DVLOG(1) << "Inconsistent channel mapping.";
 
   for (int i = 0; i < extra_data->channels; ++i)
-    extra_data->stream_map[i] = *(data + kOpusExtraDataStreamMapOffset + i);
+    extra_data->stream_map[i] = *(data + OPUS_EXTRADATA_STREAM_MAP_OFFSET + i);
   return true;
 }
 
@@ -343,7 +223,7 @@ bool OpusAudioDecoder::ConfigureDecoder() {
 
   const int channel_count =
       ChannelLayoutToChannelCount(config_.channel_layout());
-  if (!config_.IsValidConfig() || channel_count > kMaxVorbisChannels) {
+  if (!config_.IsValidConfig() || channel_count > OPUS_MAX_VORBIS_CHANNELS) {
     DLOG(ERROR) << "Invalid or unsupported audio stream -"
                 << " codec: " << config_.codec()
                 << " channel count: " << channel_count
@@ -383,12 +263,11 @@ bool OpusAudioDecoder::ConfigureDecoder() {
     return false;
   }
 
-  uint8 channel_mapping[kMaxVorbisChannels] = {0};
-  memcpy(&channel_mapping,
-         kDefaultOpusChannelLayout,
-         kMaxChannelsWithDefaultLayout);
+  uint8 channel_mapping[OPUS_MAX_VORBIS_CHANNELS] = {0};
+  memcpy(&channel_mapping, kDefaultOpusChannelLayout,
+         OPUS_MAX_CHANNELS_WITH_DEFAULT_LAYOUT);
 
-  if (channel_count > kMaxChannelsWithDefaultLayout) {
+  if (channel_count > OPUS_MAX_CHANNELS_WITH_DEFAULT_LAYOUT) {
     RemapOpusChannelLayout(opus_extra_data.stream_map,
                            channel_count,
                            channel_mapping);

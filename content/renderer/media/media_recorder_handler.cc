@@ -80,13 +80,14 @@ bool MediaRecorderHandler::start(int timeslice) {
   timeslice_ = TimeDelta::FromMilliseconds(timeslice);
   slice_origin_timestamp_ = TimeTicks::Now();
 
-  webm_muxer_.reset(
-      new media::WebmMuxer(use_vp9_ ? media::kCodecVP9 : media::kCodecVP8,
-                           base::Bind(&MediaRecorderHandler::WriteData,
-                                      weak_factory_.GetWeakPtr())));
-
   blink::WebVector<blink::WebMediaStreamTrack> video_tracks;
   media_stream_.videoTracks(video_tracks);
+
+  webm_muxer_.reset(new media::WebmMuxer(
+      use_vp9_ ? media::kCodecVP9 : media::kCodecVP8, video_tracks.size() > 0,
+      false /* no audio for now - http://crbug.com/528519 */,
+      base::Bind(&MediaRecorderHandler::WriteData,
+                 weak_factory_.GetWeakPtr())));
 
   if (video_tracks.isEmpty()) {
     // TODO(mcasas): Add audio_tracks and update the code in this function

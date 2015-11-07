@@ -557,6 +557,8 @@
         'filters/jpeg_parser.h',
         'filters/opus_audio_decoder.cc',
         'filters/opus_audio_decoder.h',
+        'filters/opus_constants.cc',
+        'filters/opus_constants.h',
         'filters/source_buffer_range.cc',
         'filters/source_buffer_range.h',
         'filters/source_buffer_stream.cc',

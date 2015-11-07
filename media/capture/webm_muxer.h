@@ -21,18 +21,19 @@ class Size;
 namespace media {
 
 class VideoFrame;
+class AudioParameters;
 
 // Adapter class to manage a WebM container [1], a simplified version of a
 // Matroska container [2], composed of an EBML header, and a single Segment
 // including at least a Track Section and a number of SimpleBlocks each
-// containing a single encoded video frame. WebM container has no Trailer.
-// Clients will push encoded VPx video frames one by one via OnEncodedVideo().
-// libwebm will eventually ping the WriteDataCB passed on contructor with the
-// wrapped encoded data.
-// WebmMuxer is designed for single thread use throughout.
+// containing a single encoded video or audio frame. WebM container has no
+// Trailer.
+// Clients will push encoded VPx video frames and Opus audio frames one by one
+// via OnEncoded{Video|Audio}(). libwebm will eventually ping the WriteDataCB
+// passed on contructor with the wrapped encoded data.
+// WebmMuxer is designed for use on a single thread.
 // [1] http://www.webmproject.org/docs/container/
 // [2] http://www.matroska.org/technical/specs/index.html
-// TODO(mcasas): Add support for Audio muxing.
 class MEDIA_EXPORT WebmMuxer : public NON_EXPORTED_BASE(mkvmuxer::IMkvWriter) {
  public:
   // Callback to be called when WebmMuxer is ready to write a chunk of data,
@@ -41,23 +42,32 @@ class MEDIA_EXPORT WebmMuxer : public NON_EXPORTED_BASE(mkvmuxer::IMkvWriter) {
 
   // |codec| can be VP8 or VP9 and should coincide with whatever is sent in
   // OnEncodedVideo().
-  WebmMuxer(VideoCodec codec, const WriteDataCB& write_data_callback);
+  WebmMuxer(VideoCodec codec,
+            bool has_video_,
+            bool has_audio_,
+            const WriteDataCB& write_data_callback);
   ~WebmMuxer() override;
 
-  // Adds a |video_frame| with |encoded_data.data()| to WebM Segment.
+  // Functions to add video and audio frames with |encoded_data.data()|
+  // to WebM Segment.
   void OnEncodedVideo(const scoped_refptr<VideoFrame>& video_frame,
                       scoped_ptr<std::string> encoded_data,
                       base::TimeTicks timestamp,
                       bool is_key_frame);
+  void OnEncodedAudio(const media::AudioParameters& params,
+                      scoped_ptr<std::string> encoded_data,
+                      base::TimeTicks timestamp);
 
  private:
   friend class WebmMuxerTest;
 
-  // Creates and adds a new video track. Called upon receiving the first
-  // frame of a given Track, adds |frame_size| and |frame_rate| to the Segment
+  // Methods for creating and adding video and audio tracks, called upon
+  // receiving the first frame of a given Track.
+  // AddVideoTrack adds |frame_size| and |frame_rate| to the Segment
   // info, although individual frames passed to OnEncodedVideo() can have any
   // frame size.
   void AddVideoTrack(const gfx::Size& frame_size, double frame_rate);
+  void AddAudioTrack(const media::AudioParameters& params);
 
   // IMkvWriter interface.
   mkvmuxer::int32 Write(const void* buf, mkvmuxer::uint32 len) override;
@@ -73,12 +83,19 @@ class MEDIA_EXPORT WebmMuxer : public NON_EXPORTED_BASE(mkvmuxer::IMkvWriter) {
   // Video Codec configured: VP9 if true, otherwise VP8 is used by default.
   const bool use_vp9_;
 
-  // A caller-side identifier to interact with |segment_|, initialised upon
-  // first frame arrival by AddVideoTrack().
-  uint64_t track_index_;
+  // Caller-side identifiers to interact with |segment_|, initialised upon
+  // first frame arrival to Add{Video, Audio}Track().
+  uint8_t video_track_index_;
+  uint8_t audio_track_index_;
 
   // Origin of times for frame timestamps.
   base::TimeTicks first_frame_timestamp_;
+  base::TimeDelta most_recent_timestamp_;
+
+  // TODO(ajose): Change these when support is added for multiple tracks.
+  // http://crbug.com/528523
+  const bool has_video_;
+  const bool has_audio_;
 
   // Callback to dump written data as being called by libwebm.
   const WriteDataCB write_data_callback_;
