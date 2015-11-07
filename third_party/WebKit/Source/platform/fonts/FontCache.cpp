@@ -43,8 +43,6 @@
 #include "platform/fonts/SimpleFontData.h"
 #include "platform/fonts/TextRenderingMode.h"
 #include "platform/fonts/opentype/OpenTypeVerticalData.h"
-#include "platform/fonts/shaping/ShapeCache.h"
-#include "public/platform/Platform.h"
 #include "wtf/HashMap.h"
 #include "wtf/ListHashSet.h"
 #include "wtf/StdLibExtras.h"
@@ -64,10 +62,8 @@ FontCache::FontCache()
 #endif // !OS(WIN)
 
 typedef HashMap<FontCacheKey, OwnPtr<FontPlatformData>, FontCacheKeyHash, FontCacheKeyTraits> FontPlatformDataCache;
-typedef HashMap<FallbackListCompositeKey, OwnPtr<ShapeCache>, FallbackListCompositeKeyHash, FallbackListCompositeKeyTraits> FallbackListShaperCache;
 
-static FontPlatformDataCache* gFontPlatformDataCache = nullptr;
-static FallbackListShaperCache* gFallbackListShaperCache = nullptr;
+static FontPlatformDataCache* gFontPlatformDataCache = 0;
 
 #if OS(WIN)
 bool FontCache::s_useDirectWrite = false;
@@ -115,24 +111,6 @@ FontPlatformData* FontCache::getFontPlatformData(const FontDescription& fontDesc
             gFontPlatformDataCache->set(key, adoptPtr(new FontPlatformData(*result))); // Cache the result under the old name.
     }
 
-    return result;
-}
-
-ShapeCache* FontCache::getShapeCache(const FallbackListCompositeKey& key)
-{
-    if (!gFallbackListShaperCache)
-        gFallbackListShaperCache = new FallbackListShaperCache;
-
-    FallbackListShaperCache::iterator it = gFallbackListShaperCache->find(key);
-    ShapeCache* result = nullptr;
-    if (it == gFallbackListShaperCache->end()) {
-        result = new ShapeCache();
-        gFallbackListShaperCache->set(key, adoptPtr(result));
-    } else {
-        result = it->value.get();
-    }
-
-    ASSERT(result);
     return result;
 }
 
@@ -237,25 +215,6 @@ static inline void purgeFontVerticalDataCache()
     }
 }
 
-static inline void purgeFallbackListShaperCache()
-{
-    unsigned items = 0;
-    if (gFallbackListShaperCache) {
-        FallbackListShaperCache::iterator iter;
-        for (iter = gFallbackListShaperCache->begin();
-            iter != gFallbackListShaperCache->end(); ++iter) {
-            items += iter->value->size();
-        }
-        gFallbackListShaperCache->clear();
-    }
-    Platform::current()->histogramCustomCounts("Blink.Fonts.ShapeCache", items, 1, 1000000, 50);
-}
-
-void FontCache::invalidateShapeCache()
-{
-    purgeFallbackListShaperCache();
-}
-
 void FontCache::purge(PurgeSeverity PurgeSeverity)
 {
     // We should never be forcing the purge while the FontCachePurgePreventer is in scope.
@@ -268,7 +227,6 @@ void FontCache::purge(PurgeSeverity PurgeSeverity)
 
     purgePlatformFontDataCache();
     purgeFontVerticalDataCache();
-    purgeFallbackListShaperCache();
 }
 
 static bool invalidateFontCache = false;

@@ -181,7 +181,7 @@ public:
     FontFeatureSettings* featureSettings() const { return m_featureSettings.get(); }
 
     float effectiveFontSize() const; // Returns either the computedSize or the computedPixelSize
-    FontCacheKey cacheKey(const FontFaceCreationParams&, FontTraits desiredTraits = FontTraits(0), bool loading = false, unsigned version = 0) const;
+    FontCacheKey cacheKey(const FontFaceCreationParams&, FontTraits desiredTraits = FontTraits(0)) const;
 
     void setFamily(const FontFamily& family) { m_familyList = family; }
     void setComputedSize(float s) { m_computedSize = clampTo<float>(s); }
@@ -217,10 +217,6 @@ public:
 
     static void setDefaultTypesettingFeatures(TypesettingFeatures);
     static TypesettingFeatures defaultTypesettingFeatures();
-
-    unsigned styleHashWithoutFamilyList() const;
-    unsigned bitmapFields() const { return m_fieldsAsUnsigned[0]; }
-    unsigned auxiliaryBitmapFields() const { return m_fieldsAsUnsigned[1]; }
 
 private:
     FontFamily m_familyList; // The list of font families to be used.
