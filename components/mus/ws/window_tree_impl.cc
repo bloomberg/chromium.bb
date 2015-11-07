@@ -9,6 +9,7 @@
 #include "components/mus/ws/connection_manager.h"
 #include "components/mus/ws/default_access_policy.h"
 #include "components/mus/ws/display_manager.h"
+#include "components/mus/ws/operation.h"
 #include "components/mus/ws/server_window.h"
 #include "components/mus/ws/window_manager_access_policy.h"
 #include "components/mus/ws/window_tree_host_impl.h"
@@ -133,7 +134,7 @@ bool WindowTreeImpl::AddWindow(const WindowId& parent_id,
   ServerWindow* child = GetWindow(child_id);
   if (parent && child && child->parent() != parent &&
       !child->Contains(parent) && access_policy_->CanAddWindow(parent, child)) {
-    ConnectionManager::ScopedChange change(this, connection_manager_, false);
+    Operation op(this, connection_manager_, OperationType::ADD_WINDOW);
     parent->Add(child);
     return true;
   }
@@ -156,7 +157,7 @@ bool WindowTreeImpl::SetWindowVisibility(const WindowId& window_id,
       !access_policy_->CanChangeWindowVisibility(window)) {
     return false;
   }
-  ConnectionManager::ScopedChange change(this, connection_manager_, false);
+  Operation op(this, connection_manager_, OperationType::SET_WINDOW_VISIBILITY);
   window->SetVisible(visible);
   return true;
 }
@@ -250,7 +251,9 @@ void WindowTreeImpl::ProcessWindowHierarchyChanged(
     std::vector<const ServerWindow*> unused;
     GetUnknownWindowsFrom(window, &unused);
   }
-  if (originated_change || connection_manager_->is_processing_delete_window() ||
+  if (originated_change || (connection_manager_->current_operation_type() ==
+                            OperationType::DELETE_WINDOW) ||
+      (connection_manager_->current_operation_type() == OperationType::EMBED) ||
       connection_manager_->DidConnectionMessageClient(id_)) {
     return;
   }
@@ -394,7 +397,7 @@ bool WindowTreeImpl::DeleteWindowImpl(WindowTreeImpl* source,
                                       ServerWindow* window) {
   DCHECK(window);
   DCHECK_EQ(window->id().connection_id, id_);
-  ConnectionManager::ScopedChange change(source, connection_manager_, true);
+  Operation op(source, connection_manager_, OperationType::DELETE_WINDOW);
   delete window;
   return true;
 }
@@ -512,7 +515,7 @@ void WindowTreeImpl::NotifyDrawnStateChanged(const ServerWindow* window,
 
 void WindowTreeImpl::DestroyWindows() {
   if (!window_map_.empty()) {
-    ConnectionManager::ScopedChange change(this, connection_manager_, true);
+    Operation op(this, connection_manager_, OperationType::DELETE_WINDOW);
     // If we get here from the destructor we're not going to get
     // ProcessWindowDeleted(). Copy the map and delete from the copy so that we
     // don't have to worry about whether |window_map_| changes or not.
@@ -536,7 +539,7 @@ void WindowTreeImpl::PrepareForEmbed(const WindowId& window_id) {
   WindowTreeImpl* existing_owner =
       connection_manager_->GetConnectionWithRoot(window_id);
 
-  ConnectionManager::ScopedChange change(this, connection_manager_, true);
+  Operation op(this, connection_manager_, OperationType::EMBED);
   RemoveChildrenAsPartOfEmbed(window_id);
   if (existing_owner) {
     // Never message the originating connection.
@@ -588,7 +591,8 @@ void WindowTreeImpl::RemoveWindowFromParent(
   if (window && window->parent() &&
       access_policy_->CanRemoveWindowFromParent(window)) {
     success = true;
-    ConnectionManager::ScopedChange change(this, connection_manager_, false);
+    Operation op(this, connection_manager_,
+                 OperationType::REMOVE_WINDOW_FROM_PARENT);
     window->parent()->Remove(window);
   }
   callback.Run(success);
@@ -604,7 +608,7 @@ void WindowTreeImpl::ReorderWindow(Id window_id,
       GetWindow(WindowIdFromTransportId(relative_window_id));
   if (CanReorderWindow(window, relative_window, direction)) {
     success = true;
-    ConnectionManager::ScopedChange change(this, connection_manager_, false);
+    Operation op(this, connection_manager_, OperationType::REORDER_WINDOW);
     window->parent()->Reorder(window, relative_window, direction);
     connection_manager_->ProcessWindowReorder(window, relative_window,
                                               direction);
@@ -633,7 +637,7 @@ void WindowTreeImpl::SetWindowBounds(Id window_id,
   // Only the owner of the window can change the bounds.
   bool success = window && access_policy_->CanSetWindowBounds(window);
   if (success) {
-    ConnectionManager::ScopedChange change(this, connection_manager_, false);
+    Operation op(this, connection_manager_, OperationType::SET_WINDOW_BOUNDS);
     window->SetBounds(bounds.To<gfx::Rect>());
   }
   callback.Run(success);
@@ -654,7 +658,7 @@ void WindowTreeImpl::SetWindowProperty(
   ServerWindow* window = GetWindow(WindowIdFromTransportId(window_id));
   const bool success = window && access_policy_->CanSetWindowProperties(window);
   if (success) {
-    ConnectionManager::ScopedChange change(this, connection_manager_, false);
+    Operation op(this, connection_manager_, OperationType::SET_WINDOW_PROPERTY);
 
     if (value.is_null()) {
       window->SetProperty(name, nullptr);
@@ -728,7 +732,7 @@ void WindowTreeImpl::SetFocus(uint32_t window_id) {
   // TODO(beng): consider shifting non-policy drawn check logic to VTH's
   //             FocusController.
   if (window && window->IsDrawn() && access_policy_->CanSetFocus(window)) {
-    ConnectionManager::ScopedChange change(this, connection_manager_, false);
+    Operation op(this, connection_manager_, OperationType::SET_FOCUS);
     WindowTreeHostImpl* host = GetHost();
     if (host)
       host->SetFocusedWindow(window);

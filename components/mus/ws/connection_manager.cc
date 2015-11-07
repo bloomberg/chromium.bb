@@ -8,6 +8,7 @@
 #include "base/stl_util.h"
 #include "components/mus/ws/client_connection.h"
 #include "components/mus/ws/connection_manager_delegate.h"
+#include "components/mus/ws/operation.h"
 #include "components/mus/ws/server_window.h"
 #include "components/mus/ws/window_coordinate_conversions.h"
 #include "components/mus/ws/window_tree_host_connection.h"
@@ -22,20 +23,6 @@ namespace mus {
 
 namespace ws {
 
-ConnectionManager::ScopedChange::ScopedChange(
-    WindowTreeImpl* connection,
-    ConnectionManager* connection_manager,
-    bool is_delete_window)
-    : connection_manager_(connection_manager),
-      connection_id_(connection->id()),
-      is_delete_window_(is_delete_window) {
-  connection_manager_->PrepareForChange(this);
-}
-
-ConnectionManager::ScopedChange::~ScopedChange() {
-  connection_manager_->FinishChange();
-}
-
 ConnectionManager::ConnectionManager(
     ConnectionManagerDelegate* delegate,
     const scoped_refptr<mus::SurfacesState>& surfaces_state)
@@ -43,7 +30,7 @@ ConnectionManager::ConnectionManager(
       surfaces_state_(surfaces_state),
       next_connection_id_(1),
       next_host_id_(0),
-      current_change_(nullptr),
+      current_operation_(nullptr),
       in_destructor_(false) {}
 
 ConnectionManager::~ConnectionManager() {
@@ -179,13 +166,13 @@ void ConnectionManager::SchedulePaint(const ServerWindow* window,
 }
 
 void ConnectionManager::OnConnectionMessagedClient(ConnectionSpecificId id) {
-  if (current_change_)
-    current_change_->MarkConnectionAsMessaged(id);
+  if (current_operation_)
+    current_operation_->MarkConnectionAsMessaged(id);
 }
 
 bool ConnectionManager::DidConnectionMessageClient(
     ConnectionSpecificId id) const {
-  return current_change_ && current_change_->DidMessageConnection(id);
+  return current_operation_ && current_operation_->DidMessageConnection(id);
 }
 
 mojom::ViewportMetricsPtr ConnectionManager::GetViewportMetricsForWindow(
@@ -249,7 +236,7 @@ void ConnectionManager::ProcessWindowBoundsChanged(
     const gfx::Rect& new_bounds) {
   for (auto& pair : connection_map_) {
     pair.second->service()->ProcessWindowBoundsChanged(
-        window, old_bounds, new_bounds, IsChangeSource(pair.first));
+        window, old_bounds, new_bounds, IsOperationSource(pair.first));
   }
 }
 
@@ -259,7 +246,8 @@ void ConnectionManager::ProcessClientAreaChanged(
     const gfx::Insets& new_client_area) {
   for (auto& pair : connection_map_) {
     pair.second->service()->ProcessClientAreaChanged(
-        window, old_client_area, new_client_area, IsChangeSource(pair.first));
+        window, old_client_area, new_client_area,
+        IsOperationSource(pair.first));
   }
 }
 
@@ -269,7 +257,7 @@ void ConnectionManager::ProcessWillChangeWindowHierarchy(
     const ServerWindow* old_parent) {
   for (auto& pair : connection_map_) {
     pair.second->service()->ProcessWillChangeWindowHierarchy(
-        window, new_parent, old_parent, IsChangeSource(pair.first));
+        window, new_parent, old_parent, IsOperationSource(pair.first));
   }
 }
 
@@ -279,7 +267,7 @@ void ConnectionManager::ProcessWindowHierarchyChanged(
     const ServerWindow* old_parent) {
   for (auto& pair : connection_map_) {
     pair.second->service()->ProcessWindowHierarchyChanged(
-        window, new_parent, old_parent, IsChangeSource(pair.first));
+        window, new_parent, old_parent, IsOperationSource(pair.first));
   }
 }
 
@@ -289,14 +277,14 @@ void ConnectionManager::ProcessWindowReorder(
     const mojom::OrderDirection direction) {
   for (auto& pair : connection_map_) {
     pair.second->service()->ProcessWindowReorder(
-        window, relative_window, direction, IsChangeSource(pair.first));
+        window, relative_window, direction, IsOperationSource(pair.first));
   }
 }
 
 void ConnectionManager::ProcessWindowDeleted(const WindowId& window) {
   for (auto& pair : connection_map_) {
     pair.second->service()->ProcessWindowDeleted(window,
-                                                 IsChangeSource(pair.first));
+                                                 IsOperationSource(pair.first));
   }
 }
 
@@ -305,20 +293,20 @@ void ConnectionManager::ProcessViewportMetricsChanged(
     const mojom::ViewportMetrics& new_metrics) {
   for (auto& pair : connection_map_) {
     pair.second->service()->ProcessViewportMetricsChanged(
-        old_metrics, new_metrics, IsChangeSource(pair.first));
+        old_metrics, new_metrics, IsOperationSource(pair.first));
   }
 }
 
-void ConnectionManager::PrepareForChange(ScopedChange* change) {
+void ConnectionManager::PrepareForOperation(Operation* op) {
   // Should only ever have one change in flight.
-  CHECK(!current_change_);
-  current_change_ = change;
+  CHECK(!current_operation_);
+  current_operation_ = op;
 }
 
-void ConnectionManager::FinishChange() {
-  // PrepareForChange/FinishChange should be balanced.
-  CHECK(current_change_);
-  current_change_ = NULL;
+void ConnectionManager::FinishOperation() {
+  // PrepareForOperation/FinishOperation should be balanced.
+  CHECK(current_operation_);
+  current_operation_ = nullptr;
 }
 
 void ConnectionManager::AddConnection(ClientConnection* connection) {
@@ -416,7 +404,7 @@ void ConnectionManager::OnWillChangeWindowVisibility(ServerWindow* window) {
 
   for (auto& pair : connection_map_) {
     pair.second->service()->ProcessWillChangeWindowVisibility(
-        window, IsChangeSource(pair.first));
+        window, IsOperationSource(pair.first));
   }
 }
 
@@ -426,7 +414,7 @@ void ConnectionManager::OnWindowSharedPropertyChanged(
     const std::vector<uint8_t>* new_data) {
   for (auto& pair : connection_map_) {
     pair.second->service()->ProcessWindowPropertyChanged(
-        window, name, new_data, IsChangeSource(pair.first));
+        window, name, new_data, IsOperationSource(pair.first));
   }
 }
 
