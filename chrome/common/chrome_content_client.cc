@@ -330,7 +330,7 @@ bool IsSystemFlashScriptDebuggerPresent() {
 
   base::win::RegKey path_key(HKEY_LOCAL_MACHINE, kFlashRegistryRoot, KEY_READ);
   DWORD debug_value;
-  if (FAILED(path_key.ReadValueDW(kIsDebuggerValueName, &debug_value)))
+  if (path_key.ReadValueDW(kIsDebuggerValueName, &debug_value) != ERROR_SUCCESS)
     return false;
 
   return (debug_value == 1);
