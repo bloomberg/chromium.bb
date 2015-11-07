@@ -14,7 +14,7 @@ import distutils.version
 import glob
 import json
 import mock
-import optparse
+import optparse  # pylint: disable=deprecated-module
 import os
 import pickle
 import sys

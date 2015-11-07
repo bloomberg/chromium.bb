@@ -12,7 +12,7 @@ from __future__ import print_function
 
 import collections
 import glob
-import optparse
+import optparse  # pylint: disable=deprecated-module
 import os
 import sys
 

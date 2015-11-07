@@ -7,7 +7,7 @@
 from __future__ import print_function
 
 import json
-import optparse
+import optparse  # pylint: disable=deprecated-module
 import os
 import sys
 

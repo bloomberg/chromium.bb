@@ -19,7 +19,7 @@ from __future__ import print_function
 import base64
 import distutils.version
 import filecmp
-import optparse
+import optparse  # pylint: disable=deprecated-module
 import os
 import re
 import sys

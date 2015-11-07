@@ -9,7 +9,7 @@ This simplifies uploading to a Google Docs spreadsheet.
 
 from __future__ import print_function
 
-import optparse
+import optparse  # pylint: disable=deprecated-module
 import os
 import re
 

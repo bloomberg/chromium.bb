@@ -15,7 +15,7 @@ import collections
 import datetime
 import functools
 import os
-import optparse
+import optparse  # pylint: disable=deprecated-module
 import signal
 import sys
 import urlparse

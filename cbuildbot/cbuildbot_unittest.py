@@ -8,7 +8,7 @@ from __future__ import print_function
 
 import argparse
 import glob
-import optparse
+import optparse  # pylint: disable=deprecated-module
 import os
 
 from chromite.cbuildbot import cbuildbot_run
