@@ -210,6 +210,13 @@ class SSLClientSocketOpenSSL : public SSLClientSocket {
   void OnPrivateKeySignComplete(Error error,
                                 const std::vector<uint8_t>& signature);
 
+  int TokenBindingAdd(const uint8_t** out,
+                      size_t* out_len,
+                      int* out_alert_value);
+  int TokenBindingParse(const uint8_t* contents,
+                        size_t contents_len,
+                        int* out_alert_value);
+
   bool transport_send_busy_;
   bool transport_recv_busy_;
 
@@ -281,6 +288,8 @@ class SSLClientSocketOpenSSL : public SSLClientSocket {
 
   // The service for retrieving Channel ID keys.  May be NULL.
   ChannelIDService* channel_id_service_;
+  bool tb_was_negotiated_;
+  TokenBindingParam tb_negotiated_param_;
 
   // OpenSSL stuff
   SSL* ssl_;

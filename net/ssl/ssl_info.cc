@@ -32,6 +32,8 @@ SSLInfo& SSLInfo::operator=(const SSLInfo& info) {
   is_issued_by_known_root = info.is_issued_by_known_root;
   client_cert_sent = info.client_cert_sent;
   channel_id_sent = info.channel_id_sent;
+  token_binding_negotiated = info.token_binding_negotiated;
+  token_binding_key_param = info.token_binding_key_param;
   handshake_type = info.handshake_type;
   public_key_hashes = info.public_key_hashes;
   signed_certificate_timestamps = info.signed_certificate_timestamps;
@@ -50,6 +52,8 @@ void SSLInfo::Reset() {
   is_issued_by_known_root = false;
   client_cert_sent = false;
   channel_id_sent = false;
+  token_binding_negotiated = false;
+  token_binding_key_param = TB_PARAM_ECDSAP256;
   handshake_type = HANDSHAKE_UNKNOWN;
   public_key_hashes.clear();
   signed_certificate_timestamps.clear();

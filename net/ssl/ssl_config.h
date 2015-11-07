@@ -27,6 +27,12 @@ enum {
   SSL_PROTOCOL_VERSION_TLS1_2 = 0x0303,
 };
 
+enum TokenBindingParam {
+  TB_PARAM_RSA2048_PKCS15 = 0,
+  TB_PARAM_RSA2048_PSS = 1,
+  TB_PARAM_ECDSAP256 = 2,
+};
+
 // Default minimum protocol version.
 NET_EXPORT extern const uint16_t kDefaultSSLVersionMin;
 
@@ -123,6 +129,11 @@ struct NET_EXPORT SSLConfig {
   bool rc4_enabled;
 
   bool channel_id_enabled;   // True if TLS channel ID extension is enabled.
+
+  // List of Token Binding key parameters supported by the client. If empty,
+  // Token Binding will be disabled, even if token_binding_enabled is true.
+  std::vector<TokenBindingParam> token_binding_params;
+
   bool false_start_enabled;  // True if we'll use TLS False Start.
   // True if the Certificate Transparency signed_certificate_timestamp
   // TLS extension is enabled.

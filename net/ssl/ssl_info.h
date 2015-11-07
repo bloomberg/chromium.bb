@@ -13,6 +13,7 @@
 #include "net/cert/sct_status_flags.h"
 #include "net/cert/x509_cert_types.h"
 #include "net/ssl/signed_certificate_timestamp_and_status.h"
+#include "net/ssl/ssl_config.h"
 
 namespace net {
 
@@ -81,6 +82,15 @@ class NET_EXPORT SSLInfo {
 
   // True if a channel ID was sent to the server.
   bool channel_id_sent;
+
+  // True if Token Binding was negotiated with the server and we agreed on a
+  // version and key params.
+  bool token_binding_negotiated;
+
+  // Only valid if |token_binding_negotiated| is true. Contains the key param
+  // negotiated by the client and server in the Token Binding Negotiation TLS
+  // extension.
+  TokenBindingParam token_binding_key_param;
 
   HandshakeType handshake_type;
 
