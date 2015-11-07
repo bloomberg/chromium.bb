@@ -5,6 +5,7 @@
 *.orig
 *.props
 *.pyc
+*.pyproj
 *.rules
 *.sdf
 *.sln
@@ -50,6 +51,7 @@ v8.log
 # Settings directories for eclipse
 /.externalToolBuilders/
 /.settings/
+/.vs/
 /_out
 /android_emulator_sdk
 /ash/ash_unittests_run.xml
