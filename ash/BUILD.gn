@@ -180,6 +180,7 @@ source_set("test_support") {
   deps = [
     ":test_support_with_content",  # TODO(beng): reverse this direction.
     "//ash/resources",
+    "//components/signin/core/account_id",
     "//skia",
     "//testing/gtest",
     "//ui/accessibility",
