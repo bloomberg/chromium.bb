@@ -4,57 +4,74 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-menu/paper-menu.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-dropdown-menu/paper-dropdown-menu.html">
 <link rel="import" href="chrome://md-settings/controls/settings_checkbox.html">
+<link rel="import" href="chrome://md-settings/controls/settings_dropdown_menu.html">
 
 <dom-module id="settings-clear-browsing-data-page">
+  <link rel="import" type="css"
+      href="chrome://md-settings/settings_page/settings_page.css">
   <link rel="import" type="css" href="clear_browsing_data_page.css">
   <template>
-    <div>
+    <div class="settings-row">
       <span i18n-content="clearFollowingItemsFrom"></span>
-      <paper-dropdown-menu>
-        <paper-menu class="dropdown-content"
-            selected="{{prefs.browser.clear_data.time_period.value}}">
-          <template is="dom-repeat" items="[[clearFromOptions_]]">
-            <paper-item>[[item]]</paper-item>
-          </template>
-        </paper-menu>
-      </paper-dropdown-menu>
+      <settings-dropdown-menu id="clearFrom"
+          pref="{{prefs.browser.clear_data.time_period}}"
+          menuOptions="[[clearFromOptions_]]" disabled>
+      </settings-dropdown-menu>
+    </div>
+    <div class="settings-row">
       <settings-checkbox id="browsingCheckbox"
           pref="{{prefs.browser.clear_data.browsing_history}}"
           i18n-values="label:clearBrowsingHistory">
       </settings-checkbox>
+    </div>
+    <div class="settings-row">
       <settings-checkbox id="downloadCheckbox"
           pref="{{prefs.browser.clear_data.download_history}}"
           i18n-values="label:clearDownloadHistory">
       </settings-checkbox>
+    </div>
+    <div class="settings-row">
       <settings-checkbox
           pref="{{prefs.browser.clear_data.cache}}"
           i18n-values="label:clearCache">
       </settings-checkbox>
+    </div>
+    <div class="settings-row">
       <settings-checkbox
           pref="{{prefs.browser.clear_data.cookies}}"
           i18n-values="label:clearCookies">
       </settings-checkbox>
+    </div>
+    <div class="settings-row">
       <settings-checkbox
           pref="{{prefs.browser.clear_data.passwords}}"
           i18n-values="label:clearPasswords">
       </settings-checkbox>
+    </div>
+    <div class="settings-row">
       <settings-checkbox
           pref="{{prefs.browser.clear_data.form_data}}"
           i18n-values="label:clearFormData">
       </settings-checkbox>
+    </div>
+    <div class="settings-row">
       <settings-checkbox
           pref="{{prefs.browser.clear_data.hosted_apps_data}}"
           i18n-values="label:clearHostedAppData">
       </settings-checkbox>
+    </div>
+    <div class="settings-row">
       <settings-checkbox
           pref="{{prefs.browser.clear_data.content_licenses}}"
           i18n-values="label:clearDeauthorizeContentLicenses">
       </settings-checkbox>
     </div>
-    <paper-button id="clearDataButton"
-        on-tap="onPerformClearBrowsingDataTap_"
-        raised i18n-content="clearBrowsingData">
-    </paper-button>
+    <div class="settings-row">
+      <paper-button id="clearDataButton"
+          on-tap="onPerformClearBrowsingDataTap_"
+          raised i18n-content="clearBrowsingData">
+      </paper-button>
+    </div>
   </template>
   <script src="clear_browsing_data_page.js"></script>
 </dom-module>
