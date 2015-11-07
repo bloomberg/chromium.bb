@@ -63,8 +63,10 @@ class BrowserFrame
   // Returns the inset of the topmost view in the client view from the top of
   // the non-client view. The topmost view depends on the window type. The
   // topmost view is the tab strip for tabbed browser windows, the toolbar for
-  // popups, the web contents for app windows and varies for fullscreen windows
-  int GetTopInset() const;
+  // popups, the web contents for app windows and varies for fullscreen windows.
+  // If |restored| is true, this is calculated as if the window was restored,
+  // regardless of its current state.
+  int GetTopInset(bool restored) const;
 
   // Returns the amount that the theme background should be inset.
   int GetThemeBackgroundXInset() const;

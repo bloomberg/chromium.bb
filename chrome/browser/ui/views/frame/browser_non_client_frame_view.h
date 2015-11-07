@@ -49,7 +49,9 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   // the non-client view. The topmost view depends on the window type. The
   // topmost view is the tab strip for tabbed browser windows, the toolbar for
   // popups, the web contents for app windows and varies for fullscreen windows.
-  virtual int GetTopInset() const = 0;
+  // If |restored| is true, this is calculated as if the window was restored,
+  // regardless of its current state.
+  virtual int GetTopInset(bool restored) const = 0;
 
   // Returns the amount that the theme background should be inset.
   virtual int GetThemeBackgroundXInset() const = 0;

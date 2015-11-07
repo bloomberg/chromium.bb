@@ -102,8 +102,8 @@ gfx::Rect BrowserFrame::GetBoundsForTabStrip(views::View* tabstrip) const {
       browser_frame_view_->GetBoundsForTabStrip(tabstrip) : gfx::Rect();
 }
 
-int BrowserFrame::GetTopInset() const {
-  return browser_frame_view_->GetTopInset();
+int BrowserFrame::GetTopInset(bool restored) const {
+  return browser_frame_view_->GetTopInset(restored);
 }
 
 int BrowserFrame::GetThemeBackgroundXInset() const {

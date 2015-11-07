@@ -41,7 +41,7 @@ class BrowserNonClientFrameViewAsh : public BrowserNonClientFrameView,
 
   // BrowserNonClientFrameView:
   gfx::Rect GetBoundsForTabStrip(views::View* tabstrip) const override;
-  int GetTopInset() const override;
+  int GetTopInset(bool restored) const override;
   int GetThemeBackgroundXInset() const override;
   void UpdateThrobber(bool running) override;
   void UpdateToolbar() override;

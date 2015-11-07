@@ -105,7 +105,7 @@ gfx::Rect GlassBrowserFrameView::GetBoundsForTabStrip(
      !frame()->IsMaximized()) ?
         GetLayoutInsets(AVATAR_ICON).right() : 0;
   const int x = incognito_bounds_.right() + offset;
-  int end_x = width() - NonClientBorderThickness();
+  int end_x = width() - NonClientBorderThickness(false);
   if (!base::i18n::IsRTL()) {
     end_x = std::min(frame()->GetMinimizeButtonOffset(), end_x) -
         (frame()->IsMaximized() ?
@@ -126,12 +126,12 @@ gfx::Rect GlassBrowserFrameView::GetBoundsForTabStrip(
       }
     }
   }
-  return gfx::Rect(x, NonClientTopBorderHeight(), std::max(0, end_x - x),
+  return gfx::Rect(x, NonClientTopBorderHeight(false), std::max(0, end_x - x),
                    tabstrip->GetPreferredSize().height());
 }
 
-int GlassBrowserFrameView::GetTopInset() const {
-  return GetClientAreaInsets().top();
+int GlassBrowserFrameView::GetTopInset(bool restored) const {
+  return GetClientAreaInsets(restored).top();
 }
 
 int GlassBrowserFrameView::GetThemeBackgroundXInset() const {
@@ -154,7 +154,7 @@ gfx::Size GlassBrowserFrameView::GetMinimumSize() const {
   gfx::Size min_size(browser_view()->GetMinimumSize());
 
   // Account for the client area insets.
-  gfx::Insets insets = GetClientAreaInsets();
+  gfx::Insets insets = GetClientAreaInsets(false);
   min_size.Enlarge(insets.width(), insets.height());
   // Client area insets do not include the shadow thickness.
   min_size.Enlarge(2 * kContentEdgeShadowThickness, 0);
@@ -193,7 +193,7 @@ gfx::Rect GlassBrowserFrameView::GetWindowBoundsForClientBounds(
     return gfx::Rect(rect);
   }
 
-  gfx::Insets insets = GetClientAreaInsets();
+  gfx::Insets insets = GetClientAreaInsets(false);
   return gfx::Rect(std::max(0, client_bounds.x() - insets.left()),
                    std::max(0, client_bounds.y() - insets.top()),
                    client_bounds.width() + insets.width(),
@@ -219,7 +219,7 @@ int GlassBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
 
   // See if we're in the sysmenu region.  We still have to check the tabstrip
   // first so that clicks in a tab don't get treated as sysmenu clicks.
-  int nonclient_border_thickness = NonClientBorderThickness();
+  int nonclient_border_thickness = NonClientBorderThickness(false);
   if (gfx::Rect(nonclient_border_thickness,
                 gfx::win::GetSystemMetricsInDIP(SM_CYSIZEFRAME),
                 gfx::win::GetSystemMetricsInDIP(SM_CXSMICON),
@@ -229,7 +229,7 @@ int GlassBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
   if (frame_component != HTNOWHERE)
     return frame_component;
 
-  int frame_top_border_height = FrameTopBorderHeight();
+  int frame_top_border_height = FrameTopBorderHeight(false);
   // We want the resize corner behavior to apply to the kResizeCornerWidth
   // pixels at each end of the top and bottom edges.  Because |point|'s x
   // coordinate is based on the DWM-inset portion of the window (so, it's 0 at
@@ -307,16 +307,16 @@ int GlassBrowserFrameView::FrameBorderThickness() const {
       0 : gfx::win::GetSystemMetricsInDIP(SM_CXSIZEFRAME);
 }
 
-int GlassBrowserFrameView::FrameTopBorderHeight() const {
+int GlassBrowserFrameView::FrameTopBorderHeight(bool restored) const {
   // We'd like to use FrameBorderThickness() here, but the maximized Aero glass
   // frame has a 0 frame border around most edges and a CYSIZEFRAME-thick border
   // at the top (see AeroGlassFrame::OnGetMinMaxInfo()).
-  return frame()->IsFullscreen() ?
+  return (frame()->IsFullscreen() && !restored) ?
       0 : gfx::win::GetSystemMetricsInDIP(SM_CYSIZEFRAME);
 }
 
-int GlassBrowserFrameView::NonClientBorderThickness() const {
-  if (frame()->IsMaximized() || frame()->IsFullscreen())
+int GlassBrowserFrameView::NonClientBorderThickness(bool restored) const {
+  if ((frame()->IsMaximized() || frame()->IsFullscreen()) && !restored)
     return 0;
 
   return (base::win::GetVersion() <= base::win::VERSION_WIN8_1)
@@ -324,11 +324,11 @@ int GlassBrowserFrameView::NonClientBorderThickness() const {
              : kNonClientBorderThicknessWin10;
 }
 
-int GlassBrowserFrameView::NonClientTopBorderHeight() const {
-  if (frame()->IsFullscreen())
+int GlassBrowserFrameView::NonClientTopBorderHeight(bool restored) const {
+  if (frame()->IsFullscreen() && !restored)
     return 0;
 
-  const int top = FrameTopBorderHeight();
+  const int top = FrameTopBorderHeight(restored);
   // The tab top inset is equal to the height of any shadow region above the
   // tabs, plus a 1 px top stroke.  In maximized mode, we want to push the
   // shadow region off the top of the screen but leave the top stroke.
@@ -337,7 +337,7 @@ int GlassBrowserFrameView::NonClientTopBorderHeight() const {
   // so that the region above the tab's hit-test zone matches) versus the shadow
   // thickness.
   const int exclusion = GetLayoutConstant(TAB_TOP_EXCLUSION_HEIGHT);
-  return frame()->IsMaximized() ?
+  return (frame()->IsMaximized() && !restored) ?
       (top - GetLayoutInsets(TAB).top() + 1) :
       (top + kNonClientRestoredExtraThickness - exclusion);
 }
@@ -367,7 +367,7 @@ void GlassBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) {
     dest_y += kPreMDToolbarTopEdgeExclusion;
   canvas->TileImageInt(
       *theme_toolbar, x + GetThemeBackgroundXInset(),
-      dest_y - GetTopInset() + Tab::GetYOffsetForActiveTabBackground(),
+      dest_y - GetTopInset(false) + Tab::GetYOffsetForActiveTabBackground(),
       x, dest_y, w, theme_toolbar->height());
 
   // Toolbar edges.
@@ -437,7 +437,7 @@ void GlassBrowserFrameView::PaintRestoredClientEdge(gfx::Canvas* canvas) {
       browser_view()->GetToolbarBounds().y() +
       tp->GetImageSkiaNamed(IDR_CONTENT_TOP_LEFT_CORNER)->height();
   int client_area_bottom =
-      std::max(client_area_top, height() - NonClientBorderThickness());
+      std::max(client_area_top, height() - NonClientBorderThickness(false));
   int client_area_height = client_area_bottom - client_area_top;
 
   // Draw the client edge images.
@@ -502,7 +502,7 @@ void GlassBrowserFrameView::LayoutNewStyleAvatar() {
   // To match both of these, we size the button as if it's always the extra one
   // pixel in height, then we place it at the correct position in restored mode,
   // or one pixel above the top of the screen in maximized mode.
-  int button_y = frame()->IsMaximized() ? (FrameTopBorderHeight() - 1) : 1;
+  int button_y = frame()->IsMaximized() ? (FrameTopBorderHeight(false) - 1) : 1;
   new_avatar_button()->SetBounds(
       button_x,
       button_y,
@@ -521,18 +521,18 @@ void GlassBrowserFrameView::LayoutIncognitoIcon() {
   // another layout call after the browser view has a widget anyway.
   if (browser_view()->GetWidget())
     size = browser_view()->GetOTRAvatarIcon().size();
-  int x = NonClientBorderThickness();
+  int x = NonClientBorderThickness(false);
   // In RTL, the icon needs to start after the caption buttons.
   if (base::i18n::IsRTL()) {
     x = width() - frame()->GetMinimizeButtonOffset() +
         (new_avatar_button() ?
             (new_avatar_button()->width() + kNewAvatarButtonOffset) : 0);
   }
-  const int bottom =
-      GetTopInset() + browser_view()->GetTabStripHeight() - insets.bottom();
+  const int bottom = GetTopInset(false) + browser_view()->GetTabStripHeight() -
+      insets.bottom();
   const int y = (ui::MaterialDesignController::IsModeMaterial() ||
                  !frame()->IsMaximized()) ?
-      (bottom - size.height()) : FrameTopBorderHeight();
+      (bottom - size.height()) : FrameTopBorderHeight(false);
   incognito_bounds_.SetRect(x + (avatar_button() ? insets.left() : 0), y,
                             avatar_button() ? size.width() : 0, bottom - y);
   if (avatar_button())
@@ -543,12 +543,12 @@ void GlassBrowserFrameView::LayoutClientView() {
   client_view_bounds_ = CalculateClientAreaBounds(width(), height());
 }
 
-gfx::Insets GlassBrowserFrameView::GetClientAreaInsets() const {
+gfx::Insets GlassBrowserFrameView::GetClientAreaInsets(bool restored) const {
   if (!browser_view()->IsTabStripVisible())
     return gfx::Insets();
 
-  const int top_height = NonClientTopBorderHeight();
-  const int border_thickness = NonClientBorderThickness();
+  const int top_height = NonClientTopBorderHeight(restored);
+  const int border_thickness = NonClientBorderThickness(restored);
   return gfx::Insets(top_height,
                      border_thickness,
                      border_thickness,
@@ -558,7 +558,7 @@ gfx::Insets GlassBrowserFrameView::GetClientAreaInsets() const {
 gfx::Rect GlassBrowserFrameView::CalculateClientAreaBounds(int width,
                                                            int height) const {
   gfx::Rect bounds(0, 0, width, height);
-  bounds.Inset(GetClientAreaInsets());
+  bounds.Inset(GetClientAreaInsets(false));
   return bounds;
 }
 

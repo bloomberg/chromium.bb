@@ -21,7 +21,7 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
 
   // BrowserNonClientFrameView:
   gfx::Rect GetBoundsForTabStrip(views::View* tabstrip) const override;
-  int GetTopInset() const override;
+  int GetTopInset(bool restored) const override;
   int GetThemeBackgroundXInset() const override;
   void UpdateThrobber(bool running) override;
   gfx::Size GetMinimumSize() const override;
@@ -57,16 +57,22 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
   // and bottom frame edges.  This does not include any client edge.
   int FrameBorderThickness() const;
 
-  // Returns the height of the window top frame edge.
-  int FrameTopBorderHeight() const;
+  // Returns the height of the window top frame edge.  If |restored| is true,
+  // this is calculated as if the window was restored, regardless of its current
+  // state.
+  int FrameTopBorderHeight(bool restored) const;
 
   // Returns the thickness of the entire nonclient left, right, and bottom
-  // borders, including both the window frame and any client edge.
-  int NonClientBorderThickness() const;
+  // borders, including both the window frame and any client edge. If |restored|
+  // is true, this is calculated as if the window was restored, regardless of
+  // its current state.
+  int NonClientBorderThickness(bool restored) const;
 
   // Returns the height of the entire nonclient top border, including the window
-  // frame, any title area, and any connected client edge.
-  int NonClientTopBorderHeight() const;
+  // frame, any title area, and any connected client edge.  If |restored| is
+  // true, this is calculated as if the window was restored, regardless of its
+  // current state.
+  int NonClientTopBorderHeight(bool restored) const;
 
   // Paint various sub-components of this view.
   void PaintToolbarBackground(gfx::Canvas* canvas);
@@ -77,8 +83,9 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
   void LayoutNewStyleAvatar();
   void LayoutClientView();
 
-  // Returns the insets of the client area.
-  gfx::Insets GetClientAreaInsets() const;
+  // Returns the insets of the client area. If |restored| is true, this is
+  // calculated as if the window was restored, regardless of its current state.
+  gfx::Insets GetClientAreaInsets(bool restored) const;
 
   // Returns the bounds of the client area for the specified view size.
   gfx::Rect CalculateClientAreaBounds(int width, int height) const;

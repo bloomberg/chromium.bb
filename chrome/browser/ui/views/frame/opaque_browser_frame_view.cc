@@ -82,12 +82,6 @@ const int kContentEdgeShadowThickness = 2;
 const int kIconMinimumSize = 16;
 #endif
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-// The number of pixels to move the frame background image upwards when using
-// the GTK+ theme and the titlebar is condensed.
-const int kGTKThemeCondensedFrameTopInset = 15;
-#endif
-
 }  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -170,10 +164,10 @@ gfx::Rect OpaqueBrowserFrameView::GetBoundsForTabStrip(
   return layout_->GetBoundsForTabStrip(tabstrip->GetPreferredSize(), width());
 }
 
-int OpaqueBrowserFrameView::GetTopInset() const {
+int OpaqueBrowserFrameView::GetTopInset(bool restored) const {
   return browser_view()->IsTabStripVisible() ?
-      layout_->GetTabStripInsetsTop(false) :
-      layout_->NonClientTopBorderHeight(false);
+      layout_->GetTabStripInsetsTop(restored) :
+      layout_->NonClientTopBorderHeight(restored);
 }
 
 int OpaqueBrowserFrameView::GetThemeBackgroundXInset() const {
@@ -626,14 +620,8 @@ void OpaqueBrowserFrameView::PaintMaximizedFrameBorder(gfx::Canvas* canvas) {
   frame_background_->set_theme_image(GetFrameImage());
   frame_background_->set_theme_overlay_image(GetFrameOverlayImage());
   frame_background_->set_top_area_height(GetTopAreaHeight());
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-  // The window manager typically shows a gradient in the native title bar (when
-  // the system title bar pref is set, or when maximized on Ubuntu). Hide the
-  // gradient in the tab strip (by shifting it up vertically) to avoid a
-  // double-gradient effect.
-  if (tp->UsingSystemTheme())
-    frame_background_->set_maximized_top_inset(kGTKThemeCondensedFrameTopInset);
-#endif
+  frame_background_->set_maximized_top_inset(
+      GetTopInset(true) - GetTopInset(false));
 
   frame_background_->PaintMaximized(canvas, this);
 
@@ -688,7 +676,7 @@ void OpaqueBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) {
   gfx::ImageSkia* theme_toolbar = tp->GetImageSkiaNamed(IDR_THEME_TOOLBAR);
   canvas->TileImageInt(
       *theme_toolbar, x + GetThemeBackgroundXInset(),
-      bottom_y - GetTopInset() + Tab::GetYOffsetForActiveTabBackground(),
+      bottom_y - GetTopInset(false) + Tab::GetYOffsetForActiveTabBackground(),
       x, bottom_y, w, theme_toolbar->height());
 
   // Draw rounded corners for the tab.
