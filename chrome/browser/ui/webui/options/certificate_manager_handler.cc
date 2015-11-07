@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/webui/options/certificate_manager_handler.h"
 
+#include <errno.h>
+
 #include <algorithm>
 #include <map>
 

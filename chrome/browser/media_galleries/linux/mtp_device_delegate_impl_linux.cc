@@ -4,6 +4,7 @@
 
 #include "chrome/browser/media_galleries/linux/mtp_device_delegate_impl_linux.h"
 
+#include <errno.h>
 #include <fcntl.h>
 #include <algorithm>
 #include <vector>

@@ -5,6 +5,7 @@
 #include "chrome/common/mac/mock_launchd.h"
 
 #include <CoreFoundation/CoreFoundation.h>
+#include <errno.h>
 #include <sys/socket.h>
 #include <sys/un.h>
 
