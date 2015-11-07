@@ -1,0 +1,26 @@
+This is a testharness.js-based test.
+PASS HTMLBodyElement.onblur 
+PASS HTMLBodyElement.onblur 1 
+PASS HTMLBodyElement.onblur 2 
+PASS HTMLBodyElement.onblur 3 
+PASS HTMLBodyElement.onblur 4 
+PASS HTMLBodyElement.onblur 5 
+FAIL HTMLBodyElement.onblur 6 assert_equals: expected (function) function "function f() {
+  return 0;
+}" but got (undefined) undefined
+FAIL HTMLBodyElement.onblur 7 assert_equals: expected (function) function "function f() {
+  return 0;
+}" but got (undefined) undefined
+PASS HTMLBodyElement.onblur 8 
+PASS HTMLBodyElement.onblur 9 
+PASS HTMLBodyElement.onblur 10 
+PASS HTMLBodyElement.onblur 11 
+PASS HTMLBodyElement.onblur 12 
+PASS HTMLBodyElement.onblur 13 
+PASS HTMLBodyElement.onblur 14 
+PASS HTMLBodyElement.onblur 15 
+PASS HTMLBodyElement.onblur 16 
+PASS HTMLBodyElement.onblur 17 
+PASS HTMLBodyElement.onblur 18 
+Harness: the test ran to completion.
+
