@@ -70,6 +70,7 @@ import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchFieldTrial;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchManager;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchManager.ContextualSearchTabPromotionDelegate;
+import org.chromium.chrome.browser.datausage.DataUseTabUIManager;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.dom_distiller.DistilledPagePrefsView;
 import org.chromium.chrome.browser.dom_distiller.ReaderModeActivityDelegate;
@@ -96,6 +97,7 @@ import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.printing.TabPrinter;
 import org.chromium.chrome.browser.share.ShareHelper;
+import org.chromium.chrome.browser.snackbar.DataUseSnackbarController;
 import org.chromium.chrome.browser.snackbar.LoFiBarPopupController;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarManageable;
@@ -204,6 +206,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     private ReaderModeActivityDelegate mReaderModeActivityDelegate;
     private SnackbarManager mSnackbarManager;
     private LoFiBarPopupController mLoFiBarPopupController;
+    private DataUseSnackbarController mDataUseSnackbarController;
     private ChromeAppMenuPropertiesDelegate mAppMenuPropertiesDelegate;
     private AppMenuHandler mAppMenuHandler;
     private ToolbarManager mToolbarManager;
@@ -253,6 +256,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         mWindowAndroid.restoreInstanceState(getSavedInstanceState());
         mSnackbarManager = new SnackbarManager(getWindow());
         mLoFiBarPopupController = new LoFiBarPopupController(this, getSnackbarManager());
+        mDataUseSnackbarController = new DataUseSnackbarController(this, getSnackbarManager());
 
         mAssistStatusHandler = createAssistStatusHandler();
         if (mAssistStatusHandler != null) {
@@ -454,6 +458,17 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         if (mTabModelSelectorTabObserver != null) mTabModelSelectorTabObserver.destroy();
         mTabModelSelectorTabObserver = new TabModelSelectorTabObserver(tabModelSelector) {
             @Override
+            public void onPageLoadStarted(Tab tab, String url) {
+                if (DataUseTabUIManager.hasDataUseTrackingStarted(tab)) {
+                    mDataUseSnackbarController.showDataUseTrackingStartedBar();
+                }
+
+                if (DataUseTabUIManager.hasDataUseTrackingEnded(tab)) {
+                    mDataUseSnackbarController.showDataUseTrackingEndedBar();
+                }
+            }
+
+            @Override
             public void didFirstVisuallyNonEmptyPaint(Tab tab) {
                 if (!tab.isNativePage() && !tab.isIncognito()
                         && DataReductionProxySettings.getInstance().wasLoFiModeActiveOnMainFrame()
@@ -482,11 +497,13 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             @Override
             public void onHidden(Tab tab) {
                 mLoFiBarPopupController.dismissLoFiBar();
+                mDataUseSnackbarController.dismissDataUseBar();
             }
 
             @Override
             public void onDestroyed(Tab tab) {
                 mLoFiBarPopupController.dismissLoFiBar();
+                mDataUseSnackbarController.dismissDataUseBar();
             }
 
             @Override

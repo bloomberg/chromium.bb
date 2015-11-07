@@ -31,6 +31,7 @@
 #include "chrome/browser/android/contextualsearch/contextual_search_manager.h"
 #include "chrome/browser/android/contextualsearch/contextual_search_tab_helper.h"
 #include "chrome/browser/android/cookies/cookies_fetcher.h"
+#include "chrome/browser/android/data_usage/data_use_tab_ui_manager_android.h"
 #include "chrome/browser/android/data_usage/external_data_use_observer.h"
 #include "chrome/browser/android/dev_tools_server.h"
 #include "chrome/browser/android/document/document_web_contents_delegate.h"
@@ -238,6 +239,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"CreditCardScanner", autofill::CreditCardScannerViewAndroid::Register},
     {"DataReductionProxyInfoBarDelegate", DataReductionProxyInfoBar::Register},
     {"DataReductionProxySettings", DataReductionProxySettingsAndroid::Register},
+    {"DataUseTabUIManager", RegisterDataUseTabUIManager},
     {"DevToolsServer", RegisterDevToolsServer},
     {"DocumentWebContentsDelegate", DocumentWebContentsDelegate::Register},
     {"DomDistillerServiceFactory",
