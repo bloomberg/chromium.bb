@@ -355,7 +355,7 @@ InspectorTest.dumpSelectedElementStyles = function(excludeComputed, excludeMatch
         InspectorTest.dumpComputedStyle();
     for (var block of sectionBlocks) {
         for (var section of block.sections) {
-            if (section.rule() && excludeMatched)
+            if (section.style().parentRule && excludeMatched)
                 continue;
             if (section.element.previousSibling && section.element.previousSibling.className === "sidebar-separator") {
                 var nodeDescription = "";

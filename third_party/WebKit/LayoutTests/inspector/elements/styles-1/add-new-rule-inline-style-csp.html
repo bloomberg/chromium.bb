@@ -28,7 +28,7 @@ function test()
 
             function successCallback(section)
             {
-                rule = section.styleRule.rule();
+                rule = section.style().parentRule;
                 InspectorTest.addResult("=== Rule added ===");
                 InspectorTest.addResult(rule.selectorText() + " {" + rule.style.cssText + "}");
                 InspectorTest.addResult("Selectors matching the (#inspected) node: " + InspectorTest.matchingSelectors(rule));

@@ -121,7 +121,7 @@ function test()
         var rules = [];
         for (var block of WebInspector.panels.elements.sidebarPanes.styles._sectionBlocks) {
             for (var section of block.sections) {
-                var rule = section.rule();
+                var rule = section.style().parentRule;
                 if (rule)
                     rules.push(rule);
             }

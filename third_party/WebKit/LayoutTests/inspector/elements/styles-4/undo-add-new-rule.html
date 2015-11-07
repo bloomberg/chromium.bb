@@ -71,7 +71,7 @@ function test()
     function printStyleSheetAndCall(next)
     {
         var section = InspectorTest.firstMatchedStyleSection();
-        var id = section.styleRule.style().styleSheetId;
+        var id = section.style().styleSheetId;
         InspectorTest.CSSAgent.getStyleSheetText(id, callback);
         function callback(error, styleSheetText)
         {
