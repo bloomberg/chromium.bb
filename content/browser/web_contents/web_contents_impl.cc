@@ -121,10 +121,13 @@
 
 #if defined(OS_ANDROID)
 #include "content/browser/android/content_video_view.h"
-#include "content/browser/android/date_time_chooser_android.h"
 #include "content/browser/media/android/media_session.h"
+#endif  // OS_ANDROID
+
+#if defined(OS_ANDROID) && !defined(USE_AURA)
+#include "content/browser/android/date_time_chooser_android.h"
 #include "content/browser/web_contents/web_contents_android.h"
-#endif
+#endif  // OS_ANDROID && !USE_AURA
 
 #if defined(OS_MACOSX)
 #include "base/mac/foundation_util.h"
@@ -652,7 +655,7 @@ bool WebContentsImpl::OnMessageReceived(RenderViewHost* render_view_host,
                         OnHideValidationMessage)
     IPC_MESSAGE_HANDLER(ViewHostMsg_MoveValidationMessage,
                         OnMoveValidationMessage)
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) && !defined(USE_AURA)
     IPC_MESSAGE_HANDLER(ViewHostMsg_FindMatchRects_Reply,
                         OnFindMatchRectsReply)
     IPC_MESSAGE_HANDLER(ViewHostMsg_OpenDateTimeDialog,
@@ -1387,7 +1390,7 @@ void WebContentsImpl::Init(const WebContents::CreateParams& params) {
 
   manifest_manager_host_.reset(new ManifestManagerHost(this));
 
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) && !defined(USE_AURA)
   date_time_chooser_.reset(new DateTimeChooserAndroid());
 #endif
 
@@ -3195,7 +3198,7 @@ void WebContentsImpl::OnFindReply(int request_id,
   }
 }
 
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) && !defined(USE_AURA)
 void WebContentsImpl::OnFindMatchRectsReply(
     int version,
     const std::vector<gfx::RectF>& rects,
@@ -3358,8 +3361,9 @@ void WebContentsImpl::CreateVideoPowerSaveBlocker() {
   video_power_save_blocker_ = PowerSaveBlocker::Create(
       PowerSaveBlocker::kPowerSaveBlockPreventDisplaySleep,
       PowerSaveBlocker::kReasonVideoPlayback, "Playing video");
-#if defined(OS_ANDROID)
-  static_cast<PowerSaveBlockerImpl*>(video_power_save_blocker_.get())
+  //TODO(mfomitchev): Support PowerSaveBlocker on Aura - crbug.com/546718.
+#if defined(OS_ANDROID) && !defined(USE_AURA)
+static_cast<PowerSaveBlockerImpl*>(video_power_save_blocker_.get())
       ->InitDisplaySleepBlocker(this);
 #endif
 }
@@ -4468,7 +4472,7 @@ bool WebContentsImpl::CreateRenderFrameForRenderManager(
   return true;
 }
 
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) && !defined(USE_AURA)
 
 base::android::ScopedJavaLocalRef<jobject>
 WebContentsImpl::GetJavaWebContents() {

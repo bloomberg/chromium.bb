@@ -26,7 +26,7 @@ struct CONTENT_EXPORT NativeWebKeyboardEvent :
   NativeWebKeyboardEvent();
 
   explicit NativeWebKeyboardEvent(gfx::NativeEvent native_event);
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) && !defined(USE_AURA)
   NativeWebKeyboardEvent(blink::WebInputEvent::Type type,
                          int modifiers,
                          double time_secs,

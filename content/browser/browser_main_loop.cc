@@ -616,7 +616,8 @@ void BrowserMainLoop::PostMainMessageLoopStart() {
           BrowserSurfaceTextureManager::GetInstance());
     }
   }
-
+  // TODO(mfomitchev): Screen Orientation APIs on Aura - crbug.com/546719.
+#if !defined(USE_AURA)
   if (!parsed_command_line_.HasSwitch(
       switches::kDisableScreenOrientationLock)) {
     TRACE_EVENT0("startup",
@@ -625,6 +626,7 @@ void BrowserMainLoop::PostMainMessageLoopStart() {
         new ScreenOrientationDelegateAndroid());
     ScreenOrientationProvider::SetDelegate(screen_orientation_delegate_.get());
   }
+#endif
 #endif
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
@@ -1179,7 +1181,7 @@ int BrowserMainLoop::BrowserThreadsStarted() {
 
   bool always_uses_gpu = true;
   bool established_gpu_channel = false;
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) && !defined(USE_AURA)
   // TODO(crbug.com/439322): This should be set to |true|.
   established_gpu_channel = false;
   BrowserGpuChannelHostFactory::Initialize(established_gpu_channel);
@@ -1381,7 +1383,7 @@ base::FilePath BrowserMainLoop::GetStartupTraceFileName(
       return trace_file;
 
     if (trace_file.empty()) {
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) && !defined(USE_AURA)
       TracingControllerAndroid::GenerateTracingFilePath(&trace_file);
 #else
       // Default to saving the startup trace into the current dir.
@@ -1389,7 +1391,7 @@ base::FilePath BrowserMainLoop::GetStartupTraceFileName(
 #endif
     }
   } else {
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) && !defined(USE_AURA)
     TracingControllerAndroid::GenerateTracingFilePath(&trace_file);
 #else
     trace_file = tracing::TraceConfigFile::GetInstance()->GetResultFile();

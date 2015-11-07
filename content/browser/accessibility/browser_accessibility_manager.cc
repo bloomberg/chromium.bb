@@ -75,7 +75,12 @@ ui::AXTreeUpdate MakeAXTreeUpdate(
 }
 
 BrowserAccessibility* BrowserAccessibilityFactory::Create() {
+  // TODO(mfomitchev): Accessibility on Android Aura - crbug.com/543262.
+#if defined(OS_ANDROID) && defined(USE_AURA)
+  return nullptr;
+#else
   return BrowserAccessibility::Create();
+#endif
 }
 
 BrowserAccessibilityFindInPageInfo::BrowserAccessibilityFindInPageInfo()

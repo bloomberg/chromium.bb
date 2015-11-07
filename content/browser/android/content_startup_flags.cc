@@ -80,11 +80,13 @@ void SetContentCommandLineFlags(bool single_process,
         switches::kProfilerTiming, switches::kProfilerTimingDisabledValue);
   }
 
+#if !defined(USE_AURA)
   cc::LayerSettings layer_settings;
   if (parsed_command_line->HasSwitch(
           switches::kEnableAndroidCompositorAnimationTimelines))
     layer_settings.use_compositor_animation_timelines = true;
   Compositor::SetLayerSettings(layer_settings);
+#endif
 }
 
 }  // namespace content

@@ -8,13 +8,16 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
-#include "content/browser/android/content_view_core_impl.h"
 #include "content/browser/media/android/browser_media_player_manager.h"
 #include "content/browser/power_save_blocker_impl.h"
 #include "content/common/android/surface_texture_peer.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/common/content_switches.h"
 #include "jni/ContentVideoView_jni.h"
+
+#if !defined(USE_AURA)
+#include "content/browser/android/content_view_core_impl.h"
+#endif
 
 using base::android::AttachCurrentThread;
 using base::android::CheckException;
@@ -198,11 +201,17 @@ ScopedJavaLocalRef<jobject> ContentVideoView::GetJavaObject(JNIEnv* env) {
 }
 
 JavaObjectWeakGlobalRef ContentVideoView::CreateJavaObject() {
-  ContentViewCore* content_view_core = manager_->GetContentViewCore();
-  JNIEnv* env = AttachCurrentThread();
 
-  base::android::ScopedJavaLocalRef<jobject> j_content_view_core =
-      content_view_core->GetJavaObject();
+  JNIEnv* env = AttachCurrentThread();
+  base::android::ScopedJavaLocalRef<jobject> j_content_view_core;
+
+  // TODO(mfomitchev): Support fullscreen video underlay on Android Aura.
+  // crbug.com/548024
+#if !defined(USE_AURA)
+  ContentViewCore* content_view_core = manager_->GetContentViewCore();
+  j_content_view_core = content_view_core->GetJavaObject();
+#endif
+
   if (j_content_view_core.is_null())
     return JavaObjectWeakGlobalRef(env, nullptr);
 
