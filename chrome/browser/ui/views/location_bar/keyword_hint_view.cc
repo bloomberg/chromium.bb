@@ -11,29 +11,84 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/ui/views/location_bar/background_with_1_px_border.h"
+#include "chrome/browser/ui/views/location_bar/icon_label_bubble_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/search_engines/template_url_service.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
+#include "ui/strings/grit/ui_strings.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 
+namespace {
+
+// For MD, the tab key looks just like other omnibox chips.
+class TabKeyBubbleView : public IconLabelBubbleView {
+ public:
+  TabKeyBubbleView(const gfx::FontList& font_list,
+                   SkColor text_color,
+                   SkColor background_color);
+  ~TabKeyBubbleView() override;
+
+ private:
+  // IconLabelBubbleView:
+  SkColor GetTextColor() const override;
+  SkColor GetBorderColor() const override;
+
+  SkColor text_color_;
+
+  DISALLOW_COPY_AND_ASSIGN(TabKeyBubbleView);
+};
+
+TabKeyBubbleView::TabKeyBubbleView(const gfx::FontList& font_list,
+                                   SkColor text_color,
+                                   SkColor background_color)
+    : IconLabelBubbleView(0, font_list, SK_ColorRED, background_color, false),
+      text_color_(text_color) {
+  SetLabel(l10n_util::GetStringUTF16(IDS_APP_TAB_KEY));
+}
+
+TabKeyBubbleView::~TabKeyBubbleView() {}
+
+SkColor TabKeyBubbleView::GetTextColor() const {
+  return text_color_;
+}
+
+SkColor TabKeyBubbleView::GetBorderColor() const {
+  return text_color_;
+}
+
+}  // namespace
 
 KeywordHintView::KeywordHintView(Profile* profile,
                                  const gfx::FontList& font_list,
+                                 const gfx::FontList& bubble_font_list,
+                                 int bubble_height,
                                  SkColor text_color,
                                  SkColor background_color)
     : profile_(profile),
-      tab_image_(new views::ImageView()) {
+      leading_label_(nullptr),
+      tab_key_view_(nullptr),
+      trailing_label_(nullptr),
+      tab_key_height_(bubble_height) {
   leading_label_ =
       CreateLabel(font_list, text_color, background_color);
-  tab_image_->SetImage(
-      ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-          IDR_OMNIBOX_KEYWORD_HINT_TAB));
-  AddChildView(tab_image_);
+  if (ui::MaterialDesignController::IsModeMaterial()) {
+    tab_key_view_ =
+        new TabKeyBubbleView(bubble_font_list, text_color, background_color);
+  } else {
+    views::ImageView* tab_image = new views::ImageView();
+    tab_image->SetImage(
+        ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+            IDR_OMNIBOX_KEYWORD_HINT_TAB));
+    tab_key_view_ = tab_image;
+  }
+  AddChildView(tab_key_view_);
   trailing_label_ =
       CreateLabel(font_list, text_color, background_color);
 }
@@ -68,28 +123,28 @@ void KeywordHintView::SetKeyword(const base::string16& keyword) {
 gfx::Size KeywordHintView::GetPreferredSize() const {
   // Height will be ignored by the LocationBarView.
   return gfx::Size(leading_label_->GetPreferredSize().width() +
-                       tab_image_->GetPreferredSize().width() +
+                       tab_key_view_->GetPreferredSize().width() +
                        trailing_label_->GetPreferredSize().width(),
                    0);
 }
 
 gfx::Size KeywordHintView::GetMinimumSize() const {
   // Height will be ignored by the LocationBarView.
-  return tab_image_->GetPreferredSize();
+  return tab_key_view_->GetPreferredSize();
 }
 
 void KeywordHintView::Layout() {
-  int tab_width = tab_image_->GetPreferredSize().width();
+  int tab_width = tab_key_view_->GetPreferredSize().width();
   bool show_labels = (width() != tab_width);
   gfx::Size leading_size(leading_label_->GetPreferredSize());
   leading_label_->SetBounds(0, 0, show_labels ? leading_size.width() : 0,
                             height());
-  tab_image_->SetBounds(leading_label_->bounds().right(), 0, tab_width,
-                        height());
+  tab_key_view_->SetBounds(leading_label_->bounds().right(),
+                           (height() - tab_key_height_) / 2, tab_width,
+                           tab_key_height_);
   gfx::Size trailing_size(trailing_label_->GetPreferredSize());
-  trailing_label_->SetBounds(tab_image_->bounds().right(), 0,
-                             show_labels ? trailing_size.width() : 0,
-                             height());
+  trailing_label_->SetBounds(tab_key_view_->bounds().right(), 0,
+                             show_labels ? trailing_size.width() : 0, height());
 }
 
 const char* KeywordHintView::GetClassName() const {

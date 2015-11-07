@@ -274,7 +274,8 @@ void LocationBarView::Init() {
   AddChildView(suggested_text_view_);
 
   keyword_hint_view_ = new KeywordHintView(
-      profile(), font_list,
+      profile(), font_list, bubble_font_list,
+      bubble_height + 2 * kBubbleInteriorVerticalPadding,
       GetColor(SecurityStateModel::NONE, LocationBarView::DEEMPHASIZED_TEXT),
       background_color);
   AddChildView(keyword_hint_view_);

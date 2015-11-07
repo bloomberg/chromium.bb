@@ -34,6 +34,8 @@ class KeywordHintView : public views::View {
  public:
   KeywordHintView(Profile* profile,
                   const gfx::FontList& font_list,
+                  const gfx::FontList& bubble_font_list,
+                  int tab_key_height,
                   SkColor text_color,
                   SkColor background_color);
   ~KeywordHintView() override;
@@ -54,9 +56,14 @@ class KeywordHintView : public views::View {
                             SkColor background_color);
 
   Profile* profile_;
+
   views::Label* leading_label_;
-  views::ImageView* tab_image_;
+  views::View* tab_key_view_;
   views::Label* trailing_label_;
+
+  // Height of the tab key view (only used in MD).
+  int tab_key_height_;
+
   base::string16 keyword_;
 
   DISALLOW_COPY_AND_ASSIGN(KeywordHintView);
