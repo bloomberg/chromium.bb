@@ -147,6 +147,24 @@ void CheckThatCredentialsStored(
 }
 #endif
 
+void TestPromptNotShown(const char* failure_message,
+                        content::WebContents* web_contents,
+                        content::RenderViewHost* rvh) {
+  SCOPED_TRACE(testing::Message(failure_message));
+
+  NavigationObserver observer(web_contents);
+  scoped_ptr<PromptObserver> prompt_observer(
+      PromptObserver::Create(web_contents));
+  std::string fill_and_submit =
+      "document.getElementById('username_failed').value = 'temp';"
+      "document.getElementById('password_failed').value = 'random';"
+      "document.getElementById('failed_form').submit()";
+
+  ASSERT_TRUE(content::ExecuteScript(rvh, fill_and_submit));
+  observer.Wait();
+  EXPECT_FALSE(prompt_observer->IsShowingPrompt());
+}
+
 }  // namespace
 
 namespace password_manager {
@@ -167,6 +185,25 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase, PromptForNormalSubmit) {
   ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
   observer.Wait();
   EXPECT_TRUE(prompt_observer->IsShowingPrompt());
+}
+
+IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
+                       NoPromptIfFormReappeared) {
+  NavigateToFile("/password/failed.html");
+  TestPromptNotShown("normal form", WebContents(), RenderViewHost());
+}
+
+IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
+                       NoPromptIfFormReappearedWithPartsHidden) {
+  NavigateToFile("/password/failed_partly_visible.html");
+  TestPromptNotShown("partly visible form", WebContents(), RenderViewHost());
+}
+
+IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
+                       NoPromptIfFormReappearedInputOutsideFor) {
+  NavigateToFile("/password/failed_input_outside.html");
+  TestPromptNotShown("form with input outside", WebContents(),
+                     RenderViewHost());
 }
 
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,

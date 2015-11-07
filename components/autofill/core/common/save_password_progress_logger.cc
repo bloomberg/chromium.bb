@@ -354,6 +354,9 @@ std::string SavePasswordProgressLogger::GetStringFromID(
       return "PasswordFormManager::state_";
     case SavePasswordProgressLogger::STRING_ADDING_SIGNATURE:
       return "Adding manager for form with this signature";
+    case SavePasswordProgressLogger::STRING_UNOWNED_INPUTS_VISIBLE:
+      return "Some control elements not associated to a form element are "
+             "visible";
     case SavePasswordProgressLogger::STRING_INVALID:
       return "INVALID";
       // Intentionally no default: clause here -- all IDs need to get covered.

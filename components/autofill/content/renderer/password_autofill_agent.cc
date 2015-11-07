@@ -126,28 +126,23 @@ bool IsUnownedPasswordFormVisible(blink::WebFrame* frame,
   scoped_ptr<PasswordForm> unowned_password_form(
       CreatePasswordFormFromUnownedInputElements(*frame, nullptr,
                                                  &form_predictions));
+  if (!unowned_password_form)
+    return false;
   std::vector<blink::WebFormControlElement> control_elements =
       form_util::GetUnownedAutofillableFormFieldElements(
           frame->document().all(), nullptr);
-  if (unowned_password_form &&
-      form_util::IsNamedElementVisible(
-          control_elements, unowned_password_form->username_element) &&
-      form_util::IsNamedElementVisible(
-          control_elements, unowned_password_form->password_element)) {
-#if !defined(OS_MACOSX) && !defined(OS_ANDROID)
-    const bool action_is_empty = action == origin;
-    bool forms_are_same =
-        action_is_empty ? form_data.SameFormAs(unowned_password_form->form_data)
-                        : action == unowned_password_form->action;
-    if (forms_are_same)
-      return true;  // Form still exists.
-#else               // OS_MACOSX or OS_ANDROID
-    if (action == unowned_password_form->action)
-      return true;  // Form still exists.
-#endif
-  }
+  if (!form_util::IsSomeControlElementVisible(control_elements))
+    return false;
 
-  return false;
+#if !defined(OS_MACOSX) && !defined(OS_ANDROID)
+  const bool action_is_empty = action == origin;
+  bool forms_are_same =
+      action_is_empty ? form_data.SameFormAs(unowned_password_form->form_data)
+                      : action == unowned_password_form->action;
+  return forms_are_same;
+#else  // OS_MACOSX or OS_ANDROID
+  return action == unowned_password_form->action;
+#endif
 }
 
 // Utility function to find the unique entry of |control_elements| for the
@@ -946,8 +941,7 @@ void PasswordAutofillAgent::OnSamePageNavigationCompleted() {
   blink::WebFrame* frame = render_frame()->GetWebFrame();
   if (form_util::IsFormVisible(frame, provisionally_saved_form_->action,
                                provisionally_saved_form_->origin,
-                               provisionally_saved_form_->form_data,
-                               form_predictions_) ||
+                               provisionally_saved_form_->form_data) ||
       IsUnownedPasswordFormVisible(frame, provisionally_saved_form_->action,
                                    provisionally_saved_form_->origin,
                                    provisionally_saved_form_->form_data,
@@ -1000,10 +994,9 @@ void PasswordAutofillAgent::SendPasswordForms(bool only_visible) {
     logger->LogNumber(Logger::STRING_NUMBER_OF_ALL_FORMS, forms.size());
 
   std::vector<PasswordForm> password_forms;
-  for (size_t i = 0; i < forms.size(); ++i) {
-    const blink::WebFormElement& form = forms[i];
+  for (const blink::WebFormElement& form : forms) {
     if (only_visible) {
-      bool is_form_visible = form_util::IsWebNodeVisible(form);
+      bool is_form_visible = form_util::AreFormContentsVisible(form);
       if (logger) {
         LogHTMLForm(logger.get(), Logger::STRING_FORM_FOUND_ON_PAGE, form);
         logger->LogBoolean(Logger::STRING_FORM_IS_VISIBLE, is_form_visible);
@@ -1028,16 +1021,29 @@ void PasswordAutofillAgent::SendPasswordForms(bool only_visible) {
 
   // See if there are any unattached input elements that could be used for
   // password submission.
-  scoped_ptr<PasswordForm> password_form(
-      CreatePasswordFormFromUnownedInputElements(*frame,
-                                                 nullptr,
-                                                 &form_predictions_));
-  if (password_form) {
+  bool add_unowned_inputs = true;
+  if (only_visible) {
+    std::vector<blink::WebFormControlElement> control_elements =
+        form_util::GetUnownedAutofillableFormFieldElements(
+            frame->document().all(), nullptr);
+    add_unowned_inputs =
+        form_util::IsSomeControlElementVisible(control_elements);
     if (logger) {
-      logger->LogPasswordForm(Logger::STRING_FORM_IS_PASSWORD,
-                              *password_form);
+      logger->LogBoolean(Logger::STRING_UNOWNED_INPUTS_VISIBLE,
+                         add_unowned_inputs);
     }
-    password_forms.push_back(*password_form);
+  }
+  if (add_unowned_inputs) {
+    scoped_ptr<PasswordForm> password_form(
+        CreatePasswordFormFromUnownedInputElements(*frame, nullptr,
+                                                   &form_predictions_));
+    if (password_form) {
+      if (logger) {
+        logger->LogPasswordForm(Logger::STRING_FORM_IS_PASSWORD,
+                                *password_form);
+      }
+      password_forms.push_back(*password_form);
+    }
   }
 
   if (password_forms.empty() && !only_visible) {

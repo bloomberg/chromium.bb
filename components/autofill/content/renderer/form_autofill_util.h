@@ -56,12 +56,6 @@ enum ExtractMask {
 // Copied to components/autofill/ios/browser/resources/autofill_controller.js.
 extern const size_t kMaxParseableFields;
 
-// Returns true if |control_elements| contains an element named |name| and is
-// visible.
-bool IsNamedElementVisible(
-    const std::vector<blink::WebFormControlElement>& control_elements,
-    const base::string16& name);
-
 // Extract FormData from the form element and return whether the operation was
 // successful.
 bool ExtractFormData(const blink::WebFormElement& form_element, FormData* data);
@@ -76,12 +70,14 @@ bool ExtractFormData(const blink::WebFormElement& form_element, FormData* data);
 bool IsFormVisible(blink::WebFrame* frame,
                    const GURL& action,
                    const GURL& origin,
-                   const FormData& form_data,
-                   const FormsPredictionsMap& form_predictions);
+                   const FormData& form_data);
 
-// Returns whether |form| is still visible in the frame. Ends up calling
-// isFormVisible() above, deriving arguments from |form|.
-bool IsFormVisible(const blink::WebFormElement& form);
+// Returns true if at least one element from |control_elements| is visible.
+bool IsSomeControlElementVisible(
+    const blink::WebVector<blink::WebFormControlElement>& control_elements);
+
+// Returns true if some control elements of |form| are visible.
+bool AreFormContentsVisible(const blink::WebFormElement& form);
 
 // Helper functions to assist in getting the canonical form of the action and
 // origin. The action will proplerly take into account <BASE>, and both will

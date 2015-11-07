@@ -615,7 +615,7 @@ void AutofillAgent::OnSamePageNavigationCompleted() {
 
   // Assume form submission only if the form is now gone, either invisible or
   // removed from the DOM.
-  if (form_util::IsFormVisible(last_interacted_form_))
+  if (form_util::AreFormContentsVisible(last_interacted_form_))
     return;
 
   // Could not find a visible form equal to our saved form, assume submission.

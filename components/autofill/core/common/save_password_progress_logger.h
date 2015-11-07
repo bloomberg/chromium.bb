@@ -127,6 +127,7 @@ class SavePasswordProgressLogger {
     STRING_FORM_SIGNATURE,
     STRING_ADDING_SIGNATURE,
     STRING_FORM_MANAGER_STATE,
+    STRING_UNOWNED_INPUTS_VISIBLE,
     STRING_INVALID,  // Represents a string returned in a case of an error.
     STRING_MAX = STRING_INVALID
   };

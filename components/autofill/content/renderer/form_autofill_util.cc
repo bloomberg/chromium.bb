@@ -1090,17 +1090,6 @@ GURL StripAuthAndParams(const GURL& gurl) {
 
 }  // namespace
 
-bool IsNamedElementVisible(
-    const std::vector<blink::WebFormControlElement>& control_elements,
-    const base::string16& name) {
-  for (size_t i = 0; i < control_elements.size(); ++i) {
-    if (control_elements[i].nameForAutofill() == name) {
-      return IsWebNodeVisible(control_elements[i]);
-    }
-  }
-  return false;
-}
-
 bool ExtractFormData(const WebFormElement& form_element, FormData* data) {
   return WebFormElementToFormData(
       form_element, WebFormControlElement(),
@@ -1112,10 +1101,9 @@ bool ExtractFormData(const WebFormElement& form_element, FormData* data) {
 bool IsFormVisible(blink::WebFrame* frame,
                    const GURL& canonical_action,
                    const GURL& canonical_origin,
-                   const FormData& form_data,
-                   const FormsPredictionsMap& form_predictions) {
+                   const FormData& form_data) {
   const GURL frame_url = GURL(frame->document().url().string().utf8());
-  blink::WebVector<blink::WebFormElement> forms;
+  blink::WebVector<WebFormElement> forms;
   frame->document().forms(forms);
 
 #if !defined(OS_MACOSX) && !defined(OS_ANDROID)
@@ -1128,9 +1116,8 @@ bool IsFormVisible(blink::WebFrame* frame,
   // to the page URL, this method checks ALL fields of the form instead (using
   // FormData.SameFormAs). This is also true if the action was set to the page
   // URL on purpose.
-  for (size_t i = 0; i < forms.size(); ++i) {
-    const blink::WebFormElement& form = forms[i];
-    if (!IsWebNodeVisible(form))
+  for (const WebFormElement& form : forms) {
+    if (!AreFormContentsVisible(form))
       continue;
 
     GURL iter_canonical_action = GetCanonicalActionForForm(form);
@@ -1142,8 +1129,8 @@ bool IsFormVisible(blink::WebFrame* frame,
 
     if (action_is_empty) {  // Both actions are empty, compare all fields.
       FormData extracted_form_data;
-      WebFormElementToFormData(form, blink::WebFormControlElement(),
-                               EXTRACT_NONE, &extracted_form_data, nullptr);
+      WebFormElementToFormData(form, WebFormControlElement(), EXTRACT_NONE,
+                               &extracted_form_data, nullptr);
       if (form_data.SameFormAs(extracted_form_data)) {
         return true;  // Form still exists.
       }
@@ -1162,12 +1149,19 @@ bool IsFormVisible(blink::WebFrame* frame,
   return false;
 }
 
-bool IsFormVisible(const WebFormElement& form) {
-  FormData form_data;
-  return ExtractFormData(form, &form_data) &&
-         IsFormVisible(form.document().frame(), GetCanonicalActionForForm(form),
-                       GetCanonicalOriginForDocument(form.document()),
-                       form_data, FormsPredictionsMap());
+bool IsSomeControlElementVisible(
+    const WebVector<WebFormControlElement>& control_elements) {
+  for (const WebFormControlElement& control_element : control_elements) {
+    if (IsWebNodeVisible(control_element))
+      return true;
+  }
+  return false;
+}
+
+bool AreFormContentsVisible(const WebFormElement& form) {
+  WebVector<WebFormControlElement> control_elements;
+  form.getFormControlElements(control_elements);
+  return IsSomeControlElementVisible(control_elements);
 }
 
 GURL GetCanonicalActionForForm(const WebFormElement& form) {
