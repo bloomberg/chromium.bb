@@ -297,19 +297,23 @@ void ManageProfileHandler::SendProfileIconsAndNames(
   base::ListValue image_url_list;
   base::ListValue default_name_list;
 
-  // First add the GAIA picture if it's available.
   const ProfileInfoCache& cache =
       g_browser_process->profile_manager()->GetProfileInfoCache();
-  Profile* profile = Profile::FromWebUI(web_ui());
-  size_t profile_index = cache.GetIndexOfProfileWithPath(profile->GetPath());
-  if (profile_index != std::string::npos) {
-    const gfx::Image* icon =
-        cache.GetGAIAPictureOfProfileAtIndex(profile_index);
-    if (icon) {
-      gfx::Image icon2 = profiles::GetAvatarIconForWebUI(*icon, true);
-      gaia_picture_url_ = webui::GetBitmapDataUrl(icon2.AsBitmap());
-      image_url_list.AppendString(gaia_picture_url_);
-      default_name_list.AppendString(std::string());
+
+  // In manage mode, first add the GAIA picture if it is available. No GAIA
+  // picture in create mode.
+  if (mode.GetString() == kManageProfileIdentifier) {
+    Profile* profile = Profile::FromWebUI(web_ui());
+    size_t profile_index = cache.GetIndexOfProfileWithPath(profile->GetPath());
+    if (profile_index != std::string::npos) {
+      const gfx::Image* icon =
+          cache.GetGAIAPictureOfProfileAtIndex(profile_index);
+      if (icon) {
+        gfx::Image icon2 = profiles::GetAvatarIconForWebUI(*icon, true);
+        gaia_picture_url_ = webui::GetBitmapDataUrl(icon2.AsBitmap());
+        image_url_list.AppendString(gaia_picture_url_);
+        default_name_list.AppendString(std::string());
+      }
     }
   }
 
