@@ -1,20 +1,16 @@
 <html>
 <head>
 <script src="../inspector-test.js"></script>
+<script src="../security-test.js"></script>
 <script>
-var initialize_SecurityTest = function() {
-    InspectorTest.preloadPanel("security");
-}
-
 function test()
 {
     var mixedContentStatus = { ranInsecureContent: false, displayedInsecureContent: false};
 
-    var targets = WebInspector.targetManager.targets();
-    targets[0].model(WebInspector.SecurityModel).dispatchEventToListeners(WebInspector.SecurityModel.EventTypes.SecurityStateChanged, new WebInspector.PageSecurityState(SecurityAgent.SecurityState.Secure, [], mixedContentStatus, true));
+    InspectorTest.mainTarget.model(WebInspector.SecurityModel).dispatchEventToListeners(WebInspector.SecurityModel.EventTypes.SecurityStateChanged, new WebInspector.PageSecurityState(SecurityAgent.SecurityState.Secure, [], mixedContentStatus, true));
 
-    var request = new WebInspector.NetworkRequest(targets[0], 0, "http://foo.test", "https://foo.test", 0, 0, null);
-    targets[0].model(WebInspector.NetworkManager).dispatchEventToListeners(WebInspector.NetworkManager.EventTypes.RequestFinished, request);
+    var request = new WebInspector.NetworkRequest(InspectorTest.mainTarget, 0, "http://foo.test", "https://foo.test", 0, 0, null);
+    InspectorTest.dispatchRequestFinished(request);
 
     var explanations = WebInspector.SecurityPanel._instance()._mainView.contentElement.getElementsByClassName("security-explanation");
     for (var i = 0; i < explanations.length; i++)
