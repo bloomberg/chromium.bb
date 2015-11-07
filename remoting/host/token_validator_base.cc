@@ -117,7 +117,15 @@ void TokenValidatorBase::OnCertificateRequested(
   client_cert_store = new net::ClientCertStoreNSS(
       net::ClientCertStoreNSS::PasswordDelegateFactory());
 #elif defined(OS_WIN)
-  client_cert_store = new net::ClientCertStoreWin();
+  // The network process is running as "Local Service" whose "Current User"
+  // cert store doesn't contain any certificates. Use the "Local Machine"
+  // store instead.
+  // The ACL on the private key of the machine certificate in the "Local
+  // Machine" cert store needs to allow access by "Local Service".
+  HCERTSTORE cert_store = ::CertOpenStore(
+      CERT_STORE_PROV_SYSTEM, 0, NULL,
+      CERT_SYSTEM_STORE_LOCAL_MACHINE | CERT_STORE_READONLY_FLAG, L"MY");
+  client_cert_store = new net::ClientCertStoreWin(cert_store);
 #elif defined(OS_MACOSX)
   client_cert_store = new net::ClientCertStoreMac();
 #elif defined(USE_OPENSSL)

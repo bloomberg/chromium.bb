@@ -87,23 +87,44 @@ bool CreateRestrictedToken(ScopedHandle* token_out) {
   if (restricted_token.Init(token.Get()) != ERROR_SUCCESS)
     return false;
 
-  // Remove all privileges in the token.
-  if (restricted_token.DeleteAllPrivileges(nullptr) != ERROR_SUCCESS)
-    return false;
-
-  // Set low integrity level if supported by the OS.
   if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
+    // "SeChangeNotifyPrivilege" is needed to access the machine certificate
+    // (including its private key) in the "Local Machine" cert store. This is
+    // needed for HTTPS client third-party authentication . But the presence of
+    // "SeChangeNotifyPrivilege" also allows it to open and manipulate objects
+    // owned by the same user. This risk is only mitigated by setting the
+    // process integrity level to Low, which is why it is unsafe to enable
+    // "SeChangeNotifyPrivilege" on Windows XP where we don't have process
+    // integrity to protect us.
+    std::vector<base::string16> exceptions;
+    exceptions.push_back(base::string16(L"SeChangeNotifyPrivilege"));
+
+    // Remove privileges in the token.
+    if (restricted_token.DeleteAllPrivileges(&exceptions) != ERROR_SUCCESS)
+      return false;
+
+    // Set low integrity level if supported by the OS.
     if (restricted_token.SetIntegrityLevel(sandbox::INTEGRITY_LEVEL_LOW)
         != ERROR_SUCCESS) {
       return false;
     }
+  } else {
+    // Remove all privileges in the token.
+    // Since "SeChangeNotifyPrivilege" is among the privileges being removed,
+    // the network process won't be able to acquire certificates from the local
+    // machine store. This means third-party authentication won't work.
+    if (restricted_token.DeleteAllPrivileges(nullptr) != ERROR_SUCCESS)
+      return false;
   }
 
   // Return the resulting token.
-  if (restricted_token.GetRestrictedToken(token_out) ==  ERROR_SUCCESS)
-    return true;
+  DWORD result = restricted_token.GetRestrictedToken(token_out);
+  if (result != ERROR_SUCCESS) {
+    LOG(ERROR) << "Failed to get the restricted token: " << result;
+    return false;
+  }
 
-  return false;
+  return true;
 }
 
 // Creates a window station with a given name and the default desktop giving
