@@ -5,7 +5,6 @@
 <script src="workspace-test.js"></script>
 
 <script>
-
 function test()
 {
     var contentReceived;
@@ -18,9 +17,8 @@ function test()
     const styleSheetURL = "http://localhost:8000/inspector/resources/example.css";
     const sourceMapURL = "example.css.map";
     const styleSheetId = 1;
-    InspectorTest.addMockUISourceCodeToWorkspace(styleSheetURL, WebInspector.resourceTypes.Stylesheet, "");
 
-    InspectorTest.addSniffer(WebInspector.CSSWorkspaceBinding.prototype, "updateLocations", locationsUpdated, true);
+    InspectorTest.addSniffer(WebInspector.CSSWorkspaceBinding.HeaderInfo.prototype, "_updateLocations", locationsUpdated, true);
     cssModel._styleSheetAdded(createMockStyleSheetHeader(styleSheetURL, sourceMapURL));
 
     function locationsUpdated()
@@ -70,7 +68,7 @@ function test()
     function scssUISourceCodeAdded(uiSourceCode)
     {
         InspectorTest.addResult("Added SCSS uiSourceCode: " + uiSourceCode.uri());
-        afterStyleSheetAdded();
+        setImmediate(afterStyleSheetAdded);
     }
 
     function rawLocationToUILocation(line, column)

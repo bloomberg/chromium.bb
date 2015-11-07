@@ -25,7 +25,6 @@ function test()
     {
         InspectorTest.addResult("Loading raw css with mapping...");
         InspectorTest.cssModel.addEventListener(WebInspector.CSSStyleModel.Events.StyleSheetAdded, styleSheetAdded);
-        InspectorTest.addSniffer(WebInspector.SASSSourceMapping.prototype, "_bindUISourceCode", afterBind);
         InspectorTest.evaluateInPage("loadCSS()");
     }
 
@@ -37,6 +36,7 @@ function test()
         var header = event.data;
         var cssLocation = new WebInspector.CSSLocation(header.cssModel(), header.id, header.sourceURL, 0, 1);
         liveLocation = WebInspector.cssWorkspaceBinding.createLiveLocation(cssLocation, function() {});
+        InspectorTest.addSniffer(WebInspector.CSSWorkspaceBinding.prototype, "pushSourceMapping", afterBind);
         dumpLiveLocation();
     }
 

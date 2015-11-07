@@ -26,7 +26,7 @@ function test()
     function onContentAvailable()
     {
         uiSourceCode.setWorkingCopy("var a = 0;");
-        uiSourceCode.checkContentUpdated(onUpdated);
+        uiSourceCode.checkContentUpdated(true, onUpdated);
     }
 
     function confirmOverride()

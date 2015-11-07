@@ -920,7 +920,7 @@ void InspectorCSSAgent::getStyleSheetText(ErrorString* errorString, const String
     inspectorStyleSheet->getText(result);
 }
 
-void InspectorCSSAgent::setStyleSheetText(ErrorString* errorString, const String& styleSheetId, const String& text)
+void InspectorCSSAgent::setStyleSheetText(ErrorString* errorString, const String& styleSheetId, const String& text, TypeBuilder::OptOutput<String>* sourceMapURL)
 {
     FrontendOperationScope scope;
     InspectorStyleSheetBase* inspectorStyleSheet = assertStyleSheetForId(errorString, styleSheetId);
@@ -932,6 +932,8 @@ void InspectorCSSAgent::setStyleSheetText(ErrorString* errorString, const String
     TrackExceptionState exceptionState;
     m_domAgent->history()->perform(adoptRefWillBeNoop(new SetStyleSheetTextAction(inspectorStyleSheet, text)), exceptionState);
     *errorString = InspectorDOMAgent::toErrorString(exceptionState);
+    if (!inspectorStyleSheet->sourceMapURL().isEmpty())
+        *sourceMapURL = inspectorStyleSheet->sourceMapURL();
 }
 
 static bool extractRangeComponent(ErrorString* errorString, const RefPtr<JSONObject>& range, const String& component, unsigned& result)
