@@ -210,7 +210,7 @@
                    type="chrome_html"
                    flattenhtml="true"
                    allowexternalscript="true" />
-        <structure name="IDR_SETTINGS_DEFAULT_BROWSERE_PAGE_JS"
+        <structure name="IDR_SETTINGS_DEFAULT_BROWSER_PAGE_JS"
                    file="default_browser_page/default_browser_page.js"
                    type="chrome_html" />
       </if>
