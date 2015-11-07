@@ -4,6 +4,7 @@
 
 #include "components/crash/content/browser/crash_handler_host_linux.h"
 
+#include <errno.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <sys/socket.h>
