@@ -63,7 +63,7 @@
         'java_in_dir': '../android_webview/tools/WebViewShellTest',
         'is_test_apk': 1,
         'test_type': 'instrumentation',
-        'isolate_file': 'android_webview_shell_test_apk.isolate',
+        'isolate_file': 'system_webview_shell_test_apk.isolate',
         'android_manifest_path': '../android_webview/tools/WebViewShellTest/AndroidManifest.xml',
       },
       'includes': [
