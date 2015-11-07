@@ -276,10 +276,10 @@ void ScrollingCoordinator::removeWebScrollbarLayer(ScrollableArea* scrollableAre
         GraphicsLayer::unregisterContentsLayer(scrollbarLayer->layer());
 }
 
-static PassOwnPtr<WebScrollbarLayer> createScrollbarLayer(Scrollbar* scrollbar)
+static PassOwnPtr<WebScrollbarLayer> createScrollbarLayer(Scrollbar* scrollbar, float deviceScaleFactor)
 {
     ScrollbarTheme* theme = scrollbar->theme();
-    WebScrollbarThemePainter painter(theme, scrollbar);
+    WebScrollbarThemePainter painter(theme, scrollbar, deviceScaleFactor);
     OwnPtr<WebScrollbarThemeGeometry> geometry(WebScrollbarThemeGeometryNative::create(theme));
 
     OwnPtr<WebScrollbarLayer> scrollbarLayer = adoptPtr(Platform::current()->compositorSupport()->createScrollbarLayer(WebScrollbarImpl::create(scrollbar), painter, geometry.leakPtr()));
@@ -367,7 +367,7 @@ void ScrollingCoordinator::scrollableAreaScrollbarLayerDidChange(ScrollableArea*
                 ASSERT(RuntimeEnabledFeatures::overlayScrollbarsEnabled());
                 webScrollbarLayer = createSolidColorScrollbarLayer(orientation, scrollbar->theme()->thumbThickness(scrollbar), scrollbar->theme()->trackPosition(scrollbar), scrollableArea->shouldPlaceVerticalScrollbarOnLeft());
             } else {
-                webScrollbarLayer = createScrollbarLayer(scrollbar);
+                webScrollbarLayer = createScrollbarLayer(scrollbar, m_page->deviceScaleFactor());
             }
             scrollbarLayer = addWebScrollbarLayer(scrollableArea, orientation, webScrollbarLayer.release());
         }

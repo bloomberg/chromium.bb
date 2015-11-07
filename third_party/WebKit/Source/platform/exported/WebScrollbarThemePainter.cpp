@@ -41,6 +41,7 @@ void WebScrollbarThemePainter::assign(const WebScrollbarThemePainter& painter)
     // This is a pointer to a static object, so no ownership transferral.
     m_theme = painter.m_theme;
     m_scrollbar = painter.m_scrollbar;
+    m_deviceScaleFactor = painter.m_deviceScaleFactor;
 }
 
 void WebScrollbarThemePainter::reset()
@@ -55,6 +56,7 @@ void WebScrollbarThemePainter::paintScrollbarBackground(WebCanvas* canvas, const
 
     IntRect intRect(rect);
     SkPictureBuilder pictureBuilder(intRect);
+    pictureBuilder.context().setDeviceScaleFactor(m_deviceScaleFactor);
     m_theme->paintScrollbarBackground(&pictureBuilder.context(), m_scrollbar.get());
     pictureBuilder.endRecording()->playback(canvas);
 }
@@ -63,6 +65,7 @@ void WebScrollbarThemePainter::paintTrackBackground(WebCanvas* canvas, const Web
 {
     IntRect intRect(rect);
     SkPictureBuilder pictureBuilder(intRect);
+    pictureBuilder.context().setDeviceScaleFactor(m_deviceScaleFactor);
     m_theme->paintTrackBackground(&pictureBuilder.context(), m_scrollbar.get(), intRect);
     pictureBuilder.endRecording()->playback(canvas);
 }
@@ -71,6 +74,7 @@ void WebScrollbarThemePainter::paintBackTrackPart(WebCanvas* canvas, const WebRe
 {
     IntRect intRect(rect);
     SkPictureBuilder pictureBuilder(intRect);
+    pictureBuilder.context().setDeviceScaleFactor(m_deviceScaleFactor);
     m_theme->paintTrackPiece(&pictureBuilder.context(), m_scrollbar.get(), intRect, BackTrackPart);
     pictureBuilder.endRecording()->playback(canvas);
 }
@@ -79,6 +83,7 @@ void WebScrollbarThemePainter::paintForwardTrackPart(WebCanvas* canvas, const We
 {
     IntRect intRect(rect);
     SkPictureBuilder pictureBuilder(intRect);
+    pictureBuilder.context().setDeviceScaleFactor(m_deviceScaleFactor);
     m_theme->paintTrackPiece(&pictureBuilder.context(), m_scrollbar.get(), intRect, ForwardTrackPart);
     pictureBuilder.endRecording()->playback(canvas);
 }
@@ -87,6 +92,7 @@ void WebScrollbarThemePainter::paintBackButtonStart(WebCanvas* canvas, const Web
 {
     IntRect intRect(rect);
     SkPictureBuilder pictureBuilder(intRect);
+    pictureBuilder.context().setDeviceScaleFactor(m_deviceScaleFactor);
     m_theme->paintButton(&pictureBuilder.context(), m_scrollbar.get(), intRect, BackButtonStartPart);
     pictureBuilder.endRecording()->playback(canvas);
 }
@@ -95,6 +101,7 @@ void WebScrollbarThemePainter::paintBackButtonEnd(WebCanvas* canvas, const WebRe
 {
     IntRect intRect(rect);
     SkPictureBuilder pictureBuilder(intRect);
+    pictureBuilder.context().setDeviceScaleFactor(m_deviceScaleFactor);
     m_theme->paintButton(&pictureBuilder.context(), m_scrollbar.get(), intRect, BackButtonEndPart);
     pictureBuilder.endRecording()->playback(canvas);
 }
@@ -103,6 +110,7 @@ void WebScrollbarThemePainter::paintForwardButtonStart(WebCanvas* canvas, const 
 {
     IntRect intRect(rect);
     SkPictureBuilder pictureBuilder(intRect);
+    pictureBuilder.context().setDeviceScaleFactor(m_deviceScaleFactor);
     m_theme->paintButton(&pictureBuilder.context(), m_scrollbar.get(), intRect, ForwardButtonStartPart);
     pictureBuilder.endRecording()->playback(canvas);
 }
@@ -111,6 +119,7 @@ void WebScrollbarThemePainter::paintForwardButtonEnd(WebCanvas* canvas, const We
 {
     IntRect intRect(rect);
     SkPictureBuilder pictureBuilder(intRect);
+    pictureBuilder.context().setDeviceScaleFactor(m_deviceScaleFactor);
     m_theme->paintButton(&pictureBuilder.context(), m_scrollbar.get(), intRect, ForwardButtonEndPart);
     pictureBuilder.endRecording()->playback(canvas);
 }
@@ -119,6 +128,7 @@ void WebScrollbarThemePainter::paintTickmarks(WebCanvas* canvas, const WebRect& 
 {
     IntRect intRect(rect);
     SkPictureBuilder pictureBuilder(intRect);
+    pictureBuilder.context().setDeviceScaleFactor(m_deviceScaleFactor);
     m_theme->paintTickmarks(&pictureBuilder.context(), m_scrollbar.get(), intRect);
     pictureBuilder.endRecording()->playback(canvas);
 }
@@ -127,13 +137,15 @@ void WebScrollbarThemePainter::paintThumb(WebCanvas* canvas, const WebRect& rect
 {
     IntRect intRect(rect);
     SkPictureBuilder pictureBuilder(intRect);
+    pictureBuilder.context().setDeviceScaleFactor(m_deviceScaleFactor);
     m_theme->paintThumb(&pictureBuilder.context(), m_scrollbar.get(), intRect);
     pictureBuilder.endRecording()->playback(canvas);
 }
 
-WebScrollbarThemePainter::WebScrollbarThemePainter(ScrollbarTheme* theme, Scrollbar* scrollbar)
+WebScrollbarThemePainter::WebScrollbarThemePainter(ScrollbarTheme* theme, Scrollbar* scrollbar, float deviceScaleFactor)
     : m_theme(theme)
     , m_scrollbar(scrollbar)
+    , m_deviceScaleFactor(deviceScaleFactor)
 {
 }
 
