@@ -60,7 +60,7 @@ class MediaNetworkSimulation(perf_benchmark.PerfBenchmark):
     return 'media.media_cns_cases'
 
 
-@benchmark.Disabled() # crbug.com/448092
+@benchmark.Disabled('all') # crbug.com/448092
 @benchmark.Disabled('l', 'android-webview') # WebView: crbug.com/419689
 class MediaAndroid(perf_benchmark.PerfBenchmark):
   """Obtains media metrics for key user scenarios on Android."""

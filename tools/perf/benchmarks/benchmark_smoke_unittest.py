@@ -137,23 +137,18 @@ def load_tests(loader, standard_tests, pattern):
     # Merge decorators.
     for attribute in ['_enabled_strings', '_disabled_strings']:
       # Do set union of attributes to eliminate duplicates.
-      merged_attributes = list(set(getattr(method, attribute, []) +
-                                   getattr(benchmark, attribute, [])))
+      merged_attributes = getattr(method, attribute, set()).union(
+          getattr(benchmark, attribute, set()))
       if merged_attributes:
         setattr(method, attribute, merged_attributes)
 
-      # Handle the case where the benchmark is Enabled/Disabled everywhere.
-      if (getattr(method, attribute, None) == [] or
-          getattr(benchmark, attribute, None) == []):
-        setattr(method, attribute, [])
-
     # Disable some tests on android platform only.
     if sys.modules[benchmark.__module__] in _ANDROID_BLACK_LIST_MODULES:
-      method._disabled_strings.append('android')
+      method._disabled_strings.add('android')
 
     # TODO(bashi): Remove once crrev.com/1266833004 is landed.
     if benchmark.Name() == 'memory.blink_memory_mobile':
-      method._disabled_strings.append('android')
+      method._disabled_strings.add('android')
 
     setattr(BenchmarkSmokeTest, benchmark.Name(), method)
 

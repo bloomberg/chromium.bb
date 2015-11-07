@@ -100,7 +100,7 @@ class RasterizeAndRecordMicroPolymer(_RasterizeAndRecordMicro):
 
 # Disabled because we do not plan on running CT benchmarks on the perf
 # waterfall any time soon.
-@benchmark.Disabled
+@benchmark.Disabled('all')
 class RasterizeAndRecordMicroCT(_RasterizeAndRecordMicro):
   """Measures rasterize and record performance for Cluster Telemetry."""
 

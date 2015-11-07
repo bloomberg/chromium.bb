@@ -45,7 +45,7 @@ class MapsPage(page_module.Page):
     action_runner.WaitForJavaScriptCondition('window.testDone')
 
 
-@benchmark.Disabled
+@benchmark.Disabled('all')
 class MapsBenchmark(perf_benchmark.PerfBenchmark):
   """Basic Google Maps benchmarks."""
   test = _MapsMeasurement

@@ -308,7 +308,7 @@ class BlinkPerfShadowDOM(perf_benchmark.PerfBenchmark):
 
 
 # This benchmark is for local testing, doesn't need to run on bots.
-@benchmark.Disabled()
+@benchmark.Disabled('all')
 class BlinkPerfXMLHttpRequest(perf_benchmark.PerfBenchmark):
   tag = 'xml_http_request'
   test = _BlinkPerfMeasurement

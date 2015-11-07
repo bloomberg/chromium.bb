@@ -20,7 +20,7 @@ class _StartupWarm(perf_benchmark.PerfBenchmark):
     return startup.Startup(cold=False)
 
 
-@benchmark.Disabled  # crbug.com/551938
+@benchmark.Disabled('all')  # crbug.com/551938
 # On android logging in is done through system accounts workflow.
 @benchmark.Disabled('android',
                     'reference') # crbug.com/499312

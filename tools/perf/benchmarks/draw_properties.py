@@ -12,7 +12,7 @@ from telemetry import benchmark
 # This benchmark depends on tracing categories available in M43
 # This benchmark is still useful for manual testing, but need not be enabled
 # and run regularly.
-@benchmark.Disabled()
+@benchmark.Disabled('all')
 class DrawPropertiesToughScrolling(perf_benchmark.PerfBenchmark):
   test = draw_properties.DrawProperties
   page_set = page_sets.ToughScrollingCasesPageSet
@@ -24,7 +24,7 @@ class DrawPropertiesToughScrolling(perf_benchmark.PerfBenchmark):
 # This benchmark depends on tracing categories available in M43
 # This benchmark is still useful for manual testing, but need not be enabled
 # and run regularly.
-@benchmark.Disabled()
+@benchmark.Disabled('all')
 class DrawPropertiesTop25(perf_benchmark.PerfBenchmark):
   """Measures the performance of computing draw properties from property trees.
 

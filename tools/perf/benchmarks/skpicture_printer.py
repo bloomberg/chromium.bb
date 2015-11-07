@@ -22,7 +22,7 @@ def _MatchPageSetName(story_set_name, story_set_base_dir):
   return None
 
 
-@benchmark.Disabled
+@benchmark.Disabled('all')
 class SkpicturePrinter(perf_benchmark.PerfBenchmark):
   @classmethod
   def AddBenchmarkCommandLineArgs(cls, parser):
@@ -54,7 +54,7 @@ class SkpicturePrinter(perf_benchmark.PerfBenchmark):
 
 # Disabled because we do not plan on running CT benchmarks on the perf
 # waterfall any time soon.
-@benchmark.Disabled
+@benchmark.Disabled('all')
 class SkpicturePrinterCT(perf_benchmark.PerfBenchmark):
   """Captures SKPs for Cluster Telemetry."""
 

@@ -38,7 +38,7 @@ class _Repaint(perf_benchmark.PerfBenchmark):
 
 #crbug.com/499320
 #@benchmark.Enabled('android')
-@benchmark.Disabled()
+@benchmark.Disabled('all')
 class RepaintKeyMobileSites(_Repaint):
   """Measures repaint performance on the key mobile sites.
 
@@ -51,7 +51,7 @@ class RepaintKeyMobileSites(_Repaint):
 
 #crbug.com/502179
 @benchmark.Enabled('android')
-@benchmark.Disabled()
+@benchmark.Disabled('all')
 class RepaintGpuRasterizationKeyMobileSites(_Repaint):
   """Measures repaint performance on the key mobile sites with forced GPU
   rasterization.
@@ -68,7 +68,7 @@ class RepaintGpuRasterizationKeyMobileSites(_Repaint):
 
 # Disabled because we do not plan on running CT benchmarks on the perf
 # waterfall any time soon.
-@benchmark.Disabled
+@benchmark.Disabled('all')
 class RepaintCT(_Repaint):
   """Measures repaint performance for Cluster Telemetry."""
 

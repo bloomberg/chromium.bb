@@ -181,7 +181,7 @@ class PageCyclerTop10Mobile(_PageCycler):
       stories.RemoveStory(found)
     return stories
 
-@benchmark.Disabled
+@benchmark.Disabled('all')
 class PageCyclerKeyMobileSites(_PageCycler):
   """Page load time benchmark for key mobile sites."""
   page_set = page_sets.KeyMobileSitesPageSet
@@ -246,7 +246,7 @@ class PageCyclerBasicOopif(_PageCycler):
     return 'page_cycler.basic_oopif'
 
 
-@benchmark.Disabled  # crbug.com/443730
+@benchmark.Disabled('all')  # crbug.com/443730
 class PageCyclerBigJs(_PageCycler):
   page_set = page_sets.BigJsPageSet
   @classmethod

@@ -37,7 +37,7 @@ class _TextSelection(perf_benchmark.PerfBenchmark):
 
 
 # See crbug.com/519044
-@benchmark.Disabled()
+@benchmark.Disabled('all')
 class TextSelectionDirection(_TextSelection):
   """Measure text selection metrics while dragging a touch selection handle on a
   subset of top ten mobile sites and using the 'direction' touch selection
@@ -51,7 +51,7 @@ class TextSelectionDirection(_TextSelection):
 
 
 # See crbug.com/519044
-@benchmark.Disabled()
+@benchmark.Disabled('all')
 class TextSelectionCharacter(_TextSelection):
   """Measure text selection metrics while dragging a touch selection handle on a
   subset of top ten mobile sites and using the 'character' touch selection

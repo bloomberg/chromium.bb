@@ -39,7 +39,7 @@ class PowerTypical10Mobile(perf_benchmark.PerfBenchmark):
 
 
 @benchmark.Enabled('android')
-@benchmark.Disabled
+@benchmark.Disabled('all')
 class PowerTypical10MobileReload(perf_benchmark.PerfBenchmark):
   """Android typical 10 mobile power reload test."""
   test = power.LoadPower

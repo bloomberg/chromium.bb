@@ -105,7 +105,7 @@ class TabSwitchingToughImageCases(perf_benchmark.PerfBenchmark):
     return 'tab_switching.tough_image_cases'
 
 
-@benchmark.Disabled
+@benchmark.Disabled('all')
 class TabSwitchingFlashEnergyCases(perf_benchmark.PerfBenchmark):
   test = tab_switching.TabSwitching
   page_set = page_sets.FlashEnergyCasesPageSet
@@ -116,7 +116,7 @@ class TabSwitchingFlashEnergyCases(perf_benchmark.PerfBenchmark):
     return 'tab_switching.flash_energy_cases'
 
 
-@benchmark.Disabled
+@benchmark.Disabled('all')
 class TabSwitchingPluginPowerSaver(perf_benchmark.PerfBenchmark):
   test = tab_switching.TabSwitching
   page_set = page_sets.FlashEnergyCasesPageSet
