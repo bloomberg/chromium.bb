@@ -15,13 +15,13 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread.h"
 #include "media/base/cdm_factory.h"
-#include "media/base/media_export.h"
 #include "media/base/pipeline.h"
 #include "media/base/renderer_factory.h"
 #include "media/base/text_track.h"
 #include "media/blink/buffered_data_source.h"
 #include "media/blink/buffered_data_source_host_impl.h"
 #include "media/blink/encrypted_media_player_support.h"
+#include "media/blink/media_blink_export.h"
 #include "media/blink/video_frame_compositor.h"
 #include "media/blink/webmediaplayer_params.h"
 #include "media/blink/webmediaplayer_util.h"
@@ -61,7 +61,7 @@ class WebTextTrackImpl;
 // The canonical implementation of blink::WebMediaPlayer that's backed by
 // Pipeline. Handles normal resource loading, Media Source, and
 // Encrypted Media.
-class MEDIA_EXPORT WebMediaPlayerImpl
+class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
     : public NON_EXPORTED_BASE(blink::WebMediaPlayer),
       public base::SupportsWeakPtr<WebMediaPlayerImpl> {
  public:

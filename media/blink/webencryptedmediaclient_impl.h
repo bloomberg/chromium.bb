@@ -11,8 +11,8 @@
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "media/base/media_export.h"
 #include "media/blink/key_system_config_selector.h"
+#include "media/blink/media_blink_export.h"
 #include "third_party/WebKit/public/platform/WebEncryptedMediaClient.h"
 
 namespace blink {
@@ -30,7 +30,7 @@ class CdmFactory;
 class KeySystems;
 class MediaPermission;
 
-class MEDIA_EXPORT WebEncryptedMediaClientImpl
+class MEDIA_BLINK_EXPORT WebEncryptedMediaClientImpl
     : public blink::WebEncryptedMediaClient {
  public:
   WebEncryptedMediaClientImpl(

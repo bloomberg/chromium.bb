@@ -7,8 +7,8 @@
 
 #include <string>
 
-#include "media/base/media_export.h"
 #include "media/base/media_keys.h"
+#include "media/blink/media_blink_export.h"
 #include "third_party/WebKit/public/platform/WebContentDecryptionModuleResult.h"
 
 namespace media {
@@ -28,14 +28,14 @@ enum CdmResultForUMA {
   NUM_RESULT_CODES
 };
 
-MEDIA_EXPORT CdmResultForUMA
-    ConvertCdmExceptionToResultForUMA(MediaKeys::Exception exception_code);
+MEDIA_BLINK_EXPORT CdmResultForUMA
+ConvertCdmExceptionToResultForUMA(MediaKeys::Exception exception_code);
 
-MEDIA_EXPORT blink::WebContentDecryptionModuleException ConvertCdmException(
-    MediaKeys::Exception exception_code);
+MEDIA_BLINK_EXPORT blink::WebContentDecryptionModuleException
+ConvertCdmException(MediaKeys::Exception exception_code);
 
-MEDIA_EXPORT void ReportCdmResultUMA(const std::string& uma_name,
-                                     CdmResultForUMA result);
+MEDIA_BLINK_EXPORT void ReportCdmResultUMA(const std::string& uma_name,
+                                           CdmResultForUMA result);
 
 }  // namespace media
 

@@ -13,9 +13,9 @@
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
 #include "media/base/data_source.h"
-#include "media/base/media_export.h"
 #include "media/base/ranges.h"
 #include "media/blink/buffered_resource_loader.h"
+#include "media/blink/media_blink_export.h"
 #include "url/gurl.h"
 
 namespace base {
@@ -25,7 +25,7 @@ class SingleThreadTaskRunner;
 namespace media {
 class MediaLog;
 
-class MEDIA_EXPORT BufferedDataSourceHost {
+class MEDIA_BLINK_EXPORT BufferedDataSourceHost {
  public:
   // Notify the host of the total size of the media file.
   virtual void SetTotalBytes(int64 total_bytes) = 0;
@@ -44,7 +44,7 @@ class MEDIA_EXPORT BufferedDataSourceHost {
 //
 // BufferedDataSource must be created and destroyed on the thread associated
 // with the |task_runner| passed in the constructor.
-class MEDIA_EXPORT BufferedDataSource : public DataSource {
+class MEDIA_BLINK_EXPORT BufferedDataSource : public DataSource {
  public:
   // Used to specify video preload states. They are "hints" to the browser about
   // how aggressively the browser should load and buffer data.

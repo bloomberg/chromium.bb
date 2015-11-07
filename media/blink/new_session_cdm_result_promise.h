@@ -9,8 +9,8 @@
 
 #include "base/basictypes.h"
 #include "media/base/cdm_promise.h"
-#include "media/base/media_export.h"
 #include "media/base/media_keys.h"
+#include "media/blink/media_blink_export.h"
 #include "third_party/WebKit/public/platform/WebContentDecryptionModuleResult.h"
 
 namespace media {
@@ -37,7 +37,7 @@ typedef base::Callback<void(const std::string& session_id,
 // promise returns the session ID (as a string), but the blink promise needs
 // to get passed a SessionStatus. This class converts the session id to a
 // SessionStatus by calling |new_session_created_cb|.
-class MEDIA_EXPORT NewSessionCdmResultPromise
+class MEDIA_BLINK_EXPORT NewSessionCdmResultPromise
     : public CdmPromiseTemplate<std::string> {
  public:
   NewSessionCdmResultPromise(

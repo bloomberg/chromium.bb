@@ -12,8 +12,8 @@
 #include "base/time/tick_clock.h"
 #include "base/timer/timer.h"
 #include "cc/layers/video_frame_provider.h"
-#include "media/base/media_export.h"
 #include "media/base/video_renderer_sink.h"
+#include "media/blink/media_blink_export.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace media {
@@ -44,7 +44,7 @@ class VideoFrame;
 //
 // VideoFrameCompositor must live on the same thread as the compositor, though
 // it may be constructed on any thread.
-class MEDIA_EXPORT VideoFrameCompositor
+class MEDIA_BLINK_EXPORT VideoFrameCompositor
     : public VideoRendererSink,
       NON_EXPORTED_BASE(public cc::VideoFrameProvider) {
  public:

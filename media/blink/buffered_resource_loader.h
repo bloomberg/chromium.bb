@@ -9,9 +9,9 @@
 
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
-#include "media/base/media_export.h"
 #include "media/base/seekable_buffer.h"
 #include "media/blink/active_loader.h"
+#include "media/blink/media_blink_export.h"
 #include "third_party/WebKit/public/platform/WebURLLoader.h"
 #include "third_party/WebKit/public/platform/WebURLLoaderClient.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
@@ -28,7 +28,7 @@ const int64 kPositionNotSpecified = -1;
 // render thread. It wraps a WebURLLoader and does in-memory buffering,
 // pausing resource loading when the in-memory buffer is full and resuming
 // resource loading when there is available capacity.
-class MEDIA_EXPORT BufferedResourceLoader
+class MEDIA_BLINK_EXPORT BufferedResourceLoader
     : NON_EXPORTED_BASE(public blink::WebURLLoaderClient) {
  public:
   // kNeverDefer - Aggresively buffer; never defer loading while paused.

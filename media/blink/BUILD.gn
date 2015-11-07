@@ -23,7 +23,7 @@ component("blink") {
     "//url",
   ]
 
-  defines = [ "MEDIA_IMPLEMENTATION" ]
+  defines = [ "MEDIA_BLINK_IMPLEMENTATION" ]
 
   sources = [
     "active_loader.cc",
@@ -43,6 +43,7 @@ component("blink") {
     "cdm_session_adapter.h",
     "key_system_config_selector.cc",
     "key_system_config_selector.h",
+    "media_blink_export.h",
     "new_session_cdm_result_promise.cc",
     "new_session_cdm_result_promise.h",
     "texttrack_impl.cc",

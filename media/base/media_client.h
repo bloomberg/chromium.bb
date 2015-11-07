@@ -21,7 +21,7 @@ class MediaClient;
 MEDIA_EXPORT void SetMediaClient(MediaClient* media_client);
 
 // Media's embedder API should only be used by media.
-#if defined(MEDIA_IMPLEMENTATION)
+#if defined(MEDIA_IMPLEMENTATION) || defined(MEDIA_BLINK_IMPLEMENTATION)
 // Getter for the client. Returns NULL if no customized client is needed.
 MEDIA_EXPORT MediaClient* GetMediaClient();
 #endif

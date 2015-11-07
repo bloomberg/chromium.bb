@@ -13,7 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "media/base/eme_constants.h"
-#include "media/base/media_export.h"
+#include "media/blink/media_blink_export.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
 
 namespace blink {
@@ -31,7 +31,7 @@ struct CdmConfig;
 class KeySystems;
 class MediaPermission;
 
-class MEDIA_EXPORT KeySystemConfigSelector {
+class MEDIA_BLINK_EXPORT KeySystemConfigSelector {
  public:
   KeySystemConfigSelector(
       const KeySystems* key_systems,

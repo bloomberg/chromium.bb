@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "media/base/media_export.h"
+#include "media/blink/media_blink_export.h"
 
 namespace blink {
 class WebURLResponse;
@@ -33,8 +33,8 @@ enum UncacheableReason {
 
 // Return the logical OR of the reasons "response" cannot be used for a future
 // request (using the disk cache), or 0 if it might be useful.
-uint32 MEDIA_EXPORT GetReasonsForUncacheability(
-    const blink::WebURLResponse& response);
+uint32 MEDIA_BLINK_EXPORT
+GetReasonsForUncacheability(const blink::WebURLResponse& response);
 
 }  // namespace media
 

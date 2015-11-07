@@ -7,7 +7,7 @@
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
-#include "media/base/media_export.h"
+#include "media/blink/media_blink_export.h"
 #include "media/filters/context_3d.h"
 
 namespace base {
@@ -28,7 +28,7 @@ class MediaPermission;
 
 // Holds parameters for constructing WebMediaPlayerImpl without having
 // to plumb arguments through various abstraction layers.
-class MEDIA_EXPORT WebMediaPlayerParams {
+class MEDIA_BLINK_EXPORT WebMediaPlayerParams {
  public:
   typedef base::Callback<void(const base::Closure&)> DeferLoadCB;
   typedef base::Callback<Context3D()> Context3DCB;

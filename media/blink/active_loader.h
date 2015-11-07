@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "media/base/media_export.h"
+#include "media/blink/media_blink_export.h"
 
 namespace blink {
 class WebURLLoader;
@@ -18,7 +18,7 @@ namespace media {
 // Wraps an active WebURLLoader with some additional state.
 //
 // Handles deferring and deletion of loaders.
-class MEDIA_EXPORT ActiveLoader {
+class MEDIA_BLINK_EXPORT ActiveLoader {
  public:
   // Creates an ActiveLoader with the given loader. It is assumed that the
   // initial state of |loader| is loading and not deferred.

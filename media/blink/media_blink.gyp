@@ -25,7 +25,7 @@
         '../../url/url.gyp:url_lib',
       ],
       'defines': [
-        'MEDIA_IMPLEMENTATION',
+        'MEDIA_BLINK_IMPLEMENTATION',
       ],
       # This sources list is duplicated in //media/blink/BUILD.gn
       'sources': [
@@ -48,6 +48,7 @@
         'encrypted_media_player_support.h',
         'key_system_config_selector.cc',
         'key_system_config_selector.h',
+        'media_blink_export.h',
         'new_session_cdm_result_promise.cc',
         'new_session_cdm_result_promise.h',
         'texttrack_impl.cc',

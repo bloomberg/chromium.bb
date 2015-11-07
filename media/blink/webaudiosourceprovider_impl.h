@@ -11,7 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
 #include "media/base/audio_renderer_sink.h"
-#include "media/base/media_export.h"
+#include "media/blink/media_blink_export.h"
 #include "third_party/WebKit/public/platform/WebAudioSourceProvider.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
 
@@ -30,7 +30,7 @@ namespace media {
 // sample-frames using the sink's RenderCallback to get the data.
 //
 // All calls are protected by a lock.
-class MEDIA_EXPORT WebAudioSourceProviderImpl
+class MEDIA_BLINK_EXPORT WebAudioSourceProviderImpl
     : NON_EXPORTED_BASE(public blink::WebAudioSourceProvider),
       NON_EXPORTED_BASE(public AudioRendererSink) {
  public:

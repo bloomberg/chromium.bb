@@ -6,15 +6,15 @@
 #define MEDIA_BLINK_BUFFERED_DATA_SOURCE_HOST_IMPL_H_
 
 #include "base/time/time.h"
-#include "media/base/media_export.h"
 #include "media/base/ranges.h"
 #include "media/blink/buffered_data_source.h"
+#include "media/blink/media_blink_export.h"
 
 namespace media {
 
 // Provides an implementation of BufferedDataSourceHost that translates the
 // buffered byte ranges into estimated time ranges.
-class MEDIA_EXPORT BufferedDataSourceHostImpl
+class MEDIA_BLINK_EXPORT BufferedDataSourceHostImpl
     : public BufferedDataSourceHost {
  public:
   BufferedDataSourceHostImpl();

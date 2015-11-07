@@ -8,14 +8,14 @@
 #include <string>
 #include <vector>
 
-#include "media/base/media_export.h"
 #include "media/base/media_log.h"
+#include "media/blink/media_blink_export.h"
 #include "third_party/WebKit/public/platform/WebMediaSource.h"
 
 namespace media {
 class ChunkDemuxer;
 
-class MEDIA_EXPORT WebMediaSourceImpl
+class MEDIA_BLINK_EXPORT WebMediaSourceImpl
     : NON_EXPORTED_BASE(public blink::WebMediaSource) {
  public:
   WebMediaSourceImpl(ChunkDemuxer* demuxer,
