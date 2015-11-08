@@ -96,7 +96,7 @@ const uint64_t MemoryDumpManager::kInvalidTracingProcessId = 0;
 
 // static
 const char* const MemoryDumpManager::kSystemAllocatorPoolName =
-#if defined(SUPPORTS_MALLOC_MEMORY_TRACING)
+#if defined(MALLOC_MEMORY_TRACING_SUPPORTED)
     MallocDumpProvider::kAllocatedObjects;
 #elif defined(OS_WIN)
     WinHeapDumpProvider::kAllocatedObjects;
@@ -155,7 +155,7 @@ void MemoryDumpManager::Initialize(MemoryDumpManagerDelegate* delegate,
                        "ProcessMemoryTotals", nullptr);
 #endif
 
-#if defined(SUPPORTS_MALLOC_MEMORY_TRACING)
+#if defined(MALLOC_MEMORY_TRACING_SUPPORTED)
   RegisterDumpProvider(MallocDumpProvider::GetInstance(), "Malloc", nullptr);
 #endif
 
