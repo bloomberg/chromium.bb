@@ -312,6 +312,23 @@ std::string CreateSignedTreeHeadJsonString(size_t tree_size,
   return sth_json;
 }
 
+std::string CreateConsistencyProofJsonString(
+    const std::vector<std::string>& raw_nodes) {
+  std::string consistency_proof_json = std::string("{\"consistency\":[");
+
+  for (auto it = raw_nodes.begin(); it != raw_nodes.end(); ++it) {
+    std::string proof_node_b64;
+    base::Base64Encode(*it, &proof_node_b64);
+    consistency_proof_json +=
+        base::StringPrintf("\"%s\"", proof_node_b64.c_str());
+    if (it + 1 != raw_nodes.end())
+      consistency_proof_json += std::string(",");
+  }
+  consistency_proof_json += std::string("]}");
+
+  return consistency_proof_json;
+}
+
 }  // namespace ct
 
 }  // namespace net

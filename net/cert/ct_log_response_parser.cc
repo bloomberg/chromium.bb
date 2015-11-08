@@ -7,6 +7,7 @@
 #include "base/base64.h"
 #include "base/json/json_value_converter.h"
 #include "base/logging.h"
+#include "base/memory/scoped_vector.h"
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -101,6 +102,33 @@ bool IsJsonSTHStructurallyValid(const JsonSignedTreeHead& sth) {
   return true;
 }
 
+// Structure for making JSON decoding easier. The string fields
+// are base64-encoded so will require further decoding.
+struct JsonConsistencyProof {
+  ScopedVector<std::string> proof_nodes;
+
+  static void RegisterJSONConverter(
+      base::JSONValueConverter<JsonConsistencyProof>* converter);
+};
+
+bool ConvertIndividualProofNode(const base::Value* value, std::string* result) {
+  std::string b64_encoded_node;
+  if (!value->GetAsString(&b64_encoded_node))
+    return false;
+
+  if (!ConvertSHA256RootHash(b64_encoded_node, result))
+    return false;
+
+  return true;
+}
+
+void JsonConsistencyProof::RegisterJSONConverter(
+    base::JSONValueConverter<JsonConsistencyProof>* converter) {
+  converter->RegisterRepeatedCustomValue<std::string>(
+      "consistency", &JsonConsistencyProof::proof_nodes,
+      &ConvertIndividualProofNode);
+}
+
 }  // namespace
 
 bool FillSignedTreeHead(const base::Value& json_signed_tree_head,
@@ -124,6 +152,23 @@ bool FillSignedTreeHead(const base::Value& json_signed_tree_head,
   memcpy(signed_tree_head->sha256_root_hash,
          parsed_sth.sha256_root_hash.c_str(),
          kSthRootHashLength);
+  return true;
+}
+
+bool FillConsistencyProof(const base::Value& json_consistency_proof,
+                          std::vector<std::string>* consistency_proof) {
+  JsonConsistencyProof parsed_proof;
+  base::JSONValueConverter<JsonConsistencyProof> converter;
+  if (!converter.Convert(json_consistency_proof, &parsed_proof)) {
+    DVLOG(1) << "Invalid consistency proof.";
+    return false;
+  }
+
+  consistency_proof->reserve(parsed_proof.proof_nodes.size());
+  for (std::string* proof_node : parsed_proof.proof_nodes) {
+    consistency_proof->push_back(*proof_node);
+  }
+
   return true;
 }
 

@@ -95,6 +95,47 @@ TEST(CTLogResponseParserTest, FailsToParseIncorrectLengthRootHash) {
   ASSERT_FALSE(FillSignedTreeHead(*too_short_hash_json.get(), &tree_head));
 }
 
+TEST(CTLogResponseParserTest, ParsesConsistencyProofSuccessfully) {
+  std::string first(32, 'a');
+  std::string second(32, 'b');
+  std::string third(32, 'c');
+
+  std::vector<std::string> raw_nodes;
+  raw_nodes.push_back(first);
+  raw_nodes.push_back(second);
+  raw_nodes.push_back(third);
+  scoped_ptr<base::Value> sample_consistency_proof =
+      ParseJson(CreateConsistencyProofJsonString(raw_nodes));
+
+  std::vector<std::string> output;
+
+  ASSERT_TRUE(FillConsistencyProof(*sample_consistency_proof.get(), &output));
+
+  EXPECT_EQ(output[0], first);
+  EXPECT_EQ(output[1], second);
+  EXPECT_EQ(output[2], third);
+}
+
+TEST(CTLogResponseParserTest, FailsOnInvalidProofJson) {
+  std::vector<std::string> output;
+
+  scoped_ptr<base::Value> badly_encoded =
+      ParseJson(std::string("{\"consistency\": [\"notbase64\"]}"));
+  EXPECT_FALSE(FillConsistencyProof(*badly_encoded.get(), &output));
+
+  scoped_ptr<base::Value> not_a_string =
+      ParseJson(std::string("{\"consistency\": [42, 16]}"));
+  EXPECT_FALSE(FillConsistencyProof(*badly_encoded.get(), &output));
+}
+
+TEST(CTLogResponseParserTest, ParsesProofJsonWithExtraFields) {
+  std::vector<std::string> output;
+
+  scoped_ptr<base::Value> badly_encoded =
+      ParseJson(std::string("{\"consistency\": [], \"somethingelse\": 3}"));
+  EXPECT_TRUE(FillConsistencyProof(*badly_encoded.get(), &output));
+}
+
 }  // namespace ct
 
 }  // namespace net

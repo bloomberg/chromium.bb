@@ -5,6 +5,9 @@
 #ifndef NET_CERT_CT_LOG_RESPONSE_PARSER_H_
 #define NET_CERT_CT_LOG_RESPONSE_PARSER_H_
 
+#include <string>
+#include <vector>
+
 #include "base/strings/string_piece.h"
 #include "net/base/net_export.h"
 
@@ -23,6 +26,10 @@ struct SignedTreeHead;
 // valid.Otherwise, returns false and does not modify |signed_tree_head|.
 NET_EXPORT bool FillSignedTreeHead(const base::Value& json_signed_tree_head,
                                    SignedTreeHead* signed_tree_head);
+
+NET_EXPORT bool FillConsistencyProof(
+    const base::Value& json_signed_tree_head,
+    std::vector<std::string>* consistency_proof);
 
 }  // namespace ct
 
