@@ -63,8 +63,9 @@ private:
         { }
 
         void pushInvalidationSet(const SiblingInvalidationSet&);
-        bool matchCurrentInvalidationSets(Element&, RecursionData&);
+        bool matchCurrentInvalidationSets(Element&, RecursionData&) const;
 
+        bool isEmpty() const { return m_invalidationEntries.isEmpty(); }
         void advance() { m_elementIndex++; }
 
     private:
@@ -79,13 +80,15 @@ private:
             unsigned m_invalidationLimit;
         };
 
-        Vector<Entry, 16> m_invalidationEntries;
+        mutable Vector<Entry, 16> m_invalidationEntries;
         unsigned m_elementIndex;
     };
 
     bool invalidate(Element&, RecursionData&, SiblingData&);
+    bool invalidateShadowRootChildren(Element&, RecursionData&);
     bool invalidateChildren(Element&, RecursionData&);
     bool checkInvalidationSetsAgainstElement(Element&, RecursionData&, SiblingData&);
+    void pushInvalidationSetsForElement(Element&, RecursionData&, SiblingData&);
 
     class RecursionCheckpoint {
     public:

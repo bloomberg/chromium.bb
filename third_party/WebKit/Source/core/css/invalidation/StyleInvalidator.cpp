@@ -147,7 +147,7 @@ void StyleInvalidator::SiblingData::pushInvalidationSet(const SiblingInvalidatio
     m_invalidationEntries.append(Entry(&invalidationSet, invalidationLimit));
 }
 
-ALWAYS_INLINE bool StyleInvalidator::SiblingData::matchCurrentInvalidationSets(Element& element, RecursionData& recursionData)
+bool StyleInvalidator::SiblingData::matchCurrentInvalidationSets(Element& element, RecursionData& recursionData) const
 {
     bool thisElementNeedsStyleRecalc = false;
     ASSERT(!recursionData.wholeSubtreeInvalid());
@@ -155,6 +155,7 @@ ALWAYS_INLINE bool StyleInvalidator::SiblingData::matchCurrentInvalidationSets(E
     unsigned index = 0;
     while (index < m_invalidationEntries.size()) {
         if (m_elementIndex > m_invalidationEntries[index].m_invalidationLimit) {
+            // m_invalidationEntries[index] only applies to earlier siblings. Remove it.
             m_invalidationEntries[index] = m_invalidationEntries.last();
             m_invalidationEntries.removeLast();
             continue;
@@ -186,6 +187,26 @@ ALWAYS_INLINE bool StyleInvalidator::SiblingData::matchCurrentInvalidationSets(E
     return thisElementNeedsStyleRecalc;
 }
 
+void StyleInvalidator::pushInvalidationSetsForElement(Element& element, RecursionData& recursionData, SiblingData& siblingData)
+{
+    PendingInvalidations* pendingInvalidations = m_pendingInvalidationMap.get(&element);
+    ASSERT(pendingInvalidations);
+
+    for (const auto& invalidationSet : pendingInvalidations->siblings())
+        siblingData.pushInvalidationSet(toSiblingInvalidationSet(*invalidationSet));
+
+    if (!pendingInvalidations->descendants().isEmpty()) {
+        for (const auto& invalidationSet : pendingInvalidations->descendants())
+            recursionData.pushInvalidationSet(toDescendantInvalidationSet(*invalidationSet));
+        if (UNLIKELY(*s_tracingEnabled)) {
+            TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline.invalidationTracking"),
+                "StyleInvalidatorInvalidationTracking",
+                TRACE_EVENT_SCOPE_THREAD,
+                "data", InspectorStyleInvalidatorInvalidateEvent::invalidationList(element, pendingInvalidations->descendants()));
+        }
+    }
+}
+
 ALWAYS_INLINE bool StyleInvalidator::checkInvalidationSetsAgainstElement(Element& element, RecursionData& recursionData, SiblingData& siblingData)
 {
     if (element.styleChangeType() >= SubtreeStyleChange || recursionData.wholeSubtreeInvalid()) {
@@ -194,36 +215,21 @@ ALWAYS_INLINE bool StyleInvalidator::checkInvalidationSetsAgainstElement(Element
     }
 
     bool thisElementNeedsStyleRecalc = recursionData.matchesCurrentInvalidationSets(element);
-    thisElementNeedsStyleRecalc |= siblingData.matchCurrentInvalidationSets(element, recursionData);
+    if (UNLIKELY(!siblingData.isEmpty()))
+        thisElementNeedsStyleRecalc |= siblingData.matchCurrentInvalidationSets(element, recursionData);
 
-    if (UNLIKELY(element.needsStyleInvalidation())) {
-        PendingInvalidations* pendingInvalidations = m_pendingInvalidationMap.get(&element);
-        ASSERT(pendingInvalidations);
-
-        for (const auto& invalidationSet : pendingInvalidations->siblings())
-            siblingData.pushInvalidationSet(toSiblingInvalidationSet(*invalidationSet));
-
-        if (!pendingInvalidations->descendants().isEmpty()) {
-            for (const auto& invalidationSet : pendingInvalidations->descendants())
-                recursionData.pushInvalidationSet(toDescendantInvalidationSet(*invalidationSet));
-            if (UNLIKELY(*s_tracingEnabled)) {
-                TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline.invalidationTracking"),
-                    "StyleInvalidatorInvalidationTracking",
-                    TRACE_EVENT_SCOPE_THREAD,
-                    "data", InspectorStyleInvalidatorInvalidateEvent::invalidationList(element, pendingInvalidations->descendants()));
-            }
-        }
-    }
+    if (UNLIKELY(element.needsStyleInvalidation()))
+        pushInvalidationSetsForElement(element, recursionData, siblingData);
     return thisElementNeedsStyleRecalc;
 }
 
-bool StyleInvalidator::invalidateChildren(Element& element, RecursionData& recursionData)
+bool StyleInvalidator::invalidateShadowRootChildren(Element& element, RecursionData& recursionData)
 {
-    SiblingData siblingData;
     bool someChildrenNeedStyleRecalc = false;
     for (ShadowRoot* root = element.youngestShadowRoot(); root; root = root->olderShadowRoot()) {
         if (!recursionData.treeBoundaryCrossing() && !root->childNeedsStyleInvalidation() && !root->needsStyleInvalidation())
             continue;
+        SiblingData siblingData;
         for (Element* child = ElementTraversal::firstChild(*root); child; child = ElementTraversal::nextSibling(*child)) {
             bool childRecalced = invalidate(*child, recursionData, siblingData);
             someChildrenNeedStyleRecalc = someChildrenNeedStyleRecalc || childRecalced;
@@ -231,6 +237,17 @@ bool StyleInvalidator::invalidateChildren(Element& element, RecursionData& recur
         root->clearChildNeedsStyleInvalidation();
         root->clearNeedsStyleInvalidation();
     }
+    return someChildrenNeedStyleRecalc;
+}
+
+bool StyleInvalidator::invalidateChildren(Element& element, RecursionData& recursionData)
+{
+    SiblingData siblingData;
+    bool someChildrenNeedStyleRecalc = false;
+    if (UNLIKELY(!!element.youngestShadowRoot())) {
+        someChildrenNeedStyleRecalc = invalidateShadowRootChildren(element, recursionData);
+    }
+
     for (Element* child = ElementTraversal::firstChild(element); child; child = ElementTraversal::nextSibling(*child)) {
         bool childRecalced = invalidate(*child, recursionData, siblingData);
         someChildrenNeedStyleRecalc = someChildrenNeedStyleRecalc || childRecalced;
@@ -240,8 +257,8 @@ bool StyleInvalidator::invalidateChildren(Element& element, RecursionData& recur
 
 bool StyleInvalidator::invalidate(Element& element, RecursionData& recursionData, SiblingData& siblingData)
 {
-    RecursionCheckpoint checkpoint(&recursionData);
     siblingData.advance();
+    RecursionCheckpoint checkpoint(&recursionData);
 
     bool thisElementNeedsStyleRecalc = checkInvalidationSetsAgainstElement(element, recursionData, siblingData);
 
