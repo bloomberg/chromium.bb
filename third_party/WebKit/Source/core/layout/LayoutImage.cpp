@@ -185,7 +185,7 @@ void LayoutImage::invalidatePaintAndMarkForLayoutIfNeeded()
         updateInnerContentRect();
     }
 
-    if (imageResource() && imageResource()->maybeAnimated())
+    if (imageResource() && imageResource()->image() && imageResource()->image()->maybeAnimated())
         setShouldDoFullPaintInvalidation(PaintInvalidationDelayedFull);
     else
         setShouldDoFullPaintInvalidation(PaintInvalidationFull);

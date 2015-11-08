@@ -61,12 +61,12 @@ void LayoutImageResourceStyleImage::shutdown()
     m_cachedImage = 0;
 }
 
-PassRefPtr<Image> LayoutImageResourceStyleImage::image(const IntSize& size) const
+PassRefPtr<Image> LayoutImageResourceStyleImage::image(int width, int height) const
 {
     // Generated content may trigger calls to image() while we're still pending, don't assert but gracefully exit.
     if (m_styleImage->isPendingImage())
         return nullptr;
-    return m_styleImage->image(m_layoutObject, size);
+    return m_styleImage->image(m_layoutObject, IntSize(width, height));
 }
 
 void LayoutImageResourceStyleImage::setContainerSizeForLayoutObject(const IntSize& size)

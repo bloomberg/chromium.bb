@@ -83,7 +83,7 @@ void LayoutImageResource::resetAnimation()
     if (!m_cachedImage)
         return;
 
-    m_cachedImage->image()->resetAnimation();
+    image()->resetAnimation();
 
     m_layoutObject->setShouldDoFullPaintInvalidation();
 }
@@ -103,12 +103,6 @@ LayoutSize LayoutImageResource::getImageSize(float multiplier, ImageResource::Si
     if (m_layoutObject && m_layoutObject->isLayoutImage() && size.width() && size.height())
         size.scale(toLayoutImage(m_layoutObject)->imageDevicePixelRatio());
     return size;
-}
-
-bool LayoutImageResource::maybeAnimated() const
-{
-    Image* image = m_cachedImage ? m_cachedImage->image() : Image::nullImage();
-    return image->maybeAnimated();
 }
 
 } // namespace blink
