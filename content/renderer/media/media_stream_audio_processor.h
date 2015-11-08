@@ -14,6 +14,7 @@
 #include "content/common/content_export.h"
 #include "content/public/common/media_stream_request.h"
 #include "content/renderer/media/aec_dump_message_filter.h"
+#include "content/renderer/media/audio_repetition_detector.h"
 #include "content/renderer/media/webrtc_audio_device_impl.h"
 #include "media/base/audio_converter.h"
 #include "third_party/libjingle/source/talk/app/webrtc/mediastreaminterface.h"
@@ -113,6 +114,7 @@ class CONTENT_EXPORT MediaStreamAudioProcessor :
 
  private:
   friend class MediaStreamAudioProcessorTest;
+
   FRIEND_TEST_ALL_PREFIXES(MediaStreamAudioProcessorTest,
                            GetAecDumpMessageFilter);
 
@@ -152,6 +154,9 @@ class CONTENT_EXPORT MediaStreamAudioProcessor :
   // Cached value for the render delay latency. This member is accessed by
   // both the capture audio thread and the render audio thread.
   base::subtle::Atomic32 render_delay_ms_;
+
+  // Module to detect and report (to UMA) bit exact audio repetition.
+  scoped_ptr<AudioRepetitionDetector> audio_repetition_detector_;
 
   // Module to handle processing and format conversion.
   scoped_ptr<webrtc::AudioProcessing> audio_processing_;

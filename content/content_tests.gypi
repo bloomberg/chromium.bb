@@ -748,6 +748,7 @@
       'browser/renderer_host/p2p/socket_host_test_utils.h',
       'browser/renderer_host/p2p/socket_host_udp_unittest.cc',
       'browser/renderer_host/p2p/socket_host_unittest.cc',
+      'renderer/media/audio_repetition_detector_unittest.cc',
       'renderer/media/media_recorder_handler_unittest.cc',
       'renderer/media/media_stream_audio_processor_unittest.cc',
       'renderer/media/media_stream_constraints_util_unittest.cc',

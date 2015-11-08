@@ -623,6 +623,8 @@
     # WebRTC-specific sources. Put WebRTC plugin-related stuff in the
     # Plugin+WebRTC section below.
     'private_renderer_webrtc_sources': [
+      'renderer/media/audio_repetition_detector.cc',
+      'renderer/media/audio_repetition_detector.h',
       'renderer/media/media_recorder_handler.cc',
       'renderer/media/media_recorder_handler.h',
       'renderer/media/media_stream.cc',

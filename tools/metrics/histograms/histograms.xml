@@ -17636,6 +17636,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Media.AudioCapturerRepetition" units="milliseconds">
+  <owner>minyue@chromium.org</owner>
+  <summary>
+    Captures bit-exact audio repetitions with pre-defined look back time. As
+    soon as a repetition is detected, its look back time is reported. Ideally,
+    no reports should be generated.
+  </summary>
+</histogram>
+
 <histogram name="Media.AudioChannelLayout" enum="ChannelLayout">
   <owner>dalecurtis@chromium.org</owner>
   <summary>Audio channel layout in HTML5 media.</summary>

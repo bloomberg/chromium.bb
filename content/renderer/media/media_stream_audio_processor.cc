@@ -29,6 +29,32 @@ using webrtc::NoiseSuppression;
 
 const int kAudioProcessingNumberOfChannels = 1;
 
+// Minimum duration of any detectable audio repetition.
+const int kMinLengthMs = 1;
+
+// The following variables defines the look back time of audio repetitions that
+// will be logged. The complexity of the detector is proportional to the number
+// of look back times we keep track.
+const int kMinLookbackTimeMs = 10;
+const int kMaxLookbackTimeMs = 200;
+const int kLookbackTimeStepMs = 10;
+
+// Maximum frames of any input chunk of audio. Used by
+// |MediaStreamAudioProcessor::audio_repetition_detector_|. Input longer than
+// |kMaxFrames| won't cause any problem, and will only affect computational
+// efficiency.
+const size_t kMaxFrames = 480;  // 10 ms * 48 kHz
+
+// Send UMA report on an audio repetition being detected. |look_back_ms|
+// provides the look back time of the detected repetition. This function is
+// called back by |MediaStreamAudioProcessor::audio_repetition_detector_|.
+void ReportRepetition(int look_back_ms) {
+  UMA_HISTOGRAM_CUSTOM_COUNTS(
+      "Media.AudioCapturerRepetition", look_back_ms,
+      kMinLookbackTimeMs, kMaxLookbackTimeMs,
+      (kMaxLookbackTimeMs - kMinLookbackTimeMs) / kLookbackTimeStepMs + 1);
+}
+
 AudioProcessing::ChannelLayout MapLayout(media::ChannelLayout media_layout) {
   switch (media_layout) {
     case media::CHANNEL_LAYOUT_MONO:
@@ -252,6 +278,16 @@ MediaStreamAudioProcessor::MediaStreamAudioProcessor(
   // ensure that we do get the filter when we should.
   if (aec_dump_message_filter_.get())
     aec_dump_message_filter_->AddDelegate(this);
+
+  // Create and configure |audio_repetition_detector_|.
+  std::vector<int> look_back_times;
+  for (int time = kMaxLookbackTimeMs; time >= kMinLookbackTimeMs;
+       time -= kLookbackTimeStepMs) {
+    look_back_times.push_back(time);
+  }
+  audio_repetition_detector_.reset(
+      new AudioRepetitionDetector(kMinLengthMs, kMaxFrames, look_back_times,
+                                  base::Bind(&ReportRepetition)));
 }
 
 MediaStreamAudioProcessor::~MediaStreamAudioProcessor() {
@@ -296,6 +332,13 @@ bool MediaStreamAudioProcessor::ProcessAndConsumeData(
   MediaStreamAudioBus* process_bus;
   if (!capture_fifo_->Consume(&process_bus, capture_delay))
     return false;
+
+  // Detect bit-exact repetition of audio present in the captured audio.
+  // We detect only one channel.
+  audio_repetition_detector_->Detect(process_bus->bus()->channel(0),
+                                     process_bus->bus()->frames(),
+                                     1,  // number of channels
+                                     input_format_.sample_rate());
 
   // Use the process bus directly if audio processing is disabled.
   MediaStreamAudioBus* output_bus = process_bus;
