@@ -1328,9 +1328,11 @@ bool WebGLRenderingContextBase::paintRenderingResultsToCanvas(SourceDrawingBuffe
 
     drawingBuffer()->commit();
     if (!canvas()->buffer()->copyRenderingResultsFromDrawingBuffer(drawingBuffer(), sourceBuffer)) {
-        canvas()->ensureUnacceleratedImageBuffer();
-        if (canvas()->hasImageBuffer())
-            drawingBuffer()->paintRenderingResultsToCanvas(canvas()->buffer());
+        // Currently, copyRenderingResultsFromDrawingBuffer is expected to always succeed because cases
+        // where canvas()-buffer() is not accelerated are handle before reaching this point.
+        // If that assumption ever stops holding true, we may need to implement a fallback right here.
+        ASSERT_NOT_REACHED();
+        return false;
     }
 
     return true;

@@ -176,7 +176,6 @@ public:
 
     void setPackAlignment(GLint param);
 
-    void paintRenderingResultsToCanvas(ImageBuffer*);
     bool paintRenderingResultsToImageData(int&, int&, SourceDrawingBuffer, WTF::ArrayBufferContents&);
 
     int sampleCount() const { return m_sampleCount; }
@@ -217,8 +216,6 @@ private:
 
     // Updates the current size of the buffer, ensuring that s_currentResourceUsePixels is updated.
     void setSize(const IntSize& size);
-
-    void paintFramebufferToCanvas(int framebuffer, int width, int height, bool premultiplyAlpha, ImageBuffer*);
 
     // This is the order of bytes to use when doing a readback.
     enum ReadbackOrder {

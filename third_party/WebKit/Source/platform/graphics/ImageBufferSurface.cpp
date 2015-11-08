@@ -81,13 +81,6 @@ void ImageBufferSurface::draw(GraphicsContext* context, const FloatRect& destRec
     context->drawImage(image.get(), destRect, srcRect, op);
 }
 
-const SkBitmap& ImageBufferSurface::deprecatedBitmapForOverwrite()
-{
-    ASSERT_NOT_REACHED(); // should only be called on non-accelerated surface types, which have overrides
-    return canvas()->getDevice()->accessBitmap(false); // Because we have to return something for the code to compile, and it can't be a local (by address).
-}
-
-
 void ImageBufferSurface::flush()
 {
     canvas()->flush();

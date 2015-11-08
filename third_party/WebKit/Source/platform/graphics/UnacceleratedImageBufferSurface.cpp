@@ -59,12 +59,6 @@ SkCanvas* UnacceleratedImageBufferSurface::canvas()
     return m_surface->getCanvas();
 }
 
-const SkBitmap& UnacceleratedImageBufferSurface::deprecatedBitmapForOverwrite()
-{
-    m_surface->notifyContentWillChange(SkSurface::kDiscard_ContentChangeMode);
-    return m_surface->getCanvas()->getDevice()->accessBitmap(false);
-}
-
 bool UnacceleratedImageBufferSurface::isValid() const
 {
     return m_surface;

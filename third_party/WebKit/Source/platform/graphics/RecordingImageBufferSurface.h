@@ -50,7 +50,6 @@ public:
     void setHasExpensiveOp() override { m_currentFrameHasExpensiveOp = true; }
 
     // Passthroughs to fallback surface
-    const SkBitmap& deprecatedBitmapForOverwrite() override;
     bool restore() override;
     WebLayer* layer() const override;
     bool isAccelerated() const override;

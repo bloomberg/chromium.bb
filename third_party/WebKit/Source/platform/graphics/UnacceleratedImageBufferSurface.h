@@ -46,7 +46,6 @@ public:
 
     SkCanvas* canvas() override;
     bool isValid() const override;
-    const SkBitmap& deprecatedBitmapForOverwrite() override;
 
     PassRefPtr<SkImage> newImageSnapshot(AccelerationHint) override;
 private:

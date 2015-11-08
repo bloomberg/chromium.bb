@@ -216,21 +216,6 @@ protected:
     RefPtr<DrawingBufferForTests> m_drawingBuffer;
 };
 
-TEST_F(DrawingBufferTest, testPaintRenderingResultsToCanvas)
-{
-    OwnPtr<ImageBufferSurface> imageBufferSurface = adoptPtr(new UnacceleratedImageBufferSurface(IntSize(initialWidth, initialHeight)));
-    EXPECT_FALSE(!imageBufferSurface);
-    EXPECT_TRUE(imageBufferSurface->isValid());
-    OwnPtr<ImageBuffer> imageBuffer = ImageBuffer::create(imageBufferSurface.release());
-    EXPECT_FALSE(!imageBuffer);
-    EXPECT_FALSE(imageBuffer->isAccelerated());
-    EXPECT_FALSE(!imageBuffer->newImageSnapshot());
-    m_drawingBuffer->paintRenderingResultsToCanvas(imageBuffer.get());
-    EXPECT_FALSE(imageBuffer->isAccelerated());
-    EXPECT_FALSE(!imageBuffer->newImageSnapshot());
-    m_drawingBuffer->beginDestruction();
-}
-
 TEST_F(DrawingBufferTest, verifyResizingProperlyAffectsMailboxes)
 {
     WebExternalTextureMailbox mailbox;

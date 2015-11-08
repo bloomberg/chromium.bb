@@ -245,15 +245,6 @@ bool RecordingImageBufferSurface::isExpensiveToPaint()
     return false;
 }
 
-const SkBitmap& RecordingImageBufferSurface::deprecatedBitmapForOverwrite()
-{
-    if (!m_fallbackSurface) {
-        willOverwriteCanvas();
-        fallBackToRasterCanvas();
-    }
-    return m_fallbackSurface->deprecatedBitmapForOverwrite();
-}
-
 // Fallback passthroughs
 
 bool RecordingImageBufferSurface::restore()

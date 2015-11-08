@@ -103,10 +103,6 @@ public:
 
     bool isDirty();
 
-    // FIXME: crbug.com/485243
-    // Prefer writePixels() and canvas()->draw*() for writing, and newImageSnapshot() for reading
-    const SkBitmap& deprecatedBitmapForOverwrite() const;
-
     bool writePixels(const SkImageInfo&, const void* pixels, size_t rowBytes, int x, int y);
 
     void willOverwriteCanvas() { m_surface->willOverwriteCanvas(); }

@@ -60,7 +60,6 @@ public:
 
     virtual SkCanvas* canvas() = 0;
     virtual void disableDeferral() { }
-    virtual const SkBitmap& deprecatedBitmapForOverwrite();
     virtual void willOverwriteCanvas() { }
     virtual void didDraw(const FloatRect& rect) { }
     virtual bool isValid() const = 0;

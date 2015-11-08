@@ -104,11 +104,6 @@ bool ImageBuffer::writePixels(const SkImageInfo& info, const void* pixels, size_
     return m_surface->writePixels(info, pixels, rowBytes, x, y);
 }
 
-const SkBitmap& ImageBuffer::deprecatedBitmapForOverwrite() const
-{
-    return m_surface->deprecatedBitmapForOverwrite();
-}
-
 bool ImageBuffer::isSurfaceValid() const
 {
     return m_surface->isValid();

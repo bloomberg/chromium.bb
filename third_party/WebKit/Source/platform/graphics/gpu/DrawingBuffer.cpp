@@ -876,11 +876,6 @@ void DrawingBuffer::setPackAlignment(GLint param)
     m_packAlignment = param;
 }
 
-void DrawingBuffer::paintRenderingResultsToCanvas(ImageBuffer* imageBuffer)
-{
-    paintFramebufferToCanvas(framebuffer(), size().width(), size().height(), !m_actualAttributes.premultipliedAlpha, imageBuffer);
-}
-
 bool DrawingBuffer::paintRenderingResultsToImageData(int& width, int& height, SourceDrawingBuffer sourceBuffer, WTF::ArrayBufferContents& contents)
 {
     ASSERT(!m_actualAttributes.premultipliedAlpha);
@@ -916,45 +911,6 @@ bool DrawingBuffer::paintRenderingResultsToImageData(int& width, int& height, So
 
     pixels.transfer(contents);
     return true;
-}
-
-void DrawingBuffer::paintFramebufferToCanvas(int framebuffer, int width, int height, bool premultiplyAlpha, ImageBuffer* imageBuffer)
-{
-    unsigned char* pixels = 0;
-
-    const SkBitmap& canvasBitmap = imageBuffer->deprecatedBitmapForOverwrite();
-    const SkBitmap* readbackBitmap = 0;
-    ASSERT(canvasBitmap.colorType() == kN32_SkColorType);
-    if (canvasBitmap.width() == width && canvasBitmap.height() == height) {
-        // This is the fastest and most common case. We read back
-        // directly into the canvas's backing store.
-        readbackBitmap = &canvasBitmap;
-        m_resizingBitmap.reset();
-    } else {
-        // We need to allocate a temporary bitmap for reading back the
-        // pixel data. We will then use Skia to rescale this bitmap to
-        // the size of the canvas's backing store.
-        if (m_resizingBitmap.width() != width || m_resizingBitmap.height() != height) {
-            if (!m_resizingBitmap.tryAllocN32Pixels(width, height))
-                return;
-        }
-        readbackBitmap = &m_resizingBitmap;
-    }
-
-    // Read back the frame buffer.
-    SkAutoLockPixels bitmapLock(*readbackBitmap);
-    pixels = static_cast<unsigned char*>(readbackBitmap->getPixels());
-
-    m_context->bindFramebuffer(GL_FRAMEBUFFER, framebuffer);
-    readBackFramebuffer(pixels, width, height, ReadbackSkia, premultiplyAlpha ? WebGLImageConversion::AlphaDoPremultiply : WebGLImageConversion::AlphaDoNothing);
-    flipVertically(pixels, width, height);
-
-    readbackBitmap->notifyPixelsChanged();
-    if (m_resizingBitmap.readyToDraw()) {
-        // We need to draw the resizing bitmap into the canvas's backing store.
-        SkCanvas canvas(canvasBitmap);
-        canvas.drawBitmapRect(m_resizingBitmap, SkRect::MakeIWH(canvasBitmap.width(), canvasBitmap.height()), nullptr);
-    }
 }
 
 void DrawingBuffer::readBackFramebuffer(unsigned char* pixels, int width, int height, ReadbackOrder readbackOrder, WebGLImageConversion::AlphaOp op)
