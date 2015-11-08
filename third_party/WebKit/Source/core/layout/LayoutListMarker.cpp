@@ -65,6 +65,18 @@ LayoutListMarker* LayoutListMarker::createAnonymous(LayoutListItem* item)
     return layoutObject;
 }
 
+IntSize LayoutListMarker::imageBulletSize() const
+{
+    ASSERT(isImage());
+
+    // FIXME: This is a somewhat arbitrary default width. Generated images for markers really won't
+    // become particularly useful until we support the CSS3 marker pseudoclass to allow control over
+    // the width and height of the marker box.
+    int bulletWidth = style()->fontMetrics().ascent() / 2;
+    IntSize defaultBulletSize(bulletWidth, bulletWidth);
+    return calculateImageIntrinsicDimensions(m_image.get(), defaultBulletSize, DoNotScaleByEffectiveZoom);
+}
+
 void LayoutListMarker::styleWillChange(StyleDifference diff, const ComputedStyle& newStyle)
 {
     if (style() && (newStyle.listStylePosition() != style()->listStylePosition() || newStyle.listStyleType() != style()->listStyleType()))
@@ -125,8 +137,9 @@ void LayoutListMarker::layout()
 
     if (isImage()) {
         updateMarginsAndContent();
-        setWidth(m_image->imageSize(this, style()->effectiveZoom()).width());
-        setHeight(m_image->imageSize(this, style()->effectiveZoom()).height());
+        LayoutSize imageSize(imageBulletSize());
+        setWidth(imageSize.width());
+        setHeight(imageSize.height());
     } else {
         setLogicalWidth(minPreferredLogicalWidth());
         setLogicalHeight(style()->fontMetrics().height());
@@ -151,7 +164,8 @@ void LayoutListMarker::imageChanged(WrappedImagePtr o, const IntRect*)
     if (o != m_image->data())
         return;
 
-    if (size() != m_image->imageSize(this, style()->effectiveZoom()) || m_image->errorOccurred())
+    LayoutSize imageSize = isImage() ? LayoutSize(imageBulletSize()) : LayoutSize();
+    if (size() != imageSize || m_image->errorOccurred())
         setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(LayoutInvalidationReason::ImageChanged);
     else
         setShouldDoFullPaintInvalidation();
@@ -172,15 +186,8 @@ void LayoutListMarker::updateContent()
 
     m_text = "";
 
-    if (isImage()) {
-        // FIXME: This is a somewhat arbitrary width.  Generated images for markers really won't become particularly useful
-        // until we support the CSS3 marker pseudoclass to allow control over the width and height of the marker box.
-        int bulletWidth = style()->fontMetrics().ascent() / 2;
-        IntSize defaultBulletSize(bulletWidth, bulletWidth);
-        IntSize imageSize = calculateImageIntrinsicDimensions(m_image.get(), defaultBulletSize, DoNotScaleByEffectiveZoom);
-        m_image->setContainerSizeForLayoutObject(this, imageSize, style()->effectiveZoom());
+    if (isImage())
         return;
-    }
 
     switch (listStyleCategory()) {
     case ListStyleCategory::None:
@@ -214,7 +221,7 @@ void LayoutListMarker::computePreferredLogicalWidths()
     updateContent();
 
     if (isImage()) {
-        LayoutSize imageSize = m_image->imageSize(this, style()->effectiveZoom());
+        LayoutSize imageSize(imageBulletSize());
         m_minPreferredLogicalWidth = m_maxPreferredLogicalWidth = style()->isHorizontalWritingMode() ? imageSize.width() : imageSize.height();
         clearPreferredLogicalWidthsDirty();
         updateMargins();
@@ -394,8 +401,10 @@ bool LayoutListMarker::isInside() const
 
 IntRect LayoutListMarker::getRelativeMarkerRect() const
 {
-    if (isImage())
-        return IntRect(0, 0, m_image->imageSize(this, style()->effectiveZoom()).width(), m_image->imageSize(this, style()->effectiveZoom()).height());
+    if (isImage()) {
+        IntSize imageSize = imageBulletSize();
+        return IntRect(0, 0, imageSize.width(), imageSize.height());
+    }
 
     IntRect relativeRect;
     switch (listStyleCategory()) {
