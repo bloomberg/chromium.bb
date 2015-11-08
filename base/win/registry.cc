@@ -364,7 +364,7 @@ LONG RegKey::ReadValues(const wchar_t* name,
   DWORD type = REG_MULTI_SZ;
   DWORD size = 0;
   LONG result = ReadValue(name, NULL, &size, &type);
-  if (FAILED(result) || size == 0)
+  if (result != ERROR_SUCCESS || size == 0)
     return result;
 
   if (type != REG_MULTI_SZ)
@@ -372,7 +372,7 @@ LONG RegKey::ReadValues(const wchar_t* name,
 
   std::vector<wchar_t> buffer(size / sizeof(wchar_t));
   result = ReadValue(name, &buffer[0], &size, NULL);
-  if (FAILED(result) || size == 0)
+  if (result != ERROR_SUCCESS || size == 0)
     return result;
 
   // Parse the double-null-terminated list of strings.
