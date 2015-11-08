@@ -24,6 +24,7 @@ protected:
     virtual RefPtrWillBeRawPtr<SVGPropertyBase> appliedSVGValue(const InterpolableValue&, const NonInterpolableValue*) const = 0;
 
     PassOwnPtr<InterpolationValue> maybeConvertSingle(const PropertySpecificKeyframe&, const InterpolationEnvironment&, const UnderlyingValue&, ConversionCheckers&) const override;
+    PassOwnPtr<InterpolationValue> maybeConvertUnderlyingValue(const InterpolationEnvironment&) const override;
     void apply(const InterpolableValue&, const NonInterpolableValue*, InterpolationEnvironment&) const final;
 };
 

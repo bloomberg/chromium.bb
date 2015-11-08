@@ -20,7 +20,6 @@ public:
 private:
     PassOwnPtr<InterpolationValue> maybeConvertNeutral() const final;
     PassOwnPtr<InterpolationValue> maybeConvertSVGValue(const SVGPropertyBase& svgValue) const final;
-    PassOwnPtr<InterpolationValue> maybeConvertUnderlyingValue(const InterpolationEnvironment&) const final;
     RefPtrWillBeRawPtr<SVGPropertyBase> appliedSVGValue(const InterpolableValue&, const NonInterpolableValue*) const final;
 
     bool m_isNonNegative;

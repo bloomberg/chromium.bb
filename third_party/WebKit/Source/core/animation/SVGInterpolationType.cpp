@@ -20,6 +20,11 @@ PassOwnPtr<InterpolationValue> SVGInterpolationType::maybeConvertSingle(const Pr
     return maybeConvertSVGValue(*svgValue);
 }
 
+PassOwnPtr<InterpolationValue> SVGInterpolationType::maybeConvertUnderlyingValue(const InterpolationEnvironment& environment) const
+{
+    return maybeConvertSVGValue(environment.svgBaseValue());
+}
+
 void SVGInterpolationType::apply(const InterpolableValue& interpolableValue, const NonInterpolableValue* nonInterpolableValue, InterpolationEnvironment& environment) const
 {
     SVGElement& targetElement = environment.svgElement();
