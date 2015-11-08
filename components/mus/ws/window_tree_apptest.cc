@@ -30,7 +30,6 @@ using mus::mojom::WindowTree;
 using mus::mojom::WindowTreeClient;
 
 namespace mus {
-
 namespace ws {
 
 namespace {
@@ -76,7 +75,7 @@ void EmbedCallbackImpl(base::RunLoop* run_loop,
 // -----------------------------------------------------------------------------
 
 bool EmbedUrl(mojo::ApplicationImpl* app,
-              WindowTree* vm,
+              WindowTree* ws,
               const String& url,
               Id root_id) {
   bool result = false;
@@ -88,82 +87,82 @@ bool EmbedUrl(mojo::ApplicationImpl* app,
         app->ConnectToApplication(request.Pass());
     mojom::WindowTreeClientPtr client;
     connection->ConnectToService(&client);
-    vm->Embed(root_id, client.Pass(), mojom::WindowTree::ACCESS_POLICY_DEFAULT,
+    ws->Embed(root_id, client.Pass(), mojom::WindowTree::ACCESS_POLICY_DEFAULT,
               base::Bind(&EmbedCallbackImpl, &run_loop, &result));
   }
   run_loop.Run();
   return result;
 }
 
-bool Embed(WindowTree* vm, Id root_id, mojom::WindowTreeClientPtr client) {
+bool Embed(WindowTree* ws, Id root_id, mojom::WindowTreeClientPtr client) {
   bool result = false;
   base::RunLoop run_loop;
   {
-    vm->Embed(root_id, client.Pass(), mojom::WindowTree::ACCESS_POLICY_DEFAULT,
+    ws->Embed(root_id, client.Pass(), mojom::WindowTree::ACCESS_POLICY_DEFAULT,
               base::Bind(&EmbedCallbackImpl, &run_loop, &result));
   }
   run_loop.Run();
   return result;
 }
 
-ErrorCode NewWindowWithErrorCode(WindowTree* vm, Id window_id) {
+ErrorCode NewWindowWithErrorCode(WindowTree* ws, Id window_id) {
   ErrorCode result = ERROR_CODE_NONE;
   base::RunLoop run_loop;
-  vm->NewWindow(window_id,
+  ws->NewWindow(window_id,
                 base::Bind(&ErrorCodeResultCallback, &run_loop, &result));
   run_loop.Run();
   return result;
 }
 
-bool AddWindow(WindowTree* vm, Id parent, Id child) {
+bool AddWindow(WindowTree* ws, Id parent, Id child) {
   bool result = false;
   base::RunLoop run_loop;
-  vm->AddWindow(parent, child,
+  ws->AddWindow(parent, child,
                 base::Bind(&BoolResultCallback, &run_loop, &result));
   run_loop.Run();
   return result;
 }
 
-bool RemoveWindowFromParent(WindowTree* vm, Id window_id) {
+bool RemoveWindowFromParent(WindowTree* ws, Id window_id) {
   bool result = false;
   base::RunLoop run_loop;
-  vm->RemoveWindowFromParent(
+  ws->RemoveWindowFromParent(
       window_id, base::Bind(&BoolResultCallback, &run_loop, &result));
   run_loop.Run();
   return result;
 }
 
-bool ReorderWindow(WindowTree* vm,
+bool ReorderWindow(WindowTree* ws,
                    Id window_id,
                    Id relative_window_id,
                    mojom::OrderDirection direction) {
   bool result = false;
   base::RunLoop run_loop;
-  vm->ReorderWindow(window_id, relative_window_id, direction,
+  ws->ReorderWindow(window_id, relative_window_id, direction,
                     base::Bind(&BoolResultCallback, &run_loop, &result));
   run_loop.Run();
   return result;
 }
 
-void GetWindowTree(WindowTree* vm,
+void GetWindowTree(WindowTree* ws,
                    Id window_id,
                    std::vector<TestWindow>* windows) {
   base::RunLoop run_loop;
-  vm->GetWindowTree(window_id,
+  ws->GetWindowTree(window_id,
                     base::Bind(&WindowTreeResultCallback, &run_loop, windows));
   run_loop.Run();
 }
 
-bool DeleteWindow(WindowTree* vm, Id window_id) {
+bool DeleteWindow(WindowTree* ws, Id window_id) {
   base::RunLoop run_loop;
   bool result = false;
-  vm->DeleteWindow(window_id,
+  ws->DeleteWindow(window_id,
                    base::Bind(&BoolResultCallback, &run_loop, &result));
   run_loop.Run();
   return result;
 }
 
-bool SetWindowBounds(WindowTree* vm, Id window_id, int x, int y, int w, int h) {
+bool SetWindowBounds(WindowTree* ws, Id window_id, int x, int y, int w, int h) {
   base::RunLoop run_loop;
   bool result = false;
   RectPtr rect(mojo::Rect::New());
@@ -171,22 +170,22 @@ bool SetWindowBounds(WindowTree* vm, Id window_id, int x, int y, int w, int h) {
   rect->y = y;
   rect->width = w;
   rect->height = h;
-  vm->SetWindowBounds(window_id, rect.Pass(),
+  ws->SetWindowBounds(window_id, rect.Pass(),
                       base::Bind(&BoolResultCallback, &run_loop, &result));
   run_loop.Run();
   return result;
 }
 
-bool SetWindowVisibility(WindowTree* vm, Id window_id, bool visible) {
+bool SetWindowVisibility(WindowTree* ws, Id window_id, bool visible) {
   base::RunLoop run_loop;
   bool result = false;
-  vm->SetWindowVisibility(window_id, visible,
+  ws->SetWindowVisibility(window_id, visible,
                           base::Bind(&BoolResultCallback, &run_loop, &result));
   run_loop.Run();
   return result;
 }
 
-bool SetWindowProperty(WindowTree* vm,
+bool SetWindowProperty(WindowTree* ws,
                        Id window_id,
                        const std::string& name,
                        const std::vector<uint8_t>* data) {
@@ -195,7 +194,7 @@ bool SetWindowProperty(WindowTree* vm,
   Array<uint8_t> mojo_data;
   if (data)
     mojo_data = Array<uint8_t>::From(*data);
-  vm->SetWindowProperty(window_id, name, mojo_data.Pass(),
+  ws->SetWindowProperty(window_id, name, mojo_data.Pass(),
                         base::Bind(&BoolResultCallback, &run_loop, &result));
   run_loop.Run();
   return result;
@@ -203,14 +202,14 @@ bool SetWindowProperty(WindowTree* vm,
 
 // Utility functions -----------------------------------------------------------
 
-// Waits for all messages to be received by |vm|. This is done by attempting to
+// Waits for all messages to be received by |ws|. This is done by attempting to
 // create a bogus window. When we get the response we know all messages have
 // been
 // processed.
-bool WaitForAllMessages(WindowTree* vm) {
+bool WaitForAllMessages(WindowTree* ws) {
   ErrorCode result = ERROR_CODE_NONE;
   base::RunLoop run_loop;
-  vm->NewWindow(WindowIdToTransportId(InvalidWindowId()),
+  ws->NewWindow(WindowIdToTransportId(InvalidWindowId()),
                 base::Bind(&ErrorCodeResultCallback, &run_loop, &result));
   run_loop.Run();
   return result != ERROR_CODE_NONE;
@@ -440,19 +439,19 @@ class WindowTreeAppTest : public mojo::test::ApplicationTestBase,
 
  protected:
   // Returns the changes from the various connections.
-  std::vector<Change>* changes1() { return vm_client1_->tracker()->changes(); }
-  std::vector<Change>* changes2() { return vm_client2_->tracker()->changes(); }
-  std::vector<Change>* changes3() { return vm_client3_->tracker()->changes(); }
+  std::vector<Change>* changes1() { return ws_client1_->tracker()->changes(); }
+  std::vector<Change>* changes2() { return ws_client2_->tracker()->changes(); }
+  std::vector<Change>* changes3() { return ws_client3_->tracker()->changes(); }
 
-  // Various connections. |vm1()|, being the first connection, has special
+  // Various connections. |ws1()|, being the first connection, has special
   // permissions (it's treated as the window manager).
-  WindowTree* vm1() { return vm_client1_->tree(); }
-  WindowTree* vm2() { return vm_client2_->tree(); }
-  WindowTree* vm3() { return vm_client3_->tree(); }
+  WindowTree* ws1() { return ws_client1_->tree(); }
+  WindowTree* ws2() { return ws_client2_->tree(); }
+  WindowTree* ws3() { return ws_client3_->tree(); }
 
-  TestWindowTreeClientImpl* vm_client1() { return vm_client1_.get(); }
-  TestWindowTreeClientImpl* vm_client2() { return vm_client2_.get(); }
-  TestWindowTreeClientImpl* vm_client3() { return vm_client3_.get(); }
+  TestWindowTreeClientImpl* ws_client1() { return ws_client1_.get(); }
+  TestWindowTreeClientImpl* ws_client2() { return ws_client2_.get(); }
+  TestWindowTreeClientImpl* ws_client3() { return ws_client3_.get(); }
 
   Id root_window_id() const { return root_window_id_; }
 
@@ -460,18 +459,18 @@ class WindowTreeAppTest : public mojo::test::ApplicationTestBase,
   int connection_id_2() const { return connection_id_2_; }
 
   void EstablishSecondConnectionWithRoot(Id root_id) {
-    ASSERT_TRUE(vm_client2_.get() == nullptr);
-    vm_client2_ =
-        EstablishConnectionViaEmbed(vm1(), root_id, &connection_id_2_);
+    ASSERT_TRUE(ws_client2_.get() == nullptr);
+    ws_client2_ =
+        EstablishConnectionViaEmbed(ws1(), root_id, &connection_id_2_);
     ASSERT_GT(connection_id_2_, 0);
-    ASSERT_TRUE(vm_client2_.get() != nullptr);
-    vm_client2_->set_root_window(root_window_id_);
+    ASSERT_TRUE(ws_client2_.get() != nullptr);
+    ws_client2_->set_root_window(root_window_id_);
   }
 
   void EstablishSecondConnection(bool create_initial_window) {
     Id window_1_1 = 0;
     if (create_initial_window) {
-      window_1_1 = vm_client1()->NewWindow(1);
+      window_1_1 = ws_client1()->NewWindow(1);
       ASSERT_TRUE(window_1_1);
     }
     ASSERT_NO_FATAL_FAILURE(
@@ -484,10 +483,10 @@ class WindowTreeAppTest : public mojo::test::ApplicationTestBase,
   }
 
   void EstablishThirdConnection(WindowTree* owner, Id root_id) {
-    ASSERT_TRUE(vm_client3_.get() == nullptr);
-    vm_client3_ = EstablishConnectionViaEmbed(owner, root_id, nullptr);
-    ASSERT_TRUE(vm_client3_.get() != nullptr);
-    vm_client3_->set_root_window(root_window_id_);
+    ASSERT_TRUE(ws_client3_.get() == nullptr);
+    ws_client3_ = EstablishConnectionViaEmbed(owner, root_id, nullptr);
+    ASSERT_TRUE(ws_client3_.get() != nullptr);
+    ws_client3_->set_root_window(root_window_id_);
   }
 
   scoped_ptr<TestWindowTreeClientImpl> WaitForWindowTreeClient() {
@@ -542,15 +541,15 @@ class WindowTreeAppTest : public mojo::test::ApplicationTestBase,
     application_impl()->ConnectToService(request.Pass(), &factory);
 
     mojom::WindowTreeClientPtr tree_client_ptr;
-    vm_client1_.reset(new TestWindowTreeClientImpl(application_impl()));
-    vm_client1_->Bind(GetProxy(&tree_client_ptr));
+    ws_client1_.reset(new TestWindowTreeClientImpl(application_impl()));
+    ws_client1_->Bind(GetProxy(&tree_client_ptr));
 
     factory->CreateWindowTreeHost(GetProxy(&host_),
                                   mojom::WindowTreeHostClientPtr(),
                                   tree_client_ptr.Pass(), nullptr);
 
     // Next we should get an embed call on the "window manager" client.
-    vm_client1_->WaitForIncomingMethodCall();
+    ws_client1_->WaitForIncomingMethodCall();
 
     ASSERT_EQ(1u, changes1()->size());
     EXPECT_EQ(CHANGE_TYPE_EMBED, (*changes1())[0].type);
@@ -561,7 +560,7 @@ class WindowTreeAppTest : public mojo::test::ApplicationTestBase,
     connection_id_1_ = (*changes1())[0].connection_id;
     ASSERT_FALSE((*changes1())[0].windows.empty());
     root_window_id_ = (*changes1())[0].windows[0].window_id;
-    vm_client1_->set_root_window(root_window_id_);
+    ws_client1_->set_root_window(root_window_id_);
     changes1()->clear();
   }
 
@@ -571,9 +570,9 @@ class WindowTreeAppTest : public mojo::test::ApplicationTestBase,
     return true;
   }
 
-  scoped_ptr<TestWindowTreeClientImpl> vm_client1_;
-  scoped_ptr<TestWindowTreeClientImpl> vm_client2_;
-  scoped_ptr<TestWindowTreeClientImpl> vm_client3_;
+  scoped_ptr<TestWindowTreeClientImpl> ws_client1_;
+  scoped_ptr<TestWindowTreeClientImpl> ws_client2_;
+  scoped_ptr<TestWindowTreeClientImpl> ws_client3_;
 
   mojom::WindowTreeHostPtr host_;
 
@@ -597,13 +596,13 @@ TEST_F(WindowTreeAppTest, TwoClientsGetDifferentConnectionIds) {
 // Verifies when Embed() is invoked any child windows are removed.
 TEST_F(WindowTreeAppTest, WindowsRemovedWhenEmbedding) {
   // Two windows 1 and 2. 2 is parented to 1.
-  Id window_1_1 = vm_client1()->NewWindow(1);
+  Id window_1_1 = ws_client1()->NewWindow(1);
   ASSERT_TRUE(window_1_1);
-  ASSERT_TRUE(AddWindow(vm1(), root_window_id(), window_1_1));
+  ASSERT_TRUE(AddWindow(ws1(), root_window_id(), window_1_1));
 
-  Id window_1_2 = vm_client1()->NewWindow(2);
+  Id window_1_2 = ws_client1()->NewWindow(2);
   ASSERT_TRUE(window_1_2);
-  ASSERT_TRUE(AddWindow(vm1(), window_1_1, window_1_2));
+  ASSERT_TRUE(AddWindow(ws1(), window_1_1, window_1_2));
 
   ASSERT_NO_FATAL_FAILURE(EstablishSecondConnection(false));
   ASSERT_EQ(1u, changes2()->size());
@@ -614,43 +613,43 @@ TEST_F(WindowTreeAppTest, WindowsRemovedWhenEmbedding) {
   // Embed() removed window 2.
   {
     std::vector<TestWindow> windows;
-    GetWindowTree(vm1(), window_1_2, &windows);
+    GetWindowTree(ws1(), window_1_2, &windows);
     EXPECT_EQ(WindowParentToString(window_1_2, kNullParentId),
               SingleWindowDescription(windows));
   }
 
-  // vm2 should not see window 2.
+  // ws2 should not see window 2.
   {
     std::vector<TestWindow> windows;
-    GetWindowTree(vm2(), window_1_1, &windows);
+    GetWindowTree(ws2(), window_1_1, &windows);
     EXPECT_EQ(WindowParentToString(window_1_1, kNullParentId),
               SingleWindowDescription(windows));
   }
   {
     std::vector<TestWindow> windows;
-    GetWindowTree(vm2(), window_1_2, &windows);
+    GetWindowTree(ws2(), window_1_2, &windows);
     EXPECT_TRUE(windows.empty());
   }
 
   // Windows 3 and 4 in connection 2.
-  Id window_2_3 = vm_client2()->NewWindow(3);
-  Id window_2_4 = vm_client2()->NewWindow(4);
+  Id window_2_3 = ws_client2()->NewWindow(3);
+  Id window_2_4 = ws_client2()->NewWindow(4);
   ASSERT_TRUE(window_2_3);
   ASSERT_TRUE(window_2_4);
-  ASSERT_TRUE(AddWindow(vm2(), window_2_3, window_2_4));
+  ASSERT_TRUE(AddWindow(ws2(), window_2_3, window_2_4));
 
   // Connection 3 rooted at 2.
-  ASSERT_NO_FATAL_FAILURE(EstablishThirdConnection(vm2(), window_2_3));
+  ASSERT_NO_FATAL_FAILURE(EstablishThirdConnection(ws2(), window_2_3));
 
   // Window 4 should no longer have a parent.
   {
     std::vector<TestWindow> windows;
-    GetWindowTree(vm2(), window_2_3, &windows);
+    GetWindowTree(ws2(), window_2_3, &windows);
     EXPECT_EQ(WindowParentToString(window_2_3, kNullParentId),
               SingleWindowDescription(windows));
 
     windows.clear();
-    GetWindowTree(vm2(), window_2_4, &windows);
+    GetWindowTree(ws2(), window_2_4, &windows);
     EXPECT_EQ(WindowParentToString(window_2_4, kNullParentId),
               SingleWindowDescription(windows));
   }
@@ -658,7 +657,7 @@ TEST_F(WindowTreeAppTest, WindowsRemovedWhenEmbedding) {
   // And window 4 should not be visible to connection 3.
   {
     std::vector<TestWindow> windows;
-    GetWindowTree(vm3(), window_2_3, &windows);
+    GetWindowTree(ws3(), window_2_3, &windows);
     EXPECT_EQ(WindowParentToString(window_2_3, kNullParentId),
               SingleWindowDescription(windows));
   }
@@ -670,21 +669,21 @@ TEST_F(WindowTreeAppTest, CantAccessChildrenOfEmbeddedWindow) {
   ASSERT_NO_FATAL_FAILURE(EstablishSecondConnection(true));
 
   Id window_1_1 = BuildWindowId(connection_id_1(), 1);
-  Id window_2_2 = vm_client2()->NewWindow(2);
+  Id window_2_2 = ws_client2()->NewWindow(2);
   ASSERT_TRUE(window_2_2);
-  ASSERT_TRUE(AddWindow(vm2(), window_1_1, window_2_2));
+  ASSERT_TRUE(AddWindow(ws2(), window_1_1, window_2_2));
 
-  ASSERT_NO_FATAL_FAILURE(EstablishThirdConnection(vm2(), window_2_2));
+  ASSERT_NO_FATAL_FAILURE(EstablishThirdConnection(ws2(), window_2_2));
 
-  Id window_3_3 = vm_client3()->NewWindow(3);
+  Id window_3_3 = ws_client3()->NewWindow(3);
   ASSERT_TRUE(window_3_3);
-  ASSERT_TRUE(AddWindow(vm3(), window_2_2, window_3_3));
+  ASSERT_TRUE(AddWindow(ws3(), window_2_2, window_3_3));
 
   // Even though 3 is a child of 2 connection 2 can't see 3 as it's from a
   // different connection.
   {
     std::vector<TestWindow> windows;
-    GetWindowTree(vm2(), window_2_2, &windows);
+    GetWindowTree(ws2(), window_2_2, &windows);
     EXPECT_EQ(WindowParentToString(window_2_2, window_1_1),
               SingleWindowDescription(windows));
   }
@@ -692,14 +691,14 @@ TEST_F(WindowTreeAppTest, CantAccessChildrenOfEmbeddedWindow) {
   // Connection 2 shouldn't be able to get window 3 at all.
   {
     std::vector<TestWindow> windows;
-    GetWindowTree(vm2(), window_3_3, &windows);
+    GetWindowTree(ws2(), window_3_3, &windows);
     EXPECT_TRUE(windows.empty());
   }
 
   // Connection 1 should be able to see it all (its the root).
   {
     std::vector<TestWindow> windows;
-    GetWindowTree(vm1(), window_1_1, &windows);
+    GetWindowTree(ws1(), window_1_1, &windows);
     ASSERT_EQ(3u, windows.size());
     EXPECT_EQ(WindowParentToString(window_1_1, kNullParentId),
               windows[0].ToString());
@@ -715,80 +714,80 @@ TEST_F(WindowTreeAppTest, CantModifyChildrenOfEmbeddedWindow) {
   ASSERT_NO_FATAL_FAILURE(EstablishSecondConnection(true));
 
   Id window_1_1 = BuildWindowId(connection_id_1(), 1);
-  Id window_2_2 = vm_client2()->NewWindow(2);
+  Id window_2_2 = ws_client2()->NewWindow(2);
   ASSERT_TRUE(window_2_2);
-  ASSERT_TRUE(AddWindow(vm2(), window_1_1, window_2_2));
+  ASSERT_TRUE(AddWindow(ws2(), window_1_1, window_2_2));
 
-  ASSERT_NO_FATAL_FAILURE(EstablishThirdConnection(vm2(), window_2_2));
+  ASSERT_NO_FATAL_FAILURE(EstablishThirdConnection(ws2(), window_2_2));
 
-  Id window_2_3 = vm_client2()->NewWindow(3);
+  Id window_2_3 = ws_client2()->NewWindow(3);
   ASSERT_TRUE(window_2_3);
   // Connection 2 shouldn't be able to add anything to the window anymore.
-  ASSERT_FALSE(AddWindow(vm2(), window_2_2, window_2_3));
+  ASSERT_FALSE(AddWindow(ws2(), window_2_2, window_2_3));
 
   // Create window 3 in connection 3 and add it to window 3.
-  Id window_3_3 = vm_client3()->NewWindow(3);
+  Id window_3_3 = ws_client3()->NewWindow(3);
   ASSERT_TRUE(window_3_3);
-  ASSERT_TRUE(AddWindow(vm3(), window_2_2, window_3_3));
+  ASSERT_TRUE(AddWindow(ws3(), window_2_2, window_3_3));
 
   // Connection 2 shouldn't be able to remove window 3.
-  ASSERT_FALSE(RemoveWindowFromParent(vm2(), window_3_3));
+  ASSERT_FALSE(RemoveWindowFromParent(ws2(), window_3_3));
 }
 
 // Verifies client gets a valid id.
 TEST_F(WindowTreeAppTest, NewWindow) {
-  Id window_1_1 = vm_client1()->NewWindow(1);
+  Id window_1_1 = ws_client1()->NewWindow(1);
   ASSERT_TRUE(window_1_1);
   EXPECT_TRUE(changes1()->empty());
 
   // Can't create a window with the same id.
   ASSERT_EQ(mojom::ERROR_CODE_VALUE_IN_USE,
-            NewWindowWithErrorCode(vm1(), window_1_1));
+            NewWindowWithErrorCode(ws1(), window_1_1));
   EXPECT_TRUE(changes1()->empty());
 
   // Can't create a window with a bogus connection id.
   EXPECT_EQ(
       mojom::ERROR_CODE_ILLEGAL_ARGUMENT,
-      NewWindowWithErrorCode(vm1(), BuildWindowId(connection_id_1() + 1, 1)));
+      NewWindowWithErrorCode(ws1(), BuildWindowId(connection_id_1() + 1, 1)));
   EXPECT_TRUE(changes1()->empty());
 }
 
 // Verifies AddWindow fails when window is already in position.
 TEST_F(WindowTreeAppTest, AddWindowWithNoChange) {
-  Id window_1_2 = vm_client1()->NewWindow(2);
-  Id window_1_3 = vm_client1()->NewWindow(3);
+  Id window_1_2 = ws_client1()->NewWindow(2);
+  Id window_1_3 = ws_client1()->NewWindow(3);
   ASSERT_TRUE(window_1_2);
   ASSERT_TRUE(window_1_3);
 
   ASSERT_NO_FATAL_FAILURE(EstablishSecondConnection(true));
 
   // Make 3 a child of 2.
-  ASSERT_TRUE(AddWindow(vm1(), window_1_2, window_1_3));
+  ASSERT_TRUE(AddWindow(ws1(), window_1_2, window_1_3));
 
   // Try again, this should fail.
-  EXPECT_FALSE(AddWindow(vm1(), window_1_2, window_1_3));
+  EXPECT_FALSE(AddWindow(ws1(), window_1_2, window_1_3));
 }
 
 // Verifies AddWindow fails when window is already in position.
 TEST_F(WindowTreeAppTest, AddAncestorFails) {
-  Id window_1_2 = vm_client1()->NewWindow(2);
-  Id window_1_3 = vm_client1()->NewWindow(3);
+  Id window_1_2 = ws_client1()->NewWindow(2);
+  Id window_1_3 = ws_client1()->NewWindow(3);
   ASSERT_TRUE(window_1_2);
   ASSERT_TRUE(window_1_3);
 
   ASSERT_NO_FATAL_FAILURE(EstablishSecondConnection(true));
 
   // Make 3 a child of 2.
-  ASSERT_TRUE(AddWindow(vm1(), window_1_2, window_1_3));
+  ASSERT_TRUE(AddWindow(ws1(), window_1_2, window_1_3));
 
   // Try to make 2 a child of 3, this should fail since 2 is an ancestor of 3.
-  EXPECT_FALSE(AddWindow(vm1(), window_1_3, window_1_2));
+  EXPECT_FALSE(AddWindow(ws1(), window_1_3, window_1_2));
 }
 
 // Verifies adding to root sends right notifications.
 TEST_F(WindowTreeAppTest, AddToRoot) {
-  Id window_1_21 = vm_client1()->NewWindow(21);
-  Id window_1_3 = vm_client1()->NewWindow(3);
+  Id window_1_21 = ws_client1()->NewWindow(21);
+  Id window_1_3 = ws_client1()->NewWindow(3);
   ASSERT_TRUE(window_1_21);
   ASSERT_TRUE(window_1_3);
 
@@ -797,41 +796,41 @@ TEST_F(WindowTreeAppTest, AddToRoot) {
   changes2()->clear();
 
   // Make 3 a child of 21.
-  ASSERT_TRUE(AddWindow(vm1(), window_1_21, window_1_3));
+  ASSERT_TRUE(AddWindow(ws1(), window_1_21, window_1_3));
 
   // Make 21 a child of 1.
-  ASSERT_TRUE(AddWindow(vm1(), window_1_1, window_1_21));
+  ASSERT_TRUE(AddWindow(ws1(), window_1_1, window_1_21));
 
   // Connection 2 should not be told anything (because the window is from a
   // different connection). Create a window to ensure we got a response from
   // the server.
-  ASSERT_TRUE(vm_client2()->NewWindow(100));
+  ASSERT_TRUE(ws_client2()->NewWindow(100));
   EXPECT_TRUE(changes2()->empty());
 }
 
 // Verifies HierarchyChanged is correctly sent for various adds/removes.
 TEST_F(WindowTreeAppTest, WindowHierarchyChangedWindows) {
   // 1,2->1,11.
-  Id window_1_2 = vm_client1()->NewWindow(2);
+  Id window_1_2 = ws_client1()->NewWindow(2);
   ASSERT_TRUE(window_1_2);
-  ASSERT_TRUE(SetWindowVisibility(vm1(), window_1_2, true));
-  Id window_1_11 = vm_client1()->NewWindow(11);
+  ASSERT_TRUE(SetWindowVisibility(ws1(), window_1_2, true));
+  Id window_1_11 = ws_client1()->NewWindow(11);
   ASSERT_TRUE(window_1_11);
-  ASSERT_TRUE(SetWindowVisibility(vm1(), window_1_11, true));
-  ASSERT_TRUE(AddWindow(vm1(), window_1_2, window_1_11));
+  ASSERT_TRUE(SetWindowVisibility(ws1(), window_1_11, true));
+  ASSERT_TRUE(AddWindow(ws1(), window_1_2, window_1_11));
 
   Id window_1_1 = BuildWindowId(connection_id_1(), 1);
   ASSERT_NO_FATAL_FAILURE(EstablishSecondConnection(true));
-  ASSERT_TRUE(SetWindowVisibility(vm1(), window_1_1, true));
+  ASSERT_TRUE(SetWindowVisibility(ws1(), window_1_1, true));
 
-  ASSERT_TRUE(WaitForAllMessages(vm2()));
+  ASSERT_TRUE(WaitForAllMessages(ws2()));
   changes2()->clear();
 
   // 1,1->1,2->1,11
   {
     // Client 2 should not get anything (1,2 is from another connection).
-    ASSERT_TRUE(AddWindow(vm1(), window_1_1, window_1_2));
-    ASSERT_TRUE(WaitForAllMessages(vm2()));
+    ASSERT_TRUE(AddWindow(ws1(), window_1_1, window_1_2));
+    ASSERT_TRUE(WaitForAllMessages(ws2()));
     EXPECT_TRUE(changes2()->empty());
   }
 
@@ -839,8 +838,8 @@ TEST_F(WindowTreeAppTest, WindowHierarchyChangedWindows) {
   {
     // Client 2 is now connected to the root, so it should have gotten a drawn
     // notification.
-    ASSERT_TRUE(AddWindow(vm1(), root_window_id(), window_1_1));
-    vm_client2_->WaitForChangeCount(1u);
+    ASSERT_TRUE(AddWindow(ws1(), root_window_id(), window_1_1));
+    ws_client2_->WaitForChangeCount(1u);
     EXPECT_EQ(
         "DrawnStateChanged window=" + IdToString(window_1_1) + " drawn=true",
         SingleChangeToDescription(*changes2()));
@@ -851,29 +850,29 @@ TEST_F(WindowTreeAppTest, WindowHierarchyChangedWindows) {
     // Client 2 is no longer connected to the root, should get drawn state
     // changed.
     changes2()->clear();
-    ASSERT_TRUE(RemoveWindowFromParent(vm1(), window_1_1));
-    vm_client2_->WaitForChangeCount(1);
+    ASSERT_TRUE(RemoveWindowFromParent(ws1(), window_1_1));
+    ws_client2_->WaitForChangeCount(1);
     EXPECT_EQ(
         "DrawnStateChanged window=" + IdToString(window_1_1) + " drawn=false",
         SingleChangeToDescription(*changes2()));
   }
 
   // 1,1->1,2->1,11->1,111.
-  Id window_1_111 = vm_client1()->NewWindow(111);
+  Id window_1_111 = ws_client1()->NewWindow(111);
   ASSERT_TRUE(window_1_111);
-  ASSERT_TRUE(SetWindowVisibility(vm1(), window_1_111, true));
+  ASSERT_TRUE(SetWindowVisibility(ws1(), window_1_111, true));
   {
     changes2()->clear();
-    ASSERT_TRUE(AddWindow(vm1(), window_1_11, window_1_111));
-    ASSERT_TRUE(WaitForAllMessages(vm2()));
+    ASSERT_TRUE(AddWindow(ws1(), window_1_11, window_1_111));
+    ASSERT_TRUE(WaitForAllMessages(ws2()));
     EXPECT_TRUE(changes2()->empty());
   }
 
   // 0,1->1,1->1,2->1,11->1,111
   {
     changes2()->clear();
-    ASSERT_TRUE(AddWindow(vm1(), root_window_id(), window_1_1));
-    vm_client2_->WaitForChangeCount(1);
+    ASSERT_TRUE(AddWindow(ws1(), root_window_id(), window_1_1));
+    ws_client2_->WaitForChangeCount(1);
     EXPECT_EQ(
         "DrawnStateChanged window=" + IdToString(window_1_1) + " drawn=true",
         SingleChangeToDescription(*changes2()));
@@ -886,24 +885,24 @@ TEST_F(WindowTreeAppTest, WindowHierarchyChangedAddingKnownToUnknown) {
   ASSERT_NO_FATAL_FAILURE(EstablishSecondConnection(true));
   Id window_1_1 = BuildWindowId(connection_id_1(), 1);
 
-  Id window_2_11 = vm_client2()->NewWindow(11);
-  Id window_2_2 = vm_client2()->NewWindow(2);
-  Id window_2_21 = vm_client2()->NewWindow(21);
+  Id window_2_11 = ws_client2()->NewWindow(11);
+  Id window_2_2 = ws_client2()->NewWindow(2);
+  Id window_2_21 = ws_client2()->NewWindow(21);
   ASSERT_TRUE(window_2_11);
   ASSERT_TRUE(window_2_2);
   ASSERT_TRUE(window_2_21);
 
   // Set up the hierarchy.
-  ASSERT_TRUE(AddWindow(vm1(), root_window_id(), window_1_1));
-  ASSERT_TRUE(AddWindow(vm2(), window_1_1, window_2_11));
-  ASSERT_TRUE(AddWindow(vm2(), window_2_2, window_2_21));
+  ASSERT_TRUE(AddWindow(ws1(), root_window_id(), window_1_1));
+  ASSERT_TRUE(AddWindow(ws2(), window_1_1, window_2_11));
+  ASSERT_TRUE(AddWindow(ws2(), window_2_2, window_2_21));
 
   // Remove 11, should result in a hierarchy change for the root.
   {
     changes1()->clear();
-    ASSERT_TRUE(RemoveWindowFromParent(vm2(), window_2_11));
+    ASSERT_TRUE(RemoveWindowFromParent(ws2(), window_2_11));
 
-    vm_client1_->WaitForChangeCount(1);
+    ws_client1_->WaitForChangeCount(1);
     EXPECT_EQ("HierarchyChanged window=" + IdToString(window_2_11) +
                   " new_parent=null old_parent=" + IdToString(window_1_1),
               SingleChangeToDescription(*changes1()));
@@ -912,8 +911,8 @@ TEST_F(WindowTreeAppTest, WindowHierarchyChangedAddingKnownToUnknown) {
   // Add 2 to 1.
   {
     changes1()->clear();
-    ASSERT_TRUE(AddWindow(vm2(), window_1_1, window_2_2));
-    vm_client1_->WaitForChangeCount(1);
+    ASSERT_TRUE(AddWindow(ws2(), window_1_1, window_2_2));
+    ws_client1_->WaitForChangeCount(1);
     EXPECT_EQ("HierarchyChanged window=" + IdToString(window_2_2) +
                   " new_parent=" + IdToString(window_1_1) + " old_parent=null",
               SingleChangeToDescription(*changes1()));
@@ -926,14 +925,14 @@ TEST_F(WindowTreeAppTest, WindowHierarchyChangedAddingKnownToUnknown) {
 TEST_F(WindowTreeAppTest, ReorderWindow) {
   ASSERT_NO_FATAL_FAILURE(EstablishSecondConnection(true));
 
-  Id window_2_1 = vm_client2()->NewWindow(1);
-  Id window_2_2 = vm_client2()->NewWindow(2);
-  Id window_2_3 = vm_client2()->NewWindow(3);
-  Id window_1_4 = vm_client1()->NewWindow(4);  // Peer to 1,1
-  Id window_1_5 = vm_client1()->NewWindow(5);  // Peer to 1,1
-  Id window_2_6 = vm_client2()->NewWindow(6);  // Child of 1,2.
-  Id window_2_7 = vm_client2()->NewWindow(7);  // Unparented.
-  Id window_2_8 = vm_client2()->NewWindow(8);  // Unparented.
+  Id window_2_1 = ws_client2()->NewWindow(1);
+  Id window_2_2 = ws_client2()->NewWindow(2);
+  Id window_2_3 = ws_client2()->NewWindow(3);
+  Id window_1_4 = ws_client1()->NewWindow(4);  // Peer to 1,1
+  Id window_1_5 = ws_client1()->NewWindow(5);  // Peer to 1,1
+  Id window_2_6 = ws_client2()->NewWindow(6);  // Child of 1,2.
+  Id window_2_7 = ws_client2()->NewWindow(7);  // Unparented.
+  Id window_2_8 = ws_client2()->NewWindow(8);  // Unparented.
   ASSERT_TRUE(window_2_1);
   ASSERT_TRUE(window_2_2);
   ASSERT_TRUE(window_2_3);
@@ -943,19 +942,19 @@ TEST_F(WindowTreeAppTest, ReorderWindow) {
   ASSERT_TRUE(window_2_7);
   ASSERT_TRUE(window_2_8);
 
-  ASSERT_TRUE(AddWindow(vm2(), window_2_1, window_2_2));
-  ASSERT_TRUE(AddWindow(vm2(), window_2_2, window_2_6));
-  ASSERT_TRUE(AddWindow(vm2(), window_2_1, window_2_3));
-  ASSERT_TRUE(AddWindow(vm1(), root_window_id(), window_1_4));
-  ASSERT_TRUE(AddWindow(vm1(), root_window_id(), window_1_5));
-  ASSERT_TRUE(AddWindow(vm1(), root_window_id(), window_2_1));
+  ASSERT_TRUE(AddWindow(ws2(), window_2_1, window_2_2));
+  ASSERT_TRUE(AddWindow(ws2(), window_2_2, window_2_6));
+  ASSERT_TRUE(AddWindow(ws2(), window_2_1, window_2_3));
+  ASSERT_TRUE(AddWindow(ws1(), root_window_id(), window_1_4));
+  ASSERT_TRUE(AddWindow(ws1(), root_window_id(), window_1_5));
+  ASSERT_TRUE(AddWindow(ws1(), root_window_id(), window_2_1));
 
   {
     changes1()->clear();
-    ASSERT_TRUE(ReorderWindow(vm2(), window_2_2, window_2_3,
+    ASSERT_TRUE(ReorderWindow(ws2(), window_2_2, window_2_3,
                               mojom::ORDER_DIRECTION_ABOVE));
 
-    vm_client1_->WaitForChangeCount(1);
+    ws_client1_->WaitForChangeCount(1);
     EXPECT_EQ("Reordered window=" + IdToString(window_2_2) + " relative=" +
                   IdToString(window_2_3) + " direction=above",
               SingleChangeToDescription(*changes1()));
@@ -963,34 +962,34 @@ TEST_F(WindowTreeAppTest, ReorderWindow) {
 
   {
     changes1()->clear();
-    ASSERT_TRUE(ReorderWindow(vm2(), window_2_2, window_2_3,
+    ASSERT_TRUE(ReorderWindow(ws2(), window_2_2, window_2_3,
                               mojom::ORDER_DIRECTION_BELOW));
 
-    vm_client1_->WaitForChangeCount(1);
+    ws_client1_->WaitForChangeCount(1);
     EXPECT_EQ("Reordered window=" + IdToString(window_2_2) + " relative=" +
                   IdToString(window_2_3) + " direction=below",
               SingleChangeToDescription(*changes1()));
   }
 
   // view2 is already below view3.
-  EXPECT_FALSE(ReorderWindow(vm2(), window_2_2, window_2_3,
+  EXPECT_FALSE(ReorderWindow(ws2(), window_2_2, window_2_3,
                              mojom::ORDER_DIRECTION_BELOW));
 
   // view4 & 5 are unknown to connection2_.
-  EXPECT_FALSE(ReorderWindow(vm2(), window_1_4, window_1_5,
+  EXPECT_FALSE(ReorderWindow(ws2(), window_1_4, window_1_5,
                              mojom::ORDER_DIRECTION_ABOVE));
 
   // view6 & view3 have different parents.
-  EXPECT_FALSE(ReorderWindow(vm1(), window_2_3, window_2_6,
+  EXPECT_FALSE(ReorderWindow(ws1(), window_2_3, window_2_6,
                              mojom::ORDER_DIRECTION_ABOVE));
 
   // Non-existent window-ids
-  EXPECT_FALSE(ReorderWindow(vm1(), BuildWindowId(connection_id_1(), 27),
+  EXPECT_FALSE(ReorderWindow(ws1(), BuildWindowId(connection_id_1(), 27),
                              BuildWindowId(connection_id_1(), 28),
                              mojom::ORDER_DIRECTION_ABOVE));
 
   // view7 & view8 are un-parented.
-  EXPECT_FALSE(ReorderWindow(vm1(), window_2_7, window_2_8,
+  EXPECT_FALSE(ReorderWindow(ws1(), window_2_7, window_2_8,
                              mojom::ORDER_DIRECTION_ABOVE));
 }
 
@@ -998,14 +997,14 @@ TEST_F(WindowTreeAppTest, ReorderWindow) {
 TEST_F(WindowTreeAppTest, DeleteWindow) {
   ASSERT_NO_FATAL_FAILURE(EstablishSecondConnection(true));
   Id window_1_1 = BuildWindowId(connection_id_1(), 1);
-  Id window_2_2 = vm_client2()->NewWindow(2);
+  Id window_2_2 = ws_client2()->NewWindow(2);
   ASSERT_TRUE(window_2_2);
 
   // Make 2 a child of 1.
   {
     changes1()->clear();
-    ASSERT_TRUE(AddWindow(vm2(), window_1_1, window_2_2));
-    vm_client1_->WaitForChangeCount(1);
+    ASSERT_TRUE(AddWindow(ws2(), window_1_1, window_2_2));
+    ws_client1_->WaitForChangeCount(1);
     EXPECT_EQ("HierarchyChanged window=" + IdToString(window_2_2) +
                   " new_parent=" + IdToString(window_1_1) + " old_parent=null",
               SingleChangeToDescription(*changes1()));
@@ -1015,10 +1014,10 @@ TEST_F(WindowTreeAppTest, DeleteWindow) {
   {
     changes1()->clear();
     changes2()->clear();
-    ASSERT_TRUE(DeleteWindow(vm2(), window_2_2));
+    ASSERT_TRUE(DeleteWindow(ws2(), window_2_2));
     EXPECT_TRUE(changes2()->empty());
 
-    vm_client1_->WaitForChangeCount(1);
+    ws_client1_->WaitForChangeCount(1);
     EXPECT_EQ("WindowDeleted window=" + IdToString(window_2_2),
               SingleChangeToDescription(*changes1()));
   }
@@ -1027,7 +1026,7 @@ TEST_F(WindowTreeAppTest, DeleteWindow) {
 // Verifies DeleteWindow isn't allowed from a separate connection.
 TEST_F(WindowTreeAppTest, DeleteWindowFromAnotherConnectionDisallowed) {
   ASSERT_NO_FATAL_FAILURE(EstablishSecondConnection(true));
-  EXPECT_FALSE(DeleteWindow(vm2(), BuildWindowId(connection_id_1(), 1)));
+  EXPECT_FALSE(DeleteWindow(ws2(), BuildWindowId(connection_id_1(), 1)));
 }
 
 // Verifies if a window was deleted and then reused that other clients are
@@ -1035,14 +1034,14 @@ TEST_F(WindowTreeAppTest, DeleteWindowFromAnotherConnectionDisallowed) {
 TEST_F(WindowTreeAppTest, ReuseDeletedWindowId) {
   ASSERT_NO_FATAL_FAILURE(EstablishSecondConnection(true));
   Id window_1_1 = BuildWindowId(connection_id_1(), 1);
-  Id window_2_2 = vm_client2()->NewWindow(2);
+  Id window_2_2 = ws_client2()->NewWindow(2);
   ASSERT_TRUE(window_2_2);
 
   // Add 2 to 1.
   {
     changes1()->clear();
-    ASSERT_TRUE(AddWindow(vm2(), window_1_1, window_2_2));
-    vm_client1_->WaitForChangeCount(1);
+    ASSERT_TRUE(AddWindow(ws2(), window_1_1, window_2_2));
+    ws_client1_->WaitForChangeCount(1);
     EXPECT_EQ("HierarchyChanged window=" + IdToString(window_2_2) +
                   " new_parent=" + IdToString(window_1_1) + " old_parent=null",
               SingleChangeToDescription(*changes1()));
@@ -1053,21 +1052,21 @@ TEST_F(WindowTreeAppTest, ReuseDeletedWindowId) {
   // Delete 2.
   {
     changes1()->clear();
-    ASSERT_TRUE(DeleteWindow(vm2(), window_2_2));
+    ASSERT_TRUE(DeleteWindow(ws2(), window_2_2));
 
-    vm_client1_->WaitForChangeCount(1);
+    ws_client1_->WaitForChangeCount(1);
     EXPECT_EQ("WindowDeleted window=" + IdToString(window_2_2),
               SingleChangeToDescription(*changes1()));
   }
 
   // Create 2 again, and add it back to 1. Should get the same notification.
-  window_2_2 = vm_client2()->NewWindow(2);
+  window_2_2 = ws_client2()->NewWindow(2);
   ASSERT_TRUE(window_2_2);
   {
     changes1()->clear();
-    ASSERT_TRUE(AddWindow(vm2(), window_1_1, window_2_2));
+    ASSERT_TRUE(AddWindow(ws2(), window_1_1, window_2_2));
 
-    vm_client1_->WaitForChangeCount(1);
+    ws_client1_->WaitForChangeCount(1);
     EXPECT_EQ("HierarchyChanged window=" + IdToString(window_2_2) +
                   " new_parent=" + IdToString(window_1_1) + " old_parent=null",
               SingleChangeToDescription(*changes1()));
@@ -1082,23 +1081,23 @@ TEST_F(WindowTreeAppTest, GetWindowTree) {
   Id window_1_1 = BuildWindowId(connection_id_1(), 1);
 
   // Create 11 in first connection and make it a child of 1.
-  Id window_1_11 = vm_client1()->NewWindow(11);
+  Id window_1_11 = ws_client1()->NewWindow(11);
   ASSERT_TRUE(window_1_11);
-  ASSERT_TRUE(AddWindow(vm1(), root_window_id(), window_1_1));
-  ASSERT_TRUE(AddWindow(vm1(), window_1_1, window_1_11));
+  ASSERT_TRUE(AddWindow(ws1(), root_window_id(), window_1_1));
+  ASSERT_TRUE(AddWindow(ws1(), window_1_1, window_1_11));
 
   // Create two windows in second connection, 2 and 3, both children of 1.
-  Id window_2_2 = vm_client2()->NewWindow(2);
-  Id window_2_3 = vm_client2()->NewWindow(3);
+  Id window_2_2 = ws_client2()->NewWindow(2);
+  Id window_2_3 = ws_client2()->NewWindow(3);
   ASSERT_TRUE(window_2_2);
   ASSERT_TRUE(window_2_3);
-  ASSERT_TRUE(AddWindow(vm2(), window_1_1, window_2_2));
-  ASSERT_TRUE(AddWindow(vm2(), window_1_1, window_2_3));
+  ASSERT_TRUE(AddWindow(ws2(), window_1_1, window_2_2));
+  ASSERT_TRUE(AddWindow(ws2(), window_1_1, window_2_3));
 
   // Verifies GetWindowTree() on the root. The root connection sees all.
   {
     std::vector<TestWindow> windows;
-    GetWindowTree(vm1(), root_window_id(), &windows);
+    GetWindowTree(ws1(), root_window_id(), &windows);
     ASSERT_EQ(5u, windows.size());
     EXPECT_EQ(WindowParentToString(root_window_id(), kNullParentId),
               windows[0].ToString());
@@ -1112,12 +1111,12 @@ TEST_F(WindowTreeAppTest, GetWindowTree) {
               windows[4].ToString());
   }
 
-  // Verifies GetWindowTree() on the window 1,1 from vm2(). vm2() sees 1,1 as
+  // Verifies GetWindowTree() on the window 1,1 from ws2(). ws2() sees 1,1 as
   // 1,1
-  // is vm2()'s root and vm2() sees all the windows it created.
+  // is ws2()'s root and ws2() sees all the windows it created.
   {
     std::vector<TestWindow> windows;
-    GetWindowTree(vm2(), window_1_1, &windows);
+    GetWindowTree(ws2(), window_1_1, &windows);
     ASSERT_EQ(3u, windows.size());
     EXPECT_EQ(WindowParentToString(window_1_1, kNullParentId),
               windows[0].ToString());
@@ -1130,36 +1129,36 @@ TEST_F(WindowTreeAppTest, GetWindowTree) {
   // Connection 2 shouldn't be able to get the root tree.
   {
     std::vector<TestWindow> windows;
-    GetWindowTree(vm2(), root_window_id(), &windows);
+    GetWindowTree(ws2(), root_window_id(), &windows);
     ASSERT_EQ(0u, windows.size());
   }
 }
 
 TEST_F(WindowTreeAppTest, SetWindowBounds) {
-  Id window_1_1 = vm_client1()->NewWindow(1);
+  Id window_1_1 = ws_client1()->NewWindow(1);
   ASSERT_TRUE(window_1_1);
-  ASSERT_TRUE(AddWindow(vm1(), root_window_id(), window_1_1));
+  ASSERT_TRUE(AddWindow(ws1(), root_window_id(), window_1_1));
 
   ASSERT_NO_FATAL_FAILURE(EstablishSecondConnection(false));
 
   changes2()->clear();
-  ASSERT_TRUE(SetWindowBounds(vm1(), window_1_1, 0, 0, 100, 100));
+  ASSERT_TRUE(SetWindowBounds(ws1(), window_1_1, 0, 0, 100, 100));
 
-  vm_client2_->WaitForChangeCount(1);
+  ws_client2_->WaitForChangeCount(1);
   EXPECT_EQ("BoundsChanged window=" + IdToString(window_1_1) +
                 " old_bounds=0,0 0x0 new_bounds=0,0 100x100",
             SingleChangeToDescription(*changes2()));
 
   // Should not be possible to change the bounds of a window created by another
   // connection.
-  ASSERT_FALSE(SetWindowBounds(vm2(), window_1_1, 0, 0, 0, 0));
+  ASSERT_FALSE(SetWindowBounds(ws2(), window_1_1, 0, 0, 0, 0));
 }
 
 // Verify AddWindow fails when trying to manipulate windows in other roots.
 TEST_F(WindowTreeAppTest, CantMoveWindowsFromOtherRoot) {
   // Create 1 and 2 in the first connection.
-  Id window_1_1 = vm_client1()->NewWindow(1);
-  Id window_1_2 = vm_client1()->NewWindow(2);
+  Id window_1_1 = ws_client1()->NewWindow(1);
+  Id window_1_2 = ws_client1()->NewWindow(2);
   ASSERT_TRUE(window_1_1);
   ASSERT_TRUE(window_1_2);
 
@@ -1167,47 +1166,47 @@ TEST_F(WindowTreeAppTest, CantMoveWindowsFromOtherRoot) {
 
   // Try to move 2 to be a child of 1 from connection 2. This should fail as 2
   // should not be able to access 1.
-  ASSERT_FALSE(AddWindow(vm2(), window_1_1, window_1_2));
+  ASSERT_FALSE(AddWindow(ws2(), window_1_1, window_1_2));
 
   // Try to reparent 1 to the root. A connection is not allowed to reparent its
   // roots.
-  ASSERT_FALSE(AddWindow(vm2(), root_window_id(), window_1_1));
+  ASSERT_FALSE(AddWindow(ws2(), root_window_id(), window_1_1));
 }
 
 // Verify RemoveWindowFromParent fails for windows that are descendants of the
 // roots.
 TEST_F(WindowTreeAppTest, CantRemoveWindowsInOtherRoots) {
   // Create 1 and 2 in the first connection and parent both to the root.
-  Id window_1_1 = vm_client1()->NewWindow(1);
-  Id window_1_2 = vm_client1()->NewWindow(2);
+  Id window_1_1 = ws_client1()->NewWindow(1);
+  Id window_1_2 = ws_client1()->NewWindow(2);
   ASSERT_TRUE(window_1_1);
   ASSERT_TRUE(window_1_2);
 
-  ASSERT_TRUE(AddWindow(vm1(), root_window_id(), window_1_1));
-  ASSERT_TRUE(AddWindow(vm1(), root_window_id(), window_1_2));
+  ASSERT_TRUE(AddWindow(ws1(), root_window_id(), window_1_1));
+  ASSERT_TRUE(AddWindow(ws1(), root_window_id(), window_1_2));
 
   // Establish the second connection and give it the root 1.
   ASSERT_NO_FATAL_FAILURE(EstablishSecondConnection(false));
 
   // Connection 2 should not be able to remove window 2 or 1 from its parent.
-  ASSERT_FALSE(RemoveWindowFromParent(vm2(), window_1_2));
-  ASSERT_FALSE(RemoveWindowFromParent(vm2(), window_1_1));
+  ASSERT_FALSE(RemoveWindowFromParent(ws2(), window_1_2));
+  ASSERT_FALSE(RemoveWindowFromParent(ws2(), window_1_1));
 
   // Create windows 10 and 11 in 2.
-  Id window_2_10 = vm_client2()->NewWindow(10);
-  Id window_2_11 = vm_client2()->NewWindow(11);
+  Id window_2_10 = ws_client2()->NewWindow(10);
+  Id window_2_11 = ws_client2()->NewWindow(11);
   ASSERT_TRUE(window_2_10);
   ASSERT_TRUE(window_2_11);
 
   // Parent 11 to 10.
-  ASSERT_TRUE(AddWindow(vm2(), window_2_10, window_2_11));
+  ASSERT_TRUE(AddWindow(ws2(), window_2_10, window_2_11));
   // Remove 11 from 10.
-  ASSERT_TRUE(RemoveWindowFromParent(vm2(), window_2_11));
+  ASSERT_TRUE(RemoveWindowFromParent(ws2(), window_2_11));
 
   // Verify nothing was actually removed.
   {
     std::vector<TestWindow> windows;
-    GetWindowTree(vm1(), root_window_id(), &windows);
+    GetWindowTree(ws1(), root_window_id(), &windows);
     ASSERT_EQ(3u, windows.size());
     EXPECT_EQ(WindowParentToString(root_window_id(), kNullParentId),
               windows[0].ToString());
@@ -1221,28 +1220,28 @@ TEST_F(WindowTreeAppTest, CantRemoveWindowsInOtherRoots) {
 // Verify GetWindowTree fails for windows that are not descendants of the roots.
 TEST_F(WindowTreeAppTest, CantGetWindowTreeOfOtherRoots) {
   // Create 1 and 2 in the first connection and parent both to the root.
-  Id window_1_1 = vm_client1()->NewWindow(1);
-  Id window_1_2 = vm_client1()->NewWindow(2);
+  Id window_1_1 = ws_client1()->NewWindow(1);
+  Id window_1_2 = ws_client1()->NewWindow(2);
   ASSERT_TRUE(window_1_1);
   ASSERT_TRUE(window_1_2);
 
-  ASSERT_TRUE(AddWindow(vm1(), root_window_id(), window_1_1));
-  ASSERT_TRUE(AddWindow(vm1(), root_window_id(), window_1_2));
+  ASSERT_TRUE(AddWindow(ws1(), root_window_id(), window_1_1));
+  ASSERT_TRUE(AddWindow(ws1(), root_window_id(), window_1_2));
 
   ASSERT_NO_FATAL_FAILURE(EstablishSecondConnection(false));
 
   std::vector<TestWindow> windows;
 
   // Should get nothing for the root.
-  GetWindowTree(vm2(), root_window_id(), &windows);
+  GetWindowTree(ws2(), root_window_id(), &windows);
   ASSERT_TRUE(windows.empty());
 
   // Should get nothing for window 2.
-  GetWindowTree(vm2(), window_1_2, &windows);
+  GetWindowTree(ws2(), window_1_2, &windows);
   ASSERT_TRUE(windows.empty());
 
   // Should get window 1 if asked for.
-  GetWindowTree(vm2(), window_1_1, &windows);
+  GetWindowTree(ws2(), window_1_1, &windows);
   ASSERT_EQ(1u, windows.size());
   EXPECT_EQ(WindowParentToString(window_1_1, kNullParentId),
             windows[0].ToString());
@@ -1253,11 +1252,11 @@ TEST_F(WindowTreeAppTest, EmbedWithSameWindowId) {
   changes2()->clear();
 
   Id window_1_1 = BuildWindowId(connection_id_1(), 1);
-  ASSERT_NO_FATAL_FAILURE(EstablishThirdConnection(vm1(), window_1_1));
+  ASSERT_NO_FATAL_FAILURE(EstablishThirdConnection(ws1(), window_1_1));
 
   // Connection2 should have been told of the unembed and delete.
   {
-    vm_client2_->WaitForChangeCount(2);
+    ws_client2_->WaitForChangeCount(2);
     EXPECT_EQ("OnUnembed", ChangesToDescription1(*changes2())[0]);
     EXPECT_EQ("WindowDeleted window=" + IdToString(window_1_1),
               ChangesToDescription1(*changes2())[1]);
@@ -1266,7 +1265,7 @@ TEST_F(WindowTreeAppTest, EmbedWithSameWindowId) {
   // Connection2 has no root. Verify it can't see window 1,1 anymore.
   {
     std::vector<TestWindow> windows;
-    GetWindowTree(vm2(), window_1_1, &windows);
+    GetWindowTree(ws2(), window_1_1, &windows);
     EXPECT_TRUE(windows.empty());
   }
 }
@@ -1276,20 +1275,20 @@ TEST_F(WindowTreeAppTest, EmbedWithSameWindowId2) {
   Id window_1_1 = BuildWindowId(connection_id_1(), 1);
   changes2()->clear();
 
-  ASSERT_NO_FATAL_FAILURE(EstablishThirdConnection(vm1(), window_1_1));
+  ASSERT_NO_FATAL_FAILURE(EstablishThirdConnection(ws1(), window_1_1));
 
   // Connection2 should have been told about the unembed and delete.
-  vm_client2_->WaitForChangeCount(2);
+  ws_client2_->WaitForChangeCount(2);
   changes2()->clear();
 
   // Create a window in the third connection and parent it to the root.
-  Id window_3_1 = vm_client3()->NewWindow(1);
+  Id window_3_1 = ws_client3()->NewWindow(1);
   ASSERT_TRUE(window_3_1);
-  ASSERT_TRUE(AddWindow(vm3(), window_1_1, window_3_1));
+  ASSERT_TRUE(AddWindow(ws3(), window_1_1, window_3_1));
 
   // Connection 1 should have been told about the add (it owns the window).
   {
-    vm_client1_->WaitForChangeCount(1);
+    ws_client1_->WaitForChangeCount(1);
     EXPECT_EQ("HierarchyChanged window=" + IdToString(window_3_1) +
                   " new_parent=" + IdToString(window_1_1) + " old_parent=null",
               SingleChangeToDescription(*changes1()));
@@ -1301,39 +1300,39 @@ TEST_F(WindowTreeAppTest, EmbedWithSameWindowId2) {
 
     // We should get a new connection for the new embedding.
     scoped_ptr<TestWindowTreeClientImpl> connection4(
-        EstablishConnectionViaEmbed(vm1(), window_1_1, nullptr));
+        EstablishConnectionViaEmbed(ws1(), window_1_1, nullptr));
     ASSERT_TRUE(connection4.get());
     EXPECT_EQ("[" + WindowParentToString(window_1_1, kNullParentId) + "]",
               ChangeWindowDescription(*connection4->tracker()->changes()));
 
     // And 3 should get an unembed and delete.
-    vm_client3_->WaitForChangeCount(2);
+    ws_client3_->WaitForChangeCount(2);
     EXPECT_EQ("OnUnembed", ChangesToDescription1(*changes3())[0]);
     EXPECT_EQ("WindowDeleted window=" + IdToString(window_1_1),
               ChangesToDescription1(*changes3())[1]);
   }
 
-  // vm3() has no root. Verify it can't see window 1,1 anymore.
+  // ws3() has no root. Verify it can't see window 1,1 anymore.
   {
     std::vector<TestWindow> windows;
-    GetWindowTree(vm3(), window_1_1, &windows);
+    GetWindowTree(ws3(), window_1_1, &windows);
     EXPECT_TRUE(windows.empty());
   }
 
   // Verify 3,1 is no longer parented to 1,1. We have to do this from 1,1 as
-  // vm3() can no longer see 1,1.
+  // ws3() can no longer see 1,1.
   {
     std::vector<TestWindow> windows;
-    GetWindowTree(vm1(), window_1_1, &windows);
+    GetWindowTree(ws1(), window_1_1, &windows);
     ASSERT_EQ(1u, windows.size());
     EXPECT_EQ(WindowParentToString(window_1_1, kNullParentId),
               windows[0].ToString());
   }
 
-  // Verify vm3() can still see the window it created 3,1.
+  // Verify ws3() can still see the window it created 3,1.
   {
     std::vector<TestWindow> windows;
-    GetWindowTree(vm3(), window_3_1, &windows);
+    GetWindowTree(ws3(), window_3_1, &windows);
     ASSERT_EQ(1u, windows.size());
     EXPECT_EQ(WindowParentToString(window_3_1, kNullParentId),
               windows[0].ToString());
@@ -1343,15 +1342,15 @@ TEST_F(WindowTreeAppTest, EmbedWithSameWindowId2) {
 // Assertions for SetWindowVisibility.
 TEST_F(WindowTreeAppTest, SetWindowVisibility) {
   // Create 1 and 2 in the first connection and parent both to the root.
-  Id window_1_1 = vm_client1()->NewWindow(1);
-  Id window_1_2 = vm_client1()->NewWindow(2);
+  Id window_1_1 = ws_client1()->NewWindow(1);
+  Id window_1_2 = ws_client1()->NewWindow(2);
   ASSERT_TRUE(window_1_1);
   ASSERT_TRUE(window_1_2);
 
-  ASSERT_TRUE(AddWindow(vm1(), root_window_id(), window_1_1));
+  ASSERT_TRUE(AddWindow(ws1(), root_window_id(), window_1_1));
   {
     std::vector<TestWindow> windows;
-    GetWindowTree(vm1(), root_window_id(), &windows);
+    GetWindowTree(ws1(), root_window_id(), &windows);
     ASSERT_EQ(2u, windows.size());
     EXPECT_EQ(WindowParentToString(root_window_id(), kNullParentId) +
                   " visible=true drawn=true",
@@ -1362,11 +1361,11 @@ TEST_F(WindowTreeAppTest, SetWindowVisibility) {
   }
 
   // Show all the windows.
-  ASSERT_TRUE(SetWindowVisibility(vm1(), window_1_1, true));
-  ASSERT_TRUE(SetWindowVisibility(vm1(), window_1_2, true));
+  ASSERT_TRUE(SetWindowVisibility(ws1(), window_1_1, true));
+  ASSERT_TRUE(SetWindowVisibility(ws1(), window_1_2, true));
   {
     std::vector<TestWindow> windows;
-    GetWindowTree(vm1(), root_window_id(), &windows);
+    GetWindowTree(ws1(), root_window_id(), &windows);
     ASSERT_EQ(2u, windows.size());
     EXPECT_EQ(WindowParentToString(root_window_id(), kNullParentId) +
                   " visible=true drawn=true",
@@ -1377,10 +1376,10 @@ TEST_F(WindowTreeAppTest, SetWindowVisibility) {
   }
 
   // Hide 1.
-  ASSERT_TRUE(SetWindowVisibility(vm1(), window_1_1, false));
+  ASSERT_TRUE(SetWindowVisibility(ws1(), window_1_1, false));
   {
     std::vector<TestWindow> windows;
-    GetWindowTree(vm1(), window_1_1, &windows);
+    GetWindowTree(ws1(), window_1_1, &windows);
     ASSERT_EQ(1u, windows.size());
     EXPECT_EQ(WindowParentToString(window_1_1, root_window_id()) +
                   " visible=false drawn=false",
@@ -1388,10 +1387,10 @@ TEST_F(WindowTreeAppTest, SetWindowVisibility) {
   }
 
   // Attach 2 to 1.
-  ASSERT_TRUE(AddWindow(vm1(), window_1_1, window_1_2));
+  ASSERT_TRUE(AddWindow(ws1(), window_1_1, window_1_2));
   {
     std::vector<TestWindow> windows;
-    GetWindowTree(vm1(), window_1_1, &windows);
+    GetWindowTree(ws1(), window_1_1, &windows);
     ASSERT_EQ(2u, windows.size());
     EXPECT_EQ(WindowParentToString(window_1_1, root_window_id()) +
                   " visible=false drawn=false",
@@ -1402,10 +1401,10 @@ TEST_F(WindowTreeAppTest, SetWindowVisibility) {
   }
 
   // Show 1.
-  ASSERT_TRUE(SetWindowVisibility(vm1(), window_1_1, true));
+  ASSERT_TRUE(SetWindowVisibility(ws1(), window_1_1, true));
   {
     std::vector<TestWindow> windows;
-    GetWindowTree(vm1(), window_1_1, &windows);
+    GetWindowTree(ws1(), window_1_1, &windows);
     ASSERT_EQ(2u, windows.size());
     EXPECT_EQ(WindowParentToString(window_1_1, root_window_id()) +
                   " visible=true drawn=true",
@@ -1419,30 +1418,30 @@ TEST_F(WindowTreeAppTest, SetWindowVisibility) {
 // Assertions for SetWindowVisibility sending notifications.
 TEST_F(WindowTreeAppTest, SetWindowVisibilityNotifications) {
   // Create 1,1 and 1,2. 1,2 is made a child of 1,1 and 1,1 a child of the root.
-  Id window_1_1 = vm_client1()->NewWindow(1);
+  Id window_1_1 = ws_client1()->NewWindow(1);
   ASSERT_TRUE(window_1_1);
-  ASSERT_TRUE(SetWindowVisibility(vm1(), window_1_1, true));
-  Id window_1_2 = vm_client1()->NewWindow(2);
+  ASSERT_TRUE(SetWindowVisibility(ws1(), window_1_1, true));
+  Id window_1_2 = ws_client1()->NewWindow(2);
   ASSERT_TRUE(window_1_2);
-  ASSERT_TRUE(SetWindowVisibility(vm1(), window_1_2, true));
-  ASSERT_TRUE(AddWindow(vm1(), root_window_id(), window_1_1));
-  ASSERT_TRUE(AddWindow(vm1(), window_1_1, window_1_2));
+  ASSERT_TRUE(SetWindowVisibility(ws1(), window_1_2, true));
+  ASSERT_TRUE(AddWindow(ws1(), root_window_id(), window_1_1));
+  ASSERT_TRUE(AddWindow(ws1(), window_1_1, window_1_2));
 
   // Establish the second connection at 1,2.
   ASSERT_NO_FATAL_FAILURE(EstablishSecondConnectionWithRoot(window_1_2));
 
   // Add 2,3 as a child of 1,2.
-  Id window_2_3 = vm_client2()->NewWindow(3);
+  Id window_2_3 = ws_client2()->NewWindow(3);
   ASSERT_TRUE(window_2_3);
-  ASSERT_TRUE(SetWindowVisibility(vm2(), window_2_3, true));
-  ASSERT_TRUE(AddWindow(vm2(), window_1_2, window_2_3));
-  WaitForAllMessages(vm1());
+  ASSERT_TRUE(SetWindowVisibility(ws2(), window_2_3, true));
+  ASSERT_TRUE(AddWindow(ws2(), window_1_2, window_2_3));
+  WaitForAllMessages(ws1());
 
   changes2()->clear();
   // Hide 1,2 from connection 1. Connection 2 should see this.
-  ASSERT_TRUE(SetWindowVisibility(vm1(), window_1_2, false));
+  ASSERT_TRUE(SetWindowVisibility(ws1(), window_1_2, false));
   {
-    vm_client2_->WaitForChangeCount(1);
+    ws_client2_->WaitForChangeCount(1);
     EXPECT_EQ(
         "VisibilityChanged window=" + IdToString(window_1_2) + " visible=false",
         SingleChangeToDescription(*changes2()));
@@ -1450,9 +1449,9 @@ TEST_F(WindowTreeAppTest, SetWindowVisibilityNotifications) {
 
   changes1()->clear();
   // Show 1,2 from connection 2, connection 1 should be notified.
-  ASSERT_TRUE(SetWindowVisibility(vm2(), window_1_2, true));
+  ASSERT_TRUE(SetWindowVisibility(ws2(), window_1_2, true));
   {
-    vm_client1_->WaitForChangeCount(1);
+    ws_client1_->WaitForChangeCount(1);
     EXPECT_EQ(
         "VisibilityChanged window=" + IdToString(window_1_2) + " visible=true",
         SingleChangeToDescription(*changes1()));
@@ -1460,9 +1459,9 @@ TEST_F(WindowTreeAppTest, SetWindowVisibilityNotifications) {
 
   changes2()->clear();
   // Hide 1,1, connection 2 should be told the draw state changed.
-  ASSERT_TRUE(SetWindowVisibility(vm1(), window_1_1, false));
+  ASSERT_TRUE(SetWindowVisibility(ws1(), window_1_1, false));
   {
-    vm_client2_->WaitForChangeCount(1);
+    ws_client2_->WaitForChangeCount(1);
     EXPECT_EQ(
         "DrawnStateChanged window=" + IdToString(window_1_2) + " drawn=false",
         SingleChangeToDescription(*changes2()));
@@ -1470,9 +1469,9 @@ TEST_F(WindowTreeAppTest, SetWindowVisibilityNotifications) {
 
   changes2()->clear();
   // Show 1,1 from connection 1. Connection 2 should see this.
-  ASSERT_TRUE(SetWindowVisibility(vm1(), window_1_1, true));
+  ASSERT_TRUE(SetWindowVisibility(ws1(), window_1_1, true));
   {
-    vm_client2_->WaitForChangeCount(1);
+    ws_client2_->WaitForChangeCount(1);
     EXPECT_EQ(
         "DrawnStateChanged window=" + IdToString(window_1_2) + " drawn=true",
         SingleChangeToDescription(*changes2()));
@@ -1480,9 +1479,9 @@ TEST_F(WindowTreeAppTest, SetWindowVisibilityNotifications) {
 
   // Change visibility of 2,3, connection 1 should see this.
   changes1()->clear();
-  ASSERT_TRUE(SetWindowVisibility(vm2(), window_2_3, false));
+  ASSERT_TRUE(SetWindowVisibility(ws2(), window_2_3, false));
   {
-    vm_client1_->WaitForChangeCount(1);
+    ws_client1_->WaitForChangeCount(1);
     EXPECT_EQ(
         "VisibilityChanged window=" + IdToString(window_2_3) + " visible=false",
         SingleChangeToDescription(*changes1()));
@@ -1490,9 +1489,9 @@ TEST_F(WindowTreeAppTest, SetWindowVisibilityNotifications) {
 
   changes2()->clear();
   // Remove 1,1 from the root, connection 2 should see drawn state changed.
-  ASSERT_TRUE(RemoveWindowFromParent(vm1(), window_1_1));
+  ASSERT_TRUE(RemoveWindowFromParent(ws1(), window_1_1));
   {
-    vm_client2_->WaitForChangeCount(1);
+    ws_client2_->WaitForChangeCount(1);
     EXPECT_EQ(
         "DrawnStateChanged window=" + IdToString(window_1_2) + " drawn=false",
         SingleChangeToDescription(*changes2()));
@@ -1500,9 +1499,9 @@ TEST_F(WindowTreeAppTest, SetWindowVisibilityNotifications) {
 
   changes2()->clear();
   // Add 1,1 back to the root, connection 2 should see drawn state changed.
-  ASSERT_TRUE(AddWindow(vm1(), root_window_id(), window_1_1));
+  ASSERT_TRUE(AddWindow(ws1(), root_window_id(), window_1_1));
   {
-    vm_client2_->WaitForChangeCount(1);
+    ws_client2_->WaitForChangeCount(1);
     EXPECT_EQ(
         "DrawnStateChanged window=" + IdToString(window_1_2) + " drawn=true",
         SingleChangeToDescription(*changes2()));
@@ -1510,16 +1509,16 @@ TEST_F(WindowTreeAppTest, SetWindowVisibilityNotifications) {
 }
 
 TEST_F(WindowTreeAppTest, SetWindowProperty) {
-  Id window_1_1 = vm_client1()->NewWindow(1);
+  Id window_1_1 = ws_client1()->NewWindow(1);
   ASSERT_TRUE(window_1_1);
 
   ASSERT_NO_FATAL_FAILURE(EstablishSecondConnection(false));
   changes2()->clear();
 
-  ASSERT_TRUE(AddWindow(vm1(), root_window_id(), window_1_1));
+  ASSERT_TRUE(AddWindow(ws1(), root_window_id(), window_1_1));
   {
     std::vector<TestWindow> windows;
-    GetWindowTree(vm1(), root_window_id(), &windows);
+    GetWindowTree(ws1(), root_window_id(), &windows);
     ASSERT_EQ(2u, windows.size());
     EXPECT_EQ(root_window_id(), windows[0].window_id);
     EXPECT_EQ(window_1_1, windows[1].window_id);
@@ -1529,9 +1528,9 @@ TEST_F(WindowTreeAppTest, SetWindowProperty) {
   // Set properties on 1.
   changes2()->clear();
   std::vector<uint8_t> one(1, '1');
-  ASSERT_TRUE(SetWindowProperty(vm1(), window_1_1, "one", &one));
+  ASSERT_TRUE(SetWindowProperty(ws1(), window_1_1, "one", &one));
   {
-    vm_client2_->WaitForChangeCount(1);
+    ws_client2_->WaitForChangeCount(1);
     EXPECT_EQ(
         "PropertyChanged window=" + IdToString(window_1_1) + " key=one value=1",
         SingleChangeToDescription(*changes2()));
@@ -1540,7 +1539,7 @@ TEST_F(WindowTreeAppTest, SetWindowProperty) {
   // Test that our properties exist in the window tree
   {
     std::vector<TestWindow> windows;
-    GetWindowTree(vm1(), window_1_1, &windows);
+    GetWindowTree(ws1(), window_1_1, &windows);
     ASSERT_EQ(1u, windows.size());
     ASSERT_EQ(1u, windows[0].properties.size());
     EXPECT_EQ(one, windows[0].properties["one"]);
@@ -1548,9 +1547,9 @@ TEST_F(WindowTreeAppTest, SetWindowProperty) {
 
   changes2()->clear();
   // Set back to null.
-  ASSERT_TRUE(SetWindowProperty(vm1(), window_1_1, "one", NULL));
+  ASSERT_TRUE(SetWindowProperty(ws1(), window_1_1, "one", NULL));
   {
-    vm_client2_->WaitForChangeCount(1);
+    ws_client2_->WaitForChangeCount(1);
     EXPECT_EQ("PropertyChanged window=" + IdToString(window_1_1) +
                   " key=one value=NULL",
               SingleChangeToDescription(*changes2()));
@@ -1561,24 +1560,24 @@ TEST_F(WindowTreeAppTest, OnEmbeddedAppDisconnected) {
   // Create connection 2 and 3.
   ASSERT_NO_FATAL_FAILURE(EstablishSecondConnection(true));
   Id window_1_1 = BuildWindowId(connection_id_1(), 1);
-  Id window_2_2 = vm_client2()->NewWindow(2);
+  Id window_2_2 = ws_client2()->NewWindow(2);
   ASSERT_TRUE(window_2_2);
-  ASSERT_TRUE(AddWindow(vm2(), window_1_1, window_2_2));
+  ASSERT_TRUE(AddWindow(ws2(), window_1_1, window_2_2));
   changes2()->clear();
-  ASSERT_NO_FATAL_FAILURE(EstablishThirdConnection(vm2(), window_2_2));
+  ASSERT_NO_FATAL_FAILURE(EstablishThirdConnection(ws2(), window_2_2));
 
   // Connection 1 should get a hierarchy change for window_2_2.
-  vm_client1_->WaitForChangeCount(1);
+  ws_client1_->WaitForChangeCount(1);
   changes1()->clear();
 
   // Close connection 3. Connection 2 (which had previously embedded 3) should
   // be notified of this.
-  vm_client3_.reset();
-  vm_client2_->WaitForChangeCount(1);
+  ws_client3_.reset();
+  ws_client2_->WaitForChangeCount(1);
   EXPECT_EQ("OnEmbeddedAppDisconnected window=" + IdToString(window_2_2),
             SingleChangeToDescription(*changes2()));
 
-  vm_client1_->WaitForChangeCount(1);
+  ws_client1_->WaitForChangeCount(1);
   EXPECT_EQ("OnEmbeddedAppDisconnected window=" + IdToString(window_2_2),
             SingleChangeToDescription(*changes1()));
 }
@@ -1589,20 +1588,20 @@ TEST_F(WindowTreeAppTest, OnParentOfEmbedDisconnects) {
   // Create connection 2 and 3.
   ASSERT_NO_FATAL_FAILURE(EstablishSecondConnection(true));
   Id window_1_1 = BuildWindowId(connection_id_1(), 1);
-  ASSERT_TRUE(AddWindow(vm1(), root_window_id(), window_1_1));
-  Id window_2_2 = vm_client2()->NewWindow(2);
-  Id window_2_3 = vm_client2()->NewWindow(3);
+  ASSERT_TRUE(AddWindow(ws1(), root_window_id(), window_1_1));
+  Id window_2_2 = ws_client2()->NewWindow(2);
+  Id window_2_3 = ws_client2()->NewWindow(3);
   ASSERT_TRUE(window_2_2);
   ASSERT_TRUE(window_2_3);
-  ASSERT_TRUE(AddWindow(vm2(), window_1_1, window_2_2));
-  ASSERT_TRUE(AddWindow(vm2(), window_2_2, window_2_3));
+  ASSERT_TRUE(AddWindow(ws2(), window_1_1, window_2_2));
+  ASSERT_TRUE(AddWindow(ws2(), window_2_2, window_2_3));
   changes2()->clear();
-  ASSERT_NO_FATAL_FAILURE(EstablishThirdConnection(vm2(), window_2_3));
+  ASSERT_NO_FATAL_FAILURE(EstablishThirdConnection(ws2(), window_2_3));
   changes3()->clear();
 
   // Close connection 2. Connection 3 should get a delete (for its root).
-  vm_client2_.reset();
-  vm_client3_->WaitForChangeCount(1);
+  ws_client2_.reset();
+  ws_client3_->WaitForChangeCount(1);
   EXPECT_EQ("WindowDeleted window=" + IdToString(window_2_3),
             SingleChangeToDescription(*changes3()));
 }
@@ -1612,26 +1611,26 @@ TEST_F(WindowTreeAppTest, OnParentOfEmbedDisconnects) {
 TEST_F(WindowTreeAppTest, DontCleanMapOnDestroy) {
   ASSERT_NO_FATAL_FAILURE(EstablishSecondConnection(true));
   Id window_1_1 = BuildWindowId(connection_id_1(), 1);
-  ASSERT_TRUE(vm_client2()->NewWindow(1));
+  ASSERT_TRUE(ws_client2()->NewWindow(1));
   changes1()->clear();
-  vm_client2_.reset();
-  vm_client1_->WaitForChangeCount(1);
+  ws_client2_.reset();
+  ws_client1_->WaitForChangeCount(1);
   EXPECT_EQ("OnEmbeddedAppDisconnected window=" + IdToString(window_1_1),
             SingleChangeToDescription(*changes1()));
   std::vector<TestWindow> windows;
-  GetWindowTree(vm1(), window_1_1, &windows);
+  GetWindowTree(ws1(), window_1_1, &windows);
   EXPECT_FALSE(windows.empty());
 }
 
 // Verifies Embed() works when supplying a WindowTreeClient.
 TEST_F(WindowTreeAppTest, EmbedSupplyingWindowTreeClient) {
-  ASSERT_TRUE(vm_client1()->NewWindow(1));
+  ASSERT_TRUE(ws_client1()->NewWindow(1));
 
   TestWindowTreeClientImpl client2(application_impl());
   mojom::WindowTreeClientPtr client2_ptr;
   mojo::Binding<WindowTreeClient> client2_binding(&client2, &client2_ptr);
   ASSERT_TRUE(
-      Embed(vm1(), BuildWindowId(connection_id_1(), 1), client2_ptr.Pass()));
+      Embed(ws1(), BuildWindowId(connection_id_1(), 1), client2_ptr.Pass()));
   client2.WaitForOnEmbed();
   EXPECT_EQ("OnEmbed",
             SingleChangeToDescription(*client2.tracker()->changes()));
@@ -1641,19 +1640,19 @@ TEST_F(WindowTreeAppTest, EmbedFailsFromOtherConnection) {
   ASSERT_NO_FATAL_FAILURE(EstablishSecondConnection(true));
 
   Id window_1_1 = BuildWindowId(connection_id_1(), 1);
-  Id window_2_2 = vm_client2()->NewWindow(2);
+  Id window_2_2 = ws_client2()->NewWindow(2);
   ASSERT_TRUE(window_2_2);
-  ASSERT_TRUE(AddWindow(vm2(), window_1_1, window_2_2));
-  ASSERT_NO_FATAL_FAILURE(EstablishThirdConnection(vm2(), window_2_2));
+  ASSERT_TRUE(AddWindow(ws2(), window_1_1, window_2_2));
+  ASSERT_NO_FATAL_FAILURE(EstablishThirdConnection(ws2(), window_2_2));
 
-  Id window_3_3 = vm_client3()->NewWindow(3);
+  Id window_3_3 = ws_client3()->NewWindow(3);
   ASSERT_TRUE(window_3_3);
-  ASSERT_TRUE(AddWindow(vm3(), window_2_2, window_3_3));
+  ASSERT_TRUE(AddWindow(ws3(), window_2_2, window_3_3));
 
   // 2 should not be able to embed in window_3_3 as window_3_3 was not created
   // by
   // 2.
-  EXPECT_FALSE(EmbedUrl(application_impl(), vm2(), application_impl()->url(),
+  EXPECT_FALSE(EmbedUrl(application_impl(), ws2(), application_impl()->url(),
                         window_3_3));
 }
 
@@ -1662,22 +1661,22 @@ TEST_F(WindowTreeAppTest, EmbedFromOtherConnection) {
   ASSERT_NO_FATAL_FAILURE(EstablishSecondConnection(true));
 
   Id window_1_1 = BuildWindowId(connection_id_1(), 1);
-  Id window_2_2 = vm_client2()->NewWindow(2);
+  Id window_2_2 = ws_client2()->NewWindow(2);
   ASSERT_TRUE(window_2_2);
-  ASSERT_TRUE(AddWindow(vm2(), window_1_1, window_2_2));
+  ASSERT_TRUE(AddWindow(ws2(), window_1_1, window_2_2));
 
   changes2()->clear();
 
   // Establish a third connection in window_2_2.
-  ASSERT_NO_FATAL_FAILURE(EstablishThirdConnection(vm1(), window_2_2));
+  ASSERT_NO_FATAL_FAILURE(EstablishThirdConnection(ws1(), window_2_2));
 
-  WaitForAllMessages(vm2());
+  WaitForAllMessages(ws2());
   EXPECT_EQ(std::string(), SingleChangeToDescription(*changes2()));
 }
 
 TEST_F(WindowTreeAppTest, CantEmbedFromConnectionRoot) {
   // Shouldn't be able to embed into the root.
-  ASSERT_FALSE(EmbedUrl(application_impl(), vm1(), application_impl()->url(),
+  ASSERT_FALSE(EmbedUrl(application_impl(), ws1(), application_impl()->url(),
                         root_window_id()));
 
   // Even though the call above failed a WindowTreeClient was obtained. We need
@@ -1687,25 +1686,25 @@ TEST_F(WindowTreeAppTest, CantEmbedFromConnectionRoot) {
 
   // Don't allow a connection to embed into its own root.
   ASSERT_NO_FATAL_FAILURE(EstablishSecondConnection(true));
-  EXPECT_FALSE(EmbedUrl(application_impl(), vm2(), application_impl()->url(),
+  EXPECT_FALSE(EmbedUrl(application_impl(), ws2(), application_impl()->url(),
                         BuildWindowId(connection_id_1(), 1)));
 
   // Need to wait for a WindowTreeClient for same reason as above.
   WaitForWindowTreeClient();
 
-  Id window_1_2 = vm_client1()->NewWindow(2);
+  Id window_1_2 = ws_client1()->NewWindow(2);
   ASSERT_TRUE(window_1_2);
   ASSERT_TRUE(
-      AddWindow(vm1(), BuildWindowId(connection_id_1(), 1), window_1_2));
-  ASSERT_TRUE(vm_client3_.get() == nullptr);
-  vm_client3_ = EstablishConnectionViaEmbedWithPolicyBitmask(
-      vm1(), window_1_2, mojom::WindowTree::ACCESS_POLICY_EMBED_ROOT, nullptr);
-  ASSERT_TRUE(vm_client3_.get() != nullptr);
-  vm_client3_->set_root_window(root_window_id());
+      AddWindow(ws1(), BuildWindowId(connection_id_1(), 1), window_1_2));
+  ASSERT_TRUE(ws_client3_.get() == nullptr);
+  ws_client3_ = EstablishConnectionViaEmbedWithPolicyBitmask(
+      ws1(), window_1_2, mojom::WindowTree::ACCESS_POLICY_EMBED_ROOT, nullptr);
+  ASSERT_TRUE(ws_client3_.get() != nullptr);
+  ws_client3_->set_root_window(root_window_id());
 
-  // window_1_2 is vm3's root, so even though v3 is an embed root it should not
+  // window_1_2 is ws3's root, so even though v3 is an embed root it should not
   // be able to Embed into itself.
-  ASSERT_FALSE(EmbedUrl(application_impl(), vm3(), application_impl()->url(),
+  ASSERT_FALSE(EmbedUrl(application_impl(), ws3(), application_impl()->url(),
                         window_1_2));
 }
 
@@ -1720,5 +1719,4 @@ TEST_F(WindowTreeAppTest, CantEmbedFromConnectionRoot) {
 // tests.
 
 }  // namespace ws
-
 }  // namespace mus
