@@ -258,8 +258,8 @@ bool PasswordAutofillManager::GetDeletionConfirmationText(
 
 bool PasswordAutofillManager::RemoveSuggestion(const base::string16& value,
                                                int identifier) {
-  // http://crbug.com/329038
-  NOTIMPLEMENTED();
+  // Password suggestions cannot be deleted this way.
+  // See http://crbug.com/329038#c15
   return false;
 }
 
