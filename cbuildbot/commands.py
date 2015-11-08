@@ -669,10 +669,12 @@ def RunTestSuite(buildroot, board, image_path, results_dir, test_type,
   if test_type == constants.FULL_AU_TEST_TYPE:
     cmd.append('--archive_dir=%s' % archive_dir)
   else:
-    if (test_type == constants.SMOKE_SUITE_TEST_TYPE or test_type ==
-        constants.GCE_VM_TEST_TYPE):
+    if test_type == constants.SMOKE_SUITE_TEST_TYPE:
       cmd.append('--only_verify')
       cmd.append('--suite=smoke')
+    elif test_type == constants.GCE_VM_TEST_TYPE:
+      cmd.append('--only_verify')
+      cmd.append('--suite=gce-smoke')
     elif test_type == constants.TELEMETRY_SUITE_TEST_TYPE:
       cmd.append('--only_verify')
       cmd.append('--suite=telemetry_unit')

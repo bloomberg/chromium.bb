@@ -744,6 +744,7 @@ VM_IMAGE_BIN = '%s.bin' % VM_IMAGE_NAME
 VM_DISK_PREFIX = 'chromiumos_qemu_disk.bin'
 VM_MEM_PREFIX = 'chromiumos_qemu_mem.bin'
 VM_TEST_RESULTS = 'vm_test_results_%(attempt)s'
+GCE_TEST_RESULTS = 'gce_test_results_%(attempt)s'
 
 TEST_IMAGE_NAME = 'chromiumos_test_image'
 TEST_IMAGE_TAR = '%s.tar.xz' % TEST_IMAGE_NAME

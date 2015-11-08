@@ -401,7 +401,7 @@ class BuildImageStage(BuildPackagesStage):
     compute images create" command. This will convert them into images that can
     be used to create GCE VM instances.
     """
-    if self._run.config.upload_gce_images:
+    if self._run.config.run_gce_tests:
       image_bins = []
       if 'base' in self._run.config['images']:
         image_bins.append(constants.IMAGE_TYPE_TO_NAME['base'])

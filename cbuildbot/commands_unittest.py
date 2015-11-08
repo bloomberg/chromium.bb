@@ -146,7 +146,7 @@ class RunTestSuiteTest(cros_build_lib_unittest.RunCommandTempDirTestCase):
     self._RunTestSuite(constants.GCE_VM_TEST_TYPE)
     self.assertCommandContains(['--only_verify'])
     self.assertCommandContains(['--type=gce'])
-    self.assertCommandContains(['--suite=smoke'])
+    self.assertCommandContains(['--suite=gce-smoke'])
 
 
 class ChromeSDKTest(cros_build_lib_unittest.RunCommandTempDirTestCase):

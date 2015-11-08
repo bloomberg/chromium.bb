@@ -530,9 +530,9 @@ def DefaultSettings():
       # If true, uploads individual image tarballs.
       upload_standalone_images=True,
 
-      # upload_gce_images -- If true, uploads tarballs that can be used as the
-      #                      basis for GCE images.
-      upload_gce_images=False,
+      # If true, runs tests as specified in overlay private gce_tests.json, or
+      # the default gce-smoke suite if none, on GCE VMs.
+      run_gce_tests=False,
 
       # List of patterns for portage packages for which stripped binpackages
       # should be uploaded to GS. The patterns are used to search for packages

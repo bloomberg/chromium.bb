@@ -544,8 +544,6 @@ _base_layout_boards = _lakitu_boards
 _no_unittest_boards = frozenset((
 ))
 
-_upload_gce_images_boards = _lakitu_boards
-
 _no_vmtest_boards = _arm_boards | _brillo_boards | frozenset((
     'cyan-cheets',
 ))
@@ -782,6 +780,7 @@ def GetConfig():
   no_vmtest_builder = config_lib.BuildConfig(
       vm_tests=[],
       vm_tests_override=None,
+      run_gce_tests=False,
   )
 
   no_hwtest_builder = config_lib.BuildConfig(
@@ -1089,8 +1088,6 @@ def GetConfig():
         base.update(no_unittest_builder)
       if board in _no_vmtest_boards:
         base.update(no_vmtest_builder)
-      if board in _upload_gce_images_boards:
-        base.update(upload_gce_images=True)
 
       # TODO(akeshet) Eliminate or clean up this special case.
       # kayle board has a lot of kayle-specific config changes.
@@ -1838,7 +1835,8 @@ def GetConfig():
   site_config.AddConfig(
       pre_cq, 'lakitu-pre-cq',
       _base_configs['lakitu'],
-      vm_tests=[constants.SMOKE_SUITE_TEST_TYPE, constants.GCE_VM_TEST_TYPE],
+      vm_tests=[constants.SMOKE_SUITE_TEST_TYPE],
+      run_gce_tests=True,
   )
 
   _CreateConfigsForBoards(no_vmtest_pre_cq, _all_boards, 'no-vmtest-pre-cq')
@@ -1927,13 +1925,15 @@ def GetConfig():
   site_config.AddConfig(
       internal_incremental, 'lakitu-incremental',
       _base_configs['lakitu'],
-      vm_tests=[constants.SMOKE_SUITE_TEST_TYPE, constants.GCE_VM_TEST_TYPE],
+      vm_tests=[constants.SMOKE_SUITE_TEST_TYPE],
+      run_gce_tests=True,
   )
 
   site_config.AddConfig(
       internal_incremental, 'lakitu_next-incremental',
       _base_configs['lakitu_next'],
-      vm_tests=[constants.SMOKE_SUITE_TEST_TYPE, constants.GCE_VM_TEST_TYPE],
+      vm_tests=[constants.SMOKE_SUITE_TEST_TYPE],
+      run_gce_tests=True,
   )
 
   site_config.AddConfigWithoutTemplate(
@@ -2323,7 +2323,8 @@ def GetConfig():
   site_config.AddConfig(
       _release, 'lakitu-release',
       _base_configs['lakitu'],
-      vm_tests=[constants.SMOKE_SUITE_TEST_TYPE, constants.GCE_VM_TEST_TYPE],
+      vm_tests=[constants.SMOKE_SUITE_TEST_TYPE],
+      run_gce_tests=True,
       sign_types=['base'],
       important=True,
   )
@@ -2331,7 +2332,8 @@ def GetConfig():
   site_config.AddConfig(
       _release, 'lakitu_mobbuild-release',
       _base_configs['lakitu_mobbuild'],
-      vm_tests=[constants.SMOKE_SUITE_TEST_TYPE, constants.GCE_VM_TEST_TYPE],
+      vm_tests=[constants.SMOKE_SUITE_TEST_TYPE],
+      run_gce_tests=True,
       signer_tests=False,
       important=True,
   )
@@ -2339,7 +2341,8 @@ def GetConfig():
   site_config.AddConfig(
       _release, 'lakitu_next-release',
       _base_configs['lakitu_next'],
-      vm_tests=[constants.SMOKE_SUITE_TEST_TYPE, constants.GCE_VM_TEST_TYPE],
+      vm_tests=[constants.SMOKE_SUITE_TEST_TYPE],
+      run_gce_tests=True,
       signer_tests=False,
   )
 

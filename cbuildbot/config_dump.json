@@ -81,6 +81,7 @@
         "push_image": false,
         "push_overlays": null,
         "rootfs_verification": true,
+        "run_gce_tests": false,
         "sanity_check_slaves": null,
         "separate_debug_symbols": true,
         "shared_user_password": null,
@@ -90,7 +91,6 @@
         "trybot_list": false,
         "unittest_blacklist": [],
         "unittests": true,
-        "upload_gce_images": false,
         "upload_hw_test_artifacts": true,
         "upload_standalone_images": true,
         "upload_stripped_packages": [
@@ -223,6 +223,7 @@
             "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
             "manifest_version": false,
             "overlays": "both",
+            "run_gce_tests": false,
             "unittests": false,
             "uprev": false,
             "use_chrome_lkgm": true,
@@ -368,6 +369,7 @@
             "overlays": "public",
             "pre_cq": true,
             "prebuilts": false,
+            "run_gce_tests": false,
             "trybot_list": true,
             "unittests": false,
             "upload_standalone_images": false,
@@ -411,6 +413,7 @@
             ],
             "paygen": false,
             "push_image": true,
+            "run_gce_tests": false,
             "sign_types": [
                 "firmware"
             ],
@@ -456,6 +459,7 @@
                 "chromeos-base/autotest-all"
             ],
             "paygen": false,
+            "run_gce_tests": false,
             "sign_types": [
                 "firmware"
             ],
@@ -565,6 +569,7 @@
             ],
             "paygen": false,
             "push_image": true,
+            "run_gce_tests": false,
             "sign_types": [
                 "firmware"
             ],
@@ -723,6 +728,7 @@
             "overlays": "public",
             "pre_cq": true,
             "prebuilts": false,
+            "run_gce_tests": false,
             "trybot_list": true,
             "upload_standalone_images": false,
             "vm_tests": [],
@@ -774,6 +780,7 @@
             "manifest_version": true,
             "overlays": "both",
             "paygen": true,
+            "run_gce_tests": false,
             "unittests": false,
             "upload_hw_test_artifacts": false,
             "vm_tests": [],
@@ -9680,7 +9687,6 @@
         "important": false,
         "manifest": "official.xml",
         "sync_chrome": false,
-        "upload_gce_images": true,
         "vm_tests": []
     },
     "lakitu-chromium-pfq": {
@@ -9698,7 +9704,6 @@
         "overlays": "both",
         "prebuilts": "public",
         "sync_chrome": false,
-        "upload_gce_images": true,
         "useflags": [
             "-chrome_internal"
         ],
@@ -9716,7 +9721,6 @@
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
         "overlays": "both",
         "sync_chrome": false,
-        "upload_gce_images": true,
         "useflags": [
             "chrome_internal"
         ]
@@ -9731,7 +9735,6 @@
         "image_test": false,
         "prebuilts": "public",
         "sync_chrome": false,
-        "upload_gce_images": true,
         "useflags": [
             "-chrome_internal"
         ],
@@ -9749,14 +9752,13 @@
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
         "overlays": "both",
+        "run_gce_tests": true,
         "sync_chrome": false,
-        "upload_gce_images": true,
         "useflags": [
             "chrome_internal"
         ],
         "vm_tests": [
-            "smoke_suite",
-            "gce_vm_test"
+            "smoke_suite"
         ]
     },
     "lakitu-no-vmtest-pre-cq": {
@@ -9771,7 +9773,6 @@
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
         "overlays": "both",
         "sync_chrome": false,
-        "upload_gce_images": true,
         "useflags": [
             "chrome_internal"
         ]
@@ -9792,7 +9793,6 @@
         "overlays": "both",
         "prebuilts": "private",
         "sync_chrome": false,
-        "upload_gce_images": true,
         "useflags": [
             "chrome_internal"
         ],
@@ -9816,14 +9816,10 @@
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
         "overlays": "both",
+        "run_gce_tests": true,
         "sync_chrome": false,
-        "upload_gce_images": true,
         "useflags": [
             "chrome_internal"
-        ],
-        "vm_tests": [
-            "smoke_suite",
-            "gce_vm_test"
         ]
     },
     "lakitu-release": {
@@ -9840,14 +9836,13 @@
         "hwqual": false,
         "image_test": false,
         "important": true,
+        "run_gce_tests": true,
         "sign_types": [
             "base"
         ],
         "sync_chrome": false,
-        "upload_gce_images": true,
         "vm_tests": [
-            "smoke_suite",
-            "gce_vm_test"
+            "smoke_suite"
         ]
     },
     "lakitu-tot-chrome-pfq-informational": {
@@ -9858,7 +9853,6 @@
         "disk_layout": "base",
         "manifest": "official.xml",
         "sync_chrome": false,
-        "upload_gce_images": true,
         "vm_tests": []
     },
     "lakitu-tot-chromium-pfq-informational": {
@@ -9868,7 +9862,6 @@
         ],
         "disk_layout": "base",
         "sync_chrome": false,
-        "upload_gce_images": true,
         "useflags": [
             "-chrome_internal"
         ],
@@ -9884,7 +9877,6 @@
         "important": false,
         "manifest": "official.xml",
         "sync_chrome": false,
-        "upload_gce_images": true,
         "vm_tests": []
     },
     "lakitu_mobbuild-chromium-pfq": {
@@ -9902,7 +9894,6 @@
         "overlays": "both",
         "prebuilts": "public",
         "sync_chrome": false,
-        "upload_gce_images": true,
         "useflags": [
             "-chrome_internal"
         ],
@@ -9920,7 +9911,6 @@
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
         "overlays": "both",
         "sync_chrome": false,
-        "upload_gce_images": true,
         "useflags": [
             "chrome_internal"
         ]
@@ -9935,7 +9925,6 @@
         "image_test": false,
         "prebuilts": "public",
         "sync_chrome": false,
-        "upload_gce_images": true,
         "useflags": [
             "-chrome_internal"
         ],
@@ -9953,7 +9942,6 @@
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
         "overlays": "both",
         "sync_chrome": false,
-        "upload_gce_images": true,
         "useflags": [
             "chrome_internal"
         ]
@@ -9974,7 +9962,6 @@
         "overlays": "both",
         "prebuilts": "private",
         "sync_chrome": false,
-        "upload_gce_images": true,
         "useflags": [
             "chrome_internal"
         ],
@@ -9999,7 +9986,6 @@
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
         "overlays": "both",
         "sync_chrome": false,
-        "upload_gce_images": true,
         "useflags": [
             "chrome_internal"
         ],
@@ -10019,12 +10005,11 @@
         "hwqual": false,
         "image_test": false,
         "important": true,
+        "run_gce_tests": true,
         "signer_tests": false,
         "sync_chrome": false,
-        "upload_gce_images": true,
         "vm_tests": [
-            "smoke_suite",
-            "gce_vm_test"
+            "smoke_suite"
         ]
     },
     "lakitu_mobbuild-tot-chrome-pfq-informational": {
@@ -10035,7 +10020,6 @@
         "disk_layout": "base",
         "manifest": "official.xml",
         "sync_chrome": false,
-        "upload_gce_images": true,
         "vm_tests": []
     },
     "lakitu_mobbuild-tot-chromium-pfq-informational": {
@@ -10045,7 +10029,6 @@
         ],
         "disk_layout": "base",
         "sync_chrome": false,
-        "upload_gce_images": true,
         "useflags": [
             "-chrome_internal"
         ],
@@ -10061,7 +10044,6 @@
         "important": false,
         "manifest": "official.xml",
         "sync_chrome": false,
-        "upload_gce_images": true,
         "vm_tests": []
     },
     "lakitu_next-chromium-pfq": {
@@ -10079,7 +10061,6 @@
         "overlays": "both",
         "prebuilts": "public",
         "sync_chrome": false,
-        "upload_gce_images": true,
         "useflags": [
             "-chrome_internal"
         ],
@@ -10097,7 +10078,6 @@
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
         "overlays": "both",
         "sync_chrome": false,
-        "upload_gce_images": true,
         "useflags": [
             "chrome_internal"
         ]
@@ -10112,7 +10092,6 @@
         "image_test": false,
         "prebuilts": "public",
         "sync_chrome": false,
-        "upload_gce_images": true,
         "useflags": [
             "-chrome_internal"
         ],
@@ -10130,14 +10109,13 @@
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
         "overlays": "both",
+        "run_gce_tests": true,
         "sync_chrome": false,
-        "upload_gce_images": true,
         "useflags": [
             "chrome_internal"
         ],
         "vm_tests": [
-            "smoke_suite",
-            "gce_vm_test"
+            "smoke_suite"
         ]
     },
     "lakitu_next-no-vmtest-pre-cq": {
@@ -10152,7 +10130,6 @@
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
         "overlays": "both",
         "sync_chrome": false,
-        "upload_gce_images": true,
         "useflags": [
             "chrome_internal"
         ]
@@ -10174,7 +10151,6 @@
         "overlays": "both",
         "prebuilts": "private",
         "sync_chrome": false,
-        "upload_gce_images": true,
         "useflags": [
             "chrome_internal"
         ],
@@ -10199,7 +10175,6 @@
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
         "overlays": "both",
         "sync_chrome": false,
-        "upload_gce_images": true,
         "useflags": [
             "chrome_internal"
         ],
@@ -10218,12 +10193,11 @@
         "hw_tests": [],
         "hwqual": false,
         "image_test": false,
+        "run_gce_tests": true,
         "signer_tests": false,
         "sync_chrome": false,
-        "upload_gce_images": true,
         "vm_tests": [
-            "smoke_suite",
-            "gce_vm_test"
+            "smoke_suite"
         ]
     },
     "lakitu_next-tot-chrome-pfq-informational": {
@@ -10234,7 +10208,6 @@
         "disk_layout": "base",
         "manifest": "official.xml",
         "sync_chrome": false,
-        "upload_gce_images": true,
         "vm_tests": []
     },
     "lakitu_next-tot-chromium-pfq-informational": {
@@ -10244,7 +10217,6 @@
         ],
         "disk_layout": "base",
         "sync_chrome": false,
-        "upload_gce_images": true,
         "useflags": [
             "-chrome_internal"
         ],

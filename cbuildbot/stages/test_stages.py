@@ -37,6 +37,17 @@ particulars, please refer to which test failed i.e. above see the
 individual test that failed -- or if an update failed, check the
 corresponding update directory.
 """
+
+_GCE_TEST_ERROR_MSG = """
+!!!GCETests failed!!!
+
+Logs are uploaded in the corresponding %(gce_test_results)s. This can be found
+by clicking on the artifacts link in the "Report" Stage. Specifically look
+for the test_harness/failed for the failing tests. For more
+particulars, please refer to which test failed i.e. above see the
+individual test that failed -- or if an update failed, check the
+corresponding update directory.
+"""
 PRE_CQ = validation_pool.PRE_CQ
 
 
@@ -76,10 +87,7 @@ class VMTestStage(generic_stages.BoardSpecificBuilderStage,
   option_name = 'tests'
   config_name = 'vm_tests'
 
-  VM_TEST_TIMEOUT = 60 * 60
-  # Check if the GCS target is available every 15 seconds.
-  CHECK_GCS_PERIOD = 15
-  CHECK_GCS_TIMEOUT = VM_TEST_TIMEOUT
+  TEST_TIMEOUT = 60 * 60
 
   def _PrintFailedTests(self, results_path, test_basename):
     """Print links to failed tests.
@@ -202,12 +210,34 @@ class VMTestStage(generic_stages.BoardSpecificBuilderStage,
       for test_type in self._run.config.vm_tests:
         logging.info('Running VM test %s.', test_type)
         with cgroups.SimpleContainChildren('VMTest'):
-          with timeout_util.Timeout(self.VM_TEST_TIMEOUT):
+          with timeout_util.Timeout(self.TEST_TIMEOUT):
             self._RunTest(test_type, test_results_dir)
 
     except Exception:
       logging.error(_VM_TEST_ERROR_MSG % dict(vm_test_results=test_basename))
       self._ArchiveVMFiles(test_results_dir)
+      raise
+    finally:
+      self._ArchiveTestResults(test_results_dir, test_basename)
+
+
+class GCETestStage(VMTestStage):
+  """Run autotests on a GCE VM instance."""
+
+  config_name = 'run_gce_tests'
+
+  def PerformStage(self):
+    # These directories are used later to archive test artifacts.
+    test_results_dir = commands.CreateTestRoot(self._build_root)
+    test_basename = constants.GCE_TEST_RESULTS % dict(attempt=self._attempt)
+    try:
+      logging.info('Running GCE tests...')
+      with cgroups.SimpleContainChildren('GCETest'):
+        with timeout_util.Timeout(self.TEST_TIMEOUT):
+          self._RunTest(constants.GCE_VM_TEST_TYPE, test_results_dir)
+
+    except Exception:
+      logging.error(_GCE_TEST_ERROR_MSG % dict(gce_test_results=test_basename))
       raise
     finally:
       self._ArchiveTestResults(test_results_dir, test_basename)
