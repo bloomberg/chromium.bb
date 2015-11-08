@@ -40,7 +40,7 @@ private:
         underlyingValue.set(&value);
     }
 
-    RefPtrWillBeRawPtr<SVGPropertyBase> appliedSVGValue(const InterpolableValue&, const NonInterpolableValue*) const final;
+    PassRefPtrWillBeRawPtr<SVGPropertyBase> appliedSVGValue(const InterpolableValue&, const NonInterpolableValue*) const final;
 };
 
 } // namespace blink

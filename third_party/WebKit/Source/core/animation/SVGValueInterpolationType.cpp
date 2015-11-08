@@ -41,7 +41,7 @@ PassOwnPtr<InterpolationValue> SVGValueInterpolationType::maybeConvertSVGValue(c
     return InterpolationValue::create(*this, InterpolableList::create(0), SVGValueNonInterpolableValue::create(referencedValue.release()));
 }
 
-RefPtrWillBeRawPtr<SVGPropertyBase> SVGValueInterpolationType::appliedSVGValue(const InterpolableValue&, const NonInterpolableValue* nonInterpolableValue) const
+PassRefPtrWillBeRawPtr<SVGPropertyBase> SVGValueInterpolationType::appliedSVGValue(const InterpolableValue&, const NonInterpolableValue* nonInterpolableValue) const
 {
     return toSVGValueNonInterpolableValue(*nonInterpolableValue).svgValue();
 }

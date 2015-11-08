@@ -24,7 +24,7 @@ PassOwnPtr<InterpolationValue> SVGNumberInterpolationType::maybeConvertSVGValue(
     return InterpolationValue::create(*this, InterpolableNumber::create(toSVGNumber(svgValue).value()));
 }
 
-RefPtrWillBeRawPtr<SVGPropertyBase> SVGNumberInterpolationType::appliedSVGValue(const InterpolableValue& interpolableValue, const NonInterpolableValue*) const
+PassRefPtrWillBeRawPtr<SVGPropertyBase> SVGNumberInterpolationType::appliedSVGValue(const InterpolableValue& interpolableValue, const NonInterpolableValue*) const
 {
     double value = toInterpolableNumber(interpolableValue).value();
     return SVGNumber::create(m_isNonNegative && value < 0 ? 0 : value);
