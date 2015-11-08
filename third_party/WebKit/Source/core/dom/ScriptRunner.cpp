@@ -206,14 +206,15 @@ void ScriptRunner::notifyScriptLoadError(ScriptLoader* scriptLoader, ExecutionTy
         RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(m_numberOfInOrderScriptsWithPendingNotification > 0);
         m_numberOfInOrderScriptsWithPendingNotification--;
 
-        auto it = m_pendingInOrderScripts.begin();
-        for (; it != m_pendingInOrderScripts.end(); ++it) {
+        bool foundPendingScript = false;
+        for (auto it = m_pendingInOrderScripts.begin(); it != m_pendingInOrderScripts.end(); ++it) {
             if (*it == scriptLoader) {
                 m_pendingInOrderScripts.remove(it);
+                foundPendingScript = true;
                 break;
             }
         }
-        RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(it != m_pendingInOrderScripts.end());
+        RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(foundPendingScript);
         break;
     }
     scriptLoader->detach();
