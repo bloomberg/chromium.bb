@@ -29,11 +29,6 @@ namespace mus {
 
 namespace ws {
 
-void RunWMCallback(const Callback<void(bool)>& callback,
-                   mojom::WindowManagerErrorCode error_code) {
-  callback.Run(error_code == mojom::WINDOW_MANAGER_ERROR_CODE_SUCCESS);
-}
-
 WindowTreeImpl::WindowTreeImpl(ConnectionManager* connection_manager,
                                ConnectionSpecificId creator_id,
                                const WindowId& root_id,
@@ -115,6 +110,13 @@ void WindowTreeImpl::OnWillDestroyWindowTreeImpl(WindowTreeImpl* connection) {
   }
   if (root_.get() && root_->connection_id == connection->id())
     root_.reset();
+}
+
+void WindowTreeImpl::NotifyChangeCompleted(
+    uint32_t change_id,
+    mojom::WindowManagerErrorCode error_code) {
+  client_->OnChangeCompleted(
+      change_id, error_code == mojom::WINDOW_MANAGER_ERROR_CODE_SUCCESS);
 }
 
 mojom::ErrorCode WindowTreeImpl::NewWindow(const WindowId& window_id) {
@@ -624,13 +626,15 @@ void WindowTreeImpl::GetWindowTree(
   callback.Run(WindowsToWindowDatas(windows));
 }
 
-void WindowTreeImpl::SetWindowBounds(Id window_id,
-                                     mojo::RectPtr bounds,
-                                     const Callback<void(bool)>& callback) {
+void WindowTreeImpl::SetWindowBounds(uint32_t change_id,
+                                     Id window_id,
+                                     mojo::RectPtr bounds) {
   ServerWindow* window = GetWindow(WindowIdFromTransportId(window_id));
   if (window && ShouldRouteToWindowManager(window)) {
-    GetHost()->window_manager()->SetBounds(
-        window_id, bounds.Pass(), base::Bind(&RunWMCallback, callback));
+    const uint32_t wm_change_id =
+        connection_manager_->GenerateWindowManagerChangeId(this, change_id);
+    GetHost()->GetWindowTree()->client_->WmSetBounds(wm_change_id, window_id,
+                                                     bounds.Pass());
     return;
   }
 
@@ -640,7 +644,7 @@ void WindowTreeImpl::SetWindowBounds(Id window_id,
     Operation op(this, connection_manager_, OperationType::SET_WINDOW_BOUNDS);
     window->SetBounds(bounds.To<gfx::Rect>());
   }
-  callback.Run(success);
+  client_->OnChangeCompleted(change_id, success);
 }
 
 void WindowTreeImpl::SetWindowVisibility(Id transport_window_id,
@@ -764,6 +768,11 @@ void WindowTreeImpl::SetResizeBehavior(
   ServerWindow* window = GetWindow(WindowIdFromTransportId(window_id));
   if (window && ShouldRouteToWindowManager(window))
     GetHost()->window_manager()->SetResizeBehavior(window_id, resize_behavior);
+}
+
+void WindowTreeImpl::WmResponse(uint32 change_id, bool response) {
+  if (GetHost() && GetHost()->GetWindowTree() == this)
+    connection_manager_->WindowManagerChangeCompleted(change_id, response);
 }
 
 bool WindowTreeImpl::IsRootForAccessPolicy(const WindowId& id) const {

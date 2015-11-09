@@ -177,6 +177,10 @@ class WindowTreeImpl : public mojom::WindowTree, public AccessPolicyDelegate {
   void PrepareForEmbed(const WindowId& window_id);
   void RemoveChildrenAsPartOfEmbed(const WindowId& window_id);
 
+  // Calls OnChangeCompleted() on the client.
+  void NotifyChangeCompleted(uint32_t change_id,
+                             mojom::WindowManagerErrorCode error_code);
+
   // WindowTree:
   void NewWindow(
       Id transport_window_id,
@@ -197,9 +201,9 @@ class WindowTreeImpl : public mojom::WindowTree, public AccessPolicyDelegate {
       Id window_id,
       const mojo::Callback<void(mojo::Array<mojom::WindowDataPtr>)>& callback)
       override;
-  void SetWindowBounds(Id window_id,
-                       mojo::RectPtr bounds,
-                       const mojo::Callback<void(bool)>& callback) override;
+  void SetWindowBounds(uint32_t change_id,
+                       Id window_id,
+                       mojo::RectPtr bounds) override;
   void SetWindowVisibility(Id window_id,
                            bool visible,
                            const mojo::Callback<void(bool)>& callback) override;
@@ -230,6 +234,7 @@ class WindowTreeImpl : public mojom::WindowTree, public AccessPolicyDelegate {
                     const SetShowStateCallback& callback) override;
   void SetResizeBehavior(uint32_t window_id,
                          mus::mojom::ResizeBehavior resize_behavior) override;
+  void WmResponse(uint32 change_id, bool response) override;
 
   // AccessPolicyDelegate:
   bool IsRootForAccessPolicy(const WindowId& id) const override;

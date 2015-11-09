@@ -13,6 +13,7 @@
 #include "mojo/application/public/cpp/application_delegate.h"
 #include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/application/public/cpp/application_test_base.h"
+#include "mojo/converters/geometry/geometry_type_converters.h"
 
 using mojo::ApplicationConnection;
 using mojo::ApplicationDelegate;
@@ -162,20 +163,6 @@ bool DeleteWindow(WindowTree* ws, Id window_id) {
   return result;
 }
 
-bool SetWindowBounds(WindowTree* ws, Id window_id, int x, int y, int w, int h) {
-  base::RunLoop run_loop;
-  bool result = false;
-  RectPtr rect(mojo::Rect::New());
-  rect->x = x;
-  rect->y = y;
-  rect->width = w;
-  rect->height = h;
-  ws->SetWindowBounds(window_id, rect.Pass(),
-                      base::Bind(&BoolResultCallback, &run_loop, &result));
-  run_loop.Run();
-  return result;
-}
-
 bool SetWindowVisibility(WindowTree* ws, Id window_id, bool visible) {
   base::RunLoop run_loop;
   bool result = false;
@@ -233,7 +220,12 @@ class TestWindowTreeClientImpl : public mojom::WindowTreeClient,
                                  public TestChangeTracker::Delegate {
  public:
   explicit TestWindowTreeClientImpl(mojo::ApplicationImpl* app)
-      : binding_(this), app_(app), connection_id_(0), root_window_id_(0) {
+      : binding_(this),
+        app_(app),
+        connection_id_(0),
+        root_window_id_(0),
+        waiting_change_id_(0),
+        on_change_completed_result_(false) {
     tracker_.set_delegate(this);
   }
 
@@ -268,6 +260,13 @@ class TestWindowTreeClientImpl : public mojom::WindowTreeClient,
 
   bool WaitForIncomingMethodCall() {
     return binding_.WaitForIncomingMethodCall();
+  }
+
+  bool WaitForChangeCompleted(uint32_t id) {
+    waiting_change_id_ = id;
+    change_completed_run_loop_.reset(new base::RunLoop);
+    change_completed_run_loop_->Run();
+    return on_change_completed_result_;
   }
 
   Id NewWindow(ConnectionSpecificId window_id) {
@@ -371,6 +370,15 @@ class TestWindowTreeClientImpl : public mojom::WindowTreeClient,
   }
   // TODO(sky): add testing coverage.
   void OnWindowFocused(uint32_t focused_window_id) override {}
+  void OnChangeCompleted(uint32_t change_id, bool success) override {
+    if (waiting_change_id_ == change_id && change_completed_run_loop_) {
+      on_change_completed_result_ = success;
+      change_completed_run_loop_->Quit();
+    }
+  }
+  void WmSetBounds(uint32_t change_id,
+                   Id window_id,
+                   mojo::RectPtr bounds) override {}
 
   TestChangeTracker tracker_;
 
@@ -387,6 +395,9 @@ class TestWindowTreeClientImpl : public mojom::WindowTreeClient,
   mojo::ApplicationImpl* app_;
   Id connection_id_;
   Id root_window_id_;
+  uint32_t waiting_change_id_;
+  bool on_change_completed_result_;
+  scoped_ptr<base::RunLoop> change_completed_run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(TestWindowTreeClientImpl);
 };
@@ -1142,7 +1153,10 @@ TEST_F(WindowTreeAppTest, SetWindowBounds) {
   ASSERT_NO_FATAL_FAILURE(EstablishSecondConnection(false));
 
   changes2()->clear();
-  ASSERT_TRUE(SetWindowBounds(ws1(), window_1_1, 0, 0, 100, 100));
+
+  ws1()->SetWindowBounds(10, window_1_1,
+                         mojo::Rect::From(gfx::Rect(0, 0, 100, 100)));
+  ASSERT_TRUE(ws_client1()->WaitForChangeCompleted(10));
 
   ws_client2_->WaitForChangeCount(1);
   EXPECT_EQ("BoundsChanged window=" + IdToString(window_1_1) +
@@ -1151,7 +1165,9 @@ TEST_F(WindowTreeAppTest, SetWindowBounds) {
 
   // Should not be possible to change the bounds of a window created by another
   // connection.
-  ASSERT_FALSE(SetWindowBounds(ws2(), window_1_1, 0, 0, 0, 0));
+  ws2()->SetWindowBounds(11, window_1_1,
+                         mojo::Rect::From(gfx::Rect(0, 0, 0, 0)));
+  ASSERT_FALSE(ws_client2()->WaitForChangeCompleted(11));
 }
 
 // Verify AddWindow fails when trying to manipulate windows in other roots.

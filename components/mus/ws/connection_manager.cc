@@ -31,7 +31,8 @@ ConnectionManager::ConnectionManager(
       next_connection_id_(1),
       next_host_id_(0),
       current_operation_(nullptr),
-      in_destructor_(false) {}
+      in_destructor_(false),
+      next_wm_change_id_(0) {}
 
 ConnectionManager::~ConnectionManager() {
   in_destructor_ = true;
@@ -87,9 +88,18 @@ void ConnectionManager::OnConnectionError(ClientConnection* connection) {
   connection_map_.erase(connection->service()->id());
 
   // Notify remaining connections so that they can cleanup.
-  for (auto& pair : connection_map_) {
+  for (auto& pair : connection_map_)
     pair.second->service()->OnWillDestroyWindowTreeImpl(connection->service());
+
+  // Remove any requests from the client that resulted in a call to the window
+  // manager and we haven't gotten a response back yet.
+  std::set<uint32_t> to_remove;
+  for (auto& pair : in_flight_wm_change_map_) {
+    if (pair.second.connection_id == connection->service()->id())
+      to_remove.insert(pair.first);
   }
+  for (uint32_t id : to_remove)
+    in_flight_wm_change_map_.erase(id);
 }
 
 void ConnectionManager::OnHostConnectionClosed(
@@ -228,6 +238,31 @@ WindowTreeImpl* ConnectionManager::GetEmbedRoot(WindowTreeImpl* service) {
       return service;
   }
   return nullptr;
+}
+
+uint32_t ConnectionManager::GenerateWindowManagerChangeId(
+    WindowTreeImpl* source,
+    uint32_t client_change_id) {
+  const uint32_t wm_change_id = next_wm_change_id_++;
+  in_flight_wm_change_map_[wm_change_id] = {source->id(), client_change_id};
+  return wm_change_id;
+}
+
+void ConnectionManager::WindowManagerChangeCompleted(
+    uint32_t window_manager_change_id,
+    bool success) {
+  // There are valid reasons as to why we wouldn't know about the id. The
+  // most likely is the client disconnected before the response from the window
+  // manager came back.
+  auto iter = in_flight_wm_change_map_.find(window_manager_change_id);
+  if (iter == in_flight_wm_change_map_.end())
+    return;
+
+  const InFlightWindowManagerChange change = iter->second;
+  in_flight_wm_change_map_.erase(iter);
+
+  WindowTreeImpl* connection = GetConnection(change.connection_id);
+  connection->client()->OnChangeCompleted(change.client_change_id, success);
 }
 
 void ConnectionManager::ProcessWindowBoundsChanged(

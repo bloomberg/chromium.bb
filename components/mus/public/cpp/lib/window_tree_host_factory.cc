@@ -14,25 +14,30 @@ void CreateWindowTreeHost(mojom::WindowTreeHostFactory* factory,
                           mojom::WindowTreeHostClientPtr host_client,
                           WindowTreeDelegate* delegate,
                           mojom::WindowTreeHostPtr* host,
-                          mojom::WindowManagerPtr window_manager) {
+                          mojom::WindowManagerPtr window_manager,
+                          WindowManagerDelegate* window_manager_delegate) {
   mojom::WindowTreeClientPtr tree_client;
-  WindowTreeConnection::Create(
+  WindowTreeConnection::CreateForWindowManager(
       delegate, GetProxy(&tree_client),
-      WindowTreeConnection::CreateType::DONT_WAIT_FOR_EMBED);
+      WindowTreeConnection::CreateType::DONT_WAIT_FOR_EMBED,
+      window_manager_delegate);
   factory->CreateWindowTreeHost(GetProxy(host), host_client.Pass(),
                                 tree_client.Pass(), window_manager.Pass());
 }
 
-void CreateSingleWindowTreeHost(mojo::ApplicationImpl* app,
-                                WindowTreeDelegate* delegate,
-                                mojom::WindowTreeHostPtr* host,
-                                mojom::WindowManagerPtr window_manager) {
+void CreateSingleWindowTreeHost(
+    mojo::ApplicationImpl* app,
+    WindowTreeDelegate* delegate,
+    mojom::WindowTreeHostPtr* host,
+    mojom::WindowManagerPtr window_manager,
+    WindowManagerDelegate* window_manager_delegate) {
   mojom::WindowTreeHostFactoryPtr factory;
   mojo::URLRequestPtr request(mojo::URLRequest::New());
   request->url = "mojo:mus";
   app->ConnectToService(request.Pass(), &factory);
   CreateWindowTreeHost(factory.get(), mojom::WindowTreeHostClientPtr(),
-                       delegate, host, window_manager.Pass());
+                       delegate, host, window_manager.Pass(),
+                       window_manager_delegate);
 }
 
 }  // namespace mus

@@ -36,9 +36,6 @@ interface WindowManager {
   SetPreferredSize(uint32 window_id, mojo.Size size) =>
       (WindowManagerErrorCode result);
 
-  SetBounds(uint32 window_id, mojo.Rect bounds) =>
-      (WindowManagerErrorCode result);
-
   SetShowState(uint32 window_id, ShowState show_state) =>
       (WindowManagerErrorCode result);
 

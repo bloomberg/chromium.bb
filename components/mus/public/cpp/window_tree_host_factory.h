@@ -18,6 +18,7 @@ class ApplicationImpl;
 
 namespace mus {
 
+class WindowManagerDelegate;
 class WindowTreeDelegate;
 
 // Uses |factory| to create a new |host|, providing the supplied |host_client|
@@ -26,14 +27,16 @@ void CreateWindowTreeHost(mojom::WindowTreeHostFactory* factory,
                           mojom::WindowTreeHostClientPtr host_client,
                           WindowTreeDelegate* delegate,
                           mojom::WindowTreeHostPtr* host,
-                          mojom::WindowManagerPtr window_manager);
+                          mojom::WindowManagerPtr window_manager,
+                          WindowManagerDelegate* window_manager_delegate);
 
 // Creates a single host with no client by connecting to the window manager
 // application. Useful only for tests and trivial UIs.
 void CreateSingleWindowTreeHost(mojo::ApplicationImpl* app,
                                 WindowTreeDelegate* delegate,
                                 mojom::WindowTreeHostPtr* host,
-                                mojom::WindowManagerPtr window_manager);
+                                mojom::WindowManagerPtr window_manager,
+                                WindowManagerDelegate* window_manager_delegate);
 
 }  // namespace mus
 

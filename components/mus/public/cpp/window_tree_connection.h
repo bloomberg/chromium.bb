@@ -14,6 +14,7 @@
 namespace mus {
 
 class Window;
+class WindowManagerDelegate;
 class WindowTreeDelegate;
 
 // Encapsulates a connection to a window tree. A unique connection is made
@@ -36,6 +37,12 @@ class WindowTreeConnection {
       WindowTreeDelegate* delegate,
       mojo::InterfaceRequest<mojom::WindowTreeClient> request,
       CreateType create_type);
+
+  static WindowTreeConnection* CreateForWindowManager(
+      WindowTreeDelegate* delegate,
+      mojo::InterfaceRequest<mojom::WindowTreeClient> request,
+      CreateType create_type,
+      WindowManagerDelegate* window_manager_delegate);
 
   // Returns the root of this connection.
   virtual Window* GetRoot() = 0;

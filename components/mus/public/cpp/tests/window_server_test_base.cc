@@ -63,7 +63,8 @@ bool WindowServerTestBase::QuitRunLoop() {
 void WindowServerTestBase::SetUp() {
   ApplicationTestBase::SetUp();
 
-  CreateSingleWindowTreeHost(application_impl(), this, &host_, nullptr);
+  CreateSingleWindowTreeHost(application_impl(), this, &host_, nullptr,
+                             nullptr);
 
   ASSERT_TRUE(DoRunLoopWithTimeout());  // RunLoop should be quit by OnEmbed().
   std::swap(window_manager_, most_recent_connection_);

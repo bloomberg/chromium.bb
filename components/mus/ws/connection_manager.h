@@ -117,8 +117,18 @@ class ConnectionManager : public ServerWindowDelegate,
   // Returns the first ancestor of |service| that is marked as an embed root.
   WindowTreeImpl* GetEmbedRoot(WindowTreeImpl* service);
 
-  // WindowTreeHost implementation helper; see mojom for details.
-  bool CloneAndAnimate(const WindowId& window_id);
+  // Returns a change id for the window manager that is associated with
+  // |source| and |client_change_id|. When the window manager replies
+  // WindowManagerChangeCompleted() is called to obtain the original source
+  // and client supplied change_id that initiated the called.
+  uint32_t GenerateWindowManagerChangeId(WindowTreeImpl* source,
+                                         uint32_t client_change_id);
+
+  // Called when a response from the window manager is obtained. Calls to
+  // the client that initiated the change with the change id originally
+  // supplied by the client.
+  void WindowManagerChangeCompleted(uint32_t window_manager_change_id,
+                                    bool success);
 
   // These functions trivially delegate to all WindowTreeImpls, which in
   // term notify their clients.
@@ -148,6 +158,17 @@ class ConnectionManager : public ServerWindowDelegate,
   using ConnectionMap = std::map<ConnectionSpecificId, ClientConnection*>;
   using HostConnectionMap =
       std::map<WindowTreeHostImpl*, WindowTreeHostConnection*>;
+
+  struct InFlightWindowManagerChange {
+    // Identifies the client that initiated the change.
+    ConnectionSpecificId connection_id;
+
+    // Change id supplied by the client.
+    uint32_t client_change_id;
+  };
+
+  using InFlightWindowManagerChangeMap =
+      std::map<uint32_t, InFlightWindowManagerChange>;
 
   // Invoked when a connection is about to execute a window server operation.
   // Subsequently followed by FinishOperation() once the change is done.
@@ -221,6 +242,13 @@ class ConnectionManager : public ServerWindowDelegate,
   Operation* current_operation_;
 
   bool in_destructor_;
+
+  // Maps from window manager change id to the client that initiated the
+  // request.
+  InFlightWindowManagerChangeMap in_flight_wm_change_map_;
+
+  // Next id supplied to the window manager.
+  uint32_t next_wm_change_id_;
 
   DISALLOW_COPY_AND_ASSIGN(ConnectionManager);
 };

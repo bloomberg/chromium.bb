@@ -210,7 +210,8 @@ void Window::SetBounds(const gfx::Rect& bounds) {
   if (bounds_ == bounds)
     return;
   if (connection_)
-    static_cast<WindowTreeClientImpl*>(connection_)->SetBounds(id_, bounds);
+    static_cast<WindowTreeClientImpl*>(connection_)
+        ->SetBounds(id_, bounds_, bounds);
   LocalSetBounds(bounds_, bounds);
 }
 

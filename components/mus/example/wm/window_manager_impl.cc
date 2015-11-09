@@ -94,18 +94,6 @@ void WindowManagerImpl::SetPreferredSize(
                    : mus::mojom::WINDOW_MANAGER_ERROR_CODE_ERROR_ACCESS_DENIED);
 }
 
-void WindowManagerImpl::SetBounds(
-    mus::Id window_id,
-    mojo::RectPtr bounds,
-    const WindowManagerErrorCodeCallback& callback) {
-  mus::Window* window = state_->root()->GetChildById(window_id);
-  if (window)
-    window->SetBounds(bounds->To<gfx::Rect>());
-  callback.Run(window
-                   ? mus::mojom::WINDOW_MANAGER_ERROR_CODE_SUCCESS
-                   : mus::mojom::WINDOW_MANAGER_ERROR_CODE_ERROR_ACCESS_DENIED);
-}
-
 void WindowManagerImpl::SetShowState(
     mus::Id window_id,
     mus::mojom::ShowState show_state,
