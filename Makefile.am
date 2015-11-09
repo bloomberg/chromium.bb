@@ -16,8 +16,8 @@ dist_aclocal_DATA = wayland-scanner.m4
 
 dist_pkgdata_DATA =				\
 	wayland-scanner.mk			\
-	protocol/wayland.xml
-
+	protocol/wayland.xml			\
+	protocol/wayland.dtd
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA =
