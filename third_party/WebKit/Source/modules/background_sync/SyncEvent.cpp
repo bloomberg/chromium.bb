@@ -11,9 +11,10 @@ SyncEvent::SyncEvent()
 {
 }
 
-SyncEvent::SyncEvent(const AtomicString& type, SyncRegistration* syncRegistration, WaitUntilObserver* observer)
+SyncEvent::SyncEvent(const AtomicString& type, SyncRegistration* syncRegistration, bool lastChance, WaitUntilObserver* observer)
     : ExtendableEvent(type, ExtendableEventInit(), observer)
     , m_syncRegistration(syncRegistration)
+    , m_lastChance(lastChance)
 {
 }
 
@@ -21,6 +22,7 @@ SyncEvent::SyncEvent(const AtomicString& type, const SyncEventInit& init)
     : ExtendableEvent(type, init)
 {
     m_syncRegistration = init.registration();
+    m_lastChance = init.lastChance();
 }
 
 SyncEvent::~SyncEvent()
@@ -35,6 +37,11 @@ const AtomicString& SyncEvent::interfaceName() const
 SyncRegistration* SyncEvent::registration()
 {
     return m_syncRegistration.get();
+}
+
+bool SyncEvent::lastChance()
+{
+    return m_lastChance;
 }
 
 DEFINE_TRACE(SyncEvent)

@@ -23,6 +23,7 @@
 #include "third_party/WebKit/public/platform/WebMessagePortChannel.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerError.h"
 #include "third_party/WebKit/public/web/modules/serviceworker/WebServiceWorkerContextClient.h"
+#include "third_party/WebKit/public/web/modules/serviceworker/WebServiceWorkerContextProxy.h"
 #include "v8/include/v8.h"
 
 namespace base {
@@ -160,8 +161,10 @@ class ServiceWorkerContextClient
   void registerForeignFetchScopes(
       const blink::WebVector<blink::WebURL>& sub_scopes) override;
 
-  virtual void DispatchSyncEvent(const blink::WebSyncRegistration& registration,
-                                 const SyncCallback& callback);
+  virtual void DispatchSyncEvent(
+      const blink::WebSyncRegistration& registration,
+      blink::WebServiceWorkerContextProxy::LastChanceOption last_chance,
+      const SyncCallback& callback);
 
  private:
   struct WorkerContextData;

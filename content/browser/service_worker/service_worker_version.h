@@ -218,6 +218,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   //
   // This must be called when the status() is ACTIVATED.
   void DispatchSyncEvent(BackgroundSyncRegistrationHandle::HandleId handle_id,
+                         BackgroundSyncEventLastChance last_chance,
                          const StatusCallback& callback);
 
   // Sends notificationclick event to the associated embedded worker and

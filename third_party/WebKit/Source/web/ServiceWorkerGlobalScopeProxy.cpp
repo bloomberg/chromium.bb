@@ -169,7 +169,7 @@ void ServiceWorkerGlobalScopeProxy::dispatchServicePortConnectEvent(WebServicePo
     collection->dispatchConnectEvent(callbacks.release(), targetURL, origin, portID);
 }
 
-void ServiceWorkerGlobalScopeProxy::dispatchSyncEvent(int eventID, const WebSyncRegistration& registration)
+void ServiceWorkerGlobalScopeProxy::dispatchSyncEvent(int eventID, const WebSyncRegistration& registration, LastChanceOption lastChance)
 {
     ASSERT(m_workerGlobalScope);
     if (!RuntimeEnabledFeatures::backgroundSyncEnabled()) {
@@ -177,7 +177,7 @@ void ServiceWorkerGlobalScopeProxy::dispatchSyncEvent(int eventID, const WebSync
         return;
     }
     WaitUntilObserver* observer = WaitUntilObserver::create(m_workerGlobalScope, WaitUntilObserver::Sync, eventID);
-    RefPtrWillBeRawPtr<Event> event(SyncEvent::create(EventTypeNames::sync, SyncRegistration::create(registration, m_workerGlobalScope->registration()), observer));
+    RefPtrWillBeRawPtr<Event> event(SyncEvent::create(EventTypeNames::sync, SyncRegistration::create(registration, m_workerGlobalScope->registration()), lastChance == IsLastChance, observer));
     m_workerGlobalScope->dispatchExtendableEvent(event.release(), observer);
 }
 

@@ -801,6 +801,7 @@ void ServiceWorkerVersion::DispatchFetchEvent(
 
 void ServiceWorkerVersion::DispatchSyncEvent(
     BackgroundSyncRegistrationHandle::HandleId handle_id,
+    BackgroundSyncEventLastChance last_chance,
     const StatusCallback& callback) {
   OnBeginEvent();
   DCHECK_EQ(ACTIVATED, status()) << status();
@@ -809,7 +810,7 @@ void ServiceWorkerVersion::DispatchSyncEvent(
     StartWorker(base::Bind(
         &RunTaskAfterStartWorker, weak_factory_.GetWeakPtr(), callback,
         base::Bind(&self::DispatchSyncEvent, weak_factory_.GetWeakPtr(),
-                   handle_id, callback)));
+                   handle_id, last_chance, callback)));
     return;
   }
 
@@ -823,8 +824,9 @@ void ServiceWorkerVersion::DispatchSyncEvent(
   }
 
   background_sync_dispatcher_->Sync(
-      handle_id, base::Bind(&self::OnSyncEventFinished,
-                            weak_factory_.GetWeakPtr(), request_id));
+      handle_id, last_chance,
+      base::Bind(&self::OnSyncEventFinished, weak_factory_.GetWeakPtr(),
+                 request_id));
 }
 
 void ServiceWorkerVersion::DispatchNotificationClickEvent(

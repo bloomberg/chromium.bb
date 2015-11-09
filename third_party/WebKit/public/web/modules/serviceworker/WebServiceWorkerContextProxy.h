@@ -72,9 +72,14 @@ public:
     // Passes ownership of the callbacks.
     virtual void dispatchServicePortConnectEvent(WebServicePortConnectEventCallbacks*, const WebURL& targetURL, const WebString& origin, WebServicePortID) = 0;
 
+    enum LastChanceOption {
+        IsNotLastChance,
+        IsLastChance
+    };
+
     // Once the ServiceWorker has finished handling the sync event,
     // didHandleSyncEvent is called on the context client.
-    virtual void dispatchSyncEvent(int syncEventID, const WebSyncRegistration&) = 0;
+    virtual void dispatchSyncEvent(int syncEventID, const WebSyncRegistration&, LastChanceOption) = 0;
 };
 
 } // namespace blink

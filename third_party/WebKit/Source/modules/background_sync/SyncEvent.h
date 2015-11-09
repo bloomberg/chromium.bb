@@ -22,9 +22,9 @@ public:
     {
         return adoptRefWillBeNoop(new SyncEvent);
     }
-    static PassRefPtrWillBeRawPtr<SyncEvent> create(const AtomicString& type, SyncRegistration* syncRegistration, WaitUntilObserver* observer)
+    static PassRefPtrWillBeRawPtr<SyncEvent> create(const AtomicString& type, SyncRegistration* syncRegistration, bool lastChance, WaitUntilObserver* observer)
     {
-        return adoptRefWillBeNoop(new SyncEvent(type, syncRegistration, observer));
+        return adoptRefWillBeNoop(new SyncEvent(type, syncRegistration, lastChance, observer));
     }
     static PassRefPtrWillBeRawPtr<SyncEvent> create(const AtomicString& type, const SyncEventInit& init)
     {
@@ -36,15 +36,17 @@ public:
     const AtomicString& interfaceName() const override;
 
     SyncRegistration* registration();
+    bool lastChance();
 
     DECLARE_VIRTUAL_TRACE();
 
 private:
     SyncEvent();
-    SyncEvent(const AtomicString& type, SyncRegistration*, WaitUntilObserver*);
+    SyncEvent(const AtomicString& type, SyncRegistration*, bool, WaitUntilObserver*);
     SyncEvent(const AtomicString& type, const SyncEventInit&);
 
     PersistentWillBeMember<SyncRegistration> m_syncRegistration;
+    bool m_lastChance;
 };
 
 } // namespace blink

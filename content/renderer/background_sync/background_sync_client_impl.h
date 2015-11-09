@@ -31,10 +31,14 @@ class CONTENT_EXPORT BackgroundSyncClientImpl
       mojo::InterfaceRequest<BackgroundSyncServiceClient> request);
 
   // BackgroundSyncServiceClient methods:
-  void Sync(int64_t handle_id, const SyncCallback& callback) override;
-  void SyncDidGetRegistration(int64_t callback_id,
-                              BackgroundSyncError error,
-                              SyncRegistrationPtr registration);
+  void Sync(int64_t handle_id,
+            content::BackgroundSyncEventLastChance last_chance,
+            const SyncCallback& callback) override;
+  void SyncDidGetRegistration(
+      int64_t callback_id,
+      content::BackgroundSyncEventLastChance last_chance,
+      BackgroundSyncError error,
+      SyncRegistrationPtr registration);
 
   int64_t service_worker_registration_id_;
   mojo::StrongBinding<BackgroundSyncServiceClient> binding_;

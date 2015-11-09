@@ -10,6 +10,7 @@
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/modules/background_sync/WebSyncError.h"
 #include "third_party/WebKit/public/platform/modules/background_sync/WebSyncRegistration.h"
+#include "third_party/WebKit/public/web/modules/serviceworker/WebServiceWorkerContextProxy.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/type_converter.h"
 
 namespace mojo {
@@ -80,6 +81,25 @@ struct CONTENT_EXPORT TypeConverter<content::SyncRegistrationPtr,
                      blink::WebSyncRegistration> {
   static content::SyncRegistrationPtr Convert(
       const blink::WebSyncRegistration& input);
+};
+
+// blink::WebServiceWorkerContextProxy::LastChanceOption <=>
+//    content::BackgroundSyncEventLastChance
+
+template <>
+struct CONTENT_EXPORT
+    TypeConverter<blink::WebServiceWorkerContextProxy::LastChanceOption,
+                  content::BackgroundSyncEventLastChance> {
+  static blink::WebServiceWorkerContextProxy::LastChanceOption Convert(
+      content::BackgroundSyncEventLastChance input);
+};
+
+template <>
+struct CONTENT_EXPORT
+    TypeConverter<content::BackgroundSyncEventLastChance,
+                  blink::WebServiceWorkerContextProxy::LastChanceOption> {
+  static content::BackgroundSyncEventLastChance Convert(
+      blink::WebServiceWorkerContextProxy::LastChanceOption input);
 };
 
 }  // namespace mojo

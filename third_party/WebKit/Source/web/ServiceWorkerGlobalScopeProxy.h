@@ -81,7 +81,7 @@ public:
     void dispatchNotificationClickEvent(int, int64_t notificationID, const WebNotificationData&, int actionIndex) override;
     void dispatchPushEvent(int, const WebString& data) override;
     void dispatchServicePortConnectEvent(WebServicePortConnectEventCallbacks*, const WebURL& targetURL, const WebString& origin, WebServicePortID) override;
-    void dispatchSyncEvent(int, const WebSyncRegistration&) override;
+    void dispatchSyncEvent(int, const WebSyncRegistration&, LastChanceOption) override;
 
     // WorkerReportingProxy overrides:
     void reportException(const String& errorMessage, int lineNumber, int columnNumber, const String& sourceURL, int exceptionId) override;

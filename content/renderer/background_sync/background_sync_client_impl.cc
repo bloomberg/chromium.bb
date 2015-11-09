@@ -11,6 +11,7 @@
 #include "third_party/WebKit/public/platform/WebThread.h"
 #include "third_party/WebKit/public/platform/modules/background_sync/WebSyncProvider.h"
 #include "third_party/WebKit/public/platform/modules/background_sync/WebSyncRegistration.h"
+#include "third_party/WebKit/public/web/modules/serviceworker/WebServiceWorkerContextProxy.h"
 
 namespace content {
 
@@ -30,8 +31,10 @@ BackgroundSyncClientImpl::BackgroundSyncClientImpl(
       binding_(this, request.Pass()),
       callback_seq_num_(0) {}
 
-void BackgroundSyncClientImpl::Sync(int64_t handle_id,
-                                    const SyncCallback& callback) {
+void BackgroundSyncClientImpl::Sync(
+    int64_t handle_id,
+    content::BackgroundSyncEventLastChance last_chance,
+    const SyncCallback& callback) {
   DCHECK(!blink::Platform::current()->mainThread()->isCurrentThread());
   // Get a registration for the given handle_id from the provider. This way
   // the provider knows about the handle and can delete it once Blink releases
@@ -55,11 +58,12 @@ void BackgroundSyncClientImpl::Sync(int64_t handle_id,
   sync_callbacks_[id] = callback;
   provider->DuplicateRegistrationHandle(
       handle_id, base::Bind(&BackgroundSyncClientImpl::SyncDidGetRegistration,
-                            base::Unretained(this), id));
+                            base::Unretained(this), id, last_chance));
 }
 
 void BackgroundSyncClientImpl::SyncDidGetRegistration(
     int64_t callback_id,
+    content::BackgroundSyncEventLastChance last_chance,
     BackgroundSyncError error,
     SyncRegistrationPtr registration) {
   SyncCallback callback;
@@ -83,7 +87,11 @@ void BackgroundSyncClientImpl::SyncDidGetRegistration(
   scoped_ptr<blink::WebSyncRegistration> web_registration =
       mojo::ConvertTo<scoped_ptr<blink::WebSyncRegistration>>(registration);
 
-  client->DispatchSyncEvent(*web_registration, callback);
+  blink::WebServiceWorkerContextProxy::LastChanceOption web_last_chance =
+      mojo::ConvertTo<blink::WebServiceWorkerContextProxy::LastChanceOption>(
+          last_chance);
+
+  client->DispatchSyncEvent(*web_registration, web_last_chance, callback);
 }
 
 }  // namespace content

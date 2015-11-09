@@ -21,6 +21,7 @@
 #include "content/public/browser/background_sync_controller.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/background_sync.mojom.h"
 
 #if defined(OS_ANDROID)
 #include "content/browser/android/background_sync_network_observer_android.h"
@@ -716,7 +717,10 @@ void BackgroundSyncManager::FireOneShotSync(
   // with the registration so don't give it a BackgroundSyncRegistrationHandle.
   // Once the render process gets the handle_id it can create its own handle
   // (with a new unique handle id).
-  active_version->DispatchSyncEvent(handle_id, callback);
+  // TODO(iclelland): Set the last_chance bool to false if this event will be
+  // retried. (https://crbug.com/545589)
+  active_version->DispatchSyncEvent(
+      handle_id, BACKGROUND_SYNC_EVENT_LAST_CHANCE_IS_LAST_CHANCE, callback);
 }
 
 scoped_ptr<BackgroundSyncRegistrationHandle>

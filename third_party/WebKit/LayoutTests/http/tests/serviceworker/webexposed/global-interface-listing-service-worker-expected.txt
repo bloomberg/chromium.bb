@@ -603,6 +603,7 @@ interface SubtleCrypto
     method verify
     method wrapKey
 interface SyncEvent : ExtendableEvent
+    getter lastChance
     getter registration
     method constructor
 interface SyncManager
