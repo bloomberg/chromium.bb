@@ -36,6 +36,9 @@ class SearchIPCRouter : public content::WebContentsObserver {
     // load event.
     virtual void OnInstantSupportDetermined(bool supports_instant) = 0;
 
+    // Called upon determination of voice search API support.
+    virtual void OnSetVoiceSearchSupport(bool supports_voice_search) = 0;
+
     // Called when the page wants the omnibox to be focused. |state| specifies
     // the omnibox focus state.
     virtual void FocusOmnibox(OmniboxFocusState state) = 0;
@@ -97,6 +100,7 @@ class SearchIPCRouter : public content::WebContentsObserver {
 
     // SearchIPCRouter calls these functions before sending/receiving messages
     // to/from the page.
+    virtual bool ShouldProcessSetVoiceSearchSupport() = 0;
     virtual bool ShouldProcessFocusOmnibox(bool is_active_tab) = 0;
     virtual bool ShouldProcessNavigateToURL(bool is_active_tab) = 0;
     virtual bool ShouldProcessDeleteMostVisitedItem() = 0;
@@ -114,6 +118,7 @@ class SearchIPCRouter : public content::WebContentsObserver {
     virtual bool ShouldSendOmniboxFocusChanged() = 0;
     virtual bool ShouldSendMostVisitedItems() = 0;
     virtual bool ShouldSendThemeBackgroundInfo() = 0;
+    virtual bool ShouldSendToggleVoiceSearch() = 0;
     virtual bool ShouldSubmitQuery() = 0;
   };
 
@@ -162,6 +167,9 @@ class SearchIPCRouter : public content::WebContentsObserver {
   // Tells the renderer about the current theme background.
   void SendThemeBackgroundInfo(const ThemeBackgroundInfo& theme_info);
 
+  // Tells the page to toggle voice search.
+  void ToggleVoiceSearch();
+
   // Tells the page that the user pressed Enter in the omnibox.
   void Submit(const base::string16& text,
               const EmbeddedSearchRequestParams& params);
@@ -191,6 +199,8 @@ class SearchIPCRouter : public content::WebContentsObserver {
   bool OnMessageReceived(const IPC::Message& message) override;
 
   void OnInstantSupportDetermined(int page_seq_no, bool supports_instant) const;
+  void OnVoiceSearchSupportDetermined(int page_id,
+                                      bool supports_voice_search) const;
   void OnFocusOmnibox(int page_id, OmniboxFocusState state) const;
   void OnSearchBoxNavigate(int page_id,
                            const GURL& url,

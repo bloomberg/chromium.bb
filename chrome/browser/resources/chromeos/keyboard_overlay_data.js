@@ -15776,6 +15776,7 @@ var keyboardOverlayData = {
     '-<>CTRL<>SHIFT': 'keyboardOverlayZoomScreenOut',
     '-<>SEARCH': 'keyboardOverlayF11',
     '.<>ALT<>CTRL': 'keyboardOverlayNextUser',
+    '.<>CTRL<>SHIFT': 'keyboardOverlayToggleSpeechInput',
     '.<>SEARCH': 'keyboardOverlayInsert',
     '/<>ALT<>CTRL': 'keyboardOverlayViewKeyboardOverlay',
     '/<>ALT<>CTRL<>SHIFT': 'keyboardOverlayViewKeyboardOverlay',

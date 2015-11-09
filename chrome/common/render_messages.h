@@ -249,6 +249,8 @@ IPC_MESSAGE_ROUTED2(ChromeViewMsg_ChromeIdentityCheckResult,
                     base::string16 /* identity */,
                     bool /* identity_match */)
 
+IPC_MESSAGE_ROUTED0(ChromeViewMsg_SearchBoxToggleVoiceSearch)
+
 // Sent on process startup to indicate whether this process is running in
 // incognito mode.
 IPC_MESSAGE_CONTROL1(ChromeViewMsg_SetIsIncognitoProcess,
@@ -536,6 +538,11 @@ IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_SearchBoxUndoAllMostVisitedDeletions,
 IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_SearchBoxUndoMostVisitedDeletion,
                     int /* page_seq_no */,
                     GURL /* url */)
+
+// Tells InstantExtended whether the page supports voice search.
+IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_SetVoiceSearchSupported,
+                    int /* page_seq_no */,
+                    bool /* supported */)
 
 // Tells the renderer a list of URLs which should be bounced back to the browser
 // process so that they can be assigned to an Instant renderer.

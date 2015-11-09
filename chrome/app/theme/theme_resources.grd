@@ -516,6 +516,7 @@
       <if expr="not is_macosx and not is_ios">
         <structure type="chrome_scaled_image" name="IDR_OMNIBOX_KEYWORD_HINT_TAB" file="common/omnibox_keyword_hint_tab.png" />
       </if>
+      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_MIC_SEARCH" file="common/omnibox_mic_search.png" />
       <structure type="chrome_scaled_image" name="IDR_OMNIBOX_PDF_ICON" file="pdf.png" />
       <structure type="chrome_scaled_image" name="IDR_OMNIBOX_POPUP_BORDER_AND_SHADOW_BOTTOM" file="common/omnibox_popup_border_and_shadow_bottom.png" />
       <structure type="chrome_scaled_image" name="IDR_OMNIBOX_POPUP_BORDER_AND_SHADOW_BOTTOM_LEFT" file="common/omnibox_popup_border_and_shadow_bottom_left.png" />

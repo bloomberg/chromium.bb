@@ -269,6 +269,10 @@ void SearchTabHelper::OnTabDeactivated() {
   ipc_router_.OnTabDeactivated();
 }
 
+void SearchTabHelper::ToggleVoiceSearch() {
+  ipc_router_.ToggleVoiceSearch();
+}
+
 bool SearchTabHelper::IsSearchResultsPage() {
   return model_.mode().is_origin_search();
 }
@@ -367,6 +371,7 @@ void SearchTabHelper::NavigationEntryCommitted(
   }
 
   model_.SetInstantSupportState(INSTANT_SUPPORT_UNKNOWN);
+  model_.SetVoiceSearchSupported(false);
   search::SetInstantSupportStateInNavigationEntry(model_.instant_support(),
                                                   entry);
 
@@ -376,6 +381,10 @@ void SearchTabHelper::NavigationEntryCommitted(
 
 void SearchTabHelper::OnInstantSupportDetermined(bool supports_instant) {
   InstantSupportChanged(supports_instant);
+}
+
+void SearchTabHelper::OnSetVoiceSearchSupport(bool supports_voice_search) {
+  model_.SetVoiceSearchSupported(supports_voice_search);
 }
 
 void SearchTabHelper::ThemeInfoChanged(const ThemeBackgroundInfo& theme_info) {

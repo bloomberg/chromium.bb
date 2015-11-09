@@ -22,6 +22,10 @@ SearchIPCRouterPolicyImpl::SearchIPCRouterPolicyImpl(
 
 SearchIPCRouterPolicyImpl::~SearchIPCRouterPolicyImpl() {}
 
+bool SearchIPCRouterPolicyImpl::ShouldProcessSetVoiceSearchSupport() {
+  return true;
+}
+
 bool SearchIPCRouterPolicyImpl::ShouldProcessFocusOmnibox(bool is_active_tab) {
   return is_active_tab && !is_incognito_ && search::IsInstantNTP(web_contents_);
 }
@@ -90,6 +94,10 @@ bool SearchIPCRouterPolicyImpl::ShouldSendMostVisitedItems() {
 
 bool SearchIPCRouterPolicyImpl::ShouldSendThemeBackgroundInfo() {
   return !is_incognito_ && search::IsInstantNTP(web_contents_);
+}
+
+bool SearchIPCRouterPolicyImpl::ShouldSendToggleVoiceSearch() {
+  return true;
 }
 
 bool SearchIPCRouterPolicyImpl::ShouldSubmitQuery() {
