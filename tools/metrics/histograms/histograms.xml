@@ -68254,7 +68254,11 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="408" label="SEARCH_HISTORY via SearchProvider"/>
   <int value="409" label="SEARCH_SUGGEST via SearchProvider"/>
   <int value="410" label="SEARCH_OTHER_ENGINE via SearchProvider"/>
+  <int value="414" label="SEARCH_SUGGEST_ENTITY via SearchProvider"/>
+  <int value="415" label="SEARCH_SUGGEST_INFINITE via SearchProvider"/>
   <int value="416" label="SEARCH_SUGGEST_PERSONALIZED via SearchProvider"/>
+  <int value="422" label="SEARCH_SUGGEST_ANSWER via SearchProvider"/>
+  <int value="423" label="CALCULATOR via SearchProvider"/>
   <int value="505" label="HISTORY_KEYWORD via KeywordProvider"/>
   <int value="510" label="SEARCH_OTHER_ENGINE via KeywordProvider"/>
   <int value="606" label="NAVSUGGEST via BuiltinProvider"/>
