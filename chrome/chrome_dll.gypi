@@ -260,23 +260,6 @@
                     '../printing/printing.gyp:printing',
                   ],
                 }],
-                ['chrome_pgo_phase==1', {
-                  'msvs_settings': {
-                    'VCLinkerTool': {
-                      'LinkTimeCodeGeneration': '2',
-                      'AdditionalOptions': [
-                        '/PogoSafeMode',
-                      ],
-                    },
-                  },
-                }],
-                ['chrome_pgo_phase==2', {
-                  'msvs_settings': {
-                    'VCLinkerTool': {
-                      'LinkTimeCodeGeneration': '3',
-                    },
-                  },
-                }],
               ]
             }],
             ['chrome_multiple_dll==1', {
