@@ -229,7 +229,10 @@ TEST_F(SafeBrowsingModuleVerifierWinTest, VerifyModuleModified) {
             (uint8_t)state.modification(1).modified_bytes()[0]);
 }
 
-TEST_F(SafeBrowsingModuleVerifierWinTest, VerifyModuleLongModification) {
+// Disabled because it fails about 80% of the time on XP.
+// http://crbug.com/549564
+TEST_F(SafeBrowsingModuleVerifierWinTest,
+       DISABLED_VerifyModuleLongModification) {
   ModuleState state;
   int num_bytes_different = 0;
 
@@ -275,7 +278,9 @@ TEST_F(SafeBrowsingModuleVerifierWinTest, VerifyModuleLongModification) {
       state.modification(0).modified_bytes());
 }
 
-TEST_F(SafeBrowsingModuleVerifierWinTest, VerifyModuleRelocOverlap) {
+// Disabled because it fails about 80% of the time on XP.
+// http://crbug.com/549564
+TEST_F(SafeBrowsingModuleVerifierWinTest, DISABLED_VerifyModuleRelocOverlap) {
   int num_bytes_different = 0;
   ModuleState state;
 
