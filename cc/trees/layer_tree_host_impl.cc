@@ -2487,7 +2487,6 @@ InputHandler::ScrollStatus LayerTreeHostImpl::RootScrollBegin(
     InputHandler::ScrollInputType type) {
   TRACE_EVENT0("cc", "LayerTreeHostImpl::RootScrollBegin");
 
-  DCHECK(!CurrentlyScrollingLayer());
   ClearCurrentlyScrollingLayer();
 
   return ScrollBeginImpl(InnerViewportScrollLayer(), type);
@@ -2498,7 +2497,6 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBegin(
     InputHandler::ScrollInputType type) {
   TRACE_EVENT0("cc", "LayerTreeHostImpl::ScrollBegin");
 
-  DCHECK(!CurrentlyScrollingLayer());
   ClearCurrentlyScrollingLayer();
 
   gfx::PointF device_viewport_point = gfx::ScalePoint(
