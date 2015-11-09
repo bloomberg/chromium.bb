@@ -235,8 +235,8 @@ junit_binary("chrome_junit_tests") {
     "junit/src/org/chromium/chrome/browser/SSLClientCertificateRequestTest.java",
     "junit/src/org/chromium/chrome/browser/crash/LogcatExtractionCallableTest.java",
     "junit/src/org/chromium/chrome/browser/externalauth/ExternalAuthUtilsTest.java",
+    "junit/src/org/chromium/chrome/browser/firstrun/FirstRunFlowSequencerTest.java",
     "junit/src/org/chromium/chrome/browser/gcore/GoogleApiClientConnectionHelperTest.java",
-
     "junit/src/org/chromium/chrome/browser/invalidations/InvalidationControllerTest.java",
     "junit/src/org/chromium/chrome/browser/media/remote/AbstractMediaRouteControllerTest.java",
     "junit/src/org/chromium/chrome/browser/media/remote/MediaUrlResolverTest.java",
