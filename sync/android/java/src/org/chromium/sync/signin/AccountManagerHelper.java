@@ -150,6 +150,10 @@ public class AccountManagerHelper {
         return new Account(name, GOOGLE_ACCOUNT_TYPE);
     }
 
+    /**
+     * Use the asynchronous version below instead. See http://crbug.com/517697.
+     */
+    @Deprecated
     public List<String> getGoogleAccountNames() {
         List<String> accountNames = new ArrayList<String>();
         for (Account account : getGoogleAccounts()) {
@@ -159,9 +163,25 @@ public class AccountManagerHelper {
     }
 
     /**
-     * Returns all Google accounts on the device.
-     * @return an array of accounts.
+     * Retrieves a list of the Google account names on the device asynchronously.
      */
+    public void getGoogleAccountNames(final Callback<List<String>> callback) {
+        getGoogleAccounts(new Callback<Account[]>() {
+            @Override
+            public void onResult(Account[] accounts) {
+                List<String> accountNames = new ArrayList<String>();
+                for (Account account : accounts) {
+                    accountNames.add(account.name);
+                }
+                callback.onResult(accountNames);
+            }
+        });
+    }
+
+    /**
+     * Use the asynchronous version below instead. See http://crbug.com/517697.
+     */
+    @Deprecated
     public Account[] getGoogleAccounts() {
         return mAccountManager.getAccountsByType(GOOGLE_ACCOUNT_TYPE);
     }
@@ -173,8 +193,24 @@ public class AccountManagerHelper {
         mAccountManager.getAccountsByType(GOOGLE_ACCOUNT_TYPE, callback);
     }
 
+    /**
+     * Use the asynchronous version below instead. See http://crbug.com/517697.
+     */
+    @Deprecated
     public boolean hasGoogleAccounts() {
         return getGoogleAccounts().length > 0;
+    }
+
+    /**
+     * Asynchronously determine whether any Google accounts have been added.
+     */
+    public void hasGoogleAccounts(final Callback<Boolean> callback) {
+        getGoogleAccounts(new Callback<Account[]>() {
+            @Override
+            public void onResult(Account[] accounts) {
+                callback.onResult(accounts.length > 0);
+            }
+        });
     }
 
     private String canonicalizeName(String name) {
@@ -191,8 +227,9 @@ public class AccountManagerHelper {
     }
 
     /**
-     * Returns the account if it exists, null otherwise.
+     * Use the asynchronous version below instead. See http://crbug.com/517697.
      */
+    @Deprecated
     public Account getAccountFromName(String accountName) {
         String canonicalName = canonicalizeName(accountName);
         Account[] accounts = getGoogleAccounts();
@@ -205,10 +242,43 @@ public class AccountManagerHelper {
     }
 
     /**
-     * Returns whether the accounts exists.
+     * Asynchronously returns the account if it exists; null otherwise.
      */
+    public void getAccountFromName(String accountName, final Callback<Account> callback) {
+        final String canonicalName = canonicalizeName(accountName);
+        getGoogleAccounts(new Callback<Account[]>() {
+            @Override
+            public void onResult(Account[] accounts) {
+                Account accountForName = null;
+                for (Account account : accounts) {
+                    if (canonicalizeName(account.name).equals(canonicalName)) {
+                        accountForName = account;
+                        break;
+                    }
+                }
+                callback.onResult(accountForName);
+            }
+        });
+    }
+
+    /**
+     * Use the asynchronous version below instead. See http://crbug.com/517697.
+     */
+    @Deprecated
     public boolean hasAccountForName(String accountName) {
         return getAccountFromName(accountName) != null;
+    }
+
+    /**
+     * Asynchronously returns whether an account exists with the given name.
+     */
+    public void hasAccountForName(String accountName, final Callback<Boolean> callback) {
+        getAccountFromName(accountName, new Callback<Account>() {
+            @Override
+            public void onResult(Account account) {
+                callback.onResult(account != null);
+            }
+        });
     }
 
     /**
