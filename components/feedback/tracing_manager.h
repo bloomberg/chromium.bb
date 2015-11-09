@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/values.h"
 
 namespace base {
 
@@ -58,7 +59,8 @@ class TracingManager {
   TracingManager();
 
   void StartTracing();
-  void OnTraceDataCollected(base::RefCountedString* data);
+  void OnTraceDataCollected(scoped_ptr<const base::DictionaryValue> metadata,
+                            base::RefCountedString* data);
 
   // ID of the trace that is being collected.
   int current_trace_id_;

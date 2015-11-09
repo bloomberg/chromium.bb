@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/trace_event/trace_event.h"
+#include "base/values.h"
 #include "content/common/content_export.h"
 
 namespace content {
@@ -38,7 +39,12 @@ class TracingController {
    public:
     virtual void AddTraceChunk(const std::string& chunk) {}
     virtual void SetSystemTrace(const std::string& data) {}
-    virtual void SetMetadata(const std::string& data) {}
+
+    // Notice that TracingController adds some default metadata when
+    // DisableRecording is called, which may override metadata that you would
+    // set beforehand in case of key collision.
+    virtual void AddMetadata(const base::DictionaryValue& data);
+    virtual const base::DictionaryValue& GetMetadata() const;
     // TODO(prabhur) Replace all the Set* functions with a generic function:
     // TraceDataSink::AppendAdditionalData(const std::string& name,
     // const std::string& trace_data)
@@ -48,6 +54,9 @@ class TracingController {
    protected:
     friend class base::RefCountedThreadSafe<TraceDataSink>;
     virtual ~TraceDataSink() {}
+
+   private:
+    base::DictionaryValue metadata_;
   };
 
   // An implementation of this interface is passed when constructing a
@@ -58,7 +67,9 @@ class TracingController {
       : public base::RefCountedThreadSafe<TraceDataEndpoint> {
    public:
     virtual void ReceiveTraceChunk(const std::string& chunk) {}
-    virtual void ReceiveTraceFinalContents(const std::string& contents) {}
+    virtual void ReceiveTraceFinalContents(
+      scoped_ptr<const base::DictionaryValue> metadata,
+      const std::string& contents) {}
 
    protected:
     friend class base::RefCountedThreadSafe<TraceDataEndpoint>;
@@ -68,7 +79,8 @@ class TracingController {
   // Create a trace sink that may be supplied to DisableRecording or
   // CaptureMonitoringSnapshot to capture the trace data as a string.
   CONTENT_EXPORT static scoped_refptr<TraceDataSink> CreateStringSink(
-      const base::Callback<void(base::RefCountedString*)>& callback);
+      const base::Callback<void(scoped_ptr<const base::DictionaryValue>,
+                                base::RefCountedString*)>& callback);
 
   CONTENT_EXPORT static scoped_refptr<TraceDataSink> CreateCompressedStringSink(
       scoped_refptr<TraceDataEndpoint> endpoint);
@@ -82,7 +94,8 @@ class TracingController {
   // Create an endpoint that may be supplied to any TraceDataSink to
   // dump the trace data to a callback.
   CONTENT_EXPORT static scoped_refptr<TraceDataEndpoint> CreateCallbackEndpoint(
-      const base::Callback<void(base::RefCountedString*)>& callback);
+      const base::Callback<void(scoped_ptr<const base::DictionaryValue>,
+                                base::RefCountedString*)>& callback);
 
   // Create an endpoint that may be supplied to any TraceDataSink to
   // dump the trace data to a file.

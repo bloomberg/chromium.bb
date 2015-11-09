@@ -4,10 +4,12 @@
 #include "content/browser/tracing/tracing_controller_impl.h"
 
 #include "base/bind.h"
+#include "base/cpu.h"
 #include "base/files/file_util.h"
 #include "base/json/string_escape.h"
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/sys_info.h"
 #include "base/trace_event/trace_event.h"
 #include "content/browser/tracing/file_tracing_provider_impl.h"
 #include "content/browser/tracing/power_tracing_agent.h"
@@ -15,8 +17,14 @@
 #include "content/browser/tracing/tracing_ui.h"
 #include "content/common/child_process_messages.h"
 #include "content/public/browser/browser_message_filter.h"
+#include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/gpu_data_manager.h"
+#include "content/public/browser/tracing_delegate.h"
 #include "content/public/common/child_process_host.h"
+#include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
+#include "gpu/config/gpu_info.h"
+#include "net/base/network_change_notifier.h"
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -36,6 +44,88 @@ namespace {
 
 base::LazyInstance<TracingControllerImpl>::Leaky g_controller =
     LAZY_INSTANCE_INITIALIZER;
+
+
+std::string GetNetworkTypeString() {
+  switch (net::NetworkChangeNotifier::GetConnectionType()) {
+    case net::NetworkChangeNotifier::CONNECTION_ETHERNET:
+      return "Ethernet";
+    case net::NetworkChangeNotifier::CONNECTION_WIFI:
+      return "WiFi";
+    case net::NetworkChangeNotifier::CONNECTION_2G:
+      return "2G";
+    case net::NetworkChangeNotifier::CONNECTION_3G:
+      return "3G";
+    case net::NetworkChangeNotifier::CONNECTION_4G:
+      return "4G";
+    case net::NetworkChangeNotifier::CONNECTION_NONE:
+      return "None";
+    case net::NetworkChangeNotifier::CONNECTION_BLUETOOTH:
+      return "Bluetooth";
+    case net::NetworkChangeNotifier::CONNECTION_UNKNOWN:
+    default:
+      break;
+  }
+  return "Unknown";
+}
+
+scoped_ptr<base::DictionaryValue> GenerateTracingMetadataDict()  {
+  scoped_ptr<base::DictionaryValue> metadata_dict(new base::DictionaryValue());
+
+  metadata_dict->SetString("network-type", GetNetworkTypeString());
+  metadata_dict->SetString("product-version", GetContentClient()->GetProduct());
+  metadata_dict->SetString("user-agent", GetContentClient()->GetUserAgent());
+
+  // OS
+  metadata_dict->SetString("os-name", base::SysInfo::OperatingSystemName());
+  metadata_dict->SetString("os-version",
+                           base::SysInfo::OperatingSystemVersion());
+  metadata_dict->SetString("os-arch",
+                           base::SysInfo::OperatingSystemArchitecture());
+
+  // CPU
+  base::CPU cpu;
+  metadata_dict->SetInteger("cpu-family", cpu.family());
+  metadata_dict->SetInteger("cpu-model", cpu.model());
+  metadata_dict->SetInteger("cpu-stepping", cpu.stepping());
+  metadata_dict->SetInteger("num-cpus", base::SysInfo::NumberOfProcessors());
+  metadata_dict->SetInteger("physical-memory",
+                            base::SysInfo::AmountOfPhysicalMemoryMB());
+
+  std::string cpu_brand = cpu.cpu_brand();
+  // Workaround for crbug.com/249713.
+  // TODO(oysteine): Remove workaround when bug is fixed.
+  size_t null_pos = cpu_brand.find('\0');
+  if (null_pos != std::string::npos)
+    cpu_brand.erase(null_pos);
+  metadata_dict->SetString("cpu-brand", cpu_brand);
+
+  // GPU
+  gpu::GPUInfo gpu_info = content::GpuDataManager::GetInstance()->GetGPUInfo();
+
+#if !defined(OS_ANDROID)
+  metadata_dict->SetInteger("gpu-venid", gpu_info.gpu.vendor_id);
+  metadata_dict->SetInteger("gpu-devid", gpu_info.gpu.device_id);
+#endif
+
+  metadata_dict->SetString("gpu-driver", gpu_info.driver_version);
+  metadata_dict->SetString("gpu-psver", gpu_info.pixel_shader_version);
+  metadata_dict->SetString("gpu-vsver", gpu_info.vertex_shader_version);
+
+#if defined(OS_MACOSX)
+  metadata_dict->SetString("gpu-glver", gpu_info.gl_version);
+#elif defined(OS_POSIX)
+  metadata_dict->SetString("gpu-gl-vendor", gpu_info.gl_vendor);
+  metadata_dict->SetString("gpu-gl-renderer", gpu_info.gl_renderer);
+#endif
+
+  scoped_ptr<TracingDelegate> delegate(
+      GetContentClient()->browser()->GetTracingDelegate());
+  if (delegate)
+    delegate->GenerateMetadataDict(metadata_dict.get());
+
+  return metadata_dict.Pass();
+}
 
 }  // namespace
 
@@ -185,6 +275,9 @@ void TracingControllerImpl::OnEnableRecordingDone(
 bool TracingControllerImpl::DisableRecording(
     const scoped_refptr<TraceDataSink>& trace_data_sink) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  if (trace_data_sink)
+    trace_data_sink->AddMetadata(*GenerateTracingMetadataDict().get());
 
   if (!can_disable_recording())
     return false;

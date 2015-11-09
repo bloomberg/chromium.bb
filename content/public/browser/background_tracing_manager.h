@@ -42,7 +42,7 @@ class BackgroundTracingManager {
   // }
   //
   typedef base::Callback<void(const scoped_refptr<base::RefCountedString>&,
-                              scoped_ptr<base::DictionaryValue>,
+                              scoped_ptr<const base::DictionaryValue>,
                               base::Closure)> ReceiveCallback;
 
   // Set the triggering rules for when to start recording.

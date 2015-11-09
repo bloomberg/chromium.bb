@@ -22,7 +22,8 @@ class TracingControllerTestEndpoint
     : public TracingController::TraceDataEndpoint {
  public:
   TracingControllerTestEndpoint(
-      base::Callback<void(base::RefCountedString*)> done_callback)
+      base::Callback<void(scoped_ptr<const base::DictionaryValue>,
+                          base::RefCountedString*)> done_callback)
       : done_callback_(done_callback) {}
 
   void ReceiveTraceChunk(const std::string& chunk) override {
@@ -30,7 +31,9 @@ class TracingControllerTestEndpoint
     trace_ += chunk;
   }
 
-  void ReceiveTraceFinalContents(const std::string& contents) override {
+  void ReceiveTraceFinalContents(
+      scoped_ptr<const base::DictionaryValue> metadata,
+      const std::string& contents) override {
     EXPECT_EQ(trace_, contents);
 
     std::string tmp = contents;
@@ -39,14 +42,15 @@ class TracingControllerTestEndpoint
 
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(done_callback_, chunk_ptr));
+        base::Bind(done_callback_, base::Passed(metadata.Pass()), chunk_ptr));
   }
 
  protected:
   ~TracingControllerTestEndpoint() override {}
 
   std::string trace_;
-  base::Callback<void(base::RefCountedString*)> done_callback_;
+  base::Callback<void(scoped_ptr<const base::DictionaryValue>,
+                      base::RefCountedString*)> done_callback_;
 };
 
 class TracingControllerTest : public ContentBrowserTest {
@@ -81,9 +85,12 @@ class TracingControllerTest : public ContentBrowserTest {
     quit_callback.Run();
   }
 
-  void DisableRecordingStringDoneCallbackTest(base::Closure quit_callback,
-                                              base::RefCountedString* data) {
+  void DisableRecordingStringDoneCallbackTest(
+      base::Closure quit_callback,
+      scoped_ptr<const base::DictionaryValue> metadata,
+      base::RefCountedString* data) {
     disable_recording_done_callback_count_++;
+    last_metadata_.reset(metadata.release());
     EXPECT_TRUE(data->size() > 0);
     quit_callback.Run();
   }
@@ -152,6 +159,10 @@ class TracingControllerTest : public ContentBrowserTest {
     return last_actual_monitoring_file_path_;
   }
 
+  const base::DictionaryValue* last_metadata() const {
+    return last_metadata_.get();
+  }
+
   void TestEnableAndDisableRecordingString() {
     Navigate(shell());
 
@@ -172,7 +183,8 @@ class TracingControllerTest : public ContentBrowserTest {
 
     {
       base::RunLoop run_loop;
-      base::Callback<void(base::RefCountedString*)> callback = base::Bind(
+      base::Callback<void(scoped_ptr<const base::DictionaryValue>,
+                          base::RefCountedString*)> callback = base::Bind(
           &TracingControllerTest::DisableRecordingStringDoneCallbackTest,
           base::Unretained(this),
           run_loop.QuitClosure());
@@ -202,7 +214,8 @@ class TracingControllerTest : public ContentBrowserTest {
 
     {
       base::RunLoop run_loop;
-      base::Callback<void(base::RefCountedString*)> callback = base::Bind(
+      base::Callback<void(scoped_ptr<const base::DictionaryValue>,
+                          base::RefCountedString*)> callback = base::Bind(
           &TracingControllerTest::DisableRecordingStringDoneCallbackTest,
           base::Unretained(this), run_loop.QuitClosure());
       bool result = controller->DisableRecording(
@@ -369,6 +382,7 @@ class TracingControllerTest : public ContentBrowserTest {
   int capture_monitoring_snapshot_done_callback_count_;
   base::FilePath last_actual_recording_file_path_;
   base::FilePath last_actual_monitoring_file_path_;
+  scoped_ptr<const base::DictionaryValue> last_metadata_;
 };
 
 IN_PROC_BROWSER_TEST_F(TracingControllerTest, GetCategories) {
@@ -388,6 +402,25 @@ IN_PROC_BROWSER_TEST_F(TracingControllerTest, GetCategories) {
 
 IN_PROC_BROWSER_TEST_F(TracingControllerTest, EnableAndDisableRecording) {
   TestEnableAndDisableRecordingString();
+}
+
+IN_PROC_BROWSER_TEST_F(TracingControllerTest, DisableRecordingStoresMetadata) {
+  TestEnableAndDisableRecordingString();
+  // Check that a number of important keys exist in the metadata dictionary. The
+  // values are not checked to ensure the test is robust.
+  EXPECT_TRUE(last_metadata() != NULL);
+  std::string network_type;
+  last_metadata()->GetString("network-type", &network_type);
+  EXPECT_TRUE(network_type.length() > 0);
+  std::string user_agent;
+  last_metadata()->GetString("user-agent", &user_agent);
+  EXPECT_TRUE(user_agent.length() > 0);
+  std::string os_name;
+  last_metadata()->GetString("os-name", &os_name);
+  EXPECT_TRUE(os_name.length() > 0);
+  std::string cpu_brand;
+  last_metadata()->GetString("cpu-brand", &cpu_brand);
+  EXPECT_TRUE(cpu_brand.length() > 0);
 }
 
 IN_PROC_BROWSER_TEST_F(TracingControllerTest,

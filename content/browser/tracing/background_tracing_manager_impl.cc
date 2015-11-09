@@ -5,22 +5,17 @@
 #include "content/browser/tracing/background_tracing_manager_impl.h"
 
 #include "base/command_line.h"
-#include "base/cpu.h"
 #include "base/json/json_writer.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
-#include "base/sys_info.h"
 #include "base/time/time.h"
 #include "content/browser/tracing/background_tracing_rule.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
-#include "content/public/browser/gpu_data_manager.h"
 #include "content/public/browser/tracing_delegate.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
-#include "gpu/config/gpu_info.h"
-#include "net/base/network_change_notifier.h"
 
 namespace content {
 
@@ -47,29 +42,6 @@ enum BackgroundTracingMetrics {
 void RecordBackgroundTracingMetric(BackgroundTracingMetrics metric) {
   UMA_HISTOGRAM_ENUMERATION("Tracing.Background.ScenarioState", metric,
                             NUMBER_OF_BACKGROUND_TRACING_METRICS);
-}
-
-std::string GetNetworkTypeString() {
-  switch (net::NetworkChangeNotifier::GetConnectionType()) {
-    case net::NetworkChangeNotifier::CONNECTION_ETHERNET:
-      return "Ethernet";
-    case net::NetworkChangeNotifier::CONNECTION_WIFI:
-      return "WiFi";
-    case net::NetworkChangeNotifier::CONNECTION_2G:
-      return "2G";
-    case net::NetworkChangeNotifier::CONNECTION_3G:
-      return "3G";
-    case net::NetworkChangeNotifier::CONNECTION_4G:
-      return "4G";
-    case net::NetworkChangeNotifier::CONNECTION_NONE:
-      return "None";
-    case net::NetworkChangeNotifier::CONNECTION_BLUETOOTH:
-      return "Bluetooth";
-    case net::NetworkChangeNotifier::CONNECTION_UNKNOWN:
-    default:
-      break;
-  }
-  return "Unknown";
 }
 
 }  // namespace
@@ -426,6 +398,7 @@ void BackgroundTracingManagerImpl::EnableRecording(
 }
 
 void BackgroundTracingManagerImpl::OnFinalizeStarted(
+    scoped_ptr<const base::DictionaryValue> metadata,
     base::RefCountedString* file_contents) {
   CHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
@@ -435,7 +408,7 @@ void BackgroundTracingManagerImpl::OnFinalizeStarted(
 
   if (!receive_callback_.is_null()) {
     receive_callback_.Run(
-        file_contents, GenerateMetadataDict(),
+        file_contents, metadata.Pass(),
         base::Bind(&BackgroundTracingManagerImpl::OnFinalizeComplete,
                    base::Unretained(this)));
   }
@@ -470,72 +443,15 @@ void BackgroundTracingManagerImpl::OnFinalizeComplete() {
   RecordBackgroundTracingMetric(FINALIZATION_COMPLETE);
 }
 
-scoped_ptr<base::DictionaryValue>
-BackgroundTracingManagerImpl::GenerateMetadataDict() const {
-  // Grab the network type.
-  std::string network_type = GetNetworkTypeString();
+void BackgroundTracingManagerImpl::AddCustomMetadata(
+    TracingControllerImpl::TraceDataSink* trace_data_sink) const {
+  base::DictionaryValue metadata_dict;
 
-  // Grab the product version.
-  std::string product_version = GetContentClient()->GetProduct();
-
-  // Serialize the config into json.
   scoped_ptr<base::DictionaryValue> config_dict(new base::DictionaryValue());
-
   config_->IntoDict(config_dict.get());
+  metadata_dict.Set("config", config_dict.Pass());
 
-  scoped_ptr<base::DictionaryValue> metadata_dict(new base::DictionaryValue());
-  metadata_dict->Set("config", config_dict.Pass());
-  metadata_dict->SetString("network-type", network_type);
-  metadata_dict->SetString("product-version", product_version);
-  metadata_dict->SetString("user-agent", GetContentClient()->GetUserAgent());
-
-  // OS
-  metadata_dict->SetString("os-name", base::SysInfo::OperatingSystemName());
-  metadata_dict->SetString("os-version",
-                           base::SysInfo::OperatingSystemVersion());
-  metadata_dict->SetString("os-arch",
-                           base::SysInfo::OperatingSystemArchitecture());
-
-  // CPU
-  base::CPU cpu;
-  metadata_dict->SetInteger("cpu-family", cpu.family());
-  metadata_dict->SetInteger("cpu-model", cpu.model());
-  metadata_dict->SetInteger("cpu-stepping", cpu.stepping());
-  metadata_dict->SetInteger("num-cpus", base::SysInfo::NumberOfProcessors());
-  metadata_dict->SetInteger("physical-memory",
-                            base::SysInfo::AmountOfPhysicalMemoryMB());
-
-  std::string cpu_brand = cpu.cpu_brand();
-  // Workaround for crbug.com/249713.
-  // TODO(oysteine): Remove workaround when bug is fixed.
-  size_t null_pos = cpu_brand.find('\0');
-  if (null_pos != std::string::npos)
-    cpu_brand.erase(null_pos);
-  metadata_dict->SetString("cpu-brand", cpu_brand);
-
-  // GPU
-  gpu::GPUInfo gpu_info = content::GpuDataManager::GetInstance()->GetGPUInfo();
-
-#if !defined(OS_ANDROID)
-  metadata_dict->SetInteger("gpu-venid", gpu_info.gpu.vendor_id);
-  metadata_dict->SetInteger("gpu-devid", gpu_info.gpu.device_id);
-#endif
-
-  metadata_dict->SetString("gpu-driver", gpu_info.driver_version);
-  metadata_dict->SetString("gpu-psver", gpu_info.pixel_shader_version);
-  metadata_dict->SetString("gpu-vsver", gpu_info.vertex_shader_version);
-
-#if defined(OS_MACOSX)
-  metadata_dict->SetString("gpu-glver", gpu_info.gl_version);
-#elif defined(OS_POSIX)
-  metadata_dict->SetString("gpu-gl-vendor", gpu_info.gl_vendor);
-  metadata_dict->SetString("gpu-gl-renderer", gpu_info.gl_renderer);
-#endif
-
-  if (delegate_)
-    delegate_->GenerateMetadataDict(metadata_dict.get());
-
-  return metadata_dict.Pass();
+  trace_data_sink->AddMetadata(metadata_dict);
 }
 
 void BackgroundTracingManagerImpl::BeginFinalizing(
@@ -557,12 +473,7 @@ void BackgroundTracingManagerImpl::BeginFinalizing(
             base::Bind(&BackgroundTracingManagerImpl::OnFinalizeStarted,
                        base::Unretained(this))));
     RecordBackgroundTracingMetric(FINALIZATION_ALLOWED);
-
-    if (auto metadata_dict = GenerateMetadataDict()) {
-      std::string results;
-      if (base::JSONWriter::Write(*metadata_dict.get(), &results))
-        trace_data_sink->SetMetadata(results);
-    }
+    AddCustomMetadata(trace_data_sink.get());
   } else {
     RecordBackgroundTracingMetric(FINALIZATION_DISALLOWED);
   }
