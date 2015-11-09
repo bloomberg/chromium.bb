@@ -748,6 +748,7 @@ html[dir=rtl] .expanded-pane-contents {
 .expanded-pane-learn-more,
 .pod.public-account .learn-more {
   background-image: url(../../webui/resources/images/business.svg);
+  background-size: 18px;
   height: 18px;
   position: relative;
   width: 18px;
