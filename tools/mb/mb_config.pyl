@@ -461,6 +461,9 @@
       'android_chromium_gn_compile_rel': 'android_gn_release_bot',
       'linux_chromium_gn_rel': 'gn_release_bot',
     },
+    'tryserver.chromium.android': {
+      'android_chromium_gn_rel': 'android_gn_release_trybot',
+    },
     'tryserver.chromium.angle': {
       'linux_angle_rel_ng': 'swarming_gpu_tests_gyp_release_trybot',
       'linux_angle_dbg_ng': 'swarming_gpu_tests_gyp_debug_trybot',
