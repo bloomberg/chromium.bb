@@ -97,9 +97,7 @@ WindowTreeClientImpl::WindowTreeClientImpl(
       next_id_(1),
       delegate_(delegate),
       root_(nullptr),
-      capture_window_(nullptr),
       focused_window_(nullptr),
-      activated_window_(nullptr),
       binding_(this, request.Pass()),
       is_embed_root_(false),
       in_destructor_(false) {}

@@ -166,9 +166,7 @@ class WindowTreeClientImpl : public WindowTreeConnection,
 
   IdToWindowMap windows_;
 
-  Window* capture_window_;
   Window* focused_window_;
-  Window* activated_window_;
 
   mojo::Binding<WindowTreeClient> binding_;
   mus::mojom::WindowTreePtr tree_;
