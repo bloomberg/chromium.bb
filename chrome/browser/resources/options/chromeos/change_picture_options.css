@@ -80,10 +80,6 @@
   display: none;
 }
 
-.animation #user-image-preview-img {
-  -webkit-transition: -webkit-transform 200ms linear;
-}
-
 .camera.flip-x #user-image-preview-img {
   -webkit-transform: rotateY(180deg);
 }
@@ -98,9 +94,6 @@
 }
 
 #user-image-stream-crop {
-  /* TODO(ivankr): temporary workaround for crbug.com/142347. */
-  -webkit-transform: rotateY(360deg);
-  -webkit-transition: -webkit-transform 200ms linear;
   height: 220px;
   overflow: hidden;
   position: relative;
