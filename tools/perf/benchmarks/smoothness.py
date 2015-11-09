@@ -386,7 +386,6 @@ class SmoothnessGpuRasterizationToughScrollingCases(_Smoothness):
   def Name(cls):
     return 'smoothness.gpu_rasterization.tough_scrolling_cases'
 
-
 @benchmark.Disabled('android')  # http://crbug.com/531593
 class SmoothnessToughImageDecodeCases(_Smoothness):
   page_set = page_sets.ToughImageDecodeCasesPageSet
@@ -394,7 +393,6 @@ class SmoothnessToughImageDecodeCases(_Smoothness):
   @classmethod
   def Name(cls):
     return 'smoothness.tough_image_decode_cases'
-
 
 @benchmark.Disabled('android')  # http://crbug.com/513699
 class SmoothnessImageDecodingCases(_Smoothness):
