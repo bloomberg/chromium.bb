@@ -27,6 +27,9 @@
 if (window.eventSender) {
     testRunner.dumpAsTextWithPixelResults();
 
+    if (window.internals)
+        internals.settings.setScrollAnimatorEnabled(false);
+
     // Scroll the #outerDiv until we reach the #innerDiv.
     eventSender.mouseMoveTo(50, 50);
     eventSender.mouseScrollBy(0, -8);

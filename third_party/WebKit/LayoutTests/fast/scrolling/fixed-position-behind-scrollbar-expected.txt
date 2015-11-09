@@ -1,4 +1,4 @@
-PASS true is true
+PASS scrollY > 0 became true
 PASS 205,205 is 205,205
 PASS successfullyParsed is true
 

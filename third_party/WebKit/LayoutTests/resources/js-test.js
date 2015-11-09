@@ -269,7 +269,7 @@ function shouldBe(_a, _b, quiet, opt_tolerance)
     testFailed(_a + " should be " + _bv + " (of type " + typeof _bv + "). Was " + _av + " (of type " + typeof _av + ").");
 }
 
-// Execute condition every 5 milliseconds until it succeed or failureTime is reached.
+// Execute condition every animation frame until it succeeds or failureTime is reached.
 // completionHandler is executed on success, failureHandler is executed on timeout.
 function _waitForCondition(condition, failureTime, completionHandler, failureHandler)
 {
@@ -278,7 +278,9 @@ function _waitForCondition(condition, failureTime, completionHandler, failureHan
   } else if (Date.now() > failureTime) {
     failureHandler();
   } else {
-    setTimeout(_waitForCondition, 5, condition, failureTime, completionHandler, failureHandler);
+    requestAnimationFrame(function() {
+      _waitForCondition(condition, failureTime, completionHandler, failureHandler);
+    });
   }
 }
 

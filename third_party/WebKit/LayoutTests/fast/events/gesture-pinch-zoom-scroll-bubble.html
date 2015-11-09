@@ -2,6 +2,32 @@
 <script src="../../resources/js-test.js"></script>
 <div style="margin: 0px 0; width: 100px; height: 1000px; background-color: blue;"></div>
 <script>
+window.jsTestIsAsync = true;
+
+function testVerticalScroll() {
+  // Do a purely vertical scroll. This will scroll contents only.
+  eventSender.continuousMouseScrollBy(0, -1);
+  shouldBecomeEqual('internals.visualViewportScrollX() == 200 && ' +
+    'internals.visualViewportScrollY() == 301', 'true', testHorizontalScroll);
+}
+
+function testHorizontalScroll() {
+  // Do a purely horizontal scroll. This will change pinch virtual viewport
+  // offset only.
+  eventSender.continuousMouseScrollBy(-1, 0);
+  shouldBecomeEqual('internals.visualViewportScrollX() == 201 && ' +
+    'internals.visualViewportScrollY() == 301', 'true', testDiagonalScroll);
+}
+
+function testDiagonalScroll() {
+  // Do a diagonal scroll. This will scroll the contents, and then bubble the
+  // result up to the visual viewport, where it will change the pinch
+  // virtual viewport offset.
+  eventSender.continuousMouseScrollBy(2, 2);
+  shouldBecomeEqual('internals.visualViewportScrollX() == 199 && ' +
+    'internals.visualViewportScrollY() == 299', 'true', finishJSTest);
+}
+
 // TODO: This test just verifies that scrollX and scrollY end up with the right
 // values after a scroll. It does not verify whether these values are coming
 // from content scroll or from viewport moving. This should be added.
@@ -15,22 +41,9 @@ if (window.eventSender && window.internals) {
   shouldBe('internals.visualViewportScrollX()', '200');
   shouldBe('internals.visualViewportScrollY()', '300');
 
-  // Do a purely vertical scroll. This will scroll contents only.
-  eventSender.continuousMouseScrollBy(0, -1);
-  shouldBe('internals.visualViewportScrollX()', '200');
-  shouldBe('internals.visualViewportScrollY()', '301');
-
-  // Do a purely horizontal scroll. This will change pinch virtual viewport
-  // offset only.
-  eventSender.continuousMouseScrollBy(-1, 0);
-  shouldBe('internals.visualViewportScrollX()', '201');
-  shouldBe('internals.visualViewportScrollY()', '301');
-
-  // Do a diagonal scroll. This will scroll the contents, and then bubble the
-  // result up to the visual viewport, where it will change the pinch
-  // virtual viewport offset.
-  eventSender.continuousMouseScrollBy(2, 2);
-  shouldBe('internals.visualViewportScrollX()', '199');
-  shouldBe('internals.visualViewportScrollY()', '299');
+  testVerticalScroll();
+} else {
+  testFailed("This test requires the event sender and internals");
+  finishJSTest();
 }
 </script>

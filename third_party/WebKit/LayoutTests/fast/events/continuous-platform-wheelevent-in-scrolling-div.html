@@ -2,16 +2,13 @@
     <head>
         <script src="../../resources/js-test.js"></script>
         <script>
+            window.jsTestIsAsync = true;
             var expectedScrollTop = 200;
             var expectedScrollLeft = 100;
             var event;
             var div;
 
-            if (window.testRunner) {
-                testRunner.waitUntilDone();
-            }
-
-            function dispatchWheelEvent()
+            function runTest()
             {
                 var overflowElement = document.getElementById("overflow");
                 if (overflowElement)
@@ -22,17 +19,9 @@
                     eventSender.continuousMouseScrollBy(-window.expectedScrollLeft, -window.expectedScrollTop);
                 }
 
-                setTimeout('checkOffsets();', 100);
-            }
-
-            function checkOffsets()
-            {
                 div = document.getElementById("overflow");
-                shouldBe("div.scrollTop", "window.expectedScrollTop");
-                shouldBe("div.scrollLeft", "window.expectedScrollLeft");
-
-                if (window.testRunner)
-                    window.testRunner.notifyDone();
+                shouldBecomeEqual("div.scrollTop == window.expectedScrollTop && " +
+                    "div.scrollLeft == window.expectedScrollLeft", "true", finishJSTest);
             }
 
             function mousewheelHandler(e)
@@ -49,7 +38,7 @@
         </script>
     </head>
 
-    <body style="margin:0" onload="setTimeout('dispatchWheelEvent();', 100)">
+    <body style="margin:0" onload="runTest()">
         <div id="overflow" style="border:2px solid black;overflow:auto;height:200px;width:200px;">
             <div style="background-color:red;height:200px;width:400px;"></div>
             <div style="background-color:green;height:200px;width:400px;"></div>

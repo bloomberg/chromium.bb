@@ -18,6 +18,8 @@ body { margin:0; padding:0; height:100%; }
 
 if (window.testRunner)
     testRunner.dumpAsText();
+if (window.internals)
+    internals.settings.setScrollAnimatorEnabled(false);
 performVerticalScrollingInputTest();
 assertInputIsInTheMiddleOfViewport();
 

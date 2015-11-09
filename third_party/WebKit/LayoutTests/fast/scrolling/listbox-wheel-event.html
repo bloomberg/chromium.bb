@@ -12,6 +12,7 @@ function test() {
 <body onload="test()">
     <select multiple id="sel" style="width:500px; height:300px;"></select>
     <script>
+        internals.settings.setScrollAnimatorEnabled(false);
         sel = document.getElementById("sel");
         for (var i = 0; i < 50; i++) {
             option = document.createElement("option");

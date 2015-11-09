@@ -23,10 +23,7 @@ PASS testEvent.__proto__ is WheelEvent.prototype
 PASS testEvent.__proto__.__proto__ is MouseEvent.prototype
 PASS testEvent.deltaZ is 0
 PASS testEvent.deltaMode is WheelEvent.DOM_DELTA_PIXEL
-PASS deltaX > 0 is true
-PASS deltaX is expectedDeltaX
-PASS deltaY > 0 is true
-PASS deltaY is expectedDeltaY
+PASS deltaX > 0 && deltaY > 0 && deltaX == testDiv.scrollLeft && deltaY == testDiv.scrollTop became true
 PASS successfullyParsed is true
 
 TEST COMPLETE

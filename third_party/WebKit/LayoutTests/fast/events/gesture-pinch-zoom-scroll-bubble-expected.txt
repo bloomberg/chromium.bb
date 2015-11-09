@@ -2,12 +2,9 @@ PASS internals.visualViewportWidth() is 400
 PASS internals.visualViewportHeight() is 300
 PASS internals.visualViewportScrollX() is 200
 PASS internals.visualViewportScrollY() is 300
-PASS internals.visualViewportScrollX() is 200
-PASS internals.visualViewportScrollY() is 301
-PASS internals.visualViewportScrollX() is 201
-PASS internals.visualViewportScrollY() is 301
-PASS internals.visualViewportScrollX() is 199
-PASS internals.visualViewportScrollY() is 299
+PASS internals.visualViewportScrollX() == 200 && internals.visualViewportScrollY() == 301 became true
+PASS internals.visualViewportScrollX() == 201 && internals.visualViewportScrollY() == 301 became true
+PASS internals.visualViewportScrollX() == 199 && internals.visualViewportScrollY() == 299 became true
 PASS successfullyParsed is true
 
 TEST COMPLETE

@@ -3,6 +3,10 @@ vertical scroll: : Success
 continuously call window.scrollY : Success
 zoom in and out preserve scroll position: Success
 resize preserves scroll position: Success
-KeyDown HOME move y-scroll position to bottom for RTL page: -3425
-KeyDown END move y-scroll position to bottom for RTL page: 0
+PASS window.scrollY == -3425 became true
+PASS window.scrollY == 0 became true
 selectAll selects all document: Success
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

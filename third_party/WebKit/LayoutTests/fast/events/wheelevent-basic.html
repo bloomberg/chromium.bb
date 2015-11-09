@@ -4,10 +4,10 @@
 <link rel="help" href="http://www.w3.org/TR/DOM-Level-3-Events/#events-WheelEvent">
 <script src="../../resources/js-test.js"></script>
 <script>
+window.jsTestIsAsync = true;
+
 var deltaX = 0;
 var deltaY = 0;
-var expectedDeltaX;
-var expectedDeltaY;
 
 var testDiv;
 function runTest() {
@@ -26,12 +26,9 @@ function runTest() {
     if (window.eventSender) {
         eventSender.mouseMoveTo(testDiv.offsetLeft + 5, testDiv.offsetTop + 5);
         eventSender.mouseScrollBy(-1, -2);
-        expectedDeltaX = testDiv.scrollLeft;
-        expectedDeltaY = testDiv.scrollTop;
-        shouldBeTrue("deltaX > 0");
-        shouldBe("deltaX", "expectedDeltaX");
-        shouldBeTrue("deltaY > 0");
-        shouldBe("deltaY", "expectedDeltaY");
+        var positive = "deltaX > 0 && deltaY > 0";
+        var correct = "deltaX == testDiv.scrollLeft && deltaY == testDiv.scrollTop";
+        shouldBecomeEqual(positive + " && " + correct , "true", finishJSTest);
     } else {
         debug("FAIL: This test requires window.eventSender.");
     }

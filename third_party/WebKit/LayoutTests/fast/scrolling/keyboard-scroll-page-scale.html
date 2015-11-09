@@ -110,6 +110,7 @@
         'scroll to see the divs at the bounds.)');
 
     if (window.eventSender && window.internals) {
+      internals.settings.setScrollAnimatorEnabled(false);
       reset();
       debug('Testing arrow keys:');
       testArrowKeys();

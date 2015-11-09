@@ -58,6 +58,7 @@
         'scroll to see the divs at the bounds.)');
 
     if (window.internals) {
+      internals.settings.setScrollAnimatorEnabled(false);
       reset();
       debug('');
       debug('Testing Document Scrolling:');

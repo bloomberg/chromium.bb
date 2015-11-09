@@ -17,13 +17,17 @@ if (window.testRunner) {
     testRunner.waitUntilDone();
 }
 
+if (window.internals) {
+    internals.settings.setScrollAnimatorEnabled(false);
+}
+
 if (window.eventSender) {
     // Lock to the anchor inside the div
     var target = document.getElementById("startLink");
     eventSender.mouseMoveTo(target.offsetLeft + 2, target.offsetTop + 2);
     eventSender.mouseDown();
     eventSender.mouseUp();
- 
+
     // Perform a page down to be handled by div, should release anchor lock
     var divInfo = document.getElementById("parentDiv");
     eventSender.mouseMoveTo(divInfo.offsetLeft + 2, divInfo.offsetTop + 2);

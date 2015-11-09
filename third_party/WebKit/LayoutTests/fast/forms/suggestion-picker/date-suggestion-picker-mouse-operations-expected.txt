@@ -10,8 +10,8 @@ Check that mouse click closes the popup and sets the value.
 PASS $("mock-page-popup") is null
 PASS document.getElementById("date").value is "2012-01-03"
 Check that you can scroll using the mouse wheel.
-PASS scrollTopBeforeWheelEvent < scrollTopAfterWheelEvent is true
-PASS scrollTopBeforeWheelEvent > scrollTopAfterWheelEvent is true
+PASS scrollTopBeforeWheelEvent < suggestionList.scrollTop became true
+PASS scrollTopBeforeWheelEvent > suggestionList.scrollTop became true
 PASS $("mock-page-popup") is null
 Check that you can scroll using the scroll bar.
 PASS scrollTopBeforeWheelEvent < scrollTopAfterWheelEvent is true

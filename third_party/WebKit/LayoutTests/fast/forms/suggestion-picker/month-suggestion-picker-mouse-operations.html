@@ -96,25 +96,32 @@ function test1AfterClosing() {
 
 var scrollTopBeforeWheelEvent = 0;
 var scrollTopAfterWheelEvent = 0;
+var suggestionList;
 
 function test2() {
-    var suggestionList = popupWindow.document.getElementsByClassName("suggestion-list")[0];
+    suggestionList = popupWindow.document.getElementsByClassName("suggestion-list")[0];
 
     debug('Check that you can scroll using the mouse wheel.');
 
-    scrollTopBeforeWheelEvent = suggestionList.scrollTop;
-    dispatchWheelEvent(suggestionList, 0, -100);
-    scrollTopAfterWheelEvent = suggestionList.scrollTop;
-    shouldBeTrue('scrollTopBeforeWheelEvent < scrollTopAfterWheelEvent');
+    function finishTest() {
+        popupWindow.focus();
+        eventSender.keyDown('escape');
+        waitUntilClosing(test2AfterClosing);
+    }
 
-    scrollTopBeforeWheelEvent = suggestionList.scrollTop;
-    dispatchWheelEvent(suggestionList, 0, 100);
-    scrollTopAfterWheelEvent = suggestionList.scrollTop;
-    shouldBeTrue('scrollTopBeforeWheelEvent > scrollTopAfterWheelEvent');
+    function scrollUp() {
+        scrollTopBeforeWheelEvent = suggestionList.scrollTop;
+        dispatchWheelEvent(suggestionList, 0, 100);
+        shouldBecomeEqual('scrollTopBeforeWheelEvent > suggestionList.scrollTop', 'true', finishTest)
+    }
 
-    popupWindow.focus();
-    eventSender.keyDown('escape');
-    waitUntilClosing(test2AfterClosing);
+    function scrollDown() {
+        scrollTopBeforeWheelEvent = suggestionList.scrollTop;
+        dispatchWheelEvent(suggestionList, 0, -100);
+        shouldBecomeEqual('scrollTopBeforeWheelEvent < suggestionList.scrollTop', 'true', scrollUp);
+    }
+
+    scrollDown();
 }
 
 function test2AfterClosing() {

@@ -3,10 +3,10 @@ This tests that scrollbars always receive events even when there is an element u
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-PASS window.scrollY is 0
 PASS receivedMousedownEvent is true
-PASS subframe.scrollTop is 0
+PASS window.scrollY became 0
 PASS receivedMousedownEvent is true
+PASS subframe.scrollTop became 0
 PASS successfullyParsed is true
 
 TEST COMPLETE

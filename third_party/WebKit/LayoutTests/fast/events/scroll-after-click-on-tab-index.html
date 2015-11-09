@@ -1,6 +1,8 @@
 <html>
 <script src="../../resources/js-test.js"></script>
 <script>
+window.jsTestIsAsync = true;
+
 function getCenterFor(element)
 {
   var rect = element.getBoundingClientRect();
@@ -23,14 +25,9 @@ function runTest()
   eventSender.mouseDown();
   eventSender.mouseUp();
   eventSender.keyDown("downArrow");
-  setTimeout(verifyScrolling, 15);
-}
 
-function verifyScrolling()
-{
   debug("Scroll position is more than 0");
-  shouldBe("document.scrollingElement.scrollTop > 0", "true");
-  testRunner.notifyDone();
+  shouldBecomeEqual("document.scrollingElement.scrollTop > 0", "true", finishJSTest);
 }
 
 </script>

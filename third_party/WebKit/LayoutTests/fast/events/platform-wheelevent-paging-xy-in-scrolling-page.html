@@ -2,6 +2,7 @@
     <head>
         <script src="../../resources/js-test.js"></script>
         <script>
+            window.jsTestIsAsync = true;
             var isMacOSX = navigator.userAgent.indexOf("Mac OS X") >= 0;
 
             var givenScrollTop = 2; // Only one page per event, so this should be interpreted as 1
@@ -22,11 +23,7 @@
             var event;
             var div;
 
-            window.jsTestIsAsync = true;
-            if (window.testRunner)
-                testRunner.waitUntilDone();
-
-            function dispatchWheelEvent()
+            function runTest()
             {
                 document.body.addEventListener("mousewheel", mousewheelHandler, false);
 
@@ -35,14 +32,8 @@
                     eventSender.continuousMouseScrollBy(-window.givenScrollLeft, -window.givenScrollTop, true);
                 }
 
-                setTimeout('checkOffsets();', 100);
-            }
-
-            function checkOffsets()
-            {
-                shouldBe("document.scrollingElement.scrollTop", "window.expectedScrollTop");
-                shouldBe("document.scrollingElement.scrollLeft", "window.expectedScrollLeft");
-                finishJSTest();
+                shouldBecomeEqual("document.scrollingElement.scrollTop == window.expectedScrollTop && " +
+                    "document.scrollingElement.scrollLeft == window.expectedScrollLeft", "true", finishJSTest)
             }
 
             function mousewheelHandler(e)
@@ -59,7 +50,7 @@
         </script>
     </head>
 
-    <body style="margin:0" onload="setTimeout('dispatchWheelEvent();', 100)">
+    <body style="margin:0" onload="runTest()">
         <div style="height:900px;width:2400px">
           <div style="background-color:red;height:900px;width:1200px;position:relative;left:0px;top:0px"></div>
           <div style="background-color:green;height:900px;width:1200px;position:relative;left:1200px;top:-900px"></div>

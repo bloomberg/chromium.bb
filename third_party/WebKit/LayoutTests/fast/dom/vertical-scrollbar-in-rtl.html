@@ -1,6 +1,9 @@
 <html dir=rtl style="-webkit-writing-mode:vertical-lr">
     <head>
+        <script src="../../resources/js-test.js"></script>
         <script language="javascript">
+            window.jsTestIsAsync = true;
+
             function log(str)
             {
                 var li = document.createElement("li");
@@ -8,24 +11,24 @@
                 var console = document.getElementById("console");
                 console.appendChild(li);
             }
-            
+
             function assertEqual(message, actual, expected)
             {
                 if (actual != expected)
-                    log("\n" + message + ": Failure, actual: " + actual + "; expected: " + expected);
+                    log(message + ": Failure, actual: " + actual + "; expected: " + expected);
                 else
-                    log("\n" + message + ": Success");
+                    log(message + ": Success");
             }
-            
+
             function assertClose(message, actual, expected)
             {
                 if ((actual >= expected && actual - expected < 5) ||
                     (expected >= actual && expected - actual < 5))
-                    log("\n" + message + ": Success");
+                    log(message + ": Success");
                 else
-                    log("\n" + message + ": Failure, actual: " + actual + "; expected: " + expected);
+                    log(message + ": Failure, actual: " + actual + "; expected: " + expected);
             }
-            
+
             var expectedScrollX = 500;
             var expectedScrollY = -1000;
 
@@ -36,13 +39,13 @@
 
                 // Test vertical scrollbar presence and that it is initially at the bottom for RTL page.
                 assertEqual("original scroll y for RTL page ", window.scrollY, 0);
-            
+
                 // Test horizontal scroll.
                 window.scrollTo(expectedScrollX, expectedScrollY);
                 assertEqual("vertical scroll: ", window.scrollY, expectedScrollY);
                 // Test calling window.scrollY continuously wont change the scrollY position.
                 assertEqual("continuously call window.scrollY ", window.scrollY, expectedScrollY);
-            
+
 
                 // Test zooming wont reset scroll position.
                 if (window.eventSender) {
@@ -51,36 +54,44 @@
                     eventSender.zoomPageOut();
                     assertClose("zoom in and out preserve scroll position", window.scrollY, expectedScrollY);
                 }
-               
+
                 // Test resize wont reset scroll position.
                 window.resizeTo(window.innerWidth, 1000);
                 window.scrollTo(expectedScrollX, expectedScrollY);
                 window.resizeTo(window.innerWidth, 2000);
                 assertEqual("resize preserves scroll position", window.scrollY, expectedScrollY);
-                
+
                 // Test HOME/END operation.
                 if (window.eventSender) {
-                    // Not using assert equal here since the behavior is different in each port. 
-                    // For example, in Mac, HOME/END key reset both x and y scroll position. 
+                    // Not using assert equal here since the behavior is different in each port.
+                    // For example, in Mac, HOME/END key reset both x and y scroll position.
                     // In Chromium, HOME/END key only reset y scroll position, and x scroll position is preserved.
-                    window.scrollTo(expectedScrollX, expectedScrollY);
-                    eventSender.keyDown("home");
-                    log("KeyDown HOME move y-scroll position to bottom for RTL page: " + window.scrollY, 0);
-                    window.scrollTo(expectedScrollX, expectedScrollY);
-                    eventSender.keyDown("end");
-                    log("KeyDown END move y-scroll position to bottom for RTL page: " + window.scrollY, 0);
+                    function testEnd() {
+                        window.scrollTo(expectedScrollX, expectedScrollY);
+                        eventSender.keyDown("end");
+                        shouldBecomeEqual('window.scrollY == 0', 'true', testSelectAll);
+                    }
+                    function testHome() {
+                        window.scrollTo(expectedScrollX, expectedScrollY);
+                        eventSender.keyDown("home");
+                        shouldBecomeEqual('window.scrollY == -3425', 'true', testEnd);
+                    }
+                    testHome();
                 }
-            
-                // Test select all selects all document content.
-                window.resizeTo(500, 500);
-                var div = document.getElementById("div");
-                div.focus();
-                document.execCommand("SelectAll");
-                var selection = window.getSelection();
-                assertEqual("selectAll selects all document", selection.toString().substring(0, div.innerHTML.length), div.innerHTML);
 
-                div.style.display = "none";
-               
+                function testSelectAll() {
+                    // Test select all selects all document content.
+                    window.resizeTo(500, 500);
+                    var div = document.getElementById("div");
+                    div.focus();
+                    document.execCommand("SelectAll");
+                    var selection = window.getSelection();
+                    assertEqual("selectAll selects all document", selection.toString().substring(0, div.innerHTML.length), div.innerHTML);
+
+                    div.style.display = "none";
+
+                    finishJSTest();
+                }
             }
         </script>
     </head>

@@ -3,23 +3,28 @@
 <a id="a" href="#bottom">Link to bottom</a>
 <div style="height: 1000px"></div>
 <a name="bottom"></a>
+<script src="/js-test-resources/js-test.js"></script>
 <script>
 if (window.testRunner) {
+    window.jsTestIsAsync = true;
     testRunner.dumpAsText();
     testRunner.waitUntilDone();
 }
 
 window.onload = function() {
     if (window.eventSender) {
-        eventSender.mouseScrollBy(0, -20);
-        var a = document.getElementById("a");
-        eventSender.mouseMoveTo(a.offsetLeft + 2, a.offsetTop - 798);
-        eventSender.mouseDown();
-        eventSender.mouseUp();
+        function clickLink() {
+            var a = document.getElementById("a");
+            eventSender.mouseMoveTo(a.offsetLeft + 2, a.offsetTop - 798);
+            eventSender.mouseDown();
+            eventSender.mouseUp();
+        }
+        eventSender.continuousMouseScrollBy(0, -800);
+        shouldBecomeEqual("window.scrollY == 800", "true", clickLink);
     }
 };
 
-var haveSeenHashChange = false;
+var haveSeenHashChange =  false;
 
 window.onhashchange = function() {
     if (!haveSeenHashChange) {
@@ -27,8 +32,7 @@ window.onhashchange = function() {
         history.back();
     } else {
         document.body.appendChild(document.createTextNode("scrollY should be 800: " + (window.scrollY == 800 ? "PASS" : "FAIL")));
-        if (window.testRunner)
-            testRunner.notifyDone();
+        finishJSTest();
     }
 }
 </script>

@@ -3,33 +3,17 @@ This tests that scrollable areas with the appropriate overflow mode set are in f
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
+PASS div.scrollTop == window.pixelsPerWheelTick && div.scrollLeft == window.pixelsPerWheelTick became true
+PASS div.scrollTop == window.pixelsPerWheelTick && div.scrollLeft == window.pixelsPerWheelTick became true
+PASS div.scrollTop == 0 && div.scrollLeft == 0 became true
+PASS div.scrollTop == window.pixelsPerWheelTick && div.scrollLeft == window.pixelsPerWheelTick became true
+PASS div.scrollTop == 0 && div.scrollLeft == 0 became true
+PASS div.scrollTop == 0 && div.scrollLeft == 0 became true
+PASS div.scrollTop == 0 && div.scrollLeft == 0 became true
+PASS div.scrollTop == 0 && div.scrollLeft == 0 became true
 PASS successfullyParsed is true
 
 TEST COMPLETE
-===overflow:scroll with overflow
-PASS div.scrollTop is window.pixelsPerWheelTick
-PASS div.scrollLeft is window.pixelsPerWheelTick
-===overflow:auto with overflow
-PASS div.scrollTop is window.pixelsPerWheelTick
-PASS div.scrollLeft is window.pixelsPerWheelTick
-===overflow:hidden with overflow
-PASS div.scrollTop is 0
-PASS div.scrollLeft is 0
-===overflow:overlay with overflow
-PASS div.scrollTop is window.pixelsPerWheelTick
-PASS div.scrollLeft is window.pixelsPerWheelTick
-===overflow:scroll without overflow
-PASS div.scrollTop is 0
-PASS div.scrollLeft is 0
-===overflow:auto without overflow
-PASS div.scrollTop is 0
-PASS div.scrollLeft is 0
-===overflow:hidden without overflow
-PASS div.scrollTop is 0
-PASS div.scrollLeft is 0
-===overflow:overlay without overflow
-PASS div.scrollTop is 0
-PASS div.scrollLeft is 0
 scroll with overflow
 Content
 auto with overflow
