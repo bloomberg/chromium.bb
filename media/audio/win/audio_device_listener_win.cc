@@ -8,7 +8,6 @@
 
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/system_monitor/system_monitor.h"
 #include "base/time/default_tick_clock.h"
 #include "base/win/scoped_co_mem.h"
 #include "base/win/windows_version.h"
@@ -31,7 +30,7 @@ static std::string RoleToString(ERole role) {
   }
 }
 
-AudioDeviceListenerWin::AudioDeviceListenerWin(const base::Closure& listener_cb)
+AudioDeviceListenerWin::AudioDeviceListenerWin(const ListenerCB& listener_cb)
     : listener_cb_(listener_cb), tick_clock_(new base::DefaultTickClock()) {
   CHECK(CoreAudioUtil::IsSupported());
 
@@ -98,10 +97,7 @@ STDMETHODIMP AudioDeviceListenerWin::OnDeviceRemoved(LPCWSTR device_id) {
 
 STDMETHODIMP AudioDeviceListenerWin::OnDeviceStateChanged(LPCWSTR device_id,
                                                           DWORD new_state) {
-  base::SystemMonitor* monitor = base::SystemMonitor::Get();
-  if (monitor)
-    monitor->ProcessDevicesChanged(base::SystemMonitor::DEVTYPE_AUDIO_CAPTURE);
-
+  listener_cb_.Run(kInputDeviceChange);
   return S_OK;
 }
 
@@ -131,7 +127,7 @@ STDMETHODIMP AudioDeviceListenerWin::OnDefaultDeviceChanged(
       now - last_device_change_time_ >
           base::TimeDelta::FromMilliseconds(kDeviceChangeLimitMs)) {
     last_device_change_time_ = now;
-    listener_cb_.Run();
+    listener_cb_.Run(kOutputDeviceChange);
     did_run_listener_cb = true;
   }
 

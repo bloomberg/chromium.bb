@@ -8,10 +8,9 @@
 #include <string>
 
 #include "media/audio/audio_manager_base.h"
+#include "media/audio/win/audio_device_listener_win.h"
 
 namespace media {
-
-class AudioDeviceListenerWin;
 
 // Windows implementation of the AudioManager singleton. This class is internal
 // to the audio output and only internal users can call methods not exposed by
@@ -87,6 +86,12 @@ class MEDIA_EXPORT AudioManagerWin : public AudioManagerBase {
   void ShutdownOnAudioThread();
 
   void GetAudioDeviceNamesImpl(bool input, AudioDeviceNames* device_names);
+
+  // We frequently see deadlock in third party Windows audio drivers, so after
+  // a device change is detected, stall for a second before allowing calls into
+  // the Windows audio subsystem.  See http://crbug.com/422522
+  void StallAudioThreadAfterDeviceChange(
+      AudioDeviceListenerWin::DeviceNotificationType notification_type);
 
   // Listen for output device changes.
   scoped_ptr<AudioDeviceListenerWin> output_device_listener_;

@@ -60,8 +60,8 @@ class AudioDeviceListenerWinTest : public testing::Test {
         base::ASCIIToUTF16(new_device_id).c_str()) == S_OK;
   }
 
-
-  MOCK_METHOD0(OnDeviceChange, void());
+  MOCK_METHOD1(OnDeviceChange,
+               void(AudioDeviceListenerWin::DeviceNotificationType));
 
  private:
   ScopedCOMInitializer com_init_;
@@ -75,12 +75,16 @@ class AudioDeviceListenerWinTest : public testing::Test {
 TEST_F(AudioDeviceListenerWinTest, OutputDeviceChange) {
   ABORT_AUDIO_TEST_IF_NOT(CoreAudioUtil::IsSupported());
 
-  EXPECT_CALL(*this, OnDeviceChange()).Times(1);
+  EXPECT_CALL(*this,
+              OnDeviceChange(AudioDeviceListenerWin::kOutputDeviceChange))
+      .Times(1);
   ASSERT_TRUE(SimulateDefaultOutputDeviceChange(kFirstTestDevice));
 
   testing::Mock::VerifyAndClear(this);
   AdvanceLastDeviceChangeTime();
-  EXPECT_CALL(*this, OnDeviceChange()).Times(1);
+  EXPECT_CALL(*this,
+              OnDeviceChange(AudioDeviceListenerWin::kOutputDeviceChange))
+      .Times(1);
   ASSERT_TRUE(SimulateDefaultOutputDeviceChange(kSecondTestDevice));
 
   // The second device event should be ignored since it occurs too soon.
@@ -92,17 +96,23 @@ TEST_F(AudioDeviceListenerWinTest, OutputDeviceChange) {
 TEST_F(AudioDeviceListenerWinTest, NullOutputDeviceChange) {
   ABORT_AUDIO_TEST_IF_NOT(CoreAudioUtil::IsSupported());
 
-  EXPECT_CALL(*this, OnDeviceChange()).Times(1);
+  EXPECT_CALL(*this,
+              OnDeviceChange(AudioDeviceListenerWin::kOutputDeviceChange))
+      .Times(1);
   ASSERT_TRUE(SimulateNullDefaultOutputDeviceChange());
 
   testing::Mock::VerifyAndClear(this);
   AdvanceLastDeviceChangeTime();
-  EXPECT_CALL(*this, OnDeviceChange()).Times(1);
+  EXPECT_CALL(*this,
+              OnDeviceChange(AudioDeviceListenerWin::kOutputDeviceChange))
+      .Times(1);
   ASSERT_TRUE(SimulateDefaultOutputDeviceChange(kFirstTestDevice));
 
   testing::Mock::VerifyAndClear(this);
   AdvanceLastDeviceChangeTime();
-  EXPECT_CALL(*this, OnDeviceChange()).Times(1);
+  EXPECT_CALL(*this,
+              OnDeviceChange(AudioDeviceListenerWin::kOutputDeviceChange))
+      .Times(1);
   ASSERT_TRUE(SimulateNullDefaultOutputDeviceChange());
 }
 
