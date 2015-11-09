@@ -140,6 +140,21 @@ VariationsSeedDateChangeState GetSeedDateChangeState(
   return SEED_DATE_SAME_DAY;
 }
 
+#if defined(OS_ANDROID)
+enum FirstRunResult {
+  FIRST_RUN_SEED_IMPORT_SUCCESS,
+  FIRST_RUN_SEED_IMPORT_FAIL_NO_CALLBACK,
+  FIRST_RUN_SEED_IMPORT_FAIL_NO_FIRST_RUN_SEED,
+  FIRST_RUN_SEED_IMPORT_FAIL_STORE_FAILED,
+  FIRST_RUN_RESULT_ENUM_SIZE,
+};
+
+void RecordFirstRunResult(FirstRunResult result) {
+  UMA_HISTOGRAM_ENUMERATION("Variations.FirstRunResult", result,
+                            FIRST_RUN_RESULT_ENUM_SIZE);
+}
+#endif  // OS_ANDROID
+
 }  // namespace
 
 VariationsSeedStore::VariationsSeedStore(PrefService* local_state)
@@ -344,17 +359,18 @@ void VariationsSeedStore::ClearPrefs() {
 #if defined(OS_ANDROID)
 void VariationsSeedStore::ImportFirstRunJavaSeed() {
   DVLOG(1) << "Importing first run seed from Java preferences.";
+  if (get_variations_first_run_seed_.is_null()) {
+    RecordFirstRunResult(FIRST_RUN_SEED_IMPORT_FAIL_NO_CALLBACK);
+    return;
+  }
+
   std::string seed_data;
   std::string seed_signature;
   std::string seed_country;
-  if (!get_variations_first_run_seed_.is_null()) {
-    get_variations_first_run_seed_.Run(&seed_data, &seed_signature,
-                                       &seed_country);
-  }
-
+  get_variations_first_run_seed_.Run(&seed_data, &seed_signature,
+                                     &seed_country);
   if (seed_data.empty()) {
-    // TODO(agulenko): add a new UMA histogram for the state of failing
-    // to import seed from Java preferences during Chrome first run.
+    RecordFirstRunResult(FIRST_RUN_SEED_IMPORT_FAIL_NO_FIRST_RUN_SEED);
     return;
   }
 
@@ -364,10 +380,12 @@ void VariationsSeedStore::ImportFirstRunJavaSeed() {
   // TODO(agulenko): Support gzip compressed seed.
   if (!StoreSeedData(seed_data, seed_signature, seed_country, current_time,
                      false, false, nullptr)) {
+    RecordFirstRunResult(FIRST_RUN_SEED_IMPORT_FAIL_STORE_FAILED);
     LOG(WARNING) << "First run variations seed is invalid.";
     return;
   }
   // TODO(agulenko): Clear Java prefs.
+  RecordFirstRunResult(FIRST_RUN_SEED_IMPORT_SUCCESS);
 }
 #endif  // OS_ANDROID
 

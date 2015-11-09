@@ -50137,6 +50137,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Variations.FirstRunResult" enum="VariationsFirstRunResult">
+  <owner>asvitkine@chromium.org</owner>
+  <summary>
+    The result of attempting to import an initial variations seed during Android
+    Chrome first run. Logged from VariationsSeedStore::LoadSeed when seed prefs
+    do not exist.
+  </summary>
+</histogram>
+
 <histogram name="Variations.HeaderConstructionTime" units="microseconds">
   <owner>asvitkine@chromium.org</owner>
   <summary>How long it took to create the X-Client-Data header.</summary>
@@ -75455,6 +75464,13 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="2" label="Invalid Signature"/>
   <int value="3" label="Invalid Signature for Seed"/>
   <int value="4" label="Valid Signature for Seed"/>
+</enum>
+
+<enum name="VariationsFirstRunResult" type="int">
+  <int value="0" label="Seed imported successfully"/>
+  <int value="1" label="Seed import failed - no callback"/>
+  <int value="2" label="Seed import failed - no first run seed"/>
+  <int value="3" label="Seed import failed - failed to store seed"/>
 </enum>
 
 <enum name="VariationsPermanentConsistencyCountryResult" type="int">
