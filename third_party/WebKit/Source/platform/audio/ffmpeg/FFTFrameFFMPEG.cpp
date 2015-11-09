@@ -45,7 +45,8 @@ extern "C" {
 namespace blink {
 
 #if ENABLE(ASSERT)
-const int kMaxFFTPow2Size = 24;
+// Max FFT size for FFMPEG.  WebAudio currently only uses FFTs up to size 15 (2^15 points).
+const int kMaxFFTPow2Size = 16;
 #endif
 
 // Normal constructor: allocates for a given fftSize.
