@@ -21,6 +21,7 @@ AudioRepetitionDetector::AudioRepetitionDetector(
     const RepetitionCallback& repetition_callback)
     : max_look_back_ms_(0),
       min_length_ms_(min_length_ms),
+      num_channels_(0),
       sample_rate_(0),
       buffer_size_frames_(0),
       buffer_end_index_(0),
