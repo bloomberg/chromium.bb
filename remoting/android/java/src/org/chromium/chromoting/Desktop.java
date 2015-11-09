@@ -240,6 +240,10 @@ public class Desktop extends AppCompatActivity implements View.OnSystemUiVisibil
                     case MotionEvent.ACTION_UP:
                         startActionBarAutoHideTimer();
                         break;
+
+                    default:
+                        // Ignore.
+                        break;
                 }
 
                 return false;
