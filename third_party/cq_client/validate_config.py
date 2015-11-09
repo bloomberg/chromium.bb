@@ -6,7 +6,14 @@
 """CQ config validation library."""
 
 import argparse
-from google import protobuf
+# This file was originally copied together with the cq_client library from the
+# internal commit_queue repository and then modified to import protobuf26
+# instead of google.protobuf to prevent conflicts with a different version of
+# google.protobuf that some users of depot_tools have installed. If you need to
+# update this file, please make similar changes again and add this comment back.
+# More details on why we chose to rename the package can be found in the file
+# depot_tools/third_party/protobuf26/README.chromium.
+import protobuf26 as protobuf
 import logging
 import re
 import sys
