@@ -595,13 +595,28 @@ LayoutUnit LayoutBox::constrainLogicalHeightByMinMax(LayoutUnit logicalHeight, L
 
 LayoutUnit LayoutBox::constrainContentBoxLogicalHeightByMinMax(LayoutUnit logicalHeight, LayoutUnit intrinsicContentHeight) const
 {
+    // If the min/max height and logical height are both percentages we take advantage of already knowing the current resolved percentage height
+    // to avoid recursing up through our containing blocks again to determine it.
     const ComputedStyle& styleToUse = styleRef();
     if (!styleToUse.logicalMaxHeight().isMaxSizeNone()) {
-        LayoutUnit maxH = computeContentLogicalHeight(MaxSize, styleToUse.logicalMaxHeight(), intrinsicContentHeight);
-        if (maxH != -1)
-            logicalHeight = std::min(logicalHeight, maxH);
+        if (styleToUse.logicalMaxHeight().hasPercent() && styleToUse.logicalHeight().hasPercent()) {
+            LayoutUnit availableLogicalHeight = logicalHeight / styleToUse.logicalHeight().value() * 100;
+            logicalHeight = std::min(logicalHeight, valueForLength(styleToUse.logicalMaxHeight(), availableLogicalHeight));
+        } else {
+            LayoutUnit maxHeight = computeContentLogicalHeight(MaxSize, styleToUse.logicalMaxHeight(), -1);
+            if (maxHeight != -1)
+                logicalHeight = std::min(logicalHeight, maxHeight);
+        }
     }
-    return std::max(logicalHeight, computeContentLogicalHeight(MinSize, styleToUse.logicalMinHeight(), intrinsicContentHeight));
+
+    if (styleToUse.logicalMinHeight().hasPercent() && styleToUse.logicalHeight().hasPercent()) {
+        LayoutUnit availableLogicalHeight = logicalHeight / styleToUse.logicalHeight().value() * 100;
+        logicalHeight = std::max(logicalHeight, valueForLength(styleToUse.logicalMinHeight(), availableLogicalHeight));
+    } else {
+        logicalHeight = std::max(logicalHeight, computeContentLogicalHeight(MinSize, styleToUse.logicalMinHeight(), intrinsicContentHeight));
+    }
+
+    return logicalHeight;
 }
 
 void LayoutBox::setLocationAndUpdateOverflowControlsIfNeeded(const LayoutPoint& location)
