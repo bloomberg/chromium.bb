@@ -47,10 +47,7 @@ source_set("mojo_runner_lib") {
       "register_local_aliases.cc",
       "register_local_aliases.h",
     ]
-    deps += [
-      "//components/tracing:startup_tracing",
-      "//mojo/shell",
-    ]
+    deps += [ "//components/tracing:startup_tracing" ]
   } else {
     sources += [
       "android/context_init.h",

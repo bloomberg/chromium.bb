@@ -21,26 +21,20 @@
 #include "mojo/runner/context.h"
 #include "mojo/runner/switches.h"
 #include "mojo/runner/tracer.h"
-#include "mojo/shell/switches.h"
 
 namespace mojo {
 namespace runner {
 
 int LauncherProcessMain(int argc, char** argv) {
   mojo::runner::Tracer tracer;
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (!command_line->HasSwitch(switches::kMojoSingleProcess) &&
-      !command_line->HasSwitch("gtest_list_tests"))
-    command_line->AppendSwitch(switches::kEnableMultiprocess);
-  command_line->AppendSwitch("use-new-edk");
-  // http://crbug.com/546644
-  command_line->AppendSwitch(switches::kMojoNoSandbox);
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
 
-  bool trace_startup = command_line->HasSwitch(switches::kTraceStartup);
+  bool trace_startup = command_line.HasSwitch(switches::kTraceStartup);
   if (trace_startup) {
     tracer.Start(
-        command_line->GetSwitchValueASCII(switches::kTraceStartup),
-        command_line->GetSwitchValueASCII(switches::kTraceStartupDuration),
+        command_line.GetSwitchValueASCII(switches::kTraceStartup),
+        command_line.GetSwitchValueASCII(switches::kTraceStartupDuration),
         "mandoline.trace");
   }
 
