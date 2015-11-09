@@ -10,15 +10,17 @@ group("all_cpu_features") {
   ]
 }
 
-source_set("cpu_features_asm") {
-  if (current_cpu == "x64" || current_cpu == "x86") {
-    sources = [
-      "arch/x86/cpu_xgetbv.S",
+if (current_toolchain == nacl_asm_toolchain) {
+  source_set("cpu_features_asm") {
+    if (current_cpu == "x64" || current_cpu == "x86") {
+      sources = [
+        "arch/x86/cpu_xgetbv.S",
+      ]
+    }
+    deps = [
+      "//build/config/nacl:nacl_base",
     ]
   }
-  deps = [
-    "//build/config/nacl:nacl_base",
-  ]
 }
 
 source_set("cpu_features") {

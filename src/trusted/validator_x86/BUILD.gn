@@ -5,13 +5,15 @@
 import("//native_client/src/trusted/asm.gni")
 
 if (current_cpu == "x86" || current_cpu == "x64") {
-  source_set("nccopy_asm") {
-    sources = [
-      "nccopycode_stores.S",
-    ]
-    deps = [
-      "//build/config/nacl:nacl_base",
-    ]
+  if (current_toolchain == nacl_asm_toolchain) {
+    source_set("nccopy_asm") {
+      sources = [
+        "nccopycode_stores.S",
+      ]
+      deps = [
+        "//build/config/nacl:nacl_base",
+      ]
+    }
   }
 
   source_set("nccopy") {

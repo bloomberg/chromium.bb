@@ -44,45 +44,47 @@ source_set("nacl_error_code") {
   ]
 }
 
-source_set("sel_asm") {
-  if (current_cpu == "x86") {
-    sources = [
-      "arch/x86_32/nacl_switch_32.S",
-      "arch/x86_32/nacl_switch_all_regs_asm_32.S",
-      "arch/x86_32/nacl_syscall_32.S",
-      "arch/x86_32/springboard.S",
-      "arch/x86_32/tramp_32.S",
-    ]
-  } else if (current_cpu == "x64") {
-    sources = [
-      "arch/x86_64/nacl_switch_64.S",
-      "arch/x86_64/nacl_syscall_64.S",
-      "arch/x86_64/tramp_64.S",
-    ]
-    if (is_win) {
-      sources += [
-        "arch/x86_64/fnstcw.S",
-        "arch/x86_64/fxsaverstor.S",
-        "win/exception_patch/exit_fast.S",
-        "win/exception_patch/intercept.S",
+if (current_toolchain == nacl_asm_toolchain) {
+  source_set("sel_asm") {
+    if (current_cpu == "x86") {
+      sources = [
+        "arch/x86_32/nacl_switch_32.S",
+        "arch/x86_32/nacl_switch_all_regs_asm_32.S",
+        "arch/x86_32/nacl_syscall_32.S",
+        "arch/x86_32/springboard.S",
+        "arch/x86_32/tramp_32.S",
+      ]
+    } else if (current_cpu == "x64") {
+      sources = [
+        "arch/x86_64/nacl_switch_64.S",
+        "arch/x86_64/nacl_syscall_64.S",
+        "arch/x86_64/tramp_64.S",
+      ]
+      if (is_win) {
+        sources += [
+          "arch/x86_64/fnstcw.S",
+          "arch/x86_64/fxsaverstor.S",
+          "win/exception_patch/exit_fast.S",
+          "win/exception_patch/intercept.S",
+        ]
+      }
+    } else if (current_cpu == "arm") {
+      sources = [
+        "arch/arm/nacl_switch.S",
+        "arch/arm/nacl_syscall.S",
+        "arch/arm/tramp_arm.S",
+      ]
+    } else if (current_cpu == "mipsel") {
+      sources = [
+        "arch/mips/nacl_switch.S",
+        "arch/mips/nacl_syscall.S",
+        "arch/mips/tramp_mips.S",
       ]
     }
-  } else if (current_cpu == "arm") {
-    sources = [
-      "arch/arm/nacl_switch.S",
-      "arch/arm/nacl_syscall.S",
-      "arch/arm/tramp_arm.S",
-    ]
-  } else if (current_cpu == "mipsel") {
-    sources = [
-      "arch/mips/nacl_switch.S",
-      "arch/mips/nacl_syscall.S",
-      "arch/mips/tramp_mips.S",
+    deps = [
+      "//build/config/nacl:nacl_base",
     ]
   }
-  deps = [
-    "//build/config/nacl:nacl_base",
-  ]
 }
 
 source_set("sel") {
