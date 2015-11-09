@@ -473,11 +473,22 @@ AutomationInternalCustomBindings::AutomationInternalCustomBindings(
       });
 }
 
-AutomationInternalCustomBindings::~AutomationInternalCustomBindings() {
+AutomationInternalCustomBindings::~AutomationInternalCustomBindings() {}
+
+void AutomationInternalCustomBindings::Invalidate() {
+  ObjectBackedNativeHandler::Invalidate();
+
   if (message_filter_)
     message_filter_->Detach();
-  STLDeleteContainerPairSecondPointers(tree_id_to_tree_cache_map_.begin(),
-                                       tree_id_to_tree_cache_map_.end());
+
+  // Delete the TreeCaches quickly by first clearing their delegates so
+  // we don't get a callback for every node being deleted.
+  for (auto iter : tree_id_to_tree_cache_map_) {
+    TreeCache* cache = iter.second;
+    cache->tree.SetDelegate(nullptr);
+    delete cache;
+  }
+  tree_id_to_tree_cache_map_.clear();
 }
 
 void AutomationInternalCustomBindings::OnMessageReceived(
