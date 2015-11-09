@@ -868,6 +868,35 @@ class GPU_EXPORT TextureManager : public base::trace_event::MemoryDumpProvider {
     const char* function_name,
     const DoTexImageArguments& args);
 
+  struct DoTexSubImageArguments {
+    GLenum target;
+    GLint level;
+    GLint xoffset;
+    GLint yoffset;
+    GLsizei width;
+    GLsizei height;
+    GLenum format;
+    GLenum type;
+    const void* pixels;
+    uint32 pixels_size;
+    // TODO(kkinnunen): currently this is used only for TexSubImage2D.
+  };
+
+  bool ValidateTexSubImage(
+      ContextState* state,
+      const char* function_name,
+      const DoTexSubImageArguments& args,
+      // Pointer to TextureRef filled in if validation successful.
+      // Presumes the pointer is valid.
+      TextureRef** texture_ref);
+
+  void ValidateAndDoTexSubImage(GLES2Decoder* decoder,
+                                DecoderTextureState* texture_state,
+                                ContextState* state,
+                                DecoderFramebufferState* framebuffer_state,
+                                const char* function_name,
+                                const DoTexSubImageArguments& args);
+
   // TODO(kloveless): Make GetTexture* private once this is no longer called
   // from gles2_cmd_decoder.
   TextureRef* GetTextureInfoForTarget(ContextState* state, GLenum target);
@@ -883,6 +912,14 @@ class GPU_EXPORT TextureManager : public base::trace_event::MemoryDumpProvider {
   // base::trace_event::MemoryDumpProvider implementation.
   bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
                     base::trace_event::ProcessMemoryDump* pmd) override;
+
+  // Returns the union of |rect1| and |rect2| if one of the rectangles is empty,
+  // contains the other rectangle or shares an edge with the other rectangle.
+  // Part of the public interface because texture pixel data rectangle
+  // operations are also implemented in decoder at the moment.
+  static bool CombineAdjacentRects(const gfx::Rect& rect1,
+                                   const gfx::Rect& rect2,
+                                   gfx::Rect* result);
 
  private:
   friend class Texture;

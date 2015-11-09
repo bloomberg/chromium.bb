@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "8.30",
+  "version": "8.31",
   "entries": [
     {
       "id": 1,
@@ -1565,6 +1565,22 @@ LONG_STRING_CONST(
       "gl_renderer": "Adreno.*",
       "features": [
         "max_copy_texture_chromium_size_1048576"
+      ]
+    },
+    {
+      "id": 134,
+      "description": "glReadPixels fails on FBOs with SRGB_ALPHA textures",
+      "cr_bugs": [550292],
+      "os": {
+        "type": "android",
+        "version": {
+          "op": "<",
+          "value": "5.0"
+        }
+      },
+      "gl_vendor": "Qualcomm.*",
+      "features": [
+        "disable_ext_srgb"
       ]
     }
   ]
