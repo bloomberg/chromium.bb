@@ -10,7 +10,9 @@
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/extensions/api/settings_private/prefs_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/zoom/chrome_zoom_level_prefs.h"
 #include "chrome/common/pref_names.h"
+#include "content/public/common/page_zoom.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "url/gurl.h"
@@ -52,6 +54,20 @@ scoped_ptr<base::Value> SettingsPrivateDelegate::GetAllPrefs() {
 PrefsUtil::SetPrefResult SettingsPrivateDelegate::SetPref(
     const std::string& pref_name, const base::Value* value) {
   return prefs_util_->SetPref(pref_name, value);
+}
+
+scoped_ptr<base::Value> SettingsPrivateDelegate::GetDefaultZoomPercent() {
+  double zoom = content::ZoomLevelToZoomFactor(
+      profile_->GetZoomLevelPrefs()->GetDefaultZoomLevelPref()) * 100;
+  scoped_ptr<base::Value> value(new base::FundamentalValue(zoom));
+  return value.Pass();
+}
+
+PrefsUtil::SetPrefResult SettingsPrivateDelegate::SetDefaultZoomPercent(
+    int percent) {
+  double zoom_factor = content::ZoomFactorToZoomLevel(percent * 0.01);
+  profile_->GetZoomLevelPrefs()->SetDefaultZoomLevelPref(zoom_factor);
+  return PrefsUtil::SetPrefResult::SUCCESS;
 }
 
 }  // namespace extensions

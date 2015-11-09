@@ -98,11 +98,10 @@ SettingsPrivateGetDefaultZoomPercentFunction::
 
 ExtensionFunction::ResponseAction
     SettingsPrivateGetDefaultZoomPercentFunction::Run() {
-  double zoom = content::ZoomLevelToZoomFactor(
-      Profile::FromBrowserContext(browser_context())->GetZoomLevelPrefs()->
-      GetDefaultZoomLevelPref()) * 100;
-  scoped_ptr<base::Value> value(new base::FundamentalValue(zoom));
-  return RespondNow(OneArgument(value.Pass()));
+  SettingsPrivateDelegate* delegate =
+      SettingsPrivateDelegateFactory::GetForBrowserContext(browser_context());
+
+  return RespondNow(OneArgument(delegate->GetDefaultZoomPercent().release()));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -119,10 +118,10 @@ ExtensionFunction::ResponseAction
       api::settings_private::SetDefaultZoomPercent::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(parameters.get());
 
-  double zoom_factor = content::ZoomFactorToZoomLevel(
-      parameters->percent * 0.01);
-  Profile::FromBrowserContext(browser_context())->GetZoomLevelPrefs()->
-      SetDefaultZoomLevelPref(zoom_factor);
+  SettingsPrivateDelegate* delegate =
+      SettingsPrivateDelegateFactory::GetForBrowserContext(browser_context());
+
+  delegate->SetDefaultZoomPercent(parameters->percent);
   return RespondNow(OneArgument(new base::FundamentalValue(true)));
 }
 

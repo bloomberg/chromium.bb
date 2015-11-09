@@ -44,6 +44,12 @@ class SettingsPrivateDelegate : public KeyedService {
   // Gets the values of all whitelisted prefs.
   virtual scoped_ptr<base::Value> GetAllPrefs();
 
+  // Gets the value.
+  virtual scoped_ptr<base::Value> GetDefaultZoomPercent();
+
+  // Sets the pref.
+  virtual PrefsUtil::SetPrefResult SetDefaultZoomPercent(int percent);
+
  protected:
   Profile* profile_;  // weak; not owned by us
   scoped_ptr<PrefsUtil> prefs_util_;
