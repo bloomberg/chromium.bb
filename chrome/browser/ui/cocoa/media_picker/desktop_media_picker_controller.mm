@@ -8,6 +8,7 @@
 #include "base/command_line.h"
 #import "base/mac/bundle_locations.h"
 #include "base/strings/sys_string_conversions.h"
+#import "chrome/browser/ui/cocoa/key_equivalent_constants.h"
 #import "chrome/browser/ui/cocoa/media_picker/desktop_media_picker_item.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/grit/generated_resources.h"
@@ -152,6 +153,7 @@ const int kExcessButtonPadding = 6;
   [shareButton_ setFrameOrigin:origin];
   [shareButton_ setAutoresizingMask:NSViewMinXMargin | NSViewMinYMargin];
   [shareButton_ setTarget:self];
+  [shareButton_ setKeyEquivalent:kKeyEquivalentReturn];
   [shareButton_ setAction:@selector(sharePressed:)];
   [content addSubview:shareButton_];
 
@@ -163,6 +165,7 @@ const int kExcessButtonPadding = 6;
   [cancelButton_ setFrameOrigin:origin];
   [cancelButton_ setAutoresizingMask:NSViewMinXMargin | NSViewMinYMargin];
   [cancelButton_ setTarget:self];
+  [cancelButton_ setKeyEquivalent:kKeyEquivalentEscape];
   [cancelButton_ setAction:@selector(cancelPressed:)];
   [content addSubview:cancelButton_];
   origin.y += kFramePadding +
