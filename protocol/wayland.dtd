@@ -14,6 +14,7 @@
 <!ELEMENT enum (description?,entry*)>
   <!ATTLIST enum name CDATA #REQUIRED>
   <!ATTLIST enum since CDATA #IMPLIED>
+  <!ATTLIST enum bitfield CDATA #IMPLIED>
 <!ELEMENT entry (description?)>
   <!ATTLIST entry name CDATA #REQUIRED>
   <!ATTLIST entry value CDATA #REQUIRED>
@@ -25,5 +26,6 @@
   <!ATTLIST arg summary CDATA #IMPLIED>
   <!ATTLIST arg interface CDATA #IMPLIED>
   <!ATTLIST arg allow-null CDATA #IMPLIED>
+  <!ATTLIST arg enum CDATA #IMPLIED>
 <!ELEMENT description (#PCDATA)>
   <!ATTLIST description summary CDATA #REQUIRED>
