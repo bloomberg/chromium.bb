@@ -29,9 +29,8 @@ void PopulatePairingEvent(const device::BluetoothDevice* device,
 }  // namespace
 
 BluetoothApiPairingDelegate::BluetoothApiPairingDelegate(
-    const std::string& extension_id,
     content::BrowserContext* browser_context)
-    : extension_id_(extension_id), browser_context_(browser_context) {}
+    : browser_context_(browser_context) {}
 
 BluetoothApiPairingDelegate::~BluetoothApiPairingDelegate() {}
 
@@ -105,8 +104,7 @@ void BluetoothApiPairingDelegate::DispatchPairingEvent(
   scoped_ptr<Event> event(new Event(events::BLUETOOTH_PRIVATE_ON_PAIRING,
                                     bt_private::OnPairing::kEventName,
                                     args.Pass()));
-  EventRouter::Get(browser_context_)
-      ->DispatchEventToExtension(extension_id_, event.Pass());
+  EventRouter::Get(browser_context_)->BroadcastEvent(event.Pass());
 }
 
 }  // namespace extensions

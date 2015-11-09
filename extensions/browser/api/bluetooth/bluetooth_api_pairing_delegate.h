@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/macros.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "extensions/common/api/bluetooth_private.h"
 
@@ -21,8 +22,8 @@ namespace extensions {
 class BluetoothApiPairingDelegate
     : public device::BluetoothDevice::PairingDelegate {
  public:
-  BluetoothApiPairingDelegate(const std::string& extension_id,
-                              content::BrowserContext* browser_context);
+  explicit BluetoothApiPairingDelegate(
+      content::BrowserContext* browser_context);
   ~BluetoothApiPairingDelegate() override;
 
   // device::PairingDelegate overrides:
@@ -40,8 +41,9 @@ class BluetoothApiPairingDelegate
   void DispatchPairingEvent(
       const api::bluetooth_private::PairingEvent& pairing_event);
 
-  std::string extension_id_;
   content::BrowserContext* browser_context_;
+
+  DISALLOW_COPY_AND_ASSIGN(BluetoothApiPairingDelegate);
 };
 
 }  // namespace extensions

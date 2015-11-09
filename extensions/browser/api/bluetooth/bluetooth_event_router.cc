@@ -232,7 +232,7 @@ void BluetoothEventRouter::AddPairingDelegateImpl(
   }
   if (!ContainsKey(pairing_delegate_map_, extension_id)) {
     BluetoothApiPairingDelegate* delegate =
-        new BluetoothApiPairingDelegate(extension_id, browser_context_);
+        new BluetoothApiPairingDelegate(browser_context_);
     DCHECK(adapter_.get());
     adapter_->AddPairingDelegate(
         delegate, device::BluetoothAdapter::PAIRING_DELEGATE_PRIORITY_HIGH);

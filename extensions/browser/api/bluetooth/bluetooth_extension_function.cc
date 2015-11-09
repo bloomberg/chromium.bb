@@ -6,6 +6,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
@@ -64,7 +65,7 @@ bool BluetoothExtensionFunction::RunAsync() {
 std::string BluetoothExtensionFunction::GetExtensionId() {
   if (extension())
     return extension()->id();
-  return GetSenderWebContents()->GetURL().host();
+  return render_frame_host()->GetLastCommittedURL().host();
 }
 
 void BluetoothExtensionFunction::RunOnAdapterReady(
