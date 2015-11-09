@@ -403,14 +403,12 @@
                            TRACE_EVENT_FLAG_COPY, arg1_name, arg1_val,   \
                            arg2_name, arg2_val)
 
-#define TRACE_EVENT_MARK(category_group, name)                           \
-  INTERNAL_TRACE_EVENT_ADD(TRACE_EVENT_PHASE_MARK, category_group, name, \
-                           TRACE_EVENT_FLAG_NONE)
-
-#define TRACE_EVENT_MARK_WITH_TIMESTAMP(category_group, name, timestamp)   \
+#define TRACE_EVENT_MARK_WITH_TIMESTAMP1(category_group, name, timestamp,  \
+                                         arg1_name, arg1_val)              \
   INTERNAL_TRACE_EVENT_ADD_WITH_TIMESTAMP(TRACE_EVENT_PHASE_MARK,          \
                                           category_group, name, timestamp, \
-                                          TRACE_EVENT_FLAG_NONE)
+                                          TRACE_EVENT_FLAG_NONE,           \
+                                          arg1_name, arg1_val)
 
 #define TRACE_EVENT_COPY_MARK(category_group, name)                      \
   INTERNAL_TRACE_EVENT_ADD(TRACE_EVENT_PHASE_MARK, category_group, name, \

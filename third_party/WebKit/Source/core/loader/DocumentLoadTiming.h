@@ -34,6 +34,7 @@ namespace blink {
 
 class DocumentLoader;
 class KURL;
+class LocalFrame;
 
 class CORE_EXPORT DocumentLoadTiming final {
     DISALLOW_NEW();
@@ -78,6 +79,7 @@ private:
     void setRedirectStart(double);
     void markRedirectEnd();
     void notifyDocumentTimingChanged();
+    LocalFrame* frame() const;
 
     double m_referenceMonotonicTime;
     double m_referenceWallTime;

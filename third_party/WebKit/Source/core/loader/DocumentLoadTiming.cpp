@@ -58,6 +58,11 @@ DEFINE_TRACE(DocumentLoadTiming)
     visitor->trace(m_documentLoader);
 }
 
+LocalFrame* DocumentLoadTiming::frame() const
+{
+    return m_documentLoader ? m_documentLoader->frame() : nullptr;
+}
+
 void DocumentLoadTiming::notifyDocumentTimingChanged()
 {
     if (m_documentLoader)
@@ -93,18 +98,18 @@ void DocumentLoadTiming::markNavigationStart()
         ASSERT(m_referenceMonotonicTime && m_referenceWallTime);
         return;
     }
-    TRACE_EVENT_MARK("blink.user_timing", "navigationStart");
     ASSERT(!m_navigationStart && !m_referenceMonotonicTime && !m_referenceWallTime);
 
     m_navigationStart = m_referenceMonotonicTime = monotonicallyIncreasingTime();
     m_referenceWallTime = currentTime();
+    TRACE_EVENT_MARK_WITH_TIMESTAMP1("blink.user_timing", "navigationStart", m_navigationStart, "frame", frame());
     notifyDocumentTimingChanged();
 }
 
 void DocumentLoadTiming::setNavigationStart(double navigationStart)
 {
-    TRACE_EVENT_MARK_WITH_TIMESTAMP("blink.user_timing", "navigationStart", navigationStart);
     m_navigationStart = navigationStart;
+    TRACE_EVENT_MARK_WITH_TIMESTAMP1("blink.user_timing", "navigationStart", m_navigationStart, "frame", frame());
 
     // |m_referenceMonotonicTime| and |m_referenceWallTime| represent
     // navigationStart. When the embedder sets navigationStart (because the
@@ -134,57 +139,57 @@ void DocumentLoadTiming::addRedirect(const KURL& redirectingUrl, const KURL& red
 
 void DocumentLoadTiming::markUnloadEventStart()
 {
-    TRACE_EVENT_MARK("blink.user_timing", "unloadEventStart");
     m_unloadEventStart = monotonicallyIncreasingTime();
+    TRACE_EVENT_MARK_WITH_TIMESTAMP1("blink.user_timing", "unloadEventStart", m_unloadEventStart, "frame", frame());
     notifyDocumentTimingChanged();
 }
 
 void DocumentLoadTiming::markUnloadEventEnd()
 {
-    TRACE_EVENT_MARK("blink.user_timing", "unloadEventEnd");
     m_unloadEventEnd = monotonicallyIncreasingTime();
+    TRACE_EVENT_MARK_WITH_TIMESTAMP1("blink.user_timing", "unloadEventEnd", m_unloadEventEnd, "frame", frame());
     notifyDocumentTimingChanged();
 }
 
 void DocumentLoadTiming::markFetchStart()
 {
-    TRACE_EVENT_MARK("blink.user_timing", "fetchStart");
     m_fetchStart = monotonicallyIncreasingTime();
+    TRACE_EVENT_MARK_WITH_TIMESTAMP1("blink.user_timing", "fetchStart", m_fetchStart, "frame", frame());
     notifyDocumentTimingChanged();
 }
 
 void DocumentLoadTiming::setResponseEnd(double responseEnd)
 {
-    TRACE_EVENT_MARK_WITH_TIMESTAMP("blink.user_timing", "responseEnd", responseEnd);
     m_responseEnd = responseEnd;
+    TRACE_EVENT_MARK_WITH_TIMESTAMP1("blink.user_timing", "responseEnd", m_responseEnd, "frame", frame());
     notifyDocumentTimingChanged();
 }
 
 void DocumentLoadTiming::markLoadEventStart()
 {
-    TRACE_EVENT_MARK("blink.user_timing", "loadEventStart");
     m_loadEventStart = monotonicallyIncreasingTime();
+    TRACE_EVENT_MARK_WITH_TIMESTAMP1("blink.user_timing", "loadEventStart", m_loadEventStart, "frame", frame());
     notifyDocumentTimingChanged();
 }
 
 void DocumentLoadTiming::markLoadEventEnd()
 {
-    TRACE_EVENT_MARK("blink.user_timing", "loadEventEnd");
     m_loadEventEnd = monotonicallyIncreasingTime();
+    TRACE_EVENT_MARK_WITH_TIMESTAMP1("blink.user_timing", "loadEventEnd", m_loadEventEnd, "frame", frame());
     notifyDocumentTimingChanged();
 }
 
 void DocumentLoadTiming::setRedirectStart(double redirectStart)
 {
-    TRACE_EVENT_MARK_WITH_TIMESTAMP("blink.user_timing", "redirectStart", redirectStart);
-    m_redirectStart = m_fetchStart;
+    m_redirectStart = redirectStart;
+    TRACE_EVENT_MARK_WITH_TIMESTAMP1("blink.user_timing", "redirectStart", m_redirectStart, "frame", frame());
     notifyDocumentTimingChanged();
 }
 
 void DocumentLoadTiming::markRedirectEnd()
 {
-    TRACE_EVENT_MARK("blink.user_timing", "redirectEnd");
     m_redirectEnd = monotonicallyIncreasingTime();
+    TRACE_EVENT_MARK_WITH_TIMESTAMP1("blink.user_timing", "redirectEnd", m_redirectEnd, "frame", frame());
     notifyDocumentTimingChanged();
 }
 

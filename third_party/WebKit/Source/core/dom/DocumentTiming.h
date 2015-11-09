@@ -31,6 +31,7 @@
 namespace blink {
 
 class Document;
+class LocalFrame;
 
 class DocumentTiming final {
     DISALLOW_NEW();
@@ -61,6 +62,7 @@ public:
     DECLARE_TRACE();
 
 private:
+    LocalFrame* frame() const;
     void notifyDocumentTimingChanged();
 
     double m_domLoading = 0.0;
