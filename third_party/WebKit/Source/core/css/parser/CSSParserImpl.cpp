@@ -58,7 +58,7 @@ static inline void filterProperties(bool important, const WillBeHeapVector<CSSPr
         const CSSProperty& property = input[i];
         if (property.isImportant() != important)
             continue;
-        const unsigned propertyIDIndex = property.id();
+        const unsigned propertyIDIndex = property.id() - firstCSSProperty;
         // All custom properties use the same CSSPropertyID so we can't remove repeated definitions
         if (property.id() != CSSPropertyVariable) {
             if (seenProperties.get(propertyIDIndex))
