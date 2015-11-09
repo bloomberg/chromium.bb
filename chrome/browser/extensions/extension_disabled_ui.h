@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_DISABLED_UI_H_
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_DISABLED_UI_H_
 
-class Browser;
 class ExtensionService;
 namespace content {
 class WebContents;

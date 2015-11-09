@@ -13,6 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
+#include "base/scoped_observer.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -35,6 +36,8 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
+#include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extension_registry_observer.h"
 #include "extensions/browser/extension_util.h"
 #include "extensions/browser/image_loader.h"
 #include "extensions/browser/notification_types.h"
@@ -146,7 +149,8 @@ void ExtensionDisabledDialogDelegate::InstallUIAbort(bool user_initiated) {
 class ExtensionDisabledGlobalError
     : public GlobalErrorWithStandardBubble,
       public content::NotificationObserver,
-      public extensions::ExtensionUninstallDialog::Delegate {
+      public extensions::ExtensionUninstallDialog::Delegate,
+      public extensions::ExtensionRegistryObserver {
  public:
   ExtensionDisabledGlobalError(ExtensionService* service,
                                const Extension* extension,
@@ -154,7 +158,7 @@ class ExtensionDisabledGlobalError
                                const gfx::Image& icon);
   ~ExtensionDisabledGlobalError() override;
 
-  // GlobalError implementation.
+  // GlobalError:
   Severity GetSeverity() override;
   bool HasMenuItem() override;
   int MenuItemCommandID() override;
@@ -170,16 +174,23 @@ class ExtensionDisabledGlobalError
   void BubbleViewCancelButtonPressed(Browser* browser) override;
   bool ShouldCloseOnDeactivate() const override;
 
-  // ExtensionUninstallDialog::Delegate implementation.
+  // ExtensionUninstallDialog::Delegate:
   void OnExtensionUninstallDialogClosed(bool did_start_uninstall,
                                         const base::string16& error) override;
 
-  // content::NotificationObserver implementation.
+ private:
+  // content::NotificationObserver:
   void Observe(int type,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
 
- private:
+  // ExtensionRegistryObserver:
+  void OnExtensionLoaded(content::BrowserContext* browser_context,
+                         const Extension* extension) override;
+  void OnShutdown(extensions::ExtensionRegistry* registry) override;
+
+  void RemoveGlobalError();
+
   ExtensionService* service_;
   const Extension* extension_;
   bool is_remote_install_;
@@ -200,6 +211,9 @@ class ExtensionDisabledGlobalError
   int menu_command_id_;
 
   content::NotificationRegistrar registrar_;
+
+  ScopedObserver<extensions::ExtensionRegistry,
+                 extensions::ExtensionRegistryObserver> registry_observer_;
 };
 
 // TODO(yoz): create error at startup for disabled extensions.
@@ -213,7 +227,8 @@ ExtensionDisabledGlobalError::ExtensionDisabledGlobalError(
       is_remote_install_(is_remote_install),
       icon_(icon),
       user_response_(IGNORED),
-      menu_command_id_(GetMenuCommandID()) {
+      menu_command_id_(GetMenuCommandID()),
+      registry_observer_(this) {
   if (icon_.IsEmpty()) {
     icon_ = gfx::Image(
         gfx::ImageSkiaOperations::CreateResizedImage(
@@ -223,9 +238,8 @@ ExtensionDisabledGlobalError::ExtensionDisabledGlobalError(
             skia::ImageOperations::RESIZE_BEST,
             gfx::Size(kIconSize, kIconSize)));
   }
-  registrar_.Add(this,
-                 extensions::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
-                 content::Source<Profile>(service->profile()));
+  registry_observer_.Add(
+      extensions::ExtensionRegistry::Get(service->profile()));
   registrar_.Add(this,
                  extensions::NOTIFICATION_EXTENSION_REMOVED,
                  content::Source<Profile>(service->profile()));
@@ -414,22 +428,34 @@ void ExtensionDisabledGlobalError::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   // The error is invalidated if the extension has been loaded or removed.
-  DCHECK(type == extensions::NOTIFICATION_EXTENSION_LOADED_DEPRECATED ||
-         type == extensions::NOTIFICATION_EXTENSION_REMOVED);
+  DCHECK_EQ(extensions::NOTIFICATION_EXTENSION_REMOVED, type);
   const Extension* extension = content::Details<const Extension>(details).ptr();
   if (extension != extension_)
     return;
-  GlobalErrorServiceFactory::GetForProfile(service_->profile())->
-      RemoveGlobalError(this);
+  user_response_ = UNINSTALL;
+  RemoveGlobalError();
+}
 
-  // Make sure we don't call RemoveGlobalError again.
+void ExtensionDisabledGlobalError::OnExtensionLoaded(
+    content::BrowserContext* browser_context,
+    const Extension* extension) {
+  if (extension != extension_)
+    return;
+  user_response_ = REENABLE;
+  RemoveGlobalError();
+}
+
+void ExtensionDisabledGlobalError::OnShutdown(
+    extensions::ExtensionRegistry* registry) {
+  DCHECK_EQ(extensions::ExtensionRegistry::Get(service_->profile()), registry);
+  registry_observer_.RemoveAll();
+}
+
+void ExtensionDisabledGlobalError::RemoveGlobalError() {
+  GlobalErrorServiceFactory::GetForProfile(service_->profile())
+      ->RemoveGlobalError(this);
   registrar_.RemoveAll();
-
-  if (type == extensions::NOTIFICATION_EXTENSION_LOADED_DEPRECATED)
-    user_response_ = REENABLE;
-  else if (type == extensions::NOTIFICATION_EXTENSION_REMOVED)
-    user_response_ = UNINSTALL;
-
+  registry_observer_.RemoveAll();
   // Delete this object after any running tasks, so that the extension dialog
   // still has it as a delegate to finish the current tasks.
   base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
