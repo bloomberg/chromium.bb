@@ -204,6 +204,19 @@ class SQL_EXPORT Connection : public base::trace_event::MemoryDumpProvider {
     EVENT_COMMIT,
     EVENT_ROLLBACK,
 
+    // Track success and failure in GetAppropriateMmapSize().
+    // GetAppropriateMmapSize() should record at most one of these per run.  The
+    // case of mapping everything is not recorded.
+    EVENT_MMAP_META_MISSING,         // No meta table present.
+    EVENT_MMAP_META_FAILURE_READ,    // Failed reading meta table.
+    EVENT_MMAP_META_FAILURE_UPDATE,  // Failed updating meta table.
+    EVENT_MMAP_VFS_FAILURE,          // Failed to access VFS.
+    EVENT_MMAP_FAILED,               // Failure from past run.
+    EVENT_MMAP_FAILED_NEW,           // Read error in this run.
+    EVENT_MMAP_SUCCESS_NEW,          // Read to EOF in this run.
+    EVENT_MMAP_SUCCESS_PARTIAL,      // Read but did not reach EOF.
+    EVENT_MMAP_SUCCESS_NO_PROGRESS,  // Read quota exhausted.
+
     // Leave this at the end.
     // TODO(shess): |EVENT_MAX| causes compile fail on Windows.
     EVENT_MAX_VALUE
@@ -688,6 +701,16 @@ class SQL_EXPORT Connection : public base::trace_event::MemoryDumpProvider {
 
   // Helper to collect diagnostic info for errors.
   std::string CollectErrorInfo(int error, Statement* stmt) const;
+
+  // Calculates a value appropriate to pass to "PRAGMA mmap_size = ".  So errors
+  // can make it unsafe to map a file, so the file is read using regular I/O,
+  // with any errors causing 0 (don't map anything) to be returned.  If the
+  // entire file is read without error, a large value is returned which will
+  // allow the entire file to be mapped in most cases.
+  //
+  // Results are recorded in the database's meta table for future reference, so
+  // the file should only be read through once.
+  size_t GetAppropriateMmapSize();
 
   // The actual sqlite database. Will be NULL before Init has been called or if
   // Init resulted in an error.
