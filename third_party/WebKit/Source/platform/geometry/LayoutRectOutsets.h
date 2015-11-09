@@ -93,6 +93,8 @@ public:
     LayoutUnit after(WritingMode) const;
     LayoutUnit start(WritingMode, TextDirection) const;
     LayoutUnit end(WritingMode, TextDirection) const;
+    LayoutUnit over(WritingMode) const;
+    LayoutUnit under(WritingMode) const;
 
     void setBefore(WritingMode, LayoutUnit);
     void setAfter(WritingMode, LayoutUnit);

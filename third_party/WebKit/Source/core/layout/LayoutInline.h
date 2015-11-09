@@ -134,6 +134,8 @@ public:
     LayoutUnit marginAfter(const ComputedStyle* otherStyle = nullptr) const final;
     LayoutUnit marginStart(const ComputedStyle* otherStyle = nullptr) const final;
     LayoutUnit marginEnd(const ComputedStyle* otherStyle = nullptr) const final;
+    LayoutUnit marginOver() const final;
+    LayoutUnit marginUnder() const final;
 
     void absoluteRects(Vector<IntRect>&, const LayoutPoint& accumulatedOffset) const final;
     void absoluteQuads(Vector<FloatQuad>&, bool* wasFixed) const override;

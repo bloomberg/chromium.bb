@@ -531,6 +531,8 @@ public:
     int borderAfterWidth() const;
     int borderStartWidth() const;
     int borderEndWidth() const;
+    int borderOverWidth() const;
+    int borderUnderWidth() const;
 
     int outlineWidth() const
     {
@@ -698,6 +700,8 @@ public:
     const Length& marginAfter() const { return surround->margin.after(writingMode()); }
     const Length& marginStart() const { return surround->margin.start(writingMode(), direction()); }
     const Length& marginEnd() const { return surround->margin.end(writingMode(), direction()); }
+    const Length& marginOver() const { return surround->margin.over(writingMode()); }
+    const Length& marginUnder() const { return surround->margin.under(writingMode()); }
     const Length& marginStartUsing(const ComputedStyle* otherStyle) const { return surround->margin.start(otherStyle->writingMode(), otherStyle->direction()); }
     const Length& marginEndUsing(const ComputedStyle* otherStyle) const { return surround->margin.end(otherStyle->writingMode(), otherStyle->direction()); }
     const Length& marginBeforeUsing(const ComputedStyle* otherStyle) const { return surround->margin.before(otherStyle->writingMode()); }
@@ -712,6 +716,8 @@ public:
     const Length& paddingAfter() const { return surround->padding.after(writingMode()); }
     const Length& paddingStart() const { return surround->padding.start(writingMode(), direction()); }
     const Length& paddingEnd() const { return surround->padding.end(writingMode(), direction()); }
+    const Length& paddingOver() const { return surround->padding.over(writingMode()); }
+    const Length& paddingUnder() const { return surround->padding.under(writingMode()); }
 
     ECursor cursor() const { return static_cast<ECursor>(inherited_flags._cursor_style); }
     CursorList* cursors() const { return rareInheritedData->cursorData.get(); }

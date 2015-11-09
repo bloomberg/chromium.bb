@@ -626,14 +626,15 @@ void InlineFlowBox::placeBoxesInBlockDirection(LayoutUnit top, LayoutUnit maxHei
             newLogicalTop += curr->baselinePosition(baselineType) - fontMetrics.ascent(baselineType);
             if (curr->isInlineFlowBox()) {
                 LineLayoutBoxModel boxObject = LineLayoutBoxModel(curr->lineLayoutItem());
-                newLogicalTop -= boxObject.style(isFirstLineStyle())->isHorizontalWritingMode() ? boxObject.borderTop() + boxObject.paddingTop() :
-                    boxObject.borderRight() + boxObject.paddingRight();
+                newLogicalTop -= boxObject.borderAndPaddingOver();
                 borderPaddingHeight = boxObject.borderAndPaddingLogicalHeight();
             }
             newLogicalTopIncludingMargins = newLogicalTop;
         } else if (!curr->layoutObject().isBR()) {
             LineLayoutBox box = LineLayoutBox(curr->lineLayoutItem());
             newLogicalTopIncludingMargins = newLogicalTop;
+            // TODO(kojii): isHorizontal() does not match to m_layoutObject.isHorizontalWritingMode(). crbug.com/552954
+            // ASSERT(curr->isHorizontal() == curr->layoutObject().style()->isHorizontalWritingMode());
             LayoutUnit overSideMargin = curr->isHorizontal() ? box.marginTop() : box.marginRight();
             LayoutUnit underSideMargin = curr->isHorizontal() ? box.marginBottom() : box.marginLeft();
             newLogicalTop += overSideMargin;

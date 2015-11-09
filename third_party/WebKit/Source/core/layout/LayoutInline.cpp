@@ -748,6 +748,16 @@ LayoutUnit LayoutInline::marginAfter(const ComputedStyle* otherStyle) const
     return computeMargin(this, style()->marginAfterUsing(otherStyle ? otherStyle : style()));
 }
 
+LayoutUnit LayoutInline::marginOver() const
+{
+    return computeMargin(this, style()->marginOver());
+}
+
+LayoutUnit LayoutInline::marginUnder() const
+{
+    return computeMargin(this, style()->marginUnder());
+}
+
 bool LayoutInline::nodeAtPoint(HitTestResult& result,
     const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction hitTestAction)
 {

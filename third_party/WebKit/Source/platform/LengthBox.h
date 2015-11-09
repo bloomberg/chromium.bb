@@ -79,6 +79,8 @@ public:
     const Length& after(WritingMode) const;
     const Length& start(WritingMode, TextDirection) const;
     const Length& end(WritingMode, TextDirection) const;
+    const Length& over(WritingMode) const;
+    const Length& under(WritingMode) const;
 
     bool operator==(const LengthBox& o) const
     {

@@ -78,6 +78,16 @@ public:
         return toBoxModel()->marginAfter(otherStyle);
     }
 
+    LayoutUnit marginOver() const
+    {
+        return toBoxModel()->marginOver();
+    }
+
+    LayoutUnit marginUnder() const
+    {
+        return toBoxModel()->marginUnder();
+    }
+
     LayoutUnit paddingTop() const
     {
         return toBoxModel()->paddingTop();
@@ -146,6 +156,16 @@ public:
     bool hasInlineDirectionBordersOrPadding() const
     {
         return toBoxModel()->hasInlineDirectionBordersOrPadding();
+    }
+
+    LayoutUnit borderAndPaddingOver() const
+    {
+        return toBoxModel()->borderAndPaddingOver();
+    }
+
+    LayoutUnit borderAndPaddingUnder() const
+    {
+        return toBoxModel()->borderAndPaddingUnder();
     }
 
     LayoutUnit borderAndPaddingLogicalHeight() const

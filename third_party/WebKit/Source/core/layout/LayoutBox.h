@@ -454,6 +454,8 @@ public:
         const ComputedStyle* styleToUse = overrideStyle ? overrideStyle : style();
         return m_marginBoxOutsets.end(styleToUse->writingMode(), styleToUse->direction());
     }
+    LayoutUnit marginOver() const final { return m_marginBoxOutsets.over(style()->writingMode()); }
+    LayoutUnit marginUnder() const final { return m_marginBoxOutsets.under(style()->writingMode()); }
     void setMarginBefore(LayoutUnit value, const ComputedStyle* overrideStyle = nullptr) { m_marginBoxOutsets.setBefore((overrideStyle ? overrideStyle : style())->writingMode(), value); }
     void setMarginAfter(LayoutUnit value, const ComputedStyle* overrideStyle = nullptr) { m_marginBoxOutsets.setAfter((overrideStyle ? overrideStyle : style())->writingMode(), value); }
     void setMarginStart(LayoutUnit value, const ComputedStyle* overrideStyle = nullptr)

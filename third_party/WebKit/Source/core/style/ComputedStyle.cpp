@@ -1638,6 +1638,16 @@ int ComputedStyle::borderEndWidth() const
     return isLeftToRightDirection() ? borderBottomWidth() : borderTopWidth();
 }
 
+int ComputedStyle::borderOverWidth() const
+{
+    return isHorizontalWritingMode() ? borderTopWidth() : borderRightWidth();
+}
+
+int ComputedStyle::borderUnderWidth() const
+{
+    return isHorizontalWritingMode() ? borderBottomWidth() : borderLeftWidth();
+}
+
 void ComputedStyle::setMarginStart(const Length& margin)
 {
     if (isHorizontalWritingMode()) {

@@ -113,6 +113,16 @@ LayoutUnit LayoutRectOutsets::end(WritingMode writingMode, TextDirection directi
     return isLeftToRightDirection(direction) ? m_bottom : m_top;
 }
 
+LayoutUnit LayoutRectOutsets::over(WritingMode writingMode) const
+{
+    return isHorizontalWritingMode(writingMode) ? m_top : m_right;
+}
+
+LayoutUnit LayoutRectOutsets::under(WritingMode writingMode) const
+{
+    return isHorizontalWritingMode(writingMode) ? m_bottom : m_left;
+}
+
 void LayoutRectOutsets::setBefore(WritingMode writingMode, LayoutUnit value)
 {
     switch (writingMode) {

@@ -184,6 +184,8 @@ public:
     LayoutUnit computedCSSPaddingAfter() const { return computedCSSPadding(style()->paddingAfter()); }
     LayoutUnit computedCSSPaddingStart() const { return computedCSSPadding(style()->paddingStart()); }
     LayoutUnit computedCSSPaddingEnd() const { return computedCSSPadding(style()->paddingEnd()); }
+    LayoutUnit computedCSSPaddingOver() const { return computedCSSPadding(style()->paddingOver()); }
+    LayoutUnit computedCSSPaddingUnder() const { return computedCSSPadding(style()->paddingUnder()); }
 
     // These functions are used during layout.
     // - Table cells override them to include the intrinsic padding (see
@@ -197,6 +199,8 @@ public:
     virtual LayoutUnit paddingAfter() const { return computedCSSPaddingAfter(); }
     virtual LayoutUnit paddingStart() const { return computedCSSPaddingStart(); }
     virtual LayoutUnit paddingEnd() const { return computedCSSPaddingEnd(); }
+    LayoutUnit paddingOver() const { return computedCSSPaddingOver(); }
+    LayoutUnit paddingUnder() const { return computedCSSPaddingUnder(); }
 
     virtual int borderTop() const { return style()->borderTopWidth(); }
     virtual int borderBottom() const { return style()->borderBottomWidth(); }
@@ -206,6 +210,8 @@ public:
     virtual int borderAfter() const { return style()->borderAfterWidth(); }
     virtual int borderStart() const { return style()->borderStartWidth(); }
     virtual int borderEnd() const { return style()->borderEndWidth(); }
+    int borderOver() const { return style()->borderOverWidth(); }
+    int borderUnder() const { return style()->borderUnderWidth(); }
 
     int borderWidth() const { return borderLeft() + borderRight(); }
     int borderHeight() const { return borderTop() + borderBottom(); }
@@ -218,6 +224,8 @@ public:
     LayoutUnit borderAndPaddingStart() const { return borderStart() + paddingStart(); }
     LayoutUnit borderAndPaddingBefore() const { return borderBefore() + paddingBefore(); }
     LayoutUnit borderAndPaddingAfter() const { return borderAfter() + paddingAfter(); }
+    LayoutUnit borderAndPaddingOver() const { return borderOver() + paddingOver(); }
+    LayoutUnit borderAndPaddingUnder() const { return borderUnder() + paddingUnder(); }
 
     LayoutUnit borderAndPaddingHeight() const { return borderTop() + borderBottom() + paddingTop() + paddingBottom(); }
     LayoutUnit borderAndPaddingWidth() const { return borderLeft() + borderRight() + paddingLeft() + paddingRight(); }
@@ -239,6 +247,8 @@ public:
     virtual LayoutUnit marginAfter(const ComputedStyle* otherStyle = nullptr) const = 0;
     virtual LayoutUnit marginStart(const ComputedStyle* otherStyle = nullptr) const = 0;
     virtual LayoutUnit marginEnd(const ComputedStyle* otherStyle = nullptr) const = 0;
+    virtual LayoutUnit marginOver() const = 0;
+    virtual LayoutUnit marginUnder() const = 0;
     LayoutUnit marginHeight() const { return marginTop() + marginBottom(); }
     LayoutUnit marginWidth() const { return marginLeft() + marginRight(); }
     LayoutUnit marginLogicalHeight() const { return marginBefore() + marginAfter(); }

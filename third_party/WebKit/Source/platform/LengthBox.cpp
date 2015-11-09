@@ -85,4 +85,14 @@ const Length& LengthBox::end(WritingMode writingMode, TextDirection direction) c
     return isLeftToRightDirection(direction) ? m_bottom : m_top;
 }
 
+const Length& LengthBox::over(WritingMode writingMode) const
+{
+    return isHorizontalWritingMode(writingMode) ? m_top : m_right;
+}
+
+const Length& LengthBox::under(WritingMode writingMode) const
+{
+    return isHorizontalWritingMode(writingMode) ? m_bottom : m_left;
+}
+
 } // namespace blink
