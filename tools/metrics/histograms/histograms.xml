@@ -37962,6 +37962,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="RenderViewContextMenu.OpenLinkAsUser" enum="OpenLinkAsUser">
+  <owner>jochen@chromium.org</owner>
+  <summary>
+    State of the profile that is activated via the &quot;Open Link as User&quot;
+    menu. Logged when one of the &quot;Open Link as User&quot; context menu
+    options is selected.
+  </summary>
+</histogram>
+
 <histogram name="RenderViewContextMenu.Shown" enum="RenderViewContextMenuItem">
   <owner>vitalybuka@chromium.org</owner>
   <summary>Count of renderer view context menu items shown.</summary>
@@ -68452,6 +68461,12 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1" label="In incognito mode."/>
   <int value="2" label="Invalid scheme."/>
   <int value="3" label="Failed to create directory."/>
+</enum>
+
+<enum name="OpenLinkAsUser" type="int">
+  <int value="0" label="Active profile."/>
+  <int value="1" label="Inactive, multi-profile."/>
+  <int value="2" label="Inactive, single-profile."/>
 </enum>
 
 <enum name="OSAgnosticErrno" type="int">

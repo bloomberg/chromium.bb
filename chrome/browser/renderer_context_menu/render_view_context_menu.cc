@@ -159,6 +159,14 @@ using extensions::MenuManager;
 
 namespace {
 
+// State of the profile that is activated via "Open Link as User".
+enum UmaEnumOpenLinkAsUser {
+  OPEN_LINK_AS_USER_ACTIVE_PROFILE_ENUM_ID,
+  OPEN_LINK_AS_USER_INACTIVE_PROFILE_MULTI_PROFILE_SESSION_ENUM_ID,
+  OPEN_LINK_AS_USER_INACTIVE_PROFILE_SINGLE_PROFILE_SESSION_ENUM_ID,
+  OPEN_LINK_AS_USER_LAST_ENUM_ID,
+};
+
 // Whether to return the general enum_id or context_specific_enum_id
 // in the FindUMAEnumValueForCommand lookup function.
 enum UmaEnumIdLookupType {
@@ -465,6 +473,7 @@ RenderViewContextMenu::RenderViewContextMenu(
                        &menu_model_,
                        base::Bind(MenuItemMatchesParams, params_)),
       profile_link_submenu_model_(this),
+      multiple_profiles_open_(false),
       protocol_handler_submenu_model_(this),
       protocol_handler_registry_(
           ProtocolHandlerRegistryFactory::GetForBrowserContext(GetProfile())),
@@ -879,6 +888,9 @@ void RenderViewContextMenu::AppendLinkItems() {
       ProfileManager* profile_manager = g_browser_process->profile_manager();
       const ProfileInfoCache& profile_info_cache =
           profile_manager->GetProfileInfoCache();
+      chrome::HostDesktopType desktop_type =
+          chrome::GetHostDesktopTypeForNativeView(
+              source_web_contents_->GetNativeView());
 
       // Find all regular profiles other than the current one which have at
       // least one open window.
@@ -893,6 +905,8 @@ void RenderViewContextMenu::AppendLinkItems() {
             !profile_info_cache.IsOmittedProfileAtIndex(profile_index) &&
             !profile_info_cache.ProfileIsSigninRequiredAtIndex(profile_index)) {
           target_profiles.push_back(profile_index);
+          if (chrome::FindLastActiveWithProfile(profile, desktop_type))
+            multiple_profiles_open_ = true;
         }
       }
 
@@ -1630,6 +1644,20 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
     chrome::HostDesktopType desktop_type =
         chrome::GetHostDesktopTypeForNativeView(
             source_web_contents_->GetNativeView());
+
+    Profile* profile = profile_manager->GetProfileByPath(profile_path);
+    UmaEnumOpenLinkAsUser profile_state;
+    if (chrome::FindLastActiveWithProfile(profile, desktop_type)) {
+      profile_state = OPEN_LINK_AS_USER_ACTIVE_PROFILE_ENUM_ID;
+    } else if (multiple_profiles_open_) {
+      profile_state =
+          OPEN_LINK_AS_USER_INACTIVE_PROFILE_MULTI_PROFILE_SESSION_ENUM_ID;
+    } else {
+      profile_state =
+          OPEN_LINK_AS_USER_INACTIVE_PROFILE_SINGLE_PROFILE_SESSION_ENUM_ID;
+    }
+    UMA_HISTOGRAM_ENUMERATION("RenderViewContextMenu.OpenLinkAsUser",
+                              profile_state, OPEN_LINK_AS_USER_LAST_ENUM_ID);
 
     profiles::SwitchToProfile(
         profile_path, desktop_type, false,
