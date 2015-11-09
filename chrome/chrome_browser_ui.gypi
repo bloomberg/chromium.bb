@@ -644,6 +644,14 @@
       'browser/ui/views/frame/web_app_left_header_view_ash.cc',
       'browser/ui/views/frame/web_app_left_header_view_ash.h',
       'browser/ui/views/tabs/window_finder_ash.cc',
+      'browser/ui/views/tabs/window_finder_impl.h',
+      'browser/ui/views/tabs/window_finder_impl.cc',
+    ],
+    # Used when Android + Views.
+    'chrome_browser_ui_views_android_sources': [
+      'browser/ui/views/tabs/window_finder_android.cc',
+      'browser/ui/views/tabs/window_finder_impl.h',
+      'browser/ui/views/tabs/window_finder_impl.cc',
     ],
     # Used when ash is disabled.
     'chrome_browser_ui_non_ash_sources': [
@@ -2976,6 +2984,9 @@
                   'sources': [ '<@(chrome_browser_ui_views_extensions_non_mac_sources)' ],
                 }],
               ],
+            }],
+            ['OS=="android"', {
+              'sources': [ '<@(chrome_browser_ui_views_android_sources)' ],
             }],
             ['enable_extensions==1', {
               'dependencies': [

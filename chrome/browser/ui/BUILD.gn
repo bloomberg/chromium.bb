@@ -250,6 +250,12 @@ source_set("ui") {
                              ".",
                              "//chrome")
     }
+    if (is_android) {
+      sources +=
+          rebase_path(gypi_values.chrome_browser_ui_views_android_sources,
+                      ".",
+                      "//chrome")
+    }
   } else {
     # !toolkit_views
     if (!is_ios) {
