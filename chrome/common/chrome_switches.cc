@@ -232,10 +232,6 @@ const char kDisableCastStreamingHWEncoding[] =
 const char kDisableChildAccountDetection[] =
     "disable-child-account-detection";
 
-// Disables data volume counters in the Clear Browsing Data dialog.
-const char kDisableClearBrowsingDataCounters[] =
-    "disable-clear-browsing-data-counters";
-
 // Disables the client-side phishing detection feature. Note that even if
 // client-side phishing detection is enabled, it will only be active if the
 // user has opted in to UMA stats and SafeBrowsing is enabled in the
@@ -394,7 +390,8 @@ const char kEnableBookmarkUndo[]            = "enable-bookmark-undo";
 const char kEnableChildAccountDetection[] =
     "enable-child-account-detection";
 
-// Enables data volume counters in the Clear Browsing Data dialog.
+// If true, the clear browsing data dialog will show data volume counters,
+// where available.
 const char kEnableClearBrowsingDataCounters[] =
     "enable-clear-browsing-data-counters";
 

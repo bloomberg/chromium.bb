@@ -2018,8 +2018,7 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_ENABLE_CLEAR_BROWSING_DATA_COUNTERS_NAME,
      IDS_FLAGS_ENABLE_CLEAR_BROWSING_DATA_COUNTERS_DESCRIPTION,
      kOsAll,
-     ENABLE_DISABLE_VALUE_TYPE(switches::kEnableClearBrowsingDataCounters,
-                               switches::kDisableClearBrowsingDataCounters)
+     SINGLE_VALUE_TYPE(switches::kEnableClearBrowsingDataCounters)
     },
 #if defined(ENABLE_TASK_MANAGER)
     {"disable-new-task-manager",
