@@ -118,6 +118,31 @@ String AudioParamTimeline::eventToString(const ParamEvent& event)
     return s + "(" + args + ")";
 }
 
+AudioParamTimeline::ParamEvent AudioParamTimeline::ParamEvent::createSetValueEvent(float value, double time)
+{
+    return ParamEvent(ParamEvent::SetValue, value, time, 0, 0, nullptr);
+}
+
+AudioParamTimeline::ParamEvent AudioParamTimeline::ParamEvent::createLinearRampEvent(float value, double time)
+{
+    return ParamEvent(ParamEvent::LinearRampToValue, value, time, 0, 0, nullptr);
+}
+
+AudioParamTimeline::ParamEvent AudioParamTimeline::ParamEvent::createExponentialRampEvent(float value, double time)
+{
+    return ParamEvent(ParamEvent::ExponentialRampToValue, value, time, 0, 0, nullptr);
+}
+
+AudioParamTimeline::ParamEvent AudioParamTimeline::ParamEvent::createSetTargetEvent(float value, double time, double timeConstant)
+{
+    return ParamEvent(ParamEvent::SetTarget, value, time, timeConstant, 0, nullptr);
+}
+
+AudioParamTimeline::ParamEvent AudioParamTimeline::ParamEvent::createSetValueCurveEvent(DOMFloat32Array* curve, double time, double duration)
+{
+    return ParamEvent(ParamEvent::SetValueCurve, 0, time, 0, duration, curve);
+}
+
 void AudioParamTimeline::setValueAtTime(float value, double time, ExceptionState& exceptionState)
 {
     ASSERT(isMainThread());
@@ -125,7 +150,7 @@ void AudioParamTimeline::setValueAtTime(float value, double time, ExceptionState
     if (!isNonNegativeAudioParamTime(time, exceptionState))
         return;
 
-    insertEvent(ParamEvent(ParamEvent::SetValue, value, time, 0, 0, nullptr), exceptionState);
+    insertEvent(ParamEvent::createSetValueEvent(value, time), exceptionState);
 }
 
 void AudioParamTimeline::linearRampToValueAtTime(float value, double time, ExceptionState& exceptionState)
@@ -135,7 +160,7 @@ void AudioParamTimeline::linearRampToValueAtTime(float value, double time, Excep
     if (!isNonNegativeAudioParamTime(time, exceptionState))
         return;
 
-    insertEvent(ParamEvent(ParamEvent::LinearRampToValue, value, time, 0, 0, nullptr), exceptionState);
+    insertEvent(ParamEvent::createLinearRampEvent(value, time), exceptionState);
 }
 
 void AudioParamTimeline::exponentialRampToValueAtTime(float value, double time, ExceptionState& exceptionState)
@@ -146,7 +171,7 @@ void AudioParamTimeline::exponentialRampToValueAtTime(float value, double time, 
         || !isNonNegativeAudioParamTime(time, exceptionState))
         return;
 
-    insertEvent(ParamEvent(ParamEvent::ExponentialRampToValue, value, time, 0, 0, nullptr), exceptionState);
+    insertEvent(ParamEvent::createExponentialRampEvent(value, time), exceptionState);
 }
 
 void AudioParamTimeline::setTargetAtTime(float target, double time, double timeConstant, ExceptionState& exceptionState)
@@ -157,7 +182,7 @@ void AudioParamTimeline::setTargetAtTime(float target, double time, double timeC
         || !isNonNegativeAudioParamTime(timeConstant, exceptionState, "Time constant"))
         return;
 
-    insertEvent(ParamEvent(ParamEvent::SetTarget, target, time, timeConstant, 0, nullptr), exceptionState);
+    insertEvent(ParamEvent::createSetTargetEvent(target, time, timeConstant), exceptionState);
 }
 
 void AudioParamTimeline::setValueCurveAtTime(DOMFloat32Array* curve, double time, double duration, ExceptionState& exceptionState)
@@ -168,7 +193,7 @@ void AudioParamTimeline::setValueCurveAtTime(DOMFloat32Array* curve, double time
         || !isPositiveAudioParamTime(duration, exceptionState, "Duration"))
         return;
 
-    insertEvent(ParamEvent(ParamEvent::SetValueCurve, 0, time, 0, duration, curve), exceptionState);
+    insertEvent(ParamEvent::createSetValueCurveEvent(curve, time, duration), exceptionState);
 }
 
 void AudioParamTimeline::insertEvent(const ParamEvent& event, ExceptionState& exceptionState)

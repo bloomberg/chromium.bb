@@ -78,6 +78,20 @@ private:
             LastType
         };
 
+        static ParamEvent createLinearRampEvent(float value, double time);
+        static ParamEvent createExponentialRampEvent(float value, double time);
+        static ParamEvent createSetValueEvent(float value, double time);
+        static ParamEvent createSetTargetEvent(float value, double time, double timeConstant);
+        static ParamEvent createSetValueCurveEvent(DOMFloat32Array* curve, double time, double duration);
+
+        Type type() const { return m_type; }
+        float value() const { return m_value; }
+        double time() const { return m_time; }
+        double timeConstant() const { return m_timeConstant; }
+        double duration() const { return m_duration; }
+        DOMFloat32Array* curve() { return m_curve.get(); }
+
+    private:
         ParamEvent(Type type, float value, double time, double timeConstant, double duration, PassRefPtr<DOMFloat32Array> curve)
             : m_type(type)
             , m_value(value)
@@ -88,18 +102,12 @@ private:
         {
         }
 
-        Type type() const { return m_type; }
-        float value() const { return m_value; }
-        double time() const { return m_time; }
-        double timeConstant() const { return m_timeConstant; }
-        double duration() const { return m_duration; }
-        DOMFloat32Array* curve() { return m_curve.get(); }
-
-    private:
         Type m_type;
         float m_value;
         double m_time;
+        // Only used for SetTarget events
         double m_timeConstant;
+        // Only used for SetValueCurve events.
         double m_duration;
         RefPtr<DOMFloat32Array> m_curve;
     };
