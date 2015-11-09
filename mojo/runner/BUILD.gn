@@ -165,10 +165,12 @@ source_set("lib") {
     ":switches",
   ]
 
-  data_deps = [
-    "//components/devtools_service",
-    "//mojo/services/tracing",
-  ]
+  if (!is_component_build) {
+    data_deps = [
+      "//components/devtools_service",
+      "//mojo/services/tracing",
+    ]
+  }
 
   if (is_android) {
     sources += [

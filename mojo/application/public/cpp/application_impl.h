@@ -114,6 +114,10 @@ class ApplicationImpl : public Application {
     connection->ConnectToService(ptr);
   }
 
+  // Block the calling thread until the Initialize() method is called by the
+  // shell.
+  void WaitForInitialize();
+
   // Initiate shutdown of this application. This may involve a round trip to the
   // Shell to ensure there are no inbound service requests.
   void Quit();

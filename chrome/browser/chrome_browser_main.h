@@ -23,6 +23,7 @@ class BrowserProcessImpl;
 class ChromeBrowserMainExtraParts;
 class FieldTrialSynchronizer;
 class MetricsService;
+class MojoRunnerState;
 class PrefService;
 class ProcessPowerCollector;
 class Profile;
@@ -190,6 +191,10 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
 
   // Members needed across shutdown methods.
   bool restart_last_session_;
+
+#if defined(MOJO_RUNNER_CLIENT)
+  scoped_ptr<MojoRunnerState> mojo_runner_state_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainParts);
 };
