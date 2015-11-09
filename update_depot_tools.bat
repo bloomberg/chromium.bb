@@ -27,6 +27,11 @@ if errorlevel 1 goto :EOF
 :: Now clear errorlevel so it can be set by other programs later.
 set errorlevel=
 
+:: Initialize/update virtualenv.
+cd /d "%DEPOT_TOOLS_DIR%."
+call python.bat -u bootstrap\bootstrap.py --deps_file bootstrap\deps.pyl --quiet ENV
+if errorlevel 1 goto :EOF
+
 :: Shall skip automatic update?
 IF "%DEPOT_TOOLS_UPDATE%" == "0" GOTO :EOF
 

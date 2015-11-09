@@ -153,3 +153,7 @@ then
 fi
 
 find "$base_dir" -iname "*.pyc" -exec rm -f {} \;
+
+# Initialize/update virtualenv.
+cd $base_dir
+python -u ./bootstrap/bootstrap.py --deps_file bootstrap/deps.pyl --quiet ENV
