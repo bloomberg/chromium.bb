@@ -11,11 +11,13 @@
 
 namespace content {
 
-enum PresentationSessionState {
-  PRESENTATION_SESSION_STATE_CONNECTED,
-  PRESENTATION_SESSION_STATE_DISCONNECTED
+enum PresentationConnectionState {
+  PRESENTATION_CONNECTION_STATE_CONNECTED,
+  PRESENTATION_CONNECTION_STATE_CLOSED,
+  PRESENTATION_CONNECTION_STATE_TERMINATED
 };
 
+// TODO(imcheng): Rename to PresentationConnectionInfo.
 // Represents a presentation session that has been established via either
 // browser actions or Presentation API.
 struct CONTENT_EXPORT PresentationSessionInfo {

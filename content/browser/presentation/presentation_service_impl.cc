@@ -427,11 +427,11 @@ void PresentationServiceImpl::ListenForSessionStateChange() {
 
 void PresentationServiceImpl::OnSessionStateChanged(
     const PresentationSessionInfo& session_info,
-    PresentationSessionState session_state) {
+    PresentationConnectionState session_state) {
   DCHECK(client_.get());
   client_->OnSessionStateChanged(
       presentation::PresentationSessionInfo::From(session_info),
-      PresentationSessionStateToMojo(session_state));
+      PresentationConnectionStateToMojo(session_state));
 }
 
 bool PresentationServiceImpl::FrameMatches(

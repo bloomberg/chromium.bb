@@ -155,12 +155,12 @@ class MockPresentationServiceClient :
       void(const mojo::String& url, bool available));
   void OnSessionStateChanged(
       presentation::PresentationSessionInfoPtr session_info,
-      presentation::PresentationSessionState new_state) override {
+      presentation::PresentationConnectionState new_state) override {
     OnSessionStateChanged(*session_info, new_state);
   }
   MOCK_METHOD2(OnSessionStateChanged,
                void(const presentation::PresentationSessionInfo& session_info,
-                    presentation::PresentationSessionState new_state));
+                    presentation::PresentationConnectionState new_state));
 
   MOCK_METHOD1(OnScreenAvailabilityNotSupported, void(const mojo::String& url));
 
@@ -838,10 +838,10 @@ TEST_F(PresentationServiceImplTest, ListenForSessionStateChange) {
   EXPECT_CALL(mock_client_,
               OnSessionStateChanged(
                   Equals(session_info),
-                  presentation::PRESENTATION_SESSION_STATE_CONNECTED));
+                  presentation::PRESENTATION_CONNECTION_STATE_CONNECTED));
   service_impl_->OnSessionStateChanged(
       content::PresentationSessionInfo(kPresentationUrl, kPresentationId),
-      content::PRESENTATION_SESSION_STATE_CONNECTED);
+      content::PRESENTATION_CONNECTION_STATE_CONNECTED);
 }
 
 TEST_F(PresentationServiceImplTest, ScreenAvailabilityNotSupported) {

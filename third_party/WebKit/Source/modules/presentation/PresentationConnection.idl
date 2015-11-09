@@ -6,7 +6,8 @@
 
 enum PresentationConnectionState {
     "connected",
-    "disconnected"
+    "closed",
+    "terminated"
 };
 
 [

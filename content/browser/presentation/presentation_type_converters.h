@@ -14,8 +14,8 @@ namespace content {
 CONTENT_EXPORT presentation::PresentationErrorType PresentationErrorTypeToMojo(
     PresentationErrorType input);
 
-CONTENT_EXPORT presentation::PresentationSessionState
-PresentationSessionStateToMojo(PresentationSessionState state);
+CONTENT_EXPORT presentation::PresentationConnectionState
+PresentationConnectionStateToMojo(PresentationConnectionState state);
 
 }  // namespace content
 

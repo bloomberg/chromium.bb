@@ -98,7 +98,7 @@ class CONTENT_EXPORT PresentationServiceImpl
       mojo::Callback<void(presentation::PresentationSessionInfoPtr)>;
   using SessionStateCallback =
       mojo::Callback<void(presentation::PresentationSessionInfoPtr,
-          presentation::PresentationSessionState)>;
+                          presentation::PresentationConnectionState)>;
   using SessionMessagesCallback =
       mojo::Callback<void(mojo::Array<presentation::SessionMessagePtr>)>;
   using SendMessageMojoCallback = mojo::Callback<void(bool)>;
@@ -256,7 +256,7 @@ class CONTENT_EXPORT PresentationServiceImpl
   // Invoked by the embedder's PresentationServiceDelegate when a
   // presentation session's state has changed.
   void OnSessionStateChanged(const PresentationSessionInfo& session_info,
-                             PresentationSessionState session_state);
+                             PresentationConnectionState session_state);
 
   // Returns true if this object is associated with |render_frame_host|.
   bool FrameMatches(content::RenderFrameHost* render_frame_host) const;

@@ -9,9 +9,10 @@ struct PresentationSessionInfo {
   string id;
 };
 
-enum PresentationSessionState {
+enum PresentationConnectionState {
   CONNECTED,
-  DISCONNECTED
+  CLOSED,
+  TERMINATED
 };
 
 enum PresentationErrorType {
@@ -121,8 +122,8 @@ interface PresentationServiceClient {
 
   // See PresentationService::ListenForSessionStateChange.
   OnSessionStateChanged(PresentationSessionInfo sessionInfo,
-                        PresentationSessionState newState);
+                        PresentationConnectionState newState);
 
   // See PresentationService::ListenForSessionMessages.
   OnSessionMessagesReceived(PresentationSessionInfo sessionInfo, array<SessionMessage> messages);
-};
+}; 

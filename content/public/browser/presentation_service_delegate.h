@@ -21,7 +21,7 @@ class PresentationScreenAvailabilityListener;
 
 using SessionStateChangedCallback =
     base::Callback<void(const PresentationSessionInfo&,
-                        PresentationSessionState)>;
+                        PresentationConnectionState)>;
 
 // Param #0: a vector of messages that are received.
 // Param #1: tells the callback handler that it may reuse strings or buffers

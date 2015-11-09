@@ -25,7 +25,7 @@ void PresentationSessionStateObserver::OnPresentationSessionConnected(
     const MediaRoute::Id& route_id) {
   if (!ContainsValue(tracked_route_ids_, route_id))
     tracked_route_ids_.push_back(route_id);
-  InvokeCallback(route_id, content::PRESENTATION_SESSION_STATE_CONNECTED);
+  InvokeCallback(route_id, content::PRESENTATION_CONNECTION_STATE_CONNECTED);
 }
 
 void PresentationSessionStateObserver::Reset() {
@@ -45,8 +45,7 @@ void PresentationSessionStateObserver::OnRoutesUpdated(
     const MediaRoute::Id& route_id = *it;
     if (ContainsValue(previous_route_ids_, route_id) &&
         !ContainsValue(current_route_ids_, route_id)) {
-      InvokeCallback(route_id,
-                     content::PRESENTATION_SESSION_STATE_DISCONNECTED);
+      InvokeCallback(route_id, content::PRESENTATION_CONNECTION_STATE_CLOSED);
       it = tracked_route_ids_.erase(it);
     } else {
       ++it;
@@ -57,7 +56,7 @@ void PresentationSessionStateObserver::OnRoutesUpdated(
 
 void PresentationSessionStateObserver::InvokeCallback(
     const MediaRoute::Id& route_id,
-    content::PresentationSessionState new_state) {
+    content::PresentationConnectionState new_state) {
   const content::PresentationSessionInfo* session_info =
       route_id_to_presentation_->Get(route_id);
   if (session_info)

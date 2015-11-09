@@ -45,17 +45,20 @@ WebPresentationClient* presentationClient(ExecutionContext* executionContext)
 const AtomicString& connectionStateToString(WebPresentationConnectionState state)
 {
     DEFINE_STATIC_LOCAL(const AtomicString, connectedValue, ("connected", AtomicString::ConstructFromLiteral));
-    DEFINE_STATIC_LOCAL(const AtomicString, disconnectedValue, ("disconnected", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(const AtomicString, closedValue, ("closed", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(const AtomicString, terminatedValue, ("terminated", AtomicString::ConstructFromLiteral));
 
     switch (state) {
     case WebPresentationConnectionState::Connected:
         return connectedValue;
-    case WebPresentationConnectionState::Disconnected:
-        return disconnectedValue;
+    case WebPresentationConnectionState::Closed:
+        return closedValue;
+    case WebPresentationConnectionState::Terminated:
+        return terminatedValue;
     }
 
     ASSERT_NOT_REACHED();
-    return disconnectedValue;
+    return terminatedValue;
 }
 
 void throwPresentationDisconnectedError(ExceptionState& exceptionState)
@@ -223,7 +226,7 @@ void PresentationConnection::send(Blob* data, ExceptionState& exceptionState)
 
 bool PresentationConnection::canSendMessage(ExceptionState& exceptionState)
 {
-    if (m_state == WebPresentationConnectionState::Disconnected) {
+    if (m_state != WebPresentationConnectionState::Connected) {
         throwPresentationDisconnectedError(exceptionState);
         return false;
     }
@@ -284,7 +287,7 @@ void PresentationConnection::setBinaryType(const String& binaryType)
 
 void PresentationConnection::didReceiveTextMessage(const String& message)
 {
-    if (m_state == WebPresentationConnectionState::Disconnected)
+    if (m_state != WebPresentationConnectionState::Connected)
         return;
 
     dispatchEvent(MessageEvent::create(message));
@@ -292,7 +295,7 @@ void PresentationConnection::didReceiveTextMessage(const String& message)
 
 void PresentationConnection::didReceiveBinaryMessage(const uint8_t* data, size_t length)
 {
-    if (m_state == WebPresentationConnectionState::Disconnected)
+    if (m_state != WebPresentationConnectionState::Connected)
         return;
 
     switch (m_binaryType) {

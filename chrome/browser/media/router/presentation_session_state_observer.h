@@ -16,6 +16,8 @@ namespace media_router {
 
 class MediaRouter;
 
+// TODO(imcheng): Remove this class and use PresentationConnectionStateObserver
+// instead (crbug.com/529893).
 // MediaRoutesObserver implementation that allows tracking state changes from
 // multiple presentation sessions and notifying the client via
 // |state_changed_callback|.
@@ -52,7 +54,7 @@ class PresentationSessionStateObserver : public MediaRoutesObserver {
   // Invokes |state_changed_callback_| with PresentationSessionInfo derived from
   // |route_id| and |new_state|, if |route_id| is valid.
   void InvokeCallback(const MediaRoute::Id& route_id,
-                      content::PresentationSessionState new_state);
+                      content::PresentationConnectionState new_state);
 
   // Route IDs of presentations that are being tracked for state changes.
   // It is built by adding entries when a presentation is started,

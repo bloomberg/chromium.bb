@@ -19,18 +19,23 @@ presentation::PresentationErrorType PresentationErrorTypeToMojo(
       return presentation::PRESENTATION_ERROR_TYPE_NO_PRESENTATION_FOUND;
     case content::PRESENTATION_ERROR_UNKNOWN:
       return presentation::PRESENTATION_ERROR_TYPE_UNKNOWN;
-    default:
-      NOTREACHED();
-      return presentation::PRESENTATION_ERROR_TYPE_UNKNOWN;
   }
+  NOTREACHED();
+  return presentation::PRESENTATION_ERROR_TYPE_UNKNOWN;
 }
 
-presentation::PresentationSessionState PresentationSessionStateToMojo(
-    content::PresentationSessionState state) {
-  if (state == content::PRESENTATION_SESSION_STATE_CONNECTED)
-    return presentation::PRESENTATION_SESSION_STATE_CONNECTED;
-  else
-    return presentation::PRESENTATION_SESSION_STATE_DISCONNECTED;
+presentation::PresentationConnectionState PresentationConnectionStateToMojo(
+    content::PresentationConnectionState state) {
+  switch (state) {
+    case content::PRESENTATION_CONNECTION_STATE_CONNECTED:
+      return presentation::PRESENTATION_CONNECTION_STATE_CONNECTED;
+    case content::PRESENTATION_CONNECTION_STATE_CLOSED:
+      return presentation::PRESENTATION_CONNECTION_STATE_CLOSED;
+    case content::PRESENTATION_CONNECTION_STATE_TERMINATED:
+      return presentation::PRESENTATION_CONNECTION_STATE_TERMINATED;
+  }
+  NOTREACHED();
+  return presentation::PRESENTATION_CONNECTION_STATE_TERMINATED;
 }
 
 }  // namespace content

@@ -39,16 +39,18 @@ blink::WebPresentationError::ErrorType GetWebPresentationErrorTypeFromMojo(
 }
 
 blink::WebPresentationConnectionState GetWebPresentationConnectionStateFromMojo(
-        presentation::PresentationSessionState mojoSessionState) {
+    presentation::PresentationConnectionState mojoSessionState) {
   switch (mojoSessionState) {
-    case presentation::PRESENTATION_SESSION_STATE_CONNECTED:
+    case presentation::PRESENTATION_CONNECTION_STATE_CONNECTED:
       return blink::WebPresentationConnectionState::Connected;
-    case presentation::PRESENTATION_SESSION_STATE_DISCONNECTED:
-      return blink::WebPresentationConnectionState::Disconnected;
+    case presentation::PRESENTATION_CONNECTION_STATE_CLOSED:
+      return blink::WebPresentationConnectionState::Closed;
+    case presentation::PRESENTATION_CONNECTION_STATE_TERMINATED:
+      return blink::WebPresentationConnectionState::Terminated;
   }
 
   NOTREACHED();
-  return blink::WebPresentationConnectionState::Disconnected;
+  return blink::WebPresentationConnectionState::Terminated;
 }
 
 }  // namespace
@@ -368,7 +370,7 @@ void PresentationDispatcher::OnSessionCreated(
 
 void PresentationDispatcher::OnSessionStateChanged(
     presentation::PresentationSessionInfoPtr session_info,
-    presentation::PresentationSessionState session_state) {
+    presentation::PresentationConnectionState session_state) {
   if (!controller_)
     return;
 

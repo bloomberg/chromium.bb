@@ -96,7 +96,7 @@ class CONTENT_EXPORT PresentationDispatcher
                                    bool available) override;
   void OnSessionStateChanged(
       presentation::PresentationSessionInfoPtr session_info,
-      presentation::PresentationSessionState new_state) override;
+      presentation::PresentationConnectionState new_state) override;
   void OnSessionMessagesReceived(
       presentation::PresentationSessionInfoPtr session_info,
       mojo::Array<presentation::SessionMessagePtr> messages) override;
