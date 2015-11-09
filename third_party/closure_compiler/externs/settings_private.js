@@ -92,6 +92,21 @@ chrome.settingsPrivate.getAllPrefs = function(callback) {};
 chrome.settingsPrivate.getPref = function(name, callback) {};
 
 /**
+ * Gets the page zoom factor as an integer percentage.
+ * @param {function(number):void} callback
+ * @see https://developer.chrome.com/extensions/settingsPrivate#method-getDefaultZoomPercent
+ */
+chrome.settingsPrivate.getDefaultZoomPercent = function(callback) {};
+
+/**
+ * Sets the page zoom factor from a zoom percentage.
+ * @param {number} percent
+ * @param {function(boolean):void=} callback
+ * @see https://developer.chrome.com/extensions/settingsPrivate#method-setDefaultZoomPercent
+ */
+chrome.settingsPrivate.setDefaultZoomPercent = function(percent, callback) {};
+
+/**
  * <p>Fired when a set of prefs has changed.</p><p>|prefs| The prefs that
  * changed.</p>
  * @type {!ChromeEvent}

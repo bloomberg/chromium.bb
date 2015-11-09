@@ -60,6 +60,40 @@ class SettingsPrivateGetPrefFunction : public UIThreadExtensionFunction {
   DISALLOW_COPY_AND_ASSIGN(SettingsPrivateGetPrefFunction);
 };
 
+// Implements the chrome.settingsPrivate.getDefaultZoomPercent method.
+class SettingsPrivateGetDefaultZoomPercentFunction
+    : public UIThreadExtensionFunction {
+ public:
+  SettingsPrivateGetDefaultZoomPercentFunction() {}
+  DECLARE_EXTENSION_FUNCTION("settingsPrivate.getDefaultZoomPercent",
+                             SETTINGSPRIVATE_GETDEFAULTZOOMPERCENTFUNCTION);
+
+ protected:
+  ~SettingsPrivateGetDefaultZoomPercentFunction() override;
+
+  // AsyncExtensionFunction overrides.
+  ResponseAction Run() override;
+
+  DISALLOW_COPY_AND_ASSIGN(SettingsPrivateGetDefaultZoomPercentFunction);
+};
+
+// Implements the chrome.settingsPrivate.setDefaultZoomPercent method.
+class SettingsPrivateSetDefaultZoomPercentFunction
+    : public UIThreadExtensionFunction {
+ public:
+  SettingsPrivateSetDefaultZoomPercentFunction() {}
+  DECLARE_EXTENSION_FUNCTION("settingsPrivate.setDefaultZoomPercent",
+                             SETTINGSPRIVATE_SETDEFAULTZOOMPERCENTFUNCTION);
+
+ protected:
+  ~SettingsPrivateSetDefaultZoomPercentFunction() override;
+
+  // AsyncExtensionFunction overrides.
+  ResponseAction Run() override;
+
+  DISALLOW_COPY_AND_ASSIGN(SettingsPrivateSetDefaultZoomPercentFunction);
+};
+
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_SETTINGS_PRIVATE_SETTINGS_PRIVATE_API_H_

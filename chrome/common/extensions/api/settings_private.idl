@@ -57,6 +57,8 @@ namespace settingsPrivate {
   callback OnPrefSetCallback = void (boolean success);
   callback GetAllPrefsCallback = void (PrefObject[] prefs);
   callback GetPrefCallback = void (PrefObject pref);
+  callback GetDefaultZoomPercentCallback = void (long percent);
+  callback SetDefaultZoomPercentCallback = void (boolean success);
 
   interface Functions {
     // Sets a settings value.
@@ -72,6 +74,13 @@ namespace settingsPrivate {
 
     // Gets the value of a specific pref.
     static void getPref(DOMString name, GetPrefCallback callback);
+
+    // Gets the page zoom factor as an integer percentage.
+    static void getDefaultZoomPercent(GetDefaultZoomPercentCallback callback);
+
+    // Sets the page zoom factor from a zoom percentage.
+    static void setDefaultZoomPercent(long percent,
+        optional SetDefaultZoomPercentCallback callback);
   };
 
   interface Events {
