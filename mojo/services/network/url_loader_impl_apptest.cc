@@ -58,13 +58,14 @@ class TestURLRequestJob : public net::URLRequestJob {
   void NotifyHeadersComplete() { net::URLRequestJob::NotifyHeadersComplete(); }
 
   void NotifyReadComplete(int result) {
-    status_ = result <= 0 ? COMPLETED : STARTED;
-
     // Map errors to net::ERR_FAILED.
     if (result < 0)
       result = net::ERR_FAILED;
 
     ReadRawDataComplete(result);
+    // Set this after calling ReadRawDataComplete since that ends up calling
+    // ReadRawData.
+    status_ = result <= 0 ? COMPLETED : STARTED;
   }
 
  private:
@@ -79,13 +80,19 @@ class TestURLRequestJob : public net::URLRequestJob {
 
 class TestProtocolHandler : public net::URLRequestJobFactory::ProtocolHandler {
  public:
-  net::URLRequestJob* MaybeCreateJob(
+  explicit TestProtocolHandler(const base::Closure& quit_closure)
+      : quit_closure_(quit_closure) {}
+    net::URLRequestJob* MaybeCreateJob(
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate) const override {
+    quit_closure_.Run();
     return new TestURLRequestJob(request, network_delegate);
   }
 
   ~TestProtocolHandler() override {}
+
+ private:
+  base::Closure quit_closure_;
 };
 
 class UrlLoaderImplTest : public test::ApplicationTestBase {
@@ -103,7 +110,8 @@ class UrlLoaderImplTest : public test::ApplicationTestBase {
     scoped_ptr<net::TestURLRequestContext> url_request_context(
         new net::TestURLRequestContext(true));
     ASSERT_TRUE(url_request_job_factory_.SetProtocolHandler(
-        "http", make_scoped_ptr(new TestProtocolHandler())));
+        "http", make_scoped_ptr(new TestProtocolHandler(
+            wait_for_request_.QuitClosure()))));
     url_request_context->set_job_factory(&url_request_job_factory_);
     url_request_context->Init();
     network_context_.reset(new NetworkContext(url_request_context.Pass()));
@@ -123,13 +131,14 @@ class UrlLoaderImplTest : public test::ApplicationTestBase {
   net::URLRequestJobFactoryImpl url_request_job_factory_;
   scoped_ptr<NetworkContext> network_context_;
   URLLoaderPtr url_loader_proxy_;
+  base::RunLoop wait_for_request_;
 };
 
 TEST_F(UrlLoaderImplTest, ClosedBeforeAnyCall) {
   url_loader_proxy_.reset();
-  base::RunLoop().RunUntilIdle();
 
-  EXPECT_FALSE(IsUrlLoaderValid());
+  while (IsUrlLoaderValid())
+    base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(UrlLoaderImplTest, ClosedWhileWaitingOnTheNetwork) {
@@ -139,7 +148,7 @@ TEST_F(UrlLoaderImplTest, ClosedWhileWaitingOnTheNetwork) {
   URLResponsePtr response;
   url_loader_proxy_->Start(request.Pass(),
                            base::Bind(&PassA<URLResponsePtr>, &response));
-  base::RunLoop().RunUntilIdle();
+  wait_for_request_.Run();
 
   EXPECT_TRUE(IsUrlLoaderValid());
   EXPECT_FALSE(response);
@@ -158,9 +167,9 @@ TEST_F(UrlLoaderImplTest, ClosedWhileWaitingOnTheNetwork) {
   EXPECT_TRUE(IsUrlLoaderValid());
 
   response.reset();
-  base::RunLoop().RunUntilIdle();
 
-  EXPECT_FALSE(IsUrlLoaderValid());
+  while (IsUrlLoaderValid())
+    base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(UrlLoaderImplTest, ClosedWhileWaitingOnThePipeToBeWriteable) {
@@ -170,20 +179,23 @@ TEST_F(UrlLoaderImplTest, ClosedWhileWaitingOnThePipeToBeWriteable) {
   URLResponsePtr response;
   url_loader_proxy_->Start(request.Pass(),
                            base::Bind(&PassA<URLResponsePtr>, &response));
-  base::RunLoop().RunUntilIdle();
+  wait_for_request_.Run();
 
   EXPECT_TRUE(IsUrlLoaderValid());
   EXPECT_FALSE(response);
   ASSERT_TRUE(g_current_job);
 
   g_current_job->NotifyHeadersComplete();
-  base::RunLoop().RunUntilIdle();
+  while (g_current_job->status() != TestURLRequestJob::READING)
+    base::RunLoop().RunUntilIdle();
+
+  while (!response)
+    base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(IsUrlLoaderValid());
-  EXPECT_TRUE(response);
   EXPECT_EQ(TestURLRequestJob::READING, g_current_job->status());
 
-  while (g_current_job->status() == TestURLRequestJob::READING) {
+  while (g_current_job->status() != TestURLRequestJob::STARTED) {
     g_current_job->NotifyReadComplete(g_current_job->buf_size());
     base::RunLoop().RunUntilIdle();
   }
@@ -196,9 +208,9 @@ TEST_F(UrlLoaderImplTest, ClosedWhileWaitingOnThePipeToBeWriteable) {
   EXPECT_TRUE(IsUrlLoaderValid());
 
   response.reset();
-  base::RunLoop().RunUntilIdle();
 
-  EXPECT_FALSE(IsUrlLoaderValid());
+  while (IsUrlLoaderValid())
+    base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(UrlLoaderImplTest, RequestCompleted) {
@@ -208,7 +220,7 @@ TEST_F(UrlLoaderImplTest, RequestCompleted) {
   URLResponsePtr response;
   url_loader_proxy_->Start(request.Pass(),
                            base::Bind(&PassA<URLResponsePtr>, &response));
-  base::RunLoop().RunUntilIdle();
+  wait_for_request_.Run();
 
   EXPECT_TRUE(IsUrlLoaderValid());
   EXPECT_FALSE(response);
@@ -227,9 +239,9 @@ TEST_F(UrlLoaderImplTest, RequestCompleted) {
   EXPECT_TRUE(IsUrlLoaderValid());
 
   g_current_job->NotifyReadComplete(0);
-  base::RunLoop().RunUntilIdle();
 
-  EXPECT_FALSE(IsUrlLoaderValid());
+  while (IsUrlLoaderValid())
+    base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(UrlLoaderImplTest, RequestFailed) {
@@ -239,7 +251,7 @@ TEST_F(UrlLoaderImplTest, RequestFailed) {
   URLResponsePtr response;
   url_loader_proxy_->Start(request.Pass(),
                            base::Bind(&PassA<URLResponsePtr>, &response));
-  base::RunLoop().RunUntilIdle();
+  wait_for_request_.Run();
 
   EXPECT_TRUE(IsUrlLoaderValid());
   EXPECT_FALSE(response);
@@ -258,9 +270,9 @@ TEST_F(UrlLoaderImplTest, RequestFailed) {
   EXPECT_TRUE(IsUrlLoaderValid());
 
   g_current_job->NotifyReadComplete(-1);
-  base::RunLoop().RunUntilIdle();
 
-  EXPECT_FALSE(IsUrlLoaderValid());
+  while (IsUrlLoaderValid())
+    base::RunLoop().RunUntilIdle();
 }
 
 }  // namespace mojo
