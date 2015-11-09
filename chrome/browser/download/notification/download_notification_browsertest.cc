@@ -662,11 +662,12 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, InterruptDownload) {
                 IDS_DOWNLOAD_STATUS_DOWNLOAD_FAILED_TITLE,
                 download_item()->GetFileNameToReportUser().LossyDisplayName()),
             GetNotification(notification_id())->title());
-  EXPECT_EQ(l10n_util::GetStringFUTF16(
-                IDS_DOWNLOAD_STATUS_INTERRUPTED,
-                l10n_util::GetStringUTF16(
-                    IDS_DOWNLOAD_INTERRUPTED_DESCRIPTION_NETWORK_ERROR)),
-            GetNotification(notification_id())->message().substr(48));
+  EXPECT_NE(GetNotification(notification_id())->message().find(
+                l10n_util::GetStringFUTF16(
+                    IDS_DOWNLOAD_STATUS_INTERRUPTED,
+                    l10n_util::GetStringUTF16(
+                        IDS_DOWNLOAD_INTERRUPTED_DESCRIPTION_NETWORK_ERROR))),
+            std::string::npos);
   EXPECT_EQ(message_center::NOTIFICATION_TYPE_BASE_FORMAT,
             GetNotification(notification_id())->type());
 }

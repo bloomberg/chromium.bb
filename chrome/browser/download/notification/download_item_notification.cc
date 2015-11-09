@@ -5,6 +5,7 @@
 #include "chrome/browser/download/notification/download_item_notification.h"
 
 #include "base/files/file_util.h"
+#include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_crx_util.h"
@@ -14,10 +15,12 @@
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/notifications/profile_notification.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/mime_util/mime_util.h"
+#include "components/url_formatter/elide_url.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_interrupt_reasons.h"
@@ -31,6 +34,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/time_format.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/base/text/bytes_formatting.h"
 #include "ui/gfx/codec/jpeg_codec.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/image.h"
@@ -788,13 +792,6 @@ base::string16 DownloadItemNotification::GetWarningStatusString() const {
 }
 
 base::string16 DownloadItemNotification::GetInProgressSubStatusString() const {
-  // The download is a CRX (app, extension, theme, ...) and it is being
-  // unpacked and validated.
-  if (item_->AllDataSaved() &&
-      download_crx_util::IsExtensionDownload(*item_)) {
-    return l10n_util::GetStringUTF16(IDS_DOWNLOAD_STATUS_CRX_INSTALL_RUNNING);
-  }
-
   // "Paused"
   if (item_->IsPaused())
     return l10n_util::GetStringUTF16(IDS_DOWNLOAD_PROGRESS_PAUSED);
@@ -836,19 +833,41 @@ base::string16 DownloadItemNotification::GetStatusString() const {
   if (item_->IsDangerous())
     return GetWarningStatusString();
 
+  // The hostname. (E.g.:"example.com" or "127.0.0.1")
+  base::string16 host_name =
+      url_formatter::FormatUrlForSecurityDisplayOmitScheme(
+          item_->GetURL(),
+          profile()->GetPrefs()->GetString(prefs::kAcceptLanguages));
+
   DownloadItemModel model(item_);
   base::string16 sub_status_text;
+  bool show_size_ratio = true;
   switch (item_->GetState()) {
     case content::DownloadItem::IN_PROGRESS:
-      sub_status_text = GetInProgressSubStatusString();
+      // The download is a CRX (app, extension, theme, ...) and it is being
+      // unpacked and validated.
+      if (item_->AllDataSaved() &&
+          download_crx_util::IsExtensionDownload(*item_)) {
+        show_size_ratio = false;
+        sub_status_text =
+            l10n_util::GetStringUTF16(IDS_DOWNLOAD_STATUS_CRX_INSTALL_RUNNING);
+      } else {
+        sub_status_text = GetInProgressSubStatusString();
+      }
       break;
     case content::DownloadItem::COMPLETE:
       // If the file has been removed: Removed
       if (item_->GetFileExternallyRemoved()) {
+        show_size_ratio = false;
         sub_status_text =
             l10n_util::GetStringUTF16(IDS_DOWNLOAD_STATUS_REMOVED);
+      } else {
+        // Otherwise, the download should be completed.
+        // "3.4 MB from example.com"
+        base::string16 size = ui::FormatBytes(item_->GetReceivedBytes());
+        return l10n_util::GetStringFUTF16(
+            IDS_DOWNLOAD_NOTIFICATION_STATUS_COMPLETED, size, host_name);
       }
-      // Otherwise, no sub status text.
       break;
     case content::DownloadItem::CANCELLED:
       // "Cancelled"
@@ -874,24 +893,15 @@ base::string16 DownloadItemNotification::GetStatusString() const {
       NOTREACHED();
   }
 
-  // The hostname. (E.g.:"example.com" or "127.0.0.1")
-  base::string16 host_name = base::UTF8ToUTF16(item_->GetURL().host());
+  // Indication of progress (E.g.:"100/200 MB" or "100 MB"), or just the
+  // received bytes if the |show_size_ratio| flag is false.
+  base::string16 size =
+      show_size_ratio ? model.GetProgressSizesString() :
+                        ui::FormatBytes(item_->GetReceivedBytes());
 
-  // Indication of progress. (E.g.:"100/200 MB" or "100 MB")
-  base::string16 size_ratio = model.GetProgressSizesString();
-
-  if (sub_status_text.empty()) {
-    // Download completed: "3.4/3.4 MB from example.com"
-    DCHECK_EQ(item_->GetState(), content::DownloadItem::COMPLETE);
-    return l10n_util::GetStringFUTF16(
-        IDS_DOWNLOAD_NOTIFICATION_STATUS_COMPLETED,
-        size_ratio, host_name);
-  }
-
-  // Download is not completed: "3.4/3.4 MB from example.com, <SUB STATUS>"
+  // Download is not completed yet: "3.4/5.6 MB, <SUB STATUS>\nFrom example.com"
   return l10n_util::GetStringFUTF16(
-      IDS_DOWNLOAD_NOTIFICATION_STATUS,
-      size_ratio, host_name, sub_status_text);
+      IDS_DOWNLOAD_NOTIFICATION_STATUS, size, sub_status_text, host_name);
 }
 
 Browser* DownloadItemNotification::GetBrowser() const {
