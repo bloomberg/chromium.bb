@@ -274,12 +274,13 @@ def _WasBuildFileModified(build_file, data, files, toplevel_dir):
 
 def _GetOrCreateTargetByName(targets, target_name):
   """Creates or returns the Target at targets[target_name]. If there is no
-  Target for |target_name| one is created."""
+  Target for |target_name| one is created. Returns a tuple of whether a new
+  Target was created and the Target."""
   if target_name in targets:
-    return targets[target_name]
+    return False, targets[target_name]
   target = Target(target_name)
   targets[target_name] = target
-  return target
+  return True, target
 
 
 def _DoesTargetTypeRequireBuild(target_dict):
@@ -294,6 +295,8 @@ def _GenerateTargets(data, target_list, target_dicts, toplevel_dir, files,
   """Returns a tuple of the following:
   . A dictionary mapping from fully qualified name to Target.
   . A list of the targets that have a source file in |files|.
+  . Set of root Targets reachable from the the files |build_files|. This
+    is the set of targets built by the 'all' target.
   This sets the |match_status| of the targets that contain any of the source
   files in |files| to MATCH_STATUS_MATCHES.
   |toplevel_dir| is the root of the source tree."""
@@ -310,10 +313,18 @@ def _GenerateTargets(data, target_list, target_dicts, toplevel_dir, files,
   # |files|.
   build_file_in_files = {}
 
+  # Root targets across all files.
+  roots = set()
+
+  # Set of Targets in |build_files|.
+  build_file_targets = set()
+
   while len(targets_to_visit) > 0:
     target_name = targets_to_visit.pop()
-    target = _GetOrCreateTargetByName(targets, target_name)
-    if target.visited:
+    created_target, target = _GetOrCreateTargetByName(targets, target_name)
+    if created_target:
+      roots.add(target)
+    elif target.visited:
       continue
 
     target.visited = True
@@ -329,6 +340,9 @@ def _GenerateTargets(data, target_list, target_dicts, toplevel_dir, files,
     if not build_file in build_file_in_files:
       build_file_in_files[build_file] = \
           _WasBuildFileModified(build_file, data, files, toplevel_dir)
+
+    if build_file in build_files:
+      build_file_targets.add(target)
 
     # If a build file (or any of its included files) is modified we assume all
     # targets in the file are modified.
@@ -350,12 +364,14 @@ def _GenerateTargets(data, target_list, target_dicts, toplevel_dir, files,
     for dep in target_dicts[target_name].get('dependencies', []):
       targets_to_visit.append(dep)
 
-      dep_target = _GetOrCreateTargetByName(targets, dep)
+      created_dep_target, dep_target = _GetOrCreateTargetByName(targets, dep)
+      if not created_dep_target:
+        roots.discard(dep_target)
 
       target.deps.add(dep_target)
       dep_target.back_deps.add(target)
 
-  return targets, matching_targets
+  return targets, matching_targets, roots & build_file_targets
 
 
 def _GetUnqualifiedToTargetMapping(all_targets, to_find):
@@ -523,7 +539,7 @@ def GenerateOutput(target_list, target_dicts, data, params):
       _WriteOutput(params, **result_dict)
       return
 
-    all_targets, matching_targets = _GenerateTargets(
+    all_targets, matching_targets, _ = _GenerateTargets(
       data, target_list, target_dicts, toplevel_dir, frozenset(config.files),
       params['build_files'])
 
