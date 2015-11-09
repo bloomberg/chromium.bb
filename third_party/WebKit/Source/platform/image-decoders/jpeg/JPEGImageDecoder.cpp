@@ -335,11 +335,6 @@ public:
 
     ~JPEGImageReader()
     {
-        close();
-    }
-
-    void close()
-    {
 #if USE(QCMSLIB)
         clearColorTransform();
 #endif
