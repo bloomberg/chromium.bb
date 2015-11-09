@@ -1845,7 +1845,7 @@ void LayoutText::checkConsistency() const
 #ifdef CHECK_CONSISTENCY
     const InlineTextBox* prev = nullptr;
     for (const InlineTextBox* child = m_firstTextBox; child; child = child->nextTextBox()) {
-        ASSERT(child->layoutObject() == this);
+        ASSERT(child->lineLayoutItem().isEqual(this));
         ASSERT(child->prevTextBox() == prev);
         prev = child;
     }

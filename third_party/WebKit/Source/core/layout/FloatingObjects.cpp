@@ -171,7 +171,7 @@ void FloatingObjects::clearLineBoxTreePointers()
     // Clear references to originating lines, since the lines are being deleted
     FloatingObjectSetIterator end = m_set.end();
     for (FloatingObjectSetIterator it = m_set.begin(); it != end; ++it) {
-        ASSERT(!((*it)->originatingLine()) || (*it)->originatingLine()->layoutObject() == m_layoutObject);
+        ASSERT(!((*it)->originatingLine()) || (*it)->originatingLine()->lineLayoutItem().isEqual(m_layoutObject));
         (*it)->setOriginatingLine(nullptr);
     }
 }

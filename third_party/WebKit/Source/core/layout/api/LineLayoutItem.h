@@ -44,6 +44,11 @@ public:
     // https://crbug.com/499321
     operator LayoutObject*() const { return m_layoutObject; }
 
+    bool isEqual(const LayoutObject* layoutObject) const
+    {
+        return m_layoutObject == layoutObject;
+    }
+
     bool needsLayout() const
     {
         return m_layoutObject->needsLayout();
