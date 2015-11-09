@@ -152,7 +152,6 @@ bool AUAudioInputStream::Open() {
                                 &enableIO,  // enable
                                 sizeof(enableIO));
   if (result != noErr) {
-    CloseAudioUnit();
     HandleError(result);
     return false;
   }
@@ -166,7 +165,6 @@ bool AUAudioInputStream::Open() {
                                 &enableIO,  // disable
                                 sizeof(enableIO));
   if (result != noErr) {
-    CloseAudioUnit();
     HandleError(result);
     return false;
   }
@@ -180,7 +178,6 @@ bool AUAudioInputStream::Open() {
                                 &input_device_id_,
                                 sizeof(input_device_id_));
   if (result != noErr) {
-    CloseAudioUnit();
     HandleError(result);
     return false;
   }
@@ -195,7 +192,6 @@ bool AUAudioInputStream::Open() {
                                 &format_,
                                 sizeof(format_));
   if (result != noErr) {
-    CloseAudioUnit();
     HandleError(result);
     return false;
   }
@@ -203,7 +199,6 @@ bool AUAudioInputStream::Open() {
   if (!manager_->MaybeChangeBufferSize(input_device_id_, audio_unit_, 1,
                                        number_of_frames_,
                                        &buffer_size_was_changed_)) {
-    CloseAudioUnit();
     return false;
   }
   DLOG_IF(WARNING, buffer_size_was_changed_) << "IO buffer size was changed to "
@@ -222,7 +217,6 @@ bool AUAudioInputStream::Open() {
                                 &callback,
                                 sizeof(callback));
   if (result != noErr) {
-    CloseAudioUnit();
     HandleError(result);
     return false;
   }
@@ -232,7 +226,6 @@ bool AUAudioInputStream::Open() {
   // it can produce in response to a single render call.
   result = AudioUnitInitialize(audio_unit_);
   if (result != noErr) {
-    CloseAudioUnit();
     HandleError(result);
     return false;
   }
