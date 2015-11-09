@@ -590,7 +590,7 @@ void InlineFlowBox::placeBoxesInBlockDirection(LayoutUnit top, LayoutUnit maxHei
     if (descendantsHaveSameLineHeightAndBaseline()) {
         adjustmentForChildrenWithSameLineHeightAndBaseline = logicalTop();
         if (parent())
-            adjustmentForChildrenWithSameLineHeightAndBaseline += (boxModelObject().borderBefore() + boxModelObject().paddingBefore());
+            adjustmentForChildrenWithSameLineHeightAndBaseline += boxModelObject().borderAndPaddingOver();
     }
 
     for (InlineBox* curr = firstChild(); curr; curr = curr->nextOnLine()) {
