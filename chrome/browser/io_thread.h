@@ -36,6 +36,14 @@ namespace base {
 class CommandLine;
 }
 
+#if defined(OS_ANDROID)
+namespace chrome {
+namespace android {
+class ExternalDataUseObserver;
+}
+}
+#endif  // defined(OS_ANDROID)
+
 namespace chrome_browser_net {
 class DnsProbeService;
 }
@@ -257,6 +265,12 @@ class IOThread : public content::BrowserThreadDelegate {
   // Returns true if QUIC should be enabled for data reduction proxy, either as
   // a result of a field trial or a command line flag.
   static bool ShouldEnableQuicForDataReductionProxy();
+
+#if defined(OS_ANDROID)
+chrome::android::ExternalDataUseObserver* external_data_use_observer() const {
+  return external_data_use_observer_.get();
+}
+#endif  // defined(OS_ANDROID)
 
  private:
   // Map from name to value for all parameters associate with a field trial.
@@ -522,8 +536,10 @@ class IOThread : public content::BrowserThreadDelegate {
   // |system_network_delegate|.
   scoped_ptr<data_usage::DataUseAggregator> data_use_aggregator_;
   // An external observer of data use.
-  scoped_ptr<data_usage::DataUseAggregator::Observer>
+#if defined(OS_ANDROID)
+  scoped_ptr<chrome::android::ExternalDataUseObserver>
       external_data_use_observer_;
+#endif  // defined(OS_ANDROID)
 
   const base::TimeTicks creation_time_;
 
