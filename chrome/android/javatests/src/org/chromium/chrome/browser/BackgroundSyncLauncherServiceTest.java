@@ -45,14 +45,9 @@ public class BackgroundSyncLauncherServiceTest extends InstrumentationTestCase {
     protected void setUp() throws Exception {
         mContext = new AdvancedMockContext(getInstrumentation().getTargetContext());
         BackgroundSyncLauncher.setGCMEnabled(false);
+        BackgroundSyncLauncher.setReportingDisabledForTests(true);
         mLauncher = BackgroundSyncLauncher.create(mContext);
         mLauncherService = new MockLauncherService();
-    }
-
-    @Override
-    protected void tearDown() throws Exception {
-        BackgroundSyncLauncher.setGCMEnabled(true);
-        super.tearDown();
     }
 
     private void deleteLauncherInstance() {

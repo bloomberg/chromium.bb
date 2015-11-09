@@ -2712,6 +2712,33 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="BackgroundSync.LaunchTask.CancelSuccess" enum="BooleanSuccess">
+  <owner>iclelland@chromium.org</owner>
+  <summary>
+    Records the result of attempting to cancel a future browser launch using the
+    GCM Network Manager on Android.
+  </summary>
+</histogram>
+
+<histogram name="BackgroundSync.LaunchTask.PlayServicesAvailable"
+    enum="Boolean">
+  <owner>iclelland@chromium.org</owner>
+  <summary>
+    Records whether Google Play Services is available to the Background Sync
+    system on Android, for scheduling future sync events when the browser is not
+    running. This will be logged at most once per run.
+  </summary>
+</histogram>
+
+<histogram name="BackgroundSync.LaunchTask.ScheduleSuccess"
+    enum="BooleanSuccess">
+  <owner>iclelland@chromium.org</owner>
+  <summary>
+    Records the result of attempting to schedule a future browser launch using
+    the GCM Network Manager on Android.
+  </summary>
+</histogram>
+
 <histogram name="BackgroundSync.Registration.OneShot"
     enum="BackgroundSyncStatus">
   <owner>iclelland@chromium.org</owner>

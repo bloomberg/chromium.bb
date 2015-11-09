@@ -15,6 +15,7 @@ import com.google.android.gms.gcm.Task;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
 import org.chromium.chrome.browser.externalauth.UserRecoverableErrorHandler;
 
@@ -42,6 +43,11 @@ public class BackgroundSyncLauncher {
      * creation that the installed Play Services library is out of date.
      */
     private static boolean sGCMEnabled = true;
+
+    /**
+     * Disables automatic reporting of GCM success / failure statistics.
+     */
+    private static boolean sReportingDisabledForTests = false;
 
     /**
      * Create a BackgroundSyncLauncher object, which is owned by C++.
@@ -140,8 +146,13 @@ public class BackgroundSyncLauncher {
         // Check to see if Play Services is up to date, and disable GCM if not.
         // This will not automatically set {@link sGCMEnabled} to true, in case it has been disabled
         // in tests.
-        if (sGCMEnabled && !canUseGooglePlayServices(context)) {
-            setGCMEnabled(false);
+        if (sGCMEnabled) {
+            if (!canUseGooglePlayServices(context)) {
+                setGCMEnabled(false);
+                recordBooleanHistogram("BackgroundSync.LaunchTask.PlayServicesAvailable", false);
+            } else {
+                recordBooleanHistogram("BackgroundSync.LaunchTask.PlayServicesAvailable", true);
+            }
         }
         mScheduler = GcmNetworkManager.getInstance(context);
         launchBrowserWhenNextOnlineIfStopped(context, false);
@@ -164,11 +175,30 @@ public class BackgroundSyncLauncher {
                                     .setPersisted(true)
                                     .setUpdateCurrent(true)
                                     .build();
-        scheduler.schedule(oneoff);
+        try {
+            scheduler.schedule(oneoff);
+            recordBooleanHistogram("BackgroundSync.LaunchTask.ScheduleSuccess", true);
+        } catch (IllegalArgumentException e) {
+            // Log the occurrence so that we can keep track of how often this is happening, and
+            // disable GCM for the remainder of this session.
+            setGCMEnabled(false);
+            recordBooleanHistogram("BackgroundSync.LaunchTask.ScheduleSuccess", false);
+        }
     }
 
     private static void removeScheduledTasks(GcmNetworkManager scheduler) {
-        scheduler.cancelAllTasks(BackgroundSyncLauncherService.class);
+        try {
+            scheduler.cancelAllTasks(BackgroundSyncLauncherService.class);
+            recordBooleanHistogram("BackgroundSync.LaunchTask.CancelSuccess", true);
+        } catch (IllegalArgumentException e) {
+            // This occurs when BackgroundSyncLauncherService is not found in the application
+            // manifest. This should not happen in code that reaches here, but has been seen in
+            // the past. See https://crbug.com/548314
+            // Log the occurrence so that we can keep track of how often this is happening, and
+            // disable GCM for the remainder of this session.
+            setGCMEnabled(false);
+            recordBooleanHistogram("BackgroundSync.LaunchTask.CancelSuccess", false);
+        }
     }
 
     /**
@@ -197,5 +227,16 @@ public class BackgroundSyncLauncher {
     @VisibleForTesting
     static void setGCMEnabled(boolean enabled) {
         sGCMEnabled = enabled;
+    }
+
+    @VisibleForTesting
+    static void setReportingDisabledForTests(boolean disabled) {
+        sReportingDisabledForTests = disabled;
+    }
+
+    private static void recordBooleanHistogram(String name, boolean value) {
+        if (!sReportingDisabledForTests) {
+            RecordHistogram.recordBooleanHistogram(name, value);
+        }
     }
 }
