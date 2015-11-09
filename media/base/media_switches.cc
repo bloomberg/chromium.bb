@@ -20,6 +20,10 @@ const char kDisableMediaThreadForMediaPlayback[] =
 // Sets the MediaSource player that uses the separate media thread
 const char kEnableMediaThreadForMediaPlayback[] =
     "enable-media-thread-for-media-playback";
+
+// Use WebMediaPlayerImpl instead of WebMediaPlayerAndroid. This is a temporary
+// switch for experimenting with unifying the Android playback pipeline.
+const char kEnableUnifiedMediaPipeline[] = "enable-unified-media-pipeline";
 #endif
 
 #if defined(OS_LINUX) || defined(OS_FREEBSD) || defined(OS_SOLARIS)

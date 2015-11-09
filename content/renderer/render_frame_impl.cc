@@ -116,6 +116,7 @@
 #include "gin/modules/module_registry.h"
 #include "media/base/audio_renderer_mixer_input.h"
 #include "media/base/media_log.h"
+#include "media/base/media_switches.h"
 #include "media/blink/webencryptedmediaclient_impl.h"
 #include "media/blink/webmediaplayer_impl.h"
 #include "media/renderers/gpu_video_accelerator_factories.h"
@@ -2176,6 +2177,13 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
 #if defined(OS_ANDROID) && !defined(ENABLE_MEDIA_PIPELINE_ON_ANDROID)
   return CreateAndroidWebMediaPlayer(client, encrypted_client, params);
 #else
+#if defined(ENABLE_MEDIA_PIPELINE_ON_ANDROID)
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableUnifiedMediaPipeline)) {
+    return CreateAndroidWebMediaPlayer(client, encrypted_client, params);
+  }
+#endif  // defined(ENABLE_MEDIA_PIPELINE_ON_ANDROID)
+
 #if defined(ENABLE_MOJO_MEDIA) && !defined(ENABLE_MEDIA_PIPELINE_ON_ANDROID)
   scoped_ptr<media::RendererFactory> media_renderer_factory(
       new media::MojoRendererFactory(GetMediaServiceFactory()));
@@ -2190,7 +2198,7 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
         *render_thread->GetAudioHardwareConfig()));
   }
 #endif  // defined(ENABLE_MOJO_MEDIA) &&
-  // !defined(ENABLE_MEDIA_PIPELINE_ON_ANDROID)
+        // !defined(ENABLE_MEDIA_PIPELINE_ON_ANDROID)
 
   return new media::WebMediaPlayerImpl(
       frame, client, encrypted_client, weak_factory_.GetWeakPtr(),
