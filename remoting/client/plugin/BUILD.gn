@@ -5,6 +5,7 @@
 assert(is_nacl,
        "These targets must only be built using the untrusted NaCl toolchains.")
 
+import("//build/config/features.gni")
 import("//remoting/remoting_srcs.gni")
 
 config("enable_linker_optimization") {
@@ -39,4 +40,18 @@ executable("remoting_client_plugin_newlib") {
   ]
 
   include_dirs = [ "//ppapi/lib/gl/include" ]
+}
+
+if (enable_pnacl && is_debug) {
+  copy("remoting_client_plugin_newlib_debug") {
+    public_deps = [
+      ":remoting_client_plugin_newlib",
+    ]
+    sources = [
+      "$root_out_dir/exe.unstripped/remoting_client_plugin_newlib.pexe",
+    ]
+    outputs = [
+      "$root_out_dir/remoting_client_plugin_newlib.pexe.debug",
+    ]
+  }
 }

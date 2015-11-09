@@ -32,19 +32,22 @@ nacl_toolchain("newlib_pnacl") {
       rebase_path("${nacl_toolchain_dir}/${toolchain_package}/bin/pnacl-",
                   root_build_dir)
 
+  executable_extension = ".pexe"
+
   is_clang = true
   cc = toolprefix + "clang"
   cxx = toolprefix + "clang++"
   ar = toolprefix + "ar"
   ld = cxx
-  executable_extension = ".pexe.debug"
 
-  finalize = toolprefix + "finalize"
-  nonfinal_file =
-      "{{root_out_dir}}/{{target_output_name}}${executable_extension}"
-  finalized_file = "{{root_out_dir}}/{{target_output_name}}.pexe"
-  postlink = "$finalize $nonfinal_file -o $finalized_file"
-  link_outputs = [ finalized_file ]
+  # The pnacl-finalize tool turns a .pexe.debug file into a .pexe file.
+  # It's very similar in purpose to the traditional "strip" utility: it
+  # turns what comes out of the linker into what you actually want to
+  # distribute and run.  PNaCl doesn't have a "strip"-like utility that
+  # you ever actually want to use other than pnacl-finalize, so just
+  # make pnacl-finalize the strip tool rather than adding an additional
+  # step like "postlink" to run pnacl-finalize.
+  strip = toolprefix + "finalize"
 }
 
 nacl_toolchain("newlib_pnacl_nonsfi") {

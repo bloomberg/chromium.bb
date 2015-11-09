@@ -42,7 +42,6 @@ template("nacl_toolchain") {
                              "is_nacl_glibc",
                              "ld",
                              "link_outputs",
-                             "postlink",
                              "symbol_level",
                              "strip",
                              "toolchain_cpu",

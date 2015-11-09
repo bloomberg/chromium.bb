@@ -197,9 +197,9 @@ template("desktop_remoting_webapp") {
     ]
 
     if (enable_pnacl) {
-      pexe_dir = get_label_info(
-              "//remoting/client/plugin:remoting_client_plugin_newlib(//build/toolchain/nacl:newlib_pnacl)",
-              "root_out_dir")
+      pnacl_tc = "//build/toolchain/nacl:newlib_pnacl"
+      pexe_label = "//remoting/client/plugin:remoting_client_plugin_newlib"
+      pexe_dir = get_label_info("${pexe_label}($pnacl_tc)", "root_out_dir")
 
       extra_files += [ "$pexe_dir/remoting_client_plugin_newlib.pexe" ]
       if (is_debug) {
@@ -228,7 +228,10 @@ template("desktop_remoting_webapp") {
     ]
 
     if (enable_pnacl) {
-      deps += [ "//remoting/client/plugin:remoting_client_plugin_newlib(//build/toolchain/nacl:newlib_pnacl)" ]
+      deps += [ "${pexe_label}($pnacl_tc)" ]
+      if (is_debug) {
+        deps += [ "${pexe_label}_debug($pnacl_tc)" ]
+      }
     }
 
     # Create a file that contains a list of all the resource files needed
