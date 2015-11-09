@@ -377,6 +377,9 @@ static std::string GetMimeType(const std::string& filename) {
   } else if (base::EndsWith(filename, ".json",
                             base::CompareCase::INSENSITIVE_ASCII)) {
     return "application/json";
+  } else if (base::EndsWith(filename, ".svg",
+                            base::CompareCase::INSENSITIVE_ASCII)) {
+    return "image/svg+xml";
   }
   LOG(ERROR) << "GetMimeType doesn't know mime type for: "
              << filename
