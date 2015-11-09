@@ -122,9 +122,16 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest,
   MakeTypicalPeerConnectionCall("call({video: true, audio: true});");
 }
 
+
+#if defined(OS_WIN) && !defined(NVALGRIND)
 // Times out on Dr. Memory bots: https://crbug.com/545740
+#define MAYBE_CanSetupCallAndSendDtmf DISABLED_CanSetupCallAndSendDtmf
+#else
+#define MAYBE_CanSetupCallAndSendDtmf CanSetupCallAndSendDtmf
+#endif
+
 IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest,
-                       DISABLED_CanSetupCallAndSendDtmf) {
+                       MAYBE_CanSetupCallAndSendDtmf) {
   MakeTypicalPeerConnectionCall("callAndSendDtmf(\'123,abc\');");
 }
 
