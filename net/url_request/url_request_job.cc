@@ -554,7 +554,9 @@ void URLRequestJob::ReadRawDataComplete(int result) {
   //
   // Update the URLRequest's status first, so that NotifyReadCompleted has an
   // accurate view of the request.
-  if (error == OK && bytes_read > 0) {
+  if (error == ERR_IO_PENDING) {
+    SetStatus(URLRequestStatus(URLRequestStatus::FromError(error)));
+  } else if (error == OK && bytes_read > 0) {
     SetStatus(URLRequestStatus());
   } else {
     NotifyDone(URLRequestStatus::FromError(error));
