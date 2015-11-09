@@ -6,7 +6,7 @@ import("//build/config/ui.gni")
 
 config("mesa_headers_config") {
   include_dirs = [ "src/include" ]
-  if (use_x11) {
+  if (!use_x11) {
     defines = [ "MESA_EGL_NO_X11_HEADERS" ]
   }
 }
