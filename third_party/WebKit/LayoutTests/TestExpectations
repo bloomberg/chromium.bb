@@ -520,6 +520,8 @@ crbug.com/542660 imported/web-platform-tests/html/semantics/text-level-semantics
 crbug.com/542660 imported/web-platform-tests/html/semantics/text-level-semantics/the-bdi-element/bdi-paragraph-level-container.html [ Failure ]
 crbug.com/542660 imported/web-platform-tests/html/semantics/text-level-semantics/the-bdo-element/bdo-override.html [ Failure ]
 
+crbug.com/553277 [ Mac ] editing/spelling/inline-spelling-markers-hidpi-composited.html [ NeedsRebaseline ]
+
 # Ref tests that needs investigation.
 crbug.com/404597 [ Mac ] fast/css3-text/css3-text-justify/text-justify-crash.html [ Failure ]
 crbug.com/404597 fast/forms/long-text-in-input.html [ Failure ]
