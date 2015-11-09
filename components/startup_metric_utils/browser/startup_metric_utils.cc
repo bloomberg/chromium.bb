@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/startup_metric_utils/startup_metric_utils.h"
+#include "components/startup_metric_utils/browser/startup_metric_utils.h"
 
 #include "base/containers/hash_tables.h"
 #include "base/environment.h"

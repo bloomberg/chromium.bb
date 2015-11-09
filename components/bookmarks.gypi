@@ -26,7 +26,6 @@
         'keyed_service_core',
         'pref_registry',
         'query_parser',
-        'startup_metric_utils',
         'url_formatter/url_formatter.gyp:url_formatter',
       ],
       'sources': [

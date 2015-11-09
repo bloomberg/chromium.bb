@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_STARTUP_METRIC_UTILS_STARTUP_METRIC_UTILS_H_
-#define COMPONENTS_STARTUP_METRIC_UTILS_STARTUP_METRIC_UTILS_H_
+#ifndef COMPONENTS_STARTUP_METRIC_UTILS_BROWSER_STARTUP_METRIC_UTILS_H_
+#define COMPONENTS_STARTUP_METRIC_UTILS_BROWSER_STARTUP_METRIC_UTILS_H_
 
 #include <string>
 
@@ -104,4 +104,4 @@ StartupTemperature GetStartupTemperature();
 
 }  // namespace startup_metric_utils
 
-#endif  // COMPONENTS_STARTUP_METRIC_UTILS_STARTUP_METRIC_UTILS_H_
+#endif  // COMPONENTS_STARTUP_METRIC_UTILS_BROWSER_STARTUP_METRIC_UTILS_H_
