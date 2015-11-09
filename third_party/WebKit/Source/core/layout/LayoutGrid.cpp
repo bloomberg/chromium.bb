@@ -473,8 +473,7 @@ void LayoutGrid::computeUsedBreadthOfGridTracks(GridTrackSizingDirection directi
         for (size_t i = 0; i < flexibleSizedTracksIndex.size(); ++i) {
             GridIterator iterator(m_grid, direction, flexibleSizedTracksIndex[i]);
             while (LayoutBox* gridItem = iterator.nextGridItem()) {
-                const GridCoordinate coordinate = cachedGridCoordinate(*gridItem);
-                const GridSpan span = (direction == ForColumns) ? coordinate.columns : coordinate.rows;
+                const GridSpan span = cachedGridSpan(*gridItem, direction);
 
                 // Do not include already processed items.
                 if (i > 0 && span.resolvedInitialPosition.toInt() <= flexibleSizedTracksIndex[i - 1])
@@ -689,39 +688,32 @@ LayoutUnit LayoutGrid::maxContentForChild(LayoutBox& child, GridTrackSizingDirec
     return logicalHeightForChild(child, columnTracks);
 }
 
-// We're basically using a class instead of a std::pair for two reasons. First of all, accessing gridItem() or
-// coordinate() is much more self-explanatory that using .first or .second members in the pair. Secondly the class
-// allows us to precompute the value of the span, something which is quite convenient for the sorting. Having a
-// std::pair<LayoutBox*, size_t> does not work either because we still need the GridCoordinate so we'd have to add an
-// extra hash lookup for each item at the beginning of LayoutGrid::resolveContentBasedTrackSizingFunctionsForItems().
+// We're basically using a class instead of a std::pair because of accessing gridItem() or gridSpan() is much more
+// self-explanatory that using .first or .second members in the pair. Having a std::pair<LayoutBox*, size_t>
+// does not work either because we still need the GridSpan so we'd have to add an extra hash lookup for each item
+// at the beginning of LayoutGrid::resolveContentBasedTrackSizingFunctionsForItems().
 class GridItemWithSpan {
 public:
-    GridItemWithSpan(LayoutBox& gridItem, const GridCoordinate& coordinate, GridTrackSizingDirection direction)
+    GridItemWithSpan(LayoutBox& gridItem, const GridSpan& gridSpan)
         : m_gridItem(&gridItem)
-        , m_coordinate(coordinate)
+        , m_gridSpan(gridSpan)
     {
-        const GridSpan& span = (direction == ForRows) ? coordinate.rows : coordinate.columns;
-        m_span = span.resolvedFinalPosition.toInt() - span.resolvedInitialPosition.toInt() + 1;
     }
 
     LayoutBox& gridItem() const { return *m_gridItem; }
-    GridCoordinate coordinate() const { return m_coordinate; }
-#if ENABLE(ASSERT)
-    size_t span() const { return m_span; }
-#endif
+    GridSpan gridSpan() const { return m_gridSpan; }
 
-    bool operator<(const GridItemWithSpan other) const { return m_span < other.m_span; }
+    bool operator<(const GridItemWithSpan other) const { return m_gridSpan.integerSpan() < other.m_gridSpan.integerSpan(); }
 
 private:
     LayoutBox* m_gridItem;
-    GridCoordinate m_coordinate;
-    size_t m_span;
+    GridSpan m_gridSpan;
 };
 
-bool LayoutGrid::spanningItemCrossesFlexibleSizedTracks(const GridCoordinate& coordinate, GridTrackSizingDirection direction) const
+bool LayoutGrid::spanningItemCrossesFlexibleSizedTracks(const GridSpan& span, GridTrackSizingDirection direction) const
 {
-    const GridResolvedPosition initialTrackPosition = (direction == ForColumns) ? coordinate.columns.resolvedInitialPosition : coordinate.rows.resolvedInitialPosition;
-    const GridResolvedPosition finalTrackPosition = (direction == ForColumns) ? coordinate.columns.resolvedFinalPosition : coordinate.rows.resolvedFinalPosition;
+    const GridResolvedPosition initialTrackPosition = span.resolvedInitialPosition;
+    const GridResolvedPosition finalTrackPosition = span.resolvedFinalPosition;
 
     for (GridResolvedPosition trackPosition = initialTrackPosition; trackPosition <= finalTrackPosition; ++trackPosition) {
         const GridTrackSize& trackSize = gridTrackSize(direction, trackPosition.toInt());
@@ -730,11 +722,6 @@ bool LayoutGrid::spanningItemCrossesFlexibleSizedTracks(const GridCoordinate& co
     }
 
     return false;
-}
-
-static inline size_t integerSpanForDirection(const GridCoordinate& coordinate, GridTrackSizingDirection direction)
-{
-    return (direction == ForRows) ? coordinate.rows.integerSpan() : coordinate.columns.integerSpan();
 }
 
 void LayoutGrid::resolveContentBasedTrackSizingFunctions(GridTrackSizingDirection direction, GridSizingData& sizingData)
@@ -746,11 +733,11 @@ void LayoutGrid::resolveContentBasedTrackSizingFunctions(GridTrackSizingDirectio
         GridTrack& track = (direction == ForColumns) ? sizingData.columnTracks[trackIndex] : sizingData.rowTracks[trackIndex];
         while (LayoutBox* gridItem = iterator.nextGridItem()) {
             if (itemsSet.add(gridItem).isNewEntry) {
-                const GridCoordinate& coordinate = cachedGridCoordinate(*gridItem);
-                if (integerSpanForDirection(coordinate, direction) == 1) {
-                    resolveContentBasedTrackSizingFunctionsForNonSpanningItems(direction, coordinate, *gridItem, track, sizingData.columnTracks);
-                } else if (!spanningItemCrossesFlexibleSizedTracks(coordinate, direction)) {
-                    sizingData.itemsSortedByIncreasingSpan.append(GridItemWithSpan(*gridItem, coordinate, direction));
+                const GridSpan& span = cachedGridSpan(*gridItem, direction);
+                if (span.integerSpan() == 1) {
+                    resolveContentBasedTrackSizingFunctionsForNonSpanningItems(direction, span, *gridItem, track, sizingData.columnTracks);
+                } else if (!spanningItemCrossesFlexibleSizedTracks(span, direction)) {
+                    sizingData.itemsSortedByIncreasingSpan.append(GridItemWithSpan(*gridItem, span));
                 }
             }
         }
@@ -776,9 +763,9 @@ void LayoutGrid::resolveContentBasedTrackSizingFunctions(GridTrackSizingDirectio
     }
 }
 
-void LayoutGrid::resolveContentBasedTrackSizingFunctionsForNonSpanningItems(GridTrackSizingDirection direction, const GridCoordinate& coordinate, LayoutBox& gridItem, GridTrack& track, Vector<GridTrack>& columnTracks)
+void LayoutGrid::resolveContentBasedTrackSizingFunctionsForNonSpanningItems(GridTrackSizingDirection direction, const GridSpan& span, LayoutBox& gridItem, GridTrack& track, Vector<GridTrack>& columnTracks)
 {
-    const GridResolvedPosition trackPosition = (direction == ForColumns) ? coordinate.columns.resolvedInitialPosition : coordinate.rows.resolvedInitialPosition;
+    const GridResolvedPosition trackPosition = span.resolvedInitialPosition;
     GridTrackSize trackSize = gridTrackSize(direction, trackPosition.toInt());
 
     if (trackSize.hasMinContentMinTrackBreadth())
@@ -930,9 +917,8 @@ void LayoutGrid::resolveContentBasedTrackSizingFunctionsForItems(GridTrackSizing
 
     for (auto it = gridItemsWithSpan.rangeStart; it != gridItemsWithSpan.rangeEnd; ++it) {
         GridItemWithSpan& gridItemWithSpan = *it;
-        ASSERT(gridItemWithSpan.span() > 1);
-        const GridCoordinate coordinate = gridItemWithSpan.coordinate();
-        const GridSpan& itemSpan = (direction == ForColumns) ? coordinate.columns : coordinate.rows;
+        ASSERT(gridItemWithSpan.gridSpan().integerSpan() > 1);
+        const GridSpan& itemSpan = gridItemWithSpan.gridSpan();
 
         sizingData.growBeyondGrowthLimitsTracks.shrink(0);
         sizingData.filteredTracks.shrink(0);
@@ -1496,10 +1482,15 @@ GridCoordinate LayoutGrid::cachedGridCoordinate(const LayoutBox& gridItem) const
     return m_gridItemCoordinate.get(&gridItem);
 }
 
+GridSpan LayoutGrid::cachedGridSpan(const LayoutBox& gridItem, GridTrackSizingDirection direction) const
+{
+    GridCoordinate coordinate = cachedGridCoordinate(gridItem);
+    return direction == ForColumns ? coordinate.columns : coordinate.rows;
+}
+
 LayoutUnit LayoutGrid::gridAreaBreadthForChild(const LayoutBox& child, GridTrackSizingDirection direction, const Vector<GridTrack>& tracks) const
 {
-    const GridCoordinate& coordinate = cachedGridCoordinate(child);
-    const GridSpan& span = (direction == ForColumns) ? coordinate.columns : coordinate.rows;
+    const GridSpan& span = cachedGridSpan(child, direction);
     LayoutUnit gridAreaBreadth = 0;
     for (GridSpan::iterator trackPosition = span.begin(); trackPosition != span.end(); ++trackPosition)
         gridAreaBreadth += tracks[trackPosition.toInt()].baseSize();
@@ -1514,8 +1505,7 @@ LayoutUnit LayoutGrid::gridAreaBreadthForChildIncludingAlignmentOffsets(const La
     // We need the cached value when available because Content Distribution alignment properties
     // may have some influence in the final grid area breadth.
     const Vector<GridTrack>& tracks = (direction == ForColumns) ? sizingData.columnTracks : sizingData.rowTracks;
-    const GridCoordinate& coordinate = cachedGridCoordinate(child);
-    const GridSpan& span = (direction == ForColumns) ? coordinate.columns : coordinate.rows;
+    const GridSpan& span = cachedGridSpan(child, direction);
     const Vector<LayoutUnit>& linePositions = (direction == ForColumns) ? m_columnPositions : m_rowPositions;
     LayoutUnit initialTrackPosition = linePositions[span.resolvedInitialPosition.toInt()];
     LayoutUnit finalTrackPosition = linePositions[span.resolvedFinalPosition.toInt()];
@@ -1826,8 +1816,8 @@ static inline LayoutUnit offsetBetweenTracks(ContentDistributionType distributio
 
 LayoutUnit LayoutGrid::columnAxisOffsetForChild(const LayoutBox& child) const
 {
-    const GridCoordinate& coordinate = cachedGridCoordinate(child);
-    size_t childStartLine = coordinate.rows.resolvedInitialPosition.toInt();
+    const GridSpan& rowsSpan = cachedGridSpan(child, ForRows);
+    size_t childStartLine = rowsSpan.resolvedInitialPosition.toInt();
     LayoutUnit startOfRow = m_rowPositions[childStartLine];
     LayoutUnit startPosition = startOfRow + marginBeforeForChild(child);
     if (hasAutoMarginsInColumnAxis(child))
@@ -1838,7 +1828,7 @@ LayoutUnit LayoutGrid::columnAxisOffsetForChild(const LayoutBox& child) const
         return startPosition;
     case GridAxisEnd:
     case GridAxisCenter: {
-        size_t childEndLine = coordinate.rows.resolvedFinalPosition.next().toInt();
+        size_t childEndLine = rowsSpan.resolvedFinalPosition.next().toInt();
         LayoutUnit endOfRow = m_rowPositions[childEndLine];
         // m_rowPositions include gutters so we need to substract them to get the actual end position for a given
         // row (this does not have to be done for the last track as there are no more m_rowPositions after it)
@@ -1858,8 +1848,8 @@ LayoutUnit LayoutGrid::columnAxisOffsetForChild(const LayoutBox& child) const
 
 LayoutUnit LayoutGrid::rowAxisOffsetForChild(const LayoutBox& child) const
 {
-    const GridCoordinate& coordinate = cachedGridCoordinate(child);
-    size_t childStartLine = coordinate.columns.resolvedInitialPosition.toInt();
+    const GridSpan& columnsSpan = cachedGridSpan(child, ForColumns);
+    size_t childStartLine = columnsSpan.resolvedInitialPosition.toInt();
     LayoutUnit startOfColumn = m_columnPositions[childStartLine];
     LayoutUnit startPosition = startOfColumn + marginStartForChild(child);
     if (hasAutoMarginsInRowAxis(child))
@@ -1870,7 +1860,7 @@ LayoutUnit LayoutGrid::rowAxisOffsetForChild(const LayoutBox& child) const
         return startPosition;
     case GridAxisEnd:
     case GridAxisCenter: {
-        size_t childEndLine = coordinate.columns.resolvedFinalPosition.next().toInt();
+        size_t childEndLine = columnsSpan.resolvedFinalPosition.next().toInt();
         LayoutUnit endOfColumn = m_columnPositions[childEndLine];
         // m_columnPositions include gutters so we need to substract them to get the actual end position for a given
         // column (this does not have to be done for the last track as there are no more m_columnPositions after it)
