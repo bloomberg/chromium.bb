@@ -359,6 +359,7 @@ source_set("test_support") {
   configs += [ "//media:media_config" ]
   deps = [
     "//testing/gmock",
+    "//media:shared_memory_support",
   ]
 }
 
