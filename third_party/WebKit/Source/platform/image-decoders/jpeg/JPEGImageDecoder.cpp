@@ -590,11 +590,11 @@ public:
                     if (!m_decoder->outputScanlines()) {
                         if (m_decoder->failed())
                             return false;
+                        // If no scan lines were read, flag it so we don't call
+                        // jpeg_start_output() multiple times for the same scan.
                         if (!m_info.output_scanline)
-                            // Didn't manage to read any lines - flag so we
-                            // don't call jpeg_start_output() multiple times for
-                            // the same scan.
                             m_info.output_scanline = 0xffffff;
+
                         return false; // I/O suspension.
                     }
 
@@ -804,9 +804,9 @@ IntSize JPEGImageDecoder::decodedYUVSize(int component, ImageDecoder::SizeType s
 unsigned JPEGImageDecoder::desiredScaleNumerator() const
 {
     size_t originalBytes = size().width() * size().height() * 4;
-    if (originalBytes <= m_maxDecodedBytes) {
+
+    if (originalBytes <= m_maxDecodedBytes)
         return scaleDenominator;
-    }
 
     // Downsample according to the maximum decoded size.
     unsigned scaleNumerator = static_cast<unsigned>(floor(sqrt(
@@ -827,6 +827,7 @@ bool JPEGImageDecoder::decodeToYUV()
 {
     if (!hasImagePlanes())
         return false;
+
     PlatformInstrumentation::willDecodeImage("JPEG");
     decode(false);
     PlatformInstrumentation::didDecodeImage();
@@ -896,6 +897,7 @@ static bool outputRawData(JPEGImageReader* reader, ImagePlanes* imagePlanes)
 {
     JSAMPARRAY samples = reader->samples();
     jpeg_decompress_struct* info = reader->info();
+
     JSAMPARRAY bufferraw[3];
     JSAMPROW bufferraw2[32];
     bufferraw[0] = &bufferraw2[0]; // Y channel rows (8 or 16)
@@ -935,6 +937,7 @@ static bool outputRawData(JPEGImageReader* reader, ImagePlanes* imagePlanes)
                 bufferraw2[i] = dummyRow;
             }
         }
+
         int scaledScanline = info->output_scanline / v;
         // Assign 8 rows of memory to read the U and V channels.
         for (int i = 0; i < 8; ++i) {
@@ -951,14 +954,14 @@ static bool outputRawData(JPEGImageReader* reader, ImagePlanes* imagePlanes)
                 bufferraw2[24 + i] = dummyRow;
             }
         }
-        JDIMENSION scanlinesRead = jpeg_read_raw_data(info, bufferraw, yScanlinesToRead);
 
-        if (scanlinesRead == 0)
+        JDIMENSION scanlinesRead = jpeg_read_raw_data(info, bufferraw, yScanlinesToRead);
+        if (!scanlinesRead)
             return false;
 
-        if (hasYLastRow) {
+        if (hasYLastRow)
             memcpy(&outputY[yMaxH * rowBytesY], yLastRow, yWidth);
-        }
+
         if (hasUVLastRow) {
             memcpy(&outputU[uvMaxH * rowBytesU], uLastRow, uvSize.width());
             memcpy(&outputV[uvMaxH * rowBytesV], vLastRow, uvSize.width());
@@ -966,15 +969,13 @@ static bool outputRawData(JPEGImageReader* reader, ImagePlanes* imagePlanes)
     }
 
     info->output_scanline = std::min(info->output_scanline, info->output_height);
-
     return true;
 }
 
 bool JPEGImageDecoder::outputScanlines()
 {
-    if (hasImagePlanes()) {
+    if (hasImagePlanes())
         return outputRawData(m_reader.get(), m_imagePlanes.get());
-    }
 
     if (m_frameBufferCache.isEmpty())
         return false;
@@ -989,9 +990,10 @@ bool JPEGImageDecoder::outputScanlines()
 
         if (!buffer.setSize(info->output_width, info->output_height))
             return setFailed();
-        buffer.setStatus(ImageFrame::FramePartial);
+
         // The buffer is transparent outside the decoded area while the image is
         // loading. The image will be marked fully opaque in complete().
+        buffer.setStatus(ImageFrame::FramePartial);
         buffer.setHasAlpha(true);
 
         // For JPEGs, the frame always fills the entire image.
