@@ -317,6 +317,8 @@
       'browser/browser_shutdown.h',
       'browser/browser_util_win.cc',
       'browser/browser_util_win.h',
+      'browser/browsing_data/autofill_counter.cc',
+      'browser/browsing_data/autofill_counter.h',
       'browser/browsing_data/browsing_data_appcache_helper.cc',
       'browser/browsing_data/browsing_data_appcache_helper.h',
       'browser/browsing_data/browsing_data_cache_storage_helper.cc',
