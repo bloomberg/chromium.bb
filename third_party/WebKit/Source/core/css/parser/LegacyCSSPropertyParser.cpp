@@ -419,14 +419,6 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
         }
         break;
 
-    case CSSPropertyOutlineColor:        // <color> | invert | inherit
-        // Outline color has "invert" as additional keyword.
-        // Also, we want to allow the special focus color even in HTML Standard parsing mode.
-        if (id == CSSValueInvert || id == CSSValueWebkitFocusRingColor) {
-            validPrimitive = true;
-            break;
-        }
-        /* nobreak */
     case CSSPropertyBackgroundColor: // <color> | inherit
     case CSSPropertyBorderTopColor: // <color> | inherit
     case CSSPropertyBorderRightColor:
@@ -607,7 +599,6 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
             unitless = FUnitlessQuirk;
         // fall through
     case CSSPropertyWebkitTextStrokeWidth:
-    case CSSPropertyOutlineWidth: // <border-width> | inherit
     case CSSPropertyWebkitBorderStartWidth:
     case CSSPropertyWebkitBorderEndWidth:
     case CSSPropertyWebkitBorderBeforeWidth:
@@ -748,9 +739,6 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     case CSSPropertyBorderRadius:
     case CSSPropertyAliasWebkitBorderRadius:
         return parseBorderRadius(unresolvedProperty, important);
-    case CSSPropertyOutlineOffset:
-        validPrimitive = validUnit(value, FLength);
-        break;
     case CSSPropertyWebkitBoxReflect:
         if (id == CSSValueNone)
             validPrimitive = true;
@@ -1021,9 +1009,6 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
         return parseShorthand(propId, webkitBorderBeforeShorthand(), important);
     case CSSPropertyWebkitBorderAfter:
         return parseShorthand(propId, webkitBorderAfterShorthand(), important);
-    case CSSPropertyOutline:
-        // [ 'outline-color' || 'outline-style' || 'outline-width' ] | inherit
-        return parseShorthand(propId, outlineShorthand(), important);
     case CSSPropertyBorderColor:
         // <color>{1,4} | inherit
         return parse4Values(propId, borderColorShorthand().properties(), important);
@@ -1188,6 +1173,10 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     case CSSPropertyWebkitTextEmphasisColor:
     case CSSPropertyWebkitTextEmphasisStyle:
     case CSSPropertyWebkitTextEmphasis:
+    case CSSPropertyOutline:
+    case CSSPropertyOutlineColor:
+    case CSSPropertyOutlineWidth:
+    case CSSPropertyOutlineOffset:
         validPrimitive = false;
         break;
 

@@ -1579,6 +1579,23 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeTextEmphasisStyle(CSSParserTokenR
     return nullptr;
 }
 
+static PassRefPtrWillBeRawPtr<CSSValue> consumeOutlineColor(CSSParserTokenRange& range, const CSSParserContext& context)
+{
+    // Outline color has "invert" as additional keyword.
+    // Also, we want to allow the special focus color even in HTML Standard parsing mode.
+    if (range.peek().id() == CSSValueInvert || range.peek().id() == CSSValueWebkitFocusRingColor)
+        return consumeIdent(range);
+    return consumeColor(range, context);
+}
+
+static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeLineWidth(CSSParserTokenRange& range, CSSParserMode cssParserMode)
+{
+    CSSValueID id = range.peek().id();
+    if (id == CSSValueThin || id == CSSValueMedium || id == CSSValueThick)
+        return consumeIdent(range);
+    return consumeLength(range, cssParserMode, ValueRangeNonNegative);
+}
+
 PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSPropertyID unresolvedProperty)
 {
     CSSPropertyID property = resolveCSSPropertyID(unresolvedProperty);
@@ -1707,6 +1724,12 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSProperty
         return consumeMotionRotation(m_range, m_context.mode());
     case CSSPropertyWebkitTextEmphasisStyle:
         return consumeTextEmphasisStyle(m_range);
+    case CSSPropertyOutlineColor:
+        return consumeOutlineColor(m_range, m_context);
+    case CSSPropertyOutlineOffset:
+        return consumeLength(m_range, m_context.mode(), ValueRangeAll);
+    case CSSPropertyOutlineWidth:
+        return consumeLineWidth(m_range, m_context.mode());
     default:
         return nullptr;
     }
@@ -2185,6 +2208,8 @@ bool CSSPropertyParser::parseShorthand(CSSPropertyID unresolvedProperty, bool im
         return consumeShorthandGreedily(motionShorthand(), important);
     case CSSPropertyWebkitTextEmphasis:
         return consumeShorthandGreedily(webkitTextEmphasisShorthand(), important);
+    case CSSPropertyOutline:
+        return consumeShorthandGreedily(outlineShorthand(), important);
     default:
         m_currentShorthand = oldShorthand;
         return false;
