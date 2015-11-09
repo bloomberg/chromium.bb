@@ -174,11 +174,12 @@ void CmaMessageFilterHost::DeleteEntries() {
 
   for (MediaPipelineMap::iterator it = media_pipelines_.begin();
        it != media_pipelines_.end(); ) {
+    int media_id = it->first;
     scoped_ptr<MediaPipelineHost> media_pipeline(it->second);
     media_pipelines_.erase(it++);
     task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&DestroyMediaPipeline, process_id_, it->first,
+        base::Bind(&DestroyMediaPipeline, process_id_, media_id,
                    base::Passed(&media_pipeline)));
   }
 }
