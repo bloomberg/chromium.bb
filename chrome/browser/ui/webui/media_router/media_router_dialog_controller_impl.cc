@@ -34,7 +34,7 @@ using content::WebUIMessageHandler;
 using ui::WebDialogDelegate;
 
 namespace {
-const int kMaxHeight = 300;
+const int kMaxHeight = 400;
 #if !defined(OS_MACOSX)
 const int kMinHeight = 80;
 #endif  // !defined(OS_MACOSX)
