@@ -426,7 +426,6 @@ v8.log
 /third_party/yasm/source/patched-yasm
 /third_party/yasm/yasm.xml
 /tools/.bisect-builds-cache.json
-/tools/deps2git/
 /tools/distcc
 /tools/gn/bin/linux
 /tools/gn/bin/mac

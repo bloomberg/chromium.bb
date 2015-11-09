@@ -242,9 +242,6 @@ deps = {
   'src/third_party/libphonenumber/src/resources':
     Var('chromium_git') + '/external/libphonenumber/resources.git' + '@' + 'b6dfdc7952571ff7ee72643cd88c988cbe966396',
 
-  'src/tools/deps2git':
-   Var('chromium_git') + '/chromium/tools/deps2git.git' + '@' + 'f04828eb0b5acd3e7ad983c024870f17f17b06d9',
-
   'src/third_party/webpagereplay':
    Var('chromium_git') + '/external/github.com/chromium/web-page-replay.git' + '@' + '7564939bdf6482d57b9bd5e9c931679f96d8cf75',
 
