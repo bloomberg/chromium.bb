@@ -23,12 +23,12 @@ namespace media {
 // TODO(dalecurtis): Delete this class once we have a proper mojo audio service;
 // tracked by http://crbug.com/425368
 class MEDIA_EXPORT AudioOutputStreamSink
-    : NON_EXPORTED_BASE(public AudioRendererSink),
+    : NON_EXPORTED_BASE(public RestartableAudioRendererSink),
       public AudioOutputStream::AudioSourceCallback {
  public:
   AudioOutputStreamSink();
 
-  // AudioRendererSink implementation.
+  // RestartableAudioRendererSink implementation.
   void Initialize(const AudioParameters& params,
                   RenderCallback* callback) override;
   void Start() override;
@@ -44,36 +44,38 @@ class MEDIA_EXPORT AudioOutputStreamSink
 
  private:
   ~AudioOutputStreamSink() override;
+  void ClearCallback();
 
   // Helper methods for running AudioManager methods on the audio thread.
-  void DoStart();
+  void DoStart(const AudioParameters& params);
   void DoStop();
   void DoPause();
   void DoPlay();
   void DoSetVolume(double volume);
 
-  // Clears |active_render_callback_| under lock, synchronously stopping render
-  // callbacks from any thread.  Must be called before Pause() and Stop()
-  // trampoline to their helper methods on the audio thread.
-  void ClearCallback();
+  bool initialized_;
+  bool started_;
 
-  // Parameters provided by Initialize(), cached for use on other threads.
+  // Parameters provided by Initialize().
   AudioParameters params_;
-
-  // Since Initialize() is only called once for AudioRenderSinks, save the
-  // callback both here and under |active_render_callback_| which will be
-  // cleared during Pause() and Stop() to achieve "synchronous" stoppage.
   RenderCallback* render_callback_;
+
+  // State latched for the audio thread.
+  // |active_render_callback_| allows Stop()/Pause() to synchronously prevent
+  // callbacks. Access is synchronized by |callback_lock_|.
+  // |active_params_| is set on the audio thread and therefore does not need
+  // synchronization.
+  AudioParameters active_params_;
+  RenderCallback* active_render_callback_;
+
+  // Lock to synchronize setting and clearing of |active_render_callback_|.
+  base::Lock callback_lock_;
 
   // The task runner for the audio thread.
   const scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner_;
 
   // The actual AudioOutputStream, must only be accessed on the audio thread.
   AudioOutputStream* stream_;
-
-  // Lock and callback for forwarding OnMoreData() calls into Render() calls.
-  base::Lock callback_lock_;
-  RenderCallback* active_render_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioOutputStreamSink);
 };

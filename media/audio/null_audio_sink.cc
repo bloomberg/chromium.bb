@@ -15,16 +15,16 @@ namespace media {
 NullAudioSink::NullAudioSink(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner)
     : initialized_(false),
+      started_(false),
       playing_(false),
       callback_(NULL),
-      task_runner_(task_runner) {
-}
+      task_runner_(task_runner) {}
 
 NullAudioSink::~NullAudioSink() {}
 
 void NullAudioSink::Initialize(const AudioParameters& params,
                                RenderCallback* callback) {
-  DCHECK(!initialized_);
+  DCHECK(!started_);
   fake_worker_.reset(new FakeAudioWorker(task_runner_, params));
   audio_bus_ = AudioBus::Create(params);
   callback_ = callback;
@@ -33,12 +33,14 @@ void NullAudioSink::Initialize(const AudioParameters& params,
 
 void NullAudioSink::Start() {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  DCHECK(!playing_);
+  DCHECK(initialized_);
+  DCHECK(!started_);
+  started_ = true;
 }
 
 void NullAudioSink::Stop() {
   DCHECK(task_runner_->BelongsToCurrentThread());
-
+  started_ = false;
   // Stop may be called at any time, so we have to check before stopping.
   if (fake_worker_)
     fake_worker_->Stop();
@@ -46,18 +48,20 @@ void NullAudioSink::Stop() {
 
 void NullAudioSink::Play() {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  DCHECK(initialized_);
+  DCHECK(started_);
 
   if (playing_)
     return;
 
   fake_worker_->Start(base::Bind(
       &NullAudioSink::CallRender, base::Unretained(this)));
+
   playing_ = true;
 }
 
 void NullAudioSink::Pause() {
   DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(started_);
 
   if (!playing_)
     return;

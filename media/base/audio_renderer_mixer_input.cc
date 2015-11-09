@@ -15,8 +15,8 @@ AudioRendererMixerInput::AudioRendererMixerInput(
     const RemoveMixerCB& remove_mixer_cb,
     const std::string& device_id,
     const url::Origin& security_origin)
-    : playing_(false),
-      initialized_(false),
+    : initialized_(false),
+      playing_(false),
       volume_(1.0f),
       get_mixer_cb_(get_mixer_cb),
       remove_mixer_cb_(remove_mixer_cb),
@@ -28,15 +28,14 @@ AudioRendererMixerInput::AudioRendererMixerInput(
                            base::Unretained(this))) {}
 
 AudioRendererMixerInput::~AudioRendererMixerInput() {
-  DCHECK(!playing_);
   DCHECK(!mixer_);
 }
 
 void AudioRendererMixerInput::Initialize(
     const AudioParameters& params,
     AudioRendererSink::RenderCallback* callback) {
+  DCHECK(!mixer_);
   DCHECK(callback);
-  DCHECK(!initialized_);
 
   params_ = params;
   callback_ = callback;
@@ -45,7 +44,6 @@ void AudioRendererMixerInput::Initialize(
 
 void AudioRendererMixerInput::Start() {
   DCHECK(initialized_);
-  DCHECK(!playing_);
   DCHECK(!mixer_);
   mixer_ = get_mixer_cb_.Run(params_, device_id_, security_origin_, nullptr);
   if (!mixer_) {

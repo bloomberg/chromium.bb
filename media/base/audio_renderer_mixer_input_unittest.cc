@@ -147,10 +147,18 @@ TEST_F(AudioRendererMixerInputTest, StopBeforeInitializeOrStart) {
 }
 
 // Test that Start() can be called after Stop().
-// TODO(dalecurtis): We shouldn't allow this.  See http://crbug.com/151051
 TEST_F(AudioRendererMixerInputTest, StartAfterStop) {
   mixer_input_->Stop();
   mixer_input_->Start();
+  mixer_input_->Stop();
+}
+
+// Test that Initialize() can be called again after Stop().
+TEST_F(AudioRendererMixerInputTest, InitializeAfterStop) {
+  mixer_input_->Initialize(audio_parameters_, fake_callback_.get());
+  mixer_input_->Start();
+  mixer_input_->Stop();
+  mixer_input_->Initialize(audio_parameters_, fake_callback_.get());
   mixer_input_->Stop();
 }
 

@@ -79,6 +79,16 @@ class AudioRendererSink
   virtual ~AudioRendererSink() {}
 };
 
+// Same as AudioRendererSink except that Initialize() and Start() can be called
+// again after Stop().
+// TODO(sandersd): Fold back into AudioRendererSink once all subclasses support
+// this.
+
+class RestartableAudioRendererSink : public AudioRendererSink {
+ protected:
+  ~RestartableAudioRendererSink() override {}
+};
+
 }  // namespace media
 
 #endif  // MEDIA_BASE_AUDIO_RENDERER_SINK_H_

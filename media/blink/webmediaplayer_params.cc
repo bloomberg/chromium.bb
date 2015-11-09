@@ -13,7 +13,7 @@ namespace media {
 
 WebMediaPlayerParams::WebMediaPlayerParams(
     const DeferLoadCB& defer_load_cb,
-    const scoped_refptr<AudioRendererSink>& audio_renderer_sink,
+    const scoped_refptr<RestartableAudioRendererSink>& audio_renderer_sink,
     const scoped_refptr<MediaLog>& media_log,
     const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
     const scoped_refptr<base::TaskRunner>& worker_task_runner,

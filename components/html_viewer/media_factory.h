@@ -30,7 +30,7 @@ class WebMediaPlayerEncryptedMediaClient;
 
 namespace media {
 class AudioManager;
-class AudioRendererSink;
+class RestartableAudioRendererSink;
 class CdmFactory;
 class MediaPermission;
 class WebEncryptedMediaClientImpl;
@@ -70,7 +70,7 @@ class MediaFactory {
 
 #if !defined(OS_ANDROID)
   const media::AudioHardwareConfig& GetAudioHardwareConfig();
-  scoped_refptr<media::AudioRendererSink> CreateAudioRendererSink();
+  scoped_refptr<media::RestartableAudioRendererSink> CreateAudioRendererSink();
   scoped_refptr<base::SingleThreadTaskRunner> GetMediaThreadTaskRunner();
 
   base::Thread media_thread_;

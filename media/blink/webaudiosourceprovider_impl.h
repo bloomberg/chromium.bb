@@ -32,17 +32,17 @@ namespace media {
 // All calls are protected by a lock.
 class MEDIA_BLINK_EXPORT WebAudioSourceProviderImpl
     : NON_EXPORTED_BASE(public blink::WebAudioSourceProvider),
-      NON_EXPORTED_BASE(public AudioRendererSink) {
+      NON_EXPORTED_BASE(public RestartableAudioRendererSink) {
  public:
   explicit WebAudioSourceProviderImpl(
-      const scoped_refptr<AudioRendererSink>& sink);
+      const scoped_refptr<RestartableAudioRendererSink>& sink);
 
   // blink::WebAudioSourceProvider implementation.
   void setClient(blink::WebAudioSourceProviderClient* client) override;
   void provideInput(const blink::WebVector<float*>& audio_data,
                     size_t number_of_frames) override;
 
-  // AudioRendererSink implementation.
+  // RestartableAudioRendererSink implementation.
   void Start() override;
   void Stop() override;
   void Play() override;
@@ -79,7 +79,7 @@ class MEDIA_BLINK_EXPORT WebAudioSourceProviderImpl
 
   // Where audio ends up unless overridden by |client_|.
   base::Lock sink_lock_;
-  scoped_refptr<AudioRendererSink> sink_;
+  scoped_refptr<RestartableAudioRendererSink> sink_;
   scoped_ptr<AudioBus> bus_wrapper_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.

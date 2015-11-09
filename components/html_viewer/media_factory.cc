@@ -160,7 +160,7 @@ const media::AudioHardwareConfig& MediaFactory::GetAudioHardwareConfig() {
   return audio_hardware_config_;
 }
 
-scoped_refptr<media::AudioRendererSink>
+scoped_refptr<media::RestartableAudioRendererSink>
 MediaFactory::CreateAudioRendererSink() {
   // TODO(dalecurtis): Replace this with an interface to an actual mojo service;
   // the AudioOutputStreamSink will not work in sandboxed processes.

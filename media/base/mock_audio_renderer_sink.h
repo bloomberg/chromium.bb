@@ -15,7 +15,7 @@ namespace media {
 
 class FakeOutputDevice;
 
-class MockAudioRendererSink : public AudioRendererSink {
+class MockAudioRendererSink : public RestartableAudioRendererSink {
  public:
   MockAudioRendererSink();
   explicit MockAudioRendererSink(OutputDeviceStatus device_status);

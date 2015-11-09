@@ -12,11 +12,12 @@
 namespace media {
 
 AudioOutputStreamSink::AudioOutputStreamSink()
-    : render_callback_(NULL),
+    : initialized_(false),
+      started_(false),
+      render_callback_(NULL),
+      active_render_callback_(NULL),
       audio_task_runner_(AudioManager::Get()->GetTaskRunner()),
-      stream_(NULL),
-      active_render_callback_(NULL) {
-}
+      stream_(NULL) {}
 
 AudioOutputStreamSink::~AudioOutputStreamSink() {
 }
@@ -24,18 +25,27 @@ AudioOutputStreamSink::~AudioOutputStreamSink() {
 void AudioOutputStreamSink::Initialize(const AudioParameters& params,
                                        RenderCallback* callback) {
   DCHECK(callback);
-  DCHECK(!render_callback_);
+  DCHECK(!started_);
   params_ = params;
   render_callback_ = callback;
+  initialized_ = true;
 }
 
 void AudioOutputStreamSink::Start() {
+  DCHECK(initialized_);
+  DCHECK(!started_);
+  {
+    base::AutoLock al(callback_lock_);
+    active_render_callback_ = render_callback_;
+  }
+  started_ = true;
   audio_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&AudioOutputStreamSink::DoStart, this));
+      FROM_HERE, base::Bind(&AudioOutputStreamSink::DoStart, this, params_));
 }
 
 void AudioOutputStreamSink::Stop() {
   ClearCallback();
+  started_ = false;
   audio_task_runner_->PostTask(
       FROM_HERE, base::Bind(&AudioOutputStreamSink::DoStop, this));
 }
@@ -47,8 +57,10 @@ void AudioOutputStreamSink::Pause() {
 }
 
 void AudioOutputStreamSink::Play() {
-  base::AutoLock al(callback_lock_);
-  active_render_callback_ = render_callback_;
+  {
+    base::AutoLock al(callback_lock_);
+    active_render_callback_ = render_callback_;
+  }
   audio_task_runner_->PostTask(
       FROM_HERE, base::Bind(&AudioOutputStreamSink::DoPlay, this));
 }
@@ -71,7 +83,7 @@ int AudioOutputStreamSink::OnMoreData(AudioBus* dest,
     return 0;
 
   return active_render_callback_->Render(
-      dest, total_bytes_delay * 1000.0 / params_.GetBytesPerSecond());
+      dest, total_bytes_delay * 1000.0 / active_params_.GetBytesPerSecond());
 }
 
 void AudioOutputStreamSink::OnError(AudioOutputStream* stream) {
@@ -81,15 +93,20 @@ void AudioOutputStreamSink::OnError(AudioOutputStream* stream) {
     active_render_callback_->OnRenderError();
 }
 
-void AudioOutputStreamSink::DoStart() {
+void AudioOutputStreamSink::DoStart(const AudioParameters& params) {
   DCHECK(audio_task_runner_->BelongsToCurrentThread());
 
   // Create an AudioOutputStreamProxy which will handle any and all resampling
   // necessary to generate a low latency output stream.
-  stream_ =
-      AudioManager::Get()->MakeAudioOutputStreamProxy(params_, std::string());
+  active_params_ = params;
+  stream_ = AudioManager::Get()->MakeAudioOutputStreamProxy(active_params_,
+                                                            std::string());
   if (!stream_ || !stream_->Open()) {
-    render_callback_->OnRenderError();
+    {
+      base::AutoLock al(callback_lock_);
+      if (active_render_callback_)
+        active_render_callback_->OnRenderError();
+    }
     if (stream_)
       stream_->Close();
     stream_ = NULL;

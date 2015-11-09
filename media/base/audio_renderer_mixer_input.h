@@ -17,7 +17,7 @@ namespace media {
 class AudioRendererMixer;
 
 class MEDIA_EXPORT AudioRendererMixerInput
-    : NON_EXPORTED_BASE(public AudioRendererSink),
+    : NON_EXPORTED_BASE(public RestartableAudioRendererSink),
       NON_EXPORTED_BASE(public OutputDevice),
       public AudioConverter::InputCallback {
  public:
@@ -36,7 +36,7 @@ class MEDIA_EXPORT AudioRendererMixerInput
                           const std::string& device_id,
                           const url::Origin& security_origin);
 
-  // AudioRendererSink implementation.
+  // RestartableAudioRendererSink implementation.
   void Start() override;
   void Stop() override;
   void Play() override;
@@ -62,8 +62,8 @@ class MEDIA_EXPORT AudioRendererMixerInput
  private:
   friend class AudioRendererMixerInputTest;
 
-  bool playing_;
   bool initialized_;
+  bool playing_;
   double volume_;
 
   // AudioConverter::InputCallback implementation.

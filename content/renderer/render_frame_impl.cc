@@ -2150,10 +2150,10 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
   RenderThreadImpl* render_thread = RenderThreadImpl::current();
 
 #if defined(OS_ANDROID) && !defined(ENABLE_MEDIA_PIPELINE_ON_ANDROID)
-  scoped_refptr<media::AudioRendererSink> audio_renderer_sink;
+  scoped_refptr<media::RestartableAudioRendererSink> audio_renderer_sink;
   media::WebMediaPlayerParams::Context3DCB context_3d_cb;
 #else
-  scoped_refptr<media::AudioRendererSink> audio_renderer_sink =
+  scoped_refptr<media::RestartableAudioRendererSink> audio_renderer_sink =
       render_thread->GetAudioRendererMixerManager()->CreateInput(
           routing_id_, sink_id.utf8(), frame->securityOrigin());
   media::WebMediaPlayerParams::Context3DCB context_3d_cb =
