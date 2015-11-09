@@ -119,6 +119,8 @@ class WebViewImpl : public mojom::WebView,
   mojo::StrongBinding<WebView> binding_;
   mus::Window* root_;
   mus::Window* content_;
+  // |find_controller_| is referenced by frame_tree_'s frames at destruction.
+  FindController find_controller_;
   scoped_ptr<FrameTree> frame_tree_;
 
   // When LoadRequest() is called a PendingWebViewLoad is created to wait for
@@ -129,8 +131,6 @@ class WebViewImpl : public mojom::WebView,
   scoped_ptr<FrameDevToolsAgent> devtools_agent_;
 
   NavigationController navigation_controller_;
-
-  FindController find_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(WebViewImpl);
 };

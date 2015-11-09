@@ -47,8 +47,8 @@ WebViewImpl::WebViewImpl(mojo::ApplicationImpl* app,
       binding_(this, request.Pass()),
       root_(nullptr),
       content_(nullptr),
-      navigation_controller_(this),
-      find_controller_(this) {
+      find_controller_(this),
+      navigation_controller_(this) {
   if (EnableRemoteDebugging())
     devtools_agent_.reset(new FrameDevToolsAgent(app_, this));
   OnDidNavigate();
