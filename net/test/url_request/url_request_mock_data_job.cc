@@ -104,12 +104,15 @@ void URLRequestMockDataJob::Start() {
 URLRequestMockDataJob::~URLRequestMockDataJob() {
 }
 
-int URLRequestMockDataJob::ReadRawData(IOBuffer* buf, int buf_size) {
-  int bytes_read =
-      std::min(static_cast<size_t>(buf_size), data_.length() - data_offset_);
-  memcpy(buf->data(), data_.c_str() + data_offset_, bytes_read);
-  data_offset_ += bytes_read;
-  return bytes_read;
+bool URLRequestMockDataJob::ReadRawData(IOBuffer* buf,
+                                        int buf_size,
+                                        int* bytes_read) {
+  DCHECK(bytes_read);
+  *bytes_read = static_cast<int>(
+      std::min(static_cast<size_t>(buf_size), data_.length() - data_offset_));
+  memcpy(buf->data(), data_.c_str() + data_offset_, *bytes_read);
+  data_offset_ += *bytes_read;
+  return true;
 }
 
 int URLRequestMockDataJob::GetResponseCode() const {

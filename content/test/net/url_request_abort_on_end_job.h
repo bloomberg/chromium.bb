@@ -29,7 +29,7 @@ class URLRequestAbortOnEndJob : public net::URLRequestJob {
   void Start() override;
   bool GetMimeType(std::string* mime_type) const override;
   void GetResponseInfo(net::HttpResponseInfo* info) override;
-  int ReadRawData(net::IOBuffer* buf, int buf_size) override;
+  bool ReadRawData(net::IOBuffer* buf, int buf_size, int* bytes_read) override;
 
   static void AddUrlHandler();
 

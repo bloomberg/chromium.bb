@@ -75,37 +75,41 @@ void BlobURLRequestJob::Kill() {
   weak_factory_.InvalidateWeakPtrs();
 }
 
-int BlobURLRequestJob::ReadRawData(net::IOBuffer* dest, int dest_size) {
+bool BlobURLRequestJob::ReadRawData(net::IOBuffer* dest,
+                                    int dest_size,
+                                    int* bytes_read) {
   TRACE_EVENT_ASYNC_BEGIN1("Blob", "BlobRequest::ReadRawData", this, "uuid",
                            blob_handle_ ? blob_handle_->uuid() : "NotFound");
   DCHECK_NE(dest_size, 0);
+  DCHECK(bytes_read);
 
-  // Bail out immediately if we encounter an error. This happens if a previous
-  // ReadRawData signalled an error to its caller but the caller called
-  // ReadRawData again anyway.
-  if (error_)
-    return 0;
+  // Bail out immediately if we encounter an error.
+  if (error_) {
+    *bytes_read = 0;
+    return true;
+  }
 
-  int bytes_read = 0;
   BlobReader::Status read_status =
-      blob_reader_->Read(dest, dest_size, &bytes_read,
+      blob_reader_->Read(dest, dest_size, bytes_read,
                          base::Bind(&BlobURLRequestJob::DidReadRawData,
                                     weak_factory_.GetWeakPtr()));
 
   switch (read_status) {
     case BlobReader::Status::NET_ERROR:
+      NotifyFailure(blob_reader_->net_error());
       TRACE_EVENT_ASYNC_END1("Blob", "BlobRequest::ReadRawData", this, "uuid",
                              blob_handle_ ? blob_handle_->uuid() : "NotFound");
-      return blob_reader_->net_error();
+      return false;
     case BlobReader::Status::IO_PENDING:
-      return net::ERR_IO_PENDING;
+      SetStatus(net::URLRequestStatus(net::URLRequestStatus::IO_PENDING, 0));
+      return false;
     case BlobReader::Status::DONE:
       TRACE_EVENT_ASYNC_END1("Blob", "BlobRequest::ReadRawData", this, "uuid",
                              blob_handle_ ? blob_handle_->uuid() : "NotFound");
-      return bytes_read;
+      return true;
   }
   NOTREACHED();
-  return 0;
+  return true;
 }
 
 bool BlobURLRequestJob::GetMimeType(std::string* mime_type) const {
@@ -218,7 +222,13 @@ void BlobURLRequestJob::DidCalculateSize(int result) {
 void BlobURLRequestJob::DidReadRawData(int result) {
   TRACE_EVENT_ASYNC_END1("Blob", "BlobRequest::ReadRawData", this, "uuid",
                          blob_handle_ ? blob_handle_->uuid() : "NotFound");
-  ReadRawDataComplete(result);
+  if (result < 0) {
+    NotifyFailure(result);
+    return;
+  }
+  // Clear the IO_PENDING status
+  SetStatus(net::URLRequestStatus());
+  NotifyReadComplete(result);
 }
 
 void BlobURLRequestJob::NotifyFailure(int error_code) {
@@ -226,7 +236,11 @@ void BlobURLRequestJob::NotifyFailure(int error_code) {
 
   // If we already return the headers on success, we can't change the headers
   // now. Instead, we just error out.
-  DCHECK(!response_info_) << "Cannot NotifyFailure after headers.";
+  if (response_info_) {
+    NotifyDone(
+        net::URLRequestStatus(net::URLRequestStatus::FAILED, error_code));
+    return;
+  }
 
   net::HttpStatusCode status_code = net::HTTP_INTERNAL_SERVER_ERROR;
   switch (error_code) {

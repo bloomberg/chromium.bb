@@ -49,23 +49,30 @@ class TestURLRequestJob : public net::URLRequestJob {
 
   void Start() override { status_ = STARTED; }
 
-  int ReadRawData(net::IOBuffer* buf, int buf_size) override {
+  bool ReadRawData(net::IOBuffer* buf, int buf_size, int* bytes_read) override {
     status_ = READING;
     buf_size_ = buf_size;
-    return net::ERR_IO_PENDING;
+    SetStatus(net::URLRequestStatus(net::URLRequestStatus::IO_PENDING, 0));
+    return false;
   }
 
   void NotifyHeadersComplete() { net::URLRequestJob::NotifyHeadersComplete(); }
 
-  void NotifyReadComplete(int result) {
-    // Map errors to net::ERR_FAILED.
-    if (result < 0)
-      result = net::ERR_FAILED;
-
-    ReadRawDataComplete(result);
-    // Set this after calling ReadRawDataComplete since that ends up calling
-    // ReadRawData.
-    status_ = result <= 0 ? COMPLETED : STARTED;
+  void NotifyReadComplete(int bytes_read) {
+    if (bytes_read < 0) {
+      status_ = COMPLETED;
+      NotifyDone(net::URLRequestStatus(
+          net::URLRequestStatus::FromError(net::ERR_FAILED)));
+      net::URLRequestJob::NotifyReadComplete(0);
+    } else if (bytes_read == 0) {
+      status_ = COMPLETED;
+      NotifyDone(net::URLRequestStatus());
+      net::URLRequestJob::NotifyReadComplete(bytes_read);
+    } else {
+      status_ = STARTED;
+      SetStatus(net::URLRequestStatus());
+      net::URLRequestJob::NotifyReadComplete(bytes_read);
+    }
   }
 
  private:

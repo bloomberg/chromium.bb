@@ -10,7 +10,6 @@
 #include "base/compiler_specific.h"
 #include "base/location.h"
 #include "base/memory/weak_ptr.h"
-#include "base/numerics/safe_conversions.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/thread_task_runner_handle.h"
@@ -45,8 +44,8 @@ class ViewHttpCacheJob : public net::URLRequestJob {
   bool GetCharset(std::string* charset) override {
     return core_->GetCharset(charset);
   }
-  int ReadRawData(net::IOBuffer* buf, int buf_size) override {
-    return core_->ReadRawData(buf, buf_size);
+  bool ReadRawData(net::IOBuffer* buf, int buf_size, int* bytes_read) override {
+    return core_->ReadRawData(buf, buf_size, bytes_read);
   }
 
  private:
@@ -66,7 +65,7 @@ class ViewHttpCacheJob : public net::URLRequestJob {
 
     bool GetMimeType(std::string* mime_type) const;
     bool GetCharset(std::string* charset);
-    int ReadRawData(net::IOBuffer* buf, int buf_size);
+    bool ReadRawData(net::IOBuffer* buf, int buf_size, int* bytes_read);
 
    private:
     friend class base::RefCounted<Core>;
@@ -165,13 +164,17 @@ bool ViewHttpCacheJob::Core::GetCharset(std::string* charset) {
   return true;
 }
 
-int ViewHttpCacheJob::Core::ReadRawData(net::IOBuffer* buf, int buf_size) {
-  int remaining = base::checked_cast<int>(data_.size()) - data_offset_;
+bool ViewHttpCacheJob::Core::ReadRawData(net::IOBuffer* buf,
+                                         int buf_size,
+                                         int* bytes_read) {
+  DCHECK(bytes_read);
+  int remaining = static_cast<int>(data_.size()) - data_offset_;
   if (buf_size > remaining)
     buf_size = remaining;
   memcpy(buf->data(), data_.data() + data_offset_, buf_size);
   data_offset_ += buf_size;
-  return buf_size;
+  *bytes_read = buf_size;
+  return true;
 }
 
 void ViewHttpCacheJob::Core::OnIOComplete(int result) {

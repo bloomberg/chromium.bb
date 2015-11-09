@@ -37,7 +37,7 @@ class URLRequestSlowDownloadJob : public URLRequestJob {
   void Start() override;
   bool GetMimeType(std::string* mime_type) const override;
   void GetResponseInfo(HttpResponseInfo* info) override;
-  int ReadRawData(IOBuffer* buf, int buf_size) override;
+  bool ReadRawData(IOBuffer* buf, int buf_size, int* bytes_read) override;
 
   // Returns the current number of URLRequestSlowDownloadJobs that have
   // not yet completed.

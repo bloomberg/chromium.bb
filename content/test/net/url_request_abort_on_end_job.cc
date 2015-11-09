@@ -8,7 +8,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/location.h"
-#include "base/numerics/safe_conversions.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/thread_task_runner_handle.h"
@@ -112,16 +111,20 @@ void URLRequestAbortOnEndJob::Start() {
                             weak_factory_.GetWeakPtr()));
 }
 
-int URLRequestAbortOnEndJob::ReadRawData(net::IOBuffer* buf, int max_bytes) {
+bool URLRequestAbortOnEndJob::ReadRawData(net::IOBuffer* buf,
+                                          const int max_bytes,
+                                          int* bytes_read) {
   if (!sent_data_) {
-    max_bytes =
-        std::min(max_bytes, base::checked_cast<int>(sizeof(kPageContent)));
-    std::memcpy(buf->data(), kPageContent, max_bytes);
+    *bytes_read = std::min(size_t(max_bytes), sizeof(kPageContent));
+    std::memcpy(buf->data(), kPageContent, *bytes_read);
     sent_data_ = true;
-    return max_bytes;
+    return true;
   }
 
-  return net::ERR_CONNECTION_ABORTED;
+  SetStatus(net::URLRequestStatus(net::URLRequestStatus::FAILED,
+                                  net::ERR_CONNECTION_ABORTED));
+  *bytes_read = -1;
+  return false;
 }
 
 }  // namespace content

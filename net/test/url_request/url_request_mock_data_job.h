@@ -24,7 +24,7 @@ class URLRequestMockDataJob : public URLRequestJob {
                         int data_repeat_count);
 
   void Start() override;
-  int ReadRawData(IOBuffer* buf, int buf_size) override;
+  bool ReadRawData(IOBuffer* buf, int buf_size, int* bytes_read) override;
   int GetResponseCode() const override;
   void GetResponseInfo(HttpResponseInfo* info) override;
 

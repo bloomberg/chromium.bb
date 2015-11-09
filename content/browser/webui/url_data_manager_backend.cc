@@ -119,7 +119,7 @@ class URLRequestChromeJob : public net::URLRequestJob {
   // net::URLRequestJob implementation.
   void Start() override;
   void Kill() override;
-  int ReadRawData(net::IOBuffer* buf, int buf_size) override;
+  bool ReadRawData(net::IOBuffer* buf, int buf_size, int* bytes_read) override;
   bool GetMimeType(std::string* mime_type) const override;
   int GetResponseCode() const override;
   void GetResponseInfo(net::HttpResponseInfo* info) override;
@@ -190,9 +190,8 @@ class URLRequestChromeJob : public net::URLRequestJob {
   bool RequiresUnsafeEval() const;
 
   // Do the actual copy from data_ (the data we're serving) into |buf|.
-  // Separate from ReadRawData so we can handle async I/O. Returns the number of
-  // bytes read.
-  int CompleteRead(net::IOBuffer* buf, int buf_size);
+  // Separate from ReadRawData so we can handle async I/O.
+  void CompleteRead(net::IOBuffer* buf, int buf_size, int* bytes_read);
 
   // The actual data we're serving.  NULL until it's been fetched.
   scoped_refptr<base::RefCountedMemory> data_;
@@ -337,16 +336,22 @@ void URLRequestChromeJob::MimeTypeAvailable(const std::string& mime_type) {
 void URLRequestChromeJob::DataAvailable(base::RefCountedMemory* bytes) {
   TRACE_EVENT_ASYNC_END0("browser", "DataManager:Request", this);
   if (bytes) {
+    // The request completed, and we have all the data.
+    // Clear any IO pending status.
+    SetStatus(net::URLRequestStatus());
+
     data_ = bytes;
+    int bytes_read;
     if (pending_buf_.get()) {
       CHECK(pending_buf_->data());
-      int result = CompleteRead(pending_buf_.get(), pending_buf_size_);
+      CompleteRead(pending_buf_.get(), pending_buf_size_, &bytes_read);
       pending_buf_ = NULL;
-      ReadRawDataComplete(result);
+      NotifyReadComplete(bytes_read);
     }
   } else {
     // The request failed.
-    ReadRawDataComplete(net::ERR_FAILED);
+    NotifyDone(
+        net::URLRequestStatus(net::URLRequestStatus::FAILED, net::ERR_FAILED));
   }
 }
 
@@ -354,21 +359,27 @@ base::WeakPtr<URLRequestChromeJob> URLRequestChromeJob::AsWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }
 
-int URLRequestChromeJob::ReadRawData(net::IOBuffer* buf, int buf_size) {
+bool URLRequestChromeJob::ReadRawData(net::IOBuffer* buf,
+                                      int buf_size,
+                                      int* bytes_read) {
   if (!data_.get()) {
+    SetStatus(net::URLRequestStatus(net::URLRequestStatus::IO_PENDING, 0));
     DCHECK(!pending_buf_.get());
     CHECK(buf->data());
     pending_buf_ = buf;
     pending_buf_size_ = buf_size;
-    return net::ERR_IO_PENDING;
+    return false;  // Tell the caller we're still waiting for data.
   }
 
   // Otherwise, the data is available.
-  return CompleteRead(buf, buf_size);
+  CompleteRead(buf, buf_size, bytes_read);
+  return true;
 }
 
-int URLRequestChromeJob::CompleteRead(net::IOBuffer* buf, int buf_size) {
-  int remaining = data_->size() - data_offset_;
+void URLRequestChromeJob::CompleteRead(net::IOBuffer* buf,
+                                       int buf_size,
+                                       int* bytes_read) {
+  int remaining = static_cast<int>(data_->size()) - data_offset_;
   if (buf_size > remaining)
     buf_size = remaining;
   if (buf_size > 0) {
@@ -380,7 +391,7 @@ int URLRequestChromeJob::CompleteRead(net::IOBuffer* buf, int buf_size) {
     memcpy(buf->data(), data_->front() + data_offset_, buf_size);
     data_offset_ += buf_size;
   }
-  return buf_size;
+  *bytes_read = buf_size;
 }
 
 void URLRequestChromeJob::CheckStoragePartitionMatches(

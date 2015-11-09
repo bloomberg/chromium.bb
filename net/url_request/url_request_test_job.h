@@ -111,7 +111,7 @@ class NET_EXPORT_PRIVATE URLRequestTestJob : public URLRequestJob {
   // Job functions
   void SetPriority(RequestPriority priority) override;
   void Start() override;
-  int ReadRawData(IOBuffer* buf, int buf_size) override;
+  bool ReadRawData(IOBuffer* buf, int buf_size, int* bytes_read) override;
   void Kill() override;
   bool GetMimeType(std::string* mime_type) const override;
   void GetResponseInfo(HttpResponseInfo* info) override;
