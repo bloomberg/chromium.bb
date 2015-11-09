@@ -21,6 +21,7 @@ import android.text.style.StyleSpan;
 import android.util.Log;
 
 import org.chromium.base.CommandLine;
+import org.chromium.base.FieldTrialList;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.metrics.RecordUserAction;
@@ -531,13 +532,26 @@ public class NotificationUIManager {
         return icon;
     }
 
+    /**
+     * Determines whether to use standard notification layouts, using NotificationCompat.Builder,
+     * or custom layouts using Chrome's own templates.
+     *
+     * The --{enable,disable}-web-notification-custom-layouts
+     * command line flags take precedence over a running Finch trial.
+     *
+     * @return Whether custom layouts should be used.
+     */
     private static boolean useCustomLayouts() {
-        // TODO(mvanouwerkerk): Add Finch experiment for enabling / disabling the feature.
+        // Query the field trial state first to ensure correct UMA reporting.
+        String groupName = FieldTrialList.findFullName("WebNotificationCustomLayouts");
         CommandLine commandLine = CommandLine.getInstance();
         if (commandLine.hasSwitch(ChromeSwitches.DISABLE_WEB_NOTIFICATION_CUSTOM_LAYOUTS)) {
             return false;
         }
-        return commandLine.hasSwitch(ChromeSwitches.ENABLE_WEB_NOTIFICATION_CUSTOM_LAYOUTS);
+        if (commandLine.hasSwitch(ChromeSwitches.ENABLE_WEB_NOTIFICATION_CUSTOM_LAYOUTS)) {
+            return true;
+        }
+        return groupName.equals("Enabled");
     }
 
     /**
