@@ -9,8 +9,8 @@
 #include "base/prefs/pref_member.h"
 #include "chrome/browser/browsing_data/browsing_data_counter.h"
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
-#include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
+#include "components/browser_sync/browser/profile_sync_service.h"
 
 namespace options {
 

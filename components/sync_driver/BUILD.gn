@@ -117,6 +117,7 @@ source_set("sync_driver") {
     "sync_service_utils.h",
     "sync_stopped_reporter.cc",
     "sync_stopped_reporter.h",
+    "sync_type_preference_provider.h",
     "sync_util.cc",
     "sync_util.h",
     "system_encryptor.cc",

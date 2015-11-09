@@ -6,11 +6,11 @@
 
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/sync_global_error.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
+#include "components/browser_sync/browser/profile_sync_service.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 
 #if defined(USE_ASH)

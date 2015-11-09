@@ -13,17 +13,14 @@
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
-#if defined(OS_WIN) && defined(USE_ASH)
-#include "chrome/browser/ui/ash/ash_util.h"
-#endif
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/autofill/core/common/password_form.h"
-#include <components/password_manager/core/browser/password_ui_utils.h>
+#include "components/browser_sync/browser/profile_sync_service.h"
 #include "components/password_manager/core/browser/password_bubble_experiment.h"
+#include "components/password_manager/core/browser/password_ui_utils.h"
 #include "components/password_manager/core/common/experiments.h"
 #include "components/url_formatter/url_formatter.h"
 #include "content/public/browser/notification_details.h"
@@ -35,6 +32,10 @@
 #include "content/public/common/origin_util.h"
 #include "net/base/net_util.h"
 #include "ui/base/l10n/l10n_util.h"
+
+#if defined(OS_WIN) && defined(USE_ASH)
+#include "chrome/browser/ui/ash/ash_util.h"
+#endif
 
 namespace options {
 

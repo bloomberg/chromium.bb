@@ -6,12 +6,12 @@
 
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/android/infobars/auto_signin_first_run_infobar.h"
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/browser_sync/browser/profile_sync_service.h"
 #include "components/infobars/core/infobar.h"
 #include "components/password_manager/core/browser/password_bubble_experiment.h"
 #include "content/public/browser/web_contents.h"

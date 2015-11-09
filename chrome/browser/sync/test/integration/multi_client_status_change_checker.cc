@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "base/scoped_observer.h"
-#include "chrome/browser/sync/profile_sync_service.h"
+#include "components/browser_sync/browser/profile_sync_service.h"
 
 MultiClientStatusChangeChecker::MultiClientStatusChangeChecker(
     std::vector<ProfileSyncService*> services)

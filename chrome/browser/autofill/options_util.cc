@@ -6,9 +6,9 @@
 
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "components/autofill/core/browser/options_util.h"
+#include "components/browser_sync/browser/profile_sync_service.h"
 
 namespace autofill {
 

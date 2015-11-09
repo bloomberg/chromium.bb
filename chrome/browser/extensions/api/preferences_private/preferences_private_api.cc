@@ -5,9 +5,9 @@
 #include "chrome/browser/extensions/api/preferences_private/preferences_private_api.h"
 
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/extensions/api/preferences_private.h"
+#include "components/browser_sync/browser/profile_sync_service.h"
 #include "components/sync_driver/sync_prefs.h"
 
 namespace extensions {

@@ -3,10 +3,10 @@
 // found in the LICENSE file.
 
 #include "base/basictypes.h"
-#include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/test/integration/extensions_helper.h"
 #include "chrome/browser/sync/test/integration/sync_integration_test_util.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
+#include "components/browser_sync/browser/profile_sync_service.h"
 
 using extensions_helper::AllProfilesHaveSameExtensionsAsVerifier;
 using extensions_helper::InstallExtension;

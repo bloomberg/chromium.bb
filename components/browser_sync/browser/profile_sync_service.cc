@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync/profile_sync_service.h"
+#include "components/browser_sync/browser/profile_sync_service.h"
 
 #include <cstddef>
 #include <map>
@@ -27,7 +27,6 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "chrome/browser/sync/sync_type_preference_provider.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/browser_sync/common/browser_sync_switches.h"
 #include "components/history/core/browser/typed_url_data_type_controller.h"
@@ -53,6 +52,7 @@
 #include "components/sync_driver/sync_driver_switches.h"
 #include "components/sync_driver/sync_error_controller.h"
 #include "components/sync_driver/sync_stopped_reporter.h"
+#include "components/sync_driver/sync_type_preference_provider.h"
 #include "components/sync_driver/sync_util.h"
 #include "components/sync_driver/system_encryptor.h"
 #include "components/sync_driver/user_selectable_sync_type.h"

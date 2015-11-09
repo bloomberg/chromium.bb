@@ -3,10 +3,10 @@
 // found in the LICENSE file.
 
 #include "base/basictypes.h"
-#include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/test/integration/apps_helper.h"
 #include "chrome/browser/sync/test/integration/sync_integration_test_util.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
+#include "components/browser_sync/browser/profile_sync_service.h"
 
 using apps_helper::AllProfilesHaveSameAppsAsVerifier;
 using apps_helper::InstallApp;

@@ -137,6 +137,7 @@
         'sync_driver/sync_service_utils.h',
         'sync_driver/sync_stopped_reporter.cc',
         'sync_driver/sync_stopped_reporter.h',
+        'sync_driver/sync_type_preference_provider.h',
         'sync_driver/sync_util.cc',
         'sync_driver/sync_util.h',
         'sync_driver/system_encryptor.cc',

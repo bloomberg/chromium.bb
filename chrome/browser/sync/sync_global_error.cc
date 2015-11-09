@@ -5,7 +5,6 @@
 #include "chrome/browser/sync/sync_global_error.h"
 
 #include "chrome/app/chrome_command_ids.h"
-#include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -14,6 +13,7 @@
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/browser_sync/browser/profile_sync_service.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "ui/base/l10n/l10n_util.h"
 

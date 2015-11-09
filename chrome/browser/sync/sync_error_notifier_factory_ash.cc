@@ -7,9 +7,9 @@
 #include "ash/shell.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/sync_error_notifier_ash.h"
+#include "components/browser_sync/browser/profile_sync_service.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 
 SyncErrorNotifierFactory::SyncErrorNotifierFactory()

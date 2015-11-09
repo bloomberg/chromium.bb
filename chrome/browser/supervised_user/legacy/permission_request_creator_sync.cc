@@ -8,7 +8,7 @@
 #include "base/values.h"
 #include "chrome/browser/supervised_user/legacy/supervised_user_shared_settings_service.h"
 #include "chrome/browser/supervised_user/supervised_user_settings_service.h"
-#include "chrome/browser/sync/profile_sync_service.h"
+#include "components/browser_sync/browser/profile_sync_service.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "net/base/escape.h"
 #include "url/gurl.h"

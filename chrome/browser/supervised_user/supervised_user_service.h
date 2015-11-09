@@ -20,10 +20,10 @@
 #include "chrome/browser/supervised_user/experimental/supervised_user_blacklist.h"
 #include "chrome/browser/supervised_user/supervised_user_url_filter.h"
 #include "chrome/browser/supervised_user/supervised_users.h"
-#include "chrome/browser/sync/sync_type_preference_provider.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/sync_driver/sync_service_observer.h"
+#include "components/sync_driver/sync_type_preference_provider.h"
 #include "net/url_request/url_request_context_getter.h"
 
 #if defined(ENABLE_EXTENSIONS)

@@ -2890,8 +2890,6 @@
       'browser/sync/glue/synced_window_delegates_getter_android.h',
       'browser/sync/profile_sync_components_factory_impl.cc',
       'browser/sync/profile_sync_components_factory_impl.h',
-      'browser/sync/profile_sync_service.cc',
-      'browser/sync/profile_sync_service.h',
       'browser/sync/profile_sync_service_android.cc',
       'browser/sync/profile_sync_service_android.h',
       'browser/sync/profile_sync_service_factory.cc',
@@ -2902,7 +2900,6 @@
       'browser/sync/supervised_user_signin_manager_wrapper.h',
       'browser/sync/sync_startup_tracker.cc',
       'browser/sync/sync_startup_tracker.h',
-      'browser/sync/sync_type_preference_provider.h',
     ],
     'chrome_browser_task_manager_sources': [
       # Stats collection for CAPS (uses old task manager):
@@ -3068,6 +3065,7 @@
         '../components/components.gyp:autofill_core_browser',
         '../components/components.gyp:bookmarks_browser',
         '../components/components.gyp:bookmarks_managed',
+        '../components/components.gyp:browser_sync_browser',
         '../components/components.gyp:browser_sync_common',
         '../components/components.gyp:captive_portal',
         '../components/components.gyp:cloud_devices_common',

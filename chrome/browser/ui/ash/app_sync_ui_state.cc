@@ -8,10 +8,10 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/pending_extension_manager.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/ash/app_sync_ui_state_factory.h"
 #include "chrome/browser/ui/ash/app_sync_ui_state_observer.h"
+#include "components/browser_sync/browser/profile_sync_service.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 

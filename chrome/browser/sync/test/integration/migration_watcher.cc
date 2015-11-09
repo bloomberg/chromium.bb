@@ -4,9 +4,9 @@
 
 #include "chrome/browser/sync/test/integration/migration_watcher.h"
 
-#include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/test/integration/migration_waiter.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
+#include "components/browser_sync/browser/profile_sync_service.h"
 
 MigrationWatcher::MigrationWatcher(ProfileSyncServiceHarness* harness)
     : harness_(harness), migration_waiter_(NULL) {

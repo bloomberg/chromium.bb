@@ -10,7 +10,7 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/sync/profile_sync_service.h"
+#include "components/browser_sync/browser/profile_sync_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/sync_driver/data_type_manager_impl.h"
 #include "components/sync_driver/glue/sync_backend_host_impl.h"

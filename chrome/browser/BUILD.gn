@@ -103,6 +103,7 @@ source_set("browser") {
     "//components/autofill/core/browser",
     "//components/bookmarks/browser",
     "//components/bookmarks/managed",
+    "//components/browser_sync/browser",
     "//components/browser_sync/common",
     "//components/captive_portal",
     "//components/certificate_reporting",

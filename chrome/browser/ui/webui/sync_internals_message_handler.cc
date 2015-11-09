@@ -8,9 +8,9 @@
 
 #include "base/logging.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/channel_info.h"
+#include "components/browser_sync/browser/profile_sync_service.h"
 #include "components/sync_driver/about_sync_util.h"
 #include "components/sync_driver/about_sync_util.h"
 #include "content/public/browser/browser_thread.h"

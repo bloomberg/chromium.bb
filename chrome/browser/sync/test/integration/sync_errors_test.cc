@@ -5,7 +5,6 @@
 #include "base/prefs/pref_member.h"
 #include "base/prefs/pref_service.h"
 #include "base/run_loop.h"
-#include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/test/integration/bookmarks_helper.h"
 #include "chrome/browser/sync/test/integration/passwords_helper.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
@@ -13,6 +12,7 @@
 #include "chrome/browser/sync/test/integration/sync_integration_test_util.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/common/pref_names.h"
+#include "components/browser_sync/browser/profile_sync_service.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "sync/protocol/sync_protocol_error.h"
 

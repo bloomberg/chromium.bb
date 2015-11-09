@@ -4,7 +4,7 @@
 
 #include "chrome/browser/sync/test/integration/updated_progress_marker_checker.h"
 
-#include "chrome/browser/sync/profile_sync_service.h"
+#include "components/browser_sync/browser/profile_sync_service.h"
 #include "sync/internal_api/public/sessions/sync_session_snapshot.h"
 
 UpdatedProgressMarkerChecker::UpdatedProgressMarkerChecker(

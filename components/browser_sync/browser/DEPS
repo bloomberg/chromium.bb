@@ -1,0 +1,17 @@
+include_rules = [
+  "+components/autofill/core/common",
+  "+components/history/core/browser",
+  "+components/invalidation",
+  "+components/keyed_service/core",
+  "+components/pref_registry",
+  "+components/signin/core/browser",
+  "+components/syncable_prefs",
+  "+components/sync_driver",
+  "+components/sync_sessions",
+  "+components/strings",
+  "+components/version_info",
+  "+google_apis",
+  "+net",
+  "+sync",
+  "+ui/base/l10n",
+]

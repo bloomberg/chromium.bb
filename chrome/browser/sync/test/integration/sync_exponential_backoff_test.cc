@@ -4,12 +4,12 @@
 
 #include "base/bind.h"
 #include "base/strings/stringprintf.h"
-#include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/test/integration/bookmarks_helper.h"
 #include "chrome/browser/sync/test/integration/retry_verifier.h"
 #include "chrome/browser/sync/test/integration/single_client_status_change_checker.h"
 #include "chrome/browser/sync/test/integration/sync_integration_test_util.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
+#include "components/browser_sync/browser/profile_sync_service.h"
 
 namespace {
 
