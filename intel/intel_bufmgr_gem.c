@@ -3060,6 +3060,34 @@ drm_intel_bufmgr_gem_set_vma_cache_size(drm_intel_bufmgr *bufmgr, int limit)
 	drm_intel_gem_bo_purge_vma_cache(bufmgr_gem);
 }
 
+static int
+parse_devid_override(const char *devid_override)
+{
+	static const struct {
+		const char *name;
+		int pci_id;
+	} name_map[] = {
+		{ "brw", PCI_CHIP_I965_GM },
+		{ "g4x", PCI_CHIP_GM45_GM },
+		{ "ilk", PCI_CHIP_ILD_G },
+		{ "snb", PCI_CHIP_SANDYBRIDGE_M_GT2_PLUS },
+		{ "ivb", PCI_CHIP_IVYBRIDGE_S_GT2 },
+		{ "hsw", PCI_CHIP_HASWELL_CRW_E_GT3 },
+		{ "byt", PCI_CHIP_VALLEYVIEW_3 },
+		{ "bdw", 0x1620 | BDW_ULX },
+		{ "skl", PCI_CHIP_SKYLAKE_DT_GT2 },
+		{ "kbl", PCI_CHIP_KABYLAKE_DT_GT2 },
+	};
+	unsigned int i;
+
+	for (i = 0; i < ARRAY_SIZE(name_map); i++) {
+		if (!strcmp(name_map[i].name, devid_override))
+			return name_map[i].pci_id;
+	}
+
+	return strtod(devid_override, NULL);
+}
+
 /**
  * Get the PCI ID for the device.  This can be overridden by setting the
  * INTEL_DEVID_OVERRIDE environment variable to the desired ID.
@@ -3076,7 +3104,7 @@ get_pci_device_id(drm_intel_bufmgr_gem *bufmgr_gem)
 		devid_override = getenv("INTEL_DEVID_OVERRIDE");
 		if (devid_override) {
 			bufmgr_gem->no_exec = true;
-			return strtod(devid_override, NULL);
+			return parse_devid_override(devid_override);
 		}
 	}
 
