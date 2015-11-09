@@ -49,6 +49,12 @@ bool IsFromGoogleSearchResult(const GURL& url, const GURL& referrer) {
   return is_possible_search_referrer && !IsFromGoogle(url);
 }
 
+bool ShouldLogEvent(const base::TimeDelta& event,
+                    const base::TimeDelta& first_background) {
+  return !event.is_zero() &&
+         (first_background.is_zero() || event < first_background);
+}
+
 }  // namespace
 
 FromGWSPageLoadMetricsObserver::FromGWSPageLoadMetricsObserver(
@@ -66,29 +72,28 @@ void FromGWSPageLoadMetricsObserver::OnComplete(
     const page_load_metrics::PageLoadExtraInfo& extra_info) {
   if (!navigation_from_gws_)
     return;
-  // Filter for navigations that never backgrounded.
-  if (!extra_info.started_in_foreground ||
-      !extra_info.first_background_time.is_zero()) {
+  // Filter out navigations that started in the background.
+  if (!extra_info.started_in_foreground)
     return;
-  }
 
-  if (!timing.dom_content_loaded_event_start.is_zero()) {
+  const base::TimeDelta& first_background = extra_info.first_background_time;
+  if (ShouldLogEvent(timing.dom_content_loaded_event_start, first_background)) {
     PAGE_LOAD_HISTOGRAM(
         "PageLoad.Clients.FromGWS.Timing2."
         "NavigationToDOMContentLoadedEventFired",
         timing.dom_content_loaded_event_start);
   }
-  if (!timing.load_event_start.is_zero()) {
+  if (ShouldLogEvent(timing.load_event_start, first_background)) {
     PAGE_LOAD_HISTOGRAM(
         "PageLoad.Clients.FromGWS.Timing2.NavigationToLoadEventFired",
         timing.load_event_start);
   }
-  if (!timing.first_layout.is_zero()) {
+  if (ShouldLogEvent(timing.first_layout, first_background)) {
     PAGE_LOAD_HISTOGRAM(
         "PageLoad.Clients.FromGWS.Timing2.NavigationToFirstLayout",
         timing.first_layout);
   }
-  if (!timing.first_text_paint.is_zero()) {
+  if (ShouldLogEvent(timing.first_text_paint, first_background)) {
     PAGE_LOAD_HISTOGRAM(
         "PageLoad.Clients.FromGWS.Timing2.NavigationToFirstTextPaint",
         timing.first_text_paint);
