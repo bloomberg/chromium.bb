@@ -165,7 +165,7 @@ SharedWorker status=stable
 SlimmingPaintV2
 SlimmingPaintOffsetCaching implied_by=SlimmingPaintV2
 SlimmingPaintStrictCullRectClipping
-SlimmingPaintSynchronizedPainting implied_by=SlimmingPaintV2, status=stable
+SlimmingPaintSynchronizedPainting implied_by=SlimmingPaintV2
 SlimmingPaintUnderInvalidationChecking
 StackedCSSPropertyAnimations status=experimental
 StyleSharing status=stable
