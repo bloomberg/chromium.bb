@@ -6,13 +6,7 @@
 
 from __future__ import print_function
 
-import json
-import apiclient
-
-from httplib2 import Http
-from apiclient.discovery import build
-from oauth2client.client import SignedJwtAssertionCredentials
-
+from chromite.lib import androidbuild
 from chromite.lib import commandline
 from chromite.lib import cros_logging as logging
 
@@ -32,18 +26,8 @@ def OpenBuildApiProxy(json_key_file):
     Proxy object used to make requests against the API.
   """
   # Load the private key associated with the Google service account.
-  with open(json_key_file) as json_file:
-    json_data = json.load(json_file)
-    credentials = SignedJwtAssertionCredentials(
-        json_data['client_email'],
-        json_data['private_key'],
-        'https://www.googleapis.com/auth/androidbuild.internal')
-
-  # Open an authorized API proxy.
-  # See https://g3doc.corp.google.com/wireless/android/build_tools/
-  #         g3doc/public/build_data.md
-  http_auth = credentials.authorize(Http())
-  return build('androidbuildinternal', 'v2beta1', http=http_auth)
+  creds = androidbuild.LoadCredentials(json_credentials_path=json_key_file)
+  return androidbuild.GetApiClient(creds)
 
 
 def FindRecentBuildIds(build_api_proxy, branch, target):
@@ -63,16 +47,10 @@ def FindRecentBuildIds(build_api_proxy, branch, target):
   Returns:
     List of build_ids as integers.
   """
-  result = build_api_proxy.build().list(
-      buildType='submitted',
+  return list(reversed(androidbuild.FindRecentBuilds(
+      ab_client=build_api_proxy,
       branch=branch,
-      buildAttemptStatus='complete',
-      successful=True,
-      target=target,
-  ).execute()
-
-  # Extract the build_ids, arrange oldest to newest.
-  return sorted(int(b['buildId']) for b in result['builds'])
+      target=target)))
 
 
 def FetchBuildArtifact(build_api_proxy, build_id, target, resource_id,
@@ -86,20 +64,13 @@ def FetchBuildArtifact(build_api_proxy, build_id, target, resource_id,
     resource_id: Resource id to fetch. Ex. 'ryu-symbols-2282124.zip'
     output_file: Path to where to write out the downloaded artifact.
   """
-  # Open the download connection.
-  download_req = build_api_proxy.buildartifact().get_media(
-      buildId=build_id,
+  androidbuild.FetchArtifact(
+      ab_client=build_api_proxy,
+      branch=None,  # unused by fetch_artifact.
       target=target,
-      attemptId='latest',
-      resourceId=resource_id)
-
-  # Download the symbols file contents.
-  with open(output_file, mode='wb') as fh:
-    downloader = apiclient.http.MediaIoBaseDownload(
-        fh, download_req, chunksize=20 * 1024 * 1024)
-    done = False
-    while not done:
-      _status, done = downloader.next_chunk()
+      build_id=build_id,
+      filepath=resource_id,
+      output=output_file)
 
 
 def main(argv):
