@@ -191,7 +191,7 @@ ResultExpr GpuBrokerProcessPolicy::EvaluateSyscall(int sysno) const {
 #endif  // !defined(__aarch64__)
     case __NR_faccessat:
     case __NR_openat:
-#if !defined(OS_CHROMEOS)
+#if !defined(OS_CHROMEOS) && !defined(__aarch64__)
     // The broker process needs to able to unlink the temporary
     // files that it may create. This is used by DRI3.
     case __NR_unlink:
