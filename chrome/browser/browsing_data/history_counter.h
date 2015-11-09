@@ -10,8 +10,12 @@
 #include "chrome/browser/browsing_data/browsing_data_counter.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/web_history_service.h"
+#include "components/sync_driver/sync_service_observer.h"
 
-class HistoryCounter: public BrowsingDataCounter {
+class ProfileSyncService;
+
+class HistoryCounter: public BrowsingDataCounter,
+                      public sync_driver::SyncServiceObserver {
  public:
   class HistoryResult : public FinishedResult {
    public:
@@ -29,6 +33,7 @@ class HistoryCounter: public BrowsingDataCounter {
   HistoryCounter();
   ~HistoryCounter() override;
 
+  void OnInitialized() override;
   const std::string& GetPrefName() const override;
 
   // Whether there are counting tasks in progress. Only used for testing.
@@ -55,6 +60,9 @@ class HistoryCounter: public BrowsingDataCounter {
 
   base::ThreadChecker thread_checker_;
 
+  ProfileSyncService* sync_service_;
+  bool history_sync_enabled_;
+
   void Count() override;
 
   void OnGetLocalHistoryCount(history::HistoryCountResult result);
@@ -62,6 +70,9 @@ class HistoryCounter: public BrowsingDataCounter {
                             const base::DictionaryValue* result);
   void OnWebHistoryTimeout();
   void MergeResults();
+
+  // SyncServiceObserver implementation.
+  void OnStateChanged() override;
 };
 
 #endif  // CHROME_BROWSER_BROWSING_DATA_HISTORY_COUNTER_H_

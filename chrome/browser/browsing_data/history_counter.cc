@@ -9,7 +9,9 @@
 #include "chrome/browser/browsing_data/history_counter.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/web_history_service_factory.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/pref_names.h"
+#include "components/browser_sync/browser/profile_sync_service.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/web_history_service.h"
 #include "content/public/browser/browser_thread.h"
@@ -22,10 +24,22 @@ HistoryCounter::HistoryCounter() : pref_name_(prefs::kDeleteBrowsingHistory),
                                    has_synced_visits_(false),
                                    local_counting_finished_(false),
                                    web_counting_finished_(false),
-                                   testing_web_history_service_(nullptr) {
+                                   testing_web_history_service_(nullptr),
+                                   sync_service_(nullptr),
+                                   history_sync_enabled_(false) {
 }
 
 HistoryCounter::~HistoryCounter() {
+  DCHECK(sync_service_);
+  sync_service_->RemoveObserver(this);
+}
+
+void HistoryCounter::OnInitialized() {
+  sync_service_ = ProfileSyncServiceFactory::GetForProfile(GetProfile());
+  DCHECK(sync_service_);
+  sync_service_->AddObserver(this);
+  history_sync_enabled_ =
+      !!WebHistoryServiceFactory::GetForProfile(GetProfile());
 }
 
 const std::string& HistoryCounter::GetPrefName() const {
@@ -162,4 +176,16 @@ HistoryCounter::HistoryResult::HistoryResult(
 }
 
 HistoryCounter::HistoryResult::~HistoryResult() {
+}
+
+void HistoryCounter::OnStateChanged() {
+  bool history_sync_enabled_new_state =
+      !!WebHistoryServiceFactory::GetForProfile(GetProfile());
+
+  // If the history sync was just enabled or disabled, restart the counter
+  // so that we update the result accordingly.
+  if (history_sync_enabled_ != history_sync_enabled_new_state) {
+    history_sync_enabled_ = history_sync_enabled_new_state;
+    Restart();
+  }
 }

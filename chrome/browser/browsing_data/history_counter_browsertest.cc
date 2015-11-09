@@ -11,9 +11,9 @@
 #include "chrome/browser/history/web_history_service_factory.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/test/base/in_process_browser_test.h"
 #include "components/browser_sync/browser/profile_sync_service.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/web_history_service.h"
@@ -25,8 +25,17 @@
 
 namespace {
 
-class HistoryCounterTest : public InProcessBrowserTest {
+class HistoryCounterTest : public SyncTest {
  public:
+  HistoryCounterTest() : SyncTest(SINGLE_CLIENT) {
+    // TODO(msramek): Only one of the test cases, RestartOnSyncChange, is a Sync
+    // integration test. Extract it and move it to the rest of integration tests
+    // in chrome/browser/sync/test/integration/. Change this class back to
+    // InProcessBrowserTest.
+  }
+
+  ~HistoryCounterTest() override {};
+
   void SetUpOnMainThread() override {
     time_ = base::Time::Now();
     service_ = HistoryServiceFactory::GetForProfileWithoutCreating(
@@ -85,6 +94,20 @@ class HistoryCounterTest : public InProcessBrowserTest {
 
     if (run_loop_ && finished_)
       run_loop_->Quit();
+  }
+
+  bool CountingFinishedSinceLastAsked() {
+    bool result = finished_;
+    finished_ = false;
+    return result;
+  }
+
+  void WaitForCountingOrConfirmFinished() {
+    if (CountingFinishedSinceLastAsked())
+      return;
+
+    WaitForCounting();
+    CountingFinishedSinceLastAsked();
   }
 
  private:
@@ -341,8 +364,9 @@ class FakeWebHistoryService : public history::WebHistoryService {
 
 // Test the behavior for a profile that syncs history.
 IN_PROC_BROWSER_TEST_F(HistoryCounterTest, Synced) {
-  // WebHistoryService makes network requests, so we need use a fake one
+  // WebHistoryService makes network requests, so we need to use a fake one
   // for testing.
+  // TODO(msramek): Move this to a separate file, next to WebHistoryService.
   scoped_ptr<FakeWebHistoryService> service(
       new FakeWebHistoryService(browser()->profile()));
 
@@ -413,6 +437,83 @@ IN_PROC_BROWSER_TEST_F(HistoryCounterTest, Synced) {
   WaitForCounting();
   EXPECT_EQ(2u, GetLocalResult());
   EXPECT_FALSE(HasSyncedVisits());
+}
+
+// Test that the counting restarts when history sync state changes.
+// TODO(crbug.com/553421): Enable this test and move it to the
+// sync/test/integration directory.
+IN_PROC_BROWSER_TEST_F(HistoryCounterTest, DISABLED_RestartOnSyncChange) {
+  // Set up the Sync client.
+  ASSERT_TRUE(SetupClients());
+  static const int kFirstProfileIndex = 0;
+  ProfileSyncService* sync_service = GetSyncService(kFirstProfileIndex);
+  Profile* profile = GetProfile(kFirstProfileIndex);
+
+  // Set up the fake web history service and the counter.
+  scoped_ptr<FakeWebHistoryService> web_history_service(
+      new FakeWebHistoryService(profile));
+  HistoryCounter counter;
+  counter.SetWebHistoryServiceForTesting(web_history_service.get());
+  counter.Init(profile,
+               base::Bind(&HistoryCounterTest::Callback,
+                          base::Unretained(this)));
+
+  // Note that some Sync operations notify observers immediately (and thus there
+  // is no need to call |WaitForCounting()|; in fact, it would block the test),
+  // while other operations only post the task on UI thread's message loop
+  // (which requires calling |WaitForCounting()| for them to run). Therefore,
+  // this test always checks if the callback has already run and only waits
+  // if it has not.
+
+  // We sync all datatypes by default, so starting Sync means that we start
+  // syncing history deletion, and this should restart the counter.
+  ASSERT_TRUE(SetupSync());
+  ASSERT_TRUE(sync_service->IsSyncActive());
+  ASSERT_TRUE(sync_service->GetPreferredDataTypes().Has(
+      syncer::HISTORY_DELETE_DIRECTIVES));
+  WaitForCountingOrConfirmFinished();
+
+  // We stop syncing history deletion in particular. This restarts the counter.
+  syncer::ModelTypeSet everything_except_history = syncer::ModelTypeSet::All();
+  everything_except_history.Remove(syncer::HISTORY_DELETE_DIRECTIVES);
+  sync_service->SetSetupInProgress(true);
+  sync_service->ChangePreferredDataTypes(everything_except_history);
+  sync_service->SetSetupInProgress(false);
+  WaitForCountingOrConfirmFinished();
+
+  // If the history deletion sync is not affected, the counter is not restarted.
+  syncer::ModelTypeSet only_passwords(syncer::PASSWORDS);
+  sync_service->ChangePreferredDataTypes(only_passwords);
+  sync_service->SetSetupInProgress(true);
+  sync_service->ChangePreferredDataTypes(only_passwords);
+  sync_service->SetSetupInProgress(false);
+  EXPECT_FALSE(counter.HasTrackedTasks());
+  EXPECT_FALSE(CountingFinishedSinceLastAsked());
+
+  // Same in this case.
+  syncer::ModelTypeSet autofill_and_passwords(
+      syncer::AUTOFILL, syncer::PASSWORDS);
+  sync_service->SetSetupInProgress(true);
+  sync_service->ChangePreferredDataTypes(autofill_and_passwords);
+  sync_service->SetSetupInProgress(false);
+  EXPECT_FALSE(counter.HasTrackedTasks());
+  EXPECT_FALSE(CountingFinishedSinceLastAsked());
+
+  // We start syncing history deletion again. This restarts the counter.
+  sync_service->SetSetupInProgress(true);
+  sync_service->ChangePreferredDataTypes(syncer::ModelTypeSet::All());
+  sync_service->SetSetupInProgress(false);
+  WaitForCountingOrConfirmFinished();
+
+  // Changing the syncing datatypes to another set that still includes history
+  // deletion should technically not trigger a restart, because the state of
+  // history deletion did not change. However, in reality we can get two
+  // notifications, one that history sync has stopped and another that it is
+  // active again.
+
+  // Stopping the Sync service triggers a restart.
+  sync_service->RequestStop(sync_driver::SyncService::CLEAR_DATA);
+  WaitForCountingOrConfirmFinished();
 }
 
 }  // namespace
