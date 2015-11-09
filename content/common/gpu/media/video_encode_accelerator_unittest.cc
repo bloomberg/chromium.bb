@@ -98,8 +98,9 @@ const unsigned int kLoggedLatencyPercentiles[] = {50, 75, 95};
 // The syntax of multiple test streams is:
 //  test-stream1;test-stream2;test-stream3
 // The syntax of each test stream is:
-// "in_filename:width:height:out_filename:requested_bitrate:requested_framerate
-//  :requested_subsequent_bitrate:requested_subsequent_framerate"
+// "in_filename:width:height:profile:out_filename:requested_bitrate
+//  :requested_framerate:requested_subsequent_bitrate
+//  :requested_subsequent_framerate"
 // - |in_filename| must be an I420 (YUV planar) raw stream
 //   (see http://www.fourcc.org/yuv.php#IYUV).
 // - |width| and |height| are in pixels.
