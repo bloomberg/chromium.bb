@@ -53,12 +53,16 @@ group("remoting_all") {
     deps += [
       "//remoting:remoting_perftests",
       "//remoting/host",
-      "//remoting/host:remoting_start_host",
-      "//remoting/host/it2me:remote_assistance_host",
 
-      #"//remoting:remoting_it2me_native_messaging_host",
-      #"//remoting:remoting_native_messaging_manifests",
+      "//remoting/host:remoting_native_messaging_manifests",
     ]
+
+    if (!is_chromeos) {
+      deps += [
+        "//remoting/host:remoting_start_host",
+        "//remoting/host/it2me:remote_assistance_host",
+      ]
+    }
   }
 
   if (enable_me2me_host) {
