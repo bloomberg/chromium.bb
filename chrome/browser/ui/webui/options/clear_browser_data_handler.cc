@@ -44,8 +44,18 @@ const char kClearBrowsingDataLearnMoreUrl[] =
     "https://support.google.com/chrome/?p=settings_clear_browsing_data";
 
 bool AreCountersEnabled() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableClearBrowsingDataCounters);
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableClearBrowsingDataCounters)) {
+    return true;
+  }
+
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableClearBrowsingDataCounters)) {
+    return false;
+  }
+
+  // Enabled by default.
+  return true;
 }
 
 }  // namespace
