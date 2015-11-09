@@ -375,15 +375,15 @@ void ServiceWorkerWriteToCacheJob::OnWriteDataComplete(net::Error error) {
 }
 
 void ServiceWorkerWriteToCacheJob::OnReadCompleted(net::URLRequest* request,
-                                                   int result) {
+                                                   int bytes_read) {
   DCHECK_EQ(net_request_, request);
-  DCHECK_NE(result, net::ERR_IO_PENDING);
 
-  if (result < 0) {
+  int result;
+  if (bytes_read < 0) {
     DCHECK(!request->status().is_success());
     result = NotifyFinishedCaching(request->status(), kFetchScriptError);
   } else {
-    result = HandleNetData(result);
+    result = HandleNetData(bytes_read);
   }
 
   // ReadRawDataComplete will be called in OnWriteDataComplete, so return early.
