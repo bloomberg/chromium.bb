@@ -212,13 +212,15 @@ template("gcc_toolchain") {
         gold_plugin_path = rebase_path(
                 "//third_party/llvm-build/Release+Asserts/lib/LLVMgold.so",
                 root_build_dir)
-        arflags = "--plugin $gold_plugin_path"
+        arflags = "--plugin \"$gold_plugin_path\""
       }
 
       # This needs a Python script to avoid using simple sh features in this
-      # command, in case the host does not use a POSIX shell (e.g. Windows).
-      ar_wrapper = rebase_path("//build/toolchain/gcc_ar_wrapper.py")
-      command = "$python_path $ar_wrapper --output={{output}} --ar=$ar $arflags rcs @$rspfile"
+      # command, in case the host does not use a POSIX shell (e.g. compiling
+      # POSIX-like toolchains such as NaCl on Windows).
+      ar_wrapper =
+          rebase_path("//build/toolchain/gcc_ar_wrapper.py", root_build_dir)
+      command = "$python_path \"$ar_wrapper\" --output={{output}} --ar=$ar $arflags rcs @\"$rspfile\""
       description = "AR {{output}}"
       rspfile_content = "{{inputs}}"
       outputs = [
@@ -247,7 +249,7 @@ template("gcc_toolchain") {
       # .TOC file, overwrite it, otherwise, don't change it.
       tocfile = sofile + ".TOC"
 
-      link_command = "$ld -shared {{ldflags}} -o $unstripped_sofile -Wl,-soname=$soname @$rspfile"
+      link_command = "$ld -shared {{ldflags}} -o \"$unstripped_sofile\" -Wl,-soname=\"$soname\" @\"$rspfile\""
 
       assert(defined(readelf), "to solink you must have a readelf")
       assert(defined(nm), "to solink you must have an nm")
@@ -260,7 +262,7 @@ template("gcc_toolchain") {
       # requiring sh control structures, pipelines, and POSIX utilities.
       # The host might not have a POSIX shell and utilities (e.g. Windows).
       solink_wrapper = rebase_path("//build/toolchain/gcc_solink_wrapper.py")
-      command = "$python_path $solink_wrapper --readelf=$readelf --nm=$nm $strip_switch --sofile=$unstripped_sofile --tocfile=$tocfile --output=$sofile -- $link_command"
+      command = "$python_path $solink_wrapper --readelf=$readelf --nm=$nm $strip_switch --sofile=\"$unstripped_sofile\" --tocfile=\"$tocfile\" --output=\"$sofile\" -- $link_command"
 
       rspfile_content = "-Wl,--whole-archive {{inputs}} {{solibs}} -Wl,--no-whole-archive $solink_libs_section_prefix {{libs}} $solink_libs_section_postfix"
 
@@ -304,11 +306,10 @@ template("gcc_toolchain") {
         unstripped_sofile = "{{root_out_dir}}/lib.unstripped/$soname"
       }
 
-      command = "$ld -shared {{ldflags}} -o $unstripped_sofile -Wl,-soname=$soname @$rspfile"
+      command = "$ld -shared {{ldflags}} -o \"$unstripped_sofile\" -Wl,-soname=\"$soname\" @\"$rspfile\""
 
       if (defined(invoker.strip)) {
-        strip_command =
-            "${invoker.strip} --strip-unneeded -o $sofile $unstripped_sofile"
+        strip_command = "${invoker.strip} --strip-unneeded -o \"$sofile\" \"$unstripped_sofile\""
         command += " && " + strip_command
       }
       rspfile_content = "-Wl,--whole-archive {{inputs}} {{solibs}} -Wl,--no-whole-archive $solink_libs_section_prefix {{libs}} $solink_libs_section_postfix"
@@ -345,10 +346,11 @@ template("gcc_toolchain") {
         unstripped_outfile = "{{root_out_dir}}/exe.unstripped/$exename"
       }
 
-      command = "$ld {{ldflags}} -o $unstripped_outfile -Wl,--start-group @$rspfile {{solibs}} -Wl,--end-group $libs_section_prefix {{libs}} $libs_section_postfix"
+      command = "$ld {{ldflags}} -o \"$unstripped_outfile\" -Wl,--start-group @\"$rspfile\" {{solibs}} -Wl,--end-group $libs_section_prefix {{libs}} $libs_section_postfix"
       if (defined(invoker.strip)) {
-        link_wrapper = rebase_path("//build/toolchain/gcc_link_wrapper.py")
-        command = "$python_path $link_wrapper --strip=${invoker.strip} --unstripped-file=$unstripped_outfile --output=$outfile -- $command"
+        link_wrapper =
+            rebase_path("//build/toolchain/gcc_link_wrapper.py", root_build_dir)
+        command = "$python_path \"$link_wrapper\" --strip=${invoker.strip} --unstripped-file=\"$unstripped_outfile\" --output=\"$outfile\" -- $command"
       }
       description = "LINK $outfile"
       rspfile_content = "{{inputs}}"
