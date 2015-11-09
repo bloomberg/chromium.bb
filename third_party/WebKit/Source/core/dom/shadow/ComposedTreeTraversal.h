@@ -138,8 +138,7 @@ private:
 #endif
     }
 
-    static Node* traverseNode(const Node&, TraversalDirection);
-    static Node* traverseLightChildren(const Node&, TraversalDirection);
+    static Node* resolveDistributionStartingAt(const Node*, TraversalDirection);
 
     static Node* traverseNext(const Node&);
     static Node* traverseNext(const Node&, const Node* stayWithin);
@@ -155,13 +154,8 @@ private:
     static Node* traverseNextSibling(const Node&);
     static Node* traversePreviousSibling(const Node&);
 
-    static Node* traverseSiblingOrBackToInsertionPoint(const Node&, TraversalDirection);
-    static Node* traverseSiblingInCurrentTree(const Node&, TraversalDirection);
-
-    static Node* traverseSiblings(const Node*, TraversalDirection);
-    static Node* traverseDistributedNodes(const Node*, const InsertionPoint&, TraversalDirection);
-
-    static Node* traverseBackToYoungerShadowRoot(const Node&, TraversalDirection);
+    static Node* traverseSiblings(const Node&, TraversalDirection);
+    static Node* traverseSiblingsOrShadowInsertionPointSiblings(const Node&, TraversalDirection);
 
     static ContainerNode* traverseParentOrHost(const Node&);
     static Node* traverseNextAncestorSibling(const Node&);
@@ -185,7 +179,7 @@ inline Element* ComposedTreeTraversal::parentElement(const Node& node)
 inline Node* ComposedTreeTraversal::nextSibling(const Node& node)
 {
     assertPrecondition(node);
-    Node* result = traverseSiblingOrBackToInsertionPoint(node, TraversalDirectionForward);
+    Node* result = traverseSiblings(node, TraversalDirectionForward);
     assertPostcondition(result);
     return result;
 }
@@ -193,7 +187,7 @@ inline Node* ComposedTreeTraversal::nextSibling(const Node& node)
 inline Node* ComposedTreeTraversal::previousSibling(const Node& node)
 {
     assertPrecondition(node);
-    Node* result = traverseSiblingOrBackToInsertionPoint(node, TraversalDirectionBackward);
+    Node* result = traverseSiblings(node, TraversalDirectionBackward);
     assertPostcondition(result);
     return result;
 }
@@ -230,7 +224,7 @@ inline Node* ComposedTreeTraversal::traverseNext(const Node& node)
         if (Node* sibling = traverseNextSibling(*next))
             return sibling;
     }
-    return 0;
+    return nullptr;
 }
 
 inline Node* ComposedTreeTraversal::traverseNext(const Node& node, const Node* stayWithin)
@@ -292,12 +286,12 @@ inline bool ComposedTreeTraversal::hasChildren(const Node& node)
 
 inline Node* ComposedTreeTraversal::traverseNextSibling(const Node& node)
 {
-    return traverseSiblingOrBackToInsertionPoint(node, TraversalDirectionForward);
+    return traverseSiblings(node, TraversalDirectionForward);
 }
 
 inline Node* ComposedTreeTraversal::traversePreviousSibling(const Node& node)
 {
-    return traverseSiblingOrBackToInsertionPoint(node, TraversalDirectionBackward);
+    return traverseSiblings(node, TraversalDirectionBackward);
 }
 
 inline Node* ComposedTreeTraversal::traverseFirstChild(const Node& node)
