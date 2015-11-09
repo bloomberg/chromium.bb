@@ -25,8 +25,9 @@
 #include "qcmsint.h"
 
 /* pre-shuffled: just load these into XMM reg instead of load-scalar/shufps sequence */
-#define FLOATSCALE  (float)(PRECACHE_OUTPUT_SIZE)
-#define CLAMPMAXVAL ( ((float) (PRECACHE_OUTPUT_SIZE - 1)) / PRECACHE_OUTPUT_SIZE )
+#define FLOATSCALE  (float)(PRECACHE_OUTPUT_SIZE - 1)
+#define CLAMPMAXVAL 1.0f
+
 static const ALIGN float floatScaleX4[4] =
     { FLOATSCALE, FLOATSCALE, FLOATSCALE, FLOATSCALE};
 static const ALIGN float clampMaxValueX4[4] =
@@ -103,7 +104,7 @@ void qcms_transform_data_rgb_out_lut_sse2(qcms_transform *transform,
         vec_b = _mm_mul_ps(vec_b, mat2);
 
         /* crunch, crunch, crunch */
-        vec_r  = _mm_add_ps(vec_r, _mm_add_ps(vec_g, vec_b));
+        vec_r  = _mm_add_ps(vec_g, _mm_add_ps(vec_r, vec_b));
         vec_r  = _mm_max_ps(min, vec_r);
         vec_r  = _mm_min_ps(max, vec_r);
         result = _mm_mul_ps(vec_r, scale);
@@ -134,7 +135,7 @@ void qcms_transform_data_rgb_out_lut_sse2(qcms_transform *transform,
     vec_g = _mm_mul_ps(vec_g, mat1);
     vec_b = _mm_mul_ps(vec_b, mat2);
 
-    vec_r  = _mm_add_ps(vec_r, _mm_add_ps(vec_g, vec_b));
+    vec_r  = _mm_add_ps(vec_g, _mm_add_ps(vec_r, vec_b));
     vec_r  = _mm_max_ps(min, vec_r);
     vec_r  = _mm_min_ps(max, vec_r);
     result = _mm_mul_ps(vec_r, scale);
@@ -223,7 +224,7 @@ void qcms_transform_data_rgba_out_lut_sse2(qcms_transform *transform,
         alpha   = src[3];
 
         /* crunch, crunch, crunch */
-        vec_r  = _mm_add_ps(vec_r, _mm_add_ps(vec_g, vec_b));
+        vec_r  = _mm_add_ps(vec_g, _mm_add_ps(vec_r, vec_b));
         vec_r  = _mm_max_ps(min, vec_r);
         vec_r  = _mm_min_ps(max, vec_r);
         result = _mm_mul_ps(vec_r, scale);
@@ -256,7 +257,7 @@ void qcms_transform_data_rgba_out_lut_sse2(qcms_transform *transform,
 
     dest[3] = alpha;
 
-    vec_r  = _mm_add_ps(vec_r, _mm_add_ps(vec_g, vec_b));
+    vec_r  = _mm_add_ps(vec_g, _mm_add_ps(vec_r, vec_b));
     vec_r  = _mm_max_ps(min, vec_r);
     vec_r  = _mm_min_ps(max, vec_r);
     result = _mm_mul_ps(vec_r, scale);
