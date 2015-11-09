@@ -2925,7 +2925,6 @@
           'dependencies': [
             'safe_browsing_chunk_proto',
             'safe_browsing_proto',
-            'safe_browsing_report_proto',
           ],
         }],
         ['buildtype!="Official" and chromeos==1', {

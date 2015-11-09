@@ -13,7 +13,7 @@
 #define IPC_MESSAGE_START SafeBrowsingMsgStart
 
 // A node is essentially a frame.
-IPC_STRUCT_BEGIN(SafeBrowsingHostMsg_MalwareDOMDetails_Node)
+IPC_STRUCT_BEGIN(SafeBrowsingHostMsg_ThreatDOMDetails_Node)
   // URL of this resource. Can be empty.
   IPC_STRUCT_MEMBER(GURL, url)
 
@@ -31,9 +31,9 @@ IPC_STRUCT_END()
 // SafeBrowsing client-side detection messages sent from the renderer to the
 // browser.
 
-// Send part of the DOM to the browser, to be used in a malware report.
-IPC_MESSAGE_ROUTED1(SafeBrowsingHostMsg_MalwareDOMDetails,
-                    std::vector<SafeBrowsingHostMsg_MalwareDOMDetails_Node>)
+// Send part of the DOM to the browser, to be used in a threat report.
+IPC_MESSAGE_ROUTED1(SafeBrowsingHostMsg_ThreatDOMDetails,
+                    std::vector<SafeBrowsingHostMsg_ThreatDOMDetails_Node>)
 
 #if defined(FULL_SAFE_BROWSING)
 // Inform the browser that the client-side phishing detector running in the
@@ -48,8 +48,8 @@ IPC_MESSAGE_ROUTED1(SafeBrowsingHostMsg_PhishingDetectionDone,
 // SafeBrowsing client-side detection messages sent from the browser to the
 // renderer.
 
-// Request a DOM tree when a malware interstitial is shown.
-IPC_MESSAGE_ROUTED0(SafeBrowsingMsg_GetMalwareDOMDetails)
+// Request a DOM tree when a safe browsing interstitial is shown.
+IPC_MESSAGE_ROUTED0(SafeBrowsingMsg_GetThreatDOMDetails)
 
 #if defined(FULL_SAFE_BROWSING)
 // A classification model for client-side phishing detection.

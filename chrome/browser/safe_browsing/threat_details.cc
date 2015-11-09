@@ -2,14 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Implementation of the MalwareDetails class.
+// Implementation of the ThreatDetails class.
 
 #include "chrome/browser/safe_browsing/threat_details.h"
 
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/safe_browsing/report.pb.h"
 #include "chrome/browser/safe_browsing/threat_details_cache.h"
 #include "chrome/browser/safe_browsing/threat_details_history.h"
 #include "chrome/common/safe_browsing/safebrowsing_messages.h"
@@ -23,13 +22,39 @@
 using content::BrowserThread;
 using content::NavigationEntry;
 using content::WebContents;
-using safe_browsing::ClientMalwareReportRequest;
+using safe_browsing::ClientSafeBrowsingReportRequest;
 
-// Keep in sync with KMaxNodes in renderer/safe_browsing/malware_dom_details
+// Keep in sync with KMaxNodes in renderer/safe_browsing/threat_dom_details
 static const uint32 kMaxDomNodes = 500;
 
 // static
 ThreatDetailsFactory* ThreatDetails::factory_ = NULL;
+
+namespace {
+
+// Helper function that converts SBThreatType to
+// ClientSafeBrowsingReportRequest::ReportType.
+ClientSafeBrowsingReportRequest::ReportType GetReportTypeFromSBThreatType(
+    SBThreatType threat_type) {
+  switch (threat_type) {
+    case SB_THREAT_TYPE_URL_PHISHING:
+      return ClientSafeBrowsingReportRequest::URL_PHISHING;
+    case SB_THREAT_TYPE_URL_MALWARE:
+      return ClientSafeBrowsingReportRequest::URL_MALWARE;
+    case SB_THREAT_TYPE_URL_UNWANTED:
+      return ClientSafeBrowsingReportRequest::URL_UNWANTED;
+    case SB_THREAT_TYPE_CLIENT_SIDE_PHISHING_URL:
+      return ClientSafeBrowsingReportRequest::CLIENT_SIDE_PHISHING_URL;
+    case SB_THREAT_TYPE_CLIENT_SIDE_MALWARE_URL:
+      return ClientSafeBrowsingReportRequest::CLIENT_SIDE_MALWARE_URL;
+    default:  // Gated by SafeBrowsingBlockingPage::ShouldReportThreatDetails.
+      NOTREACHED() << "We should not send report for threat type "
+                   << threat_type;
+      return ClientSafeBrowsingReportRequest::UNKNOWN;
+  }
+}
+
+}  // namespace
 
 // The default ThreatDetailsFactory.  Global, made a singleton so we
 // don't leak it.
@@ -51,7 +76,7 @@ class ThreatDetailsFactoryImpl : public ThreatDetailsFactory {
 };
 
 static base::LazyInstance<ThreatDetailsFactoryImpl>
-    g_malware_details_factory_impl = LAZY_INSTANCE_INITIALIZER;
+    g_threat_details_factory_impl = LAZY_INSTANCE_INITIALIZER;
 
 // Create a ThreatDetails for the given tab.
 /* static */
@@ -62,7 +87,7 @@ ThreatDetails* ThreatDetails::NewThreatDetails(
   // Set up the factory if this has not been done already (tests do that
   // before this method is called).
   if (!factory_)
-    factory_ = g_malware_details_factory_impl.Pointer();
+    factory_ = g_threat_details_factory_impl.Pointer();
   return factory_->CreateThreatDetails(ui_manager, web_contents, resource);
 }
 
@@ -86,7 +111,7 @@ ThreatDetails::~ThreatDetails() {}
 bool ThreatDetails::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ThreatDetails, message)
-    IPC_MESSAGE_HANDLER(SafeBrowsingHostMsg_MalwareDOMDetails,
+    IPC_MESSAGE_HANDLER(SafeBrowsingHostMsg_ThreatDOMDetails,
                         OnReceivedThreatDOMDetails)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -102,7 +127,7 @@ bool ThreatDetails::IsReportableUrl(const GURL& url) const {
 // updates |resource|. Otherwise, it creates a new message, adds it to
 // resources_ and updates |resource| to point to it.
 //
-ClientMalwareReportRequest::Resource* ThreatDetails::FindOrCreateResource(
+ClientSafeBrowsingReportRequest::Resource* ThreatDetails::FindOrCreateResource(
     const GURL& url) {
   safe_browsing::ResourceMap::iterator it = resources_.find(url.spec());
   if (it != resources_.end())
@@ -110,8 +135,8 @@ ClientMalwareReportRequest::Resource* ThreatDetails::FindOrCreateResource(
 
   // Create the resource for |url|.
   int id = resources_.size();
-  linked_ptr<ClientMalwareReportRequest::Resource> new_resource(
-      new ClientMalwareReportRequest::Resource());
+  linked_ptr<ClientSafeBrowsingReportRequest::Resource> new_resource(
+      new ClientSafeBrowsingReportRequest::Resource());
   new_resource->set_url(url.spec());
   new_resource->set_id(id);
   resources_[url.spec()] = new_resource;
@@ -126,13 +151,13 @@ void ThreatDetails::AddUrl(const GURL& url,
     return;
 
   // Find (or create) the resource for the url.
-  ClientMalwareReportRequest::Resource* url_resource =
+  ClientSafeBrowsingReportRequest::Resource* url_resource =
       FindOrCreateResource(url);
   if (!tagname.empty())
     url_resource->set_tag_name(tagname);
   if (!parent.is_empty() && IsReportableUrl(parent)) {
     // Add the resource for the parent.
-    ClientMalwareReportRequest::Resource* parent_resource =
+    ClientSafeBrowsingReportRequest::Resource* parent_resource =
         FindOrCreateResource(parent);
     // Update the parent-child relation
     url_resource->set_parent_id(parent_resource->id());
@@ -140,7 +165,7 @@ void ThreatDetails::AddUrl(const GURL& url,
   if (children) {
     for (std::vector<GURL>::const_iterator it = children->begin();
          it != children->end(); ++it) {
-      ClientMalwareReportRequest::Resource* child_resource =
+      ClientSafeBrowsingReportRequest::Resource* child_resource =
           FindOrCreateResource(*it);
       url_resource->add_child_ids(child_resource->id());
     }
@@ -148,11 +173,13 @@ void ThreatDetails::AddUrl(const GURL& url,
 }
 
 void ThreatDetails::StartCollection() {
-  DVLOG(1) << "Starting to compute malware details.";
-  report_.reset(new ClientMalwareReportRequest());
+  DVLOG(1) << "Starting to compute threat details.";
+  report_.reset(new ClientSafeBrowsingReportRequest());
 
-  if (IsReportableUrl(resource_.url))
-    report_->set_malware_url(resource_.url.spec());
+  if (IsReportableUrl(resource_.url)) {
+    report_->set_url(resource_.url.spec());
+    report_->set_type(GetReportTypeFromSBThreatType(resource_.threat_type));
+  }
 
   GURL page_url = web_contents()->GetURL();
   if (IsReportableUrl(page_url))
@@ -202,12 +229,12 @@ void ThreatDetails::StartCollection() {
   // Get URLs of frames, scripts etc from the DOM.
   // OnReceivedThreatDOMDetails will be called when the renderer replies.
   content::RenderViewHost* view = web_contents()->GetRenderViewHost();
-  view->Send(new SafeBrowsingMsg_GetMalwareDOMDetails(view->GetRoutingID()));
+  view->Send(new SafeBrowsingMsg_GetThreatDOMDetails(view->GetRoutingID()));
 }
 
 // When the renderer is done, this is called.
 void ThreatDetails::OnReceivedThreatDOMDetails(
-    const std::vector<SafeBrowsingHostMsg_MalwareDOMDetails_Node>& params) {
+    const std::vector<SafeBrowsingHostMsg_ThreatDOMDetails_Node>& params) {
   // Schedule this in IO thread, so it doesn't conflict with future users
   // of our data structures (eg GetSerializedReport).
   BrowserThread::PostTask(
@@ -216,7 +243,7 @@ void ThreatDetails::OnReceivedThreatDOMDetails(
 }
 
 void ThreatDetails::AddDOMDetails(
-    const std::vector<SafeBrowsingHostMsg_MalwareDOMDetails_Node>& params) {
+    const std::vector<SafeBrowsingHostMsg_ThreatDOMDetails_Node>& params) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DVLOG(1) << "Nodes from the DOM: " << params.size();
 
@@ -233,7 +260,7 @@ void ThreatDetails::AddDOMDetails(
   // Add the urls from the DOM to |resources_|.  The renderer could be
   // sending bogus messages, so limit the number of nodes we accept.
   for (size_t i = 0; i < params.size() && i < kMaxDomNodes; ++i) {
-    SafeBrowsingHostMsg_MalwareDOMDetails_Node node = params[i];
+    SafeBrowsingHostMsg_ThreatDOMDetails_Node node = params[i];
     DVLOG(1) << node.url << ", " << node.tag_name << ", " << node.parent;
     AddUrl(node.url, node.parent, node.tag_name, &(node.children));
   }
@@ -284,7 +311,7 @@ void ThreatDetails::OnCacheCollectionReady() {
   // Add all the urls in our |resources_| maps to the |report_| protocol buffer.
   for (safe_browsing::ResourceMap::const_iterator it = resources_.begin();
        it != resources_.end(); ++it) {
-    ClientMalwareReportRequest::Resource* pb_resource =
+    ClientSafeBrowsingReportRequest::Resource* pb_resource =
         report_->add_resources();
     pb_resource->CopyFrom(*(it->second));
     const GURL url(pb_resource->url());
@@ -307,9 +334,8 @@ void ThreatDetails::OnCacheCollectionReady() {
   // Send the report, using the SafeBrowsingService.
   std::string serialized;
   if (!report_->SerializeToString(&serialized)) {
-    DLOG(ERROR) << "Unable to serialize the malware report.";
+    DLOG(ERROR) << "Unable to serialize the threat report.";
     return;
   }
-
   ui_manager_->SendSerializedThreatDetails(serialized);
 }

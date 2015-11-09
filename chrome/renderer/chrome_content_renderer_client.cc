@@ -46,8 +46,8 @@
 #include "chrome/renderer/prerender/prerender_dispatcher.h"
 #include "chrome/renderer/prerender/prerender_helper.h"
 #include "chrome/renderer/prerender/prerenderer_client.h"
-#include "chrome/renderer/safe_browsing/malware_dom_details.h"
 #include "chrome/renderer/safe_browsing/phishing_classifier_delegate.h"
+#include "chrome/renderer/safe_browsing/threat_dom_details.h"
 #include "chrome/renderer/searchbox/search_bouncer.h"
 #include "chrome/renderer/searchbox/searchbox.h"
 #include "chrome/renderer/searchbox/searchbox_extension.h"
@@ -555,7 +555,7 @@ void ChromeContentRendererClient::RenderViewCreated(
 #endif
   new prerender::PrerendererClient(render_view);
 #if defined(FULL_SAFE_BROWSING)
-  safe_browsing::MalwareDOMDetails::Create(render_view);
+  safe_browsing::ThreatDOMDetails::Create(render_view);
 #endif
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();

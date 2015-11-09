@@ -10,9 +10,9 @@
 #include "base/lazy_instance.h"
 #include "base/md5.h"
 #include "base/strings/string_util.h"
-#include "chrome/browser/safe_browsing/report.pb.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/threat_details_cache.h"
+#include "chrome/common/safe_browsing/csd.pb.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/load_flags.h"
@@ -23,7 +23,7 @@
 #include "net/url_request/url_request_status.h"
 
 using content::BrowserThread;
-using safe_browsing::ClientMalwareReportRequest;
+using safe_browsing::ClientSafeBrowsingReportRequest;
 
 // Only send small files for now, a better strategy would use the size
 // of the whole report and the user's bandwidth.
@@ -87,8 +87,8 @@ void ThreatDetailsCacheCollector::OpenEntry() {
   current_fetch_->Start();  // OnURLFetchComplete will be called when done.
 }
 
-ClientMalwareReportRequest::Resource* ThreatDetailsCacheCollector::GetResource(
-    const GURL& url) {
+ClientSafeBrowsingReportRequest::Resource*
+ThreatDetailsCacheCollector::GetResource(const GURL& url) {
   safe_browsing::ResourceMap::iterator it = resources_->find(url.spec());
   if (it != resources_->end()) {
     return it->second.get();
@@ -119,7 +119,7 @@ void ThreatDetailsCacheCollector::OnURLFetchComplete(
   // Set the response headers and body to the right resource, which
   // might not be the same as the one we asked for.
   // For redirects, resources_it_->first != url.spec().
-  ClientMalwareReportRequest::Resource* resource =
+  ClientSafeBrowsingReportRequest::Resource* resource =
       GetResource(source->GetURL());
   if (!resource) {
     DVLOG(1) << "Cannot find resource for url:" << source->GetURL();
@@ -135,7 +135,7 @@ void ThreatDetailsCacheCollector::OnURLFetchComplete(
 }
 
 void ThreatDetailsCacheCollector::ReadResponse(
-    ClientMalwareReportRequest::Resource* pb_resource,
+    ClientSafeBrowsingReportRequest::Resource* pb_resource,
     const net::URLFetcher* source) {
   DVLOG(1) << "ReadResponse";
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -145,13 +145,13 @@ void ThreatDetailsCacheCollector::ReadResponse(
     return;
   }
 
-  ClientMalwareReportRequest::HTTPResponse* pb_response =
+  ClientSafeBrowsingReportRequest::HTTPResponse* pb_response =
       pb_resource->mutable_response();
   pb_response->mutable_firstline()->set_code(headers->response_code());
   void* iter = NULL;
   std::string name, value;
   while (headers->EnumerateHeaderLines(&iter, &name, &value)) {
-    ClientMalwareReportRequest::HTTPHeader* pb_header =
+    ClientSafeBrowsingReportRequest::HTTPHeader* pb_header =
         pb_response->add_headers();
     pb_header->set_name(name);
     // Strip any Set-Cookie headers.
@@ -168,11 +168,11 @@ void ThreatDetailsCacheCollector::ReadResponse(
 }
 
 void ThreatDetailsCacheCollector::ReadData(
-    ClientMalwareReportRequest::Resource* pb_resource,
+    ClientSafeBrowsingReportRequest::Resource* pb_resource,
     const std::string& data) {
   DVLOG(1) << "ReadData";
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  ClientMalwareReportRequest::HTTPResponse* pb_response =
+  ClientSafeBrowsingReportRequest::HTTPResponse* pb_response =
       pb_resource->mutable_response();
   if (data.size() <= kMaxBodySizeBytes) {  // Only send small bodies for now.
     pb_response->set_body(data);

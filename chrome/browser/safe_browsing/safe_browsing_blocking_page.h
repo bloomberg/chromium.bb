@@ -86,6 +86,9 @@ class SafeBrowsingBlockingPage : public SecurityInterstitialPage {
   void OverrideRendererPrefs(content::RendererPreferences* prefs) override;
   content::InterstitialPageDelegate::TypeID GetTypeForTesting() const override;
 
+  // Checks the threat type to decide if we should report ThreatDetails.
+  static bool ShouldReportThreatDetails(SBThreatType threat_type);
+
  protected:
   friend class SafeBrowsingBlockingPageTest;
   FRIEND_TEST_ALL_PREFIXES(SafeBrowsingBlockingPageTest,
@@ -114,9 +117,9 @@ class SafeBrowsingBlockingPage : public SecurityInterstitialPage {
   FRIEND_TEST_ALL_PREFIXES(SafeBrowsingBlockingPageTest,
       MalwareReportsToggling);
 
-  // Checks if we should even show the malware details option. For example, we
+  // Checks if we should even show the threat details option. For example, we
   // don't show it in incognito mode.
-  bool CanShowMalwareDetailsOption();
+  bool CanShowThreatDetailsOption();
 
   // Called when the insterstitial is going away. If there is a
   // pending threat details object, we look at the user's
@@ -173,7 +176,7 @@ class SafeBrowsingBlockingPage : public SecurityInterstitialPage {
   } interstitial_reason_;
 
   // The factory used to instantiate SafeBrowsingBlockingPage objects.
-  // Usefull for tests, so they can provide their own implementation of
+  // Useful for tests, so they can provide their own implementation of
   // SafeBrowsingBlockingPage.
   static SafeBrowsingBlockingPageFactory* factory_;
 

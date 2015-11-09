@@ -181,8 +181,8 @@
     ],
     # For safe_browsing==1 or safe_browsing==2.
     'chrome_renderer_basic_safe_browsing_sources': [
-      'renderer/safe_browsing/malware_dom_details.cc',
-      'renderer/safe_browsing/malware_dom_details.h',
+      'renderer/safe_browsing/threat_dom_details.cc',
+      'renderer/safe_browsing/threat_dom_details.h',
     ],
     # For safe_browsing==1 only.
     'chrome_renderer_full_safe_browsing_sources': [

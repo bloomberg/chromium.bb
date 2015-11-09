@@ -15,7 +15,7 @@
 #include "base/containers/hash_tables.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/safe_browsing/report.pb.h"
+#include "chrome/common/safe_browsing/csd.pb.h"
 #include "net/base/completion_callback.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
@@ -29,7 +29,7 @@ namespace safe_browsing {
 // Maps a URL to its Resource.
 typedef base::hash_map<
     std::string,
-    linked_ptr<safe_browsing::ClientMalwareReportRequest::Resource>>
+    linked_ptr<safe_browsing::ClientSafeBrowsingReportRequest::Resource>>
     ResourceMap;
 }
 
@@ -85,7 +85,7 @@ class ThreatDetailsCacheCollector
   scoped_ptr<net::URLFetcher> current_fetch_;
 
   // Returns the resource from resources_ that corresponds to |url|
-  safe_browsing::ClientMalwareReportRequest::Resource* GetResource(
+  safe_browsing::ClientSafeBrowsingReportRequest::Resource* GetResource(
       const GURL& url);
 
   // Creates a new URLFetcher and starts it.
@@ -93,12 +93,12 @@ class ThreatDetailsCacheCollector
 
   // Read the HTTP response from |source| and add it to |pb_resource|.
   void ReadResponse(
-      safe_browsing::ClientMalwareReportRequest::Resource* pb_resource,
+      safe_browsing::ClientSafeBrowsingReportRequest::Resource* pb_resource,
       const net::URLFetcher* source);
 
   // Read the body |data| and add it to |pb_resource|.
   void ReadData(
-      safe_browsing::ClientMalwareReportRequest::Resource* pb_resource,
+      safe_browsing::ClientSafeBrowsingReportRequest::Resource* pb_resource,
       const std::string& data);
 
   // Called when we are done.

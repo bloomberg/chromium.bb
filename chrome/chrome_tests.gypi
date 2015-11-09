@@ -853,7 +853,7 @@
       'browser/safe_browsing/safe_browsing_test.cc',
       'browser/safe_browsing/test_database_manager.cc',
       'browser/safe_browsing/test_database_manager.h',
-      'renderer/safe_browsing/malware_dom_details_browsertest.cc',
+      'renderer/safe_browsing/threat_dom_details_browsertest.cc',
       'renderer/safe_browsing/phishing_classifier_browsertest.cc',
       'renderer/safe_browsing/phishing_classifier_delegate_browsertest.cc',
       'renderer/safe_browsing/phishing_dom_feature_extractor_browsertest.cc',

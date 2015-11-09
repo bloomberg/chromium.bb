@@ -2,9 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Client side phishing and malware detection request and response
-// protocol buffers.  Those protocol messages should be kept in sync
-// with the server implementation.
+// This proto file includes:
+// (1) Client side phishing and malware detection request and response
+//   protocol buffers.  Those protocol messages should be kept in sync
+//   with the server implementation.
+//
+// (2) Safe Browsing reporting protocol buffers.
+//   A ClientSafeBrowsingReportRequest is sent when a user opts-in to
+//   sending detailed threat reports from the safe browsing interstitial page.
+//   It is a list of Resource messages, which may contain the url of a
+//   resource such as the page in the address bar or any other resource
+//   that was loaded for this page.
+//   In addition to the url, a resource can contain HTTP request and response
+//   headers and bodies.
 //
 // If you want to change this protocol definition or you have questions
 // regarding its format please contact chrome-anti-phishing@googlegroups.com.
@@ -633,4 +643,98 @@ message DownloadMetadata {
   optional uint32 download_id = 1;
 
   optional ClientIncidentReport.DownloadDetails download = 2;
+}
+
+// A Detailed Safebrowsing Report from clients. Chrome safebrowsing reports are
+// only sent by Chrome users who have opted into extended Safe Browsing.
+// This proto is replacing ClientMalwareReportRequest.
+// Next tag: 12
+message ClientSafeBrowsingReportRequest {
+  // Note: A lot of the "optional" fields would make sense to be
+  // "required" instead.  However, having them as optional allows the
+  // clients to send "stripped down" versions of the message in the
+  // future, if we want to.
+
+  enum ReportType {
+    UNKNOWN = 0;
+    URL_PHISHING = 1;
+    URL_MALWARE = 2;
+    URL_UNWANTED = 3;
+    CLIENT_SIDE_PHISHING_URL = 4;
+    CLIENT_SIDE_MALWARE_URL = 5;
+    MALICIOUS_DOWNLOAD_RECOVERY = 6;
+  }
+
+  message HTTPHeader {
+    required bytes name = 1;
+    optional bytes value = 2;
+  }
+
+  message HTTPRequest {
+    message FirstLine {
+      optional bytes verb = 1;
+      optional bytes uri = 2;
+      optional bytes version = 3;
+    }
+
+    optional FirstLine firstline = 1;
+    repeated HTTPHeader headers = 2;
+    optional bytes body = 3;
+
+    // bodydigest and bodylength can be useful if the report does not
+    // contain the body itself.
+    optional bytes bodydigest = 4;  // 32-byte hex md5 digest of body.
+    optional int32 bodylength = 5;  // length of body.
+  }
+
+  message HTTPResponse {
+    message FirstLine {
+      optional int32 code = 1;
+      optional bytes reason = 2;
+      optional bytes version = 3;
+    }
+
+    optional FirstLine firstline = 1;
+    repeated HTTPHeader headers = 2;
+    optional bytes body = 3;
+    optional bytes bodydigest = 4;  // 32-byte hex md5 digest of body.
+    optional int32 bodylength = 5;  // length of body.
+    optional bytes remote_ip = 6;   // IP of the server.
+  }
+
+  message Resource {
+    required int32 id = 1;
+    optional string url = 2;
+    optional HTTPRequest request = 3;
+    optional HTTPResponse response = 4;
+    optional int32 parent_id = 5;
+    repeated int32 child_ids = 6;
+    optional string tag_name = 7;
+  }
+
+  optional ReportType type = 10;
+
+  // Only set if ReportType is MALICIOUS_DOWNLOAD_RECOVERY.
+  optional ClientDownloadResponse.Verdict download_verdict = 11;
+
+  // URL of the page in the address bar.
+  optional string url = 1;
+  optional string page_url = 2;
+  optional string referrer_url = 3;
+
+  repeated Resource resources = 4;
+
+  // Whether the report is complete.
+  optional bool complete = 5;
+
+  // The ASN and country of the client IP. These fields are filled up by
+  // csd_frontend
+  repeated string client_asn = 6;
+  optional string client_country = 7;
+
+  // Whether user chose to proceed.
+  optional bool did_proceed = 8;
+
+  // Whether user visited this origin before.
+  optional bool repeat_visit = 9;
 }

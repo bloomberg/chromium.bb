@@ -176,7 +176,6 @@ source_set("ui") {
     deps += [
       "//chrome/browser/safe_browsing:chunk_proto",
       "//chrome/common/safe_browsing:proto",
-      "//chrome/browser/safe_browsing:report_proto",
     ]
   }
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/safe_browsing/malware_dom_details.h"
+#include "chrome/renderer/safe_browsing/threat_dom_details.h"
 
 #include "base/compiler_specific.h"
 #include "chrome/common/chrome_constants.h"
@@ -22,14 +22,14 @@ namespace {
 // Handler for the various HTML elements that we extract URLs from.
 void HandleElement(
     const blink::WebElement& element,
-    SafeBrowsingHostMsg_MalwareDOMDetails_Node* parent_node,
-    std::vector<SafeBrowsingHostMsg_MalwareDOMDetails_Node>* resources) {
+    SafeBrowsingHostMsg_ThreatDOMDetails_Node* parent_node,
+    std::vector<SafeBrowsingHostMsg_ThreatDOMDetails_Node>* resources) {
   if (!element.hasAttribute("src"))
     return;
 
   // Retrieve the link and resolve the link in case it's relative.
-  blink::WebURL full_url = element.document().completeURL(
-      element.getAttribute("src"));
+  blink::WebURL full_url =
+      element.document().completeURL(element.getAttribute("src"));
 
   const GURL& child_url = GURL(full_url);
 
@@ -37,7 +37,7 @@ void HandleElement(
   parent_node->children.push_back(child_url);
 
   // Create the child node.
-  SafeBrowsingHostMsg_MalwareDOMDetails_Node child_node;
+  SafeBrowsingHostMsg_ThreatDOMDetails_Node child_node;
   child_node.url = child_url;
   child_node.tag_name = element.tagName().utf8();
   child_node.parent = parent_node->url;
@@ -47,42 +47,40 @@ void HandleElement(
 }  // namespace
 
 // An upper limit on the number of nodes we collect.
-uint32 MalwareDOMDetails::kMaxNodes = 500;
+uint32 ThreatDOMDetails::kMaxNodes = 500;
 
 // static
-MalwareDOMDetails* MalwareDOMDetails::Create(content::RenderView* render_view) {
+ThreatDOMDetails* ThreatDOMDetails::Create(content::RenderView* render_view) {
   // Private constructor and public static Create() method to facilitate
   // stubbing out this class for binary-size reduction purposes.
-  return new MalwareDOMDetails(render_view);
+  return new ThreatDOMDetails(render_view);
 }
 
-MalwareDOMDetails::MalwareDOMDetails(content::RenderView* render_view)
-    : content::RenderViewObserver(render_view) {
-}
+ThreatDOMDetails::ThreatDOMDetails(content::RenderView* render_view)
+    : content::RenderViewObserver(render_view) {}
 
-MalwareDOMDetails::~MalwareDOMDetails() {
-}
+ThreatDOMDetails::~ThreatDOMDetails() {}
 
-bool MalwareDOMDetails::OnMessageReceived(const IPC::Message& message) {
+bool ThreatDOMDetails::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(MalwareDOMDetails, message)
-    IPC_MESSAGE_HANDLER(SafeBrowsingMsg_GetMalwareDOMDetails,
-                        OnGetMalwareDOMDetails)
+  IPC_BEGIN_MESSAGE_MAP(ThreatDOMDetails, message)
+    IPC_MESSAGE_HANDLER(SafeBrowsingMsg_GetThreatDOMDetails,
+                        OnGetThreatDOMDetails)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
 }
 
-void MalwareDOMDetails::OnGetMalwareDOMDetails() {
-  std::vector<SafeBrowsingHostMsg_MalwareDOMDetails_Node> resources;
+void ThreatDOMDetails::OnGetThreatDOMDetails() {
+  std::vector<SafeBrowsingHostMsg_ThreatDOMDetails_Node> resources;
   ExtractResources(&resources);
   // Notify the browser.
-  render_view()->Send(new SafeBrowsingHostMsg_MalwareDOMDetails(
+  render_view()->Send(new SafeBrowsingHostMsg_ThreatDOMDetails(
       render_view()->GetRoutingID(), resources));
 }
 
-void MalwareDOMDetails::ExtractResources(
-    std::vector<SafeBrowsingHostMsg_MalwareDOMDetails_Node>* resources) {
+void ThreatDOMDetails::ExtractResources(
+    std::vector<SafeBrowsingHostMsg_ThreatDOMDetails_Node>* resources) {
   blink::WebView* web_view = render_view()->GetWebView();
   if (!web_view) {
     NOTREACHED();
@@ -91,7 +89,7 @@ void MalwareDOMDetails::ExtractResources(
   blink::WebFrame* frame = web_view->mainFrame();
   for (; frame; frame = frame->traverseNext(false /* don't wrap */)) {
     DCHECK(frame);
-    SafeBrowsingHostMsg_MalwareDOMDetails_Node details_node;
+    SafeBrowsingHostMsg_ThreatDOMDetails_Node details_node;
     blink::WebDocument document = frame->document();
     details_node.url = GURL(document.url());
     if (document.isNull()) {

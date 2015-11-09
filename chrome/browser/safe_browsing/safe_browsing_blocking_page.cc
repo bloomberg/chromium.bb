@@ -193,20 +193,29 @@ SafeBrowsingBlockingPage::SafeBrowsingBlockingPage(
     navigation_entry_index_to_remove_ = -1;
   }
 
-  // Start computing malware details. They will be sent only
+  // Start computing threat details. They will be sent only
   // if the user opts-in on the blocking page later.
   // If there's more than one malicious resources, it means the user
   // clicked through the first warning, so we don't prepare additional
   // reports.
   if (unsafe_resources.size() == 1 &&
-      unsafe_resources[0].threat_type == SB_THREAT_TYPE_URL_MALWARE &&
-      threat_details_.get() == NULL && CanShowMalwareDetailsOption()) {
+      ShouldReportThreatDetails(unsafe_resources[0].threat_type) &&
+      threat_details_.get() == NULL && CanShowThreatDetailsOption()) {
     threat_details_ = ThreatDetails::NewThreatDetails(ui_manager_, web_contents,
                                                       unsafe_resources[0]);
   }
 }
 
-bool SafeBrowsingBlockingPage::CanShowMalwareDetailsOption() {
+bool SafeBrowsingBlockingPage::ShouldReportThreatDetails(
+    SBThreatType threat_type) {
+  return threat_type == SB_THREAT_TYPE_URL_PHISHING ||
+         threat_type == SB_THREAT_TYPE_URL_MALWARE ||
+         threat_type == SB_THREAT_TYPE_URL_UNWANTED ||
+         threat_type == SB_THREAT_TYPE_CLIENT_SIDE_PHISHING_URL ||
+         threat_type == SB_THREAT_TYPE_CLIENT_SIDE_MALWARE_URL;
+}
+
+bool SafeBrowsingBlockingPage::CanShowThreatDetailsOption() {
   return (!web_contents()->GetBrowserContext()->IsOffTheRecord() &&
           web_contents()->GetURL().SchemeIs(url::kHttpScheme) &&
           IsPrefEnabled(prefs::kSafeBrowsingExtendedReportingOptInAllowed));
@@ -348,7 +357,7 @@ void SafeBrowsingBlockingPage::OverrideRendererPrefs(
 
 void SafeBrowsingBlockingPage::OnProceed() {
   proceeded_ = true;
-  // Send the malware details, if we opted to.
+  // Send the threat details, if we opted to.
   FinishThreatDetails(malware_details_proceed_delay_ms_, true, /* did_proceed */
                       metrics_helper()->NumVisits());
 
@@ -429,8 +438,7 @@ void SafeBrowsingBlockingPage::FinishThreatDetails(int64 delay_ms,
                                                    bool did_proceed,
                                                    int num_visits) {
   if (threat_details_.get() == NULL)
-    return;  // Not all interstitials have malware details (eg phishing).
-  DCHECK_EQ(interstitial_reason_, SB_REASON_MALWARE);
+    return;  // Not all interstitials have threat details (eg., incognito mode).
 
   const bool enabled =
       IsPrefEnabled(prefs::kSafeBrowsingExtendedReportingEnabled) &&
@@ -616,7 +624,7 @@ void SafeBrowsingBlockingPage::PopulateInterstitialStrings(
 void SafeBrowsingBlockingPage::PopulateExtendedReportingOption(
     base::DictionaryValue* load_time_data) {
   // Only show checkbox if !(HTTPS || incognito-mode).
-  const bool show = CanShowMalwareDetailsOption();
+  const bool show = CanShowThreatDetailsOption();
   load_time_data->SetBoolean(interstitials::kDisplayCheckBox, show);
   if (!show)
     return;

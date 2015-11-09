@@ -244,7 +244,7 @@ class FakeThreatDetails : public ThreatDetails {
         waiting_(false) {}
 
   void AddDOMDetails(
-      const std::vector<SafeBrowsingHostMsg_MalwareDOMDetails_Node>& params)
+      const std::vector<SafeBrowsingHostMsg_ThreatDOMDetails_Node>& params)
       override {
     EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
     ThreatDetails::AddDOMDetails(params);
@@ -260,7 +260,7 @@ class FakeThreatDetails : public ThreatDetails {
       return;
     }
     // This condition might not trigger normally, but if you add a
-    // sleep(1) in malware_dom_details it triggers :).
+    // sleep(1) in threat_dom_details it triggers :).
     waiting_ = true;
     content::RunMessageLoop();
     EXPECT_TRUE(got_dom_);
@@ -350,7 +350,7 @@ class TestSafeBrowsingBlockingPageFactory
       const SafeBrowsingBlockingPage::UnsafeResourceList& unsafe_resources)
       override {
     return new TestSafeBrowsingBlockingPage(delegate, web_contents,
-                                              unsafe_resources);
+                                            unsafe_resources);
   }
 };
 
@@ -710,26 +710,27 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest, IframeProceed) {
 }
 
 IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest,
-                       IframeOptInAndReportMalwareDetails) {
+                       IframeOptInAndReportThreatDetails) {
   // The extended reporting opt-in is presented in the interstitial for malware,
-  // phishing, and UwS threats. It however only results in uploading further
-  // details about the immediate threat when facing malware threats.
-  const bool expect_malware_details = GetParam() == SB_THREAT_TYPE_URL_MALWARE;
+  // phishing, and UwS threats. This test uses malware as an example to verify
+  // this reporting functionality.
+  const bool expect_threat_details =
+      SafeBrowsingBlockingPage::ShouldReportThreatDetails(GetParam());
 
-  scoped_refptr<content::MessageLoopRunner> malware_report_sent_runner(
+  scoped_refptr<content::MessageLoopRunner> threat_report_sent_runner(
       new content::MessageLoopRunner);
-  if (expect_malware_details)
-    SetReportSentCallback(malware_report_sent_runner->QuitClosure());
+  if (expect_threat_details)
+    SetReportSentCallback(threat_report_sent_runner->QuitClosure());
 
   GURL url = SetupThreatIframeWarningAndNavigate();
 
-  FakeThreatDetails* fake_malware_details = details_factory_.get_details();
-  EXPECT_EQ(expect_malware_details, fake_malware_details != nullptr);
+  FakeThreatDetails* fake_threat_details = details_factory_.get_details();
+  EXPECT_EQ(expect_threat_details, fake_threat_details != nullptr);
 
   // If the DOM details from renderer did not already return when they are
   // expected, wait for them.
-  if (expect_malware_details)
-    fake_malware_details->WaitForDOM();
+  if (expect_threat_details)
+    fake_threat_details->WaitForDOM();
 
   EXPECT_EQ(VISIBLE, GetVisibility("extended-reporting-opt-in"));
   EXPECT_TRUE(Click("opt-in-checkbox"));
@@ -741,10 +742,10 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest,
   EXPECT_EQ(url,
             browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
 
-  if (expect_malware_details) {
-    malware_report_sent_runner->Run();
+  if (expect_threat_details) {
+    threat_report_sent_runner->Run();
     std::string serialized = GetReportSent();
-    safe_browsing::ClientMalwareReportRequest report;
+    safe_browsing::ClientSafeBrowsingReportRequest report;
     ASSERT_TRUE(report.ParseFromString(serialized));
     // Verify the report is complete.
     EXPECT_TRUE(report.complete());

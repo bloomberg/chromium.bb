@@ -10,11 +10,11 @@
 #include "base/time/time.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/safe_browsing/report.pb.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/threat_details.h"
 #include "chrome/browser/safe_browsing/threat_details_history.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
+#include "chrome/common/safe_browsing/csd.pb.h"
 #include "chrome/common/safe_browsing/safebrowsing_messages.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
@@ -42,11 +42,11 @@ static const char* kFirstRedirectURL = "http://redirectone.com/with/path";
 static const char* kSecondRedirectURL = "https://redirecttwo.com/with/path";
 static const char* kReferrerURL = "http://www.referrer.com/with/path";
 
-static const char* kMalwareURL = "http://www.malware.com/with/path";
-static const char* kMalwareHeaders =
+static const char* kThreatURL = "http://www.threat.com/with/path";
+static const char* kThreatHeaders =
     "HTTP/1.1 200 OK\n"
     "Content-Type: image/jpeg\n";
-static const char* kMalwareData = "exploit();";
+static const char* kThreatData = "exploit();";
 
 static const char* kLandingURL = "http://www.landingpage.com/with/path";
 static const char* kLandingHeaders =
@@ -55,11 +55,11 @@ static const char* kLandingHeaders =
     "Content-Length: 1024\n"
     "Set-Cookie: tastycookie\n";  // This header is stripped.
 static const char* kLandingData =
-    "<iframe src='http://www.malware.com/with/path'>";
+    "<iframe src='http://www.threat.com/with/path'>";
 
 using content::BrowserThread;
 using content::WebContents;
-using safe_browsing::ClientMalwareReportRequest;
+using safe_browsing::ClientSafeBrowsingReportRequest;
 
 namespace {
 
@@ -122,7 +122,7 @@ void FillCache(net::URLRequestContextGetter* context_getter) {
                ->GetBackend(&cache, cb.callback());
   ASSERT_EQ(net::OK, cb.GetResult(rv));
 
-  WriteToEntry(cache, kMalwareURL, kMalwareHeaders, kMalwareData);
+  WriteToEntry(cache, kThreatURL, kThreatHeaders, kThreatData);
   WriteToEntry(cache, kLandingURL, kLandingHeaders, kLandingData);
 }
 
@@ -195,8 +195,8 @@ class ThreatDetailsTest : public ChromeRenderViewHostTestHarness {
   }
 
   static bool ResourceLessThan(
-      const ClientMalwareReportRequest::Resource* lhs,
-      const ClientMalwareReportRequest::Resource* rhs) {
+      const ClientSafeBrowsingReportRequest::Resource* lhs,
+      const ClientSafeBrowsingReportRequest::Resource* rhs) {
     return lhs->id() < rhs->id();
   }
 
@@ -221,20 +221,22 @@ class ThreatDetailsTest : public ChromeRenderViewHostTestHarness {
 
  protected:
   void InitResource(UnsafeResource* resource,
+                    SBThreatType threat_type,
                     bool is_subresource,
                     const GURL& url) {
     resource->url = url;
     resource->is_subresource = is_subresource;
-    resource->threat_type = SB_THREAT_TYPE_URL_MALWARE;
+    resource->threat_type = threat_type;
     resource->render_process_host_id =
         web_contents()->GetRenderProcessHost()->GetID();
     resource->render_view_id =
         web_contents()->GetRenderViewHost()->GetRoutingID();
   }
 
-  void VerifyResults(const ClientMalwareReportRequest& report_pb,
-                     const ClientMalwareReportRequest& expected_pb) {
-    EXPECT_EQ(expected_pb.malware_url(), report_pb.malware_url());
+  void VerifyResults(const ClientSafeBrowsingReportRequest& report_pb,
+                     const ClientSafeBrowsingReportRequest& expected_pb) {
+    EXPECT_EQ(expected_pb.type(), report_pb.type());
+    EXPECT_EQ(expected_pb.url(), report_pb.url());
     EXPECT_EQ(expected_pb.page_url(), report_pb.page_url());
     EXPECT_EQ(expected_pb.referrer_url(), report_pb.referrer_url());
     EXPECT_EQ(expected_pb.did_proceed(), report_pb.did_proceed());
@@ -245,18 +247,18 @@ class ThreatDetailsTest : public ChromeRenderViewHostTestHarness {
 
     ASSERT_EQ(expected_pb.resources_size(), report_pb.resources_size());
     // Sort the resources, to make the test deterministic
-    std::vector<const ClientMalwareReportRequest::Resource*> resources;
+    std::vector<const ClientSafeBrowsingReportRequest::Resource*> resources;
     for (int i = 0; i < report_pb.resources_size(); ++i) {
-      const ClientMalwareReportRequest::Resource& resource =
+      const ClientSafeBrowsingReportRequest::Resource& resource =
           report_pb.resources(i);
       resources.push_back(&resource);
     }
     std::sort(resources.begin(), resources.end(),
               &ThreatDetailsTest::ResourceLessThan);
 
-    std::vector<const ClientMalwareReportRequest::Resource*> expected;
+    std::vector<const ClientSafeBrowsingReportRequest::Resource*> expected;
     for (int i = 0; i < report_pb.resources_size(); ++i) {
-      const ClientMalwareReportRequest::Resource& resource =
+      const ClientSafeBrowsingReportRequest::Resource& resource =
           expected_pb.resources(i);
       expected.push_back(&resource);
     }
@@ -270,8 +272,9 @@ class ThreatDetailsTest : public ChromeRenderViewHostTestHarness {
     EXPECT_EQ(expected_pb.complete(), report_pb.complete());
   }
 
-  void VerifyResource(const ClientMalwareReportRequest::Resource* resource,
-                      const ClientMalwareReportRequest::Resource* expected) {
+  void VerifyResource(
+      const ClientSafeBrowsingReportRequest::Resource* resource,
+      const ClientSafeBrowsingReportRequest::Resource* expected) {
     EXPECT_EQ(expected->id(), resource->id());
     EXPECT_EQ(expected->url(), resource->url());
     EXPECT_EQ(expected->parent_id(), resource->parent_id());
@@ -322,8 +325,8 @@ class ThreatDetailsTest : public ChromeRenderViewHostTestHarness {
   scoped_refptr<MockSafeBrowsingUIManager> ui_manager_;
 };
 
-// Tests creating a simple malware report.
-TEST_F(ThreatDetailsTest, MalwareSubResource) {
+// Tests creating a simple threat report of a malware URL.
+TEST_F(ThreatDetailsTest, ThreatSubResource) {
   // Start a load.
   controller().LoadURL(
       GURL(kLandingURL),
@@ -331,7 +334,7 @@ TEST_F(ThreatDetailsTest, MalwareSubResource) {
       ui::PAGE_TRANSITION_TYPED, std::string());
 
   UnsafeResource resource;
-  InitResource(&resource, true, GURL(kMalwareURL));
+  InitResource(&resource, SB_THREAT_TYPE_URL_MALWARE, true, GURL(kThreatURL));
 
   scoped_refptr<ThreatDetailsWrap> report =
       new ThreatDetailsWrap(ui_manager_.get(), web_contents(), resource, NULL);
@@ -339,11 +342,12 @@ TEST_F(ThreatDetailsTest, MalwareSubResource) {
   std::string serialized = WaitForSerializedReport(
       report.get(), true /* did_proceed*/, 1 /* num_visit */);
 
-  ClientMalwareReportRequest actual;
+  ClientSafeBrowsingReportRequest actual;
   actual.ParseFromString(serialized);
 
-  ClientMalwareReportRequest expected;
-  expected.set_malware_url(kMalwareURL);
+  ClientSafeBrowsingReportRequest expected;
+  expected.set_type(ClientSafeBrowsingReportRequest::URL_MALWARE);
+  expected.set_url(kThreatURL);
   expected.set_page_url(kLandingURL);
   // Note that the referrer policy is not actually enacted here, since that's
   // done in Blink.
@@ -351,12 +355,13 @@ TEST_F(ThreatDetailsTest, MalwareSubResource) {
   expected.set_did_proceed(true);
   expected.set_repeat_visit(true);
 
-  ClientMalwareReportRequest::Resource* pb_resource = expected.add_resources();
+  ClientSafeBrowsingReportRequest::Resource* pb_resource =
+      expected.add_resources();
   pb_resource->set_id(0);
   pb_resource->set_url(kLandingURL);
   pb_resource = expected.add_resources();
   pb_resource->set_id(1);
-  pb_resource->set_url(kMalwareURL);
+  pb_resource->set_url(kThreatURL);
   pb_resource = expected.add_resources();
   pb_resource->set_id(2);
   pb_resource->set_url(kReferrerURL);
@@ -364,14 +369,14 @@ TEST_F(ThreatDetailsTest, MalwareSubResource) {
   VerifyResults(actual, expected);
 }
 
-// Tests creating a simple malware report where the subresource has a
-// different original_url.
-TEST_F(ThreatDetailsTest, MalwareSubResourceWithOriginalUrl) {
+// Tests creating a simple threat report of a phishing page where the
+// subresource has a different original_url.
+TEST_F(ThreatDetailsTest, ThreatSubResourceWithOriginalUrl) {
   controller().LoadURL(GURL(kLandingURL), content::Referrer(),
                        ui::PAGE_TRANSITION_TYPED, std::string());
 
   UnsafeResource resource;
-  InitResource(&resource, true, GURL(kMalwareURL));
+  InitResource(&resource, SB_THREAT_TYPE_URL_PHISHING, true, GURL(kThreatURL));
   resource.original_url = GURL(kOriginalLandingURL);
 
   scoped_refptr<ThreatDetailsWrap> report =
@@ -380,17 +385,19 @@ TEST_F(ThreatDetailsTest, MalwareSubResourceWithOriginalUrl) {
   std::string serialized = WaitForSerializedReport(
       report.get(), false /* did_proceed*/, 1 /* num_visit */);
 
-  ClientMalwareReportRequest actual;
+  ClientSafeBrowsingReportRequest actual;
   actual.ParseFromString(serialized);
 
-  ClientMalwareReportRequest expected;
-  expected.set_malware_url(kMalwareURL);
+  ClientSafeBrowsingReportRequest expected;
+  expected.set_type(ClientSafeBrowsingReportRequest::URL_PHISHING);
+  expected.set_url(kThreatURL);
   expected.set_page_url(kLandingURL);
   expected.set_referrer_url("");
   expected.set_did_proceed(false);
   expected.set_repeat_visit(true);
 
-  ClientMalwareReportRequest::Resource* pb_resource = expected.add_resources();
+  ClientSafeBrowsingReportRequest::Resource* pb_resource =
+      expected.add_resources();
   pb_resource->set_id(0);
   pb_resource->set_url(kLandingURL);
 
@@ -400,33 +407,33 @@ TEST_F(ThreatDetailsTest, MalwareSubResourceWithOriginalUrl) {
 
   pb_resource = expected.add_resources();
   pb_resource->set_id(2);
-  pb_resource->set_url(kMalwareURL);
-  // The Resource for kMalwareUrl should have the Resource for
+  pb_resource->set_url(kThreatURL);
+  // The Resource for kThreatURL should have the Resource for
   // kOriginalLandingURL (with id 1) as parent.
   pb_resource->set_parent_id(1);
 
   VerifyResults(actual, expected);
 }
 
-// Tests creating a malware report with data from the renderer.
-TEST_F(ThreatDetailsTest, MalwareDOMDetails) {
+// Tests creating a threat report of a UwS page with data from the renderer.
+TEST_F(ThreatDetailsTest, ThreatDOMDetails) {
   controller().LoadURL(GURL(kLandingURL), content::Referrer(),
                        ui::PAGE_TRANSITION_TYPED, std::string());
 
   UnsafeResource resource;
-  InitResource(&resource, true, GURL(kMalwareURL));
+  InitResource(&resource, SB_THREAT_TYPE_URL_UNWANTED, true, GURL(kThreatURL));
 
   scoped_refptr<ThreatDetailsWrap> report =
       new ThreatDetailsWrap(ui_manager_.get(), web_contents(), resource, NULL);
 
   // Send a message from the DOM, with 2 nodes, a parent and a child.
-  std::vector<SafeBrowsingHostMsg_MalwareDOMDetails_Node> params;
-  SafeBrowsingHostMsg_MalwareDOMDetails_Node child_node;
+  std::vector<SafeBrowsingHostMsg_ThreatDOMDetails_Node> params;
+  SafeBrowsingHostMsg_ThreatDOMDetails_Node child_node;
   child_node.url = GURL(kDOMChildURL);
   child_node.tag_name = "iframe";
   child_node.parent = GURL(kDOMParentURL);
   params.push_back(child_node);
-  SafeBrowsingHostMsg_MalwareDOMDetails_Node parent_node;
+  SafeBrowsingHostMsg_ThreatDOMDetails_Node parent_node;
   parent_node.url = GURL(kDOMParentURL);
   parent_node.children.push_back(GURL(kDOMChildURL));
   params.push_back(parent_node);
@@ -434,23 +441,25 @@ TEST_F(ThreatDetailsTest, MalwareDOMDetails) {
 
   std::string serialized = WaitForSerializedReport(
       report.get(), false /* did_proceed*/, 0 /* num_visit */);
-  ClientMalwareReportRequest actual;
+  ClientSafeBrowsingReportRequest actual;
   actual.ParseFromString(serialized);
 
-  ClientMalwareReportRequest expected;
-  expected.set_malware_url(kMalwareURL);
+  ClientSafeBrowsingReportRequest expected;
+  expected.set_type(ClientSafeBrowsingReportRequest::URL_UNWANTED);
+  expected.set_url(kThreatURL);
   expected.set_page_url(kLandingURL);
   expected.set_referrer_url("");
   expected.set_did_proceed(false);
   expected.set_repeat_visit(false);
 
-  ClientMalwareReportRequest::Resource* pb_resource = expected.add_resources();
+  ClientSafeBrowsingReportRequest::Resource* pb_resource =
+      expected.add_resources();
   pb_resource->set_id(0);
   pb_resource->set_url(kLandingURL);
 
   pb_resource = expected.add_resources();
   pb_resource->set_id(1);
-  pb_resource->set_url(kMalwareURL);
+  pb_resource->set_url(kThreatURL);
 
   pb_resource = expected.add_resources();
   pb_resource->set_id(2);
@@ -466,37 +475,39 @@ TEST_F(ThreatDetailsTest, MalwareDOMDetails) {
   VerifyResults(actual, expected);
 }
 
-// Tests creating a malware report where there are redirect urls to an unsafe
-// resource url
-TEST_F(ThreatDetailsTest, MalwareWithRedirectUrl) {
+// Tests creating a threat report of a malware page where there are redirect
+// urls to an unsafe resource url.
+TEST_F(ThreatDetailsTest, ThreatWithRedirectUrl) {
   controller().LoadURL(GURL(kLandingURL), content::Referrer(),
                        ui::PAGE_TRANSITION_TYPED, std::string());
 
   UnsafeResource resource;
-  InitResource(&resource, true, GURL(kMalwareURL));
+  InitResource(&resource, SB_THREAT_TYPE_URL_MALWARE, true, GURL(kThreatURL));
   resource.original_url = GURL(kOriginalLandingURL);
 
   // add some redirect urls
   resource.redirect_urls.push_back(GURL(kFirstRedirectURL));
   resource.redirect_urls.push_back(GURL(kSecondRedirectURL));
-  resource.redirect_urls.push_back(GURL(kMalwareURL));
+  resource.redirect_urls.push_back(GURL(kThreatURL));
 
   scoped_refptr<ThreatDetailsWrap> report =
       new ThreatDetailsWrap(ui_manager_.get(), web_contents(), resource, NULL);
 
   std::string serialized = WaitForSerializedReport(
       report.get(), true /* did_proceed*/, 0 /* num_visit */);
-  ClientMalwareReportRequest actual;
+  ClientSafeBrowsingReportRequest actual;
   actual.ParseFromString(serialized);
 
-  ClientMalwareReportRequest expected;
-  expected.set_malware_url(kMalwareURL);
+  ClientSafeBrowsingReportRequest expected;
+  expected.set_type(ClientSafeBrowsingReportRequest::URL_MALWARE);
+  expected.set_url(kThreatURL);
   expected.set_page_url(kLandingURL);
   expected.set_referrer_url("");
   expected.set_did_proceed(true);
   expected.set_repeat_visit(false);
 
-  ClientMalwareReportRequest::Resource* pb_resource = expected.add_resources();
+  ClientSafeBrowsingReportRequest::Resource* pb_resource =
+      expected.add_resources();
   pb_resource->set_id(0);
   pb_resource->set_url(kLandingURL);
 
@@ -506,7 +517,7 @@ TEST_F(ThreatDetailsTest, MalwareWithRedirectUrl) {
 
   pb_resource = expected.add_resources();
   pb_resource->set_id(2);
-  pb_resource->set_url(kMalwareURL);
+  pb_resource->set_url(kThreatURL);
   pb_resource->set_parent_id(4);
 
   pb_resource = expected.add_resources();
@@ -528,7 +539,8 @@ TEST_F(ThreatDetailsTest, HTTPCache) {
                        ui::PAGE_TRANSITION_TYPED, std::string());
 
   UnsafeResource resource;
-  InitResource(&resource, true, GURL(kMalwareURL));
+  InitResource(&resource, SB_THREAT_TYPE_CLIENT_SIDE_PHISHING_URL, true,
+               GURL(kThreatURL));
 
   scoped_refptr<ThreatDetailsWrap> report =
       new ThreatDetailsWrap(ui_manager_.get(), web_contents(), resource,
@@ -540,7 +552,7 @@ TEST_F(ThreatDetailsTest, HTTPCache) {
                  make_scoped_refptr(profile()->GetRequestContext())));
 
   // The cache collection starts after the IPC from the DOM is fired.
-  std::vector<SafeBrowsingHostMsg_MalwareDOMDetails_Node> params;
+  std::vector<SafeBrowsingHostMsg_ThreatDOMDetails_Node> params;
   report->OnReceivedThreatDOMDetails(params);
 
   // Let the cache callbacks complete.
@@ -549,22 +561,24 @@ TEST_F(ThreatDetailsTest, HTTPCache) {
   DVLOG(1) << "Getting serialized report";
   std::string serialized = WaitForSerializedReport(
       report.get(), true /* did_proceed*/, -1 /* num_visit */);
-  ClientMalwareReportRequest actual;
+  ClientSafeBrowsingReportRequest actual;
   actual.ParseFromString(serialized);
 
-  ClientMalwareReportRequest expected;
-  expected.set_malware_url(kMalwareURL);
+  ClientSafeBrowsingReportRequest expected;
+  expected.set_type(ClientSafeBrowsingReportRequest::CLIENT_SIDE_PHISHING_URL);
+  expected.set_url(kThreatURL);
   expected.set_page_url(kLandingURL);
   expected.set_referrer_url("");
   expected.set_did_proceed(true);
 
-  ClientMalwareReportRequest::Resource* pb_resource = expected.add_resources();
+  ClientSafeBrowsingReportRequest::Resource* pb_resource =
+      expected.add_resources();
   pb_resource->set_id(0);
   pb_resource->set_url(kLandingURL);
-  safe_browsing::ClientMalwareReportRequest::HTTPResponse* pb_response =
+  safe_browsing::ClientSafeBrowsingReportRequest::HTTPResponse* pb_response =
       pb_resource->mutable_response();
   pb_response->mutable_firstline()->set_code(200);
-  safe_browsing::ClientMalwareReportRequest::HTTPHeader* pb_header =
+  safe_browsing::ClientSafeBrowsingReportRequest::HTTPHeader* pb_header =
       pb_response->add_headers();
   pb_header->set_name("Content-Type");
   pb_header->set_value("text/html");
@@ -575,21 +589,23 @@ TEST_F(ThreatDetailsTest, HTTPCache) {
   pb_header->set_name("Set-Cookie");
   pb_header->set_value("");  // The cookie is dropped.
   pb_response->set_body(kLandingData);
-  pb_response->set_bodylength(47);
-  pb_response->set_bodydigest("5abb4e63d806ec2c16a40b2699700554");
+  std::string landing_data(kLandingData);
+  pb_response->set_bodylength(landing_data.size());
+  pb_response->set_bodydigest(base::MD5String(landing_data));
   pb_response->set_remote_ip("1.2.3.4:80");
 
   pb_resource = expected.add_resources();
   pb_resource->set_id(1);
-  pb_resource->set_url(kMalwareURL);
+  pb_resource->set_url(kThreatURL);
   pb_response = pb_resource->mutable_response();
   pb_response->mutable_firstline()->set_code(200);
   pb_header = pb_response->add_headers();
   pb_header->set_name("Content-Type");
   pb_header->set_value("image/jpeg");
-  pb_response->set_body(kMalwareData);
-  pb_response->set_bodylength(10);
-  pb_response->set_bodydigest("581373551c43d4cf33bfb3b26838ff95");
+  pb_response->set_body(kThreatData);
+  std::string threat_data(kThreatData);
+  pb_response->set_bodylength(threat_data.size());
+  pb_response->set_bodydigest(base::MD5String(threat_data));
   pb_response->set_remote_ip("1.2.3.4:80");
   expected.set_complete(true);
 
@@ -602,7 +618,8 @@ TEST_F(ThreatDetailsTest, HTTPCacheNoEntries) {
                        ui::PAGE_TRANSITION_TYPED, std::string());
 
   UnsafeResource resource;
-  InitResource(&resource, true, GURL(kMalwareURL));
+  InitResource(&resource, SB_THREAT_TYPE_CLIENT_SIDE_MALWARE_URL, true,
+               GURL(kThreatURL));
 
   scoped_refptr<ThreatDetailsWrap> report =
       new ThreatDetailsWrap(ui_manager_.get(), web_contents(), resource,
@@ -611,7 +628,7 @@ TEST_F(ThreatDetailsTest, HTTPCacheNoEntries) {
   // No call to FillCache
 
   // The cache collection starts after the IPC from the DOM is fired.
-  std::vector<SafeBrowsingHostMsg_MalwareDOMDetails_Node> params;
+  std::vector<SafeBrowsingHostMsg_ThreatDOMDetails_Node> params;
   report->OnReceivedThreatDOMDetails(params);
 
   // Let the cache callbacks complete.
@@ -620,21 +637,23 @@ TEST_F(ThreatDetailsTest, HTTPCacheNoEntries) {
   DVLOG(1) << "Getting serialized report";
   std::string serialized = WaitForSerializedReport(
       report.get(), false /* did_proceed*/, -1 /* num_visit */);
-  ClientMalwareReportRequest actual;
+  ClientSafeBrowsingReportRequest actual;
   actual.ParseFromString(serialized);
 
-  ClientMalwareReportRequest expected;
-  expected.set_malware_url(kMalwareURL);
+  ClientSafeBrowsingReportRequest expected;
+  expected.set_type(ClientSafeBrowsingReportRequest::CLIENT_SIDE_MALWARE_URL);
+  expected.set_url(kThreatURL);
   expected.set_page_url(kLandingURL);
   expected.set_referrer_url("");
   expected.set_did_proceed(false);
 
-  ClientMalwareReportRequest::Resource* pb_resource = expected.add_resources();
+  ClientSafeBrowsingReportRequest::Resource* pb_resource =
+      expected.add_resources();
   pb_resource->set_id(0);
   pb_resource->set_url(kLandingURL);
   pb_resource = expected.add_resources();
   pb_resource->set_id(1);
-  pb_resource->set_url(kMalwareURL);
+  pb_resource->set_url(kThreatURL);
   expected.set_complete(true);
 
   VerifyResults(actual, expected);
@@ -644,8 +663,8 @@ TEST_F(ThreatDetailsTest, HTTPCacheNoEntries) {
 TEST_F(ThreatDetailsTest, HistoryServiceUrls) {
   // Add content to history service.
   // There are two redirect urls before reacing malware url:
-  // kFirstRedirectURL -> kSecondRedirectURL -> kMalwareURL
-  GURL baseurl(kMalwareURL);
+  // kFirstRedirectURL -> kSecondRedirectURL -> kThreatURL
+  GURL baseurl(kThreatURL);
   history::RedirectList redirects;
   redirects.push_back(GURL(kFirstRedirectURL));
   redirects.push_back(GURL(kSecondRedirectURL));
@@ -657,12 +676,12 @@ TEST_F(ThreatDetailsTest, HistoryServiceUrls) {
                        ui::PAGE_TRANSITION_TYPED, std::string());
 
   UnsafeResource resource;
-  InitResource(&resource, true, GURL(kMalwareURL));
+  InitResource(&resource, SB_THREAT_TYPE_URL_MALWARE, true, GURL(kThreatURL));
   scoped_refptr<ThreatDetailsWrap> report =
       new ThreatDetailsWrap(ui_manager_.get(), web_contents(), resource, NULL);
 
   // The redirects collection starts after the IPC from the DOM is fired.
-  std::vector<SafeBrowsingHostMsg_MalwareDOMDetails_Node> params;
+  std::vector<SafeBrowsingHostMsg_ThreatDOMDetails_Node> params;
   report->OnReceivedThreatDOMDetails(params);
 
   // Let the redirects callbacks complete.
@@ -670,23 +689,25 @@ TEST_F(ThreatDetailsTest, HistoryServiceUrls) {
 
   std::string serialized = WaitForSerializedReport(
       report.get(), true /* did_proceed*/, 1 /* num_visit */);
-  ClientMalwareReportRequest actual;
+  ClientSafeBrowsingReportRequest actual;
   actual.ParseFromString(serialized);
 
-  ClientMalwareReportRequest expected;
-  expected.set_malware_url(kMalwareURL);
+  ClientSafeBrowsingReportRequest expected;
+  expected.set_type(ClientSafeBrowsingReportRequest::URL_MALWARE);
+  expected.set_url(kThreatURL);
   expected.set_page_url(kLandingURL);
   expected.set_referrer_url("");
   expected.set_did_proceed(true);
   expected.set_repeat_visit(true);
 
-  ClientMalwareReportRequest::Resource* pb_resource = expected.add_resources();
+  ClientSafeBrowsingReportRequest::Resource* pb_resource =
+      expected.add_resources();
   pb_resource->set_id(0);
   pb_resource->set_url(kLandingURL);
   pb_resource = expected.add_resources();
   pb_resource->set_id(1);
   pb_resource->set_parent_id(2);
-  pb_resource->set_url(kMalwareURL);
+  pb_resource->set_url(kThreatURL);
   pb_resource = expected.add_resources();
   pb_resource->set_id(2);
   pb_resource->set_parent_id(3);

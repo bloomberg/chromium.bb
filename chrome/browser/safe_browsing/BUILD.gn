@@ -17,10 +17,3 @@ proto_library("metadata_proto") {
     "metadata.proto",
   ]
 }
-
-# GYP version: chrome/chrome_browser.gypi:safe_browsing_report_proto
-proto_library("report_proto") {
-  sources = [
-    "report.proto",
-  ]
-}

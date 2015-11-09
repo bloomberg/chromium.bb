@@ -501,7 +501,7 @@ source_set("browser") {
     deps += [
       "//chrome/browser/safe_browsing:chunk_proto",
       "//chrome/browser/safe_browsing:metadata_proto",
-      "//chrome/browser/safe_browsing:report_proto",
+      "//chrome/common/safe_browsing:proto",
     ]
     if (safe_browsing_mode == 1) {
       sources +=
