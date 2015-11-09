@@ -392,7 +392,7 @@ TEST_F('CvoxBrailleUtilUnitTest', 'CreateValue', function() {
   assertUndefined(s.getSpanInstanceOf(cvox.ValueSelectionSpan));
   valueSpan = s.getSpanInstanceOf(cvox.ValueSpan);
   assertEquals(0, s.getSpanStart(valueSpan));
-  assertEquals(s.getLength(), s.getSpanEnd(valueSpan));
+  assertEquals(s.length, s.getSpanEnd(valueSpan));
 
   // Value with a carret at the start of the text.
   s = cvox.BrailleUtil.createValue('value', 0);

@@ -174,11 +174,11 @@ SYNC_TEST_F('CvoxBrailleIntegrationUnitTest', 'WriteWithSpans', function() {
   var selectionSpan = new cvox.ValueSelectionSpan();
   var valueSpan = new cvox.ValueSpan(20);
   var toSend = cvox.NavBraille.fromText(
-      new cvox.Spannable('Hello', valueSpan));
+      new Spannable('Hello', valueSpan));
   toSend.text.setSpan(selectionSpan, 0, 0);
-  toSend.text.setSpan(document.body, 0, toSend.text.getLength());
+  toSend.text.setSpan(document.body, 0, toSend.text.length);
   var expected = cvox.NavBraille.fromText(
-      new cvox.Spannable(toSend.text.toString(), valueSpan));
+      new Spannable(toSend.text.toString(), valueSpan));
   expected.text.setSpan(selectionSpan, 0, 0);
 
   this.braille.write(toSend);

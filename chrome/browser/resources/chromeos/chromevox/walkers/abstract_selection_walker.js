@@ -13,11 +13,11 @@
 
 goog.provide('cvox.AbstractSelectionWalker');
 
+goog.require('Spannable');
 goog.require('cvox.AbstractWalker');
 goog.require('cvox.BareObjectWalker');
 goog.require('cvox.DescriptionUtil');
 goog.require('cvox.DomUtil');
-goog.require('cvox.Spannable');
 goog.require('cvox.TraverseContent');
 
 /**
@@ -149,7 +149,7 @@ cvox.AbstractSelectionWalker.prototype.getDescription = function(prevSel, sel) {
 cvox.AbstractSelectionWalker.prototype.getBraille = function(prevSel, sel) {
   var node = sel.absStart().node;
   var text = cvox.TraverseUtil.getNodeText(node);
-  var spannable = new cvox.Spannable(text);
+  var spannable = new Spannable(text);
   spannable.setSpan(node, 0, text.length);
   return new cvox.NavBraille({
     text: spannable,

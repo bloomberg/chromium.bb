@@ -373,7 +373,7 @@ cvox.BrailleDisplayManager.prototype.brailleToTextPosition_ =
     // This happens when the user clicks on the right part of the display
     // when it is not entirely filled with content.  Allow addressing the
     // position after the last character.
-    return this.content_.text.getLength();
+    return this.content_.text.length;
   } else {
     return mapping[braillePosition];
   }

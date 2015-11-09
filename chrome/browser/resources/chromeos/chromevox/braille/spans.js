@@ -11,7 +11,7 @@ goog.provide('cvox.ExtraCellsSpan');
 goog.provide('cvox.ValueSelectionSpan');
 goog.provide('cvox.ValueSpan');
 
-goog.require('cvox.Spannable');
+goog.require('Spannable');
 
 /**
  * Attached to the value region of a braille spannable.
@@ -46,7 +46,7 @@ cvox.ValueSpan.prototype.toJson = function() {
 };
 
 
-cvox.Spannable.registerSerializableSpan(
+Spannable.registerSerializableSpan(
     cvox.ValueSpan,
     'cvox.ValueSpan',
     cvox.ValueSpan.fromJson,
@@ -61,9 +61,8 @@ cvox.ValueSelectionSpan = function() {
 };
 
 
-cvox.Spannable.registerStatelessSerializableSpan(
-    cvox.ValueSelectionSpan,
-    'cvox.ValueSelectionSpan');
+Spannable.registerStatelessSerializableSpan(
+    cvox.ValueSelectionSpan, 'cvox.ValueSelectionSpan');
 
 
 /**

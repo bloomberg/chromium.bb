@@ -216,7 +216,7 @@ cvox.LayoutLineWalker.prototype.appendBraille_ = function(
   var item = this.subWalker_.getBraille(prevSel, cur).text;
   var valueSelectionSpan = item.getSpanInstanceOf(cvox.ValueSelectionSpan);
 
-  if (braille.text.getLength() > 0) {
+  if (braille.text.length > 0) {
     braille.text.append(cvox.BrailleUtil.ITEM_SEPARATOR);
   }
 
@@ -228,8 +228,8 @@ cvox.LayoutLineWalker.prototype.appendBraille_ = function(
     node = node.parentNode;
   }
 
-  var nodeStart = braille.text.getLength();
-  var nodeEnd = nodeStart + item.getLength();
+  var nodeStart = braille.text.length;
+  var nodeEnd = nodeStart + item.length;
   braille.text.append(item);
   braille.text.setSpan(node, nodeStart, nodeEnd);
 

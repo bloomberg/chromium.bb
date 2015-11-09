@@ -6,33 +6,33 @@
  * @fileoverview Class which allows construction of annotated strings.
  */
 
-goog.provide('cvox.Spannable');
+goog.provide('Spannable');
 
-goog.require('goog.object');
+goog.scope(function() {
 
 /**
  * @constructor
- * @param {string|!cvox.Spannable=} opt_string Initial value of the spannable.
+ * @param {string|!Spannable=} opt_string Initial value of the spannable.
  * @param {*=} opt_annotation Initial annotation for the entire string.
  */
-cvox.Spannable = function(opt_string, opt_annotation) {
+Spannable = function(opt_string, opt_annotation) {
   /**
    * Underlying string.
    * @type {string}
    * @private
    */
-  this.string_ = opt_string instanceof cvox.Spannable ? '' : opt_string || '';
+  this.string_ = opt_string instanceof Spannable ? '' : opt_string || '';
 
   /**
    * Spans (annotations).
-   * @type {!Array<!{ value: *, start: number, end: number }>}
+   * @type {!Array<!SpanStruct>}
    * @private
    */
   this.spans_ = [];
 
   // Append the initial spannable.
-  if (opt_string instanceof cvox.Spannable)
-  this.append(opt_string);
+  if (opt_string instanceof Spannable)
+    this.append(opt_string);
 
   // Optionally annotate the entire string.
   if (goog.isDef(opt_annotation)) {
@@ -41,324 +41,305 @@ cvox.Spannable = function(opt_string, opt_annotation) {
   }
 };
 
+Spannable.prototype = {
+  /** @override */
+  toString: function() {
+    return this.string_;
+  },
 
-/** @override */
-cvox.Spannable.prototype.toString = function() {
-  return this.string_;
-};
+  /** @return {number} The length of the string */
+  get length() {
+    return this.string_.length;
+  },
 
-
-/**
- * Returns the length of the string.
- * @return {number} Length of the string.
- */
-cvox.Spannable.prototype.getLength = function() {
-  return this.string_.length;
-};
-
-
-/**
- * Adds a span to some region of the string.
- * @param {*} value Annotation.
- * @param {number} start Starting index (inclusive).
- * @param {number} end Ending index (exclusive).
- */
-cvox.Spannable.prototype.setSpan = function(value, start, end) {
-  this.removeSpan(value);
-  if (0 <= start && start <= end && end <= this.string_.length) {
-    // Zero-length spans are explicitly allowed, because it is possible to
-    // query for position by annotation as well as the reverse.
-    this.spans_.push({ value: value, start: start, end: end });
-    this.spans_.sort(function(a, b) {
-      var ret = a.start - b.start;
-      if (ret == 0)
-        ret = a.end - b.end;
-      return ret;
-    });
-  } else {
-    throw new RangeError('span out of range (start=' + start +
-        ', end=' + end + ', len=' + this.string_.length + ')');
-  }
-};
-
-
-/**
- * Removes a span.
- * @param {*} value Annotation.
- */
-cvox.Spannable.prototype.removeSpan = function(value) {
-  for (var i = this.spans_.length - 1; i >= 0; i--) {
-    if (this.spans_[i].value === value) {
-      this.spans_.splice(i, 1);
+  /**
+   * Adds a span to some region of the string.
+   * @param {*} value Annotation.
+   * @param {number} start Starting index (inclusive).
+   * @param {number} end Ending index (exclusive).
+   */
+  setSpan: function(value, start, end) {
+    this.removeSpan(value);
+    if (0 <= start && start <= end && end <= this.string_.length) {
+      // Zero-length spans are explicitly allowed, because it is possible to
+      // query for position by annotation as well as the reverse.
+      this.spans_.push({ value: value, start: start, end: end });
+      this.spans_.sort(function(a, b) {
+        var ret = a.start - b.start;
+        if (ret == 0)
+          ret = a.end - b.end;
+        return ret;
+      });
+    } else {
+      throw new RangeError('span out of range (start=' + start +
+          ', end=' + end + ', len=' + this.string_.length + ')');
     }
-  }
-};
+  },
 
-
-/**
- * Appends another Spannable or string to this one.
- * @param {string|!cvox.Spannable} other String or spannable to concatenate.
- */
-cvox.Spannable.prototype.append = function(other) {
-  if (other instanceof cvox.Spannable) {
-    var otherSpannable = /** @type {!cvox.Spannable} */ (other);
-    var originalLength = this.getLength();
-    this.string_ += otherSpannable.string_;
-    other.spans_.forEach(goog.bind(function(span) {
-      this.setSpan(
-          span.value,
-          span.start + originalLength,
-          span.end + originalLength);
-    }, this));
-  } else if (typeof other === 'string') {
-    this.string_ += /** @type {string} */ (other);
-  }
-};
-
-
-/**
- * Returns the first value matching a position.
- * @param {number} position Position to query.
- * @return {*} Value annotating that position, or undefined if none is found.
- */
-cvox.Spannable.prototype.getSpan = function(position) {
-  for (var i = 0; i < this.spans_.length; i++) {
-    var span = this.spans_[i];
-    if (span.start <= position && position < span.end) {
-      return span.value;
-    }
-  }
-};
-
-
-/**
- * Returns the first span value which is an instance of a given constructor.
- * @param {!Function} constructor Constructor.
- * @return {!Object|undefined} Object if found; undefined otherwise.
- */
-cvox.Spannable.prototype.getSpanInstanceOf = function(constructor) {
-  for (var i = 0; i < this.spans_.length; i++) {
-    var span = this.spans_[i];
-    if (span.value instanceof constructor) {
-      return span.value;
-    }
-  }
-};
-
-/**
- * Returns all span values which are an instance of a given constructor.
- * Spans are returned in the order of their starting index and ending index
- * for spans with equals tarting indices.
- * @param {!Function} constructor Constructor.
- * @return {!Array<Object>} Array of object.
- */
-cvox.Spannable.prototype.getSpansInstanceOf = function(constructor) {
-  var ret = [];
-  for (var i = 0; i < this.spans_.length; i++) {
-    var span = this.spans_[i];
-    if (span.value instanceof constructor) {
-      ret.push(span.value);
-    }
-  }
-  return ret;
-};
-
-
-/**
- * Returns all spans matching a position.
- * @param {number} position Position to query.
- * @return {!Array} Values annotating that position.
- */
-cvox.Spannable.prototype.getSpans = function(position) {
-  var results = [];
-  for (var i = 0; i < this.spans_.length; i++) {
-    var span = this.spans_[i];
-    if (span.start <= position && position < span.end) {
-      results.push(span.value);
-    }
-  }
-  return results;
-};
-
-
-/**
- * Returns the start of the requested span.
- * @param {*} value Annotation.
- * @return {number|undefined} Start of the span, or undefined if not attached.
- */
-cvox.Spannable.prototype.getSpanStart = function(value) {
-  for (var i = 0; i < this.spans_.length; i++) {
-    var span = this.spans_[i];
-    if (span.value === value) {
-      return span.start;
-    }
-  }
-  return undefined;
-};
-
-
-/**
- * Returns the end of the requested span.
- * @param {*} value Annotation.
- * @return {number|undefined} End of the span, or undefined if not attached.
- */
-cvox.Spannable.prototype.getSpanEnd = function(value) {
-  for (var i = 0; i < this.spans_.length; i++) {
-    var span = this.spans_[i];
-    if (span.value === value) {
-      return span.end;
-    }
-  }
-  return undefined;
-};
-
-
-/**
- * Returns a substring of this spannable.
- * Note that while similar to String#substring, this function is much less
- * permissive about its arguments. It does not accept arguments in the wrong
- * order or out of bounds.
- *
- * @param {number} start Start index, inclusive.
- * @param {number=} opt_end End index, exclusive.
- *     If excluded, the length of the string is used instead.
- * @return {!cvox.Spannable} Substring requested.
- */
-cvox.Spannable.prototype.substring = function(start, opt_end) {
-  var end = goog.isDef(opt_end) ? opt_end : this.string_.length;
-
-  if (start < 0 || end > this.string_.length || start > end) {
-    throw new RangeError('substring indices out of range');
-  }
-
-  var result = new cvox.Spannable(this.string_.substring(start, end));
-  for (var i = 0; i < this.spans_.length; i++) {
-    var span = this.spans_[i];
-    if (span.start <= end && span.end >= start) {
-      var newStart = Math.max(0, span.start - start);
-      var newEnd = Math.min(end - start, span.end - start);
-      result.spans_.push({ value: span.value, start: newStart, end: newEnd });
-    }
-  }
-  return result;
-};
-
-
-/**
- * Trims whitespace from the beginning.
- * @return {!cvox.Spannable} String with whitespace removed.
- */
-cvox.Spannable.prototype.trimLeft = function() {
-  return this.trim_(true, false);
-};
-
-
-/**
- * Trims whitespace from the end.
- * @return {!cvox.Spannable} String with whitespace removed.
- */
-cvox.Spannable.prototype.trimRight = function() {
-  return this.trim_(false, true);
-};
-
-
-/**
- * Trims whitespace from the beginning and end.
- * @return {!cvox.Spannable} String with whitespace removed.
- */
-cvox.Spannable.prototype.trim = function() {
-  return this.trim_(true, true);
-};
-
-
-/**
- * Trims whitespace from either the beginning and end or both.
- * @param {boolean} trimStart Trims whitespace from the start of a string.
- * @param {boolean} trimEnd Trims whitespace from the end of a string.
- * @return {!cvox.Spannable} String with whitespace removed.
- * @private
- */
-cvox.Spannable.prototype.trim_ = function(trimStart, trimEnd) {
-  if (!trimStart && !trimEnd) {
-    return this;
-  }
-
-  // Special-case whitespace-only strings, including the empty string.
-  // As an arbitrary decision, we treat this as trimming the whitespace off the
-  // end, rather than the beginning, of the string.
-  // This choice affects which spans are kept.
-  if (/^\s*$/.test(this.string_)) {
-    return this.substring(0, 0);
-  }
-
-  // Otherwise, we have at least one non-whitespace character to use as an
-  // anchor when trimming.
-  var trimmedStart = trimStart ? this.string_.match(/^\s*/)[0].length : 0;
-  var trimmedEnd = trimEnd ?
-      this.string_.match(/\s*$/).index : this.string_.length;
-  return this.substring(trimmedStart, trimmedEnd);
-};
-
-
-/**
- * Returns this spannable to a json serializable form, including the text and
- * span objects whose types have been registered with registerSerializableSpan
- * or registerStatelessSerializableSpan.
- * @return {!cvox.Spannable.SerializedSpannable_} the json serializable form.
- */
-cvox.Spannable.prototype.toJson = function() {
-  var result = {};
-  result.string = this.string_;
-  result.spans = [];
-  for (var i = 0; i < this.spans_.length; ++i) {
-    var span = this.spans_[i];
-    // Use linear search, since using functions as property keys
-    // is not reliable.
-    var serializeInfo = goog.object.findValue(
-        cvox.Spannable.serializableSpansByName_,
-        function(v) { return v.ctor === span.value.constructor; });
-    if (serializeInfo) {
-      var spanObj = {type: serializeInfo.name,
-                     start: span.start,
-                     end: span.end};
-      if (serializeInfo.toJson) {
-        spanObj.value = serializeInfo.toJson.apply(span.value);
+  /**
+   * Removes a span.
+   * @param {*} value Annotation.
+   */
+  removeSpan: function(value) {
+    for (var i = this.spans_.length - 1; i >= 0; i--) {
+      if (this.spans_[i].value === value) {
+        this.spans_.splice(i, 1);
       }
-      result.spans.push(spanObj);
     }
-  }
-  return result;
-};
+  },
 
+  /**
+   * Appends another Spannable or string to this one.
+   * @param {string|!Spannable} other String or spannable to concatenate.
+   */
+  append: function(other) {
+    if (other instanceof Spannable) {
+      var otherSpannable = /** @type {!Spannable} */ (other);
+      var originalLength = this.length;
+      this.string_ += otherSpannable.string_;
+      other.spans_.forEach(function(span) {
+        this.setSpan(
+            span.value,
+            span.start + originalLength,
+            span.end + originalLength);
+      }.bind(this));
+    } else if (typeof other === 'string') {
+      this.string_ += /** @type {string} */ (other);
+    }
+  },
+
+  /**
+   * Returns the first value matching a position.
+   * @param {number} position Position to query.
+   * @return {*} Value annotating that position, or undefined if none is found.
+   */
+  getSpan: function(position) {
+    return valueOfSpan(this.spans_.find(spanCoversPosition(position)));
+  },
+
+  /**
+   * Returns the first span value which is an instance of a given constructor.
+   * @param {!Function} constructor Constructor.
+   * @return {*} Object if found; undefined otherwise.
+   */
+  getSpanInstanceOf: function(constructor) {
+    return valueOfSpan(this.spans_.find(spanInstanceOf(constructor)));
+  },
+
+  /**
+   * Returns all span values which are an instance of a given constructor.
+   * Spans are returned in the order of their starting index and ending index
+   * for spans with equals tarting indices.
+   * @param {!Function} constructor Constructor.
+   * @return {!Array<Object>} Array of object.
+   */
+  getSpansInstanceOf: function(constructor) {
+    return (this.spans_.filter(spanInstanceOf(constructor))
+            .map(valueOfSpan));
+  },
+
+  /**
+   * Returns all spans matching a position.
+   * @param {number} position Position to query.
+   * @return {!Array} Values annotating that position.
+   */
+  getSpans: function(position) {
+    return (this.spans_
+        .filter(spanCoversPosition(position))
+        .map(valueOfSpan));
+  },
+
+  /**
+   * Returns whether a span is contained in this object.
+   * @param {*} value Annotation.
+   * @return {boolean}
+   */
+  hasSpan: function(value) {
+    return this.spans_.some(spanValueIs(value));
+  },
+
+  /**
+   * Returns the start of the requested span. Throws if the span doesn't exist
+   * in this object.
+   * @param {*} value Annotation.
+   * @return {number}
+   */
+  getSpanStart: function(value) {
+    return this.getSpanByValueOrThrow_(value).start;
+  },
+
+  /**
+   * Returns the end of the requested span. Throws if the span doesn't exist
+   * in this object.
+   * @param {*} value Annotation.
+   * @return {number}
+   */
+  getSpanEnd: function(value) {
+    return this.getSpanByValueOrThrow_(value).end;
+  },
+
+  /**
+   * Returns the number of characters covered by the given span. Throws if
+   * the span is not in this object.
+   * @param {*} value
+   * @return {number}
+   */
+  getSpanLength: function(value) {
+    var span = this.getSpanByValueOrThrow_(value);
+    return span.end - span.start;
+  },
+
+  /**
+   * Gets the internal object for a span or throws if the span doesn't exist.
+   * @param {*} value The annotation.
+   * @return {!SpanStruct}
+   * @private
+   */
+  getSpanByValueOrThrow_: function(value) {
+    var span = this.spans_.find(spanValueIs(value));
+    if (span)
+      return span;
+    throw new Error('Span ' + value + ' doesn\'t exist in spannable');
+  },
+
+  /**
+   * Returns a substring of this spannable.
+   * Note that while similar to String#substring, this function is much less
+   * permissive about its arguments. It does not accept arguments in the wrong
+   * order or out of bounds.
+   *
+   * @param {number} start Start index, inclusive.
+   * @param {number=} opt_end End index, exclusive.
+   *     If excluded, the length of the string is used instead.
+   * @return {!Spannable} Substring requested.
+   */
+  substring: function(start, opt_end) {
+    var end = goog.isDef(opt_end) ? opt_end : this.string_.length;
+
+    if (start < 0 || end > this.string_.length || start > end) {
+      throw new RangeError('substring indices out of range');
+    }
+
+    var result = new Spannable(this.string_.substring(start, end));
+    this.spans_.forEach(function(span) {
+      if (span.start <= end && span.end >= start) {
+        var newStart = Math.max(0, span.start - start);
+        var newEnd = Math.min(end - start, span.end - start);
+        result.spans_.push({ value: span.value, start: newStart, end: newEnd });
+      }
+    });
+    return result;
+  },
+
+  /**
+   * Trims whitespace from the beginning.
+   * @return {!Spannable} String with whitespace removed.
+   */
+  trimLeft: function() {
+    return this.trim_(true, false);
+  },
+
+  /**
+   * Trims whitespace from the end.
+   * @return {!Spannable} String with whitespace removed.
+   */
+  trimRight: function() {
+    return this.trim_(false, true);
+  },
+
+  /**
+   * Trims whitespace from the beginning and end.
+   * @return {!Spannable} String with whitespace removed.
+   */
+  trim: function() {
+    return this.trim_(true, true);
+  },
+
+  /**
+   * Trims whitespace from either the beginning and end or both.
+   * @param {boolean} trimStart Trims whitespace from the start of a string.
+   * @param {boolean} trimEnd Trims whitespace from the end of a string.
+   * @return {!Spannable} String with whitespace removed.
+   * @private
+   */
+  trim_: function(trimStart, trimEnd) {
+    if (!trimStart && !trimEnd) {
+      return this;
+    }
+
+    // Special-case whitespace-only strings, including the empty string.
+    // As an arbitrary decision, we treat this as trimming the whitespace off
+    // the end, rather than the beginning, of the string.
+    // This choice affects which spans are kept.
+    if (/^\s*$/.test(this.string_)) {
+      return this.substring(0, 0);
+    }
+
+    // Otherwise, we have at least one non-whitespace character to use as an
+    // anchor when trimming.
+    var trimmedStart = trimStart ? this.string_.match(/^\s*/)[0].length : 0;
+    var trimmedEnd = trimEnd ?
+        this.string_.match(/\s*$/).index : this.string_.length;
+    return this.substring(trimmedStart, trimmedEnd);
+  },
+
+  /**
+   * Returns this spannable to a json serializable form, including the text and
+   * span objects whose types have been registered with registerSerializableSpan
+   * or registerStatelessSerializableSpan.
+   * @return {!SerializedSpannable} the json serializable form.
+   */
+  toJson: function() {
+    var result = {};
+    result.string = this.string_;
+    result.spans = [];
+    this.spans_.forEach(function(span) {
+      var serializeInfo = serializableSpansByConstructor.get(
+          span.value.constructor);
+      if (serializeInfo) {
+        var spanObj = {type: serializeInfo.name,
+                       start: span.start,
+                       end: span.end};
+        if (serializeInfo.toJson) {
+          spanObj.value = serializeInfo.toJson.apply(span.value);
+        }
+        result.spans.push(spanObj);
+      }
+    });
+    return result;
+  }
+};
 
 /**
  * Creates a spannable from a json serializable representation.
- * @param {!cvox.Spannable.SerializedSpannable_} obj object containing the
- *     serializable representation.
- * @return {!cvox.Spannable}
+ * @param {!SerializedSpannable} obj object containing the serializable
+ *     representation.
+ * @return {!Spannable}
  */
-cvox.Spannable.fromJson = function(obj) {
+Spannable.fromJson = function(obj) {
   if (typeof obj.string !== 'string') {
-    throw 'Invalid spannable json object: string field not a string';
+    throw new Error(
+        'Invalid spannable json object: string field not a string');
   }
   if (!(obj.spans instanceof Array)) {
-    throw 'Invalid spannable json object: no spans array';
+    throw new Error('Invalid spannable json object: no spans array');
   }
-  var result = new cvox.Spannable(obj.string);
-  for (var i = 0, span; span = obj.spans[i]; ++i) {
+  var result = new Spannable(obj.string);
+  result.spans_ = obj.spans.map(function(span) {
     if (typeof span.type !== 'string') {
-      throw 'Invalid span in spannable json object: type not a string';
+      throw new Error(
+          'Invalid span in spannable json object: type not a string');
     }
     if (typeof span.start !== 'number' || typeof span.end !== 'number') {
-      throw 'Invalid span in spannable json object: start or end not a number';
+      throw new Error(
+          'Invalid span in spannable json object: start or end not a number');
     }
-    var serializeInfo = cvox.Spannable.serializableSpansByName_[span.type];
+    var serializeInfo = serializableSpansByName.get(span.type);
     var value = serializeInfo.fromJson(span.value);
-    result.setSpan(value, span.start, span.end);
-  }
+    return {value: value, start: span.start, end: span.end};
+  });
   return result;
 };
-
 
 /**
  * Registers a type that can be converted to a json serializable format.
@@ -366,30 +347,28 @@ cvox.Spannable.fromJson = function(obj) {
  * @param {string} name String identifier used in the serializable format.
  * @param {function(!Object): !Object} fromJson A function that converts
  *     the serializable object to an actual object of this type.
- * @param {function(!Object): !Object} toJson A function that converts
- *     this object to a json serializable object.  The function will
- *     be called with this set to the object to convert.
+ * @param {function(): !Object} toJson A function that converts this object to
+ *     a json serializable object. The function will be called with |this| set
+ *     to the object to convert.
  */
-cvox.Spannable.registerSerializableSpan = function(
+Spannable.registerSerializableSpan = function(
     constructor, name, fromJson, toJson) {
-  var obj = {name: name, ctor: constructor,
-             fromJson: fromJson, toJson: toJson};
-  cvox.Spannable.serializableSpansByName_[name] = obj;
+  var obj = {name: name, fromJson: fromJson, toJson: toJson};
+  serializableSpansByName.set(name, obj);
+  serializableSpansByConstructor.set(constructor, obj);
 };
-
 
 /**
  * Registers an object type that can be converted to/from a json serializable
- * form.  Objects of this type carry no state that will be preserved
+ * form. Objects of this type carry no state that will be preserved
  * when serialized.
  * @param {!Function} constructor The type of the object that can be converted.
  *     This constructor will be called with no arguments to construct
  *     new objects.
  * @param {string} name Name of the type used in the serializable object.
  */
-cvox.Spannable.registerStatelessSerializableSpan = function(
-    constructor, name) {
-  var obj = {name: name, ctor: constructor, toJson: undefined};
+Spannable.registerStatelessSerializableSpan = function(constructor, name) {
+  var obj = {name: name, toJson: undefined};
   /**
    * @param {!Object} obj
    * @return {!Object}
@@ -397,38 +376,87 @@ cvox.Spannable.registerStatelessSerializableSpan = function(
   obj.fromJson = function(obj) {
      return new constructor();
   };
-  cvox.Spannable.serializableSpansByName_[name] = obj;
+  serializableSpansByName.set(name, obj);
+  serializableSpansByConstructor.set(constructor, obj);
 };
 
+/**
+ * An annotation with its start and end points.
+ * @typedef {{value: *, start: number, end: number}}
+ */
+var SpanStruct;
 
 /**
  * Describes how to convert a span type to/from serializable json.
- * @typedef {{ctor: !Function, name: string,
- *             fromJson: function(!Object): !Object,
- *             toJson: ((function(!Object): !Object)|undefined)}}
- * @private
+ * @typedef {{name: string,
+ *            fromJson: function(!Object): !Object,
+ *            toJson: ((function(): !Object)|undefined)}}
  */
-cvox.Spannable.SerializeInfo_;
-
+var SerializeInfo;
 
 /**
  * The serialized format of a spannable.
- * @typedef {{string: string, spans: Array<cvox.Spannable.SerializedSpan_>}}
+ * @typedef {{string: string, spans: Array<SerializedSpan>}}
  * @private
  */
-cvox.Spannable.SerializedSpannable_;
-
+var SerializedSpannable;
 
 /**
  * The format of a single annotation in a serialized spannable.
  * @typedef {{type: string, value: !Object, start: number, end: number}}
- * @private
  */
-cvox.Spannable.SerializedSpan_;
+var SerializedSpan;
 
 /**
  * Maps type names to serialization info objects.
- * @type {Object<cvox.Spannable.SerializeInfo_>}
- * @private
+ * @type {Map<string, SerializeInfo>}
  */
-cvox.Spannable.serializableSpansByName_ = {};
+var serializableSpansByName = new Map();
+
+/**
+ * Maps constructors to serialization info objects.
+ * @type {Map<Function, SerializeInfo>}
+ */
+var serializableSpansByConstructor = new Map();
+
+// Helpers for implementing the various |get*| methods of |Spannable|.
+
+/**
+ * @param {Function} constructor
+ * @return {function(SpanStruct): boolean}
+ */
+function spanInstanceOf(constructor) {
+  return function(span) {
+    return span.value instanceof constructor;
+  }
+}
+
+/**
+ * @param {number} position
+ * @return {function(SpanStruct): boolean}
+ */
+function spanCoversPosition(position) {
+  return function(span) {
+    return span.start <= position && position < span.end;
+  }
+}
+
+/**
+ * @param {*} value
+ * @return {function(SpanStruct): boolean}
+ */
+function spanValueIs(value) {
+  return function(span) {
+    return span.value === value;
+  }
+}
+
+/**
+ * @param {!SpanStruct|undefined} span
+ * @return {*}
+ */
+function valueOfSpan(span) {
+  return span ? span.value : undefined;
+}
+
+});

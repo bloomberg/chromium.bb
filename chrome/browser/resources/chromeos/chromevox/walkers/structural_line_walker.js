@@ -68,7 +68,7 @@ cvox.StructuralLineWalker.prototype.getBraille = function(prevSel, sel) {
   }
   var spannable =
       cvox.BrailleUtil.getTemplated(prevNode, objNode, {name: name});
-  spannable.setSpan(objNode, 0, spannable.getLength());
+  spannable.setSpan(objNode, 0, spannable.length);
   braille.text = spannable;
 
   // Remove any selections.

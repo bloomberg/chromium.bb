@@ -597,26 +597,26 @@ Background.prototype = {
   },
 
   /**
-   * @param {!cvox.Spannable} text
+   * @param {!Spannable} text
    * @param {number} position
    * @private
    */
   brailleRoutingCommand_: function(text, position) {
-    var actionNode = null;
+    var actionNodeSpan = null;
     var selectionSpan = null;
     text.getSpans(position).forEach(function(span) {
       if (span instanceof Output.SelectionSpan) {
         selectionSpan = span;
       } else if (span instanceof Output.NodeSpan) {
-        if (!actionNode ||
-            (text.getSpanEnd(actionNode) - text.getSpanStart(actionNode) >
-            text.getSpanEnd(span) - text.getSpanStart(span))) {
-          actionNode = span.node;
+        if (!actionNodeSpan ||
+            text.getSpanLength(span) <= text.getSpanLength(actionNodeSpan)) {
+          actionNodeSpan = span;
         }
       }
     });
-    if (!actionNode)
+    if (!actionNodeSpan)
       return;
+    var actionNode = actionNodeSpan.node;
     if (actionNode.role === RoleType.inlineTextBox)
       actionNode = actionNode.parent;
     actionNode.doDefault();

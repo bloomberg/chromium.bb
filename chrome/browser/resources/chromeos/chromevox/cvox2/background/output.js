@@ -11,12 +11,12 @@ goog.provide('Output.EventType');
 
 goog.require('AutomationUtil.Dir');
 goog.require('EarconEngine');
+goog.require('Spannable');
 goog.require('cursors.Cursor');
 goog.require('cursors.Range');
 goog.require('cursors.Unit');
 goog.require('cvox.AbstractEarcons');
 goog.require('cvox.NavBraille');
-goog.require('cvox.Spannable');
 goog.require('cvox.ValueSelectionSpan');
 goog.require('cvox.ValueSpan');
 goog.require('goog.i18n.MessageFormat');
@@ -26,7 +26,7 @@ var Dir = AutomationUtil.Dir;
 
 /**
  * An Output object formats a cursors.Range into speech, braille, or both
- * representations. This is typically a cvox.Spannable.
+ * representations. This is typically a |Spannable|.
  *
  * The translation from Range to these output representations rely upon format
  * rules which specify how to convert AutomationNode objects into annotated
@@ -52,9 +52,9 @@ var Dir = AutomationUtil.Dir;
  */
 Output = function() {
   // TODO(dtseng): Include braille specific rules.
-  /** @type {!Array<!cvox.Spannable>} */
+  /** @type {!Array<!Spannable>} */
   this.speechBuffer_ = [];
-  /** @type {!Array<!cvox.Spannable>} */
+  /** @type {!Array<!Spannable>} */
   this.brailleBuffer_ = [];
   /** @type {!Array<!Object>} */
   this.locations_ = [];
@@ -585,7 +585,7 @@ Output.EventType = {
 Output.prototype = {
   /**
    * Gets the spoken output with separator '|'.
-   * @return {!cvox.Spannable}
+   * @return {!Spannable}
    */
   get speechOutputForTest() {
     return this.speechBuffer_.reduce(function(prev, cur) {
@@ -599,7 +599,7 @@ Output.prototype = {
 
   /**
    * Gets the output buffer for braille.
-   * @return {!cvox.Spannable}
+   * @return {!Spannable}
    */
   get brailleOutputForTest() {
     return this.createBrailleOutput_();
@@ -718,11 +718,8 @@ Output.prototype = {
           buff.getSpanInstanceOf(Output.SelectionSpan);
       var startIndex = -1, endIndex = -1;
       if (selSpan) {
-        // Casts ok, since the span is known to be in the spannable.
-        var valueStart =
-            /** @type {number} */ (buff.getSpanStart(selSpan));
-        var valueEnd =
-            /** @type {number} */ (buff.getSpanEnd(selSpan));
+        var valueStart = buff.getSpanStart(selSpan);
+        var valueEnd = buff.getSpanEnd(selSpan);
         startIndex = valueStart + selSpan.startIndex;
         endIndex = valueStart + selSpan.endIndex;
         buff.setSpan(new cvox.ValueSpan(0), valueStart, valueEnd);
@@ -748,7 +745,7 @@ Output.prototype = {
    * @param {!cursors.Range} range
    * @param {cursors.Range} prevRange
    * @param {chrome.automation.EventType|string} type
-   * @param {!Array<cvox.Spannable>} buff Buffer to receive rendered output.
+   * @param {!Array<Spannable>} buff Buffer to receive rendered output.
    * @private
    */
   render_: function(range, prevRange, type, buff) {
@@ -763,7 +760,7 @@ Output.prototype = {
    * @param {chrome.automation.AutomationNode} node
    * @param {string|!Object} format The output format either specified as an
    * output template string or a parsed output format tree.
-   * @param {!Array<cvox.Spannable>} buff Buffer to receive rendered output.
+   * @param {!Array<Spannable>} buff Buffer to receive rendered output.
    * @param {!Object=} opt_exclude A set of attributes to exclude.
    * @private
    */
@@ -1042,7 +1039,7 @@ Output.prototype = {
    * @param {!cursors.Range} range
    * @param {cursors.Range} prevRange
    * @param {chrome.automation.EventType|string} type
-   * @param {!Array<cvox.Spannable>} rangeBuff
+   * @param {!Array<Spannable>} rangeBuff
    * @private
    */
   range_: function(range, prevRange, type, rangeBuff) {
@@ -1080,7 +1077,7 @@ Output.prototype = {
    * @param {!chrome.automation.AutomationNode} node
    * @param {!chrome.automation.AutomationNode} prevNode
    * @param {chrome.automation.EventType|string} type
-   * @param {!Array<cvox.Spannable>} buff
+   * @param {!Array<Spannable>} buff
    * @param {!Object=} opt_exclude A list of attributes to exclude from
    * processing.
    * @private
@@ -1152,7 +1149,7 @@ Output.prototype = {
    * @param {!chrome.automation.AutomationNode} node
    * @param {!chrome.automation.AutomationNode} prevNode
    * @param {chrome.automation.EventType|string} type
-   * @param {!Array<cvox.Spannable>} buff
+   * @param {!Array<Spannable>} buff
    * @private
    */
   node_: function(node, prevNode, type, buff) {
@@ -1167,7 +1164,7 @@ Output.prototype = {
    * @param {!cursors.Range} range
    * @param {cursors.Range} prevRange
    * @param {chrome.automation.EventType|string} type
-   * @param {!Array<cvox.Spannable>} buff
+   * @param {!Array<Spannable>} buff
    * @private
    */
   subNode_: function(range, prevRange, type, buff) {
@@ -1188,8 +1185,8 @@ Output.prototype = {
 
   /**
    * Appends output to the |buff|.
-   * @param {!Array<cvox.Spannable>} buff
-   * @param {string|!cvox.Spannable} value
+   * @param {!Array<Spannable>} buff
+   * @param {string|!Spannable} value
    * @param {{isUnique: (boolean|undefined),
    *      annotation: !Array<*>}=} opt_options
    */
@@ -1200,9 +1197,9 @@ Output.prototype = {
     if ((!value || value.length == 0) && opt_options.annotation.length == 0)
       return;
 
-    var spannableToAdd = new cvox.Spannable(value);
+    var spannableToAdd = new Spannable(value);
     opt_options.annotation.forEach(function(a) {
-      spannableToAdd.setSpan(a, 0, spannableToAdd.getLength());
+      spannableToAdd.setSpan(a, 0, spannableToAdd.length);
     });
 
     // |isUnique| specifies an annotation that cannot be duplicated.
@@ -1213,10 +1210,10 @@ Output.prototype = {
           });
       var alreadyAnnotated = buff.some(function(s) {
         return annotationSansNodes.some(function(annotation) {
+          if (!s.hasSpan(annotation))
+            return false;
           var start = s.getSpanStart(annotation);
           var end = s.getSpanEnd(annotation);
-          if (start === undefined)
-            return false;
           return s.substring(start, end).toString() == value.toString();
         });
       });
@@ -1269,11 +1266,11 @@ Output.prototype = {
 
   /**
    * Converts the currently rendered braille buffers to a single spannable.
-   * @return {!cvox.Spannable}
+   * @return {!Spannable}
    * @private
    */
   createBrailleOutput_: function() {
-    var result = new cvox.Spannable();
+    var result = new Spannable();
     var separator = '';  // Changes to space as appropriate.
     this.brailleBuffer_.forEach(function(cur) {
       // If this chunk is empty, don't add it since it won't result
@@ -1283,7 +1280,7 @@ Output.prototype = {
       // case it will result in a cursor which has to be preserved.
       // In this case, having separators, potentially both before and after
       // the empty string is correct.
-      if (cur.getLength() == 0 && !cur.getSpanInstanceOf(Output.SelectionSpan))
+      if (cur.length == 0 && !cur.getSpanInstanceOf(Output.SelectionSpan))
         return;
       var spansToExtend = [];
       var spansToRemove = [];
@@ -1299,20 +1296,20 @@ Output.prototype = {
       // using getSpansInstanceOf and check the endpoints (isntead of doing
       // the opposite).
       result.getSpansInstanceOf(Output.NodeSpan).forEach(function(leftSpan) {
-        if (result.getSpanEnd(leftSpan) < result.getLength())
+        if (result.getSpanEnd(leftSpan) < result.length)
           return;
-        var newEnd = result.getLength();
+        var newEnd = result.length;
         cur.getSpansInstanceOf(Output.NodeSpan).forEach(function(rightSpan) {
           if (cur.getSpanStart(rightSpan) == 0 &&
               leftSpan.node === rightSpan.node) {
             newEnd = Math.max(
                 newEnd,
-                result.getLength() + separator.length +
+                result.length + separator.length +
                     cur.getSpanEnd(rightSpan));
             spansToRemove.push(rightSpan);
           }
         });
-        if (newEnd > result.getLength())
+        if (newEnd > result.length)
           spansToExtend.push({span: leftSpan, end: newEnd});
       });
       result.append(separator);
@@ -1320,8 +1317,7 @@ Output.prototype = {
       spansToExtend.forEach(function(elem) {
         result.setSpan(
             elem.span,
-            // Cast ok, since span is known to exist.
-            /** @type {number} */ (result.getSpanStart(elem.span)),
+            result.getSpanStart(elem.span),
             elem.end);
       });
       spansToRemove.forEach(result.removeSpan.bind(result));

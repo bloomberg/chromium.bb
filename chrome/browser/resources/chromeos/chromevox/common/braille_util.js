@@ -9,13 +9,13 @@
 
 goog.provide('cvox.BrailleUtil');
 
+goog.require('Spannable');
 goog.require('cvox.ChromeVox');
 goog.require('cvox.DomUtil');
 goog.require('cvox.EditableTextAreaShadow');
 goog.require('cvox.Focuser');
 goog.require('cvox.NavBraille');
 goog.require('cvox.NodeStateUtil');
-goog.require('cvox.Spannable');
 goog.require('cvox.ValueSelectionSpan');
 goog.require('cvox.ValueSpan');
 
@@ -165,11 +165,11 @@ cvox.BrailleUtil.getContainer = function(prev, node) {
  * Gets the braille value of a node. A {@code cvox.ValueSpan} will be
  * attached, along with (possibly) a {@code cvox.ValueSelectionSpan}.
  * @param {Node} node The node.
- * @return {!cvox.Spannable} The value spannable.
+ * @return {!Spannable} The value spannable.
  */
 cvox.BrailleUtil.getValue = function(node) {
   if (!node) {
-    return new cvox.Spannable();
+    return new Spannable();
   }
   var valueSpan = new cvox.ValueSpan(0 /* offset */);
   if (cvox.DomUtil.isInputTypeText(node)) {
@@ -177,13 +177,13 @@ cvox.BrailleUtil.getValue = function(node) {
     if (node.type === 'password') {
       value = value.replace(/./g, '*');
     }
-    var spannable = new cvox.Spannable(value, valueSpan);
+    var spannable = new Spannable(value, valueSpan);
     if (node === document.activeElement &&
         cvox.DomUtil.doesInputSupportSelection(node)) {
       var selectionStart = cvox.BrailleUtil.clamp_(
-          node.selectionStart, 0, spannable.getLength());
+          node.selectionStart, 0, spannable.length);
       var selectionEnd = cvox.BrailleUtil.clamp_(
-          node.selectionEnd, 0, spannable.getLength());
+          node.selectionEnd, 0, spannable.length);
       spannable.setSpan(new cvox.ValueSelectionSpan(),
                         Math.min(selectionStart, selectionEnd),
                         Math.max(selectionStart, selectionEnd));
@@ -197,19 +197,19 @@ cvox.BrailleUtil.getValue = function(node) {
     var lineEnd = shadow.getLineEnd(lineIndex);
     var lineText = node.value.substring(lineStart, lineEnd);
     valueSpan.offset = lineStart;
-    var spannable = new cvox.Spannable(lineText, valueSpan);
+    var spannable = new Spannable(lineText, valueSpan);
     if (node === document.activeElement) {
       var selectionStart = cvox.BrailleUtil.clamp_(
-          node.selectionStart - lineStart, 0, spannable.getLength());
+          node.selectionStart - lineStart, 0, spannable.length);
       var selectionEnd = cvox.BrailleUtil.clamp_(
-          node.selectionEnd - lineStart, 0, spannable.getLength());
+          node.selectionEnd - lineStart, 0, spannable.length);
       spannable.setSpan(new cvox.ValueSelectionSpan(),
                         Math.min(selectionStart, selectionEnd),
                         Math.max(selectionStart, selectionEnd));
     }
     return spannable;
   } else {
-    return new cvox.Spannable(cvox.DomUtil.getValue(node), valueSpan);
+    return new Spannable(cvox.DomUtil.getValue(node), valueSpan);
   }
 };
 
@@ -219,13 +219,13 @@ cvox.BrailleUtil.getValue = function(node) {
  * @param {Node} prev The previous node (during navigation).
  * @param {Node} node The node.
  * @param {{name:(undefined|string),
- * role:(undefined|string),
- * roleMsg:(undefined|string),
- * state:(undefined|string),
- * container:(undefined|string),
- * value:(undefined|cvox.Spannable)}|Object=} opt_override Override a
- * specific property for the given node.
- * @return {!cvox.Spannable} The string representation.
+ *     role:(undefined|string),
+ *     roleMsg:(undefined|string),
+ *     state:(undefined|string),
+ *     container:(undefined|string),
+ *     value:(undefined|Spannable)}|Object=} opt_override Override a
+ *     specific property for the given node.
+ * @return {!Spannable} The string representation.
  */
 cvox.BrailleUtil.getTemplated = function(prev, node, opt_override) {
   opt_override = opt_override ? opt_override : {};
@@ -248,7 +248,7 @@ cvox.BrailleUtil.getTemplated = function(prev, node, opt_override) {
         Msgs.getMsg(roleMsg);
   }
 
-  var templated = new cvox.Spannable();
+  var templated = new Spannable();
   var mapChar = function(c) {
     switch (c) {
       case 'n':
@@ -273,8 +273,8 @@ cvox.BrailleUtil.getTemplated = function(prev, node, opt_override) {
     // unless the empty value has a selection, in which case the cursor
     // should be placed on the empty space after the empty value.
     if (!component.toString() && template[i + 1] == ' ' &&
-        (!(component instanceof cvox.Spannable) ||
-        !/**@type {cvox.Spannable}*/(component).getSpanInstanceOf(
+        (!(component instanceof Spannable) ||
+        !/**@type {Spannable}*/(component).getSpanInstanceOf(
             cvox.ValueSelectionSpan))) {
       i++;
     }
@@ -291,12 +291,11 @@ cvox.BrailleUtil.getTemplated = function(prev, node, opt_override) {
  * @param {number=} opt_selStart Selection start.
  * @param {number=} opt_selEnd Selection end if different from selection start.
  * @param {number=} opt_textOffset Start offset of text.
- * @return {!cvox.Spannable} The value spannable.
+ * @return {!Spannable} The value spannable.
  */
 cvox.BrailleUtil.createValue = function(text, opt_selStart, opt_selEnd,
                                         opt_textOffset) {
-  var spannable = new cvox.Spannable(
-      text, new cvox.ValueSpan(opt_textOffset || 0));
+  var spannable = new Spannable(text, new cvox.ValueSpan(opt_textOffset || 0));
   if (goog.isDef(opt_selStart)) {
     opt_selEnd = goog.isDef(opt_selEnd) ? opt_selEnd : opt_selStart;
     // TODO(plundblad): This looses the distinction between the selection

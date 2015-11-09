@@ -30,6 +30,32 @@ NonStatelessSerializableSpan.prototype.toJson = function() {
 };
 
 /**
+ * @param {Spannable} spannable
+ * @param {*} annotation
+ */
+function assertSpanNotFound(spannable, annotation) {
+  assertFalse(spannable.hasSpan(annotation));
+  assertException(
+      'Span ' + annotation + ' shouldn\'t be in spannable ' + spannable,
+      function() {
+        spannable.getSpanStart(annotation);
+      },
+      'Error');
+  assertException(
+      'Span ' + annotation + ' shouldn\'t be in spannable ' + spannable,
+      function() {
+        spannable.getSpanEnd(annotation);
+      },
+      'Error');
+  assertException(
+      'Span ' + annotation + ' shouldn\'t be in spannable ' + spannable,
+      function() {
+        spannable.getSpanLength(annotation);
+      },
+      'Error');
+}
+
+/**
  * Test fixture.
  * @constructor
  * @extends {ChromeVoxUnitTestBase}
@@ -41,15 +67,15 @@ CvoxSpannableUnitTest.prototype = {
 
   /** @override */
   closureModuleDeps: [
-    'cvox.Spannable',
+    'Spannable',
   ],
 
   /** @override */
   setUp: function() {
-    cvox.Spannable.registerStatelessSerializableSpan(
+    Spannable.registerStatelessSerializableSpan(
         StatelessSerializableSpan, 'StatelessSerializableSpan');
 
-    cvox.Spannable.registerSerializableSpan(
+    Spannable.registerSerializableSpan(
         NonStatelessSerializableSpan, 'NonStatelessSerializableSpan',
         NonStatelessSerializableSpan.fromJson,
         NonStatelessSerializableSpan.prototype.toJson);
@@ -57,33 +83,34 @@ CvoxSpannableUnitTest.prototype = {
 };
 
 TEST_F('CvoxSpannableUnitTest', 'ToStringUnannotated', function() {
-  assertEquals('', new cvox.Spannable().toString());
-  assertEquals('hello world', new cvox.Spannable('hello world').toString());
+  assertEquals('', new Spannable().toString());
+  assertEquals('hello world', new Spannable('hello world').toString());
 });
 
 /** Tests that toString works correctly on annotated strings. */
 TEST_F('CvoxSpannableUnitTest', 'ToStringAnnotated', function() {
-  var spannable = new cvox.Spannable('Hello Google');
+  var spannable = new Spannable('Hello Google');
   spannable.setSpan('http://www.google.com/', 6, 12);
   assertEquals('Hello Google', spannable.toString());
 });
 
 /** Tests the length calculation. */
-TEST_F('CvoxSpannableUnitTest', 'GetLength', function() {
-  var spannable = new cvox.Spannable('Hello');
+TEST_F('CvoxSpannableUnitTest', 'LengthProperty', function() {
+  var spannable = new Spannable('Hello');
   spannable.setSpan({}, 0, 3);
-  assertEquals(5, spannable.getLength());
+  assertEquals(5, spannable.length);
   spannable.append(' world');
-  assertEquals(11, spannable.getLength());
-  spannable.append(new cvox.Spannable(' from cvox.Spannable'));
-  assertEquals(31, spannable.getLength());
+  assertEquals(11, spannable.length);
+  spannable.append(new Spannable(' from Spannable'));
+  assertEquals(26, spannable.length);
 });
 
 /** Tests that a span can be added and retrieved at the beginning. */
 TEST_F('CvoxSpannableUnitTest', 'SpanBeginning', function() {
   var annotation = {};
-  var spannable = new cvox.Spannable('Hello world');
+  var spannable = new Spannable('Hello world');
   spannable.setSpan(annotation, 0, 5);
+  assertTrue(spannable.hasSpan(annotation));
   assertSame(annotation, spannable.getSpan(0));
   assertSame(annotation, spannable.getSpan(3));
   assertUndefined(spannable.getSpan(5));
@@ -93,8 +120,9 @@ TEST_F('CvoxSpannableUnitTest', 'SpanBeginning', function() {
 /** Tests that a span can be added and retrieved at the beginning. */
 TEST_F('CvoxSpannableUnitTest', 'SpanEnd', function() {
   var annotation = {};
-  var spannable = new cvox.Spannable('Hello world');
+  var spannable = new Spannable('Hello world');
   spannable.setSpan(annotation, 6, 11);
+  assertTrue(spannable.hasSpan(annotation));
   assertUndefined(spannable.getSpan(3));
   assertUndefined(spannable.getSpan(5));
   assertSame(annotation, spannable.getSpan(6));
@@ -104,8 +132,9 @@ TEST_F('CvoxSpannableUnitTest', 'SpanEnd', function() {
 /** Tests that a zero-length span is not retrieved. */
 TEST_F('CvoxSpannableUnitTest', 'SpanZeroLength', function() {
   var annotation = {};
-  var spannable = new cvox.Spannable('Hello world');
+  var spannable = new Spannable('Hello world');
   spannable.setSpan(annotation, 3, 3);
+  assertTrue(spannable.hasSpan(annotation));
   assertUndefined(spannable.getSpan(2));
   assertUndefined(spannable.getSpan(3));
   assertUndefined(spannable.getSpan(4));
@@ -114,17 +143,18 @@ TEST_F('CvoxSpannableUnitTest', 'SpanZeroLength', function() {
 /** Tests that a removed span is not returned. */
 TEST_F('CvoxSpannableUnitTest', 'RemoveSpan', function() {
   var annotation = {};
-  var spannable = new cvox.Spannable('Hello world');
+  var spannable = new Spannable('Hello world');
   spannable.setSpan(annotation, 0, 3);
   assertSame(annotation, spannable.getSpan(1));
   spannable.removeSpan(annotation);
+  assertFalse(spannable.hasSpan(annotation));
   assertUndefined(spannable.getSpan(1));
 });
 
 /** Tests that adding a span in one place removes it from another. */
 TEST_F('CvoxSpannableUnitTest', 'SetSpanMoves', function() {
   var annotation = {};
-  var spannable = new cvox.Spannable('Hello world');
+  var spannable = new Spannable('Hello world');
   spannable.setSpan(annotation, 0, 3);
   assertSame(annotation, spannable.getSpan(1));
   assertUndefined(spannable.getSpan(4));
@@ -135,7 +165,7 @@ TEST_F('CvoxSpannableUnitTest', 'SetSpanMoves', function() {
 
 /** Tests that setSpan objects to out-of-range arguments. */
 TEST_F('CvoxSpannableUnitTest', 'SetSpanRangeError', function() {
-  var spannable = new cvox.Spannable('Hello world');
+  var spannable = new Spannable('Hello world');
 
   // Start index out of range.
   assertException('expected range error', function() {
@@ -161,7 +191,7 @@ TEST_F('CvoxSpannableUnitTest', 'MultipleSpans', function() {
   var annotation1 = { number: 1 };
   var annotation2 = { number: 2 };
   assertNotSame(annotation1, annotation2);
-  var spannable = new cvox.Spannable('Hello world');
+  var spannable = new Spannable('Hello world');
   spannable.setSpan(annotation1, 1, 4);
   spannable.setSpan(annotation2, 2, 7);
   assertSame(annotation1, spannable.getSpan(1));
@@ -174,11 +204,11 @@ TEST_F('CvoxSpannableUnitTest', 'MultipleSpans', function() {
 
 /** Tests that appending appends the strings. */
 TEST_F('CvoxSpannableUnitTest', 'AppendToString', function() {
-  var spannable = new cvox.Spannable('Google');
+  var spannable = new Spannable('Google');
   assertEquals('Google', spannable.toString());
   spannable.append(' Chrome');
   assertEquals('Google Chrome', spannable.toString());
-  spannable.append(new cvox.Spannable('Vox'));
+  spannable.append(new Spannable('Vox'));
   assertEquals('Google ChromeVox', spannable.toString());
 });
 
@@ -189,9 +219,9 @@ TEST_F('CvoxSpannableUnitTest', 'AppendAnnotations', function() {
   var annotation1 = { number: 1 };
   var annotation2 = { number: 2 };
   assertNotSame(annotation1, annotation2);
-  var left = new cvox.Spannable('hello');
+  var left = new Spannable('hello');
   left.setSpan(annotation1, 0, 3);
-  var right = new cvox.Spannable(' world');
+  var right = new Spannable(' world');
   right.setSpan(annotation2, 0, 3);
   left.append(right);
   assertSame(annotation1, left.getSpan(1));
@@ -201,33 +231,35 @@ TEST_F('CvoxSpannableUnitTest', 'AppendAnnotations', function() {
 /**
  * Tests that a span's bounds can be retrieved.
  */
-TEST_F('CvoxSpannableUnitTest', 'GetSpanStartAndEnd', function() {
+TEST_F('CvoxSpannableUnitTest', 'GetSpanStartAndEndAndLength', function() {
   var annotation = {};
-  var spannable = new cvox.Spannable('potato wedges');
+  var spannable = new Spannable('potato wedges');
   spannable.setSpan(annotation, 8, 12);
   assertEquals(8, spannable.getSpanStart(annotation));
   assertEquals(12, spannable.getSpanEnd(annotation));
+  assertEquals(4, spannable.getSpanLength(annotation));
 });
 
 /**
  * Tests that an absent span's bounds are reported correctly.
  */
-TEST_F('CvoxSpannableUnitTest', 'GetSpanStartAndEndAbsent', function() {
+TEST_F('CvoxSpannableUnitTest', 'GetSpanStartAndEndAndLengthAbsent', function() {
   var annotation = {};
-  var spannable = new cvox.Spannable('potato wedges');
-  assertUndefined(spannable.getSpanStart(annotation));
-  assertUndefined(spannable.getSpanEnd(annotation));
+  var spannable = new Spannable('potato wedges');
+  assertSpanNotFound(spannable, annotation);
 });
 
 /**
  * Test that a zero length span can still be found.
  */
-TEST_F('CvoxSpannableUnitTest', 'GetSpanStartAndEndZeroLength', function() {
+TEST_F('CvoxSpannableUnitTest', 'GetSpanStartAndEndAndLengthZeroLength',
+       function() {
   var annotation = {};
-  var spannable = new cvox.Spannable('potato wedges');
+  var spannable = new Spannable('potato wedges');
   spannable.setSpan(annotation, 8, 8);
   assertEquals(8, spannable.getSpanStart(annotation));
   assertEquals(8, spannable.getSpanEnd(annotation));
+  assertEquals(0, spannable.getSpanLength(annotation));
 });
 
 /**
@@ -236,7 +268,7 @@ TEST_F('CvoxSpannableUnitTest', 'GetSpanStartAndEndZeroLength', function() {
  */
 TEST_F('CvoxSpannableUnitTest', 'GetSpanStartAndEndEquality', function() {
   // Note that 0 == '' and '' == 0 in JavaScript.
-  var spannable = new cvox.Spannable('wat');
+  var spannable = new Spannable('wat');
   spannable.setSpan(0, 0, 0);
   spannable.setSpan('', 1, 3);
   assertEquals(0, spannable.getSpanStart(0));
@@ -250,7 +282,7 @@ TEST_F('CvoxSpannableUnitTest', 'GetSpanStartAndEndEquality', function() {
  */
 TEST_F('CvoxSpannableUnitTest', 'Substring', function() {
   var assertSubstringResult = function(expected, initial, start, opt_end) {
-    var spannable = new cvox.Spannable(initial);
+    var spannable = new Spannable(initial);
     var substring = spannable.substring(start, opt_end);
     assertEquals(expected, substring.toString());
   };
@@ -265,7 +297,7 @@ TEST_F('CvoxSpannableUnitTest', 'Substring', function() {
  */
 TEST_F('CvoxSpannableUnitTest', 'SubstringRangeError', function() {
   var assertRangeError = function(initial, start, opt_end) {
-    var spannable = new cvox.Spannable(initial);
+    var spannable = new Spannable(initial);
     assertException('expected range error', function() {
       spannable.substring(start, opt_end);
     }, 'RangeError');
@@ -282,9 +314,10 @@ TEST_F('CvoxSpannableUnitTest', 'SubstringSpansIncluded', function() {
   var assertSpanIncluded = function(expectedSpanStart, expectedSpanEnd,
       initial, initialSpanStart, initialSpanEnd, start, opt_end) {
     var annotation = {};
-    var spannable = new cvox.Spannable(initial);
+    var spannable = new Spannable(initial);
     spannable.setSpan(annotation, initialSpanStart, initialSpanEnd);
     var substring = spannable.substring(start, opt_end);
+    assertTrue(substring.hasSpan(annotation));
     assertEquals(expectedSpanStart, substring.getSpanStart(annotation));
     assertEquals(expectedSpanEnd, substring.getSpanEnd(annotation));
   };
@@ -314,11 +347,10 @@ TEST_F('CvoxSpannableUnitTest', 'SubstringSpansExcluded', function() {
   var assertSpanExcluded = function(initial, spanStart, spanEnd,
       start, opt_end) {
     var annotation = {};
-    var spannable = new cvox.Spannable(initial);
+    var spannable = new Spannable(initial);
     spannable.setSpan(annotation, spanStart, spanEnd);
     var substring = spannable.substring(start, opt_end);
-    assertUndefined(substring.getSpanStart(annotation));
-    assertUndefined(substring.getSpanEnd(annotation));
+    assertSpanNotFound(substring, annotation);
   };
   assertSpanExcluded('potato wedges', 8, 12, 0, 6);
   assertSpanExcluded('potato wedges', 7, 12, 0, 6);
@@ -333,7 +365,7 @@ TEST_F('CvoxSpannableUnitTest', 'SubstringSpansClipped', function() {
   var assertSpanIncluded = function(expectedSpanStart, expectedSpanEnd,
       initial, initialSpanStart, initialSpanEnd, start, opt_end) {
     var annotation = {};
-    var spannable = new cvox.Spannable(initial);
+    var spannable = new Spannable(initial);
     spannable.setSpan(annotation, initialSpanStart, initialSpanEnd);
     var substring = spannable.substring(start, opt_end);
     assertEquals(expectedSpanStart, substring.getSpanStart(annotation));
@@ -345,7 +377,7 @@ TEST_F('CvoxSpannableUnitTest', 'SubstringSpansClipped', function() {
 
   // The first of the above should produce "edge".
   assertEquals('edge',
-      new cvox.Spannable('potato wedges').substring(8, 12).toString());
+      new Spannable('potato wedges').substring(8, 12).toString());
 });
 
 /**
@@ -353,7 +385,7 @@ TEST_F('CvoxSpannableUnitTest', 'SubstringSpansClipped', function() {
  */
 TEST_F('CvoxSpannableUnitTest', 'Trim', function() {
   var assertTrimResult = function(expected, initial) {
-    assertEquals(expected, new cvox.Spannable(initial).trim().toString());
+    assertEquals(expected, new Spannable(initial).trim().toString());
   };
   assertTrimResult('John F. Kennedy', 'John F. Kennedy');
   assertTrimResult('John F. Kennedy', '  John F. Kennedy');
@@ -367,13 +399,12 @@ TEST_F('CvoxSpannableUnitTest', 'Trim', function() {
  * Tests that trim keeps, drops and clips spans.
  */
 TEST_F('CvoxSpannableUnitTest', 'TrimSpans', function() {
-  var spannable = new cvox.Spannable(' \t Kennedy\n');
+  var spannable = new Spannable(' \t Kennedy\n');
   spannable.setSpan('tab', 1, 2);
   spannable.setSpan('jfk', 3, 10);
   spannable.setSpan('jfk-newline', 3, 11);
   var trimmed = spannable.trim();
-  assertUndefined(trimmed.getSpanStart('tab'));
-  assertUndefined(trimmed.getSpanEnd('tab'));
+  assertSpanNotFound(trimmed, 'tab');
   assertEquals(0, trimmed.getSpanStart('jfk'));
   assertEquals(7, trimmed.getSpanEnd('jfk'));
   assertEquals(0, trimmed.getSpanStart('jfk-newline'));
@@ -384,14 +415,13 @@ TEST_F('CvoxSpannableUnitTest', 'TrimSpans', function() {
  * Tests that when a string is all whitespace, we trim off the *end*.
  */
 TEST_F('CvoxSpannableUnitTest', 'TrimAllWhitespace', function() {
-  var spannable = new cvox.Spannable('    ');
+  var spannable = new Spannable('    ');
   spannable.setSpan('cursor 1', 0, 0);
   spannable.setSpan('cursor 2', 2, 2);
   var trimmed = spannable.trim();
   assertEquals(0, trimmed.getSpanStart('cursor 1'));
   assertEquals(0, trimmed.getSpanEnd('cursor 1'));
-  assertUndefined(trimmed.getSpanStart('cursor 2'));
-  assertUndefined(trimmed.getSpanEnd('cursor 2'));
+  assertSpanNotFound(trimmed, 'cursor 2');
 });
 
 /**
@@ -407,7 +437,7 @@ TEST_F('CvoxSpannableUnitTest', 'GetSpanInstanceOf', function() {
   ExampleConstructor3.prototype = new ExampleConstructorBase();
   var ex1 = new ExampleConstructor1();
   var ex2 = new ExampleConstructor2();
-  var spannable = new cvox.Spannable('Hello world');
+  var spannable = new Spannable('Hello world');
   spannable.setSpan(ex1, 0, 0);
   spannable.setSpan(ex2, 1, 1);
   assertEquals(ex1, spannable.getSpanInstanceOf(ExampleConstructor1));
@@ -418,16 +448,15 @@ TEST_F('CvoxSpannableUnitTest', 'GetSpanInstanceOf', function() {
 
 /** Tests trimming only left or right. */
 TEST_F('CvoxSpannableUnitTest', 'TrimLeftOrRight', function() {
-  var spannable = new cvox.Spannable('    ');
+  var spannable = new Spannable('    ');
   spannable.setSpan('cursor 1', 0, 0);
   spannable.setSpan('cursor 2', 2, 2);
   var trimmed = spannable.trimLeft();
   assertEquals(0, trimmed.getSpanStart('cursor 1'));
   assertEquals(0, trimmed.getSpanEnd('cursor 1'));
-  assertUndefined(trimmed.getSpanStart('cursor 2'));
-  assertUndefined(trimmed.getSpanEnd('cursor 2'));
+  assertSpanNotFound(trimmed, 'cursor 2');
 
-  var spannable2 = new cvox.Spannable('0  ');
+  var spannable2 = new Spannable('0  ');
   spannable2.setSpan('cursor 1', 0, 0);
   spannable2.setSpan('cursor 2', 2, 2);
   var trimmed2 = spannable2.trimLeft();
@@ -438,10 +467,9 @@ TEST_F('CvoxSpannableUnitTest', 'TrimLeftOrRight', function() {
   trimmed2 = trimmed2.trimRight();
   assertEquals(0, trimmed2.getSpanStart('cursor 1'));
   assertEquals(0, trimmed2.getSpanEnd('cursor 1'));
-  assertUndefined(trimmed2.getSpanStart('cursor 2'));
-  assertUndefined(trimmed2.getSpanEnd('cursor 2'));
+  assertSpanNotFound(trimmed2, 'cursor 2');
 
-  var spannable3 = new cvox.Spannable('  0');
+  var spannable3 = new Spannable('  0');
   spannable3.setSpan('cursor 1', 0, 0);
   spannable3.setSpan('cursor 2', 2, 2);
   var trimmed3 = spannable3.trimRight();
@@ -450,20 +478,19 @@ TEST_F('CvoxSpannableUnitTest', 'TrimLeftOrRight', function() {
   assertEquals(2, trimmed3.getSpanStart('cursor 2'));
   assertEquals(2, trimmed3.getSpanEnd('cursor 2'));
   trimmed3 = trimmed3.trimLeft();
-  assertUndefined(trimmed3.getSpanStart('cursor 1'));
-  assertUndefined(trimmed3.getSpanEnd('cursor 1'));
+  assertSpanNotFound(trimmed3, 'cursor 1');
   assertEquals(0, trimmed3.getSpanStart('cursor 2'));
   assertEquals(0, trimmed3.getSpanEnd('cursor 2'));
 });
 
 TEST_F('CvoxSpannableUnitTest', 'Serialize', function() {
-  var fresh = new cvox.Spannable('text');
+  var fresh = new Spannable('text');
   var freshStatelessSerializable = new StatelessSerializableSpan();
   var freshNonStatelessSerializable = new NonStatelessSerializableSpan(14);
   fresh.setSpan(new UnserializableSpan(), 0, 1);
   fresh.setSpan(freshStatelessSerializable, 0, 2);
   fresh.setSpan(freshNonStatelessSerializable, 3, 4);
-  var thawn = cvox.Spannable.fromJson(fresh.toJson());
+  var thawn = Spannable.fromJson(fresh.toJson());
   var thawnStatelessSerializable = thawn.getSpanInstanceOf(
       StatelessSerializableSpan);
   var thawnNonStatelessSerializable = thawn.getSpanInstanceOf(

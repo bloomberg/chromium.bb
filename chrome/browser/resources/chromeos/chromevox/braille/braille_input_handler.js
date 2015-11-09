@@ -130,8 +130,7 @@ cvox.BrailleInputHandler.prototype = {
   /**
    * Called when the content on the braille display is updated.  Modifies the
    * input state according to the new content.
-   * @param {cvox.Spannable} text Text, optionally with value and selection
-   *     spans.
+   * @param {Spannable} text Text, optionally with value and selection spans.
    * @param {function()} listener Called when the uncommitted cells
    *     have changed.
    */
@@ -144,12 +143,10 @@ cvox.BrailleInputHandler.prototype = {
     // set.  If the old listener is not cleared here, it could be called
     // spuriously if the entry state is cleared below.
     this.uncommittedCellsChangedListener_ = null;
-    // The type casts are ok because the spans are known to exist.
-    var valueStart = /** @type {number} */ (text.getSpanStart(valueSpan));
-    var valueEnd = /** @type {number} */ (text.getSpanEnd(valueSpan));
-    var selectionStart =
-        /** @type {number} */ (text.getSpanStart(selectionSpan));
-    var selectionEnd = /** @type {number} */ (text.getSpanEnd(selectionSpan));
+    var valueStart = text.getSpanStart(valueSpan);
+    var valueEnd = text.getSpanEnd(valueSpan);
+    var selectionStart = text.getSpanStart(selectionSpan);
+    var selectionEnd = text.getSpanEnd(selectionSpan);
     if (selectionStart < valueStart || selectionEnd > valueEnd) {
       console.error('Selection outside of value in braille content');
       this.clearEntryState_();

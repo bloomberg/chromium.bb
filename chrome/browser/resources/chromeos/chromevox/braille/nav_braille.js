@@ -11,12 +11,12 @@
 
 goog.provide('cvox.NavBraille');
 
-goog.require('cvox.Spannable');
+goog.require('Spannable');
 
 /**
  * A class capturing the braille for navigation from one object to
  * another.
- * @param {{text: (undefined|string|!cvox.Spannable),
+ * @param {{text: (undefined|string|!Spannable),
  *          startIndex: (undefined|number),
  *          endIndex: (undefined|number)}} kwargs The arguments for braille.
  *  text The text of the object itself, including text from
@@ -28,10 +28,10 @@ goog.require('cvox.Spannable');
 cvox.NavBraille = function(kwargs) {
   /**
    * Text, annotated with DOM nodes.
-   * @type {!cvox.Spannable}
+   * @type {!Spannable}
    */
-  this.text = (kwargs.text instanceof cvox.Spannable) ?
-      kwargs.text : new cvox.Spannable(kwargs.text);
+  this.text = (kwargs.text instanceof Spannable) ?
+      kwargs.text : new Spannable(kwargs.text);
 
   /**
    * Selection start index.
@@ -49,7 +49,7 @@ cvox.NavBraille = function(kwargs) {
 
 /**
  * Convenience for creating simple braille output.
- * @param {string|!cvox.Spannable} text Text to represent in braille.
+ * @param {string|!Spannable} text Text to represent in braille.
  * @return {!cvox.NavBraille} Braille output without a cursor.
  */
 cvox.NavBraille.fromText = function(text) {
@@ -69,7 +69,7 @@ cvox.NavBraille.fromJson = function(json) {
     throw 'Invalid start or end index in serialized NavBraille: ' + json;
   }
   return new cvox.NavBraille({
-    text: cvox.Spannable.fromJson(json.spannable),
+    text: Spannable.fromJson(json.spannable),
     startIndex: json.startIndex,
     endIndex: json.endIndex
   });
@@ -80,7 +80,7 @@ cvox.NavBraille.fromJson = function(json) {
  * @return {boolean} true if this braille description is empty.
  */
 cvox.NavBraille.prototype.isEmpty = function() {
-  return this.text.getLength() == 0;
+  return this.text.length == 0;
 };
 
 

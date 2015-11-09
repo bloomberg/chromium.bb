@@ -18,9 +18,9 @@ CvoxExpandingBrailleTranslatorUnitTest.prototype = {
 
   /** @override */
   closureModuleDeps: [
+    'Spannable',
     'cvox.ExpandingBrailleTranslator',
     'cvox.LibLouis',
-    'cvox.Spannable',
     'cvox.ValueSelectionSpan',
     'cvox.ValueSpan',
   ]
@@ -74,7 +74,7 @@ function assertArrayBufferMatches(expected, actual) {
 
 TEST_F('CvoxExpandingBrailleTranslatorUnitTest', 'TranslationError',
     function() {
-  var text = new cvox.Spannable('error ok', new cvox.ValueSpan());
+  var text = new Spannable('error ok', new cvox.ValueSpan());
   text.setSpan(new cvox.ValueSelectionSpan, 0, 0);
   var contractedTranslator = new FakeTranslator('c');
   // Translator that always results in an error.
@@ -133,7 +133,7 @@ function doTranslationTest(name, contracted, valueExpansion, text,
       var extraCellsSpanPos = text.getSpanStart(extraCellsSpan);
     var expectedTextToBraille = [];
     var expectedBrailleToText = [];
-    for (var i = 0, pos = 0; i < text.getLength(); ++i, ++pos) {
+    for (var i = 0, pos = 0; i < text.length; ++i, ++pos) {
       if (i === extraCellsSpanPos)
         ++pos;
       expectedTextToBraille.push(pos);
@@ -190,10 +190,10 @@ function runTranslationTestVariants(testCase, contracted, valueExpansion,
   if (contracted && valueExpansion === expType.SELECTION) {
     expectedOutput = testCase.contractedOutput;
   } else if (contracted && valueExpansion === expType.ALL) {
-    expectedOutput = new Array(testCase.input.getLength() + 1).join('u');
+    expectedOutput = new Array(testCase.input.length + 1).join('u');
   } else {
     expectedOutput =
-        new Array(testCase.input.getLength() + 1).join(outputChar);
+        new Array(testCase.input.length + 1).join(outputChar);
   }
   if (withExtraCells) {
     expectedOutput = expectedOutput.substring(0, selectionStart) + 'e' +
@@ -203,12 +203,12 @@ function runTranslationTestVariants(testCase, contracted, valueExpansion,
                     expectedOutput);
 
   // Run another test, with the value surrounded by some text.
-  var surroundedText = new cvox.Spannable('Name: ');
+  var surroundedText = new Spannable('Name: ');
   var surroundedExpectedOutput =
       new Array('Name: '.length + 1).join(outputChar);
   surroundedText.append(input);
   surroundedExpectedOutput += expectedOutput;
-  if (testCase.input.getLength() > 0) {
+  if (testCase.input.length > 0) {
     surroundedText.append(' ');
     surroundedExpectedOutput += outputChar;
   }
@@ -227,7 +227,7 @@ function runTranslationTestVariants(testCase, contracted, valueExpansion,
  * @param {=opt_selectionEnd} Selection end if selection is not a caret.
  */
 function createText(text, opt_selectionStart, opt_selectionEnd) {
-  var result = new cvox.Spannable(text);
+  var result = new Spannable(text);
 
   result.setSpan(new cvox.ValueSpan, 0, text.length);
   if (goog.isDef(opt_selectionStart)) {
