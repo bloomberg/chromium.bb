@@ -1033,9 +1033,8 @@ void JPEGImageDecoder::complete()
     if (m_frameBufferCache.isEmpty())
         return;
 
-    ImageFrame& buffer = m_frameBufferCache[0];
-    buffer.setHasAlpha(false);
-    buffer.setStatus(ImageFrame::FrameComplete);
+    m_frameBufferCache[0].setHasAlpha(false);
+    m_frameBufferCache[0].setStatus(ImageFrame::FrameComplete);
 }
 
 inline bool isComplete(const JPEGImageDecoder* decoder, bool onlySize)
