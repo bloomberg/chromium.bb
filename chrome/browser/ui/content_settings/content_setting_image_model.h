@@ -8,6 +8,8 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
+#include "chrome/browser/ui/content_settings/content_setting_bubble_model_delegate.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "ui/gfx/image/image.h"
 
@@ -25,17 +27,28 @@ class ContentSettingImageModel {
  public:
   virtual ~ContentSettingImageModel() {}
 
-  // Factory function.
-  static ContentSettingImageModel* CreateContentSettingImageModel(
-     ContentSettingsType content_settings_type);
+  // Generates a vector of all image models to be used within one window.
+  static ScopedVector<ContentSettingImageModel>
+      GenerateContentSettingImageModels();
 
   // Notifies this model that its setting might have changed and it may need to
   // update its visibility, icon and tooltip.
   virtual void UpdateFromWebContents(content::WebContents* web_contents) = 0;
 
-  ContentSettingsType get_content_settings_type() const {
-    return content_settings_type_;
-  }
+  // Creates the model for the bubble that will be attached to this image.
+  // The bubble model is owned by the caller.
+  virtual ContentSettingBubbleModel* CreateBubbleModel(
+      ContentSettingBubbleModel::Delegate* delegate,
+      content::WebContents* web_contents,
+      Profile* profile) = 0;
+
+  // Whether the animation should be run for the given |web_contents|.
+  virtual bool ShouldRunAnimation(content::WebContents* web_contents) = 0;
+
+  // Remembers that the animation has already run for the given |web_contents|,
+  // so that we do not restart it when the parent view is updated.
+  virtual void SetAnimationHasRun(content::WebContents* web_contents) = 0;
+
   bool is_visible() const { return is_visible_; }
   const gfx::Image& icon() const { return icon_; }
 #if defined(OS_MACOSX)
@@ -47,7 +60,7 @@ class ContentSettingImageModel {
   std::string get_tooltip() const { return tooltip_; }
 
  protected:
-  explicit ContentSettingImageModel(ContentSettingsType content_settings_type);
+  ContentSettingImageModel();
   void SetIconByResourceId(int id);
 #if !defined(OS_MACOSX)
   void SetIconByVectorId(gfx::VectorIconId id, bool blocked);
@@ -60,7 +73,6 @@ class ContentSettingImageModel {
   void set_tooltip(const std::string& tooltip) { tooltip_ = tooltip; }
 
  private:
-  const ContentSettingsType content_settings_type_;
   bool is_visible_;
   int icon_id_;
   gfx::Image icon_;
@@ -68,6 +80,32 @@ class ContentSettingImageModel {
   std::string tooltip_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentSettingImageModel);
+};
+
+// A subclass for an image model tied to a single content type.
+class ContentSettingSimpleImageModel : public ContentSettingImageModel {
+ public:
+  explicit ContentSettingSimpleImageModel(ContentSettingsType content_type);
+
+  // ContentSettingImageModel implementation.
+  ContentSettingBubbleModel* CreateBubbleModel(
+      ContentSettingBubbleModel::Delegate* delegate,
+      content::WebContents* web_contents,
+      Profile* profile) override;
+  bool ShouldRunAnimation(content::WebContents* web_contents) override;
+  void SetAnimationHasRun(content::WebContents* web_contents) override;
+
+  // Factory method. Used only for testing.
+  static scoped_ptr<ContentSettingImageModel> CreateForContentTypeForTesting(
+      ContentSettingsType content_type);
+
+ protected:
+  ContentSettingsType content_type() { return content_type_; }
+
+ private:
+  ContentSettingsType content_type_;
+
+  DISALLOW_COPY_AND_ASSIGN(ContentSettingSimpleImageModel);
 };
 
 #endif  // CHROME_BROWSER_UI_CONTENT_SETTINGS_CONTENT_SETTING_IMAGE_MODEL_H_

@@ -295,14 +295,17 @@ void LocationBarView::Init() {
   AddChildView(mic_search_view_);
 
   const SkColor text_color = GetColor(SecurityStateModel::NONE, TEXT);
-  for (ContentSettingsType type :
-       ContentSettingBubbleModel::GetSupportedBubbleTypes()) {
-    ContentSettingImageView* content_blocked_view = new ContentSettingImageView(
-        type, this, bubble_font_list, text_color, background_color);
-    content_setting_views_.push_back(content_blocked_view);
-    content_blocked_view->SetVisible(false);
-    AddChildView(content_blocked_view);
+  ScopedVector<ContentSettingImageModel> models =
+      ContentSettingImageModel::GenerateContentSettingImageModels();
+  for (ContentSettingImageModel* model : models.get()) {
+    // ContentSettingImageView takes ownership of its model.
+    ContentSettingImageView* image_view = new ContentSettingImageView(
+        model, this, bubble_font_list, text_color, background_color);
+    content_setting_views_.push_back(image_view);
+    image_view->SetVisible(false);
+    AddChildView(image_view);
   }
+  models.weak_clear();
 
   zoom_view_ = new ZoomView(delegate_);
   AddChildView(zoom_view_);

@@ -13,7 +13,6 @@
 #include "chrome/browser/content_settings/chrome_content_settings_utils.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
-#include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "chrome/browser/infobars/infobar_service.h"
@@ -56,22 +55,6 @@ using content_settings::SETTING_SOURCE_NONE;
 namespace {
 
 const int kAllowButtonIndex = 0;
-
-// static
-const ContentSettingsType kSupportedBubbleTypes[] = {
-    CONTENT_SETTINGS_TYPE_COOKIES,
-    CONTENT_SETTINGS_TYPE_IMAGES,
-    CONTENT_SETTINGS_TYPE_JAVASCRIPT,
-    CONTENT_SETTINGS_TYPE_PPAPI_BROKER,
-    CONTENT_SETTINGS_TYPE_PLUGINS,
-    CONTENT_SETTINGS_TYPE_POPUPS,
-    CONTENT_SETTINGS_TYPE_GEOLOCATION,
-    CONTENT_SETTINGS_TYPE_MIXEDSCRIPT,
-    CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS,
-    CONTENT_SETTINGS_TYPE_MEDIASTREAM,
-    CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS,
-    CONTENT_SETTINGS_TYPE_MIDI_SYSEX,
-};
 
 // These states must match the order of appearance of the radio buttons
 // in the XIB file for the Mac port.
@@ -586,53 +569,6 @@ void ContentSettingPopupBubbleModel::OnListItemClicked(int index) {
         ->ShowBlockedPopup(item_id_from_item_index(index));
   }
 }
-
-// The model of the content settings bubble for media settings.
-class ContentSettingMediaStreamBubbleModel
-    : public ContentSettingTitleAndLinkModel {
- public:
-  ContentSettingMediaStreamBubbleModel(Delegate* delegate,
-                                       WebContents* web_contents,
-                                       Profile* profile);
-
-  ~ContentSettingMediaStreamBubbleModel() override;
-
-  void OnManageLinkClicked() override;
-
- private:
-  // Helper functions to check if this bubble was invoked for microphone,
-  // camera, or both devices.
-  bool MicrophoneAccessed() const;
-  bool CameraAccessed() const;
-
-  void SetTitle();
-  // Sets the data for the radio buttons of the bubble.
-  void SetRadioGroup();
-  // Sets the data for the media menus of the bubble.
-  void SetMediaMenus();
-  // Set the settings management link.
-  void SetManageLink();
-  void SetCustomLink();
-  // Updates the camera and microphone setting with the passed |setting|.
-  void UpdateSettings(ContentSetting setting);
-  // Updates the camera and microphone default device with the passed |type|
-  // and device.
-  void UpdateDefaultDeviceForType(content::MediaStreamType type,
-                                  const std::string& device);
-
-  // ContentSettingBubbleModel implementation.
-  void OnRadioClicked(int radio_index) override;
-  void OnMediaMenuClicked(content::MediaStreamType type,
-                          const std::string& selected_device) override;
-
-  // The index of the selected radio item.
-  int selected_item_;
-  // The content settings that are associated with the individual radio
-  // buttons.
-  ContentSetting radio_item_setting_[2];
-  // The state of the microphone and camera access.
-  TabSpecificContentSettings::MicrophoneCameraState state_;
-};
 
 ContentSettingMediaStreamBubbleModel::ContentSettingMediaStreamBubbleModel(
     Delegate* delegate,
@@ -1283,23 +1219,12 @@ void ContentSettingMidiSysExBubbleModel::OnCustomLinkClicked() {
 }
 
 // static
-const std::set<ContentSettingsType>&
-ContentSettingBubbleModel::GetSupportedBubbleTypes() {
-  CR_DEFINE_STATIC_LOCAL(
-      const std::set<ContentSettingsType>, supported_bubble_types,
-      (kSupportedBubbleTypes,
-       kSupportedBubbleTypes + arraysize(kSupportedBubbleTypes)));
-  return supported_bubble_types;
-}
-
-// static
 ContentSettingBubbleModel*
     ContentSettingBubbleModel::CreateContentSettingBubbleModel(
         Delegate* delegate,
         WebContents* web_contents,
         Profile* profile,
         ContentSettingsType content_type) {
-  DCHECK(ContainsKey(GetSupportedBubbleTypes(), content_type));
   if (content_type == CONTENT_SETTINGS_TYPE_COOKIES) {
     return new ContentSettingCookiesBubbleModel(delegate, web_contents,
                                                 profile);
@@ -1332,8 +1257,15 @@ ContentSettingBubbleModel*
     return new ContentSettingMidiSysExBubbleModel(delegate, web_contents,
                                                   profile);
   }
-  return new ContentSettingSingleRadioGroup(delegate, web_contents, profile,
-                                            content_type);
+  if (content_type == CONTENT_SETTINGS_TYPE_IMAGES ||
+      content_type == CONTENT_SETTINGS_TYPE_JAVASCRIPT ||
+      content_type == CONTENT_SETTINGS_TYPE_PPAPI_BROKER ||
+      content_type == CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS) {
+    return new ContentSettingSingleRadioGroup(delegate, web_contents, profile,
+                                              content_type);
+  }
+  NOTREACHED() << "No bubble for the content type " << content_type << ".";
+  return nullptr;
 }
 
 ContentSettingBubbleModel::ContentSettingBubbleModel(

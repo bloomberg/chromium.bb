@@ -44,48 +44,72 @@ gfx::Image GetIcon(gfx::VectorIconId id, gfx::VectorIconId badge) {
 
 }  // namespace
 
-class ContentSettingBlockedImageModel : public ContentSettingImageModel {
+// The image models hierarchy:
+//
+// ContentSettingImageModel                  - base class
+//   ContentSettingSimpleImageModel            - single content setting
+//     ContentSettingBlockedImageModel           - generic blocked setting
+//     ContentSettingGeolocationImageModel       - geolocation
+//     ContentSettingRPHImageModel               - protocol handlers
+//     ContentSettingMIDISysExImageModel         - midi sysex
+//   ContentSettingMediaImageModel             - media
+
+class ContentSettingBlockedImageModel : public ContentSettingSimpleImageModel {
  public:
-  explicit ContentSettingBlockedImageModel(
-      ContentSettingsType content_settings_type);
+  explicit ContentSettingBlockedImageModel(ContentSettingsType content_type);
 
   void UpdateFromWebContents(WebContents* web_contents) override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ContentSettingBlockedImageModel);
 };
 
-class ContentSettingGeolocationImageModel : public ContentSettingImageModel {
+class ContentSettingGeolocationImageModel
+    : public ContentSettingSimpleImageModel {
  public:
   ContentSettingGeolocationImageModel();
 
   void UpdateFromWebContents(WebContents* web_contents) override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ContentSettingGeolocationImageModel);
 };
 
 // Image model for displaying media icons in the location bar.
 class ContentSettingMediaImageModel : public ContentSettingImageModel {
  public:
-  explicit ContentSettingMediaImageModel(ContentSettingsType type);
+  ContentSettingMediaImageModel();
 
   void UpdateFromWebContents(WebContents* web_contents) override;
+
+  ContentSettingBubbleModel* CreateBubbleModel(
+      ContentSettingBubbleModel::Delegate* delegate,
+      WebContents* web_contents,
+      Profile* profile) override;
+
+  bool ShouldRunAnimation(WebContents* web_contents) override;
+  void SetAnimationHasRun(WebContents* web_contents) override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ContentSettingMediaImageModel);
 };
 
-class ContentSettingRPHImageModel : public ContentSettingImageModel {
+class ContentSettingRPHImageModel : public ContentSettingSimpleImageModel {
  public:
   ContentSettingRPHImageModel();
 
   void UpdateFromWebContents(WebContents* web_contents) override;
 };
 
-class ContentSettingNotificationsImageModel : public ContentSettingImageModel {
- public:
-  ContentSettingNotificationsImageModel();
-
-  void UpdateFromWebContents(WebContents* web_contents) override;
-};
-
-class ContentSettingMIDISysExImageModel : public ContentSettingImageModel {
+class ContentSettingMIDISysExImageModel
+    : public ContentSettingSimpleImageModel {
  public:
   ContentSettingMIDISysExImageModel();
 
   void UpdateFromWebContents(WebContents* web_contents) override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ContentSettingMIDISysExImageModel);
 };
 
 namespace {
@@ -169,9 +193,77 @@ const ContentSettingsImageDetails* GetImageDetails(ContentSettingsType type) {
 
 }  // namespace
 
+// Single content setting ------------------------------------------------------
+
+ContentSettingSimpleImageModel::ContentSettingSimpleImageModel(
+    ContentSettingsType content_type)
+    : ContentSettingImageModel(),
+      content_type_(content_type) {
+}
+
+ContentSettingBubbleModel* ContentSettingSimpleImageModel::CreateBubbleModel(
+    ContentSettingBubbleModel::Delegate* delegate,
+    WebContents* web_contents,
+    Profile* profile) {
+  return ContentSettingBubbleModel::CreateContentSettingBubbleModel(
+      delegate,
+      web_contents,
+      profile,
+      content_type());
+}
+
+bool ContentSettingSimpleImageModel::ShouldRunAnimation(
+    WebContents* web_contents) {
+  if (!web_contents)
+    return false;
+
+  TabSpecificContentSettings* content_settings =
+      TabSpecificContentSettings::FromWebContents(web_contents);
+  if (!content_settings)
+    return false;
+
+  return !content_settings->IsBlockageIndicated(content_type());
+}
+
+void ContentSettingSimpleImageModel::SetAnimationHasRun(
+    WebContents* web_contents) {
+  if (!web_contents)
+    return;
+  TabSpecificContentSettings* content_settings =
+      TabSpecificContentSettings::FromWebContents(web_contents);
+  if (content_settings)
+    content_settings->SetBlockageHasBeenIndicated(content_type());
+}
+
+// static
+scoped_ptr<ContentSettingImageModel>
+    ContentSettingSimpleImageModel::CreateForContentTypeForTesting(
+        ContentSettingsType content_settings_type) {
+  if (content_settings_type == CONTENT_SETTINGS_TYPE_GEOLOCATION)
+    return make_scoped_ptr(new ContentSettingGeolocationImageModel());
+
+  if (content_settings_type == CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS)
+    return make_scoped_ptr(new ContentSettingRPHImageModel());
+
+  if (content_settings_type == CONTENT_SETTINGS_TYPE_MEDIASTREAM) {
+    NOTREACHED() << "The mediastream content setting is deprecated. "
+                 << "Media image model that used to be tied to this setting "
+                 << "can no longer be created by this function.";
+    return nullptr;
+  }
+
+  if (content_settings_type == CONTENT_SETTINGS_TYPE_MIDI_SYSEX)
+    return make_scoped_ptr(new ContentSettingMIDISysExImageModel());
+
+  return make_scoped_ptr(
+      new ContentSettingBlockedImageModel(content_settings_type));
+}
+
+// Generic blocked content settings --------------------------------------------
+
 ContentSettingBlockedImageModel::ContentSettingBlockedImageModel(
-    ContentSettingsType content_settings_type)
-    : ContentSettingImageModel(content_settings_type) {
+    ContentSettingsType content_type)
+    : ContentSettingSimpleImageModel(content_type) {
 }
 
 void ContentSettingBlockedImageModel::UpdateFromWebContents(
@@ -180,8 +272,9 @@ void ContentSettingBlockedImageModel::UpdateFromWebContents(
   if (!web_contents)
     return;
 
-  ContentSettingsType type = get_content_settings_type();
+  const ContentSettingsType type = content_type();
   const ContentSettingsImageDetails* image_details = GetImageDetails(type);
+  DCHECK(image_details) << "No entry for " << type << " in kImageDetails[].";
 
   int icon_id = image_details->blocked_icon_id;
   int tooltip_id = image_details->blocked_tooltip_id;
@@ -241,8 +334,10 @@ void ContentSettingBlockedImageModel::UpdateFromWebContents(
   set_tooltip(l10n_util::GetStringUTF8(tooltip_id));
 }
 
+// Geolocation -----------------------------------------------------------------
+
 ContentSettingGeolocationImageModel::ContentSettingGeolocationImageModel()
-    : ContentSettingImageModel(CONTENT_SETTINGS_TYPE_GEOLOCATION) {
+    : ContentSettingSimpleImageModel(CONTENT_SETTINGS_TYPE_GEOLOCATION) {
 }
 
 void ContentSettingGeolocationImageModel::UpdateFromWebContents(
@@ -276,35 +371,15 @@ void ContentSettingGeolocationImageModel::UpdateFromWebContents(
       IDS_GEOLOCATION_ALLOWED_TOOLTIP : IDS_GEOLOCATION_BLOCKED_TOOLTIP));
 }
 
-ContentSettingMediaImageModel::ContentSettingMediaImageModel(
-    ContentSettingsType type)
-    : ContentSettingImageModel(type) {
+// Media -----------------------------------------------------------------------
+
+ContentSettingMediaImageModel::ContentSettingMediaImageModel()
+    : ContentSettingImageModel() {
 }
 
 void ContentSettingMediaImageModel::UpdateFromWebContents(
     WebContents* web_contents) {
   set_visible(false);
-
-  // As long as a single icon is used to display the status of the camera and
-  // microphone usage only display an icon for the
-  // CONTENT_SETTINGS_TYPE_MEDIASTREAM. Don't display anything for
-  // CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC,
-  // CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA.
-  // FIXME: Remove this hack and either display a two omnibox icons (one for
-  // camera and one for microphone), or don't create one image model per
-  // content type but per icon to display. The later is probably the right
-  // thing to do, bebacuse this also allows to add more content settings type
-  // for which no omnibox icon exists.
-  if (get_content_settings_type() == CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC ||
-      get_content_settings_type() == CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA) {
-    return;
-  }
-
-  // The ContentSettingMediaImageModel must not be used with a content type
-  // other then: CONTENT_SETTINGS_TYPE_MEDIASTREAM,
-  // CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC,
-  // CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA.
-  DCHECK_EQ(get_content_settings_type(), CONTENT_SETTINGS_TYPE_MEDIASTREAM);
 
   if (!web_contents)
     return;
@@ -351,9 +426,51 @@ void ContentSettingMediaImageModel::UpdateFromWebContents(
   set_visible(true);
 }
 
+ContentSettingBubbleModel* ContentSettingMediaImageModel::CreateBubbleModel(
+    ContentSettingBubbleModel::Delegate* delegate,
+    WebContents* web_contents,
+    Profile* profile) {
+  return new ContentSettingMediaStreamBubbleModel(delegate,
+                                                  web_contents,
+                                                  profile);
+}
+
+bool ContentSettingMediaImageModel::ShouldRunAnimation(
+    WebContents* web_contents) {
+  // TODO(msramek): For bubbles that are not tied to a single content setting,
+  // TabSpecificContentSettings is not a good place to store this bit.
+  // Perhaps we should instead use a map<WebContents*, bool> here in
+  // ContentSettingMediaImageModel.
+  if (!web_contents)
+    return false;
+  TabSpecificContentSettings* content_settings =
+      TabSpecificContentSettings::FromWebContents(web_contents);
+  if (!content_settings)
+    return false;
+  return (!content_settings->IsBlockageIndicated(
+              CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC) &&
+          !content_settings->IsBlockageIndicated(
+              CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA));
+}
+
+void ContentSettingMediaImageModel::SetAnimationHasRun(
+    WebContents* web_contents) {
+  if (!web_contents)
+    return;
+  TabSpecificContentSettings* content_settings =
+      TabSpecificContentSettings::FromWebContents(web_contents);
+  if (content_settings) {
+    content_settings->SetBlockageHasBeenIndicated(
+        CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC);
+    content_settings->SetBlockageHasBeenIndicated(
+        CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA);
+  }
+}
+
+// Protocol handlers -----------------------------------------------------------
+
 ContentSettingRPHImageModel::ContentSettingRPHImageModel()
-    : ContentSettingImageModel(
-        CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS) {
+    : ContentSettingSimpleImageModel(CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS) {
   if (!UseVectorGraphics())
     SetIconByResourceId(IDR_REGISTER_PROTOCOL_HANDLER);
 #if !defined(OS_MACOSX)
@@ -379,18 +496,10 @@ void ContentSettingRPHImageModel::UpdateFromWebContents(
   set_visible(true);
 }
 
-ContentSettingNotificationsImageModel::ContentSettingNotificationsImageModel()
-    : ContentSettingImageModel(CONTENT_SETTINGS_TYPE_NOTIFICATIONS) {
-}
-
-void ContentSettingNotificationsImageModel::UpdateFromWebContents(
-    WebContents* web_contents) {
-  // Notifications do not have a bubble.
-  set_visible(false);
-}
+// MIDI SysEx ------------------------------------------------------------------
 
 ContentSettingMIDISysExImageModel::ContentSettingMIDISysExImageModel()
-    : ContentSettingImageModel(CONTENT_SETTINGS_TYPE_MIDI_SYSEX) {
+    : ContentSettingSimpleImageModel(CONTENT_SETTINGS_TYPE_MIDI_SYSEX) {
 }
 
 void ContentSettingMIDISysExImageModel::UpdateFromWebContents(
@@ -424,31 +533,44 @@ void ContentSettingMIDISysExImageModel::UpdateFromWebContents(
       IDS_MIDI_SYSEX_ALLOWED_TOOLTIP : IDS_MIDI_SYSEX_BLOCKED_TOOLTIP));
 }
 
-ContentSettingImageModel::ContentSettingImageModel(
-    ContentSettingsType content_settings_type)
-    : content_settings_type_(content_settings_type),
-      is_visible_(false),
+// Base class ------------------------------------------------------------------
+
+ContentSettingImageModel::ContentSettingImageModel()
+    : is_visible_(false),
       icon_id_(0),
       explanatory_string_id_(0) {
 }
 
 // static
-ContentSettingImageModel*
-    ContentSettingImageModel::CreateContentSettingImageModel(
-    ContentSettingsType content_settings_type) {
-  if (content_settings_type == CONTENT_SETTINGS_TYPE_GEOLOCATION) {
-    return new ContentSettingGeolocationImageModel();
-  } else if (content_settings_type == CONTENT_SETTINGS_TYPE_NOTIFICATIONS) {
-    return new ContentSettingNotificationsImageModel();
-  } else if (content_settings_type == CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS) {
-    return new ContentSettingRPHImageModel();
-  } else if (content_settings_type == CONTENT_SETTINGS_TYPE_MEDIASTREAM) {
-    return new ContentSettingMediaImageModel(content_settings_type);
-  } else if (content_settings_type == CONTENT_SETTINGS_TYPE_MIDI_SYSEX) {
-    return new ContentSettingMIDISysExImageModel();
-  } else {
-    return new ContentSettingBlockedImageModel(content_settings_type);
-  }
+ScopedVector<ContentSettingImageModel>
+    ContentSettingImageModel::GenerateContentSettingImageModels() {
+  ScopedVector<ContentSettingImageModel> result;
+
+  // The ordering of the models here influences the order in which icons are
+  // shown in the omnibox.
+  result.push_back(
+      new ContentSettingBlockedImageModel(CONTENT_SETTINGS_TYPE_COOKIES));
+  result.push_back(
+      new ContentSettingBlockedImageModel(CONTENT_SETTINGS_TYPE_IMAGES));
+  result.push_back(
+      new ContentSettingBlockedImageModel(CONTENT_SETTINGS_TYPE_JAVASCRIPT));
+  result.push_back(
+      new ContentSettingBlockedImageModel(CONTENT_SETTINGS_TYPE_PPAPI_BROKER));
+  result.push_back(
+      new ContentSettingBlockedImageModel(CONTENT_SETTINGS_TYPE_PLUGINS));
+  result.push_back(
+      new ContentSettingBlockedImageModel(CONTENT_SETTINGS_TYPE_POPUPS));
+  result.push_back(new ContentSettingGeolocationImageModel());
+  result.push_back(
+      new ContentSettingBlockedImageModel(CONTENT_SETTINGS_TYPE_MIXEDSCRIPT));
+  result.push_back(new ContentSettingRPHImageModel());
+  result.push_back(new ContentSettingMediaImageModel());
+  result.push_back(
+      new ContentSettingBlockedImageModel(
+          CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS));
+  result.push_back(new ContentSettingMIDISysExImageModel());
+
+  return result.Pass();
 }
 
 void ContentSettingImageModel::SetIconByResourceId(int id) {

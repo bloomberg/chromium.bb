@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/views/location_bar/content_setting_image_view.h"
 
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
 #include "chrome/browser/ui/content_settings/content_setting_image_model.h"
@@ -34,7 +33,7 @@ const int ContentSettingImageView::kAnimationDurationMS =
     (kOpenTimeMS * 2) + kStayOpenTimeMS;
 
 ContentSettingImageView::ContentSettingImageView(
-    ContentSettingsType content_type,
+    ContentSettingImageModel* image_model,
     LocationBarView* parent,
     const gfx::FontList& font_list,
     SkColor text_color,
@@ -45,9 +44,7 @@ ContentSettingImageView::ContentSettingImageView(
                           parent_background_color,
                           false),
       parent_(parent),
-      content_setting_image_model_(
-          ContentSettingImageModel::CreateContentSettingImageModel(
-              content_type)),
+      content_setting_image_model_(image_model),
       slide_animator_(this),
       pause_animation_(false),
       pause_animation_state_(0.0),
@@ -86,12 +83,9 @@ void ContentSettingImageView::Update(content::WebContents* web_contents) {
       base::UTF8ToUTF16(content_setting_image_model_->get_tooltip()));
   SetVisible(true);
 
-  // If the content blockage should be indicated to the user, start the
-  // animation and record that we indicated the blockage.
-  TabSpecificContentSettings* content_settings = web_contents ?
-      TabSpecificContentSettings::FromWebContents(web_contents) : NULL;
-  if (!content_settings || content_settings->IsBlockageIndicated(
-      content_setting_image_model_->get_content_settings_type()))
+  // If the content usage or blockage should be indicated to the user, start the
+  // animation and record that the icon has been shown.
+  if (!content_setting_image_model_->ShouldRunAnimation(web_contents))
     return;
 
   // We just ignore this blockage if we're already showing some other string to
@@ -104,8 +98,7 @@ void ContentSettingImageView::Update(content::WebContents* web_contents) {
     slide_animator_.Show();
   }
 
-  content_settings->SetBlockageHasBeenIndicated(
-      content_setting_image_model_->get_content_settings_type());
+  content_setting_image_model_->SetAnimationHasRun(web_contents);
 }
 
 SkColor ContentSettingImageView::GetTextColor() const {
@@ -206,10 +199,9 @@ void ContentSettingImageView::OnClick() {
   if (web_contents && !bubble_widget_) {
     bubble_widget_ =
         parent_->delegate()->CreateViewsBubble(new ContentSettingBubbleContents(
-            ContentSettingBubbleModel::CreateContentSettingBubbleModel(
+            content_setting_image_model_->CreateBubbleModel(
                 parent_->delegate()->GetContentSettingBubbleModelDelegate(),
-                web_contents, parent_->profile(),
-                content_setting_image_model_->get_content_settings_type()),
+                web_contents, parent_->profile()),
             web_contents, this, views::BubbleBorder::TOP_RIGHT));
     bubble_widget_->AddObserver(this);
     bubble_widget_->Show();

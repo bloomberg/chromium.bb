@@ -359,6 +359,9 @@ class TabSpecificContentSettings
   // Removes the given |SiteDataObserver|.
   void RemoveSiteDataObserver(SiteDataObserver* observer);
 
+  // Block all content. Used for testing content setting bubbles.
+  void BlockAllContentForTesting();
+
  private:
   friend class content::WebContentsUserData<TabSpecificContentSettings>;
 

@@ -23,7 +23,8 @@ class WebContents;
 
 class ContentSettingDecoration : public ImageDecoration {
  public:
-  ContentSettingDecoration(ContentSettingsType settings_type,
+  // ContentSettingDecoration takes ownership of its model.
+  ContentSettingDecoration(ContentSettingImageModel* model,
                            LocationBarViewMac* owner,
                            Profile* profile);
   ~ContentSettingDecoration() override;

@@ -267,10 +267,7 @@ const ContentTypeToNibPath kNibPaths[] = {
     new ContentSettingBubbleWebContentsObserverBridge(webContents, self));
 
   ContentSettingsType settingsType = model->content_type();
-  DCHECK(ContainsKey(ContentSettingBubbleModel::GetSupportedBubbleTypes(),
-                     settingsType));
-  DCHECK_EQ(ContentSettingBubbleModel::GetSupportedBubbleTypes().size(),
-            arraysize(kNibPaths));
+
   NSString* nibPath = @"";
   for (const ContentTypeToNibPath& type_to_path : kNibPaths) {
     if (settingsType == type_to_path.type) {

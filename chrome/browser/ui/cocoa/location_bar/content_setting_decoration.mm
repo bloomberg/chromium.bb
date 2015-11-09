@@ -157,12 +157,10 @@ enum AnimationState {
 
 
 ContentSettingDecoration::ContentSettingDecoration(
-    ContentSettingsType settings_type,
+    ContentSettingImageModel* model,
     LocationBarViewMac* owner,
     Profile* profile)
-    : content_setting_image_model_(
-          ContentSettingImageModel::CreateContentSettingImageModel(
-              settings_type)),
+    : content_setting_image_model_(model),
       owner_(owner),
       profile_(profile),
       text_width_(0.0) {
@@ -192,15 +190,11 @@ bool ContentSettingDecoration::UpdateFromWebContents(
         content_setting_image_model_->explanatory_string_id();
 
     // Check if the animation has already run.
-    TabSpecificContentSettings* content_settings =
-        TabSpecificContentSettings::FromWebContents(web_contents);
-    ContentSettingsType content_type =
-        content_setting_image_model_->get_content_settings_type();
-    bool ran_animation = content_settings->IsBlockageIndicated(content_type);
-
-    if (has_animated_text && !ran_animation && !animation_) {
+    if (has_animated_text &&
+        content_setting_image_model_->ShouldRunAnimation(web_contents) &&
+        !animation_) {
       // Mark the animation as having been run.
-      content_settings->SetBlockageHasBeenIndicated(content_type);
+      content_setting_image_model_->SetAnimationHasRun(web_contents);
       // Start animation, its timer will drive reflow. Note the text is
       // cached so it is not allowed to change during the animation.
       animation_.reset(
@@ -276,10 +270,10 @@ bool ContentSettingDecoration::OnMousePressed(NSRect frame, NSPoint location) {
 
   // Open bubble.
   ContentSettingBubbleModel* model =
-      ContentSettingBubbleModel::CreateContentSettingBubbleModel(
+      content_setting_image_model_->CreateBubbleModel(
           browser->content_setting_bubble_model_delegate(),
-          web_contents, profile_,
-          content_setting_image_model_->get_content_settings_type());
+          web_contents,
+          profile_);
   [ContentSettingBubbleController showForModel:model
                                    webContents:web_contents
                                   parentWindow:[field window]

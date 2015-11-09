@@ -147,9 +147,8 @@ TEST_F(ContentSettingBubbleModelTest, MediastreamMicAndCamera) {
                                                std::string());
 
   scoped_ptr<ContentSettingBubbleModel> content_setting_bubble_model(
-      ContentSettingBubbleModel::CreateContentSettingBubbleModel(
-         NULL, web_contents(), profile(),
-         CONTENT_SETTINGS_TYPE_MEDIASTREAM));
+      new ContentSettingMediaStreamBubbleModel(
+         nullptr, web_contents(), profile()));
   const ContentSettingBubbleModel::BubbleContent& bubble_content =
       content_setting_bubble_model->bubble_content();
   EXPECT_EQ(bubble_content.title,
@@ -213,9 +212,8 @@ TEST_F(ContentSettingBubbleModelTest, BlockedMediastreamMicAndCamera) {
                                                std::string());
   {
     scoped_ptr<ContentSettingBubbleModel> content_setting_bubble_model(
-        ContentSettingBubbleModel::CreateContentSettingBubbleModel(
-           NULL, web_contents(), profile(),
-           CONTENT_SETTINGS_TYPE_MEDIASTREAM));
+        new ContentSettingMediaStreamBubbleModel(
+           nullptr, web_contents(), profile()));
     const ContentSettingBubbleModel::BubbleContent& bubble_content =
         content_setting_bubble_model->bubble_content();
     // Test if the correct radio item is selected for the blocked mediastream
@@ -239,9 +237,8 @@ TEST_F(ContentSettingBubbleModelTest, BlockedMediastreamMicAndCamera) {
 
   {
     scoped_ptr<ContentSettingBubbleModel> content_setting_bubble_model(
-        ContentSettingBubbleModel::CreateContentSettingBubbleModel(
-           NULL, web_contents(), profile(),
-           CONTENT_SETTINGS_TYPE_MEDIASTREAM));
+        new ContentSettingMediaStreamBubbleModel(
+           nullptr, web_contents(), profile()));
     // Change the radio setting.
     content_setting_bubble_model->OnRadioClicked(0);
   }
@@ -296,9 +293,8 @@ TEST_F(ContentSettingBubbleModelTest, MediastreamContentBubble) {
                                                std::string());
   {
     scoped_ptr<ContentSettingBubbleModel> content_setting_bubble_model(
-        ContentSettingBubbleModel::CreateContentSettingBubbleModel(
-           NULL, web_contents(), profile(),
-           CONTENT_SETTINGS_TYPE_MEDIASTREAM));
+        new ContentSettingMediaStreamBubbleModel(
+           nullptr, web_contents(), profile()));
     const ContentSettingBubbleModel::BubbleContent& bubble_content =
         content_setting_bubble_model->bubble_content();
     // Test if the correct radio item is selected for the blocked mediastream
@@ -317,9 +313,8 @@ TEST_F(ContentSettingBubbleModelTest, MediastreamContentBubble) {
 
   {
     scoped_ptr<ContentSettingBubbleModel> content_setting_bubble_model(
-        ContentSettingBubbleModel::CreateContentSettingBubbleModel(
-           NULL, web_contents(), profile(),
-           CONTENT_SETTINGS_TYPE_MEDIASTREAM));
+        new ContentSettingMediaStreamBubbleModel(
+           nullptr, web_contents(), profile()));
     const ContentSettingBubbleModel::BubbleContent& bubble_content =
         content_setting_bubble_model->bubble_content();
     // Test that the reload hint is displayed.
@@ -341,9 +336,8 @@ TEST_F(ContentSettingBubbleModelTest, MediastreamContentBubble) {
 
   {
     scoped_ptr<ContentSettingBubbleModel> content_setting_bubble_model(
-        ContentSettingBubbleModel::CreateContentSettingBubbleModel(
-           NULL, web_contents(), profile(),
-           CONTENT_SETTINGS_TYPE_MEDIASTREAM));
+        new ContentSettingMediaStreamBubbleModel(
+            nullptr, web_contents(), profile()));
     const ContentSettingBubbleModel::BubbleContent& bubble_content =
         content_setting_bubble_model->bubble_content();
     // Test that the reload hint is not displayed any more.
@@ -390,9 +384,8 @@ TEST_F(ContentSettingBubbleModelTest, MediastreamContentBubbleMediaMenus) {
                                                std::string());
   {
     scoped_ptr<ContentSettingBubbleModel> content_setting_bubble_model(
-        ContentSettingBubbleModel::CreateContentSettingBubbleModel(
-           NULL, web_contents(), profile(),
-           CONTENT_SETTINGS_TYPE_MEDIASTREAM));
+        new ContentSettingMediaStreamBubbleModel(
+           nullptr, web_contents(), profile()));
     const ContentSettingBubbleModel::BubbleContent& bubble_content =
         content_setting_bubble_model->bubble_content();
     EXPECT_TRUE(bubble_content.custom_link.empty());
@@ -412,9 +405,8 @@ TEST_F(ContentSettingBubbleModelTest, MediastreamContentBubbleMediaMenus) {
   }
   {
     scoped_ptr<ContentSettingBubbleModel> content_setting_bubble_model(
-        ContentSettingBubbleModel::CreateContentSettingBubbleModel(
-           NULL, web_contents(), profile(),
-           CONTENT_SETTINGS_TYPE_MEDIASTREAM));
+        new ContentSettingMediaStreamBubbleModel(
+           nullptr, web_contents(), profile()));
     const ContentSettingBubbleModel::BubbleContent& bubble_content =
         content_setting_bubble_model->bubble_content();
     EXPECT_EQ(1U, bubble_content.media_menus.size());
@@ -447,9 +439,8 @@ TEST_F(ContentSettingBubbleModelTest, MediastreamContentBubbleMediaMenus) {
 
   {
     scoped_ptr<ContentSettingBubbleModel> content_setting_bubble_model(
-        ContentSettingBubbleModel::CreateContentSettingBubbleModel(
-           NULL, web_contents(), profile(),
-           CONTENT_SETTINGS_TYPE_MEDIASTREAM));
+        new ContentSettingMediaStreamBubbleModel(
+           nullptr, web_contents(), profile()));
     const ContentSettingBubbleModel::BubbleContent& bubble_content =
         content_setting_bubble_model->bubble_content();
     // Settings not changed yet, so the "settings changed" message should not be
@@ -471,9 +462,8 @@ TEST_F(ContentSettingBubbleModelTest, MediastreamContentBubbleMediaMenus) {
 
   {
     scoped_ptr<ContentSettingBubbleModel> content_setting_bubble_model(
-        ContentSettingBubbleModel::CreateContentSettingBubbleModel(
-           NULL, web_contents(), profile(),
-           CONTENT_SETTINGS_TYPE_MEDIASTREAM));
+        new ContentSettingMediaStreamBubbleModel(
+            nullptr, web_contents(), profile()));
     const ContentSettingBubbleModel::BubbleContent& bubble_content =
         content_setting_bubble_model->bubble_content();
     // Test that the reload hint is displayed.
@@ -493,9 +483,8 @@ TEST_F(ContentSettingBubbleModelTest, MediastreamContentBubbleMediaMenus) {
 
   {
     scoped_ptr<ContentSettingBubbleModel> content_setting_bubble_model(
-        ContentSettingBubbleModel::CreateContentSettingBubbleModel(
-           NULL, web_contents(), profile(),
-           CONTENT_SETTINGS_TYPE_MEDIASTREAM));
+        new ContentSettingMediaStreamBubbleModel(
+           nullptr, web_contents(), profile()));
     const ContentSettingBubbleModel::BubbleContent& bubble_content =
         content_setting_bubble_model->bubble_content();
     // Test that the reload hint is not displayed any more, because this is a
@@ -532,9 +521,8 @@ TEST_F(ContentSettingBubbleModelTest, MediastreamMic) {
                                                std::string());
 
   scoped_ptr<ContentSettingBubbleModel> content_setting_bubble_model(
-      ContentSettingBubbleModel::CreateContentSettingBubbleModel(
-          NULL, web_contents(), profile(),
-          CONTENT_SETTINGS_TYPE_MEDIASTREAM));
+      new ContentSettingMediaStreamBubbleModel(
+          nullptr, web_contents(), profile()));
   const ContentSettingBubbleModel::BubbleContent& bubble_content =
       content_setting_bubble_model->bubble_content();
   EXPECT_EQ(bubble_content.title,
@@ -566,9 +554,8 @@ TEST_F(ContentSettingBubbleModelTest, MediastreamMic) {
                                                std::string(),
                                                std::string());
   content_setting_bubble_model.reset(
-      ContentSettingBubbleModel::CreateContentSettingBubbleModel(
-          NULL, web_contents(), profile(),
-          CONTENT_SETTINGS_TYPE_MEDIASTREAM));
+      new ContentSettingMediaStreamBubbleModel(
+          nullptr, web_contents(), profile()));
   const ContentSettingBubbleModel::BubbleContent& new_bubble_content =
       content_setting_bubble_model->bubble_content();
   EXPECT_EQ(new_bubble_content.title,
@@ -611,9 +598,8 @@ TEST_F(ContentSettingBubbleModelTest, MediastreamCamera) {
                                                std::string());
 
   scoped_ptr<ContentSettingBubbleModel> content_setting_bubble_model(
-      ContentSettingBubbleModel::CreateContentSettingBubbleModel(
-          NULL, web_contents(), profile(),
-          CONTENT_SETTINGS_TYPE_MEDIASTREAM));
+      new ContentSettingMediaStreamBubbleModel(
+          nullptr, web_contents(), profile()));
   const ContentSettingBubbleModel::BubbleContent& bubble_content =
       content_setting_bubble_model->bubble_content();
   EXPECT_EQ(bubble_content.title,
@@ -645,9 +631,8 @@ TEST_F(ContentSettingBubbleModelTest, MediastreamCamera) {
                                                std::string(),
                                                std::string());
   content_setting_bubble_model.reset(
-      ContentSettingBubbleModel::CreateContentSettingBubbleModel(
-          NULL, web_contents(), profile(),
-          CONTENT_SETTINGS_TYPE_MEDIASTREAM));
+      new ContentSettingMediaStreamBubbleModel(
+          nullptr, web_contents(), profile()));
   const ContentSettingBubbleModel::BubbleContent& new_bubble_content =
       content_setting_bubble_model->bubble_content();
   EXPECT_EQ(new_bubble_content.title,
@@ -692,9 +677,8 @@ TEST_F(ContentSettingBubbleModelTest, AccumulateMediastreamMicAndCamera) {
                                                std::string());
 
   scoped_ptr<ContentSettingBubbleModel> content_setting_bubble_model(
-      ContentSettingBubbleModel::CreateContentSettingBubbleModel(
-          NULL, web_contents(), profile(),
-          CONTENT_SETTINGS_TYPE_MEDIASTREAM));
+      new ContentSettingMediaStreamBubbleModel(
+          nullptr, web_contents(), profile()));
   const ContentSettingBubbleModel::BubbleContent& bubble_content =
       content_setting_bubble_model->bubble_content();
   EXPECT_EQ(bubble_content.title,
@@ -724,9 +708,8 @@ TEST_F(ContentSettingBubbleModelTest, AccumulateMediastreamMicAndCamera) {
                                                std::string());
 
   content_setting_bubble_model.reset(
-      ContentSettingBubbleModel::CreateContentSettingBubbleModel(
-          NULL, web_contents(), profile(),
-          CONTENT_SETTINGS_TYPE_MEDIASTREAM));
+      new ContentSettingMediaStreamBubbleModel(
+          nullptr, web_contents(), profile()));
   const ContentSettingBubbleModel::BubbleContent& new_bubble_content =
       content_setting_bubble_model->bubble_content();
   EXPECT_EQ(new_bubble_content.title,
@@ -854,8 +837,7 @@ TEST_F(ContentSettingBubbleModelTest, FileURL) {
       CONTENT_SETTINGS_TYPE_IMAGES);
   scoped_ptr<ContentSettingBubbleModel> content_setting_bubble_model(
       ContentSettingBubbleModel::CreateContentSettingBubbleModel(
-          NULL, web_contents(), profile(),
-          CONTENT_SETTINGS_TYPE_IMAGES));
+          nullptr, web_contents(), profile(), CONTENT_SETTINGS_TYPE_IMAGES));
   std::string title =
       content_setting_bubble_model->bubble_content().radio_group.radio_items[0];
   ASSERT_NE(std::string::npos, title.find(file_url));

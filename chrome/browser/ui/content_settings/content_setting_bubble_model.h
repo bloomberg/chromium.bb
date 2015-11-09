@@ -11,6 +11,8 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
+#include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/common/custom_handlers/protocol_handler.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
@@ -97,9 +99,6 @@ class ContentSettingBubbleModel : public content::NotificationObserver {
     DISALLOW_COPY_AND_ASSIGN(BubbleContent);
   };
 
-  // Returns a set of the supported bubble types.
-  static const std::set<ContentSettingsType>& GetSupportedBubbleTypes();
-
   static ContentSettingBubbleModel* CreateContentSettingBubbleModel(
       Delegate* delegate,
       content::WebContents* web_contents,
@@ -130,6 +129,11 @@ class ContentSettingBubbleModel : public content::NotificationObserver {
   virtual void OnDoneClicked() {}
 
  protected:
+  // Create a bubble tied to a certain |content_type|. Note that not all content
+  // settings types have a bubble, and not all bubbles are tied to a single
+  // content setting.
+  // TODO(msramek): Generalize the bubble so that it does not reference content
+  // settings, and subclass those that need it.
   ContentSettingBubbleModel(
       content::WebContents* web_contents,
       Profile* profile,
@@ -208,6 +212,8 @@ class ContentSettingTitleAndLinkModel : public ContentSettingBubbleModel {
   void OnManageLinkClicked() override;
   void OnLearnMoreLinkClicked() override;
   Delegate* delegate_;
+
+  DISALLOW_COPY_AND_ASSIGN(ContentSettingTitleAndLinkModel);
 };
 
 // RPH stands for Register Protocol Handler.
@@ -231,6 +237,65 @@ class ContentSettingRPHBubbleModel : public ContentSettingTitleAndLinkModel {
   ProtocolHandlerRegistry* registry_;
   ProtocolHandler pending_handler_;
   ProtocolHandler previous_handler_;
+
+  DISALLOW_COPY_AND_ASSIGN(ContentSettingRPHBubbleModel);
+};
+
+// The model of the content settings bubble for media settings.
+class ContentSettingMediaStreamBubbleModel
+    : public ContentSettingTitleAndLinkModel {
+ public:
+  ContentSettingMediaStreamBubbleModel(Delegate* delegate,
+                                       content::WebContents* web_contents,
+                                       Profile* profile);
+
+  ~ContentSettingMediaStreamBubbleModel() override;
+
+  // ContentSettingTitleAndLinkModel:
+  void OnManageLinkClicked() override;
+
+ private:
+  // Helper functions to check if this bubble was invoked for microphone,
+  // camera, or both devices.
+  bool MicrophoneAccessed() const;
+  bool CameraAccessed() const;
+
+  void SetTitle();
+
+  // Sets the data for the radio buttons of the bubble.
+  void SetRadioGroup();
+
+  // Sets the data for the media menus of the bubble.
+  void SetMediaMenus();
+
+  // Sets the settings management link.
+  void SetManageLink();
+
+  // Sets the string that suggests reloading after the settings were changed.
+  void SetCustomLink();
+
+  // Updates the camera and microphone setting with the passed |setting|.
+  void UpdateSettings(ContentSetting setting);
+
+  // Updates the camera and microphone default device with the passed |type|
+  // and device.
+  void UpdateDefaultDeviceForType(content::MediaStreamType type,
+                                  const std::string& device);
+
+  // ContentSettingBubbleModel implementation.
+  void OnRadioClicked(int radio_index) override;
+  void OnMediaMenuClicked(content::MediaStreamType type,
+                          const std::string& selected_device) override;
+
+  // The index of the selected radio item.
+  int selected_item_;
+  // The content settings that are associated with the individual radio
+  // buttons.
+  ContentSetting radio_item_setting_[2];
+  // The state of the microphone and camera access.
+  TabSpecificContentSettings::MicrophoneCameraState state_;
+
+  DISALLOW_COPY_AND_ASSIGN(ContentSettingMediaStreamBubbleModel);
 };
 
 #endif  // CHROME_BROWSER_UI_CONTENT_SETTINGS_CONTENT_SETTING_BUBBLE_MODEL_H_

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_LOCATION_BAR_CONTENT_SETTING_IMAGE_VIEW_H_
 
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/ui/content_settings/content_setting_image_model.h"
 #include "chrome/browser/ui/views/location_bar/icon_label_bubble_view.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "ui/gfx/animation/animation_delegate.h"
@@ -37,8 +38,9 @@ class ContentSettingImageView : public IconLabelBubbleView,
                                 public gfx::AnimationDelegate,
                                 public views::WidgetObserver {
  public:
+  // ContentSettingImageView takes ownership of its |image_model|.
   // TODO(estade): remove |text_color| because it isn't necessary for MD.
-  ContentSettingImageView(ContentSettingsType content_type,
+  ContentSettingImageView(ContentSettingImageModel* image_model,
                           LocationBarView* parent,
                           const gfx::FontList& font_list,
                           SkColor text_color,

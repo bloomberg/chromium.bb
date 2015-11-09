@@ -107,11 +107,10 @@ class ContentSettingBubbleModelMediaStreamTest : public InProcessBrowserTest {
             original_tab->GetLastCommittedURL(),
             state, std::string(), std::string(), std::string(), std::string());
     scoped_ptr<ContentSettingBubbleModel> bubble(
-        ContentSettingBubbleModel::CreateContentSettingBubbleModel(
+        new ContentSettingMediaStreamBubbleModel(
             browser()->content_setting_bubble_model_delegate(),
             original_tab,
-            browser()->profile(),
-            CONTENT_SETTINGS_TYPE_MEDIASTREAM));
+            browser()->profile()));
 
     // Click the management link, which opens in a new tab or window.
     // Wait until it loads.

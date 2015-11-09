@@ -827,3 +827,31 @@ void TabSpecificContentSettings::MidiDidNavigate(
     const content::LoadCommittedDetails& details) {
   midi_usages_state_.DidNavigate(GetCommittedDetails(details));
 }
+
+void TabSpecificContentSettings::BlockAllContentForTesting() {
+  content_settings::ContentSettingsRegistry* registry =
+      content_settings::ContentSettingsRegistry::GetInstance();
+  for (const content_settings::ContentSettingsInfo* info : *registry) {
+    ContentSettingsType type = info->website_settings_info()->type();
+    if (type != CONTENT_SETTINGS_TYPE_GEOLOCATION &&
+        type != CONTENT_SETTINGS_TYPE_MEDIASTREAM &&
+        type != CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC &&
+        type != CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA) {
+      OnContentBlocked(type);
+    }
+  }
+
+  // Geolocation and media must be blocked separately, as the generic
+  // TabSpecificContentSettings::OnContentBlocked does not apply to them.
+  OnGeolocationPermissionSet(web_contents()->GetLastCommittedURL(), false);
+  MicrophoneCameraStateFlags media_blocked =
+      static_cast<MicrophoneCameraStateFlags>(
+          TabSpecificContentSettings::MICROPHONE_ACCESSED |
+          TabSpecificContentSettings::MICROPHONE_BLOCKED |
+          TabSpecificContentSettings::CAMERA_ACCESSED |
+          TabSpecificContentSettings::CAMERA_BLOCKED);
+  OnMediaStreamPermissionSet(
+      web_contents()->GetLastCommittedURL(),
+      media_blocked,
+      std::string(), std::string(), std::string(), std::string());
+}

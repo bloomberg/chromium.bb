@@ -108,11 +108,14 @@ LocationBarViewMac::LocationBarViewMac(AutocompleteTextField* field,
       browser_(browser),
       location_bar_visible_(true),
       weak_ptr_factory_(this) {
-  for (ContentSettingsType type :
-       ContentSettingBubbleModel::GetSupportedBubbleTypes()) {
+  ScopedVector<ContentSettingImageModel> models =
+      ContentSettingImageModel::GenerateContentSettingImageModels();
+  for (ContentSettingImageModel* model : models.get()) {
+    // ContentSettingDecoration takes ownership of its model.
     content_setting_decorations_.push_back(
-        new ContentSettingDecoration(type, this, profile));
+        new ContentSettingDecoration(model, this, profile));
   }
+  models.weak_clear();
 
   edit_bookmarks_enabled_.Init(
       bookmarks::prefs::kEditBookmarksEnabled, profile->GetPrefs(),
