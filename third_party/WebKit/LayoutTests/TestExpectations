@@ -1058,8 +1058,6 @@ crbug.com/505415 [ XP ] accessibility/canvas-fallback-content-labels.html [ Fail
 
 crbug.com/506312 imported/csswg-test/css-pseudo-4/first-letter-001.html [ Failure ]
 
-crbug.com/461482 fast/text/font-ligature-letter-spacing.html [ NeedsRebaseline ]
-
 # Mac10.10-specific failures that still need triaging.
 # Form controls need rebaseline because of the default font change.
 # If you see wider INPUT elements or narrower TEXTAREA elements, you may do just
