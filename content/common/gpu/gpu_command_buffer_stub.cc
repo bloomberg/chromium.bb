@@ -242,6 +242,10 @@ GpuCommandBufferStub::GpuCommandBufferStub(
   use_virtualized_gl_context_ |=
       context_group_->feature_info()->workarounds().use_virtualized_gl_contexts;
 
+  // MailboxManagerSync synchronization correctness currently depends on having
+  // only a single context. See crbug.com/510243 for details.
+  use_virtualized_gl_context_ |= mailbox_manager->UsesSync();
+
   if (offscreen && initial_size_.IsEmpty()) {
     // If we're an offscreen surface with zero width and/or height, set to a
     // non-zero size so that we have a complete framebuffer for operations like
