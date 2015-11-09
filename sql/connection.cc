@@ -1285,7 +1285,7 @@ void Connection::RollbackTransaction() {
 
 bool Connection::CommitTransaction() {
   if (!transaction_nesting_) {
-    DLOG_IF(FATAL, !poisoned_) << "Committing back a nonexistent transaction";
+    DLOG_IF(FATAL, !poisoned_) << "Committing a nonexistent transaction";
     return false;
   }
   transaction_nesting_--;
