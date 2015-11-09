@@ -6067,6 +6067,48 @@ TEST_F(LayerTreeHostCommonTest, DoNotIncludeBackfaceInvisibleSurfaces) {
                     .size());
 }
 
+TEST_F(LayerTreeHostCommonTest, DoNotIncludeBackfaceInvisibleLayers) {
+  LayerImpl* root = root_layer();
+  LayerImpl* child = AddChild<LayerImpl>(root);
+  LayerImpl* grand_child = AddChild<LayerImpl>(child);
+  grand_child->SetDrawsContent(true);
+
+  child->SetDoubleSided(false);
+  grand_child->SetUseParentBackfaceVisibility(true);
+
+  gfx::Transform identity_transform;
+  SetLayerPropertiesForTesting(root, identity_transform, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(50, 50), false, true,
+                               true);
+  SetLayerPropertiesForTesting(child, identity_transform, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(30, 30), false, true,
+                               false);
+  SetLayerPropertiesForTesting(grand_child, identity_transform, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(20, 20), false, true,
+                               false);
+
+  ExecuteCalculateDrawProperties(root);
+
+  EXPECT_EQ(1u, render_surface_layer_list_impl()->size());
+  EXPECT_EQ(grand_child, render_surface_layer_list_impl()
+                             ->at(0)
+                             ->render_surface()
+                             ->layer_list()[0]);
+  gfx::Transform rotation_transform = identity_transform;
+  rotation_transform.RotateAboutXAxis(180.0);
+
+  child->SetTransform(rotation_transform);
+  child->layer_tree_impl()->property_trees()->needs_rebuild = true;
+
+  ExecuteCalculateDrawProperties(root);
+  EXPECT_EQ(1u, render_surface_layer_list_impl()->size());
+  EXPECT_EQ(0u, render_surface_layer_list_impl()
+                    ->at(0)
+                    ->render_surface()
+                    ->layer_list()
+                    .size());
+}
+
 TEST_F(LayerTreeHostCommonTest, ClippedByScrollParent) {
   // Checks that the simple case (being clipped by a scroll parent that would
   // have been processed before you anyhow) results in the right clips.

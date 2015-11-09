@@ -445,14 +445,22 @@ static bool IsRootLayerOfNewRenderingContext(LayerImpl* layer) {
   return layer->Is3dSorted();
 }
 
-static bool IsLayerBackFaceVisible(LayerImpl* layer) {
+static bool IsLayerBackFaceVisible(LayerImpl* layer,
+                                   bool use_property_trees,
+                                   const TransformTree& transform_tree) {
   // The current W3C spec on CSS transforms says that backface visibility should
   // be determined differently depending on whether the layer is in a "3d
   // rendering context" or not. For Chromium code, we can determine whether we
   // are in a 3d rendering context by checking if the parent preserves 3d.
 
-  if (LayerIsInExisting3DRenderingContext(layer))
-    return layer->draw_transform().IsBackFaceVisible();
+  if (LayerIsInExisting3DRenderingContext(layer)) {
+    if (use_property_trees) {
+      return DrawTransformFromPropertyTrees(layer, transform_tree)
+          .IsBackFaceVisible();
+    } else {
+      return layer->draw_transform().IsBackFaceVisible();
+    }
+  }
 
   // In this case, either the layer establishes a new 3d rendering context, or
   // is not in a 3d rendering context at all.
@@ -519,7 +527,10 @@ static gfx::Rect CalculateVisibleLayerRect(
       layer_rect_in_target_space, layer->draw_transform());
 }
 
-static bool LayerShouldBeSkipped(LayerImpl* layer, bool layer_is_drawn) {
+static bool LayerShouldBeSkipped(LayerImpl* layer,
+                                 bool layer_is_drawn,
+                                 bool use_property_trees,
+                                 const TransformTree& transform_tree) {
   // Layers can be skipped if any of these conditions are met.
   //   - is not drawn due to it or one of its ancestors being hidden (or having
   //     no copy requests).
@@ -553,7 +564,8 @@ static bool LayerShouldBeSkipped(LayerImpl* layer, bool layer_is_drawn) {
   // The layer should not be drawn if (1) it is not double-sided and (2) the
   // back of the layer is known to be facing the screen.
   if (!backface_test_layer->double_sided() &&
-      IsLayerBackFaceVisible(backface_test_layer))
+      IsLayerBackFaceVisible(backface_test_layer, use_property_trees,
+                             transform_tree))
     return true;
 
   return false;
@@ -2542,7 +2554,9 @@ void CalculateRenderSurfaceLayerListInternal(
 
   size_t descendants_size = descendants->size();
 
-  bool layer_should_be_skipped = LayerShouldBeSkipped(layer, layer_is_drawn);
+  bool layer_should_be_skipped =
+      LayerShouldBeSkipped(layer, layer_is_drawn, use_property_trees,
+                           property_trees->transform_tree);
   if (!layer_should_be_skipped) {
     MarkLayerWithRenderSurfaceLayerListId(layer,
                                           current_render_surface_layer_list_id);
