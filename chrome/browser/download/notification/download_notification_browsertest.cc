@@ -151,6 +151,8 @@ class NotificationAddObserver : public MessageCenterChangeObserver {
 class NotificationUpdateObserver : public MessageCenterChangeObserver {
  public:
   NotificationUpdateObserver() {}
+  explicit NotificationUpdateObserver(const std::string& id)
+      : target_notification_id_(id) {}
   ~NotificationUpdateObserver() override {}
 
   std::string Wait() {
@@ -169,6 +171,11 @@ class NotificationUpdateObserver : public MessageCenterChangeObserver {
 
   void OnNotificationUpdated(const std::string& notification_id) override {
     if (notification_id_.empty()) {
+      if (!target_notification_id_.empty() &&
+          target_notification_id_ != notification_id) {
+        return;
+      }
+
       notification_id_ = notification_id;
 
       if (waiting_)
@@ -176,8 +183,13 @@ class NotificationUpdateObserver : public MessageCenterChangeObserver {
     }
   }
 
+  void Reset() {
+    notification_id_.clear();
+  }
+
  private:
   std::string notification_id_;
+  std::string target_notification_id_;
   bool waiting_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationUpdateObserver);
@@ -270,6 +282,8 @@ class DownloadNotificationTestBase : public InProcessBrowserTest {
     content::BrowserThread::PostTask(
         content::BrowserThread::IO, FROM_HERE,
         base::Bind(&net::URLRequestSlowDownloadJob::AddUrlHandler));
+
+    GetMessageCenter()->DisableTimersForTest();
   }
 
   content::DownloadManager* GetDownloadManager(Browser* browser) {
@@ -386,20 +400,17 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, DownloadFile) {
   download_item()->UpdateObservers();
   download_notification_periodically_update_observer.Wait();
 
-  NotificationUpdateObserver download_notification_update_observer;
-
   // Requests to complete the download.
   ui_test_utils::NavigateToURL(
       browser(), GURL(net::URLRequestSlowDownloadJob::kFinishDownloadUrl));
 
   // Waits for download completion.
+  NotificationUpdateObserver
+      download_change_notification_observer(notification_id());
   while (download_item()->GetState() != content::DownloadItem::COMPLETE) {
-    NotificationUpdateObserver download_change_notification_observer;
     download_change_notification_observer.Wait();
+    download_change_notification_observer.Reset();
   }
-
-  // Waits for new notification.
-  download_notification_update_observer.Wait();
 
   // Checks strings.
   EXPECT_EQ(l10n_util::GetStringFUTF16(
@@ -540,9 +551,11 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, DownloadImageFile) {
   download_terminal_observer.WaitForFinished();
 
   // Waits for download completion.
+  NotificationUpdateObserver
+      download_change_notification_observer(notification_id());
   while (GetNotification(notification_id())->image().IsEmpty()) {
-    NotificationUpdateObserver download_change_notification_observer;
     download_change_notification_observer.Wait();
+    download_change_notification_observer.Reset();
   }
 }
 
@@ -555,9 +568,11 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest,
       browser(), GURL(net::URLRequestSlowDownloadJob::kFinishDownloadUrl));
 
   // Waits for download completion.
+  NotificationUpdateObserver
+      download_change_notification_observer(notification_id());
   while (download_item()->GetState() != content::DownloadItem::COMPLETE) {
-    NotificationUpdateObserver download_change_notification_observer;
     download_change_notification_observer.Wait();
+    download_change_notification_observer.Reset();
   }
 
   // Opens the message center.
@@ -621,7 +636,8 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, InterruptDownload) {
   CreateDownload();
 
   // Installs observers before requesting.
-  NotificationUpdateObserver download_notification_update_observer;
+  NotificationUpdateObserver
+      download_notification_update_observer(notification_id());
   content::DownloadTestObserverTerminal download_terminal_observer(
       GetDownloadManager(browser()),
       1u, /* wait_count */
@@ -711,13 +727,7 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, DownloadRemoved) {
   EXPECT_EQ(0u, downloads.size());
 }
 
-#if defined(MEMORY_SANITIZER)
-# define MAYBE_DownloadMultipleFiles DISABLED_DownloadMultipleFiles
-#else
-# define MAYBE_DownloadMultipleFiles DownloadMultipleFiles
-#endif
-
-IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, MAYBE_DownloadMultipleFiles) {
+IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, DownloadMultipleFiles) {
   GURL url1(net::URLRequestSlowDownloadJob::kUnknownSizeUrl);
   GURL url2(net::URLRequestSlowDownloadJob::kKnownSizeUrl);
 
@@ -733,7 +743,7 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, MAYBE_DownloadMultipleFiles) {
   std::vector<content::DownloadItem*> downloads;
   GetDownloadManager(browser())->GetAllDownloads(&downloads);
   EXPECT_EQ(1u, downloads.size());
-  content::DownloadItem* download1or2 = downloads[0];
+  content::DownloadItem* download1 = downloads[0];
 
   // Confirms that there is a notifications.
   message_center::NotificationList::Notifications
@@ -758,11 +768,15 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, MAYBE_DownloadMultipleFiles) {
   // Confirms that there are 2 downloads.
   downloads.clear();
   GetDownloadManager(browser())->GetAllDownloads(&downloads);
-  content::DownloadItem* download1 = downloads[0];
-  content::DownloadItem* download2 = downloads[1];
   EXPECT_EQ(2u, downloads.size());
+  content::DownloadItem* download2;
+  if (download1 == downloads[0])
+    download2 = downloads[1];
+  else if (download1 == downloads[1])
+    download2 = downloads[0];
+  else
+    NOTREACHED();
   EXPECT_NE(download1, download2);
-  EXPECT_TRUE(download1 == download1or2 || download2 == download1or2);
 
   // Confirms that there are 2 notifications.
   visible_notifications = GetMessageCenter()->GetVisibleNotifications();
@@ -798,14 +812,14 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, MAYBE_DownloadMultipleFiles) {
 
   // Confirms that the updates of both download are delivered to the
   // notifications.
-  NotificationUpdateObserver notification_periodically_update_observer1;
+  NotificationUpdateObserver
+      notification_periodically_update_observer1(notification_id1);
   download1->UpdateObservers();
-  EXPECT_EQ(notification_id1,
-            notification_periodically_update_observer1.Wait());
-  NotificationUpdateObserver notification_periodically_update_observer2;
+  notification_periodically_update_observer1.Wait();
+  NotificationUpdateObserver
+      notification_periodically_update_observer2(notification_id2);
   download2->UpdateObservers();
-  EXPECT_EQ(notification_id2,
-            notification_periodically_update_observer2.Wait());
+  notification_periodically_update_observer2.Wait();
 
   // Requests to complete the downloads.
   ui_test_utils::NavigateToURL(
@@ -816,6 +830,7 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, MAYBE_DownloadMultipleFiles) {
   while (download1->GetState() != content::DownloadItem::COMPLETE ||
          download2->GetState() != content::DownloadItem::COMPLETE) {
     download_change_notification_observer.Wait();
+    download_change_notification_observer.Reset();
   }
 
   // Confirms that the both notifications are visible either as popup or in the
@@ -857,9 +872,11 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest,
       browser(), GURL(net::URLRequestSlowDownloadJob::kFinishDownloadUrl));
 
   // Waits for completion of the first download.
+  NotificationUpdateObserver
+      download_change_notification_observer1(first_notification_id);
   while (first_download_item->GetState() != content::DownloadItem::COMPLETE) {
-    NotificationUpdateObserver download_change_notification_observer;
-    download_change_notification_observer.Wait();
+    download_change_notification_observer1.Wait();
+    download_change_notification_observer1.Reset();
   }
   EXPECT_EQ(content::DownloadItem::COMPLETE, first_download_item->GetState());
 
@@ -906,9 +923,11 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest,
       browser(), GURL(net::URLRequestSlowDownloadJob::kFinishDownloadUrl));
 
   // Waits for completion of the second download.
+  NotificationUpdateObserver
+      download_change_notification_observer2(second_notification_id);
   while (second_download_item->GetState() != content::DownloadItem::COMPLETE) {
-    NotificationUpdateObserver download_change_notification_observer;
-    download_change_notification_observer.Wait();
+    download_change_notification_observer2.Wait();
+    download_change_notification_observer2.Reset();
   }
 
   // Opens the message center.
@@ -992,9 +1011,11 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, IncognitoDownloadFile) {
       GURL(net::URLRequestSlowDownloadJob::kFinishDownloadUrl));
 
   // Waits for download completion.
+  NotificationUpdateObserver
+      download_change_notification_observer(notification_id());
   while (download_item()->GetState() != content::DownloadItem::COMPLETE) {
-    NotificationUpdateObserver download_change_notification_observer;
     download_change_notification_observer.Wait();
+    download_change_notification_observer.Reset();
   }
 
   EXPECT_EQ(l10n_util::GetStringFUTF16(
@@ -1074,10 +1095,11 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest,
       browser(), GURL(net::URLRequestSlowDownloadJob::kFinishDownloadUrl));
 
   // Waits for the completion of downloads.
+  NotificationUpdateObserver download_change_notification_observer;
   while (download_normal->GetState() != content::DownloadItem::COMPLETE ||
          download_incognito->GetState() != content::DownloadItem::COMPLETE) {
-    NotificationUpdateObserver download_change_notification_observer;
     download_change_notification_observer.Wait();
+    download_change_notification_observer.Reset();
   }
 
   // Confirms the types of download notifications are correct.

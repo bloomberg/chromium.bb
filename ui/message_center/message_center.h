@@ -13,6 +13,7 @@
 #include "ui/message_center/notification_list.h"
 
 class DownloadNotification;
+class DownloadNotificationTestBase;
 
 namespace base {
 class DictionaryValue;
@@ -181,6 +182,7 @@ class MESSAGE_CENTER_EXPORT MessageCenter {
 
  protected:
   friend class ::DownloadNotification;
+  friend class ::DownloadNotificationTestBase;
   friend class MessageCenterImplTest;
   friend class MessageCenterImplTestWithChangeQueue;
   friend class MessageCenterImplTestWithoutChangeQueue;
