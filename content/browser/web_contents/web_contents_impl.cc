@@ -402,6 +402,7 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
           BrowserAccessibilityStateImpl::GetInstance()->accessibility_mode()),
       audio_stream_monitor_(this),
       virtual_keyboard_requested_(false),
+      page_scale_factor_is_one_(true),
       loading_weak_factory_(this) {
   frame_tree_.SetFrameRemoveListener(
       base::Bind(&WebContentsImpl::OnFrameRemoved,
@@ -625,6 +626,8 @@ bool WebContentsImpl::OnMessageReceived(RenderViewHost* render_view_host,
                         OnDidRunInsecureContent)
     IPC_MESSAGE_HANDLER(ViewHostMsg_GoToEntryAtOffset, OnGoToEntryAtOffset)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateZoomLimits, OnUpdateZoomLimits)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_PageScaleFactorChanged,
+                        OnPageScaleFactorChanged)
     IPC_MESSAGE_HANDLER(ViewHostMsg_EnumerateDirectory, OnEnumerateDirectory)
     IPC_MESSAGE_HANDLER(FrameHostMsg_RegisterProtocolHandler,
                         OnRegisterProtocolHandler)
@@ -2643,8 +2646,8 @@ int WebContentsImpl::GetMaximumZoomPercent() const {
   return maximum_zoom_percent_;
 }
 
-void WebContentsImpl::ResetPageScale() {
-  Send(new ViewMsg_ResetPageScale(GetRoutingID()));
+void WebContentsImpl::SetPageScale(float page_scale_factor) {
+  Send(new ViewMsg_SetPageScale(GetRoutingID(), page_scale_factor));
 }
 
 gfx::Size WebContentsImpl::GetPreferredSize() const {
@@ -3140,6 +3143,26 @@ void WebContentsImpl::OnUpdateZoomLimits(int minimum_percent,
                                          int maximum_percent) {
   minimum_zoom_percent_ = minimum_percent;
   maximum_zoom_percent_ = maximum_percent;
+}
+
+void WebContentsImpl::OnPageScaleFactorChanged(float page_scale_factor) {
+  bool is_one = page_scale_factor == 1.f;
+  if (is_one != page_scale_factor_is_one_) {
+    page_scale_factor_is_one_ = is_one;
+
+    HostZoomMapImpl* host_zoom_map =
+        static_cast<HostZoomMapImpl*>(HostZoomMap::GetForWebContents(this));
+
+    if (host_zoom_map && GetRenderProcessHost()) {
+      host_zoom_map->SetPageScaleFactorIsOneForView(
+          GetRenderProcessHost()->GetID(), GetRoutingID(),
+          page_scale_factor_is_one_);
+    }
+  }
+
+  FOR_EACH_OBSERVER(WebContentsObserver,
+                    observers_,
+                    OnPageScaleFactorChanged(page_scale_factor));
 }
 
 void WebContentsImpl::OnEnumerateDirectory(int request_id,

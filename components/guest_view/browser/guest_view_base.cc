@@ -46,7 +46,8 @@ SetSizeParams::~SetSizeParams() {
 
 // This observer ensures that the GuestViewBase destroys itself when its
 // embedder goes away. It also tracks when the embedder's fullscreen is
-// toggled so the guest can change itself accordingly.
+// toggled or when its page scale factor changes so the guest can change
+// itself accordingly.
 class GuestViewBase::OwnerContentsObserver : public WebContentsObserver {
  public:
   OwnerContentsObserver(GuestViewBase* guest,
@@ -98,6 +99,13 @@ class GuestViewBase::OwnerContentsObserver : public WebContentsObserver {
       is_fullscreen_ = false;
       guest_->EmbedderFullscreenToggled(is_fullscreen_);
     }
+  }
+
+  void OnPageScaleFactorChanged(float page_scale_factor) override {
+    if (destroyed_)
+      return;
+
+    guest_->web_contents()->SetPageScale(page_scale_factor);
   }
 
  private:

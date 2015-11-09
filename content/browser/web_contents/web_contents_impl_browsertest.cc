@@ -27,6 +27,7 @@
 #include "content/shell/browser/shell.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "testing/gmock/include/gmock/gmock.h"
 
 namespace content {
 
@@ -711,6 +712,60 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, ChangeDisplayMode) {
                             " window.matchMedia('(display-mode:"
                             " fullscreen)').matches"));
   EXPECT_EQ(base::ASCIIToUTF16("true"), shell()->web_contents()->GetTitle());
+}
+
+// Observer class used to verify that WebContentsObservers are notified
+// when the page scale factor changes.
+// See WebContentsImplBrowserTest.ChangePageScale.
+class MockPageScaleObserver : public WebContentsObserver {
+ public:
+  MockPageScaleObserver(Shell* shell)
+      : WebContentsObserver(shell->web_contents()),
+        got_page_scale_update_(false) {
+    // Once OnPageScaleFactorChanged is called, quit the run loop.
+    ON_CALL(*this, OnPageScaleFactorChanged(::testing::_)).WillByDefault(
+        ::testing::InvokeWithoutArgs(
+            this, &MockPageScaleObserver::GotPageScaleUpdate));
+  }
+
+  MOCK_METHOD1(OnPageScaleFactorChanged, void(float page_scale_factor));
+
+  void WaitForPageScaleUpdate() {
+    if (!got_page_scale_update_) {
+      base::RunLoop run_loop;
+      on_page_scale_update_ = run_loop.QuitClosure();
+      run_loop.Run();
+    }
+    got_page_scale_update_ = false;
+  }
+
+ private:
+  void GotPageScaleUpdate() {
+    got_page_scale_update_ = true;
+    on_page_scale_update_.Run();
+  }
+
+  base::Closure on_page_scale_update_;
+  bool got_page_scale_update_;
+};
+
+// When the page scale factor is set in the renderer it should send
+// a notification to the browser so that WebContentsObservers are notified.
+IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, ChangePageScale) {
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html"));
+
+  MockPageScaleObserver observer(shell());
+  ::testing::InSequence expect_call_sequence;
+
+  shell()->web_contents()->SetPageScale(1.5);
+  EXPECT_CALL(observer, OnPageScaleFactorChanged(::testing::FloatEq(1.5)));
+  observer.WaitForPageScaleUpdate();
+
+  // Navigate to reset the page scale factor.
+  shell()->LoadURL(embedded_test_server()->GetURL("/title2.html"));
+  EXPECT_CALL(observer, OnPageScaleFactorChanged(::testing::_));
+  observer.WaitForPageScaleUpdate();
 }
 
 IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, NewNamedWindow) {

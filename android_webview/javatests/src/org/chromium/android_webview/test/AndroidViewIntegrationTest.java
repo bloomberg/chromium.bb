@@ -152,9 +152,7 @@ public class AndroidViewIntegrationTest extends AwTestBase {
         assertZeroHeight(testContainerView);
 
         final int contentSizeChangeCallCount = mOnContentSizeChangedHelper.getCallCount();
-        final int pageScaleChangeCallCount = mOnPageScaleChangedHelper.getCallCount();
         loadUrlAsync(testContainerView.getAwContents(), CommonResources.ABOUT_HTML);
-        mOnPageScaleChangedHelper.waitForCallback(pageScaleChangeCallCount);
         mOnContentSizeChangedHelper.waitForCallback(contentSizeChangeCallCount);
         assertTrue(mOnContentSizeChangedHelper.getHeight() > 0);
     }
@@ -174,9 +172,7 @@ public class AndroidViewIntegrationTest extends AwTestBase {
         assertZeroHeight(testContainerView);
 
         final int contentSizeChangeCallCount = mOnContentSizeChangedHelper.getCallCount();
-        final int pageScaleChangeCallCount = mOnPageScaleChangedHelper.getCallCount();
         loadUrlAsync(testContainerView.getAwContents(), CommonResources.ABOUT_HTML);
-        mOnPageScaleChangedHelper.waitForCallback(pageScaleChangeCallCount);
         mOnContentSizeChangedHelper.waitForCallback(contentSizeChangeCallCount);
         assertTrue(mOnContentSizeChangedHelper.getHeight() > 0);
 

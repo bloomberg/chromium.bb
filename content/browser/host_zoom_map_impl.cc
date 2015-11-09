@@ -75,6 +75,8 @@ HostZoomMap* HostZoomMap::Get(SiteInstance* instance) {
 }
 
 HostZoomMap* HostZoomMap::GetForWebContents(const WebContents* contents) {
+  // TODO(wjmaclean): Update this behaviour to work with OOPIF.
+  // See crbug.com/528407.
   StoragePartition* partition =
       BrowserContext::GetStoragePartition(contents->GetBrowserContext(),
                                           contents->GetSiteInstance());

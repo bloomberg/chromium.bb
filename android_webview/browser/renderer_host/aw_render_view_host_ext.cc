@@ -133,6 +133,10 @@ void AwRenderViewHostExt::DidNavigateAnyFrame(
       ->AddVisitedURLs(params.redirects);
 }
 
+void AwRenderViewHostExt::OnPageScaleFactorChanged(float page_scale_factor) {
+  client_->OnWebLayoutPageScaleFactorChanged(page_scale_factor);
+}
+
 bool AwRenderViewHostExt::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(AwRenderViewHostExt, message)
@@ -140,8 +144,6 @@ bool AwRenderViewHostExt::OnMessageReceived(const IPC::Message& message) {
                         OnDocumentHasImagesResponse)
     IPC_MESSAGE_HANDLER(AwViewHostMsg_UpdateHitTestData,
                         OnUpdateHitTestData)
-    IPC_MESSAGE_HANDLER(AwViewHostMsg_PageScaleFactorChanged,
-                        OnPageScaleFactorChanged)
     IPC_MESSAGE_HANDLER(AwViewHostMsg_OnContentsSizeChanged,
                         OnContentsSizeChanged)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -168,10 +170,6 @@ void AwRenderViewHostExt::OnUpdateHitTestData(
   DCHECK(CalledOnValidThread());
   last_hit_test_data_ = hit_test_data;
   has_new_hit_test_data_ = true;
-}
-
-void AwRenderViewHostExt::OnPageScaleFactorChanged(float page_scale_factor) {
-  client_->OnWebLayoutPageScaleFactorChanged(page_scale_factor);
 }
 
 void AwRenderViewHostExt::OnContentsSizeChanged(

@@ -662,7 +662,7 @@ class CONTENT_EXPORT RenderViewImpl
   void OnThemeChanged();
   void OnUpdateTargetURLAck();
   void OnUpdateWebPreferences(const WebPreferences& prefs);
-  void OnResetPageScale();
+  void OnSetPageScale(float page_scale_factor);
   void OnZoom(PageZoom zoom);
   void OnEnableViewSourceMode();
   void OnForceRedraw(int request_id);
@@ -1015,8 +1015,6 @@ class CONTENT_EXPORT RenderViewImpl
 
   typedef std::map<cc::SharedBitmapId, cc::SharedBitmap*> BitmapMap;
   BitmapMap disambiguation_bitmaps_;
-
-  bool page_scale_factor_is_one_;
 
   // ---------------------------------------------------------------------------
   // ADDING NEW DATA? Please see if it fits appropriately in one of the above

@@ -350,7 +350,7 @@ class CONTENT_EXPORT WebContentsImpl
   void ViewFrameSource(const GURL& url, const PageState& page_state) override;
   int GetMinimumZoomPercent() const override;
   int GetMaximumZoomPercent() const override;
-  void ResetPageScale() override;
+  void SetPageScale(float page_scale_factor) override;
   gfx::Size GetPreferredSize() const override;
   bool GotResponseToLockMouseRequest(bool allowed) override;
   bool HasOpener() const override;
@@ -839,6 +839,7 @@ class CONTENT_EXPORT WebContentsImpl
   void OnGoToEntryAtOffset(int offset);
   void OnUpdateZoomLimits(int minimum_percent,
                           int maximum_percent);
+  void OnPageScaleFactorChanged(float page_scale_factor);
   void OnEnumerateDirectory(int request_id, const base::FilePath& path);
 
   void OnRegisterProtocolHandler(const std::string& protocol,
@@ -1320,6 +1321,8 @@ class CONTENT_EXPORT WebContentsImpl
   scoped_ptr<RenderWidgetHostInputEventRouter> rwh_input_event_router_;
 
   PageImportanceSignals page_importance_signals_;
+
+  bool page_scale_factor_is_one_;
 
   base::WeakPtrFactory<WebContentsImpl> loading_weak_factory_;
 

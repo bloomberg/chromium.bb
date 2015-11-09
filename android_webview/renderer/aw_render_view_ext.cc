@@ -146,7 +146,7 @@ void PopulateHitTestData(const GURL& absolute_link_url,
 }  // namespace
 
 AwRenderViewExt::AwRenderViewExt(content::RenderView* render_view)
-    : content::RenderViewObserver(render_view), page_scale_factor_(0.0f) {
+    : content::RenderViewObserver(render_view) {
 }
 
 AwRenderViewExt::~AwRenderViewExt() {
@@ -188,32 +188,26 @@ void AwRenderViewExt::OnDocumentHasImagesRequest(int id) {
 }
 
 void AwRenderViewExt::DidCommitCompositorFrame() {
-  PostCheckContentsSizeAndScale();
+  PostCheckContentsSize();
 }
 
 void AwRenderViewExt::DidUpdateLayout() {
-  PostCheckContentsSizeAndScale();
+  PostCheckContentsSize();
 }
 
-void AwRenderViewExt::PostCheckContentsSizeAndScale() {
+void AwRenderViewExt::PostCheckContentsSize() {
   if (check_contents_size_timer_.IsRunning())
     return;
 
   check_contents_size_timer_.Start(FROM_HERE,
                                    base::TimeDelta::FromMilliseconds(0), this,
-                                   &AwRenderViewExt::CheckContentsSizeAndScale);
+                                   &AwRenderViewExt::CheckContentsSize);
 }
 
-void AwRenderViewExt::CheckContentsSizeAndScale() {
+void AwRenderViewExt::CheckContentsSize() {
   blink::WebView* webview = render_view()->GetWebView();
   if (!webview)
     return;
-
-  if (page_scale_factor_ != webview->pageScaleFactor()) {
-    page_scale_factor_ = webview->pageScaleFactor();
-    Send(new AwViewHostMsg_PageScaleFactorChanged(routing_id(),
-                                                  page_scale_factor_));
-  }
 
   gfx::Size contents_size;
 

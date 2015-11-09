@@ -432,3 +432,24 @@ IN_PROC_BROWSER_TEST_F(HostZoomMapBrowserTest,
       new_default_zoom_level);
   EXPECT_EQ(new_default_zoom_level, child_host_zoom_map->GetDefaultZoomLevel());
 }
+
+IN_PROC_BROWSER_TEST_F(HostZoomMapBrowserTest, PageScaleIsOneChanged) {
+  GURL test_url(url::kAboutBlankURL);
+  std::string test_host(test_url.host());
+
+  ui_test_utils::NavigateToURL(browser(), test_url);
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  ASSERT_TRUE(content::HostZoomMap::PageScaleFactorIsOne(web_contents));
+
+  ZoomLevelChangeObserver observer(browser()->profile());
+
+  web_contents->SetPageScale(1.5);
+  observer.BlockUntilZoomLevelForHostHasChanged(test_host);
+  EXPECT_FALSE(content::HostZoomMap::PageScaleFactorIsOne(web_contents));
+
+  web_contents->SetPageScale(1.f);
+  observer.BlockUntilZoomLevelForHostHasChanged(test_host);
+  EXPECT_TRUE(content::HostZoomMap::PageScaleFactorIsOne(web_contents));
+}

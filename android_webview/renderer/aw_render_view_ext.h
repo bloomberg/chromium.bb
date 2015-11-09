@@ -56,13 +56,11 @@ class AwRenderViewExt : public content::RenderViewObserver {
 
   void OnSmoothScroll(int target_x, int target_y, long duration_ms);
 
-  void CheckContentsSizeAndScale();
+  void CheckContentsSize();
 
-  void PostCheckContentsSizeAndScale();
+  void PostCheckContentsSize();
 
   bool capture_picture_enabled_;
-
-  float page_scale_factor_;
 
   gfx::Size last_sent_contents_size_;
   base::OneShotTimer check_contents_size_timer_;

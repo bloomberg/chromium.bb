@@ -71,7 +71,6 @@ public class AwLayoutSizerTest extends InstrumentationTestCase {
         final int contentHeight = 389;
 
         layoutSizer.onContentSizeChanged(contentWidth, contentHeight);
-        layoutSizer.onPageScaleChanged(INITIAL_PAGE_SCALE);
         layoutSizer.onMeasure(MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED),
                 MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED));
 
@@ -89,7 +88,6 @@ public class AwLayoutSizerTest extends InstrumentationTestCase {
         layoutSizer.setDIPScale(DIP_SCALE);
 
         layoutSizer.onContentSizeChanged(FIRST_CONTENT_WIDTH, FIRST_CONTENT_HEIGHT);
-        layoutSizer.onPageScaleChanged(INITIAL_PAGE_SCALE);
         final int requestLayoutCallCount = delegate.requestLayoutCallCount;
         layoutSizer.onContentSizeChanged(SECOND_CONTENT_WIDTH, SECOND_CONTENT_WIDTH);
 
@@ -105,7 +103,6 @@ public class AwLayoutSizerTest extends InstrumentationTestCase {
         layoutSizer.setDIPScale(DIP_SCALE);
 
         layoutSizer.onContentSizeChanged(FIRST_CONTENT_WIDTH, FIRST_CONTENT_HEIGHT);
-        layoutSizer.onPageScaleChanged(INITIAL_PAGE_SCALE);
         layoutSizer.onMeasure(MeasureSpec.makeMeasureSpec(50, MeasureSpec.EXACTLY),
                 MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED));
         final int requestLayoutCallCount = delegate.requestLayoutCallCount;
@@ -123,7 +120,6 @@ public class AwLayoutSizerTest extends InstrumentationTestCase {
         layoutSizer.setDIPScale(DIP_SCALE);
 
         layoutSizer.onContentSizeChanged(FIRST_CONTENT_WIDTH, FIRST_CONTENT_HEIGHT);
-        layoutSizer.onPageScaleChanged(INITIAL_PAGE_SCALE);
         layoutSizer.onMeasure(MeasureSpec.makeMeasureSpec(50, MeasureSpec.EXACTLY),
                 MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED));
         final int requestLayoutCallCount = delegate.requestLayoutCallCount;
@@ -140,7 +136,6 @@ public class AwLayoutSizerTest extends InstrumentationTestCase {
         layoutSizer.setDelegate(delegate);
         layoutSizer.setDIPScale(DIP_SCALE);
 
-        layoutSizer.onPageScaleChanged(INITIAL_PAGE_SCALE);
         layoutSizer.onContentSizeChanged(SMALLER_CONTENT_SIZE, SMALLER_CONTENT_SIZE);
         layoutSizer.onMeasure(
                 MeasureSpec.makeMeasureSpec(AT_MOST_MEASURE_SIZE, MeasureSpec.AT_MOST),
@@ -164,7 +159,6 @@ public class AwLayoutSizerTest extends InstrumentationTestCase {
         layoutSizer.setDelegate(delegate);
         layoutSizer.setDIPScale(DIP_SCALE);
 
-        layoutSizer.onPageScaleChanged(INITIAL_PAGE_SCALE);
         layoutSizer.onContentSizeChanged(SMALLER_CONTENT_SIZE, SMALLER_CONTENT_SIZE);
         layoutSizer.onMeasure(
                 MeasureSpec.makeMeasureSpec(AT_MOST_MEASURE_SIZE, MeasureSpec.AT_MOST),
@@ -190,7 +184,6 @@ public class AwLayoutSizerTest extends InstrumentationTestCase {
         layoutSizer.setDelegate(delegate);
         layoutSizer.setDIPScale(DIP_SCALE);
 
-        layoutSizer.onPageScaleChanged(INITIAL_PAGE_SCALE);
         layoutSizer.onContentSizeChanged(SMALLER_CONTENT_SIZE, SMALLER_CONTENT_SIZE);
         layoutSizer.onMeasure(
                 MeasureSpec.makeMeasureSpec(AT_MOST_MEASURE_SIZE, MeasureSpec.AT_MOST),
@@ -228,7 +221,6 @@ public class AwLayoutSizerTest extends InstrumentationTestCase {
         layoutSizer.setDelegate(delegate);
         layoutSizer.setDIPScale(DIP_SCALE);
 
-        layoutSizer.onPageScaleChanged(INITIAL_PAGE_SCALE);
         layoutSizer.onContentSizeChanged(FIRST_CONTENT_WIDTH, FIRST_CONTENT_HEIGHT);
         layoutSizer.onMeasure(
                 MeasureSpec.makeMeasureSpec(AT_MOST_MEASURE_SIZE, MeasureSpec.EXACTLY),
@@ -247,7 +239,6 @@ public class AwLayoutSizerTest extends InstrumentationTestCase {
         layoutSizer.setDelegate(delegate);
         layoutSizer.setDIPScale(DIP_SCALE);
 
-        layoutSizer.onPageScaleChanged(INITIAL_PAGE_SCALE);
         layoutSizer.onContentSizeChanged(FIRST_CONTENT_WIDTH, FIRST_CONTENT_HEIGHT);
         layoutSizer.onMeasure(MeasureSpec.makeMeasureSpec(50, MeasureSpec.EXACTLY),
                 MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED));
@@ -268,7 +259,6 @@ public class AwLayoutSizerTest extends InstrumentationTestCase {
         final float tooLargePageScale = 3.00f;
 
         layoutSizer.onContentSizeChanged(SMALLER_CONTENT_SIZE, SMALLER_CONTENT_SIZE);
-        layoutSizer.onPageScaleChanged(INITIAL_PAGE_SCALE);
         layoutSizer.onMeasure(
                 MeasureSpec.makeMeasureSpec(AT_MOST_MEASURE_SIZE, MeasureSpec.AT_MOST),
                 MeasureSpec.makeMeasureSpec(AT_MOST_MEASURE_SIZE, MeasureSpec.AT_MOST));
@@ -343,7 +333,6 @@ public class AwLayoutSizerTest extends InstrumentationTestCase {
         layoutSizer.setDIPScale(dipScale);
 
         layoutSizer.onContentSizeChanged(FIRST_CONTENT_WIDTH, FIRST_CONTENT_HEIGHT);
-        layoutSizer.onPageScaleChanged(INITIAL_PAGE_SCALE);
         layoutSizer.onMeasure(MeasureSpec.makeMeasureSpec(measuredWidth, MeasureSpec.EXACTLY),
                 MeasureSpec.makeMeasureSpec(measuredHeight, MeasureSpec.EXACTLY));
         assertEquals(measuredWidth, delegate.measuredWidth & View.MEASURED_SIZE_MASK);
@@ -364,7 +353,6 @@ public class AwLayoutSizerTest extends InstrumentationTestCase {
 
         layoutSizer.setDIPScale(dipScale);
         layoutSizer.onContentSizeChanged(contentWidth, contentHeight);
-        layoutSizer.onPageScaleChanged(INITIAL_PAGE_SCALE);
         layoutSizer.onMeasure(MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED),
                 MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED));
 
@@ -422,7 +410,6 @@ public class AwLayoutSizerTest extends InstrumentationTestCase {
         layoutSizer.setDIPScale(DIP_SCALE);
 
         layoutSizer.onContentSizeChanged(TOO_LARGE_CONTENT_SIZE, TOO_LARGE_CONTENT_SIZE);
-        layoutSizer.onPageScaleChanged(INITIAL_PAGE_SCALE);
         layoutSizer.onMeasure(
                 MeasureSpec.makeMeasureSpec(AT_MOST_MEASURE_SIZE, MeasureSpec.AT_MOST),
                 MeasureSpec.makeMeasureSpec(AT_MOST_MEASURE_SIZE, MeasureSpec.AT_MOST));
@@ -446,7 +433,6 @@ public class AwLayoutSizerTest extends InstrumentationTestCase {
         layoutSizer.setDIPScale(DIP_SCALE);
 
         layoutSizer.onContentSizeChanged(TOO_LARGE_CONTENT_SIZE, TOO_LARGE_CONTENT_SIZE);
-        layoutSizer.onPageScaleChanged(INITIAL_PAGE_SCALE);
         layoutSizer.onMeasure(
                 MeasureSpec.makeMeasureSpec(AT_MOST_MEASURE_SIZE, MeasureSpec.AT_MOST),
                 MeasureSpec.makeMeasureSpec(AT_MOST_MEASURE_SIZE, MeasureSpec.AT_MOST));

@@ -83,7 +83,7 @@ void PageZoom::Zoom(content::WebContents* web_contents,
 
   if (zoom == content::PAGE_ZOOM_RESET) {
     zoom_controller->SetZoomLevel(default_zoom_level);
-    web_contents->ResetPageScale();
+    web_contents->SetPageScale(1.f);
     content::RecordAction(UserMetricsAction("ZoomNormal"));
     return;
   }

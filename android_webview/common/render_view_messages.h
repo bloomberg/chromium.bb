@@ -96,10 +96,6 @@ IPC_MESSAGE_ROUTED2(AwViewHostMsg_DocumentHasImagesResponse,
 IPC_MESSAGE_ROUTED1(AwViewHostMsg_UpdateHitTestData,
                     android_webview::AwHitTestData)
 
-// Sent whenever the page scale factor (as seen by RenderView) is changed.
-IPC_MESSAGE_ROUTED1(AwViewHostMsg_PageScaleFactorChanged,
-                    float /* page_scale_factor */)
-
 // Sent whenever the contents size (as seen by RenderView) is changed.
 IPC_MESSAGE_ROUTED1(AwViewHostMsg_OnContentsSizeChanged,
                     gfx::Size /* contents_size */)

@@ -659,8 +659,7 @@ RenderViewImpl::RenderViewImpl(CompositorDependencies* compositor_deps,
       pepper_last_mouse_event_target_(NULL),
 #endif
       enumeration_completion_id_(0),
-      session_storage_namespace_id_(params.session_storage_namespace_id),
-      page_scale_factor_is_one_(true) {
+      session_storage_namespace_id_(params.session_storage_namespace_id) {
 }
 
 void RenderViewImpl::Initialize(const ViewMsg_New_Params& params,
@@ -1303,7 +1302,7 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_SaveImageAt, OnSaveImageAt)
     IPC_MESSAGE_HANDLER(ViewMsg_Find, OnFind)
     IPC_MESSAGE_HANDLER(ViewMsg_StopFinding, OnStopFinding)
-    IPC_MESSAGE_HANDLER(ViewMsg_ResetPageScale, OnResetPageScale)
+    IPC_MESSAGE_HANDLER(ViewMsg_SetPageScale, OnSetPageScale)
     IPC_MESSAGE_HANDLER(ViewMsg_Zoom, OnZoom)
     IPC_MESSAGE_HANDLER(ViewMsg_SetZoomLevelForLoadingURL,
                         OnSetZoomLevelForLoadingURL)
@@ -2471,10 +2470,10 @@ void RenderViewImpl::OnFindMatchRects(int current_version) {
 }
 #endif
 
-void RenderViewImpl::OnResetPageScale() {
+void RenderViewImpl::OnSetPageScale(float page_scale_factor) {
   if (!webview())
     return;
-  webview()->setPageScaleFactor(1);
+  webview()->setPageScaleFactor(page_scale_factor);
 }
 
 void RenderViewImpl::OnZoom(PageZoom zoom) {
@@ -3393,12 +3392,9 @@ void RenderViewImpl::zoomLevelChanged() {
 void RenderViewImpl::pageScaleFactorChanged() {
   if (!webview())
     return;
-  bool page_scale_factor_is_one = webview()->pageScaleFactor() == 1;
-  if (page_scale_factor_is_one == page_scale_factor_is_one_)
-    return;
-  page_scale_factor_is_one_ = page_scale_factor_is_one;
-  Send(new ViewHostMsg_PageScaleFactorIsOneChanged(routing_id_,
-                                                   page_scale_factor_is_one_));
+
+  Send(new ViewHostMsg_PageScaleFactorChanged(routing_id_,
+                                              webview()->pageScaleFactor()));
 }
 
 double RenderViewImpl::zoomLevelToZoomFactor(double zoom_level) const {

@@ -577,8 +577,8 @@ class WebContents : public PageNavigator,
   virtual int GetMinimumZoomPercent() const = 0;
   virtual int GetMaximumZoomPercent() const = 0;
 
-  // Set the renderer's page scale back to one.
-  virtual void ResetPageScale() = 0;
+  // Set the renderer's page scale to the given factor.
+  virtual void SetPageScale(float page_scale_factor) = 0;
 
   // Gets the preferred size of the contents.
   virtual gfx::Size GetPreferredSize() const = 0;

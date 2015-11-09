@@ -20,9 +20,8 @@ public class AwLayoutSizer {
     private int mContentHeightCss;
     private int mContentWidthCss;
 
-    // Page scale factor. This is set to zero initially so that we don't attempt to do a layout if
-    // we get the content size change notification first and a page scale change second.
-    private float mPageScaleFactor = 0.0f;
+    // Page scale factor.
+    private float mPageScaleFactor = 1.0f;
 
     // Whether to postpone layout requests.
     private boolean mFreezeLayoutRequests;
