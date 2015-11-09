@@ -268,9 +268,9 @@ base::TimeTicks StartupTimeToTimeTicks(const base::Time& time) {
 void RecordMainEntryTimeHistogram() {
   const int kLowWordMask = 0xFFFFFFFF;
   const int kLower31BitsMask = 0x7FFFFFFF;
-  DCHECK(!MainEntryPointTime().is_null());
+  DCHECK(!g_main_entry_point_time.Get().is_null());
   base::TimeDelta browser_main_entry_time_absolute =
-      MainEntryPointTime() - base::Time::UnixEpoch();
+      g_main_entry_point_time.Get() - base::Time::UnixEpoch();
 
   uint64 browser_main_entry_time_raw_ms =
       browser_main_entry_time_absolute.InMilliseconds();
@@ -323,9 +323,9 @@ void RecordStartupProcessCreationTime(const base::Time& time) {
 }
 
 void RecordMainEntryPointTime(const base::Time& time) {
-  DCHECK(MainEntryPointTime().is_null());
+  DCHECK(g_main_entry_point_time.Get().is_null());
   g_main_entry_point_time.Get() = time;
-  DCHECK(!MainEntryPointTime().is_null());
+  DCHECK(!g_main_entry_point_time.Get().is_null());
 }
 
 void RecordExeMainEntryPointTime(const base::Time& time) {
@@ -357,17 +357,16 @@ void RecordBrowserMainMessageLoopStart(const base::Time& time,
   // * Measure time from main entry rather than the OS' notion of process start.
   // * Only measure launches that occur 7 minutes after boot to try to avoid
   //   cases where Chrome is auto-started and IO is heavily loaded.
-  const base::Time dll_main_time = MainEntryPointTime();
   if (is_first_run) {
     UMA_HISTOGRAM_AND_TRACE_WITH_STARTUP_TEMPERATURE(
         UMA_HISTOGRAM_LONG_TIMES,
         "Startup.BrowserMessageLoopStartTimeFromMainEntry.FirstRun",
-        dll_main_time, time);
+        g_main_entry_point_time.Get(), time);
   } else {
     UMA_HISTOGRAM_AND_TRACE_WITH_STARTUP_TEMPERATURE(
         UMA_HISTOGRAM_LONG_TIMES,
-        "Startup.BrowserMessageLoopStartTimeFromMainEntry", dll_main_time,
-        time);
+        "Startup.BrowserMessageLoopStartTimeFromMainEntry",
+        g_main_entry_point_time.Get(), time);
   }
 
   // Record timings between process creation, the main() in the executable being
@@ -383,13 +382,13 @@ void RecordBrowserMainMessageLoopStart(const base::Time& time,
       // chrome.exe:main() to chrome.dll:main().
       UMA_HISTOGRAM_AND_TRACE_WITH_STARTUP_TEMPERATURE(
           UMA_HISTOGRAM_LONG_TIMES, "Startup.LoadTime.ExeMainToDllMain",
-          exe_main_time, dll_main_time);
+          exe_main_time, g_main_entry_point_time.Get());
 
       // Process create to chrome.dll:main(). Reported as a histogram only as
       // the other two events above are sufficient for tracing purposes.
       UMA_HISTOGRAM_WITH_STARTUP_TEMPERATURE(
           UMA_HISTOGRAM_LONG_TIMES, "Startup.LoadTime.ProcessCreateToDllMain",
-          dll_main_time - process_creation_time);
+          g_main_entry_point_time.Get() - process_creation_time);
     }
   }
 }
