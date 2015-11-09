@@ -23,12 +23,24 @@ font-feature-settings:"frac" 1, "dlig" 1;
 font-variant-ligatures: discretionary-ligatures;
 }
 
+.onumDiv {
+-moz-font-feature-settings: "onum" 1;
+-ms-font-feature-settings: "onum" 1;
+-o-font-feature-settings: "onum" 1;
+-webkit-font-feature-settings: "onum" 1;
+font-feature-settings: "onum" 1;
+}
+
 .common {
 font-size: 24px;
 line-height: 100%;
 padding: 0px;
 letter-spacing:20px;
 font-family: megalopolis;
+}
+
+.noLetterSpace {
+letter-spacing: 0;
 }
 
 p { font-family: serif; font-style: italic; }
@@ -46,9 +58,18 @@ p { font-family: serif; font-style: italic; }
             }, "Ligature expected not to be applied due to letter spacing.");
     }
 
+    function testLetterSpaceDoesNotPreventOnum() {
+      var elementHeightWithLetterSpacing = onumSpanLetterSpace.getBoundingClientRect().height;
+      var elementHeightRegular = onumSpanRegular.getBoundingClientRect().height;
+      test(function() {
+        assert_equals(elementHeightWithLetterSpacing, elementHeightRegular, "Letter spacing does not prevent enabling 'onum' font feature.");
+        }, "Non-ligature font feature expected to be applied despite letter spacing.");
+    }
+
     function runTest() {
         testLetterSpaceAndLigature(dligSpan);
         testLetterSpaceAndLigature(fontVariantSpan);
+        testLetterSpaceDoesNotPreventOnum();
         done();
     }
 </script>
@@ -65,5 +86,14 @@ p { font-family: serif; font-style: italic; }
 <div class="common">
     <span id="letterSpace">CACACACA</span>
 </div>
+
+<div class="onumDiv common">
+    <span id="onumSpanLetterSpace">56</span>
+</div>
+
+<div class="onumDiv common noLetterSpace">
+    <span id="onumSpanRegular">56</span>
+</div>
+
 </body>
 </html>

@@ -322,7 +322,7 @@ CodePath Font::codePath(const TextRunPaintInfo& runInfo) const
     if (fontDescription().typesettingFeatures() && (runInfo.from || runInfo.to != run.length()))
         return ComplexPath;
 
-    if (m_fontDescription.featureSettings() && m_fontDescription.featureSettings()->size() > 0 && m_fontDescription.letterSpacing() == 0)
+    if (m_fontDescription.featureSettings() && m_fontDescription.featureSettings()->size() > 0)
         return ComplexPath;
 
     if (m_fontDescription.isVerticalBaseline())
