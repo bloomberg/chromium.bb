@@ -289,7 +289,6 @@ class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
   void SetIsLoading(bool is_loading) override;
   void ForwardMouseEvent(const blink::WebMouseEvent& mouse_event) override;
   void ForwardKeyboardEvent(const NativeWebKeyboardEvent& key_event) override;
-  gfx::Rect GetRootWindowResizerRect() const override;
 
   // Creates a new RenderView with the given route id.
   void CreateNewWindow(int32_t route_id,
@@ -333,12 +332,6 @@ class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
 
  protected:
   // RenderWidgetHost protected overrides.
-  void OnUserGesture() override;
-  void NotifyRendererUnresponsive() override;
-  void NotifyRendererResponsive() override;
-  void OnRenderAutoResized(const gfx::Size& size) override;
-  void RequestToLockMouse(bool user_gesture,
-                          bool last_unlocked_by_target) override;
   bool IsFullscreenGranted() const override;
   blink::WebDisplayMode GetDisplayMode() const override;
   void OnFocus() override;

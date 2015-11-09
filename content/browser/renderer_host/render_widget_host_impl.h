@@ -347,10 +347,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
   // Cancels an ongoing composition.
   void ImeCancelComposition();
 
-  // This is for derived classes to give us access to the resizer rect.
-  // And to also expose it to the RenderWidgetHostView.
-  virtual gfx::Rect GetRootWindowResizerRect() const;
-
   bool ignore_input_events() const {
     return ignore_input_events_;
   }
@@ -360,10 +356,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
   bool IgnoreInputEvents() const;
 
   bool has_touch_handler() const { return has_touch_handler_; }
-
-  // Notification that the user has made some kind of input that could
-  // perform an action. See OnUserGesture for more details.
-  void StartUserGesture();
 
   // Set the RenderView background transparency.
   void SetBackgroundOpaque(bool opaque);
@@ -520,31 +512,11 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
   // Called when a mousewheel event was not processed by the renderer.
   virtual void UnhandledWheelEvent(const blink::WebMouseWheelEvent& event) {}
 
-  // Notification that the user has made some kind of input that could
-  // perform an action. The gestures that count are 1) any mouse down
-  // event and 2) enter or space key presses.
-  virtual void OnUserGesture() {}
-
-  // Callbacks for notification when the renderer becomes unresponsive to user
-  // input events, and subsequently responsive again.
-  virtual void NotifyRendererUnresponsive() {}
-  virtual void NotifyRendererResponsive() {}
-
   // Callback for notification that we failed to receive any rendered graphics
   // from a newly loaded page. Used for testing.
   virtual void NotifyNewContentRenderingTimeoutForTesting() {}
 
-  // Called when auto-resize resulted in the renderer size changing.
-  virtual void OnRenderAutoResized(const gfx::Size& new_size) {}
-
   // ---------------------------------------------------------------------------
-
-  // RenderViewHost overrides this method to impose further restrictions on when
-  // to allow mouse lock.
-  // Once the request is approved or rejected, GotResponseToLockMouseRequest()
-  // will be called.
-  virtual void RequestToLockMouse(bool user_gesture,
-                                  bool last_unlocked_by_target);
 
   bool IsMouseLocked() const;
 

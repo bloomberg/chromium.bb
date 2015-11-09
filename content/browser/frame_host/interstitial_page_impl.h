@@ -119,7 +119,6 @@ class CONTENT_EXPORT InterstitialPageImpl
                             int error_code) override;
   RendererPreferences GetRendererPrefs(
       BrowserContext* browser_context) const override;
-  gfx::Rect GetRootWindowResizerRect() const override;
   void CreateNewWindow(
       SiteInstance* source_site_instance,
       int32_t route_id,

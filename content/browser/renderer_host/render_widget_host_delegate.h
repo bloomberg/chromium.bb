@@ -18,6 +18,8 @@ class WebGestureEvent;
 
 namespace gfx {
 class Point;
+class Rect;
+class Size;
 }
 
 namespace content {
@@ -43,6 +45,10 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
   // The RenderWidget was resized.
   virtual void RenderWidgetWasResized(RenderWidgetHostImpl* render_widget_host,
                                       bool width_changed) {}
+
+  // The contents auto-resized and the container should match it.
+  virtual void ResizeDueToAutoResize(RenderWidgetHostImpl* render_widget_host,
+                                     const gfx::Size& new_size) {}
 
   // The screen info has changed.
   virtual void ScreenInfoChanged() {}
@@ -75,6 +81,11 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
   // event before sending it to the renderer.
   // Returns true if the |event| was handled.
   virtual bool PreHandleGestureEvent(const blink::WebGestureEvent& event);
+
+  // Notification the user has made a gesture while focus was on the
+  // page. This is used to avoid uninitiated user downloads (aka carpet
+  // bombing), see DownloadRequestLimiter for details.
+  virtual void OnUserGesture(RenderWidgetHostImpl* render_widget_host) {}
 
   // Notifies that screen rects were sent to renderer process.
   virtual void DidSendScreenRects(RenderWidgetHostImpl* rwh) {}
@@ -111,6 +122,27 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
   // rendering a page, and this function determines which RenderWidgetHost
   // should consume a keyboard input event.
   virtual RenderWidgetHostImpl* GetFocusedRenderWidgetHost();
+
+  // Notification that the renderer has become unresponsive. The
+  // delegate can use this notification to show a warning to the user.
+  virtual void RendererUnresponsive(RenderWidgetHostImpl* render_widget_host) {}
+
+  // Notification that a previously unresponsive renderer has become
+  // responsive again. The delegate can use this notification to end the
+  // warning shown to the user.
+  virtual void RendererResponsive(RenderWidgetHostImpl* render_widget_host) {}
+
+  // Requests to lock the mouse. Once the request is approved or rejected,
+  // GotResponseToLockMouseRequest() will be called on the requesting render
+  // widget host.
+  virtual void RequestToLockMouse(RenderWidgetHostImpl* render_widget_host,
+                                  bool user_gesture,
+                                  bool last_unlocked_by_target) {}
+
+  // Return the rect where to display the resize corner, if any, otherwise
+  // an empty rect.
+  virtual gfx::Rect GetRootWindowResizerRect(
+      RenderWidgetHostImpl* render_widget_host) const;
 
 #if defined(OS_WIN)
   virtual gfx::NativeViewAccessible GetParentNativeViewAccessible();

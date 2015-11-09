@@ -1128,10 +1128,6 @@ void RenderViewHostImpl::OnDidContentsPreferredSizeChange(
   delegate_->UpdatePreferredSize(new_size);
 }
 
-void RenderViewHostImpl::OnRenderAutoResized(const gfx::Size& new_size) {
-  delegate_->ResizeDueToAutoResize(new_size);
-}
-
 void RenderViewHostImpl::OnRouteCloseEvent() {
   // Have the delegate route this to the active RenderViewHost.
   delegate_->RouteCloseEvent(this);
@@ -1233,26 +1229,9 @@ void RenderViewHostImpl::OnFocusedNodeChanged(
                                          Details<FocusedNodeDetails>(&details));
 }
 
-void RenderViewHostImpl::OnUserGesture() {
-  delegate_->OnUserGesture();
-}
-
 void RenderViewHostImpl::OnClosePageACK() {
   GetWidget()->decrement_in_flight_event_count();
   ClosePageIgnoringUnloadEvents();
-}
-
-void RenderViewHostImpl::NotifyRendererUnresponsive() {
-  delegate_->RendererUnresponsive(this);
-}
-
-void RenderViewHostImpl::NotifyRendererResponsive() {
-  delegate_->RendererResponsive(this);
-}
-
-void RenderViewHostImpl::RequestToLockMouse(bool user_gesture,
-                                            bool last_unlocked_by_target) {
-  delegate_->RequestToLockMouse(user_gesture, last_unlocked_by_target);
 }
 
 bool RenderViewHostImpl::IsFullscreenGranted() const {
@@ -1267,10 +1246,6 @@ void RenderViewHostImpl::OnFocus() {
   // Note: We allow focus and blur from swapped out RenderViewHosts, even when
   // the active RenderViewHost is in a different BrowsingInstance (e.g., WebUI).
   delegate_->Activate();
-}
-
-gfx::Rect RenderViewHostImpl::GetRootWindowResizerRect() const {
-  return delegate_->GetRootWindowResizerRect();
 }
 
 void RenderViewHostImpl::ForwardMouseEvent(

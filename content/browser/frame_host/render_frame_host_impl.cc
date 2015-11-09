@@ -39,6 +39,7 @@
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_view_host_delegate_view.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
+#include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/wake_lock/wake_lock_service_context.h"
@@ -1941,8 +1942,10 @@ void RenderFrameHostImpl::JavaScriptDialogClosed(
   // continuing to run its script and dragging out the process.
   // This must be done after sending the reply since RenderView can't close
   // correctly while waiting for a response.
-  if (is_waiting && dialog_was_suppressed)
-    render_view_host_->delegate_->RendererUnresponsive(render_view_host_);
+  if (is_waiting && dialog_was_suppressed) {
+    render_view_host_->GetWidget()->delegate()->RendererUnresponsive(
+        render_view_host_->GetWidget());
+  }
 }
 
 // PlzNavigate

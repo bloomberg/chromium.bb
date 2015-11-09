@@ -758,10 +758,6 @@ void InterstitialPageImpl::DontCreateViewForTesting() {
   create_view_ = false;
 }
 
-gfx::Rect InterstitialPageImpl::GetRootWindowResizerRect() const {
-  return gfx::Rect();
-}
-
 void InterstitialPageImpl::CreateNewWindow(
     SiteInstance* source_site_instance,
     int32_t route_id,

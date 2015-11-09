@@ -573,7 +573,8 @@ bool RenderWidgetHostImpl::GetResizeParams(
   *resize_params = ViewMsg_Resize_Params();
 
   GetWebScreenInfo(&resize_params->screen_info);
-  resize_params->resizer_rect = GetRootWindowResizerRect();
+  if (delegate_)
+    resize_params->resizer_rect = delegate_->GetRootWindowResizerRect(this);
 
   if (view_) {
     resize_params->new_size = view_->GetRequestedRendererSize();
@@ -1104,7 +1105,8 @@ void RenderWidgetHostImpl::ForwardKeyboardEvent(
   if (key_event.type == WebKeyboardEvent::Char &&
       (key_event.windowsKeyCode == ui::VKEY_RETURN ||
        key_event.windowsKeyCode == ui::VKEY_SPACE)) {
-    OnUserGesture();
+    if (delegate_)
+      delegate_->OnUserGesture(this);
   }
 
   // Double check the type to make sure caller hasn't sent us nonsense that
@@ -1375,17 +1377,6 @@ void RenderWidgetHostImpl::ImeCancelComposition() {
             std::vector<blink::WebCompositionUnderline>(), 0, 0));
 }
 
-gfx::Rect RenderWidgetHostImpl::GetRootWindowResizerRect() const {
-  return gfx::Rect();
-}
-
-void RenderWidgetHostImpl::RequestToLockMouse(bool user_gesture,
-                                              bool last_unlocked_by_target) {
-  // Directly reject to lock the mouse. Subclass can override this method to
-  // decide whether to allow mouse lock or not.
-  GotResponseToLockMouseRequest(false);
-}
-
 void RenderWidgetHostImpl::RejectMouseLockOrUnlockIfNecessary() {
   DCHECK(!pending_mouse_lock_request_ || !IsMouseLocked());
   if (pending_mouse_lock_request_) {
@@ -1440,13 +1431,15 @@ void RenderWidgetHostImpl::RendererIsUnresponsive() {
       Source<RenderWidgetHost>(this),
       NotificationService::NoDetails());
   is_unresponsive_ = true;
-  NotifyRendererUnresponsive();
+  if (delegate_)
+    delegate_->RendererUnresponsive(this);
 }
 
 void RenderWidgetHostImpl::RendererIsResponsive() {
   if (is_unresponsive_) {
     is_unresponsive_ = false;
-    NotifyRendererResponsive();
+    if (delegate_)
+      delegate_->RendererResponsive(this);
   }
 }
 
@@ -1744,7 +1737,13 @@ void RenderWidgetHostImpl::OnLockMouse(bool user_gesture,
     // Directly approve to lock the mouse.
     GotResponseToLockMouseRequest(true);
   } else {
-    RequestToLockMouse(user_gesture, last_unlocked_by_target);
+    if (delegate_) {
+      delegate_->RequestToLockMouse(this, user_gesture,
+                                    last_unlocked_by_target);
+      return;
+    }
+    // If there's no delegate, just reject it.
+    GotResponseToLockMouseRequest(false);
   }
 }
 
@@ -1860,7 +1859,8 @@ InputEventAckState RenderWidgetHostImpl::FilterInputEvent(
 
   if (event.type == WebInputEvent::MouseDown ||
       event.type == WebInputEvent::GestureTapDown) {
-    OnUserGesture();
+    if (delegate_)
+      delegate_->OnUserGesture(this);
   }
 
   if (delegate_) {
@@ -2001,10 +2001,6 @@ bool RenderWidgetHostImpl::IgnoreInputEvents() const {
   return ignore_input_events_ || process_->IgnoreInputEvents();
 }
 
-void RenderWidgetHostImpl::StartUserGesture() {
-  OnUserGesture();
-}
-
 void RenderWidgetHostImpl::SetBackgroundOpaque(bool opaque) {
   Send(new ViewMsg_SetBackgroundOpaque(GetRoutingID(), opaque));
 }
@@ -2085,7 +2081,8 @@ void RenderWidgetHostImpl::DelayedAutoResized() {
   if (!auto_resize_enabled_)
     return;
 
-  OnRenderAutoResized(new_size);
+  if (delegate_)
+    delegate_->ResizeDueToAutoResize(this, new_size);
 }
 
 void RenderWidgetHostImpl::DetachDelegate() {

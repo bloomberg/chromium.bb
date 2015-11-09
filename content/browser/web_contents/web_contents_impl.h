@@ -451,7 +451,6 @@ class CONTENT_EXPORT WebContentsImpl
   // RenderFrameHostDelegate has the same method, so list it there because this
   // interface is going away.
   // WebContents* GetAsWebContents() override;
-  gfx::Rect GetRootWindowResizerRect() const override;
   void RenderViewCreated(RenderViewHost* render_view_host) override;
   void RenderViewReady(RenderViewHost* render_view_host) override;
   void RenderViewTerminated(RenderViewHost* render_view_host,
@@ -474,11 +473,8 @@ class CONTENT_EXPORT WebContentsImpl
                            const base::string16& source_id) override;
   RendererPreferences GetRendererPrefs(
       BrowserContext* browser_context) const override;
-  void OnUserGesture() override;
   void OnUserInteraction(const blink::WebInputEvent::Type type) override;
   void OnIgnoredUIEvent() override;
-  void RendererUnresponsive(RenderViewHost* render_view_host) override;
-  void RendererResponsive(RenderViewHost* render_view_host) override;
   void LoadStateChanged(const GURL& url,
                         const net::LoadStateWithParam& load_state,
                         uint64 upload_position,
@@ -490,9 +486,6 @@ class CONTENT_EXPORT WebContentsImpl
   bool IsFullscreenForCurrentTab() const override;
   blink::WebDisplayMode GetDisplayMode() const override;
   void UpdatePreferredSize(const gfx::Size& pref_size) override;
-  void ResizeDueToAutoResize(const gfx::Size& new_size) override;
-  void RequestToLockMouse(bool user_gesture,
-                          bool last_unlocked_by_target) override;
   void LostMouseLock() override;
   void CreateNewWindow(
       SiteInstance* source_site_instance,
@@ -575,11 +568,14 @@ class CONTENT_EXPORT WebContentsImpl
   void RenderWidgetGotFocus(RenderWidgetHostImpl* render_widget_host) override;
   void RenderWidgetWasResized(RenderWidgetHostImpl* render_widget_host,
                               bool width_changed) override;
+  void ResizeDueToAutoResize(RenderWidgetHostImpl* render_widget_host,
+                             const gfx::Size& new_size) override;
   void ScreenInfoChanged() override;
   bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
                               bool* is_keyboard_shortcut) override;
   void HandleKeyboardEvent(const NativeWebKeyboardEvent& event) override;
   bool HandleWheelEvent(const blink::WebMouseWheelEvent& event) override;
+  void OnUserGesture(RenderWidgetHostImpl* render_widget_host) override;
   bool PreHandleGestureEvent(const blink::WebGestureEvent& event) override;
   void DidSendScreenRects(RenderWidgetHostImpl* rwh) override;
   BrowserAccessibilityManager* GetRootBrowserAccessibilityManager() override;
@@ -597,6 +593,13 @@ class CONTENT_EXPORT WebContentsImpl
   RenderWidgetHostInputEventRouter* GetInputEventRouter() override;
   void ReplicatePageFocus(bool is_focused) override;
   RenderWidgetHostImpl* GetFocusedRenderWidgetHost() override;
+  void RendererUnresponsive(RenderWidgetHostImpl* render_widget_host) override;
+  void RendererResponsive(RenderWidgetHostImpl* render_widget_host) override;
+  void RequestToLockMouse(RenderWidgetHostImpl* render_widget_host,
+                          bool user_gesture,
+                          bool last_unlocked_by_target) override;
+  gfx::Rect GetRootWindowResizerRect(
+      RenderWidgetHostImpl* render_widget_host) const override;
 
   // RenderFrameHostManager::Delegate ------------------------------------------
 

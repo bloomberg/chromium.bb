@@ -152,7 +152,6 @@ class MockRenderWidgetHost : public RenderWidgetHostImpl {
             process,
             routing_id,
             false),
-        unresponsive_timer_fired_(false),
         new_content_rendering_timeout_fired_(false) {
     acked_touch_event_type_ = blink::WebInputEvent::Undefined;
   }
@@ -172,10 +171,6 @@ class MockRenderWidgetHost : public RenderWidgetHostImpl {
     // Sniff touch acks.
     acked_touch_event_type_ = event.event.type;
     RenderWidgetHostImpl::OnTouchEventAck(event, ack_result);
-  }
-
-  bool unresponsive_timer_fired() const {
-    return unresponsive_timer_fired_;
   }
 
   bool new_content_rendering_timeout_fired() const {
@@ -200,15 +195,10 @@ class MockRenderWidgetHost : public RenderWidgetHostImpl {
   }
 
  protected:
-  void NotifyRendererUnresponsive() override {
-    unresponsive_timer_fired_ = true;
-  }
-
   void NotifyNewContentRenderingTimeoutForTesting() override {
     new_content_rendering_timeout_fired_ = true;
   }
 
-  bool unresponsive_timer_fired_;
   bool new_content_rendering_timeout_fired_;
   WebInputEvent::Type acked_touch_event_type_;
 
@@ -349,7 +339,8 @@ class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
         unhandled_keyboard_event_called_(false),
         unhandled_keyboard_event_type_(WebInputEvent::Undefined),
         handle_wheel_event_(false),
-        handle_wheel_event_called_(false) {}
+        handle_wheel_event_called_(false),
+        unresponsive_timer_fired_(false) {}
   ~MockRenderWidgetHostDelegate() override {}
 
   // Tests that make sure we ignore keyboard event acknowledgments to events we
@@ -384,6 +375,8 @@ class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
 
   bool handle_wheel_event_called() const { return handle_wheel_event_called_; }
 
+  bool unresponsive_timer_fired() const { return unresponsive_timer_fired_; }
+
  protected:
   bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
                               bool* is_keyboard_shortcut) override {
@@ -403,6 +396,10 @@ class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
     return handle_wheel_event_;
   }
 
+  void RendererUnresponsive(RenderWidgetHostImpl* render_widget_host) override {
+    unresponsive_timer_fired_ = true;
+  }
+
   void Cut() override {}
   void Copy() override {}
   void Paste() override {}
@@ -419,6 +416,8 @@ class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
 
   bool handle_wheel_event_;
   bool handle_wheel_event_called_;
+
+  bool unresponsive_timer_fired_;
 };
 
 // RenderWidgetHostTest --------------------------------------------------------
@@ -1066,7 +1065,7 @@ TEST_F(RenderWidgetHostTest, DontPostponeHangMonitorTimeout) {
   host_->StartHangMonitorTimeout(TimeDelta::FromMilliseconds(10));
 
   // Immediately try to add a long 30 second timeout.
-  EXPECT_FALSE(host_->unresponsive_timer_fired());
+  EXPECT_FALSE(delegate_->unresponsive_timer_fired());
   host_->StartHangMonitorTimeout(TimeDelta::FromSeconds(30));
 
   // Wait long enough for first timeout and see if it fired.
@@ -1074,7 +1073,7 @@ TEST_F(RenderWidgetHostTest, DontPostponeHangMonitorTimeout) {
       FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
       TimeDelta::FromMilliseconds(10));
   base::MessageLoop::current()->Run();
-  EXPECT_TRUE(host_->unresponsive_timer_fired());
+  EXPECT_TRUE(delegate_->unresponsive_timer_fired());
 }
 
 // Test that the hang monitor timer expires properly if it is started, stopped,
@@ -1085,7 +1084,7 @@ TEST_F(RenderWidgetHostTest, StopAndStartHangMonitorTimeout) {
   host_->StopHangMonitorTimeout();
 
   // Start it again to ensure it still works.
-  EXPECT_FALSE(host_->unresponsive_timer_fired());
+  EXPECT_FALSE(delegate_->unresponsive_timer_fired());
   host_->StartHangMonitorTimeout(TimeDelta::FromMilliseconds(10));
 
   // Wait long enough for first timeout and see if it fired.
@@ -1093,7 +1092,7 @@ TEST_F(RenderWidgetHostTest, StopAndStartHangMonitorTimeout) {
       FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
       TimeDelta::FromMilliseconds(40));
   base::MessageLoop::current()->Run();
-  EXPECT_TRUE(host_->unresponsive_timer_fired());
+  EXPECT_TRUE(delegate_->unresponsive_timer_fired());
 }
 
 // Test that the hang monitor timer expires properly if it is started, then
@@ -1103,7 +1102,7 @@ TEST_F(RenderWidgetHostTest, ShorterDelayHangMonitorTimeout) {
   host_->StartHangMonitorTimeout(TimeDelta::FromMilliseconds(100));
 
   // Start it again with shorter delay.
-  EXPECT_FALSE(host_->unresponsive_timer_fired());
+  EXPECT_FALSE(delegate_->unresponsive_timer_fired());
   host_->StartHangMonitorTimeout(TimeDelta::FromMilliseconds(20));
 
   // Wait long enough for the second timeout and see if it fired.
@@ -1111,7 +1110,7 @@ TEST_F(RenderWidgetHostTest, ShorterDelayHangMonitorTimeout) {
       FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
       TimeDelta::FromMilliseconds(25));
   base::MessageLoop::current()->Run();
-  EXPECT_TRUE(host_->unresponsive_timer_fired());
+  EXPECT_TRUE(delegate_->unresponsive_timer_fired());
 }
 
 // Test that the hang monitor timer is effectively disabled when the widget is
@@ -1124,12 +1123,12 @@ TEST_F(RenderWidgetHostTest, HangMonitorTimeoutDisabledForInputWhenHidden) {
   host_->WasHidden();
 
   // The timeout should not fire.
-  EXPECT_FALSE(host_->unresponsive_timer_fired());
+  EXPECT_FALSE(delegate_->unresponsive_timer_fired());
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
       TimeDelta::FromMicroseconds(2));
   base::MessageLoop::current()->Run();
-  EXPECT_FALSE(host_->unresponsive_timer_fired());
+  EXPECT_FALSE(delegate_->unresponsive_timer_fired());
 
   // The timeout should never reactivate while hidden.
   SimulateMouseEvent(WebInputEvent::MouseMove, 10, 10, 0, false);
@@ -1137,7 +1136,7 @@ TEST_F(RenderWidgetHostTest, HangMonitorTimeoutDisabledForInputWhenHidden) {
       FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
       TimeDelta::FromMicroseconds(2));
   base::MessageLoop::current()->Run();
-  EXPECT_FALSE(host_->unresponsive_timer_fired());
+  EXPECT_FALSE(delegate_->unresponsive_timer_fired());
 
   // Showing the widget should restore the timeout, as the events have
   // not yet been ack'ed.
@@ -1146,7 +1145,7 @@ TEST_F(RenderWidgetHostTest, HangMonitorTimeoutDisabledForInputWhenHidden) {
       FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
       TimeDelta::FromMicroseconds(2));
   base::MessageLoop::current()->Run();
-  EXPECT_TRUE(host_->unresponsive_timer_fired());
+  EXPECT_TRUE(delegate_->unresponsive_timer_fired());
 }
 
 // Test that the hang monitor catches two input events but only one ack.
@@ -1168,7 +1167,7 @@ TEST_F(RenderWidgetHostTest, MultipleInputEvents) {
       FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
       TimeDelta::FromMicroseconds(20));
   base::MessageLoop::current()->Run();
-  EXPECT_TRUE(host_->unresponsive_timer_fired());
+  EXPECT_TRUE(delegate_->unresponsive_timer_fired());
 }
 
 // Test that the rendering timeout for newly loaded content fires
