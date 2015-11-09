@@ -4,6 +4,7 @@
 
 #include "tools/android/forwarder2/pipe_notifier.h"
 
+#include <errno.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/socket.h>

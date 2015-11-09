@@ -5,6 +5,7 @@
 #include "tools/android/forwarder2/socket.h"
 
 #include <arpa/inet.h>
+#include <errno.h>
 #include <fcntl.h>
 #include <netdb.h>
 #include <netinet/in.h>
