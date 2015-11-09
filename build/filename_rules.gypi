@@ -14,8 +14,8 @@
                     ['exclude', '(^|/)win_[^/]*\\.(h|cc)$'] ],
     }],
     ['OS!="mac" or >(nacl_untrusted_build)==1', {
-      'sources/': [ ['exclude', '_(cocoa|mac)(_unittest)?\\.(h|cc|c|mm?)$'],
-                    ['exclude', '(^|/)(cocoa|mac)/'] ],
+      'sources/': [ ['exclude', '_(cocoa|mac|mach)(_unittest)?\\.(h|cc|c|mm?)$'],
+                    ['exclude', '(^|/)(cocoa|mac|mach)/'] ],
     }],
     ['OS!="ios" or >(nacl_untrusted_build)==1', {
       'sources/': [ ['exclude', '_ios(_unittest)?\\.(h|cc|mm?)$'],
