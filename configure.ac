@@ -28,6 +28,7 @@ AM_SILENT_RULES([yes])
 AC_PROG_CC
 AC_PROG_CXX
 AC_PROG_GREP
+AM_PROG_AS
 
 # check if we have C++ compiler. This is hacky workaround,
 # for a reason why it is this way see
@@ -71,6 +72,12 @@ AC_ARG_ENABLE([documentation],
 	      [],
 	      [enable_documentation=yes])
 
+AC_ARG_ENABLE([dtd-validation],
+	      [AC_HELP_STRING([--disable-dtd-validation],
+			      [Disable DTD validation of the protocol])],
+	      [],
+	      [enable_dtdvalidation=yes])
+
 AM_CONDITIONAL(USE_HOST_SCANNER, test "x$with_host_scanner" = xyes)
 
 AM_CONDITIONAL(ENABLE_LIBRARIES, test "x$enable_libraries" = xyes)
@@ -104,6 +111,12 @@ PKG_CHECK_MODULES(EXPAT, [expat], [],
 	 LIBS="$SAVE_LIBS"
 	 AC_SUBST(EXPAT_LIBS)
 	])
+
+if test "x$enable_dtdvalidation" = "xyes"; then
+	PKG_CHECK_MODULES(LIBXML, [libxml-2.0])
+	AC_DEFINE(HAVE_LIBXML, 1, [libxml-2.0 is available])
+	AC_CONFIG_LINKS([src/wayland.dtd.embed:protocol/wayland.dtd])
+fi
 
 AC_PATH_PROG(XSLTPROC, xsltproc)
 AM_CONDITIONAL([HAVE_XSLTPROC], [test "x$XSLTPROC" != "x"])

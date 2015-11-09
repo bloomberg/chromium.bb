@@ -25,6 +25,8 @@
  * SOFTWARE.
  */
 
+#include "config.h"
+
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdarg.h>
@@ -34,8 +36,17 @@
 #include <expat.h>
 #include <getopt.h>
 #include <limits.h>
+#include <unistd.h>
+
+#if HAVE_LIBXML
+#include <libxml/parser.h>
+#endif
 
 #include "wayland-util.h"
+
+/* Embedded wayland.dtd file, see dtddata.S */
+extern char DTD_DATA_begin;
+extern int DTD_DATA_len;
 
 enum side {
 	CLIENT,
@@ -57,6 +68,57 @@ usage(int ret)
 	                "                                 that is e.g. wayland-client-core.h instead\n"
 	                "                                 of wayland-client.h.\n");
 	exit(ret);
+}
+
+static bool
+is_dtd_valid(FILE *input)
+{
+	bool rc = true;
+#if HAVE_LIBXML
+	xmlParserCtxtPtr ctx = NULL;
+	xmlDocPtr doc = NULL;
+	xmlDtdPtr dtd = NULL;
+	xmlValidCtxtPtr	dtdctx;
+	xmlParserInputBufferPtr	buffer;
+	int fd = fileno(input);
+
+	dtdctx = xmlNewValidCtxt();
+	ctx = xmlNewParserCtxt();
+	if (!ctx || !dtdctx)
+		abort();
+
+	buffer = xmlParserInputBufferCreateMem(&DTD_DATA_begin,
+					       DTD_DATA_len,
+					       XML_CHAR_ENCODING_UTF8);
+	if (!buffer) {
+		fprintf(stderr, "Failed to init buffer for DTD.\n");
+		abort();
+	}
+
+	dtd = xmlIOParseDTD(NULL, buffer, XML_CHAR_ENCODING_UTF8);
+	if (!dtd) {
+		fprintf(stderr, "Failed to parse DTD.\n");
+		abort();
+	}
+
+	doc = xmlCtxtReadFd(ctx, fd, "protocol", NULL, 0);
+	if (!doc) {
+		fprintf(stderr, "Failed to read XML\n");
+		abort();
+	}
+
+	rc = xmlValidateDtd(dtdctx, doc, dtd);
+	xmlFreeDoc(doc);
+	xmlFreeParserCtxt(ctx);
+	xmlFreeValidCtxt(dtdctx);
+	/* xmlIOParseDTD consumes buffer */
+
+	if (lseek(fd, 0, SEEK_SET) != 0) {
+		fprintf(stderr, "Failed to reset fd, output would be garbage.\n");
+		abort();
+	}
+#endif
+	return rc;
 }
 
 #define XML_BUFFER_SIZE 4096
@@ -1616,6 +1678,15 @@ int main(int argc, char *argv[])
 	memset(&ctx, 0, sizeof ctx);
 	ctx.protocol = &protocol;
 	ctx.loc.filename = "<stdin>";
+
+	if (!is_dtd_valid(input)) {
+		fprintf(stderr,
+		"*******************************************************\n"
+		"*                                                     *\n"
+		"* WARNING: XML failed validation against built-in DTD *\n"
+		"*                                                     *\n"
+		"*******************************************************\n");
+	}
 
 	/* create XML parser */
 	ctx.parser = XML_ParserCreate(NULL);
