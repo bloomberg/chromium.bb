@@ -10,7 +10,7 @@ import android.view.MenuItem;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.appmenu.ChromeAppMenuPropertiesDelegate;
+import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.tab.Tab;
 
 import java.util.HashMap;
@@ -20,15 +20,14 @@ import java.util.Map;
 /**
  * App menu properties delegate for {@link CustomTabActivity}.
  */
-public class CustomTabAppMenuPropertiesDelegate extends ChromeAppMenuPropertiesDelegate {
+public class CustomTabAppMenuPropertiesDelegate extends AppMenuPropertiesDelegate {
     private boolean mIsCustomEntryAdded;
     private List<String> mMenuEntries;
     private Map<MenuItem, Integer> mItemToIndexMap = new HashMap<MenuItem, Integer>();
     /**
      * Creates an {@link CustomTabAppMenuPropertiesDelegate} instance.
      */
-    public CustomTabAppMenuPropertiesDelegate(ChromeActivity activity,
-            List<String> menuEntries) {
+    public CustomTabAppMenuPropertiesDelegate(ChromeActivity activity, List<String> menuEntries) {
         super(activity);
         mMenuEntries = menuEntries;
     }

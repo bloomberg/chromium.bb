@@ -31,7 +31,6 @@ import org.chromium.chrome.browser.IntentHandler.ExternalAppId;
 import org.chromium.chrome.browser.KeyboardShortcuts;
 import org.chromium.chrome.browser.WebContentsFactory;
 import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegate;
-import org.chromium.chrome.browser.appmenu.ChromeAppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChangeReason;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManagerDocument;
 import org.chromium.chrome.browser.rappor.RapporServiceBridge;
@@ -350,7 +349,7 @@ public class CustomTabActivity extends ChromeActivity {
     }
 
     @Override
-    protected ChromeAppMenuPropertiesDelegate createAppMenuPropertiesDelegate() {
+    protected AppMenuPropertiesDelegate createAppMenuPropertiesDelegate() {
         return new CustomTabAppMenuPropertiesDelegate(this, mIntentDataProvider.getMenuTitles());
     }
 

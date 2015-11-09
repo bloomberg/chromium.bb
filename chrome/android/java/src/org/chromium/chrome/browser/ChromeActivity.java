@@ -58,7 +58,6 @@ import org.chromium.chrome.browser.appmenu.AppMenu;
 import org.chromium.chrome.browser.appmenu.AppMenuHandler;
 import org.chromium.chrome.browser.appmenu.AppMenuObserver;
 import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegate;
-import org.chromium.chrome.browser.appmenu.ChromeAppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.bookmark.ManageBookmarkActivity;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
@@ -151,8 +150,8 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         /**
          * @return AppMenuHandler for the given activity and menu resource id.
          */
-        public AppMenuHandler get(Activity activity,
-                AppMenuPropertiesDelegate delegate, int menuResourceId);
+        public AppMenuHandler get(Activity activity, AppMenuPropertiesDelegate delegate,
+                int menuResourceId);
     }
 
     /**
@@ -207,7 +206,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     private SnackbarManager mSnackbarManager;
     private LoFiBarPopupController mLoFiBarPopupController;
     private DataUseSnackbarController mDataUseSnackbarController;
-    private ChromeAppMenuPropertiesDelegate mAppMenuPropertiesDelegate;
+    private AppMenuPropertiesDelegate mAppMenuPropertiesDelegate;
     private AppMenuHandler mAppMenuHandler;
     private ToolbarManager mToolbarManager;
     private BookmarkModelObserver mBookmarkObserver;
@@ -385,11 +384,11 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     }
 
     /**
-     * @return {@link ChromeAppMenuPropertiesDelegate} instance that the {@link AppMenuHandler}
+     * @return {@link AppMenuPropertiesDelegate} instance that the {@link AppMenuHandler}
      *         should be using in this activity.
      */
-    protected ChromeAppMenuPropertiesDelegate createAppMenuPropertiesDelegate() {
-        return new ChromeAppMenuPropertiesDelegate(this);
+    protected AppMenuPropertiesDelegate createAppMenuPropertiesDelegate() {
+        return new AppMenuPropertiesDelegate(this);
     }
 
     /**
@@ -1344,7 +1343,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
      * @return The {@link AppMenuPropertiesDelegate} associated with this activity.
      */
     @VisibleForTesting
-    public ChromeAppMenuPropertiesDelegate getAppMenuPropertiesDelegate() {
+    public AppMenuPropertiesDelegate getAppMenuPropertiesDelegate() {
         return mAppMenuPropertiesDelegate;
     }
 

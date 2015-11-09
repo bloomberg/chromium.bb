@@ -31,7 +31,7 @@ import org.chromium.chrome.browser.WindowDelegate;
 import org.chromium.chrome.browser.appmenu.AppMenuButtonHelper;
 import org.chromium.chrome.browser.appmenu.AppMenuHandler;
 import org.chromium.chrome.browser.appmenu.AppMenuObserver;
-import org.chromium.chrome.browser.appmenu.ChromeAppMenuPropertiesDelegate;
+import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.compositor.Invalidator;
 import org.chromium.chrome.browser.compositor.layouts.EmptyOverviewModeObserver;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
@@ -120,7 +120,7 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
     private TemplateUrlServiceObserver mTemplateUrlObserver;
     private final LocationBar mLocationBar;
     private FindToolbarManager mFindToolbarManager;
-    private final ChromeAppMenuPropertiesDelegate mAppMenuPropertiesDelegate;
+    private final AppMenuPropertiesDelegate mAppMenuPropertiesDelegate;
 
     private final TabObserver mTabObserver;
     private final BookmarksBridge.BookmarkModelObserver mBookmarksObserver;
@@ -154,7 +154,7 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
      */
     public ToolbarManager(final ChromeActivity activity,
             ToolbarControlContainer controlContainer, final AppMenuHandler menuHandler,
-            ChromeAppMenuPropertiesDelegate appMenuPropertiesDelegate,
+            AppMenuPropertiesDelegate appMenuPropertiesDelegate,
             Invalidator invalidator) {
         mActionBarDelegate = new ActionModeController.ActionBarDelegate() {
             @Override
