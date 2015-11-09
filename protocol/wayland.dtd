@@ -1,4 +1,4 @@
-<!ELEMENT protocol (copyright?, interface+)>
+<!ELEMENT protocol (copyright?, description?, interface+)>
   <!ATTLIST protocol name CDATA #REQUIRED>
 <!ELEMENT copyright (#PCDATA)>
 <!ELEMENT interface (description?,(request|event|enum)+)>
