@@ -32,6 +32,10 @@ class ClearBrowserDataHandler : public OptionsPageUIHandler,
 
   void UpdateInfoBannerVisibility();
 
+  // Constructs the text to be displayed by a counter from the given |result|.
+  static base::string16 GetCounterTextFromResult(
+      const BrowsingDataCounter::Result* result);
+
  private:
   // Javascript callback for when the CBD dialog is opened. The caller does
   // not provide any parameters, so |value| is unused.

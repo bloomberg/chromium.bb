@@ -1571,6 +1571,7 @@
       'browser/ui/webui/help/version_updater_chromeos_unittest.cc',
       'browser/ui/webui/ntp/ntp_user_data_logger_unittest.cc',
       'browser/ui/webui/options/autofill_options_handler_unittest.cc',
+      'browser/ui/webui/options/clear_browser_data_handler_unittest.cc',
       'browser/ui/webui/options/language_options_handler_unittest.cc',
       'browser/ui/webui/options/pepper_flash_content_settings_utils_unittest.cc',
       'browser/ui/webui/options/sync_setup_handler_unittest.cc',

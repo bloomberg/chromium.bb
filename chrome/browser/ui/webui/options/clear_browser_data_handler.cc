@@ -16,6 +16,7 @@
 #include "base/values.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browsing_data/autofill_counter.h"
 #include "chrome/browser/browsing_data/browsing_data_counter.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
@@ -89,6 +90,7 @@ void ClearBrowserDataHandler::InitializeHandler() {
     AddCounter(make_scoped_ptr(new PasswordsCounter()));
     AddCounter(make_scoped_ptr(new HistoryCounter()));
     AddCounter(make_scoped_ptr(new CacheCounter()));
+    AddCounter(make_scoped_ptr(new AutofillCounter()));
 
     sync_service_ =
         ProfileSyncServiceFactory::GetForProfile(Profile::FromWebUI(web_ui()));
@@ -133,6 +135,130 @@ void ClearBrowserDataHandler::UpdateInfoBannerVisibility() {
 
   web_ui()->CallJavascriptFunction("ClearBrowserDataOverlay.setBannerText",
                                    base::StringValue(text));
+}
+
+// static
+base::string16 ClearBrowserDataHandler::GetCounterTextFromResult(
+    const BrowsingDataCounter::Result* result) {
+  base::string16 text;
+  std::string pref_name = result->source()->GetPrefName();
+
+  if (!result->Finished()) {
+    // The counter is still counting.
+    text = l10n_util::GetStringUTF16(IDS_CLEAR_BROWSING_DATA_CALCULATING);
+
+  } else if (pref_name == prefs::kDeletePasswords) {
+    // Passwords counter.
+    BrowsingDataCounter::ResultInt passwords_count =
+        static_cast<const BrowsingDataCounter::FinishedResult*>(
+            result)->Value();
+    text = l10n_util::GetPluralStringFUTF16(
+        IDS_DEL_PASSWORDS_COUNTER, passwords_count);
+
+  } else if (pref_name == prefs::kDeleteCache) {
+    // Cache counter.
+    BrowsingDataCounter::ResultInt cache_size_bytes =
+        static_cast<const BrowsingDataCounter::FinishedResult*>(
+            result)->Value();
+
+    PrefService* prefs = result->source()->GetProfile()->GetPrefs();
+    BrowsingDataRemover::TimePeriod time_period =
+        static_cast<BrowsingDataRemover::TimePeriod>(
+            prefs->GetInteger(prefs::kDeleteTimePeriod));
+
+    // Three cases: Nonzero result for the entire cache, nonzero result for
+    // a subset of cache (i.e. a finite time interval), and almost zero (< 1MB).
+    static const int kBytesInAMegabyte = 1024 * 1024;
+    if (cache_size_bytes >= kBytesInAMegabyte) {
+      base::string16 formatted_size = ui::FormatBytes(cache_size_bytes);
+      text = time_period == BrowsingDataRemover::EVERYTHING
+          ? formatted_size
+          : l10n_util::GetStringFUTF16(IDS_DEL_CACHE_COUNTER_UPPER_ESTIMATE,
+                                       formatted_size);
+    } else {
+      base::string16 formatted_size = ui::FormatBytes(kBytesInAMegabyte);
+      text = l10n_util::GetStringFUTF16(IDS_DEL_CACHE_COUNTER_UPPER_ESTIMATE,
+                                        formatted_size);
+    }
+
+  } else if (pref_name == prefs::kDeleteBrowsingHistory) {
+    // History counter.
+    const HistoryCounter::HistoryResult* history_result =
+        static_cast<const HistoryCounter::HistoryResult*>(result);
+    BrowsingDataCounter::ResultInt local_item_count = history_result->Value();
+    bool has_synced_visits = history_result->has_synced_visits();
+
+    text = has_synced_visits
+        ? l10n_util::GetPluralStringFUTF16(
+              IDS_DEL_BROWSING_HISTORY_COUNTER_SYNCED, local_item_count)
+        : l10n_util::GetPluralStringFUTF16(
+              IDS_DEL_BROWSING_HISTORY_COUNTER, local_item_count);
+
+  } else if (pref_name == prefs::kDeleteFormData) {
+    // Autofill counter.
+    const AutofillCounter::AutofillResult* autofill_result =
+        static_cast<const AutofillCounter::AutofillResult*>(result);
+    AutofillCounter::ResultInt num_suggestions = autofill_result->Value();
+    AutofillCounter::ResultInt num_credit_cards =
+        autofill_result->num_credit_cards();
+    AutofillCounter::ResultInt num_addresses = autofill_result->num_addresses();
+
+    std::vector<base::string16> displayed_strings;
+
+    if (num_credit_cards) {
+      displayed_strings.push_back(l10n_util::GetPluralStringFUTF16(
+          IDS_DEL_AUTOFILL_COUNTER_CREDIT_CARDS, num_credit_cards));
+    }
+    if (num_addresses) {
+      displayed_strings.push_back(l10n_util::GetPluralStringFUTF16(
+          IDS_DEL_AUTOFILL_COUNTER_ADDRESSES, num_addresses));
+    }
+    if (num_suggestions) {
+      // We use a different wording for autocomplete suggestions based on the
+      // length of the entire string.
+      switch (displayed_strings.size()) {
+        case 0:
+          displayed_strings.push_back(l10n_util::GetPluralStringFUTF16(
+              IDS_DEL_AUTOFILL_COUNTER_SUGGESTIONS, num_suggestions));
+          break;
+        case 1:
+          displayed_strings.push_back(l10n_util::GetPluralStringFUTF16(
+              IDS_DEL_AUTOFILL_COUNTER_SUGGESTIONS_LONG, num_suggestions));
+          break;
+        case 2:
+          displayed_strings.push_back(l10n_util::GetPluralStringFUTF16(
+              IDS_DEL_AUTOFILL_COUNTER_SUGGESTIONS_SHORT, num_suggestions));
+          break;
+        default:
+          NOTREACHED();
+      }
+    }
+
+    // Construct the resulting string from the sections in |displayed_strings|.
+    switch (displayed_strings.size()) {
+      case 0:
+        text = l10n_util::GetStringUTF16(IDS_DEL_AUTOFILL_COUNTER_EMPTY);
+        break;
+      case 1:
+        text = displayed_strings[0];
+        break;
+      case 2:
+        text = l10n_util::GetStringFUTF16(IDS_DEL_AUTOFILL_COUNTER_TWO_TYPES,
+                                          displayed_strings[0],
+                                          displayed_strings[1]);
+        break;
+      case 3:
+        text = l10n_util::GetStringFUTF16(IDS_DEL_AUTOFILL_COUNTER_THREE_TYPES,
+                                          displayed_strings[0],
+                                          displayed_strings[1],
+                                          displayed_strings[2]);
+        break;
+      default:
+        NOTREACHED();
+    }
+  }
+
+  return text;
 }
 
 void ClearBrowserDataHandler::OnPageOpened(const base::ListValue* value) {
@@ -331,65 +457,10 @@ void ClearBrowserDataHandler::AddCounter(
 void ClearBrowserDataHandler::UpdateCounterText(
     scoped_ptr<BrowsingDataCounter::Result> result) {
   DCHECK(AreCountersEnabled());
-  base::string16 text;
-  std::string pref_name = result->source()->GetPrefName();
-
-  if (!result->Finished()) {
-    // The counter is still counting.
-    text = l10n_util::GetStringUTF16(IDS_CLEAR_BROWSING_DATA_CALCULATING);
-
-  } else if (pref_name == prefs::kDeletePasswords) {
-    // Passwords counter.
-    BrowsingDataCounter::ResultInt passwords_count =
-        static_cast<BrowsingDataCounter::FinishedResult*>(
-            result.get())->Value();
-    text = l10n_util::GetPluralStringFUTF16(
-        IDS_DEL_PASSWORDS_COUNTER, passwords_count);
-
-  } else if (pref_name == prefs::kDeleteCache) {
-    // Cache counter.
-    BrowsingDataCounter::ResultInt cache_size_bytes =
-        static_cast<BrowsingDataCounter::FinishedResult*>(
-            result.get())->Value();
-
-    PrefService* prefs = Profile::FromWebUI(web_ui())->GetPrefs();
-    BrowsingDataRemover::TimePeriod time_period =
-        static_cast<BrowsingDataRemover::TimePeriod>(
-            prefs->GetInteger(prefs::kDeleteTimePeriod));
-
-    // Three cases: Nonzero result for the entire cache, nonzero result for
-    // a subset of cache (i.e. a finite time interval), and almost zero (< 1MB).
-    static const int kBytesInAMegabyte = 1024 * 1024;
-    if (cache_size_bytes >= kBytesInAMegabyte) {
-      base::string16 formatted_size = ui::FormatBytes(cache_size_bytes);
-      text = time_period == BrowsingDataRemover::EVERYTHING
-          ? formatted_size
-          : l10n_util::GetStringFUTF16(IDS_DEL_CACHE_COUNTER_UPPER_ESTIMATE,
-                                       formatted_size);
-    } else {
-      base::string16 formatted_size = ui::FormatBytes(kBytesInAMegabyte);
-      text = l10n_util::GetStringFUTF16(IDS_DEL_CACHE_COUNTER_UPPER_ESTIMATE,
-                                        formatted_size);
-    }
-
-  } else if (pref_name == prefs::kDeleteBrowsingHistory) {
-    // History counter.
-    HistoryCounter::HistoryResult* history_result =
-        static_cast<HistoryCounter::HistoryResult*>(result.get());
-    BrowsingDataCounter::ResultInt local_item_count = history_result->Value();
-    bool has_synced_visits = history_result->has_synced_visits();
-
-    text = has_synced_visits
-        ? l10n_util::GetPluralStringFUTF16(
-              IDS_DEL_BROWSING_HISTORY_COUNTER_SYNCED, local_item_count)
-        : l10n_util::GetPluralStringFUTF16(
-              IDS_DEL_BROWSING_HISTORY_COUNTER, local_item_count);
-  }
-
   web_ui()->CallJavascriptFunction(
       "ClearBrowserDataOverlay.updateCounter",
-      base::StringValue(pref_name),
-      base::StringValue(text));
+      base::StringValue(result->source()->GetPrefName()),
+      base::StringValue(GetCounterTextFromResult(result.get())));
 }
 
 void ClearBrowserDataHandler::OnStateChanged() {
