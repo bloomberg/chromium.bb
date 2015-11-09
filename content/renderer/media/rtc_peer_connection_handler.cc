@@ -331,7 +331,9 @@ class CreateSessionDescriptionRequest
 
  protected:
   ~CreateSessionDescriptionRequest() override {
-    CHECK(webkit_request_.isNull());
+    DCHECK(main_thread_->BelongsToCurrentThread());
+    DLOG_IF(ERROR, !webkit_request_.isNull())
+        << "CreateSessionDescriptionRequest not completed. Shutting down?";
   }
 
   const scoped_refptr<base::SingleThreadTaskRunner> main_thread_;
@@ -378,7 +380,9 @@ class SetSessionDescriptionRequest
 
  protected:
   ~SetSessionDescriptionRequest() override {
-    DCHECK(webkit_request_.isNull());
+    DCHECK(main_thread_->BelongsToCurrentThread());
+    DLOG_IF(ERROR, !webkit_request_.isNull())
+        << "SetSessionDescriptionRequest not completed. Shutting down?";
   }
 
  private:
