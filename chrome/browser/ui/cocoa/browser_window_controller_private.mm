@@ -694,7 +694,7 @@ willPositionSheet:(NSWindow*)sheet
   // in startCustomAnimationToEnterFullScreenWithDuration. In order to prevent
   // multiple resizing messages from being sent to the renderer, we should call
   // adjustUIForEnteringFullscreen after the layout gets resized.
-  if ([self shouldUseCustomAppKitFullscreenTransition:YES])
+  if (isUsingCustomAnimation_)
     blockLayoutSubviews_ = YES;
   else
     [self adjustUIForEnteringFullscreen];
@@ -748,6 +748,7 @@ willPositionSheet:(NSWindow*)sheet
   enteringAppKitFullscreen_ = NO;
   enteringImmersiveFullscreen_ = NO;
   enteringPresentationMode_ = NO;
+  isUsingCustomAnimation_ = NO;
 
   [self showFullscreenExitBubbleIfNecessary];
   browser_->WindowFullscreenStateChanged();
@@ -761,7 +762,7 @@ willPositionSheet:(NSWindow*)sheet
   // Like windowWillEnterFullScreen, if we use custom animations,
   // adjustUIForExitingFullscreen should be called after the layout resizes in
   // startCustomAnimationToExitFullScreenWithDuration.
-  if ([self shouldUseCustomAppKitFullscreenTransition:NO])
+  if (isUsingCustomAnimation_)
     blockLayoutSubviews_ = YES;
   else
     [self adjustUIForExitingFullscreen];
@@ -776,6 +777,7 @@ willPositionSheet:(NSWindow*)sheet
   browser_->WindowFullscreenStateChanged();
 
   exitingAppKitFullscreen_ = NO;
+  isUsingCustomAnimation_ = NO;
   fullscreenTransition_.reset();
 
   blockLayoutSubviews_ = NO;
@@ -786,6 +788,7 @@ willPositionSheet:(NSWindow*)sheet
   enteringAppKitFullscreen_ = NO;
   fullscreenTransition_.reset();
   blockLayoutSubviews_ = NO;
+  isUsingCustomAnimation_ = NO;
   [self adjustUIForExitingFullscreenAndStopOmniboxSliding];
 }
 
@@ -793,6 +796,7 @@ willPositionSheet:(NSWindow*)sheet
   [self deregisterForContentViewResizeNotifications];
   exitingAppKitFullscreen_ = NO;
   fullscreenTransition_.reset();
+  isUsingCustomAnimation_ = NO;
   blockLayoutSubviews_ = NO;
   // Force a relayout to try and get the window back into a reasonable state.
   [self layoutSubviews];
@@ -1144,7 +1148,11 @@ willPositionSheet:(NSWindow*)sheet
       base::mac::ObjCCast<FramedBrowserWindow>([self window]);
   fullscreenTransition_.reset([[BrowserWindowFullscreenTransition alloc]
       initEnterWithWindow:framedBrowserWindow]);
-  return [fullscreenTransition_ customWindowsForFullScreenTransition];
+
+  NSArray* customWindows =
+      [fullscreenTransition_ customWindowsForFullScreenTransition];
+  isUsingCustomAnimation_ = !customWindows;
+  return customWindows;
 }
 
 - (NSArray*)customWindowsToExitFullScreenForWindow:(NSWindow*)window {
@@ -1159,7 +1167,10 @@ willPositionSheet:(NSWindow*)sheet
       initExitWithWindow:framedBrowserWindow
                    frame:savedRegularWindowFrame_]);
 
-  return [fullscreenTransition_ customWindowsForFullScreenTransition];
+  NSArray* customWindows =
+      [fullscreenTransition_ customWindowsForFullScreenTransition];
+  isUsingCustomAnimation_ = !customWindows;
+  return customWindows;
 }
 
 - (void)window:(NSWindow*)window

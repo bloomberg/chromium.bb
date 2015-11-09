@@ -153,6 +153,11 @@ class Command;
   // primary screen.
   BOOL enteringAppKitFullscreenOnPrimaryScreen_;
 
+  // This flag is set to true when |customWindowsToEnterFullScreenForWindow:|
+  // and |customWindowsToExitFullScreenForWindow:| are called and did not
+  // return nil.
+  BOOL isUsingCustomAnimation_;
+
   // The size of the original (non-fullscreen) window.  This is saved just
   // before entering fullscreen mode and is only valid when |-isFullscreen|
   // returns YES.
