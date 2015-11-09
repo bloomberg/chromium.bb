@@ -111,7 +111,7 @@ private:
 
 struct SameSizeAsRuleData {
     DISALLOW_NEW();
-    void* a;
+    RawPtrWillBeMember<void*> a;
     unsigned b;
     unsigned c;
     unsigned d[4];

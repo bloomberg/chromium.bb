@@ -47,7 +47,7 @@ struct SameSizeAsShadowRoot : public DocumentFragment, public TreeScope, public 
 #if ENABLE(OILPAN)
     char emptyClassFieldsDueToGCMixinMarker[1];
 #endif
-    void* pointers[3];
+    RawPtrWillBeMember<void*> willbeMember[3];
     unsigned countersAndFlags[1];
 };
 

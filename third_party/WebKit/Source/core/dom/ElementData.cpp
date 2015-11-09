@@ -39,7 +39,8 @@ namespace blink {
 
 struct SameSizeAsElementData : public RefCountedWillBeGarbageCollectedFinalized<SameSizeAsElementData> {
     unsigned bitfield;
-    void* pointers[3];
+    RawPtrWillBeMember<void*> willbeMember;
+    void* pointers[2];
 };
 
 static_assert(sizeof(ElementData) == sizeof(SameSizeAsElementData), "ElementData should stay small");

@@ -99,7 +99,8 @@ using namespace HTMLNames;
 
 struct SameSizeAsNode : NODE_BASE_CLASSES {
     uint32_t m_nodeFlags;
-    void* m_pointer[5];
+    RawPtrWillBeMember<void*> m_willbeMember[4];
+    void* m_pointer;
 };
 
 static_assert(sizeof(Node) <= sizeof(SameSizeAsNode), "Node should stay small");
