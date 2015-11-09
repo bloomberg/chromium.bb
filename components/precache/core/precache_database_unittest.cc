@@ -95,12 +95,14 @@ class PrecacheDatabaseTest : public testing::Test {
   void RecordFetchFromCacheCellular(const GURL& url,
                                     const base::Time& fetch_time, int64 size);
 
+  // Must be declared first so that it is destroyed last.
+  base::ScopedTempDir scoped_temp_dir_;
+
   // Having this MessageLoop member variable causes base::MessageLoop::current()
   // to be set properly.
   base::MessageLoopForUI loop_;
 
   scoped_refptr<PrecacheDatabase> precache_database_;
-  base::ScopedTempDir scoped_temp_dir_;
   base::HistogramTester histograms_;
   base::HistogramTester::CountsMap expected_histogram_counts_;
 

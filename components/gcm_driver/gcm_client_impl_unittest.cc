@@ -373,6 +373,10 @@ class GCMClientImplTest : public testing::Test,
   }
 
  private:
+  // Must be declared first so that it is destroyed last. Injected to
+  // GCM client.
+  base::ScopedTempDir temp_directory_;
+
   // Variables used for verification.
   LastEvent last_event_;
   std::string last_app_id_;
@@ -391,8 +395,7 @@ class GCMClientImplTest : public testing::Test,
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
   base::ThreadTaskRunnerHandle task_runner_handle_;
 
-  // Injected to GCM client:
-  base::ScopedTempDir temp_directory_;
+  // Injected to GCM client.
   scoped_refptr<net::TestURLRequestContextGetter> url_request_context_getter_;
 };
 

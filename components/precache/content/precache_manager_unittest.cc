@@ -21,6 +21,7 @@
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/precache/core/precache_switches.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/http/http_status_code.h"
@@ -146,8 +147,9 @@ class PrecacheManagerTest : public testing::Test {
                              net::URLRequestStatus::FAILED);
   }
 
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  // Must be declared first so that it is destroyed last.
   content::TestBrowserContext browser_context_;
+  content::TestBrowserThreadBundle test_browser_thread_bundle_;
   PrecacheManagerUnderTest precache_manager_;
   TestURLFetcherCallback url_callback_;
   net::FakeURLFetcherFactory factory_;
