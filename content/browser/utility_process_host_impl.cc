@@ -230,26 +230,36 @@ bool UtilityProcessHostImpl::StartProcess() {
   } else {
     const base::CommandLine& browser_command_line =
         *base::CommandLine::ForCurrentProcess();
-    int child_flags = child_flags_;
 
     bool has_cmd_prefix = browser_command_line.HasSwitch(
         switches::kUtilityCmdPrefix);
 
-    // When running under gdb, forking /proc/self/exe ends up forking the gdb
-    // executable instead of Chromium. It is almost safe to assume that no
-    // updates will happen while a developer is running with
-    // |switches::kUtilityCmdPrefix|. See ChildProcessHost::GetChildPath() for
-    // a similar case with Valgrind.
-    if (has_cmd_prefix)
-      child_flags = ChildProcessHost::CHILD_NORMAL;
+    #if defined(OS_ANDROID)
+      // readlink("/prof/self/exe") sometimes fails on Android at startup.
+      // As a workaround skip calling it here, since the executable name is
+      // not needed on Android anyway. See crbug.com/500854.
+      base::CommandLine* cmd_line =
+          new base::CommandLine(base::CommandLine::NO_PROGRAM);
+    #else
+      int child_flags = child_flags_;
 
-    base::FilePath exe_path = ChildProcessHost::GetChildPath(child_flags);
-    if (exe_path.empty()) {
-      NOTREACHED() << "Unable to get utility process binary name.";
-      return false;
-    }
+      // When running under gdb, forking /proc/self/exe ends up forking the gdb
+      // executable instead of Chromium. It is almost safe to assume that no
+      // updates will happen while a developer is running with
+      // |switches::kUtilityCmdPrefix|. See ChildProcessHost::GetChildPath() for
+      // a similar case with Valgrind.
+      if (has_cmd_prefix)
+        child_flags = ChildProcessHost::CHILD_NORMAL;
 
-    base::CommandLine* cmd_line = new base::CommandLine(exe_path);
+      base::FilePath exe_path = ChildProcessHost::GetChildPath(child_flags);
+      if (exe_path.empty()) {
+        NOTREACHED() << "Unable to get utility process binary name.";
+        return false;
+      }
+
+      base::CommandLine* cmd_line = new base::CommandLine(exe_path);
+    #endif
+
     cmd_line->AppendSwitchASCII(switches::kProcessType,
                                 switches::kUtilityProcess);
     cmd_line->AppendSwitchASCII(switches::kProcessChannelID, channel_id);
