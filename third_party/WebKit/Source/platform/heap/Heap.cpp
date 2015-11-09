@@ -75,27 +75,8 @@ public:
     GCScope(ThreadState* state, BlinkGC::StackState stackState, BlinkGC::GCType gcType)
         : m_state(state)
         , m_gcForbiddenScope(state)
-        // See collectGarbageForTerminatingThread() comment on why a
-        // safepoint scope isn't entered for its GCScope.
-        , m_safePointScope(stackState, gcType != BlinkGC::ThreadTerminationGC ? state : nullptr)
-        , m_gcType(gcType)
-        , m_parkedAllThreads(false)
     {
-        TRACE_EVENT0("blink_gc", "Heap::GCScope");
-        const char* samplingState = TRACE_EVENT_GET_SAMPLING_STATE();
-        if (m_state->isMainThread())
-            TRACE_EVENT_SET_SAMPLING_STATE("blink_gc", "BlinkGCWaiting");
-
         ASSERT(m_state->checkThread());
-
-        double startTime = WTF::currentTimeMS();
-        // TODO(haraken): In an unlikely coincidence that two threads decide
-        // to collect garbage at the same time, avoid doing two GCs in
-        // a row.
-        if (LIKELY(gcType != BlinkGC::ThreadTerminationGC && ThreadState::stopThreads()))
-            m_parkedAllThreads = true;
-        double timeForStoppingThreads = WTF::currentTimeMS() - startTime;
-        Platform::current()->histogramCustomCounts("BlinkGC.TimeForStoppingThreads", timeForStoppingThreads, 1, 1000, 50);
 
         switch (gcType) {
         case BlinkGC::GCWithSweep:
@@ -111,33 +92,58 @@ public:
         default:
             ASSERT_NOT_REACHED();
         }
-
-        if (m_state->isMainThread())
-            TRACE_EVENT_SET_NONCONST_SAMPLING_STATE(samplingState);
     }
-
-    bool allThreadsParked() const { return m_parkedAllThreads; }
-    Visitor* visitor() const { return m_visitor.get(); }
 
     ~GCScope()
     {
-        // Only cleanup if we parked all threads in which case the GC happened
-        // and we need to resume the other threads.
-        if (LIKELY(m_gcType != BlinkGC::ThreadTerminationGC && m_parkedAllThreads))
-            ThreadState::resumeThreads();
     }
+
+    bool parkAllThreads(BlinkGC::StackState stackState, BlinkGC::GCType gcType)
+    {
+        TRACE_EVENT0("blink_gc", "Heap::GCScope");
+        const char* samplingState = TRACE_EVENT_GET_SAMPLING_STATE();
+        if (m_state->isMainThread())
+            TRACE_EVENT_SET_SAMPLING_STATE("blink_gc", "BlinkGCWaiting");
+
+        // TODO(haraken): In an unlikely coincidence that two threads decide
+        // to collect garbage at the same time, avoid doing two GCs in
+        // a row and return false.
+        double startTime = WTF::currentTimeMS();
+        bool allParked = gcType != BlinkGC::ThreadTerminationGC && ThreadState::stopThreads();
+        double timeForStoppingThreads = WTF::currentTimeMS() - startTime;
+        Platform::current()->histogramCustomCounts("BlinkGC.TimeForStoppingThreads", timeForStoppingThreads, 1, 1000, 50);
+
+        if (m_state->isMainThread())
+            TRACE_EVENT_SET_NONCONST_SAMPLING_STATE(samplingState);
+
+        return allParked;
+    }
+
+    Visitor* visitor() const { return m_visitor.get(); }
 
 private:
     ThreadState* m_state;
-    // The ordering of the two scope objects matters: GCs must first be forbidden
-    // before entering the safe point scope. Prior to reaching the safe point,
-    // ThreadState::runScheduledGC() is called. See its comment why we need
-    // to be in a GC forbidden scope when doing so.
+    // See ThreadState::runScheduledGC() why we need to already be in a
+    // GCForbiddenScope before any safe point is entered.
     GCForbiddenScope m_gcForbiddenScope;
-    SafePointScope m_safePointScope;
-    BlinkGC::GCType m_gcType;
     OwnPtr<Visitor> m_visitor;
-    bool m_parkedAllThreads; // False if we fail to park all threads
+};
+
+class ResumeThreadScope {
+public:
+    explicit ResumeThreadScope(BlinkGC::GCType gcType)
+        : m_resumeThreads(gcType != BlinkGC::ThreadTerminationGC)
+    {
+    }
+    ~ResumeThreadScope()
+    {
+        // Only cleanup if we parked all threads in which case the GC happened
+        // and we need to resume the other threads.
+        if (m_resumeThreads)
+            ThreadState::resumeThreads();
+    }
+private:
+    bool m_resumeThreads;
 };
 
 void Heap::flushHeapDoesNotContainCache()
@@ -381,10 +387,16 @@ void Heap::collectGarbage(BlinkGC::StackState stackState, BlinkGC::GCType gcType
     state->completeSweep();
 
     GCScope gcScope(state, stackState, gcType);
-    // Check if we successfully parked the other threads.  If not we bail out of
-    // the GC.
-    if (!gcScope.allThreadsParked())
+    // See collectGarbageForTerminatingThread() comment on why a
+    // safepoint scope isn't entered for it.
+    SafePointScope safePointScope(stackState, gcType != BlinkGC::ThreadTerminationGC ? state : nullptr);
+
+    // Try to park the other threads. If we're unable to, bail out of the GC.
+    if (!gcScope.parkAllThreads(stackState, gcType))
         return;
+
+    // Resume all parked threads upon leaving this scope.
+    ResumeThreadScope resumeThreads(gcType);
 
     if (state->isMainThread())
         ScriptForbiddenScope::enter();
