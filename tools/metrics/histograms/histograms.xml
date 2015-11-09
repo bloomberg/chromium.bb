@@ -22770,6 +22770,32 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Net.ErrorCodesForHTTPSGoogleMainFrame" enum="NetErrorCodes">
+  <obsolete>
+    Deprecated as of 2012/5/16, replaced by
+    Net.ErrorCodesForHTTPSGoogleMainFrame2, which measures the same data but
+    includes ERR_ABORT and OK.
+  </obsolete>
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    Errors resulting from loading pages from https://www.google.com. Note that
+    this only counts the errors in &quot;main frames&quot;, so it is a measure
+    of the error pages that users actually see (it does not for example count
+    the error codes for subresoures on a page). This is a temporary histogram,
+    added in order to debug query loss from the SSL Search launch.
+  </summary>
+</histogram>
+
+<histogram name="Net.ErrorCodesForHTTPSGoogleMainFrame2" enum="NetErrorCodes">
+  <owner>mmenke@chromium.org</owner>
+  <summary>
+    Positive net error codes that requests for pages end with, including net::OK
+    and net::ERR_ABORTED.  This only counts loads in &quot;main frames&quot; for
+    https://www.google.com. Subresources or main frame navigations to other
+    origins are not included.
+  </summary>
+</histogram>
+
 <histogram name="Net.ErrorCodesForImages" enum="NetErrorCodes">
   <owner>skonig@chromium.org</owner>
   <owner>hbengali@chromium.org</owner>
