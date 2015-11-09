@@ -32,7 +32,6 @@
 <translation id="1644184664548287040">A configuração de rede é inválida e não pode ser importada.</translation>
 <translation id="1655462015569774233">{1,plural, =1{Este servidor não conseguiu provar que é <ph name="DOMAIN" />; o seu certificado de segurança expirou ontem. Isto pode ser o resultado de uma configuração incorreta ou de um invasor a intercetar a sua ligação. O relógio do seu computador está atualmente configurado para <ph name="CURRENT_DATE" />. Será que isso está correto? Em caso negativo, deve corrigir o relógio do seu sistema e depois atualizar esta página.}other{Este servidor não conseguiu provar que é <ph name="DOMAIN" />; o seu certificado de segurança expirou há # dias. Isto pode ser o resultado de uma configuração incorreta ou de um invasor a intercetar a sua ligação. O relógio do seu computador está atualmente configurado para <ph name="CURRENT_DATE" />. Será que isso está correto? Em caso negativo, deve corrigir o relógio do seu sistema e depois atualizar esta página.}}</translation>
 <translation id="168841957122794586">O certificado do servidor contém uma chave criptográfica fraca.</translation>
-<translation id="1693754753824026215">A página em <ph name="SITE" /> indica:</translation>
 <translation id="1706954506755087368">{1,plural, =1{Este servidor não conseguiu provar que é <ph name="DOMAIN" />; o seu certificado de segurança é supostamente de amanhã. Isto pode ser o resultado de uma configuração incorreta ou de um invasor a intercetar a sua ligação.}other{Este servidor não conseguiu provar que é <ph name="DOMAIN" />; a data do seu certificado de segurança é supostamente daqui a # dias. Isto pode ser o resultado de uma configuração incorreta ou de um invasor a intercetar a sua ligação.}}</translation>
 <translation id="1710259589646384581">SO</translation>
 <translation id="1734864079702812349">Amex</translation>
@@ -227,6 +226,7 @@
 <translation id="6263376278284652872">Marcadores do <ph name="DOMAIN" /></translation>
 <translation id="6282194474023008486">Código postal</translation>
 <translation id="6337534724793800597">Filtrar políticas pelo nome</translation>
+<translation id="6342069812937806050">Mesmo agora</translation>
 <translation id="6355080345576803305">Substituição da sessão pública</translation>
 <translation id="6387478394221739770">Está interessado nas novas e fantásticas funcionalidades do Chrome? Experimente o nosso canal beta em chrome.com/beta.</translation>
 <translation id="6445051938772793705">País</translation>
@@ -252,7 +252,6 @@
 <translation id="6965978654500191972">Dispositivo</translation>
 <translation id="6970216967273061347">Distrito</translation>
 <translation id="6973656660372572881">Foram especificados servidores proxy fixos e um URL de script .pac.</translation>
-<translation id="6980028882292583085">Alerta de JavaScript</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7050187094878475250">Tentou aceder a <ph name="DOMAIN" />, mas o servidor apresentou um certificado cujo período de validade é demasiado longo para ser fidedigno.</translation>
 <translation id="7087282848513945231">Condado</translation>
@@ -275,7 +274,6 @@
 <translation id="7419106976560586862">Caminho do Perfil</translation>
 <translation id="7441627299479586546">Assunto da política incorreto</translation>
 <translation id="7485870689360869515">Não foram encontrados dados.</translation>
-<translation id="7521387064766892559">JavaScript</translation>
 <translation id="7537536606612762813">Obrigatório</translation>
 <translation id="7542995811387359312">O preenchimento automático de cartões de crédito está desactivado, porque este formulário não utiliza uma ligação segura.</translation>
 <translation id="7567204685887185387">Este servidor não conseguiu provar que é o domínio <ph name="DOMAIN" />; o respetivo certificado de segurança poderá ter sido emitido de forma fraudulenta. Isto pode ser o resultado de uma configuração incorreta ou de um invasor a intercetar a sua ligação.</translation>

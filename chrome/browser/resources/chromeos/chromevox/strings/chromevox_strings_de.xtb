@@ -52,6 +52,7 @@
 <translation id="1594072653727561613">mnu</translation>
 <translation id="1610130962244179598">Zu 6-Punkt-Braille wechseln</translation>
 <translation id="1611168825862729585">Spaltenüberschrift:</translation>
+<translation id="1611649489706141841">Weiter</translation>
 <translation id="1613476421962910979">Earcons sind aktiviert.</translation>
 <translation id="1618597272655350600">Vollständige Beschreibung der aktuellen Position ansagen</translation>
 <translation id="1639634871799530612">{COUNT,plural, =1{Größer-als-Zeichen}other{# Größer-als-Zeichen}}</translation>
@@ -393,6 +394,7 @@
 <translation id="5054047268577924192">Vorheriges Listenelement</translation>
 <translation id="5078661581131202757">Dateiauswahl</translation>
 <translation id="5080758118274074384">Doppelgeklickt</translation>
+<translation id="5087864757604726239">zurück</translation>
 <translation id="5098541983634824365">Raster wird verlassen.</translation>
 <translation id="5102981729317424850">Symbolleiste</translation>
 <translation id="5105050547967751155">rq</translation>

@@ -119,7 +119,6 @@
 <translation id="2816165854387457183">تم اكتشاف اتصال بطيء بالإنترنت.</translation>
 <translation id="2842985007712546952">المجلد الرئيسي</translation>
 <translation id="2870560284913253234">الموقع</translation>
-<translation id="2873598956318269337">{NUM_URLS,plural, =1{‏عنوان URL واحد في الجوار}zero{‏# عنوان URL في الجوار}two{‏عنوانان (#) URL في الجوار}few{‏# عناوين URL في الجوار}many{‏# عنوان URL في الجوار}other{‏# عنوان URL في الجوار}}</translation>
 <translation id="2888126860611144412">‏حول Chrome</translation>
 <translation id="2891154217021530873">إيقاف تحميل الصفحة</translation>
 <translation id="2902702728133930130">‏أخفق Chrome أثناء بدء التشغيل بسبب خطأ غير متوقع.</translation>
@@ -156,6 +155,7 @@
 <translation id="3343085080042659442">‏إصدار Chrome قديم. تتوفر تحسينات أمان مهمة وميزات جديدة في أحدث إصدار.</translation>
 <translation id="3350687908700087792">إغلاق كافة علامات تبويب التصفح المتخفي</translation>
 <translation id="3358663646935160692">‏تتم إدارة هذا الحساب من خلال <ph name="DOMAIN_NAME" />. لقد سجلت دخولك باستخدام حساب مُدار تمنح المشرف عليه إمكانية التحكم في ملفك الشخصي على Chrome. ستظل بياناتك على Chrome مرتبطة دائمًا بهذا الحساب. ويؤدي إلغاء الربط بهذا الحساب إلى حذف بيانات Chrome المحلية.</translation>
+<translation id="3384347053049321195">مشاركة صورة</translation>
 <translation id="3410346880900521918">إذا كنت تشاهد هذا بكثرة، فجرّب هذه <ph name="BEGIN_LINK" />الاقتراحات<ph name="END_LINK" />.</translation>
 <translation id="3414952576877147120">الحجم:</translation>
 <translation id="3485544713029068372">‏Smart Lock لكلمات المرور</translation>
@@ -455,6 +455,9 @@
 <translation id="7648422057306047504">‏تشفير كلمات المرور باستخدام بيانات اعتماد Google</translation>
 <translation id="7658239707568436148">إلغاء</translation>
 <translation id="7665369617277396874">إضافة حساب</translation>
+<translation id="7735023902678907596">لن تظهر الصفحات التي تشاهدها في علامات تبويب التصفح المتخفي في سجل متصفحك ولا في وحدة تخزين ملفات تعريف الارتباط ولا في سجل البحث بعد إغلاق جميع علامات تبويب التصفح المتخفي. وستُحفظ أي ملفات تم تنزيلها أو أي صفحات تم حفظها.
+
+لكنك لن تكون غير مرئي، فاستخدام وضع التصفح المتخفي لا يخفي تصفحك عن صاحب العمل أو مزود خدمة الإنترنت أو مواقع الويب التي تزورها.</translation>
 <translation id="7761240775244195612">هل تريد حذف <ph name="PAGES_NUMBER" /> نسخ في وضع عدم الاتصال والتي لم تستخدم في الشهر الماضي؟ سيعمل ذلك على تفريغ <ph name="TOTAL_PAGE_SIZE" /> من المساحة.</translation>
 <translation id="7764225426217299476">إضافة عنوان</translation>
 <translation id="7765158879357617694">نقل</translation>
@@ -541,7 +544,6 @@
 <translation id="885701979325669005">التخزين</translation>
 <translation id="886510833909353412">تشفير الكل باستخدام عبارة مرور</translation>
 <translation id="8872441722924401214">اختيار شهادة للمصادقة</translation>
-<translation id="8891135217544884558">‏عناوين URL للأجهزة المجاورة</translation>
 <translation id="8901170036886848654">لا توجد إشارات مرجعية</translation>
 <translation id="8909135823018751308">مشاركة…</translation>
 <translation id="8912362522468806198">‏حساب Google‏</translation>

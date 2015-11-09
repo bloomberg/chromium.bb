@@ -124,6 +124,7 @@ Host</translation>
 <translation id="3950820424414687140">Sign in</translation>
 <translation id="3989511127559254552">To continue, you must first grant extended access permissions to your computer. You only have to do this once.</translation>
 <translation id="4006787130661126000">You must enable remote connections if you want to use Chrome Remote Desktop to access this computer.</translation>
+<translation id="405887016757208221">The remote computer has failed to initialise the session. If problem persists please try to configure the host again.</translation>
 <translation id="4068946408131579958">All connections</translation>
 <translation id="409800995205263688">NOTE: Policy settings permit connections only between computers within your network.</translation>
 <translation id="4155497795971509630">Some required components are missing. Please make sure that you have installed the latest version of the software and try again.</translation>
@@ -258,6 +259,7 @@ Desktop Host</translation>
 <translation id="7869445566579231750">You do not have permission to run this application.</translation>
 <translation id="7948001860594368197">Screen options</translation>
 <translation id="7970576581263377361">Authentication failed. Please sign in to Chromium again.</translation>
+<translation id="7981525049612125370">The remote session has expired.</translation>
 <translation id="8041721485428375115">By downloading the Chrome Remote Desktop Host Installer, you are agreeing to the Google <ph name="LINK_BEGIN" />Terms of Service<ph name="LINK_END" />.</translation>
 <translation id="8073845705237259513">To use Chrome Remote Desktop, you'll need to add a Google Account to your device.</translation>
 <translation id="80739703311984697">The remote host requires you to authenticate to a third-party website. To continue, you must grant Chromoting additional permissions to access this address:</translation>

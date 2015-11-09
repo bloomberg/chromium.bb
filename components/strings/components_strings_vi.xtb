@@ -32,7 +32,6 @@
 <translation id="1644184664548287040">Cấu hình mạng không hợp lệ và không thể nhập được.</translation>
 <translation id="1655462015569774233">{1,plural, =1{Máy chủ này không chứng minh được rằng đó là <ph name="DOMAIN" />; chứng chỉ bảo mật của máy chủ này đã hết hạn hôm qua. Điều này có thể do cấu hình sai hoặc có kẻ tấn công chặn kết nối của bạn. Đồng hồ máy tính của bạn hiện được đặt là <ph name="CURRENT_DATE" />. Ngày này có đúng không? Nếu không đúng, bạn phải sửa lại đồng hồ của hệ thống rồi làm mới trang này.}other{Máy chủ này không chứng minh được rằng đó là <ph name="DOMAIN" />; chứng chỉ bảo mật của máy chủ này đã hết hạn cách đây # ngày. Điều này có thể do cấu hình sai hoặc có kẻ tấn công chặn kết nối của bạn. Đồng hồ máy tính của bạn hiện được đặt là <ph name="CURRENT_DATE" />. Ngày này có đúng không? Nếu không đúng, bạn phải sửa lại đồng hồ của hệ thống rồi làm mới trang này.}}</translation>
 <translation id="168841957122794586">Chứng chỉ máy chủ chứa khóa mật mã yếu.</translation>
-<translation id="1693754753824026215">Trang trên <ph name="SITE" /> cho biết:</translation>
 <translation id="1706954506755087368">{1,plural, =1{Máy chủ này không chứng minh được rằng đó là <ph name="DOMAIN" />; chứng chỉ bảo mật của máy chủ này được đề từ ngày mai. Điều này có thể do cấu hình sai hoặc có kẻ tấn công chặn kết nối của bạn.}other{Máy chủ này không chứng minh được rằng đó là <ph name="DOMAIN" />; chứng chỉ bảo mật của máy chủ này được đề # ngày trong tương lai. Điều này có thể do cấu hình sai hoặc có kẻ tấn công chặn kết nối của bạn.}}</translation>
 <translation id="1710259589646384581">OS</translation>
 <translation id="1734864079702812349">Amex</translation>
@@ -227,6 +226,7 @@
 <translation id="6263376278284652872">Dấu trang trên <ph name="DOMAIN" /></translation>
 <translation id="6282194474023008486">Mã bưu chính</translation>
 <translation id="6337534724793800597">Lọc chính sách theo tên</translation>
+<translation id="6342069812937806050">Vừa mới</translation>
 <translation id="6355080345576803305">Ghi đè phiên công khai</translation>
 <translation id="6387478394221739770">Bạn quan tâm đến các tính năng mới thú vị của Chrome? Hãy dùng thử kênh thử nghiệm beta của chúng tôi tại chrome.com/beta.</translation>
 <translation id="6445051938772793705">Quốc gia</translation>
@@ -252,7 +252,6 @@
 <translation id="6965978654500191972">Thiết bị</translation>
 <translation id="6970216967273061347">Quận</translation>
 <translation id="6973656660372572881">Cả hai máy chủ proxy cố định và URL tập lệnh .pac đều được chỉ định.</translation>
-<translation id="6980028882292583085">Cảnh báo JavaScript</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7050187094878475250">Bạn đã cố gắng truy cập <ph name="DOMAIN" /> nhưng máy chủ đã hiển thị chứng chỉ có thời gian hiệu lực quá dài để có thể tin cậy.</translation>
 <translation id="7087282848513945231">Hạt</translation>
@@ -275,7 +274,6 @@
 <translation id="7419106976560586862">Đường dẫn cấu hình</translation>
 <translation id="7441627299479586546">Chủ đề chính sách sai</translation>
 <translation id="7485870689360869515">Không tìm thấy dữ liệu.</translation>
-<translation id="7521387064766892559">JavaScript</translation>
 <translation id="7537536606612762813">Bắt buộc</translation>
 <translation id="7542995811387359312">Tính năng tự động điền thẻ tín dụng đã bị vô hiệu hóa vì biểu mẫu này không sử dụng kết nối an toàn.</translation>
 <translation id="7567204685887185387">Máy chủ này không chứng minh được rằng đó là <ph name="DOMAIN" />; chứng chỉ bảo mật của máy chủ này có thể đã bị gian lận khi phát hành. Điều này có thể do định cấu hình sai hoặc có kẻ tấn công chặn kết nối của bạn.</translation>

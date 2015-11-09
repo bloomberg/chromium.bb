@@ -119,7 +119,6 @@
 <translation id="2816165854387457183">Conexión lenta detectada.</translation>
 <translation id="2842985007712546952">Carpeta principal</translation>
 <translation id="2870560284913253234">Sitio</translation>
-<translation id="2873598956318269337">{NUM_URLS,plural, =1{1 URL cercana}other{# URLs cercanas}}</translation>
 <translation id="2888126860611144412">Acerca de Chrome</translation>
 <translation id="2891154217021530873">Detener la carga de la página</translation>
 <translation id="2902702728133930130">Se ha producido un error inesperado en Chrome durante el inicio.</translation>
@@ -543,7 +542,6 @@ Para obtener nuevas licencias, conéctate a Internet y reproduce el contenido de
 <translation id="885701979325669005">Almacenamiento</translation>
 <translation id="886510833909353412">Cifrar todo con frase de contraseña</translation>
 <translation id="8872441722924401214">Selecciona un certificado para la autenticación</translation>
-<translation id="8891135217544884558">URL cercanas</translation>
 <translation id="8901170036886848654">No se han encontrado marcadores</translation>
 <translation id="8909135823018751308">Compartir…</translation>
 <translation id="8912362522468806198">cuenta de Google</translation>

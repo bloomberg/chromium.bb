@@ -1725,7 +1725,7 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="3445830502289589282">Ověření Phase 2:</translation>
 <translation id="3445925074670675829">Zařízení USB Type-C</translation>
 <translation id="344630545793878684">Čtení vašich dat na mnoha webech</translation>
-<translation id="3447661539832366887">Vlastník tohoto zařízení vypnul hru s dinosaury.</translation>
+<translation id="3447661539832366887">Vlastník tohoto zařízení hru s dinosaurem vypnul.</translation>
 <translation id="3449839693241009168">Stiskem klávesy <ph name="SEARCH_KEY" /> odešlete příkazy pro rozšíření <ph name="EXTENSION_NAME" /></translation>
 <translation id="3450157232394774192">Procentuální zastoupení stavu nečinnosti</translation>
 <translation id="3450505713373650336">Probíhá zálohování <ph name="FILE_COUNT" /> fotek</translation>
@@ -3706,7 +3706,6 @@ Některé funkce nemusí být dostupné. Zkontrolujte, zda profil existuje a zda
 <translation id="6333834492048057036">Přejít na adresní řádek za účelem vyhledávání</translation>
 <translation id="6339034549827494595">Ruská fonetická klávesnice (AATSEEL)</translation>
 <translation id="6341850831632289108">Určit vaše fyzické umístění</translation>
-<translation id="6342069812937806050">Právě teď</translation>
 <translation id="634208815998129842">Správce úloh</translation>
 <translation id="6344170822609224263">Zobrazení seznamu síťových připojení</translation>
 <translation id="6344783595350022745">Smazat text</translation>

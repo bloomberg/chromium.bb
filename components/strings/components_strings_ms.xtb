@@ -28,11 +28,11 @@
 <translation id="1519264250979466059">Tarikh Bina</translation>
 <translation id="1549470594296187301">Javascript mesti didayakan untuk menggunakan ciri ini.</translation>
 <translation id="1559528461873125649">Tiada fail atau direktori sedemikian</translation>
+<translation id="1629803312968146339">Adakah anda mahu Chrome menyimpan kad ini?</translation>
 <translation id="1640180200866533862">Dasar pengguna</translation>
 <translation id="1644184664548287040">Konfigurasi rangkaian tidak sah dan tidak boleh diimport.</translation>
 <translation id="1655462015569774233">{1,plural, =1{Pelayan ini tidak dapat membuktikan bahawa <ph name="DOMAIN" />; sijil keselamatannya tamat tempoh semalam. Ini mungkin disebabkan oleh kesilapan konfigurasi atau penyerang yang memintas sambungan anda. Jam komputer anda ditetapkan kepada <ph name="CURRENT_DATE" /> pada masa ini. Adakah itu betul? Jika tidak, anda perlu membetulkan jam sistem anda dan kemudian muat semula halaman ini.}other{Pelayan ini tidak dapat membuktikan bahawa <ph name="DOMAIN" />; sijil keselamatannya tamat tempoh # hari yang lalu. Ini mungkin disebabkan oleh kesilapan konfigurasi atau penyerang yang memintas sambungan anda. Jam komputer anda ditetapkan kepada <ph name="CURRENT_DATE" /> pada masa ini. Adakah itu betul? Jika tidak, anda perlu membetulkan jam sistem anda dan kemudian muat semula halaman ini.}}</translation>
 <translation id="168841957122794586">Sijil pelayan mengandungi kunci kriptografi yang lemah.</translation>
-<translation id="1693754753824026215">Halaman di <ph name="SITE" /> menyatakan:</translation>
 <translation id="1706954506755087368">{1,plural, =1{Pelayan ini tidak dapat membuktikan bahawa itu <ph name="DOMAIN" />;sijil keselamatannya sepatutnya bermula esok. Ini mungkin disebabkan oleh kesilapan konfigurasi atau penyerang yang memintas sambungan anda.}other{Pelayan ini tidak dapat membuktikan bahawa itu <ph name="DOMAIN" />; sijil keselamatannya sepatutnya bermula # hari lagi. Ini mungkin disebabkan oleh kesilapan konfigurasi atau penyerang yang memintas sambungan anda.}}</translation>
 <translation id="1710259589646384581">OS</translation>
 <translation id="1734864079702812349">Amex</translation>
@@ -147,11 +147,13 @@
 <translation id="4117700440116928470">Skop dasar tidak disokong.</translation>
 <translation id="4120075327926916474">Adakah anda mahu Chrome menyimpan maklumat kad kredit ini dengan melengkapkan borang web?</translation>
 <translation id="4148925816941278100">American Express</translation>
+<translation id="4169947484918424451">Adakah anda mahu Chromium menyimpan kad ini?</translation>
 <translation id="4171400957073367226">Tandatangan pengesahan tidak sah</translation>
 <translation id="4196861286325780578">&amp;Buat semula pindahkan</translation>
 <translation id="4220128509585149162">Nahas</translation>
 <translation id="4250680216510889253">Tidak</translation>
 <translation id="4258748452823770588">Tandatangan tidak elok</translation>
+<translation id="4268298190799576220">Chromium tidak dapat mengesahkan kad anda pada masa ini. Sila cuba lagi nanti.</translation>
 <translation id="4269787794583293679">(Tiada nama pengguna)</translation>
 <translation id="4300246636397505754">Cadangan ibu bapa</translation>
 <translation id="4325863107915753736">Gagal menemui artikel</translation>
@@ -223,10 +225,12 @@
 <translation id="6151417162996330722">Sijil pelayan mempunyai tempoh sah yang terlalu panjang.</translation>
 <translation id="6154808779448689242">Token dasar yang dikembalikan tidak sepadan dengan token semasa</translation>
 <translation id="6165508094623778733">Ketahui lebih lanjut</translation>
+<translation id="6218753634732582820">Alih keluar alamat daripada Chromium?</translation>
 <translation id="6259156558325130047">&amp;Buat Asal Susun Semula</translation>
 <translation id="6263376278284652872">Penanda halaman <ph name="DOMAIN" /></translation>
 <translation id="6282194474023008486">Poskod</translation>
 <translation id="6337534724793800597">Tapis dasar mengikut nama</translation>
+<translation id="6342069812937806050">Sebentar tadi</translation>
 <translation id="6355080345576803305">Pembatalan sesi awam</translation>
 <translation id="6387478394221739770">Berminat dengan ciri Chrome baharu yang hebat? Cuba saluran beta kami di chrome.com/beta.</translation>
 <translation id="6445051938772793705">Negara</translation>
@@ -239,6 +243,7 @@
 <translation id="6628463337424475685"><ph name="ENGINE" /> Carian</translation>
 <translation id="6644283850729428850">Dasar ini telah dikecam.</translation>
 <translation id="6646897916597483132">Masukkan CVC 4 digit dari bahagian depan kad anda</translation>
+<translation id="6671697161687535275">Alih keluar cadangan borang daripada Chromium?</translation>
 <translation id="674375294223700098">Ralat sijil pelayan tidak diketahui.</translation>
 <translation id="6753269504797312559">Nilai dasar</translation>
 <translation id="6831043979455480757">Terjemah</translation>
@@ -252,7 +257,6 @@
 <translation id="6965978654500191972">Peranti</translation>
 <translation id="6970216967273061347">Daerah</translation>
 <translation id="6973656660372572881">Pelayan proksi tetap dan juga URL skrip .pac tidak ditetapkan.</translation>
-<translation id="6980028882292583085">Makluman Javascript</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7050187094878475250">Anda cuba untuk mencapai <ph name="DOMAIN" />, tetapi pelayan memberikan sijil yang tempoh sahnya terlalu panjang untuk boleh dipercayai.</translation>
 <translation id="7087282848513945231">Daerah</translation>
@@ -275,7 +279,6 @@
 <translation id="7419106976560586862">Laluan Profil</translation>
 <translation id="7441627299479586546">Subjek dasar salah</translation>
 <translation id="7485870689360869515">Tiada data dijumpai.</translation>
-<translation id="7521387064766892559">JavaScript</translation>
 <translation id="7537536606612762813">Wajib</translation>
 <translation id="7542995811387359312">Pengisian kad kredit automatik dilumpuhkan kerana borang ini tidak menggunakan sambungan selamat.</translation>
 <translation id="7567204685887185387">Pelayan ini tidak dapat membuktikan bahawa domainnya ialah <ph name="DOMAIN" />; sijil keselamatannya mungkin telah dikeluarkan melalui penipuan. Ini mungkin disebabkan oleh kesilapan konfigurasi atau penyerang yang memintasi sambungan anda.</translation>
@@ -284,6 +287,7 @@
 <translation id="7592362899630581445">Sijil pelayan melanggar kekangan nama.</translation>
 <translation id="7600965453749440009">Jangan sekali-kali terjemahkan <ph name="LANGUAGE" /></translation>
 <translation id="7610193165460212391">Nilai berada di luar julat <ph name="VALUE" /></translation>
+<translation id="7637571805876720304">Alih keluar kad kredit daripada Chromium?</translation>
 <translation id="7674629440242451245">Berminat dengan ciri Chrome baharu yang hebat? Cuba saluran pembangun kami di chrome.com/dev.</translation>
 <translation id="7752995774971033316">Tidak Diurus</translation>
 <translation id="7761701407923456692">Sijil pelayan tidak sepadan dengan URL.</translation>

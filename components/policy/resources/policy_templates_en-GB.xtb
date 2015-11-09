@@ -64,6 +64,9 @@
 
           This policy is only respected if the 'DefaultSearchProviderEnabled' policy is enabled.</translation>
 <translation id="1265053460044691532">Limit the time for which a user authenticated via SAML can log in offline</translation>
+<translation id="1291880496936992484">Warning: RC4 will be completely removed from <ph name="PRODUCT_NAME" /> after version 52 (around September 2016) and this policy will stop working then.
+
+      If the policy is not set, or is set to false, then RC4 cipher suites in TLS will not be enabled. Otherwise it may be set to true to retain compatibility with an outdated server. This is a stopgap measure and the server should be reconfigured.</translation>
 <translation id="1297182715641689552">Use a .pac proxy script</translation>
 <translation id="1300635491585192248">Predict network actions on any network that is not cellular</translation>
 <translation id="1304973015437969093">Extension/App IDs and update URLs to be silently installed</translation>
@@ -525,6 +528,9 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       If you enable or disable this setting, users cannot change or override the "Enable phishing and malware protection" setting in <ph name="PRODUCT_NAME" />.
 
       If this policy is left not set, this will be enabled but the user will be able to change it.</translation>
+<translation id="2801230735743888564">Allow users to play dinosaur easter egg game when device is offline.
+
+      If this policy is set to False, users will not be able to play the dinosaur Easter egg game when device is offline. If this setting is set to True, users are allowed to play the dinosaur game. If this policy is not set, users are not allowed to play the dinosaur Easter egg game on enrolled Chrome OS, but are allowed to play it under other circumstances.</translation>
 <translation id="2805707493867224476">Allow all sites to show pop-ups</translation>
 <translation id="2808013382476173118">Enables usage of STUN servers when remote clients are trying to establish a connection to this machine.
 
@@ -1134,6 +1140,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
           When this policy is unset, the default action is taken, which is suspend.
 
           If the action is suspend, <ph name="PRODUCT_OS_NAME" /> can separately be configured to either lock or not lock the screen before suspending.</translation>
+<translation id="5130288486815037971">Whether RC4 cipher suites in TLS are enabled</translation>
 <translation id="5141670636904227950">Set the default screen magnifier type enabled on the login screen</translation>
 <translation id="5142301680741828703">Always render the following URL patterns in <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="5148753489738115745">Allows you to specify additional parameters that are used when <ph name="PRODUCT_FRAME_NAME" /> launches <ph name="PRODUCT_NAME" />.
@@ -1426,6 +1433,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
           The recommended way to lock the screen on idle is to enable screen locking on suspend and have <ph name="PRODUCT_OS_NAME" /> suspend after the idle delay. This policy should only be used when screen locking should occur a significant amount of time sooner than suspend or when suspend on idle is not desired at all.
 
           The policy value should be specified in milliseconds. Values are clamped to be less than the idle delay.</translation>
+<translation id="6111936128861357925">Allow Dinosaur Easter Egg Game</translation>
 <translation id="6114416803310251055">deprecated</translation>
 <translation id="6145799962557135888">Allows you to set a list of url patterns that specify sites which are allowed to run JavaScript.
 
@@ -2059,6 +2067,18 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
       If this policy is not set there will be no exceptions to the blacklist from the 'URLBlacklist' policy.</translation>
 <translation id="8176035528522326671">Allow enterprise user to be primary multi-profile user only (Default behaviour for enterprise-managed users)</translation>
+<translation id="8191318459035150777">Configures the default homepage URL in <ph name="PRODUCT_NAME" /> and prevents users from changing it.
+
+          The homepage is the page opened by the Home button. The pages that open on start-up are controlled by the RestoreOnStartup policies.
+
+          The homepage type can either be set to a URL you specify here or set to the New Tab Page. If you select the New Tab Page, then this policy does not take effect.
+
+          If you enable this setting, users cannot change their homepage URL in <ph name="PRODUCT_NAME" />, but they can still choose the New Tab Page as their home page.
+
+          If this policy is not set, this will allow the user to choose their home page if HomepageIsNewTabPage is not set.
+
+          This policy is not available on Windows instances that are not joined
+          to an Active Directory domain.</translation>
 <translation id="8197918588508433925">This policy specifies the allowed extensions to use Enterprise Platform Keys API chrome.enterprise.platformKeysPrivate.challengeUserKey() for remote attestation. Extensions must be added to this list to use the API.
 
           If an extension is not in the list, or the list is not set, the call to the API will fail with an error code.</translation>
@@ -2175,6 +2195,8 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
           If you enable this setting, CNAME lookup will be skipped and the server name will be used as entered.
 
           If you disable this setting or leave it unset, the canonical name of the server will be determined via CNAME lookup.</translation>
+<translation id="8774131509736383471">If this policy is set to true, <ph name="PRODUCT_NAME" /> will unconditionally maximise the the first window shown on first run.
+      If this policy is set to false or not configured, the decision whether to maximise the first window shown will be based on the screen size.</translation>
 <translation id="8777120694819070607">Allows <ph name="PRODUCT_NAME" />.</translation>
 <translation id="87812015706645271">Requires that the name of the local user and the remote access host owner match</translation>
 <translation id="8782750230688364867">Specifies the percentage by which the screen dim delay is scaled when the device is in presentation mode.

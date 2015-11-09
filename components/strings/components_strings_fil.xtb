@@ -28,11 +28,11 @@
 <translation id="1519264250979466059">Petsa ng Build</translation>
 <translation id="1549470594296187301">Dapat naka-enable ang JavaScript upang magamit ang feature na ito.</translation>
 <translation id="1559528461873125649">Walang naturang file o direktoryo</translation>
+<translation id="1629803312968146339">Gusto mo bang i-save ng Chrome ang card na ito?</translation>
 <translation id="1640180200866533862">Mga patakaran ng user</translation>
 <translation id="1644184664548287040">Di-wasto ang configuration ng network at hindi maaaring i-import.</translation>
 <translation id="1655462015569774233">{1,plural, =1{Hindi mapatunayan ng server na ito na ito ang <ph name="DOMAIN" />; nag-expire na ang certificate ng seguridad nito kahapon. Maaaring resulta ito ng maling configuration o kaya ng isang attacker na humahadlang sa iyong koneksyon. Sa kasalukuyan, nakatakda ang orasan ng iyong computer sa <ph name="CURRENT_DATE" />. Mukha bang tama iyon? Kung hindi, dapat mong ayusin ang orasan ng iyong system at pagkatapos ay i-refresh ang page na ito.}one{Hindi mapatunayan ng server na ito na ito ang <ph name="DOMAIN" />; nag-expire na ang certificate ng seguridad nito # araw na ang nakalipas. Maaaring resulta ito ng maling configuration o kaya ng isang attacker na humahadlang sa iyong koneksyon. Sa kasalukuyan, nakatakda ang orasan ng iyong computer sa <ph name="CURRENT_DATE" />. Mukha bang tama iyon? Kung hindi, dapat mong ayusin ang orasan ng iyong system at pagkatapos ay i-refresh ang page na ito.}other{Hindi mapatunayan ng server na ito na ito ang <ph name="DOMAIN" />; nag-expire na ang certificate ng seguridad nito # na araw na ang nakalipas. Maaaring resulta ito ng maling configuration o kaya ng isang attacker na humahadlang sa iyong koneksyon. Sa kasalukuyan, nakatakda ang orasan ng iyong computer sa <ph name="CURRENT_DATE" />. Mukha bang tama iyon? Kung hindi, dapat mong ayusin ang orasan ng iyong system at pagkatapos ay i-refresh ang page na ito.}}</translation>
 <translation id="168841957122794586">Naglalaman ang server certificate ng isang mahinang cryptographic key.</translation>
-<translation id="1693754753824026215">Isinasaad ng page sa <ph name="SITE" /> na:</translation>
 <translation id="1706954506755087368">{1,plural, =1{Hindi mapatunayan ng server na ito na ito ang <ph name="DOMAIN" />; tinatayang mula sa susunod na araw ang certificate ng seguridad nito. Maaaring resulta ito ng maling configuration o kaya ng isang attacker na humahadlang sa iyong koneksyon.}one{Hindi mapatunayan ng server na ito na ito ang <ph name="DOMAIN" />; tinatayang mula sa # araw sa hinaharap ang certificate ng seguridad nito. Maaaring resulta ito ng maling configuration o kaya ng isang attacker na humahadlang sa iyong koneksyon.}other{Hindi mapatunayan ng server na ito na ito ang <ph name="DOMAIN" />; tinatayang mula sa # na araw sa hinaharap ang certificate ng seguridad nito. Maaaring resulta ito ng maling configuration o kaya ng isang attacker na humahadlang sa iyong koneksyon.}}</translation>
 <translation id="1710259589646384581">OS</translation>
 <translation id="1734864079702812349">Amex</translation>
@@ -147,11 +147,13 @@
 <translation id="4117700440116928470">Hindi sinusuportahan ang saklaw ng patakaran.</translation>
 <translation id="4120075327926916474">Gusto mo bang i-save ng Chrome ang impormasyon ng credit card na ito para sa pagkumpleto ng mga form ng web?</translation>
 <translation id="4148925816941278100">American Express</translation>
+<translation id="4169947484918424451">Gusto mo bang i-save ng Chromium ang card na ito?</translation>
 <translation id="4171400957073367226">Hindi wasto ang signature sa pag-verify</translation>
 <translation id="4196861286325780578">&amp;Gawing muli ang paglilipat</translation>
 <translation id="4220128509585149162">Mga Pag-crash</translation>
 <translation id="4250680216510889253">Hindi</translation>
 <translation id="4258748452823770588">Maling lagda</translation>
+<translation id="4268298190799576220">Hindi na-verify ng Chromium ang iyong card sa pagkakataong ito. Pakisubukang muli sa ibang pagkakataon.</translation>
 <translation id="4269787794583293679">(Walang username)</translation>
 <translation id="4300246636397505754">Mga suhestyon ng magulang</translation>
 <translation id="4325863107915753736">Hindi nahanap ang artikulo</translation>
@@ -223,10 +225,12 @@
 <translation id="6151417162996330722">Masyadong mahaba ang panahon ng pagkakaroon ng bisa ng certificate ng server.</translation>
 <translation id="6154808779448689242">Hindi tumutugma ang ibinalik na token sa patakaran sa kasalukuyang token</translation>
 <translation id="6165508094623778733">Matuto nang higit pa</translation>
+<translation id="6218753634732582820">Gusto mo bang alisin ang address sa Chromium?</translation>
 <translation id="6259156558325130047">&amp;Gawing Muli ang Pagbabago sa Ayos</translation>
 <translation id="6263376278284652872">Mga bookmark ng <ph name="DOMAIN" /></translation>
 <translation id="6282194474023008486">Postal code</translation>
 <translation id="6337534724793800597">I-filter ang mga patakaran ayon sa pangalan</translation>
+<translation id="6342069812937806050">Ngayon lang</translation>
 <translation id="6355080345576803305">Override sa pampublikong session</translation>
 <translation id="6387478394221739770">Interesado sa mga astig at bagong tampok sa Chrome? Subukan ang aming beta channel sa chrome.com/beta.</translation>
 <translation id="6445051938772793705">Bansa</translation>
@@ -239,6 +243,7 @@
 <translation id="6628463337424475685">Paghahanap ng <ph name="ENGINE" /></translation>
 <translation id="6644283850729428850">Hindi na ginagamit ang patakarang ito.</translation>
 <translation id="6646897916597483132">Ilagay ang CVC na may 4 na digit mula sa harap ng iyong card</translation>
+<translation id="6671697161687535275">Gusto mo bang alisin ang form para sa suhestyon sa Chromium?</translation>
 <translation id="674375294223700098">Hindi alam na error sa certificate ng server</translation>
 <translation id="6753269504797312559">Halaga ng patakaran</translation>
 <translation id="6831043979455480757">Isalin</translation>
@@ -252,7 +257,6 @@
 <translation id="6965978654500191972">Device</translation>
 <translation id="6970216967273061347">Distrito</translation>
 <translation id="6973656660372572881">Tinukoy ang parehong mga hindi nababagong proxy server at isang .pac script URL.</translation>
-<translation id="6980028882292583085">Alerto ng JavaScript</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7050187094878475250">Sinubukan mong puntahan ang <ph name="DOMAIN" />, ngunit nagpakita ang server ng certificate na masyadong mahaba ang panahon ng pagkakaroon ng bisa upang maging mapagkakatiwalaan.</translation>
 <translation id="7087282848513945231">County</translation>
@@ -275,7 +279,6 @@
 <translation id="7419106976560586862">Path ng Profile</translation>
 <translation id="7441627299479586546">Maling paksa ng patakaran</translation>
 <translation id="7485870689360869515">Walang nahanap na data.</translation>
-<translation id="7521387064766892559">JavaScript</translation>
 <translation id="7537536606612762813">Kinakailangan</translation>
 <translation id="7542995811387359312">Hindi pinagana ang awtomatikong pagpuno ng credit card dahil ang form na ito ay hindi gumagamit ng secure na koneksyon.</translation>
 <translation id="7567204685887185387">Hindi mapatunayan ng server na ito na ito ay <ph name="DOMAIN" />; maaaring mapanlokong ibinigay ang certificate ng seguridad nito. Maaaring dulot ito ng maling configuration o isang umaatake na hinahadlangan ang iyong koneksyon.</translation>
@@ -284,6 +287,7 @@
 <translation id="7592362899630581445">Lumabag ang certificate ng server sa limitasyon sa pangalan.</translation>
 <translation id="7600965453749440009">Huwag isalin kailanman ang <ph name="LANGUAGE" /></translation>
 <translation id="7610193165460212391">Wala sa sakop ang halaga <ph name="VALUE" />.</translation>
+<translation id="7637571805876720304">Gusto mo bang alisin ang credit card sa Chromium?</translation>
 <translation id="7674629440242451245">Interesado sa mga astig at bagong tampok sa Chrome? Subukan ang aming dev channel sa chrome.com/dev.</translation>
 <translation id="7752995774971033316">Hindi pinamamahalaan</translation>
 <translation id="7761701407923456692">Hindi tumutugma sa URL ang certificate ng server.</translation>

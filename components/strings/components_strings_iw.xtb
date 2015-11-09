@@ -28,11 +28,11 @@
 <translation id="1519264250979466059">‏תאריך ה-Build</translation>
 <translation id="1549470594296187301">‏JavaScript צריך להיות מופעל כדי להשתמש בתכונה זו.</translation>
 <translation id="1559528461873125649">אין קובץ או ספרייה בשם זה</translation>
+<translation id="1629803312968146339">‏האם תרצה ש-Chrome ישמור את הכרטיס הזה?</translation>
 <translation id="1640180200866533862">מדיניות משתמשים</translation>
 <translation id="1644184664548287040">תצורת הרשת אינה חוקית ולא ניתן לייבא אותה.</translation>
 <translation id="1655462015569774233">{1,plural, =1{השרת הזה לא הצליח להוכיח שהוא <ph name="DOMAIN" />; התוקף של אישור האבטחה שלו פג אתמול. ייתכן שהסיבה לכך היא הגדרה שגויה או שתוקף מיירט את החיבור שלך. התאריך המוגדר כעת בשעון המחשב שלך הוא <ph name="CURRENT_DATE" />. האם זה נכון? אם לא, עליך לכוון את שעון המערכת ולאחר מכן לרענן את הדף הזה.}two{השרת הזה לא הצליח להוכיח שהוא <ph name="DOMAIN" />; התוקף של אישור האבטחה שלו פג לפני יומיים. ייתכן שהסיבה לכך היא הגדרה שגויה או שתוקף מיירט את החיבור שלך. התאריך המוגדר כעת בשעון המחשב שלך הוא <ph name="CURRENT_DATE" />. האם זה נכון? אם לא, עליך לכוון את שעון המערכת ולאחר מכן לרענן את הדף הזה.}many{השרת הזה לא הצליח להוכיח שהוא <ph name="DOMAIN" />; התוקף של אישור האבטחה שלו פג לפני # ימים. ייתכן שהסיבה לכך היא הגדרה שגויה או שתוקף מיירט את החיבור שלך. התאריך המוגדר כעת בשעון המחשב שלך הוא <ph name="CURRENT_DATE" />. האם זה נכון? אם לא, עליך לכוון את שעון המערכת ולאחר מכן לרענן את הדף הזה.}other{השרת הזה לא הצליח להוכיח שהוא <ph name="DOMAIN" />; התוקף של אישור האבטחה שלו פג לפני # ימים. ייתכן שהסיבה לכך היא הגדרה שגויה או שתוקף מיירט את החיבור שלך. התאריך המוגדר כעת בשעון המחשב שלך הוא <ph name="CURRENT_DATE" />. האם זה נכון? אם לא, עליך לכוון את שעון המערכת ולאחר מכן לרענן את הדף הזה.}}</translation>
 <translation id="168841957122794586">אישור השרת מכיל מפתח הצפנה חלש.</translation>
-<translation id="1693754753824026215">הדף ב-<ph name="SITE" /> אומר:</translation>
 <translation id="1706954506755087368">{1,plural, =1{השרת הזה לא הצליח להוכיח שהוא <ph name="DOMAIN" />; אישור האבטחה שלו אמור להיכנס לתוקף רק מחר. ייתכן שהסיבה לכך היא הגדרה שגויה או שתוקף מיירט את החיבור שלך.}two{השרת הזה לא הצליח להוכיח שהוא <ph name="DOMAIN" />; אישור האבטחה שלו אמור להיכנס לתוקף רק בעוד יומיים. ייתכן שהסיבה לכך היא הגדרה שגויה או שתוקף מיירט את החיבור שלך.}many{השרת הזה לא הצליח להוכיח שהוא <ph name="DOMAIN" />; אישור האבטחה שלו אמור להיכנס לתוקף רק בעוד # ימים. ייתכן שהסיבה לכך היא הגדרה שגויה או שתוקף מיירט את החיבור שלך.}other{השרת הזה לא הצליח להוכיח שהוא <ph name="DOMAIN" />; אישור האבטחה שלו אמור להיכנס לתוקף רק בעוד # ימים. ייתכן שהסיבה לכך היא הגדרה שגויה או שתוקף מיירט את החיבור שלך.}}</translation>
 <translation id="1710259589646384581">מערכת הפעלה</translation>
 <translation id="1734864079702812349">Amex</translation>
@@ -147,11 +147,13 @@
 <translation id="4117700440116928470">היקף המדיניות אינו נתמך.</translation>
 <translation id="4120075327926916474">‏האם ברצונך ש-Chrome ישמור פרטים אלה של כרטיס אשראי להשלמת טופסי אינטרנט?</translation>
 <translation id="4148925816941278100">American Express</translation>
+<translation id="4169947484918424451">‏האם תרצה ש-Chromium ישמור את הכרטיס הזה?</translation>
 <translation id="4171400957073367226">חתימת אימות לא חוקית</translation>
 <translation id="4196861286325780578">&amp;ביצוע מחדש של העברה</translation>
 <translation id="4220128509585149162">קריסה</translation>
 <translation id="4250680216510889253">לא</translation>
 <translation id="4258748452823770588">חתימה שגויה</translation>
+<translation id="4268298190799576220">‏Chromium לא הצליח לאמת את הכרטיס הפעם. נסה שוב מאוחר יותר.</translation>
 <translation id="4269787794583293679">(אין שם משתמש)</translation>
 <translation id="4300246636397505754">הצעות להורים</translation>
 <translation id="4325863107915753736">לא ניתן היה למצוא את הפריט</translation>
@@ -227,10 +229,12 @@ Del</translation>
 <translation id="6151417162996330722">תקופת התוקף של אישור השרת ארוכה מדי.</translation>
 <translation id="6154808779448689242">אסימון המדיניות שהוחזר אינו תואם לאסימון הנוכחי</translation>
 <translation id="6165508094623778733">למידע נוסף</translation>
+<translation id="6218753634732582820">‏האם להסיר את הכתובת מ-Chromium?</translation>
 <translation id="6259156558325130047">&amp;ביצוע מחדש של שינוי סדר</translation>
 <translation id="6263376278284652872">סימניות <ph name="DOMAIN" /></translation>
 <translation id="6282194474023008486">מיקוד</translation>
 <translation id="6337534724793800597">סנן מדיניות לפי שם</translation>
+<translation id="6342069812937806050">זה עתה</translation>
 <translation id="6355080345576803305">שינוי הפעלה ציבורית</translation>
 <translation id="6387478394221739770">‏מעוניין בתכונות חדשות ומגניבות של Chrome? נסה את ערוץ הביטא שלנו בכתובת chrome.com/beta.</translation>
 <translation id="6445051938772793705">ארץ</translation>
@@ -243,6 +247,7 @@ Del</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> חיפוש</translation>
 <translation id="6644283850729428850">מדיניות זו אינה בתוקף.</translation>
 <translation id="6646897916597483132">‏הזן את ה-CVC בן ארבע הספרות המופיע בחזית הכרטיס</translation>
+<translation id="6671697161687535275">‏האם להסיר מ-Chromium הצעות בשביל טפסים?</translation>
 <translation id="674375294223700098">שגיאת אישור שרת לא ידוע.</translation>
 <translation id="6753269504797312559">ערך מדיניות</translation>
 <translation id="6831043979455480757">תרגם</translation>
@@ -256,7 +261,6 @@ Del</translation>
 <translation id="6965978654500191972">התקן</translation>
 <translation id="6970216967273061347">מחוז</translation>
 <translation id="6973656660372572881">‏צוינו שרתי Proxy קבועים וכתובת אתר של הסקריפט מסוג ‎.Pac</translation>
-<translation id="6980028882292583085">‏התראת JavaScript</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7050187094878475250">ניסית להגיע אל <ph name="DOMAIN" />, אך השרת הציג אישור שתקופת התוקף שלו ארוכה מדי ולכן אינו מהימן.</translation>
 <translation id="7087282848513945231">מחוז (בבריטניה ובאירלנד)</translation>
@@ -279,7 +283,6 @@ Del</translation>
 <translation id="7419106976560586862">נתיב פרופיל</translation>
 <translation id="7441627299479586546">נושא המדיניות שגוי</translation>
 <translation id="7485870689360869515">לא נמצאו נתונים.</translation>
-<translation id="7521387064766892559">JavaScript</translation>
 <translation id="7537536606612762813">הכרחי</translation>
 <translation id="7542995811387359312">מילוי אוטומטי של פרטי כרטיס אשראי מושבת כיוון שטופס זה אינו משתמש בחיבור מאובטח.</translation>
 <translation id="7567204685887185387">השרת הזה לא הצליח להוכיח שהוא <ph name="DOMAIN" />. ייתכן שאישור האבטחה שלו נופק כהונאה. הסיבה לכך עשויה להיות הגדרה שגויה או תוקף המיירט את החיבור שלך.</translation>
@@ -288,6 +291,7 @@ Del</translation>
 <translation id="7592362899630581445">אישור השרת מפר את אילוצי השמות.</translation>
 <translation id="7600965453749440009">אל תתרגם לעולם <ph name="LANGUAGE" /></translation>
 <translation id="7610193165460212391">הערך מחוץ לטווח <ph name="VALUE" />.</translation>
+<translation id="7637571805876720304">‏האם להסיר את כרטיס האשראי מ-Chromium?</translation>
 <translation id="7674629440242451245">‏מעוניין בתכונות חדשות ומגניבות של Chrome? נסה את הערוץ שלנו למפתחים בכתובת chrome.com/dev.</translation>
 <translation id="7752995774971033316">ללא ניהול</translation>
 <translation id="7761701407923456692">אישור השרת אינו תואם לכתובת האתר.</translation>

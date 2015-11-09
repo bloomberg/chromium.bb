@@ -28,11 +28,11 @@
 <translation id="1519264250979466059">Programversionsdatum</translation>
 <translation id="1549470594296187301">JavaScript måste aktiveras för att du ska kunna använda den här funktionen.</translation>
 <translation id="1559528461873125649">Filen eller katalogen finns inte</translation>
+<translation id="1629803312968146339">Vill du att Chrome sparar det här kortet?</translation>
 <translation id="1640180200866533862">Användarpolicyer</translation>
 <translation id="1644184664548287040">Nätverkskonfigurationen är ogiltig och kan inte importeras.</translation>
 <translation id="1655462015569774233">{1,plural, =1{Det gick inte att bevisa att serverns identitet är <ph name="DOMAIN" /> eftersom dess säkerhetscertifikat gick ut i går. Det kan bero på att servern är felkonfigurerad eller att anslutningen har blivit kapad. Dagens datum är <ph name="CURRENT_DATE" /> enligt datorklockan. Går den rätt? I annat fall bör du ställa om datorklockan och sedan uppdatera sidan.}other{Det gick inte att bevisa att serverns identitet är <ph name="DOMAIN" /> eftersom dess säkerhetscertifikat gick ut för # dagar sedan. Det kan bero på att servern är felkonfigurerad eller att anslutningen har blivit kapad. Dagens datum är <ph name="CURRENT_DATE" /> enligt datorklockan. Går den rätt? I annat fall bör du ställa om datorklockan och sedan uppdatera sidan.}}</translation>
 <translation id="168841957122794586">Servercertifikatet innehåller en svag kryptografisk nyckel.</translation>
-<translation id="1693754753824026215">Sidan på <ph name="SITE" /> säger:</translation>
 <translation id="1706954506755087368">{1,plural, =1{Det gick inte att bevisa att serverns identitet är <ph name="DOMAIN" /> eftersom dess säkerhetscertifikat uppges börja gälla i morgon. Det kan bero på att servern är felkonfigurerad eller att anslutningen har blivit kapad.}other{Det gick inte att bevisa att serverns identitet är <ph name="DOMAIN" /> eftersom dess säkerhetscertifikat uppges börja gälla om # dagar. Det kan bero på att servern är felkonfigurerad eller att anslutningen har blivit kapad.}}</translation>
 <translation id="1710259589646384581">OS</translation>
 <translation id="1734864079702812349">Amex</translation>
@@ -147,11 +147,13 @@
 <translation id="4117700440116928470">Principens omfattning stöds inte.</translation>
 <translation id="4120075327926916474">Vill du att Chrome ska spara kreditkortsuppgifterna vid automatisk ifyllning av webbformulär?</translation>
 <translation id="4148925816941278100">American Express</translation>
+<translation id="4169947484918424451">Vill du att Chromium sparar det här kortet?</translation>
 <translation id="4171400957073367226">Felaktig verifieringssignatur</translation>
 <translation id="4196861286325780578">&amp;Gör om Flytta</translation>
 <translation id="4220128509585149162">Kraschar</translation>
 <translation id="4250680216510889253">Nej</translation>
 <translation id="4258748452823770588">Felaktig signatur</translation>
+<translation id="4268298190799576220">Chromium kunde inte verifiera kortet. Försök igen senare.</translation>
 <translation id="4269787794583293679">(Inget användarnamn)</translation>
 <translation id="4300246636397505754">Föräldratips</translation>
 <translation id="4325863107915753736">Det gick inte att hitta artikeln</translation>
@@ -223,10 +225,12 @@
 <translation id="6151417162996330722">Servercertifikatet har för lång giltighetstid.</translation>
 <translation id="6154808779448689242">Returnerad policytoken matchade inte den aktuella token</translation>
 <translation id="6165508094623778733">Läs mer</translation>
+<translation id="6218753634732582820">Vill du ta bort adressen från Chromium?</translation>
 <translation id="6259156558325130047">&amp;Gör om Ändra ordning</translation>
 <translation id="6263376278284652872">Bokmärken för <ph name="DOMAIN" /></translation>
 <translation id="6282194474023008486">Postnummer</translation>
 <translation id="6337534724793800597">Filtrera policy efter namn</translation>
+<translation id="6342069812937806050">Alldeles nyss</translation>
 <translation id="6355080345576803305">Åsidosätt offentlig session</translation>
 <translation id="6387478394221739770">Är du intresserad av häftiga nya funktioner i Chrome? Pröva vår betakanal på chrome.com/beta.</translation>
 <translation id="6445051938772793705">Land</translation>
@@ -239,6 +243,7 @@
 <translation id="6628463337424475685"><ph name="ENGINE" /> Sök</translation>
 <translation id="6644283850729428850">Policyn är föråldrad.</translation>
 <translation id="6646897916597483132">Ange den fyrsiffriga CVC-koden från kortets framsida</translation>
+<translation id="6671697161687535275">Vill du ta bort formulärförslaget från Chromium?</translation>
 <translation id="674375294223700098">Fel - okänt servercertifikat.</translation>
 <translation id="6753269504797312559">Policyvärde</translation>
 <translation id="6831043979455480757">Översätt</translation>
@@ -252,7 +257,6 @@
 <translation id="6965978654500191972">Enhet</translation>
 <translation id="6970216967273061347">Distrikt</translation>
 <translation id="6973656660372572881">Både fasta proxyservrar och en webbadress för PAC-skript anges.</translation>
-<translation id="6980028882292583085">JavaScript-varning</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7050187094878475250">Du försökte nå <ph name="DOMAIN" />, men servern svarade med ett certifikat vars giltighetstid är för lång för att det ska vara trovärdigt.</translation>
 <translation id="7087282848513945231">Grevskap</translation>
@@ -275,7 +279,6 @@
 <translation id="7419106976560586862">Profilsökväg</translation>
 <translation id="7441627299479586546">Felaktigt policyämne</translation>
 <translation id="7485870689360869515">Ingen data hittades.</translation>
-<translation id="7521387064766892559">JavaScript</translation>
 <translation id="7537536606612762813">Obligatorisk</translation>
 <translation id="7542995811387359312">Automatisk ifyllning av kreditkort har inaktiverats eftersom formulärets anslutning inte är säker.</translation>
 <translation id="7567204685887185387">Servern kunde inte bevisa att den är <ph name="DOMAIN" /> eftersom dess säkerhetscertifikat kan ha utfärdats utan behörighet. Detta kan orsakas av en felaktig konfigurering eller att någon spärrar anslutningen.</translation>
@@ -284,6 +287,7 @@
 <translation id="7592362899630581445">Serverns certifikat strider mot namnrestriktionerna.</translation>
 <translation id="7600965453749440009">Översätt aldrig från <ph name="LANGUAGE" /></translation>
 <translation id="7610193165460212391">Värdet är utanför intervallet <ph name="VALUE" />.</translation>
+<translation id="7637571805876720304">Vill du ta bort kreditkortet från Chromium?</translation>
 <translation id="7674629440242451245">Är du intresserad av häftiga nya funktioner i Chrome? Pröva vår utvecklarkanal på chrome.com/dev.</translation>
 <translation id="7752995774971033316">Hanteras inte</translation>
 <translation id="7761701407923456692">Servercertifikatet överensstämmer inte med webbadressen.</translation>

@@ -52,6 +52,7 @@
 <translation id="1594072653727561613">mnü</translation>
 <translation id="1610130962244179598">Váltás 6 pontos braille-táblázatra</translation>
 <translation id="1611168825862729585">Oszlopfejléc:</translation>
+<translation id="1611649489706141841">következő</translation>
 <translation id="1613476421962910979">beállítási oldal</translation>
 <translation id="1618597272655350600">Pontosan elmondja, hogy mi az aktuális pozíció</translation>
 <translation id="1639634871799530612">{COUNT,plural, =1{nagyobb jel}other{# nagyobb jel}}</translation>
@@ -393,6 +394,7 @@
 <translation id="5054047268577924192">Előző listaelem</translation>
 <translation id="5078661581131202757">Fájl kiválasztása</translation>
 <translation id="5080758118274074384">duplán kattintva</translation>
+<translation id="5087864757604726239">vissza</translation>
 <translation id="5098541983634824365">Rács elhagyása.</translation>
 <translation id="5102981729317424850">Eszköztár</translation>
 <translation id="5105050547967751155">kötelező</translation>

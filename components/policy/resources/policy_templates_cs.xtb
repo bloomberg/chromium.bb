@@ -615,7 +615,7 @@ Pokud toto nastavení zakážete nebo ponecháte bez nastavení, stránky ověř
 <translation id="3067188277482006117">Pokud má hodnotu true, uživatel může pomocí hardwaru, který je součástí zařízení Chrome, vzdáleně sdělit svou identitu funkci Privacy CA prostřednictvím rozhraní Enterprise Platform Keys API chrome.enterprise.platformKeysPrivate.challengeUserKey().
 
           Pokud má tato zásada hodnotu false nebo není nastavena, volání rozhraní API se nezdaří a zobrazí se kód chyby.</translation>
-<translation id="3069958900488014740">Umožňuje vypnout ve službě <ph name="PRODUCT_NAME" /> optimalizaci WPAD (Web Proxy Auto-Discovery).
+<translation id="3069958900488014740">Umožňuje vypnout v prohlížeči <ph name="PRODUCT_NAME" /> optimalizaci WPAD (Web Proxy Auto-Discovery).
 
       Je-li tato zásada nastavena na hodnotu false, je optimalizace WPAD zakázána, a <ph name="PRODUCT_NAME" /> proto bude na servery WPAD založené na DNS čekat déle. Pokud tato zásada není nastavena, je optimalizace WPAD povolena.
 

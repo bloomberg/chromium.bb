@@ -32,6 +32,7 @@
 <translation id="1967743265616885482">‏מודול בעל אותו שם מתנגש עם Chromium.</translation>
 <translation id="2077129598763517140">השתמש בהאצת חומרה כשניתן</translation>
 <translation id="2097986737970966220">‏פתח את Chromium בשולחן העבודה</translation>
+<translation id="2117181891440368863">‏Chromium אימת ש-<ph name="ISSUER" /> הנפיק את אישור האתר. השרת סיפק פרטים על שקיפות האישור אבל הם לא חוקיים.</translation>
 <translation id="2119636228670142020">‏מידע על &amp;מערכת ההפעלה של Chromium‏</translation>
 <translation id="2158734852934720349">‏רישיונות קוד פתוח של מערכת ההפעלה של Chromium</translation>
 <translation id="2233513990531887259">‏הפעל מחדש במצב עשיר של Chromium</translation>
@@ -176,6 +177,7 @@
 <translation id="6734080038664603509">‏עדכן &amp;את Chromium‏</translation>
 <translation id="6757767188268205357">אל תנדנד לי</translation>
 <translation id="6810143991807788455">‏עזור לשפר את Chromium על ידי דיווח ההגדרות הנוכחיות</translation>
+<translation id="6838494703713445896">‏Chromium אימת ש-<ph name="ISSUER" /> הנפיק את אישור האתר. השרת סיפק פרטים חוקיים על שקיפות האישור.</translation>
 <translation id="6883876366448858277">‏שולח לחיפוש Google מילה יחד עם ההקשר סביבה. מחזיר הגדרות, תמונות, ותוצאות חיפוש נוספות.</translation>
 <translation id="6893813176749746474">‏Chromium עודכן, אך לא השתמשת בו לפחות 30 ימים.</translation>
 <translation id="6900895776413482243">‏הפעלה מחדש במצב עשיר של Chromium תסגור ותפעיל מחדש את יישומי Chromium.</translation>
@@ -188,6 +190,7 @@
 <translation id="7066436765290594559">‏מערכת ההפעלה של Chromium לא הצליחה לסנכרן את הנתונים שלך. עדכן את משפט הסיסמה לסנכרון.</translation>
 <translation id="7138853919861947730">‏Chromium עשוי להשתמש בשירותי אינטרנט כדי לשפר את חווית הגלישה שלך.</translation>
 <translation id="7162152143154757523">‏Chromium יכול לספק בדיקת איות חכמה יותר על ידי שליחת הטקסט שאתה מקליד בדפדפן אל שרתי Google. כך אתה יכול להשתמש באותה טכנולוגיה של בדיקת איות שבה נעשה שימוש בחיפוש Google.</translation>
+<translation id="7178626992616222740">‏Chromium אימת ש-<ph name="ISSUER" /> הנפיק את אישור האתר. השרת סיפק פרטים על שקיפות האישור אבל Chromium לא זיהה את היומנים של שקיפות האישור.</translation>
 <translation id="7196020411877309443">למה אני רואה את הדף הזה?</translation>
 <translation id="7205698830395646142">‏הסתרה בתפריט Chromium</translation>
 <translation id="7211828883345145708">‏מפעיל מקשי קיצור נוספים השימושיים לתיקון באגים ב-‏Chromium.</translation>
@@ -213,6 +216,7 @@ Chromium לא יכול לשחזר את ההגדרות שלך.</translation>
 <translation id="7723128346970903111">‏כשמצב זה מופעל, ייעשה שימוש בתהליך כניסה אל Chromium המבוסס על iframe. אם לא יופעל, ייעשה שימוש בתהליך המבוסס על WebView.</translation>
 <translation id="7729447699958282447">‏Chromium לא הצליח לסנכרן את הנתונים שלך מפני שסנכרון אינו זמין עבור הדומיין שלך.</translation>
 <translation id="7747138024166251722">המתקין לא הצליח ליצור ספריה זמנית. בדוק את המקום הפנוי בדיסק ואת האישור להתקנת תוכנה.</translation>
+<translation id="7918535023914021398">‏Chromium אימת ש-<ph name="ISSUER" /> הנפיק את אישור האתר. השרת לא סיפק פרטים על שקיפות האישור.</translation>
 <translation id="7937630085815544518">‏נכנסת ל-Chromium כ-<ph name="USER_EMAIL_ADDRESS" />. השתמש באותו חשבון כדי להיכנס שוב.</translation>
 <translation id="7962572577636132072">‏Chromium מתעדכן באופן אוטומטי כך שתמיד ברשותך הגרסה העדכנית ביותר.</translation>
 <translation id="7979877361127045932">‏הסתר בתפריט Chromium</translation>

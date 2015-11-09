@@ -56,6 +56,9 @@
 <translation id="1221359380862872747">Muat url yang ditentukan di proses masuk demo</translation>
 <translation id="1240643596769627465">Menentukan URL mesin telusur yang digunakan untuk memberikan hasil sekejap. URL harus berisi string <ph name="SEARCH_TERM_MARKER" />, yang akan diganti pada waktu kueri dengan teks yang dimasukkan oleh pengguna hingga saat ini. Kebijakan ini bersifat opsional. Jika tidak disetel, tidak ada hasil penelusuran sekejap yang akan disediakan. Kebijakan ini hanya diterapkan jika kebijakan 'DefaultSearchProviderEnabled' diaktifkan.</translation>
 <translation id="1265053460044691532">Batasi waktu bagi pengguna yang diautentikasi melalui SAML untuk dapat masuk saat offline.</translation>
+<translation id="1291880496936992484">Peringatan: RC4 akan dihapus sepenuhnya dari <ph name="PRODUCT_NAME" /> setelah versi 52 (sekitar September 2016) dan kebijakan ini tidak akan berlaku.
+
+      Jika kebijakan tidak disetel, atau disetel ke False, cipher suite RC4 di TLS tidak akan diaktifkan. Jika kebijakan disetel ke True, kebijakan akan tetap berlaku untuk mempertahankan kompatibilitas dengan server yang usang. Ini adalah tindakan sementara dan server sebaiknya dikonfigurasi ulang.</translation>
 <translation id="1297182715641689552">Gunakan skrip proxy .pac</translation>
 <translation id="1300635491585192248">Memprediksi tindakan jaringan pada jaringan apa pun selain jaringan
           seluler</translation>
@@ -470,6 +473,9 @@
       Jika Anda mengaktifkan atau menonaktifkan setelan ini, pengguna tidak dapat mengubah atau menimpa setelan "Aktifkan perlindungan phishing dan perangkat lunak perusak" di <ph name="PRODUCT_NAME" />.
 
       Jika kebijakan ini tidak disetel, kebijakan akan diaktifkan namun pengguna dapat mengubahnya.</translation>
+<translation id="2801230735743888564">Mengizinkan pengguna memainkan game dinosaur easter egg saat perangkat offline.
+
+      Jika kebijakan ini disetel ke False, pengguna tidak akan dapat memainkan game dinosaur easter egg saat perangkat offline. Jika setelan ini disetel ke True, pengguna dapat memainkan game tersebut. Jika kebijakan ini tidak disetel, pengguna tidak dapat memainkan game dinosaur easter egg pada Chrome OS yang terdaftar, tapi pengguna dapat memainkannya dalam situasi tertentu.</translation>
 <translation id="2805707493867224476">Izinkan semua situs menampilkan munculan</translation>
 <translation id="2808013382476173118">Memungkinkan penggunaan server STUN saat klien jarak jauh mencoba untuk membuat koneksi ke komputer ini.
 
@@ -1003,6 +1009,7 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
           Saat kebijakan tidak disetel, tindakan default diambil, yaitu yang ditangguhkan
 
           Jika tindakan ditangguhkan, <ph name="PRODUCT_OS_NAME" /> dapat dikonfigurasikan secara terpisah baik layar terkunci atau pun tidak sebelum penangguhan.</translation>
+<translation id="5130288486815037971">Baik cipher suite RC4 di TLS diaktifkan</translation>
 <translation id="5141670636904227950">Menyetel jenis lup default yang diaktifkan di layar masuk</translation>
 <translation id="5142301680741828703">Selalu mengurai pola URL berikut di <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="5148753489738115745">Memungkinkan Anda menentukan parameter tambahan yang digunakan saat <ph name="PRODUCT_FRAME_NAME" /> meluncurkan <ph name="PRODUCT_NAME" />.
@@ -1261,6 +1268,7 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
           Cara yang disarankan untuk mengunci layar saat menganggur adalah dengan mengaktifkan penangguhan penguncian layar dan meminta <ph name="PRODUCT_OS_NAME" /> menangguhkan setelah penundaan waktu menganggur. Sebaiknya hanya gunakan kebijakan ini saat penguncian layar perlu terjadi jauh lebih awal dibandingkan penangguhan atau saat penangguhan ketika menganggur tidak diinginkan sama sekali.
 
           Nilai kebijakan harus ditetapkan dalam milidetik. Nilai dijepit agar kurang dari penundaan waktu menganggur.</translation>
+<translation id="6111936128861357925">Izinkan Game Dinosaur Easter Egg</translation>
 <translation id="6114416803310251055">tak lagi digunakan</translation>
 <translation id="6145799962557135888">Memungkinkan Anda menyetel daftar pola url yang menentukan situs yang tidak diizinkan untuk menjalankan JavaScript. Jika kebijakan ini tidak disetel, nilai default global akan digunakan untuk semua situs, baik dari kebijakan 'DefaultJavaScriptSetting', jika disetel, ataupun dari konfigurasi pribadi pengguna.</translation>
 <translation id="6151775819333710697">
@@ -1805,6 +1813,18 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
 
       Jika kebijakan ini tidak disetel, tidak akan ada pengecualian untuk daftar hitam dari kebijakan 'URLBlacklist'.</translation>
 <translation id="8176035528522326671">Memungkinkan pengguna perusahaan menjadi pengguna banyak profil primer saja (Perilaku default untuk pengguna yang dikelola perusahaan)</translation>
+<translation id="8191318459035150777">Mengonfigurasi URL beranda default di <ph name="PRODUCT_NAME" /> dan mencegah pengguna mengubahnya.
+
+          Beranda adalah laman yang dibuka dengan tombol Beranda. Laman yang dibuka saat memulai perangkat akan dikontrol oleh kebijakan RestoreOnStartup.
+
+          Jenis beranda dapat disetel ke URL yang Anda tetapkan di sini atau disetel ke Laman Tab Baru. Jika Anda memilih Laman Tab Baru, kebijakan ini tidak akan berlaku.
+
+          Jika Anda mengaktifkan setelan ini, pengguna tidak dapat mengubah URL beranda di <ph name="PRODUCT_NAME" />, tapi pengguna dapat memilih Laman Tab Baru sebagai beranda.
+
+          Membiarkan kebijakan ini tidak disetel akan memungkinkan pengguna memilih beranda sendiri jika HomepageIsNewTabPage juga tidak disetel.
+
+          Kebijakan ini tidak tersedia di Jendela yang tidak digabungkan
+          ke domain Directori Aktif.</translation>
 <translation id="8197918588508433925">Kebijakan ini menentukan ekstensi yang diizinkan untuk menggunakan API Kunci Platform Perusahaan chrome.enterprise.platformKeysPrivate.challengeUserKey() untuk pengesahan jarak jauh. Ekstensi harus ditambahkan ke daftar ini untuk menggunakan API.
 
           Jika ekstensi tidak ada dalam daftar, atau daftar tidak disetel, panggilan ke API akan gagal dengan suatu kode kesalahan.</translation>
@@ -1905,6 +1925,8 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
 
       Jika setelan ini dinonaktifkan, riwayat penjelajahan dan unduhan tidak dapat dihapus.</translation>
 <translation id="8764119899999036911">Menentukan apakah Kerberos SPN yang dihasilkan didasarkan pada nama DNS kanonik atau nama asli yang dimasukkan. Jika Anda mengaktifkan setelan ini, pencarian CNAME akan dilewati dan nama server akan digunakan seperti saat dimasukkan. Jika Anda menonaktifkan setelan ini atau membiarkannya tidak disetel, nama kanonik server akan ditentukan melalui pencarian CNAME.</translation>
+<translation id="8774131509736383471">Jika kebijakan ini disetel ke True, <ph name="PRODUCT_NAME" /> akan memaksimalkan jendela yang ditampilkan pada percobaan pertama tanpa syarat.
+      Jika kebijakan ini disetel ke False atau tidak dikonfigurasi, keputusan untuk memaksimalkan jendela pertama akan ditampilkan menurut ukuran layar.</translation>
 <translation id="8777120694819070607">Mengizinkan <ph name="PRODUCT_NAME" /> menjalankan plugin yang kedaluwarsa. Jika Anda mengaktifkan setelan ini, plugin yang kedaluwarsa digunakan sebagai plugin normal. Jika Anda menonaktifkan setelan ini, plugin yang kedaluwarsa tidak akan digunakan dan pengguna tidak akan dimintai izin untuk menjalankannya. Jika setelan ini tidak disetel, pengguna akan dimintai izin untuk menjalankan plugin yang kedaluwarsa.</translation>
 <translation id="87812015706645271">Mewajibkan nama pengguna lokal cocok dengan  pemilik host akses jarak jauh</translation>
 <translation id="8782750230688364867">Menentukan persentase yang digunakan untuk menskalakan penundaan layar redup saat perangkat dalam mode presentasi.

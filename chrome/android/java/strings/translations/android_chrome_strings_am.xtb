@@ -119,7 +119,6 @@
 <translation id="2816165854387457183">ቀርፋፋ ግንኙነት ተገኝቷል።</translation>
 <translation id="2842985007712546952">ወላጅ አቃፊ</translation>
 <translation id="2870560284913253234">ጣቢያ</translation>
-<translation id="2873598956318269337">{NUM_URLS,plural, =1{1 ዩአርኤል በአቅራቢያ}one{# ዩአርኤሎች በአቅራቢያ}other{# ዩአርኤሎች በአቅራቢያ}}</translation>
 <translation id="2888126860611144412">ስለChrome</translation>
 <translation id="2891154217021530873">ገጹን መጫን አቁም</translation>
 <translation id="2902702728133930130">Chrome ባልተጠበቀ ስህተት ምክንያት ሊጀምር አልቻለም።</translation>
@@ -158,6 +157,7 @@
 <translation id="3358663646935160692">ይህ መለያ የሚቀናበረው በ<ph name="DOMAIN_NAME" /> ነው።
 
 በሚቀናበር መለያ እየገቡ ነው፣ ይህም የChrome መገለጫዎ ቁጥጥር ለአስተዳዳሪው ይሰጠዋል። የእርስዎ Chrome ውሂብ እስከመጨረሻው ከዚህ መለያ ጋር የተሳሰረ ይሆናል። ከዚህ መለያ ማላቀቅ አካባቢያዊውን የChrome ውሂብ ይሰርዘዋል።</translation>
+<translation id="3384347053049321195">ምስል አጋራ</translation>
 <translation id="3410346880900521918">ይህን በተደጋጋሚነት እያዩት ከሆኑ እነዚህን <ph name="BEGIN_LINK" />የአስተያየት ጥቆማዎች<ph name="END_LINK" /> ይሞክሩ።</translation>
 <translation id="3414952576877147120">መጠን፦</translation>
 <translation id="3485544713029068372">Smart Lock ለይለፍ ቃላት</translation>
@@ -457,6 +457,7 @@
 <translation id="7648422057306047504">የይለፍ ቃላትን በGoogle ምስክርነቶች መስጥር</translation>
 <translation id="7658239707568436148">ይቅር</translation>
 <translation id="7665369617277396874">መለያ ያክሉ</translation>
+<translation id="7735023902678907596">ማንነት በማያሳውቁ ትሮች ላይ የሚያዩዋቸው ገጾች ሁሉንም ማንነት የማያሳውቁ ትሮችዎን ከዘጉ በኋላ በእርስዎ የአሳሽ ታሪክ፣ የኩኪ ማከማቻ ወይም የፍለጋ ታሪክ ውስጥ አይቆዩም። የሚያወርዷቸው ማንኛቸውም ፋይሎች ወይም የተቀመጡ ገፆች ይቀመጣሉ። ይሁንና እርስዎ ስውር አይደሉም። ማንነት በማያሳውቅ ሁነታ ላይ መሆን የእርስዎን አሰሳ ከአሰሪዎ፣ ከበይነመረብ አገልጋይዎ ወይም ከሚጎበኟቸው ድር ጣቢያዎች አይደብቁዎትም።</translation>
 <translation id="7761240775244195612">ባለፈው ወር ጥቅም ላይ ያልዋሉ <ph name="PAGES_NUMBER" /> የመስመር ውጭ ቅጂዎች ይሰረዙ? ይህ <ph name="TOTAL_PAGE_SIZE" /> ያህል ቦት ያጸዳል።</translation>
 <translation id="7764225426217299476">አድራሻ አክል</translation>
 <translation id="7765158879357617694">ውሰድ</translation>
@@ -543,7 +544,6 @@
 <translation id="885701979325669005">ማከማቻ</translation>
 <translation id="886510833909353412">ሁሉንም በይለፍ ሐረግ አመስጥር</translation>
 <translation id="8872441722924401214">የማረጋገጫ የእውቅና ማረጋገጫ ይምረጡ</translation>
-<translation id="8891135217544884558">አቅራቢያ ያሉ ዩአርኤሎች</translation>
 <translation id="8901170036886848654">ምንም ዕልባቶች አልተገኙም</translation>
 <translation id="8909135823018751308">አጋራ…</translation>
 <translation id="8912362522468806198">የGoogle መለያ</translation>

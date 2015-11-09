@@ -32,7 +32,6 @@
 <translation id="1644184664548287040">Usanidi wa mtandao ni batili na usingeweza kuingizwa.</translation>
 <translation id="1655462015569774233">{1,plural, =1{Seva hii haikuweza kuthibitisha kuwa ni <ph name="DOMAIN" />; cheti chake cha usalama kilikwisha muda jana. Hii inaweza kusababishwa na usanidi usiofaa au mvamizi kuingilia muunganisho wako. Saa ya kompyuta kwa sasa imewekwa kuwa <ph name="CURRENT_DATE" />. Je, hiyo ni sahihi? Ikiwa si sahihi, rekebisha saa ya mfumo wako kisha uonyeshe upya ukurasa huu.}other{Seva hii haikuweza kuthibitisha kuwa ni <ph name="DOMAIN" />; cheti chake cha usalama kilikwisha muda siku # zilizopita. Hii inaweza kusababishwa na usanidi usiofaa au mvamizi kuingilia muunganisho wako. Saa ya kompyuta kwa sasa imewekwa kuwa <ph name="CURRENT_DATE" />. Je, hiyo ni sahihi? Ikiwa si sahihi, rekebisha saa ya mfumo wako kisha uonyeshe upya ukurasa huu.}}</translation>
 <translation id="168841957122794586">Cheti cha seva kina kitufe dhaifu cha kifichua msimbo.</translation>
-<translation id="1693754753824026215">Ukurasa wa <ph name="SITE" /> unasema:</translation>
 <translation id="1706954506755087368">{1,plural, =1{Seva hii haikuweza kuthibitisha kuwa ni <ph name="DOMAIN" />; cheti chake cha usalama kitakwisha muda kuanzia kesho. Hii inaweza kusababishwa na usanidi usiofaa au mvamizi kuingilia muunganisho wako.}other{Seva hii haikuweza kuthibitisha kuwa ni <ph name="DOMAIN" />; cheti chake cha usalama kitakwisha muda kuanzia siku # zijazo. Hii inaweza kusababishwa na usanidi usiofaa au mvamizi kuingilia muunganisho wako.}}</translation>
 <translation id="1710259589646384581">OS</translation>
 <translation id="1734864079702812349">Amex</translation>
@@ -108,7 +107,7 @@
 <translation id="3228969707346345236">Tafsiri ilishindikana kwa sababu ukurasa tayari upo katika <ph name="LANGUAGE" />.</translation>
 <translation id="3270847123878663523">Tendua Kupanga upya</translation>
 <translation id="3286538390144397061">Zima na uwashe sasa</translation>
-<translation id="333371639341676808">Zuia ukurasa huu usiunde majadiliano zaidi.</translation>
+<translation id="333371639341676808">Zuia ukurasa huu usiulize mswali zaidi.</translation>
 <translation id="3340978935015468852">mipangilio</translation>
 <translation id="3369192424181595722">Hitilafu ya saa</translation>
 <translation id="3369366829301677151">Sasisha na uthibitishe kadi yako ya <ph name="CREDIT_CARD" /></translation>
@@ -227,6 +226,7 @@
 <translation id="6263376278284652872">Alamisho za <ph name="DOMAIN" /></translation>
 <translation id="6282194474023008486">Msimbo wa posta</translation>
 <translation id="6337534724793800597">Chuja sera kwa jina</translation>
+<translation id="6342069812937806050">Sasa hivi tu</translation>
 <translation id="6355080345576803305">Kipindi cha umma kimebatilishwa</translation>
 <translation id="6387478394221739770">Unavutiwa na vipengee vipya vizuri vya Chrome? Jaribu kituo chetu cha beta katika chrome.com/beta.</translation>
 <translation id="6445051938772793705">Nchi</translation>
@@ -252,7 +252,6 @@
 <translation id="6965978654500191972">Kifaa</translation>
 <translation id="6970216967273061347">Wilaya</translation>
 <translation id="6973656660372572881">Seva zote za proksi thabiti na URL ya hati ya .pac zimebainishwa.</translation>
-<translation id="6980028882292583085">Arifa ya Javascript</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7050187094878475250">Ulijaribu kufikia <ph name="DOMAIN" />, lakini seva ikawasilisha cheti ambacho muda wake sahihi ni mrefu sana wa kuweza kuaminika.</translation>
 <translation id="7087282848513945231">Nchi</translation>
@@ -275,7 +274,6 @@
 <translation id="7419106976560586862">Kijia cha Maelezo mafupi</translation>
 <translation id="7441627299479586546">Kichwa cha sera kisichofaa</translation>
 <translation id="7485870689360869515">Hakuna data iliyopatikana.</translation>
-<translation id="7521387064766892559">JavaScript</translation>
 <translation id="7537536606612762813">Lazima</translation>
 <translation id="7542995811387359312">Mjazo otomatiki wa kadi ya mkopo umelemazwa kwa sababu fomu hii haitumii muunganisho salama.</translation>
 <translation id="7567204685887185387">Seva hii haikuweza kuthibitisha kuwa ni <ph name="DOMAIN" />; huenda cheti chake cha usalama kimetolewa kwa njia ya ulaghai. Hii inaweza kusababishwa na usanidi usiofaa au mvamizi kuingilia muunganisho wako.</translation>

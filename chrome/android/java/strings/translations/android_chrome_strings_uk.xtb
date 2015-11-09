@@ -119,7 +119,6 @@
 <translation id="2816165854387457183">Виявлено повільне з’єднання.</translation>
 <translation id="2842985007712546952">Батьківська папка</translation>
 <translation id="2870560284913253234">Сайт</translation>
-<translation id="2873598956318269337">{NUM_URLS,plural, =1{1 URL-адреса поруч}one{# URL-адреса поруч}few{# URL-адреси поруч}many{# URL-адрес поруч}other{# URL-адреси поруч}}</translation>
 <translation id="2888126860611144412">Про Chrome</translation>
 <translation id="2891154217021530873">Припинити завантаження сторінки</translation>
 <translation id="2902702728133930130">Не вдалося запустити Chrome через неочікувану помилку.</translation>
@@ -543,7 +542,6 @@
 <translation id="885701979325669005">Обсяг пам’яті</translation>
 <translation id="886510833909353412">Шифрувати все парольною фразою</translation>
 <translation id="8872441722924401214">Виберіть сертифікат для автентифікації</translation>
-<translation id="8891135217544884558">URL-адреси з пристроїв поблизу</translation>
 <translation id="8901170036886848654">Немає закладок</translation>
 <translation id="8909135823018751308">Надіслати…</translation>
 <translation id="8912362522468806198">Обліковий запис Google</translation>

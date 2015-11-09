@@ -32,7 +32,6 @@
 <translation id="1644184664548287040">Netværkskonfigurationen er ugyldig og kunne ikke importeres.</translation>
 <translation id="1655462015569774233">{1,plural, =1{Denne server kunne ikke bevise, at den er <ph name="DOMAIN" />, da dens sikkerhedscertifikat udløb i går. Dette kan skyldes en fejlkonfiguration, eller at en hacker har opfanget din forbindelse. Computerens ur er angivet til <ph name="CURRENT_DATE" />. Er det korrekt? Hvis ikke, skal du rette systemets ur og derefter opdatere denne side.}one{Denne server kunne ikke bevise, at den er <ph name="DOMAIN" />, da dens sikkerhedscertifikat udløb for # dag siden. Dette kan skyldes en fejlkonfiguration, eller at en hacker har opfanget din forbindelse. Computerens ur er angivet til <ph name="CURRENT_DATE" />. Er det korrekt? Hvis ikke, skal du rette systemets ur og derefter opdatere denne side.}other{Denne server kunne ikke bevise, at den er <ph name="DOMAIN" />, da dens sikkerhedscertifikat udløb for # dage siden. Dette kan skyldes en fejlkonfiguration, eller at en hacker har opfanget din forbindelse. Computerens ur er angivet til <ph name="CURRENT_DATE" />. Er det korrekt? Hvis ikke, skal du rette systemets ur og derefter opdatere denne side.}}</translation>
 <translation id="168841957122794586">Servercertifikatet indeholder en svag kryptografisk nøgle.</translation>
-<translation id="1693754753824026215">Siden på <ph name="SITE" /> siger:</translation>
 <translation id="1706954506755087368">{1,plural, =1{Denne server kunne ikke bevise, at den er <ph name="DOMAIN" />, da dens sikkerhedscertifikat tilsyneladende først gælder fra i morgen. Dette kan skyldes en fejlkonfiguration, eller at en hacker har opfanget din forbindelse.}one{Denne server kunne ikke bevise, at den er <ph name="DOMAIN" />, da dens sikkerhedscertifikat tilsyneladende først gælder fra om # dag. Dette kan skyldes en fejlkonfiguration, eller at en hacker har opfanget din forbindelse.}other{Denne server kunne ikke bevise, at den er <ph name="DOMAIN" />, da dens sikkerhedscertifikat tilsyneladende først gælder fra om # dage. Dette kan skyldes en fejlkonfiguration, eller at en hacker har opfanget din forbindelse.}}</translation>
 <translation id="1710259589646384581">OS</translation>
 <translation id="1734864079702812349">Amex</translation>
@@ -227,6 +226,7 @@
 <translation id="6263376278284652872"><ph name="DOMAIN" />-bogmærker</translation>
 <translation id="6282194474023008486">Postnummer</translation>
 <translation id="6337534724793800597">Filtrer politikker efter navn</translation>
+<translation id="6342069812937806050">Lige nu</translation>
 <translation id="6355080345576803305">Tilsidesættelse af offentlig session</translation>
 <translation id="6387478394221739770">Er du interesseret i smarte nye Chrome-funktioner? Prøv vores betakanal på chrome.com/beta.</translation>
 <translation id="6445051938772793705">Land</translation>
@@ -252,7 +252,6 @@
 <translation id="6965978654500191972">Enhed</translation>
 <translation id="6970216967273061347">Distrikt</translation>
 <translation id="6973656660372572881">Både faste proxyservere og en webadresse for .pac-script angives.</translation>
-<translation id="6980028882292583085">JavaScript-advarsel</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7050187094878475250">Du forsøgte at gå til <ph name="DOMAIN" />, men serveren præsenterede et certifikat, hvis gyldighedsperiode er for lang til at være pålidelig.</translation>
 <translation id="7087282848513945231">Amt/region</translation>
@@ -275,7 +274,6 @@
 <translation id="7419106976560586862">Profilsti</translation>
 <translation id="7441627299479586546">Forkert emne for politik</translation>
 <translation id="7485870689360869515">Der blev ikke fundet nogen data.</translation>
-<translation id="7521387064766892559">JavaScript</translation>
 <translation id="7537536606612762813">Obligatorisk</translation>
 <translation id="7542995811387359312">Automatisk udfyldning af kreditkort er deaktiveret, fordi formularen ikke bruger en sikker forbindelse.</translation>
 <translation id="7567204685887185387">Denne server kunne ikke bevise, at den er <ph name="DOMAIN" />, da sikkerhedscertifikatet er udstedt på ulovlig vis. Dette kan skyldes en fejlkonfiguration, eller at en hacker har opfanget din forbindelse.</translation>

@@ -32,7 +32,6 @@
 <translation id="1644184664548287040">Nettverkskonfigurasjonen er ugyldig og kan ikke importeres.</translation>
 <translation id="1655462015569774233">{1,plural, =1{Denne tjeneren kunne ikke bevise at den er <ph name="DOMAIN" />, ettersom sikkerhetssertifikatet utløp i går. Dette kan skyldes en feilkonfigurasjon eller at en angriper avskjærer tilkoblingen mellom deg og nettstedet. Klokken på datamaskinen din er stilt til <ph name="CURRENT_DATE" />. Er det riktig? Hvis ikke bør du stille klokken på systemet og laste inn denne siden på nytt.}other{Denne tjeneren kunne ikke bevise at den er <ph name="DOMAIN" />, ettersom sikkerhetssertifikatet utløp for # dager siden. Dette kan skyldes en feilkonfigurasjon eller at en angriper avskjærer tilkoblingen mellom deg og nettstedet. Klokken på datamaskinen din er stilt til <ph name="CURRENT_DATE" />. Er det riktig? Hvis ikke bør du stille klokken på systemet og laste inn denne siden på nytt.}}</translation>
 <translation id="168841957122794586">Tjenersertifikatet inneholder en svak kryptografisk nøkkel.</translation>
-<translation id="1693754753824026215">Varsel fra <ph name="SITE" />:</translation>
 <translation id="1706954506755087368">{1,plural, =1{Denne tjeneren kunne ikke bevise at den er <ph name="DOMAIN" />, ettersom sikkerhetssertifikatet ser ut til å være fra i morgen. Dette kan skyldes en feilkonfigurasjon eller at en angriper avskjærer tilkoblingen mellom deg og nettstedet.}other{Denne tjeneren kunne ikke bevise at den er <ph name="DOMAIN" />, ettersom sikkerhetssertifikatet ser ut til å være fra # dager frem i tid. Dette kan skyldes en feilkonfigurasjon eller at en angriper avskjærer tilkoblingen mellom deg og nettstedet.}}</translation>
 <translation id="1710259589646384581">OS</translation>
 <translation id="1734864079702812349">Amex</translation>
@@ -227,6 +226,7 @@
 <translation id="6263376278284652872"><ph name="DOMAIN" />-bokmerker</translation>
 <translation id="6282194474023008486">Postnummer</translation>
 <translation id="6337534724793800597">Filtrér retningslinjer etter navn</translation>
+<translation id="6342069812937806050">Akkurat nå</translation>
 <translation id="6355080345576803305">Offentlig økt-overstyring</translation>
 <translation id="6387478394221739770">Interessert i nye kule Chrome-funksjoner? Prøv betakanalen vår på chrome.com/beta</translation>
 <translation id="6445051938772793705">Land</translation>
@@ -252,7 +252,6 @@
 <translation id="6965978654500191972">Enhet</translation>
 <translation id="6970216967273061347">Område</translation>
 <translation id="6973656660372572881">Både statiske proxytjenere og en .pac-skriptnettadresse er angitt.</translation>
-<translation id="6980028882292583085">JavaScript-varsel</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7050187094878475250">Du prøvde å nå <ph name="DOMAIN" />. Tjeneren presenterte et sertifikat som har en gyldighetsperiode som er for lang til å være pålitelig.</translation>
 <translation id="7087282848513945231">Fylke</translation>
@@ -275,7 +274,6 @@
 <translation id="7419106976560586862">Profilbane</translation>
 <translation id="7441627299479586546">Feil emne for innstillinger</translation>
 <translation id="7485870689360869515">Ingen data ble funnet.</translation>
-<translation id="7521387064766892559">JavaScript</translation>
 <translation id="7537536606612762813">Obligatorisk</translation>
 <translation id="7542995811387359312">Automatisk utfylling av kredittkort er deaktivert fordi dette skjemaet ikke bruker en sikker tilkobling.</translation>
 <translation id="7567204685887185387">Denne tjeneren kunne ikke bevise at den er <ph name="DOMAIN" />. Tjenerens sikkerhetssertifikat kan ha blitt utstedt på uredelig vis. Dette kan være forårsaket av en feilkonfigurering eller en angriper som avskjærer tilkoblingen din.</translation>

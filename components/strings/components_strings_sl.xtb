@@ -32,7 +32,6 @@
 <translation id="1644184664548287040">Omrežna konfiguracija ni veljavna in je ni mogoče uvoziti.</translation>
 <translation id="1655462015569774233">{1,plural, =1{Strežniku ni uspelo dokazati, da je domena <ph name="DOMAIN" />; njegovo varnostno potrdilo je poteklo včeraj. Razlog za to je lahko napačna konfiguracija ali napadalčevo prestrezanje povezave. Ura vašega računalnika je trenutno nastavljena na <ph name="CURRENT_DATE" />. Je to videti v redu? Če ni, pravilno nastavite sistemsko uro in nato osvežite stran.}one{Strežniku ni uspelo dokazati, da je domena <ph name="DOMAIN" />; njegovo varnostno potrdilo je poteklo pred # dnevom. Razlog za to je lahko napačna konfiguracija ali napadalčevo prestrezanje povezave. Ura vašega računalnika je trenutno nastavljena na <ph name="CURRENT_DATE" />. Je to videti v redu? Če ni, pravilno nastavite sistemsko uro in nato osvežite stran.}two{Strežniku ni uspelo dokazati, da je domena <ph name="DOMAIN" />; njegovo varnostno potrdilo je poteklo pred # dnevoma. Razlog za to je lahko napačna konfiguracija ali napadalčevo prestrezanje povezave. Ura vašega računalnika je trenutno nastavljena na <ph name="CURRENT_DATE" />. Je to videti v redu? Če ni, pravilno nastavite sistemsko uro in nato osvežite stran.}few{Strežniku ni uspelo dokazati, da je domena <ph name="DOMAIN" />; njegovo varnostno potrdilo je poteklo pred # dnevi. Razlog za to je lahko napačna konfiguracija ali napadalčevo prestrezanje povezave. Ura vašega računalnika je trenutno nastavljena na <ph name="CURRENT_DATE" />. Je to videti v redu? Če ni, pravilno nastavite sistemsko uro in nato osvežite stran.}other{Strežniku ni uspelo dokazati, da je domena <ph name="DOMAIN" />; njegovo varnostno potrdilo je poteklo pred # dnevi. Razlog za to je lahko napačna konfiguracija ali napadalčevo prestrezanje povezave. Ura vašega računalnika je trenutno nastavljena na <ph name="CURRENT_DATE" />. Je to videti v redu? Če ni, pravilno nastavite sistemsko uro in nato osvežite stran.}}</translation>
 <translation id="168841957122794586">Potrdilo strežnika vsebuje šibek šifrirni ključ.</translation>
-<translation id="1693754753824026215">Na strani na naslovu <ph name="SITE" /> je navedeno:</translation>
 <translation id="1706954506755087368">{1,plural, =1{Strežniku ni uspelo dokazati, da je domena <ph name="DOMAIN" />; njegovo varnostno potrdilo naj bi imelo jutrišnji datum. Razlog za to je lahko napačna konfiguracija ali napadalčevo prestrezanje povezave.}one{Strežniku ni uspelo dokazati, da je domena <ph name="DOMAIN" />; njegovo varnostno potrdilo naj bi imelo datum v prihodnosti – # dan od danes. Razlog za to je lahko napačna konfiguracija ali napadalčevo prestrezanje povezave.}two{Strežniku ni uspelo dokazati, da je domena <ph name="DOMAIN" />; njegovo varnostno potrdilo naj bi imelo datum v prihodnosti – # dneva od danes. Razlog za to je lahko napačna konfiguracija ali napadalčevo prestrezanje povezave.}few{Strežniku ni uspelo dokazati, da je domena <ph name="DOMAIN" />; njegovo varnostno potrdilo naj bi imelo datum v prihodnosti – # dni od danes. Razlog za to je lahko napačna konfiguracija ali napadalčevo prestrezanje povezave.}other{Strežniku ni uspelo dokazati, dokazati, da je domena <ph name="DOMAIN" />; njegovo varnostno potrdilo naj bi imelo datum v prihodnosti – # dni od danes. Razlog za to je lahko napačna konfiguracija ali napadalčevo prestrezanje povezave.}}</translation>
 <translation id="1710259589646384581">Operacijski sistem</translation>
 <translation id="1734864079702812349">Amex</translation>
@@ -228,6 +227,7 @@
 <translation id="6263376278284652872">Zaznamki <ph name="DOMAIN" /></translation>
 <translation id="6282194474023008486">Poštna številka</translation>
 <translation id="6337534724793800597">Filtriraj pravilnike po imenu</translation>
+<translation id="6342069812937806050">Pravkar</translation>
 <translation id="6355080345576803305">Preglasitev javne seje</translation>
 <translation id="6387478394221739770">Vas zanimajo super nove funkcije Chroma? Preskusite naš kanal za različice beta na chrome.com/beta.</translation>
 <translation id="6445051938772793705">Država</translation>
@@ -253,7 +253,6 @@
 <translation id="6965978654500191972">Naprava</translation>
 <translation id="6970216967273061347">Okraj</translation>
 <translation id="6973656660372572881">Določeni so stalni strežniki proxy in URL skripta .pac.</translation>
-<translation id="6980028882292583085">Opozorilo JavaScript</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7050187094878475250">Poskusili ste odpreti <ph name="DOMAIN" />, vendar je strežnik uporabil potrdilo, ki ima predolgo obdobje veljavnosti, da bi bilo verodostojno.</translation>
 <translation id="7087282848513945231">Okraj</translation>
@@ -276,7 +275,6 @@
 <translation id="7419106976560586862">Pot profila</translation>
 <translation id="7441627299479586546">Napačen subjekt pravilnika</translation>
 <translation id="7485870689360869515">Ni podatkov.</translation>
-<translation id="7521387064766892559">JavaScript</translation>
 <translation id="7537536606612762813">Obvezen</translation>
 <translation id="7542995811387359312">Samodejno izpolnjevanje podatkov o kreditni kartici je onemogočeno, ker ta obrazec ne uporablja varne povezave.</translation>
 <translation id="7567204685887185387">Strežniku ni uspelo dokazati, da je <ph name="DOMAIN" />; njegovo varnostno potrdilo je bilo morda izdano z goljufijo. Razlog za to je lahko napačna konfiguracija ali napadalčevo prestrezanje povezave.</translation>

@@ -52,6 +52,7 @@
 <translation id="1594072653727561613">mnu</translation>
 <translation id="1610130962244179598">التبديل إلى نمط برايل 6 نقاط</translation>
 <translation id="1611168825862729585">رأس العمود:</translation>
+<translation id="1611649489706141841">للأمام</translation>
 <translation id="1613476421962910979">‏تم تشغيل Earcons</translation>
 <translation id="1618597272655350600">الإعلان عن وصف كامل للموضع الحالي</translation>
 <translation id="1639634871799530612">{COUNT,plural, =1{علامة أكبر من واحدة}zero{# greater than signs}two{علامتا أكبر من (#)}few{# علامات أكبر من}many{# علامة أكبر من}other{# من علامات أكبر من}}</translation>
@@ -391,8 +392,10 @@
 <translation id="5042770794184672516">زيادة مستوى صوت النطق</translation>
 <translation id="5050015258024679800">عنوان المستوى الرابع السابق</translation>
 <translation id="5054047268577924192">عنصر القائمة السابق</translation>
+<translation id="5075936896689244141">‏مخطط المفاتيح Next</translation>
 <translation id="5078661581131202757">تحديد الملف</translation>
 <translation id="5080758118274074384">تم النقر عليه نقرًا مزدوجًا</translation>
+<translation id="5087864757604726239">رجوع</translation>
 <translation id="5098541983634824365">مغادرة الشبكة.</translation>
 <translation id="5102981729317424850">شريط الأدوات</translation>
 <translation id="5105050547967751155">rq</translation>

@@ -52,6 +52,7 @@
 <translation id="1594072653727561613">nabíd</translation>
 <translation id="1610130962244179598">Přepnout na šestibodové Braillovo písmo</translation>
 <translation id="1611168825862729585">Záhlaví sloupce:</translation>
+<translation id="1611649489706141841">vpřed</translation>
 <translation id="1613476421962910979">Zvukové signály zapnuty</translation>
 <translation id="1618597272655350600">Oznamuje úplný popis současné pozice</translation>
 <translation id="1639634871799530612">{COUNT,plural, =1{je větší než}few{# znaky je větší než}many{# greater than signs}other{# znaků je větší než}}</translation>
@@ -393,6 +394,7 @@
 <translation id="5054047268577924192">Předchozí položka v seznamu</translation>
 <translation id="5078661581131202757">Výběr souboru</translation>
 <translation id="5080758118274074384">dvakrát kliknuto</translation>
+<translation id="5087864757604726239">zpět</translation>
 <translation id="5098541983634824365">Opouští se mřížka.</translation>
 <translation id="5102981729317424850">Panel nástrojů</translation>
 <translation id="5105050547967751155">požad</translation>

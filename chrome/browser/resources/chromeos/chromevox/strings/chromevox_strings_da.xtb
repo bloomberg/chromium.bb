@@ -52,6 +52,7 @@
 <translation id="1594072653727561613">mnu</translation>
 <translation id="1610130962244179598">Skift til 6-punkts braillealfabet</translation>
 <translation id="1611168825862729585">Kolonneoverskrift:</translation>
+<translation id="1611649489706141841">videresend</translation>
 <translation id="1613476421962910979">Earcons til</translation>
 <translation id="1618597272655350600">Angiver en komplet beskrivelse af den aktuelle position</translation>
 <translation id="1639634871799530612">{COUNT,plural, =1{større end}one{# større end-tegn}other{# større end-tegn}}</translation>
@@ -393,6 +394,7 @@
 <translation id="5054047268577924192">Forrige punkt på listen</translation>
 <translation id="5078661581131202757">Filvalg</translation>
 <translation id="5080758118274074384">dobbeltklikket på</translation>
+<translation id="5087864757604726239">tilbage</translation>
 <translation id="5098541983634824365">Forlader gitter.</translation>
 <translation id="5102981729317424850">Værktøjslinje</translation>
 <translation id="5105050547967751155">rq</translation>

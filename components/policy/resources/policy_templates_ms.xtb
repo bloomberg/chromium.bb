@@ -64,6 +64,9 @@
 
           Dasar ini hanya dihormati jika dasar 'DefaultSearchProviderEnabled' didayakan.</translation>
 <translation id="1265053460044691532">Hadkan masa untuk pengguna yang membuat pengesahan melalui SAML boleh melog masuk dalam talian.</translation>
+<translation id="1291880496936992484">Amaran: RC4 akan dialih keluar sepenuhnya daripada <ph name="PRODUCT_NAME" /> selepas versi 52 (sekitar September 2016) dan dasar ini akan berhenti berfungsi selepas itu.
+
+      Jika dasar ini tidak ditetapkan atau ditetapkan kepada palsu, maka suit sifer RC4 dalam TLS tidak akan didayakan. Jika tidak, dasar mungkin ditetapkan kepada benar untuk mengekalkan keserasian dengan pelayan yang lapuk. Ini adalah langkah sementara dan pelayan harus dikonfigurasi semula.</translation>
 <translation id="1297182715641689552">Gunakan skrip proksi .pac</translation>
 <translation id="1300635491585192248">Ramalkan tindakan rangkaian pada mana-mana rangkaian yang bukan
           selular</translation>
@@ -527,6 +530,9 @@
       Jika anda mendayakan atau melumpuhkan tetapan ini, pengguna tidak boleh mengubah atau mengatasi tetapan "Dayakan perlindungan pancingan data dan perlindungan perisian hasad" dalam <ph name="PRODUCT_NAME" />.
 
       Jika dasar ini dibiarkan tanpa ditetapkan, tetapan ini akan didayakan tetapi pengguna akan dapat mengubahnya.</translation>
+<translation id="2801230735743888564">Membolehkan pengguna bermain permainan telur easter dinosaur apabila peranti di luar talian.
+
+      Jika dasar ini ditetapkan kepada Palsu, pengguna tidak akan dapat bermain permainan telur easter dinosaur apabila peranti di luar talian. Jika tetapan ini ditetapkan kepada Benar, pengguna dibenarkan bermain permainan dinosaur. Jika dasar ini tidak ditetapkan, pengguna tidak dibenarkan bermain permainan telur easter dinosaur pada OS Chrome berdaftar, tetapi dibenarkan bermain menurut keadaan lain.</translation>
 <translation id="2805707493867224476">Membenarkan semua tapak untuk memaparkan pop muncul</translation>
 <translation id="2808013382476173118">Mendayakan penggunaan pelayan STUN apabila pelanggan jauh cuba mewujudkan sambungan dengan mesin ini.
 
@@ -1134,6 +1140,7 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
           Apabila dasar ini tidak ditetapkan, tindakan lalai iaitu penggantungan akan diambil.
 
           Jika tindakan penggantungan diambil, <ph name="PRODUCT_OS_NAME" /> boleh dikonfigurasi secara berasingan sama ada kepada mengunci atau tidak mengunci skrin sebelum penggantungan.</translation>
+<translation id="5130288486815037971">Sama ada suit sifer RC4 dalam TLS didayakan</translation>
 <translation id="5141670636904227950">Tetapkan jenis penggadang skrin lalai yang didayakan pada skrin log masuk</translation>
 <translation id="5142301680741828703">Sentiasa paparkan corak URL berikut dalam <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="5148753489738115745">Membolehkan anda menentukan parameter tambahan yang digunakan apabila  <ph name="PRODUCT_FRAME_NAME" /> melancarkan <ph name="PRODUCT_NAME" />.
@@ -1419,6 +1426,7 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
           Cara yang disyorkan untuk mengunci skrin semasa melahu adalah dengan mendayakan penguncian skrin semasa tergantung dan membuatkan <ph name="PRODUCT_OS_NAME" /> tergantung selepas kelewatan melahu. Dasar ini harus digunakan hanya apabila penguncian skrin berlaku jauh lebih awal daripada masa tergantung atau apabila tergantung yang berlaku semasa melahu tidak diingini sama sekali.
 
           Nilai dasar mesti dinyatakan dalam milisaat. Nilai diketatkan menjadi kurang daripada kelewatan melahu.</translation>
+<translation id="6111936128861357925">Benarkan Permainan Telur Easter Dinosaur</translation>
 <translation id="6114416803310251055">dikecam</translation>
 <translation id="6145799962557135888">Membolehkan anda menetapkan senarai pola url yang menentukan tapak yang dibenarkan untuk menjalankan JavaScript.
 
@@ -2050,6 +2058,19 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 
       Jika dasar ini tidak ditetapkan, tiada pengecualian untuk senarai hitam daripada dasar 'URLBlacklist'.</translation>
 <translation id="8176035528522326671">Membenarkan pengguna perusahaan untuk menjadi pengguna berbilang profil utama sahaja (Tingkah laku lalai untuk pengguna perusahaan yang dikendalikan)</translation>
+<translation id="8191318459035150777">Mengkonfigurasi URL halaman utama lalai dalam <ph name="PRODUCT_NAME" /> dan menghalang pengguna daripada menukarnya.
+
+          Halaman utama ialah laman yang dibuka oleh butang Laman Utama. 
+Halaman yang dibuka semasa permulaan dikawal oleh dasar RestoreOnStartup.
+
+          Jenis halaman utama boleh ditetapkan kepada URL yang anda tentukan di sini atau ditetapkan kepada Halaman Tab Baharu. Jika anda memilih Halaman Tab Baharu, maka dasar ini tidak berkuat kuasa.
+
+          Jika anda mendayakan tetapan ini, pengguna tidak boleh menukar URL halaman utama mereka dalam <ph name="PRODUCT_NAME" />, tetapi mereka masih boleh memilih Halaman Tab Baharu sebagai halaman utama mereka.
+
+          Jika dasar ini dibiarkan tanpa ditetapkan, pengguna boleh memilih halaman utamanya sendiri jika HomepageIsNewTabPage turut tidak ditetapkan.
+
+          Dasar ini tidak tersedia pada tika Windows yang tidak dihubungkan
+          ke domain Direktori Aktif.</translation>
 <translation id="8197918588508433925">Dasar ini menentukan sambungan yang dibenarkan menggunakan API Enterprise Platform Keys chrome.enterprise.platformKeysPrivate.challengeUserKey() untuk pembuktian jauh. Sambungan hendaklah ditambahkan pada senarai ini untuk penggunakan API tersebut.
 
           Jika sambungan tidak terdapat dalam senarai atau senarai tidak ditetapkan, panggilan kepada API tersebut akan gagal dengan kod ralat.</translation>
@@ -2167,6 +2188,8 @@ Jika dasar ini dibiarkan tidak ditetapkan mana-mana pemalam yang sepadan dengan 
           Jika anda mendayakan tetapan ini, carian CNAME akan dilangkau dan nama pelayan akan digunakan seperti mana ia dimasukkan.
 
           Jika anda melumpuhkan tetapan ini atau membiarkannya tanpa ditetapkan, nama berkanun pelayan akan ditentukan melalui carian CNAME.</translation>
+<translation id="8774131509736383471">Jika dasar ini ditetapkan kepada benar, <ph name="PRODUCT_NAME" /> akan memaksimumkan tetingkap pertama yang dipaparkan pada kendalian pertama tanpa syarat.
+     Jika dasar ini ditetapkan kepada palsu atau tidak dikonfigurasi, keputusan sama ada untuk memaksimumkan tetingkap pertama yang ditunjukkan akan berdasarkan saiz skrin.</translation>
 <translation id="8777120694819070607">Membenarkan <ph name="PRODUCT_NAME" /> untuk menjalankan pemalam yang lapuk.
 
       Jika anda mendayakan tetapan ini, pemalam lapuk digunakan sebagai pemalam normal.

@@ -32,6 +32,7 @@
 <translation id="1967743265616885482">Modul dengan nama yang sama telah diketahui bercanggah dengan Chromium.</translation>
 <translation id="2077129598763517140">Gunakan pecutan perkakasan apabila tersedia</translation>
 <translation id="2097986737970966220">Buka Chromium pada desktop</translation>
+<translation id="2117181891440368863">Chromium mengesahkan bahawa <ph name="ISSUER" /> mengeluarkan sijil tapak web ini. Pelayan membekalkan maklumat Ketelusan Sijil, tetapi tidak sah.</translation>
 <translation id="2119636228670142020">Mengenai &amp;Chromium OS</translation>
 <translation id="2158734852934720349">Lesen sumber terbuka Chromium OS</translation>
 <translation id="2233513990531887259">Lancarkan semula dalam mod benaman Chromium</translation>
@@ -178,6 +179,7 @@ Beberapa ciri mungkin tidak tersedia. Sila nyatakan direktori profil yang berbez
 <translation id="6734080038664603509">Kemas kini &amp;Chromium</translation>
 <translation id="6757767188268205357">Jangan ganggu saya</translation>
 <translation id="6810143991807788455">Bantu jadikan Chromium lebih baik dengan melaporkan tetapan semasa</translation>
+<translation id="6838494703713445896">Chromium mengesahkan bahawa <ph name="ISSUER" /> mengeluarkan sijil tapak web ini. Pelayan membekalkan maklumat Ketelusan Sijil yang sah.</translation>
 <translation id="6883876366448858277">menghantar perkataan dan konteks sekitarnya kepada Carian Google, mengembalikan takrif, gambar dan hasil carian lain.</translation>
 <translation id="6893813176749746474">Chromium telah dikemas kini, tetapi anda belum menggunakannya untuk sekurang-kurangnya 30 hari.</translation>
 <translation id="6900895776413482243">Melancarkan semula dalam mod benaman Chromium akan menutup dan melancarkan semula apl Chromium anda.</translation>
@@ -190,6 +192,7 @@ Beberapa ciri mungkin tidak tersedia. Sila nyatakan direktori profil yang berbez
 <translation id="7066436765290594559">OS Chromium tidak dapat menyegerakkan data anda. Sila kemas kini frasa laluan Segerak anda.</translation>
 <translation id="7138853919861947730">Chromium boleh menggunakan perkhidmatan web untuk meningkatkan pengalaman penyemakan imbas anda.</translation>
 <translation id="7162152143154757523">Chromium dapat menyediakan semakan ejaan yang lebih pintar dengan menghantar apa yang anda taip dalam penyemak imbas kepada pelayan Google, membolehkan anda menggunakan teknologi semakan ejaan yang sama seperti yang digunakan oleh carian Google.</translation>
+<translation id="7178626992616222740">Chromium mengesahkan bahawa <ph name="ISSUER" /> mengeluarkan siil tapak web ini. Pelayan membekalkan maklumat Ketelusan Sijil, tetapi Chromium tidak mengenali mana-mana log Ketelusan Sijil.</translation>
 <translation id="7196020411877309443">Mengapakah halaman ini yang saya lihat?</translation>
 <translation id="7205698830395646142">Sembunyikan dalam Menu Chromium</translation>
 <translation id="7211828883345145708">Mendayakan pintasan papan kekunci tambahan yang berguna untuk menyahpepijat Chromium.</translation>
@@ -215,6 +218,7 @@ Chromium tidak dapat mengembalikan tetapan anda.</translation>
 <translation id="7723128346970903111">Apabila didayakan, akan menggunakan aliran log masuk Chromium berasaskan iframe; atau pun menggunakan aliran berasaskan paparan web.</translation>
 <translation id="7729447699958282447">Chromium tidak dapat menyegerakkan data anda kerana Segerak tidak tersedia untuk domain anda.</translation>
 <translation id="7747138024166251722">Pemasang tidak dapat mencipta direktori sementara. Sila semak ruang cakera kosong dan kebenaran untuk memasang perisian.</translation>
+<translation id="7918535023914021398">Chromium mengesahkan bahawa <ph name="ISSUER" /> mengeluarkan sijil tapak web ini. Pelayan tidak membekalkan sebarang maklumat Ketelusan Sijil.</translation>
 <translation id="7937630085815544518">Anda telah log masuk ke Chromium sebagai <ph name="USER_EMAIL_ADDRESS" />. Sila gunakan akaun yang sama untuk log masuk lagi.</translation>
 <translation id="7962572577636132072">Chromium dikemas kini secara automatik supaya anda sentiasa mempunyai versi yang terbaharu.</translation>
 <translation id="7979877361127045932">Sembunyikan dalam menu Chromium</translation>

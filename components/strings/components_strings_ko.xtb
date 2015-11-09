@@ -32,7 +32,6 @@
 <translation id="1644184664548287040">네트워크 구성이 잘못되어 가져올 수 없습니다.</translation>
 <translation id="1655462015569774233">{1,plural, =1{서버의 보안 인증서가 어제 만료되어 <ph name="DOMAIN" />임을 입증할 수 없습니다. 서버를 잘못 설정했거나 불법 사용자가 연결을 가로채고 있기 때문일 수 있습니다. 현재 컴퓨터의 시계가 <ph name="CURRENT_DATE" />로 설정되어 있습니다. 시간이 정확하지 않으면 시스템 시계를 수정한 뒤 이 페이지를 새로고침하세요.}other{서버의 보안 인증서가 #일 전에 만료되어 <ph name="DOMAIN" />임을 입증할 수 없습니다. 서버를 잘못 설정했거나 불법 사용자가 연결을 가로채고 있기 때문일 수 있습니다. 현재 컴퓨터의 시계가 <ph name="CURRENT_DATE" />로 설정되어 있습니다. 시간이 정확하지 않으면 시스템 시계를 수정한 뒤 이 페이지를 새로고침하세요.}}</translation>
 <translation id="168841957122794586">서버 인증서에 안전성이 낮은 암호화 키가 포함되어 있습니다.</translation>
-<translation id="1693754753824026215"><ph name="SITE" />의 페이지 내용:</translation>
 <translation id="1706954506755087368">{1,plural, =1{서버의 보안 인증서가 내일 발효될 예정이며 이에 따라 <ph name="DOMAIN" />임을 입증할 수 없습니다. 서버를 잘못 설정했거나 불법 사용자가 연결을 가로채고 있기 때문일 수 있습니다.}other{서버의 보안 인증서가 #일 후 발효될 예정이며 이에 따라 <ph name="DOMAIN" />임을 입증할 수 없습니다. 서버를 잘못 설정했거나 불법 사용자가 연결을 가로채고 있기 때문일 수 있습니다.}}</translation>
 <translation id="1710259589646384581">OS</translation>
 <translation id="1734864079702812349">Amex</translation>
@@ -227,6 +226,7 @@
 <translation id="6263376278284652872"><ph name="DOMAIN" /> 북마크</translation>
 <translation id="6282194474023008486">우편번호</translation>
 <translation id="6337534724793800597">이름별로 정책 필터링</translation>
+<translation id="6342069812937806050">완료됨</translation>
 <translation id="6355080345576803305">공개 세션 무시</translation>
 <translation id="6387478394221739770">Chrome의 멋진 새 기능에 관심이 있으십니까? chrome.com/beta 페이지에서 베타 채널을 방문해 보세요.</translation>
 <translation id="6445051938772793705">국가</translation>
@@ -252,7 +252,6 @@
 <translation id="6965978654500191972">기기</translation>
 <translation id="6970216967273061347">구</translation>
 <translation id="6973656660372572881">고정 프록시 서버와 .pac 스크립트 URL이 모두 지정되어 있습니다.</translation>
-<translation id="6980028882292583085">자바스크립트 알림</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7050187094878475250"><ph name="DOMAIN" />에 접속하려고 했지만 서버가 제시한 인증서의 유효 기간이 너무 길어서 신뢰할 수 없습니다.</translation>
 <translation id="7087282848513945231">카운티</translation>
@@ -275,7 +274,6 @@
 <translation id="7419106976560586862">프로필 경로</translation>
 <translation id="7441627299479586546">잘못된 정책 주체</translation>
 <translation id="7485870689360869515">데이터 없음</translation>
-<translation id="7521387064766892559">자바스크립트</translation>
 <translation id="7537536606612762813">필수</translation>
 <translation id="7542995811387359312">양식에 보안 연결이 사용되지 않아 신용카드 자동 채우기가 사용 중지되었습니다.</translation>
 <translation id="7567204685887185387">이 서버가 <ph name="DOMAIN" />임을 입증할 수 없으며 서버의 보안 인증서가 부정한 방식으로 발행되었을 수 있습니다. 서버를 잘못 설정했거나 불법 사용자가 연결을 가로채고 있기 때문일 수 있습니다.</translation>

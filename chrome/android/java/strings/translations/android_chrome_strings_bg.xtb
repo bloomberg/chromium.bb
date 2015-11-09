@@ -119,7 +119,6 @@
 <translation id="2816165854387457183">Открита е бавна връзка.</translation>
 <translation id="2842985007712546952">Основна папка</translation>
 <translation id="2870560284913253234">Сайт</translation>
-<translation id="2873598956318269337">{NUM_URLS,plural, =1{1 URL адрес в близост}other{# URL адреса в близост}}</translation>
 <translation id="2888126860611144412">Всичко за Chrome</translation>
 <translation id="2891154217021530873">Спиране на зареждането на страницата</translation>
 <translation id="2902702728133930130">Стартирането на Chrome не бе успешно поради неочаквана грешка.</translation>
@@ -543,7 +542,6 @@
 <translation id="885701979325669005">Хранилище</translation>
 <translation id="886510833909353412">Шифроване на всичко с пропуск</translation>
 <translation id="8872441722924401214">Изберете сертификат за удостоверяване</translation>
-<translation id="8891135217544884558">URL адреси в близост</translation>
 <translation id="8901170036886848654">Няма намерени отметки</translation>
 <translation id="8909135823018751308">Споделяне…</translation>
 <translation id="8912362522468806198">Профил в Google</translation>

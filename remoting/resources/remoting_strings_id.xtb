@@ -124,6 +124,7 @@ Chromoting</translation>
 <translation id="3950820424414687140">Masuk</translation>
 <translation id="3989511127559254552">Untuk melanjutkan, Anda harus memberikan izin akses yang diperpanjang ke komputer. Anda hanya perlu melakukan ini satu kali.</translation>
 <translation id="4006787130661126000">Anda harus mengaktifkan sambungan jarak jauh jika ingin menggunakan Chrome Desktop Jarak Jauh untuk mengakses komputer ini.</translation>
+<translation id="405887016757208221">Komputer jarak jauh gagal melakukan inisialisasi sesi. Jika masalah tetap ada, coba lakukan konfigurasi pada host lagi.</translation>
 <translation id="4068946408131579958">Semua sambungan</translation>
 <translation id="409800995205263688">CATATAN: Setelan kebijakan hanya mengizinkan sambungan antar-komputer dalam jaringan Anda.</translation>
 <translation id="4155497795971509630">Beberapa komponen yang diperlukan tidak ada. Pastikan Anda memasang perangkat lunak versi terbaru dan coba lagi.</translation>
@@ -258,6 +259,7 @@ Desktop Jarak Jauh</translation>
 <translation id="7869445566579231750">Anda tidak memiliki izin untuk menjalankan aplikasi ini.</translation>
 <translation id="7948001860594368197">Opsi layar</translation>
 <translation id="7970576581263377361">Autentikasi gagal. Masuk ke Chromium lagi.</translation>
+<translation id="7981525049612125370">Sesi jarak jauh telah berakhir.</translation>
 <translation id="8041721485428375115">Dengan mengunduh Pemasang Host Chrome Desktop Jarak Jauh, Anda menyetujui <ph name="LINK_BEGIN" />Persyaratan Layanan<ph name="LINK_END" /> Google.</translation>
 <translation id="8073845705237259513">Untuk menggunakan Chrome Desktop Jarak Jauh, Anda perlu menambahkan Akun Google ke perangkat.</translation>
 <translation id="80739703311984697">Hosting jarak jauh mewajibkan Anda mengautentikasi ke situs web pihak ketiga. Untuk melanjutkan, Anda harus memberikan izin tambahan ke Chromoting untuk mengakses alamat ini:</translation>

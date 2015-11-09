@@ -32,7 +32,6 @@
 <translation id="1644184664548287040">Tinklo konfigūracija netinkama ir jos neįmanoma importuoti.</translation>
 <translation id="1655462015569774233">{1,plural, =1{Šiam serveriui nepavyko patvirtinti, kad tai yra <ph name="DOMAIN" />; jo saugos sertifikato galiojimas baigėsi vakar. Taip gali nutikti dėl netinkamos konfigūracijos ar dėl ryšį pertraukusio užpuoliko. Šiuo metu kompiuterio laikrodis nustatytas į <ph name="CURRENT_DATE" />. Ar tai tinkama? Jei netinkama, turėtumėte koreguoti sistemos laikrodį ir atnaujinti šį puslapį.}one{Šiam serveriui nepavyko patvirtinti, kad tai yra <ph name="DOMAIN" />; jo saugos sertifikato galiojimas baigėsi prieš # dieną. Taip gali nutikti dėl netinkamos konfigūracijos ar dėl ryšį pertraukusio užpuoliko. Šiuo metu kompiuterio laikrodis nustatytas į <ph name="CURRENT_DATE" />. Ar tai tinkama? Jei netinkama, turėtumėte koreguoti sistemos laikrodį ir atnaujinti šį puslapį.}few{Šiam serveriui nepavyko patvirtinti, kad tai yra <ph name="DOMAIN" />; jo saugos sertifikato galiojimas baigėsi prieš # dienas. Taip gali nutikti dėl netinkamos konfigūracijos ar dėl ryšį pertraukusio užpuoliko. Šiuo metu kompiuterio laikrodis nustatytas į <ph name="CURRENT_DATE" />. Ar tai tinkama? Jei netinkama, turėtumėte koreguoti sistemos laikrodį ir atnaujinti šį puslapį.}many{Šiam serveriui nepavyko patvirtinti, kad tai yra <ph name="DOMAIN" />; jo saugos sertifikato galiojimas baigėsi prieš # dienos. Taip gali nutikti dėl netinkamos konfigūracijos ar dėl ryšį pertraukusio užpuoliko. Šiuo metu kompiuterio laikrodis nustatytas į <ph name="CURRENT_DATE" />. Ar tai tinkama? Jei netinkama, turėtumėte koreguoti sistemos laikrodį ir atnaujinti šį puslapį.}other{Šiam serveriui nepavyko patvirtinti, kad tai yra <ph name="DOMAIN" />; jo saugos sertifikato galiojimas baigėsi prieš # dienų. Taip gali nutikti dėl netinkamos konfigūracijos ar dėl ryšį pertraukusio užpuoliko. Šiuo metu kompiuterio laikrodis nustatytas į <ph name="CURRENT_DATE" />. Ar tai tinkama? Jei netinkama, turėtumėte koreguoti sistemos laikrodį ir atnaujinti šį puslapį.}}</translation>
 <translation id="168841957122794586">Serverio sertifikate yra nesudėtingas kriptografinis raktas.</translation>
-<translation id="1693754753824026215"><ph name="SITE" /> esančiame puslapyje nurodoma:</translation>
 <translation id="1706954506755087368">{1,plural, =1{Šiam serveriui nepavyko patvirtinti, kad tai yra <ph name="DOMAIN" />; jo saugos sertifikatas įsigalios nuo rytojaus. Taip gali nutikti dėl netinkamos konfigūracijos ar dėl ryšį pertraukusio užpuoliko.}one{Šiam serveriui nepavyko patvirtinti, kad tai yra <ph name="DOMAIN" />; jo saugos sertifikatas įsigalios po # dienos. Taip gali nutikti dėl netinkamos konfigūracijos ar dėl ryšį pertraukusio užpuoliko.}few{Šiam serveriui nepavyko patvirtinti, kad tai yra <ph name="DOMAIN" />; jo saugos sertifikatas įsigalios po # dienų. Taip gali nutikti dėl netinkamos konfigūracijos ar dėl ryšį pertraukusio užpuoliko.}many{Šiam serveriui nepavyko patvirtinti, kad tai yra <ph name="DOMAIN" />; jo saugos sertifikatas įsigalios po # dienos. Taip gali nutikti dėl netinkamos konfigūracijos ar dėl ryšį pertraukusio užpuoliko.}other{Šiam serveriui nepavyko patvirtinti, kad tai yra <ph name="DOMAIN" />; jo saugos sertifikatas įsigalios po # dienų. Taip gali nutikti dėl netinkamos konfigūracijos ar dėl ryšį pertraukusio užpuoliko.}}</translation>
 <translation id="1710259589646384581">OS</translation>
 <translation id="1734864079702812349">Amex</translation>
@@ -227,6 +226,7 @@
 <translation id="6263376278284652872"><ph name="DOMAIN" /> žymės</translation>
 <translation id="6282194474023008486">Pašto kodas</translation>
 <translation id="6337534724793800597">Filtruoti politiką pagal pavadinimą</translation>
+<translation id="6342069812937806050">Ką tik</translation>
 <translation id="6355080345576803305">Viešosios sesijos nepaisymas</translation>
 <translation id="6387478394221739770">Domina naujos „Chrome“ funkcijos? Išbandykite mūsų beta kanalą adresu chrome.com/beta.</translation>
 <translation id="6445051938772793705">Šalis</translation>
@@ -252,7 +252,6 @@
 <translation id="6965978654500191972">Įrenginys</translation>
 <translation id="6970216967273061347">Rajonas</translation>
 <translation id="6973656660372572881">Nurodyti fiksuoti įgaliotieji serveriai ir .pac scenarijaus URL.</translation>
-<translation id="6980028882292583085">„JavaScript“ įspėjimas</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7050187094878475250">Bandėte pasiekti <ph name="DOMAIN" />, bet serveris pateikė sertifikatą, kurio galiojimo laikotarpis per ilgas, kad būtų patikimas.</translation>
 <translation id="7087282848513945231">Apygarda</translation>
@@ -275,7 +274,6 @@
 <translation id="7419106976560586862">Profilio kelias</translation>
 <translation id="7441627299479586546">Netinkamas politikos objektas</translation>
 <translation id="7485870689360869515">Nerasta jokių duomenų.</translation>
-<translation id="7521387064766892559">„JavaScript“</translation>
 <translation id="7537536606612762813">Privaloma</translation>
 <translation id="7542995811387359312">Automatinis kredito kortelės informacijos pildymas neleidžiamas, nes šiai formai nenaudojamas saugus ryšys.</translation>
 <translation id="7567204685887185387">Šiam serveriui nepavyko patvirtinti, kad tai yra <ph name="DOMAIN" />; jo saugos sertifikatas gali būti neteisėtai išduotas. Taip gali nutikti dėl netinkamos konfigūracijos ar dėl ryšį pertraukusio užgrobėjo.</translation>

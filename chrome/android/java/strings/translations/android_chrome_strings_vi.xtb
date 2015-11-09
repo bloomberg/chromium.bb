@@ -119,7 +119,6 @@
 <translation id="2816165854387457183">Đã phát hiện kết nối chậm.</translation>
 <translation id="2842985007712546952">Thư mục gốc</translation>
 <translation id="2870560284913253234">Trang web</translation>
-<translation id="2873598956318269337">{NUM_URLS,plural, =1{1 URL lân cận}other{# URL lân cận}}</translation>
 <translation id="2888126860611144412">Giới thiệu Chrome</translation>
 <translation id="2891154217021530873">Ngừng tải trang</translation>
 <translation id="2902702728133930130">Chrome khởi động không thành công với lỗi không mong muốn.</translation>
@@ -543,7 +542,6 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="885701979325669005">Dung lượng</translation>
 <translation id="886510833909353412">Mã hóa tất cả bằng cụm mật khẩu</translation>
 <translation id="8872441722924401214">Chọn chứng chỉ để xác thực</translation>
-<translation id="8891135217544884558">URL lân cận</translation>
 <translation id="8901170036886848654">Không tìm thấy dấu trang</translation>
 <translation id="8909135823018751308">Chia sẻ...</translation>
 <translation id="8912362522468806198">Tài khoản Google</translation>

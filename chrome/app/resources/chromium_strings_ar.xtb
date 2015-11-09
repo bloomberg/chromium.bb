@@ -32,6 +32,7 @@
 <translation id="1967743265616885482">‏هناك وحدة تحمل الاسم نفسه ومعروف أنها تتعارض مع Chromium.</translation>
 <translation id="2077129598763517140">استخدام تسريع الأجهزة عند توفره</translation>
 <translation id="2097986737970966220">‏فتح Chromium على سطح المكتب</translation>
+<translation id="2117181891440368863">‏تحقق Chromium من أن <ph name="ISSUER" /> أصدر شهادة موقع الويب هذا. وقدم الخادم معلومات شفافية الشهادة، ولكنها غير صالحة.</translation>
 <translation id="2119636228670142020">‏حول ن&amp;ظام التشغيل Chromium</translation>
 <translation id="2158734852934720349">‏تراخيص مفتوحة المصدر لنظام التشغيل Chromium</translation>
 <translation id="2233513990531887259">‏إعادة التشغيل في وضع Chromium المجسم</translation>
@@ -178,6 +179,7 @@
 <translation id="6734080038664603509">‏تح&amp;ديث Chromium</translation>
 <translation id="6757767188268205357">عدم المطالبة مرة أخرى</translation>
 <translation id="6810143991807788455">‏ساعد في تحسين Chromium بالإبلاغ عن الإعدادات الحالية</translation>
+<translation id="6838494703713445896">‏تحقق Chromium من أن <ph name="ISSUER" /> أصدر شهادة موقع الويب هذا. وقدم الخادم معلومات شفافية الشهادة الصالحة.</translation>
 <translation id="6883876366448858277">‏إرسال الكلمة والسياق المحيط بها إلى بحث Google وعرض التعريفات والصور ونتائج البحث الأخرى.</translation>
 <translation id="6893813176749746474">‏تم تحديث متصفح Chromium، ولكنك لم تستخدمه منذ أكثر من 30 يومًا.</translation>
 <translation id="6900895776413482243">‏ستؤدي إعادة التشغيل في وضع Chromium المجسم إلى إغلاق تطبيقات Chromium وإعادة تشغيلها.</translation>
@@ -190,6 +192,7 @@
 <translation id="7066436765290594559">‏تعذر على نظام التشغيل Chromium مزامنة البيانات. الرجاء تحديث عبارة مرور المزامنة.</translation>
 <translation id="7138853919861947730">‏قد يستخدم Chromium خدمات الويب لتحسين تجربة التصفح لديك.</translation>
 <translation id="7162152143154757523">‏يمكن أن يقدم Chromium تدقيقًا إملائيًا أكثر دقة من خلال إرسال ما تكتبه في المتصفح إلى خوادم Google، مما يتيح لك استخدام تقنية التدقيق الإملائي ذاتها المستخدمة في بحث Google.</translation>
+<translation id="7178626992616222740">‏تحقق Chromium من أن <ph name="ISSUER" /> أصدر شهادة موقع الويب هذا. وقدم الخادم معلومات شفافية الشهادة، ولكن لم يتعرّفChromium على أي سجلات لشفافية الشهادة.</translation>
 <translation id="7196020411877309443">لماذا أرى مربع الحوار هذا؟</translation>
 <translation id="7205698830395646142">‏الإخفاء في قائمة Chromium</translation>
 <translation id="7211828883345145708">‏لتمكين اختصارات لوحة مفاتيح إضافية والتي تكون مفيدة لتصحيح أخطاء Chromium.</translation>
@@ -215,6 +218,7 @@
 <translation id="7723128346970903111">‏عند تمكينه، سيستخدم تدفق تسجيل دخول Chromium القائم على iframe؛ وإلا سيستخدم تدفقًا قائمًا على عرض الويب.</translation>
 <translation id="7729447699958282447">‏تعذر على Chromium مزامنة البيانات نظرًا لأن المزامنة غير متاحة في نطاقك.</translation>
 <translation id="7747138024166251722">تعذر على أداة المثبِّت إنشاء دليل مؤقت. يُرجى التحقق من وجود مساحة خالية على القرص وتوفر الإذن اللازم لتثبيت البرنامج.</translation>
+<translation id="7918535023914021398">‏تحقق Chromium من أن <ph name="ISSUER" /> أصدر شهادة موقع الويب هذا. ولم يقدم الخادم أي معلومات لشفافية الشهادة.</translation>
 <translation id="7937630085815544518">‏تم تسجيل دخولك إلى Chromium باعتبارك <ph name="USER_EMAIL_ADDRESS" />. الرجاء استخدام الحساب نفسه لتسجيل الدخول مرة أخرى.</translation>
 <translation id="7962572577636132072">‏يجري تحديث Chromium تلقائيًا بحيث يكون لديك أحدث إصدار.</translation>
 <translation id="7979877361127045932">‏الإخفاء في قائمة Chromium</translation>

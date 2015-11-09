@@ -124,6 +124,7 @@ Host</translation>
 <translation id="3950820424414687140">Logga in</translation>
 <translation id="3989511127559254552">Innan du kan fortsätta måste du bevilja utökad åtkomstbehörighet till datorn. Du behöver bara göra det en gång.</translation>
 <translation id="4006787130661126000">Du måste aktivera fjärranslutningar om du vill använda Chrome Remote Desktop för att få åtkomst till den här datorn.</translation>
+<translation id="405887016757208221">Fjärrdatorn har misslyckats med att starta sessionen. Konfigurera värden på nytt om problemet kvarstår.</translation>
 <translation id="4068946408131579958">Alla anslutningar</translation>
 <translation id="409800995205263688">OBS! Enligt policyinställningarna tillåts endast anslutning mellan datorer i ditt nätverk.</translation>
 <translation id="4155497795971509630">Vissa obligatoriska komponenter saknas. Kontrollera att du har installerat den senaste versionen av programvaran och försök igen.</translation>
@@ -258,6 +259,7 @@ Desktop Host</translation>
 <translation id="7869445566579231750">Du har inte behörighet att köra den här appen.</translation>
 <translation id="7948001860594368197">Skärmalternativ</translation>
 <translation id="7970576581263377361">Autentiseringen misslyckades. Logga in i Chromium igen.</translation>
+<translation id="7981525049612125370">Fjärrsessionen har avslutats.</translation>
 <translation id="8041721485428375115">När du laddar ned installationsprogrammet för fjärranslutningsvärden Chrome Remote Desktop godkänner du Googles <ph name="LINK_BEGIN" />användarvillkor<ph name="LINK_END" />.</translation>
 <translation id="8073845705237259513">Om du vill använda Chrome Remote Desktop måste du lägga till ett Google-konto på enheten.</translation>
 <translation id="80739703311984697">Fjärrvärden kräver att du autentiserar via en tredje parts webbplats. Om du vill fortsätta måste du ge Chromoting ytterligare behörigheter att komma åt den här adressen:</translation>

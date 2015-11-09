@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ar">
 <translation id="1001534784610492198">‏أرشيف المثبت تالف أو غير صالح. يُرجى تنزيل Google Chrome مرة أخرى.</translation>
+<translation id="1013290471399003443">‏تحقق Chrome من أن <ph name="ISSUER" /> أصدر شهادة موقع الويب هذا. وقدم الخادم معلومات شفافية الشهادة الصالحة.</translation>
 <translation id="1016765312371154165">‏لم يتم إيقاف تشغيل Chrome بشكل صحيح.</translation>
 <translation id="103396972844768118">‏معلومات مهمة بخصوص بياناتك في Chrome</translation>
 <translation id="1061441684050139317">‏يحتاج Chrome إلى الحصول على حق الوصول إلى الميكرفون لمشاركته مع هذا الموقع.</translation>
@@ -64,6 +65,7 @@
 <translation id="2769762047821873045">‏ليس Google Chrome متصفحك الافتراضي.</translation>
 <translation id="2770231113462710648">تغيير المتصفح الافتراضي إلى:</translation>
 <translation id="2871893339301912279">‏تم تسجيل دخولك إلى Chrome!</translation>
+<translation id="2997147809295888909">‏تحقق Chrome من أن <ph name="ISSUER" /> أصدر شهادة موقع الويب هذا. ولم يقدم الخادم أي معلومات لشفافية الشهادة.</translation>
 <translation id="3037838751736561277">‏Google Chrome في وضع الخلفية.</translation>
 <translation id="3047079729301751317">‏سيؤدي قطع اتصال <ph name="USERNAME" /> إلى مسح السجّل والإشارات المرجعية والإعدادات وبيانات Chrome الأخرى المخزنة على هذا الجهاز. لن يتم مسح البيانات المخزنة في حساب Google ويمكن إدارتها على <ph name="GOOGLE_DASHBOARD_LINK" />لوحة تحكم Google<ph name="END_GOOGLE_DASHBOARD_LINK" />.</translation>
 <translation id="3080151273017101988">‏استمرار تشغيل تطبيقات الخلفية عند إغلاق Google Chrome</translation>
@@ -86,6 +88,7 @@
 <translation id="3847841918622877581">‏قد يستخدم Google Chrome خدمات الويب لتحسين تجربة التصفح لديك.</translation>
 <translation id="386202838227397562">‏الرجاء إغلاق كل نوافذ Google Chrome وإعادة المحاولة.</translation>
 <translation id="3870154837782082782">Google Inc‎.‎</translation>
+<translation id="3881912906674381083">‏تحقق Chrome من أن <ph name="ISSUER" /> أصدر شهادة موقع الويب هذا. وقدم الخادم معلومات شفافية الشهادة، ولكن لم يتعرّف Chrome على أي سجلات لشفافية الشهادة.</translation>
 <translation id="3889417619312448367">‏إزالة Google Chrome</translation>
 <translation id="4011219958405096740">‏عند تمكينه، سيستخدم تدفق تسجيل دخول Chrome القائم على iframe؛ وإلا سيستخدم تدفقًا قائمًا على عرض الويب.</translation>
 <translation id="4050175100176540509">تحسينات الأمان المهمة والميزات الجديدة متاحة في أحدث إصدار.</translation>
@@ -116,6 +119,7 @@
 <translation id="4794050651896644714">‏حفظ التفاصيل في Chrome</translation>
 <translation id="4891791193823137474">‏دع Google Chrome يعمل في الخلفية</translation>
 <translation id="4921569541910214635">‏هل تشارك جهاز كمبيوتر؟ يمكنك الآن إعداد Chrome بالطريقة التي تعجبك تمامًا.</translation>
+<translation id="4925019873400497719">‏تحقق Chrome من أن <ph name="ISSUER" /> أصدر شهادة موقع الويب هذا. وقدم الخادم معلومات شفافية الشهادة، ولكنها غير صالحة.</translation>
 <translation id="4953650215774548573">‏تعيين Google Chrome المتصفح الافتراضي</translation>
 <translation id="4987308747895123092">‏الرجاء إغلاق جميع نوافذ Google Chrome (بما في ذلك تلك المفتوحة في وضع Windows 8) ثم إعادة المحاولة.</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>

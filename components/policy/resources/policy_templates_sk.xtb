@@ -63,6 +63,9 @@
 
           Toto pravidlo bude dodržané len v prípade, ak je povolené pravidlo „DefaultSearchProviderEnabled“.</translation>
 <translation id="1265053460044691532">Stanovte časový limit prihlásenia v režime offline pre používateľa, ktorého totožnosť bola overená prostredníctvom štandardu SAML</translation>
+<translation id="1291880496936992484">Upozornenie: Po verzii 52 (približne v septembri 2016) bude šifrovací algoritmus RC4 z prehliadača <ph name="PRODUCT_NAME" /> úplne odstránený a toto pravidlo prestane fungovať.
+
+      Ak toto pravidlo nie je nastavené alebo je nastavené na hodnotu False, v protokole TLS nebudú povolené šifrovacie súpravy RC4. Nastavením tohto pravidla na hodnotu True je možné zaistiť kompatibilitu so zastaraným serverom. Ide o krátkodobé riešenie, takže konfigurácia príslušného servera by mala byť upravená.</translation>
 <translation id="1297182715641689552">Použiť skript servera proxy vo formáte PAC</translation>
 <translation id="1300635491585192248">Predvídať akcie všetkých sietí, ktoré nie sú
           mobilné</translation>
@@ -527,6 +530,9 @@
       Ak toto pravidlo povolíte alebo zakážete, používatelia ho pomocou nastavenia „Povoliť ochranu pred phishingom a škodlivým softvérom“ v prehliadači <ph name="PRODUCT_NAME" /> nebudú môcť zmeniť.
 
       Ak toto pravidlo ponecháte nenastavené, funkcia bude povolená, ale používateľ to bude môcť zmeniť.</translation>
+<translation id="2801230735743888564">Povoľte používateľom hrať veľkonočnú hru s dinosaurom, keď je zariadenie offline.
+
+      Ak je toto pravidlo nastavené na hodnotu False, používatelia nebudú môcť hrať veľkonočnú hru s dinosaurom, keď je zariadenie offline. Ak je toto pravidlo nastavené na hodnotu True, používatelia môžu hrať hru s dinosaurom. Ak toto pravidlo nie je nastavené, v zaregistrovanom systéme Chrome OS používatelia veľkonočnú hru s dinosaurom hrať nemôžu, ale za všetkých iných okolností ju hrať môžu.</translation>
 <translation id="2805707493867224476">Povoliť všetkým webovým stránkam zobrazovať kontextové okná</translation>
 <translation id="2808013382476173118">Povoľuje použitie serverov typu STUN, keď sa vzdialení klienti pokúšajú nadviazať spojenie s týmto počítačom.
 
@@ -1120,6 +1126,7 @@ Ak toto pravidlo nie je nastavené alebo je prázdne, akýkoľvek používateľ 
           Keď nie je toto pravidlo nastavené, vykoná sa predvolená akcia – pozastavenie.
 
           Ak dôjde k pozastaveniu, <ph name="PRODUCT_OS_NAME" /> je možné samostatne nakonfigurovať, aby pred pozastavením obrazovku buď zamkol, alebo nezamkol.</translation>
+<translation id="5130288486815037971">Ovláda, či sú v protokole TLS povolené šifrovacie súpravy RC4</translation>
 <translation id="5141670636904227950">Nastaviť predvolený typ lupy obrazovky, ktorý je povolený na prihlasovacej obrazovke</translation>
 <translation id="5142301680741828703">Vždy vykreslovať nasledujúce vzory webových adries v doplnku <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="5148753489738115745">Umožňuje nastaviť dodatočné parametre, ktoré doplnok <ph name="PRODUCT_FRAME_NAME" /> pri spúšťaní aplikácie <ph name="PRODUCT_NAME" /> použije.
@@ -1403,6 +1410,7 @@ Ak toto pravidlo nie je nastavené alebo je prázdne, akýkoľvek používateľ 
           Odporúčaný spôsob uzamknutia obrazovky pri nečinnosti je povoliť uzamknutie obrazovky pri pozastavení a pozastaviť tak systém <ph name="PRODUCT_OS_NAME" /> po uplynutí času nečinnosti. Toto pravidlo použite iba v prípade, že chcete obrazovku uzamknúť podstatne skôr ako má dôjsť k pozastaveniu, alebo v prípade, že pozastavenie pri nečinnosti nechcete vôbec používať.
 
           Hodnota tohto pravidla sa zadáva v milisekundách. Ak zadáte hodnotu vyššiu ako je čas nečinnosti, použije sa hodnota času nečinnosti.</translation>
+<translation id="6111936128861357925">Povoliť hru s dinosaurom</translation>
 <translation id="6114416803310251055">zamietnuté</translation>
 <translation id="6145799962557135888">Umožňuje nastaviť zoznam vzorov webových adries určujúcich webové stránky, ktoré môžu spúšťať kód JavaScript.
 
@@ -2033,6 +2041,17 @@ Ak toto pravidlo nie je nastavené alebo je prázdne, akýkoľvek používateľ 
 
       Ak toto pravidlo ponecháte nenastavené, nebudú k dispozícii žiadne výnimky pre zoznam zakázaných adries uvedený v rámci pravidla URLBlacklist.</translation>
 <translation id="8176035528522326671">Povolí používateľovi v podnikovej sieti stať sa iba hlavným používateľom s viacerými profilmi (predvolené správanie pre používateľov spravovaných podnikom)</translation>
+<translation id="8191318459035150777">Konfiguruje predvolenú webovú adresu domovskej stránky prehliadača <ph name="PRODUCT_NAME" /> a zabraňuje používateľom jej úpravu.
+
+          Domovská stránka je stránka, ktorá sa zobrazí po kliknutí na tlačidlo Domovská stránka. Stránky, ktoré sa otvoria po spustení, sú ovládané pravidlami RestoreOnStartup.
+
+          Typ domovskej stránky môže byť nastavený buď na tu uvedenú webovú adresu, alebo na stránku na novej karte. Ak vyberiete stránku na novej karte, toto pravidlo sa neuplatní.
+
+          Ak toto nastavenie povolíte, používatelia nebudú môcť v prehliadači <ph name="PRODUCT_NAME" /> zmeniť webovú adresu domovskej stránky, budú však stále môcť nastaviť svoju domovskú stránku na stránku na novej karte.
+
+          Ak ponecháte toto pravidlo nenastavené, umožní to používateľovi zvoliť si domovskú stránku samostatne v prípade, že nie je nastavené ani pravidlo HomepageIsNewTabPage.
+
+          Toto pravidlo nie je k dispozícii v inštanciách systému Windows, ktoré nie sú pripojené k doméne Active Directory.</translation>
 <translation id="8197918588508433925">Toto pravidlo určuje, pre ktoré rozšírenia bude povolené vzdialené prihlásenie pomocou metódy chrome.enterprise.platformKeysPrivate.challengeUserKey() rozhrania Enterprise Platform Keys API. Aby mohli rozšírenia používať toto rozhranie API, musia byť pridané do tohto zoznamu.
 
           Ak sa rozšírenie na zozname nenachádza alebo zoznam nie je vytvorený, volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
@@ -2149,6 +2168,8 @@ Ak toto pravidlo nie je nastavené alebo je prázdne, akýkoľvek používateľ 
           Ak toto nastavenie povolíte, vyhľadávanie záznamov CNAME sa preskočí a použije sa zadaný názov servera.
 
           Ak toto nastavenie zakážete alebo ho ponecháte nenastavené, kanonický názov servera sa určí prostredníctvom vyhľadávania záznamov CNAME.</translation>
+<translation id="8774131509736383471">Ak je toto pravidlo nastavené na hodnotu True, prehliadač <ph name="PRODUCT_NAME" /> sa vždy pokúsi pri prvom spustení maximalizovať prvé okno.
+      Ak je toto pravidlo nastavené na hodnotu False alebo nie je nakonfigurované, o maximalizácii prvého zobrazeného okna sa rozhodne podľa veľkosti obrazovky.</translation>
 <translation id="8777120694819070607">Umožňuje prehliadaču <ph name="PRODUCT_NAME" /> spúšťať zastarané doplnky. Ak toto nastavenie povolíte, zastarané doplnky budú použité ako normálne. Ak toto nastavenie zakážete, zastarané doplnky nebude možné použiť a používateľom sa ani nezobrazí žiadosť o povolenie spustenia doplnku. Ak toto nastavenie nie je nakonfigurované, používateľom sa pri spustení zastaraného doplnku zobrazí žiadosť o povolenie tejto akcie.</translation>
 <translation id="87812015706645271">Vyžaduje, aby sa meno miestneho používateľa a vlastníka hostiteľa vzdialeného prístupu zhodovali</translation>
 <translation id="8782750230688364867">Určuje percentuálnu hodnotu, o ktorú sa predĺži oneskorenie stmavenia obrazovky, keď je zariadenie v režime prezentácie.

@@ -32,7 +32,6 @@
 <translation id="1644184664548287040">A hálózati konfiguráció érvénytelen és nem importálható.</translation>
 <translation id="1655462015569774233">{1,plural, =1{A szerver nem tudta bizonyítani, hogy valóban a(z) <ph name="DOMAIN" /> domainbe tartozik; biztonsági tanúsítványa tegnap lejárt. Ennek oka lehet konfigurációs hiba, de az is lehet, hogy egy támadó eltérítette az Ön kapcsolódását. Számítógépének órája jelenleg a következőre van állítva: <ph name="CURRENT_DATE" />. Ez megfelelőnek tűnik? Ha nem, állítsa be megfelelően a rendszer óráját, majd frissítse az oldalt.}other{A szerver nem tudta bizonyítani, hogy valóban a(z) <ph name="DOMAIN" /> domainbe tartozik; biztonsági tanúsítványa # nappal ezelőtt lejárt. Ennek oka lehet konfigurációs hiba, de az is lehet, hogy egy támadó eltérítette az Ön kapcsolódását. Számítógépének órája jelenleg a következőre van állítva: <ph name="CURRENT_DATE" />. Ez megfelelőnek tűnik? Ha nem, állítsa be megfelelően a rendszer óráját, majd frissítse az oldalt.}}</translation>
 <translation id="168841957122794586">A szervertanúsítvány gyenge titkosítási kulcsot tartalmaz.</translation>
-<translation id="1693754753824026215">A <ph name="SITE" /> webhelyen lévő oldal közlendője:</translation>
 <translation id="1706954506755087368">{1,plural, =1{A szerver nem tudta bizonyítani, hogy valóban a(z) <ph name="DOMAIN" /> domainbe tartozik; biztonsági tanúsítványa elméletileg holnaptól érvényes. Ennek oka lehet konfigurációs hiba, de az is lehet, hogy egy támadó eltérítette az Ön kapcsolódását.}other{A szerver nem tudta bizonyítani, hogy valóban a(z) <ph name="DOMAIN" /> domainbe tartozik; biztonsági tanúsítványa elméletileg # nap múlva lép érvénybe. Ennek oka lehet konfigurációs hiba, de az is lehet, hogy egy támadó eltérítette az Ön kapcsolódását.}}</translation>
 <translation id="1710259589646384581">OS</translation>
 <translation id="1734864079702812349">American Express</translation>
@@ -227,6 +226,7 @@
 <translation id="6263376278284652872"><ph name="DOMAIN" /> könyvjelzők</translation>
 <translation id="6282194474023008486">Irányítószám</translation>
 <translation id="6337534724793800597">Házirendek szűrése név szerint</translation>
+<translation id="6342069812937806050">Éppen most</translation>
 <translation id="6355080345576803305">Nyilvános munkamenet általi felülbírálás</translation>
 <translation id="6387478394221739770">Érdekli néhány remek új Chrome-funkció? Próbálja ki a Béta csatornánkat a chrome.com/beta webhelyen.</translation>
 <translation id="6445051938772793705">Ország</translation>
@@ -252,7 +252,6 @@
 <translation id="6965978654500191972">Készülék</translation>
 <translation id="6970216967273061347">Kerület</translation>
 <translation id="6973656660372572881">Mindkét fix proxyszerver és egy .Pac típusú szkript URL-címe meg van adva.</translation>
-<translation id="6980028882292583085">JavaScript-figyelmeztetés</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7050187094878475250">Ön megpróbálta elérni a(z) <ph name="DOMAIN" /> domaint, de a szerver olyan tanúsítványt küldött, amelynek érvényességi ideje túl hosszú ahhoz, hogy megbízható legyen.</translation>
 <translation id="7087282848513945231">Megye</translation>
@@ -275,7 +274,6 @@
 <translation id="7419106976560586862">Profil elérési útja</translation>
 <translation id="7441627299479586546">Az irányelv tárgya nem megfelelő</translation>
 <translation id="7485870689360869515">Nem található adat.</translation>
-<translation id="7521387064766892559">JavaScript</translation>
 <translation id="7537536606612762813">Kötelező</translation>
 <translation id="7542995811387359312">Az automatikus bankkártya-kitöltés le van tiltva, mivel ez az űrlap nem biztonságos kapcsolatot használ.</translation>
 <translation id="7567204685887185387">A szerver nem tudta bizonyítani, hogy valóban a(z) <ph name="DOMAIN" /> domainbe tartozik; biztonsági tanúsítványát csalással állíthatták ki. Ennek oka lehet konfigurációs hiba, vagy hogy egy támadó eltérítette az Ön kapcsolódását.</translation>

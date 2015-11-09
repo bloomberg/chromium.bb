@@ -124,6 +124,7 @@ Host</translation>
 <translation id="3950820424414687140">Mag-sign in</translation>
 <translation id="3989511127559254552">Upang magpatuloy, dapat ka munang magbigay ng mga pahintulot sa pinalawak na access sa iyong computer. Isang beses mo lang ito kailangang gawin.</translation>
 <translation id="4006787130661126000">Dapat mong paganahin ang mga malayuang koneksyon kung nais mong gamitin ang Remote na Desktop ng Chrome upang i-access ang computer na ito.</translation>
+<translation id="405887016757208221">Hindi nasimulan ng remote na computer ang session. Kung ayaw mawala ng problema, pakisubukang i-configure muli ang host.</translation>
 <translation id="4068946408131579958">Lahat ng koneksyon</translation>
 <translation id="409800995205263688">TANDAAN: Ang pinapayagan ng mga setting ng patakaran ay mga koneksyon lang sa pagitan ng mga computer sa loob ng iyong network.</translation>
 <translation id="4155497795971509630">Nawawala ang ilang bahagi na kinakailangan. Pakitiyak na na-install mo ang pinakabagong bersyon ng software at subukang muli.</translation>
@@ -258,6 +259,7 @@ Desktop ng Chrome</translation>
 <translation id="7869445566579231750">Wala kang pahintulot na gamitin ang application na ito.</translation>
 <translation id="7948001860594368197">Mga pagpipilian sa screen</translation>
 <translation id="7970576581263377361">Hindi naisagawa ang pagpapatotoo. Mangyaring muling mag-sign in sa Chromium.</translation>
+<translation id="7981525049612125370">Nag-expire na ang remote na session.</translation>
 <translation id="8041721485428375115">Sa pamamagitan ng pagda-download ng Host Installer ng Remote na Desktop ng Chrome, sumasang-ayon ka sa <ph name="LINK_BEGIN" />Mga Tuntunin ng Serbisyo<ph name="LINK_END" /> ng Google.</translation>
 <translation id="8073845705237259513">Upang magamit ang Chrome Remote Desktop, kakailanganin mong magdagdag ng Google Account sa iyong device.</translation>
 <translation id="80739703311984697">Hinihiling sa iyo ng remote host na magpatunay sa isang website ng third-party. Upang makapagpatuloy, dapat mong bigyan ng mga karagdagang pahintulot ang Chromoting upang ma-access ang address na ito:</translation>

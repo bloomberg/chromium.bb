@@ -52,6 +52,7 @@
 <translation id="1594072653727561613">meny</translation>
 <translation id="1610130962244179598">Byt till punktskrift med sex punkter</translation>
 <translation id="1611168825862729585">Kolumnrubrik:</translation>
+<translation id="1611649489706141841">framåt</translation>
 <translation id="1613476421962910979">Ljudikoner har aktiverats</translation>
 <translation id="1618597272655350600">Ger en komplett beskrivning av den aktuella positionen</translation>
 <translation id="1639634871799530612">{COUNT,plural, =1{större än-tecken}other{# större än-tecken}}</translation>
@@ -391,8 +392,10 @@
 <translation id="5042770794184672516">Höj talvolymen</translation>
 <translation id="5050015258024679800">Föregående rubrik på nivå 4</translation>
 <translation id="5054047268577924192">Föregående post i listan</translation>
+<translation id="5075936896689244141">Nästa tangentuppsättning</translation>
 <translation id="5078661581131202757">Filval</translation>
 <translation id="5080758118274074384">dubbelklickat</translation>
+<translation id="5087864757604726239">tillbaka</translation>
 <translation id="5098541983634824365">Lämnar rutnätet.</translation>
 <translation id="5102981729317424850">Verktygsfält</translation>
 <translation id="5105050547967751155">obligatoriskt</translation>

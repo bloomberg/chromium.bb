@@ -32,7 +32,6 @@
 <translation id="1644184664548287040">网络配置无效，无法导入。</translation>
 <translation id="1655462015569774233">{1,plural, =1{此服务器无法证明它是 <ph name="DOMAIN" />；其安全证书已在昨天过期。出现此问题的原因可能是配置有误，或有攻击者拦截了您的连接。计算机的时钟目前已设为 <ph name="CURRENT_DATE" />，该设置是否正确？如果不正确，请更正系统的时钟，然后刷新此页面。}other{此服务器无法证明它是 <ph name="DOMAIN" />；其安全证书已在 # 天前过期。出现此问题的原因可能是配置有误，或有攻击者拦截了您的连接。计算机的时钟目前已设为 <ph name="CURRENT_DATE" />，该设置是否正确？如果不正确，请更正系统的时钟，然后刷新此页面。}}</translation>
 <translation id="168841957122794586">服务器证书包含弱加密密钥。</translation>
-<translation id="1693754753824026215"><ph name="SITE" /> 上的网页显示：</translation>
 <translation id="1706954506755087368">{1,plural, =1{此服务器无法证明它是 <ph name="DOMAIN" />；其安全证书明天才会生效。出现此问题的原因可能是配置有误，或有攻击者拦截了您的连接。}other{此服务器无法证明它是 <ph name="DOMAIN" />；其安全证书 # 天后才会生效。出现此问题的原因可能是配置有误，或有攻击者拦截了您的连接。}}</translation>
 <translation id="1710259589646384581">操作系统</translation>
 <translation id="1734864079702812349">美国运通卡</translation>
@@ -227,6 +226,7 @@
 <translation id="6263376278284652872"><ph name="DOMAIN" /> 书签</translation>
 <translation id="6282194474023008486">邮编</translation>
 <translation id="6337534724793800597">按名称过滤政策</translation>
+<translation id="6342069812937806050">刚刚</translation>
 <translation id="6355080345576803305">覆盖公开会话</translation>
 <translation id="6387478394221739770">想试试超酷的 Chrome 新功能？欢迎访问 chrome.com/beta，试用我们的测试版！</translation>
 <translation id="6445051938772793705">国家/地区</translation>
@@ -252,7 +252,6 @@
 <translation id="6965978654500191972">设备</translation>
 <translation id="6970216967273061347">区</translation>
 <translation id="6973656660372572881">固定代理服务器和 .pac 脚本网址均已指定。</translation>
-<translation id="6980028882292583085">JavaScript 提醒</translation>
 <translation id="7012363358306927923">中国银联</translation>
 <translation id="7050187094878475250">您尝试访问 <ph name="DOMAIN" />，但服务器提供的证书不可信（有效期过长）。</translation>
 <translation id="7087282848513945231">县/郡</translation>
@@ -275,7 +274,6 @@
 <translation id="7419106976560586862">个人资料路径</translation>
 <translation id="7441627299479586546">策略主题有误</translation>
 <translation id="7485870689360869515">找不到数据。</translation>
-<translation id="7521387064766892559">JavaScript</translation>
 <translation id="7537536606612762813">强制</translation>
 <translation id="7542995811387359312">由于该表单不使用安全连接，因此自动填写信用卡信息的功能已停用。</translation>
 <translation id="7567204685887185387">此服务器无法证明它是<ph name="DOMAIN" />；其安全证书可能是由骗子发出的。出现此问题的原因可能是配置有误或您的连接被拦截了。</translation>

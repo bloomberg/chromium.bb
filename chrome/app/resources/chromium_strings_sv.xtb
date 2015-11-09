@@ -34,6 +34,7 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="1967743265616885482">En modul med samma namn har tidigare varit i konflikt med Chromium.</translation>
 <translation id="2077129598763517140">Använd maskinvaruacceleration när det är tillgängligt</translation>
 <translation id="2097986737970966220">Öppna Chromium på skrivbordet</translation>
+<translation id="2117181891440368863">Chromium har verifierat att webbplatsens certifikat har utfärdats av <ph name="ISSUER" />. De certifikattransparensuppgifter som skickades från servern är ogiltiga.</translation>
 <translation id="2119636228670142020">Om &amp;Chromium OS</translation>
 <translation id="2158734852934720349">Licenser för öppen källkod för Chromium OS</translation>
 <translation id="2233513990531887259">Starta om i integrerat läge i Chromium</translation>
@@ -180,6 +181,7 @@ Vissa funktioner är kanske inte tillgängliga. Ange en annan profilkatalog elle
 <translation id="6734080038664603509">Uppdatera &amp;Chromium</translation>
 <translation id="6757767188268205357">Stör mig inte</translation>
 <translation id="6810143991807788455">Hjälp oss att förbättra Chromium genom att rapportera dina aktuella inställningar</translation>
+<translation id="6838494703713445896">Chromium har verifierat att webbplatsens certifikat har utfärdats av <ph name="ISSUER" />. Giltiga certifikattransparensuppgifter har skickats från servern.</translation>
 <translation id="6883876366448858277">skickar ett ord med omgivande sammanhang till Google Sök och returnerar definitioner, bilder och andra sökresultat.</translation>
 <translation id="6893813176749746474">Chromium har uppdaterats men du har inte använt det på över 30 dagar.</translation>
 <translation id="6900895776413482243">Om du startar om Chromium i integrerat läge stängs och startas appar i Chromium om.</translation>
@@ -192,6 +194,7 @@ Vissa funktioner är kanske inte tillgängliga. Ange en annan profilkatalog elle
 <translation id="7066436765290594559">Det gick inte att synkronisera data med Chromium. Uppdatera lösenfrasen för synkronisering.</translation>
 <translation id="7138853919861947730">Chromium kan använda webbtjänster för att förbättra din upplevelse när du surfar.</translation>
 <translation id="7162152143154757523">Med Chromiums stavningskontroll skickas det du skriver i webbläsaren till Googles servrar så att du kan använda samma stavningsteknik som används i Googles webbsökning.</translation>
+<translation id="7178626992616222740">Chromium har verifierat att webbplatsens certifikat har utfärdats av <ph name="ISSUER" />. Certifikattransparensuppgifter har skickats från servern, men Chromium kunde inte känna igen någon av certifikattransparensloggarna.</translation>
 <translation id="7196020411877309443">Varför visas det här?</translation>
 <translation id="7205698830395646142">Dölj i Chromium-menyn</translation>
 <translation id="7211828883345145708">Aktiverar ytterligare kortkommandon som är användbara vid felsökning av Chromium.</translation>
@@ -217,6 +220,7 @@ Chromium kan inte återställa dina inställningar.</translation>
 <translation id="7723128346970903111">När det här alternativet är aktiverat används ett iframe-baserat inloggningsflöde i Chromium. Annars används ett flöde baserat på WebView.</translation>
 <translation id="7729447699958282447">Chromium kunde inte synkronisera data eftersom synkronisering inte är tillgängligt för domänen.</translation>
 <translation id="7747138024166251722">Det gick inte att skapa en tillfällig katalog för installationsfilen. Kontrollera diskutrymmet och att du har behörighet att installera program.</translation>
+<translation id="7918535023914021398">Chromium har verifierat att webbplatsens certifikat har utfärdats av <ph name="ISSUER" />. Inga certifikattransparensuppgifter skickades från servern.</translation>
 <translation id="7937630085815544518">Du var inloggad i Chromium som <ph name="USER_EMAIL_ADDRESS" />. Använd samma konto när du loggar in igen.</translation>
 <translation id="7962572577636132072">Chromium uppdateras automatiskt så att du alltid har den senaste versionen.</translation>
 <translation id="7979877361127045932">Dölj i Chromium-menyn</translation>

@@ -52,6 +52,7 @@
 <translation id="1594072653727561613">mnu</translation>
 <translation id="1610130962244179598">Alternar para braille de seis pontos</translation>
 <translation id="1611168825862729585">Cabeçalho da coluna:</translation>
+<translation id="1611649489706141841">avançar</translation>
 <translation id="1613476421962910979">Earcons ativados</translation>
 <translation id="1618597272655350600">Anuncia uma descrição completa da posição atual</translation>
 <translation id="1639634871799530612">{COUNT,plural, =1{sinal maior que}one{# sinais de maior que}other{# sinais de maior que}}</translation>
@@ -393,6 +394,7 @@
 <translation id="5054047268577924192">Item anterior da lista</translation>
 <translation id="5078661581131202757">Seleção de arquivo</translation>
 <translation id="5080758118274074384">clicado duas vezes</translation>
+<translation id="5087864757604726239">voltar</translation>
 <translation id="5098541983634824365">Saindo da grade.</translation>
 <translation id="5102981729317424850">Barra de ferramentas</translation>
 <translation id="5105050547967751155">rq</translation>

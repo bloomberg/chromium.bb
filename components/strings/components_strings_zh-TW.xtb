@@ -32,7 +32,6 @@
 <translation id="1644184664548287040">網路設定無效，無法匯入。</translation>
 <translation id="1655462015569774233">{1,plural, =1{這個伺服器無法證明所在網域是 <ph name="DOMAIN" />；伺服器的安全性憑證已在昨天過期。這可能是因為設定錯誤，或是有攻擊者攔截您的連線。您電腦的時鐘目前設為 <ph name="CURRENT_DATE" />，這是正確的時間嗎？如果不是的話，請更新系統時鐘，然後重新整理這個網頁。}other{這個伺服器無法證明所在網域是 <ph name="DOMAIN" />；伺服器的安全性憑證已在 # 天前過期。這可能是因為設定錯誤，或是有攻擊者攔截您的連線。您電腦的時鐘目前設為 <ph name="CURRENT_DATE" />，這是正確的時間嗎？如果不是的話，請更新系統時鐘，然後重新整理這個網頁。}}</translation>
 <translation id="168841957122794586">伺服器憑證含有防護力薄弱的加密編譯金鑰。</translation>
-<translation id="1693754753824026215"><ph name="SITE" /> 的網頁顯示：</translation>
 <translation id="1706954506755087368">{1,plural, =1{這個伺服器無法證明所在網域是 <ph name="DOMAIN" />；伺服器的安全性憑證預定明天才生效。這可能是因為設定錯誤，或是有攻擊者攔截您的連線。}other{這個伺服器無法證明所在網域是 <ph name="DOMAIN" />；伺服器的安全性憑證預定 # 天後才生效。這可能是因為設定錯誤，或是有攻擊者攔截您的連線。}}</translation>
 <translation id="1710259589646384581">作業系統</translation>
 <translation id="1734864079702812349">Amex</translation>
@@ -227,6 +226,7 @@
 <translation id="6263376278284652872"><ph name="DOMAIN" /> 書籤</translation>
 <translation id="6282194474023008486">郵遞區號</translation>
 <translation id="6337534724793800597">依名稱篩選政策</translation>
+<translation id="6342069812937806050">剛剛</translation>
 <translation id="6355080345576803305">公開工作階段覆寫</translation>
 <translation id="6387478394221739770">想搶先試用酷炫的 Chrome 新功能嗎？請前往 chrome.com/beta 安裝測試版。</translation>
 <translation id="6445051938772793705">國家/地區</translation>
@@ -252,7 +252,6 @@
 <translation id="6965978654500191972">裝置</translation>
 <translation id="6970216967273061347">區</translation>
 <translation id="6973656660372572881">已指定固定的 Proxy 伺服器和 .pac 指令碼網址。</translation>
-<translation id="6980028882292583085">JavaScript 通知</translation>
 <translation id="7012363358306927923">中國銀聯</translation>
 <translation id="7050187094878475250">您嘗試連線至 <ph name="DOMAIN" />，但伺服器提供的憑證有效期限太長，因此難以信任。</translation>
 <translation id="7087282848513945231">郡</translation>
@@ -275,7 +274,6 @@
 <translation id="7419106976560586862">設定檔路徑</translation>
 <translation id="7441627299479586546">政策主體有誤</translation>
 <translation id="7485870689360869515">找不到任何資料。</translation>
-<translation id="7521387064766892559">JavaScript</translation>
 <translation id="7537536606612762813">強制</translation>
 <translation id="7542995811387359312">由於這個表單並未採用加密連線方式，所以信用卡自動填入功能已停用。</translation>
 <translation id="7567204685887185387">伺服器無法證明其屬於 <ph name="DOMAIN" /> 網域；其安全性憑證是以欺詐方式發行。這可能是因為設定錯誤，或有攻擊者攔截您的連線所致。</translation>

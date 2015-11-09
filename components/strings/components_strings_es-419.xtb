@@ -32,7 +32,6 @@
 <translation id="1644184664548287040">La configuración de red no es válida y no se pudo importar.</translation>
 <translation id="1655462015569774233">{1,plural, =1{El servidor no logró comprobar si el dominio es <ph name="DOMAIN" />; el certificado de seguridad venció ayer. Es posible que esto se deba a una configuración incorrecta o a que un atacante haya interceptado la conexión. Actualmente, el reloj de la computadora está configurado en la siguiente fecha: <ph name="CURRENT_DATE" />. ¿Es correcto? De no ser así, corrige el reloj del sistema y, a continuación, actualiza la página.}other{El servidor no logró comprobar si el dominio es <ph name="DOMAIN" />; el certificado de seguridad venció hace # días. Es posible que esto se deba a una configuración incorrecta o a que un atacante haya interceptado la conexión. Actualmente, el reloj de la computadora está configurado en la siguiente fecha: <ph name="CURRENT_DATE" />. ¿Es correcto? De no ser así, corrige el reloj del sistema y, a continuación, actualiza la página.}}</translation>
 <translation id="168841957122794586">El certificado del servidor contiene una clave criptográfica no segura.</translation>
-<translation id="1693754753824026215">La página en <ph name="SITE" /> dice:</translation>
 <translation id="1706954506755087368">{1,plural, =1{El servidor no logró comprobar si el dominio es <ph name="DOMAIN" />; supuestamente, el certificado de seguridad entra en vigencia mañana. Es posible que esto se deba a una configuración incorrecta o a que un atacante haya interceptado la conexión.}other{El servidor no logró comprobar si el dominio es <ph name="DOMAIN" />; supuestamente, el certificado de seguridad entra en vigencia en # días. Es posible que esto se deba a una configuración incorrecta o a que un atacante haya interceptado la conexión.}}</translation>
 <translation id="1710259589646384581">SO</translation>
 <translation id="1734864079702812349">Amex</translation>
@@ -227,6 +226,7 @@
 <translation id="6263376278284652872">Marcadores de <ph name="DOMAIN" /></translation>
 <translation id="6282194474023008486">Código postal</translation>
 <translation id="6337534724793800597">Filtrar políticas por nombre</translation>
+<translation id="6342069812937806050">Recién</translation>
 <translation id="6355080345576803305">Anulación de sesión pública</translation>
 <translation id="6387478394221739770">Si estás interesado en probar nuevas e interesantes funciones de Chrome, visita nuestro canal beta en chrome.com/beta.</translation>
 <translation id="6445051938772793705">País</translation>
@@ -252,7 +252,6 @@
 <translation id="6965978654500191972">Dispositivo</translation>
 <translation id="6970216967273061347">Distrito</translation>
 <translation id="6973656660372572881">Se especifican servidores proxy fijos y URL de secuencias de comandos .pac.</translation>
-<translation id="6980028882292583085">Alerta de Javascript</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7050187094878475250">Intentaste acceder a <ph name="DOMAIN" />, pero el certificado de servidor tenía un período de validez demasiado extenso para ser fiable.</translation>
 <translation id="7087282848513945231">Condado</translation>
@@ -275,7 +274,6 @@
 <translation id="7419106976560586862">Ruta del perfil</translation>
 <translation id="7441627299479586546">Nombre de usuario o dominio de política incorrecto</translation>
 <translation id="7485870689360869515">No se encontró ningún dato.</translation>
-<translation id="7521387064766892559">JavaScript</translation>
 <translation id="7537536606612762813">Obligatoria</translation>
 <translation id="7542995811387359312">El rellenado automático de la tarjeta de crédito se inhabilitó porque este formulario no usa una conexión segura.</translation>
 <translation id="7567204685887185387">Este servidor no pudo probar que su dominio es <ph name="DOMAIN" />; el certificado de seguridad podría haberse emitido de forma fraudulenta. Es posible que esto se deba a una configuración incorrecta o a que un atacante interceptó la conexión.</translation>

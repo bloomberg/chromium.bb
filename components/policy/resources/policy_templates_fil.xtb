@@ -64,6 +64,9 @@
 
           Kinikilala lamang ang patakarang ito kung pinagana ang patakaran ng 'DefaultSearchProviderEnabled.'</translation>
 <translation id="1265053460044691532">Limitahan ang oras na maaaring mag-log in offline ang isang user na na-authenticate gamit ang SAML</translation>
+<translation id="1291880496936992484">Babala: Tuluyan nang maalis ang RC4 sa <ph name="PRODUCT_NAME" /> pagkatapos ng bersyon 52 (tinatayang lalabas sa Setyembre 2016) at hindi na gagana ang patakarang ito.
+
+      Kung hindi itatakda ang patakaran, o kung itatakda ito sa false, hindi mae-enable ang mga RC4 na cipher suite sa TLS. Maaari itong itakda sa true upang manatili itong compatible sa isang lumang server. Isa lang itong pansamantalang solusyon at dapat pa ring i-configure ang server.</translation>
 <translation id="1297182715641689552">Gumamit ng .pac proxy script</translation>
 <translation id="1300635491585192248">Hulaan ang mga pagkilos sa network sa anumang network na hindi
           cellular</translation>
@@ -525,6 +528,9 @@
       Kung iyong i-enable o i-disable ang setting na ito, hindi maaaring baguhin o i-override ng mga user ang setting na "I-enable ang proteksyon sa phishing at malware" sa <ph name="PRODUCT_NAME" />.
 
       Kung iiwanang hindi nakatakda ang patakarang ito, ma-e-enable ito, ngunit mababago ito ng user.</translation>
+<translation id="2801230735743888564">Nagbibigay-daan sa mga user na makapaglaro ng dinosaur easter egg game kapag offline ang device.
+
+      Kung itatakda sa False ang patakarang ito, kapag naka-offline ang device, hindi makakapaglaro ng dinosaur easter egg game ang mga user. Kung itatakda naman sa True ang setting na ito, makakapaglaro ng dinosaur game ang mga user. Kung hindi itatakda ang patakarang ito, hindi makakapaglaro ng dinosaur easter egg game ang mga user na naka-enroll sa Chrome OS, ngunit sa ibang mga pagkakataon, maaari itong malaro ng mga user.</translation>
 <translation id="2805707493867224476">Payagang magpakita ng mga pop-up ang lahat ng site</translation>
 <translation id="2808013382476173118">Ini-enable ang paggamit ng mga STUN server kapag sinusubukan ng mga malayuang kliyente na magtatag ng koneksyon sa makinang ito.
 
@@ -1132,6 +1138,7 @@
           Kapag hindi nakatakda ang patakarang ito, ginagawa ang default na pagkilos, na suspendihin.
 
           Kung ang pagkilos ay suspendihin, mako-configure nang hiwalay ang <ph name="PRODUCT_OS_NAME" /> upang i-lock o hindi i-lock ang screen bago ang pagsususpinde.</translation>
+<translation id="5130288486815037971">Kung naka-enable ang mga RC4 na cipher suite sa TLS o hindi</translation>
 <translation id="5141670636904227950">Itakda ang default na uri ng magnifier ng screen na naka-enable sa screen sa pag-login</translation>
 <translation id="5142301680741828703">Palaging i-render ang mga sumusunod na pattern ng URL sa <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="5148753489738115745">Binibigyang-daan kang tukuyin ang mga karagdagang parameter na ginagamit kapag nilunsad ng <ph name="PRODUCT_FRAME_NAME" /> ang <ph name="PRODUCT_NAME" />.
@@ -1418,6 +1425,7 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
           Ang inirerekomendang paraan ng pag-lock ng screen sa idle ay ang i-enable ang pagla-lock ng screen habang naka-suspend at hayaang mag-suspend ang <ph name="PRODUCT_OS_NAME" /> pagkatapos ang itinakdang oras ng pagiging idle. Dapat lang gamitin ang patakarang ito kapag magaganap ang pagla-lock ng screen sa loob ng mas maikling panahon kaysa sa suspend o kapag hindi mo gustong mangyari ang pag-suspend habang naka-idle.
 
           Dapat tukuyin ang value ng patakaran sa milliseconds. Itinatakda ang mga value upang maging mas maikli ang mga ito kaysa sa itinakdang oras ng pagiging idle.</translation>
+<translation id="6111936128861357925">Pahintulutan ang Dinosaur Easter Egg Game</translation>
 <translation id="6114416803310251055">hindi na ginagamit</translation>
 <translation id="6145799962557135888">Binibigyang-daan kang magtakda ng isang listahan ng mga pattern ng url na tumutukoy ng mga site na pinapayagang magpatakbo ng JavaScript.
 
@@ -2048,6 +2056,18 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 
       Kung hindi nakatakda ang patakarang ito, hindi magkakaroon ng mga pagbubukod sa blacklist mula sa patakarang 'URLBlacklist'.</translation>
 <translation id="8176035528522326671">Payagan ang user ng enterprise na maging pangunahing multiprofile na user lang (Default na pag-uugali para sa mga user na pinamamahalaan ng enterprise)</translation>
+<translation id="8191318459035150777">Kino-configure ang URL ng default na home page sa <ph name="PRODUCT_NAME" /> at pinipigilan ang mga user na mapalitan ito.
+
+          Ang home page ay ang page na binubuksan ng button ng Home. Pinamamahalaan ng mga patakaran ng RestoreOnStartup ang mga bumubukas na page sa startup.
+
+          Maaaring itakda ang uri ng home page sa isang URL na tutukuyin mo rito, o kaya, maaari itong itakda sa Page ng Bagong Tab. Kung pipiliin mo ang Page ng Bagong Tab, hindi mailalapat ang patakarang ito.
+
+          Kung ie-enable mo ang setting na ito, hindi na mapapalitan at magagawang <ph name="PRODUCT_NAME" /> ng mga user ang URL ng kanilang home page, ngunit kung gugustuhin nila, magagamit pa rin nila ang Page ng Bagong Tab bilang kanilang home page.
+
+          Kapag hindi mo itinakda ang patakarang ito at wala ring nakatakdang HomepageIsNewTabPage, mabibigyang-daan ang user na pumili ng sarili niyang home page.
+
+          Hindi available ang patakarang ito sa mga instance ng Windows na hindi kasama
+          sa isang Active Directory domain.</translation>
 <translation id="8197918588508433925">Tinutukoy ng patakarang ito ang mga pinapayagang extension upang magamit ang Enterprise Platform Keys API chrome.enterprise.platformKeysPrivate.challengeUserKey() para sa malayuang pagpapatunay. Dapat magdagdag ng mga extension sa listahang ito upang magamit ang API.
 
           Kung wala sa listahan ang isang extension, o hindi nakatakda ang listahan, mabibigo ang pagtawag sa API nang may code ng error.</translation>
@@ -2164,6 +2184,8 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
           Kung pinagana mo ang setting na ito, lalaktawan ang paghahanap ng CNAME at gagamitin ang pangalan ng server tulad ng inilagay.
 
           Kung hindi mo pinagana ang setting na ito o hinayaan itong hindi nakatakda, tutukuyin sa pamamagitan ng paghahanap ng CNAME ang canonical na pangalan ng server.</translation>
+<translation id="8774131509736383471">Kung itatakda sa true ang patakarang ito, ima-maximize ng <ph name="PRODUCT_NAME" /> ang unang lalabas na window sa unang pagpapatakbo nang walang limitasyon.
+      Kung itatakda sa false o kung hindi iko-configure ang patakarang ito, ibabatay sa laki ng screen ang pasya tungkol sa pagma-maximize sa unang lalabas na window.</translation>
 <translation id="8777120694819070607">Pinapayagan ng <ph name="PRODUCT_NAME" /> upang magpatakbo ng mga plugin na wala na sa panahon. Kung pinagana mo ang setting na ito, hindi gagamitin ang mga hindi napapanahong plugin at hihingi ng pahintulot ang mga user na patakbuhin ang mga ito. Kung hindi naitakada ang setting na ito, hihingan ng pahintulot ang mga user na magpatakbo ng mga hindi napapanahong plugin</translation>
 <translation id="87812015706645271">Kinakailangan nito na nagtutugma ang pangalan ng lokal na user at ang may-ari ng host ng malayuang pag-access</translation>
 <translation id="8782750230688364867">Tinutukoy ang porsyento ng pag-scale ng pag-antala bago magdilim ang screen kapag nasa presentation mode ang device.

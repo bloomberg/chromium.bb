@@ -124,6 +124,7 @@ Hostiteľ</translation>
 <translation id="3950820424414687140">Prihlásiť sa</translation>
 <translation id="3989511127559254552">Ak chcete pokračovať, musíte najprv udeliť rozšírené povolenia na prístup k vášmu počítaču. Stačí to urobiť len raz.</translation>
 <translation id="4006787130661126000">Ak chcete na prístup k tomuto počítaču použiť Vzdialenú plochu Chrome, musíte povoliť vzdialené pripojenia.</translation>
+<translation id="405887016757208221">Inicializácia relácie vzdialeným počítačom sa nepodarila. Ak problém pretrváva, skúste opätovne nakonfigurovať hostiteľa.</translation>
 <translation id="4068946408131579958">Všetky pripojenia</translation>
 <translation id="409800995205263688">Poznámka: Nastavenia pravidiel umožňujú pripojenie len medzi počítačmi v rámci vašej siete.</translation>
 <translation id="4155497795971509630">Niektoré potrebné komponenty chýbajú. Uistite sa, že máte nainštalovanú najnovšiu verziu príslušného softvéru a skúste to znova.</translation>
@@ -258,6 +259,7 @@ Hostiteľ pracovnej plochy</translation>
 <translation id="7869445566579231750">Nemáte povolenie spustiť túto aplikáciu.</translation>
 <translation id="7948001860594368197">Možnosti obrazovky</translation>
 <translation id="7970576581263377361">Overenie zlyhalo. Prihláste sa do prehliadača Chromium a skúste to znova.</translation>
+<translation id="7981525049612125370">Vzdialená relácia vypršala.</translation>
 <translation id="8041721485428375115">Stiahnutím nástroja na inštaláciu hostiteľa Vzdialenej plochy Chrome vyjadrujete súhlas so <ph name="LINK_BEGIN" />zmluvnými podmienkami<ph name="LINK_END" /> Google.</translation>
 <translation id="8073845705237259513">Ak chcete používať aplikáciu Vzdialená plocha Chrome, musíte si na zariadení pridať účet Google.</translation>
 <translation id="80739703311984697">Vzdialený hostiteľ od vás vyžaduje overenie na webových stránkach tretej strany. Ak chcete pokračovať, musíte funkcii Chromoting udeliť dodatočné oprávnenie na prístup k tejto adrese:</translation>

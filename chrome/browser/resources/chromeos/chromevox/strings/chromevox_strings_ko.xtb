@@ -52,6 +52,7 @@
 <translation id="1594072653727561613">mnu</translation>
 <translation id="1610130962244179598">6점 점자로 전환</translation>
 <translation id="1611168825862729585">열 헤더:</translation>
+<translation id="1611649489706141841">앞으로</translation>
 <translation id="1613476421962910979">이어콘 사용</translation>
 <translation id="1618597272655350600">현재 위치에 대한 자세한 설명을 들려줍니다.</translation>
 <translation id="1639634871799530612">{COUNT,plural, =1{큼 부호}other{큼 부호 #개}}</translation>
@@ -393,6 +394,7 @@
 <translation id="5054047268577924192">이전 목록 항목</translation>
 <translation id="5078661581131202757">파일 선택</translation>
 <translation id="5080758118274074384">더블 클릭함</translation>
+<translation id="5087864757604726239">뒤로</translation>
 <translation id="5098541983634824365">격자를 종료합니다.</translation>
 <translation id="5102981729317424850">툴바</translation>
 <translation id="5105050547967751155">rq</translation>

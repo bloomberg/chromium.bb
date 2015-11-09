@@ -119,7 +119,6 @@
 <translation id="2816165854387457183">Langsame Verbindung gefunden</translation>
 <translation id="2842985007712546952">Übergeordneter Ordner</translation>
 <translation id="2870560284913253234">Website</translation>
-<translation id="2873598956318269337">{NUM_URLS,plural, =1{1 URL in der Nähe}other{# URLs in der Nähe}}</translation>
 <translation id="2888126860611144412">Info zu Chrome</translation>
 <translation id="2891154217021530873">Laden der Seite anhalten</translation>
 <translation id="2902702728133930130">Während des Startvorgangs ist in Chrome ein unerwarteter Fehler aufgetreten.</translation>
@@ -543,7 +542,6 @@ Um neue Lizenzen zu erwerben, stellen Sie eine Internetverbindung her und spiele
 <translation id="885701979325669005">Speicher</translation>
 <translation id="886510833909353412">Alle Daten mit Passphrase verschlüsseln</translation>
 <translation id="8872441722924401214">Zertifikat für Authentifizierung auswählen</translation>
-<translation id="8891135217544884558">URLs in der Nähe</translation>
 <translation id="8901170036886848654">Keine Lesezeichen gefunden</translation>
 <translation id="8909135823018751308">Teilen...</translation>
 <translation id="8912362522468806198">Google-Konto</translation>

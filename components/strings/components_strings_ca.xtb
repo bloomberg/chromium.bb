@@ -32,7 +32,6 @@
 <translation id="1644184664548287040">La configuració de la xarxa no és vàlida i no s'ha pogut importar.</translation>
 <translation id="1655462015569774233">{1,plural, =1{Aquest servidor no ha pogut demostrar que sigui <ph name="DOMAIN" /> perquè el seu certificat de seguretat va caducar ahir. Això pot ser a causa d'una configuració incorrecta o d'un atacant que intercepta la vostra connexió. Actualment, el rellotge del vostre ordinador està configurat amb la data <ph name="CURRENT_DATE" />. És correcta? Si no ho és, corregiu el rellotge del sistema i, a continuació, actualitzeu aquesta pàgina.}other{Aquest servidor no ha pogut demostrar que sigui <ph name="DOMAIN" /> perquè el seu certificat va caducar fa # dies. Això pot ser a causa d'una configuració incorrecta o d'un atacant que intercepta la vostra connexió. Actualment, el rellotge del vostre ordinador està configurat amb la data <ph name="CURRENT_DATE" />. És correcta? Si no ho és, corregiu el rellotge del sistema i, a continuació, actualitzeu aquesta pàgina.}}</translation>
 <translation id="168841957122794586">El certificat de servidor conté una clau criptogràfica dèbil.</translation>
-<translation id="1693754753824026215">La pàgina de <ph name="SITE" /> diu:</translation>
 <translation id="1706954506755087368">{1,plural, =1{Aquest servidor no ha pogut demostrar que sigui <ph name="DOMAIN" /> perquè, suposadament, el seu certificat de seguretat té la data de demà. Això pot ser a causa d'una configuració incorrecta o d'un atacant que intercepta la vostra connexió.}other{Aquest servidor no ha pogut demostrar que sigui <ph name="DOMAIN" />; perquè, suposadament, el seu certificat de seguretat té una data que és d'aquí a # dies. Això pot ser a causa d'una configuració incorrecta o d'un atacant que intercepta la vostra connexió.}}</translation>
 <translation id="1710259589646384581">SO</translation>
 <translation id="1734864079702812349">Amex</translation>
@@ -227,6 +226,7 @@
 <translation id="6263376278284652872">Adreces d'interès de <ph name="DOMAIN" /></translation>
 <translation id="6282194474023008486">Codi postal</translation>
 <translation id="6337534724793800597">Filtra les polítiques pel nom</translation>
+<translation id="6342069812937806050">Ara mateix</translation>
 <translation id="6355080345576803305">Substitueix en sessions públiques</translation>
 <translation id="6387478394221739770">Esteu interessat en les funcions de Chrome noves i interessants? Proveu el nostre canal beta a la pàgina chrome.com/beta.</translation>
 <translation id="6445051938772793705">País</translation>
@@ -252,7 +252,6 @@
 <translation id="6965978654500191972">Dispositiu</translation>
 <translation id="6970216967273061347">Districte</translation>
 <translation id="6973656660372572881">S'especifiquen tant els servidors intermediaris fixos com un URL d'script .pac.</translation>
-<translation id="6980028882292583085">Alerta de JavaScript</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7050187094878475250">Heu provat de connectar-vos a <ph name="DOMAIN" />, però el servidor ha presentat un certificat amb un període de validesa massa gran per poder confiar-hi.</translation>
 <translation id="7087282848513945231">Comptat</translation>
@@ -275,7 +274,6 @@
 <translation id="7419106976560586862">Camí del perfil</translation>
 <translation id="7441627299479586546">Usuari de la política incorrecte</translation>
 <translation id="7485870689360869515">No s'han trobat dades.</translation>
-<translation id="7521387064766892559">JavaScript</translation>
 <translation id="7537536606612762813">Obligatòria</translation>
 <translation id="7542995811387359312">L'emplenament automàtic de targetes de crèdit està desactivat perquè el formulari no utilitza una connexió segura.</translation>
 <translation id="7567204685887185387">Aquest servidor no ha pogut comprovar que sigui <ph name="DOMAIN" /> perquè és possible que el seu certificat de seguretat s'hagi emès de manera fraudulenta. Això pot ser a causa d'una configuració incorrecta o d'un atacant que intercepta la vostra connexió.</translation>

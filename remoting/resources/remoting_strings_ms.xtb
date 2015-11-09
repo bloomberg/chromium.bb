@@ -124,6 +124,7 @@ Chromoting</translation>
 <translation id="3950820424414687140">Log masuk</translation>
 <translation id="3989511127559254552">Untuk meneruskan, anda mesti memberikan kebenaran akses lanjutan terlebih dahulu kepada komputer anda. Anda hanya perlu melakukannya sekali.</translation>
 <translation id="4006787130661126000">Anda mesti mendayakan sambungan jauh jika anda mahu menggunakan Desktop Jauh Chrome untuk mengakses komputer ini.</translation>
+<translation id="405887016757208221">Komputer jauh gagal memulakan sesi. Jika masalah berterusan, sila cuba mengkonfigurasi hos sekali lagi.</translation>
 <translation id="4068946408131579958">Semua sambungan</translation>
 <translation id="409800995205263688">NOTA: Tetapan dasar membenarkan sambungan antara komputer dalam rangkaian anda sahaja.</translation>
 <translation id="4155497795971509630">Sesetengah komponen yang diperlukan hilang. Sila pastikan anda telah memasang versi terkini perisian dan cuba lagi.</translation>
@@ -258,6 +259,7 @@ Jauh Chrome</translation>
 <translation id="7869445566579231750">Anda tidak mempunyai kebenaran untuk menjalankan aplikasi ini.</translation>
 <translation id="7948001860594368197">Pilihan skrin</translation>
 <translation id="7970576581263377361">Pengesahan gagal. Sila log masuk ke Chromium sekali lagi.</translation>
+<translation id="7981525049612125370">Sesi jauh telah tamat tempoh.</translation>
 <translation id="8041721485428375115">Apabila memuat turun Pemasang Hos Desktop Jauh Chrome, anda bersetuju menerima <ph name="LINK_BEGIN" />Syarat Perkhidmatan<ph name="LINK_END" /> Google.</translation>
 <translation id="8073845705237259513">Untuk menggunakan Desktop Jauh Chrome, anda perlu menambahkan Akaun Google kepada peranti anda.</translation>
 <translation id="80739703311984697">Hos jauh memerlukan anda membuat pengesahan pada tapak web pihak ketiga. Untuk meneruskan, anda hendaklah memberikan Chromoting kebenaran tambahan untuk mengakses alamat ini:</translation>

@@ -32,7 +32,6 @@
 <translation id="1644184664548287040">Die Netzwerkkonfiguration ist ungültig und konnte nicht importiert werden.</translation>
 <translation id="1655462015569774233">{1,plural, =1{Dieser Server konnte nicht beweisen, dass er <ph name="DOMAIN" /> ist. Sein Sicherheitszertifikat ist gestern abgelaufen. Mögliche Gründe sind eine fehlerhafte Konfiguration oder ein Angreifer, der Ihre Verbindung abfängt. Die Uhr Ihres Computers ist derzeit auf <ph name="CURRENT_DATE" /> eingestellt. Ist das korrekt? Falls nicht, stellen Sie die Uhr Ihres Systems richtig ein und aktualisieren Sie anschließend diese Seite.}other{Dieser Server konnte nicht beweisen, dass er <ph name="DOMAIN" /> ist. Sein Sicherheitszertifikat ist vor # Tagen abgelaufen. Mögliche Gründe sind eine fehlerhafte Konfiguration oder ein Angreifer, der Ihre Verbindung abfängt. Die Uhr Ihres Computers ist derzeit auf <ph name="CURRENT_DATE" /> eingestellt. Ist das korrekt? Falls nicht, stellen Sie die Uhr Ihres Systems richtig ein und aktualisieren Sie anschließend diese Seite.}}</translation>
 <translation id="168841957122794586">Das Serverzertifikat weist einen schwachen kryptografischen Schlüssel auf.</translation>
-<translation id="1693754753824026215">Die Seite auf <ph name="SITE" /> meldet:</translation>
 <translation id="1706954506755087368">{1,plural, =1{Dieser Server konnte nicht beweisen, dass er <ph name="DOMAIN" /> ist. Sein Sicherheitszertifikat gilt vermutlich erst ab morgen. Mögliche Gründe sind eine fehlerhafte Konfiguration oder ein Angreifer, der Ihre Verbindung abfängt.}other{Dieser Server konnte nicht beweisen, dass er <ph name="DOMAIN" /> ist. Sein Sicherheitszertifikat gilt vermutlich erst in # Tagen. Mögliche Gründe sind eine fehlerhafte Konfiguration oder ein Angreifer, der Ihre Verbindung abfängt.}}</translation>
 <translation id="1710259589646384581">Betriebssystem</translation>
 <translation id="1734864079702812349">American Express</translation>
@@ -227,6 +226,7 @@
 <translation id="6263376278284652872"><ph name="DOMAIN" />-Lesezeichen</translation>
 <translation id="6282194474023008486">Postleitzahl</translation>
 <translation id="6337534724793800597">Richtlinien nach Name filtern</translation>
+<translation id="6342069812937806050">Abgeschlossen</translation>
 <translation id="6355080345576803305">Überschreibung öffentlicher Sitzung</translation>
 <translation id="6387478394221739770">Interessiert an coolen neuen Chrome-Funktionen? Testen Sie unsere Betaversion unter chrome.com/beta.</translation>
 <translation id="6445051938772793705">Land</translation>
@@ -252,7 +252,6 @@
 <translation id="6965978654500191972">Gerät</translation>
 <translation id="6970216967273061347">Bezirk</translation>
 <translation id="6973656660372572881">Sowohl feste Proxyserver als auch eine PAC-Skript-URL sind festgelegt.</translation>
-<translation id="6980028882292583085">JavaScript-Warnmeldung</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7050187094878475250">Sie haben versucht, <ph name="DOMAIN" /> zu erreichen. Der Server hat jedoch ein Zertifikat präsentiert, dessen Gültigkeitsdauer zu lang ist, um vertrauenswürdig zu sein.</translation>
 <translation id="7087282848513945231">Landkreis</translation>
@@ -275,7 +274,6 @@
 <translation id="7419106976560586862">Profilpfad</translation>
 <translation id="7441627299479586546">Falsche(r) Nutzername/Domain der Richtlinie</translation>
 <translation id="7485870689360869515">Keine Daten gefunden</translation>
-<translation id="7521387064766892559">JavaScript</translation>
 <translation id="7537536606612762813">Verbindlich</translation>
 <translation id="7542995811387359312">Die Funktion zur automatischen Ausfüllung der Kreditkartendaten ist deaktiviert, da dieses Formular keine sichere Verbindung nutzt.</translation>
 <translation id="7567204685887185387">Dieser Server konnte nicht beweisen, dass er <ph name="DOMAIN" /> ist. Sein Sicherheitszertifikat wurde möglicherweise in betrügerischer Absicht ausgegeben. Mögliche Gründe sind eine fehlerhafte Konfiguration oder ein Angreifer, der Ihre Verbindung abfängt.</translation>

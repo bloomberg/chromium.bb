@@ -119,7 +119,6 @@
 <translation id="2816165854387457183">Slow connection detected.</translation>
 <translation id="2842985007712546952">Parent folder</translation>
 <translation id="2870560284913253234">Site</translation>
-<translation id="2873598956318269337">{NUM_URLS,plural, =1{1 URL nearby}other{# URLs nearby}}</translation>
 <translation id="2888126860611144412">About Chrome</translation>
 <translation id="2891154217021530873">Stop page loading</translation>
 <translation id="2902702728133930130">Chrome failed during start-up with an unexpected error.</translation>
@@ -158,6 +157,7 @@
 <translation id="3358663646935160692">This account is managed by <ph name="DOMAIN_NAME" />.
 
 You are signing in with a managed account and giving its administrator control over your Chrome profile. Your Chrome data will become permanently tied to this account. Disconnecting from this account will delete the local Chrome data.</translation>
+<translation id="3384347053049321195">Share image</translation>
 <translation id="3410346880900521918">If you're seeing this frequently, try these <ph name="BEGIN_LINK" />suggestions<ph name="END_LINK" />.</translation>
 <translation id="3414952576877147120">Size:</translation>
 <translation id="3485544713029068372">Smart Lock for Passwords</translation>
@@ -457,6 +457,9 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="7648422057306047504">Encrypt passwords with Google credentials</translation>
 <translation id="7658239707568436148">Cancel</translation>
 <translation id="7665369617277396874">Add account</translation>
+<translation id="7735023902678907596">Pages that you view in incognito tabs won’t stick around in your browser’s history, cookie store or search history after you’ve closed all of your incognito tabs. Any downloaded files or saved pages will be kept.
+
+However, you aren’t invisible. Going incognito doesn’t hide your browsing from your employer, your Internet service provider or the websites that you visit.</translation>
 <translation id="7761240775244195612">Delete <ph name="PAGES_NUMBER" /> offline copies not used in the past month? This will clear <ph name="TOTAL_PAGE_SIZE" /> of space.</translation>
 <translation id="7764225426217299476">Add address</translation>
 <translation id="7765158879357617694">Move</translation>
@@ -541,7 +544,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="885701979325669005">Storage</translation>
 <translation id="886510833909353412">Encrypt all with passphrase</translation>
 <translation id="8872441722924401214">Choose certificate for authentication</translation>
-<translation id="8891135217544884558">Nearby URLs</translation>
 <translation id="8901170036886848654">No bookmarks found</translation>
 <translation id="8909135823018751308">Share…</translation>
 <translation id="8912362522468806198">Google Account</translation>

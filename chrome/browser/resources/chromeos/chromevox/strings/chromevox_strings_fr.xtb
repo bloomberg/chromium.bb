@@ -52,6 +52,7 @@
 <translation id="1594072653727561613">menu</translation>
 <translation id="1610130962244179598">Passer au braille à six points</translation>
 <translation id="1611168825862729585">En-tête de colonne :</translation>
+<translation id="1611649489706141841">suivant</translation>
 <translation id="1613476421962910979">Icônes audio activées</translation>
 <translation id="1618597272655350600">Énonce la description complète de la position actuelle.</translation>
 <translation id="1639634871799530612">{COUNT,plural, =1{signe supérieur à}one{# signe supérieur à}other{# signes supérieur à}}</translation>
@@ -393,6 +394,7 @@
 <translation id="5054047268577924192">Élément de liste précédent</translation>
 <translation id="5078661581131202757">Sélection de fichier</translation>
 <translation id="5080758118274074384">Élément sur lequel vous avez double-cliqué</translation>
+<translation id="5087864757604726239">retour</translation>
 <translation id="5098541983634824365">Fermeture de la grille</translation>
 <translation id="5102981729317424850">Barre d'outils</translation>
 <translation id="5105050547967751155">rq</translation>

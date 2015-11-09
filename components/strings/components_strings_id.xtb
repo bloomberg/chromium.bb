@@ -28,11 +28,11 @@
 <translation id="1519264250979466059">Tanggal Dibuat</translation>
 <translation id="1549470594296187301">JavaScript harus diaktifkan untuk menggunakan fitur ini.</translation>
 <translation id="1559528461873125649">Tidak ada file atau direktori tersebut</translation>
+<translation id="1629803312968146339">Ingin Chrome menyimpan kartu ini?</translation>
 <translation id="1640180200866533862">Kebijakan pengguna</translation>
 <translation id="1644184664548287040">Konfigurasi cadangan tidak valid dan tidak dapat diimpor.</translation>
 <translation id="1655462015569774233">{1,plural, =1{Server ini tidak dapat membuktikan bahwa ini adalah <ph name="DOMAIN" />; masa berlaku sertifikat keamanannya telah berakhir kemarin. Hal ini mungkin disebabkan oleh kesalahan konfigurasi, atau ada penyerang yang memintas sambungan internet Anda. Jam komputer Anda saat ini diatur ke <ph name="CURRENT_DATE" />. Apakah terlihat sesuai? Jika tidak, Anda harus membenarkan jam sistem dan menyegarkan laman ini.}other{Server ini tidak dapat membuktikan bahwa ini adalah <ph name="DOMAIN" />; masa berlaku sertifikat keamanannya telah berakhir # hari yang lalu. Hal ini mungkin disebabkan oleh kesalahan konfigurasi, atau ada penyerang yang memintas sambungan internet Anda. Jam komputer Anda saat ini diatur ke <ph name="CURRENT_DATE" />. Apakah terlihat sesuai? Jika tidak, Anda harus membenarkan jam sistem dan menyegarkan laman ini.}}</translation>
 <translation id="168841957122794586">Sertifikat server berisi kunci kriptografis yang lemah.</translation>
-<translation id="1693754753824026215">Laman di <ph name="SITE" /> menyatakan:</translation>
 <translation id="1706954506755087368">{1,plural, =1{Server ini tidak dapat membuktikan bahwa ini adalah <ph name="DOMAIN" />; sertifikat keamanannya sepertinya dari esok hari. Hal ini mungkin disebabkan oleh kesalahan konfigurasi, atau ada penyerang yang memintas sambungan internet Anda.}other{Server ini tidak dapat membuktikan bahwa ini adalah <ph name="DOMAIN" />; sertifikat keamanannya sepertinya dari # hari mendatang. Hal ini mungkin disebabkan oleh kesalahan konfigurasi, atau ada penyerang yang memintas sambungan internet Anda.}}</translation>
 <translation id="1710259589646384581">OS</translation>
 <translation id="1734864079702812349">Amex</translation>
@@ -147,11 +147,13 @@
 <translation id="4117700440116928470">Lingkup kebijakan tidak didukung.</translation>
 <translation id="4120075327926916474">Ingin Chrome menyimpan informasi kartu kredit ini untuk melengkapi formulir web?</translation>
 <translation id="4148925816941278100">American Express</translation>
+<translation id="4169947484918424451">Ingin Chromium menyimpan kartu ini?</translation>
 <translation id="4171400957073367226">Tanda tangan verifikasi tidak valid</translation>
 <translation id="4196861286325780578">&amp;Ulangi pemindahan</translation>
 <translation id="4220128509585149162">Kerusakan</translation>
 <translation id="4250680216510889253">Tidak</translation>
 <translation id="4258748452823770588">Tanda tangan salah</translation>
+<translation id="4268298190799576220">Saat ini Chromium tidak dapat memverifikasi kartu. Coba lagi nanti.</translation>
 <translation id="4269787794583293679">(Tidak ada nama pengguna)</translation>
 <translation id="4300246636397505754">Saran induk</translation>
 <translation id="4325863107915753736">Gagal menemukan artikel</translation>
@@ -223,10 +225,12 @@
 <translation id="6151417162996330722">Sertifikat server memiliki masa berlaku yang terlalu panjang.</translation>
 <translation id="6154808779448689242">Token kebijakan yang dikembalikan tidak cocok dengan token saat ini</translation>
 <translation id="6165508094623778733">Pelajari lebih lanjut</translation>
+<translation id="6218753634732582820">Hapus alamat dari Chromium?</translation>
 <translation id="6259156558325130047">&amp;Ulangi Pengaturan Ulang</translation>
 <translation id="6263376278284652872">Bookmark <ph name="DOMAIN" /></translation>
 <translation id="6282194474023008486">Kode pos</translation>
 <translation id="6337534724793800597">Filter kebijakan menurut nama</translation>
+<translation id="6342069812937806050">Baru saja</translation>
 <translation id="6355080345576803305">Diganti oleh sesi publik</translation>
 <translation id="6387478394221739770">Tertarik dengan fitur Chrome baru yang keren? Coba saluran beta kami di chrome.com/beta.</translation>
 <translation id="6445051938772793705">Negara</translation>
@@ -239,6 +243,7 @@
 <translation id="6628463337424475685"><ph name="ENGINE" /> Penelusuran</translation>
 <translation id="6644283850729428850">Kebijakan ini telah usang.</translation>
 <translation id="6646897916597483132">Masukkan 4 digit CVC di depan kartu Anda</translation>
+<translation id="6671697161687535275">Hapus saran formulir dari Chromium?</translation>
 <translation id="674375294223700098">Kesalahan sertifikat server tidak dikenal.</translation>
 <translation id="6753269504797312559">Nilai kebijakan</translation>
 <translation id="6831043979455480757">Terjemahkan</translation>
@@ -252,7 +257,6 @@
 <translation id="6965978654500191972">Perangkat</translation>
 <translation id="6970216967273061347">Distrik</translation>
 <translation id="6973656660372572881">Server proxy tetap dan URL skrip .pac telah ditentukan.</translation>
-<translation id="6980028882292583085">Lansiran JavaScript</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7050187094878475250">Anda berusaha menjangkau <ph name="DOMAIN" />, namun server memberikan sertifikat yang masa berlakunya terlalu lama untuk dapat dipercaya.</translation>
 <translation id="7087282848513945231">County</translation>
@@ -275,7 +279,6 @@
 <translation id="7419106976560586862">Jalur Profil</translation>
 <translation id="7441627299479586546">Subjek kebijakan salah</translation>
 <translation id="7485870689360869515">Tidak ada data yang ditemukan.</translation>
-<translation id="7521387064766892559">Javascript</translation>
 <translation id="7537536606612762813">Wajib</translation>
 <translation id="7542995811387359312">Pengisian kartu kredit otomatis dinonaktifkan karena formulir ini tidak menggunakan sambungan aman.</translation>
 <translation id="7567204685887185387">Server ini tidak dapat membuktikan bahwa ini adalah <ph name="DOMAIN" />; sertifikat keamanannya mungkin telah dikeluarkan dengan curang. Hal ini disebabkan oleh kesalahan konfigurasi atau penyerang memotong sambungan Anda.</translation>
@@ -284,6 +287,7 @@
 <translation id="7592362899630581445">Sertifikat server melanggar batasan nama.</translation>
 <translation id="7600965453749440009">Jangan pernah terjemahkan bahasa <ph name="LANGUAGE" /></translation>
 <translation id="7610193165460212391">Nilai di luar jangkauan <ph name="VALUE" />.</translation>
+<translation id="7637571805876720304">Hapus kartu kredit dari Chromium?</translation>
 <translation id="7674629440242451245">Tertarik dengan fitur Chrome baru yang keren? Coba saluran dev kami di chrome.com/dev.</translation>
 <translation id="7752995774971033316">Tidak terkelola</translation>
 <translation id="7761701407923456692">Sertifikat server tidak cocok dengan URL.</translation>

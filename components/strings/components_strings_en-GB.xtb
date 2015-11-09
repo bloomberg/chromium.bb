@@ -28,11 +28,11 @@
 <translation id="1519264250979466059">Build Date</translation>
 <translation id="1549470594296187301">JavaScript must be enabled to use this feature.</translation>
 <translation id="1559528461873125649">No such file or directory</translation>
+<translation id="1629803312968146339">Do you want Chrome to save this card?</translation>
 <translation id="1640180200866533862">User policies</translation>
 <translation id="1644184664548287040">The network configuration is invalid and couldn't be imported.</translation>
 <translation id="1655462015569774233">{1,plural, =1{This server could not prove that it is <ph name="DOMAIN" />; its security certificate expired yesterday. This may be caused by a misconfiguration or an attacker intercepting your connection. Your computer's clock is currently set to <ph name="CURRENT_DATE" />. Does that look right? If not, you should correct your system's clock and then refresh this page.}other{This server could not prove that it is <ph name="DOMAIN" />; its security certificate expired # days ago. This may be caused by a misconfiguration or an attacker intercepting your connection. Your computer's clock is currently set to <ph name="CURRENT_DATE" />. Does that look right? If not, you should correct your system's clock and then refresh this page.}}</translation>
 <translation id="168841957122794586">The server certificate contains a weak cryptographic key.</translation>
-<translation id="1693754753824026215">The page at <ph name="SITE" /> says:</translation>
 <translation id="1706954506755087368">{1,plural, =1{This server could not prove that it is <ph name="DOMAIN" />; its security certificate is supposedly from tomorrow. This may be caused by a misconfiguration or an attacker intercepting your connection.}other{This server could not prove that it is <ph name="DOMAIN" />; its security certificate is supposedly from # days in the future. This may be caused by a misconfiguration or an attacker intercepting your connection.}}</translation>
 <translation id="1710259589646384581">OS</translation>
 <translation id="1734864079702812349">Amex</translation>
@@ -147,11 +147,13 @@
 <translation id="4117700440116928470">Policy scope is not supported.</translation>
 <translation id="4120075327926916474">Do you want Chrome to save this credit card information for completing web forms?</translation>
 <translation id="4148925816941278100">American Express</translation>
+<translation id="4169947484918424451">Do you want Chromium to save this card?</translation>
 <translation id="4171400957073367226">Bad verification signature</translation>
 <translation id="4196861286325780578">&amp;Redo move</translation>
 <translation id="4220128509585149162">Crashes</translation>
 <translation id="4250680216510889253">No</translation>
 <translation id="4258748452823770588">Bad signature</translation>
+<translation id="4268298190799576220">Chromium was unable to verify your card at this time. Please try again later.</translation>
 <translation id="4269787794583293679">(No username)</translation>
 <translation id="4300246636397505754">Parent suggestions</translation>
 <translation id="4325863107915753736">Failed to find article</translation>
@@ -223,10 +225,12 @@
 <translation id="6151417162996330722">The server certificate has a validity period that is too long.</translation>
 <translation id="6154808779448689242">Returned policy token doesn't match current token</translation>
 <translation id="6165508094623778733">Learn more</translation>
+<translation id="6218753634732582820">Remove address from Chromium?</translation>
 <translation id="6259156558325130047">&amp;Redo Reorder</translation>
 <translation id="6263376278284652872"><ph name="DOMAIN" /> bookmarks</translation>
 <translation id="6282194474023008486">Postcode</translation>
 <translation id="6337534724793800597">Filter policies by name</translation>
+<translation id="6342069812937806050">Just now</translation>
 <translation id="6355080345576803305">Public session override</translation>
 <translation id="6387478394221739770">Interested in cool new Chrome features? Try our beta channel at chrome.com/beta.</translation>
 <translation id="6445051938772793705">Country</translation>
@@ -239,6 +243,7 @@
 <translation id="6628463337424475685"><ph name="ENGINE" /> Search</translation>
 <translation id="6644283850729428850">This policy has been deprecated.</translation>
 <translation id="6646897916597483132">Enter the 4-digit CVC from the front of your card</translation>
+<translation id="6671697161687535275">Remove form suggestion from Chromium?</translation>
 <translation id="674375294223700098">Unknown server certificate error.</translation>
 <translation id="6753269504797312559">Policy Value</translation>
 <translation id="6831043979455480757">Translate</translation>
@@ -252,7 +257,6 @@
 <translation id="6965978654500191972">Device</translation>
 <translation id="6970216967273061347">District</translation>
 <translation id="6973656660372572881">Both fixed proxy servers and a .pac script URL are specified.</translation>
-<translation id="6980028882292583085">JavaScript Alert</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7050187094878475250">You attempted to reach <ph name="DOMAIN" />, but the server presented a certificate whose validity period is too long to be trustworthy.</translation>
 <translation id="7087282848513945231">County</translation>
@@ -275,7 +279,6 @@
 <translation id="7419106976560586862">Profile Path</translation>
 <translation id="7441627299479586546">Wrong policy subject</translation>
 <translation id="7485870689360869515">No data found.</translation>
-<translation id="7521387064766892559">JavaScript</translation>
 <translation id="7537536606612762813">Mandatory</translation>
 <translation id="7542995811387359312">Automatic credit card filling is disabled because this form does not use a secure connection.</translation>
 <translation id="7567204685887185387">This server could not prove that it is <ph name="DOMAIN" />; its security certificate might have been issued fraudulently. This may be caused by a misconfiguration or an attacker intercepting your connection.</translation>
@@ -284,6 +287,7 @@
 <translation id="7592362899630581445">Server's certificate violates name constraints.</translation>
 <translation id="7600965453749440009">Never translate <ph name="LANGUAGE" /></translation>
 <translation id="7610193165460212391">Value is out of range <ph name="VALUE" />.</translation>
+<translation id="7637571805876720304">Remove credit card from Chromium?</translation>
 <translation id="7674629440242451245">Interested in cool new Chrome features? Try our dev channel at chrome.com/dev.</translation>
 <translation id="7752995774971033316">Unmanaged</translation>
 <translation id="7761701407923456692">Server's certificate does not match the URL.</translation>

@@ -52,6 +52,7 @@
 <translation id="1594072653727561613">izvēlne</translation>
 <translation id="1610130962244179598">Pāriet uz 6 punktu Braila rakstu</translation>
 <translation id="1611168825862729585">Slejas virsraksts:</translation>
+<translation id="1611649489706141841">pārsūtīt</translation>
 <translation id="1613476421962910979">Signāli ieslēgti</translation>
 <translation id="1618597272655350600">Sniedz pilnīgu aprakstu par pašreizējo pozīciju</translation>
 <translation id="1639634871799530612">{COUNT,plural, =1{zīme “lielāks par”}zero{# zīmju “lielāks par”}one{# zīme “lielāks par”}other{# zīmes “lielāks par”}}</translation>
@@ -393,6 +394,7 @@
 <translation id="5054047268577924192">Iepriekšējais saraksta vienums</translation>
 <translation id="5078661581131202757">Failu atlase</translation>
 <translation id="5080758118274074384">Tika veikts dubultklikšķis.</translation>
+<translation id="5087864757604726239">atpakaļ</translation>
 <translation id="5098541983634824365">Notiek iziešana no režģa.</translation>
 <translation id="5102981729317424850">Rīkjosla</translation>
 <translation id="5105050547967751155">nepieciešams</translation>

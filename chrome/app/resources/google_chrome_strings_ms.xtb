@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ms">
 <translation id="1001534784610492198">Arkib pemasang rosak atau tidak sah. Sila muat turun Google Chrome semula.</translation>
+<translation id="1013290471399003443">Chrome mengesahkan bahawa <ph name="ISSUER" /> mengeluarkan sijil tapak web ini. Pelayan membekalkan maklumat Ketelusan Sijil yang sah.</translation>
 <translation id="1016765312371154165">Chrome tidak ditutup dengan betul.</translation>
 <translation id="103396972844768118">Maklumat penting mengenai data Chrome anda</translation>
 <translation id="1061441684050139317">Chrome memerlukan akses mikrofon untuk mengongsikannya dengan tapak ini.</translation>
@@ -62,6 +63,7 @@ Teruskan juga log masuk akan menggabungkan maklumat Chrome seperti penanda halam
 <translation id="2769762047821873045">Google Chrome adalah bukan penyemak imbas lalai anda.</translation>
 <translation id="2770231113462710648">Tukar penyemak imbas lalai kepada:</translation>
 <translation id="2871893339301912279">Anda kini telah log masuk ke Chrome!</translation>
+<translation id="2997147809295888909">Chrome mengesahkan bahawa <ph name="ISSUER" /> mengeluarkan sijil tapak web ini. Pelayan tidak membekalkan sebarang maklumat Ketelusan Sijil.</translation>
 <translation id="3037838751736561277">Google Chrome dalam mod latar belakang.</translation>
 <translation id="3047079729301751317">Memutuskan sambungan <ph name="USERNAME" /> akan mengosongkan sejarah anda, penanda halaman, tetapan dan data Chrome lain yang tersimpan pada peranti ini. Data yang disimpan dalam Akaun Google anda tidak akan dikosongkan dan boleh diurus pada <ph name="GOOGLE_DASHBOARD_LINK" />Papan Pemuka Google<ph name="END_GOOGLE_DASHBOARD_LINK" />.</translation>
 <translation id="3080151273017101988">Terus menjalankan apl latar belakang apabila Google Chrome ditutup</translation>
@@ -84,6 +86,7 @@ Teruskan juga log masuk akan menggabungkan maklumat Chrome seperti penanda halam
 <translation id="3847841918622877581">Google Chrome boleh menggunakan perkhidmatan web untuk meningkatkan pengalaman penyemakan imbas anda.</translation>
 <translation id="386202838227397562">Sila tutup semua tetingkap Google Chrome dan cuba semula.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
+<translation id="3881912906674381083">Chrome mengesahkan bahawa <ph name="ISSUER" /> mengeluarkan siil tapak web ini. Pelayan membekalkan maklumat Ketelusan Sijil, tetapi Chrome tidak mengenali mana-mana log Ketelusan Sijil.</translation>
 <translation id="3889417619312448367">Nyahpasang Google Chrome</translation>
 <translation id="4011219958405096740">Apabila didayakan, akan menggunakan aliran log masuk Chrome berasaskan iframe; atau pun gunakan aliran berasaskan webview.</translation>
 <translation id="4050175100176540509">Peningkatan keselamatan penting dan ciri baharu tersedia dalam versi terkini.</translation>
@@ -114,6 +117,7 @@ Teruskan juga log masuk akan menggabungkan maklumat Chrome seperti penanda halam
 <translation id="4794050651896644714">Simpan butiran di Chrome</translation>
 <translation id="4891791193823137474">Biarkan Google Chrome dijalankan di latar belakang</translation>
 <translation id="4921569541910214635">Berkongsi komputer? Kini anda boleh sediakan Chrome menurut cara yang anda suka.</translation>
+<translation id="4925019873400497719">Chrome mengesahkan bahawa <ph name="ISSUER" /> mengeluarkan sijil tapak web ini. Pelayan membekalkan maklumat Ketelusan Sijil, tetapi tidak sah.</translation>
 <translation id="4953650215774548573">Tetapkan Google Chrome sebagai penyemak imbas lalai anda</translation>
 <translation id="4987308747895123092">Sila tutup semua tetingkap Google Chrome (termasuk yang di dalam mod Windows 8) dan cuba lagi.</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>

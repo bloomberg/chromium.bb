@@ -32,7 +32,6 @@
 <translation id="1644184664548287040">De netwerkconfiguratie is ongeldig en kan niet worden geïmporteerd.</translation>
 <translation id="1655462015569774233">{1,plural, =1{Deze server kan niet bewijzen dat dit <ph name="DOMAIN" /> is. Het bijbehorende beveiligingscertificaat is gisteren verlopen. Dit kan worden veroorzaakt door een verkeerde configuratie of een aanvaller die je verbinding onderschept. De klok van je computer is momenteel ingesteld op <ph name="CURRENT_DATE" />. Is dat correct? Zo niet, dan moet je de klok van je systeem aanpassen en vervolgens deze pagina vernieuwen.}other{Deze server kan niet bewijzen dat dit <ph name="DOMAIN" /> is. Het bijbehorende beveiligingscertificaat is # dagen geleden verlopen. Dit kan worden veroorzaakt door een verkeerde configuratie of een aanvaller die je verbinding onderschept. De klok van je computer is momenteel ingesteld op <ph name="CURRENT_DATE" />. Is dat correct? Zo niet, dan moet je de klok van je systeem aanpassen en vervolgens deze pagina vernieuwen.}}</translation>
 <translation id="168841957122794586">Het servercertificaat bevat een zwakke cryptografische sleutel.</translation>
-<translation id="1693754753824026215">De pagina op <ph name="SITE" /> meldt het volgende:</translation>
 <translation id="1706954506755087368">{1,plural, =1{Deze server kan niet bewijzen dat dit <ph name="DOMAIN" /> is. Het bijbehorende beveiligingscertificaat is zogenaamd van morgen. Dit kan worden veroorzaakt door een verkeerde configuratie of een aanvaller die je verbinding onderschept.}other{Deze server kan niet bewijzen dat dit <ph name="DOMAIN" /> is. Het bijbehorende beveiligingscertificaat is zogenaamd van # dagen in de toekomst. Dit kan worden veroorzaakt door een verkeerde configuratie of een aanvaller die je verbinding onderschept.}}</translation>
 <translation id="1710259589646384581">Besturingssysteem</translation>
 <translation id="1734864079702812349">Amex</translation>
@@ -227,6 +226,7 @@
 <translation id="6263376278284652872">Bladwijzers voor <ph name="DOMAIN" /></translation>
 <translation id="6282194474023008486">Postcode</translation>
 <translation id="6337534724793800597">Beleid filteren op naam</translation>
+<translation id="6342069812937806050">Zojuist</translation>
 <translation id="6355080345576803305">Overschrijving voor openbare sessie</translation>
 <translation id="6387478394221739770">Ben je geïnteresseerd in nieuwe, coole Chrome-functies? Probeer ons bèta-kanaal op chrome.com/beta.</translation>
 <translation id="6445051938772793705">Land</translation>
@@ -252,7 +252,6 @@
 <translation id="6965978654500191972">Apparaat</translation>
 <translation id="6970216967273061347">District</translation>
 <translation id="6973656660372572881">Zowel vaste proxyservers als een pac-script-URL worden gespecificeerd.</translation>
-<translation id="6980028882292583085">JavaScript-melding</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7050187094878475250">Je hebt geprobeerd <ph name="DOMAIN" /> te bereiken, maar de server heeft een certificaat gepresenteerd waarvan de geldigheidsperiode te lang is om betrouwbaar te zijn.</translation>
 <translation id="7087282848513945231">County</translation>
@@ -275,7 +274,6 @@
 <translation id="7419106976560586862">Profielpad</translation>
 <translation id="7441627299479586546">Onjuist beleidsonderwerp</translation>
 <translation id="7485870689360869515">Geen gegevens gevonden.</translation>
-<translation id="7521387064766892559">JavaScript</translation>
 <translation id="7537536606612762813">Verplicht</translation>
 <translation id="7542995811387359312">Het automatisch invullen van creditcardnummers is uitgeschakeld, omdat dit formulier geen beveiligde verbinding gebruikt.</translation>
 <translation id="7567204685887185387">De server kan niet bewijzen dat dit <ph name="DOMAIN" /> is. Het beveiligingscertificaat van de server is mogelijk frauduleus verstrekt. Dit kan worden veroorzaakt door een verkeerde configuratie of een aanvaller die je verbinding onderschept.</translation>

@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="fil">
 <translation id="1001534784610492198">Na-corrupt o hindi wasto ang installer archive. Paki-download muli ang Google Chrome.</translation>
+<translation id="1013290471399003443">Na-verify ng Chrome na ang <ph name="ISSUER" /> ang nagbigay sa certificate ng website na ito. Nagbigay ang server ng wastong impormasyon tungkol sa Certificate Transparency.</translation>
 <translation id="1016765312371154165">Hindi nag-shut down nang tama ang Chrome.</translation>
 <translation id="103396972844768118">Mahalagang impormasyon patungkol sa iyong data sa Chrome</translation>
 <translation id="1061441684050139317">Kailangan ng Chrome ng access sa mikropono upang maibahagi ito sa site na ito.</translation>
@@ -66,6 +67,7 @@ Kapag nag-sign in ka pa rin, isasama sa <ph name="ACCOUNT_EMAIL_NEW" /> ang impo
 <translation id="2769762047821873045">Hindi Google Chrome ang iyong default na browser.</translation>
 <translation id="2770231113462710648">Baguhin ang default na browser sa:</translation>
 <translation id="2871893339301912279">Naka-sign in ka sa Chrome!</translation>
+<translation id="2997147809295888909">Na-verify ng Chrome na ang <ph name="ISSUER" /> ang nagbigay sa certificate ng website na ito. Hindi nagbigay ang server ng anumang impormasyon tungkol sa Certificate Transparency.</translation>
 <translation id="3037838751736561277">Nasa background mode ang Google Chrome.</translation>
 <translation id="3047079729301751317">Iki-clear ng pagdiskonekta kay <ph name="USERNAME" /> ang iyong history, mga bookmark, setting at iba pang data ng Chrome na naka-imbak sa device na ito. Hindi iki-clear ang data na naka-imbak sa iyong Google Account at maaaring pamahalaan sa <ph name="GOOGLE_DASHBOARD_LINK" />Google Dashboard<ph name="END_GOOGLE_DASHBOARD_LINK" />.</translation>
 <translation id="3080151273017101988">Magpatuloy sa pagpapatakbo ng mga app sa background kapag nakasara ang Google Chrome</translation>
@@ -88,6 +90,7 @@ Kapag nag-sign in ka pa rin, isasama sa <ph name="ACCOUNT_EMAIL_NEW" /> ang impo
 <translation id="3847841918622877581">Maaaring gumamit ang Google Chrome ng mga serbisyo sa web upang mapabuti ang iyong karanasan sa pagba-browse.</translation>
 <translation id="386202838227397562">Mangyaring isara lahat ng mga window ng Google Chrome at muling subukan.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
+<translation id="3881912906674381083">Na-verify ng Chrome na ang <ph name="ISSUER" /> ang nagbigay sa certificate ng website na ito. Nagbigay ang server ng impormasyon tungkol sa Certificate Transparency, ngunit hindi natukoy ng Chrome ang alinman sa mga log ng Certificate Transparency</translation>
 <translation id="3889417619312448367">I-uninstall ang Google Chrome</translation>
 <translation id="4011219958405096740">Kapag naka-enable, ito ay gagamit ng daloy ng pag-sign in ng Chrome na batay sa iframe; kung hindi man, ito ay gumagamit ng daloy na batay sa webview.</translation>
 <translation id="4050175100176540509">May available na mahahalagang pagpapahusay sa seguridad at mga bagong feature sa pinakabagong bersyon.</translation>
@@ -118,6 +121,7 @@ Kapag nag-sign in ka pa rin, isasama sa <ph name="ACCOUNT_EMAIL_NEW" /> ang impo
 <translation id="4794050651896644714">I-save ang mga detalye sa Chrome</translation>
 <translation id="4891791193823137474">Hayaan ang Google Chrome na tumakbo sa background</translation>
 <translation id="4921569541910214635">Magbabahagi ng computer? Ngayon, maaari mong i-set up ang Chrome sa paraang gusto mo.</translation>
+<translation id="4925019873400497719">Na-verify ng Chrome na ang <ph name="ISSUER" /> ang nagbigay sa certificate ng website na ito. Nagbigay ang server ng impormasyon tungkol sa Certificate Transparency, ngunit hindi iyon wasto.</translation>
 <translation id="4953650215774548573">Itakda ang Google Chrome bilang iyong default na browser</translation>
 <translation id="4987308747895123092">Pakisara ang lahat ng window ng Google Chrome (kasama ang mga nasa mode na Windows 8) at subukang muli.</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>

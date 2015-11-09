@@ -32,7 +32,6 @@
 <translation id="1644184664548287040">Võrgu seadistus on sobimatu ja seda ei saa importida.</translation>
 <translation id="1655462015569774233">{1,plural, =1{Server ei suutnud tõestada, et tegemist on domeeniga <ph name="DOMAIN" />, selle turvasertifikaat aegus eile. Selle põhjuseks võib olla vale seadistus või teie ühendust segav ründaja. Teie arvuti kell on praegu seatud kuupäevale <ph name="CURRENT_DATE" />. Kas see on õige? Kui ei ole, seadke süsteemi kell õigeks ja värskendage lehte.}other{Server ei suutnud tõestada, et tegemist on domeeniga <ph name="DOMAIN" />, selle turvasertifikaat aegus # päeva tagasi. Selle põhjuseks võib olla vale seadistus või teie ühendust segav ründaja. Teie arvuti kell on praegu seatud kuupäevale <ph name="CURRENT_DATE" />. Kas see on õige? Kui ei ole, seadke süsteemi kell õigeks ja värskendage lehte.}}</translation>
 <translation id="168841957122794586">Serveri sertifikaat sisaldab nõrka krüptograafilist võtit.</translation>
-<translation id="1693754753824026215">Teade veebilehelt aadressil <ph name="SITE" />:</translation>
 <translation id="1706954506755087368">{1,plural, =1{Server ei suutnud tõestada, et tegemist on domeeniga <ph name="DOMAIN" />, selle turvasertifikaat hakkab väidetavalt kehtima homme. Selle põhjuseks võib olla vale seadistus või teie ühendust segav ründaja.}other{Server ei suutnud tõestada, et tegemist on domeeniga <ph name="DOMAIN" />, selle turvasertifikaat hakkab väidetavalt kehtima # päeva pärast. Selle põhjuseks võib olla vale seadistus või teie ühendust segav ründaja.}}</translation>
 <translation id="1710259589646384581">OS</translation>
 <translation id="1734864079702812349">Amex</translation>
@@ -227,6 +226,7 @@
 <translation id="6263376278284652872">Domeeni <ph name="DOMAIN" /> järjehoidjad</translation>
 <translation id="6282194474023008486">Sihtnumber</translation>
 <translation id="6337534724793800597">Reeglite filtreerimine nime järgi</translation>
+<translation id="6342069812937806050">Äsja</translation>
 <translation id="6355080345576803305">Avaliku seansi alistamine</translation>
 <translation id="6387478394221739770">Kas olete huvitatud Chrome'i uutest lahedatest funktsioonidest? Proovige meie beetakanalit aadressil chrome.com/beta.</translation>
 <translation id="6445051938772793705">Riik</translation>
@@ -252,7 +252,6 @@
 <translation id="6965978654500191972">Seade</translation>
 <translation id="6970216967273061347">Ringkond</translation>
 <translation id="6973656660372572881">Määratud on nii fikseeritud puhverserverid kui ka pac-skriptiga URL.</translation>
-<translation id="6980028882292583085">JavaScripti märguanne</translation>
 <translation id="7012363358306927923">Hiina UnionPay</translation>
 <translation id="7050187094878475250">Üritasite jõuda domeenile <ph name="DOMAIN" />, kuid server esitas sertifikaadi, mille kehtivusaeg on liiga pikk, et olla usaldusväärne.</translation>
 <translation id="7087282848513945231">Maakond</translation>
@@ -275,7 +274,6 @@
 <translation id="7419106976560586862">Profiili tee</translation>
 <translation id="7441627299479586546">Reegli objekt on vale</translation>
 <translation id="7485870689360869515">Andmeid ei leitud.</translation>
-<translation id="7521387064766892559">Javascript</translation>
 <translation id="7537536606612762813">Kohustuslik</translation>
 <translation id="7542995811387359312">Automaatne krediitkaardi täide on keelatud, sest see vorm ei kasuta turvalist ühendust.</translation>
 <translation id="7567204685887185387">Server ei suutnud tõestada, et see on domeen <ph name="DOMAIN" />, selle turvasertifikaat võib olla väljastatud pettuse teel. Selle põhjuseks võib olla vale seadistus või ründaja, kes on sekkunud teie ühendusse.</translation>

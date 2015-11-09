@@ -32,7 +32,6 @@
 <translation id="1644184664548287040">Configurația rețelei este nevalidă și nu a putut fi importată.</translation>
 <translation id="1655462015569774233">{1,plural, =1{Acest server nu a putut dovedi că este <ph name="DOMAIN" />. Certificatul său de securitate a expirat ieri. Cauza poate fi o eroare de configurare sau interceptarea conexiunii de către un atacator. În prezent, ora computerului este setată la <ph name="CURRENT_DATE" />. Este corect? Dacă nu este, corectează ora sistemului și actualizează pagina.}few{Acest server nu a putut dovedi că este <ph name="DOMAIN" />. Certificatul său de securitate a expirat acum # zile. Cauza poate fi o eroare de configurare sau interceptarea conexiunii de către un atacator. În prezent, ora computerului este setată la <ph name="CURRENT_DATE" />. Este corect? Dacă nu este, corectează ora sistemului și actualizează pagina.}other{Acest server nu a putut dovedi că este <ph name="DOMAIN" />. Certificatul său de securitate a expirat acum # de zile. Cauza poate fi o eroare de configurare sau interceptarea conexiunii de către un atacator. În prezent, ora computerului este setată la <ph name="CURRENT_DATE" />. Este corect? Dacă nu este, corectează ora sistemului și actualizează pagina.}}</translation>
 <translation id="168841957122794586">Certificatul de server conține o cheie criptografică slabă.</translation>
-<translation id="1693754753824026215">Pagina de la <ph name="SITE" /> afișează mesajul:</translation>
 <translation id="1706954506755087368">{1,plural, =1{Acest server nu a putut dovedi că este <ph name="DOMAIN" />. Data de emitere a certificatului său de securitate este mâine. Cauza poate fi o eroare de configurare sau interceptarea conexiunii de către un atacator.}few{Acest server nu a putut dovedi că este <ph name="DOMAIN" />. Data de emitere a certificatului său de securitate este în viitor, peste # zile. Cauza poate fi o eroare de configurare sau interceptarea conexiunii de către un atacator.}other{Acest server nu a putut dovedi că este <ph name="DOMAIN" />. Data de emitere a certificatului său de securitate este în viitor, peste # de zile. Cauza poate fi o eroare de configurare sau interceptarea conexiunii de către un atacator.}}</translation>
 <translation id="1710259589646384581">Sistem de operare</translation>
 <translation id="1734864079702812349">Amex</translation>
@@ -227,6 +226,7 @@
 <translation id="6263376278284652872">Marcaje <ph name="DOMAIN" /></translation>
 <translation id="6282194474023008486">Cod poștal</translation>
 <translation id="6337534724793800597">Filtrați politicile după nume</translation>
+<translation id="6342069812937806050">Adineauri</translation>
 <translation id="6355080345576803305">Modificarea sesiunii publice</translation>
 <translation id="6387478394221739770">Doriți să utilizați funcții Chrome noi și interesante? Încercați canalul nostru beta de la chrome.com/beta.</translation>
 <translation id="6445051938772793705">Țară</translation>
@@ -252,7 +252,6 @@
 <translation id="6965978654500191972">Dispozitiv</translation>
 <translation id="6970216967273061347">Județ</translation>
 <translation id="6973656660372572881">Sunt specificate atât servere proxy fixe, cât și o adresă URL pentru scripturi .pac.</translation>
-<translation id="6980028882292583085">Alertă JavaScript</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7050187094878475250">Ai încercat să accesezi <ph name="DOMAIN" />, dar serverul a prezentat un certificat a cărui perioadă de validitate este prea lungă pentru a fi de încredere.</translation>
 <translation id="7087282848513945231">Comitat</translation>
@@ -275,7 +274,6 @@
 <translation id="7419106976560586862">Calea profilului</translation>
 <translation id="7441627299479586546">Subiectul politicii este greșit</translation>
 <translation id="7485870689360869515">Nu s-au găsit date.</translation>
-<translation id="7521387064766892559">JavaScript</translation>
 <translation id="7537536606612762813">Obligatorie</translation>
 <translation id="7542995811387359312">Completarea automată a cardului de credit este dezactivată, deoarece acest formular nu utilizează o conexiune sigură.</translation>
 <translation id="7567204685887185387">Acest server nu a putut dovedi că este <ph name="DOMAIN" />; este posibil ca certificatul său de securitate să fi fost emis fraudulos. Cauza poate fi o configurare greșită sau interceptarea conexiunii de către un atacator.</translation>

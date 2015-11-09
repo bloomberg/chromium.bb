@@ -52,6 +52,7 @@
 <translation id="1594072653727561613">mnu</translation>
 <translation id="1610130962244179598">עבור לברייל 6 נקודות</translation>
 <translation id="1611168825862729585">כותרת עמודה:</translation>
+<translation id="1611649489706141841">קדימה</translation>
 <translation id="1613476421962910979">‏Earcons מופעלים</translation>
 <translation id="1618597272655350600">הכרזה על תיאור מלא של המיקום הנוכחי</translation>
 <translation id="1639634871799530612">{COUNT,plural, =1{סימן ‘גדול מ’}two{# סימני ’גדול מ’}many{# סימני ’גדול מ’}other{# סימני ’גדול מ’}}</translation>
@@ -391,8 +392,10 @@
 <translation id="5042770794184672516">הגבר את עוצמת הדיבור</translation>
 <translation id="5050015258024679800">הכותרת הקודמת של רמה 4</translation>
 <translation id="5054047268577924192">פריט קודם ברשימה</translation>
+<translation id="5075936896689244141">‏מפת המקשים Next</translation>
 <translation id="5078661581131202757">בחירת קובץ</translation>
 <translation id="5080758118274074384">בוצעה לחיצה כפולה</translation>
+<translation id="5087864757604726239">הקודם</translation>
 <translation id="5098541983634824365">יציאה מהרשת.</translation>
 <translation id="5102981729317424850">סרגל כלים</translation>
 <translation id="5105050547967751155">rq</translation>

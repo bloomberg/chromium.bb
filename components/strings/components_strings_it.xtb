@@ -32,7 +32,6 @@
 <translation id="1644184664548287040">La configurazione di rete non è valida e non può essere importata.</translation>
 <translation id="1655462015569774233">{1,plural, =1{Questo server non è riuscito a verificare che si tratti di <ph name="DOMAIN" />; il relativo certificato di sicurezza è scaduto ieri. Il problema potrebbe essere dovuto a un'errata configurazione o a un malintenzionato che intercetta la connessione. L'orologio del computer è attualmente impostato su <ph name="CURRENT_DATE" />. È corretto? Se è sbagliato, dovresti regolare l'orologio e aggiornare la pagina.}other{Questo server non è riuscito a verificare che si tratti di <ph name="DOMAIN" />; il relativo certificato di sicurezza è scaduto # giorni fa. Il problema potrebbe essere dovuto a un'errata configurazione o a un malintenzionato che intercetta la connessione. L'orologio del computer è attualmente impostato su <ph name="CURRENT_DATE" />. È corretto? Se è sbagliato, dovresti regolare l'orologio e aggiornare la pagina.}}</translation>
 <translation id="168841957122794586">Il certificato del server contiene una chiave crittografica debole.</translation>
-<translation id="1693754753824026215">La pagina all'indirizzo <ph name="SITE" /> dice:</translation>
 <translation id="1706954506755087368">{1,plural, =1{Questo server non è riuscito a verificare che si tratti di <ph name="DOMAIN" />; il relativo certificato di sicurezza potrebbe essere attivo da domani. Il problema potrebbe essere dovuto a un'errata configurazione o a un malintenzionato che intercetta la connessione.}other{Questo server non è riuscito a verificare che si tratti di <ph name="DOMAIN" />; il relativo certificato di sicurezza potrebbe essere attivo tra # giorni. Il problema potrebbe essere dovuto a un'errata configurazione o a un malintenzionato che intercetta la connessione.}}</translation>
 <translation id="1710259589646384581">Sistema operativo</translation>
 <translation id="1734864079702812349">Amex</translation>
@@ -227,6 +226,7 @@
 <translation id="6263376278284652872">Segnalibri di <ph name="DOMAIN" /></translation>
 <translation id="6282194474023008486">Codice postale</translation>
 <translation id="6337534724793800597">Filtra i criteri per nome</translation>
+<translation id="6342069812937806050">In questo momento</translation>
 <translation id="6355080345576803305">Sostituzione sessione pubblica</translation>
 <translation id="6387478394221739770">Ti interessano le nuove e straordinarie funzioni di Chrome? Prova il nostro canale beta all'indirizzo chrome.com/beta.</translation>
 <translation id="6445051938772793705">Paese</translation>
@@ -252,7 +252,6 @@
 <translation id="6965978654500191972">Dispositivo</translation>
 <translation id="6970216967273061347">Distretto</translation>
 <translation id="6973656660372572881">Sono stati specificati sia i server proxy fissi che un URL script .pac.</translation>
-<translation id="6980028882292583085">Avviso JavaScript</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7050187094878475250">Hai tentato di visitare il sito <ph name="DOMAIN" />, ma il server ha presentato un certificato con periodo di validità troppo lungo per poter essere ritenuto attendibile.</translation>
 <translation id="7087282848513945231">Contea</translation>
@@ -275,7 +274,6 @@
 <translation id="7419106976560586862">Percorso profilo</translation>
 <translation id="7441627299479586546">Oggetto del criterio errato</translation>
 <translation id="7485870689360869515">Nessun dato trovato.</translation>
-<translation id="7521387064766892559">JavaScript</translation>
 <translation id="7537536606612762813">Obbligatoria</translation>
 <translation id="7542995811387359312">La compilazione automatica della carta di credito è disattivata perché questo modulo non utilizza una connessione sicura.</translation>
 <translation id="7567204685887185387">Questo server non è riuscito a dimostrare che si tratta di <ph name="DOMAIN" />; il relativo certificato di sicurezza potrebbe essere stato emesso in modo fraudolento. Il problema potrebbe essere dovuto a un'errata configurazione o a un malintenzionato che intercetta la connessione.</translation>

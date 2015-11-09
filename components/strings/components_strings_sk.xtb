@@ -28,11 +28,11 @@
 <translation id="1519264250979466059">Dátum zostavenia</translation>
 <translation id="1549470594296187301">Ak chcete použiť túto funkciu, musíte povoliť JavaScript.</translation>
 <translation id="1559528461873125649">Neexistuje žiadny takýto súbor ani priečinok</translation>
+<translation id="1629803312968146339">Chcete, aby Chrome uložil túto kartu?</translation>
 <translation id="1640180200866533862">Pravidlá pre používateľa</translation>
 <translation id="1644184664548287040">Konfigurácia siete je neplatná a nepodarilo sa ju importovať.</translation>
 <translation id="1655462015569774233">{1,plural, =1{Tomuto serveru sa nepodarilo dokázať, že ide o doménu <ph name="DOMAIN" />; platnosť jej bezpečnostného certifikátu vypršala včera. Môže to byť následok nesprávnej konfigurácie alebo napadnutia vášho pripojenia útočníkom. Hodiny vášho počítača sú momentálne nastavené na <ph name="CURRENT_DATE" />. Je tento čas správny? Ak nie, opravte čas na hodinách systému a potom obnovte túto stránku.}few{Tomuto serveru sa nepodarilo dokázať, že ide o doménu <ph name="DOMAIN" />; platnosť jej bezpečnostného certifikátu vypršala pred # dňami. Môže to byť následok nesprávnej konfigurácie alebo napadnutia vášho pripojenia útočníkom. Hodiny vášho počítača sú momentálne nastavené na <ph name="CURRENT_DATE" />. Je tento čas správny? Ak nie, opravte čas na hodinách systému a potom obnovte túto stránku.}many{Tomuto serveru sa nepodarilo dokázať, že ide o doménu <ph name="DOMAIN" />; platnosť jej bezpečnostného certifikátu vypršala pred # dňom. Môže to byť následok nesprávnej konfigurácie alebo napadnutia vášho pripojenia útočníkom. Hodiny vášho počítača sú momentálne nastavené na <ph name="CURRENT_DATE" />. Je tento čas správny? Ak nie, opravte čas na hodinách systému a potom obnovte túto stránku.}other{Tomuto serveru sa nepodarilo dokázať, že ide o doménu <ph name="DOMAIN" />; platnosť jej bezpečnostného certifikátu vypršala pred # dňami. Môže to byť následok nesprávnej konfigurácie alebo napadnutia vášho pripojenia útočníkom. Hodiny vášho počítača sú momentálne nastavené na <ph name="CURRENT_DATE" />. Je tento čas správny? Ak nie, opravte čas na hodinách systému a potom obnovte túto stránku.}}</translation>
 <translation id="168841957122794586">Certifikát servera obsahuje slabý kryptografický kľúč.</translation>
-<translation id="1693754753824026215">Stránka na lokalite <ph name="SITE" />:</translation>
 <translation id="1706954506755087368">{1,plural, =1{Tomuto serveru sa nepodarilo dokázať, že ide o doménu <ph name="DOMAIN" />; jej certifikát by mal začať platiť od zajtra. Môže to byť následok nesprávnej konfigurácie alebo napadnutia vášho pripojenia útočníkom.}few{Tomuto serveru sa nepodarilo dokázať, že ide o doménu <ph name="DOMAIN" />; jej certifikát by mal začať platiť o # dni. Môže to byť následok nesprávnej konfigurácie alebo napadnutia vášho pripojenia útočníkom.}many{Tomuto serveru sa nepodarilo dokázať, že ide o doménu <ph name="DOMAIN" />; jej certifikát by mal začať platiť o # dňa. Môže to byť následok nesprávnej konfigurácie alebo napadnutia vášho pripojenia útočníkom.}other{Tomuto serveru sa nepodarilo dokázať, že ide o doménu <ph name="DOMAIN" />; jej certifikát by mal začať platiť o # dní. Môže to byť následok nesprávnej konfigurácie alebo napadnutia vášho pripojenia útočníkom.}}</translation>
 <translation id="1710259589646384581">OS</translation>
 <translation id="1734864079702812349">Amex</translation>
@@ -147,11 +147,13 @@
 <translation id="4117700440116928470">Rozsah pravidla nie je podporovaný.</translation>
 <translation id="4120075327926916474">Má prehliadač Chrome uložiť informácie o tejto kreditnej karte a použiť ich pri vypĺňaní ďalších webových formulárov?</translation>
 <translation id="4148925816941278100">American Express</translation>
+<translation id="4169947484918424451">Chcete, aby Chromium uložil túto kartu?</translation>
 <translation id="4171400957073367226">Nesprávny overovací podpis</translation>
 <translation id="4196861286325780578">&amp;Znova presunúť</translation>
 <translation id="4220128509585149162">Zlyhania</translation>
 <translation id="4250680216510889253">Nie</translation>
 <translation id="4258748452823770588">Chybný podpis</translation>
+<translation id="4268298190799576220">Prehliadaču Chromium sa nepodarilo overiť vašu kartu. Skúste to znova neskôr.</translation>
 <translation id="4269787794583293679">(Žiadne používateľské meno)</translation>
 <translation id="4300246636397505754">Návrhy rodiča</translation>
 <translation id="4325863107915753736">Článok sa nepodarilo nájsť</translation>
@@ -223,10 +225,12 @@
 <translation id="6151417162996330722">Obdobie platnosti certifikátu servera je príliš dlhé</translation>
 <translation id="6154808779448689242">Vrátený token pravidla sa nezhoduje s aktuálnym tokenom</translation>
 <translation id="6165508094623778733">Viac informácií</translation>
+<translation id="6218753634732582820">Chcete adresu odstrániť z prehliadača Chromium?</translation>
 <translation id="6259156558325130047">&amp;Znova zmeniť poradie</translation>
 <translation id="6263376278284652872">Záložky domény <ph name="DOMAIN" /></translation>
 <translation id="6282194474023008486">Poštový kód</translation>
 <translation id="6337534724793800597">Filtrovať pravidlá podľa mena</translation>
+<translation id="6342069812937806050">Práve teraz</translation>
 <translation id="6355080345576803305">Prepísanie verejnej relácie</translation>
 <translation id="6387478394221739770">Máte záujem o skvelé nové funkcie prehliadača Chrome? Vyskúšajte verziu beta na stránke chrome.com/beta.</translation>
 <translation id="6445051938772793705">Krajina</translation>
@@ -239,6 +243,7 @@
 <translation id="6628463337424475685">Vyhľadávanie <ph name="ENGINE" /></translation>
 <translation id="6644283850729428850">Toto pravidlo bolo označené ako zastarané.</translation>
 <translation id="6646897916597483132">Zadajte štvormiestny kód CVC z prednej strany svojej karty</translation>
+<translation id="6671697161687535275">Chcete návrh položky formulára odstrániť z prehliadača Chromium?</translation>
 <translation id="674375294223700098">Neznáma chyba spôsobená certifikátom servera.</translation>
 <translation id="6753269504797312559">Hodnota pravidla</translation>
 <translation id="6831043979455480757">Preložiť</translation>
@@ -252,7 +257,6 @@
 <translation id="6965978654500191972">Zariadenie</translation>
 <translation id="6970216967273061347">Obvod</translation>
 <translation id="6973656660372572881">Určené sú pevne dané servery proxy aj skript PAC webovej adresy.</translation>
-<translation id="6980028882292583085">Upozornenie kódu JavaScript</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7050187094878475250">Pokúsili ste sa prejsť do domény <ph name="DOMAIN" />, ale server udelil certifikát, ktorého obdobie platnosti je príliš dlhé, a preto nie je dôveryhodný</translation>
 <translation id="7087282848513945231">Grófstvo</translation>
@@ -275,7 +279,6 @@
 <translation id="7419106976560586862">Cesta profilu</translation>
 <translation id="7441627299479586546">Chybný predmet pravidla</translation>
 <translation id="7485870689360869515">Nenašli sa žiadne údaje.</translation>
-<translation id="7521387064766892559">JavaScript</translation>
 <translation id="7537536606612762813">Povinné</translation>
 <translation id="7542995811387359312">Automatické dopĺňanie údajov o kreditnej karte je zakázané, pretože tento formulár nepoužíva zabezpečené pripojenie.</translation>
 <translation id="7567204685887185387">Server nedokáže overiť, či ide o doménu <ph name="DOMAIN" />, bol zrejme vydaný falošný bezpečnostný certifikát. Môže to byť spôsobené nesprávnou konfiguráciou alebo tým, že vaše pripojenie zachytil útočník.</translation>
@@ -284,6 +287,7 @@
 <translation id="7592362899630581445">Certifikát servera porušuje obmedzenia názvov.</translation>
 <translation id="7600965453749440009">Nikdy neprekladať jazyk <ph name="LANGUAGE" /></translation>
 <translation id="7610193165460212391">Hodnota (<ph name="VALUE" />) presahuje povolený rozsah.</translation>
+<translation id="7637571805876720304">Chcete kreditnú kartu odstrániť z prehliadača Chromium?</translation>
 <translation id="7674629440242451245">Máte záujem o skvelé nové funkcie prehliadača Chrome? Vyskúšajte verziu pre vývojárov na stránke chrome.com/dev.</translation>
 <translation id="7752995774971033316">Nespravované</translation>
 <translation id="7761701407923456692">Certifikát servera sa nezhoduje s webovou adresou.</translation>

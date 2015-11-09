@@ -32,7 +32,6 @@
 <translation id="1644184664548287040">Mrežna konfiguracija nije važeća i nije ju bilo moguće uvesti.</translation>
 <translation id="1655462015569774233">{1,plural, =1{Poslužitelj nije mogao dokazati da je to <ph name="DOMAIN" /> jer je sigurnosni certifikat istekao jučer. Razlog može biti pogrešna konfiguracija ili napad na vašu vezu. Sat vašeg računala trenutačno je postavljen na <ph name="CURRENT_DATE" />. Je li to u redu? Ako nije, ispravite vrijeme na satu sustava, a zatim osvježite ovu stranicu.}one{Poslužitelj nije mogao dokazati da je to <ph name="DOMAIN" /> jer je sigurnosni certifikat istekao prije # dan. Razlog može biti pogrešna konfiguracija ili napad na vašu vezu. Sat vašeg računala trenutačno je postavljen na <ph name="CURRENT_DATE" />. Je li to u redu? Ako nije, ispravite vrijeme na satu sustava, a zatim osvježite ovu stranicu.}few{Poslužitelj nije mogao dokazati da je to <ph name="DOMAIN" /> jer je sigurnosni certifikat istekao prije # dana. Razlog može biti pogrešna konfiguracija ili napad na vašu vezu. Sat vašeg računala trenutačno je postavljen na <ph name="CURRENT_DATE" />. Je li to u redu? Ako nije, ispravite vrijeme na satu sustava, a zatim osvježite ovu stranicu.}other{Poslužitelj nije mogao dokazati da je to <ph name="DOMAIN" /> jer je sigurnosni certifikat istekao prije # dana. Razlog može biti pogrešna konfiguracija ili napad na vašu vezu. Sat vašeg računala trenutačno je postavljen na <ph name="CURRENT_DATE" />. Je li to u redu? Ako nije, ispravite vrijeme na satu sustava, a zatim osvježite ovu stranicu.}}</translation>
 <translation id="168841957122794586">Certifikat poslužitelja sadrži slab kriptografski ključ!</translation>
-<translation id="1693754753824026215">Stranica na web-lokaciji <ph name="SITE" /> navodi sljedeće:</translation>
 <translation id="1706954506755087368">{1,plural, =1{Poslužitelj nije mogao dokazati da je to <ph name="DOMAIN" /> jer je sigurnosni certifikat navodno izdan sutra. Razlog može biti pogrešna konfiguracija ili napad na vašu vezu.}one{Poslužitelj nije mogao dokazati da je to <ph name="DOMAIN" /> jer je sigurnosni certifikat navodno izdan # dan u budućnosti. Razlog može biti pogrešna konfiguracija ili napad na vašu vezu.}few{Poslužitelj nije mogao dokazati da je to <ph name="DOMAIN" /> jer je sigurnosni certifikat navodno izdan # dana u budućnosti. Razlog može biti pogrešna konfiguracija ili napad na vašu vezu.}other{Poslužitelj nije mogao dokazati da je to <ph name="DOMAIN" /> jer je sigurnosni certifikat navodno izdan # dana u budućnosti. Razlog može biti pogrešna konfiguracija ili napad na vašu vezu.}}</translation>
 <translation id="1710259589646384581">OS</translation>
 <translation id="1734864079702812349">Amex</translation>
@@ -227,6 +226,7 @@
 <translation id="6263376278284652872">Oznake domene <ph name="DOMAIN" /></translation>
 <translation id="6282194474023008486">Poštanski broj</translation>
 <translation id="6337534724793800597">Filtriranje pravila prema nazivu</translation>
+<translation id="6342069812937806050">Samo sad</translation>
 <translation id="6355080345576803305">Nadjačavanje javne sesije</translation>
 <translation id="6387478394221739770">Zanimaju li vas nove, kul značajke preglednika Chrome? Isprobajte naš beta kanal na stranici chrome.com/beta.</translation>
 <translation id="6445051938772793705">Zemlja</translation>
@@ -252,7 +252,6 @@
 <translation id="6965978654500191972">Uređaj</translation>
 <translation id="6970216967273061347">Distrikt</translation>
 <translation id="6973656660372572881">Određeni su fiksni proxy poslužitelji i URL .pac skripte.</translation>
-<translation id="6980028882292583085">JavaScript upozorenje</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7050187094878475250">Pokušali ste pristupiti domeni <ph name="DOMAIN" />, ali je poslužitelj pružio certifikat koji nije pouzdan zbog predugog razdoblja valjanosti.</translation>
 <translation id="7087282848513945231">Županija</translation>
@@ -275,7 +274,6 @@
 <translation id="7419106976560586862">Putanja profila</translation>
 <translation id="7441627299479586546">Pogrešan predmet pravila</translation>
 <translation id="7485870689360869515">Nema pronađenih podataka.</translation>
-<translation id="7521387064766892559">JavaScript</translation>
 <translation id="7537536606612762813">Obavezno</translation>
 <translation id="7542995811387359312">Automatsko popunjavanje kreditne kartice onemogućeno je jer se ovaj obrazac ne služi sigurnom vezom.</translation>
 <translation id="7567204685887185387">Poslužitelj nije mogao dokazati da je <ph name="DOMAIN" />; njegov sigurnosni certifikat možda je lažan. To može biti uzrokovano pogrešnom konfiguracijom ili napadom na vašu vezu.</translation>

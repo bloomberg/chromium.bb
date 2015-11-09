@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="sv">
 <translation id="1001534784610492198">Arkivet för installationsfilen är skadat eller ogiltigt. Ladda ned Google Chrome igen.</translation>
+<translation id="1013290471399003443">Chrome har verifierat att webbplatsens certifikat har utfärdats av <ph name="ISSUER" />. Giltiga certifikattransparensuppgifter har skickats från servern.</translation>
 <translation id="1016765312371154165">Chrome avslutades inte korrekt.</translation>
 <translation id="103396972844768118">Viktig information om uppgifter i Chrome</translation>
 <translation id="1061441684050139317">Chrome behöver tillgång till mikrofonen för att kunna dela den på den här webbplatsen.</translation>
@@ -66,6 +67,7 @@ Om du loggar in ändå synkroniseras din information i Chrome, till exempel bokm
 <translation id="2769762047821873045">Google Chrome är inte din standardwebbläsare.</translation>
 <translation id="2770231113462710648">Ändra standardwebbläsare till:</translation>
 <translation id="2871893339301912279">Du är inloggad i Chrome.</translation>
+<translation id="2997147809295888909">Chrome har verifierat att webbplatsens certifikat har utfärdats av <ph name="ISSUER" />. Inga certifikattransparensuppgifter skickades från servern.</translation>
 <translation id="3037838751736561277">Google Chrome körs i bakgrundsläge.</translation>
 <translation id="3047079729301751317">Om du kopplar från <ph name="USERNAME" /> rensas din historik, dina bokmärken, dina inställningar och annan Chrome-data som du har lagrat på enheten. Data som lagras i Google-kontot rensas inte utan kan hanteras via <ph name="GOOGLE_DASHBOARD_LINK" />Google Översikt<ph name="END_GOOGLE_DASHBOARD_LINK" />.</translation>
 <translation id="3080151273017101988">Fortsätt köra bakgrundsappar när Google Chrome avslutas</translation>
@@ -88,6 +90,7 @@ Om du loggar in ändå synkroniseras din information i Chrome, till exempel bokm
 <translation id="3847841918622877581">Google Chrome kan använda webbtjänster för att förbättra din upplevelse när du surfar.</translation>
 <translation id="386202838227397562">Stäng alla Google Chrome-fönster och försök igen.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
+<translation id="3881912906674381083">Chrome har verifierat att webbplatsens certifikat har utfärdats av <ph name="ISSUER" />. Certifikattransparensuppgifter har skickats från servern, men Chrome kunde inte känna igen någon av certifikattransparensloggarna.</translation>
 <translation id="3889417619312448367">Avinstallera Google Chrome</translation>
 <translation id="4011219958405096740">När det här alternativet är aktiverat används ett iframe-baserat inloggningsflöde i Chrome. Annars används ett flöde baserat på WebView.</translation>
 <translation id="4050175100176540509">Den senaste versionen har viktiga säkerhetsförbättringar och nya funktioner.</translation>
@@ -118,6 +121,7 @@ Om du loggar in ändå synkroniseras din information i Chrome, till exempel bokm
 <translation id="4794050651896644714">Spara information i Chrome</translation>
 <translation id="4891791193823137474">Låt Google Chrome köras i bakgrunden</translation>
 <translation id="4921569541910214635">Delar du dator? Nu kan du konfigurera Chrome precis som du vill.</translation>
+<translation id="4925019873400497719">Chrome har verifierat att webbplatsens certifikat har utfärdats av <ph name="ISSUER" />. De certifikattransparensuppgifter som skickades från servern är ogiltiga.</translation>
 <translation id="4953650215774548573">Ange Google Chrome som standardwebbläsare</translation>
 <translation id="4987308747895123092">Stäng alla Google Chrome-fönster (inklusive i Windows 8-läge) och försök igen.</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>

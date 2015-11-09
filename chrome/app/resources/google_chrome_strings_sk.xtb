@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="sk">
 <translation id="1001534784610492198">Archív inštalácie je poškodený alebo neplatný. Stiahnite prehliadač Google Chrome znova.</translation>
+<translation id="1013290471399003443">Chrome overil, že certifikát tohto webu bol vydaný vydavateľom <ph name="ISSUER" />. Server poskytol platné informácie o transparentnosti certifikátu.</translation>
 <translation id="1016765312371154165">Chrome nebol správne vypnutý.</translation>
 <translation id="103396972844768118">Dôležité informácie týkajúce sa údajov prehliadača Chrome</translation>
 <translation id="1061441684050139317">Na to, aby Chrome mohol s týmito webovými stránkami zdieľať mikrofón, musí mať k nemu prístup.</translation>
@@ -64,6 +65,7 @@ Ak sa chcete aj napriek tomu prihlásiť, informácie prehliadača Chrome, ako s
 <translation id="2769762047821873045">Google Chrome nie je váš predvolený prehliadač.</translation>
 <translation id="2770231113462710648">Zmeniť predvolený prehliadač na:</translation>
 <translation id="2871893339301912279">Ste prihlásený/-á do prehliadača Chrome.</translation>
+<translation id="2997147809295888909">Chrome overil, že certifikát tohto webu bol vydaný vydavateľom <ph name="ISSUER" />. Server neposkytol žiadne informácie o transparentnosti certifikátu.</translation>
 <translation id="3037838751736561277">Google Chrome je v režime na pozadí.</translation>
 <translation id="3047079729301751317">Ak odpojíte účet <ph name="USERNAME" />, vymaže sa história, záložky, nastavenia a všetky ďalšie údaje prehliadača Chrome uložené na vašom zariadení. Údaje uložené v účte Google sa nevymažú a môžete ich spravovať v službe <ph name="GOOGLE_DASHBOARD_LINK" />Google Dashboard<ph name="END_GOOGLE_DASHBOARD_LINK" />.</translation>
 <translation id="3080151273017101988">Ponechať aplikácie na pozadí spustené po zatvorení prehliadača Google Chrome</translation>
@@ -86,6 +88,7 @@ Ak sa chcete aj napriek tomu prihlásiť, informácie prehliadača Chrome, ako s
 <translation id="3847841918622877581">Prehliadač Google Chrome vám môže spríjemniť prehliadanie pomocou webových služieb.</translation>
 <translation id="386202838227397562">Zatvorte všetky okná prehliadača Google Chrome a skúste to znova.</translation>
 <translation id="3870154837782082782">Spoločnosť Google Inc.</translation>
+<translation id="3881912906674381083">Chrome overil, že certifikát tohto webu bol vydaný vydavateľom <ph name="ISSUER" />. Server poskytol informácie o transparentnosti certifikátu, Chrome však nerozpoznal žiadne denníky transparentnosti certifikátu.</translation>
 <translation id="3889417619312448367">Odinštalovanie prehliadača Google Chrome</translation>
 <translation id="4011219958405096740">Keď je táto možnosť povolená, bude sa používať prihlasovací postup prehliadača Chrome založený na prvku iframe; inak sa použije postup založený na webovom zobrazení.</translation>
 <translation id="4050175100176540509">V najnovšej verzii sú k dispozícii dôležité vylepšenia zabezpečenia a nové funkcie.</translation>
@@ -116,6 +119,7 @@ Ak sa chcete aj napriek tomu prihlásiť, informácie prehliadača Chrome, ako s
 <translation id="4794050651896644714">Uložiť podrobnosti v prehliadači Chrome</translation>
 <translation id="4891791193823137474">Povoliť prehliadaču Google Chrome spustenie na pozadí</translation>
 <translation id="4921569541910214635">Zdieľať počítač? Teraz si môžete prehliadač Chrome nastaviť podľa vlastných predstáv.</translation>
+<translation id="4925019873400497719">Chrome overil, že certifikát tohto webu bol vydaný vydavateľom <ph name="ISSUER" />. Server poskytol informácie o transparentnosti certifikátu, boli však neplatné.</translation>
 <translation id="4953650215774548573">Nastaviť Google Chrome ako predvolený prehliadač</translation>
 <translation id="4987308747895123092">Zatvorte všetky okná prehliadača Google Chrome (vrátane okien v režime systému Windows 8) a skúste to znova.</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>

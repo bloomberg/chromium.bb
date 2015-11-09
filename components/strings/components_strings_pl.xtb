@@ -32,7 +32,6 @@
 <translation id="1644184664548287040">Konfiguracja sieci jest nieprawidłowa i nie można jej zaimportować.</translation>
 <translation id="1655462015569774233">{1,plural, =1{Ten serwer nie mógł udowodnić, że należy do <ph name="DOMAIN" />. Jego certyfikat bezpieczeństwa wygasł wczoraj. Może to być spowodowane błędną konfiguracją lub przechwyceniem połączenia. Zegar komputera jest obecnie ustawiony na <ph name="CURRENT_DATE" />. Czy to prawidłowa data? Jeśli nie, musisz skorygować zegar systemu, a następnie odświeżyć tę stronę.}few{Ten serwer nie mógł udowodnić, że należy do <ph name="DOMAIN" />. Jego certyfikat bezpieczeństwa wygasł # dni temu. Może to być spowodowane błędną konfiguracją lub przechwyceniem połączenia. Zegar komputera jest obecnie ustawiony na <ph name="CURRENT_DATE" />. Czy to prawidłowa data? Jeśli nie, musisz skorygować zegar systemu, a następnie odświeżyć tę stronę.}many{Ten serwer nie mógł udowodnić, że należy do <ph name="DOMAIN" />. Jego certyfikat bezpieczeństwa wygasł # dni temu. Może to być spowodowane błędną konfiguracją lub przechwyceniem połączenia. Zegar komputera jest obecnie ustawiony na <ph name="CURRENT_DATE" />. Czy to prawidłowa data? Jeśli nie, musisz skorygować zegar systemu, a następnie odświeżyć tę stronę.}other{Ten serwer nie mógł udowodnić, że należy do <ph name="DOMAIN" />. Jego certyfikat bezpieczeństwa wygasł # dnia temu. Może to być spowodowane błędną konfiguracją lub przechwyceniem połączenia. Zegar komputera jest obecnie ustawiony na <ph name="CURRENT_DATE" />. Czy to prawidłowa data? Jeśli nie, musisz skorygować zegar systemu, a następnie odświeżyć tę stronę.}}</translation>
 <translation id="168841957122794586">Certyfikat serwera ma słaby klucz kryptograficzny.</translation>
-<translation id="1693754753824026215">Komunikat ze strony <ph name="SITE" />:</translation>
 <translation id="1706954506755087368">{1,plural, =1{Ten serwer nie mógł udowodnić, że należy do <ph name="DOMAIN" />. Jego certyfikat bezpieczeństwa przypuszczalnie zacznie obowiązywać od jutra. Może to być spowodowane błędną konfiguracją lub przechwyceniem połączenia.}few{Ten serwer nie mógł udowodnić, że należy do <ph name="DOMAIN" />. Jego certyfikat bezpieczeństwa przypuszczalnie zacznie obowiązywać za # dni. Może to być spowodowane błędną konfiguracją lub przechwyceniem połączenia.}many{Ten serwer nie mógł udowodnić, że należy do <ph name="DOMAIN" />. Jego certyfikat bezpieczeństwa przypuszczalnie zacznie obowiązywać za # dni. Może to być spowodowane błędną konfiguracją lub przechwyceniem połączenia.}other{Ten serwer nie mógł udowodnić, że należy do <ph name="DOMAIN" />. Jego certyfikat bezpieczeństwa przypuszczalnie zacznie obowiązywać za # dnia. Może to być spowodowane błędną konfiguracją lub przechwyceniem połączenia.}}</translation>
 <translation id="1710259589646384581">System operacyjny</translation>
 <translation id="1734864079702812349">Amex</translation>
@@ -227,6 +226,7 @@
 <translation id="6263376278284652872">Zakładki <ph name="DOMAIN" /></translation>
 <translation id="6282194474023008486">Kod pocztowy</translation>
 <translation id="6337534724793800597">Filtruj zasady według nazwy</translation>
+<translation id="6342069812937806050">Przed momentem</translation>
 <translation id="6355080345576803305">Zastąpienie sesji publicznej</translation>
 <translation id="6387478394221739770">Interesują Cię nowe, przydatne funkcje Chrome? Wypróbuj wersję beta ze strony chrome.com/beta.</translation>
 <translation id="6445051938772793705">Kraj</translation>
@@ -252,7 +252,6 @@
 <translation id="6965978654500191972">Urządzenie</translation>
 <translation id="6970216967273061347">Okręg</translation>
 <translation id="6973656660372572881">Określono zarówno stałe serwery proxy, jak i URL skryptu PAC.</translation>
-<translation id="6980028882292583085">Alert JavaScript</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7050187094878475250">Próbujesz połączyć się z domeną <ph name="DOMAIN" />, ale serwer przedstawił certyfikat, którego okres ważności jest za długi, by był wiarygodny.</translation>
 <translation id="7087282848513945231">Hrabstwo</translation>
@@ -275,7 +274,6 @@
 <translation id="7419106976560586862">Ścieżka profilu</translation>
 <translation id="7441627299479586546">Nieprawidłowy podmiot zasady</translation>
 <translation id="7485870689360869515">Nie znaleziono danych.</translation>
-<translation id="7521387064766892559">JavaScript</translation>
 <translation id="7537536606612762813">Obowiązkowe</translation>
 <translation id="7542995811387359312">Automatyczne wypełnianie danych karty kredytowej jest wyłączone, ponieważ ten formularz nie korzysta z bezpiecznego połączenia.</translation>
 <translation id="7567204685887185387">Ten serwer nie mógł udowodnić, że należy do <ph name="DOMAIN" />. Jego certyfikat bezpieczeństwa mógł zostać wydany w celu oszustwa. Może to być spowodowane błędną konfiguracją lub przechwyceniem połączenia przez atakującego.</translation>

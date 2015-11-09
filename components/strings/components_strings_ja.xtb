@@ -32,7 +32,6 @@
 <translation id="1644184664548287040">ネットワーク設定が無効なためインポートできませんでした。</translation>
 <translation id="1655462015569774233">{1,plural, =1{このサーバーが <ph name="DOMAIN" /> であることを確認できませんでした。セキュリティ証明書の有効期限が昨日付けで切れています。原因として、設定が不適切であるか、悪意のあるユーザーが接続を妨害していることが考えられます。パソコンの時計は現在 <ph name="CURRENT_DATE" />に設定されています。この時刻が正しくない場合は、システムの時計を修正した後このページを更新してください。}other{このサーバーが <ph name="DOMAIN" /> であることを確認できませんでした。セキュリティ証明書の有効期限が # 日前に切れています。原因として、設定が不適切であるか、悪意のあるユーザーが接続を妨害していることが考えられます。パソコンの時計は現在 <ph name="CURRENT_DATE" />に設定されています。この時刻が正しくない場合は、システムの時計を修正した後このページを更新してください。}}</translation>
 <translation id="168841957122794586">サーバー証明書に脆弱な暗号鍵が含まれています。</translation>
-<translation id="1693754753824026215">ページ <ph name="SITE" /> の記述:</translation>
 <translation id="1706954506755087368">{1,plural, =1{このサーバーが <ph name="DOMAIN" /> であることを確認できませんでした。セキュリティ証明書はおそらく明日以降に利用できるようになります。原因として、設定が不適切であるか、悪意のあるユーザーが接続を妨害していることが考えられます。}other{このサーバーが <ph name="DOMAIN" /> であることを確認できませんでした。セキュリティ証明書はおそらく # 日後から利用できるようになります。原因として、設定が不適切であるか、悪意のあるユーザーが接続を妨害していることが考えられます。}}</translation>
 <translation id="1710259589646384581">OS</translation>
 <translation id="1734864079702812349">AMEX</translation>
@@ -227,6 +226,7 @@
 <translation id="6263376278284652872"><ph name="DOMAIN" /> のブックマーク</translation>
 <translation id="6282194474023008486">郵便番号</translation>
 <translation id="6337534724793800597">ポリシーを名前でフィルタ</translation>
+<translation id="6342069812937806050">たった今</translation>
 <translation id="6355080345576803305">公開セッションのオーバーライド</translation>
 <translation id="6387478394221739770">Chrome の新しい機能に関心をお持ちでしたら、chrome.com/beta から Beta チャンネルをお試しください。</translation>
 <translation id="6445051938772793705">国</translation>
@@ -252,7 +252,6 @@
 <translation id="6965978654500191972">デバイス</translation>
 <translation id="6970216967273061347">地区</translation>
 <translation id="6973656660372572881">固定プロキシ サーバーと .pac スクリプト URL の両方が指定されています。</translation>
-<translation id="6980028882292583085">JavaScript のアラート</translation>
 <translation id="7012363358306927923">中国銀聯</translation>
 <translation id="7050187094878475250"><ph name="DOMAIN" /> にアクセスしようとしましたが、サーバーに提示された証明書の有効期限が長すぎて信頼性を確認できませんでした。</translation>
 <translation id="7087282848513945231">郡</translation>
@@ -275,7 +274,6 @@
 <translation id="7419106976560586862">プロフィール パス</translation>
 <translation id="7441627299479586546">ポリシーの対象が間違っています</translation>
 <translation id="7485870689360869515">データが見つかりません。</translation>
-<translation id="7521387064766892559">Javascript</translation>
 <translation id="7537536606612762813">必須</translation>
 <translation id="7542995811387359312">このフォームは安全な接続を使用していないため、クレジットカードの自動入力が無効になっています。</translation>
 <translation id="7567204685887185387">このサーバーが <ph name="DOMAIN" /> であることを確認できませんでした。このサーバーのセキュリティ証明書は不正に発行されたものである可能性があります。原因としては、不適切な設定や、悪意のあるユーザーによる接続妨害が考えられます。</translation>

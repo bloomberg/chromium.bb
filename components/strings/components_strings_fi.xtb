@@ -32,7 +32,6 @@
 <translation id="1644184664548287040">Verkkoasetukset ovat virheelliset eikä niitä voi tuoda.</translation>
 <translation id="1655462015569774233">{1,plural, =1{Palvelin ei voinut todistaa olevansa <ph name="DOMAIN" />; sen suojausvarmenne vanhentui eilen. Tämä voi johtua määritysvirheestä tai verkkoyhteytesi siepanneesta hyökkääjästä. Tietokoneesi kellonaika on tällä hetkellä <ph name="CURRENT_DATE" />. Onko se oikein? Jos ei, korjaa järjestelmän kellonaika ja päivitä sivu.}other{Palvelin ei voinut todistaa olevansa <ph name="DOMAIN" />; sen suojausvarmenne vanhentui # päivää sitten. Tämä voi johtua määritysvirheestä tai verkkoyhteytesi siepanneesta hyökkääjästä. Tietokoneesi kellonaika on tällä hetkellä <ph name="CURRENT_DATE" />. Onko se oikein? Jos ei, korjaa järjestelmän kellonaika ja päivitä sivu.}}</translation>
 <translation id="168841957122794586">Palvelinvarmenne sisältää heikon salausavaimen.</translation>
-<translation id="1693754753824026215">Sivu osoitteessa <ph name="SITE" /> ilmoittaa:</translation>
 <translation id="1706954506755087368">{1,plural, =1{Palvelin ei voinut todistaa olevansa <ph name="DOMAIN" />; sen suojausvarmenne on päivätty huomiselle. Tämä voi johtua määritysvirheestä tai verkkoyhteytesi siepanneesta hyökkääjästä.}other{Palvelin ei voinut todistaa olevansa <ph name="DOMAIN" />; sen suojausvarmenne on päivätty # päivää tulevaisuuteen. Tämä voi johtua määritysvirheestä tai verkkoyhteytesi siepanneesta hyökkääjästä.}}</translation>
 <translation id="1710259589646384581">Käyttöjärjestelmä</translation>
 <translation id="1734864079702812349">Amex</translation>
@@ -227,6 +226,7 @@
 <translation id="6263376278284652872">Verkkotunnuksen <ph name="DOMAIN" /> kirjanmerkit</translation>
 <translation id="6282194474023008486">Postinumero</translation>
 <translation id="6337534724793800597">Suodata käytäntöjä nimen mukaan</translation>
+<translation id="6342069812937806050">Valmistui juuri</translation>
 <translation id="6355080345576803305">Julkisen istunnon ohitus</translation>
 <translation id="6387478394221739770">Oletko kiinnostunut Chromen uusista jännittävistä ominaisuuksista? Kokeile beta-kanavaa osoitteessa chrome.com/beta.</translation>
 <translation id="6445051938772793705">Maa</translation>
@@ -252,7 +252,6 @@
 <translation id="6965978654500191972">Laite</translation>
 <translation id="6970216967273061347">Alue</translation>
 <translation id="6973656660372572881">Sekä kiinteät välityspalvelimet että .pac-URL-osoite on määritetty.</translation>
-<translation id="6980028882292583085">JavaScript-ilmoitus</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7050187094878475250">Yritit muodostaa yhteyden verkkotunnukseen <ph name="DOMAIN" />, mutta palvelin esitti varmenteen, joka on voimassa liian kauan ollakseen luotettava.</translation>
 <translation id="7087282848513945231">Kunta</translation>
@@ -275,7 +274,6 @@
 <translation id="7419106976560586862">Profiilin polku</translation>
 <translation id="7441627299479586546">Väärä käytännön aihe</translation>
 <translation id="7485870689360869515">Tietoja ei löydy.</translation>
-<translation id="7521387064766892559">JavaScript</translation>
 <translation id="7537536606612762813">Pakollinen</translation>
 <translation id="7542995811387359312">Automaattinen luottokortin tietojen täyttäminen on poistettu käytöstä, koska tämä lomake ei käytä suojattua yhteyttä.</translation>
 <translation id="7567204685887185387">Palvelin ei voinut todistaa olevansa <ph name="DOMAIN" />; sen suojausvarmenne on ehkä luotu vilpillisesti. Tämä voi johtua määritysvirheestä tai verkkoyhteytesi siepanneesta hyökkääjästä.</translation>

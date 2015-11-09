@@ -64,6 +64,9 @@
 
           Policyn används bara om policyn DefaultSearchProviderEnabled är aktiverad.</translation>
 <translation id="1265053460044691532">Begränsa tiden som en användare som verifierats via SAML kan logga in offline</translation>
+<translation id="1291880496936992484">Varning: RC4 kommer att helt tas bort från <ph name="PRODUCT_NAME" /> efter version 52 (kring september 2016) och den här principen upphör då att fungera.
+
+      Om principen inte har ställts in eller är inställd på falskt kommer RC4-krypteringssviter inte att aktiveras. Principen kan ställas in som sant om kompatibilitet med en föråldrad server önskas bibehållas. Detta är en nödlösning, och servern bör omkonfigureras.</translation>
 <translation id="1297182715641689552">Använd en PAC-proxyskript</translation>
 <translation id="1300635491585192248">Förutsäg nätverksåtgärder i ett nätverk som inte
           är ett mobilnätverk</translation>
@@ -530,6 +533,9 @@
       Om du aktiverar eller inaktiverar den här inställningen kan användarna inte ändra eller åsidosätta inställningen ”Aktivera skydd mot lösenordsfiske och skadlig programvara” i <ph name="PRODUCT_NAME" />.
 
       Om den här principen inte anges är den aktiverad, men användarna kan ändra den.</translation>
+<translation id="2801230735743888564">Tillåt användare att spela påskäggsspelet med dinosaurier när enheten är offline.
+
+      Om den här principen är inställd på falskt kommer användare inte att kunna spela påskäggsspelet med dinosaurier när enheten är offline. Om principen är inställd på sant kommer användare att kunna spela dinosauriespelet. Om principen inte tillämpas kommer användare inte att kunna spela påskäggsspelet med dinosaurier på Chrome OS med registrering, men kan spela det under andra omständigheter.</translation>
 <translation id="2805707493867224476">Tillåt alla webbplatser att visa popup-fönster</translation>
 <translation id="2808013382476173118">Policyn gör att STUN-servrar kan användas när fjärrklienter försöker upprätta en anslutning till den här datorn.
 
@@ -1139,6 +1145,7 @@
           När policyn inte har angetts kommer standardåtgärden avstängning att vidtas.
 
           Om åtgärden är avstängning kan <ph name="PRODUCT_OS_NAME" /> konfigureras separat för att antingen låsa eller inte låsa skärmen före avstängningen.</translation>
+<translation id="5130288486815037971">Om RC4-krypteringssviter i TLS är aktiverade eller inte</translation>
 <translation id="5141670636904227950">Ange standardtypen för skärmförstoraren på inloggningsskärmen</translation>
 <translation id="5142301680741828703">Rendera alltid följande webbadressmönster i <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="5148753489738115745">Innebär att du kan ange ytterligare parametrar som används när <ph name="PRODUCT_FRAME_NAME" /> startar <ph name="PRODUCT_NAME" />.
@@ -1428,6 +1435,7 @@
           Det rekommenderade sättet att låsa skärmen vid inaktivitet är att aktivera skärmlåsning när appen skickas till bakgrunden och sätta <ph name="PRODUCT_OS_NAME" /> i viloläge efter en viss tids inaktivitet. Den här policyn bör endast användas när du vill att skärmen ska låsas mycket tidigare än viloläget startas eller när du inte vill att appen ska skickas till bakgrunden vid inaktivitet.
 
           Policyvärdet ska anges i millisekunder. Värdena har skurits ned så att de är mindre än fördröjningen innan viloläget.</translation>
+<translation id="6111936128861357925">Tillåt påskäggsspelet med dinosaurier</translation>
 <translation id="6114416803310251055">föråldrad</translation>
 <translation id="6145799962557135888">Policyn gör att du kan ange en lista med webbadressmönster som anger webbplatser som får köra JavaScript.
 
@@ -2062,6 +2070,18 @@
 
       Om den här policyn inte anges görs inga undantag från policyn URLBlacklist.</translation>
 <translation id="8176035528522326671">Tillåt en företagsanvändare att vara enbart primär flerprofilsanvändare (standardbeteendet för företagshanterade användare)</translation>
+<translation id="8191318459035150777">Konfigurerar webbadressen som är standard för startsidan i <ph name="PRODUCT_NAME" /> och förhindrar att användare ändrar den.
+
+          Startsidan är sidan som du öppnar med knappen Startsida. Sidorna som öppnas styrs av principen RestoreOnStartup.
+
+          Startsidans typ kan ställas in på en webbadress som du anger här eller på sidan Ny flik. Om du väljer sidan Ny flik ignoreras den här principen.
+
+          Om du aktiverar den här inställningen kan användarna inte ändra sin startsideadress i <ph name="PRODUCT_NAME" />, men de kan välja sidan Ny flik som startsida.
+
+          Om den här principen inte anges kan användarna själva välja sin startsida, förutsatt att inte HomepageIsNewTabPage har angetts.
+
+          Principen är inte tillgänglig på Windows-instanser som inte är anslutna
+          till en Active Directory-domän.</translation>
 <translation id="8197918588508433925">Policyn specificerar vilka tillägg som får använda API:et för Enterprise Platform Keys – chrome.enterprise.platformKeysPrivate.challengeUserKey() – för fjärrattestering. Tillägg måste anges på den här listan om de ska kunna använda API:et.
 
           Om ett tillägg inte finns med på listan, eller om listan inte har fastställts, kommer anslutningen till API:et att misslyckas och en felkod att visas.</translation>
@@ -2179,6 +2199,8 @@
           Om du aktiverar inställningen hoppas CNAME-sökningen över och servernamnet som angavs används.
 
           Om du inaktiverar inställningen eller inte anger den avgörs serverns kanoniska namn av en CNAME-sökning.</translation>
+<translation id="8774131509736383471">Om principen är inställd på sant kommer <ph name="PRODUCT_NAME" /> ovillkorligen första gången den körs att maximera det först visade fönstret.
+      Om principen är inställd på falskt eller inte konfigurerad kommer skärmstorleken att avgöra om det först visade fönstret ska maximeras.</translation>
 <translation id="8777120694819070607">Innebär att föråldrade plugin-program kan köras i <ph name="PRODUCT_NAME" />.
 
       Om du aktiverar den här inställningen kan föråldrade plugin-program användas som vanliga plugin-program.
