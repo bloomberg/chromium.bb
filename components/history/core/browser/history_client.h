@@ -5,9 +5,7 @@
 #ifndef COMPONENTS_HISTORY_CORE_BROWSER_HISTORY_CLIENT_H_
 #define COMPONENTS_HISTORY_CORE_BROWSER_HISTORY_CLIENT_H_
 
-#include "base/callback_forward.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "sql/init_status.h"
 
@@ -15,7 +13,6 @@ class GURL;
 
 namespace base {
 class FilePath;
-class SequencedTaskRunner;
 }
 
 namespace history {
@@ -45,11 +42,6 @@ class HistoryClient {
 
   // Notifies the embedder that there was a problem reading the database.
   virtual void NotifyProfileError(sql::InitStatus init_status) = 0;
-
-  // Hands the task to the embedder so it can post the task after startup.
-  virtual void PostAfterStartupTask(
-      const scoped_refptr<base::SequencedTaskRunner>& task_runner,
-      const base::Closure& task) = 0;
 
   // Returns a new HistoryBackendClient instance.
   virtual scoped_ptr<HistoryBackendClient> CreateBackendClient() = 0;

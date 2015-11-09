@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/location.h"
 #include "base/logging.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/history/core/browser/history_service.h"
@@ -61,12 +60,6 @@ bool HistoryClientImpl::CanAddURL(const GURL& url) {
 }
 
 void HistoryClientImpl::NotifyProfileError(sql::InitStatus init_status) {
-}
-
-void HistoryClientImpl::PostAfterStartupTask(
-    const scoped_refptr<base::SequencedTaskRunner>& task_runner,
-    const base::Closure& task) {
-  task_runner->PostTask(FROM_HERE, task);
 }
 
 scoped_ptr<history::HistoryBackendClient>
