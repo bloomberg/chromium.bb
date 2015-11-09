@@ -1392,6 +1392,17 @@ H264Decoder::DecodeResult H264Decoder::Decode() {
         break;
       }
 
+      case media::H264NALU::kAUD:
+      case media::H264NALU::kEOSeq:
+      case media::H264NALU::kEOStream:
+        if (state_ != kDecoding)
+          break;
+
+        if (!FinishPrevFrameIfPresent())
+          SET_ERROR_AND_RETURN();
+
+        break;
+
       default:
         DVLOG(4) << "Skipping NALU type: " << curr_nalu_->nal_unit_type;
         break;
