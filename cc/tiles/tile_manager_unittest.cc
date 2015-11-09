@@ -1448,6 +1448,7 @@ TEST_F(TileManagerTilePriorityQueueTest, RasterQueueAllUsesCorrectTileBounds) {
   }
 }
 
+// TODO(vmpstr): Merge TileManagerTest and TileManagerTilePriorityQueueTest.
 class TileManagerTest : public testing::Test {
  public:
   TileManagerTest()
@@ -1462,6 +1463,58 @@ class TileManagerTest : public testing::Test {
                                                &task_graph_runner_));
     host_impl_->SetVisible(true);
     host_impl_->InitializeRenderer(output_surface_.get());
+  }
+
+  void SetupDefaultTrees(const gfx::Size& layer_bounds) {
+    scoped_refptr<FakeDisplayListRasterSource> pending_raster_source =
+        FakeDisplayListRasterSource::CreateFilled(layer_bounds);
+    scoped_refptr<FakeDisplayListRasterSource> active_raster_source =
+        FakeDisplayListRasterSource::CreateFilled(layer_bounds);
+
+    SetupTrees(pending_raster_source, active_raster_source);
+  }
+
+  // This matches picture_layer_impl_unittest's ActivateTree.
+  void ActivateTree() {
+    host_impl_->ActivateSyncTree();
+    CHECK(!host_impl_->pending_tree());
+    bool update_lcd_text = false;
+    host_impl_->active_tree()->UpdateDrawProperties(update_lcd_text);
+  }
+
+  void SetupTrees(scoped_refptr<DisplayListRasterSource> pending_raster_source,
+                  scoped_refptr<DisplayListRasterSource> active_raster_source) {
+    SetupPendingTree(active_raster_source);
+    ActivateTree();
+    SetupPendingTree(pending_raster_source);
+  }
+
+  void SetupPendingTree(scoped_refptr<DisplayListRasterSource> raster_source) {
+    host_impl_->CreatePendingTree();
+    LayerTreeImpl* pending_tree = host_impl_->pending_tree();
+
+    // Steal from the recycled tree.
+    scoped_ptr<LayerImpl> old_pending_root = pending_tree->DetachLayerTree();
+    scoped_ptr<FakePictureLayerImpl> pending_layer;
+    if (old_pending_root) {
+      pending_layer.reset(
+          static_cast<FakePictureLayerImpl*>(old_pending_root.release()));
+      pending_layer->SetRasterSourceOnPending(raster_source, Region());
+    } else {
+      int id = 7;
+      pending_layer = FakePictureLayerImpl::CreateWithRasterSource(
+          pending_tree, id, raster_source);
+      pending_layer->SetDrawsContent(true);
+      pending_layer->SetHasRenderSurface(true);
+    }
+    // The bounds() just mirror the raster source size.
+    pending_layer->SetBounds(pending_layer->raster_source()->GetSize());
+    pending_tree->SetRootLayer(pending_layer.Pass());
+
+    // Add tilings/tiles for the layer.
+    bool update_lcd_text = false;
+    host_impl_->pending_tree()->BuildPropertyTreesForTesting();
+    host_impl_->pending_tree()->UpdateDrawProperties(update_lcd_text);
   }
 
  protected:
@@ -1516,6 +1569,25 @@ TEST_F(TileManagerTest, AllWorkFinishedTest) {
     EXPECT_TRUE(host_impl_->tile_manager()->HasScheduledTileTasksForTesting());
     run_loop.Run();
   }
+}
+
+TEST_F(TileManagerTest, ActivateAndDrawWhenOOM) {
+  SetupDefaultTrees(gfx::Size(1000, 1000));
+
+  auto global_state = host_impl_->global_tile_state();
+  global_state.hard_memory_limit_in_bytes = 1u;
+  global_state.soft_memory_limit_in_bytes = 1u;
+
+  base::RunLoop run_loop;
+  EXPECT_FALSE(host_impl_->tile_manager()->HasScheduledTileTasksForTesting());
+  EXPECT_CALL(*host_impl_, NotifyAllTileTasksCompleted())
+      .WillOnce(testing::Invoke([&run_loop]() { run_loop.Quit(); }));
+  host_impl_->tile_manager()->PrepareTiles(global_state);
+  EXPECT_TRUE(host_impl_->tile_manager()->HasScheduledTileTasksForTesting());
+  run_loop.Run();
+
+  EXPECT_TRUE(host_impl_->tile_manager()->IsReadyToDraw());
+  EXPECT_TRUE(host_impl_->tile_manager()->IsReadyToActivate());
 }
 
 TEST_F(TileManagerTest, LowResHasNoImage) {

@@ -283,6 +283,7 @@ class CC_EXPORT TileManager : public TileTaskRunnerClient {
   bool AreRequiredTilesReadyToDraw(RasterTilePriorityQueue::Type type) const;
   void CheckIfMoreTilesNeedToBePrepared();
   void CheckAndIssueSignals();
+  bool MarkTilesOutOfMemory(scoped_ptr<RasterTilePriorityQueue> queue) const;
 
   ResourceFormat DetermineResourceFormat(const Tile* tile) const;
   bool DetermineResourceRequiresSwizzle(const Tile* tile) const;

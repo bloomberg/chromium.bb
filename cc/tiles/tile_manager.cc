@@ -897,34 +897,44 @@ void TileManager::CheckIfMoreTilesNeedToBePrepared() {
       global_state_.tree_priority == SMOOTHNESS_TAKES_PRIORITY ||
       global_state_.memory_limit_policy == ALLOW_NOTHING;
 
-  // Mark any required-for-activation tiles that have not been been assigned
-  // memory after reaching a steady memory state as OOM. This ensures that we
-  // activate even when OOM. Note that we can't reuse the queue we used for
-  // AssignGpuMemoryToTiles, since the AssignGpuMemoryToTiles call could have
-  // evicted some tiles that would not be picked up by the old raster queue.
-  scoped_ptr<RasterTilePriorityQueue> required_for_activation_queue(
-      client_->BuildRasterQueue(
-          global_state_.tree_priority,
-          RasterTilePriorityQueue::Type::REQUIRED_FOR_ACTIVATION));
-
   // If we have tiles left to raster for activation, and we don't allow
   // activating without them, then skip activation and return early.
-  if (!required_for_activation_queue->IsEmpty() && wait_for_all_required_tiles)
+  if (wait_for_all_required_tiles)
     return;
 
-  // Mark required tiles as OOM so that we can activate without them.
-  for (; !required_for_activation_queue->IsEmpty();
-       required_for_activation_queue->Pop()) {
-    Tile* tile = required_for_activation_queue->Top().tile();
+  // Mark any required tiles that have not been been assigned memory after
+  // reaching a steady memory state as OOM. This ensures that we activate/draw
+  // even when OOM. Note that we can't reuse the queue we used for
+  // AssignGpuMemoryToTiles, since the AssignGpuMemoryToTiles call could have
+  // evicted some tiles that would not be picked up by the old raster queue.
+  bool need_to_signal_activate = MarkTilesOutOfMemory(client_->BuildRasterQueue(
+      global_state_.tree_priority,
+      RasterTilePriorityQueue::Type::REQUIRED_FOR_ACTIVATION));
+  bool need_to_signal_draw = MarkTilesOutOfMemory(client_->BuildRasterQueue(
+      global_state_.tree_priority,
+      RasterTilePriorityQueue::Type::REQUIRED_FOR_DRAW));
+
+  DCHECK(IsReadyToActivate());
+  DCHECK(IsReadyToDraw());
+  signals_.ready_to_activate = need_to_signal_activate;
+  signals_.ready_to_draw = need_to_signal_draw;
+  // TODO(ericrk): Investigate why we need to schedule this (not just call it
+  // inline). http://crbug.com/498439
+  signals_check_notifier_.Schedule();
+}
+
+bool TileManager::MarkTilesOutOfMemory(
+    scoped_ptr<RasterTilePriorityQueue> queue) const {
+  // Mark required tiles as OOM so that we can activate/draw without them.
+  if (queue->IsEmpty())
+    return false;
+
+  for (; !queue->IsEmpty(); queue->Pop()) {
+    Tile* tile = queue->Top().tile();
     tile->draw_info().set_oom();
     client_->NotifyTileStateChanged(tile);
   }
-
-  DCHECK(IsReadyToActivate());
-  // TODO(ericrk): Investigate why we need to schedule this (not just call it
-  // inline). http://crbug.com/498439
-  signals_.ready_to_activate = true;
-  signals_check_notifier_.Schedule();
+  return true;
 }
 
 ResourceFormat TileManager::DetermineResourceFormat(const Tile* tile) const {
