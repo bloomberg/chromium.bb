@@ -4,6 +4,8 @@
 
 #include "ui/ozone/platform/drm/gpu/hardware_display_plane_manager_legacy.h"
 
+#include <errno.h>
+
 #include "base/bind.h"
 #include "ui/ozone/platform/drm/gpu/crtc_controller.h"
 #include "ui/ozone/platform/drm/gpu/drm_device.h"
