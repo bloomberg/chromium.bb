@@ -115,9 +115,9 @@ void RecordPrecacheStatsOnUIThread(const GURL& url,
                                    void* profile_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  Profile* profile = reinterpret_cast<Profile*>(profile_id);
-  if (!g_browser_process->profile_manager()->IsValidProfile(profile))
+  if (!g_browser_process->profile_manager()->IsValidProfile(profile_id))
     return;
+  Profile* profile = reinterpret_cast<Profile*>(profile_id);
 
   precache::PrecacheManager* precache_manager =
       precache::PrecacheManagerFactory::GetForBrowserContext(profile);

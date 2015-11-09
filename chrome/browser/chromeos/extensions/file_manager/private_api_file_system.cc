@@ -119,9 +119,9 @@ file_manager::EventRouter* GetEventRouterByProfileId(void* profile_id) {
 
   // |profile_id| needs to be checked with ProfileManager::IsValidProfile
   // before using it.
-  Profile* profile = reinterpret_cast<Profile*>(profile_id);
-  if (!g_browser_process->profile_manager()->IsValidProfile(profile))
+  if (!g_browser_process->profile_manager()->IsValidProfile(profile_id))
     return NULL;
+  Profile* profile = reinterpret_cast<Profile*>(profile_id);
 
   return file_manager::EventRouterFactory::GetForProfile(profile);
 }

@@ -35,9 +35,9 @@ void NotifyEPMRequestStatus(RequestStatus status,
                             int process_id,
                             int render_frame_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  Profile* profile = reinterpret_cast<Profile*>(profile_id);
-  if (!g_browser_process->profile_manager()->IsValidProfile(profile))
+  if (!g_browser_process->profile_manager()->IsValidProfile(profile_id))
     return;
+  Profile* profile = reinterpret_cast<Profile*>(profile_id);
 
   extensions::ProcessManager* process_manager =
       extensions::ProcessManager::Get(profile);

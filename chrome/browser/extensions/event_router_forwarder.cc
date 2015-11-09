@@ -90,9 +90,9 @@ void EventRouterForwarder::HandleEvent(const std::string& extension_id,
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   Profile* profile = NULL;
   if (profile_ptr) {
-    profile = reinterpret_cast<Profile*>(profile_ptr);
-    if (!profile_manager->IsValidProfile(profile))
+    if (!profile_manager->IsValidProfile(profile_ptr))
       return;
+    profile = reinterpret_cast<Profile*>(profile_ptr);
   }
   if (profile) {
     CallEventRouter(profile, extension_id, histogram_value, event_name,

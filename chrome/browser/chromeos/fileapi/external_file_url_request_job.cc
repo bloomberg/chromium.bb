@@ -65,11 +65,11 @@ class URLHelper {
  private:
   void RunOnUIThread(Lifetime lifetime) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    Profile* const profile = reinterpret_cast<Profile*>(profile_id_);
-    if (!g_browser_process->profile_manager()->IsValidProfile(profile)) {
+    if (!g_browser_process->profile_manager()->IsValidProfile(profile_id_)) {
       ReplyResult(net::ERR_FAILED);
       return;
     }
+    Profile* const profile = reinterpret_cast<Profile*>(profile_id_);
     content::StoragePartition* const storage =
         content::BrowserContext::GetStoragePartitionForSite(profile, url_);
     DCHECK(storage);
