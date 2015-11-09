@@ -542,8 +542,8 @@ IN_PROC_BROWSER_TEST_F(MaterialPDFExtensionTest, Elements) {
   RunTestsInFile("material_elements_test.js", "test.pdf");
 }
 
-// http://crbug.com/550015
-IN_PROC_BROWSER_TEST_F(MaterialPDFExtensionTest, DISABLED_ToolbarManager) {
+// TODO(tsergeant): Verify that flake is fixed. http://crbug.com/550015
+IN_PROC_BROWSER_TEST_F(MaterialPDFExtensionTest, ToolbarManager) {
   RunTestsInFile("toolbar_manager_test.js", "test.pdf");
 }
 

@@ -126,18 +126,19 @@ var tests = [
     toolbarManager.showToolbarsForKeyboardNavigation();
     chrome.test.assertTrue(toolbar.opened);
     mockWindow.runTimeout();
-    chrome.test.assertTrue(toolbar.opened);
+    chrome.test.assertTrue(
+        toolbar.opened, 'toolbar stays open after keyboard navigation');
 
     // Hit escape -> Toolbars close.
     toolbarManager.hideSingleToolbarLayer();
-    chrome.test.assertFalse(toolbar.opened);
+    chrome.test.assertFalse(toolbar.opened, 'toolbars close on escape key');
 
     // Show toolbars, use mouse, run timeout -> Toolbars close.
     toolbarManager.showToolbarsForKeyboardNavigation();
     mouseMove(200, 200, 800, 800, 5);
     chrome.test.assertTrue(toolbar.opened);
     mockWindow.runTimeout();
-    chrome.test.assertFalse(toolbar.opened);
+    chrome.test.assertFalse(toolbar.opened, 'toolbars close after mouse move');
 
     chrome.test.succeed();
   },

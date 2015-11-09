@@ -38,10 +38,11 @@ function isMouseNearTopToolbar(e) {
 
 /**
  * @param {MouseEvent} e Event to test.
+ * @param {Window} window Window to test against.
  * @return {boolean} True if the mouse is close to the bottom-right of the
  * screen.
  */
-function isMouseNearSideToolbar(e) {
+function isMouseNearSideToolbar(e, window) {
   var atSide = e.x > window.innerWidth - SIDE_TOOLBAR_REVEAL_DISTANCE_RIGHT;
   if (isRTL())
     atSide = e.x < SIDE_TOOLBAR_REVEAL_DISTANCE_RIGHT;
@@ -79,7 +80,7 @@ ToolbarManager.prototype = {
 
   handleMouseMove: function(e) {
     this.isMouseNearTopToolbar_ = this.toolbar_ && isMouseNearTopToolbar(e);
-    this.isMouseNearSideToolbar_ = isMouseNearSideToolbar(e);
+    this.isMouseNearSideToolbar_ = isMouseNearSideToolbar(e, this.window_);
 
     this.keyboardNavigationActive = false;
     var touchInteractionActive =
