@@ -35,7 +35,6 @@
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/autofill/save_card_icon_view.h"
 #include "chrome/browser/ui/views/browser_dialogs.h"
 #include "chrome/browser/ui/views/layout_constants.h"
@@ -74,7 +73,6 @@
 #include "grit/theme_resources.h"
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
@@ -93,7 +91,6 @@
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/button_drag_utils.h"
-#include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/widget/widget.h"
 
@@ -139,7 +136,6 @@ LocationBarView::LocationBarView(Browser* browser,
       selected_keyword_view_(NULL),
       suggested_text_view_(NULL),
       keyword_hint_view_(NULL),
-      mic_search_view_(NULL),
       zoom_view_(NULL),
       open_pdf_in_reader_view_(NULL),
       manage_passwords_icon_view_(NULL),
@@ -157,9 +153,6 @@ LocationBarView::LocationBarView(Browser* browser,
       base::Bind(&LocationBarView::UpdateWithoutTabRestore,
                  base::Unretained(this)));
 
-  if (browser_)
-    browser_->search_model()->AddObserver(this);
-
   ui_zoom::ZoomEventManager::GetForBrowserContext(profile)
       ->AddZoomEventManagerObserver(this);
 
@@ -173,8 +166,6 @@ LocationBarView::LocationBarView(Browser* browser,
 LocationBarView::~LocationBarView() {
   if (template_url_service_)
     template_url_service_->RemoveObserver(this);
-  if (browser_)
-    browser_->search_model()->RemoveObserver(this);
 
   ui_zoom::ZoomEventManager::GetForBrowserContext(profile())
       ->RemoveZoomEventManagerObserver(this);
@@ -279,20 +270,6 @@ void LocationBarView::Init() {
       GetColor(SecurityStateModel::NONE, LocationBarView::DEEMPHASIZED_TEXT),
       background_color);
   AddChildView(keyword_hint_view_);
-
-  mic_search_view_ = new views::ImageButton(this);
-  mic_search_view_->set_id(VIEW_ID_MIC_SEARCH_BUTTON);
-  mic_search_view_->SetAccessibilityFocusable(true);
-  mic_search_view_->SetTooltipText(
-      l10n_util::GetStringUTF16(IDS_TOOLTIP_MIC_SEARCH));
-  mic_search_view_->SetImage(
-      views::Button::STATE_NORMAL,
-      ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-          IDR_OMNIBOX_MIC_SEARCH));
-  mic_search_view_->SetImageAlignment(views::ImageButton::ALIGN_CENTER,
-                                      views::ImageButton::ALIGN_MIDDLE);
-  mic_search_view_->SetVisible(false);
-  AddChildView(mic_search_view_);
 
   const SkColor text_color = GetColor(SecurityStateModel::NONE, TEXT);
   for (ContentSettingsType type :
@@ -579,12 +556,11 @@ gfx::Size LocationBarView::GetPreferredSize() const {
   // Compute width of omnibox-trailing content.
   int trailing_width = horizontal_edge_thickness;
   trailing_width += IncrementalMinimumWidth(star_view_) +
-      IncrementalMinimumWidth(translate_icon_view_) +
-      IncrementalMinimumWidth(open_pdf_in_reader_view_) +
-      IncrementalMinimumWidth(save_credit_card_icon_view_) +
-      IncrementalMinimumWidth(manage_passwords_icon_view_) +
-      IncrementalMinimumWidth(zoom_view_) +
-      IncrementalMinimumWidth(mic_search_view_);
+                    IncrementalMinimumWidth(translate_icon_view_) +
+                    IncrementalMinimumWidth(open_pdf_in_reader_view_) +
+                    IncrementalMinimumWidth(save_credit_card_icon_view_) +
+                    IncrementalMinimumWidth(manage_passwords_icon_view_) +
+                    IncrementalMinimumWidth(zoom_view_);
   for (PageActionViews::const_iterator i(page_action_views_.begin());
        i != page_action_views_.end(); ++i)
     trailing_width += IncrementalMinimumWidth((*i));
@@ -707,10 +683,6 @@ void LocationBarView::Layout() {
                                          *i);
     }
   }
-  if (mic_search_view_->visible()) {
-    trailing_decorations.AddDecoration(vertical_padding, location_height,
-                                       mic_search_view_);
-  }
   // Because IMEs may eat the tab key, we don't show "press tab to search" while
   // IME composition is in progress.
   if (!keyword.empty() && omnibox_view_->model()->is_keyword_hint() &&
@@ -821,9 +793,6 @@ void LocationBarView::Layout() {
 }
 
 void LocationBarView::Update(const WebContents* contents) {
-  mic_search_view_->SetVisible(
-      !GetToolbarModel()->input_in_progress() && browser_ &&
-      browser_->search_model()->voice_search_supported());
   RefreshContentSettingViews();
   RefreshZoomView();
   RefreshPageActionViews();
@@ -1336,15 +1305,6 @@ void LocationBarView::PaintChildren(const ui::PaintContext& context) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// LocationBarView, private views::ButtonListener implementation:
-
-void LocationBarView::ButtonPressed(views::Button* sender,
-                                    const ui::Event& event) {
-  DCHECK_EQ(mic_search_view_, sender);
-  command_updater()->ExecuteCommand(IDC_TOGGLE_SPEECH_INPUT);
-}
-
-////////////////////////////////////////////////////////////////////////////////
 // LocationBarView, private views::DragController implementation:
 
 void LocationBarView::WriteDragDataForView(views::View* sender,
@@ -1432,17 +1392,4 @@ void LocationBarView::OnTemplateURLServiceChanged() {
   // would make the browser the active window again.
   if (omnibox_view_ && omnibox_view_->GetWidget()->IsActive())
     ShowFirstRunBubble();
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// LocationBarView, private SearchModelObserver implementation:
-
-void LocationBarView::ModelChanged(const SearchModel::State& old_state,
-                                   const SearchModel::State& new_state) {
-  const bool visible = !GetToolbarModel()->input_in_progress() &&
-      new_state.voice_search_supported;
-  if (mic_search_view_->visible() != visible) {
-    mic_search_view_->SetVisible(visible);
-    Layout();
-  }
 }

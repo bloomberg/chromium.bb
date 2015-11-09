@@ -21,7 +21,6 @@ class SearchIPCRouterPolicyImpl : public SearchIPCRouter::Policy {
   friend class SearchIPCRouterPolicyTest;
 
   // Overridden from SearchIPCRouter::Policy:
-  bool ShouldProcessSetVoiceSearchSupport() override;
   bool ShouldProcessFocusOmnibox(bool is_active_tab) override;
   bool ShouldProcessNavigateToURL(bool is_active_tab) override;
   bool ShouldProcessDeleteMostVisitedItem() override;
@@ -39,7 +38,6 @@ class SearchIPCRouterPolicyImpl : public SearchIPCRouter::Policy {
   bool ShouldSendOmniboxFocusChanged() override;
   bool ShouldSendMostVisitedItems() override;
   bool ShouldSendThemeBackgroundInfo() override;
-  bool ShouldSendToggleVoiceSearch() override;
   bool ShouldSubmitQuery() override;
 
   // Used by unit tests.

@@ -137,13 +137,6 @@ void SearchIPCRouter::SendThemeBackgroundInfo(
   Send(new ChromeViewMsg_SearchBoxThemeChanged(routing_id(), theme_info));
 }
 
-void SearchIPCRouter::ToggleVoiceSearch() {
-  if (!policy_->ShouldSendToggleVoiceSearch())
-    return;
-
-  Send(new ChromeViewMsg_SearchBoxToggleVoiceSearch(routing_id()));
-}
-
 void SearchIPCRouter::Submit(const base::string16& text,
                              const EmbeddedSearchRequestParams& params) {
   if (!policy_->ShouldSubmitQuery())
@@ -173,8 +166,6 @@ bool SearchIPCRouter::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(SearchIPCRouter, message)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_InstantSupportDetermined,
                         OnInstantSupportDetermined)
-    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_SetVoiceSearchSupported,
-                        OnVoiceSearchSupportDetermined)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_FocusOmnibox, OnFocusOmnibox);
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_SearchBoxNavigate,
                         OnSearchBoxNavigate);
@@ -206,19 +197,6 @@ void SearchIPCRouter::OnInstantSupportDetermined(int page_seq_no,
     return;
 
   delegate_->OnInstantSupportDetermined(instant_support);
-}
-
-void SearchIPCRouter::OnVoiceSearchSupportDetermined(
-    int page_seq_no,
-    bool supports_voice_search) const {
-  if (page_seq_no != commit_counter_)
-    return;
-
-  delegate_->OnInstantSupportDetermined(true);
-  if (!policy_->ShouldProcessSetVoiceSearchSupport())
-    return;
-
-  delegate_->OnSetVoiceSearchSupport(supports_voice_search);
 }
 
 void SearchIPCRouter::OnFocusOmnibox(int page_seq_no,

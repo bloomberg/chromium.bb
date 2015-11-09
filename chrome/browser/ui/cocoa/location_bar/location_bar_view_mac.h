@@ -17,7 +17,6 @@
 #include "chrome/browser/ui/cocoa/omnibox/omnibox_view_mac.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
 #include "chrome/browser/ui/omnibox/chrome_omnibox_edit_controller.h"
-#include "chrome/browser/ui/search/search_model_observer.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/ui/zoom/zoom_event_manager_observer.h"
 
@@ -29,7 +28,6 @@ class KeywordHintDecoration;
 class LocationBarDecoration;
 class LocationIconDecoration;
 class ManagePasswordsDecoration;
-class MicSearchDecoration;
 class PageActionDecoration;
 class Profile;
 class SelectedKeywordDecoration;
@@ -45,7 +43,6 @@ class ZoomDecorationTest;
 class LocationBarViewMac : public LocationBar,
                            public LocationBarTesting,
                            public ChromeOmniboxEditController,
-                           public SearchModelObserver,
                            public ui_zoom::ZoomEventManagerObserver {
  public:
   LocationBarViewMac(AutocompleteTextField* field,
@@ -172,10 +169,6 @@ class LocationBarViewMac : public LocationBar,
     return manage_passwords_decoration_.get();
   }
 
-  // SearchModelObserver:
-  void ModelChanged(const SearchModel::State& old_state,
-                    const SearchModel::State& new_state) override;
-
   Browser* browser() const { return browser_; }
 
   // ZoomManagerObserver:
@@ -219,10 +212,6 @@ class LocationBarViewMac : public LocationBar,
   // Returns whether any updates were made.
   bool UpdateZoomDecoration(bool default_zoom_changed);
 
-  // Updates the voice search decoration. Returns true if the visible state was
-  // changed.
-  bool UpdateMicSearchDecorationVisibility();
-
   scoped_ptr<OmniboxViewMac> omnibox_view_;
 
   AutocompleteTextField* field_;  // owned by tab controller
@@ -255,9 +244,6 @@ class LocationBarViewMac : public LocationBar,
 
   // Keyword hint decoration displayed on the right-hand side.
   scoped_ptr<KeywordHintDecoration> keyword_hint_decoration_;
-
-  // The voice search icon.
-  scoped_ptr<MicSearchDecoration> mic_search_decoration_;
 
   // The right-hand-side button to manage passwords associated with a page.
   scoped_ptr<ManagePasswordsDecoration> manage_passwords_decoration_;

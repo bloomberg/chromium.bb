@@ -139,9 +139,8 @@ class InstantExtendedTest : public InProcessBrowserTest,
         submit_count_(0),
         on_esc_key_press_event_calls_(0),
         on_focus_changed_calls_(0),
-        is_focused_(false),
-        on_toggle_voice_search_calls_(0) {
-  }
+        is_focused_(false) {}
+
  protected:
   void SetUpInProcessBrowserTestFixture() override {
     search::EnableQueryExtractionForTesting();
@@ -185,8 +184,6 @@ class InstantExtendedTest : public InProcessBrowserTest,
                        &on_focus_changed_calls_) &&
            GetBoolFromJS(contents, "isFocused",
                          &is_focused_) &&
-           GetIntFromJS(contents, "onToggleVoiceSearchCalls",
-                        &on_toggle_voice_search_calls_) &&
            GetStringFromJS(contents, "prefetchQuery", &prefetch_query_value_);
 
   }
@@ -247,7 +244,6 @@ class InstantExtendedTest : public InProcessBrowserTest,
   std::string query_value_;
   int on_focus_changed_calls_;
   bool is_focused_;
-  int on_toggle_voice_search_calls_;
   std::string prefetch_query_value_;
 };
 

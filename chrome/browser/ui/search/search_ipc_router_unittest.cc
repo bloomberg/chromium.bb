@@ -46,7 +46,6 @@ class MockSearchIPCRouterDelegate : public SearchIPCRouter::Delegate {
   virtual ~MockSearchIPCRouterDelegate() {}
 
   MOCK_METHOD1(OnInstantSupportDetermined, void(bool supports_instant));
-  MOCK_METHOD1(OnSetVoiceSearchSupport, void(bool supports_voice_search));
   MOCK_METHOD1(FocusOmnibox, void(OmniboxFocusState state));
   MOCK_METHOD3(NavigateToURL, void(const GURL&, WindowOpenDisposition, bool));
   MOCK_METHOD1(OnDeleteMostVisitedItem, void(const GURL& url));
@@ -67,7 +66,6 @@ class MockSearchIPCRouterPolicy : public SearchIPCRouter::Policy {
  public:
   virtual ~MockSearchIPCRouterPolicy() {}
 
-  MOCK_METHOD0(ShouldProcessSetVoiceSearchSupport, bool());
   MOCK_METHOD1(ShouldProcessFocusOmnibox, bool(bool));
   MOCK_METHOD1(ShouldProcessNavigateToURL, bool(bool));
   MOCK_METHOD0(ShouldProcessDeleteMostVisitedItem, bool());
@@ -85,7 +83,6 @@ class MockSearchIPCRouterPolicy : public SearchIPCRouter::Policy {
   MOCK_METHOD0(ShouldSendOmniboxFocusChanged, bool());
   MOCK_METHOD0(ShouldSendMostVisitedItems, bool());
   MOCK_METHOD0(ShouldSendThemeBackgroundInfo, bool());
-  MOCK_METHOD0(ShouldSendToggleVoiceSearch, bool());
   MOCK_METHOD0(ShouldSubmitQuery, bool());
 };
 
@@ -224,32 +221,6 @@ TEST_F(SearchIPCRouterTest, IgnoreMessagesFromNonInstantRenderers) {
   OnMessageReceived(ChromeViewHostMsg_SearchBoxNavigate(
       contents->GetRoutingID(), GetSearchIPCRouterSeqNo(), destination_url,
       CURRENT_TAB, true));
-}
-
-TEST_F(SearchIPCRouterTest, ProcessVoiceSearchSupportMsg) {
-  NavigateAndCommitActiveTab(GURL("chrome-search://foo/bar"));
-  SetupMockDelegateAndPolicy();
-  MockSearchIPCRouterPolicy* policy = GetSearchIPCRouterPolicy();
-  EXPECT_CALL(*mock_delegate(), OnSetVoiceSearchSupport(true)).Times(1);
-  EXPECT_CALL(*(policy), ShouldProcessSetVoiceSearchSupport()).Times(1)
-      .WillOnce(testing::Return(true));
-
-  content::WebContents* contents = web_contents();
-  OnMessageReceived(ChromeViewHostMsg_SetVoiceSearchSupported(
-      contents->GetRoutingID(), GetSearchIPCRouterSeqNo(), true));
-}
-
-TEST_F(SearchIPCRouterTest, IgnoreVoiceSearchSupportMsg) {
-  NavigateAndCommitActiveTab(GURL("chrome-search://foo/bar"));
-  EXPECT_CALL(*mock_delegate(), OnSetVoiceSearchSupport(true)).Times(0);
-  SetupMockDelegateAndPolicy();
-  MockSearchIPCRouterPolicy* policy = GetSearchIPCRouterPolicy();
-  EXPECT_CALL(*policy, ShouldProcessSetVoiceSearchSupport()).Times(1)
-      .WillOnce(testing::Return(false));
-
-  content::WebContents* contents = web_contents();
-  OnMessageReceived(ChromeViewHostMsg_SetVoiceSearchSupported(
-      contents->GetRoutingID(), GetSearchIPCRouterSeqNo(), true));
 }
 
 TEST_F(SearchIPCRouterTest, ProcessFocusOmniboxMsg) {
@@ -875,30 +846,6 @@ TEST_F(SearchIPCRouterTest, DoNotSendSubmitMsg) {
   process()->sink().ClearMessages();
   GetSearchIPCRouter().Submit(base::string16(), EmbeddedSearchRequestParams());
   EXPECT_FALSE(MessageWasSent(ChromeViewMsg_SearchBoxSubmit::ID));
-}
-
-TEST_F(SearchIPCRouterTest, SendToggleVoiceSearch) {
-  NavigateAndCommitActiveTab(GURL("chrome-search://foo/bar"));
-  SetupMockDelegateAndPolicy();
-  MockSearchIPCRouterPolicy* policy = GetSearchIPCRouterPolicy();
-  EXPECT_CALL(*policy, ShouldSendToggleVoiceSearch()).Times(1)
-      .WillOnce(testing::Return(true));
-
-  process()->sink().ClearMessages();
-  GetSearchIPCRouter().ToggleVoiceSearch();
-  EXPECT_TRUE(MessageWasSent(ChromeViewMsg_SearchBoxToggleVoiceSearch::ID));
-}
-
-TEST_F(SearchIPCRouterTest, DoNotSendToggleVoiceSearch) {
-  NavigateAndCommitActiveTab(GURL("chrome-search://foo/bar"));
-  SetupMockDelegateAndPolicy();
-  MockSearchIPCRouterPolicy* policy = GetSearchIPCRouterPolicy();
-  EXPECT_CALL(*policy, ShouldSendToggleVoiceSearch()).Times(1)
-      .WillOnce(testing::Return(false));
-
-  process()->sink().ClearMessages();
-  GetSearchIPCRouter().ToggleVoiceSearch();
-  EXPECT_FALSE(MessageWasSent(ChromeViewMsg_SearchBoxToggleVoiceSearch::ID));
 }
 
 TEST_F(SearchIPCRouterTest, SpuriousMessageTypesIgnored) {

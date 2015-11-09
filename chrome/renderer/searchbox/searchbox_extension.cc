@@ -404,17 +404,6 @@ static const char kDispatchThemeChangeEventScript[] =
     "  true;"
     "}";
 
-static const char kDispatchToggleVoiceSearchScript[] =
-    "if (window.chrome &&"
-    "    window.chrome.embeddedSearch &&"
-    "    window.chrome.embeddedSearch.searchBox &&"
-    "    window.chrome.embeddedSearch.searchBox.ontogglevoicesearch &&"
-    "    typeof window.chrome.embeddedSearch.searchBox.ontogglevoicesearch =="
-    "         'function') {"
-    "  window.chrome.embeddedSearch.searchBox.ontogglevoicesearch();"
-    "  true;"
-    "}";
-
 // ----------------------------------------------------------------------------
 
 class SearchBoxExtensionWrapper : public v8::Extension {
@@ -514,10 +503,6 @@ class SearchBoxExtensionWrapper : public v8::Extension {
 
   // Pastes provided value or clipboard's content into the omnibox.
   static void Paste(const v8::FunctionCallbackInfo<v8::Value>& args);
-
-  // Indicates whether the page supports voice search.
-  static void SetVoiceSearchSupported(
-      const v8::FunctionCallbackInfo<v8::Value>& args);
 
   // Start capturing user key strokes.
   static void StartCapturingKeyStrokes(
@@ -627,12 +612,6 @@ void SearchBoxExtension::DispatchThemeChange(blink::WebFrame* frame) {
   Dispatch(frame, kDispatchThemeChangeEventScript);
 }
 
-// static
-void SearchBoxExtension::DispatchToggleVoiceSearch(
-    blink::WebFrame* frame) {
-  Dispatch(frame, kDispatchToggleVoiceSearchScript);
-}
-
 SearchBoxExtensionWrapper::SearchBoxExtensionWrapper(
     const base::StringPiece& code)
     : v8::Extension(kSearchBoxExtensionName, code.data(), 0, 0, code.size()) {
@@ -692,8 +671,6 @@ SearchBoxExtensionWrapper::GetNativeFunctionTemplate(
     return v8::FunctionTemplate::New(isolate, NavigateContentWindow);
   if (name->Equals(v8::String::NewFromUtf8(isolate, "Paste")))
     return v8::FunctionTemplate::New(isolate, Paste);
-  if (name->Equals(v8::String::NewFromUtf8(isolate, "SetVoiceSearchSupported")))
-    return v8::FunctionTemplate::New(isolate, SetVoiceSearchSupported);
   if (name->Equals(
           v8::String::NewFromUtf8(isolate, "StartCapturingKeyStrokes")))
     return v8::FunctionTemplate::New(isolate, StartCapturingKeyStrokes);
@@ -1257,22 +1234,6 @@ void SearchBoxExtensionWrapper::StopCapturingKeyStrokes(
 
   DVLOG(1) << render_view << " StopCapturingKeyStrokes";
   SearchBox::Get(render_view)->StopCapturingKeyStrokes();
-}
-
-// static
-void SearchBoxExtensionWrapper::SetVoiceSearchSupported(
-    const v8::FunctionCallbackInfo<v8::Value>& args) {
-  content::RenderView* render_view = GetRenderView();
-  if (!render_view) {
-    return;
-  }
-  if (!args.Length()) {
-    ThrowInvalidParameters(args);
-    return;
-  }
-
-  DVLOG(1) << render_view << " SetVoiceSearchSupported";
-  SearchBox::Get(render_view)->SetVoiceSearchSupported(args[0]->BooleanValue());
 }
 
 // static

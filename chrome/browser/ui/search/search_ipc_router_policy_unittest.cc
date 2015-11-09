@@ -41,12 +41,6 @@ class SearchIPCRouterPolicyTest : public BrowserWithTestWindowTest {
   }
 };
 
-TEST_F(SearchIPCRouterPolicyTest, ProcessVoiceSearchSupportMsg) {
-  NavigateAndCommitActiveTab(GURL("chrome-search://foo/bar"));
-  EXPECT_TRUE(GetSearchIPCRouterPolicy()->
-      ShouldProcessSetVoiceSearchSupport());
-}
-
 TEST_F(SearchIPCRouterPolicyTest, ProcessFocusOmnibox) {
   NavigateAndCommitActiveTab(GURL(chrome::kChromeSearchLocalNtpUrl));
   EXPECT_TRUE(GetSearchIPCRouterPolicy()->ShouldProcessFocusOmnibox(true));
@@ -205,7 +199,6 @@ TEST_F(SearchIPCRouterPolicyTest,
 
   SearchIPCRouter::Policy* router_policy = GetSearchIPCRouterPolicy();
   EXPECT_TRUE(router_policy->ShouldSubmitQuery());
-  EXPECT_TRUE(router_policy->ShouldSendToggleVoiceSearch());
   EXPECT_TRUE(router_policy->ShouldSendSetOmniboxStartMargin());
 }
 
@@ -235,9 +228,4 @@ TEST_F(SearchIPCRouterPolicyTest, DoNotSendThemeBackgroundInfo) {
 TEST_F(SearchIPCRouterPolicyTest, SubmitQuery) {
   NavigateAndCommitActiveTab(GURL("chrome-search://foo/bar"));
   EXPECT_TRUE(GetSearchIPCRouterPolicy()->ShouldSubmitQuery());
-}
-
-TEST_F(SearchIPCRouterPolicyTest, SendToggleVoiceSearch) {
-  NavigateAndCommitActiveTab(GURL(chrome::kChromeSearchLocalNtpUrl));
-  EXPECT_TRUE(GetSearchIPCRouterPolicy()->ShouldSendToggleVoiceSearch());
 }

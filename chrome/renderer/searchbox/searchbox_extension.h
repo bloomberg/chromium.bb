@@ -45,7 +45,6 @@ class SearchBoxExtension {
   static void DispatchSubmit(blink::WebFrame* frame);
   static void DispatchSuggestionChange(blink::WebFrame* frame);
   static void DispatchThemeChange(blink::WebFrame* frame);
-  static void DispatchToggleVoiceSearch(blink::WebFrame* frame);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(SearchBoxExtension);

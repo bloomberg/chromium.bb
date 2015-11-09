@@ -24,9 +24,7 @@ class SearchModel {
  public:
   struct State {
     State();
-    State(const SearchMode& mode,
-          InstantSupportState instant_support,
-          bool voice_search_supported);
+    State(const SearchMode& mode, InstantSupportState instant_support);
 
     bool operator==(const State& rhs) const;
 
@@ -35,9 +33,6 @@ class SearchModel {
 
     // Does the current page support Instant?
     InstantSupportState instant_support;
-
-    // Does the current page support voice search?
-    bool voice_search_supported;
   };
 
   SearchModel();
@@ -63,13 +58,6 @@ class SearchModel {
   InstantSupportState instant_support() const {
     return state_.instant_support;
   }
-
-  // Sets the page voice search support state.  Change notifications are sent to
-  // observers.
-  void SetVoiceSearchSupported(bool supported);
-
-  // Gets the voice search support state of the page.
-  bool voice_search_supported() const { return state_.voice_search_supported; }
 
   // Add and remove observers.
   void AddObserver(SearchModelObserver* observer);
