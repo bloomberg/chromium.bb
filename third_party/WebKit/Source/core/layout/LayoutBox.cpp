@@ -2852,7 +2852,11 @@ LayoutUnit LayoutBox::containingBlockLogicalWidthForPositioned(const LayoutBoxMo
     if (hasOverrideContainingBlockLogicalWidth())
         return overrideContainingBlockContentLogicalWidth();
 
-    if (containingBlock->isBox())
+    // Ensure we compute our width based on the width of our rel-pos inline container rather than any anonymous block
+    // created to manage a block-flow ancestor of ours in the rel-pos inline's inline flow.
+    if (containingBlock->isAnonymousBlock() && containingBlock->isRelPositioned())
+        containingBlock = toLayoutBox(containingBlock)->continuation();
+    else if (containingBlock->isBox())
         return std::max(LayoutUnit(), toLayoutBox(containingBlock)->clientLogicalWidth());
 
     ASSERT(containingBlock->isLayoutInline() && containingBlock->isInFlowPositioned());
