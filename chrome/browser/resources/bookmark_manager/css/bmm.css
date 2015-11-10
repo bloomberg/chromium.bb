@@ -206,6 +206,7 @@ list > .folder > .label,
   border-top: 1px solid rgb(156, 194, 239);
   display: flex;
   flex: 1;
+  min-height: 0;
 }
 
 .pane,
