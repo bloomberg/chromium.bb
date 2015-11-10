@@ -169,6 +169,11 @@ void MimeHandlerViewGuest::NavigationStateChanged(
   if (!(changed_flags & content::INVALIDATE_TYPE_TITLE))
     return;
 
+  // Only consider title changes not triggered by URL changes. Otherwise, the
+  // URL of the mime handler will be displayed.
+  if (changed_flags & content::INVALIDATE_TYPE_URL)
+    return;
+
   if (!is_full_page_plugin())
     return;
 
