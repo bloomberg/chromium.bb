@@ -8,6 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
+#include "content/browser/media/capture/cursor_renderer_aura.h"
 #include "media/capture/content/screen_capture_device_core.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
@@ -91,14 +92,14 @@ class AuraWindowCaptureMachine
       const CaptureFrameCallback& capture_frame_cb,
       scoped_ptr<cc::CopyOutputResult> result);
 
-  // Helper function to update cursor state.
-  // |region_in_frame| defines where the desktop is rendered in the captured
-  // frame.
-  // Returns the current cursor position in captured frame.
-  gfx::Point UpdateCursorState(const gfx::Rect& region_in_frame);
-
-  // Clears cursor state.
-  void ClearCursorState();
+  // Renders the cursor if needed and then delivers the captured frame.
+  static void CopyOutputFinishedForVideo(
+      base::WeakPtr<AuraWindowCaptureMachine> machine,
+      base::TimeTicks start_time,
+      const CaptureFrameCallback& capture_frame_cb,
+      const scoped_refptr<media::VideoFrame>& target,
+      scoped_ptr<cc::SingleReleaseCallback> release_callback,
+      bool result);
 
   // The window associated with the desktop.
   aura::Window* desktop_window_;
@@ -118,10 +119,8 @@ class AuraWindowCaptureMachine
   // YUV readback pipeline.
   scoped_ptr<content::ReadbackYUVInterface> yuv_readback_pipeline_;
 
-  // Cursor state.
-  ui::Cursor last_cursor_;
-  gfx::Size window_size_when_cursor_last_updated_;
-  SkBitmap scaled_cursor_bitmap_;
+  // Renders mouse cursor on frame.
+  scoped_ptr<content::CursorRendererAura> cursor_renderer_;
 
   // TODO(jiayl): Remove power_save_blocker_ when there is an API to keep the
   // screen from sleeping for the drive-by web.

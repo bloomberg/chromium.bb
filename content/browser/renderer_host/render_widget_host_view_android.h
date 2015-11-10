@@ -132,7 +132,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void CopyFromCompositingSurfaceToVideoFrame(
       const gfx::Rect& src_subrect,
       const scoped_refptr<media::VideoFrame>& target,
-      const base::Callback<void(bool)>& callback) override;
+      const base::Callback<void(const gfx::Rect&, bool)>& callback) override;
   bool CanCopyToVideoFrame() const override;
   void GetScreenInfo(blink::WebScreenInfo* results) override;
   bool GetScreenColorProfile(std::vector<char>* color_profile) override;

@@ -282,7 +282,7 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   virtual void CopyFromCompositingSurfaceToVideoFrame(
       const gfx::Rect& src_subrect,
       const scoped_refptr<media::VideoFrame>& target,
-      const base::Callback<void(bool)>& callback) = 0;
+      const base::Callback<void(const gfx::Rect&, bool)>& callback) = 0;
 
   // Returns true if CopyFromCompositingSurfaceToVideoFrame() is likely to
   // succeed.

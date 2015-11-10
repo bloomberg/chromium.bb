@@ -986,6 +986,9 @@
       'browser/media/audio_stream_monitor.h',
       'browser/media/capture/audio_mirroring_manager.cc',
       'browser/media/capture/audio_mirroring_manager.h',
+      'browser/media/capture/cursor_renderer.h',
+      'browser/media/capture/cursor_renderer_aura.cc',
+      'browser/media/capture/cursor_renderer_aura.h',
       'browser/media/capture/web_contents_audio_input_stream.cc',
       'browser/media/capture/web_contents_audio_input_stream.h',
       'browser/media/capture/web_contents_audio_muter.cc',
@@ -2100,6 +2103,8 @@
       ],
     }, {
       'sources/': [
+        ['exclude', '^browser/media/capture/cursor_renderer_aura.cc'],
+        ['exclude', '^browser/media/capture/cursor_renderer_aura.h'],
         ['exclude', '^browser/renderer_host/input/touch_selection_controller_client_aura.cc'],
         ['exclude', '^browser/renderer_host/input/touch_selection_controller_client_aura.h'],
         ['exclude', '^browser/renderer_host/render_widget_host_view_aura.cc'],

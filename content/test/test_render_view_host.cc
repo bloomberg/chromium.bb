@@ -137,8 +137,8 @@ void TestRenderWidgetHostView::CopyFromCompositingSurface(
 void TestRenderWidgetHostView::CopyFromCompositingSurfaceToVideoFrame(
     const gfx::Rect& src_subrect,
     const scoped_refptr<media::VideoFrame>& target,
-    const base::Callback<void(bool)>& callback) {
-  callback.Run(false);
+    const base::Callback<void(const gfx::Rect&, bool)>& callback) {
+  callback.Run(gfx::Rect(), false);
 }
 
 bool TestRenderWidgetHostView::CanCopyToVideoFrame() const {

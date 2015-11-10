@@ -421,6 +421,8 @@ source_set("browser") {
     ]
   } else {  # Not aura.
     sources -= [
+      "media/capture/cursor_renderer_aura.cc",
+      "media/capture/cursor_renderer_aura.h",
       "renderer_host/compositor_resize_lock_aura.cc",
       "renderer_host/compositor_resize_lock_aura.h",
       "renderer_host/input/synthetic_gesture_target_aura.cc",

@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_FRAME_HOST_RENDER_WIDGET_HOST_VIEW_CHILD_FRAME_H_
 #define CONTENT_BROWSER_FRAME_HOST_RENDER_WIDGET_HOST_VIEW_CHILD_FRAME_H_
 
+#include <vector>
+
 #include "base/memory/scoped_ptr.h"
 #include "cc/resources/returned_resource.h"
 #include "cc/surfaces/surface_factory_client.h"
@@ -100,7 +102,7 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   void CopyFromCompositingSurfaceToVideoFrame(
       const gfx::Rect& src_subrect,
       const scoped_refptr<media::VideoFrame>& target,
-      const base::Callback<void(bool)>& callback) override;
+      const base::Callback<void(const gfx::Rect&, bool)>& callback) override;
   bool CanCopyToVideoFrame() const override;
   bool HasAcceleratedSurface(const gfx::Size& desired_size) override;
   void OnSwapCompositorFrame(uint32 output_surface_id,

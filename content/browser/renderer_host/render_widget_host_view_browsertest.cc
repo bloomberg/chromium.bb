@@ -122,6 +122,7 @@ class RenderWidgetHostViewBrowserTest : public ContentBrowserTest {
 
   // Callback when using CopyFromCompositingSurfaceToVideoFrame() API.
   void FinishCopyFromCompositingSurface(const base::Closure& quit_closure,
+                                        const gfx::Rect& region_in_frame,
                                         bool frame_captured) {
     ++callback_invoke_count_;
     if (frame_captured)
@@ -135,6 +136,7 @@ class RenderWidgetHostViewBrowserTest : public ContentBrowserTest {
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
       base::Closure quit_closure,
       base::TimeTicks timestamp,
+      const gfx::Rect& region_in_frame,
       bool frame_captured) {
     ++callback_invoke_count_;
     if (frame_captured)
@@ -493,6 +495,7 @@ class CompositingRenderWidgetHostViewBrowserTestTabCapture
   void ReadbackRequestCallbackForVideo(
       scoped_refptr<media::VideoFrame> video_frame,
       base::Closure quit_callback,
+      const gfx::Rect& region_in_frame,
       bool result) {
     if (!result) {
       readback_response_ = READBACK_TO_VIDEO_FRAME_FAILED;
@@ -607,11 +610,10 @@ class CompositingRenderWidgetHostViewBrowserTestTabCapture
                                            output_size, gfx::Rect(output_size),
                                            output_size, base::TimeDelta());
 
-        base::Callback<void(bool success)> callback =
+        base::Callback<void(const gfx::Rect& rect, bool success)> callback =
             base::Bind(&CompositingRenderWidgetHostViewBrowserTestTabCapture::
                            ReadbackRequestCallbackForVideo,
-                       base::Unretained(this),
-                       video_frame,
+                       base::Unretained(this), video_frame,
                        run_loop.QuitClosure());
         rwhv->CopyFromCompositingSurfaceToVideoFrame(
             copy_rect, video_frame, callback);

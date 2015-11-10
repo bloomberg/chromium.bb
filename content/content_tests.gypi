@@ -493,6 +493,7 @@
       'browser/media/capture/audio_mirroring_manager_unittest.cc',
       'browser/media/capture/web_contents_audio_input_stream_unittest.cc',
       'browser/media/capture/web_contents_video_capture_device_unittest.cc',
+      'browser/media/capture/cursor_renderer_aura_unittest.cc',
       'browser/media/media_internals_unittest.cc',
       'browser/media/midi_host_unittest.cc',
       'browser/media/webrtc_identity_store_unittest.cc',
@@ -1261,6 +1262,12 @@
             }, {  # OS != "android"
               'dependencies': [
                 '../third_party/libvpx_new/libvpx.gyp:libvpx_new',
+              ],
+            }],
+            # Avoid windows due to non-availability of cursor resources in test.
+            ['OS != "linux"', {
+              'sources!': [
+              'browser/media/capture/cursor_renderer_aura_unittest.cc',
               ],
             }],
             ['use_aura!=1 and OS!="android"', {

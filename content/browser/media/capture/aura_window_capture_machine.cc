@@ -4,6 +4,8 @@
 
 #include "content/browser/media/capture/aura_window_capture_machine.h"
 
+#include <algorithm>
+
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/timer/timer.h"
@@ -35,85 +37,6 @@
 namespace content {
 
 namespace {
-
-int clip_byte(int x) {
-  return std::max(0, std::min(x, 255));
-}
-
-int alpha_blend(int alpha, int src, int dst) {
-  return (src * alpha + dst * (255 - alpha)) / 255;
-}
-
-// Helper function to composite a cursor bitmap on a YUV420 video frame.
-void RenderCursorOnVideoFrame(
-    const scoped_refptr<media::VideoFrame>& target,
-    const SkBitmap& cursor_bitmap,
-    const gfx::Point& cursor_position) {
-  DCHECK(target.get());
-  DCHECK(!cursor_bitmap.isNull());
-
-  gfx::Rect rect = gfx::IntersectRects(
-      gfx::Rect(cursor_bitmap.width(), cursor_bitmap.height()) +
-          gfx::Vector2d(cursor_position.x(), cursor_position.y()),
-      target->visible_rect());
-
-  cursor_bitmap.lockPixels();
-  for (int y = rect.y(); y < rect.bottom(); ++y) {
-    int cursor_y = y - cursor_position.y();
-    uint8* yplane = target->data(media::VideoFrame::kYPlane) +
-        y * target->row_bytes(media::VideoFrame::kYPlane);
-    uint8* uplane = target->data(media::VideoFrame::kUPlane) +
-        (y / 2) * target->row_bytes(media::VideoFrame::kUPlane);
-    uint8* vplane = target->data(media::VideoFrame::kVPlane) +
-        (y / 2) * target->row_bytes(media::VideoFrame::kVPlane);
-    for (int x = rect.x(); x < rect.right(); ++x) {
-      int cursor_x = x - cursor_position.x();
-      SkColor color = cursor_bitmap.getColor(cursor_x, cursor_y);
-      int alpha = SkColorGetA(color);
-      int color_r = SkColorGetR(color);
-      int color_g = SkColorGetG(color);
-      int color_b = SkColorGetB(color);
-      int color_y = clip_byte(((color_r * 66 + color_g * 129 + color_b * 25 +
-                                128) >> 8) + 16);
-      yplane[x] = alpha_blend(alpha, color_y, yplane[x]);
-
-      // Only sample U and V at even coordinates.
-      if ((x % 2 == 0) && (y % 2 == 0)) {
-        int color_u = clip_byte(((color_r * -38 + color_g * -74 +
-                                  color_b * 112 + 128) >> 8) + 128);
-        int color_v = clip_byte(((color_r * 112 + color_g * -94 +
-                                  color_b * -18 + 128) >> 8) + 128);
-        uplane[x / 2] = alpha_blend(alpha, color_u, uplane[x / 2]);
-        vplane[x / 2] = alpha_blend(alpha, color_v, vplane[x / 2]);
-      }
-    }
-  }
-  cursor_bitmap.unlockPixels();
-}
-
-using CaptureFrameCallback =
-    media::ThreadSafeCaptureOracle::CaptureFrameCallback;
-
-void CopyOutputFinishedForVideo(
-    base::WeakPtr<AuraWindowCaptureMachine> machine,
-    base::TimeTicks start_time,
-    const CaptureFrameCallback& capture_frame_cb,
-    const scoped_refptr<media::VideoFrame>& target,
-    const SkBitmap& cursor_bitmap,
-    const gfx::Point& cursor_position,
-    scoped_ptr<cc::SingleReleaseCallback> release_callback,
-    bool result) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  if (!cursor_bitmap.isNull())
-    RenderCursorOnVideoFrame(target, cursor_bitmap, cursor_position);
-  release_callback->Run(gpu::SyncToken(), false);
-
-  // Only deliver the captured frame if the AuraWindowCaptureMachine has not
-  // been stopped (i.e., the WeakPtr is still valid).
-  if (machine.get())
-    capture_frame_cb.Run(target, start_time, result);
-}
 
 void RunSingleReleaseCallback(scoped_ptr<cc::SingleReleaseCallback> cb,
                               const gpu::SyncToken& sync_token) {
@@ -212,6 +135,7 @@ void AuraWindowCaptureMachine::InternalStop(const base::Closure& callback) {
       window_host->compositor()->RemoveObserver(this);
     desktop_window_->RemoveObserver(this);
     desktop_window_ = NULL;
+    cursor_renderer_.reset();
   }
 
   // Stop timer.
@@ -225,6 +149,7 @@ void AuraWindowCaptureMachine::SetWindow(aura::Window* window) {
 
   DCHECK(!desktop_window_);
   desktop_window_ = window;
+  cursor_renderer_.reset(new CursorRendererAura(window));
 
   // Start observing window events.
   desktop_window_->AddObserver(this);
@@ -243,7 +168,7 @@ void AuraWindowCaptureMachine::UpdateCaptureSize() {
      oracle_proxy_->UpdateCaptureSize(ui::ConvertSizeToPixel(
          layer, layer->bounds().size()));
   }
-  ClearCursorState();
+  cursor_renderer_->Clear();
 }
 
 void AuraWindowCaptureMachine::Capture(bool dirty) {
@@ -388,78 +313,38 @@ bool AuraWindowCaptureMachine::ProcessCopyOutputResponse(
                                              true));
   }
 
-  gfx::Point cursor_position_in_frame = UpdateCursorState(region_in_frame);
+  cursor_renderer_->SnapshotCursorState(region_in_frame);
   yuv_readback_pipeline_->ReadbackYUV(
       texture_mailbox.mailbox(), texture_mailbox.sync_token(),
       video_frame.get(), region_in_frame.origin(),
       base::Bind(&CopyOutputFinishedForVideo, weak_factory_.GetWeakPtr(),
                  start_time, capture_frame_cb, video_frame,
-                 scaled_cursor_bitmap_, cursor_position_in_frame,
                  base::Passed(&release_callback)));
   return true;
 }
 
-gfx::Point AuraWindowCaptureMachine::UpdateCursorState(
-    const gfx::Rect& region_in_frame) {
-  const gfx::Rect window_bounds = desktop_window_->GetBoundsInScreen();
-  gfx::Point cursor_position = aura::Env::GetInstance()->last_mouse_location();
-  if (!window_bounds.Contains(cursor_position)) {
-    // Return early if there is no need to draw the cursor.
-    ClearCursorState();
-    return gfx::Point();
+using CaptureFrameCallback =
+    media::ThreadSafeCaptureOracle::CaptureFrameCallback;
+
+void AuraWindowCaptureMachine::CopyOutputFinishedForVideo(
+    base::WeakPtr<AuraWindowCaptureMachine> machine,
+    base::TimeTicks start_time,
+    const CaptureFrameCallback& capture_frame_cb,
+    const scoped_refptr<media::VideoFrame>& target,
+    scoped_ptr<cc::SingleReleaseCallback> release_callback,
+    bool result) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  release_callback->Run(gpu::SyncToken(), false);
+
+  // Render the cursor and deliver the captured frame if the
+  // AuraWindowCaptureMachine has not been stopped (i.e., the WeakPtr is
+  // still valid).
+  if (machine.get()) {
+    if (machine->cursor_renderer_ && result)
+      machine->cursor_renderer_->RenderOnVideoFrame(target);
+    capture_frame_cb.Run(target, start_time, result);
   }
-
-  aura::client::ActivationClient* activation_client =
-      aura::client::GetActivationClient(desktop_window_->GetRootWindow());
-  DCHECK(activation_client);
-  aura::Window* active_window = activation_client->GetActiveWindow();
-  if (!desktop_window_->Contains(active_window)) {
-    // Return early if the target window is not active.
-    ClearCursorState();
-    return gfx::Point();
-  }
-
-  gfx::NativeCursor cursor = desktop_window_->GetHost()->last_cursor();
-  gfx::Point cursor_hot_point;
-  if (last_cursor_ != cursor ||
-      window_size_when_cursor_last_updated_ != window_bounds.size()) {
-    SkBitmap cursor_bitmap;
-    if (ui::GetCursorBitmap(cursor, &cursor_bitmap, &cursor_hot_point)) {
-      const int scaled_width = cursor_bitmap.width() *
-          region_in_frame.width() / window_bounds.width();
-      const int scaled_height = cursor_bitmap.height() *
-          region_in_frame.height() / window_bounds.height();
-      if (scaled_width <= 0 || scaled_height <= 0) {
-        ClearCursorState();
-        return gfx::Point();
-      }
-      scaled_cursor_bitmap_ = skia::ImageOperations::Resize(
-          cursor_bitmap,
-          skia::ImageOperations::RESIZE_BEST,
-          scaled_width,
-          scaled_height);
-      last_cursor_ = cursor;
-      window_size_when_cursor_last_updated_ = window_bounds.size();
-    } else {
-      // Clear cursor state if ui::GetCursorBitmap failed so that we do not
-      // render cursor on the captured frame.
-      ClearCursorState();
-    }
-  }
-
-  cursor_position.Offset(-window_bounds.x() - cursor_hot_point.x(),
-                         -window_bounds.y() - cursor_hot_point.y());
-  return gfx::Point(
-      region_in_frame.x() + cursor_position.x() *
-          region_in_frame.width() / window_bounds.width(),
-      region_in_frame.y() + cursor_position.y() *
-          region_in_frame.height() / window_bounds.height());
-}
-
-void AuraWindowCaptureMachine::ClearCursorState() {
-  last_cursor_ = ui::Cursor();
-  window_size_when_cursor_last_updated_ = gfx::Size();
-  scaled_cursor_bitmap_.reset();
 }
 
 void AuraWindowCaptureMachine::OnWindowBoundsChanged(

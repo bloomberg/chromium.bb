@@ -925,11 +925,11 @@ void RenderWidgetHostViewAndroid::CopyFromCompositingSurface(
 }
 
 void RenderWidgetHostViewAndroid::CopyFromCompositingSurfaceToVideoFrame(
-      const gfx::Rect& src_subrect,
-      const scoped_refptr<media::VideoFrame>& target,
-      const base::Callback<void(bool)>& callback) {
+    const gfx::Rect& src_subrect,
+    const scoped_refptr<media::VideoFrame>& target,
+    const base::Callback<void(const gfx::Rect&, bool)>& callback) {
   NOTIMPLEMENTED();
-  callback.Run(false);
+  callback.Run(gfx::Rect(), false);
 }
 
 bool RenderWidgetHostViewAndroid::CanCopyToVideoFrame() const {

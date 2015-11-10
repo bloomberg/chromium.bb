@@ -716,6 +716,11 @@ test("content_unittests") {
       "../browser/web_contents/web_contents_view_aura_unittest.cc",
     ]
   }
+
+  # Avoid windows due to non-availability of cursor resources in test.
+  if (!use_aura || is_win) {
+    sources -= [ "../browser/media/capture/cursor_renderer_aura_unittest.cc" ]
+  }
   if (use_aura || toolkit_views) {
     deps += [ "//ui/events:test_support" ]
   }

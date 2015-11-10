@@ -194,11 +194,11 @@ class CaptureTestView : public TestRenderWidgetHostView {
   void CopyFromCompositingSurfaceToVideoFrame(
       const gfx::Rect& src_subrect,
       const scoped_refptr<media::VideoFrame>& target,
-      const base::Callback<void(bool)>& callback) override {
+      const base::Callback<void(const gfx::Rect&, bool)>& callback) override {
     SkColor c = ConvertRgbToYuv(controller_->GetSolidColor());
     media::FillYUV(
         target.get(), SkColorGetR(c), SkColorGetG(c), SkColorGetB(c));
-    callback.Run(true);
+    callback.Run(gfx::Rect(), true);
     controller_->SignalCopy();
   }
 
@@ -219,9 +219,9 @@ class CaptureTestView : public TestRenderWidgetHostView {
       SkColor c = ConvertRgbToYuv(controller_->GetSolidColor());
       media::FillYUV(
           target.get(), SkColorGetR(c), SkColorGetG(c), SkColorGetB(c));
-      BrowserThread::PostTask(BrowserThread::UI,
-                              FROM_HERE,
-                              base::Bind(callback, present_time, true));
+      BrowserThread::PostTask(
+          BrowserThread::UI, FROM_HERE,
+          base::Bind(callback, present_time, gfx::Rect(), true));
       controller_->SignalCopy();
     }
   }

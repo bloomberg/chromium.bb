@@ -210,6 +210,7 @@ class FakeFrameSubscriber : public RenderWidgetHostViewFrameSubscriber {
 
   static void CallbackMethod(base::Callback<void(bool)> callback,
                              base::TimeTicks present_time,
+                             const gfx::Rect& region_in_frame,
                              bool success) {
     callback.Run(success);
   }
