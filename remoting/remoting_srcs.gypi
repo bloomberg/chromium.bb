@@ -88,6 +88,8 @@
       'protocol/channel_socket_adapter.h',
       'protocol/chromium_port_allocator.cc',
       'protocol/chromium_port_allocator.h',
+      'protocol/chromium_port_allocator_factory.cc',
+      'protocol/chromium_port_allocator_factory.h',
       'protocol/chromium_socket_factory.cc',
       'protocol/chromium_socket_factory.h',
       'protocol/client_control_dispatcher.cc',

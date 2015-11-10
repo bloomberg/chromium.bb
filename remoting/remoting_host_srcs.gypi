@@ -36,8 +36,6 @@
       'host/chromeos/point_transformer.h',
       'host/chromeos/skia_bitmap_desktop_frame.cc',
       'host/chromeos/skia_bitmap_desktop_frame.h',
-      'host/chromium_port_allocator_factory.cc',
-      'host/chromium_port_allocator_factory.h',
       'host/chromoting_host.cc',
       'host/chromoting_host.h',
       'host/chromoting_host_context.cc',

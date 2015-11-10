@@ -11,9 +11,9 @@
 #include "base/synchronization/waitable_event.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "remoting/host/cast_video_capturer_adapter.h"
-#include "remoting/host/chromium_port_allocator_factory.h"
 #include "remoting/host/client_session.h"
 #include "remoting/proto/control.pb.h"
+#include "remoting/protocol/chromium_port_allocator_factory.h"
 #include "remoting/protocol/client_stub.h"
 #include "third_party/libjingle/source/talk/app/webrtc/mediastreaminterface.h"
 #include "third_party/libjingle/source/talk/app/webrtc/test/fakeconstraints.h"
@@ -498,7 +498,7 @@ bool CastExtensionSession::InitializePeerConnection() {
                            webrtc::MediaConstraintsInterface::kValueTrue);
 
   rtc::scoped_refptr<webrtc::PortAllocatorFactoryInterface>
-      port_allocator_factory = ChromiumPortAllocatorFactory::Create(
+      port_allocator_factory = protocol::ChromiumPortAllocatorFactory::Create(
           network_settings_, url_request_context_getter_);
 
   peer_connection_ = peer_conn_factory_->CreatePeerConnection(

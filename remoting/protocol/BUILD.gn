@@ -32,6 +32,7 @@ source_set("protocol") {
   if (is_nacl) {
     sources -= [
       "chromium_port_allocator.cc",
+      "chromium_port_allocator_factory.cc",
       "chromium_socket_factory.cc",
     ]
   }
