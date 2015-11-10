@@ -128,19 +128,27 @@ bool ProtoDecoder::DecodeIOBuffer(int size,
 ProtoDecoder::IOBufferRefPtr ProtoDecoder::SendHostStatus(
     const pairing_api::HostStatus& message, int* size) {
   std::string serialized_proto;
-  if (!message.SerializeToString(&serialized_proto)) {
+  if (!message.SerializeToString(&serialized_proto))
     NOTREACHED();
-  }
 
   return SendMessage(MESSAGE_HOST_STATUS, serialized_proto, size);
+}
+
+ProtoDecoder::IOBufferRefPtr ProtoDecoder::SendHostNetwork(
+    const pairing_api::AddNetwork& message,
+    int* size) {
+  std::string serialized_proto;
+  if (!message.SerializeToString(&serialized_proto))
+    NOTREACHED();
+
+  return SendMessage(MESSAGE_ADD_NETWORK, serialized_proto, size);
 }
 
 ProtoDecoder::IOBufferRefPtr ProtoDecoder::SendConfigureHost(
     const pairing_api::ConfigureHost& message, int* size) {
   std::string serialized_proto;
-  if (!message.SerializeToString(&serialized_proto)) {
+  if (!message.SerializeToString(&serialized_proto))
     NOTREACHED();
-  }
 
   return SendMessage(MESSAGE_CONFIGURE_HOST, serialized_proto, size);
 }
@@ -148,9 +156,8 @@ ProtoDecoder::IOBufferRefPtr ProtoDecoder::SendConfigureHost(
 ProtoDecoder::IOBufferRefPtr ProtoDecoder::SendPairDevices(
     const pairing_api::PairDevices& message, int* size) {
   std::string serialized_proto;
-  if (!message.SerializeToString(&serialized_proto)) {
+  if (!message.SerializeToString(&serialized_proto))
     NOTREACHED();
-  }
 
   return SendMessage(MESSAGE_PAIR_DEVICES, serialized_proto, size);
 }
@@ -158,9 +165,8 @@ ProtoDecoder::IOBufferRefPtr ProtoDecoder::SendPairDevices(
 ProtoDecoder::IOBufferRefPtr ProtoDecoder::SendCompleteSetup(
     const pairing_api::CompleteSetup& message, int* size) {
   std::string serialized_proto;
-  if (!message.SerializeToString(&serialized_proto)) {
+  if (!message.SerializeToString(&serialized_proto))
     NOTREACHED();
-  }
 
   return SendMessage(MESSAGE_COMPLETE_SETUP, serialized_proto, size);
 }
@@ -168,9 +174,8 @@ ProtoDecoder::IOBufferRefPtr ProtoDecoder::SendCompleteSetup(
 ProtoDecoder::IOBufferRefPtr ProtoDecoder::SendError(
     const pairing_api::Error& message, int* size) {
   std::string serialized_proto;
-  if (!message.SerializeToString(&serialized_proto)) {
+  if (!message.SerializeToString(&serialized_proto))
     NOTREACHED();
-  }
 
   return SendMessage(MESSAGE_ERROR, serialized_proto, size);
 }

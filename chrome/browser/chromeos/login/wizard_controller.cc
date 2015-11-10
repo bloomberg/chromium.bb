@@ -1046,14 +1046,24 @@ bool WizardController::GetUsageStatisticsReporting() const {
   return usage_statistics_reporting_;
 }
 
+void WizardController::SetHostNetwork() {
+  if (!shark_controller_)
+    return;
+  NetworkScreen* network_screen = NetworkScreen::Get(this);
+  std::string onc_spec;
+  network_screen->GetConnectedWifiNetwork(&onc_spec);
+  if (!onc_spec.empty())
+    shark_controller_->SetHostNetwork(onc_spec);
+}
+
 void WizardController::SetHostConfiguration() {
-  if (shark_controller_) {
-    NetworkScreen* network_screen = NetworkScreen::Get(this);
-    shark_controller_->SetHostConfiguration(
-        true,  // Eula must be accepted before we get this far.
-        network_screen->GetApplicationLocale(), network_screen->GetTimezone(),
-        GetUsageStatisticsReporting(), network_screen->GetInputMethod());
-  }
+  if (!shark_controller_)
+    return;
+  NetworkScreen* network_screen = NetworkScreen::Get(this);
+  shark_controller_->SetHostConfiguration(
+      true,  // Eula must be accepted before we get this far.
+      network_screen->GetApplicationLocale(), network_screen->GetTimezone(),
+      GetUsageStatisticsReporting(), network_screen->GetInputMethod());
 }
 
 void WizardController::ConfigureHostRequested(
@@ -1076,7 +1086,7 @@ void WizardController::ConfigureHostRequested(
 
 void WizardController::AddNetworkRequested(const std::string& onc_spec) {
   NetworkScreen* network_screen = NetworkScreen::Get(this);
-  network_screen->CreateNetworkFromOnc(onc_spec);
+  network_screen->CreateAndConnectNetworkFromOnc(onc_spec);
 }
 
 void WizardController::OnEnableDebuggingScreenRequested() {

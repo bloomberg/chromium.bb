@@ -68,6 +68,8 @@ class ProtoDecoder {
   // Convenience functions for serializing messages into an IOBuffer.
   static IOBufferRefPtr SendHostStatus(const pairing_api::HostStatus& message,
                                        int* size);
+  static IOBufferRefPtr SendHostNetwork(const pairing_api::AddNetwork& message,
+                                        int* size);
   static IOBufferRefPtr SendConfigureHost(
       const pairing_api::ConfigureHost& message, int* size);
   static IOBufferRefPtr SendPairDevices(const pairing_api::PairDevices& message,

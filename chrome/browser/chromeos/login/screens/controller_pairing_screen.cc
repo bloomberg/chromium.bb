@@ -101,8 +101,10 @@ void ControllerPairingScreen::PairingStageChanged(Stage new_stage) {
       break;
     }
     case ControllerPairingController::STAGE_PAIRING_DONE: {
-      if (delegate_)
+      if (delegate_) {
+        delegate_->SetHostNetwork();
         delegate_->SetHostConfiguration();
+      }
       break;
     }
     case ControllerPairingController::STAGE_HOST_UPDATE_IN_PROGRESS: {

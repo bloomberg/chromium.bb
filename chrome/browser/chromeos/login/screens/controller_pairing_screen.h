@@ -23,6 +23,9 @@ class ControllerPairingScreen
    public:
     virtual ~Delegate() {}
 
+    // Set remora network from shark.
+    virtual void SetHostNetwork() = 0;
+
     // Set remora configuration from shark.
     virtual void SetHostConfiguration() = 0;
   };

@@ -246,6 +246,7 @@ class WizardController : public BaseScreenDelegate,
   bool GetUsageStatisticsReporting() const override;
 
   // Override from ControllerPairingScreen::Delegate:
+  void SetHostNetwork() override;
   void SetHostConfiguration() override;
 
   // Override from HostPairingScreen::Delegate:

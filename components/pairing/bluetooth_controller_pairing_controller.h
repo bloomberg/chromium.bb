@@ -66,6 +66,7 @@ class BluetoothControllerPairingController
   void RepeatDiscovery() override;
   std::string GetConfirmationCode() override;
   void SetConfirmationCodeIsCorrect(bool correct) override;
+  void SetHostNetwork(const std::string& onc_spec) override;
   void SetHostConfiguration(bool accepted_eula,
                             const std::string& lang,
                             const std::string& timezone,

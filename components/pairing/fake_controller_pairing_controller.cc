@@ -204,6 +204,9 @@ void FakeControllerPairingController::SetConfirmationCodeIsCorrect(
     ChangeStage(STAGE_DEVICES_DISCOVERY);
 }
 
+void FakeControllerPairingController::SetHostNetwork(
+    const std::string& onc_spec) {}
+
 void FakeControllerPairingController::SetHostConfiguration(
     bool accepted_eula,
     const std::string& lang,

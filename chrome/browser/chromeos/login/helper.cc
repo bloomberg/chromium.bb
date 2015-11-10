@@ -15,6 +15,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/network/managed_network_configuration_handler.h"
+#include "chromeos/network/network_connection_handler.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
@@ -128,8 +129,10 @@ base::string16 NetworkStateHelper::GetCurrentNetworkName() const {
   return base::string16();
 }
 
-void NetworkStateHelper::CreateNetworkFromOnc(
-    const std::string& onc_spec) const {
+void NetworkStateHelper::CreateAndConnectNetworkFromOnc(
+    const std::string& onc_spec,
+    const base::Closure& success_callback,
+    const base::Closure& error_callback) const {
   std::string error;
   scoped_ptr<base::Value> root = base::JSONReader::ReadAndReturnError(
       onc_spec, base::JSON_ALLOW_TRAILING_COMMAS, nullptr, &error);
@@ -140,24 +143,14 @@ void NetworkStateHelper::CreateNetworkFromOnc(
     return;
   }
 
-  NetworkHandler::Get()->managed_network_configuration_handler()->
-      CreateConfiguration(
+  NetworkHandler::Get()
+      ->managed_network_configuration_handler()
+      ->CreateConfiguration(
           "", *toplevel_onc,
           base::Bind(&NetworkStateHelper::OnCreateConfiguration,
-                     base::Unretained(this)),
-          base::Bind(&NetworkStateHelper::OnCreateConfigurationFailed,
-                     base::Unretained(this)));
-}
-
-void NetworkStateHelper::OnCreateConfiguration(
-    const std::string& service_path) const {
-  // Do Nothing.
-}
-
-void NetworkStateHelper::OnCreateConfigurationFailed(
-    const std::string& error_name,
-    scoped_ptr<base::DictionaryValue> error_data) const {
-  LOG(ERROR) << "Failed to create network configuration: " << error_name;
+                     base::Unretained(this), success_callback, error_callback),
+          base::Bind(&NetworkStateHelper::OnCreateOrConnectNetworkFailed,
+                     base::Unretained(this), error_callback));
 }
 
 bool NetworkStateHelper::IsConnected() const {
@@ -172,6 +165,26 @@ bool NetworkStateHelper::IsConnecting() const {
       chromeos::NetworkHandler::Get()->network_state_handler();
   return nsh->ConnectingNetworkByType(
       chromeos::NetworkTypePattern::Default()) != nullptr;
+}
+
+void NetworkStateHelper::OnCreateConfiguration(
+    const base::Closure& success_callback,
+    const base::Closure& error_callback,
+    const std::string& service_path) const {
+  // Connect to the network.
+  NetworkHandler::Get()->network_connection_handler()->ConnectToNetwork(
+      service_path, success_callback,
+      base::Bind(&NetworkStateHelper::OnCreateOrConnectNetworkFailed,
+                 base::Unretained(this), error_callback),
+      false);
+}
+
+void NetworkStateHelper::OnCreateOrConnectNetworkFailed(
+    const base::Closure& error_callback,
+    const std::string& error_name,
+    scoped_ptr<base::DictionaryValue> error_data) const {
+  LOG(ERROR) << "Failed to create or connect to network: " << error_name;
+  error_callback.Run();
 }
 
 content::StoragePartition* GetSigninPartition() {

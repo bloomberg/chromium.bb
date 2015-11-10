@@ -88,6 +88,9 @@ class ControllerPairingController {
   // |STAGE_WAITING_FOR_CODE_CONFIRMATION| stage.
   virtual void SetConfirmationCodeIsCorrect(bool correct) = 0;
 
+  // Set the values that will be sent to the host to set its network.
+  virtual void SetHostNetwork(const std::string& onc_spec) = 0;
+
   // Set the values that will be sent to the host if it needs to be configured.
   virtual void SetHostConfiguration(bool accepted_eula,
                                     const std::string& lang,

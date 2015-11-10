@@ -4,10 +4,12 @@
 
 #include "chrome/browser/chromeos/login/screens/network_screen.h"
 
+#include "base/json/json_writer.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string16.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/base/locale_util.h"
@@ -25,7 +27,9 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/network/network_handler.h"
+#include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
+#include "chromeos/network/network_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -229,8 +233,43 @@ std::string NetworkScreen::GetTimezone() const {
   return timezone_;
 }
 
-void NetworkScreen::CreateNetworkFromOnc(const std::string& onc_spec) {
-  network_state_helper_->CreateNetworkFromOnc(onc_spec);
+void NetworkScreen::GetConnectedWifiNetwork(std::string* out_onc_spec) {
+  // Currently We can only transfer unsecured WiFi configuration from shark to
+  // remora. There is no way to get password for a secured Wifi network in Cros
+  // for security reasons.
+  const NetworkState* network_state =
+      NetworkHandler::Get()->network_state_handler()->ConnectedNetworkByType(
+          NetworkTypePattern::WiFi());
+
+  if (!network_state)
+    return;
+
+  scoped_ptr<base::DictionaryValue> current_onc =
+      network_util::TranslateNetworkStateToONC(network_state);
+  std::string security;
+  current_onc->GetString(
+      onc::network_config::WifiProperty(onc::wifi::kSecurity), &security);
+  if (security != onc::wifi::kSecurityNone)
+    return;
+
+  const std::string hex_ssid = network_state->GetHexSsid();
+
+  scoped_ptr<base::DictionaryValue> copied_onc(new base::DictionaryValue());
+  copied_onc->Set(onc::toplevel_config::kType,
+                  new base::StringValue(onc::network_type::kWiFi));
+  copied_onc->Set(onc::network_config::WifiProperty(onc::wifi::kHexSSID),
+                  new base::StringValue(hex_ssid));
+  copied_onc->Set(onc::network_config::WifiProperty(onc::wifi::kSecurity),
+                  new base::StringValue(security));
+  base::JSONWriter::Write(*copied_onc.get(), out_onc_spec);
+}
+
+void NetworkScreen::CreateAndConnectNetworkFromOnc(
+    const std::string& onc_spec) {
+  network_state_helper_->CreateAndConnectNetworkFromOnc(
+      onc_spec, base::Bind(&base::DoNothing),
+      base::Bind(&NetworkScreen::OnConnectNetworkFromOncFailed,
+                 base::Unretained(this)));
 }
 
 void NetworkScreen::AddObserver(Observer* observer) {
@@ -396,6 +435,15 @@ void NetworkScreen::OnSystemTimezoneChanged() {
   std::string current_timezone_id;
   CrosSettings::Get()->GetString(kSystemTimezone, &current_timezone_id);
   GetContextEditor().SetString(kContextKeyTimezone, current_timezone_id);
+}
+
+void NetworkScreen::OnConnectNetworkFromOncFailed() {
+  if (!network_state_helper_->IsConnected() && view_) {
+    // Show error bubble.
+    view_->ShowError(l10n_util::GetStringFUTF16(
+        IDS_NETWORK_SELECTION_ERROR,
+        l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_OS_NAME)));
+  }
 }
 
 }  // namespace chromeos

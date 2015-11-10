@@ -89,7 +89,10 @@ class NetworkScreen : public NetworkModel,
   void SetTimezone(const std::string& timezone_id);
   std::string GetTimezone() const;
 
-  void CreateNetworkFromOnc(const std::string& onc_spec);
+  // Currently We can only get unsecured Wifi network configuration from shark
+  // that can be applied to remora. Returns the network ONC configuration.
+  void GetConnectedWifiNetwork(std::string* out_onc_spec);
+  void CreateAndConnectNetworkFromOnc(const std::string& onc_spec);
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
@@ -150,6 +153,9 @@ class NetworkScreen : public NetworkModel,
 
   // Callback when the system timezone settings is changed.
   void OnSystemTimezoneChanged();
+
+  // Called when connection the network from ONC failed.
+  void OnConnectNetworkFromOncFailed();
 
   // True if subscribed to network change notification.
   bool is_network_subscribed_;
