@@ -152,7 +152,8 @@ void InitializeCrashpad(bool initial_client, const std::string& process_type) {
                                                  database_path,
                                                  url,
                                                  process_annotations,
-                                                 arguments);
+                                                 arguments,
+                                                 false);
       if (result) {
         result = crashpad_client.UseHandler();
       }
