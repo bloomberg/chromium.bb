@@ -2790,10 +2790,8 @@
       'browser/ssl/ssl_blocking_page.h',
       'browser/ssl/ssl_cert_reporter.h',
       'browser/ssl/ssl_client_certificate_selector.h',
-      'browser/ssl/ssl_error_classification.cc',
-      'browser/ssl/ssl_error_classification.h',
       'browser/ssl/ssl_error_handler.cc',
-      'browser/ssl/ssl_error_handler.h'
+      'browser/ssl/ssl_error_handler.h',
     ],
     'chrome_browser_supervised_user_sources': [
       'browser/content_settings/content_settings_supervised_provider.cc',

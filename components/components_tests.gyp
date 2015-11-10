@@ -650,6 +650,9 @@
     'ssl_config_unittest_sources': [
       'ssl_config/ssl_config_service_manager_pref_unittest.cc',
     ],
+    'ssl_errors_unittest_sources': [
+      'ssl_errors/error_classification_unittest.cc'
+    ],
     'storage_monitor_unittest_sources': [
       'storage_monitor/image_capture_device_manager_unittest.mm',
       'storage_monitor/media_storage_util_unittest.cc',
@@ -900,6 +903,7 @@
         '<@(sessions_unittest_sources)',
         '<@(signin_unittest_sources)',
         '<@(ssl_config_unittest_sources)',
+        '<@(ssl_errors_unittest_sources)',
         '<@(suggestions_unittest_sources)',
         '<@(sync_bookmarks_unittest_sources)',
         '<@(sync_driver_unittest_sources)',
@@ -1025,6 +1029,7 @@
         'components.gyp:signin_core_browser',
         'components.gyp:signin_core_browser_test_support',
         'components.gyp:ssl_config',
+        'components.gyp:ssl_errors',
         'components.gyp:suggestions',
         'components.gyp:sync_bookmarks',
         'components.gyp:sync_driver_test_support',

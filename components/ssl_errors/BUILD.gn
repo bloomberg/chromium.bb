@@ -5,6 +5,8 @@
 # GYP version: components/ssl_errors.gyp
 source_set("ssl_errors") {
   sources = [
+    "error_classification.cc",
+    "error_classification.h",
     "error_info.cc",
     "error_info.h",
   ]
@@ -14,5 +16,17 @@ source_set("ssl_errors") {
     "//components/strings",
     "//net",
     "//ui/base",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "error_classification_unittests.cc",
+  ]
+
+  deps = [
+    ":ssl_errors",
+    "//testing/gtest",
   ]
 }

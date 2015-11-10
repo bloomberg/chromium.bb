@@ -33,7 +33,6 @@
 #include "chrome/browser/ssl/common_name_mismatch_handler.h"
 #include "chrome/browser/ssl/security_state_model.h"
 #include "chrome/browser/ssl/ssl_blocking_page.h"
-#include "chrome/browser/ssl/ssl_error_classification.h"
 #include "chrome/browser/ssl/ssl_error_handler.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -48,6 +47,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/security_interstitials/core/metrics_helper.h"
+#include "components/ssl_errors/error_classification.h"
 #include "components/variations/variations_associated_data.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/browser_context.h"
@@ -507,8 +507,7 @@ class SSLUITest
     mock_clock->SetNow(base::Time::NowFromSystemTime());
     mock_clock->Advance(base::TimeDelta::FromDays(367));
     SSLErrorHandler::SetClockForTest(mock_clock.get());
-    SSLErrorClassification::SetBuildTimeForTesting(
-        base::Time::NowFromSystemTime());
+    ssl_errors::SetBuildTimeForTesting(base::Time::NowFromSystemTime());
 
     // Opt in to sending reports for invalid certificate chains.
     certificate_reporting_test_utils::SetCertReportingOptIn(browser, opt_in);
@@ -859,8 +858,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestHTTPSErrorCausedByClock) {
   mock_clock->SetNow(base::Time::NowFromSystemTime());
   mock_clock->Advance(base::TimeDelta::FromDays(367));
   SSLErrorHandler::SetClockForTest(mock_clock.get());
-  SSLErrorClassification::SetBuildTimeForTesting(
-      base::Time::NowFromSystemTime());
+  ssl_errors::SetBuildTimeForTesting(base::Time::NowFromSystemTime());
 
   ui_test_utils::NavigateToURL(browser(), https_server_expired_.GetURL("/"));
   WebContents* clock_tab = browser()->tab_strip_model()->GetActiveWebContents();
@@ -2471,8 +2469,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest,
   mock_clock.SetNow(base::Time::NowFromSystemTime());
   mock_clock.Advance(base::TimeDelta::FromDays(367));
   SSLErrorHandler::SetClockForTest(&mock_clock);
-  SSLErrorClassification::SetBuildTimeForTesting(
-      base::Time::NowFromSystemTime());
+  ssl_errors::SetBuildTimeForTesting(base::Time::NowFromSystemTime());
 
   ui_test_utils::NavigateToURL(browser(), https_server_expired_.GetURL("/"));
   content::WaitForInterstitialAttach(tab);

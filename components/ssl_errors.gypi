@@ -13,12 +13,15 @@
         '../net/net.gyp:net',
         '../ui/base/ui_base.gyp:ui_base',
         'components_strings.gyp:components_strings',
+        'url_formatter/url_formatter.gyp:url_formatter'
       ],
       'include_dirs': [
         '..',
       ],
       'sources': [
         # Note: sources list duplicated in GN build.
+        'ssl_errors/error_classification.cc',
+        'ssl_errors/error_classification.h',
         'ssl_errors/error_info.cc',
         'ssl_errors/error_info.h',
       ]

@@ -26,12 +26,12 @@
 #include "chrome/browser/renderer_preferences_util.h"
 #include "chrome/browser/ssl/cert_report_helper.h"
 #include "chrome/browser/ssl/ssl_cert_reporter.h"
-#include "chrome/browser/ssl/ssl_error_classification.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/google/core/browser/google_util.h"
+#include "components/ssl_errors/error_classification.h"
 #include "components/ssl_errors/error_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cert_store.h"
@@ -157,9 +157,8 @@ SSLBlockingPage::SSLBlockingPage(content::WebContents* web_contents,
       certificate_reporting::ErrorReport::INTERSTITIAL_SSL, overridable_,
       metrics_helper()));
 
-  SSLErrorClassification error_classification(
-      time_triggered_, request_url, cert_error_, *ssl_info_.cert.get());
-  error_classification.RecordUMAStatistics(overridable_);
+  ssl_errors::RecordUMAStatistics(overridable_, time_triggered_, request_url,
+                                  cert_error_, *ssl_info_.cert.get());
 
   // Creating an interstitial without showing (e.g. from chrome://interstitials)
   // it leaks memory, so don't create it here.
@@ -229,17 +228,9 @@ void SSLBlockingPage::PopulateInterstitialStrings(
 
     ssl_errors::ErrorInfo::ErrorType type =
         ssl_errors::ErrorInfo::NetErrorToErrorType(cert_error_);
-    if (type == ssl_errors::ErrorInfo::CERT_INVALID &&
-        SSLErrorClassification::MaybeWindowsLacksSHA256Support()) {
-      load_time_data->SetString(
-          "explanationParagraph",
-          l10n_util::GetStringFUTF16(IDS_SSL_NONOVERRIDABLE_MORE_INVALID_SP3,
-                                     url));
-    } else {
-      load_time_data->SetString(
-          "explanationParagraph",
-          l10n_util::GetStringFUTF16(IDS_SSL_NONOVERRIDABLE_MORE, url));
-    }
+    load_time_data->SetString(
+        "explanationParagraph",
+        l10n_util::GetStringFUTF16(IDS_SSL_NONOVERRIDABLE_MORE, url));
     load_time_data->SetString("primaryButtonText",
                               l10n_util::GetStringUTF16(IDS_SSL_RELOAD));
     // Customize the help link depending on the specific error type.

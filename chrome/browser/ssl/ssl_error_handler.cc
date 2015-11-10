@@ -14,7 +14,7 @@
 #include "chrome/browser/ssl/bad_clock_blocking_page.h"
 #include "chrome/browser/ssl/ssl_blocking_page.h"
 #include "chrome/browser/ssl/ssl_cert_reporter.h"
-#include "chrome/browser/ssl/ssl_error_classification.h"
+#include "components/ssl_errors/error_classification.h"
 #include "components/ssl_errors/error_info.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
@@ -137,8 +137,8 @@ bool IsErrorDueToBadClock(const base::Time& now, int error) {
       ssl_errors::ErrorInfo::CERT_DATE_INVALID) {
     return false;
   }
-  return SSLErrorClassification::IsUserClockInThePast(now) ||
-         SSLErrorClassification::IsUserClockInTheFuture(now);
+  return ssl_errors::IsUserClockInThePast(now) ||
+         ssl_errors::IsUserClockInTheFuture(now);
 }
 
 }  // namespace

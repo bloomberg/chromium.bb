@@ -26,10 +26,10 @@
 #include "chrome/browser/renderer_preferences_util.h"
 #include "chrome/browser/ssl/cert_report_helper.h"
 #include "chrome/browser/ssl/ssl_cert_reporter.h"
-#include "chrome/browser/ssl/ssl_error_classification.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/google/core/browser/google_util.h"
+#include "components/ssl_errors/error_classification.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cert_store.h"
 #include "content/public/browser/interstitial_page.h"
@@ -46,6 +46,7 @@
 #include "grit/components_strings.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
+#include "net/cert/x509_certificate.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_ANDROID)
@@ -200,9 +201,8 @@ BadClockBlockingPage::BadClockBlockingPage(
       false /* overridable */, metrics_helper()));
 
   // TODO(felt): Separate the clock statistics from the main ssl statistics.
-  SSLErrorClassification classifier(time_triggered_, request_url, cert_error_,
-                                    *ssl_info_.cert.get());
-  classifier.RecordUMAStatistics(false);
+  ssl_errors::RecordUMAStatistics(false, time_triggered_, request_url,
+                                  cert_error_, *ssl_info_.cert.get());
 }
 
 bool BadClockBlockingPage::ShouldCreateNewNavigation() const {
@@ -245,10 +245,9 @@ void BadClockBlockingPage::PopulateInterstitialStrings(
   load_time_data->SetBoolean("hide_primary_button", false);
 #endif
 
-  int heading_string =
-      SSLErrorClassification::IsUserClockInTheFuture(time_triggered_)
-          ? IDS_CLOCK_ERROR_AHEAD_HEADING
-          : IDS_CLOCK_ERROR_BEHIND_HEADING;
+  int heading_string = ssl_errors::IsUserClockInTheFuture(time_triggered_)
+                           ? IDS_CLOCK_ERROR_AHEAD_HEADING
+                           : IDS_CLOCK_ERROR_BEHIND_HEADING;
 
   load_time_data->SetString("tabTitle",
                             l10n_util::GetStringUTF16(IDS_CLOCK_ERROR_TITLE));

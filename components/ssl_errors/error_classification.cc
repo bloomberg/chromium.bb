@@ -1,10 +1,10 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <vector>
+#include "components/ssl_errors/error_classification.h"
 
-#include "chrome/browser/ssl/ssl_error_classification.h"
+#include <vector>
 
 #include "base/build_time.h"
 #include "base/lazy_instance.h"
@@ -29,6 +29,7 @@ using base::Time;
 using base::TimeTicks;
 using base::TimeDelta;
 
+namespace ssl_errors {
 namespace {
 
 // Events for UMA. Do not reorder or change!
@@ -60,16 +61,15 @@ void RecordSSLInterstitialCause(bool overridable, SSLInterstitialCause event) {
   }
 }
 
-int GetLevensteinDistance(const std::string& str1,
-                          const std::string& str2) {
+size_t GetLevensteinDistance(const std::string& str1, const std::string& str2) {
   if (str1 == str2)
     return 0;
   if (str1.size() == 0)
     return str2.size();
   if (str2.size() == 0)
     return str1.size();
-  std::vector<int> kFirstRow(str2.size() + 1, 0);
-  std::vector<int> kSecondRow(str2.size() + 1, 0);
+  std::vector<size_t> kFirstRow(str2.size() + 1, 0);
+  std::vector<size_t> kSecondRow(str2.size() + 1, 0);
 
   for (size_t i = 0; i < kFirstRow.size(); ++i)
     kFirstRow[i] = i;
@@ -77,8 +77,9 @@ int GetLevensteinDistance(const std::string& str1,
     kSecondRow[0] = i + 1;
     for (size_t j = 0; j < str2.size(); ++j) {
       int cost = str1[i] == str2[j] ? 0 : 1;
-      kSecondRow[j+1] = std::min(std::min(
-          kSecondRow[j] + 1, kFirstRow[j + 1] + 1), kFirstRow[j] + cost);
+      kSecondRow[j + 1] =
+          std::min(std::min(kSecondRow[j] + 1, kFirstRow[j + 1] + 1),
+                   kFirstRow[j] + cost);
     }
     for (size_t j = 0; j < kFirstRow.size(); j++)
       kFirstRow[j] = kSecondRow[j];
@@ -86,160 +87,24 @@ int GetLevensteinDistance(const std::string& str1,
   return kSecondRow[str2.size()];
 }
 
-// The time to use when doing build time operations in browser tests.
-base::LazyInstance<base::Time> g_testing_build_time = LAZY_INSTANCE_INITIALIZER;
-
-} // namespace
-
-SSLErrorClassification::SSLErrorClassification(const base::Time& current_time,
-                                               const GURL& url,
-                                               int cert_error,
-                                               const net::X509Certificate& cert)
-    : current_time_(current_time),
-      request_url_(url),
-      cert_error_(cert_error),
-      cert_(cert) {}
-
-SSLErrorClassification::~SSLErrorClassification() { }
-
-void SSLErrorClassification::RecordUMAStatistics(
-    bool overridable) const {
-  ssl_errors::ErrorInfo::ErrorType type =
-      ssl_errors::ErrorInfo::NetErrorToErrorType(cert_error_);
-  UMA_HISTOGRAM_ENUMERATION("interstitial.ssl_error_type", type,
-                            ssl_errors::ErrorInfo::END_OF_ENUM);
-  switch (type) {
-    case ssl_errors::ErrorInfo::CERT_DATE_INVALID: {
-      if (IsUserClockInThePast(base::Time::NowFromSystemTime())) {
-        RecordSSLInterstitialCause(overridable, CLOCK_PAST);
-      } else if (IsUserClockInTheFuture(base::Time::NowFromSystemTime())) {
-        RecordSSLInterstitialCause(overridable, CLOCK_FUTURE);
-      } else if (cert_.HasExpired() &&
-                 (current_time_ - cert_.valid_expiry()).InDays() < 28) {
-        RecordSSLInterstitialCause(overridable, EXPIRED_RECENTLY);
-      }
-      break;
-    }
-    case ssl_errors::ErrorInfo::CERT_COMMON_NAME_INVALID: {
-      std::string host_name = request_url_.host();
-      if (IsHostNameKnownTLD(host_name)) {
-        Tokens host_name_tokens = Tokenize(host_name);
-        if (IsWWWSubDomainMatch())
-          RecordSSLInterstitialCause(overridable, WWW_SUBDOMAIN_MATCH);
-        if (IsSubDomainOutsideWildcard(host_name_tokens))
-          RecordSSLInterstitialCause(overridable, SUBDOMAIN_OUTSIDE_WILDCARD);
-        std::vector<std::string> dns_names;
-        cert_.GetDNSNames(&dns_names);
-        std::vector<Tokens> dns_name_tokens = GetTokenizedDNSNames(dns_names);
-        if (NameUnderAnyNames(host_name_tokens, dns_name_tokens))
-          RecordSSLInterstitialCause(overridable, SUBDOMAIN_MATCH);
-        if (AnyNamesUnderName(dns_name_tokens, host_name_tokens))
-          RecordSSLInterstitialCause(overridable, SUBDOMAIN_INVERSE_MATCH);
-        if (IsCertLikelyFromMultiTenantHosting())
-          RecordSSLInterstitialCause(overridable, LIKELY_MULTI_TENANT_HOSTING);
-        if (IsCertLikelyFromSameDomain())
-          RecordSSLInterstitialCause(overridable, LIKELY_SAME_DOMAIN);
-      } else {
-         RecordSSLInterstitialCause(overridable, HOST_NAME_NOT_KNOWN_TLD);
-      }
-      break;
-    }
-    case ssl_errors::ErrorInfo::CERT_AUTHORITY_INVALID: {
-      const std::string& hostname = request_url_.HostNoBrackets();
-      if (net::IsLocalhost(hostname))
-        RecordSSLInterstitialCause(overridable, LOCALHOST);
-      if (IsHostnameNonUniqueOrDotless(hostname))
-        RecordSSLInterstitialCause(overridable, PRIVATE_URL);
-      if (net::X509Certificate::IsSelfSigned(cert_.os_cert_handle()))
-        RecordSSLInterstitialCause(overridable, SELF_SIGNED);
-      break;
-    }
-    default:
-      break;
-  }
-  UMA_HISTOGRAM_ENUMERATION("interstitial.ssl.connection_type",
-                            net::NetworkChangeNotifier::GetConnectionType(),
-                            net::NetworkChangeNotifier::CONNECTION_LAST);
-}
-
-bool SSLErrorClassification::IsUserClockInThePast(const base::Time& time_now) {
-  base::Time build_time;
-  if (!g_testing_build_time.Get().is_null()) {
-    build_time = g_testing_build_time.Get();
-  } else {
-#if defined(DONT_EMBED_BUILD_METADATA) && !defined(OFFICIAL_BUILD)
-    return false;
-#else
-    build_time = base::GetBuildTime();
-#endif
-  }
-
-  if (time_now < build_time - base::TimeDelta::FromDays(2))
-    return true;
-  return false;
-}
-
-bool SSLErrorClassification::IsUserClockInTheFuture(
-    const base::Time& time_now) {
-  base::Time build_time;
-  if (!g_testing_build_time.Get().is_null()) {
-    build_time = g_testing_build_time.Get();
-  } else {
-#if defined(DONT_EMBED_BUILD_METADATA) && !defined(OFFICIAL_BUILD)
-    return false;
-#else
-    build_time = base::GetBuildTime();
-#endif
-  }
-
-  if (time_now > build_time + base::TimeDelta::FromDays(365))
-    return true;
-  return false;
-}
-
-// static
-void SSLErrorClassification::SetBuildTimeForTesting(
-    const base::Time& testing_time) {
-  g_testing_build_time.Get() = testing_time;
-}
-
-bool SSLErrorClassification::MaybeWindowsLacksSHA256Support() {
-#if defined(OS_WIN)
-  return !base::win::MaybeHasSHA256Support();
-#else
-  return false;
-#endif
-}
-
-bool SSLErrorClassification::IsHostNameKnownTLD(const std::string& host_name) {
-  size_t tld_length =
-      net::registry_controlled_domains::GetRegistryLength(
-          host_name,
-          net::registry_controlled_domains::EXCLUDE_UNKNOWN_REGISTRIES,
-          net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
-  if (tld_length == 0 || tld_length == std::string::npos)
-    return false;
-  return true;
-}
-
-std::vector<SSLErrorClassification::Tokens> SSLErrorClassification::
-GetTokenizedDNSNames(const std::vector<std::string>& dns_names) {
-  std::vector<std::vector<std::string>> dns_name_tokens;
-  for (size_t i = 0; i < dns_names.size(); ++i) {
-    std::vector<std::string> dns_name_token_single;
-    if (dns_names[i].empty() || dns_names[i].find('\0') != std::string::npos
-        || !(IsHostNameKnownTLD(dns_names[i]))) {
+std::vector<HostnameTokens> GetTokenizedDNSNames(
+    const std::vector<std::string>& dns_names) {
+  std::vector<HostnameTokens> dns_name_tokens;
+  for (const auto& dns_name : dns_names) {
+    HostnameTokens dns_name_token_single;
+    if (dns_name.empty() || dns_name.find('\0') != std::string::npos ||
+        !(IsHostNameKnownTLD(dns_name))) {
       dns_name_token_single.push_back(std::string());
     } else {
-      dns_name_token_single = Tokenize(dns_names[i]);
+      dns_name_token_single = Tokenize(dns_name);
     }
     dns_name_tokens.push_back(dns_name_token_single);
   }
   return dns_name_tokens;
 }
 
-size_t SSLErrorClassification::FindSubDomainDifference(
-    const Tokens& potential_subdomain, const Tokens& parent) const {
+size_t FindSubDomainDifference(const HostnameTokens& potential_subdomain,
+                               const HostnameTokens& parent) {
   // A check to ensure that the number of tokens in the tokenized_parent is
   // less than the tokenized_potential_subdomain.
   if (parent.size() >= potential_subdomain.size())
@@ -256,17 +121,141 @@ size_t SSLErrorClassification::FindSubDomainDifference(
   return 0;
 }
 
-SSLErrorClassification::Tokens SSLErrorClassification::
-Tokenize(const std::string& name) {
-  return base::SplitString(
-      name, ".", base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
+// The time to use when doing build time operations in browser tests.
+base::LazyInstance<base::Time> g_testing_build_time = LAZY_INSTANCE_INITIALIZER;
+
+}  // namespace
+
+void RecordUMAStatistics(bool overridable,
+                         const base::Time& current_time,
+                         const GURL& request_url,
+                         int cert_error,
+                         const net::X509Certificate& cert) {
+  ssl_errors::ErrorInfo::ErrorType type =
+      ssl_errors::ErrorInfo::NetErrorToErrorType(cert_error);
+  UMA_HISTOGRAM_ENUMERATION("interstitial.ssl_error_type", type,
+                            ssl_errors::ErrorInfo::END_OF_ENUM);
+  switch (type) {
+    case ssl_errors::ErrorInfo::CERT_DATE_INVALID: {
+      if (IsUserClockInThePast(base::Time::NowFromSystemTime())) {
+        RecordSSLInterstitialCause(overridable, CLOCK_PAST);
+      } else if (IsUserClockInTheFuture(base::Time::NowFromSystemTime())) {
+        RecordSSLInterstitialCause(overridable, CLOCK_FUTURE);
+      } else if (cert.HasExpired() &&
+                 (current_time - cert.valid_expiry()).InDays() < 28) {
+        RecordSSLInterstitialCause(overridable, EXPIRED_RECENTLY);
+      }
+      break;
+    }
+    case ssl_errors::ErrorInfo::CERT_COMMON_NAME_INVALID: {
+      std::string host_name = request_url.host();
+      if (IsHostNameKnownTLD(host_name)) {
+        HostnameTokens host_name_tokens = Tokenize(host_name);
+        if (IsWWWSubDomainMatch(request_url, cert))
+          RecordSSLInterstitialCause(overridable, WWW_SUBDOMAIN_MATCH);
+        if (IsSubDomainOutsideWildcard(request_url, cert))
+          RecordSSLInterstitialCause(overridable, SUBDOMAIN_OUTSIDE_WILDCARD);
+        std::vector<std::string> dns_names;
+        cert.GetDNSNames(&dns_names);
+        std::vector<HostnameTokens> dns_name_tokens =
+            GetTokenizedDNSNames(dns_names);
+        if (NameUnderAnyNames(host_name_tokens, dns_name_tokens))
+          RecordSSLInterstitialCause(overridable, SUBDOMAIN_MATCH);
+        if (AnyNamesUnderName(dns_name_tokens, host_name_tokens))
+          RecordSSLInterstitialCause(overridable, SUBDOMAIN_INVERSE_MATCH);
+        if (IsCertLikelyFromMultiTenantHosting(request_url, cert))
+          RecordSSLInterstitialCause(overridable, LIKELY_MULTI_TENANT_HOSTING);
+        if (IsCertLikelyFromSameDomain(request_url, cert))
+          RecordSSLInterstitialCause(overridable, LIKELY_SAME_DOMAIN);
+      } else {
+        RecordSSLInterstitialCause(overridable, HOST_NAME_NOT_KNOWN_TLD);
+      }
+      break;
+    }
+    case ssl_errors::ErrorInfo::CERT_AUTHORITY_INVALID: {
+      const std::string& hostname = request_url.HostNoBrackets();
+      if (net::IsLocalhost(hostname))
+        RecordSSLInterstitialCause(overridable, LOCALHOST);
+      if (IsHostnameNonUniqueOrDotless(hostname))
+        RecordSSLInterstitialCause(overridable, PRIVATE_URL);
+      if (net::X509Certificate::IsSelfSigned(cert.os_cert_handle()))
+        RecordSSLInterstitialCause(overridable, SELF_SIGNED);
+      break;
+    }
+    default:
+      break;
+  }
+  UMA_HISTOGRAM_ENUMERATION("interstitial.ssl.connection_type",
+                            net::NetworkChangeNotifier::GetConnectionType(),
+                            net::NetworkChangeNotifier::CONNECTION_LAST);
+}
+
+bool IsUserClockInThePast(const base::Time& time_now) {
+  base::Time build_time;
+  if (!g_testing_build_time.Get().is_null()) {
+    build_time = g_testing_build_time.Get();
+  } else {
+#if defined(DONT_EMBED_BUILD_METADATA) && !defined(OFFICIAL_BUILD)
+    return false;
+#else
+    build_time = base::GetBuildTime();
+#endif
+  }
+
+  if (time_now < build_time - base::TimeDelta::FromDays(2))
+    return true;
+  return false;
+}
+
+bool IsUserClockInTheFuture(const base::Time& time_now) {
+  base::Time build_time;
+  if (!g_testing_build_time.Get().is_null()) {
+    build_time = g_testing_build_time.Get();
+  } else {
+#if defined(DONT_EMBED_BUILD_METADATA) && !defined(OFFICIAL_BUILD)
+    return false;
+#else
+    build_time = base::GetBuildTime();
+#endif
+  }
+
+  if (time_now > build_time + base::TimeDelta::FromDays(365))
+    return true;
+  return false;
+}
+
+void SetBuildTimeForTesting(const base::Time& testing_time) {
+  g_testing_build_time.Get() = testing_time;
+}
+
+bool IsHostNameKnownTLD(const std::string& host_name) {
+  size_t tld_length = net::registry_controlled_domains::GetRegistryLength(
+      host_name, net::registry_controlled_domains::EXCLUDE_UNKNOWN_REGISTRIES,
+      net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
+  if (tld_length == 0 || tld_length == std::string::npos)
+    return false;
+  return true;
+}
+
+HostnameTokens Tokenize(const std::string& name) {
+  return base::SplitString(name, ".", base::KEEP_WHITESPACE,
+                           base::SPLIT_WANT_ALL);
 }
 
 // We accept the inverse case for www for historical reasons.
-bool SSLErrorClassification::GetWWWSubDomainMatch(
-    const std::string& host_name,
-    const std::vector<std::string>& dns_names,
-    std::string* www_match_host_name) {
+bool IsWWWSubDomainMatch(const GURL& request_url,
+                         const net::X509Certificate& cert) {
+  std::string www_host;
+  std::vector<std::string> dns_names;
+  cert.GetDNSNames(&dns_names);
+  return GetWWWSubDomainMatch(request_url, dns_names, &www_host);
+}
+
+bool GetWWWSubDomainMatch(const GURL& request_url,
+                          const std::vector<std::string>& dns_names,
+                          std::string* www_match_host_name) {
+  const std::string& host_name = request_url.host();
+
   if (IsHostNameKnownTLD(host_name)) {
     // Need to account for all possible domains given in the SSL certificate.
     for (size_t i = 0; i < dns_names.size(); ++i) {
@@ -293,17 +282,8 @@ bool SSLErrorClassification::GetWWWSubDomainMatch(
   return false;
 }
 
-bool SSLErrorClassification::IsWWWSubDomainMatch() const {
-  const std::string& host_name = request_url_.host();
-  std::vector<std::string> dns_names;
-  cert_.GetDNSNames(&dns_names);
-  std::string www_host;
-  return GetWWWSubDomainMatch(host_name, dns_names, &www_host);
-}
-
-bool SSLErrorClassification::NameUnderAnyNames(
-    const Tokens& child,
-    const std::vector<Tokens>& potential_parents) const {
+bool NameUnderAnyNames(const HostnameTokens& child,
+                       const std::vector<HostnameTokens>& potential_parents) {
   bool result = false;
   // Need to account for all the possible domains given in the SSL certificate.
   for (size_t i = 0; i < potential_parents.size(); ++i) {
@@ -311,18 +291,16 @@ bool SSLErrorClassification::NameUnderAnyNames(
         potential_parents[i].size() >= child.size()) {
       result = result || false;
     } else {
-      size_t domain_diff = FindSubDomainDifference(child,
-                                                   potential_parents[i]);
-      if (domain_diff == 1 &&  child[0] != "www")
+      size_t domain_diff = FindSubDomainDifference(child, potential_parents[i]);
+      if (domain_diff == 1 && child[0] != "www")
         result = result || true;
     }
   }
   return result;
 }
 
-bool SSLErrorClassification::AnyNamesUnderName(
-    const std::vector<Tokens>& potential_children,
-    const Tokens& parent) const {
+bool AnyNamesUnderName(const std::vector<HostnameTokens>& potential_children,
+                       const HostnameTokens& parent) {
   bool result = false;
   // Need to account for all the possible domains given in the SSL certificate.
   for (size_t i = 0; i < potential_children.size(); ++i) {
@@ -330,20 +308,21 @@ bool SSLErrorClassification::AnyNamesUnderName(
         potential_children[i].size() <= parent.size()) {
       result = result || false;
     } else {
-      size_t domain_diff = FindSubDomainDifference(potential_children[i],
-                                                   parent);
-      if (domain_diff == 1 &&  potential_children[i][0] != "www")
+      size_t domain_diff =
+          FindSubDomainDifference(potential_children[i], parent);
+      if (domain_diff == 1 && potential_children[i][0] != "www")
         result = result || true;
     }
   }
   return result;
 }
 
-bool SSLErrorClassification::IsSubDomainOutsideWildcard(
-    const Tokens& host_name_tokens) const {
-  std::string host_name = request_url_.host();
+bool IsSubDomainOutsideWildcard(const GURL& request_url,
+                                const net::X509Certificate& cert) {
+  std::string host_name = request_url.host();
+  HostnameTokens host_name_tokens = Tokenize(host_name);
   std::vector<std::string> dns_names;
-  cert_.GetDNSNames(&dns_names);
+  cert.GetDNSNames(&dns_names);
   bool result = false;
 
   // This method requires that the host name be longer than the dns name on
@@ -351,27 +330,27 @@ bool SSLErrorClassification::IsSubDomainOutsideWildcard(
   for (size_t i = 0; i < dns_names.size(); ++i) {
     const std::string& name = dns_names[i];
     if (name.length() < 2 || name.length() >= host_name.length() ||
-        name.find('\0') != std::string::npos ||
-        !IsHostNameKnownTLD(name)
-        || name[0] != '*' || name[1] != '.') {
+        name.find('\0') != std::string::npos || !IsHostNameKnownTLD(name) ||
+        name[0] != '*' || name[1] != '.') {
       continue;
     }
 
     // Move past the "*.".
     std::string extracted_dns_name = name.substr(2);
-    if (FindSubDomainDifference(
-        host_name_tokens, Tokenize(extracted_dns_name)) == 2) {
+    if (FindSubDomainDifference(host_name_tokens,
+                                Tokenize(extracted_dns_name)) == 2) {
       return true;
     }
   }
   return result;
 }
 
-bool SSLErrorClassification::IsCertLikelyFromMultiTenantHosting() const {
-  std::string host_name = request_url_.host();
+bool IsCertLikelyFromMultiTenantHosting(const GURL& request_url,
+                                        const net::X509Certificate& cert) {
+  std::string host_name = request_url.host();
   std::vector<std::string> dns_names;
   std::vector<std::string> dns_names_domain;
-  cert_.GetDNSNames(&dns_names);
+  cert.GetDNSNames(&dns_names);
   size_t dns_names_size = dns_names.size();
 
   // If there is only 1 DNS name then it is definitely not a shared certificate.
@@ -382,8 +361,7 @@ bool SSLErrorClassification::IsCertLikelyFromMultiTenantHosting() const {
   // the same or not.
   for (size_t i = 0; i < dns_names_size; ++i) {
     dns_names_domain.push_back(
-        net::registry_controlled_domains::
-        GetDomainAndRegistry(
+        net::registry_controlled_domains::GetDomainAndRegistry(
             dns_names[i],
             net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES));
   }
@@ -404,10 +382,10 @@ bool SSLErrorClassification::IsCertLikelyFromMultiTenantHosting() const {
   // considered as a shared certificate. Include the host name in the URL also
   // while comparing.
   dns_names.push_back(host_name);
-  static const int kMinimumEditDsitance = 5;
+  static const size_t kMinimumEditDsitance = 5;
   for (size_t i = 0; i < dns_names_size; ++i) {
     for (size_t j = i + 1; j < dns_names_size; ++j) {
-      int edit_distance = GetLevensteinDistance(dns_names[i], dns_names[j]);
+      size_t edit_distance = GetLevensteinDistance(dns_names[i], dns_names[j]);
       if (edit_distance < kMinimumEditDsitance)
         return false;
     }
@@ -415,10 +393,11 @@ bool SSLErrorClassification::IsCertLikelyFromMultiTenantHosting() const {
   return true;
 }
 
-bool SSLErrorClassification::IsCertLikelyFromSameDomain() const {
-  std::string host_name = request_url_.host();
+bool IsCertLikelyFromSameDomain(const GURL& request_url,
+                                const net::X509Certificate& cert) {
+  std::string host_name = request_url.host();
   std::vector<std::string> dns_names;
-  cert_.GetDNSNames(&dns_names);
+  cert.GetDNSNames(&dns_names);
 
   dns_names.push_back(host_name);
   std::vector<std::string> dns_names_domain;
@@ -438,9 +417,9 @@ bool SSLErrorClassification::IsCertLikelyFromSameDomain() const {
                    host_name_domain) != dns_names_domain.end() - 1;
 }
 
-// static
-bool SSLErrorClassification::IsHostnameNonUniqueOrDotless(
-    const std::string& hostname) {
+bool IsHostnameNonUniqueOrDotless(const std::string& hostname) {
   return net::IsHostnameNonUnique(hostname) ||
          hostname.find('.') == std::string::npos;
 }
+
+}  // namespace ssl_errors

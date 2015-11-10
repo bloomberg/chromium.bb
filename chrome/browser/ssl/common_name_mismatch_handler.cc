@@ -7,7 +7,7 @@
 #include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
-#include "chrome/browser/ssl/ssl_error_classification.h"
+#include "components/ssl_errors/error_classification.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
@@ -54,10 +54,9 @@ bool CommonNameMismatchHandler::GetSuggestedUrl(
     const GURL& request_url,
     const std::vector<std::string>& dns_names,
     GURL* suggested_url) {
-  std::string host_name = request_url.host();
   std::string www_mismatch_hostname;
-  if (!SSLErrorClassification::GetWWWSubDomainMatch(host_name, dns_names,
-                                                    &www_mismatch_hostname)) {
+  if (!ssl_errors::GetWWWSubDomainMatch(request_url, dns_names,
+                                        &www_mismatch_hostname)) {
     return false;
   }
   // The full URL should be pinged, not just the new hostname. So, get the
