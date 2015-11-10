@@ -15,7 +15,6 @@
 #include "base/time/time.h"
 #include "components/password_manager/core/browser/password_store_change.h"
 #include "components/password_manager/core/browser/password_store_sync.h"
-#include "components/password_manager/core/browser/statistics_table.h"
 #include "sync/api/syncable_service.h"
 
 namespace url {
@@ -37,6 +36,7 @@ namespace password_manager {
 class AffiliatedMatchHelper;
 class PasswordStoreConsumer;
 class PasswordSyncableService;
+struct InteractionsStats;
 
 // Interface for storing form passwords in a platform-specific secure way.
 // The login request/manipulation API is not threadsafe and must be used
@@ -282,9 +282,8 @@ class PasswordStore : protected PasswordStoreSync,
   // Synchronous implementation for manipulating with statistics.
   virtual void AddSiteStatsImpl(const InteractionsStats& stats) = 0;
   virtual void RemoveSiteStatsImpl(const GURL& origin_domain) = 0;
-  // Returns a raw pointer so that InteractionsStats can be forward declared.
   virtual ScopedVector<InteractionsStats> GetSiteStatsImpl(
-      const GURL& origin_domain) WARN_UNUSED_RESULT = 0;
+      const GURL& origin_domain) = 0;
 
   // Log UMA stats for number of bulk deletions.
   void LogStatsForBulkDeletion(int num_deletions);

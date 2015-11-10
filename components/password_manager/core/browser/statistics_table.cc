@@ -22,6 +22,13 @@ enum LoginTableColumns {
 
 InteractionsStats::InteractionsStats() = default;
 
+bool operator==(const InteractionsStats& lhs, const InteractionsStats& rhs) {
+  return lhs.origin_domain == rhs.origin_domain &&
+         lhs.username_value == rhs.username_value &&
+         lhs.dismissal_count == rhs.dismissal_count &&
+         lhs.update_time == rhs.update_time;
+}
+
 StatisticsTable::StatisticsTable() : db_(nullptr) {
 }
 
@@ -58,6 +65,8 @@ bool StatisticsTable::MigrateToVersion(int version) {
 }
 
 bool StatisticsTable::AddRow(const InteractionsStats& stats) {
+  if (!stats.origin_domain.is_valid())
+    return false;
   sql::Statement s(db_->GetCachedStatement(
       SQL_FROM_HERE,
       "INSERT OR REPLACE INTO stats "
@@ -71,6 +80,8 @@ bool StatisticsTable::AddRow(const InteractionsStats& stats) {
 }
 
 bool StatisticsTable::RemoveRow(const GURL& domain) {
+  if (!domain.is_valid())
+    return false;
   sql::Statement s(db_->GetCachedStatement(SQL_FROM_HERE,
                                            "DELETE FROM stats WHERE "
                                            "origin_domain = ? "));
@@ -79,6 +90,8 @@ bool StatisticsTable::RemoveRow(const GURL& domain) {
 }
 
 ScopedVector<InteractionsStats> StatisticsTable::GetRows(const GURL& domain) {
+  if (!domain.is_valid())
+    return ScopedVector<InteractionsStats>();
   const char query[] =
       "SELECT origin_domain, username_value, "
       "dismissal_count, update_time FROM stats WHERE origin_domain == ?";

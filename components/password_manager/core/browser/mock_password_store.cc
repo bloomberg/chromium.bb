@@ -14,4 +14,12 @@ MockPasswordStore::MockPasswordStore()
 MockPasswordStore::~MockPasswordStore() {
 }
 
+ScopedVector<InteractionsStats> MockPasswordStore::GetSiteStatsImpl(
+    const GURL& origin_domain) {
+  std::vector<InteractionsStats*> stats = GetSiteStatsMock(origin_domain);
+  ScopedVector<InteractionsStats> result;
+  result.swap(stats);
+  return result.Pass();
+}
+
 }  // namespace password_manager

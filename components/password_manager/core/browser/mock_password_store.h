@@ -7,6 +7,7 @@
 
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/password_store.h"
+#include "components/password_manager/core/browser/statistics_table.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace password_manager {
@@ -47,12 +48,12 @@ class MockPasswordStore : public PasswordStore {
   MOCK_METHOD1(FillBlacklistLogins,
                bool(ScopedVector<autofill::PasswordForm>*));
   MOCK_METHOD1(NotifyLoginsChanged, void(const PasswordStoreChangeList&));
-  void AddSiteStatsImpl(const InteractionsStats& stats) override {}
-  void RemoveSiteStatsImpl(const GURL& origin_domain) override {}
+  // GMock doesn't allow to return noncopyable types.
   ScopedVector<InteractionsStats> GetSiteStatsImpl(
-      const GURL& origin_domain) override {
-    return ScopedVector<InteractionsStats>();
-  }
+      const GURL& origin_domain) override;
+  MOCK_METHOD1(GetSiteStatsMock, std::vector<InteractionsStats*>(const GURL&));
+  MOCK_METHOD1(AddSiteStatsImpl, void(const InteractionsStats&));
+  MOCK_METHOD1(RemoveSiteStatsImpl, void(const GURL&));
 
   PasswordStoreSync* GetSyncInterface() { return this; }
 

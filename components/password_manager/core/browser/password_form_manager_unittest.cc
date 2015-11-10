@@ -6,6 +6,7 @@
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/testing_pref_service.h"
+#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
 #include "components/autofill/core/browser/autofill_manager.h"
@@ -22,6 +23,7 @@
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "components/password_manager/core/browser/password_store.h"
+#include "components/password_manager/core/browser/statistics_table.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "components/password_manager/core/browser/stub_password_manager_driver.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
@@ -298,6 +300,8 @@ class PasswordFormManagerTest : public testing::Test {
     saved_match_.form_data.fields.push_back(field);
 
     mock_store_ = new NiceMock<MockPasswordStore>();
+    ON_CALL(*mock_store_, GetSiteStatsMock(_))
+        .WillByDefault(Return(std::vector<InteractionsStats*>()));
     client_.reset(new TestPasswordManagerClient(mock_store_.get()));
     password_manager_.reset(new PasswordManager(client_.get()));
     form_manager_.reset(new PasswordFormManager(
@@ -317,7 +321,7 @@ class PasswordFormManagerTest : public testing::Test {
     const PasswordStore::AuthorizationPromptPolicy auth_policy =
         PasswordStore::DISALLOW_PROMPT;
     EXPECT_CALL(*mock_store(), GetLogins(p->observed_form(), auth_policy, p));
-    p->FetchMatchingLoginsFromPasswordStore(auth_policy);
+    p->FetchDataFromPasswordStore(auth_policy);
     if (result == RESULT_NO_MATCH) {
       p->OnGetPasswordStoreResults(ScopedVector<PasswordForm>());
       return;
@@ -1240,7 +1244,7 @@ TEST_F(PasswordFormManagerTest, TestUpdateIncompleteCredentials) {
       PasswordStore::DISALLOW_PROMPT;
   EXPECT_CALL(*mock_store(),
               GetLogins(encountered_form, auth_policy, &form_manager));
-  form_manager.FetchMatchingLoginsFromPasswordStore(auth_policy);
+  form_manager.FetchDataFromPasswordStore(auth_policy);
 
   // Password store only has these incomplete credentials.
   scoped_ptr<PasswordForm> incomplete_form(new PasswordForm());
@@ -1665,7 +1669,7 @@ TEST_F(PasswordFormManagerTest, DriverDeletedBeforeStoreDone) {
   const PasswordStore::AuthorizationPromptPolicy auth_policy =
       PasswordStore::DISALLOW_PROMPT;
   EXPECT_CALL(*mock_store(), GetLogins(*form, auth_policy, &form_manager));
-  form_manager.FetchMatchingLoginsFromPasswordStore(auth_policy);
+  form_manager.FetchDataFromPasswordStore(auth_policy);
 
   // Suddenly, the frame and its driver disappear.
   client()->KillDriver();
@@ -1681,7 +1685,7 @@ TEST_F(PasswordFormManagerTest, PreferredMatchIsUpToDate) {
       PasswordStore::DISALLOW_PROMPT;
   EXPECT_CALL(*mock_store(),
               GetLogins(*observed_form(), auth_policy, form_manager()));
-  form_manager()->FetchMatchingLoginsFromPasswordStore(auth_policy);
+  form_manager()->FetchDataFromPasswordStore(auth_policy);
 
   ScopedVector<PasswordForm> simulated_results;
   scoped_ptr<PasswordForm> form(new PasswordForm(*observed_form()));
@@ -1961,8 +1965,7 @@ TEST_F(PasswordFormManagerTest, WipeStoreCopyIfOutdated_BeforeStoreCallback) {
 
   // Do not notify the store observer after this GetLogins call.
   EXPECT_CALL(*mock_store(), GetLogins(_, _, _));
-  form_manager.FetchMatchingLoginsFromPasswordStore(
-      PasswordStore::DISALLOW_PROMPT);
+  form_manager.FetchDataFromPasswordStore(PasswordStore::DISALLOW_PROMPT);
 
   PasswordForm submitted_form(form);
   submitted_form.password_value += ASCIIToUTF16("add stuff, make it different");
@@ -1995,8 +1998,7 @@ TEST_F(PasswordFormManagerTest, WipeStoreCopyIfOutdated_NotOutdated) {
   EXPECT_CALL(*mock_store(), GetLogins(_, _, _))
       .WillOnce(testing::WithArg<2>(
           InvokeConsumer(form, form_related, form_related2, form_unrelated)));
-  form_manager.FetchMatchingLoginsFromPasswordStore(
-      PasswordStore::DISALLOW_PROMPT);
+  form_manager.FetchDataFromPasswordStore(PasswordStore::DISALLOW_PROMPT);
 
   form_manager.ProvisionallySave(
       form, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
@@ -2026,8 +2028,7 @@ TEST_F(PasswordFormManagerTest, WipeStoreCopyIfOutdated_Outdated) {
   EXPECT_CALL(*mock_store(), GetLogins(_, _, _))
       .WillOnce(testing::WithArg<2>(
           InvokeConsumer(form, form_related, form_related2, form_unrelated)));
-  form_manager.FetchMatchingLoginsFromPasswordStore(
-      PasswordStore::DISALLOW_PROMPT);
+  form_manager.FetchDataFromPasswordStore(PasswordStore::DISALLOW_PROMPT);
 
   PasswordForm submitted_form(form);
   submitted_form.password_value += ASCIIToUTF16("add stuff, make it different");
@@ -2184,7 +2185,7 @@ TEST_F(PasswordFormManagerTest, GenerationStatusChangedWithPassword) {
       PasswordStore::DISALLOW_PROMPT;
   EXPECT_CALL(*mock_store(),
               GetLogins(*observed_form(), auth_policy, form_manager()));
-  form_manager()->FetchMatchingLoginsFromPasswordStore(auth_policy);
+  form_manager()->FetchDataFromPasswordStore(auth_policy);
 
   scoped_ptr<PasswordForm> generated_form(new PasswordForm(*observed_form()));
   generated_form->type = PasswordForm::TYPE_GENERATED;
@@ -2217,7 +2218,7 @@ TEST_F(PasswordFormManagerTest, GenerationStatusNotUpdatedIfPasswordUnchanged) {
       PasswordStore::DISALLOW_PROMPT;
   EXPECT_CALL(*mock_store(),
               GetLogins(*observed_form(), auth_policy, form_manager()));
-  form_manager()->FetchMatchingLoginsFromPasswordStore(auth_policy);
+  form_manager()->FetchDataFromPasswordStore(auth_policy);
 
   scoped_ptr<PasswordForm> generated_form(new PasswordForm(*observed_form()));
   generated_form->type = PasswordForm::TYPE_GENERATED;
@@ -2251,8 +2252,8 @@ TEST_F(PasswordFormManagerTest,
   EXPECT_CALL(*mock_store(), GetLogins(form_manager()->observed_form(),
                                        auth_policy, form_manager()))
       .Times(2);
-  form_manager()->FetchMatchingLoginsFromPasswordStore(auth_policy);
-  form_manager()->FetchMatchingLoginsFromPasswordStore(auth_policy);
+  form_manager()->FetchDataFromPasswordStore(auth_policy);
+  form_manager()->FetchDataFromPasswordStore(auth_policy);
 
   // First response from the store, should be ignored.
   scoped_ptr<PasswordForm> saved_form(new PasswordForm(*saved_match()));
@@ -2301,8 +2302,7 @@ TEST_F(PasswordFormManagerTest, ProcessFrame_DriverBeforeMatching) {
   // Ask store for logins, but store should not respond yet.
   EXPECT_CALL(*mock_store(),
               GetLogins(form_manager()->observed_form(), _, form_manager()));
-  form_manager()->FetchMatchingLoginsFromPasswordStore(
-      PasswordStore::DISALLOW_PROMPT);
+  form_manager()->FetchDataFromPasswordStore(PasswordStore::DISALLOW_PROMPT);
 
   // Now add the extra driver.
   form_manager()->ProcessFrame(extra_driver.AsWeakPtr());
@@ -2508,5 +2508,37 @@ TEST_F(PasswordFormManagerTest, TestNotUpdateWhenOnlyPSLMatched) {
   EXPECT_EQ(credentials.username_element, new_credentials.username_element);
   EXPECT_EQ(credentials.origin, new_credentials.origin);
 }
+
+#if !defined(OS_IOS) && !defined(OS_ANDROID)
+TEST_F(PasswordFormManagerTest, FetchStatistics) {
+  const PasswordStore::AuthorizationPromptPolicy auth_policy =
+      PasswordStore::DISALLOW_PROMPT;
+  InteractionsStats stats;
+  stats.origin_domain = observed_form()->origin.GetOrigin();
+  stats.username_value = saved_match()->username_value;
+  stats.dismissal_count = 5;
+  EXPECT_CALL(*mock_store(),
+              GetLogins(*observed_form(), auth_policy, form_manager()));
+  std::vector<InteractionsStats*> db_stats;
+  db_stats.push_back(new InteractionsStats(stats));
+  EXPECT_CALL(*mock_store(), GetSiteStatsMock(stats.origin_domain))
+      .WillOnce(Return(db_stats));
+  form_manager()->FetchDataFromPasswordStore(auth_policy);
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_THAT(form_manager()->interactions_stats(),
+              ElementsAre(Pointee(stats)));
+}
+#else
+TEST_F(PasswordFormManagerTest, DontFetchStatistics) {
+  const PasswordStore::AuthorizationPromptPolicy auth_policy =
+      PasswordStore::DISALLOW_PROMPT;
+  EXPECT_CALL(*mock_store(),
+              GetLogins(*observed_form(), auth_policy, form_manager()));
+  EXPECT_CALL(*mock_store(), GetSiteStatsMock(_)).Times(0);
+  form_manager()->FetchDataFromPasswordStore(auth_policy);
+  base::RunLoop().RunUntilIdle();
+}
+#endif
 
 }  // namespace password_manager

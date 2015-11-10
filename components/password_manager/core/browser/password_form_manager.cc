@@ -22,6 +22,7 @@
 #include "components/password_manager/core/browser/password_manager_driver.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_store.h"
+#include "components/password_manager/core/browser/statistics_table.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 
 using autofill::FormStructure;
@@ -298,7 +299,7 @@ void PasswordFormManager::Update(
   UpdateLogin();
 }
 
-void PasswordFormManager::FetchMatchingLoginsFromPasswordStore(
+void PasswordFormManager::FetchDataFromPasswordStore(
     PasswordStore::AuthorizationPromptPolicy prompt_policy) {
   if (state_ == MATCHING_PHASE) {
     // There is currently a password store query in progress. Remember the
@@ -326,6 +327,13 @@ void PasswordFormManager::FetchMatchingLoginsFromPasswordStore(
     return;
   }
   password_store->GetLogins(observed_form_, prompt_policy, this);
+
+// The statistics isn't needed on mobile, only on desktop. Let's save some
+// processor cycles.
+#if !defined(OS_IOS) && !defined(OS_ANDROID)
+  // The statistics is needed for the "Save password?" bubble.
+  password_store->GetSiteStats(observed_form_.origin.GetOrigin(), this);
+#endif
 }
 
 bool PasswordFormManager::HasCompletedMatching() const {
@@ -570,7 +578,7 @@ void PasswordFormManager::OnGetPasswordStoreResults(
   if (next_prompt_policy_) {
     // The received results are no longer up-to-date, need to re-request.
     state_ = PRE_MATCHING_PHASE;
-    FetchMatchingLoginsFromPasswordStore(*next_prompt_policy_);
+    FetchDataFromPasswordStore(*next_prompt_policy_);
     next_prompt_policy_.reset();
     return;
   }
@@ -597,6 +605,14 @@ void PasswordFormManager::OnGetPasswordStoreResults(
     if (observed_form_.scheme != PasswordForm::SCHEME_HTML)
       ProcessLoginPrompt();
   }
+}
+
+void PasswordFormManager::OnGetSiteStatistics(
+    ScopedVector<InteractionsStats> stats) {
+  // On Windows the password request may be resolved after the statistics due to
+  // importing from IE.
+  DCHECK(state_ == MATCHING_PHASE || state_ == POST_MATCHING_PHASE) << state_;
+  interactions_stats_.swap(stats);
 }
 
 void PasswordFormManager::SaveAsNewLogin() {

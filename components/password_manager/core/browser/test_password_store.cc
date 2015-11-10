@@ -6,6 +6,7 @@
 
 #include "base/thread_task_runner_handle.h"
 #include "components/autofill/core/common/password_form.h"
+#include "components/password_manager/core/browser/statistics_table.h"
 
 namespace password_manager {
 

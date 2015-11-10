@@ -34,6 +34,8 @@ struct InteractionsStats {
   base::Time update_time;
 };
 
+bool operator==(const InteractionsStats& lhs, const InteractionsStats& rhs);
+
 // Represents the 'stats' table in the Login Database.
 class StatisticsTable {
  public:

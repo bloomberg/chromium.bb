@@ -340,7 +340,7 @@ void PasswordManager::ProvisionallySavePassword(const PasswordForm& form) {
 
 void PasswordManager::UpdateFormManagers() {
   for (PasswordFormManager* form_manager : pending_login_managers_) {
-    form_manager->FetchMatchingLoginsFromPasswordStore(
+    form_manager->FetchDataFromPasswordStore(
         client_->GetAuthorizationPromptPolicy(form_manager->observed_form()));
   }
 }
@@ -514,7 +514,7 @@ void PasswordManager::CreatePendingLoginManagers(
     PasswordStore::AuthorizationPromptPolicy prompt_policy =
         client_->GetAuthorizationPromptPolicy(*iter);
 
-    manager->FetchMatchingLoginsFromPasswordStore(prompt_policy);
+    manager->FetchDataFromPasswordStore(prompt_policy);
   }
 
   if (logger) {

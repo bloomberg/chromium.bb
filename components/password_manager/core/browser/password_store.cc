@@ -15,6 +15,7 @@
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
 #include "components/password_manager/core/browser/password_syncable_service.h"
+#include "components/password_manager/core/browser/statistics_table.h"
 #include "url/origin.h"
 
 using autofill::PasswordForm;

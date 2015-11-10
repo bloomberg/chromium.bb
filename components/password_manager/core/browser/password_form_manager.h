@@ -74,11 +74,12 @@ class PasswordFormManager : public PasswordStoreConsumer {
   // they match. The return value is a MatchResultMask bitmask.
   MatchResultMask DoesManage(const autofill::PasswordForm& form) const;
 
-  // Retrieves potential matching logins from the database.
+  // Retrieves potential matching logins from the database. In addition the
+  // statistics is retrived on platforms with the password bubble.
   // |prompt_policy| indicates whether it's permissible to prompt the user to
   // authorize access to locked passwords. This argument is only used on
   // platforms that support prompting the user for access (such as Mac OS).
-  void FetchMatchingLoginsFromPasswordStore(
+  void FetchDataFromPasswordStore(
       PasswordStore::AuthorizationPromptPolicy prompt_policy);
 
   // Simple state-check to verify whether this object as received a callback
@@ -119,8 +120,10 @@ class PasswordFormManager : public PasswordStoreConsumer {
   // delayed until the data arrives.
   void ProcessFrame(const base::WeakPtr<PasswordManagerDriver>& driver);
 
+  // PasswordStoreConsumer:
   void OnGetPasswordStoreResults(
       ScopedVector<autofill::PasswordForm> results) override;
+  void OnGetSiteStatistics(ScopedVector<InteractionsStats> stats) override;
 
   // A user opted to 'never remember' passwords for this form.
   // Blacklist it so that from now on when it is seen we ignore it.
@@ -204,6 +207,12 @@ class PasswordFormManager : public PasswordStoreConsumer {
   void SimulateFetchMatchingLoginsFromPasswordStore() {
     // Just need to update the internal states.
     state_ = MATCHING_PHASE;
+  }
+
+  // TODO(vasilii): remove the unit test restriction when it's needed in
+  // production code.
+  const std::vector<InteractionsStats*>& interactions_stats() const {
+    return interactions_stats_.get();
   }
 #endif
 
@@ -419,6 +428,9 @@ class PasswordFormManager : public PasswordStoreConsumer {
 
   // The PasswordForm from the page or dialog managed by |this|.
   const autofill::PasswordForm observed_form_;
+
+  // Statistics for the current domain.
+  ScopedVector<InteractionsStats> interactions_stats_;
 
   // Stores provisionally saved form until |pending_credentials_| is created.
   scoped_ptr<const autofill::PasswordForm> provisionally_saved_form_;
