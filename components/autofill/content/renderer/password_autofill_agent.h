@@ -140,39 +140,17 @@ class PasswordAutofillAgent : public content::RenderFrameObserver {
     DISALLOW_COPY_AND_ASSIGN(PasswordValueGatekeeper);
   };
 
-  // Thunk class for RenderViewObserver methods that haven't yet been migrated
-  // to RenderFrameObserver. Should eventually be removed.
-  // http://crbug.com/433486
-  class LegacyPasswordAutofillAgent : public content::RenderViewObserver {
-   public:
-    LegacyPasswordAutofillAgent(content::RenderView* render_view,
-                                PasswordAutofillAgent* agent);
-    ~LegacyPasswordAutofillAgent() override;
-
-    // RenderViewObserver:
-    void OnDestruct() override;
-    void DidStartProvisionalLoad(blink::WebLocalFrame* frame) override;
-
-   private:
-    PasswordAutofillAgent* agent_;
-
-    DISALLOW_COPY_AND_ASSIGN(LegacyPasswordAutofillAgent);
-  };
-  friend class LegacyPasswordAutofillAgent;
-
   // RenderFrameObserver:
   bool OnMessageReceived(const IPC::Message& message) override;
   void DidFinishDocumentLoad() override;
   void DidFinishLoad() override;
   void FrameDetached() override;
   void FrameWillClose() override;
+  void DidStartProvisionalLoad() override;
   void DidCommitProvisionalLoad(bool is_new_navigation,
                                 bool is_same_page_navigation) override;
   void WillSendSubmitEvent(const blink::WebFormElement& form) override;
   void WillSubmitForm(const blink::WebFormElement& form) override;
-
-  // Legacy RenderViewObserver:
-  void LegacyDidStartProvisionalLoad(blink::WebLocalFrame* frame);
 
   // RenderView IPC handlers:
   void OnFillPasswordForm(int key, const PasswordFormFillData& form_data);
@@ -232,9 +210,6 @@ class PasswordAutofillAgent : public content::RenderFrameObserver {
 
   // Helper function called when in-page navigation completed
   void OnSamePageNavigationCompleted();
-
-  // Passes through |RenderViewObserver| method to |this|.
-  LegacyPasswordAutofillAgent legacy_;
 
   // The logins we have filled so far with their associated info.
   WebInputToPasswordInfoMap web_input_to_password_info_;

@@ -617,7 +617,6 @@ bool ContainsNonNullEntryForNonNullKey(
 
 PasswordAutofillAgent::PasswordAutofillAgent(content::RenderFrame* render_frame)
     : content::RenderFrameObserver(render_frame),
-      legacy_(render_frame->GetRenderView(), this),
       logging_state_active_(false),
       was_username_autofilled_(false),
       was_password_autofilled_(false),
@@ -1188,14 +1187,14 @@ void PasswordAutofillAgent::WillSubmitForm(const blink::WebFormElement& form) {
   }
 }
 
-void PasswordAutofillAgent::LegacyDidStartProvisionalLoad(
-    blink::WebLocalFrame* navigated_frame) {
+void PasswordAutofillAgent::DidStartProvisionalLoad() {
   scoped_ptr<RendererSavePasswordProgressLogger> logger;
   if (logging_state_active_) {
     logger.reset(new RendererSavePasswordProgressLogger(this, routing_id()));
     logger->LogMessage(Logger::STRING_DID_START_PROVISIONAL_LOAD_METHOD);
   }
 
+  const blink::WebLocalFrame* navigated_frame = render_frame()->GetWebFrame();
   if (navigated_frame->parent()) {
     if (logger)
       logger->LogMessage(Logger::STRING_FRAME_NOT_MAIN_FRAME);
@@ -1509,27 +1508,6 @@ bool PasswordAutofillAgent::ProvisionallySavedPasswordIsValid() {
          !provisionally_saved_form_->username_value.empty() &&
          !(provisionally_saved_form_->password_value.empty() &&
          provisionally_saved_form_->new_password_value.empty());
-}
-
-// LegacyPasswordAutofillAgent -------------------------------------------------
-
-PasswordAutofillAgent::LegacyPasswordAutofillAgent::LegacyPasswordAutofillAgent(
-    content::RenderView* render_view,
-    PasswordAutofillAgent* agent)
-    : content::RenderViewObserver(render_view), agent_(agent) {
-}
-
-PasswordAutofillAgent::LegacyPasswordAutofillAgent::
-    ~LegacyPasswordAutofillAgent() {
-}
-
-void PasswordAutofillAgent::LegacyPasswordAutofillAgent::OnDestruct() {
-  // No op. Do not delete |this|.
-}
-
-void PasswordAutofillAgent::LegacyPasswordAutofillAgent::
-    DidStartProvisionalLoad(blink::WebLocalFrame* navigated_frame) {
-  agent_->LegacyDidStartProvisionalLoad(navigated_frame);
 }
 
 }  // namespace autofill
