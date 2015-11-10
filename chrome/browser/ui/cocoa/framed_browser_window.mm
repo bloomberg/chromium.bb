@@ -46,17 +46,9 @@ const CGFloat kWindowGradientHeight = 24.0;
 @implementation FramedBrowserWindow
 
 - (void)setStyleMask:(NSUInteger)styleMask {
-  if (frameAndStyleMaskLock_)
+  if (styleMaskLock_)
     return;
   [super setStyleMask:styleMask];
-}
-
-- (void)setFrame:(NSRect)windowFrame
-         display:(BOOL)displayViews
-         animate:(BOOL)performAnimation {
-  if (frameAndStyleMaskLock_)
-    return;
-  [super setFrame:windowFrame display:displayViews animate:performAnimation];
 }
 
 - (id)initWithContentRect:(NSRect)contentRect
@@ -111,8 +103,6 @@ const CGFloat kWindowGradientHeight = 24.0;
                selector:@selector(adjustZoomButton:)
                    name:NSViewFrameDidChangeNotification
                  object:zoomButton_];
-
-    frameAndStyleMaskLock_ = NO;
   }
 
   return self;
@@ -193,8 +183,8 @@ const CGFloat kWindowGradientHeight = 24.0;
   shouldHideTitle_ = flag;
 }
 
-- (void)setFrameAndStyleMaskLock:(BOOL)lock {
-  frameAndStyleMaskLock_ = lock;
+- (void)setStyleMaskLock:(BOOL)lock {
+  styleMaskLock_ = lock;
 }
 
 - (BOOL)_isTitleHidden {

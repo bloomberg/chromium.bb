@@ -1112,14 +1112,13 @@ willPositionSheet:(NSWindow*)sheet
 }
 
 - (BOOL)shouldUseCustomAppKitFullscreenTransition:(BOOL)enterFullScreen {
-  // We are temporary disabling exit fullscreen animation because it only
-  // works on OSX 10.10.
-  // TODO(spqchan): Fix exit fullscreen animation so that it works on all
-  // OSX versions.
-  if (!enterFullScreen)
+  // Custom fullscreen transitions should only be available in OSX 10.10+.
+  if (base::mac::IsOSMountainLionOrEarlier())
     return NO;
 
-  if (base::mac::IsOSMountainLionOrEarlier())
+  // Disable the custom exit animation in OSX 10.9:
+  // https://code.google.com/p/chromium/issues/detail?id=526327#c3.
+  if (base::mac::IsOSMavericks() && !enterFullScreen)
     return NO;
 
   NSView* root = [[self.window contentView] superview];
@@ -1164,8 +1163,9 @@ willPositionSheet:(NSWindow*)sheet
   FramedBrowserWindow* framedBrowserWindow =
       base::mac::ObjCCast<FramedBrowserWindow>([self window]);
   fullscreenTransition_.reset([[BrowserWindowFullscreenTransition alloc]
-      initExitWithWindow:framedBrowserWindow
-                   frame:savedRegularWindowFrame_]);
+          initExitWithWindow:framedBrowserWindow
+                       frame:savedRegularWindowFrame_
+      tabStripBackgroundView:[self tabStripBackgroundView]]);
 
   NSArray* customWindows =
       [fullscreenTransition_ customWindowsForFullScreenTransition];

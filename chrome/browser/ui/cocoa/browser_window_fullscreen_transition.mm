@@ -12,12 +12,17 @@
 #import "base/mac/sdk_forward_declarations.h"
 #include "base/memory/scoped_ptr.h"
 #import "chrome/browser/ui/cocoa/framed_browser_window.h"
+#import "chrome/browser/ui/cocoa/tabs/tab_strip_background_view.h"
 
 namespace {
 
 NSString* const kPrimaryWindowAnimationID = @"PrimaryWindowAnimationID";
 NSString* const kSnapshotWindowAnimationID = @"SnapshotWindowAnimationID";
 NSString* const kAnimationIDKey = @"AnimationIDKey";
+
+// The fraction of the duration from AppKit's startCustomAnimation methods
+// that we want our animation to run in.
+CGFloat const kAnimationDurationFraction = 0.5;
 
 // This class has two simultaneous animations to resize and reposition layers.
 // These animations must use the same timing function, otherwise there will be
@@ -34,7 +39,7 @@ class FrameAndStyleLock {
 
   ~FrameAndStyleLock() { set_lock(NO); }
 
-  void set_lock(bool lock) { [window_ setFrameAndStyleMaskLock:lock]; }
+  void set_lock(bool lock) { [window_ setStyleMaskLock:lock]; }
 
  private:
   FramedBrowserWindow* window_;  // weak
@@ -43,6 +48,40 @@ class FrameAndStyleLock {
 };
 
 }  // namespace
+
+// This view draws a dummy toolbar over the resized content view during
+// the exit fullscreen animation. It is removed at the end of the animation.
+@interface FullscreenTabStripBackgroundView : NSView {
+  base::scoped_nsobject<NSColor> windowBackgroundColor_;
+}
+
+- (instancetype)initWithFrame:(NSRect)frame background:(NSColor*)color;
+
+@end
+
+@implementation FullscreenTabStripBackgroundView
+
+- (instancetype)initWithFrame:(NSRect)frame background:(NSColor*)color {
+  if ((self = [super initWithFrame:frame])) {
+    windowBackgroundColor_.reset([color copy]);
+  }
+  return self;
+}
+
+// Override this method so that we can paint the toolbar in this view.
+// This method first fill itself with the toolbar's background. After that,
+// it will paint the window's theme if applicable.
+- (void)drawRect:(NSRect)frame {
+  [windowBackgroundColor_ set];
+  NSRectFillUsingOperation(frame, NSCompositeDestinationOver);
+
+  [FramedBrowserWindow drawWindowThemeInDirtyRect:frame
+                                          forView:self
+                                           bounds:[self bounds]
+                             forceBlackBackground:NO];
+}
+
+@end
 
 @interface BrowserWindowFullscreenTransition () {
   // Flag to keep track of whether we are entering or exiting fullscreen.
@@ -57,11 +96,25 @@ class FrameAndStyleLock {
   // A temporary window that holds |snapshotLayer_|.
   base::scoped_nsobject<NSWindow> snapshotWindow_;
 
+  // The tabstrip background view in the window. During the exit fullscreen
+  // animation, this view be hidden while a dummy tabstrip background will be
+  // drawn over the content view.
+  base::scoped_nsobject<NSView> tabStripBackgroundView_;
+
   // The background color of |primaryWindow_| before the transition began.
   base::scoped_nsobject<NSColor> primaryWindowInitialBackgroundColor_;
 
   // Whether |primaryWindow_| was opaque before the transition began.
   BOOL primaryWindowInitialOpaque_;
+
+  // The initial anchor point of the root layer.
+  CGPoint initialRootAnchorPoint_;
+
+  // The initial origin of the content view.
+  NSPoint initialContentViewOrigin_;
+
+  // The initial value of the content view's autoresizeSubviews property.
+  BOOL initialContentViewAutoresizesSubviews_;
 
   // Whether the instance is in the process of changing the size of
   // |primaryWindow_|.
@@ -73,6 +126,10 @@ class FrameAndStyleLock {
   // The frame that |primaryWindow_| is expected to have after the transition
   // is finished.
   NSRect finalFrame_;
+
+  // This view draws the tabstrip background during the exit animation.
+  base::scoped_nsobject<FullscreenTabStripBackgroundView>
+      fullscreenTabStripBackgroundView_;
 
   // Locks and unlocks the FullSizeContentWindow.
   scoped_ptr<FrameAndStyleLock> lock_;
@@ -139,12 +196,13 @@ class FrameAndStyleLock {
 }
 
 - (instancetype)initExitWithWindow:(FramedBrowserWindow*)window
-                             frame:(NSRect)frame {
+                             frame:(NSRect)frame
+            tabStripBackgroundView:(NSView*)view {
   DCHECK(window);
   DCHECK([self rootLayerOfWindow:window]);
   if ((self = [super init])) {
     primaryWindow_.reset([window retain]);
-
+    tabStripBackgroundView_.reset([view retain]);
     isEnteringFullscreen_ = NO;
     finalFrame_ = frame;
     initialFrame_ = [[primaryWindow_ screen] frame];
@@ -161,9 +219,10 @@ class FrameAndStyleLock {
 }
 
 - (void)startCustomFullScreenAnimationWithDuration:(NSTimeInterval)duration {
+  CGFloat animationDuration = duration * kAnimationDurationFraction;
   [self preparePrimaryWindowForAnimation];
-  [self animatePrimaryWindowWithDuration:duration];
-  [self animateSnapshotWindowWithDuration:duration];
+  [self animatePrimaryWindowWithDuration:animationDuration];
+  [self animateSnapshotWindowWithDuration:animationDuration];
 }
 
 - (BOOL)shouldWindowBeUnconstrained {
@@ -210,6 +269,12 @@ class FrameAndStyleLock {
   NSRect snapshotLayerFrame =
       [snapshotWindow_ convertRectFromScreen:[primaryWindow_ frame]];
   [snapshotLayer_ setFrame:snapshotLayerFrame];
+
+  // If the primary window is in fullscreen mode, we can't move the snapshot
+  // window in front of it. As a result, at the beginning of the transition to
+  // exit fullscreen, we should order the snapshot window to the front ASAP.
+  if (isEnteringFullscreen_)
+    [snapshotWindow_ orderFront:nil];
 }
 
 - (void)preparePrimaryWindowForAnimation {
@@ -222,35 +287,81 @@ class FrameAndStyleLock {
   // resized, since resizing the window will call drawRect: and cause content
   // to flash over the entire screen.
   [primaryWindow_ setOpaque:NO];
-  CALayer* root = [self rootLayerOfWindow:primaryWindow_];
-  root.opacity = 0;
 
   if (isEnteringFullscreen_) {
     // As soon as the style mask includes the flag NSFullScreenWindowMask, the
     // window is expected to receive fullscreen layout. This must be set before
     // the window is resized, as that causes a relayout.
+
+    CALayer* root = [self rootLayerOfWindow:primaryWindow_];
+    root.opacity = 0;
+
     [primaryWindow_
         setStyleMask:[primaryWindow_ styleMask] | NSFullScreenWindowMask];
     [self changePrimaryWindowToFinalFrame];
   } else {
-    // Set the size of the root layer to the size of the final frame. The root
-    // layer is placed at position (0, 0) because the animation will take care
-    // of the layer's start and end position.
-    root.frame =
-        NSMakeRect(0, 0, finalFrame_.size.width, finalFrame_.size.height);
+    [snapshotWindow_ orderFront:nil];
+
+    NSView* contentView = [primaryWindow_ contentView];
+    NSView* rootView = [contentView superview];
+
+    // Since only the content view is resized, the window's background
+    // must be transparent. This is a hack that forces the layer to remove
+    // the textured background and replace it with clearColor.
+    [rootView setWantsLayer:NO];
+    [primaryWindow_ setBackgroundColor:[NSColor clearColor]];
+    [primaryWindow_ setStyleMask:[primaryWindow_ styleMask] &
+                                 ~NSTexturedBackgroundWindowMask];
+    [rootView setWantsLayer:YES];
+
+    CALayer* root = [self rootLayerOfWindow:primaryWindow_];
+    root.opacity = 0;
 
     // Right before the animation begins, change the contentView size to the
     // expected size at the end of the animation. Afterwards, lock the
     // |primaryWindow_| so that AppKit will not be able to make unwanted
     // changes to it during the animation.
-    [primaryWindow_ forceContentViewSize:finalFrame_.size];
+    initialContentViewOrigin_ = [[primaryWindow_ contentView] frame].origin;
+    initialRootAnchorPoint_ = root.anchorPoint;
+
+    NSPoint contentViewOrigin =
+        [self pointRelativeToCurrentScreen:finalFrame_.origin];
+    NSRect relativeContentFinalFrame =
+        NSMakeRect(contentViewOrigin.x, contentViewOrigin.y,
+                   finalFrame_.size.width, finalFrame_.size.height);
+    [primaryWindow_ forceContentViewFrame:relativeContentFinalFrame];
+
+    // In OSX 10.11, when the NSFullScreenWindowMask is added or removed,
+    // the window's frame and layer changes slightly which causes a janky
+    // movement. As a result, we should disable the content view's autoresize
+    // at the beginning of the animation and set it back to its original value
+    // at the end of the animation.
+    initialContentViewAutoresizesSubviews_ = [contentView autoresizesSubviews];
+    [contentView setAutoresizesSubviews:NO];
+
+    fullscreenTabStripBackgroundView_.reset(
+        [[FullscreenTabStripBackgroundView alloc]
+            initWithFrame:finalFrame_
+               background:primaryWindowInitialBackgroundColor_]);
+    [fullscreenTabStripBackgroundView_ setFrameOrigin:NSZeroPoint];
+    [contentView addSubview:fullscreenTabStripBackgroundView_.get()
+                 positioned:NSWindowBelow
+                 relativeTo:nil];
+
+    [tabStripBackgroundView_ setHidden:YES];
+
+    // Set anchor point to be the center of the content view
+    CGFloat anchorPointX =
+        NSMidX(relativeContentFinalFrame) / NSWidth(initialFrame_);
+    CGFloat anchorPointY =
+        NSMidY(relativeContentFinalFrame) / NSHeight(initialFrame_);
+    root.anchorPoint = CGPointMake(anchorPointX, anchorPointY);
+
     lock_->set_lock(YES);
   }
 }
 
 - (void)animateSnapshotWindowWithDuration:(CGFloat)duration {
-  [snapshotWindow_ orderFront:nil];
-
   // Calculate the frame so that it's relative to the screen.
   NSRect finalFrameRelativeToScreen =
       [snapshotWindow_ convertRectFromScreen:finalFrame_];
@@ -325,15 +436,10 @@ class FrameAndStyleLock {
       [self pointRelativeToCurrentScreen:centerOfInitialFrame];
   positionAnimation.fromValue = [NSValue valueWithPoint:startingLayerPoint];
 
-  // Since the root layer's frame is different from the window, AppKit might
-  // animate it to a different position if we have multiple windows in
-  // fullscreen. This ensures that the animation moves to the correct position.
-  CGFloat anchorPointX = NSWidth(endFrame) / 2;
-  CGFloat anchorPointY = NSHeight(endFrame) / 2;
-  NSPoint endLayerPoint = [self pointRelativeToCurrentScreen:endFrame.origin];
-  positionAnimation.toValue =
-      [NSValue valueWithPoint:NSMakePoint(endLayerPoint.x + anchorPointX,
-                                          endLayerPoint.y + anchorPointY)];
+  NSPoint endingLayerPoint =
+      [self pointRelativeToCurrentScreen:NSMakePoint(NSMidX(endFrame),
+                                                     NSMidY(endFrame))];
+  positionAnimation.toValue = [NSValue valueWithPoint:endingLayerPoint];
 
   CAAnimationGroup* group = [CAAnimationGroup animation];
   group.removedOnCompletion = NO;
@@ -373,9 +479,22 @@ class FrameAndStyleLock {
     // lock must also be released.
     if (!isEnteringFullscreen_) {
       lock_->set_lock(NO);
-      [primaryWindow_
-          setStyleMask:[primaryWindow_ styleMask] & ~NSFullScreenWindowMask];
+
+      CALayer* root = [self rootLayerOfWindow:primaryWindow_];
+      root.anchorPoint = initialRootAnchorPoint_;
+
+      NSUInteger styleMask =
+          ([primaryWindow_ styleMask] & ~NSFullScreenWindowMask) |
+          NSTexturedBackgroundWindowMask;
+      [primaryWindow_ setStyleMask:styleMask];
+
+      NSView* content = [primaryWindow_ contentView];
+      [content setFrameOrigin:initialContentViewOrigin_];
       [self changePrimaryWindowToFinalFrame];
+      [content setAutoresizesSubviews:initialContentViewAutoresizesSubviews_];
+
+      [tabStripBackgroundView_ setHidden:NO];
+      [fullscreenTabStripBackgroundView_ removeFromSuperview];
     }
 
     // Checks if the contentView size is correct.

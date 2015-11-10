@@ -16,11 +16,13 @@
 // This view always takes the size of its superview. It is intended to be used
 // as a NSWindow's contentView.  It is needed because NSWindow's implementation
 // explicitly resizes the contentView at inopportune times.
-@interface FullSizeContentView : NSView
+@interface FullSizeContentView : NSView {
+  BOOL forceFrameFlag_;
+}
 
 // This method allows us to set the content view size since setFrameSize is
 // overridden to prevent the view from shrinking.
-- (void)forceFrameSize:(NSSize)size;
+- (void)forceFrame:(NSRect)frame;
 
 @end
 
@@ -29,13 +31,15 @@
 // This method is directly called by AppKit during a live window resize.
 // Override it to prevent the content view from shrinking.
 - (void)setFrameSize:(NSSize)size {
-  if ([self superview])
+  if ([self superview] && !forceFrameFlag_)
     size = [[self superview] bounds].size;
   [super setFrameSize:size];
 }
 
-- (void)forceFrameSize:(NSSize)size {
-  [super setFrameSize:size];
+- (void)forceFrame:(NSRect)frame {
+  forceFrameFlag_ = YES;
+  [super setFrame:frame];
+  forceFrameFlag_ = NO;
 }
 
 @end
@@ -91,10 +95,10 @@
   return self;
 }
 
-- (void)forceContentViewSize:(NSSize)size {
+- (void)forceContentViewFrame:(NSRect)frame {
   FullSizeContentView* contentView =
       base::mac::ObjCCast<FullSizeContentView>(chromeWindowView_);
-  [contentView forceFrameSize:size];
+  [contentView forceFrame:frame];
 }
 
 #pragma mark - Private Methods

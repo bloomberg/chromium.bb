@@ -102,7 +102,8 @@
 // using |frame| as the frame that |window| is going to transition into.
 - (instancetype)initEnterWithWindow:(FramedBrowserWindow*)window;
 - (instancetype)initExitWithWindow:(FramedBrowserWindow*)window
-                             frame:(NSRect)frame;
+                             frame:(NSRect)frame
+            tabStripBackgroundView:(NSView*)view;
 
 // Returns the windows to be used in the custom fullscreen transition.
 - (NSArray*)customWindowsForFullScreenTransition;

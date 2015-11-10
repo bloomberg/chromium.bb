@@ -38,7 +38,7 @@
 // Forces the contentView to resize to the given size. This need to be forced
 // because by default, the contentView will always have the same size as the
 // window.
-- (void)forceContentViewSize:(NSSize)size;
+- (void)forceContentViewFrame:(NSRect)frame;
 
 @end
 
