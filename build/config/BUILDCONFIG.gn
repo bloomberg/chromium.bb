@@ -118,7 +118,7 @@ declare_args() {
   is_debug = true
 
   # Whether we're a traditional desktop unix.
-  is_desktop_linux = current_os == "linux" && current_os != "chromeos"
+  is_desktop_linux = current_os == "linux"
 
   # Set to true when compiling with the Clang compiler. Typically this is used
   # to configure warnings.
