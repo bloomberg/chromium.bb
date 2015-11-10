@@ -15,6 +15,7 @@ import android.view.View;
 import android.widget.CheckBox;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.EmbedContentViewActivity;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.sessions.SessionTabHelper;
 import org.chromium.chrome.browser.tab.Tab;
@@ -100,12 +101,19 @@ public class DataUseTabUIManager {
      */
     private static void startDataUseDialog(final Activity activity, final Tab tab,
             final String url, final int pageTransitionType, final String referrerUrl) {
-        View checkBoxView = View.inflate(activity, R.layout.data_use_dialog, null);
-        final CheckBox checkBox = (CheckBox) checkBoxView.findViewById(R.id.data_use_checkbox);
+        View dataUseDialogView = View.inflate(activity, R.layout.data_use_dialog, null);
+        final CheckBox checkBox = (CheckBox) dataUseDialogView.findViewById(R.id.data_use_checkbox);
+        View learnMore = dataUseDialogView.findViewById(R.id.learn_more);
+        learnMore.setOnClickListener(new android.view.View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                EmbedContentViewActivity.show(activity, R.string.data_use_learn_more_title,
+                        R.string.data_use_learn_more_link_url);
+            }
+        });
         new AlertDialog.Builder(activity, R.style.AlertDialogTheme)
                 .setTitle(R.string.data_use_tracking_ended_title)
-                .setMessage(R.string.data_use_tracking_ended_message)
-                .setView(checkBoxView)
+                .setView(dataUseDialogView)
                 .setPositiveButton(R.string.data_use_tracking_ended_continue,
                         new OnClickListener() {
                             @Override

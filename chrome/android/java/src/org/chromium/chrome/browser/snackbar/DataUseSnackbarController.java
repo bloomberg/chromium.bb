@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.snackbar;
 import android.content.Context;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.EmbedContentViewActivity;
 
 /**
  * The controller for two data use snackbars:
@@ -34,14 +35,16 @@ public class DataUseSnackbarController implements SnackbarManager.SnackbarContro
     public void showDataUseTrackingStartedBar() {
         mSnackbarManager.showSnackbar(Snackbar.make(
                 mContext.getString(R.string.data_use_tracking_started_snackbar_message), this)
-                .setAction(mContext.getString(R.string.data_use_tracking_started_snackbar_action),
+                .setAction(mContext.getString(R.string.data_use_tracking_snackbar_action),
                         null));
         // TODO(megjablon): Add metrics.
     }
 
     public void showDataUseTrackingEndedBar() {
         mSnackbarManager.showSnackbar(Snackbar.make(
-                mContext.getString(R.string.data_use_tracking_ended_title), this));
+                mContext.getString(R.string.data_use_tracking_ended_snackbar_message), this)
+                .setAction(mContext.getString(R.string.data_use_tracking_snackbar_action),
+                        null));
         // TODO(megjablon): Add metrics.
     }
 
@@ -57,7 +60,9 @@ public class DataUseSnackbarController implements SnackbarManager.SnackbarContro
      */
     @Override
     public void onAction(Object actionData) {
-        // TODO(megjablon): Load the more page and add metrics.
+        // TODO(megjablon): Add metrics.
+        EmbedContentViewActivity.show(mContext, R.string.data_use_learn_more_title,
+                R.string.data_use_learn_more_link_url);
     }
 
     @Override

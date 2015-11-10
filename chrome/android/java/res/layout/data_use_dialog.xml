@@ -3,16 +3,40 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_height="wrap_content"
     android:layout_width="match_parent"
-    android:paddingStart="18dp"
-    android:paddingTop="8dp" >
+    android:orientation="vertical"
+    android:paddingBottom="16dp"
+    android:paddingStart="16dp"
+    android:paddingTop="16dp" >
+    
+    <TextView
+        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:layout_marginBottom="16dp"
+        android:layout_marginStart="8dp"
+        android:text="@string/data_use_tracking_ended_message"
+        android:textColor="@color/light_normal_color"
+        android:textSize="16sp" />
+    
+    <TextView
+        android:id="@+id/learn_more"
+        android:layout_height="wrap_content"
+        android:layout_width="match_parent" 
+        android:clickable="true"
+        android:layout_marginBottom="16dp"
+        android:layout_marginStart="8dp"
+        android:text="@string/learn_more"
+        android:textColor="@color/light_active_color"
+        android:textSize="16sp" />
 
     <CheckBox
         android:id="@+id/data_use_checkbox"
         android:layout_height="wrap_content"
-        android:layout_width="match_parent" 
-        android:text="@string/data_use_tracking_ended_checkbox_message" />
+        android:layout_width="match_parent"
+        android:text="@string/data_use_tracking_ended_checkbox_message"
+        android:textColor="@color/light_normal_color"
+        android:textSize="16sp" />
 
-</FrameLayout>
+</LinearLayout>
