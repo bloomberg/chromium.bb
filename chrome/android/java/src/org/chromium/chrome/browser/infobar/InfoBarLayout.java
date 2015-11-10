@@ -114,9 +114,6 @@ public class InfoBarLayout extends ViewGroup implements View.OnClickListener {
         }
     }
 
-    private static final int ROW_MAIN = 1;
-    private static final int ROW_OTHER = 2;
-
     private final int mMargin;
     private final int mIconSize;
     private final int mMinWidth;
@@ -414,48 +411,26 @@ public class InfoBarLayout extends ViewGroup implements View.OnClickListener {
         placeChild(mCloseButton, Gravity.END);
         placeGroup(mMainGroup);
 
-        int customGroupWidth = 0;
         if (mCustomGroup != null) {
-            updateCustomGroupForRow(ROW_MAIN);
-            customGroupWidth = getWidthWithMargins(mCustomGroup);
-        }
-
-        int buttonGroupWidth = 0;
-        if (mButtonGroup != null) {
-            updateButtonGroupForRow(ROW_MAIN);
-            buttonGroupWidth = getWidthWithMargins(mButtonGroup);
-        }
-
-        boolean customGroupOnMainRow = customGroupWidth <= availableWidth();
-        boolean buttonGroupOnMainRow = customGroupWidth + buttonGroupWidth <= availableWidth();
-
-        if (mCustomGroup != null) {
-            if (customGroupOnMainRow) {
-                mCustomGroup.gravity = (mButtonGroup != null && buttonGroupOnMainRow)
-                        ? Gravity.START : Gravity.END;
-            } else {
-                startRow();
-                updateCustomGroupForRow(ROW_OTHER);
-            }
+            startRow();
+            updateCustomGroupLayoutProperties();
             placeGroup(mCustomGroup);
         }
 
         if (mButtonGroup != null) {
-            if (!buttonGroupOnMainRow) {
-                startRow();
-                updateButtonGroupForRow(ROW_OTHER);
+            startRow();
+            updateButtonGroupLayoutProperties();
 
-                // If the infobar consists of just a main row and a buttons row, the buttons must be
-                // at least 32dp below the bottom of the message text.
-                if (mCustomGroup == null && mMessageTextView != null) {
-                    LayoutParams lp = (LayoutParams) mMessageTextView.getLayoutParams();
-                    int messageBottom = lp.top + mMessageTextView.getMeasuredHeight();
-                    mTop = Math.max(mTop, messageBottom + 2 * mMargin);
-                }
+            // If the infobar consists of just a main row and a buttons row, the buttons must be
+            // at least 32dp below the bottom of the message text.
+            if (mCustomGroup == null && mMessageTextView != null) {
+                LayoutParams lp = (LayoutParams) mMessageTextView.getLayoutParams();
+                int messageBottom = lp.top + mMessageTextView.getMeasuredHeight();
+                mTop = Math.max(mTop, messageBottom + 2 * mMargin);
             }
             placeGroup(mButtonGroup);
 
-            if (mCustomButton != null && !buttonGroupOnMainRow) {
+            if (mCustomButton != null) {
                 // The custom button is start-aligned with the message view (unless that causes it
                 // to overlap the primary button).
                 LayoutParams primaryButtonLP = (LayoutParams) mPrimaryButton.getLayoutParams();
@@ -476,17 +451,6 @@ public class InfoBarLayout extends ViewGroup implements View.OnClickListener {
         }
 
         startRow();
-
-        // If everything fits on a single row, center everything vertically.
-        if (buttonGroupOnMainRow) {
-            int layoutHeight = mBottom;
-            for (int i = 0; i < getChildCount(); i++) {
-                View child = getChildAt(i);
-                int extraSpace = layoutHeight - child.getMeasuredHeight();
-                LayoutParams lp = (LayoutParams) child.getLayoutParams();
-                lp.top = extraSpace / 2;
-            }
-        }
     }
 
     /**
@@ -572,18 +536,15 @@ public class InfoBarLayout extends ViewGroup implements View.OnClickListener {
     }
 
     /**
-     * The button group has different layout properties (margins, gravity, etc) when placed on the
-     * main row as opposed to on a separate row. This updates the layout properties of the button
-     * group to prepare for placing it on either the main row or a separate row.
-     *
-     * @param row One of ROW_MAIN or ROW_OTHER.
+     * Updates the layout properties (margins, gravity, etc) of the button group to prepare for
+     * placing it on its own row.
      */
-    private void updateButtonGroupForRow(int row) {
-        int startEndMargin = row == ROW_MAIN ? mMargin : 0;
+    private void updateButtonGroupLayoutProperties() {
+        int startEndMargin = 0;
         mButtonGroup.setHorizontalMode(mMargin / 2, startEndMargin, startEndMargin);
         mButtonGroup.gravity = Gravity.END;
 
-        if (row == ROW_OTHER && mButtonGroup.views.length >= 2) {
+        if (mButtonGroup.views.length >= 2) {
             int extraWidth = availableWidth() - getWidthWithMargins(mButtonGroup);
             if (extraWidth < 0) {
                 // Group is too wide to fit on a single row, so stack the group items vertically.
@@ -594,21 +555,18 @@ public class InfoBarLayout extends ViewGroup implements View.OnClickListener {
                 ((LayoutParams) mTertiaryButton.getLayoutParams()).endMargin += extraWidth;
             }
         }
-        if (row == ROW_MAIN && mCustomButton != null) {
-            // Increase spacing between custom button and primary button.
-            ((LayoutParams) mCustomButton.getLayoutParams()).endMargin = mMargin;
-        }
     }
 
     /**
-     * Analagous to updateButtonGroupForRow(), but for the custom group istead of the button group.
+     * Analagous to updateButtonGroupLayoutProperties(), but for the custom group instead of the
+     * button group.
      */
-    private void updateCustomGroupForRow(int row) {
-        int startEndMargin = row == ROW_MAIN ? mMargin : 0;
+    private void updateCustomGroupLayoutProperties() {
+        int startEndMargin = 0;
         mCustomGroup.setHorizontalMode(mMargin, startEndMargin, startEndMargin);
         mCustomGroup.gravity = Gravity.START;
 
-        if (row == ROW_OTHER && mCustomGroup.views.length == 2) {
+        if (mCustomGroup.views.length == 2) {
             int extraWidth = availableWidth() - getWidthWithMargins(mCustomGroup);
             if (extraWidth < 0) {
                 // Group is too wide to fit on a single row, so stack the group items vertically.
@@ -624,7 +582,7 @@ public class InfoBarLayout extends ViewGroup implements View.OnClickListener {
                 measureChildWithFixedWidth(view1, view1.getMeasuredWidth() + extraWidth1);
             }
         }
-        if (row == ROW_OTHER && mCustomGroup.views.length == 1) {
+        if (mCustomGroup.views.length == 1) {
             mCustomGroup.gravity = Gravity.FILL_HORIZONTAL;
         }
     }
