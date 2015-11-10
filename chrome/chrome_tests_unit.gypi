@@ -82,6 +82,8 @@
       'browser/content_settings/mock_settings_observer.h',
       'browser/content_settings/tab_specific_content_settings_unittest.cc',
       'browser/custom_handlers/protocol_handler_registry_unittest.cc',
+      'browser/data_usage/tab_id_annotator_unittest.cc',
+      'browser/data_usage/tab_id_provider_unittest.cc',
       'browser/devtools/device/webrtc/devtools_bridge_instances_request_unittest.cc',
       'browser/devtools/devtools_network_controller_unittest.cc',
       'browser/download/all_download_item_notifier_unittest.cc',

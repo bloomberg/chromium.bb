@@ -30,6 +30,7 @@
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/data_usage/tab_id_annotator.h"
 #include "chrome/browser/net/async_dns_field_trial.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
 #include "chrome/browser/net/connect_interceptor.h"
@@ -605,7 +606,9 @@ void IOThread::Init() {
       extension_event_router_forwarder_;
 #endif
 
-  data_use_aggregator_.reset(new data_usage::DataUseAggregator());
+  data_use_aggregator_.reset(new data_usage::DataUseAggregator(
+      scoped_ptr<data_usage::DataUseAnnotator>(
+          new chrome_browser_data_usage::TabIdAnnotator())));
 
   // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/466432
   // is fixed.

@@ -962,7 +962,7 @@ void URLRequestJob::MaybeNotifyNetworkBytes() {
   DCHECK_GE(total_received_bytes, last_notified_total_received_bytes_);
   if (total_received_bytes > last_notified_total_received_bytes_) {
     network_delegate_->NotifyNetworkBytesReceived(
-        *request_, total_received_bytes - last_notified_total_received_bytes_);
+        request_, total_received_bytes - last_notified_total_received_bytes_);
   }
   last_notified_total_received_bytes_ = total_received_bytes;
 
@@ -971,7 +971,7 @@ void URLRequestJob::MaybeNotifyNetworkBytes() {
   DCHECK_GE(total_sent_bytes, last_notified_total_sent_bytes_);
   if (total_sent_bytes > last_notified_total_sent_bytes_) {
     network_delegate_->NotifyNetworkBytesSent(
-        *request_, total_sent_bytes - last_notified_total_sent_bytes_);
+        request_, total_sent_bytes - last_notified_total_sent_bytes_);
   }
   last_notified_total_sent_bytes_ = total_sent_bytes;
 }

@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -22,6 +23,8 @@ class URLRequest;
 }
 
 namespace data_usage {
+
+class DataUseAnnotator;
 struct DataUse;
 
 // Class that collects and aggregates network usage, reporting the usage to
@@ -38,15 +41,16 @@ class DataUseAggregator
         const std::vector<const DataUse*>& data_use_sequence) = 0;
   };
 
-  DataUseAggregator();
+  // Constructs a new DataUseAggregator with the given |annotator|. A NULL
+  // annotator will be treated as a no-op annotator.
+  explicit DataUseAggregator(scoped_ptr<DataUseAnnotator> annotator);
   ~DataUseAggregator() override;
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
   // Virtual for testing.
-  virtual void ReportDataUse(const net::URLRequest& request,
-                             int32_t tab_id,
+  virtual void ReportDataUse(net::URLRequest* request,
                              int64_t tx_bytes,
                              int64_t rx_bytes);
 
@@ -69,10 +73,15 @@ class DataUseAggregator
   void SetMccMncForTests(const std::string& mcc_mnc);
 
  private:
+  // Appends |data_use| to the buffer of unreported data use and prepares to
+  // notify observers.
+  void AppendDataUse(scoped_ptr<DataUse> data_use);
+
   // Flush any buffered data use and notify observers.
   void FlushBufferedDataUse();
 
   base::ThreadChecker thread_checker_;
+  scoped_ptr<DataUseAnnotator> annotator_;
   base::ObserverList<Observer> observer_list_;
 
   // Buffer of unreported data use.

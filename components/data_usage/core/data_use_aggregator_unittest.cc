@@ -10,9 +10,12 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/time/time.h"
 #include "components/data_usage/core/data_use.h"
+#include "components/data_usage/core/data_use_annotator.h"
 #include "net/base/load_timing_info.h"
 #include "net/base/network_change_notifier.h"
 #include "net/base/network_delegate_impl.h"
@@ -26,8 +29,20 @@ namespace data_usage {
 
 namespace {
 
+base::TimeTicks GetRequestStart(const net::URLRequest& request) {
+  net::LoadTimingInfo load_timing_info;
+  request.GetLoadTimingInfo(&load_timing_info);
+  return load_timing_info.request_start;
+}
+
 // Test class that can set the network operator's MCCMNC.
 class TestDataUseAggregator : public DataUseAggregator {
+ public:
+  TestDataUseAggregator(scoped_ptr<DataUseAnnotator> annotator)
+      : DataUseAggregator(annotator.Pass()) {}
+
+  ~TestDataUseAggregator() override {}
+
  private:
   friend class TestNetworkChangeNotifier;
   using DataUseAggregator::OnConnectionTypeChanged;
@@ -64,6 +79,29 @@ class TestNetworkChangeNotifier : public net::NetworkChangeNotifier {
   DISALLOW_COPY_AND_ASSIGN(TestNetworkChangeNotifier);
 };
 
+// A fake DataUseAnnotator that sets the tab ID of DataUse objects to a
+// predetermined fake tab ID.
+class FakeDataUseAnnotator : public DataUseAnnotator {
+ public:
+  FakeDataUseAnnotator() : tab_id_(-1) {}
+  ~FakeDataUseAnnotator() override {}
+
+  void Annotate(
+      net::URLRequest* request,
+      scoped_ptr<DataUse> data_use,
+      const base::Callback<void(scoped_ptr<DataUse>)>& callback) override {
+    data_use->tab_id = tab_id_;
+    callback.Run(data_use.Pass());
+  }
+
+  void set_tab_id(int32_t tab_id) { tab_id_ = tab_id; }
+
+ private:
+  int32_t tab_id_;
+
+  DISALLOW_COPY_AND_ASSIGN(FakeDataUseAnnotator);
+};
+
 // A network delegate that reports all received and sent network bytes to a
 // DataUseAggregator.
 class ReportingNetworkDelegate : public net::NetworkDelegateImpl {
@@ -88,8 +126,10 @@ class ReportingNetworkDelegate : public net::NetworkDelegateImpl {
 
   ReportingNetworkDelegate(
       TestDataUseAggregator* data_use_aggregator,
+      FakeDataUseAnnotator* fake_data_use_annotator,
       TestNetworkChangeNotifier* test_network_change_notifier)
       : data_use_aggregator_(data_use_aggregator),
+        fake_data_use_annotator_(fake_data_use_annotator),
         test_network_change_notifier_(test_network_change_notifier) {}
 
   ~ReportingNetworkDelegate() override {}
@@ -99,7 +139,7 @@ class ReportingNetworkDelegate : public net::NetworkDelegateImpl {
   }
 
  private:
-  DataUseContext UpdateDataUseContext(const net::URLRequest& request) {
+  void UpdateDataUseContext(const net::URLRequest& request) {
     DataUseContextMap::const_iterator data_use_context_it =
         data_use_context_map_.find(&request);
     DataUseContext data_use_context =
@@ -107,29 +147,30 @@ class ReportingNetworkDelegate : public net::NetworkDelegateImpl {
             ? DataUseContext()
             : data_use_context_it->second;
 
+    fake_data_use_annotator_->set_tab_id(data_use_context.tab_id);
+
     if (test_network_change_notifier_->GetCurrentConnectionType() !=
         data_use_context.connection_type) {
       test_network_change_notifier_->SimulateNetworkConnectionChange(
           data_use_context.connection_type, data_use_context.mcc_mnc);
     }
-    return data_use_context;
   }
 
-  void OnNetworkBytesReceived(const net::URLRequest& request,
+  void OnNetworkBytesReceived(net::URLRequest* request,
                               int64_t bytes_received) override {
-    DataUseContext data_use_context = UpdateDataUseContext(request);
-    data_use_aggregator_->ReportDataUse(request, data_use_context.tab_id,
-                                        0 /* tx_bytes */, bytes_received);
+    UpdateDataUseContext(*request);
+    data_use_aggregator_->ReportDataUse(request, 0 /* tx_bytes */,
+                                        bytes_received);
   }
 
-  void OnNetworkBytesSent(const net::URLRequest& request,
+  void OnNetworkBytesSent(net::URLRequest* request,
                           int64_t bytes_sent) override {
-    DataUseContext data_use_context = UpdateDataUseContext(request);
-    data_use_aggregator_->ReportDataUse(request, data_use_context.tab_id,
-                                        bytes_sent, 0 /* rx_bytes */);
+    UpdateDataUseContext(*request);
+    data_use_aggregator_->ReportDataUse(request, bytes_sent, 0 /* rx_bytes */);
   }
 
   TestDataUseAggregator* data_use_aggregator_;
+  FakeDataUseAnnotator* fake_data_use_annotator_;
   TestNetworkChangeNotifier* test_network_change_notifier_;
   DataUseContextMap data_use_context_map_;
 
@@ -171,8 +212,12 @@ class TestObserver : public DataUseAggregator::Observer {
 class DataUseAggregatorTest : public testing::Test {
  public:
   DataUseAggregatorTest()
-      : test_network_change_notifier_(&data_use_aggregator_),
+      : fake_data_use_annotator_(new FakeDataUseAnnotator()),
+        data_use_aggregator_(
+            scoped_ptr<DataUseAnnotator>(fake_data_use_annotator_)),
+        test_network_change_notifier_(&data_use_aggregator_),
         reporting_network_delegate_(&data_use_aggregator_,
+                                    fake_data_use_annotator_,
                                     &test_network_change_notifier_),
         context_(true),
         test_observer_(&data_use_aggregator_) {
@@ -229,6 +274,8 @@ class DataUseAggregatorTest : public testing::Test {
 
  private:
   base::MessageLoopForIO loop_;
+  // Weak, owned by |data_use_aggregator_|.
+  FakeDataUseAnnotator* fake_data_use_annotator_;
   TestDataUseAggregator data_use_aggregator_;
   TestNetworkChangeNotifier test_network_change_notifier_;
   net::MockClientSocketFactory mock_socket_factory_;
@@ -262,10 +309,7 @@ TEST_F(DataUseAggregatorTest, ReportDataUse) {
   int64_t observed_foo_tx_bytes = 0, observed_foo_rx_bytes = 0;
   while (data_use_it != test_observer()->observed_data_use().end() &&
          data_use_it->url == GURL("http://foo.com")) {
-    net::LoadTimingInfo foo_load_timing_info;
-    foo_request->GetLoadTimingInfo(&foo_load_timing_info);
-
-    EXPECT_EQ(foo_load_timing_info.request_start, data_use_it->request_start);
+    EXPECT_EQ(GetRequestStart(*foo_request), data_use_it->request_start);
     EXPECT_EQ(GURL("http://foofirstparty.com"),
               data_use_it->first_party_for_cookies);
     EXPECT_EQ(kFooTabId, data_use_it->tab_id);
@@ -282,11 +326,8 @@ TEST_F(DataUseAggregatorTest, ReportDataUse) {
   // Then, the |bar_request| data use should have happened.
   int64_t observed_bar_tx_bytes = 0, observed_bar_rx_bytes = 0;
   while (data_use_it != test_observer()->observed_data_use().end()) {
-    net::LoadTimingInfo bar_load_timing_info;
-    bar_request->GetLoadTimingInfo(&bar_load_timing_info);
-
     EXPECT_EQ(GURL("http://bar.com"), data_use_it->url);
-    EXPECT_EQ(bar_load_timing_info.request_start, data_use_it->request_start);
+    EXPECT_EQ(GetRequestStart(*bar_request), data_use_it->request_start);
     EXPECT_EQ(GURL("http://barfirstparty.com"),
               data_use_it->first_party_for_cookies);
     EXPECT_EQ(kBarTabId, data_use_it->tab_id);
@@ -367,9 +408,7 @@ TEST_F(DataUseAggregatorTest, ReportCombinedDataUse) {
   // DataUse element.
   const DataUse& foo_data_use = test_observer()->observed_data_use().front();
   EXPECT_EQ(GURL("http://foo.com"), foo_data_use.url);
-  net::LoadTimingInfo foo_load_timing_info;
-  foo_request->GetLoadTimingInfo(&foo_load_timing_info);
-  EXPECT_EQ(foo_load_timing_info.request_start, foo_data_use.request_start);
+  EXPECT_EQ(GetRequestStart(*foo_request), foo_data_use.request_start);
   EXPECT_EQ(GURL("http://foofirstparty.com"),
             foo_data_use.first_party_for_cookies);
   EXPECT_EQ(kFooTabId, foo_data_use.tab_id);
@@ -382,9 +421,7 @@ TEST_F(DataUseAggregatorTest, ReportCombinedDataUse) {
   // DataUse element.
   const DataUse& bar_data_use = test_observer()->observed_data_use().back();
   EXPECT_EQ(GURL("http://bar.com"), bar_data_use.url);
-  net::LoadTimingInfo bar_load_timing_info;
-  bar_request->GetLoadTimingInfo(&bar_load_timing_info);
-  EXPECT_EQ(bar_load_timing_info.request_start, bar_data_use.request_start);
+  EXPECT_EQ(GetRequestStart(*bar_request), bar_data_use.request_start);
   EXPECT_EQ(GURL("http://barfirstparty.com"),
             bar_data_use.first_party_for_cookies);
   EXPECT_EQ(kBarTabId, bar_data_use.tab_id);

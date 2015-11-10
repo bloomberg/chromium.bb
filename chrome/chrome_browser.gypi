@@ -1483,6 +1483,12 @@
       'browser/content_settings/web_site_settings_uma_util.cc',
       'browser/content_settings/web_site_settings_uma_util.h',
     ],
+    'chrome_browser_data_usage_sources': [
+      'browser/data_usage/tab_id_annotator.cc',
+      'browser/data_usage/tab_id_annotator.h',
+      'browser/data_usage/tab_id_provider.cc',
+      'browser/data_usage/tab_id_provider.h',
+    ],
     'chrome_browser_engagement_sources': [
       'browser/engagement/site_engagement_eviction_policy.cc',
       'browser/engagement/site_engagement_eviction_policy.h',
@@ -3279,6 +3285,7 @@
             '<@(chrome_browser_bookmark_sources)',
             '<@(chrome_browser_browser_process_sources)',
             '<@(chrome_browser_content_settings_sources)',
+            '<@(chrome_browser_data_usage_sources)',
             '<@(chrome_browser_engagement_sources)',
             '<@(chrome_browser_favicon_sources)',
             '<@(chrome_browser_google_sources)',

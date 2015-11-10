@@ -506,15 +506,15 @@ void TestNetworkDelegate::OnResponseStarted(URLRequest* request) {
   }
 }
 
-void TestNetworkDelegate::OnNetworkBytesReceived(const URLRequest& request,
+void TestNetworkDelegate::OnNetworkBytesReceived(URLRequest* request,
                                                  int64_t bytes_received) {
-  event_order_[request.identifier()] += "OnNetworkBytesReceived\n";
+  event_order_[request->identifier()] += "OnNetworkBytesReceived\n";
   total_network_bytes_received_ += bytes_received;
 }
 
-void TestNetworkDelegate::OnNetworkBytesSent(const URLRequest& request,
+void TestNetworkDelegate::OnNetworkBytesSent(URLRequest* request,
                                              int64_t bytes_sent) {
-  event_order_[request.identifier()] += "OnNetworkBytesSent\n";
+  event_order_[request->identifier()] += "OnNetworkBytesSent\n";
   total_network_bytes_sent_ += bytes_sent;
 }
 

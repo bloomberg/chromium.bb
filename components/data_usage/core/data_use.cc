@@ -6,6 +6,21 @@
 
 namespace data_usage {
 
+namespace {
+
+bool AreNonByteCountFieldsEqual(const DataUse& a, const DataUse& b) {
+  return a.url == b.url && a.request_start == b.request_start &&
+         a.first_party_for_cookies == b.first_party_for_cookies &&
+         a.tab_id == b.tab_id && a.connection_type == b.connection_type &&
+         a.mcc_mnc == b.mcc_mnc;
+}
+
+bool AreByteCountFieldsEqual(const DataUse& a, const DataUse& b) {
+  return a.tx_bytes == b.tx_bytes && a.rx_bytes == b.rx_bytes;
+}
+
+}  // namespace
+
 DataUse::DataUse(const GURL& url,
                  const base::TimeTicks& request_start,
                  const GURL& first_party_for_cookies,
@@ -25,11 +40,13 @@ DataUse::DataUse(const GURL& url,
 
 DataUse::~DataUse() {}
 
+bool DataUse::operator==(const DataUse& other) const {
+  return AreNonByteCountFieldsEqual(*this, other) &&
+         AreByteCountFieldsEqual(*this, other);
+}
+
 bool DataUse::CanCombineWith(const DataUse& other) const {
-  return url == other.url && request_start == other.request_start &&
-         first_party_for_cookies == other.first_party_for_cookies &&
-         tab_id == other.tab_id && connection_type == other.connection_type &&
-         mcc_mnc == other.mcc_mnc;
+  return AreNonByteCountFieldsEqual(*this, other);
 }
 
 }  // namespace data_usage

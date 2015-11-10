@@ -492,38 +492,21 @@ void ChromeNetworkDelegate::OnResponseStarted(net::URLRequest* request) {
   extensions_delegate_->OnResponseStarted(request);
 }
 
-void ChromeNetworkDelegate::OnNetworkBytesReceived(
-    const net::URLRequest& request,
-    int64_t bytes_received) {
+void ChromeNetworkDelegate::OnNetworkBytesReceived(net::URLRequest* request,
+                                                   int64_t bytes_received) {
 #if defined(ENABLE_TASK_MANAGER)
   // Note: Currently, OnNetworkBytesReceived is only implemented for HTTP jobs,
   // not FTP or other types, so those kinds of bytes will not be reported here.
-  task_management::TaskManagerInterface::OnRawBytesRead(request,
+  task_management::TaskManagerInterface::OnRawBytesRead(*request,
                                                         bytes_received);
 #endif  // defined(ENABLE_TASK_MANAGER)
 
-  if (data_use_aggregator_) {
-    if (is_data_usage_off_the_record_) {
-      data_use_aggregator_->ReportOffTheRecordDataUse(0 /* tx_bytes */,
-                                                      bytes_received);
-    } else {
-      data_use_aggregator_->ReportDataUse(request, -1 /* tab_id */,
-                                          0 /* tx_bytes */, bytes_received);
-    }
-  }
+  ReportDataUsageStats(request, 0 /* tx_bytes */, bytes_received);
 }
 
-void ChromeNetworkDelegate::OnNetworkBytesSent(const net::URLRequest& request,
+void ChromeNetworkDelegate::OnNetworkBytesSent(net::URLRequest* request,
                                                int64_t bytes_sent) {
-  if (data_use_aggregator_) {
-    if (is_data_usage_off_the_record_) {
-      data_use_aggregator_->ReportOffTheRecordDataUse(bytes_sent,
-                                                      0 /* rx_bytes */);
-    } else {
-      data_use_aggregator_->ReportDataUse(request, -1 /* tab_id */, bytes_sent,
-                                          0 /* rx_bytes */);
-    }
-  }
+  ReportDataUsageStats(request, bytes_sent, 0 /* rx_bytes */);
 }
 
 void ChromeNetworkDelegate::OnCompleted(net::URLRequest* request,
@@ -741,4 +724,18 @@ bool ChromeNetworkDelegate::OnCancelURLRequestWithPolicyViolatingReferrerHeader(
     const GURL& referrer_url) const {
   ReportInvalidReferrerSend(target_url, referrer_url);
   return true;
+}
+
+void ChromeNetworkDelegate::ReportDataUsageStats(net::URLRequest* request,
+                                                 int64_t tx_bytes,
+                                                 int64_t rx_bytes) {
+  if (!data_use_aggregator_)
+    return;
+
+  if (is_data_usage_off_the_record_) {
+    data_use_aggregator_->ReportOffTheRecordDataUse(tx_bytes, rx_bytes);
+    return;
+  }
+
+  data_use_aggregator_->ReportDataUse(request, tx_bytes, rx_bytes);
 }

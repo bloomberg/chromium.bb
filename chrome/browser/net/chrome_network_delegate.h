@@ -160,9 +160,9 @@ class ChromeNetworkDelegate : public net::NetworkDelegateImpl {
   void OnBeforeRedirect(net::URLRequest* request,
                         const GURL& new_location) override;
   void OnResponseStarted(net::URLRequest* request) override;
-  void OnNetworkBytesReceived(const net::URLRequest& request,
+  void OnNetworkBytesReceived(net::URLRequest* request,
                               int64_t bytes_received) override;
-  void OnNetworkBytesSent(const net::URLRequest& request,
+  void OnNetworkBytesSent(net::URLRequest* request,
                           int64_t bytes_sent) override;
   void OnCompleted(net::URLRequest* request, bool started) override;
   void OnURLRequestDestroyed(net::URLRequest* request) override;
@@ -188,6 +188,12 @@ class ChromeNetworkDelegate : public net::NetworkDelegateImpl {
       const net::URLRequest& request,
       const GURL& target_url,
       const GURL& referrer_url) const override;
+
+  // Convenience function for reporting network usage to the
+  // |data_use_aggregator_|.
+  void ReportDataUsageStats(net::URLRequest* request,
+                            int64_t tx_bytes,
+                            int64_t rx_bytes);
 
   scoped_ptr<ChromeExtensionsNetworkDelegate> extensions_delegate_;
 

@@ -87,9 +87,8 @@ class NET_EXPORT NetworkDelegate : public base::NonThreadSafe {
   void NotifyBeforeRedirect(URLRequest* request,
                             const GURL& new_location);
   void NotifyResponseStarted(URLRequest* request);
-  void NotifyNetworkBytesReceived(const URLRequest& request,
-                                  int64_t bytes_received);
-  void NotifyNetworkBytesSent(const URLRequest& request, int64_t bytes_sent);
+  void NotifyNetworkBytesReceived(URLRequest* request, int64_t bytes_received);
+  void NotifyNetworkBytesSent(URLRequest* request, int64_t bytes_sent);
   void NotifyCompleted(URLRequest* request, bool started);
   void NotifyURLRequestDestroyed(URLRequest* request);
   void NotifyURLRequestJobOrphaned(URLRequest* request);
@@ -212,7 +211,7 @@ class NET_EXPORT NetworkDelegate : public base::NonThreadSafe {
   // greater than 0.
   // Currently, this is only implemented for HTTP transactions, and
   // |bytes_received| does not include TLS overhead or TCP retransmits.
-  virtual void OnNetworkBytesReceived(const URLRequest& request,
+  virtual void OnNetworkBytesReceived(URLRequest* request,
                                       int64_t bytes_received) = 0;
 
   // Called when bytes are sent over the network, such as when sending request
@@ -222,8 +221,7 @@ class NET_EXPORT NetworkDelegate : public base::NonThreadSafe {
   // OnNetworkBytesSent was called. |bytes_sent| will always be greater than 0.
   // Currently, this is only implemented for HTTP transactions, and |bytes_sent|
   // does not include TLS overhead or TCP retransmits.
-  virtual void OnNetworkBytesSent(const URLRequest& request,
-                                  int64_t bytes_sent) = 0;
+  virtual void OnNetworkBytesSent(URLRequest* request, int64_t bytes_sent) = 0;
 
   // Indicates that the URL request has been completed or failed.
   // |started| indicates whether the request has been started. If false,

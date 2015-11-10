@@ -93,13 +93,12 @@ class TestNetworkDelegateImpl : public NetworkDelegateImpl {
     IncrementAndCompareCounter("on_response_started_count");
   }
 
-  void OnNetworkBytesReceived(const URLRequest& request,
+  void OnNetworkBytesReceived(URLRequest* request,
                               int64_t bytes_received) override {
     IncrementAndCompareCounter("on_network_bytes_received_count");
   }
 
-  void OnNetworkBytesSent(const URLRequest& request,
-                          int64_t bytes_sent) override {
+  void OnNetworkBytesSent(URLRequest* request, int64_t bytes_sent) override {
     IncrementAndCompareCounter("on_network_bytes_sent_count");
   }
 
@@ -202,11 +201,11 @@ class TestLayeredNetworkDelegate : public LayeredNetworkDelegate {
                                       request_headers.get()));
     OnBeforeSendProxyHeaders(NULL, ProxyInfo(), request_headers.get());
     OnSendHeaders(NULL, *request_headers);
-    OnNetworkBytesSent(*request, 42);
+    OnNetworkBytesSent(request.get(), 42);
     EXPECT_EQ(OK, OnHeadersReceived(NULL, completion_callback.callback(),
                                     response_headers.get(), NULL, NULL));
     OnResponseStarted(request.get());
-    OnNetworkBytesReceived(*request, 42);
+    OnNetworkBytesReceived(request.get(), 42);
     OnCompleted(request.get(), false);
     OnURLRequestDestroyed(request.get());
     OnPACScriptError(0, base::string16());
@@ -284,13 +283,13 @@ class TestLayeredNetworkDelegate : public LayeredNetworkDelegate {
     EXPECT_EQ(1, (*counters_)["on_response_started_count"]);
   }
 
-  void OnNetworkBytesReceivedInternal(const URLRequest& request,
+  void OnNetworkBytesReceivedInternal(URLRequest* request,
                                       int64_t bytes_received) override {
     ++(*counters_)["on_network_bytes_received_count"];
     EXPECT_EQ(1, (*counters_)["on_network_bytes_received_count"]);
   }
 
-  void OnNetworkBytesSentInternal(const URLRequest& request,
+  void OnNetworkBytesSentInternal(URLRequest* request,
                                   int64_t bytes_sent) override {
     ++(*counters_)["on_network_bytes_sent_count"];
     EXPECT_EQ(1, (*counters_)["on_network_bytes_sent_count"]);

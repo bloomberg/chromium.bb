@@ -321,10 +321,9 @@ class TestNetworkDelegate : public NetworkDelegateImpl {
       GURL* allowed_unsafe_redirect_url) override;
   void OnBeforeRedirect(URLRequest* request, const GURL& new_location) override;
   void OnResponseStarted(URLRequest* request) override;
-  void OnNetworkBytesReceived(const URLRequest& request,
+  void OnNetworkBytesReceived(URLRequest* request,
                               int64_t bytes_received) override;
-  void OnNetworkBytesSent(const URLRequest& request,
-                          int64_t bytes_sent) override;
+  void OnNetworkBytesSent(URLRequest* request, int64_t bytes_sent) override;
   void OnCompleted(URLRequest* request, bool started) override;
   void OnURLRequestDestroyed(URLRequest* request) override;
   void OnPACScriptError(int line_number, const base::string16& error) override;

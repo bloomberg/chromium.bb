@@ -16,6 +16,7 @@
         'data_usage/core/data_use.h',
         'data_usage/core/data_use_aggregator.cc',
         'data_usage/core/data_use_aggregator.h',
+        'data_usage/core/data_use_annotator.h',
       ]
     },
   ]

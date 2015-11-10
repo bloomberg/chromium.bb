@@ -8,6 +8,7 @@ source_set("core") {
     "data_use.h",
     "data_use_aggregator.cc",
     "data_use_aggregator.h",
+    "data_use_annotator.h",
   ]
   deps = [
     "//base",

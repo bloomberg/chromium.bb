@@ -227,6 +227,9 @@ source_set("browser") {
     sources += rebase_path(gypi_values.chrome_browser_content_settings_sources,
                            ".",
                            "//chrome")
+    sources += rebase_path(gypi_values.chrome_browser_data_usage_sources,
+                           ".",
+                           "//chrome")
     sources += rebase_path(gypi_values.chrome_browser_engagement_sources,
                            ".",
                            "//chrome")

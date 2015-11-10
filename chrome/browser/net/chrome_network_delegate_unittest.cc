@@ -23,6 +23,7 @@
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/data_usage/core/data_use_aggregator.h"
+#include "components/data_usage/core/data_use_annotator.h"
 #include "components/syncable_prefs/testing_pref_service_syncable.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/common/content_switches.h"
@@ -99,14 +100,15 @@ scoped_ptr<net::URLRequest> RequestURL(
 class FakeDataUseAggregator : public data_usage::DataUseAggregator {
  public:
   FakeDataUseAggregator()
-      : on_the_record_tx_bytes_(0),
+      : data_usage::DataUseAggregator(
+            scoped_ptr<data_usage::DataUseAnnotator>()),
+        on_the_record_tx_bytes_(0),
         on_the_record_rx_bytes_(0),
         off_the_record_tx_bytes_(0),
         off_the_record_rx_bytes_(0) {}
   ~FakeDataUseAggregator() override {}
 
-  void ReportDataUse(const net::URLRequest& request,
-                     int32_t tab_id,
+  void ReportDataUse(net::URLRequest* request,
                      int64_t tx_bytes,
                      int64_t rx_bytes) override {
     on_the_record_tx_bytes_ += tx_bytes;

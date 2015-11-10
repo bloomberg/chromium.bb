@@ -27,6 +27,8 @@ struct DataUse {
 
   ~DataUse();
 
+  bool operator==(const DataUse& other) const;
+
   // Returns true if |this| and |other| are identical except for byte counts.
   bool CanCombineWith(const DataUse& other) const;
 

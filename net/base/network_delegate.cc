@@ -89,14 +89,14 @@ void NetworkDelegate::NotifyResponseStarted(URLRequest* request) {
   OnResponseStarted(request);
 }
 
-void NetworkDelegate::NotifyNetworkBytesReceived(const URLRequest& request,
+void NetworkDelegate::NotifyNetworkBytesReceived(URLRequest* request,
                                                  int64_t bytes_received) {
   DCHECK(CalledOnValidThread());
   DCHECK_GT(bytes_received, 0);
   OnNetworkBytesReceived(request, bytes_received);
 }
 
-void NetworkDelegate::NotifyNetworkBytesSent(const URLRequest& request,
+void NetworkDelegate::NotifyNetworkBytesSent(URLRequest* request,
                                              int64_t bytes_sent) {
   DCHECK(CalledOnValidThread());
   DCHECK_GT(bytes_sent, 0);
