@@ -1,0 +1,447 @@
+# Copyright 2015 The Chromium OS Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+"""A convinient wrapper of the GCE python API.
+
+Public methods in class GceContext raise HttpError when the underlining call to
+Google API fails, or gce.Error on other failures.
+"""
+
+from __future__ import print_function
+
+import httplib2
+
+from chromite.lib import cros_logging as logging
+from chromite.lib import timeout_util
+from googleapiclient.discovery import build
+from googleapiclient.errors import HttpError
+from googleapiclient.http import HttpRequest
+from oauth2client.client import GoogleCredentials
+
+
+class Error(Exception):
+  """Base exception for this module."""
+
+
+class ResourceNotFoundError(Error):
+  """Exceptions raised when requested GCE resource was not found."""
+
+
+class RetryOnServerErrorHttpRequest(HttpRequest):
+  """A HttpRequest that will be retried on server errors automatically."""
+
+  def __init__(self, num_retries, *args, **kwargs):
+    """Constructor for RetryOnServerErrorHttpRequest."""
+    self.num_retries = num_retries
+    super(RetryOnServerErrorHttpRequest, self).__init__(*args, **kwargs)
+
+  def execute(self, http=None, num_retries=None):
+    """Excutes a RetryOnServerErrorHttpRequest.
+
+    HttpRequest.execute() has the option of automatically retrying on server
+    errors, i.e., 500 status codes. Call it with a non-zero value of
+    |num_retries| will cause failed requests to be retried.
+
+    Args:
+      http: The httplib2.http to send this request through.
+      num_retries: Number of retries. Class default value will be used if
+          omitted.
+
+    Returns:
+      A deserialized object model of the response body as determined
+          by the postproc. See HttpRequest.execute().
+    """
+    return super(RetryOnServerErrorHttpRequest, self).execute(
+        http=http, num_retries=num_retries or self.num_retries)
+
+
+class GceContext(object):
+  """A convinient wrapper around the GCE Python API."""
+
+  _GCE_SCOPES = (
+      'https://www.googleapis.com/auth/compute',  # CreateInstance, CreateImage
+      'https://www.googleapis.com/auth/devstorage.full_control', # CreateImage
+  )
+  _DEFAULT_NETWORK = 'default'
+  _DEFAULT_MACHINE_TYPE = 'n1-standard-8'
+  _DEFAULT_TIMEOUT_SEC = 5 * 60
+  _INSTANCE_OPERATIONS_TIMEOUT_SEC = 5 * 60
+  _IMAGE_OPERATIONS_TIMEOUT_SEC = 2* 60
+  RETRIES = 2
+
+  def __init__(self, project, zone, credentials, thread_safe=False):
+    """Initializes GceContext.
+
+    Args:
+      project: The GCP project to create instances in.
+      zone: The default zone to create instances in.
+      credentials: The credentials used to call the GCE API.
+      thread_safe: Whether the client is expected to be thread safe.
+    """
+    self.project = project
+    self.zone = zone
+
+    def _BuildRequest(http, *args, **kwargs):
+      """Custom request builder."""
+      return self._BuildRetriableRequest(self.RETRIES, http, thread_safe,
+                                         credentials, *args, **kwargs)
+
+    self.gce_client = build('compute', 'v1', credentials=credentials,
+                            requestBuilder=_BuildRequest)
+
+  @classmethod
+  def ForServiceAccount(cls, project, zone, json_key_file):
+    """Creates a GceContext using service account credentials.
+
+    About service account:
+    https://developers.google.com/api-client-library/python/auth/service-accounts
+
+    Args:
+      project: The GCP project to create images and instances in.
+      zone: The default zone to create instances in.
+      json_key_file: Path to the service account JSON key.
+
+    Returns:
+      GceContext.
+    """
+    credentials = GoogleCredentials.from_stream(json_key_file).create_scoped(
+        cls._GCE_SCOPES)
+    return GceContext(project, zone, credentials)
+
+  @classmethod
+  def ForServiceAccountThreadSafe(cls, project, zone, json_key_file):
+    """Creates a thread-safe GceContext using service account credentials.
+
+    About service account:
+    https://developers.google.com/api-client-library/python/auth/service-accounts
+
+    Args:
+      project: The GCP project to create images and instances in.
+      zone: The default zone to create instances in.
+      json_key_file: Path to the service account JSON key.
+
+    Returns:
+      GceContext.
+    """
+    credentials = GoogleCredentials.from_stream(json_key_file).create_scoped(
+        cls._GCE_SCOPES)
+    return GceContext(project, zone, credentials, thread_safe=True)
+
+  def CreateInstance(self, name, image, zone=None, network=None,
+                     machine_type=None, **kwargs):
+    """Creates an instance with the given image and waits until it's ready.
+
+    Args:
+      name: Instance name.
+      image: Fully spelled URL of the image, e.g., for private images,
+          'global/images/my-private-image', or for images from a
+          publicly-available project,
+          'projects/debian-cloud/global/images/debian-7-wheezy-vYYYYMMDD'.
+          Details:
+          https://cloud.google.com/compute/docs/reference/latest/instances/insert
+      zone: The zone to create the instance in. Default zone will be used if
+          omitted.
+      network: An existing network to create the instance in. Default network
+          will be used if omitted.
+      machine_type: The machine type to use. Default machine type will be used
+          if omitted.
+      kwargs: Other possible Instance Resource properties.
+          https://cloud.google.com/compute/docs/reference/latest/instances#resource
+
+    Returns:
+      URL to the created instance.
+    """
+    machine_type = 'zones/%s/machineTypes/%s' % (
+        zone or self.zone, machine_type or self._DEFAULT_MACHINE_TYPE)
+    # Allow machineType overriding.
+    if 'machineType' in kwargs:
+      machine_type = kwargs['machineType']
+
+    config = {
+        'name': name,
+        'machineType': machine_type,
+        'disks': (
+            {
+                'boot': True,
+                'autoDelete': True,
+                'initializeParams': {
+                    'sourceImage': image,
+                },
+            },
+        ),
+        'networkInterfaces': (
+            {
+                'network': ('global/networks/%s' % network or
+                            self._DEFAULT_NETWORK),
+                'accessConfigs': (
+                    {
+                        'type': 'ONE_TO_ONE_NAT',
+                        'name': 'External NAT',
+                    },
+                ),
+            },
+        ),
+    }
+    config.update(**kwargs)
+    operation = self.gce_client.instances().insert(
+        project=self.project,
+        zone=zone or self.zone,
+        body=config).execute()
+    self._WaitForZoneOperation(
+        operation['name'],
+        timeout_sec=self._INSTANCE_OPERATIONS_TIMEOUT_SEC,
+        timeout_handler=lambda: self.DeleteInstance(name))
+    return operation['targetLink']
+
+  def DeleteInstance(self, name, zone=None):
+    """Deletes an instance with the name and waits until it's done.
+
+    Args:
+      name: Name of the instance to delete.
+      zone: Zone where the instance is in. Default zone will be used if omitted.
+    """
+    operation = self.gce_client.instances().delete(
+        project=self.project,
+        zone=zone or self.zone,
+        instance=name).execute()
+    self._WaitForZoneOperation(
+        operation['name'], timeout_sec=self._INSTANCE_OPERATIONS_TIMEOUT_SEC)
+
+  def CreateImage(self, name, source):
+    """Creates an image with the given |source|.
+
+    Args:
+      name: Name of the image to be created.
+      source:
+        Google Cloud Storage object of the source disk, e.g.,
+        'https://storage.googleapis.com/my-gcs-bucket/test_image.tar.gz'.
+
+    Returns:
+      URL to the created image.
+    """
+    config = {
+        'name': name,
+        'rawDisk': {
+            'source': source,
+        },
+    }
+    operation = self.gce_client.images().insert(
+        project=self.project,
+        body=config).execute()
+    self._WaitForGlobalOperation(operation['name'],
+                                 timeout_sec=self._IMAGE_OPERATIONS_TIMEOUT_SEC,
+                                 timeout_handler=lambda: self.DeleteImage(name))
+    return operation['targetLink']
+
+  def DeleteImage(self, name):
+    """Deletes an image and waits until it's deleted.
+
+    Args:
+      name: Name of the image to delete.
+    """
+    operation = self.gce_client.images().delete(
+        project=self.project,
+        image=name).execute()
+    self._WaitForGlobalOperation(operation['name'],
+                                 timeout_sec=self._IMAGE_OPERATIONS_TIMEOUT_SEC)
+
+  def ListInstances(self, zone=None):
+    """Lists all instances.
+
+    Args:
+      zone: Zone where the instances are in. Default zone will be used if
+            omitted.
+
+    Returns:
+      A list of Instance Resources if found, or an empty list otherwise.
+    """
+    result = self.gce_client.instances().list(project=self.project,
+                                              zone=zone or self.zone).execute()
+    return result.get('items', [])
+
+  def ListImages(self):
+    """Lists all images.
+
+    Returns:
+      A list of Image Resources if found, or an empty list otherwise.
+    """
+    result = self.gce_client.images().list(project=self.project).execute()
+    return result.get('items', [])
+
+  def GetInstance(self, instance, zone=None):
+    """Gets an Instance Resource by name and zone.
+
+    Args:
+      instance: Name of the instance.
+      zone: Zone where the instance is in. Default zone will be used if omitted.
+
+    Returns:
+      An Instance Resource.
+
+    Raises:
+      ResourceNotFoundError if instance was not found, or HttpError on other
+      HTTP failures.
+    """
+    try:
+      return self.gce_client.instances().get(project=self.project,
+                                             zone=zone or self.zone,
+                                             instance=instance).execute()
+    except HttpError as e:
+      if e.resp.status == 404:
+        raise ResourceNotFoundError(
+            'Instance "%s" for project "%s" in zone "%s" was not found.' %
+            (instance, self.project, zone or self.zone))
+      else:
+        raise
+
+  def GetInstanceIP(self, instance, zone=None):
+    """Gets the external IP of an instance.
+
+    Args:
+      instance: Name of the instance to get IP for.
+      zone: Zone where the instance is in. Default zone will be used if omitted.
+
+    Returns:
+      External IP address of the instance.
+
+    Raises:
+      Error: Something went wrong when trying to get IP for the instance.
+    """
+    result = self.GetInstance(instance, zone)
+    try:
+      return result['networkInterfaces'][0]['accessConfigs'][0]['natIP']
+    except (KeyError, IndexError):
+      raise Error('Failed to get IP address for instance %s' % instance)
+
+  def GetImage(self, image):
+    """Gets an Image Resource by name.
+
+    Args:
+      image: Name of the image to look for.
+
+    Returns:
+      An Image Resource.
+
+    Raises:
+      ResourceNotFoundError: The requested image was not found.
+    """
+    try:
+      return self.gce_client.images().get(project=self.project,
+                                          image=image).execute()
+    except HttpError as e:
+      if e.resp.status == 404:
+        raise ResourceNotFoundError('Image "%s" for project "%s" was not found.'
+                                    % (image, self.project))
+      else:
+        raise
+
+  def InstanceExists(self, instance, zone=None):
+    """Checks if an instance exists in the current project.
+
+    Args:
+      instance: Name of the instance to check existence of.
+      zone: Zone where the instance is in. Default zone will be used if omitted.
+
+    Returns:
+      True if the instance exists or False otherwise.
+    """
+    try:
+      return self.GetInstance(instance, zone) is not None
+    except ResourceNotFoundError:
+      return False
+
+  def ImageExists(self, image):
+    """Checks if an image exists in the current project.
+
+    Args:
+      image: Name of the image to check existence of.
+
+    Returns:
+      True if the instance exists or False otherwise.
+    """
+    try:
+      return self.GetImage(image) is not None
+    except ResourceNotFoundError:
+      return False
+
+  def _WaitForZoneOperation(self, operation, zone=None, timeout_sec=None,
+                            timeout_handler=None):
+    """Waits until a GCE ZoneOperation is finished or timed out.
+
+    Args:
+      operation: The GCE operation to wait for.
+      zone: The zone that |operation| belongs to.
+      timeout_sec: The maximum number of seconds to wait for.
+      timeout_handler: A callable to be executed when timeout happens.
+    """
+    get_request = self.gce_client.zoneOperations().get(
+        project=self.project, zone=zone or self.zone, operation=operation)
+    self._WaitForOperation(operation, get_request, timeout_sec,
+                           timeout_handler=timeout_handler)
+
+  def _WaitForGlobalOperation(self, operation, timeout_sec=None,
+                              timeout_handler=None):
+    """Waits until a GCE GlobalOperation is finished or timed out.
+
+    Args:
+      operation: The GCE operation to wait for.
+      timeout_sec: The maximum number of seconds to wait for.
+      timeout_handler: A callable to be executed when timeout happens.
+    """
+    get_request = self.gce_client.globalOperations().get(project=self.project,
+                                                         operation=operation)
+    self._WaitForOperation(operation, get_request, timeout_sec=timeout_sec,
+                           timeout_handler=timeout_handler)
+
+  def _WaitForOperation(self, operation, get_operation_request,
+                        timeout_sec=None, timeout_handler=None):
+    """Waits until timeout or the request gets a response with a 'DONE' status.
+
+    Args:
+      operation: The GCE operation to wait for.
+      get_operation_request:
+        The HTTP request to get the operation's status.
+        This request will be executed periodically until it returns a status
+        'DONE'.
+      timeout_sec: The maximum number of seconds to wait for.
+      timeout_handler: A callable to be executed when times out.
+    """
+    def _IsDone():
+      result = get_operation_request.execute()
+      if result['status'] == 'DONE':
+        if 'error' in result:
+          raise Error(result['error'])
+        return True
+      return False
+
+    try:
+      timeout = timeout_sec or self._DEFAULT_TIMEOUT_SEC
+      logging.info('Waiting up to %d seconds for operation [%s] to complete...',
+                   timeout, operation)
+      timeout_util.WaitForReturnTrue(_IsDone, timeout, period=1)
+    except timeout_util.TimeoutError:
+      if not timeout_handler:
+        timeout_handler()
+      raise Error('Timeout wating for operation [%s] to complete' % operation)
+
+  def _BuildRetriableRequest(self, num_retries, http, thread_safe=False,
+                             credentials=None, *args, **kwargs):
+    """Builds a request that will be automatically retried on server errors.
+
+    Args:
+      num_retries: The maximum number of times to retry until give up.
+      http: An httplib2.Http object that this request will be executed through.
+      thread_safe: Whether or not the request needs to be thread-safe.
+      credentials: Credentials to apply to the request.
+      *args: Optional positional arguments.
+      **kwargs: Optional keyword arguments.
+
+    Returns:
+      RetryOnServerErrorHttpRequest: A request that will automatically retried
+          on server errors.
+    """
+    if thread_safe:
+      # Create a new http object for every request.
+      http = credentials.authorize(httplib2.Http())
+    return RetryOnServerErrorHttpRequest(num_retries, http, *args, **kwargs)
