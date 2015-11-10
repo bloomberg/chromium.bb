@@ -51,7 +51,7 @@ void SVGImagePainter::paint(const PaintInfo& paintInfo)
 
 void SVGImagePainter::paintForeground(const PaintInfo& paintInfo)
 {
-    RefPtr<Image> image = m_layoutSVGImage.imageResource()->image();
+    RefPtr<Image> image = m_layoutSVGImage.imageResource()->image(IntSize());
     FloatRect destRect = m_layoutSVGImage.objectBoundingBox();
     FloatRect srcRect(0, 0, image->width(), image->height());
 

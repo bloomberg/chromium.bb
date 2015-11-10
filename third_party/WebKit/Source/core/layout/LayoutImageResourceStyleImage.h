@@ -46,7 +46,7 @@ public:
     void shutdown() override;
 
     bool hasImage() const override { return true; }
-    PassRefPtr<Image> image(int width = 0, int height = 0) const override;
+    PassRefPtr<Image> image(const IntSize&) const override;
     bool errorOccurred() const override { return m_styleImage->errorOccurred(); }
 
     void setContainerSizeForLayoutObject(const IntSize&) override;

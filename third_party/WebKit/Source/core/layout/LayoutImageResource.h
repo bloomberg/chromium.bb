@@ -53,8 +53,9 @@ public:
     virtual bool hasImage() const { return m_cachedImage; }
 
     void resetAnimation();
+    bool maybeAnimated() const;
 
-    virtual PassRefPtr<Image> image(int /* width */ = 0, int /* height */ = 0) const
+    virtual PassRefPtr<Image> image(const IntSize&) const
     {
         return m_cachedImage ? m_cachedImage->imageForLayoutObject(m_layoutObject) : Image::nullImage();
     }
