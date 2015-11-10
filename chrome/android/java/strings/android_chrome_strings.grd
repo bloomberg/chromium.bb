@@ -777,14 +777,23 @@ To obtain new licenses, connect to the internet and play your downloaded content
       </message>
 
       <!-- Data Use -->
-      <message name="IDS_DATA_USE_TRACKING_STARTED_SNACKBAR_MESSAGE" desc="Message shown when data use tracking begins.">
-        Your data use is being tracked
+      <message name="IDS_DATA_USE_TRACKING_STARTED_SNACKBAR_MESSAGE" desc="Message shown when data use tracking starts.">
+         Data use is being tracked
       </message>
-      <message name="IDS_DATA_USE_TRACKING_STARTED_SNACKBAR_ACTION" desc="Button to learn more when data use tracking begins.">
+      <message name="IDS_DATA_USE_TRACKING_STARTED_SNACKBAR_ACTION" desc="Button to learn more when data use tracking starts.">
         More
       </message>
       <message name="IDS_DATA_USE_TRACKING_ENDED_TITLE" desc="Message shown when data use tracking has ended. Used by both the snackbar and dialog.">
         Data use tracking has ended
+      </message>
+      <message name="IDS_DATA_USE_TRACKING_ENDED_MESSAGE" desc="Message shown on the dialog when data use tracking has ended.">
+        Your data use will no longer be measured.
+      </message>
+      <message name="IDS_DATA_USE_TRACKING_ENDED_CHECKBOX_MESSAGE" desc="Message shown to opt out of seeing dialogs when data use tracking has ended.">
+        Don’t ask me again
+      </message>
+      <message name="IDS_DATA_USE_TRACKING_ENDED_CONTINUE" desc="Continue button for the dialog shown when data use tracking has ended. When clicked, the page resumes loading.">
+        Continue
       </message>
 
       <!-- About Chrome preferences -->

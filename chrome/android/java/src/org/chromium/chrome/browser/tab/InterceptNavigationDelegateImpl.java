@@ -8,6 +8,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeApplication;
+import org.chromium.chrome.browser.datausage.DataUseTabUIManager;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler.OverrideUrlLoadingResult;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationParams;
@@ -20,7 +21,8 @@ import org.chromium.content_public.common.ConsoleMessageLevel;
 
 /**
  * Class that controls navigations and allows to intercept them. It is used on Android to 'convert'
- * certain navigations to Intents to 3rd party applications.
+ * certain navigations to Intents to 3rd party applications and to "pause" navigations when data use
+ * tracking has ended.
  */
 public class InterceptNavigationDelegateImpl implements InterceptNavigationDelegate {
     private final ChromeActivity mActivity;
@@ -106,8 +108,7 @@ public class InterceptNavigationDelegateImpl implements InterceptNavigationDeleg
                 .setShouldCloseContentsOnOverrideUrlLoadingAndLaunchIntent(shouldCloseTab
                         && navigationParams.isMainFrame)
                 .build();
-        ExternalNavigationHandler.OverrideUrlLoadingResult result =
-                mExternalNavHandler.shouldOverrideUrlLoading(params);
+        OverrideUrlLoadingResult result = mExternalNavHandler.shouldOverrideUrlLoading(params);
         mLastOverrideUrlLoadingResult = result;
         switch (result) {
             case OVERRIDE_WITH_EXTERNAL_INTENT:
@@ -130,7 +131,8 @@ public class InterceptNavigationDelegateImpl implements InterceptNavigationDeleg
                     logBlockedNavigationToDevToolsConsole(url);
                     return true;
                 }
-                return false;
+                return DataUseTabUIManager.shouldOverrideUrlLoading(mActivity, mTab, url,
+                        navigationParams.pageTransitionType, navigationParams.referrer);
         }
     }
 

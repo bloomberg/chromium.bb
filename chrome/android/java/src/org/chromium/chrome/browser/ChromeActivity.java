@@ -458,11 +458,11 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         mTabModelSelectorTabObserver = new TabModelSelectorTabObserver(tabModelSelector) {
             @Override
             public void onPageLoadStarted(Tab tab, String url) {
-                if (DataUseTabUIManager.hasDataUseTrackingStarted(tab)) {
+                if (DataUseTabUIManager.checkDataUseTrackingStarted(tab)) {
                     mDataUseSnackbarController.showDataUseTrackingStartedBar();
-                }
-
-                if (DataUseTabUIManager.hasDataUseTrackingEnded(tab)) {
+                } else if (DataUseTabUIManager.checkDataUseTrackingEnded(tab)
+                        && DataUseTabUIManager
+                                .getOptedOutOfDataUseDialog(getApplicationContext())) {
                     mDataUseSnackbarController.showDataUseTrackingEndedBar();
                 }
             }

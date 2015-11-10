@@ -9,10 +9,10 @@
 #include "jni/DataUseTabUIManager_jni.h"
 
 // static
-jboolean HasDataUseTrackingStarted(JNIEnv* env,
-                                   const JavaParamRef<jclass>& clazz,
-                                   jint tab_id,
-                                   const JavaParamRef<jobject>& jprofile) {
+jboolean CheckDataUseTrackingStarted(JNIEnv* env,
+                                     const JavaParamRef<jclass>& clazz,
+                                     jint tab_id,
+                                     const JavaParamRef<jobject>& jprofile) {
   // TODO(megjablon): Get the DataUseTabUIManager which is a keyed service and
   // ask it if data use tracking has started.
   // Profile* profile = ProfileAndroid::FromProfileAndroid(jprofile);
@@ -20,10 +20,10 @@ jboolean HasDataUseTrackingStarted(JNIEnv* env,
 }
 
 // static
-jboolean HasDataUseTrackingEnded(JNIEnv* env,
-                                 const JavaParamRef<jclass>& clazz,
-                                 jint tab_id,
-                                 const JavaParamRef<jobject>& jprofile) {
+jboolean CheckDataUseTrackingEnded(JNIEnv* env,
+                                   const JavaParamRef<jclass>& clazz,
+                                   jint tab_id,
+                                   const JavaParamRef<jobject>& jprofile) {
   // TODO(megjablon): Get the DataUseTabUIManager which is a keyed service and
   // ask it if data use tracking has ended.
   // Profile* profile = ProfileAndroid::FromProfileAndroid(jprofile);

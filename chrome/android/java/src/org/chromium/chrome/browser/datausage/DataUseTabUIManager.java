@@ -4,37 +4,143 @@
 
 package org.chromium.chrome.browser.datausage;
 
+import android.app.Activity;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.DialogInterface.OnClickListener;
+import android.preference.PreferenceManager;
+import android.support.v7.app.AlertDialog;
+import android.text.TextUtils;
+import android.view.View;
+import android.widget.CheckBox;
+
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.sessions.SessionTabHelper;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.content_public.common.Referrer;
 
 /**
  * Entry point to manage all UI details for measuring data use within a Tab.
  */
 public class DataUseTabUIManager {
 
+    private static final String SHARED_PREF_DATA_USE_DIALOG_OPT_OUT = "data_use_dialog_opt_out";
+
     /**
-     * Returns true if data use tracking has started within a Tab.
+     * Returns true if data use tracking has started within a Tab. When data use tracking has
+     * started, returns true only once to signify the started event.
      *
-     * @param tab The tab to see if tracking has started in.
-     * @return If data use tracking has started.
+     * @param tab The tab that may have started tracking data use.
+     * @return true If data use tracking has indeed started.
      */
-    public static boolean hasDataUseTrackingStarted(Tab tab) {
-        return nativeHasDataUseTrackingStarted(
+    public static boolean checkDataUseTrackingStarted(Tab tab) {
+        return nativeCheckDataUseTrackingStarted(
                 SessionTabHelper.sessionIdForTab(tab.getWebContents()), tab.getProfile());
     }
 
     /**
-     * Returns true if data use tracking has ended within a Tab.
+     * Returns true if data use tracking has ended within a Tab. When data use tracking has
+     * ended, returns true only once to signify the ended event.
      *
+     * @param tab The tab that may have ended tracking data use.
+     * @return true If data use tracking has indeed ended.
+     */
+    public static boolean checkDataUseTrackingEnded(Tab tab) {
+        return nativeCheckDataUseTrackingEnded(
+                SessionTabHelper.sessionIdForTab(tab.getWebContents()), tab.getProfile());
+    }
+
+    /**
+     * Returns whether a navigation should be paused to show a dialog telling the user that data use
+     * tracking has ended within a Tab. If the navigation should be paused, shows a dialog with the
+     * option to cancel the navigation or continue.
+     *
+     * @param activity Current activity.
      * @param tab The tab to see if tracking has ended in.
-     * @return If data use tracking has ended.
+     * @param url URL that is pending.
+     * @param pageTransitionType The type of transition. see
+     *            {@link org.chromium.content.browser.PageTransition} for valid values.
+     * @param referrerUrl URL for the referrer.
+     * @return true If the URL loading should be overriden.
      */
-    public static boolean hasDataUseTrackingEnded(Tab tab) {
-        return nativeHasDataUseTrackingEnded(
-                SessionTabHelper.sessionIdForTab(tab.getWebContents()), tab.getProfile());
+    public static boolean shouldOverrideUrlLoading(Activity activity,
+            final Tab tab, final String url, final int pageTransitionType,
+            final String referrerUrl) {
+        if (!getOptedOutOfDataUseDialog(activity) && checkDataUseTrackingEnded(tab)) {
+            startDataUseDialog(activity, tab, url, pageTransitionType, referrerUrl);
+            return true;
+        }
+        return false;
     }
 
-    private static native boolean nativeHasDataUseTrackingStarted(int tabId, Profile profile);
-    private static native boolean nativeHasDataUseTrackingEnded(int tabId, Profile profile);
+    /**
+     * Shows a dialog with the option to cancel the navigation or continue. Also allows the user to
+     * opt out of seeing this dialog again.
+     *
+     * @param activity Current activity.
+     * @param tab The tab loading the url.
+     * @param url URL that is pending.
+     * @param pageTransitionType The type of transition. see
+     *            {@link org.chromium.content.browser.PageTransition} for valid values.
+     * @param referrerUrl URL for the referrer.
+     */
+    private static void startDataUseDialog(final Activity activity, final Tab tab,
+            final String url, final int pageTransitionType, final String referrerUrl) {
+        View checkBoxView = View.inflate(activity, R.layout.data_use_dialog, null);
+        final CheckBox checkBox = (CheckBox) checkBoxView.findViewById(R.id.data_use_checkbox);
+        new AlertDialog.Builder(activity, R.style.AlertDialogTheme)
+                .setTitle(R.string.data_use_tracking_ended_title)
+                .setMessage(R.string.data_use_tracking_ended_message)
+                .setView(checkBoxView)
+                .setPositiveButton(R.string.data_use_tracking_ended_continue,
+                        new OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                setOptedOutOfDataUseDialog(activity, checkBox.isChecked());
+                                LoadUrlParams loadUrlParams = new LoadUrlParams(url,
+                                        pageTransitionType);
+                                if (!TextUtils.isEmpty(referrerUrl)) {
+                                    Referrer referrer = new Referrer(referrerUrl,
+                                            Referrer.REFERRER_POLICY_ALWAYS);
+                                    loadUrlParams.setReferrer(referrer);
+                                }
+                                tab.loadUrl(loadUrlParams);
+                            }
+                        })
+                .setNegativeButton(R.string.cancel, new OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        setOptedOutOfDataUseDialog(activity, checkBox.isChecked());
+                    }
+                })
+                .show();
+    }
+
+    /**
+     * Returns true if the user has opted out of seeing the data use dialog.
+     *
+     * @param context An Android context.
+     * @return true If the user has opted out of seeing the data use dialog.
+     */
+    public static boolean getOptedOutOfDataUseDialog(Context context) {
+        return PreferenceManager.getDefaultSharedPreferences(context).getBoolean(
+                SHARED_PREF_DATA_USE_DIALOG_OPT_OUT, false);
+    }
+
+    /**
+     * Sets whether the user has opted out of seeing the data use dialog.
+     *
+     * @param context An Android context.
+     * @param optedOut Whether the user has opted out of seeing the data use dialog.
+     */
+    private static void setOptedOutOfDataUseDialog(Context context, boolean optedOut) {
+        PreferenceManager.getDefaultSharedPreferences(context).edit()
+                .putBoolean(SHARED_PREF_DATA_USE_DIALOG_OPT_OUT, optedOut)
+                .apply();
+    }
+
+    private static native boolean nativeCheckDataUseTrackingStarted(int tabId, Profile profile);
+    private static native boolean nativeCheckDataUseTrackingEnded(int tabId, Profile profile);
 }

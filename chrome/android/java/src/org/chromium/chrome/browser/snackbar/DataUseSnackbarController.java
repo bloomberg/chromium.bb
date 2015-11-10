@@ -9,7 +9,7 @@ import android.content.Context;
 import org.chromium.chrome.R;
 
 /**
- * The controller for the data use snackbars. This handles two snackbars:
+ * The controller for two data use snackbars:
  *
  * 1. When Chrome starts tracking data use in a Tab, it shows a snackbar informing the user that
  * data use tracking has started.
@@ -22,7 +22,7 @@ public class DataUseSnackbarController implements SnackbarManager.SnackbarContro
     private final Context mContext;
 
     /**
-     * Creates an instance of a {@link DataUseBarPopupController}.
+     * Creates an instance of a {@link DataUseSnackbarController}.
      * @param context The {@link Context} in which snackbar is shown.
      * @param snackbarManager The manager that helps to show up snackbar.
      */
