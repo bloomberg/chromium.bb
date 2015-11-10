@@ -430,8 +430,7 @@ base::NativeLibrary GSSAPISharedLibrary::LoadSharedLibrary() {
   } else {
     static const char* const kDefaultLibraryNames[] = {
 #if defined(OS_MACOSX)
-      // This library is provided by Kerberos.framework.
-      "libgssapi_krb5.dylib"
+      "/System/Library/Frameworks/Kerberos.framework/Kerberos"
 #elif defined(OS_OPENBSD)
       "libgssapi.so"          // Heimdal - OpenBSD
 #else
@@ -452,12 +451,16 @@ base::NativeLibrary GSSAPISharedLibrary::LoadSharedLibrary() {
     // TODO(asanka): Move library loading to a separate thread.
     //               http://crbug.com/66702
     base::ThreadRestrictions::ScopedAllowIO allow_io_temporarily;
-    base::NativeLibrary lib = base::LoadNativeLibrary(file_path, NULL);
+    base::NativeLibraryLoadError load_error;
+    base::NativeLibrary lib = base::LoadNativeLibrary(file_path, &load_error);
     if (lib) {
       // Only return this library if we can bind the functions we need.
       if (BindMethods(lib))
         return lib;
       base::UnloadNativeLibrary(lib);
+    } else {
+      // If this is the only library available, log the reason for failure.
+      LOG_IF(WARNING, num_lib_names == 1) << load_error.ToString();
     }
   }
   LOG(WARNING) << "Unable to find a compatible GSSAPI library";
