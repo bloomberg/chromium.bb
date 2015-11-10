@@ -40,7 +40,7 @@ function sendCommand(cmd) {
  * @param {string} e The key that was just pressed.
  */
 function handleKeypress(e) {
-  var BYPASS_SEQUENCE = 'danger';
+  var BYPASS_SEQUENCE = 'badidea';
   if (BYPASS_SEQUENCE.charCodeAt(keyPressState) == e.keyCode) {
     keyPressState++;
     if (keyPressState == BYPASS_SEQUENCE.length) {
