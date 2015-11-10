@@ -13,6 +13,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/prefs/pref_service.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -71,32 +72,10 @@ using extensions::APIPermission;
 namespace {
 
 struct ContentSettingWithExceptions {
-  ContentSettingsType type;
+  ContentSettingWithExceptions(bool otr, UserMetricsAction action)
+      : has_otr_exceptions(otr), uma(action) {}
   bool has_otr_exceptions;
-};
-
-const ContentSettingWithExceptions kContentTypesWithExceptions[] = {
-    // With OTR exceptions.
-    {CONTENT_SETTINGS_TYPE_COOKIES, true},
-    {CONTENT_SETTINGS_TYPE_IMAGES, true},
-    {CONTENT_SETTINGS_TYPE_JAVASCRIPT, true},
-    {CONTENT_SETTINGS_TYPE_PLUGINS, true},
-    {CONTENT_SETTINGS_TYPE_POPUPS, true},
-    {CONTENT_SETTINGS_TYPE_FULLSCREEN, true},
-    {CONTENT_SETTINGS_TYPE_MOUSELOCK, true},
-    {CONTENT_SETTINGS_TYPE_PPAPI_BROKER, true},
-    {CONTENT_SETTINGS_TYPE_PUSH_MESSAGING, true},
-#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
-    {CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER, true},
-#endif
-
-    // Without OTR exceptions.
-    {CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS, false},
-    {CONTENT_SETTINGS_TYPE_GEOLOCATION, false},
-    {CONTENT_SETTINGS_TYPE_NOTIFICATIONS, false},
-    {CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC, false},
-    {CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA, false},
-    {CONTENT_SETTINGS_TYPE_MIDI_SYSEX, false},
+  UserMetricsAction uma;
 };
 
 struct ContentSettingsTypeNameEntry {
@@ -158,6 +137,101 @@ const ContentSettingsTypeNameEntry kContentSettingsTypeGroupNames[] = {
 // A pseudo content type. We use it to display data like a content setting even
 // though it is not a real content setting.
 const char kZoomContentType[] = "zoomlevels";
+
+// Maps from a content settings type to a content setting with exceptions
+// struct.
+typedef std::map<ContentSettingsType, ContentSettingWithExceptions>
+    ExceptionsInfoMap;
+
+const ExceptionsInfoMap& GetExceptionsInfoMap() {
+  CR_DEFINE_STATIC_LOCAL(ExceptionsInfoMap, exceptions_info_map, ());
+  if (exceptions_info_map.empty()) {
+    // With OTR exceptions.
+    exceptions_info_map.insert(std::make_pair(
+        CONTENT_SETTINGS_TYPE_COOKIES,
+        ContentSettingWithExceptions(
+            true, UserMetricsAction("Options_DefaultCookieSettingChanged"))));
+    exceptions_info_map.insert(std::make_pair(
+        CONTENT_SETTINGS_TYPE_IMAGES,
+        ContentSettingWithExceptions(
+            true, UserMetricsAction("Options_DefaultImagesSettingChanged"))));
+    exceptions_info_map.insert(std::make_pair(
+        CONTENT_SETTINGS_TYPE_JAVASCRIPT,
+        ContentSettingWithExceptions(
+            true,
+            UserMetricsAction("Options_DefaultJavaScriptSettingChanged"))));
+    exceptions_info_map.insert(std::make_pair(
+        CONTENT_SETTINGS_TYPE_PLUGINS,
+        ContentSettingWithExceptions(
+            true, UserMetricsAction("Options_DefaultPluginsSettingChanged"))));
+    exceptions_info_map.insert(std::make_pair(
+        CONTENT_SETTINGS_TYPE_POPUPS,
+        ContentSettingWithExceptions(
+            true, UserMetricsAction("Options_DefaultPopupsSettingChanged"))));
+    exceptions_info_map.insert(std::make_pair(
+        CONTENT_SETTINGS_TYPE_FULLSCREEN,
+        ContentSettingWithExceptions(
+            true,
+            UserMetricsAction("Options_DefaultFullScreenSettingChanged"))));
+    exceptions_info_map.insert(std::make_pair(
+        CONTENT_SETTINGS_TYPE_MOUSELOCK,
+        ContentSettingWithExceptions(
+            true,
+            UserMetricsAction("Options_DefaultMouseLockSettingChanged"))));
+    exceptions_info_map.insert(std::make_pair(
+        CONTENT_SETTINGS_TYPE_PPAPI_BROKER,
+        ContentSettingWithExceptions(
+            true,
+            UserMetricsAction("Options_DefaultPPAPIBrokerSettingChanged"))));
+    exceptions_info_map.insert(std::make_pair(
+        CONTENT_SETTINGS_TYPE_PUSH_MESSAGING,
+        ContentSettingWithExceptions(
+            true,
+            UserMetricsAction("Options_DefaultPushMessagingSettingChanged"))));
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
+    exceptions_info_map.insert(std::make_pair(
+        CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER,
+        ContentSettingWithExceptions(
+            true,
+            UserMetricsAction(
+                "Options_DefaultProtectedMediaIdentifierSettingChanged"))));
+#endif
+
+    // Without OTR exceptions.
+    exceptions_info_map.insert(std::make_pair(
+        CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+        ContentSettingWithExceptions(
+            false,
+            UserMetricsAction("Options_DefaultNotificationsSettingChanged"))));
+    exceptions_info_map.insert(std::make_pair(
+        CONTENT_SETTINGS_TYPE_GEOLOCATION,
+        ContentSettingWithExceptions(
+            false,
+            UserMetricsAction("Options_DefaultGeolocationSettingChanged"))));
+    exceptions_info_map.insert(std::make_pair(
+        CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC,
+        ContentSettingWithExceptions(
+            false,
+            UserMetricsAction("Options_DefaultMediaStreamMicSettingChanged"))));
+    exceptions_info_map.insert(std::make_pair(
+        CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA,
+        ContentSettingWithExceptions(
+            false, UserMetricsAction(
+                       "Options_DefaultMediaStreamCameraSettingChanged"))));
+    exceptions_info_map.insert(std::make_pair(
+        CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS,
+        ContentSettingWithExceptions(
+            false, UserMetricsAction(
+                       "Options_DefaultMultipleAutomaticDLSettingChange"))));
+    exceptions_info_map.insert(std::make_pair(
+        CONTENT_SETTINGS_TYPE_MIDI_SYSEX,
+        ContentSettingWithExceptions(
+            false,
+            UserMetricsAction("Options_DefaultMIDISysExSettingChanged"))));
+  }
+
+  return exceptions_info_map;
+}
 
 content::BrowserContext* GetBrowserContext(content::WebUI* web_ui) {
   return web_ui->GetWebContents()->GetBrowserContext();
@@ -639,13 +713,8 @@ void ContentSettingsHandler::OnContentSettingChanged(
   if (details.update_all_types()) {
     UpdateAllExceptionsViewsFromModel();
   } else {
-    for (ContentSettingWithExceptions content_setting_with_exceptions :
-         kContentTypesWithExceptions) {
-      if (content_setting_with_exceptions.type == details.type()) {
-        UpdateExceptionsViewFromModel(details.type());
-        break;
-      }
-    }
+    if (ContainsKey(GetExceptionsInfoMap(), details.type()))
+      UpdateExceptionsViewFromModel(details.type());
   }
 }
 
@@ -773,21 +842,21 @@ void ContentSettingsHandler::UpdateHandlersEnabledRadios() {
 }
 
 void ContentSettingsHandler::UpdateAllExceptionsViewsFromModel() {
-  for (ContentSettingWithExceptions content_setting_with_exceptions :
-       kContentTypesWithExceptions) {
-    UpdateExceptionsViewFromModel(content_setting_with_exceptions.type);
-  }
+  const ExceptionsInfoMap& exceptions_info_map = GetExceptionsInfoMap();
+  for (const auto& exceptions_info_pair : exceptions_info_map)
+    UpdateExceptionsViewFromModel(exceptions_info_pair.first);
+
   // Zoom levels are not actually a content type so we need to handle them
   // separately.
   UpdateZoomLevelsExceptionsView();
 }
 
 void ContentSettingsHandler::UpdateAllOTRExceptionsViewsFromModel() {
-  for (ContentSettingWithExceptions content_setting_with_exceptions :
-       kContentTypesWithExceptions) {
-    if (content_setting_with_exceptions.has_otr_exceptions) {
+  const ExceptionsInfoMap& exceptions_info_map = GetExceptionsInfoMap();
+  for (const auto& exceptions_info_pair : exceptions_info_map) {
+    if (exceptions_info_pair.second.has_otr_exceptions) {
       UpdateExceptionsViewFromOTRHostContentSettingsMap(
-          content_setting_with_exceptions.type);
+          exceptions_info_pair.first);
     }
   }
 }
@@ -1373,62 +1442,10 @@ void ContentSettingsHandler::SetContentFilter(const base::ListValue* args) {
   DCHECK_NE(CONTENT_SETTINGS_TYPE_MEDIASTREAM, content_type);
   map->SetDefaultContentSetting(content_type, default_setting);
 
-  switch (content_type) {
-    case CONTENT_SETTINGS_TYPE_COOKIES:
-      content::RecordAction(
-          UserMetricsAction("Options_DefaultCookieSettingChanged"));
-      break;
-    case CONTENT_SETTINGS_TYPE_IMAGES:
-      content::RecordAction(
-          UserMetricsAction("Options_DefaultImagesSettingChanged"));
-      break;
-    case CONTENT_SETTINGS_TYPE_JAVASCRIPT:
-      content::RecordAction(
-          UserMetricsAction("Options_DefaultJavaScriptSettingChanged"));
-      break;
-    case CONTENT_SETTINGS_TYPE_PLUGINS:
-      content::RecordAction(
-          UserMetricsAction("Options_DefaultPluginsSettingChanged"));
-      break;
-    case CONTENT_SETTINGS_TYPE_POPUPS:
-      content::RecordAction(
-          UserMetricsAction("Options_DefaultPopupsSettingChanged"));
-      break;
-    case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
-      content::RecordAction(
-          UserMetricsAction("Options_DefaultNotificationsSettingChanged"));
-      break;
-    case CONTENT_SETTINGS_TYPE_GEOLOCATION:
-      content::RecordAction(
-          UserMetricsAction("Options_DefaultGeolocationSettingChanged"));
-      break;
-    case CONTENT_SETTINGS_TYPE_MOUSELOCK:
-      content::RecordAction(
-          UserMetricsAction("Options_DefaultMouseLockSettingChanged"));
-      break;
-    case CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC:
-      content::RecordAction(
-          UserMetricsAction("Options_DefaultMediaStreamMicSettingChanged"));
-      break;
-    case CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA:
-      content::RecordAction(
-          UserMetricsAction("Options_DefaultMediaStreamCameraSettingChanged"));
-      break;
-    case CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS:
-      content::RecordAction(
-          UserMetricsAction("Options_DefaultMultipleAutomaticDLSettingChange"));
-      break;
-    case CONTENT_SETTINGS_TYPE_MIDI_SYSEX:
-      content::RecordAction(
-          UserMetricsAction("Options_DefaultMIDISysExSettingChanged"));
-      break;
-    case CONTENT_SETTINGS_TYPE_PUSH_MESSAGING:
-      content::RecordAction(
-          UserMetricsAction("Options_DefaultPushMessagingSettingChanged"));
-      break;
-    default:
-      break;
-  }
+  const ExceptionsInfoMap& exceptions_info_map = GetExceptionsInfoMap();
+  const auto& it = exceptions_info_map.find(content_type);
+  if (it != exceptions_info_map.end())
+    content::RecordAction(it->second.uma);
 }
 
 void ContentSettingsHandler::RemoveException(const base::ListValue* args) {

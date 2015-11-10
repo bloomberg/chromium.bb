@@ -9381,6 +9381,14 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="Options_DefaultFullScreenSettingChanged">
+  <owner>lshang@chromium.org</owner>
+  <description>
+    Recorded when the default value for the Full Screen content setting is
+    changed by the user.
+  </description>
+</action>
+
 <action name="Options_DefaultGeolocationSettingChanged">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
@@ -9455,6 +9463,14 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Options_DefaultPPAPIBrokerSettingChanged">
+  <owner>lshang@chromium.org</owner>
+  <description>
+    Recorded when the default value for the PPAPI Broker content setting is
+    changed by the user.
+  </description>
+</action>
+
 <action name="Options_DefaultPluginsSettingChanged">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
@@ -9463,6 +9479,14 @@ should be able to be added at any place in this file.
 <action name="Options_DefaultPopupsSettingChanged">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+</action>
+
+<action name="Options_DefaultProtectedMediaIdentifierSettingChanged">
+  <owner>lshang@chromium.org</owner>
+  <description>
+    Recorded when the default value for the Protected Media Identifier content
+    setting is changed by the user.
+  </description>
 </action>
 
 <action name="Options_DefaultPushMessagingSettingChanged">
