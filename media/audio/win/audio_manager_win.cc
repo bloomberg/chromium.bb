@@ -21,9 +21,9 @@
 #include "base/process/launch.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "base/system_monitor/system_monitor.h"
 #include "base/win/windows_version.h"
 #include "media/audio/audio_parameters.h"
+#include "media/audio/win/audio_device_listener_win.h"
 #include "media/audio/win/audio_low_latency_input_win.h"
 #include "media/audio/win/audio_low_latency_output_win.h"
 #include "media/audio/win/audio_manager_win.h"
@@ -171,7 +171,7 @@ void AudioManagerWin::InitializeOnAudioThread() {
     // AudioDeviceListenerWin must be initialized on a COM thread and should
     // only be used if WASAPI / Core Audio is supported.
     output_device_listener_.reset(new AudioDeviceListenerWin(BindToCurrentLoop(
-        base::Bind(&AudioManagerWin::StallAudioThreadAfterDeviceChange,
+        base::Bind(&AudioManagerWin::NotifyAllOutputDeviceChangeListeners,
                    base::Unretained(this)))));
   }
 }
@@ -536,23 +536,6 @@ AudioInputStream* AudioManagerWin::CreatePCMWaveInAudioInputStream(
 
   return new PCMWaveInAudioInputStream(this, params, kNumInputBuffers,
                                        xp_device_id);
-}
-
-void AudioManagerWin::StallAudioThreadAfterDeviceChange(
-    AudioDeviceListenerWin::DeviceNotificationType notification_type) {
-  base::PlatformThread::Sleep(base::TimeDelta::FromSeconds(1));
-
-  if (notification_type == AudioDeviceListenerWin::kInputDeviceChange) {
-    base::SystemMonitor* monitor = base::SystemMonitor::Get();
-    if (monitor) {
-      monitor->ProcessDevicesChanged(
-          base::SystemMonitor::DEVTYPE_AUDIO_CAPTURE);
-    }
-    return;
-  }
-
-  DCHECK_EQ(notification_type, AudioDeviceListenerWin::kOutputDeviceChange);
-  NotifyAllOutputDeviceChangeListeners();
 }
 
 /// static

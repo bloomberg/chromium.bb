@@ -31,14 +31,10 @@ namespace media {
 // TODO(dalecurtis, henrika): Support input device changes.
 class MEDIA_EXPORT AudioDeviceListenerWin : public IMMNotificationClient {
  public:
-  // Callback returns whether input or output devices have changed.
-  enum DeviceNotificationType { kInputDeviceChange, kOutputDeviceChange };
-  using ListenerCB = base::Callback<void(DeviceNotificationType)>;
-
   // The listener callback will be called from a system level multimedia thread,
   // thus the callee must be thread safe.  |listener| is a permanent callback
   // and must outlive AudioDeviceListenerWin.
-  explicit AudioDeviceListenerWin(const ListenerCB& listener_cb);
+  explicit AudioDeviceListenerWin(const base::Closure& listener_cb);
   virtual ~AudioDeviceListenerWin();
 
  private:
@@ -60,7 +56,7 @@ class MEDIA_EXPORT AudioDeviceListenerWin : public IMMNotificationClient {
                                     ERole role,
                                     LPCWSTR new_default_device_id) override;
 
-  ListenerCB listener_cb_;
+  base::Closure listener_cb_;
   ScopedComPtr<IMMDeviceEnumerator> device_enumerator_;
 
   // Used to rate limit device change events.
