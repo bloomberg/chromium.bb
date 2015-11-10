@@ -180,6 +180,7 @@ public class ThreadUtils {
      * @param task The Runnable to run
      * @param delayMillis The delay in milliseconds until the Runnable will be run
      */
+    @VisibleForTesting
     public static void postOnUiThreadDelayed(Runnable task, long delayMillis) {
         getUiThreadHandler().postDelayed(task, delayMillis);
     }

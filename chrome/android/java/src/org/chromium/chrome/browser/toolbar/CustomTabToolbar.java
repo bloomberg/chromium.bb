@@ -22,7 +22,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.WindowDelegate;
@@ -51,8 +50,6 @@ import org.chromium.ui.base.WindowAndroid;
  */
 public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
         View.OnLongClickListener {
-    private static final int TITLE_ANIM_DELAY_MS = 200;
-
     private View mLocationBarFrameLayout;
     private View mTitleUrlContainer;
     private UrlBar mUrlBar;
@@ -68,14 +65,6 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
 
     private CustomTabToolbarAnimationDelegate mAnimDelegate;
     private boolean mBackgroundColorSet;
-    private long mInitializeTimeStamp;
-
-    private Runnable mTitleAnimationStarter = new Runnable() {
-        @Override
-        public void run() {
-            mAnimDelegate.startTitleAnimation(getContext());
-        }
-    };
 
     /**
      * Constructor for getting this class inflated from an xml layout file.
@@ -116,7 +105,6 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
             ToolbarTabController tabController, AppMenuButtonHelper appMenuButtonHelper) {
         super.initialize(toolbarDataProvider, tabController, appMenuButtonHelper);
         updateVisualsForState();
-        mInitializeTimeStamp = System.currentTimeMillis();
     }
 
     @Override
@@ -215,13 +203,7 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
         // It takes some time to parse the title of the webcontent, and before that Tab#getTitle
         // always return the url. We postpone the title animation until the title is authentic.
         if (mShouldShowTitle && !TextUtils.equals(currentTab.getTitle(), currentTab.getUrl())) {
-            long duration = System.currentTimeMillis() - mInitializeTimeStamp;
-            if (duration >= TITLE_ANIM_DELAY_MS) {
-                mTitleAnimationStarter.run();
-            } else {
-                ThreadUtils.postOnUiThreadDelayed(mTitleAnimationStarter,
-                        TITLE_ANIM_DELAY_MS - duration);
-            }
+            mAnimDelegate.startTitleAnimation(getContext());
         }
 
         mTitleBar.setText(currentTab.getTitle());
