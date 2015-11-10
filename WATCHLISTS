@@ -275,10 +275,6 @@
       'filepath': 'net/cookies/|'\
                   'chrome/browser/net/sqlite_persistent_cookie_store',
     },
-    'custom_handlers': {
-      'filepath': 'chrome/browser/custom_handlers/|'\
-                  'chrome/common/custom_handlers/',
-    },
     'custom_tabs': {
       'filepath': 'chrome/android/java/src/org/chromium/chrome/browser/customtabs/|'\
                   'chrome/android/javatests/src/org/chromium/chrome/browser/customtabs/',
@@ -439,6 +435,9 @@
     'ipc_messages': {
       'filepath': '_message.*.h|'\
                   '_messages.cc',
+    },
+    'login': {
+      'filepath': 'chrome/browser/ui/login'
     },
     'libwebp': {
       'filepath': 'third_party/libwebp'
@@ -1244,7 +1243,8 @@
     'autofill': ['bondd+autofillwatch@chromium.org',
                  'estade+watch@chromium.org',
                  'jdonnelly+autofillwatch@chromium.org',
-                 'rouslan+autofill@chromium.org'],
+                 'rouslan+autofill@chromium.org',
+                 'vabr+watchlistautofill@chromium.org'],
     'automation': ['robertshield@chromium.org'],
     'background_sync': ['jkarlin+watch@chromium.org'],
     'base': ['vmpstr+watch@chromium.org'],
@@ -1316,7 +1316,6 @@
                       'peter@chromium.org'],
     'content_worker': ['blink-worker-reviews@chromium.org',
                        'kinuko+watch@chromium.org'],
-    'custom_handlers': ['vabr+watchlist@chromium.org'],
     'deep_memory_profiler': ['dmikurube@chromium.org'],
     'device_bluetooth': ['scheib+watch@chromium.org'],
     'device_sensors': ['timvolodine@chromium.org',
@@ -1365,6 +1364,7 @@
                 'jfweitz+watch@chromium.org', 'skanuj+watch@chromium.org'],
     'ios_chrome': ['sdefresne+watch@chromium.org'],
     'ipc': ['jam@chromium.org', 'darin-cc@chromium.org'],
+    'login': ['vabr+watchlistlogin@chromium.org'],
     'libwebp': ['urvang@chromium.org', 'jzern@chromium.org',
                 'skal@google.com', 'vikasa@google.com'],
     'libvpx': ['tomfinegan@chromium.org', 'jzern@chromium.org',
@@ -1420,7 +1420,7 @@
                'dcheng@chromium.org', 'jianli@chromium.org'],
     'password_manager': ['mkwst+watchlist-passwords@chromium.org',
                          'gcasto+watchlist@chromium.org',
-                         'vabr+watchlist@chromium.org'],
+                         'vabr+watchlistpasswordmanager@chromium.org'],
     'pepper_api': ['bradnelson+warch@chromium.org',
                    'piman+watch@chromium.org', 'ihf+watch@chromium.org',
                    'yusukes+watch@chromium.org', 'binji+watch@chromium.org',
