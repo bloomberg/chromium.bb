@@ -25,7 +25,6 @@
           'rpc_server_loop.c',
         ],
         'cflags': [
-          '-fno-strict-aliasing',
           '-Wno-missing-field-initializers'
         ],
         # nacl_srpc_message.c contains an overflow check that produces an error

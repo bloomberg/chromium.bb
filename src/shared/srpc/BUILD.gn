@@ -17,8 +17,6 @@ static_library("nonnacl_srpc") {
     "rpc_server_loop.c",
     "rpc_service.c",
   ]
-
-  cflags_c = [ "-fno-strict-aliasing" ]
 }
 
 if (current_os == "nacl") {
@@ -40,7 +38,5 @@ if (current_os == "nacl") {
       "rpc_server_loop.c",
       "rpc_service.c",
     ]
-
-    cflags_c = [ "-fno-strict-aliasing" ]
   }
 }
