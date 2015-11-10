@@ -87,6 +87,7 @@
 #include "content/renderer/media/media_stream_renderer_factory_impl.h"
 #include "content/renderer/media/midi_dispatcher.h"
 #include "content/renderer/media/render_media_log.h"
+#include "content/renderer/media/renderer_webmediaplayer_delegate.h"
 #include "content/renderer/media/user_media_client_impl.h"
 #include "content/renderer/media/webmediaplayer_ms.h"
 #include "content/renderer/memory_benchmarking_extension.h"
@@ -749,7 +750,6 @@ RenderFrameImpl::RenderFrameImpl(const CreateParams& params)
 #if defined(VIDEO_HOLE)
       contains_media_player_(false),
 #endif
-      has_played_media_(false),
       devtools_agent_(nullptr),
       wakelock_dispatcher_(nullptr),
       geolocation_dispatcher_(NULL),
@@ -759,6 +759,7 @@ RenderFrameImpl::RenderFrameImpl(const CreateParams& params)
       manifest_manager_(NULL),
       accessibility_mode_(AccessibilityModeOff),
       renderer_accessibility_(NULL),
+      media_player_delegate_(NULL),
       is_using_lofi_(false),
       weak_factory_(this) {
   std::pair<RoutingIDFrameMap::iterator, bool> result =
@@ -2165,7 +2166,8 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
   media::WebMediaPlayerParams params(
       base::Bind(&ContentRendererClient::DeferMediaLoad,
                  base::Unretained(GetContentClient()->renderer()),
-                 static_cast<RenderFrame*>(this), has_played_media_),
+                 static_cast<RenderFrame*>(this),
+                 GetWebMediaPlayerDelegate()->has_played_media()),
       audio_renderer_sink, media_log, render_thread->GetMediaThreadTaskRunner(),
       render_thread->GetWorkerTaskRunner(),
       render_thread->compositor_task_runner(), context_3d_cb,
@@ -2201,7 +2203,7 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
         // !defined(ENABLE_MEDIA_PIPELINE_ON_ANDROID)
 
   return new media::WebMediaPlayerImpl(
-      frame, client, encrypted_client, weak_factory_.GetWeakPtr(),
+      frame, client, encrypted_client, GetWebMediaPlayerDelegate()->AsWeakPtr(),
       media_renderer_factory.Pass(), GetCdmFactory(), params);
 #endif  // defined(OS_ANDROID) && !defined(ENABLE_MEDIA_PIPELINE_ON_ANDROID)
 }
@@ -3996,22 +3998,6 @@ blink::WebVRClient* RenderFrameImpl::webVRClient() {
 }
 #endif
 
-void RenderFrameImpl::DidPlay(WebMediaPlayer* player) {
-  has_played_media_ = true;
-  Send(new FrameHostMsg_MediaPlayingNotification(
-      routing_id_, reinterpret_cast<int64>(player), player->hasVideo(),
-      player->hasAudio(), player->isRemote()));
-}
-
-void RenderFrameImpl::DidPause(WebMediaPlayer* player) {
-  Send(new FrameHostMsg_MediaPausedNotification(
-      routing_id_, reinterpret_cast<int64>(player)));
-}
-
-void RenderFrameImpl::PlayerGone(WebMediaPlayer* player) {
-  DidPause(player);
-}
-
 void RenderFrameImpl::didSerializeDataForFrame(
     const WebCString& data,
     WebPageSerializerClient::PageSerializationStatus status) {
@@ -4936,8 +4922,8 @@ WebMediaPlayer* RenderFrameImpl::CreateWebMediaPlayerForMediaStream(
     compositor_task_runner = base::MessageLoop::current()->task_runner();
 
   return new WebMediaPlayerMS(
-      frame_, client, weak_factory_.GetWeakPtr(), new RenderMediaLog(),
-      CreateRendererFactory(), compositor_task_runner,
+      frame_, client, GetWebMediaPlayerDelegate()->AsWeakPtr(),
+      new RenderMediaLog(), CreateRendererFactory(), compositor_task_runner,
       render_thread->GetMediaThreadTaskRunner(),
       render_thread->GetWorkerTaskRunner(), render_thread->GetGpuFactories(),
       sink_id, security_origin);
@@ -5250,9 +5236,10 @@ WebMediaPlayer* RenderFrameImpl::CreateAndroidWebMediaPlayer(
         context_provider, gpu_channel_host, routing_id_);
   }
 
-  return new WebMediaPlayerAndroid(
-      frame_, client, encrypted_client, weak_factory_.GetWeakPtr(),
-      GetMediaPlayerManager(), GetCdmFactory(), stream_texture_factory, params);
+  return new WebMediaPlayerAndroid(frame_, client, encrypted_client,
+                                   GetWebMediaPlayerDelegate()->AsWeakPtr(),
+                                   GetMediaPlayerManager(), GetCdmFactory(),
+                                   stream_texture_factory, params);
 }
 
 RendererMediaPlayerManager* RenderFrameImpl::GetMediaPlayerManager() {
@@ -5353,6 +5340,13 @@ mojo::ServiceProviderPtr RenderFrameImpl::ConnectToApplication(
                                     nullptr, nullptr,
                                     base::Bind(&OnGotContentHandlerID));
   return service_provider.Pass();
+}
+
+media::RendererWebMediaPlayerDelegate*
+RenderFrameImpl::GetWebMediaPlayerDelegate() {
+  if (!media_player_delegate_)
+    media_player_delegate_ = new media::RendererWebMediaPlayerDelegate(this);
+  return media_player_delegate_;
 }
 
 }  // namespace content
