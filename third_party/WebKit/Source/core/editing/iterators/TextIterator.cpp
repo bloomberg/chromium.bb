@@ -563,11 +563,11 @@ void TextIteratorAlgorithm<Strategy>::handleTextBox()
             //   FirstLetter seem to have different ideas of where things can split.
             //   FirstLetter takes the punctuation + first letter, and BIDI will
             //   split out the punctuation and possibly reorder it.
-            if (nextTextBox && nextTextBox->layoutObject() != layoutObject) {
+            if (nextTextBox && !(nextTextBox->lineLayoutItem().isEqual(layoutObject))) {
                 m_textBox = 0;
                 return;
             }
-            ASSERT(!nextTextBox || nextTextBox->layoutObject() == layoutObject);
+            ASSERT(!nextTextBox || nextTextBox->lineLayoutItem().isEqual(layoutObject));
 
             if (runStart < runEnd) {
                 // Handle either a single newline character (which becomes a space),
