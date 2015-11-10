@@ -13,10 +13,18 @@ shared_library("blimp_client") {
     "compositor/blimp_compositor.h",
     "compositor/blimp_context_provider.cc",
     "compositor/blimp_context_provider.h",
+    "compositor/blimp_layer_tree_settings.cc",
+    "compositor/blimp_layer_tree_settings.h",
     "compositor/blimp_output_surface.cc",
     "compositor/blimp_output_surface.h",
     "compositor/test/dummy_layer_driver.cc",
     "compositor/test/dummy_layer_driver.h",
+
+    # TODO(dtrainor): Remove this once the LayerTreeHost settings for Blimp
+    # are finalized or are pushed from the server component.  See
+    # crbug.com/527655.
+    "../../content/public/common/content_switches.cc",
+    "../../ui/native_theme/native_theme_switches.cc",
   ]
 
   deps = [

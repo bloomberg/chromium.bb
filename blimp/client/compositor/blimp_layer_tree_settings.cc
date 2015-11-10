@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "blimp/common/compositor/blimp_layer_tree_settings.h"
+#include "blimp/client/compositor/blimp_layer_tree_settings.h"
 
 #include "base/command_line.h"
 #include "base/logging.h"
