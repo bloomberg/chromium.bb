@@ -424,10 +424,6 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     case CSSPropertyBorderRightColor:
     case CSSPropertyBorderBottomColor:
     case CSSPropertyBorderLeftColor:
-    case CSSPropertyWebkitBorderStartColor:
-    case CSSPropertyWebkitBorderEndColor:
-    case CSSPropertyWebkitBorderBeforeColor:
-    case CSSPropertyWebkitBorderAfterColor:
     case CSSPropertyWebkitColumnRuleColor:
     case CSSPropertyWebkitTextStrokeColor:
         parsedValue = parseColor(m_valueList->current(), acceptQuirkyColors(propId));
@@ -599,10 +595,6 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
             unitless = FUnitlessQuirk;
         // fall through
     case CSSPropertyWebkitTextStrokeWidth:
-    case CSSPropertyWebkitBorderStartWidth:
-    case CSSPropertyWebkitBorderEndWidth:
-    case CSSPropertyWebkitBorderBeforeWidth:
-    case CSSPropertyWebkitBorderAfterWidth:
     case CSSPropertyWebkitColumnRuleWidth:
         if (id == CSSValueThin || id == CSSValueMedium || id == CSSValueThick)
             validPrimitive = true;
@@ -1001,14 +993,6 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     case CSSPropertyBorderLeft:
         // [ 'border-left-width' || 'border-style' || <color> ] | inherit
         return parseShorthand(propId, borderLeftShorthand(), important);
-    case CSSPropertyWebkitBorderStart:
-        return parseShorthand(propId, webkitBorderStartShorthand(), important);
-    case CSSPropertyWebkitBorderEnd:
-        return parseShorthand(propId, webkitBorderEndShorthand(), important);
-    case CSSPropertyWebkitBorderBefore:
-        return parseShorthand(propId, webkitBorderBeforeShorthand(), important);
-    case CSSPropertyWebkitBorderAfter:
-        return parseShorthand(propId, webkitBorderAfterShorthand(), important);
     case CSSPropertyBorderColor:
         // <color>{1,4} | inherit
         return parse4Values(propId, borderColorShorthand().properties(), important);
@@ -1177,6 +1161,18 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     case CSSPropertyOutlineColor:
     case CSSPropertyOutlineWidth:
     case CSSPropertyOutlineOffset:
+    case CSSPropertyWebkitBorderStartColor:
+    case CSSPropertyWebkitBorderEndColor:
+    case CSSPropertyWebkitBorderBeforeColor:
+    case CSSPropertyWebkitBorderAfterColor:
+    case CSSPropertyWebkitBorderStartWidth:
+    case CSSPropertyWebkitBorderEndWidth:
+    case CSSPropertyWebkitBorderBeforeWidth:
+    case CSSPropertyWebkitBorderAfterWidth:
+    case CSSPropertyWebkitBorderStart:
+    case CSSPropertyWebkitBorderEnd:
+    case CSSPropertyWebkitBorderBefore:
+    case CSSPropertyWebkitBorderAfter:
         validPrimitive = false;
         break;
 

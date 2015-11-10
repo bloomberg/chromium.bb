@@ -1596,6 +1596,11 @@ static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeLineWidth(CSSParserToken
     return consumeLength(range, cssParserMode, ValueRangeNonNegative);
 }
 
+static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeBorderWidth(CSSParserTokenRange& range, CSSParserMode cssParserMode)
+{
+    return consumeLineWidth(range, cssParserMode);
+}
+
 PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSPropertyID unresolvedProperty)
 {
     CSSPropertyID property = resolveCSSPropertyID(unresolvedProperty);
@@ -1699,9 +1704,18 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSProperty
     case CSSPropertyWebkitTextFillColor:
     case CSSPropertyWebkitTapHighlightColor:
     case CSSPropertyWebkitTextEmphasisColor:
+    case CSSPropertyWebkitBorderStartColor:
+    case CSSPropertyWebkitBorderEndColor:
+    case CSSPropertyWebkitBorderBeforeColor:
+    case CSSPropertyWebkitBorderAfterColor:
         return consumeColor(m_range, m_context);
     case CSSPropertyColor:
         return consumeColor(m_range, m_context, inQuirksMode());
+    case CSSPropertyWebkitBorderStartWidth:
+    case CSSPropertyWebkitBorderEndWidth:
+    case CSSPropertyWebkitBorderBeforeWidth:
+    case CSSPropertyWebkitBorderAfterWidth:
+        return consumeBorderWidth(m_range, m_context.mode());
     case CSSPropertyZIndex:
         return consumeZIndex(m_range);
     case CSSPropertyTextShadow: // CSS2 property, dropped in CSS2.1, back in CSS3, so treat as CSS3
@@ -2210,6 +2224,14 @@ bool CSSPropertyParser::parseShorthand(CSSPropertyID unresolvedProperty, bool im
         return consumeShorthandGreedily(webkitTextEmphasisShorthand(), important);
     case CSSPropertyOutline:
         return consumeShorthandGreedily(outlineShorthand(), important);
+    case CSSPropertyWebkitBorderStart:
+        return consumeShorthandGreedily(webkitBorderStartShorthand(), important);
+    case CSSPropertyWebkitBorderEnd:
+        return consumeShorthandGreedily(webkitBorderEndShorthand(), important);
+    case CSSPropertyWebkitBorderBefore:
+        return consumeShorthandGreedily(webkitBorderBeforeShorthand(), important);
+    case CSSPropertyWebkitBorderAfter:
+        return consumeShorthandGreedily(webkitBorderAfterShorthand(), important);
     default:
         m_currentShorthand = oldShorthand;
         return false;
