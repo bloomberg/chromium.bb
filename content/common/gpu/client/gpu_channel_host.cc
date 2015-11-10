@@ -372,6 +372,7 @@ gfx::GpuMemoryBufferHandle GpuChannelHost::ShareGpuMemoryBufferToGpuProcess(
       handle.type = gfx::SHARED_MEMORY_BUFFER;
       handle.handle = ShareToGpuProcess(source_handle.handle);
       handle.offset = source_handle.offset;
+      handle.stride = source_handle.stride;
       *requires_sync_point = false;
       return handle;
     }

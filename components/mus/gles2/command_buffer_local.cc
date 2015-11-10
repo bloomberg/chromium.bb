@@ -18,6 +18,7 @@
 #include "gpu/command_buffer/service/shader_translator_cache.h"
 #include "gpu/command_buffer/service/transfer_buffer_manager.h"
 #include "gpu/command_buffer/service/valuebuffer_manager.h"
+#include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/vsync_provider.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_image_shared_memory.h"
@@ -139,7 +140,9 @@ int32_t CommandBufferLocal::CreateImage(ClientBuffer buffer,
       gfx::Size(static_cast<int>(width), static_cast<int>(height)),
       internalformat));
   if (!image->Initialize(base::SharedMemory::DuplicateHandle(handle.handle),
-                         handle.id, gpu_memory_buffer->GetFormat(), 0)) {
+                         handle.id, gpu_memory_buffer->GetFormat(), 0,
+                         gfx::RowSizeForBufferFormat(
+                             width, gpu_memory_buffer->GetFormat(), 0))) {
     return -1;
   }
 

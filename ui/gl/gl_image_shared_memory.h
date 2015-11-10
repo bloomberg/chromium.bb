@@ -23,7 +23,8 @@ class GL_EXPORT GLImageSharedMemory : public GLImageMemory {
   bool Initialize(const base::SharedMemoryHandle& handle,
                   gfx::GenericSharedMemoryId shared_memory_id,
                   gfx::BufferFormat format,
-                  size_t offset);
+                  size_t offset,
+                  size_t stride);
 
   // Overridden from GLImage:
   void Destroy(bool have_context) override;

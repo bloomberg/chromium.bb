@@ -17,6 +17,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/location.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
@@ -1040,10 +1041,14 @@ scoped_refptr<gl::GLImage> GpuChannel::CreateImageForGpuMemoryBuffer(
     uint32 internalformat) {
   switch (handle.type) {
     case gfx::SHARED_MEMORY_BUFFER: {
+      if (!base::IsValueInRangeForNumericType<size_t>(handle.stride))
+        return nullptr;
       scoped_refptr<gl::GLImageSharedMemory> image(
           new gl::GLImageSharedMemory(size, internalformat));
-      if (!image->Initialize(handle.handle, handle.id, format, handle.offset))
+      if (!image->Initialize(handle.handle, handle.id, format, handle.offset,
+                             handle.stride)) {
         return nullptr;
+      }
 
       return image;
     }
