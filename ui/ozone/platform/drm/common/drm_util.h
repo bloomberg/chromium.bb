@@ -59,6 +59,7 @@ DisplaySnapshot_Params CreateDisplaySnapshotParams(
     const gfx::Point& origin);
 
 int GetFourCCFormatFromBufferFormat(gfx::BufferFormat format);
+gfx::BufferFormat GetBufferFormatFromFourCCFormat(int format);
 
 }  // namespace ui
 

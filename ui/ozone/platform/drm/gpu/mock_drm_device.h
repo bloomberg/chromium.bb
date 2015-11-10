@@ -70,13 +70,14 @@ class MockDrmDevice : public ui::DrmDevice {
   bool SetCrtc(drmModeCrtc* crtc, std::vector<uint32_t> connectors) override;
   bool DisableCrtc(uint32_t crtc_id) override;
   ScopedDrmConnectorPtr GetConnector(uint32_t connector_id) override;
-  bool AddFramebuffer(uint32_t width,
-                      uint32_t height,
-                      uint8_t depth,
-                      uint8_t bpp,
-                      uint32_t stride,
-                      uint32_t handle,
-                      uint32_t* framebuffer) override;
+  bool AddFramebuffer2(uint32_t width,
+                       uint32_t height,
+                       uint32_t format,
+                       uint32_t handles[4],
+                       uint32_t strides[4],
+                       uint32_t offsets[4],
+                       uint32_t* framebuffer,
+                       uint32_t flags) override;
   bool RemoveFramebuffer(uint32_t framebuffer) override;
   ScopedDrmFramebufferPtr GetFramebuffer(uint32_t framebuffer) override;
   bool PageFlip(uint32_t crtc_id,

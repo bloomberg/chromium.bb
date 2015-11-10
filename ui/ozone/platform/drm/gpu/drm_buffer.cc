@@ -13,25 +13,6 @@ namespace ui {
 
 namespace {
 
-uint8_t GetColorDepth(SkColorType type) {
-  switch (type) {
-    case kUnknown_SkColorType:
-    case kAlpha_8_SkColorType:
-      return 0;
-    case kIndex_8_SkColorType:
-      return 8;
-    case kRGB_565_SkColorType:
-      return 16;
-    case kARGB_4444_SkColorType:
-      return 16;
-    case kN32_SkColorType:
-      return 32;
-    default:
-      NOTREACHED();
-      return 0;
-  }
-}
-
 uint32_t GetFourCCCodeForSkColorType(SkColorType type) {
   switch (type) {
     case kUnknown_SkColorType:
@@ -84,14 +65,17 @@ bool DrmBuffer::Initialize(const SkImageInfo& info,
   }
 
   if (should_register_framebuffer) {
-    if (!drm_->AddFramebuffer(
-            info.width(), info.height(), GetColorDepth(info.colorType()),
-            info.bytesPerPixel() << 3, stride_, handle_, &framebuffer_)) {
-      PLOG(ERROR) << "DrmBuffer: AddFramebuffer: handle " << handle_;
+    uint32_t handles[4] = {0};
+    handles[0] = handle_;
+    uint32_t strides[4] = {0};
+    strides[0] = stride_;
+    uint32_t offsets[4] = {0};
+    fb_pixel_format_ = GetFourCCCodeForSkColorType(info.colorType());
+    if (!drm_->AddFramebuffer2(info.width(), info.height(), fb_pixel_format_,
+                               handles, strides, offsets, &framebuffer_, 0)) {
+      PLOG(ERROR) << "DrmBuffer: AddFramebuffer2: handle " << handle_;
       return false;
     }
-
-    fb_pixel_format_ = GetFourCCCodeForSkColorType(info.colorType());
   }
 
   surface_ =

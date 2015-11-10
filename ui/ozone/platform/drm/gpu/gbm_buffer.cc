@@ -20,6 +20,11 @@
 #include "ui/ozone/platform/drm/gpu/gbm_surface_factory.h"
 #include "ui/ozone/platform/drm/gpu/gbm_surfaceless.h"
 
+namespace {
+// Optimal format for rendering on overlay.
+const gfx::BufferFormat kOverlayRenderFormat = gfx::BufferFormat::UYVY_422;
+}  // namespace
+
 namespace ui {
 
 GbmBuffer::GbmBuffer(const scoped_refptr<GbmDevice>& gbm,
@@ -80,12 +85,15 @@ bool GbmPixmap::InitializeFromBuffer(const scoped_refptr<GbmBuffer>& buffer) {
   return true;
 }
 
-void GbmPixmap::SetScalingCallback(const ScalingCallback& scaling_callback) {
-  scaling_callback_ = scaling_callback;
+void GbmPixmap::SetProcessingCallback(
+    const ProcessingCallback& processing_callback) {
+  processing_callback_ = processing_callback;
 }
 
-scoped_refptr<NativePixmap> GbmPixmap::GetScaledPixmap(gfx::Size new_size) {
-  return scaling_callback_.Run(new_size);
+scoped_refptr<NativePixmap> GbmPixmap::GetProcessedPixmap(
+    gfx::Size target_size,
+    gfx::BufferFormat target_format) {
+  return processing_callback_.Run(target_size, target_format);
 }
 
 gfx::NativePixmapHandle GbmPixmap::ExportHandle() {
@@ -117,17 +125,23 @@ int GbmPixmap::GetDmaBufPitch() {
   return dma_buf_pitch_;
 }
 
+gfx::BufferFormat GbmPixmap::GetBufferFormat() {
+  return GetBufferFormatFromFourCCFormat(buffer_->GetFramebufferPixelFormat());
+}
+
 bool GbmPixmap::ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
                                      int plane_z_order,
                                      gfx::OverlayTransform plane_transform,
                                      const gfx::Rect& display_bounds,
                                      const gfx::RectF& crop_rect) {
-  gfx::Size required_size;
-  if (plane_z_order &&
-      ShouldApplyScaling(display_bounds, crop_rect, &required_size)) {
-    scoped_refptr<NativePixmap> scaled_pixmap = GetScaledPixmap(required_size);
-    if (scaled_pixmap) {
-      return scaled_pixmap->ScheduleOverlayPlane(
+  gfx::Size target_size;
+  gfx::BufferFormat target_format;
+  if (plane_z_order && ShouldApplyProcessing(display_bounds, crop_rect,
+                                             &target_size, &target_format)) {
+    scoped_refptr<NativePixmap> processed_pixmap =
+        GetProcessedPixmap(target_size, target_format);
+    if (processed_pixmap) {
+      return processed_pixmap->ScheduleOverlayPlane(
           widget, plane_z_order, plane_transform, display_bounds, crop_rect);
     } else {
       return false;
@@ -146,25 +160,30 @@ bool GbmPixmap::ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
   return true;
 }
 
-bool GbmPixmap::ShouldApplyScaling(const gfx::Rect& display_bounds,
-                                   const gfx::RectF& crop_rect,
-                                   gfx::Size* required_size) {
+bool GbmPixmap::ShouldApplyProcessing(const gfx::Rect& display_bounds,
+                                      const gfx::RectF& crop_rect,
+                                      gfx::Size* target_size,
+                                      gfx::BufferFormat* target_format) {
   if (crop_rect.width() == 0 || crop_rect.height() == 0) {
-    PLOG(ERROR) << "ShouldApplyScaling passed zero scaling target.";
+    PLOG(ERROR) << "ShouldApplyProcessing passed zero processing target.";
     return false;
   }
 
   if (!buffer_) {
-    PLOG(ERROR) << "ShouldApplyScaling requires a buffer.";
+    PLOG(ERROR) << "ShouldApplyProcessing requires a buffer.";
     return false;
   }
 
+  // TODO(william.xie): Figure out the optimal render format for overlay.
+  // See http://crbug.com/553264.
+  *target_format = kOverlayRenderFormat;
   gfx::Size pixmap_size = buffer_->GetSize();
   // If the required size is not integer-sized, round it to the next integer.
-  *required_size = gfx::ToCeiledSize(
+  *target_size = gfx::ToCeiledSize(
       gfx::SizeF(display_bounds.width() / crop_rect.width(),
                  display_bounds.height() / crop_rect.height()));
-  return pixmap_size != *required_size;
+
+  return pixmap_size != *target_size || GetBufferFormat() != *target_format;
 }
 
 }  // namespace ui

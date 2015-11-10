@@ -584,11 +584,13 @@ bool VaapiVideoEncodeAccelerator::PrepareNextJob() {
   }
 
   current_encode_job_->input_surface = new VASurface(
-      available_va_surface_ids_.back(), coded_size_, va_surface_release_cb_);
+      available_va_surface_ids_.back(), coded_size_,
+      vaapi_wrapper_->va_surface_format(), va_surface_release_cb_);
   available_va_surface_ids_.pop_back();
 
   current_encode_job_->recon_surface = new VASurface(
-      available_va_surface_ids_.back(), coded_size_, va_surface_release_cb_);
+      available_va_surface_ids_.back(), coded_size_,
+      vaapi_wrapper_->va_surface_format(), va_surface_release_cb_);
   available_va_surface_ids_.pop_back();
 
   // Reference surfaces are needed until the job is done, but they get

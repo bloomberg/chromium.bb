@@ -44,13 +44,17 @@ class GbmPixmap : public NativePixmap {
   explicit GbmPixmap(GbmSurfaceFactory* surface_manager);
   void Initialize(base::ScopedFD dma_buf, int dma_buf_pitch);
   bool InitializeFromBuffer(const scoped_refptr<GbmBuffer>& buffer);
-  void SetScalingCallback(const ScalingCallback& scaling_callback) override;
-  scoped_refptr<NativePixmap> GetScaledPixmap(gfx::Size new_size) override;
+  void SetProcessingCallback(
+      const ProcessingCallback& processing_callback) override;
+  scoped_refptr<NativePixmap> GetProcessedPixmap(
+      gfx::Size target_size,
+      gfx::BufferFormat target_format) override;
 
   // NativePixmap:
   void* GetEGLClientBuffer() override;
   int GetDmaBufFd() override;
   int GetDmaBufPitch() override;
+  gfx::BufferFormat GetBufferFormat() override;
   bool ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
                             int plane_z_order,
                             gfx::OverlayTransform plane_transform,
@@ -62,9 +66,10 @@ class GbmPixmap : public NativePixmap {
 
  private:
   ~GbmPixmap() override;
-  bool ShouldApplyScaling(const gfx::Rect& display_bounds,
-                          const gfx::RectF& crop_rect,
-                          gfx::Size* required_size);
+  bool ShouldApplyProcessing(const gfx::Rect& display_bounds,
+                             const gfx::RectF& crop_rect,
+                             gfx::Size* target_size,
+                             gfx::BufferFormat* target_format);
 
   scoped_refptr<GbmBuffer> buffer_;
   base::ScopedFD dma_buf_;
@@ -72,7 +77,7 @@ class GbmPixmap : public NativePixmap {
 
   GbmSurfaceFactory* surface_manager_;
 
-  ScalingCallback scaling_callback_;
+  ProcessingCallback processing_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(GbmPixmap);
 };

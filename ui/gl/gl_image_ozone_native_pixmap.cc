@@ -86,9 +86,9 @@ GLImageOzoneNativePixmap::GLImageOzoneNativePixmap(const Size& size,
 GLImageOzoneNativePixmap::~GLImageOzoneNativePixmap() {
 }
 
-bool GLImageOzoneNativePixmap::Initialize(ui::NativePixmap* pixmap,
-                                          BufferFormat format) {
+bool GLImageOzoneNativePixmap::Initialize(ui::NativePixmap* pixmap) {
   DCHECK(!pixmap_);
+  BufferFormat format = pixmap->GetBufferFormat();
   if (pixmap->GetEGLClientBuffer()) {
     EGLint attrs[] = {EGL_IMAGE_PRESERVED_KHR, EGL_TRUE, EGL_NONE};
     if (!gl::GLImageEGL::Initialize(EGL_NATIVE_PIXMAP_KHR,

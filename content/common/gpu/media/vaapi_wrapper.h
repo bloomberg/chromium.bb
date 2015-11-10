@@ -195,6 +195,9 @@ class CONTENT_EXPORT VaapiWrapper {
   // Initialize static data before sandbox is enabled.
   static void PreSandboxInitialization();
 
+  // Get the created surfaces format.
+  unsigned int va_surface_format() const { return va_surface_format_; }
+
  private:
   struct ProfileInfo {
     VAProfile va_profile;
@@ -324,6 +327,9 @@ class CONTENT_EXPORT VaapiWrapper {
 
   // Allocated ids for VASurfaces.
   std::vector<VASurfaceID> va_surface_ids_;
+
+  // VA format of surfaces with va_surface_ids_.
+  unsigned int va_surface_format_;
 
   // Singleton instance of VADisplayState.
   static base::LazyInstance<VADisplayState> va_display_state_;

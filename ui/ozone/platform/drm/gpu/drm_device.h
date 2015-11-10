@@ -77,15 +77,16 @@ class OZONE_EXPORT DrmDevice : public base::RefCountedThreadSafe<DrmDevice> {
   // Returns the connector properties for |connector_id|.
   virtual ScopedDrmConnectorPtr GetConnector(uint32_t connector_id);
 
-  // Register a buffer with the CRTC. On successful registration, the CRTC will
-  // assign a framebuffer ID to |framebuffer|.
-  virtual bool AddFramebuffer(uint32_t width,
-                              uint32_t height,
-                              uint8_t depth,
-                              uint8_t bpp,
-                              uint32_t stride,
-                              uint32_t handle,
-                              uint32_t* framebuffer);
+  // Register any format buffer with the CRTC. On successful registration, the
+  // CRTC will assign a framebuffer ID to |framebuffer|.
+  virtual bool AddFramebuffer2(uint32_t width,
+                               uint32_t height,
+                               uint32_t format,
+                               uint32_t handles[4],
+                               uint32_t strides[4],
+                               uint32_t offsets[4],
+                               uint32_t* framebuffer,
+                               uint32_t flags);
 
   // Deregister the given |framebuffer|.
   virtual bool RemoveFramebuffer(uint32_t framebuffer);

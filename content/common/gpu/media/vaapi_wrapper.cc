@@ -114,8 +114,12 @@ static std::vector<VAConfigAttrib> GetRequiredAttribs(
 
 VASurface::VASurface(VASurfaceID va_surface_id,
                      const gfx::Size& size,
+                     unsigned int format,
                      const ReleaseCB& release_cb)
-    : va_surface_id_(va_surface_id), size_(size), release_cb_(release_cb) {
+    : va_surface_id_(va_surface_id),
+      size_(size),
+      format_(format),
+      release_cb_(release_cb) {
   DCHECK(!release_cb_.is_null());
 }
 
@@ -124,7 +128,8 @@ VASurface::~VASurface() {
 }
 
 VaapiWrapper::VaapiWrapper()
-    : va_display_(NULL),
+    : va_surface_format_(0),
+      va_display_(NULL),
       va_config_id_(VA_INVALID_ID),
       va_context_id_(VA_INVALID_ID),
       va_vpp_config_id_(VA_INVALID_ID),
@@ -511,6 +516,7 @@ bool VaapiWrapper::CreateSurfaces(unsigned int va_format,
 
   DCHECK(va_surfaces->empty());
   DCHECK(va_surface_ids_.empty());
+  DCHECK_EQ(va_surface_format_, 0u);
   va_surface_ids_.resize(num_surfaces);
 
   // Allocate surfaces in driver.
@@ -537,6 +543,7 @@ bool VaapiWrapper::CreateSurfaces(unsigned int va_format,
   }
 
   *va_surfaces = va_surface_ids_;
+  va_surface_format_ = va_format;
   return true;
 }
 
@@ -557,6 +564,7 @@ void VaapiWrapper::DestroySurfaces() {
 
   va_surface_ids_.clear();
   va_context_id_ = VA_INVALID_ID;
+  va_surface_format_ = 0;
 }
 
 scoped_refptr<VASurface> VaapiWrapper::CreateUnownedSurface(
@@ -579,7 +587,7 @@ scoped_refptr<VASurface> VaapiWrapper::CreateUnownedSurface(
   // of the destruction order. All the surfaces will be destroyed
   // before VaapiWrapper.
   va_surface = new VASurface(
-      va_surface_id, size,
+      va_surface_id, size, va_format,
       base::Bind(&VaapiWrapper::DestroyUnownedSurface, base::Unretained(this)));
 
   return va_surface;

@@ -129,7 +129,7 @@ GpuMemoryBufferFactoryOzoneNativePixmap::CreateImageForGpuMemoryBuffer(
 
   scoped_refptr<gfx::GLImageOzoneNativePixmap> image(
       new gfx::GLImageOzoneNativePixmap(size, internalformat));
-  if (!image->Initialize(pixmap.get(), format)) {
+  if (!image->Initialize(pixmap.get())) {
     LOG(ERROR) << "Failed to create GLImage";
     return nullptr;
   }

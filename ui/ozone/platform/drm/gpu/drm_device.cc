@@ -299,17 +299,18 @@ ScopedDrmConnectorPtr DrmDevice::GetConnector(uint32_t connector_id) {
       drmModeGetConnector(file_.GetPlatformFile(), connector_id));
 }
 
-bool DrmDevice::AddFramebuffer(uint32_t width,
-                               uint32_t height,
-                               uint8_t depth,
-                               uint8_t bpp,
-                               uint32_t stride,
-                               uint32_t handle,
-                               uint32_t* framebuffer) {
+bool DrmDevice::AddFramebuffer2(uint32_t width,
+                                uint32_t height,
+                                uint32_t format,
+                                uint32_t handles[4],
+                                uint32_t strides[4],
+                                uint32_t offsets[4],
+                                uint32_t* framebuffer,
+                                uint32_t flags) {
   DCHECK(file_.IsValid());
-  TRACE_EVENT1("drm", "DrmDevice::AddFramebuffer", "handle", handle);
-  return !drmModeAddFB(file_.GetPlatformFile(), width, height, depth, bpp,
-                       stride, handle, framebuffer);
+  TRACE_EVENT1("drm", "DrmDevice::AddFramebuffer", "handle", handles[0]);
+  return !drmModeAddFB2(file_.GetPlatformFile(), width, height, format, handles,
+                        strides, offsets, framebuffer, flags);
 }
 
 bool DrmDevice::RemoveFramebuffer(uint32_t framebuffer) {

@@ -190,6 +190,9 @@ scoped_refptr<NativePixmap> SurfaceFactoryCast::CreateNativePixmap(
     }
     int GetDmaBufFd() override { return 0; }
     int GetDmaBufPitch() override { return 0; }
+    gfx::BufferFormat GetBufferFormat() override {
+      return gfx::BufferFormat::LAST;
+    }
     bool ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
                               int plane_z_order,
                               gfx::OverlayTransform plane_transform,
@@ -197,8 +200,11 @@ scoped_refptr<NativePixmap> SurfaceFactoryCast::CreateNativePixmap(
                               const gfx::RectF& crop_rect) override {
       return true;
     }
-    void SetScalingCallback(const ScalingCallback& scaling_callback) override {}
-    scoped_refptr<NativePixmap> GetScaledPixmap(gfx::Size new_size) override {
+    void SetProcessingCallback(
+        const ProcessingCallback& processing_callback) override {}
+    scoped_refptr<NativePixmap> GetProcessedPixmap(
+        gfx::Size target_size,
+        gfx::BufferFormat target_format) override {
       return nullptr;
     }
     gfx::NativePixmapHandle ExportHandle() override {

@@ -13,6 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/gpu/media/vaapi_picture.h"
+#include "ui/gfx/buffer_types.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace gl {
@@ -47,17 +48,21 @@ class VaapiDrmPicture : public VaapiPicture {
   bool AllowOverlay() const override;
 
  private:
-  // Calls ScalePixmap() if weak_ptr is not NULL.
-  static scoped_refptr<ui::NativePixmap> CallScalePixmap(
+  // Calls ProcessPixmap() if weak_ptr is not NULL.
+  static scoped_refptr<ui::NativePixmap> CallProcessPixmap(
       base::WeakPtr<VaapiDrmPicture> weak_ptr,
-      gfx::Size new_size);
-  // Use VPP to scale underlying pixmap_ to |new_size| and return the
-  // scaling result with a new pixmap.
-  scoped_refptr<ui::NativePixmap> ScalePixmap(gfx::Size new_size);
+      gfx::Size target_size,
+      gfx::BufferFormat target_format);
+  // Use VPP to process underlying pixmap_, scaling to |target_size| and
+  // converting to |target_format|.
+  scoped_refptr<ui::NativePixmap> ProcessPixmap(
+      gfx::Size target_size,
+      gfx::BufferFormat target_format);
   scoped_refptr<VASurface> CreateVASurfaceForPixmap(
       scoped_refptr<ui::NativePixmap> pixmap,
       gfx::Size pixmap_size);
-  scoped_refptr<ui::NativePixmap> CreateNativePixmap(gfx::Size size);
+  scoped_refptr<ui::NativePixmap> CreateNativePixmap(gfx::Size size,
+                                                     gfx::BufferFormat format);
 
   VaapiWrapper* vaapi_wrapper_;  // Not owned.
   base::Callback<bool(void)> make_context_current_;
@@ -65,8 +70,8 @@ class VaapiDrmPicture : public VaapiPicture {
   // Ozone buffer, the storage of the EGLImage and the VASurface.
   scoped_refptr<ui::NativePixmap> pixmap_;
 
-  // Ozone buffer, the storage of the scaled buffer for overlay.
-  scoped_refptr<ui::NativePixmap> scaled_pixmap_;
+  // Ozone buffer, the storage of the processed buffer for overlay.
+  scoped_refptr<ui::NativePixmap> processed_pixmap_;
 
   // EGLImage bound to the GL textures used by the VDA client.
   scoped_refptr<gl::GLImage> gl_image_;
@@ -74,8 +79,8 @@ class VaapiDrmPicture : public VaapiPicture {
   // VASurface used to transfer from the decoder's pixel format.
   scoped_refptr<VASurface> va_surface_;
 
-  // VaSurface used to apply scaling.
-  scoped_refptr<VASurface> scaled_va_surface_;
+  // VaSurface used to apply processing.
+  scoped_refptr<VASurface> processed_va_surface_;
 
   // The WeakPtrFactory for VaapiDrmPicture.
   base::WeakPtrFactory<VaapiDrmPicture> weak_this_factory_;

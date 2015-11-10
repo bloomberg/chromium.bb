@@ -119,13 +119,14 @@ ScopedDrmConnectorPtr MockDrmDevice::GetConnector(uint32_t connector_id) {
   return ScopedDrmConnectorPtr(DrmAllocator<drmModeConnector>());
 }
 
-bool MockDrmDevice::AddFramebuffer(uint32_t width,
-                                   uint32_t height,
-                                   uint8_t depth,
-                                   uint8_t bpp,
-                                   uint32_t stride,
-                                   uint32_t handle,
-                                   uint32_t* framebuffer) {
+bool MockDrmDevice::AddFramebuffer2(uint32_t width,
+                                    uint32_t height,
+                                    uint32_t format,
+                                    uint32_t handles[4],
+                                    uint32_t strides[4],
+                                    uint32_t offsets[4],
+                                    uint32_t* framebuffer,
+                                    uint32_t flags) {
   add_framebuffer_call_count_++;
   *framebuffer = add_framebuffer_call_count_;
   return add_framebuffer_expectation_;
