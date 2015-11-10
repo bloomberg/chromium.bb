@@ -29,7 +29,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/time/time.h"
 #include "base/values.h"
 #include "crypto/sha2.h"
 #include "net/base/host_port_pair.h"
@@ -49,6 +48,10 @@ namespace net {
 namespace {
 
 #include "net/http/transport_security_state_static.h"
+
+const size_t kMaxHPKPReportCacheEntries = 50;
+const int kTimeToRememberHPKPReportsMins = 60;
+const size_t kReportCacheKeyLength = 16;
 
 std::string TimeToISO8601(const base::Time& t) {
   base::Time::Exploded exploded;
@@ -73,23 +76,34 @@ scoped_ptr<base::ListValue> GetPEMEncodedChainAsList(
   return result.Pass();
 }
 
+bool HashReportForCache(const base::DictionaryValue& report,
+                        const GURL& report_uri,
+                        std::string* cache_key) {
+  char hashed[crypto::kSHA256Length];
+  std::string to_hash;
+  if (!base::JSONWriter::Write(report, &to_hash))
+    return false;
+  to_hash += "," + report_uri.spec();
+  crypto::SHA256HashString(to_hash, hashed, sizeof(hashed));
+  static_assert(kReportCacheKeyLength <= sizeof(hashed),
+                "HPKP report cache key size is larger than hash size.");
+  *cache_key = std::string(hashed, kReportCacheKeyLength);
+  return true;
+}
+
 bool GetHPKPReport(const HostPortPair& host_port_pair,
                    const TransportSecurityState::PKPState& pkp_state,
                    const X509Certificate* served_certificate_chain,
                    const X509Certificate* validated_certificate_chain,
-                   std::string* serialized_report) {
-  // TODO(estark): keep track of reports already sent and rate-limit,
-  // break loops
+                   std::string* serialized_report,
+                   std::string* cache_key) {
   if (pkp_state.report_uri.is_empty())
     return false;
 
   base::DictionaryValue report;
   base::Time now = base::Time::Now();
-  report.SetString("date-time", TimeToISO8601(now));
   report.SetString("hostname", host_port_pair.host());
   report.SetInteger("port", host_port_pair.port());
-  report.SetString("effective-expiration-date",
-                   TimeToISO8601(pkp_state.expiry));
   report.SetBoolean("include-subdomains", pkp_state.include_subdomains);
   report.SetString("noted-hostname", pkp_state.domain);
 
@@ -127,6 +141,18 @@ bool GetHPKPReport(const HostPortPair& host_port_pair,
 
   report.Set("known-pins", known_pin_list.Pass());
 
+  // For the sent reports cache, do not include the effective expiration
+  // date. The expiration date will likely change every time the user
+  // visits the site, so it would prevent reports from being effectively
+  // deduplicated.
+  if (!HashReportForCache(report, pkp_state.report_uri, cache_key)) {
+    LOG(ERROR) << "Failed to compute cache key for HPKP violation report.";
+    return false;
+  }
+
+  report.SetString("date-time", TimeToISO8601(now));
+  report.SetString("effective-expiration-date",
+                   TimeToISO8601(pkp_state.expiry));
   if (!base::JSONWriter::Write(report, serialized_report)) {
     LOG(ERROR) << "Failed to serialize HPKP violation report.";
     return false;
@@ -143,42 +169,6 @@ bool GetHPKPReport(const HostPortPair& host_port_pair,
 bool IsReportUriValidForHost(const GURL& report_uri, const std::string& host) {
   return (report_uri.host_piece() != host ||
           !report_uri.SchemeIsCryptographic());
-}
-
-bool CheckPinsAndMaybeSendReport(
-    const HostPortPair& host_port_pair,
-    const TransportSecurityState::PKPState& pkp_state,
-    const HashValueVector& hashes,
-    const X509Certificate* served_certificate_chain,
-    const X509Certificate* validated_certificate_chain,
-    const TransportSecurityState::PublicKeyPinReportStatus report_status,
-    TransportSecurityState::ReportSender* report_sender,
-    std::string* failure_log) {
-  if (pkp_state.CheckPublicKeyPins(hashes, failure_log))
-    return true;
-
-  if (!report_sender ||
-      report_status != TransportSecurityState::ENABLE_PIN_REPORTS ||
-      pkp_state.report_uri.is_empty()) {
-    return false;
-  }
-
-  DCHECK(pkp_state.report_uri.is_valid());
-  // Report URIs should not be used if they are the same host as the pin
-  // and are HTTPS, to avoid going into a report-sending loop.
-  if (!IsReportUriValidForHost(pkp_state.report_uri, host_port_pair.host()))
-    return false;
-
-  std::string serialized_report;
-
-  if (!GetHPKPReport(host_port_pair, pkp_state, served_certificate_chain,
-                     validated_certificate_chain, &serialized_report)) {
-    return false;
-  }
-
-  report_sender->Send(pkp_state.report_uri, serialized_report);
-
-  return false;
 }
 
 std::string HashesToBase64String(const HashValueVector& hashes) {
@@ -606,7 +596,10 @@ bool DecodeHSTSPreload(const std::string& hostname, PreloadResult* out) {
 }  // namespace
 
 TransportSecurityState::TransportSecurityState()
-    : delegate_(nullptr), report_sender_(nullptr), enable_static_pins_(true) {
+    : delegate_(nullptr),
+      report_sender_(nullptr),
+      enable_static_pins_(true),
+      sent_reports_cache_(kMaxHPKPReportCacheEntries) {
 // Static pinning is only enabled for official builds to make sure that
 // others don't end up with pins that cannot be easily updated.
 #if !defined(OFFICIAL_BUILD) || defined(OS_ANDROID) || defined(OS_IOS)
@@ -782,6 +775,53 @@ void TransportSecurityState::EnablePKPHost(const std::string& host,
   DirtyNotify();
 }
 
+bool TransportSecurityState::CheckPinsAndMaybeSendReport(
+    const HostPortPair& host_port_pair,
+    const TransportSecurityState::PKPState& pkp_state,
+    const HashValueVector& hashes,
+    const X509Certificate* served_certificate_chain,
+    const X509Certificate* validated_certificate_chain,
+    const TransportSecurityState::PublicKeyPinReportStatus report_status,
+    std::string* failure_log) {
+  if (pkp_state.CheckPublicKeyPins(hashes, failure_log))
+    return true;
+
+  if (!report_sender_ ||
+      report_status != TransportSecurityState::ENABLE_PIN_REPORTS ||
+      pkp_state.report_uri.is_empty()) {
+    return false;
+  }
+
+  DCHECK(pkp_state.report_uri.is_valid());
+  // Report URIs should not be used if they are the same host as the pin
+  // and are HTTPS, to avoid going into a report-sending loop.
+  if (!IsReportUriValidForHost(pkp_state.report_uri, host_port_pair.host()))
+    return false;
+
+  std::string serialized_report;
+  std::string report_cache_key;
+  if (!GetHPKPReport(host_port_pair, pkp_state, served_certificate_chain,
+                     validated_certificate_chain, &serialized_report,
+                     &report_cache_key)) {
+    return false;
+  }
+
+  // Limit the rate at which duplicate reports are sent to the same
+  // report URI. The same report will not be sent within
+  // |kTimeToRememberHPKPReportsMins|, which reduces load on servers and
+  // also prevents accidental loops (a.com triggers a report to b.com
+  // which triggers a report to a.com). See section 2.1.4 of RFC 7469.
+  if (sent_reports_cache_.Get(report_cache_key, base::TimeTicks::Now()))
+    return false;
+  sent_reports_cache_.Put(
+      report_cache_key, true, base::TimeTicks::Now(),
+      base::TimeTicks::Now() +
+          base::TimeDelta::FromMinutes(kTimeToRememberHPKPReportsMins));
+
+  report_sender_->Send(pkp_state.report_uri, serialized_report);
+  return false;
+}
+
 bool TransportSecurityState::DeleteDynamicDataForHost(const std::string& host) {
   DCHECK(CalledOnValidThread());
 
@@ -951,7 +991,7 @@ bool TransportSecurityState::ProcessHPKPReportOnlyHeader(
   CheckPinsAndMaybeSendReport(
       host_port_pair, pkp_state, ssl_info.public_key_hashes,
       ssl_info.unverified_cert.get(), ssl_info.cert.get(), ENABLE_PIN_REPORTS,
-      report_sender_, &unused_failure_log);
+      &unused_failure_log);
   return true;
 }
 
@@ -1004,7 +1044,7 @@ bool TransportSecurityState::CheckPublicKeyPinsImpl(
 
   return CheckPinsAndMaybeSendReport(
       host_port_pair, pkp_state, hashes, served_certificate_chain,
-      validated_certificate_chain, report_status, report_sender_, failure_log);
+      validated_certificate_chain, report_status, failure_log);
 }
 
 bool TransportSecurityState::GetStaticDomainState(const std::string& host,

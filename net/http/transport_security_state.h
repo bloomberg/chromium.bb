@@ -15,6 +15,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/time/time.h"
+#include "net/base/expiring_cache.h"
 #include "net/base/net_export.h"
 #include "net/cert/x509_cert_types.h"
 #include "net/cert/x509_certificate.h"
@@ -368,6 +369,22 @@ class NET_EXPORT TransportSecurityState
   void EnableSTSHost(const std::string& host, const STSState& state);
   void EnablePKPHost(const std::string& host, const PKPState& state);
 
+  // Returns true if a request to |host_port_pair| with the given
+  // SubjectPublicKeyInfo |hashes| satisfies the pins in |pkp_state|,
+  // and false otherwise. If a violation is found and reporting is
+  // configured (i.e. there is a report URI in |pkp_state| and
+  // |report_status| says to), this method sends an HPKP violation
+  // report containing |served_certificate_chain| and
+  // |validated_certificate_chain|.
+  bool CheckPinsAndMaybeSendReport(
+      const HostPortPair& host_port_pair,
+      const TransportSecurityState::PKPState& pkp_state,
+      const HashValueVector& hashes,
+      const X509Certificate* served_certificate_chain,
+      const X509Certificate* validated_certificate_chain,
+      const TransportSecurityState::PublicKeyPinReportStatus report_status,
+      std::string* failure_log);
+
   // The sets of hosts that have enabled TransportSecurity. |domain| will always
   // be empty for a STSState or PKPState in these maps; the domain
   // comes from the map keys instead. In addition, |upgrade_mode| in the
@@ -382,6 +399,11 @@ class NET_EXPORT TransportSecurityState
 
   // True if static pins should be used.
   bool enable_static_pins_;
+
+  // Keeps track of reports that have been sent recently for
+  // rate-limiting.
+  ExpiringCache<std::string, bool, base::TimeTicks, std::less<base::TimeTicks>>
+      sent_reports_cache_;
 
   DISALLOW_COPY_AND_ASSIGN(TransportSecurityState);
 };
