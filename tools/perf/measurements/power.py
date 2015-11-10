@@ -34,6 +34,10 @@ class Power(page_test.PageTest):
     self._network_metric.AddResults(tab, results)
     self._power_metric.AddResults(tab, results)
 
+  def DidRunPage(self, platform):
+    if platform.IsMonitoringPower():
+      platform.StopMonitoringPower()
+
 
 class LoadPower(Power):
   def WillNavigateToPage(self, page, tab):
