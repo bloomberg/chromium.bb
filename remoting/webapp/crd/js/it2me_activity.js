@@ -49,8 +49,7 @@ remoting.It2MeActivity.prototype.start = function() {
 
   this.logger_ = this.createLogger_();
   this.logger_.logSessionStateChange(
-      remoting.ChromotingEvent.SessionState.STARTED,
-      remoting.ChromotingEvent.ConnectionError.NONE);
+      remoting.ChromotingEvent.SessionState.STARTED);
 
   this.desktopActivity_ =
       new remoting.DesktopRemotingActivity(this, this.logger_);

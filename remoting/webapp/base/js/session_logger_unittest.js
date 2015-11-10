@@ -74,7 +74,7 @@ QUnit.test('logSignalStrategyProgress()', function(assert) {
   });
 });
 
-QUnit.test('logClientSessionStateChange()', function(assert){
+QUnit.test('logSessionStateChange()', function(assert){
   var Event = remoting.ChromotingEvent;
 
   logger = new remoting.SessionLogger(Event.Role.CLIENT, logWriter);
@@ -84,9 +84,9 @@ QUnit.test('logClientSessionStateChange()', function(assert){
   logger.setHostOs(remoting.ChromotingEvent.Os.OTHER);
   logger.setHostOsVersion('host_os_version');
 
-  logger.logClientSessionStateChange(
-      remoting.ClientSession.State.FAILED,
-      new remoting.Error(remoting.Error.Tag.HOST_IS_OFFLINE), null);
+  logger.logSessionStateChange(
+      remoting.ChromotingEvent.SessionState.CONNECTION_FAILED,
+      new remoting.Error(remoting.Error.Tag.HOST_IS_OFFLINE));
   var sessionId = logger.getSessionId();
 
   assert.ok(sessionId !== null);
@@ -110,7 +110,7 @@ QUnit.test('logClientSessionStateChange()', function(assert){
   });
 });
 
-QUnit.test('logClientSessionStateChange() should handle XMPP error',
+QUnit.test('logSessionStateChange() should handle XMPP error',
     function(assert){
   var Event = remoting.ChromotingEvent;
 
@@ -121,11 +121,9 @@ QUnit.test('logClientSessionStateChange() should handle XMPP error',
   logger.setHostOs(remoting.ChromotingEvent.Os.OTHER);
   logger.setHostOsVersion('host_os_version');
 
-  var xmppError = new remoting.ChromotingEvent.XmppError('<fake-stanza/>');
-
-  logger.logClientSessionStateChange(
-      remoting.ClientSession.State.FAILED,
-      new remoting.Error(remoting.Error.Tag.HOST_IS_OFFLINE), xmppError);
+  logger.logSessionStateChange(
+      remoting.ChromotingEvent.SessionState.CONNECTION_FAILED,
+      new remoting.Error(remoting.Error.Tag.HOST_IS_OFFLINE, '<fake-stanza/>'));
   var sessionId = logger.getSessionId();
 
   assert.ok(sessionId !== null);
@@ -152,7 +150,7 @@ QUnit.test('logClientSessionStateChange() should handle XMPP error',
   });
 });
 
-QUnit.test('logClientSessionStateChange() should handle sessionId change.',
+QUnit.test('logSessionStateChange() should handle sessionId change.',
   function(assert){
   var clock = sinon.useFakeTimers();
   var Event = remoting.ChromotingEvent;
@@ -170,8 +168,8 @@ QUnit.test('logClientSessionStateChange() should handle sessionId change.',
   clock.tick(remoting.SessionLogger.MAX_SESSION_ID_AGE + 100);
 
   // Logs the event.
-  logger.logClientSessionStateChange(
-      remoting.ClientSession.State.AUTHENTICATED, remoting.Error.none(), null);
+  logger.logSessionStateChange(
+      remoting.ChromotingEvent.SessionState.AUTHENTICATED);
 
   var newSessionId = logger.getSessionId();
   verifyEvent(assert, 0, {
@@ -225,7 +223,7 @@ QUnit.test('logClientSessionStateChange() should handle sessionId change.',
   });
 });
 
-QUnit.test('logClientSessionStateChange() should log session_duration.',
+QUnit.test('logSessionStateChange() should log session_duration.',
   function(assert){
   var clock = sinon.useFakeTimers();
   var Event = remoting.ChromotingEvent;
@@ -241,8 +239,8 @@ QUnit.test('logClientSessionStateChange() should log session_duration.',
   clock.tick(2500);
 
   // Logs the event.
-  logger.logClientSessionStateChange(
-      remoting.ClientSession.State.CONNECTED, remoting.Error.none(), null);
+  logger.logSessionStateChange(
+    remoting.ChromotingEvent.SessionState.CONNECTED);
 
   verifyEvent(assert, 0, {
     type: Event.Type.SESSION_STATE,

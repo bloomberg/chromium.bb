@@ -19,17 +19,16 @@ var remoting = remoting || {};
  */
 
 remoting.XmppErrorCache = function() {
-  /** @private {remoting.ChromotingEvent.XmppError} */
-  this.firstError_ = null;
+  /** @private {string} */
+  this.firstErrorStanza_ = '';
 };
 
 /**
- * @return {remoting.ChromotingEvent.XmppError} The first XMPP error that the
- *     monitor encountered.  Returns null if no errors have been encountered so
- *     far.
+ * @return {string} The first XMPP error stanza that the monitor encountered.
+ *     Returns an empty string if no errors have been encountered so far.
  */
-remoting.XmppErrorCache.prototype.getFirstError = function() {
-  return this.firstError_;
+remoting.XmppErrorCache.prototype.getFirstErrorStanza = function() {
+  return this.firstErrorStanza_;
 };
 
 /**
@@ -38,7 +37,7 @@ remoting.XmppErrorCache.prototype.getFirstError = function() {
  * @param {Element} iqNode
  */
 remoting.XmppErrorCache.prototype.processStanza = function(iqNode) {
-  if (this.firstError_ != null) {
+  if (this.firstErrorStanza_ != '') {
     return;
   }
   // The XML structure is as follows:
@@ -51,7 +50,7 @@ remoting.XmppErrorCache.prototype.processStanza = function(iqNode) {
   }
 
   var strippedStanza = this.stripPII_(iqNode);
-  this.firstError_ = new remoting.ChromotingEvent.XmppError(strippedStanza);
+  this.firstErrorStanza_ = strippedStanza;
 };
 
 /**

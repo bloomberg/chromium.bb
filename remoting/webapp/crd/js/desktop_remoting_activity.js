@@ -78,8 +78,7 @@ remoting.DesktopRemotingActivity.prototype.stop = function() {
     console.log('Canceled.');
     // Session creation in process, just report it as canceled.
     this.logger_.logSessionStateChange(
-      remoting.ChromotingEvent.SessionState.CONNECTION_CANCELED,
-      remoting.ChromotingEvent.ConnectionError.NONE);
+      remoting.ChromotingEvent.SessionState.CONNECTION_CANCELED);
   }
 };
 

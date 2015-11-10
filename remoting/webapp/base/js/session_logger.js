@@ -52,8 +52,6 @@ remoting.SessionLogger = function(role, writeLogEntry) {
   this.mode_ = remoting.ChromotingEvent.Mode.ME2ME;
   /** @private {remoting.ChromotingEvent.AuthMethod} */
   this.authMethod_;
-  /** @private */
-  this.pluginError_ = '';
 
   this.setSessionId_();
 };
@@ -131,13 +129,6 @@ remoting.SessionLogger.prototype.setAuthMethod = function(method) {
 };
 
 /**
- * @param {string} error  The error string of the plugin error.
- */
-remoting.SessionLogger.prototype.setPluginError = function(error) {
-  this.pluginError_ = error;
-};
-
-/**
  * @return {string} The current session id. This is random GUID, refreshed
  *     every 24hrs.
  */
@@ -162,34 +153,14 @@ remoting.SessionLogger.prototype.logSignalStrategyProgress =
 };
 
 /**
- * Logs a client session state change.
- *
- * @param {remoting.ClientSession.State} state
- * @param {!remoting.Error} stateError
- * @param {?remoting.ChromotingEvent.XmppError} xmppError The XMPP error
- *     as described in http://xmpp.org/rfcs/rfc6120.html#stanzas-error.
- *     Set if the connecton error originates from the an XMPP stanza error.
- */
-remoting.SessionLogger.prototype.logClientSessionStateChange = function(
-    state, stateError, xmppError) {
-  this.logSessionStateChange(
-      toSessionState(state),
-      stateError.toConnectionError(),
-      xmppError);
-};
-
-/**
  * @param {remoting.ChromotingEvent.SessionState} state
- * @param {remoting.ChromotingEvent.ConnectionError} error
- * @param {remoting.ChromotingEvent.XmppError=} opt_XmppError
+ * @param {remoting.Error=} opt_error
  */
-remoting.SessionLogger.prototype.logSessionStateChange = function(
-    state, error, opt_XmppError) {
+remoting.SessionLogger.prototype.logSessionStateChange =
+    function(state, opt_error) {
   this.maybeExpireSessionId_();
 
-  var entry = this.makeSessionStateChange_(
-      state, error,
-      /** @type {?remoting.ChromotingEvent.XmppError} */ (opt_XmppError));
+  var entry = this.makeSessionStateChange_(state, opt_error);
   entry.previous_session_state = this.previousSessionState_;
   this.previousSessionState_ = state;
 
@@ -219,21 +190,26 @@ remoting.SessionLogger.prototype.logStatistics = function(stats) {
 
 /**
  * @param {remoting.ChromotingEvent.SessionState} state
- * @param {remoting.ChromotingEvent.ConnectionError} error
- * @param {?remoting.ChromotingEvent.XmppError} xmppError
+ * @param {remoting.Error=} opt_error
  * @return {remoting.ChromotingEvent}
  * @private
  */
 remoting.SessionLogger.prototype.makeSessionStateChange_ =
-    function(state, error, xmppError) {
+    function(state, opt_error) {
   var entry = new remoting.ChromotingEvent(
       remoting.ChromotingEvent.Type.SESSION_STATE);
-  entry.connection_error = error;
-  entry.session_state = state;
 
-  if (Boolean(xmppError)) {
-    entry.xmpp_error = xmppError;
+  var ConnectionError = remoting.ChromotingEvent.ConnectionError;
+
+  if (!opt_error) {
+    entry.connection_error = ConnectionError.NONE;
+  } else if (opt_error instanceof remoting.Error) {
+    entry.setError(opt_error);
+  } else {
+    entry.connection_error = ConnectionError.UNKNOWN_ERROR;
   }
+
+  entry.session_state = state;
 
   this.fillEvent_(entry);
   return entry;
@@ -320,9 +296,6 @@ remoting.SessionLogger.prototype.fillEvent_ = function(entry) {
   if (this.authMethod_ != undefined) {
     entry.auth_method = this.authMethod_;
   }
-  if (Boolean(this.pluginError_)) {
-    entry.raw_plugin_error = this.pluginError_;
-  }
   entry.host_version = this.hostVersion_;
   entry.host_os = this.hostOs_;
   entry.host_os_version = this.hostOsVersion_;
@@ -388,37 +361,6 @@ remoting.SessionLogger.createForClient = function() {
   return new remoting.SessionLogger(remoting.ChromotingEvent.Role.CLIENT,
                                     remoting.TelemetryEventWriter.Client.write);
 };
-
-/**
- * TODO(kelvinp): Consolidate the two enums (crbug.com/504200)
- * @param {remoting.ClientSession.State} state
- * @return {remoting.ChromotingEvent.SessionState}
- */
-function toSessionState(state) {
-  var SessionState = remoting.ChromotingEvent.SessionState;
-  switch(state) {
-    case remoting.ClientSession.State.UNKNOWN:
-      return SessionState.UNKNOWN;
-    case remoting.ClientSession.State.INITIALIZING:
-      return SessionState.INITIALIZING;
-    case remoting.ClientSession.State.CONNECTING:
-      return SessionState.CONNECTING;
-    case remoting.ClientSession.State.AUTHENTICATED:
-      return SessionState.AUTHENTICATED;
-    case remoting.ClientSession.State.CONNECTED:
-      return SessionState.CONNECTED;
-    case remoting.ClientSession.State.CLOSED:
-      return SessionState.CLOSED;
-    case remoting.ClientSession.State.FAILED:
-      return SessionState.CONNECTION_FAILED;
-    case remoting.ClientSession.State.CONNECTION_DROPPED:
-      return SessionState.CONNECTION_DROPPED;
-    case remoting.ClientSession.State.CONNECTION_CANCELED:
-      return SessionState.CONNECTION_CANCELED;
-    default:
-      throw new Error('Unknown session state : ' + state);
-  }
-}
 
 /**
  * @param {remoting.SignalStrategy.Type} type

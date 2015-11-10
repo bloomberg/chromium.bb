@@ -54,19 +54,16 @@ remoting.Me2MeActivity.prototype.start = function() {
 
   var Event = remoting.ChromotingEvent;
   this.logger_ = this.createLogger_(Event.SessionEntryPoint.CONNECT_BUTTON);
-  this.logger_.logSessionStateChange(Event.SessionState.STARTED,
-                                     Event.ConnectionError.NONE);
-
-  var errorTag = Event.ConnectionError.NONE;
+  this.logger_.logSessionStateChange(Event.SessionState.STARTED);
 
   function handleError(/** remoting.Error */ error) {
     if (error.isCancel()) {
       remoting.setMode(remoting.AppMode.HOME);
-      that.logger_.logSessionStateChange(Event.SessionState.CONNECTION_CANCELED,
-                                         errorTag);
+      that.logger_.logSessionStateChange(
+          Event.SessionState.CONNECTION_CANCELED);
     } else {
-      that.logger_.logSessionStateChange(Event.SessionState.CONNECTION_FAILED,
-                                         error.toConnectionError());
+      that.logger_.logSessionStateChange(
+          Event.SessionState.CONNECTION_FAILED, error);
       that.showErrorMessage_(error);
     }
   }
@@ -75,8 +72,7 @@ remoting.Me2MeActivity.prototype.start = function() {
     return that.host_.options.load();
   }).catch(remoting.Error.handler(function(/** remoting.Error */ error) {
     // User cancels out of the Host upgrade dialog.  Report it as bad version.
-    errorTag = Event.ConnectionError.BAD_VERSION;
-    throw error;
+    throw new remoting.Error(remoting.Error.Tag.BAD_VERSION);
   })).then(
     this.connect_.bind(this)
   ).catch(remoting.Error.handler(handleError));
@@ -118,8 +114,7 @@ remoting.Me2MeActivity.prototype.createLogger_ = function(entryPoint) {
 remoting.Me2MeActivity.prototype.reconnect_ = function(entryPoint) {
   this.logger_ = this.createLogger_(entryPoint);
   var Event = remoting.ChromotingEvent;
-  this.logger_.logSessionStateChange(Event.SessionState.STARTED,
-                                     Event.ConnectionError.NONE);
+  this.logger_.logSessionStateChange(Event.SessionState.STARTED);
   this.connect_();
 };
 

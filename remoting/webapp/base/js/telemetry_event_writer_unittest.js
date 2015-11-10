@@ -92,8 +92,7 @@ QUnit.test('should send CANCELED event when window is closed while started.',
     chrome.app.window.current().id = 'fake-window-id';
   }).then(function() {
     logger.logSessionStateChange(
-        remoting.ChromotingEvent.SessionState.STARTED,
-        remoting.ChromotingEvent.ConnectionError.NONE);
+        remoting.ChromotingEvent.SessionState.STARTED);
   }).then(function() {
     return service.unbindSession('fake-window-id');
   }).then(function() {
@@ -119,8 +118,8 @@ QUnit.test('should send CANCELED event when window is closed while connecting.',
   return service.init().then(function() {
     chrome.app.window.current().id = 'fake-window-id';
   }).then(function() {
-    logger.logClientSessionStateChange(
-        remoting.ClientSession.State.CONNECTING, remoting.Error.none(), null);
+    logger.logSessionStateChange(
+        remoting.ChromotingEvent.SessionState.CONNECTING);
   }).then(function() {
     return service.unbindSession('fake-window-id');
   }).then(function() {
@@ -147,11 +146,11 @@ QUnit.test('should send CLOSED event when window is closed while connected.',
   return service.init().then(function() {
     chrome.app.window.current().id = 'fake-window-id';
   }).then(function() {
-    logger.logClientSessionStateChange(
-        remoting.ClientSession.State.CONNECTING, remoting.Error.none(), null);
+    logger.logSessionStateChange(
+        remoting.ChromotingEvent.SessionState.CONNECTING);
   }).then(function() {
-    logger.logClientSessionStateChange(
-        remoting.ClientSession.State.CONNECTED, remoting.Error.none(), null);
+    logger.logSessionStateChange(
+        remoting.ChromotingEvent.SessionState.CONNECTED);
   }).then(function() {
     return service.unbindSession('fake-window-id');
   }).then(function() {
@@ -180,11 +179,11 @@ QUnit.test('should not send CLOSED event when window is closed unconnected.',
   return service.init().then(function() {
     chrome.app.window.current().id = 'fake-window-id';
   }).then(function() {
-    logger.logClientSessionStateChange(
-        remoting.ClientSession.State.CONNECTING, remoting.Error.none(), null);
+    logger.logSessionStateChange(
+        remoting.ChromotingEvent.SessionState.CONNECTING);
   }).then(function() {
-    logger.logClientSessionStateChange(
-        remoting.ClientSession.State.FAILED, remoting.Error.none(), null);
+    logger.logSessionStateChange(
+        remoting.ChromotingEvent.SessionState.CONNECTION_FAILED);
   }).then(function() {
     return service.unbindSession('fake-window-id');
   }).then(function() {

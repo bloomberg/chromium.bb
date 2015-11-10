@@ -18,8 +18,8 @@ function runStanzaTest(stanza, expected, assert) {
   var parser = new DOMParser();
   var xml = parser.parseFromString(stanza, 'text/xml');
   monitor.processStanza(xml.firstElementChild);
-  var error = monitor.getFirstError();
-  assert.equal(error.raw_stanza, expected);
+  var errorStanza = monitor.getFirstErrorStanza();
+  assert.equal(errorStanza, expected);
 }
 
 QUnit.test('should strip PII from session-initiate.', function(assert) {

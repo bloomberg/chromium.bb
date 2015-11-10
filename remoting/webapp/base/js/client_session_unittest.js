@@ -76,7 +76,7 @@ QUnit.module('ClientSession', {
     listener = new SessionListener();
     logger = new remoting.SessionLogger(remoting.ChromotingEvent.Role.CLIENT,
                                         base.doNothing);
-    logToServerStub = sinon.stub(logger, 'logClientSessionStateChange');
+    logToServerStub = sinon.stub(logger, 'logSessionStateChange');
   },
   afterEach: function() {
     session.dispose();
@@ -121,13 +121,13 @@ QUnit.test(
   'Connection error after CONNECTED should raise the CONNECTION_DROPPED event',
   function(assert) {
 
-  var State = remoting.ClientSession.State;
+  var State = remoting.ChromotingEvent.SessionState;
 
   return connect().then(function() {
     var onDisconnected = sinon.stub(listener, 'onDisconnected');
     session.disconnect(new remoting.Error(remoting.Error.Tag.P2P_FAILURE));
     assert.equal(onDisconnected.callCount, 1);
-    assert.equal(logToServerStub.args[2][0], State.CONNECTION_DROPPED);
+    assert.equal(logToServerStub.args[4][0], State.CONNECTION_DROPPED);
   });
 });
 
@@ -136,14 +136,14 @@ QUnit.test(
   function(assert) {
 
   var PluginError = remoting.ClientSession.ConnectionError;
-  var State = remoting.ClientSession.State;
+  var State = remoting.ChromotingEvent.SessionState;
 
   return connect(PluginError.SESSION_REJECTED).then(function() {
     assert.ok(false, 'Expect connection to fail');
   }).catch(function(/** remoting.Error */ error) {
     assert.ok(error.hasTag(remoting.Error.Tag.INVALID_ACCESS_CODE));
-    assert.equal(logToServerStub.args[1][0], State.FAILED);
-    var errorLogged = /** @type {remoting.Error} */(logToServerStub.args[1][1]);
+    assert.equal(logToServerStub.args[3][0], State.CONNECTION_FAILED);
+    var errorLogged = /** @type {remoting.Error} */(logToServerStub.args[3][1]);
     assert.equal(errorLogged.getTag(), remoting.Error.Tag.INVALID_ACCESS_CODE);
   });
 });

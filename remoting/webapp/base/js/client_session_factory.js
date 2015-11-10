@@ -52,7 +52,8 @@ remoting.ClientSessionFactory.prototype.createSession =
   var clientPlugin;
 
   function OnError(/** !remoting.Error */ error) {
-    logError(logger, error);
+    logger.logSessionStateChange(
+        remoting.ChromotingEvent.SessionState.CONNECTION_FAILED, error);
     base.dispose(signalStrategy);
     base.dispose(clientPlugin);
     throw error;
@@ -64,14 +65,12 @@ remoting.ClientSessionFactory.prototype.createSession =
     return remoting.identity.getUserInfo();
   }).then(function(/** {email: string, name: string} */ userInfo) {
     logger.logSessionStateChange(
-        remoting.ChromotingEvent.SessionState.SIGNALING,
-        remoting.ChromotingEvent.ConnectionError.NONE);
+        remoting.ChromotingEvent.SessionState.SIGNALING);
     return connectSignaling(userInfo.email, token);
   }).then(function(/** remoting.SignalStrategy */ strategy) {
     signalStrategy = strategy;
     logger.logSessionStateChange(
-        remoting.ChromotingEvent.SessionState.CREATING_PLUGIN,
-        remoting.ChromotingEvent.ConnectionError.NONE);
+        remoting.ChromotingEvent.SessionState.CREATING_PLUGIN);
     return createPlugin(that.container_, that.requiredCapabilities_);
   }).then(function(/** remoting.ClientPlugin */ plugin) {
     clientPlugin = plugin;
@@ -122,33 +121,6 @@ function createPlugin(container, capabilities) {
   return plugin.initialize().then(function() {
     return plugin;
   });
-}
-
-/**
- * Converts |e| to remoting.ChromotingEvent.ConnectionError and logs
- * it to the telemetry service.
- *
- * TODO(kelvinp): Move this block to remoting.SessionLogger and consolidate
- * the code path with xmpp_error.
- *
- * @param {remoting.SessionLogger} logger
- * @param {remoting.Error} e
- */
-function logError(logger, e) {
-  var error = remoting.ChromotingEvent.ConnectionError.UNEXPECTED;
-
-  if (e instanceof remoting.Error) {
-    error = e.toConnectionError();
-
-    if (e.hasTag(remoting.Error.Tag.MISSING_PLUGIN)) {
-      var pluginError = /** @type {string} */ (e.getDetail());
-      console.assert(Boolean(pluginError), 'Missing plugin error string.');
-      logger.setPluginError(pluginError);
-    }
-  }
-
-  logger.logSessionStateChange(
-      remoting.ChromotingEvent.SessionState.CONNECTION_FAILED, error);
 }
 
 })();

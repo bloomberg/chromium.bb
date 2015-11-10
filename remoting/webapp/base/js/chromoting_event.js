@@ -122,6 +122,29 @@ remoting.ChromotingEvent.prototype.init_ = function() {
 };
 
 /**
+ * Populates the corresponding fields in the logEntry based on |error|.
+ *
+ * @param {remoting.Error} error
+ */
+remoting.ChromotingEvent.prototype.setError = function(error) {
+  var Tag = remoting.Error.Tag;
+  var detail = /** @type {string} */ (error.getDetail());
+
+  switch (error.getTag()) {
+    case Tag.HOST_IS_OFFLINE:
+      if (detail) {
+        this.xmpp_error = new remoting.ChromotingEvent.XmppError(detail);
+      }
+      break;
+    case Tag.MISSING_PLUGIN:
+      console.assert(detail, 'Missing PNaCl plugin last error string.');
+      this.raw_plugin_error = detail;
+  }
+
+  this.connection_error = error.toConnectionError();
+};
+
+/**
  * @param {remoting.ChromotingEvent} event
  * @return {boolean}
  */

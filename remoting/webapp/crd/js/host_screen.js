@@ -38,9 +38,7 @@ var it2meLogger = null;
 remoting.tryShare = function() {
   it2meLogger = createLogger_();
   it2meLogger.logSessionStateChange(
-      remoting.ChromotingEvent.SessionState.STARTED,
-      remoting.ChromotingEvent.ConnectionError.NONE,
-      null);
+      remoting.ChromotingEvent.SessionState.STARTED);
 
   /** @type {remoting.It2MeHostFacade} */
   var hostFacade = new remoting.It2MeHostFacade();
@@ -94,9 +92,7 @@ remoting.tryShareWithToken_ = function(hostFacade, token) {
   onNatTraversalPolicyChanged_(true);  // Hide warning by default.
   remoting.setMode(remoting.AppMode.HOST_WAITING_FOR_CODE);
   it2meLogger.logSessionStateChange(
-      remoting.ChromotingEvent.SessionState.CONNECTING,
-      remoting.ChromotingEvent.ConnectionError.NONE,
-      null);
+      remoting.ChromotingEvent.SessionState.CONNECTING);
   document.getElementById('cancel-share-button').disabled = false;
   disableTimeoutCountdown_();
 
@@ -210,18 +206,14 @@ function showShareError_(error) {
   if (error.hasTag(remoting.Error.Tag.CANCELLED)) {
     remoting.setMode(remoting.AppMode.HOME);
     it2meLogger.logSessionStateChange(
-        remoting.ChromotingEvent.SessionState.CONNECTION_CANCELED,
-        remoting.ChromotingEvent.ConnectionError.NONE,
-        null);
+        remoting.ChromotingEvent.SessionState.CONNECTION_CANCELED);
   } else {
     var errorDiv = document.getElementById('host-plugin-error');
     l10n.localizeElementFromTag(errorDiv, error.getTag());
     console.error('Sharing error: ' + error.toString());
     remoting.setMode(remoting.AppMode.HOST_SHARE_FAILED);
     it2meLogger.logSessionStateChange(
-        remoting.ChromotingEvent.SessionState.CONNECTION_FAILED,
-        error.toConnectionError(),
-        null);
+        remoting.ChromotingEvent.SessionState.CONNECTION_FAILED, error);
   }
 
   cleanUp();
@@ -253,9 +245,7 @@ remoting.cancelShare = function() {
   try {
     hostSession_.disconnect();
     it2meLogger.logSessionStateChange(
-        remoting.ChromotingEvent.SessionState.CONNECTION_CANCELED,
-        remoting.ChromotingEvent.ConnectionError.NONE,
-        null);
+        remoting.ChromotingEvent.SessionState.CONNECTION_CANCELED);
   } catch (/** @type {*} */ error) {
     console.error('Error disconnecting: ' + error +
                   '. The host probably crashed.');
