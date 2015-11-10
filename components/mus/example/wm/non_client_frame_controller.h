@@ -42,6 +42,9 @@ class NonClientFrameController : public views::WidgetDelegateView,
   void OnWindowDestroyed(mus::Window* window) override;
 
   views::Widget* widget_;
+
+  // WARNING: as widget delays destruction there is a portion of time when this
+  // is null.
   mus::Window* window_;
 
   DISALLOW_COPY_AND_ASSIGN(NonClientFrameController);

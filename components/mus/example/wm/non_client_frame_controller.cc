@@ -62,17 +62,20 @@ views::View* NonClientFrameController::GetContentsView() {
 }
 
 bool NonClientFrameController::CanResize() const {
-  return (GetResizeBehavior(window_) &
+  return window_ &&
+         (GetResizeBehavior(window_) &
           mus::mojom::RESIZE_BEHAVIOR_CAN_RESIZE) != 0;
 }
 
 bool NonClientFrameController::CanMaximize() const {
-  return (GetResizeBehavior(window_) &
+  return window_ &&
+         (GetResizeBehavior(window_) &
           mus::mojom::RESIZE_BEHAVIOR_CAN_MAXIMIZE) != 0;
 }
 
 bool NonClientFrameController::CanMinimize() const {
-  return (GetResizeBehavior(window_) &
+  return window_ &&
+         (GetResizeBehavior(window_) &
           mus::mojom::RESIZE_BEHAVIOR_CAN_MINIMIZE) != 0;
 }
 
