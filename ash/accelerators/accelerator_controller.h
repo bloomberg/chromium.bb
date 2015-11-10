@@ -133,6 +133,8 @@ class ASH_EXPORT AcceleratorController : public ui::AcceleratorTarget {
   FRIEND_TEST_ALL_PREFIXES(AcceleratorControllerTest, GlobalAccelerators);
   FRIEND_TEST_ALL_PREFIXES(AcceleratorControllerTest,
                            DontRepeatToggleFullscreen);
+  FRIEND_TEST_ALL_PREFIXES(DeprecatedAcceleratorTester,
+                           TestDeprecatedAcceleratorsBehavior);
 
   // Initializes the accelerators this class handles as a target.
   void Init();

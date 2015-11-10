@@ -649,6 +649,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Ash.Accelerators.Deprecated.NextIME"
+    enum="DeprecatedAcceleratorUsage">
+  <owner>afakhry@chromium.org</owner>
+  <summary>
+    The switch to the next IME action has two accelerators:   - Shift+Alt which
+    is deprecated.   - Ctrl+Shift+Space which is new. This histogram shows the
+    number of times each accelerator (deprecated and new) is used.
+  </summary>
+</histogram>
+
 <histogram name="Ash.Accelerators.Deprecated.ShowTaskManager"
     enum="DeprecatedAcceleratorUsage">
   <owner>afakhry@chromium.org</owner>

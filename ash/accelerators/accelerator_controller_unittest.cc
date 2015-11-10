@@ -230,6 +230,15 @@ class AcceleratorControllerTest : public test::AshTestBase {
   static AcceleratorController* GetController();
 
   static bool ProcessInController(const ui::Accelerator& accelerator) {
+    if (accelerator.type() == ui::ET_KEY_RELEASED) {
+      // If the |accelerator| should trigger on release, then we store the
+      // pressed version of it first in history then the released one to
+      // simulate what happens in reality.
+      ui::Accelerator pressed_accelerator = accelerator;
+      pressed_accelerator.set_type(ui::ET_KEY_PRESSED);
+      GetController()->accelerator_history()->StoreCurrentAccelerator(
+          pressed_accelerator);
+    }
     GetController()->accelerator_history()->
         StoreCurrentAccelerator(accelerator);
     return GetController()->Process(accelerator);
@@ -1095,8 +1104,8 @@ TEST_F(AcceleratorControllerTest, ImeGlobalAccelerators) {
     EXPECT_FALSE(ProcessInController(shift_alt_press));
     EXPECT_FALSE(ProcessInController(shift_alt_x_press));
     EXPECT_FALSE(ProcessInController(shift_alt_x));
-    EXPECT_FALSE(ProcessInController(shift_alt));
-    EXPECT_EQ(2, delegate->handle_next_ime_count());
+    EXPECT_TRUE(ProcessInController(shift_alt));
+    EXPECT_EQ(3, delegate->handle_next_ime_count());
 
     // But we _should_ if X is either VKEY_RETURN or VKEY_SPACE.
     // TODO(nona|mazda): Remove this when crbug.com/139556 in a better way.
@@ -1111,7 +1120,7 @@ TEST_F(AcceleratorControllerTest, ImeGlobalAccelerators) {
     EXPECT_FALSE(ProcessInController(shift_alt_return_press));
     EXPECT_FALSE(ProcessInController(shift_alt_return));
     EXPECT_TRUE(ProcessInController(shift_alt));
-    EXPECT_EQ(3, delegate->handle_next_ime_count());
+    EXPECT_EQ(4, delegate->handle_next_ime_count());
 
     const ui::Accelerator shift_alt_space_press(
         ui::VKEY_SPACE,
@@ -1124,7 +1133,7 @@ TEST_F(AcceleratorControllerTest, ImeGlobalAccelerators) {
     EXPECT_FALSE(ProcessInController(shift_alt_space_press));
     EXPECT_FALSE(ProcessInController(shift_alt_space));
     EXPECT_TRUE(ProcessInController(shift_alt));
-    EXPECT_EQ(4, delegate->handle_next_ime_count());
+    EXPECT_EQ(5, delegate->handle_next_ime_count());
   }
 
 #if defined(OS_CHROMEOS)
@@ -1157,8 +1166,8 @@ TEST_F(AcceleratorControllerTest, ImeGlobalAccelerators) {
     EXPECT_FALSE(ProcessInController(shift_alt_press));
     EXPECT_FALSE(ProcessInController(shift_alt_x_press));
     EXPECT_FALSE(ProcessInController(shift_alt_x));
-    EXPECT_FALSE(ProcessInController(shift_alt));
-    EXPECT_EQ(2, delegate->handle_next_ime_count());
+    EXPECT_TRUE(ProcessInController(shift_alt));
+    EXPECT_EQ(3, delegate->handle_next_ime_count());
   }
 #endif
 }
@@ -1480,6 +1489,15 @@ class DeprecatedAcceleratorTester : public AcceleratorControllerTest {
   DeprecatedAcceleratorTester() {}
   ~DeprecatedAcceleratorTester() override {}
 
+  void SetUp() override {
+    AcceleratorControllerTest::SetUp();
+
+    // For testing the deprecated and new IME shortcuts.
+    DummyImeControlDelegate* delegate = new DummyImeControlDelegate;
+    GetController()->SetImeControlDelegate(
+        scoped_ptr<ImeControlDelegate>(delegate).Pass());
+  }
+
   ui::Accelerator CreateAccelerator(const AcceleratorData& data) const {
     ui::Accelerator result(data.keycode, data.modifiers);
     result.set_type(data.trigger_on_press ? ui::ET_KEY_PRESSED
@@ -1519,20 +1537,22 @@ class DeprecatedAcceleratorTester : public AcceleratorControllerTest {
 
 TEST_F(DeprecatedAcceleratorTester, TestDeprecatedAcceleratorsBehavior) {
   for (size_t i = 0; i < kDeprecatedAcceleratorsLength; ++i) {
-    const DeprecatedAcceleratorData& data = kDeprecatedAccelerators[i];
+    const AcceleratorData& entry = kDeprecatedAccelerators[i];
+
+    auto itr = GetController()->actions_with_deprecations_.find(entry.action);
+    ASSERT_TRUE(itr != GetController()->actions_with_deprecations_.end());
+    const DeprecatedAcceleratorData* data = itr->second;
 
     EXPECT_TRUE(IsMessageCenterEmpty());
-
-    ui::Accelerator deprecated_accelerator =
-        CreateAccelerator(data.deprecated_accelerator);
-    if (data.deprecated_enabled)
+    ui::Accelerator deprecated_accelerator = CreateAccelerator(entry);
+    if (data->deprecated_enabled)
       EXPECT_TRUE(ProcessInController(deprecated_accelerator));
     else
       EXPECT_FALSE(ProcessInController(deprecated_accelerator));
 
     // We expect to see a notification in the message center.
     EXPECT_TRUE(
-        ContainsDeprecatedAcceleratorNotification(data.uma_histogram_name));
+        ContainsDeprecatedAcceleratorNotification(data->uma_histogram_name));
     RemoveAllNotifications();
 
     // If the action is LOCK_SCREEN, we must reset the state by unlocking the
@@ -1545,6 +1565,7 @@ TEST_F(DeprecatedAcceleratorTester, TestNewAccelerators) {
   // Add below the new accelerators that replaced the deprecated ones (if any).
   const AcceleratorData kNewAccelerators[] = {
       {true, ui::VKEY_L, ui::EF_COMMAND_DOWN, LOCK_SCREEN},
+      {true, ui::VKEY_SPACE, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN, NEXT_IME},
       {true, ui::VKEY_ESCAPE, ui::EF_COMMAND_DOWN, SHOW_TASK_MANAGER},
   };
 

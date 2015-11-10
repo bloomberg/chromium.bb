@@ -56,6 +56,7 @@
 #include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
+#include "base/strings/utf_string_conversions.h"
 #include "ui/aura/env.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/accelerators/accelerator_manager.h"
@@ -115,9 +116,48 @@ ui::Accelerator CreateAccelerator(ui::KeyboardCode keycode,
   return accelerator;
 }
 
+// Ensures that there are no word breaks at the "+"s in the shortcut texts such
+// as "Ctrl+Shift+Space".
+void EnsureNoWordBreaks(base::string16* shortcut_text) {
+  std::vector<base::string16> keys =
+      base::SplitString(*shortcut_text, base::ASCIIToUTF16("+"),
+                        base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+
+  if (keys.size() < 2U)
+    return;
+
+  // The plus sign surrounded by the word joiner to guarantee an non-breaking
+  // shortcut.
+  const base::string16 non_breaking_plus =
+      base::UTF8ToUTF16("\xe2\x81\xa0+\xe2\x81\xa0");
+  shortcut_text->clear();
+  for (size_t i = 0; i < keys.size() - 1; ++i) {
+    *shortcut_text += keys[i];
+    *shortcut_text += non_breaking_plus;
+  }
+
+  *shortcut_text += keys[keys.size() - 1];
+}
+
+// Gets the notification message after it formats it in such a way that there
+// are no line breaks in the middle of the shortcut texts.
+base::string16 GetNotificationText(int message_id,
+                                   int old_shortcut_id,
+                                   int new_shortcut_id) {
+  base::string16 old_shortcut = l10n_util::GetStringUTF16(old_shortcut_id);
+  base::string16 new_shortcut = l10n_util::GetStringUTF16(new_shortcut_id);
+  EnsureNoWordBreaks(&old_shortcut);
+  EnsureNoWordBreaks(&new_shortcut);
+
+  return l10n_util::GetStringFUTF16(message_id, new_shortcut, old_shortcut);
+}
+
 void ShowDeprecatedAcceleratorNotification(const char* const notification_id,
-                                           int message_id) {
-  const base::string16 message = l10n_util::GetStringUTF16(message_id);
+                                           int message_id,
+                                           int old_shortcut_id,
+                                           int new_shortcut_id) {
+  const base::string16 message =
+      GetNotificationText(message_id, old_shortcut_id, new_shortcut_id);
   scoped_ptr<message_center::Notification> notification(
       new message_center::Notification(
           message_center::NOTIFICATION_TYPE_SIMPLE, notification_id,
@@ -253,33 +293,38 @@ void HandleNewWindow() {
 }
 
 bool CanHandleNextIme(ImeControlDelegate* ime_control_delegate,
-                      const ui::Accelerator& previous_accelerator) {
-  // We only allow next IME to be triggered if the previous is accelerator key
-  // is ONLY either Shift, Alt, Enter or Space.
-  // The first two cases to avoid conflicting accelerators that contain
-  // Alt+Shift (like Alt+Shift+Tab or Alt+Shift+S) to trigger next IME when the
-  // wrong order of key sequences is pressed. crbug.com/527154.
-  // The latter two cases are needed for CJK IME users who tend to press Enter
-  // (or Space) and Shift+Alt almost at the same time to commit an IME string
-  // and then switch from the IME to the English layout. This allows these users
-  // to trigger NEXT_IME even if they press Shift+Alt before releasing Enter.
-  // crbug.com/139556.
-  // TODO(nona|mazda): Fix crbug.com/139556 in a cleaner way.
-  const ui::KeyboardCode previous_key_code = previous_accelerator.key_code();
-  switch (previous_key_code) {
-    case ui::VKEY_SHIFT:
-    case ui::VKEY_LSHIFT:
-    case ui::VKEY_RSHIFT:
-    case ui::VKEY_MENU:
-    case ui::VKEY_LMENU:
-    case ui::VKEY_RMENU:
-    case ui::VKEY_RETURN:
-    case ui::VKEY_SPACE:
-      return ime_control_delegate && ime_control_delegate->CanCycleIme();
+                      const ui::Accelerator& previous_accelerator,
+                      bool current_accelerator_is_deprecated) {
+  if (current_accelerator_is_deprecated) {
+    // We only allow next IME to be triggered if the previous is accelerator key
+    // is ONLY either Shift, Alt, Enter or Space.
+    // The first six cases below are to avoid conflicting accelerators that
+    // contain Alt+Shift (like Alt+Shift+Tab or Alt+Shift+S) to trigger next IME
+    // when the wrong order of key sequences is pressed. crbug.com/527154.
+    // The latter two cases are needed for CJK IME users who tend to press Enter
+    // (or Space) and Shift+Alt almost at the same time to commit an IME string
+    // and then switch from the IME to the English layout. This allows these
+    // users to trigger NEXT_IME even if they press Shift+Alt before releasing
+    // Enter. crbug.com/139556.
+    // TODO(nona|mazda): Fix crbug.com/139556 in a cleaner way.
+    const ui::KeyboardCode previous_key_code = previous_accelerator.key_code();
+    switch (previous_key_code) {
+      case ui::VKEY_SHIFT:
+      case ui::VKEY_LSHIFT:
+      case ui::VKEY_RSHIFT:
+      case ui::VKEY_MENU:
+      case ui::VKEY_LMENU:
+      case ui::VKEY_RMENU:
+      case ui::VKEY_RETURN:
+      case ui::VKEY_SPACE:
+        break;
 
-    default:
-      return false;
+      default:
+        return false;
+    }
   }
+
+  return ime_control_delegate && ime_control_delegate->CanCycleIme();
 }
 
 void HandleNextIme(ImeControlDelegate* ime_control_delegate) {
@@ -832,8 +877,9 @@ bool AcceleratorController::AcceleratorPressed(
         RecordUmaHistogram(data->uma_histogram_name, DEPRECATED_USED);
 
         // We always display the notification as long as this entry exists.
-        ShowDeprecatedAcceleratorNotification(data->uma_histogram_name,
-                                              data->notification_message_id);
+        ShowDeprecatedAcceleratorNotification(
+            data->uma_histogram_name, data->notification_message_id,
+            data->old_shortcut_id, data->new_shortcut_id);
 
         if (!data->deprecated_enabled)
           return false;
@@ -913,17 +959,19 @@ void AcceleratorController::RegisterAccelerators(
 
 void AcceleratorController::RegisterDeprecatedAccelerators() {
 #if defined(OS_CHROMEOS)
+  for (size_t i = 0; i < kDeprecatedAcceleratorsDataLength; ++i) {
+    const DeprecatedAcceleratorData* data = &kDeprecatedAcceleratorsData[i];
+    actions_with_deprecations_[data->action] = data;
+  }
+
   for (size_t i = 0; i < kDeprecatedAcceleratorsLength; ++i) {
-    const DeprecatedAcceleratorData* data = &kDeprecatedAccelerators[i];
-    const AcceleratorAction action = data->deprecated_accelerator.action;
+    const AcceleratorData& accelerator_data = kDeprecatedAccelerators[i];
     const ui::Accelerator deprecated_accelerator =
-        CreateAccelerator(data->deprecated_accelerator.keycode,
-                          data->deprecated_accelerator.modifiers,
-                          data->deprecated_accelerator.trigger_on_press);
+        CreateAccelerator(accelerator_data.keycode, accelerator_data.modifiers,
+                          accelerator_data.trigger_on_press);
 
     Register(deprecated_accelerator, this);
-    actions_with_deprecations_[action] = data;
-    accelerators_[deprecated_accelerator] = action;
+    accelerators_[deprecated_accelerator] = accelerator_data.action;
     deprecated_accelerators_.insert(deprecated_accelerator);
   }
 #endif  // defined(OS_CHROMEOS)
@@ -964,9 +1012,18 @@ bool AcceleratorController::CanPerformAction(
       return CanHandleMagnifyScreen();
     case NEW_INCOGNITO_WINDOW:
       return CanHandleNewIncognitoWindow();
-    case NEXT_IME:
-      return CanHandleNextIme(ime_control_delegate_.get(),
-                              previous_accelerator);
+    case NEXT_IME: {
+#if defined(OS_CHROMEOS)
+      bool accelerator_is_deprecated =
+          (deprecated_accelerators_.count(accelerator) != 0);
+#else
+      // On non-chromeos, the NEXT_IME deprecated accelerators are always used.
+      bool accelerator_is_deprecated = true;
+#endif  // defined(OS_CHROMEOS)
+
+      return CanHandleNextIme(ime_control_delegate_.get(), previous_accelerator,
+                              accelerator_is_deprecated);
+    }
     case PREVIOUS_IME:
       return CanHandlePreviousIme(ime_control_delegate_.get());
     case SCALE_UI_RESET:

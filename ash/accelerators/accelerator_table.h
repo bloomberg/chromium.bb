@@ -156,8 +156,8 @@ struct AcceleratorData {
 
 // Gathers the needed data to handle deprecated accelerators.
 struct DeprecatedAcceleratorData {
-  // The old deprecated accelerator.
-  AcceleratorData deprecated_accelerator;
+  // The action that has deprecated accelerators.
+  AcceleratorAction action;
 
   // The name of the UMA histogram that will be used to measure the deprecated
   // v.s. new accelerator usage.
@@ -166,6 +166,12 @@ struct DeprecatedAcceleratorData {
   // The ID of the localized notification message to show to users informing
   // them about the deprecation.
   int notification_message_id;
+
+  // The ID of the localized old deprecated shortcut key.
+  int old_shortcut_id;
+
+  // The ID of the localized new shortcut key.
+  int new_shortcut_id;
 
   // Specifies whether the deprecated accelerator is still enabled to do its
   // associated action.
@@ -185,10 +191,14 @@ ASH_EXPORT extern const AcceleratorData kAcceleratorData[];
 ASH_EXPORT extern const size_t kAcceleratorDataLength;
 
 #if defined(OS_CHROMEOS)
-// The list of the deprecated accelerators along with their new replacing ones
-// and how to handle them.
-ASH_EXPORT extern const DeprecatedAcceleratorData kDeprecatedAccelerators[];
+// The list of the deprecated accelerators.
+ASH_EXPORT extern const AcceleratorData kDeprecatedAccelerators[];
 ASH_EXPORT extern const size_t kDeprecatedAcceleratorsLength;
+
+// The list of the actions with deprecated accelerators and the needed data to
+// handle them.
+ASH_EXPORT extern const DeprecatedAcceleratorData kDeprecatedAcceleratorsData[];
+ASH_EXPORT extern const size_t kDeprecatedAcceleratorsDataLength;
 #endif  // defined(OS_CHROMEOS)
 
 // Debug accelerators. Debug accelerators are only enabled when the "Debugging

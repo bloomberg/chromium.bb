@@ -441,12 +441,35 @@ Press Shift + Alt to switch.
   </message>
 
   <!-- Deprecated Accelerators Messages -->
+  <!-- Shortcut keys MUST be connected with pluses (e.g. Ctrl+Shift+L). -->
+  <message name="IDS_SHORTCUT_LOCK_SCREEN_OLD" desc="the old deprecated shortcut to lock the screen.">
+    Ctrl+Shift+L
+  </message>
+  <message name="IDS_SHORTCUT_LOCK_SCREEN_NEW" desc="the new shortcut to lock the screen.">
+    Search+L
+  </message>
+  <message name="IDS_SHORTCUT_TASK_MANAGER_OLD" desc="the old deprecated shortcut to open the task manager.">
+    Shift+Esc
+  </message>
+  <message name="IDS_SHORTCUT_TASK_MANAGER_NEW" desc="the new shortcut to open the task manager.">
+    Search+Esc
+  </message>
+  <message name="IDS_SHORTCUT_NEXT_IME_OLD" desc="the old deprecated shortcut to switch to the next input method.">
+    Shift+Alt
+  </message>
+  <message name="IDS_SHORTCUT_NEXT_IME_NEW" desc="the new shortcut to switch to the next input method.">
+    Ctrl+Shift+Space
+  </message>
   <message name="IDS_DEPRECATED_LOCK_SCREEN_MSG"
            desc="Notification message to tell users about the deprecation of Ctrl+Shift+L shortcut to lock the screen.">
-    The screen lock shortcut has changed. Please use Search+L instead of Ctrl+Shift+L.
+    The shortcut to lock the screen has changed. Please use <ph name="NEW_SHORTCUT">$1<ex>Search+L</ex></ph> instead of <ph name="OLD_SHORTCUT">$2<ex>Ctrl+Shift+L</ex></ph>.
   </message>
   <message name="IDS_DEPRECATED_SHOW_TASK_MANAGER_MSG"
            desc="Notification message to tell users about the deprecation of Shift+ESC shortcut to show the task manager.">
-    The task manager shortcut has changed. Please use Search+Esc instead of Shift+Esc.
+    The shortcut to open the task manager has changed. Please use <ph name="NEW_SHORTCUT">$1<ex>Search+Esc</ex></ph> instead of <ph name="OLD_SHORTCUT">$2<ex>Shift+Esc</ex></ph>.
+  </message>
+  <message name="IDS_DEPRECATED_NEXT_IME_MSG"
+           desc="Notification message to tell users about the deprecation of Shift+Alt shortcut to switch to the next input method.">
+    The shortcut to switch to the next input method has changed. Please use <ph name="NEW_SHORTCUT">$1<ex>Ctrl+Shift+Space</ex></ph> instead of <ph name="OLD_SHORTCUT">$2<ex>Shift+Alt</ex></ph>.
   </message>
 </grit-part>

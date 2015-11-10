@@ -4,8 +4,9 @@
 
 #include <set>
 
-#include "base/basictypes.h"
 #include "ash/accelerators/accelerator_table.h"
+#include "base/basictypes.h"
+#include "base/strings/string_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace ash {
@@ -79,18 +80,29 @@ TEST(AcceleratorTableTest, CheckDuplicatedNonrepeatableActions) {
 #if defined(OS_CHROMEOS)
 
 TEST(AcceleratorTableTest, CheckDeprecatedAccelerators) {
-  std::set<AcceleratorAction> deprecated_actions;
+  std::set<AcceleratorData, Cmp> deprecated_actions;
   for (size_t i = 0; i < kDeprecatedAcceleratorsLength; ++i) {
     // A deprecated action can never appear twice in the list.
-    AcceleratorAction deprecated_action =
-        kDeprecatedAccelerators[i].deprecated_accelerator.action;
-    EXPECT_TRUE(deprecated_actions.insert(deprecated_action).second)
-        << "Duplicated action: " << deprecated_action << " at index: " << i;
+    const AcceleratorData& entry = kDeprecatedAccelerators[i];
+    EXPECT_TRUE(deprecated_actions.insert(entry).second)
+        << "Duplicate deprecated accelerator: " << entry.trigger_on_press
+        << ", " << entry.keycode << ", "
+        << (entry.modifiers & ui::EF_SHIFT_DOWN) << ", "
+        << (entry.modifiers & ui::EF_CONTROL_DOWN) << ", "
+        << (entry.modifiers & ui::EF_ALT_DOWN);
+  }
+
+  std::set<AcceleratorAction> actions;
+  for (size_t i = 0; i < kDeprecatedAcceleratorsDataLength; ++i) {
+    // There must never be any duplicated actions.
+    const DeprecatedAcceleratorData& data = kDeprecatedAcceleratorsData[i];
+    EXPECT_TRUE(actions.insert(data.action).second) << "Deprecated action: "
+                                                    << data.action;
 
     // The UMA histogram name must be of the format "Ash.Accelerators.*"
-    std::string uma_histogram(kDeprecatedAccelerators[i].uma_histogram_name);
-    EXPECT_TRUE(uma_histogram.find("Ash.Accelerators.") != std::string::npos);
-    EXPECT_TRUE(uma_histogram.find("Ash.Accelerators.") == 0);
+    std::string uma_histogram(data.uma_histogram_name);
+    EXPECT_TRUE(base::StartsWith(uma_histogram, "Ash.Accelerators.",
+                                 base::CompareCase::SENSITIVE));
   }
 }
 

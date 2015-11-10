@@ -10,16 +10,6 @@
 namespace ash {
 
 const AcceleratorData kAcceleratorData[] = {
-  // We have to define 3 entries for Shift+Alt. VKEY_[LR]MENU might be sent to
-  // the accelerator controller when RenderWidgetHostViewAura is focused, and
-  // VKEY_MENU might be when it's not (e.g. when NativeWidgetAura is focused).
-  { false, ui::VKEY_LMENU, ui::EF_SHIFT_DOWN, NEXT_IME },
-  { false, ui::VKEY_MENU, ui::EF_SHIFT_DOWN, NEXT_IME },
-  { false, ui::VKEY_RMENU, ui::EF_SHIFT_DOWN, NEXT_IME },
-  // The same is true for Alt+Shift.
-  { false, ui::VKEY_LSHIFT, ui::EF_ALT_DOWN, NEXT_IME },
-  { false, ui::VKEY_SHIFT, ui::EF_ALT_DOWN, NEXT_IME },
-  { false, ui::VKEY_RSHIFT, ui::EF_ALT_DOWN, NEXT_IME },
   { true, ui::VKEY_SPACE, ui::EF_CONTROL_DOWN, PREVIOUS_IME },
   { false, ui::VKEY_SPACE, ui::EF_CONTROL_DOWN, PREVIOUS_IME },
   // Shortcuts for Japanese IME.
@@ -102,11 +92,24 @@ const AcceleratorData kAcceleratorData[] = {
   { true, ui::VKEY_VOLUME_DOWN, ui::EF_NONE, VOLUME_DOWN },
   { true, ui::VKEY_VOLUME_UP, ui::EF_NONE, VOLUME_UP },
   { true, ui::VKEY_ESCAPE, ui::EF_COMMAND_DOWN, SHOW_TASK_MANAGER },
+  { true, ui::VKEY_SPACE, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN, NEXT_IME },
 #else
   // This key has been deprecated on CrOS. It is instead included below in the
   // |kDeprecatedAccelerators|, and above in the CrOS accelerators as
   // Search+Esc.
   { true, ui::VKEY_ESCAPE, ui::EF_SHIFT_DOWN, SHOW_TASK_MANAGER },
+  // The below keys have been deprecated on ChromeOS and were replaced above by
+  // Ctrl+Shift+Space. crbug.com/535004.
+  // We have to define 3 entries for Shift+Alt. VKEY_[LR]MENU might be sent to
+  // the accelerator controller when RenderWidgetHostViewAura is focused, and
+  // VKEY_MENU might be when it's not (e.g. when NativeWidgetAura is focused).
+  { false, ui::VKEY_LMENU, ui::EF_SHIFT_DOWN, NEXT_IME },
+  { false, ui::VKEY_MENU, ui::EF_SHIFT_DOWN, NEXT_IME },
+  { false, ui::VKEY_RMENU, ui::EF_SHIFT_DOWN, NEXT_IME },
+  // The same is true for Alt+Shift.
+  { false, ui::VKEY_LSHIFT, ui::EF_ALT_DOWN, NEXT_IME },
+  { false, ui::VKEY_SHIFT, ui::EF_ALT_DOWN, NEXT_IME },
+  { false, ui::VKEY_RSHIFT, ui::EF_ALT_DOWN, NEXT_IME },
 #endif  // defined(OS_CHROMEOS)
   { true, ui::VKEY_I, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN, OPEN_FEEDBACK_PAGE },
 #if !defined(OS_WIN)
@@ -188,8 +191,9 @@ const size_t kAcceleratorDataLength = arraysize(kAcceleratorData);
 // 1- Replace the old deprecated accelerator from the above list with the new
 //    accelerator that will take its place.
 // 2- Add an entry for it in the following |kDeprecatedAccelerators| list.
-// 3- That entry should contain the following:
-//    - The deprecated accelerator data you removed from above.
+// 3- Add another entry in the |kDeprecatedAcceleratorsData|.
+// 4- That entry should contain the following:
+//    - The action that the deprecated accelerator maps to.
 //    - Define a histogram for this action in |histograms.xml| in the form
 //      "Ash.Accelerators.Deprecated.{ActionName}" and include the name of this
 //      histogram in this entry. This name will be used as the ID of the
@@ -198,27 +202,56 @@ const size_t kAcceleratorDataLength = arraysize(kAcceleratorData);
 //    - The ID of the localized notification message to give the users telling
 //      them about the deprecation (Add one in |ash_chromeos_strings.grdp|.
 //      Search for the comment <!-- Deprecated Accelerators Messages -->).
+//    - The IDs of the localized old and new shortcut text to be used to fill
+//      the notification text. Also found in |ash_chromeos_strings.grdp|.
 //    - {true or false} whether the deprecated accelerator is still enabled (we
 //      don't disable a deprecated accelerator abruptly).
-// 4- Don't forget to update the keyboard overlay.
+// 5- Don't forget to update the keyboard overlay. Find 'shortcut' in the file
+//    keyboard_overlay_data.js.
 #if defined(OS_CHROMEOS)
 
-const DeprecatedAcceleratorData kDeprecatedAccelerators[] = {
-  {
-    { true, ui::VKEY_L, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN, LOCK_SCREEN },
-    "Ash.Accelerators.Deprecated.LockScreen",
-    IDS_DEPRECATED_LOCK_SCREEN_MSG,
-    true
-  },
-  {
-    { true, ui::VKEY_ESCAPE, ui::EF_SHIFT_DOWN, SHOW_TASK_MANAGER },
-    "Ash.Accelerators.Deprecated.ShowTaskManager",
-    IDS_DEPRECATED_SHOW_TASK_MANAGER_MSG,
-    true
-  },
+const AcceleratorData kDeprecatedAccelerators[] = {
+  { true, ui::VKEY_L, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN, LOCK_SCREEN },
+  { true, ui::VKEY_ESCAPE, ui::EF_SHIFT_DOWN, SHOW_TASK_MANAGER },
+  { false, ui::VKEY_LMENU, ui::EF_SHIFT_DOWN, NEXT_IME },
+  { false, ui::VKEY_MENU, ui::EF_SHIFT_DOWN, NEXT_IME },
+  { false, ui::VKEY_RMENU, ui::EF_SHIFT_DOWN, NEXT_IME },
+  { false, ui::VKEY_LSHIFT, ui::EF_ALT_DOWN, NEXT_IME },
+  { false, ui::VKEY_SHIFT, ui::EF_ALT_DOWN, NEXT_IME },
+  { false, ui::VKEY_RSHIFT, ui::EF_ALT_DOWN, NEXT_IME },
 };
 
 const size_t kDeprecatedAcceleratorsLength = arraysize(kDeprecatedAccelerators);
+
+const DeprecatedAcceleratorData kDeprecatedAcceleratorsData[] = {
+  {
+    LOCK_SCREEN,
+    "Ash.Accelerators.Deprecated.LockScreen",
+    IDS_DEPRECATED_LOCK_SCREEN_MSG,
+    IDS_SHORTCUT_LOCK_SCREEN_OLD,
+    IDS_SHORTCUT_LOCK_SCREEN_NEW,
+    true
+  },
+  {
+    SHOW_TASK_MANAGER,
+    "Ash.Accelerators.Deprecated.ShowTaskManager",
+    IDS_DEPRECATED_SHOW_TASK_MANAGER_MSG,
+    IDS_SHORTCUT_TASK_MANAGER_OLD,
+    IDS_SHORTCUT_TASK_MANAGER_NEW,
+    true
+  },
+  {
+    NEXT_IME,
+    "Ash.Accelerators.Deprecated.NextIME",
+    IDS_DEPRECATED_NEXT_IME_MSG,
+    IDS_SHORTCUT_NEXT_IME_OLD,
+    IDS_SHORTCUT_NEXT_IME_NEW,
+    true
+  }
+};
+
+const size_t kDeprecatedAcceleratorsDataLength =
+    arraysize(kDeprecatedAcceleratorsData);
 
 #endif  // defined(OS_CHROMEOS)
 
