@@ -1,14 +1,19 @@
 <!DOCTYPE html>
 <script src="../../resources/js-test.js"></script>
 <style>
-    #target {
-        display: grid;
-        display: -webkit-grid;
-    }
+.grid { display: grid; }
+.intrinsicSize { height: -webkit-min-content; }
+.fixedSize { height: 1px; }
 </style>
-<div id="target" contentEditable>T</div>
+
+<div id="targetAuto" class="grid" contentEditable>T</div>
+<div id="targetFixed" class="grid fixedSize" contentEditable>T</div>
+<div id="targetIntrinsic" class="grid intrinsicSize" contentEditable>T</div>
+
 <script>
-    var targetDiv = document.getElementById('target');
+var targetDiv;
+function runEditTest(id) {
+    targetDiv = document.getElementById(id);
     targetDiv.focus();
 
     // Move cursor to the end of line.
@@ -25,4 +30,10 @@
 
     document.execCommand("insertText", false, "TEST");
     shouldBeEqualToString("targetDiv.innerText", "TEST");
+}
+
+runEditTest('targetAuto');
+runEditTest('targetFixed');
+runEditTest('targetIntrinsic');
+
 </script>
