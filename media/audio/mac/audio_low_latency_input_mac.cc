@@ -790,6 +790,12 @@ void AUAudioInputStream::AddHistogramsForFailedStartup() {
                         start_was_deferred_);
   UMA_HISTOGRAM_BOOLEAN("Media.Audio.InputBufferSizeWasChangedMac",
                         buffer_size_was_changed_);
+  UMA_HISTOGRAM_COUNTS_1000("Media.Audio.NumberOfOutputStreamsMac",
+                            manager_->output_streams());
+  UMA_HISTOGRAM_COUNTS_1000("Media.Audio.NumberOfLowLatencyInputStreamsMac",
+                            manager_->low_latency_input_streams());
+  UMA_HISTOGRAM_COUNTS_1000("Media.Audio.NumberOfBasicInputStreamsMac",
+                            manager_->basic_input_streams());
 }
 
 }  // namespace media

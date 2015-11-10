@@ -17609,6 +17609,30 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Media.Audio.NumberOfBasicInputStreamsMac">
+  <owner>henrika@chromium.org</owner>
+  <summary>
+    Number of created default input audio streams. Only sampled when
+    Media.Audio.InputStartupSuccessMac reports 'Failure'.
+  </summary>
+</histogram>
+
+<histogram name="Media.Audio.NumberOfLowLatencyInputStreamsMac">
+  <owner>henrika@chromium.org</owner>
+  <summary>
+    Number of created low-latency input audio streams. Only sampled when
+    Media.Audio.InputStartupSuccessMac reports 'Failure'.
+  </summary>
+</histogram>
+
+<histogram name="Media.Audio.NumberOfOutputStreamsMac">
+  <owner>henrika@chromium.org</owner>
+  <summary>
+    Number of created output audio streams. Only sampled when
+    Media.Audio.InputStartupSuccessMac reports 'Failure'.
+  </summary>
+</histogram>
+
 <histogram name="Media.Audio.Render.FramesRequested" units="frames">
   <owner>tommi@chromium.org</owner>
   <summary>
