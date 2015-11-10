@@ -1,16 +1,11 @@
 include_rules = [
-  "+components/bitmap_uploader",
   "+components/mus/public",
-  "+components/web_view/public",
   "+gpu/GLES2",
   "+mojo/application/public",
   "+mojo/common",
   "+mojo/converters/geometry",
   "+mojo/converters/surfaces",
   "+mojo/public",
-  "+mojo/services/tracing/public/cpp",
-  "+third_party/pdfium/public",
+  "+mojo/services/network/public/interfaces",
   "+ui/gfx/geometry",
-  "+ui/mojo",
-  "+v8/include",
 ]
