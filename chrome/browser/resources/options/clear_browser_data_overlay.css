@@ -36,7 +36,7 @@
   color: #999;
 }
 
-.clear-browser-data-counter::before {
+.clear-browser-data-counter:not(:empty)::before {
   content: '–\00a0\00a0';
 }
 
