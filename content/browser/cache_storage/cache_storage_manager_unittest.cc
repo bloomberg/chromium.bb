@@ -294,12 +294,14 @@ class CacheStorageManagerTest : public testing::Test {
   }
 
  protected:
+  // Temporary directory must be allocated first so as to be destroyed last.
+  base::ScopedTempDir temp_dir_;
+
   TestBrowserContext browser_context_;
   TestBrowserThreadBundle browser_thread_bundle_;
   scoped_ptr<net::URLRequestJobFactoryImpl> url_request_job_factory_;
   storage::BlobStorageContext* blob_storage_context_;
 
-  base::ScopedTempDir temp_dir_;
   scoped_refptr<MockQuotaManagerProxy> quota_manager_proxy_;
   scoped_ptr<CacheStorageManager> cache_manager_;
 
