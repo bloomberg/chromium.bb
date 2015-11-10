@@ -638,16 +638,15 @@ void SyncTest::TearDownOnMainThread() {
     clients_[i]->service()->RequestStop(ProfileSyncService::CLEAR_DATA);
   }
 
-  content::WindowedNotificationObserver observer(
-      chrome::NOTIFICATION_BROWSER_CLOSED,
-      content::NotificationService::AllSources());
-  chrome::CloseAllBrowsers();
-
-  // Waiting for a single notification mitigates flakiness (related to not all
-  // browsers being closed). If further flakiness is seen
-  // (GetTotalBrowserCount() > 0 after this call), GetTotalBrowserCount()
-  // notifications should be waited on.
-  observer.Wait();
+  // Closing all browsers created by this test. The calls here block until
+  // they are closed. Other browsers created outside SyncTest setup should be
+  // closed by the creator of that browser.
+  size_t init_browser_count = chrome::GetTotalBrowserCount();
+  for (size_t i = 0; i < browsers_.size(); ++i) {
+    CloseBrowserSynchronously(browsers_[i]);
+  }
+  CHECK_EQ(chrome::GetTotalBrowserCount(),
+           init_browser_count - browsers_.size());
 
   if (fake_server_.get()) {
     std::vector<fake_server::FakeServerInvalidationService*>::const_iterator it;
@@ -657,9 +656,6 @@ void SyncTest::TearDownOnMainThread() {
     }
   }
 
-  // All browsers should be closed at this point, or else we could see memory
-  // corruption in QuitBrowser().
-  CHECK_EQ(0U, chrome::GetTotalBrowserCount());
   invalidation_forwarders_.clear();
   sync_refreshers_.clear();
   fake_server_invalidation_services_.clear();
