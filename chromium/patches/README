@@ -8,9 +8,6 @@ Current patches:
     base name collisions from mac libtool. These files are generated
     by generate_gyp.py. https://chromium-review.googlesource.com/#/c/274543v/
 
-  Change libavcodec/internal.h ff_tlong define from while(0) to (void(0)).
-    This fixes "while loop has empty body" compile errors.
-
   Changes/additions to libavutil/x86/x86inc.asm
     https://chromium-review.googlesource.com/#/c/272274/
     Fixes the conditionals on Linux so that these symbols are hidden and
@@ -38,6 +35,10 @@ Current patches:
     Add call to matroska_read_close() to mitigate memory leak caught by
     valgrind.
 
+  Changes to libavformat/mp3dec.c
+    TODO(chcunningham/dalecurtis): https://crbug.com/504623 - Determine whether
+    these changes are still necessary and either remove or document them.
+
   Fix pthreads emulation on Windows XP
     Emulation assumes Vista+ inside (_WIN32_WINNT >= 0x0600) checks. Replace
     with WINDOWS_XP_SUPPORT_NEEDED define in compat/w32pthreads.h.
@@ -49,8 +50,7 @@ Current patches:
     VS2015.
 
   C++11 compatability for string concatenation (http://crbug.com/454590)
-    Add spaces between string literals and tokens in libavutil/timer.h and
-    libavutil/internal.h.
+    Add spaces between string literals and tokens in libavutil/timer.h.
 
   Misc things that were not documented
     Enable av_max_alloc(0) to remove alloc size bound in libavutil/mem.c.
