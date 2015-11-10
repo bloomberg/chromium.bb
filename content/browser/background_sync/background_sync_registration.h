@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/time/time.h"
 #include "content/browser/background_sync/background_sync.pb.h"
 #include "content/browser/background_sync/background_sync_registration_options.h"
 #include "content/common/background_sync_service.mojom.h"
@@ -49,12 +50,20 @@ class CONTENT_EXPORT BackgroundSyncRegistration {
   BackgroundSyncState sync_state() const { return sync_state_; }
   void set_sync_state(BackgroundSyncState state) { sync_state_ = state; }
 
+  int num_attempts() const { return num_attempts_; }
+  void set_num_attempts(int num_attempts) { num_attempts_ = num_attempts; }
+
+  base::Time delay_until() const { return delay_until_; }
+  void set_delay_until(base::Time delay_until) { delay_until_ = delay_until; }
+
  private:
   static const RegistrationId kInvalidRegistrationId;
 
   BackgroundSyncRegistrationOptions options_;
   RegistrationId id_ = kInvalidRegistrationId;
   BackgroundSyncState sync_state_ = BACKGROUND_SYNC_STATE_PENDING;
+  int num_attempts_ = 0;
+  base::Time delay_until_;
 
   std::list<StateCallback> notify_finished_callbacks_;
 

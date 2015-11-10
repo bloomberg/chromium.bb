@@ -94,6 +94,14 @@ void OneShotPendingOnIOThread(
                       callback));
 }
 
+void SetMaxSyncAttemptsOnIOThread(
+    const scoped_refptr<BackgroundSyncContext>& sync_context,
+    int max_sync_attempts) {
+  BackgroundSyncManager* background_sync_manager =
+      sync_context->background_sync_manager();
+  background_sync_manager->set_max_sync_attempts(max_sync_attempts);
+}
+
 }  // namespace
 
 class BackgroundSyncBrowserTest : public ContentBrowserTest {
@@ -134,9 +142,8 @@ class BackgroundSyncBrowserTest : public ContentBrowserTest {
     ASSERT_TRUE(https_server_->Start());
 
     SetIncognitoMode(false);
-
+    SetMaxSyncAttempts(1);
     SetOnline(true);
-
     ASSERT_TRUE(LoadTestPage(kDefaultTestURL));
 
     ContentBrowserTest::SetUpOnMainThread();
@@ -164,6 +171,9 @@ class BackgroundSyncBrowserTest : public ContentBrowserTest {
   // Returns true if the one-shot sync with tag is currently pending. Fails
   // (assertion failure) if the tag isn't registered.
   bool OneShotPending(const std::string& tag);
+
+  // Sets the BackgroundSyncManager's max sync attempts per registration.
+  void SetMaxSyncAttempts(int max_sync_attempts);
 
   void ClearStoragePartitionData();
 
@@ -242,6 +252,21 @@ bool BackgroundSyncBrowserTest::OneShotPending(const std::string& tag) {
   run_loop.Run();
 
   return is_pending;
+}
+
+void BackgroundSyncBrowserTest::SetMaxSyncAttempts(int max_sync_attempts) {
+  base::RunLoop run_loop;
+
+  StoragePartition* storage = GetStorage();
+  BackgroundSyncContext* sync_context = storage->GetBackgroundSyncContext();
+
+  BrowserThread::PostTaskAndReply(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&SetMaxSyncAttemptsOnIOThread,
+                 make_scoped_refptr(sync_context), max_sync_attempts),
+      run_loop.QuitClosure());
+
+  run_loop.Run();
 }
 
 void BackgroundSyncBrowserTest::ClearStoragePartitionData() {
@@ -756,6 +781,20 @@ IN_PROC_BROWSER_TEST_F(BackgroundSyncBrowserTest,
 
   // Verify that it was deleted.
   EXPECT_FALSE(GetRegistrationOneShot("delay"));
+}
+
+IN_PROC_BROWSER_TEST_F(BackgroundSyncBrowserTest, VerifyRetry) {
+  EXPECT_TRUE(RegisterServiceWorker());
+  EXPECT_TRUE(LoadTestPage(kDefaultTestURL));  // Control the page.
+
+  SetMaxSyncAttempts(2);
+
+  EXPECT_TRUE(RegisterOneShot("delay"));
+  EXPECT_TRUE(RejectDelayedOneShot());
+  EXPECT_TRUE(PopConsole("ok - delay rejected"));
+
+  // Verify that the oneshot is still around and waiting to try again.
+  EXPECT_TRUE(OneShotPending("delay"));
 }
 
 }  // namespace content

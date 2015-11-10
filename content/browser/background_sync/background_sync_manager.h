@@ -11,9 +11,11 @@
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/cancelable_callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/clock.h"
 #include "content/browser/background_sync/background_sync.pb.h"
 #include "content/browser/background_sync/background_sync_registration.h"
 #include "content/browser/background_sync/background_sync_registration_handle.h"
@@ -24,6 +26,7 @@
 #include "content/common/background_sync_service.mojom.h"
 #include "content/common/content_export.h"
 #include "content/common/service_worker/service_worker_status_code.h"
+#include "content/public/browser/browser_thread.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -54,6 +57,9 @@ class CONTENT_EXPORT BackgroundSyncManager
   // The minimum amount of time to wait before waking the browser in case it
   // closed mid-sync.
   static const int64_t kMinSyncRecoveryTimeMs;
+
+  // The number of times a sync event can be fired for a registration.
+  static const int kMaxSyncAttempts;
 
   static scoped_ptr<BackgroundSyncManager> Create(
       const scoped_refptr<ServiceWorkerContextWrapper>& service_worker_context);
@@ -98,6 +104,15 @@ class CONTENT_EXPORT BackgroundSyncManager
     return network_observer_.get();
   }
 
+  void set_clock(scoped_ptr<base::Clock> clock) {
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
+    clock_ = clock.Pass();
+  }
+  void set_max_sync_attempts(int max_attempts) {
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
+    max_sync_attempts_ = max_attempts;
+  }
+
  protected:
   // A registration might be referenced by the client longer than
   // the BackgroundSyncManager needs to keep track of it (e.g., the event has
@@ -127,7 +142,10 @@ class CONTENT_EXPORT BackgroundSyncManager
   virtual void FireOneShotSync(
       BackgroundSyncRegistrationHandle::HandleId handle_id,
       const scoped_refptr<ServiceWorkerVersion>& active_version,
+      BackgroundSyncEventLastChance last_chance,
       const ServiceWorkerVersion::StatusCallback& callback);
+  virtual void ScheduleDelayedTask(const base::Closure& callback,
+                                   base::TimeDelta delay);
 
  private:
   friend class BackgroundSyncManagerTest;
@@ -353,6 +371,8 @@ class CONTENT_EXPORT BackgroundSyncManager
   scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
   bool disabled_;
   int num_firing_registrations_;
+  int max_sync_attempts_;
+  base::CancelableCallback<void()> delayed_sync_task_;
 
   scoped_ptr<BackgroundSyncNetworkObserver> network_observer_;
   scoped_ptr<BackgroundSyncPowerObserver> power_observer_;
@@ -361,6 +381,8 @@ class CONTENT_EXPORT BackgroundSyncManager
   IDMap<scoped_refptr<RefCountedRegistration>,
         IDMapOwnPointer,
         BackgroundSyncRegistrationHandle::HandleId> registration_handle_ids_;
+
+  scoped_ptr<base::Clock> clock_;
 
   base::WeakPtrFactory<BackgroundSyncManager> weak_ptr_factory_;
 
