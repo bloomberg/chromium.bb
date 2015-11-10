@@ -4414,12 +4414,36 @@
     ]
   },
   "Linux ARM Cross-Compile": {
-    "compile_targets": [
-      "browser_tests_run"
-    ],
     "gtest_tests": [
       {
+        "args": [
+          "--test-launcher-print-test-stdio=always"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "sandbox_linux_unittests"
+      },
+      {
+        "args": [
+          "--gtest_filter=*NaCl*.*"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "browser_tests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "nacl_helper_nonsfi_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "nacl_loader_unittests"
       }
     ]
   },
