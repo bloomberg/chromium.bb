@@ -160,6 +160,7 @@ private:
     WeakPtrWillBeMember<HTMLFormElement> m_form;
     AtomicString m_bestFitImageURL;
     float m_imageDevicePixelRatio;
+    RefPtrWillBeMember<HTMLSourceElement> m_source;
     unsigned m_formWasSetByParser : 1;
     unsigned m_elementCreatedByParser : 1;
     // Intrinsic sizing is viewport dependant if the 'w' descriptor was used for the picked resource.

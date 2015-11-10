@@ -87,6 +87,7 @@ HTMLImageElement::HTMLImageElement(Document& document, HTMLFormElement* form, bo
     : HTMLElement(imgTag, document)
     , m_imageLoader(HTMLImageLoader::create(this))
     , m_imageDevicePixelRatio(1.0f)
+    , m_source(nullptr)
     , m_formWasSetByParser(false)
     , m_elementCreatedByParser(createdByParser)
     , m_intrinsicSizingViewportDependant(false)
@@ -134,6 +135,7 @@ DEFINE_TRACE(HTMLImageElement)
     visitor->trace(m_imageLoader);
     visitor->trace(m_listener);
     visitor->trace(m_form);
+    visitor->trace(m_source);
     HTMLElement::trace(visitor);
 }
 
@@ -305,6 +307,7 @@ ImageCandidate HTMLImageElement::findBestFitImageFromPictureParent()
 {
     ASSERT(isMainThread());
     Node* parent = parentNode();
+    m_source = nullptr;
     if (!parent || !isHTMLPictureElement(*parent))
         return ImageCandidate();
     for (Node* child = parent->firstChild(); child; child = child->nextSibling()) {
@@ -330,6 +333,7 @@ ImageCandidate HTMLImageElement::findBestFitImageFromPictureParent()
         ImageCandidate candidate = bestFitSourceForSrcsetAttribute(document().devicePixelRatio(), sourceSize(*source), source->fastGetAttribute(srcsetAttr), &document());
         if (candidate.isEmpty())
             continue;
+        m_source = source;
         return candidate;
     }
     return ImageCandidate();
@@ -651,7 +655,10 @@ static bool sourceSizeValue(Element& element, Document& currentDocument, float& 
 FetchRequest::ResourceWidth HTMLImageElement::resourceWidth()
 {
     FetchRequest::ResourceWidth resourceWidth;
-    resourceWidth.isSet = sourceSizeValue(*this, document(), resourceWidth.width);
+    Element* element = m_source.get();
+    if (!element)
+        element = this;
+    resourceWidth.isSet = sourceSizeValue(*element, document(), resourceWidth.width);
     return resourceWidth;
 }
 
