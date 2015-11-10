@@ -4,6 +4,7 @@
 
 #include "ui/views/mus/native_widget_mus.h"
 
+#include "base/thread_task_runner_handle.h"
 #include "components/mus/public/cpp/property_type_converters.h"
 #include "components/mus/public/cpp/window.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
@@ -173,8 +174,16 @@ NativeWidgetMus::NativeWidgetMus(internal::NativeWidgetDelegate* delegate,
       native_widget_delegate_(delegate),
       surface_type_(surface_type),
       show_state_before_fullscreen_(ui::PLATFORM_WINDOW_STATE_UNKNOWN),
-      content_(new aura::Window(this)) {}
-NativeWidgetMus::~NativeWidgetMus() {}
+      ownership_(Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET),
+      content_(new aura::Window(this)),
+      close_widget_factory_(this) {}
+
+NativeWidgetMus::~NativeWidgetMus() {
+  if (ownership_ == Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET)
+    delete native_widget_delegate_;
+  else
+    CloseNow();
+}
 
 // static
 void NativeWidgetMus::SetWindowManagerClientAreaInsets(
@@ -184,6 +193,25 @@ void NativeWidgetMus::SetWindowManagerClientAreaInsets(
   // NativeWidgetMus. When we support restarting the WM we'll need to do that.
   window_manager_client_area_insets = new WindowManagerClientAreaInsets(insets);
 }
+
+void NativeWidgetMus::OnPlatformWindowClosed() {
+  GetWidget()->Close();
+}
+
+void NativeWidgetMus::OnActivationChanged(bool active) {
+  if (!native_widget_delegate_)
+    return;
+  if (active) {
+    native_widget_delegate_->OnNativeFocus();
+    GetWidget()->GetFocusManager()->RestoreFocusedView();
+  } else {
+    native_widget_delegate_->OnNativeBlur();
+    GetWidget()->GetFocusManager()->StoreFocusedView(true);
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// NativeWidgetMus, private:
 
 // static
 void NativeWidgetMus::ConfigurePropertiesForNewWindow(
@@ -205,8 +233,9 @@ NonClientFrameView* NativeWidgetMus::CreateNonClientFrameView() {
 }
 
 void NativeWidgetMus::InitNativeWidget(const Widget::InitParams& params) {
+  ownership_ = params.ownership;
   window_tree_host_.reset(
-      new WindowTreeHostMus(shell_, window_, surface_type_));
+      new WindowTreeHostMus(shell_, this, window_, surface_type_));
   window_tree_host_->InitHost();
 
   focus_client_.reset(new wm::FocusController(new FocusRulesImpl));
@@ -231,6 +260,8 @@ void NativeWidgetMus::InitNativeWidget(const Widget::InitParams& params) {
 
   window_tree_host_->window()->AddChild(content_);
   // TODO(beng): much else, see [Desktop]NativeWidgetAura.
+
+  native_widget_delegate_->OnNativeWidgetCreated(false);
 }
 
 bool NativeWidgetMus::ShouldUseNativeFrame() const {
@@ -383,11 +414,18 @@ void NativeWidgetMus::SetShape(SkRegion* shape) {
 }
 
 void NativeWidgetMus::Close() {
-  // NOTIMPLEMENTED();
+  Hide();
+  if (!close_widget_factory_.HasWeakPtrs()) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&NativeWidgetMus::CloseNow,
+                              close_widget_factory_.GetWeakPtr()));
+  }
 }
 
 void NativeWidgetMus::CloseNow() {
-  // NOTIMPLEMENTED();
+  // Note: Deleting |content_| triggers the |OnWindowDestroyed()| callback,
+  // which can delete |this|.
+  delete content_;
 }
 
 void NativeWidgetMus::Show() {
@@ -411,7 +449,7 @@ void NativeWidgetMus::ShowWithWindowState(ui::WindowShowState state) {
 
 bool NativeWidgetMus::IsVisible() const {
   // TODO(beng): this should probably be wired thru PlatformWindow.
-  return window_tree_host_->mus_window()->visible();
+  return window_->visible();
 }
 
 void NativeWidgetMus::Activate() {
@@ -638,13 +676,12 @@ void NativeWidgetMus::OnDeviceScaleFactorChanged(float device_scale_factor) {
 }
 
 void NativeWidgetMus::OnWindowDestroying(aura::Window* window) {
-  // Cleanup happens in OnHostClosed().
 }
 
 void NativeWidgetMus::OnWindowDestroyed(aura::Window* window) {
-  // Cleanup happens in OnHostClosed(). We own |content_window_| (indirectly by
-  // way of |dispatcher_|) so there should be no need to do any processing
-  // here.
+  native_widget_delegate_->OnNativeWidgetDestroyed();
+  if (ownership_ == Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET)
+    delete this;
 }
 
 void NativeWidgetMus::OnWindowTargetVisibilityChanged(bool visible) {

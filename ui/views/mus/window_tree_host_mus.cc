@@ -20,6 +20,7 @@
 #include "ui/platform_window/platform_window.h"
 #include "ui/platform_window/platform_window_delegate.h"
 #include "ui/views/mus/input_method_mus.h"
+#include "ui/views/mus/native_widget_mus.h"
 #include "ui/views/mus/surface_context_factory.h"
 #include "ui/views/mus/window_manager_connection.h"
 
@@ -45,8 +46,10 @@ class PlatformWindowMus : public ui::PlatformWindow,
   }
 
   ~PlatformWindowMus() override {
-    if (mus_window_)
-      mus_window_->RemoveObserver(this);
+    if (!mus_window_)
+      return;
+    mus_window_->RemoveObserver(this);
+    mus_window_->Destroy();
   }
 
  private:
@@ -89,8 +92,8 @@ class PlatformWindowMus : public ui::PlatformWindow,
   // mus::WindowObserver:
   void OnWindowDestroyed(mus::Window* window) override {
     DCHECK_EQ(mus_window_, window);
-    mus_window_ = nullptr;
     delegate_->OnClosed();
+    mus_window_ = nullptr;
   }
 
   void OnWindowBoundsChanged(mus::Window* window,
@@ -159,24 +162,25 @@ class PlatformWindowMus : public ui::PlatformWindow,
 // WindowTreeHostMus, public:
 
 WindowTreeHostMus::WindowTreeHostMus(mojo::Shell* shell,
+                                     NativeWidgetMus* native_widget,
                                      mus::Window* window,
                                      mus::mojom::SurfaceType surface_type)
-    : mus_window_(window),
+    : native_widget_(native_widget),
       show_state_(ui::PLATFORM_WINDOW_STATE_UNKNOWN) {
   context_factory_.reset(
-      new SurfaceContextFactory(shell, mus_window_, surface_type));
+      new SurfaceContextFactory(shell, window, surface_type));
   // WindowTreeHost creates the compositor using the ContextFactory from
   // aura::Env. Install |context_factory_| there so that |context_factory_| is
   // picked up.
   ui::ContextFactory* default_context_factory =
       aura::Env::GetInstance()->context_factory();
   aura::Env::GetInstance()->set_context_factory(context_factory_.get());
-  SetPlatformWindow(make_scoped_ptr(new PlatformWindowMus(this, mus_window_)));
+  SetPlatformWindow(make_scoped_ptr(new PlatformWindowMus(this, window)));
   compositor()->SetHostHasTransparentBackground(true);
   aura::Env::GetInstance()->set_context_factory(default_context_factory);
   DCHECK_EQ(context_factory_.get(), compositor()->context_factory());
 
-  input_method_.reset(new InputMethodMUS(this, mus_window_));
+  input_method_.reset(new InputMethodMUS(this, window));
   SetSharedInputMethod(input_method_.get());
 }
 
@@ -185,10 +189,18 @@ WindowTreeHostMus::~WindowTreeHostMus() {
   DestroyDispatcher();
 }
 
+void WindowTreeHostMus::DispatchEvent(ui::Event* event) {
+  if (event->IsKeyEvent() && GetInputMethod()) {
+    GetInputMethod()->DispatchKeyEvent(static_cast<ui::KeyEvent*>(event));
+    event->StopPropagation();
+    return;
+  }
+  WindowTreeHostPlatform::DispatchEvent(event);
+}
+
 void WindowTreeHostMus::OnClosed() {
-  // TODO(sad): NativeWidgetMus needs to know about this, and tear down the
-  // associated Widget (and this WindowTreeHostMus too).
-  NOTIMPLEMENTED();
+  if (native_widget_)
+    native_widget_->OnPlatformWindowClosed();
 }
 
 void WindowTreeHostMus::OnWindowStateChanged(ui::PlatformWindowState state) {
@@ -200,6 +212,9 @@ void WindowTreeHostMus::OnActivationChanged(bool active) {
     GetInputMethod()->OnFocus();
   else
     GetInputMethod()->OnBlur();
+  if (native_widget_)
+    native_widget_->OnActivationChanged(active);
+  WindowTreeHostPlatform::OnActivationChanged(active);
 }
 
 }  // namespace views

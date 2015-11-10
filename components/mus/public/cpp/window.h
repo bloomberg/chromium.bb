@@ -49,10 +49,10 @@ class Window {
   using EmbedCallback = base::Callback<void(bool, ConnectionSpecificId)>;
 
   // Destroys this window and all its children. Destruction is allowed for
-  // windows
-  // that were created by this connection. For windows from other connections
-  // (such as the root) Destroy() does nothing. If the destruction is allowed
-  // observers are notified and the Window is immediately deleted.
+  // windows that were created by this connection, or the root window. For
+  // windows from other connections (except the root), Destroy() does nothing.
+  // If the destruction is allowed observers are notified and the Window is
+  // immediately deleted.
   void Destroy();
 
   WindowTreeConnection* connection() { return connection_; }

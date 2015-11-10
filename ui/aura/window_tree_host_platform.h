@@ -43,7 +43,6 @@ class AURA_EXPORT WindowTreeHostPlatform
   void SetPlatformWindow(scoped_ptr<ui::PlatformWindow> window);
   ui::PlatformWindow* platform_window() { return window_.get(); }
 
- private:
   // ui::PlatformWindowDelegate:
   void OnBoundsChanged(const gfx::Rect& new_bounds) override;
   void OnDamageRect(const gfx::Rect& damaged_region) override;
@@ -57,6 +56,7 @@ class AURA_EXPORT WindowTreeHostPlatform
   void OnAcceleratedWidgetDestroyed() override;
   void OnActivationChanged(bool active) override;
 
+ private:
   gfx::AcceleratedWidget widget_;
   scoped_ptr<ui::PlatformWindow> window_;
   gfx::NativeCursor current_cursor_;

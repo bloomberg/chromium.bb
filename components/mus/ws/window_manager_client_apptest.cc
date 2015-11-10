@@ -381,23 +381,24 @@ TEST_F(WindowServerTest, SetBoundsSecurity) {
   EXPECT_TRUE(window->bounds() == window_in_embedded->bounds());
 }
 
-// Verifies that a window can only be destroyed by the connection that created
-// it.
+// Verifies that a root window can always be destroyed.
 TEST_F(WindowServerTest, DestroySecurity) {
   Window* window = window_manager()->NewWindow();
   window->SetVisible(true);
   window_manager()->GetRoot()->AddChild(window);
+
   WindowTreeConnection* embedded = Embed(window).connection;
   ASSERT_NE(nullptr, embedded);
 
-  Window* window_in_embedded = embedded->GetWindowById(window->id());
-
-  WindowTracker tracker2(window_in_embedded);
-  window_in_embedded->Destroy();
-  // Window should not have been destroyed.
-  EXPECT_TRUE(tracker2.is_valid());
-
+  // The root can be destroyed, even though it was not created by the
+  // connection.
+  Window* embed_root = embedded->GetWindowById(window->id());
   WindowTracker tracker1(window);
+  WindowTracker tracker2(embed_root);
+  embed_root->Destroy();
+  EXPECT_FALSE(tracker2.is_valid());
+  EXPECT_TRUE(tracker1.is_valid());
+
   window->Destroy();
   EXPECT_FALSE(tracker1.is_valid());
 }

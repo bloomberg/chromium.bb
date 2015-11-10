@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "components/mus/public/interfaces/window_manager.mojom.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/platform_window/platform_window_delegate.h"
@@ -69,6 +70,9 @@ class NativeWidgetMus : public internal::NativeWidgetPrivate,
       std::map<std::string, std::vector<uint8_t>>* properties);
 
   mus::Window* window() { return window_; }
+
+  void OnPlatformWindowClosed();
+  void OnActivationChanged(bool active);
 
  protected:
   // internal::NativeWidgetPrivate:
@@ -195,12 +199,16 @@ class NativeWidgetMus : public internal::NativeWidgetPrivate,
   const mus::mojom::SurfaceType surface_type_;
   ui::PlatformWindowState show_state_before_fullscreen_;
 
+  // See class documentation for Widget in widget.h for a note about ownership.
+  Widget::InitParams::Ownership ownership_;
+
   // Aura configuration.
   scoped_ptr<WindowTreeHostMus> window_tree_host_;
   aura::Window* content_;
   scoped_ptr<wm::FocusController> focus_client_;
   scoped_ptr<aura::client::DefaultCaptureClient> capture_client_;
   scoped_ptr<aura::client::WindowTreeClient> window_tree_client_;
+  base::WeakPtrFactory<NativeWidgetMus> close_widget_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeWidgetMus);
 };

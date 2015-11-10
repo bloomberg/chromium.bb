@@ -175,6 +175,10 @@ bool IsConnectionRoot(Window* window) {
   return window->connection() && window->connection()->GetRoot() == window;
 }
 
+bool OwnsWindowOrIsRoot(Window* window) {
+  return OwnsWindow(window->connection(), window) || IsConnectionRoot(window);
+}
+
 void EmptyEmbedCallback(bool result, ConnectionSpecificId connection_id) {}
 
 }  // namespace
@@ -183,7 +187,7 @@ void EmptyEmbedCallback(bool result, ConnectionSpecificId connection_id) {}
 // Window, public:
 
 void Window::Destroy() {
-  if (!OwnsWindow(connection_, this))
+  if (!OwnsWindowOrIsRoot(this))
     return;
 
   if (connection_)
@@ -203,9 +207,7 @@ void Window::Destroy() {
 }
 
 void Window::SetBounds(const gfx::Rect& bounds) {
-  const bool is_root = !parent();
-  const bool can_change = OwnsWindow(connection_, this) || is_root;
-  if (!can_change)
+  if (!OwnsWindowOrIsRoot(this))
     return;
   if (bounds_ == bounds)
     return;
@@ -216,7 +218,7 @@ void Window::SetBounds(const gfx::Rect& bounds) {
 }
 
 void Window::SetClientArea(const gfx::Insets& client_area) {
-  if (!OwnsWindow(connection_, this) && !IsConnectionRoot(this))
+  if (!OwnsWindowOrIsRoot(this))
     return;
 
   if (connection_) {

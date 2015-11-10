@@ -570,7 +570,9 @@ void WindowTreeImpl::DeleteWindow(Id transport_window_id,
   ServerWindow* window =
       GetWindow(WindowIdFromTransportId(transport_window_id));
   bool success = false;
-  if (window && access_policy_->CanDeleteWindow(window)) {
+  bool should_close = window && (access_policy_->CanDeleteWindow(window) ||
+                                 ShouldRouteToWindowManager(window));
+  if (should_close) {
     WindowTreeImpl* connection =
         connection_manager_->GetConnection(window->id().connection_id);
     success = connection && connection->DeleteWindowImpl(this, window);
