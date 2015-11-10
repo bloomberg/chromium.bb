@@ -4,11 +4,16 @@
 
 package org.chromium.chrome.browser.externalnav;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 
+import org.chromium.base.Log;
+import org.chromium.base.SecureRandomInitializer;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.util.IntentUtils;
 
+import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Arrays;
 
@@ -26,6 +31,8 @@ public class IntentWithGesturesHandler {
      */
     public static final String EXTRA_USER_GESTURE_TOKEN =
             "org.chromium.chrome.browser.user_gesture_token";
+
+    private static final String TAG = "IntentGestureHandler";
 
     private static final Object INSTANCE_LOCK = new Object();
     private static IntentWithGesturesHandler sIntentWithGesturesHandler;
@@ -45,8 +52,20 @@ public class IntentWithGesturesHandler {
         return sIntentWithGesturesHandler;
     }
 
+    @SuppressLint("TrulyRandom")
+    // SecureRandomInitializer addresses the bug in SecureRandom that "TrulyRandom"
+    // warns about, so this lint warning can safely be suppressed.
     private IntentWithGesturesHandler() {
-        mSecureRandom = new SecureRandom();
+        try {
+            mSecureRandom = SecureRandom.getInstance("SHA1PRNG");
+            SecureRandomInitializer.initialize(mSecureRandom);
+        } catch (NoSuchAlgorithmException e) {
+            Log.e(TAG, "Cannot create SecureRandom", e);
+            mSecureRandom = null;
+        } catch (IOException ioe) {
+            Log.e(TAG, "Cannot initialize SecureRandom", ioe);
+            mSecureRandom = null;
+        }
     }
 
     /**
@@ -56,6 +75,7 @@ public class IntentWithGesturesHandler {
      * @param intent Intent with user gesture.
      */
     public void onNewIntentWithGesture(Intent intent) {
+        if (mSecureRandom == null) return;
         mIntentToken = new byte[32];
         mSecureRandom.nextBytes(mIntentToken);
         intent.putExtra(EXTRA_USER_GESTURE_TOKEN, mIntentToken);
