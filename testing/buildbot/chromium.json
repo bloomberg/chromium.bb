@@ -2,6 +2,12 @@
   "Linux x64": {
     "additional_compile_targets": [
       "all"
+    ],
+    "scripts": [
+      {
+        "name": "sizes",
+        "script": "sizes.py"
+      }
     ]
   }
 }
