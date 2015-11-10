@@ -9,32 +9,12 @@ Polymer({
 
   properties: {
     /**
-     * The current view to be shown.
-     * @private {media_router.MediaRouterView}
-     */
-    currentView_: {
-      type: String,
-      readOnly: true,
-      value: media_router.MediaRouterView.ISSUE,
-    },
-
-    /**
      * The text shown in the default action button.
      * @private {string}
      */
     defaultActionButtonText_: {
       type: String,
       value: '',
-    },
-
-    /**
-     * The header text.
-     * @private {string}
-     */
-    headerText_: {
-      type: String,
-      readOnly: true,
-      value: loadTimeData.getString('issueHeader'),
     },
 
     /**

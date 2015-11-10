@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // This Polymer element shows information from media that is currently cast
-// to a device. It is assumed that |route| and |sink| correspond to each other.
+// to a device.
 Polymer({
   is: 'route-details',
 
@@ -18,16 +18,6 @@ Polymer({
     },
 
     /**
-     * The current view to be shown.
-     * @private {media_router.MediaRouterView}
-     */
-    currentView_: {
-      type: String,
-      readOnly: true,
-      value: media_router.MediaRouterView.ROUTE_DETAILS,
-    },
-
-    /**
      * The route to show.
      * @type {?media_router.Route}
      */
@@ -35,15 +25,6 @@ Polymer({
       type: Object,
       value: null,
       observer: 'maybeLoadCustomController_',
-    },
-
-    /**
-     * The sink to show.
-     * @type {?media_router.Sink}
-     */
-    sink: {
-      type: Object,
-      value: null,
     },
 
     /**

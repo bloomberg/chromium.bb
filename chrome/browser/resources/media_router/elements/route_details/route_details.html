@@ -1,13 +1,9 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
-<link rel="import" href="../media_router_header/media_router_header.html">
 <dom-module id="route-details">
   <link rel="import" type="css" href="../../media_router_common.css">
   <link rel="import" type="css" href="route_details.css">
   <template>
-    <media-router-header id="route-details-header"
-        view="[[currentView_]]" heading-text="[[sink.name]]">
-    </media-router-header>
     <div id="route-information" hidden$="[[!isCustomControllerHidden_]]">
       <span>[[activityStatus_]]</span>
     </div>

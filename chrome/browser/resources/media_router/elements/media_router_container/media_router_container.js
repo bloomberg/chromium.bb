@@ -100,6 +100,17 @@ Polymer({
     issue: {
       type: Object,
       value: null,
+      observer: 'maybeShowIssueView_',
+    },
+
+    /**
+     * The header text.
+     * @private {string}
+     */
+    issueHeaderText_: {
+      type: String,
+      readOnly: true,
+      value: loadTimeData.getString('issueHeader'),
     },
 
     /**
@@ -301,10 +312,15 @@ Polymer({
    */
   computeHeaderText_: function(view, headerText) {
     switch (view) {
-      case media_router.MediaRouterView.SINK_LIST:
-        return this.headerText;
       case media_router.MediaRouterView.CAST_MODE_LIST:
         return this.selectCastModeHeaderText_;
+      case media_router.MediaRouterView.ISSUE:
+        return this.issueHeaderText_;
+      case media_router.MediaRouterView.ROUTE_DETAILS:
+        return this.currentRoute_ ?
+            this.sinkMap_[this.currentRoute_.sinkId].name : '';
+      case media_router.MediaRouterView.SINK_LIST:
+        return this.headerText;
       default:
         return '';
     }
@@ -402,15 +418,6 @@ Polymer({
    */
   computeShareScreenSubheadingHidden_: function(castModeList) {
     return this.computeNonDefaultCastModeList_(castModeList).length == 0;
-  },
-
-  /**
-   * @param {?media_router.Route} route The current route.
-   * @return {?media_router.Sink} The sink associated with |route|.
-   * @private
-   */
-  computeSinkForCurrentRoute_: function(route) {
-    return route ? this.sinkMap_[route.sinkId] : null;
   },
 
   /**
@@ -529,6 +536,17 @@ Polymer({
   maybeShowRouteDetailsOnOpen_: function(route) {
     if (this.localRouteCount_ == 1 && this.justOpened_ && route)
       this.showRouteDetails_(route);
+  },
+
+  /**
+   * Updates |currentView_| if there is a new blocking issue.
+   *
+   * @param {?media_router.Issue} issue The new issue.
+   * @private
+   */
+  maybeShowIssueView_: function(issue) {
+    if (!!issue && issue.isBlocking)
+      this.currentView_ = media_router.MediaRouterView.ISSUE;
   },
 
   /**

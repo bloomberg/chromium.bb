@@ -18,12 +18,13 @@
         heading-text="[[computeHeaderText_(currentView_, headerText)]]"
         arrow-drop-icon-disabled="[[computeIsLaunching_(currentLaunchingSinkId_)]]"
         tooltip="[[computeHeaderTooltip_(currentView_, headerTextTooltip)]]"
-        hidden$="[[computeHeaderHidden_(currentView_, issue)]]">
+        on-back-click="showSinkList_">
     </media-router-header>
     <template is="dom-if"
         if="[[computeIssueBannerShown_(currentView_, issue)]]">
       <issue-banner id="issue-banner" issue="[[issue]]"
-          class$="[[computeIssueBannerClass_(issue)]]">
+          class$="[[computeIssueBannerClass_(issue)]]"
+          on-issue-action-click="showSinkList_">
       </issue-banner>
     </template>
     <paper-menu id="cast-mode-list"
@@ -52,8 +53,6 @@
       </template>
     </paper-menu>
     <route-details id="route-details" route="[[currentRoute_]]"
-        sink="[[computeSinkForCurrentRoute_(currentRoute_)]]"
-        on-back-click="showSinkList_"
         on-close-route-click="onCloseRouteClick_"
         hidden$="[[computeRouteDetailsHidden_(currentView_, issue)]]">
     </route-details>

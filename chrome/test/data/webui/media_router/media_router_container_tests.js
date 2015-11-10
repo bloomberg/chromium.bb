@@ -403,8 +403,7 @@ cr.define('media_router_container', function() {
 
         // Set a blocking issue. The issue should stay hidden.
         container.issue = fakeBlockingIssue;
-        checkElementsVisibleWithId(['cast-mode-list',
-                                    'container-header',
+        checkElementsVisibleWithId(['container-header',
                                     'device-missing',
                                     'sink-list']);
       });
@@ -413,7 +412,8 @@ cr.define('media_router_container', function() {
       // Tests for expected visible UI when the view is ROUTE_DETAILS.
       test('route details visibility', function() {
         container.showRouteDetails_();
-        checkElementsVisibleWithId(['device-missing',
+        checkElementsVisibleWithId(['container-header',
+                                    'device-missing',
                                     'route-details',
                                     'sink-list']);
       });
@@ -426,7 +426,8 @@ cr.define('media_router_container', function() {
         // Set a non-blocking issue. The issue should be shown.
         container.issue = fakeNonBlockingIssue;
         setTimeout(function() {
-          checkElementsVisibleWithId(['device-missing',
+          checkElementsVisibleWithId(['container-header',
+                                      'device-missing',
                                       'issue-banner',
                                       'route-details',
                                       'sink-list']);
@@ -443,7 +444,8 @@ cr.define('media_router_container', function() {
         // else, hidden.
         container.issue = fakeBlockingIssue;
         setTimeout(function() {
-          checkElementsVisibleWithId(['device-missing',
+          checkElementsVisibleWithId(['container-header',
+                                      'device-missing',
                                       'issue-banner',
                                       'sink-list']);
           done();
@@ -496,7 +498,9 @@ cr.define('media_router_container', function() {
         // else, hidden.
         container.issue = fakeBlockingIssue;
         setTimeout(function() {
-          checkElementsVisibleWithId(['issue-banner', 'sink-list']);
+          checkElementsVisibleWithId(['container-header',
+                                      'issue-banner',
+                                      'sink-list']);
           done();
         });
       });
