@@ -94,6 +94,8 @@ void ContentPasswordManagerDriverFactory::RenderFrameDeleted(
 bool ContentPasswordManagerDriverFactory::OnMessageReceived(
     const IPC::Message& message,
     content::RenderFrameHost* render_frame_host) {
+  if (!render_frame_host->IsRenderFrameLive())
+    return false;
   return frame_driver_map_[render_frame_host]->HandleMessage(message);
 }
 
@@ -101,6 +103,8 @@ void ContentPasswordManagerDriverFactory::DidNavigateAnyFrame(
     content::RenderFrameHost* render_frame_host,
     const content::LoadCommittedDetails& details,
     const content::FrameNavigateParams& params) {
+  if (!render_frame_host->IsRenderFrameLive())
+    return;
   frame_driver_map_[render_frame_host]->DidNavigateFrame(details, params);
 }
 
