@@ -585,9 +585,9 @@ FF_ENABLE_DEPRECATION_WARNINGS
 FF_DISABLE_DEPRECATION_WARNINGS
         if (frame_size >= 0 && (pkt->size || st->priv_pts->num != st->priv_pts->den >> 1 || st->priv_pts->val)) {
             frac_add(st->priv_pts, (int64_t)st->time_base.den * frame_size);
+        }
 FF_ENABLE_DEPRECATION_WARNINGS
 #endif
-        }
         break;
     case AVMEDIA_TYPE_VIDEO:
 #if FF_API_LAVF_FRAC
