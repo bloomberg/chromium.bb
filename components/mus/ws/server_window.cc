@@ -7,10 +7,10 @@
 #include <inttypes.h>
 
 #include "base/strings/stringprintf.h"
+#include "components/mus/common/transient_window_utils.h"
 #include "components/mus/ws/server_window_delegate.h"
 #include "components/mus/ws/server_window_observer.h"
 #include "components/mus/ws/server_window_surface_manager.h"
-#include "components/mus/ws/window_stacking_client.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 
 namespace mus {
@@ -21,6 +21,8 @@ ServerWindow::ServerWindow(ServerWindowDelegate* delegate, const WindowId& id)
     : delegate_(delegate),
       id_(id),
       parent_(nullptr),
+      stacking_target_(nullptr),
+      transient_parent_(nullptr),
       visible_(false),
       opacity_(1),
       // Don't notify newly added observers during notification. This causes
@@ -34,6 +36,16 @@ ServerWindow::ServerWindow(ServerWindowDelegate* delegate, const WindowId& id)
 ServerWindow::~ServerWindow() {
   FOR_EACH_OBSERVER(ServerWindowObserver, observers_,
                     OnWillDestroyWindow(this));
+
+  if (transient_parent_)
+    transient_parent_->RemoveTransientWindow(this);
+
+  // Destroy transient children, only after we've removed ourselves from our
+  // parent, as destroying an active transient child may otherwise attempt to
+  // refocus us.
+  Windows transient_children(transient_children_);
+  STLDeleteElements(&transient_children);
+  DCHECK(transient_children_.empty());
 
   while (!children_.empty())
     children_.front()->parent()->Remove(children_.front());
@@ -67,7 +79,7 @@ void ServerWindow::Add(ServerWindow* child) {
   if (child->parent() == this) {
     if (children_.size() == 1)
       return;  // Already in the right position.
-    Reorder(child, children_.back(), mojom::ORDER_DIRECTION_ABOVE);
+    child->Reorder(children_.back(), mojom::ORDER_DIRECTION_ABOVE);
     return;
   }
 
@@ -80,6 +92,11 @@ void ServerWindow::Add(ServerWindow* child) {
 
   child->parent_ = this;
   children_.push_back(child);
+
+  // Stack the child properly if it is a transient child of a sibling.
+  if (child->transient_parent_ && child->transient_parent_->parent() == this)
+    RestackTransientDescendants(child->transient_parent_, &GetStackingTarget);
+
   FOR_EACH_OBSERVER(ServerWindowObserver, child->observers_,
                     OnWindowHierarchyChanged(child, this, old_parent));
 }
@@ -93,49 +110,55 @@ void ServerWindow::Remove(ServerWindow* child) {
   FOR_EACH_OBSERVER(ServerWindowObserver, child->observers_,
                     OnWillChangeWindowHierarchy(child, nullptr, this));
   RemoveImpl(child);
+
+  // Stack the child properly if it is a transient child of a sibling.
+  if (child->transient_parent_ && child->transient_parent_->parent() == this)
+    RestackTransientDescendants(child->transient_parent_, &GetStackingTarget);
+
   FOR_EACH_OBSERVER(ServerWindowObserver, child->observers_,
                     OnWindowHierarchyChanged(child, nullptr, this));
 }
 
-void ServerWindow::Reorder(ServerWindow* child,
-                           ServerWindow* relative,
+void ServerWindow::Reorder(ServerWindow* relative,
                            mojom::OrderDirection direction) {
-  // We assume validation checks happened else where.
-  DCHECK(child);
-  DCHECK(child->parent() == this);
-  DCHECK_GT(children_.size(), 1u);
+  ServerWindow* window = this;
+  DCHECK(relative);
+  DCHECK_NE(window, relative);
+  DCHECK_EQ(window->parent(), relative->parent());
 
-  WindowStackingClient* stacking_client = GetWindowStackingClient();
-  if (stacking_client &&
-      !stacking_client->AdjustStacking(&child, &relative, &direction))
+  if (!AdjustStackingForTransientWindows(&window, &relative, &direction,
+                                         stacking_target_))
     return;
 
-  children_.erase(std::find(children_.begin(), children_.end(), child));
-  Windows::iterator i = std::find(children_.begin(), children_.end(), relative);
+  window->parent_->children_.erase(std::find(window->parent_->children_.begin(),
+                                             window->parent_->children_.end(),
+                                             window));
+  Windows::iterator i = std::find(window->parent_->children_.begin(),
+                                  window->parent_->children_.end(), relative);
   if (direction == mojom::ORDER_DIRECTION_ABOVE) {
-    DCHECK(i != children_.end());
-    children_.insert(++i, child);
+    DCHECK(i != window->parent_->children_.end());
+    window->parent_->children_.insert(++i, window);
   } else if (direction == mojom::ORDER_DIRECTION_BELOW) {
-    DCHECK(i != children_.end());
-    children_.insert(i, child);
+    DCHECK(i != window->parent_->children_.end());
+    window->parent_->children_.insert(i, window);
   }
   FOR_EACH_OBSERVER(ServerWindowObserver, observers_,
                     OnWindowReordered(this, relative, direction));
-  child->OnStackingChanged();
+  window->OnStackingChanged();
 }
 
 void ServerWindow::StackChildAtBottom(ServerWindow* child) {
   // There's nothing to do if the child is already at the bottom.
   if (children_.size() <= 1 || child == children_.front())
     return;
-  Reorder(child, children_.front(), mojom::ORDER_DIRECTION_BELOW);
+  child->Reorder(children_.front(), mojom::ORDER_DIRECTION_BELOW);
 }
 
 void ServerWindow::StackChildAtTop(ServerWindow* child) {
   // There's nothing to do if the child is already at the top.
   if (children_.size() <= 1 || child == children_.back())
     return;
-  Reorder(child, children_.back(), mojom::ORDER_DIRECTION_ABOVE);
+  child->Reorder(children_.back(), mojom::ORDER_DIRECTION_ABOVE);
 }
 
 void ServerWindow::SetBounds(const gfx::Rect& bounds) {
@@ -190,6 +213,42 @@ ServerWindow* ServerWindow::GetChildWindow(const WindowId& window_id) {
   return nullptr;
 }
 
+void ServerWindow::AddTransientWindow(ServerWindow* child) {
+  if (child->transient_parent())
+    child->transient_parent()->RemoveTransientWindow(child);
+
+  DCHECK(std::find(transient_children_.begin(), transient_children_.end(),
+                   child) == transient_children_.end());
+  transient_children_.push_back(child);
+  child->transient_parent_ = this;
+
+  // Restack |child| properly above its transient parent, if they share the same
+  // parent.
+  if (child->parent() == parent())
+    RestackTransientDescendants(this, &GetStackingTarget);
+
+  FOR_EACH_OBSERVER(ServerWindowObserver, observers_,
+                    OnTransientWindowAdded(this, child));
+}
+
+void ServerWindow::RemoveTransientWindow(ServerWindow* child) {
+  Windows::iterator i =
+      std::find(transient_children_.begin(), transient_children_.end(), child);
+  DCHECK(i != transient_children_.end());
+  transient_children_.erase(i);
+  DCHECK_EQ(this, child->transient_parent());
+  child->transient_parent_ = nullptr;
+
+  // If |child| and its former transient parent share the same parent, |child|
+  // should be restacked properly so it is not among transient children of its
+  // former parent, anymore.
+  if (parent() == child->parent())
+    RestackTransientDescendants(this, &GetStackingTarget);
+
+  FOR_EACH_OBSERVER(ServerWindowObserver, observers_,
+                    OnTransientWindowRemoved(this, child));
+}
+
 bool ServerWindow::Contains(const ServerWindow* window) const {
   for (const ServerWindow* parent = window; parent; parent = parent->parent_) {
     if (parent == this)
@@ -231,7 +290,8 @@ void ServerWindow::SetProperty(const std::string& name,
     if (value && it->second == *value)
       return;
   } else if (!value) {
-    // This property isn't set in |properties_| and |value| is NULL, so there's
+    // This property isn't set in |properties_| and |value| is nullptr, so
+    // there's
     // no change.
     return;
   }
@@ -293,13 +353,26 @@ void ServerWindow::BuildDebugInfo(const std::string& depth,
 #endif
 
 void ServerWindow::RemoveImpl(ServerWindow* window) {
-  window->parent_ = NULL;
+  window->parent_ = nullptr;
   children_.erase(std::find(children_.begin(), children_.end(), window));
 }
 
 void ServerWindow::OnStackingChanged() {
-  FOR_EACH_OBSERVER(ServerWindowObserver, observers_,
-                    OnWindowStackingChanged(this));
+  if (stacking_target_) {
+    Windows::const_iterator window_i = std::find(
+        parent()->children().begin(), parent()->children().end(), this);
+    DCHECK(window_i != parent()->children().end());
+    if (window_i != parent()->children().begin() &&
+        (*(window_i - 1) == stacking_target_)) {
+      return;
+    }
+  }
+  RestackTransientDescendants(this, &GetStackingTarget);
+}
+
+// static
+ServerWindow** ServerWindow::GetStackingTarget(ServerWindow* window) {
+  return &window->stacking_target_;
 }
 
 }  // namespace ws

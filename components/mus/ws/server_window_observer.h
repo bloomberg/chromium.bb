@@ -30,8 +30,7 @@ class ServerWindowObserver {
   virtual void OnWillDestroyWindow(ServerWindow* window) {}
 
   // Invoked at the end of the window's destructor (after it has been removed
-  // from
-  // the hierarchy.
+  // from the hierarchy.
   virtual void OnWindowDestroyed(ServerWindow* window) {}
 
   virtual void OnWillChangeWindowHierarchy(ServerWindow* window,
@@ -54,8 +53,6 @@ class ServerWindowObserver {
                                  ServerWindow* relative,
                                  mojom::OrderDirection direction) {}
 
-  virtual void OnWindowStackingChanged(ServerWindow* window) {}
-
   virtual void OnWillChangeWindowVisibility(ServerWindow* window) {}
   virtual void OnWindowVisibilityChanged(ServerWindow* window) {}
 
@@ -66,6 +63,14 @@ class ServerWindowObserver {
       ServerWindow* window,
       const std::string& name,
       const std::vector<uint8_t>* new_data) {}
+
+  // Called when a transient child is added to |window|.
+  virtual void OnTransientWindowAdded(ServerWindow* window,
+                                      ServerWindow* transient_child) {}
+
+  // Called when a transient child is removed from |window|.
+  virtual void OnTransientWindowRemoved(ServerWindow* window,
+                                        ServerWindow* transient_child) {}
 
  protected:
   virtual ~ServerWindowObserver() {}

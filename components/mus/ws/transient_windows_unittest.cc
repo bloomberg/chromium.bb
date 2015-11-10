@@ -4,11 +4,8 @@
 
 #include "base/strings/string_number_conversions.h"
 #include "components/mus/ws/server_window.h"
+#include "components/mus/ws/server_window_observer.h"
 #include "components/mus/ws/test_server_window_delegate.h"
-#include "components/mus/ws/transient_window_manager.h"
-#include "components/mus/ws/transient_window_observer.h"
-#include "components/mus/ws/transient_window_stacking_client.h"
-#include "components/mus/ws/window_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mus {
@@ -16,7 +13,7 @@ namespace ws {
 
 namespace {
 
-class TestTransientWindowObserver : public TransientWindowObserver {
+class TestTransientWindowObserver : public ServerWindowObserver {
  public:
   TestTransientWindowObserver() : add_count_(0), remove_count_(0) {}
 
@@ -26,12 +23,12 @@ class TestTransientWindowObserver : public TransientWindowObserver {
   int remove_count() const { return remove_count_; }
 
   // TransientWindowObserver overrides:
-  void OnTransientChildAdded(ServerWindow* window,
-                             ServerWindow* transient) override {
+  void OnTransientWindowAdded(ServerWindow* window,
+                              ServerWindow* transient) override {
     add_count_++;
   }
-  void OnTransientChildRemoved(ServerWindow* window,
-                               ServerWindow* transient) override {
+  void OnTransientWindowRemoved(ServerWindow* window,
+                                ServerWindow* transient) override {
     remove_count_++;
   }
 
@@ -67,24 +64,16 @@ std::string ChildWindowIDsAsString(ServerWindow* parent) {
 
 }  // namespace
 
-class TransientWindowManagerTest : public testing::Test {
+class TransientWindowsTest : public testing::Test {
  public:
-  TransientWindowManagerTest() {}
-  ~TransientWindowManagerTest() override {}
-
-  void SetUp() override {
-    client_.reset(new TransientWindowStackingClient);
-    SetWindowStackingClient(client_.get());
-  }
-
-  void TearDown() override { SetWindowStackingClient(nullptr); }
+  TransientWindowsTest() {}
+  ~TransientWindowsTest() override {}
 
  private:
-  scoped_ptr<TransientWindowStackingClient> client_;
-  DISALLOW_COPY_AND_ASSIGN(TransientWindowManagerTest);
+  DISALLOW_COPY_AND_ASSIGN(TransientWindowsTest);
 };
 
-TEST_F(TransientWindowManagerTest, TransientChildren) {
+TEST_F(TransientWindowsTest, TransientChildren) {
   TestServerWindowDelegate server_window_delegate;
 
   scoped_ptr<ServerWindow> parent(
@@ -98,7 +87,7 @@ TEST_F(TransientWindowManagerTest, TransientChildren) {
       CreateTestWindow(&server_window_delegate, WindowId(1, 3), parent.get());
 
   // w2 is now owned by w1.
-  AddTransientChild(w1.get(), w2);
+  w1->AddTransientWindow(w2);
   // Stack w1 at the top (end), this should force w2 to be last (on top of w1).
   parent->StackChildAtTop(w1.get());
   ASSERT_EQ(3u, parent->children().size());
@@ -112,7 +101,7 @@ TEST_F(TransientWindowManagerTest, TransientChildren) {
 }
 
 // Tests that transient children are stacked as a unit when using stack above.
-TEST_F(TransientWindowManagerTest, TransientChildrenGroupAbove) {
+TEST_F(TransientWindowsTest, TransientChildrenGroupAbove) {
   TestServerWindowDelegate server_window_delegate;
 
   scoped_ptr<ServerWindow> parent(
@@ -138,17 +127,17 @@ TEST_F(TransientWindowManagerTest, TransientChildrenGroupAbove) {
   ASSERT_EQ(8u, parent->children().size());
 
   // w11 is now owned by w1.
-  AddTransientChild(w1.get(), w11);
+  w1->AddTransientWindow(w11);
   // w21 is now owned by w2.
-  AddTransientChild(w2.get(), w21);
+  w2->AddTransientWindow(w21);
   // w22 is now owned by w2.
-  AddTransientChild(w2.get(), w22);
+  w2->AddTransientWindow(w22);
   // w211 is now owned by w21.
-  AddTransientChild(w21, w211);
+  w21->AddTransientWindow(w211);
   // w212 is now owned by w21.
-  AddTransientChild(w21, w212);
+  w21->AddTransientWindow(w212);
   // w213 is now owned by w21.
-  AddTransientChild(w21, w213);
+  w21->AddTransientWindow(w213);
   EXPECT_EQ("1 11 2 21 211 212 213 22", ChildWindowIDsAsString(parent.get()));
 
   // Stack w1 at the top (end), this should force w11 to be last (on top of w1).
@@ -163,44 +152,44 @@ TEST_F(TransientWindowManagerTest, TransientChildrenGroupAbove) {
   EXPECT_EQ(w22, parent->children().back());
   EXPECT_EQ("1 11 2 21 211 212 213 22", ChildWindowIDsAsString(parent.get()));
 
-  parent->Reorder(w11, w2.get(), mojom::ORDER_DIRECTION_ABOVE);
+  w11->Reorder(w2.get(), mojom::ORDER_DIRECTION_ABOVE);
   EXPECT_EQ(w11, parent->children().back());
   EXPECT_EQ("2 21 211 212 213 22 1 11", ChildWindowIDsAsString(parent.get()));
 
-  parent->Reorder(w21, w1.get(), mojom::ORDER_DIRECTION_ABOVE);
+  w21->Reorder(w1.get(), mojom::ORDER_DIRECTION_ABOVE);
   EXPECT_EQ(w22, parent->children().back());
   EXPECT_EQ("1 11 2 21 211 212 213 22", ChildWindowIDsAsString(parent.get()));
 
-  parent->Reorder(w21, w22, mojom::ORDER_DIRECTION_ABOVE);
+  w21->Reorder(w22, mojom::ORDER_DIRECTION_ABOVE);
   EXPECT_EQ(w213, parent->children().back());
   EXPECT_EQ("1 11 2 22 21 211 212 213", ChildWindowIDsAsString(parent.get()));
 
-  parent->Reorder(w11, w21, mojom::ORDER_DIRECTION_ABOVE);
+  w11->Reorder(w21, mojom::ORDER_DIRECTION_ABOVE);
   EXPECT_EQ(w11, parent->children().back());
   EXPECT_EQ("2 22 21 211 212 213 1 11", ChildWindowIDsAsString(parent.get()));
 
-  parent->Reorder(w213, w21, mojom::ORDER_DIRECTION_ABOVE);
+  w213->Reorder(w21, mojom::ORDER_DIRECTION_ABOVE);
   EXPECT_EQ(w11, parent->children().back());
   EXPECT_EQ("2 22 21 213 211 212 1 11", ChildWindowIDsAsString(parent.get()));
 
   // No change when stacking a transient parent above its transient child.
-  parent->Reorder(w21, w211, mojom::ORDER_DIRECTION_ABOVE);
+  w21->Reorder(w211, mojom::ORDER_DIRECTION_ABOVE);
   EXPECT_EQ(w11, parent->children().back());
   EXPECT_EQ("2 22 21 213 211 212 1 11", ChildWindowIDsAsString(parent.get()));
 
   // This tests that the order in children_ array rather than in
   // transient_children_ array is used when reinserting transient children.
   // If transient_children_ array was used '22' would be following '21'.
-  parent->Reorder(w2.get(), w1.get(), mojom::ORDER_DIRECTION_ABOVE);
+  w2->Reorder(w1.get(), mojom::ORDER_DIRECTION_ABOVE);
   EXPECT_EQ(w212, parent->children().back());
   EXPECT_EQ("1 11 2 22 21 213 211 212", ChildWindowIDsAsString(parent.get()));
 
-  parent->Reorder(w11, w213, mojom::ORDER_DIRECTION_ABOVE);
+  w11->Reorder(w213, mojom::ORDER_DIRECTION_ABOVE);
   EXPECT_EQ(w11, parent->children().back());
   EXPECT_EQ("2 22 21 213 211 212 1 11", ChildWindowIDsAsString(parent.get()));
 }
 
-TEST_F(TransientWindowManagerTest, TransienChildGroupBelow) {
+TEST_F(TransientWindowsTest, TransienChildGroupBelow) {
   TestServerWindowDelegate server_window_delegate;
 
   scoped_ptr<ServerWindow> parent(
@@ -226,17 +215,17 @@ TEST_F(TransientWindowManagerTest, TransienChildGroupBelow) {
   ASSERT_EQ(8u, parent->children().size());
 
   // w11 is now owned by w1.
-  AddTransientChild(w1.get(), w11);
+  w1->AddTransientWindow(w11);
   // w21 is now owned by w2.
-  AddTransientChild(w2.get(), w21);
+  w2->AddTransientWindow(w21);
   // w22 is now owned by w2.
-  AddTransientChild(w2.get(), w22);
+  w2->AddTransientWindow(w22);
   // w211 is now owned by w21.
-  AddTransientChild(w21, w211);
+  w21->AddTransientWindow(w211);
   // w212 is now owned by w21.
-  AddTransientChild(w21, w212);
+  w21->AddTransientWindow(w212);
   // w213 is now owned by w21.
-  AddTransientChild(w21, w213);
+  w21->AddTransientWindow(w213);
   EXPECT_EQ("1 11 2 21 211 212 213 22", ChildWindowIDsAsString(parent.get()));
 
   // Stack w2 at the bottom, this should force w11 to be last (on top of w1).
@@ -251,42 +240,42 @@ TEST_F(TransientWindowManagerTest, TransienChildGroupBelow) {
   EXPECT_EQ(w22, parent->children().back());
   EXPECT_EQ("1 11 2 21 211 212 213 22", ChildWindowIDsAsString(parent.get()));
 
-  parent->Reorder(w21, w1.get(), mojom::ORDER_DIRECTION_BELOW);
+  w21->Reorder(w1.get(), mojom::ORDER_DIRECTION_BELOW);
   EXPECT_EQ(w11, parent->children().back());
   EXPECT_EQ("2 21 211 212 213 22 1 11", ChildWindowIDsAsString(parent.get()));
 
-  parent->Reorder(w11, w2.get(), mojom::ORDER_DIRECTION_BELOW);
+  w11->Reorder(w2.get(), mojom::ORDER_DIRECTION_BELOW);
   EXPECT_EQ(w22, parent->children().back());
   EXPECT_EQ("1 11 2 21 211 212 213 22", ChildWindowIDsAsString(parent.get()));
 
-  parent->Reorder(w22, w21, mojom::ORDER_DIRECTION_BELOW);
+  w22->Reorder(w21, mojom::ORDER_DIRECTION_BELOW);
   EXPECT_EQ(w213, parent->children().back());
   EXPECT_EQ("1 11 2 22 21 211 212 213", ChildWindowIDsAsString(parent.get()));
 
-  parent->Reorder(w21, w11, mojom::ORDER_DIRECTION_BELOW);
+  w21->Reorder(w11, mojom::ORDER_DIRECTION_BELOW);
   EXPECT_EQ(w11, parent->children().back());
   EXPECT_EQ("2 22 21 211 212 213 1 11", ChildWindowIDsAsString(parent.get()));
 
-  parent->Reorder(w213, w211, mojom::ORDER_DIRECTION_BELOW);
+  w213->Reorder(w211, mojom::ORDER_DIRECTION_BELOW);
   EXPECT_EQ(w11, parent->children().back());
   EXPECT_EQ("2 22 21 213 211 212 1 11", ChildWindowIDsAsString(parent.get()));
 
   // No change when stacking a transient parent below its transient child.
-  parent->Reorder(w21, w211, mojom::ORDER_DIRECTION_BELOW);
+  w21->Reorder(w211, mojom::ORDER_DIRECTION_BELOW);
   EXPECT_EQ(w11, parent->children().back());
   EXPECT_EQ("2 22 21 213 211 212 1 11", ChildWindowIDsAsString(parent.get()));
 
-  parent->Reorder(w1.get(), w2.get(), mojom::ORDER_DIRECTION_BELOW);
+  w1->Reorder(w2.get(), mojom::ORDER_DIRECTION_BELOW);
   EXPECT_EQ(w212, parent->children().back());
   EXPECT_EQ("1 11 2 22 21 213 211 212", ChildWindowIDsAsString(parent.get()));
 
-  parent->Reorder(w213, w11, mojom::ORDER_DIRECTION_BELOW);
+  w213->Reorder(w11, mojom::ORDER_DIRECTION_BELOW);
   EXPECT_EQ(w11, parent->children().back());
   EXPECT_EQ("2 22 21 213 211 212 1 11", ChildWindowIDsAsString(parent.get()));
 }
 
 // Tests that transient windows are stacked properly when created.
-TEST_F(TransientWindowManagerTest, StackUponCreation) {
+TEST_F(TransientWindowsTest, StackUponCreation) {
   TestServerWindowDelegate delegate;
   scoped_ptr<ServerWindow> parent(
       CreateTestWindow(&delegate, WindowId(), nullptr));
@@ -297,13 +286,13 @@ TEST_F(TransientWindowManagerTest, StackUponCreation) {
 
   ServerWindow* window2 =
       CreateTestWindow(&delegate, WindowId(0, 3), parent.get());
-  AddTransientChild(window0.get(), window2);
+  window0->AddTransientWindow(window2);
   EXPECT_EQ("1 3 2", ChildWindowIDsAsString(parent.get()));
 }
 
-// Tests that windows are restacked properly after a call to AddTransientChild()
-// or RemoveTransientChild().
-TEST_F(TransientWindowManagerTest, RestackUponAddOrRemoveTransientChild) {
+// Tests that windows are restacked properly after a call to
+// AddTransientWindow() or RemoveTransientWindow().
+TEST_F(TransientWindowsTest, RestackUponAddOrRemoveTransientWindow) {
   TestServerWindowDelegate delegate;
   scoped_ptr<ServerWindow> parent(
       CreateTestWindow(&delegate, WindowId(), nullptr));
@@ -313,21 +302,21 @@ TEST_F(TransientWindowManagerTest, RestackUponAddOrRemoveTransientChild) {
 
   EXPECT_EQ("0 1 2 3", ChildWindowIDsAsString(parent.get()));
 
-  AddTransientChild(windows[0].get(), windows[2].get());
+  windows[0]->AddTransientWindow(windows[2].get());
   EXPECT_EQ("0 2 1 3", ChildWindowIDsAsString(parent.get()));
 
-  AddTransientChild(windows[0].get(), windows[3].get());
+  windows[0]->AddTransientWindow(windows[3].get());
   EXPECT_EQ("0 2 3 1", ChildWindowIDsAsString(parent.get()));
 
-  RemoveTransientChild(windows[0].get(), windows[2].get());
+  windows[0]->RemoveTransientWindow(windows[2].get());
   EXPECT_EQ("0 3 2 1", ChildWindowIDsAsString(parent.get()));
 
-  RemoveTransientChild(windows[0].get(), windows[3].get());
+  windows[0]->RemoveTransientWindow(windows[3].get());
   EXPECT_EQ("0 3 2 1", ChildWindowIDsAsString(parent.get()));
 }
 
 // Verifies TransientWindowObserver is notified appropriately.
-TEST_F(TransientWindowManagerTest, TransientWindowObserverNotified) {
+TEST_F(TransientWindowsTest, TransientWindowObserverNotified) {
   TestServerWindowDelegate delegate;
   scoped_ptr<ServerWindow> parent(
       CreateTestWindow(&delegate, WindowId(), nullptr));
@@ -335,18 +324,17 @@ TEST_F(TransientWindowManagerTest, TransientWindowObserverNotified) {
       CreateTestWindow(&delegate, WindowId(0, 1), parent.get()));
 
   TestTransientWindowObserver test_observer;
-  TransientWindowManager::GetOrCreate(parent.get())
-      ->AddObserver(&test_observer);
+  parent->AddObserver(&test_observer);
 
-  AddTransientChild(parent.get(), w1.get());
+  parent->AddTransientWindow(w1.get());
   EXPECT_EQ(1, test_observer.add_count());
   EXPECT_EQ(0, test_observer.remove_count());
 
-  RemoveTransientChild(parent.get(), w1.get());
+  parent->RemoveTransientWindow(w1.get());
   EXPECT_EQ(1, test_observer.add_count());
   EXPECT_EQ(1, test_observer.remove_count());
 
-  TransientWindowManager::Get(parent.get())->RemoveObserver(&test_observer);
+  parent->RemoveObserver(&test_observer);
 }
 
 }  // namespace ws

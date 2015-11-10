@@ -613,7 +613,7 @@ void WindowTreeImpl::ReorderWindow(Id window_id,
   if (CanReorderWindow(window, relative_window, direction)) {
     success = true;
     Operation op(this, connection_manager_, OperationType::REORDER_WINDOW);
-    window->parent()->Reorder(window, relative_window, direction);
+    window->Reorder(relative_window, direction);
     connection_manager_->ProcessWindowReorder(window, relative_window,
                                               direction);
   }
