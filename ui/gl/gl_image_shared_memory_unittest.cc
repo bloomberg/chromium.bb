@@ -8,19 +8,19 @@
 #include "ui/gl/gl_image_shared_memory.h"
 #include "ui/gl/test/gl_image_test_template.h"
 
-namespace gfx {
+namespace gl {
 namespace {
 
-template <BufferFormat format>
+template <gfx::BufferFormat format>
 class GLImageSharedMemoryTestDelegate {
  public:
   scoped_refptr<gl::GLImage> CreateSolidColorImage(
-      const Size& size,
+      const gfx::Size& size,
       const uint8_t color[4]) const {
     DCHECK_EQ(NumberOfPlanesForBufferFormat(format), 1u);
     base::SharedMemory shared_memory;
     bool rv = shared_memory.CreateAndMapAnonymous(
-        BufferSizeForBufferFormat(size, format));
+        gfx::BufferSizeForBufferFormat(size, format));
     DCHECK(rv);
     GLImageTestSupport::SetBufferDataToColor(
         size.width(), size.height(),
@@ -30,17 +30,17 @@ class GLImageSharedMemoryTestDelegate {
         size, gl::GLImageMemory::GetInternalFormatForTesting(format)));
     rv = image->Initialize(
         base::SharedMemory::DuplicateHandle(shared_memory.handle()),
-        GenericSharedMemoryId(0), format, 0);
+        gfx::GenericSharedMemoryId(0), format, 0);
     EXPECT_TRUE(rv);
     return image;
   }
 };
 
-using GLImageTestTypes =
-    testing::Types<GLImageSharedMemoryTestDelegate<BufferFormat::RGBX_8888>,
-                   GLImageSharedMemoryTestDelegate<BufferFormat::RGBA_8888>,
-                   GLImageSharedMemoryTestDelegate<BufferFormat::BGRX_8888>,
-                   GLImageSharedMemoryTestDelegate<BufferFormat::BGRA_8888>>;
+using GLImageTestTypes = testing::Types<
+    GLImageSharedMemoryTestDelegate<gfx::BufferFormat::RGBX_8888>,
+    GLImageSharedMemoryTestDelegate<gfx::BufferFormat::RGBA_8888>,
+    GLImageSharedMemoryTestDelegate<gfx::BufferFormat::BGRX_8888>,
+    GLImageSharedMemoryTestDelegate<gfx::BufferFormat::BGRA_8888>>;
 
 INSTANTIATE_TYPED_TEST_CASE_P(GLImageSharedMemory,
                               GLImageTest,
@@ -52,11 +52,12 @@ INSTANTIATE_TYPED_TEST_CASE_P(GLImageSharedMemory,
 
 class GLImageSharedMemoryPoolTestDelegate {
  public:
-  scoped_refptr<gl::GLImage> CreateSolidColorImage(const Size& size,
-                                               const uint8_t color[4]) const {
+  scoped_refptr<gl::GLImage> CreateSolidColorImage(
+      const gfx::Size& size,
+      const uint8_t color[4]) const {
     // Create a shared memory segment that is 2 pages larger than image.
     size_t pool_size =
-        BufferSizeForBufferFormat(size, BufferFormat::RGBA_8888) +
+        gfx::BufferSizeForBufferFormat(size, gfx::BufferFormat::RGBA_8888) +
         base::SysInfo::VMAllocationGranularity() * 3;
     base::SharedMemory shared_memory;
     bool rv = shared_memory.CreateAndMapAnonymous(pool_size);
@@ -67,15 +68,16 @@ class GLImageSharedMemoryPoolTestDelegate {
     size_t buffer_offset = 3 * base::SysInfo::VMAllocationGranularity() / 2;
     GLImageTestSupport::SetBufferDataToColor(
         size.width(), size.height(),
-        static_cast<int>(
-            RowSizeForBufferFormat(size.width(), BufferFormat::RGBA_8888, 0)),
-        BufferFormat::RGBA_8888, color,
+        static_cast<int>(RowSizeForBufferFormat(
+            size.width(), gfx::BufferFormat::RGBA_8888, 0)),
+        gfx::BufferFormat::RGBA_8888, color,
         reinterpret_cast<uint8_t*>(shared_memory.memory()) + buffer_offset);
     scoped_refptr<gl::GLImageSharedMemory> image(
         new gl::GLImageSharedMemory(size, GL_RGBA));
     rv = image->Initialize(
         base::SharedMemory::DuplicateHandle(shared_memory.handle()),
-        GenericSharedMemoryId(0), BufferFormat::RGBA_8888, buffer_offset);
+        gfx::GenericSharedMemoryId(0), gfx::BufferFormat::RGBA_8888,
+        buffer_offset);
     EXPECT_TRUE(rv);
     return image;
   }
@@ -86,4 +88,4 @@ INSTANTIATE_TYPED_TEST_CASE_P(GLImageSharedMemoryPool,
                               GLImageSharedMemoryPoolTestDelegate);
 
 }  // namespace
-}  // namespace gfx
+}  // namespace gl

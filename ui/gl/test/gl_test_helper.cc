@@ -9,7 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace gfx {
+namespace gl {
 
 // static
 GLuint GLTestHelper::CreateTexture(GLenum target) {
@@ -138,4 +138,4 @@ bool GLTestHelper::CheckPixels(int x,
   return !bad_count;
 }
 
-}  // namespace gfx
+}  // namespace gl

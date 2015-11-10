@@ -8,7 +8,7 @@
 #include "ui/gfx/buffer_types.h"
 #include "ui/gl/gl_bindings.h"
 
-namespace gfx {
+namespace gl {
 
 class GLImageTestSupport {
  public:
@@ -22,11 +22,11 @@ class GLImageTestSupport {
   static void SetBufferDataToColor(int width,
                                    int height,
                                    int stride,
-                                   BufferFormat format,
+                                   gfx::BufferFormat format,
                                    const uint8_t color[4],
                                    uint8_t* data);
 };
 
-}  // namespace gfx
+}  // namespace gl
 
 #endif  // UI_GL_TEST_GL_IMAGE_TEST_SUPPORT_H_

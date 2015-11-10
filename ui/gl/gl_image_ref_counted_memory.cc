@@ -10,9 +10,9 @@
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/process_memory_dump.h"
 
-namespace gfx {
+namespace gl {
 
-GLImageRefCountedMemory::GLImageRefCountedMemory(const Size& size,
+GLImageRefCountedMemory::GLImageRefCountedMemory(const gfx::Size& size,
                                                  unsigned internalformat)
     : GLImageMemory(size, internalformat) {}
 
@@ -22,7 +22,7 @@ GLImageRefCountedMemory::~GLImageRefCountedMemory() {
 
 bool GLImageRefCountedMemory::Initialize(
     base::RefCountedMemory* ref_counted_memory,
-    BufferFormat format) {
+    gfx::BufferFormat format) {
   if (!GLImageMemory::Initialize(ref_counted_memory->front(), format))
     return false;
 
@@ -56,4 +56,4 @@ void GLImageRefCountedMemory::OnMemoryDump(
                             ->system_allocator_pool_name());
 }
 
-}  // namespace gfx
+}  // namespace gl

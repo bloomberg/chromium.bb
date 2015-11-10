@@ -8,7 +8,7 @@
 #include "base/basictypes.h"
 #include "ui/gl/gl_bindings.h"
 
-namespace gfx {
+namespace gl {
 
 class GLTestHelper {
  public:
@@ -44,6 +44,6 @@ class GLTestHelper {
                           const uint8_t expected_color[4]);
 };
 
-}  // namespace gfx
+}  // namespace gl
 
 #endif  // UI_GL_TEST_GL_TEST_HELPER_H_

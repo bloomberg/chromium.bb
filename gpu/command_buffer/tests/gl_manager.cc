@@ -432,9 +432,9 @@ int32 GLManager::CreateImage(ClientBuffer buffer,
   GpuMemoryBufferImpl* gpu_memory_buffer =
       GpuMemoryBufferImpl::FromClientBuffer(buffer);
 
-  scoped_refptr<gfx::GLImageRefCountedMemory> image(
-      new gfx::GLImageRefCountedMemory(gfx::Size(width, height),
-                                       internalformat));
+  scoped_refptr<gl::GLImageRefCountedMemory> image(
+      new gl::GLImageRefCountedMemory(gfx::Size(width, height),
+                                      internalformat));
   if (!image->Initialize(gpu_memory_buffer->bytes(),
                          gpu_memory_buffer->GetFormat())) {
     return -1;

@@ -12,14 +12,14 @@ namespace base {
 class RefCountedMemory;
 }
 
-namespace gfx {
+namespace gl {
 
 class GL_EXPORT GLImageRefCountedMemory : public gl::GLImageMemory {
  public:
-  GLImageRefCountedMemory(const Size& size, unsigned internalformat);
+  GLImageRefCountedMemory(const gfx::Size& size, unsigned internalformat);
 
   bool Initialize(base::RefCountedMemory* ref_counted_memory,
-                  BufferFormat format);
+                  gfx::BufferFormat format);
 
   // Overridden from GLImage:
   void Destroy(bool have_context) override;
@@ -36,6 +36,6 @@ class GL_EXPORT GLImageRefCountedMemory : public gl::GLImageMemory {
   DISALLOW_COPY_AND_ASSIGN(GLImageRefCountedMemory);
 };
 
-}  // namespace gfx
+}  // namespace gl
 
 #endif  // UI_GL_GL_IMAGE_REF_COUNTED_MEMORY_H_

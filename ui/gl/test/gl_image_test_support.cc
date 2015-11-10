@@ -13,7 +13,7 @@
 #include "base/message_loop/message_loop.h"
 #endif
 
-namespace gfx {
+namespace gl {
 
 // static
 void GLImageTestSupport::InitializeGL() {
@@ -22,28 +22,28 @@ void GLImageTestSupport::InitializeGL() {
   base::MessageLoopForUI main_loop;
 #endif
 
-  std::vector<GLImplementation> allowed_impls;
+  std::vector<gfx::GLImplementation> allowed_impls;
   GetAllowedGLImplementations(&allowed_impls);
   DCHECK(!allowed_impls.empty());
 
-  GLImplementation impl = allowed_impls[0];
-  GLSurfaceTestSupport::InitializeOneOffImplementation(impl, true);
+  gfx::GLImplementation impl = allowed_impls[0];
+  gfx::GLSurfaceTestSupport::InitializeOneOffImplementation(impl, true);
 }
 
 // static
 void GLImageTestSupport::CleanupGL() {
-  ClearGLBindings();
+  gfx::ClearGLBindings();
 }
 
 // static
 void GLImageTestSupport::SetBufferDataToColor(int width,
                                               int height,
                                               int stride,
-                                              BufferFormat format,
+                                              gfx::BufferFormat format,
                                               const uint8_t color[4],
                                               uint8_t* data) {
   switch (format) {
-    case BufferFormat::RGBX_8888:
+    case gfx::BufferFormat::RGBX_8888:
       for (int y = 0; y < height; ++y) {
         for (int x = 0; x < width; ++x) {
           data[y * stride + x * 4 + 0] = color[0];
@@ -53,7 +53,7 @@ void GLImageTestSupport::SetBufferDataToColor(int width,
         }
       }
       return;
-    case BufferFormat::RGBA_8888:
+    case gfx::BufferFormat::RGBA_8888:
       for (int y = 0; y < height; ++y) {
         for (int x = 0; x < width; ++x) {
           data[y * stride + x * 4 + 0] = color[0];
@@ -63,7 +63,7 @@ void GLImageTestSupport::SetBufferDataToColor(int width,
         }
       }
       return;
-    case BufferFormat::BGRX_8888:
+    case gfx::BufferFormat::BGRX_8888:
       for (int y = 0; y < height; ++y) {
         for (int x = 0; x < width; ++x) {
           data[y * stride + x * 4 + 0] = color[2];
@@ -73,7 +73,7 @@ void GLImageTestSupport::SetBufferDataToColor(int width,
         }
       }
       return;
-    case BufferFormat::BGRA_8888:
+    case gfx::BufferFormat::BGRA_8888:
       for (int y = 0; y < height; ++y) {
         for (int x = 0; x < width; ++x) {
           data[y * stride + x * 4 + 0] = color[2];
@@ -83,20 +83,20 @@ void GLImageTestSupport::SetBufferDataToColor(int width,
         }
       }
       return;
-    case BufferFormat::ATC:
-    case BufferFormat::ATCIA:
-    case BufferFormat::DXT1:
-    case BufferFormat::DXT5:
-    case BufferFormat::ETC1:
-    case BufferFormat::R_8:
-    case BufferFormat::RGBA_4444:
-    case BufferFormat::UYVY_422:
-    case BufferFormat::YUV_420_BIPLANAR:
-    case BufferFormat::YUV_420:
+    case gfx::BufferFormat::ATC:
+    case gfx::BufferFormat::ATCIA:
+    case gfx::BufferFormat::DXT1:
+    case gfx::BufferFormat::DXT5:
+    case gfx::BufferFormat::ETC1:
+    case gfx::BufferFormat::R_8:
+    case gfx::BufferFormat::RGBA_4444:
+    case gfx::BufferFormat::UYVY_422:
+    case gfx::BufferFormat::YUV_420_BIPLANAR:
+    case gfx::BufferFormat::YUV_420:
       NOTREACHED();
       return;
   }
   NOTREACHED();
 }
 
-}  // namespace gfx
+}  // namespace gl

@@ -9,17 +9,17 @@
 #include "ui/gl/gl_image_ref_counted_memory.h"
 #include "ui/gl/test/gl_image_test_template.h"
 
-namespace gfx {
+namespace gl {
 namespace {
 
-template <BufferFormat format>
+template <gfx::BufferFormat format>
 class GLImageRefCountedMemoryTestDelegate {
  public:
   scoped_refptr<gl::GLImage> CreateSolidColorImage(
-      const Size& size,
+      const gfx::Size& size,
       const uint8_t color[4]) const {
     DCHECK_EQ(NumberOfPlanesForBufferFormat(format), 1u);
-    std::vector<uint8_t> data(BufferSizeForBufferFormat(size, format));
+    std::vector<uint8_t> data(gfx::BufferSizeForBufferFormat(size, format));
     scoped_refptr<base::RefCountedBytes> bytes(new base::RefCountedBytes(data));
     GLImageTestSupport::SetBufferDataToColor(
         size.width(), size.height(),
@@ -34,10 +34,10 @@ class GLImageRefCountedMemoryTestDelegate {
 };
 
 using GLImageTestTypes = testing::Types<
-    GLImageRefCountedMemoryTestDelegate<BufferFormat::RGBX_8888>,
-    GLImageRefCountedMemoryTestDelegate<BufferFormat::RGBA_8888>,
-    GLImageRefCountedMemoryTestDelegate<BufferFormat::BGRX_8888>,
-    GLImageRefCountedMemoryTestDelegate<BufferFormat::BGRA_8888>>;
+    GLImageRefCountedMemoryTestDelegate<gfx::BufferFormat::RGBX_8888>,
+    GLImageRefCountedMemoryTestDelegate<gfx::BufferFormat::RGBA_8888>,
+    GLImageRefCountedMemoryTestDelegate<gfx::BufferFormat::BGRX_8888>,
+    GLImageRefCountedMemoryTestDelegate<gfx::BufferFormat::BGRA_8888>>;
 
 INSTANTIATE_TYPED_TEST_CASE_P(GLImageRefCountedMemory,
                               GLImageTest,
@@ -48,4 +48,4 @@ INSTANTIATE_TYPED_TEST_CASE_P(GLImageRefCountedMemory,
                               GLImageTestTypes);
 
 }  // namespace
-}  // namespace gfx
+}  // namespace gl

@@ -23,7 +23,7 @@
 #include "ui/gl/test/gl_image_test_support.h"
 #include "ui/gl/test/gl_test_helper.h"
 
-namespace gfx {
+namespace gl {
 
 template <typename GLImageTestDelegate>
 class GLImageTest : public testing::Test {
@@ -31,9 +31,9 @@ class GLImageTest : public testing::Test {
   // Overridden from testing::Test:
   void SetUp() override {
     GLImageTestSupport::InitializeGL();
-    surface_ = GLSurface::CreateOffscreenGLSurface(Size());
-    context_ = GLContext::CreateGLContext(nullptr, surface_.get(),
-                                          PreferIntegratedGpu);
+    surface_ = gfx::GLSurface::CreateOffscreenGLSurface(gfx::Size());
+    context_ = gfx::GLContext::CreateGLContext(nullptr, surface_.get(),
+                                               gfx::PreferIntegratedGpu);
     context_->MakeCurrent(surface_.get());
   }
   void TearDown() override {
@@ -44,16 +44,16 @@ class GLImageTest : public testing::Test {
   }
 
  protected:
-  scoped_refptr<GLSurface> surface_;
-  scoped_refptr<GLContext> context_;
+  scoped_refptr<gfx::GLSurface> surface_;
+  scoped_refptr<gfx::GLContext> context_;
   GLImageTestDelegate delegate_;
 };
 
 TYPED_TEST_CASE_P(GLImageTest);
 
 TYPED_TEST_P(GLImageTest, CreateAndDestroy) {
-  const Size small_image_size(4, 4);
-  const Size large_image_size(512, 512);
+  const gfx::Size small_image_size(4, 4);
+  const gfx::Size large_image_size(512, 512);
   const uint8_t image_color[] = {0, 0xff, 0, 0xff};
 
   // Create a small solid color green image of preferred format. This must
@@ -88,7 +88,7 @@ class GLImageCopyTest : public GLImageTest<GLImageTestDelegate> {};
 TYPED_TEST_CASE_P(GLImageCopyTest);
 
 TYPED_TEST_P(GLImageCopyTest, CopyTexImage) {
-  const Size image_size(256, 256);
+  const gfx::Size image_size(256, 256);
   const uint8_t image_color[] = {0xff, 0xff, 0, 0xff};
   const uint8_t texture_color[] = {0, 0, 0xff, 0xff};
 
@@ -107,12 +107,12 @@ TYPED_TEST_P(GLImageCopyTest, CopyTexImage) {
   // Create a solid color blue texture of the same size as |image|.
   GLuint texture = GLTestHelper::CreateTexture(GL_TEXTURE_2D);
   scoped_ptr<uint8_t[]> pixels(new uint8_t[BufferSizeForBufferFormat(
-      image_size, BufferFormat::RGBA_8888)]);
+      image_size, gfx::BufferFormat::RGBA_8888)]);
   GLImageTestSupport::SetBufferDataToColor(
       image_size.width(), image_size.height(),
       static_cast<int>(RowSizeForBufferFormat(image_size.width(),
-                                              BufferFormat::RGBA_8888, 0)),
-      BufferFormat::RGBA_8888, texture_color, pixels.get());
+                                              gfx::BufferFormat::RGBA_8888, 0)),
+      gfx::BufferFormat::RGBA_8888, texture_color, pixels.get());
   // Note: This test assume that |image| can be used with GL_TEXTURE_2D but
   // that might not be the case for some GLImage implementations.
   glBindTexture(GL_TEXTURE_2D, texture);
@@ -147,7 +147,7 @@ TYPED_TEST_P(GLImageCopyTest, CopyTexImage) {
 
   GLuint vertex_shader =
       GLTestHelper::LoadShader(GL_VERTEX_SHADER, kVertexShader);
-  bool is_gles = GetGLImplementation() == kGLImplementationEGLGLES2;
+  bool is_gles = gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2;
   GLuint fragment_shader = GLTestHelper::LoadShader(
       GL_FRAGMENT_SHADER,
       base::StringPrintf("%s%s", is_gles ? kShaderFloatPrecision : "",
@@ -205,6 +205,6 @@ TYPED_TEST_P(GLImageCopyTest, CopyTexImage) {
 // handles CopyTexImage correctly.
 REGISTER_TYPED_TEST_CASE_P(GLImageCopyTest, CopyTexImage);
 
-}  // namespace gfx
+}  // namespace gl
 
 #endif  // UI_GL_TEST_GL_IMAGE_TEST_TEMPLATE_H_
