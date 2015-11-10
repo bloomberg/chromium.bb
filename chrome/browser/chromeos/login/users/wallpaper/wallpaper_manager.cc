@@ -624,7 +624,7 @@ void WallpaperManager::SetUserWallpaperInfo(const std::string& user_id,
 void WallpaperManager::ScheduleSetUserWallpaper(const std::string& user_id,
                                                 bool delayed) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  // Some unit tests come here without a UserManager or without a pref system.q
+  // Some unit tests come here without a UserManager or without a pref system.
   if (!user_manager::UserManager::IsInitialized() ||
       !g_browser_process->local_state()) {
     return;
@@ -643,6 +643,7 @@ void WallpaperManager::ScheduleSetUserWallpaper(const std::string& user_id,
            account_id) &&
        user->HasGaiaAccount()) ||
       user->GetType() == user_manager::USER_TYPE_GUEST) {
+    LOG(ERROR) << "User is ephemeral or guest! Fallback to default wallpaper.";
     InitInitialUserWallpaper(user_id, false);
     GetPendingWallpaper(user_id, delayed)->ResetSetDefaultWallpaper();
     return;

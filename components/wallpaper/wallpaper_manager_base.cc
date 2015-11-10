@@ -611,13 +611,16 @@ void WallpaperManagerBase::GetCustomWallpaperInternal(
   if (!base::PathExists(valid_path)) {
     // Falls back to custom wallpaper that uses email as part of its file path.
     // Note that email is used instead of user_id_hash here.
+    LOG(ERROR) << "Failed to load custom wallpaper from its original fallback "
+                  "file path: " << valid_path.value();
     valid_path = GetCustomWallpaperPath(kOriginalWallpaperSubDir, user_id,
                                         info.location);
   }
 
   if (!base::PathExists(valid_path)) {
     LOG(ERROR) << "Failed to load previously selected custom wallpaper. "
-               << "Fallback to default wallpaper";
+               << "Fallback to default wallpaper. Expected wallpaper path: "
+               << wallpaper_path.value();
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::Bind(&WallpaperManagerBase::DoSetDefaultWallpaper, weak_ptr,
