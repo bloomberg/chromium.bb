@@ -35,11 +35,24 @@ CrExtensionsBrowserTest.prototype = {
   /** @override */
   extraLibraries: PolymerTest.getLibraries(ROOT_PATH).concat([
     'extension_service_test.js',
+    'extension_sidebar_test.js',
+    '../mock_controller.js',
+    '../../../../../ui/webui/resources/js/webui_resource_test.js',
   ]),
 
   /** @override */
   typedefCppFixture: 'ExtensionSettingsUIBrowserTest',
 };
+
+TEST_F('CrExtensionsBrowserTest', 'ExtensionSidebarLayoutTest', function() {
+  extension_sidebar_tests.registerTests();
+  mocha.grep('test sidebar layout').run();
+});
+TEST_F('CrExtensionsBrowserTest', 'ExtensionSidebarClickHandlerTest',
+       function() {
+  extension_sidebar_tests.registerTests();
+  mocha.grep('test sidebar click handlers').run();
+});
 
 function CrExtensionsBrowserTestWithInstalledExtension() {}
 

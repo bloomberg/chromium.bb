@@ -167,6 +167,20 @@ cr.define('extensions', function() {
       chrome.developerPrivate.updateProfileConfiguration(
           {inDeveloperMode: inDevMode});
     },
+
+    /** @override */
+    loadUnpacked: function() {
+      chrome.developerPrivate.loadUnpacked({failQuietly: true});
+    },
+
+    /** @override */
+    packExtension: function() {
+    },
+
+    /** @override */
+    updateAllExtensions: function() {
+      chrome.developerPrivate.autoUpdate();
+    },
   };
 
   cr.addSingletonGetter(Service);

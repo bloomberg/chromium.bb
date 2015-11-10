@@ -12,8 +12,14 @@
   };
 }
 
+extensions-item {
+  display: inline-block;
+  margin-top: 20px;
+}
+
 #item-list {
-  -webkit-margin-start: 250px;
+  -webkit-margin-start: 30px;
+  overflow-y: auto;
 }
 
 extensions-item {

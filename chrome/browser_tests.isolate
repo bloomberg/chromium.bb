@@ -71,6 +71,7 @@
           '../third_party/safe_browsing/',
           '../third_party/simplejson/',
           '../third_party/tlslite/',
+          '../ui/webui/resources/js/webui_resource_test.js',
           '<(PRODUCT_DIR)/browser_tests.pak',
           '<(PRODUCT_DIR)/pseudo_locales/',
           '<(PRODUCT_DIR)/pyproto/',

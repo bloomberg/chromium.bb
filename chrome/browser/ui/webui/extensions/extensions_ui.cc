@@ -37,9 +37,14 @@ content::WebUIDataSource* CreateMdExtensionsSource() {
                              IDS_MANAGE_EXTENSIONS_SETTING_WINDOWS_TITLE);
   source->AddLocalizedString("toolbarTitle", IDS_MD_EXTENSIONS_TOOLBAR_TITLE);
   source->AddLocalizedString("search", IDS_MD_EXTENSIONS_SEARCH);
+  source->AddLocalizedString("sidebarApps", IDS_MD_EXTENSIONS_SIDEBAR_APPS);
   source->AddLocalizedString("sidebarExtensions",
                              IDS_MD_EXTENSIONS_SIDEBAR_EXTENSIONS);
-  source->AddLocalizedString("sidebarApps", IDS_MD_EXTENSIONS_SIDEBAR_APPS);
+  source->AddLocalizedString("sidebarLoadUnpacked",
+                             IDS_MD_EXTENSIONS_SIDEBAR_LOAD_UNPACKED);
+  source->AddLocalizedString("sidebarPack", IDS_MD_EXTENSIONS_SIDEBAR_PACK);
+  source->AddLocalizedString("sidebarUpdateNow",
+                             IDS_MD_EXTENSIONS_SIDEBAR_UPDATE_NOW);
   source->AddLocalizedString("sidebarWebsites",
                              IDS_MD_EXTENSIONS_SIDEBAR_WEBSITES);
   source->AddLocalizedString("developerMode",
@@ -60,6 +65,7 @@ content::WebUIDataSource* CreateMdExtensionsSource() {
   source->AddResourcePath("manager.css", IDR_MD_EXTENSIONS_MANAGER_CSS);
   source->AddResourcePath("manager.html", IDR_MD_EXTENSIONS_MANAGER_HTML);
   source->AddResourcePath("manager.js", IDR_MD_EXTENSIONS_MANAGER_JS);
+  source->AddResourcePath("icons.html", IDR_MD_EXTENSIONS_ICONS_HTML);
   source->AddResourcePath("item.css", IDR_MD_EXTENSIONS_ITEM_CSS);
   source->AddResourcePath("item.html", IDR_MD_EXTENSIONS_ITEM_HTML);
   source->AddResourcePath("item.js", IDR_MD_EXTENSIONS_ITEM_JS);

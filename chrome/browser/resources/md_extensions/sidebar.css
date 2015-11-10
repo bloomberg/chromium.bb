@@ -5,7 +5,7 @@
 :host {
   -webkit-margin-start: 30px;
   margin-top: 30px;
-  position: fixed;
+  white-space: nowrap;
 }
 
 #section-menu {
@@ -32,7 +32,7 @@ paper-item {
   -webkit-margin-start: 15px;
 }
 
-#developer-mode {
+#devtools-container {
   border-bottom: 1px solid #C5C5C5;
   border-top: 1px solid #C5C5C5;
   margin: 10px 0;
@@ -42,4 +42,8 @@ paper-item {
   --paper-checkbox-checked-color: rgb(66, 133, 244);
   --primary-text-color: #5A5A5A;
   -webkit-margin-start: 10px;
+}
+
+#devtools-controls {
+  -webkit-margin-start: 20px;
 }

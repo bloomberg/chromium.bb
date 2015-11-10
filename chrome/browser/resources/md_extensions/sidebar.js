@@ -12,6 +12,15 @@ cr.define('extensions', function() {
      * @param {boolean} inDevMode
      */
     setProfileInDevMode: assertNotReached,
+
+    /** Opens the dialog to load unpacked extensions. */
+    loadUnpacked: assertNotReached,
+
+    /** Opens the dialog to pack an extension. */
+    packExtension: assertNotReached,
+
+    /** Updates all extensions. */
+    updateAllExtensions: assertNotReached,
   };
 
   var Sidebar = Polymer({
@@ -24,6 +33,10 @@ cr.define('extensions', function() {
       },
     },
 
+    behaviors: [
+      I18nBehavior,
+    ],
+
     /** @param {extensions.SidebarDelegate} delegate */
     setDelegate: function(delegate) {
       this.delegate_ = delegate;
@@ -32,6 +45,18 @@ cr.define('extensions', function() {
     onDevModeChange_: function() {
       this.delegate_.setProfileInDevMode(
           this.$['developer-mode-checkbox'].checked);
+    },
+
+    onLoadUnpackedTap_: function() {
+      this.delegate_.loadUnpacked();
+    },
+
+    onPackTap_: function() {
+      this.delegate_.packExtension();
+    },
+
+    onUpdateNowTap_: function() {
+      this.delegate_.updateAllExtensions();
     },
   });
 

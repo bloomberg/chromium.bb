@@ -1,8 +1,10 @@
 <link rel="import" href="chrome://resources/html/cr.html">
+<link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-checkbox/paper-checkbox.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-item/paper-item.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-menu/paper-menu.html">
+<link rel="import" href="chrome://extensions/icons.html">
 
 <dom-module id="extensions-sidebar">
   <template>
@@ -20,12 +22,33 @@
         <span i18n-content="sidebarWebsites"></span>
       </paper-item>
     </paper-menu>
-    <paper-item id="developer-mode">
-      <span i18n-content="developerMode"></span>
-      <paper-checkbox id="developer-mode-checkbox"
-          checked="[[inDevMode]]"
-          on-change="onDevModeChange_"></paper-checkbox>
-    </paper-item>
+    <div id="devtools-container">
+      <paper-item id="developer-mode">
+        <span i18n-content="developerMode"></span>
+        <paper-checkbox id="developer-mode-checkbox"
+            checked="[[inDevMode]]"
+            on-change="onDevModeChange_"></paper-checkbox>
+      </paper-item>
+      <template is="dom-if" if="[[inDevMode]]">
+        <div id="devtools-controls">
+          <paper-item class="section-menu-item" id="load-unpacked"
+              on-tap="onLoadUnpackedTap_">
+            <iron-icon icon="file-download"></iron-icon>
+            <span>[[i18n('sidebarLoadUnpacked')]]</span>
+          </paper-item>
+          <paper-item class="section-menu-item" id="pack-extensions"
+              on-tap="onPackTap_">
+            <iron-icon icon="extensions-icons:pack"></iron-icon>
+            <span>[[i18n('sidebarPack')]]</span>
+          </paper-item>
+          <paper-item class="section-menu-item" id="update-now"
+              on-tap="onUpdateNowTap_">
+            <iron-icon icon="extensions-icons:update"></iron-icon>
+            <span>[[i18n('sidebarUpdateNow')]]</span>
+          </paper-item>
+        </div>
+      </template>
+    </div>
     <paper-item id="more-extensions" i18n-content="getMoreExtensions">
     </paper-item>
     <paper-item id="keyboard-shortcuts" i18n-content="keyboardShortcuts">

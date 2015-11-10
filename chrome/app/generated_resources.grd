@@ -4617,11 +4617,20 @@ Even if you have downloaded files from this website before, the website might ha
         <message name="IDS_MD_EXTENSIONS_SEARCH" desc="The text displayed in the search box on the chrome://extensions page.">
           Search
         </message>
+        <message name="IDS_MD_EXTENSIONS_SIDEBAR_APPS" desc="The text displayed in the sidebar to go to the apps section of the page.">
+          Chrome Apps
+        </message>
         <message name="IDS_MD_EXTENSIONS_SIDEBAR_EXTENSIONS" desc="The text displayed in the sidebar to go to the extensions section of the page.">
           Extensions
         </message>
-        <message name="IDS_MD_EXTENSIONS_SIDEBAR_APPS" desc="The text displayed in the sidebar to go to the apps section of the page.">
-          Chrome Apps
+        <message name="IDS_MD_EXTENSIONS_SIDEBAR_LOAD_UNPACKED" desc="The text displayed in the sidebar to load unpacked extensions.">
+          Load unpacked extensions
+        </message>
+        <message name="IDS_MD_EXTENSIONS_SIDEBAR_PACK" desc="The text displayed in the sidebar to pack an extension directory.">
+          Pack extensions...
+        </message>
+        <message name="IDS_MD_EXTENSIONS_SIDEBAR_UPDATE_NOW" desc="The text displayed in the sidebar to update existing extensions now.">
+          Update extensions now
         </message>
         <message name="IDS_MD_EXTENSIONS_SIDEBAR_WEBSITES" desc="The text displayed in the sidebar to go to the websites section of the page.">
           Websites
