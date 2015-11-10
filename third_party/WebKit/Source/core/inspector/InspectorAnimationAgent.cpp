@@ -21,6 +21,7 @@
 #include "core/css/CSSStyleRule.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/DOMNodeIds.h"
+#include "core/dom/NodeComputedStyle.h"
 #include "core/inspector/InjectedScriptManager.h"
 #include "core/inspector/InspectedFrames.h"
 #include "core/inspector/InspectorCSSAgent.h"
@@ -228,9 +229,9 @@ void InspectorAnimationAgent::setPaused(ErrorString* errorString, const RefPtr<J
         Animation* clone = animationClone(animation);
         if (paused && !clone->paused()) {
             // Ensure we restore a current time if the animation is limited.
-            double currentTime = animation->timeline()->currentTime() - animation->startTime();
+            double currentTime = clone->timeline()->currentTime() - clone->startTime();
             clone->pause();
-            animation->setCurrentTime(currentTime);
+            clone->setCurrentTime(currentTime);
         } else if (!paused && clone->paused()) {
             clone->unpause();
         }
@@ -242,7 +243,32 @@ Animation* InspectorAnimationAgent::animationClone(Animation* animation)
     const String id = String::number(animation->sequenceNumber());
     if (!m_idToAnimationClone.get(id)) {
         KeyframeEffect* oldEffect = toKeyframeEffect(animation->effect());
-        KeyframeEffect* newEffect = KeyframeEffect::create(oldEffect->target(), oldEffect->model(), oldEffect->specifiedTiming());
+        ASSERT(oldEffect->model()->isKeyframeEffectModel());
+        KeyframeEffectModelBase* oldModel = toKeyframeEffectModelBase(oldEffect->model());
+        EffectModel* newModel = nullptr;
+        // Clone EffectModel.
+        // TODO(samli): Determine if this is an animations bug.
+        if (oldModel->isStringKeyframeEffectModel()) {
+            StringKeyframeEffectModel* oldStringKeyframeModel = toStringKeyframeEffectModel(oldModel);
+            KeyframeVector oldKeyframes = oldStringKeyframeModel->getFrames();
+            StringKeyframeVector newKeyframes;
+            for (auto& oldKeyframe : oldKeyframes)
+                newKeyframes.append(toStringKeyframe(oldKeyframe.get()));
+            StringKeyframeEffectModel* newStringKeyframeModel = StringKeyframeEffectModel::create(newKeyframes);
+            // TODO(samli): This shouldn't be required.
+            Element* element = oldEffect->target();
+            newStringKeyframeModel->forceConversionsToAnimatableValues(*element, element->computedStyle());
+            newModel = newStringKeyframeModel;
+        } else if (oldModel->isAnimatableValueKeyframeEffectModel()) {
+            AnimatableValueKeyframeEffectModel* oldAnimatableValueKeyframeModel = toAnimatableValueKeyframeEffectModel(oldModel);
+            KeyframeVector oldKeyframes = oldAnimatableValueKeyframeModel->getFrames();
+            AnimatableValueKeyframeVector newKeyframes;
+            for (auto& oldKeyframe : oldKeyframes)
+                newKeyframes.append(toAnimatableValueKeyframe(oldKeyframe.get()));
+            newModel = AnimatableValueKeyframeEffectModel::create(newKeyframes);
+        }
+
+        KeyframeEffect* newEffect = KeyframeEffect::create(oldEffect->target(), newModel, oldEffect->specifiedTiming());
         m_isCloning = true;
         Animation* clone = Animation::create(newEffect, animation->timeline());
         m_isCloning = false;
@@ -250,13 +276,6 @@ Animation* InspectorAnimationAgent::animationClone(Animation* animation)
         m_idToAnimation.set(String::number(clone->sequenceNumber()), clone);
         clone->play();
         clone->setStartTime(animation->startTime());
-
-        // TODO(samli): This shouldn't be necessary. The clone should override completely, but isn't, perhaps becaues the keyframe model is shared.
-        if (!animation->limited()) {
-            TrackExceptionState exceptionState;
-            animation->finish(exceptionState);
-            ASSERT(!exceptionState.hadException());
-        }
     }
     return m_idToAnimationClone.get(id);
 }
