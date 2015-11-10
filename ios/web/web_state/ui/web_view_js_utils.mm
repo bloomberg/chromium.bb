@@ -56,22 +56,16 @@ void EvaluateJavaScript(WKWebView* web_view,
                         NSString* script,
                         JavaScriptCompletion completion_handler) {
   DCHECK([script length]);
-  // __block qualifier ensures that web_view_completion_handler is correctly
-  // captured by itself.
-  __block void (^web_view_completion_handler)(id, NSError*) = nil;
-  // Do not create a web_view_completion_handler if no |handler| is passed to
-  // this function. This results in no creation of an unnecessary block.
+  void (^web_view_completion_handler)(id, NSError*) = nil;
+  // Do not create a web_view_completion_handler if no |completion_handler| is
+  // passed to this function. WKWebView guarantees to call all completion
+  // handlers before deallocation. Passing nil as completion handler (when
+  // appropriate) may speed up web view deallocation, because there will be no
+  // need to call those completion handlers.
   if (completion_handler) {
-    // WKWebView crashes on deallocation when it flushes scripts that did not
-    // finish the execution but have |completion_handler|. Passing
-    // |completion_handler| ownership to the block itself and keeping it alive
-    // until it's executed fixes the crash. No memory leak is expected since
-    // |completion_handler| is always executed even if WKWebView is deallocated.
-    // https://bugs.webkit.org/show_bug.cgi?id=140203
-    web_view_completion_handler = [^(id result, NSError* error) {
+    web_view_completion_handler = ^(id result, NSError* error) {
       completion_handler(UIResultFromWKResult(result), error);
-      [web_view_completion_handler autorelease];
-    } copy];
+    };
   }
   [web_view evaluateJavaScript:script
              completionHandler:web_view_completion_handler];
