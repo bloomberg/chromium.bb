@@ -238,6 +238,7 @@ class CONTENT_EXPORT BluetoothDispatcherHost final
   void ShowBluetoothOverviewLink();
   void ShowBluetoothPairingLink();
   void ShowBluetoothAdapterOffLink();
+  void ShowNeedLocationLink();
 
   int render_process_id_;
 

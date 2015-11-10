@@ -42,8 +42,16 @@ BluetoothChooserAndroid::BluetoothChooserAndroid(
 }
 
 BluetoothChooserAndroid::~BluetoothChooserAndroid() {
-  Java_BluetoothChooserDialog_closeDialog(AttachCurrentThread(),
-                                          java_dialog_.obj());
+  if (!java_dialog_.is_null()) {
+    Java_BluetoothChooserDialog_closeDialog(AttachCurrentThread(),
+                                            java_dialog_.obj());
+  }
+}
+
+bool BluetoothChooserAndroid::CanAskForScanningPermission() {
+  // Creating the dialog returns null if Chromium can't ask for permission to
+  // scan for BT devices.
+  return !java_dialog_.is_null();
 }
 
 void BluetoothChooserAndroid::SetAdapterPresence(AdapterPresence presence) {
@@ -54,7 +62,21 @@ void BluetoothChooserAndroid::SetAdapterPresence(AdapterPresence presence) {
 }
 
 void BluetoothChooserAndroid::ShowDiscoveryState(DiscoveryState state) {
-  NOTIMPLEMENTED();  // Currently we don't show a 'still searching' state.
+  // These constants are used in BluetoothChooserDialog.notifyDiscoveryState.
+  int java_state = -1;
+  switch (state) {
+    case DiscoveryState::FAILED_TO_START:
+      java_state = 0;
+      break;
+    case DiscoveryState::DISCOVERING:
+      java_state = 1;
+      break;
+    case DiscoveryState::IDLE:
+      java_state = 2;
+      break;
+  }
+  Java_BluetoothChooserDialog_notifyDiscoveryState(
+      AttachCurrentThread(), java_dialog_.obj(), java_state);
 }
 
 void BluetoothChooserAndroid::AddDevice(const std::string& device_id,
@@ -76,15 +98,25 @@ void BluetoothChooserAndroid::RemoveDevice(const std::string& device_id) {
                                            java_device_id.obj());
 }
 
-void BluetoothChooserAndroid::OnDeviceSelected(JNIEnv* env,
+void BluetoothChooserAndroid::OnDialogFinished(JNIEnv* env,
                                                jobject obj,
+                                               jint event_type,
                                                jstring device_id) {
-  std::string id = base::android::ConvertJavaStringToUTF8(env, device_id);
-  if (id.empty()) {
-    event_handler_.Run(Event::CANCELLED, "");
-  } else {
-    event_handler_.Run(Event::SELECTED, id);
+  // Values are defined in BluetoothChooserDialog as DIALOG_FINISHED constants.
+  switch (event_type) {
+    case 0:
+      event_handler_.Run(Event::DENIED_PERMISSION, "");
+      return;
+    case 1:
+      event_handler_.Run(Event::CANCELLED, "");
+      return;
+    case 2:
+      event_handler_.Run(
+          Event::SELECTED,
+          base::android::ConvertJavaStringToUTF8(env, device_id));
+      return;
   }
+  NOTREACHED();
 }
 
 void BluetoothChooserAndroid::RestartSearch(JNIEnv* env, jobject obj) {
@@ -104,6 +136,11 @@ void BluetoothChooserAndroid::ShowBluetoothPairingLink(JNIEnv* env,
 void BluetoothChooserAndroid::ShowBluetoothAdapterOffLink(JNIEnv* env,
                                                           jobject obj) {
   event_handler_.Run(Event::SHOW_ADAPTER_OFF_HELP, "");
+}
+
+void BluetoothChooserAndroid::ShowNeedLocationPermissionLink(JNIEnv* env,
+                                                             jobject obj) {
+  event_handler_.Run(Event::SHOW_NEED_LOCATION_HELP, "");
 }
 
 // static

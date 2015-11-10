@@ -80,22 +80,15 @@ public class ItemChooserDialog {
         public final SpannableString mNoneFound;
         // A status message to show above the button row.
         public final SpannableString mStatus;
-        // An error state.
-        public final SpannableString mErrorMessage;
-        // A status message to go with the error state.
-        public final SpannableString mErrorStatus;
         // The label for the positive button (e.g. Select/Pair).
         public final String mPositiveButton;
 
         public ItemChooserLabels(SpannableString title, String searching, SpannableString noneFound,
-                SpannableString status, SpannableString errorMessage, SpannableString errorStatus,
-                String positiveButton) {
+                SpannableString status, String positiveButton) {
             mTitle = title;
             mSearching = searching;
             mNoneFound = noneFound;
             mStatus = status;
-            mErrorMessage = errorMessage;
-            mErrorStatus = errorStatus;
             mPositiveButton = positiveButton;
         }
     }
@@ -106,7 +99,6 @@ public class ItemChooserDialog {
     private enum State {
         STARTING,
         PROGRESS_UPDATE_AVAILABLE,
-        SHOWING_ERROR,
     }
 
     /**
@@ -386,10 +378,14 @@ public class ItemChooserDialog {
     }
 
     /**
-     * Set the error state for the dialog.
+     * Shows an error message in the dialog.
      */
-    public void setErrorState() {
-        setState(State.SHOWING_ERROR);
+    public void setErrorState(SpannableString errorMessage, SpannableString errorStatus) {
+        mListView.setVisibility(View.GONE);
+        mProgressBar.setVisibility(View.GONE);
+        mEmptyMessage.setText(errorMessage);
+        mEmptyMessage.setVisibility(View.VISIBLE);
+        mStatus.setText(errorStatus);
     }
 
     private void setState(State state) {
@@ -398,11 +394,7 @@ public class ItemChooserDialog {
                 mStatus.setText(mLabels.mSearching);
                 mListView.setVisibility(View.GONE);
                 mProgressBar.setVisibility(View.VISIBLE);
-                break;
-            case SHOWING_ERROR:
-                mProgressBar.setVisibility(View.GONE);
-                mEmptyMessage.setText(mLabels.mErrorMessage);
-                mStatus.setText(mLabels.mErrorStatus);
+                mEmptyMessage.setVisibility(View.GONE);
                 break;
             case PROGRESS_UPDATE_AVAILABLE:
                 mStatus.setText(mLabels.mStatus);

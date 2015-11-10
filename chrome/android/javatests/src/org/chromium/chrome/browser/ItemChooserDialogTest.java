@@ -62,12 +62,9 @@ public class ItemChooserDialogTest extends ChromeActivityTestCaseBase<ChromeActi
         String searching = new String("searching");
         SpannableString noneFound = new SpannableString("noneFound");
         SpannableString status = new SpannableString("status");
-        SpannableString errorMessage = new SpannableString("errorMessage");
-        SpannableString errorStatus = new SpannableString("errorStatus");
         String positiveButton = new String("positiveButton");
-        final ItemChooserDialog.ItemChooserLabels labels =
-                new ItemChooserDialog.ItemChooserLabels(title, searching, noneFound, status,
-                                errorMessage, errorStatus, positiveButton);
+        final ItemChooserDialog.ItemChooserLabels labels = new ItemChooserDialog.ItemChooserLabels(
+                title, searching, noneFound, status, positiveButton);
         ItemChooserDialog dialog = ThreadUtils.runOnUiThreadBlockingNoException(
                 new Callable<ItemChooserDialog>() {
                         @Override

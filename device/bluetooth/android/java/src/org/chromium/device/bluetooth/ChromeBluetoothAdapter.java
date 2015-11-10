@@ -172,6 +172,12 @@ final class ChromeBluetoothAdapter {
      * @return True on success.
      */
     private boolean startScan() {
+        Wrappers.BluetoothLeScannerWrapper scanner = mAdapter.getBluetoothLeScanner();
+
+        if (!scanner.canScan()) {
+            return false;
+        }
+
         // scanMode note: SCAN_FAILED_FEATURE_UNSUPPORTED is caused (at least on some devices) if
         // setReportDelay() is used or if SCAN_MODE_LOW_LATENCY isn't used.
         int scanMode = ScanSettings.SCAN_MODE_LOW_LATENCY;
@@ -180,7 +186,7 @@ final class ChromeBluetoothAdapter {
         mScanCallback = new ScanCallback();
 
         try {
-            mAdapter.getBluetoothLeScanner().startScan(null /* filters */, scanMode, mScanCallback);
+            scanner.startScan(null /* filters */, scanMode, mScanCallback);
         } catch (IllegalArgumentException e) {
             Log.e(TAG, "Cannot start scan: " + e);
             return false;

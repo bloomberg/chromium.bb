@@ -42,6 +42,7 @@ DOMException* BluetoothError::take(ScriptPromiseResolver*, const WebBluetoothErr
         MAP_ERROR(NoBluetoothAdapter, NotFoundError, "Bluetooth adapter not available.");
         MAP_ERROR(ChosenDeviceVanished, NotFoundError, "User selected a device that doesn't exist anymore.");
         MAP_ERROR(ChooserCancelled, NotFoundError, "User cancelled the requestDevice() chooser.");
+        MAP_ERROR(ChooserDeniedPermission, NotFoundError, "User denied the browser permission to scan for Bluetooth devices.");
         MAP_ERROR(ServiceNotFound, NotFoundError, "Service not found in device.");
         MAP_ERROR(CharacteristicNotFound, NotFoundError, "Characteristic not found in device.");
 

@@ -21,6 +21,7 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.ParcelUuid;
+import android.os.Process;
 
 import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
@@ -91,8 +92,8 @@ class Wrappers {
                 Log.i(TAG, "BluetoothAdapterWrapper.create failed: Default adapter not found.");
                 return null;
             } else {
-                return new BluetoothAdapterWrapper(
-                        adapter, new BluetoothLeScannerWrapper(adapter.getBluetoothLeScanner()));
+                return new BluetoothAdapterWrapper(adapter,
+                        new BluetoothLeScannerWrapper(context, adapter.getBluetoothLeScanner()));
             }
         }
 
@@ -131,12 +132,26 @@ class Wrappers {
      * Wraps android.bluetooth.BluetoothLeScanner.
      */
     static class BluetoothLeScannerWrapper {
+        private final Context mContext;
         private final BluetoothLeScanner mScanner;
         private final HashMap<ScanCallbackWrapper, ForwardScanCallbackToWrapper> mCallbacks;
 
-        public BluetoothLeScannerWrapper(BluetoothLeScanner scanner) {
+        public BluetoothLeScannerWrapper(Context context, BluetoothLeScanner scanner) {
+            mContext = context;
             mScanner = scanner;
             mCallbacks = new HashMap<ScanCallbackWrapper, ForwardScanCallbackToWrapper>();
+        }
+
+        // Returns true if we have permission to get results from a scan.
+        public boolean canScan() {
+            int myPid = Process.myPid();
+            int myUid = Process.myUid();
+            return mContext.checkPermission(
+                           Manifest.permission.ACCESS_COARSE_LOCATION, myPid, myUid)
+                    == PackageManager.PERMISSION_GRANTED
+                    || mContext.checkPermission(
+                               Manifest.permission.ACCESS_FINE_LOCATION, myPid, myUid)
+                    == PackageManager.PERMISSION_GRANTED;
         }
 
         public void startScan(

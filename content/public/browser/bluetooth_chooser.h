@@ -18,6 +18,8 @@ namespace content {
 class CONTENT_EXPORT BluetoothChooser {
  public:
   enum class Event {
+    // Chromium can't ask for permission to scan for Bluetooth devices.
+    DENIED_PERMISSION,
     // The user cancelled the chooser instead of selecting a device.
     CANCELLED,
     // The user selected device |opt_device_id|.
@@ -30,6 +32,9 @@ class CONTENT_EXPORT BluetoothChooser {
     SHOW_PAIRING_HELP,
     // Show help page explaining why scanning failed because Bluetooth is off.
     SHOW_ADAPTER_OFF_HELP,
+    // Show help page explaining why Chromium needs the Location permission to
+    // scan for Bluetooth devices. Only used on Android.
+    SHOW_NEED_LOCATION_HELP,
 
     // As the dialog implementations grow more user-visible buttons and knobs,
     // we'll add enumerators here to support them.
@@ -49,6 +54,11 @@ class CONTENT_EXPORT BluetoothChooser {
 
   BluetoothChooser() {}
   virtual ~BluetoothChooser();
+
+  // Some platforms (especially Android) require Chromium to have permission
+  // from the user before it can scan for Bluetooth devices. This function
+  // returns false if Chromium isn't even allowed to ask. It defaults to true.
+  virtual bool CanAskForScanningPermission();
 
   // Lets the chooser tell the user the state of the Bluetooth adapter. This
   // defaults to POWERED_ON.

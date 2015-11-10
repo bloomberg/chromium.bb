@@ -61,6 +61,7 @@ enum class UMARequestDeviceOutcome {
   OBSOLETE_BLUETOOTH_ADAPTER_OFF = 7,
   CHOSEN_DEVICE_VANISHED = 8,
   BLUETOOTH_CHOOSER_CANCELLED = 9,
+  BLUETOOTH_CHOOSER_DENIED_PERMISSION = 10,
   // NOTE: Add new requestDevice() outcomes immediately above this line. Make
   // sure to update the enum list in
   // tools/metrics/histograms/histograms.xml accordingly.

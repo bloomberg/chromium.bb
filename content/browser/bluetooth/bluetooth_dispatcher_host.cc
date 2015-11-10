@@ -630,6 +630,13 @@ void BluetoothDispatcherHost::OnRequestDevice(
         new FirstDeviceBluetoothChooser(chooser_event_handler));
   }
 
+  if (!session->chooser->CanAskForScanningPermission()) {
+    VLOG(1) << "Closing immediately because Chooser cannot obtain permission.";
+    OnBluetoothChooserEvent(chooser_id,
+                            BluetoothChooser::Event::DENIED_PERMISSION, "");
+    return;
+  }
+
   // Populate the initial list of devices.
   VLOG(1) << "Populating " << adapter_->GetDevices().size()
           << " devices in chooser " << chooser_id;
@@ -996,6 +1003,7 @@ void BluetoothDispatcherHost::OnBluetoothChooserEvent(
     case BluetoothChooser::Event::RESCAN:
       StartDeviceDiscovery(session, chooser_id);
       break;
+    case BluetoothChooser::Event::DENIED_PERMISSION:
     case BluetoothChooser::Event::CANCELLED:
     case BluetoothChooser::Event::SELECTED: {
       // Synchronously ensure nothing else calls into the chooser after it has
@@ -1022,6 +1030,9 @@ void BluetoothDispatcherHost::OnBluetoothChooserEvent(
     case BluetoothChooser::Event::SHOW_ADAPTER_OFF_HELP:
       ShowBluetoothAdapterOffLink();
       break;
+    case BluetoothChooser::Event::SHOW_NEED_LOCATION_HELP:
+      ShowNeedLocationLink();
+      break;
   }
 }
 
@@ -1040,6 +1051,16 @@ void BluetoothDispatcherHost::FinishClosingChooser(
     Send(new BluetoothMsg_RequestDeviceError(
         session->thread_id, session->request_id,
         WebBluetoothError::ChooserCancelled));
+    request_device_sessions_.Remove(chooser_id);
+    return;
+  }
+  if (event == BluetoothChooser::Event::DENIED_PERMISSION) {
+    RecordRequestDeviceOutcome(
+        UMARequestDeviceOutcome::BLUETOOTH_CHOOSER_DENIED_PERMISSION);
+    VLOG(1) << "Bluetooth chooser denied permission";
+    Send(new BluetoothMsg_RequestDeviceError(
+        session->thread_id, session->request_id,
+        WebBluetoothError::ChooserDeniedPermission));
     request_device_sessions_.Remove(chooser_id);
     return;
   }
@@ -1291,6 +1312,11 @@ void BluetoothDispatcherHost::ShowBluetoothPairingLink() {
 }
 
 void BluetoothDispatcherHost::ShowBluetoothAdapterOffLink() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  NOTIMPLEMENTED();
+}
+
+void BluetoothDispatcherHost::ShowNeedLocationLink() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   NOTIMPLEMENTED();
 }

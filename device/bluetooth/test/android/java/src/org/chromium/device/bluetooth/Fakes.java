@@ -134,9 +134,15 @@ class Fakes {
      */
     static class FakeBluetoothLeScanner extends Wrappers.BluetoothLeScannerWrapper {
         public Wrappers.ScanCallbackWrapper mScanCallback;
+        public boolean mCanScan = true;
 
         private FakeBluetoothLeScanner() {
-            super(null);
+            super(null, null);
+        }
+
+        @Override
+        public boolean canScan() {
+            return mCanScan;
         }
 
         @Override

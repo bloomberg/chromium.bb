@@ -1060,7 +1060,13 @@ To obtain new licenses, connect to the internet and play your downloaded content
         Turn on Bluetooth in <ph name="BEGIN_LINK">&lt;link&gt;</ph>device settings<ph name="END_LINK">&lt;/link&gt;</ph> to allow pairing.
       </message>
       <message name="IDS_BLUETOOTH_ADAPTER_OFF_HELP" desc="The status message to show along with the message when the bluetooth adapter is turned off (to get Help).">
-        <ph name="BEGIN_LINK">&lt;link&gt;</ph>Help<ph name="END_LINK">&lt;/link&gt;</ph>.
+        <ph name="BEGIN_LINK">&lt;link&gt;</ph>Help<ph name="END_LINK">&lt;/link&gt;</ph>
+      </message>
+      <message name="IDS_BLUETOOTH_NEED_LOCATION_PERMISSION" desc="The message to show when scanning cannot start because Chrome needs the Location permission in order for Android to return any Bluetooth devices from a scan.">
+        Chrome needs location access to scan for devices. <ph name="BEGIN_LINK">&lt;link&gt;</ph>Update permissions<ph name="END_LINK">&lt;/link&gt;</ph>
+      </message>
+      <message name="IDS_BLUETOOTH_NEED_LOCATION_PERMISSION_HELP" desc="The status message to get more information about why Chrome needs the Location permission in order to scan for Bluetooth devices.">
+        <ph name="BEGIN_LINK">&lt;link&gt;</ph>Help<ph name="END_LINK">&lt;/link&gt;</ph>
       </message>
 
       <!-- Sync error strings -->

@@ -8,4 +8,8 @@ namespace content {
 
 BluetoothChooser::~BluetoothChooser() {}
 
+bool BluetoothChooser::CanAskForScanningPermission() {
+  return true;
+}
+
 }  // namespace content

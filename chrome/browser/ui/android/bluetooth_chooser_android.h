@@ -19,14 +19,18 @@ class BluetoothChooserAndroid : public content::BluetoothChooser {
   ~BluetoothChooserAndroid() override;
 
   // content::BluetoothChooser:
+  bool CanAskForScanningPermission() override;
   void SetAdapterPresence(AdapterPresence presence) override;
   void ShowDiscoveryState(DiscoveryState state) override;
   void AddDevice(const std::string& device_id,
                  const base::string16& device_name) override;
   void RemoveDevice(const std::string& device_id) override;
 
-  // Report which device was selected (device_id).
-  void OnDeviceSelected(JNIEnv* env, jobject obj, jstring device_id);
+  // Report the dialog's result.
+  void OnDialogFinished(JNIEnv* env,
+                        jobject obj,
+                        jint event_type,
+                        jstring device_id);
 
   // Notify bluetooth stack that the search needs to be re-issued.
   void RestartSearch(JNIEnv* env, jobject obj);
@@ -34,6 +38,7 @@ class BluetoothChooserAndroid : public content::BluetoothChooser {
   void ShowBluetoothOverviewLink(JNIEnv* env, jobject obj);
   void ShowBluetoothPairingLink(JNIEnv* env, jobject obj);
   void ShowBluetoothAdapterOffLink(JNIEnv* env, jobject obj);
+  void ShowNeedLocationPermissionLink(JNIEnv* env, jobject obj);
 
   static bool Register(JNIEnv* env);
 
