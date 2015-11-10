@@ -116,6 +116,9 @@ private:
     void didFinishLoadingBlob(PassRefPtr<DOMArrayBuffer>);
     void didFailLoadingBlob(FileError::ErrorCode);
 
+    // Returns true iff current state is closed or terminated.
+    bool isDisconnected() const;
+
     String m_id;
     String m_url;
     WebPresentationConnectionState m_state;

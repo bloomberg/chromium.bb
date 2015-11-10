@@ -201,6 +201,13 @@ interface MediaRouter {
     AVAILABLE
   };
 
+  // Keep in sync with content/public/browser/presentation_session.h.
+  enum PresentationConnectionState {
+    CONNECTED,
+    CLOSED,
+    TERMINATED
+  };
+
   // Registers a MediaRouteProvider with the MediaRouter.
   // Returns a string that uniquely identifies the Media Router browser
   // process.
@@ -218,5 +225,10 @@ interface MediaRouter {
 
   // Called when the overall availability of media sinks has been updated.
   OnSinkAvailabilityUpdated(SinkAvailability availability);
+
+  // Called when the state of presentation connected to route |route_id| has
+  // changed to |state|.
+  OnPresentationConnectionStateChanged(
+      string route_id, PresentationConnectionState state);
 };
 

@@ -733,6 +733,28 @@ TEST_F(MediaRouterMojoImplTest, PresentationSessionMessagesError) {
   ProcessEventLoop();
 }
 
+TEST_F(MediaRouterMojoImplTest, PresentationConnectionStateObserver) {
+  using PresentationConnectionState =
+      interfaces::MediaRouter::PresentationConnectionState;
+
+  MediaRoute::Id route_id("route-id");
+  MockPresentationConnectionStateObserver observer(router(), route_id);
+
+  EXPECT_CALL(observer,
+              OnStateChanged(content::PRESENTATION_CONNECTION_STATE_CLOSED));
+  media_router_proxy_->OnPresentationConnectionStateChanged(
+      route_id,
+      PresentationConnectionState::PRESENTATION_CONNECTION_STATE_CLOSED);
+  ProcessEventLoop();
+
+  EXPECT_CALL(observer, OnStateChanged(
+                            content::PRESENTATION_CONNECTION_STATE_TERMINATED));
+  media_router_proxy_->OnPresentationConnectionStateChanged(
+      route_id,
+      PresentationConnectionState::PRESENTATION_CONNECTION_STATE_TERMINATED);
+  ProcessEventLoop();
+}
+
 TEST_F(MediaRouterMojoImplTest, QueuedWhileAsleep) {
   EXPECT_CALL(mock_event_page_tracker_, IsEventPageSuspended(extension_id()))
       .Times(2)

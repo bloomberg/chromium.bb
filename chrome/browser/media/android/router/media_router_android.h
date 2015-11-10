@@ -107,6 +107,10 @@ class MediaRouterAndroid : public MediaRouter {
       LocalMediaRoutesObserver* observer) override;
   void UnregisterLocalMediaRoutesObserver(
       LocalMediaRoutesObserver* observer) override;
+  void RegisterPresentationConnectionStateObserver(
+      PresentationConnectionStateObserver* observer) override;
+  void UnregisterPresentationConnectionStateObserver(
+      PresentationConnectionStateObserver* observer) override;
 
   base::android::ScopedJavaGlobalRef<jobject> java_media_router_;
 

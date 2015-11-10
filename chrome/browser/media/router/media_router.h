@@ -27,6 +27,7 @@ class IssuesObserver;
 class LocalMediaRoutesObserver;
 class MediaRoutesObserver;
 class MediaSinksObserver;
+class PresentationConnectionStateObserver;
 class PresentationSessionMessagesObserver;
 
 // Type of callback used in |CreateRoute()| and |JoinRoute()|. Callback is
@@ -125,6 +126,7 @@ class MediaRouter : public KeyedService {
   friend class LocalMediaRoutesObserver;
   friend class MediaSinksObserver;
   friend class MediaRoutesObserver;
+  friend class PresentationConnectionStateObserver;
   friend class PresentationSessionMessagesObserver;
 
   // The following functions are called by friend Observer classes above.
@@ -189,6 +191,15 @@ class MediaRouter : public KeyedService {
   // Removes the LocalMediaRoutesObserver |observer|.
   virtual void UnregisterLocalMediaRoutesObserver(
       LocalMediaRoutesObserver* observer) = 0;
+
+  // Registers/unregisters a PresentationConnectionStateObserver to receive
+  // updates on state changes for a PresentationConnection. MediaRouter does
+  // not own |observer|. When |observer| is about to be destroyed, it must be
+  // unregistered from MediaRouter.
+  virtual void RegisterPresentationConnectionStateObserver(
+      PresentationConnectionStateObserver* observer) = 0;
+  virtual void UnregisterPresentationConnectionStateObserver(
+      PresentationConnectionStateObserver* observer) = 0;
 };
 
 }  // namespace media_router

@@ -199,6 +199,10 @@ class MediaRouterMojoImpl : public MediaRouter,
       LocalMediaRoutesObserver* observer) override;
   void UnregisterLocalMediaRoutesObserver(
       LocalMediaRoutesObserver* observer) override;
+  void RegisterPresentationConnectionStateObserver(
+      PresentationConnectionStateObserver* observer) override;
+  void UnregisterPresentationConnectionStateObserver(
+      PresentationConnectionStateObserver* observer) override;
 
   // These calls invoke methods in the component extension via Mojo.
   void DoCreateRoute(const MediaSource::Id& source_id,
@@ -249,6 +253,9 @@ class MediaRouterMojoImpl : public MediaRouter,
   void OnRoutesUpdated(mojo::Array<interfaces::MediaRoutePtr> routes) override;
   void OnSinkAvailabilityUpdated(
       interfaces::MediaRouter::SinkAvailability availability) override;
+  void OnPresentationConnectionStateChanged(
+      const mojo::String& route_id,
+      interfaces::MediaRouter::PresentationConnectionState state) override;
 
   // Converts the callback result of calling Mojo CreateRoute()/JoinRoute()
   // into a local callback.
@@ -292,11 +299,18 @@ class MediaRouterMojoImpl : public MediaRouter,
   base::ScopedPtrHashMap<MediaRoute::Id,
                          scoped_ptr<PresentationSessionMessagesObserverList>>
       messages_observers_;
+
   // IDs of MediaRoutes being listened for messages. Note that this is
   // different from |message_observers_| because we might be waiting for
   // |OnRouteMessagesReceived()| to be invoked after all observers for that
   // route have been removed.
   std::set<MediaRoute::Id> route_ids_listening_for_messages_;
+
+  using PresentationConnectionStateObserverList =
+      base::ObserverList<PresentationConnectionStateObserver>;
+  base::ScopedPtrHashMap<MediaRoute::Id,
+                         scoped_ptr<PresentationConnectionStateObserverList>>
+      presentation_connection_state_observers_;
 
   IssueManager issue_manager_;
 

@@ -13,6 +13,7 @@
 #include "chrome/browser/media/router/media_router.mojom.h"
 #include "chrome/browser/media/router/media_sink.h"
 #include "chrome/browser/media/router/media_source.h"
+#include "content/public/browser/presentation_session.h"
 #include "mojo/common/common_type_converters.h"
 
 namespace mojo {
@@ -61,6 +62,10 @@ struct TypeConverter<media_router::Issue, media_router::interfaces::IssuePtr> {
   static media_router::Issue Convert(
       const media_router::interfaces::IssuePtr& input);
 };
+
+// PresentationConnectionState conversion.
+content::PresentationConnectionState PresentationConnectionStateFromMojo(
+    media_router::interfaces::MediaRouter::PresentationConnectionState state);
 
 }  // namespace mojo
 

@@ -28,4 +28,12 @@ MockEventPageTracker::MockEventPageTracker() {
 MockEventPageTracker::~MockEventPageTracker() {
 }
 
+MockPresentationConnectionStateObserver::
+    MockPresentationConnectionStateObserver(MediaRouter* router,
+                                            const MediaRoute::Id& route_id)
+    : PresentationConnectionStateObserver(router, route_id) {}
+
+MockPresentationConnectionStateObserver::
+    ~MockPresentationConnectionStateObserver() = default;
+
 }  // namespace media_router

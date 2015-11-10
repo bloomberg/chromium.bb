@@ -72,6 +72,10 @@ class MockMediaRouter : public MediaRouter {
                void(LocalMediaRoutesObserver* observer));
   MOCK_METHOD1(UnregisterLocalMediaRoutesObserver,
                void(LocalMediaRoutesObserver* observer));
+  MOCK_METHOD1(RegisterPresentationConnectionStateObserver,
+               void(PresentationConnectionStateObserver* observer));
+  MOCK_METHOD1(UnregisterPresentationConnectionStateObserver,
+               void(PresentationConnectionStateObserver* observer));
 };
 
 }  // namespace media_router

@@ -35,6 +35,8 @@
       'media_source.h',
       'media_source_helper.cc',
       'media_source_helper.h',
+      'presentation_connection_state_observer.cc',
+      'presentation_connection_state_observer.h',
       'presentation_media_sinks_observer.cc',
       'presentation_media_sinks_observer.h',
       'presentation_service_delegate_impl.cc',

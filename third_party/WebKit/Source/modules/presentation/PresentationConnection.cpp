@@ -371,4 +371,9 @@ void PresentationConnection::didFailLoadingBlob(FileError::ErrorCode errorCode)
     handleMessageQueue();
 }
 
+bool PresentationConnection::isDisconnected() const
+{
+    return m_state == WebPresentationConnectionState::Closed || m_state == WebPresentationConnectionState::Terminated;
+}
+
 } // namespace blink

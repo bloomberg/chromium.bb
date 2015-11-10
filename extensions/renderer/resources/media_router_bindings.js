@@ -98,6 +98,28 @@ define('media_router_bindings', [
   }
 
   /**
+   * Converts presentation connection state to Mojo enum value.
+   * @param {!string} state
+   * @return {!mediaRouterMojom.MediaRouter.PresentationConnectionState}
+   */
+  function presentationConnectionStateToMojo_(state) {
+    switch (state) {
+      case 'connected':
+        return
+            mediaRouterMojom.MediaRouter.PresentationConnectionState.CONNECTED;
+      case 'closed':
+        return mediaRouterMojom.MediaRouter.PresentationConnectionState.CLOSED;
+      case 'terminated':
+        return
+            mediaRouterMojom.MediaRouter.PresentationConnectionState.TERMINATED;
+      default:
+        console.error('Unknown presentation connection state: ' + state);
+        return
+            mediaRouterMojom.MediaRouter.PresentationConnectionState.TERMINATED;
+    }
+  }
+
+  /**
    * Creates a new MediaRouter.
    * Converts a route struct to its Mojo form.
    * @param {!MediaRouterService} service
@@ -265,10 +287,23 @@ define('media_router_bindings', [
 
   /**
    * Called by the provider manager when sink availability has been updated.
-   * @param {!MediaRouter.SinkAvailability} The new sink availability.
+   * @param {!mediaRouterMojom.MediaRouter.SinkAvailability} availability
+   *     The new sink availability.
    */
   MediaRouter.prototype.onSinkAvailabilityUpdated = function(availability) {
     this.service_.onSinkAvailabilityUpdated(availability);
+  };
+
+  /**
+   * Called by the provider manager when the state of a presentation connected
+   * to a route has changed.
+   * @param {!string} routeId
+   * @param {!string} state
+   */
+  MediaRouter.prototype.onPresentationConnectionStateChanged =
+      function(routeId, state) {
+    this.service_.onPresentationConnectionStateChanged(
+        routeId, presentationConnectionStateToMojo_(state));
   };
 
   /**
