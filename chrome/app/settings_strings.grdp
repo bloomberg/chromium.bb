@@ -23,17 +23,11 @@
     <message name="IDS_SETTINGS_HIGH_CONTRAST_LABEL" desc="Label for checkbox which enables high-contrast UI.">
       Use high contrast mode
     </message>
-    <message name="IDS_SETTINGS_STICKY_KEYS_LABEL" desc="Label for checkbox which enables sticky keys.">
-      Enable sticky keys
+    <message name="IDS_SETTINGS_STICKY_KEYS_LABEL" desc="Label for checkbox which enables sticky keys, with an explanation of the term 'sticky keys'.">
+      Enable sticky keys (to perform keyboard shortcuts by typing them sequentially)
     </message>
-    <message name="IDS_SETTINGS_STICKY_KEYS_SUBLABEL" desc="Sub-label describing what the term 'sticky keys' means.">
-      (to perform keyboard shortcuts by typing them sequentially)
-    </message>
-    <message name="IDS_SETTINGS_CHROMEVOX_LABEL" desc="Label for checkbox which enables ChromeVox">
-      Enable ChromeVox
-    </message>
-    <message name="IDS_SETTINGS_CHROMEVOX_SUBLABEL" desc="Sub-label describingn what ChromeVox is.">
-      (spoken feedback)
+    <message name="IDS_SETTINGS_CHROMEVOX_LABEL" desc="Label for checkbox which enables ChromeVox, with a description of what ChromeVox is.">
+      Enable ChromeVox (spoken feedback)
     </message>
     <message name="IDS_SETTINGS_SCREEN_MAGNIFIER_LABEL" desc="Label for checkbox which enables the screen magnifier">
       Enable screen magnifier

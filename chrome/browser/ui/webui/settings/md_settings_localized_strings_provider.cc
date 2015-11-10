@@ -58,11 +58,7 @@ void AddA11yStrings(content::WebUIDataSource* html_source) {
   html_source->AddLocalizedString(
       "stickyKeysLabel", IDS_SETTINGS_STICKY_KEYS_LABEL);
   html_source->AddLocalizedString(
-      "stickyKeysSublabel", IDS_SETTINGS_STICKY_KEYS_SUBLABEL);
-  html_source->AddLocalizedString(
       "chromeVoxLabel", IDS_SETTINGS_CHROMEVOX_LABEL);
-  html_source->AddLocalizedString(
-      "chromeVoxSublabel", IDS_SETTINGS_CHROMEVOX_SUBLABEL);
   html_source->AddLocalizedString(
       "screenMagnifierLabel", IDS_SETTINGS_SCREEN_MAGNIFIER_LABEL);
   html_source->AddLocalizedString(
