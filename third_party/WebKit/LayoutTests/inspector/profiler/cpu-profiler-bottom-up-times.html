@@ -104,7 +104,8 @@ function test()
     if (!node)
          InspectorTest.addResult("no node");
     while (node) {
-        InspectorTest.addResult(node.callUID + ": " + node.functionName + " " + node.selfTime + " " + node.totalTime + " " + JSON.stringify(node.data));
+        var url = node.element().children[2].firstChild.textContent;
+        InspectorTest.addResult(node.callUID + ": " + node.functionName + " " + node.selfTime + " " + node.totalTime + " " + url + " " + JSON.stringify(node.data));
         node = node.traverseNextNode(true, null, true);
     }
     InspectorTest.completeProfilerTest();

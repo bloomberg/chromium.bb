@@ -13,14 +13,15 @@ function pageFunction() {
 
 function test()
 {
-    function checkFunction(name, tree)
+    function checkFunction(tree, name, url)
     {
         var node = tree.children[0];
         if (!node)
             InspectorTest.addResult("no node");
         while (node) {
-            if (node.functionName === name) {
-                InspectorTest.addResult("found " + name);
+            var nodeURL = node.element().children[2].firstChild.textContent;
+            if (node.functionName === name && (!url || url === nodeURL)) {
+                InspectorTest.addResult("found " + name + " " + (url || ""));
                 return;
             }
             node = node.traverseNextNode(true, null, true);
@@ -36,8 +37,8 @@ function test()
                 var tree = view.profileDataGridTree;
                 if (!tree)
                     InspectorTest.addResult("no tree");
-                checkFunction("pageFunction", tree);
-                checkFunction("(anonymous function)", tree);
+                checkFunction(tree, "pageFunction", "cpu-profiler-profiling.html:7");
+                checkFunction(tree, "(anonymous function)");
                 next();
             }
             InspectorTest.showProfileWhenAdded("profile");

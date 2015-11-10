@@ -3,8 +3,8 @@ Tests that CPU profiling works. Bug 52634.
 Profiler was enabled.
 
 Running: testProfiling
-found pageFunction
-found (anonymous function)
+found pageFunction cpu-profiler-profiling.html:7
+found (anonymous function) 
 
 Profiler was disabled.
 
