@@ -52,9 +52,7 @@ template("mac_toolchain") {
     # Object files go in this directory. Use label_name instead of
     # target_output_name since labels will generally have no spaces and will be
     # unique in the directory.
-    # TODO(brettw) enable the label_name variant when binary support is rolled in to GN.
-    #object_subdir = "{{target_out_dir}}/{{label_name}}"
-    object_subdir = "{{target_out_dir}}/{{target_output_name}}"
+    object_subdir = "{{target_out_dir}}/{{label_name}}"
 
     tool("cc") {
       depfile = "{{output}}.d"

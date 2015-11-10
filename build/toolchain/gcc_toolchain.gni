@@ -174,13 +174,16 @@ template("gcc_toolchain") {
     lib_switch = "-l"
     lib_dir_switch = "-L"
 
+    # Object files go in this directory.
+    object_subdir = "{{target_out_dir}}/{{label_name}}"
+
     tool("cc") {
       depfile = "{{output}}.d"
       command = "$cc -MMD -MF $depfile ${rebuild_string}{{defines}} {{include_dirs}} {{cflags}} {{cflags_c}} -c {{source}} -o {{output}}"
       depsformat = "gcc"
       description = "CC {{output}}"
       outputs = [
-        "{{target_out_dir}}/{{target_output_name}}/{{source_name_part}}.o",
+        "$object_subdir/{{source_name_part}}.o",
       ]
     }
 
@@ -190,7 +193,7 @@ template("gcc_toolchain") {
       depsformat = "gcc"
       description = "CXX {{output}}"
       outputs = [
-        "{{target_out_dir}}/{{target_output_name}}/{{source_name_part}}.o",
+        "$object_subdir/{{source_name_part}}.o",
       ]
     }
 
@@ -201,7 +204,7 @@ template("gcc_toolchain") {
       depsformat = "gcc"
       description = "ASM {{output}}"
       outputs = [
-        "{{target_out_dir}}/{{target_output_name}}/{{source_name_part}}.o",
+        "$object_subdir/{{source_name_part}}.o",
       ]
     }
 
