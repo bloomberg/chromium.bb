@@ -221,7 +221,7 @@ public:
     String decoratedName() const;
 
     // Returns the decorated name along with the debug information from the associated Node object.
-    String debugName() const;
+    String debugName() const final;
 
     LayoutObject* parent() const { return m_parent; }
     bool isDescendantOf(const LayoutObject*) const;

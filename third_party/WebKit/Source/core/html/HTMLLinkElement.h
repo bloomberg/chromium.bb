@@ -87,6 +87,7 @@ public:
 private:
     // From StyleSheetResourceClient
     void setCSSStyleSheet(const String& href, const KURL& baseURL, const String& charset, const CSSStyleSheetResource*) override;
+    String debugName() const override { return "LinkStyle"; }
 
     enum DisabledState {
         Unset,

@@ -44,6 +44,7 @@ private:
 
     void setCSSStyleSheet(const String&, const KURL&, const String&, const CSSStyleSheetResource*) override;
     void notifyFinished(Resource*) override;
+    String debugName() const override { return "InspectorResourceContentLoader::ResourceClient"; }
     void resourceFinished(Resource*);
 
     friend class InspectorResourceContentLoader;

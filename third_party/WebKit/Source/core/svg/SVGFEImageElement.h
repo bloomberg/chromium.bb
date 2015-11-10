@@ -54,6 +54,7 @@ private:
 
     void svgAttributeChanged(const QualifiedName&) override;
     void notifyFinished(Resource*) override;
+    String debugName() const override { return "SVGFEImageElement"; }
 
     PassRefPtrWillBeRawPtr<FilterEffect> build(SVGFilterBuilder*, Filter*) override;
 

@@ -36,6 +36,7 @@ public:
 private:
     explicit SVGImageLoader(SVGImageElement*);
     void dispatchLoadEvent() override;
+    String debugName() const override { return "SVGImageLoader"; }
 };
 
 } // namespace blink

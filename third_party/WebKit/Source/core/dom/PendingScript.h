@@ -73,8 +73,9 @@ public:
 
     void setScriptResource(ScriptResource*);
 
-    virtual void notifyFinished(Resource*);
-    virtual void notifyAppendData(ScriptResource*);
+    void notifyFinished(Resource*) override;
+    String debugName() const override { return "PendingScript"; }
+    void notifyAppendData(ScriptResource*) override;
 
     DECLARE_TRACE();
 

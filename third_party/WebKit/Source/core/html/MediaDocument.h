@@ -43,6 +43,8 @@ private:
     PassRefPtrWillBeRawPtr<DocumentParser> createParser() override;
 
     void defaultEventHandler(Event*) override;
+
+    String debugName() const override { return "MediaDocument"; }
 };
 
 }

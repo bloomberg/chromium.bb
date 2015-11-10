@@ -59,6 +59,7 @@ public:
     void addClient(LayoutObject*) override;
     void removeClient(LayoutObject*) override;
     void notifyFinished(Resource*) override;
+    String debugName() const override { return "StyleFetchedImage"; }
     PassRefPtr<Image> image(const LayoutObject*, const IntSize&) const override;
     bool knownToBeOpaque(const LayoutObject*) const override;
     ImageResource* cachedImage() const override;

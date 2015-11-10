@@ -39,6 +39,7 @@ public:
     void dispatchLoadEvent() override;
 
     void notifyFinished(Resource*) override;
+    String debugName() const override { return "HTMLImageLoader"; }
 
 private:
     explicit HTMLImageLoader(Element*);

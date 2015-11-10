@@ -182,6 +182,7 @@ private:
     void dataReceived(Resource*, const char* data, unsigned length) final;
     void processData(const char* data, unsigned length);
     void notifyFinished(Resource*) final;
+    String debugName() const override { return "DocumentLoader"; }
 
     bool maybeLoadEmpty();
 

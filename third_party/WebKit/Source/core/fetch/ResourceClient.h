@@ -28,6 +28,7 @@
 #include "core/CoreExport.h"
 #include "platform/network/ResourceLoadPriority.h"
 #include "wtf/Forward.h"
+#include "wtf/text/WTFString.h"
 
 namespace blink {
 class Resource;
@@ -51,6 +52,9 @@ public:
     virtual ResourceClientType resourceClientType() const { return expectedType(); }
 
     virtual ResourcePriority computeResourcePriority() const { return ResourcePriority(); }
+
+    // Name for debugging, e.g. shown in memory-infra.
+    virtual String debugName() const = 0;
 
 protected:
     ResourceClient() { }

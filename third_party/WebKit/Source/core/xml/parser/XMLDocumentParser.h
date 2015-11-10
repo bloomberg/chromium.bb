@@ -121,6 +121,7 @@ private:
 
     // from ResourceClient
     void notifyFinished(Resource*) override;
+    String debugName() const override { return "XMLDocumentParser"; }
 
     void end();
 

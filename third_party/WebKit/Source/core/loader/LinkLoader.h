@@ -57,6 +57,7 @@ public:
 
     // from ResourceClient
     void notifyFinished(Resource*) override;
+    String debugName() const override { return "LinkLoader"; }
 
     // from PrerenderClient
     void didStartPrerender() override;

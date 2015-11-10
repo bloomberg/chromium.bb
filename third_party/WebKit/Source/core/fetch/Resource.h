@@ -209,6 +209,7 @@ public:
 
     bool hasOneHandle() const;
     bool canDelete() const;
+    String reasonNotDeletable() const;
 
     // List of acceptable MIME types separated by ",".
     // A MIME type may contain a wildcard, e.g. "text/*".

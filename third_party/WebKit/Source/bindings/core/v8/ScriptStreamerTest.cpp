@@ -136,6 +136,7 @@ public:
         : m_finished(false) { }
 
     void notifyFinished(Resource*) override { m_finished = true; }
+    String debugName() const override { return "TestScriptResourceClient"; }
 
     bool finished() const { return m_finished; }
 

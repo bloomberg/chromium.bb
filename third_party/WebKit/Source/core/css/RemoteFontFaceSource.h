@@ -29,6 +29,7 @@ public:
     void didStartFontLoad(FontResource*) override;
     void fontLoaded(FontResource*) override;
     void fontLoadWaitLimitExceeded(FontResource*) override;
+    String debugName() const override { return "RemoteFontFaceSource"; }
 
     // For UMA reporting
     bool hadBlankText() override { return m_histograms.hadBlankText(); }

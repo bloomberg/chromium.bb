@@ -81,6 +81,8 @@ class CORE_EXPORT DocumentThreadableLoader final : public ThreadableLoader, priv
         // |this| may be dead after calling this method.
         void notifyFinished(Resource*) override;
 
+        String debugName() const override { return "DocumentThreadableLoader"; }
+
         // RawResourceClient
         //
         // |this| may be dead after calling these methods.

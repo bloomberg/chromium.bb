@@ -64,6 +64,7 @@ public:
 
     // ResourceClient
     void notifyFinished(Resource*) override;
+    String debugName() const override { return "HTMLScriptRunner"; }
 
     DECLARE_TRACE();
 

@@ -99,6 +99,7 @@ private:
 
     // ResourceClient
     void notifyFinished(Resource*) override;
+    String debugName() const override { return "ScriptLoader"; }
 
     RawPtrWillBeMember<Element> m_element;
     ResourcePtr<ScriptResource> m_resource;

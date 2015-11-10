@@ -54,6 +54,8 @@ private:
 
     PassRefPtrWillBeRawPtr<DocumentParser> createParser() override;
 
+    String debugName() const override { return "PluginDocument"; }
+
     RefPtrWillBeMember<Node> m_pluginNode;
 };
 

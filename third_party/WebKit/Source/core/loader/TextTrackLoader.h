@@ -72,6 +72,7 @@ private:
     // RawResourceClient
     void dataReceived(Resource*, const char* data, unsigned length) override;
     void notifyFinished(Resource*) override;
+    String debugName() const override { return "TextTrackLoader"; }
 
     // VTTParserClient
     void newCuesParsed() override;

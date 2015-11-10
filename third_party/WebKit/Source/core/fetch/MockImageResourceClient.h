@@ -50,6 +50,7 @@ public:
     }
 
     void notifyFinished(Resource*) override;
+    String debugName() const override { return "MockImageResourceClient"; }
 
     int imageChangedCount() const { return m_imageChangedCount; }
     bool notifyFinishedCalled() const { return m_notifyFinishedCalled; }

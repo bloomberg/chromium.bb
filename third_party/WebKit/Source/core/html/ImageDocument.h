@@ -71,6 +71,8 @@ private:
     bool shouldShrinkToFit() const;
     float scale() const;
 
+    String debugName() const override { return "ImageDocument"; }
+
     RefPtrWillBeMember<HTMLImageElement> m_imageElement;
 
     // Whether enough of the image has been loaded to determine its size

@@ -38,6 +38,7 @@ public:
     ~DocumentResourceReference() override { m_document->removeClient(this); }
     DocumentResource* document() { return m_document.get(); }
 private:
+    String debugName() const override { return "DocumentResourceReference"; }
     ResourcePtr<DocumentResource> m_document;
 };
 

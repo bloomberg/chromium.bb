@@ -80,6 +80,8 @@ public:
 private:
     StyleFetchedImageSet(ImageResource*, float imageScaleFactor, CSSImageSetValue*);
 
+    String debugName() const override { return "StyleFetchedImageSet"; }
+
     ResourcePtr<ImageResource> m_bestFitImage;
     float m_imageScaleFactor;
 

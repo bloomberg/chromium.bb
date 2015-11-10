@@ -67,6 +67,7 @@ private:
         {
             m_ownerRule->setCSSStyleSheet(href, baseURL, charset, sheet);
         }
+        String debugName() const override { return "ImportedStyleSheetClient"; }
     private:
         StyleRuleImport* m_ownerRule;
     };

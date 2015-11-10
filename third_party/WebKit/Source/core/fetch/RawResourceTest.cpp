@@ -89,10 +89,11 @@ public:
     ~DummyClient() override {}
 
     // ResourceClient implementation.
-    virtual void notifyFinished(Resource* resource)
+    void notifyFinished(Resource* resource) override
     {
         m_called = true;
     }
+    String debugName() const override { return "DummyClient"; }
 
     bool called() { return m_called; }
 private:
@@ -110,13 +111,15 @@ public:
     ~AddingClient() override {}
 
     // ResourceClient implementation.
-    virtual void notifyFinished(Resource* resource)
+    void notifyFinished(Resource* resource) override
     {
         // First schedule an asynchronous task to remove the client.
         // We do not expect the client to be called.
         m_removeClientTimer.startOneShot(0, BLINK_FROM_HERE);
         resource->addClient(m_dummyClient);
     }
+    String debugName() const override { return "AddingClient"; }
+
     void removeClient(Timer<AddingClient>* timer)
     {
         m_resource->removeClient(m_dummyClient);
@@ -156,11 +159,12 @@ public:
     ~RemovingClient() override {}
 
     // ResourceClient implementation.
-    virtual void notifyFinished(Resource* resource)
+    void notifyFinished(Resource* resource) override
     {
         resource->removeClient(m_dummyClient);
         resource->removeClient(this);
     }
+    String debugName() const override { return "RemovingClient"; }
 private:
     DummyClient* m_dummyClient;
 };

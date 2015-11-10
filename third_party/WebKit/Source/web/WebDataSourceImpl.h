@@ -81,6 +81,7 @@ private:
     WebDataSourceImpl(LocalFrame*, const ResourceRequest&, const SubstituteData&);
     ~WebDataSourceImpl() override;
     void detachFromFrame() override;
+    String debugName() const override { return "WebDataSourceImpl"; }
 
     // Mutable because the const getters will magically sync these to the
     // latest version from WebKit.

@@ -104,6 +104,7 @@ private:
     void responseReceived(Resource*, const ResourceResponse&, PassOwnPtr<WebDataConsumerHandle>) override;
     void dataReceived(Resource*, const char* data, unsigned length) override;
     void notifyFinished(Resource*) override;
+    String debugName() const override { return "HTMLImportLoader"; }
 
     // DocumentParserClient
 

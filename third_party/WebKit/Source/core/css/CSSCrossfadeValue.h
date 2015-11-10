@@ -97,6 +97,7 @@ private:
         }
 
         void imageChanged(ImageResource*, const IntRect* = nullptr) override;
+        String debugName() const override { return "CrossfadeSubimageObserverProxy"; }
         void setReady(bool ready) { m_ready = ready; }
     private:
         RawPtrWillBeMember<CSSCrossfadeValue> m_ownerValue;

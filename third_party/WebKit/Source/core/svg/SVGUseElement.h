@@ -102,6 +102,7 @@ private:
     Document* externalDocument() const;
     bool instanceTreeIsLoading(const SVGElement*);
     void notifyFinished(Resource*) override;
+    String debugName() const override { return "SVGUseElement"; }
     TreeScope* referencedScope() const;
     void setDocumentResource(ResourcePtr<DocumentResource>);
 

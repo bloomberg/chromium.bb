@@ -98,6 +98,8 @@ private:
     void parseStyleSheet(const String& sheet);
     void clearSheet();
 
+    String debugName() const override { return "ProcessingInstruction"; }
+
     String m_target;
     String m_localHref;
     String m_title;

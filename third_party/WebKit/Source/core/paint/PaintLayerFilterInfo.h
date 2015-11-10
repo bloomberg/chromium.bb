@@ -61,6 +61,7 @@ public:
 
     void updateReferenceFilterClients(const FilterOperations&);
     void notifyFinished(Resource*) override;
+    String debugName() const override { return "PaintLayerFilterInfo"; }
     void removeReferenceFilterClients();
 
 private:

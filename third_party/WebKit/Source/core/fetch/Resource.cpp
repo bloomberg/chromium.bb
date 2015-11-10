@@ -512,6 +512,56 @@ bool Resource::canDelete() const
         && !m_protectorCount;
 }
 
+String Resource::reasonNotDeletable() const
+{
+    StringBuilder builder;
+    if (hasClients()) {
+        builder.append("hasClients(");
+        builder.appendNumber(m_clients.size());
+        if (!m_clientsAwaitingCallback.isEmpty()) {
+            builder.append(", AwaitingCallback=");
+            builder.appendNumber(m_clientsAwaitingCallback.size());
+        }
+        if (!m_finishedClients.isEmpty()) {
+            builder.append(", Finished=");
+            builder.appendNumber(m_finishedClients.size());
+        }
+        builder.append(")");
+    }
+    if (m_loader) {
+        if (!builder.isEmpty())
+            builder.append(' ');
+        builder.append("m_loader");
+    }
+    if (m_preloadCount) {
+        if (!builder.isEmpty())
+            builder.append(' ');
+        builder.append("m_preloadCount(");
+        builder.appendNumber(m_preloadCount);
+        builder.append(")");
+    }
+    if (!hasRightHandleCountApartFromCache(0)) {
+        if (!builder.isEmpty())
+            builder.append(' ');
+        builder.append("m_handleCount(");
+        builder.appendNumber(m_handleCount);
+        builder.append(")");
+    }
+    if (m_protectorCount) {
+        if (!builder.isEmpty())
+            builder.append(' ');
+        builder.append("m_protectorCount(");
+        builder.appendNumber(m_protectorCount);
+        builder.append(")");
+    }
+    if (memoryCache()->contains(this)) {
+        if (!builder.isEmpty())
+            builder.append(' ');
+        builder.append("in_memory_cache");
+    }
+    return builder.toString();
+}
+
 bool Resource::hasOneHandle() const
 {
     return hasRightHandleCountApartFromCache(1);
@@ -729,6 +779,7 @@ void Resource::prune()
 void Resource::onMemoryDump(WebMemoryDumpLevelOfDetail levelOfDetail, WebProcessMemoryDump* memoryDump) const
 {
     static const size_t kMaxURLReportLength = 128;
+    static const int kMaxResourceClientToShowInMemoryInfra = 10;
 
     const String dumpName = getMemoryDumpName();
     WebMemoryAllocatorDump* dump = memoryDump->createMemoryAllocatorDump(dumpName);
@@ -751,6 +802,33 @@ void Resource::onMemoryDump(WebMemoryDumpLevelOfDetail levelOfDetail, WebProcess
             urlToReport = urlToReport + "...";
         }
         dump->addString("url", "", urlToReport);
+
+        dump->addString("reason_not_deletable", "", reasonNotDeletable());
+
+        Vector<String> clientNames;
+        ResourceClientWalker<ResourceClient> walker(m_clients);
+        while (ResourceClient* client = walker.next())
+            clientNames.append(client->debugName());
+        ResourceClientWalker<ResourceClient> walker2(m_clientsAwaitingCallback);
+        while (ResourceClient* client = walker2.next())
+            clientNames.append("(awaiting) " + client->debugName());
+        ResourceClientWalker<ResourceClient> walker3(m_finishedClients);
+        while (ResourceClient* client = walker3.next())
+            clientNames.append("(finished) " + client->debugName());
+        std::sort(clientNames.begin(), clientNames.end(), codePointCompareLessThan);
+
+        StringBuilder builder;
+        for (size_t i = 0; i < clientNames.size() && i < kMaxResourceClientToShowInMemoryInfra; ++i) {
+            if (i > 0)
+                builder.append(" / ");
+            builder.append(clientNames[i]);
+        }
+        if (clientNames.size() > kMaxResourceClientToShowInMemoryInfra) {
+            builder.append(" / and ");
+            builder.appendNumber(clientNames.size() - kMaxResourceClientToShowInMemoryInfra);
+            builder.append(" more");
+        }
+        dump->addString("ResourceClient", "", builder.toString());
     }
 
     const String overheadName = dumpName + "/metadata";
