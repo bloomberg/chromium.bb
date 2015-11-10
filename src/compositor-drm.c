@@ -308,7 +308,7 @@ drm_fb_create_dumb(struct drm_backend *b, unsigned width, unsigned height)
 	if (ret)
 		goto err_add_fb;
 
-	fb->map = mmap(0, fb->size, PROT_WRITE,
+	fb->map = mmap(NULL, fb->size, PROT_WRITE,
 		       MAP_SHARED, b->drm.fd, map_arg.offset);
 	if (fb->map == MAP_FAILED)
 		goto err_add_fb;
