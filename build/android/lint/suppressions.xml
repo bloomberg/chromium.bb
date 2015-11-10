@@ -108,10 +108,6 @@ Still reading?
     <ignore path="content/shell/android/shell_apk/res/values/strings.xml" />
   </issue>
   <issue id="SignatureOrSystemPermissions" severity="ignore"/>
-  <issue id="TrulyRandom">
-    <!-- TODO(qinmin): address this warning. crbug.com/553698 -->
-    <ignore path="org/chromium/chrome/browser/externalnav/IntentWithGesturesHandler.class"/>
-  </issue>
   <issue id="UnusedAttribute" severity="ignore"/>
   <issue id="ViewConstructor" severity="ignore"/>
   <issue id="WrongCall" severity="ignore"/>
