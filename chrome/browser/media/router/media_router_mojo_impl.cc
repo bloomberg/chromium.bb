@@ -91,14 +91,12 @@ void MediaRouterMojoImpl::MediaRouterMediaRoutesObserver::OnRoutesUpdated(
   router_->UpdateHasLocalRoute(has_local_route);
 }
 
-// TODO(mfoltz): Flip the default sink availability to UNAVAILABLE, once the
-// MRPM sends initial availability status.
 MediaRouterMojoImpl::MediaRouterMojoImpl(
     extensions::EventPageTracker* event_page_tracker)
     : event_page_tracker_(event_page_tracker),
       instance_id_(base::GenerateGUID()),
       has_local_route_(false),
-      availability_(interfaces::MediaRouter::SINK_AVAILABILITY_AVAILABLE),
+      availability_(interfaces::MediaRouter::SINK_AVAILABILITY_UNAVAILABLE),
       wakeup_attempt_count_(0),
       weak_factory_(this) {
   DCHECK(event_page_tracker_);

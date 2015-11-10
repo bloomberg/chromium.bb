@@ -333,6 +333,8 @@ TEST_F(MediaRouterMojoImplTest, HandleIssue) {
 }
 
 TEST_F(MediaRouterMojoImplTest, RegisterAndUnregisterMediaSinksObserver) {
+  router()->OnSinkAvailabilityUpdated(
+      interfaces::MediaRouter::SINK_AVAILABILITY_AVAILABLE);
   MediaSource media_source(kSource);
 
   MockMediaRouter mock_router;
