@@ -100,6 +100,14 @@ void RecordFullscreenStyle(FullscreenStyle style) {
 
 }  // namespace
 
+@interface NSWindow (NSPrivateApis)
+// Note: These functions are private, use -[NSObject respondsToSelector:]
+// before calling them.
+
+- (NSWindow*)_windowForToolbar;
+
+@end
+
 @implementation BrowserWindowController(Private)
 
 // Create the tab strip controller.
@@ -712,7 +720,12 @@ willPositionSheet:(NSWindow*)sheet
     for (NSWindow* window in [[NSApplication sharedApplication] windows]) {
       if ([window
               isKindOfClass:NSClassFromString(@"NSToolbarFullScreenWindow")]) {
-        [[window contentView] setHidden:YES];
+        // Hide the toolbar if it is for a FramedBrowserWindow.
+        if ([window respondsToSelector:@selector(_windowForToolbar)]) {
+          if ([[window _windowForToolbar]
+                  isKindOfClass:[FramedBrowserWindow class]])
+            [[window contentView] setHidden:YES];
+        }
       }
     }
   }
