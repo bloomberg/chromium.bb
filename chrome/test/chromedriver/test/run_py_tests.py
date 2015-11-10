@@ -139,8 +139,6 @@ _ANDROID_NEGATIVE_FILTER['chrome_beta'] = (
 _ANDROID_NEGATIVE_FILTER['chromium'] = (
     _ANDROID_NEGATIVE_FILTER['chrome'] + [
         'ChromeDriverTest.testSwitchToWindow',
-        # https://code.google.com/p/chromium/issues/detail?id=553649
-        'ChromeDriverTest.testTouchScrollElement',
     ]
 )
 _ANDROID_NEGATIVE_FILTER['chromedriver_webview_shell'] = (
