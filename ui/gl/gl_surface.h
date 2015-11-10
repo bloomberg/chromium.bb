@@ -26,6 +26,7 @@ class GLImage;
 namespace gfx {
 
 class GLContext;
+class Transform;
 class VSyncProvider;
 
 // Encapsulates a surface that can be rendered to with GL, hiding platform
@@ -143,6 +144,15 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface> {
                                     gl::GLImage* image,
                                     const Rect& bounds_rect,
                                     const RectF& crop_rect);
+
+  // Schedule a CALayer to be shown at swap time.
+  // All arguments correspond to their CALayer properties.
+  virtual bool ScheduleCALayer(gl::GLImage* contents_image,
+                               const RectF& contents_rect,
+                               float opacity,
+                               unsigned background_color,
+                               const SizeF& size,
+                               const Transform& transform);
 
   virtual bool IsSurfaceless() const;
 

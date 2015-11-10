@@ -1699,6 +1699,16 @@ void MojoGLES2Impl::ScheduleOverlayPlaneCHROMIUM(GLint plane_z_order,
       plane_z_order, plane_transform, overlay_texture_id, bounds_x, bounds_y,
       bounds_width, bounds_height, uv_x, uv_y, uv_width, uv_height);
 }
+void MojoGLES2Impl::ScheduleCALayerCHROMIUM(GLuint contents_texture_id,
+                                            const GLfloat* contents_rect,
+                                            GLfloat opacity,
+                                            const GLuint background_color,
+                                            const GLfloat* bounds_size,
+                                            const GLfloat* transform) {
+  MojoGLES2MakeCurrent(context_);
+  glScheduleCALayerCHROMIUM(contents_texture_id, contents_rect, opacity,
+                            background_color, bounds_size, transform);
+}
 void MojoGLES2Impl::SwapInterval(GLint interval) {
   MojoGLES2MakeCurrent(context_);
   glSwapInterval(interval);

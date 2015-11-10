@@ -1036,6 +1036,13 @@ void GLES2InterfaceStub::ScheduleOverlayPlaneCHROMIUM(
     GLfloat /* uv_y */,
     GLfloat /* uv_width */,
     GLfloat /* uv_height */) {}
+void GLES2InterfaceStub::ScheduleCALayerCHROMIUM(
+    GLuint /* contents_texture_id */,
+    const GLfloat* /* contents_rect */,
+    GLfloat /* opacity */,
+    const GLuint /* background_color */,
+    const GLfloat* /* bounds_size */,
+    const GLfloat* /* transform */) {}
 void GLES2InterfaceStub::SwapInterval(GLint /* interval */) {}
 void GLES2InterfaceStub::FlushDriverCachesCHROMIUM() {}
 void GLES2InterfaceStub::MatrixLoadfCHROMIUM(GLenum /* matrixMode */,

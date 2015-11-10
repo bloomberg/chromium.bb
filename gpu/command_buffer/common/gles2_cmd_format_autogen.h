@@ -13797,6 +13797,67 @@ static_assert(offsetof(ScheduleOverlayPlaneCHROMIUM, uv_width) == 40,
 static_assert(offsetof(ScheduleOverlayPlaneCHROMIUM, uv_height) == 44,
               "offset of ScheduleOverlayPlaneCHROMIUM uv_height should be 44");
 
+struct ScheduleCALayerCHROMIUM {
+  typedef ScheduleCALayerCHROMIUM ValueType;
+  static const CommandId kCmdId = kScheduleCALayerCHROMIUM;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(GLuint _contents_texture_id,
+            GLfloat _opacity,
+            GLuint _background_color,
+            GLuint _shm_id,
+            GLuint _shm_offset) {
+    SetHeader();
+    contents_texture_id = _contents_texture_id;
+    opacity = _opacity;
+    background_color = _background_color;
+    shm_id = _shm_id;
+    shm_offset = _shm_offset;
+  }
+
+  void* Set(void* cmd,
+            GLuint _contents_texture_id,
+            GLfloat _opacity,
+            GLuint _background_color,
+            GLuint _shm_id,
+            GLuint _shm_offset) {
+    static_cast<ValueType*>(cmd)->Init(_contents_texture_id, _opacity,
+                                       _background_color, _shm_id, _shm_offset);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t contents_texture_id;
+  float opacity;
+  uint32_t background_color;
+  uint32_t shm_id;
+  uint32_t shm_offset;
+};
+
+static_assert(sizeof(ScheduleCALayerCHROMIUM) == 24,
+              "size of ScheduleCALayerCHROMIUM should be 24");
+static_assert(offsetof(ScheduleCALayerCHROMIUM, header) == 0,
+              "offset of ScheduleCALayerCHROMIUM header should be 0");
+static_assert(
+    offsetof(ScheduleCALayerCHROMIUM, contents_texture_id) == 4,
+    "offset of ScheduleCALayerCHROMIUM contents_texture_id should be 4");
+static_assert(offsetof(ScheduleCALayerCHROMIUM, opacity) == 8,
+              "offset of ScheduleCALayerCHROMIUM opacity should be 8");
+static_assert(
+    offsetof(ScheduleCALayerCHROMIUM, background_color) == 12,
+    "offset of ScheduleCALayerCHROMIUM background_color should be 12");
+static_assert(offsetof(ScheduleCALayerCHROMIUM, shm_id) == 16,
+              "offset of ScheduleCALayerCHROMIUM shm_id should be 16");
+static_assert(offsetof(ScheduleCALayerCHROMIUM, shm_offset) == 20,
+              "offset of ScheduleCALayerCHROMIUM shm_offset should be 20");
+
 struct SwapInterval {
   typedef SwapInterval ValueType;
   static const CommandId kCmdId = kSwapInterval;

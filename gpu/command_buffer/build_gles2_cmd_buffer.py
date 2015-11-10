@@ -4163,12 +4163,21 @@ _FUNCTION_INFO = {
     'trace_level': 2,
   },
   'ScheduleOverlayPlaneCHROMIUM': {
-      'type': 'Custom',
-      'impl_func': True,
-      'unit_test': False,
-      'client_test': False,
-      'extension': 'CHROMIUM_schedule_overlay_plane',
-      'chromium': True,
+    'type': 'Custom',
+    'impl_func': True,
+    'unit_test': False,
+    'client_test': False,
+    'extension': 'CHROMIUM_schedule_overlay_plane',
+    'chromium': True,
+  },
+  'ScheduleCALayerCHROMIUM': {
+    'type': 'Custom',
+    'impl_func': False,
+    'client_test': False,
+    'cmd_args': 'GLuint contents_texture_id, GLfloat opacity, '
+                'GLuint background_color, GLuint shm_id, GLuint shm_offset',
+    'extension': 'CHROMIUM_schedule_ca_layer',
+    'chromium': True,
   },
   'MatrixLoadfCHROMIUM': {
     'type': 'PUT',

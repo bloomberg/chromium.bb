@@ -61,6 +61,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/overlay_transform.h"
+#include "ui/gfx/transform.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_fence.h"
@@ -9406,6 +9407,48 @@ error::Error GLES2DecoderImpl::HandleScheduleOverlayPlaneCHROMIUM(
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION,
                        "glScheduleOverlayPlaneCHROMIUM",
                        "failed to schedule overlay");
+  }
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderImpl::HandleScheduleCALayerCHROMIUM(
+    uint32 immediate_data_size,
+    const void* cmd_data) {
+  const gles2::cmds::ScheduleCALayerCHROMIUM& c =
+      *static_cast<const gles2::cmds::ScheduleCALayerCHROMIUM*>(cmd_data);
+  gl::GLImage* image = nullptr;
+  if (c.contents_texture_id) {
+    TextureRef* ref = texture_manager()->GetTexture(c.contents_texture_id);
+    if (!ref) {
+      LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glScheduleCALayerCHROMIUM",
+                         "unknown texture");
+      return error::kNoError;
+    }
+    Texture::ImageState image_state;
+    image = ref->texture()->GetLevelImage(ref->texture()->target(), 0,
+                                          &image_state);
+    if (!image || image_state != Texture::BOUND) {
+      LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glScheduleCALayerCHROMIUM",
+                         "unsupported texture format");
+      return error::kNoError;
+    }
+  }
+
+  const GLfloat* mem = GetSharedMemoryAs<const GLfloat*>(c.shm_id, c.shm_offset,
+                                                         22 * sizeof(GLfloat));
+  if (!mem) {
+    return error::kOutOfBounds;
+  }
+  gfx::RectF contents_rect(mem[0], mem[1], mem[2], mem[3]);
+  gfx::SizeF bounds_size(mem[4], mem[5]);
+  gfx::Transform transform(mem[6], mem[10], mem[14], mem[18],
+                           mem[7], mem[11], mem[15], mem[19],
+                           mem[8], mem[12], mem[16], mem[20],
+                           mem[9], mem[13], mem[17], mem[21]);
+  if (!surface_->ScheduleCALayer(image, contents_rect, c.opacity,
+                                 c.background_color, bounds_size, transform)) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glScheduleCALayerCHROMIUM",
+                       "failed to schedule CALayer");
   }
   return error::kNoError;
 }

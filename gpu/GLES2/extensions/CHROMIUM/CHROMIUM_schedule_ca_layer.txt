@@ -1,0 +1,67 @@
+Name
+
+    CHROMIUM_schedule_ca_layer
+
+Name Strings
+
+    GL_CHROMIUM_schedule_ca_layer
+
+Version
+
+    Last Modified Date: November 7, 2015
+
+Dependencies
+
+    OpenGL ES 2.0 is required.
+
+Overview
+
+    This extension allows a client to request a texture be presented as a
+    CoreAnimation layer. The expectation is that all the CALayers scheduled
+    since the last call to glSwapBuffers or glPostSubBufferCHROMIUM are
+    displayed atomically at the time of the next call to swap buffers. Scheduled
+    CALayers are not stateful and need to be rescheduled after the buffers were
+    swapped.
+
+Issues
+
+    None
+
+New Tokens
+
+    None
+
+New Procedures and Functions
+
+    The command
+
+        glScheduleCALayerCHROMIUM(GLuint contents_texture_id,
+                                  const GLfloat* contents_rect,
+                                  GLfloat opacity,
+                                  GLuint background_color,
+                                  const GLfloat* bounds_size,
+                                  const GLfloat* transform);
+
+    Set the CALayer parameters to be presented at the time of the next call to
+    swap buffers. The order of the calls schedule CALayers determines their
+    back-to-front presentation order.
+    <contents_texture_id> is the texture to be presented. If zero, then the
+    CALayer will be a solid color.
+    <contents_rect> contains four values indicating the x, y, width, and height
+    of the sub-rectangle to display from the texture specified in
+    <contents_texture_id>, in normalized coordinates.
+    <opacity> specifies the opacity of the CALayer.
+    <background_color> specifies the background color of the CALayer, as a
+    32-bit ARGB value.
+    <bounds_size> contains two values indicating the width and height of the
+    layer in pixels.
+    <transform> contains sixteen values indicating the row major order 4x4
+    transformation matrix to apply to the CALayer.
+
+Errors
+
+    None.
+
+New State
+
+    None.

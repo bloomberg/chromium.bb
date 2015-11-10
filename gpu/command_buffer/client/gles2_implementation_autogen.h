@@ -1052,6 +1052,13 @@ void ScheduleOverlayPlaneCHROMIUM(GLint plane_z_order,
                                   GLfloat uv_width,
                                   GLfloat uv_height) override;
 
+void ScheduleCALayerCHROMIUM(GLuint contents_texture_id,
+                             const GLfloat* contents_rect,
+                             GLfloat opacity,
+                             const GLuint background_color,
+                             const GLfloat* bounds_size,
+                             const GLfloat* transform) override;
+
 void SwapInterval(GLint interval) override;
 
 void FlushDriverCachesCHROMIUM() override;

@@ -189,6 +189,16 @@ bool GLSurface::ScheduleOverlayPlane(int z_order,
   return false;
 }
 
+bool GLSurface::ScheduleCALayer(gl::GLImage* contents_image,
+                                const RectF& contents_rect,
+                                float opacity,
+                                unsigned background_color,
+                                const SizeF& bounds_size,
+                                const gfx::Transform& transform) {
+  NOTIMPLEMENTED();
+  return false;
+}
+
 bool GLSurface::IsSurfaceless() const {
   return false;
 }

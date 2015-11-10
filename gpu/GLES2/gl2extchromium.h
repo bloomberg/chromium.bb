@@ -708,34 +708,6 @@ typedef void (GL_APIENTRYP PFNGLWAITSYNCTOKENCHROMIUM) (
 #endif
 #endif /* GL_CHROMIUM_color_buffer_float_rgb */
 
-/* GL_CHROMIUM_schedule_overlay_plane */
-#ifndef GL_CHROMIUM_schedule_overlay_plane
-#define GL_CHROMIUM_schedule_overlay_plane 1
-
-#ifndef GL_OVERLAY_TRANSFORM_NONE_CHROMIUM
-#define GL_OVERLAY_TRANSFORM_NONE_CHROMIUM 0x9245
-#endif
-
-#ifndef GL_OVERLAY_TRANSFORM_FLIP_HORIZONTAL_CHROMIUM
-#define GL_OVERLAY_TRANSFORM_FLIP_HORIZONTAL_CHROMIUM 0x9246
-#endif
-
-#ifndef GL_OVERLAY_TRANSFORM_FLIP_VERTICAL_CHROMIUM
-#define GL_OVERLAY_TRANSFORM_FLIP_VERTICAL_CHROMIUM 0x9247
-#endif
-
-#ifndef GL_OVERLAY_TRANSFORM_ROTATE_90_CHROMIUM
-#define GL_OVERLAY_TRANSFORM_ROTATE_90_CHROMIUM 0x9248
-#endif
-
-#ifndef GL_OVERLAY_TRANSFORM_ROTATE_180_CHROMIUM
-#define GL_OVERLAY_TRANSFORM_ROTATE_180_CHROMIUM 0x9249
-#endif
-
-#ifndef GL_OVERLAY_TRANSFORM_ROTATE_270_CHROMIUM
-#define GL_OVERLAY_TRANSFORM_ROTATE_270_CHROMIUM 0x924A
-#endif
-
 /* GL_CHROMIUM_subscribe_uniform */
 #ifndef GL_CHROMIUM_subscribe_uniform
 #define GL_CHROMIUM_subscribe_uniform 1
@@ -765,6 +737,34 @@ GL_APICALL void GL_APIENTRY glUniformValuebufferCHROMIUM(GLint location,
 #endif
 #endif /* GL_CHROMIUM_subscribe_uniform */
 
+/* GL_CHROMIUM_schedule_overlay_plane */
+#ifndef GL_CHROMIUM_schedule_overlay_plane
+#define GL_CHROMIUM_schedule_overlay_plane 1
+
+#ifndef GL_OVERLAY_TRANSFORM_NONE_CHROMIUM
+#define GL_OVERLAY_TRANSFORM_NONE_CHROMIUM 0x9245
+#endif
+
+#ifndef GL_OVERLAY_TRANSFORM_FLIP_HORIZONTAL_CHROMIUM
+#define GL_OVERLAY_TRANSFORM_FLIP_HORIZONTAL_CHROMIUM 0x9246
+#endif
+
+#ifndef GL_OVERLAY_TRANSFORM_FLIP_VERTICAL_CHROMIUM
+#define GL_OVERLAY_TRANSFORM_FLIP_VERTICAL_CHROMIUM 0x9247
+#endif
+
+#ifndef GL_OVERLAY_TRANSFORM_ROTATE_90_CHROMIUM
+#define GL_OVERLAY_TRANSFORM_ROTATE_90_CHROMIUM 0x9248
+#endif
+
+#ifndef GL_OVERLAY_TRANSFORM_ROTATE_180_CHROMIUM
+#define GL_OVERLAY_TRANSFORM_ROTATE_180_CHROMIUM 0x9249
+#endif
+
+#ifndef GL_OVERLAY_TRANSFORM_ROTATE_270_CHROMIUM
+#define GL_OVERLAY_TRANSFORM_ROTATE_270_CHROMIUM 0x924A
+#endif
+
 #ifdef GL_GLEXT_PROTOTYPES
 GL_APICALL void GL_APIENTRY
     glScheduleOverlayPlaneCHROMIUM(GLint plane_z_order,
@@ -792,6 +792,26 @@ typedef void(GL_APIENTRYP PFNGLSCHEDULEOVERLAYPLANECHROMIUMPROC)(
     GLfloat uv_width,
     GLfloat uv_height);
 #endif /* GL_CHROMIUM_schedule_overlay_plane */
+
+#ifndef GL_CHROMIUM_schedule_ca_layer
+#define GL_CHROMIUM_schedule_ca_layer 1
+#ifdef GL_GLEXT_PROTOTYPES
+GL_APICALL void GL_APIENTRY
+glScheduleCALayerCHROMIUM(GLuint contents_texture_id,
+                          const GLfloat* contents_rect,
+                          GLfloat opacity,
+                          GLuint background_color,
+                          const GLfloat* bounds_size,
+                          const GLfloat* transform);
+#endif
+typedef void(GL_APIENTRYP PFNGLSCHEDULECALAYERCHROMIUMPROC)(
+    GLuint contents_texture_id,
+    const GLfloat* contents_rect,
+    GLfloat opacity,
+    GLuint background_color,
+    const GLfloat* bounds_size,
+    const GLfloat* transform);
+#endif /* GL_CHROMIUM_schedule_ca_layer */
 
 /* GL_CHROMIUM_sync_query */
 #ifndef GL_CHROMIUM_sync_query

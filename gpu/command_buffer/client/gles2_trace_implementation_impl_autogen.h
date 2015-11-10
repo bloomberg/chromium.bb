@@ -2214,6 +2214,18 @@ void GLES2TraceImplementation::ScheduleOverlayPlaneCHROMIUM(
       bounds_width, bounds_height, uv_x, uv_y, uv_width, uv_height);
 }
 
+void GLES2TraceImplementation::ScheduleCALayerCHROMIUM(
+    GLuint contents_texture_id,
+    const GLfloat* contents_rect,
+    GLfloat opacity,
+    const GLuint background_color,
+    const GLfloat* bounds_size,
+    const GLfloat* transform) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::ScheduleCALayerCHROMIUM");
+  gl_->ScheduleCALayerCHROMIUM(contents_texture_id, contents_rect, opacity,
+                               background_color, bounds_size, transform);
+}
+
 void GLES2TraceImplementation::SwapInterval(GLint interval) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::SwapInterval");
   gl_->SwapInterval(interval);

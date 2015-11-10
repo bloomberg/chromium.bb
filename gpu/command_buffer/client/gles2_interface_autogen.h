@@ -780,6 +780,12 @@ virtual void ScheduleOverlayPlaneCHROMIUM(GLint plane_z_order,
                                           GLfloat uv_y,
                                           GLfloat uv_width,
                                           GLfloat uv_height) = 0;
+virtual void ScheduleCALayerCHROMIUM(GLuint contents_texture_id,
+                                     const GLfloat* contents_rect,
+                                     GLfloat opacity,
+                                     const GLuint background_color,
+                                     const GLfloat* bounds_size,
+                                     const GLfloat* transform) = 0;
 virtual void SwapInterval(GLint interval) = 0;
 virtual void FlushDriverCachesCHROMIUM() = 0;
 virtual void MatrixLoadfCHROMIUM(GLenum matrixMode, const GLfloat* m) = 0;

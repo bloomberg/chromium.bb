@@ -4326,6 +4326,28 @@ void GLES2Implementation::ScheduleOverlayPlane(
                                uv_rect.height());
 }
 
+void GLES2Implementation::ScheduleCALayerCHROMIUM(GLuint contents_texture_id,
+                                                  const GLfloat* contents_rect,
+                                                  GLfloat opacity,
+                                                  GLuint background_color,
+                                                  const GLfloat* bounds_size,
+                                                  const GLfloat* transform) {
+  size_t shm_size = 22 * sizeof(GLfloat);
+  ScopedTransferBufferPtr buffer(shm_size, helper_, transfer_buffer_);
+  if (!buffer.valid() || buffer.size() < shm_size) {
+    SetGLError(GL_OUT_OF_MEMORY, "GLES2::ScheduleCALayerCHROMIUM",
+               "out of memory");
+    return;
+  }
+  GLfloat* mem = static_cast<GLfloat*>(buffer.address());
+  memcpy(mem + 0, contents_rect, 4 * sizeof(GLfloat));
+  memcpy(mem + 4, bounds_size, 2 * sizeof(GLfloat));
+  memcpy(mem + 6, transform, 16 * sizeof(GLfloat));
+  helper_->ScheduleCALayerCHROMIUM(contents_texture_id, opacity,
+                                   background_color, buffer.shm_id(),
+                                   buffer.offset());
+}
+
 GLboolean GLES2Implementation::EnableFeatureCHROMIUM(
     const char* feature) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();

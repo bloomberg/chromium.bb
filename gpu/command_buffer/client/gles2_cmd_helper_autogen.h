@@ -2833,6 +2833,18 @@ void ScheduleOverlayPlaneCHROMIUM(GLint plane_z_order,
   }
 }
 
+void ScheduleCALayerCHROMIUM(GLuint contents_texture_id,
+                             GLfloat opacity,
+                             GLuint background_color,
+                             GLuint shm_id,
+                             GLuint shm_offset) {
+  gles2::cmds::ScheduleCALayerCHROMIUM* c =
+      GetCmdSpace<gles2::cmds::ScheduleCALayerCHROMIUM>();
+  if (c) {
+    c->Init(contents_texture_id, opacity, background_color, shm_id, shm_offset);
+  }
+}
+
 void SwapInterval(GLint interval) {
   gles2::cmds::SwapInterval* c = GetCmdSpace<gles2::cmds::SwapInterval>();
   if (c) {

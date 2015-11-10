@@ -46,6 +46,12 @@ class ImageTransportSurfaceOverlayMac : public gfx::GLSurface,
                             gl::GLImage* image,
                             const gfx::Rect& bounds_rect,
                             const gfx::RectF& crop_rect) override;
+  bool ScheduleCALayer(gl::GLImage* contents_image,
+                       const gfx::RectF& contents_rect,
+                       float opacity,
+                       unsigned background_color,
+                       const gfx::SizeF& bounds_size,
+                       const gfx::Transform& transform) override;
   bool IsSurfaceless() const override;
 
   // ImageTransportSurface implementation
@@ -66,7 +72,7 @@ class ImageTransportSurfaceOverlayMac : public gfx::GLSurface,
 
   void UpdateRootAndPartialDamagePlanes(
       const linked_ptr<OverlayPlane>& new_root_plane,
-      const gfx::RectF& dip_damage_rect);
+      const gfx::RectF& pixel_damage_rect);
   void UpdateOverlayPlanes(
       const std::vector<linked_ptr<OverlayPlane>>& new_overlay_planes);
   void UpdateCALayerTree();
@@ -132,6 +138,10 @@ class ImageTransportSurfaceOverlayMac : public gfx::GLSurface,
   bool vsync_parameters_valid_;
   base::TimeTicks vsync_timebase_;
   base::TimeDelta vsync_interval_;
+
+  // Calls to ScheduleCALayer come in back-to-front. This is reset to 1 at each
+  // swap and increments with each call to ScheduleCALayer.
+  int next_ca_layer_z_order_;
 
   base::Timer display_pending_swap_timer_;
   base::WeakPtrFactory<ImageTransportSurfaceOverlayMac> weak_factory_;

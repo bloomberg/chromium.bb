@@ -369,6 +369,20 @@ VISIT_GL_CALL(ScheduleOverlayPlaneCHROMIUM,
                uv_y,
                uv_width,
                uv_height))
+VISIT_GL_CALL(ScheduleCALayerCHROMIUM,
+              void,
+              (GLuint contents_texture_id,
+               const GLfloat* contents_rect,
+               GLfloat opacity,
+               const GLuint background_color,
+               const GLfloat* bounds_size,
+               const GLfloat* transform),
+              (contents_texture_id,
+               contents_rect,
+               opacity,
+               background_color,
+               bounds_size,
+               transform))
 VISIT_GL_CALL(SwapInterval, void, (GLint interval), (interval))
 VISIT_GL_CALL(FlushDriverCachesCHROMIUM, void, (), ())
 VISIT_GL_CALL(MatrixLoadfCHROMIUM,
