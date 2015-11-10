@@ -53,6 +53,18 @@ public class DataUseTabUIManager {
     }
 
     /**
+     * Tells native code that a custom tab is navigating to a url from the given client app package.
+     *
+     * @param tab The custom tab that is navigating.
+     * @param packageName The client app package for the custom tab loading a url.
+     * @param url URL that is being loaded in the custom tab.
+     */
+    public static void onCustomTabInitialNavigation(Tab tab, String packageName, String url) {
+        nativeOnCustomTabInitialNavigation(SessionTabHelper.sessionIdForTab(tab.getWebContents()),
+                packageName, url, tab.getProfile());
+    }
+
+    /**
      * Returns whether a navigation should be paused to show a dialog telling the user that data use
      * tracking has ended within a Tab. If the navigation should be paused, shows a dialog with the
      * option to cancel the navigation or continue.
@@ -143,4 +155,6 @@ public class DataUseTabUIManager {
 
     private static native boolean nativeCheckDataUseTrackingStarted(int tabId, Profile profile);
     private static native boolean nativeCheckDataUseTrackingEnded(int tabId, Profile profile);
+    private static native void nativeOnCustomTabInitialNavigation(int tabID, String packageName,
+            String url, Profile profile);
 }

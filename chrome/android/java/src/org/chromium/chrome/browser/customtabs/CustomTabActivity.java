@@ -33,6 +33,7 @@ import org.chromium.chrome.browser.WebContentsFactory;
 import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChangeReason;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManagerDocument;
+import org.chromium.chrome.browser.datausage.DataUseTabUIManager;
 import org.chromium.chrome.browser.rappor.RapporServiceBridge;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabIdManager;
@@ -227,6 +228,10 @@ public class CustomTabActivity extends ChromeActivity {
                 return showActionButton();
             }
         };
+        DataUseTabUIManager.onCustomTabInitialNavigation(mTab,
+                CustomTabsConnection.getInstance(getApplication())
+                        .getClientPackageNameForSession(mSession),
+                IntentHandler.getUrlFromIntent(getIntent()));
         loadUrlInCurrentTab(new LoadUrlParams(IntentHandler.getUrlFromIntent(getIntent())),
                 IntentHandler.getTimestampFromIntent(getIntent()));
         recordClientPackageName();

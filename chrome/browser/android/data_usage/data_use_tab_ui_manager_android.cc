@@ -30,6 +30,17 @@ jboolean CheckDataUseTrackingEnded(JNIEnv* env,
   return false;
 }
 
+// static
+void OnCustomTabInitialNavigation(JNIEnv* env,
+                                  const JavaParamRef<jclass>& clazz,
+                                  jint tab_id,
+                                  const JavaParamRef<jstring>& url,
+                                  const JavaParamRef<jstring>& packageName,
+                                  const JavaParamRef<jobject>& jprofile) {
+  // TODO(megjablon): Get the DataUseTabUIManager which is a keyed service and
+  // tell it about the custom tab package.
+}
+
 bool RegisterDataUseTabUIManager(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
