@@ -14,9 +14,8 @@
 
 #include "base/win/scoped_handle.h"
 #include "base/win/scoped_process_information.h"
-#endif
-
-#if defined(OS_POSIX)
+#else
+#include <errno.h>
 #include <fcntl.h>
 #include <unistd.h>
 
