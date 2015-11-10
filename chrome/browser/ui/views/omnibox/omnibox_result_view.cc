@@ -38,6 +38,7 @@
 #include "ui/gfx/render_text.h"
 #include "ui/gfx/text_utils.h"
 #include "ui/gfx/vector_icons_public.h"
+#include "ui/native_theme/native_theme.h"
 
 using ui::NativeTheme;
 

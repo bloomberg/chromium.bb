@@ -7,22 +7,14 @@
 #include "chrome/browser/ui/search/search_model_observer.h"
 #include "components/search/search.h"
 
-SearchModel::State::State()
-    : instant_support(INSTANT_SUPPORT_UNKNOWN),
-      voice_search_supported(false) {
-}
+SearchModel::State::State() : instant_support(INSTANT_SUPPORT_UNKNOWN) {}
 
 SearchModel::State::State(const SearchMode& mode,
-                          InstantSupportState instant_support,
-                          bool voice_search_supported)
-    : mode(mode),
-      instant_support(instant_support),
-      voice_search_supported(voice_search_supported) {
-}
+                          InstantSupportState instant_support)
+    : mode(mode), instant_support(instant_support) {}
 
 bool SearchModel::State::operator==(const State& rhs) const {
-  return mode == rhs.mode && instant_support == rhs.instant_support &&
-      voice_search_supported == rhs.voice_search_supported;
+  return mode == rhs.mode && instant_support == rhs.instant_support;
 }
 
 SearchModel::SearchModel() {
@@ -71,21 +63,6 @@ void SearchModel::SetInstantSupportState(InstantSupportState instant_support) {
 
   const State old_state = state_;
   state_.instant_support = instant_support;
-  FOR_EACH_OBSERVER(SearchModelObserver, observers_,
-                    ModelChanged(old_state, state_));
-}
-
-void SearchModel::SetVoiceSearchSupported(bool supported) {
-  DCHECK(search::IsInstantExtendedAPIEnabled())
-      << "Please do not try to set the SearchModel state without first "
-      << "checking if Search is enabled.";
-
-  if (state_.voice_search_supported == supported)
-    return;
-
-  const State old_state = state_;
-  state_.voice_search_supported = supported;
-
   FOR_EACH_OBSERVER(SearchModelObserver, observers_,
                     ModelChanged(old_state, state_));
 }

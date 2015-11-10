@@ -24,7 +24,6 @@ if (!chrome.embeddedSearch) {
       native function IsFocused();
       native function IsKeyCaptureEnabled();
       native function Paste();
-      native function SetVoiceSearchSupported();
       native function StartCapturingKeyStrokes();
       native function StopCapturingKeyStrokes();
 
@@ -69,10 +68,6 @@ if (!chrome.embeddedSearch) {
         Paste(value);
       };
 
-      this.setVoiceSearchSupported = function(supported) {
-        SetVoiceSearchSupported(supported);
-      };
-
       this.startCapturingKeyStrokes = function() {
         StartCapturingKeyStrokes();
       };
@@ -86,7 +81,6 @@ if (!chrome.embeddedSearch) {
       this.onmarginchange = null;
       this.onsubmit = null;
       this.onsuggestionchange = null;
-      this.ontogglevoicesearch = null;
 
       //TODO(jered): Remove this empty method when google no longer requires it.
       this.setRestrictedValue = function() {};

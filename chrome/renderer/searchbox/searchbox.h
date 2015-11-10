@@ -121,9 +121,6 @@ class SearchBox : public content::RenderViewObserver,
   const ThemeBackgroundInfo& GetThemeBackgroundInfo();
   const EmbeddedSearchRequestParams& GetEmbeddedSearchRequestParams();
 
-  // Sends ChromeViewHostMsg_SetVoiceSearchSupported to the browser.
-  void SetVoiceSearchSupported(bool supported);
-
   // Sends ChromeViewHostMsg_StartCapturingKeyStrokes to the browser.
   void StartCapturingKeyStrokes();
 
@@ -167,7 +164,6 @@ class SearchBox : public content::RenderViewObserver,
   void OnSubmit(const base::string16& query,
                 const EmbeddedSearchRequestParams& params);
   void OnThemeChanged(const ThemeBackgroundInfo& theme_info);
-  void OnToggleVoiceSearch();
 
   // Returns the current zoom factor of the render view or 1 on failure.
   double GetZoom() const;

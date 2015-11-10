@@ -141,17 +141,3 @@ TEST_F(SearchModelTest, UpdateSearchModelState) {
   mock_observer.VerifyNotificationCount(1);
   EXPECT_TRUE(model->state() == expected_new_state);
 }
-
-TEST_F(SearchModelTest, UpdateVoiceSearchSupported) {
-  mock_observer.VerifyNotificationCount(0);
-  EXPECT_FALSE(model->voice_search_supported());
-
-  SearchModel::State expected_old_state = model->state();
-  SearchModel::State expected_new_state(model->state());
-  expected_new_state.voice_search_supported = true;
-
-  model->SetVoiceSearchSupported(true);
-  mock_observer.VerifySearchModelStates(expected_old_state, expected_new_state);
-  mock_observer.VerifyNotificationCount(1);
-  EXPECT_TRUE(model->voice_search_supported());
-}

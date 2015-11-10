@@ -778,9 +778,6 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
     case IDC_SHOW_SIGNIN:
       ShowBrowserSigninOrSettings(browser_, signin_metrics::SOURCE_MENU);
       break;
-    case IDC_TOGGLE_SPEECH_INPUT:
-      ToggleSpeechInput(browser_);
-      break;
     case IDC_DISTILL_PAGE:
       DistillCurrentPage(browser_);
       break;
@@ -1035,9 +1032,6 @@ void BrowserCommandController::InitCommandState() {
   // These are always enabled; the menu determines their menu item visibility.
   command_updater_.UpdateCommandEnabled(IDC_UPGRADE_DIALOG, true);
   command_updater_.UpdateCommandEnabled(IDC_VIEW_INCOMPATIBILITIES, true);
-
-  // Toggle speech input
-  command_updater_.UpdateCommandEnabled(IDC_TOGGLE_SPEECH_INPUT, true);
 
   // Distill current page.
   command_updater_.UpdateCommandEnabled(

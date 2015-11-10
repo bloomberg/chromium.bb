@@ -338,11 +338,6 @@ void SearchBox::Paste(const base::string16& text) {
       render_view()->GetRoutingID(), page_seq_no_, text));
 }
 
-void SearchBox::SetVoiceSearchSupported(bool supported) {
-  render_view()->Send(new ChromeViewHostMsg_SetVoiceSearchSupported(
-      render_view()->GetRoutingID(), page_seq_no_, supported));
-}
-
 void SearchBox::StartCapturingKeyStrokes() {
   render_view()->Send(new ChromeViewHostMsg_FocusOmnibox(
       render_view()->GetRoutingID(), page_seq_no_, OMNIBOX_FOCUS_INVISIBLE));
@@ -392,8 +387,6 @@ bool SearchBox::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxSubmit, OnSubmit)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxThemeChanged,
                         OnThemeChanged)
-    IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxToggleVoiceSearch,
-                        OnToggleVoiceSearch)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -539,13 +532,6 @@ void SearchBox::OnThemeChanged(const ThemeBackgroundInfo& theme_info) {
   theme_info_ = theme_info;
   if (render_view()->GetWebView() && render_view()->GetWebView()->mainFrame()) {
     extensions_v8::SearchBoxExtension::DispatchThemeChange(
-        render_view()->GetWebView()->mainFrame());
-  }
-}
-
-void SearchBox::OnToggleVoiceSearch() {
-  if (render_view()->GetWebView() && render_view()->GetWebView()->mainFrame()) {
-    extensions_v8::SearchBoxExtension::DispatchToggleVoiceSearch(
         render_view()->GetWebView()->mainFrame());
   }
 }
