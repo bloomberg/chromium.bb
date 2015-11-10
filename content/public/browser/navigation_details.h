@@ -35,7 +35,8 @@ struct CONTENT_EXPORT LoadCommittedDetails {
   // if there are no previous entries.
   int previous_entry_index;
 
-  // The previous URL that the user was on. This may be empty if none.
+  // The previous main frame URL that the user was on. This may be empty if
+  // there was no last committed entry.
   GURL previous_url;
 
   // True if the committed entry has replaced the exisiting one.
