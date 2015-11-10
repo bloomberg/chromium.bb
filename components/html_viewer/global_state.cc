@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/i18n/icu_util.h"
 #include "base/logging.h"
 #include "components/html_viewer/blink_platform_impl.h"
 #include "components/html_viewer/blink_settings_impl.h"
@@ -146,15 +145,12 @@ void GlobalState::InitIfNecessary(const gfx::Size& screen_size_in_pixels,
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   base::File pak_file = resource_loader_.ReleaseFile(kResourceResourcesPak);
 
-  bool initialize_icu_and_ui = true;
+  bool initialize_ui = true;
 #if defined(COMPONENT_BUILD)
   if (command_line->HasSwitch("single-process"))
-    initialize_icu_and_ui = false;
+    initialize_ui = false;
 #endif
-  if (initialize_icu_and_ui) {
-    base::i18n::InitializeICUWithFileDescriptor(
-        resource_loader_.GetICUFile().TakePlatformFile(),
-        base::MemoryMappedFile::Region::kWholeFile);
+  if (initialize_ui) {
     ui::RegisterPathProvider();
     base::File pak_file_2 = pak_file.Duplicate();
     ui::ResourceBundle::InitSharedInstanceWithPakFileRegion(

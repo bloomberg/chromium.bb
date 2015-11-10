@@ -56,15 +56,6 @@ base::File ResourceLoader::ReleaseFile(const std::string& path) {
   return file_wrapper->Pass();
 }
 
-base::File ResourceLoader::GetICUFile() {
-  base::File rv;
-  resource_provider_->GetICUHandle(
-      base::Bind(&ResourceLoader::OnGotICU, base::Unretained(this), &rv));
-  resource_provider_.WaitForIncomingResponse();
-  CHECK(rv.IsValid());
-  return rv.Pass();
-}
-
 void ResourceLoader::OnGotResources(const std::vector<std::string>& paths,
                                     mojo::Array<mojo::ScopedHandle> resources) {
 
@@ -75,10 +66,6 @@ void ResourceLoader::OnGotResources(const std::vector<std::string>& paths,
         new base::File(GetFileFromHandle(resources[i].Pass())));
   }
   loaded_ = true;
-}
-
-void ResourceLoader::OnGotICU(base::File* file, mojo::ScopedHandle handle) {
-  *file = GetFileFromHandle(handle.Pass());
 }
 
 }  // namespace resource_provider
