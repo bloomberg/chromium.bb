@@ -23,8 +23,6 @@ public class ContextualSearchFieldTrial {
     private static final String ENABLED_PARAM = "enabled";
     private static final String ENABLED_VALUE = "true";
 
-    static final String PROMO_ON_LIMITED_TAPS = "promo_on_limited_taps";
-    static final String TAP_TRIGGERED_PROMO_LIMIT = "tap_triggered_promo_limit";
     static final String PEEK_PROMO_FORCED = "peek_promo_forced";
     static final String PEEK_PROMO_ENABLED = "peek_promo_enabled";
     static final String PEEK_PROMO_MAX_SHOW_COUNT = "peek_promo_max_show_count";
@@ -35,9 +33,6 @@ public class ContextualSearchFieldTrial {
     // Translation.
     @VisibleForTesting
     static final String TRANSLATION_ONEBOX_ENABLED = "translation_onebox_enabled";
-
-    // Tap handling.
-    private static final int UNLIMITED_TAPS = -1;
 
     // Cached values to avoid repeated and redundant JNI operations.
     private static Boolean sEnabled;
@@ -96,19 +91,6 @@ public class ContextualSearchFieldTrial {
     }
 
     /**
-     * @return Whether the promo should be triggered by a limited number of taps.
-     */
-    public static boolean isPromoLimitedByTapCounts() {
-        return getBooleanParam(PROMO_ON_LIMITED_TAPS);
-    }
-
-    /**
-     * @return The maximum number of times the promo can be triggered by a tap, or
-     * {@code ContextualSearchUma#PROMO_TAPS_REMAINING_INVALID} if no value is present in the finch
-     * configuration.
-     */
-    static int getPromoTapTriggeredLimit() {
-        return getIntParamValueOrDefault(TAP_TRIGGERED_PROMO_LIMIT, UNLIMITED_TAPS);
     }
 
     /**

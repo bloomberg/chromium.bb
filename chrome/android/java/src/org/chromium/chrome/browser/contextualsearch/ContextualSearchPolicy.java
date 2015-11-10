@@ -30,6 +30,7 @@ class ContextualSearchPolicy {
     private static final Pattern CONTAINS_WHITESPACE_PATTERN = Pattern.compile("\\s");
     private static final int REMAINING_NOT_APPLICABLE = -1;
     private static final int ONE_DAY_IN_MILLIS = 24 * 60 * 60 * 1000;
+    private static final int TAP_TRIGGERED_PROMO_LIMIT = 50;
     private static final int TAP_RESOLVE_LIMIT_FOR_DECIDED = 50;
     private static final int TAP_PREFETCH_LIMIT_FOR_DECIDED = 50;
     private static final int TAP_RESOLVE_LIMIT_FOR_UNDECIDED = 20;
@@ -43,6 +44,7 @@ class ContextualSearchPolicy {
     private boolean mDidOverrideDecidedStateForTesting;
     private boolean mDecidedStateForTesting;
     private boolean mDidResetCounters;
+    private Integer mTapTriggeredPromoLimitForTesting;
     private Integer mTapResolveLimitForDecided;
     private Integer mTapPrefetchLimitForDecided;
     private Integer mTapResolveLimitForUndecided;
@@ -78,11 +80,18 @@ class ContextualSearchPolicy {
         // Return a non-negative value if opt-out promo counter is enabled, and there's a limit.
         DisableablePromoTapCounter counter = getPromoTapCounter();
         if (counter.isEnabled()) {
-            int limit = ContextualSearchFieldTrial.getPromoTapTriggeredLimit();
+            int limit = getPromoTapTriggeredLimit();
             if (limit >= 0) return Math.max(0, limit - counter.getCount());
         }
 
         return REMAINING_NOT_APPLICABLE;
+    }
+
+    private int getPromoTapTriggeredLimit() {
+        if (mTapTriggeredPromoLimitForTesting != null) {
+            return mTapTriggeredPromoLimitForTesting.intValue();
+        }
+        return TAP_TRIGGERED_PROMO_LIMIT;
     }
 
     /**
@@ -97,8 +106,7 @@ class ContextualSearchPolicy {
      */
     boolean isTapSupported() {
         if (!isUserUndecided()) return true;
-        return !ContextualSearchFieldTrial.isPromoLimitedByTapCounts()
-                || getPromoTapsRemaining() != 0;
+        return getPromoTapsRemaining() != 0;
     }
 
     /**
@@ -435,6 +443,14 @@ class ContextualSearchPolicy {
      */
     boolean isTranslationEnabled() {
         return ContextualSearchFieldTrial.isTranslationOneboxEnabled();
+    }
+
+    /**
+     * Sets the limit for the tap triggered promo.
+     */
+    @VisibleForTesting
+    void setPromoTapTriggeredLimitForTesting(int limit) {
+        mTapTriggeredPromoLimitForTesting = limit;
     }
 
     @VisibleForTesting

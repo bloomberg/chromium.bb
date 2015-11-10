@@ -1616,12 +1616,10 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
      * @Feature({"ContextualSearch"})
      */
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
-    @CommandLineFlags.Add({
-            ContextualSearchFieldTrial.PROMO_ON_LIMITED_TAPS + "=true",
-            ContextualSearchFieldTrial.TAP_TRIGGERED_PROMO_LIMIT + "=2"})
     @FlakyTest
     public void testTapTriggeredPromoLimitForOptOut()
             throws InterruptedException, TimeoutException {
+        mPolicy.setPromoTapTriggeredLimitForTesting(2);
         mPolicy.overrideDecidedStateForTesting(false);
 
         clickWordNode("states");
@@ -1863,11 +1861,9 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
      * @Feature({"ContextualSearch"})
      */
     @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
-    @CommandLineFlags.Add({
-            ContextualSearchFieldTrial.PROMO_ON_LIMITED_TAPS + "=true",
-            ContextualSearchFieldTrial.TAP_TRIGGERED_PROMO_LIMIT + "=2"})
     @FlakyTest
     public void testPromoTapCount() throws InterruptedException, TimeoutException {
+        mPolicy.setPromoTapTriggeredLimitForTesting(2);
         // Note that this tests the basic underlying counter used by
         // testTapTriggeredPromoLimitForOptOut.
         // TODO(donnd): consider removing either this test or testTapTriggeredPromoLimitForOptOut.
