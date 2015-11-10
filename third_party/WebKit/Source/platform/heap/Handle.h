@@ -238,7 +238,7 @@ private:
 
     void checkPointer()
     {
-#if ENABLE(ASSERT)
+#if ENABLE(ASSERT) && defined(ADDRESS_SANITIZER)
         if (!m_raw)
             return;
 
@@ -779,7 +779,7 @@ public:
 protected:
     void checkPointer()
     {
-#if ENABLE(ASSERT)
+#if ENABLE(ASSERT) && defined(ADDRESS_SANITIZER)
         if (!m_raw)
             return;
         // HashTable can store a special value (which is not aligned to the
