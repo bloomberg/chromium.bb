@@ -1456,6 +1456,7 @@ void V8DebuggerAgentImpl::didParseSource(const ParsedScript& parsedScript)
 
     bool isContentScript = script.isContentScript();
     bool isInternalScript = script.isInternalScript();
+    bool isLiveEdit = script.isLiveEdit();
     bool hasSourceURL = script.hasSourceURL();
     String scriptURL = script.sourceURL();
     String sourceMapURL = sourceMapURLForScript(script, parsedScript.compileResult);
@@ -1463,9 +1464,10 @@ void V8DebuggerAgentImpl::didParseSource(const ParsedScript& parsedScript)
     const String* sourceMapURLParam = sourceMapURL.isNull() ? nullptr : &sourceMapURL;
     const bool* isContentScriptParam = isContentScript ? &isContentScript : nullptr;
     const bool* isInternalScriptParam = isInternalScript ? &isInternalScript : nullptr;
+    const bool* isLiveEditParam = isLiveEdit ? &isLiveEdit : nullptr;
     const bool* hasSourceURLParam = hasSourceURL ? &hasSourceURL : nullptr;
     if (!hasSyntaxError)
-        m_frontend->scriptParsed(parsedScript.scriptId, scriptURL, script.startLine(), script.startColumn(), script.endLine(), script.endColumn(), isContentScriptParam, isInternalScriptParam, sourceMapURLParam, hasSourceURLParam);
+        m_frontend->scriptParsed(parsedScript.scriptId, scriptURL, script.startLine(), script.startColumn(), script.endLine(), script.endColumn(), isContentScriptParam, isInternalScriptParam, isLiveEditParam, sourceMapURLParam, hasSourceURLParam);
     else
         m_frontend->scriptFailedToParse(parsedScript.scriptId, scriptURL, script.startLine(), script.startColumn(), script.endLine(), script.endColumn(), isContentScriptParam, isInternalScriptParam, sourceMapURLParam, hasSourceURLParam);
 

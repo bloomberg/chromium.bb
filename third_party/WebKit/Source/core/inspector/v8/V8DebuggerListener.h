@@ -59,6 +59,7 @@ public:
         int endColumn() const { return m_endColumn; }
         bool isContentScript() const { return m_isContentScript; }
         bool isInternalScript() const { return m_isInternalScript; }
+        bool isLiveEdit() const { return m_isLiveEdit; }
 
         bool getBlackboxedState(unsigned blackboxGeneration, bool* isBlackboxed) const;
         void setBlackboxedState(unsigned blackboxGeneration, bool isBlackboxed);
@@ -73,6 +74,7 @@ public:
         Script& setEndColumn(int);
         Script& setIsContentScript(bool);
         Script& setIsInternalScript(bool);
+        Script& setIsLiveEdit(bool);
 
     private:
         String m_url;
@@ -85,6 +87,7 @@ public:
         int m_endColumn;
         bool m_isContentScript;
         bool m_isInternalScript;
+        bool m_isLiveEdit;
         // Used from outside for caching.
         bool m_isBlackboxedURL;
         unsigned m_blackboxGeneration;

@@ -132,6 +132,10 @@ Running: testRestoreBreakpointsTwice
   Adding script: a.js
   Adding UISourceCode: a.js
     breakpointRemoved(a.js, 10, 0)
+    breakpointRemoved(a.js, 20, 0)
+    breakpointAdded(a.js, 10, 0, foo == bar, true)
+    breakpointAdded(a.js, 20, 0, , false)
+    breakpointRemoved(a.js, 10, 0)
     breakpointAdded(a.js, 10, 0, foo == bar, true)
     Location created: a.js:10
   Dumping Breakpoint Locations

@@ -17,6 +17,8 @@ V8DebuggerListener::Script::Script()
     , m_endLine(0)
     , m_endColumn(0)
     , m_isContentScript(false)
+    , m_isInternalScript(false)
+    , m_isLiveEdit(false)
     , m_isBlackboxedURL(false)
     , m_blackboxGeneration(kBlackboxUnknown)
 {
@@ -101,6 +103,12 @@ V8DebuggerListener::Script& V8DebuggerListener::Script::setIsContentScript(bool 
 V8DebuggerListener::Script& V8DebuggerListener::Script::setIsInternalScript(bool isInternalScript)
 {
     m_isInternalScript = isInternalScript;
+    return *this;
+}
+
+V8DebuggerListener::Script& V8DebuggerListener::Script::setIsLiveEdit(bool isLiveEdit)
+{
+    m_isLiveEdit = isLiveEdit;
     return *this;
 }
 

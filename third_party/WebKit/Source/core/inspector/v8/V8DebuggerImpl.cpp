@@ -49,6 +49,8 @@ const char stepIntoV8MethodName[] = "stepIntoStatement";
 const char stepOutV8MethodName[] = "stepOutOfFunction";
 }
 
+static bool inLiveEditScope = false;
+
 v8::MaybeLocal<v8::Value> V8DebuggerImpl::callDebuggerMethod(const char* functionName, int argc, v8::Local<v8::Value> argv[])
 {
     v8::Local<v8::Object> debuggerScript = m_debuggerScript.Get(m_isolate);
@@ -354,8 +356,16 @@ bool V8DebuggerImpl::setScriptSource(const String& sourceID, const String& newCo
 {
     class EnableLiveEditScope {
     public:
-        explicit EnableLiveEditScope(v8::Isolate* isolate) : m_isolate(isolate) { v8::Debug::SetLiveEditEnabled(m_isolate, true); }
-        ~EnableLiveEditScope() { v8::Debug::SetLiveEditEnabled(m_isolate, false); }
+        explicit EnableLiveEditScope(v8::Isolate* isolate) : m_isolate(isolate)
+        {
+            v8::Debug::SetLiveEditEnabled(m_isolate, true);
+            inLiveEditScope = true;
+        }
+        ~EnableLiveEditScope()
+        {
+            v8::Debug::SetLiveEditEnabled(m_isolate, false);
+            inLiveEditScope = false;
+        }
     private:
         v8::Isolate* m_isolate;
     };
@@ -665,7 +675,8 @@ V8DebuggerListener::ParsedScript V8DebuggerImpl::createParsedScript(v8::Local<v8
         .setEndLine(object->Get(v8InternalizedString("endLine"))->ToInteger(m_isolate)->Value())
         .setEndColumn(object->Get(v8InternalizedString("endColumn"))->ToInteger(m_isolate)->Value())
         .setIsContentScript(object->Get(v8InternalizedString("isContentScript"))->ToBoolean(m_isolate)->Value())
-        .setIsInternalScript(object->Get(v8InternalizedString("isInternalScript"))->ToBoolean(m_isolate)->Value());
+        .setIsInternalScript(object->Get(v8InternalizedString("isInternalScript"))->ToBoolean(m_isolate)->Value())
+        .setIsLiveEdit(inLiveEditScope);
     parsedScript.compileResult = compileResult;
     return parsedScript;
 }
