@@ -72,6 +72,12 @@ const std::string GetRapporMetric(ContentSettingsType permission,
       break;
   }
 
+  // Do not record the deprecated RAPPOR metrics for media permissions.
+  if (permission == CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA ||
+      permission == CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC) {
+    return "";
+  }
+
   std::string permission_str =
       PermissionUtil::GetPermissionString(permission);
   if (permission_str.empty())
@@ -134,6 +140,16 @@ void RecordPermissionAction(ContentSettingsType permission,
             "ContentSettings.PermissionActionsSecureOrigin_DurableStorage",
             "ContentSettings.PermissionActionsInsecureOrigin_DurableStorage",
             action);
+        break;
+      case CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC:
+        // Media permissions are disabled on insecure origins, so there's no
+        // need to record metrics for secure/insecue.
+        UMA_HISTOGRAM_ENUMERATION("Permissions.Action.AudioCapture", action,
+                                  PERMISSION_ACTION_NUM);
+        break;
+      case CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA:
+        UMA_HISTOGRAM_ENUMERATION("Permissions.Action.VideoCapture", action,
+                                  PERMISSION_ACTION_NUM);
         break;
       default:
         NOTREACHED() << "PERMISSION " << permission << " not accounted for";

@@ -511,6 +511,47 @@ components/rappor/rappor_service.cc.
   </flags-field>
 </rappor-metric>
 
+<rappor-metric name="Permissions.Action.AudioCapture"
+    type="SAFEBROWSING_RAPPOR_TYPE">
+  <owner>kcarattini@chromium.org</owner>
+  <owner>tsergeant@chromium.org</owner>
+  <summary>
+    The domain+registry of a URL that requested the MediaStream Microphone API.
+  </summary>
+  <string-field name="Scheme">
+    <summary>
+      The scheme of a URL that requested a permission.
+    </summary>
+  </string-field>
+  <string-field name="Host">
+    <summary>
+      The host of a URL that requested a permission.
+    </summary>
+  </string-field>
+  <string-field name="Port">
+    <summary>
+      The port of a URL that requested a permission.
+    </summary>
+  </string-field>
+  <string-field name="Domain">
+    <summary>
+      The domain+registry of a URL that requested a permission.
+    </summary>
+  </string-field>
+  <flags-field name="Actions">
+    <flag>Bit 0: GRANTED</flag>
+    <flag>Bit 1: DENIED</flag>
+    <flag>Bit 2: DISMISSED</flag>
+    <flag>Bit 3: IGNORED</flag>
+    <flag>Bit 4: REVOKED</flag>
+    <flag>Bit 5: REENABLED</flag>
+    <flag>Bit 6: REQUESTED</flag>
+    <summary>
+      Bitfield of the permission actions taken for this permission.
+    </summary>
+  </flags-field>
+</rappor-metric>
+
 <rappor-metric name="Permissions.Action.DurableStorage"
     type="SAFEBROWSING_RAPPOR_TYPE">
   <owner>kcarattini@chromium.org</owner>
@@ -717,6 +758,47 @@ components/rappor/rappor_service.cc.
   <owner>kcarattini@chromium.org</owner>
   <summary>
     The domain+registry of a URL that requested the PushMessaging API.
+  </summary>
+  <string-field name="Scheme">
+    <summary>
+      The scheme of a URL that requested a permission.
+    </summary>
+  </string-field>
+  <string-field name="Host">
+    <summary>
+      The host of a URL that requested a permission.
+    </summary>
+  </string-field>
+  <string-field name="Port">
+    <summary>
+      The port of a URL that requested a permission.
+    </summary>
+  </string-field>
+  <string-field name="Domain">
+    <summary>
+      The domain+registry of a URL that requested a permission.
+    </summary>
+  </string-field>
+  <flags-field name="Actions">
+    <flag>Bit 0: GRANTED</flag>
+    <flag>Bit 1: DENIED</flag>
+    <flag>Bit 2: DISMISSED</flag>
+    <flag>Bit 3: IGNORED</flag>
+    <flag>Bit 4: REVOKED</flag>
+    <flag>Bit 5: REENABLED</flag>
+    <flag>Bit 6: REQUESTED</flag>
+    <summary>
+      Bitfield of the permission actions taken for this permission.
+    </summary>
+  </flags-field>
+</rappor-metric>
+
+<rappor-metric name="Permissions.Action.VideoCapture"
+    type="SAFEBROWSING_RAPPOR_TYPE">
+  <owner>kcarattini@chromium.org</owner>
+  <owner>tsergeant@chromium.org</owner>
+  <summary>
+    The domain+registry of a URL that requested the MediaStream Camera API.
   </summary>
   <string-field name="Scheme">
     <summary>
