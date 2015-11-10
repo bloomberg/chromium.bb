@@ -8,8 +8,8 @@ import android.content.Context;
 
 import org.chromium.base.ObserverList;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.chrome.browser.BookmarksBridge;
 import org.chromium.chrome.browser.ChromeBrowserProviderClient;
+import org.chromium.chrome.browser.bookmark.BookmarksBridge;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge.OfflinePageModelObserver;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge.SavePageCallback;
@@ -257,7 +257,7 @@ public class EnhancedBookmarksModel extends BookmarksBridge {
     }
 
     /**
-     * @see org.chromium.chrome.browser.BookmarksBridge.BookmarkItem#getTitle()
+     * @see org.chromium.chrome.browser.bookmark.BookmarksBridge.BookmarkItem#getTitle()
      */
     public String getBookmarkTitle(BookmarkId bookmarkId) {
         return getBookmarkById(bookmarkId).getTitle();

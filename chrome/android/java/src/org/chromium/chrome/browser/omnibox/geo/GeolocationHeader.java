@@ -13,9 +13,9 @@ import android.os.Process;
 import android.util.Base64;
 
 import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.chrome.browser.UrlUtilities;
 import org.chromium.chrome.browser.preferences.website.ContentSetting;
 import org.chromium.chrome.browser.preferences.website.GeolocationInfo;
+import org.chromium.chrome.browser.util.UrlUtilities;
 
 import java.util.Locale;
 
