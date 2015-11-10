@@ -237,7 +237,7 @@ public class LibraryLoader {
                         // Determine where the library should be loaded from.
                         String zipFilePath = null;
                         String libFilePath = System.mapLibraryName(library);
-                        if (linker.isInZipFile()) {
+                        if (Linker.isInZipFile()) {
                             // Load directly from the APK.
                             zipFilePath = getLibraryApkPath(context);
                             Log.i(TAG, "Loading " + library + " from within " + zipFilePath);
