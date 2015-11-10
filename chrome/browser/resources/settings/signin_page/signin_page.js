@@ -19,6 +19,10 @@
 Polymer({
   is: 'settings-signin-page',
 
+  behaviors: [
+    I18nBehavior,
+  ],
+
   properties: {
     /**
      * The current active route.
@@ -27,10 +31,48 @@ Polymer({
       type: Object,
       notify: true,
     },
+
+    /**
+     * The current sync status, supplied by settings.SyncPrivateApi.
+     * @type {?settings.SyncPrivateApi.SyncStatus}
+     */
+    syncStatus: Object,
+  },
+
+  created: function() {
+    settings.SyncPrivateApi.setSyncStatusCallback(
+        this.handleSyncStatusFetched_.bind(this));
+  },
+
+  /**
+   * Handler for when the sync state is pushed from settings.SyncPrivateApi.
+   * @private
+   */
+  handleSyncStatusFetched_: function(syncStatus) {
+    this.syncStatus = syncStatus;
+
+    // TODO(tommycli): Remove once we figure out how to refactor the sync
+    // code to not include HTML in the status messages.
+    this.$.syncStatusText.innerHTML = syncStatus.statusText;
+  },
+
+  /** @private */
+  onDisconnectTap_: function() {
+    this.$.disconnectDialog.open();
   },
 
   /** @private */
   onSyncTap_: function() {
     this.$.pages.setSubpageChain(['sync']);
+  },
+
+  /**
+   * @private
+   * @return {boolean}
+   */
+  isAdvancedSyncSettingsVisible_: function() {
+    var status = this.syncStatus;
+    return status && status.signedIn && !status.managed &&
+           status.syncSystemEnabled;
   },
 });

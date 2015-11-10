@@ -1,7 +1,11 @@
+<link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animatable.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-checkbox/paper-checkbox.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-dialog/paper-dialog.html">
 <link rel="import" href="chrome://md-settings/sync_page/sync_page.html">
+<link rel="import" href="chrome://md-settings/sync_page/sync_private_api.html">
 <link rel="import" href="chrome://md-settings/settings_page/settings_animated_pages.html">
 <link rel="import" href="chrome://md-settings/settings_page/settings_subheader.html">
 
@@ -12,8 +16,20 @@
     <settings-animated-pages id="pages" current-route="{{currentRoute}}"
         section="signin">
       <neon-animatable id="main">
-        <paper-button i18n-content="syncPageTitle" on-tap="onSyncTap_" raised>
+        <div id="syncStatusText"></div>
+
+        <paper-button on-tap="onDisconnectTap_" raised
+            hidden="[[!syncStatus.signedIn]]"
+            disabled="[[syncStatus.setupInProgress]]"
+            i18n-content="syncDisconnect">
         </paper-button>
+
+        <template is="dom-if"
+            if="[[isAdvancedSyncSettingsVisible_(syncStatus)]]">
+          <paper-button on-tap="onSyncTap_" raised>
+            [[i18n('syncPageTitle')]]
+          </paper-button>
+        </template>
       </neon-animatable>
       <neon-animatable id="sync">
         <settings-subheader i18n-values="page-title:syncPageTitle">
@@ -22,6 +38,23 @@
         </settings-sync-page>
       </neon-animatable>
     </settings-animated-pages>
+
+    <paper-dialog modal id="disconnectDialog">
+      <h2 i18n-content="syncDisconnectTitle"></h2>
+      <div i18n-values=".innerHTML:syncDisconnectExplanation"></div>
+<if expr="(not chromeos and is_posix) or is_win or is_macosx">
+      <paper-checkbox id="syncSetupDeleteProfile"
+          i18n-content="syncDisconnectDeleteProfile">
+      </paper-checkbox>
+</if>
+      <div class="button-strip">
+        <paper-button dialog-dismiss i18n-content="cancel">
+        </paper-button>
+        <paper-button dialog-confirm raised
+            i18n-content="syncDisconnectConfirm">
+        </paper-button>
+      </div>
+    </paper-dialog>
   </template>
   <script src="signin_page.js"></script>
 </dom-module>

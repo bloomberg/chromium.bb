@@ -60,6 +60,24 @@ cr.define('settings', function() {
   SyncPrivateApi.SyncPrefs;
 
   /**
+   * @typedef {{actionLinkText: (string|undefined),
+   *            childUser: (boolean|undefined),
+   *            hasError: (boolean|undefined),
+   *            hasUnrecoverableError: (boolean|undefined),
+   *            managed: (boolean|undefined),
+   *            setupCompleted: (boolean|undefined),
+   *            setupInProgress: (boolean|undefined),
+   *            signedIn: (boolean|undefined),
+   *            signinAllowed: (boolean|undefined),
+   *            signoutAllowed: (boolean|undefined),
+   *            statusText: (string|undefined),
+   *            supervisedUser: (boolean|undefined),
+   *            syncSystemEnabled: (boolean|undefined)}}
+   * @see chrome/browser/ui/webui/settings/sync_handler.cc
+   */
+  SyncPrivateApi.SyncStatus;
+
+  /**
    * @enum {string}
    */
   SyncPrivateApi.PageStatus = {
@@ -135,11 +153,24 @@ cr.define('settings', function() {
   };
 
   /**
-   * Legacy object called by SyncSetupHandler. It's an inconsistent name, but
-   * needed to allow a single handler to support both old and new Sync settings.
-   * TODO(tommycli): Remove when old Sync in Options is removed.
+   * Sets the callback to be invoked when sync status has been fetched.
+   * Also requests an initial sync status update.
+   * @param {!function(SyncPrivateApi.SyncStatus)} callback
    */
-  function SyncSetupOverlay() {}
+  SyncPrivateApi.setSyncStatusCallback = function(callback) {
+    SyncPrivateApi.syncStatusCallback_ = callback;
+    chrome.send('SyncSetupGetSyncStatus');
+  };
+
+  /**
+   * Handler for when sync status has been fetched from C++.
+   * @param {!SyncPrivateApi.SyncStatus} syncStatusFromCpp
+   * @private
+   */
+  SyncPrivateApi.sendSyncStatus = function(syncStatusFromCpp) {
+    if (SyncPrivateApi.syncStatusCallback_)
+      SyncPrivateApi.syncStatusCallback_(syncStatusFromCpp);
+  };
 
   /**
    * This function encapsulates the logic that maps from the legacy
@@ -147,7 +178,7 @@ cr.define('settings', function() {
    * @param {!SyncPrivateApi.PageStatus} status
    * @param {!SyncPrivateApi.SyncPrefs} prefs
    */
-  SyncSetupOverlay.showSyncSetupPage = function(status, prefs) {
+  SyncPrivateApi.showSyncSetupPage = function(status, prefs) {
     switch (status) {
       case SyncPrivateApi.PageStatus.TIMEOUT:
       case SyncPrivateApi.PageStatus.DONE:
@@ -169,9 +200,5 @@ cr.define('settings', function() {
 
   return {
     SyncPrivateApi: SyncPrivateApi,
-    SyncSetupOverlay: SyncSetupOverlay,
   };
 });
-
-// Must be global for the legacy C++ handler to call.
-var SyncSetupOverlay = settings.SyncSetupOverlay;

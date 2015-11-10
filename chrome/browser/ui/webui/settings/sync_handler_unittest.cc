@@ -151,14 +151,16 @@ namespace settings {
 class TestingSyncHandler : public SyncHandler {
  public:
   TestingSyncHandler(content::WebUI* web_ui, Profile* profile)
-      : profile_(profile) {
+      : SyncHandler(profile) {
     set_web_ui(web_ui);
   }
-  ~TestingSyncHandler() override { set_web_ui(nullptr); }
+  ~TestingSyncHandler() override {
+    // TODO(tommycli): SyncHandler needs this call to destruct properly in the
+    // unit testing context. See the destructor to SyncHandler. This is hacky.
+    set_web_ui(nullptr);
+  }
 
   void FocusUI() override {}
-
-  Profile* GetProfile() const override { return profile_; }
 
   using SyncHandler::is_configuring_sync;
 
@@ -167,8 +169,6 @@ class TestingSyncHandler : public SyncHandler {
   void DisplayGaiaLoginInNewTabOrWindow() override {}
 #endif
 
-  // Weak pointer to parent profile.
-  Profile* profile_;
   DISALLOW_COPY_AND_ASSIGN(TestingSyncHandler);
 };
 
@@ -238,7 +238,8 @@ class SyncHandlerTest : public testing::Test {
   void ExpectConfig() {
     ASSERT_EQ(1U, web_ui_.call_data().size());
     const content::TestWebUI::CallData& data = *web_ui_.call_data()[0];
-    EXPECT_EQ("SyncSetupOverlay.showSyncSetupPage", data.function_name());
+    EXPECT_EQ("settings.SyncPrivateApi.showSyncSetupPage",
+              data.function_name());
     std::string page;
     ASSERT_TRUE(data.arg1()->GetAsString(&page));
     EXPECT_EQ(page, "configure");
@@ -247,17 +248,19 @@ class SyncHandlerTest : public testing::Test {
   void ExpectDone() {
     ASSERT_EQ(1U, web_ui_.call_data().size());
     const content::TestWebUI::CallData& data = *web_ui_.call_data()[0];
-    EXPECT_EQ("SyncSetupOverlay.showSyncSetupPage", data.function_name());
+    EXPECT_EQ("settings.SyncPrivateApi.showSyncSetupPage",
+              data.function_name());
     std::string page;
     ASSERT_TRUE(data.arg1()->GetAsString(&page));
     EXPECT_EQ(page, "done");
   }
 
   void ExpectSpinnerAndClose() {
-    // We expect a call to SyncSetupOverlay.showSyncSetupPage.
+    // We expect a call to settings.SyncPrivateApi.showSyncSetupPage.
     EXPECT_EQ(1U, web_ui_.call_data().size());
     const content::TestWebUI::CallData& data = *web_ui_.call_data()[0];
-    EXPECT_EQ("SyncSetupOverlay.showSyncSetupPage", data.function_name());
+    EXPECT_EQ("settings.SyncPrivateApi.showSyncSetupPage",
+              data.function_name());
 
     std::string page;
     ASSERT_TRUE(data.arg1()->GetAsString(&page));
@@ -330,10 +333,10 @@ TEST_F(SyncHandlerTest, ShowSyncSetupWhenNotSignedIn) {
       .WillRepeatedly(Return(false));
   handler_->HandleShowSetupUI(NULL);
 
-  // We expect a call to SyncSetupOverlay.showSyncSetupPage.
+  // We expect a call to settings.SyncPrivateApi.showSyncSetupPage.
   ASSERT_EQ(1U, web_ui_.call_data().size());
   const content::TestWebUI::CallData& data = *web_ui_.call_data()[0];
-  EXPECT_EQ("SyncSetupOverlay.showSyncSetupPage", data.function_name());
+  EXPECT_EQ("settings.SyncPrivateApi.showSyncSetupPage", data.function_name());
 
   ASSERT_FALSE(handler_->is_configuring_sync());
   EXPECT_EQ(NULL,
@@ -396,11 +399,11 @@ TEST_F(SyncHandlerTest,
 
   handler_->OpenSyncSetup();
 
-  // We expect a call to SyncSetupOverlay.showSyncSetupPage.
+  // We expect a call to settings.SyncPrivateApi.showSyncSetupPage.
   EXPECT_EQ(1U, web_ui_.call_data().size());
 
   const content::TestWebUI::CallData& data0 = *web_ui_.call_data()[0];
-  EXPECT_EQ("SyncSetupOverlay.showSyncSetupPage", data0.function_name());
+  EXPECT_EQ("settings.SyncPrivateApi.showSyncSetupPage", data0.function_name());
   std::string page;
   ASSERT_TRUE(data0.arg1()->GetAsString(&page));
   EXPECT_EQ(page, "spinner");
@@ -413,10 +416,10 @@ TEST_F(SyncHandlerTest,
   EXPECT_CALL(*mock_pss_, GetAuthError()).WillRepeatedly(ReturnRef(error_));
   NotifySyncListeners();
 
-  // We expect a second call to SyncSetupOverlay.showSyncSetupPage.
+  // We expect a second call to settings.SyncPrivateApi.showSyncSetupPage.
   EXPECT_EQ(2U, web_ui_.call_data().size());
   const content::TestWebUI::CallData& data1 = *web_ui_.call_data().back();
-  EXPECT_EQ("SyncSetupOverlay.showSyncSetupPage", data1.function_name());
+  EXPECT_EQ("settings.SyncPrivateApi.showSyncSetupPage", data1.function_name());
   ASSERT_TRUE(data1.arg1()->GetAsString(&page));
   EXPECT_EQ(page, "configure");
   const base::DictionaryValue* dictionary = nullptr;
@@ -471,7 +474,7 @@ TEST_F(SyncHandlerTest,
 
   handler_->OpenSyncSetup();
   const content::TestWebUI::CallData& data = *web_ui_.call_data()[0];
-  EXPECT_EQ("SyncSetupOverlay.showSyncSetupPage", data.function_name());
+  EXPECT_EQ("settings.SyncPrivateApi.showSyncSetupPage", data.function_name());
   std::string page;
   ASSERT_TRUE(data.arg1()->GetAsString(&page));
   EXPECT_EQ(page, "spinner");
@@ -562,10 +565,10 @@ TEST_F(SyncHandlerTest, TestSyncNothing) {
   SetupInitializedProfileSyncService();
   handler_->HandleConfigure(&list_args);
 
-  // We expect a call to SyncSetupOverlay.showSyncSetupPage.
+  // We expect a call to settings.SyncPrivateApi.showSyncSetupPage.
   ASSERT_EQ(1U, web_ui_.call_data().size());
   const content::TestWebUI::CallData& data = *web_ui_.call_data()[0];
-  EXPECT_EQ("SyncSetupOverlay.showSyncSetupPage", data.function_name());
+  EXPECT_EQ("settings.SyncPrivateApi.showSyncSetupPage", data.function_name());
 }
 
 TEST_F(SyncHandlerTest, TurnOnEncryptAll) {

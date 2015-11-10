@@ -32,6 +32,9 @@
   <message name="IDS_SETTINGS_SYNC_DATA_ENCRYPTED_TEXT" desc="Text alerting the user that synced data is encrypted.">
     For added security, Google Chrome will encrypt your data.
   </message>
+  <message name="IDS_SETTINGS_SYNC_DISCONNECT_EXPLANATION" desc="The text to display below the 'Stop syncing this account' button on the options pane, explaining what the button does.">
+    By disconnecting your Google Account from Google Chrome, your data will remain on this computer but changes will no longer be synced to your Google Account. Data already stored in your Google Account will remain there until you remove it using <ph name="BEGIN_LINK">&lt;a href="$1" target=&quot;_blank&quot;&gt;</ph>Google Dashboard<ph name="END_LINK">&lt;/a&gt;</ph>.
+  </message>
 
   <!-- Languages Page -->
   <if expr="chromeos">

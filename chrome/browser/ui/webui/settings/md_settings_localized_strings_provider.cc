@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/settings/md_settings_localized_strings_provider.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/policy_indicator_localized_strings_provider.h"
 #include "chrome/common/url_constants.h"
@@ -15,6 +16,7 @@
 #include "chrome/grit/settings_chromium_strings.h"
 #include "chrome/grit/settings_google_chrome_strings.h"
 #include "chrome/grit/settings_strings.h"
+#include "components/google/core/browser/google_util.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -534,6 +536,24 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source) {
 }
 
 void AddSyncStrings(content::WebUIDataSource* html_source) {
+  html_source->AddLocalizedString("syncDisconnect",
+                                  IDS_SETTINGS_SYNC_DISCONNECT);
+  html_source->AddLocalizedString("syncDisconnectTitle",
+                                  IDS_SETTINGS_SYNC_DISCONNECT_TITLE);
+  std::string disconnect_help_url =
+      google_util::AppendGoogleLocaleParam(
+          GURL(chrome::kSyncGoogleDashboardURL),
+          g_browser_process->GetApplicationLocale())
+          .spec();
+  html_source->AddString(
+      "syncDisconnectExplanation",
+      l10n_util::GetStringFUTF16(IDS_SYNC_STOP_SYNCING_EXPLANATION_LABEL,
+                                 base::ASCIIToUTF16(disconnect_help_url)));
+  html_source->AddLocalizedString("syncDisconnectDeleteProfile",
+                                  IDS_SETTINGS_SYNC_DISCONNECT_DELETE_PROFILE);
+  html_source->AddLocalizedString("syncDisconnectConfirm",
+                                  IDS_SETTINGS_SYNC_DISCONNECT_CONFIRM);
+
   html_source->AddLocalizedString("syncPageTitle", IDS_SETTINGS_SYNC);
   html_source->AddLocalizedString("syncLoading", IDS_SETTINGS_SYNC_LOADING);
   html_source->AddLocalizedString("syncTimeout", IDS_SETTINGS_SYNC_TIMEOUT);
@@ -594,7 +614,6 @@ void AddSyncStrings(content::WebUIDataSource* html_source) {
   html_source->AddLocalizedString(
       "passphraseConfirmationPlaceholder",
       IDS_SETTINGS_PASSPHRASE_CONFIRMATION_PLACEHOLDER);
-
 }
 
 void AddUsersStrings(content::WebUIDataSource* html_source) {

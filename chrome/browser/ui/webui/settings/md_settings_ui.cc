@@ -40,7 +40,7 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
   AddSettingsPageUIHandler(new FontHandler(web_ui));
   AddSettingsPageUIHandler(new LanguagesHandler(web_ui));
   AddSettingsPageUIHandler(new StartupPagesHandler(web_ui));
-  AddSettingsPageUIHandler(new SyncHandler());
+  AddSettingsPageUIHandler(new SyncHandler(Profile::FromWebUI(web_ui)));
 
   content::WebUIDataSource* html_source =
       content::WebUIDataSource::Create(chrome::kChromeUIMdSettingsHost);
