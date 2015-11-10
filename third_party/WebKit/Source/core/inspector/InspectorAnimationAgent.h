@@ -48,6 +48,7 @@ public:
 
     // API for InspectorInstrumentation
     void didCreateAnimation(unsigned);
+    void didCancelAnimation(unsigned);
     void didStartAnimation(Animation*);
     void didClearDocumentOfWindowObject(LocalFrame*);
 

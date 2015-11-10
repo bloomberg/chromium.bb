@@ -417,6 +417,9 @@ interface InspectorInstrumentation {
     void didCreateAnimation(Document*, unsigned);
 
     [Animation, Inline=FastReturn]
+    void didCancelAnimation(Document*, unsigned);
+
+    [Animation, Inline=FastReturn]
     void didStartAnimation(Document*, Animation* player);
 }
 

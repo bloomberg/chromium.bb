@@ -3,35 +3,27 @@
 <script type="text/javascript" src="../../http/tests/inspector-protocol/inspector-protocol-test.js"></script>
 <script>
 
-var player;
-
-function startAnimation()
+function triggerEmptyTransition()
 {
-    player = node.animate([{ width: "100px" }, { width: "200px" }], 2000);
-}
-
-function cancelAnimation()
-{
-    player.cancel();
+    node.offsetTop;
+    node.style.transition = "1s";
+    node.offsetTop;
+    node.style.width = "200px";
+    node.offsetTop;
+    node.style.transition = "";
+    node.offsetTop;
 }
 
 function test()
 {
     InspectorTest.eventHandler["Animation.animationCreated"] = onCreated;
     InspectorTest.eventHandler["Animation.animationCanceled"] = onCanceled;
-    InspectorTest.eventHandler["Animation.animationStarted"] = onStarted;
     InspectorTest.sendCommand("Animation.enable", {});
-    InspectorTest.evaluateInPage("startAnimation()", function() {});
+    InspectorTest.evaluateInPage("triggerEmptyTransition()", function() {});
 
     function onCreated()
     {
         InspectorTest.log("Animation created");
-    }
-
-    function onStarted()
-    {
-        InspectorTest.log("Animation started");
-        InspectorTest.evaluateInPage("cancelAnimation()", function() {});
     }
 
     function onCanceled()
@@ -44,6 +36,6 @@ function test()
 </script>
 </head>
 <body onload="runTest()">
-    <div id="node" style="background-color: red; height: 100px"></div>
+    <div id="node" style="background-color: red; width: 100px"></div>
 </body>
 </html>

@@ -894,6 +894,8 @@ void Animation::cancel()
     m_playState = Idle;
     m_startTime = nullValue();
     m_currentTimePending = false;
+
+    InspectorInstrumentation::didCancelAnimation(m_timeline->document(), m_sequenceNumber);
 }
 
 void Animation::beginUpdatingState()

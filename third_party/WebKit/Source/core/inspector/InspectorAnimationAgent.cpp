@@ -404,6 +404,11 @@ void InspectorAnimationAgent::didCreateAnimation(unsigned sequenceNumber)
     frontend()->animationCreated(String::number(sequenceNumber));
 }
 
+void InspectorAnimationAgent::didCancelAnimation(unsigned sequenceNumber)
+{
+    frontend()->animationCanceled(String::number(sequenceNumber));
+}
+
 void InspectorAnimationAgent::didStartAnimation(Animation* animation)
 {
     const String& animationId = String::number(animation->sequenceNumber());
