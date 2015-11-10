@@ -173,6 +173,11 @@ class GaiaCookieManagerService : public KeyedService,
   // that a check which GAIA should be done can force it.
   void TriggerListAccounts();
 
+  // Forces the processing of OnCookieChanged. This is public so that callers
+  // that know the GAIA APISID cookie might have changed can inform the
+  // service. Virtual for testing.
+  virtual void ForceOnCookieChangedProcessing();
+
   // Add or remove observers of this helper.
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);

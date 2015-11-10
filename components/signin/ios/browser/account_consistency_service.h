@@ -74,6 +74,9 @@ class AccountConsistencyService : public KeyedService,
   // Does nothing if the cookie is not set on |domain|.
   void RemoveXChromeConnectedCookieFromDomain(const std::string& domain);
 
+  // Notifies the AccountConsistencyService that browsing data has been removed.
+  void OnBrowsingDataRemoved();
+
  private:
   friend class AccountConsistencyServiceTest;
 
