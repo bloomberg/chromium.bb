@@ -11,6 +11,8 @@
         'android_webview_java',
         'android_webview_pak',
         'libdrawgl',
+        '../base/base.gyp:base_java_test_support',
+        '../components/components.gyp:policy_java_test_support'
       ],
       'variables': {
         'apk_name': 'AndroidWebView',
@@ -96,6 +98,7 @@
       'type': 'none',
       'dependencies': [
         '../base/base.gyp:base_java_test_support',
+        '../components/components.gyp:policy_java_test_support',
         '../content/content_shell_and_tests.gyp:content_java_test_support',
         '../net/net.gyp:net_java_test_support',
         '../testing/android/on_device_instrumentation.gyp:broker_java',

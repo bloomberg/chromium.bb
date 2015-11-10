@@ -5,7 +5,7 @@
   <manifest xmlns:android="http://schemas.android.com/apk/res/android"
       package="org.chromium.android_webview.test">
     <uses-sdk android:minSdkVersion="19" android:targetSdkVersion="23" />
-    <instrumentation android:name="org.chromium.base.test.BaseInstrumentationTestRunner"
+    <instrumentation android:name="org.chromium.android_webview.test.AwInstrumentationTestRunner"
         android:targetPackage="org.chromium.android_webview.shell"
         android:label="Tests for org.chromium.android_webview"/>
     <uses-permission android:name="android.permission.RUN_INSTRUMENTATION" />

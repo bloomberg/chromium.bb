@@ -1,6 +1,7 @@
 include_rules = [
   "+components/external_video_surface/android/java",
   "+components/policy/android/java",
+  "+components/policy/android/javatests",
   "+content/public/android/java",
   "+content/public/test/android/javatests",
 ]

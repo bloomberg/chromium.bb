@@ -15,6 +15,7 @@ import android.os.Parcel;
 import android.preference.PreferenceManager;
 import android.util.Base64;
 
+import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 
@@ -29,6 +30,11 @@ import java.util.concurrent.Executor;
  */
 public abstract class AbstractAppRestrictionsProvider extends PolicyProvider {
     private static final String PREFERENCE_KEY = "App Restrictions";
+
+    private static final String TAG = "policy";
+
+    /** {@link Bundle} holding the restrictions to be used during tests. */
+    private static Bundle sTestRestrictions = null;
 
     private final Context mContext;
     private final SharedPreferences mSharedPreferences;
@@ -79,6 +85,11 @@ public abstract class AbstractAppRestrictionsProvider extends PolicyProvider {
      */
     @Override
     public void refresh() {
+        if (sTestRestrictions != null) {
+            notifySettingsAvailable(sTestRestrictions);
+            return;
+        }
+
         final Bundle cachedResult = getCachedPolicies();
         if (cachedResult != null) {
             notifySettingsAvailable(cachedResult);
@@ -168,5 +179,19 @@ public abstract class AbstractAppRestrictionsProvider extends PolicyProvider {
     @VisibleForTesting
     void setTaskExecutor(Executor testExecutor) {
         mExecutor = testExecutor;
+    }
+
+    /**
+     * Restrictions to be used during tests. Subsequent attempts to retrieve the restrictions will
+     * return the provided bundle instead.
+     *
+     * Chrome and WebView tests are set up to use annotations for policy testing and reset the
+     * restrictions to an empty bundle if nothing is specified. To stop using a test bundle,
+     * provide {@code null} as value instead.
+     */
+    @VisibleForTesting
+    public static void setTestRestrictions(Bundle policies) {
+        Log.d(TAG, "Test Restrictions: %s", policies.keySet().toArray());
+        sTestRestrictions = policies;
     }
 }

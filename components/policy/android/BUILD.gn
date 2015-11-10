@@ -22,6 +22,20 @@ android_library("policy_java") {
       ]
 }
 
+# GYP: //components/components.gyp:policy_test_support_java
+android_library("policy_java_test_support") {
+  testonly = true
+  deps = [
+    "//base:base_java",
+    "//base:base_java_test_support",
+    ":policy_java",
+  ]
+  java_files = [
+    "javatests/src/org/chromium/policy/test/annotations/Policies.java",
+    "javatests/src/org/chromium/policy/test/PolicyData.java",
+  ]
+}
+
 # GYP: //components/components.gyp:policy_jni_headers
 generate_jni("jni_headers") {
   visibility = [ "//components/policy/*" ]
@@ -29,13 +43,17 @@ generate_jni("jni_headers") {
   jni_package = "policy"
 }
 
+# GYP: //components/components_test.gyp:components_junit_tests
 junit_binary("components_policy_junit_tests") {
   java_files = [
     "junit/src/org/chromium/policy/AbstractAppRestrictionsProviderTest.java",
     "junit/src/org/chromium/policy/CombinedPolicyProviderTest.java",
+    "junit/src/org/chromium/policy/test/annotations/PoliciesTest.java",
   ]
   deps = [
-    "//base:base_java",
+    ":policy_java_test_support",
     ":policy_java",
+    "//base:base_java",
+    "//third_party/junit:hamcrest",
   ]
 }

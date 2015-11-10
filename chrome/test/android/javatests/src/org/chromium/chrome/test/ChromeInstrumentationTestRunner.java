@@ -19,6 +19,7 @@ import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.test.util.DisableInTabbedMode;
 import org.chromium.net.test.BaseHttpTestServer;
+import org.chromium.policy.test.annotations.Policies;
 import org.chromium.ui.base.DeviceFormFactor;
 
 import java.io.File;
@@ -214,6 +215,8 @@ public class ChromeInstrumentationTestRunner extends BaseInstrumentationTestRunn
         super.addTestHooks(result);
         result.addSkipCheck(new DisableInTabbedModeSkipCheck());
         result.addSkipCheck(new ChromeRestrictionSkipCheck());
+
+        result.addPreTestHook(Policies.getRegistrationHook());
     }
 
     private class ChromeRestrictionSkipCheck extends RestrictionSkipCheck {

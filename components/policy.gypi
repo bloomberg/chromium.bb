@@ -427,6 +427,20 @@
           },
           'includes': [ '../build/java.gypi' ],
         },
+        {
+          # GN: //components/policy/android:policy_java_test_support
+          'target_name': 'policy_java_test_support',
+          'type': 'none',
+          'dependencies': [
+            '../base/base.gyp:base_java',
+            '../base/base.gyp:base_java_test_support',
+            'policy_java'
+          ],
+          'variables': {
+            'java_in_dir': 'policy/android/javatests',
+          },
+          'includes': [ '../build/java.gypi' ],
+        },
       ],
     }],
     ['OS=="win" and target_arch=="ia32" and configuration_policy==1', {
