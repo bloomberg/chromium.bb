@@ -1617,7 +1617,9 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				GCC_PREPROCESSOR_DEFINITIONS = HAVE_MACH_O_NLIST_H;
+				GCC_VERSION = "";
 				PRODUCT_NAME = dump_syms;
+				SDKROOT = macosx;
 			};
 			name = Debug;
 		};
@@ -1625,7 +1627,9 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				GCC_PREPROCESSOR_DEFINITIONS = HAVE_MACH_O_NLIST_H;
+				GCC_VERSION = "";
 				PRODUCT_NAME = dump_syms;
+				SDKROOT = macosx;
 			};
 			name = Release;
 		};
