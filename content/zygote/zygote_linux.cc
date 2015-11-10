@@ -5,6 +5,8 @@
 #include "content/zygote/zygote_linux.h"
 
 #include <fcntl.h>
+#include <poll.h>
+#include <signal.h>
 #include <stdint.h>
 #include <string.h>
 #include <sys/socket.h>
@@ -25,6 +27,7 @@
 #include "base/process/launch.h"
 #include "base/process/process.h"
 #include "base/process/process_handle.h"
+#include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "content/common/child_process_sandbox_support_impl_linux.h"
 #include "content/common/sandbox_linux/sandbox_linux.h"
@@ -84,14 +87,16 @@ void KillAndReap(pid_t pid, ZygoteForkDelegate* helper) {
 
 }  // namespace
 
-Zygote::Zygote(int sandbox_flags, ScopedVector<ZygoteForkDelegate> helpers,
+Zygote::Zygote(int sandbox_flags,
+               ScopedVector<ZygoteForkDelegate> helpers,
                const std::vector<base::ProcessHandle>& extra_children,
                const std::vector<int>& extra_fds)
     : sandbox_flags_(sandbox_flags),
       helpers_(helpers.Pass()),
       initial_uma_index_(0),
       extra_children_(extra_children),
-      extra_fds_(extra_fds) {}
+      extra_fds_(extra_fds),
+      to_reap_() {}
 
 Zygote::~Zygote() {
 }
@@ -108,6 +113,13 @@ bool Zygote::ProcessRequests() {
   memset(&action, 0, sizeof(action));
   action.sa_handler = &SIGCHLDHandler;
   PCHECK(sigaction(SIGCHLD, &action, NULL) == 0);
+
+  // Block SIGCHLD until a child might be ready to reap.
+  sigset_t sigset;
+  sigset_t orig_sigmask;
+  PCHECK(sigemptyset(&sigset) == 0);
+  PCHECK(sigaddset(&sigset, SIGCHLD) == 0);
+  PCHECK(sigprocmask(SIG_BLOCK, &sigset, &orig_sigmask) == 0);
 
   if (UsingSUIDSandbox() || UsingNSSandbox()) {
     // Let the ZygoteHost know we are ready to go.
@@ -128,10 +140,70 @@ bool Zygote::ProcessRequests() {
 #endif
   }
 
+  sigset_t ppoll_sigmask = orig_sigmask;
+  PCHECK(sigdelset(&ppoll_sigmask, SIGCHLD) == 0);
+  struct pollfd pfd;
+  pfd.fd = kZygoteSocketPairFd;
+  pfd.events = POLLIN;
+
+  struct timespec timeout;
+  timeout.tv_sec = 2;
+  timeout.tv_nsec = 0;
+
   for (;;) {
-    // This function call can return multiple times, once per fork().
-    if (HandleRequestFromBrowser(kZygoteSocketPairFd))
-      return true;
+    struct timespec* timeout_ptr = nullptr;
+    if (!to_reap_.empty())
+      timeout_ptr = &timeout;
+    int rc = ppoll(&pfd, 1, timeout_ptr, &ppoll_sigmask);
+    PCHECK(rc >= 0 || errno == EINTR);
+    ReapChildren();
+
+    if (pfd.revents & POLLIN) {
+      // This function call can return multiple times, once per fork().
+      if (HandleRequestFromBrowser(kZygoteSocketPairFd)) {
+        PCHECK(sigprocmask(SIG_SETMASK, &orig_sigmask, NULL) == 0);
+        return true;
+      }
+    }
+  }
+  // The loop should not be exited unless a request was successfully processed.
+  NOTREACHED();
+  return false;
+}
+
+bool Zygote::ReapChild(const base::TimeTicks& now, ZygoteProcessInfo* child) {
+  pid_t pid = child->internal_pid;
+  pid_t r = HANDLE_EINTR(waitpid(pid, NULL, WNOHANG));
+  if (r > 0) {
+    if (r != pid) {
+      DLOG(ERROR) << "While waiting for " << pid << " to terminate, "
+                                                    "waitpid returned "
+                  << r;
+    }
+    return r == pid;
+  }
+  if ((now - child->time_of_reap_request).InSeconds() < 2) {
+    return false;
+  }
+  // If the process has been requested reaped >= 2 seconds ago, kill it.
+  if (!child->sent_sigkill) {
+    if (kill(pid, SIGKILL) != 0)
+      DPLOG(ERROR) << "Sending SIGKILL to process " << pid << " failed";
+
+    child->sent_sigkill = true;
+  }
+  return false;
+}
+
+void Zygote::ReapChildren() {
+  base::TimeTicks now = base::TimeTicks::Now();
+  std::vector<ZygoteProcessInfo>::iterator it = to_reap_.begin();
+  while (it != to_reap_.end()) {
+    if (ReapChild(now, &(*it))) {
+      it = to_reap_.erase(it);
+    } else {
+      it++;
+    }
   }
 }
 
@@ -243,23 +315,10 @@ void Zygote::HandleReapRequest(int fd, base::PickleIterator iter) {
     NOTREACHED();
     return;
   }
+  child_info.time_of_reap_request = base::TimeTicks::Now();
 
   if (!child_info.started_from_helper) {
-    // Do not call base::EnsureProcessTerminated() under ThreadSanitizer, as it
-    // spawns a separate thread which may live until the call to fork() in the
-    // zygote. As a result, ThreadSanitizer will report an error and almost
-    // disable race detection in the child process.
-    // Not calling EnsureProcessTerminated() may result in zombie processes
-    // sticking around. This will only happen during testing, so we can live
-    // with this for now.
-#if !defined(THREAD_SANITIZER)
-    // TODO(jln): this old code is completely broken. See crbug.com/274855.
-    base::EnsureProcessTerminated(base::Process(child_info.internal_pid));
-#else
-    LOG(WARNING) << "Zygote process omitting a call to "
-        << "base::EnsureProcessTerminated() for child pid " << child
-        << " under ThreadSanitizer. See http://crbug.com/274855.";
-#endif
+    to_reap_.push_back(child_info);
   } else {
     // For processes from the helper, send a GetTerminationStatus request
     // with known_dead set to true.

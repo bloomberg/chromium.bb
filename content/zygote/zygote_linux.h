@@ -15,6 +15,8 @@
 #include "base/posix/global_descriptors.h"
 #include "base/process/kill.h"
 #include "base/process/process.h"
+#include "base/process/process_handle.h"
+#include "base/time/time.h"
 
 namespace base {
 class Pickle;
@@ -43,6 +45,10 @@ class Zygote {
     base::ProcessHandle internal_pid;
     // Keeps track of which fork delegate helper the process was started from.
     ZygoteForkDelegate* started_from_helper;
+    // Records when the browser requested the zygote to reap this process.
+    base::TimeTicks time_of_reap_request;
+    // Notes whether the zygote has sent SIGKILL to this process.
+    bool sent_sigkill;
   };
   typedef base::SmallMap< std::map<base::ProcessHandle, ZygoteProcessInfo> >
       ZygoteProcessMap;
@@ -114,6 +120,14 @@ class Zygote {
   bool HandleGetSandboxStatus(int fd,
                               base::PickleIterator iter);
 
+  // Attempt to reap the child process by calling waitpid, and return
+  // whether successful.  If the process has not terminated within
+  // 2 seconds of its reap request, send it SIGKILL.
+  bool ReapChild(const base::TimeTicks& now, ZygoteProcessInfo* child);
+
+  // Attempt to reap all outstanding children in |to_reap_|.
+  void ReapChildren();
+
   // The Zygote needs to keep some information about each process. Most
   // notably what the PID of the process is inside the PID namespace of
   // the Zygote and whether or not a process was started by the
@@ -136,6 +150,9 @@ class Zygote {
   // This vector contains the FDs that must be closed before reaping the extra
   // children.
   std::vector<int> extra_fds_;
+
+  // The vector contains the child processes that need to be reaped.
+  std::vector<ZygoteProcessInfo> to_reap_;
 };
 
 }  // namespace content
