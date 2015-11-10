@@ -22,10 +22,11 @@ namespace {
 // GoogleSigninSucceeded or a GoogleSigninFailed notification is fired.
 class SignInObserver : public SigninTracker::Observer {
  public:
-  SignInObserver()
+  explicit SignInObserver(bool wait_for_account_cookies)
       : seen_(false),
         running_(false),
-        signed_in_(false) {}
+        signed_in_(false),
+        wait_for_account_cookies_(wait_for_account_cookies) {}
 
   virtual ~SignInObserver() {}
 
@@ -48,19 +49,31 @@ class SignInObserver : public SigninTracker::Observer {
 
   void SigninFailed(const GoogleServiceAuthError& error) override {
     DVLOG(1) << "Google signin failed.";
-    seen_ = true;
-    if (!running_)
-      return;
-    message_loop_runner_->Quit();
-    running_ = false;
+    QuitLoopRunner();
   }
 
-  void AccountAddedToCookie(const GoogleServiceAuthError& error) override {}
+  void AccountAddedToCookie(const GoogleServiceAuthError& error) override {
+    if (!wait_for_account_cookies_)
+      return;
+    if (error.state() != GoogleServiceAuthError::NONE) {
+      DVLOG(1) << "Error signing the account, error " << error.state();
+    } else {
+      DVLOG(1) << "Account cookies are added to cookie jar.";
+      signed_in_ = true;
+    }
+    QuitLoopRunner();
+  }
 
   void SigninSuccess() override {
     DVLOG(1) << "Google signin succeeded.";
-    seen_ = true;
+    if (wait_for_account_cookies_)
+      return;
     signed_in_ = true;
+    QuitLoopRunner();
+  }
+
+  void QuitLoopRunner() {
+    seen_ = true;
     if (!running_)
       return;
     message_loop_runner_->Quit();
@@ -75,6 +88,10 @@ class SignInObserver : public SigninTracker::Observer {
   bool running_;
   // True if a GoogleSigninSucceeded event has been observed.
   bool signed_in_;
+  // Whether we should block until the account cookies are added or not.
+  // If false, we only wait until SigninSuccess event is fired which happens
+  // prior to adding account to cookie.
+  bool wait_for_account_cookies_;
   scoped_refptr<MessageLoopRunner> message_loop_runner_;
 };
 
@@ -187,15 +204,15 @@ void ExecuteJsToSigninInSigninFrame(Browser* browser,
 
 bool SignInWithUI(Browser* browser,
                   const std::string& username,
-                  const std::string& password) {
-
-  SignInObserver signin_observer;
+                  const std::string& password,
+                  bool wait_for_account_cookies,
+                  signin_metrics::Source signin_source) {
+  SignInObserver signin_observer(wait_for_account_cookies);
   scoped_ptr<SigninTracker> tracker =
       SigninTrackerFactory::CreateForProfile(browser->profile(),
                                              &signin_observer);
 
-  GURL signin_url = signin::GetPromoURL(
-      signin_metrics::SOURCE_START_PAGE, false);
+  GURL signin_url = signin::GetPromoURL(signin_source, false);
   DVLOG(1) << "Navigating to " << signin_url;
   // For some tests, the window is not shown yet and this might be the first tab
   // navigation, so GetActiveWebContents() for CURRENT_TAB is NULL. That's why
@@ -213,6 +230,14 @@ bool SignInWithUI(Browser* browser,
   ExecuteJsToSigninInSigninFrame(browser, username, password);
   signin_observer.Wait();
   return signin_observer.DidSignIn();
+}
+
+bool SignInWithUI(Browser* browser,
+                  const std::string& username,
+                  const std::string& password) {
+  return SignInWithUI(browser, username, password,
+                      false  /* wait_for_account_cookies */,
+                      signin_metrics::SOURCE_START_PAGE);
 }
 
 }  // namespace login_ui_test_utils
