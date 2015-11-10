@@ -437,11 +437,7 @@ static int init_pts(AVFormatContext *s)
             if (den <= 0)
                 return AVERROR_INVALIDDATA;
 
-#if FF_API_LAVF_FRAC
-FF_DISABLE_DEPRECATION_WARNINGS
             frac_init(st->priv_pts, 0, 0, den);
-FF_ENABLE_DEPRECATION_WARNINGS
-#endif
         }
     }
 
@@ -523,13 +519,9 @@ static int compute_pkt_fields2(AVFormatContext *s, AVStream *st, AVPacket *pkt)
             av_log(s, AV_LOG_WARNING, "Encoder did not produce proper pts, making some up.\n");
             warned = 1;
         }
-#if FF_API_LAVF_FRAC
-FF_DISABLE_DEPRECATION_WARNINGS
         pkt->dts =
 //        pkt->pts= st->cur_dts;
             pkt->pts = st->priv_pts->val;
-FF_ENABLE_DEPRECATION_WARNINGS
-#endif
     }
 
     //calculate dts from pts
@@ -565,11 +557,7 @@ FF_ENABLE_DEPRECATION_WARNINGS
             av_ts2str(pkt->pts), av_ts2str(pkt->dts));
 
     st->cur_dts = pkt->dts;
-#if FF_API_LAVF_FRAC
-FF_DISABLE_DEPRECATION_WARNINGS
     st->priv_pts->val = pkt->dts;
-FF_ENABLE_DEPRECATION_WARNINGS
-#endif
 
     /* update pts */
     switch (st->codec->codec_type) {
@@ -581,20 +569,12 @@ FF_ENABLE_DEPRECATION_WARNINGS
         /* HACK/FIXME, we skip the initial 0 size packets as they are most
          * likely equal to the encoder delay, but it would be better if we
          * had the real timestamps from the encoder */
-#if FF_API_LAVF_FRAC
-FF_DISABLE_DEPRECATION_WARNINGS
         if (frame_size >= 0 && (pkt->size || st->priv_pts->num != st->priv_pts->den >> 1 || st->priv_pts->val)) {
             frac_add(st->priv_pts, (int64_t)st->time_base.den * frame_size);
         }
-FF_ENABLE_DEPRECATION_WARNINGS
-#endif
         break;
     case AVMEDIA_TYPE_VIDEO:
-#if FF_API_LAVF_FRAC
-FF_DISABLE_DEPRECATION_WARNINGS
         frac_add(st->priv_pts, (int64_t)st->time_base.den * st->codec->time_base.num);
-FF_ENABLE_DEPRECATION_WARNINGS
-#endif
         break;
     }
     return 0;

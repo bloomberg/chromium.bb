@@ -1,7 +1,7 @@
-Current Status as of July 30, 2015
+Current Status as of November 10, 2015
 
 Upstream cherry-picks:
-  f8b81a02c980609c450992a0c261330a1ae95d86 - Fixes ogg seeking.
+  None.
 
 Current patches:
   autorename_* files are renamed copies of various files that would cause
@@ -54,9 +54,6 @@ Current patches:
 
   Misc things that were not documented
     Enable av_max_alloc(0) to remove alloc size bound in libavutil/mem.c.
-
-    Add FF_DISABLE_DEPRECATION_WARNINGS/FF_ENABLE_DEPRECATION_WARNINGS pairs in
-    libavformat/mux.c.
 
     Remove static av_always_inline av_const unsigned av_clip_uintp2_arm() and
     av_clip_intp2_arm() from libavutil/arm/intmath.h due to compilation failure.
