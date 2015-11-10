@@ -7,15 +7,7 @@
 namespace autofill {
 
 CardUnmaskDelegate::UnmaskResponse::UnmaskResponse()
-    : should_store_pan(false),
-      providing_risk_advisory_data(false) {
-#if defined(OS_IOS)
-  // On iOS, we generate a RiskAdvisoryData instead of the
-  // BrowserNativeFingerprinting produced on other platforms. This field
-  // directs the Wallet client to configure the request accordingly.
-  providing_risk_advisory_data = true;
-#endif
-}
+    : should_store_pan(false) {}
 
 CardUnmaskDelegate::UnmaskResponse::~UnmaskResponse() {}
 

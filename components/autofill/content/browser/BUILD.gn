@@ -70,7 +70,7 @@ source_set("unit_tests") {
     "content_autofill_driver_unittest.cc",
     "request_autocomplete_manager_unittest.cc",
     "wallet/full_wallet_unittest.cc",
-    "wallet/real_pan_wallet_client_unittest.cc",
+    "wallet/payments_client_unittest.cc",
     "wallet/wallet_address_unittest.cc",
     "wallet/wallet_service_url_unittest.cc",
   ]

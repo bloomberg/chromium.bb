@@ -391,34 +391,33 @@ void AutofillMetrics::LogTimeBeforeAbandonUnmasking(
 
 // static
 void AutofillMetrics::LogRealPanResult(
-    AutofillClient::GetRealPanResult result) {
-  GetRealPanResult metric_result;
+    AutofillClient::PaymentsRpcResult result) {
+  PaymentsRpcResult metric_result;
   switch (result) {
     case AutofillClient::SUCCESS:
-      metric_result = GET_REAL_PAN_RESULT_SUCCESS;
+      metric_result = PAYMENTS_RESULT_SUCCESS;
       break;
     case AutofillClient::TRY_AGAIN_FAILURE:
-      metric_result = GET_REAL_PAN_RESULT_TRY_AGAIN_FAILURE;
+      metric_result = PAYMENTS_RESULT_TRY_AGAIN_FAILURE;
       break;
     case AutofillClient::PERMANENT_FAILURE:
-      metric_result = GET_REAL_PAN_RESULT_PERMANENT_FAILURE;
+      metric_result = PAYMENTS_RESULT_PERMANENT_FAILURE;
       break;
     case AutofillClient::NETWORK_ERROR:
-      metric_result = GET_REAL_PAN_RESULT_NETWORK_ERROR;
+      metric_result = PAYMENTS_RESULT_NETWORK_ERROR;
       break;
     default:
       NOTREACHED();
       return;
   }
   UMA_HISTOGRAM_ENUMERATION("Autofill.UnmaskPrompt.GetRealPanResult",
-                            metric_result,
-                            NUM_GET_REAL_PAN_RESULTS);
+                            metric_result, NUM_PAYMENTS_RESULTS);
 }
 
 // static
 void AutofillMetrics::LogRealPanDuration(
     const base::TimeDelta& duration,
-    AutofillClient::GetRealPanResult result) {
+    AutofillClient::PaymentsRpcResult result) {
   std::string suffix;
   switch (result) {
     case AutofillClient::SUCCESS:
@@ -444,7 +443,7 @@ void AutofillMetrics::LogRealPanDuration(
 // static
 void AutofillMetrics::LogUnmaskingDuration(
     const base::TimeDelta& duration,
-    AutofillClient::GetRealPanResult result) {
+    AutofillClient::PaymentsRpcResult result) {
   std::string suffix;
   switch (result) {
     case AutofillClient::SUCCESS:

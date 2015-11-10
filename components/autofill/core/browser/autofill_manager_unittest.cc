@@ -63,11 +63,38 @@ class MockAutofillClient : public TestAutofillClient {
 
   ~MockAutofillClient() override {}
 
-  MOCK_METHOD1(ConfirmSaveCreditCard,
-               void(const base::Closure& save_card_callback));
+  MOCK_METHOD1(ConfirmSaveCreditCardLocally,
+               void(const base::Closure& callback));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockAutofillClient);
+};
+
+class TestPaymentsClient : public payments::PaymentsClient {
+ public:
+  TestPaymentsClient(net::URLRequestContextGetter* context_getter,
+                     payments::PaymentsClientDelegate* delegate)
+      : PaymentsClient(context_getter, delegate), delegate_(delegate) {}
+
+  ~TestPaymentsClient() override {}
+
+  void GetUploadDetails(const std::string& app_locale) override {
+    delegate_->OnDidGetUploadDetails(
+        app_locale == "en-US" ? AutofillClient::SUCCESS
+                              : AutofillClient::PERMANENT_FAILURE,
+        base::ASCIIToUTF16("this is a context token"),
+        scoped_ptr<base::DictionaryValue>(nullptr));
+  }
+
+  void UploadCard(const payments::PaymentsClient::UploadRequestDetails&
+                      request_details) override {
+    delegate_->OnDidUploadCard(AutofillClient::SUCCESS);
+  }
+
+ private:
+  payments::PaymentsClientDelegate* const delegate_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestPaymentsClient);
 };
 
 class TestPersonalDataManager : public PersonalDataManager {
@@ -297,7 +324,7 @@ void ExpectFilledForm(int page_id,
                       bool use_month_type) {
   // The number of fields in the address and credit card forms created above.
   const size_t kAddressFormSize = 11;
-  const size_t kCreditCardFormSize = use_month_type ? 3 : 4;
+  const size_t kCreditCardFormSize = use_month_type ? 4 : 5;
 
   EXPECT_EQ(expected_page_id, page_id);
   EXPECT_EQ(ASCIIToUTF16("MyForm"), filled_form.name);
@@ -433,7 +460,12 @@ class TestAutofillManager : public AutofillManager {
       : AutofillManager(driver, client, personal_data),
         personal_data_(personal_data),
         autofill_enabled_(true),
-        expect_all_unknown_possible_types_(false) {}
+        credit_card_upload_enabled_(true),
+        credit_card_was_uploaded_(false),
+        expect_all_unknown_possible_types_(false) {
+    set_payments_client(
+        new TestPaymentsClient(driver->GetURLRequestContext(), this));
+  }
   ~TestAutofillManager() override {}
 
   bool IsAutofillEnabled() const override { return autofill_enabled_; }
@@ -441,6 +473,16 @@ class TestAutofillManager : public AutofillManager {
   void set_autofill_enabled(bool autofill_enabled) {
     autofill_enabled_ = autofill_enabled;
   }
+
+  bool IsCreditCardUploadEnabled() override {
+    return credit_card_upload_enabled_;
+  }
+
+  void set_credit_card_upload_enabled(bool credit_card_upload_enabled) {
+    credit_card_upload_enabled_ = credit_card_upload_enabled;
+  }
+
+  bool credit_card_was_uploaded() { return credit_card_was_uploaded_; }
 
   void set_expected_submitted_field_types(
       const std::vector<ServerFieldTypeSet>& expected_types) {
@@ -529,10 +571,16 @@ class TestAutofillManager : public AutofillManager {
   }
 
  private:
+  void OnDidUploadCard(AutofillClient::PaymentsRpcResult result) override {
+    credit_card_was_uploaded_ = true;
+  };
+
   // Weak reference.
   TestPersonalDataManager* personal_data_;
 
   bool autofill_enabled_;
+  bool credit_card_upload_enabled_;
+  bool credit_card_was_uploaded_;
   bool expect_all_unknown_possible_types_;
 
   scoped_ptr<base::RunLoop> run_loop_;
@@ -774,6 +822,8 @@ class AutofillManagerTest : public testing::Test {
       test::CreateTestFormField("", "ccyear", "", "text", &field);
       form->fields.push_back(field);
     }
+    test::CreateTestFormField("CVC", "cvc", "", "text", &field);
+    form->fields.push_back(field);
   }
 
   // Tests if credit card data gets saved
@@ -788,13 +838,13 @@ class AutofillManagerTest : public testing::Test {
     form.fields[1].value = ASCIIToUTF16("4111111111111111");
     form.fields[2].value = ASCIIToUTF16("11");
     form.fields[3].value = ASCIIToUTF16("2017");
-    EXPECT_CALL(autofill_client_, ConfirmSaveCreditCard(_)).Times(1);
+    EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_)).Times(1);
     FormSubmitted(form);
   }
 
   void PrepareForRealPanResponse(FormData* form, CreditCard* card) {
-    // This line silences the warning from RealPanWalletClient about matching
-    // sync and wallet server types.
+    // This line silences the warning from PaymentsClient about matching sync
+    // and Payments server types.
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
         "sync-url", "https://google.com");
 
@@ -805,7 +855,7 @@ class AutofillManagerTest : public testing::Test {
                             "2017");
     card->SetTypeForMaskedCard(kVisaCard);
 
-    EXPECT_CALL(autofill_client_, ConfirmSaveCreditCard(_)).Times(0);
+    EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_)).Times(0);
     EXPECT_CALL(*autofill_driver_, SendFormDataToRenderer(_, _, _))
         .Times(AtLeast(1));
     autofill_manager_->FillOrPreviewCreditCardForm(
@@ -834,6 +884,7 @@ class AutofillManagerTest : public testing::Test {
   scoped_ptr<TestAutofillManager> autofill_manager_;
   scoped_ptr<TestAutofillExternalDelegate> external_delegate_;
   scoped_refptr<net::TestURLRequestContextGetter> request_context_;
+  TestPaymentsClient* payments_client_;
   TestAutofillDownloadManager* download_manager_;
   TestPersonalDataManager personal_data_;
 };
@@ -2089,9 +2140,9 @@ TEST_F(AutofillManagerTest, FillAutofilledForm) {
 
   const int kPageID3 = 3;
   response_page_id = 0;
-  FillAutofillFormDataAndSaveResults(kPageID3, form, *form.fields.rbegin(),
-                                     MakeFrontendID(guid2, std::string()),
-                                     &response_page_id, &response_data);
+  FillAutofillFormDataAndSaveResults(
+      kPageID3, form, form.fields[form.fields.size() - 2],
+      MakeFrontendID(guid2, std::string()), &response_page_id, &response_data);
   {
     SCOPED_TRACE("Credit card 2");
     ExpectFilledForm(response_page_id, response_data, kPageID3, "", "", "", "",
@@ -2684,7 +2735,7 @@ TEST_F(AutofillManagerTest, CreditCardSavedWhenAutocompleteOff) {
   form.fields[1].value = ASCIIToUTF16("4111111111111111");
   form.fields[2].value = ASCIIToUTF16("11");
   form.fields[3].value = ASCIIToUTF16("2017");
-  EXPECT_CALL(autofill_client_, ConfirmSaveCreditCard(_)).Times(1);
+  EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_)).Times(1);
   FormSubmitted(form);
 }
 
@@ -2703,7 +2754,7 @@ TEST_F(AutofillManagerTest, InvalidCreditCardNumberIsNotSaved) {
   form.fields[1].value = ASCIIToUTF16(card);
   form.fields[2].value = ASCIIToUTF16("11");
   form.fields[3].value = ASCIIToUTF16("2017");
-  EXPECT_CALL(autofill_client_, ConfirmSaveCreditCard(_)).Times(0);
+  EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_)).Times(0);
   FormSubmitted(form);
 }
 
@@ -3176,7 +3227,7 @@ TEST_F(AutofillManagerTest, DontSaveCvcInAutocompleteHistory) {
   }
 }
 
-TEST_F(AutofillManagerTest, DontOfferToSaveWalletCard) {
+TEST_F(AutofillManagerTest, DontOfferToSavePaymentsCard) {
   FormData form;
   CreditCard card;
   PrepareForRealPanResponse(&form, &card);
@@ -3250,10 +3301,92 @@ TEST_F(AutofillManagerTest, FillInUpdatedExpirationDate) {
   autofill_manager_->OnDidGetRealPan(AutofillClient::SUCCESS,
                                      "4012888888881881");
 
-  EXPECT_EQ(ASCIIToUTF16("02"), autofill_manager_->unmasking_card_.GetRawInfo(
-                                    CREDIT_CARD_EXP_MONTH));
-  EXPECT_EQ(ASCIIToUTF16("2018"), autofill_manager_->unmasking_card_.GetRawInfo(
-                                      CREDIT_CARD_EXP_4_DIGIT_YEAR));
+  EXPECT_EQ(ASCIIToUTF16("02"),
+            autofill_manager_->unmask_request_.card.GetRawInfo(
+                CREDIT_CARD_EXP_MONTH));
+  EXPECT_EQ(ASCIIToUTF16("2018"),
+            autofill_manager_->unmask_request_.card.GetRawInfo(
+                CREDIT_CARD_EXP_4_DIGIT_YEAR));
+}
+
+TEST_F(AutofillManagerTest, UploadCreditCard) {
+  // Set up our form data.
+  FormData form;
+  CreateTestCreditCardFormData(&form, true, false);
+  std::vector<FormData> forms(1, form);
+  FormsSeen(forms);
+
+  // Edit the data, and submit
+  form.fields[1].value = ASCIIToUTF16("4111111111111111");
+  form.fields[2].value = ASCIIToUTF16("11");
+  form.fields[3].value = ASCIIToUTF16("2017");
+  form.fields[4].value = ASCIIToUTF16("123");
+
+  FormSubmitted(form);
+  EXPECT_TRUE(autofill_manager_->credit_card_was_uploaded());
+}
+
+TEST_F(AutofillManagerTest, DontUploadCreditCardIfFeatureNotEnabled) {
+  autofill_manager_->set_credit_card_upload_enabled(false);
+
+  // Set up our form data.
+  FormData form;
+  CreateTestCreditCardFormData(&form, true, false);
+  std::vector<FormData> forms(1, form);
+  FormsSeen(forms);
+
+  // Edit the data, and submit
+  form.fields[1].value = ASCIIToUTF16("4111111111111111");
+  form.fields[2].value = ASCIIToUTF16("11");
+  form.fields[3].value = ASCIIToUTF16("2017");
+  form.fields[4].value = ASCIIToUTF16("123");
+
+  // The save prompt should be shown instead of doing an upload.
+  EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_)).Times(1);
+  FormSubmitted(form);
+  EXPECT_FALSE(autofill_manager_->credit_card_was_uploaded());
+}
+
+TEST_F(AutofillManagerTest, DontUploadCreditCardIfCvcUnavailable) {
+  // Set up our form data.
+  FormData form;
+  CreateTestCreditCardFormData(&form, true, false);
+  std::vector<FormData> forms(1, form);
+  FormsSeen(forms);
+
+  // Edit the data, and submit
+  form.fields[1].value = ASCIIToUTF16("4111111111111111");
+  form.fields[2].value = ASCIIToUTF16("11");
+  form.fields[3].value = ASCIIToUTF16("2017");
+  form.fields[4].value = ASCIIToUTF16("");  // CVC
+
+  // The save prompt should be shown instead of doing an upload.
+  EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_)).Times(1);
+  FormSubmitted(form);
+  EXPECT_FALSE(autofill_manager_->credit_card_was_uploaded());
+}
+
+TEST_F(AutofillManagerTest, DontUploadCreditCardIfUploadDetailsFails) {
+  // Anything other than "en-US" will cause GetUploadDetails to return a failure
+  // response.
+  autofill_manager_->set_app_locale("pt-BR");
+
+  // Set up our form data.
+  FormData form;
+  CreateTestCreditCardFormData(&form, true, false);
+  std::vector<FormData> forms(1, form);
+  FormsSeen(forms);
+
+  // Edit the data, and submit
+  form.fields[1].value = ASCIIToUTF16("4111111111111111");
+  form.fields[2].value = ASCIIToUTF16("11");
+  form.fields[3].value = ASCIIToUTF16("2017");
+  form.fields[4].value = ASCIIToUTF16("123");
+
+  // The save prompt should be shown instead of doing an upload.
+  EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_)).Times(1);
+  FormSubmitted(form);
+  EXPECT_FALSE(autofill_manager_->credit_card_was_uploaded());
 }
 
 // Verify that typing "gmail" will match "theking@gmail.com" and

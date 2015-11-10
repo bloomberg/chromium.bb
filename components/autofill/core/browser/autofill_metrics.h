@@ -348,17 +348,17 @@ class AutofillMetrics {
     NUM_UNMASK_PROMPT_EVENTS,
   };
 
-  // Possible results of the GetRealPan call.
-  enum GetRealPanResult {
+  // Possible results of Payments RPCs.
+  enum PaymentsRpcResult {
     // Request succeeded.
-    GET_REAL_PAN_RESULT_SUCCESS = 0,
+    PAYMENTS_RESULT_SUCCESS = 0,
     // Request failed; try again.
-    GET_REAL_PAN_RESULT_TRY_AGAIN_FAILURE,
+    PAYMENTS_RESULT_TRY_AGAIN_FAILURE,
     // Request failed; don't try again.
-    GET_REAL_PAN_RESULT_PERMANENT_FAILURE,
-    // Unable to connect to Wallet servers.
-    GET_REAL_PAN_RESULT_NETWORK_ERROR,
-    NUM_GET_REAL_PAN_RESULTS,
+    PAYMENTS_RESULT_PERMANENT_FAILURE,
+    // Unable to connect to Payments servers.
+    PAYMENTS_RESULT_NETWORK_ERROR,
+    NUM_PAYMENTS_RESULTS,
   };
 
   // For measuring the network request time of various Wallet API calls. See
@@ -509,15 +509,15 @@ class AutofillMetrics {
   static void LogTimeBeforeAbandonUnmasking(const base::TimeDelta& duration);
 
   // Logs |result| to the get real pan result histogram.
-  static void LogRealPanResult(AutofillClient::GetRealPanResult result);
+  static void LogRealPanResult(AutofillClient::PaymentsRpcResult result);
 
   // Logs |result| to duration of the GetRealPan RPC.
   static void LogRealPanDuration(const base::TimeDelta& duration,
-                                 AutofillClient::GetRealPanResult result);
+                                 AutofillClient::PaymentsRpcResult result);
 
   // Logs |result| to the get real pan result histogram.
   static void LogUnmaskingDuration(const base::TimeDelta& duration,
-                                   AutofillClient::GetRealPanResult result);
+                                   AutofillClient::PaymentsRpcResult result);
 
   // Logs |metric| to the Wallet errors histogram.
   static void LogWalletErrorMetric(WalletErrorMetric metric);

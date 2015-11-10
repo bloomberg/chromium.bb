@@ -11,6 +11,7 @@
 #include "base/i18n/rtl.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
+#include "base/values.h"
 #include "ui/base/window_open_disposition.h"
 #include "url/gurl.h"
 
@@ -60,7 +61,7 @@ class AutofillClient {
     AutocompleteResultErrorInvalid,
   };
 
-  enum GetRealPanResult {
+  enum PaymentsRpcResult {
     // Empty result. Used for initializing variables and should generally
     // not be returned nor passed as arguments unless explicitly allowed by
     // the API.
@@ -75,7 +76,7 @@ class AutofillClient {
     // Request failed; don't try again.
     PERMANENT_FAILURE,
 
-    // Unable to connect to Wallet servers. Prompt user to check internet
+    // Unable to connect to Payments servers. Prompt user to check internet
     // connection.
     NETWORK_ERROR,
   };
@@ -115,12 +116,21 @@ class AutofillClient {
   // information to proceed.
   virtual void ShowUnmaskPrompt(const CreditCard& card,
                                 base::WeakPtr<CardUnmaskDelegate> delegate) = 0;
-  virtual void OnUnmaskVerificationResult(GetRealPanResult result) = 0;
+  virtual void OnUnmaskVerificationResult(PaymentsRpcResult result) = 0;
 
-  // Run |save_card_callback| if the credit card should be imported as personal
+  // Runs |callback| if the credit card should be imported as personal
   // data. |metric_logger| can be used to log user actions.
-  virtual void ConfirmSaveCreditCard(
-      const base::Closure& save_card_callback) = 0;
+  virtual void ConfirmSaveCreditCardLocally(const base::Closure& callback) = 0;
+
+  // Runs |callback| if the credit card should be uploaded to Payments. Displays
+  // the contents of |legal_message| to the user.
+  virtual void ConfirmSaveCreditCardToCloud(
+      const base::Closure& callback,
+      scoped_ptr<base::DictionaryValue> legal_message) = 0;
+
+  // Gathers risk data and provides it to |callback|.
+  virtual void LoadRiskData(
+      const base::Callback<void(const std::string&)>& callback) = 0;
 
   // Returns true if both the platform and the device support scanning credit
   // cards. Should be called before ScanCreditCard().

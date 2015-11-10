@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_AUTOFILL_EXPERIMENTS_H_
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_AUTOFILL_EXPERIMENTS_H_
 
+#include <string>
+
 class PrefService;
 
 namespace autofill {
@@ -23,6 +25,12 @@ bool IsInAutofillSuggestionsDisabledExperiment();
 // This controls whether the option is presented at all rather than the default
 // response of the option.
 bool OfferStoreUnmaskedCards();
+
+// Returns true if uploading credit cards to Wallet servers is enabled. This
+// requires the appropriate flags and user settings to be true and the user to
+// be a member of a supported domain.
+bool IsCreditCardUploadEnabled(const PrefService* pref_service,
+                               const std::string& user_email);
 
 }  // namespace autofill
 

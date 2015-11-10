@@ -21,11 +21,6 @@
 
 namespace autofill {
 
-void GetRiskDataWithCallback(
-    const base::Callback<void(const std::string&)>& callback) {
-  callback.Run(ios::GetChromeBrowserProvider()->GetRiskData());
-}
-
 AutofillClientIOS::AutofillClientIOS(
     ios::ChromeBrowserState* browser_state,
     infobars::InfoBarManager* infobar_manager,
@@ -37,10 +32,8 @@ AutofillClientIOS::AutofillClientIOS(
       bridge_(bridge),
       password_generation_manager_(password_generation_manager),
       identity_provider_(identity_provider.Pass()),
-      unmask_controller_(base::Bind(&GetRiskDataWithCallback),
-                         browser_state->GetPrefs(),
-                         browser_state->IsOffTheRecord()) {
-}
+      unmask_controller_(browser_state->GetPrefs(),
+                         browser_state->IsOffTheRecord()) {}
 
 AutofillClientIOS::~AutofillClientIOS() {
   HideAutofillPopup();
@@ -79,18 +72,29 @@ void AutofillClientIOS::ShowUnmaskPrompt(
       delegate);
 }
 
-void AutofillClientIOS::OnUnmaskVerificationResult(GetRealPanResult result) {
+void AutofillClientIOS::OnUnmaskVerificationResult(PaymentsRpcResult result) {
   unmask_controller_.OnVerificationResult(result);
 }
 
-void AutofillClientIOS::ConfirmSaveCreditCard(
-    const base::Closure& save_card_callback) {
+void AutofillClientIOS::ConfirmSaveCreditCardLocally(
+    const base::Closure& callback) {
   // This method is invoked synchronously from
   // AutofillManager::OnFormSubmitted(); at the time of detecting that a form
   // was submitted, the WebContents is guaranteed to be live. Since the
   // InfoBarService is a WebContentsUserData, it must also be alive at this
   // time.
-  AutofillCCInfoBarDelegate::Create(infobar_manager_, this, save_card_callback);
+  AutofillCCInfoBarDelegate::Create(infobar_manager_, this, callback);
+}
+
+void AutofillClientIOS::ConfirmSaveCreditCardToCloud(
+    const base::Closure& callback,
+    scoped_ptr<base::DictionaryValue> legal_message) {
+  NOTIMPLEMENTED();
+}
+
+void AutofillClientIOS::LoadRiskData(
+    const base::Callback<void(const std::string&)>& callback) {
+  callback.Run(ios::GetChromeBrowserProvider()->GetRiskData());
 }
 
 bool AutofillClientIOS::HasCreditCardScanFeature() {

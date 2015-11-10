@@ -4,8 +4,9 @@
 
 #include "base/command_line.h"
 #include "base/thread_task_runner_handle.h"
+#include "base/values.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
-#include "components/autofill/core/browser/wallet/real_pan_wallet_client.h"
+#include "components/autofill/core/browser/payments/payments_client.h"
 #include "components/autofill/core/common/autofill_switches.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "google_apis/gaia/fake_identity_provider.h"
@@ -15,54 +16,87 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace autofill {
-namespace wallet {
+namespace payments {
 
-class RealPanWalletClientTest : public testing::Test,
-                                public RealPanWalletClient::Delegate {
+class PaymentsClientTest : public testing::Test, public PaymentsClientDelegate {
  public:
-  RealPanWalletClientTest() : result_(AutofillClient::SUCCESS) {}
-  ~RealPanWalletClientTest() override {}
+  PaymentsClientTest() : result_(AutofillClient::NONE) {}
+  ~PaymentsClientTest() override {}
 
   void SetUp() override {
-    // Silence the warning for mismatching sync and wallet servers.
+    // Silence the warning for mismatching sync and Payments servers.
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
         switches::kWalletServiceUseSandbox, "0");
+
+    result_ = AutofillClient::NONE;
+    real_pan_.clear();
+    legal_message_.reset();
 
     request_context_ = new net::TestURLRequestContextGetter(
         base::ThreadTaskRunnerHandle::Get());
     token_service_.reset(new FakeOAuth2TokenService());
     identity_provider_.reset(new FakeIdentityProvider(token_service_.get()));
-    client_.reset(new RealPanWalletClient(request_context_.get(), this));
+    client_.reset(new PaymentsClient(request_context_.get(), this));
   }
 
   void TearDown() override { client_.reset(); }
 
-  // RealPanWalletClient::Delegate
+  // PaymentsClientDelegate
 
   IdentityProvider* GetIdentityProvider() override {
     return identity_provider_.get();
   }
 
-  void OnDidGetRealPan(AutofillClient::GetRealPanResult result,
+  void OnDidGetRealPan(AutofillClient::PaymentsRpcResult result,
                        const std::string& real_pan) override {
     result_ = result;
     real_pan_ = real_pan;
+  }
+
+  void OnDidGetUploadDetails(
+      AutofillClient::PaymentsRpcResult result,
+      const base::string16& context_token,
+      scoped_ptr<base::DictionaryValue> legal_message) override {
+    result_ = result;
+    legal_message_ = legal_message.Pass();
+  }
+
+  void OnDidUploadCard(AutofillClient::PaymentsRpcResult result) override {
+    result_ = result;
   }
 
  protected:
   void StartUnmasking() {
     token_service_->AddAccount("example@gmail.com");
     identity_provider_->LogIn("example@gmail.com");
-    CreditCard card = test::GetMaskedServerCard();
-    CardUnmaskDelegate::UnmaskResponse response;
-    response.cvc = base::ASCIIToUTF16("123");
-    client_->UnmaskCard(card, response);
+    PaymentsClient::UnmaskRequestDetails request_details;
+    request_details.card = test::GetMaskedServerCard();
+    request_details.user_response.cvc = base::ASCIIToUTF16("123");
+    request_details.risk_data = "some risk data";
+    client_->UnmaskCard(request_details);
+  }
+
+  void StartGettingUploadDetails() {
+    token_service_->AddAccount("example@gmail.com");
+    identity_provider_->LogIn("example@gmail.com");
+    client_->GetUploadDetails("language-LOCALE");
+  }
+
+  void StartUploading() {
+    token_service_->AddAccount("example@gmail.com");
+    identity_provider_->LogIn("example@gmail.com");
+    PaymentsClient::UploadRequestDetails request_details;
+    request_details.card = test::GetCreditCard();
+    request_details.cvc = base::ASCIIToUTF16("123");
+    request_details.context_token = base::ASCIIToUTF16("context token");
+    request_details.risk_data = "some risk data";
+    request_details.app_locale = "language-LOCALE";
+    client_->UploadCard(request_details);
   }
 
   void IssueOAuthToken() {
     token_service_->IssueAllTokensForAccount(
-        "example@gmail.com",
-        "totally_real_token",
+        "example@gmail.com", "totally_real_token",
         base::Time::Now() + base::TimeDelta::FromDays(10));
 
     // Verify the auth header.
@@ -71,8 +105,8 @@ class RealPanWalletClientTest : public testing::Test,
     fetcher->GetExtraRequestHeaders(&request_headers);
     std::string auth_header_value;
     EXPECT_TRUE(request_headers.GetHeader(
-        net::HttpRequestHeaders::kAuthorization,
-        &auth_header_value)) << request_headers.ToString();
+        net::HttpRequestHeaders::kAuthorization, &auth_header_value))
+        << request_headers.ToString();
     EXPECT_EQ("Bearer totally_real_token", auth_header_value);
   }
 
@@ -85,21 +119,22 @@ class RealPanWalletClientTest : public testing::Test,
     fetcher->delegate()->OnURLFetchComplete(fetcher);
   }
 
-  AutofillClient::GetRealPanResult result_;
+  AutofillClient::PaymentsRpcResult result_;
   std::string real_pan_;
+  scoped_ptr<base::DictionaryValue> legal_message_;
 
   content::TestBrowserThreadBundle thread_bundle_;
   net::TestURLFetcherFactory factory_;
   scoped_refptr<net::TestURLRequestContextGetter> request_context_;
   scoped_ptr<FakeOAuth2TokenService> token_service_;
   scoped_ptr<FakeIdentityProvider> identity_provider_;
-  scoped_ptr<RealPanWalletClient> client_;
+  scoped_ptr<PaymentsClient> client_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(RealPanWalletClientTest);
+  DISALLOW_COPY_AND_ASSIGN(PaymentsClientTest);
 };
 
-TEST_F(RealPanWalletClientTest, OAuthError) {
+TEST_F(PaymentsClientTest, OAuthError) {
   StartUnmasking();
   token_service_->IssueErrorForAllPendingRequestsForAccount(
       "example@gmail.com",
@@ -108,7 +143,7 @@ TEST_F(RealPanWalletClientTest, OAuthError) {
   EXPECT_TRUE(real_pan_.empty());
 }
 
-TEST_F(RealPanWalletClientTest, Success) {
+TEST_F(PaymentsClientTest, UnmaskSuccess) {
   StartUnmasking();
   IssueOAuthToken();
   ReturnResponse(net::HTTP_OK, "{ \"pan\": \"1234\" }");
@@ -116,7 +151,57 @@ TEST_F(RealPanWalletClientTest, Success) {
   EXPECT_EQ("1234", real_pan_);
 }
 
-TEST_F(RealPanWalletClientTest, RetryFailure) {
+TEST_F(PaymentsClientTest, GetDetailsSuccess) {
+  StartGettingUploadDetails();
+  ReturnResponse(
+      net::HTTP_OK,
+      "{ \"context_token\": \"some_token\", \"legal_message\": {} }");
+  EXPECT_EQ(AutofillClient::SUCCESS, result_);
+  EXPECT_NE(nullptr, legal_message_.get());
+}
+
+TEST_F(PaymentsClientTest, UploadSuccess) {
+  StartUploading();
+  IssueOAuthToken();
+  ReturnResponse(net::HTTP_OK, "{}");
+  EXPECT_EQ(AutofillClient::SUCCESS, result_);
+}
+
+TEST_F(PaymentsClientTest, GetDetailsFollowedByUploadSuccess) {
+  StartGettingUploadDetails();
+  ReturnResponse(
+      net::HTTP_OK,
+      "{ \"context_token\": \"some_token\", \"legal_message\": {} }");
+  EXPECT_EQ(AutofillClient::SUCCESS, result_);
+
+  result_ = AutofillClient::NONE;
+
+  StartUploading();
+  IssueOAuthToken();
+  ReturnResponse(net::HTTP_OK, "{}");
+  EXPECT_EQ(AutofillClient::SUCCESS, result_);
+}
+
+TEST_F(PaymentsClientTest, UnmaskMissingPan) {
+  StartUnmasking();
+  ReturnResponse(net::HTTP_OK, "{}");
+  EXPECT_EQ(AutofillClient::PERMANENT_FAILURE, result_);
+}
+
+TEST_F(PaymentsClientTest, GetDetailsMissingContextToken) {
+  StartGettingUploadDetails();
+  ReturnResponse(net::HTTP_OK, "{ \"legal_message\": {} }");
+  EXPECT_EQ(AutofillClient::PERMANENT_FAILURE, result_);
+}
+
+TEST_F(PaymentsClientTest, GetDetailsMissingLegalMessage) {
+  StartGettingUploadDetails();
+  ReturnResponse(net::HTTP_OK, "{ \"context_token\": \"some_token\" }");
+  EXPECT_EQ(AutofillClient::PERMANENT_FAILURE, result_);
+  EXPECT_EQ(nullptr, legal_message_.get());
+}
+
+TEST_F(PaymentsClientTest, RetryFailure) {
   StartUnmasking();
   IssueOAuthToken();
   ReturnResponse(net::HTTP_OK, "{ \"error\": { \"code\": \"INTERNAL\" } }");
@@ -124,31 +209,30 @@ TEST_F(RealPanWalletClientTest, RetryFailure) {
   EXPECT_EQ("", real_pan_);
 }
 
-TEST_F(RealPanWalletClientTest, PermanentFailure) {
+TEST_F(PaymentsClientTest, PermanentFailure) {
   StartUnmasking();
   IssueOAuthToken();
   ReturnResponse(net::HTTP_OK,
-      "{ \"error\": { \"code\": \"ANYTHING_ELSE\" } }");
+                 "{ \"error\": { \"code\": \"ANYTHING_ELSE\" } }");
   EXPECT_EQ(AutofillClient::PERMANENT_FAILURE, result_);
   EXPECT_EQ("", real_pan_);
 }
 
-TEST_F(RealPanWalletClientTest, MalformedResponse) {
+TEST_F(PaymentsClientTest, MalformedResponse) {
   StartUnmasking();
   IssueOAuthToken();
-  ReturnResponse(net::HTTP_OK,
-      "{ \"error_code\": \"WRONG_JSON_FORMAT\" }");
+  ReturnResponse(net::HTTP_OK, "{ \"error_code\": \"WRONG_JSON_FORMAT\" }");
   EXPECT_EQ(AutofillClient::PERMANENT_FAILURE, result_);
   EXPECT_EQ("", real_pan_);
 }
 
-TEST_F(RealPanWalletClientTest, ReauthNeeded) {
+TEST_F(PaymentsClientTest, ReauthNeeded) {
   {
     StartUnmasking();
     IssueOAuthToken();
     ReturnResponse(net::HTTP_UNAUTHORIZED, "");
     // No response yet.
-    EXPECT_EQ(AutofillClient::SUCCESS, result_);
+    EXPECT_EQ(AutofillClient::NONE, result_);
     EXPECT_EQ("", real_pan_);
 
     // Second HTTP_UNAUTHORIZED causes permanent failure.
@@ -158,7 +242,7 @@ TEST_F(RealPanWalletClientTest, ReauthNeeded) {
     EXPECT_EQ("", real_pan_);
   }
 
-  result_ = AutofillClient::SUCCESS;
+  result_ = AutofillClient::NONE;
   real_pan_.clear();
 
   {
@@ -166,7 +250,7 @@ TEST_F(RealPanWalletClientTest, ReauthNeeded) {
     IssueOAuthToken();
     ReturnResponse(net::HTTP_UNAUTHORIZED, "");
     // No response yet.
-    EXPECT_EQ(AutofillClient::SUCCESS, result_);
+    EXPECT_EQ(AutofillClient::NONE, result_);
     EXPECT_EQ("", real_pan_);
 
     // HTTP_OK after first HTTP_UNAUTHORIZED results in success.
@@ -177,7 +261,7 @@ TEST_F(RealPanWalletClientTest, ReauthNeeded) {
   }
 }
 
-TEST_F(RealPanWalletClientTest, NetworkError) {
+TEST_F(PaymentsClientTest, NetworkError) {
   StartUnmasking();
   IssueOAuthToken();
   ReturnResponse(net::HTTP_REQUEST_TIMEOUT, std::string());
@@ -185,7 +269,7 @@ TEST_F(RealPanWalletClientTest, NetworkError) {
   EXPECT_EQ("", real_pan_);
 }
 
-TEST_F(RealPanWalletClientTest, OtherError) {
+TEST_F(PaymentsClientTest, OtherError) {
   StartUnmasking();
   IssueOAuthToken();
   ReturnResponse(net::HTTP_FORBIDDEN, std::string());
@@ -194,4 +278,4 @@ TEST_F(RealPanWalletClientTest, OtherError) {
 }
 
 }  // namespace autofill
-}  // namespace wallet
+}  // namespace payments

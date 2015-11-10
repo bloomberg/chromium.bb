@@ -20,19 +20,16 @@
 namespace autofill {
 
 CardUnmaskPromptControllerImpl::CardUnmaskPromptControllerImpl(
-    const RiskDataCallback& risk_data_callback,
     PrefService* pref_service,
     bool is_off_the_record)
-    : risk_data_callback_(risk_data_callback),
-      pref_service_(pref_service),
+    : pref_service_(pref_service),
       new_card_link_clicked_(false),
       is_off_the_record_(is_off_the_record),
       card_unmask_view_(nullptr),
       unmasking_result_(AutofillClient::NONE),
       unmasking_initial_should_store_pan_(false),
       unmasking_number_of_attempts_(0),
-      weak_pointer_factory_(this) {
-}
+      weak_pointer_factory_(this) {}
 
 CardUnmaskPromptControllerImpl::~CardUnmaskPromptControllerImpl() {
   if (card_unmask_view_)
@@ -49,7 +46,6 @@ void CardUnmaskPromptControllerImpl::ShowPrompt(
   new_card_link_clicked_ = false;
   shown_timestamp_ = base::Time::Now();
   pending_response_ = CardUnmaskDelegate::UnmaskResponse();
-  LoadRiskFingerprint();
   card_unmask_view_ = card_unmask_view;
   card_ = card;
   delegate_ = delegate;
@@ -61,7 +57,7 @@ void CardUnmaskPromptControllerImpl::ShowPrompt(
 }
 
 bool CardUnmaskPromptControllerImpl::AllowsRetry(
-    AutofillClient::GetRealPanResult result) {
+    AutofillClient::PaymentsRpcResult result) {
   if (result == AutofillClient::NETWORK_ERROR ||
       result == AutofillClient::PERMANENT_FAILURE) {
     return false;
@@ -70,7 +66,7 @@ bool CardUnmaskPromptControllerImpl::AllowsRetry(
 }
 
 void CardUnmaskPromptControllerImpl::OnVerificationResult(
-    AutofillClient::GetRealPanResult result) {
+    AutofillClient::PaymentsRpcResult result) {
   if (!card_unmask_view_)
     return;
 
@@ -205,8 +201,7 @@ void CardUnmaskPromptControllerImpl::OnUnmaskResponse(
     pending_response_.should_store_pan = false;
   }
 
-  if (!pending_response_.risk_data.empty())
-    delegate_->OnUnmaskResponse(pending_response_);
+  delegate_->OnUnmaskResponse(pending_response_);
 }
 
 void CardUnmaskPromptControllerImpl::NewCardLinkClicked() {
@@ -309,19 +304,6 @@ bool CardUnmaskPromptControllerImpl::InputExpirationIsValid(
 base::TimeDelta CardUnmaskPromptControllerImpl::GetSuccessMessageDuration()
     const {
   return base::TimeDelta::FromMilliseconds(500);
-}
-
-void CardUnmaskPromptControllerImpl::LoadRiskFingerprint() {
-  risk_data_callback_.Run(
-      base::Bind(&CardUnmaskPromptControllerImpl::OnDidLoadRiskFingerprint,
-                 weak_pointer_factory_.GetWeakPtr()));
-}
-
-void CardUnmaskPromptControllerImpl::OnDidLoadRiskFingerprint(
-    const std::string& risk_data) {
-  pending_response_.risk_data = risk_data;
-  if (!pending_response_.cvc.empty())
-    delegate_->OnUnmaskResponse(pending_response_);
 }
 
 }  // namespace autofill

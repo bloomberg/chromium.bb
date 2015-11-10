@@ -54,7 +54,6 @@ namespace autofill {
 ChromeAutofillClient::ChromeAutofillClient(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
       unmask_controller_(
-          base::Bind(&LoadRiskData, 0, web_contents),
           user_prefs::UserPrefs::Get(web_contents->GetBrowserContext()),
           Profile::FromBrowserContext(web_contents->GetBrowserContext())
               ->IsOffTheRecord()),
@@ -148,25 +147,37 @@ void ChromeAutofillClient::ShowUnmaskPrompt(
       card, delegate);
 }
 
-void ChromeAutofillClient::OnUnmaskVerificationResult(GetRealPanResult result) {
+void ChromeAutofillClient::OnUnmaskVerificationResult(
+    PaymentsRpcResult result) {
   unmask_controller_.OnVerificationResult(result);
 }
 
-void ChromeAutofillClient::ConfirmSaveCreditCard(
-    const base::Closure& save_card_callback) {
+void ChromeAutofillClient::ConfirmSaveCreditCardLocally(
+    const base::Closure& callback) {
 // TODO(bondd): Implement save card bubble for OS_MACOSX.
 #if defined(TOOLKIT_VIEWS) && !defined(OS_MACOSX)
   // Do lazy initialization of SaveCardBubbleControllerImpl.
   autofill::SaveCardBubbleControllerImpl::CreateForWebContents(web_contents());
   autofill::SaveCardBubbleControllerImpl* controller =
       autofill::SaveCardBubbleControllerImpl::FromWebContents(web_contents());
-  controller->SetCallback(save_card_callback);
+  controller->SetCallback(callback);
   controller->ShowBubble();
 #else
   AutofillCCInfoBarDelegate::Create(
-      InfoBarService::FromWebContents(web_contents()), this,
-      save_card_callback);
+      InfoBarService::FromWebContents(web_contents()), this, callback);
 #endif
+}
+
+void ChromeAutofillClient::ConfirmSaveCreditCardToCloud(
+    const base::Closure& callback,
+    scoped_ptr<base::DictionaryValue> legal_message) {
+  // TODO(bondd): Implement upload UI.
+  ConfirmSaveCreditCardLocally(callback);
+}
+
+void ChromeAutofillClient::LoadRiskData(
+    const base::Callback<void(const std::string&)>& callback) {
+  ::autofill::LoadRiskData(0, web_contents(), callback);
 }
 
 bool ChromeAutofillClient::HasCreditCardScanFeature() {

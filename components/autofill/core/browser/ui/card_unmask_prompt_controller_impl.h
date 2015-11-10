@@ -22,11 +22,7 @@ class CardUnmaskPromptView;
 
 class CardUnmaskPromptControllerImpl : public CardUnmaskPromptController {
  public:
-  typedef base::Callback<void(const base::Callback<void(const std::string&)>&)>
-      RiskDataCallback;
-
   CardUnmaskPromptControllerImpl(
-      const RiskDataCallback& risk_data_callback,
       PrefService* pref_service,
       bool is_off_the_record);
   virtual ~CardUnmaskPromptControllerImpl();
@@ -36,7 +32,7 @@ class CardUnmaskPromptControllerImpl : public CardUnmaskPromptController {
                   const CreditCard& card,
                   base::WeakPtr<CardUnmaskDelegate> delegate);
   // The CVC the user entered went through validation.
-  void OnVerificationResult(AutofillClient::GetRealPanResult result);
+  void OnVerificationResult(AutofillClient::PaymentsRpcResult result);
 
   // CardUnmaskPromptController implementation.
   void OnUnmaskDialogClosed() override;
@@ -57,21 +53,14 @@ class CardUnmaskPromptControllerImpl : public CardUnmaskPromptController {
   base::TimeDelta GetSuccessMessageDuration() const override;
 
  protected:
-  // Virtual so tests can suppress it.
-  virtual void LoadRiskFingerprint();
-
-  // Protected so tests can call it.
-  void OnDidLoadRiskFingerprint(const std::string& risk_data);
-
   // Exposed for testing.
   CardUnmaskPromptView* view() { return card_unmask_view_; }
 
  private:
-  bool AllowsRetry(AutofillClient::GetRealPanResult result);
+  bool AllowsRetry(AutofillClient::PaymentsRpcResult result);
   void LogOnCloseEvents();
   AutofillMetrics::UnmaskPromptEvent GetCloseReasonEvent();
 
-  RiskDataCallback risk_data_callback_;
   PrefService* pref_service_;
   bool new_card_link_clicked_;
   bool is_off_the_record_;
@@ -79,7 +68,7 @@ class CardUnmaskPromptControllerImpl : public CardUnmaskPromptController {
   base::WeakPtr<CardUnmaskDelegate> delegate_;
   CardUnmaskPromptView* card_unmask_view_;
 
-  AutofillClient::GetRealPanResult unmasking_result_;
+  AutofillClient::PaymentsRpcResult unmasking_result_;
   bool unmasking_initial_should_store_pan_;
   int unmasking_number_of_attempts_;
   base::Time shown_timestamp_;

@@ -7,8 +7,10 @@
 #include "base/command_line.h"
 #include "base/metrics/field_trial.h"
 #include "base/prefs/pref_service.h"
+#include "base/strings/string_util.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/autofill/core/common/autofill_switches.h"
+#include "google_apis/gaia/gaia_auth_util.h"
 
 namespace autofill {
 
@@ -45,6 +47,32 @@ bool OfferStoreUnmaskedCards() {
   // Otherwise use the field trial to show the checkbox or not.
   return group_name != "Disabled";
 #endif
+}
+
+bool IsCreditCardUploadEnabled(const PrefService* pref_service,
+                               const std::string& user_email) {
+  // Query the field trial before checking command line flags to ensure UMA
+  // reports the correct group.
+  std::string group_name =
+      base::FieldTrialList::FindFullName("OfferUploadCreditCards");
+
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableOfferUploadCreditCards))
+    return true;
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableOfferUploadCreditCards))
+    return false;
+
+  if (group_name.empty() || group_name == "Disabled")
+    return false;
+
+  if (!pref_service->GetBoolean(prefs::kAutofillWalletSyncExperimentEnabled) ||
+      !pref_service->GetBoolean(prefs::kAutofillWalletImportEnabled))
+    return false;
+
+  std::string domain = gaia::ExtractDomainName(user_email);
+  return domain == "googlemail.com" || domain == "gmail.com" ||
+         domain == "google.com";
 }
 
 }  // namespace autofill
