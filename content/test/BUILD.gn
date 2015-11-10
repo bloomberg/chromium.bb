@@ -133,7 +133,15 @@ source_set("test_support") {
     }
 
     if (use_aura || is_mac) {
-      deps += [ "//ui/compositor" ]
+      deps += [
+        "//ui/compositor",
+        "//third_party/libvpx_new",
+      ]
+
+      sources += [
+        "../browser/compositor/test/no_transport_image_transport_factory.cc",
+        "../browser/compositor/test/no_transport_image_transport_factory.h",
+      ]
     }
 
     if (use_ozone) {
@@ -144,17 +152,6 @@ source_set("test_support") {
       deps += [
         "//content:sandbox_helper_win",
         "//third_party/iaccessible2",
-      ]
-    }
-
-    if (!is_android && !is_ios) {
-      sources += [
-        "../browser/compositor/test/no_transport_image_transport_factory.cc",
-        "../browser/compositor/test/no_transport_image_transport_factory.h",
-      ]
-      deps += [
-        "//ui/compositor",
-        "//third_party/libvpx_new",
       ]
     }
 

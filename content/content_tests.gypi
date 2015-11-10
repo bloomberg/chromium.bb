@@ -971,7 +971,7 @@
             '../third_party/iaccessible2/iaccessible2.gyp:iaccessible2',
           ],
         }],
-        ['OS!="android" and OS!="ios"', {
+        ['use_aura==1 or OS=="mac"', {
           'sources': [
             'browser/compositor/test/no_transport_image_transport_factory.cc',
             'browser/compositor/test/no_transport_image_transport_factory.h',
