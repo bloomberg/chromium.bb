@@ -560,6 +560,10 @@ crbug.com/318978 [ Linux ] http/tests/security/frameNavigation/xss-DENIED-plugin
 crbug.com/318978 [ Linux ] permissionclient/plugin-permission.html [ Skip ]
 crbug.com/318978 [ Linux ] plugins/ [ Skip ]
 
+crbug.com/552494 scrollbars/overflow-scrollbar-combinations.html [ Pass Failure ]
+crbug.com/552494 virtual/prefer_compositing_to_lcd_text/scrollbars/overflow-scrollbar-combinations.html [ Pass Failure ]
+crbug.com/552494 virtual/rootlayerscrolls/scrollbars/overflow-scrollbar-combinations.html [ Pass Failure ]
+
 crbug.com/380217 [ Linux Win ] fast/shapes/shape-outside-floats/shape-outside-floats-inset-rounded-large-radius.html [ Skip ]
 crbug.com/380217 [ Win ] fast/shapes/shape-outside-floats/shape-outside-floats-inset-rounded-bottom-left.html [ Skip ]
 
@@ -766,13 +770,12 @@ crbug.com/484370 [ Win Debug ] svg/custom/gradient-userSpaceOnUse-with-percentag
 
 crbug.com/116710 [ Win Debug ] transforms/3d/point-mapping/3d-point-mapping-preserve-3d.html [ Failure ]
 
-
-crbug.com/553553 [ XP ] svg/zoom/page/zoom-svg-through-object-with-absolute-size-2.xhtml [ Failure ]
-crbug.com/553553 [ XP ] svg/zoom/page/zoom-svg-through-object-with-absolute-size.xhtml [ Failure ]
-crbug.com/553553 [ XP ] svg/zoom/page/zoom-svg-through-object-with-percentage-size.xhtml [ Failure ]
-crbug.com/553553 scrollbars/listbox-scrollbar-combinations.html [ Failure ]
-crbug.com/553553 virtual/prefer_compositing_to_lcd_text/scrollbars/listbox-scrollbar-combinations.html [ Failure ]
-crbug.com/553553 virtual/rootlayerscrolls/scrollbars/listbox-scrollbar-combinations.html [ Failure ]
+crbug.com/553553 [ XP ] svg/zoom/page/zoom-svg-through-object-with-absolute-size-2.xhtml [ NeedsRebaseline ]
+crbug.com/553553 [ XP ] svg/zoom/page/zoom-svg-through-object-with-absolute-size.xhtml [ NeedsRebaseline ]
+crbug.com/553553 [ XP ] svg/zoom/page/zoom-svg-through-object-with-percentage-size.xhtml [ NeedsRebaseline ]
+crbug.com/553553 scrollbars/listbox-scrollbar-combinations.html [ NeedsRebaseline ]
+crbug.com/553553 virtual/prefer_compositing_to_lcd_text/scrollbars/listbox-scrollbar-combinations.html [ NeedsRebaseline ]
+crbug.com/553553 virtual/rootlayerscrolls/scrollbars/listbox-scrollbar-combinations.html [ NeedsRebaseline ]
 
 # Printing Layout broken in these tests.
 crbug.com/377696 printing/setPrinting.html [ Skip ]
