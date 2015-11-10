@@ -124,6 +124,10 @@ scoped_ptr<base::DictionaryValue> GenerateTracingMetadataDict()  {
   if (delegate)
     delegate->GenerateMetadataDict(metadata_dict.get());
 
+  // Highres ticks.
+  metadata_dict->SetBoolean("highres-ticks",
+                            base::TimeTicks::IsHighResolution());
+
   return metadata_dict.Pass();
 }
 
