@@ -121,6 +121,14 @@ Background = function() {
     }).bind(this)
   });
 
+  Object.defineProperty(cvox.ChromeVox, 'modKeyStr', {
+    get: function() {
+      return (this.mode_ == ChromeVoxMode.CLASSIC || this.mode_ ==
+              ChromeVoxMode.COMPAT) ?
+          'Search+Shift' : 'Search';
+    }.bind(this)
+  });
+
   document.addEventListener(
       'keydown', cvox.ChromeVoxKbHandler.basicKeyDownActionsListener, true);
   cvox.ChromeVoxKbHandler.commandHandler = this.onGotCommand.bind(this);

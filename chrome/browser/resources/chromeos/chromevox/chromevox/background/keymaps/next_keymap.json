@@ -3,41 +3,23 @@
     {
       "command": "previousElement",
       "sequence": {
+        "cvoxModifier": true,
         "keys": {
-          "keyCode": [37],
-          "metaKey": [true]
+          "keyCode": [37]
         }
       }
     },
     {
       "command": "previousLine",
       "sequence": {
+        "cvoxModifier": true,
         "keys": {
-          "keyCode": [38],
-          "metaKey": [true]
+          "keyCode": [38]
         }
       }
     },
     {
       "command": "nextElement",
-      "sequence": {
-        "keys": {
-          "keyCode": [39],
-          "metaKey": [true]
-        }
-      }
-    },
-    {
-      "command": "nextLine",
-      "sequence": {
-        "keys": {
-          "keyCode": [40],
-          "metaKey": [true]
-        }
-      }
-    },
-    {
-      "command": "nextCharacter",
       "sequence": {
         "cvoxModifier": true,
         "keys": {
@@ -46,11 +28,31 @@
       }
     },
     {
+      "command": "nextLine",
+      "sequence": {
+        "cvoxModifier": true,
+        "keys": {
+          "keyCode": [40]
+        }
+      }
+    },
+    {
+      "command": "nextCharacter",
+      "sequence": {
+        "cvoxModifier": true,
+        "keys": {
+          "keyCode": [39],
+          "shiftKey": [true]
+        }
+      }
+    },
+    {
       "command": "previousCharacter",
       "sequence": {
         "cvoxModifier": true,
         "keys": {
-          "keyCode": [37]
+          "keyCode": [37],
+          "shiftKey": [true]
         }
       }
     },
@@ -60,7 +62,8 @@
         "cvoxModifier": true,
         "keys": {
           "keyCode": [39],
-          "ctrlKey": [true]
+          "ctrlKey": [true],
+          "shiftKey": [true]
         }
       }
     },
@@ -70,25 +73,26 @@
         "cvoxModifier": true,
         "keys": {
           "keyCode": [37],
-          "ctrlKey": [true]
+          "ctrlKey": [true],
+          "shiftKey": [true]
         }
       }
     },
     {
       "command": "nextButton",
       "sequence": {
+        "cvoxModifier": true,
         "keys": {
-          "keyCode": [66],
-          "metaKey": [true]
+          "keyCode": [66]
         }
       }
     },
     {
       "command": "previousButton",
       "sequence": {
+        "cvoxModifier": true,
         "keys": {
           "keyCode": [66],
-          "metaKey": [true],
           "shiftKey": [true]
         }
       }
@@ -96,18 +100,18 @@
     {
       "command": "nextCheckBox",
       "sequence": {
+        "cvoxModifier": true,
         "keys": {
-          "keyCode": [88],
-          "metaKey": [true]
+          "keyCode": [88]
         }
       }
     },
     {
       "command": "previousCheckBox",
       "sequence": {
+        "cvoxModifier": true,
         "keys": {
           "keyCode": [88],
-          "metaKey": [true],
           "shiftKey": [true]
         }
       }
@@ -115,18 +119,18 @@
     {
       "command": "nextCombobox",
       "sequence": {
+        "cvoxModifier": true,
         "keys": {
-          "keyCode": [67],
-          "metaKey": [true]
+          "keyCode": [67]
         }
       }
     },
     {
       "command": "previousCombobox",
       "sequence": {
+        "cvoxModifier": true,
         "keys": {
           "keyCode": [67],
-          "metaKey": [true],
           "shiftKey": [true]
         }
       }
@@ -134,18 +138,18 @@
     {
       "command": "nextEditText",
       "sequence": {
+        "cvoxModifier": true,
         "keys": {
-          "keyCode": [69],
-          "metaKey": [true]
+          "keyCode": [69]
         }
       }
     },
     {
       "command": "previousEditText",
       "sequence": {
+        "cvoxModifier": true,
         "keys": {
           "keyCode": [69],
-          "metaKey": [true],
           "shiftKey": [true]
         }
       }
@@ -153,18 +157,18 @@
     {
       "command": "nextFormField",
       "sequence": {
+        "cvoxModifier": true,
         "keys": {
-          "keyCode": [70],
-          "metaKey": [true]
+          "keyCode": [70]
         }
       }
     },
     {
       "command": "previousFormField",
       "sequence": {
+        "cvoxModifier": true,
         "keys": {
           "keyCode": [70],
-          "metaKey": [true],
           "shiftKey": [true]
         }
       }
@@ -172,18 +176,18 @@
     {
       "command": "nextHeading",
       "sequence": {
+        "cvoxModifier": true,
         "keys": {
-          "keyCode": [72],
-          "metaKey": [true]
+          "keyCode": [72]
         }
       }
     },
     {
       "command": "previousHeading",
       "sequence": {
+        "cvoxModifier": true,
         "keys": {
           "keyCode": [72],
-          "metaKey": [true],
           "shiftKey": [true]
         }
       }
@@ -191,18 +195,18 @@
     {
       "command": "nextLink",
       "sequence": {
+        "cvoxModifier": true,
         "keys": {
-          "keyCode": [67],
-          "metaKey": [true]
+          "keyCode": [67]
         }
       }
     },
     {
       "command": "previousLink",
       "sequence": {
+        "cvoxModifier": true,
         "keys": {
           "keyCode": [76],
-          "metaKey": [true],
           "shiftKey": [true]
         }
       }
@@ -210,18 +214,18 @@
     {
       "command": "nextTable",
       "sequence": {
+        "cvoxModifier": true,
         "keys": {
-          "keyCode": [84],
-          "metaKey": [true]
+          "keyCode": [84]
         }
       }
     },
     {
       "command": "previousTable",
       "sequence": {
+        "cvoxModifier": true,
         "keys": {
           "keyCode": [84],
-          "metaKey": [true],
           "shiftKey": [true]
         }
       }
@@ -229,18 +233,18 @@
     {
       "command": "nextVisitedLink",
       "sequence": {
+        "cvoxModifier": true,
         "keys": {
-          "keyCode": [86],
-          "metaKey": [true]
+          "keyCode": [86]
         }
       }
     },
     {
       "command": "previousVisitedLink",
       "sequence": {
+        "cvoxModifier": true,
         "keys": {
           "keyCode": [86],
-          "metaKey": [true],
           "shiftKey": [true]
         }
       }
@@ -248,9 +252,9 @@
     {
       "command": "goToEnd",
       "sequence": {
+        "cvoxModifier": true,
         "keys": {
           "keyCode": [39],
-          "metaKey": [true],
           "ctrlKey": [true]
         }
       }
@@ -258,24 +262,15 @@
     {
       "command": "goToBeginning",
       "sequence": {
+        "cvoxModifier": true,
         "keys": {
           "keyCode": [37],
-          "metaKey": [true],
           "ctrlKey": [true]
         }
       }
     },
     {
       "command": "doDefault",
-      "sequence": {
-        "keys": {
-          "keyCode": [32],
-          "metaKey": [true]
-        }
-      }
-    },
-    {
-      "command": "showContextMenu",
       "sequence": {
         "cvoxModifier": true,
         "keys": {
@@ -284,11 +279,21 @@
       }
     },
     {
+      "command": "showContextMenu",
+      "sequence": {
+        "cvoxModifier": true,
+        "keys": {
+          "keyCode": [32],
+          "shitKey": [true]
+        }
+      }
+    },
+    {
       "command": "continuousRead",
       "sequence": {
+        "cvoxModifier": true,
         "keys": {
-          "keyCode": [82],
-          "metaKey": [true]
+          "keyCode": [82]
         }
       }
     },
@@ -297,7 +302,8 @@
       "sequence": {
         "cvoxModifier": true,
         "keys": {
-          "keyCode": [81]
+          "keyCode": [81],
+          "shitKey": [true]
         }
       }
     }
