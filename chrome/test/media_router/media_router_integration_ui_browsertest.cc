@@ -53,9 +53,8 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest, MANUAL_Dialog_Basic) {
   std::string sink_name_script = base::StringPrintf(
       "domAutomationController.send("
       "window.document.getElementById('media-router-container').shadowRoot."
-      "getElementById('route-details').shadowRoot.getElementById("
-      "'route-details-header').shadowRoot.getElementById('header-text')."
-      "innerText)");
+      "getElementById('container-header').shadowRoot.getElementById("
+      "'header-text').innerText)");
   std::string sink_name = ExecuteScriptAndExtractString(
       dialog_contents, sink_name_script);
   ASSERT_EQ(kTestSinkName, sink_name);
