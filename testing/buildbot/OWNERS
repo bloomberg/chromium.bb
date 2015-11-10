@@ -1,7 +1,5 @@
-# This is needed because of * in testing/OWNERS .
 # This is reserved for people that are comfortably with buildbot recipes
 # and understand the implications of changing these files.
-set noparent
 
 dpranke@chromium.org
 jam@chromium.org
