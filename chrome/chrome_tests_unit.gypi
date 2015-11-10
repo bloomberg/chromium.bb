@@ -1493,6 +1493,7 @@
       'browser/media_galleries/win/mtp_device_object_enumerator_unittest.cc',
       'browser/memory/tab_manager_delegate_chromeos_unittest.cc',
       'browser/memory/tab_manager_unittest.cc',
+      'browser/memory/tab_manager_web_contents_data_unittest.cc',
       'browser/net/firefox_proxy_settings_unittest.cc',
       'browser/platform_util_unittest.cc',
       'browser/power/process_power_collector_unittest.cc',

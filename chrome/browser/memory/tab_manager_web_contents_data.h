@@ -11,6 +11,10 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
+namespace base {
+class TickClock;
+}
+
 namespace content {
 class WebContents;
 }
@@ -60,9 +64,19 @@ class TabManager::WebContentsData
   static void CopyState(content::WebContents* old_contents,
                         content::WebContents* new_contents);
 
+  // Used to set the test TickClock, which then gets used by NowTicks(). See
+  // |test_tick_clock_| for more details.
+  void set_test_tick_clock(base::TickClock* test_tick_clock);
+
  private:
+  // Needed to access tab_data_.
+  FRIEND_TEST_ALL_PREFIXES(TabManagerWebContentsDataTest, CopyState);
+
   struct Data {
     Data();
+    bool operator==(const Data& right) const;
+    bool operator!=(const Data& right) const;
+
     // Is the tab currently discarded?
     bool is_discarded_;
     // Number of times the tab has been discarded.
@@ -78,7 +92,16 @@ class TabManager::WebContentsData
     base::TimeTicks last_reload_time_;
   };
 
+  // Returns either the system's clock or the test clock. See |test_tick_clock_|
+  // for more details.
+  base::TimeTicks NowTicks();
+
+  // Contains all the needed data for the tab.
   Data tab_data_;
+
+  // Pointer to a test clock. If this is set, then NowTicks() returns the value
+  // of this test clock, otherwise it will return the system clock's value.
+  base::TickClock* test_tick_clock_;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsData);
 };

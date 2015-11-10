@@ -5,6 +5,7 @@
 #include "chrome/browser/memory/tab_manager_web_contents_data.h"
 
 #include "base/metrics/histogram.h"
+#include "base/time/tick_clock.h"
 #include "chrome/browser/browser_process.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
@@ -17,7 +18,7 @@ DEFINE_WEB_CONTENTS_USER_DATA_KEY(memory::TabManager::WebContentsData);
 namespace memory {
 
 TabManager::WebContentsData::WebContentsData(content::WebContents* web_contents)
-    : WebContentsObserver(web_contents) {}
+    : WebContentsObserver(web_contents), test_tick_clock_(nullptr) {}
 
 TabManager::WebContentsData::~WebContentsData() {}
 
@@ -36,7 +37,7 @@ void TabManager::WebContentsData::WebContentsDestroyed() {
   // (ie. it has been reloaded), we want to record the time it took between the
   // reload event and the closing of the tab.
   if (tab_data_.discard_count_ > 0 && !tab_data_.is_discarded_) {
-    auto delta = base::TimeTicks::Now() - tab_data_.last_reload_time_;
+    auto delta = NowTicks() - tab_data_.last_reload_time_;
     // Capped to one day for now, will adjust if necessary.
     UMA_HISTOGRAM_CUSTOM_TIMES("TabManager.Discarding.ReloadToCloseTime", delta,
                                base::TimeDelta::FromSeconds(1),
@@ -53,17 +54,17 @@ void TabManager::WebContentsData::SetDiscardState(bool state) {
     static int reload_count = 0;
     UMA_HISTOGRAM_CUSTOM_COUNTS("TabManager.Discarding.ReloadCount",
                                 ++reload_count, 1, 1000, 50);
-    auto delta = base::TimeTicks::Now() - tab_data_.last_discard_time_;
+    auto delta = NowTicks() - tab_data_.last_discard_time_;
     // Capped to one day for now, will adjust if necessary.
     UMA_HISTOGRAM_CUSTOM_TIMES("TabManager.Discarding.DiscardToReloadTime",
                                delta, base::TimeDelta::FromSeconds(1),
                                base::TimeDelta::FromDays(1), 100);
-    tab_data_.last_reload_time_ = base::TimeTicks::Now();
+    tab_data_.last_reload_time_ = NowTicks();
   } else if (!tab_data_.is_discarded_ && state) {
     static int discard_count = 0;
     UMA_HISTOGRAM_CUSTOM_COUNTS("TabManager.Discarding.DiscardCount",
                                 ++discard_count, 1, 1000, 50);
-    tab_data_.last_discard_time_ = base::TimeTicks::Now();
+    tab_data_.last_discard_time_ = NowTicks();
   }
 
   tab_data_.is_discarded_ = state;
@@ -102,7 +103,21 @@ void TabManager::WebContentsData::CopyState(
     CreateForWebContents(new_contents);
     FromWebContents(new_contents)->tab_data_ =
         FromWebContents(old_contents)->tab_data_;
+    FromWebContents(new_contents)->test_tick_clock_ =
+        FromWebContents(old_contents)->test_tick_clock_;
   }
+}
+
+void TabManager::WebContentsData::set_test_tick_clock(
+    base::TickClock* test_tick_clock) {
+  test_tick_clock_ = test_tick_clock;
+}
+
+TimeTicks TabManager::WebContentsData::NowTicks() {
+  if (!test_tick_clock_)
+    return TimeTicks::Now();
+
+  return test_tick_clock_->NowTicks();
 }
 
 TabManager::WebContentsData::Data::Data()
@@ -112,5 +127,17 @@ TabManager::WebContentsData::Data::Data()
       last_audio_change_time_(TimeTicks::UnixEpoch()),
       last_discard_time_(TimeTicks::UnixEpoch()),
       last_reload_time_(TimeTicks::UnixEpoch()) {}
+
+bool TabManager::WebContentsData::Data::operator==(const Data& right) const {
+  return is_discarded_ == right.is_discarded_ &&
+         is_recently_audible_ == right.is_recently_audible_ &&
+         last_audio_change_time_ == right.last_audio_change_time_ &&
+         last_discard_time_ == right.last_discard_time_ &&
+         last_reload_time_ == right.last_reload_time_;
+}
+
+bool TabManager::WebContentsData::Data::operator!=(const Data& right) const {
+  return !(*this == right);
+}
 
 }  // namespace memory
