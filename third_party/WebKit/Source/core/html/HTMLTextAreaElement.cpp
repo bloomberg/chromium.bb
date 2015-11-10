@@ -241,13 +241,16 @@ bool HTMLTextAreaElement::shouldShowFocusRingOnMouseFocus() const
     return true;
 }
 
-void HTMLTextAreaElement::updateFocusAppearance(bool restorePreviousSelection)
+void HTMLTextAreaElement::updateFocusAppearance(SelectionBehaviorOnFocus selectionBehavior)
 {
-    if (!restorePreviousSelection)
+    switch (selectionBehavior) {
+    case SelectionBehaviorOnFocus::Reset:
         setSelectionRange(0, 0, SelectionHasNoDirection, NotDispatchSelectEvent);
-    else
+        break;
+    case SelectionBehaviorOnFocus::Restore:
         restoreCachedSelection();
-
+        break;
+    }
     if (document().frame())
         document().frame()->selection().revealSelection();
 }

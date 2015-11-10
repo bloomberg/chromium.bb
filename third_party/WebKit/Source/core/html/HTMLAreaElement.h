@@ -56,7 +56,7 @@ private:
     bool isKeyboardFocusable() const override;
     bool isMouseFocusable() const override;
     bool layoutObjectIsFocusable() const override;
-    void updateFocusAppearance(bool /*restorePreviousSelection*/) override;
+    void updateFocusAppearance(SelectionBehaviorOnFocus) override;
     void setFocus(bool) override;
 
     enum Shape { Default, Poly, Rect, Circle, Unknown };

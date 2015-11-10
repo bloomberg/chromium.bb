@@ -168,7 +168,7 @@ class TransformSource;
 class TreeWalker;
 class VisitedLinkState;
 class WebGLRenderingContext;
-
+enum class SelectionBehaviorOnFocus;
 struct AnnotatedRegionValue;
 struct IconURL;
 
@@ -803,7 +803,7 @@ public:
     void setUseSecureKeyboardEntryWhenActive(bool);
     bool useSecureKeyboardEntryWhenActive() const;
 
-    void updateFocusAppearanceSoon(bool restorePreviousSelection);
+    void updateFocusAppearanceSoon(SelectionBehaviorOnFocus);
     void cancelFocusAppearanceUpdate();
 
     bool isDNSPrefetchEnabled() const { return m_isDNSPrefetchEnabled; }
@@ -1246,8 +1246,8 @@ private:
     bool m_isDNSPrefetchEnabled;
     bool m_haveExplicitlyDisabledDNSPrefetch;
     bool m_containsValidityStyleRules;
-    bool m_updateFocusAppearanceRestoresSelection;
     bool m_containsPlugins;
+    SelectionBehaviorOnFocus m_updateFocusAppearanceSelectionBahavior;
 
     // http://www.whatwg.org/specs/web-apps/current-work/#ignore-destructive-writes-counter
     unsigned m_ignoreDestructiveWriteCount;

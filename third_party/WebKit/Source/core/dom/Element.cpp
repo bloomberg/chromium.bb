@@ -2348,7 +2348,7 @@ bool Element::hasAttributeNS(const AtomicString& namespaceURI, const AtomicStrin
     return elementData()->attributes().find(qName);
 }
 
-void Element::focus(bool restorePreviousSelection, WebFocusType type, InputDeviceCapabilities* sourceCapabilities)
+void Element::focus(const FocusParams& params)
 {
     if (!inDocument())
         return;
@@ -2370,13 +2370,13 @@ void Element::focus(bool restorePreviousSelection, WebFocusType type, InputDevic
         // Slide the focus to its inner node.
         Element* next = document().page()->focusController().findFocusableElement(WebFocusTypeForward, *this);
         if (next && containsIncludingShadowDOM(next)) {
-            next->focus(false, WebFocusTypeForward);
+            next->focus(FocusParams(SelectionBehaviorOnFocus::Reset, WebFocusTypeForward, nullptr));
             return;
         }
     }
 
     RefPtrWillBeRawPtr<Node> protect(this);
-    if (!document().page()->focusController().setFocusedElement(this, document().frame(), type, sourceCapabilities))
+    if (!document().page()->focusController().setFocusedElement(this, document().frame(), params.type, params.sourceCapabilities))
         return;
 
     // Setting the focused node above might have invalidated the layout due to scripts.
@@ -2385,7 +2385,7 @@ void Element::focus(bool restorePreviousSelection, WebFocusType type, InputDevic
         return;
 
     cancelFocusAppearanceUpdate();
-    updateFocusAppearance(restorePreviousSelection);
+    updateFocusAppearance(params.selectionBehavior);
 
     if (UserGestureIndicator::processedUserGestureSinceLoad()) {
         // Bring up the keyboard in the context of anything triggered by a user
@@ -2396,7 +2396,7 @@ void Element::focus(bool restorePreviousSelection, WebFocusType type, InputDevic
     }
 }
 
-void Element::updateFocusAppearance(bool /*restorePreviousSelection*/)
+void Element::updateFocusAppearance(SelectionBehaviorOnFocus)
 {
     if (isRootEditableElement()) {
         // Taking the ownership since setSelection() may release the last reference to |frame|.

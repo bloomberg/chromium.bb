@@ -489,7 +489,7 @@ void InputType::disableSecureTextInput()
 
 void InputType::accessKeyAction(bool)
 {
-    element().focus(false);
+    element().focus(FocusParams(SelectionBehaviorOnFocus::Reset, WebFocusTypeNone, nullptr));
 }
 
 void InputType::countUsage()

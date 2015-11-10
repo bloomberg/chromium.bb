@@ -150,7 +150,7 @@ public:
     bool layoutObjectIsNeeded(const ComputedStyle&) final;
     LayoutObject* createLayoutObject(const ComputedStyle&) override;
     void detach(const AttachContext& = AttachContext()) final;
-    void updateFocusAppearance(bool restorePreviousSelection) final;
+    void updateFocusAppearance(SelectionBehaviorOnFocus) final;
 
     // FIXME: For isActivatedSubmit and setActivatedSubmit, we should use the NVI-idiom here by making
     // it private virtual in all classes and expose a public method in HTMLFormControlElement to call

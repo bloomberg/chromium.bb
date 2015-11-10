@@ -1837,7 +1837,7 @@ bool EventHandler::slideFocusOnShadowHostIfNecessary(const Element& element)
         Element* next = page->focusController().findFocusableElement(WebFocusTypeForward, *element.authorShadowRoot());
         if (next && element.containsIncludingShadowDOM(next)) {
             // Use WebFocusTypeForward instead of WebFocusTypeMouse here to mean the focus has slided.
-            next->focus(false, WebFocusTypeForward);
+            next->focus(FocusParams(SelectionBehaviorOnFocus::Reset, WebFocusTypeForward, nullptr));
             return true;
         }
     }

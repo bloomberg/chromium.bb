@@ -87,6 +87,25 @@ enum ElementFlags {
 
 enum class ShadowRootType;
 
+enum class SelectionBehaviorOnFocus {
+    Reset,
+    Restore,
+};
+
+struct FocusParams {
+    STACK_ALLOCATED();
+
+    FocusParams() {}
+    FocusParams(SelectionBehaviorOnFocus selection, WebFocusType focusType, InputDeviceCapabilities* capabilities)
+        : selectionBehavior(selection)
+        , type(focusType)
+        , sourceCapabilities(capabilities) {}
+
+    SelectionBehaviorOnFocus selectionBehavior = SelectionBehaviorOnFocus::Restore;
+    WebFocusType type = WebFocusTypeNone;
+    Member<InputDeviceCapabilities> sourceCapabilities = nullptr;
+};
+
 typedef WillBeHeapVector<RefPtrWillBeMember<Attr>> AttrNodeList;
 
 class CORE_EXPORT Element : public ContainerNode {
@@ -371,8 +390,8 @@ public:
     virtual const AtomicString imageSourceURL() const;
     virtual Image* imageContents() { return nullptr; }
 
-    virtual void focus(bool restorePreviousSelection = true, WebFocusType = WebFocusTypeNone, InputDeviceCapabilities* sourceCapabilities = nullptr);
-    virtual void updateFocusAppearance(bool restorePreviousSelection);
+    virtual void focus(const FocusParams& = FocusParams());
+    virtual void updateFocusAppearance(SelectionBehaviorOnFocus);
     virtual void blur();
 
     void setDistributeScroll(ScrollStateCallback*, String nativeScrollBehavior);

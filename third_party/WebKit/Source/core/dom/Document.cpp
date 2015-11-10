@@ -404,8 +404,8 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
     , m_parsingState(FinishedParsing)
     , m_gotoAnchorNeededAfterStylesheetsLoad(false)
     , m_containsValidityStyleRules(false)
-    , m_updateFocusAppearanceRestoresSelection(false)
     , m_containsPlugins(false)
+    , m_updateFocusAppearanceSelectionBahavior(SelectionBehaviorOnFocus::Reset)
     , m_ignoreDestructiveWriteCount(0)
     , m_markers(adoptPtrWillBeNoop(new DocumentMarkerController))
     , m_updateFocusAppearanceTimer(this, &Document::updateFocusAppearanceTimerFired)
@@ -4902,9 +4902,9 @@ bool Document::isContextThread() const
     return isMainThread();
 }
 
-void Document::updateFocusAppearanceSoon(bool restorePreviousSelection)
+void Document::updateFocusAppearanceSoon(SelectionBehaviorOnFocus selectionbehavioronfocus)
 {
-    m_updateFocusAppearanceRestoresSelection = restorePreviousSelection;
+    m_updateFocusAppearanceSelectionBahavior = selectionbehavioronfocus;
     if (!m_updateFocusAppearanceTimer.isActive())
         m_updateFocusAppearanceTimer.startOneShot(0, BLINK_FROM_HERE);
 }
@@ -4921,7 +4921,7 @@ void Document::updateFocusAppearanceTimerFired(Timer<Document>*)
         return;
     updateLayout();
     if (element->isFocusable())
-        element->updateFocusAppearance(m_updateFocusAppearanceRestoresSelection);
+        element->updateFocusAppearance(m_updateFocusAppearanceSelectionBahavior);
 }
 
 void Document::attachRange(Range* range)

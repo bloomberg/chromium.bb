@@ -1335,7 +1335,7 @@ void HTMLSelectElement::menuListDefaultEventHandler(Event* event)
 
     if (event->type() == EventTypeNames::mousedown && event->isMouseEvent() && toMouseEvent(event)->button() == LeftButton) {
         InputDeviceCapabilities* sourceCapabilities = toMouseEvent(event)->fromTouch() ? InputDeviceCapabilities::firesTouchEventsSourceCapabilities() : InputDeviceCapabilities::doesntFireTouchEventsSourceCapabilities();
-        focus(true, WebFocusTypeNone, sourceCapabilities);
+        focus(FocusParams(SelectionBehaviorOnFocus::Restore, WebFocusTypeNone, sourceCapabilities));
         if (layoutObject() && layoutObject()->isMenuList() && !isDisabledFormControl()) {
             if (popupIsVisible()) {
                 hidePopup();

@@ -773,7 +773,7 @@ bool FocusController::advanceFocusInDocumentOrder(WebFocusType type, bool initia
         frame->selection().setSelection(newSelection);
     }
 
-    element->focus(false, type, sourceCapabilities);
+    element->focus(FocusParams(SelectionBehaviorOnFocus::Reset, type, sourceCapabilities));
     return true;
 }
 
@@ -1026,7 +1026,7 @@ bool FocusController::advanceFocusDirectionallyInContainer(Node* container, cons
     Element* element = toElement(focusCandidate.focusableNode);
     ASSERT(element);
 
-    element->focus(false, type);
+    element->focus(FocusParams(SelectionBehaviorOnFocus::Reset, type, nullptr));
     return true;
 }
 

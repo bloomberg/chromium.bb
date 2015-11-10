@@ -352,7 +352,7 @@ void TextFieldInputType::listAttributeTargetChanged()
             rpContainer->appendChild(editingViewPort.release());
             rpContainer->appendChild(DataListIndicatorElement::create(document));
             if (element().document().focusedElement() == element())
-                element().updateFocusAppearance(true /* restore selection */);
+                element().updateFocusAppearance(SelectionBehaviorOnFocus::Restore);
         }
     } else {
         picker->remove(ASSERT_NO_EXCEPTION);
