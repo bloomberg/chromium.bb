@@ -17,19 +17,16 @@ class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
   GpuMemoryBufferImpl(const gfx::Size& size,
                       gfx::BufferFormat format,
                       scoped_ptr<base::SharedMemory> shared_memory,
-                      size_t offset,
-                      size_t stride)
+                      size_t offset)
       : size_(size),
         format_(format),
         shared_memory_(shared_memory.Pass()),
         offset_(offset),
-        stride_(stride),
         mapped_(false) {}
 
   // Overridden from gfx::GpuMemoryBuffer:
   bool Map() override {
     DCHECK(!mapped_);
-    DCHECK_EQ(stride_, gfx::RowSizeForBufferFormat(size_.width(), format_, 0));
     if (!shared_memory_->Map(offset_ +
                              gfx::BufferSizeForBufferFormat(size_, format_)))
       return false;
@@ -63,7 +60,6 @@ class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
     handle.type = gfx::SHARED_MEMORY_BUFFER;
     handle.handle = shared_memory_->handle();
     handle.offset = base::checked_cast<uint32_t>(offset_);
-    handle.stride = base::checked_cast<int32_t>(stride_);
     return handle;
   }
   ClientBuffer AsClientBuffer() override {
@@ -75,7 +71,6 @@ class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
   gfx::BufferFormat format_;
   scoped_ptr<base::SharedMemory> shared_memory_;
   size_t offset_;
-  size_t stride_;
   bool mapped_;
 };
 
@@ -95,10 +90,8 @@ TestGpuMemoryBufferManager::AllocateGpuMemoryBuffer(const gfx::Size& size,
   const size_t buffer_size = gfx::BufferSizeForBufferFormat(size, format);
   if (!shared_memory->CreateAnonymous(buffer_size))
     return nullptr;
-  return make_scoped_ptr<gfx::GpuMemoryBuffer>(new GpuMemoryBufferImpl(
-      size, format, shared_memory.Pass(), 0,
-      base::checked_cast<int>(
-          gfx::RowSizeForBufferFormat(size.width(), format, 0))));
+  return make_scoped_ptr<gfx::GpuMemoryBuffer>(
+      new GpuMemoryBufferImpl(size, format, shared_memory.Pass(), 0));
 }
 
 scoped_ptr<gfx::GpuMemoryBuffer>
@@ -112,7 +105,7 @@ TestGpuMemoryBufferManager::CreateGpuMemoryBufferFromHandle(
   return make_scoped_ptr<gfx::GpuMemoryBuffer>(new GpuMemoryBufferImpl(
       size, format,
       make_scoped_ptr(new base::SharedMemory(handle.handle, false)),
-      handle.offset, handle.stride));
+      handle.offset));
 }
 
 gfx::GpuMemoryBuffer*
