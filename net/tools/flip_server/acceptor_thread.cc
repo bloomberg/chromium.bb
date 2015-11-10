@@ -7,6 +7,7 @@
 #include <errno.h>
 #include <netinet/in.h>
 #include <netinet/tcp.h>  // For TCP_NODELAY
+#include <string.h>       // For strerror
 #include <sys/socket.h>
 #include <sys/types.h>
 

@@ -5,6 +5,7 @@
 #include "net/socket/tcp_socket.h"
 #include "net/socket/tcp_socket_win.h"
 
+#include <errno.h>
 #include <mstcpip.h>
 
 #include "base/callback_helpers.h"
