@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
-#include "base/i18n/icu_util.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
@@ -192,10 +191,6 @@ bool Context::Init() {
   TRACE_EVENT0("mojo_shell", "Context::Init");
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
-
-  // ICU data is a thing every part of the system needs. This here warms
-  // up the copy of ICU in the mojo runner.
-  base::i18n::InitializeICU();
 
   EnsureEmbedderIsInitialized();
   task_runners_.reset(

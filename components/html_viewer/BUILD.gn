@@ -298,10 +298,12 @@ if (is_android) {
     deps = [
       ":pak",
       "//gin",
+      "//third_party/icu:icudata",
     ]
     dest = html_viewer_unittests_assets
     sources = [
       "$root_build_dir/html_viewer.pak",
+      "$root_build_dir/icudtl.dat",
     ]
     renaming_sources = v8_external_startup_data_renaming_sources
     renaming_destinations = v8_external_startup_data_renaming_destinations

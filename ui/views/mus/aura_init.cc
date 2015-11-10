@@ -4,6 +4,7 @@
 
 #include "ui/views/mus/aura_init.h"
 
+#include "base/i18n/icu_util.h"
 #include "base/lazy_instance.h"
 #include "base/path_service.h"
 #include "components/resource_provider/public/cpp/resource_loader.h"
@@ -76,6 +77,9 @@ void AuraInit::InitializeResources(mojo::ApplicationImpl* app) {
   if (!resource_loader.BlockUntilLoaded())
     return;
   CHECK(resource_loader.loaded());
+  base::i18n::InitializeICUWithFileDescriptor(
+      resource_loader.GetICUFile().TakePlatformFile(),
+      base::MemoryMappedFile::Region::kWholeFile);
   ui::RegisterPathProvider();
   base::File pak_file = resource_loader.ReleaseFile(resource_file_);
   base::File pak_file_2 = pak_file.Duplicate();

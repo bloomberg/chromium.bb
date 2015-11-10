@@ -47,10 +47,7 @@ source_set("mojo_runner_lib") {
       "register_local_aliases.cc",
       "register_local_aliases.h",
     ]
-    deps += [
-      "//components/tracing:startup_tracing",
-      "//third_party/icu:icudata",
-    ]
+    deps += [ "//components/tracing:startup_tracing" ]
   } else {
     sources += [
       "android/context_init.h",
@@ -103,7 +100,6 @@ source_set("init") {
   deps = [
     ":switches",
     "//base",
-    "//base:i18n",
   ]
 }
 
@@ -164,8 +160,6 @@ source_set("lib") {
   public_deps = [
     ":init",
     ":switches",
-    ":native_application_support",
-    "//mojo/shell",
   ]
 
   if (!is_component_build) {

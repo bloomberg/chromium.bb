@@ -46,6 +46,8 @@ class ResourceLoader {
   // Releases and returns the file wrapping the handle.
   base::File ReleaseFile(const std::string& path);
 
+  base::File GetICUFile();
+
   bool loaded() const { return loaded_; }
 
  private:
@@ -54,6 +56,7 @@ class ResourceLoader {
   // Callback when resources have loaded.
   void OnGotResources(const std::vector<std::string>& paths,
                       mojo::Array<mojo::ScopedHandle> resources);
+  void OnGotICU(base::File* file, mojo::ScopedHandle handle);
 
   ResourceProviderPtr resource_provider_;
 

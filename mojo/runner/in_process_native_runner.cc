@@ -9,7 +9,6 @@
 #include "base/location.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/platform_thread.h"
-#include "mojo/runner/init.h"
 #include "mojo/runner/native_application_support.h"
 #include "mojo/runner/out_of_process_native_runner.h"
 
@@ -58,7 +57,6 @@ void InProcessNativeRunner::Run() {
   // TODO(vtl): ScopedNativeLibrary doesn't have a .get() method!
   base::NativeLibrary app_library = LoadNativeApplication(app_path_);
   app_library_.Reset(app_library);
-  CallLibraryEarlyInitialization(app_library);
   RunNativeApplication(app_library, application_request_.Pass());
   app_completed_callback_runner_.Run();
   app_completed_callback_runner_.Reset();

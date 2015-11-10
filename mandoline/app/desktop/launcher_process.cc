@@ -33,6 +33,8 @@ int LauncherProcessMain(int argc, char** argv) {
   if (!command_line->HasSwitch(switches::kMojoSingleProcess))
     command_line->AppendSwitch(switches::kEnableMultiprocess);
   command_line->AppendSwitch("use-new-edk");
+  // http://crbug.com/546644
+  command_line->AppendSwitch(switches::kMojoNoSandbox);
 
   bool trace_startup = command_line->HasSwitch(switches::kTraceStartup);
   if (trace_startup) {

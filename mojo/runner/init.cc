@@ -8,7 +8,6 @@
 #include "base/command_line.h"
 #include "base/debug/debugger.h"
 #include "base/files/file_path.h"
-#include "base/i18n/icu_util.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/strings/string_split.h"
@@ -59,24 +58,6 @@ void WaitForDebuggerIfNecessary() {
 #endif
     }
   }
-}
-
-void CallLibraryEarlyInitialization(base::NativeLibrary app_library) {
-  // Do whatever warming that the mojo application wants.
-  typedef void (*LibraryEarlyInitFunction)(const uint8*);
-  LibraryEarlyInitFunction init_function =
-      reinterpret_cast<LibraryEarlyInitFunction>(
-          base::GetFunctionPointerFromNativeLibrary(app_library,
-                                                    "InitializeBase"));
-  if (init_function) {
-    // Get the ICU data that we prewarmed in the runner and then pass it to
-    // the copy of icu in the mojo binary that we're running.
-    const uint8* icu_data = base::i18n::GetRawIcuMemory();
-    init_function(icu_data);
-  }
-
-  // TODO(erg): All chromium binaries load base. We might want to make a
-  // general system for other people.
 }
 
 }  // namespace runner
