@@ -507,25 +507,29 @@ class ActionXmlTest(unittest.TestCase):
 
   def testUserMetricsActionSpanningTwoLines(self):
     code = 'base::UserMetricsAction(\n"Foo.Bar"));'
-    finder = extract_actions.ActionNameFinder('dummy', code)
+    finder = extract_actions.ActionNameFinder('dummy', code,
+        extract_actions.USER_METRICS_ACTION_RE)
     self.assertEqual('Foo.Bar', finder.FindNextAction())
     self.assertFalse(finder.FindNextAction())
 
   def testUserMetricsActionAsAParam(self):
     code = 'base::UserMetricsAction("Test.Foo"), "Test.Bar");'
-    finder = extract_actions.ActionNameFinder('dummy', code)
+    finder = extract_actions.ActionNameFinder('dummy', code,
+        extract_actions.USER_METRICS_ACTION_RE)
     self.assertEqual('Test.Foo', finder.FindNextAction())
     self.assertFalse(finder.FindNextAction())
 
   def testNonLiteralUserMetricsAction(self):
     code = 'base::UserMetricsAction(FOO)'
-    finder = extract_actions.ActionNameFinder('dummy', code)
+    finder = extract_actions.ActionNameFinder('dummy', code,
+        extract_actions.USER_METRICS_ACTION_RE)
     with self.assertRaises(Exception):
       finder.FindNextAction()
 
   def testTernaryUserMetricsAction(self):
     code = 'base::UserMetricsAction(foo ? "Foo.Bar" : "Bar.Foo"));'
-    finder = extract_actions.ActionNameFinder('dummy', code)
+    finder = extract_actions.ActionNameFinder('dummy', code,
+        extract_actions.USER_METRICS_ACTION_RE)
     with self.assertRaises(Exception):
       finder.FindNextAction()
 
@@ -533,9 +537,77 @@ class ActionXmlTest(unittest.TestCase):
     code = """base::UserMetricsAction(
       foo_bar ? "Bar.Foo" :
       "Foo.Car")"""
-    finder = extract_actions.ActionNameFinder('dummy', code)
+    finder = extract_actions.ActionNameFinder('dummy', code,
+        extract_actions.USER_METRICS_ACTION_RE)
     with self.assertRaises(extract_actions.InvalidStatementException):
       finder.FindNextAction()
+
+  def testUserMetricsActionWithExtraWhitespace(self):
+    code = """base::UserMetricsAction("Foo.Bar" )"""
+    finder = extract_actions.ActionNameFinder('dummy', code,
+        extract_actions.USER_METRICS_ACTION_RE)
+    with self.assertRaises(extract_actions.InvalidStatementException):
+      finder.FindNextAction()
+
+  def testUserMetricsActionSpanningTwoLinesJs(self):
+    code = "chrome.send('coreOptionsUserMetricsAction',\n['Foo.Bar']);"
+    finder = extract_actions.ActionNameFinder('dummy', code,
+        extract_actions.USER_METRICS_ACTION_RE_JS)
+    self.assertEqual('Foo.Bar', finder.FindNextAction())
+    self.assertFalse(finder.FindNextAction())
+
+  def testNonLiteralUserMetricsActionJs(self):
+    code = "chrome.send('coreOptionsUserMetricsAction',\n[FOO]);"
+    finder = extract_actions.ActionNameFinder('dummy', code,
+        extract_actions.USER_METRICS_ACTION_RE_JS)
+    self.assertFalse(finder.FindNextAction())
+
+  def testTernaryUserMetricsActionJs(self):
+    code = ("chrome.send('coreOptionsUserMetricsAction', "
+            "[foo ? 'Foo.Bar' : 'Bar.Foo']);")
+    finder = extract_actions.ActionNameFinder('dummy', code,
+        extract_actions.USER_METRICS_ACTION_RE_JS)
+    self.assertFalse(finder.FindNextAction())
+
+  def testTernaryUserMetricsActionWithNewLinesJs(self):
+    code = """chrome.send('coreOptionsUserMetricsAction',
+      [foo ? 'Foo.Bar' :
+      'Bar.Foo']);"""
+    finder = extract_actions.ActionNameFinder('dummy', code,
+        extract_actions.USER_METRICS_ACTION_RE_JS)
+    self.assertFalse(finder.FindNextAction())
+
+  def testUserMetricsActionWithExtraCharactersJs(self):
+    code = """chrome.send('coreOptionsUserMetricsAction',
+      ['Foo.Bar' + 1]);"""
+    finder = extract_actions.ActionNameFinder('dummy', code,
+        extract_actions.USER_METRICS_ACTION_RE_JS)
+    self.assertFalse(finder.FindNextAction())
+
+  def testComputedUserMetricsActionJs(self):
+    code = """chrome.send('coreOptionsUserMetricsAction',
+      ['Foo.' + foo_bar ? 'Bar' : 'Foo']);"""
+    finder = extract_actions.ActionNameFinder('dummy', code,
+        extract_actions.USER_METRICS_ACTION_RE_JS)
+    self.assertFalse(finder.FindNextAction())
+
+  def testUserMetricsActionWithMismatchedQuotes(self):
+    code = "chrome.send('coreOptionsUserMetricsAction', [\"Foo.Bar']);"
+    finder = extract_actions.ActionNameFinder('dummy', code,
+        extract_actions.USER_METRICS_ACTION_RE_JS)
+    self.assertFalse(finder.FindNextAction())
+
+  def testUserMetricsActionFromPropertyJs(self):
+    code = "chrome.send('coreOptionsUserMetricsAction', [objOrArray[key]]);"
+    finder = extract_actions.ActionNameFinder('dummy', code,
+        extract_actions.USER_METRICS_ACTION_RE_JS)
+    self.assertFalse(finder.FindNextAction())
+
+  def testUserMetricsActionFromFunctionJs(self):
+    code = "chrome.send('coreOptionsUserMetricsAction', [getAction(param)]);"
+    finder = extract_actions.ActionNameFinder('dummy', code,
+        extract_actions.USER_METRICS_ACTION_RE_JS)
+    self.assertFalse(finder.FindNextAction())
 
 
 if __name__ == '__main__':
