@@ -73,6 +73,7 @@ public class DownloadOverwriteInfoBar extends InfoBar {
         if (uri == null) {
             return null;
         }
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         intent.setDataAndType(uri, "*/*");
         return intent;
     }
