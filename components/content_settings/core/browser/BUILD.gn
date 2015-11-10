@@ -64,10 +64,6 @@ source_set("browser") {
     "//url",
   ]
 
-  if (enable_plugins) {
-    deps += [ "//components/plugins/common" ]
-  }
-
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 }
 
@@ -94,7 +90,6 @@ source_set("unit_tests") {
     "//base/test:test_support",
     "//components/content_settings/core/common",
     "//components/content_settings/core/test:test_support",
-    "//components/plugins/common",
     "//components/pref_registry:test_support",
     "//testing/gtest",
     "//url",

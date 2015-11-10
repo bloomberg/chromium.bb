@@ -112,7 +112,6 @@ group("all_components") {
       "//components/pdf/browser",
       "//components/pdf/common",
       "//components/pdf/renderer",
-      "//components/plugins/common",
       "//components/plugins/renderer",
       "//components/power",
       "//components/precache/core",

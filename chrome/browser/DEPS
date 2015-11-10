@@ -71,7 +71,6 @@ include_rules = [
   "+components/os_crypt",
   "+components/password_manager",
   "+components/pdf/browser",
-  "+components/plugins/common",
   "+components/policy",
   "+components/power",
   "+components/precache",

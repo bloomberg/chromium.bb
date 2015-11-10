@@ -3,20 +3,6 @@
 # found in the LICENSE file.
 
 {
-  'targets': [
-    {
-      # GN version: //components/plugins/common
-      'target_name': 'plugins_common',
-      'type': 'static_library',
-      'include_dirs': [
-        '..',
-      ],
-      'sources': [
-        'plugins/common/plugins_switches.cc',
-        'plugins/common/plugins_switches.h',
-      ],
-    },
-  ],
   'conditions': [
     ['OS!="ios"', {
       'targets': [

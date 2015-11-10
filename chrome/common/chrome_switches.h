@@ -387,8 +387,6 @@ extern const char kDebugPrint[];
 extern const char kAllowNaClCrxFsAPI[];
 extern const char kAllowNaClFileHandleAPI[];
 extern const char kAllowNaClSocketAPI[];
-extern const char kDisablePluginPowerSaver[];
-extern const char kEnablePluginPowerSaver[];
 #endif
 
 #if defined(FULL_SAFE_BROWSING)

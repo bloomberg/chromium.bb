@@ -37,7 +37,6 @@
 #include "components/offline_pages/offline_page_switches.h"
 #include "components/omnibox/browser/omnibox_switches.h"
 #include "components/password_manager/core/common/password_manager_switches.h"
-#include "components/plugins/common/plugins_switches.h"
 #include "components/proximity_auth/switches.h"
 #include "components/search/search_switches.h"
 #include "components/signin/core/common/signin_switches.h"
@@ -1726,14 +1725,6 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_REDUCED_REFERRER_GRANULARITY_DESCRIPTION,
      kOsAll,
      SINGLE_VALUE_TYPE(switches::kReducedReferrerGranularity)},
-#if defined(ENABLE_PLUGINS)
-    {"enable-plugin-power-saver",
-     IDS_FLAGS_ENABLE_PLUGIN_POWER_SAVER_NAME,
-     IDS_FLAGS_ENABLE_PLUGIN_POWER_SAVER_DESCRIPTION,
-     kOsDesktop,
-     ENABLE_DISABLE_VALUE_TYPE(plugins::switches::kEnablePluginPowerSaver,
-                               plugins::switches::kDisablePluginPowerSaver)},
-#endif
 #if defined(OS_CHROMEOS)
     {"disable-new-zip-unpacker",
      IDS_FLAGS_DISABLE_NEW_ZIP_UNPACKER_NAME,

@@ -266,7 +266,6 @@ class PluginPowerSaverBrowserTest : public InProcessBrowserTest {
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitch(switches::kEnablePluginPowerSaver);
     command_line->AppendSwitch(switches::kEnablePepperTesting);
     command_line->AppendSwitch(switches::kEnablePluginPlaceholderTesting);
     command_line->AppendSwitchASCII(

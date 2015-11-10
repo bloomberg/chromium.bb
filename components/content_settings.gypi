@@ -68,9 +68,6 @@
             'content_settings/core/browser/plugins_field_trial.cc',
             'content_settings/core/browser/plugins_field_trial.h',
           ],
-          'dependencies': [
-            'plugins_common',
-          ],
         }],
       ],
       # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.

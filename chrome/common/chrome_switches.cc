@@ -49,12 +49,6 @@ const char kAllowNaClFileHandleAPI[]        = "allow-nacl-file-handle-api";
 // Specifies comma-separated list of extension ids or hosts to grant
 // access to TCP/UDP socket APIs.
 const char kAllowNaClSocketAPI[]            = "allow-nacl-socket-api";
-
-// Disables forcing on the experimental Plugin Power Saver feature.
-const char kDisablePluginPowerSaver[] = "disable-plugin-power-saver";
-
-// Enables forcing on the experimental Plugin Power Saver feature.
-const char kEnablePluginPowerSaver[] = "enable-plugin-power-saver";
 #endif
 
 #if defined(FULL_SAFE_BROWSING)

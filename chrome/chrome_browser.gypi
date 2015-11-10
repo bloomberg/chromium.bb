@@ -3224,7 +3224,6 @@
             '../components/components.gyp:packed_ct_ev_whitelist',
             '../components/components.gyp:password_manager_content_browser',
             '../components/components.gyp:password_manager_sync_browser',
-            '../components/components.gyp:plugins_common',
             '../components/components.gyp:power',
             '../components/components.gyp:profile_metrics',
             '../components/components.gyp:proxy_config',
