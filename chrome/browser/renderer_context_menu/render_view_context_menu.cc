@@ -167,6 +167,12 @@ enum UmaEnumOpenLinkAsUser {
   OPEN_LINK_AS_USER_LAST_ENUM_ID,
 };
 
+#if !defined(OS_CHROMEOS)
+// We report the number of "Open Link as User" entries shown in the context
+// menu via UMA, differentiating between at most that many profiles.
+const int kOpenLinkAsUserMaxProfilesReported = 10;
+#endif  // !defined(OS_CHROMEOS)
+
 // Whether to return the general enum_id or context_specific_enum_id
 // in the FindUMAEnumValueForCommand lookup function.
 enum UmaEnumIdLookupType {
@@ -908,6 +914,12 @@ void RenderViewContextMenu::AppendLinkItems() {
           if (chrome::FindLastActiveWithProfile(profile, desktop_type))
             multiple_profiles_open_ = true;
         }
+      }
+
+      if (!target_profiles.empty()) {
+        UMA_HISTOGRAM_ENUMERATION("RenderViewContextMenu.OpenLinkAsUserShown",
+                                  target_profiles.size(),
+                                  kOpenLinkAsUserMaxProfilesReported);
       }
 
       if (target_profiles.size() == 1) {

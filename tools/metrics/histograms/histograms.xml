@@ -38026,6 +38026,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="RenderViewContextMenu.OpenLinkAsUserShown" units="profiles">
+  <owner>jochen@chromium.org</owner>
+  <summary>
+    Count of the profiles shown for the &quot;Open Link as User&quot; context
+    menu. Logged when the context menu is created.
+  </summary>
+</histogram>
+
 <histogram name="RenderViewContextMenu.Shown" enum="RenderViewContextMenuItem">
   <owner>vitalybuka@chromium.org</owner>
   <summary>Count of renderer view context menu items shown.</summary>
