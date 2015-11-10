@@ -196,7 +196,7 @@ static BOOL PointIsInsideView(NSPoint screenPoint, NSView* view) {
       // window. To fix, explicitly set the tab's new location so that it's
       // correct at tearoff time. See http://crbug.com/541674 .
       NSRect newTabFrame = [[draggedTab_ tabView] frame];
-      newTabFrame.origin.x = sourceTabFrame_.origin.x + offset;
+      newTabFrame.origin.x = trunc(sourceTabFrame_.origin.x + offset);
 
       // Ensure that the tab won't extend beyond the right edge of the tab area
       // in the tab strip.
