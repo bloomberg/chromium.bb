@@ -14,6 +14,8 @@ source_set("mus") {
     "input_method_mus.h",
     "native_widget_mus.cc",
     "native_widget_mus.h",
+    "platform_window_mus.cc",
+    "platform_window_mus.h",
     "surface_binding.cc",
     "surface_binding.h",
     "surface_context_factory.cc",
