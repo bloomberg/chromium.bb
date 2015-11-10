@@ -10,6 +10,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_number_conversions.h"
+#include "chrome/browser/android/data_usage/data_use_tab_model.h"
 #include "components/data_usage/core/data_use.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/browser_thread.h"
@@ -100,6 +101,9 @@ ExternalDataUseObserver::ExternalDataUseObserver(
       FROM_HERE,
       base::Bind(&ExternalDataUseObserver::FetchMatchingRulesOnUIThread,
                  GetUIWeakPtr()));
+
+  // |this| owns and must outlive the |data_use_tab_model_|.
+  data_use_tab_model_.reset(new DataUseTabModel(this, ui_task_runner_));
 
   matching_rules_fetch_pending_ = true;
   data_use_aggregator_->AddObserver(this);

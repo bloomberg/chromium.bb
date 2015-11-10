@@ -17,6 +17,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
@@ -39,6 +40,8 @@ class RE2;
 namespace chrome {
 
 namespace android {
+
+class DataUseTabModel;
 
 // This class allows platform APIs that are external to Chromium to observe how
 // much data is used by Chromium on the current Android device. It creates and
@@ -82,6 +85,11 @@ class ExternalDataUseObserver : public data_usage::DataUseAggregator::Observer {
   // successfully submitted to the external data use observer by Java. Must be
   // called on UI thread.
   void OnReportDataUseDone(JNIEnv* env, jobject obj, bool success);
+
+  // Returns true if the |gurl| matches the registered regular expressions.
+  // |label| must not be null. If a match is found, the |label| is set to the
+  // matching rule's label.
+  bool Matches(const GURL& gurl, std::string* label) const;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ExternalDataUseObserverTest, SingleRegex);
@@ -268,11 +276,6 @@ class ExternalDataUseObserver : public data_usage::DataUseAggregator::Observer {
                           const std::vector<std::string>& domain_path_regex,
                           const std::vector<std::string>& label);
 
-  // Returns true if the |gurl| matches the registered regular expressions.
-  // |label| must not be null. If a match is found, the |label| is set to the
-  // matching rule's label.
-  bool Matches(const GURL& gurl, std::string* label) const;
-
   // Return the weak pointer to |this| to be used on IO and UI thread,
   // respectively.
   base::WeakPtr<ExternalDataUseObserver> GetIOWeakPtr();
@@ -285,6 +288,9 @@ class ExternalDataUseObserver : public data_usage::DataUseAggregator::Observer {
   // expressions are applied to the request URLs, and filtered data use is
   // notified to |j_external_data_use_observer_|.
   base::android::ScopedJavaGlobalRef<jobject> j_external_data_use_observer_;
+
+  // Maintains tab sessions.
+  scoped_ptr<DataUseTabModel> data_use_tab_model_;
 
   // True if callback from |FetchMatchingRulesCallback| is currently pending.
   bool matching_rules_fetch_pending_;
