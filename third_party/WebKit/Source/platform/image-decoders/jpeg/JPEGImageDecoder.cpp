@@ -916,6 +916,7 @@ static bool outputRawData(JPEGImageReader* reader, ImagePlanes* imagePlanes)
     size_t rowBytesU = imagePlanes->rowBytes(1);
     size_t rowBytesV = imagePlanes->rowBytes(2);
 
+    // Request 8 or 16 scanlines: returns 0 or more scanlines.
     int yScanlinesToRead = DCTSIZE * v;
     JSAMPROW yLastRow = *samples;
     JSAMPROW uLastRow = yLastRow + rowBytesY;
@@ -923,11 +924,10 @@ static bool outputRawData(JPEGImageReader* reader, ImagePlanes* imagePlanes)
     JSAMPROW dummyRow = vLastRow + rowBytesY;
 
     while (info->output_scanline < info->output_height) {
-        // Request 8 or 16 scanlines: returns 0 or more scanlines.
-        bool hasYLastRow(false), hasUVLastRow(false);
         // Assign 8 or 16 rows of memory to read the Y channel.
+        bool hasYLastRow = false;
         for (int i = 0; i < yScanlinesToRead; ++i) {
-            int scanline = (info->output_scanline + i);
+            int scanline = info->output_scanline + i;
             if (scanline < yMaxH) {
                 bufferraw2[i] = &outputY[scanline * rowBytesY];
             } else if (scanline == yMaxH) {
@@ -938,10 +938,11 @@ static bool outputRawData(JPEGImageReader* reader, ImagePlanes* imagePlanes)
             }
         }
 
-        int scaledScanline = info->output_scanline / v;
         // Assign 8 rows of memory to read the U and V channels.
+        bool hasUVLastRow = false;
+        int scaledScanline = info->output_scanline / v;
         for (int i = 0; i < 8; ++i) {
-            int scanline = (scaledScanline + i);
+            int scanline = scaledScanline + i;
             if (scanline < uvMaxH) {
                 bufferraw2[16 + i] = &outputU[scanline * rowBytesU];
                 bufferraw2[24 + i] = &outputV[scanline * rowBytesV];
