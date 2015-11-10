@@ -26,6 +26,7 @@ import android.view.View;
 import android.widget.RemoteViews;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.Log;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.tab.Tab;
 
@@ -36,6 +37,8 @@ import org.chromium.chrome.browser.tab.Tab;
  * There's one service started for a distinct notification id.
  */
 public class MediaNotificationManager {
+
+    private static final String TAG = "cr_MediaNotification";
 
     // We're always used on the UI thread but the LOCK is required by lint when creating the
     // singleton.
@@ -57,7 +60,7 @@ public class MediaNotificationManager {
         private static final String ACTION_STOP =
                 "MediaNotificationManager.ListenerService.STOP";
         private static final String EXTRA_NOTIFICATION_ID =
-                "MediaNotificationManager.ListenerService.NOTIFICATION_ID";
+                MediaButtonReceiver.EXTRA_NOTIFICATION_ID;
 
         // The notification id this service instance corresponds to.
         private int mNotificationId = MediaNotificationInfo.INVALID_ID;
@@ -92,9 +95,22 @@ public class MediaNotificationManager {
         private boolean processIntent(Intent intent) {
             if (intent == null) return false;
 
-            mNotificationId = intent.getIntExtra(
+            int notificationId = intent.getIntExtra(
                     EXTRA_NOTIFICATION_ID, MediaNotificationInfo.INVALID_ID);
-            if (mNotificationId == MediaNotificationInfo.INVALID_ID) return false;
+
+            // The notification id must always be valid and should match the first notification id
+            // the service got via the intent.
+            if (notificationId == MediaNotificationInfo.INVALID_ID
+                    || (mNotificationId != MediaNotificationInfo.INVALID_ID
+                        && mNotificationId != notificationId)) {
+                Log.w(TAG, "The service intent's notification id is invalid: ", notificationId);
+                return false;
+            }
+
+            // Either the notification id matches or it's the first intent we've got.
+            mNotificationId = notificationId;
+
+            assert mNotificationId != MediaNotificationInfo.INVALID_ID;
 
             MediaNotificationManager manager = getManager(mNotificationId);
             if (manager == null || manager.mMediaNotificationInfo == null) return false;
@@ -164,6 +180,28 @@ public class MediaNotificationManager {
         private static final int NOTIFICATION_ID = R.id.presentation_notification;
     }
 
+    // Two classes to specify the right notification id in the intent.
+
+    /**
+     * This class is used internally but have to be public to be able to launch the service.
+     */
+    public static final class PlaybackMediaButtonReceiver extends MediaButtonReceiver {
+        @Override
+        public int getNotificationId() {
+            return PlaybackListenerService.NOTIFICATION_ID;
+        }
+    }
+
+    /**
+     * This class is used internally but have to be public to be able to launch the service.
+     */
+    public static final class PresentationMediaButtonReceiver extends MediaButtonReceiver {
+        @Override
+        public int getNotificationId() {
+            return PresentationListenerService.NOTIFICATION_ID;
+        }
+    }
+
     private static Intent getIntent(Context context, int notificationId) {
         Intent intent = null;
         if (notificationId == PlaybackListenerService.NOTIFICATION_ID) {
@@ -174,6 +212,19 @@ public class MediaNotificationManager {
             return null;
         }
         return intent.putExtra(ListenerService.EXTRA_NOTIFICATION_ID, notificationId);
+    }
+
+    private static String getButtonReceiverClassName(int notificationId) {
+        if (notificationId == PlaybackListenerService.NOTIFICATION_ID) {
+            return PlaybackMediaButtonReceiver.class.getName();
+        }
+
+        if (notificationId == PresentationListenerService.NOTIFICATION_ID) {
+            return PresentationMediaButtonReceiver.class.getName();
+        }
+
+        assert false;
+        return null;
     }
 
     /**
@@ -535,7 +586,7 @@ public class MediaNotificationManager {
                 mContext,
                 mContext.getString(R.string.app_name),
                 new ComponentName(mContext.getPackageName(),
-                        MediaButtonReceiver.class.getName()),
+                        getButtonReceiverClassName(mMediaNotificationInfo.id)),
                 null);
         mediaSession.setFlags(MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS
                 | MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS);

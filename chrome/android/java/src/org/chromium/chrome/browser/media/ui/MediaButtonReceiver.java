@@ -19,10 +19,14 @@ import java.util.List;
  * to the service listening to them.
  * This is there for backward compatibility with JB_MR0 and JB_MR1.
  */
-public class MediaButtonReceiver extends BroadcastReceiver {
+public abstract class MediaButtonReceiver extends BroadcastReceiver {
     private static final String LISTENER_SERVICE_CLASS_NAME =
             "org.chromium.chrome.browser.media.ui"
             + "MediaNotificationManager$ListenerService";
+    public static final String EXTRA_NOTIFICATION_ID =
+            "MediaNotificationManager.ListenerService.NOTIFICATION_ID";
+
+    public abstract int getNotificationId();
 
     @Override
     public void onReceive(Context context, Intent intent) {
@@ -39,6 +43,7 @@ public class MediaButtonReceiver extends BroadcastReceiver {
         assert LISTENER_SERVICE_CLASS_NAME.equals(component.getClassName());
 
         intent.setComponent(component);
+        intent.putExtra(EXTRA_NOTIFICATION_ID, getNotificationId());
         context.startService(intent);
     }
 }
