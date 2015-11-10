@@ -3710,6 +3710,29 @@ void EventHandler::sendPointerCancels(WillBeHeapVector<TouchInfo>& touchInfos)
     }
 }
 
+namespace {
+
+// Defining this class type local to dispatchTouchEvents() and annotating
+// it with STACK_ALLOCATED(), runs into MSVC(VS 2013)'s C4822 warning
+// that the local class doesn't provide a local definition for 'operator new'.
+// Which it intentionally doesn't and shouldn't.
+//
+// Work around such toolchain bugginess by lifting out the type, thereby
+// taking it out of C4822's reach.
+class ChangedTouches final {
+    STACK_ALLOCATED();
+public:
+    // The touches corresponding to the particular change state this struct
+    // instance represents.
+    RefPtrWillBeMember<TouchList> m_touches;
+
+    using EventTargetSet = WillBeHeapHashSet<RefPtrWillBeMember<EventTarget>>;
+    // Set of targets involved in m_touches.
+    EventTargetSet m_targets;
+};
+
+} // namespace
+
 bool EventHandler::dispatchTouchEvents(const PlatformTouchEvent& event,
     WillBeHeapVector<TouchInfo>& touchInfos, bool freshTouchEvents, bool allTouchReleased)
 {
@@ -3727,14 +3750,7 @@ bool EventHandler::dispatchTouchEvents(const PlatformTouchEvent& event,
     TargetTouchesHeapMap touchesByTarget;
 
     // Array of touches per state, used to assemble the 'changedTouches' list.
-    using EventTargetSet = WillBeHeapHashSet<RefPtrWillBeMember<EventTarget>>;
-    struct {
-        // The touches corresponding to the particular change state this struct
-        // instance represents.
-        RefPtrWillBeMember<TouchList> m_touches;
-        // Set of targets involved in m_touches.
-        EventTargetSet m_targets;
-    } changedTouches[PlatformTouchPoint::TouchStateEnd];
+    ChangedTouches changedTouches[PlatformTouchPoint::TouchStateEnd];
 
     for (unsigned i = 0; i < touchInfos.size(); ++i) {
         const TouchInfo& touchInfo = touchInfos[i];
@@ -3798,8 +3814,7 @@ bool EventHandler::dispatchTouchEvents(const PlatformTouchEvent& event,
             continue;
 
         const AtomicString& eventName(touchEventNameForTouchPointState(static_cast<PlatformTouchPoint::State>(state)));
-        const EventTargetSet& targetsForState = changedTouches[state].m_targets;
-        for (const RefPtrWillBeMember<EventTarget>& eventTarget : targetsForState) {
+        for (const auto& eventTarget : changedTouches[state].m_targets) {
             EventTarget* touchEventTarget = eventTarget.get();
             RefPtrWillBeRawPtr<TouchEvent> touchEvent = TouchEvent::create(
                 touches.get(), touchesByTarget.get(touchEventTarget), changedTouches[state].m_touches.get(),
