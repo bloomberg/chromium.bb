@@ -397,7 +397,7 @@ void SearchBoxView::ButtonPressed(views::Button* sender,
   if (back_button_ && sender == back_button_)
     delegate_->BackButtonPressed();
   else if (speech_button_ && sender == speech_button_)
-    view_delegate_->ToggleSpeechRecognition();
+    view_delegate_->StartSpeechRecognition();
   else
     NOTREACHED();
 }

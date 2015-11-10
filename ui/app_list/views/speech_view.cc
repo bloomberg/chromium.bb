@@ -197,7 +197,7 @@ gfx::Size SpeechView::GetPreferredSize() const {
 }
 
 void SpeechView::ButtonPressed(views::Button* sender, const ui::Event& event) {
-  delegate_->ToggleSpeechRecognition();
+  delegate_->StopSpeechRecognition();
 }
 
 void SpeechView::OnSpeechSoundLevelChanged(uint8 level) {

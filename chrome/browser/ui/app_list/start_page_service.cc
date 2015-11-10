@@ -419,14 +419,7 @@ void StartPageService::AppListHidden() {
     UnloadContents();
 
   if (speech_recognizer_) {
-    speech_recognizer_->Stop();
-    speech_recognizer_.reset();
-
-    // When the SpeechRecognizer is destroyed above, we get stuck in the current
-    // speech state instead of being reset into the READY state. Reset the
-    // speech state explicitly so that speech works when the launcher is opened
-    // again.
-    OnSpeechRecognitionStateChanged(SPEECH_RECOGNITION_READY);
+    StopSpeechRecognition();
   }
 
 #if defined(OS_CHROMEOS)
@@ -434,7 +427,7 @@ void StartPageService::AppListHidden() {
 #endif
 }
 
-void StartPageService::ToggleSpeechRecognition(
+void StartPageService::StartSpeechRecognition(
     const scoped_refptr<content::SpeechRecognitionSessionPreamble>& preamble) {
   DCHECK(contents_);
   speech_button_toggled_manually_ = true;
@@ -455,6 +448,17 @@ void StartPageService::ToggleSpeechRecognition(
   }
 
   speech_recognizer_->Start(preamble);
+}
+
+void StartPageService::StopSpeechRecognition() {
+  // A call to Stop() isn't needed since deleting the recognizer implicitly
+  // stops.
+  speech_recognizer_.reset();
+
+  // When the SpeechRecognizer is destroyed above, we get stuck in the current
+  // speech state instead of being reset into the READY state. Reset the speech
+  // state explicitly so that speech works when the launcher is opened again.
+  OnSpeechRecognitionStateChanged(SPEECH_RECOGNITION_READY);
 }
 
 bool StartPageService::HotwordEnabled() {

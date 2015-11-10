@@ -372,7 +372,7 @@ void AppListServiceImpl::ShowForVoiceSearch(
     Profile* profile,
     const scoped_refptr<content::SpeechRecognitionSessionPreamble>& preamble) {
   ShowForProfile(profile);
-  view_delegate_->ToggleSpeechRecognitionForHotword(preamble);
+  view_delegate_->StartSpeechRecognitionForHotword(preamble);
 }
 
 void AppListServiceImpl::ShowForAppInstall(Profile* profile,

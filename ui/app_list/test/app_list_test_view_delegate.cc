@@ -20,7 +20,7 @@ namespace test {
 
 AppListTestViewDelegate::AppListTestViewDelegate()
     : dismiss_count_(0),
-      toggle_speech_recognition_count_(0),
+      stop_speech_recognition_count_(0),
       open_search_result_count_(0),
       next_profile_app_count_(0),
       model_(new AppListTestModel) {
@@ -29,9 +29,9 @@ AppListTestViewDelegate::AppListTestViewDelegate()
 
 AppListTestViewDelegate::~AppListTestViewDelegate() {}
 
-int AppListTestViewDelegate::GetToggleSpeechRecognitionCountAndReset() {
-  int count = toggle_speech_recognition_count_;
-  toggle_speech_recognition_count_ = 0;
+int AppListTestViewDelegate::GetStopSpeechRecognitionCountAndReset() {
+  int count = stop_speech_recognition_count_;
+  stop_speech_recognition_count_ = 0;
   return count;
 }
 
@@ -83,8 +83,8 @@ void AppListTestViewDelegate::Dismiss() {
   ++dismiss_count_;
 }
 
-void AppListTestViewDelegate::ToggleSpeechRecognition() {
-  ++toggle_speech_recognition_count_;
+void AppListTestViewDelegate::StopSpeechRecognition() {
+  ++stop_speech_recognition_count_;
 }
 
 gfx::ImageSkia AppListTestViewDelegate::GetWindowIcon() {

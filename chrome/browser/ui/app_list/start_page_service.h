@@ -69,8 +69,10 @@ class StartPageService : public KeyedService,
 
   void AppListShown();
   void AppListHidden();
-  void ToggleSpeechRecognition(
+
+  void StartSpeechRecognition(
       const scoped_refptr<content::SpeechRecognitionSessionPreamble>& preamble);
+  void StopSpeechRecognition();
 
   // Called when the WebUI has finished loading.
   void WebUILoaded();

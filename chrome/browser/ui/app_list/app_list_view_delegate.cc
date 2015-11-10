@@ -382,7 +382,7 @@ void AppListViewDelegate::OnHotwordRecognized(
     const scoped_refptr<content::SpeechRecognitionSessionPreamble>& preamble) {
   DCHECK_EQ(app_list::SPEECH_RECOGNITION_HOTWORD_LISTENING,
             speech_ui_->state());
-  ToggleSpeechRecognitionForHotword(preamble);
+  StartSpeechRecognitionForHotword(preamble);
 }
 
 void AppListViewDelegate::SigninManagerCreated(SigninManagerBase* manager) {
@@ -601,11 +601,18 @@ void AppListViewDelegate::OpenFeedback() {
                            chrome::kAppLauncherCategoryTag);
 }
 
-void AppListViewDelegate::ToggleSpeechRecognition() {
-  ToggleSpeechRecognitionForHotword(nullptr);
+void AppListViewDelegate::StartSpeechRecognition() {
+  StartSpeechRecognitionForHotword(nullptr);
 }
 
-void AppListViewDelegate::ToggleSpeechRecognitionForHotword(
+void AppListViewDelegate::StopSpeechRecognition() {
+  app_list::StartPageService* service =
+      app_list::StartPageService::Get(profile_);
+  if (service)
+    service->StopSpeechRecognition();
+}
+
+void AppListViewDelegate::StartSpeechRecognitionForHotword(
     const scoped_refptr<content::SpeechRecognitionSessionPreamble>& preamble) {
   app_list::StartPageService* service =
       app_list::StartPageService::Get(profile_);
@@ -618,7 +625,7 @@ void AppListViewDelegate::ToggleSpeechRecognitionForHotword(
           app_list::SPEECH_RECOGNITION_NETWORK_ERROR, true);
       return;
     }
-    service->ToggleSpeechRecognition(preamble);
+    service->StartSpeechRecognition(preamble);
   }
 
   // With the new hotword extension, stop the hotword session. With the launcher

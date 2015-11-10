@@ -335,7 +335,8 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
     // Nothing needs to be done.
   }
 
-  void ToggleSpeechRecognition() override { NOTIMPLEMENTED(); }
+  void StartSpeechRecognition() override { NOTIMPLEMENTED(); }
+  void StopSpeechRecognition() override { NOTIMPLEMENTED(); }
 
   void ShowForProfileByPath(const base::FilePath& profile_path) override {
     // Nothing needs to be done.

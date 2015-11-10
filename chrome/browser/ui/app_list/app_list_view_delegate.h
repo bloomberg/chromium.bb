@@ -74,9 +74,8 @@ class AppListViewDelegate : public app_list::AppListViewDelegate,
   void SetProfile(Profile* profile);
   Profile* profile() { return profile_; }
 
-  // Invoked to toggle the status of speech recognition based on a hotword
-  // trigger.
-  void ToggleSpeechRecognitionForHotword(
+  // Invoked to start speech recognition based on a hotword trigger.
+  void StartSpeechRecognitionForHotword(
       const scoped_refptr<content::SpeechRecognitionSessionPreamble>& preamble);
 
   // Overridden from app_list::AppListViewDelegate:
@@ -104,7 +103,8 @@ class AppListViewDelegate : public app_list::AppListViewDelegate,
   void OpenSettings() override;
   void OpenHelp() override;
   void OpenFeedback() override;
-  void ToggleSpeechRecognition() override;
+  void StartSpeechRecognition() override;
+  void StopSpeechRecognition() override;
   void ShowForProfileByPath(const base::FilePath& profile_path) override;
 #if defined(TOOLKIT_VIEWS)
   views::View* CreateStartPageWebView(const gfx::Size& size) override;

@@ -129,7 +129,8 @@ class APP_LIST_EXPORT AppListViewDelegate {
   virtual void OpenFeedback() = 0;
 
   // Invoked to toggle the status of speech recognition.
-  virtual void ToggleSpeechRecognition() = 0;
+  virtual void StartSpeechRecognition() = 0;
+  virtual void StopSpeechRecognition() = 0;
 
   // Shows the app list for the profile specified by |profile_path|.
   virtual void ShowForProfileByPath(const base::FilePath& profile_path) = 0;
