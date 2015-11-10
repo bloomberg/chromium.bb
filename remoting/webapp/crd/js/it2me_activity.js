@@ -46,28 +46,41 @@ remoting.It2MeActivity.prototype.dispose = function() {
 
 remoting.It2MeActivity.prototype.start = function() {
   var that = this;
+  var SessionState = remoting.ChromotingEvent.SessionState;
 
   this.logger_ = this.createLogger_();
-  this.logger_.logSessionStateChange(
-      remoting.ChromotingEvent.SessionState.STARTED);
+  this.logger_.logSessionStateChange(SessionState.STARTED);
 
+  console.assert(
+      !this.desktopActivity_, 'Zombie DesktopActivity from previous session');
+  base.dispose(this.desktopActivity_);
   this.desktopActivity_ =
       new remoting.DesktopRemotingActivity(this, this.logger_);
 
+  function onError(/** remoting.Error */ error) {
+    if (error.isCancel()) {
+      that.logger_.logSessionStateChange(SessionState.CONNECTION_CANCELED);
+      remoting.setMode(remoting.AppMode.HOME);
+    } else {
+      that.logger_.logSessionStateChange(SessionState.CONNECTION_FAILED, error);
+      that.showErrorMessage_(error);
+    }
+
+    base.dispose(that.desktopActivity_);
+    that.desktopActivity_ = null;
+  }
+
+  var sessionStart = Date.now();
+
   this.accessCodeDialog_.show().then(function(/** string */ accessCode) {
+    that.logger_.setAuthTotalTime(Date.now() - sessionStart);
     that.desktopActivity_.getConnectingDialog().show();
     return that.verifyAccessCode_(accessCode);
   }).then(function() {
     return remoting.HostListApi.getInstance().getSupportHost(that.hostId_);
   }).then(function(/** remoting.Host */ host) {
     that.connect_(host);
-  }).catch(remoting.Error.handler(function(/** remoting.Error */ error) {
-    if (error.hasTag(remoting.Error.Tag.CANCELLED)) {
-      remoting.setMode(remoting.AppMode.HOME);
-    } else {
-      that.showErrorMessage_(error);
-    }
-  }));
+  }).catch(remoting.Error.handler(onError));
 };
 
 
