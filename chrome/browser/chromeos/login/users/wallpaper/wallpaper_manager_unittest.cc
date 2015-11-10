@@ -127,4 +127,42 @@ TEST_F(WallpaperManagerCacheTest, VerifyWallpaperCache) {
       test_api->GetPathFromCache(test_account_id_3.GetUserEmail(), &path));
 }
 
+// Test that the user's wallpaper cache is cleared after the user is removed.
+TEST_F(WallpaperManagerCacheTest, CacheClearedOnUserRemoval) {
+  const AccountId test_account_id_1 =
+      AccountId::FromUserEmail("test1@example.com");
+  const AccountId test_account_id_2 =
+      AccountId::FromUserEmail("test2@example.com");
+  const base::FilePath path1("user1_custom_path");
+  const base::FilePath path2("user2_custom_path");
+  fake_user_manager()->AddUser(test_account_id_1);
+  fake_user_manager()->AddUser(test_account_id_2);
+
+  scoped_ptr<WallpaperManager::TestApi> test_api(
+      new WallpaperManager::TestApi(WallpaperManager::Get()));
+
+  const gfx::ImageSkia test_user_1_wallpaper = CreateTestImage(SK_ColorRED);
+  const gfx::ImageSkia test_user_2_wallpaper = CreateTestImage(SK_ColorGREEN);
+  test_api->SetWallpaperCache(test_account_id_1.GetUserEmail(), path1,
+                              test_user_1_wallpaper);
+  test_api->SetWallpaperCache(test_account_id_2.GetUserEmail(), path2,
+                              test_user_2_wallpaper);
+
+  gfx::ImageSkia cached_wallpaper;
+  // Test that both user1 and user2's wallpaper can be found in cache.
+  EXPECT_TRUE(test_api->GetWallpaperFromCache(test_account_id_1.GetUserEmail(),
+                                              &cached_wallpaper));
+  EXPECT_TRUE(test_api->GetWallpaperFromCache(test_account_id_2.GetUserEmail(),
+                                              &cached_wallpaper));
+
+  // Remove user2.
+  fake_user_manager()->RemoveUserFromList(test_account_id_2);
+
+  // Test that only user1's wallpaper can be found in cache.
+  EXPECT_TRUE(test_api->GetWallpaperFromCache(test_account_id_1.GetUserEmail(),
+                                              &cached_wallpaper));
+  EXPECT_FALSE(test_api->GetWallpaperFromCache(test_account_id_2.GetUserEmail(),
+                                               &cached_wallpaper));
+}
+
 }  // namespace chromeos

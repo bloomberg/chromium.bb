@@ -61,6 +61,7 @@ class FakeChromeUserManager : public user_manager::FakeUserManager,
   void SessionStarted() override;
   void RemoveUser(const AccountId& account_id,
                   user_manager::RemoveUserDelegate* delegate) override;
+  void RemoveUserFromList(const AccountId& account_id) override;
   bool FindKnownUserPrefs(const AccountId& account_id,
                           const base::DictionaryValue** out_value) override;
   void UpdateKnownUserPrefs(const AccountId& account_id,

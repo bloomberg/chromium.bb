@@ -427,9 +427,15 @@ void WallpaperManager::Observe(int type,
 }
 
 void WallpaperManager::RemoveUserWallpaperInfo(const std::string& user_id) {
+  if (wallpaper_cache_.find(user_id) != wallpaper_cache_.end())
+    wallpaper_cache_.erase(user_id);
+
+  PrefService* prefs = g_browser_process->local_state();
+  // PrefService could be NULL in tests.
+  if (!prefs)
+    return;
   WallpaperInfo info;
   GetUserWallpaperInfo(user_id, &info);
-  PrefService* prefs = g_browser_process->local_state();
   DictionaryPrefUpdate prefs_wallpapers_info_update(
       prefs, wallpaper::kUsersWallpaperInfo);
   prefs_wallpapers_info_update->RemoveWithoutPathExpansion(user_id, NULL);

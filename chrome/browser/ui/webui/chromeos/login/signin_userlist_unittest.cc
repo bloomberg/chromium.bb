@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/test/ash_test_base.h"
 #include "base/compiler_specific.h"
 #include "chrome/browser/chromeos/login/screens/user_selection_screen.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/multi_profile_user_controller.h"
 #include "chrome/browser/chromeos/login/users/multi_profile_user_controller_delegate.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
+#include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/proximity_auth/screenlock_bridge.h"
@@ -30,9 +32,8 @@ const char* kUsers[] = {
 
 namespace chromeos {
 
-class SigninPrepareUserListTest
-    : public testing::Test,
-      public MultiProfileUserControllerDelegate {
+class SigninPrepareUserListTest : public ash::test::AshTestBase,
+                                  public MultiProfileUserControllerDelegate {
  public:
   SigninPrepareUserListTest()
       : fake_user_manager_(new FakeChromeUserManager()),
@@ -41,6 +42,7 @@ class SigninPrepareUserListTest
   ~SigninPrepareUserListTest() override {}
 
   void SetUp() override {
+    ash::test::AshTestBase::SetUp();
     profile_manager_.reset(
         new TestingProfileManager(TestingBrowserProcess::GetGlobal()));
     ASSERT_TRUE(profile_manager_->SetUp());
@@ -56,11 +58,15 @@ class SigninPrepareUserListTest
       fake_user_manager_->AddUser(AccountId::FromUserEmail(kUsers[i]));
 
     fake_user_manager_->set_owner_id(AccountId::FromUserEmail(kOwner));
+
+    chromeos::WallpaperManager::Initialize();
   }
 
   void TearDown() override {
+    chromeos::WallpaperManager::Shutdown();
     controller_.reset();
     profile_manager_.reset();
+    ash::test::AshTestBase::TearDown();
   }
 
   // MultiProfileUserControllerDelegate overrides:

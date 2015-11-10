@@ -1922,6 +1922,7 @@
             '../build/linux/system.gyp:dbus',
             '../chromeos/chromeos.gyp:chromeos_test_support',
             '../components/components.gyp:user_manager_test_support',
+            '../third_party/icu/icu.gyp:icui18n',
           ],
           'sources': [
             # Note: sources list duplicated in GN build.

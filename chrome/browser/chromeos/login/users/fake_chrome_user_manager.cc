@@ -6,6 +6,7 @@
 
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/fake_supervised_user_manager.h"
+#include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/grit/theme_resources.h"
@@ -141,6 +142,11 @@ void FakeChromeUserManager::SessionStarted() {
 void FakeChromeUserManager::RemoveUser(
     const AccountId& account_id,
     user_manager::RemoveUserDelegate* delegate) {}
+
+void FakeChromeUserManager::RemoveUserFromList(const AccountId& account_id) {
+  WallpaperManager::Get()->RemoveUserWallpaperInfo(account_id.GetUserEmail());
+  FakeUserManager::RemoveUserFromList(account_id);
+}
 
 user_manager::UserList
 FakeChromeUserManager::GetUsersAllowedForSupervisedUsersCreation() const {
