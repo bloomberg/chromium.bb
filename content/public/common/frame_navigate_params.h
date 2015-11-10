@@ -33,6 +33,9 @@ struct CONTENT_EXPORT FrameNavigateParams {
   // means. If the navigation was renderer-initiated, this value is 0.
   int nav_entry_id;
 
+  // The unique name of the frame in which this navigation takes place.
+  std::string frame_unique_name;
+
   // The item sequence number identifies each stop in the session history.  It
   // is unique within the renderer process and makes a best effort to be unique
   // across browser sessions (using a renderer process timestamp).

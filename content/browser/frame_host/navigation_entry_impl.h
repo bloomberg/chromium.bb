@@ -180,6 +180,7 @@ class CONTENT_EXPORT NavigationEntryImpl
   // Does nothing if there is no entry already and |url| is about:blank, since
   // that does not count as a real commit.
   void AddOrUpdateFrameEntry(FrameTreeNode* frame_tree_node,
+                             const std::string& frame_unique_name,
                              int64 item_sequence_number,
                              int64 document_sequence_number,
                              SiteInstanceImpl* site_instance,

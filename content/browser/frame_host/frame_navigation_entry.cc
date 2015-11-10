@@ -13,12 +13,14 @@ FrameNavigationEntry::FrameNavigationEntry(int frame_tree_node_id)
 }
 
 FrameNavigationEntry::FrameNavigationEntry(int frame_tree_node_id,
+                                           const std::string& frame_unique_name,
                                            int64 item_sequence_number,
                                            int64 document_sequence_number,
                                            SiteInstanceImpl* site_instance,
                                            const GURL& url,
                                            const Referrer& referrer)
     : frame_tree_node_id_(frame_tree_node_id),
+      frame_unique_name_(frame_unique_name),
       item_sequence_number_(item_sequence_number),
       document_sequence_number_(document_sequence_number),
       site_instance_(site_instance),
@@ -31,17 +33,20 @@ FrameNavigationEntry::~FrameNavigationEntry() {
 
 FrameNavigationEntry* FrameNavigationEntry::Clone() const {
   FrameNavigationEntry* copy = new FrameNavigationEntry(frame_tree_node_id_);
-  copy->UpdateEntry(item_sequence_number_, document_sequence_number_,
-                    site_instance_.get(), url_, referrer_, page_state_);
+  copy->UpdateEntry(frame_unique_name_, item_sequence_number_,
+                    document_sequence_number_, site_instance_.get(), url_,
+                    referrer_, page_state_);
   return copy;
 }
 
-void FrameNavigationEntry::UpdateEntry(int64 item_sequence_number,
+void FrameNavigationEntry::UpdateEntry(const std::string& frame_unique_name,
+                                       int64 item_sequence_number,
                                        int64 document_sequence_number,
                                        SiteInstanceImpl* site_instance,
                                        const GURL& url,
                                        const Referrer& referrer,
                                        const PageState& page_state) {
+  frame_unique_name_ = frame_unique_name;
   item_sequence_number_ = item_sequence_number;
   document_sequence_number_ = document_sequence_number;
   site_instance_ = site_instance;

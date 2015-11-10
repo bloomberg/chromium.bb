@@ -4167,6 +4167,7 @@ void RenderFrameImpl::SendDidCommitProvisionalLoad(
     params.page_state = SingleHistoryItemToPageState(item);
     post_id = ExtractPostId(item);
   }
+  params.frame_unique_name = item.target().utf8();
   params.item_sequence_number = item.itemSequenceNumber();
   params.document_sequence_number = item.documentSequenceNumber();
 

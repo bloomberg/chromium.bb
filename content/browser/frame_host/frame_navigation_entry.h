@@ -19,17 +19,16 @@ namespace content {
 // For now, it is owned by a single NavigationEntry and only tracks the main
 // frame.
 //
-// TODO(creis): In --site-per-process, fill in a tree of FrameNavigationEntries
-// in each NavigationEntry, one per frame.  FrameNavigationEntries may be shared
-// across NavigationEntries if the frame hasn't changed.
+// If SiteIsolationPolicy::UseSubframeNavigationEntries is true, there will be a
+// tree of FrameNavigationEntries in each NavigationEntry, one per frame.
+// TODO(creis): Share these FrameNavigationEntries across NavigationEntries if
+// the frame hasn't changed.
 class CONTENT_EXPORT FrameNavigationEntry
     : public base::RefCounted<FrameNavigationEntry> {
  public:
-  // TODO(creis): We should not use FTN IDs here, since they will change if you
-  // leave a page and come back later.  We should evaluate whether Blink's
-  // unique names would work instead, similar to HistoryNode.
   explicit FrameNavigationEntry(int frame_tree_node_id);
   FrameNavigationEntry(int frame_tree_node_id,
+                       const std::string& frame_unique_name,
                        int64 item_sequence_number,
                        int64 document_sequence_number,
                        SiteInstanceImpl* site_instance,
@@ -41,7 +40,8 @@ class CONTENT_EXPORT FrameNavigationEntry
   FrameNavigationEntry* Clone() const;
 
   // Updates all the members of this entry.
-  void UpdateEntry(int64 item_sequence_number,
+  void UpdateEntry(const std::string& frame_unique_name,
+                   int64 item_sequence_number,
                    int64 document_sequence_number,
                    SiteInstanceImpl* site_instance,
                    const GURL& url,
@@ -51,8 +51,22 @@ class CONTENT_EXPORT FrameNavigationEntry
   // The ID of the FrameTreeNode this entry is for.  -1 for the main frame,
   // since we don't always know the FrameTreeNode ID when creating the overall
   // NavigationEntry.
-  // TODO(creis): Replace with frame sequence number or unique name.
+  // TODO(creis): Consider removing |frame_tree_node_id| in favor of
+  // |frame_unique_name|, if we can move unique name computation to the browser
+  // process.
   int frame_tree_node_id() const { return frame_tree_node_id_; }
+
+  // The unique name of the frame this entry is for.  This is a stable name for
+  // the frame based on its position in the tree and relation to other named
+  // frames, which does not change after cross-process navigations or restores.
+  // Only the main frame can have an empty name.
+  //
+  // This is unique relative to other frames in the same page, but not among
+  // other pages (i.e., not globally unique).
+  const std::string& frame_unique_name() const { return frame_unique_name_; }
+  void set_frame_unique_name(const std::string& frame_unique_name) {
+    frame_unique_name_ = frame_unique_name;
+  }
 
   // Keeps track of where this entry belongs in the frame's session history.
   // The item sequence number identifies each stop in the back/forward history
@@ -91,13 +105,14 @@ class CONTENT_EXPORT FrameNavigationEntry
   virtual ~FrameNavigationEntry();
 
   // WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING
-  // For all new fields, update |Clone|.
+  // Add all new fields to |UpdateEntry|.
   // TODO(creis): These fields have implications for session restore.  This is
   // currently managed by NavigationEntry, but the logic will move here.
   // WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING
 
   // See the accessors above for descriptions.
   int frame_tree_node_id_;
+  std::string frame_unique_name_;
   int64 item_sequence_number_;
   int64 document_sequence_number_;
   scoped_refptr<SiteInstanceImpl> site_instance_;

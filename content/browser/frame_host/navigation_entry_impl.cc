@@ -102,7 +102,7 @@ NavigationEntryImpl::NavigationEntryImpl(SiteInstanceImpl* instance,
                                          ui::PageTransition transition_type,
                                          bool is_renderer_initiated)
     : frame_tree_(new TreeNode(
-          new FrameNavigationEntry(-1, -1, -1, instance, url, referrer))),
+          new FrameNavigationEntry(-1, "", -1, -1, instance, url, referrer))),
       unique_id_(GetUniqueIDInConstructor()),
       bindings_(kInvalidBindings),
       page_type_(PAGE_TYPE_NORMAL),
@@ -547,13 +547,15 @@ void NavigationEntryImpl::ResetForCommit() {
 #endif
 }
 
-void NavigationEntryImpl::AddOrUpdateFrameEntry(FrameTreeNode* frame_tree_node,
-                                                int64 item_sequence_number,
-                                                int64 document_sequence_number,
-                                                SiteInstanceImpl* site_instance,
-                                                const GURL& url,
-                                                const Referrer& referrer,
-                                                const PageState& page_state) {
+void NavigationEntryImpl::AddOrUpdateFrameEntry(
+    FrameTreeNode* frame_tree_node,
+    const std::string& frame_unique_name,
+    int64 item_sequence_number,
+    int64 document_sequence_number,
+    SiteInstanceImpl* site_instance,
+    const GURL& url,
+    const Referrer& referrer,
+    const PageState& page_state) {
   // We should already have a TreeNode for the parent node by the time this node
   // commits.  Find it first.
   DCHECK(frame_tree_node->parent());
@@ -570,7 +572,7 @@ void NavigationEntryImpl::AddOrUpdateFrameEntry(FrameTreeNode* frame_tree_node,
   for (TreeNode* child : parent_node->children) {
     if (child->frame_entry->frame_tree_node_id() == frame_tree_node_id) {
       // Update the existing FrameNavigationEntry (e.g., for replaceState).
-      child->frame_entry->UpdateEntry(item_sequence_number,
+      child->frame_entry->UpdateEntry(frame_unique_name, item_sequence_number,
                                       document_sequence_number, site_instance,
                                       url, referrer, page_state);
       return;
@@ -581,8 +583,8 @@ void NavigationEntryImpl::AddOrUpdateFrameEntry(FrameTreeNode* frame_tree_node,
   // Unordered list, since we expect to look up entries by frame sequence number
   // or unique name.
   FrameNavigationEntry* frame_entry = new FrameNavigationEntry(
-      frame_tree_node_id, item_sequence_number, document_sequence_number,
-      site_instance, url, referrer);
+      frame_tree_node_id, frame_unique_name, item_sequence_number,
+      document_sequence_number, site_instance, url, referrer);
   frame_entry->set_page_state(page_state);
   parent_node->children.push_back(
       new NavigationEntryImpl::TreeNode(frame_entry));

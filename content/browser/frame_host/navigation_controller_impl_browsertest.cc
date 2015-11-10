@@ -1904,6 +1904,94 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   }
 }
 
+// Verifies that the |frame_unique_name| is set to the correct frame, so that we
+// can match subframe FrameNavigationEntries to newly created frames after
+// back/forward and restore.
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       FrameNavigationEntry_FrameUniqueName) {
+  const NavigationControllerImpl& controller =
+      static_cast<const NavigationControllerImpl&>(
+          shell()->web_contents()->GetController());
+
+  // 1. Navigate the main frame.
+  GURL url(embedded_test_server()->GetURL(
+      "/navigation_controller/page_with_links.html"));
+  NavigateToURL(shell(), url);
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+  SiteInstance* main_site_instance =
+      root->current_frame_host()->GetSiteInstance();
+
+  // The main frame defaults to an empty name.
+  FrameNavigationEntry* frame_entry =
+      controller.GetLastCommittedEntry()->GetFrameEntry(root);
+  EXPECT_EQ("", frame_entry->frame_unique_name());
+
+  // Test subframe unique names only if enabled, e.g. in --site-per-process.
+  if (!SiteIsolationPolicy::UseSubframeNavigationEntries())
+    return;
+
+  // 2. Add an unnamed subframe, which does an AUTO_SUBFRAME navigation.
+  {
+    LoadCommittedCapturer capturer(shell()->web_contents());
+    std::string script = "var iframe = document.createElement('iframe');"
+                         "iframe.src = '" + url.spec() + "';"
+                         "document.body.appendChild(iframe);";
+    EXPECT_TRUE(content::ExecuteScript(root->current_frame_host(), script));
+    capturer.Wait();
+    EXPECT_EQ(ui::PAGE_TRANSITION_AUTO_SUBFRAME, capturer.transition_type());
+  }
+
+  // The root FrameNavigationEntry hasn't changed.
+  EXPECT_EQ(frame_entry,
+            controller.GetLastCommittedEntry()->GetFrameEntry(root));
+
+  // The subframe should have a generated name.
+  FrameTreeNode* subframe = root->child_at(0);
+  EXPECT_EQ(main_site_instance,
+            subframe->current_frame_host()->GetSiteInstance());
+  FrameNavigationEntry* subframe_entry =
+      controller.GetLastCommittedEntry()->GetFrameEntry(subframe);
+  std::string unnamed_subframe_name = "<!--framePath //<!--frame0-->-->";
+  EXPECT_EQ(unnamed_subframe_name, subframe_entry->frame_unique_name());
+
+  // 3. Add a named subframe.
+  {
+    LoadCommittedCapturer capturer(shell()->web_contents());
+    std::string script = "var iframe = document.createElement('iframe');"
+                         "iframe.src = '" + url.spec() + "';"
+                         "iframe.name = 'foo';"
+                         "document.body.appendChild(iframe);";
+    EXPECT_TRUE(content::ExecuteScript(root->current_frame_host(), script));
+    capturer.Wait();
+    EXPECT_EQ(ui::PAGE_TRANSITION_AUTO_SUBFRAME, capturer.transition_type());
+  }
+
+  // The new subframe should have the specified name.
+  EXPECT_EQ(frame_entry,
+            controller.GetLastCommittedEntry()->GetFrameEntry(root));
+  FrameTreeNode* foo_subframe = root->child_at(1);
+  EXPECT_EQ(main_site_instance,
+            foo_subframe->current_frame_host()->GetSiteInstance());
+  FrameNavigationEntry* foo_subframe_entry =
+      controller.GetLastCommittedEntry()->GetFrameEntry(foo_subframe);
+  std::string named_subframe_name = "foo";
+  EXPECT_EQ(named_subframe_name, foo_subframe_entry->frame_unique_name());
+
+  // 4. Navigating in the subframes cross-process shouldn't change their names.
+  // TODO(creis): Fix the unnamed case in https://crbug.com/502317.
+  GURL bar_url(embedded_test_server()->GetURL(
+      "bar.com", "/navigation_controller/simple_page_1.html"));
+  NavigateFrameToURL(foo_subframe, bar_url);
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  EXPECT_NE(main_site_instance,
+            foo_subframe->current_frame_host()->GetSiteInstance());
+  foo_subframe_entry =
+      controller.GetLastCommittedEntry()->GetFrameEntry(foo_subframe);
+  EXPECT_EQ(named_subframe_name, foo_subframe_entry->frame_unique_name());
+}
+
 // Verifies that item sequence numbers and document sequence numbers update
 // properly for main frames and subframes.
 IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
@@ -1946,10 +2034,10 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   // 3. Add a subframe, which does an AUTO_SUBFRAME navigation.
   {
     LoadCommittedCapturer capturer(shell()->web_contents());
-    std::string script = "var iframe = document.createElement('iframe');"
-                         "iframe.src = '" + url.spec() + "';"
-                         "document.body.appendChild(iframe);";
-    EXPECT_TRUE(content::ExecuteScript(root->current_frame_host(), script));
+    std::string add_script = "var iframe = document.createElement('iframe');"
+                             "iframe.src = '" + url.spec() + "';"
+                             "document.body.appendChild(iframe);";
+    EXPECT_TRUE(content::ExecuteScript(root->current_frame_host(), add_script));
     capturer.Wait();
     EXPECT_EQ(ui::PAGE_TRANSITION_AUTO_SUBFRAME, capturer.transition_type());
   }
