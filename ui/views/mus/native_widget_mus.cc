@@ -8,6 +8,7 @@
 #include "components/mus/public/cpp/window.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "ui/aura/client/default_capture_client.h"
+#include "ui/aura/client/window_tree_client.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/window.h"
 #include "ui/base/hit_test.h"
@@ -67,6 +68,29 @@ class ContentWindowLayoutManager : public aura::LayoutManager {
   aura::Window* inner_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentWindowLayoutManager);
+};
+
+class NativeWidgetMusWindowTreeClient : public aura::client::WindowTreeClient {
+ public:
+  explicit NativeWidgetMusWindowTreeClient(aura::Window* root_window)
+      : root_window_(root_window) {
+    aura::client::SetWindowTreeClient(root_window_, this);
+  }
+  ~NativeWidgetMusWindowTreeClient() override {
+    aura::client::SetWindowTreeClient(root_window_, nullptr);
+  }
+
+  // Overridden from client::WindowTreeClient:
+  aura::Window* GetDefaultParent(aura::Window* context,
+                                 aura::Window* window,
+                                 const gfx::Rect& bounds) override {
+    return root_window_;
+  }
+
+ private:
+  aura::Window* root_window_;
+
+  DISALLOW_COPY_AND_ASSIGN(NativeWidgetMusWindowTreeClient);
 };
 
 // As the window manager renderers the non-client decorations this class does
@@ -191,6 +215,8 @@ void NativeWidgetMus::InitNativeWidget(const Widget::InitParams& params) {
                                focus_client_.get());
   aura::client::SetActivationClient(window_tree_host_->window(),
                                     focus_client_.get());
+  window_tree_client_.reset(
+      new NativeWidgetMusWindowTreeClient(window_tree_host_->window()));
   window_tree_host_->window()->AddPreTargetHandler(focus_client_.get());
   window_tree_host_->window()->SetLayoutManager(
       new ContentWindowLayoutManager(window_tree_host_->window(), content_));
@@ -199,6 +225,7 @@ void NativeWidgetMus::InitNativeWidget(const Widget::InitParams& params) {
 
   content_->SetType(ui::wm::WINDOW_TYPE_NORMAL);
   content_->Init(ui::LAYER_TEXTURED);
+  content_->Show();
   content_->SetTransparent(true);
   content_->SetFillsBoundsCompletely(false);
 
@@ -383,8 +410,8 @@ void NativeWidgetMus::ShowWithWindowState(ui::WindowShowState state) {
 }
 
 bool NativeWidgetMus::IsVisible() const {
-  // NOTIMPLEMENTED();
-  return true;
+  // TODO(beng): this should probably be wired thru PlatformWindow.
+  return window_tree_host_->mus_window()->visible();
 }
 
 void NativeWidgetMus::Activate() {

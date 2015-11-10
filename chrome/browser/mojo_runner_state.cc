@@ -4,9 +4,12 @@
 
 #include "chrome/browser/mojo_runner_state.h"
 
+#include "components/mus/public/interfaces/window_manager.mojom.h"
 #include "mojo/application/public/cpp/application_delegate.h"
 #include "mojo/application/public/cpp/application_impl.h"
+#include "mojo/converters/network/network_type_converters.h"
 #include "mojo/runner/child/runner_connection.h"
+#include "ui/views/mus/window_manager_connection.h"
 
 class ChromeApplicationDelegate : public mojo::ApplicationDelegate {
  public:
@@ -15,7 +18,11 @@ class ChromeApplicationDelegate : public mojo::ApplicationDelegate {
 
  private:
   void Initialize(mojo::ApplicationImpl* application) override {
-    // TODO(beng): Connect to the window manager.
+    mus::mojom::WindowManagerPtr window_manager;
+    application->ConnectToService(
+        mojo::URLRequest::From(std::string("mojo:example_wm")),
+        &window_manager);
+    views::WindowManagerConnection::Create(window_manager.Pass(), application);
   }
   bool ConfigureIncomingConnection(
       mojo::ApplicationConnection* connection) override {

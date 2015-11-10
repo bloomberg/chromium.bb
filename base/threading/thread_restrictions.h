@@ -51,6 +51,9 @@ namespace disk_cache {
 class BackendImpl;
 class InFlightIO;
 }
+namespace gles2 {
+class CommandBufferClientImpl;
+}
 namespace mojo {
 namespace common {
 class WatcherThreadManager;
@@ -194,6 +197,7 @@ class BASE_EXPORT ThreadRestrictions {
   friend class ThreadTestHelper;
   friend class PlatformThread;
   friend class android::JavaHandlerThread;
+  friend class gles2::CommandBufferClientImpl;
 
   // END ALLOWED USAGE.
   // BEGIN USAGE THAT NEEDS TO BE FIXED.

@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/process/process_handle.h"
+#include "base/threading/thread_restrictions.h"
 #include "components/mus/gles2/command_buffer_type_conversions.h"
 #include "components/mus/gles2/mojo_buffer_backing.h"
 #include "components/mus/gles2/mojo_gpu_memory_buffer.h"
@@ -141,6 +142,8 @@ CommandBufferClientImpl::CommandBufferClientImpl(
 CommandBufferClientImpl::~CommandBufferClientImpl() {}
 
 bool CommandBufferClientImpl::Initialize() {
+  base::ThreadRestrictions::ScopedAllowWait wait;
+
   const size_t kSharedStateSize = sizeof(gpu::CommandBufferSharedState);
   void* memory = NULL;
   mojo::ScopedSharedBufferHandle duped;
@@ -329,6 +332,7 @@ int32_t CommandBufferClientImpl::CreateGpuMemoryBufferImage(
 }
 
 uint32_t CommandBufferClientImpl::InsertSyncPoint() {
+  base::ThreadRestrictions::ScopedAllowWait wait;
   command_buffer_->InsertSyncPoint(true);
   return sync_point_client_impl_->WaitForInsertSyncPoint();
 }

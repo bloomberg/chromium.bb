@@ -207,6 +207,7 @@ source_set("browser") {
     "//ui/strings",
     "//ui/resources",
   ]
+  data_deps = []
 
   sources +=
       rebase_path(gypi_values.chrome_browser_undo_sources, ".", "//chrome")
@@ -574,15 +575,21 @@ source_set("browser") {
     sources += [
       "mojo_runner_state.cc",
       "mojo_runner_state.h",
+      "ui/views/frame/browser_frame_mus.cc",
+      "ui/views/frame/browser_frame_mus.h",
     ]
     deps += [
+      "//components/mus/public/interfaces",
       "//mojo/runner/child:lib",
+      "//mojo/converters/network",
       "//ui/aura",
       "//ui/compositor",
       "//ui/keyboard",
       "//ui/keyboard:keyboard_with_content",
+      "//ui/views/mus",
     ]
     defines += [ "MOJO_RUNNER_CLIENT" ]
+    data_deps += [ "//components/mus/example/wm:example_wm" ]
   }
   if (ui_compositor_image_transport) {
     deps += [ "//ui/gl" ]

@@ -58,6 +58,7 @@ include_rules = [
   "+components/metrics",
   "+components/metrics_services_manager",
   "+components/mime_util",
+  "+components/mus/public/interfaces",
   "+components/nacl/browser",
   "+components/nacl/common",
   "+components/navigation_interception",
@@ -149,6 +150,7 @@ include_rules = [
   "+media/base",  # For media switches
   "+media/midi",  # For midi switches
   "+mojo/application/public/cpp",
+  "+mojo/converters",
   "+mojo/runner/child",
   "+policy",  # For generated headers and source
   "+ppapi/c",  # For various types.

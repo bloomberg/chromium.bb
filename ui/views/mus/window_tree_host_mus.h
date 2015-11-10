@@ -35,6 +35,8 @@ class WindowTreeHostMus : public aura::WindowTreeHostPlatform {
                     mus::mojom::SurfaceType surface_type);
   ~WindowTreeHostMus() override;
 
+  mus::Window* mus_window() { return mus_window_; }
+
   using WindowTreeHostPlatform::platform_window;
   ui::PlatformWindowState show_state() const { return show_state_; }
 

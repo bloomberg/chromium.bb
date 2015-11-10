@@ -34,6 +34,8 @@ class WindowManagerConnection : public mus::WindowTreeDelegate {
                      mojo::ApplicationImpl* app);
   static WindowManagerConnection* Get();
 
+  mojo::ApplicationImpl* app() { return app_; }
+
   mus::Window* NewWindow(const std::map<std::string,
                          std::vector<uint8_t>>& properties);
 

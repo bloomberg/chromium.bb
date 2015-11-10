@@ -17,6 +17,7 @@
 namespace aura {
 namespace client {
 class DefaultCaptureClient;
+class WindowTreeClient;
 }
 class Window;
 }
@@ -199,6 +200,7 @@ class NativeWidgetMus : public internal::NativeWidgetPrivate,
   aura::Window* content_;
   scoped_ptr<wm::FocusController> focus_client_;
   scoped_ptr<aura::client::DefaultCaptureClient> capture_client_;
+  scoped_ptr<aura::client::WindowTreeClient> window_tree_client_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeWidgetMus);
 };
