@@ -12,14 +12,7 @@
 #error Unknown branding
 #endif
 
-#if defined(GOOGLE_CHROME_BUILD)
-const wchar_t kAppDataDirName[] = L"Google\\Chrome";
-#else
-const wchar_t kAppDataDirName[] = L"Chromium";
-#endif
-const wchar_t kCanaryAppDataDirName[] = L"Google\\Chrome SxS";
 const wchar_t kLocalStateFilename[] = L"Local State";
-const wchar_t kPreferencesFilename[] = L"Preferences";
 const wchar_t kUserDataDirName[] = L"User Data";
 
 namespace blacklist {

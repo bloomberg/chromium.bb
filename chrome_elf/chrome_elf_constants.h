@@ -10,10 +10,7 @@
 #include <windows.h>
 
 // directory names
-extern const wchar_t kAppDataDirName[];
-extern const wchar_t kCanaryAppDataDirName[];
 extern const wchar_t kLocalStateFilename[];
-extern const wchar_t kPreferencesFilename[];
 extern const wchar_t kUserDataDirName[];
 
 namespace blacklist {

@@ -9,7 +9,6 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/metrics/histogram.h"
-#include "chrome_elf/create_file/chrome_create_file.h"
 
 namespace {
 
@@ -32,7 +31,6 @@ FileVerificationResult VerifyFileAtPath(const base::FilePath& file) {
   FileVerificationResult file_verification_result =
       FILE_VERIFICATION_FAILED_UNKNOWN;
   base::FilePath normalized_path;
-  int redirect_count_before = ::GetRedirectCount();
   if (!base::NormalizeFilePath(file, &normalized_path)) {
     if (::GetLastError() == ERROR_FILE_NOT_FOUND)
       file_verification_result = FILE_VERIFICATION_FILE_NOT_FOUND;
@@ -41,24 +39,15 @@ FileVerificationResult VerifyFileAtPath(const base::FilePath& file) {
   } else {
     internal::PathComparisonReason path_comparison_reason =
         internal::ComparePathsIgnoreCase(file, normalized_path);
-    // GetRedirectCount() tracks the number of CreateFile() calls that were
-    // redirected. If it has increased then the CreateFile() call made by
-    // base::NormalizeFilePath() was redirected.
-    bool was_redirected = ::GetRedirectCount() > redirect_count_before;
     switch (path_comparison_reason) {
       case internal::PATH_COMPARISON_EQUAL:
-        file_verification_result = was_redirected ?
-            FILE_VERIFICATION_SUCCESS_REDIRECT : FILE_VERIFICATION_SUCCESS;
+        file_verification_result = FILE_VERIFICATION_SUCCESS;
         break;
       case internal::PATH_COMPARISON_FAILED_SAMEBASE:
-        file_verification_result = was_redirected ?
-            FILE_VERIFICATION_FAILED_SAMEBASE_REDIRECT :
-            FILE_VERIFICATION_FAILED_SAMEBASE;
+        file_verification_result = FILE_VERIFICATION_FAILED_SAMEBASE;
         break;
       case internal::PATH_COMPARISON_FAILED_SAMEDIR:
-        file_verification_result = was_redirected ?
-            FILE_VERIFICATION_FAILED_SAMEDIR_REDIRECT :
-            FILE_VERIFICATION_FAILED_SAMEDIR;
+        file_verification_result = FILE_VERIFICATION_FAILED_SAMEDIR;
         break;
       case internal::PATH_COMPARISON_FAILED_UNKNOWN:
         // file_verification_result was initialized to the right value above.
