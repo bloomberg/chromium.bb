@@ -239,7 +239,7 @@ class ContentSettingSingleRadioGroup
 
  private:
   void SetRadioGroup();
-  void AddException(ContentSetting setting);
+  void SetNarrowestContentSetting(ContentSetting setting);
   void OnRadioClicked(int radio_index) override;
 
   ContentSetting block_setting_;
@@ -264,7 +264,7 @@ ContentSettingSingleRadioGroup::~ContentSettingSingleRadioGroup() {
         selected_item_ == kAllowButtonIndex ?
                           CONTENT_SETTING_ALLOW :
                           block_setting_;
-    AddException(setting);
+    SetNarrowestContentSetting(setting);
   }
 }
 
@@ -397,13 +397,13 @@ void ContentSettingSingleRadioGroup::SetRadioGroup() {
   set_radio_group(radio_group);
 }
 
-void ContentSettingSingleRadioGroup::AddException(ContentSetting setting) {
+void ContentSettingSingleRadioGroup::SetNarrowestContentSetting(
+    ContentSetting setting) {
   if (profile()) {
-    HostContentSettingsMapFactory::GetForProfile(profile())->AddExceptionForURL(
-        bubble_content().radio_group.url,
-        bubble_content().radio_group.url,
-        content_type(),
-        setting);
+    HostContentSettingsMapFactory::GetForProfile(profile())
+        ->SetNarrowestContentSetting(bubble_content().radio_group.url,
+                                     bubble_content().radio_group.url,
+                                     content_type(), setting);
   }
 }
 

@@ -268,47 +268,8 @@ void WebsiteSettings::OnSitePermissionChanged(ContentSettingsType type,
   // compare it against other kinds of actions in WebsiteSettings[PopupView].
   RecordWebsiteSettingsAction(WEBSITE_SETTINGS_CHANGED_PERMISSION);
 
-  // TODO(raymes): The scoping here should be a property of ContentSettingsInfo.
-  // Make this happen! crbug.com/444742.
-  ContentSettingsPattern primary_pattern;
-  ContentSettingsPattern secondary_pattern;
-  if (type == CONTENT_SETTINGS_TYPE_GEOLOCATION ||
-      type == CONTENT_SETTINGS_TYPE_MIDI_SYSEX ||
-      type == CONTENT_SETTINGS_TYPE_FULLSCREEN) {
-    // TODO(markusheintz): The rule we create here should also change the
-    // location permission for iframed content.
-    primary_pattern = ContentSettingsPattern::FromURLNoWildcard(site_url_);
-    secondary_pattern = ContentSettingsPattern::FromURLNoWildcard(site_url_);
-  } else if (type == CONTENT_SETTINGS_TYPE_IMAGES ||
-             type == CONTENT_SETTINGS_TYPE_JAVASCRIPT ||
-             type == CONTENT_SETTINGS_TYPE_PLUGINS ||
-             type == CONTENT_SETTINGS_TYPE_POPUPS ||
-             type == CONTENT_SETTINGS_TYPE_MOUSELOCK ||
-             type == CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS ||
-             type == CONTENT_SETTINGS_TYPE_PUSH_MESSAGING) {
-    primary_pattern = ContentSettingsPattern::FromURL(site_url_);
-    secondary_pattern = ContentSettingsPattern::Wildcard();
-  } else if (type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC ||
-             type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA ||
-             type == CONTENT_SETTINGS_TYPE_NOTIFICATIONS) {
-    primary_pattern = ContentSettingsPattern::FromURLNoWildcard(site_url_);
-    secondary_pattern = ContentSettingsPattern::Wildcard();
-  } else {
-    NOTREACHED() << "ContentSettingsType " << type << "is not supported.";
-  }
-
-  // Permission settings are specified via rules. There exists always at least
-  // one rule for the default setting. Get the rule that currently defines
-  // the permission for the given permission |type|. Then test whether the
-  // existing rule is more specific than the rule we are about to create. If
-  // the existing rule is more specific, than change the existing rule instead
-  // of creating a new rule that would be hidden behind the existing rule.
-  content_settings::SettingInfo info;
-  scoped_ptr<base::Value> v =
-      content_settings_->GetWebsiteSetting(
-          site_url_, site_url_, type, std::string(), &info);
-  content_settings_->SetNarrowestWebsiteSetting(
-      primary_pattern, secondary_pattern, type, std::string(), setting, info);
+  content_settings_->SetNarrowestContentSetting(site_url_, site_url_, type,
+                                                setting);
 
   show_info_bar_ = true;
 

@@ -152,24 +152,15 @@ class HostContentSettingsMap : public content_settings::Observer,
                          const std::string& resource_identifier,
                          base::Value* value);
 
-  // Sets the most specific rule that currently defines the permission for the
-  // given permission type.
-  void SetNarrowestWebsiteSetting(
-      const ContentSettingsPattern& primary_pattern,
-      const ContentSettingsPattern& secondary_pattern,
-      ContentSettingsType content_type,
-      const std::string& resource_identifier,
-      ContentSetting setting,
-      content_settings::SettingInfo existing_info);
-
-  // Convenience method to add a content setting for the given URLs, making sure
-  // that there is no setting overriding it.
-  //
-  // This should only be called on the UI thread.
-  void AddExceptionForURL(const GURL& primary_url,
-                          const GURL& secondary_url,
-                          ContentSettingsType content_type,
-                          ContentSetting setting);
+  // Sets the most specific rule that currently defines the setting for the
+  // given content type. TODO(raymes): Remove this once all content settings
+  // are scoped to origin scope. There is no scope more narrow than origin
+  // scope, so we can just blindly set the value of the origin scope when that
+  // happens.
+  void SetNarrowestContentSetting(const GURL& primary_url,
+                                  const GURL& secondary_url,
+                                  ContentSettingsType type,
+                                  ContentSetting setting);
 
   // Clears all host-specific settings for one content type.
   //

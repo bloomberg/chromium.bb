@@ -92,8 +92,8 @@ bool PopupBlockedInfoBarDelegate::Accept() {
   DCHECK(can_show_popups_);
 
   // Create exceptions.
-  map_->AddExceptionForURL(
-      url_, url_, CONTENT_SETTINGS_TYPE_POPUPS, CONTENT_SETTING_ALLOW);
+  map_->SetNarrowestContentSetting(url_, url_, CONTENT_SETTINGS_TYPE_POPUPS,
+                                   CONTENT_SETTING_ALLOW);
 
   // Launch popups.
   content::WebContents* web_contents =

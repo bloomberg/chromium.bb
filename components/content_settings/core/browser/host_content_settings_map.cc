@@ -251,32 +251,70 @@ void HostContentSettingsMap::SetWebsiteSetting(
   NOTREACHED();
 }
 
-void HostContentSettingsMap::SetNarrowestWebsiteSetting(
-    const ContentSettingsPattern& primary_pattern,
-    const ContentSettingsPattern& secondary_pattern,
-    ContentSettingsType content_type,
-    const std::string& resource_identifier,
-    ContentSetting setting,
-    content_settings::SettingInfo existing_info) {
+void HostContentSettingsMap::SetNarrowestContentSetting(
+    const GURL& primary_url,
+    const GURL& secondary_url,
+    ContentSettingsType type,
+    ContentSetting setting) {
+  // TODO(raymes): The scoping here should be a property of ContentSettingsInfo.
+  // Make this happen! crbug.com/444742.
+  ContentSettingsPattern primary_pattern;
+  ContentSettingsPattern secondary_pattern;
+  if (type == CONTENT_SETTINGS_TYPE_GEOLOCATION ||
+      type == CONTENT_SETTINGS_TYPE_MIDI_SYSEX ||
+      type == CONTENT_SETTINGS_TYPE_FULLSCREEN) {
+    // TODO(markusheintz): The rule we create here should also change the
+    // location permission for iframed content.
+    primary_pattern = ContentSettingsPattern::FromURLNoWildcard(primary_url);
+    secondary_pattern =
+        ContentSettingsPattern::FromURLNoWildcard(secondary_url);
+  } else if (type == CONTENT_SETTINGS_TYPE_IMAGES ||
+             type == CONTENT_SETTINGS_TYPE_JAVASCRIPT ||
+             type == CONTENT_SETTINGS_TYPE_PLUGINS ||
+             type == CONTENT_SETTINGS_TYPE_POPUPS ||
+             type == CONTENT_SETTINGS_TYPE_MOUSELOCK ||
+             type == CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS ||
+             type == CONTENT_SETTINGS_TYPE_PUSH_MESSAGING) {
+    primary_pattern = ContentSettingsPattern::FromURL(primary_url);
+    secondary_pattern = ContentSettingsPattern::Wildcard();
+  } else if (type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC ||
+             type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA ||
+             type == CONTENT_SETTINGS_TYPE_NOTIFICATIONS) {
+    primary_pattern = ContentSettingsPattern::FromURLNoWildcard(primary_url);
+    secondary_pattern = ContentSettingsPattern::Wildcard();
+  } else {
+    NOTREACHED() << "ContentSettingsType " << type << "is not supported.";
+  }
+
+  // Permission settings are specified via rules. There exists always at least
+  // one rule for the default setting. Get the rule that currently defines
+  // the permission for the given permission |type|. Then test whether the
+  // existing rule is more specific than the rule we are about to create. If
+  // the existing rule is more specific, than change the existing rule instead
+  // of creating a new rule that would be hidden behind the existing rule.
+  content_settings::SettingInfo info;
+  scoped_ptr<base::Value> v =
+      GetWebsiteSetting(primary_url, secondary_url, type, std::string(), &info);
+  DCHECK_EQ(content_settings::SETTING_SOURCE_USER, info.source);
+
   ContentSettingsPattern narrow_primary = primary_pattern;
   ContentSettingsPattern narrow_secondary = secondary_pattern;
 
-  DCHECK_EQ(content_settings::SETTING_SOURCE_USER, existing_info.source);
   ContentSettingsPattern::Relation r1 =
-      existing_info.primary_pattern.Compare(primary_pattern);
+      info.primary_pattern.Compare(primary_pattern);
   if (r1 == ContentSettingsPattern::PREDECESSOR) {
-    narrow_primary = existing_info.primary_pattern;
+    narrow_primary = info.primary_pattern;
   } else if (r1 == ContentSettingsPattern::IDENTITY) {
     ContentSettingsPattern::Relation r2 =
-        existing_info.secondary_pattern.Compare(secondary_pattern);
+        info.secondary_pattern.Compare(secondary_pattern);
     DCHECK(r2 != ContentSettingsPattern::DISJOINT_ORDER_POST &&
            r2 != ContentSettingsPattern::DISJOINT_ORDER_PRE);
     if (r2 == ContentSettingsPattern::PREDECESSOR)
-      narrow_secondary = existing_info.secondary_pattern;
+      narrow_secondary = info.secondary_pattern;
   }
 
-  SetContentSetting(
-      narrow_primary, narrow_secondary, content_type, std::string(), setting);
+  SetContentSetting(narrow_primary, narrow_secondary, type, std::string(),
+                    setting);
 }
 
 void HostContentSettingsMap::SetContentSetting(
@@ -388,32 +426,6 @@ void HostContentSettingsMap::SetPrefClockForTesting(
   UsedContentSettingsProviders();
 
   GetPrefProvider()->SetClockForTesting(clock.Pass());
-}
-
-void HostContentSettingsMap::AddExceptionForURL(
-    const GURL& primary_url,
-    const GURL& secondary_url,
-    ContentSettingsType content_type,
-    ContentSetting setting) {
-  // TODO(markusheintz): Until the UI supports pattern pairs, both urls must
-  // match.
-  DCHECK(primary_url == secondary_url);
-  DCHECK(content_settings::ContentSettingsRegistry::GetInstance()->Get(
-      content_type));
-
-  // Make sure there is no entry that would override the pattern we are about
-  // to insert for exactly this URL.
-  SetContentSetting(ContentSettingsPattern::FromURLNoWildcard(primary_url),
-                    ContentSettingsPattern::Wildcard(),
-                    content_type,
-                    std::string(),
-                    CONTENT_SETTING_DEFAULT);
-
-  SetContentSetting(ContentSettingsPattern::FromURL(primary_url),
-                    ContentSettingsPattern::Wildcard(),
-                    content_type,
-                    std::string(),
-                    setting);
 }
 
 void HostContentSettingsMap::ClearSettingsForOneType(
