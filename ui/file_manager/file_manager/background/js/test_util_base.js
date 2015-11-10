@@ -276,18 +276,21 @@ test.util.sync.inputText = function(contentWindow, query, text) {
 };
 
 /**
- * Sends an event to the element specified by |targetQuery|.
+ * Sends an event to the element specified by |targetQuery| or active element.
  *
  * @param {Window} contentWindow Window to be tested.
- * @param {string} targetQuery Query to specify the element.
+ * @param {?string} targetQuery Query to specify the element. If this value is
+ *     null, an event is dispatched to active element of the document.
  * @param {!Event} event Event to be sent.
  * @param {string=} opt_iframeQuery Optional iframe selector.
  * @return {boolean} True if the event is sent to the target, false otherwise.
  */
 test.util.sync.sendEvent = function(
     contentWindow, targetQuery, event, opt_iframeQuery) {
-  var target = test.util.sync.getElement_(
-      contentWindow, targetQuery, opt_iframeQuery);
+  var target = targetQuery === null ?
+      contentWindow.document.activeElement :
+      test.util.sync.getElement_(contentWindow, targetQuery, opt_iframeQuery);
+
   if (!target)
     return false;
 
@@ -320,11 +323,12 @@ test.util.sync.fakeEvent = function(contentWindow,
 };
 
 /**
- * Sends a fake key event to the element specified by |targetQuery| with the
- * given |keyIdentifier| and optional |ctrl| modifier to the file manager.
+ * Sends a fake key event to the element specified by |targetQuery| or active
+ * element with the given |keyIdentifier| and optional |ctrl| modifier.
  *
  * @param {Window} contentWindow Window to be tested.
- * @param {string} targetQuery Query to specify the element.
+ * @param {?string} targetQuery Query to specify the element. If this value is
+ *     null, key event is dispatched to active element of the document.
  * @param {string} keyIdentifier Identifier of the emulated key.
  * @param {boolean} ctrl Whether CTRL should be pressed, or not.
  * @param {boolean} shift whether SHIFT should be pressed, or not.

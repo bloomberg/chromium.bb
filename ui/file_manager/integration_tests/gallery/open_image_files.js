@@ -59,6 +59,30 @@ function openSingleImage(testVolumeName, volumeType) {
 }
 
 /**
+ * Confirms that two images are loaded in thumbnail mode. This method doesn't
+ * care whether two images are loaded with error or not.
+ *
+ * @param {string} appId
+ * @return {Promise} Promise to be fulfilled with on success.
+ */
+function confirmTwoImagesAreLoadedInThumbnailMode(appId) {
+  // Wait until Gallery changes to thumbnail mode.
+  return gallery.waitForElement(
+      appId, '.gallery[mode="thumbnail"]').then(function() {
+    // Confirm that two tiles are shown.
+    return repeatUntil(function() {
+      return gallery.callRemoteTestUtil('queryAllElements', appId,
+          ['.thumbnail-view .thumbnail']).then(function(tiles) {
+        if (tiles.length !== 2)
+          return pending('The number of tiles is expected 2, but is %d',
+              tiles.length);
+        return tiles;
+      });
+    });
+  });
+}
+
+/**
  * Runs a test to open multiple images.
  *
  * @param {string} testVolumeName Test volume name passed to the addEntries
@@ -71,21 +95,31 @@ function openMultipleImages(testVolumeName, volumeType) {
   var launchedPromise = launch(testVolumeName, volumeType, testEntries);
   return launchedPromise.then(function(args) {
     var appId = args.appId;
-    var rootElementPromise =
-        gallery.waitForElement(appId, '.gallery[mode="thumbnail"]');
-    var tilesPromise = repeatUntil(function() {
+    return confirmTwoImagesAreLoadedInThumbnailMode(appId);
+  });
+}
+
+/**
+ * Runs a test to open multiple images and change to slide mode with keyboard.
+ *
+ * @param {string} testVolumeName Test volume name passed to the addEntries
+ *     function. Either 'drive' or 'local'.
+ * @param {VolumeManagerCommon.VolumeType} volumeType Volume type.
+ * @return {Promise} Promise to be fulfilled with on success.
+ */
+function openMultipleImagesAndChangeToSlideMode(testVolumeName, volumeType) {
+  var testEntries = [ENTRIES.desktop, ENTRIES.image3];
+  var launchedPromise = launch(testVolumeName, volumeType, testEntries);
+  return launchedPromise.then(function(args) {
+    var appId = args.appId;
+    return confirmTwoImagesAreLoadedInThumbnailMode(appId).then(function() {
+      // Press Enter key and mode should be changed to slide mode.
       return gallery.callRemoteTestUtil(
-          'queryAllElements',
-          appId,
-          ['.thumbnail-view .thumbnail']
-      ).then(function(tiles) {
-        if (tiles.length !== 2)
-          return pending('The number of tiles is expected 2, but is %d',
-                         tiles.length);
-        return tiles;
-      });
+          'fakeKeyDown', appId, [null /* active element */, 'Enter', false]);
+    }).then(function() {
+      // Wait until it changes to slide mode.
+      return gallery.waitForElement(appId, '.gallery[mode="slide"]');
     });
-    return Promise.all([rootElementPromise, tilesPromise]);
   });
 }
 
@@ -119,4 +153,12 @@ testcase.openMultipleImagesOnDownloads = function() {
  */
 testcase.openMultipleImagesOnDrive = function() {
   return openMultipleImages('drive', 'drive');
+};
+
+/**
+ * The openMultipleImagesAndChangeToSlideMode test for Downloads.
+ * @return {Promise} Promise to be fulfilled with on success.
+ */
+testcase.openMultipleImagesAndChangeToSlideModeOnDownloads = function() {
+  return openMultipleImagesAndChangeToSlideMode('local', 'downloads');
 };
