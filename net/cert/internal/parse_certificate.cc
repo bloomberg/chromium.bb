@@ -353,4 +353,56 @@ bool ParseTbsCertificate(const der::Input& tbs_tlv, ParsedTbsCertificate* out) {
   return true;
 }
 
+// From RFC 5280:
+//
+//    Extension  ::=  SEQUENCE  {
+//            extnID      OBJECT IDENTIFIER,
+//            critical    BOOLEAN DEFAULT FALSE,
+//            extnValue   OCTET STRING
+//                        -- contains the DER encoding of an ASN.1 value
+//                        -- corresponding to the extension type identified
+//                        -- by extnID
+//            }
+bool ParseExtension(const der::Input& extension_tlv, ParsedExtension* out) {
+  der::Parser parser(extension_tlv);
+
+  //    Extension  ::=  SEQUENCE  {
+  der::Parser extension_parser;
+  if (!parser.ReadSequence(&extension_parser))
+    return false;
+
+  //            extnID      OBJECT IDENTIFIER,
+  if (!extension_parser.ReadTag(der::kOid, &out->oid))
+    return false;
+
+  //            critical    BOOLEAN DEFAULT FALSE,
+  out->critical = false;
+  bool has_critical;
+  der::Input critical;
+  if (!extension_parser.ReadOptionalTag(der::kBool, &critical, &has_critical))
+    return false;
+  if (has_critical) {
+    if (!der::ParseBool(critical, &out->critical))
+      return false;
+    if (!out->critical)
+      return false;  // DER-encoding requires DEFAULT values be omitted.
+  }
+
+  //            extnValue   OCTET STRING
+  if (!extension_parser.ReadTag(der::kOctetString, &out->value))
+    return false;
+
+  // The Extension type does not have an extension point (everything goes in
+  // extnValue).
+  if (extension_parser.HasMore())
+    return false;
+
+  // By definition the input was a single Extension sequence, so there shouldn't
+  // be unconsumed data.
+  if (parser.HasMore())
+    return false;
+
+  return true;
+}
+
 }  // namespace net

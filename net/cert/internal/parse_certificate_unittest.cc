@@ -326,6 +326,71 @@ TEST(ParseTbsCertificateTest, ValidityRelaxed) {
   EnsureParsingTbsFails("tbs_validity_relaxed.pem");
 }
 
+// Reads a PEM file containing a block "EXTENSION". This input will be
+// passed to ParseExtension, and the results filled in |out|.
+bool ParseExtensionFromFile(const std::string& file_name,
+                            ParsedExtension* out,
+                            std::string* data) {
+  const PemBlockMapping mappings[] = {
+      {"EXTENSION", data},
+  };
+
+  EXPECT_TRUE(ReadTestDataFromPemFile(GetFilePath(file_name), mappings));
+  return ParseExtension(InputFromString(data), out);
+}
+
+// Parses an Extension whose critical field is true (255).
+TEST(ParseExtensionTest, Critical) {
+  std::string data;
+  ParsedExtension extension;
+  ASSERT_TRUE(
+      ParseExtensionFromFile("extension_critical.pem", &extension, &data));
+
+  EXPECT_TRUE(extension.critical);
+
+  const uint8_t kExpectedOid[] = {0x55, 0x1d, 0x13};
+  EXPECT_EQ(der::Input(kExpectedOid), extension.oid);
+
+  const uint8_t kExpectedValue[] = {0x30, 0x00};
+  EXPECT_EQ(der::Input(kExpectedValue), extension.value);
+}
+
+// Parses an Extension whose critical field is false (omitted).
+TEST(ParseExtensionTest, NotCritical) {
+  std::string data;
+  ParsedExtension extension;
+  ASSERT_TRUE(
+      ParseExtensionFromFile("extension_not_critical.pem", &extension, &data));
+
+  EXPECT_FALSE(extension.critical);
+
+  const uint8_t kExpectedOid[] = {0x55, 0x1d, 0x13};
+  EXPECT_EQ(der::Input(kExpectedOid), extension.oid);
+
+  const uint8_t kExpectedValue[] = {0x30, 0x00};
+  EXPECT_EQ(der::Input(kExpectedValue), extension.value);
+}
+
+// Parses an Extension whose critical field is 0. This is in one sense FALSE,
+// however because critical has DEFAULT of false this is in fact invalid
+// DER-encoding.
+TEST(ParseExtensionTest, Critical0) {
+  std::string data;
+  ParsedExtension extension;
+  ASSERT_FALSE(
+      ParseExtensionFromFile("extension_critical_0.pem", &extension, &data));
+}
+
+// Parses an Extension whose critical field is 3. Under DER-encoding BOOLEAN
+// values must an octet of either all zero bits, or all 1 bits, so this is not
+// valid.
+TEST(ParseExtensionTest, Critical3) {
+  std::string data;
+  ParsedExtension extension;
+  ASSERT_FALSE(
+      ParseExtensionFromFile("extension_critical_3.pem", &extension, &data));
+}
+
 }  // namespace
 
 }  // namespace net

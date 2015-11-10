@@ -214,6 +214,37 @@ struct NET_EXPORT ParsedTbsCertificate {
   der::Input extensions_tlv;
 };
 
+// ParsedExtension represents a parsed "Extension" from RFC 5280. It contains
+// der:Inputs which are not owned so the associated data must be kept alive.
+//
+//    Extension  ::=  SEQUENCE  {
+//            extnID      OBJECT IDENTIFIER,
+//            critical    BOOLEAN DEFAULT FALSE,
+//            extnValue   OCTET STRING
+//                        -- contains the DER encoding of an ASN.1 value
+//                        -- corresponding to the extension type identified
+//                        -- by extnID
+//            }
+struct NET_EXPORT ParsedExtension {
+  der::Input oid;
+  // |value| will contain the contents of the OCTET STRING. For instance for
+  // basicConstraints it will be the TLV for a SEQUENCE.
+  der::Input value;
+  bool critical = false;
+};
+
+// Parses a DER-encoded "Extension" as specified by RFC 5280. Returns true on
+// success and sets the results in |out|.
+//
+// Note that on success |out| aliases data from the input |extension_tlv|.
+// Hence the fields of the ParsedExtension are only valid as long as
+// |extension_tlv| remains valid.
+//
+// On failure |out| has an undefined state. Some of its fields may have been
+// updated during parsing, whereas others may not have been changed.
+NET_EXPORT bool ParseExtension(const der::Input& extension_tlv,
+                               ParsedExtension* out) WARN_UNUSED_RESULT;
+
 }  // namespace net
 
 #endif  // NET_CERT_INTERNAL_PARSE_CERTIFICATE_H_
