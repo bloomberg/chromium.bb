@@ -18,7 +18,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "10.14",
+  "version": "10.15",
   "entries": [
     {
       "id": 1,
@@ -1169,19 +1169,6 @@ LONG_STRING_CONST(
       "device_id": ["0x0402", "0x0406", "0x040a", "0x040b", "0x040e",
                     "0x0a02", "0x0a06", "0x0a0a", "0x0a0b", "0x0a0e",
                     "0x0d02", "0x0d06", "0x0d0a", "0x0d0b", "0x0d0e"],
-      "features": [
-        "all"
-      ]
-    },
-    {
-      "id": 108,
-      "description": "Screen flickers on 2009 iMacs",
-      "cr_bugs": [543324],
-      "os": {
-        "type": "macosx"
-      },
-      "vendor_id": "0x1002",
-      "device_id": ["0x944a"],
       "features": [
         "all"
       ]

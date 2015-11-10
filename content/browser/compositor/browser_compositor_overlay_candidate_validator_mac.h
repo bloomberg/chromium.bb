@@ -28,6 +28,7 @@ class CONTENT_EXPORT BrowserCompositorOverlayCandidateValidatorMac
  private:
   gfx::AcceleratedWidget widget_;
   bool software_mirror_active_;
+  bool ca_layers_disabled_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserCompositorOverlayCandidateValidatorMac);
 };
