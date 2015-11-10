@@ -390,6 +390,19 @@ void AccountConsistencyService::RemoveXChromeConnectedCookies() {
   }
 }
 
+void AccountConsistencyService::OnBrowsingDataRemoved() {
+  // X-CHROME-CONNECTED cookies have been removed, update internal state
+  // accordingly.
+  ResetWKWebView();
+  cookie_requests_.clear();
+  domains_with_cookies_.clear();
+  base::DictionaryValue dict;
+  signin_client_->GetPrefs()->Set(kDomainsWithCookiePref, dict);
+
+  // APISID cookie has been removed, notify the GCMS.
+  gaia_cookie_manager_service_->ForceOnCookieChangedProcessing();
+}
+
 void AccountConsistencyService::OnAddAccountToCookieCompleted(
     const std::string& account_id,
     const GoogleServiceAuthError& error) {

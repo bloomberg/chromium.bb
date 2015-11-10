@@ -57,6 +57,10 @@ const net::BackoffEntry::Policy kBackoffPolicy = {
 
 const int kMaxFetcherRetries = 8;
 
+// Name of the GAIA cookie that is being observed to detect when available
+// accounts have changed in the content-area.
+const char* kGaiaCookieName = "APISID";
+
 enum GaiaCookieRequestType {
   ADD_ACCOUNT,
   LOG_OUT_ALL_ACCOUNTS,
@@ -292,8 +296,7 @@ GaiaCookieManagerService::~GaiaCookieManagerService() {
 
 void GaiaCookieManagerService::Init() {
   cookie_changed_subscription_ = signin_client_->AddCookieChangedCallback(
-      GaiaUrls::GetInstance()->google_url(),
-      "APISID",
+      GaiaUrls::GetInstance()->google_url(), kGaiaCookieName,
       base::Bind(&GaiaCookieManagerService::OnCookieChanged,
                  base::Unretained(this)));
 }
@@ -366,6 +369,15 @@ void GaiaCookieManagerService::TriggerListAccounts() {
   }
 }
 
+void GaiaCookieManagerService::ForceOnCookieChangedProcessing() {
+  GURL google_url = GaiaUrls::GetInstance()->google_url();
+  net::CanonicalCookie cookie(google_url, kGaiaCookieName, "",
+                              google_url.host(), "", base::Time(), base::Time(),
+                              base::Time(), false, false, false,
+                              net::COOKIE_PRIORITY_DEFAULT);
+  OnCookieChanged(cookie, true);
+}
+
 void GaiaCookieManagerService::LogOutAllAccounts() {
   VLOG(1) << "GaiaCookieManagerService::LogOutAllAccounts";
 
@@ -434,7 +446,7 @@ void GaiaCookieManagerService::CancelAll() {
 void GaiaCookieManagerService::OnCookieChanged(
     const net::CanonicalCookie& cookie,
     bool removed) {
-  DCHECK_EQ("APISID", cookie.Name());
+  DCHECK_EQ(kGaiaCookieName, cookie.Name());
   DCHECK_EQ(GaiaUrls::GetInstance()->google_url().host(), cookie.Domain());
   // Ignore changes to the cookie while requests are pending.  These changes
   // are caused by the service itself as it adds accounts.  A side effects is
