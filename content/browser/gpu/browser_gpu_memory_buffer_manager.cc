@@ -101,30 +101,8 @@ bool IsNativeGpuMemoryBufferFactoryConfigurationSupported(
 
 GpuMemoryBufferConfigurationSet GetNativeGpuMemoryBufferConfigurations() {
   GpuMemoryBufferConfigurationSet configurations;
-#if defined(OS_MACOSX)
-  bool enable_native_gpu_memory_buffers =
-      !base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableNativeGpuMemoryBuffers);
-#else
-  bool enable_native_gpu_memory_buffers =
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableNativeGpuMemoryBuffers);
-#endif
 
-#if defined(USE_OZONE) || defined(OS_MACOSX)
-  bool force_native_gpu_read_write_formats = true;
-#else
-  bool force_native_gpu_read_write_formats = false;
-#endif
-
-  // Disable native buffers when using Mesa.
-  if (base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kUseGL) == gfx::kGLImplementationOSMesaName) {
-    enable_native_gpu_memory_buffers = false;
-    force_native_gpu_read_write_formats = false;
-  }
-
-  if (enable_native_gpu_memory_buffers) {
+  if (BrowserGpuMemoryBufferManager::IsNativeGpuMemoryBuffersEnabled()) {
     const gfx::BufferFormat kNativeFormats[] = {
         gfx::BufferFormat::R_8,       gfx::BufferFormat::RGBA_4444,
         gfx::BufferFormat::RGBA_8888, gfx::BufferFormat::BGRA_8888,
@@ -141,6 +119,14 @@ GpuMemoryBufferConfigurationSet GetNativeGpuMemoryBufferConfigurations() {
     }
   }
 
+#if defined(USE_OZONE) || defined(OS_MACOSX)
+  // Disable native buffers only when using Mesa.
+  bool force_native_gpu_read_write_formats =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kUseGL) != gfx::kGLImplementationOSMesaName;
+#else
+  bool force_native_gpu_read_write_formats = false;
+#endif
   if (force_native_gpu_read_write_formats) {
     const gfx::BufferFormat kGPUReadWriteFormats[] = {
         gfx::BufferFormat::RGBA_8888, gfx::BufferFormat::RGBX_8888,
@@ -220,6 +206,23 @@ BrowserGpuMemoryBufferManager::~BrowserGpuMemoryBufferManager() {
 // static
 BrowserGpuMemoryBufferManager* BrowserGpuMemoryBufferManager::current() {
   return g_gpu_memory_buffer_manager;
+}
+
+// static
+bool BrowserGpuMemoryBufferManager::IsNativeGpuMemoryBuffersEnabled() {
+  // Disable native buffers when using Mesa.
+  if (base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kUseGL) == gfx::kGLImplementationOSMesaName) {
+    return false;
+  }
+
+#if defined(OS_MACOSX)
+  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableNativeGpuMemoryBuffers);
+#else
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableNativeGpuMemoryBuffers);
+#endif
 }
 
 // static

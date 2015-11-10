@@ -51,6 +51,8 @@ class CONTENT_EXPORT BrowserGpuMemoryBufferManager
 
   static BrowserGpuMemoryBufferManager* current();
 
+  static bool IsNativeGpuMemoryBuffersEnabled();
+
   static uint32 GetImageTextureTarget(gfx::BufferFormat format,
                                       gfx::BufferUsage usage);
 
