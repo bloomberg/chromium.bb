@@ -320,7 +320,7 @@ void LocatedEvent::UpdateForRootTransform(
 MouseEvent::MouseEvent(const base::NativeEvent& native_event)
     : LocatedEvent(native_event),
       changed_button_flags_(GetChangedMouseButtonFlagsFromNative(native_event)),
-      pointer_details_(PointerDetails(EventPointerType::POINTER_TYPE_MOUSE)) {
+      pointer_details_(GetMousePointerDetailsFromNative(native_event)) {
   if (type() == ET_MOUSE_PRESSED || type() == ET_MOUSE_RELEASED)
     SetClickCount(GetRepeatCount(*this));
 }

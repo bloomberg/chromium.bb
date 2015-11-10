@@ -6,7 +6,6 @@
 
 #include <vector>
 
-#include "ui/events/event.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/screen.h"
 

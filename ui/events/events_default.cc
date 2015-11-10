@@ -46,6 +46,14 @@ int GetChangedMouseButtonFlagsFromNative(
   return event->changed_button_flags();
 }
 
+PointerDetails GetMousePointerDetailsFromNative(
+    const base::NativeEvent& native_event) {
+  const ui::MouseEvent* event =
+      static_cast<const ui::MouseEvent*>(native_event);
+  DCHECK(event->IsMouseEvent() || event->IsScrollEvent());
+  return event->pointer_details();
+}
+
 KeyboardCode KeyboardCodeFromNative(const base::NativeEvent& native_event) {
   const ui::KeyEvent* event = static_cast<const ui::KeyEvent*>(native_event);
   DCHECK(event->IsKeyEvent());
