@@ -546,7 +546,6 @@ void BrowserGpuMemoryBufferManager::HandleCreateGpuMemoryBufferFromHandleOnIO(
   handle.id = new_id;
   handle.handle = request->handle.handle;
   handle.offset = request->handle.offset;
-  handle.stride = request->handle.stride;
 
   // Note: Unretained is safe as IO thread is stopped before manager is
   // destroyed.

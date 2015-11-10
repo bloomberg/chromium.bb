@@ -16,9 +16,7 @@ class GL_EXPORT GLImageMemory : public GLImage {
  public:
   GLImageMemory(const gfx::Size& size, unsigned internalformat);
 
-  bool Initialize(const unsigned char* memory,
-                  gfx::BufferFormat format,
-                  size_t stride);
+  bool Initialize(const unsigned char* memory, gfx::BufferFormat format);
 
   // Overridden from GLImage:
   void Destroy(bool have_context) override;
@@ -42,14 +40,12 @@ class GL_EXPORT GLImageMemory : public GLImage {
   ~GLImageMemory() override;
 
   gfx::BufferFormat format() const { return format_; }
-  size_t stride() const { return stride_; }
 
  private:
   const gfx::Size size_;
   const unsigned internalformat_;
   const unsigned char* memory_;
   gfx::BufferFormat format_;
-  size_t stride_;
 
   DISALLOW_COPY_AND_ASSIGN(GLImageMemory);
 };
