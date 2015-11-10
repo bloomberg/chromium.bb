@@ -37,8 +37,11 @@ source_set("test_support") {
 test("mojo_view_manager_lib_unittests") {
   sources = [
     "run_all_unittests.cc",
+    "test_window_tree.cc",
+    "test_window_tree.h",
     "window_server_test_suite.cc",
     "window_server_test_suite.h",
+    "window_tree_client_impl_unittest.cc",
     "window_unittest.cc",
   ]
 
@@ -48,6 +51,7 @@ test("mojo_view_manager_lib_unittests") {
     "//base/test:test_support",
     "//components/mus/public/cpp",
     "//mojo/application/public/cpp",
+    "//mojo/converters/geometry",
     "//mojo/gles2",
     "//mojo/platform_handle:platform_handle_impl",
     "//testing/gtest",

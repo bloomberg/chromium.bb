@@ -19,6 +19,7 @@ class Size;
 
 namespace mus {
 class InFlightChange;
+class WindowTreeClientImplPrivate;
 class WindowTreeConnection;
 class WindowTreeDelegate;
 
@@ -26,18 +27,17 @@ enum class ChangeType;
 
 // Manages the connection with the Window Server service.
 class WindowTreeClientImpl : public WindowTreeConnection,
-                             public mus::mojom::WindowTreeClient {
+                             public mojom::WindowTreeClient {
  public:
-  WindowTreeClientImpl(
-      WindowTreeDelegate* delegate,
-      WindowManagerDelegate* window_manager_delegate,
-      mojo::InterfaceRequest<mus::mojom::WindowTreeClient> request);
+  WindowTreeClientImpl(WindowTreeDelegate* delegate,
+                       WindowManagerDelegate* window_manager_delegate,
+                       mojo::InterfaceRequest<mojom::WindowTreeClient> request);
   ~WindowTreeClientImpl() override;
 
   // Wait for OnEmbed(), returning when done.
   void WaitForEmbed();
 
-  bool connected() const { return tree_; }
+  bool connected() const { return tree_ != nullptr; }
   ConnectionSpecificId connection_id() const { return connection_id_; }
 
   // API exposed to the window implementations that pushes local changes to the
@@ -72,9 +72,9 @@ class WindowTreeClientImpl : public WindowTreeConnection,
                         mojo::TextInputStatePtr state);
 
   void Embed(Id window_id,
-             mus::mojom::WindowTreeClientPtr client,
+             mojom::WindowTreeClientPtr client,
              uint32_t policy_bitmask,
-             const mus::mojom::WindowTree::EmbedCallback& callback);
+             const mojom::WindowTree::EmbedCallback& callback);
 
   void RequestSurface(Id window_id,
                       mojom::SurfaceType type,
@@ -103,6 +103,8 @@ class WindowTreeClientImpl : public WindowTreeConnection,
   void SetResizeBehavior(Id window_id, mojom::ResizeBehavior resize_behavior);
 
  private:
+  friend class WindowTreeClientImplPrivate;
+
   typedef std::map<Id, Window*> IdToWindowMap;
 
   using InFlightMap = base::ScopedPtrMap<uint32_t, scoped_ptr<InFlightChange>>;
@@ -112,6 +114,13 @@ class WindowTreeClientImpl : public WindowTreeConnection,
   // Returns the oldest InFlightChange matching the supplied arguments.
   InFlightChange* GetOldestInFlightChangeMatching(Id window_id,
                                                   ChangeType change_type);
+
+  // OnEmbed() calls into this. Exposed as a separate function for testing.
+  void OnEmbedImpl(mojom::WindowTree* window_tree,
+                   ConnectionSpecificId connection_id,
+                   mojom::WindowDataPtr root_data,
+                   Id focused_window_id,
+                   uint32 access_policy);
 
   // Overridden from WindowTreeConnection:
   Window* GetRoot() override;
@@ -189,7 +198,10 @@ class WindowTreeClientImpl : public WindowTreeConnection,
   Window* focused_window_;
 
   mojo::Binding<WindowTreeClient> binding_;
-  mus::mojom::WindowTreePtr tree_;
+  mojom::WindowTreePtr tree_ptr_;
+  // Typically this is the value contained in |tree_ptr_|, but tests may
+  // directly set this.
+  mojom::WindowTree* tree_;
 
   bool is_embed_root_;
 

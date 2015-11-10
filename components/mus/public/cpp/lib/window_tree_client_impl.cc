@@ -23,7 +23,7 @@
 namespace mus {
 namespace {
 
-void WindowManagerCallback(mus::mojom::WindowManagerErrorCode error_code) {}
+void WindowManagerCallback(mojom::WindowManagerErrorCode error_code) {}
 
 }  // namespace
 
@@ -83,7 +83,7 @@ Window* BuildWindowTree(WindowTreeClientImpl* client,
 
 WindowTreeConnection* WindowTreeConnection::Create(
     WindowTreeDelegate* delegate,
-    mojo::InterfaceRequest<mus::mojom::WindowTreeClient> request,
+    mojo::InterfaceRequest<mojom::WindowTreeClient> request,
     CreateType create_type) {
   WindowTreeClientImpl* client =
       new WindowTreeClientImpl(delegate, nullptr, request.Pass());
@@ -94,7 +94,7 @@ WindowTreeConnection* WindowTreeConnection::Create(
 
 WindowTreeConnection* WindowTreeConnection::CreateForWindowManager(
     WindowTreeDelegate* delegate,
-    mojo::InterfaceRequest<mus::mojom::WindowTreeClient> request,
+    mojo::InterfaceRequest<mojom::WindowTreeClient> request,
     CreateType create_type,
     WindowManagerDelegate* window_manager_delegate) {
   WindowTreeClientImpl* client = new WindowTreeClientImpl(
@@ -107,7 +107,7 @@ WindowTreeConnection* WindowTreeConnection::CreateForWindowManager(
 WindowTreeClientImpl::WindowTreeClientImpl(
     WindowTreeDelegate* delegate,
     WindowManagerDelegate* window_manager_delegate,
-    mojo::InterfaceRequest<mus::mojom::WindowTreeClient> request)
+    mojo::InterfaceRequest<mojom::WindowTreeClient> request)
     : connection_id_(0),
       next_window_id_(1),
       next_change_id_(1),
@@ -115,9 +115,14 @@ WindowTreeClientImpl::WindowTreeClientImpl(
       window_manager_delegate_(window_manager_delegate),
       root_(nullptr),
       focused_window_(nullptr),
-      binding_(this, request.Pass()),
+      binding_(this),
+      tree_(nullptr),
       is_embed_root_(false),
-      in_destructor_(false) {}
+      in_destructor_(false) {
+  // Allow for a null request in tests.
+  if (request.is_pending())
+    binding_.Bind(request.Pass());
+}
 
 WindowTreeClientImpl::~WindowTreeClientImpl() {
   in_destructor_ = true;
@@ -233,9 +238,9 @@ void WindowTreeClientImpl::SetImeVisibility(Id window_id,
 
 void WindowTreeClientImpl::Embed(
     Id window_id,
-    mus::mojom::WindowTreeClientPtr client,
+    mojom::WindowTreeClientPtr client,
     uint32_t policy_bitmask,
-    const mus::mojom::WindowTree::EmbedCallback& callback) {
+    const mojom::WindowTree::EmbedCallback& callback) {
   DCHECK(tree_);
   tree_->Embed(window_id, client.Pass(), policy_bitmask, callback);
 }
@@ -299,9 +304,6 @@ void WindowTreeClientImpl::SetResizeBehavior(
   tree_->SetResizeBehavior(window_id, resize_behavior);
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// WindowTreeClientImpl, WindowTreeConnection implementation:
-
 Id WindowTreeClientImpl::CreateWindowOnServer() {
   DCHECK(tree_);
   const Id window_id = MakeTransportId(connection_id_, next_window_id_++);
@@ -321,6 +323,24 @@ InFlightChange* WindowTreeClientImpl::GetOldestInFlightChangeMatching(
     }
   }
   return nullptr;
+}
+
+void WindowTreeClientImpl::OnEmbedImpl(mojom::WindowTree* window_tree,
+                                       ConnectionSpecificId connection_id,
+                                       mojom::WindowDataPtr root_data,
+                                       Id focused_window_id,
+                                       uint32 access_policy) {
+  tree_ = window_tree;
+  connection_id_ = connection_id;
+  is_embed_root_ =
+      (access_policy & mojom::WindowTree::ACCESS_POLICY_EMBED_ROOT) != 0;
+
+  DCHECK(!root_);
+  root_ = AddWindowToConnection(this, nullptr, root_data);
+
+  focused_window_ = GetWindowById(focused_window_id);
+
+  delegate_->OnEmbed(root_);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -358,24 +378,14 @@ ConnectionSpecificId WindowTreeClientImpl::GetConnectionId() {
 
 void WindowTreeClientImpl::OnEmbed(ConnectionSpecificId connection_id,
                                    mojom::WindowDataPtr root_data,
-                                   mus::mojom::WindowTreePtr tree,
+                                   mojom::WindowTreePtr tree,
                                    Id focused_window_id,
                                    uint32 access_policy) {
-  if (tree) {
-    DCHECK(!tree_);
-    tree_ = tree.Pass();
-    tree_.set_connection_error_handler([this]() { delete this; });
-  }
-  connection_id_ = connection_id;
-  is_embed_root_ =
-      (access_policy & mus::mojom::WindowTree::ACCESS_POLICY_EMBED_ROOT) != 0;
-
-  DCHECK(!root_);
-  root_ = AddWindowToConnection(this, nullptr, root_data);
-
-  focused_window_ = GetWindowById(focused_window_id);
-
-  delegate_->OnEmbed(root_);
+  DCHECK(!tree_ptr_);
+  tree_ptr_ = tree.Pass();
+  tree_ptr_.set_connection_error_handler([this]() { delete this; });
+  OnEmbedImpl(tree_ptr_.get(), connection_id, root_data.Pass(),
+              focused_window_id, access_policy);
 }
 
 void WindowTreeClientImpl::OnEmbeddedAppDisconnected(Id window_id) {
@@ -399,7 +409,7 @@ void WindowTreeClientImpl::OnWindowBoundsChanged(Id window_id,
       GetOldestInFlightChangeMatching(window_id, ChangeType::BOUNDS);
   if (change) {
     static_cast<InFlightBoundsChange*>(change)
-        ->set_revert_bounds(old_bounds.To<gfx::Rect>());
+        ->set_revert_bounds(new_bounds.To<gfx::Rect>());
     // Wait for the change we initiated on the server to complete before
     // deciding if |new_bounds| should be applied.
     return;
