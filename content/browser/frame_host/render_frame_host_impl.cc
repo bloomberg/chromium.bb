@@ -1584,6 +1584,7 @@ void RenderFrameHostImpl::OnAccessibilitySnapshotResponse(
     if (snapshot.has_tree_data) {
       AXContentTreeDataToAXTreeData(snapshot.tree_data,
                                     &dst_snapshot.tree_data);
+      dst_snapshot.has_tree_data = true;
     }
     it->second.Run(dst_snapshot);
     ax_tree_snapshot_callbacks_.erase(it);
