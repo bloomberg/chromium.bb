@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/** @fileoverview Sends braille content to a content script if the braille
- * captions feature is enabled.
+/** @fileoverview If the braille captions feature is enabled, sends
+ * braille content to the Panel on Chrome OS, or a content script on
+ * other platforms.
  */
 
 goog.provide('cvox.BrailleCaptionsBackground');
 
+goog.require('PanelCommand');
 goog.require('cvox.BrailleDisplayState');
 goog.require('cvox.ExtensionBridge');
 
@@ -65,11 +67,17 @@ cvox.BrailleCaptionsBackground.setContent = function(text, cells) {
     brailleChars += String.fromCharCode(
         self.BRAILLE_UNICODE_BLOCK_START | byteBuf[i]);
   }
-  cvox.ExtensionBridge.send({
-    message: 'BRAILLE_CAPTION',
-    text: text,
-    brailleChars: brailleChars
-  });
+
+  if (cvox.ChromeVox.isChromeOS) {
+    var data = {text: text, braille: brailleChars};
+    (new PanelCommand(PanelCommandType.UPDATE_BRAILLE, data)).send();
+  } else {
+    cvox.ExtensionBridge.send({
+      message: 'BRAILLE_CAPTION',
+      text: text,
+      brailleChars: brailleChars
+    });
+  }
 };
 
 

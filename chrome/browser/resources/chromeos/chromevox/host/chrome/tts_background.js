@@ -10,6 +10,7 @@
 
 goog.provide('cvox.TtsBackground');
 
+goog.require('PanelCommand');
 goog.require('cvox.AbstractTts');
 goog.require('cvox.ChromeTtsBase');
 goog.require('cvox.ChromeVox');
@@ -301,6 +302,9 @@ cvox.TtsBackground.prototype.speakUsingQueue_ = function(utterance, queueMode) {
   // make a note that we're going to stop speech.
   if (queueMode == cvox.QueueMode.FLUSH ||
       queueMode == cvox.QueueMode.CATEGORY_FLUSH) {
+    (new PanelCommand(
+        PanelCommandType.CLEAR_SPEECH)).send();
+
     if (this.shouldCancel_(this.currentUtterance_, utterance, queueMode)) {
       this.cancelUtterance_(this.currentUtterance_);
       this.currentUtterance_ = null;
@@ -319,6 +323,19 @@ cvox.TtsBackground.prototype.speakUsingQueue_ = function(utterance, queueMode) {
 
   // Next, add the new utterance to the queue.
   this.utteranceQueue_.push(utterance);
+
+  // Update the caption panel.
+  if (utterance.properties &&
+      utterance.properties['pitch'] &&
+      utterance.properties['pitch'] < this.ttsProperties['pitch']) {
+    (new PanelCommand(
+        PanelCommandType.ADD_ANNOTATION_SPEECH,
+        utterance.textString)).send();
+  } else {
+    (new PanelCommand(
+        PanelCommandType.ADD_NORMAL_SPEECH,
+        utterance.textString)).send();
+  }
 
   // Now start speaking the next item in the queue.
   this.startSpeakingNextItemInQueue_();
@@ -499,6 +516,7 @@ cvox.TtsBackground.prototype.stop = function() {
 
   this.utteranceQueue_.length = 0;
 
+  (new PanelCommand(PanelCommandType.CLEAR_SPEECH)).send();
   chrome.tts.stop();
 };
 

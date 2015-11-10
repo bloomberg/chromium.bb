@@ -2397,6 +2397,20 @@
       <message desc="Describes the volume up key in the ChromeVox keyboard explorer." name="IDS_CHROMEVOX_VOLUME_UP_KEY">
         volume up
       </message>
+
+      <!-- Panel -->
+      <message desc="Title of the ChromeVox panel, a window that displays the text ChromeVox is speaking and contains controls to manipulate ChromeVox." name="IDS_CHROMEVOX_PANEL_TITLE">
+        ChromeVox Panel
+      </message>
+      <message desc="Title of the button that opens up the ChromeVox menu." name="IDS_CHROMEVOX_MENU_TITLE">
+        ChromeVox Menu
+      </message>
+      <message desc="Title of the button that opens up the ChromeVox menu." name="IDS_CHROMEVOX_OPTIONS">
+        ChromeVox Options
+      </message>
+      <message desc="Title of the button that disables ChromeVox." name="IDS_CHROMEVOX_DISABLE_CHROMEVOX">
+        Disable ChromeVox
+      </message>
     </messages>
   </release>
 </grit>

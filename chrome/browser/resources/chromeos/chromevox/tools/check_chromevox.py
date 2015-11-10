@@ -61,6 +61,7 @@ _TOP_LEVEL_SCRIPTS = [
     [[CVoxPath('chromevox/background/options_loader.js')], _COMMON_EXTERNS],
     [[CVoxPath('chromevox/injected/loader.js')], _COMMON_EXTERNS],
     [[CVoxPath('cvox2/background/loader.js')], _COMMON_EXTERNS],
+    [[CVoxPath('cvox2/background/panel_loader.js')], _COMMON_EXTERNS],
     ]
 
 

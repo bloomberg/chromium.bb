@@ -353,8 +353,7 @@ Background.prototype = {
         }
         break;
       case 'showOptionsPage':
-        var optionsPage = {url: 'chromevox/background/options.html'};
-        chrome.tabs.create(optionsPage);
+        chrome.runtime.openOptionsPage();
         break;
       case 'toggleChromeVoxVersion':
         var newMode;
@@ -409,6 +408,14 @@ Background.prototype = {
     }
 
     return false;
+  },
+
+  /**
+   * Open the options page in a new tab.
+   */
+  showOptionsPage: function() {
+    var optionsPage = {url: 'chromevox/background/options.html'};
+    chrome.tabs.create(optionsPage);
   },
 
   /**
