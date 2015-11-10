@@ -530,4 +530,17 @@ TEST_F(AppCacheHostTest, SelectCacheBlocked) {
   service_.set_quota_manager_proxy(NULL);
 }
 
+TEST_F(AppCacheHostTest, SelectCacheTwice) {
+  AppCacheHost host(1, &mock_frontend_, &service_);
+  const GURL kDocAndOriginUrl(GURL("http://whatever/").GetOrigin());
+
+  EXPECT_TRUE(host.SelectCache(kDocAndOriginUrl, kAppCacheNoCacheId, GURL()));
+
+  // Select methods should bail if cache has already been selected.
+  EXPECT_FALSE(host.SelectCache(kDocAndOriginUrl, kAppCacheNoCacheId, GURL()));
+  EXPECT_FALSE(host.SelectCacheForWorker(0, 0));
+  EXPECT_FALSE(host.SelectCacheForSharedWorker(kAppCacheNoCacheId));
+  EXPECT_FALSE(host.MarkAsForeignEntry(kDocAndOriginUrl, kAppCacheNoCacheId));
+}
+
 }  // namespace content
