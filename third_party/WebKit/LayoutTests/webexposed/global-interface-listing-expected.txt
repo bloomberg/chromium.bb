@@ -3336,6 +3336,7 @@ interface MessageEvent : Event
     getter origin
     getter ports
     getter source
+    getter suborigin
     method constructor
     method initMessageEvent
 interface MessagePort : EventTarget

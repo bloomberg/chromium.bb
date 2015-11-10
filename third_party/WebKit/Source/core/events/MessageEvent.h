@@ -47,29 +47,29 @@ public:
     {
         return adoptRefWillBeNoop(new MessageEvent);
     }
-    static PassRefPtrWillBeRawPtr<MessageEvent> create(MessagePortArray* ports, const String& origin = String(), const String& lastEventId = String(), PassRefPtrWillBeRawPtr<EventTarget> source = nullptr)
+    static PassRefPtrWillBeRawPtr<MessageEvent> create(MessagePortArray* ports, const String& origin = String(), const String& lastEventId = String(), PassRefPtrWillBeRawPtr<EventTarget> source = nullptr, const String& suborigin = String())
     {
-        return adoptRefWillBeNoop(new MessageEvent(origin, lastEventId, source, ports));
+        return adoptRefWillBeNoop(new MessageEvent(origin, lastEventId, source, ports, suborigin));
     }
-    static PassRefPtrWillBeRawPtr<MessageEvent> create(MessagePortArray* ports, PassRefPtr<SerializedScriptValue> data, const String& origin = String(), const String& lastEventId = String(), PassRefPtrWillBeRawPtr<EventTarget> source = nullptr)
+    static PassRefPtrWillBeRawPtr<MessageEvent> create(MessagePortArray* ports, PassRefPtr<SerializedScriptValue> data, const String& origin = String(), const String& lastEventId = String(), PassRefPtrWillBeRawPtr<EventTarget> source = nullptr, const String& suborigin = String())
     {
-        return adoptRefWillBeNoop(new MessageEvent(data, origin, lastEventId, source, ports));
+        return adoptRefWillBeNoop(new MessageEvent(data, origin, lastEventId, source, ports, suborigin));
     }
-    static PassRefPtrWillBeRawPtr<MessageEvent> create(PassOwnPtr<MessagePortChannelArray> channels, PassRefPtr<SerializedScriptValue> data, const String& origin = String(), const String& lastEventId = String(), PassRefPtrWillBeRawPtr<EventTarget> source = nullptr)
+    static PassRefPtrWillBeRawPtr<MessageEvent> create(PassOwnPtr<MessagePortChannelArray> channels, PassRefPtr<SerializedScriptValue> data, const String& origin = String(), const String& lastEventId = String(), PassRefPtrWillBeRawPtr<EventTarget> source = nullptr, const String& suborigin = String())
     {
-        return adoptRefWillBeNoop(new MessageEvent(data, origin, lastEventId, source, channels));
+        return adoptRefWillBeNoop(new MessageEvent(data, origin, lastEventId, source, channels, suborigin));
     }
-    static PassRefPtrWillBeRawPtr<MessageEvent> create(const String& data, const String& origin = String())
+    static PassRefPtrWillBeRawPtr<MessageEvent> create(const String& data, const String& origin = String(), const String& suborigin = String())
     {
-        return adoptRefWillBeNoop(new MessageEvent(data, origin));
+        return adoptRefWillBeNoop(new MessageEvent(data, origin, suborigin));
     }
-    static PassRefPtrWillBeRawPtr<MessageEvent> create(Blob* data, const String& origin = String())
+    static PassRefPtrWillBeRawPtr<MessageEvent> create(Blob* data, const String& origin = String(), const String& suborigin = String())
     {
-        return adoptRefWillBeNoop(new MessageEvent(data, origin));
+        return adoptRefWillBeNoop(new MessageEvent(data, origin, suborigin));
     }
-    static PassRefPtrWillBeRawPtr<MessageEvent> create(PassRefPtr<DOMArrayBuffer> data, const String& origin = String())
+    static PassRefPtrWillBeRawPtr<MessageEvent> create(PassRefPtr<DOMArrayBuffer> data, const String& origin = String(), const String& suborigin = String())
     {
-        return adoptRefWillBeNoop(new MessageEvent(data, origin));
+        return adoptRefWillBeNoop(new MessageEvent(data, origin, suborigin));
     }
     static PassRefPtrWillBeRawPtr<MessageEvent> create(const AtomicString& type, const MessageEventInit& initializer, ExceptionState&);
     ~MessageEvent() override;
@@ -78,6 +78,7 @@ public:
     void initMessageEvent(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtr<SerializedScriptValue> data, const String& origin, const String& lastEventId, DOMWindow* source, MessagePortArray*);
 
     const String& origin() const { return m_origin; }
+    const String& suborigin() const { return m_suborigin; }
     const String& lastEventId() const { return m_lastEventId; }
     EventTarget* source() const { return m_source.get(); }
     MessagePortArray ports(bool& isNull) const;
@@ -115,13 +116,13 @@ public:
 private:
     MessageEvent();
     MessageEvent(const AtomicString&, const MessageEventInit&);
-    MessageEvent(const String& origin, const String& lastEventId, PassRefPtrWillBeRawPtr<EventTarget> source, MessagePortArray*);
-    MessageEvent(PassRefPtr<SerializedScriptValue> data, const String& origin, const String& lastEventId, PassRefPtrWillBeRawPtr<EventTarget> source, MessagePortArray*);
-    MessageEvent(PassRefPtr<SerializedScriptValue> data, const String& origin, const String& lastEventId, PassRefPtrWillBeRawPtr<EventTarget> source, PassOwnPtr<MessagePortChannelArray>);
+    MessageEvent(const String& origin, const String& lastEventId, PassRefPtrWillBeRawPtr<EventTarget> source, MessagePortArray*, const String& suborigin);
+    MessageEvent(PassRefPtr<SerializedScriptValue> data, const String& origin, const String& lastEventId, PassRefPtrWillBeRawPtr<EventTarget> source, MessagePortArray*, const String& suborigin);
+    MessageEvent(PassRefPtr<SerializedScriptValue> data, const String& origin, const String& lastEventId, PassRefPtrWillBeRawPtr<EventTarget> source, PassOwnPtr<MessagePortChannelArray>, const String& suborigin);
 
-    MessageEvent(const String& data, const String& origin);
-    MessageEvent(Blob* data, const String& origin);
-    MessageEvent(PassRefPtr<DOMArrayBuffer> data, const String& origin);
+    MessageEvent(const String& data, const String& origin, const String& suborigin);
+    MessageEvent(Blob* data, const String& origin, const String& suborigin);
+    MessageEvent(PassRefPtr<DOMArrayBuffer> data, const String& origin, const String& suborigin);
 
     DataType m_dataType;
     ScriptValue m_dataAsScriptValue;
@@ -137,6 +138,7 @@ private:
     // non-empty at a time. entangleMessagePorts() moves between the states.
     PersistentWillBeMember<MessagePortArray> m_ports;
     OwnPtr<MessagePortChannelArray> m_channels;
+    String m_suborigin;
 };
 
 } // namespace blink

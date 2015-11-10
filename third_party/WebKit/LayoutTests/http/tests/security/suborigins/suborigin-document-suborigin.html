@@ -7,9 +7,11 @@
 </head>
 <script>
 window.onmessage = function(event) {
-    assert_equals(event.data, undefined, "document.suborigin should exist when page has a suborigin.");
+    assert_equals(event.data.type, 'iframe');
+    // TODO(jww): Update when document.suborigin implemented
+    assert_equals(event.data.suborigin, undefined, "document.suborigin should exist when page has a suborigin.");
     done();
 }
 </script>
-<iframe src="resources/post-document-to-parent.php?suborigin=foobar"></iframe>
+<iframe src="resources/post-document-to-parent.php?suborigin=foobar&type=iframe"></iframe>
 </html>

@@ -38,6 +38,7 @@
     // TODO(bashi): |source| should be (WindowProxy or MessagePort)?
     readonly attribute EventTarget? source;
     readonly attribute MessagePort[]? ports;
+    [RuntimeEnabled=suborigins] readonly attribute DOMString suborigin;
 
     // TODO(philipj): None of the initMessageEvent() arguments should be
     // optional, and |sourceArg| and |portsArg| are of the wrong type.

@@ -200,6 +200,7 @@ void DOMWindow::postMessage(PassRefPtr<SerializedScriptValue> message, const Mes
     if (!sourceDocument)
         return;
     String sourceOrigin = sourceDocument->securityOrigin()->toString();
+    String sourceSuborigin = sourceDocument->securityOrigin()->suboriginName();
 
     // FIXME: MixedContentChecker needs to be refactored for OOPIF.  For now,
     // create the url using replicated origins for remote frames.
@@ -212,7 +213,7 @@ void DOMWindow::postMessage(PassRefPtr<SerializedScriptValue> message, const Mes
     // Give the embedder a chance to intercept this postMessage.  If the
     // target is a remote frame, the message will be forwarded through the
     // browser process.
-    RefPtrWillBeRawPtr<MessageEvent> event = MessageEvent::create(channels.release(), message, sourceOrigin, String(), source);
+    RefPtrWillBeRawPtr<MessageEvent> event = MessageEvent::create(channels.release(), message, sourceOrigin, String(), source, sourceSuborigin);
     bool didHandleMessageEvent = frame()->client()->willCheckAndDispatchMessageEvent(target.get(), event.get(), source->document()->frame());
     if (!didHandleMessageEvent) {
         // Capture stack trace only when inspector front-end is loaded as it may be time consuming.

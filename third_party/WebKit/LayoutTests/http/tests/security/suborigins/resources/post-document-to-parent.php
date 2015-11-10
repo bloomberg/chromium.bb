@@ -6,6 +6,15 @@ if ($_GET["suborigin"]) {
 <!DOCTYPE html>
 <html>
 <script>
-window.parent.postMessage(document.suborigin, '*');
+var type = '<?php echo $_GET["type"]; ?>';
+var is_iframe = (type === 'iframe');
+var p = window.opener;
+if (is_iframe)
+    p = window.parent;
+
+p.postMessage({
+  'suborigin': document.suborigin,
+  'type': type
+}, '*');
 </script>
 </html>
