@@ -30,6 +30,10 @@ class ContextualSearchPolicy {
     private static final Pattern CONTAINS_WHITESPACE_PATTERN = Pattern.compile("\\s");
     private static final int REMAINING_NOT_APPLICABLE = -1;
     private static final int ONE_DAY_IN_MILLIS = 24 * 60 * 60 * 1000;
+    private static final int TAP_RESOLVE_LIMIT_FOR_DECIDED = 50;
+    private static final int TAP_PREFETCH_LIMIT_FOR_DECIDED = 50;
+    private static final int TAP_RESOLVE_LIMIT_FOR_UNDECIDED = 20;
+    private static final int TAP_PREFETCH_LIMIT_FOR_UNDECIDED = 20;
 
     private static ContextualSearchPolicy sInstance;
 
@@ -39,6 +43,10 @@ class ContextualSearchPolicy {
     private boolean mDidOverrideDecidedStateForTesting;
     private boolean mDecidedStateForTesting;
     private boolean mDidResetCounters;
+    private Integer mTapResolveLimitForDecided;
+    private Integer mTapPrefetchLimitForDecided;
+    private Integer mTapResolveLimitForUndecided;
+    private Integer mTapPrefetchLimitForUndecided;
 
     public static ContextualSearchPolicy getInstance(Context context) {
         if (sInstance == null) {
@@ -429,6 +437,26 @@ class ContextualSearchPolicy {
         return ContextualSearchFieldTrial.isTranslationOneboxEnabled();
     }
 
+    @VisibleForTesting
+    void setTapResolveLimitForDecidedForTesting(int limit) {
+        mTapResolveLimitForDecided = limit;
+    }
+
+    @VisibleForTesting
+    void setTapPrefetchLimitForDecidedForTesting(int limit) {
+        mTapPrefetchLimitForDecided = limit;
+    }
+
+    @VisibleForTesting
+    void setTapPrefetchLimitForUndecidedForTesting(int limit) {
+        mTapPrefetchLimitForUndecided = limit;
+    }
+
+    @VisibleForTesting
+    void setTapResolveLimitForUndecidedForTesting(int limit) {
+        mTapResolveLimitForUndecided = limit;
+    }
+
     // --------------------------------------------------------------------------------------------
     // Private helpers.
     // --------------------------------------------------------------------------------------------
@@ -456,32 +484,14 @@ class ContextualSearchPolicy {
      * @return Whether the tap resolve limit has been exceeded.
      */
     private boolean isTapResolveBeyondTheLimit() {
-        return isTapResolveLimited() && getTapCount() > getTapResolveLimit();
+        return getTapCount() > getTapResolveLimit();
     }
 
     /**
      * @return Whether the tap resolve limit has been exceeded.
      */
     private boolean isTapPrefetchBeyondTheLimit() {
-        return isTapPrefetchLimited() && getTapCount() > getTapPrefetchLimit();
-    }
-
-    /**
-     * @return Whether a tap gesture is resolve-limited.
-     */
-    private boolean isTapResolveLimited() {
-        return isUserUndecided()
-                ? ContextualSearchFieldTrial.isTapResolveLimitedForUndecided()
-                : ContextualSearchFieldTrial.isTapResolveLimitedForDecided();
-    }
-
-    /**
-     * @return Whether a tap gesture is resolve-limited.
-     */
-    private boolean isTapPrefetchLimited() {
-        return isUserUndecided()
-                ? ContextualSearchFieldTrial.isTapPrefetchLimitedForUndecided()
-                : ContextualSearchFieldTrial.isTapPrefetchLimitedForDecided();
+        return getTapCount() > getTapPrefetchLimit();
     }
 
     /**
@@ -489,8 +499,8 @@ class ContextualSearchPolicy {
      */
     private int getTapPrefetchLimit() {
         return isUserUndecided()
-                ? ContextualSearchFieldTrial.getTapPrefetchLimitForUndecided()
-                : ContextualSearchFieldTrial.getTapPrefetchLimitForDecided();
+                ? getTapPrefetchLimitForUndecided()
+                : getTapPrefetchLimitForDecided();
     }
 
     /**
@@ -498,7 +508,27 @@ class ContextualSearchPolicy {
      */
     private int getTapResolveLimit() {
         return isUserUndecided()
-                ? ContextualSearchFieldTrial.getTapResolveLimitForUndecided()
-                : ContextualSearchFieldTrial.getTapResolveLimitForDecided();
+                ? getTapResolveLimitForUndecided()
+                : getTapResolveLimitForDecided();
+    }
+
+    private int getTapPrefetchLimitForDecided() {
+        if (mTapPrefetchLimitForDecided != null) return mTapPrefetchLimitForDecided.intValue();
+        return TAP_PREFETCH_LIMIT_FOR_DECIDED;
+    }
+
+    private int getTapResolveLimitForDecided() {
+        if (mTapResolveLimitForDecided != null) return mTapResolveLimitForDecided.intValue();
+        return TAP_RESOLVE_LIMIT_FOR_DECIDED;
+    }
+
+    private int getTapPrefetchLimitForUndecided() {
+        if (mTapPrefetchLimitForUndecided != null) return mTapPrefetchLimitForUndecided.intValue();
+        return TAP_PREFETCH_LIMIT_FOR_UNDECIDED;
+    }
+
+    private int getTapResolveLimitForUndecided() {
+        if (mTapResolveLimitForUndecided != null) return mTapResolveLimitForUndecided.intValue();
+        return TAP_RESOLVE_LIMIT_FOR_UNDECIDED;
     }
 }

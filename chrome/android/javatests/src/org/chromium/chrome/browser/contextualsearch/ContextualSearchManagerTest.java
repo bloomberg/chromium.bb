@@ -1516,8 +1516,8 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
     @SmallTest
     @Feature({"ContextualSearch"})
     @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
-    @CommandLineFlags.Add(ContextualSearchFieldTrial.TAP_RESOLVE_LIMIT_FOR_DECIDED + "=2")
     public void testTapResolveLimitForDecided() throws InterruptedException, TimeoutException {
+        mPolicy.setTapResolveLimitForDecidedForTesting(2);
         clickToTriggerSearchTermResolution();
         assertSearchTermRequested();
         clickToTriggerSearchTermResolution();
@@ -1540,8 +1540,8 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
     @SmallTest
     @Feature({"ContextualSearch"})
     @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
-    @CommandLineFlags.Add(ContextualSearchFieldTrial.TAP_RESOLVE_LIMIT_FOR_UNDECIDED + "=2")
     public void testTapResolveLimitForUndecided() throws InterruptedException, TimeoutException {
+        mPolicy.setTapResolveLimitForUndecidedForTesting(2);
         mPolicy.overrideDecidedStateForTesting(false);
 
         clickToTriggerSearchTermResolution();
@@ -1566,8 +1566,8 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
     @SmallTest
     @Feature({"ContextualSearch"})
     @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
-    @CommandLineFlags.Add(ContextualSearchFieldTrial.TAP_PREFETCH_LIMIT_FOR_DECIDED + "=2")
     public void testTapPrefetchLimitForDecided() throws InterruptedException, TimeoutException {
+        mPolicy.setTapPrefetchLimitForDecidedForTesting(2);
         clickToTriggerPrefetch();
         assertLoadedLowPriorityUrl();
         clickToTriggerPrefetch();
@@ -1590,8 +1590,8 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
     @SmallTest
     @Feature({"ContextualSearch"})
     @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
-    @CommandLineFlags.Add(ContextualSearchFieldTrial.TAP_PREFETCH_LIMIT_FOR_UNDECIDED + "=2")
     public void testTapPrefetchLimitForUndecided() throws InterruptedException, TimeoutException {
+        mPolicy.setTapPrefetchLimitForUndecidedForTesting(2);
         mPolicy.overrideDecidedStateForTesting(false);
 
         clickToTriggerPrefetch();
@@ -1665,9 +1665,9 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
      * @Feature({"ContextualSearch"})
      */
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
-    @CommandLineFlags.Add(ContextualSearchFieldTrial.TAP_PREFETCH_LIMIT_FOR_DECIDED + "=2")
     @FlakyTest
     public void testDisembodiedBar() throws InterruptedException, TimeoutException {
+        mPolicy.setTapPrefetchLimitForDecidedForTesting(2);
         clickToTriggerPrefetch();
         assertLoadedLowPriorityUrl();
         clickToTriggerPrefetch();
@@ -2098,11 +2098,11 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
      * of selection bounds, so this helps prevent a regression with that.
      */
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
-    @CommandLineFlags.Add({ContextualSearchFieldTrial.TAP_RESOLVE_LIMIT_FOR_DECIDED + "=200",
-            ContextualSearchFieldTrial.TAP_RESOLVE_LIMIT_FOR_UNDECIDED + "=200",
-            ContextualSearchFieldTrial.TAP_PREFETCH_LIMIT_FOR_DECIDED + "=200",
-            ContextualSearchFieldTrial.TAP_PREFETCH_LIMIT_FOR_UNDECIDED + "=200"})
     public void testTapALot() throws InterruptedException, TimeoutException {
+        mPolicy.setTapPrefetchLimitForDecidedForTesting(200);
+        mPolicy.setTapResolveLimitForDecidedForTesting(200);
+        mPolicy.setTapPrefetchLimitForUndecidedForTesting(200);
+        mPolicy.setTapResolveLimitForUndecidedForTesting(200);
         for (int i = 0; i < 50; i++) {
             clickToTriggerSearchTermResolution();
             waitForSelectionDissolved();
