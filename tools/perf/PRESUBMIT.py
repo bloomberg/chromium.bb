@@ -28,31 +28,24 @@ def _LicenseHeader(input_api):
 
 
 def _CheckLicense(input_api, output_api):
-  results = []
-  license_check = input_api.canned_checks.CheckLicense(
+  results = input_api.canned_checks.CheckLicense(
       input_api, output_api, _LicenseHeader(input_api))
-  results.extend(license_check)
-  if license_check:
+  if results:
     results.append(
         output_api.PresubmitError('License check failed. Please fix.'))
   return results
+
 
 def _CommonChecks(input_api, output_api):
   """Performs common checks, which includes running pylint."""
   results = []
 
-  old_sys_path = sys.path
-  try:
-    # Modules in tools/perf depend on telemetry.
-    sys.path = [os.path.join('..', 'telemetry')] + sys.path
-    results.extend(input_api.canned_checks.RunPylint(
-        input_api, output_api, black_list=[], pylintrc='pylintrc',
-        extra_paths_list=_GetPathsToPrepend(input_api)))
-    results.extend(_CheckLicense(input_api, output_api))
-    results.extend(_CheckJson(input_api, output_api))
-    results.extend(_CheckWprShaFiles(input_api, output_api))
-  finally:
-    sys.path = old_sys_path
+  results.extend(_CheckLicense(input_api, output_api))
+  results.extend(_CheckWprShaFiles(input_api, output_api))
+  results.extend(_CheckJson(input_api, output_api))
+  results.extend(input_api.RunTests(input_api.canned_checks.GetPylint(
+      input_api, output_api, extra_paths_list=_GetPathsToPrepend(input_api),
+      pylintrc='pylintrc')))
   return results
 
 
@@ -68,7 +61,14 @@ def _GetPathsToPrepend(input_api):
 
 def _CheckWprShaFiles(input_api, output_api):
   """Check whether the wpr sha files have matching URLs."""
-  from catapult_base import cloud_storage
+  old_sys_path = sys.path
+  try:
+    # TODO: The cloud_storage module is in telemetry.
+    sys.path = [os.path.join('..', 'telemetry')] + sys.path
+    from catapult_base import cloud_storage
+  finally:
+    sys.path = old_sys_path
+
   results = []
   for affected_file in input_api.AffectedFiles(include_deletes=False):
     filename = affected_file.AbsoluteLocalPath()
@@ -116,7 +116,7 @@ def CheckChangeOnCommit(input_api, output_api):
   return report
 
 
-def _IsBenchmarksModified(change):
+def _AreBenchmarksModified(change):
   """Checks whether CL contains any modification to Telemetry benchmarks."""
   for affected_file in change.AffectedFiles():
     affected_file_path = affected_file.LocalPath()
@@ -134,7 +134,7 @@ def PostUploadHook(cl, change, output_api):
   Telemetry benchmarks on Perf trybots in addtion to CQ trybots if the CL
   contains any changes to Telemetry benchmarks.
   """
-  benchmarks_modified = _IsBenchmarksModified(change)
+  benchmarks_modified = _AreBenchmarksModified(change)
   rietveld_obj = cl.RpcServer()
   issue = cl.issue
   original_description = rietveld_obj.get_description(issue)
