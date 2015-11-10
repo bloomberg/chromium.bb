@@ -202,7 +202,7 @@ CompositedLayerMapping::~CompositedLayerMapping()
     updateForegroundLayer(false);
     updateBackgroundLayer(false);
     updateMaskLayer(false);
-    updateClippingMaskLayers(false);
+    updateChildClippingMaskLayer(false);
     updateScrollingLayers(false);
     updateSquashingLayers(false);
     destroyGraphicsLayers();
@@ -468,29 +468,48 @@ bool CompositedLayerMapping::updateGraphicsLayerConfiguration()
     // that's plugged into another GraphicsLayer that is part of the hierarchy.
     // It has no parent or child GraphicsLayer. For that reason, we process it
     // here, after the hierarchy has been updated.
-    bool maskLayerChanged = false;
-    if (updateMaskLayer(layoutObject->hasMask())) {
-        maskLayerChanged = true;
+    bool maskLayerChanged = updateMaskLayer(layoutObject->hasMask());
+    if (maskLayerChanged)
         m_graphicsLayer->setMaskLayer(m_maskLayer.get());
-    }
 
     bool hasChildClippingLayer = compositor->clipsCompositingDescendants(&m_owningLayer) && (hasClippingLayer() || hasScrollingLayer());
     // If we have a border radius or clip path on a scrolling layer, we need a clipping mask to properly
     // clip the scrolled contents, even if there are no composited descendants.
     bool hasClipPath = layoutObject->style()->clipPath();
     bool needsChildClippingMask = (hasClipPath || layoutObject->style()->hasBorderRadius()) && (hasChildClippingLayer || isAcceleratedContents(layoutObject) || hasScrollingLayer());
-    if (updateClippingMaskLayers(needsChildClippingMask)) {
-        // Clip path clips the entire subtree, including scrollbars. It must be attached directly onto
-        // the main m_graphicsLayer.
-        if (hasClipPath)
-            m_graphicsLayer->setMaskLayer(m_childClippingMaskLayer.get());
-        else if (hasClippingLayer())
-            clippingLayer()->setMaskLayer(m_childClippingMaskLayer.get());
-        else if (hasScrollingLayer())
-            scrollingLayer()->setMaskLayer(m_childClippingMaskLayer.get());
-        else if (isAcceleratedContents(layoutObject))
-            m_graphicsLayer->setContentsClippingMaskLayer(m_childClippingMaskLayer.get());
+
+    GraphicsLayer* layerToApplyChildClippingMask = nullptr;
+    bool shouldApplyChildClippingMaskOnContents = false;
+    if (needsChildClippingMask) {
+        if (hasClipPath) {
+            // Clip path clips the entire subtree, including scrollbars. It must be attached directly onto
+            // the main m_graphicsLayer.
+            layerToApplyChildClippingMask = m_graphicsLayer.get();
+        } else if (hasClippingLayer()) {
+            layerToApplyChildClippingMask = clippingLayer();
+        } else if (hasScrollingLayer()) {
+            layerToApplyChildClippingMask = scrollingLayer();
+        } else if (isAcceleratedContents(layoutObject)) {
+            shouldApplyChildClippingMaskOnContents = true;
+        }
     }
+
+    updateChildClippingMaskLayer(needsChildClippingMask);
+
+    if (layerToApplyChildClippingMask == m_graphicsLayer) {
+        if (m_graphicsLayer->maskLayer() != m_childClippingMaskLayer.get()) {
+            m_graphicsLayer->setMaskLayer(m_childClippingMaskLayer.get());
+            maskLayerChanged = true;
+        }
+    } else if (m_graphicsLayer->maskLayer() && m_graphicsLayer->maskLayer() != m_maskLayer.get()) {
+        m_graphicsLayer->setMaskLayer(nullptr);
+        maskLayerChanged = true;
+    }
+    if (hasClippingLayer())
+        clippingLayer()->setMaskLayer(layerToApplyChildClippingMask == clippingLayer() ? m_childClippingMaskLayer.get() : nullptr);
+    if (hasScrollingLayer())
+        scrollingLayer()->setMaskLayer(layerToApplyChildClippingMask == scrollingLayer() ? m_childClippingMaskLayer.get() : nullptr);
+    m_graphicsLayer->setContentsClippingMaskLayer(shouldApplyChildClippingMaskOnContents ? m_childClippingMaskLayer.get() : nullptr);
 
     if (m_owningLayer.reflectionInfo()) {
         if (m_owningLayer.reflectionInfo()->reflectionLayer()->hasCompositedLayerMapping()) {
@@ -1546,20 +1565,16 @@ bool CompositedLayerMapping::updateMaskLayer(bool needsMaskLayer)
     return layerChanged;
 }
 
-bool CompositedLayerMapping::updateClippingMaskLayers(bool needsChildClippingMaskLayer)
+void CompositedLayerMapping::updateChildClippingMaskLayer(bool needsChildClippingMaskLayer)
 {
-    bool layerChanged = false;
     if (needsChildClippingMaskLayer) {
         if (!m_childClippingMaskLayer) {
             m_childClippingMaskLayer = createGraphicsLayer(CompositingReasonLayerForClippingMask);
             m_childClippingMaskLayer->setPaintingPhase(GraphicsLayerPaintChildClippingMask);
-            layerChanged = true;
         }
-    } else if (m_childClippingMaskLayer) {
-        m_childClippingMaskLayer = nullptr;
-        layerChanged = true;
+        return;
     }
-    return layerChanged;
+    m_childClippingMaskLayer = nullptr;
 }
 
 bool CompositedLayerMapping::updateScrollingLayers(bool needsScrollingLayers)

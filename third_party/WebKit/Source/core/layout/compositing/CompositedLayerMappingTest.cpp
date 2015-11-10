@@ -208,6 +208,39 @@ TEST_F(CompositedLayerMappingTest, ClippedBigLayer)
     EXPECT_TRUE(checkRectsEqual(IntRect(0, 0, 4001, 4001), computeInterestRect(paintLayer->graphicsLayerBacking(), paintLayer->layoutObject())));
 }
 
+TEST_F(CompositedLayerMappingTest, ClippingMaskLayer)
+{
+    if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+        return;
+
+    const AtomicString styleWithoutClipping = "backface-visibility: hidden; width: 200px; height: 200px";
+    const AtomicString styleWithBorderRadius = styleWithoutClipping + "; border-radius: 10px";
+    const AtomicString styleWithClipPath = styleWithoutClipping + "; -webkit-clip-path: inset(10px)";
+
+    setBodyInnerHTML("<video id='video' src='x' style='" + styleWithoutClipping + "'></video>");
+
+    document().view()->updateAllLifecyclePhases();
+    Element* videoElement = document().getElementById("video");
+    GraphicsLayer* graphicsLayer = toLayoutBoxModelObject(videoElement->layoutObject())->layer()->graphicsLayerBacking();
+    EXPECT_FALSE(graphicsLayer->maskLayer());
+    EXPECT_FALSE(graphicsLayer->contentsClippingMaskLayer());
+
+    videoElement->setAttribute(HTMLNames::styleAttr, styleWithBorderRadius);
+    document().view()->updateAllLifecyclePhases();
+    EXPECT_FALSE(graphicsLayer->maskLayer());
+    EXPECT_TRUE(graphicsLayer->contentsClippingMaskLayer());
+
+    videoElement->setAttribute(HTMLNames::styleAttr, styleWithClipPath);
+    document().view()->updateAllLifecyclePhases();
+    EXPECT_TRUE(graphicsLayer->maskLayer());
+    EXPECT_FALSE(graphicsLayer->contentsClippingMaskLayer());
+
+    videoElement->setAttribute(HTMLNames::styleAttr, styleWithoutClipping);
+    document().view()->updateAllLifecyclePhases();
+    EXPECT_FALSE(graphicsLayer->maskLayer());
+    EXPECT_FALSE(graphicsLayer->contentsClippingMaskLayer());
+}
+
 TEST_F(CompositedLayerMappingTest, InterestRectChangedEnoughToRepaintEmpty)
 {
     IntSize layerSize(1000, 1000);
