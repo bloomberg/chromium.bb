@@ -145,8 +145,7 @@ void TestResultsTracker::AddTest(
   // to compare with regular test names, e.g. before or after disabling.
   all_tests_.insert(TestNameWithoutDisabledPrefix(test_name));
 
-  test_locations_.insert(std::make_pair(
-      TestNameWithoutDisabledPrefix(test_name), CodeLocation(file, line)));
+  test_locations_.insert(std::make_pair(test_name, CodeLocation(file, line)));
 }
 
 void TestResultsTracker::AddDisabledTest(const std::string& test_name) {
