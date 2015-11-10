@@ -6089,6 +6089,7 @@ TEST_F(LayerTreeHostCommonTest, DoNotIncludeBackfaceInvisibleSurfaces) {
   rotation_transform.RotateAboutXAxis(180.0);
 
   render_surface->SetTransform(rotation_transform);
+  root->layer_tree_impl()->property_trees()->needs_rebuild = true;
 
   ExecuteCalculateDrawProperties(root);
 

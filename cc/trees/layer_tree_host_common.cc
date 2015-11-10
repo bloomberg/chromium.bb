@@ -1776,12 +1776,15 @@ static void CalculateDrawPropertiesInternal(
     DCHECK(layer->render_surface());
     // Check back-face visibility before continuing with this surface and its
     // subtree
+    RenderSurfaceImpl* render_surface = layer->render_surface();
     if (!layer->double_sided() &&
         IsSurfaceBackFaceVisible(layer, combined_transform)) {
+      gfx::Transform draw_transform = combined_transform;
+      draw_transform.Scale(1.0 / combined_transform_scales.x(),
+                           1.0 / combined_transform_scales.y());
+      render_surface->SetDrawTransform(draw_transform);
       return;
     }
-
-    RenderSurfaceImpl* render_surface = layer->render_surface();
 
     if (IsRootLayer(layer)) {
       // The root layer's render surface size is predetermined and so the root
@@ -2494,12 +2497,6 @@ void CalculateRenderSurfaceLayerListInternal(
 
   if (render_to_separate_surface) {
     DCHECK(layer->render_surface());
-    if (!layer->double_sided() &&
-        IsSurfaceBackFaceVisible(layer, layer->draw_transform())) {
-      layer->ClearRenderSurfaceLayerList();
-      layer->draw_properties().render_target = nullptr;
-      return;
-    }
 
     if (use_property_trees) {
       RenderSurfaceDrawProperties draw_properties;
@@ -2518,6 +2515,14 @@ void CalculateRenderSurfaceLayerListInternal(
       layer->render_surface()->SetReplicaScreenSpaceTransform(
           draw_properties.replica_screen_space_transform);
       layer->render_surface()->SetClipRect(draw_properties.clip_rect);
+    }
+
+    if (!layer->double_sided() &&
+        IsSurfaceBackFaceVisible(layer,
+                                 layer->render_surface()->draw_transform())) {
+      layer->ClearRenderSurfaceLayerList();
+      layer->draw_properties().render_target = nullptr;
+      return;
     }
 
     if (IsRootLayer(layer)) {
