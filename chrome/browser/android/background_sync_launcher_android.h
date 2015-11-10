@@ -25,8 +25,8 @@ class BackgroundSyncLauncherAndroid {
  public:
   static BackgroundSyncLauncherAndroid* Get();
 
-  static void LaunchBrowserWhenNextOnline(
-      bool launch_when_next_online);
+  static void LaunchBrowserIfStopped(bool launch_when_next_online,
+                                     int64_t min_delay_ms);
 
   static bool RegisterLauncher(JNIEnv* env);
 
@@ -37,8 +37,8 @@ class BackgroundSyncLauncherAndroid {
   BackgroundSyncLauncherAndroid();
   ~BackgroundSyncLauncherAndroid();
 
-  void LaunchBrowserWhenNextOnlineImpl(
-      bool launch_when_next_online);
+  void LaunchBrowserIfStoppedImpl(bool launch_when_next_online,
+                                  int64_t min_delay_ms);
 
   base::android::ScopedJavaGlobalRef<jobject> java_launcher_;
   DISALLOW_COPY_AND_ASSIGN(BackgroundSyncLauncherAndroid);

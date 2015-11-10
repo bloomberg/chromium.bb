@@ -94,17 +94,22 @@ void NotifyBackgroundSyncRegisteredOnUIThread(
 
 void RunInBackgroundOnUIThread(
     const scoped_refptr<ServiceWorkerContextWrapper>& sw_context_wrapper,
-    bool enabled) {
+    bool enabled,
+    int64_t min_ms) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   BackgroundSyncController* background_sync_controller =
       GetBackgroundSyncControllerOnUIThread(sw_context_wrapper);
   if (background_sync_controller) {
-    background_sync_controller->RunInBackground(enabled);
+    background_sync_controller->RunInBackground(enabled, min_ms);
   }
 }
 
 }  // namespace
+
+// static
+const int64_t BackgroundSyncManager::kMinSyncRecoveryTimeMs =
+    1000 * 60 * 6;  // 6 minutes
 
 BackgroundSyncManager::BackgroundSyncRegistrations::
     BackgroundSyncRegistrations()
@@ -262,6 +267,7 @@ BackgroundSyncManager::BackgroundSyncManager(
     const scoped_refptr<ServiceWorkerContextWrapper>& service_worker_context)
     : service_worker_context_(service_worker_context),
       disabled_(false),
+      num_firing_registrations_(0),
       weak_ptr_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -988,8 +994,11 @@ bool BackgroundSyncManager::IsRegistrationReadyToFire(
   return AreOptionConditionsMet(*registration.options());
 }
 
-void BackgroundSyncManager::SchedulePendingRegistrations() {
-  bool keep_browser_alive_for_one_shot = false;
+void BackgroundSyncManager::RunInBackgroundIfNecessary() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  bool run_in_background = false;
+  int64_t nearest_wakeup_ms = 0;
 
   for (const auto& sw_id_and_registrations : active_registrations_) {
     for (const auto& key_and_registration :
@@ -998,7 +1007,7 @@ void BackgroundSyncManager::SchedulePendingRegistrations() {
           *key_and_registration.second->value();
       if (registration.sync_state() == BACKGROUND_SYNC_STATE_PENDING) {
         if (registration.options()->periodicity == SYNC_ONE_SHOT) {
-          keep_browser_alive_for_one_shot = true;
+          run_in_background = true;
         } else {
           // TODO(jkarlin): Support keeping the browser alive for periodic
           // syncs.
@@ -1007,10 +1016,17 @@ void BackgroundSyncManager::SchedulePendingRegistrations() {
     }
   }
 
+  // If the browser is closed while firing events, the browser needs a task to
+  // wake it back up and try again.
+  if (!run_in_background && num_firing_registrations_ > 0) {
+    run_in_background = true;
+    nearest_wakeup_ms = kMinSyncRecoveryTimeMs;
+  }
+
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(RunInBackgroundOnUIThread, service_worker_context_,
-                 keep_browser_alive_for_one_shot));
+                 run_in_background, nearest_wakeup_ms));
 }
 
 void BackgroundSyncManager::FireReadyEvents() {
@@ -1053,41 +1069,41 @@ void BackgroundSyncManager::FireReadyEventsImpl(const base::Closure& callback) {
     }
   }
 
-  // If there are no registrations currently ready, then just run |callback|.
-  // Otherwise, fire them all, and record the result when done.
   if (sw_id_and_keys_to_fire.empty()) {
+    RunInBackgroundIfNecessary();
     base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
                                                   base::Bind(callback));
-  } else {
-    base::TimeTicks start_time = base::TimeTicks::Now();
-
-    // Fire the sync event of the ready registrations and run |callback| once
-    // they're all done.
-    base::Closure events_fired_barrier_closure = base::BarrierClosure(
-        sw_id_and_keys_to_fire.size(), base::Bind(callback));
-
-    // Record the total time taken after all events have run to completion.
-    base::Closure events_completed_barrier_closure =
-        base::BarrierClosure(sw_id_and_keys_to_fire.size(),
-                             base::Bind(&OnAllSyncEventsCompleted, start_time,
-                                        sw_id_and_keys_to_fire.size()));
-
-    for (const auto& sw_id_and_key : sw_id_and_keys_to_fire) {
-      int64 service_worker_id = sw_id_and_key.first;
-      const RefCountedRegistration* registration =
-          LookupActiveRegistration(service_worker_id, sw_id_and_key.second);
-      DCHECK(registration);
-
-      service_worker_context_->FindReadyRegistrationForId(
-          service_worker_id, active_registrations_[service_worker_id].origin,
-          base::Bind(&BackgroundSyncManager::FireReadyEventsDidFindRegistration,
-                     weak_ptr_factory_.GetWeakPtr(), sw_id_and_key.second,
-                     registration->value()->id(), events_fired_barrier_closure,
-                     events_completed_barrier_closure));
-    }
+    return;
   }
 
-  SchedulePendingRegistrations();
+  base::TimeTicks start_time = base::TimeTicks::Now();
+
+  // Fire the sync event of the ready registrations and run |callback| once
+  // they're all done.
+  base::Closure events_fired_barrier_closure = base::BarrierClosure(
+      sw_id_and_keys_to_fire.size(),
+      base::Bind(&BackgroundSyncManager::FireReadyEventsAllEventsFiring,
+                 weak_ptr_factory_.GetWeakPtr(), callback));
+
+  // Record the total time taken after all events have run to completion.
+  base::Closure events_completed_barrier_closure =
+      base::BarrierClosure(sw_id_and_keys_to_fire.size(),
+                           base::Bind(&OnAllSyncEventsCompleted, start_time,
+                                      sw_id_and_keys_to_fire.size()));
+
+  for (const auto& sw_id_and_key : sw_id_and_keys_to_fire) {
+    int64 service_worker_id = sw_id_and_key.first;
+    const RefCountedRegistration* registration =
+        LookupActiveRegistration(service_worker_id, sw_id_and_key.second);
+    DCHECK(registration);
+
+    service_worker_context_->FindReadyRegistrationForId(
+        service_worker_id, active_registrations_[service_worker_id].origin,
+        base::Bind(&BackgroundSyncManager::FireReadyEventsDidFindRegistration,
+                   weak_ptr_factory_.GetWeakPtr(), sw_id_and_key.second,
+                   registration->value()->id(), events_fired_barrier_closure,
+                   events_completed_barrier_closure));
+  }
 }
 
 void BackgroundSyncManager::FireReadyEventsDidFindRegistration(
@@ -1116,6 +1132,8 @@ void BackgroundSyncManager::FireReadyEventsDidFindRegistration(
   scoped_ptr<BackgroundSyncRegistrationHandle> registration_handle =
       CreateRegistrationHandle(registration);
 
+  num_firing_registrations_ += 1;
+
   BackgroundSyncRegistrationHandle::HandleId handle_id =
       registration_handle->handle_id();
   FireOneShotSync(
@@ -1127,6 +1145,15 @@ void BackgroundSyncManager::FireReadyEventsDidFindRegistration(
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(event_fired_callback));
+}
+
+void BackgroundSyncManager::FireReadyEventsAllEventsFiring(
+    const base::Closure& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  RunInBackgroundIfNecessary();
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                base::Bind(callback));
 }
 
 // |service_worker_registration| is just to keep the registration alive
@@ -1159,6 +1186,8 @@ void BackgroundSyncManager::EventCompleteImpl(
       registration_handle->registration();
   DCHECK(registration);
   DCHECK(!registration->HasCompleted());
+
+  num_firing_registrations_ -= 1;
 
   // The event ran to completion, we should count it, no matter what happens
   // from here.
@@ -1230,6 +1259,9 @@ void BackgroundSyncManager::EventCompleteDidStore(
     DisableAndClearManager(base::Bind(callback));
     return;
   }
+
+  // Fire any ready events and call RunInBackground if anything is waiting.
+  FireReadyEvents();
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
                                                 base::Bind(callback));

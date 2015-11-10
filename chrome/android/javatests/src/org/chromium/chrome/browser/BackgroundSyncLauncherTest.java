@@ -34,7 +34,7 @@ public class BackgroundSyncLauncherTest extends InstrumentationTestCase {
         mLauncher = null;
     }
 
-    private Boolean shouldLaunchWhenNextOnlineSync() {
+    private Boolean shouldLaunchBrowserIfStoppedSync() {
         mShouldLaunchResult = false;
 
         // Use a semaphore to wait for the callback to be called.
@@ -49,7 +49,7 @@ public class BackgroundSyncLauncherTest extends InstrumentationTestCase {
                     }
                 };
 
-        BackgroundSyncLauncher.shouldLaunchWhenNextOnline(mContext, callback);
+        BackgroundSyncLauncher.shouldLaunchBrowserIfStopped(mContext, callback);
         try {
             // Wait on the callback to be called.
             semaphore.acquire();
@@ -70,28 +70,28 @@ public class BackgroundSyncLauncherTest extends InstrumentationTestCase {
     @SmallTest
     @Feature({"BackgroundSync"})
     public void testDefaultNoLaunch() {
-        assertFalse(shouldLaunchWhenNextOnlineSync());
+        assertFalse(shouldLaunchBrowserIfStoppedSync());
     }
 
     @SmallTest
     @Feature({"BackgroundSync"})
     public void testSetLaunchWhenNextOnline() {
-        assertFalse(shouldLaunchWhenNextOnlineSync());
-        mLauncher.launchBrowserWhenNextOnlineIfStopped(mContext, true);
-        assertTrue(shouldLaunchWhenNextOnlineSync());
-        mLauncher.launchBrowserWhenNextOnlineIfStopped(mContext, false);
-        assertFalse(shouldLaunchWhenNextOnlineSync());
+        assertFalse(shouldLaunchBrowserIfStoppedSync());
+        mLauncher.launchBrowserIfStopped(mContext, true, 0);
+        assertTrue(shouldLaunchBrowserIfStoppedSync());
+        mLauncher.launchBrowserIfStopped(mContext, false, 0);
+        assertFalse(shouldLaunchBrowserIfStoppedSync());
     }
 
     @SmallTest
     @Feature({"BackgroundSync"})
     public void testNewLauncherDisablesNextOnline() {
-        mLauncher.launchBrowserWhenNextOnlineIfStopped(mContext, true);
-        assertTrue(shouldLaunchWhenNextOnlineSync());
+        mLauncher.launchBrowserIfStopped(mContext, true, 0);
+        assertTrue(shouldLaunchBrowserIfStoppedSync());
 
         // Simulate restarting the browser by deleting the launcher and creating a new one.
         deleteLauncherInstance();
         mLauncher = BackgroundSyncLauncher.create(mContext);
-        assertFalse(shouldLaunchWhenNextOnlineSync());
+        assertFalse(shouldLaunchBrowserIfStoppedSync());
     }
 }

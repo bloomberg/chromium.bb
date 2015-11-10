@@ -51,6 +51,10 @@ class CONTENT_EXPORT BackgroundSyncManager
       BackgroundSyncStatus,
       scoped_ptr<ScopedVector<BackgroundSyncRegistrationHandle>>)>;
 
+  // The minimum amount of time to wait before waking the browser in case it
+  // closed mid-sync.
+  static const int64_t kMinSyncRecoveryTimeMs;
+
   static scoped_ptr<BackgroundSyncManager> Create(
       const scoped_refptr<ServiceWorkerContextWrapper>& service_worker_context);
   ~BackgroundSyncManager() override;
@@ -269,11 +273,14 @@ class CONTENT_EXPORT BackgroundSyncManager
   bool IsRegistrationReadyToFire(
       const BackgroundSyncRegistration& registration);
 
-  // Schedules pending registrations to run in the future. For one-shots this
-  // means keeping the browser alive so that network connectivity events can be
-  // seen (on Android the browser is instead woken up the next time it goes
-  // online). For periodic syncs this means creating an alarm.
-  void SchedulePendingRegistrations();
+  // Determines if the browser needs to be able to run in the background (e.g.,
+  // to run a pending registration or verify that a firing registration
+  // completed). If background processing is required it calls out to the
+  // BackgroundSyncController to enable it.
+  // Assumes that all registrations in the pending state are not currently ready
+  // to fire. Therefore this should not be called directly and should only be
+  // called by FireReadyEvents.
+  void RunInBackgroundIfNecessary();
 
   // FireReadyEvents scans the list of available events and fires those that are
   // ready to fire. For those that can't yet be fired, wakeup alarms are set.
@@ -287,6 +294,7 @@ class CONTENT_EXPORT BackgroundSyncManager
       ServiceWorkerStatusCode service_worker_status,
       const scoped_refptr<ServiceWorkerRegistration>&
           service_worker_registration);
+  void FireReadyEventsAllEventsFiring(const base::Closure& callback);
 
   // Called when a sync event has completed.
   void EventComplete(
@@ -344,6 +352,7 @@ class CONTENT_EXPORT BackgroundSyncManager
   CacheStorageScheduler op_scheduler_;
   scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
   bool disabled_;
+  int num_firing_registrations_;
 
   scoped_ptr<BackgroundSyncNetworkObserver> network_observer_;
   scoped_ptr<BackgroundSyncPowerObserver> power_observer_;

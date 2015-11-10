@@ -23,13 +23,15 @@ class CONTENT_EXPORT BackgroundSyncController {
   virtual void NotifyBackgroundSyncRegistered(const GURL& origin) {}
 
   // If |enabled|, ensures that the browser is running when the device next goes
-  // online. The behavior is platform dependent:
+  // online after |min_ms| has passed. The behavior is platform dependent:
   // * Android: Registers a GCM task which verifies that the browser is running
-  // the next time the device goes online. If it's not, it starts it.
+  // the next time the device goes online after |min_ms| has passed. If it's
+  // not, it starts it.
   //
   // * Other Platforms: (UNIMPLEMENTED) Keeps the browser alive via
-  // BackgroundModeManager until called with |enabled| = false.
-  virtual void RunInBackground(bool enabled) {}
+  // BackgroundModeManager until called with |enabled| = false. |min_ms| is
+  // ignored.
+  virtual void RunInBackground(bool enabled, int64_t min_ms) {}
 };
 
 }  // namespace content

@@ -24,7 +24,7 @@ class BackgroundSyncControllerImpl : public content::BackgroundSyncController,
 
   // content::BackgroundSyncController overrides.
   void NotifyBackgroundSyncRegistered(const GURL& origin) override;
-  void RunInBackground(bool enabled) override;
+  void RunInBackground(bool enabled, int64_t min_ms) override;
 
  protected:
   // Virtual for testing.

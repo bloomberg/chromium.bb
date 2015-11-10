@@ -120,15 +120,17 @@ class CountingBackgroundSyncController : public BackgroundSyncController {
     registration_count_ += 1;
     registration_origin_ = origin;
   }
-  void RunInBackground(bool enabled) override {
+  void RunInBackground(bool enabled, int64_t min_ms) override {
     run_in_background_count_ += 1;
     run_in_background_enabled_ = enabled;
+    run_in_background_min_ms_ = min_ms;
   }
 
   int registration_count() const { return registration_count_; }
   GURL registration_origin() const { return registration_origin_; }
   int run_in_background_count() const { return run_in_background_count_; }
   bool run_in_background_enabled() const { return run_in_background_enabled_; }
+  int64_t run_in_background_min_ms() const { return run_in_background_min_ms_; }
 
  private:
   int registration_count_ = 0;
@@ -136,6 +138,7 @@ class CountingBackgroundSyncController : public BackgroundSyncController {
 
   int run_in_background_count_ = 0;
   bool run_in_background_enabled_ = true;
+  int64_t run_in_background_min_ms_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(CountingBackgroundSyncController);
 };
@@ -1822,7 +1825,9 @@ TEST_F(BackgroundSyncManagerTest, WakeBrowserCalled) {
   // Start the event but it will pause mid-sync due to
   // InitDelayedSyncEventTest() above.
   SetNetwork(net::NetworkChangeNotifier::CONNECTION_WIFI);
-  EXPECT_FALSE(counting_controller_->run_in_background_enabled());
+  EXPECT_TRUE(counting_controller_->run_in_background_enabled());
+  EXPECT_EQ(BackgroundSyncManager::kMinSyncRecoveryTimeMs,
+            counting_controller_->run_in_background_min_ms());
 
   // Finish the sync.
   sync_fired_callback_.Run(SERVICE_WORKER_OK);

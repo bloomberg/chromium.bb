@@ -22,21 +22,23 @@ BackgroundSyncLauncherAndroid* BackgroundSyncLauncherAndroid::Get() {
 }
 
 // static
-void BackgroundSyncLauncherAndroid::LaunchBrowserWhenNextOnline(
-    bool launch_when_next_online) {
+void BackgroundSyncLauncherAndroid::LaunchBrowserIfStopped(
+    bool launch_when_next_online,
+    int64_t min_delay_ms) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  Get()->LaunchBrowserWhenNextOnlineImpl(launch_when_next_online);
+  Get()->LaunchBrowserIfStoppedImpl(launch_when_next_online, min_delay_ms);
 }
 
-void BackgroundSyncLauncherAndroid::LaunchBrowserWhenNextOnlineImpl(
-    bool launch_when_next_online) {
+void BackgroundSyncLauncherAndroid::LaunchBrowserIfStoppedImpl(
+    bool launch_when_next_online,
+    int64_t min_delay_ms) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_BackgroundSyncLauncher_launchBrowserWhenNextOnlineIfStopped(
+  Java_BackgroundSyncLauncher_launchBrowserIfStopped(
       env, java_launcher_.obj(), base::android::GetApplicationContext(),
-      launch_when_next_online);
+      launch_when_next_online, min_delay_ms);
 }
 
 // static
