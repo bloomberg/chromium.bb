@@ -26,7 +26,7 @@
 #include "chrome/app/chrome_crash_reporter_client.h"
 #include "chrome/app/chrome_watcher_client_win.h"
 #include "chrome/app/chrome_watcher_command_line_win.h"
-#include "chrome/app/image_pre_reader_win.h"
+#include "chrome/app/file_pre_reader_win.h"
 #include "chrome/app/kasko_client.h"
 #include "chrome/chrome_watcher/chrome_watcher_main_api.h"
 #include "chrome/common/chrome_constants.h"
@@ -63,9 +63,7 @@ HMODULE LoadModuleWithDirectory(const base::FilePath& module, bool pre_read) {
     // We pre-read the binary to warm the memory caches (fewer hard faults to
     // page parts of the binary in).
     const size_t kStepSize = 1024 * 1024;
-    size_t percent = 100;
-    ImagePreReader::PartialPreReadImage(module.value().c_str(), percent,
-                                        kStepSize);
+    PreReadFile(module, kStepSize);
   }
 
   return ::LoadLibraryExW(module.value().c_str(), nullptr,
