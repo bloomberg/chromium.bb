@@ -20,36 +20,34 @@ TCPClientTransport::TCPClientTransport(const net::AddressList& addresses,
 TCPClientTransport::~TCPClientTransport() {}
 
 int TCPClientTransport::Connect(const net::CompletionCallback& callback) {
-  DCHECK(!connection_);
+  DCHECK(!socket_);
   DCHECK(!callback.is_null());
 
-  scoped_ptr<net::StreamSocket> socket;
-  socket.reset(
+  socket_.reset(
       new net::TCPClientSocket(addresses_, net_log_, net::NetLog::Source()));
   net::CompletionCallback completion_callback = base::Bind(
       &TCPClientTransport::OnTCPConnectComplete, base::Unretained(this));
 
-  int result = socket->Connect(completion_callback);
-  connection_.reset(new StreamSocketConnection(socket.Pass()));
+  int result = socket_->Connect(completion_callback);
   if (result == net::ERR_IO_PENDING) {
     connect_callback_ = callback;
   } else if (result != net::OK) {
-    connection_ = nullptr;
+    socket_ = nullptr;
   }
 
   return result;
 }
 
 scoped_ptr<BlimpConnection> TCPClientTransport::TakeConnection() {
-  DCHECK(connection_);
   DCHECK(connect_callback_.is_null());
-  return connection_.Pass();
+  DCHECK(socket_);
+  return make_scoped_ptr(new StreamSocketConnection(socket_.Pass()));
 }
 
 void TCPClientTransport::OnTCPConnectComplete(int result) {
-  DCHECK(connection_);
+  DCHECK(socket_);
   if (result != net::OK) {
-    connection_ = nullptr;
+    socket_ = nullptr;
   }
   base::ResetAndReturn(&connect_callback_).Run(result);
 }

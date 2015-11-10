@@ -25,6 +25,8 @@ class BLIMP_NET_EXPORT BlimpConnection {
  private:
   scoped_ptr<PacketReader> reader_;
   scoped_ptr<PacketWriter> writer_;
+
+  DISALLOW_COPY_AND_ASSIGN(BlimpConnection);
 };
 
 }  // namespace blimp

@@ -14,6 +14,7 @@
 
 namespace net {
 class NetLog;
+class StreamSocket;
 }  // namespace net
 
 namespace blimp {
@@ -36,7 +37,7 @@ class TCPClientTransport : public BlimpTransport {
 
   net::AddressList addresses_;
   net::NetLog* net_log_;
-  scoped_ptr<BlimpConnection> connection_;
+  scoped_ptr<net::StreamSocket> socket_;
   net::CompletionCallback connect_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(TCPClientTransport);
