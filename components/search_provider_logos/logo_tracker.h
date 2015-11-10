@@ -66,9 +66,10 @@ class LogoDelegate {
 
 // Parses the response from the server and returns it as an EncodedLogo. Returns
 // NULL if the response is invalid.
-typedef base::Callback<
-    scoped_ptr<EncodedLogo>(const scoped_ptr<std::string>& response,
-                            base::Time response_time)> ParseLogoResponse;
+typedef base::Callback<scoped_ptr<EncodedLogo>(
+    const scoped_ptr<std::string>& response,
+    base::Time response_time,
+    bool* parsing_failed)> ParseLogoResponse;
 
 // Encodes the fingerprint of the cached logo in the logo URL. This enables the
 // server to verify whether the cached logo is up-to-date.
@@ -142,9 +143,26 @@ class LogoTracker : public net::URLFetcherDelegate {
   void SetClockForTests(scoped_ptr<base::Clock> clock);
 
  private:
+
+  // These values must stay in sync with the NewTabPageLogoDownloadOutcome enum
+  // in histograms.xml. And any addtion should be treated as append-only!
+  // Animated doodle is not covered by this enum.
+  enum LogoDownloadOutcome {
+      DOWNLOAD_OUTCOME_NEW_LOGO_SUCCESS,
+      DOWNLOAD_OUTCOME_NO_LOGO_TODAY,
+      DOWNLOAD_OUTCOME_DOWNLOAD_FAILED,
+      DOWNLOAD_OUTCOME_PARSING_FAILED,
+      DOWNLOAD_OUTCOME_DECODING_FAILED,
+      DOWNLOAD_OUTCOME_LOGO_REVALIDATED,
+      DOWNLOAD_OUTCOME_COUNT,
+  };
+
+  const int kDownloadOutcomeNotTracked = -1;
+
   // Cancels the current asynchronous operation, if any, and resets all member
-  // variables that change as the logo is fetched.
-  void ReturnToIdle();
+  // variables that change as the logo is fetched. This method also records UMA
+  // histograms for for the given LogoDownloadOutcome.
+  void ReturnToIdle(int outcome);
 
   // Called when the cached logo has been read from the cache. |cached_logo|
   // will be NULL if there wasn't a valid, up-to-date logo in the cache.
@@ -166,11 +184,12 @@ class LogoTracker : public net::URLFetcherDelegate {
 
   // Called when the logo has been downloaded and parsed. |logo| will be NULL
   // if the server's response was invalid.
-  void OnFreshLogoParsed(scoped_ptr<EncodedLogo> logo);
+  void OnFreshLogoParsed(bool* parsing_failed, scoped_ptr<EncodedLogo> logo);
 
   // Called when the fresh logo has been decoded into an SkBitmap. |image| will
   // be NULL if decoding failed.
   void OnFreshLogoAvailable(scoped_ptr<EncodedLogo> logo,
+                            bool parsing_failed,
                             const SkBitmap& image);
 
   // net::URLFetcherDelegate:
@@ -204,6 +223,9 @@ class LogoTracker : public net::URLFetcherDelegate {
   // |cached_logo_| may be NULL even if |is_cached_logo_valid_| is true, if no
   // logo is cached.
   bool is_cached_logo_valid_;
+
+  // The timestamp for the last time a logo is stated to be downloaded.
+  base::TimeTicks logo_download_start_time_;
 
   // The URLFetcher currently fetching the logo. NULL when not fetching.
   scoped_ptr<net::URLFetcher> fetcher_;

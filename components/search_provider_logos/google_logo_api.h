@@ -23,7 +23,8 @@ GURL GoogleAppendQueryparamsToLogoURL(const GURL& logo_url,
 // Implements ParseLogoResponse, defined in logo_tracker.h, for Google doodles.
 scoped_ptr<EncodedLogo> GoogleParseLogoResponse(
     const scoped_ptr<std::string>& response,
-    base::Time response_time);
+    base::Time response_time,
+    bool* parsing_failed);
 
 }  // namespace search_provider_logos
 

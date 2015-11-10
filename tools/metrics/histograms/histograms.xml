@@ -28908,6 +28908,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="NewTabPage.AnimatedLogoDownloadTime" units="milliseconds">
+  <owner>ianwen@chromium.org</owner>
+  <summary>The amount of time it takes to download the animated logo.</summary>
+</histogram>
+
 <histogram name="NewTabPage.AppsPageDragSource" enum="AppsPageDragSource">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
@@ -28979,6 +28984,20 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     Histogram of the time, in milliseconds, it took for the NTP to load all of
     its tiles since navigation start.
   </summary>
+</histogram>
+
+<histogram name="NewTabPage.LogoDownloadOutcome"
+    enum="NewTabPageLogoDownloadOutcome">
+  <owner>ianwen@chromium.org</owner>
+  <summary>
+    Outcome of downloading search provider's logos. It measures whether
+    download/parsing is successful, revalidation and parsing work properly, etc.
+  </summary>
+</histogram>
+
+<histogram name="NewTabPage.LogoDownloadTime" units="milliseconds">
+  <owner>ianwen@chromium.org</owner>
+  <summary>The amount of time it takes to download the static logo.</summary>
 </histogram>
 
 <histogram name="NewTabPage.MobileIsUserOnline" enum="Boolean">
@@ -68111,6 +68130,19 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1" label="Deleted root partner folder"/>
   <int value="2" label="Renamed partner bookmark"/>
   <int value="3" label="Renamed root partner folder"/>
+</enum>
+
+<enum name="NewTabPageLogoDownloadOutcome" type="int">
+  <summary>
+    These values are defined in LogoDownloadOutcome enum in
+    components/search_provider_logos/logo_tracker.h.
+  </summary>
+  <int value="0" label="New logo success"/>
+  <int value="1" label="No logo today"/>
+  <int value="2" label="Download failed"/>
+  <int value="3" label="Parsing failed"/>
+  <int value="4" label="Decoding failed"/>
+  <int value="5" label="Logo revalidated"/>
 </enum>
 
 <enum name="NewTabPageMobilePromo" type="int">

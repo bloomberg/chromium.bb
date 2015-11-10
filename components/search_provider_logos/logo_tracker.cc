@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/task_runner_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/time/default_clock.h"
@@ -80,7 +81,7 @@ LogoTracker::LogoTracker(
       weak_ptr_factory_(this) {}
 
 LogoTracker::~LogoTracker() {
-  ReturnToIdle();
+  ReturnToIdle(kDownloadOutcomeNotTracked);
   file_task_runner_->PostTask(
       FROM_HERE, base::Bind(&DeleteLogoCacheOnFileThread, logo_cache_));
   logo_cache_ = NULL;
@@ -94,7 +95,7 @@ void LogoTracker::SetServerAPI(
   if (logo_url == logo_url_)
     return;
 
-  ReturnToIdle();
+  ReturnToIdle(kDownloadOutcomeNotTracked);
 
   logo_url_ = logo_url;
   parse_logo_response_func_ = parse_logo_response_func;
@@ -137,7 +138,11 @@ void LogoTracker::SetClockForTests(scoped_ptr<base::Clock> clock) {
   clock_ = clock.Pass();
 }
 
-void LogoTracker::ReturnToIdle() {
+void LogoTracker::ReturnToIdle(int outcome) {
+  if (outcome != kDownloadOutcomeNotTracked) {
+    UMA_HISTOGRAM_ENUMERATION("NewTabPage.LogoDownloadOutcome", outcome,
+                              DOWNLOAD_OUTCOME_COUNT);
+  }
   // Cancel the current asynchronous operation, if any.
   fetcher_.reset();
   weak_ptr_factory_.InvalidateWeakPtrs();
@@ -211,16 +216,18 @@ void LogoTracker::FetchLogo() {
   fetcher_ = net::URLFetcher::Create(url, net::URLFetcher::GET, this);
   fetcher_->SetRequestContext(request_context_getter_.get());
   fetcher_->Start();
+  logo_download_start_time_ = base::TimeTicks::Now();
 }
 
-void LogoTracker::OnFreshLogoParsed(scoped_ptr<EncodedLogo> logo) {
+void LogoTracker::OnFreshLogoParsed(bool* parsing_failed,
+                                    scoped_ptr<EncodedLogo> logo) {
   DCHECK(!is_idle_);
 
   if (logo)
     logo->metadata.source_url = logo_url_.spec();
 
   if (!logo || !logo->encoded_image.get()) {
-    OnFreshLogoAvailable(logo.Pass(), SkBitmap());
+    OnFreshLogoAvailable(logo.Pass(), *parsing_failed, SkBitmap());
   } else {
     // Store the value of logo->encoded_image for use below. This ensures that
     // logo->encoded_image is evaulated before base::Passed(&logo), which sets
@@ -230,13 +237,17 @@ void LogoTracker::OnFreshLogoParsed(scoped_ptr<EncodedLogo> logo) {
         encoded_image,
         base::Bind(&LogoTracker::OnFreshLogoAvailable,
                    weak_ptr_factory_.GetWeakPtr(),
-                   base::Passed(&logo)));
+                   base::Passed(&logo),
+                   *parsing_failed));
   }
 }
 
 void LogoTracker::OnFreshLogoAvailable(scoped_ptr<EncodedLogo> encoded_logo,
+                                       bool parsing_failed,
                                        const SkBitmap& image) {
   DCHECK(!is_idle_);
+
+  int download_outcome = kDownloadOutcomeNotTracked;
 
   if (encoded_logo && !encoded_logo->encoded_image.get() && cached_logo_ &&
       !encoded_logo->metadata.fingerprint.empty() &&
@@ -246,8 +257,10 @@ void LogoTracker::OnFreshLogoAvailable(scoped_ptr<EncodedLogo> encoded_logo,
     // mime_type isn't sent when revalidating, so copy it from the cached logo.
     encoded_logo->metadata.mime_type = cached_logo_->metadata.mime_type;
     SetCachedMetadata(encoded_logo->metadata);
+    download_outcome = DOWNLOAD_OUTCOME_LOGO_REVALIDATED;
   } else if (encoded_logo && image.isNull()) {
     // Image decoding failed. Do nothing.
+    download_outcome = DOWNLOAD_OUTCOME_DECODING_FAILED;
   } else {
     scoped_ptr<Logo> logo;
     // Check if the server returned a valid, non-empty response.
@@ -256,6 +269,15 @@ void LogoTracker::OnFreshLogoAvailable(scoped_ptr<EncodedLogo> encoded_logo,
       logo.reset(new Logo());
       logo->metadata = encoded_logo->metadata;
       logo->image = image;
+    }
+
+    if (logo) {
+      download_outcome = DOWNLOAD_OUTCOME_NEW_LOGO_SUCCESS;
+    } else {
+      if (parsing_failed)
+        download_outcome = DOWNLOAD_OUTCOME_PARSING_FAILED;
+      else
+        download_outcome = DOWNLOAD_OUTCOME_NO_LOGO_TODAY;
     }
 
     // Notify observers if a new logo was fetched, or if the new logo is NULL
@@ -268,7 +290,8 @@ void LogoTracker::OnFreshLogoAvailable(scoped_ptr<EncodedLogo> encoded_logo,
     }
   }
 
-  ReturnToIdle();
+  DCHECK(download_outcome != kDownloadOutcomeNotTracked);
+  ReturnToIdle(download_outcome);
 }
 
 void LogoTracker::OnURLFetchComplete(const net::URLFetcher* source) {
@@ -276,21 +299,24 @@ void LogoTracker::OnURLFetchComplete(const net::URLFetcher* source) {
   scoped_ptr<net::URLFetcher> cleanup_fetcher(fetcher_.release());
 
   if (!source->GetStatus().is_success() || (source->GetResponseCode() != 200)) {
-    ReturnToIdle();
+    ReturnToIdle(DOWNLOAD_OUTCOME_DOWNLOAD_FAILED);
     return;
   }
+
+  UMA_HISTOGRAM_TIMES("NewTabPage.LogoDownloadTime",
+                      base::TimeTicks::Now() - logo_download_start_time_);
 
   scoped_ptr<std::string> response(new std::string());
   source->GetResponseAsString(response.get());
   base::Time response_time = clock_->Now();
 
+  bool* parsing_failed = new bool(false);
   base::PostTaskAndReplyWithResult(
-      background_task_runner_.get(),
-      FROM_HERE,
-      base::Bind(
-          parse_logo_response_func_, base::Passed(&response), response_time),
+      background_task_runner_.get(), FROM_HERE,
+      base::Bind(parse_logo_response_func_, base::Passed(&response),
+                 response_time, parsing_failed),
       base::Bind(&LogoTracker::OnFreshLogoParsed,
-                 weak_ptr_factory_.GetWeakPtr()));
+                 weak_ptr_factory_.GetWeakPtr(), base::Owned(parsing_failed)));
 }
 
 void LogoTracker::OnURLFetchDownloadProgress(const net::URLFetcher* source,
@@ -298,7 +324,7 @@ void LogoTracker::OnURLFetchDownloadProgress(const net::URLFetcher* source,
                                              int64 total) {
   if (total > kMaxDownloadBytes || current > kMaxDownloadBytes) {
     LOG(WARNING) << "Search provider logo exceeded download size limit";
-    ReturnToIdle();
+    ReturnToIdle(DOWNLOAD_OUTCOME_DOWNLOAD_FAILED);
   }
 }
 

@@ -49,7 +49,8 @@ GURL GoogleAppendQueryparamsToLogoURL(const GURL& logo_url,
 
 scoped_ptr<EncodedLogo> GoogleParseLogoResponse(
     const scoped_ptr<std::string>& response,
-    base::Time response_time) {
+    base::Time response_time,
+    bool* parsing_failed) {
   // Google doodles are sent as JSON with a prefix. Example:
   //   )]}' {"update":{"logo":{
   //     "data": "/9j/4QAYRXhpZgAASUkqAAgAAAAAAAAAAAAAAP/...",
@@ -67,9 +68,15 @@ scoped_ptr<EncodedLogo> GoogleParseLogoResponse(
     response_sp.remove_prefix(strlen(kResponsePreamble));
 
   scoped_ptr<base::Value> value = base::JSONReader::Read(response_sp);
-  if (!value.get())
-    return scoped_ptr<EncodedLogo>();
 
+  // Check if no logo today.
+  if (!value.get()) {
+    *parsing_failed = false;
+    return scoped_ptr<EncodedLogo>();
+  }
+
+  // Default parsing failure to be true.
+  *parsing_failed = true;
   // The important data lives inside several nested dictionaries:
   // {"update": {"logo": { "mime_type": ..., etc } } }
   const base::DictionaryValue* outer_dict;
@@ -117,6 +124,8 @@ scoped_ptr<EncodedLogo> GoogleParseLogoResponse(
   }
   logo->metadata.expiration_time = response_time + time_to_live;
 
+  // If this point is reached, parsing has succeeded.
+  *parsing_failed = false;
   return logo.Pass();
 }
 

@@ -10,6 +10,7 @@
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
+#include "base/metrics/histogram_macros.h"
 #include "chrome/browser/android/logo_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
@@ -139,6 +140,7 @@ void LogoBridge::GetAnimatedLogo(JNIEnv* env,
   fetcher_ = net::URLFetcher::Create(url, net::URLFetcher::GET, this);
   fetcher_->SetRequestContext(request_context_getter_.get());
   fetcher_->Start();
+  animated_logo_download_start_time_ = base::TimeTicks::Now();
 }
 
 void LogoBridge::OnURLFetchComplete(const net::URLFetcher* source) {
@@ -147,6 +149,10 @@ void LogoBridge::OnURLFetchComplete(const net::URLFetcher* source) {
     ClearFetcher();
     return;
   }
+
+  UMA_HISTOGRAM_TIMES(
+      "NewTabPage.AnimatedLogoDownloadTime",
+      base::TimeTicks::Now() - animated_logo_download_start_time_);
 
   std::string response;
   source->GetResponseAsString(&response);
