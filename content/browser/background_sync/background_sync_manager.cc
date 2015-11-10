@@ -474,6 +474,11 @@ void BackgroundSyncManager::RegisterImpl(
         BackgroundSyncMetrics::REGISTRATION_IS_DUPLICATE,
         BACKGROUND_SYNC_STATUS_OK);
 
+    if (existing_registration->IsFiring()) {
+      existing_registration->set_sync_state(
+          BACKGROUND_SYNC_STATE_REREGISTERED_WHILE_FIRING);
+    }
+
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(
@@ -1255,9 +1260,12 @@ void BackgroundSyncManager::EventCompleteImpl(
   }
 
   if (registration->options()->periodicity == SYNC_ONE_SHOT) {
-    if (status_code != SERVICE_WORKER_OK) {
+    if (registration->sync_state() ==
+        BACKGROUND_SYNC_STATE_REREGISTERED_WHILE_FIRING) {
+      registration->set_sync_state(BACKGROUND_SYNC_STATE_PENDING);
+      registration->set_num_attempts(0);
+    } else if (status_code != SERVICE_WORKER_OK) {  // Sync failed
       bool can_retry = registration->num_attempts() < max_sync_attempts_;
-
       if (registration->sync_state() ==
           BACKGROUND_SYNC_STATE_UNREGISTERED_WHILE_FIRING) {
         registration->set_sync_state(can_retry
@@ -1270,11 +1278,11 @@ void BackgroundSyncManager::EventCompleteImpl(
             clock_->Now() +
             base::TimeDelta::FromMinutes(kInitialRetryDelayInMins) *
                 pow(kRetryDelayFactor, registration->num_attempts() - 1));
-      } else {  // can't retry
+      } else {
         registration->set_sync_state(BACKGROUND_SYNC_STATE_FAILED);
         registration->RunFinishedCallbacks();
       }
-    } else {  // sync succeeded
+    } else {  // Sync succeeded
       registration->set_sync_state(BACKGROUND_SYNC_STATE_SUCCESS);
       registration->RunFinishedCallbacks();
     }

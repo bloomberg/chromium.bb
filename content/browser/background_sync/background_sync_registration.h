@@ -34,6 +34,7 @@ class CONTENT_EXPORT BackgroundSyncRegistration {
   void AddFinishedCallback(const StateCallback& callback);
   void RunFinishedCallbacks();
   bool HasCompleted() const;
+  bool IsFiring() const;
 
   // If the registration is currently firing, sets its state to
   // BACKGROUND_SYNC_STATE_UNREGISTERED_WHILE_FIRING. If it is firing, it sets

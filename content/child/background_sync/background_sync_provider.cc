@@ -393,6 +393,7 @@ void BackgroundSyncProvider::NotifyWhenFinishedCallback(
       switch (state) {
         case BACKGROUND_SYNC_STATE_PENDING:
         case BACKGROUND_SYNC_STATE_FIRING:
+        case BACKGROUND_SYNC_STATE_REREGISTERED_WHILE_FIRING:
         case BACKGROUND_SYNC_STATE_UNREGISTERED_WHILE_FIRING:
           NOTREACHED();
           break;
