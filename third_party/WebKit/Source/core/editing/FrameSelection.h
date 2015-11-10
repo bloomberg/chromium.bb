@@ -83,6 +83,7 @@ public:
         DoNotSetFocus = 1 << 4,
         DoNotUpdateAppearance = 1 << 5,
         DoNotClearStrategy = 1 << 6,
+        DoNotAdjustInComposedTree = 1 << 7,
     };
     typedef unsigned SetSelectionOptions; // Union of values in SetSelectionOption and EUserTriggered
     static inline EUserTriggered selectionOptionsToUserTriggered(SetSelectionOptions options)

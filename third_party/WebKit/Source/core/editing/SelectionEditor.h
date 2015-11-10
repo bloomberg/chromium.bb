@@ -57,8 +57,8 @@ public:
 
     template <typename Strategy>
     const VisibleSelectionTemplate<Strategy>& visibleSelection() const;
-    void setVisibleSelection(const VisibleSelection&);
-    void setVisibleSelection(const VisibleSelectionInComposedTree&);
+    void setVisibleSelection(const VisibleSelection&, FrameSelection::SetSelectionOptions);
+    void setVisibleSelection(const VisibleSelectionInComposedTree&, FrameSelection::SetSelectionOptions);
 
     void setIsDirectional(bool);
     void setWithoutValidation(const Position& start, const Position& end);

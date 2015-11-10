@@ -377,12 +377,14 @@ void HTMLTextFormControlElement::setSelectionRange(int start, int end, TextField
     ASSERT(start == indexForPosition(innerEditor, startPosition));
     ASSERT(end == indexForPosition(innerEditor, endPosition));
 
+#if ENABLE(ASSERT)
     // startPosition and endPosition can be null position for example when
     // "-webkit-user-select: none" style attribute is specified.
     if (startPosition.isNotNull() && endPosition.isNotNull()) {
         ASSERT(startPosition.anchorNode()->shadowHost() == this
             && endPosition.anchorNode()->shadowHost() == this);
     }
+#endif // ENABLE(ASSERT)
     VisibleSelection newSelection;
     if (direction == SelectionHasBackwardDirection)
         newSelection.setWithoutValidation(endPosition, startPosition);
@@ -390,7 +392,7 @@ void HTMLTextFormControlElement::setSelectionRange(int start, int end, TextField
         newSelection.setWithoutValidation(startPosition, endPosition);
     newSelection.setIsDirectional(direction != SelectionHasNoDirection);
 
-    frame->selection().setSelection(newSelection, FrameSelection::CloseTyping | FrameSelection::ClearTypingStyle | (selectionOption == ChangeSelectionAndFocus ? 0 : FrameSelection::DoNotSetFocus));
+    frame->selection().setSelection(newSelection, FrameSelection::DoNotAdjustInComposedTree | FrameSelection::CloseTyping | FrameSelection::ClearTypingStyle | (selectionOption == ChangeSelectionAndFocus ? 0 : FrameSelection::DoNotSetFocus));
     if (eventBehaviour == DispatchSelectEvent)
         scheduleSelectEvent();
 }

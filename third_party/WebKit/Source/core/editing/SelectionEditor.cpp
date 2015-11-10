@@ -80,14 +80,24 @@ const VisibleSelectionInComposedTree& SelectionEditor::visibleSelection<EditingI
     return m_selectionInComposedTree;
 }
 
-void SelectionEditor::setVisibleSelection(const VisibleSelection& newSelection)
+void SelectionEditor::setVisibleSelection(const VisibleSelection& newSelection, FrameSelection::SetSelectionOptions options)
 {
     m_selection = newSelection;
+    if (options & FrameSelection::DoNotAdjustInComposedTree) {
+        const auto& base = toPositionInComposedTree(m_selection.base());
+        const auto& extent = toPositionInComposedTree(m_selection.extent());
+        base.anchorNode()->updateDistribution();
+        extent.anchorNode()->updateDistribution();
+        m_selectionInComposedTree.setWithoutValidation(base, extent);
+        return;
+    }
+
     adjustVisibleSelectionInComposedTree();
 }
 
-void SelectionEditor::setVisibleSelection(const VisibleSelectionInComposedTree& newSelection)
+void SelectionEditor::setVisibleSelection(const VisibleSelectionInComposedTree& newSelection, FrameSelection::SetSelectionOptions options)
 {
+    ASSERT(!(options & FrameSelection::DoNotAdjustInComposedTree));
     m_selectionInComposedTree = newSelection;
     adjustVisibleSelectionInDOMTree();
 }

@@ -279,7 +279,7 @@ void FrameSelection::setSelectionAlgorithm(const VisibleSelectionTemplate<Strate
         s.setIsDirectional(true);
 
     if (!m_frame) {
-        m_selectionEditor->setVisibleSelection(s);
+        m_selectionEditor->setVisibleSelection(s, options);
         return;
     }
 
@@ -323,7 +323,7 @@ void FrameSelection::setSelectionAlgorithm(const VisibleSelectionTemplate<Strate
     const VisibleSelectionTemplate<Strategy> oldSelection = visibleSelection<Strategy>();
     const VisibleSelection oldSelectionInDOMTree = selection();
 
-    m_selectionEditor->setVisibleSelection(s);
+    m_selectionEditor->setVisibleSelection(s, options);
     setCaretRectNeedsUpdate();
 
     if (!s.isNone() && !(options & DoNotSetFocus))

@@ -650,8 +650,11 @@ bool VisibleSelectionTemplate<Strategy>::isValidFor(const Document& document) co
 template <typename Strategy>
 void VisibleSelectionTemplate<Strategy>::setWithoutValidation(const PositionTemplate<Strategy>& base, const PositionTemplate<Strategy>& extent)
 {
-    ASSERT(!base.isNull());
-    ASSERT(!extent.isNull());
+    if (base.isNull() || extent.isNull()) {
+        m_base = m_extent = m_start = m_end = PositionTemplate<Strategy>();
+        updateSelectionType();
+        return;
+    }
 
     // TODO(hajimehoshi): We doubt this assertion is needed. This was introduced
     // by http://trac.webkit.org/browser/trunk/WebCore/editing/Selection.cpp?annotate=blame&rev=21071

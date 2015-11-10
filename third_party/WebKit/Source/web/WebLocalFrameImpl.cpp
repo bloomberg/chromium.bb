@@ -1237,11 +1237,7 @@ WebString WebLocalFrameImpl::selectionAsText() const
     if (pluginContainer)
         return pluginContainer->plugin()->selectionAsText();
 
-    const EphemeralRange range = frame()->selection().selection().toNormalizedEphemeralRange();
-    if (range.isNull())
-        return WebString();
-
-    String text = plainText(range, TextIteratorEmitsObjectReplacementCharacter);
+    String text = frame()->selection().selectedText(TextIteratorEmitsObjectReplacementCharacter);
 #if OS(WIN)
     replaceNewlinesWithWindowsStyleNewlines(text);
 #endif
