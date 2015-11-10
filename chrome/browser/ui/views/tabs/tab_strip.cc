@@ -408,7 +408,7 @@ void NewTabButton::PaintFill(bool pressed,
   // For custom tab backgrounds the background starts at the top of the tab
   // strip. Otherwise the background starts at the top of the frame.
   const int offset_y = theme_provider->HasCustomImage(bg_id) ?
-      0 : background_offset_.y();
+      -GetLayoutConstant(TAB_TOP_EXCLUSION_HEIGHT) : background_offset_.y();
 
   // The new tab background is mirrored in RTL mode, but the theme background
   // should never be mirrored. Mirror it here to compensate.
