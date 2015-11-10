@@ -337,4 +337,9 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerTest,
   EXPECT_TRUE(RunExtensionSubtest("service_worker/no_background", "page.html"));
 }
 
+IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, NotificationAPI) {
+  EXPECT_TRUE(RunExtensionSubtest("service_worker/notifications/has_permission",
+                                  "page.html"));
+}
+
 }  // namespace extensions
