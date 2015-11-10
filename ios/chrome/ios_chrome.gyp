@@ -298,6 +298,8 @@
         'browser/install_time_util.mm',
         'browser/installation_notifier.h',
         'browser/installation_notifier.mm',
+        'browser/invalidation/ios_chrome_profile_invalidation_provider_factory.cc',
+        'browser/invalidation/ios_chrome_profile_invalidation_provider_factory.h',
         'browser/ios_chrome_field_trials.cc',
         'browser/ios_chrome_field_trials.h',
         'browser/memory/memory_debugger.h',
