@@ -578,8 +578,9 @@ bool BufferedResourceLoader::HasSingleOrigin() const {
 }
 
 bool BufferedResourceLoader::DidPassCORSAccessCheck() const {
-  DCHECK(start_cb_.is_null())
-      << "Start() must complete before calling DidPassCORSAccessCheck()";
+  // Until Start() is done we don't know, assume no until we know.
+  if (!start_cb_.is_null())
+    return false;
   return !loader_failed_ && cors_mode_ != kUnspecified;
 }
 
