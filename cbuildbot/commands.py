@@ -186,7 +186,7 @@ def BuildRootGitCleanup(buildroot):
         logging.warning('\n%s', result.error)
 
         # If there's no repository corruption, just delete the index.
-        corrupted = git.IsGitRepositoryCorrupted(cwd)
+        corrupted = git.IsGitRepositoryCorrupted(repo_git_store)
         lock.write_lock()
         logging.warning('Deleting %s because %s failed', cwd, result.cmd)
         osutils.RmDir(cwd, ignore_missing=True)
