@@ -46,6 +46,11 @@ DesktopAutomationHandler = function(node) {
 DesktopAutomationHandler.prototype = {
   __proto__: BaseAutomationHandler.prototype,
 
+  /** @override */
+  willHandleEvent_: function(evt) {
+    return !cvox.ChromeVox.isActive;
+  },
+
   /**
    * Provides all feedback once ChromeVox's focus changes.
    * @param {Object} evt

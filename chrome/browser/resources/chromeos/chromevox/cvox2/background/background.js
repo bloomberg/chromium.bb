@@ -81,27 +81,6 @@ Background = function() {
       this[func] = this[func].bind(this);
   }
 
-  chrome.automation.getDesktop(this.onGotDesktop);
-
-  // Handle messages directed to the Next background page.
-  cvox.ExtensionBridge.addMessageListener(function(msg, port) {
-    var target = msg['target'];
-    var action = msg['action'];
-
-    switch (target) {
-      case 'next':
-        if (action == 'getIsClassicEnabled') {
-          var url = msg['url'];
-          var isClassicEnabled = this.shouldEnableClassicForUrl_(url);
-          port.postMessage({
-            target: 'next',
-            isClassicEnabled: isClassicEnabled
-          });
-        }
-        break;
-    }
-  }.bind(this));
-
   /** @type {!cvox.AbstractEarcons} @private */
   this.classicEarcons_ = cvox.ChromeVox.earcons || new cvox.ClassicEarcons();
 
@@ -129,12 +108,25 @@ Background = function() {
     }.bind(this)
   });
 
+  Object.defineProperty(cvox.ChromeVox, 'isActive', {
+    get: function() {
+      return localStorage['active'] !== 'false';
+    },
+    set: function(value) {
+      localStorage['active'] = value;
+    }
+  });
+
+  cvox.ExtensionBridge.addMessageListener(this.onMessage_);
+
   document.addEventListener(
       'keydown', cvox.ChromeVoxKbHandler.basicKeyDownActionsListener, true);
   cvox.ChromeVoxKbHandler.commandHandler = this.onGotCommand.bind(this);
 
   // Classic keymap.
   cvox.ChromeVoxKbHandler.handlerKeyMap = cvox.KeyMap.fromDefaults();
+
+  chrome.automation.addTreeChangeObserver(this.onTreeChange);
 };
 
 Background.prototype = {
@@ -156,15 +148,6 @@ Background.prototype = {
       return;
 
     this.currentRange_ = value;
-  },
-
-  /**
-   * Handles all setup once a new automation tree appears.
-   * @param {chrome.automation.AutomationNode} desktop
-   */
-  onGotDesktop: function(desktop) {
-    // Register a tree change observer.
-    chrome.automation.addTreeChangeObserver(this.onTreeChange);
   },
 
   /**
@@ -363,6 +346,17 @@ Background.prototype = {
       case 'showOptionsPage':
         chrome.runtime.openOptionsPage();
         break;
+      case 'toggleChromeVox':
+        if (cvox.ChromeVox.isChromeOS)
+          return false;
+
+        cvox.ChromeVox.isActive = !cvox.ChromeVox.isActive;
+        if (!cvox.ChromeVox.isActive) {
+          var msg = Msgs.getMsg('chromevox_inactive');
+          cvox.ChromeVox.tts.speak(msg, cvox.QueueMode.FLUSH);
+          return false;
+        }
+        break;
       case 'toggleChromeVoxVersion':
         var newMode;
         if (this.mode_ == ChromeVoxMode.FORCE_NEXT) {
@@ -490,7 +484,7 @@ Background.prototype = {
    * @param {chrome.automation.TreeChange} treeChange
    */
   onTreeChange: function(treeChange) {
-    if (this.mode_ === ChromeVoxMode.CLASSIC)
+    if (this.mode_ === ChromeVoxMode.CLASSIC || !cvox.ChromeVox.isActive)
       return;
 
     var node = treeChange.target;
@@ -638,6 +632,29 @@ Background.prototype = {
     if (selectionSpan) {
       var start = text.getSpanStart(selectionSpan);
       actionNode.setSelection(position - start, position - start);
+    }
+  },
+
+  /**
+   * @param {Object} msg A message sent from a content script.
+   * @param {Port} port
+   * @private
+   */
+  onMessage_: function(msg, port) {
+    var target = msg['target'];
+    var action = msg['action'];
+
+    switch (target) {
+      case 'next':
+        if (action == 'getIsClassicEnabled') {
+          var url = msg['url'];
+          var isClassicEnabled = this.shouldEnableClassicForUrl_(url);
+          port.postMessage({
+            target: 'next',
+            isClassicEnabled: isClassicEnabled
+          });
+        }
+        break;
     }
   }
 };

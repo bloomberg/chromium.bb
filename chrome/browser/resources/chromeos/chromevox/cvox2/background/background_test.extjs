@@ -475,3 +475,38 @@ SYNC_TEST_F('BackgroundTest', 'GlobsToRegExp', function() {
       '/^(url1.*|u.l2|.*url3)$/',
       Background.globsToRegExp_(['url1*', 'u?l2', '*url3']).toString());
 });
+
+TEST_F('BackgroundTest', 'ActiveOrInactive', function() {
+  var mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree(function() {/*!
+      <a href="a">a</a>
+      <button>b</button>
+      <input type="text"></input>
+    */},
+    function(rootNode) {
+      var focusButton = function() { rootNode.find({role: 'button'}).focus(); };
+      var on = function() { cvox.ChromeVox.isActive = true; };
+      var off = function() { cvox.ChromeVox.isActive = false; };
+
+      function focusThen(toFocus, then) {
+        toFocus.addEventListener('focus', function innerFocus(e) {
+          if (e.target != toFocus)
+            return;
+          rootNode.removeEventListener('focus', innerFocus, true);
+          then && then();
+        }, true);
+        toFocus.focus();
+      }
+
+      mockFeedback.call(focusButton)
+          .expectSpeech('b').expectSpeech('Button')
+          .call(off)
+          .call(focusThen.bind(this, rootNode.find({ role: 'link' }), on))
+          .call(focusThen.bind(this, rootNode.find({ role: 'textField' })))
+          .expectNextSpeechUtteranceIsNot('a')
+          .expectSpeech('Edit text');
+
+      mockFeedback.replay();
+    }
+  );
+});

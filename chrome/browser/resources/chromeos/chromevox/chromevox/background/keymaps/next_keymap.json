@@ -306,6 +306,15 @@
           "shitKey": [true]
         }
       }
+    },
+    {
+      "command": "toggleChromeVox",
+      "sequence": {
+        "cvoxModifier": true,
+        "keys": {
+          "keyCode": [65, 65]
+        }
+      }
     }
   ]
 }
