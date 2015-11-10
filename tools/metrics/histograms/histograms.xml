@@ -11381,6 +11381,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>The result of an open attempt to an Extensions database.</summary>
 </histogram>
 
+<histogram name="Extensions.Database.Restore"
+    enum="LevelDBCorruptionRestoreValue">
+  <owner>cmumford@chromium.org</owner>
+  <summary>
+    The result of an attempt to recover from an attempt to open a database that
+    failed as a result of corruption.
+  </summary>
+</histogram>
+
 <histogram name="Extensions.DeclarativeRulesStorageInitialization"
     units="milliseconds">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
@@ -65037,6 +65046,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="4" label="Bookmark shortcut widget"/>
 </enum>
 
+<enum name="LevelDBCorruptionRestoreValue" type="int">
+  <int value="0" label="Delete Success"/>
+  <int value="1" label="Delete Failure"/>
+  <int value="2" label="Repair Success"/>
+</enum>
+
 <enum name="LevelDBCorruptionTypes" type="int">
   <int value="0" label="other"/>
   <int value="1" label="missing files"/>
@@ -77580,6 +77595,13 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="Settings" label="Settings backing stores"/>
   <suffix name="State" label="State backing stores"/>
   <affected-histogram name="Extensions.Database.Open"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="ExtensionsDatabaseRestore" separator=".">
+  <suffix name="Rules" label="Rules backing stores"/>
+  <suffix name="Settings" label="Settings backing stores"/>
+  <suffix name="State" label="State backing stores"/>
+  <affected-histogram name="Extensions.Database.Restore"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="ExternalExtensionEvent" separator="">

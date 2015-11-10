@@ -92,7 +92,7 @@ class LeveldbValueStore : public ValueStore,
 
   // Removes the on-disk database at |db_path_|. Any file system locks should
   // be released before calling this method.
-  void DeleteDbFile();
+  bool DeleteDbFile();
 
   // Returns whether the database is empty.
   bool IsEmpty();
@@ -103,6 +103,7 @@ class LeveldbValueStore : public ValueStore,
   // leveldb backend.
   scoped_ptr<leveldb::DB> db_;
   base::HistogramBase* open_histogram_;
+  base::HistogramBase* restore_histogram_;
 
   DISALLOW_COPY_AND_ASSIGN(LeveldbValueStore);
 };
