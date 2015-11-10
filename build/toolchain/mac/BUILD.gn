@@ -49,6 +49,13 @@ template("mac_toolchain") {
     lib_switch = "-l"
     lib_dir_switch = "-L"
 
+    # Object files go in this directory. Use label_name instead of
+    # target_output_name since labels will generally have no spaces and will be
+    # unique in the directory.
+    # TODO(brettw) enable the label_name variant when binary support is rolled in to GN.
+    #object_subdir = "{{target_out_dir}}/{{label_name}}"
+    object_subdir = "{{target_out_dir}}/{{target_output_name}}"
+
     tool("cc") {
       depfile = "{{output}}.d"
       precompiled_header_type = "gcc"
@@ -56,7 +63,7 @@ template("mac_toolchain") {
       depsformat = "gcc"
       description = "CC {{output}}"
       outputs = [
-        "{{target_out_dir}}/{{target_output_name}}/{{source_name_part}}.o",
+        "$object_subdir/{{source_name_part}}.o",
       ]
     }
 
@@ -67,7 +74,7 @@ template("mac_toolchain") {
       depsformat = "gcc"
       description = "CXX {{output}}"
       outputs = [
-        "{{target_out_dir}}/{{target_output_name}}/{{source_name_part}}.o",
+        "$object_subdir/{{source_name_part}}.o",
       ]
     }
 
@@ -78,7 +85,7 @@ template("mac_toolchain") {
       depsformat = "gcc"
       description = "ASM {{output}}"
       outputs = [
-        "{{target_out_dir}}/{{target_output_name}}/{{source_name_part}}.o",
+        "$object_subdir/{{source_name_part}}.o",
       ]
     }
 
@@ -89,7 +96,7 @@ template("mac_toolchain") {
       depsformat = "gcc"
       description = "OBJC {{output}}"
       outputs = [
-        "{{target_out_dir}}/{{target_output_name}}/{{source_name_part}}.o",
+        "$object_subdir/{{source_name_part}}.o",
       ]
     }
 
@@ -100,7 +107,7 @@ template("mac_toolchain") {
       depsformat = "gcc"
       description = "OBJCXX {{output}}"
       outputs = [
-        "{{target_out_dir}}/{{target_output_name}}/{{source_name_part}}.o",
+        "$object_subdir/{{source_name_part}}.o",
       ]
     }
 
@@ -129,7 +136,7 @@ template("mac_toolchain") {
       tocname = dylib + ".TOC"
       temporary_tocname = dylib + ".tmp"
 
-      does_reexport_command = "[ ! -e $dylib -o ! -e $tocname ] || otool -l $dylib | grep -q LC_REEXPORT_DYLIB"
+      does_reexport_command = "[ ! -e \"$dylib\" -o ! -e \"$tocname\" ] || otool -l \"$dylib\" | grep -q LC_REEXPORT_DYLIB"
 
       link_command =
           "$ld -shared {{ldflags}} -o \"$dylib\" -Wl,-filelist,\"$rspfile\""
@@ -138,10 +145,10 @@ template("mac_toolchain") {
       }
       link_command += " {{solibs}} {{libs}}"
 
-      replace_command = "if ! cmp -s $temporary_tocname $tocname; then mv $temporary_tocname $tocname"
-      extract_toc_command = "{ otool -l $dylib | grep LC_ID_DYLIB -A 5; nm -gP $dylib | cut -f1-2 -d' ' | grep -v U\$\$; true; }"
+      replace_command = "if ! cmp -s \"$temporary_tocname\" \"$tocname\"; then mv \"$temporary_tocname\" \"$tocname\""
+      extract_toc_command = "{ otool -l \"$dylib\" | grep LC_ID_DYLIB -A 5; nm -gP \"$dylib\" | cut -f1-2 -d' ' | grep -v U\$\$; true; }"
 
-      command = "if $does_reexport_command ; then $link_command && $extract_toc_command > $tocname; else $link_command && $extract_toc_command > $temporary_tocname && $replace_command ; fi; fi"
+      command = "if $does_reexport_command ; then $link_command && $extract_toc_command > \"$tocname\"; else $link_command && $extract_toc_command > \"$temporary_tocname\" && $replace_command ; fi; fi"
 
       rspfile_content = "{{inputs_newline}}"
 
@@ -198,6 +205,15 @@ template("mac_toolchain") {
     tool("link") {
       outfile = "{{root_out_dir}}/{{target_output_name}}{{output_extension}}"
       rspfile = "$outfile.rsp"
+
+      # Note about --filelist: Apple's linker reads the file list file and
+      # interprets each newline-separated chunk of text as a file name. It
+      # doesn't do the things one would expect from the shell like unescaping
+      # or handling quotes. In contrast, when Ninja finds a file name with
+      # spaces, it single-quotes them in $inputs_newline as it would normally
+      # do for command-line arguments. Thus any source names with spaces, or
+      # label names with spaces (which GN bases the output paths on) will be
+      # corrupted by this process. Don't use spaces for source files or labels.
       command = "$ld {{ldflags}} -o \"$outfile\" -Wl,-filelist,\"$rspfile\" {{solibs}} {{libs}}"
       description = "LINK $outfile"
       rspfile_content = "{{inputs_newline}}"

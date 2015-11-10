@@ -193,6 +193,10 @@ TEST(SubstitutionWriter, TargetSubstitutions) {
   EXPECT_EQ("//foo/bar:baz", result);
 
   EXPECT_TRUE(SubstitutionWriter::GetTargetSubstitution(
+      &target, SUBSTITUTION_LABEL_NAME, &result));
+  EXPECT_EQ("baz", result);
+
+  EXPECT_TRUE(SubstitutionWriter::GetTargetSubstitution(
       &target, SUBSTITUTION_ROOT_GEN_DIR, &result));
   EXPECT_EQ("gen", result);
 

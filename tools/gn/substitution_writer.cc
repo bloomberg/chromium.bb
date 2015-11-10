@@ -422,6 +422,9 @@ bool SubstitutionWriter::GetTargetSubstitution(
       *result = target->label().GetUserVisibleName(
           !target->settings()->is_default());
       break;
+    case SUBSTITUTION_LABEL_NAME:
+      *result = target->label().name();
+      break;
     case SUBSTITUTION_ROOT_GEN_DIR:
       SetDirOrDotWithNoSlash(
           GetToolchainGenDirAsOutputFile(target->settings()).value(),

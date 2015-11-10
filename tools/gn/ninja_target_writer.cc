@@ -103,6 +103,12 @@ void NinjaTargetWriter::WriteSharedVars(const SubstitutionBits& bits) {
     written_anything = true;
   }
 
+  // Target label name
+  if (bits.used[SUBSTITUTION_LABEL_NAME]) {
+    WriteEscapedSubstitution(SUBSTITUTION_LABEL_NAME);
+    written_anything = true;
+  }
+
   // Root gen dir.
   if (bits.used[SUBSTITUTION_ROOT_GEN_DIR]) {
     WriteEscapedSubstitution(SUBSTITUTION_ROOT_GEN_DIR);

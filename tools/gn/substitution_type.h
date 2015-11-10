@@ -34,6 +34,7 @@ enum SubstitutionType {
   // Valid for all compiler and linker tools. These depend on the target and
   // no not vary on a per-file basis.
   SUBSTITUTION_LABEL,  // {{label}}
+  SUBSTITUTION_LABEL_NAME,  // {{label_name}}
   SUBSTITUTION_ROOT_GEN_DIR,  // {{root_gen_dir}}
   SUBSTITUTION_ROOT_OUT_DIR,  // {{root_out_dir}}
   SUBSTITUTION_TARGET_GEN_DIR,  // {{target_gen_dir}}
