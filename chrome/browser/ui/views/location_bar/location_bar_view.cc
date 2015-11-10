@@ -86,6 +86,7 @@
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia_operations.h"
+#include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/scoped_canvas.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/text_utils.h"
@@ -1398,8 +1399,11 @@ void LocationBarView::AnimationEnded(const gfx::Animation* animation) {
 // LocationBarView, private OmniboxEditController implementation:
 
 void LocationBarView::OnChanged() {
-  int icon_id = omnibox_view_->GetIcon();
-  location_icon_view_->SetImage(GetThemeProvider()->GetImageSkiaNamed(icon_id));
+  location_icon_view_->SetImage(
+      ui::MaterialDesignController::IsModeMaterial()
+          ? gfx::CreateVectorIcon(omnibox_view_->GetVectorIcon(), 16,
+                                  gfx::kChromeIconGrey)
+          : *GetThemeProvider()->GetImageSkiaNamed(omnibox_view_->GetIcon()));
   location_icon_view_->ShowTooltip(!GetOmniboxView()->IsEditingOrEmpty());
 
   Layout();

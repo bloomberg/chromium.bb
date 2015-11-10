@@ -16,6 +16,7 @@
 #include "components/toolbar/toolbar_model.h"
 #include "grit/components_scaled_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/vector_icons_public.h"
 
 // static
 base::string16 OmniboxView::StripJavascriptSchemas(const base::string16& text) {
@@ -78,6 +79,24 @@ int OmniboxView::GetIcon() const {
   int id = AutocompleteMatch::TypeToIcon(model_.get() ?
       model_->CurrentTextType() : AutocompleteMatchType::URL_WHAT_YOU_TYPED);
   return (id == IDR_OMNIBOX_HTTP) ? IDR_LOCATION_BAR_HTTP : id;
+}
+
+gfx::VectorIconId OmniboxView::GetVectorIcon() const {
+#if !defined(OS_ANDROID) && !defined(OS_MACOSX) && !defined(OS_IOS)
+  if (!IsEditingOrEmpty())
+    return controller_->GetToolbarModel()->GetVectorIcon();
+  // Reuse the dropdown icons...
+  gfx::VectorIconId id = AutocompleteMatch::TypeToVectorIcon(
+      model_ ? model_->CurrentTextType()
+             : AutocompleteMatchType::URL_WHAT_YOU_TYPED);
+  // but use a tweaked version for the HTTP icon.
+  return (id == gfx::VectorIconId::OMNIBOX_HTTP)
+             ? gfx::VectorIconId::LOCATION_BAR_HTTP
+             : id;
+#else
+  NOTIMPLEMENTED();
+  return gfx::VectorIconId::VECTOR_ICON_NONE;
+#endif
 }
 
 void OmniboxView::SetUserText(const base::string16& text) {

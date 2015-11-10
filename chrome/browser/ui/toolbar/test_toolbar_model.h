@@ -24,6 +24,7 @@ class TestToolbarModel : public ChromeToolbarModel {
   SecurityStateModel::SecurityLevel GetSecurityLevel(
       bool ignore_editing) const override;
   int GetIcon() const override;
+  gfx::VectorIconId GetVectorIcon() const override;
   base::string16 GetEVCertName() const override;
   bool ShouldDisplayURL() const override;
 

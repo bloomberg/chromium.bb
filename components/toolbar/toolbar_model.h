@@ -11,6 +11,10 @@
 #include "base/strings/string16.h"
 #include "url/gurl.h"
 
+namespace gfx {
+enum class VectorIconId;
+}
+
 namespace net {
 class X509Certificate;
 }
@@ -63,6 +67,9 @@ class ToolbarModel {
   // returns a search icon.  This doesn't cover specialized icons while the
   // user is editing; see OmniboxView::GetIcon().
   virtual int GetIcon() const = 0;
+
+  // Like GetIcon(), but gets the vector asset ID.
+  virtual gfx::VectorIconId GetVectorIcon() const = 0;
 
   // Returns the name of the EV cert holder.  This returns an empty string if
   // the security level is not EV_SECURE.

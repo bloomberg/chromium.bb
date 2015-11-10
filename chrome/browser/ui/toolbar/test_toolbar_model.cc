@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/toolbar/test_toolbar_model.h"
 
 #include "grit/components_scaled_resources.h"
+#include "ui/gfx/vector_icons_public.h"
 
 TestToolbarModel::TestToolbarModel()
     : ChromeToolbarModel(),
@@ -43,6 +44,10 @@ SecurityStateModel::SecurityLevel TestToolbarModel::GetSecurityLevel(
 
 int TestToolbarModel::GetIcon() const {
   return icon_;
+}
+
+gfx::VectorIconId TestToolbarModel::GetVectorIcon() const {
+  return gfx::VectorIconId::VECTOR_ICON_NONE;
 }
 
 base::string16 TestToolbarModel::GetEVCertName() const {

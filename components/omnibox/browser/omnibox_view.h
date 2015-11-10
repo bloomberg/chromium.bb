@@ -28,6 +28,10 @@ class OmniboxEditController;
 class OmniboxViewMacTest;
 class ToolbarModel;
 
+namespace gfx {
+enum class VectorIconId;
+}
+
 class OmniboxView {
  public:
   virtual ~OmniboxView();
@@ -70,6 +74,9 @@ class OmniboxView {
 
   // Returns the resource ID of the icon to show for the current text.
   int GetIcon() const;
+
+  // Like GetIcon(), but returns a vector icon identifier.
+  gfx::VectorIconId GetVectorIcon() const;
 
   // The user text is the text the user has manually keyed in.  When present,
   // this is shown in preference to the permanent text; hitting escape will
