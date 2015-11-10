@@ -1082,12 +1082,8 @@ int ff_write_chained(AVFormatContext *dst, int dst_stream, AVPacket *pkt,
     if (interleave) ret = av_interleaved_write_frame(dst, &local_pkt);
     else            ret = av_write_frame(dst, &local_pkt);
     pkt->buf = local_pkt.buf;
-#if FF_API_DESTRUCT_PACKET
-FF_DISABLE_DEPRECATION_WARNINGS
     pkt->side_data       = local_pkt.side_data;
     pkt->side_data_elems = local_pkt.side_data_elems;
-FF_ENABLE_DEPRECATION_WARNINGS
-#endif
     return ret;
 }
 
