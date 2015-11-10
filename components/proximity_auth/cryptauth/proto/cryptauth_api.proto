@@ -30,7 +30,7 @@ message DeviceClassifier {
 
 enum DeviceType {
   UNKNOWN = 0;
-  ANDROID = 1;
+  ANDROIDOS = 1;
   CHROME = 2;
   IOS = 3;
   BROWSER = 4;
@@ -228,7 +228,7 @@ message GcmDeviceInfo {
   optional string device_manufacturer = 31;
 
   // Used to indicate which type of device this is.
-  optional DeviceType device_type = 32 [default = ANDROID];
+  optional DeviceType device_type = 32 [default = ANDROIDOS];
 
   // Fields corresponding to screenlock type/features and hardware features
   // should be numbered in the 400 range.
