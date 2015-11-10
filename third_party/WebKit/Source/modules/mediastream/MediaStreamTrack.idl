@@ -34,7 +34,7 @@
     readonly attribute boolean remote;
     readonly attribute DOMString readyState;
 
-    [CallWith=ExecutionContext, RaisesException, MeasureAs=MediaStreamTrackGetSources] static void getSources(MediaStreamTrackSourcesCallback callback);
+    [CallWith=ExecutionContext, RaisesException, DeprecateAs=MediaStreamTrackGetSources] static void getSources(MediaStreamTrackSourcesCallback callback);
     [ImplementedAs=stopTrack, RaisesException] void stop();
     [CallWith=ExecutionContext] MediaStreamTrack clone();
 

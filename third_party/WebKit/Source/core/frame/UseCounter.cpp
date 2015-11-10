@@ -955,6 +955,9 @@ String UseCounter::deprecationMessage(Feature feature)
     case V8SVGElement_OffsetHeight_AttributeGetter:
         return "'SVGElement.offsetHeight' is deprecated and will be removed in M50, around April 2016. See https://www.chromestatus.com/features/5724912467574784 for more details.";
 
+    case MediaStreamTrackGetSources:
+        return "MediaStreamTrack.getSources is deprecated. See https://www.chromestatus.com/feature/4765305641369600 for more details.";
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
         return String();
