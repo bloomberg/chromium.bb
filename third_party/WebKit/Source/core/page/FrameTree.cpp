@@ -195,24 +195,16 @@ Frame* FrameTree::scopedChild(const AtomicString& name) const
     return nullptr;
 }
 
-inline unsigned FrameTree::scopedChildCount(TreeScope* scope) const
-{
-    unsigned scopedCount = 0;
-    for (Frame* child = firstChild(); child; child = child->tree().nextSibling()) {
-        if (child->client()->inShadowTree())
-            continue;
-        scopedCount++;
-    }
-
-    return scopedCount;
-}
-
 unsigned FrameTree::scopedChildCount() const
 {
     if (m_scopedChildCount == invalidChildCount) {
-        // FIXME: implement a TreeScope for RemoteFrames.
-        TreeScope* scope = m_thisFrame->isLocalFrame() ? toLocalFrame(m_thisFrame)->document() : nullptr;
-        m_scopedChildCount = scopedChildCount(scope);
+        unsigned scopedCount = 0;
+        for (Frame* child = firstChild(); child; child = child->tree().nextSibling()) {
+            if (child->client()->inShadowTree())
+                continue;
+            scopedCount++;
+        }
+        m_scopedChildCount = scopedCount;
     }
     return m_scopedChildCount;
 }

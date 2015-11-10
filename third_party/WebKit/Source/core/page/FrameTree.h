@@ -69,7 +69,6 @@ private:
     Frame* deepLastChild() const;
     AtomicString uniqueChildName(const AtomicString& requestedName) const;
     bool uniqueNameExists(const AtomicString& name) const;
-    unsigned scopedChildCount(TreeScope*) const;
 
     RawPtrWillBeMember<Frame> m_thisFrame;
 
