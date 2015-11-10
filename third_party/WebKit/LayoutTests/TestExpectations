@@ -900,10 +900,6 @@ crbug.com/425345 [ Mac ] fast/text/line-break-after-question-mark.html [ Failure
 # By about a quarter or less of a pixel.
 crbug.com/421412 [ Mac ] fast/text/international/bdo-bidi-width.html [ Failure ]
 
-crbug.com/553553 scrollbars/overflow-scrollbar-combinations.html [ NeedsRebaseline ]
-crbug.com/553553 virtual/prefer_compositing_to_lcd_text/scrollbars/overflow-scrollbar-combinations.html [ NeedsRebaseline ]
-crbug.com/553553 virtual/rootlayerscrolls/scrollbars/overflow-scrollbar-combinations.html [ NeedsRebaseline ]
-
 crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/scrollable-area-frame-overflow-hidden.html [ Failure ]
 crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/scrollable-area-frame-overried-inherited-visibility-hidden.html [ Failure ]
 crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/scrollable-area-frame-scrolling-no-overried-inherited-visibility-hidden.html [ Failure ]
