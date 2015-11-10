@@ -37,8 +37,8 @@ REVISION = '{REVISION}'
 GSTORE_URL = 'https://storage.googleapis.com/nativeclient-mirror'
 CONFIG_FILENAME = 'naclsdk_config.json'
 MANIFEST_FILENAME = 'naclsdk_manifest2.json'
-DEFAULT_SDK_ROOT = os.path.abspath(PARENT_DIR)
-USER_DATA_DIR = os.path.join(DEFAULT_SDK_ROOT, 'sdk_cache')
+SDK_ROOT = PARENT_DIR
+USER_DATA_DIR = os.path.join(SDK_ROOT, 'sdk_cache')
 
 
 def usage(more):
@@ -115,6 +115,7 @@ def LoadLocalManifest(raise_on_error=False):
       raise
     else:
       logging.warn(str(e))
+
   return manifest
 
 
@@ -166,6 +167,25 @@ def LoadCombinedRemoteManifest(default_manifest_url, cfg):
   return manifest
 
 
+def PruneLocalManifest(local_manifest, remote_manifest):
+  """Remove SDKs from the local manifest that don't exist remotely and
+  are not installed locally.
+
+  Without this the local manifest will grown unboundedly.
+  """
+  local_only_bundles = set([b.name for b in local_manifest.GetBundles()])
+  local_only_bundles -= set([b.name for b in remote_manifest.GetBundles()])
+  dirty = False
+  for bundle in local_only_bundles:
+    root = os.path.join(SDK_ROOT, bundle)
+    if not os.path.exists(root):
+      local_manifest.RemoveBundle(bundle)
+      dirty = True
+
+  if dirty:
+    WriteLocalManifest(local_manifest)
+
+
 # Commands #####################################################################
 
 
@@ -188,6 +208,7 @@ def CMDlist(parser, args):
   local_manifest = LoadLocalManifest()
   cfg = LoadConfig()
   remote_manifest = LoadCombinedRemoteManifest(options.manifest_url, cfg)
+  PruneLocalManifest(local_manifest, remote_manifest)
   command.list.List(remote_manifest, local_manifest, options.revision)
   return 0
 
@@ -206,9 +227,10 @@ def CMDupdate(parser, args):
   cfg = LoadConfig()
   remote_manifest = LoadCombinedRemoteManifest(options.manifest_url, cfg)
 
+  PruneLocalManifest(local_manifest, remote_manifest)
+
   try:
-    delegate = command.update.RealUpdateDelegate(USER_DATA_DIR,
-                                                 DEFAULT_SDK_ROOT, cfg)
+    delegate = command.update.RealUpdateDelegate(USER_DATA_DIR, SDK_ROOT, cfg)
     command.update.Update(delegate, remote_manifest, local_manifest,
                           options.bundles, options.force)
   finally:
@@ -237,7 +259,7 @@ def CMDuninstall(parser, args):
   parser.add_argument('bundles', nargs='+', help='bundles to uninstall')
   options = parser.parse_args(args)
   local_manifest = LoadLocalManifest()
-  command.uninstall.Uninstall(DEFAULT_SDK_ROOT, local_manifest, options.bundles)
+  command.uninstall.Uninstall(SDK_ROOT, local_manifest, options.bundles)
   WriteLocalManifest(local_manifest)
   return 0
 
@@ -255,8 +277,7 @@ def CMDreinstall(parser, args):
 
   cfg = LoadConfig()
   try:
-    delegate = command.update.RealUpdateDelegate(USER_DATA_DIR,
-                                                 DEFAULT_SDK_ROOT, cfg)
+    delegate = command.update.RealUpdateDelegate(USER_DATA_DIR, SDK_ROOT, cfg)
     command.update.Reinstall(delegate, local_manifest, options.bundles)
   finally:
     # Always write out the local manifest, we may have successfully updated one
@@ -342,8 +363,7 @@ def UpdateSDKTools(options, args):
   remote_manifest = LoadCombinedRemoteManifest(options.manifest_url, cfg)
 
   try:
-    delegate = command.update.RealUpdateDelegate(USER_DATA_DIR,
-                                                 DEFAULT_SDK_ROOT, cfg)
+    delegate = command.update.RealUpdateDelegate(USER_DATA_DIR, SDK_ROOT, cfg)
     command.update.UpdateBundleIfNeeded(
         delegate,
         remote_manifest,

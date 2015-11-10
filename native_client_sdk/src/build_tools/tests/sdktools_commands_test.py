@@ -156,12 +156,13 @@ class TestCommands(SdkToolsTestCase):
     self._WriteManifest()
     p23bundle = self._AddDummyBundle(self.manifest, 'pepper_23')
     self._WriteCacheManifest(self.manifest)
+    # Create pepper_23 directory so that manifest entry doesn't get purged
+    os.mkdir(os.path.join(self.nacl_sdk_base, 'pepper_23'))
     output = self._Run(['list', '-r'])
     message = 'Bundles installed locally that are not available remotely:'
-    message_loc = output.find(message)
-    self.assertNotEqual(message_loc, -1)
+    self.assertIn(message, output)
     # Make sure pepper_23 is listed after the message above.
-    self.assertTrue('pepper_23' in output[message_loc:])
+    self.assertTrue('pepper_23' in output[output.find(message):])
 
   def testSources(self):
     """The sources command should allow adding/listing/removing of sources.

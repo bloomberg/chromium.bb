@@ -39,7 +39,8 @@ class SdkToolsTestCase(unittest.TestCase):
 
   def SetupWithBaseDirPrefix(self, basedir_prefix, tmpdir=None):
     self.basedir = tempfile.mkdtemp(prefix=basedir_prefix, dir=tmpdir)
-    self.cache_dir = os.path.join(self.basedir, 'nacl_sdk', 'sdk_cache')
+    self.nacl_sdk_base = os.path.join(self.basedir, 'nacl_sdk')
+    self.cache_dir = os.path.join(self.nacl_sdk_base, 'sdk_cache')
     # We have to make sure that we build our updaters with a version that is at
     # least as large as the version in the sdk_tools bundle. If not, update
     # tests may fail because the "current" version (according to the sdk_cache)
@@ -121,7 +122,7 @@ class SdkToolsTestCase(unittest.TestCase):
     return archive
 
   def _Run(self, args, expect_error=False):
-    naclsdk_shell_script = os.path.join(self.basedir, 'nacl_sdk', 'naclsdk')
+    naclsdk_shell_script = os.path.join(self.nacl_sdk_base, 'naclsdk')
     if getos.GetPlatform() == 'win':
       naclsdk_shell_script += '.bat'
     cmd = [naclsdk_shell_script]
@@ -214,8 +215,7 @@ class TestAutoUpdateSdkTools(SdkToolsTestCase):
     self.sdk_tools_bundle.revision = new_revision
     self._WriteManifest()
 
-    sdk_tools_update_dir = os.path.join(self.basedir, 'nacl_sdk',
-        'sdk_tools_update')
+    sdk_tools_update_dir = os.path.join(self.nacl_sdk_base, 'sdk_tools_update')
     self.assertFalse(os.path.exists(sdk_tools_update_dir))
     stdout = self._Run(['update', 'sdk_tools'])
     self.assertTrue(stdout.find('Ignoring manual update request.') != -1)
