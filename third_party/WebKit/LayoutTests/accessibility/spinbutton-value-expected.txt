@@ -9,7 +9,7 @@ PASS endsWith(axSpin.intValue, '5') is true
 PASS endsWith(axSpin.minValue, '1') is true
 PASS endsWith(axSpin.maxValue, '9') is true
 PASS endsWith(axSpin.valueDescription, '5 of 9') is true
-PASS axSpin.deprecatedTitle is axUntitled.deprecatedTitle
+PASS axSpin.name is axUntitled.name
 PASS successfullyParsed is true
 
 TEST COMPLETE

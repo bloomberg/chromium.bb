@@ -26,10 +26,10 @@
           var firstChild = listBox.childAtIndex(0);
           var secondChild = listBox.childAtIndex(1);
           debug("firstChild.role is " + firstChild.role);
-          shouldBe("firstChild.deprecatedTitle", "'AXTitle: option 1'");
+          shouldBe("firstChild.name", "'option 1'");
 
           debug("secondChild.role is " + secondChild.role);
-          shouldBe("secondChild.deprecatedDescription", "'AXDescription: label 2'");
+          shouldBe("secondChild.name", "'label 2'");
 
           shouldBe("firstChild.childrenCount", "0");
           shouldBe("secondChild.childrenCount", "0");

@@ -3,19 +3,19 @@ This test checks value changed accessibility notifications.
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-Focus AXHelp: Month=AXValueDescription: 10
-Focus AXHelp: Day=AXValueDescription: 09
-Focus AXHelp: Year=AXValueDescription: 2012
-Focus AXHelp: Hours=AXValueDescription: 12
-Focus AXHelp: Minutes=AXValueDescription: 34
-ValueChanged AXHelp: Day=AXValueDescription: 04
-ValueChanged AXHelp: Day=AXValueDescription: 04
-ValueChanged AXHelp: Year=AXValueDescription: 2013
-ValueChanged AXHelp: Year=AXValueDescription: 2013
-ValueChanged AXHelp: Hours=AXValueDescription: 02
-ValueChanged AXHelp: Hours=AXValueDescription: 02
-ValueChanged AXHelp: Minutes=AXValueDescription: 33
-ValueChanged AXHelp: Minutes=AXValueDescription: 33
+Focus Month=AXValueDescription: 10
+Focus Day=AXValueDescription: 09
+Focus Year=AXValueDescription: 2012
+Focus Hours=AXValueDescription: 12
+Focus Minutes=AXValueDescription: 34
+ValueChanged Day=AXValueDescription: 04
+ValueChanged Day=AXValueDescription: 04
+ValueChanged Year=AXValueDescription: 2013
+ValueChanged Year=AXValueDescription: 2013
+ValueChanged Hours=AXValueDescription: 02
+ValueChanged Hours=AXValueDescription: 02
+ValueChanged Minutes=AXValueDescription: 33
+ValueChanged Minutes=AXValueDescription: 33
 
 PASS successfullyParsed is true
 

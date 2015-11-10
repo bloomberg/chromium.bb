@@ -24,7 +24,7 @@
         document.body.focus();
         var body = accessibilityController.focusedElement;
         var fieldset = body.childAtIndex(0);
-        var titleUIElement = fieldset.deprecatedTitleUIElement();
+        var titleUIElement = fieldset.nameElementAtIndex(0);
 
         // Print out the tree of accessible objects, indicating the titleUIElement so
         // that each platform can verify their expected object has been found

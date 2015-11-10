@@ -19,7 +19,7 @@ link2
 PASS document.activeElement == element2 is true
 PASS axElement2.role is axElement1.role
 PASS axElement2.roleDescription is axElement1.roleDescription
-PASS axElement2.deprecatedTitle is axElement1.deprecatedTitle
+PASS axElement2.name is axElement1.deprecatedTitle
 PASS axElement2.deprecatedDescription is axElement1.deprecatedDescription
 PASS axElement2.deprecatedHelpText is axElement1.deprecatedHelpText
 PASS axElement2.stringValue is axElement1.stringValue
@@ -36,7 +36,7 @@ button2
 PASS document.activeElement == element2 is true
 PASS axElement2.role is axElement1.role
 PASS axElement2.roleDescription is axElement1.roleDescription
-PASS axElement2.deprecatedTitle is axElement1.deprecatedTitle
+PASS axElement2.name is axElement1.deprecatedTitle
 PASS axElement2.deprecatedDescription is axElement1.deprecatedDescription
 PASS axElement2.deprecatedHelpText is axElement1.deprecatedHelpText
 PASS axElement2.stringValue is axElement1.stringValue
@@ -53,7 +53,7 @@ labeled-button2
 PASS document.activeElement == element2 is true
 PASS axElement2.role is axElement1.role
 PASS axElement2.roleDescription is axElement1.roleDescription
-PASS axElement2.deprecatedTitle is axElement1.deprecatedTitle
+PASS axElement2.name is axElement1.deprecatedTitle
 PASS axElement2.deprecatedDescription is axElement1.deprecatedDescription
 PASS axElement2.deprecatedHelpText is axElement1.deprecatedHelpText
 PASS axElement2.stringValue is axElement1.stringValue
@@ -70,7 +70,7 @@ button-with-title2
 PASS document.activeElement == element2 is true
 PASS axElement2.role is axElement1.role
 PASS axElement2.roleDescription is axElement1.roleDescription
-PASS axElement2.deprecatedTitle is axElement1.deprecatedTitle
+PASS axElement2.name is axElement1.deprecatedTitle
 PASS axElement2.deprecatedDescription is axElement1.deprecatedDescription
 PASS axElement2.deprecatedHelpText is axElement1.deprecatedHelpText
 PASS axElement2.stringValue is axElement1.stringValue
@@ -87,7 +87,7 @@ text2
 PASS document.activeElement == element2 is true
 PASS axElement2.role is axElement1.role
 PASS axElement2.roleDescription is axElement1.roleDescription
-PASS axElement2.deprecatedTitle is axElement1.deprecatedTitle
+PASS axElement2.name is axElement1.deprecatedTitle
 PASS axElement2.deprecatedDescription is axElement1.deprecatedDescription
 PASS axElement2.deprecatedHelpText is axElement1.deprecatedHelpText
 PASS axElement2.stringValue is axElement1.stringValue
@@ -104,7 +104,7 @@ checkbox2
 PASS document.activeElement == element2 is true
 PASS axElement2.role is axElement1.role
 PASS axElement2.roleDescription is axElement1.roleDescription
-PASS axElement2.deprecatedTitle is axElement1.deprecatedTitle
+PASS axElement2.name is axElement1.deprecatedTitle
 PASS axElement2.deprecatedDescription is axElement1.deprecatedDescription
 PASS axElement2.deprecatedHelpText is axElement1.deprecatedHelpText
 PASS axElement2.stringValue is axElement1.stringValue
@@ -121,7 +121,7 @@ number2
 PASS document.activeElement == element2 is true
 PASS axElement2.role is axElement1.role
 PASS axElement2.roleDescription is axElement1.roleDescription
-PASS axElement2.deprecatedTitle is axElement1.deprecatedTitle
+PASS axElement2.name is axElement1.deprecatedTitle
 PASS axElement2.deprecatedDescription is axElement1.deprecatedDescription
 PASS axElement2.deprecatedHelpText is axElement1.deprecatedHelpText
 PASS axElement2.stringValue is axElement1.stringValue
@@ -138,7 +138,7 @@ radio2
 PASS document.activeElement == element2 is true
 PASS axElement2.role is axElement1.role
 PASS axElement2.roleDescription is axElement1.roleDescription
-PASS axElement2.deprecatedTitle is axElement1.deprecatedTitle
+PASS axElement2.name is axElement1.deprecatedTitle
 PASS axElement2.deprecatedDescription is axElement1.deprecatedDescription
 PASS axElement2.deprecatedHelpText is axElement1.deprecatedHelpText
 PASS axElement2.stringValue is axElement1.stringValue
@@ -155,7 +155,7 @@ slider2
 PASS document.activeElement == element2 is true
 PASS axElement2.role is axElement1.role
 PASS axElement2.roleDescription is axElement1.roleDescription
-PASS axElement2.deprecatedTitle is axElement1.deprecatedTitle
+PASS axElement2.name is axElement1.deprecatedTitle
 PASS axElement2.deprecatedDescription is axElement1.deprecatedDescription
 PASS axElement2.deprecatedHelpText is axElement1.deprecatedHelpText
 PASS axElement2.stringValue is axElement1.stringValue
@@ -172,7 +172,7 @@ submit2
 PASS document.activeElement == element2 is true
 PASS axElement2.role is axElement1.role
 PASS axElement2.roleDescription is axElement1.roleDescription
-PASS axElement2.deprecatedTitle is axElement1.deprecatedTitle
+PASS axElement2.name is axElement1.deprecatedTitle
 PASS axElement2.deprecatedDescription is axElement1.deprecatedDescription
 PASS axElement2.deprecatedHelpText is axElement1.deprecatedHelpText
 PASS axElement2.stringValue is axElement1.stringValue
@@ -189,7 +189,7 @@ combobox2
 PASS document.activeElement == element2 is true
 PASS axElement2.role is axElement1.role
 PASS axElement2.roleDescription is axElement1.roleDescription
-PASS axElement2.deprecatedTitle is axElement1.deprecatedTitle
+PASS axElement2.name is axElement1.deprecatedTitle
 PASS axElement2.deprecatedDescription is axElement1.deprecatedDescription
 PASS axElement2.deprecatedHelpText is axElement1.deprecatedHelpText
 PASS axElement2.stringValue is axElement1.stringValue
@@ -206,7 +206,7 @@ listbox2
 PASS document.activeElement == element2 is true
 PASS axElement2.role is axElement1.role
 PASS axElement2.roleDescription is axElement1.roleDescription
-PASS axElement2.deprecatedTitle is axElement1.deprecatedTitle
+PASS axElement2.name is axElement1.deprecatedTitle
 PASS axElement2.deprecatedDescription is axElement1.deprecatedDescription
 PASS axElement2.deprecatedHelpText is axElement1.deprecatedHelpText
 PASS axElement2.stringValue is axElement1.stringValue
@@ -223,7 +223,7 @@ textarea2
 PASS document.activeElement == element2 is true
 PASS axElement2.role is axElement1.role
 PASS axElement2.roleDescription is axElement1.roleDescription
-PASS axElement2.deprecatedTitle is axElement1.deprecatedTitle
+PASS axElement2.name is axElement1.deprecatedTitle
 PASS axElement2.deprecatedDescription is axElement1.deprecatedDescription
 PASS axElement2.deprecatedHelpText is axElement1.deprecatedHelpText
 PASS axElement2.stringValue is axElement1.stringValue
@@ -240,7 +240,7 @@ focusable2
 PASS document.activeElement == element2 is true
 PASS axElement2.role is axElement1.role
 PASS axElement2.roleDescription is axElement1.roleDescription
-PASS axElement2.deprecatedTitle is axElement1.deprecatedTitle
+PASS axElement2.name is axElement1.deprecatedTitle
 PASS axElement2.deprecatedDescription is axElement1.deprecatedDescription
 PASS axElement2.deprecatedHelpText is axElement1.deprecatedHelpText
 PASS axElement2.stringValue is axElement1.stringValue
@@ -257,7 +257,7 @@ heading2
 PASS document.activeElement == element2 is true
 PASS axElement2.role is axElement1.role
 PASS axElement2.roleDescription is axElement1.roleDescription
-PASS axElement2.deprecatedTitle is axElement1.deprecatedTitle
+PASS axElement2.name is axElement1.deprecatedTitle
 PASS axElement2.deprecatedDescription is axElement1.deprecatedDescription
 PASS axElement2.deprecatedHelpText is axElement1.deprecatedHelpText
 PASS axElement2.stringValue is axElement1.stringValue
@@ -274,7 +274,7 @@ aria-button2
 PASS document.activeElement == element2 is true
 PASS axElement2.role is axElement1.role
 PASS axElement2.roleDescription is axElement1.roleDescription
-PASS axElement2.deprecatedTitle is axElement1.deprecatedTitle
+PASS axElement2.name is axElement1.deprecatedTitle
 PASS axElement2.deprecatedDescription is axElement1.deprecatedDescription
 PASS axElement2.deprecatedHelpText is axElement1.deprecatedHelpText
 PASS axElement2.stringValue is axElement1.stringValue
@@ -291,7 +291,7 @@ aria-disabledbutton2
 PASS document.activeElement == element2 is true
 PASS axElement2.role is axElement1.role
 PASS axElement2.roleDescription is axElement1.roleDescription
-PASS axElement2.deprecatedTitle is axElement1.deprecatedTitle
+PASS axElement2.name is axElement1.deprecatedTitle
 PASS axElement2.deprecatedDescription is axElement1.deprecatedDescription
 PASS axElement2.deprecatedHelpText is axElement1.deprecatedHelpText
 PASS axElement2.stringValue is axElement1.stringValue
@@ -308,7 +308,7 @@ aria-enabledbutton2
 PASS document.activeElement == element2 is true
 PASS axElement2.role is axElement1.role
 PASS axElement2.roleDescription is axElement1.roleDescription
-PASS axElement2.deprecatedTitle is axElement1.deprecatedTitle
+PASS axElement2.name is axElement1.deprecatedTitle
 PASS axElement2.deprecatedDescription is axElement1.deprecatedDescription
 PASS axElement2.deprecatedHelpText is axElement1.deprecatedHelpText
 PASS axElement2.stringValue is axElement1.stringValue
@@ -325,7 +325,7 @@ aria-requiredbutton2
 PASS document.activeElement == element2 is true
 PASS axElement2.role is axElement1.role
 PASS axElement2.roleDescription is axElement1.roleDescription
-PASS axElement2.deprecatedTitle is axElement1.deprecatedTitle
+PASS axElement2.name is axElement1.deprecatedTitle
 PASS axElement2.deprecatedDescription is axElement1.deprecatedDescription
 PASS axElement2.deprecatedHelpText is axElement1.deprecatedHelpText
 PASS axElement2.stringValue is axElement1.stringValue
@@ -342,7 +342,7 @@ aria-togglebutton2
 PASS document.activeElement == element2 is true
 PASS axElement2.role is axElement1.role
 PASS axElement2.roleDescription is axElement1.roleDescription
-PASS axElement2.deprecatedTitle is axElement1.deprecatedTitle
+PASS axElement2.name is axElement1.deprecatedTitle
 PASS axElement2.deprecatedDescription is axElement1.deprecatedDescription
 PASS axElement2.deprecatedHelpText is axElement1.deprecatedHelpText
 PASS axElement2.stringValue is axElement1.stringValue
@@ -359,7 +359,7 @@ aria-link2
 PASS document.activeElement == element2 is true
 PASS axElement2.role is axElement1.role
 PASS axElement2.roleDescription is axElement1.roleDescription
-PASS axElement2.deprecatedTitle is axElement1.deprecatedTitle
+PASS axElement2.name is axElement1.deprecatedTitle
 PASS axElement2.deprecatedDescription is axElement1.deprecatedDescription
 PASS axElement2.deprecatedHelpText is axElement1.deprecatedHelpText
 PASS axElement2.stringValue is axElement1.stringValue

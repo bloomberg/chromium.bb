@@ -49,7 +49,7 @@ if (window.testRunner && window.accessibilityController) {
 
     function hasTitleUIElement(axElement) {
         var label1 = accessibilityController.accessibleElementById("label1");
-        var titleUIElement = axElement.deprecatedTitleUIElement();
+        var titleUIElement = axElement.nameElementAtIndex(0);
         if (titleUIElement == null)
             return false;
         return titleUIElement.role == label1.role;
@@ -72,13 +72,13 @@ if (window.testRunner && window.accessibilityController) {
         return accessibilityController.accessibleElementById(id);
     }
 
-    shouldBe("axElement('control1').deprecatedTitleUIElement().isEqual(axElement('label1'))", "true");
+    shouldBe("axElement('control1').nameElementAtIndex(0).isEqual(axElement('label1'))", "true");
 
-    shouldBe("axElement('control2').deprecatedTitleUIElement().isEqual(axElement('label2'))", "true");
+    shouldBe("axElement('control2').nameElementAtIndex(0).isEqual(axElement('label2'))", "true");
 
     // Test changing the "for" attribute dynamically.
     shouldBe("hasTitleUIElement(axElement('control3'))", "false");
-    shouldBe("document.getElementById('label3').setAttribute('for', 'control3'); axElement('control3').deprecatedTitleUIElement().isEqual(axElement('label3'))", "true");
+    shouldBe("document.getElementById('label3').setAttribute('for', 'control3'); axElement('control3').nameElementAtIndex(0).isEqual(axElement('label3'))", "true");
 
     // Test unattached label element that's subsequently attached.
     var label4Element = document.createElement("label");
@@ -87,7 +87,7 @@ if (window.testRunner && window.accessibilityController) {
     label4Element.innerText = "Label 4";
     shouldBe("var label4Element = createLabelWithIdAndForAttribute('label4', 'control4'); hasTitleUIElement(axElement('control4'))", "false");
     shouldBe("document.getElementById('container').appendChild(label4Element); hasTitleUIElement(axElement('control4'))", "true");
-    shouldBe("axElement('control4').deprecatedTitleUIElement().isEqual(axElement('label4'))", "true");
+    shouldBe("axElement('control4').nameElementAtIndex(0).isEqual(axElement('label4'))", "true");
 
     // Test what happens when the label is detached.
     shouldBe("label4Element.parentElement.removeChild(label4Element); hasTitleUIElement(axElement('control4'))", "false");
@@ -95,13 +95,13 @@ if (window.testRunner && window.accessibilityController) {
     // Test label that gets a control reparented into it.
     shouldBe("hasTitleUIElement(axElement('control5'))", "false");
 
-    shouldBe("reparentNodeIntoContainer(document.getElementById('control5'), document.getElementById('label5')); axElement('control5').deprecatedTitleUIElement() != null", "true");
-    shouldBe("axElement('control5').deprecatedTitleUIElement().isEqual(axElement('label5'))", "true");
+    shouldBe("reparentNodeIntoContainer(document.getElementById('control5'), document.getElementById('label5')); axElement('control5').nameElementAtIndex(0) != null", "true");
+    shouldBe("axElement('control5').nameElementAtIndex(0).isEqual(axElement('label5'))", "true");
 
     // Make sure the first label is returned, even as labels are added and removed.
-    shouldBe("axElement('control6').deprecatedTitleUIElement().isEqual(axElement('label6b'))", "true");
-    shouldBe("newLabel6Element = createLabelWithIdAndForAttribute('label6a', 'control6'); document.body.insertBefore(newLabel6Element, document.body.firstChild); axElement('control6').deprecatedTitleUIElement().isEqual(axElement('label6a'))", "true");
-    shouldBe("document.body.removeChild(newLabel6Element); axElement('control6').deprecatedTitleUIElement().isEqual(axElement('label6b'))", "true");
+    shouldBe("axElement('control6').nameElementAtIndex(0).isEqual(axElement('label6b'))", "true");
+    shouldBe("newLabel6Element = createLabelWithIdAndForAttribute('label6a', 'control6'); document.body.insertBefore(newLabel6Element, document.body.firstChild); axElement('control6').nameElementAtIndex(0).isEqual(axElement('label6a'))", "true");
+    shouldBe("document.body.removeChild(newLabel6Element); axElement('control6').nameElementAtIndex(0).isEqual(axElement('label6b'))", "true");
 
     document.getElementById('container').style.display = 'none';
 }

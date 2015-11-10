@@ -14,7 +14,7 @@ description('Tests if typing an arrow key dispatches |Focus| and |ActiveDescenda
 window.accessibilityController.setNotificationListener(function(axnode, type) {
     if (type == 'Focus') {
         // Remove ',' to reduce platform differences.
-        debug('Focused: ' + escapeHTML(accessibilityController.focusedElement.deprecatedDescription.replace(/,/g, '')));
+        debug('Focused: ' + escapeHTML(accessibilityController.focusedElement.name.replace(/,/g, '')));
     } else if (type == 'ActiveDescendantChanged') {
         testPassed('Received ActiveDescendantChanged');
         if (++activeDescendantCounter == 2)

@@ -16,16 +16,16 @@ if (!window.accessibilityController || !window.eventSender)
 else {
     debug('Non-empty value');
     testInput.focus();
-    checkFocusedElementAXAttributes('AXHelp: Month, AXValueDescription: October, intValue:10, range:1-12');
+    checkFocusedElementAXAttributes('Month, AXValueDescription: October, intValue:10, range:1-12');
     eventSender.keyDown('\t');
-    checkFocusedElementAXAttributes('AXHelp: Year, AXValueDescription: 2012, intValue:2012, range:1-275760');
+    checkFocusedElementAXAttributes('Year, AXValueDescription: 2012, intValue:2012, range:1-275760');
 
     debug('Empty value');
     eventSender.keyDown('\b');
-    checkFocusedElementAXAttributes('AXHelp: Year, AXValueDescription: blank, intValue:0, range:1-275760');
+    checkFocusedElementAXAttributes('Year, AXValueDescription: blank, intValue:0, range:1-275760');
     eventSender.keyDown('\t', ['shiftKey']);
     eventSender.keyDown('\b');
-    checkFocusedElementAXAttributes('AXHelp: Month, AXValueDescription: blank, intValue:0, range:1-12');
+    checkFocusedElementAXAttributes('Month, AXValueDescription: blank, intValue:0, range:1-12');
 
     debug('');
     testInput.remove();

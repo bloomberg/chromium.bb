@@ -6,9 +6,9 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 
 firstChild.role is AXRole: AXListBoxOption
-PASS firstChild.deprecatedTitle is 'AXTitle: option 1'
+PASS firstChild.name is 'option 1'
 secondChild.role is AXRole: AXListBoxOption
-PASS secondChild.deprecatedDescription is 'AXDescription: label 2'
+PASS secondChild.name is 'label 2'
 PASS firstChild.childrenCount is 0
 PASS secondChild.childrenCount is 0
 PASS successfullyParsed is true

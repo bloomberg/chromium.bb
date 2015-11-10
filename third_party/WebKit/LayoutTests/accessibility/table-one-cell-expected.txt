@@ -1,6 +1,5 @@
 Pick Your Location!
 Get specific content for your area. 
 http://web.apple.com
-AXTitle: 
+
 AXRole: AXParagraph
-AXDescription:

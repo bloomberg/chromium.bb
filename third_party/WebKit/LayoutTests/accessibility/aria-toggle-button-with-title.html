@@ -11,12 +11,12 @@ function runTest()
     document.getElementById("tbutton").focus();
     tbutton1 = accessibilityController.focusedElement;
     debug("Role: " + tbutton1.role);
-    shouldBe("tbutton1.deprecatedTitle", "'AXTitle: Toggle button'");
+    shouldBe("tbutton1.name", "'Toggle button'");
 
     document.getElementById("button").focus();
     button = accessibilityController.focusedElement;
     debug("Role: " + button.role);
-    shouldBe("button.deprecatedTitle", "'AXTitle: Button title'");
+    shouldBe("button.name", "'Button title'");
   }
 }
 </script>

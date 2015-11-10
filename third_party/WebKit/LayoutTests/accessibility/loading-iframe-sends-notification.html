@@ -37,7 +37,7 @@
 
                 // Ignore this notification if it's not within the subtree of the iframe.
                 var frameTarget = target.parentElement().parentElement();
-                if (frameTarget.deprecatedDescription.indexOf("InnerFrame") == -1)
+                if (frameTarget.name.indexOf("InnerFrame") == -1)
                     return;
 
                 // Even still we'll get LayoutComplete notifications sooner than we want.

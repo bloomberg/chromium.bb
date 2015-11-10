@@ -10,7 +10,7 @@
 
 <p id="description"></p>
 <div id="console"></div>
-    
+
     <input type="radio" name="r1" id="r1" title="TITLE">Test<br>
     <label for="r1">LABEL</label>
 
@@ -32,25 +32,25 @@
 
             // 1) Even though a checkbox has a title attribute, the title ui element should still be exposed.
             var focusedElement = accessibilityController.focusedElement;
-            var titleUIElement = focusedElement.deprecatedTitleUIElement();
-            shouldBe("focusedElement.deprecatedTitle", "'AXTitle: LABEL'");
-            shouldBeTrue("!titleUIElement || titleUIElement.deprecatedTitle == 'AXTitle: '");
+            var titleUIElement = focusedElement.nameElementAtIndex(0);
+            shouldBe("focusedElement.name", "'LABEL'");
+            shouldBeTrue("!titleUIElement || titleUIElement.name == ''");
 
             // 2) aria-labeledby should override the native label semantics and return a title for the radio button, instead of a title ui element.
             document.getElementById("r2").focus();
             focusedElement = accessibilityController.focusedElement;
-            titleUIElement = focusedElement.deprecatedTitleUIElement();
-            shouldBe("focusedElement.deprecatedDescription", "'AXDescription: LABEL2a'");
-            shouldBe("focusedElement.deprecatedTitle", "'AXTitle: '");
-            shouldBeTrue("!titleUIElement || titleUIElement.deprecatedTitle == 'AXTitle: '");
+            titleUIElement = focusedElement.nameElementAtIndex(0);
+            shouldBe("focusedElement.name", "'LABEL2a'");
+            shouldBe("focusedElement.description", "''");
+            shouldBeTrue("!titleUIElement || titleUIElement.name == ''");
 
             // 3) If a radio button has an aria-label and a <label>, the aria-label should be the title.
             document.getElementById("r3").focus();
             focusedElement = accessibilityController.focusedElement;
-            titleUIElement = focusedElement.deprecatedTitleUIElement();
-            shouldBe("focusedElement.deprecatedDescription", "'AXDescription: radio3'");
-            shouldBe("focusedElement.deprecatedTitle", "'AXTitle: '");
-            shouldBeTrue("!titleUIElement || titleUIElement.deprecatedTitle == 'AXTitle: '");
+            titleUIElement = focusedElement.nameElementAtIndex(0);
+            shouldBe("focusedElement.name", "'radio3'");
+            shouldBe("focusedElement.description", "''");
+            shouldBeTrue("!titleUIElement || titleUIElement.name == ''");
 
         }
     </script>

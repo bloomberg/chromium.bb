@@ -214,6 +214,8 @@ AXValueNativeSourceType::Enum nativeSourceType(AXTextFromNativeHTML nativeSource
         return AXValueNativeSourceType::Labelwrapped;
     case AXTextFromNativeHTMLTableCaption:
         return AXValueNativeSourceType::Tablecaption;
+    case AXTextFromNativeHTMLLegend:
+        return AXValueNativeSourceType::Legend;
     default:
         return AXValueNativeSourceType::Other;
     }

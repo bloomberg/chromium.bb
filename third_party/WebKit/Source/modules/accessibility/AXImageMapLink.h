@@ -31,32 +31,29 @@
 
 #include "core/html/HTMLAreaElement.h"
 #include "core/html/HTMLMapElement.h"
-#include "modules/accessibility/AXMockObject.h"
+#include "modules/accessibility/AXNodeObject.h"
 
 namespace blink {
 
 class AXObjectCacheImpl;
 
-class AXImageMapLink final : public AXMockObject {
+class AXImageMapLink final : public AXNodeObject {
 
 private:
-    explicit AXImageMapLink(AXObjectCacheImpl&);
+    explicit AXImageMapLink(HTMLAreaElement*, AXObjectCacheImpl&);
 
 public:
-    static AXImageMapLink* create(AXObjectCacheImpl&);
+    static AXImageMapLink* create(HTMLAreaElement*, AXObjectCacheImpl&);
     ~AXImageMapLink() override;
     DECLARE_VIRTUAL_TRACE();
 
-    void setHTMLAreaElement(HTMLAreaElement* element) { m_areaElement = element; }
-    HTMLAreaElement* areaElement() const { return m_areaElement.get(); }
+    HTMLAreaElement* areaElement() const { return toHTMLAreaElement(node()); }
 
-    void setHTMLMapElement(HTMLMapElement* element) { m_mapElement = element; }
-    HTMLMapElement* mapElement() const { return m_mapElement.get(); }
-
-    Node* node() const override { return m_areaElement.get(); }
+    HTMLMapElement* mapElement() const;
 
     AccessibilityRole roleValue() const override;
     bool isEnabled() const override { return true; }
+    bool computeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
 
     Element* anchorElement() const override;
     Element* actionElement() const override;
@@ -70,12 +67,6 @@ public:
     LayoutRect elementRect() const override;
 
 private:
-    RefPtrWillBeMember<HTMLAreaElement> m_areaElement;
-    RefPtrWillBeMember<HTMLMapElement> m_mapElement;
-
-    void detach() override;
-    void detachFromParent() override;
-
     bool isImageMapLink() const override { return true; }
 };
 

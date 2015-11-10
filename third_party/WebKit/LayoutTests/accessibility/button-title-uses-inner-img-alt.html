@@ -22,7 +22,7 @@ if (window.testRunner && window.accessibilityController) {
     button.focus();
     shouldBe("document.activeElement == button", "true");
     window.axButton = accessibilityController.focusedElement;
-    shouldBe("axButton.deprecatedTitle.indexOf('Button with image of cake') >= 0", "true");
+    shouldBe("axButton.name.indexOf('Button with image of cake') >= 0", "true");
 }
 
 </script>

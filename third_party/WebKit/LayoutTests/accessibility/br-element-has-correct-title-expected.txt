@@ -6,7 +6,7 @@ This tests that a br element will return the newline character as its accessible
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-PASS brElement.deprecatedTitle is 'AXTitle: \n'
+PASS brElement.name is '\n'
 PASS successfullyParsed is true
 
 TEST COMPLETE

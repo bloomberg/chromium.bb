@@ -2474,10 +2474,9 @@ void AXLayoutObject::addImageMapChildren()
 
     for (HTMLAreaElement& area : Traversal<HTMLAreaElement>::descendantsOf(*map)) {
         // add an <area> element for this child if it has a link
-        if (area.isLink()) {
-            AXImageMapLink* areaObject = toAXImageMapLink(axObjectCache().getOrCreate(ImageMapLinkRole));
-            areaObject->setHTMLAreaElement(&area);
-            areaObject->setHTMLMapElement(map);
+        AXObject* obj = axObjectCache().getOrCreate(&area);
+        if (obj) {
+            AXImageMapLink* areaObject = toAXImageMapLink(obj);
             areaObject->setParent(this);
             ASSERT(areaObject->axObjectID() != 0);
             if (!areaObject->accessibilityIsIgnored())

@@ -20,9 +20,9 @@
     description("This tests that when a link is inside a button, its visible text is still available for the button.");
     if (window.accessibilityController) {
           var button1 = accessibilityController.accessibleElementById("button1");
-          shouldBe("button1.deprecatedTitle", "'AXTitle: foo1'");
+          shouldBe("button1.name", "'foo1'");
           var button2 = accessibilityController.accessibleElementById("button2");
-          shouldBe("button2.deprecatedTitle", "'AXTitle: foo2'");
+          shouldBe("button2.name", "'foo2'");
           document.getElementById("content").style.visibility = 'hidden';
     }
 </script>

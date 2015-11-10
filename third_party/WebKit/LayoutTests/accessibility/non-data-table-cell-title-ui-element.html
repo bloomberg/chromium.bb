@@ -31,7 +31,7 @@
             body.focus();
             // get the <th>skip</th> element
             var group = accessibilityController.focusedElement.childAtIndex(5);
-            var titleUI = group.deprecatedTitleUIElement();
+            var titleUI = group.nameElementAtIndex(0);
             var allAttributes = "";
             if (titleUI)
                 allAttributes = titleUI.allAttributes();

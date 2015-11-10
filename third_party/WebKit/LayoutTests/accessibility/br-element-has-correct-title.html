@@ -15,7 +15,7 @@
 
     if (window.accessibilityController) {
         var brElement = accessibilityController.accessibleElementById("br");
-        shouldBe("brElement.deprecatedTitle", "'AXTitle: \\n'");
+        shouldBe("brElement.name", "'\\n'");
     }
 </script>
 

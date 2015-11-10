@@ -23,7 +23,7 @@
         document.getElementById("images").focus();
         var imagesGroup = accessibilityController.focusedElement;
         shouldBe("imagesGroup.childrenCount", "4");
-        console.log("Image description: " + imagesGroup.childAtIndex(2).deprecatedDescription);
+        console.log("Image description: " + imagesGroup.childAtIndex(2).name);
     }
 
 </script>

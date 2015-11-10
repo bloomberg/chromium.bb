@@ -9,7 +9,7 @@ PASS successfullyParsed is true
 
 TEST COMPLETE
 Role: AXRole: AXToggleButton
-PASS tbutton1.deprecatedTitle is 'AXTitle: Toggle button'
+PASS tbutton1.name is 'Toggle button'
 Role: AXRole: AXButton
-PASS button.deprecatedTitle is 'AXTitle: Button title'
+PASS button.name is 'Button title'
 

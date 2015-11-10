@@ -36,6 +36,7 @@
 #include "core/frame/Settings.h"
 #include "core/html/HTMLDialogElement.h"
 #include "core/html/HTMLFrameOwnerElement.h"
+#include "core/html/parser/HTMLParserIdioms.h"
 #include "core/layout/LayoutListItem.h"
 #include "core/layout/LayoutTheme.h"
 #include "core/layout/LayoutView.h"
@@ -680,6 +681,10 @@ String AXObject::name(AXNameFrom& nameFrom, AXObject::AXObjectVector* nameObject
     HeapHashSet<Member<const AXObject>> visited;
     AXRelatedObjectVector relatedObjects;
     String text = textAlternative(false, false, visited, nameFrom, &relatedObjects, nullptr);
+
+    if (!node() || !isHTMLBRElement(node()))
+        text = text.simplifyWhiteSpace(isHTMLSpace<UChar>);
+
     if (nameObjects) {
         nameObjects->clear();
         for (size_t i = 0; i < relatedObjects.size(); i++)
@@ -693,7 +698,9 @@ String AXObject::name(NameSources* nameSources) const
     AXObjectSet visited;
     AXNameFrom tmpNameFrom;
     AXRelatedObjectVector tmpRelatedObjects;
-    return textAlternative(false, false, visited, tmpNameFrom, &tmpRelatedObjects, nameSources);
+    String text = textAlternative(false, false, visited, tmpNameFrom, &tmpRelatedObjects, nameSources);
+    text = text.simplifyWhiteSpace(isHTMLSpace<UChar>);
+    return text;
 }
 
 String AXObject::recursiveTextAlternative(const AXObject& axObj, bool inAriaLabelledByTraversal, AXObjectSet& visited)
@@ -1462,21 +1469,23 @@ bool AXObject::nameFromContents() const
     switch (roleValue()) {
     case ButtonRole:
     case CheckBoxRole:
-    case CellRole:
-    case ColumnHeaderRole:
     case DirectoryRole:
     case DisclosureTriangleRole:
+    case HeadingRole:
+    case LineBreakRole:
     case LinkRole:
+    case ListBoxOptionRole:
     case ListItemRole:
     case MenuItemRole:
     case MenuItemCheckBoxRole:
     case MenuItemRadioRole:
     case MenuListOptionRole:
     case RadioButtonRole:
-    case RowHeaderRole:
     case StaticTextRole:
     case StatusRole:
     case SwitchRole:
+    case TabRole:
+    case ToggleButtonRole:
     case TreeItemRole:
         return true;
     default:

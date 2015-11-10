@@ -25,14 +25,14 @@ test(function(t)
     assert_equals(axList1.childrenCount, 3);
 
     var axItem = axList1.childAtIndex(0);
-    assert_equals(axList1.childAtIndex(0).deprecatedTitle, "AXTitle: One");
-    assert_equals(axList1.childAtIndex(1).deprecatedTitle, "AXTitle: Two");
-    assert_equals(axList1.childAtIndex(2).deprecatedTitle, "AXTitle: Three");
+    assert_equals(axList1.childAtIndex(0).name, "One");
+    assert_equals(axList1.childAtIndex(1).name, "Two");
+    assert_equals(axList1.childAtIndex(2).name, "Three");
 
     var axList2 = accessibilityController.accessibleElementById("list2");
     assert_equals(axList2.role, "AXRole: AXList");
     assert_equals(axList2.childrenCount, 1);
-    assert_equals(axList2.childAtIndex(0).deprecatedTitle, "AXTitle: Four");
+    assert_equals(axList2.childAtIndex(0).name, "Four");
 }, "Aria-owns moves an element from one part of the tree to another.");
 </script>
 
@@ -57,12 +57,12 @@ test(function(t)
     assert_true(axActualParent.isEqual(axParent1) || axActualParent.isEqual(axParent2));
     if (axActualParent.isEqual(axParent1)) {
         assert_equals(axParent1.childrenCount, 1);
-        assert_equals(axParent1.childAtIndex(0).deprecatedTitle, "AXTitle: Child");
+        assert_equals(axParent1.childAtIndex(0).name, "Child");
         assert_equals(axParent2.childrenCount, 0);
     } else {
         assert_equals(axParent1.childrenCount, 0);
         assert_equals(axParent2.childrenCount, 1);
-        assert_equals(axParent2.childAtIndex(0).deprecatedTitle, "AXTitle: Child");
+        assert_equals(axParent2.childAtIndex(0).name, "Child");
     }
     assert_equals(axParent3.childrenCount, 0);
 }, "If two nodes own (using aria-owns) the same element by id, only one gets to be the owner.");

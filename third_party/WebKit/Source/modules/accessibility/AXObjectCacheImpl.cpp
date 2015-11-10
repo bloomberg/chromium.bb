@@ -231,13 +231,18 @@ AXObject* AXObjectCacheImpl::get(Node* node)
     if (!node)
         return 0;
 
-    AXID layoutID = node->layoutObject() ? m_layoutObjectMapping.get(node->layoutObject()) : 0;
+    // Menu list option and HTML area elements are indexed by DOM node, never by layout object.
+    LayoutObject* layoutObject = node->layoutObject();
+    if (isMenuListOption(node) || isHTMLAreaElement(node))
+        layoutObject = nullptr;
+
+    AXID layoutID = layoutObject ? m_layoutObjectMapping.get(layoutObject) : 0;
     ASSERT(!HashTraits<AXID>::isDeletedValue(layoutID));
 
     AXID nodeID = m_nodeObjectMapping.get(node);
     ASSERT(!HashTraits<AXID>::isDeletedValue(nodeID));
 
-    if (node->layoutObject() && nodeID && !layoutID && !isMenuListOption(node)) {
+    if (layoutObject && nodeID && !layoutID) {
         // This can happen if an AXNodeObject is created for a node that's not
         // laid out, but later something changes and it gets a layoutObject (like if it's
         // reparented).
@@ -338,6 +343,9 @@ AXObject* AXObjectCacheImpl::createFromNode(Node* node)
     if (isMenuListOption(node))
         return AXMenuListOption::create(toHTMLOptionElement(node), *this);
 
+    if (isHTMLAreaElement(node))
+        return AXImageMapLink::create(toHTMLAreaElement(node), *this);
+
     return AXNodeObject::create(node, *this);
 }
 
@@ -392,7 +400,9 @@ AXObject* AXObjectCacheImpl::getOrCreate(Node* node)
     if (AXObject* obj = get(node))
         return obj;
 
-    if (node->layoutObject())
+    // If the node has a layout object, prefer using that as the primary key for the AXObject,
+    // with the exception of an HTMLAreaElement, which is created based on its node.
+    if (node->layoutObject() && !isHTMLAreaElement(node))
         return getOrCreate(node->layoutObject());
 
     if (!node->parentElement())
@@ -479,9 +489,6 @@ AXObject* AXObjectCacheImpl::getOrCreate(AccessibilityRole role)
 
     // will be filled in...
     switch (role) {
-    case ImageMapLinkRole:
-        obj = AXImageMapLink::create(*this);
-        break;
     case ColumnRole:
         obj = AXTableColumn::create(*this);
         break;

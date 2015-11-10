@@ -6,17 +6,17 @@ This tests that images will fallback to using the title attribute if no other de
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-Image1 description: AXDescription: test1
-Image1 help: AXHelp: 
+Image1 name: test1
+Image1 description: 
 
-Image2 description: AXDescription: alt
-Image2 help: AXHelp: test2
+Image2 name: alt
+Image2 description: test2
 
-Image3 description: AXDescription: test3
-Image3 help: AXHelp: 
+Image3 name: test3
+Image3 description: 
 
-Image4 description: AXDescription: alt
-Image4 help: AXHelp: test4
+Image4 name: test4
+Image4 description: 
 
 PASS imagesGroup.childAtIndex(0).childrenCount is 2
 PASS successfullyParsed is true

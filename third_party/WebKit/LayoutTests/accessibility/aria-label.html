@@ -18,11 +18,11 @@
           var body = document.getElementById("body");
           body.focus();
           var obj = accessibilityController.focusedElement.childAtIndex(0).childAtIndex(0);
-          var succeeded = obj.deprecatedDescription == "AXDescription: aria label";
+          var succeeded = obj.name == "aria label";
           shouldBe("succeeded", "true");
 
           obj = accessibilityController.focusedElement.childAtIndex(0).childAtIndex(1);
-          succeeded = obj.deprecatedDescription == "AXDescription: aria link";
+          succeeded = obj.name == "aria link";
           shouldBe("succeeded", "true");
     }
 

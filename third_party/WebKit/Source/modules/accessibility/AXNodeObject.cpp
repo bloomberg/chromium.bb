@@ -30,6 +30,7 @@
 #include "modules/accessibility/AXNodeObject.h"
 
 #include "core/InputTypeNames.h"
+#include "core/dom/Element.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/Text.h"
 #include "core/dom/shadow/ComposedTreeTraversal.h"
@@ -1499,6 +1500,15 @@ String AXNodeObject::stringValue() const
     if (node->isTextNode())
         return deprecatedTextUnderElement(TextUnderElementAll);
 
+    return stringValueOfControl();
+}
+
+String AXNodeObject::stringValueOfControl() const
+{
+    Node* node = this->node();
+    if (!node)
+        return String();
+
     if (isHTMLSelectElement(*node)) {
         HTMLSelectElement& selectElement = toHTMLSelectElement(*node);
         int selectedIndex = selectElement.selectedIndex();
@@ -1516,10 +1526,15 @@ String AXNodeObject::stringValue() const
     if (isNativeTextControl())
         return text();
 
-    // FIXME: We might need to implement a value here for more types
-    // FIXME: It would be better not to advertise a value at all for the types for which we don't implement one;
-    // this would require subclassing or making accessibilityAttributeNames do something other than return a
-    // single static array.
+    // Handle other HTML input elements that aren't text controls, like date and time
+    // controls, by returning the string value, with the exception of checkboxes
+    // and radio buttons (which would return "on").
+    if (isHTMLInputElement(node)) {
+        HTMLInputElement* input = toHTMLInputElement(node);
+        if (input->type() != InputTypeNames::checkbox && input->type() != InputTypeNames::radio)
+            return input->value();
+    }
+
     return String();
 }
 
@@ -1925,14 +1940,14 @@ String AXNodeObject::textAlternative(bool recursive, bool inAriaLabelledByTraver
     // Step 2E from: http://www.w3.org/TR/accname-aam-1.1
     if (recursive && !inAriaLabelledByTraversal && isControl()) {
         // No need to set any name source info in a recursive call.
-        if (roleValue() == TextFieldRole || roleValue() == ComboBoxRole)
-            return text();
         if (isRange()) {
             const AtomicString& ariaValuetext = getAttribute(aria_valuetextAttr);
             if (!ariaValuetext.isNull())
                 return ariaValuetext.string();
             return String::number(valueForRange());
         }
+
+        return stringValueOfControl();
     }
 
     // Step 2F / 2G from: http://www.w3.org/TR/accname-aam-1.1
@@ -1946,6 +1961,8 @@ String AXNodeObject::textAlternative(bool recursive, bool inAriaLabelledByTraver
         Node* node = this->node();
         if (node && node->isTextNode())
             textAlternative = toText(node)->wholeText();
+        else if (isHTMLBRElement(node))
+            textAlternative = String("\n");
         else
             textAlternative = textFromDescendants(visited);
 
@@ -1998,6 +2015,10 @@ String AXNodeObject::textFromDescendants(AXObjectSet& visited) const
     StringBuilder accumulatedText;
     AXObject* previous = nullptr;
     for (AXObject* child = firstChild(); child; child = child->nextSibling()) {
+        // Skip hidden children
+        if (child->isInertOrAriaHidden())
+            continue;
+
         // If we're going between two layoutObjects that are in separate LayoutBoxes, add
         // whitespace if it wasn't there already. Intuitively if you have
         // <span>Hello</span><span>World</span>, those are part of the same LayoutBox
@@ -2223,6 +2244,9 @@ bool AXNodeObject::canHaveChildren() const
     // doesn't have a node - there are some layoutObjects that don't have associated
     // nodes, like scroll areas and css-generated text.
     if (!node() && !isAXLayoutObject())
+        return false;
+
+    if (node() && isHTMLMapElement(node()))
         return false;
 
     // Elements that should not have children
@@ -2762,8 +2786,8 @@ String AXNodeObject::nativeTextAlternative(AXObjectSet& visited, AXNameFrom& nam
         return textAlternative;
     }
 
-    // 5.8 img Element
-    if (isHTMLImageElement(node())) {
+    // 5.8 img or area Element
+    if (isHTMLImageElement(node()) || isHTMLAreaElement(node()) || (layoutObject() && layoutObject()->isSVGImage())) {
         // alt
         nameFrom = AXNameFromAttribute;
         if (nameSources) {
@@ -2838,6 +2862,39 @@ String AXNodeObject::nativeTextAlternative(AXObjectSet& visited, AXNameFrom& nam
         }
 
         return textAlternative;
+    }
+
+    // Fieldset / legend.
+    if (isHTMLFieldSetElement(node())) {
+        nameFrom = AXNameFromRelatedElement;
+        if (nameSources) {
+            nameSources->append(NameSource(*foundTextAlternative));
+            nameSources->last().type = nameFrom;
+            nameSources->last().nativeSource = AXTextFromNativeHTMLLegend;
+        }
+        HTMLElement* legend = toHTMLFieldSetElement(node())->legend();
+        if (legend) {
+            AXObject* legendAXObject = axObjectCache().getOrCreate(legend);
+            // Avoid an infinite loop
+            if (legendAXObject && !visited.contains(legendAXObject)) {
+                textAlternative = recursiveTextAlternative(*legendAXObject, false, visited);
+
+                if (relatedObjects) {
+                    localRelatedObjects.append(new NameSourceRelatedObject(legendAXObject, textAlternative));
+                    *relatedObjects = localRelatedObjects;
+                    localRelatedObjects.clear();
+                }
+
+                if (nameSources) {
+                    NameSource& source = nameSources->last();
+                    source.relatedObjects = *relatedObjects;
+                    source.text = textAlternative;
+                    *foundTextAlternative = true;
+                } else {
+                    return textAlternative;
+                }
+            }
+        }
     }
 
     return textAlternative;
@@ -3019,6 +3076,24 @@ String AXNodeObject::description(AXNameFrom nameFrom, AXDescriptionFrom& descrip
         }
     }
 
+    // aria-help.
+    // FIXME: this is not part of the official standard, but it's needed because the built-in date/time controls use it.
+    descriptionFrom = AXDescriptionFromAttribute;
+    if (descriptionSources) {
+        descriptionSources->append(DescriptionSource(foundDescription, aria_helpAttr));
+        descriptionSources->last().type = descriptionFrom;
+    }
+    const AtomicString& help = getAttribute(aria_helpAttr);
+    if (!help.isEmpty()) {
+        description = help;
+        if (descriptionSources) {
+            foundDescription = true;
+            descriptionSources->last().text = description;
+        } else {
+            return description;
+        }
+    }
+
     descriptionFrom = AXDescriptionFromUninitialized;
 
     if (foundDescription) {
@@ -3042,4 +3117,4 @@ DEFINE_TRACE(AXNodeObject)
     AXObject::trace(visitor);
 }
 
-} // namespace blink
+} // namespace blin

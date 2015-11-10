@@ -335,6 +335,7 @@ enum AXTextFromNativeHTML {
     AXTextFromNativeHTMLLabel,
     AXTextFromNativeHTMLLabelFor,
     AXTextFromNativeHTMLLabelWrapped,
+    AXTextFromNativeHTMLLegend,
     AXTextFromNativeHTMLTableCaption,
 };
 

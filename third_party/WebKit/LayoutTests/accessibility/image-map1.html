@@ -7,7 +7,7 @@
         testRunner.dumpAsText();
 </script>
 <body id="body">
-    
+
     <!-- Test image map -->
     <map id="apple" name="imagemap1">
       <area shape="rect" coords="10,10,133,72" href="http://www.apple.com" title="Link1" />
@@ -20,7 +20,7 @@
 
 <p id="description"></p>
 <div id="console"></div>
-     
+
     <script>
         description("This tests that you can reach the links within an image map.");
 
@@ -28,14 +28,14 @@
             document.getElementById("body").focus();
 
             var body = accessibilityController.focusedElement;
-            shouldBe("body.childAtIndex(3).role", "'AXRole: AXLink'");
-            shouldBe("body.childAtIndex(3).deprecatedTitle", "'AXTitle: Link1'");
+            shouldBe("body.childAtIndex(0).role", "'AXRole: AXLink'");
+            shouldBe("body.childAtIndex(0).name", "'Link1'");
 
-            shouldBe("body.childAtIndex(4).role", "'AXRole: AXLink'");
-            shouldBe("body.childAtIndex(4).deprecatedTitle", "'AXTitle: Link2'");
+            shouldBe("body.childAtIndex(1).role", "'AXRole: AXLink'");
+            shouldBe("body.childAtIndex(1).name", "'Link2'");
 
-            shouldBe("body.childAtIndex(5).role", "'AXRole: AXLink'");
-            shouldBe("body.childAtIndex(5).deprecatedTitle", "'AXTitle: Link3'");
+            shouldBe("body.childAtIndex(2).role", "'AXRole: AXLink'");
+            shouldBe("body.childAtIndex(2).name", "'Link3'");
         }
 </script>
 

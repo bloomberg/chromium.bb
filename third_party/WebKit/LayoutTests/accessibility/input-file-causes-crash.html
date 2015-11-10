@@ -17,7 +17,7 @@
     if (window.accessibilityController) {
         document.getElementById("file-input").focus();
         var element = accessibilityController.focusedElement;
-        var title = element.deprecatedTitle;
+        var title = element.name;
         shouldBeNonNull("title");
     }
 </script>

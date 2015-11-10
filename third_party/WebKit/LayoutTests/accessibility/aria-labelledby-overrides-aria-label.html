@@ -34,20 +34,16 @@
 
     if (window.accessibilityController) {
         var usingNone = getAccessibilityObject("using-none");
-        output("usingNone.deprecatedTitle: [" + usingNone.deprecatedTitle + "]");
-        output("usingNone.deprecatedDescription:  [" + usingNone.deprecatedDescription + "]");
+        output("usingNone.name: [" + usingNone.name + "]");
 
         var usingLabel = getAccessibilityObject("using-label");
-        output("usingLabel.deprecatedTitle: [" + usingLabel.deprecatedTitle + "]");
-        output("usingLabel.deprecatedDescription:  [" + usingLabel.deprecatedDescription + "]");
+        output("usingLabel.name: [" + usingLabel.name + "]");
 
         var usingLabelledby = getAccessibilityObject("using-labelledby");
-        output("usingLabelledby.deprecatedTitle: [" + usingLabelledby.deprecatedTitle + "]");
-        output("usingLabelledby.deprecatedDescription:  [" + usingLabelledby.deprecatedDescription + "]");
+        output("usingLabelledby.name: [" + usingLabelledby.name + "]");
 
         var usingLabeledby = getAccessibilityObject("using-labeledby");
-        output("usingLabeledby.deprecatedTitle: [" + usingLabeledby.deprecatedTitle + "]");
-        output("usingLabeledby.deprecatedDescription:  [" + usingLabeledby.deprecatedDescription + "]");
+        output("usingLabeledby.name: [" + usingLabeledby.name + "]");
     }
 
     successfullyParsed = true;

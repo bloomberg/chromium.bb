@@ -259,16 +259,6 @@ std::string RoleToString(blink::WebAXRole role)
   }
 }
 
-std::string DeprecatedGetDescription(const blink::WebAXObject& object) {
-  std::string description = object.deprecatedAccessibilityDescription().utf8();
-  return description.insert(0, "AXDescription: ");
-}
-
-std::string DeprecatedGetHelpText(const blink::WebAXObject& object) {
-  std::string help_text = object.deprecatedHelpText().utf8();
-  return help_text.insert(0, "AXHelp: ");
-}
-
 std::string GetStringValue(const blink::WebAXObject& object) {
   std::string value;
   if (object.role() == blink::WebAXRoleColorWell) {
@@ -298,11 +288,6 @@ std::string GetRole(const blink::WebAXObject& object) {
   return role_string;
 }
 
-std::string DeprecatedGetTitle(const blink::WebAXObject& object) {
-  std::string title = object.deprecatedTitle().utf8();
-  return title.insert(0, "AXTitle: ");
-}
-
 std::string GetValueDescription(const blink::WebAXObject& object) {
   std::string value_description = object.valueDescription().utf8();
   return value_description.insert(0, "AXValueDescription: ");
@@ -314,12 +299,11 @@ std::string GetLanguage(const blink::WebAXObject& object) {
 }
 
 std::string GetAttributes(const blink::WebAXObject& object) {
-  // FIXME: Concatenate all attributes of the AXObject.
-  std::string attributes(DeprecatedGetTitle(object));
+  blink::WebAXNameFrom nameFrom;
+  blink::WebVector<blink::WebAXObject> nameObjects;
+  std::string attributes(object.name(nameFrom, nameObjects).utf8());
   attributes.append("\n");
   attributes.append(GetRole(object));
-  attributes.append("\n");
-  attributes.append(DeprecatedGetDescription(object));
   return attributes;
 }
 
@@ -596,17 +580,6 @@ WebAXObjectProxy::GetObjectTemplateBuilder(v8::Isolate* isolate) {
       .SetMethod("removeNotificationListener",
                  &WebAXObjectProxy::UnsetNotificationListener)
       //
-      // DEPRECATED accessible name and description accessors
-      //
-      .SetProperty("deprecatedTitle",
-                   &WebAXObjectProxy::DeprecatedTitle)
-      .SetProperty("deprecatedDescription",
-                   &WebAXObjectProxy::DeprecatedDescription)
-      .SetProperty("deprecatedHelpText",
-                   &WebAXObjectProxy::DeprecatedHelpText)
-      .SetMethod("deprecatedTitleUIElement",
-                 &WebAXObjectProxy::DeprecatedTitleUIElement)
-      //
       // NEW accessible name and description accessors
       //
       .SetProperty("name", &WebAXObjectProxy::Name)
@@ -665,21 +638,6 @@ void WebAXObjectProxy::Reset()  {
 std::string WebAXObjectProxy::Role() {
   accessibility_object_.updateLayoutAndCheckValidity();
   return GetRole(accessibility_object_);
-}
-
-std::string WebAXObjectProxy::DeprecatedTitle() {
-  accessibility_object_.updateLayoutAndCheckValidity();
-  return DeprecatedGetTitle(accessibility_object_);
-}
-
-std::string WebAXObjectProxy::DeprecatedDescription() {
-  accessibility_object_.updateLayoutAndCheckValidity();
-  return DeprecatedGetDescription(accessibility_object_);
-}
-
-std::string WebAXObjectProxy::DeprecatedHelpText() {
-  accessibility_object_.updateLayoutAndCheckValidity();
-  return DeprecatedGetHelpText(accessibility_object_);
 }
 
 std::string WebAXObjectProxy::StringValue() {
@@ -1159,15 +1117,6 @@ v8::Local<v8::Object> WebAXObjectProxy::CellForColumnAndRow(
   accessibility_object_.updateLayoutAndCheckValidity();
   blink::WebAXObject obj =
       accessibility_object_.cellForColumnAndRow(column, row);
-  if (obj.isNull())
-    return v8::Local<v8::Object>();
-
-  return factory_->GetOrCreate(obj);
-}
-
-v8::Local<v8::Object> WebAXObjectProxy::DeprecatedTitleUIElement() {
-  accessibility_object_.updateLayoutAndCheckValidity();
-  blink::WebAXObject obj = accessibility_object_.deprecatedTitleUIElement();
   if (obj.isNull())
     return v8::Local<v8::Object>();
 

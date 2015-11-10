@@ -46,28 +46,28 @@ if (window.testRunner && window.accessibilityController) {
 
     var face = container.childAtIndex(0);
     debug('Face role: ' + face.role);
-    debug('Face label: ' + face.deprecatedDescription);
+    debug('Face label: ' + face.name);
     debug('FaceX: ' + (pageX(face) - x));
     debug('FaceY: ' + Math.abs(pageY(face) - y));
     debug('<br>');
 
     var eye = container.childAtIndex(1);
     debug('Eye role: ' + eye.role);
-    debug('Eye label: ' + eye.deprecatedDescription);
+    debug('Eye label: ' + eye.name);
     debug('EyeX: ' + (pageX(eye) - x));
     debug('EyeY: ' + Math.abs(pageY(eye) - y));
     debug('<br>');
 
     var nose = container.childAtIndex(3);
     debug('Nose role: ' + nose.role);
-    debug('Nose label: ' + nose.deprecatedDescription);
+    debug('Nose label: ' + nose.name);
     debug('NoseX: ' + (pageX(nose) - x));
     debug('NoseY: ' + Math.abs(pageY(nose) - y));
     debug('<br>');
 
     var mouth = container.childAtIndex(4);
     debug('Mouth role: ' + mouth.role);
-    debug('Mouth label: ' + mouth.deprecatedDescription);
+    debug('Mouth label: ' + mouth.name);
     debug('MouthX: ' + (pageX(mouth) - x));
     debug('MouthY: ' + Math.floor(Math.abs(pageY(mouth) - y)));
     debug('<br>');
@@ -82,7 +82,7 @@ if (window.testRunner && window.accessibilityController) {
 
     var image = container.childAtIndex(6);
     debug('Image role: ' + image.role);
-    debug('Image label: ' + image.deprecatedDescription);
+    debug('Image label: ' + image.name);
     debug('ImageX: ' + (pageX(image) - x));
     debug('ImageY: ' + Math.abs(pageY(image) - y));
 }

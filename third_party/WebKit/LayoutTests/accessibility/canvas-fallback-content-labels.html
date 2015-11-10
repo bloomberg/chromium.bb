@@ -3,7 +3,7 @@
 <body>
 <script src="../resources/js-test.js"></script>
 
-<div>
+<div id="container">
   <label id="nothing1">Nothing</label>
   <label id="text_label1">
     Text
@@ -81,8 +81,8 @@ if (window.testRunner && window.accessibilityController) {
             return;
         }
         shouldBe("axElement2.role", "axElement1.role");
-        shouldBe("collapseWhitespace(axElement2.deprecatedTitle)", "collapseWhitespace(axElement1.deprecatedTitle)");
-        shouldBe("axElement2.deprecatedTitleUIElement", "axElement1.deprecatedTitleUIElement");
+        shouldBe("collapseWhitespace(axElement2.name)", "collapseWhitespace(axElement1.name)");
+        shouldBe("axElement2.nameElementCount()", "axElement1.nameElementCount()");
         debug("");
     }
 
@@ -99,6 +99,8 @@ if (window.testRunner && window.accessibilityController) {
     check("list1", "list2");
     check("label_for1", "label_for2");
     check("text_for1", "text_for2");
+
+    document.getElementById("container").style.display = "none";
 }
 
 </script>

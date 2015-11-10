@@ -17,7 +17,7 @@ function enableAccessibility()
 
     accessibilityController.addNotificationListener(function (element, notification) {
         if (notification == 'Focus' || notification == 'ValueChanged') {
-            debug(notification + ' ' + element.deprecatedHelpText + '=' + element.valueDescription);
+            debug(notification + ' ' + element.description + '=' + element.valueDescription);
         }
     });
 }

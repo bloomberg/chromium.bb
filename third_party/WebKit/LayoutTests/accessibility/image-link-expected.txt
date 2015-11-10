@@ -3,13 +3,11 @@ Image link in the presence of inline continuations
 This test checks that the right accessibility tree is generated for a link inside an image
 
 
-AXTitle: Delicious cake
+Delicious cake
 AXRole: AXLink
-AXDescription: 
 
 Child 0:
-AXTitle: 
+Delicious cake
 AXRole: AXImage
-AXDescription: Delicious cake
 
 
