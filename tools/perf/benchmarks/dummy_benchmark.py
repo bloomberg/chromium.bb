@@ -40,7 +40,7 @@ class DummyBenchmarkOne(_DummyBenchmark):
   """ A low noise benchmark with mean=100 & std=1. """
 
   def CreatePageTest(self, options):
-    return _DummyTest(100, 1)
+    return _DummyTest(120, 1)
 
   @classmethod
   def Name(cls):
