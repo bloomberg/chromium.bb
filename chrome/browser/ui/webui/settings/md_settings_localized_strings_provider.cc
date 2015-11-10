@@ -379,6 +379,18 @@ void AddOnStartupStrings(content::WebUIDataSource* html_source) {
       IDS_SETTINGS_ON_STARTUP_ENTER_URL);
 }
 
+void AddPasswordsAndFormsStrings(content::WebUIDataSource* html_source) {
+  html_source->AddLocalizedString(
+      "passwordsAndAutofillPageTitle",
+      IDS_SETTINGS_PASSWORDS_AND_AUTOFILL_PAGE_TITLE);
+  html_source->AddLocalizedString("autofill", IDS_SETTINGS_AUTOFILL);
+  html_source->AddLocalizedString("autofillDetail",
+                                  IDS_SETTINGS_AUTOFILL_DETAIL);
+  html_source->AddLocalizedString("passwords", IDS_SETTINGS_PASSWORDS);
+  html_source->AddLocalizedString("passwordsDetail",
+                                  IDS_SETTINGS_PASSWORDS_DETAIL);
+}
+
 void AddPrivacyStrings(content::WebUIDataSource* html_source) {
   html_source->AddLocalizedString("privacyPageTitle",
                                   IDS_SETTINGS_PRIVACY);
@@ -691,6 +703,7 @@ void AddLocalizedStrings(content::WebUIDataSource* html_source,
   AddMultiProfilesStrings(html_source, profile);
 #endif
   AddOnStartupStrings(html_source);
+  AddPasswordsAndFormsStrings(html_source);
   AddPrivacyStrings(html_source);
   AddResetStrings(html_source);
   AddSearchEnginesStrings(html_source);

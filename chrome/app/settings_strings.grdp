@@ -102,6 +102,23 @@
   </message>
 
 
+  <!-- Passwords and Autofill Page -->
+  <message name="IDS_SETTINGS_PASSWORDS_AND_AUTOFILL_PAGE_TITLE" desc="Name of the settings page which allows managing passwords and autofill settings.">
+    Passwords and Forms
+  </message>
+  <message name="IDS_SETTINGS_AUTOFILL" desc="Name for the autofill section and toggle.">
+    Autofill settings
+  </message>
+  <message name="IDS_SETTINGS_AUTOFILL_DETAIL" desc="Description of what toggling the 'Autofill' setting does. Immediately underneath IDS_SETTINGS_AUTOFILL">
+    Enable Autofill to fill out forms in a single click
+  </message>
+  <message name="IDS_SETTINGS_PASSWORDS" desc="Name for the password section and toggle">
+    Manage passwords
+  </message>
+  <message name="IDS_SETTINGS_PASSWORDS_DETAIL" desc="Description of what toggling the 'Manage passwords' setting does. Immediately underneath IDS_SETTINGS_PASSWORDS">
+    Offer to save your web passwords
+  </message>
+
   <!-- Basic Page -->
   <message name="IDS_SETTINGS_BASIC" desc="Name of the settings page which displays advanced preferences.">
     Basic
