@@ -9,6 +9,8 @@
       ".*isolate",
       "build/.*gyp[i]?",
       "build/android/.*py",
+      "build/android/devil/.*",
+      "build/android/play_services/.*",
       "build/android/pylib/.*",
       "build/compiler_version.py",
       "build/get_landmines.py",
