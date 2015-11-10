@@ -147,7 +147,16 @@ public class OverlayPanel extends ContextualSearchPanelAnimation
      * @param url The URL that the panel should load.
      */
     public void loadUrlInPanel(String url) {
-        getOverlayPanelContent().loadUrl(url);
+        getOverlayPanelContent().loadUrl(url, true);
+    }
+
+    /**
+     * @param url The URL that the panel should load.
+     * @param shouldLoadImmediately If the URL should be loaded immediately when this method is
+     *                              called.
+     */
+    public void loadUrlInPanel(String url, boolean shouldLoadImmediately) {
+        getOverlayPanelContent().loadUrl(url, shouldLoadImmediately);
     }
 
     /**

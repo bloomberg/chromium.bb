@@ -270,10 +270,10 @@ class ContextualSearchFakeServer
         }
 
         @Override
-        public void loadUrl(String url) {
+        public void loadUrl(String url, boolean shouldLoadImmediately) {
             mLoadedUrl = url;
             mLoadedUrlCount++;
-            super.loadUrl(url);
+            super.loadUrl(url, shouldLoadImmediately);
         }
 
         @Override
