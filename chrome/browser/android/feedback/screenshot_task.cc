@@ -30,10 +30,13 @@ bool RegisterScreenshotTask(JNIEnv* env) {
 void SnapshotCallback(JNIEnv* env,
                       base::android::ScopedJavaGlobalRef<jobject>* callback,
                       scoped_refptr<base::RefCountedBytes> png_data) {
-  size_t size = png_data->size();
-  jbyteArray jbytes = env->NewByteArray(size);
-  env->SetByteArrayRegion(jbytes, 0, size, (jbyte*)png_data->front());
-  Java_ScreenshotTask_notifySnapshotFinished(AttachCurrentThread(),
+  jbyteArray jbytes = nullptr;
+  if (!png_data.get()) {
+    size_t size = png_data->size();
+    jbytes = env->NewByteArray(size);
+    env->SetByteArrayRegion(jbytes, 0, size, (jbyte*) png_data->front());
+  }
+  Java_ScreenshotTask_notifySnapshotFinished(env,
                                              callback->obj(),
                                              jbytes);
 }
