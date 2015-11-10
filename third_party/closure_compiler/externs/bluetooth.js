@@ -69,6 +69,8 @@ chrome.bluetooth.AdapterState;
  *   type: (!chrome.bluetooth.DeviceType|undefined),
  *   paired: (boolean|undefined),
  *   connected: (boolean|undefined),
+ *   connecting: (boolean|undefined),
+ *   connectable: (boolean|undefined),
  *   uuids: (!Array<string>|undefined),
  *   inquiryRssi: (number|undefined),
  *   inquiryTxPower: (number|undefined)

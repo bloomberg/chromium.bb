@@ -66,6 +66,12 @@ namespace bluetooth {
     // Indicates whether the device is currently connected to the system.
     boolean? connected;
 
+    // Indicates whether the device is currently connecting to the system.
+    boolean? connecting;
+
+    // Indicates whether the device is connectable.
+    boolean? connectable;
+
     // UUIDs of protocols, profiles and services advertised by the device.
     // For classic Bluetooth devices, this list is obtained from EIR data and
     // SDP tables. For Low Energy devices, this list is obtained from AD and
