@@ -46,6 +46,8 @@ OneShotAccessibilityTreeSearch::~OneShotAccessibilityTreeSearch() {
 void OneShotAccessibilityTreeSearch::SetStartNode(
     BrowserAccessibility* start_node) {
   DCHECK(!did_search_);
+  CHECK(start_node);
+
   if (!scope_node_->GetParent() ||
       start_node->IsDescendantOf(scope_node_->GetParent())) {
     start_node_ = start_node;

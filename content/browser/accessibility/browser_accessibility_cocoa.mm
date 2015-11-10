@@ -259,11 +259,10 @@ bool InitializeAccessibilityTreeSearch(
   NSDictionary* dictionary = parameter;
 
   id startElementParameter = [dictionary objectForKey:@"AXStartElement"];
-  BrowserAccessibility* startNode = nullptr;
   if ([startElementParameter isKindOfClass:[BrowserAccessibilityCocoa class]]) {
     BrowserAccessibilityCocoa* startNodeCocoa =
         (BrowserAccessibilityCocoa*)startElementParameter;
-    startNode = [startNodeCocoa browserAccessibility];
+    search->SetStartNode([startNodeCocoa browserAccessibility]);
   }
 
   bool immediateDescendantsOnly = false;
@@ -297,7 +296,6 @@ bool InitializeAccessibilityTreeSearch(
   if ([searchTextParameter isKindOfClass:[NSString class]])
     searchText = base::SysNSStringToUTF8(searchTextParameter);
 
-  search->SetStartNode(startNode);
   search->SetDirection(direction);
   search->SetImmediateDescendantsOnly(immediateDescendantsOnly);
   search->SetVisibleOnly(visibleOnly);
