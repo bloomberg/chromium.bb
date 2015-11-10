@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.compositor.bottombar;
 
+import android.text.TextUtils;
+
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -51,6 +53,11 @@ public class OverlayPanelContent {
      * Observer used for tracking loading and navigation.
      */
     private WebContentsObserver mWebContentsObserver;
+
+    /**
+     * The URL that was directly loaded using the {@link #loadUrl(String)} method.
+     */
+    private String mLoadedUrl;
 
     /**
      * Whether the ContentViewCore has started loading a URL.
@@ -205,7 +212,8 @@ public class OverlayPanelContent {
                             boolean isMainFrame, String validatedUrl, boolean isErrorPage,
                             boolean isIframeSrcdoc) {
                         if (isMainFrame) {
-                            mContentDelegate.onMainFrameLoadStarted(validatedUrl);
+                            mContentDelegate.onMainFrameLoadStarted(validatedUrl,
+                                    !TextUtils.equals(validatedUrl, mLoadedUrl));
                         }
                     }
 
@@ -215,6 +223,7 @@ public class OverlayPanelContent {
                             int httpResultCode) {
                         mIsProcessingPendingNavigation = false;
                         mContentDelegate.onMainFrameNavigation(url,
+                                !TextUtils.equals(url, mLoadedUrl),
                                 isHttpFailureCode(httpResultCode));
                     }
 
@@ -264,6 +273,7 @@ public class OverlayPanelContent {
         createNewContentView();
 
         if (mContentViewCore != null && mContentViewCore.getWebContents() != null) {
+            mLoadedUrl = url;
             mDidStartLoadingUrl = true;
             mIsProcessingPendingNavigation = true;
             mContentViewCore.getWebContents().getNavigationController().loadUrl(

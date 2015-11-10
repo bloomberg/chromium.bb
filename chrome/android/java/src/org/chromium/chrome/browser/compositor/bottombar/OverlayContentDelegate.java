@@ -17,15 +17,17 @@ public class OverlayContentDelegate {
     /**
      * Called when the panel's ContentViewCore navigates in the main frame.
      * @param url The URL being navigated to.
+     * @param isExternalUrl Whether the URL is different from the initially loaded URL.
      */
-    public void onMainFrameLoadStarted(String url) {}
+    public void onMainFrameLoadStarted(String url, boolean isExternalUrl) {}
 
     /**
      * Called when a page navigation results in an error page.
      * @param url The URL that caused the failure.
-     * @param isFailure If the loaded page is an error page.
+     * @param isExternalUrl Whether the URL is different from the initially loaded URL.
+     * @param isFailure Whether the loaded page is an error page.
      */
-    public void onMainFrameNavigation(String url, boolean isFailure) {}
+    public void onMainFrameNavigation(String url, boolean isExternalUrl, boolean isFailure) {}
 
     /**
      * Called when content started loading in the panel.

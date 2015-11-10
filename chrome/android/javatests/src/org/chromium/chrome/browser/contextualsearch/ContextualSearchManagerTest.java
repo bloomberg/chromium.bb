@@ -380,7 +380,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
      */
     private void fakeContentViewDidNavigate(boolean isFailure) {
         String url = mFakeServer.getLoadedUrl();
-        mManager.getOverlayContentDelegate().onMainFrameNavigation(url, isFailure);
+        mManager.getOverlayContentDelegate().onMainFrameNavigation(url, false, isFailure);
     }
 
     /**

@@ -863,15 +863,15 @@ public class ContextualSearchManager extends ContextualSearchObservable
         public SearchOverlayContentDelegate() {}
 
         @Override
-        public void onMainFrameLoadStarted(String url) {
-            onExternalNavigation(url);
+        public void onMainFrameLoadStarted(String url, boolean isExternalUrl) {
+            if (isExternalUrl) {
+                onExternalNavigation(url);
+            }
         }
 
         @Override
-        public void onMainFrameNavigation(String url, boolean isFailure) {
-            if (shouldPromoteSearchNavigation()) {
-                onExternalNavigation(url);
-            } else {
+        public void onMainFrameNavigation(String url, boolean isExternalUrl, boolean isFailure) {
+            if (!isExternalUrl) {
                 // Could be just prefetching, check if that failed.
                 onContextualSearchRequestNavigation(isFailure);
             }
