@@ -22,6 +22,7 @@ import org.chromium.sync.ModelTypeHelper;
 import org.chromium.sync.notifier.InvalidationIntentProtocol;
 import org.chromium.sync.signin.ChromeSigninController;
 import org.chromium.sync.test.util.MockSyncContentResolverDelegate;
+import org.chromium.testing.local.CustomShadowAsyncTask;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 import org.junit.Assert;
 import org.junit.Before;
@@ -39,7 +40,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * Tests for the {@link InvalidationController}.
  */
 @RunWith(LocalRobolectricTestRunner.class)
-@Config(manifest = Config.NONE)
+@Config(manifest = Config.NONE, shadows = {CustomShadowAsyncTask.class})
 public class InvalidationControllerTest {
     /**
      * Stubbed out ProfileSyncService with a setter to control return value of
