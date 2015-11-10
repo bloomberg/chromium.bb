@@ -14,7 +14,30 @@ if (target_cpu == "x86" && current_cpu == "x64") {
   arch_suffix = ""
 }
 
-shared_library("port_monitor") {
+# When compiling a 64-bit port monitor from a 32-bit build, copy the DLL to the
+# root build directory. When targeting 64-bit CPUs, there is no cross-compiling
+# so nothing extra needs to happen.
+if (target_cpu == "x86" && current_cpu == "x64") {
+  copy("port_monitor") {
+    sources = [
+      "$root_out_dir/gcp_portmon64.dll",
+    ]
+    outputs = [
+      "$root_build_dir/gcp_portmon64.dll",
+    ]
+    deps = [
+      ":port_monitor_dll",
+    ]
+  }
+} else {
+  group("port_monitor") {
+    public_deps = [
+      ":port_monitor_dll",
+    ]
+  }
+}
+
+shared_library("port_monitor_dll") {
   output_name = "gcp_portmon$arch_suffix"
 
   sources = [

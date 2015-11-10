@@ -2,15 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-declare_args() {
-  # Path to the directory containing the VC binaries for the right
-  # combination of host and target architectures. Currently only the
-  # 64-bit host toolchain is supported, with either 32-bit or 64-bit targets.
-  # If vc_bin_dir is not specified on the command line (and it normally
-  # isn't), we will dynamically determine the right value to use at runtime.
-  vc_bin_dir = ""
-}
-
 import("//build/config/win/visual_studio_version.gni")
 import("//build/toolchain/goma.gni")
 import("//build/toolchain/toolchain.gni")
@@ -25,20 +16,6 @@ assert(is_win)
 # list to us.
 gyp_win_tool_path =
     rebase_path("//tools/gyp/pylib/gyp/win_tool.py", root_build_dir)
-
-toolchain_data = exec_script("setup_toolchain.py",
-                             [
-                               visual_studio_path,
-                               gyp_win_tool_path,
-                               windows_sdk_path,
-                               visual_studio_runtime_dirs,
-                               current_cpu,
-                             ],
-                             "scope")
-
-if (vc_bin_dir == "") {
-  vc_bin_dir = toolchain_data.vc_bin_dir
-}
 
 if (use_goma) {
   goma_prefix = "$goma_dir/gomacc.exe "
@@ -244,17 +221,27 @@ template("msvc_toolchain") {
   }
 }
 
-# TODO(dpranke): Declare both toolchains all of the time when we
-# get it sorted out how we want to support them both in a single build.
-# Right now only one of these can be enabled at a time because the
-# runtime libraries get copied to root_build_dir and would collide.
-if (current_cpu == "x86") {
+# 32-bit toolchains. Only define these when the target architecture is 32-bit
+# since we don't do any 32-bit cross compiles when targeting 64-bit (the
+# build does generate some 64-bit stuff from 32-bit target builds).
+if (target_cpu == "x86") {
+  x86_toolchain_data = exec_script("setup_toolchain.py",
+                                   [
+                                     visual_studio_path,
+                                     gyp_win_tool_path,
+                                     windows_sdk_path,
+                                     visual_studio_runtime_dirs,
+                                     "x86",
+                                   ],
+                                   "scope")
+
   msvc_toolchain("x86") {
     environment = "environment.x86"
     current_cpu = "x86"
-    cl = "${goma_prefix}\"${vc_bin_dir}/cl.exe\""
+    cl = "${goma_prefix}\"${x86_toolchain_data.vc_bin_dir}/cl.exe\""
     is_clang = false
   }
+
   msvc_toolchain("clang_x86") {
     environment = "environment.x86"
     current_cpu = "x86"
@@ -266,39 +253,56 @@ if (current_cpu == "x86") {
   }
 }
 
-if (current_cpu == "x64") {
-  msvc_toolchain("x64") {
-    environment = "environment.x64"
-    current_cpu = "x64"
+# 64-bit toolchains.
+x64_toolchain_data = exec_script("setup_toolchain.py",
+                                 [
+                                   visual_studio_path,
+                                   gyp_win_tool_path,
+                                   windows_sdk_path,
+                                   visual_studio_runtime_dirs,
+                                   "x64",
+                                 ],
+                                 "scope")
+
+msvc_toolchain("x64") {
+  environment = "environment.x64"
+  current_cpu = "x64"
+  cl = "${goma_prefix}\"${x64_toolchain_data.vc_bin_dir}/cl.exe\""
+  is_clang = false
+}
+
+msvc_toolchain("clang_x64") {
+  environment = "environment.x64"
+  current_cpu = "x64"
+  prefix = rebase_path("//third_party/llvm-build/Release+Asserts/bin",
+                       root_build_dir)
+  cl = "${goma_prefix}$prefix/clang-cl.exe"
+  current_os = "win"
+  is_clang = true
+}
+
+# WinRT toolchains. Only define these when targeting them.
+#
+# NOTE: This is currently broken because it references vc_bin_dir. brettw@
+# changed this around a bit, and I don't know what this should be set to
+# in terms of what setup_toolchain returns for a certain CPU architecture.
+if (target_os == "winrt_81" || target_os == "winrt_81_phone" ||
+    target_os == "winrt_10") {
+  msvc_toolchain("winrt_x86") {
+    environment = "environment.winrt_x86"
     cl = "${goma_prefix}\"${vc_bin_dir}/cl.exe\""
     is_clang = false
+
+    current_cpu = "x86"
+    current_os = current_os
   }
-  msvc_toolchain("clang_x64") {
-    environment = "environment.x64"
+
+  msvc_toolchain("winrt_x64") {
+    environment = "environment.winrt_x64"
+    cl = "${goma_prefix}\"${vc_bin_dir}/cl.exe\""
+    is_clang = false
+
     current_cpu = "x64"
-    prefix = rebase_path("//third_party/llvm-build/Release+Asserts/bin",
-                         root_build_dir)
-    cl = "${goma_prefix}$prefix/clang-cl.exe"
-    current_os = "win"
-    is_clang = true
+    current_os = current_os
   }
-}
-
-# WinRT toolchains
-msvc_toolchain("winrt_x86") {
-  environment = "environment.winrt_x86"
-  cl = "${goma_prefix}\"${vc_bin_dir}/cl.exe\""
-  is_clang = false
-
-  current_cpu = "x86"
-  current_os = current_os
-}
-
-msvc_toolchain("winrt_x64") {
-  environment = "environment.winrt_x64"
-  cl = "${goma_prefix}\"${vc_bin_dir}/cl.exe\""
-  is_clang = false
-
-  current_cpu = "x64"
-  current_os = current_os
 }

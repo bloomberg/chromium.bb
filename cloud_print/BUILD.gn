@@ -17,8 +17,7 @@ group("cloud_print") {
     # When compiling 32-bit, also reference the 64-bit driver for installing on
     # 64-bit systems.
     if (target_cpu == "x86" && current_cpu == "x86") {
-      # TODO(brettw) enable this when Windows cross-compiles are set up.
-      # public_deps += [ "//cloud_print/virtual_driver/win/port_monitor(//build/toolchain/win:x64)" ]
+      public_deps += [ "//cloud_print/virtual_driver/win/port_monitor(//build/toolchain/win:x64)" ]
     }
   }
 }
