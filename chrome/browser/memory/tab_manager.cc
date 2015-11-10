@@ -440,6 +440,15 @@ bool TabManager::CanDiscardTab(int64 target_web_contents_id) const {
 
   WebContents* web_contents = model->GetWebContentsAt(idx);
 
+  // Do not discard tabs that don't have a valid URL (most probably they have
+  // just been opened and dicarding them would lose the URL).
+  // TODO(georgesak): Look into a workaround to be able to kill the tab without
+  // losing the pending navigation.
+  if (!web_contents->GetLastCommittedURL().is_valid() ||
+      web_contents->GetLastCommittedURL().is_empty()) {
+    return false;
+  }
+
   // Do not discard tabs in which the user has entered text in a form, lest that
   // state gets lost.
   if (web_contents->GetPageImportanceSignals().had_form_interaction)
