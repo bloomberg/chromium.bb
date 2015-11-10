@@ -46,6 +46,11 @@ WindowTreeHostMus::~WindowTreeHostMus() {
   DestroyDispatcher();
 }
 
+PlatformWindowMus* WindowTreeHostMus::platform_window() {
+  return static_cast<PlatformWindowMus*>(
+      WindowTreeHostPlatform::platform_window());
+}
+
 void WindowTreeHostMus::DispatchEvent(ui::Event* event) {
   if (event->IsKeyEvent() && GetInputMethod()) {
     GetInputMethod()->DispatchKeyEvent(static_cast<ui::KeyEvent*>(event));

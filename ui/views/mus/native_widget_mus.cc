@@ -17,6 +17,7 @@
 #include "ui/compositor/paint_recorder.h"
 #include "ui/gfx/canvas.h"
 #include "ui/native_theme/native_theme_aura.h"
+#include "ui/views/mus/platform_window_mus.h"
 #include "ui/views/mus/window_manager_client_area_insets.h"
 #include "ui/views/mus/window_tree_host_mus.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -445,6 +446,9 @@ void NativeWidgetMus::ShowMaximizedWithBounds(
 void NativeWidgetMus::ShowWithWindowState(ui::WindowShowState state) {
   window_tree_host_->Show();
   GetNativeWindow()->Show();
+  if (state != ui::SHOW_STATE_INACTIVE)
+    Activate();
+  GetWidget()->SetInitialFocus(state);
 }
 
 bool NativeWidgetMus::IsVisible() const {
@@ -453,7 +457,7 @@ bool NativeWidgetMus::IsVisible() const {
 }
 
 void NativeWidgetMus::Activate() {
-  // NOTIMPLEMENTED();
+  window_tree_host_->platform_window()->Activate();
 }
 
 void NativeWidgetMus::Deactivate() {

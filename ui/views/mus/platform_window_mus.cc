@@ -38,9 +38,9 @@ PlatformWindowMus::~PlatformWindowMus() {
   mus_window_->Destroy();
 }
 
-void PlatformWindowMus::SetShowState(mus::mojom::ShowState show_state) {
-  WindowManagerConnection::Get()->window_manager()->SetShowState(
-      mus_window_->id(), show_state, base::Bind(&WindowManagerCallback));
+
+void PlatformWindowMus::Activate() {
+  mus_window_->SetFocus();
 }
 
 void PlatformWindowMus::Show() {
@@ -105,6 +105,11 @@ void PlatformWindowMus::ConfineCursorToBounds(const gfx::Rect& bounds) {
 
 ui::PlatformImeController* PlatformWindowMus::GetPlatformImeController() {
   return nullptr;
+}
+
+void PlatformWindowMus::SetShowState(mus::mojom::ShowState show_state) {
+  WindowManagerConnection::Get()->window_manager()->SetShowState(
+      mus_window_->id(), show_state, base::Bind(&WindowManagerCallback));
 }
 
 void PlatformWindowMus::OnWindowDestroyed(mus::Window* window) {

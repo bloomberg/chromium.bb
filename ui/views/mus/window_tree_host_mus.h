@@ -8,7 +8,6 @@
 #include "base/macros.h"
 #include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "ui/aura/window_tree_host_platform.h"
-#include "ui/views/widget/native_widget_private.h"
 
 class SkBitmap;
 
@@ -28,6 +27,7 @@ namespace views {
 
 class InputMethodMUS;
 class NativeWidgetMus;
+class PlatformWindowMus;
 class SurfaceContextFactory;
 
 class WindowTreeHostMus : public aura::WindowTreeHostPlatform {
@@ -38,7 +38,7 @@ class WindowTreeHostMus : public aura::WindowTreeHostPlatform {
                     mus::mojom::SurfaceType surface_type);
   ~WindowTreeHostMus() override;
 
-  using WindowTreeHostPlatform::platform_window;
+  PlatformWindowMus* platform_window();
   ui::PlatformWindowState show_state() const { return show_state_; }
 
  private:

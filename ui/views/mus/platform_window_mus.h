@@ -21,14 +21,12 @@ class PlatformWindowMus : public ui::PlatformWindow,
                     mus::Window* mus_window);
   ~PlatformWindowMus() override;
 
- private:
-  void SetShowState(mus::mojom::ShowState show_state);
+  void Activate();
 
   // ui::PlatformWindow:
   void Show() override;
   void Hide() override;
   void Close() override;
-
   void SetBounds(const gfx::Rect& bounds) override;
   gfx::Rect GetBounds() override;
   void SetTitle(const base::string16& title) override;
@@ -42,6 +40,9 @@ class PlatformWindowMus : public ui::PlatformWindow,
   void MoveCursorTo(const gfx::Point& location) override;
   void ConfineCursorToBounds(const gfx::Rect& bounds) override;
   ui::PlatformImeController* GetPlatformImeController() override;
+
+ private:
+  void SetShowState(mus::mojom::ShowState show_state);
 
   // mus::WindowObserver:
   void OnWindowDestroyed(mus::Window* window) override;
