@@ -16,6 +16,8 @@ std::string NativeLibraryLoadError::ToString() const {
 NativeLibrary LoadNativeLibrary(const base::FilePath& library_path,
                                 NativeLibraryLoadError* error) {
   NOTIMPLEMENTED();
+  if (error)
+    error->message = "Not implemented.";
   return nullptr;
 }
 

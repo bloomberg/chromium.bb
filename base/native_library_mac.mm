@@ -52,7 +52,8 @@ NativeLibrary LoadNativeLibrary(const base::FilePath& library_path,
   if (library_path.Extension() == "dylib" || !DirectoryExists(library_path)) {
     void* dylib = dlopen(library_path.value().c_str(), RTLD_LAZY);
     if (!dylib) {
-      error->message = dlerror();
+      if (error)
+        error->message = dlerror();
       return NULL;
     }
     NativeLibrary native_lib = new NativeLibraryStruct();
