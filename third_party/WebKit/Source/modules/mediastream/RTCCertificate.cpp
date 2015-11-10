@@ -33,11 +33,6 @@
 
 namespace blink {
 
-double RTCCertificate::expires() const
-{
-    return m_certificate->expires();
-}
-
 RTCCertificate::RTCCertificate(WebRTCCertificate* certificate)
     : m_certificate(adoptPtr(certificate))
 {

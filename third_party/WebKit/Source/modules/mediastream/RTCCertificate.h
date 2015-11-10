@@ -41,15 +41,6 @@ namespace blink {
 class RTCCertificate final : public GarbageCollectedFinalized<RTCCertificate>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    // Visible to the JavaScript world in accordance with the .idl file:
-
-    // The date and time after which the certificate should be considered
-    // invalid. Return type is really a Date, the double expresses the time
-    // since 1970-01-01T00:00:00Z in milliseconds.
-    double expires() const;
-
-    // Hidden from the JavaScript world:
-
     // Takes ownership of the certificate.
     RTCCertificate(WebRTCCertificate*);
 

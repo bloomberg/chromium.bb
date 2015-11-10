@@ -33,8 +33,5 @@
     GarbageCollected,
     RuntimeEnabled=RTCCertificate
 ] interface RTCCertificate {
-    // The date and time after which the certificate should be considered
-    // invalid.
-    // TODO(hbos): Use different type than Date? See crbug.com/544894.
-    readonly attribute Date expires;
+    // TODO(hbos): Add expires attribute, crbug.com/544894.
 };

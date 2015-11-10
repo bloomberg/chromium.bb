@@ -3843,7 +3843,6 @@ interface PushSubscription
     method toJSON
     method unsubscribe
 interface RTCCertificate
-    getter expires
     method constructor
 interface RTCIceCandidate
     getter candidate
