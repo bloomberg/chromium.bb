@@ -14,6 +14,7 @@
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_conversions.h"
+#include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/scoped_canvas.h"
@@ -301,6 +302,13 @@ void Canvas::DrawRoundRect(const Rect& rect,
                            const SkPaint& paint) {
   canvas_->drawRoundRect(RectToSkRect(rect), SkIntToScalar(radius),
                          SkIntToScalar(radius), paint);
+}
+
+void Canvas::DrawRoundRect(const RectF& rect,
+                           float radius,
+                           const SkPaint& paint) {
+  canvas_->drawRoundRect(RectFToSkRect(rect), SkFloatToScalar(radius),
+                         SkFloatToScalar(radius), paint);
 }
 
 void Canvas::DrawPath(const SkPath& path, const SkPaint& paint) {

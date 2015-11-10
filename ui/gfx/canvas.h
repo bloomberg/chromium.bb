@@ -20,6 +20,7 @@
 namespace gfx {
 
 class Rect;
+class RectF;
 class FontList;
 class Point;
 class Size;
@@ -248,8 +249,13 @@ class GFX_EXPORT Canvas {
                   const SkPaint& paint);
 
   // Draws the given rectangle with rounded corners of |radius| using the
-  // given |paint| parameters.
+  // given |paint| parameters. DEPRECATED in favor of the RectF version below.
+  // TODO(mgiuca): Remove this (http://crbug.com/553726).
   void DrawRoundRect(const Rect& rect, int radius, const SkPaint& paint);
+
+  // Draws the given rectangle with rounded corners of |radius| using the
+  // given |paint| parameters.
+  void DrawRoundRect(const RectF& rect, float radius, const SkPaint& paint);
 
   // Draws the given path using the given |paint| parameters.
   void DrawPath(const SkPath& path, const SkPaint& paint);

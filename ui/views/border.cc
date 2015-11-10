@@ -6,7 +6,9 @@
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "third_party/skia/include/core/SkPaint.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/geometry/rect_f.h"
 #include "ui/views/painter.h"
 #include "ui/views/view.h"
 
@@ -57,6 +59,50 @@ gfx::Insets SolidSidedBorder::GetInsets() const {
 
 gfx::Size SolidSidedBorder::GetMinimumSize() const {
   return gfx::Size(insets_.width(), insets_.height());
+}
+
+// A border with a rounded rectangle and single color.
+class RoundedRectBorder : public Border {
+ public:
+  RoundedRectBorder(int thickness, int corner_radius, SkColor color);
+
+  // Overridden from Border:
+  void Paint(const View& view, gfx::Canvas* canvas) override;
+  gfx::Insets GetInsets() const override;
+  gfx::Size GetMinimumSize() const override;
+
+ private:
+  const int thickness_;
+  const int corner_radius_;
+  const SkColor color_;
+
+  DISALLOW_COPY_AND_ASSIGN(RoundedRectBorder);
+};
+
+RoundedRectBorder::RoundedRectBorder(int thickness,
+                                     int corner_radius,
+                                     SkColor color)
+    : thickness_(thickness), corner_radius_(corner_radius), color_(color) {}
+
+void RoundedRectBorder::Paint(const View& view, gfx::Canvas* canvas) {
+  SkPaint paint;
+  paint.setStrokeWidth(thickness_);
+  paint.setColor(color_);
+  paint.setStyle(SkPaint::kStroke_Style);
+  paint.setAntiAlias(true);
+
+  float half_thickness = thickness_ / 2;
+  gfx::RectF bounds(view.GetLocalBounds());
+  bounds.Inset(half_thickness, half_thickness);
+  canvas->DrawRoundRect(bounds, corner_radius_, paint);
+}
+
+gfx::Insets RoundedRectBorder::GetInsets() const {
+  return gfx::Insets(thickness_, thickness_, thickness_, thickness_);
+}
+
+gfx::Size RoundedRectBorder::GetMinimumSize() const {
+  return gfx::Size(thickness_ * 2, thickness_ * 2);
 }
 
 class EmptyBorder : public Border {
@@ -144,6 +190,14 @@ scoped_ptr<Border> Border::CreateSolidBorder(int thickness, SkColor color) {
 // static
 scoped_ptr<Border> Border::CreateEmptyBorder(const gfx::Insets& insets) {
   return make_scoped_ptr(new EmptyBorder(insets));
+}
+
+// static
+scoped_ptr<Border> Border::CreateRoundedRectBorder(int thickness,
+                                                   int corner_radius,
+                                                   SkColor color) {
+  return make_scoped_ptr(
+      new RoundedRectBorder(thickness, corner_radius, color));
 }
 
 // static

@@ -49,6 +49,12 @@ class VIEWS_EXPORT Border {
   // color.
   static scoped_ptr<Border> CreateSolidBorder(int thickness, SkColor color);
 
+  // Creates a border that is a rounded rectangle of the specified thickness and
+  // color.
+  static scoped_ptr<Border> CreateRoundedRectBorder(int thickness,
+                                                    int corner_radius,
+                                                    SkColor color);
+
   // Creates a border for reserving space. The returned border does not
   // paint anything.
   static scoped_ptr<Border> CreateEmptyBorder(const gfx::Insets& insets);
