@@ -59945,6 +59945,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1093" label="LANGUAGESETTINGSPRIVATE_REMOVESPELLCHECKWORD"/>
   <int value="1094" label="SETTINGSPRIVATE_GETDEFAULTZOOMPERCENTFUNCTION"/>
   <int value="1095" label="SETTINGSPRIVATE_SETDEFAULTZOOMPERCENTFUNCTION"/>
+  <int value="1096" label="BLUETOOTHPRIVATE_CONNECT"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">

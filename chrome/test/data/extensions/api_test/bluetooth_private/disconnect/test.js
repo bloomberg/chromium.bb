@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 var deviceAddress = '11:12:13:14:15:16';
-var errorNotConnected = 'Device is not connected';
+var errorNotConnected = 'Device not connected';
 var errorDisconnectFailed = 'Failed to disconnect device';
 
 var btp = chrome.bluetoothPrivate;

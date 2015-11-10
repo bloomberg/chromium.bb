@@ -10,7 +10,7 @@
 // See https://code.google.com/p/chromium/wiki/ClosureCompilation.
 
 // IMPORTANT:
-// s/chrome.bluetoothPrivate.bluetooth.device/chrome.bluetooth.device/
+// s/chrome.bluetoothPrivate.bluetooth.Device/chrome.bluetooth.Device/
 
 /** @fileoverview Externs generated from namespace: bluetoothPrivate */
 
@@ -36,12 +36,39 @@ chrome.bluetoothPrivate.PairingEventType = {
 
 /**
  * @enum {string}
+ * @see https://developer.chrome.com/extensions/bluetoothPrivate#type-ConnectResultType
+ */
+chrome.bluetoothPrivate.ConnectResultType = {
+  SUCCESS: 'success',
+  UNKNOWN_ERROR: 'unknownError',
+  IN_PROGRESS: 'inProgress',
+  ALREADY_CONNECTED: 'alreadyConnected',
+  FAILED: 'failed',
+  AUTH_FAILED: 'authFailed',
+  AUTH_CANCELED: 'authCanceled',
+  AUTH_REJECTED: 'authRejected',
+  AUTH_TIMEOUT: 'authTimeout',
+  UNSUPPORTED_DEVICE: 'unsupportedDevice',
+};
+
+/**
+ * @enum {string}
  * @see https://developer.chrome.com/extensions/bluetoothPrivate#type-PairingResponse
  */
 chrome.bluetoothPrivate.PairingResponse = {
   CONFIRM: 'confirm',
   REJECT: 'reject',
   CANCEL: 'cancel',
+};
+
+/**
+ * @enum {string}
+ * @see https://developer.chrome.com/extensions/bluetoothPrivate#type-TransportType
+ */
+chrome.bluetoothPrivate.TransportType = {
+  LE: 'le',
+  BREDR: 'bredr',
+  DUAL: 'dual',
 };
 
 /**
@@ -76,16 +103,6 @@ chrome.bluetoothPrivate.NewAdapterState;
  * @see https://developer.chrome.com/extensions/bluetoothPrivate#type-SetPairingResponseOptions
  */
 chrome.bluetoothPrivate.SetPairingResponseOptions;
-
-/**
- * @enum {string}
- * @see https://developer.chrome.com/extensions/bluetoothPrivate#type-TransportType
- */
-chrome.bluetoothPrivate.TransportType = {
-  LE: 'le',
-  BREDR: 'bredr',
-  DUAL: 'dual',
-};
 
 /**
  * @typedef {{
@@ -128,6 +145,16 @@ chrome.bluetoothPrivate.disconnectAll = function(deviceAddress, callback) {};
  * @see https://developer.chrome.com/extensions/bluetoothPrivate#method-setDiscoveryFilter
  */
 chrome.bluetoothPrivate.setDiscoveryFilter = function(discoveryFilter, callback) {};
+
+/**
+ * Connects to the given device. This will only throw an error if the device
+ * address is invalid or the device is already connected. Otherwise this will
+ * succeed and invoke |callback| with ConnectResultType.
+ * @param {string} deviceAddress
+ * @param {function(!chrome.bluetoothPrivate.ConnectResultType):void=} callback
+ * @see https://developer.chrome.com/extensions/bluetoothPrivate#method-connect
+ */
+chrome.bluetoothPrivate.connect = function(deviceAddress, callback) {};
 
 /**
  * Pairs the given device.

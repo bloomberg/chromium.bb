@@ -257,6 +257,17 @@ IN_PROC_BROWSER_TEST_F(BluetoothPrivateApiTest, DiscoveryFilter) {
       << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(BluetoothPrivateApiTest, Connect) {
+  EXPECT_CALL(*mock_device_.get(), IsConnected())
+      .Times(2)
+      .WillOnce(Return(false))
+      .WillOnce(Return(true));
+  EXPECT_CALL(*mock_device_.get(), Connect(_, _, _))
+      .WillOnce(InvokeCallbackArgument<1>());
+  ASSERT_TRUE(RunComponentExtensionTest("bluetooth_private/connect"))
+      << message_;
+}
+
 IN_PROC_BROWSER_TEST_F(BluetoothPrivateApiTest, Pair) {
   EXPECT_CALL(*mock_adapter_.get(),
               AddPairingDelegate(

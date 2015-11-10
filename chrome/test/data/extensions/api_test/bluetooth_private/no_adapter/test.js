@@ -10,8 +10,8 @@ function testSetAdapterStateFails() {
   };
 
   chrome.bluetoothPrivate.setAdapterState(newState, function() {
-    chrome.test.assertLastError('Could not find a Bluetooth adapter.');
-    chrome.test.succeed()
+    chrome.test.assertLastError('Failed to find a Bluetooth adapter');
+    chrome.test.succeed();
   });
 }
 

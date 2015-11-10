@@ -43,6 +43,20 @@ namespace bluetoothPrivate {
     complete
   };
 
+  // Results for connect(). See function declaration for details.
+  enum ConnectResultType {
+    success,
+    unknownError,
+    inProgress,
+    alreadyConnected,
+    failed,
+    authFailed,
+    authCanceled,
+    authRejected,
+    authTimeout,
+    unsupportedDevice
+  };
+
   // Valid pairing responses.
   enum PairingResponse {
     confirm, reject, cancel
@@ -105,6 +119,7 @@ namespace bluetoothPrivate {
   };
 
   callback VoidCallback = void();
+  callback ConnectCallback = void(ConnectResultType result);
 
   // These functions all report failures via chrome.runtime.lastError.
   interface Functions {
@@ -123,6 +138,12 @@ namespace bluetoothPrivate {
     // Set or clear discovery filter.
     static void setDiscoveryFilter(DiscoveryFilter discoveryFilter,
                                    optional VoidCallback callback);
+
+    // Connects to the given device. This will only throw an error if the
+    // device address is invalid or the device is already connected. Otherwise
+    // this will succeed and invoke |callback| with ConnectResultType.
+    static void connect(DOMString deviceAddress,
+                        optional ConnectCallback callback);
 
     // Pairs the given device.
     static void pair(DOMString deviceAddress, optional VoidCallback callback);
