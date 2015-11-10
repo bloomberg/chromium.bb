@@ -115,9 +115,6 @@ public abstract class ChromeSwitches {
     public static final String ENABLE_READER_MODE_BUTTON_ANIMATION =
             "enable-dom-distiller-button-animation";
 
-    /** Enable the native app banners. */
-    public static final String ENABLE_APP_INSTALL_ALERTS = "enable-app-install-alerts";
-
     /**
      * Use sandbox Wallet environment for requestAutocomplete.
      * Native switch - autofill::switches::kWalletServiceUseSandbox.

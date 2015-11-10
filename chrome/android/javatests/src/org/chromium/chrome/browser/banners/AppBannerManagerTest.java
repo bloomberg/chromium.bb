@@ -21,10 +21,8 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.infobar.AnimationHelper;
 import org.chromium.chrome.browser.infobar.AppBannerInfoBarAndroid;
 import org.chromium.chrome.browser.infobar.AppBannerInfoBarDelegateAndroid;
@@ -44,7 +42,6 @@ import java.util.List;
 /**
  * Tests the app banners.
  */
-@CommandLineFlags.Add(ChromeSwitches.ENABLE_APP_INSTALL_ALERTS)
 public class AppBannerManagerTest extends ChromeTabbedActivityTestBase {
     private static final String NATIVE_APP_URL =
             TestHttpServerClient.getUrl("chrome/test/data/banners/play_app_test_page.html");
