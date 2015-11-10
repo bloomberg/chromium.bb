@@ -240,6 +240,8 @@ class EVENTS_DEVICES_EXPORT DeviceDataManagerX11 : public DeviceDataManager {
   void DisableDevice(int deviceid);
   void EnableDevice(int deviceid);
 
+  bool IsDeviceEnabled(int device_id) const;
+
   // Returns true if |native_event| should be blocked.
   bool IsEventBlocked(const base::NativeEvent& native_event);
 

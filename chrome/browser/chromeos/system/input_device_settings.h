@@ -9,6 +9,8 @@
 #include "base/logging.h"
 #include "chromeos/chromeos_export.h"
 
+class PrefRegistrySimple;
+
 namespace chromeos {
 namespace system {
 
@@ -165,6 +167,16 @@ class CHROMEOS_EXPORT InputDeviceSettings {
   // where other input devices like mouse are absent.
   static bool ForceKeyboardDrivenUINavigation();
 
+  // Registers local pref names for touchpad and touch screen statuses.
+  static void RegisterPrefs(PrefRegistrySimple* registry);
+
+  void InitTouchDevicesStatusFromLocalPrefs();
+
+  // Toggles the status of Touchscreen/Touchpad on or off and updates the local
+  // prefs.
+  void ToggleTouchscreen();
+  void ToggleTouchpad();
+
   // Calls |callback| asynchronously after determining if a touchpad is
   // connected.
   virtual void TouchpadExists(const DeviceExistsCallback& callback) = 0;
@@ -210,6 +222,10 @@ class CHROMEOS_EXPORT InputDeviceSettings {
 
   // Reapplies previously set mouse settings.
   virtual void ReapplyMouseSettings() = 0;
+
+ private:
+  virtual void SetInternalTouchpadEnabled(bool enabled) {}
+  virtual void SetTouchscreensEnabled(bool enabled) {}
 };
 
 }  // namespace system

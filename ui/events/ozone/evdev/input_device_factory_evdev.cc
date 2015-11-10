@@ -367,6 +367,10 @@ bool InputDeviceFactoryEvdev::IsDeviceEnabled(
       converter->HasTouchpad())
     return false;
 
+  if (!input_device_settings_.enable_touch_screens &&
+      converter->HasTouchscreen())
+    return false;
+
   return input_device_settings_.enable_devices;
 }
 

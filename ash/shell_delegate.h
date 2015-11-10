@@ -162,6 +162,10 @@ class ASH_EXPORT ShellDelegate {
   virtual void OpenKeyboardShortcutHelpPage() const {}
 
   virtual gfx::Image GetDeprecatedAcceleratorImage() const = 0;
+
+  // Toggles the status of the touchpad / touchscreen on or off.
+  virtual void ToggleTouchpad() {}
+  virtual void ToggleTouchscreen() {}
 };
 
 }  // namespace ash

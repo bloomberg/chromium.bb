@@ -986,6 +986,8 @@ bool AcceleratorController::CanPerformAction(
       return CanHandlePositionCenter();
 #if defined(OS_CHROMEOS)
     case DEBUG_ADD_REMOVE_DISPLAY:
+    case DEBUG_TOGGLE_TOUCH_PAD:
+    case DEBUG_TOGGLE_TOUCH_SCREEN:
     case DEBUG_TOGGLE_UNIFIED_DESKTOP:
       return debug::DebugAcceleratorsEnabled();
     case DISABLE_CAPS_LOCK:
@@ -1242,8 +1244,8 @@ void AcceleratorController::PerformAction(AcceleratorAction action,
       HandleBrightnessUp(brightness_control_delegate_.get(), accelerator);
       break;
     case DEBUG_ADD_REMOVE_DISPLAY:
-      debug::PerformDebugActionIfEnabled(action);
-      break;
+    case DEBUG_TOGGLE_TOUCH_PAD:
+    case DEBUG_TOGGLE_TOUCH_SCREEN:
     case DEBUG_TOGGLE_UNIFIED_DESKTOP:
       debug::PerformDebugActionIfEnabled(action);
       break;

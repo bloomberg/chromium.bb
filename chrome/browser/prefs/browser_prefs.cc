@@ -182,6 +182,7 @@
 #include "chrome/browser/chromeos/settings/device_settings_cache.h"
 #include "chrome/browser/chromeos/status/data_promo_notification.h"
 #include "chrome/browser/chromeos/system/automatic_reboot_manager.h"
+#include "chrome/browser/chromeos/system/input_device_settings.h"
 #include "chrome/browser/extensions/api/enterprise_platform_keys_private/enterprise_platform_keys_private_api.h"
 #include "chrome/browser/extensions/extension_assets_manager_chromeos.h"
 #include "chrome/browser/media/protected_media_identifier_permission_context.h"
@@ -326,6 +327,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   chromeos::SigninScreenHandler::RegisterPrefs(registry);
   chromeos::StartupUtils::RegisterPrefs(registry);
   chromeos::system::AutomaticRebootManager::RegisterPrefs(registry);
+  chromeos::system::InputDeviceSettings::RegisterPrefs(registry);
   chromeos::UserImageManager::RegisterPrefs(registry);
   chromeos::UserSessionManager::RegisterPrefs(registry);
   chromeos::WallpaperManager::RegisterPrefs(registry);

@@ -13,8 +13,11 @@
 #include "ash/host/ash_window_tree_host.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
+#include "ash/shell_delegate.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "ui/aura/window.h"
@@ -123,6 +126,22 @@ void HandleToggleDesktopBackgroundMode() {
   }
 }
 
+#if defined(OS_CHROMEOS)
+
+void HandleToggleTouchpad() {
+  base::RecordAction(base::UserMetricsAction("Accel_Toggle_Touchpad"));
+
+  ash::Shell::GetInstance()->delegate()->ToggleTouchpad();
+}
+
+void HandleToggleTouchscreen() {
+  base::RecordAction(base::UserMetricsAction("Accel_Toggle_Touchscreen"));
+
+  ash::Shell::GetInstance()->delegate()->ToggleTouchscreen();
+}
+
+#endif  // defined(OS_CHROMEOS)
+
 }  // namespace
 
 void PrintUIHierarchies() {
@@ -147,6 +166,12 @@ void PerformDebugActionIfEnabled(AcceleratorAction action) {
 #if defined(OS_CHROMEOS)
     case DEBUG_ADD_REMOVE_DISPLAY:
       Shell::GetInstance()->display_manager()->AddRemoveDisplay();
+      break;
+    case DEBUG_TOGGLE_TOUCH_PAD:
+      HandleToggleTouchpad();
+      break;
+    case DEBUG_TOGGLE_TOUCH_SCREEN:
+      HandleToggleTouchscreen();
       break;
     case DEBUG_TOGGLE_UNIFIED_DESKTOP:
       Shell::GetInstance()->display_manager()->SetUnifiedDesktopEnabled(

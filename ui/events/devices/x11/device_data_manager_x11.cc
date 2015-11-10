@@ -742,6 +742,10 @@ void DeviceDataManagerX11::EnableDevice(int deviceid) {
   }
 }
 
+bool DeviceDataManagerX11::IsDeviceEnabled(int device_id) const {
+  return blocked_devices_.test(device_id);
+}
+
 bool DeviceDataManagerX11::IsEventBlocked(
     const base::NativeEvent& native_event) {
   // Only check XI2 events which have a source device id.

@@ -790,6 +790,10 @@ const char kFileSystemProviderMounted[] = "file_system_provider.mounted";
 // A boolean pref set to true if the virtual keyboard should be enabled.
 const char kTouchVirtualKeyboardEnabled[] = "ui.touch_virtual_keyboard_enabled";
 
+// Boolean prefs for the status of the touch screen and the touchpad.
+const char kTouchScreenEnabled[] = "events.touch_screen.enabled";
+const char kTouchPadEnabled[] = "events.touch_pad.enabled";
+
 // A boolean pref that controls whether the dark connect feature is enabled.
 // The dark connect feature allows a Chrome OS device to periodically wake
 // from suspend in a low-power state to maintain WiFi connectivity.

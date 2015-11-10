@@ -39,6 +39,8 @@ class InputDeviceSettingsImplOzone : public InputDeviceSettings {
   void SetPrimaryButtonRight(bool right) override;
   void ReapplyTouchpadSettings() override;
   void ReapplyMouseSettings() override;
+  void SetInternalTouchpadEnabled(bool enabled) override;
+  void SetTouchscreensEnabled(bool enabled) override;
 
   // Cached InputController pointer. It should be fixed throughout the browser
   // session.
@@ -126,6 +128,14 @@ void InputDeviceSettingsImplOzone::ReapplyTouchpadSettings() {
 
 void InputDeviceSettingsImplOzone::ReapplyMouseSettings() {
   MouseSettings::Apply(current_mouse_settings_, this);
+}
+
+void InputDeviceSettingsImplOzone::SetInternalTouchpadEnabled(bool enabled) {
+  input_controller_->SetInternalTouchpadEnabled(enabled);
+}
+
+void InputDeviceSettingsImplOzone::SetTouchscreensEnabled(bool enabled) {
+  input_controller_->SetTouchscreensEnabled(enabled);
 }
 
 }  // namespace

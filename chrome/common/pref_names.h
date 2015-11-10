@@ -262,6 +262,8 @@ extern const char kTimeOnOobe[];
 extern const char kCurrentWallpaperAppName[];
 extern const char kFileSystemProviderMounted[];
 extern const char kTouchVirtualKeyboardEnabled[];
+extern const char kTouchScreenEnabled[];
+extern const char kTouchPadEnabled[];
 extern const char kWakeOnWifiDarkConnect[];
 extern const char kCaptivePortalAuthenticationIgnoresProxy[];
 extern const char kForceMaximizeOnFirstRun[];

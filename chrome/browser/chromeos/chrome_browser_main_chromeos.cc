@@ -674,6 +674,8 @@ void ChromeBrowserMainPartsChromeos::PreBrowserStart() {
 }
 
 void ChromeBrowserMainPartsChromeos::PostBrowserStart() {
+  system::InputDeviceSettings::Get()->InitTouchDevicesStatusFromLocalPrefs();
+
   // These are dependent on the ash::Shell singleton already having been
   // initialized.
   // TODO(oshima): Remove ash dependency in PowerButtonObserver.

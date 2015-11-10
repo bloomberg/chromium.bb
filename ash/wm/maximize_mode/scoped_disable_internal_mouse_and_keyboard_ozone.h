@@ -19,6 +19,10 @@ class ScopedDisableInternalMouseAndKeyboardOzone
   ~ScopedDisableInternalMouseAndKeyboardOzone() override;
 
  private:
+  // If the touch pad is already disabled we ignore re-enabling it in the
+  // destructor.
+  bool should_ignore_touch_pad_ = false;
+
   DISALLOW_COPY_AND_ASSIGN(ScopedDisableInternalMouseAndKeyboardOzone);
 };
 

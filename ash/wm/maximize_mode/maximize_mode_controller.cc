@@ -301,6 +301,9 @@ void MaximizeModeController::HandleHingeRotation(
             HasSwitch(switches::kAshEnableTouchViewTesting)) {
       EnterMaximizeMode();
     }
+    // Always reset first to avoid creation before destruction of a previous
+    // object.
+    event_blocker_.reset();
 #if defined(USE_X11)
     event_blocker_.reset(new ScopedDisableInternalMouseAndKeyboardX11);
 #elif defined(USE_OZONE)

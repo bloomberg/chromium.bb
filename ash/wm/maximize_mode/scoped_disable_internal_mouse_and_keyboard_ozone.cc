@@ -18,10 +18,11 @@ ScopedDisableInternalMouseAndKeyboardOzone::
     ScopedDisableInternalMouseAndKeyboardOzone() {
   ui::InputController* input_controller =
       ui::OzonePlatform::GetInstance()->GetInputController();
-  if (input_controller->HasTouchpad()) {
+  if (input_controller->HasTouchpad() &&
+      input_controller->IsInternalTouchpadEnabled()) {
+    should_ignore_touch_pad_ = false;
     input_controller->SetInternalTouchpadEnabled(false);
-    aura::client::GetCursorClient(Shell::GetInstance()->GetPrimaryRootWindow())
-        ->HideCursor();
+    Shell::GetInstance()->cursor_manager()->HideCursor();
   }
 
   // Allow the acccessible keys present on the side of some devices to continue
@@ -38,7 +39,12 @@ ScopedDisableInternalMouseAndKeyboardOzone::
     ~ScopedDisableInternalMouseAndKeyboardOzone() {
   ui::InputController* input_controller =
       ui::OzonePlatform::GetInstance()->GetInputController();
-  input_controller->SetInternalTouchpadEnabled(true);
+
+  if (!should_ignore_touch_pad_) {
+    input_controller->SetInternalTouchpadEnabled(true);
+    Shell::GetInstance()->cursor_manager()->ShowCursor();
+  }
+
   input_controller->SetInternalKeyboardFilter(false /* enable_filter */,
                                               std::vector<ui::DomCode>());
 }

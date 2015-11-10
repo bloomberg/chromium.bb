@@ -79,6 +79,8 @@ class ChromeShellDelegate : public ash::ShellDelegate,
   base::string16 GetProductName() const override;
   void OpenKeyboardShortcutHelpPage() const override;
   gfx::Image GetDeprecatedAcceleratorImage() const override;
+  void ToggleTouchpad() override;
+  void ToggleTouchscreen() override;
 
   // content::NotificationObserver override:
   void Observe(int type,

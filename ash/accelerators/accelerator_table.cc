@@ -238,6 +238,10 @@ const AcceleratorData kDebugAcceleratorData[] = {
      DEBUG_TOGGLE_UNIFIED_DESKTOP},
     {true, ui::VKEY_M, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN,
      TOGGLE_MIRROR_MODE},
+    {true, ui::VKEY_P, ui::EF_COMMAND_DOWN | ui::EF_SHIFT_DOWN,
+     DEBUG_TOGGLE_TOUCH_PAD},
+    {true, ui::VKEY_T, ui::EF_COMMAND_DOWN | ui::EF_SHIFT_DOWN,
+     DEBUG_TOGGLE_TOUCH_SCREEN},
     {true, ui::VKEY_W, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN, TOGGLE_WIFI},
     // Extra shortcut for display swapping as alt-f4 is taken on linux desktop.
     {true, ui::VKEY_S, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN,
@@ -320,6 +324,8 @@ const AcceleratorAction kActionsAllowedAtLoginOrLockScreen[] = {
   BRIGHTNESS_DOWN,
   BRIGHTNESS_UP,
   DEBUG_ADD_REMOVE_DISPLAY,
+  DEBUG_TOGGLE_TOUCH_PAD,
+  DEBUG_TOGGLE_TOUCH_SCREEN,
   DISABLE_CAPS_LOCK,
   DISABLE_GPU_WATCHDOG,
   KEYBOARD_BRIGHTNESS_DOWN,
@@ -373,6 +379,8 @@ const AcceleratorAction kActionsAllowedAtModalWindow[] = {
   BRIGHTNESS_DOWN,
   BRIGHTNESS_UP,
   DEBUG_ADD_REMOVE_DISPLAY,
+  DEBUG_TOGGLE_TOUCH_PAD,
+  DEBUG_TOGGLE_TOUCH_SCREEN,
   DISABLE_CAPS_LOCK,
   KEYBOARD_BRIGHTNESS_DOWN,
   KEYBOARD_BRIGHTNESS_UP,
@@ -411,6 +419,8 @@ const AcceleratorAction kNonrepeatableActions[] = {
     TOGGLE_MAXIMIZED,
     WINDOW_MINIMIZE,
 #if defined(OS_CHROMEOS)
+    DEBUG_TOGGLE_TOUCH_PAD,
+    DEBUG_TOGGLE_TOUCH_SCREEN,
     LOCK_SCREEN,
 #endif
 };
@@ -439,6 +449,8 @@ const AcceleratorAction kActionsAllowedInAppMode[] = {
   BRIGHTNESS_DOWN,
   BRIGHTNESS_UP,
   DEBUG_ADD_REMOVE_DISPLAY,
+  DEBUG_TOGGLE_TOUCH_PAD,
+  DEBUG_TOGGLE_TOUCH_SCREEN,
   DISABLE_CAPS_LOCK,
   DISABLE_GPU_WATCHDOG,
   KEYBOARD_BRIGHTNESS_DOWN,
@@ -488,6 +500,8 @@ const AcceleratorAction kActionsKeepingMenuOpen[] = {
 #if defined(OS_CHROMEOS)
     BRIGHTNESS_DOWN,
     BRIGHTNESS_UP,
+    DEBUG_TOGGLE_TOUCH_PAD,
+    DEBUG_TOGGLE_TOUCH_SCREEN,
     DISABLE_CAPS_LOCK,
     KEYBOARD_BRIGHTNESS_DOWN,
     KEYBOARD_BRIGHTNESS_UP,

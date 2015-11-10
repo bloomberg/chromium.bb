@@ -73,8 +73,7 @@ ScopedDisableInternalMouseAndKeyboardX11::
       last_mouse_location_(GetMouseLocationInScreen()) {
 
   ui::DeviceDataManagerX11* device_data_manager =
-      static_cast<ui::DeviceDataManagerX11*>(
-          ui::DeviceDataManager::GetInstance());
+      ui::DeviceDataManagerX11::GetInstance();
   if (device_data_manager->IsXInput2Available()) {
     const XIDeviceList& xi_dev_list =
         ui::DeviceListCacheX11::GetInstance()->GetXI2DeviceList(
@@ -83,10 +82,14 @@ ScopedDisableInternalMouseAndKeyboardX11::
       std::string device_name(xi_dev_list[i].name);
       base::TrimWhitespaceASCII(device_name, base::TRIM_TRAILING, &device_name);
       if (device_name == kInternalTouchpadName) {
-        touchpad_device_id_ = xi_dev_list[i].deviceid;
-        device_data_manager->DisableDevice(touchpad_device_id_);
-        aura::client::GetCursorClient(
-            Shell::GetInstance()->GetPrimaryRootWindow())->HideCursor();
+        if (device_data_manager->IsDeviceEnabled(xi_dev_list[i].deviceid)) {
+          // If the touchpad is already disabled we will do nothing about it.
+          // This will result in doing nothing in the destructor as well since
+          // |touchpad_device_id_| will remain |kDeviceIdNone|.
+          touchpad_device_id_ = xi_dev_list[i].deviceid;
+          device_data_manager->DisableDevice(touchpad_device_id_);
+          Shell::GetInstance()->cursor_manager()->HideCursor();
+        }
       } else if (device_name == kCoreKeyboardName) {
         core_keyboard_device_id_ = xi_dev_list[i].deviceid;
         device_data_manager->DisableDevice(core_keyboard_device_id_);
@@ -118,8 +121,10 @@ ScopedDisableInternalMouseAndKeyboardX11::
   ui::DeviceDataManagerX11* device_data_manager =
       static_cast<ui::DeviceDataManagerX11*>(
           ui::DeviceDataManager::GetInstance());
-  if (touchpad_device_id_ != kDeviceIdNone)
+  if (touchpad_device_id_ != kDeviceIdNone) {
     device_data_manager->EnableDevice(touchpad_device_id_);
+    Shell::GetInstance()->cursor_manager()->ShowCursor();
+  }
   if (keyboard_device_id_ != kDeviceIdNone)
     device_data_manager->EnableDevice(keyboard_device_id_);
   if (core_keyboard_device_id_ != kDeviceIdNone)

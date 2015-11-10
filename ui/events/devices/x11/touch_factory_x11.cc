@@ -19,6 +19,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/sys_info.h"
+#include "ui/events/base_event_utils.h"
 #include "ui/events/devices/x11/device_data_manager_x11.h"
 #include "ui/events/devices/x11/device_list_cache_x11.h"
 #include "ui/events/event_switches.h"
@@ -28,7 +29,6 @@ namespace ui {
 
 TouchFactory::TouchFactory()
     : pointer_device_lookup_(),
-      touch_events_disabled_(false),
       touch_device_list_(),
       virtual_core_keyboard_device_(-1),
       id_generator_(0) {
@@ -37,11 +37,6 @@ TouchFactory::TouchFactory()
 
   XDisplay* display = gfx::GetXDisplay();
   UpdateDeviceList(display);
-
-  base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
-  touch_events_disabled_ = cmdline->HasSwitch(switches::kTouchEvents) &&
-      cmdline->GetSwitchValueASCII(switches::kTouchEvents) ==
-          switches::kTouchEventsDisabled;
 }
 
 TouchFactory::~TouchFactory() {
@@ -164,7 +159,7 @@ bool TouchFactory::ShouldProcessXI2Event(XEvent* xev) {
     bool is_from_master_or_float = touch_device_list_[xiev->deviceid];
     bool is_from_slave_device = !is_from_master_or_float
         && xiev->sourceid == xiev->deviceid;
-    return !touch_events_disabled_ &&
+    return ui::AreTouchEventsEnabled() &&
            IsTouchDevice(xiev->deviceid) &&
            !is_from_slave_device;
   }
@@ -177,13 +172,14 @@ bool TouchFactory::ShouldProcessXI2Event(XEvent* xev) {
 
   if (event->evtype != XI_ButtonPress &&
       event->evtype != XI_ButtonRelease &&
-      event->evtype != XI_Motion)
+      event->evtype != XI_Motion) {
     return true;
+  }
 
   if (!pointer_device_lookup_[xiev->deviceid])
     return false;
 
-  return IsTouchDevice(xiev->deviceid) ? !touch_events_disabled_ : true;
+  return IsTouchDevice(xiev->deviceid) ? ui::AreTouchEventsEnabled() : true;
 }
 
 void TouchFactory::SetupXI2ForXWindow(Window window) {
@@ -270,13 +266,12 @@ void TouchFactory::ReleaseSlotForTrackingID(uint32 tracking_id) {
 }
 
 bool TouchFactory::IsTouchDevicePresent() {
-  return !touch_events_disabled_ && touch_device_lookup_.any();
+  return ui::AreTouchEventsEnabled() && touch_device_lookup_.any();
 }
 
 void TouchFactory::ResetForTest() {
   pointer_device_lookup_.reset();
   touch_device_lookup_.reset();
-  touch_events_disabled_ = false;
   touch_device_list_.clear();
   touchscreen_ids_.clear();
   id_generator_.ResetForTest();
@@ -292,7 +287,6 @@ void TouchFactory::SetTouchDeviceForTest(
     touch_device_lookup_[*iter] = true;
     touch_device_list_[*iter] = true;
   }
-  touch_events_disabled_ = false;
 }
 
 void TouchFactory::SetPointerDeviceForTest(

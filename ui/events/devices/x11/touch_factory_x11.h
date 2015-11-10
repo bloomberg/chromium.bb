@@ -119,9 +119,6 @@ class EVENTS_DEVICES_EXPORT TouchFactory {
   // A quick lookup table for determining if a device is a touch device.
   std::bitset<kMaxDeviceNum> touch_device_lookup_;
 
-  // Indicates whether touch events are explicitly disabled.
-  bool touch_events_disabled_;
-
   // The list of touch devices. For testing/debugging purposes, a single-pointer
   // device (mouse or touch screen without sufficient X/driver support for MT)
   // can sometimes be treated as a touch device. The key in the map represents

@@ -77,6 +77,9 @@ class OZONE_EXPORT InputController {
   virtual void SetTapToClickPaused(bool state) = 0;
 
   virtual void SetInternalTouchpadEnabled(bool enabled) = 0;
+  virtual bool IsInternalTouchpadEnabled() const = 0;
+
+  virtual void SetTouchscreensEnabled(bool enabled) = 0;
 
   // If |enable_filter| is true, all keys on the internal keyboard except
   // |allowed_keys| are disabled.

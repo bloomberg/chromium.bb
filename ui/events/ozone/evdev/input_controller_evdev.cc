@@ -92,6 +92,15 @@ void InputControllerEvdev::SetInternalTouchpadEnabled(bool enabled) {
   ScheduleUpdateDeviceSettings();
 }
 
+bool InputControllerEvdev::IsInternalTouchpadEnabled() const {
+  return input_device_settings_.enable_internal_touchpad;
+}
+
+void InputControllerEvdev::SetTouchscreensEnabled(bool enabled) {
+  input_device_settings_.enable_touch_screens = enabled;
+  ScheduleUpdateDeviceSettings();
+}
+
 void InputControllerEvdev::SetTouchEventLoggingEnabled(bool enabled) {
   input_device_settings_.touch_event_logging_enabled = enabled;
   ScheduleUpdateDeviceSettings();

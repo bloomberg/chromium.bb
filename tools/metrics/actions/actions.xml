@@ -725,6 +725,22 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="Accel_Toggle_Touchpad">
+  <owner>afakhry@chromium.org</owner>
+  <description>
+    Metric recorded when the user toggles the touchpad status using the
+    debugging accelerator.
+  </description>
+</action>
+
+<action name="Accel_Toggle_Touchscreen">
+  <owner>afakhry@chromium.org</owner>
+  <description>
+    Metric recorded when the user toggles the touchscreen status using the
+    debugging accelerator.
+  </description>
+</action>
+
 <action name="Accel_Touch_Hud_Clear">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
