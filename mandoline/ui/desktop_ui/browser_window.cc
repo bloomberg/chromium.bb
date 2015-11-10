@@ -27,7 +27,7 @@
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/mus/aura_init.h"
 #include "ui/views/mus/display_converter.h"
-#include "ui/views/mus/native_widget_view_manager.h"
+#include "ui/views/mus/native_widget_mus.h"
 #include "ui/views/widget/widget_delegate.h"
 
 namespace mandoline {
@@ -415,8 +415,8 @@ void BrowserWindow::Init(mus::Window* root) {
   views::Widget* widget = new views::Widget;
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
-  params.native_widget =
-      new views::NativeWidgetViewManager(widget, app_->shell(), root_);
+  params.native_widget = new views::NativeWidgetMus(
+      widget, app_->shell(), root, mus::mojom::SURFACE_TYPE_DEFAULT);
   params.delegate = widget_delegate;
   params.bounds = root_->bounds();
   widget->Init(params);
