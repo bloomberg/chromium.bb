@@ -440,6 +440,8 @@ action("aggregate_vector_icons") {
     "vector_icons/code.icon",
     "vector_icons/cookie.icon",
     "vector_icons/crashed_tab.icon",
+    "vector_icons/credit_card.1x.icon",
+    "vector_icons/credit_card.icon",
     "vector_icons/error_circle.icon",
     "vector_icons/extension.icon",
     "vector_icons/extension_crashed.icon",

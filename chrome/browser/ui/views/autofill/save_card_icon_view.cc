@@ -51,7 +51,7 @@ views::BubbleDelegateView* SaveCardIconView::GetBubble() const {
 }
 
 gfx::VectorIconId SaveCardIconView::GetVectorIcon() const {
-  return gfx::VectorIconId::AUTOFILL;
+  return gfx::VectorIconId::CREDIT_CARD;
 }
 
 }  // namespace autofill
