@@ -34,6 +34,7 @@ CrExtensionsBrowserTest.prototype = {
 
   /** @override */
   extraLibraries: PolymerTest.getLibraries(ROOT_PATH).concat([
+    'extension_item_test.js',
     'extension_service_test.js',
     'extension_sidebar_test.js',
     '../mock_controller.js',
@@ -55,6 +56,32 @@ TEST_F('CrExtensionsBrowserTest', 'ExtensionSidebarClickHandlerTest',
 });
 
 function CrExtensionsBrowserTestWithInstalledExtension() {}
+
+TEST_F('CrExtensionsBrowserTest', 'ExtensionItemNormalStateTest', function() {
+  extension_item_tests.registerTests();
+  var testNames = extension_item_tests.testNames;
+  mocha.grep(assert(testNames.ElementVisibilityNormalState)).run();
+});
+
+TEST_F('CrExtensionsBrowserTest', 'ExtensionItemDetailStateTest', function() {
+  extension_item_tests.registerTests();
+  var testNames = extension_item_tests.testNames;
+  mocha.grep(assert(testNames.ElementVisibilityDetailState)).run();
+});
+
+TEST_F('CrExtensionsBrowserTest', 'ExtensionItemDeveloperStateTest',
+       function() {
+  extension_item_tests.registerTests();
+  var testNames = extension_item_tests.testNames;
+  mocha.grep(assert(testNames.ElementVisibilityDeveloperState)).run();
+});
+
+TEST_F('CrExtensionsBrowserTest', 'ExtensionItemClickableItemsTest',
+       function() {
+  extension_item_tests.registerTests();
+  var testNames = extension_item_tests.testNames;
+  mocha.grep(assert(testNames.ClickableItems)).run();
+});
 
 CrExtensionsBrowserTestWithInstalledExtension.prototype = {
   __proto__: CrExtensionsBrowserTest.prototype,
