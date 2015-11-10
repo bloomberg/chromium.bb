@@ -87,6 +87,7 @@ gfx::GpuMemoryBufferHandle MojoGpuMemoryBufferImpl::GetHandle() const {
   handle.type = gfx::SHARED_MEMORY_BUFFER;
   handle.handle = shared_memory_->handle();
   handle.offset = 0;
+  handle.stride = gfx::RowSizeForBufferFormat(size_.width(), format_, 0);
   return handle;
 }
 

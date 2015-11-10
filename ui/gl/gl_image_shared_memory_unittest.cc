@@ -30,7 +30,8 @@ class GLImageSharedMemoryTestDelegate {
         size, gl::GLImageMemory::GetInternalFormatForTesting(format)));
     rv = image->Initialize(
         base::SharedMemory::DuplicateHandle(shared_memory.handle()),
-        gfx::GenericSharedMemoryId(0), format, 0);
+        gfx::GenericSharedMemoryId(0), format, 0,
+        gfx::RowSizeForBufferFormat(size.width(), format, 0));
     EXPECT_TRUE(rv);
     return image;
   }
@@ -55,10 +56,13 @@ class GLImageSharedMemoryPoolTestDelegate {
   scoped_refptr<gl::GLImage> CreateSolidColorImage(
       const gfx::Size& size,
       const uint8_t color[4]) const {
-    // Create a shared memory segment that is 2 pages larger than image.
+    // Create a shared memory segment that holds an image with a stride that is
+    // twice the row size and 2 pages larger than image.
+    size_t stride = gfx::RowSizeForBufferFormat(
+                        size.width(), gfx::BufferFormat::RGBA_8888, 0) *
+                    2;
     size_t pool_size =
-        gfx::BufferSizeForBufferFormat(size, gfx::BufferFormat::RGBA_8888) +
-        base::SysInfo::VMAllocationGranularity() * 3;
+        stride * size.height() + base::SysInfo::VMAllocationGranularity() * 3;
     base::SharedMemory shared_memory;
     bool rv = shared_memory.CreateAndMapAnonymous(pool_size);
     DCHECK(rv);
@@ -67,17 +71,15 @@ class GLImageSharedMemoryPoolTestDelegate {
     // Place buffer at a non-zero non-page-aligned offset in shared memory.
     size_t buffer_offset = 3 * base::SysInfo::VMAllocationGranularity() / 2;
     GLImageTestSupport::SetBufferDataToColor(
-        size.width(), size.height(),
-        static_cast<int>(RowSizeForBufferFormat(
-            size.width(), gfx::BufferFormat::RGBA_8888, 0)),
-        gfx::BufferFormat::RGBA_8888, color,
+        size.width(), size.height(), stride, gfx::BufferFormat::RGBA_8888,
+        color,
         reinterpret_cast<uint8_t*>(shared_memory.memory()) + buffer_offset);
     scoped_refptr<gl::GLImageSharedMemory> image(
         new gl::GLImageSharedMemory(size, GL_RGBA));
     rv = image->Initialize(
         base::SharedMemory::DuplicateHandle(shared_memory.handle()),
         gfx::GenericSharedMemoryId(0), gfx::BufferFormat::RGBA_8888,
-        buffer_offset);
+        buffer_offset, stride);
     EXPECT_TRUE(rv);
     return image;
   }

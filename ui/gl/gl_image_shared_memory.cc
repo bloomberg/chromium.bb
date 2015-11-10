@@ -28,9 +28,14 @@ bool GLImageSharedMemory::Initialize(
     const base::SharedMemoryHandle& handle,
     gfx::GenericSharedMemoryId shared_memory_id,
     gfx::BufferFormat format,
-    size_t offset) {
-  size_t size_in_bytes;
-  if (!BufferSizeForBufferFormatChecked(GetSize(), format, &size_in_bytes))
+    size_t offset,
+    size_t stride) {
+  if (NumberOfPlanesForBufferFormat(format) != 1)
+    return false;
+
+  base::CheckedNumeric<size_t> checked_size = stride;
+  checked_size *= GetSize().height();
+  if (!checked_size.IsValid())
     return false;
 
   if (!base::SharedMemory::IsHandleValid(handle))
@@ -52,22 +57,21 @@ bool GLImageSharedMemory::Initialize(
   size_t map_offset = base::SysInfo::VMAllocationGranularity() *
                       (offset / base::SysInfo::VMAllocationGranularity());
 
-  base::CheckedNumeric<size_t> checked_size_to_map_in_bytes = size_in_bytes;
-  checked_size_to_map_in_bytes += memory_offset;
-  if (!checked_size_to_map_in_bytes.IsValid())
+  checked_size += memory_offset;
+  if (!checked_size.IsValid())
     return false;
 
   scoped_ptr<base::SharedMemory> duped_shared_memory(
       new base::SharedMemory(duped_shared_memory_handle, true));
   if (!duped_shared_memory->MapAt(static_cast<off_t>(map_offset),
-                                  checked_size_to_map_in_bytes.ValueOrDie())) {
+                                  checked_size.ValueOrDie())) {
     DVLOG(0) << "Failed to map shared memory.";
     return false;
   }
 
   if (!GLImageMemory::Initialize(
           static_cast<uint8_t*>(duped_shared_memory->memory()) + memory_offset,
-          format)) {
+          format, stride)) {
     return false;
   }
 
@@ -89,7 +93,7 @@ void GLImageSharedMemory::OnMemoryDump(
   size_t size_in_bytes = 0;
 
   if (shared_memory_)
-    size_in_bytes = BufferSizeForBufferFormat(GetSize(), format());
+    size_in_bytes = stride() * GetSize().height();
 
   // Dump under "/shared_memory", as the base class may also dump to
   // "/texture_memory".
