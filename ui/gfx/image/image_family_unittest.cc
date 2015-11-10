@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkImageInfo.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_family.h"
 #include "ui/gfx/image/image_skia.h"
@@ -21,6 +23,17 @@ do { \
   EXPECT_TRUE(image_); \
   EXPECT_EQ(expected_width, image_->Width()); \
   EXPECT_EQ(expected_height, image_->Height()); \
+} while(0)
+
+// Tests that |image| has the given width and height.
+// This is a macro instead of a function, so that the correct line numbers are
+// reported when a test fails.
+#define EXPECT_IMAGE_SIZE(image, expected_width, expected_height) \
+do { \
+  const gfx::Image& image_ = image; \
+  EXPECT_FALSE(image_.IsEmpty()); \
+  EXPECT_EQ(expected_width, image_.Width()); \
+  EXPECT_EQ(expected_height, image_.Height()); \
 } while(0)
 
 class ImageFamilyTest : public testing::Test {
@@ -92,7 +105,7 @@ TEST_F(ImageFamilyTest, Iteration) {
   EXPECT_TRUE(it == end);
 }
 
-TEST_F(ImageFamilyTest, Get) {
+TEST_F(ImageFamilyTest, GetBest) {
   // Get on an empty family.
   gfx::ImageFamily empty_family;
   EXPECT_TRUE(empty_family.empty());
@@ -149,6 +162,54 @@ TEST_F(ImageFamilyTest, Get) {
   EXPECT_IMAGE_NON_NULL_AND_SIZE(image_family_.GetBest(255, 51), 256, 64);
   EXPECT_IMAGE_NON_NULL_AND_SIZE(image_family_.GetBest(260, 52), 512, 128);
   EXPECT_IMAGE_NON_NULL_AND_SIZE(image_family_.GetBest(654, 129), 512, 128);
+}
+
+TEST_F(ImageFamilyTest, CreateExact) {
+  // CreateExact on an empty family.
+  gfx::ImageFamily empty_family;
+  EXPECT_TRUE(empty_family.empty());
+  EXPECT_TRUE(empty_family.CreateExact(32, 32).IsEmpty());
+  EXPECT_TRUE(empty_family.CreateExact(0, 32).IsEmpty());
+  EXPECT_TRUE(empty_family.CreateExact(32, 0).IsEmpty());
+
+  // CreateExact on a family with only empty images results in an empty image,
+  // despite the requested image size.
+  gfx::ImageFamily family_with_empty_image;
+  family_with_empty_image.Add(gfx::Image());
+  EXPECT_FALSE(family_with_empty_image.empty());
+  EXPECT_TRUE(family_with_empty_image.CreateExact(32, 32).IsEmpty());
+
+  // CreateExact on various aspect ratios and sizes on the sample family.
+
+  // Targeting an image with width and/or height of 0 results in empty image.
+  EXPECT_TRUE(image_family_.CreateExact(0, 0).IsEmpty());
+  EXPECT_TRUE(image_family_.CreateExact(0, 64).IsEmpty());
+  EXPECT_TRUE(image_family_.CreateExact(64, 0).IsEmpty());
+
+  // Thinner than thinnest image.
+  EXPECT_IMAGE_SIZE(image_family_.CreateExact(2, 12), 2, 12);
+
+  // Exact match aspect ratio.
+  // Exact match size.
+  EXPECT_IMAGE_SIZE(image_family_.CreateExact(32, 32), 32, 32);
+  // Much smaller.
+  EXPECT_IMAGE_SIZE(image_family_.CreateExact(17, 17), 17, 17);
+  // Smaller than any image.
+  EXPECT_IMAGE_SIZE(image_family_.CreateExact(3, 3), 3, 3);
+  // Larger than any image.
+  EXPECT_IMAGE_SIZE(image_family_.CreateExact(512, 512), 512, 512);
+
+  // Wider than widest image.
+  EXPECT_IMAGE_SIZE(image_family_.CreateExact(255, 51), 255, 51);
+
+  // CreateExact on an image family with a non-N32 color bitmap results in an
+  // empty image.
+  gfx::ImageFamily a8_family;
+  SkBitmap a8_bitmap;
+  SkImageInfo a8_info = SkImageInfo::MakeA8(64, 64);
+  a8_bitmap.allocPixels(a8_info);
+  a8_family.Add(gfx::Image::CreateFrom1xBitmap(a8_bitmap));
+  EXPECT_TRUE(a8_family.CreateExact(32, 32).IsEmpty());
 }
 
 // Test adding and looking up images with 0 width and height.

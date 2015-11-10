@@ -49,42 +49,36 @@ bool BuildResizedImageFamily(const gfx::ImageFamily& image_family,
   DCHECK(resized_image_family);
   DCHECK(resized_image_family->empty());
 
+  // Determine whether there is an image bigger than 48x48 (kMediumIconSize).
+  const gfx::Image* biggest =
+      image_family.GetBest(IconUtil::kLargeIconSize, IconUtil::kLargeIconSize);
+  if (!biggest || biggest->IsEmpty()) {
+    // Either |image_family| is empty, or all images have size 0x0.
+    return false;
+  }
+
+  bool has_bigger_than_medium = biggest->Width() > IconUtil::kMediumIconSize ||
+                                biggest->Height() > IconUtil::kMediumIconSize;
+
   for (size_t i = 0; i < IconUtil::kNumIconDimensions; ++i) {
     int dimension = IconUtil::kIconDimensions[i];
-    gfx::Size size(dimension, dimension);
-    const gfx::Image* best = image_family.GetBest(size);
-    if (!best || best->IsEmpty()) {
-      // Either |image_family| is empty, or all images have size 0x0.
+    // Windows' "Large icons" view displays icons at full size only if there is
+    // a 256x256 (kLargeIconSize) image in the .ico file. Otherwise, it shrinks
+    // icons to 48x48 (kMediumIconSize). Therefore, if there is no source icon
+    // larger than 48x48, do not create any images larger than 48x48.
+    // kIconDimensions is sorted in ascending order, so it is safe to break
+    // here.
+    if (!has_bigger_than_medium && dimension > IconUtil::kMediumIconSize)
+      break;
+
+    gfx::Image resized = image_family.CreateExact(dimension, dimension);
+    if (resized.IsEmpty()) {
+      // An error occurred in CreateExact (typically because the image had the
+      // wrong pixel format).
       return false;
     }
 
-    // Optimize for the "Large icons" view in Windows Vista+. This view displays
-    // icons at full size if only if there is a 256x256 (kLargeIconSize) image
-    // in the .ico file. Otherwise, it shrinks icons to 48x48 (kMediumIconSize).
-    if (dimension > IconUtil::kMediumIconSize &&
-        best->Width() <= IconUtil::kMediumIconSize &&
-        best->Height() <= IconUtil::kMediumIconSize) {
-      // There is no source icon larger than 48x48, so do not create any
-      // images larger than 48x48. kIconDimensions is sorted in ascending
-      // order, so it is safe to break here.
-      break;
-    }
-
-    if (best->Size() == size) {
-      resized_image_family->Add(*best);
-    } else {
-      // There is no |dimension|x|dimension| source image.
-      // Resize this one to the desired size, and insert it.
-      SkBitmap best_bitmap = best->AsBitmap();
-      // Only kARGB_8888 images are supported.
-      // This will also filter out images with no pixels.
-      if (best_bitmap.colorType() != kN32_SkColorType)
-        return false;
-      SkBitmap resized_bitmap = skia::ImageOperations::Resize(
-          best_bitmap, skia::ImageOperations::RESIZE_LANCZOS3,
-          dimension, dimension);
-      resized_image_family->Add(gfx::Image::CreateFrom1xBitmap(resized_bitmap));
-    }
+    resized_image_family->Add(resized);
   }
   return true;
 }

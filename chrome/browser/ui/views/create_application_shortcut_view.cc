@@ -176,24 +176,11 @@ void AppInfoView::UpdateText(const base::string16& title,
 }
 
 void AppInfoView::UpdateIcon(const gfx::ImageFamily& image) {
-  // Get the icon closest to the desired preview size.
-  const gfx::Image* icon = image.GetBest(kIconPreviewSizePixels,
-                                         kIconPreviewSizePixels);
-  if (!icon || icon->IsEmpty())
-    // The family has no icons. Leave the image blank.
-    return;
-  const SkBitmap& bitmap = *icon->ToSkBitmap();
-  if (bitmap.width() == kIconPreviewSizePixels &&
-      bitmap.height() == kIconPreviewSizePixels) {
-    icon_->SetImage(gfx::ImageSkia::CreateFrom1xBitmap(bitmap));
-  } else {
-    // Resize the image to the desired size.
-    SkBitmap resized_bitmap = skia::ImageOperations::Resize(
-        bitmap, skia::ImageOperations::RESIZE_LANCZOS3,
-        kIconPreviewSizePixels, kIconPreviewSizePixels);
-
-    icon_->SetImage(gfx::ImageSkia::CreateFrom1xBitmap(resized_bitmap));
-  }
+  // Get an icon at the desired preview size (scaling from a larger image if
+  // none is available at that exact size).
+  gfx::Image icon =
+      image.CreateExact(kIconPreviewSizePixels, kIconPreviewSizePixels);
+  icon_->SetImage(icon.ToImageSkia());
 }
 
 void AppInfoView::OnPaint(gfx::Canvas* canvas) {

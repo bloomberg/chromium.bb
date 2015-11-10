@@ -136,6 +136,17 @@ class GFX_EXPORT ImageFamily {
   // NULL.
   const gfx::Image* GetBest(const gfx::Size& size) const;
 
+  // Gets an image of size |width|x|height|. If no image of that exact size
+  // exists, chooses the nearest larger image using GetBest() and scales it to
+  // the desired size. If there are no images in the family, returns an empty
+  // image.
+  gfx::Image CreateExact(int width, int height) const;
+
+  // Gets an image of size |size|. If no image of that exact size exists,
+  // chooses the nearest larger image using GetBest() and scales it to the
+  // desired size. If there are no images in the family, returns an empty image.
+  gfx::Image CreateExact(const gfx::Size& size) const;
+
  private:
   // Find the closest aspect ratio in the map to |desired_aspect|.
   // Ties are broken by the thinner aspect.

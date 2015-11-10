@@ -6,6 +6,7 @@
 
 #include <cmath>
 
+#include "skia/ext/image_operations.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
@@ -105,6 +106,28 @@ float ImageFamily::GetClosestAspect(float desired_aspect) const {
 
 const gfx::Image* ImageFamily::GetBest(const gfx::Size& size) const {
   return GetBest(size.width(), size.height());
+}
+
+gfx::Image ImageFamily::CreateExact(int width, int height) const {
+  // Resize crashes if width or height is 0, so just return an empty image.
+  if (width == 0 || height == 0)
+    return gfx::Image();
+
+  const gfx::Image* image = GetBest(width, height);
+  if (!image)
+    return gfx::Image();
+
+  if (image->Width() == width && image->Height() == height)
+    return gfx::Image(*image);
+
+  SkBitmap bitmap = image->AsBitmap();
+  SkBitmap resized_bitmap = skia::ImageOperations::Resize(
+      bitmap, skia::ImageOperations::RESIZE_LANCZOS3, width, height);
+  return gfx::Image::CreateFrom1xBitmap(resized_bitmap);
+}
+
+gfx::Image ImageFamily::CreateExact(const gfx::Size& size) const {
+  return CreateExact(size.width(), size.height());
 }
 
 const gfx::Image* ImageFamily::GetWithExactAspect(float aspect,
