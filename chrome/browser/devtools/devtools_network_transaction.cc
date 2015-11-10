@@ -38,14 +38,6 @@ DevToolsNetworkTransaction::~DevToolsNetworkTransaction() {
     interceptor_->RemoveThrottable(this);
 }
 
-bool DevToolsNetworkTransaction::HasStarted() {
-  return !!request_;
-}
-
-bool DevToolsNetworkTransaction::HasFailed() {
-  return failed_;
-}
-
 int64_t DevToolsNetworkTransaction::ThrottledByteCount() {
   return throttled_byte_count_;
 }
@@ -127,6 +119,10 @@ void DevToolsNetworkTransaction::Fail() {
   failed_ = true;
   network_transaction_->SetBeforeNetworkStartCallback(
       BeforeNetworkStartCallback());
+  if (interceptor_) {
+    interceptor_->RemoveThrottable(this);
+    interceptor_.reset();
+  }
   if (callback_.is_null())
     return;
   net::CompletionCallback callback = callback_;
@@ -145,15 +141,17 @@ int DevToolsNetworkTransaction::Start(
   std::string client_id;
   ProcessRequest(&client_id);
   interceptor_ = controller_->GetInterceptor(client_id);
-  if (interceptor_)
-    interceptor_->AddThrottable(this);
 
   if (interceptor_ && interceptor_->ShouldFail()) {
     failed_ = true;
     network_transaction_->SetBeforeNetworkStartCallback(
         BeforeNetworkStartCallback());
+    interceptor_.reset();
     return net::ERR_INTERNET_DISCONNECTED;
   }
+
+  if (interceptor_)
+    interceptor_->AddThrottable(this);
   int rv = network_transaction_->Start(request_, proxy_callback_, net_log);
   return SetupCallback(callback, rv, START);
 }

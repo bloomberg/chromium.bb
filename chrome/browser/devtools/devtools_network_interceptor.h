@@ -28,8 +28,6 @@ class DevToolsNetworkInterceptor {
   class Throttable {
    public:
     virtual ~Throttable() {}
-    virtual bool HasStarted() = 0;
-    virtual bool HasFailed() = 0;
     virtual void Fail() = 0;
     virtual int64_t ThrottledByteCount() = 0;
     virtual void Throttled(int64_t count) = 0;

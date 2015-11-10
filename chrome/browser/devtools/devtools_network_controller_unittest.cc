@@ -84,7 +84,20 @@ class DevToolsNetworkControllerHelper {
   }
 
   bool ShouldFail() {
-    return transaction_->interceptor_->ShouldFail();
+    if (transaction_->interceptor_)
+      return transaction_->interceptor_->ShouldFail();
+    base::WeakPtr<DevToolsNetworkInterceptor> interceptor =
+        controller_.GetInterceptor(kClientId);
+    EXPECT_TRUE(!!interceptor);
+    return interceptor->ShouldFail();
+  }
+
+  bool HasStarted() {
+    return !!transaction_->request_;
+  }
+
+  bool HasFailed() {
+    return transaction_->failed_;
   }
 
   ~DevToolsNetworkControllerHelper() {
@@ -184,10 +197,10 @@ TEST(DevToolsNetworkControllerTest, ReadAfterFail) {
 
   int rv = helper.Start();
   EXPECT_EQ(rv, net::OK);
-  EXPECT_TRUE(helper.transaction()->HasStarted());
+  EXPECT_TRUE(helper.HasStarted());
 
   helper.SetNetworkState(kClientId, true);
-  EXPECT_TRUE(helper.transaction()->HasFailed());
+  EXPECT_TRUE(helper.HasFailed());
 
   scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(64));
   rv = helper.Read();

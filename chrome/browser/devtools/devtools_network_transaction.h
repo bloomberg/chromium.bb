@@ -54,8 +54,6 @@ class DevToolsNetworkTransaction
   ~DevToolsNetworkTransaction() override;
 
   // DevToolsNetworkInterceptor::Throttable implementation.
-  bool HasStarted() override;
-  bool HasFailed() override;
   void Fail() override;
   int64_t ThrottledByteCount() override;
   void Throttled(int64_t count) override;

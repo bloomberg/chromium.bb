@@ -77,8 +77,6 @@ void DevToolsNetworkInterceptor::UpdateConditions(
     for (;it != old_throttables.end(); ++it) {
       if (throttables_.find(*it) == throttables_.end())
         continue;
-      if (!(*it)->HasStarted() || (*it)->HasFailed())
-        continue;
       (*it)->Fail();
     }
     return;
