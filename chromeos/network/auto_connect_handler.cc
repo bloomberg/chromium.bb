@@ -100,10 +100,12 @@ void AutoConnectHandler::PoliciesChanged(const std::string& userhash) {
 }
 
 void AutoConnectHandler::PoliciesApplied(const std::string& userhash) {
-  if (userhash.empty())
+  if (userhash.empty()) {
     device_policy_applied_ = true;
-  else
+  } else {
     user_policy_applied_ = true;
+    DisconnectIfPolicyRequires();
+  }
 
   // Request to connect to the best network only if there is at least one
   // managed network. Otherwise only process existing requests.
@@ -194,8 +196,10 @@ void AutoConnectHandler::CheckBestConnection() {
 }
 
 void AutoConnectHandler::DisconnectIfPolicyRequires() {
-  if (applied_autoconnect_policy_ || !LoginState::Get()->IsUserLoggedIn())
+  if (applied_autoconnect_policy_ || !LoginState::Get()->IsUserLoggedIn() ||
+      !user_policy_applied_) {
     return;
+  }
 
   const base::DictionaryValue* global_network_config =
       managed_configuration_handler_->GetGlobalConfigFromPolicy(

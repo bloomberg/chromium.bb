@@ -58,11 +58,11 @@ class CHROMEOS_EXPORT AutoConnectHandler : public LoginState::Observer,
   // If the user logged in already and the policy to prevent unmanaged & shared
   // networks to autoconnect is enabled, then disconnects all such networks
   // except wired networks. It will do this only once after the user logged in
-  // and the device policy was available.
+  // and the device policy and user policy was available.
   // This is enforced once after a user logs in 1) to allow mananged networks to
   // autoconnect and 2) to prevent a previous user from foisting a network on
   // the new user. Therefore, this function is called at login and when the
-  // device policy is changed.
+  // device policy is changed after user policy is fetched and applied.
   void DisconnectIfPolicyRequires();
 
   // Disconnects from all unmanaged and shared WiFi networks that are currently
