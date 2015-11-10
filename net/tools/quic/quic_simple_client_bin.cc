@@ -216,17 +216,16 @@ int main(int argc, char *argv[]) {
     versions.clear();
     versions.push_back(static_cast<net::QuicVersion>(FLAGS_quic_version));
   }
-  scoped_ptr<CertVerifier> cert_verifier;
-  scoped_ptr<TransportSecurityState> transport_security_state;
+  // For secure QUIC we need to verify the cert chain.
+  scoped_ptr<CertVerifier> cert_verifier(CertVerifier::CreateDefault());
+  scoped_ptr<TransportSecurityState> transport_security_state(
+      new TransportSecurityState);
   ProofVerifierChromium* proof_verifier = new ProofVerifierChromium(
       cert_verifier.get(), nullptr, transport_security_state.get());
   net::tools::QuicSimpleClient client(net::IPEndPoint(ip_addr, port), server_id,
                                       versions, proof_verifier);
   client.set_initial_max_packet_length(
       FLAGS_initial_mtu != 0 ? FLAGS_initial_mtu : net::kDefaultMaxPacketSize);
-  // For secure QUIC we need to verify the cert chain.
-  cert_verifier = CertVerifier::CreateDefault();
-  transport_security_state.reset(new TransportSecurityState);
   if (!client.Initialize()) {
     cerr << "Failed to initialize client." << endl;
     return 1;
