@@ -179,8 +179,8 @@ void OpenSSLPutNetError(const tracked_objects::Location& location, int err) {
     NOTREACHED();
     err = ERR_INVALID_ARGUMENT;
   }
-  ERR_put_error(OpenSSLNetErrorLib(), err, location.function_name(),
-                location.file_name(), location.line_number());
+  ERR_put_error(OpenSSLNetErrorLib(), 0 /* unused */, err, location.file_name(),
+                location.line_number());
 }
 
 int MapOpenSSLError(int err, const crypto::OpenSSLErrStackTracer& tracer) {
