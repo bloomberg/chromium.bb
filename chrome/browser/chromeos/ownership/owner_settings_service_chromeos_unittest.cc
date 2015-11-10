@@ -352,20 +352,4 @@ TEST_F(OwnerSettingsServiceChromeOSNoOwnerTest, TakeOwnershipForceWhitelist) {
                               provider_->Get(kAccountsPrefUsers)));
 }
 
-TEST_F(OwnerSettingsServiceChromeOSNoOwnerTest, RestoreOwnershipNoPolicy) {
-  device_settings_test_helper_.set_policy_blob(std::string());
-  ReloadDeviceSettings();
-  EXPECT_FALSE(device_settings_service_.policy_data());
-  EXPECT_EQ(DeviceSettingsService::STORE_NO_POLICY,
-            device_settings_service_.status());
-
-  owner_key_util_->SetPrivateKey(device_policy_.GetSigningKey());
-  InitOwner(AccountId::FromUserEmail(device_policy_.policy_data().username()),
-            true);
-  ReloadDeviceSettings();
-  EXPECT_TRUE(service_->IsOwner());
-  EXPECT_TRUE(FindInListValue(device_policy_.policy_data().username(),
-                              provider_->Get(kAccountsPrefUsers)));
-}
-
 }  // namespace chromeos

@@ -466,8 +466,8 @@ scoped_ptr<em::PolicyData> OwnerSettingsServiceChromeOS::AssemblePolicy(
   policy->set_timestamp(
       (base::Time::Now() - base::Time::UnixEpoch()).InMilliseconds());
   policy->set_username(user_id);
-  if (policy->management_mode() == em::PolicyData::LOCAL_OWNER ||
-      policy->management_mode() == em::PolicyData::CONSUMER_MANAGED) {
+  if (policy_data->management_mode() == em::PolicyData::LOCAL_OWNER ||
+      policy_data->management_mode() == em::PolicyData::CONSUMER_MANAGED) {
     FixupLocalOwnerPolicy(user_id, settings);
   }
   if (!settings->SerializeToString(policy->mutable_policy_value()))
@@ -755,20 +755,14 @@ void OwnerSettingsServiceChromeOS::StorePendingChanges() {
   }
 
   em::ChromeDeviceSettingsProto settings;
-  DeviceSettingsService::Status status = device_settings_service_->status();
   if (tentative_settings_.get()) {
     settings.Swap(tentative_settings_.get());
     tentative_settings_.reset();
-  } else if (status == DeviceSettingsService::STORE_SUCCESS &&
+  } else if (device_settings_service_->status() ==
+                 DeviceSettingsService::STORE_SUCCESS &&
              device_settings_service_->device_settings()) {
     settings = *device_settings_service_->device_settings();
-  } else if (status == DeviceSettingsService::STORE_NO_POLICY ||
-             status == DeviceSettingsService::STORE_INVALID_POLICY ||
-             status == DeviceSettingsService::STORE_VALIDATION_ERROR) {
-    // If policy is missing or broken, attempt to clear it.
-    settings.Clear();
   } else {
-    LOG(ERROR) << "Bailing due to bad DeviceSettingsService status " << status;
     return;
   }
 
