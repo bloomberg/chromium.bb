@@ -6,8 +6,8 @@
   'variables': {
     # File lists shared with GN build.
     'media_router_sources': [
-      'create_presentation_session_request.cc',
-      'create_presentation_session_request.h',
+      'create_presentation_connection_request.cc',
+      'create_presentation_connection_request.h',
       'issue.cc',
       'issue.h',
       'issue_manager.cc',
@@ -39,12 +39,15 @@
       'presentation_connection_state_observer.h',
       'presentation_media_sinks_observer.cc',
       'presentation_media_sinks_observer.h',
+      'presentation_request.cc',
+      'presentation_request.h',
       'presentation_service_delegate_impl.cc',
       'presentation_service_delegate_impl.h',
       'presentation_session_messages_observer.cc',
       'presentation_session_messages_observer.h',
       'presentation_session_state_observer.cc',
       'presentation_session_state_observer.h',
+      'render_frame_host_id.h',
     ],
     # Files that are only needed on desktop builds
     'media_router_non_android_sources': [

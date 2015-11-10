@@ -41,12 +41,6 @@ MATCHER_P(Equals, expected, "") {
 const char *const kPresentationId = "presentationId";
 const char *const kPresentationUrl = "http://foo.com/index.html";
 
-bool ArePresentationSessionsEqual(
-    const presentation::PresentationSessionInfo& expected,
-    const presentation::PresentationSessionInfo& actual) {
-  return expected.url == actual.url && expected.id == actual.id;
-}
-
 bool ArePresentationSessionMessagesEqual(
     const presentation::SessionMessage* expected,
     const presentation::SessionMessage* actual) {
@@ -91,26 +85,24 @@ class MockPresentationServiceDelegate : public PresentationServiceDelegate {
       void(
           int render_process_id,
           int routing_id));
-  MOCK_METHOD3(SetDefaultPresentationUrl,
-      void(
-          int render_process_id,
-          int routing_id,
-          const std::string& default_presentation_url));
+  MOCK_METHOD4(SetDefaultPresentationUrl,
+               void(int render_process_id,
+                    int routing_id,
+                    const std::string& default_presentation_url,
+                    const PresentationSessionStartedCallback& callback));
   MOCK_METHOD5(StartSession,
-      void(
-          int render_process_id,
-          int render_frame_id,
-          const std::string& presentation_url,
-          const PresentationSessionSuccessCallback& success_cb,
-          const PresentationSessionErrorCallback& error_cb));
+               void(int render_process_id,
+                    int render_frame_id,
+                    const std::string& presentation_url,
+                    const PresentationSessionStartedCallback& success_cb,
+                    const PresentationSessionErrorCallback& error_cb));
   MOCK_METHOD6(JoinSession,
-      void(
-          int render_process_id,
-          int render_frame_id,
-          const std::string& presentation_url,
-          const std::string& presentation_id,
-          const PresentationSessionSuccessCallback& success_cb,
-          const PresentationSessionErrorCallback& error_cb));
+               void(int render_process_id,
+                    int render_frame_id,
+                    const std::string& presentation_url,
+                    const std::string& presentation_id,
+                    const PresentationSessionStartedCallback& success_cb,
+                    const PresentationSessionErrorCallback& error_cb));
   MOCK_METHOD3(CloseSession,
                void(int render_process_id,
                     int render_frame_id,
@@ -171,6 +163,13 @@ class MockPresentationServiceClient :
     MessagesReceived();
   }
   MOCK_METHOD0(MessagesReceived, void());
+
+  void OnDefaultSessionStarted(
+      presentation::PresentationSessionInfoPtr session_info) override {
+    OnDefaultSessionStarted(*session_info);
+  }
+  MOCK_METHOD1(OnDefaultSessionStarted,
+               void(const presentation::PresentationSessionInfo& session_info));
 
   mojo::Array<presentation::SessionMessagePtr> messages_received_;
 };
@@ -257,7 +256,6 @@ class PresentationServiceImplTest : public RenderViewHostImplTestHarness {
     EXPECT_EQ(
         service_impl_->screen_availability_listeners_.find(kPresentationUrl),
         service_impl_->screen_availability_listeners_.end());
-    EXPECT_FALSE(service_impl_->default_session_start_context_.get());
     EXPECT_FALSE(service_impl_->on_session_messages_callback_.get());
   }
 
@@ -275,25 +273,6 @@ class PresentationServiceImplTest : public RenderViewHostImplTestHarness {
       presentation::PresentationErrorPtr error) {
     EXPECT_TRUE(info.is_null());
     EXPECT_FALSE(error.is_null());
-    if (!run_loop_quit_closure_.is_null())
-      run_loop_quit_closure_.Run();
-  }
-
-  void ExpectDefaultSessionStarted(
-      const presentation::PresentationSessionInfo& expected_session,
-      presentation::PresentationSessionInfoPtr actual_session) {
-    ASSERT_TRUE(!actual_session.is_null());
-    EXPECT_TRUE(ArePresentationSessionsEqual(
-        expected_session, *actual_session));
-    ++default_session_started_count_;
-    if (!run_loop_quit_closure_.is_null())
-      run_loop_quit_closure_.Run();
-  }
-
-  void ExpectDefaultSessionNull(
-      presentation::PresentationSessionInfoPtr actual_session) {
-    EXPECT_TRUE(actual_session.is_null());
-    ++default_session_started_count_;
     if (!run_loop_quit_closure_.is_null())
       run_loop_quit_closure_.Run();
   }
@@ -450,24 +429,30 @@ TEST_F(PresentationServiceImplTest, DelegateFails) {
 
 TEST_F(PresentationServiceImplTest, SetDefaultPresentationUrl) {
   std::string url1("http://fooUrl");
-  EXPECT_CALL(mock_delegate_,
-      SetDefaultPresentationUrl(_, _, Eq(url1)))
+  EXPECT_CALL(mock_delegate_, SetDefaultPresentationUrl(_, _, Eq(url1), _))
       .Times(1);
   service_impl_->SetDefaultPresentationURL(url1);
   EXPECT_EQ(url1, service_impl_->default_presentation_url_);
 
   std::string url2("http://barUrl");
   // Sets different DPU.
-  EXPECT_CALL(mock_delegate_,
-      SetDefaultPresentationUrl(_, _, Eq(url2)))
-      .Times(1);
+  content::PresentationSessionStartedCallback callback;
+  EXPECT_CALL(mock_delegate_, SetDefaultPresentationUrl(_, _, Eq(url2), _))
+      .WillOnce(SaveArg<3>(&callback));
   service_impl_->SetDefaultPresentationURL(url2);
   EXPECT_EQ(url2, service_impl_->default_presentation_url_);
+
+  presentation::PresentationSessionInfo session_info;
+  session_info.url = url2;
+  session_info.id = kPresentationId;
+  EXPECT_CALL(mock_client_, OnDefaultSessionStarted(Equals(session_info)))
+      .Times(1);
+  callback.Run(content::PresentationSessionInfo(url2, kPresentationId));
 }
 
 TEST_F(PresentationServiceImplTest, SetSameDefaultPresentationUrl) {
   EXPECT_CALL(mock_delegate_,
-      SetDefaultPresentationUrl(_, _, Eq(kPresentationUrl)))
+              SetDefaultPresentationUrl(_, _, Eq(kPresentationUrl), _))
       .Times(1);
   service_impl_->SetDefaultPresentationURL(kPresentationUrl);
   EXPECT_TRUE(Mock::VerifyAndClearExpectations(&mock_delegate_));
@@ -590,59 +575,6 @@ TEST_F(PresentationServiceImplTest, StartSessionInProgress) {
           &PresentationServiceImplTest::ExpectNewSessionMojoCallbackError,
           base::Unretained(this)));
   SaveQuitClosureAndRunLoop();
-}
-
-TEST_F(PresentationServiceImplTest, ListenForDefaultSessionStart) {
-  presentation::PresentationSessionInfo expected_session;
-  expected_session.url = kPresentationUrl;
-  expected_session.id = kPresentationId;
-  service_ptr_->ListenForDefaultSessionStart(
-      base::Bind(&PresentationServiceImplTest::ExpectDefaultSessionStarted,
-                 base::Unretained(this),
-                 expected_session));
-  RunLoopFor(base::TimeDelta::FromMilliseconds(50));
-  service_impl_->OnDefaultPresentationStarted(
-      content::PresentationSessionInfo(kPresentationUrl, kPresentationId));
-  SaveQuitClosureAndRunLoop();
-  EXPECT_EQ(1, default_session_started_count_);
-}
-
-TEST_F(PresentationServiceImplTest, ListenForDefaultSessionStartAfterSet) {
-  // Note that the callback will only pick up presentation_url2/id2 since
-  // ListenForDefaultSessionStart wasn't called yet when the DPU was still
-  // presentation_url1.
-  std::string presentation_url1("http://fooUrl1");
-  std::string presentation_id1("presentationId1");
-  std::string presentation_url2("http://fooUrl2");
-  std::string presentation_id2("presentationId2");
-  service_impl_->OnDefaultPresentationStarted(
-      content::PresentationSessionInfo(presentation_url1, presentation_id1));
-
-  presentation::PresentationSessionInfo expected_session;
-  expected_session.url = presentation_url2;
-  expected_session.id = presentation_id2;
-  service_ptr_->ListenForDefaultSessionStart(
-      base::Bind(&PresentationServiceImplTest::ExpectDefaultSessionStarted,
-                 base::Unretained(this),
-                 expected_session));
-  RunLoopFor(base::TimeDelta::FromMilliseconds(50));
-  service_impl_->OnDefaultPresentationStarted(
-      content::PresentationSessionInfo(presentation_url2, presentation_id2));
-  SaveQuitClosureAndRunLoop();
-  EXPECT_EQ(1, default_session_started_count_);
-}
-
-TEST_F(PresentationServiceImplTest, DefaultSessionStartReset) {
-  service_ptr_->ListenForDefaultSessionStart(
-      base::Bind(&PresentationServiceImplTest::ExpectDefaultSessionNull,
-                 base::Unretained(this)));
-  RunLoopFor(TestTimeouts::tiny_timeout());
-
-  ExpectReset();
-  service_impl_->Reset();
-  ExpectCleanState();
-  SaveQuitClosureAndRunLoop();
-  EXPECT_EQ(1, default_session_started_count_);
 }
 
 TEST_F(PresentationServiceImplTest, SendStringMessage) {

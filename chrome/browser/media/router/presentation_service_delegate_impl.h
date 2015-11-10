@@ -16,6 +16,8 @@
 #include "base/observer_list.h"
 #include "chrome/browser/media/router/media_router.h"
 #include "chrome/browser/media/router/media_source.h"
+#include "chrome/browser/media/router/presentation_request.h"
+#include "chrome/browser/media/router/render_frame_host_id.h"
 #include "content/public/browser/presentation_service_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
@@ -35,8 +37,6 @@ class MediaSinksObserver;
 class PresentationFrameManager;
 class PresentationSessionStateObserver;
 
-using RenderFrameHostId = std::pair<int, int>;
-
 // Implementation of PresentationServiceDelegate that interfaces an
 // instance of WebContents with the Chrome Media Router. It uses the Media
 // Router to handle presentation API calls forwarded from
@@ -49,6 +49,23 @@ class PresentationServiceDelegateImpl
     : public content::WebContentsUserData<PresentationServiceDelegateImpl>,
       public content::PresentationServiceDelegate {
  public:
+  // Observer interface for listening to default presentation request
+  // changes for the WebContents.
+  class DefaultPresentationRequestObserver {
+   public:
+    virtual ~DefaultPresentationRequestObserver() = default;
+
+    // Called when default presentation request for the corresponding
+    // WebContents is set or changed.
+    // |default_presentation_info|: New default presentation request.
+    virtual void OnDefaultPresentationChanged(
+        const PresentationRequest& default_presentation_request) = 0;
+
+    // Called when default presentation request for the corresponding
+    // WebContents has been removed.
+    virtual void OnDefaultPresentationRemoved() = 0;
+  };
+
   // Retrieves the instance of PresentationServiceDelegateImpl that was attached
   // to the specified WebContents.  If no instance was attached, creates one,
   // and attaches it to the specified WebContents.
@@ -75,18 +92,21 @@ class PresentationServiceDelegateImpl
   void SetDefaultPresentationUrl(
       int render_process_id,
       int render_frame_id,
-      const std::string& default_presentation_url) override;
-  void StartSession(int render_process_id,
-                    int render_frame_id,
-                    const std::string& presentation_url,
-                    const PresentationSessionSuccessCallback& success_cb,
-                    const PresentationSessionErrorCallback& error_cb) override;
-  void JoinSession(int render_process_id,
-                   int render_frame_id,
-                   const std::string& presentation_url,
-                   const std::string& presentation_id,
-                   const PresentationSessionSuccessCallback& success_cb,
-                   const PresentationSessionErrorCallback& error_cb) override;
+      const std::string& default_presentation_url,
+      const content::PresentationSessionStartedCallback& callback) override;
+  void StartSession(
+      int render_process_id,
+      int render_frame_id,
+      const std::string& presentation_url,
+      const content::PresentationSessionStartedCallback& success_cb,
+      const content::PresentationSessionErrorCallback& error_cb) override;
+  void JoinSession(
+      int render_process_id,
+      int render_frame_id,
+      const std::string& presentation_url,
+      const std::string& presentation_id,
+      const content::PresentationSessionStartedCallback& success_cb,
+      const content::PresentationSessionErrorCallback& error_cb) override;
   void CloseSession(int render_process_id,
                     int render_frame_id,
                     const std::string& presentation_id) override;
@@ -105,39 +125,34 @@ class PresentationServiceDelegateImpl
       int render_frame_id,
       const content::SessionStateChangedCallback& state_changed_cb) override;
 
-  // Callback invoked when there is a route response from CreateRoute/JoinRoute
-  // outside of a Presentation API request. This could be due to
-  // browser action (e.g., browser initiated media router dialog) or
-  // a media route provider (e.g., autojoin).
-  void OnRouteResponse(const MediaRoute* route,
+  // Callback invoked when a default PresentationRequest is started from a
+  // browser-initiated dialog.
+  void OnRouteResponse(const PresentationRequest& request,
+                       const MediaRoute* route,
                        const std::string& presentation_id,
                        const std::string& error);
 
-  // Returns the default MediaSource for this tab if there is one.
-  // Returns an empty MediaSource otherwise.
-  MediaSource default_source() const { return default_source_; }
+  // Adds / removes an observer for listening to default PresentationRequest
+  // changes. This class does not own |observer|. When |observer| is about to
+  // be destroyed, |RemoveDefaultPresentationRequestObserver| must be called.
+  void AddDefaultPresentationRequestObserver(
+      DefaultPresentationRequestObserver* observer);
+  void RemoveDefaultPresentationRequestObserver(
+      DefaultPresentationRequestObserver* observer);
 
-  content::WebContents* web_contents() const { return web_contents_; }
-  const GURL& default_frame_url() const { return default_frame_url_; }
+  // Gets the default presentation request for the owning tab WebContents. It
+  // is an error to call this method if the default presentation request does
+  // not exist.
+  PresentationRequest GetDefaultPresentationRequest() const;
 
-  // Observer interface for listening to default MediaSource changes for the
+  // Returns true if there is a default presentation request for the owning tab
   // WebContents.
-  class DefaultMediaSourceObserver {
-   public:
-    virtual ~DefaultMediaSourceObserver() {}
+  bool HasDefaultPresentationRequest() const;
 
-    // Called when default media source for the corresponding WebContents has
-    // changed.
-    // |source|: New default MediaSource, or empty if default was removed.
-    // |frame_url|: URL of the frame that contains the default media
-    //     source, or empty if there is no default media source.
-    virtual void OnDefaultMediaSourceChanged(const MediaSource& source,
-                                             const GURL& frame_url) = 0;
-  };
+  // Returns the WebContents that owns this instance.
+  content::WebContents* web_contents() const { return web_contents_; }
 
-  // Adds / removes an observer for listening to default MediaSource changes.
-  void AddDefaultMediaSourceObserver(DefaultMediaSourceObserver* observer);
-  void RemoveDefaultMediaSourceObserver(DefaultMediaSourceObserver* observer);
+  base::WeakPtr<PresentationServiceDelegateImpl> GetWeakPtr();
 
   void SetMediaRouterForTest(MediaRouter* router);
   bool HasScreenAvailabilityListenerForTest(
@@ -145,12 +160,16 @@ class PresentationServiceDelegateImpl
       int render_frame_id,
       const MediaSource::Id& source_id) const;
 
-  base::WeakPtr<PresentationServiceDelegateImpl> GetWeakPtr();
-
  private:
   friend class content::WebContentsUserData<PresentationServiceDelegateImpl>;
   FRIEND_TEST_ALL_PREFIXES(PresentationServiceDelegateImplTest,
                            DelegateObservers);
+  FRIEND_TEST_ALL_PREFIXES(PresentationServiceDelegateImplTest,
+                           SetDefaultPresentationUrl);
+  FRIEND_TEST_ALL_PREFIXES(PresentationServiceDelegateImplTest,
+                           DefaultPresentationRequestObserver);
+  FRIEND_TEST_ALL_PREFIXES(PresentationServiceDelegateImplTest,
+                           DefaultPresentationUrlCallback);
 
   explicit PresentationServiceDelegateImpl(content::WebContents* web_contents);
 
@@ -159,47 +178,26 @@ class PresentationServiceDelegateImpl
   MediaSource GetMediaSourceFromListener(
       content::PresentationScreenAvailabilityListener* listener);
 
-  void OnJoinRouteResponse(int render_process_id,
-                           int render_frame_id,
-                           const content::PresentationSessionInfo& session,
-                           const PresentationSessionSuccessCallback& success_cb,
-                           const PresentationSessionErrorCallback& error_cb,
-                           const MediaRoute* route,
-                           const std::string& presentation_id,
-                           const std::string& error_text);
+  void OnJoinRouteResponse(
+      int render_process_id,
+      int render_frame_id,
+      const content::PresentationSessionInfo& session,
+      const content::PresentationSessionStartedCallback& success_cb,
+      const content::PresentationSessionErrorCallback& error_cb,
+      const MediaRoute* route,
+      const std::string& presentation_id,
+      const std::string& error_text);
 
   void OnStartSessionSucceeded(
       int render_process_id,
       int render_frame_id,
-      const PresentationSessionSuccessCallback& success_cb,
+      const content::PresentationSessionStartedCallback& success_cb,
       const content::PresentationSessionInfo& new_session,
       const MediaRoute::Id& route_id);
 
-  // Returns |true| if the frame is the main frame of |web_contents_|.
-  bool IsMainFrame(int render_process_id, int render_frame_id) const;
-
-  // Updates tab-level default MediaSource, default frame URL, and the
-  // originating frame. If the source or frame URL changed, notify the
-  // observers.
-  void UpdateDefaultMediaSourceAndNotifyObservers(
-      const RenderFrameHostId& render_frame_host_id,
-      const MediaSource& new_default_source,
-      const GURL& new_default_frame_url);
-
-  // ID of RenderFrameHost that contains the default presentation.
-  RenderFrameHostId default_presentation_render_frame_host_id_;
-  // Default MediaSource for the tab associated with this instance.
-  MediaSource default_source_;
-  // URL of the frame that contains the default MediaSource.
-  GURL default_frame_url_;
-
-  // References to the observers listening for changes to default media source.
-  base::ObserverList<
-      DefaultMediaSourceObserver> default_media_source_observers_;
-
   // References to the WebContents that owns this instance, and associated
   // browser profile's MediaRouter instance.
-  content::WebContents* web_contents_;
+  content::WebContents* const web_contents_;
   MediaRouter* router_;
 
   scoped_ptr<PresentationFrameManager> frame_manager_;

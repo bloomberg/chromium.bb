@@ -224,13 +224,6 @@ void PresentationServiceImpl::StopListeningForScreenAvailability(
   screen_availability_listeners_.erase(listener_it);
 }
 
-void PresentationServiceImpl::ListenForDefaultSessionStart(
-    const DefaultSessionMojoCallback& callback) {
-  if (!default_session_start_context_.get())
-    default_session_start_context_.reset(new DefaultSessionStartContext);
-  default_session_start_context_->AddCallback(callback);
-}
-
 void PresentationServiceImpl::StartSession(
     const mojo::String& presentation_url,
     const NewSessionMojoCallback& callback) {
@@ -368,11 +361,12 @@ void PresentationServiceImpl::SetDefaultPresentationURL(
   const std::string& new_default_url = url.get();
   if (default_presentation_url_ == new_default_url)
     return;
-  delegate_->SetDefaultPresentationUrl(
-      render_process_id_,
-      render_frame_id_,
-      new_default_url);
+
   default_presentation_url_ = new_default_url;
+  delegate_->SetDefaultPresentationUrl(
+      render_process_id_, render_frame_id_, new_default_url,
+      base::Bind(&PresentationServiceImpl::OnDefaultPresentationStarted,
+                 weak_factory_.GetWeakPtr()));
 }
 
 void PresentationServiceImpl::SendSessionMessage(
@@ -521,8 +515,6 @@ void PresentationServiceImpl::Reset() {
 
   pending_join_session_cbs_.clear();
 
-  default_session_start_context_.reset();
-
   if (on_session_messages_callback_.get()) {
     on_session_messages_callback_->Run(
         mojo::Array<presentation::SessionMessagePtr>());
@@ -544,9 +536,10 @@ void PresentationServiceImpl::OnDelegateDestroyed() {
 }
 
 void PresentationServiceImpl::OnDefaultPresentationStarted(
-    const PresentationSessionInfo& session) {
-  if (default_session_start_context_.get())
-    default_session_start_context_->set_session(session);
+    const PresentationSessionInfo& session_info) {
+  DCHECK(client_.get());
+  client_->OnDefaultSessionStarted(
+      presentation::PresentationSessionInfo::From(session_info));
 }
 
 PresentationServiceImpl::ScreenAvailabilityListenerImpl
@@ -595,47 +588,6 @@ void PresentationServiceImpl::NewSessionMojoCallbackWrapper::Run(
   DCHECK(!callback_.is_null());
   callback_.Run(session.Pass(), error.Pass());
   callback_.reset();
-}
-
-PresentationServiceImpl::DefaultSessionStartContext
-::DefaultSessionStartContext() {
-}
-
-PresentationServiceImpl::DefaultSessionStartContext
-::~DefaultSessionStartContext() {
-  Reset();
-}
-
-void PresentationServiceImpl::DefaultSessionStartContext::AddCallback(
-    const DefaultSessionMojoCallback& callback) {
-  if (session_.get()) {
-    DCHECK(callbacks_.empty());
-    callback.Run(presentation::PresentationSessionInfo::From(*session_));
-    session_.reset();
-  } else {
-    callbacks_.push_back(new DefaultSessionMojoCallback(callback));
-  }
-}
-
-void PresentationServiceImpl::DefaultSessionStartContext::set_session(
-    const PresentationSessionInfo& session) {
-  if (callbacks_.empty()) {
-    session_.reset(new PresentationSessionInfo(session));
-  } else {
-    DCHECK(!session_.get());
-    ScopedVector<DefaultSessionMojoCallback> callbacks;
-    callbacks.swap(callbacks_);
-    for (const auto& callback : callbacks)
-      callback->Run(presentation::PresentationSessionInfo::From(session));
-  }
-}
-
-void PresentationServiceImpl::DefaultSessionStartContext::Reset() {
-  ScopedVector<DefaultSessionMojoCallback> callbacks;
-  callbacks.swap(callbacks_);
-  for (const auto& callback : callbacks)
-    callback->Run(presentation::PresentationSessionInfoPtr());
-  session_.reset();
 }
 
 }  // namespace content

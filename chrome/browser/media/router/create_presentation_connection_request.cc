@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/media/router/create_presentation_session_request.h"
+#include "chrome/browser/media/router/create_presentation_connection_request.h"
 
 #include "chrome/browser/media/router/media_source_helper.h"
 
@@ -11,13 +11,13 @@ using content::PresentationError;
 
 namespace media_router {
 
-CreatePresentationSessionRequest::CreatePresentationSessionRequest(
+CreatePresentationConnectionRequest::CreatePresentationConnectionRequest(
+    const RenderFrameHostId& render_frame_host_id,
     const std::string& presentation_url,
     const GURL& frame_url,
     const PresentationSessionSuccessCallback& success_cb,
     const PresentationSessionErrorCallback& error_cb)
-    : media_source_(MediaSourceForPresentationUrl(presentation_url)),
-      frame_url_(frame_url),
+    : presentation_request_(render_frame_host_id, presentation_url, frame_url),
       success_cb_(success_cb),
       error_cb_(error_cb),
       cb_invoked_(false) {
@@ -25,28 +25,27 @@ CreatePresentationSessionRequest::CreatePresentationSessionRequest(
   DCHECK(!error_cb.is_null());
 }
 
-CreatePresentationSessionRequest::~CreatePresentationSessionRequest() {
+CreatePresentationConnectionRequest::~CreatePresentationConnectionRequest() {
   if (!cb_invoked_) {
     error_cb_.Run(content::PresentationError(
         content::PRESENTATION_ERROR_UNKNOWN, "Unknown error."));
   }
 }
 
-void CreatePresentationSessionRequest::InvokeSuccessCallback(
+void CreatePresentationConnectionRequest::InvokeSuccessCallback(
     const std::string& presentation_id,
     const MediaRoute::Id& route_id) {
   DCHECK(!cb_invoked_);
   if (!cb_invoked_) {
-    // Overwrite presentation ID.
     success_cb_.Run(
         content::PresentationSessionInfo(
-            PresentationUrlFromMediaSource(media_source_), presentation_id),
+            presentation_request_.presentation_url(), presentation_id),
         route_id);
     cb_invoked_ = true;
   }
 }
 
-void CreatePresentationSessionRequest::InvokeErrorCallback(
+void CreatePresentationConnectionRequest::InvokeErrorCallback(
     const content::PresentationError& error) {
   DCHECK(!cb_invoked_);
   if (!cb_invoked_) {
@@ -56,8 +55,8 @@ void CreatePresentationSessionRequest::InvokeErrorCallback(
 }
 
 // static
-void CreatePresentationSessionRequest::HandleRouteResponse(
-    scoped_ptr<CreatePresentationSessionRequest> presentation_request,
+void CreatePresentationConnectionRequest::HandleRouteResponse(
+    scoped_ptr<CreatePresentationConnectionRequest> presentation_request,
     const MediaRoute* route,
     const std::string& presentation_id,
     const std::string& error) {

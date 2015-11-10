@@ -100,13 +100,13 @@ class CONTENT_EXPORT PresentationDispatcher
   void OnSessionMessagesReceived(
       presentation::PresentationSessionInfoPtr session_info,
       mojo::Array<presentation::SessionMessagePtr> messages) override;
+  void OnDefaultSessionStarted(
+      presentation::PresentationSessionInfoPtr session_info) override;
 
   void OnSessionCreated(
       blink::WebPresentationConnectionClientCallbacks* callback,
       presentation::PresentationSessionInfoPtr session_info,
       presentation::PresentationErrorPtr error);
-  void OnDefaultSessionStarted(
-      presentation::PresentationSessionInfoPtr session_info);
 
   // Call to PresentationService to send the message in |request|.
   // |session_info| and |message| of |reuqest| will be consumed.

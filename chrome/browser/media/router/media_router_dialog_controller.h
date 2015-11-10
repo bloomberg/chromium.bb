@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
-#include "chrome/browser/media/router/create_presentation_session_request.h"
+#include "chrome/browser/media/router/create_presentation_connection_request.h"
 #include "content/public/browser/web_contents_observer.h"
 
 namespace content {
@@ -40,7 +40,7 @@ class MediaRouterDialogController {
   // If the dialog already exists, brings it to the front but doesn't change the
   // dialog with |request|, returns false and |request| is deleted.
   bool ShowMediaRouterDialogForPresentation(
-      scoped_ptr<CreatePresentationSessionRequest> request);
+      scoped_ptr<CreatePresentationConnectionRequest> request);
 
   // Shows the media router dialog modal to |initiator_|.
   // Creates the dialog if it did not exist prior to this call, returns true.
@@ -62,13 +62,14 @@ class MediaRouterDialogController {
   // Activates the WebContents that initiated the dialog, e.g. focuses the tab.
   void ActivateInitiatorWebContents();
 
-  // Passes the ownership of the CreatePresentationSessionRequest to the caller.
-  scoped_ptr<CreatePresentationSessionRequest> TakePresentationRequest();
+  // Passes the ownership of the CreatePresentationConnectionRequest to the
+  // caller.
+  scoped_ptr<CreatePresentationConnectionRequest> TakeCreateConnectionRequest();
 
-  // Returns the CreatePresentationSessionRequest to the caller but keeps the
+  // Returns the CreatePresentationConnectionRequest to the caller but keeps the
   // ownership with the MediaRouterDialogController.
-  const CreatePresentationSessionRequest* presentation_request() const {
-    return presentation_request_.get();
+  const CreatePresentationConnectionRequest* create_connection_request() const {
+    return create_connection_request_.get();
   }
 
   // Returns the WebContents that initiated showing the dialog.
@@ -94,7 +95,7 @@ class MediaRouterDialogController {
   // Data for dialogs created at the request of the Presentation API.
   // Passed from the caller via ShowMediaRouterDialogForPresentation to the
   // dialog when it is initialized.
-  scoped_ptr<CreatePresentationSessionRequest> presentation_request_;
+  scoped_ptr<CreatePresentationConnectionRequest> create_connection_request_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaRouterDialogController);
 };
