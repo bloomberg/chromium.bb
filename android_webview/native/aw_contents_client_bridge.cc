@@ -340,21 +340,6 @@ void AwContentsClientBridge::RunBeforeUnloadDialog(
       env, obj.obj(), jurl.obj(), jmessage.obj(), callback_id);
 }
 
-bool AwContentsClientBridge::ShouldOverrideUrlLoading(const base::string16& url,
-                                                      bool has_user_gesture,
-                                                      bool is_redirect,
-                                                      bool is_main_frame) {
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
-  if (obj.is_null())
-    return false;
-  ScopedJavaLocalRef<jstring> jurl = ConvertUTF16ToJavaString(env, url);
-  devtools_instrumentation::ScopedEmbedderCallbackTask(
-      "shouldOverrideUrlLoading");
-  return Java_AwContentsClientBridge_shouldOverrideUrlLoading(
-      env, obj.obj(), jurl.obj(), has_user_gesture, is_redirect, is_main_frame);
-}
-
 void AwContentsClientBridge::ConfirmJsResult(JNIEnv* env,
                                              jobject,
                                              int id,

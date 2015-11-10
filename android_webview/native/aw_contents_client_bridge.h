@@ -54,10 +54,6 @@ class AwContentsClientBridge : public AwContentsClientBridgeBase {
       const base::string16& message_text,
       const content::JavaScriptDialogManager::DialogClosedCallback& callback)
       override;
-  bool ShouldOverrideUrlLoading(const base::string16& url,
-                                bool has_user_gesture,
-                                bool is_redirect,
-                                bool is_main_frame) override;
 
   // Methods called from Java.
   void ProceedSslError(JNIEnv* env, jobject obj, jboolean proceed, jint id);

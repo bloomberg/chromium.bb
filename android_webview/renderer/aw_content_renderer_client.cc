@@ -29,8 +29,6 @@
 #include "components/printing/renderer/print_web_view_helper.h"
 #include "components/visitedlink/renderer/visitedlink_slave.h"
 #include "content/public/common/url_constants.h"
-#include "content/public/renderer/document_state.h"
-#include "content/public/renderer/navigation_state.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
@@ -41,7 +39,6 @@
 #include "third_party/WebKit/public/platform/WebURLError.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
-#include "third_party/WebKit/public/web/WebNavigationType.h"
 #include "third_party/WebKit/public/web/WebSecurityPolicy.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -77,61 +74,6 @@ void AwContentRendererClient::RenderThreadStarted() {
   blink::WebString aw_scheme(
       base::ASCIIToUTF16(android_webview::kAndroidWebViewVideoPosterScheme));
   blink::WebSecurityPolicy::registerURLSchemeAsSecure(aw_scheme);
-}
-
-bool AwContentRendererClient::HandleNavigation(
-    content::RenderFrame* render_frame,
-    bool is_content_initiated,
-    int opener_id,
-    blink::WebFrame* frame,
-    const blink::WebURLRequest& request,
-    blink::WebNavigationType type,
-    blink::WebNavigationPolicy default_policy,
-    bool is_redirect) {
-  // Only GETs can be overridden.
-  if (!request.httpMethod().equals("GET"))
-    return false;
-
-  // Any navigation from loadUrl, and goBack/Forward are considered application-
-  // initiated and hence will not yield a shouldOverrideUrlLoading() callback.
-  // Webview classic does not consider reload application-initiated so we
-  // continue the same behavior.
-  // TODO(sgurun) is_content_initiated is normally false for cross-origin
-  // navigations but since android_webview does not swap out renderers, this
-  // works fine. This will stop working if android_webview starts swapping out
-  // renderers on navigation.
-  bool application_initiated =
-      !is_content_initiated || type == blink::WebNavigationTypeBackForward;
-
-  // Don't offer application-initiated navigations unless it's a redirect.
-  if (application_initiated && !is_redirect)
-    return false;
-
-  bool is_main_frame = !frame->parent();
-  const GURL& gurl = request.url();
-  // For HTTP schemes, only top-level navigations can be overridden. Similarly,
-  // WebView Classic lets app override only top level about:blank navigations.
-  // So we filter out non-top about:blank navigations here.
-  if (!is_main_frame &&
-      (gurl.SchemeIs(url::kHttpScheme) || gurl.SchemeIs(url::kHttpsScheme) ||
-       gurl.SchemeIs(url::kAboutScheme)))
-    return false;
-
-  // use NavigationInterception throttle to handle the call as that can
-  // be deferred until after the java side has been constructed.
-  if (opener_id != MSG_ROUTING_NONE) {
-    return false;
-  }
-
-  bool ignore_navigation = false;
-  base::string16 url = request.url().string();
-  bool has_user_gesture = request.hasUserGesture();
-
-  int render_frame_id = render_frame->GetRoutingID();
-  RenderThread::Get()->Send(new AwViewHostMsg_ShouldOverrideUrlLoading(
-      render_frame_id, url, has_user_gesture, is_redirect, is_main_frame,
-      &ignore_navigation));
-  return ignore_navigation;
 }
 
 void AwContentRendererClient::RenderFrameCreated(

@@ -36,14 +36,6 @@ class AwContentRendererClient : public content::ContentRendererClient {
   bool IsLinkVisited(unsigned long long link_hash) override;
   void AddKeySystems(std::vector<media::KeySystemInfo>* key_systems) override;
 
-  bool HandleNavigation(content::RenderFrame* render_frame,
-                        bool is_content_initiated,
-                        int opener_id,
-                        blink::WebFrame* frame,
-                        const blink::WebURLRequest& request,
-                        blink::WebNavigationType type,
-                        blink::WebNavigationPolicy default_policy,
-                        bool is_redirect) override;
   bool ShouldOverridePageVisibilityState(
       const content::RenderFrame* render_frame,
       blink::WebPageVisibilityState* override_state) override;
