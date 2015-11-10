@@ -73,16 +73,6 @@ class MockAccountReconcilor : public AccountReconcilor {
   MOCK_METHOD1(OnReceivedManageAccountsResponse, void(signin::GAIAServiceType));
 };
 
-// Mock GaiaCookieManagerService to catch call to ForceOnCookieChangedProcessing
-class MockGaiaCookieManagerService : public GaiaCookieManagerService {
- public:
-  MockGaiaCookieManagerService()
-      : GaiaCookieManagerService(nullptr,
-                                 GaiaConstants::kChromeSource,
-                                 nullptr) {}
-  MOCK_METHOD0(ForceOnCookieChangedProcessing, void());
-};
-
 // TestWebState that allows control over its policy decider.
 class TestWebState : public web::TestWebState {
  public:
@@ -121,7 +111,8 @@ class AccountConsistencyServiceTest : public PlatformTest {
     HostContentSettingsMap::RegisterProfilePrefs(prefs_.registry());
     SigninManagerBase::RegisterProfilePrefs(prefs_.registry());
 
-    gaia_cookie_manager_service_.reset(new MockGaiaCookieManagerService());
+    gaia_cookie_manager_service_.reset(new GaiaCookieManagerService(
+        nullptr, GaiaConstants::kChromeSource, nullptr));
     signin_client_.reset(new TestSigninClient(&prefs_));
     signin_manager_.reset(new FakeSigninManager(
         signin_client_.get(), nullptr, &account_tracker_service_, nullptr));
@@ -190,7 +181,7 @@ class AccountConsistencyServiceTest : public PlatformTest {
   scoped_ptr<AccountConsistencyService> account_consistency_service_;
   scoped_ptr<TestSigninClient> signin_client_;
   scoped_ptr<FakeSigninManager> signin_manager_;
-  scoped_ptr<MockGaiaCookieManagerService> gaia_cookie_manager_service_;
+  scoped_ptr<GaiaCookieManagerService> gaia_cookie_manager_service_;
   scoped_refptr<HostContentSettingsMap> settings_map_;
   scoped_refptr<content_settings::CookieSettings> cookie_settings_;
 };
@@ -370,24 +361,4 @@ TEST_F(AccountConsistencyServiceTest, DomainsWithCookieLoadedFromPrefs) {
   AddPageLoadedExpectation(kYoutubeUrl, true /* continue_navigation */);
   SignOut();
   EXPECT_OCMOCK_VERIFY(GetMockWKWebView());
-}
-
-// Tests that domains with cookie are cleared when browsing data is removed.
-TEST_F(AccountConsistencyServiceTest, DomainsClearedOnBrowsingDataRemoved) {
-  CR_TEST_REQUIRES_WK_WEB_VIEW();
-
-  AddPageLoadedExpectation(kGoogleUrl, true /* continue_navigation */);
-  AddPageLoadedExpectation(kYoutubeUrl, true /* continue_navigation */);
-  SignIn();
-  EXPECT_OCMOCK_VERIFY(GetMockWKWebView());
-  const base::DictionaryValue* dict =
-      prefs_.GetDictionary(AccountConsistencyService::kDomainsWithCookiePref);
-  EXPECT_EQ(2u, dict->size());
-
-  EXPECT_CALL(*gaia_cookie_manager_service_, ForceOnCookieChangedProcessing())
-      .Times(1);
-  account_consistency_service_->OnBrowsingDataRemoved();
-  dict =
-      prefs_.GetDictionary(AccountConsistencyService::kDomainsWithCookiePref);
-  EXPECT_EQ(0u, dict->size());
 }
