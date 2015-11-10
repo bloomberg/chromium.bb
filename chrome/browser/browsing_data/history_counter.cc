@@ -30,14 +30,14 @@ HistoryCounter::HistoryCounter() : pref_name_(prefs::kDeleteBrowsingHistory),
 }
 
 HistoryCounter::~HistoryCounter() {
-  DCHECK(sync_service_);
-  sync_service_->RemoveObserver(this);
+  if (sync_service_)
+    sync_service_->RemoveObserver(this);
 }
 
 void HistoryCounter::OnInitialized() {
   sync_service_ = ProfileSyncServiceFactory::GetForProfile(GetProfile());
-  DCHECK(sync_service_);
-  sync_service_->AddObserver(this);
+  if (sync_service_)
+    sync_service_->AddObserver(this);
   history_sync_enabled_ =
       !!WebHistoryServiceFactory::GetForProfile(GetProfile());
 }
@@ -65,7 +65,8 @@ void HistoryCounter::Count() {
   local_counting_finished_ = false;
 
   history::HistoryService* service =
-      HistoryServiceFactory::GetForProfileWithoutCreating(GetProfile());
+      HistoryServiceFactory::GetForProfile(
+          GetProfile(), ServiceAccessType::EXPLICIT_ACCESS);
 
   service->GetHistoryCount(
       GetPeriodStart(),
