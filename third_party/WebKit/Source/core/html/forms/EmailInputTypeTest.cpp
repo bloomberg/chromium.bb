@@ -29,6 +29,14 @@ void expectToFail(const String& source)
 
 TEST(EmailInputTypeTest, ConvertEmailAddressToASCII)
 {
+    // U+043C U+043E U+0439 . U+0434 U+043E U+043C U+0435 U+043D
+    expectToFail(String::fromUTF8("user@\xD0\xBC\xD0\xBE\xD0\xB9.\xD0\xB4\xD0\xBE\xD0\xBC\xD0\xB5\xD0\xBD@"));
+    expectToFail(String::fromUTF8("user@\xD0\xBC\xD0\xBE\xD0\xB9. \xD0\xB4\xD0\xBE\xD0\xBC\xD0\xB5\xD0\xBD"));
+    expectToFail(String::fromUTF8("user@\xD0\xBC\xD0\xBE\xD0\xB9.\t\xD0\xB4\xD0\xBE\xD0\xBC\xD0\xB5\xD0\xBD"));
+}
+
+TEST(EmailInputTypeTest, ConvertEmailAddressToASCIIUTS46)
+{
     // http://unicode.org/reports/tr46/#Table_IDNA_Comparisons
 
     // U+00E0

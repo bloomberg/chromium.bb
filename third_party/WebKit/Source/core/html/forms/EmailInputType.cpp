@@ -64,11 +64,12 @@ String EmailInputType::convertEmailAddressToASCII(const String& address)
     size_t atPosition = address.find('@');
     if (atPosition == kNotFound)
         return address;
+    String host = address.substring(atPosition + 1);
 
     // UnicodeString ctor for copy-on-write does not work reliably (in debug
     // build.) TODO(jshin): In an unlikely case this is a perf-issue, treat
     // 8bit and non-8bit strings separately.
-    icu::UnicodeString idnDomainName(address.charactersWithNullTermination().data() + atPosition + 1, address.length() - atPosition - 1);
+    icu::UnicodeString idnDomainName(host.charactersWithNullTermination().data(), host.length());
     icu::UnicodeString domainName;
 
     // Leak |idna| at the end.
@@ -83,7 +84,8 @@ String EmailInputType::convertEmailAddressToASCII(const String& address)
     StringBuilder builder;
     builder.append(address, 0, atPosition + 1);
     builder.append(domainName.getBuffer(), domainName.length());
-    return builder.toString();
+    String asciiEmail = builder.toString();
+    return isValidEmailAddress(asciiEmail) ? asciiEmail : address;
 }
 
 String EmailInputType::convertEmailAddressToUnicode(const String& address) const
