@@ -864,9 +864,6 @@
             ],
           }],
           ['OS == "android" and _toolset == "host" and host_os == "linux"', {
-            'defines': [
-              'OS_ANDROID_HOST=Linux',
-            ],
             'sources/': [
               # Pull in specific files for host builds.
               ['include', '^threading/platform_thread_linux\\.cc$'],
