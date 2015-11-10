@@ -42,6 +42,7 @@
 #include "platform/graphics/paint/CachedDisplayItem.h"
 #include "platform/graphics/paint/DisplayItemClient.h"
 #include "platform/graphics/paint/PaintController.h"
+#include "platform/heap/Handle.h"
 #include "platform/transforms/TransformationMatrix.h"
 #include "public/platform/WebCompositorAnimationDelegate.h"
 #include "public/platform/WebContentLayer.h"
@@ -346,7 +347,7 @@ private:
 
     // A layer that replicates this layer. We only allow one, for now.
     // The replica is not parented; this is the primary reference to it.
-    GraphicsLayer* m_replicaLayer; 
+    GraphicsLayer* m_replicaLayer;
     GraphicsLayer* m_replicatedLayer; // For a replica layer, a reference to the original layer.
     FloatPoint m_replicatedLayerPosition; // For a replica layer, the position of the replica.
 
@@ -367,6 +368,7 @@ private:
 
     OwnPtr<ContentLayerDelegate> m_contentLayerDelegate;
 
+    GC_PLUGIN_IGNORE("509911")
     ScrollableArea* m_scrollableArea;
     GraphicsLayerDebugInfo m_debugInfo;
     int m_3dRenderingContext;

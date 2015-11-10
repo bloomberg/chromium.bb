@@ -6,6 +6,7 @@
 #define ProgrammaticScrollAnimator_h
 
 #include "platform/geometry/FloatPoint.h"
+#include "platform/heap/Handle.h"
 #include "public/platform/WebCompositorAnimationDelegate.h"
 #include "public/platform/WebCompositorAnimationPlayerClient.h"
 #include "wtf/Allocator.h"
@@ -75,6 +76,7 @@ private:
     OwnPtr<WebCompositorAnimationPlayer> m_compositorPlayer;
     int m_compositorAnimationAttachedToLayerId;
 
+    GC_PLUGIN_IGNORE("509911")
     ScrollableArea* m_scrollableArea;
     OwnPtr<WebScrollOffsetAnimationCurve> m_animationCurve;
     FloatPoint m_targetOffset;

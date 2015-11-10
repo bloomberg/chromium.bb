@@ -34,6 +34,7 @@
 #include "platform/PlatformExport.h"
 #include "platform/PlatformWheelEvent.h"
 #include "platform/geometry/FloatSize.h"
+#include "platform/heap/Handle.h"
 #include "platform/scroll/ScrollTypes.h"
 #include "wtf/Forward.h"
 
@@ -103,6 +104,7 @@ protected:
 
     virtual void notifyPositionChanged();
 
+    GC_PLUGIN_IGNORE("509911")
     ScrollableArea* m_scrollableArea;
     float m_currentPosX; // We avoid using a FloatPoint in order to reduce
     float m_currentPosY; // subclass code complexity.
