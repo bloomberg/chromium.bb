@@ -2,9 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import json
 import os
 import subprocess
 import sys
+import tempfile
 import unittest
 
 
@@ -38,10 +40,25 @@ class ScriptsSmokeTest(unittest.TestCase):
   def testRunBenchmarkListListsOutBenchmarks(self):
     return_code, stdout = self.RunPerfScript('run_benchmark list')
     self.assertIn('Pass --browser to list benchmarks', stdout)
-    self.assertIn('kraken', stdout)
+    self.assertIn('dummy_benchmark.stable_benchmark_1', stdout)
     self.assertEquals(return_code, 0)
 
   def testRunRecordWprHelp(self):
     return_code, stdout = self.RunPerfScript('record_wpr')
     self.assertIn('optional arguments:', stdout)
     self.assertEquals(return_code, 0)
+
+  def testRunBenchmarkListJSONListsOutBenchmarks(self):
+    tmp_file = tempfile.NamedTemporaryFile(delete=False)
+    tmp_file_name = tmp_file.name
+    tmp_file.close()
+    try:
+      return_code, _ = self.RunPerfScript(
+          'run_benchmark list --json-output %s' % tmp_file_name)
+      self.assertEquals(return_code, 0)
+      with open(tmp_file_name, 'r') as f:
+        benchmark_data = json.load(f)
+        self.assertIn('dummy_benchmark.stable_benchmark_1',
+                      benchmark_data['steps'])
+    finally:
+      os.remove(tmp_file_name)
