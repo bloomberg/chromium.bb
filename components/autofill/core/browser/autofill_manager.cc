@@ -1445,13 +1445,8 @@ void AutofillManager::ParseForms(const std::vector<FormData>& forms) {
   for (const FormData& form : forms) {
     scoped_ptr<FormStructure> form_structure(new FormStructure(form));
 
-    if (!form_structure->ShouldBeParsed()) {
-      if (form_structure->has_password_field()) {
-        AutofillMetrics::LogPasswordFormQueryVolume(
-            AutofillMetrics::NEW_PASSWORD_QUERY);
-      }
+    if (!form_structure->ShouldBeParsed())
       continue;
-    }
 
     form_structure->DetermineHeuristicTypes();
 
@@ -1460,13 +1455,10 @@ void AutofillManager::ParseForms(const std::vector<FormData>& forms) {
     // as long as receivers don't take ownership.
     form_structures_.push_back(form_structure.Pass());
 
-    if (form_structures_.back()->ShouldBeCrowdsourced()) {
-      AutofillMetrics::LogPasswordFormQueryVolume(
-          AutofillMetrics::CURRENT_QUERY);
+    if (form_structures_.back()->ShouldBeCrowdsourced())
       queryable_forms.push_back(form_structures_.back());
-    } else {
+    else
       non_queryable_forms.push_back(form_structures_.back());
-    }
   }
 
   if (!queryable_forms.empty() && download_manager_) {

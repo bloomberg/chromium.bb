@@ -622,13 +622,6 @@ void AutofillMetrics::LogAutocompleteSuggestionAcceptedIndex(int index) {
 }
 
 // static
-void AutofillMetrics::LogPasswordFormQueryVolume(
-    PasswordFormQueryVolumeMetric metric) {
-  UMA_HISTOGRAM_ENUMERATION("Autofill.PasswordFormQueryVolume", metric,
-                            NUM_PASSWORD_FORM_QUERY_VOLUME_METRIC);
-}
-
-// static
 void AutofillMetrics::LogNumberOfEditedAutofilledFieldsAtSubmission(
     size_t num_edited_autofilled_fields) {
   UMA_HISTOGRAM_COUNTS_1000(

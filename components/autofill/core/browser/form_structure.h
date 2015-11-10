@@ -191,8 +191,6 @@ class FormStructure {
 
   const GURL& source_url() const { return source_url_; }
 
-  bool has_password_field() const { return has_password_field_; }
-
   void set_upload_required(UploadRequired required) {
     upload_required_ = required;
   }

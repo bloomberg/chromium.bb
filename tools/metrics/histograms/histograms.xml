@@ -2358,6 +2358,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     enum="PasswordFormQueryVolume">
   <owner>dvadym@chromium.org</owner>
   <owner>gcasto@chromium.org</owner>
+  <obsolete>
+    Deprecated 10/2015.
+  </obsolete>
   <summary>
     Tracks the increased load on the Autofill server if the restriction on
     querying for password forms with fewer than 3 fields were omitted.
