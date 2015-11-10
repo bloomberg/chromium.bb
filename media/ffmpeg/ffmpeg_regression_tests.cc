@@ -87,7 +87,10 @@ FFMPEG_TEST_CASE(Cr110849,
                  "security/110849.mkv",
                  DEMUXER_ERROR_COULD_NOT_OPEN,
                  DEMUXER_ERROR_NO_SUPPORTED_STREAMS);
-FFMPEG_TEST_CASE(Cr112384, "security/112384.webm", PIPELINE_OK, PIPELINE_OK);
+FFMPEG_TEST_CASE(Cr112384,
+                 "security/112384.webm",
+                 DEMUXER_ERROR_COULD_NOT_PARSE,
+                 DEMUXER_ERROR_COULD_NOT_PARSE);
 FFMPEG_TEST_CASE(Cr112976, "security/112976.ogg", PIPELINE_OK, PIPELINE_OK);
 FFMPEG_TEST_CASE(Cr116927,
                  "security/116927.ogv",
@@ -333,6 +336,7 @@ FLAKY_FFMPEG_TEST_CASE(WEBM_3, "security/out.webm.139771.2965");
 FLAKY_FFMPEG_TEST_CASE(MP4_10, "security/null1.m4a");
 FLAKY_FFMPEG_TEST_CASE(Cr112670, "security/112670.mp4");
 
+// Uses ASSERTs to prevent sharded tests from hanging on failure.
 TEST_P(FFmpegRegressionTest, BasicPlayback) {
   if (GetParam().init_status == PIPELINE_OK) {
     ASSERT_EQ(PIPELINE_OK, Start(GetParam().filename, kClockless));
