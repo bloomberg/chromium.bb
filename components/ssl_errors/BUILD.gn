@@ -22,7 +22,7 @@ source_set("ssl_errors") {
 source_set("unit_tests") {
   testonly = true
   sources = [
-    "error_classification_unittests.cc",
+    "error_classification_unittest.cc",
   ]
 
   deps = [
