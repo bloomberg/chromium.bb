@@ -520,13 +520,61 @@ if (current_cpu == "x86" || current_cpu == "x64") {
       "//build/config/compiler:no_chromium_code",
     ]
   }
-  source_set("skia_opts_sse4") {
+  source_set("skia_opts_sse41") {
     sources = gypi_skia_opts.sse41_sources
     if (!is_win || is_clang) {
       cflags = [ "-msse4.1" ]
     }
     if (is_win) {
       defines = [ "SK_CPU_SSE_LEVEL=41" ]
+    }
+    visibility = [ ":skia_opts" ]
+    configs -= [ "//build/config/compiler:chromium_code" ]
+    configs += [
+      ":skia_config",
+      ":skia_library_config",
+      "//build/config/compiler:no_chromium_code",
+    ]
+  }
+  source_set("skia_opts_sse42") {
+    sources = gypi_skia_opts.sse42_sources
+    if (!is_win || is_clang) {
+      cflags = [ "-msse4.2" ]
+    }
+    if (is_win) {
+      defines = [ "SK_CPU_SSE_LEVEL=42" ]
+    }
+    visibility = [ ":skia_opts" ]
+    configs -= [ "//build/config/compiler:chromium_code" ]
+    configs += [
+      ":skia_config",
+      ":skia_library_config",
+      "//build/config/compiler:no_chromium_code",
+    ]
+  }
+  source_set("skia_opts_avx") {
+    sources = gypi_skia_opts.avx_sources
+    if (!is_win || is_clang) {
+      cflags = [ "-mavx" ]
+    }
+    if (is_win) {
+      cflags = [ "/arch:AVX" ]
+    }
+    visibility = [ ":skia_opts" ]
+    configs -= [ "//build/config/compiler:chromium_code" ]
+    configs += [
+      ":skia_config",
+      ":skia_library_config",
+      "//build/config/compiler:no_chromium_code",
+    ]
+  }
+  source_set("skia_opts_avx2") {
+    sources = gypi_skia_opts.avx2_sources
+    if (!is_win || is_clang) {
+      cflags = [ "-mavx2" ]
+    }
+    if (is_win) {
+      cflags = [ "/arch:AVX2" ]
     }
     visibility = [ ":skia_opts" ]
     configs -= [ "//build/config/compiler:chromium_code" ]
@@ -549,7 +597,10 @@ source_set("skia_opts") {
     sources = gypi_skia_opts.sse2_sources
     deps += [
       ":skia_opts_sse3",
-      ":skia_opts_sse4",
+      ":skia_opts_sse41",
+      ":skia_opts_sse42",
+      ":skia_opts_avx",
+      ":skia_opts_avx2",
     ]
   } else if (current_cpu == "arm") {
     # The assembly uses the frame pointer register (r7 in Thumb/r11 in

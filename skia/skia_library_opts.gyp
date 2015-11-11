@@ -29,7 +29,7 @@
       'target_name': 'skia_opts',
       'type': 'static_library',
       # The optimize: 'max' scattered throughout are particularly
-      # important when compiled by MSVC 2013, which seems 
+      # important when compiled by MSVC 2013, which seems
       # to mis-link-time-compile code that's built with
       # different optimization levels. http://crbug.com/543583
       'variables': {
@@ -55,6 +55,9 @@
           'dependencies': [
             'skia_opts_ssse3',
             'skia_opts_sse41',
+            'skia_opts_sse42',
+            'skia_opts_avx',
+            'skia_opts_avx2',
           ],
         }],
         [ 'target_arch == "arm"', {
@@ -110,7 +113,7 @@
       'target_name': 'skia_opts_ssse3',
       'type': 'static_library',
       # The optimize: 'max' scattered throughout are particularly
-      # important when compiled by MSVC 2013, which seems 
+      # important when compiled by MSVC 2013, which seems
       # to mis-link-time-compile code that's built with
       # different optimization levels. http://crbug.com/543583
       'variables': {
@@ -154,7 +157,7 @@
       'target_name': 'skia_opts_sse41',
       'type': 'static_library',
       # The optimize: 'max' scattered throughout are particularly
-      # important when compiled by MSVC 2013, which seems 
+      # important when compiled by MSVC 2013, which seems
       # to mis-link-time-compile code that's built with
       # different optimization levels. http://crbug.com/543583
       'variables': {
@@ -188,10 +191,107 @@
       ],
     },
     {
+      'target_name': 'skia_opts_sse42',
+      'type': 'static_library',
+      # The optimize: 'max' scattered throughout are particularly
+      # important when compiled by MSVC 2013, which seems
+      # to mis-link-time-compile code that's built with
+      # different optimization levels. http://crbug.com/543583
+      'variables': {
+        'optimize': 'max',
+      },
+      'includes': [
+        'skia_common.gypi',
+        '../build/android/increase_size_for_speed.gypi',
+      ],
+      'include_dirs': [ '<@(include_dirs)' ],
+      'sources': [ '<@(sse42_sources)' ],
+      'conditions': [
+        [ 'OS in ["linux", "freebsd", "openbsd", "solaris", "android"]', {
+          'cflags': [ '-msse4.2' ],
+        }],
+        [ 'OS == "mac"', {
+          'xcode_settings': {
+            'GCC_ENABLE_SSE42_EXTENSIONS': 'YES',
+          },
+        }],
+        [ 'OS == "win" and clang == 1', {
+          # cl.exe's /arch flag doesn't have a setting for SSE4.2, and cl.exe
+          # doesn't need it for intrinsics. clang-cl does need it, though.
+          'msvs_settings': {
+            'VCCLCompilerTool': { 'AdditionalOptions': [ '-msse4.2' ] },
+          },
+        }],
+        [ 'OS == "win"', {
+          'defines' : [ 'SK_CPU_SSE_LEVEL=42' ],
+        }],
+      ],
+    },
+    {
+      'target_name': 'skia_opts_avx',
+      'type': 'static_library',
+      # The optimize: 'max' scattered throughout are particularly
+      # important when compiled by MSVC 2013, which seems
+      # to mis-link-time-compile code that's built with
+      # different optimization levels. http://crbug.com/543583
+      'variables': {
+        'optimize': 'max',
+      },
+      'includes': [
+        'skia_common.gypi',
+        '../build/android/increase_size_for_speed.gypi',
+      ],
+      'include_dirs': [ '<@(include_dirs)' ],
+      'sources': [ '<@(avx_sources)' ],
+      'conditions': [
+        [ 'OS in ["linux", "freebsd", "openbsd", "solaris", "android"]', {
+          'cflags': [ '-mavx' ],
+        }],
+        [ 'OS == "mac"', {
+          'xcode_settings': {
+            'OTHER_CFLAGS': [ '-mavx' ],
+          },
+        }],
+        [ 'OS == "win"', {
+          'msvs_settings': { 'VCCLCompilerTool': { 'EnableEnhancedInstructionSet': '3' } },
+        }],
+      ],
+    },
+    {
+      'target_name': 'skia_opts_avx2',
+      'type': 'static_library',
+      # The optimize: 'max' scattered throughout are particularly
+      # important when compiled by MSVC 2013, which seems
+      # to mis-link-time-compile code that's built with
+      # different optimization levels. http://crbug.com/543583
+      'variables': {
+        'optimize': 'max',
+      },
+      'includes': [
+        'skia_common.gypi',
+        '../build/android/increase_size_for_speed.gypi',
+      ],
+      'include_dirs': [ '<@(include_dirs)' ],
+      'sources': [ '<@(avx2_sources)' ],
+      'conditions': [
+        [ 'OS in ["linux", "freebsd", "openbsd", "solaris", "android"]', {
+          'cflags': [ '-mavx2' ],
+        }],
+        [ 'OS == "mac"', {
+          'xcode_settings': {
+            'OTHER_CFLAGS': [ '-mavx2' ],
+          },
+        }],
+        [ 'OS == "win"', {
+          'msvs_settings': { 'VCCLCompilerTool': { 'EnableEnhancedInstructionSet': '5' } },
+        }],
+      ],
+    },
+    {
       'target_name': 'skia_opts_none',
       'type': 'static_library',
       # The optimize: 'max' scattered throughout are particularly
-      # important when compiled by MSVC 2013, which seems 
+      # important when compiled by MSVC 2013, which seems
       # to mis-link-time-compile code that's built with
       # different optimization levels. http://crbug.com/543583
       'variables': {
