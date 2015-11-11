@@ -93,6 +93,7 @@
         '<(DEPTH)/media/media.gyp:shared_memory_support',
         '<(DEPTH)/third_party/opus/opus.gyp:opus',
         '<(DEPTH)/third_party/libvpx_new/libvpx.gyp:libvpx_new',
+        '<(DEPTH)/third_party/libyuv/libyuv.gyp:libyuv',
         '<(DEPTH)/ui/gfx/gfx.gyp:gfx_geometry',
       ],
       'sources': [
@@ -194,7 +195,7 @@
             'sender/vp8_encoder.cc',
             'sender/vp8_encoder.h',
             'sender/vp8_quantizer_parser.cc',
-	    'sender/vp8_quantizer_parser.h', 
+	    'sender/vp8_quantizer_parser.h',
           ],
         }], # OS=="ios"
         # iOS and OS X encoders

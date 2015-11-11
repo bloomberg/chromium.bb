@@ -204,6 +204,7 @@ source_set("receiver") {
     "//media",
     "//media:shared_memory_support",
     "//third_party/libvpx_new",
+    "//third_party/libyuv",
     "//third_party/opus",
     "//ui/gfx",
   ]
