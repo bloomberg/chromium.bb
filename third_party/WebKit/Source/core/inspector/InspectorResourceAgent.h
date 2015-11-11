@@ -168,7 +168,7 @@ private:
     InspectedFrames* m_inspectedFrames;
     String m_userAgentOverride;
     String m_hostId;
-    OwnPtr<NetworkResourcesData> m_resourcesData;
+    OwnPtrWillBeMember<NetworkResourcesData> m_resourcesData;
 
     typedef HashMap<ThreadableLoaderClient*, unsigned long> ThreadableLoaderClientRequestIdMap;
 

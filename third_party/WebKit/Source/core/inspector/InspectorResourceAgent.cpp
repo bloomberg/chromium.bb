@@ -411,6 +411,7 @@ InspectorResourceAgent::~InspectorResourceAgent()
 
 DEFINE_TRACE(InspectorResourceAgent)
 {
+    visitor->trace(m_resourcesData);
     visitor->trace(m_replayXHRs);
     visitor->trace(m_replayXHRsToBeDeleted);
     visitor->trace(m_pendingXHRReplayData);
@@ -1091,7 +1092,7 @@ void InspectorResourceAgent::removeFinishedReplayXHRFired(Timer<InspectorResourc
 InspectorResourceAgent::InspectorResourceAgent(InspectedFrames* inspectedFrames)
     : InspectorBaseAgent<InspectorResourceAgent, InspectorFrontend::Network>("Network")
     , m_inspectedFrames(inspectedFrames)
-    , m_resourcesData(adoptPtr(new NetworkResourcesData()))
+    , m_resourcesData(NetworkResourcesData::create())
     , m_pendingRequest(nullptr)
     , m_isRecalculatingStyle(false)
     , m_removeFinishedReplayXHRTimer(this, &InspectorResourceAgent::removeFinishedReplayXHRFired)

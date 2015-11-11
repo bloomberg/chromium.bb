@@ -78,11 +78,11 @@ private:
     bool m_includeCredentials;
 };
 
-class NetworkResourcesData {
-    USING_FAST_MALLOC(NetworkResourcesData);
+class NetworkResourcesData final : public NoBaseWillBeGarbageCollectedFinalized<NetworkResourcesData> {
+    USING_FAST_MALLOC_WILL_BE_REMOVED(NetworkResourcesData);
 public:
-    class ResourceData {
-        USING_FAST_MALLOC(ResourceData);
+    class ResourceData final : public NoBaseWillBeGarbageCollectedFinalized<ResourceData> {
+        USING_FAST_MALLOC_WILL_BE_REMOVED(ResourceData);
         friend class NetworkResourcesData;
     public:
         ResourceData(const String& requestId, const String& loaderId);
@@ -133,6 +133,7 @@ public:
         BlobDataHandle* downloadedFileBlob() const { return m_downloadedFileBlob.get(); }
         void setDownloadedFileBlob(PassRefPtr<BlobDataHandle> blob) { m_downloadedFileBlob = blob; }
 
+        DECLARE_TRACE();
     private:
         bool hasData() const { return m_dataBuffer; }
         size_t dataLength() const;
@@ -144,7 +145,7 @@ public:
         String m_frameId;
         KURL m_url;
         String m_content;
-        RefPtrWillBePersistent<XHRReplayData> m_xhrReplayData;
+        RefPtrWillBeMember<XHRReplayData> m_xhrReplayData;
         bool m_base64Encoded;
         RefPtr<SharedBuffer> m_dataBuffer;
         bool m_isContentEvicted;
@@ -156,12 +157,14 @@ public:
         OwnPtr<TextResourceDecoder> m_decoder;
 
         RefPtr<SharedBuffer> m_buffer;
-        Resource* m_cachedResource;
+        RawPtrWillBeMember<Resource> m_cachedResource;
         RefPtr<BlobDataHandle> m_downloadedFileBlob;
     };
 
-    NetworkResourcesData();
-
+    static PassOwnPtrWillBeRawPtr<NetworkResourcesData> create()
+    {
+        return adoptPtrWillBeNoop(new NetworkResourcesData);
+    }
     ~NetworkResourcesData();
 
     void resourceCreated(const String& requestId, const String& loaderId);
@@ -179,9 +182,12 @@ public:
     void setResourcesDataSizeLimits(size_t maximumResourcesContentSize, size_t maximumSingleResourceContentSize);
     void setXHRReplayData(const String& requestId, XHRReplayData*);
     XHRReplayData* xhrReplayData(const String& requestId);
-    Vector<ResourceData*> resources();
+    WillBeHeapVector<RawPtrWillBeMember<ResourceData>> resources();
 
+    DECLARE_TRACE();
 private:
+    NetworkResourcesData();
+
     ResourceData* resourceDataForRequestId(const String& requestId);
     void ensureNoDataForRequestId(const String& requestId);
     bool ensureFreeSpace(size_t);
@@ -190,7 +196,7 @@ private:
 
     typedef HashMap<String, String> ReusedRequestIds;
     ReusedRequestIds m_reusedXHRReplayDataRequestIds;
-    typedef HashMap<String, ResourceData*> ResourceDataMap;
+    typedef WillBeHeapHashMap<String, RawPtrWillBeMember<ResourceData>> ResourceDataMap;
     ResourceDataMap m_requestIdToResourceDataMap;
     size_t m_contentSize;
     size_t m_maximumResourcesContentSize;
