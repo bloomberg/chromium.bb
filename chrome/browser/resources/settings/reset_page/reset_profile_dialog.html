@@ -1,0 +1,39 @@
+<link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-checkbox/paper-checkbox.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-dialog/paper-dialog.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-spinner/paper-spinner.html">
+
+<dom-module id="settings-reset-profile-dialog">
+  <link rel="import" type="css" href="reset_profile_dialog.css">
+  <template>
+    <paper-dialog modal id="dialog">
+      <div>
+        <h2 i18n-content="resetPageTitle"></h2>
+        <div i18n-content="resetPageExplanation" id="explanation"></div>
+        <div class="layout center horizontal" id="buttonContainer">
+          <paper-button on-tap="onLearnMoreTap_" id="learnMore"
+              i18n-content="learnMore"></paper-button>
+          <div class="layout center buttons flex-1">
+            <paper-spinner id="resetSpinner"></paper-spinner>
+            <paper-button on-tap="onCancelTap_" id="cancel"
+                i18n-content="cancel"></paper-button>
+            <paper-button i18n-content="resetPageCommit" on-tap="onResetTap_"
+                id="reset"></paper-button>
+          </div>
+        </div>
+      </div>
+      <div id="feedbackBar">
+        <paper-checkbox id="sendSettings" i18n-content="resetPageFeedback"
+            checked on-change="onSendSettingsChange_"></paper-checkbox>
+        <div id="settings">
+          <template is="dom-repeat" items="[[feedbackInfo_]]">
+            <div><span>[[item.key]]</span>: <span>[[item.value]]</span></div>
+          </template>
+        </div>
+      </div>
+    </paper-dialog>
+  </template>
+  <script src="reset_profile_dialog.js"></script>
+</dom-module>
