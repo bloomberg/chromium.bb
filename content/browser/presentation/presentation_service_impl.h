@@ -94,7 +94,7 @@ class CONTENT_EXPORT PresentationServiceImpl
   // Maximum number of pending JoinSession requests at any given time.
   static const int kMaxNumQueuedSessionRequests = 10;
 
-  using PresentationSessionMojoCallback =
+  using DefaultSessionMojoCallback =
       mojo::Callback<void(presentation::PresentationSessionInfoPtr)>;
   using SessionStateCallback =
       mojo::Callback<void(presentation::PresentationSessionInfoPtr,
@@ -123,6 +123,27 @@ class CONTENT_EXPORT PresentationServiceImpl
    private:
     const std::string availability_url_;
     PresentationServiceImpl* const service_;
+  };
+
+  class CONTENT_EXPORT DefaultSessionStartContext {
+   public:
+    DefaultSessionStartContext();
+    ~DefaultSessionStartContext();
+
+    // Adds a callback. May invoke the callback immediately if |session| using
+    // default presentation URL was already started.
+    void AddCallback(const DefaultSessionMojoCallback& callback);
+
+    // Sets the session info. Maybe invoke callbacks queued with AddCallback().
+    void set_session(const PresentationSessionInfo& session);
+
+   private:
+    // Flush all queued callbacks by invoking them with null
+    // PresentationSessionInfoPtr.
+    void Reset();
+
+    ScopedVector<DefaultSessionMojoCallback> callbacks_;
+    scoped_ptr<PresentationSessionInfo> session_;
   };
 
   // Ensures the provided NewSessionMojoCallback is invoked exactly once
@@ -156,6 +177,8 @@ class CONTENT_EXPORT PresentationServiceImpl
   void SetClient(presentation::PresentationServiceClientPtr client) override;
   void ListenForScreenAvailability(const mojo::String& url) override;
   void StopListeningForScreenAvailability(const mojo::String& url) override;
+  void ListenForDefaultSessionStart(
+      const DefaultSessionMojoCallback& callback) override;
   void StartSession(
       const mojo::String& presentation_url,
       const NewSessionMojoCallback& callback) override;
@@ -185,11 +208,8 @@ class CONTENT_EXPORT PresentationServiceImpl
 
   // PresentationServiceDelegate::Observer
   void OnDelegateDestroyed() override;
-
-  // Passed to embedder's implementation of PresentationServiceDelegate for
-  // later invocation when default presentation has started.
-  void OnDefaultPresentationStarted(
-      const PresentationSessionInfo& session_info);
+  void OnDefaultPresentationStarted(const PresentationSessionInfo& session)
+      override;
 
   // Finds the callback from |pending_join_session_cbs_| using
   // |request_session_id|.
@@ -263,6 +283,8 @@ class CONTENT_EXPORT PresentationServiceImpl
   // For JoinSession requests.
   base::hash_map<int, linked_ptr<NewSessionMojoCallbackWrapper>>
       pending_join_session_cbs_;
+
+  scoped_ptr<DefaultSessionStartContext> default_session_start_context_;
 
   // RAII binding of |this| to an Presentation interface request.
   // The binding is removed when binding_ is cleared or goes out of scope.

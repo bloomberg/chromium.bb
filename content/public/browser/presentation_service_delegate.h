@@ -19,10 +19,6 @@ namespace content {
 
 class PresentationScreenAvailabilityListener;
 
-using PresentationSessionStartedCallback =
-    base::Callback<void(const PresentationSessionInfo&)>;
-using PresentationSessionErrorCallback =
-    base::Callback<void(const PresentationError&)>;
 using SessionStateChangedCallback =
     base::Callback<void(const PresentationSessionInfo&,
                         PresentationConnectionState)>;
@@ -43,10 +39,21 @@ class CONTENT_EXPORT PresentationServiceDelegate {
     // Called when the PresentationServiceDelegate is being destroyed.
     virtual void OnDelegateDestroyed() = 0;
 
+    // Called when the default presentation has been started outside of a
+    // Presentation API context (e.g., browser action). This will not be called
+    // if the session was created as a result of Presentation API's
+    // StartSession()/JoinSession().
+    virtual void OnDefaultPresentationStarted(
+        const PresentationSessionInfo& session) = 0;
+
    protected:
     virtual ~Observer() {}
   };
 
+  using PresentationSessionSuccessCallback =
+      base::Callback<void(const PresentationSessionInfo&)>;
+  using PresentationSessionErrorCallback =
+      base::Callback<void(const PresentationError&)>;
   using SendMessageCallback = base::Callback<void(bool)>;
 
   virtual ~PresentationServiceDelegate() {}
@@ -94,16 +101,13 @@ class CONTENT_EXPORT PresentationServiceDelegate {
       int render_frame_id) = 0;
 
   // Sets the default presentation URL for frame given by |render_process_id|
-  // and |render_frame_id|. When the default presentation is started on this
-  // frame, |callback| will be invoked with the corresponding
-  // PresentationSessionInfo object.
+  // and |render_frame_id|.
   // If |default_presentation_url| is empty, the default presentation URL will
-  // be cleared and the previously registered callback (if any) will be removed.
+  // be cleared.
   virtual void SetDefaultPresentationUrl(
       int render_process_id,
       int render_frame_id,
-      const std::string& default_presentation_url,
-      const PresentationSessionStartedCallback& callback) = 0;
+      const std::string& default_presentation_url) = 0;
 
   // Starts a new presentation session. The presentation id of the session will
   // be the default presentation ID if any or a generated one otherwise.
@@ -119,7 +123,7 @@ class CONTENT_EXPORT PresentationServiceDelegate {
       int render_process_id,
       int render_frame_id,
       const std::string& presentation_url,
-      const PresentationSessionStartedCallback& success_cb,
+      const PresentationSessionSuccessCallback& success_cb,
       const PresentationSessionErrorCallback& error_cb) = 0;
 
   // Joins an existing presentation session. Unlike StartSession(), this
@@ -135,7 +139,7 @@ class CONTENT_EXPORT PresentationServiceDelegate {
       int render_frame_id,
       const std::string& presentation_url,
       const std::string& presentation_id,
-      const PresentationSessionStartedCallback& success_cb,
+      const PresentationSessionSuccessCallback& success_cb,
       const PresentationSessionErrorCallback& error_cb) = 0;
 
   // Close an existing presentation session.

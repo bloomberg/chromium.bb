@@ -337,6 +337,11 @@ void PresentationDispatcher::OnDefaultSessionStarted(
   if (!controller_)
     return;
 
+  // Reset the callback to get the next event.
+  presentation_service_->ListenForDefaultSessionStart(base::Bind(
+      &PresentationDispatcher::OnDefaultSessionStarted,
+      base::Unretained(this)));
+
   if (!session_info.is_null()) {
     controller_->didStartDefaultSession(
         new PresentationConnectionClient(session_info.Clone()));
@@ -421,6 +426,9 @@ void PresentationDispatcher::ConnectToPresentationServiceIfNeeded() {
   binding_.Bind(GetProxy(&client_ptr));
   presentation_service_->SetClient(client_ptr.Pass());
 
+  presentation_service_->ListenForDefaultSessionStart(base::Bind(
+      &PresentationDispatcher::OnDefaultSessionStarted,
+      base::Unretained(this)));
   presentation_service_->ListenForSessionStateChange();
 }
 

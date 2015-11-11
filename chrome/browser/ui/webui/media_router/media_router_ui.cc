@@ -9,7 +9,7 @@
 #include "base/guid.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/media/router/create_presentation_connection_request.h"
+#include "chrome/browser/media/router/create_presentation_session_request.h"
 #include "chrome/browser/media/router/issue.h"
 #include "chrome/browser/media/router/issues_observer.h"
 #include "chrome/browser/media/router/media_route.h"
@@ -163,12 +163,11 @@ MediaRouterUI::~MediaRouterUI() {
   if (query_result_manager_.get())
     query_result_manager_->RemoveObserver(this);
   if (presentation_service_delegate_.get())
-    presentation_service_delegate_->RemoveDefaultPresentationRequestObserver(
-        this);
-  // If |create_session_request_| still exists, then it means presentation route
+    presentation_service_delegate_->RemoveDefaultMediaSourceObserver(this);
+  // If |presentation_request_| still exists, then it means presentation route
   // request was never attempted.
-  if (create_session_request_) {
-    create_session_request_->InvokeErrorCallback(content::PresentationError(
+  if (presentation_request_) {
+    presentation_request_->InvokeErrorCallback(content::PresentationError(
         content::PRESENTATION_ERROR_SESSION_REQUEST_CANCELLED,
         "Dialog closed."));
   }
@@ -181,30 +180,30 @@ void MediaRouterUI::InitWithDefaultMediaSource(
   DCHECK(!query_result_manager_.get());
 
   presentation_service_delegate_ = delegate;
-  presentation_service_delegate_->AddDefaultPresentationRequestObserver(this);
-  InitCommon(presentation_service_delegate_->web_contents());
-  if (presentation_service_delegate_->HasDefaultPresentationRequest()) {
-    OnDefaultPresentationChanged(
-        presentation_service_delegate_->GetDefaultPresentationRequest());
-  }
+  presentation_service_delegate_->AddDefaultMediaSourceObserver(this);
+  InitCommon(presentation_service_delegate_->web_contents(),
+             presentation_service_delegate_->default_source(),
+             presentation_service_delegate_->default_frame_url());
 }
 
 void MediaRouterUI::InitWithPresentationSessionRequest(
     content::WebContents* initiator,
     const base::WeakPtr<PresentationServiceDelegateImpl>& delegate,
-    scoped_ptr<CreatePresentationConnectionRequest> create_session_request) {
+    scoped_ptr<CreatePresentationSessionRequest> presentation_request) {
   DCHECK(initiator);
-  DCHECK(create_session_request);
-  DCHECK(!create_session_request_);
+  DCHECK(presentation_request);
+  DCHECK(!presentation_request_);
   DCHECK(!query_result_manager_);
 
-  create_session_request_ = create_session_request.Pass();
+  presentation_request_ = presentation_request.Pass();
   presentation_service_delegate_ = delegate;
-  InitCommon(initiator);
-  OnDefaultPresentationChanged(create_session_request_->presentation_request());
+  InitCommon(initiator, presentation_request_->media_source(),
+             presentation_request_->frame_url());
 }
 
-void MediaRouterUI::InitCommon(content::WebContents* initiator) {
+void MediaRouterUI::InitCommon(content::WebContents* initiator,
+                               const MediaSource& default_source,
+                               const GURL& default_frame_url) {
   DCHECK(initiator);
   DCHECK(router_);
 
@@ -224,31 +223,26 @@ void MediaRouterUI::InitCommon(content::WebContents* initiator) {
       MediaSourceForTab(SessionTabHelper::IdForTab(initiator)));
   query_result_manager_->StartSinksQuery(
       MediaCastMode::TAB_MIRROR, mirroring_source);
+
+  OnDefaultMediaSourceChanged(default_source, default_frame_url);
 }
 
-void MediaRouterUI::OnDefaultPresentationChanged(
-    const PresentationRequest& presentation_request) {
-  presentation_request_.reset(new PresentationRequest(presentation_request));
-  query_result_manager_->StartSinksQuery(
-      MediaCastMode::DEFAULT, presentation_request_->GetMediaSource());
-  UpdateCastModes();
-}
-
-void MediaRouterUI::OnDefaultPresentationRemoved() {
-  presentation_request_.reset();
-  query_result_manager_->StopSinksQuery(MediaCastMode::DEFAULT);
-  UpdateCastModes();
-}
-
-void MediaRouterUI::UpdateCastModes() {
-  // Gets updated cast modes from |query_result_manager_| and forwards it to UI.
-  query_result_manager_->GetSupportedCastModes(&cast_modes_);
-  if (ui_initialized_) {
-    handler_->UpdateCastModes(
-        cast_modes_, presentation_request_
-                         ? GetHostFromURL(presentation_request_->frame_url())
-                         : std::string());
+void MediaRouterUI::OnDefaultMediaSourceChanged(const MediaSource& source,
+                                                const GURL& frame_url) {
+  if (source.Empty()) {
+    query_result_manager_->StopSinksQuery(MediaCastMode::DEFAULT);
+  } else {
+    query_result_manager_->StartSinksQuery(MediaCastMode::DEFAULT, source);
   }
+  UpdateSourceHostAndCastModes(frame_url);
+}
+
+void MediaRouterUI::UpdateSourceHostAndCastModes(const GURL& frame_url) {
+  DCHECK(query_result_manager_);
+  frame_url_ = frame_url;
+  query_result_manager_->GetSupportedCastModes(&cast_modes_);
+  if (ui_initialized_)
+    handler_->UpdateCastModes(cast_modes_, GetHostFromURL(frame_url_));
 }
 
 void MediaRouterUI::Close() {
@@ -274,11 +268,11 @@ bool MediaRouterUI::CreateRoute(const MediaSink::Id& sink_id,
   DCHECK(initiator_);
 
   // Note that there is a rarely-encountered bug, where the MediaCastMode to
-  // MediaSource mapping could have been updated, between when the user clicked
-  // on the UI to start a create route request, and when this function is
-  // called. However, since the user does not have visibility into the
-  // MediaSource, and that it occurs very rarely in practice, we leave it as-is
-  // for now.
+  // MediaSource mapping could have been updated, between when the user
+  // clicked on the UI to start a create route request,
+  // and when this function is called.
+  // However, since the user does not have visibility into the MediaSource, and
+  // that it occurs very rarely in practice, we leave it as-is for now.
   MediaSource source = query_result_manager_->GetSourceForCastMode(cast_mode);
   if (source.Empty()) {
     LOG(ERROR) << "No corresponding MediaSource for cast mode " << cast_mode;
@@ -286,16 +280,11 @@ bool MediaRouterUI::CreateRoute(const MediaSink::Id& sink_id,
   }
 
   requesting_route_for_default_source_ = cast_mode == MediaCastMode::DEFAULT;
-  if (requesting_route_for_default_source_ && !presentation_request_) {
-    DLOG(ERROR) << "Requested to create a route for presentation, but "
-                << "presentation request is missing.";
-    return false;
-  }
-
   current_route_request_id_ = ++route_request_counter_;
   GURL origin;
+  // TODO(imcheng): What is the origin if not creating route in DEFAULT mode?
   if (requesting_route_for_default_source_) {
-    origin = presentation_request_->frame_url().GetOrigin();
+    origin = frame_url_.GetOrigin();
   } else {
     // Requesting route for mirroring. Use a placeholder URL as origin.
     origin = GURL(chrome::kChromeUIMediaRouterURL);
@@ -308,7 +297,7 @@ bool MediaRouterUI::CreateRoute(const MediaSink::Id& sink_id,
   // (1) Non-presentation route request (e.g., mirroring). No additional
   // notification necessary.
   // (2) Presentation route request for a Presentation API startSession call.
-  // The startSession (CreatePresentationConnectionRequest) will need to be
+  // The startSession (CreatePresentationSessionRequest) will need to be
   // answered with the
   // route response.
   // (3) Browser-initiated presentation route request. If successful,
@@ -321,16 +310,16 @@ bool MediaRouterUI::CreateRoute(const MediaSink::Id& sink_id,
                  weak_factory_.GetWeakPtr(), current_route_request_id_,
                  sink_id));
   if (requesting_route_for_default_source_) {
-    if (create_session_request_) {
-      // |create_session_request_| will be nullptr after this call, as the
+    if (presentation_request_) {
+      // |presentation_request_| will be nullptr after this call, as the
       // object will be transferred to the callback.
       route_response_callbacks.push_back(
-          base::Bind(&CreatePresentationConnectionRequest::HandleRouteResponse,
-                     base::Passed(&create_session_request_)));
+          base::Bind(&CreatePresentationSessionRequest::HandleRouteResponse,
+                     base::Passed(&presentation_request_)));
     } else if (presentation_service_delegate_) {
       route_response_callbacks.push_back(
           base::Bind(&PresentationServiceDelegateImpl::OnRouteResponse,
-                     presentation_service_delegate_, *presentation_request_));
+                     presentation_service_delegate_));
     }
   }
 
