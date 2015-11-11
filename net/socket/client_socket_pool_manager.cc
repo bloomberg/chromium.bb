@@ -39,14 +39,12 @@ static_assert(arraysize(g_max_sockets_per_pool) ==
 // as home routers blocking the connections!?!?  See http://crbug.com/12066.
 //
 // WebSocket connections are long-lived, and should be treated differently
-// than normal other connections. 6 connections per group sounded too small
-// for such use, thus we use a larger limit which was determined somewhat
-// arbitrarily.
-// TODO(yutak): Look at the usage and determine the right value after
-// WebSocket protocol stack starts to work.
+// than normal other connections. Use a limit of 255, so the limit for wss will
+// be the same as the limit for ws. Also note that Firefox uses a limit of 200.
+// See http://crbug.com/486800
 int g_max_sockets_per_group[] = {
   6,  // NORMAL_SOCKET_POOL
-  30  // WEBSOCKET_SOCKET_POOL
+  255 // WEBSOCKET_SOCKET_POOL
 };
 
 static_assert(arraysize(g_max_sockets_per_group) ==
