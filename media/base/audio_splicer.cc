@@ -349,7 +349,9 @@ bool AudioSplicer::AddInput(const scoped_refptr<AudioBuffer>& input) {
   // may not actually have a splice.  Here we check if any frames exist before
   // the splice.  In this case, just transfer all data to the output sanitizer.
   const int frames_before_splice =
-      output_ts_helper.GetFramesToTarget(splice_timestamp_);
+      output_ts_helper.base_timestamp() == kNoTimestamp()
+          ? 0
+          : output_ts_helper.GetFramesToTarget(splice_timestamp_);
   if (frames_before_splice < 0 ||
       pre_splice_sanitizer_->GetFrameCount() <= frames_before_splice) {
     CHECK(pre_splice_sanitizer_->DrainInto(output_sanitizer_.get()));

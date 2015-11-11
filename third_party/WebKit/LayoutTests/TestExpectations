@@ -802,8 +802,6 @@ crbug.com/302729 [ Android ] http/tests/media/media-source/mediasource-seek-beyo
 crbug.com/524160 [ Debug ] http/tests/media/media-source/mediasource-appendbuffer-quota-exceeded.html [ Timeout ]
 crbug.com/524160 [ Debug ] http/tests/media/media-source/mediasource-appendstream-quota-exceeded.html [ Timeout ]
 
-crbug.com/527152 http/tests/media/media-source/mediasource-duration.html [ Pass Crash ]
-
 crbug.com/517449 [ Android ] css3/images/optimize-contrast-image.html [ Failure ]
 
 crbug.com/309675 compositing/gestures/gesture-tapHighlight-simple-longPress.html [ Failure ]
