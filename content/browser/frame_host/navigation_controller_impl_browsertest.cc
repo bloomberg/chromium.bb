@@ -103,6 +103,55 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest, UniqueIDs) {
             controller.GetEntryAtIndex(1)->GetUniqueID());
 }
 
+// Ensures that RenderFrameHosts end up with the correct nav_entry_id() after
+// navigations.
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest, UniqueIDsOnFrames) {
+  NavigationController& controller = shell()->web_contents()->GetController();
+
+  // Load a main frame with an about:blank subframe.
+  GURL main_url(embedded_test_server()->GetURL(
+      "/navigation_controller/page_with_iframe.html"));
+  NavigateToURL(shell(), main_url);
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+  ASSERT_EQ(1U, root->child_count());
+  ASSERT_NE(nullptr, root->child_at(0));
+
+  // The main frame's nav_entry_id should match the last committed entry.
+  int unique_id = controller.GetLastCommittedEntry()->GetUniqueID();
+  EXPECT_EQ(unique_id, root->current_frame_host()->nav_entry_id());
+
+  // The about:blank iframe should have inherited the same nav_entry_id.
+  EXPECT_EQ(unique_id, root->child_at(0)->current_frame_host()->nav_entry_id());
+
+  // Use NavigateFrameToURL to go cross-site in the subframe.
+  GURL foo_url(embedded_test_server()->GetURL(
+      "foo.com", "/navigation_controller/simple_page_1.html"));
+  NavigateFrameToURL(root->child_at(0), foo_url);
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+
+  // The unique ID should have stayed the same for the auto-subframe navigation,
+  // since the new page replaces the initial about:blank page in the subframe.
+  EXPECT_EQ(unique_id, controller.GetLastCommittedEntry()->GetUniqueID());
+  EXPECT_EQ(unique_id, root->current_frame_host()->nav_entry_id());
+  EXPECT_EQ(unique_id, root->child_at(0)->current_frame_host()->nav_entry_id());
+
+  // Navigating in the subframe again should create a new entry.
+  GURL foo_url2(embedded_test_server()->GetURL(
+      "foo.com", "/navigation_controller/simple_page_2.html"));
+  NavigateFrameToURL(root->child_at(0), foo_url2);
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  int unique_id2 = controller.GetLastCommittedEntry()->GetUniqueID();
+  EXPECT_NE(unique_id, unique_id2);
+
+  // The unique ID should have updated for the current RenderFrameHost in both
+  // frames, not just the subframe.
+  EXPECT_EQ(unique_id2, root->current_frame_host()->nav_entry_id());
+  EXPECT_EQ(unique_id2,
+            root->child_at(0)->current_frame_host()->nav_entry_id());
+}
+
 // This test used to make sure that a scheme used to prevent spoofs didn't ever
 // interfere with navigations. We switched to a different scheme, so now this is
 // just a test to make sure we can still navigate once we prune the history

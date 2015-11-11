@@ -211,6 +211,12 @@ RenderFrameHostImpl::RenderFrameHostImpl(SiteInstance* site_instance,
     GetSiteInstance()->increment_active_frame_count();
   }
 
+  // New child frames should inherit the nav_entry_id of their parent.
+  if (frame_tree_node_->parent()) {
+    set_nav_entry_id(
+        frame_tree_node_->parent()->current_frame_host()->nav_entry_id());
+  }
+
   SetUpMojoIfNeeded();
   swapout_event_monitor_timeout_.reset(new TimeoutMonitor(base::Bind(
       &RenderFrameHostImpl::OnSwappedOut, weak_ptr_factory_.GetWeakPtr())));

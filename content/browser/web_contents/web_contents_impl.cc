@@ -4145,7 +4145,13 @@ void WebContentsImpl::UpdateStateForFrame(RenderFrameHost* render_frame_host,
   if (!frame_entry)
     return;
 
-  CHECK_EQ(frame_entry->site_instance(), rfhi->GetSiteInstance());
+  // The SiteInstance might not match if we do a cross-process navigation with
+  // replacement (e.g., auto-subframe), in which case the swap out of the old
+  // RenderFrameHost runs in the background after the old FrameNavigationEntry
+  // has already been replaced and destroyed.
+  if (frame_entry->site_instance() != rfhi->GetSiteInstance())
+    return;
+
   if (page_state == frame_entry->page_state())
     return;  // Nothing to update.
 
