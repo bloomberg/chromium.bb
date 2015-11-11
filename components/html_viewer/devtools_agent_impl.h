@@ -38,7 +38,8 @@ class DevToolsAgentImpl : public devtools_service::DevToolsAgent,
   void DispatchProtocolMessage(const mojo::String& message) override;
 
   // blink::WebDevToolsAgentClient implementation.
-  void sendProtocolMessage(int call_id,
+  void sendProtocolMessage(int session_id,
+                           int call_id,
                            const blink::WebString& response,
                            const blink::WebString& state);
 

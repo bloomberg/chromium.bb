@@ -40,13 +40,15 @@ bool EmbeddedWorkerDevToolsAgent::OnMessageReceived(
   return handled;
 }
 
-void EmbeddedWorkerDevToolsAgent::OnAttach(const std::string& host_id) {
-  webworker_->attachDevTools(WebString::fromUTF8(host_id));
+void EmbeddedWorkerDevToolsAgent::OnAttach(const std::string& host_id,
+                                           int session_id) {
+  webworker_->attachDevTools(WebString::fromUTF8(host_id), session_id);
 }
 
 void EmbeddedWorkerDevToolsAgent::OnReattach(const std::string& host_id,
+                                             int session_id,
                                              const std::string& state) {
-  webworker_->reattachDevTools(WebString::fromUTF8(host_id),
+  webworker_->reattachDevTools(WebString::fromUTF8(host_id), session_id,
                                WebString::fromUTF8(state));
 }
 
@@ -55,8 +57,9 @@ void EmbeddedWorkerDevToolsAgent::OnDetach() {
 }
 
 void EmbeddedWorkerDevToolsAgent::OnDispatchOnInspectorBackend(
+    int session_id,
     const std::string& message) {
-  webworker_->dispatchDevToolsMessage(WebString::fromUTF8(message));
+  webworker_->dispatchDevToolsMessage(session_id, WebString::fromUTF8(message));
 }
 
 }  // namespace content

@@ -10,16 +10,22 @@
 
 namespace content {
 
-using DevToolsCommandId = int;
-class DevToolsProtocolHandler;
+struct DevToolsCommandId {
+  static const int kNoId;
+
+  DevToolsCommandId(int call_id, int session_id)
+      : call_id(call_id), session_id(session_id) {}
+
+  int call_id;
+  int session_id;
+};
+
+class DevToolsProtocolDelegate;
 class DevToolsProtocolDispatcher;
+class DevToolsProtocolHandler;
 
 class DevToolsProtocolClient {
  public:
-  typedef base::Callback<void(const std::string& message)>
-      RawMessageCallback;
-  static const DevToolsCommandId kNoId;
-
   struct Response {
    public:
     static Response FallThrough();
@@ -46,12 +52,13 @@ class DevToolsProtocolClient {
   bool SendError(DevToolsCommandId command_id,
                  const Response& response);
 
-  // Sends message to client, the caller is presumed to properly
+  // Sends notification to client, the caller is presumed to properly
   // format the message. Do not use unless you must.
-  void SendRawMessage(const std::string& message);
+  void SendRawNotification(const std::string& message);
 
-  explicit DevToolsProtocolClient(
-      const RawMessageCallback& raw_message_callback);
+  void SendMessage(int session_id, const base::DictionaryValue& message);
+
+  explicit DevToolsProtocolClient(DevToolsProtocolDelegate* notifier);
   virtual ~DevToolsProtocolClient();
 
  protected:
@@ -63,9 +70,7 @@ class DevToolsProtocolClient {
  private:
   friend class DevToolsProtocolDispatcher;
 
-  void SendMessage(const base::DictionaryValue& message);
-
-  RawMessageCallback raw_message_callback_;
+  DevToolsProtocolDelegate* notifier_;
   DISALLOW_COPY_AND_ASSIGN(DevToolsProtocolClient);
 };
 

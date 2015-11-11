@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
+#include "content/browser/devtools/devtools_agent_host_impl.h"
 #include "content/browser/devtools/devtools_manager.h"
 #include "content/public/browser/devtools_manager_delegate.h"
 
@@ -36,35 +37,35 @@ scoped_ptr<base::DictionaryValue> TakeDictionary(base::DictionaryValue* dict,
 }  // namespace
 
 DevToolsProtocolHandler::DevToolsProtocolHandler(
-    DevToolsAgentHost* agent_host, const Notifier& notifier)
-    : agent_host_(agent_host),
-      client_(notifier),
-      dispatcher_(notifier) {
-}
+    DevToolsAgentHostImpl* agent_host)
+    : agent_host_(agent_host), client_(agent_host), dispatcher_(agent_host) {}
 
 DevToolsProtocolHandler::~DevToolsProtocolHandler() {
 }
 
-void DevToolsProtocolHandler::HandleMessage(const std::string& message) {
-  scoped_ptr<base::DictionaryValue> command = ParseCommand(message);
+void DevToolsProtocolHandler::HandleMessage(int session_id,
+                                            const std::string& message) {
+  scoped_ptr<base::DictionaryValue> command = ParseCommand(session_id, message);
   if (!command)
     return;
-  if (PassCommandToDelegate(command.get()))
+  if (PassCommandToDelegate(session_id, command.get()))
     return;
-  HandleCommand(command.Pass());
+  HandleCommand(session_id, command.Pass());
 }
 
-bool DevToolsProtocolHandler::HandleOptionalMessage(
-    const std::string& message, int* call_id) {
-  scoped_ptr<base::DictionaryValue> command = ParseCommand(message);
+bool DevToolsProtocolHandler::HandleOptionalMessage(int session_id,
+                                                    const std::string& message,
+                                                    int* call_id) {
+  scoped_ptr<base::DictionaryValue> command = ParseCommand(session_id, message);
   if (!command)
     return true;
-  if (PassCommandToDelegate(command.get()))
+  if (PassCommandToDelegate(session_id, command.get()))
     return true;
-  return HandleOptionalCommand(command.Pass(), call_id);
+  return HandleOptionalCommand(session_id, command.Pass(), call_id);
 }
 
 bool DevToolsProtocolHandler::PassCommandToDelegate(
+    int session_id,
     base::DictionaryValue* command) {
   DevToolsManagerDelegate* delegate =
       DevToolsManager::GetInstance()->delegate();
@@ -74,41 +75,41 @@ bool DevToolsProtocolHandler::PassCommandToDelegate(
   scoped_ptr<base::DictionaryValue> response(
       delegate->HandleCommand(agent_host_, command));
   if (response) {
-    std::string json_response;
-    base::JSONWriter::Write(*response, &json_response);
-    client_.SendRawMessage(json_response);
+    client_.SendMessage(session_id, *response);
     return true;
   }
 
   return false;
 }
 
-scoped_ptr<base::DictionaryValue>
-DevToolsProtocolHandler::ParseCommand(const std::string& message) {
+scoped_ptr<base::DictionaryValue> DevToolsProtocolHandler::ParseCommand(
+    int session_id,
+    const std::string& message) {
   scoped_ptr<base::Value> value = base::JSONReader::Read(message);
   if (!value || !value->IsType(base::Value::TYPE_DICTIONARY)) {
-    client_.SendError(DevToolsProtocolClient::kNoId,
-                      Response(kStatusParseError,
-                               "Message must be in JSON format"));
+    client_.SendError(
+        DevToolsCommandId(DevToolsCommandId::kNoId, session_id),
+        Response(kStatusParseError, "Message must be in JSON format"));
     return nullptr;
   }
 
   scoped_ptr<base::DictionaryValue> command =
       make_scoped_ptr(static_cast<base::DictionaryValue*>(value.release()));
-  int id = DevToolsProtocolClient::kNoId;
-  bool ok = command->GetInteger(kIdParam, &id) && id >= 0;
+  int call_id = DevToolsCommandId::kNoId;
+  bool ok = command->GetInteger(kIdParam, &call_id) && call_id >= 0;
   if (!ok) {
-    client_.SendError(id, Response(kStatusInvalidRequest,
-                                   "The type of 'id' property must be number"));
+    client_.SendError(DevToolsCommandId(call_id, session_id),
+                      Response(kStatusInvalidRequest,
+                               "The type of 'id' property must be number"));
     return nullptr;
   }
 
   std::string method;
   ok = command->GetString(kMethodParam, &method);
   if (!ok) {
-    client_.SendError(id,
-        Response(kStatusInvalidRequest,
-                 "The type of 'method' property must be string"));
+    client_.SendError(DevToolsCommandId(call_id, session_id),
+                      Response(kStatusInvalidRequest,
+                               "The type of 'method' property must be string"));
     return nullptr;
   }
 
@@ -116,34 +117,39 @@ DevToolsProtocolHandler::ParseCommand(const std::string& message) {
 }
 
 void DevToolsProtocolHandler::HandleCommand(
+    int session_id,
     scoped_ptr<base::DictionaryValue> command) {
-  int id = DevToolsProtocolClient::kNoId;
+  int call_id = DevToolsCommandId::kNoId;
   std::string method;
-  command->GetInteger(kIdParam, &id);
+  command->GetInteger(kIdParam, &call_id);
   command->GetString(kMethodParam, &method);
   DevToolsProtocolDispatcher::CommandHandler command_handler(
       dispatcher_.FindCommandHandler(method));
   if (command_handler.is_null()) {
-    client_.SendError(id, Response(kStatusNoSuchMethod, "No such method"));
+    client_.SendError(DevToolsCommandId(call_id, session_id),
+                      Response(kStatusNoSuchMethod, "No such method"));
     return;
   }
 
   bool result =
-      command_handler.Run(id, TakeDictionary(command.get(), kParamsParam));
+      command_handler.Run(DevToolsCommandId(call_id, session_id),
+                          TakeDictionary(command.get(), kParamsParam));
   DCHECK(result);
 }
 
 bool DevToolsProtocolHandler::HandleOptionalCommand(
-    scoped_ptr<base::DictionaryValue> command, int* call_id) {
-  *call_id = DevToolsProtocolClient::kNoId;
+    int session_id,
+    scoped_ptr<base::DictionaryValue> command,
+    int* call_id) {
+  *call_id = DevToolsCommandId::kNoId;
   std::string method;
   command->GetInteger(kIdParam, call_id);
   command->GetString(kMethodParam, &method);
   DevToolsProtocolDispatcher::CommandHandler command_handler(
       dispatcher_.FindCommandHandler(method));
   if (!command_handler.is_null()) {
-    return command_handler.Run(
-        *call_id, TakeDictionary(command.get(), kParamsParam));
+    return command_handler.Run(DevToolsCommandId(*call_id, session_id),
+                               TakeDictionary(command.get(), kParamsParam));
   }
   return false;
 }

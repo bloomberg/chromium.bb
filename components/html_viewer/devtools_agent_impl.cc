@@ -21,7 +21,7 @@ DevToolsAgentImpl::DevToolsAgentImpl(blink::WebLocalFrame* frame,
 
   if (state) {
     cache_until_client_ready_ = true;
-    frame_->devToolsAgent()->reattach(blink::WebString::fromUTF8(id_),
+    frame_->devToolsAgent()->reattach(blink::WebString::fromUTF8(id_), 0,
                                       blink::WebString::fromUTF8(*state));
   }
 }
@@ -52,16 +52,17 @@ void DevToolsAgentImpl::SetClient(
                                        message.state);
     cached_client_messages_.clear();
   } else {
-    frame_->devToolsAgent()->attach(blink::WebString::fromUTF8(id_));
+    frame_->devToolsAgent()->attach(blink::WebString::fromUTF8(id_), 0);
   }
 }
 
 void DevToolsAgentImpl::DispatchProtocolMessage(const mojo::String& message) {
   frame_->devToolsAgent()->dispatchOnInspectorBackend(
-      blink::WebString::fromUTF8(message));
+      0, blink::WebString::fromUTF8(message));
 }
 
-void DevToolsAgentImpl::sendProtocolMessage(int call_id,
+void DevToolsAgentImpl::sendProtocolMessage(int session_id,
+                                            int call_id,
                                             const blink::WebString& response,
                                             const blink::WebString& state) {
   DCHECK(!response.isNull());

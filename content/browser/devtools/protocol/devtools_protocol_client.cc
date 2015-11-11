@@ -6,6 +6,7 @@
 
 #include "base/json/json_writer.h"
 #include "base/strings/stringprintf.h"
+#include "content/browser/devtools/protocol/devtools_protocol_delegate.h"
 
 namespace content {
 
@@ -30,24 +31,24 @@ const int kStatusServerError = -32000;
 }  // namespace
 
 // static
-const DevToolsCommandId DevToolsProtocolClient::kNoId = -1;
+const int DevToolsCommandId::kNoId = -1;
 
 DevToolsProtocolClient::DevToolsProtocolClient(
-    const RawMessageCallback& raw_message_callback)
-    : raw_message_callback_(raw_message_callback) {
-}
+    DevToolsProtocolDelegate* notifier)
+    : notifier_(notifier) {}
 
 DevToolsProtocolClient::~DevToolsProtocolClient() {
 }
 
-void DevToolsProtocolClient::SendRawMessage(const std::string& message) {
-  raw_message_callback_.Run(message);
+void DevToolsProtocolClient::SendRawNotification(const std::string& message) {
+  notifier_->SendProtocolNotification(message);
 }
 
-void DevToolsProtocolClient::SendMessage(const base::DictionaryValue& message) {
+void DevToolsProtocolClient::SendMessage(int session_id,
+                                         const base::DictionaryValue& message) {
   std::string json_message;
   base::JSONWriter::Write(message, &json_message);
-  SendRawMessage(json_message);
+  notifier_->SendProtocolResponse(session_id, json_message);
 }
 
 void DevToolsProtocolClient::SendNotification(
@@ -58,19 +59,21 @@ void DevToolsProtocolClient::SendNotification(
   if (params)
     notification.Set(kParamsParam, params.release());
 
-  SendMessage(notification);
+  std::string json_message;
+  base::JSONWriter::Write(notification, &json_message);
+  SendRawNotification(json_message);
 }
 
 void DevToolsProtocolClient::SendSuccess(
     DevToolsCommandId command_id,
     scoped_ptr<base::DictionaryValue> params) {
   base::DictionaryValue response;
-  response.SetInteger(kIdParam, command_id);
+  response.SetInteger(kIdParam, command_id.call_id);
 
   response.Set(kResultParam,
       params ? params.release() : new base::DictionaryValue());
 
-  SendMessage(response);
+  SendMessage(command_id.session_id, response);
 }
 
 bool DevToolsProtocolClient::SendError(DevToolsCommandId command_id,
@@ -80,10 +83,10 @@ bool DevToolsProtocolClient::SendError(DevToolsCommandId command_id,
     return false;
   }
   base::DictionaryValue dict;
-  if (command_id == kNoId)
+  if (command_id.call_id == DevToolsCommandId::kNoId)
     dict.Set(kIdParam, base::Value::CreateNullValue());
   else
-    dict.SetInteger(kIdParam, command_id);
+    dict.SetInteger(kIdParam, command_id.call_id);
 
   base::DictionaryValue* error_object = new base::DictionaryValue();
   error_object->SetInteger(kErrorCodeParam, response.status());
@@ -91,7 +94,7 @@ bool DevToolsProtocolClient::SendError(DevToolsCommandId command_id,
     error_object->SetString(kErrorMessageParam, response.message());
 
   dict.Set(kErrorParam, error_object);
-  SendMessage(dict);
+  SendMessage(command_id.session_id, dict);
   return true;
 }
 

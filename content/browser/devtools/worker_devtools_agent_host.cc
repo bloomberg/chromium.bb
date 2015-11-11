@@ -21,7 +21,8 @@ void WorkerDevToolsAgentHost::Attach() {
     AttachToWorker();
   }
   if (RenderProcessHost* host = RenderProcessHost::FromID(worker_id_.first))
-    host->Send(new DevToolsAgentMsg_Attach(worker_id_.second, GetId()));
+    host->Send(
+        new DevToolsAgentMsg_Attach(worker_id_.second, GetId(), session_id()));
   OnAttachedStateChanged(true);
   DevToolsAgentHostImpl::NotifyCallbacks(this, true);
 }
@@ -45,12 +46,12 @@ bool WorkerDevToolsAgentHost::DispatchProtocolMessage(
     return true;
 
   int call_id;
-  if (protocol_handler_->HandleOptionalMessage(message, &call_id))
+  if (protocol_handler_->HandleOptionalMessage(session_id(), message, &call_id))
     return true;
 
   if (RenderProcessHost* host = RenderProcessHost::FromID(worker_id_.first)) {
     host->Send(new DevToolsAgentMsg_DispatchOnInspectorBackend(
-        worker_id_.second, message));
+        worker_id_.second, session_id(), message));
   }
   return true;
 }
@@ -83,7 +84,8 @@ void WorkerDevToolsAgentHost::WorkerReadyForInspection() {
     AttachToWorker();
     if (RenderProcessHost* host = RenderProcessHost::FromID(worker_id_.first)) {
       host->Send(new DevToolsAgentMsg_Reattach(
-          worker_id_.second, GetId(), chunk_processor_.state_cookie()));
+          worker_id_.second, GetId(), session_id(),
+          chunk_processor_.state_cookie()));
     }
     OnAttachedStateChanged(true);
   }
@@ -101,10 +103,7 @@ void WorkerDevToolsAgentHost::WorkerDestroyed() {
   if (state_ == WORKER_INSPECTED) {
     DCHECK(IsAttached());
     // Client host is debugging this worker agent host.
-    base::Callback<void(const std::string&)> raw_message_callback(
-        base::Bind(&WorkerDevToolsAgentHost::SendMessageToClient,
-                base::Unretained(this)));
-    devtools::inspector::Client inspector(raw_message_callback);
+    devtools::inspector::Client inspector(this);
     inspector.TargetCrashed(
         devtools::inspector::TargetCrashedParams::Create());
     DetachFromWorker();
@@ -117,15 +116,10 @@ bool WorkerDevToolsAgentHost::IsTerminated() {
   return state_ == WORKER_TERMINATED;
 }
 
-WorkerDevToolsAgentHost::WorkerDevToolsAgentHost(
-    WorkerId worker_id)
-    : protocol_handler_(new DevToolsProtocolHandler(
-          this,
-          base::Bind(&WorkerDevToolsAgentHost::SendMessageToClient,
-                     base::Unretained(this)))),
-      chunk_processor_(
-          base::Bind(&WorkerDevToolsAgentHost::SendMessageToClient,
-                     base::Unretained(this))),
+WorkerDevToolsAgentHost::WorkerDevToolsAgentHost(WorkerId worker_id)
+    : protocol_handler_(new DevToolsProtocolHandler(this)),
+      chunk_processor_(base::Bind(&WorkerDevToolsAgentHost::SendMessageToClient,
+                                  base::Unretained(this))),
       state_(WORKER_UNINSPECTED),
       worker_id_(worker_id) {
   WorkerCreated();

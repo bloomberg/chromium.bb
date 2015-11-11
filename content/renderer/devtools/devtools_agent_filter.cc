@@ -60,6 +60,7 @@ bool DevToolsAgentFilter::OnMessageReceived(const IPC::Message& message) {
 DevToolsAgentFilter::~DevToolsAgentFilter() {}
 
 void DevToolsAgentFilter::OnDispatchOnInspectorBackend(
+    int session_id,
     const std::string& message) {
   if (embedded_worker_routes_.find(current_routing_id_) !=
       embedded_worker_routes_.end()) {
@@ -69,7 +70,7 @@ void DevToolsAgentFilter::OnDispatchOnInspectorBackend(
   if (WebDevToolsAgent::shouldInterruptForMessage(
           WebString::fromUTF8(message))) {
     WebDevToolsAgent::interruptAndDispatch(
-        new MessageImpl(message, current_routing_id_));
+        session_id, new MessageImpl(message, current_routing_id_));
   }
 
 }

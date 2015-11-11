@@ -43,13 +43,13 @@ class WebDevToolsAgent {
 public:
     virtual ~WebDevToolsAgent() {}
 
-    virtual void attach(const WebString& hostId) = 0;
-    virtual void reattach(const WebString& hostId, const WebString& savedState) = 0;
+    virtual void attach(const WebString& hostId, int sessionId) = 0;
+    virtual void reattach(const WebString& hostId, int sessionId, const WebString& savedState) = 0;
     virtual void detach() = 0;
 
     virtual void continueProgram() = 0;
 
-    virtual void dispatchOnInspectorBackend(const WebString& message) = 0;
+    virtual void dispatchOnInspectorBackend(int sessionId, const WebString& message) = 0;
 
     virtual void inspectElementAt(const WebPoint&) = 0;
 
@@ -64,7 +64,7 @@ public:
         virtual WebString message() = 0;
     };
     // Asynchronously request debugger to pause immediately and run the command.
-    BLINK_EXPORT static void interruptAndDispatch(MessageDescriptor*);
+    BLINK_EXPORT static void interruptAndDispatch(int sessionId, MessageDescriptor*);
     BLINK_EXPORT static bool shouldInterruptForMessage(const WebString&);
 
 };
