@@ -199,8 +199,9 @@
             '_POSIX_C_SOURCE=200112',
             '_XOPEN_SOURCE=600',
             'PIC',
-            # Disable deprecated features which generate spammy warnings.
-            # None currently.
+            # Disable deprecated features that generate spammy warnings.
+            # BUILD.gn & media/ffmpeg/ffmpeg_common.h must be kept in sync.
+            'FF_API_CONVERGENCE_DURATION=0',
           ],
           'variables': {
             'clang_warning_flags': [
