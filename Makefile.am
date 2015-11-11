@@ -83,6 +83,9 @@ if LINUX_HOST
 includeclhdir = $(includedir)/$(PACKAGE)/client/linux/handler
 includeclh_HEADERS = $(top_srcdir)/src/client/linux/handler/*.h
 
+includecldwcdir = $(includedir)/$(PACKAGE)/client/linux/dump_writer_common
+includecldwc_HEADERS = $(top_srcdir)/src/client/linux/dump_writer_common/*.h
+
 includeclmdir = $(includedir)/$(PACKAGE)/client/linux/minidump_writer
 includeclm_HEADERS = $(top_srcdir)/src/client/linux/minidump_writer/*.h
 
