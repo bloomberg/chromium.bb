@@ -133,6 +133,20 @@ backgroundColorShouldBe('host', 'rgb(0, 128, 0)');
 
 cleanUp();
 
+debug('crbug.com/552602 :host-context with non-matching selector with :host should not crash.');
+
+sandbox.appendChild(
+    createDOM('host-element', {'id': 'host'},
+        createShadowRoot(
+            createDOM('style', {},
+                document.createTextNode(':host-context(div:host) { background-color: green; }')),
+            createDOM('div', {},
+                document.createTextNode('Hello')))));
+
+backgroundColorShouldBe('host', 'rgba(0, 0, 0, 0)');
+
+cleanUp();
+
 debug(':host-context takes simple selectors and matches when one of the simple selectors matches.');
 
 sandbox.appendChild(

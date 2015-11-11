@@ -1054,6 +1054,8 @@ bool SelectorChecker::checkPseudoHost(const SelectorCheckingContext& context, Ma
     if (m_mode == SharingRules)
         return true;
     // :host only matches a shadow host when :host is in a shadow tree of the shadow host.
+    if (!context.scope)
+        return false;
     const ContainerNode* shadowHost = context.scope->shadowHost();
     if (!shadowHost || shadowHost != element)
         return false;

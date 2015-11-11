@@ -20,6 +20,8 @@ PASS backgroundColorOf('host') is "rgba(0, 0, 0, 0)"
 PASS backgroundColorOf('host') is "rgb(0, 128, 0)"
 :host-context with :host in a shadow tree should match its shadow host.
 PASS backgroundColorOf('host') is "rgb(0, 128, 0)"
+crbug.com/552602 :host-context with non-matching selector with :host should not crash.
+PASS backgroundColorOf('host') is "rgba(0, 0, 0, 0)"
 :host-context takes simple selectors and matches when one of the simple selectors matches.
 PASS backgroundColorOf('host') is "rgb(0, 128, 0)"
 :host-context matches a shadow host in just a nested shadow tree, not all enclosing shadow trees.
