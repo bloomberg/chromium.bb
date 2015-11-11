@@ -67,9 +67,10 @@ enum AutoplayMetrics {
     NumberOfAutoplayMetrics,
 };
 
-class AutoplayExperimentHelper {
+class AutoplayExperimentHelper final {
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
-    AutoplayExperimentHelper(HTMLMediaElement&);
+    explicit AutoplayExperimentHelper(HTMLMediaElement&);
     ~AutoplayExperimentHelper();
 
     void becameReadyToPlay();
@@ -102,6 +103,11 @@ public:
         // starting to play.
         PlayMuted     = 1 << 6,
     };
+
+    DEFINE_INLINE_TRACE()
+    {
+        visitor->trace(m_element);
+    }
 
 private:
     // Register to receive position updates, if we haven't already.  If we
@@ -139,6 +145,8 @@ private:
     // Return our media element's document.
     Document& document() const;
 
+    HTMLMediaElement& element() const;
+
     inline bool enabled(Mode mode) const
     {
         return ((int)m_mode) & ((int)mode);
@@ -146,8 +154,7 @@ private:
 
     Mode fromString(const String& mode);
 
-private:
-    HTMLMediaElement& m_element;
+    RawPtrWillBeMember<HTMLMediaElement> m_element;
 
     Mode m_mode;
 

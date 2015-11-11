@@ -3535,6 +3535,7 @@ DEFINE_TRACE(HTMLMediaElement)
     visitor->trace(m_audioSourceProvider);
     visitor->template registerWeakMembers<HTMLMediaElement, &HTMLMediaElement::clearWeakMembers>(this);
 #endif
+    visitor->trace(m_autoplayHelper);
     HeapSupplementable<HTMLMediaElement>::trace(visitor);
 #endif
     HTMLElement::trace(visitor);
