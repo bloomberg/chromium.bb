@@ -365,16 +365,20 @@ class Espn(WebsiteTest):
       self.Wait(1)
 
 
-# Fails due to test framework issue.
+# Saves wrong username -- http://crbug.com/554004
 class Flipkart(WebsiteTest):
 
   def Login(self):
     self.GoTo("http://www.flipkart.com/")
-    self.Wait(2)
+    while (not self.IsDisplayed(".appDownloadInterstitialDialog .window .close")
+           or not self.IsDisplayed(".header-links .js-login")):
+      self.Wait(1)
+    if self.IsDisplayed(".appDownloadInterstitialDialog .window .close"):
+      self.Click(".appDownloadInterstitialDialog .window .close")
     self.Click(".header-links .js-login")
-    self.FillUsernameInto("#login_email_id")
-    self.FillPasswordInto("#login_password")
-    self.Submit("#login_password")
+    self.FillUsernameInto(".login-input-wrap .user-email")
+    self.FillPasswordInto(".login-input-wrap .user-pwd")
+    self.Click(".login-btn-wrap .login-btn")
 
 
 class Instagram(WebsiteTest):
