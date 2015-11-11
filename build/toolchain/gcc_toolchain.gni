@@ -60,7 +60,7 @@ concurrent_links = exec_script("get_concurrent_links.py", [], "value")
 #  - strip
 #      Location of the strip executable. When specified, strip will be run on
 #      all shared libraries and executables as they are built. The pre-stripped
-#      artifacts will be put in lib.stripped/ and exe.stripped/.
+#      artifacts will be put in lib.unstripped/ and exe.unstripped/.
 #
 # Optional build argument contols.
 #

@@ -31,13 +31,7 @@ template("mojo_native_application") {
       assert(false, "Platform not supported.")
     }
 
-    if (is_android) {
-      # On android, use the stripped version of the library, because applications
-      # are always fetched over the network.
-      library_dir = "${root_out_dir}/lib.stripped"
-    } else {
-      library_dir = root_out_dir
-    }
+    library_dir = root_out_dir
 
     shared_library(library_target_name) {
       if (defined(invoker.cflags)) {
@@ -407,7 +401,7 @@ if (is_android) {
       script = "//build/android/gn/zip.py"
 
       inputs = [
-        "${root_out_dir}/lib.stripped/${library_basename}",
+        "${root_out_dir}/${library_basename}",
         dex_output_path,
       ]
 

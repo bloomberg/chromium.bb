@@ -411,7 +411,7 @@ chrome_public_apk_tmpl("chrome_public_apk") {
   android_manifest = get_target_outputs(":chrome_public_apk_manifest")
   android_manifest = android_manifest[1]
   apk_name = "ChromePublic"
-  native_libs = [ "$root_build_dir/lib.stripped/libchrome_public.so" ]
+  native_libs = [ "libchrome_public.so" ]
   native_lib_version_rule = "//build/util:chrome_version_json"
 
   # Only attempt loading the library from the APK for 64 bit devices
