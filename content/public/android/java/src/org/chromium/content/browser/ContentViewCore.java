@@ -3247,6 +3247,14 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
 
     @Override
     public void onScreenOrientationChanged(int orientation) {
+        // ActionMode#invalidate() won't be able to re-layout the floating
+        // action mode menu items according to the new orientation. So Chrome
+        // has to re-create the action mode.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && mActionMode != null) {
+            hidePopupsAndPreserveSelection();
+            showSelectActionMode(true);
+        }
+
         sendOrientationChangeEvent(orientation);
     }
 
