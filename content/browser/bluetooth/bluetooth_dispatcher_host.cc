@@ -269,15 +269,34 @@ bool BluetoothDispatcherHost::OnMessageReceived(const IPC::Message& message) {
 void BluetoothDispatcherHost::SetBluetoothAdapterForTesting(
     scoped_refptr<device::BluetoothAdapter> mock_adapter) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  current_delay_time_ = kTestingDelayTime;
-  devices_with_discovered_services_.clear();
-  // Reset the discovery session timer to use the new delay time.
-  discovery_session_timer_.Start(
-      FROM_HERE, base::TimeDelta::FromSecondsD(current_delay_time_),
-      base::Bind(&BluetoothDispatcherHost::StopDeviceDiscovery,
-                 // base::Timer guarantees it won't call back after its
-                 // destructor starts.
-                 base::Unretained(this)));
+
+  if (mock_adapter.get()) {
+    current_delay_time_ = kTestingDelayTime;
+    // Reset the discovery session timer to use the new delay time.
+    discovery_session_timer_.Start(
+        FROM_HERE, base::TimeDelta::FromSecondsD(current_delay_time_),
+        base::Bind(&BluetoothDispatcherHost::StopDeviceDiscovery,
+                   // base::Timer guarantees it won't call back after its
+                   // destructor starts.
+                   base::Unretained(this)));
+  } else {
+    // The following data structures are used to store pending operations.
+    // They should never contain elements at the end of a test.
+    DCHECK(request_device_sessions_.IsEmpty());
+    DCHECK(pending_primary_services_requests_.empty());
+
+    // The following data structures are cleaned up when a
+    // device/service/characteristic is removed.
+    // Since this can happen after the test is done and the cleanup function is
+    // called, we clean them here.
+    service_to_device_.clear();
+    characteristic_to_service_.clear();
+    characteristic_id_to_notify_session_.clear();
+    active_characteristic_threads_.clear();
+    connections_.clear();
+    devices_with_discovered_services_.clear();
+  }
+
   set_adapter(mock_adapter.Pass());
 }
 

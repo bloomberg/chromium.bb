@@ -158,7 +158,7 @@ LayoutTestBluetoothAdapterProvider::GetBluetoothAdapter(
   else if (fake_adapter_name == "DelayedServicesDiscoveryAdapter")
     return GetDelayedServicesDiscoveryAdapter();
   else if (fake_adapter_name == "")
-    return NULL;
+    return nullptr;
 
   if (base::StartsWith(fake_adapter_name, "PowerValueAdapter",
                        base::CompareCase::SENSITIVE)) {

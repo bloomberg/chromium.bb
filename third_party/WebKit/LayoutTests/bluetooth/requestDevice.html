@@ -192,7 +192,7 @@ promise_test(() => {
   });
 
   // The adapter finds nothing, so we just see discovery start and stop.
-  getBluetoothManualChooserEvents(3).then(events => {
+  return getBluetoothManualChooserEvents(3).then(events => {
     assert_array_equals(events,
                         ['chooser-opened(file:///)',
                          'discovering',
