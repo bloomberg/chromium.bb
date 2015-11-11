@@ -5,7 +5,6 @@
 #ifndef CONTENT_RENDERER_MEDIA_ANDROID_WEBMEDIAPLAYER_ANDROID_H_
 #define CONTENT_RENDERER_MEDIA_ANDROID_WEBMEDIAPLAYER_ANDROID_H_
 
-#include <jni.h>
 #include <string>
 #include <vector>
 

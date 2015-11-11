@@ -9,8 +9,6 @@
 #include "content/child/thread_safe_sender.h"
 #include "content/common/media/media_player_messages_android.h"
 #include "content/renderer/media/android/media_source_delegate.h"
-#include "content/renderer/media/android/renderer_media_player_manager.h"
-#include "content/renderer/media/android/webmediaplayer_android.h"
 #include "content/renderer/render_thread_impl.h"
 
 namespace content {
