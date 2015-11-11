@@ -62,6 +62,8 @@ public:
     static MediaSource* create(ExecutionContext*);
     ~MediaSource() override;
 
+    static void logAndThrowDOMException(ExceptionState&, const ExceptionCode& error, const String& message);
+
     // MediaSource.idl methods
     SourceBufferList* sourceBuffers() { return m_sourceBuffers.get(); }
     SourceBufferList* activeSourceBuffers() { return m_activeSourceBuffers.get(); }

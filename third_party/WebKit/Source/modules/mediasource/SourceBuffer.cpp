@@ -62,11 +62,11 @@ namespace {
 static bool throwExceptionIfRemovedOrUpdating(bool isRemoved, bool isUpdating, ExceptionState& exceptionState)
 {
     if (isRemoved) {
-        exceptionState.throwDOMException(InvalidStateError, "This SourceBuffer has been removed from the parent media source.");
+        MediaSource::logAndThrowDOMException(exceptionState, InvalidStateError, "This SourceBuffer has been removed from the parent media source.");
         return true;
     }
     if (isUpdating) {
-        exceptionState.throwDOMException(InvalidStateError, "This SourceBuffer is still processing an 'appendBuffer', 'appendStream', or 'remove' operation.");
+        MediaSource::logAndThrowDOMException(exceptionState, InvalidStateError, "This SourceBuffer is still processing an 'appendBuffer', 'appendStream', or 'remove' operation.");
         return true;
     }
 
@@ -172,7 +172,7 @@ void SourceBuffer::setMode(const AtomicString& newMode, ExceptionState& exceptio
     if (newMode == sequenceKeyword())
         appendMode = WebSourceBuffer::AppendModeSequence;
     if (!m_webSourceBuffer->setMode(appendMode)) {
-        exceptionState.throwDOMException(InvalidStateError, "The mode may not be set while the SourceBuffer's append state is 'PARSING_MEDIA_SEGMENT'.");
+        MediaSource::logAndThrowDOMException(exceptionState, InvalidStateError, "The mode may not be set while the SourceBuffer's append state is 'PARSING_MEDIA_SEGMENT'.");
         return;
     }
 
@@ -186,7 +186,7 @@ TimeRanges* SourceBuffer::buffered(ExceptionState& exceptionState) const
     // 1. If this object has been removed from the sourceBuffers attribute of the parent media source then throw an
     //    InvalidStateError exception and abort these steps.
     if (isRemoved()) {
-        exceptionState.throwDOMException(InvalidStateError, "This SourceBuffer has been removed from the parent media source.");
+        MediaSource::logAndThrowDOMException(exceptionState, InvalidStateError, "This SourceBuffer has been removed from the parent media source.");
         return nullptr;
     }
 
@@ -218,7 +218,7 @@ void SourceBuffer::setTimestampOffset(double offset, ExceptionState& exceptionSt
     // 5. If the append state equals PARSING_MEDIA_SEGMENT, then throw an INVALID_STATE_ERR and abort these steps.
     // 6. If the mode attribute equals "sequence", then set the group start timestamp to new timestamp offset.
     if (!m_webSourceBuffer->setTimestampOffset(offset)) {
-        exceptionState.throwDOMException(InvalidStateError, "The timestamp offset may not be set while the SourceBuffer's append state is 'PARSING_MEDIA_SEGMENT'.");
+        MediaSource::logAndThrowDOMException(exceptionState, InvalidStateError, "The timestamp offset may not be set while the SourceBuffer's append state is 'PARSING_MEDIA_SEGMENT'.");
         return;
     }
 
@@ -244,7 +244,7 @@ void SourceBuffer::setAppendWindowStart(double start, ExceptionState& exceptionS
     // 3. If the new value is less than 0 or greater than or equal to appendWindowEnd then throw an InvalidAccessError
     //    exception and abort these steps.
     if (start < 0 || start >= m_appendWindowEnd) {
-        exceptionState.throwDOMException(InvalidAccessError, ExceptionMessages::indexOutsideRange("value", start, 0.0, ExceptionMessages::ExclusiveBound, m_appendWindowEnd, ExceptionMessages::InclusiveBound));
+        MediaSource::logAndThrowDOMException(exceptionState, InvalidAccessError, ExceptionMessages::indexOutsideRange("value", start, 0.0, ExceptionMessages::ExclusiveBound, m_appendWindowEnd, ExceptionMessages::InclusiveBound));
         return;
     }
 
@@ -271,13 +271,13 @@ void SourceBuffer::setAppendWindowEnd(double end, ExceptionState& exceptionState
 
     // 3. If the new value equals NaN, then throw an InvalidAccessError and abort these steps.
     if (std::isnan(end)) {
-        exceptionState.throwDOMException(InvalidAccessError, ExceptionMessages::notAFiniteNumber(end));
+        MediaSource::logAndThrowDOMException(exceptionState, InvalidAccessError, ExceptionMessages::notAFiniteNumber(end));
         return;
     }
     // 4. If the new value is less than or equal to appendWindowStart then throw an InvalidAccessError
     //    exception and abort these steps.
     if (end <= m_appendWindowStart) {
-        exceptionState.throwDOMException(InvalidAccessError, ExceptionMessages::indexExceedsMinimumBound("value", end, m_appendWindowStart));
+        MediaSource::logAndThrowDOMException(exceptionState, InvalidAccessError, ExceptionMessages::indexExceedsMinimumBound("value", end, m_appendWindowStart));
         return;
     }
 
@@ -327,11 +327,11 @@ void SourceBuffer::abort(ExceptionState& exceptionState)
     // 2. If the readyState attribute of the parent media source is not in the "open" state
     //    then throw an InvalidStateError exception and abort these steps.
     if (isRemoved()) {
-        exceptionState.throwDOMException(InvalidStateError, "This SourceBuffer has been removed from the parent media source.");
+        MediaSource::logAndThrowDOMException(exceptionState, InvalidStateError, "This SourceBuffer has been removed from the parent media source.");
         return;
     }
     if (!m_source->isOpen()) {
-        exceptionState.throwDOMException(InvalidStateError, "The parent media source's readyState is not 'open'.");
+        MediaSource::logAndThrowDOMException(exceptionState, InvalidStateError, "The parent media source's readyState is not 'open'.");
         return;
     }
 
@@ -357,13 +357,13 @@ void SourceBuffer::remove(double start, double end, ExceptionState& exceptionSta
     // 2. If start is negative or greater than duration, then throw an InvalidAccessError exception and abort these steps.
 
     if (start < 0 || (m_source && (std::isnan(m_source->duration()) || start > m_source->duration()))) {
-        exceptionState.throwDOMException(InvalidAccessError, ExceptionMessages::indexOutsideRange("start", start, 0.0, ExceptionMessages::ExclusiveBound, !m_source || std::isnan(m_source->duration()) ? 0 : m_source->duration(), ExceptionMessages::ExclusiveBound));
+        MediaSource::logAndThrowDOMException(exceptionState, InvalidAccessError, ExceptionMessages::indexOutsideRange("start", start, 0.0, ExceptionMessages::ExclusiveBound, !m_source || std::isnan(m_source->duration()) ? 0 : m_source->duration(), ExceptionMessages::ExclusiveBound));
         return;
     }
 
     // 3. If end is less than or equal to start or end equals NaN, then throw an InvalidAccessError exception and abort these steps.
     if (end <= start || std::isnan(end)) {
-        exceptionState.throwDOMException(InvalidAccessError, "The end value provided (" + String::number(end) + ") must be greater than the start value provided (" + String::number(start) + ").");
+        MediaSource::logAndThrowDOMException(exceptionState, InvalidAccessError, "The end value provided (" + String::number(end) + ") must be greater than the start value provided (" + String::number(start) + ").");
         return;
     }
 
@@ -556,7 +556,7 @@ bool SourceBuffer::prepareAppend(size_t newDataSize, ExceptionState& exceptionSt
     ASSERT(m_source);
     ASSERT(m_source->mediaElement());
     if (m_source->mediaElement()->error()) {
-        exceptionState.throwDOMException(InvalidStateError, "The HTMLMediaElement.error attribute is not null.");
+        MediaSource::logAndThrowDOMException(exceptionState, InvalidStateError, "The HTMLMediaElement.error attribute is not null.");
         TRACE_EVENT_ASYNC_END0("media", "SourceBuffer::prepareAppend", this);
         return false;
     }
@@ -570,7 +570,7 @@ bool SourceBuffer::prepareAppend(size_t newDataSize, ExceptionState& exceptionSt
     if (!evictCodedFrames(newDataSize)) {
         // 6. If the buffer full flag equals true, then throw a QUOTA_EXCEEDED_ERR exception and abort these steps.
         WTF_LOG(Media, "SourceBuffer::prepareAppend %p -> throw QuotaExceededError", this);
-        exceptionState.throwDOMException(QuotaExceededError, "The SourceBuffer is full, and cannot free space to append additional buffers.");
+        MediaSource::logAndThrowDOMException(exceptionState, QuotaExceededError, "The SourceBuffer is full, and cannot free space to append additional buffers.");
         TRACE_EVENT_ASYNC_END0("media", "SourceBuffer::prepareAppend", this);
         return false;
     }
@@ -705,7 +705,7 @@ void SourceBuffer::appendStreamInternal(Stream* stream, ExceptionState& exceptio
     // http://w3c.github.io/media-source/#widl-SourceBuffer-appendStream-void-ReadableStream-stream-unsigned-long-long-maxSize
     // (0. If the stream has been neutered, then throw an InvalidAccessError exception and abort these steps.)
     if (stream->isNeutered()) {
-        exceptionState.throwDOMException(InvalidAccessError, "The stream provided has been neutered.");
+        MediaSource::logAndThrowDOMException(exceptionState, InvalidAccessError, "The stream provided has been neutered.");
         TRACE_EVENT_ASYNC_END0("media", "SourceBuffer::appendStream", this);
         return;
     }

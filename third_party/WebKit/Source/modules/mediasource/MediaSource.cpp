@@ -57,11 +57,11 @@ namespace blink {
 static bool throwExceptionIfClosedOrUpdating(bool isOpen, bool isUpdating, ExceptionState& exceptionState)
 {
     if (!isOpen) {
-        exceptionState.throwDOMException(InvalidStateError, "The MediaSource's readyState is not 'open'.");
+        MediaSource::logAndThrowDOMException(exceptionState, InvalidStateError, "The MediaSource's readyState is not 'open'.");
         return true;
     }
     if (isUpdating) {
-        exceptionState.throwDOMException(InvalidStateError, "The 'updating' attribute is true on one or more of this MediaSource's SourceBuffers.");
+        MediaSource::logAndThrowDOMException(exceptionState, InvalidStateError, "The 'updating' attribute is true on one or more of this MediaSource's SourceBuffers.");
         return true;
     }
 
@@ -113,6 +113,12 @@ MediaSource::~MediaSource()
 #endif
 }
 
+void MediaSource::logAndThrowDOMException(ExceptionState& exceptionState, const ExceptionCode& error, const String& message)
+{
+    WTF_LOG(Media, "throwDOMException: error=%d msg=%s", error, message.utf8().data());
+    exceptionState.throwDOMException(error, message);
+}
+
 SourceBuffer* MediaSource::addSourceBuffer(const String& type, ExceptionState& exceptionState)
 {
     WTF_LOG(Media, "MediaSource::addSourceBuffer(%s) %p", type.ascii().data(), this);
@@ -121,21 +127,21 @@ SourceBuffer* MediaSource::addSourceBuffer(const String& type, ExceptionState& e
     // 1. If type is an empty string then throw an InvalidAccessError exception
     // and abort these steps.
     if (type.isEmpty()) {
-        exceptionState.throwDOMException(InvalidAccessError, "The type provided is empty.");
+        logAndThrowDOMException(exceptionState, InvalidAccessError, "The type provided is empty.");
         return 0;
     }
 
     // 2. If type contains a MIME type that is not supported ..., then throw a
     // NotSupportedError exception and abort these steps.
     if (!isTypeSupported(type)) {
-        exceptionState.throwDOMException(NotSupportedError, "The type provided ('" + type + "') is unsupported.");
+        logAndThrowDOMException(exceptionState, NotSupportedError, "The type provided ('" + type + "') is unsupported.");
         return 0;
     }
 
     // 4. If the readyState attribute is not in the "open" state then throw an
     // InvalidStateError exception and abort these steps.
     if (!isOpen()) {
-        exceptionState.throwDOMException(InvalidStateError, "The MediaSource's readyState is not 'open'.");
+        logAndThrowDOMException(exceptionState, InvalidStateError, "The MediaSource's readyState is not 'open'.");
         return 0;
     }
 
@@ -169,7 +175,7 @@ void MediaSource::removeSourceBuffer(SourceBuffer* buffer, ExceptionState& excep
     // 1. If sourceBuffer specifies an object that is not in sourceBuffers then
     // throw a NotFoundError exception and abort these steps.
     if (!m_sourceBuffers->length() || !m_sourceBuffers->contains(buffer)) {
-        exceptionState.throwDOMException(NotFoundError, "The SourceBuffer provided is not contained in this MediaSource.");
+        logAndThrowDOMException(exceptionState, NotFoundError, "The SourceBuffer provided is not contained in this MediaSource.");
         return;
     }
 
@@ -387,11 +393,11 @@ void MediaSource::setDuration(double duration, ExceptionState& exceptionState)
     // 1. If the value being set is negative or NaN then throw an InvalidAccessError
     // exception and abort these steps.
     if (std::isnan(duration)) {
-        exceptionState.throwDOMException(InvalidAccessError, ExceptionMessages::notAFiniteNumber(duration, "duration"));
+        logAndThrowDOMException(exceptionState, InvalidAccessError, ExceptionMessages::notAFiniteNumber(duration, "duration"));
         return;
     }
     if (duration < 0.0) {
-        exceptionState.throwDOMException(InvalidAccessError, ExceptionMessages::indexExceedsMinimumBound("duration", duration, 0.0));
+        logAndThrowDOMException(exceptionState, InvalidAccessError, ExceptionMessages::indexExceedsMinimumBound("duration", duration, 0.0));
         return;
     }
 
@@ -586,14 +592,14 @@ PassOwnPtr<WebSourceBuffer> MediaSource::createWebSourceBuffer(const String& typ
         // Step 2: If type contains a MIME type ... that is not supported with the types
         // specified for the other SourceBuffer objects in sourceBuffers, then throw
         // a NotSupportedError exception and abort these steps.
-        exceptionState.throwDOMException(NotSupportedError, "The type provided ('" + type + "') is not supported.");
+        logAndThrowDOMException(exceptionState, NotSupportedError, "The type provided ('" + type + "') is not supported.");
         return nullptr;
     case WebMediaSource::AddStatusReachedIdLimit:
         ASSERT(!webSourceBuffer);
         // 2.2 https://dvcs.w3.org/hg/html-media/raw-file/default/media-source/media-source.html#widl-MediaSource-addSourceBuffer-SourceBuffer-DOMString-type
         // Step 3: If the user agent can't handle any more SourceBuffer objects then throw
         // a QuotaExceededError exception and abort these steps.
-        exceptionState.throwDOMException(QuotaExceededError, "This MediaSource has reached the limit of SourceBuffer objects it can handle. No additional SourceBuffer objects may be added.");
+        logAndThrowDOMException(exceptionState, QuotaExceededError, "This MediaSource has reached the limit of SourceBuffer objects it can handle. No additional SourceBuffer objects may be added.");
         return nullptr;
     }
 
