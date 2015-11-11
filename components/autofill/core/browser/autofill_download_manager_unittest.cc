@@ -20,6 +20,8 @@
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/test_autofill_driver.h"
 #include "components/autofill/core/common/form_data.h"
+#include "components/compression/compression_utils.h"
+#include "net/http/http_request_headers.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_status.h"
 #include "net/url_request/url_request_test_util.h"
@@ -43,6 +45,13 @@ void FakeOnURLFetchComplete(net::TestURLFetcher* fetcher,
   fetcher->SetResponseString(response_body);
 
   fetcher->delegate()->OnURLFetchComplete(fetcher);
+}
+
+// Compresses |data| and returns the result.
+std::string Compress(const std::string& data) {
+  std::string compressed_data;
+  EXPECT_TRUE(compression::GzipCompress(data, &compressed_data));
+  return compressed_data;
 }
 
 }  // namespace
@@ -546,6 +555,121 @@ TEST_F(AutofillDownloadTest, CacheQueryTest) {
   FakeOnURLFetchComplete(fetcher, 200, std::string(responses[0]));
   ASSERT_EQ(1U, responses_.size());
   EXPECT_EQ(responses[0], responses_.front().response);
+}
+
+TEST_F(AutofillDownloadTest, QueryRequestIsGzipped) {
+  // Expected query (uncompressed for visual verification).
+  const char* kExpectedQueryXml =
+      "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+      "<autofillquery clientversion=\"6.1.1715.1442/en (GGLL)\">"
+      "<form signature=\"14546501144368603154\">"
+      "<field signature=\"239111655\"/>"
+      "<field signature=\"3763331450\"/>"
+      "<field signature=\"3494530716\"/>"
+      "</form></autofillquery>";
+
+  // Create and register factory.
+  net::TestURLFetcherFactory factory;
+
+  FormData form;
+
+  FormFieldData field;
+  field.form_control_type = "text";
+
+  field.label = ASCIIToUTF16("username");
+  field.name = ASCIIToUTF16("username");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("First Name");
+  field.name = ASCIIToUTF16("firstname");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Last Name");
+  field.name = ASCIIToUTF16("lastname");
+  form.fields.push_back(field);
+
+  FormStructure* form_structure = new FormStructure(form);
+  ScopedVector<FormStructure> form_structures;
+  form_structures.push_back(form_structure);
+
+  base::HistogramTester histogram;
+  // Request with id 0.
+  EXPECT_TRUE(download_manager_.StartQueryRequest(form_structures.get()));
+  histogram.ExpectUniqueSample("Autofill.ServerQueryResponse",
+                               AutofillMetrics::QUERY_SENT, 1);
+
+  // Request payload is gzipped.
+  net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
+  ASSERT_TRUE(fetcher);
+  EXPECT_EQ(Compress(kExpectedQueryXml), fetcher->upload_data());
+
+  // Proper content-encoding header is defined.
+  net::HttpRequestHeaders headers;
+  fetcher->GetExtraRequestHeaders(&headers);
+  std::string header;
+  EXPECT_TRUE(headers.GetHeader("content-encoding", &header));
+  EXPECT_EQ("gzip", header);
+
+  // Expect that the compression is logged.
+  histogram.ExpectUniqueSample("Autofill.PayloadCompressionRatio.Query", 73, 1);
+}
+
+TEST_F(AutofillDownloadTest, UploadRequestIsGzipped) {
+  // Expected upload (uncompressed for visual verification).
+  const char* kExpectedUploadXml =
+      "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+      "<autofillupload clientversion=\"6.1.1715.1442/en (GGLL)\""
+      " formsignature=\"14546501144368603154\" autofillused=\"true\""
+      " datapresent=\"\"/>";
+
+  // Create and register factory.
+  net::TestURLFetcherFactory factory;
+
+  FormData form;
+
+  FormFieldData field;
+  field.form_control_type = "text";
+
+  field.label = ASCIIToUTF16("username");
+  field.name = ASCIIToUTF16("username");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("First Name");
+  field.name = ASCIIToUTF16("firstname");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Last Name");
+  field.name = ASCIIToUTF16("lastname");
+  form.fields.push_back(field);
+
+  FormStructure* form_structure = new FormStructure(form);
+  ScopedVector<FormStructure> form_structures;
+  form_structures.push_back(form_structure);
+
+  // Set upload to 100% so requests happen.
+  download_manager_.SetPositiveUploadRate(1.0);
+  download_manager_.SetNegativeUploadRate(1.0);
+
+  base::HistogramTester histogram;
+  // Request with id 0.
+  EXPECT_TRUE(download_manager_.StartUploadRequest(
+      *(form_structures[0]), true, ServerFieldTypeSet(), std::string()));
+
+  // Request payload is gzipped.
+  net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
+  ASSERT_TRUE(fetcher);
+  EXPECT_EQ(Compress(kExpectedUploadXml), fetcher->upload_data());
+
+  // Proper content-encoding header is defined.
+  net::HttpRequestHeaders headers;
+  fetcher->GetExtraRequestHeaders(&headers);
+  std::string header;
+  EXPECT_TRUE(headers.GetHeader("content-encoding", &header));
+  EXPECT_EQ("gzip", header);
+
+  // Expect that the compression is logged.
+  histogram.ExpectUniqueSample("Autofill.PayloadCompressionRatio.Upload", 92,
+                               1);
 }
 
 }  // namespace autofill

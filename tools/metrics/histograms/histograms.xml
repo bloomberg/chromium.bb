@@ -2367,6 +2367,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Autofill.PayloadCompressionRatio" units="%">
+  <owner>mathp@chromium.org</owner>
+  <summary>
+    Compression ratio of the query and upload payload that are sent to the
+    Autofill server. The payload is compressed using gzip.
+  </summary>
+</histogram>
+
 <histogram name="Autofill.ProfileActionOnFormSubmitted"
     enum="AutofillProfileAction">
   <owner>sebsg@chromium.org</owner>
@@ -76724,6 +76732,12 @@ To add a new entry, add it with any value and run test to compute valid value.
       label="both server and local autofill data"/>
   <affected-histogram name="Autofill.FormEvents.Address"/>
   <affected-histogram name="Autofill.FormEvents.CreditCard"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="AutofillPayloadCompressionType" separator=".">
+  <suffix name="Query" label="Query request compression"/>
+  <suffix name="Upload" label="Upload request compression"/>
+  <affected-histogram name="Autofill.PayloadCompressionRatio"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="AutofillRealPanResultGroups" separator=".">

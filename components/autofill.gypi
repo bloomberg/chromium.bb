@@ -88,6 +88,7 @@
         'autofill_core_common',
         'components_resources.gyp:components_resources',
         'components_strings.gyp:components_strings',
+        'compression',
         'data_use_measurement_core',
         'infobars_core',
         'keyed_service_core',

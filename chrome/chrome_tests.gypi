@@ -2117,6 +2117,7 @@
         '../components/components.gyp:autofill_content_test_support',
         '../components/components.gyp:captive_portal_test_support',
         '../components/components.gyp:certificate_reporting',
+        '../components/components.gyp:compression',
         '../components/components.gyp:dom_distiller_content_browser',
         '../components/components.gyp:dom_distiller_content_renderer',
         '../components/components.gyp:dom_distiller_test_support',
