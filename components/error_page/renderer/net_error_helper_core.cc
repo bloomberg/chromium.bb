@@ -369,21 +369,24 @@ void ReportAutoReloadFailure(const blink::WebURLError& error, size_t count) {
 }  // namespace
 
 struct NetErrorHelperCore::ErrorPageInfo {
-  ErrorPageInfo(blink::WebURLError error, bool was_failed_post)
+  ErrorPageInfo(blink::WebURLError error,
+                bool was_failed_post,
+                bool was_ignoring_cache)
       : error(error),
         was_failed_post(was_failed_post),
+        was_ignoring_cache(was_ignoring_cache),
         needs_dns_updates(false),
         needs_load_navigation_corrections(false),
         reload_button_in_page(false),
         show_saved_copy_button_in_page(false),
         show_cached_copy_button_in_page(false),
         is_finished_loading(false),
-        auto_reload_triggered(false) {
-  }
+        auto_reload_triggered(false) {}
 
   // Information about the failed page load.
   blink::WebURLError error;
   bool was_failed_post;
+  bool was_ignoring_cache;
 
   // Information about the status of the error page.
 
@@ -623,18 +626,19 @@ void NetErrorHelperCore::OnFinishLoad(FrameType frame_type) {
   UpdateErrorPage();
 }
 
-void NetErrorHelperCore::GetErrorHTML(
-    FrameType frame_type,
-    const blink::WebURLError& error,
-    bool is_failed_post,
-    std::string* error_html) {
+void NetErrorHelperCore::GetErrorHTML(FrameType frame_type,
+                                      const blink::WebURLError& error,
+                                      bool is_failed_post,
+                                      bool is_ignoring_cache,
+                                      std::string* error_html) {
   if (frame_type == MAIN_FRAME) {
     // If navigation corrections were needed before, that should have been
     // cancelled earlier by starting a new page load (Which has now failed).
     DCHECK(!committed_error_page_info_ ||
            !committed_error_page_info_->needs_load_navigation_corrections);
 
-    pending_error_page_info_.reset(new ErrorPageInfo(error, is_failed_post));
+    pending_error_page_info_.reset(
+        new ErrorPageInfo(error, is_failed_post, is_ignoring_cache));
     pending_error_page_info_->navigation_correction_params.reset(
         new NavigationCorrectionParams(navigation_correction_params_));
     GetErrorHtmlForMainFrame(pending_error_page_info_.get(), error_html);
@@ -753,9 +757,10 @@ void NetErrorHelperCore::OnNavigationCorrectionsFetched(
   DCHECK(committed_error_page_info_->needs_load_navigation_corrections);
   DCHECK(committed_error_page_info_->navigation_correction_params);
 
-  pending_error_page_info_.reset(
-      new ErrorPageInfo(committed_error_page_info_->error,
-                        committed_error_page_info_->was_failed_post));
+  pending_error_page_info_.reset(new ErrorPageInfo(
+      committed_error_page_info_->error,
+      committed_error_page_info_->was_failed_post,
+      committed_error_page_info_->was_ignoring_cache));
   pending_error_page_info_->navigation_correction_response =
       ParseNavigationCorrectionResponse(corrections);
 
@@ -811,11 +816,11 @@ blink::WebURLError NetErrorHelperCore::GetUpdatedError(
   return updated_error;
 }
 
-void NetErrorHelperCore::Reload() {
+void NetErrorHelperCore::Reload(bool ignore_cache) {
   if (!committed_error_page_info_) {
     return;
   }
-  delegate_->ReloadPage();
+  delegate_->ReloadPage(ignore_cache);
 }
 
 bool NetErrorHelperCore::MaybeStartAutoReloadTimer() {
@@ -859,7 +864,7 @@ void NetErrorHelperCore::AutoReloadTimerFired() {
 
   auto_reload_count_++;
   auto_reload_in_flight_ = true;
-  Reload();
+  Reload(committed_error_page_info_->was_ignoring_cache);
 }
 
 void NetErrorHelperCore::PauseAutoReloadTimer() {
@@ -918,7 +923,7 @@ void NetErrorHelperCore::ExecuteButtonPress(Button button) {
         RecordEvent(NETWORK_ERROR_PAGE_BOTH_BUTTONS_RELOAD_CLICKED);
       }
       navigation_from_button_ = RELOAD_BUTTON;
-      Reload();
+      Reload(false);
       return;
     case SHOW_SAVED_COPY_BUTTON:
       RecordEvent(NETWORK_ERROR_PAGE_SHOW_SAVED_COPY_BUTTON_CLICKED);

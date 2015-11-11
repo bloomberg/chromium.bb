@@ -155,12 +155,12 @@ void NetErrorHelper::NetworkStateChanged(bool enabled) {
   core_->NetworkStateChanged(enabled);
 }
 
-void NetErrorHelper::GetErrorHTML(
-    const blink::WebURLError& error,
-    bool is_failed_post,
-    std::string* error_html) {
+void NetErrorHelper::GetErrorHTML(const blink::WebURLError& error,
+                                  bool is_failed_post,
+                                  bool is_ignoring_cache,
+                                  std::string* error_html) {
   core_->GetErrorHTML(GetFrameType(render_frame()), error, is_failed_post,
-                      error_html);
+                      is_ignoring_cache, error_html);
 }
 
 bool NetErrorHelper::ShouldSuppressErrorPage(const GURL& url) {
@@ -289,8 +289,8 @@ void NetErrorHelper::SendTrackingRequest(
                  base::Unretained(this)));
 }
 
-void NetErrorHelper::ReloadPage() {
-  render_frame()->GetWebFrame()->reload(false);
+void NetErrorHelper::ReloadPage(bool ignore_cache) {
+  render_frame()->GetWebFrame()->reload(ignore_cache);
 }
 
 void NetErrorHelper::LoadPageFromCache(const GURL& page_url) {
