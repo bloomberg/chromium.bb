@@ -33,16 +33,16 @@ namespace WTF {
 // method. That trace method will be called automatically by the on-heap
 // collections.
 //
-#define DISALLOW_NEW()                                   \
+#define DISALLOW_NEW()                                          \
     private:                                                    \
         void* operator new(size_t) = delete;                    \
         void* operator new(size_t, NotNullTag, void*) = delete; \
         void* operator new(size_t, void*) = delete;             \
     public:
 
-#define DISALLOW_NEW_EXCEPT_PLACEMENT_NEW()                                              \
+#define DISALLOW_NEW_EXCEPT_PLACEMENT_NEW()                                         \
     public:                                                                         \
-        using IsAllowOnlyInlineAllocation = int;                                    \
+        using IsAllowOnlyPlacementNew = int;                                        \
         void* operator new(size_t, NotNullTag, void* location) { return location; } \
         void* operator new(size_t, void* location) { return location; }             \
     private:                                                                        \

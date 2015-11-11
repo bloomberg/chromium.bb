@@ -1002,8 +1002,8 @@ Value* HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Alloca
 
 #if ENABLE(OILPAN)
     static_assert(Allocator::isGarbageCollected
-        || ((!IsAllowOnlyInlineAllocation<KeyType>::value || !NeedsTracing<KeyType>::value)
-        && (!IsAllowOnlyInlineAllocation<ValueType>::value || !NeedsTracing<ValueType>::value))
+        || ((!AllowsOnlyPlacementNew<KeyType>::value || !NeedsTracing<KeyType>::value)
+        && (!AllowsOnlyPlacementNew<ValueType>::value || !NeedsTracing<ValueType>::value))
         , "Cannot put DISALLOW_NEW_EXCEPT_PLACEMENT_NEW objects that have trace methods into an off-heap HashTable");
 #endif
     if (Traits::emptyValueIsZero) {

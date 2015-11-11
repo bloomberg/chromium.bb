@@ -633,7 +633,7 @@ public:
     {
         static_assert(!IsPolymorphic<T>::value || !VectorTraits<T>::canInitializeWithMemset, "Cannot initialize with memset if there is a vtable");
 #if ENABLE(OILPAN)
-        static_assert(Allocator::isGarbageCollected || !IsAllowOnlyInlineAllocation<T>::value || !NeedsTracing<T>::value, "Cannot put DISALLOW_NEW_EXCEPT_PLACEMENT_NEW objects that have trace methods into an off-heap Vector");
+        static_assert(Allocator::isGarbageCollected || !AllowsOnlyPlacementNew<T>::value || !NeedsTracing<T>::value, "Cannot put DISALLOW_NEW_EXCEPT_PLACEMENT_NEW objects that have trace methods into an off-heap Vector");
 #endif
         static_assert(Allocator::isGarbageCollected || !IsPointerToGarbageCollectedType<T>::value, "Cannot put raw pointers to garbage-collected classes into an off-heap Vector.  Use HeapVector<Member<T>> instead.");
 
@@ -646,7 +646,7 @@ public:
     {
         static_assert(!IsPolymorphic<T>::value || !VectorTraits<T>::canInitializeWithMemset, "Cannot initialize with memset if there is a vtable");
 #if ENABLE(OILPAN)
-        static_assert(Allocator::isGarbageCollected || !IsAllowOnlyInlineAllocation<T>::value || !NeedsTracing<T>::value, "Cannot put DISALLOW_NEW_EXCEPT_PLACEMENT_NEW objects that have trace methods into an off-heap Vector");
+        static_assert(Allocator::isGarbageCollected || !AllowsOnlyPlacementNew<T>::value || !NeedsTracing<T>::value, "Cannot put DISALLOW_NEW_EXCEPT_PLACEMENT_NEW objects that have trace methods into an off-heap Vector");
 #endif
         static_assert(Allocator::isGarbageCollected || !IsPointerToGarbageCollectedType<T>::value, "Cannot put raw pointers to garbage-collected classes into an off-heap Vector.  Use HeapVector<Member<T>> instead.");
 

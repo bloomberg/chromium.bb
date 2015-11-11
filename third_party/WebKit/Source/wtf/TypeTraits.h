@@ -353,14 +353,14 @@ struct NeedsTracing<std::pair<T, U>> {
 // This is used to check that DISALLOW_NEW_EXCEPT_PLACEMENT_NEW objects are not
 // stored in off-heap Vectors, HashTables etc.
 template <typename T>
-struct IsAllowOnlyInlineAllocation {
+struct AllowsOnlyPlacementNew {
 private:
     using YesType = char;
     struct NoType {
         char padding[8];
     };
 
-    template <typename U> static YesType checkMarker(typename U::IsAllowOnlyInlineAllocation*);
+    template <typename U> static YesType checkMarker(typename U::IsAllowOnlyPlacementNew*);
     template <typename U> static NoType checkMarker(...);
 public:
     static const bool value = sizeof(checkMarker<T>(nullptr)) == sizeof(YesType);
