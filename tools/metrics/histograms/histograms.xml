@@ -26239,6 +26239,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Net.SSLServerKeyExchangeHash" enum="SSLHashAlgorithm">
+  <owner>davidben@chromium.org</owner>
+  <summary>
+    For each SSL connection with a full handshake using a DHE- or ECDHE-based
+    key exchange, the hash function used in the ServerKeyExchange signature.
+  </summary>
+</histogram>
+
 <histogram name="Net.SSLSessionVersionMatch" enum="BooleanMatched">
   <owner>davidben@chromium.org</owner>
   <obsolete>
@@ -74269,6 +74277,16 @@ To add a new entry, add it with any value and run test to compute valid value.
 <enum name="SSLGoodCertSeenEvent" type="int">
   <int value="0" label="NO_PREVIOUS_EXCEPTION"/>
   <int value="1" label="HAD_PREVIOUS_EXCEPTION"/>
+</enum>
+
+<enum name="SSLHashAlgorithm" type="int">
+  <int value="0" label="None (unused)"/>
+  <int value="1" label="MD5"/>
+  <int value="2" label="SHA-1"/>
+  <int value="3" label="SHA-224"/>
+  <int value="4" label="SHA-256"/>
+  <int value="5" label="SHA-384"/>
+  <int value="6" label="SHA-512"/>
 </enum>
 
 <enum name="SSLIsExpiredAndDecision" type="int">

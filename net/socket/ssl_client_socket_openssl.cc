@@ -21,6 +21,7 @@
 #include "base/lazy_instance.h"
 #include "base/memory/singleton.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/sparse_histogram.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"
@@ -1207,6 +1208,12 @@ int SSLClientSocketOpenSSL::DoHandshakeComplete(int result) {
 
   if (IsRenegotiationAllowed())
     SSL_set_renegotiate_mode(ssl_, ssl_renegotiate_freely);
+
+  uint8_t server_key_exchange_hash = SSL_get_server_key_exchange_hash(ssl_);
+  if (server_key_exchange_hash != TLSEXT_hash_none) {
+    UMA_HISTOGRAM_SPARSE_SLOWLY("Net.SSLServerKeyExchangeHash",
+                                server_key_exchange_hash);
+  }
 
   // Verify the certificate.
   UpdateServerCert();
