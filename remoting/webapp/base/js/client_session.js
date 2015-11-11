@@ -308,9 +308,13 @@ remoting.ClientSession.prototype.disconnect = function(error) {
       '</jingle>' +
     '</cli:iq>');
 
-  var state = error.isNone() ?
-                  remoting.ClientSession.State.CLOSED :
-                  remoting.ClientSession.State.FAILED;
+  var state = remoting.ClientSession.State.FAILED;
+  if (error.hasTag(
+          remoting.Error.Tag.NONE,
+          remoting.Error.Tag.CLIENT_SUSPENDED)) {
+    state = remoting.ClientSession.State.CLOSED;
+  }
+
   this.error_ = error;
   this.setState_(state);
 };
@@ -610,8 +614,7 @@ function recordState(state) {
  */
 remoting.ClientSession.prototype.notifyStateChanges_ =
     function(oldState, newState) {
-  /** @type {remoting.Error} */
-  var error;
+  var error = this.getError();
   switch (this.state_) {
     case remoting.ClientSession.State.CONNECTED:
       console.log('Connection established.');
@@ -636,12 +639,11 @@ remoting.ClientSession.prototype.notifyStateChanges_ =
 
     case remoting.ClientSession.State.CLOSED:
       console.log('Connection closed.');
-      this.listener_.onDisconnected(remoting.Error.none());
+      this.listener_.onDisconnected(error);
       break;
 
     case remoting.ClientSession.State.CONNECTION_CANCELED:
     case remoting.ClientSession.State.FAILED:
-      error = this.getError();
       if (!error.isNone()) {
         console.error('Connection failed: ' + error.toString());
       }
@@ -649,7 +651,6 @@ remoting.ClientSession.prototype.notifyStateChanges_ =
       break;
 
     case remoting.ClientSession.State.CONNECTION_DROPPED:
-      error = this.getError();
       console.error('Connection dropped: ' + error.toString());
       this.listener_.onDisconnected(error);
       break;

@@ -358,19 +358,11 @@ QUnit.test('HOST_OFFLINE - Reconnect failed', function() {
 
 QUnit.test('Connection dropped - Auto Reconnect', function() {
   var EntryPoint = remoting.ChromotingEvent.SessionEntryPoint;
-  expectSequence(testDriver, {
+  expectSucceeded(testDriver, {
     session_entry_point: EntryPoint.CONNECT_BUTTON,
     role: remoting.ChromotingEvent.Role.CLIENT,
     mode: remoting.ChromotingEvent.Mode.ME2ME,
-  }, [
-    remoting.ChromotingEvent.SessionState.STARTED,
-    remoting.ChromotingEvent.SessionState.SIGNALING,
-    remoting.ChromotingEvent.SessionState.CREATING_PLUGIN,
-    remoting.ChromotingEvent.SessionState.CONNECTING,
-    remoting.ChromotingEvent.SessionState.AUTHENTICATED,
-    remoting.ChromotingEvent.SessionState.CONNECTED,
-    remoting.ChromotingEvent.SessionState.CONNECTION_DROPPED,
-  ]);
+  });
 
   expectSucceeded(testDriver, {
     session_entry_point: EntryPoint.AUTO_RECONNECT_ON_CONNECTION_DROPPED,
@@ -388,10 +380,9 @@ QUnit.test('Connection dropped - Auto Reconnect', function() {
     if (state == remoting.ClientSession.State.CONNECTED) {
       count++;
       if (count == 1) {
-        // On first CONNECTED, fake network failure.
-        plugin.mock$setConnectionStatus(
-            remoting.ClientSession.State.FAILED,
-            remoting.ClientSession.ConnectionError.NETWORK_FAILURE);
+        // On first CONNECTED, fake client suspension.
+        testDriver.me2meActivity().getDesktopActivity().getSession().disconnect(
+            new remoting.Error(remoting.Error.Tag.CLIENT_SUSPENDED));
       } else if (count == 2) {
         // On second CONNECTED, disconnect and finish the test.
         testDriver.me2meActivity().stop();
