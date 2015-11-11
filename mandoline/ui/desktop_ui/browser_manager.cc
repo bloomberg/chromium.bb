@@ -18,7 +18,7 @@ const char kGoogleURL[] = "http://www.google.com";
 }  // namespace
 
 BrowserManager::BrowserManager()
-    : app_(nullptr), startup_time_(base::Time::Now()) {}
+    : app_(nullptr), startup_ticks_(base::TimeTicks::Now()) {}
 
 BrowserManager::~BrowserManager() {
   while (!browsers_.empty())

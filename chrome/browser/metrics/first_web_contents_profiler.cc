@@ -56,7 +56,7 @@ void FirstWebContentsProfiler::DidFirstVisuallyNonEmptyPaint() {
   }
 
   collected_paint_metric_ = true;
-  const base::Time now = base::Time::Now();
+  const base::TimeTicks now = base::TimeTicks::Now();
   // Record the old metric unconditionally.
   startup_metric_utils::RecordDeprecatedFirstWebContentsNonEmptyPaint(now);
   if (!finished_)
@@ -78,7 +78,7 @@ void FirstWebContentsProfiler::DocumentOnLoadCompletedInMainFrame() {
   }
 
   collected_load_metric_ = true;
-  const base::Time now = base::Time::Now();
+  const base::TimeTicks now = base::TimeTicks::Now();
   // Record the old metric unconditionally.
   startup_metric_utils::RecordDeprecatedFirstWebContentsMainFrameLoad(now);
   if (!finished_)
@@ -102,7 +102,7 @@ void FirstWebContentsProfiler::DidStartNavigation(
 
   collected_main_navigation_start_metric_ = true;
   startup_metric_utils::RecordFirstWebContentsMainNavigationStart(
-      base::Time::Now());
+      base::TimeTicks::Now());
 }
 
 void FirstWebContentsProfiler::DidFinishNavigation(
@@ -138,7 +138,7 @@ void FirstWebContentsProfiler::DidFinishNavigation(
 
   collected_main_navigation_finished_metric_ = true;
   startup_metric_utils::RecordFirstWebContentsMainNavigationFinished(
-      base::Time::Now());
+      base::TimeTicks::Now());
 }
 
 void FirstWebContentsProfiler::WasHidden() {

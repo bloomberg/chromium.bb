@@ -20,24 +20,19 @@ MacStartupProfiler::~MacStartupProfiler() {
 }
 
 void MacStartupProfiler::Profile(Location location) {
-  profiled_times_[location] = base::Time::Now();
+  profiled_ticks_[location] = base::TimeTicks::Now();
 }
 
 void MacStartupProfiler::RecordMetrics() {
-  const base::Time main_entry_time = startup_metric_utils::MainEntryPointTime();
-  DCHECK(!main_entry_time.is_null());
+  const base::TimeTicks main_entry_ticks =
+      startup_metric_utils::MainEntryPointTicks();
+  DCHECK(!main_entry_ticks.is_null());
   DCHECK(!recorded_metrics_);
 
   recorded_metrics_ = true;
 
-  for (std::map<Location, base::Time>::const_iterator it =
-           profiled_times_.begin();
-       it != profiled_times_.end();
-       ++it) {
-    const base::Time& location_time = it->second;
-    base::TimeDelta delta = location_time - main_entry_time;
-    RecordHistogram(it->first, delta);
-  }
+  for (const std::pair<Location, base::TimeTicks>& entry : profiled_ticks_)
+    RecordHistogram(entry.first, entry.second - main_entry_ticks);
 }
 
 const std::string MacStartupProfiler::HistogramName(Location location) {

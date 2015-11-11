@@ -426,8 +426,8 @@ void HTMLFrame::didHandleOnloadEvents(blink::WebLocalFrame* frame) {
   DVLOG(2) << "XXX HTMLFrame::didHandleOnloadEvents id=" << id_;
   static bool recorded = false;
   if (!recorded && startup_performance_data_collector_) {
-    startup_performance_data_collector_->SetFirstWebContentsMainFrameLoadTime(
-        base::Time::Now().ToInternalValue());
+    startup_performance_data_collector_->SetFirstWebContentsMainFrameLoadTicks(
+        base::TimeTicks::Now().ToInternalValue());
     recorded = true;
   }
 }

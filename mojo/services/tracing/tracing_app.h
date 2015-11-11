@@ -51,11 +51,11 @@ class TracingApp
   // StartupPerformanceDataCollector implementation.
   void SetShellProcessCreationTime(int64 time) override;
   void SetShellMainEntryPointTime(int64 time) override;
-  void SetBrowserMessageLoopStartTime(int64 time) override;
-  void SetBrowserWindowDisplayTime(int64 time) override;
+  void SetBrowserMessageLoopStartTicks(int64 ticks) override;
+  void SetBrowserWindowDisplayTicks(int64 ticks) override;
   void SetBrowserOpenTabsTimeDelta(int64 delta) override;
-  void SetFirstWebContentsMainFrameLoadTime(int64 time) override;
-  void SetFirstVisuallyNonEmptyLayoutTime(int64 time) override;
+  void SetFirstWebContentsMainFrameLoadTicks(int64 ticks) override;
+  void SetFirstVisuallyNonEmptyLayoutTicks(int64 ticks) override;
   void GetStartupPerformanceTimes(
       const GetStartupPerformanceTimesCallback& callback) override;
 

@@ -765,8 +765,8 @@ void ChromeBrowserMainParts::RecordBrowserStartupTime() {
 #endif  // defined(OS_ANDROID)
 
   // Record collected startup metrics.
-  startup_metric_utils::RecordBrowserMainMessageLoopStart(base::Time::Now(),
-                                                          is_first_run);
+  startup_metric_utils::RecordBrowserMainMessageLoopStart(
+      base::TimeTicks::Now(), is_first_run);
 }
 
 // -----------------------------------------------------------------------------

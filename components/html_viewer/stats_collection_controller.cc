@@ -22,7 +22,6 @@ namespace html_viewer {
 namespace {
 
 // Initialize the histogram data using the given startup performance times.
-// TODO(msw): Use TimeTicks to avoid system clock changes: crbug.com/521164
 void GetStartupPerformanceTimesCallbackImpl(
     tracing::StartupPerformanceTimesPtr times) {
   base::StatisticsRecorder::Initialize();
@@ -36,22 +35,23 @@ void GetStartupPerformanceTimesCallbackImpl(
 
   // TODO(msw): Determine if this is the first run.
   startup_metric_utils::RecordBrowserMainMessageLoopStart(
-      base::Time::FromInternalValue(times->browser_message_loop_start_time),
+      base::TimeTicks::FromInternalValue(
+          times->browser_message_loop_start_ticks),
       false);
 
   startup_metric_utils::RecordBrowserWindowDisplay(
-      base::Time::FromInternalValue(times->browser_window_display_time));
+      base::TimeTicks::FromInternalValue(times->browser_window_display_ticks));
 
   startup_metric_utils::RecordBrowserOpenTabsDelta(
       base::TimeDelta::FromInternalValue(times->browser_open_tabs_time_delta));
 
   startup_metric_utils::RecordFirstWebContentsMainFrameLoad(
-      base::Time::FromInternalValue(
-          times->first_web_contents_main_frame_load_time));
+      base::TimeTicks::FromInternalValue(
+          times->first_web_contents_main_frame_load_ticks));
 
   startup_metric_utils::RecordFirstWebContentsNonEmptyPaint(
-      base::Time::FromInternalValue(
-          times->first_visually_non_empty_layout_time));
+      base::TimeTicks::FromInternalValue(
+          times->first_visually_non_empty_layout_ticks));
 }
 
 }  // namespace

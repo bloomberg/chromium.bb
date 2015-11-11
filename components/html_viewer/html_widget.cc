@@ -126,11 +126,11 @@ void HTMLWidgetRootLocal::didMeaningfulLayout(
     blink::WebMeaningfulLayout layout_type) {
   static bool called = false;
   if (!called && layout_type == blink::WebMeaningfulLayout::VisuallyNonEmpty) {
-    const int64 time = base::Time::Now().ToInternalValue();
+    const int64 ticks = base::TimeTicks::Now().ToInternalValue();
     tracing::StartupPerformanceDataCollectorPtr collector =
         StatsCollectionController::ConnectToDataCollector(app_);
     if (collector)
-      collector->SetFirstVisuallyNonEmptyLayoutTime(time);
+      collector->SetFirstVisuallyNonEmptyLayoutTicks(ticks);
     called = true;
   }
 }

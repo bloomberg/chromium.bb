@@ -136,14 +136,14 @@ void TracingApp::SetShellMainEntryPointTime(int64 time) {
     startup_performance_times_.shell_main_entry_point_time = time;
 }
 
-void TracingApp::SetBrowserMessageLoopStartTime(int64 time) {
-  if (startup_performance_times_.browser_message_loop_start_time == 0)
-    startup_performance_times_.browser_message_loop_start_time = time;
+void TracingApp::SetBrowserMessageLoopStartTicks(int64 ticks) {
+  if (startup_performance_times_.browser_message_loop_start_ticks == 0)
+    startup_performance_times_.browser_message_loop_start_ticks = ticks;
 }
 
-void TracingApp::SetBrowserWindowDisplayTime(int64 time) {
-  if (startup_performance_times_.browser_window_display_time == 0)
-    startup_performance_times_.browser_window_display_time = time;
+void TracingApp::SetBrowserWindowDisplayTicks(int64 ticks) {
+  if (startup_performance_times_.browser_window_display_ticks == 0)
+    startup_performance_times_.browser_window_display_ticks = ticks;
 }
 
 void TracingApp::SetBrowserOpenTabsTimeDelta(int64 delta) {
@@ -151,14 +151,14 @@ void TracingApp::SetBrowserOpenTabsTimeDelta(int64 delta) {
     startup_performance_times_.browser_open_tabs_time_delta = delta;
 }
 
-void TracingApp::SetFirstWebContentsMainFrameLoadTime(int64 time) {
-  if (startup_performance_times_.first_web_contents_main_frame_load_time == 0)
-    startup_performance_times_.first_web_contents_main_frame_load_time = time;
+void TracingApp::SetFirstWebContentsMainFrameLoadTicks(int64 ticks) {
+  if (startup_performance_times_.first_web_contents_main_frame_load_ticks == 0)
+    startup_performance_times_.first_web_contents_main_frame_load_ticks = ticks;
 }
 
-void TracingApp::SetFirstVisuallyNonEmptyLayoutTime(int64 time) {
-  if (startup_performance_times_.first_visually_non_empty_layout_time == 0)
-    startup_performance_times_.first_visually_non_empty_layout_time = time;
+void TracingApp::SetFirstVisuallyNonEmptyLayoutTicks(int64 ticks) {
+  if (startup_performance_times_.first_visually_non_empty_layout_ticks == 0)
+    startup_performance_times_.first_visually_non_empty_layout_ticks = ticks;
 }
 
 void TracingApp::GetStartupPerformanceTimes(

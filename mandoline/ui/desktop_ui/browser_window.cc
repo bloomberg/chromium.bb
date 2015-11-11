@@ -170,7 +170,7 @@ void BrowserWindow::OnEmbed(mus::Window* root) {
   CHECK(!root_);
 
   // Record when the browser window was displayed, used for performance testing.
-  const base::Time display_time = base::Time::Now();
+  const base::TimeTicks display_ticks = base::TimeTicks::Now();
 
   root_ = root;
 
@@ -214,7 +214,8 @@ void BrowserWindow::OnEmbed(mus::Window* root) {
   LoadURL(default_url_);
 
   // Record the time spent opening initial tabs, used for performance testing.
-  const base::TimeDelta open_tabs_delta = base::Time::Now() - display_time;
+  const base::TimeDelta open_tabs_delta =
+      base::TimeTicks::Now() - display_ticks;
 
   // Record the browser startup time metrics, used for performance testing.
   static bool recorded_browser_startup_metrics = false;
@@ -225,10 +226,10 @@ void BrowserWindow::OnEmbed(mus::Window* root) {
     request->url = mojo::String::From("mojo:tracing");
     tracing::StartupPerformanceDataCollectorPtr collector;
     app_->ConnectToService(request.Pass(), &collector);
-    collector->SetBrowserWindowDisplayTime(display_time.ToInternalValue());
+    collector->SetBrowserWindowDisplayTicks(display_ticks.ToInternalValue());
     collector->SetBrowserOpenTabsTimeDelta(open_tabs_delta.ToInternalValue());
-    collector->SetBrowserMessageLoopStartTime(
-        manager_->startup_time().ToInternalValue());
+    collector->SetBrowserMessageLoopStartTicks(
+        manager_->startup_ticks().ToInternalValue());
     recorded_browser_startup_metrics = true;
   }
 }

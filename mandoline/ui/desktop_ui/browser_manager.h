@@ -37,7 +37,7 @@ class BrowserManager : public mojo::ApplicationDelegate,
   void BrowserWindowClosed(BrowserWindow* browser);
 
   // Get the time recorded just before the application message loop was started.
-  const base::Time& startup_time() const { return startup_time_; }
+  const base::TimeTicks& startup_ticks() const { return startup_ticks_; }
 
  private:
   // Overridden from LaunchHandler:
@@ -56,7 +56,7 @@ class BrowserManager : public mojo::ApplicationDelegate,
   mus::mojom::WindowTreeHostFactoryPtr host_factory_;
   mojo::WeakBindingSet<LaunchHandler> launch_handler_bindings_;
   std::set<BrowserWindow*> browsers_;
-  base::Time startup_time_;
+  const base::TimeTicks startup_ticks_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserManager);
 };
