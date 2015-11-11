@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -412,10 +413,17 @@ void PlatformNotificationServiceImpl::OpenNotificationSettings(
 
   Profile* profile = Profile::FromBrowserContext(browser_context);
   DCHECK(profile);
-  chrome::ScopedTabbedBrowserDisplayer browser_displayer(
-      profile, chrome::GetActiveDesktop());
-  chrome::ShowContentSettingsExceptions(browser_displayer.browser(),
-                                        CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
+
+  if (switches::SettingsWindowEnabled()) {
+    chrome::ShowContentSettingsExceptionsInWindow(
+        profile, CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
+  } else {
+    chrome::ScopedTabbedBrowserDisplayer browser_displayer(
+        profile, chrome::GetActiveDesktop());
+    chrome::ShowContentSettingsExceptions(browser_displayer.browser(),
+                                          CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
+  }
+
 #endif  // defined(OS_ANDROID)
 }
 

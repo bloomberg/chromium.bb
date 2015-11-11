@@ -129,6 +129,11 @@ void ShowHelpImpl(Browser* browser,
 #endif
 }
 
+std::string GenerateContentSettingsExceptionsSubPage(ContentSettingsType type) {
+  return kContentSettingsExceptionsSubPage + std::string(kHashMark) +
+         options::ContentSettingsHandler::ContentSettingsTypeToGroupName(type);
+}
+
 }  // namespace
 
 void ShowBookmarkManager(Browser* browser) {
@@ -298,10 +303,15 @@ void ShowSettingsSubPageInTabbedBrowser(Browser* browser,
 void ShowContentSettingsExceptions(Browser* browser,
                                    ContentSettingsType content_settings_type) {
   ShowSettingsSubPage(
-      browser,
-      kContentSettingsExceptionsSubPage + std::string(kHashMark) +
-          options::ContentSettingsHandler::ContentSettingsTypeToGroupName(
-              content_settings_type));
+      browser, GenerateContentSettingsExceptionsSubPage(content_settings_type));
+}
+
+void ShowContentSettingsExceptionsInWindow(
+    Profile* profile,
+    ContentSettingsType content_settings_type) {
+  DCHECK(switches::SettingsWindowEnabled());
+  ShowSettingsSubPageForProfile(
+      profile, GenerateContentSettingsExceptionsSubPage(content_settings_type));
 }
 
 void ShowContentSettings(Browser* browser,
