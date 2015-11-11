@@ -11,3 +11,7 @@ DownloadFile/DownloadFileTestWithRename.RenameWithErrorRetry/1
 # http://crbug.com/522049
 RenderWidgetCompositorOutputSurfaceTest.SucceedTwice
 RenderWidgetCompositorOutputSurfaceTest.FallbackSuccessNormalSuccess
+
+# http://crbug.com/554665
+WebContentsVideoCaptureDeviceTest.VariableResolution_AnyWithinLimits
+WebContentsVideoCaptureDeviceTest.VariableResolution_FixedAspectRatio
