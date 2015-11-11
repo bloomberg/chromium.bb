@@ -11,7 +11,6 @@
 #include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/bad_message.h"
 #include "extensions/browser/guest_view/extension_view/extension_view_constants.h"
-#include "extensions/browser/guest_view/extension_view/whitelist/extension_view_whitelist.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/strings/grit/extensions_strings.h"
@@ -72,8 +71,7 @@ void ExtensionViewGuest::CreateWebContents(
   std::string extension_id;
   create_params.GetString(extensionview::kAttributeExtension, &extension_id);
 
-  if (!crx_file::id_util::IdIsValid(extension_id) ||
-      !IsExtensionIdWhitelisted(extension_id)) {
+  if (!crx_file::id_util::IdIsValid(extension_id)) {
     callback.Run(nullptr);
     return;
   }
