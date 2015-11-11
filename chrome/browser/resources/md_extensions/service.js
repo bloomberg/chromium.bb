@@ -163,6 +163,16 @@ cr.define('extensions', function() {
     },
 
     /** @override */
+    inspectItemView: function(id, view) {
+      chrome.developerPrivate.openDevTools({
+        extensionId: id,
+        renderProcessId: view.renderProcessId,
+        renderViewId: view.renderViewId,
+        incognito: view.incognito,
+      });
+    },
+
+    /** @override */
     setProfileInDevMode: function(inDevMode) {
       chrome.developerPrivate.updateProfileConfiguration(
           {inDeveloperMode: inDevMode});

@@ -39,7 +39,7 @@
               <div id="inspect-views">
                 <span>[[i18n('itemInspectViews')]]</span>
                 <template is="dom-repeat" items="[[data.views]]">
-                  <paper-button>[[item.url]]</paper-button>
+                  <paper-button on-tap="onInspectTap_">[[computeInspectLabel_(item)]]</paper-button>
                 </template>
               </div>
             </template>

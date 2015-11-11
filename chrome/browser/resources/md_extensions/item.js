@@ -27,6 +27,12 @@ cr.define('extensions', function() {
 
     /** @return {boolean} */
     isInDevMode: assertNotReached,
+
+    /**
+     * @param {string} id,
+     * @param {chrome.developerPrivate.ExtensionView} view
+     */
+    inspectItemView: assertNotReached,
   };
 
   var Item = Polymer({
@@ -114,6 +120,14 @@ cr.define('extensions', function() {
     },
 
     /**
+     * @param {!{model: !{item: !chrome.developerPrivate.ExtensionView}}} e
+     * @private
+     */
+    onInspectTap_: function(e) {
+      this.delegate_.inspectItemView(this.data.id, e.model.item);
+    },
+
+    /**
      * Returns true if the extension is enabled, including terminated
      * extensions.
      * @return {boolean}
@@ -144,6 +158,27 @@ cr.define('extensions', function() {
     computeEnableCheckboxLabel_: function() {
       return this.i18n(this.isEnabled_() ? 'itemEnabled' : 'itemDisabled');
     },
+
+    /**
+     * @param {chrome.developerPrivate.ExtensionView} view
+     * @suppress {checkTypes} Needed for URL externs. :(
+     * @private
+     */
+    computeInspectLabel_: function(view) {
+      // Trim the "chrome-extension://<id>/".
+      var url = new URL(view.url);
+      var label = view.url;
+      if (url.protocol == 'chrome-extension:')
+        label = url.pathname.substring(1);
+      if (label == '_generated_background_page.html')
+        label = this.i18n('viewBackgroundPage');
+      // Add any qualifiers.
+      label += (view.incognito ? ' ' + this.i18n('viewIncognito') : '') +
+               (view.renderProcessId == -1 ?
+                    ' ' + this.i18n('viewInactive') : '') +
+               (view.isIframe ? ' ' + this.i18n('viewIframe') : '');
+      return label;
+    }
   });
 
   return {

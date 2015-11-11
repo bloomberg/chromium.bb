@@ -61,6 +61,14 @@ content::WebUIDataSource* CreateMdExtensionsSource() {
   source->AddLocalizedString("itemDetails", IDS_MD_EXTENSIONS_ITEM_DETAILS);
   source->AddLocalizedString("itemEnabled", IDS_MD_EXTENSIONS_ITEM_ENABLED);
   source->AddLocalizedString("itemDisabled", IDS_MD_EXTENSIONS_ITEM_DISABLED);
+  source->AddLocalizedString("viewBackgroundPage",
+                             IDS_EXTENSIONS_BACKGROUND_PAGE);
+  source->AddLocalizedString("viewIncognito",
+                             IDS_EXTENSIONS_VIEW_INCOGNITO);
+  source->AddLocalizedString("viewInactive",
+                             IDS_EXTENSIONS_VIEW_INACTIVE);
+  source->AddLocalizedString("viewIframe",
+                             IDS_EXTENSIONS_VIEW_IFRAME);
 
   source->AddResourcePath("manager.css", IDR_MD_EXTENSIONS_MANAGER_CSS);
   source->AddResourcePath("manager.html", IDR_MD_EXTENSIONS_MANAGER_HTML);

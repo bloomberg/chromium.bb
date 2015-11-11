@@ -76,3 +76,8 @@
 #inspect-views paper-button {
   color: rgb(51, 103, 214);
 }
+
+paper-button {
+  /* TODO(devlin): Decide whether all webui should do this. */
+  cursor: pointer;
+}

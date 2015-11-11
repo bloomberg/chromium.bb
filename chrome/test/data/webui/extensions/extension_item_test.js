@@ -42,7 +42,10 @@ cr.define('extension_item_tests', function() {
     setItemAllowedIncognito: function(id, enabled) {},
 
     /** @override */
-    isInDevMode: function() { return false; }
+    isInDevMode: function() { return false; },
+
+    /** @override: */
+    inspectItemView: function(id, view) {},
   };
 
   /** @type {string} The mock extension's id. */
@@ -111,6 +114,9 @@ cr.define('extension_item_tests', function() {
   var devElements = [
     {selector: '#extension-id', text: 'ID:' + extensionData.id},
     {selector: '#inspect-views'},
+    {selector: '#inspect-views paper-button', text: 'foo.html'},
+    {selector: '#inspect-views paper-button:nth-of-type(0n + 2)',
+     text: 'bar.html'},
   ];
 
   /**
@@ -187,7 +193,7 @@ cr.define('extension_item_tests', function() {
         document.body.appendChild(item);
       });
 
-      test(testNames.ElementVisibilityNormalState, function() {
+      test(assert(testNames.ElementVisibilityNormalState), function() {
         testNormalElementsAreVisible(item);
         testDetailElementsAreHidden(item);
         testDeveloperElementsAreHidden(item);
@@ -199,14 +205,14 @@ cr.define('extension_item_tests', function() {
         expectEquals('Disabled', item.$.enabled.textContent);
       });
 
-      test(testNames.ElementVisibilityDetailState, function() {
+      test(assert(testNames.ElementVisibilityDetailState), function() {
         MockInteractions.tap(item.$['show-details']);
         testNormalElementsAreVisible(item);
         testDetailElementsAreVisible(item);
         testDeveloperElementsAreHidden(item);
       });
 
-      test(testNames.ElementVisibilitydevState, function() {
+      test(assert(testNames.ElementVisibilityDeveloperState), function() {
         MockInteractions.tap(item.$['show-details']);
         item.set('inDevMode', true);
 
@@ -222,7 +228,7 @@ cr.define('extension_item_tests', function() {
       });
 
       /** Tests that the delegate methods are correctly called. */
-      test(testNames.ClickableItems, function() {
+      test(assert(testNames.ClickableItems), function() {
         MockInteractions.tap(item.$['show-details']);
         item.set('inDevMode', true);
 
@@ -235,6 +241,12 @@ cr.define('extension_item_tests', function() {
             [item.data.id, true]);
         mockDelegate.testClickingCalls(
             item.$$('#details-button'), 'showItemDetails', [item.data.id]);
+        mockDelegate.testClickingCalls(
+            item.$$('#inspect-views paper-button'),
+            'inspectItemView', [item.data.id, item.data.views[0]]);
+        mockDelegate.testClickingCalls(
+            item.$$('#inspect-views paper-button:nth-of-type(0n + 2)'),
+            'inspectItemView', [item.data.id, item.data.views[1]]);
       });
     });
   }
