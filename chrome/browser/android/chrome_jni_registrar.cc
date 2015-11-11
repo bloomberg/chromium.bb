@@ -154,6 +154,7 @@
 #include "components/service_tab_launcher/component_jni_registrar.h"
 #include "components/signin/core/browser/android/component_jni_registrar.h"
 #include "components/variations/android/component_jni_registrar.h"
+#include "components/variations/android/variations_seed_bridge.h"
 #include "components/web_contents_delegate_android/component_jni_registrar.h"
 #include "sync/android/sync_jni_registrar.h"
 
@@ -344,6 +345,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"UmaSessionStats", RegisterUmaSessionStats},
     {"UrlUtilities", RegisterUrlUtilities},
     {"Variations", variations::android::RegisterVariations},
+    {"VariationsSeedBridge", variations::android::RegisterVariationsSeedBridge},
     {"VariationsSession", chrome::android::RegisterVariationsSession},
     {"WarmupManager", RegisterWarmupManager},
     {"WebappRegistry", WebappRegistry::RegisterWebappRegistry},

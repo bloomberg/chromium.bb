@@ -14,6 +14,8 @@ source_set("variations") {
     "android/component_jni_registrar.h",
     "android/variations_associated_data_android.cc",
     "android/variations_associated_data_android.h",
+    "android/variations_seed_bridge.cc",
+    "android/variations_seed_bridge.h",
     "caching_permuted_entropy_provider.cc",
     "caching_permuted_entropy_provider.h",
     "entropy_provider.cc",
@@ -80,6 +82,7 @@ if (is_android) {
   generate_jni("jni") {
     sources = [
       "android/java/src/org/chromium/components/variations/VariationsAssociatedData.java",
+      "android/java/src/org/chromium/components/variations/firstrun/VariationsSeedBridge.java",
     ]
     jni_package = "variations"
   }

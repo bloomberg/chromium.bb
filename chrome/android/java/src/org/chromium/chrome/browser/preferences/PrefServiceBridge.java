@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.preferences;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
-import android.util.Base64;
 import android.util.Log;
 
 import org.chromium.base.ThreadUtils;
@@ -218,45 +217,6 @@ public final class PrefServiceBridge {
             default:
                 return null;
         }
-    }
-
-    // TODO(agulenko): Move this piece of code to a separate class.
-
-    private static final String VARIATIONS_FIRST_RUN_SEED_BASE64 = "variations_seed_base64";
-    private static final String VARIATIONS_FIRST_RUN_SEED_SIGNATURE = "variations_seed_signature";
-    private static final String VARIATIONS_FIRST_RUN_SEED_COUNTRY = "variations_seed_country";
-
-    private static String getVariationsFirstRunSeedPref(Context context, String prefName) {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        return prefs.getString(prefName, "");
-    }
-
-    public static void setVariationsFirstRunSeed(
-            Context context, byte[] rawSeed, String signature, String country) {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        prefs.edit()
-                .putString(VARIATIONS_FIRST_RUN_SEED_BASE64,
-                        Base64.encodeToString(rawSeed, Base64.NO_WRAP))
-                .putString(VARIATIONS_FIRST_RUN_SEED_SIGNATURE, signature)
-                .putString(VARIATIONS_FIRST_RUN_SEED_COUNTRY, country)
-                .apply();
-    }
-
-    @CalledByNative
-    private static byte[] getVariationsFirstRunSeedData(Context context) {
-        return Base64.decode(
-                getVariationsFirstRunSeedPref(context, VARIATIONS_FIRST_RUN_SEED_BASE64),
-                Base64.NO_WRAP);
-    }
-
-    @CalledByNative
-    private static String getVariationsFirstRunSeedSignature(Context context) {
-        return getVariationsFirstRunSeedPref(context, VARIATIONS_FIRST_RUN_SEED_SIGNATURE);
-    }
-
-    @CalledByNative
-    private static String getVariationsFirstRunSeedCountry(Context context) {
-        return getVariationsFirstRunSeedPref(context, VARIATIONS_FIRST_RUN_SEED_COUNTRY);
     }
 
     public boolean isAcceptCookiesEnabled() {

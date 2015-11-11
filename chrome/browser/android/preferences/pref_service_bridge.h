@@ -26,11 +26,6 @@ class PrefServiceBridge {
   // ContentSettingsType specified (or an empty string if no permission exists).
   static std::string GetAndroidPermissionForContentSetting(
       ContentSettingsType content_type);
-
-  // Return the first run seed data pulled from the Java side of application.
-  static void GetVariationsFirstRunSeed(std::string* seed_data,
-                                        std::string* seed_signature,
-                                        std::string* seed_country);
 };
 
 #endif  // CHROME_BROWSER_ANDROID_PREFERENCES_PREF_SERVICE_BRIDGE_H_

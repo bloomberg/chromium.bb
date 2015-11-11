@@ -462,6 +462,16 @@ by a child template that "extends" this file.
         </receiver>
         {% endif %}
 
+        <service android:name="org.chromium.components.variations.firstrun.VariationsSeedService"
+            android:exported="false" />
+
+        <receiver android:name="org.chromium.components.variations.firstrun.VariationsSeedServiceLauncher"
+            android:permission="{{ manifest_package }}.TOS_ACKED">
+            <intent-filter>
+                <action android:name="{{ manifest_package }}.TOS_ACKED" />
+            </intent-filter>
+        </receiver>
+
         <receiver android:name="org.chromium.chrome.browser.firstrun.ToSAckedReceiver"
             android:permission="{{ manifest_package }}.TOS_ACKED">
             <intent-filter>

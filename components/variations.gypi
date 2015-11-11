@@ -30,6 +30,8 @@
         'variations/android/component_jni_registrar.h',
         'variations/android/variations_associated_data_android.cc',
         'variations/android/variations_associated_data_android.h',
+        'variations/android/variations_seed_bridge.cc',
+        'variations/android/variations_seed_bridge.h',
         'variations/caching_permuted_entropy_provider.cc',
         'variations/caching_permuted_entropy_provider.h',
         'variations/entropy_provider.cc',
@@ -161,6 +163,7 @@
           'type': 'none',
           'sources': [
             'variations/android/java/src/org/chromium/components/variations/VariationsAssociatedData.java',
+            'variations/android/java/src/org/chromium/components/variations/firstrun/VariationsSeedBridge.java',
           ],
           'variables': {
             'jni_gen_package': 'variations',
