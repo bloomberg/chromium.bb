@@ -393,6 +393,7 @@ var pincher = (function() {
     },
 
     handleTouchCancel: function(e) {
+      if (!pinching) return;
       endPinch();
     },
 
