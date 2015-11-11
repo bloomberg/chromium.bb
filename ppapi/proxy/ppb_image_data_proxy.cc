@@ -387,6 +387,9 @@ PlatformImageData::~PlatformImageData() {
 
 void* PlatformImageData::Map() {
   if (!mapped_canvas_.get()) {
+    if (!transport_dib_.get())
+      return NULL;
+
     const bool is_opaque = false;
     mapped_canvas_.reset(transport_dib_->GetPlatformCanvas(desc_.size.width,
                                                            desc_.size.height,
