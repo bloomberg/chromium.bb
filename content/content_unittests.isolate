@@ -43,14 +43,7 @@
         ],
       },
     }],
-    ['OS=="android"', {
-      'variables': {
-        'files': [
-          '<(PRODUCT_DIR)/content_shell/assets/content_shell.pak',
-        ],
-      },
-    }],
-    ['OS=="linux" or OS=="mac" or OS=="win"', {
+    ['OS=="linux" or OS=="mac" or OS=="win" or OS=="android"', {
       'variables': {
         'files': [
           '<(PRODUCT_DIR)/content_shell.pak',

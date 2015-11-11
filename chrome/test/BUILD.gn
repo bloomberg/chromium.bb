@@ -1618,10 +1618,11 @@ test("unit_tests") {
 
     android_manifest =
         "//chrome/test/android/unit_tests_apk/AndroidManifest.xml"
-    apk_asset_location = "$root_out_dir/unit_tests_apk/assets"
-    apk_deps = [ ":unit_tests_java" ]
+    apk_deps = [
+      ":unit_tests_java",
+      "//v8:v8_external_startup_data_assets",
+    ]
     isolate_file = "../unit_tests.isolate"
-    deps += [ ":copy_unit_tests_apk_assets" ]
 
     # Some android targets still depend on --gc-sections to link.
     # TODO: remove --gc-sections for Debug builds (crbug.com/159847).
@@ -2198,19 +2199,6 @@ source_set("test_support_unit") {
 }
 
 if (is_android) {
-  copy_ex("copy_unit_tests_apk_assets") {
-    clear_dir = true
-    dest = "$root_out_dir/unit_tests_apk/assets"
-
-    if (v8_use_external_startup_data) {
-      renaming_sources = v8_external_startup_data_renaming_sources
-      renaming_destinations = v8_external_startup_data_renaming_destinations
-      deps = [
-        "//v8",
-      ]
-    }
-  }
-
   android_library("unit_tests_java") {
     DEPRECATED_java_in_dir = "//chrome/test/android/unit_tests_apk/src"
     deps = [

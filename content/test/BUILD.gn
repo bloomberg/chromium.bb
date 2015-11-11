@@ -157,7 +157,6 @@ source_set("test_support") {
 
     if (is_android) {
       deps += [
-        "//content/shell/android:copy_content_shell_assets",
         "//ui/android",
         "//ui/shell_dialogs",
       ]
@@ -483,23 +482,6 @@ test("content_browsertests") {
   }
 }
 
-if (is_android) {
-  _content_unittests_apk_assets_dir =
-      "$root_out_dir/content_unittests_apk/assets"
-  copy_ex("copy_content_unittests_apk_assets") {
-    clear_dir = true
-    dest = _content_unittests_apk_assets_dir
-
-    if (v8_use_external_startup_data) {
-      renaming_sources = v8_external_startup_data_renaming_sources
-      renaming_destinations = v8_external_startup_data_renaming_destinations
-      deps = [
-        "//v8",
-      ]
-    }
-  }
-}
-
 # TODO(GYP): Delete this after we've converted everything to GN.
 # The _run targets exist only for compatibility w/ GYP.
 group("content_unittests_run") {
@@ -686,12 +668,11 @@ test("content_unittests") {
       "../browser/webui/url_data_manager_backend_unittest.cc",
     ]
     deps -= [ "//device/battery" ]
-    deps += [ ":copy_content_unittests_apk_assets" ]
 
-    apk_asset_location = _content_unittests_apk_assets_dir
     apk_deps = [
       "//base:base_java_unittest_support",
       "//content/public/android:content_java",
+      "//v8:v8_external_startup_data_assets",
     ]
 
     defines += [ "APPCACHE_USE_SIMPLE_CACHE" ]
@@ -812,9 +793,8 @@ test("content_gl_tests") {
   if (is_android) {
     apk_deps = [
       "//content/public/test/android:content_java_test_support",
-      "//content/shell/android:copy_content_shell_assets",
+      "//content/shell/android:content_shell_assets",
     ]
-    apk_asset_location = "$root_build_dir/content_shell/assets"
   } else {
     data_deps = [
       "//third_party/ffmpeg",

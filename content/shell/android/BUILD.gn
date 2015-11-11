@@ -86,26 +86,16 @@ android_library("content_shell_apk_java") {
   DEPRECATED_java_in_dir = "shell_apk/src"
 }
 
-content_shell_assets_dir = "$root_build_dir/content_shell/assets"
-copy_ex("copy_content_shell_assets") {
-  clear_dir = true
-  dest = content_shell_assets_dir
+android_assets("content_shell_assets") {
   sources = [
     "$root_out_dir/content_shell.pak",
   ]
+  disable_compression = true
   deps = [
     "//content/shell:pak",
+    "//third_party/icu:icu_assets",
+    "//v8:v8_external_startup_data_assets",
   ]
-
-  if (icu_use_data_file) {
-    sources += [ "$root_build_dir/icudtl.dat" ]
-    deps += [ "//third_party/icu:icudata" ]
-  }
-  if (v8_use_external_startup_data) {
-    renaming_sources = v8_external_startup_data_renaming_sources
-    renaming_destinations = v8_external_startup_data_renaming_destinations
-    deps += [ "//v8" ]
-  }
 }
 
 android_apk("content_shell_apk") {
@@ -116,9 +106,9 @@ android_apk("content_shell_apk") {
   deps = [
     ":content_shell_apk_java",
     ":content_shell_apk_resources",
+    ":content_shell_assets",
     ":content_shell_java",
     ":content_shell_manifest",
-    ":copy_content_shell_assets",
     ":libcontent_shell_content_view",
     "//base:base_java",
     "//content/public/android:content_java",
@@ -131,7 +121,6 @@ android_apk("content_shell_apk") {
   apk_name = "ContentShell"
   android_manifest = content_shell_manifest
   native_libs = [ "libcontent_shell_content_view.so" ]
-  asset_location = content_shell_assets_dir
 
   # TODO(GYP)
   #'extra_native_libs': ['<(SHARED_LIB_DIR)/libosmesa.so'],
@@ -190,8 +179,8 @@ if (current_cpu != "x64") {
     testonly = true
     deps = [
       ":chromium_linker_test_manifest",
+      ":content_shell_assets",
       ":content_shell_java",
-      ":copy_content_shell_assets",
       ":linker_resources",
       ":linker_test",
       "//base:base_java",
@@ -199,7 +188,6 @@ if (current_cpu != "x64") {
       "//ui/android:ui_java",
     ]
     android_manifest = chromium_linker_test_manifest
-    asset_location = content_shell_assets_dir
     apk_name = "ChromiumLinkerTest"
     DEPRECATED_java_in_dir = "linker_test_apk/src"
     native_libs = [ "liblinker_test.so" ]

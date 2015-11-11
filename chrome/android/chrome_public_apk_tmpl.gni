@@ -9,7 +9,6 @@ template("chrome_public_apk_tmpl") {
   forward_variables_from(invoker, "*")
 
   android_apk(target_name) {
-    asset_location = "$root_build_dir/chrome_public_apk_assets"
     _native_lib_file =
         rebase_path("$root_gen_dir/CHROME_VERSION.json", root_out_dir)
     native_lib_version_arg = "@FileArg($_native_lib_file:full-quoted)"

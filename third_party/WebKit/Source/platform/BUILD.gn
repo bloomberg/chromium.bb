@@ -358,10 +358,9 @@ test("heap_unittests") {
   if (is_android) {
     apk_deps = [
       "//base:base_java",
-      "//content/shell/android:copy_content_shell_assets",
+      "//content/shell/android:content_shell_assets",
       "//net/android:net_java",
     ]
-    apk_asset_location = "$root_build_dir/content_shell/assets"
   }
 }
 
