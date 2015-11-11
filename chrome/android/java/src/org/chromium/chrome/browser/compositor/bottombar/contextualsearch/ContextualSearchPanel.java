@@ -297,6 +297,18 @@ public class ContextualSearchPanel extends OverlayPanel {
 
     @Override
     public boolean onInterceptBarClick() {
+        return onInterceptOpeningPanel();
+    }
+
+    @Override
+    public boolean onInterceptBarSwipe() {
+        return onInterceptOpeningPanel();
+    }
+
+    /**
+     * @return True if the event on the bar was intercepted.
+     */
+    private boolean onInterceptOpeningPanel() {
         if (mManagementDelegate.isRunningInCompatibilityMode()) {
             mManagementDelegate.openResolvedSearchUrlInNewTab();
             return true;
@@ -318,6 +330,11 @@ public class ContextualSearchPanel extends OverlayPanel {
         // The selected text on the page is lost when the panel is closed, thus, this panel cannot
         // be restored if it is suppressed.
         return false;
+    }
+
+    @Override
+    public boolean supportsContextualSearchLayout() {
+        return mManagementDelegate != null && !mManagementDelegate.isRunningInCompatibilityMode();
     }
 
     // ============================================================================================

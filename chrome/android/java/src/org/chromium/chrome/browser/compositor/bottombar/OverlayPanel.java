@@ -403,6 +403,16 @@ public class OverlayPanel extends ContextualSearchPanelAnimation
     public void updateSceneLayer(ResourceManager resourceManager) {
     }
 
+    /**
+     * Determine if using a second layout for showing the overlay panel is possible. This should
+     * be overridden by each panel and returns true by default.
+     * @return True if the layout is supported.
+     * TODO(mdjones): Rename to supportsOverlayPanelLayout once the corresponding class is renamed.
+     */
+    public boolean supportsContextualSearchLayout() {
+        return true;
+    }
+
     // ============================================================================================
     // Generic Event Handling
     // ============================================================================================
@@ -495,6 +505,15 @@ public class OverlayPanel extends ContextualSearchPanelAnimation
      * @return True if the click on the bar was intercepted by this function.
      */
     protected boolean onInterceptBarClick() {
+        return false;
+    }
+
+    /**
+     * If the panel is intercepting the initial bar swipe event. This should be overridden per
+     * panel.
+     * @return True if the panel intercepted the initial bar swipe.
+     */
+    public boolean onInterceptBarSwipe() {
         return false;
     }
 
