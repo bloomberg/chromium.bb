@@ -92,14 +92,14 @@ class MemoryTracingTest : public ContentBrowserTest {
             GetTraceConfig_EmptyTriggers());
 
     base::RunLoop run_loop;
-    bool success = TracingController::GetInstance()->EnableRecording(
+    bool success = TracingController::GetInstance()->StartTracing(
       trace_config, run_loop.QuitClosure());
     EXPECT_TRUE(success);
     run_loop.Run();
   }
 
   void DisableTracing() {
-    bool success = TracingController::GetInstance()->DisableRecording(NULL);
+    bool success = TracingController::GetInstance()->StopTracing(NULL);
     EXPECT_TRUE(success);
     base::RunLoop().RunUntilIdle();
   }

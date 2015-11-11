@@ -56,12 +56,12 @@ IPC_MESSAGE_CONTROL0(TracingMsg_EndTracing)
 IPC_MESSAGE_CONTROL0(TracingMsg_CancelTracing)
 
 // Sent to all child processes to start monitoring.
-IPC_MESSAGE_CONTROL2(TracingMsg_EnableMonitoring,
+IPC_MESSAGE_CONTROL2(TracingMsg_StartMonitoring,
                      std::string /*  trace_config_str */,
                      base::TimeTicks /* browser_time */)
 
 // Sent to all child processes to stop monitoring.
-IPC_MESSAGE_CONTROL0(TracingMsg_DisableMonitoring)
+IPC_MESSAGE_CONTROL0(TracingMsg_StopMonitoring)
 
 // Sent to all child processes to capture the current monitorint snapshot.
 IPC_MESSAGE_CONTROL0(TracingMsg_CaptureMonitoringSnapshot)

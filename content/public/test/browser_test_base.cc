@@ -125,7 +125,7 @@ class LocalHostResolverProc : public net::HostResolverProc {
   ~LocalHostResolverProc() override {}
 };
 
-void TraceDisableRecordingComplete(const base::Closure& quit,
+void TraceStopTracingComplete(const base::Closure& quit,
                                    const base::FilePath& file_path) {
   LOG(ERROR) << "Tracing written to: " << file_path.value();
   quit.Run();
@@ -293,9 +293,9 @@ void BrowserTestBase::ProxyRunTestOnMainThreadLoop() {
         base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
             switches::kEnableTracing),
         base::trace_event::RECORD_CONTINUOUSLY);
-    TracingController::GetInstance()->EnableRecording(
+    TracingController::GetInstance()->StartTracing(
         trace_config,
-        TracingController::EnableRecordingDoneCallback());
+        TracingController::StartTracingDoneCallback());
   }
 
   RunTestOnMainThreadLoop();
@@ -312,10 +312,10 @@ void BrowserTestBase::ProxyRunTestOnMainThreadLoop() {
 
     // Wait for tracing to collect results from the renderers.
     base::RunLoop run_loop;
-    TracingController::GetInstance()->DisableRecording(
+    TracingController::GetInstance()->StopTracing(
         TracingControllerImpl::CreateFileSink(
             trace_file,
-            base::Bind(&TraceDisableRecordingComplete,
+            base::Bind(&TraceStopTracingComplete,
                        run_loop.QuitClosure(),
                        trace_file)));
     run_loop.Run();

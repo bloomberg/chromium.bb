@@ -138,7 +138,7 @@ TracingController* TracingController::GetInstance() {
 }
 
 TracingControllerImpl::TracingControllerImpl()
-    : pending_disable_recording_ack_count_(0),
+    : pending_stop_tracing_ack_count_(0),
       pending_capture_monitoring_snapshot_ack_count_(0),
       pending_trace_log_status_ack_count_(0),
       maximum_trace_buffer_usage_(0),
@@ -150,7 +150,7 @@ TracingControllerImpl::TracingControllerImpl()
 #if defined(OS_CHROMEOS) || defined(OS_WIN)
       is_system_tracing_(false),
 #endif
-      is_recording_(TraceLog::GetInstance()->IsEnabled()),
+      is_tracing_(TraceLog::GetInstance()->IsEnabled()),
       is_monitoring_(false),
       is_power_tracing_(false) {
   base::trace_event::MemoryDumpManager::GetInstance()->Initialize(
@@ -177,12 +177,12 @@ bool TracingControllerImpl::GetCategories(
   // message. So to get known categories, just begin and end tracing immediately
   // afterwards. This will ping all the child processes for categories.
   pending_get_categories_done_callback_ = callback;
-  if (!EnableRecording(TraceConfig("*", ""), EnableRecordingDoneCallback())) {
+  if (!StartTracing(TraceConfig("*", ""), StartTracingDoneCallback())) {
     pending_get_categories_done_callback_.Reset();
     return false;
   }
 
-  bool ok = DisableRecording(NULL);
+  bool ok = StopTracing(NULL);
   DCHECK(ok);
   return true;
 }
@@ -206,14 +206,14 @@ void TracingControllerImpl::SetDisabledOnFileThread(
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, callback);
 }
 
-bool TracingControllerImpl::EnableRecording(
+bool TracingControllerImpl::StartTracing(
     const TraceConfig& trace_config,
-    const EnableRecordingDoneCallback& callback) {
+    const StartTracingDoneCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  if (!can_enable_recording())
+  if (!can_start_tracing())
     return false;
-  is_recording_ = true;
+  is_tracing_ = true;
 
 #if defined(OS_ANDROID)
   if (pending_get_categories_done_callback_.is_null())
@@ -235,8 +235,8 @@ bool TracingControllerImpl::EnableRecording(
 #endif
   }
 
-  base::Closure on_enable_recording_done_callback =
-      base::Bind(&TracingControllerImpl::OnEnableRecordingDone,
+  base::Closure on_start_tracing_done_callback =
+      base::Bind(&TracingControllerImpl::OnStartTracingDone,
                  base::Unretained(this),
                  trace_config, callback);
   if (!BrowserThread::PostTask(
@@ -244,21 +244,21 @@ bool TracingControllerImpl::EnableRecording(
           base::Bind(&TracingControllerImpl::SetEnabledOnFileThread,
                      base::Unretained(this), trace_config,
                      base::trace_event::TraceLog::RECORDING_MODE,
-                     on_enable_recording_done_callback))) {
+                     on_start_tracing_done_callback))) {
     // BrowserThread::PostTask fails if the threads haven't been created yet,
     // so it should be safe to just use TraceLog::SetEnabled directly.
     base::trace_event::TraceLog::GetInstance()->SetEnabled(
         trace_config, base::trace_event::TraceLog::RECORDING_MODE);
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            on_enable_recording_done_callback);
+                            on_start_tracing_done_callback);
   }
 
   return true;
 }
 
-void TracingControllerImpl::OnEnableRecordingDone(
+void TracingControllerImpl::OnStartTracingDone(
     const TraceConfig& trace_config,
-    const EnableRecordingDoneCallback& callback) {
+    const StartTracingDoneCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   TRACE_EVENT_API_ADD_METADATA_EVENT("IsTimeTicksHighResolution", "value",
@@ -276,29 +276,29 @@ void TracingControllerImpl::OnEnableRecordingDone(
     callback.Run();
 }
 
-bool TracingControllerImpl::DisableRecording(
+bool TracingControllerImpl::StopTracing(
     const scoped_refptr<TraceDataSink>& trace_data_sink) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (trace_data_sink)
     trace_data_sink->AddMetadata(*GenerateTracingMetadataDict().get());
 
-  if (!can_disable_recording())
+  if (!can_stop_tracing())
     return false;
 
   trace_data_sink_ = trace_data_sink;
   // Disable local trace early to avoid traces during end-tracing process from
   // interfering with the process.
-  base::Closure on_disable_recording_done_callback = base::Bind(
-      &TracingControllerImpl::OnDisableRecordingDone, base::Unretained(this));
+  base::Closure on_stop_tracing_done_callback = base::Bind(
+      &TracingControllerImpl::OnStopTracingDone, base::Unretained(this));
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
       base::Bind(&TracingControllerImpl::SetDisabledOnFileThread,
                  base::Unretained(this),
-                 on_disable_recording_done_callback));
+                 on_stop_tracing_done_callback));
   return true;
 }
 
-void TracingControllerImpl::OnDisableRecordingDone() {
+void TracingControllerImpl::OnStopTracingDone() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
 #if defined(OS_ANDROID)
@@ -306,16 +306,16 @@ void TracingControllerImpl::OnDisableRecordingDone() {
     TraceLog::GetInstance()->AddClockSyncMetadataEvent();
 #endif
 
-  // Count myself (local trace) in pending_disable_recording_ack_count_,
+  // Count myself (local trace) in pending_stop_tracing_ack_count_,
   // acked below.
-  pending_disable_recording_ack_count_ = trace_message_filters_.size() + 1;
-  pending_disable_recording_filters_ = trace_message_filters_;
+  pending_stop_tracing_ack_count_ = trace_message_filters_.size() + 1;
+  pending_stop_tracing_filters_ = trace_message_filters_;
 
 #if defined(OS_CHROMEOS) || defined(OS_WIN)
   if (is_system_tracing_) {
     // Disable system tracing.
     is_system_tracing_ = false;
-    ++pending_disable_recording_ack_count_;
+    ++pending_stop_tracing_ack_count_;
 
 #if defined(OS_CHROMEOS)
     scoped_refptr<base::TaskRunner> task_runner =
@@ -336,7 +336,7 @@ void TracingControllerImpl::OnDisableRecordingDone() {
 
   if (is_power_tracing_) {
     is_power_tracing_ = false;
-    ++pending_disable_recording_ack_count_;
+    ++pending_stop_tracing_ack_count_;
     PowerTracingAgent::GetInstance()->StopTracing(
         base::Bind(&TracingControllerImpl::OnEndPowerTracingAcked,
                    base::Unretained(this)));
@@ -345,7 +345,7 @@ void TracingControllerImpl::OnDisableRecordingDone() {
   // Handle special case of zero child processes by immediately flushing the
   // trace log. Once the flush has completed the caller will be notified that
   // tracing has ended.
-  if (pending_disable_recording_ack_count_ == 1) {
+  if (pending_stop_tracing_ack_count_ == 1) {
     // Flush/cancel asynchronously now, because we don't have any children to
     // wait for.
     if (trace_data_sink_) {
@@ -370,12 +370,12 @@ void TracingControllerImpl::OnDisableRecordingDone() {
   }
 }
 
-bool TracingControllerImpl::EnableMonitoring(
+bool TracingControllerImpl::StartMonitoring(
     const TraceConfig& trace_config,
-    const EnableMonitoringDoneCallback& callback) {
+    const StartMonitoringDoneCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  if (!can_enable_monitoring())
+  if (!can_start_monitoring())
     return false;
   OnMonitoringStateChanged(true);
 
@@ -383,8 +383,8 @@ bool TracingControllerImpl::EnableMonitoring(
   TraceLog::GetInstance()->AddClockSyncMetadataEvent();
 #endif
 
-  base::Closure on_enable_monitoring_done_callback =
-      base::Bind(&TracingControllerImpl::OnEnableMonitoringDone,
+  base::Closure on_start_monitoring_done_callback =
+      base::Bind(&TracingControllerImpl::OnStartMonitoringDone,
                  base::Unretained(this),
                  trace_config, callback);
   if (!BrowserThread::PostTask(
@@ -392,51 +392,51 @@ bool TracingControllerImpl::EnableMonitoring(
           base::Bind(&TracingControllerImpl::SetEnabledOnFileThread,
                      base::Unretained(this), trace_config,
                      base::trace_event::TraceLog::MONITORING_MODE,
-                     on_enable_monitoring_done_callback))) {
+                     on_start_monitoring_done_callback))) {
     // BrowserThread::PostTask fails if the threads haven't been created yet,
     // so it should be safe to just use TraceLog::SetEnabled directly.
     base::trace_event::TraceLog::GetInstance()->SetEnabled(
         trace_config, base::trace_event::TraceLog::MONITORING_MODE);
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            on_enable_monitoring_done_callback);
+                            on_start_monitoring_done_callback);
   }
   return true;
 }
 
-void TracingControllerImpl::OnEnableMonitoringDone(
+void TracingControllerImpl::OnStartMonitoringDone(
     const TraceConfig& trace_config,
-    const EnableMonitoringDoneCallback& callback) {
+    const StartMonitoringDoneCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // Notify all child processes.
   for (TraceMessageFilterSet::iterator it = trace_message_filters_.begin();
       it != trace_message_filters_.end(); ++it) {
-    it->get()->SendEnableMonitoring(trace_config);
+    it->get()->SendStartMonitoring(trace_config);
   }
 
   if (!callback.is_null())
     callback.Run();
 }
 
-bool TracingControllerImpl::DisableMonitoring(
-    const DisableMonitoringDoneCallback& callback) {
+bool TracingControllerImpl::StopMonitoring(
+    const StopMonitoringDoneCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  if (!can_disable_monitoring())
+  if (!can_stop_monitoring())
     return false;
 
-  base::Closure on_disable_monitoring_done_callback =
-      base::Bind(&TracingControllerImpl::OnDisableMonitoringDone,
+  base::Closure on_stop_monitoring_done_callback =
+      base::Bind(&TracingControllerImpl::OnStopMonitoringDone,
                  base::Unretained(this), callback);
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
       base::Bind(&TracingControllerImpl::SetDisabledOnFileThread,
                  base::Unretained(this),
-                 on_disable_monitoring_done_callback));
+                 on_stop_monitoring_done_callback));
   return true;
 }
 
-void TracingControllerImpl::OnDisableMonitoringDone(
-    const DisableMonitoringDoneCallback& callback) {
+void TracingControllerImpl::OnStopMonitoringDone(
+    const StopMonitoringDoneCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   OnMonitoringStateChanged(false);
@@ -444,7 +444,7 @@ void TracingControllerImpl::OnDisableMonitoringDone(
   // Notify all child processes.
   for (TraceMessageFilterSet::iterator it = trace_message_filters_.begin();
       it != trace_message_filters_.end(); ++it) {
-    it->get()->SendDisableMonitoring();
+    it->get()->SendStopMonitoring();
   }
   if (!callback.is_null())
     callback.Run();
@@ -461,7 +461,7 @@ bool TracingControllerImpl::CaptureMonitoringSnapshot(
     const scoped_refptr<TraceDataSink>& monitoring_data_sink) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  if (!can_disable_monitoring())
+  if (!can_stop_monitoring())
     return false;
 
   if (!monitoring_data_sink.get())
@@ -572,8 +572,8 @@ bool TracingControllerImpl::CancelWatchEvent() {
   return true;
 }
 
-bool TracingControllerImpl::IsRecording() const {
-  return is_recording_;
+bool TracingControllerImpl::IsTracing() const {
+  return is_tracing_;
 }
 
 void TracingControllerImpl::AddTraceMessageFilter(
@@ -591,12 +591,12 @@ void TracingControllerImpl::AddTraceMessageFilter(
     trace_message_filter->SendSetWatchEvent(watch_category_name_,
                                             watch_event_name_);
   }
-  if (can_disable_recording()) {
+  if (can_stop_tracing()) {
     trace_message_filter->SendBeginTracing(
         TraceLog::GetInstance()->GetCurrentTraceConfig());
   }
-  if (can_disable_monitoring()) {
-    trace_message_filter->SendEnableMonitoring(
+  if (can_stop_monitoring()) {
+    trace_message_filter->SendStartMonitoring(
         TraceLog::GetInstance()->GetCurrentTraceConfig());
   }
 
@@ -617,12 +617,12 @@ void TracingControllerImpl::RemoveTraceMessageFilter(
   // If a filter is removed while a response from that filter is pending then
   // simulate the response. Otherwise the response count will be wrong and the
   // completion callback will never be executed.
-  if (pending_disable_recording_ack_count_ > 0) {
+  if (pending_stop_tracing_ack_count_ > 0) {
     TraceMessageFilterSet::const_iterator it =
-        pending_disable_recording_filters_.find(trace_message_filter);
-    if (it != pending_disable_recording_filters_.end()) {
+        pending_stop_tracing_filters_.find(trace_message_filter);
+    if (it != pending_stop_tracing_filters_.end()) {
       BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-          base::Bind(&TracingControllerImpl::OnDisableRecordingAcked,
+          base::Bind(&TracingControllerImpl::OnStopTracingAcked,
                      base::Unretained(this),
                      make_scoped_refptr(trace_message_filter),
                      std::vector<std::string>()));
@@ -665,12 +665,12 @@ void TracingControllerImpl::RemoveTraceMessageFilter(
   trace_message_filters_.erase(trace_message_filter);
 }
 
-void TracingControllerImpl::OnDisableRecordingAcked(
+void TracingControllerImpl::OnStopTracingAcked(
     TraceMessageFilter* trace_message_filter,
     const std::vector<std::string>& known_category_groups) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-        base::Bind(&TracingControllerImpl::OnDisableRecordingAcked,
+        base::Bind(&TracingControllerImpl::OnStopTracingAcked,
                    base::Unretained(this),
                    make_scoped_refptr(trace_message_filter),
                    known_category_groups));
@@ -681,16 +681,16 @@ void TracingControllerImpl::OnDisableRecordingAcked(
   known_category_groups_.insert(known_category_groups.begin(),
                                 known_category_groups.end());
 
-  if (pending_disable_recording_ack_count_ == 0)
+  if (pending_stop_tracing_ack_count_ == 0)
     return;
 
   if (trace_message_filter &&
-      !pending_disable_recording_filters_.erase(trace_message_filter)) {
+      !pending_stop_tracing_filters_.erase(trace_message_filter)) {
     // The response from the specified message filter has already been received.
     return;
   }
 
-  if (--pending_disable_recording_ack_count_ == 1) {
+  if (--pending_stop_tracing_ack_count_ == 1) {
     // All acks from subprocesses have been received. Now flush the local trace.
     // During or after this call, our OnLocalTraceDataCollected will be
     // called with the last of the local trace data.
@@ -707,12 +707,12 @@ void TracingControllerImpl::OnDisableRecordingAcked(
     return;
   }
 
-  if (pending_disable_recording_ack_count_ != 0)
+  if (pending_stop_tracing_ack_count_ != 0)
     return;
 
   // All acks (including from the subprocesses and the local trace) have been
   // received.
-  is_recording_ = false;
+  is_tracing_ = false;
 
   // Trigger callback if one is set.
   if (!pending_get_categories_done_callback_.is_null()) {
@@ -733,7 +733,7 @@ void TracingControllerImpl::OnEndPowerTracingAcked(
     trace_data_sink_->SetPowerTrace(json_string);
   }
   std::vector<std::string> category_groups;
-  OnDisableRecordingAcked(NULL, category_groups);
+  OnStopTracingAcked(NULL, category_groups);
 }
 
 #if defined(OS_CHROMEOS) || defined(OS_WIN)
@@ -754,7 +754,7 @@ void TracingControllerImpl::OnEndSystemTracingAcked(
   }
   DCHECK(!is_system_tracing_);
   std::vector<std::string> category_groups;
-  OnDisableRecordingAcked(NULL, category_groups);
+  OnStopTracingAcked(NULL, category_groups);
 }
 #endif
 
@@ -833,10 +833,10 @@ void TracingControllerImpl::OnLocalTraceDataCollected(
   if (has_more_events)
     return;
 
-  // Simulate an DisableRecordingAcked for the local trace.
+  // Simulate an StopTracingAcked for the local trace.
   std::vector<std::string> category_groups;
   TraceLog::GetInstance()->GetKnownCategoryGroups(&category_groups);
-  OnDisableRecordingAcked(NULL, category_groups);
+  OnStopTracingAcked(NULL, category_groups);
 }
 
 void TracingControllerImpl::OnLocalMonitoringTraceDataCollected(

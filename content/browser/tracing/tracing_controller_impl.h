@@ -31,14 +31,14 @@ class TracingControllerImpl
 
   // TracingController implementation.
   bool GetCategories(const GetCategoriesDoneCallback& callback) override;
-  bool EnableRecording(const base::trace_event::TraceConfig& trace_config,
-                       const EnableRecordingDoneCallback& callback) override;
-  bool DisableRecording(const scoped_refptr<TraceDataSink>& sink) override;
-  bool EnableMonitoring(
+  bool StartTracing(const base::trace_event::TraceConfig& trace_config,
+                    const StartTracingDoneCallback& callback) override;
+  bool StopTracing(const scoped_refptr<TraceDataSink>& sink) override;
+  bool StartMonitoring(
       const base::trace_event::TraceConfig& trace_config,
-      const EnableMonitoringDoneCallback& callback) override;
-  bool DisableMonitoring(
-      const DisableMonitoringDoneCallback& callback) override;
+      const StartMonitoringDoneCallback& callback) override;
+  bool StopMonitoring(
+      const StopMonitoringDoneCallback& callback) override;
   void GetMonitoringStatus(
       bool* out_enabled,
       base::trace_event::TraceConfig* out_trace_config) override;
@@ -50,7 +50,7 @@ class TracingControllerImpl
                      const std::string& event_name,
                      const WatchEventCallback& callback) override;
   bool CancelWatchEvent() override;
-  bool IsRecording() const override;
+  bool IsTracing() const override;
 
   void RegisterTracingUI(TracingUI* tracing_ui);
   void UnregisterTracingUI(TracingUI* tracing_ui);
@@ -76,19 +76,19 @@ class TracingControllerImpl
   TracingControllerImpl();
   ~TracingControllerImpl() override;
 
-  bool can_enable_recording() const {
-    return !is_recording_;
+  bool can_start_tracing() const {
+    return !is_tracing_;
   }
 
-  bool can_disable_recording() const {
-    return is_recording_ && !trace_data_sink_.get();
+  bool can_stop_tracing() const {
+    return is_tracing_ && !trace_data_sink_.get();
   }
 
-  bool can_enable_monitoring() const {
+  bool can_start_monitoring() const {
     return !is_monitoring_;
   }
 
-  bool can_disable_monitoring() const {
+  bool can_stop_monitoring() const {
     return is_monitoring_ && !monitoring_data_sink_.get();
   }
 
@@ -118,7 +118,7 @@ class TracingControllerImpl
       const scoped_refptr<base::RefCountedString>& events_str_ptr,
       bool has_more_events);
 
-  void OnDisableRecordingAcked(
+  void OnStopTracingAcked(
       TraceMessageFilter* trace_message_filter,
       const std::vector<std::string>& known_category_groups);
 
@@ -151,23 +151,23 @@ class TracingControllerImpl
       int mode,
       const base::Closure& callback);
   void SetDisabledOnFileThread(const base::Closure& callback);
-  void OnEnableRecordingDone(
+  void OnStartTracingDone(
       const base::trace_event::TraceConfig& trace_config,
-      const EnableRecordingDoneCallback& callback);
-  void OnDisableRecordingDone();
-  void OnEnableMonitoringDone(
+      const StartTracingDoneCallback& callback);
+  void OnStopTracingDone();
+  void OnStartMonitoringDone(
       const base::trace_event::TraceConfig& trace_config,
-      const EnableMonitoringDoneCallback& callback);
-  void OnDisableMonitoringDone(const DisableMonitoringDoneCallback& callback);
+      const StartMonitoringDoneCallback& callback);
+  void OnStopMonitoringDone(const StopMonitoringDoneCallback& callback);
 
   void OnMonitoringStateChanged(bool is_monitoring);
 
   typedef std::set<scoped_refptr<TraceMessageFilter>> TraceMessageFilterSet;
   TraceMessageFilterSet trace_message_filters_;
 
-  // Pending acks for DisableRecording.
-  int pending_disable_recording_ack_count_;
-  TraceMessageFilterSet pending_disable_recording_filters_;
+  // Pending acks for StopTracing.
+  int pending_stop_tracing_ack_count_;
+  TraceMessageFilterSet pending_stop_tracing_filters_;
 
   // Pending acks for CaptureMonitoringSnapshot.
   int pending_capture_monitoring_snapshot_ack_count_;
@@ -189,7 +189,7 @@ class TracingControllerImpl
 #if defined(OS_CHROMEOS) || defined(OS_WIN)
   bool is_system_tracing_;
 #endif
-  bool is_recording_;
+  bool is_tracing_;
   bool is_monitoring_;
   bool is_power_tracing_;
 

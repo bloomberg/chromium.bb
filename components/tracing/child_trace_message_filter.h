@@ -48,9 +48,9 @@ class TRACING_EXPORT ChildTraceMessageFilter : public IPC::MessageFilter {
                       uint64 tracing_process_id);
   void OnEndTracing();
   void OnCancelTracing();
-  void OnEnableMonitoring(const std::string& trace_config_str,
+  void OnStartMonitoring(const std::string& trace_config_str,
                           base::TimeTicks browser_time);
-  void OnDisableMonitoring();
+  void OnStopMonitoring();
   void OnCaptureMonitoringSnapshot();
   void OnGetTraceLogStatus();
   void OnSetWatchEvent(const std::string& category_name,

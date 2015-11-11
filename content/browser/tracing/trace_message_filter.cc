@@ -90,16 +90,16 @@ void TraceMessageFilter::SendCancelTracing() {
   Send(new TracingMsg_CancelTracing);
 }
 
-void TraceMessageFilter::SendEnableMonitoring(
+void TraceMessageFilter::SendStartMonitoring(
       const base::trace_event::TraceConfig& trace_config) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  Send(new TracingMsg_EnableMonitoring(trace_config.ToString(),
+  Send(new TracingMsg_StartMonitoring(trace_config.ToString(),
                                        base::TimeTicks::Now()));
 }
 
-void TraceMessageFilter::SendDisableMonitoring() {
+void TraceMessageFilter::SendStopMonitoring() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  Send(new TracingMsg_DisableMonitoring);
+  Send(new TracingMsg_StopMonitoring);
 }
 
 void TraceMessageFilter::SendCaptureMonitoringSnapshot() {
@@ -148,7 +148,7 @@ void TraceMessageFilter::OnEndTracingAck(
   // child process is compromised.
   if (is_awaiting_end_ack_) {
     is_awaiting_end_ack_ = false;
-    TracingControllerImpl::GetInstance()->OnDisableRecordingAcked(
+    TracingControllerImpl::GetInstance()->OnStopTracingAcked(
         this, known_categories);
   } else {
     NOTREACHED();

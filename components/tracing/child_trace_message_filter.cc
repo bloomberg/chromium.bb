@@ -46,8 +46,8 @@ bool ChildTraceMessageFilter::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(TracingMsg_BeginTracing, OnBeginTracing)
     IPC_MESSAGE_HANDLER(TracingMsg_EndTracing, OnEndTracing)
     IPC_MESSAGE_HANDLER(TracingMsg_CancelTracing, OnCancelTracing)
-    IPC_MESSAGE_HANDLER(TracingMsg_EnableMonitoring, OnEnableMonitoring)
-    IPC_MESSAGE_HANDLER(TracingMsg_DisableMonitoring, OnDisableMonitoring)
+    IPC_MESSAGE_HANDLER(TracingMsg_StartMonitoring, OnStartMonitoring)
+    IPC_MESSAGE_HANDLER(TracingMsg_StopMonitoring, OnStopMonitoring)
     IPC_MESSAGE_HANDLER(TracingMsg_CaptureMonitoringSnapshot,
                         OnCaptureMonitoringSnapshot)
     IPC_MESSAGE_HANDLER(TracingMsg_GetTraceLogStatus, OnGetTraceLogStatus)
@@ -103,14 +103,14 @@ void ChildTraceMessageFilter::OnCancelTracing() {
       base::Bind(&ChildTraceMessageFilter::OnTraceDataCollected, this));
 }
 
-void ChildTraceMessageFilter::OnEnableMonitoring(
+void ChildTraceMessageFilter::OnStartMonitoring(
     const std::string& trace_config_str, base::TimeTicks browser_time) {
   TraceLog::GetInstance()->SetEnabled(
       base::trace_event::TraceConfig(trace_config_str),
       base::trace_event::TraceLog::MONITORING_MODE);
 }
 
-void ChildTraceMessageFilter::OnDisableMonitoring() {
+void ChildTraceMessageFilter::OnStopMonitoring() {
   TraceLog::GetInstance()->SetDisabled();
 }
 

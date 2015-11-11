@@ -111,7 +111,7 @@ bool BeginRecording(const std::string& data64,
   if (!GetTracingOptions(data64, &trace_config))
     return false;
 
-  return TracingController::GetInstance()->EnableRecording(
+  return TracingController::GetInstance()->StartTracing(
       trace_config,
       base::Bind(&OnRecordingEnabledAck, callback));
 }
@@ -145,13 +145,13 @@ void OnTraceBufferStatusResult(const WebUIDataSource::GotDataCallback& callback,
 
 void OnMonitoringEnabledAck(const WebUIDataSource::GotDataCallback& callback);
 
-bool EnableMonitoring(const std::string& data64,
+bool StartMonitoring(const std::string& data64,
                       const WebUIDataSource::GotDataCallback& callback) {
   base::trace_event::TraceConfig trace_config("", "");
   if (!GetTracingOptions(data64, &trace_config))
     return false;
 
-  return TracingController::GetInstance()->EnableMonitoring(
+  return TracingController::GetInstance()->StartMonitoring(
       trace_config,
       base::Bind(OnMonitoringEnabledAck, callback));
 }
@@ -236,16 +236,16 @@ bool OnBeginJSONRequest(const std::string& path,
             TracingController::CreateCallbackEndpoint(
                 base::Bind(TracingCallbackWrapperBase64, callback)));
     AddCustomMetadata(data_sink.get());
-    return TracingController::GetInstance()->DisableRecording(data_sink);
+    return TracingController::GetInstance()->StopTracing(data_sink);
   }
 
-  const char* enableMonitoringPath = "json/begin_monitoring?";
-  if (path.find(enableMonitoringPath) == 0) {
-    std::string data = path.substr(strlen(enableMonitoringPath));
-    return EnableMonitoring(data, callback);
+  const char* StartMonitoringPath = "json/begin_monitoring?";
+  if (path.find(StartMonitoringPath) == 0) {
+    std::string data = path.substr(strlen(StartMonitoringPath));
+    return StartMonitoring(data, callback);
   }
   if (path == "json/end_monitoring") {
-    return TracingController::GetInstance()->DisableMonitoring(
+    return TracingController::GetInstance()->StopMonitoring(
         base::Bind(OnMonitoringDisabled, callback));
   }
   if (path == "json/capture_monitoring_compressed") {

@@ -179,7 +179,7 @@ bool BackgroundTracingManagerImpl::SetActiveScenario(
     }
   }
 
-  EnableRecordingIfConfigNeedsIt();
+  StartTracingIfConfigNeedsIt();
 
   RecordBackgroundTracingMetric(SCENARIO_ACTIVATED_SUCCESSFULLY);
   return true;
@@ -203,12 +203,12 @@ void BackgroundTracingManagerImpl::ValidateStartupScenario() {
   }
 }
 
-void BackgroundTracingManagerImpl::EnableRecordingIfConfigNeedsIt() {
+void BackgroundTracingManagerImpl::StartTracingIfConfigNeedsIt() {
   if (!config_)
     return;
 
   if (config_->tracing_mode() == BackgroundTracingConfigImpl::PREEMPTIVE) {
-    EnableRecording(
+    StartTracing(
         GetCategoryFilterStringForCategoryPreset(config_->category_preset()),
         base::trace_event::RECORD_CONTINUOUSLY);
   }
@@ -311,7 +311,7 @@ void BackgroundTracingManagerImpl::OnRuleTriggered(
 
     if (!is_tracing_) {
       // It was not already tracing, start a new trace.
-      EnableRecording(GetCategoryFilterStringForCategoryPreset(
+      StartTracing(GetCategoryFilterStringForCategoryPreset(
                           triggered_rule->GetCategoryPreset()),
                       base::trace_event::RECORD_UNTIL_FULL);
     } else {
@@ -385,14 +385,14 @@ void BackgroundTracingManagerImpl::FireTimerForTesting() {
   tracing_timer_->FireTimerForTesting();
 }
 
-void BackgroundTracingManagerImpl::EnableRecording(
+void BackgroundTracingManagerImpl::StartTracing(
     std::string category_filter_str,
     base::trace_event::TraceRecordMode record_mode) {
   base::trace_event::TraceConfig trace_config(category_filter_str, record_mode);
   if (requires_anonymized_data_)
     trace_config.EnableArgumentFilter();
 
-  is_tracing_ = TracingController::GetInstance()->EnableRecording(
+  is_tracing_ = TracingController::GetInstance()->StartTracing(
       trace_config, tracing_enabled_callback_for_testing_);
   RecordBackgroundTracingMetric(RECORDING_ENABLED);
 }
@@ -435,7 +435,7 @@ void BackgroundTracingManagerImpl::OnFinalizeComplete() {
   if (!delegate_ ||
       delegate_->IsAllowedToBeginBackgroundScenario(
           *config_.get(), requires_anonymized_data_)) {
-    EnableRecordingIfConfigNeedsIt();
+    StartTracingIfConfigNeedsIt();
   } else {
     AbortScenario();
   }
@@ -478,7 +478,7 @@ void BackgroundTracingManagerImpl::BeginFinalizing(
     RecordBackgroundTracingMetric(FINALIZATION_DISALLOWED);
   }
 
-  content::TracingController::GetInstance()->DisableRecording(trace_data_sink);
+  content::TracingController::GetInstance()->StopTracing(trace_data_sink);
 
   if (!callback.is_null())
     callback.Run(is_allowed_finalization);
@@ -490,7 +490,7 @@ void BackgroundTracingManagerImpl::AbortScenario() {
   config_.reset();
   tracing_timer_.reset();
 
-  content::TracingController::GetInstance()->DisableRecording(nullptr);
+  content::TracingController::GetInstance()->StopTracing(nullptr);
 }
 
 std::string

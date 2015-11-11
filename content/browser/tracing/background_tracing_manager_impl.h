@@ -52,8 +52,8 @@ class BackgroundTracingManagerImpl : public BackgroundTracingManager {
   BackgroundTracingManagerImpl();
   ~BackgroundTracingManagerImpl() override;
 
-  void EnableRecording(std::string, base::trace_event::TraceRecordMode);
-  void EnableRecordingIfConfigNeedsIt();
+  void StartTracing(std::string, base::trace_event::TraceRecordMode);
+  void StartTracingIfConfigNeedsIt();
   void OnFinalizeStarted(
       scoped_ptr<const base::DictionaryValue> metadata,
       base::RefCountedString*);
