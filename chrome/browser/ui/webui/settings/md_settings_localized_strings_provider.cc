@@ -121,6 +121,15 @@ void AddAppearanceStrings(content::WebUIDataSource* html_source) {
       "chooseFromWebStore", IDS_SETTINGS_WEB_STORE);
 }
 
+#if defined(OS_CHROMEOS)
+void AddBluetoothStrings(content::WebUIDataSource* html_source) {
+  html_source->AddLocalizedString(
+      "bluetoothPageTitle", IDS_SETTINGS_BLUETOOTH);
+  html_source->AddLocalizedString(
+      "enableBluetooth", IDS_SETTINGS_BLUETOOTH_ENABLE);
+}
+#endif
+
 void AddCertificateManagerStrings(content::WebUIDataSource* html_source) {
   html_source->AddLocalizedString("certificateManagerPageTitle",
                                   IDS_SETTINGS_CERTIFICATE_MANAGER);
@@ -696,6 +705,9 @@ void AddLocalizedStrings(content::WebUIDataSource* html_source,
   AddAccountUITweaksStrings(html_source, profile);
 #endif
   AddAppearanceStrings(html_source);
+#if defined(OS_CHROMEOS)
+  AddBluetoothStrings(html_source);
+#endif
   AddCertificateManagerStrings(html_source);
   AddClearBrowsingDataStrings(html_source);
 #if !defined(OS_CHROMEOS)

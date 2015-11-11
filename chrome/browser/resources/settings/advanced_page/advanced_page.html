@@ -10,6 +10,7 @@
 
 <if expr="chromeos">
 <link rel="import" href="chrome://md-settings/a11y_page/a11y_page.html">
+<link rel="import" href="chrome://md-settings/bluetooth_page/bluetooth_page.html">
 <link rel="import" href="chrome://md-settings/date_time_page/date_time_page.html">
 </if>
 
@@ -36,6 +37,14 @@
         current-route="{{currentRoute}}">
       </settings-privacy-page>
     </settings-section>
+
+<if expr="chromeos">
+    <settings-section i18n-values="page-title:bluetoothPageTitle"
+        current-route="[[currentRoute]]" section="bluetooth">
+      <settings-bluetooth-page current-route="{{currentRoute}}">
+      </settings-bluetooth-page>
+    </settings-section>
+</if>
 
     <settings-section
         i18n-values="page-title:passwordsAndAutofillPageTitle"

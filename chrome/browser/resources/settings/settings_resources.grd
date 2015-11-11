@@ -485,6 +485,15 @@
                  file="settings.js"
                  type="chrome_html" />
       <if expr="chromeos">
+        <structure name="IDR_SETTINGS_BLUETOOTH_PAGE_CSS"
+                   file="bluetooth_page/bluetooth_page.css"
+                   type="chrome_html" />
+        <structure name="IDR_SETTINGS_BLUETOOTH_PAGE_HTML"
+                   file="bluetooth_page/bluetooth_page.html"
+                   type="chrome_html" />
+        <structure name="IDR_SETTINGS_BLUETOOTH_PAGE_JS"
+                   file="bluetooth_page/bluetooth_page.js"
+                   type="chrome_html" />
         <structure name="IDR_SETTINGS_DATE_TIME_PAGE_CSS"
                    file="date_time_page/date_time_page.css"
                    type="chrome_html" />

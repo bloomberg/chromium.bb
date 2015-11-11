@@ -1,0 +1,26 @@
+<link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/device-icons.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animatable.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-toggle-button/paper-toggle-button.html">
+<link rel="import" href="chrome://md-settings/settings_page/settings_animated_pages.html">
+
+<dom-module id="settings-bluetooth-page">
+  <link rel="import" type="css" href="chrome://md-settings/settings_page/settings_page.css">
+  <link rel="import" type="css" href="bluetooth_page.css">
+  <template>
+    <settings-animated-pages id="pages" current-route="{{currentRoute}}"
+        section="bluetooth">
+      <neon-animatable id="main">
+        <div class="layout horizontal center">
+          <iron-icon icon="device:bluetooth"></iron-icon>
+          <span class="flex" i18n-content="enableBluetooth"></span>
+          <paper-toggle-button checked="{{bluetoothEnabled}}"
+              on-change="onBluetoothEnabledChange_">
+          </paper-toggle-button>
+        </div>
+      </neon-animatable>
+    </settings-animated-pages>
+  </template>
+  <script src="bluetooth_page.js"></script>
+</dom-module>
