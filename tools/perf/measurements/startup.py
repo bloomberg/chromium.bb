@@ -29,6 +29,10 @@ class Startup(page_test.PageTest):
     ])
     keychain_metric.KeychainMetric.CustomizeBrowserOptions(options)
 
+  def RunNavigateSteps(self, page, tab):
+    # Overriden so that no page navigation occurs - startup to the NTP.
+    pass
+
   def ValidateAndMeasurePage(self, page, tab, results):
     keychain_metric.KeychainMetric().AddResults(tab, results)
     startup_metric.StartupMetric().AddResults(tab, results)
