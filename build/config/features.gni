@@ -16,6 +16,7 @@
 
 import("//build/config/chrome_build.gni")
 import("//build/config/chromecast_build.gni")
+import("//build/config/headless_build.gni")
 if (is_android) {
   import("//build/config/android/config.gni")
 }
@@ -86,7 +87,7 @@ declare_args() {
 
   enable_one_click_signin = is_win || is_mac || (is_linux && !is_chromeos)
 
-  enable_remoting = !is_ios && !is_android && !is_chromecast
+  enable_remoting = !is_ios && !is_android && !is_chromecast && !is_headless
 
   # Enable hole punching for the protected video.
   enable_video_hole = is_android
@@ -116,7 +117,7 @@ declare_args() {
   # Note: this setting is ignored if is_chrome_branded.
   fieldtrial_testing_like_official_build = is_chrome_branded
 
-  use_cups = (is_desktop_linux || is_mac) && !is_chromecast
+  use_cups = (is_desktop_linux || is_mac) && !is_chromecast && !is_headless
 }
 
 # Additional dependent variables -----------------------------------------------
@@ -127,7 +128,7 @@ declare_args() {
 cld_version = 2
 
 # libudev usage. This currently only affects the content layer.
-use_udev = is_linux && !is_chromecast
+use_udev = is_linux && !is_chromecast && !is_headless
 
 # Enable the spell checker.
 enable_spellcheck = !is_ios
@@ -136,11 +137,12 @@ enable_spellcheck = !is_ios
 use_browser_spellchecker = is_android || is_mac
 
 # Enable basic printing support and UI.
-enable_basic_printing = !is_chromeos && !is_chromecast && !is_ios
+enable_basic_printing =
+    !is_chromeos && !is_chromecast && !is_ios && !is_headless
 
 # Enable printing with print preview. It does not imply
 # enable_basic_printing. It's possible to build Chrome with preview only.
-enable_print_preview = !is_android && !is_chromecast && !is_ios
+enable_print_preview = !is_android && !is_chromecast && !is_ios && !is_headless
 
 # Enables the use of CDMs in pepper plugins.
 enable_pepper_cdms =
@@ -159,7 +161,7 @@ enable_notifications = !is_ios
 
 enable_web_speech = !is_android && !is_ios
 
-use_dbus = is_linux && !is_chromecast
+use_dbus = is_linux && !is_chromecast && !is_headless
 
 enable_extensions = !is_android && !is_ios
 
@@ -191,7 +193,7 @@ use_brlapi = is_chromeos
 
 # Option controlling the use of GConf (the classic GNOME configuration
 # system).
-use_gconf = is_linux && !is_chromeos && !is_chromecast
+use_gconf = is_linux && !is_chromeos && !is_chromecast && !is_headless
 
 # Whether to back up data before sync.
 enable_pre_sync_backup = is_win || is_mac || (is_linux && !is_chromeos)
@@ -199,3 +201,5 @@ enable_pre_sync_backup = is_win || is_mac || (is_linux && !is_chromeos)
 # Enable WebVR support by default on Android
 # Still requires command line flag to access API
 enable_webvr = is_android
+
+use_gio = is_desktop_linux && !is_headless

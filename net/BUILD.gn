@@ -26,9 +26,9 @@ gypi_values = exec_script("//build/gypi_to_gn.py",
                           "scope",
                           [ "net.gypi" ])
 
-# Disable Kerberos on ChromeOS, iOS, and Chromecast, at least for now.
+# Disable Kerberos on ChromeOS, iOS, Chromecast and headless, at least for now.
 # It needs configuration (krb5.conf and so on).
-use_kerberos = !is_chromeos && !is_ios && !is_chromecast
+use_kerberos = !is_chromeos && !is_ios && !is_chromecast && !is_headless
 
 # The way the cache uses mmap() is inefficient on some Android devices. If
 # this flag is set, we hackily avoid using mmap() in the disk cache. We are

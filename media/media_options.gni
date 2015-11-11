@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/config/chromecast_build.gni")
+import("//build/config/headless_build.gni")
 
 declare_args() {
   # Allows distributions to link pulseaudio directly (DT_NEEDED) instead of
@@ -40,7 +41,7 @@ declare_args() {
 
   # Alsa should be used on non-Android, non-Mac POSIX systems, and Chromecast
   # builds for desktop Linux.
-  if (is_posix && !is_android && !is_mac &&
+  if (is_posix && !is_headless && !is_android && !is_mac &&
       (!is_chromecast || target_cpu != "arm")) {
     use_alsa = true
     if (!use_cras) {

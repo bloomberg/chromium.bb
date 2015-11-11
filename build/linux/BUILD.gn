@@ -30,7 +30,7 @@ if (use_brlapi) {
     functions = gypi_values.libbrlapi_functions
   }
 }
-if (is_desktop_linux) {
+if (use_gio) {
   pkg_config("gio_config") {
     packages = [ "gio-2.0" ]
 
