@@ -30,16 +30,15 @@ Guide applies to Chromium and its subprojects. Subprojects can choose to be
 more restrictive if they need to compile on more toolchains than Chromium.</p>
 
 <p>You can propose to make a feature available or to ban a
-feature by sending an email to chromium-dev. Ideally include a short blurb
-on what the feature is, and why you think it should or should not be allowed.
-Ideally, the list will arrive at some consensus and the wiki page will be
-updated to mention that consensus. If there's no consensus,
-<code>src/styleguide/C++/OWNERS</code> get to decide -- for divisive features, we expect
-the decision to be to not use the feature yet and possibly discuss it again a
-few months later, when we have more experience with the language.</p>
-
-<p class="warning">Unless otherwise noted, <strong>no</strong> C++11
-<strong>library</strong> features are allowed.</p>
+feature by sending an email to <a
+href="https://groups.google.com/a/chromium.org/forum/#!forum/cxx">cxx@chromium.org</a>.
+Ideally include a short blurb on what the feature is, and why you think it
+should or should not be allowed.  Ideally, the list will arrive at some
+consensus and the wiki page will be updated to mention that consensus. If
+there's no consensus, <code>src/styleguide/C++/OWNERS</code> get to decide --
+for divisive features, we expect the decision to be to not use the feature yet
+and possibly discuss it again a few months later, when we have more experience
+with the language.</p>
 
 <h2 id="whitelist">C++11 Allowed Features</h2>
 
@@ -199,7 +198,7 @@ nullptr</a></td>
 <td>Recommended for new code.
 <a href="https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/4mijeJHzxLg">Discussion thread</a>.
 <a href="https://google-styleguide.googlecode.com/svn/trunk/cppguide.html#0_and_nullptr/NULL">Google Style Guide</a>.
-Note: <code>std::nullptr_t</code> is a library feature and not available.
+<code>std::nullptr_t</code> can be used too.
 </td>
 </tr>
 
@@ -257,6 +256,31 @@ Parameter pack</a></td>
 <td>Usage should be rare. Use instead of .pump files. <a href="https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/6ItymeMXpMc">Discussion thread</a></td>
 </tr>
 
+</tbody>
+</table>
+
+<h2 id="whitelist">C++11 Allowed Library Features</h2>
+
+<p>The following library features are currently allowed.</p>
+
+<table id="whitelist_lib_list" class="unlined striped">
+<tbody>
+
+<tr>
+<th style='width:240px;'>Feature or Library</th>
+<th style='width:240px;'>Snippet</th>
+<th style='width:240px;'>Description</th>
+<th style='width:240px;'>Documentation Link</th>
+<th style='width:240px;'>Notes</th>
+</tr>
+
+<tr>
+<td>Containers containing movable types</td>
+<td><code>vector&lt;scoped_ptr&gt;</code></td>
+<td>Enables containers that contain move-only types like <code>scoped_ptr</code></td>
+<td>TODO</td>
+<td>Allows getting rid of <a href="http://crbug.com/554289">ScopedVector</a></td>
+</tr>
 </tbody>
 </table>
 
@@ -387,6 +411,50 @@ string literal</a></td>
 </tbody>
 </table>
 
+<h3 id="whitelist">C++11 Banned Library Features</h3>
+
+<p>This section lists C++11 library features that are not allowed in the Chromium codebase.</p>
+
+<table id="blacklist_lib_list" class="unlined striped">
+<tbody>
+
+<tr>
+<th style='width:240px;'>Feature</th>
+<th style='width:240px;'>Snippet</th>
+<th style='width:240px;'>Description</th>
+<th style='width:240px;'>Documentation Link</th>
+<th style='width:240px;'>Notes</th>
+</tr>
+
+<tr>
+<td>Chrono Library</td>
+<td><code>&lt;chrono&gt;</code></td>
+<td>Provides a standard date and time library</td>
+<td><a href="http://en.cppreference.com/w/cpp/chrono">Date and time utilities</a></td>
+<td>Duplicated <code>Time</code> APIs in <code>base/</code>. Keep using the <code>base/</code> classes.</td>
+</tr>
+
+<tr>
+<td>Regex Library</td>
+<td><code>&lt;regex&gt;</code></td>
+<td>Provides a standard regular expressions library</td>
+<td><a href="http://en.cppreference.com/w/cpp/regex">Regular expressions library</a></td>
+<td>We already have too many regular expression libraries in Chromium. Use re2 when in doubt.</td>
+</tr>
+
+<tr>
+<td>Thread Library</td>
+<td><code>&lt;thread&gt; support, including &lt;future&gt;,
+&lt;mutex&gt;, &lt;condition_variable&gt;</code></td>
+<td>Provides a standard mulitthreading library using <code>std::thread</code> and associates</td>
+<td><a href="http://en.cppreference.com/w/cpp/thread">Thread support library</a></td>
+<td>C++11 has all kinds of classes for threads, mutexes, etc. Since we already have good code for this in <code>base/</code>, we should keep using the base classes, at least at first. <code>base::Thread</code> is tightly coupled to <code>MessageLoop</code> which would make it hard to replace. We should investigate using standard mutexes, or unique_lock, etc. to replace our locking/synchronization classes.</td>
+</tr>
+
+</tbody>
+</table>
+
+
 <h3 id="blacklist_review">C++11 Features To Be Discussed</h3>
 
 <p>The following C++ language features are currently disallowed.
@@ -479,15 +547,9 @@ User-defined literals</a></td>
 </tbody>
 </table>
 
-<h3 id="blacklist_stdlib">C++11 Standard Library features</h3>
+<h3 id="blacklist_stdlib">C++11 Standard Library Features To Be Discussed</h3>
 
-<details>
-
-<p><summary class="note">All C++11 <strong>Standard Library features are currently
-banned</strong>, because they are not supported on all of our toolchains yet.
-In particular, chromium/android is currently using STLport, and chromium/mac is
-currently using libstdc++4.2, which predate C++11.
-</summary></p>
+<p>The following C++ library features are currently disallowed. See the top of this page on how to propose moving a feature from this list into the allowed or banned sections. Note that not all of these features work in all our compilers yet.</p>
 
 <table id="banned_stdlib" class="unlined striped">
 
@@ -574,14 +636,6 @@ std::end</a></td>
 <td>Provides floating point status flags and control modes for C-compatible code</td>
 <td><a href="http://en.cppreference.com/w/cpp/header/cfenv">Standard library header &lt;cfenv&gt;</a></td>
 <td>Compilers do not support use</td>
-</tr>
-
-<tr>
-<td>Chrono Library</td>
-<td><code>&lt;chrono&gt;</code></td>
-<td>Provides a standard date and time library</td>
-<td><a href="http://en.cppreference.com/w/cpp/chrono">Date and time utilities</a></td>
-<td></td>
 </tr>
 
 <tr>
@@ -785,14 +839,6 @@ Reference Wrappers</a></td>
 </tr>
 
 <tr>
-<td>Regex Library</td>
-<td><code>&lt;regex&gt;</code></td>
-<td>Provides a standard regular expressions library</td>
-<td><a href="http://en.cppreference.com/w/cpp/regex">Regular expressions library</a></td>
-<td></td>
-</tr>
-
-<tr>
 <td>Shared Pointers</td>
 <td><code>std::shared_ptr</code></td>
 <td>Allows shared ownership of a pointer through reference counts</td>
@@ -864,15 +910,6 @@ Algorithms library</a> for a complete list.</td>
 <td><a href="http://en.cppreference.com/w/cpp/language/function">
 Declaring functions</a></td>
 <td><a href="https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/OQyYSfH9m2M">Discussion thread</a></td>
-</tr>
-
-<tr>
-<td>Thread Library</td>
-<td><code>&lt;thread&gt; support, including &lt;future&gt;,
-&lt;mutex&gt;, &lt;condition_variable&gt;</code></td>
-<td>Provides a standard mulitthreading library using <code>std::thread</code> and associates</td>
-<td><a href="http://en.cppreference.com/w/cpp/thread">Thread support library</a></td>
-<td></td>
 </tr>
 
 <tr>
@@ -980,8 +1017,6 @@ consuming non-ASCII data.</td>
 
 </tbody>
 </table>
-
-</details>
 
 </div>
 </body>
