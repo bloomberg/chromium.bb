@@ -26,6 +26,11 @@ class Task {
 
   virtual void Run() = 0;
 
+  // Does a best effort attempt to make a task release its resources and stop
+  // soon. It is possible that a running task may complete even if this
+  // method is called.
+  virtual void Cancel() = 0;
+
   // Returns the ids corresponding to the CRXs associated with this update task.
   virtual std::vector<std::string> GetIds() const = 0;
 };

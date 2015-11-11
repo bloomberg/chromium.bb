@@ -68,7 +68,8 @@ UpdateClientImpl::UpdateClientImpl(
     scoped_ptr<PingManager> ping_manager,
     UpdateChecker::Factory update_checker_factory,
     CrxDownloader::Factory crx_downloader_factory)
-    : config_(config),
+    : is_stopped_(false),
+      config_(config),
       ping_manager_(ping_manager.Pass()),
       update_engine_(
           new UpdateEngine(config,
@@ -76,16 +77,13 @@ UpdateClientImpl::UpdateClientImpl(
                            crx_downloader_factory,
                            ping_manager_.get(),
                            base::Bind(&UpdateClientImpl::NotifyObservers,
-                                      base::Unretained(this)))) {
-}
+                                      base::Unretained(this)))) {}
 
 UpdateClientImpl::~UpdateClientImpl() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  while (!task_queue_.empty()) {
-    delete task_queue_.front();
-    task_queue_.pop();
-  }
+  DCHECK(task_queue_.empty());
+  DCHECK(tasks_.empty());
 
   config_ = nullptr;
 }
@@ -150,8 +148,16 @@ void UpdateClientImpl::OnTaskComplete(
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(completion_callback, error));
 
+  // Remove the task from the set of the running tasks. Only tasks handled by
+  // the update engine can be in this data structure.
   tasks_.erase(task);
+
+  // Delete the completed task. A task can be completed because the update
+  // engine has run it or because it has been canceled but never run.
   delete task;
+
+  if (is_stopped_)
+    return;
 
   // Pick up a task from the queue if the queue has pending tasks and no other
   // task is running.
@@ -193,6 +199,31 @@ bool UpdateClientImpl::IsUpdating(const std::string& id) const {
   }
 
   return false;
+}
+
+void UpdateClientImpl::Stop() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  is_stopped_ = true;
+
+  // In the current implementation it is sufficient to cancel the pending
+  // tasks only. The tasks that are run by the update engine will stop
+  // making progress naturally, as the main task runner stops running task
+  // actions. Upon the browser shutdown, the resources employed by the active
+  // tasks will leak, as the operating system kills the thread associated with
+  // the update engine task runner. Further refactoring may be needed in this
+  // area, to cancel the running tasks by canceling the current action update.
+  // This behavior would be expected, correct, and result in no resource leaks
+  // in all cases, in shutdown or not.
+  //
+  // Cancel the pending tasks. These tasks are safe to cancel and delete since
+  // they have not picked up by the update engine, and not shared with any
+  // task runner yet.
+  while (!task_queue_.empty()) {
+    const auto task(task_queue_.front());
+    task_queue_.pop();
+    task->Cancel();
+  }
 }
 
 scoped_refptr<UpdateClient> UpdateClientFactory(

@@ -89,6 +89,7 @@ void CrxUpdateService::Stop() {
   DCHECK(thread_checker_.CalledOnValidThread());
   VLOG(1) << "CrxUpdateService stopping";
   timer_.Stop();
+  update_client_->Stop();
 }
 
 // Adds a component to be checked for upgrades. If the component exists it

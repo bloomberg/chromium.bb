@@ -40,11 +40,14 @@ class TaskUpdate : public Task {
 
   void Run() override;
 
+  void Cancel() override;
+
   std::vector<std::string> GetIds() const override;
 
  private:
-  // Called when the Run function associated with this task has completed.
-  void RunComplete(int error);
+  // Called when the task has completed either because the task has run or
+  // it has been canceled.
+  void TaskComplete(int error);
 
   base::ThreadChecker thread_checker_;
 
