@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.enhancedbookmarks;
 
 import android.content.Context;
-import android.graphics.PorterDuff;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -187,7 +186,6 @@ abstract class EnhancedBookmarkRow extends FrameLayout implements EnhancedBookma
 
             mMoreIcon = (TintedImageButton) findViewById(R.id.more);
             mMoreIcon.setVisibility(VISIBLE);
-            mMoreIcon.setColorFilterMode(PorterDuff.Mode.MULTIPLY);
             mMoreIcon.setOnClickListener(new OnClickListener() {
                 @Override
                 public void onClick(View view) {

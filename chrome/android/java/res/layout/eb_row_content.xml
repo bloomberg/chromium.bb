@@ -57,7 +57,7 @@
             android:contentDescription="@string/accessibility_enhanced_bookmark_more_info"
             android:paddingEnd="16dp"
             android:paddingStart="16dp"
-            android:src="@drawable/eb_item_more"
+            android:src="@drawable/btn_menu"
             chrome:tint="@color/dark_mode_tint" />
     </LinearLayout>
 
