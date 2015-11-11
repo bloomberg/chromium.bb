@@ -32,6 +32,7 @@ import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarManageable;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.variations.VariationsAssociatedData;
+import org.chromium.ui.base.DeviceFormFactor;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
@@ -303,7 +304,8 @@ public class EnhancedBookmarkManager implements EnhancedBookmarkDelegate {
             // page and there is no network connection.
             if (mEnhancedBookmarksModel.getOfflinePageBridge() != null
                     && !mEnhancedBookmarksModel.getOfflinePageBridge().getAllPages().isEmpty()
-                    && !OfflinePageUtils.isConnected(ApplicationStatus.getApplicationContext())) {
+                    && !OfflinePageUtils.isConnected(mActivity.getApplicationContext())
+                    && !DeviceFormFactor.isTablet(mActivity.getApplicationContext())) {
                 UIState filterState = UIState.createFilterState(
                         EnhancedBookmarkFilter.OFFLINE_PAGES, mEnhancedBookmarksModel);
                 if (state.mState != UIState.STATE_LOADING) {
