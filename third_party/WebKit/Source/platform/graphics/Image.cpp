@@ -274,4 +274,9 @@ PassRefPtr<Image> Image::imageForDefaultFrame()
     return image.release();
 }
 
+bool Image::isTextureBacked()
+{
+    return imageForCurrentFrame()->isTextureBacked();
+}
+
 } // namespace blink

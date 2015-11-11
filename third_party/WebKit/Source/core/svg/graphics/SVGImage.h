@@ -54,6 +54,7 @@ public:
     LayoutBox* embeddedContentBox() const;
 
     bool isSVGImage() const override { return true; }
+    bool isTextureBacked() override { return false; }
     IntSize size() const override { return m_intrinsicSize; }
     void setURL(const KURL& url) { m_url = url; }
 

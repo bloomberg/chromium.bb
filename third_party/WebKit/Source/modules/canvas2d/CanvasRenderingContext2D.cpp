@@ -1394,7 +1394,7 @@ void CanvasRenderingContext2D::drawImage(CanvasImageSource* imageSource,
     if (srcRect.isEmpty())
         return;
 
-    if (shouldDisableDeferral(imageSource) || image->imageForCurrentFrame()->isTextureBacked())
+    if (shouldDisableDeferral(imageSource) || image->isTextureBacked())
         canvas()->disableDeferral();
 
     validateStateStack();
