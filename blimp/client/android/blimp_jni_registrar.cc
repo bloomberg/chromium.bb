@@ -7,11 +7,13 @@
 #include "base/android/jni_registrar.h"
 #include "blimp/client/android/blimp_library_loader.h"
 #include "blimp/client/android/blimp_view.h"
+#include "blimp/client/android/toolbar.h"
 
 namespace {
 
 base::android::RegistrationMethod kBlimpRegistrationMethods[] = {
     {"BlimpLibraryLoader", blimp::RegisterBlimpLibraryLoaderJni},
+    {"Toolbar", blimp::Toolbar::RegisterJni},
     {"BlimpView", blimp::BlimpView::RegisterJni},
 };
 

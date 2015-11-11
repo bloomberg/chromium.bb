@@ -30,12 +30,14 @@ shared_library("blimp_client") {
   deps = [
     "//base",
     "//blimp/common:blimp_common",
+    "//blimp/common/proto",
     "//cc",
     "//gpu/command_buffer/client:gl_in_process_context",
     "//gpu/command_buffer/common:gles2_utils",
     "//gpu/skia_bindings",
     "//ui/gfx/geometry",
     "//ui/gl",
+    "//url:url",
   ]
 
   if (is_android) {
@@ -46,6 +48,8 @@ shared_library("blimp_client") {
       "android/blimp_library_loader.h",
       "android/blimp_view.cc",
       "android/blimp_view.h",
+      "android/toolbar.cc",
+      "android/toolbar.h",
       "compositor/blimp_compositor_android.cc",
       "compositor/blimp_compositor_android.h",
     ]
@@ -80,6 +84,7 @@ if (is_android) {
     sources = [
       "android/java/src/org/chromium/blimp/BlimpLibraryLoader.java",
       "android/java/src/org/chromium/blimp/BlimpView.java",
+      "android/java/src/org/chromium/blimp/toolbar/Toolbar.java",
     ]
 
     jni_package = "blimp"
@@ -162,6 +167,8 @@ if (is_android) {
       "android/java/src/org/chromium/blimp/BlimpLibraryLoader.java",
       "android/java/src/org/chromium/blimp/BlimpRendererActivity.java",
       "android/java/src/org/chromium/blimp/BlimpView.java",
+      "android/java/src/org/chromium/blimp/toolbar/Toolbar.java",
+      "android/java/src/org/chromium/blimp/toolbar/UrlBar.java",
     ]
   }
 

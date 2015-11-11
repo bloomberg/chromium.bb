@@ -30,6 +30,8 @@ public class BlimpView extends SurfaceView implements SurfaceHolder.Callback2 {
      */
     public BlimpView(Context context, AttributeSet attrs) {
         super(context, attrs);
+        setFocusable(true);
+        setFocusableInTouchMode(true);
     }
 
     /**

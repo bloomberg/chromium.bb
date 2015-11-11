@@ -96,6 +96,11 @@ void BlimpEngineSession::CreateWebContents(const int target_tab_id) {
   PlatformSetContents(new_contents.Pass());
 }
 
+void BlimpEngineSession::CloseWebContents(const int target_tab_id) {
+  DCHECK(web_contents_);
+  web_contents_->Close();
+}
+
 void BlimpEngineSession::LoadUrl(const int target_tab_id, const GURL& url) {
   if (url.is_empty() || !web_contents_)
     return;
@@ -107,19 +112,59 @@ void BlimpEngineSession::LoadUrl(const int target_tab_id, const GURL& url) {
   web_contents_->Focus();
 }
 
-net::Error BlimpEngineSession::OnBlimpMessage(const BlimpMessage& message) {
-  DCHECK(message.type() == BlimpMessage::CONTROL);
+void BlimpEngineSession::GoBack(const int target_tab_id) {
+  if (!web_contents_)
+    return;
 
-  switch (message.control().type()) {
-    case ControlMessage::CREATE_TAB:
-      CreateWebContents(message.target_tab_id());
-      break;
-    case ControlMessage::LOAD_URL:
-      LoadUrl(message.target_tab_id(),
-              GURL(message.control().load_url().url()));
-      break;
-    default:
-      NOTIMPLEMENTED();
+  web_contents_->GetController().GoBack();
+}
+
+void BlimpEngineSession::GoForward(const int target_tab_id) {
+  if (!web_contents_)
+    return;
+
+  web_contents_->GetController().GoForward();
+}
+
+void BlimpEngineSession::Reload(const int target_tab_id) {
+  if (!web_contents_)
+    return;
+
+  web_contents_->GetController().Reload(true);
+}
+
+net::Error BlimpEngineSession::OnBlimpMessage(const BlimpMessage& message) {
+  DCHECK(message.type() == BlimpMessage::CONTROL ||
+         message.type() == BlimpMessage::NAVIGATION);
+
+  if (message.type() == BlimpMessage::CONTROL) {
+    switch (message.control().type()) {
+      case ControlMessage::CREATE_TAB:
+        CreateWebContents(message.target_tab_id());
+        break;
+      case ControlMessage::CLOSE_TAB:
+        CloseWebContents(message.target_tab_id());
+      default:
+        NOTIMPLEMENTED();
+    }
+  } else if (message.type() == BlimpMessage::NAVIGATION && web_contents_) {
+    switch (message.navigation().type()) {
+      case NavigationMessage::LOAD_URL:
+        LoadUrl(message.target_tab_id(),
+                GURL(message.navigation().load_url().url()));
+        break;
+      case NavigationMessage::GO_BACK:
+        GoBack(message.target_tab_id());
+        break;
+      case NavigationMessage::GO_FORWARD:
+        GoForward(message.target_tab_id());
+        break;
+      case NavigationMessage::RELOAD:
+        Reload(message.target_tab_id());
+        break;
+      default:
+        NOTIMPLEMENTED();
+    }
   }
 
   return net::OK;

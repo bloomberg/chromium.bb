@@ -4,8 +4,43 @@
      found in the LICENSE file. -->
 
 <merge xmlns:android="http://schemas.android.com/apk/res/android">
-    <org.chromium.blimp.BlimpView
-        android:id="@+id/renderer"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+        <!-- Toolbar -->
+        <org.chromium.blimp.toolbar.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:paddingStart="5dp"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:background="#f2f2f2">
+            <org.chromium.blimp.toolbar.UrlBar
+                android:id="@+id/toolbar_url_bar"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:paddingStart="10dp"
+                android:paddingEnd="10dp"
+                android:singleLine="true"
+                android:maxLines="1"
+                android:background="@drawable/textbox"
+                android:textColor="#333" />
+            <ImageButton
+                android:id="@+id/toolbar_reload_btn"
+                android:layout_width="48dp"
+                android:layout_height="56dp"
+                android:background="?android:attr/selectableItemBackground"
+                android:scaleType="center"
+                android:src="@drawable/btn_reload" />
+        </org.chromium.blimp.toolbar.Toolbar>
+        
+        <!-- Content Area -->
+        <org.chromium.blimp.BlimpView
+            android:id="@+id/renderer"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+    </LinearLayout>
 </merge>

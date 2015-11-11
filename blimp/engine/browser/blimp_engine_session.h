@@ -57,11 +57,17 @@ class BlimpEngineSession : public BlimpMessageReceiver,
   net::Error OnBlimpMessage(const BlimpMessage& message) override;
 
  private:
+  // ControlMessage handler methods.
   // Creates a new WebContents, which will be indexed by |target_tab_id|.
   void CreateWebContents(const int target_tab_id);
+  void CloseWebContents(const int target_tab_id);
 
+  // NavigationMessage handler methods.
   // Navigates the target tab to the |url|.
   void LoadUrl(const int target_tab_id, const GURL& url);
+  void GoBack(const int target_tab_id);
+  void GoForward(const int target_tab_id);
+  void Reload(const int target_tab_id);
 
   // content::WebContentsDelegate implementation.
   content::WebContents* OpenURLFromTab(

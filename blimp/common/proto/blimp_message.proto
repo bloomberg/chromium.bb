@@ -27,6 +27,7 @@ option optimize_for = LITE_RUNTIME;
 import "control.proto";
 import "compositor.proto";
 import "input.proto";
+import "navigation.proto";
 
 package blimp;
 
@@ -35,6 +36,7 @@ message BlimpMessage {
     COMPOSITOR = 0;
     INPUT = 1;
     CONTROL = 2;
+    NAVIGATION = 3;
   }
   // Identifies the feature type of this message.
   // The feature-specific contents are contained in optional fields of the same
@@ -58,5 +60,6 @@ message BlimpMessage {
   optional CompositorMessage compositor = 1000;
   optional InputMessage input = 1001;
   optional ControlMessage control = 1002;
+  optional NavigationMessage navigation = 1003;
 }
 

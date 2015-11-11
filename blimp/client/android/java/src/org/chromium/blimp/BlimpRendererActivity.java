@@ -13,6 +13,7 @@ import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.blimp.auth.RetryingTokenSource;
 import org.chromium.blimp.auth.TokenSource;
 import org.chromium.blimp.auth.TokenSourceImpl;
+import org.chromium.blimp.toolbar.Toolbar;
 import org.chromium.ui.widget.Toast;
 
 /**
@@ -26,6 +27,7 @@ public class BlimpRendererActivity extends Activity implements BlimpLibraryLoade
     private static final String TAG = "Blimp";
     private TokenSource mTokenSource;
     private BlimpView mBlimpView;
+    private Toolbar mToolbar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,6 +53,11 @@ public class BlimpRendererActivity extends Activity implements BlimpLibraryLoade
             mBlimpView = null;
         }
 
+        if (mToolbar != null) {
+            mToolbar.destroy();
+            mToolbar = null;
+        }
+
         if (mTokenSource != null) {
             mTokenSource.destroy();
             mTokenSource = null;
@@ -73,6 +80,15 @@ public class BlimpRendererActivity extends Activity implements BlimpLibraryLoade
         }
     }
 
+    @Override
+    public void onBackPressed() {
+        // Check if the toolbar can handle the back navigation.
+        if (mToolbar != null && mToolbar.onBackPressed()) return;
+
+        // If not, use the default Activity behavior.
+        super.onBackPressed();
+    }
+
     // BlimpLibraryLoader.Callback implementation.
     @Override
     public void onStartupComplete(boolean success) {
@@ -83,8 +99,12 @@ public class BlimpRendererActivity extends Activity implements BlimpLibraryLoade
         }
 
         setContentView(R.layout.blimp_main);
+
         mBlimpView = (BlimpView) findViewById(R.id.renderer);
         mBlimpView.initializeRenderer();
+
+        mToolbar = (Toolbar) findViewById(R.id.toolbar);
+        mToolbar.initialize();
     }
 
     // TokenSource.Callback implementation.
