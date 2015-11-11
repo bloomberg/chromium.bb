@@ -8,9 +8,9 @@
 #include "base/lazy_instance.h"
 #include "base/memory/linked_ptr.h"
 #include "base/thread_task_runner_handle.h"
+#include "chrome/browser/extensions/api/gcd_private/privet_v3_session.h"
 #include "chrome/browser/local_discovery/privet_http.h"
 #include "chrome/browser/local_discovery/privet_http_asynchronous_factory.h"
-#include "chrome/browser/local_discovery/privetv3_session.h"
 #include "chrome/browser/local_discovery/service_discovery_shared_client.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
@@ -92,7 +92,7 @@ class GcdPrivateAPIImpl {
       service_discovery_client_;
 
   struct SessionInfo {
-    linked_ptr<local_discovery::PrivetV3Session> session;
+    linked_ptr<PrivetV3Session> session;
     linked_ptr<local_discovery::PrivetHTTPResolution> http_resolution;
   };
 
@@ -150,8 +150,7 @@ void GcdPrivateAPIImpl::OnServiceResolved(
                         base::DictionaryValue());
   }
   auto& session_data = sessions_[session_id];
-  session_data.session.reset(
-      new local_discovery::PrivetV3Session(client.Pass()));
+  session_data.session.reset(new PrivetV3Session(client.Pass()));
   session_data.session->Init(base::Bind(callback, session_id));
 }
 

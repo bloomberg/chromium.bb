@@ -2664,8 +2664,6 @@
       'browser/local_discovery/privet_notifications_factory.h',
       'browser/local_discovery/privet_url_fetcher.cc',
       'browser/local_discovery/privet_url_fetcher.h',
-      'browser/local_discovery/privetv3_session.cc',
-      'browser/local_discovery/privetv3_session.h',
       'browser/local_discovery/service_discovery_client_mac.h',
       'browser/local_discovery/service_discovery_client_mac.mm',
       'browser/local_discovery/service_discovery_client_mac_factory.h',

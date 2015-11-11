@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_LOCAL_DISCOVERY_PRIVETV3_SESSION_H_
-#define CHROME_BROWSER_LOCAL_DISCOVERY_PRIVETV3_SESSION_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_API_GCD_PRIVATE_PRIVET_V3_SESSION_H_
+#define CHROME_BROWSER_EXTENSIONS_API_GCD_PRIVATE_PRIVET_V3_SESSION_H_
 
 #include <string>
 
 #include "base/callback.h"
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
@@ -24,10 +25,12 @@ class P224EncryptedKeyExchange;
 }
 
 namespace local_discovery {
-
 class PrivetHTTPClient;
 class PrivetJSONOperation;
 class PrivetURLFetcher;
+}
+
+namespace extensions {
 
 // Manages secure communication between browser and local Privet device.
 class PrivetV3Session {
@@ -46,7 +49,8 @@ class PrivetV3Session {
                               const base::DictionaryValue& response)>
       MessageCallback;
 
-  explicit PrivetV3Session(scoped_ptr<PrivetHTTPClient> client);
+  explicit PrivetV3Session(
+      scoped_ptr<local_discovery::PrivetHTTPClient> client);
   ~PrivetV3Session();
 
   // Initializes session. Queries /privet/info and returns supported pairing
@@ -87,14 +91,15 @@ class PrivetV3Session {
   void StartPostRequest(const std::string& api,
                         const base::DictionaryValue& input,
                         const MessageCallback& callback);
-  PrivetURLFetcher* CreateFetcher(const std::string& api,
-                                  net::URLFetcher::RequestType request_type,
-                                  const MessageCallback& callback);
+  local_discovery::PrivetURLFetcher* CreateFetcher(
+      const std::string& api,
+      net::URLFetcher::RequestType request_type,
+      const MessageCallback& callback);
   void DeleteFetcher(const FetcherDelegate* fetcher);
   void Cancel();
 
   // Creates instances of PrivetURLFetcher.
-  scoped_ptr<PrivetHTTPClient> client_;
+  scoped_ptr<local_discovery::PrivetHTTPClient> client_;
 
   // Current authentication token.
   std::string privet_auth_token_;
@@ -121,6 +126,6 @@ class PrivetV3Session {
   DISALLOW_COPY_AND_ASSIGN(PrivetV3Session);
 };
 
-}  // namespace local_discovery
+}  // namespace extensions
 
-#endif  // CHROME_BROWSER_LOCAL_DISCOVERY_PRIVETV3_SESSION_H_
+#endif  // CHROME_BROWSER_EXTENSIONS_API_GCD_PRIVATE_PRIVET_V3_SESSION_H_

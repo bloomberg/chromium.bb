@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/local_discovery/privetv3_session.h"
+#include "chrome/browser/extensions/api/gcd_private/privet_v3_session.h"
 
 #include "base/base64.h"
 #include "base/strings/stringprintf.h"
@@ -16,7 +16,11 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace local_discovery {
+using local_discovery::PrivetHTTPClient;
+using local_discovery::PrivetJSONOperation;
+using local_discovery::PrivetURLFetcher;
+
+namespace extensions {
 
 namespace {
 
@@ -169,8 +173,7 @@ TEST_F(PrivetV3SessionTest, NoHttpsError) {
 }
 
 TEST_F(PrivetV3SessionTest, Pairing) {
-  EXPECT_CALL(*this, OnInitializedMock(Result::STATUS_SUCCESS, _))
-      .Times(1);
+  EXPECT_CALL(*this, OnInitializedMock(Result::STATUS_SUCCESS, _)).Times(1);
   fetcher_factory_.SetFakeResponse(GURL("http://host/privet/info"),
                                    kInfoResponse, net::HTTP_OK,
                                    net::URLRequestStatus::SUCCESS);
@@ -194,25 +197,24 @@ TEST_F(PrivetV3SessionTest, Pairing) {
 
   EXPECT_CALL(*this, OnPairingStarted(Result::STATUS_SUCCESS)).Times(1);
   EXPECT_CALL(*this, OnPostData(_))
-      .WillOnce(
-          Invoke([this, &spake](const base::DictionaryValue& data) {
-            std::string pairing_type;
-            EXPECT_TRUE(data.GetString("pairing", &pairing_type));
-            EXPECT_EQ("embeddedCode", pairing_type);
+      .WillOnce(Invoke([this, &spake](const base::DictionaryValue& data) {
+        std::string pairing_type;
+        EXPECT_TRUE(data.GetString("pairing", &pairing_type));
+        EXPECT_EQ("embeddedCode", pairing_type);
 
-            std::string crypto_type;
-            EXPECT_TRUE(data.GetString("crypto", &crypto_type));
-            EXPECT_EQ("p224_spake2", crypto_type);
+        std::string crypto_type;
+        EXPECT_TRUE(data.GetString("crypto", &crypto_type));
+        EXPECT_EQ("p224_spake2", crypto_type);
 
-            std::string device_commitment;
-            base::Base64Encode(spake.GetNextMessage(), &device_commitment);
-            fetcher_factory_.SetFakeResponse(
-                GURL("http://host/privet/v3/pairing/start"),
-                base::StringPrintf(
-                    "{\"deviceCommitment\":\"%s\",\"sessionId\":\"testId\"}",
-                    device_commitment.c_str()),
-                net::HTTP_OK, net::URLRequestStatus::SUCCESS);
-          }));
+        std::string device_commitment;
+        base::Base64Encode(spake.GetNextMessage(), &device_commitment);
+        fetcher_factory_.SetFakeResponse(
+            GURL("http://host/privet/v3/pairing/start"),
+            base::StringPrintf(
+                "{\"deviceCommitment\":\"%s\",\"sessionId\":\"testId\"}",
+                device_commitment.c_str()),
+            net::HTTP_OK, net::URLRequestStatus::SUCCESS);
+      }));
   session_.StartPairing(PairingType::PAIRING_TYPE_EMBEDDEDCODE,
                         base::Bind(&PrivetV3SessionTest::OnPairingStarted,
                                    base::Unretained(this)));
@@ -270,24 +272,23 @@ TEST_F(PrivetV3SessionTest, Pairing) {
                     fingerprint_base64.c_str(), signature_base64.c_str()),
                 net::HTTP_OK, net::URLRequestStatus::SUCCESS);
           }))
-      .WillOnce(
-          Invoke([this, &spake](const base::DictionaryValue& data) {
-            std::string access_token_base64;
-            EXPECT_TRUE(data.GetString("authCode", &access_token_base64));
-            std::string access_token;
-            EXPECT_TRUE(base::Base64Decode(access_token_base64, &access_token));
+      .WillOnce(Invoke([this, &spake](const base::DictionaryValue& data) {
+        std::string access_token_base64;
+        EXPECT_TRUE(data.GetString("authCode", &access_token_base64));
+        std::string access_token;
+        EXPECT_TRUE(base::Base64Decode(access_token_base64, &access_token));
 
-            crypto::HMAC hmac(crypto::HMAC::SHA256);
-            const std::string& key = spake.GetUnverifiedKey();
-            EXPECT_TRUE(hmac.Init(key));
-            EXPECT_TRUE(hmac.Verify("testId", access_token));
+        crypto::HMAC hmac(crypto::HMAC::SHA256);
+        const std::string& key = spake.GetUnverifiedKey();
+        EXPECT_TRUE(hmac.Init(key));
+        EXPECT_TRUE(hmac.Verify("testId", access_token));
 
-            fetcher_factory_.SetFakeResponse(
-                GURL("http://host/privet/v3/auth"),
-                "{\"accessToken\":\"567\",\"tokenType\":\"testType\","
-                "\"scope\":\"owner\"}",
-                net::HTTP_OK, net::URLRequestStatus::SUCCESS);
-          }));
+        fetcher_factory_.SetFakeResponse(
+            GURL("http://host/privet/v3/auth"),
+            "{\"accessToken\":\"567\",\"tokenType\":\"testType\","
+            "\"scope\":\"owner\"}",
+            net::HTTP_OK, net::URLRequestStatus::SUCCESS);
+      }));
   session_.ConfirmCode("testPin",
                        base::Bind(&PrivetV3SessionTest::OnCodeConfirmed,
                                   base::Unretained(this)));
@@ -298,7 +299,7 @@ TEST_F(PrivetV3SessionTest, Pairing) {
 }
 
 TEST_F(PrivetV3SessionTest, Cancel) {
-  EXPECT_CALL(*this, OnInitializedMock(Result::STATUS_SUCCESS, _)).Times(1);;
+  EXPECT_CALL(*this, OnInitializedMock(Result::STATUS_SUCCESS, _)).Times(1);
   fetcher_factory_.SetFakeResponse(GURL("http://host/privet/info"),
                                    kInfoResponse, net::HTTP_OK,
                                    net::URLRequestStatus::SUCCESS);
@@ -339,4 +340,4 @@ TEST_F(PrivetV3SessionTest, Cancel) {
 // TODO(vitalybuka): replace PrivetHTTPClient with regular URL fetcher and
 // implement SendMessage test.
 
-}  // namespace local_discovery
+}  // namespace extensions

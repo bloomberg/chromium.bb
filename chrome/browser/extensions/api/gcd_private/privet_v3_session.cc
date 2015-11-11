@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/local_discovery/privetv3_session.h"
+#include "chrome/browser/extensions/api/gcd_private/privet_v3_session.h"
 
 #include "base/base64.h"
 #include "base/json/json_writer.h"
@@ -18,7 +18,9 @@
 #include "crypto/p224_spake.h"
 #include "url/gurl.h"
 
-namespace local_discovery {
+using local_discovery::PrivetURLFetcher;
+
+namespace extensions {
 
 namespace {
 
@@ -130,11 +132,9 @@ PrivetV3Session::FetcherDelegate::FetcherDelegate(
     : session_(session),
       auth_token_(auth_token),
       callback_(callback),
-      weak_ptr_factory_(this) {
-}
+      weak_ptr_factory_(this) {}
 
-PrivetV3Session::FetcherDelegate::~FetcherDelegate() {
-}
+PrivetV3Session::FetcherDelegate::~FetcherDelegate() {}
 
 std::string PrivetV3Session::FetcherDelegate::GetAuthToken() {
   return auth_token_;
@@ -206,9 +206,9 @@ void PrivetV3Session::FetcherDelegate::OnTimeout() {
                         base::DictionaryValue());
 }
 
-PrivetV3Session::PrivetV3Session(scoped_ptr<PrivetHTTPClient> client)
-    : client_(client.Pass()), weak_ptr_factory_(this) {
-}
+PrivetV3Session::PrivetV3Session(
+    scoped_ptr<local_discovery::PrivetHTTPClient> client)
+    : client_(client.Pass()), weak_ptr_factory_(this) {}
 
 PrivetV3Session::~PrivetV3Session() {
   Cancel();
@@ -221,7 +221,7 @@ void PrivetV3Session::Init(const InitCallback& callback) {
   DCHECK(privet_auth_token_.empty());
 
   privet_auth_token_ = kPrivetV3AuthAnonymous;
-  StartGetRequest(kPrivetInfoPath,
+  StartGetRequest(local_discovery::kPrivetInfoPath,
                   base::Bind(&PrivetV3Session::OnInfoDone,
                              weak_ptr_factory_.GetWeakPtr(), callback));
 }
@@ -462,4 +462,4 @@ void PrivetV3Session::Cancel() {
   StartPostRequest(kPrivetV3PairingCancelPath, input, MessageCallback());
 }
 
-}  // namespace local_discovery
+}  // namespace extensions

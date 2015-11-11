@@ -623,6 +623,7 @@
       'browser/extensions/api/file_handlers/api_file_handler_util_unittest.cc',
       'browser/extensions/api/file_handlers/mime_util_unittest.cc',
       'browser/extensions/api/file_system/file_system_api_unittest.cc',
+      'browser/extensions/api/gcd_private/privet_v3_session_unittest.cc',
       'browser/extensions/api/identity/extension_token_key_unittest.cc',
       'browser/extensions/api/identity/gaia_web_auth_flow_unittest.cc',
       'browser/extensions/api/identity/identity_mint_queue_unittest.cc',
@@ -910,7 +911,6 @@
       'browser/local_discovery/privet_confirm_api_flow_unittest.cc',
       'browser/local_discovery/privet_http_unittest.cc',
       'browser/local_discovery/privet_url_fetcher_unittest.cc',
-      'browser/local_discovery/privetv3_session_unittest.cc',
       'browser/local_discovery/service_discovery_client_mac_unittest.mm',
     ],
     'chrome_unit_tests_configuration_policy_sources': [
