@@ -709,6 +709,10 @@ void ThreadState::scheduleGCIfNeeded()
     if (isGCForbidden())
         return;
 
+    if (isSweepingInProgress())
+        return;
+    ASSERT(!sweepForbidden());
+
     if (shouldForceMemoryPressureGC()) {
         completeSweep();
         if (shouldForceMemoryPressureGC()) {
@@ -719,10 +723,6 @@ void ThreadState::scheduleGCIfNeeded()
             return;
         }
     }
-
-    if (isSweepingInProgress())
-        return;
-    ASSERT(!sweepForbidden());
 
     if (shouldForceConservativeGC()) {
         completeSweep();
