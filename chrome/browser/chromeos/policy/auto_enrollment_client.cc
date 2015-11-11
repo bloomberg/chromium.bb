@@ -324,9 +324,9 @@ bool AutoEnrollmentClient::OnBucketDownloadRequestCompletion(
     int64 modulus = enrollment_response.expected_modulus();
     int power = NextPowerOf2(modulus);
     if ((INT64_C(1) << power) != modulus) {
-      LOG(WARNING) << "Auto enrollment: the server didn't ask for a power-of-2 "
-                   << "modulus. Using the closest power-of-2 instead "
-                   << "(" << modulus << " vs 2^" << power << ")";
+      LOG(ERROR) << "Auto enrollment: the server didn't ask for a power-of-2 "
+                 << "modulus. Using the closest power-of-2 instead "
+                 << "(" << modulus << " vs 2^" << power << ")";
     }
     if (modulus_updates_received_ >= 2) {
       LOG(ERROR) << "Auto enrollment error: already retried with an updated "

@@ -136,14 +136,16 @@ void AutoEnrollmentController::Start() {
            chromeos::switches::kEnterpriseEnrollmentModulusLimit)) ||
       GetMode() == MODE_NONE ||
       IsFirstDeviceSetup()) {
-    VLOG(1) << "Auto-enrollment disabled.";
+    LOG(WARNING) << "Auto-enrollment disabled.";
     UpdateState(policy::AUTO_ENROLLMENT_STATE_NO_ENROLLMENT);
     return;
   }
 
   // If a client is being created or already existing, bail out.
-  if (client_start_weak_factory_.HasWeakPtrs() || client_)
+  if (client_start_weak_factory_.HasWeakPtrs() || client_) {
+    LOG(ERROR) << "Auto-enrollment client is already running.";
     return;
+  }
 
   // Arm the belts-and-suspenders timer to avoid hangs.
   safeguard_timer_.Start(
@@ -185,25 +187,35 @@ AutoEnrollmentController::RegisterProgressCallback(
 
 void AutoEnrollmentController::OnOwnershipStatusCheckDone(
     DeviceSettingsService::OwnershipStatus status) {
-  if (status != DeviceSettingsService::OWNERSHIP_NONE) {
-    // The device is already owned. No need for auto-enrollment checks.
-    VLOG(1) << "Device already owned, skipping auto-enrollment check";
-    UpdateState(policy::AUTO_ENROLLMENT_STATE_NO_ENROLLMENT);
-    return;
+  switch (status) {
+    case DeviceSettingsService::OWNERSHIP_NONE: {
+      g_browser_process->platform_part()
+          ->browser_policy_connector_chromeos()
+          ->GetStateKeysBroker()
+          ->RequestStateKeys(
+              base::Bind(&AutoEnrollmentController::StartClient,
+                         client_start_weak_factory_.GetWeakPtr()));
+      break;
+    }
+    case DeviceSettingsService::OWNERSHIP_TAKEN: {
+      // This is part of normal operation.  Logging as "WARNING" nevertheless to
+      // make sure it's preserved in the logs.
+      LOG(WARNING) << "Device already owned, skipping auto-enrollment check.";
+      UpdateState(policy::AUTO_ENROLLMENT_STATE_NO_ENROLLMENT);
+      break;
+    }
+    case DeviceSettingsService::OWNERSHIP_UNKNOWN: {
+      LOG(ERROR) << "Ownership unknown, skipping auto-enrollment check.";
+      UpdateState(policy::AUTO_ENROLLMENT_STATE_NO_ENROLLMENT);
+      break;
+    }
   }
-
-  // Make sure state keys are available.
-  g_browser_process->platform_part()
-      ->browser_policy_connector_chromeos()
-      ->GetStateKeysBroker()
-      ->RequestStateKeys(base::Bind(&AutoEnrollmentController::StartClient,
-                                    client_start_weak_factory_.GetWeakPtr()));
 }
 
 void AutoEnrollmentController::StartClient(
     const std::vector<std::string>& state_keys) {
   if (state_keys.empty()) {
-    LOG(WARNING) << "No state keys available!";
+    LOG(ERROR) << "No state keys available!";
     UpdateState(policy::AUTO_ENROLLMENT_STATE_NO_ENROLLMENT);
     return;
   }
@@ -220,7 +232,7 @@ void AutoEnrollmentController::StartClient(
       chromeos::switches::kEnterpriseEnrollmentModulusLimit);
   if (power_initial > power_limit) {
     LOG(ERROR) << "Initial auto-enrollment modulus is larger than the limit, "
-               << "clamping to the limit.";
+                  "clamping to the limit.";
     power_initial = power_limit;
   }
 
@@ -240,7 +252,9 @@ void AutoEnrollmentController::StartClient(
 
 void AutoEnrollmentController::UpdateState(
     policy::AutoEnrollmentState new_state) {
-  VLOG(1) << "New state: " << new_state << ".";
+  // This is part of normal operation.  Logging as "WARNING" nevertheless to
+  // make sure it's preserved in the logs.
+  LOG(WARNING) << "New auto-enrollment state: " << new_state;
   state_ = new_state;
 
   // Stop the safeguard timer once a result comes in.
