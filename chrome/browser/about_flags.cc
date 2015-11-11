@@ -78,6 +78,10 @@
 #include "extensions/common/switches.h"
 #endif
 
+#if defined(ENABLE_PRINT_PREVIEW)
+#include "chrome/browser/ui/webui/print_preview/print_preview_distiller.h"
+#endif
+
 #if defined(USE_OZONE)
 #include "ui/ozone/public/ozone_switches.h"
 #endif
@@ -1339,11 +1343,11 @@ const FeatureEntry kFeatureEntries[] = {
      SINGLE_VALUE_TYPE(switches::kEnablePrivetV3)},
 #endif  // ENABLE_SERVICE_DISCOVERY
 #if defined(ENABLE_PRINT_PREVIEW)
-    {"disable-print-preview-simplify",
-     IDS_FLAGS_DISABLE_DISTILLER_IN_PRINT_PREVIEW_NAME,
-     IDS_FLAGS_DISABLE_DISTILLER_IN_PRINT_PREVIEW_DESCRIPTION,
+    {"enable-print-preview-simplify",
+     IDS_FLAGS_ENABLE_DISTILLER_IN_PRINT_PREVIEW_NAME,
+     IDS_FLAGS_ENABLE_DISTILLER_IN_PRINT_PREVIEW_DESCRIPTION,
      kOsDesktop,
-     SINGLE_VALUE_TYPE(switches::kDisablePrintPreviewSimplify)},
+     FEATURE_VALUE_TYPE(PrintPreviewDistiller::kFeature)},
 #endif
 #if defined(OS_WIN)
     {"enable-cloud-print-xps",
