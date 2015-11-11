@@ -11,11 +11,17 @@
 
 namespace {
 
-bool IsProfilerEnabledForCurrentChannel() {
+// The profiler is currently only implemented for Windows x64, and only runs on
+// trunk, canary, and dev.
+bool IsProfilerSupported() {
+#if !defined(_WIN64)
+  return false;
+#else
   const version_info::Channel channel = chrome::GetChannel();
   return (channel == version_info::Channel::UNKNOWN ||
           channel == version_info::Channel::CANARY ||
           channel == version_info::Channel::DEV);
+#endif
 }
 
 }  // namespace
@@ -66,12 +72,12 @@ StackSamplingConfiguration::GetSamplingParams() const {
 }
 
 bool StackSamplingConfiguration::IsProfilerEnabled() const {
-  return IsProfilerEnabledForCurrentChannel() &&
-      configuration_ != PROFILE_DISABLED;
+  return (configuration_ != PROFILE_DISABLED &&
+          configuration_ != PROFILE_CONTROL);
 }
 
 void StackSamplingConfiguration::RegisterSyntheticFieldTrial() const {
-  if (!IsProfilerEnabledForCurrentChannel())
+  if (!IsProfilerSupported())
     return;
 
   std::string group;
@@ -109,37 +115,45 @@ void StackSamplingConfiguration::RegisterSyntheticFieldTrial() const {
 // static
 StackSamplingConfiguration::ProfileConfiguration
 StackSamplingConfiguration::GenerateConfiguration() {
+  if (!IsProfilerSupported())
+    return PROFILE_DISABLED;
+
   // Enable the profiler in the intended ultimate production configuration for
   // development/waterfall builds.
   if (chrome::GetChannel() == version_info::Channel::UNKNOWN)
     return PROFILE_10HZ;
 
-  struct Variation {
-    ProfileConfiguration config;
-    int weight;
-  };
+  // Enable according to the variations below in canary and dev.
+  if (chrome::GetChannel() == version_info::Channel::CANARY ||
+      chrome::GetChannel() == version_info::Channel::DEV) {
+    struct Variation {
+      ProfileConfiguration config;
+      int weight;
+    };
 
-  // Generate a configuration according to the associated weights.
-  const Variation variations[] = {
-    { PROFILE_10HZ, 15},
-    { PROFILE_CONTROL, 15},
-    { PROFILE_DISABLED, 70}
-  };
+    // Generate a configuration according to the associated weights.
+    const Variation variations[] = {
+      { PROFILE_10HZ, 50},
+      { PROFILE_CONTROL, 50},
+      { PROFILE_DISABLED, 0}
+    };
 
-  int total_weight = 0;
-  for (const Variation& variation : variations)
-    total_weight += variation.weight;
-  DCHECK_EQ(100, total_weight);
+    int total_weight = 0;
+    for (const Variation& variation : variations)
+      total_weight += variation.weight;
+    DCHECK_EQ(100, total_weight);
 
-  int chosen = base::RandInt(0, total_weight - 1);  // Max is inclusive.
-  int cumulative_weight = 0;
-  for (const Variation& variation : variations) {
-    if (chosen >= cumulative_weight &&
-        chosen < cumulative_weight + variation.weight) {
-      return variation.config;
+    int chosen = base::RandInt(0, total_weight - 1);  // Max is inclusive.
+    int cumulative_weight = 0;
+    for (const Variation& variation : variations) {
+      if (chosen >= cumulative_weight &&
+          chosen < cumulative_weight + variation.weight) {
+        return variation.config;
+      }
+      cumulative_weight += variation.weight;
     }
-    cumulative_weight += variation.weight;
+    NOTREACHED();
   }
-  NOTREACHED();
+
   return PROFILE_DISABLED;
 }
