@@ -8,29 +8,29 @@ Current patches:
     base name collisions from mac libtool. These files are generated
     by generate_gyp.py. https://chromium-review.googlesource.com/#/c/274543v/
 
-  Changes/additions to libavutil/x86/x86inc.asm
-    https://chromium-review.googlesource.com/#/c/272274/
-    Fixes the conditionals on Linux so that these symbols are hidden and
-    adds the Chromium-specific private_extern extension for hiding these
-    symbols on OSX.
-
   Changes/additions to compat/msvcrt/{snprintf.h,strtod.h}
     Commit b5269bfb48c71fe17c02eee00c71b1e9762497db changes these files and
     relevant build rules to fix inconsistent linkage when building with MSVC.
     The rules/files expose overriden symbols as externs and force inject these
     headers when building with the component build.
 
+  Fix pthreads emulation on Windows XP
+    Emulation assumes Vista+ inside (_WIN32_WINNT >= 0x0600) checks. Replace
+    with WINDOWS_XP_SUPPORT_NEEDED define in compat/w32pthreads.h.
+
+    Add call to w32thread_init() in libavcodec/vp8.c.
+
   Remove UNCHECKED_BITSTREAM_READER defines
     Remove "#define UNCHECKED_BITSTREAM_READER 1" from all codecs. In Chromium
     all codecs should use the safe bitstream reader.
 
   Changes to libavformat/matroskadec.c
+    Add CONFIG_SIPR_DECODER and CONFIG_LZO checks to remove code that may be a
+    security risk. Discuss with cevans before removing.
+
     Remove extra const from static EbmlSyntax arrays. This fixes windows
     compile error C4114, since EbmlSyntax struct is already defined with const.
     TODO: push upstream.
-
-    Add CONFIG_SIPR_DECODER and CONFIG_LZO checks to remove code that may be a
-    security risk. Discuss with cevans before removing.
 
     Add call to matroska_read_close() to mitigate memory leak caught by
     valgrind.
@@ -39,21 +39,22 @@ Current patches:
     TODO(chcunningham/dalecurtis): https://crbug.com/504623 - Determine whether
     these changes are still necessary and either remove or document them.
 
-  Fix pthreads emulation on Windows XP
-    Emulation assumes Vista+ inside (_WIN32_WINNT >= 0x0600) checks. Replace
-    with WINDOWS_XP_SUPPORT_NEEDED define in compat/w32pthreads.h.
-
-    Add call to w32thread_init() in libavcodec/vp8.c.
+  Changes to libavutil/arm/intmath.h
+    Remove static av_always_inline av_const unsigned av_clip_uintp2_arm() and
+    av_clip_intp2_arm() from libavutil/arm/intmath.h due to compilation failure.
 
   Disable FMA3 instructions in libavutil/log.c (http://crbug.com/440892)
     Remove call to _set_FMA3_enable() on Windows. Remove once we are using
     VS2015.
 
+  Changes to libavutil/mem.c
+    Enable av_max_alloc(0) to remove alloc size bound in libavutil/mem.c.
+
   C++11 compatability for string concatenation (http://crbug.com/454590)
     Add spaces between string literals and tokens in libavutil/timer.h.
 
-  Misc things that were not documented
-    Enable av_max_alloc(0) to remove alloc size bound in libavutil/mem.c.
-
-    Remove static av_always_inline av_const unsigned av_clip_uintp2_arm() and
-    av_clip_intp2_arm() from libavutil/arm/intmath.h due to compilation failure.
+  Changes/additions to libavutil/x86/x86inc.asm
+    https://chromium-review.googlesource.com/#/c/272274/
+    Fixes the conditionals on Linux so that these symbols are hidden and
+    adds the Chromium-specific private_extern extension for hiding these
+    symbols on OSX.
