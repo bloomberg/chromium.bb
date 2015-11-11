@@ -95,6 +95,11 @@ static void convertRequestDeviceOptions(const RequestDeviceOptions& options, Web
 {
     ASSERT(options.hasFilters());
 
+    if (options.filters().isEmpty()) {
+        exceptionState.throwTypeError(
+            "'filters' member must be non-empty to find any devices.");
+    }
+
     Vector<WebBluetoothScanFilter> filters;
     for (const BluetoothScanFilter& filter : options.filters()) {
         WebBluetoothScanFilter canonicalizedFilter = WebBluetoothScanFilter();

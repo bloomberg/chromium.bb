@@ -26,6 +26,14 @@ promise_test(() => {
 });
 
 promise_test(() => {
+  testRunner.setBluetoothMockDataSet('HeartRateAdapter');
+  return assert_promise_rejects_with_message(
+    requestDeviceWithKeyDown({filters: []}),
+    new TypeError('Failed to execute \'requestDevice\' on \'Bluetooth\': ' +
+                  '\'filters\' member must be non-empty to find any devices.'))
+}, 'An empty |filters| member should result in a TypeError');
+
+promise_test(() => {
   testRunner.setBluetoothMockDataSet('EmptyAdapter');
   return assert_promise_rejects(requestDeviceWithKeyDown({
     filters: [{}]
