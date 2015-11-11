@@ -33,6 +33,7 @@
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/screen.h"
+#include "ui/gfx/switches.h"
 
 namespace {
 
@@ -272,6 +273,9 @@ class PluginPowerSaverBrowserTest : public InProcessBrowserTest {
         switches::kOverridePluginPowerSaverForTesting, "ignore-list");
 
     ASSERT_TRUE(ppapi::RegisterPowerSaverTestPlugin(command_line));
+
+    // Allows us to use the same reference image on HiDPI/Retina displays.
+    command_line->AppendSwitchASCII(switches::kForceDeviceScaleFactor, "1");
 
 #if !defined(OS_CHROMEOS)
     // These pixel tests are flaky on MSan bots with hardware rendering.
