@@ -60,18 +60,24 @@ class TestURLRequestJob : public net::URLRequestJob {
 
   void NotifyReadComplete(int bytes_read) {
     if (bytes_read < 0) {
-      status_ = COMPLETED;
       NotifyDone(net::URLRequestStatus(
           net::URLRequestStatus::FromError(net::ERR_FAILED)));
       net::URLRequestJob::NotifyReadComplete(0);
-    } else if (bytes_read == 0) {
+      // Set this after calling ReadRawDataComplete since that ends up calling
+      // ReadRawData.
       status_ = COMPLETED;
+    } else if (bytes_read == 0) {
       NotifyDone(net::URLRequestStatus());
       net::URLRequestJob::NotifyReadComplete(bytes_read);
+      // Set this after calling ReadRawDataComplete since that ends up calling
+      // ReadRawData.
+      status_ = COMPLETED;
     } else {
-      status_ = STARTED;
       SetStatus(net::URLRequestStatus());
       net::URLRequestJob::NotifyReadComplete(bytes_read);
+      // Set this after calling ReadRawDataComplete since that ends up calling
+      // ReadRawData.
+      status_ = STARTED;
     }
   }
 
