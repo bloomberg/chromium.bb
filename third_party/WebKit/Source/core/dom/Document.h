@@ -330,6 +330,7 @@ public:
     KURL baseURI() const final;
 
     String origin() const { return securityOrigin()->toString(); }
+    String suborigin() const { return securityOrigin()->suboriginName(); }
 
     String visibilityState() const;
     PageVisibilityState pageVisibilityState() const;

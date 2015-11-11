@@ -35,6 +35,7 @@ interface Document : Node {
     // FIXME: documentURI should not be nullable.
     [ImplementedAs=url] readonly attribute DOMString? documentURI;
     readonly attribute DOMString origin;
+    [RuntimeEnabled=suborigins] readonly attribute DOMString suborigin;
     readonly attribute DOMString compatMode;
 
     readonly attribute DOMString characterSet;
