@@ -2568,14 +2568,29 @@ def MakeMacEnv(platform=None):
   # code's assembly syntax, so turn clang on by default.
   mac_env.SetBits('clang')
 
+  # For no good reason, this all gets instantiated on every platform,
+  # and then only actually used on Mac.  But the find_sdk.py script
+  # will barf if run on a non-Mac.
+  if pynacl.platform.IsMac():
+    # Find the Mac SDK to use as sysroot.
+    # This invocation matches the model in //build/config/mac/mac_sdk.gni.
+    mac_sdk_sysroot, mac_sdk_version = subprocess.check_output([
+        sys.executable,
+        os.path.join(os.path.pardir, 'build', 'mac', 'find_sdk.py'),
+        '--print_sdk_path',
+        'list lines'
+        ]).splitlines()
+  else:
+    mac_sdk_sysroot = 'ThisIsNotAMac'
+
   # This should be kept in synch with mac_deployment_target
   # in build/common.gypi, which in turn should be kept in synch
   # with chromium/src/build/common.gypi.
   mac_deployment_target = '10.6'
 
-  mac_env.Append(
-      CCFLAGS=['-mmacosx-version-min=' + mac_deployment_target],
-      LINKFLAGS=['-mmacosx-version-min=' + mac_deployment_target])
+  sdk_flags = ['-isysroot', mac_sdk_sysroot,
+               '-mmacosx-version-min=' + mac_deployment_target]
+  mac_env.Append(CCFLAGS=sdk_flags, ASFLAGS=sdk_flags, LINKFLAGS=sdk_flags)
 
   subarch_flag = '-m%s' % mac_env['BUILD_SUBARCH']
   mac_env.Append(
@@ -3787,7 +3802,7 @@ mac_coverage_env = mac_debug_env.Clone(
     # Strict doesnt't currently work for coverage because the path to gcov is
     # magically baked into the compiler.
     LIBS_STRICT = False,
-)
+    )
 AddDualLibrary(mac_coverage_env)
 environment_list.append(mac_coverage_env)
 
