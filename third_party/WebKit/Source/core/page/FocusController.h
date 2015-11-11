@@ -37,6 +37,7 @@
 namespace blink {
 
 struct FocusCandidate;
+struct FocusParams;
 class Element;
 class Frame;
 class HTMLFrameOwnerElement;
@@ -64,7 +65,10 @@ public:
     bool advanceFocus(WebFocusType type, InputDeviceCapabilities* sourceCapabilities = nullptr) { return advanceFocus(type, false, sourceCapabilities); }
     Element* findFocusableElement(WebFocusType, Node&);
 
-    bool setFocusedElement(Element*, PassRefPtrWillBeRawPtr<Frame>, WebFocusType = WebFocusTypeNone, InputDeviceCapabilities* sourceCapabilities = nullptr);
+    bool setFocusedElement(Element*, PassRefPtrWillBeRawPtr<Frame>, const FocusParams&);
+    // |setFocusedElement| variant with SelectionBehaviorOnFocus::None,
+    // |WebFocusTypeNone, and null InputDeviceCapabilities.
+    bool setFocusedElement(Element*, PassRefPtrWillBeRawPtr<Frame>);
 
     void setActive(bool);
     bool isActive() const { return m_isActive; }

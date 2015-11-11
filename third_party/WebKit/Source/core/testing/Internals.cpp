@@ -2367,7 +2367,7 @@ void Internals::setFocused(bool focused)
 
 void Internals::setInitialFocus(bool reverse)
 {
-    frame()->document()->setFocusedElement(nullptr);
+    frame()->document()->clearFocusedElement();
     frame()->page()->focusController().setInitialFocus(reverse ? WebFocusTypeBackward : WebFocusTypeForward);
 }
 

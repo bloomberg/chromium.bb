@@ -2376,7 +2376,7 @@ void Element::focus(const FocusParams& params)
     }
 
     RefPtrWillBeRawPtr<Node> protect(this);
-    if (!document().page()->focusController().setFocusedElement(this, document().frame(), params.type, params.sourceCapabilities))
+    if (!document().page()->focusController().setFocusedElement(this, document().frame(), params))
         return;
 
     // Setting the focused node above might have invalidated the layout due to scripts.
@@ -2427,7 +2427,7 @@ void Element::blur()
         if (doc.page())
             doc.page()->focusController().setFocusedElement(0, doc.frame());
         else
-            doc.setFocusedElement(nullptr);
+            doc.clearFocusedElement();
     }
 }
 

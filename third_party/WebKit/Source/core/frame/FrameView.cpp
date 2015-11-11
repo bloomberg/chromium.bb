@@ -1454,7 +1454,7 @@ bool FrameView::processUrlFragmentHelper(const String& name, UrlFragmentBehavior
     // If the anchor accepts keyboard focus, move focus there to aid users relying on keyboard navigation.
     // If anchorNode is not focusable, setFocusedElement() will still clear focus, which matches the behavior of other browsers.
     if (anchorNode)
-        m_frame->document()->setFocusedElement(anchorNode);
+        m_frame->document()->setFocusedElement(anchorNode, FocusParams(SelectionBehaviorOnFocus::None, WebFocusTypeNone, nullptr));
 
     return true;
 }

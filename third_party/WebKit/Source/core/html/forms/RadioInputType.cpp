@@ -118,7 +118,7 @@ void RadioInputType::handleKeydownEvent(KeyboardEvent* event)
     }
     if (inputElement) {
         RefPtrWillBeRawPtr<HTMLInputElement> protector(inputElement);
-        document.setFocusedElement(inputElement);
+        document.setFocusedElement(inputElement, FocusParams(SelectionBehaviorOnFocus::None, WebFocusTypeNone, nullptr));
         inputElement->dispatchSimulatedClick(event, SendNoEvents);
         event->setDefaultHandled();
         return;

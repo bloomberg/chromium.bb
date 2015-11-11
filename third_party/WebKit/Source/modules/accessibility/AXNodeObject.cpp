@@ -2385,7 +2385,7 @@ void AXNodeObject::setFocused(bool on)
 
     Document* document = this->document();
     if (!on) {
-        document->setFocusedElement(nullptr);
+        document->clearFocusedElement();
     } else {
         Node* node = this->node();
         if (node && node->isElementNode()) {
@@ -2393,11 +2393,11 @@ void AXNodeObject::setFocused(bool on)
             // That is a problem when focus is removed from the webpage to chrome, and then returns.
             // In these cases, we need to do what keyboard and mouse focus do, which is reset focus first.
             if (document->focusedElement() == node)
-                document->setFocusedElement(nullptr);
+                document->clearFocusedElement();
 
             toElement(node)->focus();
         } else {
-            document->setFocusedElement(nullptr);
+            document->clearFocusedElement();
         }
     }
 }

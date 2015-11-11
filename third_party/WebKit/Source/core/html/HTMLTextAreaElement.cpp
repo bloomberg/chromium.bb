@@ -250,6 +250,11 @@ void HTMLTextAreaElement::updateFocusAppearance(SelectionBehaviorOnFocus selecti
     case SelectionBehaviorOnFocus::Restore:
         restoreCachedSelection();
         break;
+    case SelectionBehaviorOnFocus::None:
+        // |None| is used only for FocusController::setFocusedElement and
+        // Document::setFocusedElement, and they don't call
+        // updateFocusAppearance().
+        ASSERT_NOT_REACHED();
     }
     if (document().frame())
         document().frame()->selection().revealSelection();

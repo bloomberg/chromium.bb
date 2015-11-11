@@ -1876,7 +1876,7 @@ void WebLocalFrameImpl::setFindEndstateFocusAndSelection()
                 // Found a focusable parent node. Set the active match as the
                 // selection and focus to the focusable node.
                 frame()->selection().setSelection(VisibleSelection(EphemeralRange(activeMatch)));
-                frame()->document()->setFocusedElement(element);
+                frame()->document()->setFocusedElement(element, FocusParams(SelectionBehaviorOnFocus::None, WebFocusTypeNone, nullptr));
                 return;
             }
         }
@@ -1890,7 +1890,7 @@ void WebLocalFrameImpl::setFindEndstateFocusAndSelection()
                 continue;
             Element* element = toElement(node);
             if (element->isFocusable()) {
-                frame()->document()->setFocusedElement(element);
+                frame()->document()->setFocusedElement(element, FocusParams(SelectionBehaviorOnFocus::None, WebFocusTypeNone, nullptr));
                 return;
             }
         }
@@ -1901,7 +1901,7 @@ void WebLocalFrameImpl::setFindEndstateFocusAndSelection()
         // we have nothing focused (otherwise you might have text selected but
         // a link focused, which is weird).
         frame()->selection().setSelection(VisibleSelection(EphemeralRange(activeMatch)));
-        frame()->document()->setFocusedElement(nullptr);
+        frame()->document()->clearFocusedElement();
 
         // Finally clear the active match, for two reasons:
         // We just finished the find 'session' and we don't want future (potentially

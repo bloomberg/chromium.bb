@@ -2818,7 +2818,7 @@ void WebViewImpl::setInitialFocus(bool reverse)
     Frame* frame = page()->focusController().focusedOrMainFrame();
     if (frame->isLocalFrame()) {
         if (Document* document = toLocalFrame(frame)->document())
-            document->setFocusedElement(nullptr);
+            document->clearFocusedElement();
     }
     page()->focusController().setInitialFocus(reverse ? WebFocusTypeBackward : WebFocusTypeForward);
 }
@@ -2836,10 +2836,7 @@ void WebViewImpl::clearFocusedElement()
         return;
 
     RefPtrWillBeRawPtr<Element> oldFocusedElement = document->focusedElement();
-
-    // Clear the focused node.
-    document->setFocusedElement(nullptr);
-
+    document->clearFocusedElement();
     if (!oldFocusedElement)
         return;
 

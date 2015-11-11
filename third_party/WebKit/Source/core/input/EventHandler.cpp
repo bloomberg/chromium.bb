@@ -1807,14 +1807,14 @@ bool EventHandler::handleMouseFocus(const MouseEventWithHitTestResults& targeted
         if (element) {
             if (slideFocusOnShadowHostIfNecessary(*element))
                 return true;
-            if (!page->focusController().setFocusedElement(element, m_frame, WebFocusTypeMouse, sourceCapabilities))
+            if (!page->focusController().setFocusedElement(element, m_frame, FocusParams(SelectionBehaviorOnFocus::None, WebFocusTypeMouse, sourceCapabilities)))
                 return true;
         } else {
             // We call setFocusedElement even with !element in order to blur
             // current focus element when a link is clicked; this is expected by
             // some sites that rely on onChange handlers running from form
             // fields before the button click is processed.
-            if (!page->focusController().setFocusedElement(0, m_frame, WebFocusTypeNone, sourceCapabilities))
+            if (!page->focusController().setFocusedElement(nullptr, m_frame, FocusParams(SelectionBehaviorOnFocus::None, WebFocusTypeNone, sourceCapabilities)))
                 return true;
         }
     }

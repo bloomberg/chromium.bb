@@ -3401,7 +3401,7 @@ void Document::removeFocusedElementOfSubtree(Node* node, bool amongChildrenOnly)
         return;
     bool contains = node->containsIncludingShadowDOM(m_focusedElement.get());
     if (contains && (m_focusedElement != node || !amongChildrenOnly))
-        setFocusedElement(nullptr);
+        clearFocusedElement();
 }
 
 void Document::hoveredNodeDetached(Element& element)
@@ -3453,7 +3453,7 @@ void Document::setAnnotatedRegions(const Vector<AnnotatedRegionValue>& regions)
     setAnnotatedRegionsDirty(false);
 }
 
-bool Document::setFocusedElement(PassRefPtrWillBeRawPtr<Element> prpNewFocusedElement, WebFocusType type, InputDeviceCapabilities* sourceCapabilities)
+bool Document::setFocusedElement(PassRefPtrWillBeRawPtr<Element> prpNewFocusedElement, const FocusParams& params)
 {
     ASSERT(!m_lifecycle.inDetach());
 
@@ -3485,7 +3485,7 @@ bool Document::setFocusedElement(PassRefPtrWillBeRawPtr<Element> prpNewFocusedEl
         // Dispatch the blur event and let the node do any other blur related activities (important for text fields)
         // If page lost focus, blur event will have already been dispatched
         if (page() && (page()->focusController().isFocused())) {
-            oldFocusedElement->dispatchBlurEvent(newFocusedElement.get(), type, sourceCapabilities);
+            oldFocusedElement->dispatchBlurEvent(newFocusedElement.get(), params.type, params.sourceCapabilities);
 
             if (m_focusedElement) {
                 // handler shifted focus
@@ -3493,10 +3493,10 @@ bool Document::setFocusedElement(PassRefPtrWillBeRawPtr<Element> prpNewFocusedEl
                 newFocusedElement = nullptr;
             }
 
-            oldFocusedElement->dispatchFocusOutEvent(EventTypeNames::focusout, newFocusedElement.get(), sourceCapabilities); // DOM level 3 name for the bubbling blur event.
+            oldFocusedElement->dispatchFocusOutEvent(EventTypeNames::focusout, newFocusedElement.get(), params.sourceCapabilities); // DOM level 3 name for the bubbling blur event.
             // FIXME: We should remove firing DOMFocusOutEvent event when we are sure no content depends
             // on it, probably when <rdar://problem/8503958> is resolved.
-            oldFocusedElement->dispatchFocusOutEvent(EventTypeNames::DOMFocusOut, newFocusedElement.get(), sourceCapabilities); // DOM level 2 name for compatibility.
+            oldFocusedElement->dispatchFocusOutEvent(EventTypeNames::DOMFocusOut, newFocusedElement.get(), params.sourceCapabilities); // DOM level 2 name for compatibility.
 
             if (m_focusedElement) {
                 // handler shifted focus
@@ -3510,9 +3510,9 @@ bool Document::setFocusedElement(PassRefPtrWillBeRawPtr<Element> prpNewFocusedEl
         if (view()) {
             Widget* oldWidget = widgetForElement(*oldFocusedElement);
             if (oldWidget)
-                oldWidget->setFocus(false, type);
+                oldWidget->setFocus(false, params.type);
             else
-                view()->setFocus(false, type);
+                view()->setFocus(false, params.type);
         }
     }
 
@@ -3530,7 +3530,7 @@ bool Document::setFocusedElement(PassRefPtrWillBeRawPtr<Element> prpNewFocusedEl
         // Dispatch the focus event and let the node do any other focus related activities (important for text fields)
         // If page lost focus, event will be dispatched on page focus, don't duplicate
         if (page() && (page()->focusController().isFocused())) {
-            m_focusedElement->dispatchFocusEvent(oldFocusedElement.get(), type, sourceCapabilities);
+            m_focusedElement->dispatchFocusEvent(oldFocusedElement.get(), params.type, params.sourceCapabilities);
 
 
             if (m_focusedElement != newFocusedElement) {
@@ -3538,7 +3538,7 @@ bool Document::setFocusedElement(PassRefPtrWillBeRawPtr<Element> prpNewFocusedEl
                 focusChangeBlocked = true;
                 goto SetFocusedElementDone;
             }
-            m_focusedElement->dispatchFocusInEvent(EventTypeNames::focusin, oldFocusedElement.get(), type, sourceCapabilities); // DOM level 3 bubbling focus event.
+            m_focusedElement->dispatchFocusInEvent(EventTypeNames::focusin, oldFocusedElement.get(), params.type, params.sourceCapabilities); // DOM level 3 bubbling focus event.
 
             if (m_focusedElement != newFocusedElement) {
                 // handler shifted focus
@@ -3548,7 +3548,7 @@ bool Document::setFocusedElement(PassRefPtrWillBeRawPtr<Element> prpNewFocusedEl
 
             // FIXME: We should remove firing DOMFocusInEvent event when we are sure no content depends
             // on it, probably when <rdar://problem/8503958> is m.
-            m_focusedElement->dispatchFocusInEvent(EventTypeNames::DOMFocusIn, oldFocusedElement.get(), type, sourceCapabilities); // DOM level 2 for compatibility.
+            m_focusedElement->dispatchFocusInEvent(EventTypeNames::DOMFocusIn, oldFocusedElement.get(), params.type, params.sourceCapabilities); // DOM level 2 for compatibility.
 
             if (m_focusedElement != newFocusedElement) {
                 // handler shifted focus
@@ -3573,9 +3573,9 @@ bool Document::setFocusedElement(PassRefPtrWillBeRawPtr<Element> prpNewFocusedEl
                 focusWidget = widgetForElement(*m_focusedElement);
             }
             if (focusWidget)
-                focusWidget->setFocus(true, type);
+                focusWidget->setFocus(true, params.type);
             else
-                view()->setFocus(true, type);
+                view()->setFocus(true, params.type);
         }
     }
 
@@ -3593,6 +3593,11 @@ SetFocusedElementDone:
     if (LocalFrame* frame = this->frame())
         frame->selection().didChangeFocus();
     return !focusChangeBlocked;
+}
+
+void Document::clearFocusedElement()
+{
+    setFocusedElement(nullptr, FocusParams(SelectionBehaviorOnFocus::None, WebFocusTypeNone, nullptr));
 }
 
 void Document::setCSSTarget(Element* newTarget)

@@ -170,6 +170,7 @@ class VisitedLinkState;
 class WebGLRenderingContext;
 enum class SelectionBehaviorOnFocus;
 struct AnnotatedRegionValue;
+struct FocusParams;
 struct IconURL;
 
 using MouseEventWithHitTestResults = EventWithHitTestResults<PlatformMouseEvent>;
@@ -583,7 +584,8 @@ public:
     String selectedStylesheetSet() const;
     void setSelectedStylesheetSet(const String&);
 
-    bool setFocusedElement(PassRefPtrWillBeRawPtr<Element>, WebFocusType = WebFocusTypeNone, InputDeviceCapabilities* sourceCapabilities = nullptr);
+    bool setFocusedElement(PassRefPtrWillBeRawPtr<Element>, const FocusParams&);
+    void clearFocusedElement();
     Element* focusedElement() const { return m_focusedElement.get(); }
     UserActionElementSet& userActionElements()  { return m_userActionElements; }
     const UserActionElementSet& userActionElements() const { return m_userActionElements; }

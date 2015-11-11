@@ -76,7 +76,7 @@ static void setFocusForModalDialog(HTMLDialogElement* dialog)
         return;
     }
 
-    dialog->document().setFocusedElement(nullptr);
+    dialog->document().clearFocusedElement();
 }
 
 static void inertSubtreesChanged(Document& document)

@@ -928,7 +928,7 @@ void WebPluginContainerImpl::focusPlugin()
     if (Page* currentPage = containingFrame.page())
         currentPage->focusController().setFocusedElement(m_element, &containingFrame);
     else
-        containingFrame.document()->setFocusedElement(m_element);
+        containingFrame.document()->setFocusedElement(m_element, FocusParams(SelectionBehaviorOnFocus::None, WebFocusTypeNone, nullptr));
 }
 
 void WebPluginContainerImpl::issuePaintInvalidations()

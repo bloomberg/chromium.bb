@@ -90,6 +90,7 @@ enum class ShadowRootType;
 enum class SelectionBehaviorOnFocus {
     Reset,
     Restore,
+    None,
 };
 
 struct FocusParams {

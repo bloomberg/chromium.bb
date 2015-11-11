@@ -169,7 +169,7 @@ bool TextFinder::find(int identifier, const WebString& searchText, const WebFind
     mainFrameImpl->ensureTextFinder().m_currentActiveMatchFrame = &ownerFrame();
 
     // Make sure no node is focused. See http://crbug.com/38700.
-    ownerFrame().frame()->document()->setFocusedElement(nullptr);
+    ownerFrame().frame()->document()->clearFocusedElement();
 
     if (!options.findNext || activeSelection) {
         // This is either a Find operation or a Find-next from a new start point
@@ -630,7 +630,7 @@ int TextFinder::selectFindMatch(unsigned index, WebRect* selectionRect)
         ownerFrame().frame()->selection().clear();
 
         // Make sure no node is focused. See http://crbug.com/38700.
-        ownerFrame().frame()->document()->setFocusedElement(nullptr);
+        ownerFrame().frame()->document()->clearFocusedElement();
     }
 
     IntRect activeMatchRect;
