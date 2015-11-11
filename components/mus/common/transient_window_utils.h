@@ -92,8 +92,16 @@ bool AdjustStackingForTransientWindows(T** child,
 }
 
 // Stacks transient descendants of |window| that are its siblings just above it.
+// |GetStackingTarget| is a function that returns a marker associated with a
+// Window that indicates the current Window being stacked.
+// |Reorder| is a function that takes in two windows and orders the first
+// relative to the second based on the provided OrderDirection.
 template <class T>
-void RestackTransientDescendants(T* window, T** (*GetStackingTarget)(T*)) {
+void RestackTransientDescendants(T* window,
+                                 T** (*GetStackingTarget)(T*),
+                                 void (*Reorder)(T*,
+                                                 T*,
+                                                 mojom::OrderDirection)) {
   T* parent = window->parent();
   if (!parent)
     return;
@@ -106,7 +114,7 @@ void RestackTransientDescendants(T* window, T** (*GetStackingTarget)(T*)) {
     if ((*it) != window && HasTransientAncestor(*it, window)) {
       T* old_stacking_target = *GetStackingTarget(*it);
       *GetStackingTarget(*it) = window;
-      (*it)->Reorder(window, mojom::ORDER_DIRECTION_ABOVE);
+      Reorder(*it, window, mojom::ORDER_DIRECTION_ABOVE);
       *GetStackingTarget(*it) = old_stacking_target;
     }
   }

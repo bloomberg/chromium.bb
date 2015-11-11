@@ -95,7 +95,8 @@ void ServerWindow::Add(ServerWindow* child) {
 
   // Stack the child properly if it is a transient child of a sibling.
   if (child->transient_parent_ && child->transient_parent_->parent() == this)
-    RestackTransientDescendants(child->transient_parent_, &GetStackingTarget);
+    RestackTransientDescendants(child->transient_parent_, &GetStackingTarget,
+                                &ReorderImpl);
 
   FOR_EACH_OBSERVER(ServerWindowObserver, child->observers_,
                     OnWindowHierarchyChanged(child, this, old_parent));
@@ -113,7 +114,8 @@ void ServerWindow::Remove(ServerWindow* child) {
 
   // Stack the child properly if it is a transient child of a sibling.
   if (child->transient_parent_ && child->transient_parent_->parent() == this)
-    RestackTransientDescendants(child->transient_parent_, &GetStackingTarget);
+    RestackTransientDescendants(child->transient_parent_, &GetStackingTarget,
+                                &ReorderImpl);
 
   FOR_EACH_OBSERVER(ServerWindowObserver, child->observers_,
                     OnWindowHierarchyChanged(child, nullptr, this));
@@ -121,30 +123,7 @@ void ServerWindow::Remove(ServerWindow* child) {
 
 void ServerWindow::Reorder(ServerWindow* relative,
                            mojom::OrderDirection direction) {
-  ServerWindow* window = this;
-  DCHECK(relative);
-  DCHECK_NE(window, relative);
-  DCHECK_EQ(window->parent(), relative->parent());
-
-  if (!AdjustStackingForTransientWindows(&window, &relative, &direction,
-                                         stacking_target_))
-    return;
-
-  window->parent_->children_.erase(std::find(window->parent_->children_.begin(),
-                                             window->parent_->children_.end(),
-                                             window));
-  Windows::iterator i = std::find(window->parent_->children_.begin(),
-                                  window->parent_->children_.end(), relative);
-  if (direction == mojom::ORDER_DIRECTION_ABOVE) {
-    DCHECK(i != window->parent_->children_.end());
-    window->parent_->children_.insert(++i, window);
-  } else if (direction == mojom::ORDER_DIRECTION_BELOW) {
-    DCHECK(i != window->parent_->children_.end());
-    window->parent_->children_.insert(i, window);
-  }
-  FOR_EACH_OBSERVER(ServerWindowObserver, observers_,
-                    OnWindowReordered(this, relative, direction));
-  window->OnStackingChanged();
+  ReorderImpl(this, relative, direction);
 }
 
 void ServerWindow::StackChildAtBottom(ServerWindow* child) {
@@ -225,7 +204,7 @@ void ServerWindow::AddTransientWindow(ServerWindow* child) {
   // Restack |child| properly above its transient parent, if they share the same
   // parent.
   if (child->parent() == parent())
-    RestackTransientDescendants(this, &GetStackingTarget);
+    RestackTransientDescendants(this, &GetStackingTarget, &ReorderImpl);
 
   FOR_EACH_OBSERVER(ServerWindowObserver, observers_,
                     OnTransientWindowAdded(this, child));
@@ -243,7 +222,7 @@ void ServerWindow::RemoveTransientWindow(ServerWindow* child) {
   // should be restacked properly so it is not among transient children of its
   // former parent, anymore.
   if (parent() == child->parent())
-    RestackTransientDescendants(this, &GetStackingTarget);
+    RestackTransientDescendants(this, &GetStackingTarget, &ReorderImpl);
 
   FOR_EACH_OBSERVER(ServerWindowObserver, observers_,
                     OnTransientWindowRemoved(this, child));
@@ -367,7 +346,36 @@ void ServerWindow::OnStackingChanged() {
       return;
     }
   }
-  RestackTransientDescendants(this, &GetStackingTarget);
+  RestackTransientDescendants(this, &GetStackingTarget, &ReorderImpl);
+}
+
+// static
+void ServerWindow::ReorderImpl(ServerWindow* window,
+                               ServerWindow* relative,
+                               mojom::OrderDirection direction) {
+  DCHECK(relative);
+  DCHECK_NE(window, relative);
+  DCHECK_EQ(window->parent(), relative->parent());
+
+  if (!AdjustStackingForTransientWindows(&window, &relative, &direction,
+                                         window->stacking_target_))
+    return;
+
+  window->parent_->children_.erase(std::find(window->parent_->children_.begin(),
+                                             window->parent_->children_.end(),
+                                             window));
+  Windows::iterator i = std::find(window->parent_->children_.begin(),
+                                  window->parent_->children_.end(), relative);
+  if (direction == mojom::ORDER_DIRECTION_ABOVE) {
+    DCHECK(i != window->parent_->children_.end());
+    window->parent_->children_.insert(++i, window);
+  } else if (direction == mojom::ORDER_DIRECTION_BELOW) {
+    DCHECK(i != window->parent_->children_.end());
+    window->parent_->children_.insert(i, window);
+  }
+  FOR_EACH_OBSERVER(ServerWindowObserver, window->observers_,
+                    OnWindowReordered(window, relative, direction));
+  window->OnStackingChanged();
 }
 
 // static

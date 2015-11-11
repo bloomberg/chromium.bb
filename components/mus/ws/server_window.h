@@ -57,7 +57,7 @@ class ServerWindow {
 
   void Add(ServerWindow* child);
   void Remove(ServerWindow* child);
-  void Reorder(ServerWindow* releative, mojom::OrderDirection diretion);
+  void Reorder(ServerWindow* relative, mojom::OrderDirection diretion);
   void StackChildAtBottom(ServerWindow* child);
   void StackChildAtTop(ServerWindow* child);
 
@@ -141,6 +141,10 @@ class ServerWindow {
 
   // Called when this window's stacking order among its siblings is changed.
   void OnStackingChanged();
+
+  static void ReorderImpl(ServerWindow* window,
+                          ServerWindow* relative,
+                          mojom::OrderDirection diretion);
 
   // Returns a pointer to the stacking target that can be used by
   // RestackTransientDescendants.
