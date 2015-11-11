@@ -87,6 +87,11 @@ void SetCurrentTabIsPDF(bool value);
 // enum (values decimal from 0 to 7).
 void SetCurrentOrientation(int statusBarOrientation, int deviceOrientation);
 
+// Sets a key in browser_state dictionary to store the device horizontal size
+// class. The values are from the UIKit UIUserInterfaceSizeClass enum (decimal
+// values from 0 to 2).
+void SetCurrentHorizontalSizeClass(int horizontalSizeClass);
+
 // Sets a key in browser to store the playback state of media player (audio or
 // video). This function records a new start. This function is called for each
 // stream in the media (once or twice for audio, two or three times for video).
