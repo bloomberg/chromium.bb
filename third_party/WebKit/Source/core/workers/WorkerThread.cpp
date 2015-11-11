@@ -291,6 +291,8 @@ void WorkerThread::initialize(PassOwnPtr<WorkerThreadStartupData> startupData)
         if (RuntimeEnabledFeatures::v8IdleTasksEnabled()) {
             V8PerIsolateData::enableIdleTasks(m_isolate, adoptPtr(new V8IdleTaskRunner(m_webScheduler)));
         }
+        // Optimize for memory usage instead of latency for the worker isolate.
+        m_isolate->IsolateInBackgroundNotification();
         m_workerGlobalScope = createWorkerGlobalScope(startupData);
         m_workerGlobalScope->scriptLoaded(sourceCode.length(), cachedMetaData.get() ? cachedMetaData->size() : 0);
 
