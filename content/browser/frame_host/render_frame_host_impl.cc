@@ -443,6 +443,21 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
     }
   }
 
+  // This message map is for handling internal IPC messages which should not
+  // be dispatched to other objects.
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP(RenderFrameHostImpl, msg)
+    // This message is synthetic and doesn't come from RenderFrame, but from
+    // RenderProcessHost.
+    IPC_MESSAGE_HANDLER(FrameHostMsg_RenderProcessGone, OnRenderProcessGone)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+
+  // Internal IPCs should not be leaked outside of this object, so return
+  // early.
+  if (handled)
+    return true;
+
   if (delegate_->OnMessageReceived(this, msg))
     return true;
 
@@ -452,7 +467,7 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
       proxy->cross_process_frame_connector()->OnMessageReceived(msg))
     return true;
 
-  bool handled = true;
+  handled = true;
   IPC_BEGIN_MESSAGE_MAP(RenderFrameHostImpl, msg)
     IPC_MESSAGE_HANDLER(FrameHostMsg_AddMessageToConsole, OnAddMessageToConsole)
     IPC_MESSAGE_HANDLER(FrameHostMsg_Detach, OnDetach)
@@ -505,9 +520,6 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(AccessibilityHostMsg_SnapshotResponse,
                         OnAccessibilitySnapshotResponse)
     IPC_MESSAGE_HANDLER(FrameHostMsg_ToggleFullscreen, OnToggleFullscreen)
-    // The following message is synthetic and doesn't come from RenderFrame, but
-    // from RenderProcessHost.
-    IPC_MESSAGE_HANDLER(FrameHostMsg_RenderProcessGone, OnRenderProcessGone)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidStartLoading, OnDidStartLoading)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidStopLoading, OnDidStopLoading)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidChangeLoadProgress,

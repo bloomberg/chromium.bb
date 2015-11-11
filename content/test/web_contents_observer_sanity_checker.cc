@@ -255,12 +255,9 @@ void WebContentsObserverSanityChecker::DidOpenRequestedURL(
 bool WebContentsObserverSanityChecker::OnMessageReceived(
     const IPC::Message& message,
     RenderFrameHost* render_frame_host) {
-  // TODO(nasko): FrameHostMsg_RenderProcessGone is delivered to
-  // WebContentsObserver since RenderFrameHost allows the delegate to handle
-  // the message first. This shouldn't happen, but for now handle it here.
-  // https://crbug.com/450799
-  if (message.type() == FrameHostMsg_RenderProcessGone::ID)
-    return false;
+  // FrameHostMsg_RenderProcessGone is special internal IPC message that
+  // should not be leaking outside of RenderFrameHost.
+  CHECK(message.type() != FrameHostMsg_RenderProcessGone::ID);
 
 #if !defined(OS_MACOSX)
 // TODO(avi): Disabled because of http://crbug.com/445054
