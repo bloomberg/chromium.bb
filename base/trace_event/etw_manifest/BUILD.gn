@@ -2,47 +2,19 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/win/message_compiler.gni")
+
 assert(is_win, "This only runs on Windows.")
 
-# Makes the .h/.rc files from the .man file.
-action("chrome_events_win_generate") {
-  visibility = [ ":*" ]
-  script = "build/message_compiler.py"
-
-  sources = [
-    "chrome_events_win.man",
-  ]
-
-  outputs = [
-    "$target_gen_dir/chrome_events_win.h",
-    "$target_gen_dir/chrome_events_win.rc",
-  ]
-
-  args = [
-    # Where to put the header.
-    "-h",
-    rebase_path("$target_gen_dir", root_build_dir),
-
-    # Where to put the .rc file.
-    "-r",
-    rebase_path("$target_gen_dir", root_build_dir),
-
-    # Generate the user-mode code.
-    "-um",
-    rebase_path("chrome_events_win.man", root_build_dir),
-  ]
-}
-
-# Compile the generated files.
-source_set("chrome_events_win") {
+message_compiler("chrome_events_win") {
   visibility = [
     "//base/trace_event/*",
     "//chrome:main_dll",
   ]
 
-  sources = get_target_outputs(":chrome_events_win_generate")
-
-  deps = [
-    ":chrome_events_win_generate",
+  sources = [
+    "chrome_events_win.man",
   ]
+
+  user_mode_logging = true
 }
