@@ -16,7 +16,9 @@
       playing: {
         type: Boolean,
         value: false,
-        notify: true
+        notify: true,
+        reflectToAttribute: true,
+        observer: 'playingChanged_'
       },
 
       /**
@@ -88,6 +90,14 @@
         type: Boolean,
         value: false,
         notify: true
+      },
+
+      /**
+       * Dictionary which contains aria-labels for each controls.
+       */
+      ariaLabels: {
+        type: Object,
+        observer: 'ariaLabelsChanged_'
       }
     },
 
@@ -147,19 +157,35 @@
     },
 
     /**
-     * Computes state for play button based on 'playing' property.
-     * @return {string}
+     * Invoked when the playing property is changed.
+     * @param {boolean} playing
+     * @private
      */
-    computePlayState_: function(playing) {
-      return playing ? "playing" : "ended";
+    playingChanged_: function(playing) {
+      if (this.ariaLabels) {
+        this.$.play.setAttribute('aria-label',
+            playing ? this.ariaLabels.pause : this.ariaLabels.play);
+      }
     },
 
     /**
-     * Computes style for '.filled' element of progress bar.
-     * @return {string}
+     * Invoked when the ariaLabels property is changed.
+     * @param {Object} ariaLabels
+     * @private
      */
-    computeProgressBarStyle_: function(time, duration) {
-      return 'width: ' + (time / duration * 100) + '%;';
+    ariaLabelsChanged_: function(ariaLabels) {
+      assert(ariaLabels);
+      // TODO(fukino): Use data bindings.
+      this.$.volumeSlider.setAttribute('aria-label', ariaLabels.volumeSlider);
+      this.$.shuffle.setAttribute('aria-label', ariaLabels.shuffle);
+      this.$.repeat.setAttribute('aria-label', ariaLabels.repeat);
+      this.$.previous.setAttribute('aria-label', ariaLabels.previous);
+      this.$.play.setAttribute('aria-label',
+          this.playing ? ariaLabels.pause : ariaLabels.play);
+      this.$.next.setAttribute('aria-label', ariaLabels.next);
+      this.$.volume.setAttribute('aria-label', ariaLabels.volume);
+      this.$.playList.setAttribute('aria-label', ariaLabels.playList);
+      this.$.timeSlider.setAttribute('aria-label', ariaLabels.seekSlider);
     }
   });
 })();  // Anonymous closure

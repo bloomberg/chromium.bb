@@ -98,6 +98,10 @@ Polymer({
       type: Number,
       value: 0,
       reflectToAttribute: true
+    },
+
+    ariaLabels: {
+      type: Object
     }
   },
 

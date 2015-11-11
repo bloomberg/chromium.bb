@@ -13,14 +13,6 @@
   width: 32px;
 }
 
-.media-button:hover {
-  background-color: rgba(153, 153, 153, 0.2);
-}
-
-.media-button:active {
-  background-color: rgba(153, 153, 153, 0.4);
-}
-
 .media-button.disabled {
   background-color: transparent;
   opacity: 0.26;
@@ -142,6 +134,15 @@ paper-slider.volume {
     url(../images/media/media_chromecast.png) 1x,
     url(../images/media/2x/media_chromecast.png) 2x);
   display: none;
+  border-radius: 2px;
+}
+
+/* Reset browser's button style. */
+.media-button.cast {
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  outline: none;
 }
 
 #video-player[cast-available][castable] .media-button.cast {
@@ -154,6 +155,10 @@ paper-slider.volume {
     url(../images/media/2x/media_chromecast_casting.png) 2x);
 }
 
+.media-button.cast:focus:not(.using-mouse) {
+  box-shadow: 0 0 0 1px rgba(66, 133, 244, 0.5);
+}
+
 /* Fullscreen button. */
 /* There is no final decision whether we need a separate icon when toggled. */
 
@@ -163,7 +168,7 @@ paper-slider.volume {
     url(../images/media/2x/media_fullscreen.png) 2x);
 }
 
-#video-player[fullscreen] .media-button.fullscreen {
+#controls[fullscreen] .media-button.fullscreen {
   background-image: -webkit-image-set(
     url(../images/media/media_fullscreen_exit.png) 1x,
     url(../images/media/2x/media_fullscreen_exit.png) 2x);
