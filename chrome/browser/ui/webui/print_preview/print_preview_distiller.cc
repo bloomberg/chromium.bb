@@ -6,8 +6,6 @@
 
 #include <string>
 
-#include "base/command_line.h"
-#include "base/feature_list.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/dom_distiller/tab_utils.h"
@@ -15,7 +13,6 @@
 #include "chrome/browser/printing/print_preview_message_handler.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/web_contents_sizer.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/prerender_messages.h"
 #include "components/dom_distiller/content/browser/distiller_javascript_utils.h"
 #include "components/printing/common/print_messages.h"
@@ -206,14 +203,6 @@ class PrintPreviewDistiller::WebContentsDelegateImpl
   // The callback called when the preview failed.
   base::Closure on_failed_callback_;
 };
-
-const base::Feature PrintPreviewDistiller::kFeature = {
-    "PrintPreviewDistiller", base::FEATURE_ENABLED_BY_DEFAULT,
-};
-
-bool PrintPreviewDistiller::IsEnabled() {
-  return base::FeatureList::IsEnabled(kFeature);
-}
 
 PrintPreviewDistiller::PrintPreviewDistiller(
     WebContents* source_web_contents,
