@@ -39,16 +39,12 @@ class CONTENT_EXPORT SandboxedProcessLauncherDelegate {
   // (i.e. through base::LaunchProcess directly).
   virtual bool ShouldSandbox();
 
-  // Called before the default sandbox is applied. If the default policy is too
-  // restrictive, the caller should set |disable_default_policy| to true and
-  // apply their policy in PreSpawnTarget. |exposed_dir| is used to allow a
-  //directory through the sandbox.
-  virtual void PreSandbox(bool* disable_default_policy,
-                          base::FilePath* exposed_dir) {}
+  // Whether to disable the default policy specified in
+  // AddPolicyForSandboxedProcess.
+  virtual bool DisableDefaultPolicy();
 
-  // Called right before spawning the process.
-  virtual void PreSpawnTarget(sandbox::TargetPolicy* policy,
-                              bool* success) {}
+  // Called right before spawning the process. Returns false on failure.
+  virtual bool PreSpawnTarget(sandbox::TargetPolicy* policy);
 
   // Called right after the process is launched, but before its thread is run.
   virtual void PostSpawnTarget(base::ProcessHandle process) {}

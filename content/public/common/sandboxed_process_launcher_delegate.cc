@@ -15,6 +15,15 @@ bool SandboxedProcessLauncherDelegate::ShouldSandbox() {
   return true;
 }
 
+bool SandboxedProcessLauncherDelegate::DisableDefaultPolicy() {
+  return false;
+}
+
+bool SandboxedProcessLauncherDelegate::PreSpawnTarget(
+    sandbox::TargetPolicy* policy) {
+  return true;
+}
+
 #elif(OS_POSIX)
 bool SandboxedProcessLauncherDelegate::ShouldUseZygote() {
   return false;

@@ -26,7 +26,8 @@
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
 #include "ipc/ipc_switches.h"
 #include "printing/emf_win.h"
-#include "sandbox/win/src/sandbox_policy_base.h"
+#include "sandbox/win/src/sandbox_policy.h"
+#include "sandbox/win/src/sandbox_types.h"
 #include "ui/base/ui_base_switches.h"
 
 namespace {
@@ -61,10 +62,10 @@ class ServiceSandboxedProcessLauncherDelegate
  public:
   ServiceSandboxedProcessLauncherDelegate() {}
 
-  void PreSpawnTarget(sandbox::TargetPolicy* policy, bool* success) override {
+  bool PreSpawnTarget(sandbox::TargetPolicy* policy) override {
     // Service process may run as windows service and it fails to create a
     // window station.
-    policy->SetAlternateDesktop(false);
+    return policy->SetAlternateDesktop(false) == sandbox::SBOX_ALL_OK;
   }
 
  private:

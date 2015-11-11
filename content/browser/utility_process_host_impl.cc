@@ -8,6 +8,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
+#include "base/files/file_path.h"
 #include "base/lazy_instance.h"
 #include "base/message_loop/message_loop.h"
 #include "base/process/process_handle.h"
@@ -31,6 +32,11 @@
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
 #include "ipc/ipc_switches.h"
 #include "ui/base/ui_base_switches.h"
+
+#if defined(OS_WIN)
+#include "sandbox/win/src/sandbox_policy.h"
+#include "sandbox/win/src/sandbox_types.h"
+#endif
 
 namespace content {
 
@@ -57,10 +63,25 @@ class UtilitySandboxedProcessLauncherDelegate
 
 #if defined(OS_WIN)
   bool ShouldLaunchElevated() override { return launch_elevated_; }
-  void PreSandbox(bool* disable_default_policy,
-                  base::FilePath* exposed_dir) override {
-    *exposed_dir = exposed_dir_;
+
+  bool PreSpawnTarget(sandbox::TargetPolicy* policy) override {
+    if (exposed_dir_.empty())
+      return true;
+
+    sandbox::ResultCode result;
+    result = policy->AddRule(sandbox::TargetPolicy::SUBSYS_FILES,
+                             sandbox::TargetPolicy::FILES_ALLOW_ANY,
+                             exposed_dir_.value().c_str());
+    if (result != sandbox::SBOX_ALL_OK)
+      return false;
+
+    base::FilePath exposed_files = exposed_dir_.AppendASCII("*");
+    result = policy->AddRule(sandbox::TargetPolicy::SUBSYS_FILES,
+                             sandbox::TargetPolicy::FILES_ALLOW_ANY,
+                             exposed_files.value().c_str());
+    return result == sandbox::SBOX_ALL_OK;
   }
+
 #elif defined(OS_POSIX)
 
   bool ShouldUseZygote() override {

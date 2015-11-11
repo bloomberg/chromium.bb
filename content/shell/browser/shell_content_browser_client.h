@@ -87,7 +87,7 @@ class ShellContentBrowserClient : public ContentBrowserClient {
       content::FileDescriptorInfo* mappings) override;
 #endif  // defined(OS_ANDROID)
 #if defined(OS_WIN)
-  void PreSpawnRenderer(sandbox::TargetPolicy* policy, bool* success) override;
+  bool PreSpawnRenderer(sandbox::TargetPolicy* policy) override;
 #endif
 
   ShellBrowserContext* browser_context();

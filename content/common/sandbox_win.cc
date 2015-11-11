@@ -661,6 +661,7 @@ bool InitTargetServices(sandbox::TargetServices* target_services) {
 base::Process StartSandboxedProcess(
     SandboxedProcessLauncherDelegate* delegate,
     base::CommandLine* cmd_line) {
+  DCHECK(delegate);
   const base::CommandLine& browser_command_line =
       *base::CommandLine::ForCurrentProcess();
   std::string type_str = cmd_line->GetSwitchValueASCII(switches::kProcessType);
@@ -680,7 +681,7 @@ base::Process StartSandboxedProcess(
   // to create separate pretetch settings for browser, renderer etc.
   cmd_line->AppendArg(base::StringPrintf("/prefetch:%d", base::Hash(type_str)));
 
-  if ((delegate && !delegate->ShouldSandbox()) ||
+  if ((!delegate->ShouldSandbox()) ||
       browser_command_line.HasSwitch(switches::kNoSandbox) ||
       cmd_line->HasSwitch(switches::kNoSandbox)) {
     base::Process process =
@@ -717,13 +718,10 @@ base::Process StartSandboxedProcess(
 
   SetJobLevel(*cmd_line, sandbox::JOB_LOCKDOWN, 0, policy);
 
-  bool disable_default_policy = false;
-  base::FilePath exposed_dir;
-  if (delegate)
-    delegate->PreSandbox(&disable_default_policy, &exposed_dir);
-
-  if (!disable_default_policy && !AddPolicyForSandboxedProcess(policy))
-    return base::Process();
+  if (!delegate->DisableDefaultPolicy()) {
+    if (!AddPolicyForSandboxedProcess(policy))
+      return base::Process();
+  }
 
 #if !defined(NACL_WIN64)
   if (type_str == switches::kRendererProcess ||
@@ -761,22 +759,6 @@ base::Process StartSandboxedProcess(
     cmd_line->AppendSwitchASCII("ignored", " --type=renderer ");
   }
 
-  sandbox::ResultCode result;
-  if (!exposed_dir.empty()) {
-    result = policy->AddRule(sandbox::TargetPolicy::SUBSYS_FILES,
-                             sandbox::TargetPolicy::FILES_ALLOW_ANY,
-                             exposed_dir.value().c_str());
-    if (result != sandbox::SBOX_ALL_OK)
-      return base::Process();
-
-    base::FilePath exposed_files = exposed_dir.AppendASCII("*");
-    result = policy->AddRule(sandbox::TargetPolicy::SUBSYS_FILES,
-                             sandbox::TargetPolicy::FILES_ALLOW_ANY,
-                             exposed_files.value().c_str());
-    if (result != sandbox::SBOX_ALL_OK)
-      return base::Process();
-  }
-
   if (!AddGenericPolicy(policy)) {
     NOTREACHED();
     return base::Process();
@@ -800,17 +782,13 @@ base::Process StartSandboxedProcess(
   policy->SetStderrHandle(GetStdHandle(STD_ERROR_HANDLE));
 #endif
 
-  if (delegate) {
-    bool success = true;
-    delegate->PreSpawnTarget(policy, &success);
-    if (!success)
-      return base::Process();
-  }
+  if (!delegate->PreSpawnTarget(policy))
+    return base::Process();
 
   TRACE_EVENT_BEGIN0("startup", "StartProcessWithAccess::LAUNCHPROCESS");
 
   PROCESS_INFORMATION temp_process_info = {};
-  result = g_broker_services->SpawnTarget(
+  sandbox::ResultCode result = g_broker_services->SpawnTarget(
       cmd_line->GetProgram().value().c_str(),
       cmd_line->GetCommandLineString().c_str(), policy, &temp_process_info);
   DWORD last_error = ::GetLastError();
@@ -833,13 +811,10 @@ base::Process StartSandboxedProcess(
     } else
       DLOG(ERROR) << "Failed to launch process. Error: " << result;
 
-    policy->Release();
     return base::Process();
   }
-  policy->Release();
 
-  if (delegate)
-    delegate->PostSpawnTarget(target.process_handle());
+  delegate->PostSpawnTarget(target.process_handle());
 
   CHECK(ResumeThread(target.thread_handle()) != -1);
   return base::Process(target.TakeProcessHandle());
@@ -855,7 +830,6 @@ bool BrokerDuplicateHandle(HANDLE source_handle,
     return !!::DuplicateHandle(::GetCurrentProcess(), source_handle,
                                ::GetCurrentProcess(), target_handle,
                                desired_access, FALSE, options);
-
   }
 
   // Try the broker next

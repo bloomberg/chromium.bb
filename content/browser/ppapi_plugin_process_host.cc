@@ -59,10 +59,10 @@ class PpapiPluginSandboxedProcessLauncherDelegate
     return !is_broker_;
   }
 
-  void PreSpawnTarget(sandbox::TargetPolicy* policy, bool* success) override {
+  bool PreSpawnTarget(sandbox::TargetPolicy* policy) override {
     if (is_broker_)
-      return;
-    *success = false;
+      return true;
+
     // The Pepper process is as locked-down as a renderer except that it can
     // create the server side of Chrome pipes.
     sandbox::ResultCode result;
@@ -70,12 +70,13 @@ class PpapiPluginSandboxedProcessLauncherDelegate
                              sandbox::TargetPolicy::NAMEDPIPES_ALLOW_ANY,
                              L"\\\\.\\pipe\\chrome.*");
     if (result != sandbox::SBOX_ALL_OK)
-      return;
+      return false;
+
 #if !defined(NACL_WIN64)
     for (const auto& mime_type : info_.mime_types) {
       if (IsWin32kLockdownEnabledForMimeType(mime_type.mime_type)) {
         if (!AddWin32kLockdownPolicy(policy))
-          return;
+          return false;
         break;
       }
     }
@@ -86,7 +87,7 @@ class PpapiPluginSandboxedProcessLauncherDelegate
     if (!sid.empty())
       AddAppContainerPolicy(policy, sid.c_str());
 
-    *success = true;
+    return true;
   }
 
 #elif defined(OS_POSIX)

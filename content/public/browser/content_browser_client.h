@@ -739,8 +739,7 @@ class CONTENT_EXPORT ContentBrowserClient {
   // This is called on the PROCESS_LAUNCHER thread before the renderer process
   // is launched. It gives the embedder a chance to add loosen the sandbox
   // policy.
-  virtual void PreSpawnRenderer(sandbox::TargetPolicy* policy,
-                                bool* success) {}
+  virtual bool PreSpawnRenderer(sandbox::TargetPolicy* policy);
 
   // Returns the AppContainer SID for the specified sandboxed process type, or
   // empty string if this sandboxed process type does not support living inside

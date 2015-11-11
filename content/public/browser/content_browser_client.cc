@@ -392,6 +392,10 @@ const wchar_t* ContentBrowserClient::GetResourceDllName() {
   return nullptr;
 }
 
+bool ContentBrowserClient::PreSpawnRenderer(sandbox::TargetPolicy* policy) {
+  return true;
+}
+
 base::string16 ContentBrowserClient::GetAppContainerSidForSandboxType(
     int sandbox_type) const {
   // Embedders should override this method and return different SIDs for each

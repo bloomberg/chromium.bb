@@ -51,8 +51,7 @@ void NaClBrokerListener::Listen() {
 }
 
 // NOTE: changes to this method need to be reviewed by the security team.
-void NaClBrokerListener::PreSpawnTarget(sandbox::TargetPolicy* policy,
-                                        bool* success) {
+bool NaClBrokerListener::PreSpawnTarget(sandbox::TargetPolicy* policy) {
   // This code is duplicated in chrome_content_browser_client.cc.
 
   // Allow the server side of a pipe restricted to the "chrome.nacl."
@@ -62,7 +61,7 @@ void NaClBrokerListener::PreSpawnTarget(sandbox::TargetPolicy* policy,
       sandbox::TargetPolicy::SUBSYS_NAMED_PIPES,
       sandbox::TargetPolicy::NAMEDPIPES_ALLOW_ANY,
       L"\\\\.\\pipe\\chrome.nacl.*");
-  *success = (result == sandbox::SBOX_ALL_OK);
+  return result == sandbox::SBOX_ALL_OK;
 }
 
 void NaClBrokerListener::OnChannelConnected(int32 peer_pid) {

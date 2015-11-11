@@ -2558,9 +2558,8 @@ base::string16 ChromeContentBrowserClient::GetAppContainerSidForSandboxType(
   return base::string16();
 }
 
-void ChromeContentBrowserClient::PreSpawnRenderer(
-    sandbox::TargetPolicy* policy,
-    bool* success) {
+bool ChromeContentBrowserClient::PreSpawnRenderer(
+    sandbox::TargetPolicy* policy) {
   // This code is duplicated in nacl_exe_win_64.cc.
   // Allow the server side of a pipe restricted to the "chrome.nacl."
   // namespace so that it cannot impersonate other system or other chrome
@@ -2569,20 +2568,15 @@ void ChromeContentBrowserClient::PreSpawnRenderer(
       sandbox::TargetPolicy::SUBSYS_NAMED_PIPES,
       sandbox::TargetPolicy::NAMEDPIPES_ALLOW_ANY,
       L"\\\\.\\pipe\\chrome.nacl.*");
-  if (result != sandbox::SBOX_ALL_OK) {
-    *success = false;
-    return;
-  }
+  if (result != sandbox::SBOX_ALL_OK)
+    return false;
 
   // Renderers need to send named pipe handles and shared memory
   // segment handles to NaCl loader processes.
   result = policy->AddRule(sandbox::TargetPolicy::SUBSYS_HANDLES,
                            sandbox::TargetPolicy::HANDLES_DUP_ANY,
                            L"File");
-  if (result != sandbox::SBOX_ALL_OK) {
-    *success = false;
-    return;
-  }
+  return result == sandbox::SBOX_ALL_OK;
 }
 #endif
 

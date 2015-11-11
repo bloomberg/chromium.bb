@@ -189,16 +189,15 @@ class GpuSandboxedProcessLauncherDelegate
     return sandbox;
   }
 
-  void PreSandbox(bool* disable_default_policy,
-                  base::FilePath* exposed_dir) override {
-    *disable_default_policy = true;
+  bool DisableDefaultPolicy() override {
+    return true;
   }
 
   // For the GPU process we gotten as far as USER_LIMITED. The next level
   // which is USER_RESTRICTED breaks both the DirectX backend and the OpenGL
   // backend. Note that the GPU process is connected to the interactive
   // desktop.
-  void PreSpawnTarget(sandbox::TargetPolicy* policy, bool* success) override {
+  bool PreSpawnTarget(sandbox::TargetPolicy* policy) override {
     if (base::win::GetVersion() > base::win::VERSION_XP) {
       if (cmd_line_->GetSwitchValueASCII(switches::kUseGL) ==
           gfx::kGLImplementationDesktopName) {
@@ -239,10 +238,8 @@ class GpuSandboxedProcessLauncherDelegate
         sandbox::TargetPolicy::SUBSYS_NAMED_PIPES,
         sandbox::TargetPolicy::NAMEDPIPES_ALLOW_ANY,
         L"\\\\.\\pipe\\chrome.gpu.*");
-    if (result != sandbox::SBOX_ALL_OK) {
-      *success = false;
-      return;
-    }
+    if (result != sandbox::SBOX_ALL_OK)
+      return false;
 
     // Block this DLL even if it is not loaded by the browser process.
     policy->AddDllToUnload(L"cmsetac.dll");
@@ -253,10 +250,8 @@ class GpuSandboxedProcessLauncherDelegate
     result = policy->AddRule(sandbox::TargetPolicy::SUBSYS_HANDLES,
                              sandbox::TargetPolicy::HANDLES_DUP_BROKER,
                              L"Section");
-    if (result != sandbox::SBOX_ALL_OK) {
-      *success = false;
-      return;
-    }
+    if (result != sandbox::SBOX_ALL_OK)
+      return false;
 #endif
 
     if (cmd_line_->HasSwitch(switches::kEnableLogging)) {
@@ -265,12 +260,12 @@ class GpuSandboxedProcessLauncherDelegate
         result = policy->AddRule(sandbox::TargetPolicy::SUBSYS_FILES,
                                  sandbox::TargetPolicy::FILES_ALLOW_ANY,
                                  log_file_path.c_str());
-        if (result != sandbox::SBOX_ALL_OK) {
-          *success = false;
-          return;
-        }
+        if (result != sandbox::SBOX_ALL_OK)
+          return false;
       }
     }
+
+    return true;
   }
 #elif defined(OS_POSIX)
 

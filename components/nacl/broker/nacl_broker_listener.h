@@ -27,7 +27,7 @@ class NaClBrokerListener : public content::SandboxedProcessLauncherDelegate,
   void Listen();
 
   // content::SandboxedProcessLauncherDelegate implementation:
-  void PreSpawnTarget(sandbox::TargetPolicy* policy, bool* success) override;
+  bool PreSpawnTarget(sandbox::TargetPolicy* policy) override;
 
   // IPC::Listener implementation.
   void OnChannelConnected(int32 peer_pid) override;

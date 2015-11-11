@@ -367,7 +367,7 @@ class RendererSandboxedProcessLauncherDelegate
   ~RendererSandboxedProcessLauncherDelegate() override {}
 
 #if defined(OS_WIN)
-  void PreSpawnTarget(sandbox::TargetPolicy* policy, bool* success) override {
+  bool PreSpawnTarget(sandbox::TargetPolicy* policy) override {
     AddBaseHandleClosePolicy(policy);
 
     const base::string16& sid =
@@ -376,7 +376,7 @@ class RendererSandboxedProcessLauncherDelegate
     if (!sid.empty())
       AddAppContainerPolicy(policy, sid.c_str());
 
-    GetContentClient()->browser()->PreSpawnRenderer(policy, success);
+    return GetContentClient()->browser()->PreSpawnRenderer(policy);
   }
 
 #elif defined(OS_POSIX)
