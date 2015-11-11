@@ -24,12 +24,14 @@ scoped_refptr<gfx::GLSurface> ImageTransportSurface::CreateNativeSurface(
   DCHECK_EQ(handle.transport_type, gfx::NATIVE_DIRECT);
   ANativeWindow* window =
       GpuSurfaceLookup::GetInstance()->AcquireNativeWidget(handle.handle);
-  CHECK(window) << "Failed to retrieve window handle.";
+  if (!window) {
+    LOG(WARNING) << "Failed to acquire native widget.";
+    return scoped_refptr<gfx::GLSurface>();
+  }
   scoped_refptr<gfx::GLSurface> surface =
       new gfx::NativeViewGLSurfaceEGL(window);
   bool initialize_success = surface->Initialize();
-  if (window)
-    ANativeWindow_release(window);
+  ANativeWindow_release(window);
   if (!initialize_success)
     return scoped_refptr<gfx::GLSurface>();
 
