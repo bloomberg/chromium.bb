@@ -1,4 +1,4 @@
-# Copyright 2014 The Chromium Authors. All rights reserved.
+﻿# Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -18,12 +18,14 @@ class StorySetUnitTest(story_set_smoke_test.StorySetSmokeTest):
     self.top_level_dir = os.path.dirname(self.story_sets_dir)
 
   # TODO(tbarzic): crbug.com/386416.
-  @decorators.Disabled('chromeos')
+  # http://crbug.com/513086
+  @decorators.Disabled('all')
   def testSmoke(self):
     self.RunSmokeTest(self.story_sets_dir, self.top_level_dir)
 
   # TODO(nednguyen): Remove this test once crbug.com/508538 is fixed.
-  @decorators.Disabled('chromeos')
+  # http://crbug.com/513086
+  @decorators.Disabled('all')
   def testNoPageDefinedSyntheticDelay(self):
     for story_set_class in self.GetAllStorySetClasses(self.story_sets_dir,
                                                       self.top_level_dir):
