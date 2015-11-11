@@ -10,8 +10,13 @@
 
 package org.chromium.chrome.browser.widget.findinpage;
 
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.test.suitebuilder.annotation.SmallTest;
+import android.text.Spannable;
+import android.text.style.StyleSpan;
 import android.view.KeyCharacterMap;
 import android.view.KeyEvent;
 import android.view.View;
@@ -80,10 +85,9 @@ public class FindTest extends ChromeTabbedActivityTestBase {
             throws InterruptedException {
         findInPageFromMenu();
         // FindToolbar should automatically get focus.
-        assertTrue("FindToolbar should have focus",
-                getActivity().findViewById(R.id.find_query).hasFocus());
-        final TextView findQueryText = (TextView) getActivity().findViewById(R.id.find_query);
-        assertNotNull(findQueryText);
+        final TextView findQueryText = getFindQueryText();
+        assertTrue("FindToolbar should have focus", findQueryText.hasFocus());
+
         // We have to send each key 1-by-1 to trigger the right listeners in the toolbar.
         KeyCharacterMap keyCharacterMap = KeyCharacterMap.load(KeyCharacterMap.VIRTUAL_KEYBOARD);
         final KeyEvent[] events = keyCharacterMap.getEvents(query.toCharArray());
@@ -108,6 +112,18 @@ public class FindTest extends ChromeTabbedActivityTestBase {
         assertTrue("Expected: " + expectedResult + " Got: " + findResults + " for: "
                 + TestHttpServerClient.getUrl(FILEPATH),
                 findResults.contains(expectedResult));
+    }
+
+    private FindToolbar getFindToolbar() {
+        final FindToolbar findToolbar = (FindToolbar) getActivity().findViewById(R.id.find_toolbar);
+        assertNotNull("FindToolbar not found", findToolbar);
+        return findToolbar;
+    }
+
+    private EditText getFindQueryText() {
+        final EditText findQueryText = (EditText) getActivity().findViewById(R.id.find_query);
+        assertNotNull("FindQueryText not found", findQueryText);
+        return findQueryText;
     }
 
     /**
@@ -188,8 +204,9 @@ public class FindTest extends ChromeTabbedActivityTestBase {
     public void testResultsBarInitiallyVisible() throws InterruptedException {
         loadUrl(TestHttpServerClient.getUrl(FILEPATH));
         findInPageFromMenu();
-        FindToolbar findToolbar = (FindToolbar) getActivity().findViewById(R.id.find_toolbar);
-        View resultBar = findToolbar.getFindResultBar();
+        final FindToolbar findToolbar = getFindToolbar();
+        final View resultBar = findToolbar.getFindResultBar();
+        assertNotNull(resultBar);
         assertEquals(View.VISIBLE, resultBar.getVisibility());
     }
 
@@ -198,11 +215,10 @@ public class FindTest extends ChromeTabbedActivityTestBase {
     public void testResultsBarVisibleAfterTypingText() throws InterruptedException {
         loadUrl(TestHttpServerClient.getUrl(FILEPATH));
         findInPageFromMenu();
-        FindToolbar findToolbar = (FindToolbar) getActivity().findViewById(R.id.find_toolbar);
-        View resultBar = findToolbar.getFindResultBar();
+        final FindToolbar findToolbar = getFindToolbar();
+        final View resultBar = findToolbar.getFindResultBar();
         assertNotNull(resultBar);
-        final TextView findQueryText = (TextView) findToolbar.findViewById(R.id.find_query);
-        assertNotNull(findQueryText);
+        final TextView findQueryText = getFindQueryText();
 
         KeyUtils.singleKeyEventView(getInstrumentation(), findQueryText, KeyEvent.KEYCODE_T);
         assertEquals(View.VISIBLE, resultBar.getVisibility());
@@ -220,11 +236,9 @@ public class FindTest extends ChromeTabbedActivityTestBase {
         loadUrl(TestHttpServerClient.getUrl(FILEPATH));
         findInPageFromMenu();
 
-        FindToolbar findToolbar = (FindToolbar) getActivity().findViewById(R.id.find_toolbar);
-        assertNotNull(findToolbar);
+        final FindToolbar findToolbar = getFindToolbar();
         assertEquals(View.VISIBLE, findToolbar.getVisibility());
-        final TextView findQueryText = (TextView) findToolbar.findViewById(R.id.find_query);
-        assertNotNull(findQueryText);
+        final TextView findQueryText = getFindQueryText();
         KeyUtils.singleKeyEventView(getInstrumentation(), findQueryText, KeyEvent.KEYCODE_T);
         KeyUtils.singleKeyEventView(getInstrumentation(), findQueryText, KeyEvent.KEYCODE_DEL);
         KeyUtils.singleKeyEventView(getInstrumentation(), findQueryText, KeyEvent.KEYCODE_ENTER);
@@ -268,9 +282,41 @@ public class FindTest extends ChromeTabbedActivityTestBase {
         findInPageFromMenu();
         UiUtils.settleDownUI(getInstrumentation());
         // Verify the text content.
-        EditText e = (EditText) getActivity().findViewById(R.id.find_query);
+        final EditText e = getFindQueryText();
         String myText = e.getText().toString();
         assertTrue("expected empty string : " + myText, myText.isEmpty());
+    }
+
+    /**
+     * Verify pasted text in the FindQuery text box doesn't retain formatting
+     */
+    @SmallTest
+    @Feature({"FindInPage"})
+    public void testPastedTextStylingRemoved() throws InterruptedException {
+        loadUrl(TestHttpServerClient.getUrl(FILEPATH));
+        findInPageFromMenu();
+
+        final FindToolbar findToolbar = getFindToolbar();
+        assertEquals(View.VISIBLE, findToolbar.getVisibility());
+        final EditText findQueryText = getFindQueryText();
+
+        // Setup the clipboard with a selection of stylized text
+        ClipboardManager clipboard = (ClipboardManager) (getInstrumentation().getTargetContext())
+                .getSystemService(Context.CLIPBOARD_SERVICE);
+        clipboard.setPrimaryClip(ClipData.newHtmlText("label", "text", "<b>text</b>"));
+
+        // Emulate pasting the text into the find query text box
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                findQueryText.onTextContextMenuItem(android.R.id.paste);
+            }
+        });
+
+        // Resulting text in the find query box should be unstyled
+        final Spannable text = findQueryText.getText();
+        final StyleSpan[] spans = text.getSpans(0, text.length(), StyleSpan.class);
+        assertEquals(0, spans.length);
     }
 
     @Override

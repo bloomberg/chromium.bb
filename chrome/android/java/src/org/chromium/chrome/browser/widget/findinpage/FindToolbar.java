@@ -5,6 +5,8 @@
 package org.chromium.chrome.browser.widget.findinpage;
 
 import android.annotation.SuppressLint;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Context;
 import android.graphics.Rect;
 import android.os.Handler;
@@ -13,6 +15,7 @@ import android.provider.Settings;
 import android.support.v4.view.accessibility.AccessibilityEventCompat;
 import android.text.Editable;
 import android.text.InputType;
+import android.text.Selection;
 import android.text.TextWatcher;
 import android.util.AttributeSet;
 import android.view.ActionMode;
@@ -121,6 +124,39 @@ public class FindToolbar extends LinearLayout
                 return true;
             }
             return super.onKeyDown(keyCode, event);
+        }
+
+        @Override
+        public boolean onTextContextMenuItem(int id) {
+            if (id == android.R.id.paste) {
+                ClipboardManager clipboard = (ClipboardManager) getContext()
+                        .getSystemService(Context.CLIPBOARD_SERVICE);
+                ClipData clipData = clipboard.getPrimaryClip();
+                if (clipData != null) {
+                    // Convert the clip data to a simple string
+                    StringBuilder builder = new StringBuilder();
+                    for (int i = 0; i < clipData.getItemCount(); i++) {
+                        builder.append(clipData.getItemAt(i).coerceToText(getContext()));
+                    }
+
+                    // Identify how much of the original text should be replaced
+                    int min = 0;
+                    int max = getText().length();
+
+                    if (isFocused()) {
+                        final int selStart = getSelectionStart();
+                        final int selEnd = getSelectionEnd();
+
+                        min = Math.max(0, Math.min(selStart, selEnd));
+                        max = Math.max(0, Math.max(selStart, selEnd));
+                    }
+
+                    Selection.setSelection(getText(), max);
+                    getText().replace(min, max, builder.toString());
+                    return true;
+                }
+            }
+            return super.onTextContextMenuItem(id);
         }
     }
 
