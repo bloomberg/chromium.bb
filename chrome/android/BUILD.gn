@@ -419,7 +419,7 @@ chrome_public_apk_tmpl("chrome_public_apk") {
   # approach falls to a minimal level -  http://crbug.com/390618.
   if (chromium_linker_supported &&
       (target_cpu == "arm64" || target_cpu == "x64")) {
-    load_library_from_apk = true
+    load_library_from_apk = chrome_public_apk_load_library_from_apk
   }
 
   deps = [

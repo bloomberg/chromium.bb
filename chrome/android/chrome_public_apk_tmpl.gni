@@ -4,6 +4,17 @@
 
 import("//build/config/android/rules.gni")
 
+declare_args() {
+  # Whether chrome_public_apk should use the crazy linker.
+  chrome_public_apk_use_chromium_linker = true
+
+  # Whether chrome_public_apk should use the relocation packer.
+  chrome_public_apk_use_relocation_packer = true
+
+  # Whether native libraries should be loaded from within the apk.
+  chrome_public_apk_load_library_from_apk = true
+}
+
 # GYP: //chrome/android/chrome_apk.gypi
 template("chrome_public_apk_tmpl") {
   forward_variables_from(invoker, "*")
@@ -20,11 +31,11 @@ template("chrome_public_apk_tmpl") {
     #]
 
     if (chromium_linker_supported) {
-      use_chromium_linker = true
+      use_chromium_linker = chrome_public_apk_use_chromium_linker
 
       # TODO: Enable packed relocations for x64. See: b/20532404
       if (current_cpu != "x64") {
-        enable_relocation_packing = true
+        enable_relocation_packing = chrome_public_apk_use_relocation_packer
       }
     }
   }
