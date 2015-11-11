@@ -14,8 +14,9 @@ import org.chromium.ui.resources.dynamics.ViewResourceInflater;
 
 /**
  * A helper class for inflating Contextual Search Views.
+ * TODO(mdjones): Refactor to OverlayPanelInflater.
  */
-abstract class ContextualSearchInflater extends ViewResourceInflater {
+public abstract class ContextualSearchInflater extends ViewResourceInflater {
 
     /**
      * The panel delegate used to get information about the panel layout.
