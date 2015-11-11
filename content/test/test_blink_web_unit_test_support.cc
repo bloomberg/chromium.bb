@@ -222,6 +222,8 @@ blink::WebString TestBlinkWebUnitTestSupport::queryLocalizedString(
       return base::ASCIIToUTF16("<<ThisMonthLabel>>");
     case blink::WebLocalizedString::ThisWeekButtonLabel:
       return base::ASCIIToUTF16("<<ThisWeekLabel>>");
+    case blink::WebLocalizedString::ValidationValueMissing:
+      return base::ASCIIToUTF16("<<ValidationValueMissing>>");
     case blink::WebLocalizedString::WeekFormatTemplate:
       return base::ASCIIToUTF16("Week $2, $1");
     default:

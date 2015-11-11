@@ -689,7 +689,7 @@ bool InputType::supportsReadOnly() const
 
 String InputType::defaultToolTip() const
 {
-    return String();
+    return validationMessage();
 }
 
 Decimal InputType::findClosestTickMarkValue(const Decimal&)

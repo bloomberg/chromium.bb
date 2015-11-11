@@ -48,4 +48,16 @@ TEST(HTMLInputElementTest, NoAssertWhenMovedInNewDocument)
     document.body()->removeChild(document.body()->firstChild());
 }
 
+TEST(HTMLInputElementTest, DefaultToolTip)
+{
+    RefPtrWillBeRawPtr<Document> document = Document::create();
+    RefPtrWillBeRawPtr<HTMLHtmlElement> html = HTMLHtmlElement::create(*document);
+    html->appendChild(HTMLBodyElement::create(*document));
+    RefPtrWillBeRawPtr<HTMLInputElement> input = HTMLInputElement::create(*document, nullptr, false);
+    input->setBooleanAttribute(HTMLNames::requiredAttr, true);
+    toHTMLBodyElement(html->firstChild())->appendChild(input.get());
+    document->appendChild(html.release());
+    EXPECT_EQ("<<ValidationValueMissing>>", input->defaultToolTip());
+}
+
 } // namespace blink
