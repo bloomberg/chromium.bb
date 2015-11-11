@@ -489,7 +489,7 @@ void EpollServer::Wake() {
 }
 
 int64 EpollServer::NowInUsec() const {
-  return base::Time::Now().ToInternalValue();
+  return (base::Time::Now() - base::Time::UnixEpoch()).InMicroseconds();
 }
 
 int64 EpollServer::ApproximateNowInUsec() const {
