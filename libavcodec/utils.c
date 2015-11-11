@@ -1782,7 +1782,13 @@ int attribute_align_arg avcodec_encode_audio2(AVCodecContext *avctx,
             avpkt->buf      = user_pkt.buf;
             avpkt->data     = user_pkt.data;
         } else {
+// Suppress deprecation warning related to FF_API_AVPACKET_OLD_API.
+// Upstream did not build with FF_API_AVPACKET_OLD_API=0 at the time of the M48
+// branch, so this must be manually suppressed.
+// TODO(ddorwin): Remove when this line is changed upstream.
+FF_DISABLE_DEPRECATION_WARNINGS
             if (av_dup_packet(avpkt) < 0) {
+FF_ENABLE_DEPRECATION_WARNINGS
                 ret = AVERROR(ENOMEM);
             }
         }
@@ -1871,7 +1877,13 @@ int attribute_align_arg avcodec_encode_video2(AVCodecContext *avctx,
             avpkt->buf      = user_pkt.buf;
             avpkt->data     = user_pkt.data;
         } else {
+// Suppress deprecation warning related to FF_API_AVPACKET_OLD_API.
+// Upstream did not build with FF_API_AVPACKET_OLD_API=0 at the time of the M48
+// branch, so this must be manually suppressed.
+// TODO(ddorwin): Remove when this line is changed upstream.
+FF_DISABLE_DEPRECATION_WARNINGS
             if (av_dup_packet(avpkt) < 0) {
+FF_ENABLE_DEPRECATION_WARNINGS
                 ret = AVERROR(ENOMEM);
             }
         }

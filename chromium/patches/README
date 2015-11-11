@@ -30,6 +30,11 @@ Current patches:
     Remove "#define UNCHECKED_BITSTREAM_READER 1" from all codecs.
     In Chromium, all codecs should use the safe bitstream reader.
 
+  Changes to libavcodec/utils.c
+    Disable deprecation warnings related to FF_API_AVPACKET_OLD_API.
+    We cannot just disable FF_API_AVPACKET_OLD_API because upstream does not yet
+    compile with it disabled. Therefore, suppress the warnings locally.
+
   Changes to libavformat/matroskadec.c
     Add CONFIG_LZO and CONFIG_SIPR_DECODER (and other CONFIG_*) checks to remove
     code that may be a security risk. Discuss with cevans@ before removing.
