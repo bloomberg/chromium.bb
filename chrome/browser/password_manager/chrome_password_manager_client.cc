@@ -4,6 +4,8 @@
 
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 
+#include <string>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"

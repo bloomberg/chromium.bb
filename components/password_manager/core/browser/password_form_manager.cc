@@ -5,6 +5,7 @@
 #include "components/password_manager/core/browser/password_form_manager.h"
 
 #include <algorithm>
+#include <map>
 #include <set>
 
 #include "base/metrics/histogram_macros.h"
