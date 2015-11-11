@@ -224,11 +224,18 @@ class TestServerThread(threading.Thread):
       command = [os.path.join(command, 'net', 'tools', 'testserver',
                               'testserver.py')] + self.command_line
     logging.info('Running: %s', command)
+
+    # Disable PYTHONUNBUFFERED because it has a bad interaction with the
+    # testserver. Remove once this interaction is fixed.
+    unbuf = os.environ.pop('PYTHONUNBUFFERED', None)
+
     # Pass DIR_SOURCE_ROOT as the child's working directory so that relative
     # paths in the arguments are resolved correctly.
     self.process = subprocess.Popen(
         command, preexec_fn=self._CloseUnnecessaryFDsForTestServerProcess,
         cwd=constants.DIR_SOURCE_ROOT)
+    if unbuf:
+      os.environ['PYTHONUNBUFFERED'] = unbuf
     if self.process:
       if self.pipe_out:
         self.is_ready = self._WaitToStartAndGetPortFromTestServer()
