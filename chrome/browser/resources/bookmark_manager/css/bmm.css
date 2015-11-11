@@ -243,6 +243,7 @@ list > .folder > .label,
 
 #list-pane {
   flex: 1;
+  min-width: 0;
 }
 
 #list-pane > :first-child {
