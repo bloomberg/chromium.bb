@@ -113,7 +113,8 @@ public abstract class FirstRunFlowSequencer  {
     }
 
     protected boolean shouldShowDataReductionPage() {
-        return FieldTrialList.findFullName("DataReductionProxyFREPromo").startsWith("Enabled");
+        return FieldTrialList.findFullName("DataReductionProxyFREPromo").startsWith("Enabled")
+                || ChromeVersionInfo.isLocalBuild() || ChromeVersionInfo.isCanaryBuild();
     }
 
     @VisibleForTesting
