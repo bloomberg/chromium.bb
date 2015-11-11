@@ -34,6 +34,7 @@
 #include "core/CoreExport.h"
 #include "core/dom/MessagePort.h"
 #include "core/workers/WorkerReportingProxy.h"
+#include "platform/heap/Handle.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
 
@@ -78,6 +79,7 @@ protected:
 
 private:
     // These objects always outlive this proxy.
+    GC_PLUGIN_IGNORE("553613")
     ExecutionContext* m_executionContext;
     WorkerMessagingProxy* m_messagingProxy;
 };
