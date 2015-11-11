@@ -9,10 +9,6 @@
 
 #include <windows.h>
 
-// directory names
-extern const wchar_t kLocalStateFilename[];
-extern const wchar_t kUserDataDirName[];
-
 namespace blacklist {
 
 // The registry path of the blacklist beacon.

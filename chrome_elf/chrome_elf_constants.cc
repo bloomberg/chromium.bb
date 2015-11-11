@@ -12,9 +12,6 @@
 #error Unknown branding
 #endif
 
-const wchar_t kLocalStateFilename[] = L"Local State";
-const wchar_t kUserDataDirName[] = L"User Data";
-
 namespace blacklist {
 
 const wchar_t kRegistryBeaconPath[] =
