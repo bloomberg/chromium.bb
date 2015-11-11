@@ -126,6 +126,23 @@ void ChildProcessHost::DoLaunch() {
   base::LaunchOptions options;
 #if defined(OS_WIN)
   options.handles_to_inherit = &handle_passing_info;
+  options.stdin_handle = INVALID_HANDLE_VALUE;
+  options.stdout_handle = GetStdHandle(STD_OUTPUT_HANDLE);
+  options.stderr_handle = GetStdHandle(STD_ERROR_HANDLE);
+
+  // Pseudo handles are used when stdout and stderr redirect to the console. In
+  // that case, they're automatically inherited by child processes. See
+  // https://msdn.microsoft.com/en-us/library/windows/desktop/ms682075.aspx
+  // Trying to add them to the list of handles to inherit causes CreateProcess
+  // to fail. When this process is launched from Python
+  // (i.e. by apptest_runner.py) then a real handle is used. In that case, we do
+  // want to add it to the list of handles that is inherited.
+  if (GetFileType(options.stdout_handle) != FILE_TYPE_CHAR)
+    handle_passing_info.push_back(options.stdout_handle);
+  if (GetFileType(options.stderr_handle) != FILE_TYPE_CHAR &&
+      options.stdout_handle != options.stdout_handle) {
+    handle_passing_info.push_back(options.stderr_handle);
+  }
 #elif defined(OS_POSIX)
   handle_passing_info.push_back(std::make_pair(STDIN_FILENO, STDIN_FILENO));
   handle_passing_info.push_back(std::make_pair(STDOUT_FILENO, STDOUT_FILENO));
