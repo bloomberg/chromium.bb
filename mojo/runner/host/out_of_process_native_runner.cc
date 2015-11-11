@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/runner/out_of_process_native_runner.h"
+#include "mojo/runner/host/out_of_process_native_runner.h"
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/task_runner.h"
-#include "mojo/runner/child_process_host.h"
-#include "mojo/runner/in_process_native_runner.h"
+#include "mojo/runner/host/child_process_host.h"
+#include "mojo/runner/host/in_process_native_runner.h"
 
 namespace mojo {
 namespace runner {

@@ -14,7 +14,7 @@
 #include "mojo/common/data_pipe_utils.h"
 #include "mojo/public/c/system/main.h"
 #include "mojo/runner/android/run_android_application_function.h"
-#include "mojo/runner/native_application_support.h"
+#include "mojo/runner/host/native_application_support.h"
 #include "mojo/util/filename_util.h"
 #include "url/gurl.h"
 

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_RUNNER_IN_PROCESS_NATIVE_RUNNER_H_
-#define MOJO_RUNNER_IN_PROCESS_NATIVE_RUNNER_H_
+#ifndef MOJO_RUNNER_HOST_IN_PROCESS_NATIVE_RUNNER_H_
+#define MOJO_RUNNER_HOST_IN_PROCESS_NATIVE_RUNNER_H_
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
@@ -11,7 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/scoped_native_library.h"
 #include "base/threading/simple_thread.h"
-#include "mojo/runner/native_application_support.h"
+#include "mojo/runner/host/native_application_support.h"
 #include "mojo/shell/native_runner.h"
 
 namespace base {
@@ -67,4 +67,4 @@ class InProcessNativeRunnerFactory : public shell::NativeRunnerFactory {
 }  // namespace runner
 }  // namespace mojo
 
-#endif  // MOJO_RUNNER_IN_PROCESS_NATIVE_RUNNER_H_
+#endif  // MOJO_RUNNER_HOST_IN_PROCESS_NATIVE_RUNNER_H_

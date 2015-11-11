@@ -6,17 +6,9 @@
 
 namespace switches {
 
-// Used internally by the main process to indicate that a new process should be
-// a child process. Takes the absolute path to the mojo application to load as
-// an argument. Not for user use.
-const char kChildProcess[] = "child-process";
-
 // Comma separated list like:
 // text/html,mojo:html_viewer,application/bravo,https://abarth.com/bravo
 const char kContentHandlers[] = "content-handlers";
-
-// Enables the sandbox on this process.
-const char kEnableSandbox[] = "enable-sandbox";
 
 // In multiprocess mode, force these apps to be loaded in the main process.
 // This is a comma-separated list of URLs. Example:

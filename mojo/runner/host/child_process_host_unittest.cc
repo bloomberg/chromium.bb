@@ -4,7 +4,7 @@
 
 // Note: This file also tests child_process.*.
 
-#include "mojo/runner/child_process_host.h"
+#include "mojo/runner/host/child_process_host.h"
 
 #include "base/logging.h"
 #include "base/macros.h"
@@ -12,7 +12,6 @@
 #include "base/path_service.h"
 #include "base/threading/thread.h"
 #include "mojo/message_pump/message_pump_mojo.h"
-#include "mojo/runner/context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/mojo/src/mojo/edk/embedder/embedder.h"
 #include "third_party/mojo/src/mojo/edk/embedder/process_delegate.h"
@@ -56,9 +55,6 @@ class ProcessDelegate : public embedder::ProcessDelegate {
 // Just tests starting the child process and joining it (without starting an
 // app).
 TEST(ChildProcessHostTest, MAYBE_StartJoin) {
-  // TODO(beng): will have to call embedder::Init() here once we move to a
-  //             different suite.
-  Context::EnsureEmbedderIsInitialized();
   base::FilePath shell_dir;
   PathService::Get(base::DIR_MODULE, &shell_dir);
   base::MessageLoop message_loop(

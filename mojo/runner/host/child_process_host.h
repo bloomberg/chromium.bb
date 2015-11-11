@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_RUNNER_CHILD_PROCESS_HOST_H_
-#define MOJO_RUNNER_CHILD_PROCESS_HOST_H_
+#ifndef MOJO_RUNNER_HOST_CHILD_PROCESS_HOST_H_
+#define MOJO_RUNNER_HOST_CHILD_PROCESS_HOST_H_
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
@@ -11,7 +11,7 @@
 #include "base/process/process.h"
 #include "base/synchronization/waitable_event.h"
 #include "mojo/runner/child/child_controller.mojom.h"
-#include "mojo/runner/child_process_host.h"
+#include "mojo/runner/host/child_process_host.h"
 #include "third_party/mojo/src/mojo/edk/embedder/channel_info_forward.h"
 #include "third_party/mojo/src/mojo/edk/embedder/platform_channel_pair.h"
 #include "third_party/mojo/src/mojo/edk/embedder/scoped_platform_handle.h"
@@ -92,4 +92,4 @@ class ChildProcessHost {
 }  // namespace runner
 }  // namespace mojo
 
-#endif  // MOJO_RUNNER_CHILD_PROCESS_HOST_H_
+#endif  // MOJO_RUNNER_HOST_CHILD_PROCESS_HOST_H_

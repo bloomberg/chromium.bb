@@ -37,6 +37,8 @@ source_set("mojo_runner_lib") {
     "//mojo/common",
     "//mojo/environment:chromium",
     "//mojo/message_pump",
+    "//mojo/runner/host:lib",
+    "//mojo/runner/host:switches",
   ]
 
   if (!is_android) {
@@ -101,23 +103,15 @@ source_set("init") {
   ]
 
   deps = [
-    ":switches",
+    "//mojo/runner/host:switches",
     "//base",
   ]
 }
 
 source_set("lib") {
   sources = [
-    "child_process.cc",
-    "child_process.h",
-    "child_process_host.cc",
-    "child_process_host.h",
     "context.cc",
     "context.h",
-    "in_process_native_runner.cc",
-    "in_process_native_runner.h",
-    "out_of_process_native_runner.cc",
-    "out_of_process_native_runner.h",
     "scoped_user_data_dir.cc",
     "scoped_user_data_dir.h",
     "task_runners.cc",
@@ -128,7 +122,6 @@ source_set("lib") {
 
   deps = [
     ":init",
-    ":native_application_support",
     "//base",
     "//base/third_party/dynamic_annotations",
     "//base:base_static",
@@ -138,6 +131,7 @@ source_set("lib") {
     "//mojo/message_pump",
     "//mojo/package_manager",
     "//mojo/runner/child:interfaces",
+    "//mojo/runner/host:lib",
     "//mojo/services/network/public/interfaces",
     "//mojo/services/tracing/public/cpp",
     "//mojo/services/tracing/public/interfaces",
@@ -147,18 +141,6 @@ source_set("lib") {
     "//ui/gl",
     "//url",
   ]
-
-  if (is_linux && !is_android) {
-    sources += [
-      "linux_sandbox.cc",
-      "linux_sandbox.h",
-    ]
-
-    deps += [
-      "//sandbox/linux:sandbox",
-      "//sandbox/linux:sandbox_services",
-    ]
-  }
 
   public_deps = [
     ":init",
@@ -198,28 +180,6 @@ source_set("lib") {
   # so we can enable checking for the rest of the targets in this file.
   # TODO: Might be better to split the files with OS-specific includes out to a
   # separate source_set so we can leave checking on for the rest of the target.
-  check_includes = false
-}
-
-source_set("native_application_support") {
-  sources = [
-    "native_application_support.cc",
-    "native_application_support.h",
-  ]
-
-  deps = [
-    "//base",
-    "//mojo/gles2",
-    "//mojo/platform_handle:platform_handle_impl",
-    "//mojo/shell",
-  ]
-
-  # This target has to include the public thunk headers, which generally
-  # shouldn't be included without picking an implementation. We are providing
-  # the implementation but the thunk header target cannot declare that we are
-  # permitted to include it since it's in the public SDK and we are not.
-  # Suppress include checking so we can still check the rest of the targets in
-  # this file.
   check_includes = false
 }
 
@@ -419,9 +379,7 @@ test("mojo_runner_unittests") {
     "../fetcher/data_fetcher_unittest.cc",
     "../fetcher/network_fetcher_unittest.cc",
     "../fetcher/url_resolver_unittest.cc",
-    "child_process_host_unittest.cc",
     "data_pipe_peek_unittest.cc",
-    "in_process_native_runner_unittest.cc",
     "native_runner_unittest.cc",
     "register_local_aliases.cc",
     "register_local_aliases.h",

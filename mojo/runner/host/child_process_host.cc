@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/runner/child_process_host.h"
+#include "mojo/runner/host/child_process_host.h"
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -16,8 +16,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "mojo/public/cpp/bindings/interface_ptr_info.h"
 #include "mojo/public/cpp/system/core.h"
-#include "mojo/runner/switches.h"
-#include "mojo/runner/task_runners.h"
+#include "mojo/runner/host/switches.h"
 #include "third_party/mojo/src/mojo/edk/embedder/embedder.h"
 
 #if defined(OS_LINUX) && !defined(OS_ANDROID)
@@ -49,9 +48,8 @@ void ChildProcessHost::Start() {
   DCHECK(platform_channel_.is_valid());
 
   ScopedMessagePipeHandle handle(embedder::CreateChannel(
-      platform_channel_.Pass(),
-      base::Bind(&ChildProcessHost::DidCreateChannel,
-                 weak_factory_.GetWeakPtr()),
+      platform_channel_.Pass(), base::Bind(&ChildProcessHost::DidCreateChannel,
+                                           weak_factory_.GetWeakPtr()),
       base::ThreadTaskRunnerHandle::Get()));
 
   controller_.Bind(InterfacePtrInfo<ChildController>(handle.Pass(), 0u));

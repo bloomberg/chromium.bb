@@ -2,12 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_RUNNER_NATIVE_APPLICATION_SUPPORT_H_
-#define MOJO_RUNNER_NATIVE_APPLICATION_SUPPORT_H_
+#ifndef MOJO_RUNNER_HOST_NATIVE_APPLICATION_SUPPORT_H_
+#define MOJO_RUNNER_HOST_NATIVE_APPLICATION_SUPPORT_H_
 
 #include "base/native_library.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
-#include "mojo/shell/native_runner.h"
 
 namespace base {
 class FilePath;
@@ -41,4 +40,4 @@ bool RunNativeApplication(base::NativeLibrary app_library,
 }  // namespace runner
 }  // namespace mojo
 
-#endif  // MOJO_RUNNER_NATIVE_APPLICATION_SUPPORT_H_
+#endif  // MOJO_RUNNER_HOST_NATIVE_APPLICATION_SUPPORT_H_

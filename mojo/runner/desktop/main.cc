@@ -7,10 +7,10 @@
 #include "base/debug/stack_trace.h"
 #include "base/process/launch.h"
 #include "build/build_config.h"
-#include "mojo/runner/child_process.h"
 #include "mojo/runner/desktop/launcher_process.h"
+#include "mojo/runner/host/child_process.h"
+#include "mojo/runner/host/switches.h"
 #include "mojo/runner/init.h"
-#include "mojo/runner/switches.h"
 
 int main(int argc, char** argv) {
   base::AtExitManager at_exit;

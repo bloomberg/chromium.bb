@@ -41,7 +41,7 @@ int LauncherProcessMain(int argc, char** argv) {
     tracer.Start(
         command_line->GetSwitchValueASCII(switches::kTraceStartup),
         command_line->GetSwitchValueASCII(switches::kTraceStartupDuration),
-        "mandoline.trace");
+        "mojo_runner.trace");
   }
 
   // We want the shell::Context to outlive the MessageLoop so that pipes are

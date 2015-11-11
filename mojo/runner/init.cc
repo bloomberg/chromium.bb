@@ -12,7 +12,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
-#include "mojo/runner/switches.h"
+#include "mojo/runner/host/switches.h"
 
 #if defined(OS_WIN)
 #include <windows.h>

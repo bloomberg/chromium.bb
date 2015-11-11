@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/runner/child_process.h"
+#include "mojo/runner/host/child_process.h"
 
 #include "base/base_switches.h"
 #include "base/bind.h"
@@ -24,8 +24,8 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/core.h"
 #include "mojo/runner/child/child_controller.mojom.h"
-#include "mojo/runner/native_application_support.h"
-#include "mojo/runner/switches.h"
+#include "mojo/runner/host/native_application_support.h"
+#include "mojo/runner/host/switches.h"
 #include "third_party/mojo/src/mojo/edk/embedder/embedder.h"
 #include "third_party/mojo/src/mojo/edk/embedder/platform_channel_pair.h"
 #include "third_party/mojo/src/mojo/edk/embedder/process_delegate.h"
@@ -34,7 +34,7 @@
 #if defined(OS_LINUX) && !defined(OS_ANDROID)
 #include "base/rand_util.h"
 #include "base/sys_info.h"
-#include "mojo/runner/linux_sandbox.h"
+#include "mojo/runner/host/linux_sandbox.h"
 #endif
 
 namespace mojo {
@@ -92,7 +92,7 @@ class ChildControllerImpl;
 
 // Should be created and initialized on the main thread.
 // TODO(use_chrome_edk)
-//class AppContext : public edk::ProcessDelegate {
+// class AppContext : public edk::ProcessDelegate {
 class AppContext : public embedder::ProcessDelegate {
  public:
   AppContext()
@@ -284,7 +284,7 @@ int ChildProcessMain() {
 
 #if defined(OS_LINUX) && !defined(OS_ANDROID)
   using sandbox::syscall_broker::BrokerFilePermission;
-  scoped_ptr<mandoline::LinuxSandbox> sandbox;
+  scoped_ptr<mojo::runner::LinuxSandbox> sandbox;
 #endif
   base::NativeLibrary app_library = 0;
   if (command_line.HasSwitch(switches::kChildProcess)) {
@@ -315,7 +315,7 @@ int ChildProcessMain() {
       std::vector<BrokerFilePermission> permissions;
       permissions.push_back(
           BrokerFilePermission::ReadWriteCreateUnlinkRecursive("/dev/shm/"));
-      sandbox.reset(new mandoline::LinuxSandbox(permissions));
+      sandbox.reset(new mojo::runner::LinuxSandbox(permissions));
       sandbox->Warmup();
       sandbox->EngageNamespaceSandbox();
       sandbox->EngageSeccompSandbox();

@@ -2,17 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_RUNNER_LINUX_SANDBOX_H_
-#define MOJO_RUNNER_LINUX_SANDBOX_H_
+#ifndef MOJO_RUNNER_HOST_LINUX_SANDBOX_H_
+#define MOJO_RUNNER_HOST_LINUX_SANDBOX_H_
 
 #include "base/files/scoped_file.h"
+#include "base/macros.h"
 #include "sandbox/linux/bpf_dsl/bpf_dsl.h"
 #include "sandbox/linux/bpf_dsl/policy.h"
 #include "sandbox/linux/syscall_broker/broker_process.h"
 
-namespace mandoline {
+namespace mojo {
+namespace runner {
 
-// Encapsulates all tasks related to raising the sandbox for mandoline.
+// Encapsulates all tasks related to raising the sandbox for mojo runner.
 class LinuxSandbox {
  public:
   explicit LinuxSandbox(
@@ -43,6 +45,7 @@ class LinuxSandbox {
   DISALLOW_COPY_AND_ASSIGN(LinuxSandbox);
 };
 
-}  // namespace mandoline
+}  // namespace runner
+}  // namespace mojo
 
-#endif  // MOJO_RUNNER_LINUX_SANDBOX_H_
+#endif  // MOJO_RUNNER_HOST_LINUX_SANDBOX_H_

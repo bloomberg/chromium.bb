@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_RUNNER_OUT_OF_PROCESS_NATIVE_RUNNER_H_
-#define MOJO_RUNNER_OUT_OF_PROCESS_NATIVE_RUNNER_H_
+#ifndef MOJO_RUNNER_HOST_OUT_OF_PROCESS_NATIVE_RUNNER_H_
+#define MOJO_RUNNER_HOST_OUT_OF_PROCESS_NATIVE_RUNNER_H_
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
@@ -66,4 +66,4 @@ class OutOfProcessNativeRunnerFactory : public shell::NativeRunnerFactory {
 }  // namespace runner
 }  // namespace mojo
 
-#endif  // MOJO_RUNNER_OUT_OF_PROCESS_NATIVE_RUNNER_H_
+#endif  // MOJO_RUNNER_HOST_OUT_OF_PROCESS_NATIVE_RUNNER_H_

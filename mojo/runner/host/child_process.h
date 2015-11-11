@@ -2,17 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/runner/in_process_native_runner.h"
-
-#include "testing/gtest/include/gtest/gtest.h"
+#ifndef MOJO_RUNNER_HOST_CHILD_PROCESS_H_
+#define MOJO_RUNNER_HOST_CHILD_PROCESS_H_
 
 namespace mojo {
 namespace runner {
 
-TEST(InProcessNativeRunnerTest, NotStarted) {
-  InProcessNativeRunner runner;
-  // Shouldn't crash or DCHECK on destruction.
-}
+// Main method for a child process.
+int ChildProcessMain();
 
 }  // namespace runner
 }  // namespace mojo
+
+#endif  // MOJO_RUNNER_HOST_CHILD_PROCESS_H_
