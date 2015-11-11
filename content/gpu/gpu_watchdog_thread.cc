@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/gpu/gpu_watchdog_thread.h"
+
+#include <errno.h>
+
 #if defined(OS_WIN)
 #include <windows.h>
 #endif
-
-#include "content/gpu/gpu_watchdog_thread.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"

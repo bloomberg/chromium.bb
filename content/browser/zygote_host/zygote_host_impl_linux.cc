@@ -4,6 +4,7 @@
 
 #include "content/browser/zygote_host/zygote_host_impl_linux.h"
 
+#include <errno.h>
 #include <string.h>
 #include <sys/socket.h>
 #include <sys/stat.h>

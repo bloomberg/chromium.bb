@@ -4,6 +4,9 @@
 
 #include "content/browser/renderer_host/render_message_filter.h"
 
+#include <errno.h>
+#include <string.h>
+
 #include <map>
 
 #include "base/bind.h"

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 //
 
+#include <errno.h>
 #include <fcntl.h>
 #include <libdrm/drm_fourcc.h>
 #include <linux/videodev2.h>

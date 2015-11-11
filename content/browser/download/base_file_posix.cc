@@ -4,6 +4,8 @@
 
 #include "content/browser/download/base_file.h"
 
+#include <errno.h>
+
 #include "base/files/file_util.h"
 #include "content/public/browser/download_interrupt_reasons.h"
 
