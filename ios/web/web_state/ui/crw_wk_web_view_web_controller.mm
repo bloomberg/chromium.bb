@@ -954,8 +954,9 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
           {leafCert, base::SysNSStringToUTF8(host)});
       bool cacheHit = error != _certVerificationErrors->end();
       if (cacheHit) {
-        status.cert_status = error->second.status;
         recoverable = error->second.is_recoverable;
+        status.cert_status = error->second.status;
+        info.cert_status = error->second.status;
       }
       UMA_HISTOGRAM_BOOLEAN("WebController.CertVerificationErrorsCacheHit",
                             cacheHit);

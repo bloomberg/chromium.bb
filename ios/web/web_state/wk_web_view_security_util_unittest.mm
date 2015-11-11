@@ -249,6 +249,7 @@ TEST_F(WKWebViewSecurityUtilTest, SSLInfoFromErrorWithCert) {
   EXPECT_TRUE(info.is_valid());
   EXPECT_EQ(net::CERT_STATUS_INVALID, info.cert_status);
   EXPECT_TRUE(info.cert->subject().GetDisplayName() == kTestSubject);
+  EXPECT_TRUE(info.unverified_cert->subject().GetDisplayName() == kTestSubject);
 }
 
 // Tests GetSecurityStyleFromTrustResult with bad SecTrustResultType result.

@@ -120,8 +120,10 @@ void GetSSLInfoFromWKWebViewSSLCertError(NSError* error,
                                          net::SSLInfo* ssl_info) {
   DCHECK(IsWKWebViewSSLCertError(error));
   ssl_info->cert_status = GetCertStatusFromNSErrorCode(error.code);
-  ssl_info->cert = web::CreateCertFromChain(
+  scoped_refptr<net::X509Certificate> cert = web::CreateCertFromChain(
       error.userInfo[web::kNSErrorPeerCertificateChainKey]);
+  ssl_info->cert = cert;
+  ssl_info->unverified_cert = cert;
 }
 
 SecurityStyle GetSecurityStyleFromTrustResult(SecTrustResultType result) {
