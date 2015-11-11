@@ -37,10 +37,6 @@ class Tracer : public mojo::common::DataPipeDrainer::Client {
              const std::string& duration_seconds_str,
              const std::string& filename);
 
-  // Notifies the tracer that a message loop has been created. If startup
-  // tracing is active the tracer can use this to schedule when to stop tracing.
-  void DidCreateMessageLoop();
-
   // Starts collecting data from the tracing service with the given set of
   // categories.
   void StartCollectingFromTracingService(
@@ -85,8 +81,6 @@ class Tracer : public mojo::common::DataPipeDrainer::Client {
   mojo::TraceProviderImpl trace_provider_impl_;
   // Whether we're currently tracing.
   bool tracing_;
-  // How long to trace after message loop creation.
-  int trace_duration_secs_;
   // Categories to trace.
   std::string categories_;
 

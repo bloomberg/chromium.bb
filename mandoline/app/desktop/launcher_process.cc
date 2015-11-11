@@ -21,7 +21,6 @@
 #include "mandoline/app/desktop/launcher_process.h"
 #include "mojo/runner/context.h"
 #include "mojo/runner/switches.h"
-#include "mojo/runner/tracer.h"
 #include "mojo/shell/switches.h"
 
 namespace mandoline {
@@ -46,13 +45,12 @@ int LauncherProcessMain(int argc, char** argv) {
 
   // We want the runner::Context to outlive the MessageLoop so that pipes are
   // all gracefully closed / error-out before we try to shut the Context down.
-  base::FilePath shell_dir;
-  PathService::Get(base::DIR_MODULE, &shell_dir);
-  mojo::runner::Context shell_context(shell_dir, &tracer);
+  mojo::runner::Context shell_context;
   {
     base::MessageLoop message_loop;
-    tracer.DidCreateMessageLoop();
-    if (!shell_context.Init()) {
+    base::FilePath shell_dir;
+    PathService::Get(base::DIR_MODULE, &shell_dir);
+    if (!shell_context.Init(shell_dir)) {
       return 0;
     }
 

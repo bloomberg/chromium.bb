@@ -17,10 +17,8 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/trace_event/trace_event.h"
 #include "components/tracing/trace_config_file.h"
-#include "components/tracing/tracing_switches.h"
 #include "mojo/runner/context.h"
 #include "mojo/runner/switches.h"
-#include "mojo/runner/tracer.h"
 #include "mojo/shell/switches.h"
 
 namespace mojo {
@@ -36,23 +34,14 @@ int LauncherProcessMain(int argc, char** argv) {
   // http://crbug.com/546644
   command_line->AppendSwitch(switches::kMojoNoSandbox);
 
-  bool trace_startup = command_line->HasSwitch(switches::kTraceStartup);
-  if (trace_startup) {
-    tracer.Start(
-        command_line->GetSwitchValueASCII(switches::kTraceStartup),
-        command_line->GetSwitchValueASCII(switches::kTraceStartupDuration),
-        "mojo_runner.trace");
-  }
-
   // We want the shell::Context to outlive the MessageLoop so that pipes are
   // all gracefully closed / error-out before we try to shut the Context down.
-  base::FilePath shell_dir;
-  PathService::Get(base::DIR_MODULE, &shell_dir);
-  Context shell_context(shell_dir, &tracer);
+  Context shell_context;
   {
     base::MessageLoop message_loop;
-    tracer.DidCreateMessageLoop();
-    if (!shell_context.Init()) {
+    base::FilePath shell_dir;
+    PathService::Get(base::DIR_MODULE, &shell_dir);
+    if (!shell_context.Init(shell_dir)) {
       return 0;
     }
 

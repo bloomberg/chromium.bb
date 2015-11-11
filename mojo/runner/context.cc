@@ -22,6 +22,7 @@
 #include "build/build_config.h"
 #include "components/devtools_service/public/cpp/switches.h"
 #include "components/devtools_service/public/interfaces/devtools_service.mojom.h"
+#include "components/tracing/tracing_switches.h"
 #include "mojo/application/public/cpp/application_connection.h"
 #include "mojo/application/public/cpp/application_delegate.h"
 #include "mojo/application/public/cpp/application_impl.h"
@@ -171,11 +172,8 @@ class TracingServiceProvider : public ServiceProvider {
 
 }  // namespace
 
-Context::Context(const base::FilePath& shell_file_root, Tracer* tracer)
-    : shell_file_root_(shell_file_root),
-      tracer_(tracer),
-      package_manager_(nullptr),
-      main_entry_time_(base::Time::Now()) {}
+Context::Context()
+    : package_manager_(nullptr), main_entry_time_(base::Time::Now()) {}
 
 Context::~Context() {
   DCHECK(!base::MessageLoop::current());
@@ -187,10 +185,18 @@ void Context::EnsureEmbedderIsInitialized() {
   setup.Get();
 }
 
-bool Context::Init() {
+bool Context::Init(const base::FilePath& shell_file_root) {
   TRACE_EVENT0("mojo_shell", "Context::Init");
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
+
+  bool trace_startup = command_line.HasSwitch(switches::kTraceStartup);
+  if (trace_startup) {
+    tracer_.Start(
+        command_line.GetSwitchValueASCII(switches::kTraceStartup),
+        command_line.GetSwitchValueASCII(switches::kTraceStartupDuration),
+        "mojo_runner.trace");
+  }
 
   EnsureEmbedderIsInitialized();
   task_runners_.reset(
@@ -202,7 +208,7 @@ bool Context::Init() {
       task_runners_->io_runner(), embedder::ScopedPlatformHandle());
 
   package_manager_ = new package_manager::PackageManagerImpl(
-      shell_file_root_, task_runners_->blocking_pool());
+      shell_file_root, task_runners_->blocking_pool());
   InitContentHandlers(package_manager_, command_line);
 
   RegisterLocalAliases(package_manager_);
@@ -226,7 +232,7 @@ bool Context::Init() {
 
   ServiceProviderPtr tracing_services;
   ServiceProviderPtr tracing_exposed_services;
-  new TracingServiceProvider(tracer_, GetProxy(&tracing_exposed_services));
+  new TracingServiceProvider(&tracer_, GetProxy(&tracing_exposed_services));
 
   scoped_ptr<shell::ConnectToApplicationParams> params(
       new shell::ConnectToApplicationParams);
@@ -239,12 +245,11 @@ bool Context::Init() {
   application_manager_->ConnectToApplication(params.Pass());
 
   if (command_line.HasSwitch(tracing::kTraceStartup)) {
-    DCHECK(tracer_);
     tracing::TraceCollectorPtr coordinator;
     auto coordinator_request = GetProxy(&coordinator);
     tracing_services->ConnectToService(tracing::TraceCollector::Name_,
                                        coordinator_request.PassMessagePipe());
-    tracer_->StartCollectingFromTracingService(coordinator.Pass());
+    tracer_.StartCollectingFromTracingService(coordinator.Pass());
   }
 
   // Record the shell startup metrics used for performance testing.

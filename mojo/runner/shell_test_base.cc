@@ -30,14 +30,15 @@ void QuitIfRunning() {
 
 }  // namespace
 
-ShellTestBase::ShellTestBase()
-    : shell_context_(GetTestAppFilePath(), nullptr) {}
+ShellTestBase::ShellTestBase() {}
 
 ShellTestBase::~ShellTestBase() {
 }
 
 void ShellTestBase::SetUp() {
-  CHECK(shell_context_.Init());
+  base::FilePath shell_dir;
+  PathService::Get(base::DIR_MODULE, &shell_dir);
+  CHECK(shell_context_.Init(shell_dir));
 }
 
 void ShellTestBase::TearDown() {

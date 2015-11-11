@@ -27,12 +27,6 @@ Tracer::~Tracer() {
 void Tracer::Start(const std::string& categories,
                    const std::string& duration_seconds_str,
                    const std::string& filename) {
-  trace_duration_secs_ = 5;
-  if (!duration_seconds_str.empty()) {
-    CHECK(base::StringToInt(duration_seconds_str, &trace_duration_secs_))
-        << "Could not parse --trace-startup-duration value "
-        << duration_seconds_str;
-  }
   tracing_ = true;
   trace_filename_ = filename;
   categories_ = categories;
@@ -40,16 +34,17 @@ void Tracer::Start(const std::string& categories,
                                         base::trace_event::RECORD_UNTIL_FULL);
   base::trace_event::TraceLog::GetInstance()->SetEnabled(
       config, base::trace_event::TraceLog::RECORDING_MODE);
-}
 
-void Tracer::DidCreateMessageLoop() {
-  if (!tracing_)
-    return;
-
+  int trace_duration_secs = 5;
+  if (!duration_seconds_str.empty()) {
+    CHECK(base::StringToInt(duration_seconds_str, &trace_duration_secs))
+        << "Could not parse --trace-startup-duration value "
+        << duration_seconds_str;
+  }
   base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&Tracer::StopAndFlushToFile, base::Unretained(this)),
-      base::TimeDelta::FromSeconds(trace_duration_secs_));
+      base::TimeDelta::FromSeconds(trace_duration_secs));
 }
 
 void Tracer::StartCollectingFromTracingService(
