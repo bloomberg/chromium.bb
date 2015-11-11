@@ -34,42 +34,42 @@
     ImplementedAs=DOMSelection,
     WillBeGarbageCollected,
 ] interface Selection {
-    readonly attribute Node? anchorNode;
-    readonly attribute long anchorOffset;
-    readonly attribute Node? focusNode;
-    readonly attribute long focusOffset;
-    readonly attribute boolean isCollapsed;
-    readonly attribute long rangeCount;
+    [MeasureAs=SelectionAnchorNode] readonly attribute Node? anchorNode;
+    [MeasureAs=SelectionAnchorOffset] readonly attribute long anchorOffset;
+    [MeasureAs=SelectionFocusNode] readonly attribute Node? focusNode;
+    [MeasureAs=SelectionFocusOffset] readonly attribute long focusOffset;
+    [MeasureAs=SelectionIsCollapsed] readonly attribute boolean isCollapsed;
+    [MeasureAs=SelectionRangeCount] readonly attribute long rangeCount;
     [MeasureAs=SelectionType] readonly attribute DOMString type;
-    [RaisesException] Range getRangeAt(long index);
-    void addRange(Range range);
+    [MeasureAs=SelectionGetRangeAt, RaisesException] Range getRangeAt(long index);
+    [MeasureAs=SelectionAddRange] void addRange(Range range);
     // TODO(yoichio): Implement removeRange. crbug.com/391673
     //void removeRange(Range range);
-    void removeAllRanges();
+    [MeasureAs=SelectionRemoveAllRanges] void removeAllRanges();
     [MeasureAs=SelectionEmpty] void empty();
     // TODO(yoichio): The node argument should not be nullable. crbug.com/391673
     // TODO(philipj): The offset argument should not have a default value.
-    [RaisesException] void collapse(Node? node, optional long offset = 0);
+    [MeasureAs=SelectionCollapse, RaisesException] void collapse(Node? node, optional long offset = 0);
     // TODO(yoichio): The node argument should not be nullable. crbug.com/391673
     // TODO(philipj): The offset argument should not have a default value.
     [ImplementedAs=collapse, MeasureAs=SelectionSetPosition, RaisesException] void setPosition(Node? node, optional long offset = 0);
-    [RaisesException] void collapseToStart();
-    [RaisesException] void collapseToEnd();
+    [MeasureAs=SelectionCollapseToStart, RaisesException] void collapseToStart();
+    [MeasureAs=SelectionCollapseToEnd, RaisesException] void collapseToEnd();
     // TODO(philipj): The offset argument should not have a default value.
-    [RaisesException, TypeChecking=Interface] void extend(Node node, optional long offset = 0);
+    [MeasureAs=SelectionExtend, RaisesException, TypeChecking=Interface] void extend(Node node, optional long offset = 0);
     // TODO(philipj): The arguments should be anchorNode, anchorOffset,
     // focusNode and focusOffset, and none of them should be optional.
     [MeasureAs=SelectionSetBaseAndExtent, RaisesException] void setBaseAndExtent([Default=Undefined] optional Node baseNode,
                                                                                  [Default=Undefined] optional long baseOffset,
                                                                                  [Default=Undefined] optional Node extentNode,
                                                                                  [Default=Undefined] optional long extentOffset);
-    [RaisesException, TypeChecking=Interface] void selectAllChildren(Node node);
-    [CustomElementCallbacks] void deleteFromDocument();
+    [MeasureAs=SelectionSelectAllChildren, RaisesException, TypeChecking=Interface] void selectAllChildren(Node node);
+    [MeasureAs=SelectionDeleteDromDocument, CustomElementCallbacks] void deleteFromDocument();
     [MeasureAs=SelectionContainsNode, TypeChecking=Interface] boolean containsNode(Node node, optional boolean allowPartialContainment = false);
     // TODO(philipj): The spec does not use [NotEnumerable]. See also:
     // https://codereview.chromium.org/345983004/
     // https://www.w3.org/Bugs/Public/show_bug.cgi?id=26179
-    [NotEnumerable] stringifier DOMString ();
+    [MeasureAs=SelectionDOMString, NotEnumerable] stringifier DOMString();
 
     // Non-standard APIs
 

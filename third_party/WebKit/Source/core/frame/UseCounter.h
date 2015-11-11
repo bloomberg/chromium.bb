@@ -856,6 +856,22 @@ public:
         MeterElementWithNoneAppearance = 994,
         MeterElementWithRatingAppearance = 995,
         MeterElementWithRelevancyAppearance = 996,
+        SelectionAnchorNode = 997,
+        SelectionAnchorOffset = 998,
+        SelectionFocusNode = 999,
+        SelectionFocusOffset = 1000,
+        SelectionIsCollapsed = 1001,
+        SelectionRangeCount = 1002,
+        SelectionGetRangeAt = 1003,
+        SelectionAddRange = 1004,
+        SelectionRemoveAllRanges = 1005,
+        SelectionCollapse = 1006,
+        SelectionCollapseToStart = 1007,
+        SelectionCollapseToEnd = 1008,
+        SelectionExtend = 1009,
+        SelectionSelectAllChildren = 1010,
+        SelectionDeleteDromDocument = 1011,
+        SelectionDOMString = 1012,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
