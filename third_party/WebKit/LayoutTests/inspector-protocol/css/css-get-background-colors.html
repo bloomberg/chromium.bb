@@ -1,0 +1,539 @@
+<html>
+<head>
+<script type="text/javascript" src="../../http/tests/inspector-protocol/inspector-test.js"></script>
+<script type="text/javascript" src="../../http/tests/inspector-protocol/inspector-protocol-test.js"></script>
+<script type="text/javascript" src="../../http/tests/inspector-protocol/dom-protocol-test.js"></script>
+<script type="text/javascript" src="../../http/tests/inspector-protocol/css-protocol-test.js"></script>
+<script>
+function test() {
+    if (!InspectorTest)
+        return;
+
+    InspectorTest.requestDocumentNodeId(onDocumentNodeId);
+
+    var documentNodeId;
+    var textLayerId;
+
+    function testGetBgColors(querySelector, done) {
+        function onNodeId(nodeId) {
+            function onGotBackgroundColors(response) {
+                InspectorTest.log(JSON.stringify(response));
+                done();
+            }
+
+            InspectorTest.sendCommandOrDie("CSS.getBackgroundColors", { nodeId: nodeId }, onGotBackgroundColors);
+        }
+
+
+        InspectorTest.requestNodeId(documentNodeId, querySelector, onNodeId);
+    }
+
+    function onDocumentNodeId(nodeId)
+    {
+        documentNodeId = nodeId;
+        InspectorTest.runTestSuite([
+            function testNoText(done) {
+                InspectorTest.log("No text: should be null");
+                testGetBgColors(".noText > p", done);
+            },
+            function testNoBgColor(done) {
+                InspectorTest.log("No background color: should be white");
+                testGetBgColors(".noBgColor > p", done);
+            },
+            function testOpaqueBgColor(done) {
+                InspectorTest.log("Opaque background color: should be red");
+                testGetBgColors(".opaqueBgColor > p", done);
+            },
+            function testLayeredOpaqueBgColors(done) {
+                InspectorTest.log("Opaque background color in front of another opaque background color: should be blue");
+                testGetBgColors(".layeredOpaqueBgColors > p", done);
+            },
+            function testOneSemitransparentBgColor(done) {
+                InspectorTest.log("Semi-transparent background color: should be light red");
+                testGetBgColors(".semitransparentBgColor > p", done);
+            },
+            function testTwoSemitransparentBgColors(done) {
+                InspectorTest.log("Two layered semi-transparent background colors: should be medium red");
+                testGetBgColors(".twoSemitransparentBgColors > p", done);
+            },
+            function testOpaqueGradientBackground(done) {
+                InspectorTest.log("Opaque gradient: should be red and black");
+                testGetBgColors(".opaqueGradientBg > p", done);
+            },
+            function testOpaqueGradientBackgroundBehindScrim(done)
+            {
+                InspectorTest.log("Opaque gradient behind semi-transparent color: should be light red and 50% grey");
+                testGetBgColors(".opaqueGradientBehindScrim > p", done);
+            },
+            function testOpaqueGradientBackgroundWithColorBackground(done)
+            {
+                InspectorTest.log("Opaque gradient and solid color background on same element: should be red and black");
+                testGetBgColors(".opaqueGradientAndColorBg > p", done);
+            },
+            function testPartiallyTransparentGradientBackground(done)
+            {
+                InspectorTest.log("Semi-transparent gradient: should be light red and 50% grey");
+                testGetBgColors(".semitransparentGradientBg > p", done);
+            },
+            function testPartiallyTransparentGradientAndColorBackground(done)
+            {
+                InspectorTest.log("Semi-transparent gradient and solid color on same element: should be dark red and 50% grey");
+                testGetBgColors(".semitransparentGradientAndColorBg > p", done);
+            },
+            function testTwoPartiallyTransparentGradientBackgrounds(done)
+            {
+                InspectorTest.log("Layered semi-transparent gradients: should be empty array");
+                testGetBgColors(".twoSemitransparentGradientBgs > p", done);
+            },
+            function testPartiallyOverlappingBackground(done)
+            {
+                InspectorTest.log("Partially overlapping background: should be empty array");
+                testGetBgColors(".partiallyOverlappingBackground > p", done);
+            },
+            function smallerBackground(done)
+            {
+                InspectorTest.log("Background smaller than text: should be empty array");
+                testGetBgColors(".smallerBackground > p", done);
+            },
+            function testObscuredPartiallyOverlappingBackground(done)
+            {
+                InspectorTest.log("Red background obscuring partially overlapping blue background: should be red only");
+                testGetBgColors(".obscuredPartiallyOverlappingBackground > p", done);
+            },
+            function testBackgroundImage(done)
+            {
+                InspectorTest.log("Background image: should be empty array");
+                testGetBgColors(".backgroundImage > p", done);
+            },
+            function testBackgroundImageAndBgColor(done)
+            {
+                InspectorTest.log("Background image with background color: should be empty array");
+                testGetBgColors(".backgroundImageAndBgColor > p", done);
+            },
+
+            function testBackgroundImageBehindScrim(done)
+            {
+                InspectorTest.log("Background image behind scrim: should be semi-transparent white");
+                testGetBgColors(".backgroundImageBehindScrim > p", done);
+            },
+            function testForegroundImage(done)
+            {
+                InspectorTest.log("Image behind text: should be empty array");
+                testGetBgColors(".foregroundImage > p", done);
+            },
+            function testForegroundImageBehindScrim(done)
+            {
+                InspectorTest.log("Image behind scrim: should be semi-transparent white");
+                testGetBgColors(".foregroundImageBehindScrim > p", done);
+            },
+            function testForegroundCanvas(done)
+            {
+                InspectorTest.log("Canvas behind text: should be empty array");
+                testGetBgColors(".canvas > p", done);
+            },
+            function testForegroundEmbed(done)
+            {
+                InspectorTest.log("Embed behind text: should be empty array");
+                testGetBgColors(".embed > p", done);
+            },
+            function testForegroundObject(done)
+            {
+                InspectorTest.log("Object behind text: should be empty array");
+                testGetBgColors(".object > p", done);
+            },
+            function testForegroundPicture(done)
+            {
+                InspectorTest.log("Picture behind text: should be empty array");
+                testGetBgColors(".picture > p", done);
+            },
+            function testForegroundSVG(done)
+            {
+                InspectorTest.log("SVG behind text: should be empty array");
+                testGetBgColors(".svg > p", done);
+            },
+            function testForegroundVideo(done)
+            {
+                InspectorTest.log("Video behind text: should be empty array");
+                testGetBgColors(".video > p", done);
+            },
+        ]);
+    }
+}
+</script>
+<style>
+.testCase {
+   position: relative;
+}
+.layer, .testCase {
+   width: 200px;
+   height: 200px;
+}
+.background {
+   overflow: hidden;
+}
+.background, p {
+   position: absolute;
+   top: 0;
+   left: 0;
+}
+p {
+   color: black;
+}
+</style>
+</head>
+<body onload="runTest()">
+<!-- No text -->
+<div class="testCase noText">
+  <p class="layer">
+  </p>
+</div>
+
+<!-- No background color -->
+<div class="testCase noBgColor">
+  <p class="layer">
+    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+  </p>
+</div>
+
+
+<!-- Opaque background color -->
+<style>
+.opaqueBgColor > .background {
+  background-color: red;
+}
+</style>
+<div class="testCase opaqueBgColor">
+  <div class="background layer"></div>
+  <p class="layer">
+    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+  </p>
+</div>
+
+<!-- Layered opaque background colors -->
+<style>
+.layeredOpaqueBgColors,
+.layeredOpaqueBgColors > .background.obscured {
+  height: 300px;
+  width: 300px;
+}
+.layeredOpaqueBgColors > .background.obscured {
+  background-color: red;
+}
+.layeredOpaqueBgColors > .background.obscuring {
+  background-color: blue;
+}
+.layeredOpaqueBgColors > .background.obscuring,
+.layeredOpaqueBgColors > p {
+  top: 50px;
+  left: 50px;
+}
+
+</style>
+<div class="testCase layeredOpaqueBgColors">
+  <div class="background layer obscured"></div>
+  <div class="background layer obscuring"></div>
+  <p class="layer">
+    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+  </p>
+</div>
+
+<!-- Semi-transparent background color -->
+<style>
+.semitransparentBgColor > .background {
+  background-color: rgba(255, 0, 0, 0.5);
+}
+</style>
+<div class="testCase semitransparentBgColor">
+  <div class="background layer"></div>
+  <p class="layer">
+    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+  </p>
+</div>
+
+<!-- Two layered semi-transparent background colors -->
+<style>
+.twoSemitransparentBgColors > .background {
+  background-color: rgba(255, 0, 0, 0.5);
+}
+</style>
+<div class="testCase twoSemitransparentBgColors">
+  <div class="background layer"></div>
+  <div class="background layer"></div>
+  <p class="layer">
+    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+  </p>
+</div>
+
+<!-- Opaque gradient background -->
+<style>
+.opaqueGradientBg > .background {
+  background: linear-gradient(45deg, red, black);
+}
+</style>
+<div class="testCase opaqueGradientBg">
+  <div class="background layer"></div>
+  <p class="layer">
+    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+  </p>
+</div>
+
+<!-- Opaque gradient background behind scrim-->
+<style>
+.opaqueGradientBehindScrim > .background.gradient {
+  background: linear-gradient(45deg, red, black);
+}
+.opaqueGradientBehindScrim > .background.scrim {
+  background: rgba(255, 255, 255, 0.5);
+}
+</style>
+<div class="testCase opaqueGradientBehindScrim">
+  <div class="background layer gradient"></div>
+  <div class="background layer scrim"></div>
+  <p class="layer">
+    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+  </p>
+</div>
+
+<!-- Opaque gradient background and color background -->
+<style>
+.opaqueGradientAndColorBg > .background {
+  background-image: linear-gradient(45deg, red, black);
+  background-color: blue;
+}
+</style>
+<div class="testCase opaqueGradientAndColorBg">
+  <div class="background layer"></div>
+  <p class="layer">
+    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+  </p>
+</div>
+
+<!-- Semi-transparent gradient background -->
+<style>
+.semitransparentGradientBg > .background {
+  background: linear-gradient(45deg, rgba(255, 0, 0, 0.5), rgba(0, 0, 0, 0.5));
+}
+</style>
+<div class="testCase semitransparentGradientBg">
+  <div class="background layer"></div>
+  <p class="layer">
+    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+  </p>
+</div>
+
+<!-- Semi-transparent gradient background and color background -->
+<style>
+.semitransparentGradientAndColorBg > .background {
+  background-image: linear-gradient(45deg, rgba(255, 0, 0, 0.5), rgba(255, 255, 255, 0.5));
+  background-color: black;
+}
+</style>
+<div class="testCase semitransparentGradientAndColorBg">
+  <div class="background layer"></div>
+  <p class="layer">
+    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+  </p>
+</div>
+
+<!-- Layered semi-transparent gradient backgrounds -->
+<style>
+.twoSemitransparentGradientBgs > .background {
+  background: linear-gradient(45deg, rgba(255, 0, 0, 0.5), rgba(0, 0, 0, 0.5));
+}
+</style>
+<div class="testCase twoSemitransparentGradientBgs">
+  <div class="background layer"></div>
+  <div class="background layer"></div>
+  <p class="layer">
+    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+  </p>
+</div>
+
+<!-- Partially overlapping background element -->
+<style>
+.partiallyOverlappingBackground > .background {
+  background-color: red;
+  left: 150px;
+}
+</style>
+<div class="testCase partiallyOverlappingBackground">
+  <div class="background layer"></div>
+  <p class="layer">
+    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+  </p>
+</div>
+
+<!-- Smaller background element -->
+<style>
+.smallerBackground > .background {
+  background-color: red;
+  width: 100px;
+  height: 100px;
+}
+</style>
+<div class="testCase smallerBackground">
+  <div class="background layer"></div>
+  <p class="layer">
+    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+  </p>
+</div>
+
+<!-- Partially overlapping background element which is overlapped by opaque element -->
+<style>
+.obscuredPartiallyOverlappingBackground > .background.partiallyOverlapping {
+  background-color: blue;
+  left: 150px;
+}
+
+.obscuredPartiallyOverlappingBackground > .background.obscuring {
+  background-color: red;
+}
+</style>
+<div class="testCase obscuredPartiallyOverlappingBackground">
+  <div class="background layer partiallyOverlapping"></div>
+  <div class="background layer obscuring"></div>
+  <p class="layer">
+    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+  </p>
+</div>
+
+<!-- Background image -->
+<style>
+.backgroundImage > .background {
+  background-image: url(../../media/content/abe.png);
+}
+</style>
+<div class="testCase backgroundImage">
+  <div class="background layer"></div>
+  <p class="layer">
+    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+  </p>
+</div>
+
+<!-- Background image and background color -->
+<style>
+.backgroundImageAndBgColor > .background {
+  background-image: url(../../media/content/abe.png);
+  background-color: red;
+}
+</style>
+<div class="testCase backgroundImageAndBgColor">
+  <div class="background layer"></div>
+  <p class="layer">
+    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+  </p>
+</div>
+
+<!-- Background image behind semi-opaque scrim -->
+<style>
+.backgroundImageBehindScrim > .backgroundImage {
+  background-image: url(../../media/content/abe.png);
+}
+
+.backgroundImageBehindScrim > .scrim {
+  background-color: rgba(255, 255, 255, 0.5);
+}
+</style>
+<div class="testCase backgroundImageBehindScrim">
+  <div class="background layer backgroundImage"></div>
+  <div class="background layer scrim"></div>
+  <p class="layer">
+    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+  </p>
+</div>
+
+<!-- Image behind text -->
+<div class="testCase foregroundImage">
+  <div class="background layer">
+    <img width="200" height="200" src="../../media/content/abe.png" alt="Abraham Lincoln">
+  </div>
+  <p class="layer">
+    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+  </p>
+</div>
+
+<!-- Image behind scrim -->
+<style>
+.foregroundImageBehindScrim > .scrim {
+  background-color: rgba(255, 255, 255, 0.5);
+}
+</style>
+<div class="testCase foregroundImageBehindScrim">
+  <div class="background layer">
+    <img width="200" height="200" src="../../media/content/abe.png" alt="Abraham Lincoln">
+  </div>
+  <div class="background layer scrim"></div>
+  <p class="layer">
+    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+  </p>
+</div>
+
+<!-- Canvas behind text -->
+<div class="testCase canvas">
+  <div class="background layer">
+    <canvas width="200" height="200"></canvas>
+    <img width="200" height="200" style="visibility: hidden;" src="../../media/content/abe.png"></img>
+  </div>
+  <p class="layer">
+    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+  </p>
+</div>
+<script type="text/javascript">
+  var image = document.querySelector(".canvas img");
+  var canvas = document.querySelector(".canvas canvas");
+  var context = canvas.getContext('2d');
+  context.drawImage(image, 0, 0, 200, 200);
+</script>
+
+<!-- Embed behind text -->
+<div class="testCase embed">
+  <div class="background layer">
+    <embed width="200" height="200" src="../../media/content/abe.png"></embed>
+  </div>
+  <p class="layer">
+    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+  </p>
+</div>
+
+<!-- Object behind text -->
+<div class="testCase object">
+  <div class="background layer">
+    <object width="200" height="200" data="../../media/content/abe.png"></object>
+  </div>
+  <p class="layer">
+    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+  </p>
+</div>
+
+<!-- Picture behind text -->
+<div class="testCase picture">
+  <div class="background layer">
+    <picture><source type="image/webp" srcset="../../fast/images/resources/test.webp"><img src="../../media/content/abe.png" height="200" width="200"></picture>
+  </div>
+  <p class="layer">
+    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+  </p>
+</div>
+
+<!-- SVG behind text -->
+<div class="testCase svg">
+  <div class="background layer">
+    <svg width="100%" height="100%" viewBox="0 0 400 400"><circle r="200" cx="200" cy="200" stroke="red" stroke-width="1" fill="yellow" /><ellipse cx="120" cy="180" rx="18" ry="33" fill="black"/><ellipse cx="280" cy="120" rx="18" ry="33" fill="black"/><ellipse cx="200" cy="220" rx="8" ry="15" fill="black"/><path stroke-width="10" stroke="black" fill="none" stroke-linecap="round" d="M120,280 Q200,330 290,280"/></svg>
+  </div>
+  <p class="layer">
+    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+  </p>
+</div>
+
+<!-- Video behind text -->
+<div class="testCase video">
+  <div class="background layer">
+    <video src="../../media/content/test.ogv" height="200"></video>
+  </div>
+  <p class="layer">
+    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+  </p>
+</div>
+
+</body>
+</html>

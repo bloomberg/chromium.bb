@@ -572,6 +572,16 @@ bool CSSGradientValue::knownToBeOpaque(const LayoutObject* object) const
     return true;
 }
 
+void CSSGradientValue::getStopColors(WillBeHeapVector<Color>& stopColors, const LayoutObject* object) const
+{
+    ASSERT(object);
+    for (auto& stop : m_stops) {
+        if (!stop.isHint())
+            stopColors.append(resolveStopColor(*stop.m_color, *object));
+    }
+
+}
+
 DEFINE_TRACE_AFTER_DISPATCH(CSSGradientValue)
 {
 #if ENABLE(OILPAN)

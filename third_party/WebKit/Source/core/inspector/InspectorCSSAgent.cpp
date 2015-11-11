@@ -30,8 +30,10 @@
 #include "core/CSSPropertyNames.h"
 #include "core/InspectorTypeBuilder.h"
 #include "core/StylePropertyShorthand.h"
+#include "core/css/CSSColorValue.h"
 #include "core/css/CSSComputedStyleDeclaration.h"
 #include "core/css/CSSDefaultStyleSheets.h"
+#include "core/css/CSSGradientValue.h"
 #include "core/css/CSSImportRule.h"
 #include "core/css/CSSKeyframeRule.h"
 #include "core/css/CSSMediaRule.h"
@@ -52,7 +54,9 @@
 #include "core/dom/Node.h"
 #include "core/dom/StyleEngine.h"
 #include "core/dom/Text.h"
+#include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/html/HTMLFrameOwnerElement.h"
 #include "core/html/HTMLHeadElement.h"
 #include "core/html/VoidCallback.h"
 #include "core/inspector/IdentifiersFactory.h"
@@ -62,13 +66,18 @@
 #include "core/inspector/InspectorResourceContentLoader.h"
 #include "core/inspector/InspectorState.h"
 #include "core/inspector/InstrumentingAgents.h"
+#include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutObjectInlines.h"
 #include "core/layout/LayoutText.h"
 #include "core/layout/LayoutTextFragment.h"
+#include "core/layout/LayoutView.h"
 #include "core/layout/line/InlineTextBox.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/page/Page.h"
+#include "core/style/StyleGeneratedImage.h"
+#include "core/style/StyleImage.h"
+#include "core/svg/SVGElement.h"
 #include "platform/fonts/Font.h"
 #include "platform/fonts/FontCache.h"
 #include "platform/fonts/GlyphBuffer.h"
@@ -127,6 +136,132 @@ PassRefPtrWillBeRawPtr<CSSRuleList> filterDuplicateRules(RefPtrWillBeRawPtr<CSSR
     for (unsigned i = uniqRules.size(); i > 0; --i)
         uniqRuleList->rules().append(uniqRules[i - 1]);
     return uniqRuleList.release();
+}
+
+// Get the elements which overlap the given rectangle.
+WillBeHeapVector<RawPtrWillBeMember<Element>> elementsFromRect(LayoutRect rect, Document& document)
+{
+    HitTestRequest request(HitTestRequest::ReadOnly | HitTestRequest::Active | HitTestRequest::ListBased | HitTestRequest::PenetratingList | HitTestRequest::IgnoreClipping);
+
+    LayoutPoint center = rect.center();
+    unsigned leftPadding, rightPadding, topPadding, bottomPadding;
+    leftPadding = rightPadding = rect.width() / 2;
+    topPadding = bottomPadding = rect.height() / 2;
+    HitTestResult result(request, center, topPadding, rightPadding, bottomPadding, leftPadding);
+    document.frame()->contentLayoutObject()->hitTest(result);
+    return document.elementsFromHitTestResult(result);
+}
+
+// Blends the colors from the given gradient with the existing colors.
+void blendWithColorsFromGradient(CSSGradientValue* gradient, WillBeHeapVector<Color>& colors, bool& foundNonTransparentColor, bool& foundOpaqueColor, const LayoutObject* layoutObject)
+{
+    WillBeHeapVector<Color> stopColors;
+    gradient->getStopColors(stopColors, layoutObject);
+
+    if (colors.isEmpty()) {
+        colors.appendRange(stopColors.begin(), stopColors.end());
+    } else {
+        if (colors.size() > 1) {
+            // Gradient on gradient is too complicated, bail out
+            colors.clear();
+            return;
+        }
+
+        Color existingColor = colors.first();
+        colors.clear();
+        for (auto stopColor : stopColors) {
+            foundNonTransparentColor = foundNonTransparentColor || (stopColor.alpha() != 0);
+            colors.append(existingColor.blend(stopColor));
+        }
+    }
+    foundOpaqueColor = foundOpaqueColor || gradient->knownToBeOpaque(layoutObject);
+}
+
+// Gets the colors from an image style, if one exists and it is a gradient.
+void addColorsFromImageStyle(const ComputedStyle& style, WillBeHeapVector<Color>& colors, bool& foundOpaqueColor, bool& foundNonTransparentColor, const LayoutObject* layoutObject)
+{
+    const FillLayer& backgroundLayers = style.backgroundLayers();
+    if (!backgroundLayers.hasImage())
+        return;
+
+    StyleImage* styleImage = backgroundLayers.image();
+    if (!styleImage->isGeneratedImage()) {
+        // Make no assertions about the colors in non-generated images
+        colors.clear();
+        foundOpaqueColor = false;
+        return;
+    }
+
+    StyleGeneratedImage* genImage = toStyleGeneratedImage(styleImage);
+    RefPtrWillBeRawPtr<CSSValue> imageCSS = genImage->cssValue();
+    if (imageCSS->isGradientValue()) {
+        CSSGradientValue* gradient = toCSSGradientValue(imageCSS.get());
+        blendWithColorsFromGradient(gradient, colors, foundNonTransparentColor, foundOpaqueColor, layoutObject);
+    }
+    return;
+}
+
+// Get the background colors behind the given rect in the given document, by
+// walking up all the elements returned by a hit test (but not going beyond
+// |topElement|) covering the area of the rect, and blending their background
+// colors.
+bool getColorsFromRect(LayoutRect rect, Document& document, Element* topElement, WillBeHeapVector<Color>& colors)
+{
+    WillBeHeapVector<RawPtrWillBeMember<Element>> elementsUnderRect = elementsFromRect(rect, document);
+
+    bool foundOpaqueColor = false;
+    bool foundTopElement = false;
+
+    for (auto e = elementsUnderRect.rbegin(); !foundTopElement && e != elementsUnderRect.rend(); ++e) {
+        const Element* element = *e;
+        if (element->isSameNode(topElement))
+            foundTopElement = true;
+
+        const LayoutObject* layoutObject = element->layoutObject();
+        if (!layoutObject)
+            continue;
+
+        if (isHTMLCanvasElement(element) || isHTMLEmbedElement(element) || isHTMLImageElement(element) || isHTMLObjectElement(element) || isHTMLPictureElement(element) || element->isSVGElement() || isHTMLVideoElement(element)) {
+            colors.clear();
+            foundOpaqueColor = false;
+            continue;
+        }
+
+        const ComputedStyle* style = layoutObject->style();
+        if (!style)
+            continue;
+
+        Color backgroundColor = style->visitedDependentColor(CSSPropertyBackgroundColor);
+        bool foundNonTransparentColor = false;
+        if (backgroundColor.alpha() != 0) {
+            foundNonTransparentColor = true;
+            if (colors.isEmpty()) {
+                if (!backgroundColor.hasAlpha())
+                    foundOpaqueColor = true;
+                colors.append(backgroundColor);
+            } else {
+                if (!backgroundColor.hasAlpha()) {
+                    colors.clear();
+                    colors.append(backgroundColor);
+                    foundOpaqueColor = true;
+                } else {
+                    for (size_t i = 0; i < colors.size(); i++)
+                        colors[i] = colors[i].blend(backgroundColor);
+                    foundOpaqueColor = foundOpaqueColor || backgroundColor.hasAlpha();
+                }
+            }
+        }
+
+        addColorsFromImageStyle(*style, colors, foundOpaqueColor, foundNonTransparentColor, layoutObject);
+
+        bool contains = foundTopElement || element->boundingBox().contains(rect);
+        if (!contains && foundNonTransparentColor) {
+            // Only return colors if some opaque element covers up this one.
+            colors.clear();
+            foundOpaqueColor = false;
+        }
+    }
+    return foundOpaqueColor;
 }
 
 } // namespace
@@ -493,7 +628,7 @@ void InspectorCSSAgent::flushPendingProtocolNotifications()
 {
     if (!m_invalidatedDocuments.size())
         return;
-    WillBeHeapHashSet<RawPtrWillBeMember<Document> > invalidatedDocuments;
+    WillBeHeapHashSet<RawPtrWillBeMember<Document>> invalidatedDocuments;
     m_invalidatedDocuments.swap(&invalidatedDocuments);
     for (Document* document: invalidatedDocuments)
         updateActiveStyleSheets(document, ExistingFrontendRefresh);
@@ -1800,6 +1935,58 @@ void InspectorCSSAgent::setEffectivePropertyValueForNode(ErrorString* errorStrin
     }
 
     setCSSPropertyValue(errorString, element, foundStyle.get(), propertyId, value);
+}
+
+void InspectorCSSAgent::getBackgroundColors(ErrorString* errorString, int nodeId, RefPtr<TypeBuilder::Array<String>>& result)
+{
+    Element* element = elementForId(errorString, nodeId);
+    if (!element) {
+        *errorString = "Node not found";
+        return;
+    }
+
+    LayoutRect textBounds;
+    LayoutObject* elementLayout = element->layoutObject();
+    if (!elementLayout)
+        return;
+
+    for (const LayoutObject* child = elementLayout->slowFirstChild(); child; child = child->nextSibling()) {
+        if (!child->isText())
+            continue;
+        textBounds.unite(LayoutRect(child->absoluteBoundingBoxRect()));
+    }
+    if (textBounds.size().isEmpty())
+        return;
+
+    WillBeHeapVector<Color> colors;
+    FrameView* view = element->document().view();
+    if (!view) {
+        *errorString = "No view.";
+        return;
+    }
+    Document& document = element->document();
+    bool isMainFrame = !document.ownerElement();
+    bool foundOpaqueColor = false;
+    if (isMainFrame && !view->isTransparent()) {
+        // Start with the "default" page color (typically white).
+        Color baseBackgroundColor = view->baseBackgroundColor();
+        colors.append(view->baseBackgroundColor());
+        foundOpaqueColor = !baseBackgroundColor.hasAlpha();
+    }
+
+    foundOpaqueColor = getColorsFromRect(textBounds, element->document(), element, colors);
+
+    if (!foundOpaqueColor && !isMainFrame) {
+        for (HTMLFrameOwnerElement* ownerElement = document.ownerElement();
+            !foundOpaqueColor && ownerElement;
+            ownerElement = ownerElement->document().ownerElement()) {
+            foundOpaqueColor = getColorsFromRect(textBounds, ownerElement->document(), nullptr, colors);
+        }
+    }
+
+    result = TypeBuilder::Array<String>::create();
+    for (auto color : colors)
+        result->addItem(color.serializedAsCSSComponentValue());
 }
 
 DEFINE_TRACE(InspectorCSSAgent)

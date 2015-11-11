@@ -293,18 +293,9 @@ Element* TreeScope::hitTestPoint(int x, int y, const HitTestRequest& request) co
     return toElement(node);
 }
 
-WillBeHeapVector<RawPtrWillBeMember<Element>> TreeScope::elementsFromPoint(int x, int y) const
+WillBeHeapVector<RawPtrWillBeMember<Element>> TreeScope::elementsFromHitTestResult(HitTestResult& result) const
 {
     WillBeHeapVector<RawPtrWillBeMember<Element>> elements;
-
-    Document& document = rootNode().document();
-    IntPoint hitPoint(x, y);
-    if (!pointWithScrollAndZoomIfPossible(document, hitPoint))
-        return elements;
-
-    HitTestRequest request(HitTestRequest::ReadOnly | HitTestRequest::Active | HitTestRequest::ListBased | HitTestRequest::PenetratingList);
-    HitTestResult result(request, hitPoint);
-    document.layoutView()->hitTest(result);
 
     Node* lastNode = nullptr;
     for (const auto rectBasedNode : result.listBasedTestResult()) {
@@ -335,6 +326,20 @@ WillBeHeapVector<RawPtrWillBeMember<Element>> TreeScope::elementsFromPoint(int x
     }
 
     return elements;
+}
+
+WillBeHeapVector<RawPtrWillBeMember<Element>> TreeScope::elementsFromPoint(int x, int y) const
+{
+    Document& document = rootNode().document();
+    IntPoint hitPoint(x, y);
+    if (!pointWithScrollAndZoomIfPossible(document, hitPoint))
+        return WillBeHeapVector<RawPtrWillBeMember<Element>>();
+
+    HitTestRequest request(HitTestRequest::ReadOnly | HitTestRequest::Active | HitTestRequest::ListBased | HitTestRequest::PenetratingList);
+    HitTestResult result(request, hitPoint);
+    document.layoutView()->hitTest(result);
+
+    return elementsFromHitTestResult(result);
 }
 
 void TreeScope::addLabel(const AtomicString& forAttributeValue, HTMLLabelElement* element)

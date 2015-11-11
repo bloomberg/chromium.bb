@@ -33,6 +33,7 @@
 
 namespace blink {
 
+class Color;
 class FloatPoint;
 class Gradient;
 
@@ -51,6 +52,8 @@ enum CSSGradientRepeat { NonRepeating, Repeating };
 // stack scanning. When allocated as part of Vectors in heap-allocated
 // objects its members are visited via the containing object's
 // (CSSGradientValue) traceAfterDispatch method.
+//
+// http://www.w3.org/TR/css3-images/#color-stop-syntax
 struct CSSGradientColorStop {
     DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
@@ -107,6 +110,8 @@ public:
     bool knownToBeOpaque(const LayoutObject*) const;
 
     void loadSubimages(Document*) { }
+
+    void getStopColors(WillBeHeapVector<Color>& stopColors, const LayoutObject*) const;
 
     DECLARE_TRACE_AFTER_DISPATCH();
 
