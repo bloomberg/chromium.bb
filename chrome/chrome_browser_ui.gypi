@@ -729,6 +729,8 @@
       'browser/ui/cocoa/animatable_image.mm',
       'browser/ui/cocoa/animatable_view.h',
       'browser/ui/cocoa/animatable_view.mm',
+      'browser/ui/cocoa/app_menu/app_menu_controller.h',
+      'browser/ui/cocoa/app_menu/app_menu_controller.mm',
       'browser/ui/cocoa/applescript/apple_event_util.h',
       'browser/ui/cocoa/applescript/apple_event_util.mm',
       'browser/ui/cocoa/applescript/bookmark_folder_applescript.h',
@@ -1280,8 +1282,6 @@
       'browser/ui/cocoa/wrench_menu/recent_tabs_menu_model_delegate.mm',
       'browser/ui/cocoa/wrench_menu/wrench_menu_button_cell.h',
       'browser/ui/cocoa/wrench_menu/wrench_menu_button_cell.mm',
-      'browser/ui/cocoa/wrench_menu/wrench_menu_controller.h',
-      'browser/ui/cocoa/wrench_menu/wrench_menu_controller.mm',
     ],
     # Files used only on desktop systems (not iOS, Android, ChromeOS).
     'chrome_browser_ui_desktop_sources': [

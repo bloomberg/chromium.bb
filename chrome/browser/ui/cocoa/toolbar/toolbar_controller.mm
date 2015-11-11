@@ -27,6 +27,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_window.h"
+#import "chrome/browser/ui/cocoa/app_menu/app_menu_controller.h"
 #import "chrome/browser/ui/cocoa/background_gradient_view.h"
 #include "chrome/browser/ui/cocoa/drag_util.h"
 #import "chrome/browser/ui/cocoa/extensions/browser_action_button.h"
@@ -43,7 +44,6 @@
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_view_cocoa.h"
 #import "chrome/browser/ui/cocoa/toolbar/wrench_toolbar_button_cell.h"
 #import "chrome/browser/ui/cocoa/view_id_util.h"
-#import "chrome/browser/ui/cocoa/wrench_menu/wrench_menu_controller.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/app_menu_badge_controller.h"
 #include "chrome/browser/ui/toolbar/app_menu_model.h"
@@ -395,7 +395,7 @@ class NotificationBridge : public AppMenuBadgeController::Delegate {
   [backMenuController_ browserWillBeDestroyed];
   [forwardMenuController_ browserWillBeDestroyed];
   [browserActionsController_ browserWillBeDestroyed];
-  [wrenchMenuController_ browserWillBeDestroyed];
+  [appMenuController_ browserWillBeDestroyed];
 
   [self cleanUp];
 }
@@ -564,7 +564,7 @@ class NotificationBridge : public AppMenuBadgeController::Delegate {
 
 - (void)zoomChangedForActiveTab:(BOOL)canShowBubble {
   locationBarView_->ZoomChangedForActiveTab(
-      canShowBubble && ![wrenchMenuController_ isMenuOpen]);
+      canShowBubble && ![appMenuController_ isMenuOpen]);
 }
 
 - (void)setIsLoading:(BOOL)isLoading force:(BOOL)force {
@@ -663,13 +663,13 @@ class NotificationBridge : public AppMenuBadgeController::Delegate {
 // Install the menu wrench buttons. Calling this repeatedly is inexpensive so it
 // can be done every time the buttons are shown.
 - (void)installWrenchMenu {
-  if (wrenchMenuController_.get())
+  if (appMenuController_.get())
     return;
 
-  wrenchMenuController_.reset(
-      [[WrenchMenuController alloc] initWithBrowser:browser_]);
-  [wrenchMenuController_ setUseWithPopUpButtonCell:YES];
-  [wrenchButton_ setAttachedMenu:[wrenchMenuController_ menu]];
+  appMenuController_.reset(
+      [[AppMenuController alloc] initWithBrowser:browser_]);
+  [appMenuController_ setUseWithPopUpButtonCell:YES];
+  [wrenchButton_ setAttachedMenu:[appMenuController_ menu]];
 }
 
 - (void)updateWrenchButtonSeverity:(AppMenuIconPainter::Severity)severity
@@ -882,7 +882,7 @@ class NotificationBridge : public AppMenuBadgeController::Delegate {
   NSRect frame = wrenchButton_.frame;
   NSPoint point = NSMakePoint(NSMidX(frame), NSMinY(frame));
   // Inset to account for the whitespace around the hotdogs.
-  point.y += wrench_menu_controller::kWrenchBubblePointOffsetY;
+  point.y += app_menu_controller::kAppMenuBubblePointOffsetY;
   return [self.view convertPoint:point toView:nil];
 }
 
@@ -917,8 +917,8 @@ class NotificationBridge : public AppMenuBadgeController::Delegate {
   return wrenchButton_;
 }
 
-- (WrenchMenuController*)wrenchMenuController {
-  return wrenchMenuController_.get();
+- (AppMenuController*)appMenuController {
+  return appMenuController_.get();
 }
 
 // (URLDropTargetController protocol)

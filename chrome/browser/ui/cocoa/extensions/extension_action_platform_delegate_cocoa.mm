@@ -12,12 +12,12 @@
 #include "chrome/browser/extensions/extension_view_host.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
+#import "chrome/browser/ui/cocoa/app_menu/app_menu_controller.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/extensions/browser_actions_controller.h"
 #import "chrome/browser/ui/cocoa/extensions/extension_popup_controller.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
-#import "chrome/browser/ui/cocoa/wrench_menu/wrench_menu_controller.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_delegate.h"
 #include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "content/public/browser/notification_details.h"
@@ -81,15 +81,15 @@ void ExtensionActionPlatformDelegateCocoa::ShowPopup(
 }
 
 void ExtensionActionPlatformDelegateCocoa::CloseOverflowMenu() {
-  // If this was triggered by an action overflowed to the wrench menu, then
-  // the wrench menu will be open. Close it before opening the popup.
-  WrenchMenuController* wrenchMenuController =
+  // If this was triggered by an action overflowed to the app menu, then the app
+  // menu will be open. Close it before opening the popup.
+  AppMenuController* appMenuController =
       [[[BrowserWindowController
           browserWindowControllerForWindow:
               controller_->browser()->window()->GetNativeWindow()]
-          toolbarController] wrenchMenuController];
-  if ([wrenchMenuController isMenuOpen])
-    [wrenchMenuController cancel];
+          toolbarController] appMenuController];
+  if ([appMenuController isMenuOpen])
+    [appMenuController cancel];
 }
 
 NSPoint ExtensionActionPlatformDelegateCocoa::GetPopupPoint() const {

@@ -6,7 +6,7 @@
         <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="5056"/>
     </dependencies>
     <objects>
-        <customObject id="-2" userLabel="File's Owner" customClass="WrenchMenuButtonViewController">
+        <customObject id="-2" userLabel="File's Owner" customClass="AppMenuButtonViewController">
             <connections>
                 <outlet property="editCopy" destination="20" id="31"/>
                 <outlet property="editCut" destination="21" id="32"/>
@@ -40,7 +40,7 @@
                                 <font key="font" metaFont="smallSystem"/>
                             </buttonCell>
                             <connections>
-                                <action selector="dispatchWrenchMenuCommand:" target="-2" id="42"/>
+                                <action selector="dispatchAppMenuCommand:" target="-2" id="42"/>
                             </connections>
                         </button>
                         <button verticalHuggingPriority="750" tag="36001" id="20" customClass="MenuTrackedButton">
@@ -51,7 +51,7 @@
                                 <font key="font" metaFont="smallSystem"/>
                             </buttonCell>
                             <connections>
-                                <action selector="dispatchWrenchMenuCommand:" target="-2" id="46"/>
+                                <action selector="dispatchAppMenuCommand:" target="-2" id="46"/>
                             </connections>
                         </button>
                         <button verticalHuggingPriority="750" tag="36003" id="19" customClass="MenuTrackedButton">
@@ -62,7 +62,7 @@
                                 <font key="font" metaFont="smallSystem"/>
                             </buttonCell>
                             <connections>
-                                <action selector="dispatchWrenchMenuCommand:" target="-2" id="47"/>
+                                <action selector="dispatchAppMenuCommand:" target="-2" id="47"/>
                             </connections>
                         </button>
                     </subviews>
@@ -123,7 +123,7 @@
                                 <font key="font" metaFont="smallSystem"/>
                             </buttonCell>
                             <connections>
-                                <action selector="dispatchWrenchMenuCommand:" target="-2" id="43"/>
+                                <action selector="dispatchAppMenuCommand:" target="-2" id="43"/>
                             </connections>
                         </button>
                         <button verticalHuggingPriority="750" tag="38001" id="9" customClass="MenuTrackedButton">
@@ -134,7 +134,7 @@
                                 <font key="font" metaFont="smallSystem"/>
                             </buttonCell>
                             <connections>
-                                <action selector="dispatchWrenchMenuCommand:" target="-2" id="45"/>
+                                <action selector="dispatchAppMenuCommand:" target="-2" id="45"/>
                             </connections>
                         </button>
                         <button verticalHuggingPriority="750" tag="38004" id="8">
@@ -153,7 +153,7 @@
                                 <font key="font" metaFont="smallSystem"/>
                             </buttonCell>
                             <connections>
-                                <action selector="dispatchWrenchMenuCommand:" target="-2" id="44"/>
+                                <action selector="dispatchAppMenuCommand:" target="-2" id="44"/>
                             </connections>
                         </button>
                     </subviews>

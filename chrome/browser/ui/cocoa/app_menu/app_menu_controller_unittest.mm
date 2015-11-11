@@ -11,11 +11,11 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_list_observer.h"
+#import "chrome/browser/ui/cocoa/app_menu/app_menu_controller.h"
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #include "chrome/browser/ui/cocoa/run_loop_testing.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
 #import "chrome/browser/ui/cocoa/view_resizer_pong.h"
-#import "chrome/browser/ui/cocoa/wrench_menu/wrench_menu_controller.h"
 #include "chrome/browser/ui/sync/browser_synced_window_delegates_getter.h"
 #include "chrome/browser/ui/toolbar/app_menu_model.h"
 #include "chrome/browser/ui/toolbar/recent_tabs_builder_test_helper.h"
@@ -56,12 +56,11 @@ class DummyRouter : public browser_sync::LocalSessionEventRouter {
   void Stop() override {}
 };
 
-class WrenchMenuControllerTest
-    : public CocoaProfileTest {
+class AppMenuControllerTest : public CocoaProfileTest {
  public:
-  WrenchMenuControllerTest()
+  AppMenuControllerTest()
       : local_device_(new sync_driver::LocalDeviceInfoProviderMock(
-            "WrenchMenuControllerTest",
+            "AppMenuControllerTest",
             "Test Machine",
             "Chromium 10k",
             "Chrome 10k",
@@ -73,7 +72,7 @@ class WrenchMenuControllerTest
     CocoaProfileTest::SetUp();
     ASSERT_TRUE(browser());
 
-    controller_.reset([[WrenchMenuController alloc] initWithBrowser:browser()]);
+    controller_.reset([[AppMenuController alloc] initWithBrowser:browser()]);
     fake_model_.reset(new MockAppMenuModel);
 
     sync_prefs_.reset(new sync_driver::SyncPrefs(profile()->GetPrefs()));
@@ -108,11 +107,11 @@ class WrenchMenuControllerTest
     CocoaProfileTest::TearDown();
   }
 
-  WrenchMenuController* controller() {
+  AppMenuController* controller() {
     return controller_.get();
   }
 
-  base::scoped_nsobject<WrenchMenuController> controller_;
+  base::scoped_nsobject<AppMenuController> controller_;
 
   scoped_ptr<MockAppMenuModel> fake_model_;
 
@@ -122,12 +121,12 @@ class WrenchMenuControllerTest
   scoped_ptr<sync_driver::LocalDeviceInfoProviderMock> local_device_;
 };
 
-TEST_F(WrenchMenuControllerTest, Initialized) {
+TEST_F(AppMenuControllerTest, Initialized) {
   EXPECT_TRUE([controller() menu]);
   EXPECT_GE([[controller() menu] numberOfItems], 5);
 }
 
-TEST_F(WrenchMenuControllerTest, DispatchSimple) {
+TEST_F(AppMenuControllerTest, DispatchSimple) {
   base::scoped_nsobject<NSButton> button([[NSButton alloc] init]);
   [button setTag:IDC_ZOOM_PLUS];
 
@@ -135,11 +134,11 @@ TEST_F(WrenchMenuControllerTest, DispatchSimple) {
   EXPECT_CALL(*fake_model_, ExecuteCommand(IDC_ZOOM_PLUS, 0));
   [controller() setModel:fake_model_.get()];
 
-  [controller() dispatchWrenchMenuCommand:button.get()];
+  [controller() dispatchAppMenuCommand:button.get()];
   chrome::testing::NSRunLoopRunAllPending();
 }
 
-TEST_F(WrenchMenuControllerTest, RecentTabsFavIcon) {
+TEST_F(AppMenuControllerTest, RecentTabsFavIcon) {
   RecentTabsBuilderTestHelper recent_tabs_builder;
   recent_tabs_builder.AddSession();
   recent_tabs_builder.AddWindow(0);
@@ -174,7 +173,7 @@ TEST_F(WrenchMenuControllerTest, RecentTabsFavIcon) {
   fake_model_.reset();
 }
 
-TEST_F(WrenchMenuControllerTest, RecentTabsElideTitle) {
+TEST_F(AppMenuControllerTest, RecentTabsElideTitle) {
   // Add 1 session with 1 window and 2 tabs.
   RecentTabsBuilderTestHelper recent_tabs_builder;
   recent_tabs_builder.AddSession();
@@ -238,7 +237,7 @@ TEST_F(WrenchMenuControllerTest, RecentTabsElideTitle) {
 
 // Verify that |RecentTabsMenuModelDelegate| is deleted before the model
 // it's observing.
-TEST_F(WrenchMenuControllerTest, RecentTabDeleteOrder) {
+TEST_F(AppMenuControllerTest, RecentTabDeleteOrder) {
   [controller_ menuNeedsUpdate:[controller_ menu]];
   // If the delete order is wrong then the test will crash on exit.
 }
@@ -256,10 +255,10 @@ class BrowserRemovedObserver : public chrome::BrowserListObserver {
   DISALLOW_COPY_AND_ASSIGN(BrowserRemovedObserver);
 };
 
-// Test that WrenchMenuController can be destroyed after the Browser.
-// This can happen because the WrenchMenuController's owner (ToolbarController)
+// Test that AppMenuController can be destroyed after the Browser.
+// This can happen because the AppMenuController's owner (ToolbarController)
 // can outlive the Browser.
-TEST_F(WrenchMenuControllerTest, DestroyedAfterBrowser) {
+TEST_F(AppMenuControllerTest, DestroyedAfterBrowser) {
   BrowserRemovedObserver observer;
   // This is normally called by ToolbarController, but since |controller_| is
   // not owned by one, call it here.

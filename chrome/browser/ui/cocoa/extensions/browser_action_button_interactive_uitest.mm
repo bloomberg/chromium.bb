@@ -11,12 +11,12 @@
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/ui/browser_window.h"
+#import "chrome/browser/ui/cocoa/app_menu/app_menu_controller.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/extensions/browser_action_button.h"
 #import "chrome/browser/ui/cocoa/extensions/browser_actions_container_view.h"
 #import "chrome/browser/ui/cocoa/extensions/browser_actions_controller.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
-#import "chrome/browser/ui/cocoa/wrench_menu/wrench_menu_controller.h"
 #include "chrome/browser/ui/global_error/global_error.h"
 #include "chrome/browser/ui/global_error/global_error_service.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
@@ -43,7 +43,7 @@ class MenuError : public GlobalError {
   }
   base::string16 MenuItemLabel() override {
     const char kErrorMessage[] =
-        "This is a really long error message that will cause the wrench menu "
+        "This is a really long error message that will cause the app menu "
         "to have increased width";
     return base::ASCIIToUTF16(kErrorMessage);
   }
@@ -136,7 +136,7 @@ class BrowserActionButtonUiTest : public ExtensionBrowserTest {
                 window()->GetNativeWindow()]
             toolbarController];
     ASSERT_TRUE(toolbarController_);
-    wrenchMenuController_ = [toolbarController_ wrenchMenuController];
+    appMenuController_ = [toolbarController_ appMenuController];
     model_ = ToolbarActionsModel::Get(profile());
   }
 
@@ -154,7 +154,7 @@ class BrowserActionButtonUiTest : public ExtensionBrowserTest {
   }
 
   ToolbarController* toolbarController() { return toolbarController_; }
-  WrenchMenuController* wrenchMenuController() { return wrenchMenuController_; }
+  AppMenuController* appMenuController() { return appMenuController_; }
   ToolbarActionsModel* model() { return model_; }
   NSView* wrenchButton() { return [toolbarController_ wrenchButton]; }
 
@@ -162,7 +162,7 @@ class BrowserActionButtonUiTest : public ExtensionBrowserTest {
   scoped_ptr<extensions::FeatureSwitch::ScopedOverride> enable_redesign_;
 
   ToolbarController* toolbarController_ = nil;
-  WrenchMenuController* wrenchMenuController_ = nil;
+  AppMenuController* appMenuController_ = nil;
   ToolbarActionsModel* model_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserActionButtonUiTest);
@@ -172,13 +172,13 @@ class BrowserActionButtonUiTest : public ExtensionBrowserTest {
 // |closure| upon completion.
 void ClickOnOverflowedAction(ToolbarController* toolbarController,
                              const base::Closure& closure) {
-  WrenchMenuController* wrenchMenuController =
-      [toolbarController wrenchMenuController];
-  // The wrench menu should start as open (since that's where the overflowed
+  AppMenuController* appMenuController =
+      [toolbarController appMenuController];
+  // The app menu should start as open (since that's where the overflowed
   // actions are).
-  EXPECT_TRUE([wrenchMenuController isMenuOpen]);
+  EXPECT_TRUE([appMenuController isMenuOpen]);
   BrowserActionsController* overflowController =
-      [wrenchMenuController browserActionsController];
+      [appMenuController browserActionsController];
 
   ASSERT_TRUE(overflowController);
   BrowserActionButton* actionButton =
@@ -187,15 +187,15 @@ void ClickOnOverflowedAction(ToolbarController* toolbarController,
   EXPECT_TRUE([actionButton superview]);
 
   // ui_controls:: methods don't play nice when there is an open menu (like the
-  // wrench menu). Instead, simulate a right click by feeding the event directly
-  // to the button.
+  // app menu). Instead, simulate a right click by feeding the event directly to
+  // the button.
   NSPoint centerPoint = GetCenterPoint(actionButton);
   NSEvent* mouseEvent = cocoa_test_event_utils::RightMouseDownAtPointInWindow(
       centerPoint, [actionButton window]);
   [actionButton rightMouseDown:mouseEvent];
 
-  // This should close the wrench menu.
-  EXPECT_FALSE([wrenchMenuController isMenuOpen]);
+  // This should close the app menu.
+  EXPECT_FALSE([appMenuController isMenuOpen]);
   base::MessageLoop::current()->PostTask(FROM_HERE, closure);
 }
 
@@ -262,15 +262,15 @@ IN_PROC_BROWSER_TEST_F(BrowserActionButtonUiTest,
   model()->SetVisibleIconCount(0);
   EXPECT_EQ(nil, [actionButton superview]);
 
-  // Move the mouse over the wrench button.
+  // Move the mouse over the app button.
   MoveMouseToCenter(wrenchButton());
 
   {
     // No menu yet (on the browser action).
     EXPECT_FALSE([menuHelper menuOpened]);
     base::RunLoop runLoop;
-    // Click on the wrench menu, and pass in a callback to continue the test
-    // in ClickOnOverflowedAction (Due to the blocking nature of Cocoa menus,
+    // Click on the app menu, and pass in a callback to continue the test in
+    // ClickOnOverflowedAction (Due to the blocking nature of Cocoa menus,
     // passing in runLoop.QuitClosure() is not sufficient here.)
     ui_controls::SendMouseEventsNotifyWhenDone(
         ui_controls::LEFT, ui_controls::DOWN | ui_controls::UP,
@@ -285,37 +285,37 @@ IN_PROC_BROWSER_TEST_F(BrowserActionButtonUiTest,
   }
 }
 
-// Checks the layout of the overflow bar in the wrench menu.
+// Checks the layout of the overflow bar in the app menu.
 void CheckWrenchMenuLayout(ToolbarController* toolbarController,
                            int overflowStartIndex,
                            const std::string& error_message,
                            const base::Closure& closure) {
-  WrenchMenuController* wrenchMenuController =
-      [toolbarController wrenchMenuController];
-  // The wrench menu should start as open (since that's where the overflowed
+  AppMenuController* appMenuController =
+      [toolbarController appMenuController];
+  // The app menu should start as open (since that's where the overflowed
   // actions are).
-  EXPECT_TRUE([wrenchMenuController isMenuOpen]) << error_message;
+  EXPECT_TRUE([appMenuController isMenuOpen]) << error_message;
   BrowserActionsController* overflowController =
-      [wrenchMenuController browserActionsController];
+      [appMenuController browserActionsController];
   ASSERT_TRUE(overflowController) << error_message;
 
   ToolbarActionsBar* overflowBar = [overflowController toolbarActionsBar];
   BrowserActionsContainerView* overflowContainer =
       [overflowController containerView];
-  NSMenu* menu = [wrenchMenuController menu];
+  NSMenu* menu = [appMenuController menu];
 
-  // The overflow container should be within the bounds of the wrench menu, as
+  // The overflow container should be within the bounds of the app menu, as
   // should its parents.
   int menu_width = [menu size].width;
   NSRect frame = [overflowContainer frame];
   // The container itself should be indented in the menu.
   EXPECT_GT(NSMinX(frame), 0) << error_message;
   // Hierarchy: The overflow container is owned by two different views in the
-  // wrench menu. Each superview should start at 0 in the x-axis..
+  // app menu. Each superview should start at 0 in the x-axis.
   EXPECT_EQ(0, NSMinX([[overflowContainer superview] frame])) << error_message;
   EXPECT_EQ(0, NSMinX([[[overflowContainer superview] superview] frame])) <<
       error_message;
-  // The overflow container should fully fit in the wrench menu, including the
+  // The overflow container should fully fit in the app menu, including the
   // space taken away for padding, and should have its desired size.
   EXPECT_LE(NSWidth(frame), menu_width - kMenuPadding) << error_message;
   EXPECT_EQ(NSWidth(frame), overflowBar->GetPreferredSize().width()) <<
@@ -348,13 +348,13 @@ void CheckWrenchMenuLayout(ToolbarController* toolbarController,
     }
   }
 
-  // Close the wrench menu.
-  [wrenchMenuController cancel];
-  EXPECT_FALSE([wrenchMenuController isMenuOpen]) << error_message;
+  // Close the app menu.
+  [appMenuController cancel];
+  EXPECT_FALSE([appMenuController isMenuOpen]) << error_message;
   base::MessageLoop::current()->PostTask(FROM_HERE, closure);
 }
 
-// Tests the layout of the overflow container in the wrench menu.
+// Tests the layout of the overflow container in the app menu.
 IN_PROC_BROWSER_TEST_F(BrowserActionButtonUiTest, TestOverflowContainerLayout) {
   // Add a bunch of extensions - enough to trigger multiple rows in the overflow
   // menu.
@@ -368,7 +368,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionButtonUiTest, TestOverflowContainerLayout) {
   }
   ASSERT_EQ(kNumExtensions, static_cast<int>(model()->toolbar_items().size()));
 
-  // A helper function to open the wrench menu and call the check function.
+  // A helper function to open the app menu and call the check function.
   auto resizeAndActivateWrench = [this](int visible_count,
                                         const std::string& error_message) {
     model()->SetVisibleIconCount(kNumExtensions - visible_count);
@@ -376,8 +376,8 @@ IN_PROC_BROWSER_TEST_F(BrowserActionButtonUiTest, TestOverflowContainerLayout) {
 
     {
       base::RunLoop runLoop;
-      // Click on the wrench menu, and pass in a callback to continue the test
-      // in CheckWrenchMenuLayout (due to the blocking nature of Cocoa menus,
+      // Click on the app menu, and pass in a callback to continue the test in
+      // CheckWrenchMenuLayout (due to the blocking nature of Cocoa menus,
       // passing in runLoop.QuitClosure() is not sufficient here.)
       ui_controls::SendMouseEventsNotifyWhenDone(
           ui_controls::LEFT, ui_controls::DOWN | ui_controls::UP,
@@ -394,8 +394,8 @@ IN_PROC_BROWSER_TEST_F(BrowserActionButtonUiTest, TestOverflowContainerLayout) {
   for (int i = 1; i <= kNumExtensions; ++i)
     resizeAndActivateWrench(i, base::StringPrintf("Normal: %d", i));
 
-  // Adding a global error adjusts the wrench menu size, and has been known
-  // to mess up the overflow container's bounds (crbug.com/511326).
+  // Adding a global error adjusts the app menu size, and has been known to mess
+  // up the overflow container's bounds (crbug.com/511326).
   GlobalErrorService* error_service =
       GlobalErrorServiceFactory::GetForProfile(profile());
   error_service->AddGlobalError(new MenuError());

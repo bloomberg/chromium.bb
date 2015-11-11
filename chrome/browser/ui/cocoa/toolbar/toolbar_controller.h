@@ -28,7 +28,7 @@ class LocationBarViewMac;
 class Profile;
 @class ReloadButton;
 @class ToolbarButton;
-@class WrenchMenuController;
+@class AppMenuController;
 
 namespace content {
 class WebContents;
@@ -73,7 +73,7 @@ class NotificationBridge;
       browserActionsContainerDelegate_;
 
   // Lazily-instantiated menu controller.
-  base::scoped_nsobject<WrenchMenuController> wrenchMenuController_;
+  base::scoped_nsobject<AppMenuController> appMenuController_;
 
   // Used for monitoring the optional toolbar button prefs.
   scoped_ptr<ToolbarControllerInternal::NotificationBridge> notificationBridge_;
@@ -174,8 +174,8 @@ class NotificationBridge;
 // Returns the wrench button.
 - (NSButton*)wrenchButton;
 
-// Returns the wrench menu controller.
-- (WrenchMenuController*)wrenchMenuController;
+// Returns the app menu controller.
+- (AppMenuController*)appMenuController;
 
 @end
 

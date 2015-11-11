@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/ui/cocoa/wrench_menu/wrench_menu_controller.h"
+#import "chrome/browser/ui/cocoa/app_menu/app_menu_controller.h"
 
 #include "base/basictypes.h"
 #include "base/mac/bundle_locations.h"
@@ -50,13 +50,13 @@ const int kRightPadding = 10;
 const int kMaxOverflowContainerHeight = 416;
 }
 
-namespace wrench_menu_controller {
-const CGFloat kWrenchBubblePointOffsetY = 6;
+namespace app_menu_controller {
+const CGFloat kAppMenuBubblePointOffsetY = 6;
 }
 
 using base::UserMetricsAction;
 
-@interface WrenchMenuController (Private)
+@interface AppMenuController (Private)
 - (void)createModel;
 - (void)adjustPositioning;
 - (void)performCommandDispatch:(NSNumber*)tag;
@@ -69,9 +69,9 @@ using base::UserMetricsAction;
                  modelIndex:(int)modelIndex;
 @end
 
-namespace WrenchMenuControllerInternal {
+namespace AppMenuControllerInternal {
 
-// A C++ delegate that handles the accelerators in the wrench menu.
+// A C++ delegate that handles the accelerators in the app menu.
 class AcceleratorDelegate : public ui::AcceleratorProvider {
  public:
   bool GetAcceleratorForCommandId(int command_id,
@@ -88,7 +88,7 @@ class AcceleratorDelegate : public ui::AcceleratorProvider {
 
 class ZoomLevelObserver {
  public:
-  ZoomLevelObserver(WrenchMenuController* controller,
+  ZoomLevelObserver(AppMenuController* controller,
                     ui_zoom::ZoomEventManager* manager)
       : controller_(controller) {
     subscription_ = manager->AddZoomLevelChangedCallback(
@@ -109,14 +109,14 @@ class ZoomLevelObserver {
 
   scoped_ptr<content::HostZoomMap::Subscription> subscription_;
 
-  WrenchMenuController* controller_;  // Weak; owns this.
+  AppMenuController* controller_;  // Weak; owns this.
 
   DISALLOW_COPY_AND_ASSIGN(ZoomLevelObserver);
 };
 
 class ToolbarActionsBarObserverHelper : public ToolbarActionsBarObserver {
  public:
-  ToolbarActionsBarObserverHelper(WrenchMenuController* controller,
+  ToolbarActionsBarObserverHelper(AppMenuController* controller,
                                   ToolbarActionsBar* toolbar_actions_bar)
       : controller_(controller),
         scoped_observer_(this) {
@@ -133,21 +133,21 @@ class ToolbarActionsBarObserverHelper : public ToolbarActionsBarObserver {
     [controller_ updateBrowserActionsSubmenu];
   }
 
-  WrenchMenuController* controller_;
+  AppMenuController* controller_;
   ScopedObserver<ToolbarActionsBar, ToolbarActionsBarObserver> scoped_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(ToolbarActionsBarObserverHelper);
 };
 
-}  // namespace WrenchMenuControllerInternal
+}  // namespace AppMenuControllerInternal
 
-@implementation WrenchMenuController
+@implementation AppMenuController
 
 - (id)initWithBrowser:(Browser*)browser {
   if ((self = [super init])) {
     browser_ = browser;
     acceleratorDelegate_.reset(
-        new WrenchMenuControllerInternal::AcceleratorDelegate());
+        new AppMenuControllerInternal::AcceleratorDelegate());
     [self createModel];
   }
   return self;
@@ -204,8 +204,8 @@ class ToolbarActionsBarObserverHelper : public ToolbarActionsBarObserver {
 
       // The overflow browser actions container can't function properly without
       // a main counterpart, so if the browser window hasn't initialized, abort.
-      // (This is fine because we re-populate the wrench menu each time before
-      // we show it.)
+      // (This is fine because we re-populate the app menu each time before we
+      // show it.)
       if (!browser_->window())
         break;
 
@@ -214,7 +214,7 @@ class ToolbarActionsBarObserverHelper : public ToolbarActionsBarObserver {
               window()->GetNativeWindow()] toolbarController]
                   browserActionsController];
       toolbar_actions_bar_observer_.reset(
-          new WrenchMenuControllerInternal::ToolbarActionsBarObserverHelper(
+          new AppMenuControllerInternal::ToolbarActionsBarObserverHelper(
               self, [mainController toolbarActionsBar]));
       browserActionsController_.reset(
           [[BrowserActionsController alloc]
@@ -333,7 +333,7 @@ class ToolbarActionsBarObserverHelper : public ToolbarActionsBarObserver {
   [super menuWillOpen:menu];
 
   zoom_level_observer_.reset(
-      new WrenchMenuControllerInternal::ZoomLevelObserver(
+      new AppMenuControllerInternal::ZoomLevelObserver(
           self,
           ui_zoom::ZoomEventManager::GetForBrowserContext(
               browser_->profile())));
@@ -379,11 +379,11 @@ class ToolbarActionsBarObserverHelper : public ToolbarActionsBarObserver {
   [self updateBrowserActionsSubmenu];
 }
 
-// Used to dispatch commands from the Wrench menu. The custom items within the
+// Used to dispatch commands from the App menu. The custom items within the
 // menu cannot be hooked up directly to First Responder because the window in
 // which the controls reside is not the BrowserWindowController, but a
 // NSCarbonMenuWindow; this screws up the typical |-commandDispatch:| system.
-- (IBAction)dispatchWrenchMenuCommand:(id)sender {
+- (IBAction)dispatchAppMenuCommand:(id)sender {
   NSInteger tag = [sender tag];
   if (sender == [buttonViewController_ zoomPlus] ||
       sender == [buttonViewController_ zoomMinus]) {
@@ -397,8 +397,8 @@ class ToolbarActionsBarObserverHelper : public ToolbarActionsBarObserver {
       [menu_ cancelTracking];
     }
   } else {
-    // The custom views within the Wrench menu are abnormal and keep the menu
-    // open after a target-action.  Close the menu manually.
+    // The custom views within the App menu are abnormal and keep the menu open
+    // after a target-action.  Close the menu manually.
     [menu_ cancelTracking];
 
     // Executing certain commands from the nested run loop of the menu can lead
@@ -439,7 +439,7 @@ class ToolbarActionsBarObserverHelper : public ToolbarActionsBarObserver {
   [self setModel:appMenuModel_.get()];
 
   buttonViewController_.reset(
-      [[WrenchMenuButtonViewController alloc] initWithController:self]);
+      [[AppMenuButtonViewController alloc] initWithController:self]);
   [buttonViewController_ view];
 
   // See comment in containerSuperviewFrameChanged:.
@@ -521,8 +521,8 @@ class ToolbarActionsBarObserverHelper : public ToolbarActionsBarObserver {
 // kRecentlyClosedHeaderCommandId or the kDisabledRecentlyClosedHeaderCommandId.
 - (RecentTabsSubMenuModel*)recentTabsMenuModel {
   int index = 0;
-  // Start searching at the wrench menu model level, |model| will be updated
-  // only if the command we're looking for is found in one of the [sub]menus.
+  // Start searching at the app menu model level, |model| will be updated only
+  // if the command we're looking for is found in one of the [sub]menus.
   ui::MenuModel* model = [self appMenuModel];
   if (ui::MenuModel::GetModelAndIndexForCommandId(
           RecentTabsSubMenuModel::kRecentlyClosedHeaderCommandId, &model,
@@ -548,15 +548,15 @@ class ToolbarActionsBarObserverHelper : public ToolbarActionsBarObserver {
   return -1;
 }
 
-@end  // @implementation WrenchMenuController
+@end  // @implementation AppMenuController
 
 ////////////////////////////////////////////////////////////////////////////////
 
-@interface WrenchMenuButtonViewController ()
+@interface AppMenuButtonViewController ()
 - (void)containerSuperviewFrameChanged:(NSNotification*)notification;
 @end
 
-@implementation WrenchMenuButtonViewController
+@implementation AppMenuButtonViewController
 
 @synthesize editItem = editItem_;
 @synthesize editCut = editCut_;
@@ -570,10 +570,10 @@ class ToolbarActionsBarObserverHelper : public ToolbarActionsBarObserver {
 @synthesize toolbarActionsOverflowItem = toolbarActionsOverflowItem_;
 @synthesize overflowActionsContainerView = overflowActionsContainerView_;
 
-- (id)initWithController:(WrenchMenuController*)controller {
+- (id)initWithController:(AppMenuController*)controller {
   if ((self = [super initWithNibName:@"WrenchMenu"
                               bundle:base::mac::FrameworkBundle()])) {
-    propertyReleaser_.Init(self, [WrenchMenuButtonViewController class]);
+    propertyReleaser_.Init(self, [AppMenuButtonViewController class]);
     controller_ = controller;
     [[NSNotificationCenter defaultCenter]
         addObserver:self
@@ -589,8 +589,8 @@ class ToolbarActionsBarObserverHelper : public ToolbarActionsBarObserver {
   [super dealloc];
 }
 
-- (IBAction)dispatchWrenchMenuCommand:(id)sender {
-  [controller_ dispatchWrenchMenuCommand:sender];
+- (IBAction)dispatchAppMenuCommand:(id)sender {
+  [controller_ dispatchAppMenuCommand:sender];
 }
 
 - (void)containerSuperviewFrameChanged:(NSNotification*)notification {
@@ -607,4 +607,4 @@ class ToolbarActionsBarObserverHelper : public ToolbarActionsBarObserver {
     [containerSuperview setFrameOrigin:NSZeroPoint];
 }
 
-@end  // @implementation WrenchMenuButtonViewController
+@end  // @implementation AppMenuButtonViewController

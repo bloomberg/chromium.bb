@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_COCOA_WRENCH_MENU_WRENCH_MENU_CONTROLLER_H_
-#define CHROME_BROWSER_UI_COCOA_WRENCH_MENU_WRENCH_MENU_CONTROLLER_H_
+#ifndef CHROME_BROWSER_UI_COCOA_APP_MENU_APP_MENU_CONTROLLER_H_
+#define CHROME_BROWSER_UI_COCOA_APP_MENU_APP_MENU_CONTROLLER_H_
 
 #import <Cocoa/Cocoa.h>
 
@@ -20,33 +20,33 @@ class Browser;
 @class MenuTrackedRootView;
 class RecentTabsMenuModelDelegate;
 @class ToolbarController;
-@class WrenchMenuButtonViewController;
+@class AppMenuButtonViewController;
 class AppMenuModel;
 
-namespace wrench_menu_controller {
-// The vertical offset of the wrench bubbles from the wrench menu button.
-extern const CGFloat kWrenchBubblePointOffsetY;
+namespace app_menu_controller {
+// The vertical offset of the app menu bubbles from the app menu button.
+extern const CGFloat kAppMenuBubblePointOffsetY;
 }
 
-namespace WrenchMenuControllerInternal {
+namespace AppMenuControllerInternal {
 class AcceleratorDelegate;
 class ToolbarActionsBarObserverHelper;
 class ZoomLevelObserver;
-}  // namespace WrenchMenuControllerInternal
+}  // namespace AppMenuControllerInternal
 
-// The Wrench menu has a creative layout, with buttons in menu items. There is
-// a cross-platform model for this special menu, but on the Mac it's easier to
+// The App menu has a creative layout, with buttons in menu items. There is a
+// cross-platform model for this special menu, but on the Mac it's easier to
 // get spacing and alignment precisely right using a NIB. To do that, we
 // subclass the generic MenuController implementation and special-case the two
 // items that require specific layout and load them from the NIB.
 //
 // This object is owned by the ToolbarController and receives its NIB-based
 // views using the shim view controller below.
-@interface WrenchMenuController
+@interface AppMenuController
     : MenuController<NSMenuDelegate, HasWeakBrowserPointer> {
  @private
   // Used to provide accelerators for the menu.
-  scoped_ptr<WrenchMenuControllerInternal::AcceleratorDelegate>
+  scoped_ptr<AppMenuControllerInternal::AcceleratorDelegate>
       acceleratorDelegate_;
 
   // The model, rebuilt each time the |-menuNeedsUpdate:|.
@@ -58,7 +58,7 @@ class ZoomLevelObserver;
 
   // A shim NSViewController that loads the buttons from the NIB because ObjC
   // doesn't have multiple inheritance as this class is a MenuController.
-  base::scoped_nsobject<WrenchMenuButtonViewController> buttonViewController_;
+  base::scoped_nsobject<AppMenuButtonViewController> buttonViewController_;
 
   // The browser for which this controller exists.
   Browser* browser_;  // weak
@@ -67,15 +67,15 @@ class ZoomLevelObserver;
   scoped_ptr<BookmarkMenuBridge> bookmarkMenuBridge_;
 
   // Observer for page zoom level change notifications.
-  scoped_ptr<WrenchMenuControllerInternal::ZoomLevelObserver>
+  scoped_ptr<AppMenuControllerInternal::ZoomLevelObserver>
       zoom_level_observer_;
 
   // Observer for the main window's ToolbarActionsBar changing size.
-  scoped_ptr<WrenchMenuControllerInternal::ToolbarActionsBarObserverHelper>
+  scoped_ptr<AppMenuControllerInternal::ToolbarActionsBarObserverHelper>
       toolbar_actions_bar_observer_;
 
   // The controller for the toolbar actions overflow that is stored in the
-  // wrench menu.
+  // app menu.
   // This will only be present if the extension action redesign switch is on.
   base::scoped_nsobject<BrowserActionsController> browserActionsController_;
 
@@ -86,11 +86,11 @@ class ZoomLevelObserver;
 // Designated initializer.
 - (id)initWithBrowser:(Browser*)browser;
 
-// Used to dispatch commands from the Wrench menu. The custom items within the
+// Used to dispatch commands from the App menu. The custom items within the
 // menu cannot be hooked up directly to First Responder because the window in
 // which the controls reside is not the BrowserWindowController, but a
 // NSCarbonMenuWindow; this screws up the typical |-commandDispatch:| system.
-- (IBAction)dispatchWrenchMenuCommand:(id)sender;
+- (IBAction)dispatchAppMenuCommand:(id)sender;
 
 // Returns the weak reference to the AppMenuModel.
 - (AppMenuModel*)appMenuModel;
@@ -110,9 +110,9 @@ class ZoomLevelObserver;
 ////////////////////////////////////////////////////////////////////////////////
 
 // Shim view controller that merely unpacks objects from a NIB.
-@interface WrenchMenuButtonViewController : NSViewController {
+@interface AppMenuButtonViewController : NSViewController {
  @private
-  WrenchMenuController* controller_;
+  AppMenuController* controller_;
 
   MenuTrackedRootView* editItem_;
   NSButton* editCut_;
@@ -145,9 +145,9 @@ class ZoomLevelObserver;
 @property(retain, nonatomic)
     IBOutlet BrowserActionsContainerView* overflowActionsContainerView;
 
-- (id)initWithController:(WrenchMenuController*)controller;
-- (IBAction)dispatchWrenchMenuCommand:(id)sender;
+- (id)initWithController:(AppMenuController*)controller;
+- (IBAction)dispatchAppMenuCommand:(id)sender;
 
 @end
 
-#endif  // CHROME_BROWSER_UI_COCOA_WRENCH_MENU_WRENCH_MENU_CONTROLLER_H_
+#endif  // CHROME_BROWSER_UI_COCOA_APP_MENU_APP_MENU_CONTROLLER_H_

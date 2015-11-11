@@ -11,11 +11,11 @@
 #include "base/strings/utf_string_conversions.h"
 #import "chrome/browser/ui/browser.h"
 #import "chrome/browser/ui/browser_window.h"
+#import "chrome/browser/ui/cocoa/app_menu/app_menu_controller.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
 #import "chrome/browser/ui/cocoa/l10n_util.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
-#import "chrome/browser/ui/cocoa/wrench_menu/wrench_menu_controller.h"
 #include "chrome/browser/ui/global_error/global_error.h"
 #include "chrome/browser/ui/global_error/global_error_bubble_view_base.h"
 #include "chrome/browser/ui/global_error/global_error_service.h"
@@ -55,7 +55,7 @@ class Bridge : public GlobalErrorBubbleViewBase {
   NSView* wrenchButton = [[bwc toolbarController] wrenchButton];
   NSPoint offset = NSMakePoint(
       NSMidX([wrenchButton bounds]),
-      wrench_menu_controller::kWrenchBubblePointOffsetY);
+      app_menu_controller::kAppMenuBubblePointOffsetY);
 
   // The bubble will be automatically deleted when the window is closed.
   GlobalErrorBubbleController* bubble = [[GlobalErrorBubbleController alloc]

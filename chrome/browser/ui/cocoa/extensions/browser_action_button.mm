@@ -13,11 +13,11 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
+#import "chrome/browser/ui/cocoa/app_menu/app_menu_controller.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/extensions/browser_actions_controller.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
-#import "chrome/browser/ui/cocoa/wrench_menu/wrench_menu_controller.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_delegate.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
@@ -113,14 +113,14 @@ void ToolbarActionViewDelegateBridge::ShowContextMenu() {
   DCHECK(![owner_ superview]);
 
   contextMenuRunning_ = true;
-  WrenchMenuController* wrenchMenuController =
+  AppMenuController* appMenuController =
       [[[BrowserWindowController browserWindowControllerForWindow:
           [controller_ browser]->window()->GetNativeWindow()]
-              toolbarController] wrenchMenuController];
-  // If the wrench menu is open, we have to first close it. Part of this happens
+              toolbarController] appMenuController];
+  // If the app menu is open, we have to first close it. Part of this happens
   // asynchronously, so we have to use a posted task to open the next menu.
-  if ([wrenchMenuController isMenuOpen])
-    [wrenchMenuController cancel];
+  if ([appMenuController isMenuOpen])
+    [appMenuController cancel];
 
   [controller_ toolbarActionsBar]->PopOutAction(
       viewController_,
@@ -154,11 +154,11 @@ void ToolbarActionViewDelegateBridge::OnPopupClosed() {
 }
 
 void ToolbarActionViewDelegateBridge::DoShowContextMenu() {
-  // The point the menu shows matches that of the normal wrench menu - that is,
-  // the right-left most corner of the menu is left-aligned with the wrench
-  // button, and the menu is displayed "a little bit" lower. It would be nice to
-  // be able to avoid the magic '5' here, but since it's built into Cocoa, it's
-  // not too hopeful.
+  // The point the menu shows matches that of the normal app menu - that is, the
+  // right-left most corner of the menu is left-aligned with the app button,
+  // and the menu is displayed "a little bit" lower. It would be nice to be able
+  // to avoid the magic '5' here, but since it's built into Cocoa, it's not too
+  // hopeful.
   NSPoint menuPoint = NSMakePoint(0, NSHeight([owner_ bounds]) + 5);
   [[owner_ cell] setHighlighted:YES];
   [[owner_ menu] popUpMenuPositioningItem:nil
@@ -230,9 +230,9 @@ void ToolbarActionViewDelegateBridge::DoShowContextMenu() {
 
 - (void)rightMouseDown:(NSEvent*)theEvent {
   // Cocoa doesn't allow menus-running-in-menus, so in order to show the
-  // context menu for an overflowed action, we close the wrench menu and show
-  // the context menu over the wrench (similar to what we do for popups).
-  // Let the main bar's button handle showing the context menu, since the wrench
+  // context menu for an overflowed action, we close the app menu and show the
+  // context menu over the app menu (similar to what we do for popups).
+  // Let the main bar's button handle showing the context menu, since the app
   // menu will close..
   if ([browserActionsController_ isOverflow]) {
     [browserActionsController_ mainButtonForId:viewController_->GetId()]->
