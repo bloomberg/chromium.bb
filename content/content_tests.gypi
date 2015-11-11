@@ -1893,6 +1893,7 @@
           ],
         },
         {
+          # GN: //content/shell/android:content_shell_browsertests_java
           'target_name': 'content_shell_browsertests_java',
           'type': 'none',
           'dependencies': [

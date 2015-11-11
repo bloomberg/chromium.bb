@@ -1813,6 +1813,8 @@ template("instrumentation_test_apk") {
 #     support executables.
 #   apk_name: The name of the produced apk. If unspecified, it uses the name
 #             of the unittests_dep target postfixed with "_apk"
+#   use_default_launcher: Whether the default activity (NativeUnitTestActivity)
+#     should be used for launching tests.
 #
 # Example
 #   unittest_apk("foo_unittests_apk") {
@@ -1850,12 +1852,15 @@ template("unittest_apk") {
                              "android_manifest",
                            ])
     final_apk_path = "$root_build_dir/${apk_name}_apk/${apk_name}-debug.apk"
-    java_files = [
-      "//testing/android/native_test/java/src/org/chromium/native_test/NativeBrowserTestActivity.java",
-      "//testing/android/native_test/java/src/org/chromium/native_test/NativeTestActivity.java",
-      "//testing/android/native_test/java/src/org/chromium/native_test/NativeUnitTestActivity.java",
-      "//testing/android/native_test/java/src/org/chromium/native_test/NativeTestInstrumentationTestRunner.java",
-    ]
+
+    if (!defined(invoker.use_default_launcher) || invoker.use_default_launcher) {
+      java_files = [
+        "//testing/android/native_test/java/src/org/chromium/native_test/NativeBrowserTestActivity.java",
+        "//testing/android/native_test/java/src/org/chromium/native_test/NativeTestActivity.java",
+        "//testing/android/native_test/java/src/org/chromium/native_test/NativeUnitTestActivity.java",
+        "//testing/android/native_test/java/src/org/chromium/native_test/NativeTestInstrumentationTestRunner.java",
+      ]
+    }
     if (!defined(invoker.android_manifest)) {
       android_manifest =
           "//testing/android/native_test/java/AndroidManifest.xml"

@@ -418,7 +418,7 @@ test("content_browsertests") {
       "//testing/android/native_test:native_test_support",
     ]
 
-    use_launcher = false
+    use_default_launcher = false
   }
 
   if (is_mac) {

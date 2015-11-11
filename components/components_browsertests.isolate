@@ -34,20 +34,10 @@
         ],
       },
     }],
-    ['OS=="android"', {
-      'variables': {
-        'files': [
-          '<(PRODUCT_DIR)/components_browsertests_apk_shell/assets/components_tests_resources.pak',
-          '<(PRODUCT_DIR)/components_browsertests_apk_shell/assets/content_shell.pak',
-        ],
-      },
-    }],
     ['OS=="linux" or OS=="mac" or OS=="win"', {
       'variables': {
         'files': [
           '../testing/test_env.py',
-          '<(PRODUCT_DIR)/components_tests_resources.pak',
-          '<(PRODUCT_DIR)/content_shell.pak',
         ],
       },
     }],
@@ -57,6 +47,8 @@
           'test/data/',
           'dom_distiller/core/javascript/',
           '../third_party/dom_distiller_js/dist/test/data/',
+          '<(PRODUCT_DIR)/components_tests_resources.pak',
+          '<(PRODUCT_DIR)/content_shell.pak',
         ],
       },
     }],

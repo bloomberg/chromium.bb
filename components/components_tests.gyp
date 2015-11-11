@@ -1519,7 +1519,7 @@
           'includes': [ '../build/android/jinja_template.gypi' ],
         },
         {
-          # TODO(GN)
+          # GN: //components:components_browsertests_apk
           'target_name': 'components_browsertests_apk',
           'type': 'none',
           'dependencies': [

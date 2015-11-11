@@ -54,7 +54,8 @@ template("test") {
                              ])
 
       deps = []
-      if (!defined(invoker.use_launcher) || invoker.use_launcher) {
+      if (!defined(invoker.use_default_launcher) ||
+          invoker.use_default_launcher) {
         deps += [ "//testing/android/native_test:native_test_native_code" ]
       }
       if (defined(invoker.deps)) {
@@ -80,6 +81,9 @@ template("test") {
       }
       if (defined(invoker.android_manifest)) {
         android_manifest = invoker.android_manifest
+      }
+      if (defined(invoker.use_default_launcher)) {
+        use_default_launcher = invoker.use_default_launcher
       }
     }
 

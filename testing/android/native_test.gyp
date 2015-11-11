@@ -51,6 +51,7 @@
           ],
         },
         {
+          # GN: //testing/android/native_test:native_test_java
           'target_name': 'native_test_java',
           'type': 'none',
           'dependencies': [

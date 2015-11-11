@@ -7,6 +7,10 @@ import("//build/config/ui.gni")
 import("//testing/test.gni")
 import("//tools/grit/repack.gni")
 
+if (is_android) {
+  import("//build/config/android/rules.gni")
+}
+
 # Collection of all components. You wouldn't link to this, but this is rather
 # to reference the files so they can be compiled by the build system.
 group("all_components") {
@@ -516,6 +520,48 @@ repack("components_tests_pak") {
   ]
 }
 
+if (is_android) {
+  android_assets("components_browsertests_assets") {
+    testonly = true
+    sources = [
+      "$root_out_dir/components_tests_resources.pak",
+      "$root_out_dir/content_shell.pak",
+    ]
+    deps = [
+      ":components_tests_pak",
+      "//content/shell:pak",
+      "//third_party/icu:icu_assets",
+      "//v8:v8_external_startup_data_assets",
+    ]
+  }
+
+  android_library("components_browsertests_java") {
+    testonly = true
+    deps = [
+      ":components_browsertests_resources",
+      "//base:base_java",
+      "//content/public/test/android:content_java_test_support",
+      "//content/shell/android:content_shell_browsertests_java",
+      "//testing/android/native_test:native_test_java",
+    ]
+    DEPRECATED_java_in_dir = "//components/test/android/browsertests_apk/src"
+  }
+
+  jinja_template("components_browsertests_manifest") {
+    testonly = true
+    input =
+        "//components/test/android/browsertests_apk/AndroidManifest.xml.jinja2"
+    output =
+        "${target_gen_dir}/components_browsertests_manifest/AndroidManifest.xml"
+  }
+
+  android_resources("components_browsertests_resources") {
+    testonly = true
+    resource_dirs = [ "//components/test/android/browsertests_apk/res" ]
+    custom_package = "org.chromium.components_browsertests_apk"
+  }
+}
+
 # TODO(GYP): Delete this after we've converted everything to GN.
 # The _run targets exist only for compatibility w/ GYP.
 group("components_browsertests_run") {
@@ -590,8 +636,15 @@ test("components_browsertests") {
     sources += [ "test/android/browsertests_apk/components_browser_tests_jni_onload.cc" ]
     sources -= [ "autofill/content/browser/risk/fingerprint_browsertest.cc" ]
     deps += [ "//testing/android/native_test:native_test_support" ]
-    use_launcher = false
+    use_default_launcher = false
     isolate_file = "components_browsertests.isolate"
+    android_manifest =
+        "${target_gen_dir}/components_browsertests_manifest/AndroidManifest.xml"
+    apk_deps = [
+      ":components_browsertests_assets",
+      ":components_browsertests_java",
+      ":components_browsertests_manifest",
+    ]
   }
 
   if (is_linux) {

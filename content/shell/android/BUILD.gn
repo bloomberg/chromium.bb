@@ -224,3 +224,16 @@ if (current_cpu != "x64") {
     ]
   }
 }
+
+# GYP: //content/content_tests.gypi:content_shell_browsertests_java"
+android_library("content_shell_browsertests_java") {
+  testonly = true
+  deps = [
+    ":content_shell_java",
+    "//base:base_java",
+    "//content/public/android:content_java",
+    "//testing/android/native_test:native_test_java",
+    "//ui/android:ui_java",
+  ]
+  DEPRECATED_java_in_dir = "browsertests/src"
+}
