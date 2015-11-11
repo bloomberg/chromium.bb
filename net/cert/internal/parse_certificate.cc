@@ -174,6 +174,17 @@ bool ParseValidity(const der::Input& validity_tlv,
   return true;
 }
 
+// Returns true if every bit in |bits| is zero (including empty).
+WARN_UNUSED_RESULT bool BitStringIsAllZeros(const der::BitString& bits) {
+  // Note that it is OK to read from the unused bits, since BitString parsing
+  // guarantees they are all zero.
+  for (size_t i = 0; i < bits.bytes().Length(); ++i) {
+    if (bits.bytes().UnsafeData()[i] != 0)
+      return false;
+  }
+  return true;
+}
+
 }  // namespace
 
 ParsedTbsCertificate::ParsedTbsCertificate() {}
@@ -565,6 +576,25 @@ bool ParseBasicConstraints(const der::Input& basic_constraints_tlv,
   // By definition the input was a single BasicConstraints sequence, so there
   // shouldn't be unconsumed data.
   if (parser.HasMore())
+    return false;
+
+  return true;
+}
+
+bool ParseKeyUsage(const der::Input& key_usage_tlv, der::BitString* key_usage) {
+  der::Parser parser(key_usage_tlv);
+  if (!parser.ReadBitString(key_usage))
+    return false;
+
+  // By definition the input was a single BIT STRING.
+  if (parser.HasMore())
+    return false;
+
+  // RFC 5280 section 4.2.1.3:
+  //
+  //     When the keyUsage extension appears in a certificate, at least
+  //     one of the bits MUST be set to 1.
+  if (BitStringIsAllZeros(*key_usage))
     return false;
 
   return true;

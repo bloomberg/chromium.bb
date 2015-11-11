@@ -62,6 +62,14 @@ class NET_EXPORT BitString {
   const Input& bytes() const { return bytes_; }
   uint8_t unused_bits() const { return unused_bits_; }
 
+  // Returns true if the bit string contains 1 at the specified position.
+  // Otherwise returns false.
+  //
+  // A return value of false can mean either:
+  //  * The bit value at |bit_index| is 0.
+  //  * There is no bit at |bit_index| (index is beyond the end).
+  bool AssertsBit(size_t bit_index) const WARN_UNUSED_RESULT;
+
  private:
   Input bytes_;
   uint8_t unused_bits_;

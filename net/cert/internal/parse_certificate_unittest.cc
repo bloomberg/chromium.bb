@@ -684,6 +684,109 @@ TEST(ParseBasicConstraintsTest, PathLenButNotCa) {
   EXPECT_EQ(1u, constraints.path_len);
 }
 
+// Parses a KeyUsage with a single 0 bit.
+TEST(ParseKeyUsageTest, OneBitAllZeros) {
+  const uint8_t der[] = {
+      0x03, 0x02,  // BIT STRING
+      0x07,        // Number of unused bits
+      0x00,        // bits
+  };
+
+  der::BitString key_usage;
+  ASSERT_FALSE(ParseKeyUsage(der::Input(der), &key_usage));
+}
+
+// Parses a KeyUsage with 32 bits that are all 0.
+TEST(ParseKeyUsageTest, 32BitsAllZeros) {
+  const uint8_t der[] = {
+      0x03, 0x05,  // BIT STRING
+      0x00,        // Number of unused bits
+      0x00, 0x00, 0x00, 0x00,
+  };
+
+  der::BitString key_usage;
+  ASSERT_FALSE(ParseKeyUsage(der::Input(der), &key_usage));
+}
+
+// Parses a KeyUsage with 32 bits, one of which is 1 (but not in recognized
+// set).
+TEST(ParseKeyUsageTest, 32BitsOneSet) {
+  const uint8_t der[] = {
+      0x03, 0x05,  // BIT STRING
+      0x00,        // Number of unused bits
+      0x00, 0x00, 0x00, 0x02,
+  };
+
+  der::BitString key_usage;
+  ASSERT_TRUE(ParseKeyUsage(der::Input(der), &key_usage));
+
+  EXPECT_FALSE(key_usage.AssertsBit(KEY_USAGE_BIT_DIGITAL_SIGNATURE));
+  EXPECT_FALSE(key_usage.AssertsBit(KEY_USAGE_BIT_NON_REPUDIATION));
+  EXPECT_FALSE(key_usage.AssertsBit(KEY_USAGE_BIT_KEY_ENCIPHERMENT));
+  EXPECT_FALSE(key_usage.AssertsBit(KEY_USAGE_BIT_DATA_ENCIPHERMENT));
+  EXPECT_FALSE(key_usage.AssertsBit(KEY_USAGE_BIT_KEY_AGREEMENT));
+  EXPECT_FALSE(key_usage.AssertsBit(KEY_USAGE_BIT_KEY_CERT_SIGN));
+  EXPECT_FALSE(key_usage.AssertsBit(KEY_USAGE_BIT_CRL_SIGN));
+  EXPECT_FALSE(key_usage.AssertsBit(KEY_USAGE_BIT_ENCIPHER_ONLY));
+  EXPECT_FALSE(key_usage.AssertsBit(KEY_USAGE_BIT_DECIPHER_ONLY));
+}
+
+// Parses a KeyUsage containing bit string 101.
+TEST(ParseKeyUsageTest, ThreeBits) {
+  const uint8_t der[] = {
+      0x03, 0x02,  // BIT STRING
+      0x05,        // Number of unused bits
+      0xA0,        // bits
+  };
+
+  der::BitString key_usage;
+  ASSERT_TRUE(ParseKeyUsage(der::Input(der), &key_usage));
+
+  EXPECT_TRUE(key_usage.AssertsBit(KEY_USAGE_BIT_DIGITAL_SIGNATURE));
+  EXPECT_FALSE(key_usage.AssertsBit(KEY_USAGE_BIT_NON_REPUDIATION));
+  EXPECT_TRUE(key_usage.AssertsBit(KEY_USAGE_BIT_KEY_ENCIPHERMENT));
+  EXPECT_FALSE(key_usage.AssertsBit(KEY_USAGE_BIT_DATA_ENCIPHERMENT));
+  EXPECT_FALSE(key_usage.AssertsBit(KEY_USAGE_BIT_KEY_AGREEMENT));
+  EXPECT_FALSE(key_usage.AssertsBit(KEY_USAGE_BIT_KEY_CERT_SIGN));
+  EXPECT_FALSE(key_usage.AssertsBit(KEY_USAGE_BIT_CRL_SIGN));
+  EXPECT_FALSE(key_usage.AssertsBit(KEY_USAGE_BIT_ENCIPHER_ONLY));
+  EXPECT_FALSE(key_usage.AssertsBit(KEY_USAGE_BIT_DECIPHER_ONLY));
+}
+
+// Parses a KeyUsage containing DECIPHER_ONLY, which is the
+// only bit that doesn't fit in the first byte.
+TEST(ParseKeyUsageTest, DecipherOnly) {
+  const uint8_t der[] = {
+      0x03, 0x03,  // BIT STRING
+      0x07,        // Number of unused bits
+      0x00, 0x80,  // bits
+  };
+
+  der::BitString key_usage;
+  ASSERT_TRUE(ParseKeyUsage(der::Input(der), &key_usage));
+
+  EXPECT_FALSE(key_usage.AssertsBit(KEY_USAGE_BIT_DIGITAL_SIGNATURE));
+  EXPECT_FALSE(key_usage.AssertsBit(KEY_USAGE_BIT_NON_REPUDIATION));
+  EXPECT_FALSE(key_usage.AssertsBit(KEY_USAGE_BIT_KEY_ENCIPHERMENT));
+  EXPECT_FALSE(key_usage.AssertsBit(KEY_USAGE_BIT_DATA_ENCIPHERMENT));
+  EXPECT_FALSE(key_usage.AssertsBit(KEY_USAGE_BIT_KEY_AGREEMENT));
+  EXPECT_FALSE(key_usage.AssertsBit(KEY_USAGE_BIT_KEY_CERT_SIGN));
+  EXPECT_FALSE(key_usage.AssertsBit(KEY_USAGE_BIT_CRL_SIGN));
+  EXPECT_FALSE(key_usage.AssertsBit(KEY_USAGE_BIT_ENCIPHER_ONLY));
+  EXPECT_TRUE(key_usage.AssertsBit(KEY_USAGE_BIT_DECIPHER_ONLY));
+}
+
+// Parses an empty KeyUsage.
+TEST(ParseKeyUsageTest, Empty) {
+  const uint8_t der[] = {
+      0x03, 0x01,  // BIT STRING
+      0x00,        // Number of unused bits
+  };
+
+  der::BitString key_usage;
+  ASSERT_FALSE(ParseKeyUsage(der::Input(der), &key_usage));
+}
+
 }  // namespace
 
 }  // namespace net

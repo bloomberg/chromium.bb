@@ -305,6 +305,10 @@ TEST(ParseValuesTest, ParseBitStringEmptyNoUnusedBits) {
 
   EXPECT_EQ(0u, bit_string.unused_bits());
   EXPECT_EQ(0u, bit_string.bytes().Length());
+
+  EXPECT_FALSE(bit_string.AssertsBit(0));
+  EXPECT_FALSE(bit_string.AssertsBit(1));
+  EXPECT_FALSE(bit_string.AssertsBit(3));
 }
 
 // Tests parsing an empty BIT STRING that incorrectly claims one unused bit.
@@ -334,6 +338,16 @@ TEST(ParseValuesTest, ParseBitStringSevenOneBits) {
   EXPECT_EQ(1u, bit_string.unused_bits());
   EXPECT_EQ(1u, bit_string.bytes().Length());
   EXPECT_EQ(0xFE, bit_string.bytes().UnsafeData()[0]);
+
+  EXPECT_TRUE(bit_string.AssertsBit(0));
+  EXPECT_TRUE(bit_string.AssertsBit(1));
+  EXPECT_TRUE(bit_string.AssertsBit(2));
+  EXPECT_TRUE(bit_string.AssertsBit(3));
+  EXPECT_TRUE(bit_string.AssertsBit(4));
+  EXPECT_TRUE(bit_string.AssertsBit(5));
+  EXPECT_TRUE(bit_string.AssertsBit(6));
+  EXPECT_FALSE(bit_string.AssertsBit(7));
+  EXPECT_FALSE(bit_string.AssertsBit(8));
 }
 
 // Tests parsing a BIT STRING of 7 bits each of which are 1. The unused bit

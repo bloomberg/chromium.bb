@@ -326,6 +326,47 @@ NET_EXPORT bool ParseBasicConstraints(const der::Input& basic_constraints_tlv,
                                       ParsedBasicConstraints* out)
     WARN_UNUSED_RESULT;
 
+// KeyUsageBit contains the index for a particular key usage. The index is
+// measured from the most significant bit of a bit string.
+//
+// From RFC 5280 section 4.2.1.3:
+//
+//     KeyUsage ::= BIT STRING {
+//          digitalSignature        (0),
+//          nonRepudiation          (1), -- recent editions of X.509 have
+//                               -- renamed this bit to contentCommitment
+//          keyEncipherment         (2),
+//          dataEncipherment        (3),
+//          keyAgreement            (4),
+//          keyCertSign             (5),
+//          cRLSign                 (6),
+//          encipherOnly            (7),
+//          decipherOnly            (8) }
+enum KeyUsageBit {
+  KEY_USAGE_BIT_DIGITAL_SIGNATURE = 0,
+  KEY_USAGE_BIT_NON_REPUDIATION = 1,
+  KEY_USAGE_BIT_KEY_ENCIPHERMENT = 2,
+  KEY_USAGE_BIT_DATA_ENCIPHERMENT = 3,
+  KEY_USAGE_BIT_KEY_AGREEMENT = 4,
+  KEY_USAGE_BIT_KEY_CERT_SIGN = 5,
+  KEY_USAGE_BIT_CRL_SIGN = 6,
+  KEY_USAGE_BIT_ENCIPHER_ONLY = 7,
+  KEY_USAGE_BIT_DECIPHER_ONLY = 8,
+};
+
+// Parses the KeyUsage extension as defined by RFC 5280. Returns true on
+// success, and |key_usage| will alias data in |key_usage_tlv|. On failure
+// returns false, and |key_usage| may have been modified.
+//
+// In addition to validating that key_usage_tlv is a BIT STRING, this does
+// additional KeyUsage specific validations such as requiring at least 1 bit to
+// be set.
+//
+// To test if a particular key usage is set, call, e.g.:
+//     key_usage->AssertsBit(KEY_USAGE_BIT_DIGITAL_SIGNATURE);
+NET_EXPORT bool ParseKeyUsage(const der::Input& key_usage_tlv,
+                              der::BitString* key_usage) WARN_UNUSED_RESULT;
+
 }  // namespace net
 
 #endif  // NET_CERT_INTERNAL_PARSE_CERTIFICATE_H_

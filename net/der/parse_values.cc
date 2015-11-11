@@ -208,6 +208,31 @@ BitString::BitString(const Input& bytes, uint8_t unused_bits)
     : bytes_(bytes), unused_bits_(unused_bits) {
   DCHECK_LT(unused_bits, 8);
   DCHECK(unused_bits == 0 || bytes.Length() != 0);
+  // The unused bits must be zero.
+  DCHECK(bytes.Length() == 0 ||
+         (bytes.UnsafeData()[bytes.Length() - 1] & ((1u << unused_bits) - 1)) ==
+             0);
+}
+
+bool BitString::AssertsBit(size_t bit_index) const {
+  // Index of the byte that contains the bit.
+  size_t byte_index = bit_index / 8;
+
+  // If the bit is outside of the bitstring, by definition it is not
+  // asserted.
+  if (byte_index >= bytes_.Length())
+    return false;
+
+  // Within a byte, bits are ordered from most significant to least significant.
+  // Convert |bit_index| to an index within the |byte_index| byte, measured from
+  // its least significant bit.
+  uint8_t bit_index_in_byte = 7 - (bit_index - byte_index * 8);
+
+  // BIT STRING parsing already guarantees that unused bits in a byte are zero
+  // (otherwise it wouldn't be valid DER). Therefore it isn't necessary to check
+  // |unused_bits_|
+  uint8_t byte = bytes_.UnsafeData()[byte_index];
+  return 0 != (byte & (1 << bit_index_in_byte));
 }
 
 bool ParseBitString(const Input& in, BitString* out) {
