@@ -38,7 +38,6 @@
 #include "components/sync_driver/signin_manager_wrapper.h"
 #include "components/sync_driver/startup_controller.h"
 #include "components/sync_driver/sync_util.h"
-#include "components/variations/variations_associated_data.h"
 #include "content/public/browser/browser_thread.h"
 #include "url/gurl.h"
 
@@ -82,15 +81,6 @@ ProfileSyncService* ProfileSyncServiceFactory::GetForProfile(
     Profile* profile) {
   if (!ProfileSyncService::IsSyncAllowedByFlag())
     return NULL;
-
-  // Disable sync experimentally to measure impact on startup time. Supervised
-  // users are unaffected, since supervised users rely completely on sync.
-  // TODO(mlerman): Remove this after the experiment. crbug.com/454788
-  if (!profile->IsSupervised() &&
-      !variations::GetVariationParamValue("LightSpeed", "DisableSync")
-           .empty()) {
-    return NULL;
-  }
 
   return static_cast<ProfileSyncService*>(
       GetInstance()->GetServiceForBrowserContext(profile, true));

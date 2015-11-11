@@ -42,7 +42,6 @@
 #include "components/sync_driver/sync_client.h"
 #include "components/sync_driver/ui_data_type_controller.h"
 #include "components/sync_sessions/session_data_type_controller.h"
-#include "components/variations/variations_associated_data.h"
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 #include "google_apis/gaia/oauth2_token_service_request.h"
@@ -103,17 +102,6 @@ syncer::ModelTypeSet GetDisabledTypesFromCommandLine(
   syncer::ModelTypeSet disabled_types;
   std::string disabled_types_str =
       command_line.GetSwitchValueASCII(switches::kDisableSyncTypes);
-
-  // Disable sync types experimentally to measure impact on startup time.
-  // TODO(mlerman): Remove this after the experiment. crbug.com/454788
-  std::string disable_types_finch =
-      variations::GetVariationParamValue("LightSpeed", "DisableSyncPart");
-  if (!disable_types_finch.empty()) {
-    if (disabled_types_str.empty())
-      disabled_types_str = disable_types_finch;
-    else
-      disabled_types_str += ", " + disable_types_finch;
-  }
 
   disabled_types = syncer::ModelTypeSetFromString(disabled_types_str);
   return disabled_types;
