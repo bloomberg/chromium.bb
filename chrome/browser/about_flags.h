@@ -18,6 +18,7 @@
 class PrefService;
 
 namespace base {
+struct Feature;
 class ListValue;
 }
 
@@ -106,8 +107,8 @@ struct FeatureEntry {
   const char* disable_command_line_switch;
   const char* disable_command_line_value;
 
-  // For FEATURE_VALUE, the name of the base::Feature this entry corresponds to.
-  const char* feature_name;
+  // For FEATURE_VALUE, the base::Feature this entry corresponds to.
+  const base::Feature* feature;
 
   // This is used if type is MULTI_VALUE.
   const Choice* choices;

@@ -7,6 +7,7 @@
 #include <stdint.h>
 #include <utility>
 
+#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/format_macros.h"
 #include "base/path_service.h"
@@ -230,6 +231,9 @@ const FeatureEntry::Choice kMultiChoices[] = {
   { IDS_PRODUCT_NAME, kMultiSwitch2, kValueForMultiSwitch2 },
 };
 
+const base::Feature kTestFeature{"FeatureName",
+                                 base::FEATURE_ENABLED_BY_DEFAULT};
+
 // The entries that are set for these tests. The 3rd entry is not supported on
 // the current platform, all others are.
 static FeatureEntry kEntries[] = {
@@ -259,7 +263,7 @@ static FeatureEntry kEntries[] = {
     {kFlags7, IDS_PRODUCT_NAME, IDS_PRODUCT_NAME,
      0,  // Ends up being mapped to the current platform.
      FeatureEntry::FEATURE_VALUE, nullptr, nullptr, nullptr, nullptr,
-     "FeatureName", nullptr, 3},
+     &kTestFeature, nullptr, 3},
 };
 
 class AboutFlagsTest : public ::testing::Test {

@@ -78,6 +78,10 @@
 #include "extensions/common/switches.h"
 #endif
 
+#if defined(ENABLE_PRINT_PREVIEW)
+#include "chrome/browser/ui/webui/print_preview/print_preview_distiller.h"
+#endif
+
 #if defined(USE_OZONE)
 #include "ui/ozone/public/ozone_switches.h"
 #endif
@@ -108,7 +112,7 @@ namespace about_flags {
       choices, arraysize(choices)
 #define FEATURE_VALUE_TYPE(feature)                                \
   FeatureEntry::FEATURE_VALUE, nullptr, nullptr, nullptr, nullptr, \
-      feature.name, nullptr, 3
+      &feature, nullptr, 3
 
 namespace {
 
@@ -1338,6 +1342,13 @@ const FeatureEntry kFeatureEntries[] = {
      kOsDesktop,
      SINGLE_VALUE_TYPE(switches::kEnablePrivetV3)},
 #endif  // ENABLE_SERVICE_DISCOVERY
+#if defined(ENABLE_PRINT_PREVIEW)
+    {"enable-print-preview-simplify",
+     IDS_FLAGS_ENABLE_DISTILLER_IN_PRINT_PREVIEW_NAME,
+     IDS_FLAGS_ENABLE_DISTILLER_IN_PRINT_PREVIEW_DESCRIPTION,
+     kOsDesktop,
+     FEATURE_VALUE_TYPE(PrintPreviewDistiller::kFeature)},
+#endif
 #if defined(OS_WIN)
     {"enable-cloud-print-xps",
      IDS_FLAGS_ENABLE_CLOUD_PRINT_XPS_NAME,
@@ -2281,7 +2292,7 @@ bool ValidateFeatureEntry(const FeatureEntry& e) {
     case FeatureEntry::FEATURE_VALUE:
       DCHECK_EQ(3, e.num_choices);
       DCHECK(!e.choices);
-      DCHECK(e.feature_name);
+      DCHECK(e.feature);
       return true;
   }
   NOTREACHED();
@@ -2699,9 +2710,9 @@ void FlagsState::ConvertFlagsToSwitches(flags_ui::FlagsStorage* flags_storage,
       case FeatureEntry::FEATURE_VALUE:
         AddFeatureMapping(e.NameForChoice(0), std::string(), false,
                           &name_to_switch_map);
-        AddFeatureMapping(e.NameForChoice(1), e.feature_name, true,
+        AddFeatureMapping(e.NameForChoice(1), e.feature->name, true,
                           &name_to_switch_map);
-        AddFeatureMapping(e.NameForChoice(2), e.feature_name, false,
+        AddFeatureMapping(e.NameForChoice(2), e.feature->name, false,
                           &name_to_switch_map);
         break;
     }
