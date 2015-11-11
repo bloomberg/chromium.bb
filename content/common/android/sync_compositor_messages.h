@@ -7,6 +7,7 @@
 #include "cc/output/compositor_frame_ack.h"
 #include "content/common/content_export.h"
 #include "content/common/content_param_traits.h"
+#include "content/common/input/did_overscroll_params.h"
 #include "content/common/input/input_event_ack_state.h"
 #include "ipc/ipc_message_macros.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
@@ -125,3 +126,7 @@ IPC_SYNC_MESSAGE_ROUTED2_2(SyncCompositorMsg_DemandDrawHw,
 
 IPC_MESSAGE_ROUTED1(SyncCompositorHostMsg_UpdateState,
                     content::SyncCompositorCommonRendererParams)
+
+IPC_MESSAGE_ROUTED2(SyncCompositorHostMsg_OverScroll,
+                    content::SyncCompositorCommonRendererParams,
+                    content::DidOverscrollParams)

@@ -19,6 +19,7 @@ namespace content {
 
 class RenderWidgetHostViewAndroid;
 class SynchronousCompositorClient;
+struct DidOverscrollParams;
 struct SyncCompositorCommonBrowserParams;
 struct SyncCompositorCommonRendererParams;
 
@@ -56,6 +57,8 @@ class SynchronousCompositorHost : public SynchronousCompositorBase {
   void ProcessCommonParams(const SyncCompositorCommonRendererParams& params);
   void UpdateNeedsBeginFrames();
   void UpdateFrameMetaData(const cc::CompositorFrameMetadata& frame_metadata);
+  void OnOverScroll(const SyncCompositorCommonRendererParams& params,
+                    const DidOverscrollParams& over_scroll_params);
 
   RenderWidgetHostViewAndroid* const rwhva_;
   SynchronousCompositorClient* const client_;

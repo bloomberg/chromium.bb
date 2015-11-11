@@ -8,6 +8,7 @@
 #include "base/stl_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "content/common/android/sync_compositor_messages.h"
+#include "content/common/input_messages.h"
 #include "content/renderer/android/synchronous_compositor_proxy.h"
 
 namespace content {
@@ -53,6 +54,15 @@ bool SynchronousCompositorFilter::OnMessageReceived(
   return result;
 }
 
+SynchronousCompositorProxy* SynchronousCompositorFilter::FindProxy(
+    int routing_id) {
+  auto itr = sync_compositor_map_.find(routing_id);
+  if (itr == sync_compositor_map_.end()) {
+    return nullptr;
+  }
+  return itr->second;
+}
+
 bool SynchronousCompositorFilter::GetSupportedMessageClasses(
     std::vector<uint32_t>* supported_message_classes) const {
   supported_message_classes->push_back(SyncCompositorMsgStart);
@@ -63,9 +73,9 @@ void SynchronousCompositorFilter::OnMessageReceivedOnCompositorThread(
     const IPC::Message& message) {
   DCHECK(compositor_task_runner_->BelongsToCurrentThread());
 
-  auto itr = sync_compositor_map_.find(message.routing_id());
-  if (itr != sync_compositor_map_.end()) {
-    itr->second->OnMessageReceived(message);
+  SynchronousCompositorProxy* proxy = FindProxy(message.routing_id());
+  if (proxy) {
+    proxy->OnMessageReceived(message);
     return;
   }
   IPC::Message* reply = IPC::SyncMessage::GenerateReply(&message);
@@ -228,12 +238,17 @@ void SynchronousCompositorFilter::DidOverscroll(
     int routing_id,
     const DidOverscrollParams& params) {
   DCHECK(compositor_task_runner_->BelongsToCurrentThread());
-  // TODO(boliu): Implement
+  SynchronousCompositorProxy* proxy = FindProxy(routing_id);
+  if (!proxy) {
+    DLOG(WARNING) << "No matching proxy in DidOverScroll " << routing_id;
+    return;
+  }
+  proxy->DidOverscroll(params);
 }
 
 void SynchronousCompositorFilter::DidStopFlinging(int routing_id) {
   DCHECK(compositor_task_runner_->BelongsToCurrentThread());
-  // TODO(boliu): Implement
+  Send(new InputHostMsg_DidStopFlinging(routing_id));
 }
 
 SynchronousCompositorFilter::Entry::Entry()

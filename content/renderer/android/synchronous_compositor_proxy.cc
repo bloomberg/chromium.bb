@@ -207,6 +207,14 @@ void SynchronousCompositorProxy::OnComputeScroll(
   PopulateCommonParams(common_renderer_params);
 }
 
+void SynchronousCompositorProxy::DidOverscroll(
+    const DidOverscrollParams& did_overscroll_params) {
+  SyncCompositorCommonRendererParams params;
+  PopulateCommonParams(&params);
+  Send(new SyncCompositorHostMsg_OverScroll(routing_id_, params,
+                                            did_overscroll_params));
+}
+
 void SynchronousCompositorProxy::ProcessCommonParams(
     const SyncCompositorCommonBrowserParams& common_params) {
   if (bytes_limit_ != common_params.bytes_limit) {

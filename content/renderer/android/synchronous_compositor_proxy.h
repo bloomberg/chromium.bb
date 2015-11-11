@@ -65,6 +65,7 @@ class SynchronousCompositorProxy
 
   void OnMessageReceived(const IPC::Message& message);
   bool Send(IPC::Message* message);
+  void DidOverscroll(const DidOverscrollParams& did_overscroll_params);
 
  private:
   void ProcessCommonParams(

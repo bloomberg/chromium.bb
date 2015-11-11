@@ -40,6 +40,7 @@ bool SynchronousCompositorHost::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(SynchronousCompositorHost, message)
     IPC_MESSAGE_HANDLER(SyncCompositorHostMsg_UpdateState, ProcessCommonParams)
+    IPC_MESSAGE_HANDLER(SyncCompositorHostMsg_OverScroll, OnOverScroll)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -156,6 +157,15 @@ void SynchronousCompositorHost::BeginFrame(const cc::BeginFrameArgs& args) {
     return;
   }
   ProcessCommonParams(common_renderer_params);
+}
+
+void SynchronousCompositorHost::OnOverScroll(
+    const SyncCompositorCommonRendererParams& params,
+    const DidOverscrollParams& over_scroll_params) {
+  ProcessCommonParams(params);
+  client_->DidOverscroll(over_scroll_params.accumulated_overscroll,
+                         over_scroll_params.latest_overscroll_delta,
+                         over_scroll_params.current_fling_velocity);
 }
 
 void SynchronousCompositorHost::PopulateCommonParams(
