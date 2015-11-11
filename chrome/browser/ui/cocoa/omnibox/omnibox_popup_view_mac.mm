@@ -7,6 +7,7 @@
 #include <cmath>
 
 #include "base/mac/mac_util.h"
+#import "base/mac/sdk_forward_declarations.h"
 #include "base/stl_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/search/search.h"
@@ -274,19 +275,21 @@ void OmniboxPopupViewMac::PositionPopup(const CGFloat matrixHeight) {
     [popup_ setAnimations:@{@"frame" : [NSNull null]}];
   }
 
-  if (!animate && base::mac::IsOSElCapitanOrLater()) {
-    // When using the animator to make |popup_| larger on El Capitan, for some
-    // reason the window does not get redrawn. There's no animation in this case
-    // anyway, so just force the frame change. See http://crbug.com/538590 .
-    [popup_ setFrame:popup_frame display:YES];
-  } else {
-    [NSAnimationContext beginGrouping];
-    // Don't use the GTM addition for the "Steve" slowdown because this can
-    // happen async from user actions and the effects could be a surprise.
-    [[NSAnimationContext currentContext] setDuration:kShrinkAnimationDuration];
-    [[popup_ animator] setFrame:popup_frame display:YES];
-    [NSAnimationContext endGrouping];
+  [NSAnimationContext beginGrouping];
+  // Don't use the GTM addition for the "Steve" slowdown because this can
+  // happen async from user actions and the effects could be a surprise.
+  [[NSAnimationContext currentContext] setDuration:kShrinkAnimationDuration];
+  // When using the animator to update |popup_| on El Capitan, for some reason
+  // the window does not get redrawn. Use a completion handler to make sure
+  // |popup_| gets redrawn once the animation completes. See
+  // http://crbug.com/538590 and http://crbug.com/551007 .
+  if (base::mac::IsOSElCapitanOrLater()) {
+    [[NSAnimationContext currentContext] setCompletionHandler:^{
+      [popup_ display];
+    }];
   }
+  [[popup_ animator] setFrame:popup_frame display:YES];
+  [NSAnimationContext endGrouping];
 
   if (!animate) {
     // Restore the original animations dictionary.  This does not reinstate any
