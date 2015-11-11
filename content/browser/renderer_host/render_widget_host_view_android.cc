@@ -359,9 +359,7 @@ void RenderWidgetHostViewAndroid::Blur() {
 bool RenderWidgetHostViewAndroid::OnMessageReceived(
     const IPC::Message& message) {
   if (IPC_MESSAGE_ID_CLASS(message.type()) == SyncCompositorMsgStart) {
-    bool handled = SyncCompositorOnMessageReceived(message);
-    DCHECK(handled);
-    return handled;
+    return SyncCompositorOnMessageReceived(message);
   }
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(RenderWidgetHostViewAndroid, message)
@@ -379,6 +377,7 @@ bool RenderWidgetHostViewAndroid::OnMessageReceived(
 
 bool RenderWidgetHostViewAndroid::SyncCompositorOnMessageReceived(
     const IPC::Message& message) {
+  DCHECK(!content_view_core_ || sync_compositor_) << !!content_view_core_;
   return sync_compositor_ && sync_compositor_->OnMessageReceived(message);
 }
 
