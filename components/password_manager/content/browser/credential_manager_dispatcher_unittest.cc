@@ -4,6 +4,9 @@
 
 #include "components/password_manager/content/browser/credential_manager_dispatcher.h"
 
+#include <string>
+#include <vector>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/prefs/pref_registry_simple.h"
@@ -31,6 +34,8 @@ using content::WebContents;
 
 using testing::_;
 
+namespace password_manager {
+
 namespace {
 
 // Chosen by fair dice roll. Guaranteed to be random.
@@ -40,8 +45,7 @@ const char kTestWebOrigin[] = "https://example.com/";
 const char kTestAndroidRealm1[] = "android://hash@com.example.one.android/";
 const char kTestAndroidRealm2[] = "android://hash@com.example.two.android/";
 
-class MockPasswordManagerClient
-    : public password_manager::StubPasswordManagerClient {
+class MockPasswordManagerClient : public StubPasswordManagerClient {
  public:
   MOCK_CONST_METHOD0(IsSavingAndFillingEnabledForCurrentPage, bool());
   MOCK_CONST_METHOD0(IsOffTheRecord, bool());
@@ -49,34 +53,28 @@ class MockPasswordManagerClient
   MOCK_METHOD1(NotifyUserAutoSigninPtr,
                bool(const std::vector<autofill::PasswordForm*>& local_forms));
   MOCK_METHOD2(PromptUserToSavePasswordPtr,
-               void(password_manager::PasswordFormManager*,
-                    password_manager::CredentialSourceType type));
+               void(PasswordFormManager*, CredentialSourceType type));
   MOCK_METHOD4(PromptUserToChooseCredentialsPtr,
                bool(const std::vector<autofill::PasswordForm*>& local_forms,
                     const std::vector<autofill::PasswordForm*>& federated_forms,
                     const GURL& origin,
-                    base::Callback<void(
-                        const password_manager::CredentialInfo&)> callback));
+                    base::Callback<void(const CredentialInfo&)> callback));
 
-  MockPasswordManagerClient(password_manager::PasswordStore* store)
-      : store_(store) {
-    prefs_.registry()->RegisterBooleanPref(
-        password_manager::prefs::kPasswordManagerAutoSignin, true);
+  explicit MockPasswordManagerClient(PasswordStore* store) : store_(store) {
+    prefs_.registry()->RegisterBooleanPref(prefs::kPasswordManagerAutoSignin,
+                                           true);
   }
   ~MockPasswordManagerClient() override {}
 
-  bool PromptUserToSaveOrUpdatePassword(
-      scoped_ptr<password_manager::PasswordFormManager> manager,
-      password_manager::CredentialSourceType type,
-      bool update_password) override {
+  bool PromptUserToSaveOrUpdatePassword(scoped_ptr<PasswordFormManager> manager,
+                                        CredentialSourceType type,
+                                        bool update_password) override {
     manager_.swap(manager);
     PromptUserToSavePasswordPtr(manager_.get(), type);
     return true;
   }
 
-  password_manager::PasswordStore* GetPasswordStore() const override {
-    return store_;
-  }
+  PasswordStore* GetPasswordStore() const override { return store_; }
 
   PrefService* GetPrefs() override { return &prefs_; }
 
@@ -84,13 +82,12 @@ class MockPasswordManagerClient
       ScopedVector<autofill::PasswordForm> local_forms,
       ScopedVector<autofill::PasswordForm> federated_forms,
       const GURL& origin,
-      base::Callback<void(const password_manager::CredentialInfo&)> callback) {
+      base::Callback<void(const CredentialInfo&)> callback) {
     EXPECT_FALSE(local_forms.empty() && federated_forms.empty());
-    password_manager::CredentialInfo info(
+    CredentialInfo info(
         local_forms.empty() ? *federated_forms[0] : *local_forms[0],
-        local_forms.empty()
-            ? password_manager::CredentialType::CREDENTIAL_TYPE_FEDERATED
-            : password_manager::CredentialType::CREDENTIAL_TYPE_PASSWORD);
+        local_forms.empty() ? CredentialType::CREDENTIAL_TYPE_FEDERATED
+                            : CredentialType::CREDENTIAL_TYPE_PASSWORD);
     base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
                                                   base::Bind(callback, info));
     PromptUserToChooseCredentialsPtr(local_forms.get(), federated_forms.get(),
@@ -104,46 +101,40 @@ class MockPasswordManagerClient
     NotifyUserAutoSigninPtr(local_forms.get());
   }
 
-  password_manager::PasswordFormManager* pending_manager() const {
-    return manager_.get();
-  }
+  PasswordFormManager* pending_manager() const { return manager_.get(); }
 
   void set_zero_click_enabled(bool zero_click_enabled) {
-    prefs_.SetBoolean(password_manager::prefs::kPasswordManagerAutoSignin,
-                      zero_click_enabled);
+    prefs_.SetBoolean(prefs::kPasswordManagerAutoSignin, zero_click_enabled);
   }
 
  private:
   TestingPrefServiceSimple prefs_;
-  password_manager::PasswordStore* store_;
-  scoped_ptr<password_manager::PasswordFormManager> manager_;
+  PasswordStore* store_;
+  scoped_ptr<PasswordFormManager> manager_;
 
   DISALLOW_COPY_AND_ASSIGN(MockPasswordManagerClient);
 };
 
-class TestCredentialManagerDispatcher
-    : public password_manager::CredentialManagerDispatcher {
+class TestCredentialManagerDispatcher : public CredentialManagerDispatcher {
  public:
-  TestCredentialManagerDispatcher(
-      content::WebContents* web_contents,
-      password_manager::PasswordManagerClient* client,
-      password_manager::PasswordManagerDriver* driver);
+  TestCredentialManagerDispatcher(content::WebContents* web_contents,
+                                  PasswordManagerClient* client,
+                                  PasswordManagerDriver* driver);
 
  private:
-  base::WeakPtr<password_manager::PasswordManagerDriver> GetDriver() override;
+  base::WeakPtr<PasswordManagerDriver> GetDriver() override;
 
-  base::WeakPtr<password_manager::PasswordManagerDriver> driver_;
+  base::WeakPtr<PasswordManagerDriver> driver_;
 };
 
 TestCredentialManagerDispatcher::TestCredentialManagerDispatcher(
     content::WebContents* web_contents,
-    password_manager::PasswordManagerClient* client,
-    password_manager::PasswordManagerDriver* driver)
+    PasswordManagerClient* client,
+    PasswordManagerDriver* driver)
     : CredentialManagerDispatcher(web_contents, client),
-      driver_(driver->AsWeakPtr()) {
-}
+      driver_(driver->AsWeakPtr()) {}
 
-base::WeakPtr<password_manager::PasswordManagerDriver>
+base::WeakPtr<PasswordManagerDriver>
 TestCredentialManagerDispatcher::GetDriver() {
   return driver_;
 }
@@ -156,8 +147,6 @@ void RunAllPendingTasks() {
 }
 
 }  // namespace
-
-namespace password_manager {
 
 class CredentialManagerDispatcherTest
     : public content::RenderViewHostTestHarness {
@@ -283,12 +272,9 @@ class CredentialManagerDispatcherTest
 };
 
 TEST_F(CredentialManagerDispatcherTest, CredentialManagerOnStore) {
-  CredentialInfo info(
-      form_, password_manager::CredentialType::CREDENTIAL_TYPE_PASSWORD);
-  EXPECT_CALL(
-      *client_,
-      PromptUserToSavePasswordPtr(
-          _, password_manager::CredentialSourceType::CREDENTIAL_SOURCE_API))
+  CredentialInfo info(form_, CredentialType::CREDENTIAL_TYPE_PASSWORD);
+  EXPECT_CALL(*client_, PromptUserToSavePasswordPtr(
+                            _, CredentialSourceType::CREDENTIAL_SOURCE_API))
       .Times(testing::Exactly(1));
 
   dispatcher()->OnStore(kRequestId, info);
@@ -320,10 +306,8 @@ TEST_F(CredentialManagerDispatcherTest,
   CredentialInfo info(form_, CredentialType::CREDENTIAL_TYPE_PASSWORD);
   EXPECT_CALL(*client_, IsSavingAndFillingEnabledForCurrentPage())
       .WillRepeatedly(testing::Return(false));
-  EXPECT_CALL(
-      *client_,
-      PromptUserToSavePasswordPtr(
-          _, password_manager::CredentialSourceType::CREDENTIAL_SOURCE_API))
+  EXPECT_CALL(*client_, PromptUserToSavePasswordPtr(
+                            _, CredentialSourceType::CREDENTIAL_SOURCE_API))
       .Times(testing::Exactly(0));
 
   dispatcher()->OnStore(kRequestId, info);
@@ -409,10 +393,8 @@ TEST_F(CredentialManagerDispatcherTest,
 TEST_F(CredentialManagerDispatcherTest,
        CredentialManagerOnRequestCredentialWithEmptyPasswordStore) {
   std::vector<GURL> federations;
-  EXPECT_CALL(
-      *client_,
-      PromptUserToSavePasswordPtr(
-          _, password_manager::CredentialSourceType::CREDENTIAL_SOURCE_API))
+  EXPECT_CALL(*client_, PromptUserToSavePasswordPtr(
+                            _, CredentialSourceType::CREDENTIAL_SOURCE_API))
       .Times(testing::Exactly(0));
   EXPECT_CALL(*client_, PromptUserToChooseCredentialsPtr(_, _, _, _))
       .Times(testing::Exactly(0));
@@ -437,10 +419,8 @@ TEST_F(CredentialManagerDispatcherTest,
   store_->AddLogin(cross_origin_form_);
 
   std::vector<GURL> federations;
-  EXPECT_CALL(
-      *client_,
-      PromptUserToSavePasswordPtr(
-          _, password_manager::CredentialSourceType::CREDENTIAL_SOURCE_API))
+  EXPECT_CALL(*client_, PromptUserToSavePasswordPtr(
+                            _, CredentialSourceType::CREDENTIAL_SOURCE_API))
       .Times(testing::Exactly(0));
   EXPECT_CALL(*client_, PromptUserToChooseCredentialsPtr(_, _, _, _))
       .Times(testing::Exactly(0));
