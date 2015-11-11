@@ -12,6 +12,7 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
+import android.util.DisplayMetrics;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -147,6 +148,30 @@ public class CustomNotificationBuilderTest extends InstrumentationTestCase {
         assertEquals(maxLength, ((Button) buttons.get(0)).getText().length());
     }
 
+    @SmallTest
+    @Feature({"Browser", "Notifications"})
+    public void testCalculateMaxBodyLines() {
+        assertEquals(7, CustomNotificationBuilder.calculateMaxBodyLines(-1000.0f));
+        assertEquals(7, CustomNotificationBuilder.calculateMaxBodyLines(0.5f));
+        assertEquals(7, CustomNotificationBuilder.calculateMaxBodyLines(1.0f));
+        assertEquals(4, CustomNotificationBuilder.calculateMaxBodyLines(2.0f));
+        assertEquals(1, CustomNotificationBuilder.calculateMaxBodyLines(1000.0f));
+    }
+
+    @SmallTest
+    @Feature({"Browser", "Notifications"})
+    public void testCalculateScaledPadding() {
+        DisplayMetrics metrics = new DisplayMetrics();
+        metrics.density = 10.0f;
+        assertEquals(30, CustomNotificationBuilder.calculateScaledPadding(-1000.0f, metrics));
+        assertEquals(30, CustomNotificationBuilder.calculateScaledPadding(0.5f, metrics));
+        assertEquals(30, CustomNotificationBuilder.calculateScaledPadding(1.0f, metrics));
+        assertEquals(20, CustomNotificationBuilder.calculateScaledPadding(1.1f, metrics));
+        assertEquals(10, CustomNotificationBuilder.calculateScaledPadding(1.2f, metrics));
+        assertEquals(0, CustomNotificationBuilder.calculateScaledPadding(1.3f, metrics));
+        assertEquals(0, CustomNotificationBuilder.calculateScaledPadding(1000.0f, metrics));
+    }
+
     /**
      * Finds a TextView with the given id in each of the given views, and checks that they all
      * contain the same text.
@@ -169,13 +194,13 @@ public class CustomNotificationBuilderTest extends InstrumentationTestCase {
         return result;
     }
 
-    private PendingIntent createIntent(Context context, String action) {
+    private static PendingIntent createIntent(Context context, String action) {
         Intent intent = new Intent("CustomNotificationBuilderTest." + action);
         return PendingIntent.getBroadcast(
                 context, 0 /* requestCode */, intent, PendingIntent.FLAG_UPDATE_CURRENT);
     }
 
-    private String createString(char character, int length) {
+    private static String createString(char character, int length) {
         char[] chars = new char[length];
         Arrays.fill(chars, character);
         return new String(chars);

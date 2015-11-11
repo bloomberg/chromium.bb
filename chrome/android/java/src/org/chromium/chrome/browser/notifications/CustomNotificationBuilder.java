@@ -12,6 +12,8 @@ import android.os.Build;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationCompat.Action;
 import android.text.format.DateFormat;
+import android.util.DisplayMetrics;
+import android.util.TypedValue;
 import android.view.View;
 import android.widget.RemoteViews;
 
@@ -42,6 +44,24 @@ public class CustomNotificationBuilder implements NotificationBuilder {
      */
     private static final int MAX_ACTION_BUTTONS = 3;
 
+    /**
+     * The maximum number of lines of body text for the expanded state. Fewer lines are used when
+     * the text is scaled up, with a minimum of one line.
+     */
+    private static final int MAX_BODY_LINES = 7;
+
+    /**
+     * The fontScale considered large for the purposes of layout.
+     */
+    private static final float FONT_SCALE_LARGE = 1.3f;
+
+    /**
+     * The maximum amount of padding (in dip units) that is applied around views that must have a
+     * flexible amount of padding. If the font size is scaled up the applied padding will be scaled
+     * down towards 0.
+     */
+    private static final int MAX_SCALABLE_PADDING_DIP = 3;
+
     private final Context mContext;
 
     private CharSequence mTitle;
@@ -67,6 +87,10 @@ public class CustomNotificationBuilder implements NotificationBuilder {
         RemoteViews bigView =
                 new RemoteViews(mContext.getPackageName(), R.layout.web_notification_big);
 
+        float fontScale = mContext.getResources().getConfiguration().fontScale;
+        bigView.setInt(R.id.body, "setMaxLines", calculateMaxBodyLines(fontScale));
+        int scaledPadding =
+                calculateScaledPadding(fontScale, mContext.getResources().getDisplayMetrics());
         String time = DateFormat.getTimeFormat(mContext).format(new Date());
         for (RemoteViews view : new RemoteViews[] {compactView, bigView}) {
             view.setTextViewText(R.id.time, time);
@@ -74,6 +98,8 @@ public class CustomNotificationBuilder implements NotificationBuilder {
             view.setTextViewText(R.id.body, mBody);
             view.setTextViewText(R.id.origin, mOrigin);
             view.setImageViewBitmap(R.id.icon, mLargeIcon);
+            view.setViewPadding(R.id.title, 0, scaledPadding, 0, 0);
+            view.setViewPadding(R.id.body, 0, scaledPadding, 0, scaledPadding);
         }
 
         if (!mActions.isEmpty()) {
@@ -190,5 +216,43 @@ public class CustomNotificationBuilder implements NotificationBuilder {
             return input.subSequence(0, MAX_CHARSEQUENCE_LENGTH);
         }
         return input;
+    }
+
+    /**
+     * Scales down the maximum number of displayed lines in the body text if font scaling is greater
+     * than 1.0. Never scales up the number of lines, as on some devices the notification text is
+     * rendered in dp units (which do not scale) and additional lines could lead to cropping at the
+     * bottom of the notification.
+     *
+     * @param fontScale The current system font scaling factor.
+     * @return The number of lines to be displayed.
+     */
+    @VisibleForTesting
+    static int calculateMaxBodyLines(float fontScale) {
+        if (fontScale > 1.0f) {
+            return (int) Math.round(Math.ceil((1 / fontScale) * MAX_BODY_LINES));
+        }
+        return MAX_BODY_LINES;
+    }
+
+    /**
+     * Scales down the maximum amount of flexible padding to use if font scaling is over 1.0. Never
+     * scales up the amount of padding, as on some devices the notification text is rendered in dp
+     * units (which do not scale) and additional padding could lead to cropping at the bottom of the
+     * notification. Never scales the padding below zero.
+     *
+     * @param fontScale The current system font scaling factor.
+     * @param displayMetrics The display metrics for the current context.
+     * @return The amount of padding to be used, in pixels.
+     */
+    @VisibleForTesting
+    static int calculateScaledPadding(float fontScale, DisplayMetrics displayMetrics) {
+        float paddingScale = 1.0f;
+        if (fontScale > 1.0f) {
+            fontScale = Math.min(fontScale, FONT_SCALE_LARGE);
+            paddingScale = (FONT_SCALE_LARGE - fontScale) / (FONT_SCALE_LARGE - 1.0f);
+        }
+        return Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
+                paddingScale * MAX_SCALABLE_PADDING_DIP, displayMetrics));
     }
 }

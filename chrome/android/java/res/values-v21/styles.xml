@@ -65,18 +65,10 @@
     <style name="WebNotificationTitle"
         parent="@android:style/TextAppearance.Material.Notification.Title">
         <item name="android:layout_marginStart">0dp</item>
-        <item name="android:layout_marginTop">4dp</item>
-    </style>
-    <style name="WebNotificationTitleBig"
-        parent="@android:style/TextAppearance.Material.Notification.Title">
-        <item name="android:layout_marginStart">0dp</item>
-        <item name="android:layout_marginTop">4dp</item>
     </style>
     <style name="WebNotificationBody"
         parent="@android:style/TextAppearance.Material.Notification.Line2">
-        <item name="android:layout_marginBottom">-1dp</item>
         <item name="android:layout_marginStart">0dp</item>
-        <item name="android:layout_marginTop">-1dp</item>
     </style>
     <style name="WebNotificationBodyBig"
         parent="@android:style/TextAppearance.Material.Notification">
