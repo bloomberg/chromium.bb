@@ -51,6 +51,8 @@ behavior._ This can interfere with the test runner. To disable this dialog, run:
 Use an emulator (i.e. Android Virtual Device, AVD): Enabling Intel's
 Virtualizaton support provides the fastest, most reliable emulator configuration
 available (i.e. x86 emulator with GPU acceleration and KVM support).
+Remember to build with `target_arch=ia32` for x86. Otherwise installing the APKs
+will fail with `INSTALL_FAILED_NO_MATCHING_ABIS`.
 
 1.  Enable Intel Virtualization support in the BIOS.
 
@@ -63,7 +65,7 @@ available (i.e. x86 emulator with GPU acceleration and KVM support).
 3.  Install emulator deps:
 
     ```shell
-    build/android/install_emulator_deps.py --api-level=19
+    build/android/install_emulator_deps.py --api-level=23
     ```
 
     This script will download Android SDK and place it a directory called
@@ -76,7 +78,7 @@ available (i.e. x86 emulator with GPU acceleration and KVM support).
     --abi.
 
     ```shell
-    build/android/avd.py --api-level=19
+    build/android/avd.py --api-level=23
     ```
 
     This script will attempt to use GPU emulation, so you must be running the
@@ -138,11 +140,11 @@ with the following commands:
 
 ```shell
 # Resize userdata partition to be 1G
-resize2fs android_emulator_sdk/sdk/system-images/android-19/x86/userdata.img 1G
+resize2fs android_emulator_sdk/sdk/system-images/android-23/x86/userdata.img 1G
 
 # Set filesystem parameter to continue on errors; Android doesn't like some
 # things e2fsprogs does.
-tune2fs -e continue android_emulator_sdk/sdk/system-images/android-19/x86/userdata.img
+tune2fs -e continue android_emulator_sdk/sdk/system-images/android-23/x86/userdata.img
 ```
 
 ## Symbolizing Crashes
