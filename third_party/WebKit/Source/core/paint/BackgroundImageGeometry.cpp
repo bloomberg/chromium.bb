@@ -302,7 +302,7 @@ void BackgroundImageGeometry::calculate(const LayoutBoxModelObject& obj, const L
     }
 
     if (backgroundRepeatX == RepeatFill) {
-        int xOffset = fillLayer.backgroundXOrigin() == RightEdge ? availableWidth - computedXPosition : computedXPosition;
+        LayoutUnit xOffset = fillLayer.backgroundXOrigin() == RightEdge ? availableWidth - computedXPosition : computedXPosition;
         setPhaseX(tileSize().width() ? tileSize().width() - roundToInt(xOffset + left) % tileSize().width() : 0);
         setSpaceSize(IntSize());
     } else if (backgroundRepeatX == SpaceFill && fillTileSize.width() > 0) {
@@ -318,13 +318,13 @@ void BackgroundImageGeometry::calculate(const LayoutBoxModelObject& obj, const L
         }
     }
     if (backgroundRepeatX == NoRepeatFill) {
-        int xOffset = fillLayer.backgroundXOrigin() == RightEdge ? availableWidth - computedXPosition : computedXPosition;
+        LayoutUnit xOffset = fillLayer.backgroundXOrigin() == RightEdge ? availableWidth - computedXPosition : computedXPosition;
         setNoRepeatX(left + xOffset);
         setSpaceSize(IntSize(0, spaceSize().height()));
     }
 
     if (backgroundRepeatY == RepeatFill) {
-        int yOffset = fillLayer.backgroundYOrigin() == BottomEdge ? availableHeight - computedYPosition : computedYPosition;
+        LayoutUnit yOffset = fillLayer.backgroundYOrigin() == BottomEdge ? availableHeight - computedYPosition : computedYPosition;
         setPhaseY(tileSize().height() ? tileSize().height() - roundToInt(yOffset + top) % tileSize().height() : 0);
         setSpaceSize(IntSize(spaceSize().width(), 0));
     } else if (backgroundRepeatY == SpaceFill && fillTileSize.height() > 0) {
@@ -340,7 +340,7 @@ void BackgroundImageGeometry::calculate(const LayoutBoxModelObject& obj, const L
         }
     }
     if (backgroundRepeatY == NoRepeatFill) {
-        int yOffset = fillLayer.backgroundYOrigin() == BottomEdge ? availableHeight - computedYPosition : computedYPosition;
+        LayoutUnit yOffset = fillLayer.backgroundYOrigin() == BottomEdge ? availableHeight - computedYPosition : computedYPosition;
         setNoRepeatY(top + yOffset);
         setSpaceSize(IntSize(spaceSize().width(), 0));
     }
