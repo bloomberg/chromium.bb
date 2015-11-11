@@ -653,7 +653,7 @@ group("gn_only") {
     }
   }
 
-  if (is_android) {
+  if (is_android || is_linux || is_chromeos) {
     deps += [ "//blimp" ]
   }
 

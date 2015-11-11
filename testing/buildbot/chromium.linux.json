@@ -298,12 +298,14 @@
   },
   "Linux Builder": {
     "additional_compile_targets": [
+      "blimp",
       "components/mus/example:all",
       "mandoline:all"
     ]
   },
   "Linux Builder (dbg)": {
     "additional_compile_targets": [
+      "blimp",
       "mandoline:all"
     ]
   },
