@@ -59,6 +59,9 @@ enum SubstitutionType {
   SUBSTITUTION_OUTPUT_EXTENSION,  // {{output_extension}}
   SUBSTITUTION_SOLIBS,  // {{solibs}}
 
+  // Used only for the args of actions.
+  SUBSTITUTION_RSP_FILE_NAME,  // {{response_file_name}}
+
   SUBSTITUTION_NUM_TYPES  // Must be last.
 };
 

@@ -126,7 +126,7 @@ action("archive") {
 
   if (enable_nacl) {
     inputs += [ "$root_out_dir/nacl_irt_x86_64.nexe" ]
-    if (cpu_arch == "x86") {
+    if (current_cpu == "x86") {
       inputs += [
         "$root_out_dir/nacl64.exe",
         "$root_out_dir/nacl_irt_x86_32.nexe",

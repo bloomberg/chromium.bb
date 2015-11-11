@@ -105,52 +105,42 @@ std::string NinjaActionTargetWriter::WriteRuleDefinition() {
   EscapeOptions args_escape_options;
   args_escape_options.mode = ESCAPE_NINJA_COMMAND;
 
-  if (settings_->IsWin()) {
-    // Send through gyp-win-tool and use a response file.
+  out_ << "rule " << custom_rule_name << std::endl;
+
+  if (target_->action_values().uses_rsp_file()) {
+    // Needs a response file. The unique_name part is for action_foreach so
+    // each invocation of the rule gets a different response file. This isn't
+    // strictly necessary for regular one-shot actions, but it's easier to
+    // just always define unique_name.
     std::string rspfile = custom_rule_name;
     if (!target_->sources().empty())
       rspfile += ".$unique_name";
     rspfile += ".rsp";
-
-    out_ << "rule " << custom_rule_name << std::endl;
-    out_ << "  command = ";
-    path_output_.WriteFile(out_, settings_->build_settings()->python_path());
-    // TODO(brettw) this hardcodes "environment.x86" which is something that
-    // the Chrome Windows toolchain writes. We should have a way to invoke
-    // python without requiring this gyp_win_tool thing.
-    out_ << " gyp-win-tool action-wrapper environment.x86 " << rspfile
-         << std::endl;
-    out_ << "  description = ACTION " << target_label << std::endl;
-    out_ << "  restat = 1" << std::endl;
     out_ << "  rspfile = " << rspfile << std::endl;
 
-    // The build command goes in the rsp file.
-    out_ << "  rspfile_content = ";
-    path_output_.WriteFile(out_, settings_->build_settings()->python_path());
-    out_ << " ";
-    path_output_.WriteFile(out_, target_->action_values().script());
-    for (const auto& arg : args.list()) {
+    // Response file contents.
+    out_ << "  rspfile_content =";
+    for (const auto& arg :
+         target_->action_values().rsp_file_contents().list()) {
       out_ << " ";
       SubstitutionWriter::WriteWithNinjaVariables(
           arg, args_escape_options, out_);
     }
     out_ << std::endl;
-  } else {
-    // Posix can execute Python directly.
-    out_ << "rule " << custom_rule_name << std::endl;
-    out_ << "  command = ";
-    path_output_.WriteFile(out_, settings_->build_settings()->python_path());
-    out_ << " ";
-    path_output_.WriteFile(out_, target_->action_values().script());
-    for (const auto& arg : args.list()) {
-      out_ << " ";
-      SubstitutionWriter::WriteWithNinjaVariables(
-          arg, args_escape_options, out_);
-    }
-    out_ << std::endl;
-    out_ << "  description = ACTION " << target_label << std::endl;
-    out_ << "  restat = 1" << std::endl;
   }
+
+  out_ << "  command = ";
+  path_output_.WriteFile(out_, settings_->build_settings()->python_path());
+  out_ << " ";
+  path_output_.WriteFile(out_, target_->action_values().script());
+  for (const auto& arg : args.list()) {
+    out_ << " ";
+    SubstitutionWriter::WriteWithNinjaVariables(
+        arg, args_escape_options, out_);
+  }
+  out_ << std::endl;
+  out_ << "  description = ACTION " << target_label << std::endl;
+  out_ << "  restat = 1" << std::endl;
 
   return custom_rule_name;
 }
@@ -164,9 +154,6 @@ void NinjaActionTargetWriter::WriteSourceRules(
   // We're writing the substitution values, these should not be quoted since
   // they will get pasted into the real command line.
   args_escape_options.inhibit_quoting = true;
-
-  const std::vector<SubstitutionType>& args_substitutions_used =
-      target_->action_values().args().required_types();
 
   const Target::FileList& sources = target_->sources();
   for (size_t i = 0; i < sources.size(); i++) {
@@ -185,12 +172,22 @@ void NinjaActionTargetWriter::WriteSourceRules(
     }
     out_ << std::endl;
 
-    // Windows needs a unique ID for the response file.
-    if (target_->settings()->IsWin())
+    // Response files require a unique name be defined.
+    if (target_->action_values().uses_rsp_file())
       out_ << "  unique_name = " << i << std::endl;
 
+    // The required types is the union of the args and response file. This
+    // might theoretically duplicate a definition if the same substitution is
+    // used in both the args and the reponse file. However, this should be
+    // very unusual (normally the substitutions will go in one place or the
+    // other) and the redundant assignment won't bother Ninja.
     SubstitutionWriter::WriteNinjaVariablesForSource(
-        settings_, sources[i], args_substitutions_used,
+        settings_, sources[i],
+        target_->action_values().args().required_types(),
+        args_escape_options, out_);
+    SubstitutionWriter::WriteNinjaVariablesForSource(
+        settings_, sources[i],
+        target_->action_values().rsp_file_contents().required_types(),
         args_escape_options, out_);
 
     if (target_->action_values().has_depfile()) {

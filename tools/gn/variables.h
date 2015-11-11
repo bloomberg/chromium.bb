@@ -195,6 +195,10 @@ extern const char kPublicDeps[];
 extern const char kPublicDeps_HelpShort[];
 extern const char kPublicDeps_Help[];
 
+extern const char kResponseFileContents[];
+extern const char kResponseFileContents_HelpShort[];
+extern const char kResponseFileContents_Help[];
+
 extern const char kScript[];
 extern const char kScript_HelpShort[];
 extern const char kScript_Help[];

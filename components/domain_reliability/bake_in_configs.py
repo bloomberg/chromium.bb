@@ -11,7 +11,9 @@ and loaded at runtime."""
 
 import ast
 import json
+import optparse
 import os
+import shlex
 import sys
 
 
@@ -475,6 +477,12 @@ def read_json_files_from_gypi(gypi_file):
   return json_files
 
 
+def read_json_files_from_file(list_file):
+  with open(list_file, 'r') as f:
+    list_text = f.read()
+  return shlex.split(list_text)
+
+
 def domain_is_whitelisted(domain):
   return any(domain == e or domain.endswith('.' + e)  for e in DOMAIN_WHITELIST)
 
@@ -500,19 +508,42 @@ def quote_and_wrap_text(text, width=79, prefix='  "', suffix='"'):
 
 
 def main():
-  if len(sys.argv) != 4:
-    print >> sys.stderr, (('Usage: %s <JSON pathname base directory> ' +
-                           '<input .gypi file> <output .cpp file>') %
-                          sys.argv[0])
-    print >> sys.stderr, sys.modules[__name__].__doc__
-    return 1
-  json_path = sys.argv[1]
-  gypi_file = sys.argv[2]
-  cpp_file = sys.argv[3]
+  parser = optparse.OptionParser(usage="bake_in_configs.py [options]")
+  parser.add_option("", "--output", metavar="FILE",
+                    help="[Required] Name of the .cc file to write.")
 
-  json_files = read_json_files_from_gypi(gypi_file)
-  json_files = [ os.path.join(json_path, f) for f in json_files ]
-  json_files = [ os.path.normpath(f) for f in json_files ]
+  # For response file reading.
+  parser.add_option("", "--file-list", metavar="FILE",
+                    help="File containing whitespace separated names of "
+                         "the baked in configs files.")
+
+  # For .gypi file reading.
+  parser.add_option("", "--gypi-file", metavar="FILE",
+                    help=".gypi file containing baked_in_configs variable.")
+  parser.add_option("", "--gypi-relative-to", metavar="PATH",
+                    help="Directory the baked_in_configs in the --gypi-file"
+                         "are relative to.""")
+
+  opts, args = parser.parse_args()
+
+  if not opts.output:
+    print >> sys.stderr, "--output argument required"
+    return 1
+
+  if opts.gypi_file:
+    # .gypi-style input.
+    if not opts.gypi_relative_to:
+      print >> sys.stderr, "--gypi-relative-to is required with --gypi-file"
+      return 1
+    json_files = read_json_files_from_gypi(opts.gypi_file)
+    json_files = [ os.path.join(opts.gypi_relative_to, f) for f in json_files ]
+    json_files = [ os.path.normpath(f) for f in json_files ]
+  elif opts.file_list:
+    # Regular file list input.
+    json_files = read_json_files_from_file(opts.file_list)
+  else:
+    print >> sys.stderr, "Either --file-list or --gypi-file is required."
+    return 1
 
   cpp_code = CC_HEADER
   found_invalid_config = False
@@ -549,7 +580,7 @@ def main():
   if found_invalid_config:
     return 1
 
-  with open(cpp_file, 'wb') as f:
+  with open(opts.output, 'wb') as f:
     f.write(cpp_code)
 
   return 0

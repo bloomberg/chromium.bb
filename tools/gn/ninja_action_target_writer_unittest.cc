@@ -140,57 +140,26 @@ TEST(NinjaActionTargetWriter, ActionWithSources) {
   target.SetToolchain(setup.toolchain());
   ASSERT_TRUE(target.OnResolved(&err));
 
-  // Posix.
-  {
-    setup.settings()->set_target_os(Settings::LINUX);
-    setup.build_settings()->set_python_path(base::FilePath(FILE_PATH_LITERAL(
-        "/usr/bin/python")));
+  setup.settings()->set_target_os(Settings::LINUX);
+  setup.build_settings()->set_python_path(base::FilePath(FILE_PATH_LITERAL(
+      "/usr/bin/python")));
 
-    std::ostringstream out;
-    NinjaActionTargetWriter writer(&target, out);
-    writer.Run();
+  std::ostringstream out;
+  NinjaActionTargetWriter writer(&target, out);
+  writer.Run();
 
-    const char expected_linux[] =
-        "rule __foo_bar___rule\n"
-        "  command = /usr/bin/python ../../foo/script.py\n"
-        "  description = ACTION //foo:bar()\n"
-        "  restat = 1\n"
-        "build obj/foo/bar.inputdeps.stamp: stamp ../../foo/script.py "
-            "../../foo/included.txt ../../foo/source.txt\n"
-        "\n"
-        "build foo.out: __foo_bar___rule | obj/foo/bar.inputdeps.stamp\n"
-        "\n"
-        "build obj/foo/bar.stamp: stamp foo.out\n";
-    EXPECT_EQ(expected_linux, out.str());
-  }
-
-  // Windows.
-  {
-    // Note: we use forward slashes here so that the output will be the same on
-    // Linux and Windows.
-    setup.build_settings()->set_python_path(base::FilePath(FILE_PATH_LITERAL(
-        "C:/python/python.exe")));
-    setup.settings()->set_target_os(Settings::WIN);
-
-    std::ostringstream out;
-    NinjaActionTargetWriter writer(&target, out);
-    writer.Run();
-
-    const char expected_win[] =
-        "rule __foo_bar___rule\n"
-        "  command = C$:/python/python.exe gyp-win-tool action-wrapper environment.x86 __foo_bar___rule.$unique_name.rsp\n"
-        "  description = ACTION //foo:bar()\n"
-        "  restat = 1\n"
-        "  rspfile = __foo_bar___rule.$unique_name.rsp\n"
-        "  rspfile_content = C$:/python/python.exe ../../foo/script.py\n"
-        "build obj/foo/bar.inputdeps.stamp: stamp ../../foo/script.py "
-            "../../foo/included.txt ../../foo/source.txt\n"
-        "\n"
-        "build foo.out: __foo_bar___rule | obj/foo/bar.inputdeps.stamp\n"
-        "\n"
-        "build obj/foo/bar.stamp: stamp foo.out\n";
-    EXPECT_EQ(expected_win, out.str());
-  }
+  const char expected_linux[] =
+      "rule __foo_bar___rule\n"
+      "  command = /usr/bin/python ../../foo/script.py\n"
+      "  description = ACTION //foo:bar()\n"
+      "  restat = 1\n"
+      "build obj/foo/bar.inputdeps.stamp: stamp ../../foo/script.py "
+          "../../foo/included.txt ../../foo/source.txt\n"
+      "\n"
+      "build foo.out: __foo_bar___rule | obj/foo/bar.inputdeps.stamp\n"
+      "\n"
+      "build obj/foo/bar.stamp: stamp foo.out\n";
+  EXPECT_EQ(expected_linux, out.str());
 }
 
 TEST(NinjaActionTargetWriter, ForEach) {
@@ -237,86 +206,43 @@ TEST(NinjaActionTargetWriter, ForEach) {
   target.SetToolchain(setup.toolchain());
   ASSERT_TRUE(target.OnResolved(&err));
 
-  // Posix.
-  {
-    setup.settings()->set_target_os(Settings::LINUX);
-    setup.build_settings()->set_python_path(base::FilePath(FILE_PATH_LITERAL(
-        "/usr/bin/python")));
+  setup.settings()->set_target_os(Settings::LINUX);
+  setup.build_settings()->set_python_path(base::FilePath(FILE_PATH_LITERAL(
+      "/usr/bin/python")));
 
-    std::ostringstream out;
-    NinjaActionTargetWriter writer(&target, out);
-    writer.Run();
+  std::ostringstream out;
+  NinjaActionTargetWriter writer(&target, out);
+  writer.Run();
 
-    const char expected_linux[] =
-        "rule __foo_bar___rule\n"
-        "  command = /usr/bin/python ../../foo/script.py -i ${in} "
-            // Escaping is different between Windows and Posix.
+  const char expected_linux[] =
+      "rule __foo_bar___rule\n"
+      "  command = /usr/bin/python ../../foo/script.py -i ${in} "
+          // Escaping is different between Windows and Posix.
 #if defined(OS_WIN)
-            "\"--out=foo$ bar${source_name_part}.o\"\n"
+          "\"--out=foo$ bar${source_name_part}.o\"\n"
 #else
-            "--out=foo\\$ bar${source_name_part}.o\n"
+          "--out=foo\\$ bar${source_name_part}.o\n"
 #endif
-        "  description = ACTION //foo:bar()\n"
-        "  restat = 1\n"
-        "build obj/foo/bar.inputdeps.stamp: stamp ../../foo/script.py "
-            "../../foo/included.txt obj/foo/dep.stamp\n"
-        "\n"
-        "build input1.out: __foo_bar___rule ../../foo/input1.txt | "
-            "obj/foo/bar.inputdeps.stamp\n"
-        "  source_name_part = input1\n"
-        "build input2.out: __foo_bar___rule ../../foo/input2.txt | "
-            "obj/foo/bar.inputdeps.stamp\n"
-        "  source_name_part = input2\n"
-        "\n"
-        "build obj/foo/bar.stamp: "
-            "stamp input1.out input2.out || obj/foo/datadep.stamp\n";
+      "  description = ACTION //foo:bar()\n"
+      "  restat = 1\n"
+      "build obj/foo/bar.inputdeps.stamp: stamp ../../foo/script.py "
+          "../../foo/included.txt obj/foo/dep.stamp\n"
+      "\n"
+      "build input1.out: __foo_bar___rule ../../foo/input1.txt | "
+          "obj/foo/bar.inputdeps.stamp\n"
+      "  source_name_part = input1\n"
+      "build input2.out: __foo_bar___rule ../../foo/input2.txt | "
+          "obj/foo/bar.inputdeps.stamp\n"
+      "  source_name_part = input2\n"
+      "\n"
+      "build obj/foo/bar.stamp: "
+          "stamp input1.out input2.out || obj/foo/datadep.stamp\n";
 
-    std::string out_str = out.str();
+  std::string out_str = out.str();
 #if defined(OS_WIN)
-    std::replace(out_str.begin(), out_str.end(), '\\', '/');
+  std::replace(out_str.begin(), out_str.end(), '\\', '/');
 #endif
-    EXPECT_EQ(expected_linux, out_str);
-  }
-
-  // Windows.
-  {
-    setup.build_settings()->set_python_path(base::FilePath(FILE_PATH_LITERAL(
-        "C:/python/python.exe")));
-    setup.settings()->set_target_os(Settings::WIN);
-
-    std::ostringstream out;
-    NinjaActionTargetWriter writer(&target, out);
-    writer.Run();
-
-    const char expected_win[] =
-        "rule __foo_bar___rule\n"
-        "  command = C$:/python/python.exe gyp-win-tool action-wrapper "
-            "environment.x86 __foo_bar___rule.$unique_name.rsp\n"
-        "  description = ACTION //foo:bar()\n"
-        "  restat = 1\n"
-        "  rspfile = __foo_bar___rule.$unique_name.rsp\n"
-        "  rspfile_content = C$:/python/python.exe ../../foo/script.py -i "
-#if defined(OS_WIN)
-            "${in} \"--out=foo$ bar${source_name_part}.o\"\n"
-#else
-            "${in} --out=foo\\$ bar${source_name_part}.o\n"
-#endif
-        "build obj/foo/bar.inputdeps.stamp: stamp ../../foo/script.py "
-            "../../foo/included.txt obj/foo/dep.stamp\n"
-        "\n"
-        "build input1.out: __foo_bar___rule ../../foo/input1.txt | "
-            "obj/foo/bar.inputdeps.stamp\n"
-        "  unique_name = 0\n"
-        "  source_name_part = input1\n"
-        "build input2.out: __foo_bar___rule ../../foo/input2.txt | "
-            "obj/foo/bar.inputdeps.stamp\n"
-        "  unique_name = 1\n"
-        "  source_name_part = input2\n"
-        "\n"
-        "build obj/foo/bar.stamp: "
-            "stamp input1.out input2.out || obj/foo/datadep.stamp\n";
-    EXPECT_EQ(expected_win, out.str());
-  }
+  EXPECT_EQ(expected_linux, out_str);
 }
 
 TEST(NinjaActionTargetWriter, ForEachWithDepfile) {
@@ -349,80 +275,96 @@ TEST(NinjaActionTargetWriter, ForEachWithDepfile) {
 
   target.inputs().push_back(SourceFile("//foo/included.txt"));
 
-  // Posix.
-  {
-    setup.settings()->set_target_os(Settings::LINUX);
-    setup.build_settings()->set_python_path(base::FilePath(FILE_PATH_LITERAL(
-        "/usr/bin/python")));
+  setup.settings()->set_target_os(Settings::LINUX);
+  setup.build_settings()->set_python_path(base::FilePath(FILE_PATH_LITERAL(
+      "/usr/bin/python")));
 
-    std::ostringstream out;
-    NinjaActionTargetWriter writer(&target, out);
-    writer.Run();
+  std::ostringstream out;
+  NinjaActionTargetWriter writer(&target, out);
+  writer.Run();
 
-    const char expected_linux[] =
-        "rule __foo_bar___rule\n"
-        "  command = /usr/bin/python ../../foo/script.py -i ${in} "
+  const char expected_linux[] =
+      "rule __foo_bar___rule\n"
+      "  command = /usr/bin/python ../../foo/script.py -i ${in} "
 #if defined(OS_WIN)
-            "\"--out=foo$ bar${source_name_part}.o\"\n"
+          "\"--out=foo$ bar${source_name_part}.o\"\n"
 #else
-            "--out=foo\\$ bar${source_name_part}.o\n"
+          "--out=foo\\$ bar${source_name_part}.o\n"
 #endif
-        "  description = ACTION //foo:bar()\n"
-        "  restat = 1\n"
-        "build obj/foo/bar.inputdeps.stamp: stamp ../../foo/script.py "
-            "../../foo/included.txt\n"
-        "\n"
-        "build input1.out: __foo_bar___rule ../../foo/input1.txt"
-            " | obj/foo/bar.inputdeps.stamp\n"
-        "  source_name_part = input1\n"
-        "  depfile = gen/input1.d\n"
-        "build input2.out: __foo_bar___rule ../../foo/input2.txt"
-            " | obj/foo/bar.inputdeps.stamp\n"
-        "  source_name_part = input2\n"
-        "  depfile = gen/input2.d\n"
-        "\n"
-        "build obj/foo/bar.stamp: stamp input1.out input2.out\n";
-    EXPECT_EQ(expected_linux, out.str());
-  }
+      "  description = ACTION //foo:bar()\n"
+      "  restat = 1\n"
+      "build obj/foo/bar.inputdeps.stamp: stamp ../../foo/script.py "
+          "../../foo/included.txt\n"
+      "\n"
+      "build input1.out: __foo_bar___rule ../../foo/input1.txt"
+          " | obj/foo/bar.inputdeps.stamp\n"
+      "  source_name_part = input1\n"
+      "  depfile = gen/input1.d\n"
+      "build input2.out: __foo_bar___rule ../../foo/input2.txt"
+          " | obj/foo/bar.inputdeps.stamp\n"
+      "  source_name_part = input2\n"
+      "  depfile = gen/input2.d\n"
+      "\n"
+      "build obj/foo/bar.stamp: stamp input1.out input2.out\n";
+  EXPECT_EQ(expected_linux, out.str());
+}
 
-  // Windows.
-  {
-    setup.build_settings()->set_python_path(base::FilePath(FILE_PATH_LITERAL(
-        "C:/python/python.exe")));
-    setup.settings()->set_target_os(Settings::WIN);
+TEST(NinjaActionTargetWriter, ForEachWithResponseFile) {
+  TestWithScope setup;
+  Err err;
 
-    std::ostringstream out;
-    NinjaActionTargetWriter writer(&target, out);
-    writer.Run();
+  setup.build_settings()->SetBuildDir(SourceDir("//out/Debug/"));
+  Target target(setup.settings(), Label(SourceDir("//foo/"), "bar"));
+  target.set_output_type(Target::ACTION_FOREACH);
 
-    const char expected_win[] =
-        "rule __foo_bar___rule\n"
-        "  command = C$:/python/python.exe gyp-win-tool action-wrapper "
-            "environment.x86 __foo_bar___rule.$unique_name.rsp\n"
-        "  description = ACTION //foo:bar()\n"
-        "  restat = 1\n"
-        "  rspfile = __foo_bar___rule.$unique_name.rsp\n"
-        "  rspfile_content = C$:/python/python.exe ../../foo/script.py -i "
-#if defined(OS_WIN)
-            "${in} \"--out=foo$ bar${source_name_part}.o\"\n"
-#else
-            "${in} --out=foo\\$ bar${source_name_part}.o\n"
-#endif
-        "build obj/foo/bar.inputdeps.stamp: stamp ../../foo/script.py "
-            "../../foo/included.txt\n"
-        "\n"
-        "build input1.out: __foo_bar___rule ../../foo/input1.txt"
-            " | obj/foo/bar.inputdeps.stamp\n"
-        "  unique_name = 0\n"
-        "  source_name_part = input1\n"
-        "  depfile = gen/input1.d\n"
-        "build input2.out: __foo_bar___rule ../../foo/input2.txt"
-            " | obj/foo/bar.inputdeps.stamp\n"
-        "  unique_name = 1\n"
-        "  source_name_part = input2\n"
-        "  depfile = gen/input2.d\n"
-        "\n"
-        "build obj/foo/bar.stamp: stamp input1.out input2.out\n";
-    EXPECT_EQ(expected_win, out.str());
-  }
+  target.sources().push_back(SourceFile("//foo/input1.txt"));
+  target.action_values().set_script(SourceFile("//foo/script.py"));
+
+  target.SetToolchain(setup.toolchain());
+  ASSERT_TRUE(target.OnResolved(&err));
+
+  // Make sure we get interesting substitutions for both the args and the
+  // response file contents.
+  target.action_values().args() = SubstitutionList::MakeForTest(
+      "{{source}}",
+      "{{source_file_part}}",
+      "{{response_file_name}}");
+  target.action_values().rsp_file_contents() = SubstitutionList::MakeForTest(
+      "-j",
+      "{{source_name_part}}");
+  target.action_values().outputs() = SubstitutionList::MakeForTest(
+      "//out/Debug/{{source_name_part}}.out");
+
+  setup.settings()->set_target_os(Settings::LINUX);
+  setup.build_settings()->set_python_path(base::FilePath(FILE_PATH_LITERAL(
+      "/usr/bin/python")));
+
+  std::ostringstream out;
+  NinjaActionTargetWriter writer(&target, out);
+  writer.Run();
+
+  const char expected_linux[] =
+      "rule __foo_bar___rule\n"
+      // This name is autogenerated from the target rule name.
+      "  rspfile = __foo_bar___rule.$unique_name.rsp\n"
+      // These come from rsp_file_contents above.
+      "  rspfile_content = -j ${source_name_part}\n"
+      // These come from the args.
+      "  command = /usr/bin/python ../../foo/script.py ${in} "
+          "${source_file_part} ${rspfile}\n"
+      "  description = ACTION //foo:bar()\n"
+      "  restat = 1\n"
+      "build obj/foo/bar.inputdeps.stamp: stamp ../../foo/script.py\n"
+      "\n"
+      "build input1.out: __foo_bar___rule ../../foo/input1.txt"
+          " | obj/foo/bar.inputdeps.stamp\n"
+      // Necessary for the rspfile defined in the rule.
+      "  unique_name = 0\n"
+      // Substitution for the args.
+      "  source_file_part = input1.txt\n"
+      // Substitution for the rspfile contents.
+      "  source_name_part = input1\n"
+      "\n"
+      "build obj/foo/bar.stamp: stamp input1.out\n";
+  EXPECT_EQ(expected_linux, out.str());
 }

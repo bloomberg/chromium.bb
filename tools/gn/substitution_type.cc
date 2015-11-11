@@ -44,6 +44,8 @@ const char* kSubstitutionNames[SUBSTITUTION_NUM_TYPES] = {
   "{{libs}}",  // SUBSTITUTION_LIBS
   "{{output_extension}}",  // SUBSTITUTION_OUTPUT_EXTENSION
   "{{solibs}}",  // SUBSTITUTION_SOLIBS
+
+  "{{response_file_name}}",  // SUBSTITUTION_RSP_FILE_NAME
 };
 
 const char* kSubstitutionNinjaNames[SUBSTITUTION_NUM_TYPES] = {
@@ -85,6 +87,8 @@ const char* kSubstitutionNinjaNames[SUBSTITUTION_NUM_TYPES] = {
     "libs",              // SUBSTITUTION_LIBS
     "output_extension",  // SUBSTITUTION_OUTPUT_EXTENSION
     "solibs",            // SUBSTITUTION_SOLIBS
+
+    "rspfile",  // SUBSTITUTION_RSP_FILE_NAME
 };
 
 SubstitutionBits::SubstitutionBits() : used() {
