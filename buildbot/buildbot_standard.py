@@ -256,7 +256,21 @@ def BuildScript(status, context):
       CommandGclientRunhooks(context)
 
   # Make sure our GN build is working.
-  can_use_gn = context.Linux()
+  if context.Windows() and not context['clang']:
+    # The GN scripts for MSVC barf for a target_cpu other than x86 or
+    # x64 even if we only try to build the untrusted code.  Windows does
+    # build for both x86-32 and x86-64 targets, but the GN Windows MSVC
+    # toolchain scripts only support x86-64 hosts, while NaCl's x86-32
+    # testing bots have to be actual x86-32 hosts.
+    can_use_gn = context['arch'] == '64'
+  elif context.Mac():
+    # Mac builds for x86-32 and x86-64, but the bots do not yet have
+    # the right SDK installed for the GN Mac toolchain to be happy.
+    # TODO(mcgrathr): Remove this when the bots are all updated.
+    can_use_gn = False
+  else:
+    # Linux builds (or cross-builds) for every target.
+    can_use_gn = True
   gn_out = '../out'
 
   if can_use_gn:
@@ -279,6 +293,12 @@ def BuildScript(status, context):
       'use_clang_newlib=' + gn_newlib,
     ]
 
+    # is_clang is the GN default for Mac and Windows, so
+    # don't override that on "non-clang" bots, but do set
+    # it explicitly for an explicitly "clang" bot.
+    if context['clang']:
+      gn_gen_args.append('is_clang=true')
+
     # If this is a 32-bit build but the kernel reports as 64-bit,
     # then gn will set host_cpu=x64 when we want host_cpu=x86.
     if context['arch'] == '32':
@@ -288,7 +308,7 @@ def BuildScript(status, context):
     gn_out_irt = os.path.join(gn_out, 'irt_' + gn_arch_name)
 
     gn_cmd = [
-      'gn',
+      'gn.bat' if context.Windows() else 'gn',
       '--dotfile=../native_client/.gn', '--root=..',
       # Note: quotes are not needed around this space-separated
       # list of args.  The shell would remove them before passing
@@ -299,9 +319,14 @@ def BuildScript(status, context):
       'gen', gn_out,
       ]
 
+    gn_ninja_cmd = ['ninja', '-C', gn_out]
+    if gn_arch_name not in ('x86', 'x64') and not context.Linux():
+      # On non-Linux non-x86, we can only build the untrusted code.
+      gn_ninja_cmd.append('untrusted')
+
     with Step('gn_compile', status):
       Command(context, cmd=gn_cmd)
-      Command(context, cmd=['ninja', '-C', gn_out])
+      Command(context, cmd=gn_ninja_cmd)
 
   if context['clang']:
     with Step('update_clang', status):
@@ -410,13 +435,17 @@ def BuildScript(status, context):
 
   ### BEGIN GN tests ###
   if can_use_gn:
+    gn_sel_ldr = os.path.join(gn_out_trusted, 'sel_ldr')
+    if context.Windows():
+      gn_sel_ldr += '.exe'
     gn_extra = [
-        'force_sel_ldr=' + os.path.join(gn_out_trusted, 'sel_ldr'),
-        'force_bootstrap=' + os.path.join(gn_out_trusted,
-                                          'nacl_helper_bootstrap'),
+        'force_sel_ldr=' + gn_sel_ldr,
         'force_irt=' + os.path.join(gn_out_irt, 'irt_core.nexe'),
         'perf_prefix=gn_',
-    ]
+        ]
+    if context.Linux():
+      gn_extra.append('force_bootstrap=' +
+                      os.path.join(gn_out_trusted, 'nacl_helper_bootstrap'))
     def RunGNTests(step_suffix, extra_scons_modes, suite_suffix):
       for suite in ['small_tests', 'medium_tests', 'large_tests']:
         with Step(suite + step_suffix + ' (GN)', status, halt_on_fail=False):
