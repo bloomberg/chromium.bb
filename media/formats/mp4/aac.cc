@@ -38,12 +38,11 @@ bool AAC::Parse(const std::vector<uint8>& data,
   frequency_ = 0;
   extension_frequency_ = 0;
 
-  // TODO(msu.koo): Need to update comments after checking which version of
-  // ISO 14496-3 this implementation is according to. Also need to reflect
-  // ISO 14496-3:2009 if ISO 14496-3:2005 was reflected here.
+  // TODO(msu.koo): Need to consider whether ISO 14496-3:2009 needs
+  // to be reflected instead of ISO 14496-3:2005.
   // https://crbug.com/532281
 
-  // The following code is written according to ISO 14496 Part 3 Table 1.13 -
+  // The following code is written according to ISO 14496-3:2005 Table 1.13 -
   // Syntax of AudioSpecificConfig.
 
   // Read base configuration
@@ -161,7 +160,7 @@ int AAC::GetOutputSamplesPerSecond(bool sbr_in_mimetype) const {
   if (!sbr_in_mimetype)
     return frequency_;
 
-  // The following code is written according to ISO 14496 Part 3 Table 1.11 and
+  // The following code is written according to ISO 14496-3:2005 Table 1.11 and
   // Table 1.22. (Table 1.11 refers to the capping to 48000, Table 1.22 refers
   // to SBR doubling the AAC sample rate.)
   // TODO(acolwell) : Extend sample rate cap to 96kHz for Level 5 content.
@@ -172,7 +171,7 @@ int AAC::GetOutputSamplesPerSecond(bool sbr_in_mimetype) const {
 ChannelLayout AAC::GetChannelLayout(bool sbr_in_mimetype) const {
   // Check for implicit signalling of HE-AAC and indicate stereo output
   // if the mono channel configuration is signalled.
-  // See ISO-14496-3 Section 1.6.6.1.2 for details about this special casing.
+  // See ISO 14496-3:2005 Section 1.6.5.3 for details about this special casing.
   if (sbr_in_mimetype && channel_config_ == 1)
     return CHANNEL_LAYOUT_STEREO;
 
@@ -205,7 +204,7 @@ bool AAC::ConvertEsdsToADTS(std::vector<uint8>* buffer) const {
 }
 
 // Currently this function only support GASpecificConfig defined in
-// ISO 14496 Part 3 Table 4.1 - Syntax of GASpecificConfig()
+// ISO 14496-3:2005 Table 4.1 - Syntax of GASpecificConfig()
 bool AAC::SkipDecoderGASpecificConfig(BitReader* bit_reader) const {
   switch (profile_) {
     case 1:
@@ -248,7 +247,7 @@ bool AAC::SkipErrorSpecificConfig() const {
   return true;
 }
 
-// The following code is written according to ISO 14496 part 3 Table 4.1 -
+// The following code is written according to ISO 14496-3:2005 Table 4.1 -
 // GASpecificConfig.
 bool AAC::SkipGASpecificConfig(BitReader* bit_reader) const {
   uint8 extension_flag = 0;
