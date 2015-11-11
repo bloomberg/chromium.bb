@@ -268,10 +268,6 @@ bool TestRenderViewHost::CreateRenderView(
   return true;
 }
 
-bool TestRenderViewHost::IsFullscreenGranted() const {
-  return RenderViewHostImpl::IsFullscreenGranted();
-}
-
 MockRenderProcessHost* TestRenderViewHost::GetProcess() const {
   return static_cast<MockRenderProcessHost*>(RenderViewHostImpl::GetProcess());
 }

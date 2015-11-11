@@ -14,7 +14,6 @@
 #include "content/browser/dom_storage/session_storage_namespace_impl.h"
 #include "content/common/content_export.h"
 #include "net/base/load_states.h"
-#include "third_party/WebKit/public/platform/WebDisplayMode.h"
 #include "third_party/WebKit/public/web/WebPopupType.h"
 #include "ui/base/window_open_disposition.h"
 
@@ -153,12 +152,6 @@ class CONTENT_EXPORT RenderViewHostDelegate {
   virtual void RunFileChooser(
       RenderViewHost* render_view_host,
       const FileChooserParams& params) {}
-
-  // Returns whether the associated tab is in fullscreen mode.
-  virtual bool IsFullscreenForCurrentTab() const;
-
-  // Returns the display mode for the view.
-  virtual blink::WebDisplayMode GetDisplayMode() const;
 
   // The contents' preferred size changed.
   virtual void UpdatePreferredSize(const gfx::Size& pref_size) {}

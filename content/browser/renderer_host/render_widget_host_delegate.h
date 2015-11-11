@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
+#include "third_party/WebKit/public/platform/WebDisplayMode.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -142,6 +143,14 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
   // Return the rect where to display the resize corner, if any, otherwise
   // an empty rect.
   virtual gfx::Rect GetRootWindowResizerRect(
+      RenderWidgetHostImpl* render_widget_host) const;
+
+  // Returns whether the associated tab is in fullscreen mode.
+  virtual bool IsFullscreenForCurrentTab(
+      RenderWidgetHostImpl* render_widget_host) const;
+
+  // Returns the display mode for the view.
+  virtual blink::WebDisplayMode GetDisplayMode(
       RenderWidgetHostImpl* render_widget_host) const;
 
 #if defined(OS_WIN)

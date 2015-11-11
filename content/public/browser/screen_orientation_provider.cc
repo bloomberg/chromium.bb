@@ -4,8 +4,8 @@
 
 #include "content/public/browser/screen_orientation_provider.h"
 
-#include "content/browser/renderer_host/render_view_host_delegate.h"
-#include "content/public/browser/render_view_host.h"
+#include "content/browser/renderer_host/render_view_host_impl.h"
+#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/screen_orientation_delegate.h"
 #include "content/public/browser/screen_orientation_dispatcher_host.h"
@@ -44,19 +44,15 @@ void ScreenOrientationProvider::LockOrientation(int request_id,
   }
 
   if (delegate_->FullScreenRequired(web_contents())) {
-    RenderViewHost* rvh = web_contents()->GetRenderViewHost();
-    if (!rvh) {
+    RenderViewHostImpl* rvhi =
+        static_cast<RenderViewHostImpl*>(web_contents()->GetRenderViewHost());
+    if (!rvhi) {
       dispatcher_->NotifyLockError(request_id,
                                    blink::WebLockOrientationErrorCanceled);
       return;
     }
-    RenderViewHostDelegate* rvhd = rvh->GetDelegate();
-    if (!rvhd) {
-      dispatcher_->NotifyLockError(request_id,
-                                   blink::WebLockOrientationErrorCanceled);
-      return;
-    }
-    if (!rvhd->IsFullscreenForCurrentTab()) {
+    if (!static_cast<WebContentsImpl*>(web_contents())
+             ->IsFullscreenForCurrentTab(rvhi->GetWidget())) {
       dispatcher_->NotifyLockError(request_id,
           blink::WebLockOrientationErrorFullScreenRequired);
       return;

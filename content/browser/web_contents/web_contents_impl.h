@@ -483,8 +483,6 @@ class CONTENT_EXPORT WebContentsImpl
   void LostCapture() override;
   void RunFileChooser(RenderViewHost* render_view_host,
                       const FileChooserParams& params) override;
-  bool IsFullscreenForCurrentTab() const override;
-  blink::WebDisplayMode GetDisplayMode() const override;
   void UpdatePreferredSize(const gfx::Size& pref_size) override;
   void LostMouseLock() override;
   void CreateNewWindow(
@@ -599,6 +597,10 @@ class CONTENT_EXPORT WebContentsImpl
                           bool user_gesture,
                           bool last_unlocked_by_target) override;
   gfx::Rect GetRootWindowResizerRect(
+      RenderWidgetHostImpl* render_widget_host) const override;
+  bool IsFullscreenForCurrentTab(
+      RenderWidgetHostImpl* render_widget_host) const override;
+  blink::WebDisplayMode GetDisplayMode(
       RenderWidgetHostImpl* render_widget_host) const override;
 
   // RenderFrameHostManager::Delegate ------------------------------------------

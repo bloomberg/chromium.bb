@@ -573,8 +573,15 @@ bool RenderWidgetHostImpl::GetResizeParams(
   *resize_params = ViewMsg_Resize_Params();
 
   GetWebScreenInfo(&resize_params->screen_info);
-  if (delegate_)
+  if (delegate_) {
     resize_params->resizer_rect = delegate_->GetRootWindowResizerRect(this);
+    resize_params->is_fullscreen_granted =
+        delegate_->IsFullscreenForCurrentTab(this);
+    resize_params->display_mode = delegate_->GetDisplayMode(this);
+  } else {
+    resize_params->is_fullscreen_granted = false;
+    resize_params->display_mode = blink::WebDisplayModeBrowser;
+  }
 
   if (view_) {
     resize_params->new_size = view_->GetRequestedRendererSize();
@@ -583,8 +590,6 @@ bool RenderWidgetHostImpl::GetResizeParams(
     resize_params->top_controls_shrink_blink_size =
         view_->DoTopControlsShrinkBlinkSize();
     resize_params->visible_viewport_size = view_->GetVisibleViewportSize();
-    resize_params->is_fullscreen_granted = IsFullscreenGranted();
-    resize_params->display_mode = GetDisplayMode();
   }
 
   const bool size_changed =
@@ -1389,14 +1394,6 @@ void RenderWidgetHostImpl::RejectMouseLockOrUnlockIfNecessary() {
 
 bool RenderWidgetHostImpl::IsMouseLocked() const {
   return view_ ? view_->IsMouseLocked() : false;
-}
-
-bool RenderWidgetHostImpl::IsFullscreenGranted() const {
-  return false;
-}
-
-blink::WebDisplayMode RenderWidgetHostImpl::GetDisplayMode() const {
-  return blink::WebDisplayModeBrowser;
 }
 
 void RenderWidgetHostImpl::SetAutoResize(bool enable,

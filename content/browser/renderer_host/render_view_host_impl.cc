@@ -1234,14 +1234,6 @@ void RenderViewHostImpl::OnClosePageACK() {
   ClosePageIgnoringUnloadEvents();
 }
 
-bool RenderViewHostImpl::IsFullscreenGranted() const {
-  return delegate_->IsFullscreenForCurrentTab();
-}
-
-blink::WebDisplayMode RenderViewHostImpl::GetDisplayMode() const {
-  return delegate_->GetDisplayMode();
-}
-
 void RenderViewHostImpl::OnFocus() {
   // Note: We allow focus and blur from swapped out RenderViewHosts, even when
   // the active RenderViewHost is in a different BrowsingInstance (e.g., WebUI).

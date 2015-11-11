@@ -332,8 +332,6 @@ class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
 
  protected:
   // RenderWidgetHost protected overrides.
-  bool IsFullscreenGranted() const override;
-  blink::WebDisplayMode GetDisplayMode() const override;
   void OnFocus() override;
 
   // IPC message handlers.

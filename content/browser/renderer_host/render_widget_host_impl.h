@@ -520,12 +520,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
 
   bool IsMouseLocked() const;
 
-  // RenderViewHost overrides this method to report whether tab-initiated
-  // fullscreen was granted.
-  virtual bool IsFullscreenGranted() const;
-
-  virtual blink::WebDisplayMode GetDisplayMode() const;
-
   // The View associated with the RenderViewHost. The lifetime of this object
   // is associated with the lifetime of the Render process. If the Renderer
   // crashes, its View is destroyed and this pointer becomes NULL, even though
