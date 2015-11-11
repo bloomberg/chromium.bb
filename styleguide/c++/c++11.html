@@ -527,6 +527,15 @@ std::exception</a></td>
 </tr>
 
 <tr>
+<td>Ref-qualified Member Functions</td>
+<td><code>class T {<br/>&nbsp;&nbsp;void f() & {}<br/>&nbsp;&nbsp;void f() && {}<br/>};<br/>t.f();  // first<br/>T().f(); // second<br/>std::move(t).f(); // second</code></td>
+<td>Allows class member functions to only bind to |this| as an rvalue or lvalue.</td>
+<td><a href="http://en.cppreference.com/w/cpp/language/member_functions">
+Member functions</a></td>
+<td>Banned in the google3 C++11 library style guide, but being considered for use in bind/callback in google3 and the standard library.</td>
+</tr>
+
+<tr>
 <td>Union Class Members</td>
 <td><code>union <i>name</i> { <i>class</i> <i>var</i>}</code></td>
 <td>Allows class type members</td>
