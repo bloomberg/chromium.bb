@@ -516,6 +516,18 @@
   <message name="IDS_SETTINGS_SITE_SETTINGS_RESET_MENU" desc="Label for the menu item to reset the permission for a particular site (make it ask you again next time).">
     Reset to ask
   </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_USAGE" desc="The Usage header, used to group disk and battery usage information on the Site Details page.">
+    Usage
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_PERMISSIONS" desc="The Permissions header, used to group together permissions, such as Geolocation, on the Site Details page.">
+    Permissions
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_CLEAR_BUTTON" desc="The Clear and Reset button, used to clear all permissions and storage for a given site.">
+    Clear &amp; Reset
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_DELETE" desc="Label for the trashcan icon used to delete storage on the Site Details page.">
+    Delete
+  </message>
 
   <!-- Sign-in Page -->
   <message name="IDS_SETTINGS_SIGNIN" desc="Name of the settings page which manages Chrome's signed-in Google profile.">

@@ -1,0 +1,51 @@
+<link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="chrome://md-settings/site_settings/site_details_permission.html">
+
+<dom-module id="site-details">
+  <link rel="import" type="css"
+      href="chrome://md-settings/settings_page/settings_page.css">
+  <link rel="import" type="css" href="site_details.css">
+  <template>
+    <div class="origin">[[origin]]</div>
+    <h2 i18n-content="siteSettingsUsage" id="usage" hidden></h2>
+    <paper-item id="storage" hidden>
+      <div class="flex">[[storedData_]]</div>
+      <paper-icon-button icon="delete"
+          on-tap="onClearStorage_"
+          i18n-values="alt:siteSettingsDelete"></paper-icon-button>
+    </paper-item>
+    <h2 i18n-content="siteSettingsPermissions"></h2>
+    <site-details-permission prefs="{{prefs}}" id="cookies"
+        origin="[[origin]]">
+    </site-details-permission>
+    <site-details-permission prefs="{{prefs}}" id="javascript"
+        origin="[[origin]]">
+    </site-details-permission>
+    <site-details-permission prefs="{{prefs}}" id="popups"
+        origin="[[origin]]">
+    </site-details-permission>
+    <site-details-permission prefs="{{prefs}}" id="geolocation"
+        origin="[[origin]]">
+    </site-details-permission>
+    <site-details-permission prefs="{{prefs}}" id="notification"
+        origin="[[origin]]">
+    </site-details-permission>
+    <site-details-permission prefs="{{prefs}}" id="fullscreen"
+        origin="[[origin]]">
+    </site-details-permission>
+    <site-details-permission prefs="{{prefs}}" id="camera"
+        origin="[[origin]]">
+    </site-details-permission>
+    <site-details-permission prefs="{{prefs}}" id="mic"
+        origin="[[origin]]">
+    </site-details-permission>
+    <paper-button
+        on-tap="onClearAndReset_"
+        raised i18n-content="siteSettingsClearAndReset"
+        class="reset-button"></paper-button>
+  </template>
+  <script src="site_details.js"></script>
+</dom-module>

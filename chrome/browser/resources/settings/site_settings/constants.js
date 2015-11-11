@@ -24,10 +24,10 @@ cr.define('settings', function() {
   };
 
   /**
-   * Contains the possible default values for a given contentSettingsType.
+   * Contains the possible values for a given contentSettingsType.
    * @enum {number}
    */
-  var DefaultValues = {
+  var PermissionValues = {
     ALLOW: 1,
     BLOCK: 2,
     ASK: 3,
@@ -35,6 +35,6 @@ cr.define('settings', function() {
 
   return {
     ContentSettingsTypes: ContentSettingsTypes,
-    DefaultValues: DefaultValues,
+    PermissionValues: PermissionValues,
   };
 });

@@ -1,0 +1,39 @@
+<link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/av-icons.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/communication-icons.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/social-icons.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-item/paper-item.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-menu/paper-menu.html">
+<link rel="import" href="chrome://md-settings/prefs/prefs_behavior.html">
+<link rel="import" href="chrome://md-settings/site_settings/site_settings_behavior.html">
+
+<dom-module id="site-details-permission">
+  <link rel="import" type="css"
+      href="chrome://md-settings/settings_page/settings_page.css">
+  <link rel="import" type="css" href="site_details_permission.css">
+  <template>
+    <div id="details" class="horizontal layout top" hidden>
+      <div class="left-column">
+        <iron-icon icon="[[computeIconForContentCategory(category)]]"
+            item-icon></iron-icon>
+      </div>
+      <div class="flex right-column">
+        <div class="permission-header">
+          [[computeTitleForContentCategory(category)]]
+        </div>
+        <div class="permission-list">
+          <paper-dropdown-menu>
+            <paper-menu id="permission" class="dropdown-content">
+              <paper-item>[[i18n_.allowAction]]</paper-item>
+              <paper-item>[[i18n_.blockAction]]</paper-item>
+            </paper-menu>
+          </paper-dropdown-menu>
+        </div>
+      </div>
+    </div>
+  </template>
+  <script src="site_details_permission.js"></script>
+</dom-module>

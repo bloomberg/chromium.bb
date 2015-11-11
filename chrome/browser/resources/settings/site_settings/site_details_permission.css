@@ -1,0 +1,36 @@
+/* Copyright 2015 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+:host {
+  display: block;
+}
+
+.left-column {
+  -webkit-margin-start: 15px;
+}
+
+.right-column {
+  -webkit-margin-start: 10px;
+}
+
+.permission-header {
+  -webkit-margin-start: 6px;
+}
+
+.permission-list {
+  -webkit-margin-end: 35px;
+}
+
+.permission-list > paper-dropdown-menu {
+  -webkit-margin-end: 3px;
+  -webkit-margin-start: -13px;
+  margin-bottom: 12px;
+  margin-top: -20px;
+  width: 100%;
+}
+
+.permission-list > paper-dropdown-menu::shadow > paper-menu-button {
+  -webkit-margin-start: 11px;
+  width: 100%;
+}

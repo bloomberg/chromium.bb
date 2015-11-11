@@ -541,6 +541,14 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source) {
                                   IDS_SETTINGS_SITE_SETTINGS_BLOCK_MENU);
   html_source->AddLocalizedString("siteSettingsActionReset",
                                   IDS_SETTINGS_SITE_SETTINGS_RESET_MENU);
+  html_source->AddLocalizedString("siteSettingsUsage",
+                                  IDS_SETTINGS_SITE_SETTINGS_USAGE);
+  html_source->AddLocalizedString("siteSettingsPermissions",
+                                  IDS_SETTINGS_SITE_SETTINGS_PERMISSIONS);
+  html_source->AddLocalizedString("siteSettingsClearAndReset",
+                                  IDS_SETTINGS_SITE_SETTINGS_CLEAR_BUTTON);
+  html_source->AddLocalizedString("siteSettingsDelete",
+                                  IDS_SETTINGS_SITE_SETTINGS_DELETE);
 }
 
 void AddSyncStrings(content::WebUIDataSource* html_source) {

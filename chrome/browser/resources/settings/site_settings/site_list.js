@@ -158,9 +158,9 @@ Polymer({
    */
   setUpActionMenu_: function() {
     this.showAllowAction_ =
-        this.categorySubtype == settings.DefaultValues.BLOCK;
+        this.categorySubtype == settings.PermissionValues.BLOCK;
     this.showBlockAction_ =
-        this.categorySubtype == settings.DefaultValues.ALLOW &&
+        this.categorySubtype == settings.PermissionValues.ALLOW &&
         this.category != settings.ContentSettingsTypes.FULLSCREEN;
   },
 
@@ -189,7 +189,7 @@ Polymer({
    * @private
    */
   computeSiteListHeader_: function(siteList, toggleState) {
-    if (this.categorySubtype == settings.DefaultValues.ALLOW) {
+    if (this.categorySubtype == settings.PermissionValues.ALLOW) {
       return loadTimeData.getStringF(
           'titleAndCount',
           loadTimeData.getString(
@@ -208,7 +208,7 @@ Polymer({
    * @private
    */
   isAllowList_: function() {
-    return this.categorySubtype == settings.DefaultValues.ALLOW;
+    return this.categorySubtype == settings.PermissionValues.ALLOW;
   },
 
   /**

@@ -45,6 +45,14 @@ Polymer({
     category: {
       type: Number,
     },
+
+    /**
+     * The origin that was selected by the user in the dropdown list.
+     */
+    selectedOrigin: {
+      type: String,
+      observer: 'onSelectedOriginChanged_',
+    },
   },
 
   observers: [
@@ -52,8 +60,8 @@ Polymer({
   ],
 
   ready: function() {
-    this.$.blockList.categorySubtype = settings.DefaultValues.BLOCK;
-    this.$.allowList.categorySubtype = settings.DefaultValues.ALLOW;
+    this.$.blockList.categorySubtype = settings.PermissionValues.BLOCK;
+    this.$.allowList.categorySubtype = settings.PermissionValues.ALLOW;
 
     CrSettingsPrefs.initialized.then(function() {
       this.categoryEnabled = this.isCategoryAllowed(this.category);
@@ -74,8 +82,8 @@ Polymer({
         // "Allowed" vs "Blocked".
         this.setPrefValue(this.computeCategoryPrefName(this.category),
                           this.categoryEnabled ?
-                              settings.DefaultValues.ALLOW :
-                              settings.DefaultValues.BLOCK);
+                              settings.PermissionValues.ALLOW :
+                              settings.PermissionValues.BLOCK);
         break;
       case settings.ContentSettingsTypes.NOTIFICATION:
       case settings.ContentSettingsTypes.GEOLOCATION:
@@ -84,19 +92,23 @@ Polymer({
         // "Ask" vs "Blocked".
         this.setPrefValue(this.computeCategoryPrefName(this.category),
                           this.categoryEnabled ?
-                              settings.DefaultValues.ASK :
-                              settings.DefaultValues.BLOCK);
+                              settings.PermissionValues.ASK :
+                              settings.PermissionValues.BLOCK);
         break;
       case settings.ContentSettingsTypes.FULLSCREEN:
         // "Allowed" vs. "Ask first".
         this.setPrefValue(this.computeCategoryPrefName(this.category),
                           this.categoryEnabled ?
-                              settings.DefaultValues.ALLOW :
-                              settings.DefaultValues.ASK);
+                              settings.PermissionValues.ALLOW :
+                              settings.PermissionValues.ASK);
         break;
       default:
         assertNotReached();
     }
+  },
+
+  onSelectedOriginChanged_: function() {
+    this.$.pages.setSubpageChain(['site-details']);
   },
 
   /**

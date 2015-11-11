@@ -19,9 +19,9 @@ var SiteSettingsBehaviorImpl = {
 
     // FullScreen is Allow vs. Ask.
     if (category == settings.ContentSettingsTypes.FULLSCREEN)
-      return pref.value != settings.DefaultValues.ASK;
+      return pref.value != settings.PermissionValues.ASK;
 
-    return pref.value != settings.DefaultValues.BLOCK;
+    return pref.value != settings.PermissionValues.BLOCK;
   },
 
   /**
