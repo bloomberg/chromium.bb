@@ -638,7 +638,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
       # Eval the content.
       try:
         exec(deps_content, global_scope, local_scope)
-      except SyntaxError, e:
+      except SyntaxError as e:
         gclient_utils.SyntaxErrorToError(filepath, e)
       if use_strict:
         for key, val in local_scope.iteritems():
@@ -983,7 +983,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
         start_time = time.time()
         gclient_utils.CheckCallAndFilterAndHeader(
             hook, cwd=self.root.root_dir, always=True)
-      except (gclient_utils.Error, subprocess2.CalledProcessError), e:
+      except (gclient_utils.Error, subprocess2.CalledProcessError) as e:
         # Use a discrete exit status code of 2 to indicate that a hook action
         # failed.  Users of this script may wish to treat hook action failures
         # differently from VC failures.
@@ -1008,7 +1008,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
         start_time = time.time()
         gclient_utils.CheckCallAndFilterAndHeader(
             hook, cwd=self.root.root_dir, always=True)
-      except (gclient_utils.Error, subprocess2.CalledProcessError), e:
+      except (gclient_utils.Error, subprocess2.CalledProcessError) as e:
         # Use a discrete exit status code of 2 to indicate that a hook action
         # failed.  Users of this script may wish to treat hook action failures
         # differently from VC failures.
@@ -1248,7 +1248,7 @@ want to set 'managed': False in .gclient.
     self.config_content = content
     try:
       exec(content, config_dict)
-    except SyntaxError, e:
+    except SyntaxError as e:
       gclient_utils.SyntaxErrorToError('.gclient', e)
 
     # Append any target OS that is not already being enforced to the tuple.
@@ -1443,7 +1443,7 @@ been automagically updated.  The previous version is available at %s.old.
       return {}
     try:
       exec(gclient_utils.FileRead(filename), scope)
-    except SyntaxError, e:
+    except SyntaxError as e:
       gclient_utils.SyntaxErrorToError(filename, e)
     return scope['entries']
 
@@ -2312,7 +2312,7 @@ def main(argv):
   except KeyboardInterrupt:
     gclient_utils.GClientChildren.KillAllRemainingChildren()
     raise
-  except (gclient_utils.Error, subprocess2.CalledProcessError), e:
+  except (gclient_utils.Error, subprocess2.CalledProcessError) as e:
     print('Error: %s' % str(e), file=sys.stderr)
     return 1
   finally:
