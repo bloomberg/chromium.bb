@@ -186,12 +186,8 @@ void WindowTreeClientImpl::SetBounds(Id window_id,
                                      const gfx::Rect& old_bounds,
                                      const gfx::Rect& bounds) {
   DCHECK(tree_);
-  const uint32_t change_id = next_change_id_++;
-  {
-    scoped_ptr<InFlightBoundsChange> change(
-        new InFlightBoundsChange(this, window_id, old_bounds));
-    in_flight_map_.set(change_id, change.Pass());
-  }
+  const uint32_t change_id = ScheduleInFlightChange(
+      make_scoped_ptr(new InFlightBoundsChange(this, window_id, old_bounds)));
   tree_->SetWindowBounds(change_id, window_id, mojo::Rect::From(bounds));
 }
 
@@ -307,9 +303,9 @@ void WindowTreeClientImpl::SetResizeBehavior(
 Id WindowTreeClientImpl::CreateWindowOnServer() {
   DCHECK(tree_);
   const Id window_id = MakeTransportId(connection_id_, next_window_id_++);
-  tree_->NewWindow(window_id, [this](mojom::ErrorCode code) {
-    OnActionCompleted(code == mojom::ERROR_CODE_NONE);
-  });
+  const uint32_t change_id = ScheduleInFlightChange(make_scoped_ptr(
+      new CrashInFlightChange(window_id, ChangeType::NEW_WINDOW)));
+  tree_->NewWindow(change_id, window_id);
   return window_id;
 }
 
@@ -323,6 +319,13 @@ InFlightChange* WindowTreeClientImpl::GetOldestInFlightChangeMatching(
     }
   }
   return nullptr;
+}
+
+uint32_t WindowTreeClientImpl::ScheduleInFlightChange(
+    scoped_ptr<InFlightChange> change) {
+  const uint32_t change_id = next_change_id_++;
+  in_flight_map_.set(change_id, change.Pass());
+  return change_id;
 }
 
 void WindowTreeClientImpl::OnEmbedImpl(mojom::WindowTree* window_tree,

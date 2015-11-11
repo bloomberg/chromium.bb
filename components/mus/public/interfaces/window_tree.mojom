@@ -89,7 +89,7 @@ interface WindowTree {
   //
   // TODO(erg): Once we have default values in mojo, make this take a map of
   // properties.
-  NewWindow(uint32 window_id) => (ErrorCode error_code);
+  NewWindow(uint32 change_id, uint32 window_id);
 
   // Deletes a window. This does not recurse. No hierarchy change notifications
   // are sent as a result of this. Only the connection that created the window

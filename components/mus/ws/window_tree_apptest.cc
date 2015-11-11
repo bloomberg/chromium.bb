@@ -51,13 +51,6 @@ void BoolResultCallback(base::RunLoop* run_loop,
   run_loop->Quit();
 }
 
-void ErrorCodeResultCallback(base::RunLoop* run_loop,
-                             ErrorCode* result_cache,
-                             ErrorCode result) {
-  *result_cache = result;
-  run_loop->Quit();
-}
-
 void WindowTreeResultCallback(base::RunLoop* run_loop,
                               std::vector<TestWindow>* windows,
                               Array<WindowDataPtr> results) {
@@ -102,15 +95,6 @@ bool Embed(WindowTree* ws, Id root_id, mojom::WindowTreeClientPtr client) {
     ws->Embed(root_id, client.Pass(), mojom::WindowTree::ACCESS_POLICY_DEFAULT,
               base::Bind(&EmbedCallbackImpl, &run_loop, &result));
   }
-  run_loop.Run();
-  return result;
-}
-
-ErrorCode NewWindowWithErrorCode(WindowTree* ws, Id window_id) {
-  ErrorCode result = ERROR_CODE_NONE;
-  base::RunLoop run_loop;
-  ws->NewWindow(window_id,
-                base::Bind(&ErrorCodeResultCallback, &run_loop, &result));
   run_loop.Run();
   return result;
 }
@@ -189,19 +173,6 @@ bool SetWindowProperty(WindowTree* ws,
 
 // Utility functions -----------------------------------------------------------
 
-// Waits for all messages to be received by |ws|. This is done by attempting to
-// create a bogus window. When we get the response we know all messages have
-// been
-// processed.
-bool WaitForAllMessages(WindowTree* ws) {
-  ErrorCode result = ERROR_CODE_NONE;
-  base::RunLoop run_loop;
-  ws->NewWindow(WindowIdToTransportId(InvalidWindowId()),
-                base::Bind(&ErrorCodeResultCallback, &run_loop, &result));
-  run_loop.Run();
-  return result != ERROR_CODE_NONE;
-}
-
 const Id kNullParentId = 0;
 std::string IdToString(Id id) {
   return (id == kNullParentId) ? "null" : base::StringPrintf(
@@ -224,6 +195,9 @@ class TestWindowTreeClientImpl : public mojom::WindowTreeClient,
         app_(app),
         connection_id_(0),
         root_window_id_(0),
+        // Start with a random large number so tests can use lower ids if they
+        // want.
+        next_change_id_(10000),
         waiting_change_id_(0),
         on_change_completed_result_(false) {
     tracker_.set_delegate(this);
@@ -249,6 +223,8 @@ class TestWindowTreeClientImpl : public mojom::WindowTreeClient,
     wait_state_.reset();
   }
 
+  uint32_t GetAndAdvanceChangeId() { return next_change_id_++; }
+
   // Runs a nested MessageLoop until OnEmbed() has been encountered.
   void WaitForOnEmbed() {
     if (tree_)
@@ -269,14 +245,24 @@ class TestWindowTreeClientImpl : public mojom::WindowTreeClient,
     return on_change_completed_result_;
   }
 
+  // Waits for all messages to be received by |ws|. This is done by attempting
+  // to create a bogus window. When we get the response we know all messages
+  // have been processed.
+  bool WaitForAllMessages() {
+    return NewWindowWithCompleteId(WindowIdToTransportId(InvalidWindowId())) ==
+           0;
+  }
+
   Id NewWindow(ConnectionSpecificId window_id) {
-    ErrorCode result = ERROR_CODE_NONE;
-    base::RunLoop run_loop;
-    Id id = BuildWindowId(connection_id_, window_id);
-    tree()->NewWindow(id,
-                      base::Bind(&ErrorCodeResultCallback, &run_loop, &result));
-    run_loop.Run();
-    return result == ERROR_CODE_NONE ? id : 0;
+    return NewWindowWithCompleteId(BuildWindowId(connection_id_, window_id));
+  }
+
+  // Generally you want NewWindow(), but use this if you need to test given
+  // a complete window id (NewWindow() ors with the connection id).
+  Id NewWindowWithCompleteId(Id id) {
+    const uint32_t change_id = GetAndAdvanceChangeId();
+    tree()->NewWindow(change_id, id);
+    return WaitForChangeCompleted(change_id) ? id : 0;
   }
 
   void set_root_window(Id root_window_id) { root_window_id_ = root_window_id; }
@@ -395,6 +381,7 @@ class TestWindowTreeClientImpl : public mojom::WindowTreeClient,
   mojo::ApplicationImpl* app_;
   Id connection_id_;
   Id root_window_id_;
+  uint32_t next_change_id_;
   uint32_t waiting_change_id_;
   bool on_change_completed_result_;
   scoped_ptr<base::RunLoop> change_completed_run_loop_;
@@ -752,14 +739,12 @@ TEST_F(WindowTreeAppTest, NewWindow) {
   EXPECT_TRUE(changes1()->empty());
 
   // Can't create a window with the same id.
-  ASSERT_EQ(mojom::ERROR_CODE_VALUE_IN_USE,
-            NewWindowWithErrorCode(ws1(), window_1_1));
+  ASSERT_EQ(0u, ws_client1()->NewWindowWithCompleteId(window_1_1));
   EXPECT_TRUE(changes1()->empty());
 
   // Can't create a window with a bogus connection id.
-  EXPECT_EQ(
-      mojom::ERROR_CODE_ILLEGAL_ARGUMENT,
-      NewWindowWithErrorCode(ws1(), BuildWindowId(connection_id_1() + 1, 1)));
+  ASSERT_EQ(0u, ws_client1()->NewWindowWithCompleteId(
+                    BuildWindowId(connection_id_1() + 1, 1)));
   EXPECT_TRUE(changes1()->empty());
 }
 
@@ -834,14 +819,14 @@ TEST_F(WindowTreeAppTest, WindowHierarchyChangedWindows) {
   ASSERT_NO_FATAL_FAILURE(EstablishSecondConnection(true));
   ASSERT_TRUE(SetWindowVisibility(ws1(), window_1_1, true));
 
-  ASSERT_TRUE(WaitForAllMessages(ws2()));
+  ASSERT_TRUE(ws_client2()->WaitForAllMessages());
   changes2()->clear();
 
   // 1,1->1,2->1,11
   {
     // Client 2 should not get anything (1,2 is from another connection).
     ASSERT_TRUE(AddWindow(ws1(), window_1_1, window_1_2));
-    ASSERT_TRUE(WaitForAllMessages(ws2()));
+    ASSERT_TRUE(ws_client2()->WaitForAllMessages());
     EXPECT_TRUE(changes2()->empty());
   }
 
@@ -875,7 +860,7 @@ TEST_F(WindowTreeAppTest, WindowHierarchyChangedWindows) {
   {
     changes2()->clear();
     ASSERT_TRUE(AddWindow(ws1(), window_1_11, window_1_111));
-    ASSERT_TRUE(WaitForAllMessages(ws2()));
+    ASSERT_TRUE(ws_client2()->WaitForAllMessages());
     EXPECT_TRUE(changes2()->empty());
   }
 
@@ -1451,7 +1436,7 @@ TEST_F(WindowTreeAppTest, SetWindowVisibilityNotifications) {
   ASSERT_TRUE(window_2_3);
   ASSERT_TRUE(SetWindowVisibility(ws2(), window_2_3, true));
   ASSERT_TRUE(AddWindow(ws2(), window_1_2, window_2_3));
-  WaitForAllMessages(ws1());
+  ASSERT_TRUE(ws_client1()->WaitForAllMessages());
 
   changes2()->clear();
   // Hide 1,2 from connection 1. Connection 2 should see this.
@@ -1686,7 +1671,7 @@ TEST_F(WindowTreeAppTest, EmbedFromOtherConnection) {
   // Establish a third connection in window_2_2.
   ASSERT_NO_FATAL_FAILURE(EstablishThirdConnection(ws1(), window_2_2));
 
-  WaitForAllMessages(ws2());
+  ASSERT_TRUE(ws_client2()->WaitForAllMessages());
   EXPECT_EQ(std::string(), SingleChangeToDescription(*changes2()));
 }
 

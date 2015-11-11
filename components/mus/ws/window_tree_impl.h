@@ -74,7 +74,7 @@ class WindowTreeImpl : public mojom::WindowTree, public AccessPolicyDelegate {
 
   // These functions are synchronous variants of those defined in the mojom. The
   // WindowTree implementations all call into these. See the mojom for details.
-  mojom::ErrorCode NewWindow(const WindowId& window_id);
+  bool NewWindow(const WindowId& window_id);
   bool AddWindow(const WindowId& parent_id, const WindowId& child_id);
   std::vector<const ServerWindow*> GetWindowTree(
       const WindowId& window_id) const;
@@ -182,9 +182,7 @@ class WindowTreeImpl : public mojom::WindowTree, public AccessPolicyDelegate {
                              mojom::WindowManagerErrorCode error_code);
 
   // WindowTree:
-  void NewWindow(
-      Id transport_window_id,
-      const mojo::Callback<void(mojom::ErrorCode)>& callback) override;
+  void NewWindow(uint32_t change_id, Id transport_window_id) override;
   void DeleteWindow(Id transport_window_id,
                     const mojo::Callback<void(bool)>& callback) override;
   void AddWindow(Id parent_id,

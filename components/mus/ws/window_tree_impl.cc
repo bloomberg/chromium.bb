@@ -119,15 +119,15 @@ void WindowTreeImpl::NotifyChangeCompleted(
       change_id, error_code == mojom::WINDOW_MANAGER_ERROR_CODE_SUCCESS);
 }
 
-mojom::ErrorCode WindowTreeImpl::NewWindow(const WindowId& window_id) {
+bool WindowTreeImpl::NewWindow(const WindowId& window_id) {
   if (window_id.connection_id != id_)
-    return mojom::ERROR_CODE_ILLEGAL_ARGUMENT;
+    return false;
   if (window_map_.find(window_id.window_id) != window_map_.end())
-    return mojom::ERROR_CODE_VALUE_IN_USE;
+    return false;
   window_map_[window_id.window_id] =
       connection_manager_->CreateServerWindow(window_id);
   known_windows_.insert(WindowIdToTransportId(window_id));
-  return mojom::ERROR_CODE_NONE;
+  return true;
 }
 
 bool WindowTreeImpl::AddWindow(const WindowId& parent_id,
@@ -559,10 +559,9 @@ void WindowTreeImpl::RemoveChildrenAsPartOfEmbed(const WindowId& window_id) {
     window->Remove(children[i]);
 }
 
-void WindowTreeImpl::NewWindow(
-    Id transport_window_id,
-    const Callback<void(mojom::ErrorCode)>& callback) {
-  callback.Run(NewWindow(WindowIdFromTransportId(transport_window_id)));
+void WindowTreeImpl::NewWindow(uint32_t change_id, Id transport_window_id) {
+  client_->OnChangeCompleted(
+      change_id, NewWindow(WindowIdFromTransportId(transport_window_id)));
 }
 
 void WindowTreeImpl::DeleteWindow(Id transport_window_id,

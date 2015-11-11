@@ -33,4 +33,18 @@ void InFlightBoundsChange::Revert() {
     WindowPrivate(window).LocalSetBounds(window->bounds(), revert_bounds_);
 }
 
+CrashInFlightChange::CrashInFlightChange(Id window_id, ChangeType type)
+    : InFlightChange(window_id, type) {}
+
+CrashInFlightChange::~CrashInFlightChange() {}
+
+void CrashInFlightChange::PreviousChangeCompleted(InFlightChange* change,
+                                                  bool success) {
+  CHECK(success);
+}
+
+void CrashInFlightChange::Revert() {
+  CHECK(false);
+}
+
 }  // namespace mus

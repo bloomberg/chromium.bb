@@ -15,6 +15,7 @@ class WindowTreeConnection;
 
 enum class ChangeType {
   BOUNDS,
+  NEW_WINDOW,
 };
 
 // InFlightChange is used to track function calls to the server and take the
@@ -76,6 +77,21 @@ class InFlightBoundsChange : public InFlightChange {
   gfx::Rect revert_bounds_;
 
   DISALLOW_COPY_AND_ASSIGN(InFlightBoundsChange);
+};
+
+// Inflight change that crashes on failure. This is useful for changes that are
+// expected to always complete.
+class CrashInFlightChange : public InFlightChange {
+ public:
+  CrashInFlightChange(Id window_id, ChangeType type);
+  ~CrashInFlightChange() override;
+
+  // InFlightChange:
+  void PreviousChangeCompleted(InFlightChange* change, bool success) override;
+  void Revert() override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(CrashInFlightChange);
 };
 
 }  // namespace mus

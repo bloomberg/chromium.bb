@@ -115,6 +115,8 @@ class WindowTreeClientImpl : public WindowTreeConnection,
   InFlightChange* GetOldestInFlightChangeMatching(Id window_id,
                                                   ChangeType change_type);
 
+  uint32_t ScheduleInFlightChange(scoped_ptr<InFlightChange> change);
+
   // OnEmbed() calls into this. Exposed as a separate function for testing.
   void OnEmbedImpl(mojom::WindowTree* window_tree,
                    ConnectionSpecificId connection_id,
