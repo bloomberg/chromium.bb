@@ -6413,6 +6413,25 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="DataUse.UIAction" enum="DataUseUIAction">
+  <owner>bengr@chromium.org</owner>
+  <owner>megjablon@chromium.org</owner>
+  <summary>
+    Samples of user interactions with the Data Use snackbar and dialog. These
+    samples include:
+
+    Displays of the snackbar that indicates the start of data use tracking and
+    clicks on its &quot;More&quot; button. Displays of snackbar that indicates
+    the end of data use tracking and clicks on its &quot;More&quot; button.
+    Displays of the dialog that indicates the end of data use tracking and the
+    user interactions with it, which include: clicking &quot;Continue&quot;,
+    clicking &quot;Cancel&quot;, clicking &quot;Learn more&quot;, and opting out
+    of seeing the dialog. If the user opts out of seeing the dialog, he or she
+    will see the snackbar that indicates the end of data use tracking from then
+    on.
+  </summary>
+</histogram>
+
 <histogram name="DefaultBrowser.AsyncSetAsDefault.Duration"
     units="milliseconds">
   <owner>pmonette@chromium.org</owner>
@@ -56431,6 +56450,22 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="12" label="Autofill"/>
   <int value="13" label="Policy"/>
   <int value="14" label="Spell Checker"/>
+</enum>
+
+<enum name="DataUseUIAction" type="int">
+  <int value="0" label="Data use tracking started snackbar shown"/>
+  <int value="1"
+      label="Data use tracking started snackbar 'More' link clicked"/>
+  <int value="2" label="Data use tracking ended snackbar shown"/>
+  <int value="3" label="Data use tracking ended snackbar 'More' link clicked"/>
+  <int value="4" label="Data use tracking ended dialog shown"/>
+  <int value="5"
+      label="Data use tracking ended dialog 'Continue' button clicked"/>
+  <int value="6"
+      label="Data use tracking ended dialog 'Cancel' button clicked"/>
+  <int value="7"
+      label="Data use tracking ended dialog 'Learn more' link clicked"/>
+  <int value="8" label="Data use tracking ended dialog opted out"/>
 </enum>
 
 <enum name="DecodedImageType" type="int">

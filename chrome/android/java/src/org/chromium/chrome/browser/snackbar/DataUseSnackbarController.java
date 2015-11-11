@@ -8,6 +8,8 @@ import android.content.Context;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.EmbedContentViewActivity;
+import org.chromium.chrome.browser.datausage.DataUseTabUIManager;
+import org.chromium.chrome.browser.datausage.DataUseTabUIManager.DataUseUIActions;
 
 /**
  * The controller for two data use snackbars:
@@ -19,6 +21,10 @@ import org.chromium.chrome.browser.EmbedContentViewActivity;
  * data use tracking has ended.
  */
 public class DataUseSnackbarController implements SnackbarManager.SnackbarController {
+    /** Snackbar types */
+    private static final int STARTED_SNACKBAR = 0;
+    private static final int ENDED_SNACKBAR = 1;
+
     private final SnackbarManager mSnackbarManager;
     private final Context mContext;
 
@@ -36,16 +42,16 @@ public class DataUseSnackbarController implements SnackbarManager.SnackbarContro
         mSnackbarManager.showSnackbar(Snackbar.make(
                 mContext.getString(R.string.data_use_tracking_started_snackbar_message), this)
                 .setAction(mContext.getString(R.string.data_use_tracking_snackbar_action),
-                        null));
-        // TODO(megjablon): Add metrics.
+                        STARTED_SNACKBAR));
+        DataUseTabUIManager.recordDataUseUIAction(DataUseUIActions.STARTED_SNACKBAR_SHOWN);
     }
 
     public void showDataUseTrackingEndedBar() {
         mSnackbarManager.showSnackbar(Snackbar.make(
                 mContext.getString(R.string.data_use_tracking_ended_snackbar_message), this)
                 .setAction(mContext.getString(R.string.data_use_tracking_snackbar_action),
-                        null));
-        // TODO(megjablon): Add metrics.
+                        ENDED_SNACKBAR));
+        DataUseTabUIManager.recordDataUseUIAction(DataUseUIActions.ENDED_SNACKBAR_SHOWN);
     }
 
     /**
@@ -60,9 +66,24 @@ public class DataUseSnackbarController implements SnackbarManager.SnackbarContro
      */
     @Override
     public void onAction(Object actionData) {
-        // TODO(megjablon): Add metrics.
         EmbedContentViewActivity.show(mContext, R.string.data_use_learn_more_title,
                 R.string.data_use_learn_more_link_url);
+
+        if (actionData == null) return;
+        int snackbarType = (int) actionData;
+        switch (snackbarType) {
+            case STARTED_SNACKBAR:
+                DataUseTabUIManager.recordDataUseUIAction(
+                        DataUseUIActions.STARTED_SNACKBAR_MORE_CLICKED);
+                break;
+            case ENDED_SNACKBAR:
+                DataUseTabUIManager.recordDataUseUIAction(
+                        DataUseUIActions.ENDED_SNACKBAR_MORE_CLICKED);
+                break;
+            default:
+                assert false;
+                break;
+        }
     }
 
     @Override
