@@ -283,6 +283,7 @@ protected:
     // (ResourcePtrs and ResourceClients registering themselves) don't work in this case, so
     // have a separate internal protector).
     class InternalResourcePtr {
+        STACK_ALLOCATED();
     public:
         explicit InternalResourcePtr(Resource* resource)
             : m_resource(resource)
@@ -296,7 +297,7 @@ protected:
             m_resource->deleteIfPossible();
         }
     private:
-        Resource* m_resource;
+        RawPtrWillBeMember<Resource> m_resource;
     };
 
     void incrementProtectorCount() { m_protectorCount++; }
