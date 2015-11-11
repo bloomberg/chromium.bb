@@ -403,19 +403,19 @@ void VPNConfigView::InitFocus() {
     view_to_focus->RequestFocus();
 }
 
-const std::string VPNConfigView::GetService() const {
+std::string VPNConfigView::GetService() const {
   if (service_textfield_ != NULL)
     return GetTextFromField(service_textfield_, true);
   return service_path_;
 }
 
-const std::string VPNConfigView::GetServer() const {
+std::string VPNConfigView::GetServer() const {
   if (server_textfield_ != NULL)
     return GetTextFromField(server_textfield_, true);
   return std::string();
 }
 
-const std::string VPNConfigView::GetPSKPassphrase() const {
+std::string VPNConfigView::GetPSKPassphrase() const {
   if (psk_passphrase_textfield_ &&
       enable_psk_passphrase_ &&
       psk_passphrase_textfield_->visible())
@@ -423,23 +423,23 @@ const std::string VPNConfigView::GetPSKPassphrase() const {
   return std::string();
 }
 
-const std::string VPNConfigView::GetUsername() const {
+std::string VPNConfigView::GetUsername() const {
   return GetTextFromField(username_textfield_, true);
 }
 
-const std::string VPNConfigView::GetUserPassphrase() const {
+std::string VPNConfigView::GetUserPassphrase() const {
   return GetPassphraseFromField(user_passphrase_textfield_);
 }
 
-const std::string VPNConfigView::GetGroupName() const {
+std::string VPNConfigView::GetGroupName() const {
   return GetTextFromField(group_name_textfield_, false);
 }
 
-const std::string VPNConfigView::GetOTP() const {
+std::string VPNConfigView::GetOTP() const {
   return GetTextFromField(otp_textfield_, true);
 }
 
-const std::string VPNConfigView::GetServerCACertPEM() const {
+std::string VPNConfigView::GetServerCACertPEM() const {
   int index = server_ca_cert_combobox_ ?
       server_ca_cert_combobox_->selected_index() : 0;
   if (index == 0) {
