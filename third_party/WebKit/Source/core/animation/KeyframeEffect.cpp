@@ -224,7 +224,7 @@ void KeyframeEffect::updateChildrenAndEffects() const
 
 double KeyframeEffect::calculateTimeToEffectChange(bool forwards, double localTime, double timeToNextIteration) const
 {
-    const double start = startTimeInternal() + specifiedTiming().startDelay;
+    const double start = specifiedTiming().startDelay;
     const double end = start + activeDurationInternal();
 
     switch (phase()) {

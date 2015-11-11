@@ -96,8 +96,7 @@ public:
 
     double iterationDuration() const;
     double activeDurationInternal() const;
-    double startTimeInternal() const { return m_startTime; }
-    double endTimeInternal() const { return std::max(startTimeInternal(), startTimeInternal() + specifiedTiming().startDelay + activeDurationInternal() + specifiedTiming().endDelay); }
+    double endTimeInternal() const { return specifiedTiming().startDelay + activeDurationInternal() + specifiedTiming().endDelay; }
 
     const Animation* animation() const { return m_animation; }
     Animation* animation() { return m_animation; }
@@ -142,9 +141,6 @@ protected:
     virtual double calculateTimeToEffectChange(bool forwards, double localTime, double timeToNextIteration) const = 0;
     virtual void specifiedTimingChanged() { }
 
-    // FIXME: m_parent and m_startTime are placeholders, they depend on timing groups.
-    Member<AnimationEffect> m_parent;
-    const double m_startTime;
     Member<Animation> m_animation;
     Timing m_timing;
     Member<EventDelegate> m_eventDelegate;

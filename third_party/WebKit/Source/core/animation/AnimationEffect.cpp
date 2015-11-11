@@ -52,9 +52,7 @@ Timing::FillMode resolvedFillMode(Timing::FillMode fillMode, bool isAnimation)
 } // namespace
 
 AnimationEffect::AnimationEffect(const Timing& timing, EventDelegate* eventDelegate)
-    : m_parent(nullptr)
-    , m_startTime(0)
-    , m_animation(nullptr)
+    : m_animation(nullptr)
     , m_timing(timing)
     , m_eventDelegate(eventDelegate)
     , m_calculated()
@@ -100,7 +98,7 @@ void AnimationEffect::updateSpecifiedTiming(const Timing& timing)
 void AnimationEffect::computedTiming(ComputedTimingProperties& computedTiming)
 {
     // ComputedTimingProperties members.
-    computedTiming.setStartTime(startTimeInternal() * 1000);
+    computedTiming.setStartTime(0);
     computedTiming.setEndTime(endTimeInternal() * 1000);
     computedTiming.setActiveDuration(activeDurationInternal() * 1000);
 
@@ -142,7 +140,7 @@ void AnimationEffect::updateInheritedTime(double inheritedTime, TimingUpdateReas
     m_needsUpdate = false;
     m_lastUpdateTime = inheritedTime;
 
-    const double localTime = inheritedTime - m_startTime;
+    const double localTime = inheritedTime;
     double timeToNextIteration = std::numeric_limits<double>::infinity();
     if (needsUpdate) {
         const double activeDuration = this->activeDurationInternal();
@@ -191,9 +189,9 @@ void AnimationEffect::updateInheritedTime(double inheritedTime, TimingUpdateReas
 
         m_calculated.phase = currentPhase;
         m_calculated.isInEffect = !isNull(activeTime);
-        m_calculated.isInPlay = phase() == PhaseActive && (!m_parent || m_parent->isInPlay());
-        m_calculated.isCurrent = phase() == PhaseBefore || isInPlay() || (m_parent && m_parent->isCurrent());
-        m_calculated.localTime = m_lastUpdateTime - m_startTime;
+        m_calculated.isInPlay = phase() == PhaseActive;
+        m_calculated.isCurrent = phase() == PhaseBefore || isInPlay();
+        m_calculated.localTime = m_lastUpdateTime;
     }
 
     // Test for events even if timing didn't need an update as the animation may have gained a start time.
@@ -228,7 +226,6 @@ AnimationEffectTiming* AnimationEffect::timing()
 
 DEFINE_TRACE(AnimationEffect)
 {
-    visitor->trace(m_parent);
     visitor->trace(m_animation);
     visitor->trace(m_eventDelegate);
 }
