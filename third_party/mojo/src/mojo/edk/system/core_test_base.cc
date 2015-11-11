@@ -8,11 +8,11 @@
 
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
-#include "mojo/public/cpp/system/macros.h"
 #include "third_party/mojo/src/mojo/edk/system/configuration.h"
 #include "third_party/mojo/src/mojo/edk/system/core.h"
 #include "third_party/mojo/src/mojo/edk/system/dispatcher.h"
 #include "third_party/mojo/src/mojo/edk/system/memory.h"
+#include "third_party/mojo/src/mojo/public/cpp/system/macros.h"
 
 namespace mojo {
 namespace system {

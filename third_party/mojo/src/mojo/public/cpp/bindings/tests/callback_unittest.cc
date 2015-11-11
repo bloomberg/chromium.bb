@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/public/cpp/bindings/callback.h"
-#include "mojo/public/cpp/bindings/map.h"
-#include "mojo/public/cpp/bindings/string.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/callback.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/map.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/string.h"
 
 namespace mojo {
 namespace test {

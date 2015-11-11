@@ -5,8 +5,8 @@
 #include "base/macros.h"
 #include "mojo/edk/js/handle.h"
 #include "mojo/edk/js/handle_close_observer.h"
-#include "mojo/public/cpp/system/core.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/mojo/src/mojo/public/cpp/system/core.h"
 
 namespace mojo {
 namespace edk {

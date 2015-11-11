@@ -11,10 +11,10 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "mojo/fetcher/network_fetcher.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/services/network/public/interfaces/url_loader.mojom.h"
 #include "mojo/services/network/public/interfaces/url_loader_factory.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/strong_binding.h"
 
 namespace mojo {
 namespace fetcher {

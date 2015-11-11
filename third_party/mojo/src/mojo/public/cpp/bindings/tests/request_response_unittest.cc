@@ -4,11 +4,11 @@
 
 #include "base/message_loop/message_loop.h"
 #include "mojo/message_pump/message_pump_mojo.h"
-#include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/test_support/test_utils.h"
-#include "mojo/public/interfaces/bindings/tests/sample_import.mojom.h"
-#include "mojo/public/interfaces/bindings/tests/sample_interfaces.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
+#include "third_party/mojo/src/mojo/public/cpp/test_support/test_utils.h"
+#include "third_party/mojo/src/mojo/public/interfaces/bindings/tests/sample_import.mojom.h"
+#include "third_party/mojo/src/mojo/public/interfaces/bindings/tests/sample_interfaces.mojom.h"
 
 namespace mojo {
 namespace test {

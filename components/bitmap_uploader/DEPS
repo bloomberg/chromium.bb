@@ -8,4 +8,5 @@ include_rules = [
   "+mojo/public",
   "+mojo/services/network/public/interfaces",
   "+ui/gfx/geometry",
+  "+third_party/mojo/src/mojo/public",
 ]

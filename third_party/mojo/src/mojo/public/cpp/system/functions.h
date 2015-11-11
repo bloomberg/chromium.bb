@@ -5,13 +5,13 @@
 // This file provides a C++ wrapping around the standalone functions of the Mojo
 // C API, replacing the prefix of "Mojo" with a "mojo" namespace.
 //
-// Please see "mojo/public/c/system/functions.h" for complete documentation of
+// Please see "third_party/mojo/src/mojo/public/c/system/functions.h" for complete documentation of
 // the API.
 
-#ifndef MOJO_PUBLIC_CPP_SYSTEM_FUNCTIONS_H_
-#define MOJO_PUBLIC_CPP_SYSTEM_FUNCTIONS_H_
+#ifndef THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_CPP_SYSTEM_FUNCTIONS_H_
+#define THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_CPP_SYSTEM_FUNCTIONS_H_
 
-#include "mojo/public/c/system/functions.h"
+#include "third_party/mojo/src/mojo/public/c/system/functions.h"
 
 namespace mojo {
 
@@ -29,4 +29,4 @@ inline MojoTimeTicks GetTimeTicksNow() {
 
 }  // namespace mojo
 
-#endif  // MOJO_PUBLIC_CPP_SYSTEM_FUNCTIONS_H_
+#endif  // THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_CPP_SYSTEM_FUNCTIONS_H_

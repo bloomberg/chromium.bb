@@ -17,19 +17,19 @@
 #include <math.h>
 
 #include "base/trace_event/trace_event.h"
-#include "mojo/public/cpp/bindings/lib/array_serialization.h"
-#include "mojo/public/cpp/bindings/lib/bindings_serialization.h"
-#include "mojo/public/cpp/bindings/lib/bounds_checker.h"
-#include "mojo/public/cpp/bindings/lib/map_data_internal.h"
-#include "mojo/public/cpp/bindings/lib/map_serialization.h"
-#include "mojo/public/cpp/bindings/lib/message_builder.h"
-#include "mojo/public/cpp/bindings/lib/string_serialization.h"
-#include "mojo/public/cpp/bindings/lib/validate_params.h"
-#include "mojo/public/cpp/bindings/lib/validation_errors.h"
-#include "mojo/public/cpp/bindings/lib/validation_util.h"
-#include "mojo/public/cpp/environment/lib/scoped_task_tracking.h"
-#include "mojo/public/cpp/environment/logging.h"
-#include "mojo/public/interfaces/bindings/interface_control_messages.mojom.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/lib/array_serialization.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/lib/bindings_serialization.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/lib/bounds_checker.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/lib/map_data_internal.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/lib/map_serialization.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/lib/message_builder.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/lib/string_serialization.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/lib/validate_params.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/lib/validation_errors.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/lib/validation_util.h"
+#include "third_party/mojo/src/mojo/public/cpp/environment/lib/scoped_task_tracking.h"
+#include "third_party/mojo/src/mojo/public/cpp/environment/logging.h"
+#include "third_party/mojo/src/mojo/public/interfaces/bindings/interface_control_messages.mojom.h"
 
 {%- for namespace in namespaces_as_array %}
 namespace {{namespace}} {

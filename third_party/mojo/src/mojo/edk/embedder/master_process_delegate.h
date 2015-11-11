@@ -5,10 +5,10 @@
 #ifndef THIRD_PARTY_MOJO_SRC_MOJO_EDK_EMBEDDER_MASTER_PROCESS_DELEGATE_H_
 #define THIRD_PARTY_MOJO_SRC_MOJO_EDK_EMBEDDER_MASTER_PROCESS_DELEGATE_H_
 
-#include "mojo/public/cpp/system/macros.h"
 #include "third_party/mojo/src/mojo/edk/embedder/process_delegate.h"
 #include "third_party/mojo/src/mojo/edk/embedder/slave_info.h"
 #include "third_party/mojo/src/mojo/edk/system/system_impl_export.h"
+#include "third_party/mojo/src/mojo/public/cpp/system/macros.h"
 
 namespace mojo {
 namespace embedder {

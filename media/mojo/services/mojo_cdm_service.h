@@ -15,7 +15,7 @@
 #include "media/mojo/services/mojo_cdm_promise.h"
 #include "media/mojo/services/mojo_cdm_service_context.h"
 #include "mojo/application/public/interfaces/service_provider.mojom.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/strong_binding.h"
 
 namespace media {
 

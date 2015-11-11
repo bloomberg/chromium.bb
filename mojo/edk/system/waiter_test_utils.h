@@ -12,8 +12,8 @@
 #include "mojo/edk/system/dispatcher.h"
 #include "mojo/edk/system/handle_signals_state.h"
 #include "mojo/edk/system/waiter.h"
-#include "mojo/public/c/system/types.h"
-#include "mojo/public/cpp/system/macros.h"
+#include "third_party/mojo/src/mojo/public/c/system/types.h"
+#include "third_party/mojo/src/mojo/public/cpp/system/macros.h"
 
 namespace mojo {
 namespace edk {

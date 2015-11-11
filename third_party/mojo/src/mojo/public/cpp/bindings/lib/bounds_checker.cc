@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/public/cpp/bindings/lib/bounds_checker.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/lib/bounds_checker.h"
 
-#include "mojo/public/cpp/bindings/lib/bindings_serialization.h"
-#include "mojo/public/cpp/environment/logging.h"
-#include "mojo/public/cpp/system/handle.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/lib/bindings_serialization.h"
+#include "third_party/mojo/src/mojo/public/cpp/environment/logging.h"
+#include "third_party/mojo/src/mojo/public/cpp/system/handle.h"
 
 namespace mojo {
 namespace internal {

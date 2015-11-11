@@ -15,7 +15,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/test/test_io_thread.h"
-#include "mojo/public/cpp/system/macros.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/mojo/src/mojo/edk/embedder/platform_channel_pair.h"
 #include "third_party/mojo/src/mojo/edk/embedder/simple_platform_support.h"
 #include "third_party/mojo/src/mojo/edk/system/channel.h"
@@ -28,7 +28,7 @@
 #include "third_party/mojo/src/mojo/edk/system/raw_channel.h"
 #include "third_party/mojo/src/mojo/edk/system/test_utils.h"
 #include "third_party/mojo/src/mojo/edk/system/waiter.h"
-#include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/mojo/src/mojo/public/cpp/system/macros.h"
 
 namespace mojo {
 namespace system {

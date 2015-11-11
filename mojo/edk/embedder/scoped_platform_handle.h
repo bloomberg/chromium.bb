@@ -8,7 +8,7 @@
 #include "base/move.h"
 #include "mojo/edk/embedder/platform_handle.h"
 #include "mojo/edk/system/system_impl_export.h"
-#include "mojo/public/c/system/macros.h"
+#include "third_party/mojo/src/mojo/public/c/system/macros.h"
 
 namespace mojo {
 namespace edk {

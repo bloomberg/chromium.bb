@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_PUBLIC_CPP_BINDINGS_LIB_MAP_DATA_INTERNAL_H_
-#define MOJO_PUBLIC_CPP_BINDINGS_LIB_MAP_DATA_INTERNAL_H_
+#ifndef THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_CPP_BINDINGS_LIB_MAP_DATA_INTERNAL_H_
+#define THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_CPP_BINDINGS_LIB_MAP_DATA_INTERNAL_H_
 
-#include "mojo/public/cpp/bindings/lib/array_internal.h"
-#include "mojo/public/cpp/bindings/lib/validate_params.h"
-#include "mojo/public/cpp/bindings/lib/validation_errors.h"
-#include "mojo/public/cpp/bindings/lib/validation_util.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/lib/array_internal.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/lib/validate_params.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/lib/validation_errors.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/lib/validation_util.h"
 
 namespace mojo {
 namespace internal {
@@ -138,4 +138,4 @@ static_assert(sizeof(Map_Data<char, char>) == 24, "Bad sizeof(Map_Data)");
 }  // namespace internal
 }  // namespace mojo
 
-#endif  // MOJO_PUBLIC_CPP_BINDINGS_LIB_MAP_DATA_INTERNAL_H_
+#endif  // THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_CPP_BINDINGS_LIB_MAP_DATA_INTERNAL_H_

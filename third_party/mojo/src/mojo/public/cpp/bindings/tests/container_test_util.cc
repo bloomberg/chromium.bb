@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/public/cpp/bindings/tests/container_test_util.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/tests/container_test_util.h"
 
 namespace mojo {
 

@@ -7,14 +7,14 @@
 
 #include <stdint.h>
 
-#include "mojo/public/c/system/data_pipe.h"
-#include "mojo/public/c/system/macros.h"
-#include "mojo/public/c/system/types.h"
 #include "third_party/mojo/src/mojo/edk/embedder/platform_handle_vector.h"
 #include "third_party/mojo/src/mojo/edk/system/data_pipe.h"
 #include "third_party/mojo/src/mojo/edk/system/handle_signals_state.h"
 #include "third_party/mojo/src/mojo/edk/system/memory.h"
 #include "third_party/mojo/src/mojo/edk/system/system_impl_export.h"
+#include "third_party/mojo/src/mojo/public/c/system/data_pipe.h"
+#include "third_party/mojo/src/mojo/public/c/system/macros.h"
+#include "third_party/mojo/src/mojo/public/c/system/types.h"
 
 namespace mojo {
 namespace system {

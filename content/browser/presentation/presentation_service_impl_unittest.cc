@@ -18,9 +18,9 @@
 #include "content/test/test_render_frame_host.h"
 #include "content/test/test_render_view_host.h"
 #include "content/test/test_web_contents.h"
-#include "mojo/public/cpp/bindings/interface_ptr.h"
-#include "mojo/public/cpp/bindings/string.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/interface_ptr.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/string.h"
 
 using ::testing::_;
 using ::testing::Eq;

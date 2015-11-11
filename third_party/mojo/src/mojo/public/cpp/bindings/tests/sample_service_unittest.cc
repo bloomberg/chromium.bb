@@ -6,8 +6,8 @@
 #include <ostream>
 #include <string>
 
-#include "mojo/public/interfaces/bindings/tests/sample_service.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/mojo/src/mojo/public/interfaces/bindings/tests/sample_service.mojom.h"
 
 namespace mojo {
 

@@ -10,7 +10,7 @@
 #include "mojo/application/public/cpp/lib/interface_factory_connector.h"
 #include "mojo/application/public/cpp/lib/service_connector_registry.h"
 #include "mojo/application/public/interfaces/service_provider.mojom.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/strong_binding.h"
 
 namespace mojo {
 

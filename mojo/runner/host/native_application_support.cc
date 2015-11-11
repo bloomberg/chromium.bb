@@ -9,10 +9,10 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "mojo/platform_handle/platform_handle_private_thunks.h"
-#include "mojo/public/platform/native/gles2_impl_chromium_extension_thunks.h"
-#include "mojo/public/platform/native/gles2_impl_thunks.h"
-#include "mojo/public/platform/native/gles2_thunks.h"
-#include "mojo/public/platform/native/system_thunks.h"
+#include "third_party/mojo/src/mojo/public/platform/native/gles2_impl_chromium_extension_thunks.h"
+#include "third_party/mojo/src/mojo/public/platform/native/gles2_impl_thunks.h"
+#include "third_party/mojo/src/mojo/public/platform/native/gles2_thunks.h"
+#include "third_party/mojo/src/mojo/public/platform/native/system_thunks.h"
 
 namespace mojo {
 namespace runner {

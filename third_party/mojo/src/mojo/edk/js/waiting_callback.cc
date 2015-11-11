@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "gin/per_context_data.h"
-#include "mojo/public/cpp/environment/environment.h"
+#include "third_party/mojo/src/mojo/public/cpp/environment/environment.h"
 
 namespace mojo {
 namespace js {

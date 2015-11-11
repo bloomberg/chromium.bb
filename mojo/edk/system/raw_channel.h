@@ -15,7 +15,7 @@
 #include "mojo/edk/system/message_in_transit.h"
 #include "mojo/edk/system/message_in_transit_queue.h"
 #include "mojo/edk/system/system_impl_export.h"
-#include "mojo/public/cpp/system/macros.h"
+#include "third_party/mojo/src/mojo/public/cpp/system/macros.h"
 
 namespace mojo {
 namespace edk {

@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_PUBLIC_CPP_BINDINGS_LIB_STRING_SERIALIZATION_H_
-#define MOJO_PUBLIC_CPP_BINDINGS_LIB_STRING_SERIALIZATION_H_
+#ifndef THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_CPP_BINDINGS_LIB_STRING_SERIALIZATION_H_
+#define THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_CPP_BINDINGS_LIB_STRING_SERIALIZATION_H_
 
-#include "mojo/public/cpp/bindings/lib/array_internal.h"
-#include "mojo/public/cpp/bindings/string.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/lib/array_internal.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/string.h"
 
 namespace mojo {
 
@@ -18,4 +18,4 @@ void Deserialize_(internal::String_Data* input, String* output);
 
 }  // namespace mojo
 
-#endif  // MOJO_PUBLIC_CPP_BINDINGS_LIB_STRING_SERIALIZATION_H_
+#endif  // THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_CPP_BINDINGS_LIB_STRING_SERIALIZATION_H_

@@ -12,7 +12,7 @@
 #include "mojo/edk/embedder/platform_support.h"
 #include "mojo/edk/system/configuration.h"
 #include "mojo/edk/system/options_validation.h"
-#include "mojo/public/c/system/macros.h"
+#include "third_party/mojo/src/mojo/public/c/system/macros.h"
 
 namespace mojo {
 namespace edk {

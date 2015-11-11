@@ -34,7 +34,6 @@
         'java_out_dir': '<(PRODUCT_DIR)/java_mojo/<(_target_name)/src',
         'mojom_import_args%': [
          '-I<(DEPTH)',
-         '-I<(DEPTH)/third_party/mojo/src'
         ],
         'stamp_filename': '<(PRODUCT_DIR)/java_mojo/<(_target_name)/<(_target_name).stamp',
       },
@@ -66,16 +65,12 @@
   ],
   'include_dirs': [
     '<(DEPTH)',
-    '<(DEPTH)/third_party/mojo/src',
     '<(SHARED_INTERMEDIATE_DIR)',
-    '<(SHARED_INTERMEDIATE_DIR)/third_party/mojo/src',
   ],
   'direct_dependent_settings': {
     'include_dirs': [
       '<(DEPTH)',
-      '<(DEPTH)/third_party/mojo/src',
       '<(SHARED_INTERMEDIATE_DIR)',
-      '<(SHARED_INTERMEDIATE_DIR)/third_party/mojo/src',
     ],
     'variables': {
       'generated_src_dirs': [

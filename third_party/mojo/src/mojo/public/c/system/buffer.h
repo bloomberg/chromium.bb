@@ -9,12 +9,12 @@
 //
 // Note: This header should be compilable as C.
 
-#ifndef MOJO_PUBLIC_C_SYSTEM_BUFFER_H_
-#define MOJO_PUBLIC_C_SYSTEM_BUFFER_H_
+#ifndef THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_C_SYSTEM_BUFFER_H_
+#define THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_C_SYSTEM_BUFFER_H_
 
-#include "mojo/public/c/system/macros.h"
-#include "mojo/public/c/system/system_export.h"
-#include "mojo/public/c/system/types.h"
+#include "third_party/mojo/src/mojo/public/c/system/macros.h"
+#include "third_party/mojo/src/mojo/public/c/system/system_export.h"
+#include "third_party/mojo/src/mojo/public/c/system/types.h"
 
 // |MojoCreateSharedBufferOptions|: Used to specify creation parameters for a
 // shared buffer to |MojoCreateSharedBuffer()|.
@@ -183,4 +183,4 @@ MOJO_SYSTEM_EXPORT MojoResult MojoUnmapBuffer(void* buffer);  // In.
 }  // extern "C"
 #endif
 
-#endif  // MOJO_PUBLIC_C_SYSTEM_BUFFER_H_
+#endif  // THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_C_SYSTEM_BUFFER_H_

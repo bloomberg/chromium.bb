@@ -8,9 +8,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/process/launch.h"
 #include "build/build_config.h"
-#include "mojo/public/cpp/system/macros.h"
 #include "third_party/mojo/src/mojo/edk/embedder/scoped_platform_handle.h"
 #include "third_party/mojo/src/mojo/edk/system/system_impl_export.h"
+#include "third_party/mojo/src/mojo/public/cpp/system/macros.h"
 
 namespace base {
 class CommandLine;

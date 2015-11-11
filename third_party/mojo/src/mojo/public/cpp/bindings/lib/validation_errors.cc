@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/public/cpp/bindings/lib/validation_errors.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/lib/validation_errors.h"
 
-#include "mojo/public/cpp/environment/logging.h"
+#include "third_party/mojo/src/mojo/public/cpp/environment/logging.h"
 
 namespace mojo {
 namespace internal {

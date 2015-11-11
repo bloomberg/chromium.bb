@@ -4,10 +4,10 @@
 
 #include "mojo/edk/embedder/embedder_internal.h"
 #include "mojo/edk/system/core.h"
-#include "mojo/public/c/system/buffer.h"
-#include "mojo/public/c/system/data_pipe.h"
-#include "mojo/public/c/system/functions.h"
-#include "mojo/public/c/system/message_pipe.h"
+#include "third_party/mojo/src/mojo/public/c/system/buffer.h"
+#include "third_party/mojo/src/mojo/public/c/system/data_pipe.h"
+#include "third_party/mojo/src/mojo/public/c/system/functions.h"
+#include "third_party/mojo/src/mojo/public/c/system/message_pipe.h"
 
 using mojo::edk::internal::g_core;
 

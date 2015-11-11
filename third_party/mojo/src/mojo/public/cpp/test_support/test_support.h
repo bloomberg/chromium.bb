@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_PUBLIC_CPP_TEST_SUPPORT_TEST_SUPPORT_H_
-#define MOJO_PUBLIC_CPP_TEST_SUPPORT_TEST_SUPPORT_H_
+#ifndef THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_CPP_TEST_SUPPORT_TEST_SUPPORT_H_
+#define THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_CPP_TEST_SUPPORT_TEST_SUPPORT_H_
 
 #include <string>
 #include <vector>
 
-#include "mojo/public/c/test_support/test_support.h"
+#include "third_party/mojo/src/mojo/public/c/test_support/test_support.h"
 
 namespace mojo {
 namespace test {
@@ -32,4 +32,4 @@ std::vector<std::string> EnumerateSourceRootRelativeDirectory(
 }  // namespace test
 }  // namespace mojo
 
-#endif  // MOJO_PUBLIC_CPP_TEST_SUPPORT_TEST_SUPPORT_H_
+#endif  // THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_CPP_TEST_SUPPORT_TEST_SUPPORT_H_

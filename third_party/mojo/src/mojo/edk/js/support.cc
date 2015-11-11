@@ -12,9 +12,9 @@
 #include "gin/per_isolate_data.h"
 #include "gin/public/wrapper_info.h"
 #include "gin/wrappable.h"
-#include "mojo/public/cpp/system/core.h"
 #include "third_party/mojo/src/mojo/edk/js/handle.h"
 #include "third_party/mojo/src/mojo/edk/js/waiting_callback.h"
+#include "third_party/mojo/src/mojo/public/cpp/system/core.h"
 
 namespace mojo {
 namespace js {

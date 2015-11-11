@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_PUBLIC_CPP_BINDINGS_ASSOCIATED_INTERFACE_PTR_INFO_H_
-#define MOJO_PUBLIC_CPP_BINDINGS_ASSOCIATED_INTERFACE_PTR_INFO_H_
+#ifndef THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_CPP_BINDINGS_ASSOCIATED_INTERFACE_PTR_INFO_H_
+#define THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_CPP_BINDINGS_ASSOCIATED_INTERFACE_PTR_INFO_H_
 
-#include "mojo/public/cpp/system/macros.h"
+#include "third_party/mojo/src/mojo/public/cpp/system/macros.h"
 
 namespace mojo {
 
@@ -29,4 +29,4 @@ class AssociatedInterfacePtrInfo {
 
 }  // namespace mojo
 
-#endif  // MOJO_PUBLIC_CPP_BINDINGS_ASSOCIATED_INTERFACE_PTR_INFO_H_
+#endif  // THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_CPP_BINDINGS_ASSOCIATED_INTERFACE_PTR_INFO_H_

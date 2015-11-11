@@ -18,7 +18,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/test/test_io_thread.h"
 #include "build/build_config.h"              // TODO(vtl): Remove this.
-#include "mojo/public/cpp/system/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/mojo/src/mojo/edk/embedder/platform_channel_pair.h"
 #include "third_party/mojo/src/mojo/edk/embedder/platform_shared_buffer.h"
@@ -36,6 +35,7 @@
 #include "third_party/mojo/src/mojo/edk/system/test_utils.h"
 #include "third_party/mojo/src/mojo/edk/system/waiter.h"
 #include "third_party/mojo/src/mojo/edk/test/test_utils.h"
+#include "third_party/mojo/src/mojo/public/cpp/system/macros.h"
 
 namespace mojo {
 namespace system {

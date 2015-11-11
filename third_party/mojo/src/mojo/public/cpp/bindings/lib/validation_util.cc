@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/public/cpp/bindings/lib/validation_util.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/lib/validation_util.h"
 
 #include <limits>
 
-#include "mojo/public/cpp/bindings/lib/bindings_serialization.h"
-#include "mojo/public/cpp/bindings/lib/message_internal.h"
-#include "mojo/public/cpp/bindings/lib/validation_errors.h"
-#include "mojo/public/interfaces/bindings/interface_control_messages.mojom.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/lib/bindings_serialization.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/lib/message_internal.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/lib/validation_errors.h"
+#include "third_party/mojo/src/mojo/public/interfaces/bindings/interface_control_messages.mojom.h"
 
 namespace mojo {
 namespace internal {

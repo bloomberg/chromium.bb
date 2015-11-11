@@ -6,12 +6,12 @@
 //
 // Note: This header should be compilable as C.
 
-#ifndef MOJO_PUBLIC_C_SYSTEM_DATA_PIPE_H_
-#define MOJO_PUBLIC_C_SYSTEM_DATA_PIPE_H_
+#ifndef THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_C_SYSTEM_DATA_PIPE_H_
+#define THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_C_SYSTEM_DATA_PIPE_H_
 
-#include "mojo/public/c/system/macros.h"
-#include "mojo/public/c/system/system_export.h"
-#include "mojo/public/c/system/types.h"
+#include "third_party/mojo/src/mojo/public/c/system/macros.h"
+#include "third_party/mojo/src/mojo/public/c/system/system_export.h"
+#include "third_party/mojo/src/mojo/public/c/system/types.h"
 
 // |MojoCreateDataPipeOptions|: Used to specify creation parameters for a data
 // pipe to |MojoCreateDataPipe()|.
@@ -363,4 +363,4 @@ MOJO_SYSTEM_EXPORT MojoResult
 }  // extern "C"
 #endif
 
-#endif  // MOJO_PUBLIC_C_SYSTEM_DATA_PIPE_H_
+#endif  // THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_C_SYSTEM_DATA_PIPE_H_

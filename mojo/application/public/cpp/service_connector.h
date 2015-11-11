@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "mojo/public/cpp/system/message_pipe.h"
+#include "third_party/mojo/src/mojo/public/cpp/system/message_pipe.h"
 
 namespace mojo {
 

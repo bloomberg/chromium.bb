@@ -5,7 +5,7 @@
 #ifndef MOJO_UTIL_CAPTURE_UTIL_H_
 #define MOJO_UTIL_CAPTURE_UTIL_H_
 
-#include "mojo/public/cpp/bindings/lib/template_util.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/lib/template_util.h"
 
 namespace mojo {
 

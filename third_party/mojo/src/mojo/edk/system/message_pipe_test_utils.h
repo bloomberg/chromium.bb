@@ -6,11 +6,11 @@
 #define THIRD_PARTY_MOJO_SRC_MOJO_EDK_SYSTEM_MESSAGE_PIPE_TEST_UTILS_H_
 
 #include "base/test/test_io_thread.h"
-#include "mojo/public/cpp/system/macros.h"
 #include "third_party/mojo/src/mojo/edk/embedder/simple_platform_support.h"
 #include "third_party/mojo/src/mojo/edk/system/channel.h"
 #include "third_party/mojo/src/mojo/edk/system/test_utils.h"
 #include "third_party/mojo/src/mojo/edk/test/multiprocess_test_helper.h"
+#include "third_party/mojo/src/mojo/public/cpp/system/macros.h"
 
 namespace mojo {
 namespace system {

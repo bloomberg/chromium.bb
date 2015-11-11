@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/public/cpp/bindings/lib/control_message_proxy.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/lib/control_message_proxy.h"
 
-#include "mojo/public/cpp/bindings/lib/message_builder.h"
-#include "mojo/public/cpp/bindings/message.h"
-#include "mojo/public/cpp/system/macros.h"
-#include "mojo/public/interfaces/bindings/interface_control_messages.mojom.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/lib/message_builder.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/message.h"
+#include "third_party/mojo/src/mojo/public/cpp/system/macros.h"
+#include "third_party/mojo/src/mojo/public/interfaces/bindings/interface_control_messages.mojom.h"
 
 namespace mojo {
 namespace internal {

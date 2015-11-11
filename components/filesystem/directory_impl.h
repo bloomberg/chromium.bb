@@ -10,8 +10,8 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/filesystem/public/interfaces/directory.mojom.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/interface_request.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/strong_binding.h"
 
 namespace base {
 class ScopedTempDir;

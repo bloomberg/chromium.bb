@@ -13,8 +13,8 @@
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "mojo/converters/surfaces/surfaces_type_converters.h"
 #include "mojo/converters/surfaces/surfaces_utils.h"
-#include "mojo/public/c/gles2/gles2.h"
 #include "mojo/services/network/public/interfaces/url_loader.mojom.h"
+#include "third_party/mojo/src/mojo/public/c/gles2/gles2.h"
 
 namespace bitmap_uploader {
 namespace {

@@ -6,7 +6,7 @@
 #define MOJO_EDK_SYSTEM_HANDLE_SIGNALS_STATE_H_
 
 #include "mojo/edk/system/system_impl_export.h"
-#include "mojo/public/c/system/types.h"
+#include "third_party/mojo/src/mojo/public/c/system/types.h"
 
 namespace mojo {
 namespace edk {

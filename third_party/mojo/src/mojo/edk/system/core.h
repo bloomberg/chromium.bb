@@ -10,16 +10,16 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "mojo/public/c/system/buffer.h"
-#include "mojo/public/c/system/data_pipe.h"
-#include "mojo/public/c/system/message_pipe.h"
-#include "mojo/public/c/system/types.h"
-#include "mojo/public/cpp/system/macros.h"
 #include "third_party/mojo/src/mojo/edk/system/handle_table.h"
 #include "third_party/mojo/src/mojo/edk/system/mapping_table.h"
 #include "third_party/mojo/src/mojo/edk/system/memory.h"
 #include "third_party/mojo/src/mojo/edk/system/mutex.h"
 #include "third_party/mojo/src/mojo/edk/system/system_impl_export.h"
+#include "third_party/mojo/src/mojo/public/c/system/buffer.h"
+#include "third_party/mojo/src/mojo/public/c/system/data_pipe.h"
+#include "third_party/mojo/src/mojo/public/c/system/message_pipe.h"
+#include "third_party/mojo/src/mojo/public/c/system/types.h"
+#include "third_party/mojo/src/mojo/public/cpp/system/macros.h"
 
 namespace mojo {
 
@@ -73,7 +73,7 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
   // API functions, referenced below.
 
   // These methods correspond to the API functions defined in
-  // "mojo/public/c/system/functions.h":
+  // "third_party/mojo/src/mojo/public/c/system/functions.h":
   MojoTimeTicks GetTimeTicksNow();
   MojoResult Close(MojoHandle handle);
   MojoResult Wait(MojoHandle handle,
@@ -88,7 +88,7 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
                       UserPointer<MojoHandleSignalsState> signals_states);
 
   // These methods correspond to the API functions defined in
-  // "mojo/public/c/system/message_pipe.h":
+  // "third_party/mojo/src/mojo/public/c/system/message_pipe.h":
   MojoResult CreateMessagePipe(
       UserPointer<const MojoCreateMessagePipeOptions> options,
       UserPointer<MojoHandle> message_pipe_handle0,
@@ -107,7 +107,7 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
                          MojoReadMessageFlags flags);
 
   // These methods correspond to the API functions defined in
-  // "mojo/public/c/system/data_pipe.h":
+  // "third_party/mojo/src/mojo/public/c/system/data_pipe.h":
   MojoResult CreateDataPipe(
       UserPointer<const MojoCreateDataPipeOptions> options,
       UserPointer<MojoHandle> data_pipe_producer_handle,
@@ -134,7 +134,7 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
                          uint32_t num_bytes_read);
 
   // These methods correspond to the API functions defined in
-  // "mojo/public/c/system/buffer.h":
+  // "third_party/mojo/src/mojo/public/c/system/buffer.h":
   MojoResult CreateSharedBuffer(
       UserPointer<const MojoCreateSharedBufferOptions> options,
       uint64_t num_bytes,

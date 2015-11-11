@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/public/cpp/bindings/tests/validation_test_input_parser.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/tests/validation_test_input_parser.h"
 
 #include <assert.h>
 #include <stdio.h>
@@ -13,7 +13,7 @@
 #include <set>
 #include <utility>
 
-#include "mojo/public/c/system/macros.h"
+#include "third_party/mojo/src/mojo/public/c/system/macros.h"
 
 namespace mojo {
 namespace test {

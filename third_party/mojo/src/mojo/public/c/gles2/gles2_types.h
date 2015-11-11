@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_PUBLIC_C_GLES2_GLES2_TYPES_H_
-#define MOJO_PUBLIC_C_GLES2_GLES2_TYPES_H_
+#ifndef THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_C_GLES2_GLES2_TYPES_H_
+#define THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_C_GLES2_GLES2_TYPES_H_
 
 // Note: This header should be compilable as C.
 
 #include <stdint.h>
 
-#include "mojo/public/c/gles2/gles2_export.h"
+#include "third_party/mojo/src/mojo/public/c/gles2/gles2_export.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -23,4 +23,4 @@ typedef void (*MojoGLES2SignalSyncPointCallback)(void* closure);
 }  // extern "C"
 #endif
 
-#endif  // MOJO_PUBLIC_C_GLES2_GLES2_TYPES_H_
+#endif  // THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_C_GLES2_GLES2_TYPES_H_

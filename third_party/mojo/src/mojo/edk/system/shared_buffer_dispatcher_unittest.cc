@@ -7,11 +7,11 @@
 #include <limits>
 
 #include "base/memory/ref_counted.h"
-#include "mojo/public/cpp/system/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/mojo/src/mojo/edk/embedder/platform_shared_buffer.h"
 #include "third_party/mojo/src/mojo/edk/embedder/simple_platform_support.h"
 #include "third_party/mojo/src/mojo/edk/system/dispatcher.h"
+#include "third_party/mojo/src/mojo/public/cpp/system/macros.h"
 
 namespace mojo {
 namespace system {

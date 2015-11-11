@@ -7,8 +7,8 @@
 
 #include "mojo/application/public/cpp/application_delegate.h"
 #include "mojo/application/public/cpp/interface_factory_impl.h"
-#include "mojo/public/cpp/system/macros.h"
 #include "mojo/services/test_service/test_request_tracker_impl.h"
+#include "third_party/mojo/src/mojo/public/cpp/system/macros.h"
 
 namespace mojo {
 class ApplicationImpl;

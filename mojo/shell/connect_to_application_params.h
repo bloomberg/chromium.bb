@@ -10,9 +10,9 @@
 #include "base/callback.h"
 #include "mojo/application/public/interfaces/service_provider.mojom.h"
 #include "mojo/application/public/interfaces/shell.mojom.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/services/network/public/interfaces/url_loader.mojom.h"
 #include "mojo/shell/identity.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/interface_request.h"
 #include "url/gurl.h"
 
 namespace mojo {

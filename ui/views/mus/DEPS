@@ -10,6 +10,7 @@ include_rules = [
   "+mojo/converters",
   "+mojo/public",
   "+skia",
+  "+third_party/mojo/src/mojo/public",
   "+ui/aura",
   "+ui/base",
   "+ui/compositor",

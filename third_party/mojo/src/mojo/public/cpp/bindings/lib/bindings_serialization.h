@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_PUBLIC_CPP_BINDINGS_LIB_BINDINGS_SERIALIZATION_H_
-#define MOJO_PUBLIC_CPP_BINDINGS_LIB_BINDINGS_SERIALIZATION_H_
+#ifndef THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_CPP_BINDINGS_LIB_BINDINGS_SERIALIZATION_H_
+#define THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_CPP_BINDINGS_LIB_BINDINGS_SERIALIZATION_H_
 
 #include <vector>
 
-#include "mojo/public/cpp/bindings/interface_ptr.h"
-#include "mojo/public/cpp/bindings/lib/bindings_internal.h"
-#include "mojo/public/cpp/system/core.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/interface_ptr.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/lib/bindings_internal.h"
+#include "third_party/mojo/src/mojo/public/cpp/system/core.h"
 
 namespace mojo {
 namespace internal {
@@ -88,4 +88,4 @@ inline void InterfaceDataToPointer(Interface_Data* input,
 }  // namespace internal
 }  // namespace mojo
 
-#endif  // MOJO_PUBLIC_CPP_BINDINGS_LIB_BINDINGS_SERIALIZATION_H_
+#endif  // THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_CPP_BINDINGS_LIB_BINDINGS_SERIALIZATION_H_

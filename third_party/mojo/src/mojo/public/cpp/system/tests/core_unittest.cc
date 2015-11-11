@@ -6,14 +6,14 @@
 // TODO(vtl): Maybe rename "CoreCppTest" -> "CoreTest" if/when this gets
 // compiled into a different binary from the C API tests.
 
-#include "mojo/public/cpp/system/core.h"
+#include "third_party/mojo/src/mojo/public/cpp/system/core.h"
 
 #include <stddef.h>
 
 #include <map>
 
-#include "mojo/public/cpp/system/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/mojo/src/mojo/public/cpp/system/macros.h"
 
 namespace mojo {
 namespace {

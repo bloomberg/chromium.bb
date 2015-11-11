@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_PUBLIC_C_SYSTEM_MACROS_H_
-#define MOJO_PUBLIC_C_SYSTEM_MACROS_H_
+#ifndef THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_C_SYSTEM_MACROS_H_
+#define THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_C_SYSTEM_MACROS_H_
 
 #include <stddef.h>
 
@@ -76,4 +76,4 @@ inline void mojo_ignore_result(const T&) {
 #error "Please define MOJO_ALIGNAS() for your compiler."
 #endif
 
-#endif  // MOJO_PUBLIC_C_SYSTEM_MACROS_H_
+#endif  // THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_C_SYSTEM_MACROS_H_

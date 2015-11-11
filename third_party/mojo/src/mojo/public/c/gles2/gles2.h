@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_PUBLIC_C_GLES2_GLES2_H_
-#define MOJO_PUBLIC_C_GLES2_GLES2_H_
+#ifndef THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_C_GLES2_GLES2_H_
+#define THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_C_GLES2_GLES2_H_
 
 // Note: This header should be compilable as C.
 
-#include <stdint.h>
 #include <GLES2/gl2.h>
+#include <stdint.h>
 
-#include "mojo/public/c/environment/async_waiter.h"
-#include "mojo/public/c/gles2/gles2_export.h"
-#include "mojo/public/c/gles2/gles2_types.h"
-#include "mojo/public/c/system/types.h"
+#include "third_party/mojo/src/mojo/public/c/environment/async_waiter.h"
+#include "third_party/mojo/src/mojo/public/c/gles2/gles2_export.h"
+#include "third_party/mojo/src/mojo/public/c/gles2/gles2_types.h"
+#include "third_party/mojo/src/mojo/public/c/system/types.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -40,11 +40,11 @@ MOJO_GLES2_EXPORT void* MojoGLES2GetGLES2Interface(MojoGLES2Context context);
 
 #define VISIT_GL_CALL(Function, ReturnType, PARAMETERS, ARGUMENTS) \
   MOJO_GLES2_EXPORT ReturnType GL_APIENTRY gl##Function PARAMETERS;
-#include "mojo/public/c/gles2/gles2_call_visitor_autogen.h"
+#include "third_party/mojo/src/mojo/public/c/gles2/gles2_call_visitor_autogen.h"
 #undef VISIT_GL_CALL
 
 #ifdef __cplusplus
 }  // extern "C"
 #endif
 
-#endif  // MOJO_PUBLIC_C_GLES2_GLES2_H_
+#endif  // THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_C_GLES2_GLES2_H_

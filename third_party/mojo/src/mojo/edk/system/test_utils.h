@@ -6,8 +6,8 @@
 #define THIRD_PARTY_MOJO_SRC_MOJO_EDK_SYSTEM_TEST_UTILS_H_
 
 #include "base/time/time.h"
-#include "mojo/public/c/system/types.h"
-#include "mojo/public/cpp/system/macros.h"
+#include "third_party/mojo/src/mojo/public/c/system/types.h"
+#include "third_party/mojo/src/mojo/public/cpp/system/macros.h"
 
 namespace mojo {
 namespace system {

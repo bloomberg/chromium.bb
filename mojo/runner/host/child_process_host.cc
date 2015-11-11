@@ -14,10 +14,10 @@
 #include "base/process/launch.h"
 #include "base/task_runner.h"
 #include "base/thread_task_runner_handle.h"
-#include "mojo/public/cpp/bindings/interface_ptr_info.h"
-#include "mojo/public/cpp/system/core.h"
 #include "mojo/runner/host/switches.h"
 #include "third_party/mojo/src/mojo/edk/embedder/embedder.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/interface_ptr_info.h"
+#include "third_party/mojo/src/mojo/public/cpp/system/core.h"
 
 #if defined(OS_LINUX) && !defined(OS_ANDROID)
 #include "sandbox/linux/services/namespace_sandbox.h"

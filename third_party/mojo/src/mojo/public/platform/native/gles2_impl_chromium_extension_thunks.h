@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_PUBLIC_PLATFORM_NATIVE_GLES2_IMPL_CHROMIUM_EXTENSION_THUNKS_H_
-#define MOJO_PUBLIC_PLATFORM_NATIVE_GLES2_IMPL_CHROMIUM_EXTENSION_THUNKS_H_
+#ifndef THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_PLATFORM_NATIVE_GLES2_IMPL_CHROMIUM_EXTENSION_THUNKS_H_
+#define THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_PLATFORM_NATIVE_GLES2_IMPL_CHROMIUM_EXTENSION_THUNKS_H_
 
 #include <stddef.h>
 
-#include "mojo/public/c/gles2/chromium_extension.h"
+#include "third_party/mojo/src/mojo/public/c/gles2/chromium_extension.h"
 
 // Specifies the API for the GLES2 CHROMIUM extension.
 #pragma pack(push, 8)
@@ -16,7 +16,7 @@ struct MojoGLES2ImplChromiumExtensionThunks {
 
 #define VISIT_GL_CALL(Function, ReturnType, PARAMETERS, ARGUMENTS) \
   ReturnType(GL_APIENTRY *Function) PARAMETERS;
-#include "mojo/public/c/gles2/gles2_call_visitor_chromium_extension_autogen.h"
+#include "third_party/mojo/src/mojo/public/c/gles2/gles2_call_visitor_chromium_extension_autogen.h"
 #undef VISIT_GL_CALL
 };
 #pragma pack(pop)
@@ -28,7 +28,7 @@ MojoMakeGLES2ImplChromiumExtensionThunks() {
   MojoGLES2ImplChromiumExtensionThunks gles2_impl_chromium_extension_thunks = {
       sizeof(MojoGLES2ImplChromiumExtensionThunks),
 #define VISIT_GL_CALL(Function, ReturnType, PARAMETERS, ARGUMENTS) gl##Function,
-#include "mojo/public/c/gles2/gles2_call_visitor_chromium_extension_autogen.h"
+#include "third_party/mojo/src/mojo/public/c/gles2/gles2_call_visitor_chromium_extension_autogen.h"
 #undef VISIT_GL_CALL
   };
 
@@ -41,4 +41,4 @@ MojoMakeGLES2ImplChromiumExtensionThunks() {
 typedef size_t (*MojoSetGLES2ImplChromiumExtensionThunksFn)(
     const MojoGLES2ImplChromiumExtensionThunks* thunks);
 
-#endif  // MOJO_PUBLIC_PLATFORM_NATIVE_GLES2_IMPL_CHROMIUM_EXTENSION_THUNKS_H_
+#endif  // THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_PLATFORM_NATIVE_GLES2_IMPL_CHROMIUM_EXTENSION_THUNKS_H_

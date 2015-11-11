@@ -2,22 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_PUBLIC_CPP_BINDINGS_LIB_ARRAY_INTERNAL_H_
-#define MOJO_PUBLIC_CPP_BINDINGS_LIB_ARRAY_INTERNAL_H_
+#ifndef THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_CPP_BINDINGS_LIB_ARRAY_INTERNAL_H_
+#define THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_CPP_BINDINGS_LIB_ARRAY_INTERNAL_H_
 
 #include <new>
 #include <vector>
 
-#include "mojo/public/c/system/macros.h"
-#include "mojo/public/cpp/bindings/lib/bindings_internal.h"
-#include "mojo/public/cpp/bindings/lib/bindings_serialization.h"
-#include "mojo/public/cpp/bindings/lib/bounds_checker.h"
-#include "mojo/public/cpp/bindings/lib/buffer.h"
-#include "mojo/public/cpp/bindings/lib/map_data_internal.h"
-#include "mojo/public/cpp/bindings/lib/template_util.h"
-#include "mojo/public/cpp/bindings/lib/validate_params.h"
-#include "mojo/public/cpp/bindings/lib/validation_errors.h"
-#include "mojo/public/cpp/environment/logging.h"
+#include "third_party/mojo/src/mojo/public/c/system/macros.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/lib/bindings_internal.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/lib/bindings_serialization.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/lib/bounds_checker.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/lib/buffer.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/lib/map_data_internal.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/lib/template_util.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/lib/validate_params.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/lib/validation_errors.h"
+#include "third_party/mojo/src/mojo/public/cpp/environment/logging.h"
 
 namespace mojo {
 template <typename T>
@@ -531,4 +531,4 @@ struct WrapperTraits<String, false> {
 }  // namespace internal
 }  // namespace mojo
 
-#endif  // MOJO_PUBLIC_CPP_BINDINGS_LIB_ARRAY_INTERNAL_H_
+#endif  // THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_CPP_BINDINGS_LIB_ARRAY_INTERNAL_H_

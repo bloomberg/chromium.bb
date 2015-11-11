@@ -9,7 +9,7 @@
 #include "mojo/application/public/cpp/application_connection.h"
 #include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/application/public/cpp/application_runner.h"
-#include "mojo/public/c/system/main.h"
+#include "third_party/mojo/src/mojo/public/c/system/main.h"
 
 namespace updater {
 

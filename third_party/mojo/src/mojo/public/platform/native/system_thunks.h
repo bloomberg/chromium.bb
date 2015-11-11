@@ -4,12 +4,12 @@
 
 // Note: This header should be compilable as C.
 
-#ifndef MOJO_PUBLIC_PLATFORM_NATIVE_SYSTEM_THUNKS_H_
-#define MOJO_PUBLIC_PLATFORM_NATIVE_SYSTEM_THUNKS_H_
+#ifndef THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_PLATFORM_NATIVE_SYSTEM_THUNKS_H_
+#define THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_PLATFORM_NATIVE_SYSTEM_THUNKS_H_
 
 #include <stddef.h>
 
-#include "mojo/public/c/system/core.h"
+#include "third_party/mojo/src/mojo/public/c/system/core.h"
 
 // The embedder needs to bind the basic Mojo Core functions of a DSO to those of
 // the embedder when loading a DSO that is dependent on mojo_system.
@@ -143,4 +143,4 @@ inline MojoSystemThunks MojoMakeSystemThunks() {
 typedef size_t (*MojoSetSystemThunksFn)(
     const struct MojoSystemThunks* system_thunks);
 
-#endif  // MOJO_PUBLIC_PLATFORM_NATIVE_SYSTEM_THUNKS_H_
+#endif  // THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_PLATFORM_NATIVE_SYSTEM_THUNKS_H_

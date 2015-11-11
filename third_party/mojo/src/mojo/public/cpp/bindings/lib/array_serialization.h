@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_PUBLIC_CPP_BINDINGS_LIB_ARRAY_SERIALIZATION_H_
-#define MOJO_PUBLIC_CPP_BINDINGS_LIB_ARRAY_SERIALIZATION_H_
+#ifndef THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_CPP_BINDINGS_LIB_ARRAY_SERIALIZATION_H_
+#define THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_CPP_BINDINGS_LIB_ARRAY_SERIALIZATION_H_
 
 #include <string.h>  // For |memcpy()|.
 
 #include <vector>
 
-#include "mojo/public/c/system/macros.h"
-#include "mojo/public/cpp/bindings/lib/array_internal.h"
-#include "mojo/public/cpp/bindings/lib/map_serialization.h"
-#include "mojo/public/cpp/bindings/lib/string_serialization.h"
-#include "mojo/public/cpp/bindings/lib/template_util.h"
-#include "mojo/public/cpp/bindings/lib/validation_errors.h"
+#include "third_party/mojo/src/mojo/public/c/system/macros.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/lib/array_internal.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/lib/map_serialization.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/lib/string_serialization.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/lib/template_util.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/lib/validation_errors.h"
 
 namespace mojo {
 
@@ -335,4 +335,4 @@ inline void Deserialize_(internal::Array_Data<F>* input, Array<E>* output) {
 
 }  // namespace mojo
 
-#endif  // MOJO_PUBLIC_CPP_BINDINGS_LIB_ARRAY_SERIALIZATION_H_
+#endif  // THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_CPP_BINDINGS_LIB_ARRAY_SERIALIZATION_H_

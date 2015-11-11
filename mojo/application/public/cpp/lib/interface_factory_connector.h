@@ -7,7 +7,7 @@
 
 #include "mojo/application/public/cpp/interface_factory.h"
 #include "mojo/application/public/cpp/service_connector.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/interface_request.h"
 
 namespace mojo {
 namespace internal {

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/public/cpp/environment/lib/default_async_waiter.h"
+#include "third_party/mojo/src/mojo/public/cpp/environment/lib/default_async_waiter.h"
 
 #include <assert.h>
 
-#include "mojo/public/c/environment/async_waiter.h"
-#include "mojo/public/cpp/utility/run_loop.h"
-#include "mojo/public/cpp/utility/run_loop_handler.h"
+#include "third_party/mojo/src/mojo/public/c/environment/async_waiter.h"
+#include "third_party/mojo/src/mojo/public/cpp/utility/run_loop.h"
+#include "third_party/mojo/src/mojo/public/cpp/utility/run_loop_handler.h"
 
 namespace mojo {
 

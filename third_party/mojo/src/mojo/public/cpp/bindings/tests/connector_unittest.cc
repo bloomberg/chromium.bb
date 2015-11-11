@@ -7,11 +7,11 @@
 
 #include "base/message_loop/message_loop.h"
 #include "mojo/message_pump/message_pump_mojo.h"
-#include "mojo/public/cpp/bindings/lib/connector.h"
-#include "mojo/public/cpp/bindings/lib/message_builder.h"
-#include "mojo/public/cpp/bindings/tests/message_queue.h"
-#include "mojo/public/cpp/system/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/lib/connector.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/lib/message_builder.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/tests/message_queue.h"
+#include "third_party/mojo/src/mojo/public/cpp/system/macros.h"
 
 namespace mojo {
 namespace test {

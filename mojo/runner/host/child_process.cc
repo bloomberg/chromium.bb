@@ -21,8 +21,6 @@
 #include "base/threading/thread.h"
 #include "base/threading/thread_checker.h"
 #include "mojo/message_pump/message_pump_mojo.h"
-#include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/system/core.h"
 #include "mojo/runner/child/child_controller.mojom.h"
 #include "mojo/runner/host/native_application_support.h"
 #include "mojo/runner/host/switches.h"
@@ -30,6 +28,8 @@
 #include "third_party/mojo/src/mojo/edk/embedder/platform_channel_pair.h"
 #include "third_party/mojo/src/mojo/edk/embedder/process_delegate.h"
 #include "third_party/mojo/src/mojo/edk/embedder/scoped_platform_handle.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
+#include "third_party/mojo/src/mojo/public/cpp/system/core.h"
 
 #if defined(OS_LINUX) && !defined(OS_ANDROID)
 #include "base/rand_util.h"

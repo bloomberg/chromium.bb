@@ -21,8 +21,8 @@
 #include "mojo/edk/system/message_pipe_dispatcher.h"
 #include "mojo/edk/system/shared_buffer_dispatcher.h"
 #include "mojo/edk/system/waiter.h"
-#include "mojo/public/c/system/macros.h"
-#include "mojo/public/cpp/system/macros.h"
+#include "third_party/mojo/src/mojo/public/c/system/macros.h"
+#include "third_party/mojo/src/mojo/public/cpp/system/macros.h"
 
 namespace mojo {
 namespace edk {

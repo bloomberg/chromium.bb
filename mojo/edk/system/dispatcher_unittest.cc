@@ -10,8 +10,8 @@
 #include "base/threading/simple_thread.h"
 #include "mojo/edk/embedder/platform_shared_buffer.h"
 #include "mojo/edk/system/waiter.h"
-#include "mojo/public/cpp/system/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/mojo/src/mojo/public/cpp/system/macros.h"
 
 namespace mojo {
 namespace edk {

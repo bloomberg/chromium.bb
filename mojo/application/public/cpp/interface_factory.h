@@ -5,7 +5,7 @@
 #ifndef MOJO_APPLICATION_PUBLIC_CPP_INTERFACE_FACTORY_H_
 #define MOJO_APPLICATION_PUBLIC_CPP_INTERFACE_FACTORY_H_
 
-#include "mojo/public/cpp/bindings/interface_request.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/interface_request.h"
 
 namespace mojo {
 

@@ -167,13 +167,7 @@
       ],
       'include_dirs': [
         '..',
-        '../third_party/mojo/src',
       ],
-      'direct_dependent_settings': {
-        'include_dirs': [
-          '../third_party/mojo/src',
-        ],
-      },
       'export_dependent_settings': [
         'mojo_environment_chromium_impl',
       ],
@@ -203,13 +197,7 @@
       ],
       'include_dirs': [
         '..',
-        '../third_party/mojo/src',
       ],
-      'direct_dependent_settings': {
-        'include_dirs': [
-          '../third_party/mojo/src',
-        ],
-      },
     },
     {
       'target_name': 'mojo_application_bindings_mojom',

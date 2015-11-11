@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/public/cpp/utility/lib/thread_local.h"
+#include "third_party/mojo/src/mojo/public/cpp/utility/lib/thread_local.h"
 
-#include <assert.h>
 #include <windows.h>
+#include <assert.h>
 
 namespace mojo {
 namespace internal {

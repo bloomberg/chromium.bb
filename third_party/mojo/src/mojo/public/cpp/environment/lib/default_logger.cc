@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/public/cpp/environment/lib/default_logger.h"
+#include "third_party/mojo/src/mojo/public/cpp/environment/lib/default_logger.h"
 
 #include <stdio.h>
 #include <stdlib.h>  // For |abort()|.
 
 #include <algorithm>
 
-#include "mojo/public/c/environment/logger.h"
+#include "third_party/mojo/src/mojo/public/c/environment/logger.h"
 
 namespace mojo {
 

@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_PUBLIC_C_TEST_SUPPORT_TEST_SUPPORT_H_
-#define MOJO_PUBLIC_C_TEST_SUPPORT_TEST_SUPPORT_H_
+#ifndef THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_C_TEST_SUPPORT_TEST_SUPPORT_H_
+#define THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_C_TEST_SUPPORT_TEST_SUPPORT_H_
 
 // Note: This header should be compilable as C.
 
 #include <stdio.h>
 
-#include "mojo/public/c/test_support/test_support_export.h"
+#include "third_party/mojo/src/mojo/public/c/test_support/test_support_export.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -52,4 +52,4 @@ char** MojoTestSupportEnumerateSourceRootRelativeDirectory(
 }  // extern "C"
 #endif
 
-#endif  // MOJO_PUBLIC_C_TEST_SUPPORT_TEST_SUPPORT_H_
+#endif  // THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_C_TEST_SUPPORT_TEST_SUPPORT_H_

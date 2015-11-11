@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/public/cpp/environment/environment.h"
+#include "third_party/mojo/src/mojo/public/cpp/environment/environment.h"
 
 #include <assert.h>
 
-#include "mojo/public/c/environment/logger.h"
-#include "mojo/public/cpp/environment/lib/default_async_waiter.h"
-#include "mojo/public/cpp/environment/lib/default_logger.h"
-#include "mojo/public/cpp/environment/lib/default_task_tracker.h"
-#include "mojo/public/cpp/utility/run_loop.h"
+#include "third_party/mojo/src/mojo/public/c/environment/logger.h"
+#include "third_party/mojo/src/mojo/public/cpp/environment/lib/default_async_waiter.h"
+#include "third_party/mojo/src/mojo/public/cpp/environment/lib/default_logger.h"
+#include "third_party/mojo/src/mojo/public/cpp/environment/lib/default_task_tracker.h"
+#include "third_party/mojo/src/mojo/public/cpp/utility/run_loop.h"
 
 namespace mojo {
 

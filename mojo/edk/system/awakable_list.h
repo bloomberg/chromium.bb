@@ -10,8 +10,8 @@
 #include <vector>
 
 #include "mojo/edk/system/system_impl_export.h"
-#include "mojo/public/c/system/types.h"
-#include "mojo/public/cpp/system/macros.h"
+#include "third_party/mojo/src/mojo/public/c/system/types.h"
+#include "third_party/mojo/src/mojo/public/cpp/system/macros.h"
 
 namespace mojo {
 namespace edk {

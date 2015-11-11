@@ -11,8 +11,8 @@
 #include "base/test/multiprocess_test.h"
 #include "base/test/test_timeouts.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
-#include "mojo/public/cpp/system/macros.h"
 #include "testing/multiprocess_func_list.h"
+#include "third_party/mojo/src/mojo/public/cpp/system/macros.h"
 
 namespace mojo {
 

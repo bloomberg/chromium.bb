@@ -9,7 +9,6 @@
   'target_defaults' : {
     'include_dirs': [
       '..',
-      '../third_party/mojo/src',
     ],
     'direct_dependent_settings': {
       'include_dirs': [

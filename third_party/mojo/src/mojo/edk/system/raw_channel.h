@@ -10,12 +10,12 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
-#include "mojo/public/cpp/system/macros.h"
 #include "third_party/mojo/src/mojo/edk/embedder/platform_handle_vector.h"
 #include "third_party/mojo/src/mojo/edk/embedder/scoped_platform_handle.h"
 #include "third_party/mojo/src/mojo/edk/system/message_in_transit.h"
 #include "third_party/mojo/src/mojo/edk/system/message_in_transit_queue.h"
 #include "third_party/mojo/src/mojo/edk/system/system_impl_export.h"
+#include "third_party/mojo/src/mojo/public/cpp/system/macros.h"
 
 namespace base {
 class MessageLoopForIO;

@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_PUBLIC_CPP_BINDINGS_LIB_ROUTER_H_
-#define MOJO_PUBLIC_CPP_BINDINGS_LIB_ROUTER_H_
+#ifndef THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_CPP_BINDINGS_LIB_ROUTER_H_
+#define THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_CPP_BINDINGS_LIB_ROUTER_H_
 
 #include <map>
 
-#include "mojo/public/cpp/bindings/callback.h"
-#include "mojo/public/cpp/bindings/lib/connector.h"
-#include "mojo/public/cpp/bindings/lib/filter_chain.h"
-#include "mojo/public/cpp/bindings/lib/shared_data.h"
-#include "mojo/public/cpp/bindings/lib/thread_checker.h"
-#include "mojo/public/cpp/environment/environment.h"
-#include "mojo/public/cpp/environment/logging.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/callback.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/lib/connector.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/lib/filter_chain.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/lib/shared_data.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/lib/thread_checker.h"
+#include "third_party/mojo/src/mojo/public/cpp/environment/environment.h"
+#include "third_party/mojo/src/mojo/public/cpp/environment/logging.h"
 
 namespace mojo {
 namespace internal {
@@ -138,4 +138,4 @@ class Router : public MessageReceiverWithResponder {
 }  // namespace internal
 }  // namespace mojo
 
-#endif  // MOJO_PUBLIC_CPP_BINDINGS_LIB_ROUTER_H_
+#endif  // THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_CPP_BINDINGS_LIB_ROUTER_H_

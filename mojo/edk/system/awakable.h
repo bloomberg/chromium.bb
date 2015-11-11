@@ -8,7 +8,7 @@
 #include <stdint.h>
 
 #include "mojo/edk/system/system_impl_export.h"
-#include "mojo/public/c/system/types.h"
+#include "third_party/mojo/src/mojo/public/c/system/types.h"
 
 namespace mojo {
 namespace edk {

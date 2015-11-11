@@ -4,13 +4,13 @@
 
 // Note: This header should be compilable as C.
 
-#ifndef MOJO_PUBLIC_C_GPU_MGL_MGL_H_
-#define MOJO_PUBLIC_C_GPU_MGL_MGL_H_
+#ifndef THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_C_GPU_MGL_MGL_H_
+#define THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_C_GPU_MGL_MGL_H_
 
 #include <stdint.h>
 
-#include "mojo/public/c/gpu/MGL/mgl_types.h"
-#include "mojo/public/c/system/types.h"
+#include "third_party/mojo/src/mojo/public/c/gpu/MGL/mgl_types.h"
+#include "third_party/mojo/src/mojo/public/c/system/types.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -59,4 +59,4 @@ MGLContext MGLGetCurrentContext(void);
 }  // extern "C"
 #endif
 
-#endif  // MOJO_PUBLIC_C_GPU_MGL_MGL_H_
+#endif  // THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_C_GPU_MGL_MGL_H_

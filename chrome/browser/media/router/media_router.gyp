@@ -27,9 +27,6 @@
       ],
       'conditions': [
         [ 'OS!="android" and OS!="ios"', {
-          'include_dirs': [
-            '<(DEPTH)/third_party/mojo/src',
-          ],
           'dependencies': [
             # media_router_type_converters.h needs the generated file.
             'media_router_mojo_gen',
@@ -40,7 +37,7 @@
             '<@(media_router_non_android_sources)',
           ]
         }],
-      ]     
+      ]
     },
     {
       # Mojo compiler for the Media Router internal API.
@@ -56,9 +53,6 @@
     {
       'target_name': 'media_router_mojo',
       'type': 'static_library',
-      'include_dirs': [
-        '<(DEPTH)/third_party/mojo/src',
-      ],
       'dependencies': [
         'media_router_mojo_gen',
       ],
@@ -73,7 +67,6 @@
       'type': 'static_library',
       'include_dirs': [
         '<(DEPTH)',
-        '<(DEPTH)/third_party/mojo/src',
       ],
       'dependencies': [
         'media_router',

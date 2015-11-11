@@ -9,7 +9,7 @@
 #include "gin/converter.h"
 #include "gin/handle.h"
 #include "gin/wrappable.h"
-#include "mojo/public/cpp/system/core.h"
+#include "third_party/mojo/src/mojo/public/cpp/system/core.h"
 
 namespace mojo {
 namespace edk {

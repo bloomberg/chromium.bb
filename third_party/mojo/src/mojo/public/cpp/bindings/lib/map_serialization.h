@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_PUBLIC_CPP_BINDINGS_LIB_MAP_SERIALIZATION_H_
-#define MOJO_PUBLIC_CPP_BINDINGS_LIB_MAP_SERIALIZATION_H_
+#ifndef THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_CPP_BINDINGS_LIB_MAP_SERIALIZATION_H_
+#define THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_CPP_BINDINGS_LIB_MAP_SERIALIZATION_H_
 
-#include "mojo/public/cpp/bindings/lib/array_internal.h"
-#include "mojo/public/cpp/bindings/lib/map_data_internal.h"
-#include "mojo/public/cpp/bindings/lib/map_internal.h"
-#include "mojo/public/cpp/bindings/lib/string_serialization.h"
-#include "mojo/public/cpp/bindings/map.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/lib/array_internal.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/lib/map_data_internal.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/lib/map_internal.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/lib/string_serialization.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/map.h"
 
 namespace mojo {
 
@@ -179,4 +179,4 @@ inline void Deserialize_(internal::Map_Data<DataKey, DataValue>* input,
 
 }  // namespace mojo
 
-#endif  // MOJO_PUBLIC_CPP_BINDINGS_LIB_MAP_SERIALIZATION_H_
+#endif  // THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_CPP_BINDINGS_LIB_MAP_SERIALIZATION_H_

@@ -13,9 +13,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "jni/CoreImpl_jni.h"
-#include "mojo/public/c/environment/async_waiter.h"
-#include "mojo/public/c/system/core.h"
-#include "mojo/public/cpp/environment/environment.h"
+#include "third_party/mojo/src/mojo/public/c/environment/async_waiter.h"
+#include "third_party/mojo/src/mojo/public/c/system/core.h"
+#include "third_party/mojo/src/mojo/public/cpp/environment/environment.h"
 
 namespace {
 

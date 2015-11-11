@@ -5,8 +5,8 @@
 #ifndef THIRD_PARTY_MOJO_SRC_MOJO_EDK_SYSTEM_HANDLE_SIGNALS_STATE_H_
 #define THIRD_PARTY_MOJO_SRC_MOJO_EDK_SYSTEM_HANDLE_SIGNALS_STATE_H_
 
-#include "mojo/public/c/system/types.h"
 #include "third_party/mojo/src/mojo/edk/system/system_impl_export.h"
+#include "third_party/mojo/src/mojo/public/c/system/types.h"
 
 namespace mojo {
 namespace system {

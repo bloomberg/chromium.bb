@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_PUBLIC_C_ENVIRONMENT_ASYNC_WAITER_H_
-#define MOJO_PUBLIC_C_ENVIRONMENT_ASYNC_WAITER_H_
+#ifndef THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_C_ENVIRONMENT_ASYNC_WAITER_H_
+#define THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_C_ENVIRONMENT_ASYNC_WAITER_H_
 
-#include "mojo/public/c/system/types.h"
+#include "third_party/mojo/src/mojo/public/c/system/types.h"
 
 typedef uintptr_t MojoAsyncWaitID;
 
@@ -62,4 +62,4 @@ struct MojoAsyncWaiter {
   void (*CancelWait)(MojoAsyncWaitID wait_id);
 };
 
-#endif  // MOJO_PUBLIC_C_ENVIRONMENT_ASYNC_WAITER_H_
+#endif  // THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_C_ENVIRONMENT_ASYNC_WAITER_H_

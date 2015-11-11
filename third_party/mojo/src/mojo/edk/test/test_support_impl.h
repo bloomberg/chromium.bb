@@ -7,8 +7,8 @@
 
 #include <stdio.h>
 
-#include "mojo/public/cpp/system/macros.h"
-#include "mojo/public/tests/test_support_private.h"
+#include "third_party/mojo/src/mojo/public/cpp/system/macros.h"
+#include "third_party/mojo/src/mojo/public/tests/test_support_private.h"
 
 namespace mojo {
 namespace test {

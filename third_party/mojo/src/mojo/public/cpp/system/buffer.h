@@ -6,17 +6,17 @@
 // replacing the prefix of "Mojo" with a "mojo" namespace, and using more
 // strongly-typed representations of |MojoHandle|s.
 //
-// Please see "mojo/public/c/system/buffer.h" for complete documentation of the
+// Please see "third_party/mojo/src/mojo/public/c/system/buffer.h" for complete documentation of the
 // API.
 
-#ifndef MOJO_PUBLIC_CPP_SYSTEM_BUFFER_H_
-#define MOJO_PUBLIC_CPP_SYSTEM_BUFFER_H_
+#ifndef THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_CPP_SYSTEM_BUFFER_H_
+#define THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_CPP_SYSTEM_BUFFER_H_
 
 #include <assert.h>
 
-#include "mojo/public/c/system/buffer.h"
-#include "mojo/public/cpp/system/handle.h"
-#include "mojo/public/cpp/system/macros.h"
+#include "third_party/mojo/src/mojo/public/c/system/buffer.h"
+#include "third_party/mojo/src/mojo/public/cpp/system/handle.h"
+#include "third_party/mojo/src/mojo/public/cpp/system/macros.h"
 
 namespace mojo {
 
@@ -129,4 +129,4 @@ inline SharedBuffer::~SharedBuffer() {
 
 }  // namespace mojo
 
-#endif  // MOJO_PUBLIC_CPP_SYSTEM_BUFFER_H_
+#endif  // THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_CPP_SYSTEM_BUFFER_H_

@@ -8,11 +8,11 @@
 #include <stddef.h>
 
 #include "base/memory/ref_counted.h"
-#include "mojo/public/cpp/system/macros.h"
 #include "third_party/mojo/src/mojo/edk/system/channel_endpoint_client.h"
 #include "third_party/mojo/src/mojo/edk/system/message_in_transit_queue.h"
 #include "third_party/mojo/src/mojo/edk/system/mutex.h"
 #include "third_party/mojo/src/mojo/edk/system/system_impl_export.h"
+#include "third_party/mojo/src/mojo/public/cpp/system/macros.h"
 
 struct MojoCreateDataPipeOptions;
 

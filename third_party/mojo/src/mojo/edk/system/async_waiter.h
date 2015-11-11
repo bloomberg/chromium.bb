@@ -6,10 +6,10 @@
 #define THIRD_PARTY_MOJO_SRC_MOJO_EDK_SYSTEM_ASYNC_WAITER_H_
 
 #include "base/callback.h"
-#include "mojo/public/c/system/types.h"
-#include "mojo/public/cpp/system/macros.h"
 #include "third_party/mojo/src/mojo/edk/system/awakable.h"
 #include "third_party/mojo/src/mojo/edk/system/system_impl_export.h"
+#include "third_party/mojo/src/mojo/public/c/system/types.h"
+#include "third_party/mojo/src/mojo/public/cpp/system/macros.h"
 
 namespace mojo {
 namespace system {

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_PUBLIC_CPP_ENVIRONMENT_ASYNC_WAITER_H_
-#define MOJO_PUBLIC_CPP_ENVIRONMENT_ASYNC_WAITER_H_
+#ifndef THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_CPP_ENVIRONMENT_ASYNC_WAITER_H_
+#define THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_CPP_ENVIRONMENT_ASYNC_WAITER_H_
 
-#include "mojo/public/c/environment/async_waiter.h"
-#include "mojo/public/cpp/bindings/callback.h"
-#include "mojo/public/cpp/environment/environment.h"
-#include "mojo/public/cpp/system/handle.h"
+#include "third_party/mojo/src/mojo/public/c/environment/async_waiter.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/callback.h"
+#include "third_party/mojo/src/mojo/public/cpp/environment/environment.h"
+#include "third_party/mojo/src/mojo/public/cpp/system/handle.h"
 
 namespace mojo {
 
@@ -37,4 +37,4 @@ class AsyncWaiter {
 
 }  // namespace mojo
 
-#endif  // MOJO_PUBLIC_CPP_ENVIRONMENT_ASYNC_WAITER_H_
+#endif  // THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_CPP_ENVIRONMENT_ASYNC_WAITER_H_

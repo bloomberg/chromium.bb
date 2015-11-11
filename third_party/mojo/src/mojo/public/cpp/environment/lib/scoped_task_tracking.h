@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_PUBLIC_CPP_ENVIRONMENT_LIB_SCOPED_TASK_TRACKING_H_
-#define MOJO_PUBLIC_CPP_ENVIRONMENT_LIB_SCOPED_TASK_TRACKING_H_
+#ifndef THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_CPP_ENVIRONMENT_LIB_SCOPED_TASK_TRACKING_H_
+#define THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_CPP_ENVIRONMENT_LIB_SCOPED_TASK_TRACKING_H_
 
-#include "mojo/public/cpp/environment/task_tracker.h"
-#include "mojo/public/cpp/system/macros.h"
+#include "third_party/mojo/src/mojo/public/cpp/environment/task_tracker.h"
+#include "third_party/mojo/src/mojo/public/cpp/system/macros.h"
 
 namespace mojo {
 namespace internal {
@@ -31,4 +31,4 @@ class ScopedTaskTracking {
 }  // namespace internal
 }  // namespace mojo
 
-#endif  // MOJO_PUBLIC_CPP_ENVIRONMENT_SCOPED_TASK_TRACKING_H_
+#endif  // THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_CPP_ENVIRONMENT_LIB_SCOPED_TASK_TRACKING_H_

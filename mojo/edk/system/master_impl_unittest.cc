@@ -10,8 +10,8 @@
 #include "base/files/scoped_temp_dir.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/test/test_utils.h"
-#include "mojo/public/c/system/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/mojo/src/mojo/public/c/system/macros.h"
 
 namespace mojo {
 namespace edk {

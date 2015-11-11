@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/public/cpp/environment/lib/default_task_tracker.h"
+#include "third_party/mojo/src/mojo/public/cpp/environment/lib/default_task_tracker.h"
 
-#include "mojo/public/cpp/environment/task_tracker.h"
+#include "third_party/mojo/src/mojo/public/cpp/environment/task_tracker.h"
 
 namespace mojo {
 

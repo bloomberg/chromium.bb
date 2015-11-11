@@ -8,9 +8,9 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/weak_ptr.h"
-#include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/services/tracing/public/interfaces/tracing.mojom.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/interface_request.h"
 
 namespace mojo {
 

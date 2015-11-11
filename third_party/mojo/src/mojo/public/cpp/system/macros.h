@@ -3,13 +3,13 @@
 // found in the LICENSE file.
 
 // Define a set of C++ specific macros.
-// Mojo C++ API users can assume that mojo/public/cpp/system/macros.h
-// includes mojo/public/c/system/macros.h.
+// Mojo C++ API users can assume that third_party/mojo/src/mojo/public/cpp/system/macros.h
+// includes third_party/mojo/src/mojo/public/c/system/macros.h.
 
-#ifndef MOJO_PUBLIC_CPP_SYSTEM_MACROS_H_
-#define MOJO_PUBLIC_CPP_SYSTEM_MACROS_H_
+#ifndef THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_CPP_SYSTEM_MACROS_H_
+#define THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_CPP_SYSTEM_MACROS_H_
 
-#include "mojo/public/c/system/macros.h"  // Symbols exposed.
+#include "third_party/mojo/src/mojo/public/c/system/macros.h"  // Symbols exposed.
 
 // A macro to disallow the copy constructor and operator= functions.
 #define MOJO_DISALLOW_COPY_AND_ASSIGN(TypeName) \
@@ -78,4 +78,4 @@ inline void ignore_result(const T&) {
 
 }  // namespace mojo
 
-#endif  // MOJO_PUBLIC_CPP_SYSTEM_MACROS_H_
+#endif  // THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_CPP_SYSTEM_MACROS_H_

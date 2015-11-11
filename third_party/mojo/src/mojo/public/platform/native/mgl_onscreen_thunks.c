@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/public/platform/native/mgl_onscreen_thunks.h"
+#include "third_party/mojo/src/mojo/public/platform/native/mgl_onscreen_thunks.h"
 
 #include <assert.h>
 
-#include "mojo/public/platform/native/thunk_export.h"
+#include "third_party/mojo/src/mojo/public/platform/native/thunk_export.h"
 
 static struct MGLOnscreenThunks g_onscreen_thunks = {0};
 

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_PUBLIC_PLATFORM_THUNK_EXPORT_H_
-#define MOJO_PUBLIC_PLATFORM_THUNK_EXPORT_H_
+#ifndef THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_PLATFORM_NATIVE_THUNK_EXPORT_H_
+#define THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_PLATFORM_NATIVE_THUNK_EXPORT_H_
 
 // Call this function by looking inside the resulting shared object and
 // grabbing the symbol manually.
@@ -15,4 +15,4 @@
 #define THUNK_EXPORT __attribute__((visibility("default")))
 #endif
 
-#endif // MOJO_PUBLIC_PLATFORM_THUNK_EXPORT_H_
+#endif // THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_PLATFORM_NATIVE_THUNK_EXPORT_H_

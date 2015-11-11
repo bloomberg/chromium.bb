@@ -8,13 +8,8 @@
   ],
   'target_defaults' : {
     'include_dirs': [
-      'src',
+      '../..',
     ],
-    'direct_dependent_settings': {
-      'include_dirs': [
-        'src',
-      ],
-    },
   },
   'targets': [
     {

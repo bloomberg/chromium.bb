@@ -11,10 +11,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "mojo/application/public/interfaces/application.mojom.h"
 #include "mojo/application/public/interfaces/shell.mojom.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/shell/capability_filter.h"
 #include "mojo/shell/connect_to_application_params.h"
 #include "mojo/shell/identity.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
 #include "url/gurl.h"
 
 namespace mojo {

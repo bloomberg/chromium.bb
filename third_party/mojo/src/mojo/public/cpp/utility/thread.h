@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_PUBLIC_CPP_UTILITY_THREAD_H_
-#define MOJO_PUBLIC_CPP_UTILITY_THREAD_H_
+#ifndef THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_CPP_UTILITY_THREAD_H_
+#define THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_CPP_UTILITY_THREAD_H_
 
 #ifdef _WIN32
 #error "Not implemented: See crbug.com/342893."
@@ -12,7 +12,7 @@
 #include <pthread.h>
 #include <stddef.h>
 
-#include "mojo/public/cpp/system/macros.h"
+#include "third_party/mojo/src/mojo/public/cpp/system/macros.h"
 
 namespace mojo {
 
@@ -59,4 +59,4 @@ class Thread {
 
 }  // namespace mojo
 
-#endif  // MOJO_PUBLIC_CPP_UTILITY_THREAD_H_
+#endif  // THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_CPP_UTILITY_THREAD_H_

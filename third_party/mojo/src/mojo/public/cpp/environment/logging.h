@@ -9,14 +9,14 @@
 // implementation (in environment/lib) is meant to be used by any implementation
 // of the environment.
 
-#ifndef MOJO_PUBLIC_CPP_ENVIRONMENT_LOGGING_H_
-#define MOJO_PUBLIC_CPP_ENVIRONMENT_LOGGING_H_
+#ifndef THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_CPP_ENVIRONMENT_LOGGING_H_
+#define THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_CPP_ENVIRONMENT_LOGGING_H_
 
 #include <sstream>
 
-#include "mojo/public/c/environment/logger.h"
-#include "mojo/public/cpp/environment/environment.h"
-#include "mojo/public/cpp/system/macros.h"
+#include "third_party/mojo/src/mojo/public/c/environment/logger.h"
+#include "third_party/mojo/src/mojo/public/cpp/environment/environment.h"
+#include "third_party/mojo/src/mojo/public/cpp/system/macros.h"
 
 #define MOJO_LOG_STREAM(level)                                             \
   ::mojo::internal::LogMessage(MOJO_LOG_LEVEL_##level, __FILE__, __LINE__) \
@@ -87,4 +87,4 @@ struct VoidifyOstream {
 }  // namespace internal
 }  // namespace mojo
 
-#endif  // MOJO_PUBLIC_CPP_ENVIRONMENT_LOGGING_H_
+#endif  // THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_CPP_ENVIRONMENT_LOGGING_H_

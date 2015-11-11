@@ -6,17 +6,17 @@
 
 #include "base/message_loop/message_loop.h"
 #include "mojo/message_pump/message_pump_mojo.h"
-#include "mojo/public/cpp/bindings/array.h"
-#include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/bindings/lib/array_internal.h"
-#include "mojo/public/cpp/bindings/lib/array_serialization.h"
-#include "mojo/public/cpp/bindings/lib/bounds_checker.h"
-#include "mojo/public/cpp/bindings/lib/fixed_buffer.h"
-#include "mojo/public/cpp/bindings/string.h"
-#include "mojo/public/cpp/test_support/test_utils.h"
-#include "mojo/public/interfaces/bindings/tests/test_structs.mojom.h"
-#include "mojo/public/interfaces/bindings/tests/test_unions.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/array.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/lib/array_internal.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/lib/array_serialization.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/lib/bounds_checker.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/lib/fixed_buffer.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/string.h"
+#include "third_party/mojo/src/mojo/public/cpp/test_support/test_utils.h"
+#include "third_party/mojo/src/mojo/public/interfaces/bindings/tests/test_structs.mojom.h"
+#include "third_party/mojo/src/mojo/public/interfaces/bindings/tests/test_unions.mojom.h"
 
 namespace mojo {
 namespace test {

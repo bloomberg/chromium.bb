@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/public/cpp/bindings/lib/message_builder.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/lib/message_builder.h"
 
-#include "mojo/public/cpp/bindings/lib/bindings_serialization.h"
-#include "mojo/public/cpp/bindings/message.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/lib/bindings_serialization.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/message.h"
 
 namespace mojo {
 namespace internal {

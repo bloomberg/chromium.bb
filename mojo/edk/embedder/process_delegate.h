@@ -6,7 +6,7 @@
 #define MOJO_EDK_EMBEDDER_PROCESS_DELEGATE_H_
 
 #include "mojo/edk/system/system_impl_export.h"
-#include "mojo/public/cpp/system/macros.h"
+#include "third_party/mojo/src/mojo/public/cpp/system/macros.h"
 
 namespace mojo {
 namespace edk {

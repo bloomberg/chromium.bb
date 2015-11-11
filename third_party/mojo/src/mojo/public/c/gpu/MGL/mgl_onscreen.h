@@ -4,12 +4,12 @@
 
 // Note: This header should be compilable as C.
 
-#ifndef MOJO_PUBLIC_C_GPU_MGL_MGL_ONSCREEN_H_
-#define MOJO_PUBLIC_C_GPU_MGL_MGL_ONSCREEN_H_
+#ifndef THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_C_GPU_MGL_MGL_ONSCREEN_H_
+#define THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_C_GPU_MGL_MGL_ONSCREEN_H_
 
 #include <stdint.h>
 
-#include "mojo/public/c/gpu/MGL/mgl_types.h"
+#include "third_party/mojo/src/mojo/public/c/gpu/MGL/mgl_types.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -26,4 +26,4 @@ void MGLSwapBuffers();
 }  // extern "C"
 #endif
 
-#endif  // MOJO_PUBLIC_C_GPU_MGL_MGL_ONSCREEN_H_
+#endif  // THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_C_GPU_MGL_MGL_ONSCREEN_H_

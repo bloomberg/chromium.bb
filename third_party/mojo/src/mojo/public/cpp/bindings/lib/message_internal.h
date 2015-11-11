@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_PUBLIC_CPP_BINDINGS_LIB_MESSAGE_INTERNAL_H_
-#define MOJO_PUBLIC_CPP_BINDINGS_LIB_MESSAGE_INTERNAL_H_
+#ifndef THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_CPP_BINDINGS_LIB_MESSAGE_INTERNAL_H_
+#define THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_CPP_BINDINGS_LIB_MESSAGE_INTERNAL_H_
 
-#include "mojo/public/cpp/bindings/lib/bindings_internal.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/lib/bindings_internal.h"
 
 namespace mojo {
 namespace internal {
@@ -47,4 +47,4 @@ static_assert(sizeof(MessageData) == sizeof(MessageHeader),
 }  // namespace internal
 }  // namespace mojo
 
-#endif  // MOJO_PUBLIC_CPP_BINDINGS_LIB_MESSAGE_INTERNAL_H_
+#endif  // THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_CPP_BINDINGS_LIB_MESSAGE_INTERNAL_H_

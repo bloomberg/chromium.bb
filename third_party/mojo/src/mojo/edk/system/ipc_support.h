@@ -10,7 +10,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/task_runner.h"
-#include "mojo/public/cpp/system/macros.h"
 #include "third_party/mojo/src/mojo/edk/embedder/process_type.h"
 #include "third_party/mojo/src/mojo/edk/embedder/scoped_platform_handle.h"
 #include "third_party/mojo/src/mojo/edk/embedder/slave_info.h"
@@ -18,6 +17,7 @@
 #include "third_party/mojo/src/mojo/edk/system/connection_identifier.h"
 #include "third_party/mojo/src/mojo/edk/system/process_identifier.h"
 #include "third_party/mojo/src/mojo/edk/system/system_impl_export.h"
+#include "third_party/mojo/src/mojo/public/cpp/system/macros.h"
 
 namespace mojo {
 

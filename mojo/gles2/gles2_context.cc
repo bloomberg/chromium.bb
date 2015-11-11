@@ -7,8 +7,8 @@
 #include "gpu/command_buffer/client/gles2_cmd_helper.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/client/transfer_buffer.h"
-#include "mojo/public/c/gles2/gles2.h"
-#include "mojo/public/cpp/system/core.h"
+#include "third_party/mojo/src/mojo/public/c/gles2/gles2.h"
+#include "third_party/mojo/src/mojo/public/cpp/system/core.h"
 
 namespace gles2 {
 

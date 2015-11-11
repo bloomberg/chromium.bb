@@ -13,7 +13,7 @@
 #include "mojo/edk/system/awakable.h"
 #include "mojo/edk/system/core_test_base.h"
 #include "mojo/edk/system/test_utils.h"
-#include "mojo/public/cpp/system/macros.h"
+#include "third_party/mojo/src/mojo/public/cpp/system/macros.h"
 
 namespace mojo {
 namespace edk {

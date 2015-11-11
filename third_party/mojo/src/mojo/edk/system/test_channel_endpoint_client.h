@@ -7,11 +7,11 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "mojo/public/cpp/system/macros.h"
 #include "third_party/mojo/src/mojo/edk/system/channel_endpoint.h"
 #include "third_party/mojo/src/mojo/edk/system/channel_endpoint_client.h"
 #include "third_party/mojo/src/mojo/edk/system/message_in_transit_queue.h"
 #include "third_party/mojo/src/mojo/edk/system/mutex.h"
+#include "third_party/mojo/src/mojo/public/cpp/system/macros.h"
 
 namespace base {
 class WaitableEvent;

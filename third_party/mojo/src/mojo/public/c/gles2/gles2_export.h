@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_PUBLIC_C_GLES2_GLES2_EXPORT_H_
-#define MOJO_PUBLIC_C_GLES2_GLES2_EXPORT_H_
+#ifndef THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_C_GLES2_GLES2_EXPORT_H_
+#define THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_C_GLES2_GLES2_EXPORT_H_
 
 #if defined(COMPONENT_BUILD) && defined(MOJO_USE_GLES2_IMPL)
 #if defined(WIN32)
@@ -30,4 +30,4 @@
 
 #endif  // defined(COMPONENT_BUILD) && defined(MOJO_USE_GLES2_IMPL)
 
-#endif  // MOJO_PUBLIC_C_GLES2_GLES2_EXPORT_H_
+#endif  // THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_C_GLES2_GLES2_EXPORT_H_

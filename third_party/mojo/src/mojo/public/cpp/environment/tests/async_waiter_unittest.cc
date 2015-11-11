@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/public/cpp/bindings/callback.h"
-#include "mojo/public/cpp/environment/async_waiter.h"
-#include "mojo/public/cpp/test_support/test_utils.h"
-#include "mojo/public/cpp/utility/run_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/callback.h"
+#include "third_party/mojo/src/mojo/public/cpp/environment/async_waiter.h"
+#include "third_party/mojo/src/mojo/public/cpp/test_support/test_utils.h"
+#include "third_party/mojo/src/mojo/public/cpp/utility/run_loop.h"
 
 namespace mojo {
 namespace {

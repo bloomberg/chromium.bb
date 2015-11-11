@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_PUBLIC_CPP_BINDINGS_ARRAY_H_
-#define MOJO_PUBLIC_CPP_BINDINGS_ARRAY_H_
+#ifndef THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_CPP_BINDINGS_ARRAY_H_
+#define THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_CPP_BINDINGS_ARRAY_H_
 
 #include <string.h>
 
@@ -12,11 +12,11 @@
 #include <string>
 #include <vector>
 
-#include "mojo/public/cpp/bindings/lib/array_internal.h"
-#include "mojo/public/cpp/bindings/lib/bindings_internal.h"
-#include "mojo/public/cpp/bindings/lib/template_util.h"
-#include "mojo/public/cpp/bindings/lib/value_traits.h"
-#include "mojo/public/cpp/bindings/type_converter.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/lib/array_internal.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/lib/bindings_internal.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/lib/template_util.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/lib/value_traits.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/type_converter.h"
 
 namespace mojo {
 
@@ -246,4 +246,4 @@ struct TypeConverter<std::set<E>, Array<T>> {
 
 }  // namespace mojo
 
-#endif  // MOJO_PUBLIC_CPP_BINDINGS_ARRAY_H_
+#endif  // THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_CPP_BINDINGS_ARRAY_H_

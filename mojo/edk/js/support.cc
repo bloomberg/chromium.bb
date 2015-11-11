@@ -14,7 +14,7 @@
 #include "gin/wrappable.h"
 #include "mojo/edk/js/handle.h"
 #include "mojo/edk/js/waiting_callback.h"
-#include "mojo/public/cpp/system/core.h"
+#include "third_party/mojo/src/mojo/public/cpp/system/core.h"
 
 namespace mojo {
 namespace edk {

@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_PUBLIC_CPP_TEST_SUPPORT_TEST_UTILS_H_
-#define MOJO_PUBLIC_CPP_TEST_SUPPORT_TEST_UTILS_H_
+#ifndef THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_CPP_TEST_SUPPORT_TEST_UTILS_H_
+#define THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_CPP_TEST_SUPPORT_TEST_UTILS_H_
 
 #include <string>
 
-#include "mojo/public/cpp/system/core.h"
+#include "third_party/mojo/src/mojo/public/cpp/system/core.h"
 
 namespace mojo {
 namespace test {
@@ -37,4 +37,4 @@ void IterateAndReportPerf(const char* test_name,
 }  // namespace test
 }  // namespace mojo
 
-#endif  // MOJO_PUBLIC_CPP_TEST_SUPPORT_TEST_UTILS_H_
+#endif  // THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_CPP_TEST_SUPPORT_TEST_UTILS_H_

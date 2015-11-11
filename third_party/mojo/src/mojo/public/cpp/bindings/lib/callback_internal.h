@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_PUBLIC_CPP_BINDINGS_LIB_CALLBACK_INTERNAL_H_
-#define MOJO_PUBLIC_CPP_BINDINGS_LIB_CALLBACK_INTERNAL_H_
+#ifndef THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_CPP_BINDINGS_LIB_CALLBACK_INTERNAL_H_
+#define THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_CPP_BINDINGS_LIB_CALLBACK_INTERNAL_H_
 
-#include "mojo/public/cpp/bindings/lib/template_util.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/lib/template_util.h"
 
 namespace mojo {
 class String;
@@ -50,4 +50,4 @@ struct HasCompatibleCallOperator {
 }  // namespace internal
 }  // namespace mojo
 
-#endif  // MOJO_PUBLIC_CPP_BINDINGS_LIB_CALLBACK_INTERNAL_H_
+#endif  // THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_CPP_BINDINGS_LIB_CALLBACK_INTERNAL_H_

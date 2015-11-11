@@ -4,8 +4,8 @@
 
 #include "base/memory/ref_counted.h"
 #include "mojo/edk/system/test_utils.h"
-#include "mojo/public/c/system/core.h"
-#include "mojo/public/c/system/types.h"
+#include "third_party/mojo/src/mojo/public/c/system/core.h"
+#include "third_party/mojo/src/mojo/public/c/system/types.h"
 
 namespace mojo {
 namespace edk {

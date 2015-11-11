@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_PUBLIC_CPP_UTILITY_RUN_LOOP_HANDLER_H_
-#define MOJO_PUBLIC_CPP_UTILITY_RUN_LOOP_HANDLER_H_
+#ifndef THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_CPP_UTILITY_RUN_LOOP_HANDLER_H_
+#define THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_CPP_UTILITY_RUN_LOOP_HANDLER_H_
 
-#include "mojo/public/cpp/system/core.h"
+#include "third_party/mojo/src/mojo/public/cpp/system/core.h"
 
 namespace mojo {
 
@@ -22,4 +22,4 @@ class RunLoopHandler {
 
 }  // namespace mojo
 
-#endif  // MOJO_PUBLIC_CPP_UTILITY_RUN_LOOP_HANDLER_H_
+#endif  // THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_CPP_UTILITY_RUN_LOOP_HANDLER_H_

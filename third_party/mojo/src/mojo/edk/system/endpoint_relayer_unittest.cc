@@ -7,12 +7,12 @@
 #include "base/logging.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/test_timeouts.h"
-#include "mojo/public/cpp/system/macros.h"
 #include "third_party/mojo/src/mojo/edk/system/channel_endpoint_id.h"
 #include "third_party/mojo/src/mojo/edk/system/channel_test_base.h"
 #include "third_party/mojo/src/mojo/edk/system/message_in_transit_queue.h"
 #include "third_party/mojo/src/mojo/edk/system/message_in_transit_test_utils.h"
 #include "third_party/mojo/src/mojo/edk/system/test_channel_endpoint_client.h"
+#include "third_party/mojo/src/mojo/public/cpp/system/macros.h"
 
 namespace mojo {
 namespace system {

@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_PUBLIC_TESTS_TEST_SUPPORT_PRIVATE_H_
-#define MOJO_PUBLIC_TESTS_TEST_SUPPORT_PRIVATE_H_
+#ifndef THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_TESTS_TEST_SUPPORT_PRIVATE_H_
+#define THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_TESTS_TEST_SUPPORT_PRIVATE_H_
 
 #include <stdio.h>
 
-#include "mojo/public/c/test_support/test_support.h"
+#include "third_party/mojo/src/mojo/public/c/test_support/test_support.h"
 
 namespace mojo {
 namespace test {
@@ -34,4 +34,4 @@ class MOJO_TEST_SUPPORT_EXPORT TestSupport {
 }  // namespace test
 }  // namespace mojo
 
-#endif  // MOJO_PUBLIC_TESTS_TEST_SUPPORT_PRIVATE_H_
+#endif  // THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_TESTS_TEST_SUPPORT_PRIVATE_H_

@@ -193,9 +193,6 @@ template("mojom") {
       data = process_file_template(invoker.sources, generator_js_outputs)
     }
 
-    public_configs =
-        rebase_path([ "mojo/public/build/config:mojo_sdk" ], ".", mojo_root)
-
     public_deps = rebase_path([ "mojo/public/cpp/bindings" ], ".", mojo_root)
     if (defined(invoker.sources)) {
       public_deps += [ ":${cpp_sources_target_name}" ]
@@ -256,8 +253,6 @@ template("mojom") {
         testonly = invoker.testonly
       }
       sources = process_file_template(invoker.sources, generator_cpp_outputs)
-      public_configs =
-          rebase_path([ "mojo/public/build/config:mojo_sdk" ], ".", mojo_root)
       deps = [
         ":$generator_target_name",
         "//base",

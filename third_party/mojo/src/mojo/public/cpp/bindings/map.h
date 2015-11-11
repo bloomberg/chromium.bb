@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_PUBLIC_CPP_BINDINGS_MAP_H_
-#define MOJO_PUBLIC_CPP_BINDINGS_MAP_H_
+#ifndef THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_CPP_BINDINGS_MAP_H_
+#define THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_CPP_BINDINGS_MAP_H_
 
 #include <map>
 
-#include "mojo/public/cpp/bindings/lib/map_internal.h"
-#include "mojo/public/cpp/bindings/lib/value_traits.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/lib/map_internal.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/lib/value_traits.h"
 
 namespace mojo {
 
@@ -293,4 +293,4 @@ struct TypeConverter<std::map<STLKey, STLValue>, Map<MojoKey, MojoValue>> {
 
 }  // namespace mojo
 
-#endif  // MOJO_PUBLIC_CPP_BINDINGS_MAP_H_
+#endif  // THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_CPP_BINDINGS_MAP_H_

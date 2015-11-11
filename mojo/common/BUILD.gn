@@ -31,6 +31,10 @@ component("common_base") {
 
   defines = [ "MOJO_COMMON_IMPLEMENTATION" ]
 
+  public_deps = [
+    "//third_party/mojo/src/mojo/public/cpp/system",
+  ]
+
   deps = [
     "//base",
     "//base/third_party/dynamic_annotations",
@@ -39,7 +43,6 @@ component("common_base") {
     "//third_party/mojo/src/mojo/public/c/system:for_component",
     "//third_party/mojo/src/mojo/public/cpp/bindings",
     "//third_party/mojo/src/mojo/public/cpp/environment",
-    "//third_party/mojo/src/mojo/public/cpp/system",
   ]
 }
 

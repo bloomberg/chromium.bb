@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_PUBLIC_CPP_UTILITY_RUN_LOOP_H_
-#define MOJO_PUBLIC_CPP_UTILITY_RUN_LOOP_H_
+#ifndef THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_CPP_UTILITY_RUN_LOOP_H_
+#define THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_CPP_UTILITY_RUN_LOOP_H_
 
 #include <map>
 #include <queue>
 
-#include "mojo/public/cpp/bindings/callback.h"
-#include "mojo/public/cpp/system/core.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/callback.h"
+#include "third_party/mojo/src/mojo/public/cpp/system/core.h"
 
 namespace mojo {
 
@@ -153,4 +153,4 @@ class RunLoop {
 
 }  // namespace mojo
 
-#endif  // MOJO_PUBLIC_CPP_UTILITY_RUN_LOOP_H_
+#endif  // THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_CPP_UTILITY_RUN_LOOP_H_

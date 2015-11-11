@@ -8,12 +8,12 @@
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "mojo/public/c/system/macros.h"
 #include "third_party/mojo/src/mojo/edk/embedder/platform_support.h"
 #include "third_party/mojo/src/mojo/edk/system/channel.h"
 #include "third_party/mojo/src/mojo/edk/system/configuration.h"
 #include "third_party/mojo/src/mojo/edk/system/memory.h"
 #include "third_party/mojo/src/mojo/edk/system/options_validation.h"
+#include "third_party/mojo/src/mojo/public/c/system/macros.h"
 
 namespace mojo {
 namespace system {

@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_PUBLIC_PLATFORM_NATIVE_MGL_THUNKS_H_
-#define MOJO_PUBLIC_PLATFORM_NATIVE_MGL_THUNKS_H_
+#ifndef THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_PLATFORM_NATIVE_MGL_THUNKS_H_
+#define THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_PLATFORM_NATIVE_MGL_THUNKS_H_
 
 #include <stddef.h>
 
-#include "mojo/public/c/gpu/MGL/mgl.h"
+#include "third_party/mojo/src/mojo/public/c/gpu/MGL/mgl.h"
 
 // Structure used to bind the interface which manipulates MGL contexts to a
 // DSO to theose of the embedder.
@@ -53,4 +53,4 @@ inline struct MGLThunks MojoMakeMGLThunks() {
 // The contents of |mgl_thunks| are copied.
 typedef size_t (*MojoSetMGLThunksFn)(const struct MGLThunks* mgl_thunks);
 
-#endif  // MOJO_PUBLIC_PLATFORM_NATIVE_MGL_THUNKS_H_
+#endif  // THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_PLATFORM_NATIVE_MGL_THUNKS_H_

@@ -9,12 +9,12 @@
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task_runner.h"
-#include "mojo/public/cpp/system/macros.h"
 #include "third_party/mojo/src/mojo/edk/embedder/master_process_delegate.h"
 #include "third_party/mojo/src/mojo/edk/embedder/process_delegate.h"
 #include "third_party/mojo/src/mojo/edk/embedder/process_type.h"
 #include "third_party/mojo/src/mojo/edk/embedder/scoped_platform_handle.h"
 #include "third_party/mojo/src/mojo/edk/embedder/slave_process_delegate.h"
+#include "third_party/mojo/src/mojo/public/cpp/system/macros.h"
 
 namespace mojo {
 namespace test {

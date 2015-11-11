@@ -11,7 +11,7 @@
 #include "mojo/edk/system/dispatcher.h"
 #include "mojo/edk/system/raw_channel.h"
 #include "mojo/edk/system/system_impl_export.h"
-#include "mojo/public/cpp/system/macros.h"
+#include "third_party/mojo/src/mojo/public/cpp/system/macros.h"
 
 namespace mojo {
 namespace edk {

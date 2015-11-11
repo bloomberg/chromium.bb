@@ -49,9 +49,6 @@ component("chromium_impl") {
 
   defines = [ "MOJO_ENVIRONMENT_IMPL_IMPLEMENTATION" ]
 
-  public_configs =
-      [ "//third_party/mojo/src/mojo/public/build/config:mojo_sdk" ]
-
   deps = [
     "//base",
     "//base/third_party/dynamic_annotations",

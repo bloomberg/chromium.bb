@@ -4,8 +4,8 @@
 
 #include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/application/public/cpp/application_runner.h"
-#include "mojo/public/c/system/main.h"
 #include "mojo/services/tracing/tracing_app.h"
+#include "third_party/mojo/src/mojo/public/c/system/main.h"
 
 MojoResult MojoMain(MojoHandle shell_handle) {
   mojo::ApplicationRunner runner(new tracing::TracingApp);

@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/public/cpp/bindings/lib/message_header_validator.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/lib/message_header_validator.h"
 
-#include "mojo/public/cpp/bindings/lib/bounds_checker.h"
-#include "mojo/public/cpp/bindings/lib/validation_errors.h"
-#include "mojo/public/cpp/bindings/lib/validation_util.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/lib/bounds_checker.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/lib/validation_errors.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/lib/validation_util.h"
 
 namespace mojo {
 namespace internal {

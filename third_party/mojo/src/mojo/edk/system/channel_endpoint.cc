@@ -6,9 +6,9 @@
 
 #include "base/logging.h"
 #include "base/threading/platform_thread.h"
-#include "mojo/public/cpp/system/macros.h"
 #include "third_party/mojo/src/mojo/edk/system/channel.h"
 #include "third_party/mojo/src/mojo/edk/system/channel_endpoint_client.h"
+#include "third_party/mojo/src/mojo/public/cpp/system/macros.h"
 
 namespace mojo {
 namespace system {

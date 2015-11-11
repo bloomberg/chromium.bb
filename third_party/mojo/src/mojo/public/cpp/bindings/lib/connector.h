@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_PUBLIC_CPP_BINDINGS_LIB_CONNECTOR_H_
-#define MOJO_PUBLIC_CPP_BINDINGS_LIB_CONNECTOR_H_
+#ifndef THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_CPP_BINDINGS_LIB_CONNECTOR_H_
+#define THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_CPP_BINDINGS_LIB_CONNECTOR_H_
 
-#include "mojo/public/c/environment/async_waiter.h"
-#include "mojo/public/cpp/bindings/callback.h"
-#include "mojo/public/cpp/bindings/message.h"
-#include "mojo/public/cpp/environment/environment.h"
-#include "mojo/public/cpp/system/core.h"
+#include "third_party/mojo/src/mojo/public/c/environment/async_waiter.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/callback.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/message.h"
+#include "third_party/mojo/src/mojo/public/cpp/environment/environment.h"
+#include "third_party/mojo/src/mojo/public/cpp/system/core.h"
 
 namespace mojo {
 class ErrorHandler;
@@ -139,4 +139,4 @@ class Connector : public MessageReceiver {
 }  // namespace internal
 }  // namespace mojo
 
-#endif  // MOJO_PUBLIC_CPP_BINDINGS_LIB_CONNECTOR_H_
+#endif  // THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_CPP_BINDINGS_LIB_CONNECTOR_H_

@@ -4,21 +4,21 @@
 
 // This tests the performance of the C API.
 
-#include "mojo/public/c/system/core.h"
+#include "third_party/mojo/src/mojo/public/c/system/core.h"
 
 #include <assert.h>
 #include <stdint.h>
 #include <stdio.h>
 
-#include "mojo/public/cpp/system/macros.h"
-#include "mojo/public/cpp/test_support/test_support.h"
-#include "mojo/public/cpp/test_support/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/mojo/src/mojo/public/cpp/system/macros.h"
+#include "third_party/mojo/src/mojo/public/cpp/test_support/test_support.h"
+#include "third_party/mojo/src/mojo/public/cpp/test_support/test_utils.h"
 
 // TODO(vtl): (here and below) crbug.com/342893
 #if !defined(WIN32)
 #include <time.h>
-#include "mojo/public/cpp/utility/thread.h"
+#include "third_party/mojo/src/mojo/public/cpp/utility/thread.h"
 #endif  // !defined(WIN32)
 
 namespace {

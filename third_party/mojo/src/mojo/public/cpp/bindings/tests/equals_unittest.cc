@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/public/cpp/bindings/lib/value_traits.h"
-#include "mojo/public/interfaces/bindings/tests/test_structs.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/lib/value_traits.h"
+#include "third_party/mojo/src/mojo/public/interfaces/bindings/tests/test_structs.mojom.h"
 
 namespace mojo {
 namespace test {

@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/public/platform/native/gles2_thunks.h"
+#include "third_party/mojo/src/mojo/public/platform/native/gles2_thunks.h"
 
 #include <assert.h>
 
-#include "mojo/public/platform/native/thunk_export.h"
+#include "third_party/mojo/src/mojo/public/platform/native/thunk_export.h"
 
 extern "C" {
 

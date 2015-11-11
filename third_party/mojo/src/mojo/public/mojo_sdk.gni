@@ -74,8 +74,7 @@ template("mojo_sdk_source_set") {
       libs = invoker.libs
     }
 
-    public_configs =
-        [ rebase_path("mojo/public/build/config:mojo_sdk", ".", mojo_root) ]
+    public_configs = []
     if (defined(invoker.public_configs)) {
       public_configs += invoker.public_configs
     }

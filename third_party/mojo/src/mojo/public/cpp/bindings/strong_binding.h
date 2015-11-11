@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_PUBLIC_CPP_BINDINGS_STRONG_BINDING_H_
-#define MOJO_PUBLIC_CPP_BINDINGS_STRONG_BINDING_H_
+#ifndef THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_CPP_BINDINGS_STRONG_BINDING_H_
+#define THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_CPP_BINDINGS_STRONG_BINDING_H_
 
 #include <assert.h>
 
-#include "mojo/public/c/environment/async_waiter.h"
-#include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/bindings/callback.h"
-#include "mojo/public/cpp/bindings/interface_ptr.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
-#include "mojo/public/cpp/bindings/lib/filter_chain.h"
-#include "mojo/public/cpp/bindings/lib/message_header_validator.h"
-#include "mojo/public/cpp/bindings/lib/router.h"
-#include "mojo/public/cpp/system/core.h"
+#include "third_party/mojo/src/mojo/public/c/environment/async_waiter.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/callback.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/interface_ptr.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/interface_request.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/lib/filter_chain.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/lib/message_header_validator.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/lib/router.h"
+#include "third_party/mojo/src/mojo/public/cpp/system/core.h"
 
 namespace mojo {
 
@@ -124,4 +124,4 @@ class StrongBinding {
 
 }  // namespace mojo
 
-#endif  // MOJO_PUBLIC_CPP_BINDINGS_STRONG_BINDING_H_
+#endif  // THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_CPP_BINDINGS_STRONG_BINDING_H_

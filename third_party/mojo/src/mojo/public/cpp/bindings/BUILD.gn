@@ -65,13 +65,16 @@ mojo_sdk_source_set("bindings") {
     "type_converter.h",
   ]
 
-  deps = [
+  public_deps = [
     ":callback",
+  ]
+
+  mojo_sdk_public_deps = [
+    "mojo/public/cpp/system",
   ]
 
   mojo_sdk_deps = [
     "mojo/public/cpp/environment",
-    "mojo/public/cpp/system",
     "mojo/public/interfaces/bindings:bindings_cpp_sources",
   ]
 }

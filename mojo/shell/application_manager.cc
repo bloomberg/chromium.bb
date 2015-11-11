@@ -11,12 +11,12 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/trace_event/trace_event.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/shell/application_instance.h"
 #include "mojo/shell/fetcher.h"
 #include "mojo/shell/package_manager.h"
 #include "mojo/shell/query_util.h"
 #include "mojo/shell/switches.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
 
 namespace mojo {
 namespace shell {

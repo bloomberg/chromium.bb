@@ -8,7 +8,7 @@
 // TODO(vtl): Fix no-compile tests (which are all disabled; crbug.com/105388)
 // and write some "negative" tests.
 
-#include "mojo/public/c/system/macros.h"
+#include "third_party/mojo/src/mojo/public/c/system/macros.h"
 
 #include <assert.h>
 #include <stdint.h>

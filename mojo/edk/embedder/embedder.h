@@ -13,7 +13,7 @@
 #include "base/task_runner.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/edk/system/system_impl_export.h"
-#include "mojo/public/cpp/system/message_pipe.h"
+#include "third_party/mojo/src/mojo/public/cpp/system/message_pipe.h"
 
 namespace mojo {
 namespace edk {

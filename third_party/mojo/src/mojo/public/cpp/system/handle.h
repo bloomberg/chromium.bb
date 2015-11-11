@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_PUBLIC_CPP_SYSTEM_HANDLE_H_
-#define MOJO_PUBLIC_CPP_SYSTEM_HANDLE_H_
+#ifndef THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_CPP_SYSTEM_HANDLE_H_
+#define THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_CPP_SYSTEM_HANDLE_H_
 
 #include <assert.h>
 #include <limits>
 
-#include "mojo/public/c/system/functions.h"
-#include "mojo/public/c/system/types.h"
-#include "mojo/public/cpp/system/macros.h"
+#include "third_party/mojo/src/mojo/public/c/system/functions.h"
+#include "third_party/mojo/src/mojo/public/c/system/types.h"
+#include "third_party/mojo/src/mojo/public/cpp/system/macros.h"
 
 namespace mojo {
 
@@ -48,7 +48,7 @@ namespace mojo {
 // Wrapper functions:
 //
 // We provide simple wrappers for the |Mojo...()| functions (in
-// mojo/public/c/system/core.h -- see that file for details on individual
+// third_party/mojo/src/mojo/public/c/system/core.h -- see that file for details on individual
 // functions).
 //
 // The general guideline is functions that imply ownership transfer of a handle
@@ -287,4 +287,4 @@ inline bool operator<(const Handle a, const Handle b) {
 
 }  // namespace mojo
 
-#endif  // MOJO_PUBLIC_CPP_SYSTEM_HANDLE_H_
+#endif  // THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_CPP_SYSTEM_HANDLE_H_

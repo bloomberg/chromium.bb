@@ -5,13 +5,13 @@
 #include "base/message_loop/message_loop.h"
 #include "build/build_config.h"
 #include "mojo/message_pump/message_pump_mojo.h"
-#include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/bindings/interface_ptr.h"
-#include "mojo/public/cpp/bindings/string.h"
-#include "mojo/public/cpp/system/message_pipe.h"
-#include "mojo/public/cpp/test_support/test_support.h"
-#include "mojo/public/interfaces/bindings/tests/sample_interfaces.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/interface_ptr.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/string.h"
+#include "third_party/mojo/src/mojo/public/cpp/system/message_pipe.h"
+#include "third_party/mojo/src/mojo/public/cpp/test_support/test_support.h"
+#include "third_party/mojo/src/mojo/public/interfaces/bindings/tests/sample_interfaces.mojom.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 //

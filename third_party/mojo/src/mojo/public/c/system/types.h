@@ -7,12 +7,12 @@
 //
 // Note: This header should be compilable as C.
 
-#ifndef MOJO_PUBLIC_C_SYSTEM_TYPES_H_
-#define MOJO_PUBLIC_C_SYSTEM_TYPES_H_
+#ifndef THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_C_SYSTEM_TYPES_H_
+#define THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_C_SYSTEM_TYPES_H_
 
 #include <stdint.h>
 
-#include "mojo/public/c/system/macros.h"
+#include "third_party/mojo/src/mojo/public/c/system/macros.h"
 
 // TODO(vtl): Notes: Use of undefined flags will lead to undefined behavior
 // (typically they'll be ignored), not necessarily an error.
@@ -182,4 +182,4 @@ struct MOJO_ALIGNAS(4) MojoHandleSignalsState {
 MOJO_STATIC_ASSERT(sizeof(MojoHandleSignalsState) == 8,
                    "MojoHandleSignalsState has wrong size");
 
-#endif  // MOJO_PUBLIC_C_SYSTEM_TYPES_H_
+#endif  // THIRD_PARTY_MOJO_SRC_MOJO_PUBLIC_C_SYSTEM_TYPES_H_

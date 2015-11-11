@@ -23,7 +23,7 @@
 #include "mojo/application/public/interfaces/shell.mojom.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "mojo/converters/surfaces/surfaces_type_converters.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
 #include "ui/views/mus/window_tree_host_mus.h"
 
 namespace views {

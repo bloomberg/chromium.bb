@@ -6,7 +6,7 @@
 #define MOJO_RUNNER_HOST_NATIVE_APPLICATION_SUPPORT_H_
 
 #include "base/native_library.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/interface_request.h"
 
 namespace base {
 class FilePath;

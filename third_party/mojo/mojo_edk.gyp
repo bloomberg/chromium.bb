@@ -14,13 +14,7 @@
       # latter includes mojo/edk/system/memory.h, the header from third_party
       # would incorrectly get chosen).
       '../..',
-      'src',
     ],
-    'direct_dependent_settings': {
-      'include_dirs': [
-        'src',
-      ],
-    },
   },
   'targets': [
     {

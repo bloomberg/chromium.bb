@@ -13,11 +13,11 @@
 #include "base/threading/thread.h"
 #include "base/threading/thread_checker.h"
 #include "mojo/message_pump/message_pump_mojo.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/runner/child/child_controller.mojom.h"
 #include "third_party/mojo/src/mojo/edk/embedder/embedder.h"
 #include "third_party/mojo/src/mojo/edk/embedder/platform_channel_pair.h"
 #include "third_party/mojo/src/mojo/edk/embedder/scoped_platform_handle.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
 
 namespace mojo {
 namespace runner {
