@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/options/reset_profile_settings_handler.h"
+#include "chrome/browser/ui/webui/settings/reset_settings_handler.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -23,121 +23,44 @@
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_ui.h"
-#include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_WIN)
 #include "chrome/browser/profile_resetter/triggered_profile_resetter.h"
 #include "chrome/browser/profile_resetter/triggered_profile_resetter_factory.h"
 #endif  // defined(OS_WIN)
 
-namespace options {
+namespace settings {
 
-ResetProfileSettingsHandler::ResetProfileSettingsHandler()
+ResetSettingsHandler::ResetSettingsHandler(content::WebUI* web_ui)
     : automatic_profile_resetter_(NULL),
       has_shown_confirmation_dialog_(false) {
   google_brand::GetBrand(&brandcode_);
-}
-
-ResetProfileSettingsHandler::~ResetProfileSettingsHandler() {}
-
-void ResetProfileSettingsHandler::InitializeHandler() {
-  Profile* profile = Profile::FromWebUI(web_ui());
+  Profile* profile = Profile::FromWebUI(web_ui);
   resetter_.reset(new ProfileResetter(profile));
   automatic_profile_resetter_ =
       AutomaticProfileResetterFactory::GetForBrowserContext(profile);
 }
 
-void ResetProfileSettingsHandler::InitializePage() {
-  web_ui()->CallJavascriptFunction(
-      "ResetProfileSettingsOverlay.setResettingState",
-      base::FundamentalValue(resetter_->IsActive()));
-  if (automatic_profile_resetter_ &&
-      automatic_profile_resetter_->ShouldShowResetBanner()) {
-    web_ui()->CallJavascriptFunction("ResetProfileSettingsBanner.show");
-  }
-}
-
-void ResetProfileSettingsHandler::Uninitialize() {
+ResetSettingsHandler::~ResetSettingsHandler() {
   if (has_shown_confirmation_dialog_ && automatic_profile_resetter_) {
     automatic_profile_resetter_->NotifyDidCloseWebUIResetDialog(
         false /*performed_reset*/);
   }
 }
 
-void ResetProfileSettingsHandler::GetLocalizedValues(
-    base::DictionaryValue* localized_strings) {
-  DCHECK(localized_strings);
-
-  static OptionsStringResource resources[] = {
-    { "resetProfileSettingsBannerText",
-        IDS_RESET_PROFILE_SETTINGS_BANNER_TEXT },
-    { "resetProfileSettingsCommit", IDS_RESET_PROFILE_SETTINGS_COMMIT_BUTTON },
-    { "resetProfileSettingsExplanation",
-        IDS_RESET_PROFILE_SETTINGS_EXPLANATION },
-    { "resetProfileSettingsFeedback", IDS_RESET_PROFILE_SETTINGS_FEEDBACK }
-  };
-
-  RegisterStrings(localized_strings, resources, arraysize(resources));
-  RegisterTitle(localized_strings, "resetProfileSettingsOverlay",
-                IDS_RESET_PROFILE_SETTINGS_TITLE);
-  localized_strings->SetString(
-      "resetProfileSettingsLearnMoreUrl",
-      chrome::kResetProfileSettingsLearnMoreURL);
-
-  // Set up the localized strings for the triggered profile reset overlay.
-  // The reset tool name can currently only have a custom value on Windows.
-  base::string16 reset_tool_name;
-#if defined(OS_WIN)
-  Profile* profile = Profile::FromWebUI(web_ui());
-  TriggeredProfileResetter* triggered_profile_resetter =
-      TriggeredProfileResetterFactory::GetForBrowserContext(profile);
-  // TriggeredProfileResetter instance will be nullptr for incognito profiles.
-  if (triggered_profile_resetter)
-    reset_tool_name = triggered_profile_resetter->GetResetToolName();
-#endif
-
-  if (reset_tool_name.empty()) {
-    reset_tool_name = l10n_util::GetStringUTF16(
-        IDS_TRIGGERED_RESET_PROFILE_SETTINGS_DEFAULT_TOOL_NAME);
-  }
-  localized_strings->SetString(
-      "triggeredResetProfileSettingsOverlay",
-      l10n_util::GetStringFUTF16(IDS_TRIGGERED_RESET_PROFILE_SETTINGS_TITLE,
-                                 reset_tool_name));
-  // Set the title manually since RegisterTitle() wants an id.
-  base::string16 title_string(l10n_util::GetStringFUTF16(
-      IDS_TRIGGERED_RESET_PROFILE_SETTINGS_TITLE, reset_tool_name));
-  localized_strings->SetString("triggeredResetProfileSettingsOverlay",
-                               title_string);
-  localized_strings->SetString(
-      "triggeredResetProfileSettingsOverlayTabTitle",
-      l10n_util::GetStringFUTF16(IDS_OPTIONS_TAB_TITLE,
-                                 l10n_util::GetStringUTF16(IDS_SETTINGS_TITLE),
-                                 title_string));
-  localized_strings->SetString(
-      "triggeredResetProfileSettingsExplanation",
-      l10n_util::GetStringFUTF16(
-          IDS_TRIGGERED_RESET_PROFILE_SETTINGS_EXPLANATION, reset_tool_name));
-}
-
-void ResetProfileSettingsHandler::RegisterMessages() {
-  // Setup handlers specific to this panel.
+void ResetSettingsHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("performResetProfileSettings",
-      base::Bind(&ResetProfileSettingsHandler::HandleResetProfileSettings,
+      base::Bind(&ResetSettingsHandler::HandleResetProfileSettings,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("onShowResetProfileDialog",
-      base::Bind(&ResetProfileSettingsHandler::OnShowResetProfileDialog,
+      base::Bind(&ResetSettingsHandler::OnShowResetProfileDialog,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("onHideResetProfileDialog",
-      base::Bind(&ResetProfileSettingsHandler::OnHideResetProfileDialog,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("onDismissedResetProfileSettingsBanner",
-      base::Bind(&ResetProfileSettingsHandler::
-                 OnDismissedResetProfileSettingsBanner,
+      base::Bind(&ResetSettingsHandler::OnHideResetProfileDialog,
                  base::Unretained(this)));
 }
 
-void ResetProfileSettingsHandler::HandleResetProfileSettings(
+void ResetSettingsHandler::HandleResetProfileSettings(
     const base::ListValue* value) {
   bool send_settings = false;
   bool success = value->GetBoolean(0, &send_settings);
@@ -147,7 +70,7 @@ void ResetProfileSettingsHandler::HandleResetProfileSettings(
   if (config_fetcher_ && config_fetcher_->IsActive()) {
     // Reset once the prefs are fetched.
     config_fetcher_->SetCallback(
-        base::Bind(&ResetProfileSettingsHandler::ResetProfile,
+        base::Bind(&ResetSettingsHandler::ResetProfile,
                    Unretained(this),
                    send_settings));
   } else {
@@ -155,9 +78,9 @@ void ResetProfileSettingsHandler::HandleResetProfileSettings(
   }
 }
 
-void ResetProfileSettingsHandler::OnResetProfileSettingsDone(
+void ResetSettingsHandler::OnResetProfileSettingsDone(
     bool send_feedback) {
-  web_ui()->CallJavascriptFunction("ResetProfileSettingsOverlay.doneResetting");
+  web_ui()->CallJavascriptFunction("SettingsResetPage.doneResetting");
   if (send_feedback && setting_snapshot_) {
     Profile* profile = Profile::FromWebUI(web_ui());
     ResettableSettingsSnapshot current_snapshot(profile);
@@ -179,13 +102,13 @@ void ResetProfileSettingsHandler::OnResetProfileSettingsDone(
   }
 }
 
-void ResetProfileSettingsHandler::OnShowResetProfileDialog(
+void ResetSettingsHandler::OnShowResetProfileDialog(
     const base::ListValue* value) {
   if (!resetter_->IsActive()) {
     setting_snapshot_.reset(
         new ResettableSettingsSnapshot(Profile::FromWebUI(web_ui())));
     setting_snapshot_->RequestShortcuts(base::Bind(
-        &ResetProfileSettingsHandler::UpdateFeedbackUI, AsWeakPtr()));
+        &ResetSettingsHandler::UpdateFeedbackUI, AsWeakPtr()));
     UpdateFeedbackUI();
   }
 
@@ -196,31 +119,25 @@ void ResetProfileSettingsHandler::OnShowResetProfileDialog(
   if (brandcode_.empty())
     return;
   config_fetcher_.reset(new BrandcodeConfigFetcher(
-      base::Bind(&ResetProfileSettingsHandler::OnSettingsFetched,
+      base::Bind(&ResetSettingsHandler::OnSettingsFetched,
                  Unretained(this)),
       GURL("https://tools.google.com/service/update2"),
       brandcode_));
 }
 
-void ResetProfileSettingsHandler::OnHideResetProfileDialog(
+void ResetSettingsHandler::OnHideResetProfileDialog(
     const base::ListValue* value) {
   if (!resetter_->IsActive())
     setting_snapshot_.reset();
 }
 
-void ResetProfileSettingsHandler::OnDismissedResetProfileSettingsBanner(
-    const base::ListValue* args) {
-  if (automatic_profile_resetter_)
-    automatic_profile_resetter_->NotifyDidCloseWebUIResetBanner();
-}
-
-void ResetProfileSettingsHandler::OnSettingsFetched() {
+void ResetSettingsHandler::OnSettingsFetched() {
   DCHECK(config_fetcher_);
   DCHECK(!config_fetcher_->IsActive());
   // The master prefs is fetched. We are waiting for user pressing 'Reset'.
 }
 
-void ResetProfileSettingsHandler::ResetProfile(bool send_settings) {
+void ResetSettingsHandler::ResetProfile(bool send_settings) {
   DCHECK(resetter_);
   DCHECK(!resetter_->IsActive());
 
@@ -241,14 +158,14 @@ void ResetProfileSettingsHandler::ResetProfile(bool send_settings) {
       ProfileResetter::ALL,
       default_settings.Pass(),
       send_settings,
-      base::Bind(&ResetProfileSettingsHandler::OnResetProfileSettingsDone,
+      base::Bind(&ResetSettingsHandler::OnResetProfileSettingsDone,
                  AsWeakPtr(),
                  send_settings));
   content::RecordAction(base::UserMetricsAction("ResetProfile"));
   UMA_HISTOGRAM_BOOLEAN("ProfileReset.SendFeedback", send_settings);
 }
 
-void ResetProfileSettingsHandler::UpdateFeedbackUI() {
+void ResetSettingsHandler::UpdateFeedbackUI() {
   if (!setting_snapshot_)
     return;
   scoped_ptr<base::ListValue> list = GetReadableFeedbackForSnapshot(
@@ -257,8 +174,7 @@ void ResetProfileSettingsHandler::UpdateFeedbackUI() {
   base::DictionaryValue feedback_info;
   feedback_info.Set("feedbackInfo", list.release());
   web_ui()->CallJavascriptFunction(
-      "ResetProfileSettingsOverlay.setFeedbackInfo",
-      feedback_info);
+      "SettingsResetPage.setFeedbackInfo", feedback_info);
 }
 
-}  // namespace options
+}  // namespace settings

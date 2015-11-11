@@ -21,25 +21,56 @@
 Polymer({
   is: 'settings-reset-page',
 
+  properties: {
+    feedbackInfo_: String,
+  },
+
+  attached: function() {
+    cr.define('SettingsResetPage', function() {
+      return {
+        doneResetting: function() {
+          this.$.resetSpinner.active = false;
+          this.$.resetDialog.close();
+        }.bind(this),
+
+        setFeedbackInfo: function(data) {
+          this.set('feedbackInfo_', data.feedbackInfo);
+          this.async(function() {
+            this.$.resetDialog.center();
+          });
+        }.bind(this),
+      };
+    }.bind(this));
+  },
+
   /** @private */
   onShowDialog_: function() {
     this.$.resetDialog.open();
+    chrome.send('onShowResetProfileDialog');
   },
 
   /** @private */
   onCancelTap_: function() {
     this.$.resetDialog.close();
+    chrome.send('onHideResetProfileDialog');
   },
 
   /** @private */
   onResetTap_: function() {
-    // TODO(dpapad): Set up C++ handlers and figure out when it is OK to close
-    // the dialog.
-    this.$.resetDialog.close();
+    this.$.resetSpinner.active = true;
+    chrome.send('performResetProfileSettings', [this.$.sendSettings.checked]);
   },
 
   /** @private */
   onLearnMoreTap_: function() {
     window.open(loadTimeData.getString('resetPageLearnMoreUrl'));
+  },
+
+  /** @private */
+  onSendSettingsChange_: function() {
+    // TODO(dpapad): Update how settings info is surfaced when final mocks
+    // exist.
+    this.$.settings.hidden = !this.$.sendSettings.checked;
+    this.$.resetDialog.center();
   }
 });
