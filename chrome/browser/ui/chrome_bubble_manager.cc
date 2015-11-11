@@ -26,6 +26,9 @@ enum BubbleType {
   // Extension-related bubbles:
   BUBBLE_TYPE_EXTENSION_INSTALLED = 10,  // Displayed after installing.
 
+  // Translation-related bubbles:
+  BUBBLE_TYPE_TRANSLATE = 20,  // Displays a request to translate a page.
+
   // Upper boundary for metrics.
   BUBBLE_TYPE_MAX,
 };
@@ -40,6 +43,8 @@ static int GetBubbleId(BubbleReference bubble) {
     bubble_type = BUBBLE_TYPE_MOCK;
   else if (bubble->GetName().compare("ExtensionInstalled") == 0)
     bubble_type = BUBBLE_TYPE_EXTENSION_INSTALLED;
+  else if (bubble->GetName().compare("TranslateBubble") == 0)
+    bubble_type = BUBBLE_TYPE_TRANSLATE;
 
   DCHECK_NE(bubble_type, BUBBLE_TYPE_UNKNOWN);
   DCHECK_NE(bubble_type, BUBBLE_TYPE_MAX);
