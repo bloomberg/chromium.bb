@@ -95,6 +95,7 @@ class RecordInfo {
   bool IsOnlyPlacementNewable();
   bool IsGCMixinInstance();
   bool IsEagerlyFinalized();
+  bool IsGCRefCounted();
 
   bool HasDefinition();
 

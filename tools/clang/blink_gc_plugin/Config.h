@@ -138,6 +138,11 @@ class Config {
            name == "ThreadSafeRefCountedGarbageCollected";
   }
 
+  static bool IsGCRefCountedBase(const std::string& name) {
+    return name == "RefCountedGarbageCollected" ||
+           name == "ThreadSafeRefCountedGarbageCollected";
+  }
+
   static bool IsGCBase(const std::string& name) {
     return name == "GarbageCollected" ||
            IsGCFinalizedBase(name) ||

@@ -107,7 +107,13 @@ void CheckFieldsVisitor::AtValue(Value* edge) {
     return;
   }
 
-  if (Parent()->IsRawPtr() || Parent()->IsRefPtr() || Parent()->IsOwnPtr()) {
+  if (Parent()->IsRawPtr() || Parent()->IsOwnPtr()) {
+    invalid_fields_.push_back(std::make_pair(
+        current_, InvalidSmartPtr(Parent())));
+    return;
+  }
+
+  if (Parent()->IsRefPtr() && !edge->value()->IsGCRefCounted()) {
     invalid_fields_.push_back(std::make_pair(
         current_, InvalidSmartPtr(Parent())));
     return;

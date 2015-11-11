@@ -8,4 +8,6 @@ namespace blink {
 
 void HeapObject::trace(Visitor*) { }
 
+void RefHeapObject::trace(Visitor*) { }
+
 }
