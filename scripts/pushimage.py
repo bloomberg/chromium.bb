@@ -151,12 +151,37 @@ class InputInsns(object):
     """
     return self.SplitCfgField(self.cfg.get('insns', 'channel'))
 
-  def GetKeysets(self):
-    """Return the list of keysets to sign for this board."""
+  def GetKeysets(self, insns_merge=None):
+    """Return the list of keysets to sign for this board.
+
+    Args:
+      insns_merge: The additional section to look at over [insns].
+    """
+    # First load the default value from [insns.keyset] if available.
+    sections = ['insns']
+    # Then overlay the [insns.xxx.keyset] if requested.
+    if insns_merge is not None:
+      sections += [insns_merge]
+
+    keyset = ''
+    for section in sections:
+      try:
+        keyset = self.cfg.get(section, 'keyset')
+      except (ConfigParser.NoSectionError, ConfigParser.NoOptionError):
+        pass
+
     # We do not perturb the order (e.g. using sorted() or making a set())
     # because we want the behavior stable, and we want the input insns to
     # explicitly control the order (since it has an impact on naming).
-    return self.SplitCfgField(self.cfg.get('insns', 'keyset'))
+    return self.SplitCfgField(keyset)
+
+  def GetAltInsnSets(self):
+    """Return the list of alternative insn sections."""
+    # We do not perturb the order (e.g. using sorted() or making a set())
+    # because we want the behavior stable, and we want the input insns to
+    # explicitly control the order (since it has an impact on naming).
+    ret = [x for x in self.cfg.sections() if x.startswith('insns.')]
+    return ret if ret else [None]
 
   @staticmethod
   def CopyConfigParser(config):
@@ -176,8 +201,14 @@ class InputInsns(object):
 
     return ret
 
-  def OutputInsns(self, output_file, sect_insns, sect_general):
+  def OutputInsns(self, output_file, sect_insns, sect_general,
+                  insns_merge=None):
     """Generate the output instruction file for sending to the signer.
+
+    The override order is (later has precedence):
+      [insns]
+      [insns_merge]  (should be named "insns.xxx")
+      sect_insns
 
     Note: The format of the instruction file pushimage outputs (and the signer
     reads) is not exactly the same as the instruction file pushimage reads.
@@ -186,9 +217,16 @@ class InputInsns(object):
       output_file: The file to write the new instruction file to.
       sect_insns: Items to set/override in the [insns] section.
       sect_general: Items to set/override in the [general] section.
+      insns_merge: The alternative insns.xxx section to merge.
     """
     # Create a copy so we can clobber certain fields.
     config = self.CopyConfigParser(self.cfg)
+    sect_insns = sect_insns.copy()
+
+    # Merge in the alternative insns section if need be.
+    if insns_merge is not None:
+      for k, v in config.items(insns_merge):
+        sect_insns.setdefault(k, v)
 
     # Clear channel entry in instructions file, ensuring we only get
     # one channel for the signer to look at.  Then provide all the
@@ -199,6 +237,10 @@ class InputInsns(object):
         config.add_section(sect)
       for k, v in fields.iteritems():
         config.set(sect, k, v)
+
+    # Now prune the alternative sections.
+    for alt in self.GetAltInsnSets():
+      config.remove_section(alt)
 
     output = cStringIO.StringIO()
     config.write(output)
@@ -468,48 +510,51 @@ def PushImage(src_path, board, versionrev=None, profile=None, priority=50,
                      gs_artifact_path)
         continue
 
-      # Figure out which keysets have been requested for this type.  We sort the
-      # forced set so tests/runtime behavior is stable, and because we need/want
-      # list since we'll be indexing it below w/multiple keysets.
-      keysets = sorted(force_keysets)
-      if not keysets:
-        keysets = input_insns.GetKeysets()
+      first_image = True
+      for alt_insn_set in input_insns.GetAltInsnSets():
+        # Figure out which keysets have been requested for this type.
+        # We sort the forced set so tests/runtime behavior is stable.
+        keysets = sorted(force_keysets)
         if not keysets:
-          logging.warning('Skipping %s image signing due to no keysets',
-                          image_type)
+          keysets = input_insns.GetKeysets(insns_merge=alt_insn_set)
+          if not keysets:
+            logging.warning('Skipping %s image signing due to no keysets',
+                            image_type)
 
-      for keyset in keysets:
-        sect_insns['keyset'] = keyset
+        for keyset in keysets:
+          sect_insns['keyset'] = keyset
 
-        # Generate the insn file for this artifact that the signer will use,
-        # and flag it for signing.
-        with tempfile.NamedTemporaryFile(
-            bufsize=0, prefix='pushimage.insns.') as insns_path:
-          input_insns.OutputInsns(insns_path.name, sect_insns, sect_general)
+          # Generate the insn file for this artifact that the signer will use,
+          # and flag it for signing.
+          with tempfile.NamedTemporaryFile(
+              bufsize=0, prefix='pushimage.insns.') as insns_path:
+            input_insns.OutputInsns(insns_path.name, sect_insns, sect_general,
+                                    insns_merge=alt_insn_set)
 
-          gs_insns_path = '%s/%s' % (dst_path, dst_name)
-          if keyset != keysets[0]:
-            gs_insns_path += '-%s' % keyset
-          gs_insns_path += '.instructions'
+            gs_insns_path = '%s/%s' % (dst_path, dst_name)
+            if not first_image:
+              gs_insns_path += '-%s' % keyset
+            first_image = False
+            gs_insns_path += '.instructions'
 
-          try:
-            ctx.Copy(insns_path.name, gs_insns_path)
-          except gs.GSContextException:
-            unknown_error[0] = True
-            logging.error('Unknown error while uploading insns %s',
-                          gs_insns_path, exc_info=True)
-            continue
+            try:
+              ctx.Copy(insns_path.name, gs_insns_path)
+            except gs.GSContextException:
+              unknown_error[0] = True
+              logging.error('Unknown error while uploading insns %s',
+                            gs_insns_path, exc_info=True)
+              continue
 
-          try:
-            MarkImageToBeSigned(ctx, tbs_base, gs_insns_path, priority)
-          except gs.GSContextException:
-            unknown_error[0] = True
-            logging.error('Unknown error while marking for signing %s',
-                          gs_insns_path, exc_info=True)
-            continue
-          logging.info('Signing %s image with keyset %s at %s', image_type,
-                       keyset, gs_insns_path)
-          instruction_urls.setdefault(channel, []).append(gs_insns_path)
+            try:
+              MarkImageToBeSigned(ctx, tbs_base, gs_insns_path, priority)
+            except gs.GSContextException:
+              unknown_error[0] = True
+              logging.error('Unknown error while marking for signing %s',
+                            gs_insns_path, exc_info=True)
+              continue
+            logging.info('Signing %s image with keyset %s at %s', image_type,
+                         keyset, gs_insns_path)
+            instruction_urls.setdefault(channel, []).append(gs_insns_path)
 
   if unknown_error[0]:
     raise PushError('hit some unknown error(s)', instruction_urls)

@@ -74,6 +74,7 @@ create_nplusone = true
 """
 
     insns = pushimage.InputInsns('test.board')
+    self.assertEqual(insns.GetAltInsnSets(), [None])
     m = self.PatchObject(osutils, 'WriteFile')
     insns.OutputInsns('/bogus', {}, {})
     self.assertTrue(m.called)
@@ -110,6 +111,57 @@ config_board = test.board
     self.assertTrue(m.called)
     content = m.call_args_list[0][0][1]
     self.assertEqual(content.rstrip(), exp_content.rstrip())
+
+  def testOutputInsnsMergeAlts(self):
+    """Verify handling of alternative insns.xxx sections"""
+    TEMPLATE_CONTENT = """[insns]
+channel = %(channel)s
+chromeos_shell = false
+ensure_no_password = true
+firmware_update = true
+security_checks = true
+create_nplusone = true
+override = sect_insns
+keyset = %(keyset)s
+%(extra)s
+[general]
+board = board
+config_board = test.board
+"""
+
+    exp_alts = ['insns.one', 'insns.two', 'insns.hotsoup']
+    exp_fields = {
+        'one': {'channel': 'dev canary', 'keyset': 'OneKeyset', 'extra': ''},
+        'two': {'channel': 'best', 'keyset': 'TwoKeyset', 'extra': ''},
+        'hotsoup': {
+            'channel': 'dev canary',
+            'keyset': 'ColdKeyset',
+            'extra': 'soup = cheddar\n',
+        },
+    }
+
+    # Make sure this overrides the insn sections.
+    sect_insns = {
+        'override': 'sect_insns',
+    }
+    sect_insns_copy = sect_insns.copy()
+    sect_general = {
+        'config_board': 'test.board',
+        'board': 'board',
+    }
+
+    insns = pushimage.InputInsns('test.multi')
+    self.assertEqual(insns.GetAltInsnSets(), exp_alts)
+    m = self.PatchObject(osutils, 'WriteFile')
+
+    for alt in exp_alts:
+      m.reset_mock()
+      insns.OutputInsns('/a/file', sect_insns, sect_general, insns_merge=alt)
+      self.assertEqual(sect_insns, sect_insns_copy)
+      self.assertTrue(m.called)
+      content = m.call_args_list[0][0][1]
+      exp_content = TEMPLATE_CONTENT % exp_fields[alt[6:]]
+      self.assertEqual(content.rstrip(), exp_content.rstrip())
 
 
 class MarkImageToBeSignedTest(gs_unittest.AbstractGSContextTest):
@@ -294,6 +346,30 @@ class PushImageTests(gs_unittest.AbstractGSContextTest):
     with mock.patch.object(gs.GSContext, 'Exists', return_value=True):
       urls = pushimage.PushImage('/src', 'test.board', 'R34-5126.0.0',
                                  force_keysets=('key1', 'key2', 'key3'))
+    self.assertEqual(urls, EXPECTED)
+
+  def testMultipleAltInsns(self):
+    """Verify behavior when processing an insn w/multiple insn overlays"""
+    EXPECTED = {
+        'canary': [
+            ('gs://chromeos-releases/canary-channel/test.multi/1.0.0/'
+             'ChromeOS-recovery-R1-1.0.0-test.multi.instructions'),
+            ('gs://chromeos-releases/canary-channel/test.multi/1.0.0/'
+             'ChromeOS-recovery-R1-1.0.0-test.multi-TwoKeyset.instructions'),
+            ('gs://chromeos-releases/canary-channel/test.multi/1.0.0/'
+             'ChromeOS-recovery-R1-1.0.0-test.multi-ColdKeyset.instructions'),
+        ],
+        'dev': [
+            ('gs://chromeos-releases/dev-channel/test.multi/1.0.0/'
+             'ChromeOS-recovery-R1-1.0.0-test.multi.instructions'),
+            ('gs://chromeos-releases/dev-channel/test.multi/1.0.0/'
+             'ChromeOS-recovery-R1-1.0.0-test.multi-TwoKeyset.instructions'),
+            ('gs://chromeos-releases/dev-channel/test.multi/1.0.0/'
+             'ChromeOS-recovery-R1-1.0.0-test.multi-ColdKeyset.instructions'),
+        ],
+    }
+    with mock.patch.object(gs.GSContext, 'Exists', return_value=True):
+      urls = pushimage.PushImage('/src', 'test.multi', 'R1-1.0.0')
     self.assertEqual(urls, EXPECTED)
 
 
