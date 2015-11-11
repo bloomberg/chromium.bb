@@ -1228,8 +1228,13 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
 
   v8_sampling_profiler_.reset(new V8SamplingProfiler());
 
-  if (GetContentClient()->renderer()->RunIdleHandlerWhenWidgetsHidden())
+  if (GetContentClient()->renderer()->RunIdleHandlerWhenWidgetsHidden()) {
     ScheduleIdleHandler(kLongIdleHandlerDelayMs);
+  } else {
+    // If we do not track widget visibility, then assume conservatively that
+    // the isolate is in background. This reduces memory usage.
+    isolate->IsolateInBackgroundNotification();
+  }
 
   renderer_scheduler_->SetTimerQueueSuspensionWhenBackgroundedEnabled(
       GetContentClient()
@@ -1996,18 +2001,19 @@ void RenderThreadImpl::WidgetRestored() {
 }
 
 void RenderThreadImpl::OnRendererHidden() {
-  blink::mainThreadIsolate()->IsolateInBackgroundNotification();
   // TODO(rmcilroy): Remove IdleHandler and replace it with an IdleTask
   // scheduled by the RendererScheduler - http://crbug.com/469210.
-  if (GetContentClient()->renderer()->RunIdleHandlerWhenWidgetsHidden())
-    ScheduleIdleHandler(kInitialIdleHandlerDelayMs);
+  if (!GetContentClient()->renderer()->RunIdleHandlerWhenWidgetsHidden())
+    return;
+  ScheduleIdleHandler(kInitialIdleHandlerDelayMs);
+  blink::mainThreadIsolate()->IsolateInBackgroundNotification();
 }
 
 void RenderThreadImpl::OnRendererVisible() {
-  blink::mainThreadIsolate()->IsolateInForegroundNotification();
   if (!GetContentClient()->renderer()->RunIdleHandlerWhenWidgetsHidden())
     return;
   ScheduleIdleHandler(kLongIdleHandlerDelayMs);
+  blink::mainThreadIsolate()->IsolateInForegroundNotification();
 }
 
 void RenderThreadImpl::ReleaseFreeMemory() {
