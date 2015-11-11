@@ -17,15 +17,23 @@
 #include "components/dom_distiller/core/dom_distiller_switches.h"
 #include "components/dom_distiller/core/url_constants.h"
 
+#if defined(ENABLE_PRINT_PREVIEW)
+#include "chrome/browser/ui/webui/print_preview/print_preview_distiller.h"
+#endif  // defined(ENABLE_PRINT_PREVIEW)
+
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/dom_distiller/distiller_ui_handle_android.h"
 #endif  // defined(OS_ANDROID)
 
 void RegisterDomDistillerViewerSource(Profile* profile) {
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kEnableDomDistiller) ||
-      !command_line.HasSwitch(switches::kDisablePrintPreviewSimplify)) {
+  bool enabled_distiller = base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableDomDistiller);
+#if defined(ENABLE_PRINT_PREVIEW)
+  if (PrintPreviewDistiller::IsEnabled())
+    enabled_distiller = true;
+#endif  // defined(ENABLE_PRINT_PREVIEW)
+
+  if (enabled_distiller) {
     dom_distiller::DomDistillerServiceFactory* dom_distiller_service_factory =
         dom_distiller::DomDistillerServiceFactory::GetInstance();
     // The LazyDomDistillerService deletes itself when the profile is destroyed.

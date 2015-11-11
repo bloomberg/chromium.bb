@@ -1338,13 +1338,6 @@ const FeatureEntry kFeatureEntries[] = {
      kOsDesktop,
      SINGLE_VALUE_TYPE(switches::kEnablePrivetV3)},
 #endif  // ENABLE_SERVICE_DISCOVERY
-#if defined(ENABLE_PRINT_PREVIEW)
-    {"disable-print-preview-simplify",
-     IDS_FLAGS_DISABLE_DISTILLER_IN_PRINT_PREVIEW_NAME,
-     IDS_FLAGS_DISABLE_DISTILLER_IN_PRINT_PREVIEW_DESCRIPTION,
-     kOsDesktop,
-     SINGLE_VALUE_TYPE(switches::kDisablePrintPreviewSimplify)},
-#endif
 #if defined(OS_WIN)
     {"enable-cloud-print-xps",
      IDS_FLAGS_ENABLE_CLOUD_PRINT_XPS_NAME,
