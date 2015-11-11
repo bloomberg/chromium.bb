@@ -80,7 +80,11 @@ public class MediaPlayerBridge {
     protected boolean prepareAsync() {
         try {
             getLocalPlayer().prepareAsync();
-        } catch (IllegalStateException e) {
+        } catch (IllegalStateException ise) {
+            Log.e(TAG, "Unable to prepare MediaPlayer.", ise);
+            return false;
+        } catch (Exception e) {
+            // Catch IOException thrown by android MediaPlayer native code.
             Log.e(TAG, "Unable to prepare MediaPlayer.", e);
             return false;
         }
