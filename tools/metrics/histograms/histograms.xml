@@ -26071,6 +26071,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Net.SSL_Connection_Latency_Google_No_Revocation_Checking"
     units="milliseconds">
+  <obsolete>
+    Removed in 2011.
+  </obsolete>
   <owner>agl@chromium.org</owner>
   <summary>
     Time from when the Connect() starts until it completes for google.com and
@@ -26081,6 +26084,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Net.SSL_Connection_Latency_Google_Revocation_Checking"
     units="milliseconds">
+  <obsolete>
+    Removed in 2011.
+  </obsolete>
   <owner>agl@chromium.org</owner>
   <summary>
     Time from when the Connect() starts until it completes for google.com and
@@ -26198,11 +26204,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Net.SSLHostInfoDNSLookup" units="milliseconds">
+  <obsolete>
+    Removed in 2011.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>Time to complete a DNS lookup for a DNS CAA record.</summary>
 </histogram>
 
 <histogram name="Net.SSLHostInfoDNSLookupDelayMs" units="milliseconds">
+  <obsolete>
+    Removed in 2011.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Time that we would have wasted had we waited for a CAA lookup in order to
@@ -26211,6 +26223,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Net.SSLHostInfoVerificationTimeMs" units="milliseconds">
+  <obsolete>
+    Removed in 2012.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>Time to complete a speculative certificate verification.</summary>
 </histogram>
@@ -26226,6 +26241,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Net.SSLSessionVersionMatch" enum="BooleanMatched">
   <owner>davidben@chromium.org</owner>
+  <obsolete>
+    Removed on 2015-11-10.
+  </obsolete>
   <summary>
     For each SSL connection that resumed a session, whether the session was
     resumed at the same version it was established at. This is only recorded in
@@ -26246,11 +26264,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Net.SSLVerificationMerged">
+  <obsolete>
+    Removed in 2012.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>Was a speculative certificate verification used?</summary>
 </histogram>
 
 <histogram name="Net.SSLVerificationMergedMsSaved" units="milliseconds">
+  <obsolete>
+    Removed in 2012.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>Time saved by a speculative certificate vertification.</summary>
 </histogram>
