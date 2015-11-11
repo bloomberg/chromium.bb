@@ -242,9 +242,14 @@ void PrecacheManager::OnDone() {
 
   precache_fetcher_.reset();
 
-  precache_completion_callback_.Run(!is_precaching_);
-  // Uninitialize the callback so that any scoped_refptrs in it are released.
-  precache_completion_callback_.Reset();
+  // Run completion callback if not null. It's null if the client is in the
+  // Control group and CancelPrecaching is called before TopHosts computation
+  // finishes.
+  if (!precache_completion_callback_.is_null()) {
+    precache_completion_callback_.Run(!is_precaching_);
+    // Uninitialize the callback so that any scoped_refptrs in it are released.
+    precache_completion_callback_.Reset();
+  }
 
   is_precaching_ = false;
 }
