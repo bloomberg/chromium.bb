@@ -26,6 +26,7 @@
 #include "gpu/command_buffer/service/valuebuffer_manager.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "mojo/platform_handle/platform_handle_functions.h"
+#include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gfx/vsync_provider.h"
 #include "ui/gl/gl_context.h"
@@ -250,7 +251,9 @@ void CommandBufferDriver::CreateImage(int32_t id,
   scoped_refptr<gl::GLImageSharedMemory> image =
       new gl::GLImageSharedMemory(gfx_size, internal_format);
   // TODO(jam): also need a mojo enum for this enum
-  if (!image->Initialize(handle, gfx::GpuMemoryBufferId(id), gpu_format, 0)) {
+  if (!image->Initialize(
+          handle, gfx::GpuMemoryBufferId(id), gpu_format, 0,
+          gfx::RowSizeForBufferFormat(gfx_size.width(), gpu_format, 0))) {
     NOTREACHED();
     return;
   }

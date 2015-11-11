@@ -9,6 +9,7 @@
 #include "base/trace_event/memory_allocator_dump.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/process_memory_dump.h"
+#include "ui/gfx/buffer_format_util.h"
 
 namespace gl {
 
@@ -23,8 +24,11 @@ GLImageRefCountedMemory::~GLImageRefCountedMemory() {
 bool GLImageRefCountedMemory::Initialize(
     base::RefCountedMemory* ref_counted_memory,
     gfx::BufferFormat format) {
-  if (!GLImageMemory::Initialize(ref_counted_memory->front(), format))
+  if (!GLImageMemory::Initialize(
+          ref_counted_memory->front(), format,
+          gfx::RowSizeForBufferFormat(GetSize().width(), format, 0))) {
     return false;
+  }
 
   DCHECK(!ref_counted_memory_.get());
   ref_counted_memory_ = ref_counted_memory;

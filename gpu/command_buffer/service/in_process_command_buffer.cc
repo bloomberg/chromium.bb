@@ -15,6 +15,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/sequence_checker.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
@@ -114,6 +115,7 @@ gfx::GpuMemoryBufferHandle ShareGpuMemoryBufferToGpuThread(
       handle.type = gfx::SHARED_MEMORY_BUFFER;
       handle.handle = ShareToGpuThread(source_handle.handle);
       handle.offset = source_handle.offset;
+      handle.stride = source_handle.stride;
       *requires_sync_point = false;
       return handle;
     }
@@ -735,9 +737,14 @@ void InProcessCommandBuffer::CreateImageOnGpuThread(
 
   switch (handle.type) {
     case gfx::SHARED_MEMORY_BUFFER: {
+      if (!base::IsValueInRangeForNumericType<size_t>(handle.stride)) {
+        LOG(ERROR) << "Invalid stride for image.";
+        return;
+      }
       scoped_refptr<gl::GLImageSharedMemory> image(
           new gl::GLImageSharedMemory(size, internalformat));
-      if (!image->Initialize(handle.handle, handle.id, format, handle.offset)) {
+      if (!image->Initialize(handle.handle, handle.id, format, handle.offset,
+                             handle.stride)) {
         LOG(ERROR) << "Failed to initialize image.";
         return;
       }

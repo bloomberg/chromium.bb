@@ -70,6 +70,7 @@ IPC_STRUCT_TRAITS_BEGIN(gfx::GpuMemoryBufferHandle)
   IPC_STRUCT_TRAITS_MEMBER(type)
   IPC_STRUCT_TRAITS_MEMBER(handle)
   IPC_STRUCT_TRAITS_MEMBER(offset)
+  IPC_STRUCT_TRAITS_MEMBER(stride)
 #if defined(USE_OZONE)
   IPC_STRUCT_TRAITS_MEMBER(native_pixmap_handle)
 #endif
