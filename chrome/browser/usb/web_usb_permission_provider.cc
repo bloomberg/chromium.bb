@@ -6,11 +6,15 @@
 
 #include "base/command_line.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/usb/usb_chooser_context.h"
+#include "chrome/browser/usb/usb_chooser_context_factory.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/web_contents.h"
 #include "device/core/device_client.h"
 
+using content::WebContents;
 using device::usb::WebUsbDescriptorSet;
 using device::usb::WebUsbConfigurationSubsetPtr;
 using device::usb::WebUsbFunctionSubsetPtr;
@@ -73,14 +77,25 @@ void WebUSBPermissionProvider::HasDevicePermission(
     mojo::Array<device::usb::DeviceInfoPtr> requested_devices,
     const HasDevicePermissionCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  GURL origin = render_frame_host_->GetLastCommittedURL().GetOrigin();
+  WebContents* web_contents =
+      WebContents::FromRenderFrameHost(render_frame_host_);
+  GURL embedding_origin =
+      web_contents->GetMainFrame()->GetLastCommittedURL().GetOrigin();
+  GURL requesting_origin =
+      render_frame_host_->GetLastCommittedURL().GetOrigin();
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  UsbChooserContext* chooser_context =
+      UsbChooserContextFactory::GetForProfile(profile);
 
   mojo::Array<mojo::String> allowed_guids(0);
   for (size_t i = 0; i < requested_devices.size(); ++i) {
     const device::usb::DeviceInfoPtr& device = requested_devices[i];
-    if (FindOriginInDescriptorSet(device->webusb_allowed_origins.get(), origin,
-                                  nullptr, nullptr) &&
-        EnableWebUsbOnAnyOrigin())
+    if (FindOriginInDescriptorSet(device->webusb_allowed_origins.get(),
+                                  requesting_origin, nullptr, nullptr) &&
+        (EnableWebUsbOnAnyOrigin() ||
+         chooser_context->HasDevicePermission(requesting_origin,
+                                              embedding_origin, device->guid)))
       allowed_guids.push_back(device->guid);
   }
   callback.Run(allowed_guids.Pass());

@@ -125,6 +125,7 @@
 #if !defined(OS_ANDROID)
 #include "chrome/browser/profile_resetter/automatic_profile_resetter_factory.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
+#include "chrome/browser/usb/usb_chooser_context_factory.h"
 #endif
 
 #if defined(OS_WIN)
@@ -331,6 +332,9 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
 #endif
 #if defined(OS_WIN)
   TriggeredProfileResetterFactory::GetInstance();
+#endif
+#if !defined(OS_ANDROID)
+  UsbChooserContextFactory::GetInstance();
 #endif
   WebDataServiceFactory::GetInstance();
 }
