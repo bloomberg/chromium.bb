@@ -267,6 +267,7 @@
         'api/attachments/attachment_id_unittest.cc',
         'api/attachments/attachment_metadata_unittest.cc',
         'api/attachments/attachment_unittest.cc',
+        'api/entity_data_unittest.cc',
         'api/sync_change_unittest.cc',
         'api/sync_data_unittest.cc',
         'api/sync_error_unittest.cc',

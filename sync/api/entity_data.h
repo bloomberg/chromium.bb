@@ -8,70 +8,71 @@
 #include <string>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/time/time.h"
 #include "sync/base/sync_export.h"
 #include "sync/internal_api/public/util/proto_value_ptr.h"
-#include "sync/protocol/entity_metadata.pb.h"
-
-namespace sync_pb {
-class EntityMetadata;
-class EntitySpecifics;
-}  // namespace sync_pb
+#include "sync/protocol/sync.pb.h"
 
 namespace syncer_v2 {
 
-// A light-weight container for sync entity data.
-//
-// EntityData objects either have specifics data or represent a deleted
-// entity that does not have specifics. This component is immutable.
-//
-// EntityData objects can also be modified by adding EntityMetadata to them,
-// which is stored in its serialized form for persistence to storage.
-class SYNC_EXPORT EntityData {
+// A light-weight container for sync entity data which represents either
+// local data created on the ModelTypeService side or remote data created
+// on ModelTypeWorker.
+// EntityData is supposed to be wrapped and passed by reference.
+struct SYNC_EXPORT EntityData {
  public:
+  EntityData();
   ~EntityData();
 
-  // Default copy and assign welcome.
+  // Typically this is a server assigned sync ID, although for a local change
+  // that represents a new entity this field might be either empty or contain
+  // a temporary client sync ID.
+  std::string server_id;
 
-  static EntityData CreateData(const std::string& client_id,
-                               const std::string& non_unique_name,
-                               const sync_pb::EntitySpecifics& specifics);
+  // A hash based on the client tag and model type.
+  // Used for various map lookups. Should always be available.
+  // Sent to the server as SyncEntity::client_defined_unique_tag.
+  std::string client_tag_hash;
 
-  static EntityData CreateDelete(const std::string& client_id,
-                                 const std::string& non_unique_name);
+  // Entity name, used mostly for Debug purposes.
+  std::string non_unique_name;
 
-  const std::string& client_id() const { return client_id_; }
-  const std::string& non_unique_name() const { return non_unique_name_; }
-  bool is_deleted() const { return is_deleted_; }
-  const sync_pb::EntitySpecifics& specifics() const;
-  bool HasMetadata() const;
-  void SetMetadata(const sync_pb::EntityMetadata& metadata);
-  // Maybe this should be private with SMTP and ModelTypeWorker as friends?
-  const sync_pb::EntityMetadata& GetMetadata() const { return metadata_; }
+  // Model type specific sync data.
+  sync_pb::EntitySpecifics specifics;
+
+  // Entity creation and modification timestamps.
+  base::Time creation_time;
+  base::Time modification_time;
+
+  // Sync ID of the parent entity. This is supposed to be set only for
+  // hierarchical datatypes (e.g. Bookmarks).
+  std::string parent_id;
+
+  // Unique position of an entity among its siblings. This is supposed to be
+  // set only for datatypes that support positioning (e.g. Bookmarks).
+  sync_pb::UniquePosition unique_position;
+
+  // True if EntityData represents deleted entity; otherwise false.
+  // Note that EntityData would be considered to represent a deletion if it
+  // specifics hasn't been set.
+  bool is_deleted() { return specifics.ByteSize() == 0; }
 
  private:
-  EntityData(const std::string& client_id,
-             const std::string& non_unique_name,
-             const sync_pb::EntitySpecifics* specifics,
-             bool is_deleted);
+  friend struct EntityDataTraits;
+  // Used to transfer the data without copying.
+  void Swap(EntityData* other);
 
-  // Fields that are always present and don't change.
-  const std::string client_id_;
-  const std::string non_unique_name_;
-  syncer::syncable::EntitySpecificsPtr specifics_;
-  // TODO(maxbogue): This might be replaced by a ChangeType enum.
-  const bool is_deleted_;
-
-  // Present sometimes.
-  base::Time modification_time_;
-  sync_pb::EntityMetadata metadata_;
-
-  // Only set for bookmarks; should really be in bookmark specifics.
-  // std::string parent_tag_hash_;
-  // sync_pb::UniquePosition unique_position_;
+  DISALLOW_COPY_AND_ASSIGN(EntityData);
 };
 
-typedef std::vector<EntityData> EntityDataList;
+struct SYNC_EXPORT EntityDataTraits {
+  static void SwapValue(EntityData* dest, EntityData* src);
+  static bool HasValue(const EntityData& value);
+  static const EntityData& DefaultValue();
+};
+
+typedef syncer::ProtoValuePtr<EntityData, EntityDataTraits> EntityDataPtr;
 
 }  // namespace syncer_v2
 

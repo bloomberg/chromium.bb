@@ -14,7 +14,7 @@ message EntityMetadata {
   // A hash based on the client tag and model type.
   // Used for various map lookups. Should always be available.
   // Sent to the server as SyncEntity::client_defined_unique_tag.
-  optional string client_id = 1;
+  optional string client_tag_hash = 1;
 
   // The entity's server-assigned ID.
   //
@@ -48,13 +48,8 @@ message EntityMetadata {
   optional int64 creation_time = 7;
   optional int64 modification_time = 8;
 
-  // A non-unique name associated with this entity.
-  //
-  // It is sometimes used for debugging. It gets saved to and restored from
-  // the sync server.
-  //
-  // Its value is often related to the item's unhashed client tag, though this
-  // is not guaranteed and should not be relied on. May be hidden when
-  // encryption is enabled.
-  optional string non_unique_name = 9;
+  // A hash of the current entity specifics value. Used to detect whether
+  // entity's specifics value has changed without having to keep specifics in
+  // memory.
+  optional string specifics_hash = 9;
 }

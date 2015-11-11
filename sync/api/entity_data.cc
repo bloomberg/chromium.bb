@@ -4,54 +4,38 @@
 
 #include "sync/api/entity_data.h"
 
-#include "sync/protocol/entity_metadata.pb.h"
-#include "sync/protocol/sync.pb.h"
-#include "sync/util/time.h"
+#include "base/logging.h"
 
 namespace syncer_v2 {
 
-EntityData::EntityData(const std::string& client_id,
-                       const std::string& non_unique_name,
-                       const sync_pb::EntitySpecifics* specifics,
-                       bool is_deleted)
-    : client_id_(client_id),
-      non_unique_name_(non_unique_name),
-      is_deleted_(is_deleted) {
-  if (!is_deleted) {
-    DCHECK(specifics);
-    specifics_.set_value(*specifics);
-  }
-}
-
+EntityData::EntityData() {}
 EntityData::~EntityData() {}
 
-// Static.
-EntityData EntityData::CreateData(const std::string& client_id,
-                                  const std::string& non_unique_name,
-                                  const sync_pb::EntitySpecifics& specifics) {
-  return EntityData(client_id, non_unique_name, &specifics, false);
+void EntityData::Swap(EntityData* other) {
+  server_id.swap(other->server_id);
+  client_tag_hash.swap(other->client_tag_hash);
+  non_unique_name.swap(other->non_unique_name);
+
+  specifics.Swap(&other->specifics);
+
+  std::swap(creation_time, other->creation_time);
+  std::swap(modification_time, other->modification_time);
+
+  parent_id.swap(other->parent_id);
+  unique_position.Swap(&other->unique_position);
 }
 
-// Static.
-EntityData EntityData::CreateDelete(const std::string& sync_tag,
-                                    const std::string& non_unique_name) {
-  return EntityData(sync_tag, non_unique_name, nullptr, true);
+void EntityDataTraits::SwapValue(EntityData* dest, EntityData* src) {
+  dest->Swap(src);
 }
 
-const sync_pb::EntitySpecifics& EntityData::specifics() const {
-  DCHECK(!is_deleted());
-  return specifics_.value();
+bool EntityDataTraits::HasValue(const EntityData& value) {
+  return !value.client_tag_hash.empty();
 }
 
-bool EntityData::HasMetadata() const {
-  return metadata_.client_id() == client_id_;
-}
-
-void EntityData::SetMetadata(const sync_pb::EntityMetadata& metadata) {
-  DCHECK(!HasMetadata());
-  DCHECK_EQ(client_id_, metadata.client_id());
-  modification_time_ = syncer::ProtoTimeToTime(metadata.modification_time());
-  metadata_ = metadata;
+const EntityData& EntityDataTraits::DefaultValue() {
+  CR_DEFINE_STATIC_LOCAL(EntityData, default_instance, ());
+  return default_instance;
 }
 
 }  // namespace syncer_v2

@@ -7,15 +7,16 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
-#include "sync/protocol/attachments.pb.h"
-#include "sync/protocol/sync.pb.h"
 
 namespace syncer_v2 {
-class EntityData;
-}
+FORWARD_DECLARE_TEST(EntityDataTest, Swap);
+}  // namespace syncable
 
 namespace syncer {
+
 namespace syncable {
+struct EntryKernel;
+}  // namespace syncable
 
 // Default traits struct for ProtoValuePtr - adapts a
 // ::google::protobuf::MessageLite derived type to be used with ProtoValuePtr.
@@ -23,6 +24,8 @@ template <typename T>
 struct DefaultProtoValuePtrTraits {
   // Deep copy the value from |src| to |dest|.
   static void CopyValue(T* dest, const T& src) { dest->CopyFrom(src); }
+  // Swap the value with the source (to avoid deep copying).
+  static void SwapValue(T* dest, T* src) { dest->Swap(src); }
   // Parse the value from BLOB.
   static void ParseFromBlob(T* dest, const void* blob, int length) {
     dest->ParseFromArray(blob, length);
@@ -54,6 +57,8 @@ class ProtoValuePtr {
   class Wrapper : public base::RefCountedThreadSafe<Wrapper> {
    public:
     Wrapper(const T& value) { Traits::CopyValue(&value_, value); }
+    Wrapper(T* value) { Traits::SwapValue(&value_, value); }
+
     const T& value() const { return value_; }
     // Create wrapper by deserializing a BLOB.
     static Wrapper* ParseFromBlob(const void* blob, int length) {
@@ -84,15 +89,27 @@ class ProtoValuePtr {
   }
 
  private:
-  friend class syncer_v2::EntityData;
-  friend struct EntryKernel;
-  FRIEND_TEST_ALL_PREFIXES(ProtoValuePtrTest, BasicTest);
+  friend struct syncable::EntryKernel;
+  FRIEND_TEST_ALL_PREFIXES(ProtoValuePtrTest, ValueAssignment);
+  FRIEND_TEST_ALL_PREFIXES(ProtoValuePtrTest, ValueSwap);
   FRIEND_TEST_ALL_PREFIXES(ProtoValuePtrTest, SharingTest);
   FRIEND_TEST_ALL_PREFIXES(ProtoValuePtrTest, ParsingTest);
+  FRIEND_TEST_ALL_PREFIXES(syncer_v2::EntityDataTest, Swap);
 
+  // set the value to copy of |new_value|.
   void set_value(const T& new_value) {
     if (Traits::HasValue(new_value)) {
       wrapper_ = new Wrapper(new_value);
+    } else {
+      // Don't store default value.
+      wrapper_ = nullptr;
+    }
+  }
+
+  // Take over |src| value (swap).
+  void swap_value(T* src) {
+    if (Traits::HasValue(*src)) {
+      wrapper_ = new Wrapper(src);
     } else {
       // Don't store default value.
       wrapper_ = nullptr;
@@ -106,10 +123,6 @@ class ProtoValuePtr {
   scoped_refptr<Wrapper> wrapper_;
 };
 
-typedef ProtoValuePtr<sync_pb::EntitySpecifics> EntitySpecificsPtr;
-typedef ProtoValuePtr<sync_pb::AttachmentMetadata> AttachmentMetadataPtr;
-
-}  // namespace syncable
 }  // namespace syncer
 
 #endif  // SYNC_SYNCABLE_ENTRY_PROTO_FIELD_PTR_H_

@@ -4,19 +4,29 @@
 
 #include "sync/internal_api/public/util/proto_value_ptr.h"
 
+#include "base/memory/scoped_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {
-namespace syncable {
 
 namespace {
+
+// Simple test struct that wraps an integer
+struct IntValue {
+ public:
+  explicit IntValue(int value) { value_ = value; }
+  int value() { return value_; }
+
+ private:
+  int value_;
+};
 
 // TestValue class is used as a template argument with ProtoValuePtr<T>
 class TestValue {
  public:
-  TestValue() : value_(0), is_initialized_(false), is_default_(false) {}
+  TestValue() : value_(nullptr), is_default_(false) {}
   explicit TestValue(int value)
-      : value_(value), is_initialized_(true), is_default_(false) {}
+      : value_(new IntValue(value)), is_default_(false) {}
 
   ~TestValue() { g_delete_count++; }
 
@@ -30,8 +40,9 @@ class TestValue {
   static int parse_count() { return g_parse_count; }
   static int delete_count() { return g_delete_count; }
 
-  int value() const { return value_; }
-  bool is_initialized() const { return is_initialized_; }
+  int value() const { return value_->value(); }
+  IntValue* value_ptr() const { return value_.get(); }
+  bool is_initialized() const { return value_; }
   bool is_default() const { return is_default_; }
 
   // TestValue uses the default traits struct with ProtoValuePtr<TestValue>.
@@ -45,9 +56,20 @@ class TestValue {
     ASSERT_FALSE(is_default());
     ASSERT_TRUE(from.is_initialized());
     ASSERT_FALSE(from.is_default());
-    value_ = from.value();
-    is_initialized_ = true;
+    value_.reset(new IntValue(from.value()));
     g_copy_count++;
+  }
+
+  void Swap(TestValue* src) {
+    // Expected to always swap with an initialized instance.
+    // The current instance must always be an uninitialized one.
+    // Not expected either value to be default.
+    ASSERT_FALSE(is_initialized());
+    ASSERT_FALSE(is_default());
+    ASSERT_TRUE(src->is_initialized());
+    ASSERT_FALSE(src->is_default());
+    // Not exactly swap, but good enough for the test.
+    value_ = src->value_.Pass();
   }
 
   void ParseFromArray(const void* blob, int length) {
@@ -57,8 +79,7 @@ class TestValue {
     ASSERT_FALSE(is_default());
     // The blob is an address of an integer
     ASSERT_EQ(static_cast<int>(sizeof(int)), length);
-    value_ = *static_cast<const int*>(blob);
-    is_initialized_ = true;
+    value_.reset(new IntValue(*static_cast<const int*>(blob)));
     g_parse_count++;
   }
 
@@ -75,7 +96,7 @@ class TestValue {
   static int g_parse_count;
   static int g_delete_count;
 
-  int value_;
+  scoped_ptr<IntValue> value_;
   bool is_initialized_;
   bool is_default_;
 
@@ -103,7 +124,7 @@ class ProtoValuePtrTest : public testing::Test {
   }
 };
 
-TEST_F(ProtoValuePtrTest, BasicTest) {
+TEST_F(ProtoValuePtrTest, ValueAssignment) {
   // Basic assignment and default value.
   TestValue t1(1);
   {
@@ -116,6 +137,24 @@ TEST_F(ProtoValuePtrTest, BasicTest) {
   }
 
   EXPECT_EQ(1, TestValue::copy_count());
+  EXPECT_EQ(1, TestValue::delete_count());
+}
+
+TEST_F(ProtoValuePtrTest, ValueSwap) {
+  TestValue t2(2);
+  {
+    TestPtr ptr2;
+    EXPECT_TRUE(ptr2->is_default());
+
+    IntValue* inner_ptr = t2.value_ptr();
+
+    ptr2.swap_value(&t2);
+    EXPECT_FALSE(ptr2->is_default());
+    EXPECT_EQ(2, ptr2->value());
+    EXPECT_EQ(inner_ptr, ptr2->value_ptr());
+  }
+
+  EXPECT_EQ(0, TestValue::copy_count());
   EXPECT_EQ(1, TestValue::delete_count());
 }
 
@@ -204,5 +243,4 @@ TEST_F(ProtoValuePtrTest, ParsingTest) {
   EXPECT_EQ(1, TestValue::delete_count());
 }
 
-}  // namespace syncable
 }  // namespace syncer

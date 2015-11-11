@@ -14,6 +14,8 @@
 #include "sync/internal_api/public/base/unique_position.h"
 #include "sync/internal_api/public/util/immutable.h"
 #include "sync/internal_api/public/util/proto_value_ptr.h"
+#include "sync/protocol/attachments.pb.h"
+#include "sync/protocol/sync.pb.h"
 #include "sync/syncable/metahandle_set.h"
 #include "sync/syncable/syncable_id.h"
 #include "sync/util/time.h"
@@ -193,6 +195,10 @@ enum {
 
 struct SYNC_EXPORT_PRIVATE EntryKernel {
  private:
+  typedef syncer::ProtoValuePtr<sync_pb::EntitySpecifics> EntitySpecificsPtr;
+  typedef syncer::ProtoValuePtr<sync_pb::AttachmentMetadata>
+      AttachmentMetadataPtr;
+
   std::string string_fields[STRING_FIELDS_COUNT];
   EntitySpecificsPtr specifics_fields[PROTO_FIELDS_COUNT];
   int64 int64_fields[INT64_FIELDS_COUNT];
