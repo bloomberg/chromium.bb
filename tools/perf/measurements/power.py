@@ -35,8 +35,7 @@ class Power(page_test.PageTest):
     self._power_metric.AddResults(tab, results)
 
   def DidRunPage(self, platform):
-    if platform.IsMonitoringPower():
-      platform.StopMonitoringPower()
+    self._power_metric.Close()
 
 
 class LoadPower(Power):

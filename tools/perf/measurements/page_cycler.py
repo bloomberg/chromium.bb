@@ -150,3 +150,6 @@ class PageCycler(page_test.PageTest):
     # warm run, and clearing the cache before the load of the following
     # URL would eliminate the intended warmup for the previous URL.
     return self._has_loaded_page[url] >= self._cold_run_start_index
+
+  def DidRunPage(self, platform):
+    self._power_metric.Close()

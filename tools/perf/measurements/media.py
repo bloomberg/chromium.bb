@@ -67,3 +67,6 @@ class Media(page_test.PageTest):
                                      trace_name=trace_name,
                                      exclude_metrics=exclude_metrics)
       self._power_metric.AddResults(tab, results)
+
+  def DidRunPage(self, platform):
+    self._power_metric.Close()

@@ -63,3 +63,6 @@ class WebRTC(page_test.PageTest):
 
     self._webrtc_stats_metric.Stop(page, tab)
     self._webrtc_stats_metric.AddResults(tab, results)
+
+  def DidRunPage(self, platform):
+    self._power_metric.Close()

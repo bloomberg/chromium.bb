@@ -38,3 +38,6 @@ class Memory(page_test.PageTest):
     self._memory_metric.Stop(page, tab)
     self._memory_metric.AddResults(tab, results)
     self._power_metric.AddResults(tab, results)
+
+  def DidRunPage(self, platform):
+    self._power_metric.Close()

@@ -104,3 +104,6 @@ class TabSwitching(page_test.PageTest):
                                  important=False))
 
     keychain_metric.KeychainMetric().AddResults(tab, results)
+
+  def DidRunPage(self, platform):
+    self._power_metric.Close()

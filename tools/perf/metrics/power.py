@@ -1,7 +1,6 @@
 # Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-import atexit
 import logging
 import time
 
@@ -82,13 +81,6 @@ class PowerMetric(Metric):
     self._starting_cpu_stats = self._browser.cpu_stats
     self._platform.StartMonitoringPower(self._browser)
 
-    # Make sure that power monitoring is cleaned up when program exits.
-    platform = self._platform
-    def CleanUp():
-      if platform.IsMonitoringPower():
-        platform.StopMonitoringPower()
-    atexit.register(CleanUp)
-
     self._running = True
 
   def Stop(self, _, tab):
@@ -97,6 +89,10 @@ class PowerMetric(Metric):
       return
 
     self._StopInternal()
+
+  def Close(self):
+    if self._platform.IsMonitoringPower():
+      self._platform.StopMonitoringPower()
 
   def AddResults(self, _, results):
     """Add the collected power data into the results object.

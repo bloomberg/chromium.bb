@@ -99,5 +99,6 @@ class ImageDecoding(page_test.PageTest):
         tab.EvaluateJavaScript('averageLoadingTimeMs()')))
 
   def DidRunPage(self, platform):
+    self._power_metric.Close()
     if platform.tracing_controller.is_tracing_running:
       platform.tracing_controller.Stop()
