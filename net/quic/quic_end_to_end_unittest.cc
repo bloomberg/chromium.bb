@@ -181,7 +181,7 @@ class QuicEndToEndTest : public PlatformTest {
                   StringPiece response_detail,
                   StringPiece body) {
     QuicInMemoryCache::GetInstance()->AddSimpleResponse(
-        "test.example.com", path, response_code, response_detail, body);
+        "test.example.com", path, response_code, body);
   }
 
   // Populates |request_body_| with |length_| ASCII bytes.

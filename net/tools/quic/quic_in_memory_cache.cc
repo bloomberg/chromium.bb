@@ -46,13 +46,9 @@ const QuicInMemoryCache::Response* QuicInMemoryCache::GetResponse(
 void QuicInMemoryCache::AddSimpleResponse(StringPiece host,
                                           StringPiece path,
                                           int response_code,
-                                          StringPiece response_detail,
                                           StringPiece body) {
   SpdyHeaderBlock response_headers;
-  response_headers[":version"] = "HTTP/1.1";
-  string status = IntToString(response_code) + " ";
-  response_detail.AppendToString(&status);
-  response_headers[":status"] = status;
+  response_headers[":status"] = IntToString(response_code);
   response_headers["content-length"] =
       IntToString(static_cast<int>(body.length()));
   AddResponse(host, path, response_headers, body);

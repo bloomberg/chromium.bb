@@ -79,7 +79,6 @@ class QuicInMemoryCache {
   void AddSimpleResponse(base::StringPiece host,
                          base::StringPiece path,
                          int response_code,
-                         base::StringPiece response_detail,
                          base::StringPiece body);
 
   // Add a response to the cache.

@@ -153,9 +153,7 @@ void QuicSpdyServerStream::SendResponse() {
   }
 
   DVLOG(1) << "Sending response for stream " << id();
-  SendHeadersAndBody(
-      SpdyUtils::ConvertSpdy3ResponseHeadersToSpdy4(response->headers()),
-      response->body());
+  SendHeadersAndBody(response->headers(), response->body());
 }
 
 void QuicSpdyServerStream::SendErrorResponse() {

@@ -15,9 +15,6 @@ namespace net {
 
 class NET_EXPORT_PRIVATE SpdyUtils {
  public:
-  static SpdyHeaderBlock ConvertSpdy3ResponseHeadersToSpdy4(
-      SpdyHeaderBlock response_headers);
-
   static std::string SerializeUncompressedHeaders(
       const SpdyHeaderBlock& headers);
 
