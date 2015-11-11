@@ -520,4 +520,54 @@ NET_EXPORT bool ParseExtensions(
   return true;
 }
 
+bool ParseBasicConstraints(const der::Input& basic_constraints_tlv,
+                           ParsedBasicConstraints* out) {
+  der::Parser parser(basic_constraints_tlv);
+
+  //    BasicConstraints ::= SEQUENCE {
+  der::Parser sequence_parser;
+  if (!parser.ReadSequence(&sequence_parser))
+    return false;
+
+  //         cA                      BOOLEAN DEFAULT FALSE,
+  out->is_ca = false;
+  bool has_ca;
+  der::Input ca;
+  if (!sequence_parser.ReadOptionalTag(der::kBool, &ca, &has_ca))
+    return false;
+  if (has_ca) {
+    if (!der::ParseBool(ca, &out->is_ca))
+      return false;
+    // TODO(eroman): Should reject if CA was set to false, since
+    // DER-encoding requires DEFAULT values be omitted. In
+    // practice however there are a lot of certificates that use
+    // the broken encoding.
+  }
+
+  //         pathLenConstraint       INTEGER (0..MAX) OPTIONAL }
+  der::Input encoded_path_len;
+  if (!sequence_parser.ReadOptionalTag(der::kInteger, &encoded_path_len,
+                                       &out->has_path_len)) {
+    return false;
+  }
+  if (out->has_path_len) {
+    if (!der::ParseUint8(encoded_path_len, &out->path_len))
+      return false;
+  } else {
+    // Default initialize to 0 as a precaution.
+    out->path_len = 0;
+  }
+
+  // There shouldn't be any unconsumed data in the extension.
+  if (sequence_parser.HasMore())
+    return false;
+
+  // By definition the input was a single BasicConstraints sequence, so there
+  // shouldn't be unconsumed data.
+  if (parser.HasMore())
+    return false;
+
+  return true;
+}
+
 }  // namespace net

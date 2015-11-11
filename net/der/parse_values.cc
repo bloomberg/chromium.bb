@@ -191,6 +191,19 @@ bool ParseUint64(const Input& in, uint64_t* out) {
   return true;
 }
 
+bool ParseUint8(const Input& in, uint8_t* out) {
+  // TODO(eroman): Implement this more directly.
+  uint64_t value;
+  if (!ParseUint64(in, &value))
+    return false;
+
+  if (value > 0xFF)
+    return false;
+
+  *out = static_cast<uint8_t>(value);
+  return true;
+}
+
 BitString::BitString(const Input& bytes, uint8_t unused_bits)
     : bytes_(bytes), unused_bits_(unused_bits) {
   DCHECK_LT(unused_bits, 8);

@@ -308,6 +308,24 @@ NET_EXPORT bool ParseExtensions(
     const der::Input& extensions_tlv,
     std::map<der::Input, ParsedExtension>* extensions) WARN_UNUSED_RESULT;
 
+struct ParsedBasicConstraints {
+  bool is_ca = false;
+  bool has_path_len = false;
+  uint8_t path_len = 0;
+};
+
+// Parses the BasicConstraints extension as defined by RFC 5280:
+//
+//    BasicConstraints ::= SEQUENCE {
+//         cA                      BOOLEAN DEFAULT FALSE,
+//         pathLenConstraint       INTEGER (0..MAX) OPTIONAL }
+//
+// The maximum allowed value of pathLenConstraints will be whatever can fit
+// into a uint8_t.
+NET_EXPORT bool ParseBasicConstraints(const der::Input& basic_constraints_tlv,
+                                      ParsedBasicConstraints* out)
+    WARN_UNUSED_RESULT;
+
 }  // namespace net
 
 #endif  // NET_CERT_INTERNAL_PARSE_CERTIFICATE_H_

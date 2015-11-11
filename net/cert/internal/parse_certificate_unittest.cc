@@ -581,6 +581,109 @@ TEST(ParseExtensionsTest, Real) {
   // TODO(eroman): Verify the other 4 extensions' values.
 }
 
+// Reads a PEM file containing a block "BASIC CONSTRAINTS". This input will
+// be passed to ParseExtension, and the results filled in |out|.
+bool ParseBasicConstraintsFromFile(const std::string& file_name,
+                                   ParsedBasicConstraints* out) {
+  std::string data;
+  const PemBlockMapping mappings[] = {
+      {"BASIC CONSTRAINTS", &data},
+  };
+
+  EXPECT_TRUE(ReadTestDataFromPemFile(GetFilePath(file_name), mappings));
+  return ParseBasicConstraints(InputFromString(&data), out);
+}
+
+// Parses a BasicConstraints with no CA or pathlen.
+TEST(ParseBasicConstraintsTest, NotCa) {
+  ParsedBasicConstraints constraints;
+  ASSERT_TRUE(ParseBasicConstraintsFromFile("basic_constraints_not_ca.pem",
+                                            &constraints));
+  EXPECT_FALSE(constraints.is_ca);
+  EXPECT_FALSE(constraints.has_path_len);
+}
+
+// Parses a BasicConstraints with CA but no pathlen.
+TEST(ParseBasicConstraintsTest, CaNoPath) {
+  ParsedBasicConstraints constraints;
+  ASSERT_TRUE(ParseBasicConstraintsFromFile("basic_constraints_ca_no_path.pem",
+                                            &constraints));
+  EXPECT_TRUE(constraints.is_ca);
+  EXPECT_FALSE(constraints.has_path_len);
+}
+
+// Parses a BasicConstraints with CA and pathlen of 9.
+TEST(ParseBasicConstraintsTest, CaPath9) {
+  ParsedBasicConstraints constraints;
+  ASSERT_TRUE(ParseBasicConstraintsFromFile("basic_constraints_ca_path_9.pem",
+                                            &constraints));
+  EXPECT_TRUE(constraints.is_ca);
+  EXPECT_TRUE(constraints.has_path_len);
+  EXPECT_EQ(9u, constraints.path_len);
+}
+
+// Parses a BasicConstraints with CA and pathlen of 255 (largest allowed size).
+TEST(ParseBasicConstraintsTest, Pathlen255) {
+  ParsedBasicConstraints constraints;
+  ASSERT_TRUE(ParseBasicConstraintsFromFile("basic_constraints_pathlen_255.pem",
+                                            &constraints));
+  EXPECT_TRUE(constraints.is_ca);
+  EXPECT_TRUE(constraints.has_path_len);
+  EXPECT_EQ(255, constraints.path_len);
+}
+
+// Parses a BasicConstraints with CA and pathlen of 256 (too large).
+TEST(ParseBasicConstraintsTest, Pathlen256) {
+  ParsedBasicConstraints constraints;
+  ASSERT_FALSE(ParseBasicConstraintsFromFile(
+      "basic_constraints_pathlen_256.pem", &constraints));
+}
+
+// Parses a BasicConstraints with CA and a negative pathlen.
+TEST(ParseBasicConstraintsTest, NegativePath) {
+  ParsedBasicConstraints constraints;
+  ASSERT_FALSE(ParseBasicConstraintsFromFile(
+      "basic_constraints_negative_path.pem", &constraints));
+}
+
+// Parses a BasicConstraints with CA and pathlen that is very large (and
+// couldn't fit in a 64-bit integer).
+TEST(ParseBasicConstraintsTest, PathTooLarge) {
+  ParsedBasicConstraints constraints;
+  ASSERT_FALSE(ParseBasicConstraintsFromFile(
+      "basic_constraints_path_too_large.pem", &constraints));
+}
+
+// Parses a BasicConstraints with CA explicitly set to false. This violates
+// DER-encoding rules, however is commonly used, so it is accepted.
+TEST(ParseBasicConstraintsTest, CaFalse) {
+  ParsedBasicConstraints constraints;
+  ASSERT_TRUE(ParseBasicConstraintsFromFile("basic_constraints_ca_false.pem",
+                                            &constraints));
+  EXPECT_FALSE(constraints.is_ca);
+  EXPECT_FALSE(constraints.has_path_len);
+}
+
+// Parses a BasicConstraints with CA set to true and an unexpected NULL at
+// the end.
+TEST(ParseBasicConstraintsTest, UnconsumedData) {
+  ParsedBasicConstraints constraints;
+  ASSERT_FALSE(ParseBasicConstraintsFromFile(
+      "basic_constraints_unconsumed_data.pem", &constraints));
+}
+
+// Parses a BasicConstraints with CA omitted (false), but with a pathlen of 1.
+// This is valid DER for the ASN.1, however is not valid when interpreting the
+// BasicConstraints at a higher level.
+TEST(ParseBasicConstraintsTest, PathLenButNotCa) {
+  ParsedBasicConstraints constraints;
+  ASSERT_TRUE(ParseBasicConstraintsFromFile(
+      "basic_constraints_pathlen_not_ca.pem", &constraints));
+  EXPECT_FALSE(constraints.is_ca);
+  EXPECT_TRUE(constraints.has_path_len);
+  EXPECT_EQ(1u, constraints.path_len);
+}
+
 }  // namespace
 
 }  // namespace net

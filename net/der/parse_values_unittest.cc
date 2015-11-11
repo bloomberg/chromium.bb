@@ -214,6 +214,42 @@ TEST(ParseValuesTest, ParseUint64) {
   }
 }
 
+struct Uint8TestData {
+  bool should_pass;
+  const uint8_t input[9];
+  size_t length;
+  uint8_t expected_value;
+};
+
+const Uint8TestData kUint8TestData[] = {
+    {true, {0x00}, 1, 0},
+    // This number fails because it is not a minimal representation.
+    {false, {0x00, 0x00}, 2},
+    {true, {0x01}, 1, 1},
+    {false, {0x01, 0xFF}, 2},
+    {false, {0x03, 0x83}, 2},
+    {true, {0x7F}, 1, 0x7F},
+    {true, {0x00, 0xFF}, 2, 0xFF},
+    // This number fails because it is negative.
+    {false, {0xFF}, 1},
+    {false, {0x80}, 1},
+    {false, {0x00, 0x01}, 2},
+    {false, {0}, 0},
+};
+
+TEST(ParseValuesTest, ParseUint8) {
+  for (size_t i = 0; i < arraysize(kUint8TestData); i++) {
+    const Uint8TestData& test_case = kUint8TestData[i];
+    SCOPED_TRACE(i);
+
+    uint8_t result;
+    EXPECT_EQ(test_case.should_pass,
+              ParseUint8(Input(test_case.input, test_case.length), &result));
+    if (test_case.should_pass)
+      EXPECT_EQ(test_case.expected_value, result);
+  }
+}
+
 struct IsValidIntegerTestData {
   bool should_pass;
   const uint8_t input[2];

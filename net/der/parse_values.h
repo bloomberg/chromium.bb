@@ -41,6 +41,9 @@ NET_EXPORT bool IsValidInteger(const Input& in,
 // integer.
 NET_EXPORT bool ParseUint64(const Input& in, uint64_t* out) WARN_UNUSED_RESULT;
 
+// Same as ParseUint64() but for a uint8_t.
+NET_EXPORT bool ParseUint8(const Input& in, uint8_t* out) WARN_UNUSED_RESULT;
+
 // The BitString class is a helper for representing a valid parsed BIT STRING.
 //
 // * The bits are ordered within each octet of bytes() from most to least
