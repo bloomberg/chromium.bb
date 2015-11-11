@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 
@@ -382,11 +381,7 @@ const SafeBrowsingFiletype& GetFileType(const base::FilePath& file) {
     nullptr, EXTENSION_OTHER, false, false
   };
 
-  base::FilePath::StringType file_basename = file.BaseName().value();
-  base::FilePath::StringPieceType trimmed_filename = base::TrimString(
-      file_basename, FILE_PATH_LITERAL(". "), base::TRIM_TRAILING);
-  base::FilePath::StringType extension =
-      base::FilePath(trimmed_filename).FinalExtension();
+  base::FilePath::StringType extension = GetFileExtension(file);
   SafeBrowsingFiletype needle = {extension.c_str()};
 
   const auto begin = kSafeBrowsingFileTypes;
@@ -407,6 +402,14 @@ const SafeBrowsingFiletype& GetFileType(const base::FilePath& file) {
 } // namespace
 
 const int kSBClientDownloadExtensionsMax = EXTENSION_MAX;
+
+const base::FilePath::StringType GetFileExtension(const base::FilePath& file) {
+  // Remove trailing space and period characters from the extension.
+  base::FilePath::StringType file_basename = file.BaseName().value();
+  base::FilePath::StringPieceType trimmed_filename = base::TrimString(
+      file_basename, FILE_PATH_LITERAL(". "), base::TRIM_TRAILING);
+  return base::FilePath(trimmed_filename).FinalExtension();
+}
 
 bool IsArchiveFile(const base::FilePath& file) {
   // List of interesting archive file formats in kSafeBrowsingFileTypes is by no

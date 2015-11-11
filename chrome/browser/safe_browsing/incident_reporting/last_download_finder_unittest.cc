@@ -97,13 +97,18 @@ static const base::FilePath::CharType kBinaryFileName[] =
     FILE_PATH_LITERAL("spam.exe");
 #endif
 
+static const base::FilePath::CharType kPDFFileName[] =
+    FILE_PATH_LITERAL("download.pdf");
+
 }  // namespace
 
 namespace safe_browsing {
 
 class LastDownloadFinderTest : public testing::Test {
  public:
-  void NeverCalled(scoped_ptr<ClientIncidentReport_DownloadDetails> download) {
+  void NeverCalled(scoped_ptr<ClientIncidentReport_DownloadDetails> download,
+                   scoped_ptr<ClientIncidentReport_NonBinaryDownloadDetails>
+                       non_binary_download) {
     FAIL();
   }
 
@@ -122,11 +127,15 @@ class LastDownloadFinderTest : public testing::Test {
 
   // LastDownloadFinder::LastDownloadCallback implementation that
   // passes the found download to |result| and then runs a closure.
-  void OnLastDownload(
-      scoped_ptr<ClientIncidentReport_DownloadDetails>* result,
-      const base::Closure& quit_closure,
-      scoped_ptr<ClientIncidentReport_DownloadDetails> download) {
+  void OnLastDownload(scoped_ptr<ClientIncidentReport_DownloadDetails>* result,
+                      scoped_ptr<ClientIncidentReport_NonBinaryDownloadDetails>*
+                          non_binary_result,
+                      const base::Closure& quit_closure,
+                      scoped_ptr<ClientIncidentReport_DownloadDetails> download,
+                      scoped_ptr<ClientIncidentReport_NonBinaryDownloadDetails>
+                          non_binary_download) {
     *result = download.Pass();
+    *non_binary_result = non_binary_download.Pass();
     quit_closure.Run();
   }
 
@@ -139,7 +148,7 @@ class LastDownloadFinderTest : public testing::Test {
     EXTENDED_REPORTING_OPT_IN,
   };
 
-  LastDownloadFinderTest() : profile_number_() {}
+  LastDownloadFinderTest() : profile_number_(), download_id_(1) {}
 
   void SetUp() override {
     testing::Test::SetUp();
@@ -233,24 +242,21 @@ class LastDownloadFinderTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
-  // Runs the last download finder on all loaded profiles, returning the found
-  // download or an empty pointer if none was found.
-  scoped_ptr<ClientIncidentReport_DownloadDetails> RunLastDownloadFinder() {
+  // Runs the last download finder on all loaded profiles.
+  void RunLastDownloadFinder(
+      scoped_ptr<ClientIncidentReport_DownloadDetails>* last_binary_download,
+      scoped_ptr<ClientIncidentReport_NonBinaryDownloadDetails>*
+          last_non_binary_download) {
     base::RunLoop run_loop;
-
-    scoped_ptr<ClientIncidentReport_DownloadDetails> last_download;
 
     scoped_ptr<LastDownloadFinder> finder(LastDownloadFinder::Create(
         GetDownloadDetailsGetter(),
         base::Bind(&LastDownloadFinderTest::OnLastDownload,
-                   base::Unretained(this),
-                   &last_download,
-                   run_loop.QuitClosure())));
+                   base::Unretained(this), last_binary_download,
+                   last_non_binary_download, run_loop.QuitClosure())));
 
     if (finder)
       run_loop.Run();
-
-    return last_download.Pass();
   }
 
   history::DownloadRow CreateTestDownloadRow(
@@ -272,20 +278,10 @@ class LastDownloadFinderTest : public testing::Test {
         history::DownloadDangerType::NOT_DANGEROUS,  // danger_type
         history::ToHistoryDownloadInterruptReason(
             content::DOWNLOAD_INTERRUPT_REASON_NONE),  // interrupt_reason,
-        1,                                             // id
+        download_id_++,                                // id
         false,                                         // download_opened
         std::string(),                                 // ext_id
         std::string());                                // ext_name
-  }
-
-  void ExpectNoDownloadFound(
-      scoped_ptr<ClientIncidentReport_DownloadDetails> download) {
-    EXPECT_FALSE(download);
-  }
-
-  void ExpectFoundTestDownload(
-      scoped_ptr<ClientIncidentReport_DownloadDetails> download) {
-    ASSERT_TRUE(download);
   }
 
   content::TestBrowserThreadBundle browser_thread_bundle_;
@@ -310,11 +306,19 @@ class LastDownloadFinderTest : public testing::Test {
   }
 
   int profile_number_;
+
+  // Incremented on every download addition to avoid downloads with the same id.
+  int download_id_;
 };
 
 // Tests that nothing happens if there are no profiles at all.
 TEST_F(LastDownloadFinderTest, NoProfiles) {
-  ExpectNoDownloadFound(RunLastDownloadFinder());
+  scoped_ptr<ClientIncidentReport_DownloadDetails> last_binary_download;
+  scoped_ptr<ClientIncidentReport_NonBinaryDownloadDetails>
+      last_non_binary_download;
+  RunLastDownloadFinder(&last_binary_download, &last_non_binary_download);
+  EXPECT_FALSE(last_binary_download);
+  EXPECT_FALSE(last_non_binary_download);
 }
 
 // Tests that nothing happens other than the callback being invoked if there are
@@ -326,7 +330,12 @@ TEST_F(LastDownloadFinderTest, NoParticipatingProfiles) {
   // Add a download.
   AddDownload(profile, CreateTestDownloadRow(kBinaryFileName));
 
-  ExpectNoDownloadFound(RunLastDownloadFinder());
+  scoped_ptr<ClientIncidentReport_DownloadDetails> last_binary_download;
+  scoped_ptr<ClientIncidentReport_NonBinaryDownloadDetails>
+      last_non_binary_download;
+  RunLastDownloadFinder(&last_binary_download, &last_non_binary_download);
+  EXPECT_FALSE(last_binary_download);
+  EXPECT_FALSE(last_non_binary_download);
 }
 
 // Tests that a download is found from a single profile.
@@ -334,10 +343,32 @@ TEST_F(LastDownloadFinderTest, SimpleEndToEnd) {
   // Create a profile with a history service that is opted-in.
   TestingProfile* profile = CreateProfile(EXTENDED_REPORTING_OPT_IN);
 
-  // Add a download.
+  // Add a binary and non-binary download.
   AddDownload(profile, CreateTestDownloadRow(kBinaryFileName));
+  AddDownload(profile, CreateTestDownloadRow(kPDFFileName));
 
-  ExpectFoundTestDownload(RunLastDownloadFinder());
+  scoped_ptr<ClientIncidentReport_DownloadDetails> last_binary_download;
+  scoped_ptr<ClientIncidentReport_NonBinaryDownloadDetails>
+      last_non_binary_download;
+  RunLastDownloadFinder(&last_binary_download, &last_non_binary_download);
+  EXPECT_TRUE(last_binary_download);
+  EXPECT_TRUE(last_non_binary_download);
+}
+
+// Tests that a non-binary download is found
+TEST_F(LastDownloadFinderTest, NonBinaryOnly) {
+  // Create a profile with a history service that is opted-in.
+  TestingProfile* profile = CreateProfile(EXTENDED_REPORTING_OPT_IN);
+
+  // Add a non-binary download.
+  AddDownload(profile, CreateTestDownloadRow(kPDFFileName));
+
+  scoped_ptr<ClientIncidentReport_DownloadDetails> last_binary_download;
+  scoped_ptr<ClientIncidentReport_NonBinaryDownloadDetails>
+      last_non_binary_download;
+  RunLastDownloadFinder(&last_binary_download, &last_non_binary_download);
+  EXPECT_FALSE(last_binary_download);
+  EXPECT_TRUE(last_non_binary_download);
 }
 
 // Tests that a download is found from a single profile when the field trial is
@@ -354,7 +385,12 @@ TEST_F(LastDownloadFinderTest, SimpleEndToEndFieldTrial) {
   // Add a download.
   AddDownload(profile, CreateTestDownloadRow(kBinaryFileName));
 
-  ExpectFoundTestDownload(RunLastDownloadFinder());
+  scoped_ptr<ClientIncidentReport_DownloadDetails> last_binary_download;
+  scoped_ptr<ClientIncidentReport_NonBinaryDownloadDetails>
+      last_non_binary_download;
+  RunLastDownloadFinder(&last_binary_download, &last_non_binary_download);
+  EXPECT_FALSE(last_non_binary_download);
+  EXPECT_TRUE(last_binary_download);
 }
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_ANDROID)
@@ -366,7 +402,12 @@ TEST_F(LastDownloadFinderTest, DownloadForDifferentOs) {
   // Add a download.
   AddDownload(profile, CreateTestDownloadRow(kBinaryFileNameForOtherOS));
 
-  ExpectNoDownloadFound(RunLastDownloadFinder());
+  scoped_ptr<ClientIncidentReport_DownloadDetails> last_binary_download;
+  scoped_ptr<ClientIncidentReport_NonBinaryDownloadDetails>
+      last_non_binary_download;
+  RunLastDownloadFinder(&last_binary_download, &last_non_binary_download);
+  EXPECT_FALSE(last_binary_download);
+  EXPECT_FALSE(last_non_binary_download);
 }
 #endif
 
@@ -392,7 +433,9 @@ TEST_F(LastDownloadFinderTest, AddProfileAfterStarting) {
   // Create a profile with a history service that is opted-in.
   CreateProfile(EXTENDED_REPORTING_OPT_IN);
 
-  scoped_ptr<ClientIncidentReport_DownloadDetails> last_download;
+  scoped_ptr<ClientIncidentReport_DownloadDetails> last_binary_download;
+  scoped_ptr<ClientIncidentReport_NonBinaryDownloadDetails>
+      last_non_binary_download;
   base::RunLoop run_loop;
 
   // Post a task that will create a second profile once the main loop is run.
@@ -404,13 +447,12 @@ TEST_F(LastDownloadFinderTest, AddProfileAfterStarting) {
   scoped_ptr<LastDownloadFinder> finder(LastDownloadFinder::Create(
       GetDownloadDetailsGetter(),
       base::Bind(&LastDownloadFinderTest::OnLastDownload,
-                 base::Unretained(this),
-                 &last_download,
-                 run_loop.QuitClosure())));
+                 base::Unretained(this), &last_binary_download,
+                 &last_non_binary_download, run_loop.QuitClosure())));
 
   run_loop.Run();
 
-  ExpectFoundTestDownload(last_download.Pass());
+  ASSERT_TRUE(last_binary_download);
 }
 
 }  // namespace safe_browsing

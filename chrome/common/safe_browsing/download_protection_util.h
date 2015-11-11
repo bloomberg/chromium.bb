@@ -5,11 +5,8 @@
 #ifndef CHROME_COMMON_SAFE_BROWSING_DOWNLOAD_PROTECTION_UTIL_H_
 #define CHROME_COMMON_SAFE_BROWSING_DOWNLOAD_PROTECTION_UTIL_H_
 
+#include "base/files/file_path.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
-
-namespace base {
-class FilePath;
-}
 
 namespace safe_browsing {
 namespace download_protection_util {
@@ -23,6 +20,9 @@ bool IsArchiveFile(const base::FilePath& file);
 // Returns the DownloadType of the file at |path|. This function is only valid
 // for paths that satisfy IsSupportedBinaryFile() above.
 ClientDownloadRequest::DownloadType GetDownloadType(const base::FilePath& file);
+
+// Returns the extension of the file at |path|.
+const base::FilePath::StringType GetFileExtension(const base::FilePath& file);
 
 // The maximum value returned by GetSBClientDownloadExtensionValueForUMA() + 1.
 extern const int kSBClientDownloadExtensionsMax;

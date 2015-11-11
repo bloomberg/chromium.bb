@@ -797,7 +797,9 @@ void IncidentReportingService::CancelDownloadCollection() {
 }
 
 void IncidentReportingService::OnLastDownloadFound(
-    scoped_ptr<ClientIncidentReport_DownloadDetails> last_download) {
+    scoped_ptr<ClientIncidentReport_DownloadDetails> last_binary_download,
+    scoped_ptr<ClientIncidentReport_NonBinaryDownloadDetails>
+        last_non_binary_download) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(report_);
 
@@ -808,8 +810,13 @@ void IncidentReportingService::OnLastDownloadFound(
   // Harvest the finder.
   last_download_finder_.reset();
 
-  if (last_download)
-    report_->set_allocated_download(last_download.release());
+  if (last_binary_download)
+    report_->set_allocated_download(last_binary_download.release());
+
+  if (last_non_binary_download) {
+    report_->set_allocated_non_binary_download(
+        last_non_binary_download.release());
+  }
 
   ProcessIncidentsIfCollectionComplete();
 }
@@ -885,6 +892,9 @@ void IncidentReportingService::ProcessIncidentsIfCollectionComplete() {
   if (!HasIncidentsToUpload())
     return;
 
+  bool has_download =
+      report->has_download() || report->has_non_binary_download();
+
   // Collect incidents across all profiles participating in safe browsing. Drop
   // incidents if the profile stopped participating before collection completed.
   // Prune previously submitted incidents.
@@ -912,7 +922,7 @@ void IncidentReportingService::ProcessIncidentsIfCollectionComplete() {
       if (context->state_store->HasBeenReported(state.type, state.key,
                                                 state.digest)) {
         LogIncidentDataType(PRUNED, *incident);
-      } else if (!report->has_download()) {
+      } else if (!has_download) {
         LogIncidentDataType(NO_DOWNLOAD, *incident);
         // Drop the incident and mark for future pruning since no executable
         // download was found.
@@ -936,7 +946,7 @@ void IncidentReportingService::ProcessIncidentsIfCollectionComplete() {
 
   // Abandon the request if all incidents were pruned or otherwise dropped.
   if (!count) {
-    if (!report->has_download()) {
+    if (!has_download) {
       UMA_HISTOGRAM_ENUMERATION("SBIRS.UploadResult",
                                 IncidentReportUploader::UPLOAD_NO_DOWNLOAD,
                                 IncidentReportUploader::NUM_UPLOAD_RESULTS);

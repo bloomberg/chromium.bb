@@ -34,9 +34,10 @@ class HistoryService;
 namespace safe_browsing {
 
 class ClientIncidentReport_DownloadDetails;
+class ClientIncidentReport_NonBinaryDownloadDetails;
 
-// Finds the most recent executable downloaded by any on-the-record profile with
-// history that participates in safe browsing.
+// Finds the most recent executable download and non-executable download by
+// any on-the-record profile with history that participates in safe browsing.
 class LastDownloadFinder : public content::NotificationObserver,
                            public history::HistoryServiceObserver {
  public:
@@ -45,15 +46,17 @@ class LastDownloadFinder : public content::NotificationObserver,
       const DownloadMetadataManager::GetDownloadDetailsCallback&)>
       DownloadDetailsGetter;
 
-  // The type of a callback run by the finder upon completion. The argument is a
-  // protobuf containing details of the download that was found, or an empty
-  // pointer if none was found.
-  typedef base::Callback<void(scoped_ptr<ClientIncidentReport_DownloadDetails>)>
+  // The type of a callback run by the finder upon completion. Each argument is
+  // a protobuf containing details of the respective download that was found,
+  // or an empty pointer if none was found.
+  typedef base::Callback<void(
+      scoped_ptr<ClientIncidentReport_DownloadDetails>,
+      scoped_ptr<ClientIncidentReport_NonBinaryDownloadDetails>)>
       LastDownloadCallback;
 
   ~LastDownloadFinder() override;
 
-  // Initiates an asynchronous search for the most recent download. |callback|
+  // Initiates an asynchronous search for the most recent downloads. |callback|
   // will be run when the search is complete. The returned instance can be
   // deleted to terminate the search, in which case |callback| is not invoked.
   // Returns NULL without running |callback| if there are no eligible profiles
@@ -70,6 +73,7 @@ class LastDownloadFinder : public content::NotificationObserver,
   enum ProfileWaitState {
     WAITING_FOR_METADATA,
     WAITING_FOR_HISTORY,
+    WAITING_FOR_NON_BINARY_HISTORY,
   };
 
   LastDownloadFinder(const DownloadDetailsGetter& download_details_getter,
@@ -137,7 +141,11 @@ class LastDownloadFinder : public content::NotificationObserver,
   scoped_ptr<ClientIncidentReport_DownloadDetails> details_;
 
   // The most recent download, updated progressively as query results arrive.
-  history::DownloadRow most_recent_row_;
+  history::DownloadRow most_recent_binary_row_;
+
+  // The most recent non-binary download, updated progressively as query results
+  // arrive.
+  history::DownloadRow most_recent_non_binary_row_;
 
   // HistoryServiceObserver
   ScopedObserver<history::HistoryService, history::HistoryServiceObserver>

@@ -231,9 +231,12 @@ class IncidentReportingService : public content::NotificationObserver {
   void CancelDownloadCollection();
 
   // A callback invoked on the UI thread by the last download finder when the
-  // search for the most recent binary download is complete.
+  // search for the most recent binary download and most recent non-binary
+  // download is complete.
   void OnLastDownloadFound(
-      scoped_ptr<ClientIncidentReport_DownloadDetails> last_download);
+      scoped_ptr<ClientIncidentReport_DownloadDetails> last_binary_download,
+      scoped_ptr<ClientIncidentReport_NonBinaryDownloadDetails>
+          last_non_binary_download);
 
   // Processes all received incidents once all data collection is
   // complete. Incidents originating from profiles that do not participate in

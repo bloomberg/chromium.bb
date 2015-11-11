@@ -628,6 +628,15 @@ message ClientIncidentReport {
   optional ChromeUserPopulation population = 7;
 
   optional ExtensionData extension_data = 8;
+
+  message NonBinaryDownloadDetails {
+    optional string file_type = 1;
+    optional bytes url_spec_sha256 = 2;
+    optional string host = 3;
+    optional int64 length = 4;
+  }
+
+  optional NonBinaryDownloadDetails non_binary_download = 9;
 }
 
 message ClientIncidentResponse {

@@ -157,8 +157,12 @@ class IncidentReportingServiceTest : public testing::Test {
   // A type for specifying the action to be taken by the test fixture when the
   // service creates a LastDownloadFinder.
   enum OnCreateDownloadFinderAction {
-    // Post a task that reports a download.
-    ON_CREATE_DOWNLOAD_FINDER_DOWNLOAD_FOUND,
+    // Post a task that reports a binary and non-binary download.
+    ON_CREATE_DOWNLOAD_FINDER_DOWNLOADS_FOUND,
+    // Post a task that reports a binary download.
+    ON_CREATE_DOWNLOAD_FINDER_BINARY_DOWNLOAD_FOUND,
+    // Post a task that reports a non-binary download.
+    ON_CREATE_DOWNLOAD_FINDER_NON_BINARY_DOWNLOAD_FOUND,
     // Post a task that reports no downloads found.
     ON_CREATE_DOWNLOAD_FINDER_NO_DOWNLOADS,
     // Immediately return due to a lack of eligible profiles.
@@ -174,6 +178,7 @@ class IncidentReportingServiceTest : public testing::Test {
 
   static const char kFakeOsName[];
   static const char kFakeDownloadToken[];
+  static const char kFakeDownloadHost[];
   static const char kTestTrackedPrefPath[];
   static const char kFakeExtensionId[];
 
@@ -182,7 +187,7 @@ class IncidentReportingServiceTest : public testing::Test {
         thread_task_runner_handle_(task_runner_),
         profile_manager_(TestingBrowserProcess::GetGlobal()),
         on_create_download_finder_action_(
-            ON_CREATE_DOWNLOAD_FINDER_DOWNLOAD_FOUND),
+            ON_CREATE_DOWNLOAD_FINDER_DOWNLOADS_FOUND),
         on_delayed_analysis_action_(ON_DELAYED_ANALYSIS_NO_ACTION),
         upload_result_(safe_browsing::IncidentReportUploader::UPLOAD_SUCCESS),
         environment_collected_(),
@@ -302,37 +307,11 @@ class IncidentReportingServiceTest : public testing::Test {
                    base::Unretained(this)));
   }
 
-  // Confirms that the test incident(s) was/were uploaded by the service, then
-  // clears the instance for subsequent incidents.
-  void ExpectTestIncidentUploaded(int incident_count) {
-    if (incident_count == 0) {
-      ASSERT_FALSE(uploaded_report_);
-      return;
-    }
-    ASSERT_TRUE(uploaded_report_);
-    ASSERT_EQ(incident_count, uploaded_report_->incident_size());
-    for (int i = 0; i < incident_count; ++i) {
-      ASSERT_TRUE(uploaded_report_->incident(i).has_incident_time_msec());
-      ASSERT_NE(0LL, uploaded_report_->incident(i).incident_time_msec());
-      ASSERT_TRUE(uploaded_report_->incident(i).has_tracked_preference());
-      ASSERT_TRUE(
-          uploaded_report_->incident(i).tracked_preference().has_path());
-      ASSERT_EQ(std::string(kTestTrackedPrefPath),
-                uploaded_report_->incident(i).tracked_preference().path());
-    }
-    ASSERT_TRUE(uploaded_report_->has_environment());
-    ASSERT_TRUE(uploaded_report_->environment().has_os());
-    ASSERT_TRUE(uploaded_report_->environment().os().has_os_name());
-    ASSERT_EQ(std::string(kFakeOsName),
-              uploaded_report_->environment().os().os_name());
-    ASSERT_EQ(
-        std::string(kFakeExtensionId),
-        uploaded_report_->extension_data().last_installed_extension().id());
-    ASSERT_EQ(std::string(kFakeDownloadToken),
-              uploaded_report_->download().token());
-
-    uploaded_report_.reset();
-  }
+  // Expects that |incident_count| incidents were uploaded by the service with
+  // the described downloads, then clears the instance for subsequent incidents.
+  void ExpectTestIncidentUploadWithBinaryDownload(int incident_count);
+  void ExpectTestIncidentUploadWithNonBinaryDownload(int incident_count);
+  void ExpectTestIncidentUploadWithBothDownloads(int incident_count);
 
   void AssertNoUpload() { ASSERT_FALSE(uploaded_report_); }
 
@@ -400,12 +379,15 @@ class IncidentReportingServiceTest : public testing::Test {
     static scoped_ptr<safe_browsing::LastDownloadFinder> Create(
         const base::Closure& on_deleted,
         scoped_ptr<safe_browsing::ClientIncidentReport_DownloadDetails>
-            download,
+            binary_download,
+        scoped_ptr<safe_browsing::ClientIncidentReport_NonBinaryDownloadDetails>
+            non_binary_download,
         const safe_browsing::LastDownloadFinder::LastDownloadCallback&
             callback) {
       // Post a task to run the callback.
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::Bind(callback, base::Passed(&download)));
+          FROM_HERE, base::Bind(callback, base::Passed(&binary_download),
+                                base::Passed(&non_binary_download)));
       return scoped_ptr<safe_browsing::LastDownloadFinder>(
           new FakeDownloadFinder(on_deleted));
     }
@@ -420,6 +402,47 @@ class IncidentReportingServiceTest : public testing::Test {
 
     DISALLOW_COPY_AND_ASSIGN(FakeDownloadFinder);
   };
+
+  // Confirms that the test incident(s) was/were uploaded by the service, then
+  // clears the instance for subsequent incidents.
+  void ExpectTestIncidentUploadedImpl(int incident_count,
+                                      bool withBinaryDownload,
+                                      bool withNonBinaryDownload) {
+    if (incident_count == 0) {
+      ASSERT_FALSE(uploaded_report_);
+      return;
+    }
+    ASSERT_TRUE(uploaded_report_);
+    ASSERT_EQ(incident_count, uploaded_report_->incident_size());
+    for (int i = 0; i < incident_count; ++i) {
+      ASSERT_TRUE(uploaded_report_->incident(i).has_incident_time_msec());
+      ASSERT_NE(0LL, uploaded_report_->incident(i).incident_time_msec());
+      ASSERT_TRUE(uploaded_report_->incident(i).has_tracked_preference());
+      ASSERT_TRUE(
+          uploaded_report_->incident(i).tracked_preference().has_path());
+      ASSERT_EQ(std::string(kTestTrackedPrefPath),
+                uploaded_report_->incident(i).tracked_preference().path());
+    }
+    ASSERT_TRUE(uploaded_report_->has_environment());
+    ASSERT_TRUE(uploaded_report_->environment().has_os());
+    ASSERT_TRUE(uploaded_report_->environment().os().has_os_name());
+    ASSERT_EQ(std::string(kFakeOsName),
+              uploaded_report_->environment().os().os_name());
+    ASSERT_EQ(
+        std::string(kFakeExtensionId),
+        uploaded_report_->extension_data().last_installed_extension().id());
+
+    if (withBinaryDownload) {
+      ASSERT_EQ(std::string(kFakeDownloadToken),
+                uploaded_report_->download().token());
+    }
+    if (withNonBinaryDownload) {
+      ASSERT_EQ(std::string(kFakeDownloadHost),
+                uploaded_report_->non_binary_download().host());
+    }
+
+    uploaded_report_.reset();
+  }
 
   // Properties for a profile that impact the behavior of the test.
   struct ProfileProperties {
@@ -477,22 +500,36 @@ class IncidentReportingServiceTest : public testing::Test {
   scoped_ptr<safe_browsing::LastDownloadFinder> CreateDownloadFinder(
       const safe_browsing::LastDownloadFinder::LastDownloadCallback& callback) {
     download_finder_created_ = true;
-    scoped_ptr<safe_browsing::ClientIncidentReport_DownloadDetails> download;
+    scoped_ptr<safe_browsing::ClientIncidentReport_DownloadDetails>
+        binary_download;
+    scoped_ptr<safe_browsing::ClientIncidentReport_NonBinaryDownloadDetails>
+        non_binary_download;
     if (on_create_download_finder_action_ ==
         ON_CREATE_DOWNLOAD_FINDER_NO_PROFILES) {
       return scoped_ptr<safe_browsing::LastDownloadFinder>();
     }
     if (on_create_download_finder_action_ ==
-        ON_CREATE_DOWNLOAD_FINDER_DOWNLOAD_FOUND) {
-      download.reset(new safe_browsing::ClientIncidentReport_DownloadDetails);
-      download->set_token(kFakeDownloadToken);
+            ON_CREATE_DOWNLOAD_FINDER_DOWNLOADS_FOUND ||
+        on_create_download_finder_action_ ==
+            ON_CREATE_DOWNLOAD_FINDER_BINARY_DOWNLOAD_FOUND) {
+      binary_download.reset(
+          new safe_browsing::ClientIncidentReport_DownloadDetails);
+      binary_download->set_token(kFakeDownloadToken);
     }
+    if (on_create_download_finder_action_ ==
+            ON_CREATE_DOWNLOAD_FINDER_DOWNLOADS_FOUND ||
+        on_create_download_finder_action_ ==
+            ON_CREATE_DOWNLOAD_FINDER_NON_BINARY_DOWNLOAD_FOUND) {
+      non_binary_download.reset(
+          new safe_browsing::ClientIncidentReport_NonBinaryDownloadDetails);
+      non_binary_download->set_host(kFakeDownloadHost);
+    }
+
     return scoped_ptr<safe_browsing::LastDownloadFinder>(
         FakeDownloadFinder::Create(
             base::Bind(&IncidentReportingServiceTest::OnDownloadFinderDestroyed,
                        base::Unretained(this)),
-            download.Pass(),
-            callback));
+            binary_download.Pass(), non_binary_download.Pass(), callback));
   }
 
   // A fake StartUpload implementation invoked by the service during operation.
@@ -535,8 +572,24 @@ base::LazyInstance<base::ThreadLocalPointer<
     IncidentReportingServiceTest::TestIncidentReportingService::test_instance_ =
         LAZY_INSTANCE_INITIALIZER;
 
+void IncidentReportingServiceTest::ExpectTestIncidentUploadWithBinaryDownload(
+    int incident_count) {
+  ExpectTestIncidentUploadedImpl(incident_count, true, false);
+}
+
+void IncidentReportingServiceTest::
+    ExpectTestIncidentUploadWithNonBinaryDownload(int incident_count) {
+  ExpectTestIncidentUploadedImpl(incident_count, false, true);
+}
+
+void IncidentReportingServiceTest::ExpectTestIncidentUploadWithBothDownloads(
+    int incident_count) {
+  ExpectTestIncidentUploadedImpl(incident_count, true, false);
+}
+
 const char IncidentReportingServiceTest::kFakeOsName[] = "fakedows";
 const char IncidentReportingServiceTest::kFakeDownloadToken[] = "fakedlt";
+const char IncidentReportingServiceTest::kFakeDownloadHost[] = "chromium.org";
 const char IncidentReportingServiceTest::kTestTrackedPrefPath[] = "some_pref";
 const char IncidentReportingServiceTest::kFakeExtensionId[] = "fakeExtensionId";
 
@@ -561,7 +614,7 @@ TEST_F(IncidentReportingServiceTest, AddIncident) {
 
   // Verify that report upload took place and contained the incident,
   // environment data, and download details.
-  ExpectTestIncidentUploaded(1);
+  ExpectTestIncidentUploadWithBinaryDownload(1);
 
   // Verify that the download finder and the uploader were destroyed.
   ASSERT_TRUE(DownloadFinderDestroyed());
@@ -591,7 +644,7 @@ TEST_F(IncidentReportingServiceTest, CoalesceIncidents) {
 
   // Verify that report upload took place and contained the incident,
   // environment data, and download details.
-  ExpectTestIncidentUploaded(2);
+  ExpectTestIncidentUploadWithBinaryDownload(2);
 
   // Verify that the download finder and the uploader were destroyed.
   ASSERT_TRUE(DownloadFinderDestroyed());
@@ -640,7 +693,7 @@ TEST_F(IncidentReportingServiceTest, SafeBrowsingFieldTrial) {
 
   // Verify that report upload took place and contained the incident,
   // environment data, and download details.
-  ExpectTestIncidentUploaded(1);
+  ExpectTestIncidentUploadWithBinaryDownload(1);
 
   // Verify that the download finder and the uploader were destroyed.
   ASSERT_TRUE(DownloadFinderDestroyed());
@@ -697,7 +750,7 @@ TEST_F(IncidentReportingServiceTest, ExtendedReportingNoFieldTrial) {
 
   // Verify that report upload took place and contained the incident,
   // environment data, and download details.
-  ExpectTestIncidentUploaded(1);
+  ExpectTestIncidentUploadWithBinaryDownload(1);
 
   // Verify that the download finder and the uploader were destroyed.
   ASSERT_TRUE(DownloadFinderDestroyed());
@@ -754,7 +807,7 @@ TEST_F(IncidentReportingServiceTest, NoUploadBeforeExtendedReporting) {
 
   // Verify that a report upload took place, and only the second incident was
   // uploaded.
-  ExpectTestIncidentUploaded(1);
+  ExpectTestIncidentUploadWithBinaryDownload(1);
 
   // Ensure that no report processing remains.
   ASSERT_FALSE(instance_->IsProcessingReport());
@@ -802,7 +855,7 @@ TEST_F(IncidentReportingServiceTest, NoDownloadPrunedIncidentOneUpload) {
   AssertNoUpload();
 
   // Tell the fixture to return a download now.
-  SetCreateDownloadFinderAction(ON_CREATE_DOWNLOAD_FINDER_DOWNLOAD_FOUND);
+  SetCreateDownloadFinderAction(ON_CREATE_DOWNLOAD_FINDER_DOWNLOADS_FOUND);
 
   // Add a variation on the incident to the service.
   instance_->GetIncidentReceiver()->AddIncidentForProfile(
@@ -812,7 +865,7 @@ TEST_F(IncidentReportingServiceTest, NoDownloadPrunedIncidentOneUpload) {
   task_runner_->RunUntilIdle();
 
   // Verify that an additional report upload took place.
-  ExpectTestIncidentUploaded(1);
+  ExpectTestIncidentUploadWithBinaryDownload(1);
 
   // Ensure that no report processing remains.
   ASSERT_FALSE(instance_->IsProcessingReport());
@@ -836,7 +889,7 @@ TEST_F(IncidentReportingServiceTest, NoDownloadPrunedSameIncidentNoUpload) {
   AssertNoUpload();
 
   // Tell the fixture to return a download now.
-  SetCreateDownloadFinderAction(ON_CREATE_DOWNLOAD_FINDER_DOWNLOAD_FOUND);
+  SetCreateDownloadFinderAction(ON_CREATE_DOWNLOAD_FINDER_DOWNLOADS_FOUND);
 
   // Add the incident to the service again.
   AddTestIncident(profile);
@@ -889,7 +942,7 @@ TEST_F(IncidentReportingServiceTest, OneIncidentOneUpload) {
 
   // Verify that report upload took place and contained the incident and
   // environment data.
-  ExpectTestIncidentUploaded(1);
+  ExpectTestIncidentUploadWithBinaryDownload(1);
 
   // Add the incident to the service again.
   AddTestIncident(profile);
@@ -917,7 +970,7 @@ TEST_F(IncidentReportingServiceTest, TwoIncidentsTwoUploads) {
 
   // Verify that report upload took place and contained the incident and
   // environment data.
-  ExpectTestIncidentUploaded(1);
+  ExpectTestIncidentUploadWithBinaryDownload(1);
 
   // Add a variation on the incident to the service.
   instance_->GetIncidentReceiver()->AddIncidentForProfile(
@@ -927,7 +980,7 @@ TEST_F(IncidentReportingServiceTest, TwoIncidentsTwoUploads) {
   task_runner_->RunUntilIdle();
 
   // Verify that an additional report upload took place.
-  ExpectTestIncidentUploaded(1);
+  ExpectTestIncidentUploadWithBinaryDownload(1);
 
   // Ensure that no report processing remains.
   ASSERT_FALSE(instance_->IsProcessingReport());
@@ -946,7 +999,7 @@ TEST_F(IncidentReportingServiceTest, TwoProfilesTwoUploads) {
 
   // Verify that report upload took place and contained the incident and
   // environment data.
-  ExpectTestIncidentUploaded(1);
+  ExpectTestIncidentUploadWithBinaryDownload(1);
 
   // Create a second profile with its own incident on addition.
   CreateProfile("profile2", EXTENDED_REPORTING_OPT_IN,
@@ -956,7 +1009,7 @@ TEST_F(IncidentReportingServiceTest, TwoProfilesTwoUploads) {
   task_runner_->RunUntilIdle();
 
   // Verify that a second report upload took place.
-  ExpectTestIncidentUploaded(1);
+  ExpectTestIncidentUploadWithBinaryDownload(1);
 
   // Ensure that no report processing remains.
   ASSERT_FALSE(instance_->IsProcessingReport());
@@ -979,7 +1032,7 @@ TEST_F(IncidentReportingServiceTest, ProfileDestroyedDuringUpload) {
 
   // Verify that report upload took place and contained the incident and
   // environment data.
-  ExpectTestIncidentUploaded(1);
+  ExpectTestIncidentUploadWithBinaryDownload(1);
 
   // Ensure that no report processing remains.
   ASSERT_FALSE(instance_->IsProcessingReport());
@@ -1020,7 +1073,7 @@ TEST_F(IncidentReportingServiceTest, ProcessWideOneUpload) {
   task_runner_->RunUntilIdle();
 
   // An upload should have taken place.
-  ExpectTestIncidentUploaded(1);
+  ExpectTestIncidentUploadWithBinaryDownload(1);
 
   // Add the incident to the service again.
   AddTestIncident(NULL);
@@ -1052,7 +1105,7 @@ TEST_F(IncidentReportingServiceTest, ProcessWideTwoUploads) {
   task_runner_->RunUntilIdle();
 
   // An upload should have taken place.
-  ExpectTestIncidentUploaded(1);
+  ExpectTestIncidentUploadWithBinaryDownload(1);
 
   // Add a variation on the incident to the service.
   receiver->AddIncidentForProcess(MakeTestIncident("leeches"));
@@ -1061,7 +1114,7 @@ TEST_F(IncidentReportingServiceTest, ProcessWideTwoUploads) {
   task_runner_->RunUntilIdle();
 
   // Verify that an additional report upload took place.
-  ExpectTestIncidentUploaded(1);
+  ExpectTestIncidentUploadWithBinaryDownload(1);
 
   // Ensure that no report processing remains.
   ASSERT_FALSE(instance_->IsProcessingReport());
@@ -1215,7 +1268,7 @@ TEST_F(IncidentReportingServiceTest, DelayedAnalysisOneUpload) {
   ASSERT_TRUE(DelayedAnalysisRan());
 
   // An upload should have taken place.
-  ExpectTestIncidentUploaded(1);
+  ExpectTestIncidentUploadWithBinaryDownload(1);
 
   // Add the incident to the service again.
   AddTestIncident(NULL);
@@ -1256,6 +1309,59 @@ TEST_F(IncidentReportingServiceTest, NoDownloadNoWaiting) {
   EXPECT_TRUE(DownloadFinderDestroyed());
 
   // Ensure that the report is dropped.
+  ASSERT_FALSE(instance_->IsProcessingReport());
+}
+
+// Tests that the service sends the report if a non-binary download is found.
+TEST_F(IncidentReportingServiceTest, NonBinaryDownloadStillUploads) {
+  SetFieldTrialAndCreateService(false);
+  // Tell the fixture to return only the last non-binary download.
+  SetCreateDownloadFinderAction(
+      ON_CREATE_DOWNLOAD_FINDER_NON_BINARY_DOWNLOAD_FOUND);
+
+  // Register a callback.
+  RegisterAnalysis(ON_DELAYED_ANALYSIS_ADD_INCIDENT);
+
+  // Add a profile that participates in safe browsing.
+  CreateProfile("profile1", EXTENDED_REPORTING_OPT_IN,
+                ON_PROFILE_ADDITION_NO_ACTION, nullptr);
+
+  // Let all tasks run.
+  task_runner_->RunUntilIdle();
+
+  // Confirm that the callbacks were run.
+  ASSERT_TRUE(DelayedAnalysisRan());
+
+  // Verify that a report upload took place.
+  ExpectTestIncidentUploadWithNonBinaryDownload(1);
+
+  // Ensure that no report processing remains.
+  ASSERT_FALSE(instance_->IsProcessingReport());
+}
+
+// Tests that the service can send both a binary and non-binary download.
+TEST_F(IncidentReportingServiceTest, UploadsWithBothDownloadTypes) {
+  SetFieldTrialAndCreateService(false);
+  // Tell the fixture to return only the last non-binary download.
+  SetCreateDownloadFinderAction(ON_CREATE_DOWNLOAD_FINDER_DOWNLOADS_FOUND);
+
+  // Register a callback.
+  RegisterAnalysis(ON_DELAYED_ANALYSIS_ADD_INCIDENT);
+
+  // Add a profile that participates in safe browsing.
+  CreateProfile("profile1", EXTENDED_REPORTING_OPT_IN,
+                ON_PROFILE_ADDITION_NO_ACTION, nullptr);
+
+  // Let all tasks run.
+  task_runner_->RunUntilIdle();
+
+  // Confirm that the callbacks were run.
+  ASSERT_TRUE(DelayedAnalysisRan());
+
+  // Verify that a report upload took place.
+  ExpectTestIncidentUploadWithBothDownloads(1);
+
+  // Ensure that no report processing remains.
   ASSERT_FALSE(instance_->IsProcessingReport());
 }
 
@@ -1310,7 +1416,7 @@ TEST_F(IncidentReportingServiceTest, ProcessWideUploadClearUpload) {
   task_runner_->RunUntilIdle();
 
   // An upload should have taken place.
-  ExpectTestIncidentUploaded(1);
+  ExpectTestIncidentUploadWithBinaryDownload(1);
 
   // Clear incident data.
   receiver->ClearIncidentForProcess(MakeTestIncident(nullptr));
@@ -1319,7 +1425,7 @@ TEST_F(IncidentReportingServiceTest, ProcessWideUploadClearUpload) {
   task_runner_->RunUntilIdle();
 
   // No uploads should have taken place.
-  ExpectTestIncidentUploaded(0);
+  ExpectTestIncidentUploadWithBinaryDownload(0);
 
   // Add the incident to the service again.
   receiver->AddIncidentForProcess(MakeTestIncident(nullptr));
@@ -1328,7 +1434,7 @@ TEST_F(IncidentReportingServiceTest, ProcessWideUploadClearUpload) {
   task_runner_->RunUntilIdle();
 
   // An upload should have taken place.
-  ExpectTestIncidentUploaded(1);
+  ExpectTestIncidentUploadWithBinaryDownload(1);
 
   // Ensure that no report processing remains.
   ASSERT_FALSE(instance_->IsProcessingReport());
@@ -1350,7 +1456,7 @@ TEST_F(IncidentReportingServiceTest, ClearProcessIncidentOnCleanState) {
   task_runner_->RunUntilIdle();
 
   // No uploads should have taken place.
-  ExpectTestIncidentUploaded(0);
+  ExpectTestIncidentUploadWithBinaryDownload(0);
 
   // Downloads and environment data should have not been collected.
   ASSERT_FALSE(HasCreatedDownloadFinder());

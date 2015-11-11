@@ -11,6 +11,8 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/prefs/pref_service.h"
+#include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/history/history_service_factory.h"
@@ -24,6 +26,7 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
+#include "crypto/sha2.h"
 
 namespace safe_browsing {
 
@@ -76,7 +79,7 @@ bool IsBinaryDownloadForCurrentOS(
   return download_type == ClientDownloadRequest::WIN_EXECUTABLE;
 }
 
-// Returns true if a download represented by a DownloadRow is binary file for
+// Returns true if a download represented by a DownloadRow is a binary file for
 // the current OS.
 bool IsBinaryDownload(const history::DownloadRow& row) {
   // TODO(grt): Peek into archives to see if they contain binaries;
@@ -85,6 +88,11 @@ bool IsBinaryDownload(const history::DownloadRow& row) {
           !download_protection_util::IsArchiveFile(row.target_path) &&
           IsBinaryDownloadForCurrentOS(
               download_protection_util::GetDownloadType(row.target_path)));
+}
+
+// Returns true if a download represented by a DownloadRow is not a binary file.
+bool IsNonBinaryDownload(const history::DownloadRow& row) {
+  return !download_protection_util::IsSupportedBinaryFile(row.target_path);
 }
 
 // Returns true if a download represented by a DownloadDetails is binary file
@@ -108,8 +116,19 @@ bool HasBeenOpened(const ClientIncidentReport_DownloadDetails& details) {
 // non-opened for downloads that completed at the same time (extraordinarily
 // unlikely). Only files that look like some kind of executable are considered.
 template <class A, class B>
-bool IsMoreInterestingThan(const A& first, const B& second) {
+bool IsMoreInterestingBinaryThan(const A& first, const B& second) {
   if (GetEndTime(first) < GetEndTime(second) || !IsBinaryDownload(first))
+    return false;
+  return (GetEndTime(first) != GetEndTime(second) ||
+          (HasBeenOpened(first) && !HasBeenOpened(second)));
+}
+
+// Returns true if |first| is more recent than |second|, preferring opened over
+// non-opened for downloads that completed at the same time (extraordinarily
+// unlikely). Only files that do not look like an executable are considered.
+bool IsMoreInterestingNonBinaryThan(const history::DownloadRow& first,
+                                    const history::DownloadRow& second) {
+  if (GetEndTime(first) < GetEndTime(second) || !IsNonBinaryDownload(first))
     return false;
   return (GetEndTime(first) != GetEndTime(second) ||
           (HasBeenOpened(first) && !HasBeenOpened(second)));
@@ -117,15 +136,19 @@ bool IsMoreInterestingThan(const A& first, const B& second) {
 
 // Returns a pointer to the most interesting completed download in |downloads|.
 const history::DownloadRow* FindMostInteresting(
-    const std::vector<history::DownloadRow>& downloads) {
-  const history::DownloadRow* most_recent_row = NULL;
-  for (size_t i = 0; i < downloads.size(); ++i) {
-    const history::DownloadRow& row = downloads[i];
+    const std::vector<history::DownloadRow>& downloads,
+    bool is_binary) {
+  const history::DownloadRow* most_recent_row = nullptr;
+  for (const auto& row : downloads) {
     // Ignore incomplete downloads.
     if (row.state != history::DownloadState::COMPLETE)
       continue;
-    if (!most_recent_row || IsMoreInterestingThan(row, *most_recent_row))
+
+    if (!most_recent_row ||
+        (is_binary ? IsMoreInterestingBinaryThan(row, *most_recent_row)
+                   : IsMoreInterestingNonBinaryThan(row, *most_recent_row))) {
       most_recent_row = &row;
+    }
   }
   return most_recent_row;
 }
@@ -133,12 +156,12 @@ const history::DownloadRow* FindMostInteresting(
 // Returns true if |candidate| is more interesting than whichever of |details|
 // or |best_row| is present.
 template <class D>
-bool IsMostInteresting(const D& candidate,
-                       const ClientIncidentReport_DownloadDetails* details,
-                       const history::DownloadRow& best_row) {
-  return details ?
-      IsMoreInterestingThan(candidate, *details) :
-      IsMoreInterestingThan(candidate, best_row);
+bool IsMostInterestingBinary(
+    const D& candidate,
+    const ClientIncidentReport_DownloadDetails* details,
+    const history::DownloadRow& best_row) {
+  return details ? IsMoreInterestingBinaryThan(candidate, *details)
+                 : IsMoreInterestingBinaryThan(candidate, best_row);
 }
 
 // Populates the |details| protobuf with information pertaining to |download|.
@@ -175,6 +198,22 @@ void PopulateDetailsFromRow(const history::DownloadRow& download,
   // opened in Chrome.
   if (download.opened)
     details->set_open_time_msec(download.end_time.ToJavaTime());
+}
+
+// Populates the |details| protobuf with information pertaining to the
+// (non-binary) |download|.
+void PopulateNonBinaryDetailsFromRow(
+    const history::DownloadRow& download,
+    ClientIncidentReport_NonBinaryDownloadDetails* details) {
+  details->set_file_type(
+      base::FilePath(
+          download_protection_util::GetFileExtension(download.target_path))
+          .AsUTF8Unsafe());
+  details->set_length(download.received_bytes);
+  if (download.url_chain.back().has_host())
+    details->set_host(download.url_chain.back().host());
+  details->set_url_spec_sha256(
+      crypto::SHA256HashString(download.url_chain.back().spec()));
 }
 
 }  // namespace
@@ -251,32 +290,32 @@ void LastDownloadFinder::OnMetadataQuery(
     return;
 
   if (details) {
-    if (IsMostInteresting(*details, details_.get(), most_recent_row_)) {
+    if (IsMostInterestingBinary(*details, details_.get(),
+                                most_recent_binary_row_)) {
       details_ = details.Pass();
-      most_recent_row_.end_time = base::Time();
+      most_recent_binary_row_.end_time = base::Time();
     }
-
-    RemoveProfileAndReportIfDone(iter);
+    iter->second = WAITING_FOR_NON_BINARY_HISTORY;
   } else {
-    // Search history since no metadata was found.
     iter->second = WAITING_FOR_HISTORY;
-    history::HistoryService* history_service =
-        HistoryServiceFactory::GetForProfile(
-            profile, ServiceAccessType::IMPLICIT_ACCESS);
-    // No history service is returned for profiles that do not save history.
-    if (!history_service) {
-      RemoveProfileAndReportIfDone(iter);
-      return;
-    }
-    if (history_service->BackendLoaded()) {
-      history_service->QueryDownloads(
-          base::Bind(&LastDownloadFinder::OnDownloadQuery,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     profile));
-    } else {
-      // else wait until history is loaded.
-      history_service_observer_.Add(history_service);
-    }
+  }
+
+  // Initiate a history search
+  history::HistoryService* history_service =
+      HistoryServiceFactory::GetForProfile(profile,
+                                           ServiceAccessType::IMPLICIT_ACCESS);
+  // No history service is returned for profiles that do not save history.
+  if (!history_service) {
+    RemoveProfileAndReportIfDone(iter);
+    return;
+  }
+  if (history_service->BackendLoaded()) {
+    history_service->QueryDownloads(
+        base::Bind(&LastDownloadFinder::OnDownloadQuery,
+                   weak_ptr_factory_.GetWeakPtr(), profile));
+  } else {
+    // else wait until history is loaded.
+    history_service_observer_.Add(history_service);
   }
 }
 
@@ -295,13 +334,26 @@ void LastDownloadFinder::OnDownloadQuery(
   if (iter == profile_states_.end())
     return;
 
-  // Find the most recent from this profile and use it if it's better than
-  // anything else found so far.
-  const history::DownloadRow* profile_best = FindMostInteresting(*downloads);
-  if (profile_best &&
-      IsMostInteresting(*profile_best, details_.get(), most_recent_row_)) {
-    details_.reset();
-    most_recent_row_ = *profile_best;
+  // Don't overwrite the download from metadata if it came from this profile.
+  if (iter->second == WAITING_FOR_HISTORY) {
+    // Find the most recent from this profile and use it if it's better than
+    // anything else found so far.
+    const history::DownloadRow* profile_best_binary =
+        FindMostInteresting(*downloads, true);
+    if (profile_best_binary &&
+        IsMostInterestingBinary(*profile_best_binary, details_.get(),
+                                most_recent_binary_row_)) {
+      details_.reset();
+      most_recent_binary_row_ = *profile_best_binary;
+    }
+  }
+
+  const history::DownloadRow* profile_best_non_binary =
+      FindMostInteresting(*downloads, false);
+  if (profile_best_non_binary &&
+      IsMoreInterestingNonBinaryThan(*profile_best_non_binary,
+                                     most_recent_non_binary_row_)) {
+    most_recent_non_binary_row_ = *profile_best_non_binary;
   }
 
   RemoveProfileAndReportIfDone(iter);
@@ -320,23 +372,28 @@ void LastDownloadFinder::RemoveProfileAndReportIfDone(
 
 void LastDownloadFinder::ReportResults() {
   DCHECK(profile_states_.empty());
+
+  scoped_ptr<ClientIncidentReport_DownloadDetails> binary_details = nullptr;
+  scoped_ptr<ClientIncidentReport_NonBinaryDownloadDetails> non_binary_details =
+      nullptr;
+
   if (details_) {
-    callback_.Run(make_scoped_ptr(new ClientIncidentReport_DownloadDetails(
-                                      *details_)).Pass());
-    // Do not touch this LastDownloadFinder after running the callback, since it
-    // may have been deleted.
-  } else if (!most_recent_row_.end_time.is_null()) {
-    scoped_ptr<ClientIncidentReport_DownloadDetails> details(
-        new ClientIncidentReport_DownloadDetails());
-    PopulateDetailsFromRow(most_recent_row_, details.get());
-    callback_.Run(details.Pass());
-    // Do not touch this LastDownloadFinder after running the callback, since it
-    // may have been deleted.
-  } else {
-    callback_.Run(scoped_ptr<ClientIncidentReport_DownloadDetails>());
-    // Do not touch this LastDownloadFinder after running the callback, since it
-    // may have been deleted.
+    binary_details.reset(new ClientIncidentReport_DownloadDetails(*details_));
+  } else if (!most_recent_binary_row_.end_time.is_null()) {
+    binary_details.reset(new ClientIncidentReport_DownloadDetails());
+    PopulateDetailsFromRow(most_recent_binary_row_, binary_details.get());
   }
+
+  if (!most_recent_non_binary_row_.end_time.is_null()) {
+    non_binary_details.reset(
+        new ClientIncidentReport_NonBinaryDownloadDetails());
+    PopulateNonBinaryDetailsFromRow(most_recent_non_binary_row_,
+                                    non_binary_details.get());
+  }
+
+  callback_.Run(binary_details.Pass(), non_binary_details.Pass());
+  // Do not touch this LastDownloadFinder after running the callback, since it
+  // may have been deleted.
 }
 
 void LastDownloadFinder::Observe(int type,
@@ -362,7 +419,8 @@ void LastDownloadFinder::OnHistoryServiceLoaded(
     if (hs == history_service) {
       // Start the query in the history service if the finder was waiting for
       // the service to load.
-      if (pair.second == WAITING_FOR_HISTORY) {
+      if (pair.second == WAITING_FOR_HISTORY ||
+          pair.second == WAITING_FOR_NON_BINARY_HISTORY) {
         history_service->QueryDownloads(
             base::Bind(&LastDownloadFinder::OnDownloadQuery,
                        weak_ptr_factory_.GetWeakPtr(),
