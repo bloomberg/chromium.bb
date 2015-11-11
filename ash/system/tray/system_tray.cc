@@ -474,6 +474,11 @@ void SystemTray::ShowItems(const std::vector<SystemTrayItem*>& items,
       system_bubble_->bubble()->FocusDefaultIfNeeded();
     }
   } else {
+    // Cleanup the existing bubble before showing a new one. Otherwise, it's
+    // possible to confuse the new system bubble with the old one during
+    // destruction, leading to subtle errors/crashes such as crbug.com/545166.
+    DestroySystemBubble();
+
     // Remember if the menu is a single property (like e.g. volume) or the
     // full tray menu. Note that in case of the |BUBBLE_USE_EXISTING| case
     // above, |full_system_tray_menu_| does not get changed since the fact that
@@ -507,6 +512,7 @@ void SystemTray::ShowItems(const std::vector<SystemTrayItem*>& items,
     if (items.size() == 1 && items[0]->ShouldHideArrow())
       init_params.arrow_paint_type = views::BubbleBorder::PAINT_TRANSPARENT;
     SystemTrayBubble* bubble = new SystemTrayBubble(this, items, bubble_type);
+
     system_bubble_.reset(new SystemBubbleWrapper(bubble));
     system_bubble_->InitView(this, tray_container(), &init_params, persistent);
   }
