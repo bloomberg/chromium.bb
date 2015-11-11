@@ -59,6 +59,7 @@ class WebFormElement;
 class WebElementCollection;
 class WebString;
 class WebURL;
+struct WebDistillabilityFeatures;
 
 // Provides readonly access to some properties of a DOM document.
 class WebDocument : public WebNode {
@@ -136,6 +137,7 @@ public:
 
     BLINK_EXPORT WebURL manifestURL() const;
     BLINK_EXPORT bool manifestUseCredentials() const;
+    BLINK_EXPORT WebDistillabilityFeatures distillabilityFeatures();
 
 #if BLINK_IMPLEMENTATION
     WebDocument(const PassRefPtrWillBeRawPtr<Document>&);

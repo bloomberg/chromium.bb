@@ -50916,6 +50916,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="WebCore.DistillabilityUs" units="microseconds">
+  <owner>wychen@chromium.org</owner>
+  <summary>
+    The time spent on collecting the statistics of the document in the main
+    frame. These statistics would be used as features to classify whether the
+    page is suitable for DOM distiller.
+  </summary>
+</histogram>
+
 <histogram name="WebCore.Document.execCommand" enum="MappedEditingCommands">
   <owner>yoichio@chromium.org</owner>
   <summary>
