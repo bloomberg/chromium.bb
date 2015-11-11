@@ -2290,6 +2290,47 @@ TEST_F(SearchProviderTest, DontInlineAutocompleteAsynchronously) {
   }
 }
 
+TEST_F(SearchProviderTest, DontCacheCalculatorSuggestions) {
+  // This test sends two separate queries and checks that at each stage of
+  // processing (receiving first asynchronous response, handling new keystroke
+  // synchronously) we have the expected matches.  The new keystroke should
+  // immediately invalidate old calculator suggestions.
+  struct {
+    const std::string json;
+    const ExpectedMatch async_matches[4];
+    const ExpectedMatch sync_matches[4];
+  } cases[] = {
+    { "[\"1+2\",[\"3\", \"1+2+3+4+5\"],[],[],"
+       "{\"google:verbatimrelevance\":1300,"
+        "\"google:suggesttype\":[\"CALCULATOR\", \"QUERY\"],"
+        "\"google:suggestrelevance\":[1200, 900]}]",
+      { { "1+2", true }, { "3", false }, { "1+2+3+4+5", false },
+        kEmptyExpectedMatch },
+      { { "1+23", true }, { "1+2+3+4+5", false }, kEmptyExpectedMatch,
+        kEmptyExpectedMatch } },
+  };
+
+  for (size_t i = 0; i < arraysize(cases); ++i) {
+    // First, send the query "1+2" and receive the JSON response |first_json|.
+    ClearAllResults();
+    QueryForInputAndWaitForFetcherResponses(
+        ASCIIToUTF16("1+2"), false, cases[i].json, std::string());
+
+    // Verify that the matches after the asynchronous results are as expected.
+    std::string description = "first asynchronous response for input with "
+        "json=" + cases[i].json;
+    CheckMatches(description, arraysize(cases[i].async_matches),
+                 cases[i].async_matches, provider_->matches());
+
+    // Then, send the query "1+23" and check the synchronous matches.
+    description = "synchronous response after the first keystroke after input "
+        "with json=" + cases[i].json;
+    QueryForInput(ASCIIToUTF16("1+23"), false, false);
+    CheckMatches(description, arraysize(cases[i].sync_matches),
+                 cases[i].sync_matches, provider_->matches());
+  }
+}
+
 TEST_F(SearchProviderTest, LocalAndRemoteRelevances) {
   // We hardcode the string "term1" below, so ensure that the search term that
   // got added to history already is that string.

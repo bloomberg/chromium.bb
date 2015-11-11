@@ -215,8 +215,13 @@ void SearchProvider::UpdateOldResults(
   if (!minimal_changes) {
     for (SearchSuggestionParser::SuggestResults::iterator sug_it =
              results->suggest_results.begin();
-         sug_it != results->suggest_results.end(); ++sug_it) {
-      sug_it->set_received_after_last_keystroke(false);
+         sug_it != results->suggest_results.end(); ) {
+      if (sug_it->type() == AutocompleteMatchType::CALCULATOR) {
+        sug_it = results->suggest_results.erase(sug_it);
+      } else {
+        sug_it->set_received_after_last_keystroke(false);
+        ++sug_it;
+      }
     }
     for (SearchSuggestionParser::NavigationResults::iterator nav_it =
              results->navigation_results.begin();
