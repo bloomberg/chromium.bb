@@ -13,6 +13,7 @@ group("runner") {
   deps = [
     ":mojo_runner",
     "//mojo/runner/child",
+    "//mojo/runner/host",
   ]
 }
 
@@ -201,7 +202,6 @@ if (is_android) {
       "android/apk/src/org/chromium/mojo/shell/AndroidHandler.java",
       "android/apk/src/org/chromium/mojo/shell/Bootstrap.java",
       "android/apk/src/org/chromium/mojo/shell/ShellMain.java",
-      "android/tests/src/org/chromium/mojo/shell/ShellTestBase.java",
     ]
     jni_package = "mojo/shell"
   }
@@ -362,89 +362,4 @@ if (is_android) {
     ]
     dir = mojo_runner_test_assets_dir
   }
-
-  android_library("mojo_runner_tests_java") {
-    java_files =
-        [ "android/tests/src/org/chromium/mojo/shell/ShellTestBase.java" ]
-
-    deps = [
-      ":java",
-      "//base:base_java",
-    ]
-  }
-}
-
-test("mojo_runner_unittests") {
-  sources = [
-    "../fetcher/about_fetcher_unittest.cc",
-    "../fetcher/data_fetcher_unittest.cc",
-    "../fetcher/network_fetcher_unittest.cc",
-    "../fetcher/url_resolver_unittest.cc",
-    "data_pipe_peek_unittest.cc",
-    "native_runner_unittest.cc",
-    "register_local_aliases.cc",
-    "register_local_aliases.h",
-    "shell_test_base.cc",
-    "shell_test_base.h",
-    "shell_test_base_android.cc",
-    "shell_test_base_unittest.cc",
-    "shell_test_main.cc",
-  ]
-
-  deps = [
-    ":lib",
-    "//base",
-    "//base:i18n",
-    "//base/test:test_support",
-    "//mojo/application/public/cpp",
-    "//mojo/common",
-    "//mojo/environment:chromium",
-    "//mojo/fetcher",
-    "//mojo/message_pump",
-    "//mojo/package_manager",
-    "//mojo/services/test_service:bindings",
-    "//mojo/shell",
-    "//mojo/util:filename_util",
-    "//testing/gtest",
-    "//third_party/mojo/src/mojo/edk/system",
-    "//third_party/mojo/src/mojo/public/cpp/bindings",
-    "//url",
-  ]
-
-  data_deps = [
-    "//mojo/services/test_service:test_app",
-    "//mojo/services/test_service:test_request_tracker_app",
-  ]
-
-  if (is_android) {
-    sources += [ "android/background_application_loader_unittest.cc" ]
-
-    deps += [ ":jni_headers" ]
-
-    apk_deps = [
-      ":build_mojo_runner_test_assets",
-      ":mojo_runner_tests_java",
-    ]
-
-    apk_asset_location = mojo_runner_test_assets_dir
-  }
-}
-
-mojo_native_application("apptests") {
-  output_name = "runner_apptests"
-
-  testonly = true
-
-  sources = [
-    # TODO(jam): needs http_server service. http://crbug.com/479316
-    #"shell_apptest.cc",
-  ]
-
-  deps = [
-    "//base",
-    "//mojo/application/public/cpp:test_support",
-    "//mojo/runner/test:bindings",
-    "//mojo/services/network/public/interfaces",
-    "//third_party/mojo/src/mojo/public/cpp/bindings:callback",
-  ]
 }

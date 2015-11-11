@@ -12,7 +12,7 @@ group("host") {
 
   deps = [
     ":lib",
-    ":unittests",
+    ":mojo_runner_host_unittests",
   ]
 }
 
@@ -86,9 +86,7 @@ source_set("lib") {
   }
 }
 
-test("unittests") {
-  output_name = "mojo_runner_host_unittests"
-
+test("mojo_runner_host_unittests") {
   sources = [
     "child_process_host_unittest.cc",
     "host_unittests.cc",

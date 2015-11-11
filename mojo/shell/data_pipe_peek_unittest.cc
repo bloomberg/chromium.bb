@@ -4,7 +4,6 @@
 
 #include "mojo/shell/data_pipe_peek.h"
 
-#include "mojo/runner/context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
@@ -12,8 +11,6 @@ namespace runner {
 namespace {
 
 TEST(DataPipePeek, PeekNBytes) {
-  Context::EnsureEmbedderIsInitialized();
-
   DataPipe data_pipe;
   DataPipeConsumerHandle consumer(data_pipe.consumer_handle.get());
   DataPipeProducerHandle producer(data_pipe.producer_handle.get());
@@ -72,8 +69,6 @@ TEST(DataPipePeek, PeekNBytes) {
 }
 
 TEST(DataPipePeek, PeekLine) {
-  Context::EnsureEmbedderIsInitialized();
-
   DataPipe data_pipe;
   DataPipeConsumerHandle consumer(data_pipe.consumer_handle.get());
   DataPipeProducerHandle producer(data_pipe.producer_handle.get());

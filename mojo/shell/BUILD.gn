@@ -75,8 +75,13 @@ source_set("test_support") {
 
 test("mojo_shell_unittests") {
   sources = [
+    "../fetcher/about_fetcher_unittest.cc",
+    "../fetcher/data_fetcher_unittest.cc",
+    "../fetcher/network_fetcher_unittest.cc",
+    "../fetcher/url_resolver_unittest.cc",
     "application_manager_unittest.cc",
     "capability_filter_unittest.cc",
+    "data_pipe_peek_unittest.cc",
     "query_util_unittest.cc",
   ]
 
@@ -86,7 +91,11 @@ test("mojo_shell_unittests") {
     ":test_support",
     "//base",
     "//mojo/application/public/cpp",
+    "//mojo/fetcher",
+    "//mojo/package_manager",
+    "//mojo/util:filename_util",
     "//third_party/mojo/src/mojo/edk/test:run_all_unittests",
+    "//third_party/mojo/src/mojo/public/cpp/system",
     "//testing/gtest",
     "//url",
   ]

@@ -16,7 +16,6 @@
 #include "mojo/common/weak_binding_set.h"
 #include "mojo/fetcher/about_fetcher.h"
 #include "mojo/package_manager/package_manager_impl.h"
-#include "mojo/runner/context.h"
 #include "mojo/shell/application_loader.h"
 #include "mojo/shell/application_manager.h"
 #include "mojo/util/filename_util.h"
@@ -124,7 +123,6 @@ class AboutFetcherTest : public testing::Test {
 
   // Overridden from testing::Test:
   void SetUp() override {
-    runner::Context::EnsureEmbedderIsInitialized();
     base::FilePath shell_dir;
     PathService::Get(base::DIR_MODULE, &shell_dir);
     scoped_ptr<package_manager::PackageManagerImpl> package_manager(

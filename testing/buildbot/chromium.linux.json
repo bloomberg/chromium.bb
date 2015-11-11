@@ -84,7 +84,7 @@
         "test": "mojo_public_utility_unittests"
       },
       {
-        "test": "mojo_runner_unittests"
+        "test": "mojo_runner_host_unittests"
       },
       {
         "test": "mojo_shell_unittests"
@@ -553,7 +553,7 @@
         "test": "mojo_public_utility_unittests"
       },
       {
-        "test": "mojo_runner_unittests"
+        "test": "mojo_runner_host_unittests"
       },
       {
         "test": "mojo_shell_unittests"

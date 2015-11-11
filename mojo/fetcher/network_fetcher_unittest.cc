@@ -12,7 +12,6 @@
 #include "base/run_loop.h"
 #include "mojo/fetcher/network_fetcher.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
-#include "mojo/runner/context.h"
 #include "mojo/services/network/public/interfaces/url_loader.mojom.h"
 #include "mojo/services/network/public/interfaces/url_loader_factory.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -121,7 +120,6 @@ class NetworkFetcherTest : public testing::Test {
  protected:
   // Overridden from testing::Test:
   void SetUp() override {
-    runner::Context::EnsureEmbedderIsInitialized();
     // Automatically destroyed when |url_loader_factory_| is closed.
     new TestURLLoaderFactoryImpl(GetProxy(&url_loader_factory_));
   }
