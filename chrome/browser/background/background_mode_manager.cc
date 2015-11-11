@@ -963,11 +963,12 @@ void BackgroundModeManager::UpdateStatusTrayIconContextMenu() {
       }
     }
     // We should only be displaying the status tray icon if there is at least
-    // one profile using background mode.
-    DCHECK_GT(profiles_using_background_mode, 0);
+    // one profile using background mode. If |keep_alive_for_test_| is set,
+    // there may not be any profiles and that is okay.
+    DCHECK(profiles_using_background_mode > 0 || keep_alive_for_test_);
   } else {
     // We should only have one profile in the cache if we are not
-    // using multi-profiles. If keep_alive_for_test_ is set, then we may not
+    // using multi-profiles. If |keep_alive_for_test_| is set, then we may not
     // have any profiles in the cache.
     DCHECK(profile_cache_->GetNumberOfProfiles() == size_t(1) ||
            keep_alive_for_test_);
