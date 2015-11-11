@@ -10,13 +10,12 @@ import android.graphics.Color;
 import android.os.Build;
 import android.test.suitebuilder.annotation.SmallTest;
 
-import org.chromium.base.ObserverList.RewindableIterator;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.metrics.WebappUma;
-import org.chromium.chrome.browser.tab.TabObserver;
+import org.chromium.chrome.browser.tab.TabTestUtils;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -59,12 +58,7 @@ public class WebappSplashScreenThemeColorTest extends WebappActivityTestBase {
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                RewindableIterator<TabObserver> observers =
-                        getActivity().getActivityTab().getTabObservers();
-                while (observers.hasNext()) {
-                    observers.next().onDidChangeThemeColor(
-                            getActivity().getActivityTab(), Color.GREEN);
-                }
+                TabTestUtils.simulateChangeThemeColor(getActivity().getActivityTab(), Color.GREEN);
             }
         });
 

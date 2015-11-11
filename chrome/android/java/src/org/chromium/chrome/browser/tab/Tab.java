@@ -1061,8 +1061,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
      *         {@link java.util.Iterator#remove()} will throw an
      *         {@link UnsupportedOperationException}.
      */
-    @VisibleForTesting
-    public ObserverList.RewindableIterator<TabObserver> getTabObservers() {
+    protected ObserverList.RewindableIterator<TabObserver> getTabObservers() {
         return mObservers.rewindableIterator();
     }
 

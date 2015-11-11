@@ -19,14 +19,14 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.base.ObserverList.RewindableIterator;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.metrics.WebappUma;
-import org.chromium.chrome.browser.tab.TabObserver;
+import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabTestUtils;
 
 /**
  * Tests for splash screens.
@@ -82,11 +82,7 @@ public class WebappSplashScreenTest extends WebappActivityTestBase {
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                RewindableIterator<TabObserver> observers =
-                        getActivity().getActivityTab().getTabObservers();
-                while (observers.hasNext()) {
-                    observers.next().didFirstVisuallyNonEmptyPaint(getActivity().getActivityTab());
-                }
+                TabTestUtils.simulateFirstVisuallyNonEmptyPaint(getActivity().getActivityTab());
             }
         });
 
@@ -102,11 +98,7 @@ public class WebappSplashScreenTest extends WebappActivityTestBase {
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                RewindableIterator<TabObserver> observers =
-                        getActivity().getActivityTab().getTabObservers();
-                while (observers.hasNext()) {
-                    observers.next().onCrash(getActivity().getActivityTab(), true);
-                }
+                TabTestUtils.simulateCrash(getActivity().getActivityTab(), true);
             }
         });
 
@@ -122,11 +114,7 @@ public class WebappSplashScreenTest extends WebappActivityTestBase {
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                RewindableIterator<TabObserver> observers =
-                        getActivity().getActivityTab().getTabObservers();
-                while (observers.hasNext()) {
-                    observers.next().onPageLoadFinished(getActivity().getActivityTab());
-                }
+                TabTestUtils.simulatePageLoadFinished(getActivity().getActivityTab());
             }
         });
 
@@ -142,11 +130,7 @@ public class WebappSplashScreenTest extends WebappActivityTestBase {
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                RewindableIterator<TabObserver> observers =
-                        getActivity().getActivityTab().getTabObservers();
-                while (observers.hasNext()) {
-                    observers.next().onPageLoadFailed(getActivity().getActivityTab(), 0);
-                }
+                TabTestUtils.simulatePageLoadFailed(getActivity().getActivityTab(), 0);
             }
         });
 
@@ -162,21 +146,11 @@ public class WebappSplashScreenTest extends WebappActivityTestBase {
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                RewindableIterator<TabObserver> observers =
-                        getActivity().getActivityTab().getTabObservers();
-                while (observers.hasNext()) {
-                    observers.next().onPageLoadFinished(getActivity().getActivityTab());
-                }
+                Tab tab = getActivity().getActivityTab();
 
-                observers.rewind();
-                while (observers.hasNext()) {
-                    observers.next().onPageLoadFailed(getActivity().getActivityTab(), 0);
-                }
-
-                observers.rewind();
-                while (observers.hasNext()) {
-                    observers.next().didFirstVisuallyNonEmptyPaint(getActivity().getActivityTab());
-                }
+                TabTestUtils.simulatePageLoadFinished(tab);
+                TabTestUtils.simulatePageLoadFailed(tab, 0);
+                TabTestUtils.simulateFirstVisuallyNonEmptyPaint(tab);
             }
         });
 
@@ -223,11 +197,7 @@ public class WebappSplashScreenTest extends WebappActivityTestBase {
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                RewindableIterator<TabObserver> observers =
-                        getActivity().getActivityTab().getTabObservers();
-                while (observers.hasNext()) {
-                    observers.next().didFirstVisuallyNonEmptyPaint(getActivity().getActivityTab());
-                }
+                TabTestUtils.simulateFirstVisuallyNonEmptyPaint(getActivity().getActivityTab());
             }
         });
 
