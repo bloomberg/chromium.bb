@@ -152,8 +152,13 @@ cr.define('cr.ui', function() {
 
       switch (e.type) {
         case 'mousedown':
-          if (!this.menu.contains(e.target))
+          if (!this.menu.contains(e.target)) {
             this.hideMenu();
+            if(e.button == 0 /* Left click */) {
+              e.preventDefault();
+              e.stopPropagation();
+            }
+          }
           else
             e.preventDefault();
           break;

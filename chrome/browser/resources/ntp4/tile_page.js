@@ -703,12 +703,8 @@ cr.define('ntp', function() {
             Array.prototype.indexOf.call(this.focusableElements_,
                                          focusable);
         this.updateFocusElement_();
-      } else {
-        // This prevents the tile page from getting focus when the user clicks
-        // inside the grid but outside of any tile.
-        e.preventDefault();
       }
-    },
+  },
 
     /**
      * Handle arrow key focus nav.
