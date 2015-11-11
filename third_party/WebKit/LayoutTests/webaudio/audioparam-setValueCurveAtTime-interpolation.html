@@ -51,32 +51,32 @@
         curveDuration: 300 / sampleRate,
         curveLength: 2,
         fullGainTime: 0.75,
-        maxErrorThreshold: 5.961e-8,
-        snrThreshold: 172.068
+        maxErrorThreshold: 5.9605e-8,
+        snrThreshold: 171.206
       }, {
         // Increase the curve length
         curveStartTime: 256 / sampleRate,
         curveDuration: 300 / sampleRate,
         curveLength: 3,
         fullGainTime: 0.75,
-        maxErrorThreshold: 5.961e-8,
-        snrThreshold: 172.068
+        maxErrorThreshold: 5.9605e-8,
+        snrThreshold: 171.206
       }, {
         // Increase the curve length
         curveStartTime: 256 / sampleRate,
         curveDuration: 300 / sampleRate,
         curveLength: 16,
         fullGainTime: 0.75,
-        maxErrorThreshold: 5.961e-8,
-        snrThreshold: 170.012
+        maxErrorThreshold: 5.9605e-8,
+        snrThreshold: 170.892
       }, {
         // Increase the curve length
         curveStartTime: 256 / sampleRate,
         curveDuration: 300 / sampleRate,
         curveLength: 100,
         fullGainTime: 0.75,
-        maxErrorThreshold: 5.961e-8,
-        snrThreshold: 170.196
+        maxErrorThreshold: 1.1921e-7,
+        snrThreshold: 168.712
       }, {
         // Corner case with duration less than a frame!
         curveStartTime: 256 / sampleRate,
@@ -107,8 +107,8 @@
         curveDuration: .5,
         curveLength: 1000,
         fullGainTime: 0.75,
-        maxErrorThreshold: 5.961e-8,
-        snrThreshold: 152.800
+        maxErrorThreshold: 5.9605e-8,
+        snrThreshold: 152.784
       }];
 
       // Creates a function based on the test config that is suitable for use by defineTask().
@@ -124,6 +124,54 @@
         var name = k + ":curve=" + config.curveLength + ",duration=" + (config.curveDuration * sampleRate);
         audit.defineTask(name, createTaskFunction(config));
       }
+
+      // Simple test from crbug.com/441471.  Makes sure the end points and the middle point are
+      // interpolated correctly.
+      audit.defineTask("crbug-441471", function (done) {
+        // Any sample rate should work; we pick something small such that the time end points are on
+        // a sampling point.
+        var context = new OfflineAudioContext(1, 5000, 5000)
+
+        // A constant source 
+        var source = context.createBufferSource();
+        source.buffer = createConstantBuffer(context, 1, 1);
+        source.loop = true;
+
+        var gain = context.createGain();
+
+        var startTime = 0.7;
+        var duration = 0.2;
+        
+        // Create the curve.  The interpolated result should be just a straight line from -1 to 1
+        // from time startTime to startTime + duration.
+
+        var c = new Float32Array(3);
+        c[0] = -1;
+        c[1] = 0;
+        c[2] = 1;
+        gain.gain.setValueCurveAtTime(c, startTime, duration);
+        source.connect(gain);
+        gain.connect(context.destination);
+        source.start();
+
+        context.startRendering().then(function (renderedBuffer) { 
+          var data = renderedBuffer.getChannelData(0);
+          var endTime = startTime + duration;
+          var midPoint = (startTime + endTime) / 2;
+          var success = true;
+
+          success = Should("Curve value at time " + startTime,
+            data[timeToSampleFrame(startTime, context.sampleRate)]).beEqualTo(c[0]) && success;
+          success = Should("Curve value at time " + midPoint,
+            data[timeToSampleFrame(midPoint, context.sampleRate)]).beEqualTo(c[1]) && success;
+          success = Should("Curve value at time " + endTime,
+            data[timeToSampleFrame(endTime, context.sampleRate)]).beEqualTo(c[2]) && success;
+          if (success)
+            testPassed("Test: crbug.com/44471\n");
+          else
+            testFailed("Test: crbug.com/44471\n");
+        }).then(done);
+      });
 
       // Must be the last defined task.
       audit.defineTask("end", function (done) {
@@ -229,7 +277,7 @@
 
          // Linearly ramp now.  This assumes that the actual curve used is a linear ramp, even if
          // there are many curve points.
-         var stepSize = curveValue / (config.curveDuration * sampleRate - 1);
+         var stepSize = curveValue / (config.curveDuration * sampleRate);
          for (; k < curveEndFrame; ++k)
            expected[k] = stepSize * (k - curveStartFrame);
 

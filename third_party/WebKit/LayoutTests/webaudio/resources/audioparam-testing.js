@@ -151,8 +151,8 @@ function createReferenceSineArray(startTime, endTime, startValue, endValue, samp
     var length = Math.floor(endFrame - startFrame);
     var array = new Array(length);
 
-    // v(t) = linearly interpolate between V[k] and V[k + 1] where k = floor(N/duration*(t - t0))
-    var f = length / (endTime - startTime);
+    // v(t) = linearly interpolate between V[k] and V[k + 1] where k = floor((N-1)/duration*(t - t0))
+    var f = (length - 1) / (endTime - startTime);
 
     for (var k = 0; k < length; ++k) {
         var t = (startFrame + k) / sampleRate;

@@ -6,29 +6,29 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 PASS Check: Curve end time is less than or equal to 1.
 PASS Check: Full gain start time is less than or equal to 1.
 PASS Check: Full gain start time is greater than or equal to 0.021718750000000002.
-PASS SNR is greater than or equal to 172.068.
-PASS Max difference is less than or equal to 5.961e-8.
+PASS SNR is greater than or equal to 171.206.
+PASS Max difference is less than or equal to 5.9605e-8.
 PASS Test: curve length = 2; duration frames = 300.
 
 PASS Check: Curve end time is less than or equal to 1.
 PASS Check: Full gain start time is less than or equal to 1.
 PASS Check: Full gain start time is greater than or equal to 0.021718750000000002.
-PASS SNR is greater than or equal to 172.068.
-PASS Max difference is less than or equal to 5.961e-8.
+PASS SNR is greater than or equal to 171.206.
+PASS Max difference is less than or equal to 5.9605e-8.
 PASS Test: curve length = 3; duration frames = 300.
 
 PASS Check: Curve end time is less than or equal to 1.
 PASS Check: Full gain start time is less than or equal to 1.
 PASS Check: Full gain start time is greater than or equal to 0.021718750000000002.
-PASS SNR is greater than or equal to 170.012.
-PASS Max difference is less than or equal to 5.961e-8.
+PASS SNR is greater than or equal to 170.892.
+PASS Max difference is less than or equal to 5.9605e-8.
 PASS Test: curve length = 16; duration frames = 300.
 
 PASS Check: Curve end time is less than or equal to 1.
 PASS Check: Full gain start time is less than or equal to 1.
 PASS Check: Full gain start time is greater than or equal to 0.021718750000000002.
-PASS SNR is greater than or equal to 170.196.
-PASS Max difference is less than or equal to 5.961e-8.
+PASS SNR is greater than or equal to 168.712.
+PASS Max difference is less than or equal to 1.1921e-7.
 PASS Test: curve length = 100; duration frames = 300.
 
 PASS Check: Curve end time is less than or equal to 1.
@@ -55,9 +55,14 @@ PASS Test: curve length = 8; duration frames = 2.
 PASS Check: Curve end time is less than or equal to 1.
 PASS Check: Full gain start time is less than or equal to 1.
 PASS Check: Full gain start time is greater than or equal to 0.51.
-PASS SNR is greater than or equal to 152.8.
-PASS Max difference is less than or equal to 5.961e-8.
+PASS SNR is greater than or equal to 152.784.
+PASS Max difference is less than or equal to 5.9605e-8.
 PASS Test: curve length = 1000; duration frames = 12800.
+
+PASS Curve value at time 0.7 is equal to -1.
+PASS Curve value at time 0.7999999999999999 is equal to 0.
+PASS Curve value at time 0.8999999999999999 is equal to 1.
+PASS Test: crbug.com/44471
 
 PASS successfullyParsed is true
 

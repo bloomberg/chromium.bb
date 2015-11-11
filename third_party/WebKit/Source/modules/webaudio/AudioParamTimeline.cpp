@@ -594,21 +594,9 @@ float AudioParamTimeline::valuesForFrameRangeImpl(
 
                     // Curve events have duration, so don't just use next event time.
                     double duration = event.duration();
-                    double durationFrames = duration * sampleRate;
-                    // How much to step the curve index for each frame.  We want the curve index to
-                    // be exactly equal to the last index (numberOfCurvePoints - 1) after
-                    // durationFrames - 1 frames.  In this way, the last output value will equal the
-                    // last value in the curve array.
-                    double curvePointsPerFrame;
-
-                    // If the duration is less than a frame, we want to just output the last curve
-                    // value.  Do this by setting curvePointsPerFrame to be more than number of
-                    // points in the curve.  Then the curveVirtualIndex will always exceed the last
-                    // curve index, so that the last curve value will be used.
-                    if (durationFrames > 1)
-                        curvePointsPerFrame = (numberOfCurvePoints - 1) / (durationFrames - 1);
-                    else
-                        curvePointsPerFrame = numberOfCurvePoints + 1;
+                    // How much to step the curve index for each frame.  This is basically the term
+                    // (N - 1)/Td in the specification.
+                    double curvePointsPerFrame = (numberOfCurvePoints - 1) / duration / sampleRate;
 
                     if (!curve || !curveData || !numberOfCurvePoints || duration <= 0 || sampleRate <= 0) {
                         // Error condition - simply propagate previous value.
