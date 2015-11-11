@@ -333,7 +333,7 @@ am__dirstamp = $(am__leading_dot)dirstamp
 src_client_linux_libbreakpad_client_a_OBJECTS =  \
 	$(am_src_client_linux_libbreakpad_client_a_OBJECTS)
 src_libbreakpad_a_AR = $(AR) $(ARFLAGS)
-@DISABLE_PROCESSOR_FALSE@src_libbreakpad_a_DEPENDENCIES = src/third_party/libdisasm/libdisasm.a
+src_libbreakpad_a_LIBADD =
 am__src_libbreakpad_a_SOURCES_DIST =  \
 	src/google_breakpad/common/breakpad_types.h \
 	src/google_breakpad/common/minidump_format.h \
@@ -2194,7 +2194,6 @@ lib_LIBRARIES = $(am__append_5) $(am__append_8)
 @DISABLE_PROCESSOR_FALSE@	src/processor/tokenize.cc \
 @DISABLE_PROCESSOR_FALSE@	src/processor/tokenize.h
 
-@DISABLE_PROCESSOR_FALSE@src_libbreakpad_a_LIBADD = src/third_party/libdisasm/libdisasm.a
 @DISABLE_PROCESSOR_FALSE@src_third_party_libdisasm_libdisasm_a_SOURCES = \
 @DISABLE_PROCESSOR_FALSE@	src/third_party/libdisasm/ia32_implicit.c \
 @DISABLE_PROCESSOR_FALSE@	src/third_party/libdisasm/ia32_implicit.h \

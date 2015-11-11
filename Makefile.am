@@ -273,8 +273,6 @@ src_libbreakpad_a_SOURCES = \
 	src/processor/tokenize.cc \
 	src/processor/tokenize.h
 
-src_libbreakpad_a_LIBADD = src/third_party/libdisasm/libdisasm.a
-
 src_third_party_libdisasm_libdisasm_a_SOURCES = \
 	src/third_party/libdisasm/ia32_implicit.c \
 	src/third_party/libdisasm/ia32_implicit.h \
