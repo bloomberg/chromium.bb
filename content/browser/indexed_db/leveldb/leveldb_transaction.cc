@@ -99,8 +99,8 @@ leveldb::Status LevelDBTransaction::Commit() {
   base::TimeTicks begin_time = base::TimeTicks::Now();
   scoped_ptr<LevelDBWriteBatch> write_batch = LevelDBWriteBatch::Create();
 
-  auto it = data_.begin(), end = data_.end();
-  while (it != end) {
+  auto it = data_.begin();
+  while (it != data_.end()) {
     if (!it->second->deleted)
       write_batch->Put(it->first, it->second->value);
     else
