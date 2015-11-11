@@ -4,7 +4,9 @@
 
 #include "content/browser/compositor/software_output_device_win.h"
 
+#include "base/debug/alias.h"
 #include "base/memory/shared_memory.h"
+#include "cc/resources/shared_bitmap.h"
 #include "content/public/browser/browser_thread.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -14,6 +16,10 @@
 #include "ui/gfx/skia_util.h"
 
 namespace content {
+
+// If a window is larger than this in bytes, don't even try to create a
+// backing bitmap for it.
+static const size_t kMaxBitmapSizeBytes = 4 * (16384 * 8192);
 
 OutputDeviceBacking::OutputDeviceBacking() : created_byte_size_(0) {
 }
@@ -46,12 +52,21 @@ void OutputDeviceBacking::UnregisterOutputDevice(
   Resized();
 }
 
-base::SharedMemory* OutputDeviceBacking::GetSharedMemory() {
+base::SharedMemory* OutputDeviceBacking::GetSharedMemory(
+    const gfx::Size& size) {
   if (backing_)
     return backing_.get();
-  created_byte_size_ = GetMaxByteSize();
+  size_t expected_byte_size = GetMaxByteSize();
+  size_t required_size;
+  if (!cc::SharedBitmap::SizeInBytes(size, &required_size))
+    return nullptr;
+  if (required_size > expected_byte_size)
+    return nullptr;
+
+  created_byte_size_ = expected_byte_size;
 
   backing_.reset(new base::SharedMemory);
+  base::debug::Alias(&expected_byte_size);
   CHECK(backing_->CreateAnonymous(created_byte_size_));
   return backing_.get();
 }
@@ -60,9 +75,13 @@ size_t OutputDeviceBacking::GetMaxByteSize() {
   // Minimum byte size is 1 because creating a 0-byte-long SharedMemory fails.
   size_t max_size = 1;
   for (const SoftwareOutputDeviceWin* device : devices_) {
-    max_size = std::max(
-        max_size,
-        static_cast<size_t>(device->viewport_pixel_size().GetArea() * 4));
+    size_t current_size;
+    if (!cc::SharedBitmap::SizeInBytes(device->viewport_pixel_size(),
+                                       &current_size))
+      continue;
+    if (current_size > kMaxBitmapSizeBytes)
+      continue;
+    max_size = std::max(max_size, current_size);
   }
   return max_size;
 }
@@ -113,11 +132,21 @@ SkCanvas* SoftwareOutputDeviceWin::BeginPaint(const gfx::Rect& damage_rect) {
   DCHECK(!in_paint_);
   if (!contents_) {
     HANDLE shared_section = NULL;
-    if (backing_)
-      shared_section = backing_->GetSharedMemory()->handle().GetHandle();
-    contents_ = skia::AdoptRef(skia::CreatePlatformCanvas(
-        viewport_pixel_size_.width(), viewport_pixel_size_.height(), true,
-        shared_section, skia::CRASH_ON_FAILURE));
+    bool can_create_contents = true;
+    if (backing_) {
+      base::SharedMemory* memory =
+          backing_->GetSharedMemory(viewport_pixel_size_);
+      if (memory) {
+        shared_section = memory->handle().GetHandle();
+      } else {
+        can_create_contents = false;
+      }
+    }
+    if (can_create_contents) {
+      contents_ = skia::AdoptRef(skia::CreatePlatformCanvas(
+          viewport_pixel_size_.width(), viewport_pixel_size_.height(), true,
+          shared_section, skia::CRASH_ON_FAILURE));
+    }
   }
 
   damage_rect_ = damage_rect;
@@ -127,11 +156,13 @@ SkCanvas* SoftwareOutputDeviceWin::BeginPaint(const gfx::Rect& damage_rect) {
 
 void SoftwareOutputDeviceWin::EndPaint() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(contents_);
   DCHECK(in_paint_);
 
   in_paint_ = false;
   SoftwareOutputDevice::EndPaint();
+
+  if (!contents_)
+    return;
 
   gfx::Rect rect = damage_rect_;
   rect.Intersect(gfx::Rect(viewport_pixel_size_));

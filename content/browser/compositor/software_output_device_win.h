@@ -31,7 +31,7 @@ class OutputDeviceBacking {
   void Resized();
   void RegisterOutputDevice(SoftwareOutputDeviceWin* device);
   void UnregisterOutputDevice(SoftwareOutputDeviceWin* device);
-  base::SharedMemory* GetSharedMemory();
+  base::SharedMemory* GetSharedMemory(const gfx::Size& size);
 
  private:
   size_t GetMaxByteSize();
