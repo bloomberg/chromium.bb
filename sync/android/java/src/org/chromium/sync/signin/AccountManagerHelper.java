@@ -152,8 +152,8 @@ public class AccountManagerHelper {
 
     /**
      * Use the asynchronous version below instead. See http://crbug.com/517697.
+     * @deprecated
      */
-    @Deprecated
     public List<String> getGoogleAccountNames() {
         List<String> accountNames = new ArrayList<String>();
         for (Account account : getGoogleAccounts()) {
@@ -180,8 +180,8 @@ public class AccountManagerHelper {
 
     /**
      * Use the asynchronous version below instead. See http://crbug.com/517697.
+     * @deprecated
      */
-    @Deprecated
     public Account[] getGoogleAccounts() {
         return mAccountManager.getAccountsByType(GOOGLE_ACCOUNT_TYPE);
     }
@@ -195,8 +195,8 @@ public class AccountManagerHelper {
 
     /**
      * Use the asynchronous version below instead. See http://crbug.com/517697.
+     * @deprecated
      */
-    @Deprecated
     public boolean hasGoogleAccounts() {
         return getGoogleAccounts().length > 0;
     }
@@ -228,8 +228,8 @@ public class AccountManagerHelper {
 
     /**
      * Use the asynchronous version below instead. See http://crbug.com/517697.
+     * @deprecated
      */
-    @Deprecated
     public Account getAccountFromName(String accountName) {
         String canonicalName = canonicalizeName(accountName);
         Account[] accounts = getGoogleAccounts();
@@ -263,8 +263,8 @@ public class AccountManagerHelper {
 
     /**
      * Use the asynchronous version below instead. See http://crbug.com/517697.
+     * @deprecated
      */
-    @Deprecated
     public boolean hasAccountForName(String accountName) {
         return getAccountFromName(accountName) != null;
     }
