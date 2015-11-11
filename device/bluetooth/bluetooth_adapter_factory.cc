@@ -12,10 +12,6 @@
 #include "base/memory/weak_ptr.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 
-#if defined(OS_CHROMEOS) || defined(OS_LINUX)
-#include "device/bluetooth/bluetooth_adapter_bluez.h"
-#endif
-
 #if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
 #endif
