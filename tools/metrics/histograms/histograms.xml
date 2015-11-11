@@ -40849,6 +40849,35 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Scheduling.BeginMainFrameQueueDurationCritical"
+    units="microseconds">
+  <owner>brianderson@chromium.org</owner>
+  <summary>
+    How long it takes for the main side to start the BeginMainFrame in response
+    to the compositor's SendBeginMainFrame when the on_critical_path flag is
+    set.
+  </summary>
+</histogram>
+
+<histogram name="Scheduling.BeginMainFrameQueueDurationNotCritical"
+    units="microseconds">
+  <owner>brianderson@chromium.org</owner>
+  <summary>
+    How long it takes for the main side to start the BeginMainFrame in response
+    to the compositor's SendBeginMainFrame when the on_critical_path flag is not
+    set.
+  </summary>
+</histogram>
+
+<histogram name="Scheduling.BeginMainFrameStartToCommitDuration"
+    units="microseconds">
+  <owner>brianderson@chromium.org</owner>
+  <summary>
+    The time from when the main side actually starts the BeginMainFrame to when
+    the commit completes on the impl side.
+  </summary>
+</histogram>
+
 <histogram name="Scheduling.BeginMainFrameToCommitDuration"
     units="microseconds">
   <owner>brianderson@chromium.org</owner>
@@ -77025,6 +77054,15 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="Scheduling.PrepareTilesDuration"/>
 </histogram_suffixes>
 
+<histogram_suffixes name="CompositorTimingHistoryProcess2" separator="."
+    ordering="prefix">
+  <suffix name="Browser"/>
+  <suffix name="Renderer"/>
+  <affected-histogram name="Scheduling.BeginMainFrameQueueDurationCritical"/>
+  <affected-histogram name="Scheduling.BeginMainFrameQueueDurationNotCritical"/>
+  <affected-histogram name="Scheduling.BeginMainFrameStartToCommitDuration"/>
+</histogram_suffixes>
+
 <histogram_suffixes name="CompositorTimingHistorySubcategory" separator=".">
   <suffix name="NotUsedForEstimate"
       label="Samples that don't affect estimates. For example, because we are
@@ -77048,6 +77086,24 @@ To add a new entry, add it with any value and run test to compute valid value.
       name="Scheduling.Renderer.CommitToReadyToActivateDuration"/>
   <affected-histogram name="Scheduling.Renderer.DrawDuration"/>
   <affected-histogram name="Scheduling.Renderer.PrepareTilesDuration"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="CompositorTimingHistorySubcategory2" separator=".">
+  <suffix name="NotUsedForEstimate"
+      label="Samples that don't affect estimates. For example, because we are
+             coming out of idle."/>
+  <affected-histogram
+      name="Scheduling.Browser.BeginMainFrameQueueDurationCritical"/>
+  <affected-histogram
+      name="Scheduling.Browser.BeginMainFrameQueueDurationNotCritical"/>
+  <affected-histogram
+      name="Scheduling.Browser.BeginMainFrameStartToCommitDuration"/>
+  <affected-histogram
+      name="Scheduling.Renderer.BeginMainFrameQueueDurationCritical"/>
+  <affected-histogram
+      name="Scheduling.Renderer.BeginMainFrameQueueDurationNotCritical"/>
+  <affected-histogram
+      name="Scheduling.Renderer.BeginMainFrameStartToCommitDuration"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="ConnCountImpact">

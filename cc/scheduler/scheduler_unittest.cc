@@ -326,7 +326,7 @@ class SchedulerTest : public testing::Test {
       SCOPED_TRACE("Do first frame to commit after initialize.");
       AdvanceFrame();
 
-      scheduler_->NotifyBeginMainFrameStarted();
+      scheduler_->NotifyBeginMainFrameStarted(base::TimeTicks());
       scheduler_->NotifyReadyToCommit();
       scheduler_->NotifyReadyToActivate();
       scheduler_->NotifyReadyToDraw();
@@ -555,7 +555,7 @@ TEST_F(SchedulerTest, RequestCommit) {
   client_->Reset();
 
   // NotifyReadyToCommit should trigger the commit.
-  scheduler_->NotifyBeginMainFrameStarted();
+  scheduler_->NotifyBeginMainFrameStarted(base::TimeTicks());
   scheduler_->NotifyReadyToCommit();
   EXPECT_SINGLE_ACTION("ScheduledActionCommit", client_);
   EXPECT_TRUE(client_->needs_begin_frames());
@@ -678,7 +678,7 @@ TEST_F(SchedulerTest, RequestCommitAfterBeginMainFrameSent) {
   client_->Reset();
 
   // Finish the first commit.
-  scheduler_->NotifyBeginMainFrameStarted();
+  scheduler_->NotifyBeginMainFrameStarted(base::TimeTicks());
   scheduler_->NotifyReadyToCommit();
   EXPECT_SINGLE_ACTION("ScheduledActionCommit", client_);
   EXPECT_TRUE(scheduler_->BeginImplFrameDeadlinePending());
@@ -709,7 +709,7 @@ TEST_F(SchedulerTest, RequestCommitAfterBeginMainFrameSent) {
 
   // Finishing the commit before the deadline should post a new deadline task
   // to trigger the deadline early.
-  scheduler_->NotifyBeginMainFrameStarted();
+  scheduler_->NotifyBeginMainFrameStarted(base::TimeTicks());
   scheduler_->NotifyReadyToCommit();
   EXPECT_SINGLE_ACTION("ScheduledActionCommit", client_);
   EXPECT_TRUE(scheduler_->BeginImplFrameDeadlinePending());
@@ -892,7 +892,7 @@ TEST_F(SchedulerTest, RequestCommitInsideDraw) {
   EXPECT_EQ(1, client->num_draws());
   EXPECT_TRUE(scheduler_->CommitPending());
   EXPECT_TRUE(client->needs_begin_frames());
-  scheduler_->NotifyBeginMainFrameStarted();
+  scheduler_->NotifyBeginMainFrameStarted(base::TimeTicks());
   scheduler_->NotifyReadyToCommit();
   scheduler_->NotifyReadyToActivate();
 
@@ -1278,7 +1278,7 @@ TEST_F(SchedulerTest, WaitForReadyToDrawDoNotPostDeadline) {
 
   // Begin new frame.
   EXPECT_SCOPED(AdvanceFrame());
-  scheduler_->NotifyBeginMainFrameStarted();
+  scheduler_->NotifyBeginMainFrameStarted(base::TimeTicks());
   EXPECT_ACTION("WillBeginImplFrame", client_, 0, 2);
   EXPECT_ACTION("ScheduledActionSendBeginMainFrame", client_, 1, 2);
 
@@ -1318,7 +1318,7 @@ TEST_F(SchedulerTest, WaitForReadyToDrawCancelledWhenLostOutputSurface) {
 
   // Begin new frame.
   EXPECT_SCOPED(AdvanceFrame());
-  scheduler_->NotifyBeginMainFrameStarted();
+  scheduler_->NotifyBeginMainFrameStarted(base::TimeTicks());
   EXPECT_ACTION("WillBeginImplFrame", client_, 0, 2);
   EXPECT_ACTION("ScheduledActionSendBeginMainFrame", client_, 1, 2);
 
@@ -1355,7 +1355,7 @@ void SchedulerTest::CheckMainFrameSkippedAfterLateCommit(
   EXPECT_FALSE(scheduler_->MainThreadMissedLastDeadline());
   task_runner().RunTasksWhile(client_->ImplFrameDeadlinePending(true));
   EXPECT_TRUE(scheduler_->MainThreadMissedLastDeadline());
-  scheduler_->NotifyBeginMainFrameStarted();
+  scheduler_->NotifyBeginMainFrameStarted(base::TimeTicks());
   scheduler_->NotifyReadyToCommit();
   scheduler_->NotifyReadyToActivate();
   EXPECT_ACTION("SetNeedsBeginFrames(true)", client_, 0, 5);
@@ -1478,7 +1478,7 @@ void SchedulerTest::ImplFrameSkippedAfterLateSwapAck(
   EXPECT_ACTION("ScheduledActionSendBeginMainFrame", client_, 3, 4);
 
   client_->Reset();
-  scheduler_->NotifyBeginMainFrameStarted();
+  scheduler_->NotifyBeginMainFrameStarted(base::TimeTicks());
   scheduler_->NotifyReadyToCommit();
   scheduler_->NotifyReadyToActivate();
   EXPECT_FALSE(scheduler_->MainThreadMissedLastDeadline());
@@ -1527,7 +1527,7 @@ void SchedulerTest::ImplFrameSkippedAfterLateSwapAck(
     EXPECT_ACTION("ScheduledActionSendBeginMainFrame", client_, 2, 3);
 
     client_->Reset();
-    scheduler_->NotifyBeginMainFrameStarted();
+    scheduler_->NotifyBeginMainFrameStarted(base::TimeTicks());
     scheduler_->NotifyReadyToCommit();
     scheduler_->NotifyReadyToActivate();
     task_runner().RunTasksWhile(client_->ImplFrameDeadlinePending(true));
@@ -1664,7 +1664,7 @@ void SchedulerTest::ImplFrameIsNotSkippedAfterLateSwapAck() {
   EXPECT_ACTION("ScheduledActionSendBeginMainFrame", client_, 2, 3);
 
   client_->Reset();
-  scheduler_->NotifyBeginMainFrameStarted();
+  scheduler_->NotifyBeginMainFrameStarted(base::TimeTicks());
   scheduler_->NotifyReadyToCommit();
   scheduler_->NotifyReadyToActivate();
   EXPECT_FALSE(scheduler_->MainThreadMissedLastDeadline());
@@ -1689,7 +1689,7 @@ void SchedulerTest::ImplFrameIsNotSkippedAfterLateSwapAck() {
 
     client_->Reset();
     scheduler_->DidSwapBuffersComplete();
-    scheduler_->NotifyBeginMainFrameStarted();
+    scheduler_->NotifyBeginMainFrameStarted(base::TimeTicks());
     scheduler_->NotifyReadyToCommit();
     scheduler_->NotifyReadyToActivate();
     task_runner().RunTasksWhile(client_->ImplFrameDeadlinePending(true));
@@ -1774,7 +1774,7 @@ TEST_F(SchedulerTest,
   EXPECT_FALSE(scheduler_->MainThreadMissedLastDeadline());
   task_runner().RunTasksWhile(client_->ImplFrameDeadlinePending(true));
   EXPECT_TRUE(scheduler_->MainThreadMissedLastDeadline());
-  scheduler_->NotifyBeginMainFrameStarted();
+  scheduler_->NotifyBeginMainFrameStarted(base::TimeTicks());
   scheduler_->NotifyReadyToCommit();
   scheduler_->NotifyReadyToActivate();
   EXPECT_TRUE(scheduler_->MainThreadMissedLastDeadline());
@@ -1792,7 +1792,7 @@ TEST_F(SchedulerTest,
   EXPECT_SCOPED(AdvanceFrame());
   EXPECT_TRUE(scheduler_->MainThreadMissedLastDeadline());
   task_runner().RunTasksWhile(client_->ImplFrameDeadlinePending(true));
-  scheduler_->NotifyBeginMainFrameStarted();
+  scheduler_->NotifyBeginMainFrameStarted(base::TimeTicks());
   scheduler_->NotifyReadyToCommit();
   scheduler_->NotifyReadyToActivate();
 
@@ -1863,7 +1863,7 @@ TEST_F(SchedulerTest,
   EXPECT_FALSE(scheduler_->MainThreadMissedLastDeadline());
   SendNextBeginFrame();
   EXPECT_FALSE(scheduler_->MainThreadMissedLastDeadline());
-  scheduler_->NotifyBeginMainFrameStarted();
+  scheduler_->NotifyBeginMainFrameStarted(base::TimeTicks());
   scheduler_->NotifyReadyToCommit();
   scheduler_->NotifyReadyToActivate();
   task_runner().RunTasksWhile(client_->ImplFrameDeadlinePending(true));
@@ -1905,7 +1905,7 @@ TEST_F(
   EXPECT_TRUE(scheduler_->BeginImplFrameDeadlinePending());
   task_runner().RunTasksWhile(client_->ImplFrameDeadlinePending(true));
   EXPECT_FALSE(scheduler_->BeginImplFrameDeadlinePending());
-  scheduler_->NotifyBeginMainFrameStarted();
+  scheduler_->NotifyBeginMainFrameStarted(base::TimeTicks());
   scheduler_->NotifyReadyToCommit();
   scheduler_->NotifyReadyToActivate();
   EXPECT_FALSE(scheduler_->CommitPending());
@@ -1922,7 +1922,7 @@ TEST_F(
   EXPECT_FALSE(scheduler_->CommitPending());
   scheduler_->SetNeedsBeginMainFrame();
   EXPECT_SCOPED(AdvanceFrame());
-  scheduler_->NotifyBeginMainFrameStarted();
+  scheduler_->NotifyBeginMainFrameStarted(base::TimeTicks());
   scheduler_->NotifyReadyToCommit();
   scheduler_->NotifyReadyToActivate();
   EXPECT_TRUE(scheduler_->BeginImplFrameDeadlinePending());
@@ -1977,7 +1977,7 @@ TEST_F(SchedulerTest,
   task_runner().RunTasksWhile(client_->ImplFrameDeadlinePending(true));
   EXPECT_FALSE(scheduler_->BeginImplFrameDeadlinePending());
   scheduler_->DidSwapBuffersComplete();
-  scheduler_->NotifyBeginMainFrameStarted();
+  scheduler_->NotifyBeginMainFrameStarted(base::TimeTicks());
   scheduler_->NotifyReadyToCommit();
   EXPECT_FALSE(scheduler_->CommitPending());
   EXPECT_ACTION("SetNeedsBeginFrames(true)", client_, 0, 6);
@@ -1998,7 +1998,7 @@ TEST_F(SchedulerTest,
   EXPECT_TRUE(scheduler_->BeginImplFrameDeadlinePending());
   task_runner().RunTasksWhile(client_->ImplFrameDeadlinePending(true));
   EXPECT_FALSE(scheduler_->BeginImplFrameDeadlinePending());
-  scheduler_->NotifyBeginMainFrameStarted();
+  scheduler_->NotifyBeginMainFrameStarted(base::TimeTicks());
   EXPECT_ACTION("WillBeginImplFrame", client_, 0, 4);
   EXPECT_ACTION("ScheduledActionAnimate", client_, 1, 4);
   EXPECT_ACTION("ScheduledActionSendBeginMainFrame", client_, 2, 4);
@@ -2058,7 +2058,7 @@ TEST_F(
   task_runner().RunTasksWhile(client_->ImplFrameDeadlinePending(true));
   EXPECT_FALSE(scheduler_->BeginImplFrameDeadlinePending());
   scheduler_->DidSwapBuffersComplete();
-  scheduler_->NotifyBeginMainFrameStarted();
+  scheduler_->NotifyBeginMainFrameStarted(base::TimeTicks());
   scheduler_->NotifyReadyToCommit();
   EXPECT_FALSE(scheduler_->CommitPending());
   EXPECT_ACTION("SetNeedsBeginFrames(true)", client_, 0, 6);
@@ -2079,7 +2079,7 @@ TEST_F(
   task_runner().RunTasksWhile(client_->ImplFrameDeadlinePending(true));
   EXPECT_FALSE(scheduler_->BeginImplFrameDeadlinePending());
   scheduler_->DidSwapBuffersComplete();
-  scheduler_->NotifyBeginMainFrameStarted();
+  scheduler_->NotifyBeginMainFrameStarted(base::TimeTicks());
   EXPECT_ACTION("WillBeginImplFrame", client_, 0, 4);
   EXPECT_ACTION("ScheduledActionAnimate", client_, 1, 4);
   EXPECT_ACTION("ScheduledActionSendBeginMainFrame", client_, 2, 4);
@@ -2133,7 +2133,7 @@ TEST_F(SchedulerTest, BeginRetroFrame) {
   client_->Reset();
 
   // NotifyReadyToCommit should trigger the commit.
-  scheduler_->NotifyBeginMainFrameStarted();
+  scheduler_->NotifyBeginMainFrameStarted(base::TimeTicks());
   scheduler_->NotifyReadyToCommit();
   EXPECT_SINGLE_ACTION("ScheduledActionCommit", client_);
   EXPECT_TRUE(client_->needs_begin_frames());
@@ -2188,7 +2188,7 @@ TEST_F(SchedulerTest, RetroFrameDoesNotExpireTooEarly) {
   EXPECT_TRUE(scheduler_->BeginImplFrameDeadlinePending());
 
   client_->Reset();
-  scheduler_->NotifyBeginMainFrameStarted();
+  scheduler_->NotifyBeginMainFrameStarted(base::TimeTicks());
 
   client_->Reset();
   BeginFrameArgs retro_frame_args = SendNextBeginFrame();
@@ -2249,7 +2249,7 @@ TEST_F(SchedulerTest, RetroFrameExpiresOnTime) {
   EXPECT_TRUE(scheduler_->BeginImplFrameDeadlinePending());
 
   client_->Reset();
-  scheduler_->NotifyBeginMainFrameStarted();
+  scheduler_->NotifyBeginMainFrameStarted(base::TimeTicks());
 
   client_->Reset();
   BeginFrameArgs retro_frame_args = SendNextBeginFrame();
@@ -2366,7 +2366,7 @@ void SchedulerTest::BeginFramesNotFromClient(
   client_->Reset();
 
   // NotifyReadyToCommit should trigger the commit.
-  scheduler_->NotifyBeginMainFrameStarted();
+  scheduler_->NotifyBeginMainFrameStarted(base::TimeTicks());
   scheduler_->NotifyReadyToCommit();
   EXPECT_SINGLE_ACTION("ScheduledActionCommit", client_);
   client_->Reset();
@@ -2456,7 +2456,7 @@ void SchedulerTest::BeginFramesNotFromClient_SwapThrottled(
   client_->Reset();
 
   // NotifyReadyToCommit should trigger the pending commit.
-  scheduler_->NotifyBeginMainFrameStarted();
+  scheduler_->NotifyBeginMainFrameStarted(base::TimeTicks());
   scheduler_->NotifyReadyToCommit();
   EXPECT_SINGLE_ACTION("ScheduledActionCommit", client_);
   client_->Reset();
@@ -2581,7 +2581,7 @@ TEST_F(SchedulerTest, DidLoseOutputSurfaceAfterBeginFrameStarted) {
   EXPECT_NO_ACTION(client_);
 
   client_->Reset();
-  scheduler_->NotifyBeginMainFrameStarted();
+  scheduler_->NotifyBeginMainFrameStarted(base::TimeTicks());
   scheduler_->NotifyReadyToCommit();
   EXPECT_ACTION("ScheduledActionCommit", client_, 0, 2);
   EXPECT_ACTION("ScheduledActionActivateSyncTree", client_, 1, 2);
@@ -2631,7 +2631,7 @@ TEST_F(SchedulerTest,
   EXPECT_FALSE(scheduler_->BeginImplFrameDeadlinePending());
 
   client_->Reset();
-  scheduler_->NotifyBeginMainFrameStarted();
+  scheduler_->NotifyBeginMainFrameStarted(base::TimeTicks());
   scheduler_->NotifyReadyToCommit();
   EXPECT_ACTION("ScheduledActionCommit", client_, 0, 3);
   EXPECT_ACTION("ScheduledActionActivateSyncTree", client_, 1, 3);
@@ -2653,7 +2653,7 @@ TEST_F(SchedulerTest, DidLoseOutputSurfaceAfterReadyToCommit) {
   EXPECT_TRUE(scheduler_->BeginImplFrameDeadlinePending());
 
   client_->Reset();
-  scheduler_->NotifyBeginMainFrameStarted();
+  scheduler_->NotifyBeginMainFrameStarted(base::TimeTicks());
   scheduler_->NotifyReadyToCommit();
   EXPECT_SINGLE_ACTION("ScheduledActionCommit", client_);
 
@@ -2732,7 +2732,7 @@ TEST_F(SchedulerTest, DidLoseOutputSurfaceAfterBeginRetroFramePosted) {
 
   // NotifyReadyToCommit should trigger the commit.
   client_->Reset();
-  scheduler_->NotifyBeginMainFrameStarted();
+  scheduler_->NotifyBeginMainFrameStarted(base::TimeTicks());
   scheduler_->NotifyReadyToCommit();
   EXPECT_SINGLE_ACTION("ScheduledActionCommit", client_);
   EXPECT_TRUE(client_->needs_begin_frames());
@@ -2792,7 +2792,7 @@ TEST_F(SchedulerTest, DidLoseOutputSurfaceDuringBeginRetroFrameRunning) {
 
   // NotifyReadyToCommit should trigger the commit.
   client_->Reset();
-  scheduler_->NotifyBeginMainFrameStarted();
+  scheduler_->NotifyBeginMainFrameStarted(base::TimeTicks());
   scheduler_->NotifyReadyToCommit();
   EXPECT_SINGLE_ACTION("ScheduledActionCommit", client_);
   EXPECT_TRUE(client_->needs_begin_frames());
@@ -2849,7 +2849,7 @@ TEST_F(SchedulerTest, DidLoseOutputSurfaceWithSyntheticBeginFrameSource) {
 
   // NotifyReadyToCommit should trigger the commit.
   client_->Reset();
-  scheduler_->NotifyBeginMainFrameStarted();
+  scheduler_->NotifyBeginMainFrameStarted(base::TimeTicks());
   scheduler_->NotifyReadyToCommit();
   EXPECT_SINGLE_ACTION("ScheduledActionCommit", client_);
   EXPECT_TRUE(scheduler_->frame_source().NeedsBeginFrames());
@@ -2888,7 +2888,7 @@ TEST_F(SchedulerTest, DidLoseOutputSurfaceWhenIdle) {
   EXPECT_TRUE(scheduler_->BeginImplFrameDeadlinePending());
 
   client_->Reset();
-  scheduler_->NotifyBeginMainFrameStarted();
+  scheduler_->NotifyBeginMainFrameStarted(base::TimeTicks());
   scheduler_->NotifyReadyToCommit();
   EXPECT_SINGLE_ACTION("ScheduledActionCommit", client_);
 
@@ -2924,7 +2924,7 @@ TEST_F(SchedulerTest, ScheduledActionActivateAfterBecomingInvisible) {
   EXPECT_TRUE(scheduler_->BeginImplFrameDeadlinePending());
 
   client_->Reset();
-  scheduler_->NotifyBeginMainFrameStarted();
+  scheduler_->NotifyBeginMainFrameStarted(base::TimeTicks());
   scheduler_->NotifyReadyToCommit();
   EXPECT_SINGLE_ACTION("ScheduledActionCommit", client_);
   EXPECT_TRUE(scheduler_->BeginImplFrameDeadlinePending());
@@ -3068,7 +3068,7 @@ TEST_F(SchedulerTest, SendBeginMainFrameNotExpectedSoon) {
 
   // Trigger a frame draw.
   EXPECT_SCOPED(AdvanceFrame());
-  scheduler_->NotifyBeginMainFrameStarted();
+  scheduler_->NotifyBeginMainFrameStarted(base::TimeTicks());
   scheduler_->NotifyReadyToCommit();
   scheduler_->NotifyReadyToActivate();
   task_runner().RunPendingTasks();
@@ -3226,7 +3226,7 @@ TEST_F(SchedulerTest, SynchronousCompositorCommit) {
   EXPECT_FALSE(scheduler_->BeginImplFrameDeadlinePending());
   client_->Reset();
 
-  scheduler_->NotifyBeginMainFrameStarted();
+  scheduler_->NotifyBeginMainFrameStarted(base::TimeTicks());
   EXPECT_NO_ACTION(client_);
 
   // Next vsync.
@@ -3283,7 +3283,7 @@ TEST_F(SchedulerTest, SynchronousCompositorDoubleCommitWithoutDraw) {
   EXPECT_FALSE(scheduler_->BeginImplFrameDeadlinePending());
   client_->Reset();
 
-  scheduler_->NotifyBeginMainFrameStarted();
+  scheduler_->NotifyBeginMainFrameStarted(base::TimeTicks());
   EXPECT_NO_ACTION(client_);
 
   scheduler_->NotifyReadyToCommit();
@@ -3305,7 +3305,7 @@ TEST_F(SchedulerTest, SynchronousCompositorDoubleCommitWithoutDraw) {
   EXPECT_FALSE(scheduler_->BeginImplFrameDeadlinePending());
   client_->Reset();
 
-  scheduler_->NotifyBeginMainFrameStarted();
+  scheduler_->NotifyBeginMainFrameStarted(base::TimeTicks());
   EXPECT_NO_ACTION(client_);
 
   // Allow new commit even though previous commit hasn't been drawn.
@@ -3402,7 +3402,7 @@ TEST_F(SchedulerTest, SynchronousCompositorSendBeginMainFrameWhileIdle) {
   EXPECT_SINGLE_ACTION("ScheduledActionSendBeginMainFrame", client_);
   client_->Reset();
 
-  scheduler_->NotifyBeginMainFrameStarted();
+  scheduler_->NotifyBeginMainFrameStarted(base::TimeTicks());
   scheduler_->NotifyReadyToCommit();
   EXPECT_SINGLE_ACTION("ScheduledActionCommit", client_);
   client_->Reset();
@@ -3461,7 +3461,7 @@ TEST_F(SchedulerTest, AuthoritativeVSyncInterval) {
 
   EXPECT_EQ(initial_interval, scheduler_->BeginImplFrameInterval());
 
-  scheduler_->NotifyBeginMainFrameStarted();
+  scheduler_->NotifyBeginMainFrameStarted(base::TimeTicks());
   scheduler_->NotifyReadyToCommit();
   scheduler_->NotifyReadyToActivate();
   task_runner().RunTasksWhile(client_->ImplFrameDeadlinePending(true));

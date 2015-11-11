@@ -35,7 +35,6 @@ class CC_EXPORT ProxyImpl {
   virtual void SetDeferCommitsOnImpl(bool defer_commits) const = 0;
   virtual void SetNeedsRedrawOnImpl(const gfx::Rect& damage_rect) = 0;
   virtual void SetNeedsCommitOnImpl() = 0;
-  virtual void BeginMainFrameAbortedOnImpl(CommitEarlyOutReason reason) = 0;
   virtual void FinishAllRenderingOnImpl(CompletionEvent* completion) = 0;
   virtual void SetVisibleOnImpl(bool visible) = 0;
   virtual void ReleaseOutputSurfaceOnImpl(CompletionEvent* completion) = 0;
@@ -43,8 +42,12 @@ class CC_EXPORT ProxyImpl {
   virtual void MainFrameWillHappenOnImplForTesting(
       CompletionEvent* completion,
       bool* main_frame_will_happen) = 0;
+  virtual void BeginMainFrameAbortedOnImpl(
+      CommitEarlyOutReason reason,
+      base::TimeTicks main_thread_start_time) = 0;
   virtual void StartCommitOnImpl(CompletionEvent* completion,
                                  LayerTreeHost* layer_tree_host,
+                                 base::TimeTicks main_thread_start_time,
                                  bool hold_commit_for_activation) = 0;
   virtual void InitializeImplOnImpl(CompletionEvent* completion,
                                     LayerTreeHost* layer_tree_host) = 0;

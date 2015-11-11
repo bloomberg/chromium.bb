@@ -595,6 +595,9 @@ void ThreadProxy::BeginMainFrame(
   benchmark_instrumentation::ScopedBeginFrameTask begin_frame_task(
       benchmark_instrumentation::kDoBeginFrame,
       begin_main_frame_state->begin_frame_id);
+
+  base::TimeTicks begin_main_frame_start_time = base::TimeTicks::Now();
+
   TRACE_EVENT_SYNTHETIC_DELAY_BEGIN("cc.BeginMainFrame");
   DCHECK(IsMainThread());
   DCHECK_EQ(NO_PIPELINE_STAGE, main().current_pipeline_stage);
@@ -603,7 +606,8 @@ void ThreadProxy::BeginMainFrame(
     TRACE_EVENT_INSTANT0("cc", "EarlyOut_DeferCommit",
                          TRACE_EVENT_SCOPE_THREAD);
     main().channel_main->BeginMainFrameAbortedOnImpl(
-        CommitEarlyOutReason::ABORTED_DEFERRED_COMMIT);
+        CommitEarlyOutReason::ABORTED_DEFERRED_COMMIT,
+        begin_main_frame_start_time);
     return;
   }
 
@@ -618,7 +622,7 @@ void ThreadProxy::BeginMainFrame(
   if (!main().layer_tree_host->visible()) {
     TRACE_EVENT_INSTANT0("cc", "EarlyOut_NotVisible", TRACE_EVENT_SCOPE_THREAD);
     main().channel_main->BeginMainFrameAbortedOnImpl(
-        CommitEarlyOutReason::ABORTED_NOT_VISIBLE);
+        CommitEarlyOutReason::ABORTED_NOT_VISIBLE, begin_main_frame_start_time);
     return;
   }
 
@@ -626,7 +630,8 @@ void ThreadProxy::BeginMainFrame(
     TRACE_EVENT_INSTANT0(
         "cc", "EarlyOut_OutputSurfaceLost", TRACE_EVENT_SCOPE_THREAD);
     main().channel_main->BeginMainFrameAbortedOnImpl(
-        CommitEarlyOutReason::ABORTED_OUTPUT_SURFACE_LOST);
+        CommitEarlyOutReason::ABORTED_OUTPUT_SURFACE_LOST,
+        begin_main_frame_start_time);
     return;
   }
 
@@ -667,7 +672,7 @@ void ThreadProxy::BeginMainFrame(
   if (!updated && can_cancel_this_commit) {
     TRACE_EVENT_INSTANT0("cc", "EarlyOut_NoUpdates", TRACE_EVENT_SCOPE_THREAD);
     main().channel_main->BeginMainFrameAbortedOnImpl(
-        CommitEarlyOutReason::FINISHED_NO_UPDATES);
+        CommitEarlyOutReason::FINISHED_NO_UPDATES, begin_main_frame_start_time);
 
     // Although the commit is internally aborted, this is because it has been
     // detected to be a no-op.  From the perspective of an embedder, this commit
@@ -696,6 +701,7 @@ void ThreadProxy::BeginMainFrame(
 
     CompletionEvent completion;
     main().channel_main->StartCommitOnImpl(&completion, main().layer_tree_host,
+                                           begin_main_frame_start_time,
                                            main().commit_waits_for_activation);
     completion.Wait();
     main().commit_waits_for_activation = false;
@@ -714,6 +720,7 @@ void ThreadProxy::BeginMainFrameNotExpectedSoon() {
 
 void ThreadProxy::StartCommitOnImpl(CompletionEvent* completion,
                                     LayerTreeHost* layer_tree_host,
+                                    base::TimeTicks main_thread_start_time,
                                     bool hold_commit_for_activation) {
   TRACE_EVENT0("cc", "ThreadProxy::StartCommitOnImplThread");
   DCHECK(!impl().commit_completion_event);
@@ -737,14 +744,16 @@ void ThreadProxy::StartCommitOnImpl(CompletionEvent* completion,
 
   // Ideally, we should inform to impl thread when BeginMainFrame is started.
   // But, we can avoid a PostTask in here.
-  impl().scheduler->NotifyBeginMainFrameStarted();
+  impl().scheduler->NotifyBeginMainFrameStarted(main_thread_start_time);
   impl().commit_completion_event = completion;
   DCHECK(!blocked_main_commit().layer_tree_host);
   blocked_main_commit().layer_tree_host = layer_tree_host;
   impl().scheduler->NotifyReadyToCommit();
 }
 
-void ThreadProxy::BeginMainFrameAbortedOnImpl(CommitEarlyOutReason reason) {
+void ThreadProxy::BeginMainFrameAbortedOnImpl(
+    CommitEarlyOutReason reason,
+    base::TimeTicks main_thread_start_time) {
   TRACE_EVENT1("cc", "ThreadProxy::BeginMainFrameAbortedOnImplThread", "reason",
                CommitEarlyOutReasonToString(reason));
   DCHECK(IsImplThread());
@@ -758,6 +767,7 @@ void ThreadProxy::BeginMainFrameAbortedOnImpl(CommitEarlyOutReason reason) {
         impl().last_begin_main_frame_args;
   }
   impl().layer_tree_host_impl->BeginMainFrameAborted(reason);
+  impl().scheduler->NotifyBeginMainFrameStarted(main_thread_start_time);
   impl().scheduler->BeginMainFrameAborted(reason);
 }
 

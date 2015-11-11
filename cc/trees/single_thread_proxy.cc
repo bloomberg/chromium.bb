@@ -752,6 +752,11 @@ void SingleThreadProxy::SendBeginMainFrameNotExpectedSoon() {
 }
 
 void SingleThreadProxy::BeginMainFrame(const BeginFrameArgs& begin_frame_args) {
+  if (scheduler_on_impl_thread_) {
+    scheduler_on_impl_thread_->NotifyBeginMainFrameStarted(
+        base::TimeTicks::Now());
+  }
+
   commit_requested_ = false;
   animate_requested_ = false;
 
@@ -805,10 +810,8 @@ void SingleThreadProxy::DoBeginMainFrame(
   // TODO(enne): SingleThreadProxy does not support cancelling commits yet,
   // search for CommitEarlyOutReason::FINISHED_NO_UPDATES inside
   // thread_proxy.cc
-  if (scheduler_on_impl_thread_) {
-    scheduler_on_impl_thread_->NotifyBeginMainFrameStarted();
+  if (scheduler_on_impl_thread_)
     scheduler_on_impl_thread_->NotifyReadyToCommit();
-  }
 }
 
 void SingleThreadProxy::BeginMainFrameAbortedOnImplThread(

@@ -80,10 +80,13 @@ void ThreadedChannel::SetNeedsCommitOnImpl() {
                                               proxy_impl_->GetImplWeakPtr()));
 }
 
-void ThreadedChannel::BeginMainFrameAbortedOnImpl(CommitEarlyOutReason reason) {
+void ThreadedChannel::BeginMainFrameAbortedOnImpl(
+    CommitEarlyOutReason reason,
+    base::TimeTicks main_thread_start_time) {
   ImplThreadTaskRunner()->PostTask(
       FROM_HERE, base::Bind(&ProxyImpl::BeginMainFrameAbortedOnImpl,
-                            proxy_impl_->GetImplWeakPtr(), reason));
+                            proxy_impl_->GetImplWeakPtr(), reason,
+                            main_thread_start_time));
 }
 
 void ThreadedChannel::SetNeedsRedrawOnImpl(const gfx::Rect& damage_rect) {
@@ -94,11 +97,13 @@ void ThreadedChannel::SetNeedsRedrawOnImpl(const gfx::Rect& damage_rect) {
 
 void ThreadedChannel::StartCommitOnImpl(CompletionEvent* completion,
                                         LayerTreeHost* layer_tree_host,
+                                        base::TimeTicks main_thread_start_time,
                                         bool hold_commit_for_activation) {
   ImplThreadTaskRunner()->PostTask(
       FROM_HERE,
       base::Bind(&ProxyImpl::StartCommitOnImpl, proxy_impl_->GetImplWeakPtr(),
-                 completion, layer_tree_host, hold_commit_for_activation));
+                 completion, layer_tree_host, main_thread_start_time,
+                 hold_commit_for_activation));
 }
 
 void ThreadedChannel::InitializeImplOnImpl(CompletionEvent* completion,

@@ -263,9 +263,11 @@ void Scheduler::DidCreateAndInitializeOutputSurface() {
   ProcessScheduledActions();
 }
 
-void Scheduler::NotifyBeginMainFrameStarted() {
+void Scheduler::NotifyBeginMainFrameStarted(
+    base::TimeTicks main_thread_start_time) {
   TRACE_EVENT0("cc", "Scheduler::NotifyBeginMainFrameStarted");
   state_machine_.NotifyBeginMainFrameStarted();
+  compositor_timing_history_->BeginMainFrameStarted(main_thread_start_time);
 }
 
 base::TimeTicks Scheduler::LastBeginImplFrameTime() {
@@ -510,6 +512,7 @@ void Scheduler::BeginImplFrame(const BeginFrameArgs& args) {
   DCHECK(state_machine_.HasInitializedOutputSurface());
 
   begin_impl_frame_tracker_.Start(args);
+  begin_main_frame_args_ = args;
   state_machine_.OnBeginImplFrame();
   devtools_instrumentation::DidBeginFrame(layer_tree_host_id_);
   client_->WillBeginImplFrame(begin_impl_frame_tracker_.Current());
@@ -648,8 +651,10 @@ void Scheduler::ProcessScheduledActions() {
         client_->ScheduledActionAnimate();
         break;
       case SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME:
-        compositor_timing_history_->WillBeginMainFrame();
+        compositor_timing_history_->WillBeginMainFrame(
+            begin_main_frame_args_.on_critical_path);
         state_machine_.WillSendBeginMainFrame();
+        // TODO(brianderson): Pass begin_main_frame_args_ directly to client.
         client_->ScheduledActionSendBeginMainFrame();
         break;
       case SchedulerStateMachine::ACTION_COMMIT: {

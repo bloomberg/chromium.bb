@@ -218,9 +218,11 @@ class ThreadProxyForTest : public ThreadProxy {
     ThreadProxy::SetDeferCommitsOnImpl(defer_commits);
   }
 
-  void BeginMainFrameAbortedOnImpl(CommitEarlyOutReason reason) override {
+  void BeginMainFrameAbortedOnImpl(
+      CommitEarlyOutReason reason,
+      base::TimeTicks main_thread_start_time) override {
     test_hooks_->BeginMainFrameAbortedOnImpl(reason);
-    ThreadProxy::BeginMainFrameAbortedOnImpl(reason);
+    ThreadProxy::BeginMainFrameAbortedOnImpl(reason, main_thread_start_time);
   }
 
   void SetNeedsRedrawOnImpl(const gfx::Rect& damage_rect) override {
@@ -255,9 +257,11 @@ class ThreadProxyForTest : public ThreadProxy {
 
   void StartCommitOnImpl(CompletionEvent* completion,
                          LayerTreeHost* layer_tree_host,
+                         base::TimeTicks main_thread_start_time,
                          bool hold_commit_for_activation) override {
     test_hooks_->StartCommitOnImpl();
     ThreadProxy::StartCommitOnImpl(completion, layer_tree_host,
+                                   main_thread_start_time,
                                    hold_commit_for_activation);
   }
 

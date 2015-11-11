@@ -85,7 +85,9 @@ class CC_EXPORT ThreadedChannel : public ChannelMain, public ChannelImpl {
   void SetInputThrottledUntilCommitOnImpl(bool is_throttled) override;
   void SetDeferCommitsOnImpl(bool defer_commits) override;
   void SetNeedsCommitOnImpl() override;
-  void BeginMainFrameAbortedOnImpl(CommitEarlyOutReason reason) override;
+  void BeginMainFrameAbortedOnImpl(
+      CommitEarlyOutReason reason,
+      base::TimeTicks main_thread_start_time) override;
   void SetNeedsRedrawOnImpl(const gfx::Rect& damage_rect) override;
   void SetVisibleOnImpl(bool visible) override;
 
@@ -98,6 +100,7 @@ class CC_EXPORT ThreadedChannel : public ChannelMain, public ChannelImpl {
       bool* main_frame_will_happen) override;
   void StartCommitOnImpl(CompletionEvent* completion,
                          LayerTreeHost* layer_tree_host,
+                         base::TimeTicks main_thread_start_time,
                          bool hold_commit_for_activation) override;
   void InitializeImplOnImpl(CompletionEvent* completion,
                             LayerTreeHost* layer_tree_host) override;

@@ -1035,7 +1035,7 @@ void SchedulerStateMachine::SetNeedsOneBeginImplFrame() {
 }
 
 void SchedulerStateMachine::NotifyReadyToCommit() {
-  DCHECK(begin_main_frame_state_ == BEGIN_MAIN_FRAME_STATE_STARTED)
+  DCHECK_EQ(begin_main_frame_state_, BEGIN_MAIN_FRAME_STATE_STARTED)
       << AsValue()->ToString();
   begin_main_frame_state_ = BEGIN_MAIN_FRAME_STATE_READY_TO_COMMIT;
   // In commit_to_active_tree mode, commit should happen right after
@@ -1046,7 +1046,7 @@ void SchedulerStateMachine::NotifyReadyToCommit() {
 }
 
 void SchedulerStateMachine::BeginMainFrameAborted(CommitEarlyOutReason reason) {
-  DCHECK_EQ(begin_main_frame_state_, BEGIN_MAIN_FRAME_STATE_SENT);
+  DCHECK_EQ(begin_main_frame_state_, BEGIN_MAIN_FRAME_STATE_STARTED);
   switch (reason) {
     case CommitEarlyOutReason::ABORTED_OUTPUT_SURFACE_LOST:
     case CommitEarlyOutReason::ABORTED_NOT_VISIBLE:

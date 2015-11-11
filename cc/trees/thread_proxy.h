@@ -288,9 +288,12 @@ class CC_EXPORT ThreadProxy : public Proxy,
       bool* main_frame_will_happen) override;
   void SetNeedsCommitOnImpl() override;
   void SetNeedsRedrawOnImpl(const gfx::Rect& damage_rect) override;
-  void BeginMainFrameAbortedOnImpl(CommitEarlyOutReason reason) override;
+  void BeginMainFrameAbortedOnImpl(
+      CommitEarlyOutReason reason,
+      base::TimeTicks main_thread_start_time) override;
   void StartCommitOnImpl(CompletionEvent* completion,
                          LayerTreeHost* layer_tree_host,
+                         base::TimeTicks main_thread_start_time,
                          bool hold_commit_for_activation) override;
   void InitializeImplOnImpl(CompletionEvent* completion,
                             LayerTreeHost* layer_tree_host) override;

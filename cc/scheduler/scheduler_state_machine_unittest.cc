@@ -1233,6 +1233,7 @@ TEST(SchedulerStateMachineTest, TestAbortBeginMainFrameBecauseInvisible) {
 
   // Become invisible and abort BeginMainFrame.
   state.SetVisible(false);
+  state.NotifyBeginMainFrameStarted();
   state.BeginMainFrameAborted(CommitEarlyOutReason::ABORTED_NOT_VISIBLE);
 
   // NeedsCommit should now be true again because we never actually did a
@@ -1288,6 +1289,7 @@ TEST(SchedulerStateMachineTest, TestAbortBeginMainFrameBecauseCommitNotNeeded) {
 
   // Abort the commit, true means that the BeginMainFrame was sent but there
   // was no work to do on the main thread.
+  state.NotifyBeginMainFrameStarted();
   state.BeginMainFrameAborted(CommitEarlyOutReason::FINISHED_NO_UPDATES);
 
   // NeedsCommit should now be false because the commit was actually handled.
@@ -1849,6 +1851,7 @@ TEST(SchedulerStateMachineTest,
 
   // Since only the scroll offset changed, the main thread will abort the
   // commit.
+  state.NotifyBeginMainFrameStarted();
   state.BeginMainFrameAborted(CommitEarlyOutReason::FINISHED_NO_UPDATES);
 
   // Since the commit was aborted, we should draw right away instead of waiting
