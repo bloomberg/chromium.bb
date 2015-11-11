@@ -12,6 +12,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/stop_find_action.h"
+#include "extensions/browser/guest_view/extension_view/whitelist/extension_view_whitelist.h"
 #include "extensions/common/api/extension_view_internal.h"
 #include "extensions/common/constants.h"
 
@@ -34,17 +35,14 @@ bool ExtensionViewInternalExtensionFunction::RunAsync() {
 // Returns true if |src| is valid.
 bool IsSrcValid(GURL src) {
   // Check if src is valid and matches the extension scheme.
-  if (!src.is_valid() || !src.SchemeIs(kExtensionScheme)) {
-    VLOG(0) << "src not valid or match extension scheme";
+  if (!src.is_valid() || !src.SchemeIs(kExtensionScheme))
     return false;
-  }
 
   // Get the extension id and check if it is valid.
   std::string extension_id = src.host();
-  if (!crx_file::id_util::IdIsValid(extension_id)) {
-    VLOG(0) << "extension id not valid: " << extension_id;
+  if (!crx_file::id_util::IdIsValid(extension_id) ||
+      !IsExtensionIdWhitelisted(extension_id))
     return false;
-  }
 
   return true;
 }

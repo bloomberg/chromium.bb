@@ -79,10 +79,8 @@ class ExtensionViewTest : public extensions::PlatformAppBrowserTest {
 // Tests that <extensionview> can be created and added to the DOM.
 IN_PROC_BROWSER_TEST_F(ExtensionViewTest,
                        TestExtensionViewCreationShouldSucceed) {
-  const extensions::Extension* skeleton_app =
-      InstallPlatformApp("extension_view/skeleton");
-  TestHelper("testExtensionViewCreationShouldSucceed", "extension_view",
-             skeleton_app->id(), "");
+  TestHelper("testExtensionViewCreationShouldSucceed",
+             "extension_view/creation", "", "");
 }
 
 // Tests that verify that <extensionview> does not change extension ID if
