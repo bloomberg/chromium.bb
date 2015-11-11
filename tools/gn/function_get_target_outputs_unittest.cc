@@ -12,8 +12,6 @@ namespace {
 class GetTargetOutputsTest : public testing::Test {
  public:
   GetTargetOutputsTest() {
-    // Want consistent target names so explicitly set platform.
-    setup_.settings()->set_target_os(Settings::LINUX);
     setup_.scope()->set_item_collector(&items_);
   }
 

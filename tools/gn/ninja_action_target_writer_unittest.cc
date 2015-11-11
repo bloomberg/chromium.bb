@@ -54,7 +54,6 @@ TEST(NinjaActionTargetWriter, ActionNoSources) {
   target.SetToolchain(setup.toolchain());
   ASSERT_TRUE(target.OnResolved(&err));
 
-  setup.settings()->set_target_os(Settings::LINUX);
   setup.build_settings()->set_python_path(base::FilePath(FILE_PATH_LITERAL(
       "/usr/bin/python")));
 
@@ -96,7 +95,6 @@ TEST(NinjaActionTargetWriter, ActionNoSourcesConsole) {
   target.SetToolchain(setup.toolchain());
   ASSERT_TRUE(target.OnResolved(&err));
 
-  setup.settings()->set_target_os(Settings::LINUX);
   setup.build_settings()->set_python_path(base::FilePath(FILE_PATH_LITERAL(
       "/usr/bin/python")));
 
@@ -140,7 +138,6 @@ TEST(NinjaActionTargetWriter, ActionWithSources) {
   target.SetToolchain(setup.toolchain());
   ASSERT_TRUE(target.OnResolved(&err));
 
-  setup.settings()->set_target_os(Settings::LINUX);
   setup.build_settings()->set_python_path(base::FilePath(FILE_PATH_LITERAL(
       "/usr/bin/python")));
 
@@ -206,7 +203,6 @@ TEST(NinjaActionTargetWriter, ForEach) {
   target.SetToolchain(setup.toolchain());
   ASSERT_TRUE(target.OnResolved(&err));
 
-  setup.settings()->set_target_os(Settings::LINUX);
   setup.build_settings()->set_python_path(base::FilePath(FILE_PATH_LITERAL(
       "/usr/bin/python")));
 
@@ -275,7 +271,6 @@ TEST(NinjaActionTargetWriter, ForEachWithDepfile) {
 
   target.inputs().push_back(SourceFile("//foo/included.txt"));
 
-  setup.settings()->set_target_os(Settings::LINUX);
   setup.build_settings()->set_python_path(base::FilePath(FILE_PATH_LITERAL(
       "/usr/bin/python")));
 
@@ -335,7 +330,6 @@ TEST(NinjaActionTargetWriter, ForEachWithResponseFile) {
   target.action_values().outputs() = SubstitutionList::MakeForTest(
       "//out/Debug/{{source_name_part}}.out");
 
-  setup.settings()->set_target_os(Settings::LINUX);
   setup.build_settings()->set_python_path(base::FilePath(FILE_PATH_LITERAL(
       "/usr/bin/python")));
 

@@ -26,13 +26,6 @@
 // the file with the toolchain declaration in it.
 class Settings {
  public:
-  enum TargetOS {
-    UNKNOWN,
-    LINUX,
-    MAC,
-    WIN
-  };
-
   // Constructs a toolchain settings.
   //
   // The output_subdir_name is the name we should use for the subdirectory in
@@ -59,13 +52,6 @@ class Settings {
   bool is_default() const {
     return toolchain_label_ == default_toolchain_label_;
   }
-
-  bool IsMac() const { return target_os_ == MAC; }
-  bool IsLinux() const { return target_os_ == LINUX; }
-  bool IsWin() const { return target_os_ == WIN; }
-
-  TargetOS target_os() const { return target_os_; }
-  void set_target_os(TargetOS t) { target_os_ = t; }
 
   const OutputFile& toolchain_output_subdir() const {
     return toolchain_output_subdir_;
@@ -105,8 +91,6 @@ class Settings {
 
   Label toolchain_label_;
   Label default_toolchain_label_;
-
-  TargetOS target_os_;
 
   mutable ImportManager import_manager_;
 

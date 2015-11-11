@@ -15,7 +15,6 @@ TEST(NinjaBinaryTargetWriter, SourceSet) {
   Err err;
 
   setup.build_settings()->SetBuildDir(SourceDir("//out/Debug/"));
-  setup.settings()->set_target_os(Settings::WIN);
 
   Target target(setup.settings(), Label(SourceDir("//foo/"), "bar"));
   target.set_output_type(Target::SOURCE_SET);
@@ -152,7 +151,6 @@ TEST(NinjaBinaryTargetWriter, ProductExtensionAndInputDeps) {
   Err err;
 
   setup.build_settings()->SetBuildDir(SourceDir("//out/Debug/"));
-  setup.settings()->set_target_os(Settings::LINUX);
 
   // An action for our library to depend on.
   Target action(setup.settings(), Label(SourceDir("//foo/"), "action"));
@@ -208,7 +206,6 @@ TEST(NinjaBinaryTargetWriter, EmptyProductExtension) {
   Err err;
 
   setup.build_settings()->SetBuildDir(SourceDir("//out/Debug/"));
-  setup.settings()->set_target_os(Settings::LINUX);
 
   // This test is the same as ProductExtension, except that
   // we call set_output_extension("") and ensure that we still get the default.
@@ -250,7 +247,6 @@ TEST(NinjaBinaryTargetWriter, EmptyProductExtension) {
 TEST(NinjaBinaryTargetWriter, SourceSetDataDeps) {
   TestWithScope setup;
   setup.build_settings()->SetBuildDir(SourceDir("//out/Debug/"));
-  setup.settings()->set_target_os(Settings::LINUX);
 
   Err err;
 
@@ -332,7 +328,6 @@ TEST(NinjaBinaryTargetWriter, SourceSetDataDeps) {
 TEST(NinjaBinaryTargetWriter, SharedLibraryModuleDefinitionFile) {
   TestWithScope setup;
   setup.build_settings()->SetBuildDir(SourceDir("//out/Debug/"));
-  setup.settings()->set_target_os(Settings::WIN);
 
   Target shared_lib(setup.settings(), Label(SourceDir("//foo/"), "bar"));
   shared_lib.set_output_type(Target::SHARED_LIBRARY);

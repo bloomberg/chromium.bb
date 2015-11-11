@@ -880,9 +880,12 @@ const char kLibs_Help[] =
     "  When constructing the linker command, the \"lib_prefix\" attribute of\n"
     "  the linker tool in the current toolchain will be prepended to each\n"
     "  library. So your BUILD file should not specify the switch prefix\n"
-    "  (like \"-l\"). On Mac, libraries ending in \".framework\" will be\n"
-    "  special-cased: the switch \"-framework\" will be prepended instead of\n"
-    "  the lib_prefix, and the \".framework\" suffix will be trimmed.\n"
+    "  (like \"-l\").\n"
+    "\n"
+    "  Libraries ending in \".framework\" will be special-cased: the switch\n"
+    "  \"-framework\" will be prepended instead of the lib_prefix, and the\n"
+    "  \".framework\" suffix will be trimmed. This is to support the way Mac\n"
+    "  links framework dependencies.\n"
     COMMON_LIB_INHERITANCE_HELP
     COMMON_ORDERING_HELP
     "\n"

@@ -15,7 +15,6 @@ TEST(NinjaCopyTargetWriter, Run) {
   TestWithScope setup;
   Err err;
 
-  setup.settings()->set_target_os(Settings::LINUX);
   setup.build_settings()->SetBuildDir(SourceDir("//out/Debug/"));
   Target target(setup.settings(), Label(SourceDir("//foo/"), "bar"));
   target.set_output_type(Target::COPY_FILES);
@@ -47,7 +46,6 @@ TEST(NinjaCopyTargetWriter, ToolchainDeps) {
   TestWithScope setup;
   Err err;
 
-  setup.settings()->set_target_os(Settings::LINUX);
   setup.build_settings()->SetBuildDir(SourceDir("//out/Debug/"));
   Target target(setup.settings(), Label(SourceDir("//foo/"), "bar"));
   target.set_output_type(Target::COPY_FILES);
@@ -76,7 +74,6 @@ TEST(NinjaCopyTargetWriter, OrderOnlyDeps) {
   TestWithScope setup;
   Err err;
 
-  setup.settings()->set_target_os(Settings::LINUX);
   setup.build_settings()->SetBuildDir(SourceDir("//out/Debug/"));
 
   Target target(setup.settings(), Label(SourceDir("//foo/"), "bar"));
