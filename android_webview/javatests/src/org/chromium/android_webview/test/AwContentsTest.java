@@ -80,8 +80,6 @@ public class AwContentsTest extends AwTestBase {
 
     @LargeTest
     @Feature({"AndroidWebView"})
-    // Run in single-process mode only. Blocked by rendering support crbug.com/526842.
-    @ParameterizedTest.Set
     public void testCreateLoadDestroyManyTimes() throws Throwable {
         for (int i = 0; i < 10; ++i) {
             AwTestContainerView testView = createAwTestContainerViewOnMainSync(mContentsClient);

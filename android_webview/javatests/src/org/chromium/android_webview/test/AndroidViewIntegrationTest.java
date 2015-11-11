@@ -300,7 +300,7 @@ public class AndroidViewIntegrationTest extends AwTestBase {
 
     @SmallTest
     @Feature({"AndroidWebView"})
-    // Run in single-process mode only. Blocked by rendering support crbug.com/526842.
+    // Run in single-process mode only. Blocked by software draws support crbug.com/545611.
     @ParameterizedTest.Set
     public void testViewIsNotBlankInWrapContentsMode() throws Throwable {
         final TestAwContentsClient contentsClient = new TestAwContentsClient();

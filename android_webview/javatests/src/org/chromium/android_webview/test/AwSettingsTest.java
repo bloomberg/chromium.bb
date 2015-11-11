@@ -32,7 +32,6 @@ import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.TestFileUtil;
 import org.chromium.base.test.util.UrlUtils;
-import org.chromium.base.test.util.parameter.ParameterizedTest;
 import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content.browser.test.util.HistoryUtils;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
@@ -2193,8 +2192,6 @@ public class AwSettingsTest extends AwTestBase {
 
     @SmallTest
     @Feature({"AndroidWebView", "Preferences"})
-    // Run in single-process mode only. Blocked by rendering support crbug.com/526842.
-    @ParameterizedTest.Set
     public void testLayoutAlgorithmWithTwoViews() throws Throwable {
         ViewPair views = createViews();
         runPerViewSettingsTest(
@@ -2213,8 +2210,6 @@ public class AwSettingsTest extends AwTestBase {
 
     @SmallTest
     @Feature({"AndroidWebView", "Preferences"})
-    // Run in single-process mode only. Blocked by rendering support crbug.com/526842.
-    @ParameterizedTest.Set
     public void testTextZoomAutosizingWithTwoViews() throws Throwable {
         ViewPair views = createViews();
         runPerViewSettingsTest(
@@ -2583,8 +2578,6 @@ public class AwSettingsTest extends AwTestBase {
 
     @MediumTest
     @Feature({"AndroidWebView", "Preferences"})
-    // Run in single-process mode only. Blocked by rendering support crbug.com/526842.
-    @ParameterizedTest.Set
     public void testUseWideViewportControlsDoubleTabToZoom() throws Throwable {
         final TestAwContentsClient contentClient = new TestAwContentsClient();
         final AwTestContainerView testContainerView =
@@ -2657,8 +2650,6 @@ public class AwSettingsTest extends AwTestBase {
 
     @SmallTest
     @Feature({"AndroidWebView", "Preferences"})
-    // Run in single-process mode only. Blocked by rendering support crbug.com/526842.
-    @ParameterizedTest.Set
     public void testLoadWithOverviewModeWithTwoViews() throws Throwable {
         ViewPair views = createViews();
         runPerViewSettingsTest(
@@ -2670,8 +2661,6 @@ public class AwSettingsTest extends AwTestBase {
 
     @SmallTest
     @Feature({"AndroidWebView", "Preferences"})
-    // Run in single-process mode only. Blocked by rendering support crbug.com/526842.
-    @ParameterizedTest.Set
     public void testLoadWithOverviewModeViewportTagWithTwoViews() throws Throwable {
         ViewPair views = createViews();
         runPerViewSettingsTest(
@@ -2683,8 +2672,6 @@ public class AwSettingsTest extends AwTestBase {
 
     @SmallTest
     @Feature({"AndroidWebView", "Preferences"})
-    // Run in single-process mode only. Blocked by rendering support crbug.com/526842.
-    @ParameterizedTest.Set
     public void testSetInitialScale() throws Throwable {
         final TestAwContentsClient contentClient = new TestAwContentsClient();
         final AwTestContainerView testContainerView =

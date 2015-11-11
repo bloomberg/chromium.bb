@@ -33,8 +33,6 @@ import java.util.concurrent.atomic.AtomicReference;
  * Integration tests for synchronous scrolling.
  */
 @SuppressFBWarnings("DLS_DEAD_LOCAL_STORE")
-// Run in single-process mode only. Blocked by rendering support crbug.com/526842.
-@ParameterizedTest.Set
 public class AndroidScrollIntegrationTest extends AwTestBase {
     private TestWebServer mWebServer;
 
@@ -377,6 +375,8 @@ public class AndroidScrollIntegrationTest extends AwTestBase {
 
     @SmallTest
     @Feature({"AndroidWebView"})
+    // Run in single-process mode only. Flaky with sandboxed renderer crbug.com/554529.
+    @ParameterizedTest.Set
     public void testJsScrollFromBody() throws Throwable {
         final TestAwContentsClient contentsClient = new TestAwContentsClient();
         final ScrollTestContainerView testContainerView =
@@ -522,6 +522,8 @@ public class AndroidScrollIntegrationTest extends AwTestBase {
 
     @SmallTest
     @Feature({"AndroidWebView"})
+    // Run in single-process mode only. Blocked by software draws support crbug.com/545611.
+    @ParameterizedTest.Set
     public void testOverScrollX() throws Throwable {
         final TestAwContentsClient contentsClient = new TestAwContentsClient();
         final ScrollTestContainerView testContainerView =
@@ -555,6 +557,8 @@ public class AndroidScrollIntegrationTest extends AwTestBase {
 
     @SmallTest
     @Feature({"AndroidWebView"})
+    // Run in single-process mode only. Blocked by software draws support crbug.com/545611.
+    @ParameterizedTest.Set
     public void testOverScrollY() throws Throwable {
         final TestAwContentsClient contentsClient = new TestAwContentsClient();
         final ScrollTestContainerView testContainerView =
@@ -617,6 +621,8 @@ public class AndroidScrollIntegrationTest extends AwTestBase {
 
     @SmallTest
     @Feature({"AndroidWebView"})
+    // Run in single-process mode only. Blocked by multiple RVHs crbug.com/533516.
+    @ParameterizedTest.Set
     public void testFlingScrollOnPopup() throws Throwable {
         final TestAwContentsClient parentContentsClient = new TestAwContentsClient();
         final ScrollTestContainerView parentContainerView =
