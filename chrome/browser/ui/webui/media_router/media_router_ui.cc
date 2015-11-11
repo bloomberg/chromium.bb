@@ -224,6 +224,7 @@ void MediaRouterUI::InitCommon(content::WebContents* initiator) {
       MediaSourceForTab(SessionTabHelper::IdForTab(initiator)));
   query_result_manager_->StartSinksQuery(
       MediaCastMode::TAB_MIRROR, mirroring_source);
+  UpdateCastModes();
 }
 
 void MediaRouterUI::OnDefaultPresentationChanged(
