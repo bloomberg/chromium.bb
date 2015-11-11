@@ -641,7 +641,7 @@ CookieTreeHostNode::CookieTreeHostNode(const GURL& url)
 
 CookieTreeHostNode::~CookieTreeHostNode() {}
 
-const std::string CookieTreeHostNode::GetHost() const {
+std::string CookieTreeHostNode::GetHost() const {
   const std::string file_origin_node_name(
       std::string(url::kFileScheme) + url::kStandardSchemeSeparator);
   return url_.SchemeIsFile() ? file_origin_node_name : url_.host();

@@ -237,7 +237,7 @@ class CookieTreeHostNode : public CookieTreeNode {
   // True if a content exception can be created for this origin.
   bool CanCreateContentException() const;
 
-  const std::string GetHost() const;
+  std::string GetHost() const;
 
  private:
   // Pointers to the cookies, databases, local and session storage and appcache
