@@ -278,7 +278,6 @@ am__installdirs = "$(DESTDIR)$(libdir)" "$(DESTDIR)$(bindir)" \
 	"$(DESTDIR)$(includegbcdir)" "$(DESTDIR)$(includelssdir)" \
 	"$(DESTDIR)$(includepdir)"
 LIBRARIES = $(lib_LIBRARIES) $(noinst_LIBRARIES)
-AR = ar
 ARFLAGS = cru
 AM_V_AR = $(am__v_AR_@AM_V@)
 am__v_AR_ = $(am__v_AR_@AM_DEFAULT_V@)
@@ -1880,7 +1879,7 @@ TEST_LOG_COMPILE = $(TEST_LOG_COMPILER) $(AM_TEST_LOG_FLAGS) \
 	$(TEST_LOG_FLAGS)
 am__DIST_COMMON = $(srcdir)/Makefile.in \
 	$(srcdir)/breakpad-client.pc.in $(srcdir)/breakpad.pc.in \
-	$(top_srcdir)/autotools/compile \
+	$(top_srcdir)/autotools/ar-lib $(top_srcdir)/autotools/compile \
 	$(top_srcdir)/autotools/config.guess \
 	$(top_srcdir)/autotools/config.sub \
 	$(top_srcdir)/autotools/depcomp \
@@ -1888,9 +1887,9 @@ am__DIST_COMMON = $(srcdir)/Makefile.in \
 	$(top_srcdir)/autotools/missing \
 	$(top_srcdir)/autotools/test-driver \
 	$(top_srcdir)/src/config.h.in AUTHORS ChangeLog INSTALL NEWS \
-	autotools/compile autotools/config.guess autotools/config.sub \
-	autotools/depcomp autotools/install-sh autotools/ltmain.sh \
-	autotools/missing
+	autotools/ar-lib autotools/compile autotools/config.guess \
+	autotools/config.sub autotools/depcomp autotools/install-sh \
+	autotools/ltmain.sh autotools/missing
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 distdir = $(PACKAGE)-$(VERSION)
 top_distdir = $(distdir)
@@ -1911,6 +1910,7 @@ distcleancheck_listfiles = find . -type f -print
 ACLOCAL = @ACLOCAL@
 AMTAR = @AMTAR@
 AM_DEFAULT_VERBOSITY = @AM_DEFAULT_VERBOSITY@
+AR = @AR@
 AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
@@ -1968,6 +1968,7 @@ abs_builddir = @abs_builddir@
 abs_srcdir = @abs_srcdir@
 abs_top_builddir = @abs_top_builddir@
 abs_top_srcdir = @abs_top_srcdir@
+ac_ct_AR = @ac_ct_AR@
 ac_ct_CC = @ac_ct_CC@
 ac_ct_CXX = @ac_ct_CXX@
 am__include = @am__include@
