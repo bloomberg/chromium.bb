@@ -39,10 +39,6 @@
 # include "native_client/src/trusted/service_runtime/include/sys/errno.h"
 #endif
 
-#ifndef SIZE_T_MAX
-# define SIZE_T_MAX (~((size_t) 0))
-#endif
-
 static size_t size_min(size_t a, size_t b) {
   if (a < b) {
     return a;

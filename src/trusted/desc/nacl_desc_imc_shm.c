@@ -33,10 +33,6 @@
 #include "native_client/src/trusted/service_runtime/internal_errno.h"
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 
-#ifndef SIZE_T_MAX
-# define SIZE_T_MAX   (~(size_t) 0)
-#endif
-
 /*
  * This file contains the implementation of the NaClDescImcShm
  * subclass of NaClDesc.

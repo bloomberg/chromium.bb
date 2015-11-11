@@ -13,12 +13,9 @@
 #include <string.h>
 
 #include "native_client/src/include/build_config.h"
+#include "native_client/src/include/portability.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 #include "native_client/src/shared/srpc/nacl_srpc_internal.h"
-
-#ifndef SIZE_T_MAX
-# define SIZE_T_MAX (~((size_t) 0))
-#endif
 
 
 /*

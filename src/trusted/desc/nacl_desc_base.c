@@ -66,13 +66,6 @@
  * functions, at least, will enforce this restriction.
  */
 
-/*
- * TODO(bsy): remove when we put SIZE_T_MAX in a common header file.
- */
-#if !defined(SIZE_T_MAX)
-# define SIZE_T_MAX ((size_t) -1)
-#endif
-
 int NaClDescCtor(struct NaClDesc *ndp) {
   /* this should be a compile-time test */
   if (0 != (sizeof(struct NaClInternalHeader) & 0xf)) {

@@ -28,10 +28,6 @@
 #include "native_client/src/trusted/service_runtime/include/sys/errno.h"
 #endif
 
-#ifndef SIZE_T_MAX
-# define SIZE_T_MAX (~((size_t) 0))
-#endif
-
 /*
  * Message formats:
  *
