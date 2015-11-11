@@ -74,6 +74,51 @@ template("android_lint") {
   }
 }
 
+template("proguard") {
+  action(target_name) {
+    set_sources_assignment_filter([])
+    forward_variables_from(invoker,
+                           [
+                             "deps",
+                             "data_deps",
+                             "public_deps",
+                             "testonly",
+                           ])
+    script = "//build/android/gyp/proguard.py"
+    _proguard_jar_path = "//third_party/proguard/lib/proguard.jar"
+    _output_jar_path = invoker.output_jar_path
+    inputs = [
+      android_sdk_jar,
+      _proguard_jar_path,
+    ]
+    if (defined(invoker.inputs)) {
+      inputs += invoker.inputs
+    }
+    depfile = "${target_gen_dir}/${target_name}.d"
+    outputs = [
+      depfile,
+      _output_jar_path,
+      "$_output_jar_path.dump",
+      "$_output_jar_path.seeds",
+      "$_output_jar_path.mapping",
+      "$_output_jar_path.usage",
+    ]
+    args = [
+      "--depfile",
+      rebase_path(depfile, root_build_dir),
+      "--proguard-path",
+      rebase_path(_proguard_jar_path, root_build_dir),
+      "--output-path",
+      rebase_path(_output_jar_path, root_build_dir),
+      "--classpath",
+      rebased_android_sdk_jar,
+    ]
+    if (defined(invoker.args)) {
+      args += invoker.args
+    }
+  }
+}
+
 template("findbugs") {
   jar_path = invoker.jar_path
 
@@ -233,19 +278,15 @@ template("dex") {
 # See build/android/gyp/write_build_config.py and
 # build/android/gyp/util/build_utils.py:ExpandFileArgs
 template("write_build_config") {
-  set_sources_assignment_filter([])
-
-  assert(defined(invoker.type))
-  assert(defined(invoker.build_config))
-
-  type = invoker.type
-  build_config = invoker.build_config
-
-  assert(type == "android_apk" || type == "java_library" ||
-         type == "android_resources" || type == "deps_dex" ||
-         type == "android_assets" || type == "resource_rewriter")
-
   action(target_name) {
+    set_sources_assignment_filter([])
+    type = invoker.type
+    build_config = invoker.build_config
+
+    assert(type == "android_apk" || type == "java_library" ||
+           type == "android_resources" || type == "deps_dex" ||
+           type == "android_assets" || type == "resource_rewriter")
+
     deps = []
     forward_variables_from(invoker,
                            [
@@ -403,6 +444,14 @@ template("write_build_config") {
           "--readelf-path=$rebased_android_readelf",
         ]
       }
+
+      if (defined(invoker.proguard_enabled) && invoker.proguard_enabled) {
+        args += [
+          "--proguard-enabled",
+          "--proguard-info",
+          rebase_path(invoker.proguard_info, root_build_dir),
+        ]
+      }
     }
 
     if (defined(invoker.srcjar)) {
@@ -426,44 +475,29 @@ template("process_java_prebuilt") {
   assert(invoker.build_config != "")
 
   if (defined(invoker.proguard_preprocess) && invoker.proguard_preprocess) {
-    _proguard_jar_path = "//third_party/proguard/lib/proguard.jar"
-    _proguard_config_path = invoker.proguard_config
     _build_config = invoker.build_config
     _rebased_build_config = rebase_path(_build_config, root_build_dir)
+    _proguard_config_path = invoker.proguard_config
     _output_jar_target = "${target_name}__proguard_process"
-    action(_output_jar_target) {
+    proguard(_output_jar_target) {
       forward_variables_from(invoker,
                              [
                                "data_deps",
                                "deps",
                                "public_deps",
                              ])
-      script = "//build/android/gyp/proguard.py"
       inputs = [
-        android_sdk_jar,
-        _proguard_jar_path,
         _build_config,
         _input_jar_path,
         _proguard_config_path,
       ]
-      depfile = "${target_gen_dir}/${target_name}.d"
-      outputs = [
-        depfile,
-        _output_jar_path,
-      ]
+      output_jar_path = _output_jar_path
+      _rebased_input_paths = [ rebase_path(_input_jar_path, root_build_dir) ]
+      _rebased_proguard_configs =
+          [ rebase_path(_proguard_config_path, root_build_dir) ]
       args = [
-        "--depfile",
-        rebase_path(depfile, root_build_dir),
-        "--proguard-path",
-        rebase_path(_proguard_jar_path, root_build_dir),
-        "--input-path",
-        rebase_path(_input_jar_path, root_build_dir),
-        "--output-path",
-        rebase_path(_output_jar_path, root_build_dir),
-        "--proguard-config",
-        rebase_path(_proguard_config_path, root_build_dir),
-        "--classpath",
-        rebased_android_sdk_jar,
+        "--input-paths=$_rebased_input_paths",
+        "--proguard-configs=$_rebased_proguard_configs",
         "--classpath=@FileArg($_rebased_build_config:javac:classpath)",
       ]
     }
@@ -1537,6 +1571,14 @@ template("process_resources") {
       args += [
         "--all-resources-zip-out",
         rebase_path(all_resources_zip, root_build_dir),
+      ]
+    }
+
+    if (defined(invoker.proguard_file)) {
+      outputs += [ invoker.proguard_file ]
+      args += [
+        "--proguard-file",
+        rebase_path(invoker.proguard_file, root_build_dir),
       ]
     }
 

@@ -446,7 +446,6 @@ jinja_template("chrome_public_test_apk_manifest") {
 
 # GYP: //chrome/android/chrome_apk.gyp:chrome_public_test_apk
 instrumentation_test_apk("chrome_public_test_apk") {
-  # TODO(GYP,cjhopman): Does this need version code/name?
   apk_name = "ChromePublicTest"
   apk_under_test = ":chrome_public_apk"
   android_manifest = chrome_public_test_apk_manifest
@@ -455,4 +454,5 @@ instrumentation_test_apk("chrome_public_test_apk") {
     "//chrome/android:chrome_shared_test_java",
   ]
   isolate_file = "../chrome_public_test_apk.isolate"
+  proguard_enabled = !is_debug
 }

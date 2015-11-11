@@ -1351,6 +1351,12 @@ template("android_apk") {
   # Help GN understand that _create_abi_split is not unused (bug in GN).
   assert(_create_abi_split || true)
 
+  _proguard_enabled =
+      defined(invoker.proguard_enabled) && invoker.proguard_enabled
+  if (_proguard_enabled) {
+    _proguard_jar_path = "$base_path.proguard.jar"
+  }
+
   build_config_target = "${_template_name}__build_config"
   write_build_config(build_config_target) {
     forward_variables_from(invoker, [ "apk_under_test" ])
@@ -1366,11 +1372,17 @@ template("android_apk") {
       deps += invoker.deps
     }
 
+    proguard_enabled = _proguard_enabled
+    if (_proguard_enabled) {
+      proguard_info = "$_proguard_jar_path.info"
+    }
+
     native_libs = _native_libs
   }
 
   _final_deps = []
 
+  _generated_proguard_config = "$base_path.resources.proguard.txt"
   process_resources_target = "${_template_name}__process_resources"
   process_resources(process_resources_target) {
     forward_variables_from(invoker, [ "include_all_resources" ])
@@ -1381,6 +1393,7 @@ template("android_apk") {
     zip_path = resources_zip_path
     all_resources_zip_path = _all_resources_zip_path
     generate_constant_ids = true
+    proguard_file = _generated_proguard_config
 
     build_config = _build_config
     deps = _android_manifest_deps + [ ":$build_config_target" ]
@@ -1493,20 +1506,47 @@ template("android_apk") {
     }
   }
 
+  if (_proguard_enabled) {
+    _proguard_configs = [ _generated_proguard_config ]
+    if (defined(invoker.proguard_configs)) {
+      _proguard_configs += invoker.proguard_configs
+    }
+    _proguard_target = "${_template_name}__proguard"
+    proguard(_proguard_target) {
+      deps = [
+        ":$build_config_target",
+        ":$process_resources_target",
+        ":$java_target",
+      ]
+      inputs = [
+                 _build_config,
+                 _jar_path,
+               ] + _proguard_configs
+
+      output_jar_path = _proguard_jar_path
+      rebased_proguard_configs = rebase_path(_proguard_configs, root_build_dir)
+      args = [
+        "--proguard-configs=$rebased_proguard_configs",
+        "--tested-apk-info=@FileArg($_rebased_build_config:proguard:tested_apk_info)",
+        "--input-paths=@FileArg($_rebased_build_config:proguard:input_paths)",
+      ]
+    }
+    _dex_sources = [ _proguard_jar_path ]
+    _dex_deps = [ ":$_proguard_target" ]
+  } else {
+    _dex_sources = [ _lib_dex_path ]
+    _dex_deps = [ ":$java_target" ]
+  }
+
   dex("$final_dex_target_name") {
-    deps = [
-      ":$build_config_target",
-      ":$java_target",
-    ]
+    deps = _dex_deps + [ ":$build_config_target" ]
     inputs = [
       _build_config,
     ]
+    sources = _dex_sources
     output = final_dex_path
     _dex_arg_key = "${_rebased_build_config}:final_dex:dependency_dex_files"
-    args = [
-      "--inputs=@FileArg($_dex_arg_key)",
-      _rebased_lib_dex_path,
-    ]
+    args = [ "--inputs=@FileArg($_dex_arg_key)" ]
   }
 
   if (_native_libs != []) {
