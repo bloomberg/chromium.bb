@@ -11,17 +11,20 @@
 #include "base/memory/scoped_ptr.h"
 #include "mojo/shell/native_runner.h"
 
+namespace base {
+class TaskRunner;
+}
+
 namespace mojo {
 namespace runner {
 
 class ChildProcessHost;
-class Context;
 
 // An implementation of |NativeRunner| that loads/runs the given app (from the
 // file system) in a separate process (of its own).
 class OutOfProcessNativeRunner : public shell::NativeRunner {
  public:
-  explicit OutOfProcessNativeRunner(Context* context);
+  explicit OutOfProcessNativeRunner(base::TaskRunner* launch_process_runner);
   ~OutOfProcessNativeRunner() override;
 
   // |NativeRunner| method:
@@ -34,7 +37,7 @@ class OutOfProcessNativeRunner : public shell::NativeRunner {
   // |ChildController::StartApp()| callback:
   void AppCompleted(int32_t result);
 
-  Context* const context_;
+  base::TaskRunner* const launch_process_runner_;
 
   base::FilePath app_path_;
   base::Closure app_completed_callback_;
@@ -46,15 +49,16 @@ class OutOfProcessNativeRunner : public shell::NativeRunner {
 
 class OutOfProcessNativeRunnerFactory : public shell::NativeRunnerFactory {
  public:
-  explicit OutOfProcessNativeRunnerFactory(Context* context)
-      : context_(context) {}
+  explicit OutOfProcessNativeRunnerFactory(
+      base::TaskRunner* launch_process_runner)
+      : launch_process_runner_(launch_process_runner) {}
   ~OutOfProcessNativeRunnerFactory() override {}
 
   scoped_ptr<shell::NativeRunner> Create(
       const base::FilePath& app_path) override;
 
  private:
-  Context* const context_;
+  base::TaskRunner* const launch_process_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(OutOfProcessNativeRunnerFactory);
 };

@@ -16,10 +16,12 @@
 #include "third_party/mojo/src/mojo/edk/embedder/platform_channel_pair.h"
 #include "third_party/mojo/src/mojo/edk/embedder/scoped_platform_handle.h"
 
+namespace base {
+class TaskRunner;
+}
+
 namespace mojo {
 namespace runner {
-
-class Context;
 
 // This class represents a "child process host". Handles launching and
 // connecting a platform-specific "pipe" to the child, and supports joining the
@@ -36,7 +38,7 @@ class ChildProcessHost {
   // |name| is just for debugging ease. We will spawn off a process so that it
   // can be sandboxed if |start_sandboxed| is true. |app_path| is a path to the
   // mojo application we wish to start.
-  ChildProcessHost(Context* context,
+  ChildProcessHost(base::TaskRunner* launch_process_runner,
                    bool start_sandboxed,
                    const base::FilePath& app_path);
   virtual ~ChildProcessHost();
@@ -65,7 +67,7 @@ class ChildProcessHost {
   // Callback for |embedder::CreateChannel()|.
   void DidCreateChannel(embedder::ChannelInfo* channel_info);
 
-  Context* const context_;
+  base::TaskRunner* const launch_process_runner_;
   bool start_sandboxed_;
   const base::FilePath app_path_;
   base::Process child_process_;

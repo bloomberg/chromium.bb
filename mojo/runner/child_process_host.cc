@@ -12,10 +12,10 @@
 #include "base/message_loop/message_loop.h"
 #include "base/process/kill.h"
 #include "base/process/launch.h"
+#include "base/task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "mojo/public/cpp/bindings/interface_ptr_info.h"
 #include "mojo/public/cpp/system/core.h"
-#include "mojo/runner/context.h"
 #include "mojo/runner/switches.h"
 #include "mojo/runner/task_runners.h"
 #include "third_party/mojo/src/mojo/edk/embedder/embedder.h"
@@ -27,10 +27,10 @@
 namespace mojo {
 namespace runner {
 
-ChildProcessHost::ChildProcessHost(Context* context,
+ChildProcessHost::ChildProcessHost(base::TaskRunner* launch_process_runner,
                                    bool start_sandboxed,
                                    const base::FilePath& app_path)
-    : context_(context),
+    : launch_process_runner_(launch_process_runner),
       start_sandboxed_(start_sandboxed),
       app_path_(app_path),
       channel_info_(nullptr),
@@ -56,7 +56,7 @@ void ChildProcessHost::Start() {
 
   controller_.Bind(InterfacePtrInfo<ChildController>(handle.Pass(), 0u));
 
-  context_->task_runners()->blocking_pool()->PostTaskAndReply(
+  launch_process_runner_->PostTaskAndReply(
       FROM_HERE,
       base::Bind(&ChildProcessHost::DoLaunch, base::Unretained(this)),
       base::Bind(&ChildProcessHost::DidStart, weak_factory_.GetWeakPtr()));

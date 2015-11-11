@@ -14,17 +14,19 @@
 #include "mojo/runner/native_application_support.h"
 #include "mojo/shell/native_runner.h"
 
+namespace base {
+class TaskRunner;
+}
+
 namespace mojo {
 namespace runner {
-
-class Context;
 
 // An implementation of |NativeRunner| that loads/runs the given app (from the
 // file system) on a separate thread (in the current process).
 class InProcessNativeRunner : public shell::NativeRunner,
                               public base::DelegateSimpleThread::Delegate {
  public:
-  explicit InProcessNativeRunner(Context* context);
+  InProcessNativeRunner();
   ~InProcessNativeRunner() override;
 
   // |NativeRunner| method:
@@ -49,14 +51,15 @@ class InProcessNativeRunner : public shell::NativeRunner,
 
 class InProcessNativeRunnerFactory : public shell::NativeRunnerFactory {
  public:
-  explicit InProcessNativeRunnerFactory(Context* context) : context_(context) {}
+  explicit InProcessNativeRunnerFactory(base::TaskRunner* launch_process_runner)
+      : launch_process_runner_(launch_process_runner) {}
   ~InProcessNativeRunnerFactory() override {}
 
   scoped_ptr<shell::NativeRunner> Create(
       const base::FilePath& app_path) override;
 
  private:
-  Context* const context_;
+  base::TaskRunner* const launch_process_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(InProcessNativeRunnerFactory);
 };

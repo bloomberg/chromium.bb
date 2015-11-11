@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/location.h"
+#include "base/task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/platform_thread.h"
 #include "mojo/runner/native_application_support.h"
@@ -15,8 +16,7 @@
 namespace mojo {
 namespace runner {
 
-InProcessNativeRunner::InProcessNativeRunner(Context* context)
-    : app_library_(nullptr) {}
+InProcessNativeRunner::InProcessNativeRunner() : app_library_(nullptr) {}
 
 InProcessNativeRunner::~InProcessNativeRunner() {
   // It is important to let the thread exit before unloading the DSO (when
@@ -65,9 +65,11 @@ void InProcessNativeRunner::Run() {
 scoped_ptr<shell::NativeRunner> InProcessNativeRunnerFactory::Create(
     const base::FilePath& app_path) {
   // Non-Mojo apps are always run in a new process.
-  if (!app_path.MatchesExtension(FILE_PATH_LITERAL(".mojo")))
-    return make_scoped_ptr(new OutOfProcessNativeRunner(context_));
-  return make_scoped_ptr(new InProcessNativeRunner(context_));
+  if (!app_path.MatchesExtension(FILE_PATH_LITERAL(".mojo"))) {
+    return make_scoped_ptr(
+        new OutOfProcessNativeRunner(launch_process_runner_));
+  }
+  return make_scoped_ptr(new InProcessNativeRunner);
 }
 
 }  // namespace runner

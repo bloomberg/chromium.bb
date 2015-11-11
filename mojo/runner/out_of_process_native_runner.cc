@@ -8,15 +8,16 @@
 #include "base/callback_helpers.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/task_runner.h"
 #include "mojo/runner/child_process_host.h"
 #include "mojo/runner/in_process_native_runner.h"
 
 namespace mojo {
 namespace runner {
 
-OutOfProcessNativeRunner::OutOfProcessNativeRunner(Context* context)
-    : context_(context) {
-}
+OutOfProcessNativeRunner::OutOfProcessNativeRunner(
+    base::TaskRunner* launch_process_runner)
+    : launch_process_runner_(launch_process_runner) {}
 
 OutOfProcessNativeRunner::~OutOfProcessNativeRunner() {
   if (child_process_host_)
@@ -34,7 +35,7 @@ void OutOfProcessNativeRunner::Start(
   app_completed_callback_ = app_completed_callback;
 
   child_process_host_.reset(
-      new ChildProcessHost(context_, start_sandboxed, app_path));
+      new ChildProcessHost(launch_process_runner_, start_sandboxed, app_path));
   child_process_host_->Start();
 
   child_process_host_->StartApp(
@@ -57,7 +58,7 @@ void OutOfProcessNativeRunner::AppCompleted(int32_t result) {
 
 scoped_ptr<shell::NativeRunner> OutOfProcessNativeRunnerFactory::Create(
     const base::FilePath& app_path) {
-  return make_scoped_ptr(new OutOfProcessNativeRunner(context_));
+  return make_scoped_ptr(new OutOfProcessNativeRunner(launch_process_runner_));
 }
 
 }  // namespace runner

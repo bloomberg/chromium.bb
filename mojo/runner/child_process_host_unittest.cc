@@ -10,9 +10,12 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
+#include "base/threading/thread.h"
 #include "mojo/message_pump/message_pump_mojo.h"
 #include "mojo/runner/context.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/mojo/src/mojo/edk/embedder/embedder.h"
+#include "third_party/mojo/src/mojo/edk/embedder/process_delegate.h"
 
 namespace mojo {
 namespace runner {
@@ -21,8 +24,8 @@ namespace {
 // Subclass just so we can observe |DidStart()|.
 class TestChildProcessHost : public ChildProcessHost {
  public:
-  explicit TestChildProcessHost(Context* context)
-      : ChildProcessHost(context, false, base::FilePath()) {}
+  explicit TestChildProcessHost(base::TaskRunner* launch_process_runner)
+      : ChildProcessHost(launch_process_runner, false, base::FilePath()) {}
   ~TestChildProcessHost() override {}
 
   void DidStart() override {
@@ -34,6 +37,16 @@ class TestChildProcessHost : public ChildProcessHost {
   DISALLOW_COPY_AND_ASSIGN(TestChildProcessHost);
 };
 
+class ProcessDelegate : public embedder::ProcessDelegate {
+ public:
+  ProcessDelegate() {}
+  ~ProcessDelegate() override {}
+
+ private:
+  void OnShutdownComplete() override {}
+  DISALLOW_COPY_AND_ASSIGN(ProcessDelegate);
+};
+
 #if defined(OS_ANDROID)
 // TODO(qsr): Multiprocess shell tests are not supported on android.
 #define MAYBE_StartJoin DISABLED_StartJoin
@@ -43,21 +56,35 @@ class TestChildProcessHost : public ChildProcessHost {
 // Just tests starting the child process and joining it (without starting an
 // app).
 TEST(ChildProcessHostTest, MAYBE_StartJoin) {
+  // TODO(beng): will have to call embedder::Init() here once we move to a
+  //             different suite.
+  Context::EnsureEmbedderIsInitialized();
   base::FilePath shell_dir;
   PathService::Get(base::DIR_MODULE, &shell_dir);
-  Context context(shell_dir, nullptr);
   base::MessageLoop message_loop(
       scoped_ptr<base::MessagePump>(new common::MessagePumpMojo()));
-  context.Init();
-  TestChildProcessHost child_process_host(&context);
+  scoped_refptr<base::SequencedWorkerPool> blocking_pool(
+      new base::SequencedWorkerPool(3, "blocking_pool"));
+
+  base::Thread io_thread("io_thread");
+  base::Thread::Options options;
+  options.message_loop_type = base::MessageLoop::TYPE_IO;
+  io_thread.StartWithOptions(options);
+
+  ProcessDelegate delegate;
+  embedder::InitIPCSupport(
+      embedder::ProcessType::NONE, base::MessageLoop::current()->task_runner(),
+      &delegate, io_thread.task_runner(), embedder::ScopedPlatformHandle());
+
+  TestChildProcessHost child_process_host(blocking_pool.get());
   child_process_host.Start();
   message_loop.Run();
   child_process_host.ExitNow(123);
   int exit_code = child_process_host.Join();
   VLOG(2) << "Joined child: exit_code = " << exit_code;
   EXPECT_EQ(123, exit_code);
-
-  context.Shutdown();
+  blocking_pool->Shutdown();
+  embedder::ShutdownIPCSupport();
 }
 
 }  // namespace
