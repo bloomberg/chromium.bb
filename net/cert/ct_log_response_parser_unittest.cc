@@ -126,6 +126,12 @@ TEST(CTLogResponseParserTest, FailsOnInvalidProofJson) {
   scoped_ptr<base::Value> not_a_string =
       ParseJson(std::string("{\"consistency\": [42, 16]}"));
   EXPECT_FALSE(FillConsistencyProof(*badly_encoded.get(), &output));
+
+  scoped_ptr<base::Value> missing_consistency = ParseJson(std::string("{}"));
+  EXPECT_FALSE(FillConsistencyProof(*missing_consistency.get(), &output));
+
+  scoped_ptr<base::Value> not_a_dict = ParseJson(std::string("[]"));
+  EXPECT_FALSE(FillConsistencyProof(*not_a_dict.get(), &output));
 }
 
 TEST(CTLogResponseParserTest, ParsesProofJsonWithExtraFields) {

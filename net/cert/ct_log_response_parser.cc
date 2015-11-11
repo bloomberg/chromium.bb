@@ -164,6 +164,13 @@ bool FillConsistencyProof(const base::Value& json_consistency_proof,
     return false;
   }
 
+  const base::DictionaryValue* dict_value = NULL;
+  if (!json_consistency_proof.GetAsDictionary(&dict_value) ||
+      !dict_value->HasKey("consistency")) {
+    DVLOG(1) << "Missing consistency field.";
+    return false;
+  }
+
   consistency_proof->reserve(parsed_proof.proof_nodes.size());
   for (std::string* proof_node : parsed_proof.proof_nodes) {
     consistency_proof->push_back(*proof_node);
