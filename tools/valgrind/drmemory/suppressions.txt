@@ -437,8 +437,6 @@ system call NtGdiCreateDIBSection
 *!SkScalerContext::getImage
 *!SkGlyphCache::findImage
 *!D1G*RectClip
-*!SkDraw::drawPosText
-*!SkBitmapDevice::drawPosText
 
 HANDLE LEAK
 name=http://crbug.com/346993
