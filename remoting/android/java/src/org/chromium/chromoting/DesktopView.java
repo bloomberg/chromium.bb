@@ -38,7 +38,7 @@ public class DesktopView extends SurfaceView implements DesktopViewInterface,
     private static final String TAG = "Chromoting";
 
     private final RenderData mRenderData;
-    private TouchInputHandler mInputHandler;
+    private TouchInputHandlerInterface mInputHandler;
 
     /** The parent Desktop activity. */
     private Desktop mDesktop;
@@ -130,7 +130,7 @@ public class DesktopView extends SurfaceView implements DesktopViewInterface,
         setFocusableInTouchMode(true);
 
         mRenderData = new RenderData();
-        mInputHandler = new TrackingInputHandler(this, context, mRenderData);
+        mInputHandler = new TouchInputHandler(this, context, mRenderData);
         mRepaintPending = false;
 
         getHolder().addCallback(this);
