@@ -32,6 +32,7 @@ ResultExpr PpapiProcessPolicy::EvaluateSyscall(int sysno) const {
     case __NR_pwrite64:
     case __NR_sched_get_priority_max:
     case __NR_sched_get_priority_min:
+    case __NR_sysinfo:
     case __NR_times:
       return Allow();
     case __NR_sched_getaffinity:
