@@ -92,6 +92,9 @@ void ContentAutofillDriverFactory::DidNavigateAnyFrame(
     content::RenderFrameHost* rfh,
     const content::LoadCommittedDetails& details,
     const content::FrameNavigateParams& params) {
+  // TODO(vabr): Remove those as soon as http://crbug.com/554479 is clarified.
+  CHECK(rfh->IsRenderFrameLive());
+  CHECK(ContainsKey(frame_driver_map_, rfh));
   frame_driver_map_[rfh]->DidNavigateFrame(details, params);
 }
 
