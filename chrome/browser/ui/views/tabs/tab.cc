@@ -626,14 +626,14 @@ int Tab::GetImmersiveHeight() {
 }
 
 // static
-int Tab::GetYOffsetForActiveTabBackground() {
+int Tab::GetYInsetForActiveTabBackground() {
   // The computed value here is strangely less than the height of the area atop
   // the tab that doesn't get a background painted; otherwise, we could compute
   // the value by simply using GetLayoutInsets(TAB).top().  My suspicion is that
   // originally there was some sort of off-by-one error in how this background
   // was painted, and theme authors compensated; now we're stuck perpetuating it
   // as a result.
-  return -GetLayoutConstant(TAB_TOP_EXCLUSION_HEIGHT) - 1;
+  return GetLayoutConstant(TAB_TOP_EXCLUSION_HEIGHT) + 1;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1141,7 +1141,7 @@ void Tab::PaintTabBackground(gfx::Canvas* canvas) {
   const int kActiveTabFillId = IDR_THEME_TOOLBAR;
   const bool has_custom_image =
       GetThemeProvider()->HasCustomImage(kActiveTabFillId);
-  const int y_offset = GetYOffsetForActiveTabBackground();
+  const int y_offset = -GetYInsetForActiveTabBackground();
   if (IsActive()) {
     PaintTabBackgroundUsingFillId(canvas, true, kActiveTabFillId,
                                   has_custom_image, y_offset);

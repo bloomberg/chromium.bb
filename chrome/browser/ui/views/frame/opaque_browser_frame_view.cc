@@ -676,7 +676,7 @@ void OpaqueBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) {
   gfx::ImageSkia* theme_toolbar = tp->GetImageSkiaNamed(IDR_THEME_TOOLBAR);
   canvas->TileImageInt(
       *theme_toolbar, x + GetThemeBackgroundXInset(),
-      bottom_y - GetTopInset(false) + Tab::GetYOffsetForActiveTabBackground(),
+      bottom_y - GetTopInset(false) - Tab::GetYInsetForActiveTabBackground(),
       x, bottom_y, w, theme_toolbar->height());
 
   // Draw rounded corners for the tab.

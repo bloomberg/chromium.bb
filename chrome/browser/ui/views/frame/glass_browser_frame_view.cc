@@ -367,7 +367,7 @@ void GlassBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) {
     dest_y += kPreMDToolbarTopEdgeExclusion;
   canvas->TileImageInt(
       *theme_toolbar, x + GetThemeBackgroundXInset(),
-      dest_y - GetTopInset(false) + Tab::GetYOffsetForActiveTabBackground(),
+      dest_y - GetTopInset(false) - Tab::GetYInsetForActiveTabBackground(),
       x, dest_y, w, theme_toolbar->height());
 
   // Toolbar edges.
