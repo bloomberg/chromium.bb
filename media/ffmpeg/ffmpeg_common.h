@@ -22,10 +22,7 @@ extern "C" {
 // Disable deprecated features which result in spammy compile warnings.  This
 // list of defines must mirror those in the 'defines' section of the ffmpeg.gyp
 // file or the headers below will generate different structures.
-#define FF_API_PIX_FMT_DESC 0
-#define FF_API_OLD_DECODE_AUDIO 0
-#define FF_API_DESTRUCT_PACKET 0
-#define FF_API_GET_BUFFER 0
+// None currently.
 
 // Temporarily disable possible loss of data warning.
 // TODO(scherkus): fix and upstream the compiler warnings.
