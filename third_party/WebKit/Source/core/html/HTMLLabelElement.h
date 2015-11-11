@@ -54,7 +54,6 @@ private:
     explicit HTMLLabelElement(Document&, HTMLFormElement*);
     bool isInInteractiveContent(Node*) const;
 
-    bool layoutObjectIsFocusable() const override;
     bool isInteractiveContent() const override;
     void accessKeyAction(bool sendMouseEvents) override;
 
