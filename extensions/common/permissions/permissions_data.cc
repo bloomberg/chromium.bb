@@ -23,7 +23,7 @@ namespace extensions {
 
 namespace {
 
-PermissionsData::PolicyDelegate* g_policy_delegate = NULL;
+PermissionsData::PolicyDelegate* g_policy_delegate = nullptr;
 
 class AutoLockOnValidThread {
  public:
@@ -149,7 +149,7 @@ void PermissionsData::UpdateTabSpecificPermissions(
           ? static_cast<const PermissionSet&>(PermissionSet())
           : *iter->second,
       permissions);
-  tab_specific_permissions_.set(tab_id, new_permissions.Pass());
+  tab_specific_permissions_[tab_id] = new_permissions.Pass();
 }
 
 void PermissionsData::ClearTabSpecificPermissions(int tab_id) const {
@@ -304,7 +304,7 @@ const PermissionSet* PermissionsData::GetTabSpecificPermissions(
   runtime_lock_.AssertAcquired();
   TabPermissionsMap::const_iterator iter =
       tab_specific_permissions_.find(tab_id);
-  return (iter != tab_specific_permissions_.end()) ? iter->second : nullptr;
+  return iter != tab_specific_permissions_.end() ? iter->second.get() : nullptr;
 }
 
 bool PermissionsData::HasTabSpecificPermissionToExecuteScript(

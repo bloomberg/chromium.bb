@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_TABS_WINDOWS_EVENT_ROUTER_H_
 #define CHROME_BROWSER_EXTENSIONS_API_TABS_WINDOWS_EVENT_ROUTER_H_
 
+#include <map>
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/containers/scoped_ptr_map.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/extensions/window_controller_list_observer.h"
@@ -90,7 +90,7 @@ class WindowsEventRouter : public AppWindowRegistry::Observer,
   // windows.onFocusChanged events with the same windowId.
   int focused_window_id_;
 
-  typedef base::ScopedPtrMap<int, scoped_ptr<AppWindowController>> AppWindowMap;
+  using AppWindowMap = std::map<int, scoped_ptr<AppWindowController>>;
   // Map of application windows, the key to the session of the app window.
   AppWindowMap app_windows_;
 

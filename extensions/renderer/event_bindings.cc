@@ -9,7 +9,6 @@
 
 #include "base/basictypes.h"
 #include "base/bind.h"
-#include "base/containers/scoped_ptr_map.h"
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/crx_file/id_util.h"
@@ -44,7 +43,7 @@ base::LazyInstance<std::map<std::string, EventListenerCounts>>
 // we transition between 0 and 1.
 using FilteredEventListenerKey = std::pair<std::string, std::string>;
 using FilteredEventListenerCounts =
-    base::ScopedPtrMap<FilteredEventListenerKey, scoped_ptr<ValueCounter>>;
+    std::map<FilteredEventListenerKey, scoped_ptr<ValueCounter>>;
 base::LazyInstance<FilteredEventListenerCounts> g_filtered_listener_counts =
     LAZY_INSTANCE_INITIALIZER;
 
@@ -124,7 +123,9 @@ bool AddFilter(const std::string& event_name,
   FilteredEventListenerCounts& all_counts = g_filtered_listener_counts.Get();
   FilteredEventListenerCounts::const_iterator counts = all_counts.find(key);
   if (counts == all_counts.end()) {
-    counts = all_counts.insert(key, make_scoped_ptr(new ValueCounter())).first;
+    counts = all_counts.insert(std::make_pair(
+                                   key, make_scoped_ptr(new ValueCounter())))
+                 .first;
   }
   return counts->second->Add(filter);
 }

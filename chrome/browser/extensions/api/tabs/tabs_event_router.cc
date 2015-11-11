@@ -163,7 +163,7 @@ void TabsEventRouter::RegisterForTabNotifications(WebContents* contents) {
 
   int tab_id = ExtensionTabUtil::GetTabId(contents);
   DCHECK(tab_entries_.find(tab_id) == tab_entries_.end());
-  tab_entries_.set(tab_id, make_scoped_ptr(new TabEntry(this, contents)));
+  tab_entries_[tab_id] = make_scoped_ptr(new TabEntry(this, contents));
 }
 
 void TabsEventRouter::UnregisterForTabNotifications(WebContents* contents) {
@@ -474,7 +474,7 @@ void TabsEventRouter::DispatchTabUpdatedEvent(
 TabsEventRouter::TabEntry* TabsEventRouter::GetTabEntry(WebContents* contents) {
   const auto it = tab_entries_.find(ExtensionTabUtil::GetTabId(contents));
 
-  return it == tab_entries_.end() ? nullptr : it->second;
+  return it == tab_entries_.end() ? nullptr : it->second.get();
 }
 
 void TabsEventRouter::TabChangedAt(WebContents* contents,

@@ -5,9 +5,9 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_TABS_TABS_EVENT_ROUTER_H_
 #define CHROME_BROWSER_EXTENSIONS_API_TABS_TABS_EVENT_ROUTER_H_
 
+#include <map>
 #include <string>
 
-#include "base/containers/scoped_ptr_map.h"
 #include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/extensions/api/tabs/tabs_api.h"
@@ -187,11 +187,11 @@ class TabsEventRouter : public TabStripModelObserver,
     DISALLOW_COPY_AND_ASSIGN(TabEntry);
   };
 
-  // Gets the TabEntry for the given |contents|. Returns linked_ptr<TabEntry>
-  // if found, NULL if not.
+  // Gets the TabEntry for the given |contents|. Returns TabEntry* if found,
+  // nullptr if not.
   TabEntry* GetTabEntry(content::WebContents* contents);
 
-  using TabEntryMap = base::ScopedPtrMap<int, scoped_ptr<TabEntry>>;
+  using TabEntryMap = std::map<int, scoped_ptr<TabEntry>>;
   TabEntryMap tab_entries_;
 
   // The main profile that owns this event router.

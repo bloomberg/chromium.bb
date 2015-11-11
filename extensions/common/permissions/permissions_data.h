@@ -9,8 +9,8 @@
 #include <string>
 #include <vector>
 
-#include "base/containers/scoped_ptr_map.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
@@ -45,8 +45,7 @@ class PermissionsData {
                      // the given page.
   };
 
-  using TabPermissionsMap =
-      base::ScopedPtrMap<int, scoped_ptr<const PermissionSet>>;
+  using TabPermissionsMap = std::map<int, scoped_ptr<const PermissionSet>>;
 
   // Delegate class to allow different contexts (e.g. browser vs renderer) to
   // have control over policy decisions.

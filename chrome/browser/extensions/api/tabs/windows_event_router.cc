@@ -173,15 +173,15 @@ void WindowsEventRouter::OnAppWindowRemoved(extensions::AppWindow* app_window) {
           Profile::FromBrowserContext(app_window->browser_context())))
     return;
 
-  scoped_ptr<WindowController> controller =
-      app_windows_.take_and_erase(app_window->session_id().id());
+  app_windows_.erase(app_window->session_id().id());
 }
 
 void WindowsEventRouter::OnAppWindowActivated(
     extensions::AppWindow* app_window) {
   AppWindowMap::const_iterator iter =
       app_windows_.find(app_window->session_id().id());
-  OnActiveWindowChanged(iter != app_windows_.end() ? iter->second : nullptr);
+  OnActiveWindowChanged(iter != app_windows_.end() ? iter->second.get()
+                                                   : nullptr);
 }
 
 void WindowsEventRouter::OnWindowControllerAdded(
@@ -279,7 +279,7 @@ bool WindowsEventRouter::HasEventListener(const std::string& event_name) {
 void WindowsEventRouter::AddAppWindow(extensions::AppWindow* app_window) {
   scoped_ptr<AppWindowController> controller(new AppWindowController(
       app_window, make_scoped_ptr(new AppBaseWindow(app_window)), profile_));
-  app_windows_.set(app_window->session_id().id(), controller.Pass());
+  app_windows_[app_window->session_id().id()] = controller.Pass();
 }
 
 }  // namespace extensions
