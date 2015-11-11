@@ -77,9 +77,7 @@ public class ToolbarProgressBar extends ClipDrawableProgressBar {
                         getWidth()));
 
                 if (getProgress() == mTargetProgress) {
-                    if (mTargetProgress == 1.0f && !mIsStarted) {
-                        postOnAnimationDelayed(mHideRunnable, mHidingDelayMs);
-                    }
+                    if (!mIsStarted) postOnAnimationDelayed(mHideRunnable, mHidingDelayMs);
                     mProgressAnimator.end();
                     return;
                 }
