@@ -6089,8 +6089,8 @@
         ],
       },
     }],
-    # Apply a lower LTO optimization level in non-official builds.
-    ['use_lto==1 and clang==1 and buildtype!="Official"', {
+    # Apply a lower LTO optimization level as the default is too slow.
+    ['use_lto==1 and clang==1', {
       'target_defaults': {
         'target_conditions': [
           ['_toolset=="target"', {

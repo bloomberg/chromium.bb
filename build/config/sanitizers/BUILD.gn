@@ -183,13 +183,11 @@ config("default_sanitizer_flags") {
         "-fsanitize=cfi-unrelated-cast",
       ]
 
-      # Apply a lower LTO optimization level in non-official builds.
-      if (!is_official_build) {
-        if (is_linux) {
-          ldflags += [ "-Wl,-plugin-opt,O1" ]
-        } else if (is_mac) {
-          ldflags += [ "-Wl,-mllvm,-O1" ]
-        }
+      # Apply a lower LTO optimization level as the default is too slow.
+      if (is_linux) {
+        ldflags += [ "-Wl,-plugin-opt,O1" ]
+      } else if (is_mac) {
+        ldflags += [ "-Wl,-mllvm,-O1" ]
       }
 
       # Work-around for http://openradar.appspot.com/20356002
