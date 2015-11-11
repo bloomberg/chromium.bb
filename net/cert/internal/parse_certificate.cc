@@ -4,6 +4,8 @@
 
 #include "net/cert/internal/parse_certificate.h"
 
+#include <utility>
+
 #include "net/der/input.h"
 #include "net/der/parse_values.h"
 #include "net/der/parser.h"
@@ -399,6 +401,119 @@ bool ParseExtension(const der::Input& extension_tlv, ParsedExtension* out) {
 
   // By definition the input was a single Extension sequence, so there shouldn't
   // be unconsumed data.
+  if (parser.HasMore())
+    return false;
+
+  return true;
+}
+
+der::Input KeyUsageOid() {
+  // From RFC 5280:
+  //
+  //     id-ce-keyUsage OBJECT IDENTIFIER ::=  { id-ce 15 }
+  //
+  // In dotted notation: 2.5.29.15
+  static const uint8_t oid[] = {0x55, 0x1d, 0x0f};
+  return der::Input(oid);
+}
+
+der::Input SubjectAltNameOid() {
+  // From RFC 5280:
+  //
+  //     id-ce-subjectAltName OBJECT IDENTIFIER ::=  { id-ce 17 }
+  //
+  // In dotted notation: 2.5.29.17
+  static const uint8_t oid[] = {0x55, 0x1d, 0x11};
+  return der::Input(oid);
+}
+
+der::Input BasicConstraintsOid() {
+  // From RFC 5280:
+  //
+  //     id-ce-basicConstraints OBJECT IDENTIFIER ::=  { id-ce 19 }
+  //
+  // In dotted notation: 2.5.29.19
+  static const uint8_t oid[] = {0x55, 0x1d, 0x13};
+  return der::Input(oid);
+}
+
+der::Input NameConstraintsOid() {
+  // From RFC 5280:
+  //
+  //     id-ce-nameConstraints OBJECT IDENTIFIER ::=  { id-ce 30 }
+  //
+  // In dotted notation: 2.5.29.30
+  static const uint8_t oid[] = {0x55, 0x1d, 0x1e};
+  return der::Input(oid);
+}
+
+der::Input CertificatePoliciesOid() {
+  // From RFC 5280:
+  //
+  //     id-ce-certificatePolicies OBJECT IDENTIFIER ::=  { id-ce 32 }
+  //
+  // In dotted notation: 2.5.29.32
+  static const uint8_t oid[] = {0x55, 0x1d, 0x20};
+  return der::Input(oid);
+}
+
+der::Input PolicyConstraintsOid() {
+  // From RFC 5280:
+  //
+  //     id-ce-policyConstraints OBJECT IDENTIFIER ::=  { id-ce 36 }
+  //
+  // In dotted notation: 2.5.29.36
+  static const uint8_t oid[] = {0x55, 0x1d, 0x24};
+  return der::Input(oid);
+}
+
+der::Input ExtKeyUsageOid() {
+  // From RFC 5280:
+  //
+  //     id-ce-extKeyUsage OBJECT IDENTIFIER ::= { id-ce 37 }
+  //
+  // In dotted notation: 2.5.29.37
+  static const uint8_t oid[] = {0x55, 0x1d, 0x25};
+  return der::Input(oid);
+}
+
+NET_EXPORT bool ParseExtensions(
+    const der::Input& extensions_tlv,
+    std::map<der::Input, ParsedExtension>* extensions) {
+  der::Parser parser(extensions_tlv);
+
+  //    Extensions  ::=  SEQUENCE SIZE (1..MAX) OF Extension
+  der::Parser extensions_parser;
+  if (!parser.ReadSequence(&extensions_parser))
+    return false;
+
+  // The Extensions SEQUENCE must contains at least 1 element (otherwise it
+  // should have been omitted).
+  if (!extensions_parser.HasMore())
+    return false;
+
+  extensions->clear();
+
+  while (extensions_parser.HasMore()) {
+    ParsedExtension extension;
+
+    der::Input extension_tlv;
+    if (!extensions_parser.ReadRawTLV(&extension_tlv))
+      return false;
+
+    if (!ParseExtension(extension_tlv, &extension))
+      return false;
+
+    bool is_duplicate =
+        !extensions->insert(std::make_pair(extension.oid, extension)).second;
+
+    // RFC 5280 says that an extension should not appear more than once.
+    if (is_duplicate)
+      return false;
+  }
+
+  // By definition the input was a single Extensions sequence, so there
+  // shouldn't be unconsumed data.
   if (parser.HasMore())
     return false;
 

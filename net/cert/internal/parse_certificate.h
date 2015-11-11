@@ -5,6 +5,8 @@
 #ifndef NET_CERT_INTERNAL_PARSE_CERTIFICATE_H_
 #define NET_CERT_INTERNAL_PARSE_CERTIFICATE_H_
 
+#include <map>
+
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "net/base/net_export.h"
@@ -244,6 +246,67 @@ struct NET_EXPORT ParsedExtension {
 // updated during parsing, whereas others may not have been changed.
 NET_EXPORT bool ParseExtension(const der::Input& extension_tlv,
                                ParsedExtension* out) WARN_UNUSED_RESULT;
+
+// From RFC 5280:
+//
+//     id-ce-keyUsage OBJECT IDENTIFIER ::=  { id-ce 15 }
+//
+// In dotted notation: 2.5.29.15
+NET_EXPORT der::Input KeyUsageOid();
+
+// From RFC 5280:
+//
+//     id-ce-subjectAltName OBJECT IDENTIFIER ::=  { id-ce 17 }
+//
+// In dotted notation: 2.5.29.17
+NET_EXPORT der::Input SubjectAltNameOid();
+
+// From RFC 5280:
+//
+//     id-ce-basicConstraints OBJECT IDENTIFIER ::=  { id-ce 19 }
+//
+// In dotted notation: 2.5.29.19
+NET_EXPORT der::Input BasicConstraintsOid();
+
+// From RFC 5280:
+//
+//     id-ce-nameConstraints OBJECT IDENTIFIER ::=  { id-ce 30 }
+//
+// In dotted notation: 2.5.29.30
+NET_EXPORT der::Input NameConstraintsOid();
+
+// From RFC 5280:
+//
+//     id-ce-certificatePolicies OBJECT IDENTIFIER ::=  { id-ce 32 }
+//
+// In dotted notation: 2.5.29.32
+NET_EXPORT der::Input CertificatePoliciesOid();
+
+// From RFC 5280:
+//
+//     id-ce-policyConstraints OBJECT IDENTIFIER ::=  { id-ce 36 }
+//
+// In dotted notation: 2.5.29.36
+NET_EXPORT der::Input PolicyConstraintsOid();
+
+// From RFC 5280:
+//
+//     id-ce-extKeyUsage OBJECT IDENTIFIER ::= { id-ce 37 }
+//
+// In dotted notation: 2.5.29.37
+NET_EXPORT der::Input ExtKeyUsageOid();
+
+// Parses the Extensions sequence as defined by RFC 5280. Extensions are added
+// to the map |extensions| keyed by the OID. Parsing guarantees that each OID
+// is unique. Note that certificate verification must consume each extension
+// marked as critical.
+//
+// Returns true on success and fills |extensions|. The output will reference
+// bytes in |extensions_tlv|, so that data must be kept alive.
+// On failure |extensions| may be partially written to and should not be used.
+NET_EXPORT bool ParseExtensions(
+    const der::Input& extensions_tlv,
+    std::map<der::Input, ParsedExtension>* extensions) WARN_UNUSED_RESULT;
 
 }  // namespace net
 
