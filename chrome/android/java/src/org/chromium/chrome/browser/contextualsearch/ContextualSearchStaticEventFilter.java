@@ -7,7 +7,8 @@ package org.chromium.chrome.browser.contextualsearch;
 import android.content.Context;
 import android.view.MotionEvent;
 
-import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel;
+import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;
+import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManager;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.EdgeSwipeHandler;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.EventFilter;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.EventFilterHost;
@@ -18,9 +19,9 @@ import org.chromium.chrome.browser.compositor.layouts.eventfilter.EventFilterHos
  */
 public class ContextualSearchStaticEventFilter extends EventFilter {
     /**
-     * The @{link ContextualSearchPanel} that controls Contextual Search's UI.
+     * The @{link OverlayPanelManager} that controls panel's UI.
      */
-    private final ContextualSearchPanel mSearchPanel;
+    private final OverlayPanelManager mPanelManager;
 
     /**
      * The @{link SwipeRecognizer} that recognizes directional swipe gestures.
@@ -47,15 +48,15 @@ public class ContextualSearchStaticEventFilter extends EventFilter {
      *
      * @param context The current Android {@link Context}.
      * @param host The @{link EventFilterHost} associated to this filter.
-     * @param searchPanel The @{link ContextualSearchPanel} that controls Contextual Seach's UI.
+     * @param panelManager The @{link OverlayPanelManager} responsible for showing different panels.
      * @param swipeHandler The @{link EdgeSwipeHandler} for Contextual Search events.
      */
     public ContextualSearchStaticEventFilter(Context context, EventFilterHost host,
-            ContextualSearchPanel searchPanel, EdgeSwipeHandler swipeHandler,
+            OverlayPanelManager panelManager, EdgeSwipeHandler swipeHandler,
             ContextualSearchTapHandler tapHandler) {
         super(context, host);
 
-        mSearchPanel = searchPanel;
+        mPanelManager = panelManager;
         mSwipeRecognizer = new SwipeRecognizerImpl(context);
         mSwipeRecognizer.setSwipeHandler(swipeHandler);
         mTapHandler = tapHandler;
@@ -68,9 +69,10 @@ public class ContextualSearchStaticEventFilter extends EventFilter {
         // keyboard is showing here because Contextual Search's Panel will
         // be closed, if opened, when the keyboard shows up. Even so,
         // it would be nice fixing this problem in Chrome-Android.
-        return mSearchPanel.isPeeking()
-                && mSearchPanel.isCoordinateInsideBar(event.getX() * mPxToDp,
-                        mSearchPanel.getFullscreenY(event.getY()) * mPxToDp);
+        OverlayPanel activePanel = mPanelManager.getActivePanel();
+        return activePanel != null && activePanel.isPeeking()
+                && activePanel.isCoordinateInsideBar(event.getX() * mPxToDp,
+                        activePanel.getFullscreenY(event.getY()) * mPxToDp);
     }
 
     @Override
@@ -81,7 +83,7 @@ public class ContextualSearchStaticEventFilter extends EventFilter {
             // TODO(pedrosimonetti): Once we implement "side-swipe to dismiss"
             // we'll have to revisit this because we don't want to set the
             // Content View visibility to true when the side-swipe is detected.
-            mSearchPanel.notifyPanelTouched();
+            mPanelManager.getActivePanel().notifyPanelTouched();
         }
 
         mSwipeRecognizer.onTouchEvent(event);
@@ -97,7 +99,8 @@ public class ContextualSearchStaticEventFilter extends EventFilter {
         public boolean onSingleTapUp(MotionEvent event) {
             if (mTapHandler == null) return true;
             mTapHandler.handleTapContextualSearchBar(event.getEventTime(),
-                    event.getX() * mPxToDp, mSearchPanel.getFullscreenY(event.getY()) * mPxToDp);
+                    event.getX() * mPxToDp,
+                    mPanelManager.getActivePanel().getFullscreenY(event.getY()) * mPxToDp);
             return true;
         }
     }

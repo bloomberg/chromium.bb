@@ -12,6 +12,7 @@ import android.view.ViewGroup;
 import org.chromium.chrome.browser.compositor.LayerTitleCache;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelHost;
+import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManager;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.EventFilter;
 import org.chromium.chrome.browser.compositor.scene_layer.SceneLayer;
@@ -34,9 +35,9 @@ public abstract class ContextualSearchSupportedLayout extends Layout {
     protected final OverlayPanelHost mOverlayPanelHost;
 
     /**
-     * The {@link OverlayPanel} that represents the Contextual Search UI.
+     * The {@link OverlayPanelManager} used to get the active panel.
      */
-    protected final OverlayPanel mSearchPanel;
+    protected final OverlayPanelManager mPanelManager;
 
     /**
      * Size of half pixel in dps.
@@ -48,10 +49,11 @@ public abstract class ContextualSearchSupportedLayout extends Layout {
      * @param updateHost The {@link LayoutUpdateHost} view for this layout.
      * @param renderHost The {@link LayoutRenderHost} view for this layout.
      * @param eventFilter The {@link EventFilter} that is needed for this view.
-     * @param panel The {@link OverlayPanel} that represents the Contextual Search UI.
+     * @param panelManager The {@link OverlayPanelManager} responsible for showing panels.
      */
     public ContextualSearchSupportedLayout(Context context, LayoutUpdateHost updateHost,
-            LayoutRenderHost renderHost, EventFilter eventFilter, OverlayPanel panel) {
+            LayoutRenderHost renderHost, EventFilter eventFilter,
+            OverlayPanelManager panelManager) {
         super(context, updateHost, renderHost, eventFilter);
 
         mOverlayPanelHost = new OverlayPanelHost() {
@@ -61,22 +63,23 @@ public abstract class ContextualSearchSupportedLayout extends Layout {
             }
         };
 
-        mSearchPanel = panel;
+        mPanelManager = panelManager;
         float dpToPx = context.getResources().getDisplayMetrics().density;
         mHalfPixelDp = 0.5f / dpToPx;
     }
 
     @Override
     public void attachViews(ViewGroup container) {
-        mSearchPanel.setContainerView(container);
+        mPanelManager.setContainerView(container);
     }
 
     @Override
     public void getAllViews(List<View> views) {
         // TODO(dtrainor): If we move ContextualSearch to an overlay, pull the views from there
         // instead in Layout.java.
-        if (mSearchPanel != null) {
-            ContentViewCore content = mSearchPanel.getContentViewCore();
+        OverlayPanel panel = mPanelManager.getActivePanel();
+        if (panel != null) {
+            ContentViewCore content = panel.getContentViewCore();
             if (content != null) views.add(content.getContainerView());
         }
         super.getAllViews(views);
@@ -86,9 +89,9 @@ public abstract class ContextualSearchSupportedLayout extends Layout {
     public void getAllContentViewCores(List<ContentViewCore> contents) {
         // TODO(dtrainor): If we move ContextualSearch to an overlay, pull the content from there
         // instead in Layout.java.
-        if (mSearchPanel != null) {
-            ContentViewCore content =
-                    mSearchPanel.getContentViewCore();
+        OverlayPanel panel = mPanelManager.getActivePanel();
+        if (panel != null) {
+            ContentViewCore content = panel.getContentViewCore();
             if (content != null) contents.add(content);
         }
         super.getAllContentViewCores(contents);
@@ -96,7 +99,7 @@ public abstract class ContextualSearchSupportedLayout extends Layout {
 
     @Override
     public void show(long time, boolean animate) {
-        mSearchPanel.setHost(mOverlayPanelHost);
+        mPanelManager.setPanelHost(mOverlayPanelHost);
         super.show(time, animate);
     }
 
@@ -117,19 +120,23 @@ public abstract class ContextualSearchSupportedLayout extends Layout {
         // visible. For this reason, we're comparing to see if the difference between them
         // is less than half pixel. If so, it means the Toolbar is visible.
         final boolean isToolbarVisible = getHeight() - getHeightMinusTopControls() <= mHalfPixelDp;
-        mSearchPanel.onSizeChanged(width, height, isToolbarVisible);
+
+        mPanelManager.onSizeChanged(width, height, isToolbarVisible);
     }
 
     @Override
     protected boolean onUpdateAnimation(long time, boolean jumpToEnd) {
         boolean parentAnimating = super.onUpdateAnimation(time, jumpToEnd);
-        boolean panelAnimating = mSearchPanel.onUpdateAnimation(time, jumpToEnd);
+        OverlayPanel panel = mPanelManager.getActivePanel();
+        boolean panelAnimating = panel != null && panel.onUpdateAnimation(time, jumpToEnd);
         return panelAnimating || parentAnimating;
     }
 
     @Override
     protected SceneLayer getSceneLayer() {
-        return mSearchPanel.getSceneLayer();
+        OverlayPanel panel = mPanelManager.getActivePanel();
+        if (panel == null) return null;
+        return panel.getSceneLayer();
     }
 
     @Override
@@ -138,8 +145,9 @@ public abstract class ContextualSearchSupportedLayout extends Layout {
             ResourceManager resourceManager, ChromeFullscreenManager fullscreenManager) {
         super.updateSceneLayer(viewport, contentViewport, layerTitleCache, tabContentManager,
                 resourceManager, fullscreenManager);
-        if (!mSearchPanel.isShowing()) return;
+        OverlayPanel panel = mPanelManager.getActivePanel();
+        if (panel == null || !panel.isShowing()) return;
 
-        mSearchPanel.updateSceneLayer(resourceManager);
+        panel.updateSceneLayer(resourceManager);
     }
 }

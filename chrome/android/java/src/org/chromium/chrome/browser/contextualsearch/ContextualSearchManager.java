@@ -532,7 +532,7 @@ public class ContextualSearchManager extends ContextualSearchObservable
         // Refactor to show the bar and set the text at the same time!
         // TODO(donnd): If there was a previously ongoing contextual search, we should ensure
         // it's registered as closed.
-        mSearchPanel.peekPanel(stateChangeReason);
+        mSearchPanel.requestPanelShow(stateChangeReason);
 
         assert mSelectionController.getSelectionType() != SelectionType.UNDETERMINED;
         mWasActivatedByTap = mSelectionController.getSelectionType() == SelectionType.TAP;

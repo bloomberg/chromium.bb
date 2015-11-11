@@ -10,7 +10,8 @@ import android.os.Handler;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.LayerTitleCache;
-import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel;
+import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;
+import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManager;
 import org.chromium.chrome.browser.compositor.layouts.components.LayoutTab;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.EventFilter;
@@ -67,10 +68,11 @@ public class StaticLayout extends ContextualSearchSupportedLayout {
      * @param updateHost          The {@link LayoutUpdateHost} view for this layout.
      * @param renderHost          The {@link LayoutRenderHost} view for this layout.
      * @param eventFilter         The {@link EventFilter} that is needed for this view.
+     * @param panelManager        The {@link OverlayPanelManager} responsible for showing panels.
      */
     public StaticLayout(Context context, LayoutUpdateHost updateHost, LayoutRenderHost renderHost,
-            EventFilter eventFilter, ContextualSearchPanel panel) {
-        super(context, updateHost, renderHost, eventFilter, panel);
+            EventFilter eventFilter, OverlayPanelManager panelManager) {
+        super(context, updateHost, renderHost, eventFilter, panelManager);
 
         mHandler = new Handler();
         mUnstallRunnable = new UnstallRunnable();
@@ -302,7 +304,8 @@ public class StaticLayout extends ContextualSearchSupportedLayout {
 
         // TODO(pedrosimonetti): Coordinate w/ dtrainor@ to improve integration with TreeProvider.
         SceneLayer overlayLayer = null;
-        if (mSearchPanel.isShowing()) {
+        OverlayPanel panel = mPanelManager.getActivePanel();
+        if (panel != null && panel.isShowing()) {
             overlayLayer = super.getSceneLayer();
         } else if (mReaderModePanel != null && mReaderModePanel.isShowing()) {
             mReaderModePanel.updateSceneLayer(resourceManager);

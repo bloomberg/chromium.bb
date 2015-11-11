@@ -12,6 +12,8 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayContentProgressObserver;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelContent;
+import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManager;
+import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManager.PanelPriority;
 import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
 import org.chromium.chrome.browser.compositor.scene_layer.ContextualSearchSceneLayer;
 import org.chromium.chrome.browser.compositor.scene_layer.SceneLayer;
@@ -67,9 +69,11 @@ public class ContextualSearchPanel extends OverlayPanel {
     /**
      * @param context The current Android {@link Context}.
      * @param updateHost The {@link LayoutUpdateHost} used to request updates in the Layout.
+     * @param panelManager The object managing the how different panels are shown.
      */
-    public ContextualSearchPanel(Context context, LayoutUpdateHost updateHost) {
-        super(context, updateHost);
+    public ContextualSearchPanel(Context context, LayoutUpdateHost updateHost,
+                OverlayPanelManager panelManager) {
+        super(context, updateHost, panelManager);
         mSceneLayer = createNewContextualSearchSceneLayer();
         mPanelMetrics = new ContextualSearchPanelMetrics();
     }
@@ -297,6 +301,22 @@ public class ContextualSearchPanel extends OverlayPanel {
             mManagementDelegate.openResolvedSearchUrlInNewTab();
             return true;
         }
+        return false;
+    }
+
+    // ============================================================================================
+    // Panel base methods
+    // ============================================================================================
+
+    @Override
+    public PanelPriority getPriority() {
+        return PanelPriority.HIGH;
+    }
+
+    @Override
+    public boolean canBeSuppressed() {
+        // The selected text on the page is lost when the panel is closed, thus, this panel cannot
+        // be restored if it is suppressed.
         return false;
     }
 
@@ -696,22 +716,9 @@ public class ContextualSearchPanel extends OverlayPanel {
     // Panel Content
     // ============================================================================================
 
-    // TODO(pedrosimonetti): move content code to its own section.
-
-    /**
-     * Acknowledges that there was a touch in the search content view, though no immediate action
-     * needs to be taken.
-     * TODO(mdjones): Get a better name for this.
-     */
+    @Override
     public void onTouchSearchContentViewAck() {
         mHasContentBeenTouched = true;
-    }
-
-    /**
-     * Notify the panel that it's content has been touched.
-     */
-    public void notifyPanelTouched() {
-        getOverlayPanelContent().notifyPanelTouched();
     }
 
     /**
