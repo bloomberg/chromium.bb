@@ -151,7 +151,7 @@ public class OfflinePageBridgeTest extends ChromeActivityTestCaseBase<ChromeActi
                         getActivity().getActivityTab().getWebContents());
 
                 mOfflinePageBridge.savePage(getActivity().getActivityTab().getWebContents(),
-                        BOOKMARK_ID, getActivity().getWindowAndroid(), new SavePageCallback() {
+                        BOOKMARK_ID, new SavePageCallback() {
                             @Override
                             public void onSavePageDone(int savePageResult, String url) {
                                 assertEquals(
@@ -190,15 +190,13 @@ public class OfflinePageBridgeTest extends ChromeActivityTestCaseBase<ChromeActi
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                mOfflinePageBridge.deletePage(
-                        BOOKMARK_ID, getActivity().getWindowAndroid(), new DeletePageCallback() {
-                            @Override
-                            public void onDeletePageDone(int deletePageResult) {
-                                assertEquals("Delete result incorrect.", expectedResult,
-                                        deletePageResult);
-                                semaphore.release();
-                            }
-                        });
+                mOfflinePageBridge.deletePage(BOOKMARK_ID, new DeletePageCallback() {
+                    @Override
+                    public void onDeletePageDone(int deletePageResult) {
+                        assertEquals("Delete result incorrect.", expectedResult, deletePageResult);
+                        semaphore.release();
+                    }
+                });
             }
         });
         assertTrue(semaphore.tryAcquire(TIMEOUT_MS, TimeUnit.MILLISECONDS));

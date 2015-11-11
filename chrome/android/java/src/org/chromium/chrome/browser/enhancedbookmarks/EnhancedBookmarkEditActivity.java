@@ -30,7 +30,6 @@ import org.chromium.chrome.browser.widget.EmptyAlertEditText;
 import org.chromium.chrome.browser.widget.TintedDrawable;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.content_public.browser.WebContents;
-import org.chromium.ui.base.ActivityWindowAndroid;
 
 /**
  * The activity that enables the user to modify the title, url and parent folder of a bookmark.
@@ -61,7 +60,6 @@ public class EnhancedBookmarkEditActivity extends EnhancedBookmarkActivityBase {
 
     private OfflineButtonType mOfflineButtonType = OfflineButtonType.NONE;
     private OfflinePageModelObserver mOfflinePageModelObserver;
-    private ActivityWindowAndroid mActivityWindowAndroid;
 
     private BookmarkModelObserver mBookmarkModelObserver = new BookmarkModelObserver() {
         @Override
@@ -146,7 +144,6 @@ public class EnhancedBookmarkEditActivity extends EnhancedBookmarkActivityBase {
             findViewById(R.id.offline_page_group).setVisibility(View.VISIBLE);
             getIntent().setExtrasClassLoader(WebContents.class.getClassLoader());
             mWebContents = getIntent().getParcelableExtra(INTENT_WEB_CONTENTS);
-            mActivityWindowAndroid = new ActivityWindowAndroid(this, false);
             updateOfflineSection();
         }
 
@@ -198,19 +195,6 @@ public class EnhancedBookmarkEditActivity extends EnhancedBookmarkActivityBase {
             return true;
         }
         return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    public void onRequestPermissionsResult(
-            int requestCode, String[] permissions, int[] grantResults) {
-        if (mActivityWindowAndroid != null) {
-            if (mActivityWindowAndroid.onRequestPermissionsResult(
-                    requestCode, permissions, grantResults)) {
-                return;
-            }
-        }
-
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
     @Override
@@ -280,7 +264,7 @@ public class EnhancedBookmarkEditActivity extends EnhancedBookmarkActivityBase {
             public void onClick(View v) {
                 recordOfflineButtonAction(true);
                 mEnhancedBookmarksModel.getOfflinePageBridge().deletePage(
-                        mBookmarkId, mActivityWindowAndroid, new DeletePageCallback() {
+                        mBookmarkId, new DeletePageCallback() {
                             @Override
                             public void onDeletePageDone(int deletePageResult) {
                                 // TODO(fgorski): Add snackbar upon failure.
@@ -301,7 +285,7 @@ public class EnhancedBookmarkEditActivity extends EnhancedBookmarkActivityBase {
             public void onClick(View v) {
                 recordOfflineButtonAction(true);
                 mEnhancedBookmarksModel.getOfflinePageBridge().savePage(
-                        mWebContents, mBookmarkId, mActivityWindowAndroid, new SavePageCallback() {
+                        mWebContents, mBookmarkId, new SavePageCallback() {
                             @Override
                             public void onSavePageDone(int savePageResult, String url) {
                                 // TODO(fgorski): Add snackbar upon failure.

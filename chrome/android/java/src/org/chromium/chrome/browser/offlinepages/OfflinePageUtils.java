@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.offlinepages;
 
-import android.Manifest.permission;
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -23,8 +22,6 @@ import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.bookmarks.BookmarkType;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.base.PageTransition;
-import org.chromium.ui.base.WindowAndroid;
-import org.chromium.ui.base.WindowAndroid.PermissionCallback;
 
 /**
  * A class holding static util functions for offline pages.
@@ -114,30 +111,6 @@ public class OfflinePageUtils {
         } else {
             showOfflineSnackbar(activity, tab.getId(), save, bookmarkId);
         }
-    }
-
-    /**
-     * Returns whether file access is allowed.
-     *
-     * @param windowAndroid The Android window used to access the file system.
-     * @return true if allowed, or false otherwise.
-     */
-    public static boolean hasFileAccessPermission(WindowAndroid windowAndroid) {
-        assert windowAndroid != null;
-        return windowAndroid.hasPermission(permission.WRITE_EXTERNAL_STORAGE);
-    }
-
-    /**
-     * Called to prompt user with the file access permission.
-     *
-     * @param windowAndroid The Android window used to access the file system.
-     * @param callback Callback for the permission request.
-     */
-    public static void requestFileAccessPermission(
-            WindowAndroid windowAndroid, PermissionCallback callback) {
-        assert windowAndroid != null;
-        windowAndroid.requestPermissions(
-                new String[] {android.Manifest.permission.WRITE_EXTERNAL_STORAGE}, callback);
     }
 
     /**
