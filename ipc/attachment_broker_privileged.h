@@ -71,12 +71,14 @@ class IPC_EXPORT AttachmentBrokerPrivileged : public IPC::AttachmentBroker {
     ERROR_MAKE_RECEIVE_PORT = 6,
     // Couldn't change the attributes of a Mach port.
     ERROR_SET_ATTRIBUTES = 7,
-    // Couldn't extract a right.
-    ERROR_EXTRACT_RIGHT = 8,
+    // Couldn't extract a right from the destination.
+    ERROR_EXTRACT_DEST_RIGHT = 8,
     // Couldn't send a Mach port in a call to mach_msg().
     ERROR_SEND_MACH_PORT = 9,
     // Couldn't decrease the ref count on a Mach port.
     ERROR_DECREASE_REF = 10,
+    // Couldn't extract a right from the source.
+    ERROR_EXTRACT_SOURCE_RIGHT = 11,
     ERROR_MAX
   };
 

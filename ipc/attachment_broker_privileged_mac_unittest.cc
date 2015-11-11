@@ -119,6 +119,15 @@ scoped_ptr<base::SharedMemory> MapMemoryObject(mach_port_t memory_object,
   return shared_memory;
 }
 
+class MockPortProvider : public base::PortProvider {
+ public:
+  MockPortProvider() {}
+  ~MockPortProvider() override {}
+  mach_port_t TaskForPid(base::ProcessHandle process) const override {
+    return MACH_PORT_NULL;
+  }
+};
+
 }  // namespace
 
 class AttachmentBrokerPrivilegedMacMultiProcessTest
@@ -159,6 +168,9 @@ class AttachmentBrokerPrivilegedMacMultiProcessTest
   // Child process's task port.
   base::mac::ScopedMachSendRight client_task_port_;
 
+  // Dummy port provider.
+  MockPortProvider port_provider_;
+
   base::Process child_process_;
   DISALLOW_COPY_AND_ASSIGN(AttachmentBrokerPrivilegedMacMultiProcessTest);
 };
@@ -172,7 +184,7 @@ TEST_F(AttachmentBrokerPrivilegedMacMultiProcessTest, InsertRight) {
 
   SetUpChild("InsertRightClient");
   mach_msg_type_number_t original_name_count = GetActiveNameCount();
-  IPC::AttachmentBrokerPrivilegedMac broker(nullptr);
+  IPC::AttachmentBrokerPrivilegedMac broker(&port_provider_);
 
   // Create some shared memory.
   scoped_ptr<base::SharedMemory> shared_memory =
@@ -239,7 +251,7 @@ TEST_F(AttachmentBrokerPrivilegedMacMultiProcessTest, InsertSameRightTwice) {
 
   SetUpChild("InsertSameRightTwiceClient");
   mach_msg_type_number_t original_name_count = GetActiveNameCount();
-  IPC::AttachmentBrokerPrivilegedMac broker(nullptr);
+  IPC::AttachmentBrokerPrivilegedMac broker(&port_provider_);
 
   // Create some shared memory.
   scoped_ptr<base::SharedMemory> shared_memory =
@@ -335,7 +347,7 @@ TEST_F(AttachmentBrokerPrivilegedMacMultiProcessTest, InsertTwoRights) {
 
   SetUpChild("InsertTwoRightsClient");
   mach_msg_type_number_t original_name_count = GetActiveNameCount();
-  IPC::AttachmentBrokerPrivilegedMac broker(nullptr);
+  IPC::AttachmentBrokerPrivilegedMac broker(&port_provider_);
 
   for (int i = 0; i < 2; ++i) {
     // Create some shared memory.

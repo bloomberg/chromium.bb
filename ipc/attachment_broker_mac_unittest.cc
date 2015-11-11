@@ -14,6 +14,7 @@
 #include "base/mac/mac_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
+#include "ipc/attachment_broker_messages.h"
 #include "ipc/attachment_broker_privileged_mac.h"
 #include "ipc/attachment_broker_unprivileged_mac.h"
 #include "ipc/ipc_listener.h"
@@ -348,7 +349,10 @@ class MockPortProvider : public base::PortProvider {
 
   void InsertEntry(base::ProcessHandle process, mach_port_t task_port) {
     port_map_[process] = task_port;
+    NotifyObservers(process);
   }
+
+  void ClearPortMap() { port_map_.clear(); }
 
  private:
   std::map<base::ProcessHandle, mach_port_t> port_map_;
@@ -466,16 +470,22 @@ class IPCAttachmentBrokerMacTest : public IPCTestBase {
   ResultListener result_listener_;
 };
 
-using OnMessageReceivedCallback = void (*)(IPC::Sender* sender,
-                                           const IPC::Message& message);
-
 // These objects are globally accessible, and are expected to outlive all IPC
 // Channels.
 struct ChildProcessGlobals {
-  scoped_ptr<IPC::AttachmentBrokerPrivilegedMac> broker;
   MockPortProvider port_provider;
+
+  // The broker must be destroyed before the port_provider, so that the broker
+  // gets a chance to unregister itself as an observer. This doesn't matter
+  // outside of tests, since neither port_provider nor broker will ever be
+  // destroyed.
+  scoped_ptr<IPC::AttachmentBrokerPrivilegedMac> broker;
   base::mac::ScopedMachSendRight server_task_port;
 };
+
+using OnMessageReceivedCallback = void (*)(IPC::Sender* sender,
+                                           const IPC::Message& message,
+                                           ChildProcessGlobals* globals);
 
 // Sets up the Mach communication ports with the server. Returns a set of
 // globals that must live at least as long as the test.
@@ -527,7 +537,7 @@ int CommonPrivilegedProcessMain(OnMessageReceivedCallback callback,
 
     while (listener.has_message()) {
       LOG(INFO) << "Privileged process running callback.";
-      callback(channel.get(), listener.get_first_message());
+      callback(channel.get(), listener.get_first_message(), globals.get());
       LOG(INFO) << "Privileged process finishing callback.";
       listener.pop_first_message();
     }
@@ -556,7 +566,8 @@ TEST_F(IPCAttachmentBrokerMacTest, SendSharedMemoryHandle) {
 }
 
 void SendSharedMemoryHandleCallback(IPC::Sender* sender,
-                                    const IPC::Message& message) {
+                                    const IPC::Message& message,
+                                    ChildProcessGlobals* globals) {
   bool success = CheckContentsOfMessage1(message, kDataBuffer1);
   SendControlMessage(sender, success);
 }
@@ -582,7 +593,8 @@ TEST_F(IPCAttachmentBrokerMacTest, SendSharedMemoryHandleLong) {
 }
 
 void SendSharedMemoryHandleLongCallback(IPC::Sender* sender,
-                                        const IPC::Message& message) {
+                                        const IPC::Message& message,
+                                        ChildProcessGlobals* globals) {
   std::string buffer(1 << 23, 'a');
   bool success = CheckContentsOfMessage1(message, buffer);
   SendControlMessage(sender, success);
@@ -610,7 +622,8 @@ TEST_F(IPCAttachmentBrokerMacTest, SendTwoMessagesDifferentSharedMemoryHandle) {
 
 void SendTwoMessagesDifferentSharedMemoryHandleCallback(
     IPC::Sender* sender,
-    const IPC::Message& message) {
+    const IPC::Message& message,
+    ChildProcessGlobals* globals) {
   static int count = 0;
   static bool success = true;
   ++count;
@@ -654,7 +667,8 @@ TEST_F(IPCAttachmentBrokerMacTest, SendTwoMessagesSameSharedMemoryHandle) {
 
 void SendTwoMessagesSameSharedMemoryHandleCallback(
     IPC::Sender* sender,
-    const IPC::Message& message) {
+    const IPC::Message& message,
+    ChildProcessGlobals* globals) {
   static int count = 0;
   static base::SharedMemoryHandle handle1;
   ++count;
@@ -701,7 +715,8 @@ TEST_F(IPCAttachmentBrokerMacTest,
 
 void SendOneMessageWithTwoDifferentSharedMemoryHandlesCallback(
     IPC::Sender* sender,
-    const IPC::Message& message) {
+    const IPC::Message& message,
+    ChildProcessGlobals* globals) {
   base::SharedMemoryHandle handle1;
   base::SharedMemoryHandle handle2;
   if (!GetSharedMemoryHandlesFromMsg2(message, &handle1, &handle2)) {
@@ -745,7 +760,8 @@ TEST_F(IPCAttachmentBrokerMacTest,
 
 void SendOneMessageWithTwoSameSharedMemoryHandlesCallback(
     IPC::Sender* sender,
-    const IPC::Message& message) {
+    const IPC::Message& message,
+    ChildProcessGlobals* globals) {
   base::SharedMemoryHandle handle1;
   base::SharedMemoryHandle handle2;
   if (!GetSharedMemoryHandlesFromMsg2(message, &handle1, &handle2)) {
@@ -802,7 +818,8 @@ TEST_F(IPCAttachmentBrokerMacTest, SendPosixFDAndMachPort) {
 }
 
 void SendPosixFDAndMachPortCallback(IPC::Sender* sender,
-                                    const IPC::Message& message) {
+                                    const IPC::Message& message,
+                                    ChildProcessGlobals* globals) {
   TestSharedMemoryHandleMsg3::Schema::Param p;
   if (!TestSharedMemoryHandleMsg3::Read(&message, &p)) {
     LOG(ERROR) << "Failed to deserialize message.";
@@ -883,7 +900,8 @@ TEST_F(IPCAttachmentBrokerMacTest, SendSharedMemoryHandleToSelf) {
 }
 
 void SendSharedMemoryHandleToSelfCallback(IPC::Sender* sender,
-                                          const IPC::Message&) {
+                                          const IPC::Message&,
+                                          ChildProcessGlobals* globals) {
   // Do nothing special. The default behavior already runs the
   // AttachmentBrokerPrivilegedMac.
 }
@@ -937,7 +955,8 @@ TEST_F(IPCAttachmentBrokerMacTest, SendSharedMemoryHandleChannelProxy) {
 }
 
 void SendSharedMemoryHandleChannelProxyCallback(IPC::Sender* sender,
-                                                const IPC::Message& message) {
+                                                const IPC::Message& message,
+                                                ChildProcessGlobals* globals) {
   bool success = CheckContentsOfMessage1(message, kDataBuffer1);
   SendControlMessage(sender, success);
 }
@@ -971,7 +990,9 @@ TEST_F(IPCAttachmentBrokerMacTest, ShareToProcess) {
   CommonTearDown();
 }
 
-void ShareToProcessCallback(IPC::Sender* sender, const IPC::Message& message) {
+void ShareToProcessCallback(IPC::Sender* sender,
+                            const IPC::Message& message,
+                            ChildProcessGlobals* globals) {
   bool success = CheckContentsOfMessage1(message, kDataBuffer1);
   SendControlMessage(sender, success);
 }
@@ -1004,7 +1025,8 @@ TEST_F(IPCAttachmentBrokerMacTest, ShareReadOnlyToProcess) {
 }
 
 void ShareReadOnlyToProcessCallback(IPC::Sender* sender,
-                                    const IPC::Message& message) {
+                                    const IPC::Message& message,
+                                    ChildProcessGlobals* globals) {
   base::SharedMemoryHandle shm(GetSharedMemoryHandleFromMsg1(message));
 
   // Try to map the memory as writable.
@@ -1030,6 +1052,104 @@ void ShareReadOnlyToProcessCallback(IPC::Sender* sender,
 MULTIPROCESS_IPC_TEST_CLIENT_MAIN(ShareReadOnlyToProcess) {
   return CommonPrivilegedProcessMain(&ShareReadOnlyToProcessCallback,
                                      "ShareReadOnlyToProcess");
+}
+
+// Similar to SendSharedMemoryHandleToSelf, but the child process pretends to
+// not have the task port for the parent process.
+TEST_F(IPCAttachmentBrokerMacTest, SendSharedMemoryHandleToSelfDelayedPort) {
+  // Mach-based SharedMemory isn't support on OSX 10.6.
+  if (base::mac::IsOSSnowLeopard())
+    return;
+
+  SetBroker(new MockBroker);
+  CommonSetUp("SendSharedMemoryHandleToSelfDelayedPort");
+
+  // Technically, the channel is an endpoint, but we need the proxy listener to
+  // receive the messages so that it can quit the message loop.
+  channel()->SetAttachmentBrokerEndpoint(false);
+  get_proxy_listener()->set_listener(get_broker());
+
+  {
+    scoped_ptr<base::SharedMemory> shared_memory(
+        MakeSharedMemory(kDataBuffer1));
+    mach_port_urefs_t ref_count = IPC::GetMachRefCount(
+        shared_memory->handle().GetMemoryObject(), MACH_PORT_RIGHT_SEND);
+
+    std::vector<IPC::BrokerableAttachment::AttachmentId> ids;
+    const int kMessagesToTest = 3;
+    for (int i = 0; i < kMessagesToTest; ++i) {
+      base::SharedMemoryHandle h = shared_memory->handle().Duplicate();
+      ids.push_back(
+          IPC::BrokerableAttachment::AttachmentId::CreateIdWithRandomNonce());
+      IPC::internal::MachPortAttachmentMac::WireFormat wire_format(
+          h.GetMemoryObject(), getpid(), ids[i]);
+      sender()->Send(new AttachmentBrokerMsg_DuplicateMachPort(wire_format));
+
+      // Send a dummy message, which will trigger the callback handler in the
+      // child process.
+      sender()->Send(new TestSharedMemoryHandleMsg4(1));
+    }
+
+    int received_message_count = 0;
+    while (received_message_count < kMessagesToTest) {
+      // Wait until the child process has sent this process a message.
+      base::MessageLoop::current()->Run();
+
+      // Wait for any asynchronous activity to complete.
+      base::MessageLoop::current()->RunUntilIdle();
+
+      while (get_proxy_listener()->has_message()) {
+        get_proxy_listener()->pop_first_message();
+        received_message_count++;
+      }
+    }
+
+    for (int i = 0; i < kMessagesToTest; ++i) {
+      IPC::BrokerableAttachment::AttachmentId* id = &ids[i];
+      ASSERT_TRUE(id);
+      scoped_refptr<IPC::BrokerableAttachment> received_attachment;
+      get_broker()->GetAttachmentWithId(*id, &received_attachment);
+      ASSERT_NE(received_attachment.get(), nullptr);
+
+      base::mac::ScopedMachSendRight memory_object(
+          GetMachPortFromBrokeredAttachment(received_attachment));
+      ASSERT_EQ(shared_memory->handle().GetMemoryObject(), memory_object);
+    }
+
+    // Check that the ref count hasn't changed.
+    EXPECT_EQ(ref_count,
+              IPC::GetMachRefCount(shared_memory->handle().GetMemoryObject(),
+                                   MACH_PORT_RIGHT_SEND));
+  }
+
+  FinalCleanUp();
+}
+
+void SendSharedMemoryHandleToSelfDelayedPortCallback(
+    IPC::Sender* sender,
+    const IPC::Message& message,
+    ChildProcessGlobals* globals) {
+  static int i = 0;
+  static base::ProcessId pid = message.get_sender_pid();
+  static mach_port_t task_port = globals->port_provider.TaskForPid(pid);
+  ++i;
+
+  if (i == 1) {
+    // Pretend to not have the task port for the parent.
+    globals->port_provider.ClearPortMap();
+  } else if (i == 2) {
+    // Intentionally do nothing.
+  } else if (i == 3) {
+    // Setting the task port should trigger callbacks, eventually resulting in
+    // multiple attachment broker messages.
+    globals->port_provider.InsertEntry(pid, task_port);
+  }
+}
+
+MULTIPROCESS_IPC_TEST_CLIENT_MAIN(SendSharedMemoryHandleToSelfDelayedPort) {
+  return CommonPrivilegedProcessMain(
+      &SendSharedMemoryHandleToSelfDelayedPortCallback,
+      "SendSharedMemoryHandleToSelfDelayedPort");
 }
 
 }  // namespace

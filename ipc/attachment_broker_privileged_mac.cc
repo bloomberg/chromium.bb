@@ -55,9 +55,23 @@ namespace IPC {
 
 AttachmentBrokerPrivilegedMac::AttachmentBrokerPrivilegedMac(
     base::PortProvider* port_provider)
-    : port_provider_(port_provider) {}
+    : port_provider_(port_provider) {
+  port_provider_->AddObserver(this);
+}
 
-AttachmentBrokerPrivilegedMac::~AttachmentBrokerPrivilegedMac() {}
+AttachmentBrokerPrivilegedMac::~AttachmentBrokerPrivilegedMac() {
+  port_provider_->RemoveObserver(this);
+  {
+    base::AutoLock l(precursors_lock_);
+    for (auto it : precursors_)
+      delete it.second;
+  }
+  {
+    base::AutoLock l(extractors_lock_);
+    for (auto it : extractors_)
+      delete it.second;
+  }
+}
 
 bool AttachmentBrokerPrivilegedMac::SendAttachmentToProcess(
     const scoped_refptr<IPC::BrokerableAttachment>& attachment,
@@ -68,25 +82,11 @@ bool AttachmentBrokerPrivilegedMac::SendAttachmentToProcess(
           static_cast<internal::MachPortAttachmentMac*>(attachment.get());
       MachPortWireFormat wire_format =
           mach_port_attachment->GetWireFormat(destination_process);
-
-      if (destination_process == base::Process::Current().Pid()) {
-        RouteWireFormatToSelf(wire_format);
-        mach_port_attachment->reset_mach_port_ownership();
-        return true;
-      }
-
-      mach_port_name_t intermediate_port = CreateIntermediateMachPort(
-          wire_format.destination_process,
-          base::mac::ScopedMachSendRight(wire_format.mach_port));
+      AddPrecursor(wire_format.destination_process,
+                   base::mac::ScopedMachSendRight(wire_format.mach_port),
+                   wire_format.attachment_id);
       mach_port_attachment->reset_mach_port_ownership();
-      if (intermediate_port == MACH_PORT_NULL) {
-        LogError(ERROR_MAKE_INTERMEDIATE);
-        return false;
-      }
-
-      MachPortWireFormat intermediate_wire_format =
-          CopyWireFormat(wire_format, intermediate_port);
-      RouteWireFormatToAnother(intermediate_wire_format);
+      SendPrecursorsForProcess(wire_format.destination_process);
       return true;
     }
     default:
@@ -106,8 +106,39 @@ bool AttachmentBrokerPrivilegedMac::OnMessageReceived(const Message& msg) {
   return handled;
 }
 
+void AttachmentBrokerPrivilegedMac::OnReceivedTaskPort(
+    base::ProcessHandle process) {
+  SendPrecursorsForProcess(process);
+}
+
+AttachmentBrokerPrivilegedMac::AttachmentPrecursor::AttachmentPrecursor(
+    const base::ProcessId& pid,
+    base::mac::ScopedMachSendRight port,
+    const BrokerableAttachment::AttachmentId& id)
+    : pid_(pid), port_(port.release()), id_(id) {}
+
+AttachmentBrokerPrivilegedMac::AttachmentPrecursor::~AttachmentPrecursor() {}
+
+base::mac::ScopedMachSendRight
+AttachmentBrokerPrivilegedMac::AttachmentPrecursor::TakePort() {
+  return base::mac::ScopedMachSendRight(port_.release());
+}
+
+AttachmentBrokerPrivilegedMac::AttachmentExtractor::AttachmentExtractor(
+    const base::ProcessId& source_pid,
+    const base::ProcessId& dest_pid,
+    mach_port_name_t port,
+    const BrokerableAttachment::AttachmentId& id)
+    : source_pid_(source_pid),
+      dest_pid_(dest_pid),
+      port_to_extract_(port),
+      id_(id) {}
+
+AttachmentBrokerPrivilegedMac::AttachmentExtractor::~AttachmentExtractor() {}
+
 void AttachmentBrokerPrivilegedMac::OnDuplicateMachPort(
     const IPC::Message& message) {
+  DCHECK_NE(0, message.get_sender_pid());
   AttachmentBrokerMsg_DuplicateMachPort::Param param;
   if (!AttachmentBrokerMsg_DuplicateMachPort::Read(&message, &param)) {
     LogError(ERROR_PARSE_DUPLICATE_MACH_PORT_MESSAGE);
@@ -121,31 +152,18 @@ void AttachmentBrokerPrivilegedMac::OnDuplicateMachPort(
     return;
   }
 
-  // Acquire a send right to the Mach port.
-  base::ProcessId sender_pid = message.get_sender_pid();
-  DCHECK_NE(sender_pid, base::GetCurrentProcId());
-  base::mac::ScopedMachSendRight send_right(
-      AcquireSendRight(sender_pid, wire_format.mach_port));
-
-  if (wire_format.destination_process == base::GetCurrentProcId()) {
-    // Intentionally leak the reference, as the consumer of the Chrome IPC
-    // message will take ownership.
-    mach_port_t final_mach_port = send_right.release();
-    MachPortWireFormat final_wire_format(
-        CopyWireFormat(wire_format, final_mach_port));
-    RouteWireFormatToSelf(final_wire_format);
-    return;
-  }
-
-  mach_port_name_t intermediate_mach_port = CreateIntermediateMachPort(
-      wire_format.destination_process,
-      base::mac::ScopedMachSendRight(send_right.release()));
-  RouteWireFormatToAnother(CopyWireFormat(wire_format, intermediate_mach_port));
+  AddExtractor(message.get_sender_pid(), wire_format.destination_process,
+               wire_format.mach_port, wire_format.attachment_id);
+  ProcessExtractorsForProcess(message.get_sender_pid());
 }
 
-void AttachmentBrokerPrivilegedMac::RouteWireFormatToSelf(
-    const MachPortWireFormat& wire_format) {
-  DCHECK_EQ(wire_format.destination_process, base::Process::Current().Pid());
+void AttachmentBrokerPrivilegedMac::RoutePrecursorToSelf(
+    AttachmentPrecursor* precursor) {
+  DCHECK_EQ(base::Process::Current().Pid(), precursor->pid());
+
+  // Intentionally leak the port, since the attachment takes ownership.
+  internal::MachPortAttachmentMac::WireFormat wire_format(
+      precursor->TakePort().release(), precursor->pid(), precursor->id());
   scoped_refptr<BrokerableAttachment> attachment(
       new internal::MachPortAttachmentMac(wire_format));
   HandleReceivedAttachment(attachment);
@@ -170,19 +188,6 @@ void AttachmentBrokerPrivilegedMac::RouteWireFormatToAnother(
 
   LogError(DESTINATION_FOUND);
   sender->Send(new AttachmentBrokerMsg_MachPortHasBeenDuplicated(wire_format));
-}
-
-mach_port_name_t AttachmentBrokerPrivilegedMac::CreateIntermediateMachPort(
-    base::ProcessId pid,
-    base::mac::ScopedMachSendRight port_to_insert) {
-  DCHECK_NE(pid, base::GetCurrentProcId());
-  mach_port_t task_port = port_provider_->TaskForPid(pid);
-  if (task_port == MACH_PORT_NULL) {
-    LogError(ERROR_TASK_FOR_PID);
-    return MACH_PORT_NULL;
-  }
-  return CreateIntermediateMachPort(
-      task_port, base::mac::ScopedMachSendRight(port_to_insert.release()));
 }
 
 mach_port_name_t AttachmentBrokerPrivilegedMac::CreateIntermediateMachPort(
@@ -219,7 +224,7 @@ mach_port_name_t AttachmentBrokerPrivilegedMac::CreateIntermediateMachPort(
       mach_port_extract_right(task_port, endpoint, MACH_MSG_TYPE_MAKE_SEND_ONCE,
                               &send_once_right, &send_right_type);
   if (kr != KERN_SUCCESS) {
-    LogError(ERROR_EXTRACT_RIGHT);
+    LogError(ERROR_EXTRACT_DEST_RIGHT);
     mach_port_deallocate(task_port, endpoint);
     return MACH_PORT_NULL;
   }
@@ -263,8 +268,10 @@ base::mac::ScopedMachSendRight AttachmentBrokerPrivilegedMac::ExtractNamedRight(
   kern_return_t kr =
       mach_port_extract_right(task_port, named_right, MACH_MSG_TYPE_COPY_SEND,
                               &extracted_right, &extracted_right_type);
-  if (kr != KERN_SUCCESS)
+  if (kr != KERN_SUCCESS) {
+    LogError(ERROR_EXTRACT_SOURCE_RIGHT);
     return base::mac::ScopedMachSendRight(MACH_PORT_NULL);
+  }
 
   DCHECK_EQ(static_cast<mach_msg_type_name_t>(MACH_MSG_TYPE_PORT_SEND),
             extracted_right_type);
@@ -286,6 +293,110 @@ AttachmentBrokerPrivilegedMac::CopyWireFormat(
     uint32_t mach_port) {
   return MachPortWireFormat(mach_port, wire_format.destination_process,
                             wire_format.attachment_id);
+}
+
+void AttachmentBrokerPrivilegedMac::SendPrecursorsForProcess(
+    base::ProcessId pid) {
+  base::AutoLock l(precursors_lock_);
+  auto it = precursors_.find(pid);
+  if (it == precursors_.end())
+    return;
+
+  // Whether this process is the destination process.
+  bool to_self = pid == base::GetCurrentProcId();
+
+  mach_port_t task_port = port_provider_->TaskForPid(pid);
+  if (!to_self && task_port == MACH_PORT_NULL)
+    return;
+
+  while (!it->second->empty()) {
+    auto precursor_it = it->second->begin();
+    if (to_self)
+      RoutePrecursorToSelf(*precursor_it);
+    else
+      SendPrecursor(*precursor_it, task_port);
+    it->second->erase(precursor_it);
+  }
+
+  delete it->second;
+  precursors_.erase(it);
+}
+
+void AttachmentBrokerPrivilegedMac::SendPrecursor(
+    AttachmentPrecursor* precursor,
+    mach_port_t task_port) {
+  DCHECK(task_port);
+  internal::MachPortAttachmentMac::WireFormat wire_format(
+      MACH_PORT_NULL, precursor->pid(), precursor->id());
+  base::mac::ScopedMachSendRight port_to_insert = precursor->TakePort();
+  mach_port_name_t intermediate_port = MACH_PORT_NULL;
+  if (port_to_insert.get() != MACH_PORT_NULL) {
+    intermediate_port = CreateIntermediateMachPort(
+        task_port, base::mac::ScopedMachSendRight(port_to_insert.release()));
+  }
+  RouteWireFormatToAnother(CopyWireFormat(wire_format, intermediate_port));
+}
+
+void AttachmentBrokerPrivilegedMac::AddPrecursor(
+    base::ProcessId pid,
+    base::mac::ScopedMachSendRight port,
+    const BrokerableAttachment::AttachmentId& id) {
+  base::AutoLock l(precursors_lock_);
+  auto it = precursors_.find(pid);
+  if (it == precursors_.end())
+    precursors_[pid] = new ScopedVector<AttachmentPrecursor>;
+
+  precursors_[pid]->push_back(new AttachmentPrecursor(
+      pid, base::mac::ScopedMachSendRight(port.release()), id));
+}
+
+void AttachmentBrokerPrivilegedMac::ProcessExtractorsForProcess(
+    base::ProcessId pid) {
+  base::AutoLock l(extractors_lock_);
+  auto it = extractors_.find(pid);
+  if (it == extractors_.end())
+    return;
+
+  mach_port_t task_port = port_provider_->TaskForPid(pid);
+  if (task_port == MACH_PORT_NULL)
+    return;
+
+  while (!it->second->empty()) {
+    auto extractor_it = it->second->begin();
+    ProcessExtractor(*extractor_it, task_port);
+    it->second->erase(extractor_it);
+  }
+
+  delete it->second;
+  extractors_.erase(it);
+}
+
+void AttachmentBrokerPrivilegedMac::ProcessExtractor(
+    AttachmentExtractor* extractor,
+    mach_port_t task_port) {
+  DCHECK(task_port);
+  base::mac::ScopedMachSendRight send_right =
+      ExtractNamedRight(task_port, extractor->port());
+  AddPrecursor(extractor->dest_pid(),
+               base::mac::ScopedMachSendRight(send_right.release()),
+               extractor->id());
+  SendPrecursorsForProcess(extractor->dest_pid());
+}
+
+void AttachmentBrokerPrivilegedMac::AddExtractor(
+    base::ProcessId source_pid,
+    base::ProcessId dest_pid,
+    mach_port_name_t port,
+    const BrokerableAttachment::AttachmentId& id) {
+  base::AutoLock l(extractors_lock_);
+  DCHECK_NE(base::GetCurrentProcId(), source_pid);
+
+  auto it = extractors_.find(source_pid);
+  if (it == extractors_.end())
+    extractors_[source_pid] = new ScopedVector<AttachmentExtractor>;
+
+  extractors_[source_pid]->push_back(
+      new AttachmentExtractor(source_pid, dest_pid, port, id));
 }
 
 }  // namespace IPC

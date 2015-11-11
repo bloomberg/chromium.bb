@@ -163,7 +163,6 @@ bool ChannelReader::TranslateInputData(const char* input_data,
 bool ChannelReader::HandleTranslatedMessage(
     Message* translated_message,
     const AttachmentIdVector& attachment_ids) {
-
   // Immediately handle internal messages.
   if (IsInternalMessage(*translated_message)) {
     EmitLogBeforeDispatch(*translated_message);

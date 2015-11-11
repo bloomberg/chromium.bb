@@ -64600,12 +64600,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="7" label="ERROR_SET_ATTRIBUTES">
     Couldn't change the attributes of a Mach port.
   </int>
-  <int value="8" label="ERROR_EXTRACT_RIGHT">Couldn't extract a right.</int>
+  <int value="8" label="ERROR_EXTRACT_RIGHT_DEST">
+    Couldn't extract a right from the destination process.
+  </int>
   <int value="9" label="ERROR_SEND_MACH_PORT">
     Couldn't send a Mach port in a call to mach_msg().
   </int>
   <int value="10" label="ERROR_DECREASE_REF">
     Couldn't decrease the ref count on a Mach port.
+  </int>
+  <int value="11" label="ERROR_EXTRACT_RIGHT_SOURCE">
+    Couldn't extract a right from the source process.
   </int>
 </enum>
 

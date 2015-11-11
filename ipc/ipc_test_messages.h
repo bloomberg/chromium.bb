@@ -31,4 +31,6 @@ IPC_MESSAGE_CONTROL4(TestSharedMemoryHandleMsg3,
                      base::SharedMemoryHandle,
                      base::FileDescriptor,
                      base::SharedMemoryHandle)
+IPC_MESSAGE_CONTROL1(TestSharedMemoryHandleMsg4, int)
+
 #endif  // defined(OS_MACOSX)

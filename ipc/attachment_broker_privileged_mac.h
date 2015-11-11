@@ -7,9 +7,14 @@
 
 #include <mach/mach.h>
 
+#include <map>
+
 #include "base/gtest_prod_util.h"
 #include "base/mac/scoped_mach_port.h"
+#include "base/macros.h"
+#include "base/memory/scoped_vector.h"
 #include "base/process/port_provider_mac.h"
+#include "base/synchronization/lock.h"
 #include "ipc/attachment_broker_privileged.h"
 #include "ipc/ipc_export.h"
 #include "ipc/mach_port_attachment_mac.h"
@@ -49,7 +54,8 @@ namespace IPC {
 // For the rest of this file, and the corresponding implementation file, R will
 // be called the "intermediate Mach port" and M3 the "final Mach port".
 class IPC_EXPORT AttachmentBrokerPrivilegedMac
-    : public AttachmentBrokerPrivileged {
+    : public AttachmentBrokerPrivileged,
+      public base::PortProvider::Observer {
  public:
   explicit AttachmentBrokerPrivilegedMac(base::PortProvider* port_provider);
   ~AttachmentBrokerPrivilegedMac() override;
@@ -62,6 +68,9 @@ class IPC_EXPORT AttachmentBrokerPrivilegedMac
   // IPC::Listener overrides.
   bool OnMessageReceived(const Message& message) override;
 
+  // base::PortProvider::Observer override.
+  void OnReceivedTaskPort(base::ProcessHandle process) override;
+
  private:
   FRIEND_TEST_ALL_PREFIXES(AttachmentBrokerPrivilegedMacMultiProcessTest,
                            InsertRight);
@@ -70,6 +79,58 @@ class IPC_EXPORT AttachmentBrokerPrivilegedMac
   FRIEND_TEST_ALL_PREFIXES(AttachmentBrokerPrivilegedMacMultiProcessTest,
                            InsertTwoRights);
   using MachPortWireFormat = internal::MachPortAttachmentMac::WireFormat;
+
+  // Contains all the information necessary to broker an attachment into a
+  // destination process. The only thing that prevents an AttachmentPrecusor
+  // from being immediately processed is if |port_provider_| does not yet have a
+  // task port for |pid|.
+  class IPC_EXPORT AttachmentPrecursor {
+   public:
+    AttachmentPrecursor(const base::ProcessId& pid,
+                        base::mac::ScopedMachSendRight port_to_insert,
+                        const BrokerableAttachment::AttachmentId& id);
+    ~AttachmentPrecursor();
+
+    // Caller takes ownership of |port_|.
+    base::mac::ScopedMachSendRight TakePort();
+
+    base::ProcessId pid() const { return pid_; }
+    const BrokerableAttachment::AttachmentId id() const { return id_; }
+
+   private:
+    // The pid of the destination process.
+    const base::ProcessId pid_;
+    // The final Mach port, as per definition at the top of this file.
+    base::mac::ScopedMachSendRight port_;
+    // The id of the attachment.
+    const BrokerableAttachment::AttachmentId id_;
+    DISALLOW_COPY_AND_ASSIGN(AttachmentPrecursor);
+  };
+
+  // Contains all the information necessary to extract a send right and create
+  // an AttachmentPrecursor. The only thing that prevents an AttachmentExtractor
+  // from being immediately processed is if |port_provider_| does not yet have a
+  // task port for |source_pid|.
+  class IPC_EXPORT AttachmentExtractor {
+   public:
+    AttachmentExtractor(const base::ProcessId& source_pid,
+                        const base::ProcessId& dest_pid,
+                        mach_port_name_t port,
+                        const BrokerableAttachment::AttachmentId& id);
+    ~AttachmentExtractor();
+
+    base::ProcessId source_pid() const { return source_pid_; }
+    base::ProcessId dest_pid() const { return dest_pid_; }
+    mach_port_name_t port() const { return port_to_extract_; }
+    const BrokerableAttachment::AttachmentId id() const { return id_; }
+
+   private:
+    const base::ProcessId source_pid_;
+    const base::ProcessId dest_pid_;
+    mach_port_name_t port_to_extract_;
+    const BrokerableAttachment::AttachmentId id_;
+  };
+
   // IPC message handlers.
   void OnDuplicateMachPort(const Message& message);
 
@@ -78,19 +139,13 @@ class IPC_EXPORT AttachmentBrokerPrivilegedMac
   MachPortWireFormat DuplicateMachPort(const MachPortWireFormat& wire_format,
                                        base::ProcessId source_process);
 
-  // |pid| must be another process.
+  // |task_port| is the task port of another process.
   // |port_to_insert| must be a send right in the current task's name space.
   // Creates an intermediate Mach port in |pid| and sends |port_to_insert| as a
   // mach_msg to the intermediate Mach port.
-  // On success, returns the name of the intermediate Mach port.
-  // On failure, returns |MACH_PORT_NULL|.
+  // Returns the intermediate port on success, and MACH_PORT_NULL on failure.
   // This method takes ownership of |port_to_insert|. On success, ownership is
   // passed to the intermediate Mach port.
-  mach_port_name_t CreateIntermediateMachPort(
-      base::ProcessId pid,
-      base::mac::ScopedMachSendRight port_to_insert);
-
-  // Same as the above method, where |task_port| is the task port of |pid|.
   mach_port_name_t CreateIntermediateMachPort(
       mach_port_t task_port,
       base::mac::ScopedMachSendRight port_to_insert);
@@ -115,7 +170,7 @@ class IPC_EXPORT AttachmentBrokerPrivilegedMac
   // Consumes a reference to |wire_format.mach_port|, as ownership is implicitly
   // passed to the consumer of the Chrome IPC message.
   // Makes an attachment, queues it, and notifies the observers.
-  void RouteWireFormatToSelf(const MachPortWireFormat& wire_format);
+  void RoutePrecursorToSelf(AttachmentPrecursor* precursor);
 
   // |wire_format.destination_process| must be another process.
   // |wire_format.mach_port| must be the intermediate Mach port.
@@ -123,8 +178,44 @@ class IPC_EXPORT AttachmentBrokerPrivilegedMac
   // that receives the Chrome IPC message.
   void RouteWireFormatToAnother(const MachPortWireFormat& wire_format);
 
+  // Atempts to broker all precursors whose destination is |pid|. Has no effect
+  // if |port_provider_| does not have the task port for |pid|.
+  void SendPrecursorsForProcess(base::ProcessId pid);
+
+  // Brokers a single precursor into the task represented by |task_port|.
+  void SendPrecursor(AttachmentPrecursor* precursor, mach_port_t task_port);
+
+  // Add a precursor to |precursors_|. Takes ownership of |port|.
+  void AddPrecursor(base::ProcessId pid,
+                    base::mac::ScopedMachSendRight port,
+                    const BrokerableAttachment::AttachmentId& id);
+
+  // Atempts to process all extractors whose source is |pid|. Has no effect
+  // if |port_provider_| does not have the task port for |pid|.
+  void ProcessExtractorsForProcess(base::ProcessId pid);
+
+  // Processes a single extractor whose source pid is represented by
+  // |task_port|.
+  void ProcessExtractor(AttachmentExtractor* extractor, mach_port_t task_port);
+
+  // Add an extractor to |extractors_|.
+  void AddExtractor(base::ProcessId source_pid,
+                    base::ProcessId dest_pid,
+                    mach_port_name_t port,
+                    const BrokerableAttachment::AttachmentId& id);
+
   // The port provider must live at least as long as the AttachmentBroker.
-  const base::PortProvider* port_provider_;
+  base::PortProvider* port_provider_;
+
+  // For each ProcessId, a vector of precursors that are waiting to be
+  // sent.
+  std::map<base::ProcessId, ScopedVector<AttachmentPrecursor>*> precursors_;
+  base::Lock precursors_lock_;
+
+  // For each ProcessId, a vector of extractors that are waiting to be
+  // processed.
+  std::map<base::ProcessId, ScopedVector<AttachmentExtractor>*> extractors_;
+  base::Lock extractors_lock_;
 
   DISALLOW_COPY_AND_ASSIGN(AttachmentBrokerPrivilegedMac);
 };
