@@ -218,7 +218,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
   // Called to notify the RenderWidget that its associated native window
   // got/lost focused.
   virtual void GotFocus();
-  virtual void LostCapture();
+  void LostCapture();
 
   // Indicates whether the RenderWidgetHost thinks it is focused.
   // This is different from RenderWidgetHostView::HasFocus() in the sense that
@@ -230,7 +230,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
   bool is_focused() const { return is_focused_; }
 
   // Called to notify the RenderWidget that it has lost the mouse lock.
-  virtual void LostMouseLock();
+  void LostMouseLock();
 
   // Noifies the RenderWidget of the current mouse cursor visibility state.
   void SendCursorVisibilityState(bool is_visible);
@@ -383,8 +383,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
   bool GotResponseToLockMouseRequest(bool allowed);
 
   // Tells the RenderWidget about the latest vsync parameters.
-  virtual void UpdateVSyncParameters(base::TimeTicks timebase,
-                                     base::TimeDelta interval);
+  void UpdateVSyncParameters(base::TimeTicks timebase,
+                             base::TimeDelta interval);
 
   // Called by the view in response to OnSwapCompositorFrame.
   static void SendSwapCompositorFrameAck(
@@ -506,11 +506,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
   gfx::NativeViewId GetNativeViewId() const;
 
   // ---------------------------------------------------------------------------
-  // The following methods are overridden by RenderViewHost to send upwards to
+  // The following method is overridden by RenderViewHost to send upwards to
   // its delegate.
-
-  // Called when a mousewheel event was not processed by the renderer.
-  virtual void UnhandledWheelEvent(const blink::WebMouseWheelEvent& event) {}
 
   // Callback for notification that we failed to receive any rendered graphics
   // from a newly loaded page. Used for testing.

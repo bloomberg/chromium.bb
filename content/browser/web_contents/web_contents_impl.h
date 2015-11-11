@@ -480,11 +480,9 @@ class CONTENT_EXPORT WebContentsImpl
                         uint64 upload_position,
                         uint64 upload_size) override;
   void Activate() override;
-  void LostCapture() override;
   void RunFileChooser(RenderViewHost* render_view_host,
                       const FileChooserParams& params) override;
   void UpdatePreferredSize(const gfx::Size& pref_size) override;
-  void LostMouseLock() override;
   void CreateNewWindow(
       SiteInstance* source_site_instance,
       int32_t route_id,
@@ -602,6 +600,8 @@ class CONTENT_EXPORT WebContentsImpl
       RenderWidgetHostImpl* render_widget_host) const override;
   blink::WebDisplayMode GetDisplayMode(
       RenderWidgetHostImpl* render_widget_host) const override;
+  void LostCapture(RenderWidgetHostImpl* render_widget_host) override;
+  void LostMouseLock(RenderWidgetHostImpl* render_widget_host) override;
 
   // RenderFrameHostManager::Delegate ------------------------------------------
 

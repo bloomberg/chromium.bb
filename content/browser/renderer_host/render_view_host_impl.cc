@@ -830,16 +830,6 @@ void RenderViewHostImpl::GotFocus() {
     view->GotFocus();
 }
 
-void RenderViewHostImpl::LostCapture() {
-  RenderWidgetHostImpl::LostCapture();
-  delegate_->LostCapture();
-}
-
-void RenderViewHostImpl::LostMouseLock() {
-  RenderWidgetHostImpl::LostMouseLock();
-  delegate_->LostMouseLock();
-}
-
 void RenderViewHostImpl::SetInitialFocus(bool reverse) {
   Send(new ViewMsg_SetInitialFocus(GetRoutingID(), reverse));
 }

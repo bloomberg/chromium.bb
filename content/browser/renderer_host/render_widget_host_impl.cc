@@ -740,6 +740,9 @@ void RenderWidgetHostImpl::LostCapture() {
     touch_emulator_->CancelTouch();
 
   Send(new InputMsg_MouseCaptureLost(routing_id_));
+
+  if (delegate_)
+    delegate_->LostCapture(this);
 }
 
 void RenderWidgetHostImpl::SetActive(bool active) {
@@ -748,6 +751,9 @@ void RenderWidgetHostImpl::SetActive(bool active) {
 
 void RenderWidgetHostImpl::LostMouseLock() {
   Send(new ViewMsg_MouseLockLost(routing_id_));
+
+  if (delegate_)
+    delegate_->LostMouseLock(this);
 }
 
 void RenderWidgetHostImpl::ViewDestroyed() {

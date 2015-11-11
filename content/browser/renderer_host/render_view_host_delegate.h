@@ -145,9 +145,6 @@ class CONTENT_EXPORT RenderViewHostDelegate {
   // JavaScript window.focus() method).
   virtual void Activate() {}
 
-  // Notification that the view has lost capture.
-  virtual void LostCapture() {}
-
   // Called when a file selection is to be done.
   virtual void RunFileChooser(
       RenderViewHost* render_view_host,
@@ -155,9 +152,6 @@ class CONTENT_EXPORT RenderViewHostDelegate {
 
   // The contents' preferred size changed.
   virtual void UpdatePreferredSize(const gfx::Size& pref_size) {}
-
-  // Notification that the view has lost the mouse lock.
-  virtual void LostMouseLock() {}
 
   // The page is trying to open a new page (e.g. a popup window). The window
   // should be created associated with the given |route_id| in the process of
