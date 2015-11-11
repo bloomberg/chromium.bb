@@ -10,19 +10,20 @@
 #include "base/values.h"
 #include "url/gurl.h"
 
+class GURL;
+
 namespace dom_distiller {
 
 // The length of the derived features vector.
 extern int kDerivedFeaturesCount;
 
 // The distillable page detector is a model trained on a list of numeric
-// features derived from core more complex features of a webpage (like the
-// body's .textContent). This derives the numeric features for a set of core
-// features.
+// features derived from features of a webpage (like body's number of elements
+// ). This derives the numeric features form a set of core features.
 //
 // Note: It is crucial that these features are derived in the same way and are
 // in the same order as in the training pipeline. See //heuristics/distillable
-// in the external DomDistillerJs repo.
+// in the external DomDistiller repo.
 std::vector<double> CalculateDerivedFeatures(bool isOGArticle,
                                              const GURL& url,
                                              double numElements,
@@ -36,6 +37,16 @@ std::vector<double> CalculateDerivedFeatures(bool isOGArticle,
 // javascript core feature extraction.
 std::vector<double> CalculateDerivedFeaturesFromJSON(
     const base::Value* stringified_json);
+
+std::vector<double> CalculateDerivedFeatures(
+    bool openGraph,
+    const GURL& url,
+    unsigned elementCount,
+    unsigned anchorCount,
+    unsigned formCount,
+    double mozScore,
+    double mozScoreAllSqrt,
+    double mozScoreAllLinear);
 
 }  // namespace dom_distiller
 

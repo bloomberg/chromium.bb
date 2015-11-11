@@ -8,6 +8,7 @@
 
 #include "base/json/json_reader.h"
 #include "third_party/re2/re2/re2.h"
+#include "url/gurl.h"
 
 namespace dom_distiller {
 /* This code needs to derive features in the same way and order in which they
@@ -177,6 +178,66 @@ std::vector<double> CalculateDerivedFeaturesFromJSON(
   return CalculateDerivedFeatures(isOGArticle, parsed_url, numElements,
                                   numAnchors, numForms, innerText, textContent,
                                   innerHTML);
+}
+
+std::vector<double> CalculateDerivedFeatures(
+    bool openGraph,
+    const GURL& url,
+    unsigned elementCount,
+    unsigned anchorCount,
+    unsigned formCount,
+    double mozScore,
+    double mozScoreAllSqrt,
+    double mozScoreAllLinear) {
+  const std::string& path = url.path();
+  std::vector<double> features;
+  // 'opengraph', opengraph,
+  features.push_back(openGraph);
+  // 'forum', 'forum' in path,
+  features.push_back(Contains("forum", path));
+  // 'index', 'index' in path,
+  features.push_back(Contains("index", path));
+  // 'search', 'search' in path,
+  features.push_back(Contains("search", path));
+  // 'view', 'view' in path,
+  features.push_back(Contains("view", path));
+  // 'archive', 'archive' in path,
+  features.push_back(Contains("archive", path));
+  // 'asp', '.asp' in path,
+  features.push_back(Contains(".asp", path));
+  // 'phpbb', 'phpbb' in path,
+  features.push_back(Contains("phpbb", path));
+  // 'php', path.endswith('.php'),
+  features.push_back(EndsWith(".php", path));
+  // 'pathLength', len(path),
+  features.push_back(path.size());
+  // 'domain', len(path) < 2,
+  features.push_back(path.size() < 2);
+  // 'pathComponents', CountMatches(path, r'\/.'),
+  features.push_back(CountMatches(path, "\\/."));
+  // 'slugDetector', CountMatches(path, r'[^\w/]'),
+  features.push_back(CountMatches(path, "[^\\w/]"));
+  // 'pathNumbers', CountMatches(path, r'\d+'),
+  features.push_back(CountMatches(path, "\\d+"));
+  // 'lastSegmentLength', len(GetLastSegment(path)),
+  features.push_back(GetLastSegment(path).size());
+  // 'formCount', numForms,
+  features.push_back(formCount);
+  // 'anchorCount', numAnchors,
+  features.push_back(anchorCount);
+  // 'elementCount', numElements,
+  features.push_back(elementCount);
+  // 'anchorRatio', float(numAnchors) / max(1, numElements),
+  features.push_back(
+      double(anchorCount) / std::max<double>(1, elementCount));
+  // 'mozScore'
+  features.push_back(mozScore);
+  // 'mozScoreAllSqrt'
+  features.push_back(mozScoreAllSqrt);
+  // 'mozScoreAllLinear'
+  features.push_back(mozScoreAllLinear);
+
+  return features;
 }
 
 }  // namespace dom_distiller
