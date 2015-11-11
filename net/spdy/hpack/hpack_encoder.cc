@@ -40,7 +40,8 @@ bool HpackEncoder::EncodeHeaderSet(const SpdyHeaderBlock& header_set,
       // a map.
       found_cookie = true;
       CookieToCrumbs(header, &regular_headers);
-    } else if (header.first[0] == kPseudoHeaderPrefix) {
+    } else if (!header.first.empty() &&
+               header.first[0] == kPseudoHeaderPrefix) {
       DecomposeRepresentation(header, &pseudo_headers);
     } else {
       DecomposeRepresentation(header, &regular_headers);
