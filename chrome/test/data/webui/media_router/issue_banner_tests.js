@@ -63,12 +63,12 @@ cr.define('issue_banner', function() {
           checkElementText(issue.title, 'title');
 
           checkElementText(loadTimeData.getString(
-              banner.issueActionTypeToButtonTextResource_[
+              banner.actionTypeToButtonTextResource_[
                   issue.defaultActionType]), 'default-button');
 
           if (issue.secondaryActionType) {
             checkElementText(loadTimeData.getString(
-                banner.issueActionTypeToButtonTextResource_[
+                banner.actionTypeToButtonTextResource_[
                     issue.secondaryActionType]), 'opt-button');
           }
         } else {

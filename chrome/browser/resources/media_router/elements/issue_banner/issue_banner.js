@@ -9,6 +9,21 @@ Polymer({
 
   properties: {
     /**
+     * Maps an issue action type to the resource identifier of the text shown
+     * in the action button.
+     * This is a property of issue-banner because it is used in tests. This
+     * property should always be set before |issue| is set or updated.
+     * @private {!Array<string>}
+     */
+    actionTypeToButtonTextResource_: {
+      type: Array,
+      readOnly: true,
+      value: function() {
+        return ['dismissButton', 'learnMoreButton'];
+      },
+    },
+
+    /**
      * The text shown in the default action button.
      * @private {string}
      */
@@ -25,20 +40,6 @@ Polymer({
       type: Object,
       value: null,
       observer: 'updateActionButtonText_',
-    },
-
-    /**
-     * Maps an issue action type to the resource identifier of the text shown
-     * in the action button.
-     * This is a property of issue-banner because it is used in tests.
-     * @private {!Array<string>}
-     */
-    issueActionTypeToButtonTextResource_: {
-      type: Array,
-      readOnly: true,
-      value: function() {
-        return ['dismissButton', 'learnMoreButton'];
-      },
     },
 
     /**
@@ -122,19 +123,16 @@ Polymer({
    * @private
    */
   updateActionButtonText_: function() {
-    if (!this.issueActionTypeToButtonTextResource_)
-      return;
-
     var defaultText = '';
     var secondaryText = '';
     if (this.issue) {
       defaultText = loadTimeData.getString(
-          this.issueActionTypeToButtonTextResource_[
+          this.actionTypeToButtonTextResource_[
           this.issue.defaultActionType]);
 
       if (this.issue.secondaryActionType) {
         secondaryText = loadTimeData.getString(
-            this.issueActionTypeToButtonTextResource_[
+            this.actionTypeToButtonTextResource_[
             this.issue.secondaryActionType]);
       }
     }
