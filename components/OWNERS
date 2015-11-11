@@ -330,7 +330,6 @@ per-file variations.gypi=stevet@chromium.org
 per-file version_ui.gypi=bauerb@chromium.org
 per-file version_ui.gypi=dbeam@chromium.org
 per-file version_ui.gypi=estade@chromium.org
-per-file version_ui.gypi=jhawkins@chromium.org
 per-file version_ui.gypi=nkostylev@chromium.org
 per-file version_ui.gypi=pam@chromium.org
 per-file version_ui.gypi=xiyuan@chromium.org

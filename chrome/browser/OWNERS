@@ -5,7 +5,6 @@ per-file about_flags.cc=*
 per-file browser_resources.grd=bauerb@chromium.org
 per-file browser_resources.grd=dbeam@chromium.org
 per-file browser_resources.grd=estade@chromium.org
-per-file browser_resources.grd=jhawkins@chromium.org
 per-file browser_resources.grd=nkostylev@chromium.org
 per-file browser_resources.grd=pam@chromium.org
 per-file browser_resources.grd=xiyuan@chromium.org
