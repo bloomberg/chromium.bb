@@ -11,7 +11,7 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/channel_info.h"
 #include "components/browser_sync/browser/profile_sync_service.h"
-#include "components/sync_driver/about_sync_util.h"
+#include "components/signin/core/browser/signin_manager_base.h"
 #include "components/sync_driver/about_sync_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_ui.h"
@@ -215,9 +215,10 @@ void SyncInternalsMessageHandler::HandleJsEvent(
 
 void SyncInternalsMessageHandler::SendAboutInfo() {
   ProfileSyncService* sync_service = GetProfileSyncService();
+  SigninManagerBase* signin = sync_service ? sync_service->signin() : nullptr;
   scoped_ptr<base::DictionaryValue> value =
       sync_driver::sync_ui_util::ConstructAboutInformation(
-          sync_service, sync_service->signin(), chrome::GetChannel());
+          sync_service, signin, chrome::GetChannel());
   web_ui()->CallJavascriptFunction(
       sync_driver::sync_ui_util::kDispatchEvent,
       base::StringValue(sync_driver::sync_ui_util::kOnAboutInfoUpdated),
