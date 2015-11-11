@@ -50,7 +50,7 @@ struct CONTENT_EXPORT ExplodedFrameState {
   base::NullableString16 state_object;
   std::vector<base::NullableString16> document_state;
   blink::WebHistoryScrollRestorationType scroll_restoration_type;
-  gfx::PointF pinch_viewport_scroll_offset;
+  gfx::PointF visual_viewport_scroll_offset;
   gfx::Point scroll_offset;
   int64 item_sequence_number;
   int64 document_sequence_number;

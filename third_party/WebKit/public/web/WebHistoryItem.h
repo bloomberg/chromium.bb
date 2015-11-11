@@ -87,11 +87,6 @@ public:
     BLINK_EXPORT WebFloatPoint visualViewportScrollOffset() const;
     BLINK_EXPORT void setVisualViewportScrollOffset(const WebFloatPoint&);
 
-    // TODO(bokan): Renamed to the above versions. Remove once chromium
-    // callers are renamed.
-    BLINK_EXPORT WebFloatPoint pinchViewportScrollOffset() const;
-    BLINK_EXPORT void setPinchViewportScrollOffset(const WebFloatPoint&);
-
     BLINK_EXPORT WebPoint scrollOffset() const;
     BLINK_EXPORT void setScrollOffset(const WebPoint&);
 

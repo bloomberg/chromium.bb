@@ -105,16 +105,6 @@ void WebHistoryItem::setVisualViewportScrollOffset(const WebFloatPoint& scrollOf
     m_private->setVisualViewportScrollPoint(scrollOffset);
 }
 
-WebFloatPoint WebHistoryItem::pinchViewportScrollOffset() const
-{
-    return visualViewportScrollOffset();
-}
-
-void WebHistoryItem::setPinchViewportScrollOffset(const WebFloatPoint& scrollOffset)
-{
-    setVisualViewportScrollOffset(scrollOffset);
-}
-
 WebPoint WebHistoryItem::scrollOffset() const
 {
     return m_private->scrollPoint();

@@ -495,8 +495,8 @@ void WriteFrameState(
   WriteInteger64(state.item_sequence_number, obj);
   WriteInteger64(state.document_sequence_number, obj);
   WriteInteger(state.referrer_policy, obj);
-  WriteReal(state.pinch_viewport_scroll_offset.x(), obj);
-  WriteReal(state.pinch_viewport_scroll_offset.y(), obj);
+  WriteReal(state.visual_viewport_scroll_offset.x(), obj);
+  WriteReal(state.visual_viewport_scroll_offset.y(), obj);
 
   WriteInteger(state.scroll_restoration_type, obj);
 
@@ -566,9 +566,9 @@ void ReadFrameState(SerializeObject* obj, bool is_top,
   if (obj->version >= 20) {
     double x = ReadReal(obj);
     double y = ReadReal(obj);
-    state->pinch_viewport_scroll_offset = gfx::PointF(x, y);
+    state->visual_viewport_scroll_offset = gfx::PointF(x, y);
   } else {
-    state->pinch_viewport_scroll_offset = gfx::PointF(-1, -1);
+    state->visual_viewport_scroll_offset = gfx::PointF(-1, -1);
   }
 
   if (obj->version >= 22) {
@@ -708,7 +708,7 @@ void ExplodedFrameState::assign(const ExplodedFrameState& other) {
   state_object = other.state_object;
   document_state = other.document_state;
   scroll_restoration_type = other.scroll_restoration_type;
-  pinch_viewport_scroll_offset = other.pinch_viewport_scroll_offset;
+  visual_viewport_scroll_offset = other.visual_viewport_scroll_offset;
   scroll_offset = other.scroll_offset;
   item_sequence_number = other.item_sequence_number;
   document_sequence_number = other.document_sequence_number;

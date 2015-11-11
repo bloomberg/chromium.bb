@@ -42,7 +42,7 @@ void RecursivelyRemovePasswordData(ExplodedFrameState* state) {
 
 void RecursivelyRemoveScrollOffset(ExplodedFrameState* state) {
   state->scroll_offset = gfx::Point();
-  state->pinch_viewport_scroll_offset = gfx::PointF();
+  state->visual_viewport_scroll_offset = gfx::PointF();
 }
 
 void RecursivelyRemoveReferrer(ExplodedFrameState* state) {
