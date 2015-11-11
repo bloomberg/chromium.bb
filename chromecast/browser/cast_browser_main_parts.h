@@ -29,6 +29,7 @@ class CastBrowserMainParts : public content::BrowserMainParts {
   // content::BrowserMainParts implementation:
   void PreMainMessageLoopStart() override;
   void PostMainMessageLoopStart() override;
+  void ToolkitInitialized() override;
   int PreCreateThreads() override;
   void PreMainMessageLoopRun() override;
   bool MainMessageLoopRun(int* result_code) override;
