@@ -10,6 +10,7 @@
 #include "chrome/browser/media/router/media_router.h"
 #include "chrome/browser/media/router/media_router_factory.h"
 #include "chrome/browser/media/router/media_source.h"
+#include "chrome/browser/media/router/presentation_request.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
@@ -35,16 +36,17 @@ MediaRouterDialogControllerAndroid::GetOrCreateForWebContents(
 
 void MediaRouterDialogControllerAndroid::OnSinkSelected(
     JNIEnv* env, jobject obj, jstring jsink_id) {
-  scoped_ptr<CreatePresentationSessionRequest>
-      request(TakePresentationRequest());
-
-  const std::string& source_id = request->media_source().id();
-  const GURL& origin = request->frame_url().GetOrigin();
+  scoped_ptr<CreatePresentationConnectionRequest> create_connection_request =
+      TakeCreateConnectionRequest();
+  const PresentationRequest& presentation_request =
+      create_connection_request->presentation_request();
+  const MediaSource::Id source_id = presentation_request.GetMediaSource().id();
+  const GURL origin = presentation_request.frame_url().GetOrigin();
 
   std::vector<MediaRouteResponseCallback> route_response_callbacks;
   route_response_callbacks.push_back(
-      base::Bind(&CreatePresentationSessionRequest::HandleRouteResponse,
-                 base::Passed(&request)));
+      base::Bind(&CreatePresentationConnectionRequest::HandleRouteResponse,
+                 base::Passed(&create_connection_request)));
 
   MediaRouter* router = MediaRouterFactory::GetApiForBrowserContext(
       initiator()->GetBrowserContext());
@@ -76,9 +78,8 @@ void MediaRouterDialogControllerAndroid::OnDialogCancelled(
 }
 
 void MediaRouterDialogControllerAndroid::CancelPresentationRequest() {
-  scoped_ptr<CreatePresentationSessionRequest> request(
-      TakePresentationRequest());
-
+  scoped_ptr<CreatePresentationConnectionRequest> request =
+      TakeCreateConnectionRequest();
   DCHECK(request);
 
   request->InvokeErrorCallback(content::PresentationError(
@@ -109,10 +110,10 @@ MediaRouterDialogControllerAndroid::~MediaRouterDialogControllerAndroid() {
 void MediaRouterDialogControllerAndroid::CreateMediaRouterDialog() {
   JNIEnv* env = base::android::AttachCurrentThread();
 
-  const MediaSource::Id& media_source_id =
-      presentation_request()->media_source().id();
+  const MediaSource::Id source_id =
+      create_connection_request()->presentation_request().GetMediaSource().id();
   ScopedJavaLocalRef<jstring> jsource_urn =
-      base::android::ConvertUTF8ToJavaString(env, media_source_id);
+      base::android::ConvertUTF8ToJavaString(env, source_id);
 
   // If it's a single route with the same source, show the controller dialog
   // instead of the device picker.
@@ -120,7 +121,7 @@ void MediaRouterDialogControllerAndroid::CreateMediaRouterDialog() {
   // PresentationServiceDelegateImpl: if the route exists for the same frame
   // and tab, show the route controller dialog, if not, show the device picker.
   if (single_existing_route_.get() &&
-      single_existing_route_->media_source().id() == media_source_id) {
+      single_existing_route_->media_source().id() == source_id) {
     ScopedJavaLocalRef<jstring> jmedia_route_id =
         base::android::ConvertUTF8ToJavaString(
             env, single_existing_route_->media_route_id());

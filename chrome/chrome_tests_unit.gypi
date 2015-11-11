@@ -1432,7 +1432,7 @@
       'browser/supervised_user/legacy/supervised_user_sync_service_unittest.cc',
     ],
     'chrome_unit_tests_media_router_sources': [
-      'browser/media/router/create_presentation_session_request_unittest.cc',
+      'browser/media/router/create_presentation_connection_request_unittest.cc',
       'browser/media/router/issue_manager_unittest.cc',
       'browser/media/router/issue_unittest.cc',
       'browser/media/router/media_route_unittest.cc',
@@ -1440,6 +1440,7 @@
       'browser/media/router/media_source_helper_unittest.cc',
       'browser/media/router/media_source_unittest.cc',
       'browser/media/router/presentation_media_sinks_observer_unittest.cc',
+      'browser/media/router/presentation_request_unittest.cc',
       'browser/media/router/presentation_service_delegate_impl_unittest.cc',
       'browser/media/router/presentation_session_state_observer_unittest.cc',
     ],

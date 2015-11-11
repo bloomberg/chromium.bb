@@ -24,6 +24,7 @@
 using ::testing::_;
 using ::testing::Mock;
 using ::testing::Return;
+using ::testing::SaveArg;
 using ::testing::StrictMock;
 
 namespace media_router {
@@ -36,11 +37,12 @@ class MockDelegateObserver
                void(const content::PresentationSessionInfo&));
 };
 
-class MockDefaultMediaSourceObserver
-    : public PresentationServiceDelegateImpl::DefaultMediaSourceObserver {
+class MockDefaultPresentationRequestObserver
+    : public PresentationServiceDelegateImpl::
+          DefaultPresentationRequestObserver {
  public:
-  MOCK_METHOD2(OnDefaultMediaSourceChanged,
-               void(const MediaSource&, const GURL&));
+  MOCK_METHOD1(OnDefaultPresentationChanged, void(const PresentationRequest&));
+  MOCK_METHOD0(OnDefaultPresentationRemoved, void());
 };
 
 class PresentationServiceDelegateImplTest
@@ -55,6 +57,9 @@ class PresentationServiceDelegateImplTest
     delegate_impl_->SetMediaRouterForTest(&router_);
   }
 
+  MOCK_METHOD1(OnDefaultPresentationStarted,
+               void(const content::PresentationSessionInfo& session_info));
+
   PresentationServiceDelegateImpl* delegate_impl_;
   MockMediaRouter router_;
 };
@@ -62,8 +67,8 @@ class PresentationServiceDelegateImplTest
 TEST_F(PresentationServiceDelegateImplTest, AddScreenAvailabilityListener) {
   ON_CALL(router_, RegisterMediaSinksObserver(_)).WillByDefault(Return(true));
 
-  std::string presentation_url1("http://url1");
-  std::string presentation_url2("http://url2");
+  std::string presentation_url1("http://url1.fakeUrl");
+  std::string presentation_url2("http://url2.fakeUrl");
   MediaSource source1 = MediaSourceForPresentationUrl(presentation_url1);
   MediaSource source2 = MediaSourceForPresentationUrl(presentation_url2);
   MockScreenAvailabilityListener listener1(presentation_url1);
@@ -98,7 +103,7 @@ TEST_F(PresentationServiceDelegateImplTest, AddScreenAvailabilityListener) {
 TEST_F(PresentationServiceDelegateImplTest, AddSameListenerTwice) {
   ON_CALL(router_, RegisterMediaSinksObserver(_)).WillByDefault(Return(true));
 
-  std::string presentation_url1("http://url1");
+  std::string presentation_url1("http://url1.fakeUrl");
   MediaSource source1(MediaSourceForPresentationUrl(presentation_url1));
   MockScreenAvailabilityListener listener1(presentation_url1);
   int render_process_id = 1;
@@ -119,76 +124,144 @@ TEST_F(PresentationServiceDelegateImplTest, AddSameListenerTwice) {
       render_process_id, render_frame_id, source1.id()));
 }
 
+// TODO(imcheng): Add a test to set default presentation URL in a different
+// RenderFrameHost and verify that it works.
 TEST_F(PresentationServiceDelegateImplTest, SetDefaultPresentationUrl) {
-  content::WebContentsTester::For(web_contents())
-      ->NavigateAndCommit(GURL("http://www.google.com"));
+  EXPECT_FALSE(delegate_impl_->HasDefaultPresentationRequest());
+
+  GURL frame_url("http://www.google.com");
+  content::WebContentsTester::For(web_contents())->NavigateAndCommit(frame_url);
   content::RenderFrameHost* main_frame = web_contents()->GetMainFrame();
   ASSERT_TRUE(main_frame);
   int render_process_id = main_frame->GetProcess()->GetID();
   int routing_id = main_frame->GetRoutingID();
 
-  std::string presentation_url1("http://foo");
+  auto callback = base::Bind(
+      &PresentationServiceDelegateImplTest::OnDefaultPresentationStarted,
+      base::Unretained(this));
+  std::string presentation_url1("http://foo.fakeUrl");
   delegate_impl_->SetDefaultPresentationUrl(render_process_id, routing_id,
-                                            presentation_url1);
-  EXPECT_TRUE(delegate_impl_->default_source().Equals(
-      MediaSourceForPresentationUrl(presentation_url1)));
-
-  // Remove default presentation URL.
-  delegate_impl_->SetDefaultPresentationUrl(render_process_id, routing_id, "");
-  EXPECT_TRUE(delegate_impl_->default_source().Empty());
+                                            presentation_url1, callback);
+  ASSERT_TRUE(delegate_impl_->HasDefaultPresentationRequest());
+  PresentationRequest request1 =
+      delegate_impl_->GetDefaultPresentationRequest();
+  EXPECT_EQ(presentation_url1, request1.presentation_url());
+  EXPECT_EQ(RenderFrameHostId(render_process_id, routing_id),
+            request1.render_frame_host_id());
+  EXPECT_EQ(frame_url, request1.frame_url());
 
   // Set to a new default presentation URL
   std::string presentation_url2("https://youtube.com");
   delegate_impl_->SetDefaultPresentationUrl(render_process_id, routing_id,
-                                            presentation_url2);
-  EXPECT_TRUE(delegate_impl_->default_source().Equals(
-      MediaSourceForPresentationUrl(presentation_url2)));
+                                            presentation_url2, callback);
+  ASSERT_TRUE(delegate_impl_->HasDefaultPresentationRequest());
+  PresentationRequest request2 =
+      delegate_impl_->GetDefaultPresentationRequest();
+  EXPECT_EQ(presentation_url2, request2.presentation_url());
+  EXPECT_EQ(RenderFrameHostId(render_process_id, routing_id),
+            request2.render_frame_host_id());
+  EXPECT_EQ(frame_url, request2.frame_url());
+
+  // Remove default presentation URL.
+  delegate_impl_->SetDefaultPresentationUrl(render_process_id, routing_id, "",
+                                            callback);
+  EXPECT_FALSE(delegate_impl_->HasDefaultPresentationRequest());
 }
 
-TEST_F(PresentationServiceDelegateImplTest, DefaultMediaSourceObserver) {
-  content::WebContentsTester::For(web_contents())
-      ->NavigateAndCommit(GURL("http://www.google.com"));
+TEST_F(PresentationServiceDelegateImplTest, DefaultPresentationUrlCallback) {
   content::RenderFrameHost* main_frame = web_contents()->GetMainFrame();
   ASSERT_TRUE(main_frame);
   int render_process_id = main_frame->GetProcess()->GetID();
   int routing_id = main_frame->GetRoutingID();
-  StrictMock<MockDefaultMediaSourceObserver> observer1;
-  StrictMock<MockDefaultMediaSourceObserver> observer2;
-  delegate_impl_->AddDefaultMediaSourceObserver(&observer1);
-  delegate_impl_->AddDefaultMediaSourceObserver(&observer2);
-  std::string url1("http://foo");
-  EXPECT_CALL(observer1, OnDefaultMediaSourceChanged(
-                             Equals(MediaSourceForPresentationUrl(url1)),
-                             GURL("http://www.google.com"))).Times(1);
-  EXPECT_CALL(observer2, OnDefaultMediaSourceChanged(
-                             Equals(MediaSourceForPresentationUrl(url1)),
-                             GURL("http://www.google.com"))).Times(1);
-  delegate_impl_->SetDefaultPresentationUrl(render_process_id,
-                                            routing_id, url1);
 
-  EXPECT_TRUE(Mock::VerifyAndClearExpectations(&observer1));
-  EXPECT_TRUE(Mock::VerifyAndClearExpectations(&observer2));
+  auto callback = base::Bind(
+      &PresentationServiceDelegateImplTest::OnDefaultPresentationStarted,
+      base::Unretained(this));
+  std::string presentation_url1("http://foo.fakeUrl");
+  delegate_impl_->SetDefaultPresentationUrl(render_process_id, routing_id,
+                                            presentation_url1, callback);
 
-  delegate_impl_->RemoveDefaultMediaSourceObserver(&observer2);
+  ASSERT_TRUE(delegate_impl_->HasDefaultPresentationRequest());
+  PresentationRequest request = delegate_impl_->GetDefaultPresentationRequest();
+
+  // Should not trigger callback since route response is error.
+  delegate_impl_->OnRouteResponse(request, nullptr, "", "Error");
+  EXPECT_TRUE(Mock::VerifyAndClearExpectations(this));
+
+  // Should not trigger callback since request doesn't match.
+  std::string presentation_url2("http://bar.fakeUrl");
+  PresentationRequest different_request(RenderFrameHostId(100, 200),
+                                        presentation_url2,
+                                        GURL("http://anotherFrameUrl.fakeUrl"));
+  MediaRoute different_route("differentRouteId",
+                             MediaSourceForPresentationUrl(presentation_url2),
+                             "mediaSinkId", "", true, "", true);
+  delegate_impl_->OnRouteResponse(different_request, &different_route,
+                                  "differentPresentationId", "");
+  EXPECT_TRUE(Mock::VerifyAndClearExpectations(this));
+
+  // Should trigger callback since request matches.
+  MediaRoute route("routeId", MediaSourceForPresentationUrl(presentation_url1),
+                   "mediaSinkId", "", true, "", true);
+  EXPECT_CALL(*this, OnDefaultPresentationStarted(_)).Times(1);
+  delegate_impl_->OnRouteResponse(request, &route, "presentationId", "");
+}
+
+TEST_F(PresentationServiceDelegateImplTest,
+       DefaultPresentationRequestObserver) {
+  auto callback = base::Bind(
+      &PresentationServiceDelegateImplTest::OnDefaultPresentationStarted,
+      base::Unretained(this));
+
+  StrictMock<MockDefaultPresentationRequestObserver> observer;
+  delegate_impl_->AddDefaultPresentationRequestObserver(&observer);
+
+  GURL frame_url("http://www.google.com");
+  content::WebContentsTester::For(web_contents())->NavigateAndCommit(frame_url);
+  content::RenderFrameHost* main_frame = web_contents()->GetMainFrame();
+  ASSERT_TRUE(main_frame);
+  int render_process_id = main_frame->GetProcess()->GetID();
+  int routing_id = main_frame->GetRoutingID();
+
+  std::string url1("http://foo.fakeUrl");
+  PresentationRequest observed_request1(
+      RenderFrameHostId(render_process_id, routing_id), url1, frame_url);
+  EXPECT_CALL(observer, OnDefaultPresentationChanged(Equals(observed_request1)))
+      .Times(1);
+  delegate_impl_->SetDefaultPresentationUrl(render_process_id, routing_id, url1,
+                                            callback);
+
+  ASSERT_TRUE(delegate_impl_->HasDefaultPresentationRequest());
+  PresentationRequest request1 =
+      delegate_impl_->GetDefaultPresentationRequest();
+  EXPECT_TRUE(request1.Equals(observed_request1));
+
+  EXPECT_TRUE(Mock::VerifyAndClearExpectations(&observer));
+
   std::string url2("http://youtube.com");
-  EXPECT_CALL(observer1, OnDefaultMediaSourceChanged(
-                             Equals(MediaSourceForPresentationUrl(url2)),
-                             GURL("http://www.google.com"))).Times(1);
-  delegate_impl_->SetDefaultPresentationUrl(render_process_id,
-                                            routing_id, url2);
+  PresentationRequest observed_request2(
+      RenderFrameHostId(render_process_id, routing_id), url2, frame_url);
+  EXPECT_CALL(observer, OnDefaultPresentationChanged(Equals(observed_request2)))
+      .Times(1);
+  delegate_impl_->SetDefaultPresentationUrl(render_process_id, routing_id, url2,
+                                            callback);
+  ASSERT_TRUE(delegate_impl_->HasDefaultPresentationRequest());
+  PresentationRequest request2 =
+      delegate_impl_->GetDefaultPresentationRequest();
+  EXPECT_TRUE(request2.Equals(observed_request2));
 
-  EXPECT_TRUE(Mock::VerifyAndClearExpectations(&observer1));
+  EXPECT_TRUE(Mock::VerifyAndClearExpectations(&observer));
+
   // Remove default presentation URL.
-  EXPECT_CALL(observer1, OnDefaultMediaSourceChanged(
-                             Equals(MediaSource()),
-                             GURL("http://www.google.com"))).Times(1);
-  delegate_impl_->SetDefaultPresentationUrl(render_process_id, routing_id, "");
+  EXPECT_CALL(observer, OnDefaultPresentationRemoved()).Times(1);
+  delegate_impl_->SetDefaultPresentationUrl(render_process_id, routing_id, "",
+                                            callback);
 }
 
 TEST_F(PresentationServiceDelegateImplTest, Reset) {
   ON_CALL(router_, RegisterMediaSinksObserver(_)).WillByDefault(Return(true));
 
-  std::string presentation_url1("http://url1");
+  std::string presentation_url1("http://url1.fakeUrl");
   MediaSource source = MediaSourceForPresentationUrl(presentation_url1);
   MockScreenAvailabilityListener listener1(presentation_url1);
   int render_process_id = 1;
@@ -225,7 +298,7 @@ TEST_F(PresentationServiceDelegateImplTest, DelegateObservers) {
 TEST_F(PresentationServiceDelegateImplTest, SinksObserverCantRegister) {
   ON_CALL(router_, RegisterMediaSinksObserver(_)).WillByDefault(Return(false));
 
-  const std::string presentation_url("http://url1");
+  const std::string presentation_url("http://url1.fakeUrl");
   MockScreenAvailabilityListener listener(presentation_url);
   const int render_process_id = 10;
   const int render_frame_id = 1;
