@@ -2,15 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.content.browser;
+package org.chromium.chrome.browser.media.cdm;
 
 import org.chromium.base.annotations.CalledByNative;
-import org.chromium.base.annotations.JNINamespace;
 
 /**
  * A wrapper of the android MediaDrmCredentialManager
  */
-@JNINamespace("content")
 public class MediaDrmCredentialManager {
 
     /**

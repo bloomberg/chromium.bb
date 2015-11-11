@@ -92,6 +92,7 @@
 #include "chrome/browser/interests/android/interests_service.h"
 #include "chrome/browser/invalidation/invalidation_service_factory_android.h"
 #include "chrome/browser/lifetime/application_lifetime_android.h"
+#include "chrome/browser/media/android/cdm/media_drm_credential_manager.h"
 #include "chrome/browser/media/android/remote/record_cast_action.h"
 #include "chrome/browser/media/android/remote/remote_media_player_bridge.h"
 #include "chrome/browser/media/android/router/media_router_android.h"
@@ -279,6 +280,8 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"LayerTitleCache", chrome::android::RegisterLayerTitleCache},
     {"LocationSettings", LocationSettingsImpl::Register},
     {"LogoBridge", RegisterLogoBridge},
+    {"MediaDrmCredentialManager",
+     MediaDrmCredentialManager::RegisterMediaDrmCredentialManager},
     {"MostVisitedSites", MostVisitedSites::Register},
     {"NativeInfoBar", RegisterNativeInfoBar},
     {"ExternalEstimateProviderAndroid",

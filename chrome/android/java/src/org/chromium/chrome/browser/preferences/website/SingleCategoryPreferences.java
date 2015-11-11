@@ -21,6 +21,8 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.media.cdm.MediaDrmCredentialManager;
+import org.chromium.chrome.browser.media.cdm.MediaDrmCredentialManager.MediaDrmCredentialManagerCallback;
 import org.chromium.chrome.browser.preferences.ChromeBaseCheckBoxPreference;
 import org.chromium.chrome.browser.preferences.ChromeBasePreference;
 import org.chromium.chrome.browser.preferences.ChromeSwitchPreference;
@@ -31,8 +33,6 @@ import org.chromium.chrome.browser.preferences.ManagedPreferencesUtils;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.ProtectedContentResetCredentialConfirmDialogFragment;
 import org.chromium.chrome.browser.widget.TintedDrawable;
-import org.chromium.content.browser.MediaDrmCredentialManager;
-import org.chromium.content.browser.MediaDrmCredentialManager.MediaDrmCredentialManagerCallback;
 import org.chromium.ui.widget.Toast;
 
 import java.util.ArrayList;

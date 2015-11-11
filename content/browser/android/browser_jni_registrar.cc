@@ -9,7 +9,6 @@
 #include "content/browser/android/browser_startup_controller.h"
 #include "content/browser/android/child_process_launcher_android.h"
 #include "content/browser/android/content_video_view.h"
-#include "content/browser/media/android/media_drm_credential_manager.h"
 #include "content/browser/media/android/media_resource_getter_impl.h"
 #include "content/browser/media/android/media_session.h"
 #include "content/browser/mojo/service_registrar_android.h"
@@ -52,8 +51,6 @@ base::android::RegistrationMethod kContentRegisteredMethods[] = {
     {"ChildProcessLauncher", content::RegisterChildProcessLauncher},
     {"ContentVideoView", content::ContentVideoView::RegisterContentVideoView},
     {"CoreImpl", mojo::android::RegisterCoreImpl},
-    {"MediaDrmCredentialManager",
-     content::MediaDrmCredentialManager::RegisterMediaDrmCredentialManager},
     {"MediaResourceGetterImpl",
      content::MediaResourceGetterImpl::RegisterMediaResourceGetter},
     {"MediaSession", content::MediaSession::RegisterMediaSession},

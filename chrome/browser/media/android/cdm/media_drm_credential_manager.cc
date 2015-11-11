@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/media/android/media_drm_credential_manager.h"
+#include "chrome/browser/media/android/cdm/media_drm_credential_manager.h"
 
 #include "base/android/jni_android.h"
 #include "base/android/scoped_java_ref.h"
@@ -25,17 +25,15 @@ void MediaDrmCredentialManagerCallback(
     const ScopedJavaGlobalRef<jobject>& j_media_drm_credential_manager_callback,
     bool succeeded) {
   JNIEnv* env = base::android::AttachCurrentThread();
-  content::Java_MediaDrmCredentialManagerCallback_onCredentialResetFinished(
+  Java_MediaDrmCredentialManagerCallback_onCredentialResetFinished(
       env, j_media_drm_credential_manager_callback.obj(), succeeded);
 }
 
 }  // namespace
 
-namespace content {
+MediaDrmCredentialManager::MediaDrmCredentialManager() {}
 
-MediaDrmCredentialManager::MediaDrmCredentialManager() {};
-
-MediaDrmCredentialManager::~MediaDrmCredentialManager() {};
+MediaDrmCredentialManager::~MediaDrmCredentialManager() {}
 
 // static
 MediaDrmCredentialManager* MediaDrmCredentialManager::GetInstance() {
@@ -115,5 +113,3 @@ bool MediaDrmCredentialManager::ResetCredentialsInternal(
 bool MediaDrmCredentialManager::RegisterMediaDrmCredentialManager(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
-
-}  // namespace content

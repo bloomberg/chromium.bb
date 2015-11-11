@@ -28,7 +28,6 @@
     'public/android/java/src/org/chromium/content/browser/input/PopupTouchHandleDrawable.java',
     'public/android/java/src/org/chromium/content/browser/InterstitialPageDelegateAndroid.java',
     'public/android/java/src/org/chromium/content/browser/LocationProviderAdapter.java',
-    'public/android/java/src/org/chromium/content/browser/MediaDrmCredentialManager.java',
     'public/android/java/src/org/chromium/content/browser/MediaSession.java',
     'public/android/java/src/org/chromium/content/browser/MediaResourceGetter.java',
     'public/android/java/src/org/chromium/content/browser/MediaThrottler.java',

@@ -2,17 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_MEDIA_ANDROID_MEDIA_DRM_CREDENTIAL_MANAGER_H_
-#define CONTENT_BROWSER_MEDIA_ANDROID_MEDIA_DRM_CREDENTIAL_MANAGER_H_
+#ifndef CHROME_BROWSER_MEDIA_ANDROID_CDM_MEDIA_DRM_CREDENTIAL_MANAGER_H_
+#define CHROME_BROWSER_MEDIA_ANDROID_CDM_MEDIA_DRM_CREDENTIAL_MANAGER_H_
 
 #include <jni.h>
 #include <string>
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "media/base/android/media_drm_bridge.h"
-
-namespace content {
 
 // This class manages the media DRM credentials on Android.
 class MediaDrmCredentialManager {
@@ -60,6 +59,4 @@ class MediaDrmCredentialManager {
   DISALLOW_COPY_AND_ASSIGN(MediaDrmCredentialManager);
 };
 
-}  // namespace content
-
-#endif  // CONTENT_BROWSER_MEDIA_ANDROID_MEDIA_DRM_CREDENTIAL_MANAGER_H_
+#endif  // CHROME_BROWSER_MEDIA_ANDROID_CDM_MEDIA_DRM_CREDENTIAL_MANAGER_H_
