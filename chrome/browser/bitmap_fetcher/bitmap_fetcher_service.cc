@@ -118,8 +118,10 @@ void BitmapFetcherService::Prefetch(const GURL& url) {
     EnsureFetcherForUrl(url);
 }
 
-chrome::BitmapFetcher* BitmapFetcherService::CreateFetcher(const GURL& url) {
-  chrome::BitmapFetcher* new_fetcher = new chrome::BitmapFetcher(url, this);
+scoped_ptr<chrome::BitmapFetcher> BitmapFetcherService::CreateFetcher(
+    const GURL& url) {
+  scoped_ptr<chrome::BitmapFetcher> new_fetcher(
+      new chrome::BitmapFetcher(url, this));
 
   new_fetcher->Init(
       context_->GetRequestContext(),
@@ -136,32 +138,29 @@ const chrome::BitmapFetcher* BitmapFetcherService::EnsureFetcherForUrl(
   if (fetcher)
     return fetcher;
 
-  chrome::BitmapFetcher* new_fetcher = CreateFetcher(url);
-  active_fetchers_.push_back(new_fetcher);
-  return new_fetcher;
+  scoped_ptr<chrome::BitmapFetcher> new_fetcher = CreateFetcher(url);
+  active_fetchers_.push_back(new_fetcher.Pass());
+  return active_fetchers_.back().get();
 }
 
 const chrome::BitmapFetcher* BitmapFetcherService::FindFetcherForUrl(
     const GURL& url) {
-  for (BitmapFetchers::iterator iter = active_fetchers_.begin();
-       iter != active_fetchers_.end();
-       ++iter) {
-    if (url == (*iter)->url())
-      return *iter;
+  for (auto it = active_fetchers_.begin(); it != active_fetchers_.end(); ++it) {
+    if (url == (*it)->url())
+      return it->get();
   }
-  return NULL;
+  return nullptr;
 }
 
 void BitmapFetcherService::RemoveFetcher(const chrome::BitmapFetcher* fetcher) {
-  for (BitmapFetchers::iterator iter = active_fetchers_.begin();
-       iter != active_fetchers_.end();
-       ++iter) {
-    if (fetcher == (*iter)) {
-      active_fetchers_.erase(iter);
-      return;
-    }
+  auto it = active_fetchers_.begin();
+  for (; it != active_fetchers_.end(); ++it) {
+    if (it->get() == fetcher)
+      break;
   }
-  NOTREACHED();  // RemoveFetcher should always result in removal.
+  // RemoveFetcher should always result in removal.
+  DCHECK(it != active_fetchers_.end());
+  active_fetchers_.erase(it);
 }
 
 void BitmapFetcherService::OnFetchComplete(const GURL& url,

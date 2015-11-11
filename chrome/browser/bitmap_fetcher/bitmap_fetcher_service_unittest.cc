@@ -42,8 +42,8 @@ class TestService : public BitmapFetcherService {
 
   // Create a fetcher, but don't start downloading. That allows side-stepping
   // the decode step, which requires a utility process.
-  chrome::BitmapFetcher* CreateFetcher(const GURL& url) override {
-    return new chrome::BitmapFetcher(url, this);
+  scoped_ptr<chrome::BitmapFetcher> CreateFetcher(const GURL& url) override {
+    return make_scoped_ptr(new chrome::BitmapFetcher(url, this));
   }
 };
 
@@ -66,7 +66,8 @@ class BitmapFetcherServiceTest : public testing::Test,
   const ScopedVector<BitmapFetcherRequest>& requests() const {
     return service_->requests_;
   }
-  const ScopedVector<chrome::BitmapFetcher>& active_fetchers() const {
+  const std::vector<scoped_ptr<chrome::BitmapFetcher>>& active_fetchers()
+      const {
     return service_->active_fetchers_;
   }
   size_t cache_size() const { return service_->cache_.size(); }
