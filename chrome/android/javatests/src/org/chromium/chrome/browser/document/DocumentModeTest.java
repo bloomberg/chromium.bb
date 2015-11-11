@@ -10,6 +10,7 @@ import android.app.PendingIntent;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
+import android.test.FlakyTest;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.text.TextUtils;
 import android.view.View;
@@ -616,7 +617,11 @@ public class DocumentModeTest extends DocumentModeTestBase {
      * Tests that tabs opened via window.open() that have huge URLs load properly, even without the
      * URL in the Intent.
      */
-    @MediumTest
+    /*
+     * Bug: http://crbug/554487
+     * @MediumTest
+     */
+    @FlakyTest
     public void testBehemothUrlWindowOpen() throws Exception {
         Intent lastIntent = performNewWindowTest(
                 HUGE_URL_PAGE, "behemoth URL page", true, "behemoth result", true);
