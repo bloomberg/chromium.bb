@@ -14,7 +14,7 @@ file. All content written to this directory will be uploaded upon termination
 and the .isolated file describing this directory will be printed to stdout.
 """
 
-__version__ = '0.5.4'
+__version__ = '0.5.5'
 
 import logging
 import optparse
@@ -406,11 +406,11 @@ def run_tha_test(
     print(
         '[run_isolated_out_hack]%s[/run_isolated_out_hack]' %
         tools.format_json(data, dense=True))
+    sys.stdout.flush()
   return result['exit_code'] or int(bool(result['internal_failure']))
 
 
 def main(args):
-  tools.disable_buffering()
   parser = logging_utils.OptionParserWithLogging(
       usage='%prog <options>',
       version=__version__,

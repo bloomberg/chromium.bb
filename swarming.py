@@ -5,7 +5,7 @@
 
 """Client tool to trigger tasks or retrieve results from a Swarming server."""
 
-__version__ = '0.8.3'
+__version__ = '0.8.4'
 
 import collections
 import datetime
@@ -1323,9 +1323,12 @@ def CMDreproduce(parser, args):
   if properties.get('env'):
     env = os.environ.copy()
     logging.info('env: %r', properties['env'])
-    env.update(
-        (i['key'].encode('utf-8'), i['value'].encode('utf-8'))
-        for i in properties['env'])
+    for i in properties['env']:
+      key = i['key'].encode('utf-8')
+      if not i['value']:
+        env.pop(key, None)
+      else:
+        env[key] = i['value'].encode('utf-8')
 
   if properties.get('inputs_ref'):
     # Create the tree.
