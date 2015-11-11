@@ -5,6 +5,10 @@
 .cr-dialog-frame.share-dialog-frame {
   -webkit-app-region: no-drag;
   background-color: white;
+  box-sizing: border-box;
+  max-height: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
   width: auto;
 }
 
@@ -12,7 +16,6 @@
   height: 100px;
   margin-top: 10px;
   min-width: 300px;
-  overflow: hidden;
   transition: height 200ms ease-out;
 }
 
