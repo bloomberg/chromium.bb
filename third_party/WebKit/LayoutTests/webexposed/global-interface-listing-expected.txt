@@ -2303,6 +2303,7 @@ interface HTMLLegendElement : HTMLElement
     method constructor
     setter align
 interface HTMLLinkElement : HTMLElement
+    getter as
     getter charset
     getter crossOrigin
     getter disabled
@@ -2318,6 +2319,7 @@ interface HTMLLinkElement : HTMLElement
     getter target
     getter type
     method constructor
+    setter as
     setter charset
     setter crossOrigin
     setter disabled

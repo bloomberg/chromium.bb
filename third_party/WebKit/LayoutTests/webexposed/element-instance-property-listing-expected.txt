@@ -661,6 +661,7 @@ html element li
     property type
     property value
 html element link
+    property as
     property charset
     property crossOrigin
     property disabled
