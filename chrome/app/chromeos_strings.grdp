@@ -4857,8 +4857,8 @@ Battery full
   <message name="IDS_STATUSBAR_LAYOUT_UNITED_KINGDOM_DVORAK" desc="In the language menu button, this shows the input mode [UK Dvorak keyboard].">
     UK Dvorak
   </message>
-  <message name="IDS_STATUSBAR_LAYOUT_SLOVAKIA" desc="In the language menu button, this shows the input mode [Slovakian keyboard].">
-    Slovakian
+  <message name="IDS_STATUSBAR_LAYOUT_SLOVAKIA" desc="In the language menu button, this shows the input mode [Slovak keyboard].">
+    Slovak
   </message>
   <message name="IDS_STATUSBAR_LAYOUT_RUSSIA" desc="In the language menu button, this shows the input mode [Russian keyboard].">
     Russian
@@ -5104,8 +5104,8 @@ Battery full
   <message name="IDS_IME_NAME_KEYBOARD_SERBIAN" desc="The input method name shows in system tray menu, this shows [Serbian keyboard].">
     Serbian keyboard
   </message>
-  <message name="IDS_IME_NAME_KEYBOARD_SLOVAKIAN" desc="The input method name shows in system tray menu, this shows [Slovakian keyboard].">
-    Slovakian keyboard
+  <message name="IDS_IME_NAME_KEYBOARD_SLOVAK" desc="The input method name shows in system tray menu, this shows [Slovak keyboard].">
+    Slovak keyboard
   </message>
   <message name="IDS_IME_NAME_KEYBOARD_SLOVENIAN" desc="The input method name shows in system tray menu, this shows [Slovenian keyboard].">
     Slovenian keyboard

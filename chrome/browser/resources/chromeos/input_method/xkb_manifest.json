@@ -718,7 +718,7 @@
       "input_view": "inputview.html?id=se.compact.qwerty&language=sv&passwordLayout=se.compact.qwerty&name=keyboard_swedish"
     },
     {
-      "name": "__MSG_keyboard_slovakian__",
+      "name": "__MSG_keyboard_slovak__",
       "type": "ime",
       "id": "xkb:sk::slo",
       "description": "",

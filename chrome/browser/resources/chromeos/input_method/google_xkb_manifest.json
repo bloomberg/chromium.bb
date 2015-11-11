@@ -847,7 +847,7 @@
       "options_page": "hmm_options.html?code=xkb:se::swe"
     },
     {
-      "name": "__MSG_keyboard_slovakian__",
+      "name": "__MSG_keyboard_slovak__",
       "type": "ime",
       "id": "xkb:sk::slo",
       "description": "",
