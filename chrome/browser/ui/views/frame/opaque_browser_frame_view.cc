@@ -650,90 +650,109 @@ void OpaqueBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) {
   int y = toolbar_bounds.y();
   int h = toolbar_bounds.height();
 
-  // Gross hack: We split the toolbar images into two pieces, since sometimes
-  // (popup mode) the toolbar isn't tall enough to show the whole image.  The
-  // split happens between the top shadow section and the bottom gradient
-  // section so that we never break the gradient.
-  int split_point = kFrameShadowThickness * 2;
+  const bool normal_mode = browser_view()->IsTabStripVisible();
+  if (normal_mode) {
+    // Normal mode toolbar.  We need to create a separate layer to hold the
+    // background, so we can mask off the corners before compositing onto the
+    // frame.
+    canvas->sk_canvas()->saveLayer(
+        gfx::RectToSkRect(gfx::Rect(x - kContentEdgeShadowThickness, y,
+                                    w + kContentEdgeShadowThickness * 2, h)),
+        nullptr);
+  }
+
+  // The top stroke is drawn using the IDR_CONTENT_TOP_XXX images, which overlay
+  // the toolbar.  The top 2 px of these images is the actual top stroke +
+  // shadow, and is partly transparent, so the toolbar background shouldn't be
+  // drawn over it.  Furthermore, the toolbar may be in popup mode, where we
+  // don't want rounded corners at all, and in that case dividing the toolbar
+  // assets at this point, plus manipulating the horizontal offset of the top
+  // pieces, lets us make the toolbar look almost as if it's intended to have
+  // square corners.
+  const int kPreMDToolbarTopEdgeExclusion = 2;
+  const int split_point = std::min(kPreMDToolbarTopEdgeExclusion, h);
   int bottom_y = y + split_point;
+  int bottom_edge_height = h - split_point;
+
   ui::ThemeProvider* tp = GetThemeProvider();
-  gfx::ImageSkia* toolbar_left = tp->GetImageSkiaNamed(
-      IDR_CONTENT_TOP_LEFT_CORNER);
-  int bottom_edge_height = std::min(toolbar_left->height(), h) - split_point;
+  if (bottom_edge_height) {
+    // Avoid theming popup or app windows.
+    gfx::ImageSkia* theme_toolbar = normal_mode ?
+        tp->GetImageSkiaNamed(IDR_THEME_TOOLBAR) :
+        ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+            IDR_THEME_TOOLBAR);
+    // Tile the toolbar image starting at the frame edge on the left and where
+    // the horizontal tabstrip is (or would be) on the top.
+    canvas->TileImageInt(
+        *theme_toolbar, x + GetThemeBackgroundXInset(),
+        bottom_y - GetTopInset(false) - Tab::GetYInsetForActiveTabBackground(),
+        x, bottom_y, w, bottom_edge_height);
+  }
 
-  // Split our canvas out so we can mask out the corners of the toolbar
-  // without masking out the frame.
-  canvas->SaveLayerAlpha(
-      255, gfx::Rect(x - kClientEdgeThickness, y, w + kClientEdgeThickness * 3,
-                     h));
-
-  // Paint the bottom rect.
-  canvas->FillRect(gfx::Rect(x, bottom_y, w, bottom_edge_height),
-                   tp->GetColor(ThemeProperties::COLOR_TOOLBAR));
-
-  // Tile the toolbar image starting at the frame edge on the left and where the
-  // horizontal tabstrip is (or would be) on the top.
-  gfx::ImageSkia* theme_toolbar = tp->GetImageSkiaNamed(IDR_THEME_TOOLBAR);
-  canvas->TileImageInt(
-      *theme_toolbar, x + GetThemeBackgroundXInset(),
-      bottom_y - GetTopInset(false) - Tab::GetYInsetForActiveTabBackground(),
-      x, bottom_y, w, theme_toolbar->height());
-
-  // Draw rounded corners for the tab.
-  gfx::ImageSkia* toolbar_left_mask =
-      tp->GetImageSkiaNamed(IDR_CONTENT_TOP_LEFT_CORNER_MASK);
-  gfx::ImageSkia* toolbar_right_mask =
-      tp->GetImageSkiaNamed(IDR_CONTENT_TOP_RIGHT_CORNER_MASK);
-
-  // We mask out the corners by using the DestinationIn transfer mode,
-  // which keeps the RGB pixels from the destination and the alpha from
-  // the source.
-  SkPaint paint;
-  paint.setXfermodeMode(SkXfermode::kDstIn_Mode);
-
-  // Mask the left edge.
-  int left_x = x - kContentEdgeShadowThickness;
-  canvas->DrawImageInt(*toolbar_left_mask, 0, 0, toolbar_left_mask->width(),
-                       split_point, left_x, y, toolbar_left_mask->width(),
-                       split_point, false, paint);
-  canvas->DrawImageInt(*toolbar_left_mask, 0,
-      toolbar_left_mask->height() - bottom_edge_height,
-      toolbar_left_mask->width(), bottom_edge_height, left_x, bottom_y,
-      toolbar_left_mask->width(), bottom_edge_height, false, paint);
-
-  // Mask the right edge.
-  int right_x =
-      x + w - toolbar_right_mask->width() + kContentEdgeShadowThickness;
-  canvas->DrawImageInt(*toolbar_right_mask, 0, 0, toolbar_right_mask->width(),
-                       split_point, right_x, y, toolbar_right_mask->width(),
-                       split_point, false, paint);
-  canvas->DrawImageInt(*toolbar_right_mask, 0,
-      toolbar_right_mask->height() - bottom_edge_height,
-      toolbar_right_mask->width(), bottom_edge_height, right_x, bottom_y,
-      toolbar_right_mask->width(), bottom_edge_height, false, paint);
-  canvas->Restore();
-
-  canvas->DrawImageInt(*toolbar_left, 0, 0, toolbar_left->width(), split_point,
-                       left_x, y, toolbar_left->width(), split_point, false);
-  canvas->DrawImageInt(*toolbar_left, 0,
-      toolbar_left->height() - bottom_edge_height, toolbar_left->width(),
-      bottom_edge_height, left_x, bottom_y, toolbar_left->width(),
-      bottom_edge_height, false);
-
+  const int left_x = x - kContentEdgeShadowThickness;
+  gfx::ImageSkia* toolbar_left =
+      tp->GetImageSkiaNamed(IDR_CONTENT_TOP_LEFT_CORNER);
   gfx::ImageSkia* toolbar_center =
       tp->GetImageSkiaNamed(IDR_CONTENT_TOP_CENTER);
-  canvas->TileImageInt(*toolbar_center, 0, 0, left_x + toolbar_left->width(),
-      y, right_x - (left_x + toolbar_left->width()),
-      split_point);
+  gfx::ImageSkia* toolbar_right =
+      tp->GetImageSkiaNamed(IDR_CONTENT_TOP_RIGHT_CORNER);
+  const int right_x =
+      x + w - toolbar_right->width() + kContentEdgeShadowThickness;
+  if (normal_mode) {
+    // Draw rounded corners for the tab.
+    gfx::ImageSkia* toolbar_left_mask =
+        tp->GetImageSkiaNamed(IDR_CONTENT_TOP_LEFT_CORNER_MASK);
+    gfx::ImageSkia* toolbar_right_mask =
+        tp->GetImageSkiaNamed(IDR_CONTENT_TOP_RIGHT_CORNER_MASK);
 
-  gfx::ImageSkia* toolbar_right = tp->GetImageSkiaNamed(
-      IDR_CONTENT_TOP_RIGHT_CORNER);
-  canvas->DrawImageInt(*toolbar_right, 0, 0, toolbar_right->width(),
-      split_point, right_x, y, toolbar_right->width(), split_point, false);
-  canvas->DrawImageInt(*toolbar_right, 0,
-      toolbar_right->height() - bottom_edge_height, toolbar_right->width(),
-      bottom_edge_height, right_x, bottom_y, toolbar_right->width(),
-      bottom_edge_height, false);
+    // We mask out the corners by using the DestinationIn transfer mode,
+    // which keeps the RGB pixels from the destination and the alpha from
+    // the source.
+    SkPaint paint;
+    paint.setXfermodeMode(SkXfermode::kDstIn_Mode);
+
+    // Mask the left edge.
+    canvas->DrawImageInt(*toolbar_left_mask, 0, 0, toolbar_left_mask->width(),
+                         h, left_x, y, toolbar_left_mask->width(), h, false,
+                         paint);
+
+    // Mask the right edge.
+    canvas->DrawImageInt(*toolbar_right_mask, 0, 0, toolbar_right_mask->width(),
+                         h, right_x, y, toolbar_right_mask->width(), h, false,
+                         paint);
+    canvas->Restore();
+
+    canvas->DrawImageInt(*toolbar_left, 0, 0, toolbar_left->width(),
+                         h, left_x, y, toolbar_left->width(), h, false);
+
+    canvas->TileImageInt(*toolbar_center, 0, 0, left_x + toolbar_left->width(),
+                         y, right_x - (left_x + toolbar_left->width()),
+                         split_point);
+
+    canvas->DrawImageInt(*toolbar_right, 0, 0, toolbar_right->width(), h,
+                         right_x, y, toolbar_right->width(), h, false);
+  } else {
+    canvas->DrawImageInt(*toolbar_left, 1, 0, toolbar_left->width() - 1,
+                         split_point, left_x, y, toolbar_left->width() - 1,
+                         split_point, false);
+    const int right_corner_x = right_x + 1;
+    canvas->DrawImageInt(*toolbar_right, 0, 0, toolbar_right->width() - 1,
+                         split_point, right_corner_x, y,
+                         toolbar_right->width() - 1, split_point, false);
+    canvas->TileImageInt(
+        *toolbar_center, 0, 0, left_x + toolbar_left->width() - 1, y,
+        right_corner_x - (left_x + toolbar_left->width() - 1), split_point);
+    if (bottom_edge_height) {
+      canvas->DrawImageInt(
+          *toolbar_left, 0, toolbar_left->height() - bottom_edge_height,
+          toolbar_left->width(), bottom_edge_height, left_x, bottom_y,
+          toolbar_left->width(), bottom_edge_height, false);
+      canvas->DrawImageInt(
+          *toolbar_right, 0, toolbar_right->height() - bottom_edge_height,
+          toolbar_right->width(), bottom_edge_height, right_x, bottom_y,
+          toolbar_right->width(), bottom_edge_height, false);
+    }
+  }
 
   // Draw the content/toolbar separator.
   if (ui::MaterialDesignController::IsModeMaterial()) {
@@ -764,20 +783,10 @@ void OpaqueBrowserFrameView::PaintRestoredClientEdge(gfx::Canvas* canvas) {
   SkColor toolbar_color = tp->GetColor(ThemeProperties::COLOR_TOOLBAR);
 
   if (browser_view()->IsToolbarVisible()) {
-    // The client edge images always start below the toolbar corner images.  The
-    // client edge filled rects start there or at the bottom of the toolbar,
-    // whichever is shorter.
+    // The client edge images start below the toolbar.
     gfx::Rect toolbar_bounds(browser_view()->GetToolbarBounds());
-
-    gfx::ImageSkia* content_top_left_corner =
-        tp->GetImageSkiaNamed(IDR_CONTENT_TOP_LEFT_CORNER);
-    // TODO(oshima): Sanity checks for crbug.com/374273. Remove when it's fixed.
-    CHECK(content_top_left_corner);
-    CHECK(!content_top_left_corner->isNull());
-
-    image_top += toolbar_bounds.y() + content_top_left_corner->height();
-    client_area_top = std::min(image_top,
-        client_area_top + toolbar_bounds.bottom() - kClientEdgeThickness);
+    client_area_top += toolbar_bounds.bottom();
+    image_top = client_area_top;
   } else if (!browser_view()->IsTabStripVisible()) {
     // The toolbar isn't going to draw a client edge for us, so draw one
     // ourselves.
