@@ -176,6 +176,14 @@
             "group_name": "Enabled"
         }
     ],
+    "ProgressBarAnimationAndroid": [
+        {
+            "group_name": "SmoothAnimation",
+            "params": {
+                "progress-bar-animation": "smooth"
+            }
+        }
+    ],
     "QUIC": [
         {
             "group_name": "Enabled",
