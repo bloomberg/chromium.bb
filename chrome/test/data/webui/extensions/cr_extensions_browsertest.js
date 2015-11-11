@@ -34,6 +34,7 @@ CrExtensionsBrowserTest.prototype = {
 
   /** @override */
   extraLibraries: PolymerTest.getLibraries(ROOT_PATH).concat([
+    'extension_test_util.js',
     'extension_item_test.js',
     'extension_service_test.js',
     'extension_sidebar_test.js',
@@ -47,12 +48,12 @@ CrExtensionsBrowserTest.prototype = {
 
 TEST_F('CrExtensionsBrowserTest', 'ExtensionSidebarLayoutTest', function() {
   extension_sidebar_tests.registerTests();
-  mocha.grep('test sidebar layout').run();
+  mocha.grep(assert(extension_sidebar_tests.testNames.Layout)).run();
 });
 TEST_F('CrExtensionsBrowserTest', 'ExtensionSidebarClickHandlerTest',
        function() {
   extension_sidebar_tests.registerTests();
-  mocha.grep('test sidebar click handlers').run();
+  mocha.grep(assert(extension_sidebar_tests.testNames.ClickHandlers)).run();
 });
 
 function CrExtensionsBrowserTestWithInstalledExtension() {}
@@ -95,21 +96,22 @@ CrExtensionsBrowserTestWithInstalledExtension.prototype = {
 
 TEST_F('CrExtensionsBrowserTestWithInstalledExtension',
        'ExtensionServiceToggleEnableTest', function() {
-  extension_service_tests.registerToggleEnableTests();
-  mocha.run();
+  extension_service_tests.registerTests();
+  mocha.grep(assert(extension_service_tests.testNames.EnableAndDisable)).run();
 });
 TEST_F('CrExtensionsBrowserTestWithInstalledExtension',
        'ExtensionServiceToggleIncognitoTest', function() {
-  extension_service_tests.registerToggleIncognitoTests();
-  mocha.run();
+  extension_service_tests.registerTests();
+  mocha.grep(
+      assert(extension_service_tests.testNames.ToggleIncognitoMode)).run();
 });
 TEST_F('CrExtensionsBrowserTestWithInstalledExtension',
        'ExtensionServiceUninstallTest', function() {
-  extension_service_tests.registerUninstallTests();
-  mocha.run();
+  extension_service_tests.registerTests();
+  mocha.grep(assert(extension_service_tests.testNames.Uninstall)).run();
 });
 TEST_F('CrExtensionsBrowserTestWithInstalledExtension',
        'ExtensionServiceProfileSettingsTest', function() {
-  extension_service_tests.registerProfileSettingsTests();
-  mocha.run();
+  extension_service_tests.registerTests();
+  mocha.grep(assert(extension_service_tests.testNames.ProfileSettings)).run();
 });

@@ -4,33 +4,16 @@
 
 /** @fileoverview Suite of tests for extension-sidebar. */
 cr.define('extension_sidebar_tests', function() {
-  /** @type {extensions.Sidebar} */
-  var sidebar;
-
   /**
-   * A mock delegate for the sidebar, capable of testing functionality.
+   * A mock delegate for the sidebar.
    * @constructor
    * @implements {extensions.SidebarDelegate}
+   * @extends {extension_test_util.ClickMock}
    */
   function MockDelegate() {}
 
   MockDelegate.prototype = {
-    /**
-     * Tests clicking on an element and expected a delegate call from the
-     * sidebar.
-     * @param {HTMLElement} element The element to click on.
-     * @param {string} callName The function expected to be called.
-     * @param {Array<?>=} opt_expectedArgs The arguments the function is
-     *     expected to be called with.
-     */
-    testClickingCalls: function(element, callName, opt_expectedArgs) {
-      var mock = new MockController();
-      var mockMethod = mock.createFunctionMock(this, callName);
-      MockMethod.prototype.addExpectation.apply(
-          mockMethod, opt_expectedArgs);
-      MockInteractions.tap(element);
-      mock.verifyMocks();
-    },
+    __proto__: extension_test_util.ClickMock.prototype,
 
     /** @override */
     setProfileInDevMode: function(inDevMode) {},
@@ -45,23 +28,18 @@ cr.define('extension_sidebar_tests', function() {
     updateAllExtensions: function() {},
   };
 
-  /**
-   * Tests that the element's visibility matches |expectedVisible|.
-   * @param {boolean} expectedVisible Whether the element should be
-   *     visible.
-   * @param {string} selector The selector to find the element.
-   */
-  function testVisible(selector, expectedVisible) {
-    var element = sidebar.$$(selector);
-    var rect = element ? element.getBoundingClientRect() : null;
-    var isVisible = !!rect && (rect.width * rect.height > 0);
-    expectEquals(expectedVisible, isVisible, selector);
-  }
+  var testNames = {
+    Layout: 'layout',
+    ClickHandlers: 'click handlers',
+  };
 
   function registerTests() {
     suite('ExtensionSidebarTest', function() {
       /** @type {MockDelegate} */
       var mockDelegate;
+
+      /** @type {extensions.Sidebar} */
+      var sidebar;
 
       // Import cr_settings_checkbox.html before running suite.
       suiteSetup(function() {
@@ -74,7 +52,8 @@ cr.define('extension_sidebar_tests', function() {
         sidebar.setDelegate(mockDelegate);
       });
 
-      test('test sidebar layout', function() {
+      test(testNames.Layout, function() {
+        var testVisible = extension_test_util.testVisible.bind(null, sidebar);
         testVisible('#load-unpacked', false);
         testVisible('#pack-extensions', false);
         testVisible('#update-now', false);
@@ -87,7 +66,7 @@ cr.define('extension_sidebar_tests', function() {
         testVisible('#update-now', true);
       });
 
-      test('test sidebar click handlers', function() {
+      test(testNames.ClickHandlers, function() {
         sidebar.set('inDevMode', true);
         Polymer.dom.flush();
 
@@ -109,5 +88,6 @@ cr.define('extension_sidebar_tests', function() {
 
   return {
     registerTests: registerTests,
+    testNames: testNames,
   };
 });

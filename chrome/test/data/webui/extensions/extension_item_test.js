@@ -7,27 +7,13 @@ cr.define('extension_item_tests', function() {
   /**
    * A mock delegate for the item, capable of testing functionality.
    * @constructor
+   * @extends {extension_test_util.ClickMock}
    * @implements {extensions.ItemDelegate}
    */
   function MockDelegate() {}
 
   MockDelegate.prototype = {
-    /**
-     * Tests clicking on an element and expected a delegate call from the
-     * item.
-     * @param {HTMLElement} element The element to click on.
-     * @param {string} callName The function expected to be called.
-     * @param {Array<?>=} opt_expectedArgs The arguments the function is
-     *     expected to be called with.
-     */
-    testClickingCalls: function(element, callName, opt_expectedArgs) {
-      var mock = new MockController();
-      var mockMethod = mock.createFunctionMock(this, callName);
-      MockMethod.prototype.addExpectation.apply(
-          mockMethod, opt_expectedArgs);
-      MockInteractions.tap(element);
-      mock.verifyMocks();
-    },
+    __proto__: extension_test_util.ClickMock.prototype,
 
     /** @override */
     deleteItem: function(id) {},
@@ -70,30 +56,6 @@ cr.define('extension_item_tests', function() {
     views: [{url: baseUrl + 'foo.html'}, {url: baseUrl + 'bar.html'}],
   };
 
-  /**
-   * Tests that the element's visibility matches |expectedVisible| and,
-   * optionally, has specific content.
-   * @param {HTMLElement} item The item to query for the element.
-   * @param {boolean} expectedVisible Whether the element should be
-   *     visible.
-   * @param {string} selector The selector to find the element.
-   * @param {string=} opt_expected The expected textContent value.
-   */
-  function testVisible(item, expectedVisible, selector, opt_expected) {
-    var element = item.$$(selector);
-    var elementIsVisible = !!element;
-    // Iterate through the parents of the element (up to the item's root)
-    // and check if each is visible. If one is not, then the element
-    // itself is not.
-    for (var e = element; elementIsVisible && e != item.shadowRoot;
-         e = e.parentNode) {
-      elementIsVisible = !e.hidden && e.offsetWidth > 0;
-    }
-    expectEquals(expectedVisible, elementIsVisible, selector);
-    if (expectedVisible && opt_expected && element)
-      expectEquals(opt_expected, element.textContent, selector);
-  }
-
   // The normal elements, which should always be shown.
   var normalElements = [
     {selector: '#name', text: extensionData.name},
@@ -127,7 +89,8 @@ cr.define('extension_item_tests', function() {
    */
   function testElementsVisibility(item, elements, visibility) {
     elements.forEach(function(element) {
-      testVisible(item, visibility, element.selector, element.text);
+      extension_test_util.testVisible(
+          item, element.selector, visibility, element.text);
     });
   }
 

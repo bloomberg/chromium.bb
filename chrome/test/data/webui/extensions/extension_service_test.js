@@ -4,15 +4,6 @@
 
 /** @fileoverview Suite of tests for extension-item. */
 cr.define('extension_service_tests', function() {
-  /** @const */
-  var kExtensionId = 'ldnnhddmnhbkjipkidpdiheffobcpfmf';
-
-  /** @const */
-  var EventType = chrome.developerPrivate.EventType;
-
-  /** @const */
-  var ExtensionState = chrome.developerPrivate.ExtensionState;
-
   /** @constructor */
   function ChangeListener() {}
 
@@ -67,14 +58,28 @@ cr.define('extension_service_tests', function() {
                function() { return true; });
   }
 
-  function registerToggleEnableTests() {
-    suite('ExtensionServiceTest', function() {
-      // The 2-second timeout that Mocha has by default isn't nearly enough for
-      // our slower bots, like Dr. Memory. Just disable Mocha timeouts and let
-      // the C++ fixtures handle it.
-      this.timeout(0);
+  var testNames = {
+    EnableAndDisable: 'enable and disable',
+    ToggleIncognitoMode: 'toggle incognito mode',
+    Uninstall: 'uninstall',
+    ProfileSettings: 'profile settings',
+  };
 
+  function registerTests() {
+    suite('ExtensionServiceTest', function() {
+      /** @const{string} */
+      var kExtensionId = 'ldnnhddmnhbkjipkidpdiheffobcpfmf';
+
+      /** @const */
+      var EventType = chrome.developerPrivate.EventType;
+
+      /** @const */
+      var ExtensionState = chrome.developerPrivate.ExtensionState;
+
+      /** @type {extensions.Service} */
       var service;
+
+      /** @type {extensions.Manager} */
       var manager;
 
       suiteSetup(function() {
@@ -87,7 +92,7 @@ cr.define('extension_service_tests', function() {
         manager = document.getElementsByTagName('extensions-manager')[0];
       });
 
-      test('Test extension service enable and disable', function(done) {
+      test(testNames.EnableAndDisable, function(done) {
         var item = manager.getItem(kExtensionId);
         assertTrue(!!item);
         expectEquals(kExtensionId, item.id);
@@ -109,27 +114,8 @@ cr.define('extension_service_tests', function() {
           done();
         });
       });
-    });
-  }
 
-  function registerToggleIncognitoTests() {
-    suite('ExtensionServiceToggleIncognitoTest', function() {
-      this.timeout(0);
-
-      var service;
-      var manager;
-
-      suiteSetup(function() {
-        return PolymerTest.importHtml('chrome://extensions/service.html');
-      });
-
-      // Initialize an extension item before each test.
-      setup(function() {
-        service = extensions.Service.getInstance();
-        manager = document.getElementsByTagName('extensions-manager')[0];
-      });
-
-      test('Test extension service toggle incognito mode', function(done) {
+      test(testNames.ToggleIncognitoMode, function(done) {
         var item = manager.getItem(kExtensionId);
         assertTrue(!!item);
         expectTrue(item.data.incognitoAccess.isEnabled);
@@ -154,27 +140,8 @@ cr.define('extension_service_tests', function() {
           done();
         });
       });
-    });
-  }
 
-  function registerUninstallTests() {
-    suite('ExtensionServiceUninstallTest', function() {
-      this.timeout(0);
-
-      var service;
-      var manager;
-
-      suiteSetup(function() {
-        return PolymerTest.importHtml('chrome://extensions/service.html');
-      });
-
-      // Initialize an extension item before each test.
-      setup(function() {
-        service = extensions.Service.getInstance();
-        manager = document.querySelector('extensions-manager');
-      });
-
-      test('Test extension service uninstall', function(done) {
+      test(testNames.Uninstall, function(done) {
         var item = manager.getItem(kExtensionId);
         assertTrue(!!item);
         var uninstallListener =
@@ -187,27 +154,8 @@ cr.define('extension_service_tests', function() {
           done();
         });
       });
-    });
-  }
 
-  function registerProfileSettingsTests() {
-    suite('ExtensionServiceProfileSettingsTest', function() {
-      this.timeout(0);
-
-      var service;
-      var manager;
-
-      suiteSetup(function() {
-        return PolymerTest.importHtml('chrome://extensions/service.html');
-      });
-
-      // Initialize an extension item before each test.
-      setup(function() {
-        service = extensions.Service.getInstance();
-        manager = document.getElementsByTagName('extensions-manager')[0];
-      });
-
-      test('Test extension service profile settings', function(done) {
+      test(testNames.ProfileSettings, function(done) {
         var item = manager.getItem(kExtensionId);
         assertTrue(!!item);
         expectFalse(item.inDevMode);
@@ -231,9 +179,7 @@ cr.define('extension_service_tests', function() {
 
   return {
     ChangeListener: ChangeListener,
-    registerToggleEnableTests: registerToggleEnableTests,
-    registerToggleIncognitoTests: registerToggleIncognitoTests,
-    registerUninstallTests: registerUninstallTests,
-    registerProfileSettingsTests: registerProfileSettingsTests,
+    registerTests: registerTests,
+    testNames: testNames,
   };
 });
