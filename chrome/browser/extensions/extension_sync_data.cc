@@ -49,8 +49,8 @@ enum BadSyncDataReason {
   // No ExtensionSpecifics in the EntitySpecifics.
   NO_EXTENSION_SPECIFICS,
 
-  // Enabled extensions can't have disable reasons.
-  BAD_DISABLE_REASONS,
+  // Not used anymore; still here because of UMA.
+  DEPRECATED_BAD_DISABLE_REASONS,
 
   // Must be at the end.
   NUM_BAD_SYNC_DATA_REASONS
@@ -250,17 +250,6 @@ bool ExtensionSyncData::PopulateFromExtensionSpecifics(
     LOG(ERROR) << "Attempt to sync bad ExtensionSpecifics (bad update URL):\n"
                << GetExtensionSpecificsLogMessage(specifics);
     RecordBadSyncData(BAD_UPDATE_URL);
-    return false;
-  }
-
-  // Enabled extensions can't have disable reasons. (The proto field may be
-  // unset, in which case it defaults to DISABLE_NONE.)
-  if (specifics.enabled() &&
-      specifics.disable_reasons() != Extension::DISABLE_NONE) {
-    LOG(ERROR) << "Attempt to sync bad ExtensionSpecifics "
-               << "(enabled extension can't have disable reasons):\n"
-               << GetExtensionSpecificsLogMessage(specifics);
-    RecordBadSyncData(BAD_DISABLE_REASONS);
     return false;
   }
 

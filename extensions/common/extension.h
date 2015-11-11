@@ -85,6 +85,8 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // not remove/reorder entries - only add at the end just before
   // DISABLE_REASON_LAST (and update the shift value for it). Also remember to
   // update the enum listing in tools/metrics/histograms.xml.
+  // Also carefully consider if your reason should sync to other devices, and if
+  // so, add it to kKnownSyncableDisableReasons in extension_sync_service.cc.
   enum DisableReason {
     DISABLE_NONE = 0,
     DISABLE_USER_ACTION = 1 << 0,

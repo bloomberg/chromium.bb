@@ -753,6 +753,11 @@ void ExtensionPrefs::RemoveDisableReason(
   ModifyDisableReasons(extension_id, disable_reason, DISABLE_REASON_REMOVE);
 }
 
+void ExtensionPrefs::ReplaceDisableReasons(const std::string& extension_id,
+                                           int disable_reasons) {
+  ModifyDisableReasons(extension_id, disable_reasons, DISABLE_REASON_REPLACE);
+}
+
 void ExtensionPrefs::ClearDisableReasons(const std::string& extension_id) {
   ModifyDisableReasons(extension_id, Extension::DISABLE_NONE,
                        DISABLE_REASON_CLEAR);
@@ -769,6 +774,9 @@ void ExtensionPrefs::ModifyDisableReasons(const std::string& extension_id,
       break;
     case DISABLE_REASON_REMOVE:
       new_value &= ~reasons;
+      break;
+    case DISABLE_REASON_REPLACE:
+      new_value = reasons;
       break;
     case DISABLE_REASON_CLEAR:
       new_value = Extension::DISABLE_NONE;

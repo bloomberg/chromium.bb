@@ -47,7 +47,7 @@ class ExtensionSyncService : public syncer::SyncableService,
 
   // Returns whether the extension with the given |id| will be re-enabled once
   // it is updated to the given |version|. This happens when we get a Sync
-  // update telling us to re-enable a newer version that what is currently
+  // update telling us to re-enable a newer version than what is currently
   // installed.
   bool HasPendingReenable(const std::string& id,
                           const base::Version& version) const;

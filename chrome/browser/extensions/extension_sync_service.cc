@@ -95,6 +95,21 @@ syncer::SyncDataList ToSyncerSyncDataList(
   return result;
 }
 
+static_assert(Extension::DISABLE_REASON_LAST == (1 << 15),
+              "Please consider whether your new disable reason should be"
+              " syncable, and if so update this bitmask accordingly!");
+const int kKnownSyncableDisableReasons =
+    Extension::DISABLE_USER_ACTION |
+    Extension::DISABLE_PERMISSIONS_INCREASE |
+    Extension::DISABLE_SIDELOAD_WIPEOUT |
+    Extension::DISABLE_GREYLIST |
+    Extension::DISABLE_REMOTE_INSTALL;
+const int kAllKnownDisableReasons = Extension::DISABLE_REASON_LAST - 1;
+// We also include any future bits for newer clients that added another disable
+// reason.
+const int kSyncableDisableReasons =
+    kKnownSyncableDisableReasons | ~kAllKnownDisableReasons;
+
 }  // namespace
 
 struct ExtensionSyncService::PendingUpdate {
@@ -236,43 +251,38 @@ syncer::SyncError ExtensionSyncService::ProcessSyncChanges(
 
 ExtensionSyncData ExtensionSyncService::CreateSyncData(
     const Extension& extension) const {
+  const std::string& id = extension.id();
   const ExtensionPrefs* extension_prefs = ExtensionPrefs::Get(profile_);
-  // Query the enabled state from ExtensionPrefs rather than
-  // ExtensionService::IsExtensionEnabled - the latter uses ExtensionRegistry
-  // which might not have been updated yet (ExtensionPrefs are updated first,
-  // and we're listening for changes to these).
-  bool enabled = !extension_prefs->IsExtensionDisabled(extension.id());
-  enabled = enabled &&
-      !extension_prefs->IsExternalExtensionUninstalled(extension.id());
-  // Blacklisted extensions are not marked as disabled in ExtensionPrefs.
+  int disable_reasons =
+      extension_prefs->GetDisableReasons(id) & kSyncableDisableReasons;
+  // Note that we're ignoring the enabled state during ApplySyncData (we check
+  // for the existence of disable reasons instead), we're just setting it here
+  // for older Chrome versions (<M48).
+  bool enabled = (disable_reasons == Extension::DISABLE_NONE);
   enabled = enabled &&
       extension_prefs->GetExtensionBlacklistState(extension.id()) ==
           extensions::NOT_BLACKLISTED;
-  int disable_reasons = extension_prefs->GetDisableReasons(extension.id());
-  bool incognito_enabled = extensions::util::IsIncognitoEnabled(extension.id(),
-                                                                profile_);
+  bool incognito_enabled = extensions::util::IsIncognitoEnabled(id, profile_);
   bool remote_install =
-      extension_prefs->HasDisableReason(extension.id(),
-                                        Extension::DISABLE_REMOTE_INSTALL);
+      extension_prefs->HasDisableReason(id, Extension::DISABLE_REMOTE_INSTALL);
   ExtensionSyncData::OptionalBoolean allowed_on_all_url =
-      GetAllowedOnAllUrlsOptionalBoolean(extension.id(), profile_);
+      GetAllowedOnAllUrlsOptionalBoolean(id, profile_);
   AppSorting* app_sorting = ExtensionSystem::Get(profile_)->app_sorting();
 
   ExtensionSyncData result = extension.is_app()
       ? ExtensionSyncData(
             extension, enabled, disable_reasons, incognito_enabled,
             remote_install, allowed_on_all_url,
-            app_sorting->GetAppLaunchOrdinal(extension.id()),
-            app_sorting->GetPageOrdinal(extension.id()),
-            extensions::GetLaunchTypePrefValue(extension_prefs,
-                                               extension.id()))
+            app_sorting->GetAppLaunchOrdinal(id),
+            app_sorting->GetPageOrdinal(id),
+            extensions::GetLaunchTypePrefValue(extension_prefs, id))
       : ExtensionSyncData(
             extension, enabled, disable_reasons, incognito_enabled,
             remote_install, allowed_on_all_url);
 
   // If there's a pending update, send the new version to sync instead of the
   // installed one.
-  auto it = pending_updates_.find(extension.id());
+  auto it = pending_updates_.find(id);
   if (it != pending_updates_.end()) {
     const base::Version& version = it->second.version;
     // If we have a pending version, it should be newer than the installed one.
@@ -324,72 +334,100 @@ void ExtensionSyncService::ApplySyncData(
     return;
   }
 
-  int version_compare_result = extension ?
-      extension->version()->CompareTo(extension_sync_data.version()) : 0;
+  enum {
+    NOT_INSTALLED,
+    INSTALLED_OUTDATED,
+    INSTALLED_MATCHING,
+    INSTALLED_NEWER,
+  } state = NOT_INSTALLED;
+  if (extension) {
+    switch (extension->version()->CompareTo(extension_sync_data.version())) {
+      case -1: state = INSTALLED_OUTDATED; break;
+      case 0: state = INSTALLED_MATCHING; break;
+      case 1: state = INSTALLED_NEWER; break;
+      default: NOTREACHED();
+    }
+  }
+
+  // Figure out the resulting set of disable reasons.
+  int disable_reasons = extension_prefs->GetDisableReasons(id);
+
+  // Chrome versions M37-M44 used |extension_sync_data.remote_install()| to tag
+  // not-yet-approved remote installs. It's redundant now that disable reasons
+  // are synced (DISABLE_REMOTE_INSTALL should be among them already), but some
+  // old sync data may still be around, and it doesn't hurt to add the reason.
+  // TODO(treib,devlin): Deprecate and eventually remove |remote_install|?
+  if (extension_sync_data.remote_install())
+    disable_reasons |= Extension::DISABLE_REMOTE_INSTALL;
+
+  // Add/remove disable reasons based on the incoming sync data.
+  int incoming_disable_reasons = extension_sync_data.disable_reasons();
+  if (!!incoming_disable_reasons == extension_sync_data.enabled()) {
+    // The enabled flag disagrees with the presence of disable reasons. This
+    // must come from an old (<M45) client which doesn't sync disable reasons.
+    // Update |disable_reasons| based on the enabled flag.
+    if (extension_sync_data.enabled())
+      disable_reasons &= ~kKnownSyncableDisableReasons;
+    else  // Assume the extension was likely disabled by the user.
+      disable_reasons |= Extension::DISABLE_USER_ACTION;
+  } else {
+    // Replace the syncable disable reasons:
+    // 1. Remove any syncable disable reasons we might have.
+    disable_reasons &= ~kSyncableDisableReasons;
+    // 2. Add the incoming reasons. Mask with |kSyncableDisableReasons|, because
+    //    Chrome M45-M47 also wrote local disable reasons to sync, and we don't
+    //    want those.
+    disable_reasons |= incoming_disable_reasons & kSyncableDisableReasons;
+  }
 
   // Enable/disable the extension.
+  bool should_be_enabled = (disable_reasons == Extension::DISABLE_NONE);
   bool reenable_after_update = false;
-  if (extension_sync_data.enabled()) {
-    DCHECK(!extension_sync_data.disable_reasons());
-
+  if (should_be_enabled && !extension_service()->IsExtensionEnabled(id)) {
     if (extension) {
       // Only grant permissions if the sync data explicitly sets the disable
       // reasons to Extension::DISABLE_NONE (as opposed to the legacy (<M45)
       // case where they're not set at all), and if the version from sync
       // matches our local one.
       bool grant_permissions = extension_sync_data.supports_disable_reasons() &&
-                               (version_compare_result == 0);
-      if (grant_permissions) {
-        extension_service()->GrantPermissionsAndEnableExtension(extension);
-      } else if (!extension_service()->IsExtensionEnabled(extension->id())) {
-        // Only enable if the extension already has all required permissions.
-        scoped_ptr<const extensions::PermissionSet> granted_permissions =
-            extension_prefs->GetGrantedPermissions(extension->id());
-        DCHECK(granted_permissions.get());
-        bool is_privilege_increase =
-            extensions::PermissionMessageProvider::Get()->IsPrivilegeIncrease(
-                *granted_permissions,
-                extension->permissions_data()->active_permissions(),
-                extension->GetType());
-        if (!is_privilege_increase)
-          extension_service()->EnableExtension(id);
-        else if (extension_sync_data.supports_disable_reasons())
-          reenable_after_update = true;
+                               (state == INSTALLED_MATCHING);
+      if (grant_permissions)
+        extension_service()->GrantPermissions(extension);
+
+      // Only enable if the extension has all required permissions.
+      // (Even if the version doesn't match - if the new version needs more
+      // permissions, it'll get disabled after the update.)
+      bool has_all_permissions =
+          grant_permissions ||
+          !extensions::PermissionMessageProvider::Get()->IsPrivilegeIncrease(
+              *extension_prefs->GetGrantedPermissions(id),
+              extension->permissions_data()->active_permissions(),
+              extension->GetType());
+      if (has_all_permissions)
+        extension_service()->EnableExtension(id);
+      else if (extension_sync_data.supports_disable_reasons())
+        reenable_after_update = true;
 
 #if defined(ENABLE_SUPERVISED_USERS)
-        if (is_privilege_increase && version_compare_result > 0 &&
-            extensions::util::IsExtensionSupervised(extension, profile_)) {
-          SupervisedUserServiceFactory::GetForProfile(profile_)
-              ->AddExtensionUpdateRequest(id, *extension->version());
-        }
-#endif
+      if (!has_all_permissions && (state == INSTALLED_NEWER) &&
+          extensions::util::IsExtensionSupervised(extension, profile_)) {
+        SupervisedUserServiceFactory::GetForProfile(profile_)
+            ->AddExtensionUpdateRequest(id, *extension->version());
       }
+#endif
     } else {
       // The extension is not installed yet. Set it to enabled; we'll check for
-      // permission increase when it's actually installed.
+      // permission increase (more accurately, for a version change) when it's
+      // actually installed.
       extension_service()->EnableExtension(id);
     }
-  } else {
-    int disable_reasons = extension_sync_data.disable_reasons();
-    if (extension_sync_data.remote_install()) {
-      if (!(disable_reasons & Extension::DISABLE_REMOTE_INSTALL)) {
-        // Since disabled reasons are synced since M45, DISABLE_REMOTE_INSTALL
-        // should be among them already.
-        DCHECK(!extension_sync_data.supports_disable_reasons());
-        disable_reasons |= Extension::DISABLE_REMOTE_INSTALL;
-      }
-    } else if (!extension_sync_data.supports_disable_reasons()) {
-      // Legacy case (<M45), from before we synced disable reasons (see
-      // crbug.com/484214). Assume the extension was likely disabled by the
-      // user, so add DISABLE_USER_ACTION to any existing disable reasons.
-      disable_reasons = extension_prefs->GetDisableReasons(id);
-      disable_reasons |= Extension::DISABLE_USER_ACTION;
-    }
-
-    // Clear any existing disable reasons first, otherwise sync can't remove
-    // just some of them.
-    extension_prefs->ClearDisableReasons(id);
-    extension_service()->DisableExtension(id, disable_reasons);
+  } else if (!should_be_enabled) {
+    // Note that |disable_reasons| includes any pre-existing reasons that
+    // weren't explicitly removed above.
+    if (extension_service()->IsExtensionEnabled(id))
+      extension_service()->DisableExtension(id, disable_reasons);
+    else  // Already disabled, just replace the disable reasons.
+      extension_prefs->ReplaceDisableReasons(id, disable_reasons);
   }
 
   // If the target extension has already been installed ephemerally, it can
@@ -397,11 +435,6 @@ void ExtensionSyncService::ApplySyncData(
   // Store is not necessary.
   if (extension && extensions::util::IsEphemeralApp(id, profile_))
     extension_service()->PromoteEphemeralApp(extension, true);
-
-  // Cache whether the extension was already installed because setting the
-  // incognito flag invalidates the |extension| pointer (it reloads the
-  // extension).
-  bool extension_installed = (extension != nullptr);
 
   // Update the incognito flag.
   extensions::util::SetIsIncognitoEnabled(
@@ -441,14 +474,12 @@ void ExtensionSyncService::ApplySyncData(
 
   // Finally, trigger installation/update as required.
   bool check_for_updates = false;
-  if (extension_installed) {
+  if (state == INSTALLED_OUTDATED) {
     // If the extension is installed but outdated, store the new version.
-    if (version_compare_result < 0) {
-      pending_updates_[id] = PendingUpdate(extension_sync_data.version(),
-                                           reenable_after_update);
-      check_for_updates = true;
-    }
-  } else {
+    pending_updates_[id] =
+        PendingUpdate(extension_sync_data.version(), reenable_after_update);
+    check_for_updates = true;
+  } else if (state == NOT_INSTALLED) {
     if (!extension_service()->pending_extension_manager()->AddFromSync(
             id,
             extension_sync_data.update_url(),

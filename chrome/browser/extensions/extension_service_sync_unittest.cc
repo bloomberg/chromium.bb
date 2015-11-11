@@ -307,6 +307,80 @@ TEST_F(ExtensionServiceSyncTest, GetSyncData) {
   EXPECT_EQ(extension->name(), data->name());
 }
 
+TEST_F(ExtensionServiceSyncTest, GetSyncDataDisableReasons) {
+  InitializeEmptyExtensionService();
+  const Extension* extension =
+      InstallCRX(data_dir().AppendASCII("good.crx"), INSTALL_NEW);
+  ASSERT_TRUE(extension);
+
+  syncer::FakeSyncChangeProcessor processor;
+  extension_sync_service()->MergeDataAndStartSyncing(
+      syncer::EXTENSIONS,
+      syncer::SyncDataList(),
+      scoped_ptr<syncer::SyncChangeProcessor>(
+          new syncer::FakeSyncChangeProcessor),
+      scoped_ptr<syncer::SyncErrorFactory>(new syncer::SyncErrorFactoryMock()));
+
+  {
+    syncer::SyncDataList list =
+        extension_sync_service()->GetAllSyncData(syncer::EXTENSIONS);
+    ASSERT_EQ(list.size(), 1U);
+    scoped_ptr<ExtensionSyncData> data =
+        ExtensionSyncData::CreateFromSyncData(list[0]);
+    ASSERT_TRUE(data.get());
+    EXPECT_TRUE(data->enabled());
+    EXPECT_TRUE(data->supports_disable_reasons());
+    EXPECT_EQ(Extension::DISABLE_NONE, data->disable_reasons());
+  }
+
+  // Syncable disable reason, should propagate to sync.
+  service()->DisableExtension(good_crx, Extension::DISABLE_USER_ACTION);
+  {
+    syncer::SyncDataList list =
+        extension_sync_service()->GetAllSyncData(syncer::EXTENSIONS);
+    ASSERT_EQ(list.size(), 1U);
+    scoped_ptr<ExtensionSyncData> data =
+        ExtensionSyncData::CreateFromSyncData(list[0]);
+    ASSERT_TRUE(data.get());
+    EXPECT_FALSE(data->enabled());
+    EXPECT_TRUE(data->supports_disable_reasons());
+    EXPECT_EQ(Extension::DISABLE_USER_ACTION, data->disable_reasons());
+  }
+  service()->EnableExtension(good_crx);
+
+  // Non-syncable disable reason. The sync data should still say "enabled".
+  service()->DisableExtension(good_crx, Extension::DISABLE_RELOAD);
+  {
+    syncer::SyncDataList list =
+        extension_sync_service()->GetAllSyncData(syncer::EXTENSIONS);
+    ASSERT_EQ(list.size(), 1U);
+    scoped_ptr<ExtensionSyncData> data =
+        ExtensionSyncData::CreateFromSyncData(list[0]);
+    ASSERT_TRUE(data.get());
+    EXPECT_TRUE(data->enabled());
+    EXPECT_TRUE(data->supports_disable_reasons());
+    EXPECT_EQ(Extension::DISABLE_NONE, data->disable_reasons());
+  }
+  service()->EnableExtension(good_crx);
+
+  // Both a syncable and a non-syncable disable reason, only the former should
+  // propagate to sync.
+  service()->DisableExtension(
+      good_crx, Extension::DISABLE_USER_ACTION | Extension::DISABLE_RELOAD);
+  {
+    syncer::SyncDataList list =
+        extension_sync_service()->GetAllSyncData(syncer::EXTENSIONS);
+    ASSERT_EQ(list.size(), 1U);
+    scoped_ptr<ExtensionSyncData> data =
+        ExtensionSyncData::CreateFromSyncData(list[0]);
+    ASSERT_TRUE(data.get());
+    EXPECT_FALSE(data->enabled());
+    EXPECT_TRUE(data->supports_disable_reasons());
+    EXPECT_EQ(Extension::DISABLE_USER_ACTION, data->disable_reasons());
+  }
+  service()->EnableExtension(good_crx);
+}
+
 TEST_F(ExtensionServiceSyncTest, GetSyncDataTerminated) {
   InitializeEmptyExtensionService();
   InstallCRX(data_dir().AppendASCII("good.crx"), INSTALL_NEW);
@@ -1085,19 +1159,35 @@ TEST_F(ExtensionServiceSyncTest, ProcessSyncDataEnableDisable) {
     { "NopEnable", 0, true, 0, 0 },
     { "NopDisable", Extension::DISABLE_USER_ACTION, false,
       Extension::DISABLE_USER_ACTION, Extension::DISABLE_USER_ACTION },
+    { "Enable", Extension::DISABLE_USER_ACTION, true, 0, 0 },
     { "Disable", 0, false, Extension::DISABLE_USER_ACTION,
       Extension::DISABLE_USER_ACTION },
-    { "DisableLegacy", 0, false, -1, Extension::DISABLE_USER_ACTION },
     { "AddDisableReason", Extension::DISABLE_REMOTE_INSTALL, false,
       Extension::DISABLE_REMOTE_INSTALL | Extension::DISABLE_USER_ACTION,
       Extension::DISABLE_REMOTE_INSTALL | Extension::DISABLE_USER_ACTION },
-    { "AddDisableReasonLegacy", Extension::DISABLE_USER_ACTION, false, -1,
-      Extension::DISABLE_USER_ACTION},
     { "RemoveDisableReason",
       Extension::DISABLE_REMOTE_INSTALL | Extension::DISABLE_USER_ACTION, false,
       Extension::DISABLE_USER_ACTION, Extension::DISABLE_USER_ACTION },
-    { "Enable", Extension::DISABLE_USER_ACTION, true, 0, 0 },
-    { "EnableLegacy", Extension::DISABLE_USER_ACTION, true, -1, 0 },
+    { "PreserveLocalDisableReason", Extension::DISABLE_RELOAD, true, 0,
+      Extension::DISABLE_RELOAD },
+    { "PreserveOnlyLocalDisableReason",
+      Extension::DISABLE_USER_ACTION | Extension::DISABLE_RELOAD, true, 0,
+      Extension::DISABLE_RELOAD },
+
+    // Interaction with Chrome clients <=M44, which don't sync disable_reasons
+    // at all (any existing reasons are preserved).
+    { "M44Enable", Extension::DISABLE_USER_ACTION, true, -1, 0 },
+    // An M44 client enables an extension that had been disabled on a new
+    // client. The disable reasons are still be there, but should be ignored.
+    { "M44ReEnable", Extension::DISABLE_USER_ACTION, true,
+      Extension::DISABLE_USER_ACTION, 0 },
+    { "M44Disable", 0, false, -1, Extension::DISABLE_USER_ACTION },
+    { "M44ReDisable", 0, false, 0, Extension::DISABLE_USER_ACTION },
+    { "M44AlreadyDisabledByUser", Extension::DISABLE_USER_ACTION, false, -1,
+      Extension::DISABLE_USER_ACTION},
+    { "M44AlreadyDisabledWithOtherReason", Extension::DISABLE_REMOTE_INSTALL,
+      false, -1,
+      Extension::DISABLE_REMOTE_INSTALL | Extension::DISABLE_USER_ACTION },
   };
 
   for (const TestCase& test_case : test_cases) {

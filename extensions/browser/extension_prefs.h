@@ -269,6 +269,8 @@ class ExtensionPrefs : public ExtensionScopedPrefs, public KeyedService {
   void AddDisableReasons(const std::string& extension_id, int disable_reasons);
   void RemoveDisableReason(const std::string& extension_id,
                            Extension::DisableReason disable_reason);
+  void ReplaceDisableReasons(const std::string& extension_id,
+                             int disable_reasons);
   void ClearDisableReasons(const std::string& extension_id);
 
   // Gets the set of extensions that have been blacklisted in prefs. This will
@@ -558,6 +560,7 @@ class ExtensionPrefs : public ExtensionScopedPrefs, public KeyedService {
   enum DisableReasonChange {
     DISABLE_REASON_ADD,
     DISABLE_REASON_REMOVE,
+    DISABLE_REASON_REPLACE,
     DISABLE_REASON_CLEAR
   };
 

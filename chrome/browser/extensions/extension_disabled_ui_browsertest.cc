@@ -250,6 +250,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionDisabledGlobalErrorTest, RemoteInstall) {
   specifics.mutable_extension()->set_id(extension_id);
   specifics.mutable_extension()->set_enabled(false);
   specifics.mutable_extension()->set_remote_install(true);
+  specifics.mutable_extension()->set_disable_reasons(
+      Extension::DISABLE_REMOTE_INSTALL);
   specifics.mutable_extension()->set_update_url(
       "http://localhost/autoupdate/updates.xml");
   specifics.mutable_extension()->set_version("2");

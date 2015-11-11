@@ -445,7 +445,8 @@ class EphemeralAppBrowserTest : public EphemeralAppTestBase {
 
   void PromoteEphemeralAppAndVerify(
       const Extension* app,
-      ExtensionRegistry::IncludeFlag expected_set) {
+      ExtensionRegistry::IncludeFlag expected_set,
+      bool expect_sync_enabled) {
     ASSERT_TRUE(app);
 
     // Ephemeral apps should not be synced.
@@ -467,8 +468,14 @@ class EphemeralAppBrowserTest : public EphemeralAppTestBase {
 
     // The installation should now be synced.
     sync_change = GetLastSyncChangeForApp(app->id());
-    VerifySyncChange(sync_change.get(),
-                     expected_set == ExtensionRegistry::ENABLED);
+    VerifySyncChange(sync_change.get(), expect_sync_enabled);
+  }
+
+  void PromoteEphemeralAppAndVerify(
+      const Extension* app,
+      ExtensionRegistry::IncludeFlag expected_set) {
+    PromoteEphemeralAppAndVerify(app, expected_set,
+                                 expected_set == ExtensionRegistry::ENABLED);
   }
 
   void PromoteEphemeralAppFromSyncAndVerify(
@@ -843,7 +850,11 @@ IN_PROC_BROWSER_TEST_F(EphemeralAppBrowserTest,
   DisableEphemeralApp(app, Extension::DISABLE_UNSUPPORTED_REQUIREMENT);
 
   // When promoted to a regular installed app, it should remain disabled.
-  PromoteEphemeralAppAndVerify(app, ExtensionRegistry::DISABLED);
+  // However, DISABLE_UNSUPPORTED_REQUIREMENT is not a syncable disable reason,
+  // so sync should still say "enabled".
+  bool expect_sync_enabled = true;
+  PromoteEphemeralAppAndVerify(app, ExtensionRegistry::DISABLED,
+                               expect_sync_enabled);
 }
 
 // Verifies that promoting an ephemeral app that is blacklisted will not enable
