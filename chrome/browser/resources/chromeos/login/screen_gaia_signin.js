@@ -32,18 +32,9 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
       'loadAuthExtension',
       'doReload',
       'monitorOfflineIdle',
-      'onWebviewError',
-      'onFrameError',
       'updateCancelButtonState',
       'showWhitelistCheckFailedError',
     ],
-
-    /**
-     * Frame loading error code (0 - no error).
-     * @type {number}
-     * @private
-     */
-    error_: 0,
 
     /**
      * Saved gaia auth host load params.
@@ -481,8 +472,6 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
 
       if (data.forceReload ||
           JSON.stringify(this.gaiaAuthParams_) != JSON.stringify(params)) {
-        this.error_ = 0;
-
         var authMode = cr.login.GaiaAuthHost.AuthMode.DEFAULT;
         if (data.useOffline)
           authMode = cr.login.GaiaAuthHost.AuthMode.OFFLINE;
@@ -499,9 +488,6 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
                                   params,
                                   this.onAuthCompleted_.bind(this));
         }
-      } else if (this.loading && this.error_) {
-        // An error has occurred, so trying to reload.
-        this.doReload();
       }
     },
 
@@ -830,7 +816,6 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
     doReload: function() {
       if (this.isLocal)
         return;
-      this.error_ = 0;
       this.gaiaAuthHost_.reload();
       this.loading = true;
       this.startLoadingTimer_();
@@ -876,17 +861,6 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
 
       this.classList.remove('whitelist-error');
       Oobe.showUserPods();
-    },
-
-    /**
-     * Handler for iframe's error notification coming from the outside.
-     * For more info see C++ class 'WebUILoginView' which calls this method.
-     * @param {number} error Error code.
-     * @param {string} url The URL that failed to load.
-     */
-    onFrameError: function(error, url) {
-      this.error_ = error;
-      chrome.send('frameLoadingCompleted', [this.error_]);
     },
 
     /**

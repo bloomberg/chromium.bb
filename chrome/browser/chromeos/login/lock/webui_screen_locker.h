@@ -20,6 +20,7 @@
 #include "chrome/browser/chromeos/login/ui/login_display.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
 #include "chromeos/dbus/power_manager_client.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "ui/gfx/display_observer.h"
 #include "ui/keyboard/keyboard_controller_observer.h"
 #include "ui/views/widget/widget.h"
@@ -54,7 +55,8 @@ class WebUIScreenLocker : public WebUILoginView,
                           public PowerManagerClient::Observer,
                           public ash::VirtualKeyboardStateObserver,
                           public keyboard::KeyboardControllerObserver,
-                          public gfx::DisplayObserver {
+                          public gfx::DisplayObserver,
+                          public content::WebContentsObserver {
  public:
   explicit WebUIScreenLocker(ScreenLocker* screen_locker);
 

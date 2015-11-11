@@ -69,7 +69,7 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
             if (this.currentStep_ != STEP_SIGNIN)
               return;
             this.isCancelDisabled = false;
-            chrome.send('frameLoadingCompleted', [0]);
+            chrome.send('frameLoadingCompleted');
           }).bind(this));
 
       this.authenticator_.addEventListener('authCompleted',

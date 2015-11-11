@@ -16,7 +16,6 @@
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/login/error_screens_histogram_helper.h"
 #include "chrome/browser/chromeos/login/screens/network_error.h"
-#include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/enrollment_status_chromeos.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
@@ -28,7 +27,6 @@
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/gaia/google_service_auth_error.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace chromeos {
@@ -101,7 +99,6 @@ EnrollmentScreenHandler::EnrollmentScreenHandler(
     : BaseScreenHandler(kJsScreenPath),
       controller_(NULL),
       show_on_init_(false),
-      frame_error_(net::OK),
       first_show_(true),
       observe_network_failure_(false),
       network_state_informer_(network_state_informer),
@@ -112,24 +109,10 @@ EnrollmentScreenHandler::EnrollmentScreenHandler(
   DCHECK(network_state_informer_.get());
   DCHECK(network_error_model_);
   network_state_informer_->AddObserver(this);
-
-  if (chromeos::LoginDisplayHostImpl::default_host()) {
-    chromeos::WebUILoginView* login_view =
-        chromeos::LoginDisplayHostImpl::default_host()->GetWebUILoginView();
-    if (login_view)
-      login_view->AddFrameObserver(this);
-  }
 }
 
 EnrollmentScreenHandler::~EnrollmentScreenHandler() {
   network_state_informer_->RemoveObserver(this);
-
-  if (chromeos::LoginDisplayHostImpl::default_host()) {
-    chromeos::WebUILoginView* login_view =
-        chromeos::LoginDisplayHostImpl::default_host()->GetWebUILoginView();
-    if (login_view)
-      login_view->RemoveFrameObserver(this);
-  }
 }
 
 // EnrollmentScreenHandler, WebUIMessageHandler implementation --
@@ -407,9 +390,7 @@ void EnrollmentScreenHandler::UpdateStateInternal(
   const bool is_online = (state == NetworkStateInformer::ONLINE);
   const bool is_behind_captive_portal =
       (state == NetworkStateInformer::CAPTIVE_PORTAL);
-  const bool is_frame_error =
-      (frame_error() != net::OK) ||
-      (reason == NetworkError::ERROR_REASON_FRAME_ERROR);
+  const bool is_frame_error = reason == NetworkError::ERROR_REASON_FRAME_ERROR;
 
   LOG(WARNING) << "EnrollmentScreenHandler::UpdateState(): "
                << "state=" << NetworkStateInformer::StatusString(state) << ", "
@@ -436,9 +417,7 @@ void EnrollmentScreenHandler::SetupAndShowOfflineMessage(
   const std::string network_path = network_state_informer_->network_path();
   const bool is_behind_captive_portal = IsBehindCaptivePortal(state, reason);
   const bool is_proxy_error = IsProxyError(state, reason);
-  const bool is_frame_error =
-      (frame_error() != net::OK) ||
-      (reason == NetworkError::ERROR_REASON_FRAME_ERROR);
+  const bool is_frame_error = reason == NetworkError::ERROR_REASON_FRAME_ERROR;
 
   if (is_proxy_error) {
     network_error_model_->SetErrorState(NetworkError::ERROR_STATE_PROXY,
@@ -482,12 +461,6 @@ void EnrollmentScreenHandler::HideOfflineMessage(
   histogram_helper_->OnErrorHide();
 }
 
-void EnrollmentScreenHandler::OnFrameError(
-    const std::string& frame_unique_name) {
-  if (frame_unique_name == "oauth-enroll-signin-frame") {
-    HandleFrameLoadingCompleted(net::ERR_FAILED);
-  }
-}
 // EnrollmentScreenHandler, private -----------------------------
 
 void EnrollmentScreenHandler::HandleClose(const std::string& reason) {
@@ -514,16 +487,11 @@ void EnrollmentScreenHandler::HandleRetry() {
   controller_->OnRetry();
 }
 
-void EnrollmentScreenHandler::HandleFrameLoadingCompleted(int status) {
-  const net::Error frame_error = static_cast<net::Error>(status);
-  frame_error_ = frame_error;
-
+void EnrollmentScreenHandler::HandleFrameLoadingCompleted() {
   if (network_state_informer_->state() != NetworkStateInformer::ONLINE)
     return;
-  if (frame_error_)
-    UpdateState(NetworkError::ERROR_REASON_FRAME_ERROR);
-  else
-    UpdateState(NetworkError::ERROR_REASON_UPDATE);
+
+  UpdateState(NetworkError::ERROR_REASON_UPDATE);
 }
 
 void EnrollmentScreenHandler::HandleDeviceAttributesProvided(

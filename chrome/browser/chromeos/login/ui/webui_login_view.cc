@@ -197,7 +197,6 @@ void WebUILoginView::Init() {
   web_contents->SetDelegate(this);
   extensions::ChromeExtensionWebContentsObserver::CreateForWebContents(
       web_contents);
-  WebContentsObserver::Observe(web_contents);
   content::RendererPreferences* prefs = web_contents->GetMutableRendererPrefs();
   renderer_preferences_util::UpdateFromSystemSettings(
       prefs, signin_profile, web_contents);
@@ -334,18 +333,6 @@ void WebUILoginView::SetUIEnabled(bool enabled) {
   tray->SetEnabled(enabled);
 }
 
-void WebUILoginView::AddFrameObserver(FrameObserver* frame_observer) {
-  DCHECK(frame_observer);
-  DCHECK(!frame_observer_list_.HasObserver(frame_observer));
-  frame_observer_list_.AddObserver(frame_observer);
-}
-
-void WebUILoginView::RemoveFrameObserver(FrameObserver* frame_observer) {
-  DCHECK(frame_observer);
-  DCHECK(frame_observer_list_.HasObserver(frame_observer));
-  frame_observer_list_.RemoveObserver(frame_observer);
-}
-
 // WebUILoginView protected: ---------------------------------------------------
 
 void WebUILoginView::Layout() {
@@ -464,23 +451,6 @@ bool WebUILoginView::PreHandleGestureEvent(
   return event.type == blink::WebGestureEvent::GesturePinchBegin ||
       event.type == blink::WebGestureEvent::GesturePinchUpdate ||
       event.type == blink::WebGestureEvent::GesturePinchEnd;
-}
-
-void WebUILoginView::DidFailProvisionalLoad(
-    content::RenderFrameHost* render_frame_host,
-    const GURL& validated_url,
-    int error_code,
-    const base::string16& error_description,
-    bool was_ignored_by_handler) {
-  FOR_EACH_OBSERVER(FrameObserver,
-                    frame_observer_list_,
-                    OnFrameError(render_frame_host->GetFrameName()));
-  if (render_frame_host->GetFrameName() != "gaia-frame")
-    return;
-
-  GetWebUI()->CallJavascriptFunction("login.GaiaSigninScreen.onFrameError",
-                                     base::FundamentalValue(-error_code),
-                                     base::StringValue(validated_url.spec()));
 }
 
 void WebUILoginView::OnLoginPromptVisible() {

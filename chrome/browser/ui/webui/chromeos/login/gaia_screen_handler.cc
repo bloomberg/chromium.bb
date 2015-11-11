@@ -333,8 +333,6 @@ void GaiaScreenHandler::Initialize() {
 }
 
 void GaiaScreenHandler::RegisterMessages() {
-  AddCallback("frameLoadingCompleted",
-              &GaiaScreenHandler::HandleFrameLoadingCompleted);
   AddCallback("webviewLoadAborted",
               &GaiaScreenHandler::HandleWebviewLoadAborted);
   AddCallback("completeLogin", &GaiaScreenHandler::HandleCompleteLogin);
@@ -385,29 +383,6 @@ void GaiaScreenHandler::HandleIdentifierEntered(
     const std::string& account_identifier) {
   if (!Delegate()->IsUserWhitelisted(account_identifier))
     ShowWhitelistCheckFailedError();
-}
-
-void GaiaScreenHandler::HandleFrameLoadingCompleted(int status) {
-  const net::Error frame_error = static_cast<net::Error>(-status);
-  if (frame_error == net::ERR_ABORTED) {
-    LOG(WARNING) << "Ignoring Gaia frame error: " << frame_error;
-    return;
-  }
-  frame_error_ = frame_error;
-  if (frame_error == net::OK) {
-    VLOG(1) << "Gaia is loaded";
-    frame_state_ = FRAME_STATE_LOADED;
-  } else {
-    LOG(WARNING) << "Gaia frame error: " << frame_error_;
-    frame_state_ = FRAME_STATE_ERROR;
-  }
-
-  if (network_state_informer_->state() != NetworkStateInformer::ONLINE)
-    return;
-  if (frame_state_ == FRAME_STATE_LOADED)
-    UpdateState(NetworkError::ERROR_REASON_UPDATE);
-  else if (frame_state_ == FRAME_STATE_ERROR)
-    UpdateState(NetworkError::ERROR_REASON_FRAME_ERROR);
 }
 
 void GaiaScreenHandler::HandleWebviewLoadAborted(
@@ -566,12 +541,18 @@ void GaiaScreenHandler::HandleToggleEasyBootstrap() {
 }
 
 void GaiaScreenHandler::HandleGaiaUIReady() {
+  VLOG(1) << "Gaia is loaded";
+
   // As we could miss and window.onload could already be called, restore
   // focus to current pod (see crbug/175243).
   if (gaia_silent_load_)
     signin_screen_handler_->RefocusCurrentPod();
 
-  HandleFrameLoadingCompleted(0);
+  frame_error_ = net::OK;
+  frame_state_ = FRAME_STATE_LOADED;
+
+  if (network_state_informer_->state() == NetworkStateInformer::ONLINE)
+    UpdateState(NetworkError::ERROR_REASON_UPDATE);
 
   if (test_expects_complete_login_)
     SubmitLoginFormForTest();
