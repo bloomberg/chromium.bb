@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/sys_byteorder.h"
+#include "blimp/common/proto/blimp_message.pb.h"
 #include "blimp/net/common.h"
 #include "net/base/io_buffer.h"
 
@@ -15,6 +16,10 @@ namespace blimp {
 MockStreamSocket::MockStreamSocket() {}
 
 MockStreamSocket::~MockStreamSocket() {}
+
+MockBlimpMessageProcessor::MockBlimpMessageProcessor() {}
+
+MockBlimpMessageProcessor::~MockBlimpMessageProcessor() {}
 
 std::string EncodeHeader(size_t size) {
   scoped_ptr<char[]> serialized(new char[kPacketHeaderSizeBytes]);

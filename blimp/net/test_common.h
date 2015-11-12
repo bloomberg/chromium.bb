@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "blimp/net/blimp_message_processor.h"
 #include "net/socket/stream_socket.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -68,6 +69,17 @@ class MockStreamSocket : public net::StreamSocket {
   MOCK_METHOD0(ClearConnectionAttempts, void());
   MOCK_METHOD1(AddConnectionAttempts, void(const net::ConnectionAttempts&));
   MOCK_CONST_METHOD0(GetTotalReceivedBytes, int64_t());
+};
+
+class MockBlimpMessageProcessor : public BlimpMessageProcessor {
+ public:
+  MockBlimpMessageProcessor();
+
+  ~MockBlimpMessageProcessor() override;
+
+  MOCK_METHOD2(ProcessMessage,
+               void(const BlimpMessage& message,
+                    const net::CompletionCallback& callback));
 };
 
 // Returns true if |buf| has a prefix of |str|.

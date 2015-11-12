@@ -7,8 +7,9 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "blimp/net/blimp_message_receiver.h"
+#include "blimp/net/blimp_message_processor.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "net/base/completion_callback.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace aura {
@@ -42,7 +43,7 @@ class BlimpScreen;
 class BlimpUiContextFactory;
 class BlimpWindowTreeHost;
 
-class BlimpEngineSession : public BlimpMessageReceiver,
+class BlimpEngineSession : public BlimpMessageProcessor,
                            public content::WebContentsDelegate {
  public:
   explicit BlimpEngineSession(scoped_ptr<BlimpBrowserContext> browser_context);
@@ -52,9 +53,10 @@ class BlimpEngineSession : public BlimpMessageReceiver,
 
   BlimpBrowserContext* browser_context() { return browser_context_.get(); }
 
-  // BlimpMessageReceiver implementation.
-  // TODO(haibinlu): Remove this in favor of the BlimpMessageDispatcher.
-  net::Error OnBlimpMessage(const BlimpMessage& message) override;
+  // BlimpMessageProcessor implementation.
+  // TODO(haibinlu): Delete this and move to BlimpMessageDemultiplexer.
+  void ProcessMessage(const BlimpMessage& message,
+                      const net::CompletionCallback& callback) override;
 
  private:
   // ControlMessage handler methods.

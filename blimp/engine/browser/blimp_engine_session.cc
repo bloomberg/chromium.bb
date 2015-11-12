@@ -17,6 +17,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents.h"
+#include "net/base/net_errors.h"
 #include "ui/aura/client/default_capture_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
@@ -133,7 +134,9 @@ void BlimpEngineSession::Reload(const int target_tab_id) {
   web_contents_->GetController().Reload(true);
 }
 
-net::Error BlimpEngineSession::OnBlimpMessage(const BlimpMessage& message) {
+void BlimpEngineSession::ProcessMessage(
+    const BlimpMessage& message,
+    const net::CompletionCallback& callback) {
   DCHECK(message.type() == BlimpMessage::CONTROL ||
          message.type() == BlimpMessage::NAVIGATION);
 
@@ -167,7 +170,9 @@ net::Error BlimpEngineSession::OnBlimpMessage(const BlimpMessage& message) {
     }
   }
 
-  return net::OK;
+  if (!callback.is_null()) {
+    callback.Run(net::OK);
+  }
 }
 
 void BlimpEngineSession::AddNewContents(content::WebContents* source,

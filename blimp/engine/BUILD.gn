@@ -53,6 +53,7 @@ if (is_linux) {
     deps = [
       ":pak",
       "//blimp/engine/app",
+      "//blimp/net:blimp_net",
     ]
   }
 

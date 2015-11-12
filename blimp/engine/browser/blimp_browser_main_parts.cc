@@ -45,13 +45,13 @@ void BlimpBrowserMainParts::PreMainMessageLoopRun() {
   BlimpMessage message;
   message.set_type(BlimpMessage::CONTROL);
   message.mutable_control()->set_type(ControlMessage::CREATE_TAB);
-  engine_session_->OnBlimpMessage(message);
+  engine_session_->ProcessMessage(message, net::CompletionCallback());
   message.clear_control();
   message.set_type(BlimpMessage::NAVIGATION);
   message.mutable_navigation()->set_type(NavigationMessage::LOAD_URL);
   message.mutable_navigation()->mutable_load_url()->set_url(
       "https://www.google.com/");
-  engine_session_->OnBlimpMessage(message);
+  engine_session_->ProcessMessage(message, net::CompletionCallback());
 }
 
 void BlimpBrowserMainParts::PostMainMessageLoopRun() {

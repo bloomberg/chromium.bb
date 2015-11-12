@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "blimp/net/blimp_message_dispatcher.h"
+#include "blimp/net/blimp_message_demultiplexer.h"
 
 #include <string>
 
 #include "base/strings/stringprintf.h"
+#include "net/base/net_errors.h"
 
 namespace blimp {
 namespace {
@@ -17,12 +18,12 @@ std::string BlimpMessageToDebugString(const BlimpMessage& message) {
 
 }  // namespace
 
-BlimpMessageDispatcher::BlimpMessageDispatcher() {}
+BlimpMessageDemultiplexer::BlimpMessageDemultiplexer() {}
 
-BlimpMessageDispatcher::~BlimpMessageDispatcher() {}
+BlimpMessageDemultiplexer::~BlimpMessageDemultiplexer() {}
 
-void BlimpMessageDispatcher::AddReceiver(BlimpMessage::Type type,
-                                         BlimpMessageReceiver* receiver) {
+void BlimpMessageDemultiplexer::AddProcessor(BlimpMessage::Type type,
+                                             BlimpMessageProcessor* receiver) {
   DCHECK(receiver);
   if (feature_receiver_map_.find(type) == feature_receiver_map_.end()) {
     feature_receiver_map_.insert(std::make_pair(type, receiver));
@@ -31,15 +32,19 @@ void BlimpMessageDispatcher::AddReceiver(BlimpMessage::Type type,
   }
 }
 
-net::Error BlimpMessageDispatcher::OnBlimpMessage(const BlimpMessage& message) {
+void BlimpMessageDemultiplexer::ProcessMessage(
+    const BlimpMessage& message,
+    const net::CompletionCallback& callback) {
   auto receiver_iter = feature_receiver_map_.find(message.type());
   if (receiver_iter == feature_receiver_map_.end()) {
     DLOG(FATAL) << "No registered receiver for "
                 << BlimpMessageToDebugString(message) << ".";
-    return net::ERR_NOT_IMPLEMENTED;
+    if (!callback.is_null()) {
+      callback.Run(net::ERR_NOT_IMPLEMENTED);
+    }
   }
 
-  return receiver_iter->second->OnBlimpMessage(message);
+  receiver_iter->second->ProcessMessage(message, callback);
 }
 
 }  // namespace blimp
