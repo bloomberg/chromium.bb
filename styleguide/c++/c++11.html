@@ -80,7 +80,7 @@ C++ Templates Angle Brackets Pitfall</a></td>
 <td><a href="http://en.cppreference.com/w/cpp/language/auto">
 auto specifier</a></td>
 <td>Use according to the <a
-href="https://google-styleguide.googlecode.com/svn/trunk/cppguide.html#auto">Google
+href="https://google.github.io/styleguide/cppguide.html#auto">Google
 Style Guide on <code>auto</code></a>. <a href="https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/OQyYSfH9m2M">Discussion thread</a>. <a href="https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/5-Bt3BJzAo0">Another discussion thread</a>.</td>
 </tr>
 
@@ -155,7 +155,7 @@ synthetic function such as a copy constructor</td>
 <code>base::Callback</code> instead, because they offer protection against a
 large class of object lifetime mistakes. Don't use default captures
 (<code>[=]</code>, <code>[&amp;]</code> &ndash; <a
-  href="https://google-styleguide.googlecode.com/svn/trunk/cppguide.html#Lambda_expressions">Google Style Guide</a>).
+  href="https://google.github.io/styleguide/cppguide.html#Lambda_expressions">Google Style Guide</a>).
 Lambdas are typically useful as a parameter to methods or
 functions that will use them immediately, such as those in
 <code>&lt;algorithm&gt;</code>. <a
@@ -183,8 +183,7 @@ class C {<br />
 <td>Allows non-static class members to be initialized at their definitions (outside constructors)</td>
 <td><a href="http://en.cppreference.com/w/cpp/language/data_members">
 Non-static data members</a></td>
-<td><a href="https://google-styleguide.googlecode.com/svn/trunk/cppguide.html#Initialization">Google
-Style Guide</a>.
+<td>
 <a href="https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/zqB-DySA4V0">Discussion thread</a>
 </td>
 </tr>
@@ -197,7 +196,7 @@ Style Guide</a>.
 nullptr</a></td>
 <td>Recommended for new code.
 <a href="https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/4mijeJHzxLg">Discussion thread</a>.
-<a href="https://google-styleguide.googlecode.com/svn/trunk/cppguide.html#0_and_nullptr/NULL">Google Style Guide</a>.
+<a href="https://google.github.io/styleguide/cppguide.html#0_and_nullptr/NULL">Google Style Guide</a>.
 <code>std::nullptr_t</code> can be used too.
 </td>
 </tr>
@@ -312,7 +311,7 @@ codebase.
 <td><a href="http://en.cppreference.com/w/cpp/language/constexpr">
 constexpr specifier</a></td>
 <td>Doesn't work in MSVS2013. Reevalute once it does. <a
-href="https://google-styleguide.googlecode.com/svn/trunk/cppguide.html#Use_of_constexpr">Google
+href="https://google.github.io/styleguide/cppguide.html#Use_of_constexpr">Google
 Style Guide on <code>constexpr</code></a></td>
 </tr>
 
@@ -394,7 +393,7 @@ UTF-16 and UTF-32 string data)</td>
 Fundamental types</a></td>
 <td>Doesn't work in MSVS2013. Reevaluate once it does.  Non-UTF-8 text is
 banned by the
-<a href="https://google-styleguide.googlecode.com/svn/trunk/cppguide.html#Non-ASCII_Characters">
+<a href="https://google.github.io/styleguide/cppguide.html#Non-ASCII_Characters">
 C++ Style Guide</a>. However, may be useful for
 consuming non-ASCII data. <a href="https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/ME2kL7_Kvyk">Discussion thread</a></td>
 </tr>
@@ -512,7 +511,7 @@ and <code>nested_exception</code></td>
 <td><a href="http://en.cppreference.com/w/cpp/error/exception">
 std::exception</a></td>
 <td>Exceptions are banned by the
-<a href="https://google-styleguide.googlecode.com/svn/trunk/cppguide.html#Exceptions"> C++ Style Guide</a>. <a href="https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/8i4tMqNpHhg">Discussion thread</a></td>
+<a href="https://google.github.io/styleguide/cppguide.html#Exceptions"> C++ Style Guide</a>. <a href="https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/8i4tMqNpHhg">Discussion thread</a></td>
 </tr>
 
 <tr>
@@ -574,7 +573,7 @@ User-defined literals</a></td>
 <td>Obtains the address of an object even with overloaded <code>operator&amp;</code></td>
 <td><a href="http://en.cppreference.com/w/cpp/memory/addressof">std::addressof</a></td>
 <td>Usage should be rare as
-<a href="https://google-styleguide.googlecode.com/svn/trunk/cppguide.html#Operator_Overloading">
+<a href="https://google.github.io/styleguide/cppguide.html#Operator_Overloading">
 Operator Overloading</a> is rare and <code>&amps;</code>
 should suffice in most cases. May be preferable
 over <code>&amps;</code> for performing object
@@ -856,7 +855,7 @@ Reference Wrappers</a></td>
 <td><code>std::shared_ptr</code></td>
 <td>Allows shared ownership of a pointer through reference counts</td>
 <td><a href="http://en.cppreference.com/w/cpp/memory/shared_ptr">std::shared_ptr</a></td>
-<td><a href="https://google-styleguide.googlecode.com/svn/trunk/cppguide.html#Ownership_and_Smart_Pointers">
+<td><a href="https://google.github.io/styleguide/cppguide.html#Ownership_and_Smart_Pointers">
 Ownership and Smart Pointers</a></td>
 </tr>
 
@@ -971,7 +970,7 @@ Standard library header &lt;type_traits&gt;</a></td>
 <td><code>std::unique_ptr&lt;<i>type</i>&gt;</code></td>
 <td>Defines a pointer with clear and unambiguous ownership</td>
 <td>TODO: documentation link</td>
-<td><a href="https://google-styleguide.googlecode.com/svn/trunk/cppguide.html#Ownership_and_Smart_Pointers">
+<td><a href="https://google.github.io/styleguide/cppguide.html#Ownership_and_Smart_Pointers">
 Ownership and Smart Pointers</a></td>
 </tr>
 
@@ -1000,7 +999,7 @@ and <a href="http://en.cppreference.com/w/cpp/container/unordered_set">std::unor
 <td>Allows a weak reference to a <code>std::shared_ptr</code></td>
 <td><a href="http://en.cppreference.com/w/cpp/memory/weak_ptr">
 std::weak_ptr</a></td>
-<td><a href="https://google-styleguide.googlecode.com/svn/trunk/cppguide.html#Ownership_and_Smart_Pointers">
+<td><a href="https://google.github.io/styleguide/cppguide.html#Ownership_and_Smart_Pointers">
 Ownership and Smart Pointers</a></td>
 </tr>
 
@@ -1023,7 +1022,7 @@ std::codecvt_utf16</a>, and
 std::codecvt_utf8_utf16</a>
 </td>
 <td>Non-UTF-8 text is banned by the
-<a href="https://google-styleguide.googlecode.com/svn/trunk/cppguide.html#Non-ASCII_Characters">
+<a href="https://google.github.io/styleguide/cppguide.html#Non-ASCII_Characters">
 C++ Style Guide</a>. However, may be useful for
 consuming non-ASCII data.</td>
 </tr>
