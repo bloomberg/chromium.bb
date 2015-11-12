@@ -32,7 +32,7 @@ FirstRunBubble* FirstRunBubble::ShowBubble(Browser* browser,
   first_run::LogFirstRunMetric(first_run::FIRST_RUN_BUBBLE_SHOWN);
 
   FirstRunBubble* delegate = new FirstRunBubble(browser, anchor_view);
-  views::BubbleDelegateView::CreateBubble(delegate)->Show();
+  views::BubbleDelegateView::CreateBubble(delegate)->ShowInactive();
   return delegate;
 }
 
@@ -80,7 +80,8 @@ void FirstRunBubble::Init() {
 
 FirstRunBubble::FirstRunBubble(Browser* browser, views::View* anchor_view)
     : views::BubbleDelegateView(anchor_view, views::BubbleBorder::TOP_LEFT),
-      browser_(browser) {
+      browser_(browser),
+      bubble_closer_(this, anchor_view) {
   // Compensate for built-in vertical padding in the anchor view's image.
   set_anchor_view_insets(
       gfx::Insets(kAnchorVerticalInset, 0, kAnchorVerticalInset, 0));
@@ -95,4 +96,37 @@ void FirstRunBubble::LinkClicked(views::Link* source, int event_flags) {
   GetWidget()->Close();
   if (browser_)
     chrome::ShowSearchEngineSettings(browser_);
+}
+
+FirstRunBubble::FirstRunBubbleCloser::FirstRunBubbleCloser(
+    FirstRunBubble* bubble,
+    views::View* anchor_view)
+    : bubble_(bubble),
+      anchor_widget_(anchor_view->GetWidget()) {
+  AddKeyboardEventObserver();
+}
+
+FirstRunBubble::FirstRunBubbleCloser::~FirstRunBubbleCloser() {
+  if (anchor_widget_)
+    RemoveKeyboardEventObserver();
+}
+
+void FirstRunBubble::FirstRunBubbleCloser::OnKeyEvent(ui::KeyEvent* event) {
+  if (!anchor_widget_)
+    return;
+
+  RemoveKeyboardEventObserver();
+  DCHECK(bubble_);
+  bubble_->GetWidget()->Close();
+  bubble_ = nullptr;
+}
+
+void FirstRunBubble::FirstRunBubbleCloser::AddKeyboardEventObserver() {
+  anchor_widget_->GetRootView()->AddPreTargetHandler(this);
+}
+
+void FirstRunBubble::FirstRunBubbleCloser::RemoveKeyboardEventObserver() {
+  DCHECK(anchor_widget_);
+  anchor_widget_->GetRootView()->RemovePreTargetHandler(this);
+  anchor_widget_ = nullptr;
 }

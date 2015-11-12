@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_FIRST_RUN_BUBBLE_H_
 #define CHROME_BROWSER_UI_VIEWS_FIRST_RUN_BUBBLE_H_
 
+#include "base/macros.h"
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/controls/link_listener.h"
 
@@ -24,10 +25,34 @@ class FirstRunBubble : public views::BubbleDelegateView,
   FirstRunBubble(Browser* browser, views::View* anchor_view);
   ~FirstRunBubble() override;
 
+  // This class observes keyboard events targeted towards the target view
+  // dismisses the first run bubble accordingly.
+  class FirstRunBubbleCloser : public ui::EventHandler {
+   public:
+    FirstRunBubbleCloser(FirstRunBubble* bubble, views::View* anchor_view);
+    ~FirstRunBubbleCloser() override;
+
+    // ui::EventHandler overrides.
+    void OnKeyEvent(ui::KeyEvent* event) override;
+
+   private:
+    void AddKeyboardEventObserver();
+    void RemoveKeyboardEventObserver();
+
+    // The bubble instance.
+    FirstRunBubble* bubble_;
+
+    // The widget we are observing for keyboard events.
+    views::Widget* anchor_widget_;
+
+    DISALLOW_COPY_AND_ASSIGN(FirstRunBubbleCloser);
+  };
+
   // views::LinkListener overrides:
   void LinkClicked(views::Link* source, int event_flags) override;
 
   Browser* browser_;
+  FirstRunBubbleCloser bubble_closer_;
 
   DISALLOW_COPY_AND_ASSIGN(FirstRunBubble);
 };
