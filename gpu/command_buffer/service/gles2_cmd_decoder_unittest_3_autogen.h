@@ -368,6 +368,14 @@ TEST_P(GLES2DecoderTest3, PopGroupMarkerEXTValidArgs) {
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
+TEST_P(GLES2DecoderTest3, SwapBuffersValidArgs) {
+  SpecializedSetup<cmds::SwapBuffers, 0>(true);
+  cmds::SwapBuffers cmd;
+  cmd.Init();
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
+
 TEST_P(GLES2DecoderTest3, IsValuebufferCHROMIUMValidArgs) {
   SpecializedSetup<cmds::IsValuebufferCHROMIUM, 0>(true);
   cmds::IsValuebufferCHROMIUM cmd;
@@ -385,5 +393,13 @@ TEST_P(GLES2DecoderTest3, IsValuebufferCHROMIUMInvalidArgsBadSharedMemoryId) {
   cmd.Init(client_valuebuffer_id_, shared_memory_id_,
            kInvalidSharedMemoryOffset);
   EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
+}
+
+TEST_P(GLES2DecoderTest3, SwapIntervalValidArgs) {
+  SpecializedSetup<cmds::SwapInterval, 0>(true);
+  cmds::SwapInterval cmd;
+  cmd.Init(1);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 #endif  // GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_3_AUTOGEN_H_

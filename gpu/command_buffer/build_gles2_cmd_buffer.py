@@ -3413,16 +3413,16 @@ _FUNCTION_INFO = {
   'SwapBuffers': {
     'impl_func': False,
     'decoder_func': 'DoSwapBuffers',
-    'unit_test': False,
     'client_test': False,
+    'expectation': False,
     'extension': True,
     'trace_level': 1,
   },
   'SwapInterval': {
     'impl_func': False,
     'decoder_func': 'DoSwapInterval',
-    'unit_test': False,
     'client_test': False,
+    'expectation': False,
     'extension': True,
     'trace_level': 1,
   },
