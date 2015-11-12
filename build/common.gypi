@@ -6244,10 +6244,24 @@
             'msvs_settings': {
               'VCCLCompilerTool': {
                 'AdditionalOptions': [
+                  # TODO(pcc): Use regular -fsanitize=* flags here once clang-cl
+                  # supports LTO.
+                  '-Xclang',
                   '-fsanitize=cfi-vcall',
+                  '-Xclang',
                   '-fsanitize=cfi-derived-cast',
+                  '-Xclang',
                   '-fsanitize=cfi-unrelated-cast',
+                  '-Xclang',
+                  '-fsanitize-trap=cfi-vcall',
+                  '-Xclang',
+                  '-fsanitize-trap=cfi-derived-cast',
+                  '-Xclang',
+                  '-fsanitize-trap=cfi-unrelated-cast',
+                  '-Xclang',
                   '-fsanitize-blacklist=<(cfi_blacklist)',
+                  '-Xclang',
+                  '-fsanitize-blacklist=../../<(make_clang_dir)/lib/clang/<!(python <(DEPTH)/tools/clang/scripts/update.py --print-clang-version)/cfi_blacklist.txt',
                 ],
               },
             },
