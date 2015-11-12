@@ -11,19 +11,15 @@
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/rand_util.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
+#include "chrome/browser/extensions/api/gcd_private/privet_v3_context_getter.h"
 #include "chrome/browser/local_discovery/privet_constants.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/cloud_print/cloud_print_constants.h"
 #include "net/base/url_util.h"
-#include "net/cert/cert_verifier.h"
-#include "net/cert/cert_verify_result.h"
-#include "net/url_request/url_request_context.h"
-#include "net/url_request/url_request_context_builder.h"
 #include "url/gurl.h"
 
 #if defined(ENABLE_PRINT_PREVIEW)
@@ -88,85 +84,6 @@ GURL CreatePrivetParamURL(const std::string& path,
   }
   return url.ReplaceComponents(replacements);
 }
-
-// Class verifies certificate by its fingerprint received using different
-// channel. It's the only know information about device with self-signed
-// certificate.
-class FingerprintVerifier : public net::CertVerifier {
- public:
-  explicit FingerprintVerifier(
-      const net::SHA256HashValue& certificate_fingerprint)
-      : certificate_fingerprint_(certificate_fingerprint) {}
-
-  int Verify(net::X509Certificate* cert,
-             const std::string& hostname,
-             const std::string& ocsp_response,
-             int flags,
-             net::CRLSet* crl_set,
-             net::CertVerifyResult* verify_result,
-             const net::CompletionCallback& callback,
-             scoped_ptr<Request>* out_req,
-             const net::BoundNetLog& net_log) override {
-    // Mark certificate as invalid as we didn't check it.
-    verify_result->Reset();
-    verify_result->verified_cert = cert;
-    verify_result->cert_status = net::CERT_STATUS_INVALID;
-
-    auto fingerprint =
-        net::X509Certificate::CalculateFingerprint256(cert->os_cert_handle());
-
-    return certificate_fingerprint_.Equals(fingerprint) ? net::OK
-                                                        : net::ERR_CERT_INVALID;
-  }
-
- private:
-  net::SHA256HashValue certificate_fingerprint_;
-
-  DISALLOW_COPY_AND_ASSIGN(FingerprintVerifier);
-};
-
-class PrivetContextGetter : public net::URLRequestContextGetter {
- public:
-  PrivetContextGetter(
-      const scoped_refptr<base::SingleThreadTaskRunner>& net_task_runner,
-      const net::SHA256HashValue& certificate_fingerprint)
-      : verifier_(new FingerprintVerifier(certificate_fingerprint)),
-        net_task_runner_(net_task_runner) {
-    CHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kEnablePrivetV3));
-  }
-
-  net::URLRequestContext* GetURLRequestContext() override {
-    DCHECK(net_task_runner_->BelongsToCurrentThread());
-    if (!context_) {
-      net::URLRequestContextBuilder builder;
-      builder.set_proxy_service(net::ProxyService::CreateDirect());
-      builder.SetSpdyAndQuicEnabled(false, false);
-      builder.DisableHttpCache();
-      builder.SetCertVerifier(verifier_.Pass());
-      builder.set_user_agent(::GetUserAgent());
-      context_ = builder.Build();
-    }
-    return context_.get();
-  }
-
-  scoped_refptr<base::SingleThreadTaskRunner> GetNetworkTaskRunner()
-      const override {
-    return net_task_runner_;
-  }
-
- protected:
-  ~PrivetContextGetter() override {
-    DCHECK(net_task_runner_->BelongsToCurrentThread());
-  }
-
- private:
-  scoped_ptr<net::CertVerifier> verifier_;
-  scoped_ptr<net::URLRequestContext> context_;
-  scoped_refptr<base::SingleThreadTaskRunner> net_task_runner_;
-
-  DISALLOW_COPY_AND_ASSIGN(PrivetContextGetter);
-};
 
 }  // namespace
 
@@ -826,7 +743,7 @@ void PrivetHTTPClientImpl::SwitchToHttps(
     const net::SHA256HashValue& certificate_fingerprint) {
   use_https_ = true;
   host_port_.set_port(port);
-  context_getter_ = new PrivetContextGetter(
+  context_getter_ = new extensions::PrivetV3ContextGetter(
       context_getter_->GetNetworkTaskRunner(), certificate_fingerprint);
 }
 

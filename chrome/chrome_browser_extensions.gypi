@@ -293,6 +293,8 @@
       'browser/extensions/api/font_settings/font_settings_api.h',
       'browser/extensions/api/gcd_private/gcd_private_api.cc',
       'browser/extensions/api/gcd_private/gcd_private_api.h',
+      'browser/extensions/api/gcd_private/privet_v3_context_getter.cc',
+      'browser/extensions/api/gcd_private/privet_v3_context_getter.h',
       'browser/extensions/api/gcd_private/privet_v3_session.cc',
       'browser/extensions/api/gcd_private/privet_v3_session.h',
       'browser/extensions/api/gcm/gcm_api.cc',
