@@ -1,0 +1,23 @@
+<!--
+  -- Copyright 2015 The Chromium Authors. All rights reserved.
+  -- Use of this source code is governed by a BSD-style license that can be
+  -- found in the LICENSE file.
+  -->
+
+<link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
+
+<dom-module id="volume-controller">
+  <link rel="import" type="css" href="volume_controller.css">
+  <template>
+    <div id="background"></div>
+    <input name="rawValueInput" id="rawValueInput" touch-action="manipulation"
+           type="range" min="0" max="100" value="{{rawValue::input}}">
+    <div id="bar">
+      <div class="filled" style$="[[computeFilledStyle_(rawValue)]]"></div>
+      <div class="cap left"></div>
+      <div class="cap right"></div>
+    </div>
+  </template>
+</dom-module>
+
+<script src="volume_controller.js"></script>

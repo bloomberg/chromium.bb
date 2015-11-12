@@ -26,7 +26,6 @@ AudioPlayerModel.prototype.initialize = function(callback) {
       repeat: false,
       volume: 100,
       expanded: false,
-      volumeSliderShown: false
     };
 
   /**
