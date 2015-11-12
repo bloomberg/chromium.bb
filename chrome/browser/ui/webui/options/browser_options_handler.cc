@@ -22,7 +22,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/value_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/auto_launch_trial.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/custom_home_pages_table_model.h"
@@ -134,7 +133,6 @@
 
 #if defined(OS_WIN)
 #include "chrome/browser/extensions/settings_api_helpers.h"
-#include "chrome/installer/util/auto_launch_util.h"
 #include "content/public/browser/browser_url_handler.h"
 #endif  // defined(OS_WIN)
 
@@ -232,7 +230,6 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
     { "advancedSectionTitlePrivacy",
       IDS_OPTIONS_ADVANCED_SECTION_TITLE_PRIVACY },
     { "advancedSectionTitleSystem", IDS_OPTIONS_ADVANCED_SECTION_TITLE_SYSTEM },
-    { "autoLaunchText", IDS_AUTOLAUNCH_TEXT },
     { "autoOpenFileTypesInfo", IDS_OPTIONS_OPEN_FILE_TYPES_AUTOMATICALLY },
     { "autoOpenFileTypesResetToDefault",
       IDS_OPTIONS_AUTOOPENFILETYPES_RESETTODEFAULT },
@@ -915,15 +912,6 @@ void BrowserOptionsHandler::InitializeHandler() {
 
 #if defined(OS_WIN)
   ExtensionRegistry::Get(Profile::FromWebUI(web_ui()))->AddObserver(this);
-
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-  if (!command_line.HasSwitch(switches::kUserDataDir)) {
-    BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-        base::Bind(&BrowserOptionsHandler::CheckAutoLaunch,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   profile->GetPath()));
-  }
 #endif
 
   // No preferences below this point may be modified by guest profiles.
@@ -1049,50 +1037,6 @@ void BrowserOptionsHandler::InitializePage() {
   if (consumer_management) {
     OnConsumerManagementStatusChanged();
     consumer_management->AddObserver(this);
-  }
-#endif
-}
-
-// static
-void BrowserOptionsHandler::CheckAutoLaunch(
-    base::WeakPtr<BrowserOptionsHandler> weak_this,
-    const base::FilePath& profile_path) {
-#if defined(OS_WIN)
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
-
-  // Auto-launch is not supported for secondary profiles yet.
-  if (profile_path.BaseName().value() !=
-          base::ASCIIToUTF16(chrome::kInitialProfile)) {
-    return;
-  }
-
-  // Pass in weak pointer to this to avoid race if BrowserOptionsHandler is
-  // deleted.
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-      base::Bind(&BrowserOptionsHandler::CheckAutoLaunchCallback,
-                 weak_this,
-                 auto_launch_trial::IsInAutoLaunchGroup(),
-                 auto_launch_util::AutoStartRequested(
-                     profile_path.BaseName().value(),
-                     true,  // Window requested.
-                     base::FilePath())));
-#endif
-}
-
-void BrowserOptionsHandler::CheckAutoLaunchCallback(
-    bool is_in_auto_launch_group,
-    bool will_launch_at_login) {
-#if defined(OS_WIN)
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  if (is_in_auto_launch_group) {
-    web_ui()->RegisterMessageCallback("toggleAutoLaunch",
-        base::Bind(&BrowserOptionsHandler::ToggleAutoLaunch,
-        base::Unretained(this)));
-
-    base::FundamentalValue enabled(will_launch_at_login);
-    web_ui()->CallJavascriptFunction("BrowserOptions.updateAutoLaunchState",
-                                     enabled);
   }
 #endif
 }
@@ -1331,26 +1275,6 @@ void BrowserOptionsHandler::OnProfileNameChanged(
 void BrowserOptionsHandler::OnProfileAvatarChanged(
     const base::FilePath& profile_path) {
   SendProfilesInfo();
-}
-
-void BrowserOptionsHandler::ToggleAutoLaunch(const base::ListValue* args) {
-#if defined(OS_WIN)
-  if (!auto_launch_trial::IsInAutoLaunchGroup())
-    return;
-
-  bool enable;
-  CHECK_EQ(args->GetSize(), 1U);
-  CHECK(args->GetBoolean(0, &enable));
-
-  Profile* profile = Profile::FromWebUI(web_ui());
-  content::BrowserThread::PostTask(
-      content::BrowserThread::FILE, FROM_HERE,
-      enable ?
-          base::Bind(&auto_launch_util::EnableForegroundStartAtLogin,
-                     profile->GetPath().BaseName().value(), base::FilePath()) :
-          base::Bind(&auto_launch_util::DisableForegroundStartAtLogin,
-                      profile->GetPath().BaseName().value()));
-#endif  // OS_WIN
 }
 
 scoped_ptr<base::ListValue> BrowserOptionsHandler::GetProfilesInfoList() {

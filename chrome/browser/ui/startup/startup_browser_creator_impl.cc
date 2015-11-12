@@ -26,7 +26,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/apps/install_chrome_app.h"
-#include "chrome/browser/auto_launch_trial.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
@@ -63,7 +62,6 @@
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/session_crashed_bubble.h"
-#include "chrome/browser/ui/startup/autolaunch_prompt.h"
 #include "chrome/browser/ui/startup/bad_flags_prompt.h"
 #include "chrome/browser/ui/startup/default_browser_prompt.h"
 #include "chrome/browser/ui/startup/google_api_keys_infobar_delegate.h"
@@ -827,10 +825,9 @@ void StartupBrowserCreatorImpl::AddInfoBarsIfNecessary(
       // Generally, the default browser prompt should not be shown on first
       // run. However, when the set-as-default dialog has been suppressed, we
       // need to allow it.
-      if ((!is_first_run_ ||
-           (browser_creator_ &&
-            browser_creator_->is_default_browser_dialog_suppressed())) &&
-          !chrome::ShowAutolaunchPrompt(browser)) {
+      if (!is_first_run_ ||
+          (browser_creator_ &&
+           browser_creator_->is_default_browser_dialog_suppressed())) {
         chrome::ShowDefaultBrowserPrompt(profile_,
                                          browser->host_desktop_type());
       }

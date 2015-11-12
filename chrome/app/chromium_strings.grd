@@ -551,13 +551,6 @@ Chromium is unable to recover your settings.
         </message>
       </if>
 
-      <!-- Autolaunch infobar -->
-      <if expr="is_win">
-        <message name="IDS_AUTO_LAUNCH_INFOBAR_TEXT" desc="The text to show in the infobar when Chromium was automatically launched on startup">
-          Chromium is configured to automatically launch when you start your computer.
-        </message>
-      </if>
-
       <!-- about:flags -->
       <message name="IDS_FLAGS_ENABLE_IFRAME_BASED_SIGNIN_NAME" desc="Title for the flag to enable iframe-based sign-in flows.">
         Enables iframe-based Chromium sign-in flows. This flag overrides --enable-web-based-signin.
@@ -1022,9 +1015,6 @@ Signing in anyway will merge Chromium information like bookmarks, history, and o
 
       <!-- chrome://settings. Android uses native UI for settings -->
       <if expr="not is_android">
-        <message name="IDS_AUTOLAUNCH_TEXT" desc="The text displayed in settings to explain whether Chromium is set to auto-launch on startup or not.">
-          Launch Chromium automatically when your computer starts
-        </message>
         <message name="IDS_OPTIONS_DEFAULTBROWSER_USEASDEFAULT" desc="The label of the 'Use Chromium as default' browser button">
           Make Chromium the default browser
         </message>

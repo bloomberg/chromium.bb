@@ -164,23 +164,6 @@ class BrowserOptionsHandler
   // Sets the search engine at the given index to be default. Called from WebUI.
   void SetDefaultSearchEngine(const base::ListValue* args);
 
-  // Enables/disables auto-launching of Chrome on computer startup.
-  void ToggleAutoLaunch(const base::ListValue* args);
-
-  // Checks (on the file thread) whether the user is in the auto-launch trial
-  // and whether Chrome is set to auto-launch at login. Gets a reply on the UI
-  // thread (see CheckAutoLaunchCallback). A weak pointer to this is passed in
-  // as a parameter to avoid the need to lock between this function and the
-  // destructor. |profile_path| is the full path to the current profile.
-  static void CheckAutoLaunch(base::WeakPtr<BrowserOptionsHandler> weak_this,
-                              const base::FilePath& profile_path);
-
-  // Sets up (on the UI thread) the necessary bindings for toggling auto-launch
-  // (if the user is part of the auto-launch and makes sure the HTML UI knows
-  // whether Chrome will auto-launch at login.
-  void CheckAutoLaunchCallback(bool is_in_auto_launch_group,
-                               bool will_launch_at_login);
-
   // Returns the string ID for the given default browser state.
   int StatusStringIdForState(ShellIntegration::DefaultWebClientState state);
 

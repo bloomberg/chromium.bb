@@ -436,8 +436,6 @@ cr.define('options', function() {
         $('set-as-default-browser').onclick = function(event) {
           chrome.send('becomeDefaultBrowser');
         };
-
-        $('auto-launch').onclick = this.handleAutoLaunchChanged_;
       }
 
       // Privacy section.
@@ -1326,16 +1324,6 @@ cr.define('options', function() {
       return url.replace(/^http:\/\//, '');
     },
 
-   /**
-    * Shows the autoLaunch preference and initializes its checkbox value.
-    * @param {boolean} enabled Whether autolaunch is enabled or or not.
-    * @private
-    */
-    updateAutoLaunchState_: function(enabled) {
-      $('auto-launch-option').hidden = false;
-      $('auto-launch').checked = enabled;
-    },
-
     /**
      * Called when the value of the download.default_directory preference
      * changes.
@@ -1425,14 +1413,6 @@ cr.define('options', function() {
         var selection = engineSelect.options[selectedIndex];
         chrome.send('setDefaultSearchEngine', [String(selection.value)]);
       }
-    },
-
-   /**
-     * Sets or clear whether Chrome should Auto-launch on computer startup.
-     * @private
-     */
-    handleAutoLaunchChanged_: function() {
-      chrome.send('toggleAutoLaunch', [$('auto-launch').checked]);
     },
 
     /**

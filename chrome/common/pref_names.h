@@ -653,7 +653,6 @@ extern const char kRegisteredBackgroundContents[];
 
 #if defined(OS_WIN)
 extern const char kLastWelcomedOSVersion[];
-extern const char kShownAutoLaunchInfobar[];
 extern const char kWelcomePageOnOSUpgradeEnabled[];
 #endif
 

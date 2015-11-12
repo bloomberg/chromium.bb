@@ -1342,7 +1342,6 @@
     'chrome_browser_ui_linux_sources': [
       'browser/ui/certificate_dialogs.cc',
       'browser/ui/certificate_dialogs.h',
-      'browser/ui/startup/autolaunch_prompt.cc',
       'browser/ui/views/apps/chrome_app_window_client_views.cc',
       'browser/ui/webui/certificate_viewer_ui.cc',
       'browser/ui/webui/certificate_viewer_ui.h',
@@ -1444,7 +1443,6 @@
       # manage_passwords_decoration.mm
       'browser/ui/passwords/manage_passwords_icon.cc',
       'browser/ui/passwords/manage_passwords_icon.h',
-      'browser/ui/startup/autolaunch_prompt.cc',
       'browser/ui/web_contents_sizer.mm',
     ],
     'chrome_browser_ui_media_router_sources': [
@@ -1664,8 +1662,6 @@
       'browser/ui/settings_window_manager_observer.h',
       'browser/ui/singleton_tabs.cc',
       'browser/ui/singleton_tabs.h',
-      'browser/ui/startup/autolaunch_prompt.h',
-      'browser/ui/startup/autolaunch_prompt_win.cc',
       'browser/ui/startup/bad_flags_prompt.cc',
       'browser/ui/startup/bad_flags_prompt.h',
       'browser/ui/startup/google_api_keys_infobar_delegate.cc',

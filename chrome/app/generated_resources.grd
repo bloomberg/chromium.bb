@@ -3398,16 +3398,6 @@ Even if you have downloaded files from this website before, the website might ha
         View
       </message>
 
-      <!-- Autolaunch infobar -->
-      <if expr="is_win">
-        <message name="IDS_AUTO_LAUNCH_OK" desc="Label for OK button on Autolaunch confirmation infobar.">
-          OK
-        </message>
-        <message name="IDS_AUTO_LAUNCH_REVERT" desc="Label for button (on Autolaunch confirmation infobar) that disables autolaunching.">
-          Cut it out!
-        </message>
-      </if>
-
       <!-- DevTools attached infobar -->
       <message name="IDS_DEV_TOOLS_INFOBAR_LABEL" desc="Label displayed in an infobar when external debugger is attached to the browser">
         "<ph name="CLIENT_NAME">$1<ex>Extension Foo</ex></ph>" is debugging this browser.

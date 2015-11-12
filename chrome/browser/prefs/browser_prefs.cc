@@ -60,7 +60,6 @@
 #include "chrome/browser/ui/network_profile_bubble.h"
 #include "chrome/browser/ui/prefs/prefs_tab_helper.h"
 #include "chrome/browser/ui/search_engines/keyword_editor_controller.h"
-#include "chrome/browser/ui/startup/autolaunch_prompt.h"
 #include "chrome/browser/ui/tabs/pinned_tab_codec.h"
 #include "chrome/browser/ui/webui/flags_ui.h"
 #include "chrome/browser/ui/webui/instant_ui.h"
@@ -227,14 +226,11 @@
 
 namespace {
 
-#if !defined(OS_ANDROID)
-// The AutomaticProfileResetter service used this preference to save that the
-// profile reset prompt had already been shown, however, the preference has been
-// renamed in Local State. We keep the name here for now so that we can clear
-// out legacy values.
-// TODO(engedy): Remove this and usages in M42 or later. See crbug.com/398813.
-const char kLegacyProfileResetPromptMemento[] = "profile.reset_prompt_memento";
-#endif
+#if defined(OS_WIN)
+// Deprecated 11/2015 (M48). TODO(gab): delete in M52+.
+const char kShownAutoLaunchInfobarDeprecated[] =
+    "browser.shown_autolaunch_infobar";
+#endif  // defined(OS_WIN)
 
 }  // namespace
 
@@ -357,12 +353,6 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
 #if defined(TOOLKIT_VIEWS)
   RegisterBrowserViewLocalPrefs(registry);
 #endif
-
-  // Preferences registered only for migration (clearing or moving to a new key)
-  // go here.
-#if !defined(OS_ANDROID)
-  registry->RegisterDictionaryPref(kLegacyProfileResetPromptMemento);
-#endif  // !defined(OS_ANDROID)
 }
 
 // Register prefs applicable to all profiles.
@@ -481,7 +471,6 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   NewTabUI::RegisterProfilePrefs(registry);
   PepperFlashSettingsManager::RegisterProfilePrefs(registry);
   PinnedTabCodec::RegisterProfilePrefs(registry);
-  RegisterAutolaunchUserPrefs(registry);
   signin::RegisterProfilePrefs(registry);
 #endif
 
@@ -521,6 +510,13 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
   browser_sync::ForeignSessionHandler::RegisterProfilePrefs(registry);
 #endif
+
+  // Preferences registered only for migration (clearing or moving to a new key)
+  // go here.
+
+#if defined(OS_WIN)
+  registry->RegisterIntegerPref(kShownAutoLaunchInfobarDeprecated, 0);
+#endif  // defined(OS_WIN)
 }
 
 void RegisterUserProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
@@ -549,11 +545,6 @@ void MigrateObsoleteBrowserPrefs(Profile* profile, PrefService* local_state) {
   // Added 05/2014.
   MigrateBrowserTabStripPrefs(local_state);
 #endif
-
-#if !defined(OS_ANDROID)
-  // Added 08/2014.
-  local_state->ClearPref(kLegacyProfileResetPromptMemento);
-#endif
 }
 
 // This method should be periodically pruned of year+ old migrations.
@@ -567,6 +558,11 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
 #if defined(OS_CHROMEOS) && defined(ENABLE_APP_LIST)
   // Added 02/2015.
   MigrateGoogleNowPrefs(profile);
+#endif
+
+#if defined(OS_WIN)
+  // Added 11/2015.
+  profile_prefs->ClearPref(kShownAutoLaunchInfobarDeprecated);
 #endif
 }
 

@@ -8,8 +8,6 @@
 
 #include "base/command_line.h"
 #include "base/metrics/field_trial.h"
-#include "chrome/browser/auto_launch_trial.h"
-#include "chrome/browser/google/google_brand.h"
 #include "chrome/browser/prerender/prerender_field_trial.h"
 #include "chrome/browser/tracing/background_tracing_field_trial.h"
 #include "chrome/common/chrome_switches.h"
@@ -20,20 +18,6 @@
 namespace chrome {
 
 namespace {
-
-void AutoLaunchChromeFieldTrial() {
-  std::string brand;
-  google_brand::GetBrand(&brand);
-
-  // Create a 100% field trial based on the brand code.
-  if (auto_launch_trial::IsInExperimentGroup(brand)) {
-    base::FieldTrialList::CreateFieldTrial(kAutoLaunchTrialName,
-                                           kAutoLaunchTrialAutoLaunchGroup);
-  } else if (auto_launch_trial::IsInControlGroup(brand)) {
-    base::FieldTrialList::CreateFieldTrial(kAutoLaunchTrialName,
-                                           kAutoLaunchTrialControlGroup);
-  }
-}
 
 void SetupLightSpeedTrials() {
   if (!variations::GetVariationParamValue("LightSpeed", "NoGpu").empty()) {
@@ -67,7 +51,6 @@ void SetupStunProbeTrial() {
 
 void SetupDesktopFieldTrials(const base::CommandLine& parsed_command_line) {
   prerender::ConfigurePrerender(parsed_command_line);
-  AutoLaunchChromeFieldTrial();
   SetupLightSpeedTrials();
   tracing::SetupBackgroundTracingFieldTrial();
   SetupStunProbeTrial();

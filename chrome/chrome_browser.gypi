@@ -1029,8 +1029,6 @@
     'chrome_browser_non_mobile_sources': [
       'browser/accessibility/invert_bubble_prefs.cc',
       'browser/accessibility/invert_bubble_prefs.h',
-      'browser/auto_launch_trial.cc',
-      'browser/auto_launch_trial.h',
       'browser/background/background_contents.cc',
       'browser/background/background_contents.h',
       'browser/banners/app_banner_data_fetcher_desktop.cc',
