@@ -595,6 +595,7 @@ bool FinalizeCrashDoneAndroid(bool is_browser_process) {
 
 bool CrashDone(const MinidumpDescriptor& minidump,
                const bool upload,
+               const bool should_finalize,
                const bool succeeded) {
   // WARNING: this code runs in a compromised context. It may not call into
   // libc nor allocate memory normally.
@@ -629,17 +630,27 @@ bool CrashDone(const MinidumpDescriptor& minidump,
   info.crash_keys = g_crash_keys;
   HandleCrashDump(info);
 #if defined(OS_ANDROID)
-  return FinalizeCrashDoneAndroid(true /* is_browser_process */);
+  return !should_finalize ||
+         FinalizeCrashDoneAndroid(true /* is_browser_process */);
 #else
   return true;
 #endif
 }
 
+#if defined(OS_ANDROID)
+// Wrapper function, do not add more code here.
+bool MinidumpGenerated(const MinidumpDescriptor& minidump,
+                       void* context,
+                       bool succeeded) {
+  return CrashDone(minidump, false, false, succeeded);
+}
+#endif
+
 // Wrapper function, do not add more code here.
 bool CrashDoneNoUpload(const MinidumpDescriptor& minidump,
                        void* context,
                        bool succeeded) {
-  return CrashDone(minidump, false, succeeded);
+  return CrashDone(minidump, false, true, succeeded);
 }
 
 #if !defined(OS_ANDROID)
@@ -647,7 +658,7 @@ bool CrashDoneNoUpload(const MinidumpDescriptor& minidump,
 bool CrashDoneUpload(const MinidumpDescriptor& minidump,
                      void* context,
                      bool succeeded) {
-  return CrashDone(minidump, true, succeeded);
+  return CrashDone(minidump, true, true, succeeded);
 }
 #endif
 
@@ -814,13 +825,11 @@ void EnableNonBrowserCrashDumping(const std::string& process_type,
 }
 
 void GenerateMinidumpOnDemandForAndroid() {
-  // TODO(tobiasjs) this still calls FinalizeCrashDoneAndroid, which
-  // generates logspam. Consider refactoring.
   int dump_fd = GetCrashReporterClient()->GetAndroidMinidumpDescriptor();
   if (dump_fd >= 0) {
     MinidumpDescriptor minidump_descriptor(dump_fd);
     minidump_descriptor.set_size_limit(-1);
-    ExceptionHandler(minidump_descriptor, nullptr, CrashDoneNoUpload, nullptr,
+    ExceptionHandler(minidump_descriptor, nullptr, MinidumpGenerated, nullptr,
                      false, -1)
         .WriteMinidump();
   }
