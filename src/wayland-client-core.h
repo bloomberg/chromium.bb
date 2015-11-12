@@ -139,9 +139,21 @@ wl_proxy_marshal_constructor(struct wl_proxy *proxy,
 			     ...);
 
 struct wl_proxy *
+wl_proxy_marshal_constructor_versioned(struct wl_proxy *proxy,
+				       uint32_t opcode,
+				       const struct wl_interface *interface,
+				       uint32_t version,
+				       ...);
+struct wl_proxy *
 wl_proxy_marshal_array_constructor(struct wl_proxy *proxy,
 				   uint32_t opcode, union wl_argument *args,
 				   const struct wl_interface *interface);
+struct wl_proxy *
+wl_proxy_marshal_array_constructor_versioned(struct wl_proxy *proxy,
+					     uint32_t opcode,
+					     union wl_argument *args,
+					     const struct wl_interface *interface,
+					     uint32_t version);
 
 void
 wl_proxy_destroy(struct wl_proxy *proxy);
@@ -163,6 +175,9 @@ wl_proxy_set_user_data(struct wl_proxy *proxy, void *user_data);
 
 void *
 wl_proxy_get_user_data(struct wl_proxy *proxy);
+
+uint32_t
+wl_proxy_get_version(struct wl_proxy *proxy);
 
 uint32_t
 wl_proxy_get_id(struct wl_proxy *proxy);

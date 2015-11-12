@@ -62,6 +62,7 @@ struct wl_proxy {
 	int refcount;
 	void *user_data;
 	wl_dispatcher_func_t dispatcher;
+	uint32_t version;
 };
 
 struct wl_global {
@@ -326,7 +327,8 @@ wl_display_create_queue(struct wl_display *display)
 }
 
 static struct wl_proxy *
-proxy_create(struct wl_proxy *factory, const struct wl_interface *interface)
+proxy_create(struct wl_proxy *factory, const struct wl_interface *interface,
+	     uint32_t version)
 {
 	struct wl_proxy *proxy;
 	struct wl_display *display = factory->display;
@@ -339,6 +341,7 @@ proxy_create(struct wl_proxy *factory, const struct wl_interface *interface)
 	proxy->display = display;
 	proxy->queue = factory->queue;
 	proxy->refcount = 1;
+	proxy->version = version;
 
 	proxy->object.id = wl_map_insert_new(&display->objects, 0, proxy);
 
@@ -371,7 +374,7 @@ wl_proxy_create(struct wl_proxy *factory, const struct wl_interface *interface)
 	struct wl_proxy *proxy;
 
 	pthread_mutex_lock(&display->mutex);
-	proxy = proxy_create(factory, interface);
+	proxy = proxy_create(factory, interface, factory->version);
 	pthread_mutex_unlock(&display->mutex);
 
 	return proxy;
@@ -394,6 +397,7 @@ wl_proxy_create_for_id(struct wl_proxy *factory,
 	proxy->display = display;
 	proxy->queue = factory->queue;
 	proxy->refcount = 1;
+	proxy->version = factory->version;
 
 	wl_map_insert_at(&display->objects, 0, id, proxy);
 
@@ -525,7 +529,7 @@ wl_proxy_add_dispatcher(struct wl_proxy *proxy,
 static struct wl_proxy *
 create_outgoing_proxy(struct wl_proxy *proxy, const struct wl_message *message,
 		      union wl_argument *args,
-		      const struct wl_interface *interface)
+		      const struct wl_interface *interface, uint32_t version)
 {
 	int i, count;
 	const char *signature;
@@ -539,7 +543,7 @@ create_outgoing_proxy(struct wl_proxy *proxy, const struct wl_message *message,
 
 		switch (arg.type) {
 		case 'n':
-			new_proxy = proxy_create(proxy, interface);
+			new_proxy = proxy_create(proxy, interface, version);
 			if (new_proxy == NULL)
 				return NULL;
 
@@ -564,7 +568,8 @@ create_outgoing_proxy(struct wl_proxy *proxy, const struct wl_message *message,
  *
  * For new-id arguments, this function will allocate a new wl_proxy
  * and send the ID to the server.  The new wl_proxy will be returned
- * on success or NULL on errror with errno set accordingly.
+ * on success or NULL on errror with errno set accordingly.  The newly
+ * created proxy will inherit their version from their parent.
  *
  * \note This is intended to be used by language bindings and not in
  * non-generated code.
@@ -578,6 +583,43 @@ wl_proxy_marshal_array_constructor(struct wl_proxy *proxy,
 				   uint32_t opcode, union wl_argument *args,
 				   const struct wl_interface *interface)
 {
+	return wl_proxy_marshal_array_constructor_versioned(proxy, opcode,
+							    args, interface,
+							    proxy->version);
+}
+
+
+/** Prepare a request to be sent to the compositor
+ *
+ * \param proxy The proxy object
+ * \param opcode Opcode of the request to be sent
+ * \param args Extra arguments for the given request
+ * \param interface The interface to use for the new proxy
+ * \param version The protocol object version for the new proxy
+ *
+ * Translates the request given by opcode and the extra arguments into the
+ * wire format and write it to the connection buffer.  This version takes an
+ * array of the union type wl_argument.
+ *
+ * For new-id arguments, this function will allocate a new wl_proxy
+ * and send the ID to the server.  The new wl_proxy will be returned
+ * on success or NULL on errror with errno set accordingly.  The newly
+ * created proxy will have the version specified.
+ *
+ * \note This is intended to be used by language bindings and not in
+ * non-generated code.
+ *
+ * \sa wl_proxy_marshal()
+ *
+ * \memberof wl_proxy
+ */
+WL_EXPORT struct wl_proxy *
+wl_proxy_marshal_array_constructor_versioned(struct wl_proxy *proxy,
+					     uint32_t opcode,
+					     union wl_argument *args,
+					     const struct wl_interface *interface,
+					     uint32_t version)
+{
 	struct wl_closure *closure;
 	struct wl_proxy *new_proxy = NULL;
 	const struct wl_message *message;
@@ -587,7 +629,8 @@ wl_proxy_marshal_array_constructor(struct wl_proxy *proxy,
 	message = &proxy->object.interface->methods[opcode];
 	if (interface) {
 		new_proxy = create_outgoing_proxy(proxy, message,
-						  args, interface);
+						  args, interface,
+						  version);
 		if (new_proxy == NULL)
 			goto err_unlock;
 	}
@@ -655,7 +698,8 @@ wl_proxy_marshal(struct wl_proxy *proxy, uint32_t opcode, ...)
  *
  * For new-id arguments, this function will allocate a new wl_proxy
  * and send the ID to the server.  The new wl_proxy will be returned
- * on success or NULL on errror with errno set accordingly.
+ * on success or NULL on errror with errno set accordingly.  The newly
+ * created proxy will inherit their version from their parent.
  *
  * \note This should not normally be used by non-generated code.
  *
@@ -675,6 +719,46 @@ wl_proxy_marshal_constructor(struct wl_proxy *proxy, uint32_t opcode,
 
 	return wl_proxy_marshal_array_constructor(proxy, opcode,
 						  args, interface);
+}
+
+
+/** Prepare a request to be sent to the compositor
+ *
+ * \param proxy The proxy object
+ * \param opcode Opcode of the request to be sent
+ * \param interface The interface to use for the new proxy
+ * \param version The protocol object version of the new proxy
+ * \param ... Extra arguments for the given request
+ * \return A new wl_proxy for the new_id argument or NULL on error
+ *
+ * Translates the request given by opcode and the extra arguments into the
+ * wire format and write it to the connection buffer.
+ *
+ * For new-id arguments, this function will allocate a new wl_proxy
+ * and send the ID to the server.  The new wl_proxy will be returned
+ * on success or NULL on errror with errno set accordingly.  The newly
+ * created proxy will have the version specified.
+ *
+ * \note This should not normally be used by non-generated code.
+ *
+ * \memberof wl_proxy
+ */
+WL_EXPORT struct wl_proxy *
+wl_proxy_marshal_constructor_versioned(struct wl_proxy *proxy, uint32_t opcode,
+				       const struct wl_interface *interface,
+				       uint32_t version, ...)
+{
+	union wl_argument args[WL_CLOSURE_MAX_ARGS];
+	va_list ap;
+
+	va_start(ap, version);
+	wl_argument_from_va_list(proxy->object.interface->methods[opcode].signature,
+				 args, WL_CLOSURE_MAX_ARGS, ap);
+	va_end(ap);
+
+	return wl_proxy_marshal_array_constructor_versioned(proxy, opcode,
+							    args, interface,
+							    version);
 }
 
 /** Prepare a request to be sent to the compositor
@@ -838,6 +922,25 @@ wl_display_connect_to_fd(int fd)
 	display->proxy.queue = &display->default_queue;
 	display->proxy.flags = 0;
 	display->proxy.refcount = 1;
+
+	/* We set this version to 0 for backwards compatibility.
+	 *
+	 * If a client is using old versions of protocol headers,
+	 * it will use unversioned API to create proxies.  Those
+	 * proxies will inherit this 0.
+	 *
+	 * A client could be passing these proxies into library
+	 * code newer than the headers that checks proxy
+	 * versions.  When the proxy version is reported as 0
+	 * the library will know that it can't reliably determine
+	 * the proxy version, and should do whatever fallback is
+	 * required.
+	 *
+	 * This trick forces wl_display to always report 0, but
+	 * since it's a special object that we can't bind
+	 * specific versions of anyway, this should be fine.
+	 */
+	display->proxy.version = 0;
 
 	display->connection = wl_connection_create(display->fd);
 	if (display->connection == NULL)
@@ -1762,6 +1865,28 @@ WL_EXPORT void *
 wl_proxy_get_user_data(struct wl_proxy *proxy)
 {
 	return proxy->user_data;
+}
+
+/** Get the protocol object version of a proxy object
+ *
+ * \param proxy The proxy object
+ * \return The protocol object version of the proxy or 0
+ *
+ * Gets the protocol object version of a proxy object, or 0
+ * if the proxy was created with unversioned API.
+ *
+ * A returned value of 0 means that no version information is
+ * available, so the caller must make safe assumptions about
+ * the object's real version.
+ *
+ * wl_display's version will always return 0.
+ *
+ * \memberof wl_proxy
+ */
+WL_EXPORT uint32_t
+wl_proxy_get_version(struct wl_proxy *proxy)
+{
+	return proxy->version;
 }
 
 /** Get the id of a proxy object

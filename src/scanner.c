@@ -956,6 +956,14 @@ emit_stubs(struct wl_list *message_list, struct interface *interface)
 	       interface->name, interface->name, interface->name,
 	       interface->name);
 
+	printf("static inline uint32_t\n"
+	       "%s_get_version(struct %s *%s)\n"
+	       "{\n"
+	       "\treturn wl_proxy_get_version((struct wl_proxy *) %s);\n"
+	       "}\n\n",
+	       interface->name, interface->name, interface->name,
+	       interface->name);
+
 	has_destructor = 0;
 	has_destroy = 0;
 	wl_list_for_each(m, message_list, link) {
@@ -1027,21 +1035,31 @@ emit_stubs(struct wl_list *message_list, struct interface *interface)
 
 		printf(")\n"
 		       "{\n");
-		if (ret) {
+		if (ret && ret->interface_name == NULL) {
+			/* an arg has type ="new_id" but interface is not
+			 * provided, such as in wl_registry.bind */
 			printf("\tstruct wl_proxy *%s;\n\n"
-			       "\t%s = wl_proxy_marshal_constructor("
+			       "\t%s = wl_proxy_marshal_constructor_versioned("
 			       "(struct wl_proxy *) %s,\n"
-			       "\t\t\t %s_%s, ",
+			       "\t\t\t %s_%s, interface, version",
 			       ret->name, ret->name,
 			       interface->name,
 			       interface->uppercase_name,
 			       m->uppercase_name);
-
-			if (ret->interface_name == NULL)
-				printf("interface");
-			else
-				printf("&%s_interface", ret->interface_name);
+		} else if (ret) {
+			/* Normal factory case, an arg has type="new_id" and
+			 * an interface is provided */
+			printf("\tstruct wl_proxy *%s;\n\n"
+			       "\t%s = wl_proxy_marshal_constructor("
+			       "(struct wl_proxy *) %s,\n"
+			       "\t\t\t %s_%s, &%s_interface",
+			       ret->name, ret->name,
+			       interface->name,
+			       interface->uppercase_name,
+			       m->uppercase_name,
+			       ret->interface_name);
 		} else {
+			/* No args have type="new_id" */
 			printf("\twl_proxy_marshal((struct wl_proxy *) %s,\n"
 			       "\t\t\t %s_%s",
 			       interface->name,
