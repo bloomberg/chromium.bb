@@ -98,3 +98,19 @@ test("mojo_common_unittests") {
     "common_type_converters_unittest.cc",
   ]
 }
+
+test("mojo_common_perftests") {
+  deps = [
+    ":common",
+    "//base",
+    "//mojo/environment:chromium",
+    "//mojo/message_pump",
+    "//testing/gtest",
+    "//third_party/mojo/src/mojo/edk/test:run_all_perftests",
+    "//third_party/mojo/src/mojo/public/cpp/test_support:test_utils",
+  ]
+
+  sources = [
+    "../message_pump/handle_watcher_perftest.cc",
+  ]
+}
