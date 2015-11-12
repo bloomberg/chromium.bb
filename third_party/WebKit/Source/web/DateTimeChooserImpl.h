@@ -43,12 +43,14 @@ class PagePopup;
 
 class DateTimeChooserImpl final : public DateTimeChooser, public PagePopupClient {
 public:
-    static PassRefPtr<DateTimeChooserImpl> create(ChromeClientImpl*, DateTimeChooserClient*, const DateTimeChooserParameters&);
+    static PassRefPtrWillBeRawPtr<DateTimeChooserImpl> create(ChromeClientImpl*, DateTimeChooserClient*, const DateTimeChooserParameters&);
     ~DateTimeChooserImpl() override;
 
     // DateTimeChooser functions:
     void endChooser() override;
     AXObject* rootAXObject() override;
+
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     DateTimeChooserImpl(ChromeClientImpl*, DateTimeChooserClient*, const DateTimeChooserParameters&);
@@ -63,7 +65,7 @@ private:
     Element& ownerElement() override;
     void didClosePopup() override;
 
-    ChromeClientImpl* m_chromeClient;
+    RawPtrWillBeMember<ChromeClientImpl> m_chromeClient;
     DateTimeChooserClient* m_client;
     PagePopup* m_popup;
     DateTimeChooserParameters m_parameters;

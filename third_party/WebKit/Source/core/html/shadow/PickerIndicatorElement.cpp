@@ -185,6 +185,7 @@ void PickerIndicatorElement::didNotifySubtreeInsertionsToDocument()
 DEFINE_TRACE(PickerIndicatorElement)
 {
     visitor->trace(m_pickerIndicatorOwner);
+    visitor->trace(m_chooser);
     HTMLDivElement::trace(visitor);
 }
 

@@ -33,6 +33,7 @@
 
 #include "core/CoreExport.h"
 #include "platform/geometry/IntRect.h"
+#include "platform/heap/Handle.h"
 #include "wtf/Allocator.h"
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
@@ -70,13 +71,15 @@ struct DateTimeChooserParameters {
 };
 
 // For pickers like color pickers and date pickers.
-class CORE_EXPORT DateTimeChooser : public RefCounted<DateTimeChooser> {
+class CORE_EXPORT DateTimeChooser : public RefCountedWillBeGarbageCollectedFinalized<DateTimeChooser> {
 public:
     virtual ~DateTimeChooser();
 
     virtual void endChooser() = 0;
     // Returns a root AXObject in the DateTimeChooser if it's available.
     virtual AXObject* rootAXObject() = 0;
+
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
 };
 
 } // namespace blink

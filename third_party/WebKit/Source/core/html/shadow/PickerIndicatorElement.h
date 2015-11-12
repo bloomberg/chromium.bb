@@ -83,7 +83,7 @@ private:
     HTMLInputElement* hostInput();
 
     RawPtrWillBeMember<PickerIndicatorOwner> m_pickerIndicatorOwner;
-    RefPtr<DateTimeChooser> m_chooser;
+    RefPtrWillBeMember<DateTimeChooser> m_chooser;
 };
 
 DEFINE_TYPE_CASTS(PickerIndicatorElement, Element, element, element->isPickerIndicatorElement(), element.isPickerIndicatorElement());
