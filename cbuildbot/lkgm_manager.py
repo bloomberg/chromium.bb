@@ -9,12 +9,15 @@ from __future__ import print_function
 import codecs
 import os
 import re
+import tempfile
 from xml.dom import minidom
 from xml.parsers import expat
 
 from chromite.cbuildbot import config_lib
 from chromite.cbuildbot import constants
 from chromite.cbuildbot import manifest_version
+from chromite.cbuildbot import repository
+from chromite.cbuildbot import trybot_patch_pool
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import git
@@ -229,6 +232,34 @@ class LKGMManager(manifest_version.BuildSpecsManager):
 
     self._WriteXml(manifest_dom, manifest)
 
+  def _AdjustRepoCheckoutToLocalManifest(self, manifest_path):
+    """Re-checkout repository based on patched internal manifest repository.
+
+    This method clones the current state of 'manifest-internal' into a temp
+    location, and then re-sync's the current repository to that manifest. This
+    is intended to allow sync'ing with test manifest CLs included.
+
+    It does NOT clean up afterwards.
+
+    Args:
+      manifest_path: Directory containing the already patched manifest.
+        Normally SOURCE_ROOT/manifest or SOURCE_ROOT/manifest-internal.
+    """
+    tmp_manifest_repo = tempfile.mkdtemp(prefix='patched_manifest')
+
+    logging.info('Cloning manifest repository from %s to %s.',
+                 manifest_path, tmp_manifest_repo)
+
+    repository.CloneGitRepo(tmp_manifest_repo, manifest_path)
+    git.CreateBranch(tmp_manifest_repo, self.cros_source.branch or 'master')
+
+    logging.info('Switching to local patched manifest repository:')
+    logging.info('TMPDIR: %s', tmp_manifest_repo)
+    logging.info('        %s', os.listdir(tmp_manifest_repo))
+
+    self.cros_source.Initialize(manifest_repo_url=tmp_manifest_repo)
+    self.cros_source.Sync()
+
   def CreateNewCandidate(self, validation_pool=None,
                          chrome_version=None,
                          retries=manifest_version.NUM_RETRIES,
@@ -261,6 +292,22 @@ class LKGMManager(manifest_version.BuildSpecsManager):
     # Throw away CLs that might not be used this run.
     if validation_pool:
       validation_pool.FilterChangesForThrottledTree()
+
+      # Apply any manifest CLs (internal or exteral).
+      validation_pool.ApplyPoolIntoRepo(
+          filter_fn=trybot_patch_pool.ManifestFilter)
+
+      manifest_dir = os.path.join(
+          validation_pool.build_root, 'manifest-internal')
+
+      if not os.path.exists(manifest_dir):
+        # Fall back to external manifest directory.
+        manifest_dir = os.path.join(
+            validation_pool.build_root, 'manifest')
+
+      # This is only needed if there were internal manifest changes, but we
+      # always run it to make sure this logic works.
+      self._AdjustRepoCheckoutToLocalManifest(manifest_dir)
 
     new_manifest = self.CreateManifest()
 
