@@ -334,6 +334,11 @@ TEST_F(RTCPeerConnectionHandlerTest, Destruct) {
   pc_handler_.reset(NULL);
 }
 
+TEST_F(RTCPeerConnectionHandlerTest, DestructAllHandlers) {
+  EXPECT_CALL(*mock_client_.get(), releasePeerConnectionHandler())
+      .Times(1);
+  RTCPeerConnectionHandler::DestructAllHandlers();
+}
 TEST_F(RTCPeerConnectionHandlerTest, CreateOffer) {
   blink::WebRTCSessionDescriptionRequest request;
   blink::WebMediaConstraints options;
