@@ -222,7 +222,7 @@ private:
 
     RefPtrWillBeMember<PageAnimator> m_animator;
     const OwnPtrWillBeMember<AutoscrollController> m_autoscrollController;
-    ChromeClient* m_chromeClient;
+    RawPtrWillBeMember<ChromeClient> m_chromeClient;
     const OwnPtrWillBeMember<DragCaretController> m_dragCaretController;
     const OwnPtrWillBeMember<DragController> m_dragController;
     const OwnPtrWillBeMember<FocusController> m_focusController;

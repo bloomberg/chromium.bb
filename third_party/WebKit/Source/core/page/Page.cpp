@@ -561,6 +561,7 @@ DEFINE_TRACE(Page)
 #if ENABLE(OILPAN)
     visitor->trace(m_animator);
     visitor->trace(m_autoscrollController);
+    visitor->trace(m_chromeClient);
     visitor->trace(m_dragCaretController);
     visitor->trace(m_dragController);
     visitor->trace(m_focusController);
