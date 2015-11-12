@@ -46,6 +46,10 @@ TabModalConfirmDialog* TabModalConfirmDialog::Create(
   delegate_->Cancel();
 }
 
+- (void)onCloseButton:(id)sender {
+  delegate_->Close();
+}
+
 - (void)onLinkClicked:(id)sender {
   WindowOpenDisposition disposition =
       ui::WindowOpenDispositionFromNSEvent([NSApp currentEvent]);
@@ -82,7 +86,7 @@ TabModalConfirmDialogMac::TabModalConfirmDialogMac(
                      target:bridge_
                      action:@selector(onCancelButton:)];
   [[alert_ closeButton] setTarget:bridge_];
-  [[alert_ closeButton] setAction:@selector(onCancelButton:)];
+  [[alert_ closeButton] setAction:@selector(onCloseButton:)];
   [alert_ layout];
 
   base::scoped_nsobject<CustomConstrainedWindowSheet> sheet(
