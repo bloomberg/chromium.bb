@@ -148,7 +148,7 @@ public class AndroidScrollIntegrationTest extends AwTestBase {
             + "      margin: 0px; "
             + "   } "
             + "   div { "
-            + "      width:1000px; "
+            + "      width:10000px; "
             + "      height:10000px; "
             + "      background-color: blue; "
             + "   } "
