@@ -58,6 +58,11 @@ function MouseInactivityWatcher(container, opt_timeout, opt_toolsActive) {
     this.activityStarted_();
     this.activityStopped_();
   }.bind(this));
+  // If pointer goes outside the app window, tools should be hidden immediately.
+  document.addEventListener('mouseout', function(event) {
+    if (event.relatedTarget === null)
+      this.forceTimeout_();
+  }.bind(this));
 }
 
 /**
@@ -178,4 +183,15 @@ MouseInactivityWatcher.prototype.onTimeout_ = function() {
   this.timeoutID_ = null;
   if (!this.disabled_ && !this.toolsActive_())
     this.showTools(false);
+};
+
+/**
+ * Force the timer to be timed out immediately.
+ * @private
+ */
+MouseInactivityWatcher.prototype.forceTimeout_ = function() {
+  if (this.timeoutID_) {
+    clearTimeout(this.timeoutID_);
+    this.onTimeout_();
+  }
 };

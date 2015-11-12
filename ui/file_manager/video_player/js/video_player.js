@@ -145,8 +145,7 @@ FullWindowVideoControls.prototype.onPlaybackError_ = function(error) {
     this.decodeErrorOccured = true;
   }
 
-  // Disable inactivity watcher, and disable the ui, by hiding tools manually.
-  this.getInactivityWatcher().disabled = true;
+  // Disable controls on the ui.
   getRequiredElement('video-player').setAttribute('disabled', 'true');
 
   // Detach the video element, since it may be unreliable and reset stored
@@ -230,6 +229,17 @@ VideoPlayer.prototype.prepare = function(videos) {
       getRequiredElement('video-container'),
       getRequiredElement('controls'));
 
+  var observer = new MutationObserver(function(mutations) {
+    var isLoadingOrDisabledChanged = mutations.some(function(mutation) {
+      return mutation.attributeName === 'loading' ||
+             mutation.attributeName === 'disabled';
+    });
+    if (isLoadingOrDisabledChanged)
+      this.updateInactivityWatcherState_();
+  }.bind(this));
+  observer.observe(getRequiredElement('video-player'),
+      { attributes: true, childList: false });
+
   var reloadVideo = function(e) {
     if (this.controls_.decodeErrorOccured &&
         // Ignore shortcut keys
@@ -297,7 +307,6 @@ VideoPlayer.prototype.loadVideo_ = function(video, opt_callback) {
     getRequiredElement('video-player').removeAttribute('disabled');
     getRequiredElement('error').removeAttribute('visible');
     this.controls.detachMedia();
-    this.controls.getInactivityWatcher().disabled = true;
     this.controls.decodeErrorOccured = false;
     this.controls.casting = !!this.currentCast_;
 
@@ -377,7 +386,6 @@ VideoPlayer.prototype.loadVideo_ = function(video, opt_callback) {
               if (opt_callback)
                 opt_callback();
               videoPlayerElement.removeAttribute('loading');
-              this.controls.getInactivityWatcher().disabled = false;
             }
 
             this.videoElement_.removeEventListener('loadedmetadata', handler);
@@ -387,10 +395,12 @@ VideoPlayer.prototype.loadVideo_ = function(video, opt_callback) {
 
           this.videoElement_.addEventListener('play', function() {
             chrome.power.requestKeepAwake('display');
-          }.wrap());
+            this.updateInactivityWatcherState_();
+          }.wrap(this));
           this.videoElement_.addEventListener('pause', function() {
             chrome.power.releaseKeepAwake();
-          }.wrap());
+            this.updateInactivityWatcherState_();
+          }.wrap(this));
 
           this.videoElement_.load();
           callback();
@@ -633,6 +643,23 @@ VideoPlayer.prototype.onCurrentCastDisappear_ = function() {
 VideoPlayer.prototype.onCastSessionUpdate_ = function(alive) {
   if (!alive)
     this.unloadVideo();
+};
+
+/**
+ * Updates the MouseInactivityWatcher's disable property to prevent control
+ * panel from being hidden in some situations.
+ * @private
+ */
+VideoPlayer.prototype.updateInactivityWatcherState_ = function() {
+  var videoPlayerElement = getRequiredElement('video-player');
+  // If any of following condition is met, we don't hide the tool bar.
+  // - Loaded video is paused.
+  // - Loading a video is in progress.
+  // - Opening video has an error.
+  this.controls.getInactivityWatcher().disabled =
+      (this.videoElement_ && this.videoElement_.paused) ||
+      videoPlayerElement.hasAttribute('loading') ||
+      videoPlayerElement.hasAttribute('disabled');
 };
 
 var player = new VideoPlayer();
