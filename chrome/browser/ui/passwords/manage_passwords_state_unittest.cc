@@ -25,11 +25,21 @@ using ::testing::UnorderedElementsAre;
 
 namespace {
 
+class MockPasswordManagerClient
+    : public password_manager::StubPasswordManagerClient {
+ public:
+  MOCK_CONST_METHOD0(GetPasswordManager,
+                     const password_manager::PasswordManager*());
+};
+
 class ManagePasswordsStateTest : public testing::Test {
  public:
-  ManagePasswordsStateTest() : password_manager_(&client_) {}
+  ManagePasswordsStateTest() : password_manager_(&mock_client_) {}
 
   void SetUp() override {
+    ON_CALL(mock_client_, GetPasswordManager())
+        .WillByDefault(testing::Return(&password_manager_));
+
     test_local_form_.origin = GURL("http://example.com");
     test_local_form_.username_value = base::ASCIIToUTF16("username");
     test_local_form_.password_value = base::ASCIIToUTF16("12345");
@@ -41,7 +51,7 @@ class ManagePasswordsStateTest : public testing::Test {
     test_federated_form_.origin = GURL("https://idp.com");
     test_federated_form_.username_value = base::ASCIIToUTF16("username");
 
-    passwords_data_.set_client(&client_);
+    passwords_data_.set_client(&mock_client_);
   }
 
   autofill::PasswordForm& test_local_form() { return test_local_form_; }
@@ -66,7 +76,7 @@ class ManagePasswordsStateTest : public testing::Test {
                void(const password_manager::CredentialInfo&));
 
  private:
-  password_manager::StubPasswordManagerClient client_;
+  MockPasswordManagerClient mock_client_;
   password_manager::StubPasswordManagerDriver driver_;
   password_manager::PasswordManager password_manager_;
 
@@ -79,9 +89,9 @@ class ManagePasswordsStateTest : public testing::Test {
 scoped_ptr<password_manager::PasswordFormManager>
 ManagePasswordsStateTest::CreateFormManager() {
   scoped_ptr<password_manager::PasswordFormManager> test_form_manager(
-      new password_manager::PasswordFormManager(&password_manager_, &client_,
-                                                driver_.AsWeakPtr(),
-                                                test_local_form(), false));
+      new password_manager::PasswordFormManager(
+          &password_manager_, &mock_client_, driver_.AsWeakPtr(),
+          test_local_form(), false));
   test_form_manager->SimulateFetchMatchingLoginsFromPasswordStore();
   ScopedVector<autofill::PasswordForm> stored_forms;
   stored_forms.push_back(new autofill::PasswordForm(test_local_form()));

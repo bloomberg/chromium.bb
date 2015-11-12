@@ -16,6 +16,7 @@
 #include "chrome/test/base/interactive_test_utils.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/password_form_manager.h"
+#include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "components/password_manager/core/browser/stub_password_manager_driver.h"
@@ -54,9 +55,10 @@ void ManagePasswordsTest::SetupManagingPasswords() {
 void ManagePasswordsTest::SetupPendingPassword() {
   password_manager::StubPasswordManagerClient client;
   password_manager::StubPasswordManagerDriver driver;
+  password_manager::PasswordManager password_manager(&client);
   scoped_ptr<password_manager::PasswordFormManager> test_form_manager(
       new password_manager::PasswordFormManager(
-          NULL, &client, driver.AsWeakPtr(), *test_form(), false));
+          &password_manager, &client, driver.AsWeakPtr(), *test_form(), false));
   test_form_manager->SimulateFetchMatchingLoginsFromPasswordStore();
   ScopedVector<autofill::PasswordForm> best_matches;
   test_form_manager->OnGetPasswordStoreResults(best_matches.Pass());
@@ -66,9 +68,10 @@ void ManagePasswordsTest::SetupPendingPassword() {
 void ManagePasswordsTest::SetupAutomaticPassword() {
   password_manager::StubPasswordManagerClient client;
   password_manager::StubPasswordManagerDriver driver;
+  password_manager::PasswordManager password_manager(&client);
   scoped_ptr<password_manager::PasswordFormManager> test_form_manager(
       new password_manager::PasswordFormManager(
-          NULL, &client, driver.AsWeakPtr(), *test_form(), false));
+          &password_manager, &client, driver.AsWeakPtr(), *test_form(), false));
   GetController()->OnAutomaticPasswordSave(test_form_manager.Pass());
 }
 
