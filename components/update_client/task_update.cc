@@ -8,7 +8,6 @@
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
-#include "components/update_client/update_client.h"
 #include "components/update_client/update_engine.h"
 
 namespace update_client {
@@ -33,30 +32,23 @@ void TaskUpdate::Run() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (ids_.empty()) {
-    TaskComplete(Error::ERROR_UPDATE_INVALID_ARGUMENT);
+    RunComplete(-1);
     return;
   }
 
   update_engine_->Update(
       is_foreground_, ids_, crx_data_callback_,
-      base::Bind(&TaskUpdate::TaskComplete, base::Unretained(this)));
-}
-
-void TaskUpdate::Cancel() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  TaskComplete(Error::ERROR_UPDATE_CANCELED);
+      base::Bind(&TaskUpdate::RunComplete, base::Unretained(this)));
 }
 
 std::vector<std::string> TaskUpdate::GetIds() const {
   return ids_;
 }
 
-void TaskUpdate::TaskComplete(int error) {
+void TaskUpdate::RunComplete(int error) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(callback_, this, error));
+  callback_.Run(this, error);
 }
 
 }  // namespace update_client
