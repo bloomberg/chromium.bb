@@ -141,7 +141,7 @@ protected:
     RawPtrWillBeMember<FrameOwner> m_owner;
 
 private:
-    FrameClient* m_client;
+    RawPtrWillBeMember<FrameClient> m_client;
     // Needed to identify Frame Timing requests.
     int64_t m_frameID;
     bool m_isLoading;
