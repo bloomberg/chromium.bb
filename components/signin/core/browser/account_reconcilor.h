@@ -92,6 +92,8 @@ class AccountReconcilor : public KeyedService,
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, StartReconcileNoopMultiple);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, StartReconcileAddToCookie);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest,
+                           SignoutAfterErrorDoesNotRecordUma);
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest,
                            StartReconcileRemoveFromCookie);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest,
                            StartReconcileAddToCookieTwice);
@@ -176,7 +178,7 @@ class AccountReconcilor : public KeyedService,
   // True while the reconcilor is busy checking or managing the accounts in
   // this profile.
   bool is_reconcile_started_;
-  base::Time m_reconcile_start_time_;
+  base::Time reconcile_start_time_;
 
   // True iff this is the first time the reconcilor is executing.
   bool first_execution_;

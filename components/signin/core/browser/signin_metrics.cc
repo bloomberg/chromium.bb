@@ -53,6 +53,15 @@ void LogSigninAccountReconciliation(int total_number_accounts,
   }
 }
 
+void LogSigninAccountReconciliationDuration(base::TimeDelta duration,
+                                            bool successful) {
+  if (successful) {
+    UMA_HISTOGRAM_TIMES("Signin.Reconciler.Duration.Success", duration);
+  } else {
+    UMA_HISTOGRAM_TIMES("Signin.Reconciler.Duration.Failure", duration);
+  }
+}
+
 void LogSigninProfile(bool is_first_run, base::Time install_date) {
   // Track whether or not the user signed in during the first run of Chrome.
   UMA_HISTOGRAM_BOOLEAN("Signin.DuringFirstRun", is_first_run);

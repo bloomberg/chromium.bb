@@ -13,6 +13,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_client.h"
 #include "components/signin/core/browser/signin_metrics.h"
@@ -250,6 +251,8 @@ void AccountReconcilor::PerformLogoutAllAccountsAction() {
 }
 
 void AccountReconcilor::StartReconcile() {
+  reconcile_start_time_ = base::Time::Now();
+
   if (!IsProfileConnected() || !client_->AreSigninCookiesAllowed()) {
     VLOG(1) << "AccountReconcilor::StartReconcile: !connected or no cookies";
     return;
@@ -440,6 +443,13 @@ void AccountReconcilor::AbortReconcile() {
 }
 
 void AccountReconcilor::CalculateIfReconcileIsDone() {
+  base::TimeDelta duration = base::Time::Now() - reconcile_start_time_;
+  // Record the duration if reconciliation was underway and now it is over.
+  if (is_reconcile_started_ && add_to_cookie_.empty()) {
+    signin_metrics::LogSigninAccountReconciliationDuration(duration,
+        !error_during_last_reconcile_);
+  }
+
   is_reconcile_started_ = !add_to_cookie_.empty();
   if (!is_reconcile_started_)
     VLOG(1) << "AccountReconcilor::CalculateIfReconcileIsDone: done";

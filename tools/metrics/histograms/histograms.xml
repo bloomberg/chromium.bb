@@ -42957,6 +42957,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Signin.Reconciler.Duration">
+  <owner>rogerta@chromium.org</owner>
+  <summary>Records the execution time of the account reconciler.</summary>
+</histogram>
+
 <histogram name="Signin.Reconciler.ExternalCcResultTime.Completed">
   <owner>mlerman@chromium.org</owner>
   <summary>
@@ -81591,6 +81596,12 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="Signin.Reconciler.AddedToCookieJar"/>
   <affected-histogram name="Signin.Reconciler.DifferentPrimaryAccounts"/>
   <affected-histogram name="Signin.Reconciler.RemovedFromCookieJar"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="Signin.Reconciler.Duration" separator=".">
+  <suffix name="Success" label="Successful execution of reconciler"/>
+  <suffix name="Failure" label="Failed execution of reconciler"/>
+  <affected-histogram name="Signin.Reconciler.Duration"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="SimpleCacheWithOrWithoutIndex">

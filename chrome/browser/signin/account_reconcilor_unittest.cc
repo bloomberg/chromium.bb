@@ -564,7 +564,52 @@ TEST_P(AccountReconcilorTest, StartReconcileAddToCookie) {
       "Signin.Reconciler.AddedToCookieJar.FirstRun", 1, 1);
   histogram_tester()->ExpectUniqueSample(
       "Signin.Reconciler.RemovedFromCookieJar.FirstRun", 0, 1);
+
+  base::HistogramTester::CountsMap expected_counts;
+  expected_counts["Signin.Reconciler.Duration.Success"] = 1;
+  EXPECT_THAT(histogram_tester()->GetTotalCountsForPrefix(
+      "Signin.Reconciler.Duration.Success"),
+      testing::ContainerEq(expected_counts));
 }
+
+#if !defined(OS_CHROMEOS)
+// This test does not run on ChromeOS because it calls
+// FakeSigninManagerForTesting::SignOut() which doesn't exist for ChromeOS.
+
+TEST_F(AccountReconcilorTest, SignoutAfterErrorDoesNotRecordUma) {
+  const std::string account_id =
+      ConnectProfileToAccount("12345", "user@gmail.com");
+  token_service()->UpdateCredentials(account_id, "refresh_token");
+  cookie_manager_service()->SetListAccountsResponseOneAccount(
+      "user@gmail.com", "12345");
+
+  const std::string account_id2 =
+      PickAccountIdForAccount("67890", "other@gmail.com");
+  token_service()->UpdateCredentials(account_id2, "refresh_token");
+
+  EXPECT_CALL(*GetMockReconcilor(), PerformMergeAction(account_id2));
+
+  AccountReconcilor* reconcilor = GetMockReconcilor();
+  reconcilor->StartReconcile();
+
+  base::RunLoop().RunUntilIdle();
+  ASSERT_TRUE(reconcilor->is_reconcile_started_);
+  GoogleServiceAuthError
+    error(GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
+  SimulateAddAccountToCookieCompleted(reconcilor, account_id2, error);
+  ASSERT_FALSE(reconcilor->is_reconcile_started_);
+
+  EXPECT_CALL(*GetMockReconcilor(), PerformLogoutAllAccountsAction());
+  signin_manager()->SignOut(signin_metrics::SIGNOUT_TEST);
+
+  base::HistogramTester::CountsMap expected_counts;
+  expected_counts["Signin.Reconciler.Duration.Failure"] = 1;
+  EXPECT_THAT(histogram_tester()->GetTotalCountsForPrefix(
+      "Signin.Reconciler.Duration.Failure"),
+      testing::ContainerEq(expected_counts));
+}
+
+#endif  // !defined(OS_CHROMEOS)
 
 TEST_P(AccountReconcilorTest, StartReconcileRemoveFromCookie) {
   const std::string account_id =

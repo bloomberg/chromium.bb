@@ -198,6 +198,12 @@ void LogSigninAccountReconciliation(int total_number_accounts,
                                     bool is_first_reconcile,
                                     int pre_count_gaia_cookies);
 
+// Logs duration of a single execution of AccountReconciler to UMA histograms.
+// |duration| - How long execution of AccountReconciler took.
+// |successful| - True if AccountReconciler was successful.
+void LogSigninAccountReconciliationDuration(base::TimeDelta duration,
+                                            bool successful);
+
 // Track a successful signin.
 void LogSigninAddAccount();
 
