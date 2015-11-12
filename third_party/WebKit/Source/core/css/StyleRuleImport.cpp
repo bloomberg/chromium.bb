@@ -61,6 +61,7 @@ StyleRuleImport::~StyleRuleImport()
 
 DEFINE_TRACE_AFTER_DISPATCH(StyleRuleImport)
 {
+    visitor->trace(m_styleSheetClient);
     visitor->trace(m_parentStyleSheet);
     visitor->trace(m_mediaQueries);
     visitor->trace(m_styleSheet);

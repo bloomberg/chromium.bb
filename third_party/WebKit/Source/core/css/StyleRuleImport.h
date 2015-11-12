@@ -68,8 +68,14 @@ private:
             m_ownerRule->setCSSStyleSheet(href, baseURL, charset, sheet);
         }
         String debugName() const override { return "ImportedStyleSheetClient"; }
+
+        DEFINE_INLINE_TRACE()
+        {
+            visitor->trace(m_ownerRule);
+        }
+
     private:
-        StyleRuleImport* m_ownerRule;
+        RawPtrWillBeMember<StyleRuleImport> m_ownerRule;
     };
 
     void setCSSStyleSheet(const String& href, const KURL& baseURL, const String& charset, const CSSStyleSheetResource*);
