@@ -285,7 +285,7 @@ CHAR-LIMIT guidelines:
         Auto Sign-in
       </message>
       <message name="IDS_PASSWORDS_AUTO_SIGNIN_DESCRIPTION" desc="Text under 'Auto sign-in' checkbox">
-        Automatically sign in to websites using stored credentials. When the feature is off, you'll be asked for verification every time before signing in to a website.
+        Automatically sign in to websites using stored credentials. When the feature is off, you’ll be asked for verification every time before signing in to a website.
       </message>
       <message name="IDS_SECTION_SAVED_PASSWORDS" desc="Header for the list of passwords that have been saved in Chrome. [CHAR-LIMIT=32]">
         Passwords
@@ -408,10 +408,10 @@ To adjust your search term, long press to select. To refine your search, slide t
         crash_dump_only_with_wifi
       </message>
       <message name="IDS_DO_NOT_TRACK_TITLE" desc="Title for 'Do Not Track' preference">
-        ‘Do Not Track’
+        “Do Not Track”
       </message>
       <message name="IDS_DO_NOT_TRACK_DESCRIPTION" desc="Description for 'Do Not Track' preference">
-        Enabling ‘Do Not Track’ means that a request will be included with your browsing traffic. Any effect depends on whether a website responds to the request, and how the request is interpreted.
+        Enabling “Do Not Track” means that a request will be included with your browsing traffic. Any effect depends on whether a website responds to the request, and how the request is interpreted.
 
 For example, some websites may respond to this request by showing you ads that aren’t based on other websites you’ve visited. Many websites will still collect and use your browsing data - for example to improve security, to provide content, ads and recommendations on their websites, and to generate reporting statistics.
       </message>
@@ -428,7 +428,7 @@ For example, some websites may respond to this request by showing you ads that a
         Cookies, site data
       </message>
       <message name="IDS_CLEAR_COOKIES_NO_SIGN_OUT_SUMMARY" desc="Text at the bottom of the Clear Browsing Data dialog informing that clearing cookies wouldn't sign the user out of Google Accounts. Dialog also contains a link which opens the Account Management screen.">
-        You won't be signed out of your <ph name="BEGIN_LINK">&lt;link&gt;</ph>Google Accounts<ph name="END_LINK">&lt;/link&gt;</ph>
+        You won’t be signed out of your <ph name="BEGIN_LINK">&lt;link&gt;</ph>Google Accounts<ph name="END_LINK">&lt;/link&gt;</ph>
       </message>
       <message name="IDS_CLEAR_PASSWORDS_TITLE" desc="Title for Clear Passwords in Clear Browsing Data preference">
         Saved passwords
@@ -449,7 +449,7 @@ For example, some websites may respond to this request by showing you ads that a
         Please wait…
       </message>
       <message name="IDS_CAN_NOT_CLEAR_BROWSING_HISTORY_TOAST" desc="Message on the toast explaining that child account users can not clear their browsing history.">
-        Browsing history can't be cleared with accounts for kids
+        Browsing history can’t be cleared with accounts for kids
       </message>
       <message name="IDS_USAGE_AND_CRASH_REPORTS_TITLE" desc="Title for 'Usage and crash reports' preference">
         Usage and crash reports
@@ -823,7 +823,7 @@ To obtain new licenses, connect to the internet and play your downloaded content
 
       <!-- Child accounts -->
       <message name="IDS_KIDS_ACCOUNT" desc="Identifies an account as a child account.">
-        This is a kid's account
+        This is a kid’s account
       </message>
       <message name="IDS_ACCOUNT_MANAGEMENT_PARENTAL_SETTINGS" desc="Title of parental settings section of account page for child account.">
         Parental Settings
@@ -946,7 +946,7 @@ To obtain new licenses, connect to the internet and play your downloaded content
         You are signing out of an account managed by <ph name="DOMAIN_NAME">%1$s<ex>google.com</ex></ph>. This will delete the Chrome data stored on this device, but the data will remain in your Google Account.
       </message>
       <message name="IDS_FIRSTRUN_SIGNED_IN_TITLE" desc="Message informing the user that they are now signed in.">
-        You're now signed in to Chrome.
+        You’re now signed in to Chrome.
       </message>
       <message name="IDS_FIRSTRUN_SIGNED_IN_DESCRIPTION" desc="Message informing the user what is being synced.">
         Your open bookmarks, history, passwords, and more are being synced with your Google Account.
@@ -1017,7 +1017,7 @@ To obtain new licenses, connect to the internet and play your downloaded content
         This field cannot be blank
       </message>
       <message name="IDS_SYNC_PASSPHRASE_RESET_INSTRUCTIONS" desc="Inform the user how they can reset their passphrase if they have forgotten it." meaning="Android">
-        If you've forgotten your passphrase, stop and reset Sync via <ph name="BEGIN_LINK">&lt;link&gt;</ph>Google Dashboard<ph name="END_LINK">&lt;/link&gt;</ph>.
+        If you’ve forgotten your passphrase, stop and reset Sync via <ph name="BEGIN_LINK">&lt;link&gt;</ph>Google Dashboard<ph name="END_LINK">&lt;/link&gt;</ph>.
       </message>
       <message name="IDS_SYNC_PASSPHRASES_DO_NOT_MATCH" desc="Inform user that their sync password does not match.">
         Passphrases do not match
@@ -1036,7 +1036,7 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_BLUETOOTH_DIALOG_TITLE" desc="The header message shown on top of the dialog that lets the user pick a Bluetooth device for the site to pair with. Shown above a list of Bluetooth devices discovered. ">
         <ph name="SITE">%1$s<ex>https://www.google.com</ex></ph> wants to <ph name="BEGIN_LINK">&lt;link&gt;</ph>pair with<ph name="END_LINK">&lt;/link&gt;</ph>:</message>
       <message name="IDS_BLUETOOTH_SEARCHING" desc="The message shown in the Bluetooth picker dialog while scanning for devices.">
-        Searching for devices...
+        Searching for devices…
       </message>
       <message name="IDS_BLUETOOTH_CONFIRM_BUTTON" desc="The button to confirm association of a website with a Bluetooth device. Use the same term as in 'Pair this Bluetooth headset with your phone.'">
         Pair
@@ -1425,7 +1425,7 @@ You are signing in with a managed account and giving its administrator control o
 
       <!-- Sad tab page -->
       <message name="IDS_SAD_TAB_SUGGESTIONS" desc="The help message displayed on the sad tab page after a tab crashes.">
-        If you're seeing this frequently, try these <ph name="BEGIN_LINK">&lt;link&gt;</ph>suggestions<ph name="END_LINK">&lt;/link&gt;</ph>.
+        If you’re seeing this frequently, try these <ph name="BEGIN_LINK">&lt;link&gt;</ph>suggestions<ph name="END_LINK">&lt;/link&gt;</ph>.
       </message>
 
       <!-- Web Notifications API -->
@@ -1503,13 +1503,13 @@ You are signing in with a managed account and giving its administrator control o
         Chrome tabs have moved
       </message>
       <message name="IDS_TABS_AND_APPS_OPT_OUT_TEXT" desc="A promo message shown to users who have document mode enabled to explain the new location for the tabs and provide an option to opt out">
-        See your tabs with other recent apps on your phone's Overview screen. You can control this in <ph name="BEGIN_LINK">&lt;link&gt;</ph>Settings<ph name="END_LINK">&lt;/link&gt;</ph>.
+        See your tabs with other recent apps on your phone’s Overview screen. You can control this in <ph name="BEGIN_LINK">&lt;link&gt;</ph>Settings<ph name="END_LINK">&lt;/link&gt;</ph>.
       </message>
       <message name="IDS_TABS_AND_APPS_GOT_IT_BUTTON" desc="A button to confirm and dismiss opt out promo">
         Ok, got it
       </message>
       <message name="IDS_TABS_AND_APPS_SETTINGS_DESCRIPTION" desc="A message shown on settings screen from which you can enable/disable the feature that combines Chrome tabs with recent applications and shows them together in the system app switcher.">
-        See your tabs with other recent apps on your phone's Overview screen.
+        See your tabs with other recent apps on your phone’s Overview screen.
       </message>
       <message name="IDS_TABS_AND_APPS_TURN_OFF_TITLE" desc="A message shown as a title of a confirmation dialog to turn off a feature where apps and tabs are located together in recents switcher">
         Separate tabs and apps
@@ -1590,7 +1590,7 @@ You are signing in with a managed account and giving its administrator control o
         Your parents help manage these settings.
       </message>
       <message name="IDS_FRE_TOS_AND_PRIVACY" desc="Message explaining that use of Chrome is governed by Chrome's terms of service and privacy notice.">
-        By using this application, you agree to Chrome's <ph name="BEGIN_LINK1">&lt;LINK1&gt;</ph>Terms of Service<ph name="END_LINK1">&lt;/LINK1&gt;</ph> and <ph name="BEGIN_LINK2">&lt;LINK2&gt;</ph>Privacy Notice<ph name="END_LINK2">&lt;/LINK2&gt;</ph>.
+        By using this application, you agree to Chrome’s <ph name="BEGIN_LINK1">&lt;LINK1&gt;</ph>Terms of Service<ph name="END_LINK1">&lt;/LINK1&gt;</ph> and <ph name="BEGIN_LINK2">&lt;LINK2&gt;</ph>Privacy Notice<ph name="END_LINK2">&lt;/LINK2&gt;</ph>.
       </message>
       <message name="IDS_FRE_SEND_REPORT_CHECK" desc="Text for asking the user to allow sending stats and crash reports">
         Help make Chrome better by sending usage statistics and crash reports to Google.
@@ -1675,7 +1675,7 @@ You are signing in with a managed account and giving its administrator control o
         Your most visited pages will appear here
       </message>
       <message name="IDS_ACCESSIBILITY_GOOGLE_DOODLE" desc="Content description for the Google Doodle (the fun, alternative Google logo) shown on the new tab page.">
-        Google doodle: <ph name="DOODLE_DESCRIPTION">%1$s<ex>Einstein's birthday</ex></ph>
+        Google doodle: <ph name="DOODLE_DESCRIPTION">%1$s<ex>Einstein’s birthday</ex></ph>
       </message>
       <message name="IDS_NTP_RECENT_TABS_SYNC_PROMO_TITLE" desc="Header for the promo explaining how users can see the list of tabs open on their other devices">
         Other devices
@@ -2179,7 +2179,7 @@ Just open Chrome on your computer, go to the menu, and select “Sign in to Chro
         Touch to return to <ph name="URL_OF_THE_CURRENT_TAB">%1$s<ex>https://apprtc.appspot.com</ex></ph>
       </message>
       <message name="IDS_NEW_TAB_INCOGNITO_HEADER" desc="Header shown when a user opens an incognito tab explaining incognito mode">
-        You've gone incognito.
+        You’ve gone incognito.
       </message>
       <message name="IDS_NEW_TAB_INCOGNITO_MESSAGE" desc="Message shown when a user opens an incognito tab explaining incognito mode">
         Pages you view in incognito tabs won’t stick around in your browser’s history, cookie store, or search history after you’ve closed all of your incognito tabs. Any files you download or bookmarks you create will be kept.
