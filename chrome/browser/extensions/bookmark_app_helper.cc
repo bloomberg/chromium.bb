@@ -513,8 +513,10 @@ BookmarkAppHelper::BookmarkAppHelper(Profile* profile,
     : profile_(profile),
       contents_(contents),
       web_app_info_(web_app_info),
-      crx_installer_(extensions::CrxInstaller::CreateSilent(
-          ExtensionSystem::Get(profile)->extension_service())) {
+      crx_installer_(
+          extensions::CrxInstaller::CreateSilent(ExtensionSystem::Get(profile)
+                                                     ->extension_service())),
+      weak_factory_(this) {
   web_app_info_.open_as_window =
       profile_->GetPrefs()->GetInteger(
           extensions::pref_names::kBookmarkAppCreationLaunchType) ==
@@ -548,7 +550,7 @@ void BookmarkAppHelper::Create(const CreateBookmarkAppCallback& callback) {
   if (contents_ &&
       !contents_->GetVisibleURL().SchemeIs(extensions::kExtensionScheme)) {
     contents_->GetManifest(base::Bind(&BookmarkAppHelper::OnDidGetManifest,
-                                     base::Unretained(this)));
+                                      weak_factory_.GetWeakPtr()));
   } else {
     OnIconsDownloaded(true, std::map<GURL, std::vector<SkBitmap>>());
   }
@@ -581,10 +583,9 @@ void BookmarkAppHelper::OnDidGetManifest(const content::Manifest& manifest) {
   }
 
   favicon_downloader_.reset(
-      new FaviconDownloader(contents_,
-                            web_app_info_icon_urls,
+      new FaviconDownloader(contents_, web_app_info_icon_urls,
                             base::Bind(&BookmarkAppHelper::OnIconsDownloaded,
-                                       base::Unretained(this))));
+                                       weak_factory_.GetWeakPtr())));
   favicon_downloader_->Start();
 }
 
@@ -648,7 +649,7 @@ void BookmarkAppHelper::OnIconsDownloaded(
   }
   browser->window()->ShowBookmarkAppBubble(
       web_app_info_, base::Bind(&BookmarkAppHelper::OnBubbleCompleted,
-                                base::Unretained(this)));
+                                weak_factory_.GetWeakPtr()));
 }
 
 void BookmarkAppHelper::OnBubbleCompleted(

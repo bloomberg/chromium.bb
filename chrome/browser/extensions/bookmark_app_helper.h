@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/common/web_application_info.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -154,6 +155,11 @@ class BookmarkAppHelper : public content::NotificationObserver {
   scoped_refptr<extensions::CrxInstaller> crx_installer_;
 
   content::NotificationRegistrar registrar_;
+
+  // With fast tab unloading enabled, shutting down can cause BookmarkAppHelper
+  // to be destroyed before the bookmark creation bubble. Use weak pointers to
+  // prevent a heap-use-after free in this instance (https://crbug.com/534994).
+  base::WeakPtrFactory<BookmarkAppHelper> weak_factory_;
 };
 
 // Creates or updates a bookmark app from the given |web_app_info|. Icons will
