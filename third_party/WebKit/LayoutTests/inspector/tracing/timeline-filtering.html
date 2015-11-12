@@ -79,7 +79,8 @@ function test()
     dumpRecords();
 
     InspectorTest.addResult("Filtered by 'bar':");
-    panel._filters._textFilterUI.setValue("bar");
+    var textFilterUI = panel._filters._textFilterUI;
+    textFilterUI.setValue("bar");
     dumpRecords();
 
     InspectorTest.addResult("Collapsed 'bar04' and 'foo13':");
@@ -94,7 +95,7 @@ function test()
     dumpRecords();
 
     InspectorTest.addResult("Filtered by 'foo':");
-    panel._filters._textFilterUI.setValue("foo");
+    textFilterUI.setValue("foo");
     dumpRecords();
 
     InspectorTest.completeTest();

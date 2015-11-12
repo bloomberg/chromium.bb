@@ -52,18 +52,19 @@ function test()
     for (var i = 0; i < rootRecord.presentationChildren().length; ++i)
         rootRecord.presentationChildren()[i].setCollapsed(false);
 
+    var categoryFilter = WebInspector.panels.timeline._filters._categoryFilter;
     InspectorTest.addResult("Original records");
-    WebInspector.panels.timeline._categoryFilter.notifyFilterChanged();
+    categoryFilter.notifyFilterChanged();
     InspectorTest.dumpVisibleRecords();
 
     InspectorTest.addResult("Visible records when 'loading' is disabled");
     WebInspector.TimelineUIUtils.categories().loading.hidden = true;
-    WebInspector.panels.timeline._categoryFilter.notifyFilterChanged();
+    categoryFilter.notifyFilterChanged();
     InspectorTest.dumpVisibleRecords();
 
     InspectorTest.addResult("Visible records when 'scripting' is disabled");
     WebInspector.TimelineUIUtils.categories().scripting.hidden = true;
-    WebInspector.panels.timeline._categoryFilter.notifyFilterChanged();
+    categoryFilter.notifyFilterChanged();
     InspectorTest.dumpVisibleRecords();
 
     InspectorTest.completeTest();
