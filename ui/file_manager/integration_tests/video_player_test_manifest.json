@@ -11,7 +11,8 @@
       "remote_call.js",
       "video_player/background.js",
       "video_player/open_video_files.js",
-      "video_player/check_elements.js"
+      "video_player/check_elements.js",
+      "video_player/click_control_buttons.js"
     ]},
   "incognito" : "split",
   "permissions": ["commandLinePrivate"]

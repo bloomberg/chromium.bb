@@ -76,4 +76,15 @@ IN_PROC_BROWSER_TEST_F(VideoPlayerBrowserTest, MAYBE_CheckInitialElements) {
   StartTest();
 }
 
+// http://crbug.com/508949
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_ClickControlButtons DISABLED_ClickControlButtons
+#else
+#define MAYBE_ClickControlButtons ClickControlButtons
+#endif
+IN_PROC_BROWSER_TEST_F(VideoPlayerBrowserTest, MAYBE_ClickControlButtons) {
+  set_test_case_name("clickControlButtons");
+  StartTest();
+}
+
 }  // namespace file_manager

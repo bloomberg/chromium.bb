@@ -3,23 +3,45 @@
 // found in the LICENSE file.
 
 /**
- * Returns if the specified file is being played.
- *
- * @param {string} filename Name of audio file to be checked. This must be same
- *     as entry.name() of the audio file.
- * @return {boolean} True if the video is playing, false otherwise.
+ * Returns if a video element playing the specified file meet the condition
+ * which is given by a parameter.
+ * @param {string} filename Name of video file to be checked. This must be same
+ *     as entry.name() of the video file.
+ * @param {function(!HTMLElement):boolean} testFunction
  */
-test.util.sync.isPlaying = function(filename) {
+function testElement(filename, testFunction) {
   for (var appId in window.background.appWindows) {
     var contentWindow = window.background.appWindows[appId].contentWindow;
     if (contentWindow &&
         contentWindow.document.title === filename) {
       var element = contentWindow.document.querySelector('video[src]');
-      if (element && !element.paused)
+      if (element && testFunction(element))
         return true;
     }
   }
   return false;
+}
+
+/**
+ * Returns if the specified file is being played.
+ *
+ * @param {string} filename Name of video file to be checked. This must be same
+ *     as entry.name() of the video file.
+ * @return {boolean} True if the video is playing, false otherwise.
+ */
+test.util.sync.isPlaying = function(filename) {
+  return testElement(filename, element => !element.paused);
+};
+
+/**
+ * Returns if the specified file is being played.
+ *
+ * @param {string} filename Name of video file to be checked. This must be same
+ *     as entry.name() of the video file.
+ * @return {boolean} True if the video is playing, false otherwise.
+ */
+test.util.sync.isMuted = function(filename) {
+  return testElement(filename, element => element.volume === 0);
 };
 
 /**
