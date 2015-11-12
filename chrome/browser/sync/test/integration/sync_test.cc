@@ -44,7 +44,6 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/views/profiles/profile_chooser_view.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/common/chrome_constants.h"
@@ -617,17 +616,6 @@ bool SyncTest::SetupSync() {
       LoginUIServiceFactory::GetForProfile(GetProfile(i))->
           SyncConfirmationUIClosed(false /* configure_sync_first */);
     }
-
-    // With external servers, profile paths are created outside user_data_dir.
-    // This causes the ProfileManager to show an avatar bubble without an anchor
-    // view. The bubble is then not destroyed at shutdown, crbug.com/527505.
-    // This is a fix to explicitly close the bubble early on.
-    // ProfileChooserView is available on few platforms including Linux which is
-    // the only supported platform for ExternalServers.
-#if defined(OS_LINUX)
-    // TODO(shadi): Remove this hack once crbug.com/527505 is fixed.
-    ProfileChooserView::Hide();
-#endif  // defined(OS_LINUX)
   }
 
   return true;
