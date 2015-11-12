@@ -629,21 +629,35 @@ base::FilePath ShellIntegration::GetStartMenuShortcut(
     base::DIR_START_MENU,
   };
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  base::string16 shortcut_name(
-      dist->GetShortcutName(BrowserDistribution::SHORTCUT_CHROME));
+  const base::string16 shortcut_name(
+      dist->GetShortcutName(BrowserDistribution::SHORTCUT_CHROME) +
+      installer::kLnkExt);
+  base::FilePath programs_folder;
   base::FilePath shortcut;
 
   // Check both the common and the per-user Start Menu folders for system-level
   // installs.
   size_t folder = InstallUtil::IsPerUserInstall(chrome_exe) ? 1 : 0;
   for (; folder < arraysize(kFolderIds); ++folder) {
-    if (!PathService::Get(kFolderIds[folder], &shortcut)) {
+    if (!PathService::Get(kFolderIds[folder], &programs_folder)) {
       NOTREACHED();
       continue;
     }
 
-    shortcut = shortcut.Append(shortcut_name).Append(shortcut_name +
-                                                     installer::kLnkExt);
+    shortcut = programs_folder.Append(shortcut_name);
+    if (base::PathExists(shortcut))
+      return shortcut;
+
+    // Check in "Start Menu\Programs\<BROWSER>" if the shortcut was not found in
+    // "Start Menu\Programs". This fallback check is here to handle running
+    // instances that are updated past the change that migrates Chrome's start
+    // menu shortcut from the "Google Chrome" folder up into the main "Programs"
+    // folder. This code will become obsolete when the migration change lands,
+    // and is to be removed in that change.
+    shortcut =
+        programs_folder.Append(dist->GetStartMenuShortcutSubfolder(
+                                   BrowserDistribution::SUBFOLDER_CHROME))
+            .Append(shortcut_name);
     if (base::PathExists(shortcut))
       return shortcut;
   }
