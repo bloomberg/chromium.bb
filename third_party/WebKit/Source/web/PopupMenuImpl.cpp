@@ -254,6 +254,7 @@ PopupMenuImpl::~PopupMenuImpl()
 
 DEFINE_TRACE(PopupMenuImpl)
 {
+    visitor->trace(m_chromeClient);
     visitor->trace(m_ownerElement);
     PopupMenu::trace(visitor);
 }

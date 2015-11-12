@@ -54,7 +54,7 @@ private:
     Locale& locale() override;
     void didClosePopup() override;
 
-    ChromeClientImpl* m_chromeClient;
+    RawPtrWillBeMember<ChromeClientImpl> m_chromeClient;
     RawPtrWillBeMember<HTMLSelectElement> m_ownerElement;
     PagePopup* m_popup;
     bool m_needsUpdate;
