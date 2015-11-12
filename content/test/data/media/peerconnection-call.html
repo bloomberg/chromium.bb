@@ -544,8 +544,10 @@
       // When all the above events have occurred- the test pass.
       setAllEventsOccuredHandler(reportTestSuccess);
 
+      gFirstConnection.removeStream(localStream);
       localStream.addTrack(gLocalStream.getAudioTracks()[0]);
       localStream.removeTrack(localStream.getVideoTracks()[0]);
+      gFirstConnection.addStream(localStream);
       negotiate();
     });
   }
