@@ -27,7 +27,7 @@ class BLIMP_NET_EXPORT BlimpConnection {
   BlimpConnection(scoped_ptr<PacketReader> reader,
                   scoped_ptr<PacketWriter> writer);
 
-  ~BlimpConnection();
+  virtual ~BlimpConnection();
 
   // Lets |observer| know when the network connection is terminated.
   void AddDisconnectObserver(DisconnectObserver* observer);

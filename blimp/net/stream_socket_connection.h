@@ -19,7 +19,8 @@ namespace blimp {
 class StreamSocketConnection : public BlimpConnection {
  public:
   explicit StreamSocketConnection(scoped_ptr<net::StreamSocket> socket);
-  virtual ~StreamSocketConnection();
+
+  ~StreamSocketConnection() override;
 
  private:
   scoped_ptr<net::StreamSocket> socket_;
