@@ -28,6 +28,10 @@ class ServerWindowDelegate {
   virtual const ServerWindow* GetRootWindow(
       const ServerWindow* window) const = 0;
 
+  // Schedules a callback to DestroySurfacesScheduledForDestruction() at the
+  // appropriate time, which may be synchronously.
+  virtual void ScheduleSurfaceDestruction(ServerWindow* window) = 0;
+
  protected:
   virtual ~ServerWindowDelegate() {}
 };

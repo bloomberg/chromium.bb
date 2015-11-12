@@ -15,9 +15,7 @@
 #include "mojo/converters/surfaces/surfaces_type_converters.h"
 
 namespace mus {
-
 namespace ws {
-
 namespace {
 
 void CallCallback(const mojo::Closure& callback, cc::SurfaceDrawStatus status) {
@@ -59,7 +57,15 @@ void ServerWindowSurface::SubmitCompositorFrame(
     // If the size of the CompostiorFrame has changed then destroy the existing
     // Surface and create a new one of the appropriate size.
     if (frame_size != last_submitted_frame_size_) {
-      surface_factory_.Destroy(surface_id_);
+      // Rendering of the topmost frame happens in two phases. First the frame
+      // is generated and submitted, and a later date it is actually drawn.
+      // During the time the frame is generated and drawn we can't destroy the
+      // surface, otherwise when drawn you get an empty surface. To deal with
+      // this we schedule destruction via the delegate. The delegate will call
+      // us back when we're not waiting on a frame to be drawn (which may be
+      // synchronously).
+      surfaces_scheduled_for_destruction_.insert(surface_id_);
+      window()->delegate()->ScheduleSurfaceDestruction(window());
       surface_id_ = manager_->GenerateId();
       surface_factory_.Create(surface_id_);
     }
@@ -70,6 +76,13 @@ void ServerWindowSurface::SubmitCompositorFrame(
   window()->delegate()->GetSurfacesState()->scheduler()->SetNeedsDraw();
   window()->delegate()->OnScheduleWindowPaint(window());
   last_submitted_frame_size_ = frame_size;
+}
+
+void ServerWindowSurface::DestroySurfacesScheduledForDestruction() {
+  std::set<cc::SurfaceId> surfaces;
+  surfaces.swap(surfaces_scheduled_for_destruction_);
+  for (auto& id : surfaces)
+    surface_factory_.Destroy(id);
 }
 
 ServerWindow* ServerWindowSurface::window() {
@@ -138,5 +151,4 @@ void ServerWindowSurface::SetBeginFrameSource(
 }
 
 }  // namespace ws
-
 }  // namespace mus

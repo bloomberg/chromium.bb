@@ -194,6 +194,7 @@ class ConnectionManager : public ServerWindowDelegate,
   mus::SurfacesState* GetSurfacesState() override;
   void OnScheduleWindowPaint(const ServerWindow* window) override;
   const ServerWindow* GetRootWindow(const ServerWindow* window) const override;
+  void ScheduleSurfaceDestruction(ServerWindow* window) override;
 
   // Overridden from ServerWindowObserver:
   void OnWindowDestroyed(ServerWindow* window) override;

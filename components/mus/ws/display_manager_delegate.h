@@ -39,6 +39,9 @@ class DisplayManagerDelegate {
 
   virtual void OnTopLevelSurfaceChanged(cc::SurfaceId surface_id) = 0;
 
+  // Called when a compositor frame is finished drawing.
+  virtual void OnCompositorFrameDrawn() = 0;
+
  protected:
   virtual ~DisplayManagerDelegate() {}
 };

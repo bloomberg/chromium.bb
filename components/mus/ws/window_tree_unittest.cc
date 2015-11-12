@@ -237,6 +237,7 @@ class TestDisplayManager : public DisplayManager {
   }
   void UpdateTextInputState(const ui::TextInputState& state) override {}
   void SetImeVisibility(bool visible) override {}
+  bool IsFramePending() const override { return false; }
 
  private:
   mojom::ViewportMetrics display_metrices_;

@@ -12,13 +12,13 @@
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
 #include "components/mus/public/interfaces/window_tree.mojom.h"
-#include "components/mus/surfaces/top_level_display_client.h"
 #include "components/mus/ws/display_manager_delegate.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/callback.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/platform_window/platform_window_delegate.h"
 
 namespace cc {
+class CompositorFrame;
 class SurfaceIdAllocator;
 class SurfaceManager;
 }  // namespace cc
@@ -38,7 +38,9 @@ struct TextInputState;
 
 namespace mus {
 
+class GpuState;
 class SurfacesState;
+class TopLevelDisplayClient;
 
 namespace ws {
 
@@ -71,6 +73,9 @@ class DisplayManager {
   virtual void UpdateTextInputState(const ui::TextInputState& state) = 0;
   virtual void SetImeVisibility(bool visible) = 0;
 
+  // Returns true if a compositor frame has been submitted but not drawn yet.
+  virtual bool IsFramePending() const = 0;
+
   // Overrides factory for testing. Default (NULL) value indicates regular
   // (non-test) environment.
   static void set_factory_for_testing(DisplayManagerFactory* factory) {
@@ -101,6 +106,7 @@ class DefaultDisplayManager : public DisplayManager,
   const mojom::ViewportMetrics& GetViewportMetrics() override;
   void UpdateTextInputState(const ui::TextInputState& state) override;
   void SetImeVisibility(bool visible) override;
+  bool IsFramePending() const override;
 
  private:
   void WantToDraw();

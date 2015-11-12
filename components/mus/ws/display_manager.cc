@@ -14,6 +14,7 @@
 #include "components/mus/public/interfaces/gpu.mojom.h"
 #include "components/mus/public/interfaces/quads.mojom.h"
 #include "components/mus/surfaces/surfaces_state.h"
+#include "components/mus/surfaces/top_level_display_client.h"
 #include "components/mus/ws/display_manager_factory.h"
 #include "components/mus/ws/server_window.h"
 #include "components/mus/ws/server_window_surface.h"
@@ -245,8 +246,13 @@ void DefaultDisplayManager::Draw() {
 
 void DefaultDisplayManager::DidDraw() {
   frame_pending_ = false;
+  delegate_->OnCompositorFrameDrawn();
   if (!dirty_rect_.IsEmpty())
     WantToDraw();
+}
+
+bool DefaultDisplayManager::IsFramePending() const {
+  return frame_pending_;
 }
 
 void DefaultDisplayManager::WantToDraw() {

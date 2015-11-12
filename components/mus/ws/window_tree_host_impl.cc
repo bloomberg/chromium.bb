@@ -39,7 +39,10 @@ WindowTreeHostImpl::WindowTreeHostImpl(
   }
 }
 
-WindowTreeHostImpl::~WindowTreeHostImpl() {}
+WindowTreeHostImpl::~WindowTreeHostImpl() {
+  for (ServerWindow* window : windows_needing_frame_destruction_)
+    window->RemoveObserver(this);
+}
 
 void WindowTreeHostImpl::Init(WindowTreeHostDelegate* delegate) {
   delegate_ = delegate;
@@ -63,6 +66,17 @@ bool WindowTreeHostImpl::SchedulePaintIfInViewport(const ServerWindow* window,
     return true;
   }
   return false;
+}
+
+void WindowTreeHostImpl::ScheduleSurfaceDestruction(ServerWindow* window) {
+  if (!display_manager_->IsFramePending()) {
+    window->DestroySurfacesScheduledForDestruction();
+    return;
+  }
+  if (windows_needing_frame_destruction_.count(window))
+    return;
+  windows_needing_frame_destruction_.insert(window);
+  window->AddObserver(this);
 }
 
 const mojom::ViewportMetrics& WindowTreeHostImpl::GetViewportMetrics() const {
@@ -162,6 +176,15 @@ void WindowTreeHostImpl::OnTopLevelSurfaceChanged(cc::SurfaceId surface_id) {
   event_dispatcher_.set_surface_id(surface_id);
 }
 
+void WindowTreeHostImpl::OnCompositorFrameDrawn() {
+  std::set<ServerWindow*> windows;
+  windows.swap(windows_needing_frame_destruction_);
+  for (ServerWindow* window : windows) {
+    window->RemoveObserver(this);
+    window->DestroySurfacesScheduledForDestruction();
+  }
+}
+
 void WindowTreeHostImpl::OnFocusChanged(ServerWindow* old_focused_window,
                                         ServerWindow* new_focused_window) {
   // There are up to four connections that need to be notified:
@@ -255,6 +278,11 @@ void WindowTreeHostImpl::DispatchInputEventToWindow(ServerWindow* target,
   connection->client()->OnWindowInputEvent(WindowIdToTransportId(target->id()),
                                            event.Pass(),
                                            base::Bind(&base::DoNothing));
+}
+
+void WindowTreeHostImpl::OnWindowDestroyed(ServerWindow* window) {
+  windows_needing_frame_destruction_.erase(window);
+  window->RemoveObserver(this);
 }
 
 }  // namespace ws

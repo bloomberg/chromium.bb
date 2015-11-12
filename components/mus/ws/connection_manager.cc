@@ -370,6 +370,15 @@ const ServerWindow* ConnectionManager::GetRootWindow(
   return host ? host->root_window() : nullptr;
 }
 
+void ConnectionManager::ScheduleSurfaceDestruction(ServerWindow* window) {
+  for (auto& pair : host_connection_map_) {
+    if (pair.first->root_window()->Contains(window)) {
+      pair.first->ScheduleSurfaceDestruction(window);
+      break;
+    }
+  }
+}
+
 void ConnectionManager::OnWindowDestroyed(ServerWindow* window) {
   if (!in_destructor_)
     ProcessWindowDeleted(window->id());

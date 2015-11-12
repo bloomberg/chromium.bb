@@ -14,6 +14,7 @@
 #include "components/mus/ws/event_dispatcher_delegate.h"
 #include "components/mus/ws/focus_controller_delegate.h"
 #include "components/mus/ws/server_window.h"
+#include "components/mus/ws/server_window_observer.h"
 
 namespace mus {
 namespace ws {
@@ -31,7 +32,8 @@ class WindowTreeImpl;
 class WindowTreeHostImpl : public DisplayManagerDelegate,
                            public mojom::WindowTreeHost,
                            public FocusControllerDelegate,
-                           public EventDispatcherDelegate {
+                           public EventDispatcherDelegate,
+                           public ServerWindowObserver {
  public:
   // TODO(fsamuel): All these parameters are just plumbing for creating
   // DisplayManagers. We should probably just store these common parameters
@@ -61,6 +63,11 @@ class WindowTreeHostImpl : public DisplayManagerDelegate,
   // viewport.
   bool SchedulePaintIfInViewport(const ServerWindow* window,
                                  const gfx::Rect& bounds);
+
+  // Schedules destruction of surfaces in |window|. If a frame has been
+  // scheduled but not drawn surface destruction is delayed until the frame is
+  // drawn, otherwise destruction is immediate.
+  void ScheduleSurfaceDestruction(ServerWindow* window);
 
   // Returns the metrics for this viewport.
   const mojom::ViewportMetrics& GetViewportMetrics() const;
@@ -99,6 +106,7 @@ class WindowTreeHostImpl : public DisplayManagerDelegate,
       const mojom::ViewportMetrics& old_metrics,
       const mojom::ViewportMetrics& new_metrics) override;
   void OnTopLevelSurfaceChanged(cc::SurfaceId surface_id) override;
+  void OnCompositorFrameDrawn() override;
 
   // FocusControllerDelegate:
   void OnFocusChanged(ServerWindow* old_focused_window,
@@ -112,6 +120,9 @@ class WindowTreeHostImpl : public DisplayManagerDelegate,
                                   bool in_nonclient_area,
                                   mojom::EventPtr event) override;
 
+  // ServerWindowObserver:
+  void OnWindowDestroyed(ServerWindow* window) override;
+
   WindowTreeHostDelegate* delegate_;
   ConnectionManager* const connection_manager_;
   mojom::WindowTreeHostClientPtr client_;
@@ -120,6 +131,10 @@ class WindowTreeHostImpl : public DisplayManagerDelegate,
   scoped_ptr<DisplayManager> display_manager_;
   scoped_ptr<FocusController> focus_controller_;
   mojom::WindowManagerPtr window_manager_;
+
+  // Set of windows with surfaces that need to be destroyed once the frame
+  // draws.
+  std::set<ServerWindow*> windows_needing_frame_destruction_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowTreeHostImpl);
 };

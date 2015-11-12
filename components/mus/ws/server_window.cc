@@ -306,6 +306,18 @@ bool ServerWindow::IsDrawn() const {
   return root == window;
 }
 
+void ServerWindow::DestroySurfacesScheduledForDestruction() {
+  if (!surface_manager_)
+    return;
+  ServerWindowSurface* surface = surface_manager_->GetDefaultSurface();
+  if (surface)
+    surface->DestroySurfacesScheduledForDestruction();
+
+  surface = surface_manager_->GetUnderlaySurface();
+  if (surface)
+    surface->DestroySurfacesScheduledForDestruction();
+}
+
 ServerWindowSurfaceManager* ServerWindow::GetOrCreateSurfaceManager() {
   if (!surface_manager_.get())
     surface_manager_.reset(new ServerWindowSurfaceManager(this));

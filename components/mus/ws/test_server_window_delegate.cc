@@ -25,6 +25,9 @@ const ServerWindow* TestServerWindowDelegate::GetRootWindow(
   return root_window_;
 }
 
+void TestServerWindowDelegate::ScheduleSurfaceDestruction(
+    ServerWindow* window) {}
+
 }  // namespace ws
 
 }  // namespace mus

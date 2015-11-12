@@ -123,6 +123,9 @@ class ServerWindow {
   // visible.
   bool IsDrawn() const;
 
+  // Called when its appropriate to destroy surfaces scheduled for destruction.
+  void DestroySurfacesScheduledForDestruction();
+
   ServerWindowSurfaceManager* GetOrCreateSurfaceManager();
   ServerWindowSurfaceManager* surface_manager() {
     return surface_manager_.get();
