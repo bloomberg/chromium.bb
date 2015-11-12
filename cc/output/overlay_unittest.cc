@@ -1613,6 +1613,35 @@ TEST_F(GLRendererWithOverlaysTest, NoValidatorNoOverlay) {
   Mock::VerifyAndClearExpectations(&scheduler_);
 }
 
+TEST_F(GLRendererWithOverlaysTest, OccludedQuadNotDrawn) {
+  bool use_validator = true;
+  Init(use_validator);
+  renderer_->set_expect_overlays(true);
+  gfx::Rect viewport_rect(16, 16);
+
+  scoped_ptr<RenderPass> pass = CreateRenderPass();
+
+  CreateFullscreenCandidateQuad(resource_provider_.get(),
+                                pass->shared_quad_state_list.back(),
+                                pass.get());
+
+  CreateFullscreenOpaqueQuad(resource_provider_.get(),
+                             pass->shared_quad_state_list.back(), pass.get());
+  CreateFullscreenOpaqueQuad(resource_provider_.get(),
+                             pass->shared_quad_state_list.back(), pass.get());
+
+  RenderPassList pass_list;
+  pass_list.push_back(pass.Pass());
+
+  output_surface_->set_is_displayed_as_overlay_plane(true);
+  EXPECT_CALL(*renderer_, DoDrawQuad(_, _, _)).Times(0);
+  EXPECT_CALL(scheduler_, Schedule(_, _, _, _, _)).Times(2);
+  renderer_->DrawFrame(&pass_list, 1.f, viewport_rect, viewport_rect, false);
+  SwapBuffers();
+  Mock::VerifyAndClearExpectations(renderer_.get());
+  Mock::VerifyAndClearExpectations(&scheduler_);
+}
+
 TEST_F(GLRendererWithOverlaysTest, ResourcesExportedAndReturnedWithDelay) {
   bool use_validator = true;
   Init(use_validator);
