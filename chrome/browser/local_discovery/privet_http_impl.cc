@@ -751,6 +751,10 @@ bool PrivetHTTPClientImpl::IsInHttpsMode() const {
   return use_https_;
 }
 
+std::string PrivetHTTPClientImpl::GetHost() const {
+  return host_port_.host();
+}
+
 void PrivetHTTPClientImpl::OnPrivetInfoDone(
     const base::DictionaryValue* value) {
   info_operation_.reset();

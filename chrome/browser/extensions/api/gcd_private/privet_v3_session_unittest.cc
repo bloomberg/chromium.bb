@@ -59,6 +59,7 @@ class MockPrivetHTTPClient : public PrivetHTTPClient {
       PrivetJSONOperation*(const PrivetJSONOperation::ResultCallback&));
   MOCK_METHOD2(SwitchToHttps, void(uint16_t, const net::SHA256HashValue&));
   MOCK_CONST_METHOD0(IsInHttpsMode, bool());
+  MOCK_CONST_METHOD0(GetHost, std::string());
 
   void RefreshPrivetToken(
       const PrivetURLFetcher::TokenCallback& callback) override {

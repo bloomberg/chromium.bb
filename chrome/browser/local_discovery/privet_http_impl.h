@@ -257,6 +257,7 @@ class PrivetHTTPClientImpl : public PrivetHTTPClient {
       uint16_t port,
       const net::SHA256HashValue& certificate_fingerprint) override;
   bool IsInHttpsMode() const override;
+  std::string GetHost() const override;
 
  private:
   typedef std::vector<PrivetURLFetcher::TokenCallback> TokenCallbackVector;

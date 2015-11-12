@@ -63,6 +63,8 @@ class PrivetHTTPClient {
   virtual void RefreshPrivetToken(
       const PrivetURLFetcher::TokenCallback& token_callback) = 0;
 
+  // TODO(vitalybuka): Remove all below as part of crbug.com/551631
+  // PrivetV3Session should not need to use PrivetHTTPClient.
   // After this call only HTTPS will be used. Only requests to the server with
   // matching certificate will be allowed.
   // Privet v3 devices MUST support HTTPS. Before communicating over HTTPS,
@@ -78,6 +80,8 @@ class PrivetHTTPClient {
       const net::SHA256HashValue& certificate_fingerprint) = 0;
 
   virtual bool IsInHttpsMode() const = 0;
+
+  virtual std::string GetHost() const = 0;
 };
 
 class PrivetDataReadOperation {
