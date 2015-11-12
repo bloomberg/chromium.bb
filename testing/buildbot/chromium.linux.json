@@ -306,13 +306,15 @@
     "additional_compile_targets": [
       "blimp",
       "components/mus/example:all",
-      "mandoline:all"
+      "mandoline:all",
+      "remoting_all"
     ]
   },
   "Linux Builder (dbg)": {
     "additional_compile_targets": [
       "blimp",
-      "mandoline:all"
+      "mandoline:all",
+      "remoting_all"
     ]
   },
   "Linux Tests": {

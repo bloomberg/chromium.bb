@@ -33,6 +33,7 @@
       "mojo_system_unittests",
       "ppapi_unittests",
       "printing_unittests",
+      "remoting_all",
       "skia_unittests",
       "sql_unittests",
       "sync_unit_tests",
