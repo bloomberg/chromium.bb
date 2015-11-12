@@ -27,12 +27,14 @@ HoleFrameFactory::HoleFrameFactory(
     gl->BindTexture(GL_TEXTURE_2D, texture_);
     image_id_ = gl->CreateGpuMemoryBufferImageCHROMIUM(1, 1, GL_RGBA,
                                                        GL_READ_WRITE_CHROMIUM);
-    gl->BindTexImage2DCHROMIUM(GL_TEXTURE_2D, image_id_);
+    if (image_id_) {
+      gl->BindTexImage2DCHROMIUM(GL_TEXTURE_2D, image_id_);
 
-    gl->GenMailboxCHROMIUM(mailbox_.name);
-    gl->ProduceTextureDirectCHROMIUM(texture_, GL_TEXTURE_2D, mailbox_.name);
+      gl->GenMailboxCHROMIUM(mailbox_.name);
+      gl->ProduceTextureDirectCHROMIUM(texture_, GL_TEXTURE_2D, mailbox_.name);
 
-    sync_token_ = gpu::SyncToken(gl->InsertSyncPointCHROMIUM());
+      sync_token_ = gpu::SyncToken(gl->InsertSyncPointCHROMIUM());
+    }
   }
 }
 
@@ -43,15 +45,17 @@ HoleFrameFactory::~HoleFrameFactory() {
     CHECK(lock);
     gpu::gles2::GLES2Interface* gl = lock->ContextGL();
     gl->BindTexture(GL_TEXTURE_2D, texture_);
-    gl->ReleaseTexImage2DCHROMIUM(GL_TEXTURE_2D, image_id_);
+    if (image_id_)
+      gl->ReleaseTexImage2DCHROMIUM(GL_TEXTURE_2D, image_id_);
     gl->DeleteTextures(1, &texture_);
-    gl->DestroyImageCHROMIUM(image_id_);
+    if (image_id_)
+      gl->DestroyImageCHROMIUM(image_id_);
   }
 }
 
 scoped_refptr<::media::VideoFrame> HoleFrameFactory::CreateHoleFrame(
     const gfx::Size& size) {
-  if (texture_) {
+  if (texture_ && image_id_) {
     scoped_refptr<::media::VideoFrame> frame =
         ::media::VideoFrame::WrapNativeTexture(
             ::media::PIXEL_FORMAT_XRGB,

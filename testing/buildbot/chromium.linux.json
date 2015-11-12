@@ -193,6 +193,12 @@
         "test": "cast_media_unittests"
       },
       {
+        "args": [
+          "--enable-local-file-accesses",
+          "--enable-cma-media-pipeline",
+          "--ozone-platform=cast",
+          "--no-sandbox"
+        ],
         "test": "cast_shell_browser_test"
       },
       {
