@@ -27,6 +27,10 @@ class AccessPolicy {
   virtual bool CanRemoveWindowFromParent(const ServerWindow* window) const = 0;
   virtual bool CanAddWindow(const ServerWindow* parent,
                             const ServerWindow* child) const = 0;
+  virtual bool CanAddTransientWindow(const ServerWindow* parent,
+                                     const ServerWindow* child) const = 0;
+  virtual bool CanRemoveTransientWindowFromParent(
+      const ServerWindow* window) const = 0;
   virtual bool CanReorderWindow(const ServerWindow* window,
                                 const ServerWindow* relative_window,
                                 mojom::OrderDirection direction) const = 0;

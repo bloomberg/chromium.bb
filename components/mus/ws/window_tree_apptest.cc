@@ -316,6 +316,14 @@ class TestWindowTreeClientImpl : public mojom::WindowTreeClient,
   void OnClientAreaChanged(uint32_t window_id,
                            mojo::InsetsPtr old_client_area,
                            mojo::InsetsPtr new_client_area) override {}
+  void OnTransientWindowAdded(uint32_t window_id,
+                              uint32_t transient_window_id) override {
+    tracker()->OnTransientWindowAdded(window_id, transient_window_id);
+  }
+  void OnTransientWindowRemoved(uint32_t window_id,
+                                uint32_t transient_window_id) override {
+    tracker()->OnTransientWindowRemoved(window_id, transient_window_id);
+  }
   void OnWindowViewportMetricsChanged(ViewportMetricsPtr old_metrics,
                                       ViewportMetricsPtr new_metrics) override {
     // Don't track the metrics as they are available at an indeterministic time
@@ -1707,6 +1715,52 @@ TEST_F(WindowTreeAppTest, CantEmbedFromConnectionRoot) {
   // be able to Embed into itself.
   ASSERT_FALSE(EmbedUrl(application_impl(), ws3(), application_impl()->url(),
                         window_1_2));
+}
+
+// Verifies that a transient window tracks its parent's lifetime.
+TEST_F(WindowTreeAppTest, TransientWindowTracksTransientParentLifetime) {
+  ASSERT_NO_FATAL_FAILURE(EstablishSecondConnection(true));
+  Id window_1_1 = BuildWindowId(connection_id_1(), 1);
+
+  Id window_2_1 = ws_client2()->NewWindow(1);
+  Id window_2_2 = ws_client2()->NewWindow(2);
+  Id window_2_3 = ws_client2()->NewWindow(3);
+  ASSERT_TRUE(window_2_1);
+
+  // root -> window_1_1 -> window_2_1
+  // root -> window_1_1 -> window_2_2
+  // root -> window_1_1 -> window_2_3
+  ASSERT_TRUE(AddWindow(ws1(), root_window_id(), window_1_1));
+  ASSERT_TRUE(AddWindow(ws2(), window_1_1, window_2_1));
+  ASSERT_TRUE(AddWindow(ws2(), window_1_1, window_2_2));
+  ASSERT_TRUE(AddWindow(ws2(), window_1_1, window_2_3));
+
+  // window_2_2 and window_2_3 now track the lifetime of window_2_1.
+  changes1()->clear();
+  ws2()->AddTransientWindow(10, window_2_1, window_2_2);
+  ws2()->AddTransientWindow(11, window_2_1, window_2_3);
+  ws_client1()->WaitForChangeCount(2);
+  EXPECT_EQ("AddTransientWindow parent = " + IdToString(window_2_1) +
+                " child = " + IdToString(window_2_2),
+            ChangesToDescription1(*changes1())[0]);
+  EXPECT_EQ("AddTransientWindow parent = " + IdToString(window_2_1) +
+                " child = " + IdToString(window_2_3),
+            ChangesToDescription1(*changes1())[1]);
+
+  changes1()->clear();
+  ws2()->RemoveTransientWindowFromParent(12, window_2_3);
+  ws_client1()->WaitForChangeCount(1);
+  EXPECT_EQ("RemoveTransientWindowFromParent parent = " +
+                IdToString(window_2_1) + " child = " + IdToString(window_2_3),
+            SingleChangeToDescription(*changes1()));
+
+  changes1()->clear();
+  ASSERT_TRUE(DeleteWindow(ws2(), window_2_1));
+  ws_client1()->WaitForChangeCount(2);
+  EXPECT_EQ("WindowDeleted window=" + IdToString(window_2_2),
+            ChangesToDescription1(*changes1())[0]);
+  EXPECT_EQ("WindowDeleted window=" + IdToString(window_2_1),
+            ChangesToDescription1(*changes1())[1]);
 }
 
 // TODO(sky): need to better track changes to initial connection. For example,

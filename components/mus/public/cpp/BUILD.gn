@@ -49,6 +49,7 @@ source_set("cpp") {
     "//cc",
     "//cc/surfaces",
     "//cc/surfaces:surface_id",
+    "//components/mus/common",
     "//mojo/application/public/cpp",
     "//mojo/application/public/interfaces",
     "//mojo/converters/geometry",

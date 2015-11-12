@@ -139,6 +139,19 @@ interface WindowTree {
   // visible to connection B.
   RemoveWindowFromParent(uint32 window_id) => (bool success);
 
+  // Ties the lifetime of |child| to the lifetime of |parent|. This also
+  // places |child| always on top of |parent|.
+  // This fails for any of the following reasons:
+  // . |window_id| or |transient_window_id| does not identify a valid window.
+  // . |transient_window_id| is an ancestor of |window_id|.
+  AddTransientWindow(uint32 change_id,
+                     uint32 window_id,
+                     uint32 transient_window_id);
+
+  // Decouples the lifetime of |transient_window_id| from its transient parent.
+  // This does not change transient window's position in the window hierarchy.
+  RemoveTransientWindowFromParent(uint32 change_id, uint32 transient_window_id);
+
   // Reorders a window in its parent, relative to |relative_window_id| according
   // to |direction|. Only the connection that created the window's parent can
   // reorder its children.
@@ -248,6 +261,12 @@ interface WindowTreeClient {
   OnClientAreaChanged(uint32 window_id,
                       mojo.Insets old_client_area,
                       mojo.Insets new_client_area);
+
+  OnTransientWindowAdded(uint32 window_id,
+                         uint32 transient_window_id);
+
+  OnTransientWindowRemoved(uint32 window_id,
+                           uint32 transient_window_id);
 
   // Invoked when the viewport metrics for the window have changed.
   // Clients are expected to propagate this to the window tree.

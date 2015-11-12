@@ -15,6 +15,7 @@ namespace mus {
 class TestWindow : public Window {
  public:
   TestWindow() { WindowPrivate(this).set_id(1); }
+  explicit TestWindow(Id window_id) { WindowPrivate(this).set_id(window_id); }
   ~TestWindow() {}
 
  private:

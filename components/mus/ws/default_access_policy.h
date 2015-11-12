@@ -25,6 +25,10 @@ class DefaultAccessPolicy : public AccessPolicy {
   bool CanRemoveWindowFromParent(const ServerWindow* window) const override;
   bool CanAddWindow(const ServerWindow* parent,
                     const ServerWindow* child) const override;
+  bool CanAddTransientWindow(const ServerWindow* parent,
+                             const ServerWindow* child) const override;
+  bool CanRemoveTransientWindowFromParent(
+      const ServerWindow* window) const override;
   bool CanReorderWindow(const ServerWindow* window,
                         const ServerWindow* relative_window,
                         mojom::OrderDirection direction) const override;

@@ -44,6 +44,11 @@ std::string ChangeToDescription1(const Change& change) {
     case CHANGE_TYPE_UNEMBED:
       return "OnUnembed";
 
+    case CHANGE_TYPE_NODE_ADD_TRANSIENT_WINDOW:
+      return base::StringPrintf("AddTransientWindow parent = %s child = %s",
+                                WindowIdToString(change.window_id).c_str(),
+                                WindowIdToString(change.window_id2).c_str());
+
     case CHANGE_TYPE_NODE_BOUNDS_CHANGED:
       return base::StringPrintf(
           "BoundsChanged window=%s old_bounds=%s new_bounds=%s",
@@ -61,6 +66,12 @@ std::string ChangeToDescription1(const Change& change) {
           WindowIdToString(change.window_id).c_str(),
           WindowIdToString(change.window_id2).c_str(),
           WindowIdToString(change.window_id3).c_str());
+
+    case CHANGE_TYPE_NODE_REMOVE_TRANSIENT_WINDOW_FROM_PARENT:
+      return base::StringPrintf(
+          "RemoveTransientWindowFromParent parent = %s child = %s",
+          WindowIdToString(change.window_id).c_str(),
+          WindowIdToString(change.window_id2).c_str());
 
     case CHANGE_TYPE_NODE_REORDERED:
       return base::StringPrintf("Reordered window=%s relative=%s direction=%s",
@@ -208,6 +219,24 @@ void TestChangeTracker::OnWindowBoundsChanged(Id window_id,
 void TestChangeTracker::OnUnembed() {
   Change change;
   change.type = CHANGE_TYPE_UNEMBED;
+  AddChange(change);
+}
+
+void TestChangeTracker::OnTransientWindowAdded(Id window_id,
+                                               Id transient_window_id) {
+  Change change;
+  change.type = CHANGE_TYPE_NODE_ADD_TRANSIENT_WINDOW;
+  change.window_id = window_id;
+  change.window_id2 = transient_window_id;
+  AddChange(change);
+}
+
+void TestChangeTracker::OnTransientWindowRemoved(Id window_id,
+                                                 Id transient_window_id) {
+  Change change;
+  change.type = CHANGE_TYPE_NODE_REMOVE_TRANSIENT_WINDOW_FROM_PARENT;
+  change.window_id = window_id;
+  change.window_id2 = transient_window_id;
   AddChange(change);
 }
 

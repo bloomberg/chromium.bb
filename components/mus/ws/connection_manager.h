@@ -219,6 +219,10 @@ class ConnectionManager : public ServerWindowDelegate,
       const std::vector<uint8_t>* new_data) override;
   void OnWindowTextInputStateChanged(ServerWindow* window,
                                      const ui::TextInputState& state) override;
+  void OnTransientWindowAdded(ServerWindow* window,
+                              ServerWindow* transient_child) override;
+  void OnTransientWindowRemoved(ServerWindow* window,
+                                ServerWindow* transient_child) override;
 
   ConnectionManagerDelegate* delegate_;
 

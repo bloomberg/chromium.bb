@@ -50,6 +50,9 @@ class WindowTreeClientImpl : public WindowTreeConnection,
   void AddChild(Id child_id, Id parent_id);
   void RemoveChild(Id child_id, Id parent_id);
 
+  void AddTransientWindow(Id window_id, Id transient_window_id);
+  void RemoveTransientWindow(Id transient_window_id, Id transient_parent_id);
+
   void Reorder(Id window_id,
                Id relative_window_id,
                mojom::OrderDirection direction);
@@ -146,6 +149,10 @@ class WindowTreeClientImpl : public WindowTreeConnection,
   void OnClientAreaChanged(uint32_t window_id,
                            mojo::InsetsPtr old_client_area,
                            mojo::InsetsPtr new_client_area) override;
+  void OnTransientWindowAdded(uint32_t window_id,
+                              uint32_t transient_window_id) override;
+  void OnTransientWindowRemoved(uint32_t window_id,
+                                uint32_t transient_window_id) override;
   void OnWindowViewportMetricsChanged(
       mojom::ViewportMetricsPtr old_metrics,
       mojom::ViewportMetricsPtr new_metrics) override;

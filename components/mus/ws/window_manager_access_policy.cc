@@ -31,6 +31,17 @@ bool WindowManagerAccessPolicy::CanAddWindow(const ServerWindow* parent,
   return true;
 }
 
+bool WindowManagerAccessPolicy::CanAddTransientWindow(
+    const ServerWindow* parent,
+    const ServerWindow* child) const {
+  return true;
+}
+
+bool WindowManagerAccessPolicy::CanRemoveTransientWindowFromParent(
+    const ServerWindow* window) const {
+  return true;
+}
+
 bool WindowManagerAccessPolicy::CanReorderWindow(
     const ServerWindow* window,
     const ServerWindow* relative_window,

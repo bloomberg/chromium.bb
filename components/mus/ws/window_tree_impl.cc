@@ -143,6 +143,20 @@ bool WindowTreeImpl::AddWindow(const WindowId& parent_id,
   return false;
 }
 
+bool WindowTreeImpl::AddTransientWindow(const WindowId& window_id,
+                                        const WindowId& transient_window_id) {
+  ServerWindow* window = GetWindow(window_id);
+  ServerWindow* transient_window = GetWindow(transient_window_id);
+  if (window && transient_window && !transient_window->Contains(window) &&
+      access_policy_->CanAddTransientWindow(window, transient_window)) {
+    Operation op(this, connection_manager_,
+                 OperationType::ADD_TRANSIENT_WINDOW);
+    window->AddTransientWindow(transient_window);
+    return true;
+  }
+  return false;
+}
+
 std::vector<const ServerWindow*> WindowTreeImpl::GetWindowTree(
     const WindowId& window_id) const {
   const ServerWindow* window = GetWindow(window_id);
@@ -282,12 +296,14 @@ void WindowTreeImpl::ProcessWindowReorder(const ServerWindow* window,
                                           mojom::OrderDirection direction,
                                           bool originated_change) {
   if (originated_change || !IsWindowKnown(window) ||
-      !IsWindowKnown(relative_window))
+      !IsWindowKnown(relative_window) ||
+      connection_manager_->DidConnectionMessageClient(id_))
     return;
 
   client()->OnWindowReordered(WindowIdToTransportId(window->id()),
                               WindowIdToTransportId(relative_window->id()),
                               direction);
+  connection_manager_->OnConnectionMessagedClient(id_);
 }
 
 void WindowTreeImpl::ProcessWindowDeleted(const WindowId& window,
@@ -342,6 +358,28 @@ void WindowTreeImpl::ProcessFocusChanged(
           : nullptr;
   client()->OnWindowFocused(window ? WindowIdToTransportId(window->id())
                                    : WindowIdToTransportId(WindowId()));
+}
+
+void WindowTreeImpl::ProcessTransientWindowAdded(
+    const ServerWindow* window,
+    const ServerWindow* transient_window,
+    bool originated_change) {
+  if (originated_change)
+    return;
+  client()->OnTransientWindowAdded(
+      WindowIdToTransportId(window->id()),
+      WindowIdToTransportId(transient_window->id()));
+}
+
+void WindowTreeImpl::ProcessTransientWindowRemoved(
+    const ServerWindow* window,
+    const ServerWindow* transient_window,
+    bool originated_change) {
+  if (originated_change)
+    return;
+  client()->OnTransientWindowRemoved(
+      WindowIdToTransportId(window->id()),
+      WindowIdToTransportId(transient_window->id()));
 }
 
 bool WindowTreeImpl::ShouldRouteToWindowManager(
@@ -516,15 +554,23 @@ void WindowTreeImpl::NotifyDrawnStateChanged(const ServerWindow* window,
 }
 
 void WindowTreeImpl::DestroyWindows() {
-  if (!window_map_.empty()) {
-    Operation op(this, connection_manager_, OperationType::DELETE_WINDOW);
-    // If we get here from the destructor we're not going to get
-    // ProcessWindowDeleted(). Copy the map and delete from the copy so that we
-    // don't have to worry about whether |window_map_| changes or not.
-    WindowMap window_map_copy;
-    window_map_.swap(window_map_copy);
-    STLDeleteValues(&window_map_copy);
+  if (window_map_.empty())
+    return;
+
+  Operation op(this, connection_manager_, OperationType::DELETE_WINDOW);
+  // If we get here from the destructor we're not going to get
+  // ProcessWindowDeleted(). Copy the map and delete from the copy so that we
+  // don't have to worry about whether |window_map_| changes or not.
+  WindowMap window_map_copy;
+  window_map_.swap(window_map_copy);
+  // A sibling can be a transient parent of another window so we detach windows
+  // from their transient parents to avoid double deletes.
+  for (auto& pair : window_map_copy) {
+    ServerWindow* transient_parent = pair.second->transient_parent();
+    if (transient_parent)
+      transient_parent->RemoveTransientWindow(pair.second);
   }
+  STLDeleteValues(&window_map_copy);
 }
 
 bool WindowTreeImpl::CanEmbed(const WindowId& window_id,
@@ -601,6 +647,30 @@ void WindowTreeImpl::RemoveWindowFromParent(
   callback.Run(success);
 }
 
+void WindowTreeImpl::AddTransientWindow(uint32_t change_id,
+                                        Id window,
+                                        Id transient_window) {
+  client_->OnChangeCompleted(
+      change_id, AddTransientWindow(WindowIdFromTransportId(window),
+                                    WindowIdFromTransportId(transient_window)));
+}
+
+void WindowTreeImpl::RemoveTransientWindowFromParent(uint32_t change_id,
+                                                     Id transient_window_id) {
+  bool success = false;
+  ServerWindow* transient_window =
+      GetWindow(WindowIdFromTransportId(transient_window_id));
+  if (transient_window->transient_parent() &&
+      access_policy_->CanRemoveTransientWindowFromParent(transient_window)) {
+    success = true;
+    Operation op(this, connection_manager_,
+                 OperationType::REMOVE_TRANSIENT_WINDOW_FROM_PARENT);
+    transient_window->transient_parent()->RemoveTransientWindow(
+        transient_window);
+  }
+  client_->OnChangeCompleted(change_id, success);
+}
+
 void WindowTreeImpl::ReorderWindow(Id window_id,
                                    Id relative_window_id,
                                    mojom::OrderDirection direction,
@@ -664,7 +734,6 @@ void WindowTreeImpl::SetWindowProperty(
   const bool success = window && access_policy_->CanSetWindowProperties(window);
   if (success) {
     Operation op(this, connection_manager_, OperationType::SET_WINDOW_PROPERTY);
-
     if (value.is_null()) {
       window->SetProperty(name, nullptr);
     } else {

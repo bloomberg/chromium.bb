@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/bind.h"
+#include "components/mus/common/transient_window_utils.h"
 #include "components/mus/public/cpp/lib/window_private.h"
 #include "components/mus/public/cpp/lib/window_tree_client_impl.h"
 #include "components/mus/public/cpp/window_observer.h"
@@ -86,19 +87,24 @@ void RemoveChildImpl(Window* child, Window::Children* children) {
   }
 }
 
-class ScopedOrderChangedNotifier {
+class OrderChangedNotifier {
  public:
-  ScopedOrderChangedNotifier(Window* window,
-                             Window* relative_window,
-                             mojom::OrderDirection direction)
+  OrderChangedNotifier(Window* window,
+                       Window* relative_window,
+                       mojom::OrderDirection direction)
       : window_(window),
         relative_window_(relative_window),
-        direction_(direction) {
+        direction_(direction) {}
+
+  ~OrderChangedNotifier() {}
+
+  void NotifyWindowReordering() {
     FOR_EACH_OBSERVER(
         WindowObserver, *WindowPrivate(window_).observers(),
         OnWindowReordering(window_, relative_window_, direction_));
   }
-  ~ScopedOrderChangedNotifier() {
+
+  void NotifyWindowReordered() {
     FOR_EACH_OBSERVER(WindowObserver, *WindowPrivate(window_).observers(),
                       OnWindowReordered(window_, relative_window_, direction_));
   }
@@ -108,38 +114,8 @@ class ScopedOrderChangedNotifier {
   Window* relative_window_;
   mojom::OrderDirection direction_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(ScopedOrderChangedNotifier);
+  MOJO_DISALLOW_COPY_AND_ASSIGN(OrderChangedNotifier);
 };
-
-// Returns true if the order actually changed.
-bool ReorderImpl(Window::Children* children,
-                 Window* window,
-                 Window* relative,
-                 mojom::OrderDirection direction) {
-  DCHECK(relative);
-  DCHECK_NE(window, relative);
-  DCHECK_EQ(window->parent(), relative->parent());
-
-  const size_t child_i =
-      std::find(children->begin(), children->end(), window) - children->begin();
-  const size_t target_i =
-      std::find(children->begin(), children->end(), relative) -
-      children->begin();
-  if ((direction == mojom::ORDER_DIRECTION_ABOVE && child_i == target_i + 1) ||
-      (direction == mojom::ORDER_DIRECTION_BELOW && child_i + 1 == target_i)) {
-    return false;
-  }
-
-  ScopedOrderChangedNotifier notifier(window, relative, direction);
-
-  const size_t dest_i = direction == mojom::ORDER_DIRECTION_ABOVE
-                            ? (child_i < target_i ? target_i : target_i + 1)
-                            : (child_i < target_i ? target_i - 1 : target_i);
-  children->erase(children->begin() + child_i);
-  children->insert(children->begin() + dest_i, window);
-
-  return true;
-}
 
 class ScopedSetBoundsNotifier {
  public:
@@ -299,6 +275,25 @@ void Window::RemoveChild(Window* child) {
   }
 }
 
+void Window::AddTransientWindow(Window* transient_window) {
+  if (connection_)
+    CHECK_EQ(transient_window->connection(), connection_);
+  LocalAddTransientWindow(transient_window);
+  if (connection_)
+    static_cast<WindowTreeClientImpl*>(connection_)
+        ->AddTransientWindow(id_, transient_window->id());
+}
+
+void Window::RemoveTransientWindow(Window* transient_window) {
+  if (connection_)
+    CHECK_EQ(transient_window->connection(), connection_);
+  LocalRemoveTransientWindow(transient_window);
+  if (connection_) {
+    static_cast<WindowTreeClientImpl*>(connection_)
+        ->RemoveTransientWindow(transient_window->id(), id_);
+  }
+}
+
 void Window::MoveToFront() {
   if (!parent_ || parent_->children_.back() == this)
     return;
@@ -345,7 +340,7 @@ Window* Window::GetChildById(Id id) {
     if (window)
       return window;
   }
-  return NULL;
+  return nullptr;
 }
 
 void Window::SetTextInputState(mojo::TextInputStatePtr state) {
@@ -423,15 +418,31 @@ mojom::ViewportMetricsPtr CreateEmptyViewportMetrics() {
 }  // namespace
 
 Window::Window()
-    : connection_(NULL),
+    : connection_(nullptr),
       id_(static_cast<Id>(-1)),
-      parent_(NULL),
+      parent_(nullptr),
+      stacking_target_(nullptr),
+      transient_parent_(nullptr),
       viewport_metrics_(CreateEmptyViewportMetrics()),
       visible_(true),
       drawn_(false) {}
 
 Window::~Window() {
   FOR_EACH_OBSERVER(WindowObserver, observers_, OnWindowDestroying(this));
+
+  // Remove from transient parent.
+  if (transient_parent_)
+    transient_parent_->LocalRemoveTransientWindow(this);
+
+  // Remove transient children.
+  while (!transient_children_.empty()) {
+    Window* transient_child = transient_children_.front();
+    LocalRemoveTransientWindow(transient_child);
+    transient_child->LocalDestroy();
+    DCHECK(transient_children_.empty() ||
+           transient_children_.front() != transient_child);
+  }
+
   if (parent_)
     parent_->LocalRemoveChild(this);
 
@@ -468,6 +479,8 @@ Window::Window(WindowTreeConnection* connection, Id id)
     : connection_(connection),
       id_(id),
       parent_(nullptr),
+      stacking_target_(nullptr),
+      transient_parent_(nullptr),
       viewport_metrics_(CreateEmptyViewportMetrics()),
       visible_(false),
       drawn_(false) {}
@@ -530,12 +543,34 @@ void Window::LocalAddChild(Window* child) {
 
 void Window::LocalRemoveChild(Window* child) {
   DCHECK_EQ(this, child->parent());
-  ScopedTreeNotifier notifier(child, this, NULL);
+  ScopedTreeNotifier notifier(child, this, nullptr);
   RemoveChildImpl(child, &children_);
 }
 
+void Window::LocalAddTransientWindow(Window* transient_window) {
+  if (transient_window->transient_parent())
+    RemoveTransientWindowImpl(transient_window);
+  transient_children_.push_back(transient_window);
+  transient_window->transient_parent_ = this;
+
+  // Restack |transient_window| properly above its transient parent, if they
+  // share the same parent.
+  if (transient_window->parent() == parent())
+    RestackTransientDescendants(this, &GetStackingTarget,
+                                &ReorderWithoutNotification);
+
+  // TODO(fsamuel): We might want a notification here.
+}
+
+void Window::LocalRemoveTransientWindow(Window* transient_window) {
+  DCHECK_EQ(this, transient_window->transient_parent());
+  RemoveTransientWindowImpl(transient_window);
+  // TODO(fsamuel): We might want a notification here.
+}
+
 bool Window::LocalReorder(Window* relative, mojom::OrderDirection direction) {
-  return ReorderImpl(&parent_->children_, this, relative, direction);
+  OrderChangedNotifier notifier(this, relative, direction);
+  return ReorderImpl(this, relative, direction, &notifier);
 }
 
 void Window::LocalSetBounds(const gfx::Rect& old_bounds,
@@ -601,8 +636,8 @@ void Window::LocalSetSharedProperty(const std::string& name,
     if (value && old_value == *value)
       return;
   } else if (!value) {
-    // This property isn't set in |properties_| and |value| is NULL, so there's
-    // no change.
+    // This property isn't set in |properties_| and |value| is nullptr, so
+    // there's no change.
     return;
   }
 
@@ -615,6 +650,19 @@ void Window::LocalSetSharedProperty(const std::string& name,
   FOR_EACH_OBSERVER(
       WindowObserver, observers_,
       OnWindowSharedPropertyChanged(this, name, old_value_ptr, value));
+}
+
+void Window::NotifyWindowStackingChanged() {
+  if (stacking_target_) {
+    Children::const_iterator window_i = std::find(
+        parent()->children().begin(), parent()->children().end(), this);
+    DCHECK(window_i != parent()->children().end());
+    if (window_i != parent()->children().begin() &&
+        (*(window_i - 1) == stacking_target_))
+      return;
+  }
+  RestackTransientDescendants(this, &GetStackingTarget,
+                              &ReorderWithoutNotification);
 }
 
 void Window::NotifyWindowVisibilityChanged(Window* target) {
@@ -677,4 +725,77 @@ bool Window::PrepareForEmbed() {
   return true;
 }
 
+void Window::RemoveTransientWindowImpl(Window* transient_window) {
+  Window::Children::iterator it = std::find(
+      transient_children_.begin(), transient_children_.end(), transient_window);
+  if (it != transient_children_.end()) {
+    transient_children_.erase(it);
+    transient_window->transient_parent_ = nullptr;
+  }
+  // If |transient_window| and its former transient parent share the same
+  // parent, |transient_window| should be restacked properly so it is not among
+  // transient children of its former parent, anymore.
+  if (parent() == transient_window->parent())
+    RestackTransientDescendants(this, &GetStackingTarget,
+                                &ReorderWithoutNotification);
+
+  // TOOD(fsamuel): We might want to notify observers here.
+}
+
+// static
+void Window::ReorderWithoutNotification(Window* window,
+                                        Window* relative,
+                                        mojom::OrderDirection direction) {
+  ReorderImpl(window, relative, direction, nullptr);
+}
+
+// static
+// Returns true if the order actually changed.
+bool Window::ReorderImpl(Window* window,
+                         Window* relative,
+                         mojom::OrderDirection direction,
+                         OrderChangedNotifier* notifier) {
+  DCHECK(relative);
+  DCHECK_NE(window, relative);
+  DCHECK_EQ(window->parent(), relative->parent());
+
+  if (!AdjustStackingForTransientWindows(&window, &relative, &direction,
+                                         window->stacking_target_))
+    return false;
+
+  const size_t child_i = std::find(window->parent_->children_.begin(),
+                                   window->parent_->children_.end(), window) -
+                         window->parent_->children_.begin();
+  const size_t target_i =
+      std::find(window->parent_->children_.begin(),
+                window->parent_->children_.end(), relative) -
+      window->parent_->children_.begin();
+  if ((direction == mojom::ORDER_DIRECTION_ABOVE && child_i == target_i + 1) ||
+      (direction == mojom::ORDER_DIRECTION_BELOW && child_i + 1 == target_i)) {
+    return false;
+  }
+
+  if (notifier)
+    notifier->NotifyWindowReordering();
+
+  const size_t dest_i = direction == mojom::ORDER_DIRECTION_ABOVE
+                            ? (child_i < target_i ? target_i : target_i + 1)
+                            : (child_i < target_i ? target_i - 1 : target_i);
+  window->parent_->children_.erase(window->parent_->children_.begin() +
+                                   child_i);
+  window->parent_->children_.insert(window->parent_->children_.begin() + dest_i,
+                                    window);
+
+  window->NotifyWindowStackingChanged();
+
+  if (notifier)
+    notifier->NotifyWindowReordered();
+
+  return true;
+}
+
+// static
+Window** Window::GetStackingTarget(Window* window) {
+  return &window->stacking_target_;
+}
 }  // namespace mus

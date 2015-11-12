@@ -23,7 +23,9 @@ class WindowPrivate {
     return &window_->observers_;
   }
 
-  void ClearParent() { window_->parent_ = NULL; }
+  void ClearParent() { window_->parent_ = nullptr; }
+
+  void ClearTransientParent() { window_->transient_parent_ = nullptr; }
 
   void set_visible(bool visible) { window_->visible_ = visible; }
 
@@ -47,6 +49,12 @@ class WindowPrivate {
   void LocalDestroy() { window_->LocalDestroy(); }
   void LocalAddChild(Window* child) { window_->LocalAddChild(child); }
   void LocalRemoveChild(Window* child) { window_->LocalRemoveChild(child); }
+  void LocalAddTransientWindow(Window* child) {
+    window_->LocalAddTransientWindow(child);
+  }
+  void LocalRemoveTransientWindow(Window* child) {
+    window_->LocalRemoveTransientWindow(child);
+  }
   void LocalReorder(Window* relative, mojom::OrderDirection direction) {
     window_->LocalReorder(relative, direction);
   }
@@ -63,6 +71,7 @@ class WindowPrivate {
                               const std::vector<uint8_t>* data){
     window_->LocalSetSharedProperty(name, data);
   }
+  void NotifyWindowStackingChanged() { window_->NotifyWindowStackingChanged(); }
 
  private:
   Window* window_;

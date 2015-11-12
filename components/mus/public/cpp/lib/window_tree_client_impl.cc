@@ -170,6 +170,24 @@ void WindowTreeClientImpl::RemoveChild(Id child_id, Id parent_id) {
   tree_->RemoveWindowFromParent(child_id, ActionCompletedCallback());
 }
 
+void WindowTreeClientImpl::AddTransientWindow(Id window_id,
+                                              Id transient_window_id) {
+  DCHECK(tree_);
+  const uint32_t change_id = ScheduleInFlightChange(make_scoped_ptr(
+      new CrashInFlightChange(window_id, ChangeType::ADD_TRANSIENT_WINDOW)));
+  tree_->AddTransientWindow(change_id, window_id, transient_window_id);
+}
+
+void WindowTreeClientImpl::RemoveTransientWindow(Id transient_window_id,
+                                                 Id transient_parent_id) {
+  DCHECK(tree_);
+  const uint32_t change_id =
+      ScheduleInFlightChange(make_scoped_ptr(new CrashInFlightChange(
+          transient_window_id,
+          ChangeType::REMOVE_TRANSIENT_WINDOW_FROM_PARENT)));
+  tree_->RemoveTransientWindowFromParent(change_id, transient_window_id);
+}
+
 void WindowTreeClientImpl::Reorder(Id window_id,
                                    Id relative_window_id,
                                    mojom::OrderDirection direction) {
@@ -430,6 +448,28 @@ void WindowTreeClientImpl::OnClientAreaChanged(
   Window* window = GetWindowById(window_id);
   if (window)
     WindowPrivate(window).LocalSetClientArea(new_client_area.To<gfx::Insets>());
+}
+
+void WindowTreeClientImpl::OnTransientWindowAdded(
+    uint32_t window_id,
+    uint32_t transient_window_id) {
+  Window* window = GetWindowById(window_id);
+  Window* transient_window = GetWindowById(transient_window_id);
+  // window or transient_window or both may be null if a local delete occurs
+  // with an in flight add from the server.
+  if (window && transient_window)
+    WindowPrivate(window).LocalAddTransientWindow(transient_window);
+}
+
+void WindowTreeClientImpl::OnTransientWindowRemoved(
+    uint32_t window_id,
+    uint32_t transient_window_id) {
+  Window* window = GetWindowById(window_id);
+  Window* transient_window = GetWindowById(transient_window_id);
+  // window or transient_window or both may be null if a local delete occurs
+  // with an in flight delete from the server.
+  if (window && transient_window)
+    WindowPrivate(window).LocalRemoveTransientWindow(transient_window);
 }
 
 namespace {

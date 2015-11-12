@@ -310,6 +310,12 @@ void ConnectionManager::ProcessWindowReorder(
     const ServerWindow* window,
     const ServerWindow* relative_window,
     const mojom::OrderDirection direction) {
+  // We'll probably do a bit of reshuffling when we add a transient window.
+  if ((current_operation_type() == OperationType::ADD_TRANSIENT_WINDOW) ||
+      (current_operation_type() ==
+       OperationType::REMOVE_TRANSIENT_WINDOW_FROM_PARENT)) {
+    return;
+  }
   for (auto& pair : connection_map_) {
     pair.second->service()->ProcessWindowReorder(
         window, relative_window, direction, IsOperationSource(pair.first));
@@ -458,6 +464,26 @@ void ConnectionManager::OnWindowTextInputStateChanged(
     const ui::TextInputState& state) {
   WindowTreeHostImpl* host = GetWindowTreeHostByWindow(window);
   host->UpdateTextInputState(window, state);
+}
+
+void ConnectionManager::OnTransientWindowAdded(ServerWindow* window,
+                                               ServerWindow* transient_child) {
+  for (auto& pair : connection_map_) {
+    pair.second->service()->ProcessTransientWindowAdded(
+        window, transient_child, IsOperationSource(pair.first));
+  }
+}
+
+void ConnectionManager::OnTransientWindowRemoved(
+    ServerWindow* window,
+    ServerWindow* transient_child) {
+  // If we're deleting a window, then this is a superfluous message.
+  if (current_operation_type() == OperationType::DELETE_WINDOW)
+    return;
+  for (auto& pair : connection_map_) {
+    pair.second->service()->ProcessTransientWindowRemoved(
+        window, transient_child, IsOperationSource(pair.first));
+  }
 }
 
 }  // namespace ws

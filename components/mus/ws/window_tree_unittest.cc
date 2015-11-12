@@ -79,6 +79,10 @@ class TestWindowTreeClient : public mus::mojom::WindowTreeClient {
   void OnClientAreaChanged(uint32_t window_id,
                            mojo::InsetsPtr old_client_area,
                            mojo::InsetsPtr new_client_area) override {}
+  void OnTransientWindowAdded(uint32_t window_id,
+                              uint32_t transient_window_id) override {}
+  void OnTransientWindowRemoved(uint32_t window_id,
+                                uint32_t transient_window_id) override {}
   void OnWindowViewportMetricsChanged(
       mojom::ViewportMetricsPtr old_metrics,
       mojom::ViewportMetricsPtr new_metrics) override {

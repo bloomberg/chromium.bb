@@ -14,8 +14,10 @@ namespace mus {
 class WindowTreeConnection;
 
 enum class ChangeType {
+  ADD_TRANSIENT_WINDOW,
   BOUNDS,
   NEW_WINDOW,
+  REMOVE_TRANSIENT_WINDOW_FROM_PARENT
 };
 
 // InFlightChange is used to track function calls to the server and take the

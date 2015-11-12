@@ -76,6 +76,8 @@ class WindowTreeImpl : public mojom::WindowTree, public AccessPolicyDelegate {
   // WindowTree implementations all call into these. See the mojom for details.
   bool NewWindow(const WindowId& window_id);
   bool AddWindow(const WindowId& parent_id, const WindowId& child_id);
+  bool AddTransientWindow(const WindowId& window_id,
+                          const WindowId& transient_window_id);
   std::vector<const ServerWindow*> GetWindowTree(
       const WindowId& window_id) const;
   bool SetWindowVisibility(const WindowId& window_id, bool visible);
@@ -119,6 +121,12 @@ class WindowTreeImpl : public mojom::WindowTree, public AccessPolicyDelegate {
                                          bool originated_change);
   void ProcessFocusChanged(const ServerWindow* old_focused_window,
                            const ServerWindow* new_focused_window);
+  void ProcessTransientWindowAdded(const ServerWindow* window,
+                                   const ServerWindow* transient_window,
+                                   bool originated_change);
+  void ProcessTransientWindowRemoved(const ServerWindow* window,
+                                     const ServerWindow* transient_window,
+                                     bool originated_change);
 
  private:
   using WindowIdSet = base::hash_set<Id>;
@@ -191,6 +199,11 @@ class WindowTreeImpl : public mojom::WindowTree, public AccessPolicyDelegate {
   void RemoveWindowFromParent(
       Id window_id,
       const mojo::Callback<void(bool)>& callback) override;
+  void AddTransientWindow(uint32_t change_id,
+                          Id window_id,
+                          Id transient_window_id) override;
+  void RemoveTransientWindowFromParent(uint32_t change_id,
+                                       Id transient_window_id) override;
   void ReorderWindow(Id window_id,
                      Id relative_window_id,
                      mojom::OrderDirection direction,
