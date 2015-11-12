@@ -1,0 +1,416 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "components/data_usage/android/traffic_stats_amortizer.h"
+
+#include <stdint.h>
+
+#include <string>
+
+#include "base/bind.h"
+#include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
+#include "base/test/simple_test_tick_clock.h"
+#include "base/time/tick_clock.h"
+#include "base/time/time.h"
+#include "base/timer/mock_timer.h"
+#include "base/timer/timer.h"
+#include "components/data_usage/core/data_use.h"
+#include "components/data_usage/core/data_use_amortizer.h"
+#include "net/base/network_change_notifier.h"
+#include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
+
+namespace data_usage {
+namespace android {
+
+namespace {
+
+// The delay between receiving DataUse and querying TrafficStats byte counts for
+// amortization.
+const base::TimeDelta kTrafficStatsQueryDelay =
+    base::TimeDelta::FromMilliseconds(50);
+
+// The longest amount of time that an amortization run can be delayed for.
+const base::TimeDelta kMaxAmortizationDelay =
+    base::TimeDelta::FromMilliseconds(200);
+
+// The maximum allowed size of the DataUse buffer.
+const size_t kMaxDataUseBufferSize = 8;
+
+// Synthesizes a fake scoped_ptr<DataUse> with the given |tx_bytes| and
+// |rx_bytes|, using arbitrary values for all other fields.
+scoped_ptr<DataUse> CreateDataUse(int64_t tx_bytes, int64_t rx_bytes) {
+  return scoped_ptr<DataUse>(new DataUse(
+      GURL("http://example.com"), base::TimeTicks() /* request_start */,
+      GURL("http://examplefirstparty.com"), 10 /* tab_id */,
+      net::NetworkChangeNotifier::CONNECTION_2G, "example_mcc_mnc", tx_bytes,
+      rx_bytes));
+}
+
+// Class that represents a base::MockTimer with an attached base::TickClock, so
+// that it can update its |desired_run_time()| according to the current time
+// when the timer is reset.
+class MockTimerWithTickClock : public base::MockTimer {
+ public:
+  MockTimerWithTickClock(bool retain_user_task,
+                         bool is_repeating,
+                         base::TickClock* tick_clock)
+      : base::MockTimer(retain_user_task, is_repeating),
+        tick_clock_(tick_clock) {}
+
+  ~MockTimerWithTickClock() override {}
+
+  void Reset() override {
+    base::MockTimer::Reset();
+    set_desired_run_time(tick_clock_->NowTicks() + GetCurrentDelay());
+  }
+
+ private:
+  base::TickClock* tick_clock_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockTimerWithTickClock);
+};
+
+// A TrafficStatsAmortizer for testing that allows for tests to simulate the
+// byte counts returned from TrafficStats.
+class TestTrafficStatsAmortizer : public TrafficStatsAmortizer {
+ public:
+  TestTrafficStatsAmortizer(scoped_ptr<base::TickClock> tick_clock,
+                            scoped_ptr<base::Timer> traffic_stats_query_timer)
+      : TrafficStatsAmortizer(tick_clock.Pass(),
+                              traffic_stats_query_timer.Pass(),
+                              kTrafficStatsQueryDelay,
+                              kMaxAmortizationDelay,
+                              kMaxDataUseBufferSize),
+        next_traffic_stats_available_(false),
+        next_traffic_stats_tx_bytes_(-1),
+        next_traffic_stats_rx_bytes_(-1) {}
+
+  ~TestTrafficStatsAmortizer() override {}
+
+  void SetNextTrafficStats(bool available, int64_t tx_bytes, int64_t rx_bytes) {
+    next_traffic_stats_available_ = available;
+    next_traffic_stats_tx_bytes_ = tx_bytes;
+    next_traffic_stats_rx_bytes_ = rx_bytes;
+  }
+
+  void AddTrafficStats(int64_t tx_bytes, int64_t rx_bytes) {
+    next_traffic_stats_tx_bytes_ += tx_bytes;
+    next_traffic_stats_rx_bytes_ += rx_bytes;
+  }
+
+ protected:
+  bool QueryTrafficStats(int64_t* tx_bytes, int64_t* rx_bytes) const override {
+    *tx_bytes = next_traffic_stats_tx_bytes_;
+    *rx_bytes = next_traffic_stats_rx_bytes_;
+    return next_traffic_stats_available_;
+  }
+
+ private:
+  bool next_traffic_stats_available_;
+  int64_t next_traffic_stats_tx_bytes_;
+  int64_t next_traffic_stats_rx_bytes_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestTrafficStatsAmortizer);
+};
+
+class TrafficStatsAmortizerTest : public testing::Test {
+ public:
+  TrafficStatsAmortizerTest()
+      : test_tick_clock_(new base::SimpleTestTickClock()),
+        mock_timer_(new MockTimerWithTickClock(false, false, test_tick_clock_)),
+        amortizer_(scoped_ptr<base::TickClock>(test_tick_clock_),
+                   scoped_ptr<base::Timer>(mock_timer_)),
+        data_use_callback_call_count_(0) {}
+
+  ~TrafficStatsAmortizerTest() override {
+    EXPECT_FALSE(mock_timer_->IsRunning());
+  }
+
+  // Simulates the passage of time by |delta|, firing timers when appropriate.
+  void AdvanceTime(const base::TimeDelta& delta) {
+    const base::TimeTicks end_time = test_tick_clock_->NowTicks() + delta;
+    base::RunLoop().RunUntilIdle();
+
+    while (test_tick_clock_->NowTicks() < end_time) {
+      PumpMockTimer();
+
+      // If |mock_timer_| is scheduled to fire in the future before |end_time|,
+      // advance to that time.
+      if (mock_timer_->IsRunning() &&
+          mock_timer_->desired_run_time() < end_time) {
+        test_tick_clock_->Advance(mock_timer_->desired_run_time() -
+                                  test_tick_clock_->NowTicks());
+      } else {
+        // Otherwise, advance to |end_time|.
+        test_tick_clock_->Advance(end_time - test_tick_clock_->NowTicks());
+      }
+    }
+    PumpMockTimer();
+  }
+
+  // Skip the first amortization run where TrafficStats byte count deltas are
+  // unavailable, for convenience.
+  void SkipFirstAmortizationRun() {
+    // The initial values of TrafficStats shouldn't matter.
+    amortizer()->SetNextTrafficStats(true, 0, 0);
+
+    // Do the first amortization run with TrafficStats unavailable.
+    amortizer()->OnExtraBytes(100, 1000);
+    AdvanceTime(kTrafficStatsQueryDelay);
+    EXPECT_EQ(0, data_use_callback_call_count());
+  }
+
+  // Expects that |expected| and |actual| are equivalent.
+  void ExpectDataUse(scoped_ptr<DataUse> expected, scoped_ptr<DataUse> actual) {
+    ++data_use_callback_call_count_;
+
+    // Have separate checks for the |tx_bytes| and |rx_bytes|, since those are
+    // calculated with floating point arithmetic.
+    EXPECT_DOUBLE_EQ(static_cast<double>(expected->tx_bytes),
+                     static_cast<double>(actual->tx_bytes));
+    EXPECT_DOUBLE_EQ(static_cast<double>(expected->rx_bytes),
+                     static_cast<double>(actual->rx_bytes));
+
+    // Copy the byte counts over from |expected| just in case they're only
+    // slightly different due to floating point error, so that this doesn't
+    // cause the equality comparison below to fail.
+    actual->tx_bytes = expected->tx_bytes;
+    actual->rx_bytes = expected->rx_bytes;
+    EXPECT_EQ(*expected, *actual);
+  }
+
+  // Creates an ExpectDataUse callback, as a convenience.
+  DataUseAmortizer::AmortizationCompleteCallback ExpectDataUseCallback(
+      scoped_ptr<DataUse> expected) {
+    return base::Bind(&TrafficStatsAmortizerTest::ExpectDataUse,
+                      base::Unretained(this), base::Passed(&expected));
+  }
+
+  base::TimeTicks NowTicks() const { return test_tick_clock_->NowTicks(); }
+
+  TestTrafficStatsAmortizer* amortizer() { return &amortizer_; }
+
+  int data_use_callback_call_count() const {
+    return data_use_callback_call_count_;
+  }
+
+ private:
+  // Pumps |mock_timer_|, firing it while it's scheduled to run now or in the
+  // past. After calling this, |mock_timer_| is either not running or is
+  // scheduled to run in the future.
+  void PumpMockTimer() {
+    // Fire the |mock_timer_| if the time has come up. Use a while loop in case
+    // the fired task started the timer again to fire immediately.
+    while (mock_timer_->IsRunning() &&
+           mock_timer_->desired_run_time() <= test_tick_clock_->NowTicks()) {
+      mock_timer_->Fire();
+      base::RunLoop().RunUntilIdle();
+    }
+  }
+
+  base::MessageLoop message_loop_;
+
+  // Weak, owned by |amortizer_|.
+  base::SimpleTestTickClock* test_tick_clock_;
+
+  // Weak, owned by |amortizer_|.
+  MockTimerWithTickClock* mock_timer_;
+
+  TestTrafficStatsAmortizer amortizer_;
+
+  // The number of times ExpectDataUse has been called.
+  int data_use_callback_call_count_;
+
+  DISALLOW_COPY_AND_ASSIGN(TrafficStatsAmortizerTest);
+};
+
+TEST_F(TrafficStatsAmortizerTest, AmortizeWithTrafficStatsAlwaysUnavailable) {
+  amortizer()->SetNextTrafficStats(false, -1, -1);
+  // Do it three times for good measure.
+  for (int i = 0; i < 3; ++i) {
+    // Extra bytes should be ignored since TrafficStats are unavailable.
+    amortizer()->OnExtraBytes(1337, 9001);
+    // The original DataUse should be unchanged.
+    amortizer()->AmortizeDataUse(
+        CreateDataUse(100, 1000),
+        ExpectDataUseCallback(CreateDataUse(100, 1000)));
+
+    AdvanceTime(kTrafficStatsQueryDelay);
+    EXPECT_EQ(i + 1, data_use_callback_call_count());
+  }
+}
+
+TEST_F(TrafficStatsAmortizerTest, AmortizeDataUse) {
+  // The initial values of TrafficStats shouldn't matter.
+  amortizer()->SetNextTrafficStats(true, 1337, 9001);
+
+  // The first amortization run should not change any byte counts because
+  // there's no TrafficStats delta to work with.
+  amortizer()->AmortizeDataUse(CreateDataUse(50, 500),
+                               ExpectDataUseCallback(CreateDataUse(50, 500)));
+  amortizer()->AmortizeDataUse(CreateDataUse(100, 1000),
+                               ExpectDataUseCallback(CreateDataUse(100, 1000)));
+  AdvanceTime(kTrafficStatsQueryDelay);
+  EXPECT_EQ(2, data_use_callback_call_count());
+
+  // This amortization run, tx_bytes and rx_bytes should be doubled.
+  amortizer()->AmortizeDataUse(CreateDataUse(50, 500),
+                               ExpectDataUseCallback(CreateDataUse(100, 1000)));
+  AdvanceTime(kTrafficStatsQueryDelay / 2);
+
+  // Another DataUse is reported before the amortizer queries TrafficStats.
+  amortizer()->AmortizeDataUse(CreateDataUse(100, 1000),
+                               ExpectDataUseCallback(CreateDataUse(200, 2000)));
+  AdvanceTime(kTrafficStatsQueryDelay / 2);
+
+  // Then, the TrafficStats values update with the new bytes. The second run
+  // callbacks should not have been called yet.
+  amortizer()->AddTrafficStats(300, 3000);
+  EXPECT_EQ(2, data_use_callback_call_count());
+
+  // The callbacks should fire once kTrafficStatsQueryDelay has passed since the
+  // DataUse was passed to the amortizer.
+  AdvanceTime(kTrafficStatsQueryDelay / 2);
+  EXPECT_EQ(4, data_use_callback_call_count());
+}
+
+TEST_F(TrafficStatsAmortizerTest, AmortizeWithExtraBytes) {
+  SkipFirstAmortizationRun();
+
+  // Byte counts should double.
+  amortizer()->AmortizeDataUse(CreateDataUse(50, 500),
+                               ExpectDataUseCallback(CreateDataUse(100, 1000)));
+  amortizer()->OnExtraBytes(500, 5000);
+  amortizer()->AddTrafficStats(1100, 11000);
+  AdvanceTime(kTrafficStatsQueryDelay);
+  EXPECT_EQ(1, data_use_callback_call_count());
+}
+
+TEST_F(TrafficStatsAmortizerTest, AmortizeWithNegativeOverhead) {
+  SkipFirstAmortizationRun();
+
+  // Byte counts should halve.
+  amortizer()->AmortizeDataUse(CreateDataUse(50, 500),
+                               ExpectDataUseCallback(CreateDataUse(25, 250)));
+  amortizer()->AddTrafficStats(25, 250);
+  AdvanceTime(kTrafficStatsQueryDelay);
+  EXPECT_EQ(1, data_use_callback_call_count());
+}
+
+TEST_F(TrafficStatsAmortizerTest, AmortizeWithMaxIntByteCounts) {
+  SkipFirstAmortizationRun();
+
+  // Byte counts should be unchanged.
+  amortizer()->AmortizeDataUse(
+      CreateDataUse(INT64_MAX, INT64_MAX),
+      ExpectDataUseCallback(CreateDataUse(INT64_MAX, INT64_MAX)));
+  amortizer()->SetNextTrafficStats(true, INT64_MAX, INT64_MAX);
+  AdvanceTime(kTrafficStatsQueryDelay);
+  EXPECT_EQ(1, data_use_callback_call_count());
+}
+
+TEST_F(TrafficStatsAmortizerTest, AmortizeWithMaxIntScaleFactor) {
+  SkipFirstAmortizationRun();
+
+  // Byte counts should be scaled up to INT64_MAX.
+  amortizer()->AmortizeDataUse(
+      CreateDataUse(1, 1),
+      ExpectDataUseCallback(CreateDataUse(INT64_MAX, INT64_MAX)));
+  amortizer()->SetNextTrafficStats(true, INT64_MAX, INT64_MAX);
+  AdvanceTime(kTrafficStatsQueryDelay);
+  EXPECT_EQ(1, data_use_callback_call_count());
+}
+
+TEST_F(TrafficStatsAmortizerTest, AmortizeWithZeroScaleFactor) {
+  SkipFirstAmortizationRun();
+
+  // Byte counts should be scaled down to 0.
+  amortizer()->AmortizeDataUse(CreateDataUse(INT64_MAX, INT64_MAX),
+                               ExpectDataUseCallback(CreateDataUse(0, 0)));
+  amortizer()->SetNextTrafficStats(true, 0, 0);
+  AdvanceTime(kTrafficStatsQueryDelay);
+  EXPECT_EQ(1, data_use_callback_call_count());
+}
+
+TEST_F(TrafficStatsAmortizerTest, AmortizeWithZeroPreAmortizationBytes) {
+  SkipFirstAmortizationRun();
+
+  // Both byte counts should stay 0, even though TrafficStats saw bytes.
+  amortizer()->AmortizeDataUse(CreateDataUse(0, 0),
+                               ExpectDataUseCallback(CreateDataUse(0, 0)));
+  amortizer()->AddTrafficStats(100, 1000);
+  AdvanceTime(kTrafficStatsQueryDelay);
+  EXPECT_EQ(1, data_use_callback_call_count());
+
+  // This time, only TX bytes are 0, so RX bytes should double, but TX bytes
+  // should stay 0.
+  amortizer()->AmortizeDataUse(CreateDataUse(0, 500),
+                               ExpectDataUseCallback(CreateDataUse(0, 1000)));
+  amortizer()->AddTrafficStats(100, 1000);
+  AdvanceTime(kTrafficStatsQueryDelay);
+  EXPECT_EQ(2, data_use_callback_call_count());
+
+  // This time, only RX bytes are 0, so TX bytes should double, but RX bytes
+  // should stay 0.
+  amortizer()->AmortizeDataUse(CreateDataUse(50, 0),
+                               ExpectDataUseCallback(CreateDataUse(100, 0)));
+  amortizer()->AddTrafficStats(100, 1000);
+  AdvanceTime(kTrafficStatsQueryDelay);
+  EXPECT_EQ(3, data_use_callback_call_count());
+}
+
+TEST_F(TrafficStatsAmortizerTest, AmortizeAtMaxDelay) {
+  SkipFirstAmortizationRun();
+
+  // Byte counts should double.
+  amortizer()->AddTrafficStats(1000, 10000);
+  amortizer()->AmortizeDataUse(CreateDataUse(50, 500),
+                               ExpectDataUseCallback(CreateDataUse(100, 1000)));
+
+  // kSmallDelay is a delay that's shorter than the delay before TrafficStats
+  // would be queried, where kMaxAmortizationDelay is a multiple of kSmallDelay.
+  const base::TimeDelta kSmallDelay = kMaxAmortizationDelay / 10;
+  EXPECT_LT(kSmallDelay, kMaxAmortizationDelay);
+
+  // Simulate multiple cases of extra bytes being reported, each before
+  // TrafficStats would be queried, until kMaxAmortizationDelay has elapsed.
+  AdvanceTime(kSmallDelay);
+  for (int64_t i = 0; i < kMaxAmortizationDelay / kSmallDelay - 1; ++i) {
+    EXPECT_EQ(0, data_use_callback_call_count());
+    amortizer()->OnExtraBytes(50, 500);
+    AdvanceTime(kSmallDelay);
+  }
+
+  // The final time, the amortizer should have given up on waiting to query
+  // TrafficStats and just have amortized as soon as it hit the deadline of
+  // kMaxAmortizationDelay.
+  EXPECT_EQ(1, data_use_callback_call_count());
+}
+
+TEST_F(TrafficStatsAmortizerTest, AmortizeAtMaxBufferSize) {
+  SkipFirstAmortizationRun();
+
+  // Report (max buffer size + 1) consecutive DataUse objects, which will be
+  // amortized immediately once the buffer exceeds maximum size.
+  amortizer()->AddTrafficStats(100 * (kMaxDataUseBufferSize + 1),
+                               1000 * (kMaxDataUseBufferSize + 1));
+  for (size_t i = 0; i < kMaxDataUseBufferSize + 1; ++i) {
+    EXPECT_EQ(0, data_use_callback_call_count());
+    amortizer()->AmortizeDataUse(
+        CreateDataUse(50, 500),
+        ExpectDataUseCallback(CreateDataUse(100, 1000)));
+  }
+
+  EXPECT_EQ(static_cast<int>(kMaxDataUseBufferSize + 1),
+            data_use_callback_call_count());
+}
+
+}  // namespace
+
+}  // namespace android
+}  // namespace data_usage

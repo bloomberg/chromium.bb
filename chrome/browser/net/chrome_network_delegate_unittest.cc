@@ -23,6 +23,7 @@
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/data_usage/core/data_use_aggregator.h"
+#include "components/data_usage/core/data_use_amortizer.h"
 #include "components/data_usage/core/data_use_annotator.h"
 #include "components/syncable_prefs/testing_pref_service_syncable.h"
 #include "content/public/browser/resource_request_info.h"
@@ -101,7 +102,8 @@ class FakeDataUseAggregator : public data_usage::DataUseAggregator {
  public:
   FakeDataUseAggregator()
       : data_usage::DataUseAggregator(
-            scoped_ptr<data_usage::DataUseAnnotator>()),
+            scoped_ptr<data_usage::DataUseAnnotator>(),
+            scoped_ptr<data_usage::DataUseAmortizer>()),
         on_the_record_tx_bytes_(0),
         on_the_record_rx_bytes_(0),
         off_the_record_tx_bytes_(0),

@@ -727,6 +727,7 @@ source_set("browser") {
       ":delta_file_proto",
       ":jni_headers",
       "//components/cdm/browser",
+      "//components/data_usage/android",
       "//components/enhanced_bookmarks",
       "//components/precache/content",
       "//components/precache/core",

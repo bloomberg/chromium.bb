@@ -15,6 +15,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "components/data_usage/core/data_use.h"
 #include "components/data_usage/core/data_use_aggregator.h"
+#include "components/data_usage/core/data_use_amortizer.h"
 #include "components/data_usage/core/data_use_annotator.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/browser_thread.h"
@@ -37,7 +38,8 @@ class ExternalDataUseObserverTest : public testing::Test {
     ui_task_runner_ = content::BrowserThread::GetMessageLoopProxyForThread(
         content::BrowserThread::UI);
     data_use_aggregator_.reset(new data_usage::DataUseAggregator(
-        scoped_ptr<data_usage::DataUseAnnotator>()));
+        scoped_ptr<data_usage::DataUseAnnotator>(),
+        scoped_ptr<data_usage::DataUseAmortizer>()));
     external_data_use_observer_.reset(new ExternalDataUseObserver(
         data_use_aggregator_.get(), io_task_runner_.get(),
         ui_task_runner_.get()));

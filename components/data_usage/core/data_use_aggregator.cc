@@ -6,11 +6,9 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
-#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "components/data_usage/core/data_use.h"
+#include "components/data_usage/core/data_use_amortizer.h"
 #include "components/data_usage/core/data_use_annotator.h"
 #include "net/base/load_timing_info.h"
 #include "net/base/network_change_notifier.h"
@@ -22,12 +20,11 @@
 
 namespace data_usage {
 
-DataUseAggregator::DataUseAggregator(scoped_ptr<DataUseAnnotator> annotator)
+DataUseAggregator::DataUseAggregator(scoped_ptr<DataUseAnnotator> annotator,
+                                     scoped_ptr<DataUseAmortizer> amortizer)
     : annotator_(annotator.Pass()),
+      amortizer_(amortizer.Pass()),
       connection_type_(net::NetworkChangeNotifier::GetConnectionType()),
-      off_the_record_tx_bytes_since_last_flush_(0),
-      off_the_record_rx_bytes_since_last_flush_(0),
-      is_flush_pending_(false),
       weak_ptr_factory_(this) {
 #if defined(OS_ANDROID)
   mcc_mnc_ = net::android::GetTelephonySimOperator();
@@ -63,20 +60,24 @@ void DataUseAggregator::ReportDataUse(net::URLRequest* request,
                   connection_type_, mcc_mnc_, tx_bytes, rx_bytes));
 
   if (!annotator_) {
-    AppendDataUse(data_use.Pass());
+    PassDataUseToAmortizer(data_use.Pass());
     return;
   }
 
+  // TODO(sclittle): Instead of binding a new callback every time, re-use the
+  // same callback every time.
   annotator_->Annotate(
       request, data_use.Pass(),
-      base::Bind(&DataUseAggregator::AppendDataUse, GetWeakPtr()));
+      base::Bind(&DataUseAggregator::PassDataUseToAmortizer, GetWeakPtr()));
 }
 
 void DataUseAggregator::ReportOffTheRecordDataUse(int64_t tx_bytes,
                                                   int64_t rx_bytes) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  off_the_record_tx_bytes_since_last_flush_ += tx_bytes;
-  off_the_record_rx_bytes_since_last_flush_ += rx_bytes;
+  if (!amortizer_)
+    return;
+
+  amortizer_->OnExtraBytes(tx_bytes, rx_bytes);
 }
 
 base::WeakPtr<DataUseAggregator> DataUseAggregator::GetWeakPtr() {
@@ -99,50 +100,33 @@ void DataUseAggregator::SetMccMncForTests(const std::string& mcc_mnc) {
   mcc_mnc_ = mcc_mnc;
 }
 
-void DataUseAggregator::AppendDataUse(scoped_ptr<DataUse> data_use) {
+void DataUseAggregator::PassDataUseToAmortizer(scoped_ptr<DataUse> data_use) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(data_use);
 
-  // As an optimization, attempt to combine the newly reported data use with the
-  // most recent buffered data use, if the annotations on the data use are the
-  // same.
-  if (!buffered_data_use_.empty() &&
-      buffered_data_use_.back()->CanCombineWith(*data_use)) {
-    buffered_data_use_.back()->tx_bytes += data_use->tx_bytes;
-    buffered_data_use_.back()->rx_bytes += data_use->rx_bytes;
-  } else {
-    buffered_data_use_.push_back(data_use.Pass());
+  if (!amortizer_) {
+    OnAmortizationComplete(data_use.Pass());
+    return;
   }
 
-  if (!is_flush_pending_) {
-    // Post a flush operation to happen in the future, so that the
-    // DataUseAggregator has a chance to batch together some data use before
-    // notifying observers.
-    base::MessageLoop::current()->task_runner()->PostTask(
-        FROM_HERE,
-        base::Bind(&DataUseAggregator::FlushBufferedDataUse, GetWeakPtr()));
-    is_flush_pending_ = true;
-  }
+  // TODO(sclittle): Instead of binding a new callback every time, re-use the
+  // same callback every time.
+  amortizer_->AmortizeDataUse(
+      data_use.Pass(),
+      base::Bind(&DataUseAggregator::OnAmortizationComplete, GetWeakPtr()));
 }
 
-void DataUseAggregator::FlushBufferedDataUse() {
+void DataUseAggregator::OnAmortizationComplete(
+    scoped_ptr<DataUse> amortized_data_use) {
   DCHECK(thread_checker_.CalledOnValidThread());
-
-  // TODO(sclittle): Amortize data use on supported platforms before notifying
-  // observers.
 
   // Pass Observers a sequence of const DataUse pointers instead of using the
   // buffer directly in order to prevent Observers from modifying the DataUse
   // objects.
-  std::vector<const DataUse*> const_sequence(buffered_data_use_.begin(),
-                                             buffered_data_use_.end());
+  // TODO(sclittle): Change the observer interface to take in a const DataUse&.
+  std::vector<const DataUse*> const_sequence(1, amortized_data_use.get());
   DCHECK(!ContainsValue(const_sequence, nullptr));
   FOR_EACH_OBSERVER(Observer, observer_list_, OnDataUse(const_sequence));
-
-  buffered_data_use_.clear();
-  off_the_record_tx_bytes_since_last_flush_ = 0;
-  off_the_record_rx_bytes_since_last_flush_ = 0;
-  is_flush_pending_ = false;
 }
 
 }  // namespace data_usage

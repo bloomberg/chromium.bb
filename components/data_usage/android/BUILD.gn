@@ -2,17 +2,14 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-source_set("core") {
+source_set("android") {
   sources = [
-    "data_use.cc",
-    "data_use.h",
-    "data_use_aggregator.cc",
-    "data_use_aggregator.h",
-    "data_use_amortizer.h",
-    "data_use_annotator.h",
+    "traffic_stats_amortizer.cc",
+    "traffic_stats_amortizer.h",
   ]
   deps = [
     "//base",
+    "//components/data_usage/core",
     "//net",
     "//url",
   ]
@@ -21,15 +18,16 @@ source_set("core") {
 source_set("unit_tests") {
   testonly = true
   sources = [
-    "data_use_aggregator_unittest.cc",
+    "traffic_stats_amortizer_unittest.cc",
   ]
 
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 
   deps = [
-    ":core",
+    ":android",
     "//base",
     "//base/test:test_support",
+    "//components/data_usage/core",
     "//net:test_support",
     "//testing/gtest",
   ]

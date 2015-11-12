@@ -3667,6 +3667,7 @@
             '../build/android/ndk.gyp:cpu_features',
             '../components/components.gyp:cdm_browser',
             '../components/components.gyp:data_reduction_proxy_content',
+            '../components/components.gyp:data_usage_android',
             '../components/components.gyp:enhanced_bookmarks',
             '../components/components.gyp:offline_pages',
             '../components/components.gyp:precache_content',
