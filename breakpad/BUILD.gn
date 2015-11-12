@@ -53,6 +53,8 @@ config("sender_config") {
 if (!is_win && current_toolchain == host_toolchain) {
   # Contains the code shared by both {micro,mini}dump_stackwalk.
   static_library("stackwalk_common") {
+    # Always want these files included regardless of platform.
+    set_sources_assignment_filter([])
     sources = [
       "src/processor/basic_code_module.h",
       "src/processor/basic_code_modules.cc",
