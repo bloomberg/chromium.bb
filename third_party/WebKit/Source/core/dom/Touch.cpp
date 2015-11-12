@@ -71,6 +71,20 @@ Touch::Touch(EventTarget* target, int identifier, const FloatPoint& clientPos, c
 {
 }
 
+Touch::Touch(LocalFrame* frame, const TouchInit& initializer)
+    : m_target(initializer.target())
+    , m_identifier(initializer.identifier())
+    , m_clientPos(FloatPoint(initializer.clientX(), initializer.clientY()))
+    , m_screenPos(FloatPoint(initializer.screenX(), initializer.screenY()))
+    , m_pagePos(FloatPoint(initializer.pageX(), initializer.pageY()))
+    , m_radius(FloatSize(initializer.radiusX(), initializer.radiusY()))
+    , m_rotationAngle(initializer.rotationAngle())
+    , m_force(initializer.force())
+{
+    float scaleFactor = frame ? frame->pageZoomFactor() : 1.0f;
+    m_absoluteLocation = roundedLayoutPoint(m_pagePos.scaledBy(scaleFactor));
+}
+
 PassRefPtrWillBeRawPtr<Touch> Touch::cloneWithNewTarget(EventTarget* eventTarget) const
 {
     return adoptRefWillBeNoop(new Touch(eventTarget, m_identifier, m_clientPos, m_screenPos, m_pagePos, m_radius, m_rotationAngle, m_force, m_absoluteLocation));

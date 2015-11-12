@@ -25,9 +25,9 @@
 
 // https://w3c.github.io/touch-events/#touchevent-interface
 
-// TODO(rbyers): TouchEvent should have a constructor. http://crbug.com/508675
-
-interface TouchEvent : UIEvent {
+[
+    Constructor(DOMString type, optional TouchEventInit eventInitDict),
+] interface TouchEvent : UIEvent {
     readonly attribute TouchList touches;
     readonly attribute TouchList targetTouches;
     readonly attribute TouchList changedTouches;

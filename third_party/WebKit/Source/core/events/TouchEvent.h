@@ -28,9 +28,10 @@
 #define TouchEvent_h
 
 #include "core/CoreExport.h"
+#include "core/dom/TouchList.h"
 #include "core/events/EventDispatchMediator.h"
 #include "core/events/MouseRelatedEvent.h"
-#include "core/dom/TouchList.h"
+#include "core/events/TouchEventInit.h"
 
 namespace blink {
 
@@ -52,6 +53,11 @@ public:
     {
         return adoptRefWillBeNoop(new TouchEvent(touches, targetTouches, changedTouches, type, view,
             modifiers, cancelable, causesScrollingIfUncanceled, uiCreateTime));
+    }
+
+    static PassRefPtrWillBeRawPtr<TouchEvent> create(const AtomicString& type, const TouchEventInit& initializer)
+    {
+        return adoptRefWillBeNoop(new TouchEvent(type, initializer));
     }
 
     void initTouchEvent(ScriptState*, TouchList* touches, TouchList* targetTouches,
@@ -87,6 +93,7 @@ private:
         PassRefPtrWillBeRawPtr<AbstractView>, PlatformEvent::Modifiers,
         bool cancelable, bool causesScrollingIfUncanceled,
         double uiCreateTime = 0);
+    TouchEvent(const AtomicString&, const TouchEventInit&);
 
     RefPtrWillBeMember<TouchList> m_touches;
     RefPtrWillBeMember<TouchList> m_targetTouches;

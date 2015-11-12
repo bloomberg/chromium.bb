@@ -28,6 +28,8 @@
 
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CoreExport.h"
+#include "core/dom/Document.h"
+#include "core/dom/TouchInit.h"
 #include "core/events/EventTarget.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/FloatSize.h"
@@ -50,6 +52,11 @@ public:
     {
         return adoptRefWillBeNoop(
             new Touch(frame, target, identifier, screenPos, pagePos, radius, rotationAngle, force));
+    }
+
+    static PassRefPtrWillBeRawPtr<Touch> create(const Document& document, const TouchInit& initializer)
+    {
+        return adoptRefWillBeNoop(new Touch(document.frame(), initializer));
     }
 
     // DOM Touch implementation
@@ -81,6 +88,8 @@ private:
     Touch(EventTarget*, int identifier, const FloatPoint& clientPos,
         const FloatPoint& screenPos, const FloatPoint& pagePos,
         const FloatSize& radius, float rotationAngle, float force, LayoutPoint absoluteLocation);
+
+    Touch(LocalFrame*, const TouchInit&);
 
     RefPtrWillBeMember<EventTarget> m_target;
     int m_identifier;

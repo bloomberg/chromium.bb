@@ -25,9 +25,9 @@
 
 // https://w3c.github.io/touch-events/#touch-interface
 
-// TODO(rbyers): Touch should have a constructor. http://crbug.com/508675
-
 [
+    Constructor(TouchInit initDict),
+    ConstructorCallWith=Document,
     WillBeGarbageCollected,
 ] interface Touch {
     readonly attribute long identifier;

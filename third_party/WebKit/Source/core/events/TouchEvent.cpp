@@ -53,6 +53,14 @@ TouchEvent::TouchEvent(TouchList* touches, TouchList* targetTouches,
     setPlatformTimeStamp(timestamp);
 }
 
+TouchEvent::TouchEvent(const AtomicString& type, const TouchEventInit& initializer)
+    : UIEventWithKeyState(type, initializer)
+    , m_touches(TouchList::create(initializer.touches()))
+    , m_targetTouches(TouchList::create(initializer.targetTouches()))
+    , m_changedTouches(TouchList::create(initializer.changedTouches()))
+{
+}
+
 TouchEvent::~TouchEvent()
 {
 }
