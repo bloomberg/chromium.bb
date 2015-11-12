@@ -4122,7 +4122,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="ChromeOS.GAIA.WebViewFlow" enum="BooleanGAIAWebViewFlow">
-  <owner>ginkage@chromium.org</owner>
+  <owner>achuith@chromium.org</owner>
   <summary>
     Whether a user signed in using the new WebView-based GAIA flow. This value
     is sent after the GAIA screen has completed user authentication.
@@ -13070,7 +13070,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Extensions.SandboxUnpackHashCheck" enum="BooleanValidHashSum">
-  <owner>ginkage@chromium.org</owner>
+  <owner>achuith@chromium.org</owner>
   <summary>
     Whether a CRX file hash sum was the same as in an updater manifest.
   </summary>
@@ -17365,12 +17365,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Login.FailureReason" enum="LoginFailureReason">
-  <owner>nkostylev@chromium.org</owner>
+  <owner>achuith@chromium.org</owner>
   <summary>Chrome OS login failure reason.</summary>
 </histogram>
 
 <histogram name="Login.LeastUsedAccountDays" units="days">
-  <owner>antrim@chromium.org</owner>
+  <owner>achuith@chromium.org</owner>
+  <owner>omrilio@chromium.org</owner>
   <summary>
     Chrome OS histogram that keeps track of the days since the least frequently
     used account signed in. Reported on every boot and once a day after that.
@@ -17397,7 +17398,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Login.PromptToCompleteLoginTime" units="milliseconds">
-  <owner>nkostylev@chromium.org</owner>
+  <owner>achuith@chromium.org</owner>
   <summary>
     Time from first display of the login prompt until the user completes signing
     in.
@@ -17405,7 +17406,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Login.ReauthReason" enum="LoginReauthReasons">
-  <owner>ginkage@chromium.org</owner>
+  <owner>achuith@chromium.org</owner>
   <summary>
     Tracks the reason why a user was sent through the GAIA re-auth flow.
   </summary>
@@ -17418,7 +17419,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Login.SuccessReason" enum="LoginSuccessReason">
-  <owner>nkostylev@chromium.org</owner>
+  <owner>achuith@chromium.org</owner>
   <summary>Chrome OS login success reason.</summary>
 </histogram>
 
@@ -17440,7 +17441,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Login.UsersActiveWeekly" units="users">
   <owner>alemate@chromium.org</owner>
-  <owner>nkostylev@chromium.org</owner>
+  <owner>achuith@chromium.org</owner>
   <summary>
     Chrome OS histogram that keeps track of number of users who have logged in
     in the last 7 days. Reported on every boot and once a day after that.
@@ -17449,7 +17450,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Login.UsersActiveWeekly.Percent" units="%">
   <owner>alemate@chromium.org</owner>
-  <owner>nkostylev@chromium.org</owner>
+  <owner>achuith@chromium.org</owner>
   <summary>
     Chrome OS histogram that keeps track of percentage of local users who have
     logged in in the last 7 days. Reported on every boot and once a day after
@@ -17467,7 +17468,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="ManagedUsers.ChromeOS.PasswordChange"
     enum="ManagedUserPasswordChange">
-  <owner>antrim@chromium.org</owner>
+  <owner>achuith@chromium.org</owner>
   <summary>
     Chrome OS histogram that keeps track of supervised user password change
     result.
@@ -30312,31 +30313,31 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="OOBE.ErrorScreensTime.Enrollment" units="milliseconds">
-  <owner>rsorokin@chromium.org</owner>
+  <owner>achuith@chromium.org</owner>
   <summary>
     Time spent on error screens during enrollment or autoenrollment.
   </summary>
 </histogram>
 
 <histogram name="OOBE.ErrorScreensTime.Signin" units="milliseconds">
-  <owner>rsorokin@chromium.org</owner>
+  <owner>achuith@chromium.org</owner>
   <summary>Time spent on error screens during signin.</summary>
 </histogram>
 
 <histogram name="OOBE.ErrorScreensTime.Supervised" units="milliseconds">
-  <owner>rsorokin@chromium.org</owner>
+  <owner>achuith@chromium.org</owner>
   <summary>
     Time spent on error screens during supervised user creation.
   </summary>
 </histogram>
 
 <histogram name="OOBE.ErrorScreensTime.Update" units="milliseconds">
-  <owner>rsorokin@chromium.org</owner>
+  <owner>achuith@chromium.org</owner>
   <summary>Time spent on error screens during update.</summary>
 </histogram>
 
 <histogram name="OOBE.NetworkErrorShown.Enrollment" enum="NetworkErrorType">
-  <owner>rsorokin@google.com</owner>
+  <owner>achuith@google.com</owner>
   <summary>
     Number of times error screen has appeared during enrollment or
     autoenrollment.
@@ -30344,19 +30345,19 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="OOBE.NetworkErrorShown.Signin" enum="NetworkErrorType">
-  <owner>rsorokin@google.com</owner>
+  <owner>achuith@google.com</owner>
   <summary>Number of times error screen has appeared during signin.</summary>
 </histogram>
 
 <histogram name="OOBE.NetworkErrorShown.Supervised" enum="NetworkErrorType">
-  <owner>rsorokin@google.com</owner>
+  <owner>achuith@google.com</owner>
   <summary>
     Number of times error screen has appeared during supervised user creation.
   </summary>
 </histogram>
 
 <histogram name="OOBE.NetworkErrorShown.Update" enum="NetworkErrorType">
-  <owner>rsorokin@google.com</owner>
+  <owner>achuith@google.com</owner>
   <summary>Number of times error screen has appeared during update.</summary>
 </histogram>
 
@@ -31836,7 +31837,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Platform.DiskUsage.OldestUserOnDevice">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>achuith@chromium.org</owner>
+  <owner>omrilio@chromium.org</owner>
   <summary>
     Days since last login of the least recently user on device. Logged once a
     day, if disk usage is high.
@@ -31844,7 +31846,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Platform.DiskUsage.UsersOnDevice">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>achuith@chromium.org</owner>
+  <owner>omrilio@chromium.org</owner>
   <summary>
     Number of user home dirs on device. Logged once a day, if disk usage is
     high.
@@ -32150,7 +32153,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Platform.StatefulUsage" units="%">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>achuith@chromium.org</owner>
+  <owner>omrilio@chromium.org</owner>
   <summary>Chrome OS stateful partition usage level.</summary>
 </histogram>
 
@@ -49605,7 +49609,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="UserImage.ChangeChoice" enum="ChromeOSUserImageId">
-  <owner>nkostylev@chromium.org</owner>
+  <owner>achuith@chromium.org</owner>
   <summary>
     Distribution of the default images that users choose in Change Picture
     dialog (Chrome OS). One sample is taken each time the user changes picture.
@@ -49613,7 +49617,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="UserImage.FirstTimeChoice" enum="ChromeOSUserImageId">
-  <owner>nkostylev@chromium.org</owner>
+  <owner>achuith@chromium.org</owner>
   <summary>
     Distribution of the default images chosen on user image screen during
     out-of-the-box experience (Chrome OS). One sample is taken each time the
@@ -49622,7 +49626,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="UserImage.LoggedIn" enum="ChromeOSUserImageId">
-  <owner>nkostylev@chromium.org</owner>
+  <owner>achuith@chromium.org</owner>
   <summary>
     Distribution of the default images that existing users login with (Chrome
     OS). One sample is taken each time the user logs in.
@@ -49631,7 +49635,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="UserImage.ProfileDownloadResult"
     enum="ProfileImageDownloadResult">
-  <owner>nkostylev@chromium.org</owner>
+  <owner>achuith@chromium.org</owner>
   <summary>
     Profile image download result for UserManager (either on behalf of the
     Change Picture prefs page, OOBE or scheduled refresh after user login).
@@ -49639,19 +49643,19 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="UserImage.ProfileDownloadTime" units="milliseconds">
-  <owner>nkostylev@chromium.org</owner>
+  <owner>achuith@chromium.org</owner>
   <summary>The time it took to download user's profile picture.</summary>
 </histogram>
 
 <histogram name="UserImage.ScreenIsShownTime" units="milliseconds">
-  <owner>nkostylev@chromium.org</owner>
+  <owner>achuith@chromium.org</owner>
   <summary>
     Time histogram of the &quot;Choose Picture&quot; OOBE screen display delay.
   </summary>
 </histogram>
 
 <histogram name="UserManager.LoginUserType" enum="UserType">
-  <owner>nkostylev@chromium.org</owner>
+  <owner>achuith@chromium.org</owner>
   <summary>
     The number of users of different types that log in to the system (Chrome
     OS).
@@ -49660,7 +49664,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="UserManager.LogoutToLoginDelay" units="seconds">
   <owner>alemate@chromium.org</owner>
-  <owner>nkostylev@chromium.org</owner>
+  <owner>omrilio@chromium.org</owner>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The time between one regular user logging out and a different regular user
@@ -49670,7 +49674,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="UserSessionManager.UserPodsDisplay" enum="UserPodsDisplay">
-  <owner>ginkage@chromium.org</owner>
+  <owner>achuith@chromium.org</owner>
   <summary>
     Whether the user pods were enabled during login, and what could disable
     them.
