@@ -103,7 +103,6 @@ ADDITIONAL_PATHS = (
     os.path.join('sdch', 'open-vcdiff'),
     os.path.join('testing', 'gmock'),
     os.path.join('testing', 'gtest'),
-    os.path.join('tools', 'grit'),
     os.path.join('tools', 'gyp'),
     os.path.join('tools', 'page_cycler', 'acid3'),
     os.path.join('url', 'third_party', 'mozilla'),
@@ -202,12 +201,6 @@ SPECIAL_CASES = {
         "Name": "webpagereplay",
         "URL": "http://code.google.com/p/web-page-replay",
         "License": "Apache 2.0",
-        "License File": "NOT_SHIPPED",
-    },
-    os.path.join('tools', 'grit'): {
-        "Name": "grit",
-        "URL": "http://code.google.com/p/grit-i18n",
-        "License": "BSD",
         "License File": "NOT_SHIPPED",
     },
     os.path.join('tools', 'gyp'): {
