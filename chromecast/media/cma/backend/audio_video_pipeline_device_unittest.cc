@@ -324,16 +324,17 @@ void AudioVideoPipelineDeviceTest::Start() {
 
 void AudioVideoPipelineDeviceTest::OnEndOfStream(
     MediaPipelineBackend::Decoder* decoder) {
-  bool success = backend_->Stop();
-  ASSERT_TRUE(success);
 
   if (decoder == audio_decoder_)
     audio_decoder_ = nullptr;
   else if (decoder == video_decoder_)
     video_decoder_ = nullptr;
 
-  if (!audio_decoder_ && !video_decoder_)
+  if (!audio_decoder_ && !video_decoder_) {
+    bool success = backend_->Stop();
+    ASSERT_TRUE(success);
     base::MessageLoop::current()->QuitWhenIdle();
+  }
 }
 
 void AudioVideoPipelineDeviceTest::OnDecoderError(
