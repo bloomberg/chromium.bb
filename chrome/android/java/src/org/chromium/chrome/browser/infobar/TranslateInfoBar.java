@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.infobar;
 
 import android.content.Context;
+import android.support.v7.widget.SwitchCompat;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
@@ -13,7 +14,6 @@ import android.text.style.ClickableSpan;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
-import android.widget.Switch;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.R;
@@ -234,8 +234,8 @@ public class TranslateInfoBar extends InfoBar implements SubPanelListener {
 
         // Handle the "Always Translate" checkbox.
         if (getInfoBarType() == AFTER_TRANSLATE_INFOBAR) {
-            Switch alwaysSwitch =
-                    (Switch) getContentWrapper().findViewById(R.id.translate_infobar_always_toggle);
+            SwitchCompat alwaysSwitch = (SwitchCompat) getContentWrapper().findViewById(
+                    R.id.translate_infobar_always_toggle);
             mOptions.toggleAlwaysTranslateLanguageState(alwaysSwitch.isChecked());
         }
 

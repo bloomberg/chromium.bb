@@ -64,12 +64,16 @@
     <dimen name="infobar_text_size">16sp</dimen>
     <!-- Minimum width of an infobar. -->
     <dimen name="infobar_min_width">220dp</dimen>
+    <!-- Maximum width of an infobar. -->
+    <dimen name="infobar_max_width">600dp</dimen>
     <!-- Margin between items in an infobar. -->
     <dimen name="infobar_margin">16dp</dimen>
     <!-- Width and height of the infobar icon. -->
     <dimen name="infobar_icon_size">36dp</dimen>
     <!-- Text size for controls on the infobar (e.g. toggles or informational text). -->
     <dimen name="infobar_control_text_size">14sp</dimen>
+    <!-- Margin between items in the same control group. -->
+    <dimen name="infobar_control_margin_between_items">8dp</dimen>
 
     <!-- App banner dimensions -->
     <dimen name="app_banner_icon_spacing">16dp</dimen>

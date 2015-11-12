@@ -4,13 +4,6 @@
      found in the LICENSE file. -->
 
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
-    <!-- InfoBar constants -->
-    <item type="id" name="infobar_message" />
-    <item type="id" name="infobar_close_button" />
-    <item type="id" name="button_primary" />
-    <item type="id" name="button_secondary" />
-    <item type="id" name="button_tertiary" />
-    <item type="id" name="infobar_extra_check" />
 
     <!-- Menu Animation Constants -->
     <item type="fraction" format="fraction" name="menu_animation_pivot_x">95%</item>
@@ -37,29 +30,5 @@
     <integer name="select_bookmark_folder_max_depth_indent">5</integer>
     <!-- TabSwitcher - Maximum amount to tilt tabs in over scroll in degrees. -->
     <integer name="over_scroll_angle">15</integer>
-
-    <!-- Menu items IDs in Settings -->
-    <item type="id" name="menu_id_help_general" />
-    <item type="id" name="menu_id_translate_help" />
-    <item type="id" name="menu_id_help_privacy" />
-
-    <!-- Menu item IDs for FullscreenActivities -->
-    <item type="id" name="menu_id_open_in_chrome" />
-
-    <!-- Cast notification -->
-    <item type="id" name="remote_notification" />
-
-    <!-- Media playback notification -->
-    <item type="id" name="media_playback_notification" />
-
-    <!-- Presentation API notification -->
-    <item type="id" name="presentation_notification" />
-
-    <!-- Sync UI constants -->
-    <item type="id" name="passphrase_type_list" />
-
-    <!-- Keyboard shortcuts -->
-    <item type="id" name="focus_url_bar" />
-    <item type="id" name="show_menu" />
 
 </resources>

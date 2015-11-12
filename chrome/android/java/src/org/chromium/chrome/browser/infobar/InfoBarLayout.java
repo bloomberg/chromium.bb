@@ -231,6 +231,8 @@ public class InfoBarLayout extends ViewGroup implements View.OnClickListener {
      *  - Side by side on the main row,
      *  - Side by side on a separate row, each taking up half the width of the infobar,
      *  - Stacked above each other on two separate rows, taking up the full width of the infobar.
+     *
+     * TODO(dfalcantara): Remove all callers of this method.
      */
     public void setCustomContent(View view1, View view2) {
         mCustomGroup = new Group(view1, view2);
@@ -243,6 +245,8 @@ public class InfoBarLayout extends ViewGroup implements View.OnClickListener {
      *  - On the main row, start-aligned or end-aligned depending on whether there are also
      *    buttons on the main row, OR
      *  - On a separate row, start-aligned
+     *
+     * TODO(dfalcantara): Change this method to take only InfoBarControlLayouts.
      */
     public void setCustomContent(View view) {
         mCustomGroup = new Group(view);
@@ -457,6 +461,10 @@ public class InfoBarLayout extends ViewGroup implements View.OnClickListener {
      * Places a group of views on the current row, or stacks them over multiple rows if
      * group.isStacked is true. mStart, mEnd, and mBottom are updated to reflect the space taken by
      * the group.
+     *
+     * TODO(dfalcantara): Change this code so that it is only concerned about applying the correct
+     *                    margins to InfoBarControlLayout once all callers of setCustomContent are
+     *                    updated.
      */
     private void placeGroup(Group group) {
         if (group.gravity == Gravity.END) {

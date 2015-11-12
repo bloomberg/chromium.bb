@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.infobar;
 
 import android.content.Context;
 import android.graphics.Color;
-import android.support.v7.widget.AppCompatSpinner;
 import android.text.SpannableString;
 import android.text.TextUtils;
 import android.text.style.ForegroundColorSpan;
@@ -75,8 +74,16 @@ public class TranslateLanguagePanel
         layout.setMessage(changeLanguage);
 
         // Set up the spinners.
-        createSpinners(context);
-        layout.setCustomContent(mSourceSpinner, mTargetSpinner);
+        InfoBarControlLayout controlLayout = new InfoBarControlLayout(context);
+        View sourceSpinnerView = controlLayout.addSpinner(R.id.translate_infobar_source_spinner);
+        View targetSpinnerView = controlLayout.addSpinner(R.id.translate_infobar_target_spinner);
+        layout.setCustomContent(controlLayout);
+
+        mSourceSpinner =
+                (Spinner) sourceSpinnerView.findViewById(R.id.translate_infobar_source_spinner);
+        mTargetSpinner =
+                (Spinner) targetSpinnerView.findViewById(R.id.translate_infobar_target_spinner);
+        setUpSpinners(context);
 
         // Set up the buttons.
         layout.setButtons(context.getString(R.string.translate_button_done),
@@ -92,7 +99,7 @@ public class TranslateLanguagePanel
         mListener.onPanelClosed(ActionType.NONE);
     }
 
-    private void createSpinners(Context context) {
+    private void setUpSpinners(Context context) {
         mSourceAdapter = new LanguageArrayAdapter(context, R.layout.translate_spinner,
                 LANGUAGE_TYPE_SOURCE);
         mTargetAdapter = new LanguageArrayAdapter(context, R.layout.translate_spinner,
@@ -104,9 +111,7 @@ public class TranslateLanguagePanel
         mSourceAdapter.measureWidthRequiredForView();
         mTargetAdapter.measureWidthRequiredForView();
 
-        // Create the spinners.
-        mSourceSpinner = new AppCompatSpinner(context);
-        mTargetSpinner = new AppCompatSpinner(context);
+        // Set up the spinners.
         mSourceSpinner.setOnItemSelectedListener(this);
         mTargetSpinner.setOnItemSelectedListener(this);
         mSourceSpinner.setAdapter(mSourceAdapter);

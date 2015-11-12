@@ -5,33 +5,37 @@
 
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/subcontrol_toggle"
     android:layout_width="match_parent"
-    android:layout_height="36dp"
+    android:layout_height="wrap_content"
+    android:minHeight="36dp"
     android:gravity="center_vertical">
 
     <ImageView
         android:id="@+id/control_toggle_icon"
         android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:layout_marginEnd="8dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/infobar_control_margin_between_items"
         android:scaleType="centerInside"
         android:contentDescription="@null" />
 
+    <!-- TODO(dfalcantara): Line spacing multiplier is applied to all lines in JB & KK, even if the
+                            TextView has only one line.  This throws off vertical alignment.  Find
+                            a solution that hopefully doesn't involve subclassing the TextView.
+    -->
     <TextView
         android:id="@+id/control_toggle_message"
         android:layout_width="0dp"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:layout_weight="1"
+        android:layout_marginStart="@dimen/infobar_control_margin_between_items"
         android:gravity="center_vertical"
-        android:lineSpacingMultiplier="1.4"
         android:textSize="@dimen/infobar_control_text_size"
         android:textColor="@color/default_text_color" />
 
-    <Switch
+    <android.support.v7.widget.SwitchCompat
         android:id="@+id/control_toggle_switch"
         android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:layout_marginStart="16dp" />
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/infobar_control_margin_between_items" />
 
 </LinearLayout>
