@@ -263,8 +263,9 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
      * renderer. https://crbug.com/434477.
      * @throws InterruptedException
      * @throws TimeoutException
+     * @SmallTest
      */
-    @SmallTest
+    @FlakyTest
     public void testNewTabSetsContentViewSize() throws InterruptedException, TimeoutException {
         ChromeTabUtils.newTabFromMenu(getInstrumentation(), getActivity());
 
