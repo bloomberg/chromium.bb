@@ -593,6 +593,16 @@ class VisitedLinkEventsTest : public content::RenderViewHostTestHarness {
     content::RenderViewHostTestHarness::SetUp();
   }
 
+  void TearDown() override {
+    // Explicitly destroy the master before proceeding with the rest
+    // of teardown because it posts a task to close a file handle, and
+    // we need to make sure we've finished all file related work
+    // before our superclass sets about destroying the scoped temp
+    // directory.
+    master_.reset();
+    RenderViewHostTestHarness::TearDown();
+  }
+
   content::BrowserContext* CreateBrowserContext() override {
     VisitCountingContext* context = new VisitCountingContext();
     master_.reset(new VisitedLinkMaster(context, &delegate_, true));
@@ -608,7 +618,7 @@ class VisitedLinkEventsTest : public content::RenderViewHostTestHarness {
     return master_.get();
   }
 
-  void WaitForCoalescense() {
+  void WaitForCoalescence() {
     // Let the timer fire.
     //
     // TODO(ajwong): This is horrid! What is the right synchronization method?
@@ -627,7 +637,7 @@ class VisitedLinkEventsTest : public content::RenderViewHostTestHarness {
   scoped_ptr<VisitedLinkMaster> master_;
 };
 
-TEST_F(VisitedLinkEventsTest, Coalescense) {
+TEST_F(VisitedLinkEventsTest, Coalescence) {
   // add some URLs to master.
   // Add a few URLs.
   master()->AddURL(GURL("http://acidtests.org/"));
@@ -641,7 +651,7 @@ TEST_F(VisitedLinkEventsTest, Coalescense) {
   EXPECT_EQ(0, context()->add_count());
   EXPECT_EQ(0, context()->add_event_count());
 
-  WaitForCoalescense();
+  WaitForCoalescence();
 
   // We now should have 3 entries added in 1 event.
   EXPECT_EQ(3, context()->add_count());
@@ -652,7 +662,7 @@ TEST_F(VisitedLinkEventsTest, Coalescense) {
   master()->AddURL(GURL("http://webkit.org/"));
   master()->AddURL(GURL("http://acid3.acidtests.org/"));
 
-  WaitForCoalescense();
+  WaitForCoalescence();
 
   // We should have 6 entries added in 2 events.
   EXPECT_EQ(6, context()->add_count());
@@ -661,7 +671,7 @@ TEST_F(VisitedLinkEventsTest, Coalescense) {
   // Test whether duplicate entries produce add events.
   master()->AddURL(GURL("http://acidtests.org/"));
 
-  WaitForCoalescense();
+  WaitForCoalescence();
 
   // We should have no change in results.
   EXPECT_EQ(6, context()->add_count());
@@ -671,7 +681,7 @@ TEST_F(VisitedLinkEventsTest, Coalescense) {
   master()->AddURL(GURL("http://build.chromium.org/"));
   master()->DeleteAllURLs();
 
-  WaitForCoalescense();
+  WaitForCoalescence();
 
   // We should have no change in results except for one new reset event.
   EXPECT_EQ(6, context()->add_count());
@@ -688,7 +698,7 @@ TEST_F(VisitedLinkEventsTest, Basics) {
   master()->AddURL(GURL("http://google.com/"));
   master()->AddURL(GURL("http://chromium.org/"));
 
-  WaitForCoalescense();
+  WaitForCoalescence();
 
   // We now should have 1 add event.
   EXPECT_EQ(1, context()->add_event_count());
@@ -696,7 +706,7 @@ TEST_F(VisitedLinkEventsTest, Basics) {
 
   master()->DeleteAllURLs();
 
-  WaitForCoalescense();
+  WaitForCoalescence();
 
   // We should have no change in add results, plus one new reset event.
   EXPECT_EQ(1, context()->add_event_count());
@@ -715,7 +725,7 @@ TEST_F(VisitedLinkEventsTest, TabVisibility) {
   master()->AddURL(GURL("http://google.com/"));
   master()->AddURL(GURL("http://chromium.org/"));
 
-  WaitForCoalescense();
+  WaitForCoalescence();
 
   // We shouldn't have any events.
   EXPECT_EQ(0, context()->add_event_count());
@@ -735,7 +745,7 @@ TEST_F(VisitedLinkEventsTest, TabVisibility) {
   for (int i = 0; i < 100; i++)
     master()->AddURL(TestURL(i));
 
-  WaitForCoalescense();
+  WaitForCoalescence();
 
   // Again, no change in events until tab is active.
   EXPECT_EQ(1, context()->add_event_count());
@@ -759,7 +769,7 @@ TEST_F(VisitedLinkEventsTest, IgnoreRendererCreationFromDifferentContext) {
       content::NOTIFICATION_RENDERER_PROCESS_CREATED,
       content::Source<content::RenderProcessHost>(&different_process_host),
       content::NotificationService::NoDetails());
-  WaitForCoalescense();
+  WaitForCoalescence();
 
   EXPECT_EQ(0, different_context.new_table_count());
 }
