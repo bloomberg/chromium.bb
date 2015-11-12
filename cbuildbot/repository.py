@@ -232,14 +232,18 @@ class RepoRepository(object):
     os.unlink(manifest_path)
     shutil.copyfile(local_manifest, manifest_path)
 
-  def Initialize(self, local_manifest=None, extra_args=()):
+  def Initialize(self, local_manifest=None, manifest_repo_url=None,
+                 extra_args=()):
     """Initializes a repository.  Optionally forces a local manifest.
 
     Args:
       local_manifest: The absolute path to a custom manifest to use.  This will
                       replace .repo/manifest.xml.
+      manifest_repo_url: A new value for manifest_repo_url.
       extra_args: Extra args to pass to 'repo init'
     """
+    if manifest_repo_url:
+      self.manifest_repo_url = manifest_repo_url
 
     # Do a sanity check on the repo; if it exists and we can't pull a
     # manifest from it, we know it's fairly screwed up and needs a fresh
@@ -350,7 +354,7 @@ class RepoRepository(object):
     git.RunGit('.', cmd)
 
   def Sync(self, local_manifest=None, jobs=None, all_branches=True,
-           network_only=False):
+           network_only=False, detach=False):
     """Sync/update the source.  Changes manifest if specified.
 
     Args:
@@ -367,6 +371,8 @@ class RepoRepository(object):
         if the manifest has bad copyfile statements, via skipping checkout
         the broken copyfile tag won't be spotted), or of use when the
         invoking code is fine w/ operating on bare repos, ie .repo/projects/*.
+      detach: If true, throw away all local changes, even if on tracking
+        branches.
     """
     try:
       # Always re-initialize to the current branch.
@@ -386,6 +392,9 @@ class RepoRepository(object):
 
       if network_only:
         return
+
+      if detach:
+        cmd.append('--detach')
 
       # Do the local sync; note that there is a couple of corner cases where
       # the new manifest cannot transition from the old checkout cleanly-
