@@ -4521,7 +4521,7 @@ TEST_P(SpdyNetworkTransactionTest, HTTP11RequiredProxyRetry) {
   MockWrite writes1[] = {
       MockWrite(ASYNC, 0,
                 "CONNECT www.example.org:443 HTTP/1.1\r\n"
-                "Host: www.example.org\r\n"
+                "Host: www.example.org:443\r\n"
                 "Proxy-Connection: keep-alive\r\n\r\n"),
       MockWrite(ASYNC, 2,
                 "GET / HTTP/1.1\r\n"
@@ -4592,7 +4592,7 @@ TEST_P(SpdyNetworkTransactionTest, ProxyConnect) {
 
   const char kConnect443[] = {
       "CONNECT www.example.org:443 HTTP/1.1\r\n"
-      "Host: www.example.org\r\n"
+      "Host: www.example.org:443\r\n"
       "Proxy-Connection: keep-alive\r\n\r\n"};
   const char kHTTP200[] = {"HTTP/1.1 200 OK\r\n\r\n"};
   scoped_ptr<SpdyFrame> req(
@@ -4625,7 +4625,7 @@ TEST_P(SpdyNetworkTransactionTest, ProxyConnect) {
 
   // Verify the SYN_REPLY.
   HttpResponseInfo response = *trans->GetResponseInfo();
-  EXPECT_TRUE(response.headers.get() != NULL);
+  ASSERT_TRUE(response.headers.get() != NULL);
   EXPECT_EQ("HTTP/1.1 200 OK", response.headers->GetStatusLine());
 
   std::string response_data;
@@ -4711,7 +4711,7 @@ TEST_P(SpdyNetworkTransactionTest, DirectConnectProxyReconnect) {
   // Set up data for the proxy connection.
   const char kConnect443[] = {
       "CONNECT www.example.org:443 HTTP/1.1\r\n"
-      "Host: www.example.org\r\n"
+      "Host: www.example.org:443\r\n"
       "Proxy-Connection: keep-alive\r\n\r\n"};
   const char kHTTP200[] = {"HTTP/1.1 200 OK\r\n\r\n"};
   scoped_ptr<SpdyFrame> req2(spdy_util_2.ConstructSpdyGet(
@@ -4763,7 +4763,7 @@ TEST_P(SpdyNetworkTransactionTest, DirectConnectProxyReconnect) {
   EXPECT_EQ(0, rv);
 
   HttpResponseInfo response_proxy = *trans_proxy->GetResponseInfo();
-  EXPECT_TRUE(response_proxy.headers.get() != NULL);
+  ASSERT_TRUE(response_proxy.headers.get() != NULL);
   EXPECT_EQ("HTTP/1.1 200 OK", response_proxy.headers->GetStatusLine());
 
   std::string response_data;

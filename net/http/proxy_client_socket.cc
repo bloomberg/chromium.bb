@@ -45,9 +45,7 @@ void ProxyClientSocket::BuildTunnelRequest(
   std::string host_and_port = endpoint.ToString();
   *request_line =
       base::StringPrintf("CONNECT %s HTTP/1.1\r\n", host_and_port.c_str());
-  request_headers->SetHeader(HttpRequestHeaders::kHost, endpoint.port() == 443
-                                                            ? endpoint.host()
-                                                            : host_and_port);
+  request_headers->SetHeader(HttpRequestHeaders::kHost, host_and_port);
   request_headers->SetHeader(HttpRequestHeaders::kProxyConnection,
                              "keep-alive");
   if (!user_agent.empty())

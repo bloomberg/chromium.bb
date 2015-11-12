@@ -369,9 +369,10 @@ TEST_P(HttpProxyClientSocketPoolTest, SetSocketRequestPriorityOnInit) {
 
 TEST_P(HttpProxyClientSocketPoolTest, NeedAuth) {
   MockWrite writes[] = {
-    MockWrite(ASYNC, 0, "CONNECT www.google.com:443 HTTP/1.1\r\n"
-              "Host: www.google.com\r\n"
-              "Proxy-Connection: keep-alive\r\n\r\n"),
+      MockWrite(ASYNC, 0,
+                "CONNECT www.google.com:443 HTTP/1.1\r\n"
+                "Host: www.google.com:443\r\n"
+                "Proxy-Connection: keep-alive\r\n\r\n"),
   };
   MockRead reads[] = {
     // No credentials.
@@ -435,10 +436,11 @@ TEST_P(HttpProxyClientSocketPoolTest, HaveAuth) {
           (kHttpsProxyHost + std::string(":443"));
   std::string request =
       "CONNECT www.google.com:443 HTTP/1.1\r\n"
-      "Host: www.google.com\r\n"
+      "Host: www.google.com:443\r\n"
       "Proxy-Connection: keep-alive\r\n"
       "Proxy-Authorization: Basic Zm9vOmJhcg==\r\n"
-      "Foo: " + proxy_host_port + "\r\n\r\n";
+      "Foo: " +
+      proxy_host_port + "\r\n\r\n";
   MockWrite writes[] = {
     MockWrite(SYNCHRONOUS, 0, request.c_str()),
   };
@@ -473,10 +475,11 @@ TEST_P(HttpProxyClientSocketPoolTest, AsyncHaveAuth) {
           (kHttpsProxyHost + std::string(":443"));
   std::string request =
       "CONNECT www.google.com:443 HTTP/1.1\r\n"
-      "Host: www.google.com\r\n"
+      "Host: www.google.com:443\r\n"
       "Proxy-Connection: keep-alive\r\n"
       "Proxy-Authorization: Basic Zm9vOmJhcg==\r\n"
-      "Foo: " + proxy_host_port + "\r\n\r\n";
+      "Foo: " +
+      proxy_host_port + "\r\n\r\n";
   MockWrite writes[] = {
     MockWrite(ASYNC, 0, request.c_str()),
   };
@@ -621,11 +624,11 @@ TEST_P(HttpProxyClientSocketPoolTest, SslClientAuth) {
 
 TEST_P(HttpProxyClientSocketPoolTest, TunnelUnexpectedClose) {
   MockWrite writes[] = {
-    MockWrite(ASYNC, 0,
-              "CONNECT www.google.com:443 HTTP/1.1\r\n"
-              "Host: www.google.com\r\n"
-              "Proxy-Connection: keep-alive\r\n"
-              "Proxy-Authorization: Basic Zm9vOmJhcg==\r\n\r\n"),
+      MockWrite(ASYNC, 0,
+                "CONNECT www.google.com:443 HTTP/1.1\r\n"
+                "Host: www.google.com:443\r\n"
+                "Proxy-Connection: keep-alive\r\n"
+                "Proxy-Authorization: Basic Zm9vOmJhcg==\r\n\r\n"),
   };
   MockRead reads[] = {
     MockRead(ASYNC, 1, "HTTP/1.1 200 Conn"),
@@ -671,10 +674,10 @@ TEST_P(HttpProxyClientSocketPoolTest, Tunnel1xxResponse) {
   }
 
   MockWrite writes[] = {
-    MockWrite(ASYNC, 0,
-              "CONNECT www.google.com:443 HTTP/1.1\r\n"
-              "Host: www.google.com\r\n"
-              "Proxy-Connection: keep-alive\r\n\r\n"),
+      MockWrite(ASYNC, 0,
+                "CONNECT www.google.com:443 HTTP/1.1\r\n"
+                "Host: www.google.com:443\r\n"
+                "Proxy-Connection: keep-alive\r\n\r\n"),
   };
   MockRead reads[] = {
     MockRead(ASYNC, 1, "HTTP/1.1 100 Continue\r\n\r\n"),
@@ -695,11 +698,11 @@ TEST_P(HttpProxyClientSocketPoolTest, Tunnel1xxResponse) {
 
 TEST_P(HttpProxyClientSocketPoolTest, TunnelSetupError) {
   MockWrite writes[] = {
-    MockWrite(ASYNC, 0,
-              "CONNECT www.google.com:443 HTTP/1.1\r\n"
-              "Host: www.google.com\r\n"
-              "Proxy-Connection: keep-alive\r\n"
-              "Proxy-Authorization: Basic Zm9vOmJhcg==\r\n\r\n"),
+      MockWrite(ASYNC, 0,
+                "CONNECT www.google.com:443 HTTP/1.1\r\n"
+                "Host: www.google.com:443\r\n"
+                "Proxy-Connection: keep-alive\r\n"
+                "Proxy-Authorization: Basic Zm9vOmJhcg==\r\n\r\n"),
   };
   MockRead reads[] = {
     MockRead(ASYNC, 1, "HTTP/1.1 304 Not Modified\r\n\r\n"),
@@ -745,11 +748,11 @@ TEST_P(HttpProxyClientSocketPoolTest, TunnelSetupRedirect) {
                                    "Set-Cookie: foo=bar\r\n"
                                    "\r\n";
   MockWrite writes[] = {
-    MockWrite(ASYNC, 0,
-              "CONNECT www.google.com:443 HTTP/1.1\r\n"
-              "Host: www.google.com\r\n"
-              "Proxy-Connection: keep-alive\r\n"
-              "Proxy-Authorization: Basic Zm9vOmJhcg==\r\n\r\n"),
+      MockWrite(ASYNC, 0,
+                "CONNECT www.google.com:443 HTTP/1.1\r\n"
+                "Host: www.google.com:443\r\n"
+                "Proxy-Connection: keep-alive\r\n"
+                "Proxy-Authorization: Basic Zm9vOmJhcg==\r\n\r\n"),
   };
   MockRead reads[] = {
     MockRead(ASYNC, 1, responseText.c_str()),

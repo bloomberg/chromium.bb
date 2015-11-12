@@ -2582,7 +2582,7 @@ TEST_P(HttpNetworkTransactionTest, BasicAuthProxyNoKeepAliveHttp10) {
   // Since we have proxy, should try to establish tunnel.
   MockWrite data_writes1[] = {
       MockWrite("CONNECT www.example.org:443 HTTP/1.1\r\n"
-                "Host: www.example.org\r\n"
+                "Host: www.example.org:443\r\n"
                 "Proxy-Connection: keep-alive\r\n\r\n"),
   };
 
@@ -2600,7 +2600,7 @@ TEST_P(HttpNetworkTransactionTest, BasicAuthProxyNoKeepAliveHttp10) {
       // After calling trans->RestartWithAuth(), this is the request we should
       // be issuing -- the final header line contains the credentials.
       MockWrite("CONNECT www.example.org:443 HTTP/1.1\r\n"
-                "Host: www.example.org\r\n"
+                "Host: www.example.org:443\r\n"
                 "Proxy-Connection: keep-alive\r\n"
                 "Proxy-Authorization: Basic Zm9vOmJhcg==\r\n\r\n"),
 
@@ -2706,7 +2706,7 @@ TEST_P(HttpNetworkTransactionTest, BasicAuthProxyNoKeepAliveHttp11) {
   // Since we have proxy, should try to establish tunnel.
   MockWrite data_writes1[] = {
       MockWrite("CONNECT www.example.org:443 HTTP/1.1\r\n"
-                "Host: www.example.org\r\n"
+                "Host: www.example.org:443\r\n"
                 "Proxy-Connection: keep-alive\r\n\r\n"),
   };
 
@@ -2723,7 +2723,7 @@ TEST_P(HttpNetworkTransactionTest, BasicAuthProxyNoKeepAliveHttp11) {
       // After calling trans->RestartWithAuth(), this is the request we should
       // be issuing -- the final header line contains the credentials.
       MockWrite("CONNECT www.example.org:443 HTTP/1.1\r\n"
-                "Host: www.example.org\r\n"
+                "Host: www.example.org:443\r\n"
                 "Proxy-Connection: keep-alive\r\n"
                 "Proxy-Authorization: Basic Zm9vOmJhcg==\r\n\r\n"),
 
@@ -2832,18 +2832,16 @@ TEST_P(HttpNetworkTransactionTest, BasicAuthProxyKeepAliveHttp10) {
 
   // Since we have proxy, should try to establish tunnel.
   MockWrite data_writes1[] = {
-      MockWrite(
-          "CONNECT www.example.org:443 HTTP/1.1\r\n"
-          "Host: www.example.org\r\n"
-          "Proxy-Connection: keep-alive\r\n\r\n"),
+      MockWrite("CONNECT www.example.org:443 HTTP/1.1\r\n"
+                "Host: www.example.org:443\r\n"
+                "Proxy-Connection: keep-alive\r\n\r\n"),
 
       // After calling trans->RestartWithAuth(), this is the request we should
       // be issuing -- the final header line contains the credentials.
-      MockWrite(
-          "CONNECT www.example.org:443 HTTP/1.1\r\n"
-          "Host: www.example.org\r\n"
-          "Proxy-Connection: keep-alive\r\n"
-          "Proxy-Authorization: Basic Zm9vOmJheg==\r\n\r\n"),
+      MockWrite("CONNECT www.example.org:443 HTTP/1.1\r\n"
+                "Host: www.example.org:443\r\n"
+                "Proxy-Connection: keep-alive\r\n"
+                "Proxy-Authorization: Basic Zm9vOmJheg==\r\n\r\n"),
   };
 
   // The proxy responds to the connect with a 407, using a persistent
@@ -2939,18 +2937,16 @@ TEST_P(HttpNetworkTransactionTest, BasicAuthProxyKeepAliveHttp11) {
 
   // Since we have proxy, should try to establish tunnel.
   MockWrite data_writes1[] = {
-      MockWrite(
-          "CONNECT www.example.org:443 HTTP/1.1\r\n"
-          "Host: www.example.org\r\n"
-          "Proxy-Connection: keep-alive\r\n\r\n"),
+      MockWrite("CONNECT www.example.org:443 HTTP/1.1\r\n"
+                "Host: www.example.org:443\r\n"
+                "Proxy-Connection: keep-alive\r\n\r\n"),
 
       // After calling trans->RestartWithAuth(), this is the request we should
       // be issuing -- the final header line contains the credentials.
-      MockWrite(
-          "CONNECT www.example.org:443 HTTP/1.1\r\n"
-          "Host: www.example.org\r\n"
-          "Proxy-Connection: keep-alive\r\n"
-          "Proxy-Authorization: Basic Zm9vOmJheg==\r\n\r\n"),
+      MockWrite("CONNECT www.example.org:443 HTTP/1.1\r\n"
+                "Host: www.example.org:443\r\n"
+                "Proxy-Connection: keep-alive\r\n"
+                "Proxy-Authorization: Basic Zm9vOmJheg==\r\n\r\n"),
   };
 
   // The proxy responds to the connect with a 407, using a persistent
@@ -3044,7 +3040,7 @@ TEST_P(HttpNetworkTransactionTest, BasicAuthProxyKeepAliveHangupDuringBody) {
   // Since we have proxy, should try to establish tunnel.
   MockWrite data_writes1[] = {
       MockWrite("CONNECT www.example.org:443 HTTP/1.1\r\n"
-                "Host: www.example.org\r\n"
+                "Host: www.example.org:443\r\n"
                 "Proxy-Connection: keep-alive\r\n\r\n"),
   };
 
@@ -3063,7 +3059,7 @@ TEST_P(HttpNetworkTransactionTest, BasicAuthProxyKeepAliveHangupDuringBody) {
       // After calling trans->RestartWithAuth(), this is the request we should
       // be issuing -- the final header line contains the credentials.
       MockWrite("CONNECT www.example.org:443 HTTP/1.1\r\n"
-                "Host: www.example.org\r\n"
+                "Host: www.example.org:443\r\n"
                 "Proxy-Connection: keep-alive\r\n"
                 "Proxy-Authorization: Basic Zm9vOmJhcg==\r\n\r\n"),
 
@@ -3133,10 +3129,9 @@ TEST_P(HttpNetworkTransactionTest, BasicAuthProxyCancelTunnel) {
 
   // Since we have proxy, should try to establish tunnel.
   MockWrite data_writes[] = {
-      MockWrite(
-          "CONNECT www.example.org:443 HTTP/1.1\r\n"
-          "Host: www.example.org\r\n"
-          "Proxy-Connection: keep-alive\r\n\r\n"),
+      MockWrite("CONNECT www.example.org:443 HTTP/1.1\r\n"
+                "Host: www.example.org:443\r\n"
+                "Proxy-Connection: keep-alive\r\n\r\n"),
   };
 
   // The proxy responds to the connect with a 407.
@@ -3193,10 +3188,9 @@ TEST_P(HttpNetworkTransactionTest, SanitizeProxyAuthHeaders) {
 
   // Since we have proxy, should try to establish tunnel.
   MockWrite data_writes[] = {
-      MockWrite(
-          "CONNECT www.example.org:443 HTTP/1.1\r\n"
-          "Host: www.example.org\r\n"
-          "Proxy-Connection: keep-alive\r\n\r\n"),
+      MockWrite("CONNECT www.example.org:443 HTTP/1.1\r\n"
+                "Host: www.example.org:443\r\n"
+                "Proxy-Connection: keep-alive\r\n\r\n"),
   };
 
   // The proxy responds to the connect with a 407.
@@ -3299,15 +3293,13 @@ TEST_P(HttpNetworkTransactionTest,
 
   // Since we have proxy, should try to establish tunnel.
   MockWrite data_writes1[] = {
-      MockWrite(
-          "CONNECT www.example.org:443 HTTP/1.1\r\n"
-          "Host: www.example.org\r\n"
-          "Proxy-Connection: keep-alive\r\n\r\n"),
+      MockWrite("CONNECT www.example.org:443 HTTP/1.1\r\n"
+                "Host: www.example.org:443\r\n"
+                "Proxy-Connection: keep-alive\r\n\r\n"),
 
-      MockWrite(
-          "GET / HTTP/1.1\r\n"
-          "Host: www.example.org\r\n"
-          "Connection: keep-alive\r\n\r\n"),
+      MockWrite("GET / HTTP/1.1\r\n"
+                "Host: www.example.org\r\n"
+                "Connection: keep-alive\r\n\r\n"),
   };
 
   MockRead data_reads1[] = {
@@ -3375,7 +3367,7 @@ TEST_P(HttpNetworkTransactionTest,
   // Since we have proxy, should try to establish tunnel.
   MockWrite data_writes1[] = {
       MockWrite("CONNECT www.example.org:443 HTTP/1.1\r\n"
-                "Host: www.example.org\r\n"
+                "Host: www.example.org:443\r\n"
                 "Proxy-Connection: keep-alive\r\n\r\n"),
   };
 
@@ -3394,7 +3386,7 @@ TEST_P(HttpNetworkTransactionTest,
       // After calling trans->RestartWithAuth(), this is the request we should
       // be issuing -- the final header line contains the credentials.
       MockWrite("CONNECT www.example.org:443 HTTP/1.1\r\n"
-                "Host: www.example.org\r\n"
+                "Host: www.example.org:443\r\n"
                 "Proxy-Connection: keep-alive\r\n"
                 "Proxy-Authorization: auth_token\r\n\r\n"),
 
@@ -3492,11 +3484,11 @@ TEST_P(HttpNetworkTransactionTest,
   // Should try to establish tunnel.
   MockWrite data_writes1[] = {
       MockWrite("CONNECT www.example.org:443 HTTP/1.1\r\n"
-                "Host: www.example.org\r\n"
+                "Host: www.example.org:443\r\n"
                 "Proxy-Connection: keep-alive\r\n\r\n"),
 
       MockWrite("CONNECT www.example.org:443 HTTP/1.1\r\n"
-                "Host: www.example.org\r\n"
+                "Host: www.example.org:443\r\n"
                 "Proxy-Connection: keep-alive\r\n"
                 "Proxy-Authorization: auth_token\r\n\r\n"),
   };
@@ -3514,7 +3506,7 @@ TEST_P(HttpNetworkTransactionTest,
   // credentials.
   MockWrite data_writes2[] = {
       MockWrite("CONNECT www.example.org:443 HTTP/1.1\r\n"
-                "Host: www.example.org\r\n"
+                "Host: www.example.org:443\r\n"
                 "Proxy-Connection: keep-alive\r\n"
                 "Proxy-Authorization: auth_token\r\n\r\n"),
 
@@ -3614,11 +3606,11 @@ TEST_P(HttpNetworkTransactionTest,
   // Should try to establish tunnel.
   MockWrite data_writes1[] = {
       MockWrite("CONNECT www.example.org:443 HTTP/1.1\r\n"
-                "Host: www.example.org\r\n"
+                "Host: www.example.org:443\r\n"
                 "Proxy-Connection: keep-alive\r\n\r\n"),
 
       MockWrite("CONNECT www.example.org:443 HTTP/1.1\r\n"
-                "Host: www.example.org\r\n"
+                "Host: www.example.org:443\r\n"
                 "Proxy-Connection: keep-alive\r\n"
                 "Proxy-Authorization: auth_token\r\n\r\n"),
   };
@@ -3639,7 +3631,7 @@ TEST_P(HttpNetworkTransactionTest,
   // request.
   MockWrite data_writes2[] = {
       MockWrite("CONNECT www.example.org:443 HTTP/1.1\r\n"
-                "Host: www.example.org\r\n"
+                "Host: www.example.org:443\r\n"
                 "Proxy-Connection: keep-alive\r\n\r\n"),
   };
 
@@ -3718,7 +3710,7 @@ TEST_P(HttpNetworkTransactionTest,
   // Should try to establish tunnel.
   MockWrite data_writes1[] = {
       MockWrite("CONNECT www.example.org:443 HTTP/1.1\r\n"
-                "Host: www.example.org\r\n"
+                "Host: www.example.org:443\r\n"
                 "Proxy-Connection: keep-alive\r\n\r\n"),
   };
 
@@ -3735,7 +3727,7 @@ TEST_P(HttpNetworkTransactionTest,
   // credentials.
   MockWrite data_writes2[] = {
       MockWrite("CONNECT www.example.org:443 HTTP/1.1\r\n"
-                "Host: www.example.org\r\n"
+                "Host: www.example.org:443\r\n"
                 "Proxy-Connection: keep-alive\r\n"
                 "Proxy-Authorization: auth_token\r\n\r\n"),
   };
@@ -3804,20 +3796,17 @@ TEST_P(HttpNetworkTransactionTest, HttpProxyLoadTimingNoPacTwoRequests) {
 
   // Since we have proxy, should try to establish tunnel.
   MockWrite data_writes1[] = {
-      MockWrite(
-          "CONNECT www.example.org:443 HTTP/1.1\r\n"
-          "Host: www.example.org\r\n"
-          "Proxy-Connection: keep-alive\r\n\r\n"),
+      MockWrite("CONNECT www.example.org:443 HTTP/1.1\r\n"
+                "Host: www.example.org:443\r\n"
+                "Proxy-Connection: keep-alive\r\n\r\n"),
 
-      MockWrite(
-          "GET /1 HTTP/1.1\r\n"
-          "Host: www.example.org\r\n"
-          "Connection: keep-alive\r\n\r\n"),
+      MockWrite("GET /1 HTTP/1.1\r\n"
+                "Host: www.example.org\r\n"
+                "Connection: keep-alive\r\n\r\n"),
 
-      MockWrite(
-          "GET /2 HTTP/1.1\r\n"
-          "Host: www.example.org\r\n"
-          "Connection: keep-alive\r\n\r\n"),
+      MockWrite("GET /2 HTTP/1.1\r\n"
+                "Host: www.example.org\r\n"
+                "Connection: keep-alive\r\n\r\n"),
   };
 
   // The proxy responds to the connect with a 407, using a persistent
@@ -3905,20 +3894,17 @@ TEST_P(HttpNetworkTransactionTest, HttpProxyLoadTimingWithPacTwoRequests) {
 
   // Since we have proxy, should try to establish tunnel.
   MockWrite data_writes1[] = {
-      MockWrite(
-          "CONNECT www.example.org:443 HTTP/1.1\r\n"
-          "Host: www.example.org\r\n"
-          "Proxy-Connection: keep-alive\r\n\r\n"),
+      MockWrite("CONNECT www.example.org:443 HTTP/1.1\r\n"
+                "Host: www.example.org:443\r\n"
+                "Proxy-Connection: keep-alive\r\n\r\n"),
 
-      MockWrite(
-          "GET /1 HTTP/1.1\r\n"
-          "Host: www.example.org\r\n"
-          "Connection: keep-alive\r\n\r\n"),
+      MockWrite("GET /1 HTTP/1.1\r\n"
+                "Host: www.example.org\r\n"
+                "Connection: keep-alive\r\n\r\n"),
 
-      MockWrite(
-          "GET /2 HTTP/1.1\r\n"
-          "Host: www.example.org\r\n"
-          "Connection: keep-alive\r\n\r\n"),
+      MockWrite("GET /2 HTTP/1.1\r\n"
+                "Host: www.example.org\r\n"
+                "Connection: keep-alive\r\n\r\n"),
   };
 
   // The proxy responds to the connect with a 407, using a persistent
@@ -4991,10 +4977,9 @@ void HttpNetworkTransactionTest::ConnectStatusHelperWithExpectedStatus(
 
   // Since we have proxy, should try to establish tunnel.
   MockWrite data_writes[] = {
-      MockWrite(
-          "CONNECT www.example.org:443 HTTP/1.1\r\n"
-          "Host: www.example.org\r\n"
-          "Proxy-Connection: keep-alive\r\n\r\n"),
+      MockWrite("CONNECT www.example.org:443 HTTP/1.1\r\n"
+                "Host: www.example.org:443\r\n"
+                "Proxy-Connection: keep-alive\r\n\r\n"),
   };
 
   MockRead data_reads[] = {
@@ -5716,10 +5701,9 @@ TEST_P(HttpNetworkTransactionTest,
 
   // Since we have proxy, should try to establish tunnel.
   MockWrite data_writes1[] = {
-      MockWrite(
-          "CONNECT www.example.org:443 HTTP/1.1\r\n"
-          "Host: www.example.org\r\n"
-          "Proxy-Connection: keep-alive\r\n\r\n"),
+      MockWrite("CONNECT www.example.org:443 HTTP/1.1\r\n"
+                "Host: www.example.org:443\r\n"
+                "Proxy-Connection: keep-alive\r\n\r\n"),
   };
 
   // The proxy responds to the connect with a 404, using a persistent
@@ -7031,10 +7015,9 @@ TEST_P(HttpNetworkTransactionTest, HTTPSBadCertificateViaProxy) {
   request.load_flags = 0;
 
   MockWrite proxy_writes[] = {
-      MockWrite(
-          "CONNECT www.example.org:443 HTTP/1.1\r\n"
-          "Host: www.example.org\r\n"
-          "Proxy-Connection: keep-alive\r\n\r\n"),
+      MockWrite("CONNECT www.example.org:443 HTTP/1.1\r\n"
+                "Host: www.example.org:443\r\n"
+                "Proxy-Connection: keep-alive\r\n\r\n"),
   };
 
   MockRead proxy_reads[] = {
@@ -7043,14 +7026,12 @@ TEST_P(HttpNetworkTransactionTest, HTTPSBadCertificateViaProxy) {
   };
 
   MockWrite data_writes[] = {
-      MockWrite(
-          "CONNECT www.example.org:443 HTTP/1.1\r\n"
-          "Host: www.example.org\r\n"
-          "Proxy-Connection: keep-alive\r\n\r\n"),
-      MockWrite(
-          "GET / HTTP/1.1\r\n"
-          "Host: www.example.org\r\n"
-          "Connection: keep-alive\r\n\r\n"),
+      MockWrite("CONNECT www.example.org:443 HTTP/1.1\r\n"
+                "Host: www.example.org:443\r\n"
+                "Proxy-Connection: keep-alive\r\n\r\n"),
+      MockWrite("GET / HTTP/1.1\r\n"
+                "Host: www.example.org\r\n"
+                "Connection: keep-alive\r\n\r\n"),
   };
 
   MockRead data_reads[] = {
@@ -7116,14 +7097,12 @@ TEST_P(HttpNetworkTransactionTest, HTTPSViaHttpsProxy) {
   request.load_flags = 0;
 
   MockWrite data_writes[] = {
-      MockWrite(
-          "CONNECT www.example.org:443 HTTP/1.1\r\n"
-          "Host: www.example.org\r\n"
-          "Proxy-Connection: keep-alive\r\n\r\n"),
-      MockWrite(
-          "GET / HTTP/1.1\r\n"
-          "Host: www.example.org\r\n"
-          "Connection: keep-alive\r\n\r\n"),
+      MockWrite("CONNECT www.example.org:443 HTTP/1.1\r\n"
+                "Host: www.example.org:443\r\n"
+                "Proxy-Connection: keep-alive\r\n\r\n"),
+      MockWrite("GET / HTTP/1.1\r\n"
+                "Host: www.example.org\r\n"
+                "Connection: keep-alive\r\n\r\n"),
   };
 
   MockRead data_reads[] = {
@@ -7182,10 +7161,9 @@ TEST_P(HttpNetworkTransactionTest, RedirectOfHttpsConnectViaHttpsProxy) {
   request.load_flags = 0;
 
   MockWrite data_writes[] = {
-      MockWrite(
-          "CONNECT www.example.org:443 HTTP/1.1\r\n"
-          "Host: www.example.org\r\n"
-          "Proxy-Connection: keep-alive\r\n\r\n"),
+      MockWrite("CONNECT www.example.org:443 HTTP/1.1\r\n"
+                "Host: www.example.org:443\r\n"
+                "Proxy-Connection: keep-alive\r\n\r\n"),
   };
 
   MockRead data_reads[] = {
@@ -7315,10 +7293,9 @@ TEST_P(HttpNetworkTransactionTest,
   request.load_flags = 0;
 
   MockWrite data_writes[] = {
-      MockWrite(
-          "CONNECT www.example.org:443 HTTP/1.1\r\n"
-          "Host: www.example.org\r\n"
-          "Proxy-Connection: keep-alive\r\n\r\n"),
+      MockWrite("CONNECT www.example.org:443 HTTP/1.1\r\n"
+                "Host: www.example.org:443\r\n"
+                "Proxy-Connection: keep-alive\r\n\r\n"),
   };
 
   MockRead data_reads[] = {
@@ -7757,10 +7734,9 @@ TEST_P(HttpNetworkTransactionTest, HTTPSBadCertificateViaHttpsProxy) {
 
   // Attempt to fetch the URL from a server with a bad cert
   MockWrite bad_cert_writes[] = {
-      MockWrite(
-          "CONNECT www.example.org:443 HTTP/1.1\r\n"
-          "Host: www.example.org\r\n"
-          "Proxy-Connection: keep-alive\r\n\r\n"),
+      MockWrite("CONNECT www.example.org:443 HTTP/1.1\r\n"
+                "Host: www.example.org:443\r\n"
+                "Proxy-Connection: keep-alive\r\n\r\n"),
   };
 
   MockRead bad_cert_reads[] = {
@@ -7770,14 +7746,12 @@ TEST_P(HttpNetworkTransactionTest, HTTPSBadCertificateViaHttpsProxy) {
 
   // Attempt to fetch the URL with a good cert
   MockWrite good_data_writes[] = {
-      MockWrite(
-          "CONNECT www.example.org:443 HTTP/1.1\r\n"
-          "Host: www.example.org\r\n"
-          "Proxy-Connection: keep-alive\r\n\r\n"),
-      MockWrite(
-          "GET / HTTP/1.1\r\n"
-          "Host: www.example.org\r\n"
-          "Connection: keep-alive\r\n\r\n"),
+      MockWrite("CONNECT www.example.org:443 HTTP/1.1\r\n"
+                "Host: www.example.org:443\r\n"
+                "Proxy-Connection: keep-alive\r\n\r\n"),
+      MockWrite("GET / HTTP/1.1\r\n"
+                "Host: www.example.org\r\n"
+                "Connection: keep-alive\r\n\r\n"),
   };
 
   MockRead good_cert_reads[] = {
@@ -7883,11 +7857,10 @@ TEST_P(HttpNetworkTransactionTest, BuildRequest_UserAgentOverTunnel) {
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   MockWrite data_writes[] = {
-      MockWrite(
-          "CONNECT www.example.org:443 HTTP/1.1\r\n"
-          "Host: www.example.org\r\n"
-          "Proxy-Connection: keep-alive\r\n"
-          "User-Agent: Chromium Ultra Awesome X Edition\r\n\r\n"),
+      MockWrite("CONNECT www.example.org:443 HTTP/1.1\r\n"
+                "Host: www.example.org:443\r\n"
+                "Proxy-Connection: keep-alive\r\n"
+                "User-Agent: Chromium Ultra Awesome X Edition\r\n\r\n"),
   };
   MockRead data_reads[] = {
     // Return an error, so the transaction stops here (this test isn't
@@ -10659,7 +10632,7 @@ TEST_P(HttpNetworkTransactionTest,
   MockWrite spdy_writes[] = {
       MockWrite(ASYNC, 0,
                 "CONNECT www.example.org:443 HTTP/1.1\r\n"
-                "Host: www.example.org\r\n"
+                "Host: www.example.org:443\r\n"
                 "Proxy-Connection: keep-alive\r\n\r\n"),
       CreateMockWrite(*req, 2),
   };
@@ -10883,11 +10856,11 @@ TEST_P(HttpNetworkTransactionTest, GenerateAuthToken) {
       "Authorization: auth_token\r\n\r\n");
   const MockWrite kConnect(
       "CONNECT www.example.com:443 HTTP/1.1\r\n"
-      "Host: www.example.com\r\n"
+      "Host: www.example.com:443\r\n"
       "Proxy-Connection: keep-alive\r\n\r\n");
   const MockWrite kConnectProxyAuth(
       "CONNECT www.example.com:443 HTTP/1.1\r\n"
-      "Host: www.example.com\r\n"
+      "Host: www.example.com:443\r\n"
       "Proxy-Connection: keep-alive\r\n"
       "Proxy-Authorization: auth_token\r\n\r\n");
 
@@ -11629,14 +11602,14 @@ TEST_P(HttpNetworkTransactionTest, SpdyAlternateProtocolThroughProxy) {
       // First connection attempt without Proxy-Authorization.
       MockWrite(ASYNC, 0,
                 "CONNECT www.example.org:443 HTTP/1.1\r\n"
-                "Host: www.example.org\r\n"
+                "Host: www.example.org:443\r\n"
                 "Proxy-Connection: keep-alive\r\n"
                 "\r\n"),
 
       // Second connection attempt with Proxy-Authorization.
       MockWrite(ASYNC, 2,
                 "CONNECT www.example.org:443 HTTP/1.1\r\n"
-                "Host: www.example.org\r\n"
+                "Host: www.example.org:443\r\n"
                 "Proxy-Connection: keep-alive\r\n"
                 "Proxy-Authorization: auth_token\r\n"
                 "\r\n"),
@@ -11885,15 +11858,13 @@ TEST_P(HttpNetworkTransactionTest, ProxyTunnelGet) {
 
   // Since we have proxy, should try to establish tunnel.
   MockWrite data_writes1[] = {
-      MockWrite(
-          "CONNECT www.example.org:443 HTTP/1.1\r\n"
-          "Host: www.example.org\r\n"
-          "Proxy-Connection: keep-alive\r\n\r\n"),
+      MockWrite("CONNECT www.example.org:443 HTTP/1.1\r\n"
+                "Host: www.example.org:443\r\n"
+                "Proxy-Connection: keep-alive\r\n\r\n"),
 
-      MockWrite(
-          "GET / HTTP/1.1\r\n"
-          "Host: www.example.org\r\n"
-          "Connection: keep-alive\r\n\r\n"),
+      MockWrite("GET / HTTP/1.1\r\n"
+                "Host: www.example.org\r\n"
+                "Connection: keep-alive\r\n\r\n"),
   };
 
   MockRead data_reads1[] = {
@@ -11948,6 +11919,81 @@ TEST_P(HttpNetworkTransactionTest, ProxyTunnelGet) {
                                  CONNECT_TIMING_HAS_SSL_TIMES);
 }
 
+// Test a basic HTTPS GET request through a proxy, connecting to an IPv6
+// literal host.
+TEST_P(HttpNetworkTransactionTest, ProxyTunnelGetIPv6) {
+  session_deps_.proxy_service =
+      ProxyService::CreateFixedFromPacResult("PROXY myproxy:70");
+  BoundTestNetLog log;
+  session_deps_.net_log = log.bound().net_log();
+  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+
+  HttpRequestInfo request;
+  request.method = "GET";
+  request.url = GURL("https://[::1]:443/");
+
+  // Since we have proxy, should try to establish tunnel.
+  MockWrite data_writes1[] = {
+      MockWrite("CONNECT [::1]:443 HTTP/1.1\r\n"
+                "Host: [::1]:443\r\n"
+                "Proxy-Connection: keep-alive\r\n\r\n"),
+
+      MockWrite("GET / HTTP/1.1\r\n"
+                "Host: [::1]\r\n"
+                "Connection: keep-alive\r\n\r\n"),
+  };
+
+  MockRead data_reads1[] = {
+      MockRead("HTTP/1.1 200 Connection Established\r\n\r\n"),
+
+      MockRead("HTTP/1.1 200 OK\r\n"),
+      MockRead("Content-Type: text/html; charset=iso-8859-1\r\n"),
+      MockRead("Content-Length: 100\r\n\r\n"),
+      MockRead(SYNCHRONOUS, OK),
+  };
+
+  StaticSocketDataProvider data1(data_reads1, arraysize(data_reads1),
+                                 data_writes1, arraysize(data_writes1));
+  session_deps_.socket_factory->AddSocketDataProvider(&data1);
+  SSLSocketDataProvider ssl(ASYNC, OK);
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
+
+  TestCompletionCallback callback1;
+
+  scoped_ptr<HttpTransaction> trans(
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
+
+  int rv = trans->Start(&request, callback1.callback(), log.bound());
+  EXPECT_EQ(ERR_IO_PENDING, rv);
+
+  rv = callback1.WaitForResult();
+  EXPECT_EQ(OK, rv);
+  TestNetLogEntry::List entries;
+  log.GetEntries(&entries);
+  size_t pos = ExpectLogContainsSomewhere(
+      entries, 0, NetLog::TYPE_HTTP_TRANSACTION_SEND_TUNNEL_HEADERS,
+      NetLog::PHASE_NONE);
+  ExpectLogContainsSomewhere(
+      entries, pos, NetLog::TYPE_HTTP_TRANSACTION_READ_TUNNEL_RESPONSE_HEADERS,
+      NetLog::PHASE_NONE);
+
+  const HttpResponseInfo* response = trans->GetResponseInfo();
+  ASSERT_TRUE(response != NULL);
+
+  EXPECT_TRUE(response->headers->IsKeepAlive());
+  EXPECT_EQ(200, response->headers->response_code());
+  EXPECT_EQ(100, response->headers->GetContentLength());
+  EXPECT_TRUE(HttpVersion(1, 1) == response->headers->GetHttpVersion());
+  EXPECT_TRUE(response->was_fetched_via_proxy);
+  EXPECT_TRUE(
+      response->proxy_server.Equals(HostPortPair::FromString("myproxy:70")));
+
+  LoadTimingInfo load_timing_info;
+  EXPECT_TRUE(trans->GetLoadTimingInfo(&load_timing_info));
+  TestLoadTimingNotReusedWithPac(load_timing_info,
+                                 CONNECT_TIMING_HAS_SSL_TIMES);
+}
+
 // Test a basic HTTPS GET request through a proxy, but the server hangs up
 // while establishing the tunnel.
 TEST_P(HttpNetworkTransactionTest, ProxyTunnelGetHangup) {
@@ -11962,15 +12008,13 @@ TEST_P(HttpNetworkTransactionTest, ProxyTunnelGetHangup) {
 
   // Since we have proxy, should try to establish tunnel.
   MockWrite data_writes1[] = {
-      MockWrite(
-          "CONNECT www.example.org:443 HTTP/1.1\r\n"
-          "Host: www.example.org\r\n"
-          "Proxy-Connection: keep-alive\r\n\r\n"),
+      MockWrite("CONNECT www.example.org:443 HTTP/1.1\r\n"
+                "Host: www.example.org:443\r\n"
+                "Proxy-Connection: keep-alive\r\n\r\n"),
 
-      MockWrite(
-          "GET / HTTP/1.1\r\n"
-          "Host: www.example.org\r\n"
-          "Connection: keep-alive\r\n\r\n"),
+      MockWrite("GET / HTTP/1.1\r\n"
+                "Host: www.example.org\r\n"
+                "Connection: keep-alive\r\n\r\n"),
   };
 
   MockRead data_reads1[] = {
@@ -15109,27 +15153,24 @@ TEST_P(HttpNetworkTransactionTest, ProxyHeadersNotSentOverWssTunnel) {
 
   // Since a proxy is configured, try to establish a tunnel.
   MockWrite data_writes[] = {
-      MockWrite(
-          "CONNECT www.example.org:443 HTTP/1.1\r\n"
-          "Host: www.example.org\r\n"
-          "Proxy-Connection: keep-alive\r\n\r\n"),
+      MockWrite("CONNECT www.example.org:443 HTTP/1.1\r\n"
+                "Host: www.example.org:443\r\n"
+                "Proxy-Connection: keep-alive\r\n\r\n"),
 
       // After calling trans->RestartWithAuth(), this is the request we should
       // be issuing -- the final header line contains the credentials.
-      MockWrite(
-          "CONNECT www.example.org:443 HTTP/1.1\r\n"
-          "Host: www.example.org\r\n"
-          "Proxy-Connection: keep-alive\r\n"
-          "Proxy-Authorization: Basic Zm9vOmJhcg==\r\n\r\n"),
+      MockWrite("CONNECT www.example.org:443 HTTP/1.1\r\n"
+                "Host: www.example.org:443\r\n"
+                "Proxy-Connection: keep-alive\r\n"
+                "Proxy-Authorization: Basic Zm9vOmJhcg==\r\n\r\n"),
 
-      MockWrite(
-          "GET / HTTP/1.1\r\n"
-          "Host: www.example.org\r\n"
-          "Connection: Upgrade\r\n"
-          "Upgrade: websocket\r\n"
-          "Origin: http://www.example.org\r\n"
-          "Sec-WebSocket-Version: 13\r\n"
-          "Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\n\r\n"),
+      MockWrite("GET / HTTP/1.1\r\n"
+                "Host: www.example.org\r\n"
+                "Connection: Upgrade\r\n"
+                "Upgrade: websocket\r\n"
+                "Origin: http://www.example.org\r\n"
+                "Sec-WebSocket-Version: 13\r\n"
+                "Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\n\r\n"),
   };
 
   // The proxy responds to the connect with a 407, using a persistent
