@@ -161,7 +161,7 @@ void ChromeAutofillClient::ConfirmSaveCreditCardLocally(
   autofill::SaveCardBubbleControllerImpl* controller =
       autofill::SaveCardBubbleControllerImpl::FromWebContents(web_contents());
   controller->SetCallback(callback);
-  controller->ShowBubble();
+  controller->ShowBubble(false);
 #else
   AutofillCCInfoBarDelegate::Create(
       InfoBarService::FromWebContents(web_contents()), this, callback);

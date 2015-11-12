@@ -22,14 +22,9 @@ SaveCardIconView::SaveCardIconView(CommandUpdater* command_updater,
       browser_(browser) {
   set_id(VIEW_ID_SAVE_CREDIT_CARD_BUTTON);
   SetTooltipText(l10n_util::GetStringUTF16(IDS_TOOLTIP_SAVE_CREDIT_CARD));
-  SetToggled(false);
 }
 
 SaveCardIconView::~SaveCardIconView() {}
-
-void SaveCardIconView::SetToggled(bool on) {
-  SetActiveInternal(on);
-}
 
 void SaveCardIconView::OnExecuting(
     BubbleIconView::ExecuteSource execute_source) {}

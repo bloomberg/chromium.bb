@@ -22,9 +22,23 @@ class WebContents;
 class LocationBarBubbleDelegateView : public views::BubbleDelegateView,
                                       public content::NotificationObserver {
  public:
+  enum DisplayReason {
+    // The bubble appears as a direct result of a user action (clicking on the
+    // location bar icon).
+    USER_GESTURE,
+
+    // The bubble appears spontaneously over the course of the user's
+    // interaction with Chrome (e.g. due to some change in the feature's
+    // status).
+    AUTOMATIC,
+  };
+
   LocationBarBubbleDelegateView(views::View* anchor_view,
                                 content::WebContents* web_contents);
   ~LocationBarBubbleDelegateView() override;
+
+  // Displays the bubble with appearance and behavior tailored for |reason|.
+  void ShowForReason(DisplayReason reason);
 
   // content::NotificationObserver:
   void Observe(int type,

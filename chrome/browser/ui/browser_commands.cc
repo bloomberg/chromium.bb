@@ -816,7 +816,7 @@ void SaveCreditCard(Browser* browser) {
   autofill::SaveCardBubbleControllerImpl* controller =
       autofill::SaveCardBubbleControllerImpl::FromWebContents(web_contents);
   DCHECK(controller);
-  controller->ShowBubble();
+  controller->ShowBubble(true);
 }
 #endif
 

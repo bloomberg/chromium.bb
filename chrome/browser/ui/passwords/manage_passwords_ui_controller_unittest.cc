@@ -44,14 +44,9 @@ class TestManagePasswordsIconView : public ManagePasswordsIconView {
     state_ = state;
   }
   password_manager::ui::State state() { return state_; }
-  void SetActive(bool active) override {
-    active_ = active;
-  }
-  bool active() { return active_; }
 
  private:
   password_manager::ui::State state_;
-  bool active_;
 
   DISALLOW_COPY_AND_ASSIGN(TestManagePasswordsIconView);
 };

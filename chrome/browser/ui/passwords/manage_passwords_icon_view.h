@@ -14,7 +14,6 @@ class ManagePasswordsIconView {
   ManagePasswordsIconView() {}
 
   virtual void SetState(password_manager::ui::State state) = 0;
-  virtual void SetActive(bool active) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ManagePasswordsIconView);

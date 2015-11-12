@@ -23,16 +23,11 @@ ManagePasswordsIconViews::ManagePasswordsIconViews(CommandUpdater* updater)
 
 ManagePasswordsIconViews::~ManagePasswordsIconViews() {}
 
-void ManagePasswordsIconViews::SetActive(bool active) {
-  SetActiveInternal(active);
-}
-
 void ManagePasswordsIconViews::SetState(password_manager::ui::State state) {
   if (state_ == state)
     return;
   // If there is an opened bubble for the current icon it should go away.
-  if (active())
-    ManagePasswordsBubbleView::CloseBubble();
+  ManagePasswordsBubbleView::CloseBubble();
   state_ = state;
   UpdateUiForState();
 }
@@ -61,8 +56,7 @@ void ManagePasswordsIconViews::OnExecuting(
 
 bool ManagePasswordsIconViews::OnMousePressed(const ui::MouseEvent& event) {
   bool result = BubbleIconView::OnMousePressed(event);
-  if (IsBubbleShowing())
-    ManagePasswordsBubbleView::CloseBubble();
+  ManagePasswordsBubbleView::CloseBubble();
   return result;
 }
 
@@ -72,8 +66,8 @@ bool ManagePasswordsIconViews::OnKeyPressed(const ui::KeyEvent& event) {
   // button.
   if (event.key_code() == ui::VKEY_SPACE)
     return true;
-  if (event.key_code() == ui::VKEY_RETURN && active()) {
-    // If the icon is active, it should transfer its focus to the bubble.
+  if (event.key_code() == ui::VKEY_RETURN && IsBubbleShowing()) {
+    // If the bubble's open, the icon should transfer its focus to the bubble.
     // If it still somehow got this key event, the bubble shouldn't be reopened.
     return true;
   }
@@ -90,6 +84,6 @@ gfx::VectorIconId ManagePasswordsIconViews::GetVectorIcon() const {
 
 void ManagePasswordsIconViews::AboutToRequestFocusFromTabTraversal(
     bool reverse) {
-  if (active())
+  if (IsBubbleShowing())
     ManagePasswordsBubbleView::ActivateBubble();
 }

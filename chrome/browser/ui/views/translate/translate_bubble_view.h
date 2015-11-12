@@ -61,7 +61,7 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
                          content::WebContents* web_contents,
                          translate::TranslateStep step,
                          translate::TranslateErrors::Type error_type,
-                         bool is_user_gesture);
+                         DisplayReason reason);
 
   // Closes the current bubble if existing.
   static void CloseBubble();

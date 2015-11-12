@@ -13,16 +13,9 @@ namespace autofill {
 // bubble. This object is responsible for its own lifetime.
 class SaveCardBubbleView {
  public:
-  virtual void Show() = 0;
-  virtual void Close() = 0;
-  virtual void ControllerGone() = 0;
-
- protected:
-  SaveCardBubbleView() {}
-  virtual ~SaveCardBubbleView() {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(SaveCardBubbleView);
+  // Called to close the bubble and prevent future callbacks into the
+  // controller.
+  virtual void Hide() = 0;
 };
 
 }  // namespace autofill

@@ -37,7 +37,7 @@ ZoomBubbleView* ZoomBubbleView::zoom_bubble_ = NULL;
 
 // static
 void ZoomBubbleView::ShowBubble(content::WebContents* web_contents,
-                                bool auto_close) {
+                                DisplayReason reason) {
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
   DCHECK(browser && browser->window() &&
          browser->exclusive_access_manager()->fullscreen_controller());
@@ -67,7 +67,7 @@ void ZoomBubbleView::ShowBubble(content::WebContents* web_contents,
   // bubble must be closed and a new one created.
   CloseBubble();
 
-  zoom_bubble_ = new ZoomBubbleView(anchor_view, web_contents, auto_close,
+  zoom_bubble_ = new ZoomBubbleView(anchor_view, web_contents, reason,
                                     browser_view->immersive_mode_controller());
 
   // If the zoom change was initiated by an extension, capture the relevent
@@ -88,10 +88,7 @@ void ZoomBubbleView::ShowBubble(content::WebContents* web_contents,
   if (is_fullscreen)
     zoom_bubble_->AdjustForFullscreen(browser_view->GetBoundsInScreen());
 
-  if (auto_close)
-    zoom_bubble_->GetWidget()->ShowInactive();
-  else
-    zoom_bubble_->GetWidget()->Show();
+  zoom_bubble_->ShowForReason(reason);
 }
 
 // static
@@ -108,13 +105,13 @@ ZoomBubbleView* ZoomBubbleView::GetZoomBubble() {
 ZoomBubbleView::ZoomBubbleView(
     views::View* anchor_view,
     content::WebContents* web_contents,
-    bool auto_close,
+    DisplayReason reason,
     ImmersiveModeController* immersive_mode_controller)
     : LocationBarBubbleDelegateView(anchor_view, web_contents),
       image_button_(NULL),
       label_(NULL),
       web_contents_(web_contents),
-      auto_close_(auto_close),
+      auto_close_(reason == AUTOMATIC),
       immersive_mode_controller_(immersive_mode_controller) {
   // Compensate for built-in vertical padding in the anchor view's image.
   set_anchor_view_insets(gfx::Insets(5, 0, 5, 0));
@@ -298,19 +295,20 @@ void ZoomBubbleView::SetExtensionInfo(const extensions::Extension* extension) {
 }
 
 void ZoomBubbleView::StartTimerIfNecessary() {
-  if (auto_close_) {
-    if (timer_.IsRunning()) {
-      timer_.Reset();
-    } else {
-      // The number of milliseconds the bubble should stay on the screen if it
-      // will close automatically.
-      const int kBubbleCloseDelay = 1500;
-      timer_.Start(
-          FROM_HERE,
-          base::TimeDelta::FromMilliseconds(kBubbleCloseDelay),
-          this,
-          &ZoomBubbleView::Close);
-    }
+  if (!auto_close_)
+    return;
+
+  if (timer_.IsRunning()) {
+    timer_.Reset();
+  } else {
+    // The number of milliseconds the bubble should stay on the screen if it
+    // will close automatically.
+    const int kBubbleCloseDelay = 1500;
+    timer_.Start(
+        FROM_HERE,
+        base::TimeDelta::FromMilliseconds(kBubbleCloseDelay),
+        this,
+        &ZoomBubbleView::Close);
   }
 }
 

@@ -26,7 +26,7 @@ class ManagePasswordsBubbleView : public LocationBarBubbleDelegateView {
  public:
   // Shows the bubble.
   static void ShowBubble(content::WebContents* web_contents,
-                         ManagePasswordsBubbleModel::DisplayReason reason);
+                         DisplayReason reason);
 
   // Closes the existing bubble.
   static void CloseBubble();
@@ -65,16 +65,13 @@ class ManagePasswordsBubbleView : public LocationBarBubbleDelegateView {
 
   ManagePasswordsBubbleView(content::WebContents* web_contents,
                             ManagePasswordsIconViews* anchor_view,
-                            ManagePasswordsBubbleModel::DisplayReason reason);
+                            DisplayReason reason);
   ~ManagePasswordsBubbleView() override;
 
   // LocationBarBubbleDelegateView:
   views::View* GetInitiallyFocusedView() override;
   void Init() override;
   void Close() override;
-
-  // WidgetObserver:
-  void OnWidgetClosing(views::Widget* widget) override;
 
   // WidgetDelegate:
   bool ShouldShowCloseButton() const override;

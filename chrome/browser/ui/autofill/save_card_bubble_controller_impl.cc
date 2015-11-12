@@ -34,7 +34,7 @@ SaveCardBubbleControllerImpl::SaveCardBubbleControllerImpl(
 
 SaveCardBubbleControllerImpl::~SaveCardBubbleControllerImpl() {
   if (save_card_bubble_view_)
-    save_card_bubble_view_->ControllerGone();
+    save_card_bubble_view_->Hide();
 }
 
 void SaveCardBubbleControllerImpl::SetCallback(
@@ -42,7 +42,7 @@ void SaveCardBubbleControllerImpl::SetCallback(
   save_card_callback_ = save_card_callback;
 }
 
-void SaveCardBubbleControllerImpl::ShowBubble() {
+void SaveCardBubbleControllerImpl::ShowBubble(bool user_action) {
   DCHECK(!save_card_callback_.is_null());
 
   // Need to create location bar icon before bubble, otherwise bubble will be
@@ -50,8 +50,8 @@ void SaveCardBubbleControllerImpl::ShowBubble() {
   UpdateIcon();
 
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
-  save_card_bubble_view_ =
-      browser->window()->ShowSaveCreditCardBubble(web_contents(), this);
+  save_card_bubble_view_ = browser->window()->ShowSaveCreditCardBubble(
+      web_contents(), this, user_action);
   DCHECK(save_card_bubble_view_);
 
   // Update icon after creating |save_card_bubble_view_| so that icon will show
@@ -63,10 +63,6 @@ void SaveCardBubbleControllerImpl::ShowBubble() {
 
 bool SaveCardBubbleControllerImpl::IsIconVisible() const {
   return !save_card_callback_.is_null();
-}
-
-bool SaveCardBubbleControllerImpl::IsIconToggled() const {
-  return !!save_card_bubble_view_;
 }
 
 SaveCardBubbleView* SaveCardBubbleControllerImpl::save_card_bubble_view()
@@ -119,10 +115,12 @@ void SaveCardBubbleControllerImpl::DidNavigateMainFrame(
 
   // Otherwise, get rid of the bubble and icon.
   save_card_callback_.Reset();
-  if (save_card_bubble_view_)
-    save_card_bubble_view_->Close();
-  else
+  if (save_card_bubble_view_) {
+    save_card_bubble_view_->Hide();
+    OnBubbleClosed();
+  } else {
     UpdateIcon();
+  }
 }
 
 }  // namespace autofill

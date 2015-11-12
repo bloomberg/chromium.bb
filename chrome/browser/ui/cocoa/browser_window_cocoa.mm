@@ -631,7 +631,8 @@ void BrowserWindowCocoa::ShowBookmarkAppBubble(
 
 autofill::SaveCardBubbleView* BrowserWindowCocoa::ShowSaveCreditCardBubble(
     content::WebContents* web_contents,
-    autofill::SaveCardBubbleController* controller) {
+    autofill::SaveCardBubbleController* controller,
+    bool user_gesture) {
   NOTIMPLEMENTED();
   return nullptr;
 }

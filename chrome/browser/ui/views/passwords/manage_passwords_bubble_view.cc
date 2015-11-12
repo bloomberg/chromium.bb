@@ -914,7 +914,7 @@ ManagePasswordsBubbleView* ManagePasswordsBubbleView::manage_passwords_bubble_ =
 // static
 void ManagePasswordsBubbleView::ShowBubble(
     content::WebContents* web_contents,
-    ManagePasswordsBubbleModel::DisplayReason reason) {
+    DisplayReason reason) {
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
   DCHECK(browser);
   DCHECK(browser->window());
@@ -940,10 +940,8 @@ void ManagePasswordsBubbleView::ShowBubble(
     manage_passwords_bubble_->AdjustForFullscreen(
         browser_view->GetBoundsInScreen());
   }
-  if (reason == ManagePasswordsBubbleModel::AUTOMATIC)
-    manage_passwords_bubble_->GetWidget()->ShowInactive();
-  else
-    manage_passwords_bubble_->GetWidget()->Show();
+
+  manage_passwords_bubble_->ShowForReason(reason);
 }
 
 // static
@@ -966,11 +964,13 @@ content::WebContents* ManagePasswordsBubbleView::web_contents() const {
 ManagePasswordsBubbleView::ManagePasswordsBubbleView(
     content::WebContents* web_contents,
     ManagePasswordsIconViews* anchor_view,
-    ManagePasswordsBubbleModel::DisplayReason reason)
+    DisplayReason reason)
     : LocationBarBubbleDelegateView(anchor_view, web_contents),
-      model_(web_contents, reason),
+      model_(web_contents,
+             reason == AUTOMATIC ? ManagePasswordsBubbleModel::AUTOMATIC
+                                 : ManagePasswordsBubbleModel::USER_ACTION),
       anchor_view_(anchor_view),
-      initially_focused_view_(NULL) {
+      initially_focused_view_(nullptr) {
   // Compensate for built-in vertical padding in the anchor view's image.
   set_anchor_view_insets(gfx::Insets(5, 0, 5, 0));
 
@@ -978,8 +978,6 @@ ManagePasswordsBubbleView::ManagePasswordsBubbleView(
                                                  : views::kPanelVertMargin;
   set_margins(gfx::Insets(top_margin, views::kPanelHorizMargin,
                           views::kPanelVertMargin, views::kPanelHorizMargin));
-  if (anchor_view)
-    anchor_view->SetActive(true);
   mouse_handler_.reset(new WebContentMouseHandler(this));
 }
 
@@ -1002,11 +1000,6 @@ void ManagePasswordsBubbleView::Init() {
 void ManagePasswordsBubbleView::Close() {
   mouse_handler_.reset();
   LocationBarBubbleDelegateView::Close();
-}
-
-void ManagePasswordsBubbleView::OnWidgetClosing(views::Widget* /*widget*/) {
-  if (anchor_view_)
-    anchor_view_->SetActive(false);
 }
 
 bool ManagePasswordsBubbleView::ShouldShowCloseButton() const {

@@ -78,7 +78,7 @@ void TranslateBubbleView::ShowBubble(
     content::WebContents* web_contents,
     translate::TranslateStep step,
     translate::TranslateErrors::Type error_type,
-    bool is_user_gesture) {
+    DisplayReason reason) {
   if (translate_bubble_view_) {
     // When the user reads the advanced setting panel, the bubble should not be
     // changed because they are focusing on the bubble.
@@ -97,7 +97,7 @@ void TranslateBubbleView::ShowBubble(
     return;
   } else {
     if (step == translate::TRANSLATE_STEP_AFTER_TRANSLATE &&
-        !is_user_gesture) {
+        reason == AUTOMATIC) {
       return;
     }
   }
@@ -119,10 +119,8 @@ void TranslateBubbleView::ShowBubble(
                                                       model.Pass(),
                                                       error_type,
                                                       web_contents);
-  if (is_user_gesture)
-    views::BubbleDelegateView::CreateBubble(view)->Show();
-  else
-    views::BubbleDelegateView::CreateBubble(view)->ShowInactive();
+  views::BubbleDelegateView::CreateBubble(view);
+  view->ShowForReason(reason);
 }
 
 // static

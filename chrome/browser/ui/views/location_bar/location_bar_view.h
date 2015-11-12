@@ -177,9 +177,6 @@ class LocationBarView : public LocationBar,
     return save_credit_card_icon_view_;
   }
 
-  // Toggles the translate icon on or off.
-  void SetTranslateIconToggled(bool on);
-
   // The translate icon. It may not be visible.
   TranslateIconView* translate_icon_view() { return translate_icon_view_; }
 

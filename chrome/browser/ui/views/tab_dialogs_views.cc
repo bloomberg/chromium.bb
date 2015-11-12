@@ -60,8 +60,8 @@ void TabDialogsViews::ShowManagePasswordsBubble(bool user_action) {
     ManagePasswordsBubbleView::CloseBubble();
   }
   ManagePasswordsBubbleView::ShowBubble(
-      web_contents_, user_action ? ManagePasswordsBubbleModel::USER_ACTION
-                                 : ManagePasswordsBubbleModel::AUTOMATIC);
+      web_contents_, user_action ? ManagePasswordsBubbleView::USER_GESTURE
+                                 : ManagePasswordsBubbleView::AUTOMATIC);
 }
 
 void TabDialogsViews::HideManagePasswordsBubble() {

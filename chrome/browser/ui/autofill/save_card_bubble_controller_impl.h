@@ -28,14 +28,10 @@ class SaveCardBubbleControllerImpl
   void SetCallback(const base::Closure& save_card_callback);
 
   // SetCallback() must be called first.
-  void ShowBubble();
+  void ShowBubble(bool user_action);
 
   // Returns true if Omnibox save credit card icon should be visible.
   bool IsIconVisible() const;
-
-  // Returns true if Omnibox save credit card should be shown in its "toggled
-  // on" state.
-  bool IsIconToggled() const;
 
   // Returns nullptr if no bubble is currently shown.
   SaveCardBubbleView* save_card_bubble_view() const;

@@ -23,10 +23,6 @@ TranslateIconView::TranslateIconView(CommandUpdater* command_updater)
 
 TranslateIconView::~TranslateIconView() {}
 
-void TranslateIconView::SetToggled(bool on) {
-  SetActiveInternal(on);
-}
-
 void TranslateIconView::OnExecuting(
     BubbleIconView::ExecuteSource execute_source) {}
 

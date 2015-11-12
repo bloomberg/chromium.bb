@@ -48,7 +48,8 @@ void ZoomView::Update(ui_zoom::ZoomController* zoom_controller) {
 }
 
 void ZoomView::OnExecuting(BubbleIconView::ExecuteSource source) {
-  ZoomBubbleView::ShowBubble(location_bar_delegate_->GetWebContents(), false);
+  ZoomBubbleView::ShowBubble(location_bar_delegate_->GetWebContents(),
+                             ZoomBubbleView::USER_GESTURE);
 }
 
 void ZoomView::GetAccessibleState(ui::AXViewState* state) {

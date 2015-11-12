@@ -37,10 +37,10 @@ class SaveCardBubbleViews : public SaveCardBubbleView,
                       content::WebContents* web_contents,
                       SaveCardBubbleController* controller);
 
+  void Show(DisplayReason reason);
+
   // SaveCardBubbleView
-  void Show() override;
-  void Close() override;
-  void ControllerGone() override;
+  void Hide() override;
 
   // views::WidgetDelegate
   views::View* GetInitiallyFocusedView() override;

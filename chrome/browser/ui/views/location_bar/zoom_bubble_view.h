@@ -36,9 +36,9 @@ class ZoomBubbleView : public LocationBarBubbleDelegateView,
                        public extensions::IconImage::Observer {
  public:
   // Shows the bubble and automatically closes it after a short time period if
-  // |auto_close| is true.
+  // |reason| is AUTOMATIC.
   static void ShowBubble(content::WebContents* web_contents,
-                         bool auto_close);
+                         DisplayReason reason);
 
   // Closes the showing bubble (if one exists).
   static void CloseBubble();
@@ -71,7 +71,7 @@ class ZoomBubbleView : public LocationBarBubbleDelegateView,
 
   ZoomBubbleView(views::View* anchor_view,
                  content::WebContents* web_contents,
-                 bool auto_close,
+                 DisplayReason reason,
                  ImmersiveModeController* immersive_mode_controller);
   ~ZoomBubbleView() override;
 
@@ -115,7 +115,7 @@ class ZoomBubbleView : public LocationBarBubbleDelegateView,
   // twice at the same time.
   static ZoomBubbleView* zoom_bubble_;
 
-  // Timer used to close the bubble when |auto_close_| is true.
+  // Timer used to auto close the bubble.
   base::OneShotTimer timer_;
 
   // Image button in the zoom bubble that will show the |extension_icon_| image

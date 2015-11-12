@@ -318,7 +318,8 @@ class BrowserView : public BrowserWindow,
       const ShowBookmarkAppBubbleCallback& callback) override;
   autofill::SaveCardBubbleView* ShowSaveCreditCardBubble(
       content::WebContents* contents,
-      autofill::SaveCardBubbleController* controller) override;
+      autofill::SaveCardBubbleController* controller,
+      bool is_user_gesture) override;
   void ShowTranslateBubble(content::WebContents* contents,
                            translate::TranslateStep step,
                            translate::TranslateErrors::Type error_type,

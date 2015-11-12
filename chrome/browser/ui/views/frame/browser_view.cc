@@ -856,7 +856,7 @@ void BrowserView::SetStarredState(bool is_starred) {
 }
 
 void BrowserView::SetTranslateIconToggled(bool is_lit) {
-  GetLocationBarView()->SetTranslateIconToggled(is_lit);
+  // Translate icon is never active on Views.
 }
 
 void BrowserView::OnActiveTabChanged(content::WebContents* old_contents,
@@ -1281,11 +1281,13 @@ void BrowserView::ShowBookmarkAppBubble(
 
 autofill::SaveCardBubbleView* BrowserView::ShowSaveCreditCardBubble(
     content::WebContents* web_contents,
-    autofill::SaveCardBubbleController* controller) {
-  autofill::SaveCardBubbleView* view = new autofill::SaveCardBubbleViews(
+    autofill::SaveCardBubbleController* controller,
+    bool is_user_gesture) {
+  autofill::SaveCardBubbleViews* view = new autofill::SaveCardBubbleViews(
       GetToolbarView()->GetSaveCreditCardBubbleAnchor(), web_contents,
       controller);
-  view->Show();
+  view->Show(is_user_gesture ? autofill::SaveCardBubbleViews::USER_GESTURE
+                             : autofill::SaveCardBubbleViews::AUTOMATIC);
   return view;
 }
 
@@ -1312,7 +1314,8 @@ void BrowserView::ShowTranslateBubble(
 
   TranslateBubbleView::ShowBubble(
       GetToolbarView()->GetTranslateBubbleAnchor(), web_contents, step,
-      error_type, is_user_gesture);
+      error_type, is_user_gesture ? TranslateBubbleView::USER_GESTURE
+                                  : TranslateBubbleView::AUTOMATIC);
 }
 
 bool BrowserView::IsProfileResetBubbleSupported() const {

@@ -23,7 +23,6 @@ class ManagePasswordsIconViews : public ManagePasswordsIconView,
 
   // ManagePasswordsIconView:
   void SetState(password_manager::ui::State state) override;
-  void SetActive(bool active) override;
 
   // BubbleIconView:
   void OnExecuting(BubbleIconView::ExecuteSource source) override;

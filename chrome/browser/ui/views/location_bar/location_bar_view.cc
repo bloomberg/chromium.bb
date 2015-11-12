@@ -386,7 +386,7 @@ void LocationBarView::ZoomChangedForActiveTab(bool can_show_bubble) {
 
   WebContents* web_contents = GetWebContents();
   if (can_show_bubble && zoom_view_->visible() && web_contents)
-    ZoomBubbleView::ShowBubble(web_contents, true);
+    ZoomBubbleView::ShowBubble(web_contents, ZoomBubbleView::AUTOMATIC);
 }
 
 void LocationBarView::SetPreviewEnabledPageAction(ExtensionAction* page_action,
@@ -424,10 +424,6 @@ PageActionWithBadgeView* LocationBarView::GetPageActionView(
 void LocationBarView::SetStarToggled(bool on) {
   if (star_view_)
     star_view_->SetToggled(on);
-}
-
-void LocationBarView::SetTranslateIconToggled(bool on) {
-  translate_icon_view_->SetToggled(on);
 }
 
 gfx::Point LocationBarView::GetOmniboxViewOrigin() const {
@@ -986,8 +982,6 @@ bool LocationBarView::RefreshSaveCreditCardIconView() {
   command_updater()->UpdateCommandEnabled(IDC_SAVE_CREDIT_CARD_FOR_PAGE,
                                           enabled);
   save_credit_card_icon_view_->SetVisible(enabled);
-  if (enabled)
-    save_credit_card_icon_view_->SetToggled(controller->IsIconToggled());
 
   return was_visible != save_credit_card_icon_view_->visible();
 }
@@ -1001,7 +995,6 @@ void LocationBarView::RefreshTranslateIcon() {
   bool enabled = language_state.translate_enabled();
   command_updater()->UpdateCommandEnabled(IDC_TRANSLATE_PAGE, enabled);
   translate_icon_view_->SetVisible(enabled);
-  translate_icon_view_->SetToggled(language_state.IsPageTranslated());
   if (!enabled)
     TranslateBubbleView::CloseBubble();
 }

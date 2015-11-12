@@ -49,17 +49,13 @@ SaveCardBubbleViews::SaveCardBubbleViews(views::View* anchor_view,
 
 SaveCardBubbleViews::~SaveCardBubbleViews() {}
 
-void SaveCardBubbleViews::Show() {
-  GetWidget()->Show();
+void SaveCardBubbleViews::Show(DisplayReason reason) {
+  ShowForReason(reason);
 }
 
-void SaveCardBubbleViews::Close() {
-  GetWidget()->Close();
-}
-
-void SaveCardBubbleViews::ControllerGone() {
+void SaveCardBubbleViews::Hide() {
   controller_ = nullptr;
-  GetWidget()->Close();
+  Close();
 }
 
 views::View* SaveCardBubbleViews::GetInitiallyFocusedView() {
@@ -87,7 +83,7 @@ void SaveCardBubbleViews::ButtonPressed(views::Button* sender,
     DCHECK_EQ(sender, cancel_button_);
     controller_->OnCancelButton();
   }
-  GetWidget()->Close();
+  Close();
 }
 
 void SaveCardBubbleViews::LinkClicked(views::Link* source, int event_flags) {

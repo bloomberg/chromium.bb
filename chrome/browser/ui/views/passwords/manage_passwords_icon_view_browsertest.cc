@@ -31,7 +31,6 @@ class ManagePasswordsIconViewTest : public ManagePasswordsTest {
   }
 
   password_manager::ui::State ViewState() { return GetView()->state_; }
-  bool ViewIsActive() { return GetView()->active(); }
 
   ManagePasswordsIconViews* GetView() {
     return static_cast<ManagePasswordsIconViews*>(view());
@@ -56,14 +55,9 @@ IN_PROC_BROWSER_TEST_F(ManagePasswordsIconViewTest, PendingState) {
   SetupPendingPassword();
   EXPECT_EQ(password_manager::ui::PENDING_PASSWORD_STATE, ViewState());
   EXPECT_TRUE(GetView()->visible());
-  EXPECT_TRUE(ViewIsActive());
   // No tooltip because the bubble is showing.
   EXPECT_EQ(base::string16(), GetTooltipText());
   const gfx::ImageSkia active_image = GetView()->GetImage();
-
-  GetView()->SetActive(false);
-  EXPECT_FALSE(active_image.BackedBySameObjectAs(GetView()->GetImage()));
-  EXPECT_FALSE(ViewIsActive());
 }
 
 IN_PROC_BROWSER_TEST_F(ManagePasswordsIconViewTest, ManageState) {
@@ -72,28 +66,15 @@ IN_PROC_BROWSER_TEST_F(ManagePasswordsIconViewTest, ManageState) {
   EXPECT_TRUE(GetView()->visible());
   EXPECT_EQ(l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_TOOLTIP_MANAGE),
             GetTooltipText());
-  const gfx::ImageSkia inactive_image = GetView()->GetImage();
-
-  GetView()->SetActive(true);
-  const gfx::ImageSkia active_image = GetView()->GetImage();
-  EXPECT_FALSE(active_image.BackedBySameObjectAs(inactive_image));
-  EXPECT_TRUE(ViewIsActive());
-
-  GetView()->SetActive(false);
-  EXPECT_FALSE(active_image.BackedBySameObjectAs(GetView()->GetImage()));
-  EXPECT_TRUE(inactive_image.BackedBySameObjectAs(GetView()->GetImage()));
-  EXPECT_FALSE(ViewIsActive());
 }
 
 IN_PROC_BROWSER_TEST_F(ManagePasswordsIconViewTest, CloseOnClick) {
   SetupPendingPassword();
   EXPECT_TRUE(GetView()->visible());
-  EXPECT_TRUE(ViewIsActive());
   ui::MouseEvent mouse_down(ui::ET_MOUSE_PRESSED, gfx::Point(10, 10),
                             gfx::Point(900, 60), ui::EventTimeForNow(),
                             ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
   GetView()->OnMousePressed(mouse_down);
   // Wait for the command execution to close the bubble.
   content::RunAllPendingInMessageLoop();
-  EXPECT_FALSE(ViewIsActive());
 }

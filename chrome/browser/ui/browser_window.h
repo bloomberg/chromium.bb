@@ -253,7 +253,8 @@ class BrowserWindow : public ui::BaseWindow {
   // Shows the "Save credit card" bubble.
   virtual autofill::SaveCardBubbleView* ShowSaveCreditCardBubble(
       content::WebContents* contents,
-      autofill::SaveCardBubbleController* controller) = 0;
+      autofill::SaveCardBubbleController* controller,
+      bool is_user_gesture) = 0;
 
   // Shows the translate bubble.
   //

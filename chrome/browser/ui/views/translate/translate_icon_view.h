@@ -17,9 +17,6 @@ class TranslateIconView : public BubbleIconView {
   explicit TranslateIconView(CommandUpdater* command_updater);
   ~TranslateIconView() override;
 
-  // Toggles the icon on or off.
-  void SetToggled(bool on);
-
  protected:
   // BubbleIconView:
   void OnExecuting(BubbleIconView::ExecuteSource execute_source) override;

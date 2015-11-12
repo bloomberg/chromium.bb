@@ -19,7 +19,7 @@ class ManagePasswordsIcon : public ManagePasswordsIconView {
   void SetState(password_manager::ui::State state) override;
   password_manager::ui::State state() const { return state_; }
 
-  void SetActive(bool active) override;
+  void SetActive(bool active);
   bool active() const { return active_; }
 
  protected:
