@@ -44,7 +44,7 @@ def run_apptest(config, shell, args, apptest, isolate):
     return _run_apptest_with_retry(config, shell, args, apptest)
 
   fixtures = _get_fixtures(config, shell, args, apptest)
-  fixtures = [f for f in fixtures if not f.startswith('DISABLED_')]
+  fixtures = [f for f in fixtures if not '.DISABLED_' in f]
   failed = []
   for fixture in fixtures:
     arguments = args + ['--gtest_filter=%s' % fixture]
@@ -89,6 +89,7 @@ def _run_apptest(config, shell, args, apptest):
   # Find all fixtures begun from gtest's '[ RUN      ] <Suite.Fixture>' output.
   tests = [x for x in out.split('\n') if x.find('[ RUN      ] ') != -1]
   tests = [x.strip(' \t\n\r')[x.find('[ RUN      ] ') + 13:] for x in tests]
+  tests = tests or [apptest]
 
   # Fail on output with gtest's '[  FAILED  ]' or a lack of '[       OK ]'.
   # The latter check ensures failure on broken command lines, hung output, etc.
