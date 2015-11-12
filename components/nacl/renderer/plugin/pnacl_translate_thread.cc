@@ -223,10 +223,12 @@ void PnaclTranslateThread::DoCompile() {
   std::vector<char> split_args;
   if (pnacl_options_->use_subzero) {
     GetSubzeroCommandLine(&split_args, pnacl_options_->opt_level,
-                          pnacl_options_->is_debug, architecture_attributes_);
+                          PP_ToBool(pnacl_options_->is_debug),
+                          architecture_attributes_);
   } else {
     GetLlcCommandLine(&split_args, obj_files_->size(),
-                      pnacl_options_->opt_level, pnacl_options_->is_debug,
+                      pnacl_options_->opt_level,
+                      PP_ToBool(pnacl_options_->is_debug),
                       architecture_attributes_);
   }
 

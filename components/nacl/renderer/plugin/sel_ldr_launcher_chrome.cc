@@ -10,7 +10,9 @@ namespace plugin {
 
 bool SelLdrLauncherChrome::Start(const char* url) {
   NACL_NOTREACHED();
-  return false;
+  /*
+   * No return here because MSVC warns about it as unreached code.
+   */
 }
 
 void SelLdrLauncherChrome::set_channel(NaClHandle channel) {

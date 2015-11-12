@@ -289,7 +289,8 @@ void PnaclCoordinator::BitcodeStreamCacheMiss(int64_t expected_pexe_size,
   // The component updater's resource throttles + OnDemand update/install
   // should block the URL request until the compiler is present. Now we
   // can load the resources (e.g. llc and ld nexes).
-  resources_.reset(new PnaclResources(plugin_, pnacl_options_.use_subzero));
+  resources_.reset(new PnaclResources(plugin_,
+                                      PP_ToBool(pnacl_options_.use_subzero)));
   CHECK(resources_ != NULL);
 
   // The first step of loading resources: read the resource info file.
