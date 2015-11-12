@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "chrome/browser/browser_process.h"
@@ -25,7 +26,18 @@ using content::OpenURLParams;
 
 namespace memory {
 
-using TabManagerTest = InProcessBrowserTest;
+class TabManagerTest : public InProcessBrowserTest {
+ public:
+  // Tab discarding is enabled by default on CrOS. On other platforms, force it
+  // by turning on the corresponding experiment as some tests assume this
+  // behavior it turned on.
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+#if !defined(OS_CHROMEOS)
+    command_line->AppendSwitchASCII(switches::kForceFieldTrials,
+                                    "AutomaticTabDiscarding/Enabled/");
+#endif
+  }
+};
 
 IN_PROC_BROWSER_TEST_F(TabManagerTest, TabManagerBasics) {
   using content::WindowedNotificationObserver;
