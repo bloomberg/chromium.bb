@@ -283,6 +283,7 @@ if (is_android) {
       "//components/mus/ws:apptests",
       "//components/resource_provider:apptests",
       "//mojo/services/network:apptests",
+      "//third_party/icu:icudata",
     ]
 
     sources = [
@@ -293,6 +294,7 @@ if (is_android) {
     apptest_outputs = [
       "clipboard",
       "clipboard_apptests",
+      "icudtl.dat",
       "mus_apptests",
       "resource_provider",
       "resource_provider_apptests",
