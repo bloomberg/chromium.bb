@@ -176,7 +176,7 @@ void PasswordManagerSettingMigratorService::OnIsSyncingChanged() {
 }
 
 bool PasswordManagerSettingMigratorService::WasModelAssociationStepPerformed() {
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_IOS)
   return prefs_->IsPrioritySyncing();
 #else
   return prefs_->IsSyncing() && prefs_->IsPrioritySyncing();
@@ -197,7 +197,7 @@ void PasswordManagerSettingMigratorService::MigrateAfterModelAssociation(
   if (sync_data_.empty()) {
     MigrateOffState(prefs);
   } else if (sync_data_.size() == 1) {
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_IOS)
     if (initial_new_pref_value_ != initial_legacy_pref_value_) {
       // Treat special case for mobile clients where only priority pref
       // arrives on the client.
