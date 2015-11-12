@@ -6,6 +6,7 @@
 #define WebPassOwnPtr_h
 
 #include "public/platform/WebCommon.h"
+#include <cstddef>
 
 #if INSIDE_BLINK
 #include "wtf/PassOwnPtr.h"
@@ -22,7 +23,7 @@ template <typename T>
 class WebPassOwnPtr final {
 public:
     WebPassOwnPtr() : m_ptr(nullptr) {}
-    WebPassOwnPtr(decltype(nullptr)) : m_ptr(nullptr) {}
+    WebPassOwnPtr(std::nullptr_t) : m_ptr(nullptr) {}
     // We need |const| to bind an rvalue. As a result, |m_ptr| needs to be
     // mutable because we manipulate it.
     template <typename U>

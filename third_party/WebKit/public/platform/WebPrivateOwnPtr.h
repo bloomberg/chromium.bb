@@ -29,6 +29,7 @@
 
 #include "WebCommon.h"
 #include "WebNonCopyable.h"
+#include <cstddef>
 
 #if INSIDE_BLINK
 #include "wtf/PassOwnPtr.h"
@@ -46,7 +47,7 @@ template <typename T>
 class WebPrivateOwnPtr : public WebNonCopyable {
 public:
     WebPrivateOwnPtr() : m_ptr(nullptr) {}
-    WebPrivateOwnPtr(decltype(nullptr)) : m_ptr(nullptr) {}
+    WebPrivateOwnPtr(std::nullptr_t) : m_ptr(nullptr) {}
     ~WebPrivateOwnPtr() { BLINK_ASSERT(!m_ptr); }
 
     explicit WebPrivateOwnPtr(T* ptr)

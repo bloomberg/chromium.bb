@@ -32,7 +32,6 @@
 #define WTF_RawPtr_h
 
 #include "wtf/HashTableDeletedValueType.h"
-#include "wtf/NullPtr.h"
 #include "wtf/TypeTraits.h"
 #include <algorithm>
 #include <stdint.h>

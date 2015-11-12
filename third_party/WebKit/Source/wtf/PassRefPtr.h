@@ -22,7 +22,6 @@
 #define WTF_PassRefPtr_h
 
 #include "wtf/Assertions.h"
-#include "wtf/NullPtr.h"
 #include "wtf/RawPtr.h"
 #include "wtf/TypeTraits.h"
 
