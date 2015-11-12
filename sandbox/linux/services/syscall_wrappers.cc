@@ -33,10 +33,10 @@ pid_t sys_gettid(void) {
 }
 
 long sys_clone(unsigned long flags,
-               decltype(nullptr) child_stack,
+               std::nullptr_t child_stack,
                pid_t* ptid,
                pid_t* ctid,
-               decltype(nullptr) tls) {
+               std::nullptr_t tls) {
   const bool clone_tls_used = flags & CLONE_SETTLS;
   const bool invalid_ctid =
       (flags & (CLONE_CHILD_SETTID | CLONE_CHILD_CLEARTID)) && !ctid;
@@ -139,7 +139,7 @@ int sys_unshare(int flags) {
   return syscall(__NR_unshare, flags);
 }
 
-int sys_sigprocmask(int how, const sigset_t* set, decltype(nullptr) oldset) {
+int sys_sigprocmask(int how, const sigset_t* set, std::nullptr_t oldset) {
   // In some toolchain (in particular Android and PNaCl toolchain),
   // sigset_t is 32 bits, but the Linux ABI uses more.
   LinuxSigSet linux_value;

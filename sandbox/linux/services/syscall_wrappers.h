@@ -9,6 +9,8 @@
 #include <stdint.h>
 #include <sys/types.h>
 
+#include <cstddef>
+
 #include "sandbox/sandbox_export.h"
 
 struct sock_fprog;
@@ -32,10 +34,10 @@ SANDBOX_EXPORT long sys_clone(unsigned long flags);
 // nullptr, since otherwise this function cannot safely return. As a
 // consequence, this function does not support CLONE_VM.
 SANDBOX_EXPORT long sys_clone(unsigned long flags,
-                              decltype(nullptr) child_stack,
+                              std::nullptr_t child_stack,
                               pid_t* ptid,
                               pid_t* ctid,
-                              decltype(nullptr) regs);
+                              std::nullptr_t regs);
 
 SANDBOX_EXPORT void sys_exit_group(int status);
 
@@ -71,7 +73,7 @@ SANDBOX_EXPORT int sys_unshare(int flags);
 // because of some ABI gap between toolchain's and Linux's.
 SANDBOX_EXPORT int sys_sigprocmask(int how,
                                    const sigset_t* set,
-                                   decltype(nullptr) oldset);
+                                   std::nullptr_t oldset);
 
 // Some libcs do not expose a sigaction().
 SANDBOX_EXPORT int sys_sigaction(int signum,
