@@ -1,4 +1,3 @@
 Animation created
 Animation started
-Animation canceled
 

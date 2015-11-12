@@ -7,6 +7,7 @@
 
 #include "core/CoreExport.h"
 #include "core/InspectorFrontend.h"
+#include "core/animation/Animation.h"
 #include "core/css/CSSKeyframesRule.h"
 #include "core/inspector/InspectorBaseAgent.h"
 #include "wtf/PassOwnPtr.h"
@@ -14,7 +15,6 @@
 
 namespace blink {
 
-class Animation;
 class AnimationNode;
 class AnimationTimeline;
 class Element;
@@ -48,8 +48,7 @@ public:
 
     // API for InspectorInstrumentation
     void didCreateAnimation(unsigned);
-    void didCancelAnimation(unsigned);
-    void didStartAnimation(Animation*);
+    void animationPlayStateChanged(Animation*, Animation::AnimationPlayState, Animation::AnimationPlayState);
     void didClearDocumentOfWindowObject(LocalFrame*);
 
     // API for InspectorFrontend

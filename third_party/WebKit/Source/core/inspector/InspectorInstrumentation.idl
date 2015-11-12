@@ -417,10 +417,7 @@ interface InspectorInstrumentation {
     void didCreateAnimation(Document*, unsigned);
 
     [Animation, Inline=FastReturn]
-    void didCancelAnimation(Document*, unsigned);
-
-    [Animation, Inline=FastReturn]
-    void didStartAnimation(Document*, Animation* player);
+    void animationPlayStateChanged(Document*, Animation*, Animation::AnimationPlayState oldPlayState, Animation::AnimationPlayState newPlayState);
 }
 
 interface InspectorConsoleInstrumentation {

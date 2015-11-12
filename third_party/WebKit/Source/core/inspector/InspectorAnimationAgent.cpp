@@ -423,17 +423,15 @@ void InspectorAnimationAgent::didCreateAnimation(unsigned sequenceNumber)
     frontend()->animationCreated(String::number(sequenceNumber));
 }
 
-void InspectorAnimationAgent::didCancelAnimation(unsigned sequenceNumber)
-{
-    frontend()->animationCanceled(String::number(sequenceNumber));
-}
-
-void InspectorAnimationAgent::didStartAnimation(Animation* animation)
+void InspectorAnimationAgent::animationPlayStateChanged(Animation* animation, Animation::AnimationPlayState oldPlayState, Animation::AnimationPlayState newPlayState)
 {
     const String& animationId = String::number(animation->sequenceNumber());
     if (m_idToAnimation.get(animationId))
         return;
-    frontend()->animationStarted(buildObjectForAnimation(*animation));
+    if (newPlayState == Animation::Running || newPlayState == Animation::Finished)
+        frontend()->animationStarted(buildObjectForAnimation(*animation));
+    else if (newPlayState == Animation::Idle || newPlayState == Animation::Paused)
+        frontend()->animationCanceled(animationId);
 }
 
 void InspectorAnimationAgent::didClearDocumentOfWindowObject(LocalFrame* frame)

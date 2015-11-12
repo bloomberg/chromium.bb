@@ -894,8 +894,6 @@ void Animation::cancel()
     m_playState = Idle;
     m_startTime = nullValue();
     m_currentTimePending = false;
-
-    InspectorInstrumentation::didCancelAnimation(m_timeline->document(), m_sequenceNumber);
 }
 
 void Animation::beginUpdatingState()
@@ -1057,8 +1055,8 @@ Animation::PlayStateUpdateScope::~PlayStateUpdateScope()
     }
     m_animation->endUpdatingState();
 
-    if (oldPlayState != newPlayState && newPlayState == Running)
-        InspectorInstrumentation::didStartAnimation(m_animation->timeline()->document(), m_animation);
+    if (oldPlayState != newPlayState)
+        InspectorInstrumentation::animationPlayStateChanged(m_animation->timeline()->document(), m_animation, oldPlayState, newPlayState);
 }
 
 bool Animation::addEventListenerInternal(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener> listener, const EventListenerOptions& options)
