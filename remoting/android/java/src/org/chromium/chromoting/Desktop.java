@@ -29,6 +29,8 @@ import android.view.View.OnTouchListener;
 import android.view.inputmethod.InputMethodManager;
 
 import org.chromium.chromoting.cardboard.DesktopActivity;
+import org.chromium.chromoting.help.HelpContext;
+import org.chromium.chromoting.help.HelpSingleton;
 import org.chromium.chromoting.jni.JniInterface;
 
 import java.util.Set;
@@ -38,10 +40,6 @@ import java.util.TreeSet;
  * A simple screen that does nothing except display a DesktopView and notify it of rotations.
  */
 public class Desktop extends AppCompatActivity implements View.OnSystemUiVisibilityChangeListener {
-    /** Web page to be displayed in the Help screen when launched from this activity. */
-    private static final String HELP_URL =
-            "https://support.google.com/chrome/?p=mobile_crd_connecthost";
-
     /**
      * Preference used for displaying an interestitial dialog only when the user first accesses the
      * Cardboard function.
@@ -407,7 +405,7 @@ public class Desktop extends AppCompatActivity implements View.OnSystemUiVisibil
             return true;
         }
         if (id == R.id.actionbar_help) {
-            HelpActivity.launch(this, HELP_URL);
+            HelpSingleton.getInstance().launchHelp(this, HelpContext.DESKTOP);
             return true;
         }
         return super.onOptionsItemSelected(item);

@@ -29,6 +29,8 @@ import android.widget.Toast;
 import org.chromium.base.Log;
 import org.chromium.chromoting.accountswitcher.AccountSwitcher;
 import org.chromium.chromoting.accountswitcher.AccountSwitcherFactory;
+import org.chromium.chromoting.help.HelpContext;
+import org.chromium.chromoting.help.HelpSingleton;
 import org.chromium.chromoting.jni.JniInterface;
 
 import java.util.ArrayList;
@@ -44,14 +46,6 @@ public class Chromoting extends AppCompatActivity implements JniInterface.Connec
 
     /** Only accounts of this type will be selectable for authentication. */
     private static final String ACCOUNT_TYPE = "com.google";
-
-    /** Web page to be displayed in the Help screen when launched from this activity. */
-    private static final String HELP_URL =
-            "https://support.google.com/chrome/?p=mobile_crd_hostslist";
-
-    /** Web page to be displayed when user triggers the hyperlink for setting up hosts. */
-    private static final String HOST_SETUP_URL =
-            "https://support.google.com/chrome/answer/1649523";
 
     /** Result code used for starting {@link DesktopActivity}. */
     public static final int DESKTOP_ACTIVITY = 0;
@@ -212,7 +206,8 @@ public class Chromoting extends AppCompatActivity implements JniInterface.Connec
                     @Override
                     public void onItemClick(AdapterView<?> parent, View view, int position,
                             long id) {
-                        HelpActivity.launch(Chromoting.this, HELP_URL);
+                        HelpSingleton.getInstance().launchHelp(Chromoting.this,
+                                HelpContext.HOST_LIST);
                     }
                 });
 
@@ -367,7 +362,7 @@ public class Chromoting extends AppCompatActivity implements JniInterface.Connec
     /** Called when the user touches hyperlinked text. */
     @Override
     public void onClick(View view) {
-        HelpActivity.launch(this, HOST_SETUP_URL);
+        HelpSingleton.getInstance().launchHelp(this, HelpContext.HOST_SETUP);
     }
 
     /** Called when the user taps on a host entry. */
