@@ -411,6 +411,9 @@ class BrowserOptionsHandler
   PrefChangeRegistrar profile_pref_registrar_;
 #if defined(OS_CHROMEOS)
   scoped_ptr<policy::PolicyChangeRegistrar> policy_registrar_;
+
+  // Whether factory reset can be performed.
+  bool enable_factory_reset_;
 #endif
 
   ScopedObserver<SigninManagerBase, SigninManagerBase::Observer>

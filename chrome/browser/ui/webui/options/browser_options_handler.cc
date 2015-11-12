@@ -176,6 +176,9 @@ BrowserOptionsHandler::BrowserOptionsHandler()
     : page_initialized_(false),
       template_url_service_(NULL),
       cloud_print_mdns_ui_enabled_(false),
+#if defined(OS_CHROMEOS)
+      enable_factory_reset_(false),
+#endif  // defined(OS_CHROMEOS)
       signin_observer_(this),
       weak_ptr_factory_(this) {
   default_browser_worker_ = new ShellIntegration::DefaultBrowserWorker(this);
@@ -1020,9 +1023,10 @@ void BrowserOptionsHandler::InitializePage() {
   SetupAccessibilityFeatures();
   policy::BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
-  if (!connector->IsEnterpriseManaged() &&
+  enable_factory_reset_ = !connector->IsEnterpriseManaged() &&
       !user_manager::UserManager::Get()->IsLoggedInAsGuest() &&
-      !user_manager::UserManager::Get()->IsLoggedInAsSupervisedUser()) {
+      !user_manager::UserManager::Get()->IsLoggedInAsSupervisedUser();
+  if (enable_factory_reset_) {
     web_ui()->CallJavascriptFunction(
         "BrowserOptions.enableFactoryResetSection");
   }
@@ -1911,9 +1915,7 @@ void BrowserOptionsHandler::VirtualKeyboardChangeCallback(
 
 void BrowserOptionsHandler::PerformFactoryResetRestart(
     const base::ListValue* args) {
-  policy::BrowserPolicyConnectorChromeOS* connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
-  if (connector->IsEnterpriseManaged())
+  if (!enable_factory_reset_)
     return;
 
   PrefService* prefs = g_browser_process->local_state();
