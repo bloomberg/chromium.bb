@@ -59,10 +59,6 @@ bool IsCertLikelyFromSameDomain(const GURL& request_url,
 //     example.com ~ www.example.com -> true
 //     www.food.example.com ~ example.com -> false
 //     mail.example.com ~ example.com -> false
-bool IsWWWSubDomainMatch(const GURL& request_url,
-                         const net::X509Certificate& cert);
-
-// Provides the output of IsWWWSubDomainMatch() as well as the matching name.
 bool GetWWWSubDomainMatch(const GURL& request_url,
                           const std::vector<std::string>& dns_names,
                           std::string* www_match_host_name);

@@ -103,22 +103,34 @@ std::vector<HostnameTokens> GetTokenizedDNSNames(
   return dns_name_tokens;
 }
 
-size_t FindSubDomainDifference(const HostnameTokens& potential_subdomain,
-                               const HostnameTokens& parent) {
+// If |potential_subdomain| is a subdomain of |parent|, return the number of
+// different tokens. Otherwise returns -1.
+int FindSubdomainDifference(const HostnameTokens& potential_subdomain,
+                            const HostnameTokens& parent) {
   // A check to ensure that the number of tokens in the tokenized_parent is
   // less than the tokenized_potential_subdomain.
   if (parent.size() >= potential_subdomain.size())
-    return 0;
+    return -1;
 
-  size_t tokens_match = 0;
-  size_t diff_size = potential_subdomain.size() - parent.size();
-  for (size_t i = 0; i < parent.size(); ++i) {
-    if (parent[i] == potential_subdomain[i + diff_size])
-      tokens_match++;
+  // Don't be ridiculous. Also, don't overflow.
+  if (potential_subdomain.size() >= INT_MAX || parent.size() >= INT_MAX)
+    return -1;
+
+  int diff_size = static_cast<int>(potential_subdomain.size() - parent.size());
+  for (size_t i = 0; i < parent.size(); i++) {
+    if (parent[i] != potential_subdomain[i + diff_size])
+      return -1;
   }
-  if (tokens_match == parent.size())
-    return diff_size;
-  return 0;
+  return diff_size;
+}
+
+// We accept the inverse case for www for historical reasons.
+bool IsWWWSubDomainMatch(const GURL& request_url,
+                         const net::X509Certificate& cert) {
+  std::string www_host;
+  std::vector<std::string> dns_names;
+  cert.GetDNSNames(&dns_names);
+  return GetWWWSubDomainMatch(request_url, dns_names, &www_host);
 }
 
 // The time to use when doing build time operations in browser tests.
@@ -242,15 +254,6 @@ HostnameTokens Tokenize(const std::string& name) {
                            base::SPLIT_WANT_ALL);
 }
 
-// We accept the inverse case for www for historical reasons.
-bool IsWWWSubDomainMatch(const GURL& request_url,
-                         const net::X509Certificate& cert) {
-  std::string www_host;
-  std::vector<std::string> dns_names;
-  cert.GetDNSNames(&dns_names);
-  return GetWWWSubDomainMatch(request_url, dns_names, &www_host);
-}
-
 bool GetWWWSubDomainMatch(const GURL& request_url,
                           const std::vector<std::string>& dns_names,
                           std::string* www_match_host_name) {
@@ -258,22 +261,21 @@ bool GetWWWSubDomainMatch(const GURL& request_url,
 
   if (IsHostNameKnownTLD(host_name)) {
     // Need to account for all possible domains given in the SSL certificate.
-    for (size_t i = 0; i < dns_names.size(); ++i) {
-      if (dns_names[i].empty() ||
-          dns_names[i].find('\0') != std::string::npos ||
-          dns_names[i].length() == host_name.length() ||
-          !IsHostNameKnownTLD(dns_names[i])) {
+    for (const auto& dns_name : dns_names) {
+      if (dns_name.empty() || dns_name.find('\0') != std::string::npos ||
+          dns_name.length() == host_name.length() ||
+          !IsHostNameKnownTLD(dns_name)) {
         continue;
-      } else if (dns_names[i].length() > host_name.length()) {
-        if (url_formatter::StripWWW(base::ASCIIToUTF16(dns_names[i])) ==
+      } else if (dns_name.length() > host_name.length()) {
+        if (url_formatter::StripWWW(base::ASCIIToUTF16(dns_name)) ==
             base::ASCIIToUTF16(host_name)) {
-          *www_match_host_name = dns_names[i];
+          *www_match_host_name = dns_name;
           return true;
         }
       } else {
         if (url_formatter::StripWWW(base::ASCIIToUTF16(host_name)) ==
-            base::ASCIIToUTF16(dns_names[i])) {
-          *www_match_host_name = dns_names[i];
+            base::ASCIIToUTF16(dns_name)) {
+          *www_match_host_name = dns_name;
           return true;
         }
       }
@@ -284,37 +286,30 @@ bool GetWWWSubDomainMatch(const GURL& request_url,
 
 bool NameUnderAnyNames(const HostnameTokens& child,
                        const std::vector<HostnameTokens>& potential_parents) {
-  bool result = false;
   // Need to account for all the possible domains given in the SSL certificate.
-  for (size_t i = 0; i < potential_parents.size(); ++i) {
-    if (potential_parents[i].empty() ||
-        potential_parents[i].size() >= child.size()) {
-      result = result || false;
-    } else {
-      size_t domain_diff = FindSubDomainDifference(child, potential_parents[i]);
-      if (domain_diff == 1 && child[0] != "www")
-        result = result || true;
+  for (const auto& potential_parent : potential_parents) {
+    if (potential_parent.empty() || potential_parent.size() >= child.size()) {
+      continue;
     }
+    int domain_diff = FindSubdomainDifference(child, potential_parent);
+    if (domain_diff == 1 && child[0] != "www")
+      return true;
   }
-  return result;
+  return false;
 }
 
 bool AnyNamesUnderName(const std::vector<HostnameTokens>& potential_children,
                        const HostnameTokens& parent) {
-  bool result = false;
   // Need to account for all the possible domains given in the SSL certificate.
-  for (size_t i = 0; i < potential_children.size(); ++i) {
-    if (potential_children[i].empty() ||
-        potential_children[i].size() <= parent.size()) {
-      result = result || false;
-    } else {
-      size_t domain_diff =
-          FindSubDomainDifference(potential_children[i], parent);
-      if (domain_diff == 1 && potential_children[i][0] != "www")
-        result = result || true;
+  for (const auto& potential_child : potential_children) {
+    if (potential_child.empty() || potential_child.size() <= parent.size()) {
+      continue;
     }
+    int domain_diff = FindSubdomainDifference(potential_child, parent);
+    if (domain_diff == 1 && potential_child[0] != "www")
+      return true;
   }
-  return result;
+  return false;
 }
 
 bool IsSubDomainOutsideWildcard(const GURL& request_url,
@@ -327,17 +322,17 @@ bool IsSubDomainOutsideWildcard(const GURL& request_url,
 
   // This method requires that the host name be longer than the dns name on
   // the certificate.
-  for (size_t i = 0; i < dns_names.size(); ++i) {
-    const std::string& name = dns_names[i];
-    if (name.length() < 2 || name.length() >= host_name.length() ||
-        name.find('\0') != std::string::npos || !IsHostNameKnownTLD(name) ||
-        name[0] != '*' || name[1] != '.') {
+  for (const auto& dns_name : dns_names) {
+    if (dns_name.length() < 2 || dns_name.length() >= host_name.length() ||
+        dns_name.find('\0') != std::string::npos ||
+        !IsHostNameKnownTLD(dns_name) || dns_name[0] != '*' ||
+        dns_name[1] != '.') {
       continue;
     }
 
     // Move past the "*.".
-    std::string extracted_dns_name = name.substr(2);
-    if (FindSubDomainDifference(host_name_tokens,
+    std::string extracted_dns_name = dns_name.substr(2);
+    if (FindSubdomainDifference(host_name_tokens,
                                 Tokenize(extracted_dns_name)) == 2) {
       return true;
     }
