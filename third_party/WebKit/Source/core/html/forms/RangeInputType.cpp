@@ -36,6 +36,7 @@
 #include "core/HTMLNames.h"
 #include "core/InputTypeNames.h"
 #include "core/dom/AXObjectCache.h"
+#include "core/dom/NodeComputedStyle.h"
 #include "core/dom/Touch.h"
 #include "core/dom/TouchList.h"
 #include "core/dom/shadow/ShadowRoot.h"
@@ -88,6 +89,10 @@ RangeInputType::RangeInputType(HTMLInputElement& element)
 void RangeInputType::countUsage()
 {
     countUsageIfVisible(UseCounter::InputTypeRange);
+    if (const ComputedStyle* style = element().computedStyle()) {
+        if (style->appearance() == SliderVerticalPart)
+            UseCounter::count(element().document(), UseCounter::InputTypeRangeVerticalAppearance);
+    }
 }
 
 const AtomicString& RangeInputType::formControlType() const
