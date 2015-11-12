@@ -38,6 +38,8 @@ class CONTENT_EXPORT SensorManagerAndroid {
   void GotLight(JNIEnv*, jobject, double value);
   void GotOrientation(JNIEnv*, jobject,
                       double alpha, double beta, double gamma);
+  void GotOrientationAbsolute(JNIEnv*, jobject,
+                      double alpha, double beta, double gamma);
   void GotAcceleration(JNIEnv*, jobject,
                        double x, double y, double z);
   void GotAccelerationIncludingGravity(JNIEnv*, jobject,
@@ -46,17 +48,17 @@ class CONTENT_EXPORT SensorManagerAndroid {
                        double alpha, double beta, double gamma);
 
   // Shared memory related methods.
-  bool StartFetchingDeviceLightData(DeviceLightHardwareBuffer* buffer);
+  void StartFetchingDeviceLightData(DeviceLightHardwareBuffer* buffer);
   void StopFetchingDeviceLightData();
 
-  bool StartFetchingDeviceMotionData(DeviceMotionHardwareBuffer* buffer);
+  void StartFetchingDeviceMotionData(DeviceMotionHardwareBuffer* buffer);
   void StopFetchingDeviceMotionData();
 
-  bool StartFetchingDeviceOrientationData(
+  void StartFetchingDeviceOrientationData(
       DeviceOrientationHardwareBuffer* buffer);
   void StopFetchingDeviceOrientationData();
 
-  bool StartFetchingDeviceOrientationAbsoluteData(
+  void StartFetchingDeviceOrientationAbsoluteData(
       DeviceOrientationHardwareBuffer* buffer);
   void StopFetchingDeviceOrientationAbsoluteData();
 
@@ -77,9 +79,15 @@ class CONTENT_EXPORT SensorManagerAndroid {
   SensorManagerAndroid();
   virtual ~SensorManagerAndroid();
 
-  virtual bool Start(ConsumerType event_type);
-  virtual void Stop(ConsumerType event_type);
-  virtual int GetOrientationSensorTypeUsed();
+  // Starts listening to the sensors corresponding to the consumer_type.
+  // Returns true if the registration with sensors was successful.
+  virtual bool Start(ConsumerType consumer_type);
+  // Stops listening to the sensors corresponding to the consumer_type.
+  virtual void Stop(ConsumerType consumer_type);
+  // Returns currently used sensor type for device orientation.
+  virtual OrientationSensorType GetOrientationSensorTypeUsed();
+  // Returns the number of active sensors corresponding to
+  // ConsumerType.DEVICE_MOTION.
   virtual int GetNumberActiveDeviceMotionSensors();
 
   void StartFetchingLightDataOnUI(DeviceLightHardwareBuffer* buffer);
@@ -91,6 +99,10 @@ class CONTENT_EXPORT SensorManagerAndroid {
   void StartFetchingOrientationDataOnUI(
       DeviceOrientationHardwareBuffer* buffer);
   void StopFetchingOrientationDataOnUI();
+
+  void StartFetchingOrientationAbsoluteDataOnUI(
+      DeviceOrientationHardwareBuffer* buffer);
+  void StopFetchingOrientationAbsoluteDataOnUI();
 
  private:
   friend struct base::DefaultSingletonTraits<SensorManagerAndroid>;
@@ -108,22 +120,25 @@ class CONTENT_EXPORT SensorManagerAndroid {
   void SetMotionBufferReadyStatus(bool ready);
   void ClearInternalMotionBuffers();
 
-  void SetOrientationBufferStatus(bool ready, bool absolute);
-
   // The Java provider of sensors info.
   base::android::ScopedJavaGlobalRef<jobject> device_sensors_;
   int number_active_device_motion_sensors_;
   int received_motion_data_[RECEIVED_MOTION_DATA_MAX];
+
+  // Cached pointers to buffers, owned by DataFetcherSharedMemoryBase.
   DeviceLightHardwareBuffer* device_light_buffer_;
   DeviceMotionHardwareBuffer* device_motion_buffer_;
   DeviceOrientationHardwareBuffer* device_orientation_buffer_;
+  DeviceOrientationHardwareBuffer* device_orientation_absolute_buffer_;
 
   bool motion_buffer_initialized_;
   bool orientation_buffer_initialized_;
+  bool orientation_absolute_buffer_initialized_;
 
   base::Lock light_buffer_lock_;
   base::Lock motion_buffer_lock_;
   base::Lock orientation_buffer_lock_;
+  base::Lock orientation_absolute_buffer_lock_;
 
   bool is_shutdown_;
 
