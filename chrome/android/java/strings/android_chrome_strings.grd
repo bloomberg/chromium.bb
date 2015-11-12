@@ -933,6 +933,9 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_SIGN_IN_ACCOUNTS_MESSAGE" desc="Description of the signed-in section shown below the header">
         You’re signed in to the following Google Accounts. Add or remove accounts in Android settings.
       </message>
+      <message name="IDS_SIGN_IN_ACCOUNTS_MESSAGE_MANAGED" desc="Description of the signed-in section shown below the header when adding or removing accounts is not allowed.">
+        You’re signed in to the following Google Accounts.
+      </message>
       <message name="IDS_SIGN_IN_ACCOUNTS_MESSAGE_CHILD" desc="Description of the signed-in section shown below the header for child accounts">
         You’re signed in to the following Google Account.
       </message>

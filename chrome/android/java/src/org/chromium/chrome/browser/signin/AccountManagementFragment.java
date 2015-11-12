@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.signin;
 
 import android.accounts.Account;
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -19,7 +20,9 @@ import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.UserManager;
 import android.preference.Preference;
 import android.preference.Preference.OnPreferenceChangeListener;
 import android.preference.Preference.OnPreferenceClickListener;
@@ -203,6 +206,15 @@ public class AccountManagementFragment extends PreferenceFragment
         updateAccountsList();
     }
 
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    private boolean canAddAccounts() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) return true;
+
+        UserManager userManager = (UserManager) getActivity()
+                .getSystemService(Context.USER_SERVICE);
+        return !userManager.hasUserRestriction(UserManager.DISALLOW_MODIFY_ACCOUNTS);
+    }
+
     private void configureSignOutSwitch() {
         boolean isChildAccount = ChildAccountService.isChildAccount();
 
@@ -214,6 +226,8 @@ public class AccountManagementFragment extends PreferenceFragment
             getPreferenceScreen().removePreference(findPreference(PREF_SIGN_IN_CHILD_MESSAGE));
             signOutSwitch.setChecked(true);
             signOutSwitch.setEnabled(getSignOutAllowedPreferenceValue(getActivity()));
+            signOutSwitch.setSummary(canAddAccounts() ? R.string.sign_in_accounts_message
+                    : R.string.sign_in_accounts_message_managed);
             signOutSwitch.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
                 @Override
                 public boolean onPreferenceChange(Preference preference, Object newValue) {
@@ -267,6 +281,12 @@ public class AccountManagementFragment extends PreferenceFragment
                     }
 
                     return true;
+                }
+            });
+            addAccount.setManagedPreferenceDelegate(new ManagedPreferenceDelegate() {
+                @Override
+                public boolean isPreferenceControlledByPolicy(Preference preference) {
+                    return !canAddAccounts();
                 }
             });
         }
