@@ -60,7 +60,8 @@ bool ThumbnailServiceImpl::SetPageThumbnail(const ThumbnailingContext& context,
   if (!local_ptr)
     return false;
 
-  return local_ptr->SetPageThumbnail(context.url, thumbnail, context.score);
+  return local_ptr->SetPageThumbnail(context.GetURL(), thumbnail,
+                                     context.score());
 }
 
 bool ThumbnailServiceImpl::GetPageThumbnail(

@@ -18,7 +18,7 @@ class RefCountedMemory;
 namespace thumbnails {
 
 class ThumbnailingAlgorithm;
-struct ThumbnailingContext;
+class ThumbnailingContext;
 
 // An interface abstracting access to thumbnails. Intended as a temporary
 // bridge facilitating switch from TopSites as the thumbnail source to a more

@@ -26,8 +26,8 @@ class ConsumerCallbackCatcher {
                         const SkBitmap& bitmap) {
     called_back_ = true;
     captured_bitmap_ = bitmap;
-    clip_result_ = context.clip_result;
-    score_ = context.score;
+    clip_result_ = context.clip_result();
+    score_ = context.score();
   }
 
   bool called_back() const {
@@ -100,7 +100,7 @@ TEST_F(ContentBasedThumbnailingAlgorithmTest, PrepareSourceBitmap) {
   const gfx::Size copy_size(400, 200);
   scoped_refptr<ThumbnailingContext> context(
       ThumbnailingContext::CreateThumbnailingContextForTest());
-  context->requested_copy_size = copy_size;
+  context->set_requested_copy_size(copy_size);
 
   // This calls for exercising two distinct paths: with prior clipping and
   // without.
@@ -109,7 +109,7 @@ TEST_F(ContentBasedThumbnailingAlgorithmTest, PrepareSourceBitmap) {
   source.eraseARGB(255, 50, 150, 200);
   SkBitmap result = ContentBasedThumbnailingAlgorithm::PrepareSourceBitmap(
       source, thumbnail_size, context.get());
-  EXPECT_EQ(CLIP_RESULT_SOURCE_SAME_AS_TARGET, context->clip_result);
+  EXPECT_EQ(CLIP_RESULT_SOURCE_SAME_AS_TARGET, context->clip_result());
   EXPECT_GE(result.width(), copy_size.width());
   EXPECT_GE(result.height(), copy_size.height());
   EXPECT_LT(result.width(), source.width());
@@ -122,7 +122,7 @@ TEST_F(ContentBasedThumbnailingAlgorithmTest, PrepareSourceBitmap) {
 
   result = ContentBasedThumbnailingAlgorithm::PrepareSourceBitmap(
       source, thumbnail_size, context.get());
-  EXPECT_EQ(CLIP_RESULT_SOURCE_SAME_AS_TARGET, context->clip_result);
+  EXPECT_EQ(CLIP_RESULT_SOURCE_SAME_AS_TARGET, context->clip_result());
   EXPECT_GE(result.width(), copy_size.width());
   EXPECT_GE(result.height(), copy_size.height());
   EXPECT_LT(result.width(), source.width());
@@ -143,8 +143,8 @@ TEST_F(ContentBasedThumbnailingAlgorithmTest, CreateRetargetedThumbnail) {
   const gfx::Size thumbnail_size(432, 284);
   scoped_refptr<ThumbnailingContext> context(
       ThumbnailingContext::CreateThumbnailingContextForTest());
-  context->requested_copy_size = image_size;
-  context->clip_result = CLIP_RESULT_SOURCE_SAME_AS_TARGET;
+  context->set_requested_copy_size(image_size);
+  context->set_clip_result(CLIP_RESULT_SOURCE_SAME_AS_TARGET);
 
   base::MessageLoopForUI message_loop;
   content::TestBrowserThread ui_thread(content::BrowserThread::UI,

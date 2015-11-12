@@ -58,15 +58,22 @@ namespace {
 void UpdateThumbnail(const ThumbnailingContext& context,
                      const SkBitmap& thumbnail) {
   gfx::Image image = gfx::Image::CreateFrom1xBitmap(thumbnail);
-  context.service->SetPageThumbnail(context, image);
-  DVLOG(1) << "Thumbnail taken for " << context.url << ": "
-           << context.score.ToString();
+  context.service()->SetPageThumbnail(context, image);
+  DVLOG(1) << "Thumbnail taken for " << context.GetURL() << ": "
+           << context.score().ToString();
 }
 
 void ProcessCapturedBitmap(scoped_refptr<ThumbnailingContext> context,
                            scoped_refptr<ThumbnailingAlgorithm> algorithm,
                            const SkBitmap& bitmap,
                            content::ReadbackResponse response) {
+  // Was the web contents destroyed before the thumbnail could be generated?
+  if (!context->web_contents())
+    return;
+
+  // Balance the IncrementCapturerCount() from UpdateThumbnailIfNecessary().
+  context->web_contents()->DecrementCapturerCount();
+
   if (response != content::READBACK_SUCCESS)
     return;
 
@@ -77,12 +84,11 @@ void ProcessCapturedBitmap(scoped_refptr<ThumbnailingContext> context,
   algorithm->ProcessBitmap(context, base::Bind(&UpdateThumbnail), bitmap);
 }
 
-void AsyncProcessThumbnail(content::WebContents* web_contents,
-                           scoped_refptr<ThumbnailingContext> context,
+void AsyncProcessThumbnail(scoped_refptr<ThumbnailingContext> context,
                            scoped_refptr<ThumbnailingAlgorithm> algorithm) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   RenderWidgetHost* render_widget_host =
-      web_contents->GetRenderViewHost()->GetWidget();
+      context->web_contents()->GetRenderViewHost()->GetWidget();
   content::RenderWidgetHostView* view = render_widget_host->GetView();
   if (!view)
     return;
@@ -102,14 +108,16 @@ void AsyncProcessThumbnail(content::WebContents* web_contents,
   ui::ScaleFactor scale_factor =
       ui::GetSupportedScaleFactor(
           ui::GetScaleFactorForNativeView(view->GetNativeView()));
-  context->clip_result = algorithm->GetCanvasCopyInfo(
+  gfx::Size requested_copy_size;
+  context->set_clip_result(algorithm->GetCanvasCopyInfo(
       copy_rect.size(),
       scale_factor,
       &copy_rect,
-      &context->requested_copy_size);
+      &requested_copy_size));
+  context->set_requested_copy_size(requested_copy_size);
   render_widget_host->CopyFromBackingStore(
       copy_rect,
-      context->requested_copy_size,
+      requested_copy_size,
       base::Bind(&ProcessCapturedBitmap, context, algorithm),
       kN32_SkColorType);
 }
@@ -196,12 +204,14 @@ void ThumbnailTabHelper::UpdateThumbnailIfNecessary(
     return;
   }
 
+  web_contents->IncrementCapturerCount(gfx::Size());
+
   scoped_refptr<thumbnails::ThumbnailingAlgorithm> algorithm(
       thumbnail_service->GetThumbnailingAlgorithm());
 
   scoped_refptr<ThumbnailingContext> context(new ThumbnailingContext(
       web_contents, thumbnail_service.get(), load_interrupted_));
-  AsyncProcessThumbnail(web_contents, context, algorithm);
+  AsyncProcessThumbnail(context, algorithm);
 }
 
 void ThumbnailTabHelper::RenderViewHostCreated(

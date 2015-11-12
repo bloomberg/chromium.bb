@@ -10,6 +10,7 @@
 #include "chrome/browser/thumbnails/thumbnail_service.h"
 #include "components/history/core/common/thumbnail_score.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace thumbnails {
@@ -34,7 +35,10 @@ enum ClipResult {
 };
 
 // Holds the information needed for processing a thumbnail.
-struct ThumbnailingContext : base::RefCountedThreadSafe<ThumbnailingContext> {
+class ThumbnailingContext
+    : public base::RefCountedThreadSafe<ThumbnailingContext>,
+      public content::WebContentsObserver {
+ public:
   ThumbnailingContext(content::WebContents* web_contents,
                       ThumbnailService* receiving_service,
                       bool load_interrupted);
@@ -44,17 +48,30 @@ struct ThumbnailingContext : base::RefCountedThreadSafe<ThumbnailingContext> {
     return new ThumbnailingContext();
   }
 
-  scoped_refptr<ThumbnailService> service;
-  GURL url;
-  ClipResult clip_result;
-  gfx::Size requested_copy_size;
-  ThumbnailScore score;
+  const scoped_refptr<ThumbnailService>& service() const;
+
+  const GURL& GetURL() const;
+
+  ClipResult clip_result() const;
+  void set_clip_result(ClipResult result);
+
+  gfx::Size requested_copy_size();
+  void set_requested_copy_size(const gfx::Size& requested_size);
+
+  ThumbnailScore score() const;
+  void SetBoringScore(double score);
+  void SetGoodClipping(bool is_good_clipping);
 
  private:
   ThumbnailingContext();
-  ~ThumbnailingContext();
+  ~ThumbnailingContext() override;
 
   friend class base::RefCountedThreadSafe<ThumbnailingContext>;
+
+  scoped_refptr<ThumbnailService> service_;
+  ClipResult clip_result_;
+  gfx::Size requested_copy_size_;
+  ThumbnailScore score_;
 };
 
 }  // namespace thumbnails
