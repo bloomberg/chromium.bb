@@ -39,6 +39,7 @@
 #include "core/svg/SVGURIReference.h"
 #include "core/svg/animation/SMILTimeContainer.h"
 #include "platform/FloatConversion.h"
+#include "platform/heap/Handle.h"
 #include "wtf/MathExtras.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/Vector.h"
@@ -129,6 +130,7 @@ public:
     DEFINE_INLINE_VIRTUAL_TRACE()
     {
         visitor->trace(m_animation);
+        visitor->trace(m_condition);
         EventListener::trace(visitor);
     }
 
@@ -143,7 +145,7 @@ private:
     void handleEvent(ExecutionContext*, Event*) override;
 
     RawPtrWillBeMember<SVGSMILElement> m_animation;
-    SVGSMILElement::Condition* m_condition;
+    RawPtrWillBeMember<SVGSMILElement::Condition> m_condition;
 };
 
 bool ConditionEventListener::operator==(const EventListener& listener) const
