@@ -55,7 +55,7 @@ Polymer({
 
     /**
      * The current sync preferences, supplied by settings.SyncPrivateApi.
-     * @type {?settings.SyncPrivateApi.SyncPrefs}
+     * @type {?settings.SyncPrefs}
      */
     syncPrefs: {
       type: Object,
@@ -99,7 +99,7 @@ Polymer({
 
   /** @private */
   currentRouteChanged_: function() {
-    if (this.currentRoute.section == 'signin' &&
+    if (this.currentRoute.section == 'people' &&
         this.currentRoute.subpage.length == 1 &&
         this.currentRoute.subpage[0] == 'sync') {
       // Display loading page until the settings have been retrieved.
@@ -179,16 +179,16 @@ Polymer({
 
   /**
    * Callback invoked from calling settings.SyncPrivateApi.setSyncPrefs().
-   * @param {!SyncPrivatApi.SetSyncCallbackState} callbackState
+   * @param {!settings.PageStatus} callbackState
    * @private
    */
   setPageStatusCallback_: function(callbackState) {
-    if (callbackState == settings.SyncPrivateApi.PageStatus.DONE) {
+    if (callbackState == settings.PageStatus.DONE) {
       this.onCancelTap_();
-    } else if (callbackState == settings.SyncPrivateApi.PageStatus.TIMEOUT) {
+    } else if (callbackState == settings.PageStatus.TIMEOUT) {
       this.$.pages.selected = 'timeout';
     } else if (callbackState ==
-               settings.SyncPrivateApi.PageStatus.PASSPHRASE_ERROR) {
+               settings.PageStatus.PASSPHRASE_ERROR) {
       this.$$('#incorrectPassphraseError').hidden = false;
     }
   },

@@ -14,21 +14,36 @@
       href="chrome://md-settings/settings_page/settings_page.css">
   <template>
     <settings-animated-pages id="pages" current-route="{{currentRoute}}"
-        section="signin">
+        section="people">
       <neon-animatable id="main">
-        <div id="syncStatusText"></div>
-
-        <paper-button on-tap="onDisconnectTap_" raised
-            hidden="[[!syncStatus.signedIn]]"
-            disabled="[[syncStatus.setupInProgress]]"
-            i18n-content="syncDisconnect">
-        </paper-button>
-
-        <template is="dom-if"
-            if="[[isAdvancedSyncSettingsVisible_(syncStatus)]]">
-          <paper-button on-tap="onSyncTap_" raised>
-            [[i18n('syncPageTitle')]]
+        <div class="settings-row" hidden="[[!isStatusTextSet_(syncStatus)]]">
+          <span id="syncStatusText"></span>
+          <paper-button on-tap="onActionLinkTap_">
+            [[syncStatus.actionLinkText]]
           </paper-button>
+        </div>
+
+        <template is="dom-if" if="[[!syncStatus.signedIn]]">
+          <div class="settings-row">[[i18n('syncOverview')]]</div>
+          <div class="settings-row button-strip">
+            <paper-button on-tap="onSigninTap_" raised
+                disabled="[[syncStatus.setupInProgress]]">
+                [[i18n('syncSignin')]]
+            </paper-button>
+          </div>
+        </template>
+        <template is="dom-if" if="[[syncStatus.signedIn]]">
+          <paper-button on-tap="onDisconnectTap_" raised
+              disabled="[[syncStatus.setupInProgress]]">
+              [[i18n('syncDisconnect')]]
+          </paper-button>
+
+          <template is="dom-if"
+              if="[[isAdvancedSyncSettingsVisible_(syncStatus)]]">
+            <paper-button on-tap="onSyncTap_" raised>
+              [[i18n('syncPageTitle')]]
+            </paper-button>
+          </template>
         </template>
       </neon-animatable>
       <neon-animatable id="sync">
@@ -43,14 +58,14 @@
       <h2 i18n-content="syncDisconnectTitle"></h2>
       <div i18n-values=".innerHTML:syncDisconnectExplanation"></div>
 <if expr="(not chromeos and is_posix) or is_win or is_macosx">
-      <paper-checkbox id="syncSetupDeleteProfile"
+      <paper-checkbox id="deleteProfile"
           i18n-content="syncDisconnectDeleteProfile">
       </paper-checkbox>
 </if>
       <div class="button-strip">
         <paper-button dialog-dismiss i18n-content="cancel">
         </paper-button>
-        <paper-button dialog-confirm raised
+        <paper-button dialog-confirm raised on-tap="onDisconnectConfirm_"
             i18n-content="syncDisconnectConfirm">
         </paper-button>
       </div>

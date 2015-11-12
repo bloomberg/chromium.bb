@@ -496,12 +496,6 @@ void AddSearchEnginesStrings(content::WebUIDataSource* html_source) {
                                   IDS_SETTINGS_SEARCH_ENGINES_ADD_BUTTON_LABEL);
 }
 
-#if !defined(OS_CHROMEOS)
-void AddSigninSettingsStrings(content::WebUIDataSource* html_source) {
-  html_source->AddLocalizedString("signinPageTitle", IDS_SETTINGS_SIGNIN);
-}
-#endif
-
 void AddSiteSettingsStrings(content::WebUIDataSource* html_source) {
   html_source->AddLocalizedString("siteSettingsPageTitle",
                                   IDS_SETTINGS_SITE_SETTINGS);
@@ -579,6 +573,9 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source) {
 }
 
 void AddSyncStrings(content::WebUIDataSource* html_source) {
+  html_source->AddLocalizedString("peoplePageTitle", IDS_SETTINGS_SYNC_PEOPLE);
+  html_source->AddLocalizedString("syncOverview", IDS_SETTINGS_SYNC_OVERVIEW);
+  html_source->AddLocalizedString("syncSignin", IDS_SETTINGS_SYNC_SIGNIN);
   html_source->AddLocalizedString("syncDisconnect",
                                   IDS_SETTINGS_SYNC_DISCONNECT);
   html_source->AddLocalizedString("syncDisconnectTitle",
@@ -590,7 +587,7 @@ void AddSyncStrings(content::WebUIDataSource* html_source) {
           .spec();
   html_source->AddString(
       "syncDisconnectExplanation",
-      l10n_util::GetStringFUTF16(IDS_SYNC_STOP_SYNCING_EXPLANATION_LABEL,
+      l10n_util::GetStringFUTF16(IDS_SETTINGS_SYNC_DISCONNECT_EXPLANATION,
                                  base::ASCIIToUTF16(disconnect_help_url)));
   html_source->AddLocalizedString("syncDisconnectDeleteProfile",
                                   IDS_SETTINGS_SYNC_DISCONNECT_DELETE_PROFILE);
@@ -746,9 +743,6 @@ void AddLocalizedStrings(content::WebUIDataSource* html_source,
   AddResetStrings(html_source);
   AddSearchEnginesStrings(html_source);
   AddSearchStrings(html_source);
-#if !defined(OS_CHROMEOS)
-  AddSigninSettingsStrings(html_source);
-#endif
   AddSiteSettingsStrings(html_source);
   AddSyncStrings(html_source);
   AddUsersStrings(html_source);

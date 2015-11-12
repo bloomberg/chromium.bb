@@ -121,7 +121,7 @@ Polymer({
     {
       url: '/syncSetup',
       page: 'basic',
-      section: 'signin',
+      section: 'people',
       subpage: ['sync'],
       subpageTitles: ['syncPageTitle'],
     },

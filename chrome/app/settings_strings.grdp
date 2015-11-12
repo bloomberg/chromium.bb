@@ -539,12 +539,13 @@
     Delete
   </message>
 
-  <!-- Sign-in Page -->
-  <message name="IDS_SETTINGS_SIGNIN" desc="Name of the settings page which manages Chrome's signed-in Google profile.">
-    Sign in
+  <!-- Sync / People Page -->
+  <message name="IDS_SETTINGS_SYNC_PEOPLE" desc="Name of the settings page which manages Chrome's signed-in Google profile.">
+    People
   </message>
-
-  <!-- Sync Page -->
+  <message name="IDS_SETTINGS_SYNC_OVERVIEW" desc="The message that appears in the options dialog when sync has not been set up by the user.">
+    Sign in to get your bookmarks, history, passwords and other settings on all your devices. You'll also automatically be signed in to your Google services.
+  </message>
   <message name="IDS_SETTINGS_SYNC_DISCONNECT" desc="The text to display on the button to indicate stop syncing functionality.">
     Sign Out
   </message>

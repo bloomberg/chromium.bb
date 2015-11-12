@@ -14,6 +14,7 @@
         'on_startup_page/compiled_resources.gyp:*',
         'prefs/compiled_resources.gyp:*',
         'site_settings/compiled_resources.gyp:*',
+        'sync_page/compiled_resources.gyp:*',
         'controls/compiled_resources.gyp:*',
       ],
     },

@@ -40,7 +40,7 @@ Polymer({
   },
 
   created: function() {
-    settings.SyncPrivateApi.setSyncStatusCallback(
+    settings.SyncPrivateApi.getSyncStatus(
         this.handleSyncStatusFetched_.bind(this));
   },
 
@@ -57,13 +57,39 @@ Polymer({
   },
 
   /** @private */
+  onActionLinkTap_: function() {
+    settings.SyncPrivateApi.showSetupUI();
+  },
+
+  /** @private */
+  onSigninTap_: function() {
+    settings.SyncPrivateApi.startSignIn();
+  },
+
+  /** @private */
   onDisconnectTap_: function() {
     this.$.disconnectDialog.open();
   },
 
   /** @private */
+  onDisconnectConfirm_: function() {
+    var deleteProfile = this.$.deleteProfile && this.$.deleteProfile.checked;
+    settings.SyncPrivateApi.disconnect(deleteProfile);
+
+    // Dialog automatically closed because button has dialog-confirm attribute.
+  },
+
+  /** @private */
   onSyncTap_: function() {
     this.$.pages.setSubpageChain(['sync']);
+  },
+
+  /**
+   * @private
+   * @return {boolean}
+   */
+  isStatusTextSet_: function() {
+    return this.syncStatus && this.syncStatus.statusText.length > 0;
   },
 
   /**
