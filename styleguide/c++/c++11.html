@@ -478,11 +478,8 @@ work in all our compilers yet.</p>
 <td>
 <code>alignas</code> specifier,
 <code>alignof</code> operator,
-<code>std::alignment_of&lt;T&gt;</code>,
-<code>std::aligned_union&lt;Size, ...Types&gt;</code> and
-<code>std::max_align_t</code></td>
 <td>Object alignment</td>
-<td><a href="http://en.cppreference.com/w/cpp/types/alignment_of">std::alignment_of</a></td>
+<td><a href="http://en.cppreference.com/w/cpp/language/alignof">alignof</a></td>
 <td></td>
 </tr>
 
@@ -586,11 +583,15 @@ identity checks.</td>
 
 <tr>
 <td>Aligned Storage</td>
-<td><code>std::aligned_storage&lt;Size, Align&gt;::type</code></td>
-<td>Declare uninitialized storage having a specified alignment.</td>
+<td><code>std::aligned_storage&lt;Size, Align&gt;::type</code>
+<code>std::alignment_of&lt;T&gt;</code>,
+<code>std::aligned_union&lt;Size, ...Types&gt;</code> and
+<code>std::max_align_t</code></td>
+<td>Declare uninitialized storage having a specified alignment, or determine alignments.</td>
 <td><a href="http://en.cppreference.com/w/cpp/types/aligned_storage">std::aligned_storage</a></td>
-<td>Note: <code>std::aligned_storage</code> is allowed, but some other C++11
-alignment features are still disallowed.</td>
+<td><code>std::aligned_storage</code> and <code>std::aligned_union</code> are
+disallowed in google3 over concerns about compatibility with internal cross-compiling
+toolchains.</td>
 </tr>
 
 <tr>
@@ -641,10 +642,11 @@ std::end</a></td>
 
 <tr>
 <td>C Floating-Point Environment</td>
-<td><code>&lt;cfenv&gt;</code></td>
+<td><code>&lt;cfenv&gt;</code>, <code>&lt;fenv.h&gt;</code></td>
 <td>Provides floating point status flags and control modes for C-compatible code</td>
 <td><a href="http://en.cppreference.com/w/cpp/header/cfenv">Standard library header &lt;cfenv&gt;</a></td>
-<td>Compilers do not support use</td>
+<td>Compilers do not support use. This is banned in google style guide over
+compilers not supporting these reliably.</td>
 </tr>
 
 <tr>
@@ -832,8 +834,10 @@ Pseudo-random number generation</a></td>
 <td>Ratio Template Class</td>
 <td><code>std::ratio&lt;<i>numerator</i>, <i>denominator</i>&gt;</code></td>
 <td>Provides compile-time rational numbers</td>
-<td>TODO: documentation link</td>
-<td></td>
+<td><a href="http://en.cppreference.com/w/cpp/numeric/ratio/ratio">std::ratio
+</a></td>
+<td>Note: These are banned in the google style guide over concerns that they are
+tied to a more template-heavy interface style.</td>
 </tr>
 
 <tr>
