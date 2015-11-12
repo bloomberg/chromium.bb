@@ -126,12 +126,10 @@ class EncryptedMediaTest : public content::MediaBrowserTest,
     title_watcher->AlsoWaitForTitle(base::ASCIIToUTF16(kEmeKeyError));
   }
 
-#if defined(OS_ANDROID)
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(
         switches::kDisableGestureRequirementForMediaPlayback);
   }
-#endif
 };
 
 using ::testing::Combine;

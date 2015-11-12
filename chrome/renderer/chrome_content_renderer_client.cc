@@ -636,10 +636,13 @@ void ChromeContentRendererClient::DeferMediaLoad(
   // loads even when hidden to allow playlist-like functionality.
   //
   // NOTE: This is also used to defer media loading for prerender.
+  // NOTE: Switch can be used to allow autoplay, unless frame is prerendered.
   //
   // TODO(dalecurtis): Include an idle check too.  http://crbug.com/509135
-  if (render_frame->IsHidden() && !has_played_media_before) {
-    // Lifetime is tied to |render_frame| via content::RenderFrameObserver.
+  if ((render_frame->IsHidden() && !has_played_media_before &&
+       !base::CommandLine::ForCurrentProcess()->HasSwitch(
+           switches::kDisableGestureRequirementForMediaPlayback)) ||
+      prerender::PrerenderHelper::IsPrerendering(render_frame)) {
     new MediaLoadDeferrer(render_frame, closure);
     return;
   }

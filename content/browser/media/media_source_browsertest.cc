@@ -54,12 +54,10 @@ class MediaSourceTest : public content::MediaBrowserTest {
                      false);
   }
 
-#if defined(OS_ANDROID)
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(
         switches::kDisableGestureRequirementForMediaPlayback);
   }
-#endif
 };
 
 IN_PROC_BROWSER_TEST_F(MediaSourceTest, Playback_VideoAudio_WebM) {

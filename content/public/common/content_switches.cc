@@ -112,6 +112,10 @@ const char kDisableFlash3d[]                = "disable-flash-3d";
 // Disable Stage3D inside of flapper.
 const char kDisableFlashStage3d[]           = "disable-flash-stage3d";
 
+// Disable user gesture requirement for media playback.
+const char kDisableGestureRequirementForMediaPlayback[] =
+    "disable-gesture-requirement-for-media-playback";
+
 // Disables GPU hardware acceleration.  If software renderer is not in place,
 // then the GPU process won't launch.
 const char kDisableGpu[]                    = "disable-gpu";
@@ -874,10 +878,6 @@ const char kWebRtcMaxCaptureFramerate[]     = "max-gum-fps";
 #endif
 
 #if defined(OS_ANDROID)
-// Disable user gesture requirement for media playback.
-const char kDisableGestureRequirementForMediaPlayback[] =
-    "disable-gesture-requirement-for-media-playback";
-
 // Disable overscroll edge effects like those found in Android views.
 const char kDisableOverscrollEdgeEffect[]   = "disable-overscroll-edge-effect";
 

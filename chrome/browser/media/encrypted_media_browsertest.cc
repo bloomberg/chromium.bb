@@ -263,10 +263,8 @@ class EncryptedMediaTestBase : public MediaBrowserTest {
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-#if defined(OS_ANDROID)
     command_line->AppendSwitch(
         switches::kDisableGestureRequirementForMediaPlayback);
-#endif  // defined(OS_ANDROID)
     // For simplicity with respect to parameterized tests, enable for all tests.
     command_line->AppendSwitch(switches::kEnablePrefixedEncryptedMedia);
   }

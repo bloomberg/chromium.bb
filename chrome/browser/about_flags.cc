@@ -1239,13 +1239,11 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_DEFAULT_TILE_HEIGHT_DESCRIPTION,
      kOsAll,
      MULTI_VALUE_TYPE(kDefaultTileHeightChoices)},
-#if defined(OS_ANDROID)
     {"disable-gesture-requirement-for-media-playback",
      IDS_FLAGS_DISABLE_GESTURE_REQUIREMENT_FOR_MEDIA_PLAYBACK_NAME,
      IDS_FLAGS_DISABLE_GESTURE_REQUIREMENT_FOR_MEDIA_PLAYBACK_DESCRIPTION,
-     kOsAndroid,
+     kOsAll,
      SINGLE_VALUE_TYPE(switches::kDisableGestureRequirementForMediaPlayback)},
-#endif
 #if defined(OS_CHROMEOS)
     {"enable-virtual-keyboard",
      IDS_FLAGS_ENABLE_VIRTUAL_KEYBOARD_NAME,
