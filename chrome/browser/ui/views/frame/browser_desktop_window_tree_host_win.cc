@@ -156,12 +156,9 @@ void BrowserDesktopWindowTreeHostWin::HandleCreate() {
   DesktopWindowTreeHostWin::HandleCreate();
   browser_window_property_manager_ =
       BrowserWindowPropertyManager::CreateBrowserWindowPropertyManager(
-          browser_view_, GetHWND());
-}
-
-void BrowserDesktopWindowTreeHostWin::HandleDestroying() {
-  browser_window_property_manager_.reset();
-  DesktopWindowTreeHostWin::HandleDestroying();
+          browser_view_);
+  if (browser_window_property_manager_)
+    browser_window_property_manager_->UpdateWindowProperties(GetHWND());
 }
 
 void BrowserDesktopWindowTreeHostWin::HandleFrameChanged() {
