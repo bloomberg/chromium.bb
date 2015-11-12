@@ -15,6 +15,9 @@
 
 // ScopedVector wraps a vector deleting the elements from its
 // destructor.
+//
+// TODO(http://crbug.com/554289): DEPRECATED: Use std::vector instead (now that
+// we have support for moveable types inside containers).
 template <class T>
 class ScopedVector {
   MOVE_ONLY_TYPE_FOR_CPP_03(ScopedVector, RValue)

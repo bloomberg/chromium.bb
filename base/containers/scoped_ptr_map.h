@@ -22,6 +22,9 @@ namespace base {
 //
 // |ScopedPtr| must be a type scoped_ptr<T>. This is for compatibility with
 // std::map in C++11.
+//
+// TODO(http://crbug.com/554291): DEPRECATED: Use std::map instead (now that we
+// have support for moveable types inside containers).
 template <class Key, class ScopedPtr, class Compare = std::less<Key>>
 class ScopedPtrMap {
   MOVE_ONLY_TYPE_WITH_MOVE_CONSTRUCTOR_FOR_CPP_03(ScopedPtrMap)
