@@ -25,16 +25,7 @@ using content::OpenURLParams;
 
 namespace memory {
 
-class TabManagerTest : public InProcessBrowserTest {
- public:
-  // Tab discarding is enabled by default on CrOS, on other platforms, force it
-  // by setting the command line flag.
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-#if !defined(OS_CHROMEOS)
-    command_line->AppendSwitch(switches::kEnableTabDiscarding);
-#endif
-  }
-};
+using TabManagerTest = InProcessBrowserTest;
 
 IN_PROC_BROWSER_TEST_F(TabManagerTest, TabManagerBasics) {
   using content::WindowedNotificationObserver;

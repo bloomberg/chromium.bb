@@ -1163,8 +1163,7 @@ void ChromeBrowserMainParts::PreBrowserStart() {
 #elif defined(OS_WIN) || defined(OS_MACOSX)
   const std::string group_name =
       base::FieldTrialList::FindFullName("AutomaticTabDiscarding");
-  if (parsed_command_line().HasSwitch(switches::kEnableTabDiscarding) ||
-      base::StartsWith(group_name, "Enabled", base::CompareCase::SENSITIVE)) {
+  if (base::StartsWith(group_name, "Enabled", base::CompareCase::SENSITIVE)) {
     bool enabled_once = base::StartsWith(group_name, "Enabled_Once",
                                          base::CompareCase::SENSITIVE);
     g_browser_process->GetTabManager()->Start(enabled_once);

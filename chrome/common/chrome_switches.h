@@ -370,10 +370,6 @@ extern const char kWaitForMutex[];
 extern const char kWindows8Search[];
 #endif  // defined(OS_WIN)
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
-extern const char kEnableTabDiscarding[];
-#endif  // defined(OS_WIN) || defined(OS_MACOSX)
-
 #if defined(ENABLE_IPC_FUZZER)
 extern const char kIpcFuzzerTestcase[];
 #endif

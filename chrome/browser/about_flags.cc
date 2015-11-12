@@ -2002,13 +2002,6 @@ const FeatureEntry kFeatureEntries[] = {
      ENABLE_DISABLE_VALUE_TYPE(switches::kEnableMaterialDesignDownloads,
                                switches::kDisableMaterialDesignDownloads)},
 #endif
-#if defined(OS_WIN) || defined(OS_MACOSX)
-    {"enable-tab-discarding",
-     IDS_FLAGS_ENABLE_TAB_DISCARDING_NAME,
-     IDS_FLAGS_ENABLE_TAB_DISCARDING_DESCRIPTION,
-     kOsWin | kOsMac,
-     SINGLE_VALUE_TYPE(switches::kEnableTabDiscarding)},
-#endif
     {"enable-clear-browsing-data-counters",
      IDS_FLAGS_ENABLE_CLEAR_BROWSING_DATA_COUNTERS_NAME,
      IDS_FLAGS_ENABLE_CLEAR_BROWSING_DATA_COUNTERS_DESCRIPTION,
