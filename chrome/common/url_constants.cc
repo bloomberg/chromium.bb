@@ -751,12 +751,10 @@ const char kLanguageSettingsLearnMoreUrl[] =
 #endif
 
 #if defined(OS_MACOSX)
-const char kMac32BitDeprecationURL[] =
-#if !defined(ARCH_CPU_64_BITS)
-    "https://support.google.com/chrome/?p=ui_mac_32bit_support";
-#else
-    "";
-#endif
+// TODO(mark): Change to a Help Center URL when one is available.
+// https://crbug.com/555044
+const char kMac10_678_DeprecationURL[] =
+    "http://chrome.blogspot.com/2015/11/updates-to-chrome-platform-support.html";
 #endif
 
 #if defined(OS_WIN)

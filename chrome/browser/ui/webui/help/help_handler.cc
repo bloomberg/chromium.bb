@@ -288,12 +288,10 @@ void HelpHandler::GetLocalizedValues(base::DictionaryValue* localized_strings) {
                                  l10n_util::GetStringUTF16(resources[i].ids));
   }
 
-  if (ObsoleteSystem::IsObsoleteNowOrSoon()) {
-    localized_strings->SetString("updateObsoleteSystem",
-                                 ObsoleteSystem::LocalizedObsoleteString());
-    localized_strings->SetString("updateObsoleteSystemURL",
-                                 ObsoleteSystem::GetLinkURL());
-  }
+  localized_strings->SetString("updateObsoleteSystem",
+                               ObsoleteSystem::LocalizedObsoleteString());
+  localized_strings->SetString("updateObsoleteSystemURL",
+                               ObsoleteSystem::GetLinkURL());
 
   localized_strings->SetString(
       "browserVersion",
@@ -453,7 +451,8 @@ void HelpHandler::OnPageLoaded(const base::ListValue* args) {
       base::FundamentalValue(ObsoleteSystem::IsObsoleteNowOrSoon()));
   web_ui()->CallJavascriptFunction(
       "help.HelpPage.setObsoleteSystemEndOfTheLine",
-      base::FundamentalValue(ObsoleteSystem::IsObsoleteNowOrSoon()));
+      base::FundamentalValue(ObsoleteSystem::IsObsoleteNowOrSoon() &&
+                             ObsoleteSystem::IsEndOfTheLine()));
 
 #if defined(OS_CHROMEOS)
   web_ui()->CallJavascriptFunction(

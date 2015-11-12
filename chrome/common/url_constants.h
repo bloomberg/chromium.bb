@@ -559,8 +559,8 @@ extern const char kMediaAccessLearnMoreUrl[];
 extern const char kLanguageSettingsLearnMoreUrl[];
 
 #if defined(OS_MACOSX)
-// The URL for the 32-bit Mac deprecation help center article.
-extern const char kMac32BitDeprecationURL[];
+// The URL for the Mac OS X 10.6/10.7/10.8 deprecation help center article.
+extern const char kMac10_678_DeprecationURL[];
 #endif
 
 #if defined(OS_WIN)
