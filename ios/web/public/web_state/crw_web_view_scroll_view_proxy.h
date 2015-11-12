@@ -20,7 +20,7 @@
 // needed.
 // The class forwards some of the methods onto the UIScrollView. For more
 // information look at the UIScrollView documentation.
-// TODO(kkhorimoto): rename class to CRWContentViewScrollViewProxy.
+// TODO(crbug.com/546152): rename class to CRWContentViewScrollViewProxy.
 @interface CRWWebViewScrollViewProxy : NSObject<UIScrollViewDelegate>
 @property(nonatomic, assign) CGPoint contentOffset;
 @property(nonatomic, assign) UIEdgeInsets contentInset;

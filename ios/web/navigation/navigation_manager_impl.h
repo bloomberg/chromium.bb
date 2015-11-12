@@ -117,7 +117,8 @@ class NavigationManagerImpl : public NavigationManager {
 
   // Returns the current list of transient url rewriters, passing ownership to
   // the caller.
-  // TODO(kkhorimoto): remove once NavigationItem creation occurs in this class.
+  // TODO(crbug.com/546197): remove once NavigationItem creation occurs in this
+  // class.
   scoped_ptr<std::vector<BrowserURLRewriter::URLRewriter>>
   GetTransientURLRewriters();
 

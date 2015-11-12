@@ -27,6 +27,8 @@ WebControllerProviderFactory* GetWebControllerProviderFactory();
 
 // Interface that provides URL-loading and JavaScript injection with optional
 // dialog suppression.
+// TODO(crbug.com/546231): Remove once JS dialog suppression is exposed via
+// WebState's public interface.
 class WebControllerProvider {
  public:
   // Constructor for a WebControllerProvider backed by a CRWWebController

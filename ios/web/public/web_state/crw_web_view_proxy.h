@@ -13,7 +13,7 @@
 
 // Provides an interface for embedders to access the WebState's web view in a
 // limited and controlled manner.
-// TODO(kkhorimoto): rename protocol to CRWContentViewProxy.
+// TODO(crbug.com/546152): rename protocol to CRWContentViewProxy.
 @protocol CRWWebViewProxy<NSObject>
 
 // The web view's bounding rectangle (relative to its parent).

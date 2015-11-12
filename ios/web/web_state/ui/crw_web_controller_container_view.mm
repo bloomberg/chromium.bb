@@ -161,11 +161,6 @@
 
 - (void)setNativeController:(id<CRWNativeContent>)nativeController {
   if (![_nativeController isEqual:nativeController]) {
-    // TODO(kkhorimoto): This line isn't strictly necessary since all native
-    // controllers currently inherit from NativeContentController, which removes
-    // its view upon deallocation.  Consider moving NativeContentController into
-    // web/ so this behavior can be depended upon from within web/ without
-    // making assumptions about chrome/ code.
     base::WeakNSProtocol<id> oldController(_nativeController);
     [[_nativeController view] removeFromSuperview];
     _nativeController.reset([nativeController retain]);

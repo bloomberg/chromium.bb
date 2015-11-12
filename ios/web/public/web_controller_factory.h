@@ -25,7 +25,7 @@ CRWWebController* CreateWebController(WebViewType web_view_type,
 // By requiring only the BrowserState, this eliminates the dependency on
 // WebStateImpl from components.
 // Note: Callers are responsible for releasing the returned web controller.
-// TODO(kkhorimoto): Move factory method to WebState once the ownership of
+// TODO(crbug.com/546221): Move factory method to WebState once the ownership of
 // WebState and CRWWebController is reversed.
 CRWWebController* CreateWebController(WebViewType web_view_type,
                                       BrowserState* browser_state);

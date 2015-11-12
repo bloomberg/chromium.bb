@@ -3327,7 +3327,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
         scrollView.maximumZoomScale);
     displayState.zoom_state().set_zoom_scale(scrollView.zoomScale);
   } else {
-    // TODO(kkhorimoto): Handle native views.
+    // TODO(crbug.com/546146): Handle native views.
   }
   return displayState;
 }

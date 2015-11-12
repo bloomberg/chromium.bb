@@ -9,8 +9,7 @@
 
 // Temporary functions for supporting size classes on pre-iOS8 devices.  The
 // return values are based on the bounds of the main UIScreen.
-// TODO(kkhorimoto): Remove once Chrome for iOS drops support for iOS7.
-// http://crbug.com/519568
+// TODO(crbug.com/519568): Remove once Chrome for iOS drops support for iOS7.
 SizeClassIdiom CurrentWidthSizeClass();
 SizeClassIdiom CurrentHeightSizeClass();
 

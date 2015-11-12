@@ -1529,11 +1529,11 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
                           (void (^)(WKNavigationResponsePolicy))handler {
   if ([navigationResponse.response isKindOfClass:[NSHTTPURLResponse class]]) {
     // Create HTTP headers from the response.
-    // TODO(kkhorimoto): Due to the limited interface of NSHTTPURLResponse, some
-    // data in the HttpResponseHeaders generated here is inexact.  Once
-    // UIWebView is no longer supported, update WebState's implementation so
-    // that the Content-Language and the MIME type can be set without using this
-    // imperfect conversion.
+    // TODO(crbug.com/546157): Due to the limited interface of
+    // NSHTTPURLResponse, some data in the HttpResponseHeaders generated here is
+    // inexact.  Once UIWebView is no longer supported, update WebState's
+    // implementation so that the Content-Language and the MIME type can be set
+    // without using this imperfect conversion.
     scoped_refptr<net::HttpResponseHeaders> HTTPHeaders =
         net::CreateHeadersFromNSHTTPURLResponse(
             static_cast<NSHTTPURLResponse*>(navigationResponse.response));

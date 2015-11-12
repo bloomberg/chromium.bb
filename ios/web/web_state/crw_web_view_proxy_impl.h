@@ -12,7 +12,7 @@
 
 @class CRWWebController;
 
-// TODO(kkhorimoto): Rename class to CRWContentViewProxyImpl.
+// TODO(crbug.com/546152): Rename class to CRWContentViewProxyImpl.
 @interface CRWWebViewProxyImpl : NSObject<CRWWebViewProxy>
 
 // Used by CRWWebController to set the content view being managed.
