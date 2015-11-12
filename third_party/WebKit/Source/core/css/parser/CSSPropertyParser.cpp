@@ -1601,6 +1601,11 @@ static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeBorderWidth(CSSParserTok
     return consumeLineWidth(range, cssParserMode);
 }
 
+static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeTextStrokeWidth(CSSParserTokenRange& range, CSSParserMode cssParserMode)
+{
+    return consumeLineWidth(range, cssParserMode);
+}
+
 PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSPropertyID unresolvedProperty)
 {
     CSSPropertyID property = resolveCSSPropertyID(unresolvedProperty);
@@ -1701,6 +1706,8 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSProperty
     case CSSPropertyTextDecorationColor:
         ASSERT(RuntimeEnabledFeatures::css3TextDecorationsEnabled());
         return consumeColor(m_range, m_context);
+    case CSSPropertyWebkitTextStrokeWidth:
+        return consumeTextStrokeWidth(m_range, m_context.mode());
     case CSSPropertyWebkitTextFillColor:
     case CSSPropertyWebkitTapHighlightColor:
     case CSSPropertyWebkitTextEmphasisColor:
@@ -1708,6 +1715,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSProperty
     case CSSPropertyWebkitBorderEndColor:
     case CSSPropertyWebkitBorderBeforeColor:
     case CSSPropertyWebkitBorderAfterColor:
+    case CSSPropertyWebkitTextStrokeColor:
         return consumeColor(m_range, m_context);
     case CSSPropertyColor:
         return consumeColor(m_range, m_context, inQuirksMode());
@@ -2232,6 +2240,8 @@ bool CSSPropertyParser::parseShorthand(CSSPropertyID unresolvedProperty, bool im
         return consumeShorthandGreedily(webkitBorderBeforeShorthand(), important);
     case CSSPropertyWebkitBorderAfter:
         return consumeShorthandGreedily(webkitBorderAfterShorthand(), important);
+    case CSSPropertyWebkitTextStroke:
+        return consumeShorthandGreedily(webkitTextStrokeShorthand(), important);
     default:
         m_currentShorthand = oldShorthand;
         return false;

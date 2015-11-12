@@ -425,7 +425,6 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     case CSSPropertyBorderBottomColor:
     case CSSPropertyBorderLeftColor:
     case CSSPropertyWebkitColumnRuleColor:
-    case CSSPropertyWebkitTextStrokeColor:
         parsedValue = parseColor(m_valueList->current(), acceptQuirkyColors(propId));
         if (parsedValue)
             m_valueList->next();
@@ -594,7 +593,6 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
         if (!inShorthand() || m_currentShorthand == CSSPropertyBorderWidth)
             unitless = FUnitlessQuirk;
         // fall through
-    case CSSPropertyWebkitTextStrokeWidth:
     case CSSPropertyWebkitColumnRuleWidth:
         if (id == CSSValueThin || id == CSSValueMedium || id == CSSValueThick)
             validPrimitive = true;
@@ -1014,8 +1012,6 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
         return parseShorthand(propId, listStyleShorthand(), important);
     case CSSPropertyWebkitColumnRule:
         return parseShorthand(propId, webkitColumnRuleShorthand(), important);
-    case CSSPropertyWebkitTextStroke:
-        return parseShorthand(propId, webkitTextStrokeShorthand(), important);
     case CSSPropertyInvalid:
         return false;
     // CSS Text Layout Module Level 3: Vertical writing support
@@ -1173,6 +1169,9 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     case CSSPropertyWebkitBorderEnd:
     case CSSPropertyWebkitBorderBefore:
     case CSSPropertyWebkitBorderAfter:
+    case CSSPropertyWebkitTextStroke:
+    case CSSPropertyWebkitTextStrokeColor:
+    case CSSPropertyWebkitTextStrokeWidth:
         validPrimitive = false;
         break;
 
