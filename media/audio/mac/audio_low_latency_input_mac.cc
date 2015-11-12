@@ -199,6 +199,8 @@ bool AUAudioInputStream::Open() {
   if (!manager_->MaybeChangeBufferSize(input_device_id_, audio_unit_, 1,
                                        number_of_frames_,
                                        &buffer_size_was_changed_)) {
+    result = kAudioUnitErr_FormatNotSupported;
+    HandleError(result);
     return false;
   }
   DLOG_IF(WARNING, buffer_size_was_changed_) << "IO buffer size was changed to "
