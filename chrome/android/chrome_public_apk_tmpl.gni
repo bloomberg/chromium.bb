@@ -17,16 +17,21 @@ declare_args() {
 
 # GYP: //chrome/android/chrome_apk.gypi
 template("chrome_public_apk_tmpl") {
-  forward_variables_from(invoker, "*")
-
   android_apk(target_name) {
+    forward_variables_from(invoker, "*")
     _native_lib_file =
         rebase_path("$root_gen_dir/CHROME_VERSION.json", root_out_dir)
     native_lib_version_arg = "@FileArg($_native_lib_file:full-quoted)"
 
     if (!is_debug) {
       proguard_enabled = true
-      proguard_configs = [ "//chrome/android/java/proguard.flags" ]
+      _prev_proguard_configs = []
+      if (defined(proguard_configs)) {
+        _prev_proguard_configs = proguard_configs
+      }
+      proguard_configs = []
+      proguard_configs =
+          [ "//chrome/android/java/proguard.flags" ] + _prev_proguard_configs
     }
 
     if (chromium_linker_supported) {
