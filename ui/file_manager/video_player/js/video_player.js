@@ -15,6 +15,7 @@ function FullWindowVideoControls(
   VideoControls.call(this,
       controlsContainer,
       this.onPlaybackError_.wrap(this),
+      loadTimeData.getString.wrap(loadTimeData),
       this.toggleFullScreen_.wrap(this),
       videoContainer);
 
@@ -27,9 +28,9 @@ function FullWindowVideoControls(
   window.addEventListener('resize', this.updateStyle.wrap(this));
   var currentWindow = chrome.app.window.current();
   currentWindow.onFullscreened.addListener(
-      this.onFullScreenChanged.bind(this, true));
+      this.onFullScreenChanged_.bind(this, true));
   currentWindow.onRestored.addListener(
-      this.onFullScreenChanged.bind(this, false));
+      this.onFullScreenChanged_.bind(this, false));
   document.addEventListener('keydown', function(e) {
     switch (util.getKeyModifiers(e) + e.keyIdentifier) {
       // Handle debug shortcut keys.
@@ -48,8 +49,7 @@ function FullWindowVideoControls(
 
       case 'U+0020': // Space
       case 'MediaPlayPause':
-        if (!e.target.classList.contains('menu-button'))
-          this.togglePlayStateWithFeedback();
+        this.togglePlayStateWithFeedback();
         break;
       case 'U+001B': // Escape
         util.toggleFullScreen(
@@ -120,7 +120,7 @@ FullWindowVideoControls.prototype.getInactivityWatcher = function() {
  */
 FullWindowVideoControls.prototype.showErrorMessage = function(message) {
   var errorBanner = getRequiredElement('error');
-  errorBanner.textContent = str(message);
+  errorBanner.textContent = loadTimeData.getString(message);
   errorBanner.setAttribute('visible', 'true');
 
   // The window is hidden if the video has not loaded yet.
@@ -165,6 +165,19 @@ FullWindowVideoControls.prototype.onPlaybackError_ = function(error) {
 FullWindowVideoControls.prototype.toggleFullScreen_ = function() {
   var appWindow = chrome.app.window.current();
   util.toggleFullScreen(appWindow, !util.isFullScreen(appWindow));
+};
+
+/**
+ * Updates video control when the window is fullscreened or restored.
+ * @param {boolean} fullscreen True if the window gets fullscreened.
+ * @private
+ */
+FullWindowVideoControls.prototype.onFullScreenChanged_ = function(fullscreen) {
+  if (fullscreen) {
+    this.playerContainer_.setAttribute('fullscreen', '');
+  } else {
+    this.playerContainer_.removeAttribute('fullscreen');
+  }
 };
 
 /**
@@ -568,7 +581,7 @@ VideoPlayer.prototype.setCastList = function(casts) {
   }
 
   var item = new cr.ui.MenuItem();
-  item.label = str('VIDEO_PLAYER_PLAY_THIS_COMPUTER');
+  item.label = loadTimeData.getString('VIDEO_PLAYER_PLAY_THIS_COMPUTER');
   item.setAttribute('aria-label', item.label);
   item.castLabel = '';
   item.addEventListener('activate', this.onCastSelected_.wrap(this, null));

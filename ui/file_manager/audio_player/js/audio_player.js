@@ -68,19 +68,6 @@ function AudioPlayer(container) {
       this.offlineString_ = strings['AUDIO_OFFLINE'];
       AudioPlayer.TrackInfo.DEFAULT_ARTIST =
           strings['AUDIO_PLAYER_DEFAULT_ARTIST'];
-      // Pass translated labels to the AudioPlayerElement.
-      this.player_.ariaLabels = {
-        volumeSlider: strings['AUDIO_PLAYER_OPEN_VOLUME_SLIDER_BUTTON_LABEL'],
-        shuffle: strings['AUDIO_PLAYER_SHUFFLE_BUTTON_LABEL'],
-        repeat: strings['AUDIO_PLAYER_REPEAT_BUTTON_LABEL'],
-        previous: strings['MEDIA_PLAYER_PREVIOUS_BUTTON_LABEL'],
-        play: strings['MEDIA_PLAYER_PLAY_BUTTON_LABEL'],
-        pause: strings['MEDIA_PLAYER_PAUSE_BUTTON_LABEL'],
-        next: strings['MEDIA_PLAYER_NEXT_BUTTON_LABEL'],
-        volume: strings['AUDIO_PLAYER_OPEN_VOLUME_SLIDER_BUTTON_LABEL'],
-        playList: strings['AUDIO_PLAYER_OPEN_PLAY_LIST_BUTTON_LABEL'],
-        seekSlider: strings['MEDIA_PLAYER_SEEK_SLIDER_LABEL']
-      };
     }.bind(this));
 
     this.volumeManager_.addEventListener('externally-unmounted',

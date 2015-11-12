@@ -16,9 +16,7 @@
       playing: {
         type: Boolean,
         value: false,
-        notify: true,
-        reflectToAttribute: true,
-        observer: 'playingChanged_'
+        notify: true
       },
 
       /**
@@ -90,14 +88,6 @@
         type: Boolean,
         value: false,
         notify: true
-      },
-
-      /**
-       * Dictionary which contains aria-labels for each controls.
-       */
-      ariaLabels: {
-        type: Object,
-        observer: 'ariaLabelsChanged_'
       }
     },
 
@@ -157,35 +147,19 @@
     },
 
     /**
-     * Invoked when the playing property is changed.
-     * @param {boolean} playing
-     * @private
+     * Computes state for play button based on 'playing' property.
+     * @return {string}
      */
-    playingChanged_: function(playing) {
-      if (this.ariaLabels) {
-        this.$.play.setAttribute('aria-label',
-            playing ? this.ariaLabels.pause : this.ariaLabels.play);
-      }
+    computePlayState_: function(playing) {
+      return playing ? "playing" : "ended";
     },
 
     /**
-     * Invoked when the ariaLabels property is changed.
-     * @param {Object} ariaLabels
-     * @private
+     * Computes style for '.filled' element of progress bar.
+     * @return {string}
      */
-    ariaLabelsChanged_: function(ariaLabels) {
-      assert(ariaLabels);
-      // TODO(fukino): Use data bindings.
-      this.$.volumeSlider.setAttribute('aria-label', ariaLabels.volumeSlider);
-      this.$.shuffle.setAttribute('aria-label', ariaLabels.shuffle);
-      this.$.repeat.setAttribute('aria-label', ariaLabels.repeat);
-      this.$.previous.setAttribute('aria-label', ariaLabels.previous);
-      this.$.play.setAttribute('aria-label',
-          this.playing ? ariaLabels.pause : ariaLabels.play);
-      this.$.next.setAttribute('aria-label', ariaLabels.next);
-      this.$.volume.setAttribute('aria-label', ariaLabels.volume);
-      this.$.playList.setAttribute('aria-label', ariaLabels.playList);
-      this.$.timeSlider.setAttribute('aria-label', ariaLabels.seekSlider);
+    computeProgressBarStyle_: function(time, duration) {
+      return 'width: ' + (time / duration * 100) + '%;';
     }
   });
 })();  // Anonymous closure

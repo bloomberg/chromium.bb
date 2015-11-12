@@ -62,6 +62,13 @@
   top: 0;
 }
 
+.media-button[state='default']:not(.disabled) > .default,
+.media-button[state='ended']:not(.disabled) > .ended,
+.media-button[state='playing']:not(.disabled) > .playing,
+.media-button.disabled > .disabled {
+  opacity: 1;
+}
+
 /* Custom sliders for progress and volume. */
 
 /* Customize the standard input[type='range']. */
@@ -127,7 +134,7 @@ paper-slider.disabled {
   visibility: hidden;
 }
 
-.media-button.shuffle-mode {
+.media-button.shuffle-mode > label > .icon {
   background-image: -webkit-image-set(
       url(../assets/100/player_button_shuffle.png) 1x,
       url(../assets/200/player_button_shuffle.png) 2x);
@@ -139,7 +146,7 @@ paper-slider.disabled {
   margin-right: 0;
 }
 
-.media-button.repeat {
+.media-button.repeat > label > .icon {
   background-image: -webkit-image-set(
       url(../assets/100/player_button_repeat.png) 1x,
       url(../assets/200/player_button_repeat.png) 2x);
@@ -151,48 +158,76 @@ paper-slider.disabled {
   margin-right: 4px;
 }
 
-.media-button.play {
+.media-button.play > .ended {
   background-image: -webkit-image-set(
       url(../assets/100/player_button_play.png) 1x,
       url(../assets/200/player_button_play.png) 2x);
 }
 
-:host([playing]) .media-button.play {
+.media-button.play > .playing {
   background-image: -webkit-image-set(
       url(../assets/100/player_button_pause.png) 1x,
       url(../assets/200/player_button_pause.png) 2x);
 }
 
 .media-button.previous {
-  background-image: -webkit-image-set(
-      url(../assets/100/player_button_previous.png) 1x,
-      url(../assets/200/player_button_previous.png) 2x);
   margin-left: 8px;
   margin-right: 0;
 }
 
+.media-button.previous > .normal {
+  background-image: -webkit-image-set(
+      url(../assets/100/player_button_previous.png) 1x,
+      url(../assets/200/player_button_previous.png) 2x);
+}
+
 .media-button.next {
+  margin-left: 0;
+  margin-right: 8px;
+}
+
+.media-button.next > .normal {
   background-image: -webkit-image-set(
       url(../assets/100/player_button_next.png) 1x,
       url(../assets/200/player_button_next.png) 2x);
-  margin-left: 0;
-  margin-right: 8px;
 }
 
 .media-button.volume {
+  margin-left: 0;
+  margin-right: 8px;
+}
+
+.media-button.volume > .normal {
   background-image: -webkit-image-set(
       url(../assets/100/player_button_volume.png) 1x,
       url(../assets/200/player_button_volume.png) 2x);
-  margin-left: 0;
-  margin-right: 8px;
+}
+
+.media-button.volume > label > .icon {
+  background-image: -webkit-image-set(
+      url(../assets/100/player_button_volume.png) 1x,
+      url(../assets/200/player_button_volume.png) 2x);
   pointer-events: auto;
 }
 
-.media-button.playlist {
+.media-button.playlist > label > .icon {
   background-image: -webkit-image-set(
       url(../assets/100/player_button_playlist.png) 1x,
       url(../assets/200/player_button_playlist.png) 2x);
   pointer-events: auto;
+}
+
+.media-button files-toggle-ripple {
+  position: absolute;
+  height: 28px;
+  left: 2px;
+  top: 2px;
+  width: 28px;
+  pointer-events: none;
+}
+
+.media-button files-toggle-ripple::shadow .ripple.activated {
+  opacity: 0.1;
 }
 
 /* Invisible div used to compute the width required for the elapsed time. */

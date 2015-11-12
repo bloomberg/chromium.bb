@@ -7,7 +7,8 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/font-roboto/roboto.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-slider/paper-slider.html">
-<link rel="import" href="chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/foreground/elements/files_icon_button.html">
+<link rel="import" href="chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/foreground/elements/files_ripple.html">
+<link rel="import" href="chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/foreground/elements/files_toggle_ripple.html">
 
 <dom-module id="control-panel">
   <link rel="import" type="css" href="control_panel.css">
@@ -18,54 +19,77 @@
       </div>
       <div class="control-row audio-controls">
         <!-- Shuffle toggle button in the bottom line. -->
-        <files-icon-button toggles
-            id="shuffle"
-            class="shuffle-mode media-button toggle"
-            active="{{shuffle}}">
-        </files-icon-button>
+        <button class="shuffle-mode media-button toggle" state="default">
+          <label>
+            <input id="shuffleCheckbox"
+                   type="checkbox"
+                   checked="{{shuffle::change}}">
+            <span class="icon"></span>
+          </label>
+          <files-toggle-ripple activated="[[shuffle]]"></files-toggle-ripple>
+        </button>
 
         <!-- Repeat toggle button in the bottom line. -->
-        <files-icon-button toggles
-            id="repeat"
-            class="repeat media-button toggle"
-            active="{{repeat}}">
-        </files-icon-button>
+        <button class="repeat media-button toggle" state="default">
+          <label>
+            <input id="repeatCheckbox"
+                   type="checkbox"
+                   checked="{{repeat::change}}">
+            <span class="icon"></span>
+          </label>
+          <files-toggle-ripple activated="[[repeat]]"></files-toggle-ripple>
+        </button>
 
         <!-- Prev button in the bottom line. -->
-        <files-icon-button
-            id="previous"
-            class="previous media-button"
-            on-click="previousClick">
-        </files-icon-button>
+        <button class="previous media-button"
+               state="default"
+               on-click="previousClick">
+          <div class="normal default"></div>
+          <div class="disabled"></div>
+          <files-ripple></files-ripple>
+        </button>
 
         <!-- Play button in the bottom line. -->
-        <files-icon-button
-            id="play"
-            class="play media-button"
-            on-click="playClick">
-        </files-icon-button>
+        <button class="play media-button"
+                state$="[[computePlayState_(playing)]]"
+                on-click="playClick">
+          <div class="normal playing"></div>
+          <div class="normal ended"></div>
+          <div class="disabled"></div>
+          <files-ripple></files-ripple>
+        </button>
 
         <!-- Next button in the bottom line. -->
-        <files-icon-button
-            id="next"
-            class="next media-button"
-            on-click="nextClick">
-        </files-icon-button>
+        <button class="next media-button"
+                state="default"
+                on-click="nextClick">
+          <div class="normal default"></div>
+          <div class="disabled"></div>
+          <files-ripple></files-ripple>
+        </button>
 
         <!-- Volume button in the bottom line. -->
-        <files-icon-button toggles
-            id="volume"
-            class="volume media-button toggle"
-            anchor-point="bottom center"
-            active="{{volumeSliderShown}}">
-        </files-icon-button>
+        <button id="volumeButton"
+                class="volume media-button toggle"
+                state="default"
+                anchor-point="bottom center">
+          <label>
+            <input type="checkbox" checked="{{volumeSliderShown::change}}">
+            <span class="icon"></span>
+          </label>
+          <files-toggle-ripple activated="[[volumeSliderShown]]"></files-toggle-ripple>
+        </button>
 
         <!-- Playlist button in the bottom line. -->
-        <files-icon-button toggles
-            id="playList"
-            class="playlist media-button toggle"
-            active="{{expanded}}">
-        </files-toggle-ripple>
+        <button id="playlistButton"
+                class="playlist media-button toggle"
+                state="default">
+          <label>
+            <input type="checkbox" checked="{{expanded::change}}">
+            <span class="icon"></span>
+          </label>
+          <files-toggle-ripple activated="[[expanded]]"></files-toggle-ripple>
+        </button>
       </div>
       <div class="control-row time-controls">
         <div class="time-container">

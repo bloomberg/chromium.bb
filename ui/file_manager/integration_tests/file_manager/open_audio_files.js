@@ -268,7 +268,7 @@ function audioRepeatSingleFile(path) {
       audioPlayerApp.callRemoteTestUtil(
           'fakeMouseClick',
           audioAppId,
-          ['audio-player /deep/ files-icon-button.repeat'],
+          ['audio-player /deep/ button.repeat input'],
           this.next);
     },
     function(result) {
@@ -404,7 +404,7 @@ function audioRepeatMultipleFile(path) {
       audioPlayerApp.callRemoteTestUtil(
           'fakeMouseClick',
           audioAppId,
-          ['audio-player /deep/ files-icon-button.repeat'],
+          ['audio-player /deep/ button.repeat input'],
           this.next);
     },
     function(result) {
