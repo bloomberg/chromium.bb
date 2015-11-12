@@ -24,11 +24,10 @@ template("chrome_public_apk_tmpl") {
         rebase_path("$root_gen_dir/CHROME_VERSION.json", root_out_dir)
     native_lib_version_arg = "@FileArg($_native_lib_file:full-quoted)"
 
-    # TODO(GYP):
-    #'proguard_enabled': 'true',
-    #'proguard_flags_paths': [
-    #  'chrome/android/java/proguard.flags',
-    #]
+    if (!is_debug) {
+      proguard_enabled = true
+      proguard_configs = [ "//chrome/android/java/proguard.flags" ]
+    }
 
     if (chromium_linker_supported) {
       use_chromium_linker = chrome_public_apk_use_chromium_linker

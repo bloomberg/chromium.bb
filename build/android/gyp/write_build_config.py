@@ -192,6 +192,10 @@ def main(argv):
   parser.add_option('--tested-apk-config',
       help='Path to the build config of the tested apk (for an instrumentation '
       'test apk).')
+  parser.add_option('--proguard-enabled', action='store_true',
+      help='Whether proguard is enabled for this apk.')
+  parser.add_option('--proguard-info',
+      help='Path to the proguard .info output for this apk.')
 
   options, args = parser.parse_args(argv)
 
@@ -351,6 +355,17 @@ def main(argv):
   if options.type in ['android_apk', 'deps_dex']:
     deps_dex_files = [c['dex_path'] for c in all_library_deps]
 
+  proguard_enabled = options.proguard_enabled
+  if options.type == 'android_apk':
+    deps_info['proguard_enabled'] = proguard_enabled
+
+  if proguard_enabled:
+    deps_info['proguard_info'] = options.proguard_info
+    config['proguard'] = {}
+    proguard_config = config['proguard']
+    proguard_config['input_paths'] = [options.jar_path] + java_full_classpath
+    proguard_config['tested_apk_info'] = ''
+
   # An instrumentation test apk should exclude the dex files that are in the apk
   # under test.
   if options.type == 'android_apk' and options.tested_apk_config:
@@ -364,12 +379,19 @@ def main(argv):
     expected_tested_package = tested_apk_config['package_name']
     AndroidManifest(options.android_manifest).CheckInstrumentation(
         expected_tested_package)
+    if tested_apk_config['proguard_enabled']:
+      assert proguard_enabled, ('proguard must be enabled for instrumentation'
+          ' apks if it\'s enabled for the tested apk')
+      proguard_config['tested_apk_info'] = tested_apk_config['proguard_info']
 
   # Dependencies for the final dex file of an apk or a 'deps_dex'.
   if options.type in ['android_apk', 'deps_dex']:
     config['final_dex'] = {}
     dex_config = config['final_dex']
-    # TODO(cjhopman): proguard version
+    if proguard_enabled:
+      # When proguard is enabled, the proguarded jar contains the code for all
+      # of the dependencies.
+      deps_dex_files = []
     dex_config['dependency_dex_files'] = deps_dex_files
 
   if options.type == 'android_apk':
