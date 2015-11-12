@@ -94,7 +94,7 @@
             '<@(locales)',
           ],
         },
-        # GN version:  //android_webview/rename_snapshot_blob 
+        # GN version:  //android_webview/rename_snapshot_blob
         {
           'action_name': 'rename_snapshot_blob',
           'inputs': [
@@ -110,7 +110,7 @@
             '<@(_outputs)',
           ],
         },
-        # GN version:  //android_webview/rename_natives_blob 
+        # GN version:  //android_webview/rename_natives_blob
         {
           'action_name': 'rename_natives_blob',
           'inputs': [
@@ -126,6 +126,7 @@
             '<@(_outputs)',
           ],
         },
+        # GN version:  //android_webview/generate_webview_license_notice
         {
           'action_name': 'generate_webview_license_notice',
           'inputs': [
@@ -146,7 +147,7 @@
         },
       ],
     },
-    # GN version:  //android_webview/locale_paks 
+    # GN version:  //android_webview/locale_paks
     {
       'target_name': 'android_webview_locale_paks',
       'type': 'none',
@@ -173,7 +174,7 @@
       ],
     },
     {
-      # GN version:  //android_webview/common:version 
+      # GN version:  //android_webview/common:version
       'target_name': 'android_webview_version',
       'type': 'none',
       'direct_dependent_settings': {
@@ -422,6 +423,7 @@
         }],
       ],
     },
+    # GN version:  //android_webview:libwebviewchromium
     {
       'target_name': 'libwebviewchromium',
       'includes': [
@@ -458,6 +460,7 @@
       ],
       'includes': [ '../build/java.gypi' ],
     },
+    # GN version:  //android_webview/glue
     {
       'target_name': 'system_webview_glue_java',
       'variables': {
@@ -466,6 +469,7 @@
       },
       'includes': [ 'apk/system_webview_glue_common.gypi' ],
     },
+    # GN version:  //android_webview:system_webview_apk
     {
       'target_name': 'system_webview_apk',
       'dependencies': [

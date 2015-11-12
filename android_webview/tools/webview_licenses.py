@@ -281,6 +281,13 @@ def main():
     print ' '.join(
       sorted(set(GenerateNoticeFile(generate_licenses_file_list_only=True))))
     return ScanResult.Ok
+  elif args[0] == 'gn_notice_deps':
+    # generate list for gn.
+    # 'set' is used to eliminate duplicate references to the same license file.
+    gn_file_list = ['"' + f + '"' for f in
+        sorted(set(GenerateNoticeFile(generate_licenses_file_list_only=True)))]
+    print '[%s] ' % ','.join(gn_file_list)
+    return ScanResult.Ok
   elif args[0] == 'notice':
     notice_file_contents = GenerateNoticeFile()
     if len(args) == 1:

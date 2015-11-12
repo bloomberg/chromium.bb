@@ -106,6 +106,8 @@ source_set("native") {
   if (enable_video_hole) {
     deps += [ "//components/external_video_surface:external_video_surface" ]
   }
+
+  libs = [ "jnigraphics" ]
 }
 
 generate_jni("native_jni") {

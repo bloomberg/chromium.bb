@@ -287,7 +287,7 @@ group("both_gn_and_gyp") {
 
     if (!is_chromecast) {
       deps += [
-        "//android_webview:system_webview_apk",
+        "//android_webview",
         "//chrome/android:chrome_junit_tests",
         "//chrome/android:chrome_public_apk",
         "//chrome/android:chrome_public_test_apk",

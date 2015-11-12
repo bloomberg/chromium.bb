@@ -16,15 +16,15 @@ if (current_cpu == "arm" || current_cpu == "x86" || current_cpu == "mipsel") {
   arch_suffix = 64
 }
 
-# This is dummy target for adding WebView gn piece by piece, so we don't need
-# to modify the src/BUILD.gn everytime new targets added.
-group("system_webview_apk") {
+group("android_webview") {
   deps = [
-    ":android_webview_java",
-    ":common",
-    ":assets",
-    "//android_webview/glue",
+    ":system_webview_apk",
   ]
+}
+
+jinja_template("system_webview_manifest") {
+  input = "apk/java/AndroidManifest.xml"
+  output = "$target_gen_dir/system_webview_manifest/AndroidManifest.xml"
 }
 
 webview_repack_locales("repack_locales") {
@@ -140,15 +140,18 @@ copy("rename_snapshot_blob") {
 }
 
 android_webview_assets_dir = "$root_build_dir/android_webview_assets"
+webview_license_path = "$target_gen_dir/webview_licenses.notice"
 
 copy_ex("assets") {
   clear_dir = true
   dest = android_webview_assets_dir
   sources = [
     "$target_gen_dir/webviewchromium.pak",
+    webview_license_path,
   ]
   deps = [
     ":repack_pack",
+    ":generate_webview_license_notice",
   ]
   if (icu_use_data_file) {
     sources += [ "$root_build_dir/icudtl.dat" ]
@@ -164,6 +167,26 @@ copy_ex("assets") {
       ":rename_snapshot_blob",
     ]
   }
+}
+
+action("generate_webview_license_notice") {
+  script = "tools/webview_licenses.py"
+  inputs = exec_script("//android_webview/tools/webview_licenses.py",
+                       [ "gn_notice_deps" ],
+                       "value")
+  inputs += [ "tools/licenses_notice.tmpl" ]
+  outputs = [
+    webview_license_path,
+  ]
+  args = [
+    "notice",
+    rebase_path(webview_license_path),
+  ]
+}
+
+android_resources("system_webview_resources") {
+  resource_dirs = [ "apk/java/res" ]
+  custom_package = "com.android.webview"
 }
 
 android_resources("resources") {
@@ -314,6 +337,16 @@ grit("generate_components_strings") {
     "components_strings_zh-CN.pak",
     "components_strings_zh-TW.pak",
   ]
+}
+
+shared_library("libwebviewchromium") {
+  deps = [
+    ":common",
+  ]
+  sources = [
+    "lib/main/webview_entry_point.cc",
+  ]
+  configs -= [ "//build/config/android:hide_native_jni_exports" ]
 }
 
 source_set("common") {
@@ -487,6 +520,7 @@ source_set("common") {
     "//components/visitedlink/browser",
     "//components/visitedlink/renderer",
     "//components/web_contents_delegate_android:web_contents_delegate_android",
+    "//content",
     "//content/public/app:both",
     "//content/public/browser",
     "//gin",
@@ -643,4 +677,21 @@ java_strings_grd("strings_grd") {
     "values-zh-rTW/android_webview_strings.xml",
     "values/android_webview_strings.xml",
   ]
+}
+
+android_apk("system_webview_apk") {
+  android_manifest = get_target_outputs(":system_webview_manifest")
+  android_manifest = android_manifest[1]
+  android_manifest_dep = ":system_webview_manifest"
+  asset_location = android_webview_assets_dir
+  chromium_code = true
+  deps = [
+    ":system_webview_resources",
+    ":assets",
+    ":libwebviewchromium",
+    "//android_webview/glue",
+    "//base:base_java",
+  ]
+  apk_name = "SystemWebView"
+  native_libs = [ "$root_build_dir/libwebviewchromium.so" ]
 }
