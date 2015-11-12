@@ -125,52 +125,6 @@ private:
     FrameTestHelpers::WebViewHelper m_helper;
 };
 
-TEST_F(WebPageSerializerTest, HTMLNodes)
-{
-    // Register the mocked frame and load it.
-    WebURL topFrameURL = toKURL("http://www.test.com");
-    registerMockedURLLoad("http://www.test.com", WebString::fromUTF8("simple_page.html"));
-    registerMockedURLLoad("http://www.example.com/beautifull.css", WebString::fromUTF8("beautifull.css"));
-
-    registerMockedImageURL("http://www.test.com/imageButton.png");
-    registerMockedImageURL("http://www.test.com/tableBackground.png");
-    registerMockedImageURL("http://www.test.com/trBackground.png");
-    registerMockedImageURL("http://www.test.com/tdBackground.png");
-    registerMockedImageURL("http://www.test.com/innerFrame.png");
-    registerMockedImageURL("http://www.test.com/bodyBackground.jpg");
-    registerMockedImageURL("https://www.secure.com/https.gif");
-    registerMockedImageURL("ftp://ftp.com/ftp.gif");
-    registerMockedImageURL("unknown://unkown.com/unknown.gif");
-
-    loadURLInTopFrame(topFrameURL);
-
-    // Retrieve all resources.
-    WebVector<WebURL> frames;
-    WebVector<WebURL> resources;
-    ASSERT_TRUE(WebPageSerializer::retrieveAllResources(
-        webView(), m_supportedSchemes, &resources, &frames));
-
-    // Tests that all resources from the frame have been retrieved.
-    EXPECT_EQ(1U, frames.size()); // There should be no duplicates.
-    EXPECT_TRUE(webVectorContains(frames, "http://www.test.com"));
-
-    EXPECT_EQ(14U, resources.size()); // There should be no duplicates.
-    EXPECT_TRUE(webVectorContains(resources, "http://www.example.com/beautifull.css"));
-    EXPECT_TRUE(webVectorContains(resources, "http://www.test.com/awesome.js"));
-    EXPECT_TRUE(webVectorContains(resources, "http://www.test.com/bodyBackground.jpg"));
-    EXPECT_TRUE(webVectorContains(resources, "http://www.test.com/awesome.png"));
-    EXPECT_TRUE(webVectorContains(resources, "http://www.test.com/imageButton.png"));
-    EXPECT_TRUE(webVectorContains(resources, "http://www.test.com/tableBackground.png"));
-    EXPECT_TRUE(webVectorContains(resources, "http://www.test.com/trBackground.png"));
-    EXPECT_TRUE(webVectorContains(resources, "http://www.test.com/tdBackground.png"));
-    EXPECT_TRUE(webVectorContains(resources, "http://www.evene.fr/citations/auteur.php?ida=46"));
-    EXPECT_TRUE(webVectorContains(resources, "http://www.brainyquote.com/quotes/authors/c/charles_darwin.html"));
-    EXPECT_TRUE(webVectorContains(resources, "http://www.test.com/why_deleted.html"));
-    EXPECT_TRUE(webVectorContains(resources, "http://www.test.com/why_inserted.html"));
-    EXPECT_TRUE(webVectorContains(resources, "https://www.secure.com/https.gif"));
-    EXPECT_TRUE(webVectorContains(resources, "file://c/my_folder/file.gif"));
-}
-
 TEST_F(WebPageSerializerTest, URLAttributeValues)
 {
     WebURL topFrameURL = toKURL("http://www.test.com");
@@ -229,47 +183,6 @@ TEST_F(WebPageSerializerTest, fromUrlWithMinusMinus)
     WebPageSerializer::serialize(webView()->mainFrame()->toWebLocalFrame(), &serializerClient, links, localPaths, "");
 
     EXPECT_EQ("<!-- saved from url=(0030)http://www.test.com/?-%2Dx-%2D -->", serializerClient.toString().substr(1, 60));
-}
-
-TEST_F(WebPageSerializerTest, MultipleFrames)
-{
-    // Register the mocked frames.
-    WebURL topFrameURL = toKURL("http://www.test.com");
-    registerMockedURLLoad("http://www.test.com", WebString::fromUTF8("top_frame.html"));
-    registerMockedURLLoad("http://www.test.com/simple_iframe.html",
-                          WebString::fromUTF8("simple_iframe.html"));
-    registerMockedURLLoad("http://www.test.com/object_iframe.html",
-                          WebString::fromUTF8("object_iframe.html"));
-    registerMockedURLLoad("http://www.test.com/embed_iframe.html",
-                          WebString::fromUTF8("embed_iframe.html"));
-    registerMockedImageURL("http://www.test.com/innerFrame.png");
-    registerMockedImageURL("http://www.test.com/embed.png");
-    registerMockedImageURL("http://www.test.com/object.png");
-
-    loadURLInTopFrame(topFrameURL);
-
-    // Retrieve all resources.
-    WebVector<WebURL> frames;
-    WebVector<WebURL> resources;
-    ASSERT_TRUE(WebPageSerializer::retrieveAllResources(
-        webView(), m_supportedSchemes, &resources, &frames));
-
-    // Tests that all resources from the frame have been retrieved.
-    EXPECT_EQ(4U, frames.size()); // There should be no duplicates.
-    EXPECT_TRUE(webVectorContains(frames, "http://www.test.com"));
-    EXPECT_TRUE(webVectorContains(frames, "http://www.test.com/simple_iframe.html"));
-    EXPECT_TRUE(webVectorContains(frames, "http://www.test.com/object_iframe.html"));
-    EXPECT_TRUE(webVectorContains(frames, "http://www.test.com/embed_iframe.html"));
-
-    EXPECT_EQ(5U, resources.size()); // There should be no duplicates.
-    EXPECT_TRUE(webVectorContains(resources, "http://www.test.com/awesome.png"));
-    EXPECT_TRUE(webVectorContains(resources, "http://www.test.com/innerFrame.png"));
-    EXPECT_TRUE(webVectorContains(resources, "http://www.test.com/flash.swf"));
-    // FIXME: for some reason the following resources is missing on one of the bot
-    //        causing the test to fail. Probably a plugin issue.
-    // EXPECT_TRUE(webVectorContains(resources, "http://www.test.com/music.mid"));
-    EXPECT_TRUE(webVectorContains(resources, "http://www.test.com/object.png"));
-    EXPECT_TRUE(webVectorContains(resources, "http://www.test.com/embed.png"));
 }
 
 } // namespace blink

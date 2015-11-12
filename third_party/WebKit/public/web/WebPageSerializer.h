@@ -47,18 +47,6 @@ template <typename T> class WebVector;
 // which contain all resource links that have local copy.
 class WebPageSerializer {
 public:
-    struct Resource {
-        WebURL url;
-        WebCString mimeType;
-        WebCString data;
-    };
-
-    // Serializes all the frames from the WebView, retrieves the page's
-    // resources (such as images and CSS) and adds them to the passed vector.
-    // The first resource in that vector is the top frame contents.
-    // Note that this also strips-out any script tag or link to JavaScript.
-    BLINK_EXPORT static void serialize(WebView*, WebVector<Resource>*);
-
     // Serializes the WebView contents to a MHTML representation.
     BLINK_EXPORT static WebCString serializeToMHTML(WebView*);
 
@@ -92,14 +80,6 @@ public:
         const WebVector<WebURL>& links,
         const WebVector<WebString>& localPaths,
         const WebString& localDirectoryName);
-
-    // Retrieve all the resource for the passed view, including the main frame
-    // and sub-frames. Returns true if all resources were retrieved
-    // successfully.
-    BLINK_EXPORT static bool retrieveAllResources(WebView*,
-                                                   const WebVector<WebCString>& supportedSchemes,
-                                                   WebVector<WebURL>* resources,
-                                                   WebVector<WebURL>* frames);
 
     // FIXME: The following are here for unit testing purposes. Consider
     // changing the unit tests instead.
