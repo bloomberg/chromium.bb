@@ -7,6 +7,10 @@
 
 #include <string>
 
+namespace base {
+class FeatureList;
+}
+
 namespace chrome_variations {
 
 struct FieldTrialTestingConfig;
@@ -17,14 +21,17 @@ struct FieldTrialTestingConfig;
 // on the formatting.
 bool AssociateParamsFromString(const std::string& variations_string);
 
-// Provides a mechanism to associate multiple set of params to multiple groups
-// with the |config| struct. This will also force the selection of FieldTrial
-// groups specified in the |config|.
-void AssociateParamsFromFieldTrialConfig(const FieldTrialTestingConfig& config);
+// Provides a mechanism to associate multiple set of params and features to
+// multiple groups with the |config| struct. This will also force the selection
+// of FieldTrial groups specified in the |config|. Registers features associated
+// with default field trials with |feature_list|.
+void AssociateParamsFromFieldTrialConfig(const FieldTrialTestingConfig& config,
+                                         base::FeatureList* feature_list);
 
-// Associates params to FieldTrial groups and forces the selection of groups
-// specified in testing/variations/fieldtrial_testing_config_*.json.
-void AssociateDefaultFieldTrialConfig();
+// Associates params and features to FieldTrial groups and forces the selection
+// of groups specified in testing/variations/fieldtrial_testing_config_*.json.
+// Registers features associated with default field trials with |feature_list|.
+void AssociateDefaultFieldTrialConfig(base::FeatureList* feature_list);
 
 }  // namespace chrome_variations
 

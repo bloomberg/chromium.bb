@@ -23,6 +23,10 @@ struct FieldTrialTestingGroup {
   const char* const group_name;
   const FieldTrialGroupParams * params;
   const size_t params_size;
+  const char* const * enable_features;
+  const size_t enable_features_size;
+  const char* const * disable_features;
+  const size_t disable_features_size;
 };
 
 struct FieldTrialTestingConfig {

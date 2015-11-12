@@ -24,6 +24,16 @@
               {"field": "value", "type": "string"}
             ]
           }
+        },
+        {
+          "field": "enable_features",
+          "type": "array",
+          "contents": { "type": "string"}
+        },
+        {
+          "field": "disable_features",
+          "type": "array",
+          "contents": { "type": "string"}
         }
       ]
     }

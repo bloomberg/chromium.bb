@@ -10,6 +10,16 @@
 #include "test_ouput.h"
 
 
+const char* const array_kFieldTrialConfig_enable_features_0[] = {
+    "X",
+};
+const char* const array_kFieldTrialConfig_disable_features[] = {
+    "C",
+};
+const char* const array_kFieldTrialConfig_enable_features[] = {
+    "A",
+    "B",
+};
 const FieldTrialGroupParams array_kFieldTrialConfig_params[] = {
     {
       "x",
@@ -26,15 +36,33 @@ const FieldTrialTestingGroup array_kFieldTrialConfig_groups[] = {
     "TestGroup1",
     NULL,
     0,
+    NULL,
+    0,
+    NULL,
+    0,
   },
   {
     "TestStudy2",
     "TestGroup2",
     array_kFieldTrialConfig_params,
     2,
+    array_kFieldTrialConfig_enable_features,
+    2,
+    array_kFieldTrialConfig_disable_features,
+    1,
+  },
+  {
+    "TestStudy3",
+    "TestGroup3",
+    NULL,
+    0,
+    array_kFieldTrialConfig_enable_features_0,
+    1,
+    NULL,
+    0,
   },
 };
 const FieldTrialTestingConfig kFieldTrialConfig = {
   array_kFieldTrialConfig_groups,
-  2,
+  3,
 };

@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include "base/feature_list.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_split.h"
 #include "chrome/common/variations/fieldtrial_testing_config.h"
@@ -62,8 +63,8 @@ bool AssociateParamsFromString(const std::string& varations_string) {
   return true;
 }
 
-void AssociateParamsFromFieldTrialConfig(
-    const FieldTrialTestingConfig& config) {
+void AssociateParamsFromFieldTrialConfig(const FieldTrialTestingConfig& config,
+                                         base::FeatureList* feature_list) {
   for (size_t i = 0; i < config.groups_size; ++i) {
     const FieldTrialTestingGroup& group = config.groups[i];
     if (group.params_size != 0) {
@@ -75,12 +76,24 @@ void AssociateParamsFromFieldTrialConfig(
       variations::AssociateVariationParams(group.study, group.group_name,
                                            params);
     }
-    base::FieldTrialList::CreateFieldTrial(group.study, group.group_name);
+    base::FieldTrial* trial =
+        base::FieldTrialList::CreateFieldTrial(group.study, group.group_name);
+
+    for (size_t j = 0; j < group.enable_features_size; ++j) {
+      feature_list->RegisterFieldTrialOverride(
+          group.enable_features[j], base::FeatureList::OVERRIDE_ENABLE_FEATURE,
+          trial);
+    }
+    for (size_t j = 0; j < group.disable_features_size; ++j) {
+      feature_list->RegisterFieldTrialOverride(
+          group.disable_features[j],
+          base::FeatureList::OVERRIDE_DISABLE_FEATURE, trial);
+    }
   }
 }
 
-void AssociateDefaultFieldTrialConfig() {
-  AssociateParamsFromFieldTrialConfig(kFieldTrialConfig);
+void AssociateDefaultFieldTrialConfig(base::FeatureList* feature_list) {
+  AssociateParamsFromFieldTrialConfig(kFieldTrialConfig, feature_list);
 }
 
 }  // namespace chrome_variations

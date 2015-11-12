@@ -18,7 +18,9 @@ class FieldTrialToStruct(unittest.TestCase):
           'params': {
             'x': '1',
             'y': '2'
-          }
+          },
+          'enable_features': ['A', 'B'],
+          'disable_features': ['C']
         }
       ],
       'Study2': [{'group_name': 'OtherGroup'}]
@@ -34,7 +36,10 @@ class FieldTrialToStruct(unittest.TestCase):
               'params': [
                 {'key': 'x', 'value': '1'},
                 {'key': 'y', 'value': '2'}
-              ]
+              ],
+             'enable_features': ['A',
+                                 'B'],
+             'disable_features': ['C']
             },
             {
               'study': 'Study2',
@@ -44,6 +49,7 @@ class FieldTrialToStruct(unittest.TestCase):
         }
       }
     }
+    self.maxDiff = None
     self.assertEqual(expected, result)
 
   def test_FieldTrialToStructMain(self):

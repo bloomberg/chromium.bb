@@ -48,6 +48,12 @@ def _FieldTrialConfigToDescription(config):
       for param in sorted(params_data.keys()):
         params.append({'key': param, 'value': params_data[param]})
       group['params'] = params
+    enable_features_data = group_data.get('enable_features')
+    if enable_features_data:
+      group['enable_features'] = enable_features_data
+    disable_features_data = group_data.get('disable_features')
+    if disable_features_data:
+      group['disable_features'] = disable_features_data
     element['groups'].append(group)
   return {'elements': {'kFieldTrialConfig': element}}
 
