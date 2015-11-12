@@ -349,6 +349,19 @@ NaClProcessHost::~NaClProcessHost() {
         base::Bind(&CloseFile, base::Passed(file.Pass())));
   }
 #endif
+  base::File files_to_close[] = {
+      nexe_file_.Pass(),
+      socket_for_renderer_.Pass(),
+      socket_for_sel_ldr_.Pass(),
+  };
+  // Open files need to be closed on the blocking pool.
+  for (auto& file : files_to_close) {
+    if (file.IsValid()) {
+      content::BrowserThread::GetBlockingPool()->PostTask(
+          FROM_HERE,
+          base::Bind(&CloseFile, base::Passed(file.Pass())));
+    }
+  }
 
   if (reply_msg_) {
     // The process failed to launch for some reason.
