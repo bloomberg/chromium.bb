@@ -14,13 +14,14 @@
 namespace web {
 
 CookieNotificationBridge::CookieNotificationBridge() {
-  observer_.reset([[NSNotificationCenter defaultCenter]
+  id<NSObject> observer = [[NSNotificationCenter defaultCenter]
       addObserverForName:NSHTTPCookieManagerCookiesChangedNotification
                   object:[NSHTTPCookieStorage sharedHTTPCookieStorage]
                    queue:nil
               usingBlock:^(NSNotification* notification) {
-                  OnNotificationReceived(notification);
-              }]);
+                OnNotificationReceived(notification);
+              }];
+  observer_.reset([observer retain]);
 }
 
 CookieNotificationBridge::~CookieNotificationBridge() {
