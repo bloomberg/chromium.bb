@@ -39,6 +39,8 @@ P2PPortAllocator::P2PPortAllocator(
   uint32 flags = 0;
   if (!config_.enable_multiple_routes)
     flags |= cricket::PORTALLOCATOR_DISABLE_ADAPTER_ENUMERATION;
+  if (!config_.enable_default_local_candidate)
+    flags |= cricket::PORTALLOCATOR_DISABLE_DEFAULT_LOCAL_CANDIDATE;
   if (!config_.enable_nonproxied_udp) {
     flags |= cricket::PORTALLOCATOR_DISABLE_UDP |
              cricket::PORTALLOCATOR_DISABLE_STUN |

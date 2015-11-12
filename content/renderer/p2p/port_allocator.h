@@ -42,8 +42,17 @@ class P2PPortAllocator : public cricket::BasicPortAllocator {
     // RETURN is available in the future.
     bool enable_nonproxied_udp = true;
 
-    // Disable binding to individual NICs when set to false.
+    // Request binding to individual NICs. Whether multiple routes is allowed is
+    // subject to the permission check on mic/camera. When specified as false or
+    // the permission request is denied, it still uses the default local address
+    // to generate a single local candidate. TODO(guoweis): Rename this to
+    // |request_multiple_routes|.
     bool enable_multiple_routes = true;
+
+    // Enable exposing the default local address when set to true. This is
+    // only in effect when the |enable_multiple_routes| is false or the
+    // permission check of mic/camera is denied.
+    bool enable_default_local_candidate = true;
   };
 
   P2PPortAllocator(

@@ -479,15 +479,18 @@ PeerConnectionDependencyFactory::CreatePeerConnection(
         // |request_multiple_routes|. Whether local IP addresses could be
         // collected depends on if mic/camera permission is granted for this
         // origin.
-        std::string mode = renderer_view_impl->renderer_preferences()
-                               .webrtc_ip_handling_policy;
-        switch (GetWebRTCIPHandlingPolicy(mode)) {
+        WebRTCIPHandlingPolicy policy =
+            GetWebRTCIPHandlingPolicy(renderer_view_impl->renderer_preferences()
+                                          .webrtc_ip_handling_policy);
+        switch (policy) {
           // TODO(guoweis): specify the flag of disabling local candidate
           // collection when webrtc is updated.
           case DEFAULT_PUBLIC_INTERFACE_ONLY:
           case DEFAULT_PUBLIC_AND_PRIVATE_INTERFACES:
             port_config.enable_multiple_routes = false;
             port_config.enable_nonproxied_udp = true;
+            port_config.enable_default_local_candidate =
+                (policy == DEFAULT_PUBLIC_AND_PRIVATE_INTERFACES);
             break;
           case DISABLE_NON_PROXIED_UDP:
             port_config.enable_multiple_routes = false;
@@ -497,13 +500,10 @@ PeerConnectionDependencyFactory::CreatePeerConnection(
             port_config.enable_multiple_routes = true;
             port_config.enable_nonproxied_udp = true;
             break;
-          default:
-            NOTREACHED();
-            break;
         }
 
         VLOG(3) << "WebRTC routing preferences: "
-                << "policy: " << mode
+                << "policy: " << policy
                 << ", multiple_routes: " << port_config.enable_multiple_routes
                 << ", nonproxied_udp: " << port_config.enable_nonproxied_udp;
       }
