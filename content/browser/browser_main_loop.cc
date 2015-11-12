@@ -374,12 +374,7 @@ class BrowserMainLoop::MemoryObserver : public base::MessageLoop::TaskObserver {
   void DidProcessTask(const base::PendingTask& pending_task) override {
 #if !defined(OS_IOS)  // No ProcessMetrics on IOS.
     scoped_ptr<base::ProcessMetrics> process_metrics(
-        base::ProcessMetrics::CreateProcessMetrics(
-#if defined(OS_MACOSX)
-            base::GetCurrentProcessHandle(), NULL));
-#else
-            base::GetCurrentProcessHandle()));
-#endif
+        base::ProcessMetrics::CreateCurrentProcessMetrics());
     size_t private_bytes;
     process_metrics->GetMemoryBytes(&private_bytes, NULL);
     LOCAL_HISTOGRAM_MEMORY_KB("Memory.BrowserUsed", private_bytes >> 10);

@@ -25,17 +25,6 @@ namespace trace_event {
 // static
 uint64 ProcessMemoryTotalsDumpProvider::rss_bytes_for_testing = 0;
 
-namespace {
-
-ProcessMetrics* CreateProcessMetricsForCurrentProcess() {
-#if !defined(OS_MACOSX) || defined(OS_IOS)
-  return ProcessMetrics::CreateProcessMetrics(GetCurrentProcessHandle());
-#else
-  return ProcessMetrics::CreateProcessMetrics(GetCurrentProcessHandle(), NULL);
-#endif
-}
-}  // namespace
-
 // static
 ProcessMemoryTotalsDumpProvider*
 ProcessMemoryTotalsDumpProvider::GetInstance() {
@@ -45,8 +34,7 @@ ProcessMemoryTotalsDumpProvider::GetInstance() {
 }
 
 ProcessMemoryTotalsDumpProvider::ProcessMemoryTotalsDumpProvider()
-    : process_metrics_(CreateProcessMetricsForCurrentProcess()) {
-}
+    : process_metrics_(ProcessMetrics::CreateCurrentProcessMetrics()) {}
 
 ProcessMemoryTotalsDumpProvider::~ProcessMemoryTotalsDumpProvider() {
 }

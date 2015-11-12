@@ -90,8 +90,9 @@ struct CommittedKBytes {
 BASE_EXPORT int64 TimeValToMicroseconds(const struct timeval& tv);
 
 // Provides performance metrics for a specified process (CPU usage, memory and
-// IO counters). To use it, invoke CreateProcessMetrics() to get an instance
-// for a specific process, then access the information with the different get
+// IO counters). Use CreateCurrentProcessMetrics() to get an instance for the
+// current process, or CreateProcessMetrics() to get an instance for an
+// arbitrary process. Then, access the information with the different get
 // methods.
 class BASE_EXPORT ProcessMetrics {
  public:
@@ -109,6 +110,11 @@ class BASE_EXPORT ProcessMetrics {
   static ProcessMetrics* CreateProcessMetrics(ProcessHandle process,
                                               PortProvider* port_provider);
 #endif  // !defined(OS_MACOSX) || defined(OS_IOS)
+
+  // Creates a ProcessMetrics for the current process. This a cross-platform
+  // convenience wrapper for CreateProcessMetrics().
+  // The caller owns the returned object.
+  static ProcessMetrics* CreateCurrentProcessMetrics();
 
   // Returns the current space allocated for the pagefile, in bytes (these pages
   // may or may not be in memory).  On Linux, this returns the total virtual

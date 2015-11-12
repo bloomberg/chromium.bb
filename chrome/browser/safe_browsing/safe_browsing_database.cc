@@ -1431,15 +1431,8 @@ void SafeBrowsingDatabaseNew::UpdatePrefixSetUrlStore(
 
   // Measure the amount of IO during the filter build.
   base::IoCounters io_before, io_after;
-  base::ProcessHandle handle = base::GetCurrentProcessHandle();
   scoped_ptr<base::ProcessMetrics> metric(
-#if !defined(OS_MACOSX)
-      base::ProcessMetrics::CreateProcessMetrics(handle)
-#else
-      // Getting stats only for the current process is enough, so NULL is fine.
-      base::ProcessMetrics::CreateProcessMetrics(handle, NULL)
-#endif
-  );
+      base::ProcessMetrics::CreateCurrentProcessMetrics());
 
   // IoCounters are currently not supported on Mac, and may not be
   // available for Linux, so we check the result and only show IO

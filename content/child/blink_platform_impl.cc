@@ -1215,20 +1215,6 @@ blink::WebString BlinkPlatformImpl::signedPublicKeyAndChallengeString(
   return blink::WebString("");
 }
 
-static scoped_ptr<base::ProcessMetrics> CurrentProcessMetrics() {
-  using base::ProcessMetrics;
-#if defined(OS_MACOSX)
-  return scoped_ptr<ProcessMetrics>(
-      // The default port provider is sufficient to get data for the current
-      // process.
-      ProcessMetrics::CreateProcessMetrics(base::GetCurrentProcessHandle(),
-                                           NULL));
-#else
-  return scoped_ptr<ProcessMetrics>(
-      ProcessMetrics::CreateProcessMetrics(base::GetCurrentProcessHandle()));
-#endif
-}
-
 static size_t getMemoryUsageMB(bool bypass_cache) {
   size_t current_mem_usage = 0;
   MemoryUsageCache* mem_usage_cache_singleton = MemoryUsageCache::GetInstance();
@@ -1268,7 +1254,9 @@ size_t BlinkPlatformImpl::numberOfProcessors() {
 bool BlinkPlatformImpl::processMemorySizesInBytes(
     size_t* private_bytes,
     size_t* shared_bytes) {
-  return CurrentProcessMetrics()->GetMemoryBytes(private_bytes, shared_bytes);
+  scoped_ptr<base::ProcessMetrics> current_process_metrics(
+      base::ProcessMetrics::CreateCurrentProcessMetrics());
+  return current_process_metrics->GetMemoryBytes(private_bytes, shared_bytes);
 }
 
 bool BlinkPlatformImpl::memoryAllocatorWasteInBytes(size_t* size) {
