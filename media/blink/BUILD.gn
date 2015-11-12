@@ -112,6 +112,7 @@ test("media_blink_unittests") {
     "buffered_data_source_unittest.cc",
     "buffered_resource_loader_unittest.cc",
     "cache_util_unittest.cc",
+    "interval_map_unittest.cc",
     "key_system_config_selector_unittest.cc",
     "lru_unittest.cc",
     "mock_webframeclient.h",
