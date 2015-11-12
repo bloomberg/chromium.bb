@@ -603,6 +603,20 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
     }
   }
 
+  if (remove_mask & REMOVE_HISTORY) {
+    password_manager::PasswordStore* password_store =
+        PasswordStoreFactory::GetForProfile(
+            profile_, ServiceAccessType::EXPLICIT_ACCESS).get();
+
+    if (password_store) {
+      waiting_for_clear_passwords_stats_ = true;
+      password_store->RemoveStatisticsCreatedBetween(
+          delete_begin_, delete_end_,
+          base::Bind(&BrowsingDataRemover::OnClearedPasswordsStats,
+                     base::Unretained(this)));
+    }
+  }
+
   if (remove_mask & REMOVE_FORM_DATA) {
     content::RecordAction(UserMetricsAction("ClearBrowsingData_Autofill"));
     scoped_refptr<autofill::AutofillWebDataService> web_data_service =
@@ -876,6 +890,7 @@ bool BrowsingDataRemover::AllDone() {
          !waiting_for_clear_network_predictor_ &&
          !waiting_for_clear_networking_history_ &&
          !waiting_for_clear_passwords_ &&
+         !waiting_for_clear_passwords_stats_ &&
          !waiting_for_clear_platform_keys_ &&
          !waiting_for_clear_plugin_data_ &&
          !waiting_for_clear_pnacl_cache_ &&
@@ -1084,6 +1099,12 @@ void BrowsingDataRemover::OnClearPlatformKeys(
 void BrowsingDataRemover::OnClearedPasswords() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   waiting_for_clear_passwords_ = false;
+  NotifyAndDeleteIfDone();
+}
+
+void BrowsingDataRemover::OnClearedPasswordsStats() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  waiting_for_clear_passwords_stats_ = false;
   NotifyAndDeleteIfDone();
 }
 

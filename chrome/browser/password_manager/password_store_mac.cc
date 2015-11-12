@@ -1167,6 +1167,14 @@ PasswordStoreChangeList PasswordStoreMac::RemoveLoginsSyncedBetweenImpl(
   return changes;
 }
 
+bool PasswordStoreMac::RemoveStatisticsCreatedBetweenImpl(
+    base::Time delete_begin,
+    base::Time delete_end) {
+  return login_metadata_db_ &&
+         login_metadata_db_->stats_table().RemoveStatsBetween(delete_begin,
+                                                              delete_end);
+}
+
 ScopedVector<autofill::PasswordForm> PasswordStoreMac::FillMatchingLogins(
     const autofill::PasswordForm& form,
     AuthorizationPromptPolicy prompt_policy) {

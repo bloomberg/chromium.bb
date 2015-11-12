@@ -137,6 +137,13 @@ PasswordStoreChangeList PasswordStoreDefault::RemoveLoginsSyncedBetweenImpl(
   return changes;
 }
 
+bool PasswordStoreDefault::RemoveStatisticsCreatedBetweenImpl(
+    base::Time delete_begin,
+    base::Time delete_end) {
+  return login_db_ &&
+         login_db_->stats_table().RemoveStatsBetween(delete_begin, delete_end);
+}
+
 ScopedVector<autofill::PasswordForm> PasswordStoreDefault::FillMatchingLogins(
     const autofill::PasswordForm& form,
     AuthorizationPromptPolicy prompt_policy) {
