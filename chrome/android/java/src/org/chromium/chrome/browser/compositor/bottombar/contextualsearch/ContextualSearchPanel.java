@@ -28,11 +28,6 @@ import org.chromium.ui.resources.ResourceManager;
 public class ContextualSearchPanel extends OverlayPanel {
 
     /**
-     * The extra dp added around the close button touch target.
-     */
-    private static final int CLOSE_BUTTON_TOUCH_SLOP_DP = 5;
-
-    /**
      * The delay after which the hide progress will be hidden.
      */
     private static final long HIDE_PROGRESS_BAR_DELAY = 1000 / 60 * 4;
@@ -280,19 +275,6 @@ public class ContextualSearchPanel extends OverlayPanel {
                 getManagementDelegate().promoteToTab();
             }
         }
-    }
-
-    /**
-     * @param x The x coordinate in dp.
-     * @param y The y coordinate in dp.
-     * @return Whether the given |x| |y| coordinate is inside the close button.
-     */
-    private boolean isCoordinateInsideCloseButton(float x, float y) {
-        boolean isInY = y >= (getCloseIconY() - CLOSE_BUTTON_TOUCH_SLOP_DP)
-                && y <= (getCloseIconY() + getCloseIconDimension() + CLOSE_BUTTON_TOUCH_SLOP_DP);
-        boolean isInX = x >= (getCloseIconX() - CLOSE_BUTTON_TOUCH_SLOP_DP)
-                && x <= (getCloseIconX() + getCloseIconDimension() + CLOSE_BUTTON_TOUCH_SLOP_DP);
-        return isInY && isInX;
     }
 
     @Override

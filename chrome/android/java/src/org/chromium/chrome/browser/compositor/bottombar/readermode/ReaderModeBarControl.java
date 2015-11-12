@@ -24,6 +24,11 @@ public class ReaderModeBarControl extends ContextualSearchInflater {
     private TextView mReaderText;
 
     /**
+     * Track the last string that was displayed in the bar to avoid unnecessary re-draw.
+     */
+    private int mLastDisplayedStringId;
+
+    /**
      * @param panel             The panel.
      * @param context           The Android Context used to inflate the View.
      * @param container         The container View used to inflate the View.
@@ -43,6 +48,9 @@ public class ReaderModeBarControl extends ContextualSearchInflater {
      * @param stringId The resource ID of the string to set the text to.
      */
     public void setBarText(int stringId) {
+        if (stringId == mLastDisplayedStringId) return;
+        mLastDisplayedStringId = stringId;
+
         inflate();
         mReaderText.setText(stringId);
         invalidate();

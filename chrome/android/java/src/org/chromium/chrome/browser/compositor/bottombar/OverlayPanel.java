@@ -24,6 +24,11 @@ public class OverlayPanel extends ContextualSearchPanelAnimation
         implements OverlayPanelContentFactory {
 
     /**
+     * The extra dp added around the close button touch target.
+     */
+    private static final int CLOSE_BUTTON_TOUCH_SLOP_DP = 5;
+
+    /**
      * State of the Overlay Panel.
      */
     public static enum PanelState {
@@ -469,6 +474,19 @@ public class OverlayPanel extends ContextualSearchPanelAnimation
     public void handleFling(float velocity) {
         mHasDetectedTouchGesture = true;
         animateToProjectedState(velocity);
+    }
+
+    /**
+     * @param x The x coordinate in dp.
+     * @param y The y coordinate in dp.
+     * @return Whether the given |x| |y| coordinate is inside the close button.
+     */
+    protected boolean isCoordinateInsideCloseButton(float x, float y) {
+        boolean isInY = y >= (getCloseIconY() - CLOSE_BUTTON_TOUCH_SLOP_DP)
+                && y <= (getCloseIconY() + getCloseIconDimension() + CLOSE_BUTTON_TOUCH_SLOP_DP);
+        boolean isInX = x >= (getCloseIconX() - CLOSE_BUTTON_TOUCH_SLOP_DP)
+                && x <= (getCloseIconX() + getCloseIconDimension() + CLOSE_BUTTON_TOUCH_SLOP_DP);
+        return isInY && isInX;
     }
 
     /**

@@ -1259,7 +1259,7 @@ abstract class ContextualSearchPanelBase implements ContextualSearchPromoHost {
      * Updates the target offset of the Base Page in order to keep the selection in view
      * after expanding the Panel.
      */
-    private void updateBasePageTargetY() {
+    protected void updateBasePageTargetY() {
         mBasePageTargetY = calculateBasePageTargetY(PanelState.EXPANDED);
     }
 
@@ -1270,7 +1270,7 @@ abstract class ContextualSearchPanelBase implements ContextualSearchPromoHost {
      * @param expandedState
      * @return The target offset Y.
      */
-    private float calculateBasePageTargetY(PanelState expandedState) {
+    protected float calculateBasePageTargetY(PanelState expandedState) {
         // Only a fullscreen wide Panel should offset the base page. A small panel should
         // always return zero to ensure the Base Page remains in the same position.
         if (!isFullscreenSizePanel()) return 0.f;
