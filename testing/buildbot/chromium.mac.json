@@ -149,6 +149,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "gn_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "google_apis_unittests"
       },
       {
@@ -433,6 +439,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "gfx_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "gn_unittests"
       },
       {
         "swarming": {
@@ -727,6 +739,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "gn_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "google_apis_unittests"
       },
       {
@@ -1016,6 +1034,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "gn_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "google_apis_unittests"
       },
       {
@@ -1300,6 +1324,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "gfx_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "gn_unittests"
       },
       {
         "swarming": {
