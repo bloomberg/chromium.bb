@@ -8,10 +8,80 @@
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "core/dom/ExecutionContext.h"
+#include "modules/audio_output_devices/AudioOutputDeviceClient.h"
 #include "modules/audio_output_devices/SetSinkIdCallbacks.h"
 #include "public/platform/WebSecurityOrigin.h"
 
 namespace blink {
+
+namespace {
+
+class SetSinkIdResolver : public ScriptPromiseResolver {
+    WTF_MAKE_NONCOPYABLE(SetSinkIdResolver);
+public:
+    static SetSinkIdResolver* create(ScriptState*, HTMLMediaElement&, const String& sinkId);
+    ~SetSinkIdResolver() override = default;
+    void startAsync();
+
+    DECLARE_VIRTUAL_TRACE();
+
+private:
+    SetSinkIdResolver(ScriptState*, HTMLMediaElement&, const String& sinkId);
+    void timerFired(Timer<SetSinkIdResolver>*);
+
+    RefPtrWillBeMember<HTMLMediaElement> m_element;
+    String m_sinkId;
+    Timer<SetSinkIdResolver> m_timer;
+};
+
+SetSinkIdResolver* SetSinkIdResolver::create(ScriptState* scriptState, HTMLMediaElement& element, const String& sinkId)
+{
+    SetSinkIdResolver* resolver = new SetSinkIdResolver(scriptState, element, sinkId);
+    resolver->suspendIfNeeded();
+    resolver->keepAliveWhilePending();
+    return resolver;
+}
+
+SetSinkIdResolver::SetSinkIdResolver(ScriptState* scriptState, HTMLMediaElement& element, const String& sinkId)
+    : ScriptPromiseResolver(scriptState)
+    , m_element(element)
+    , m_sinkId(sinkId)
+    , m_timer(this, &SetSinkIdResolver::timerFired)
+{
+}
+
+void SetSinkIdResolver::startAsync()
+{
+    m_timer.startOneShot(0, BLINK_FROM_HERE);
+}
+
+void SetSinkIdResolver::timerFired(Timer<SetSinkIdResolver>* timer)
+{
+    ExecutionContext* context = executionContext();
+    ASSERT(context && context->isDocument());
+    OwnPtr<SetSinkIdCallbacks> callbacks = adoptPtr(new SetSinkIdCallbacks(this, *m_element, m_sinkId));
+    WebMediaPlayer* webMediaPlayer = m_element->webMediaPlayer();
+    if (webMediaPlayer) {
+        // Using leakPtr() to transfer ownership because |webMediaPlayer| is a platform object that takes raw pointers
+        webMediaPlayer->setSinkId(m_sinkId, WebSecurityOrigin(context->securityOrigin()), callbacks.leakPtr());
+    } else {
+        if (AudioOutputDeviceClient* client = AudioOutputDeviceClient::from(context)) {
+            client->checkIfAudioSinkExistsAndIsAuthorized(context, m_sinkId, callbacks.release());
+        } else {
+            // The context has been detached. Impossible to get a security origin to check.
+            ASSERT(context->activeDOMObjectsAreStopped());
+            reject(DOMException::create(SecurityError, "Impossible to authorize device for detached context"));
+        }
+    }
+}
+
+DEFINE_TRACE(SetSinkIdResolver)
+{
+    visitor->trace(m_element);
+    ScriptPromiseResolver::trace(visitor);
+}
+
+} // namespace
 
 HTMLMediaElementAudioOutputDevice::HTMLMediaElementAudioOutputDevice()
     : m_sinkId("")
@@ -31,18 +101,14 @@ void HTMLMediaElementAudioOutputDevice::setSinkId(const String& sinkId)
 
 ScriptPromise HTMLMediaElementAudioOutputDevice::setSinkId(ScriptState* scriptState, HTMLMediaElement& element, const String& sinkId)
 {
-    ASSERT(scriptState);
+    SetSinkIdResolver* resolver = SetSinkIdResolver::create(scriptState, element, sinkId);
+    ScriptPromise promise = resolver->promise();
+    if (sinkId == HTMLMediaElementAudioOutputDevice::sinkId(element))
+        resolver->resolve();
+    else
+        resolver->startAsync();
 
-    WebMediaPlayer* webMediaPlayer = element.webMediaPlayer();
-    if (!webMediaPlayer)
-        return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(AbortError, "No media player available"));
-
-    ExecutionContext* context = scriptState->executionContext();
-    ASSERT(context && context->isDocument());
-
-    ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
-    webMediaPlayer->setSinkId(sinkId, WebSecurityOrigin(context->securityOrigin()), new SetSinkIdCallbacks(resolver, element, sinkId));
-    return resolver->promise();
+    return promise;
 }
 
 const char* HTMLMediaElementAudioOutputDevice::supplementName()

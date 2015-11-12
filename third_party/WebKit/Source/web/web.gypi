@@ -4,6 +4,8 @@
       'AssertMatchingEnums.cpp',
       'AssociatedURLLoader.cpp',
       'AssociatedURLLoader.h',
+      'AudioOutputDeviceClientImpl.cpp',
+      'AudioOutputDeviceClientImpl.h',
       'ChromeClientImpl.cpp',
       'ChromeClientImpl.h',
       'ColorChooserPopupUIController.cpp',

@@ -17,6 +17,7 @@
 #include "base/process/process.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "cc/base/switches.h"
 #include "components/scheduler/renderer/renderer_scheduler.h"
@@ -79,6 +80,7 @@
 #include "content/renderer/ime_event_guard.h"
 #include "content/renderer/internal_document_state_data.h"
 #include "content/renderer/manifest/manifest_manager.h"
+#include "content/renderer/media/audio_device_factory.h"
 #include "content/renderer/media/audio_renderer_mixer_manager.h"
 #include "content/renderer/media/crypto/render_cdm_factory.h"
 #include "content/renderer/media/media_permission_dispatcher_impl.h"
@@ -115,6 +117,7 @@
 #include "content/renderer/web_ui_extension.h"
 #include "content/renderer/websharedworker_proxy.h"
 #include "gin/modules/module_registry.h"
+#include "media/audio/audio_output_device.h"
 #include "media/base/audio_renderer_mixer_input.h"
 #include "media/base/media_log.h"
 #include "media/base/media_switches.h"
@@ -5347,6 +5350,20 @@ RenderFrameImpl::GetWebMediaPlayerDelegate() {
   if (!media_player_delegate_)
     media_player_delegate_ = new media::RendererWebMediaPlayerDelegate(this);
   return media_player_delegate_;
+}
+
+void RenderFrameImpl::checkIfAudioSinkExistsAndIsAuthorized(
+    const blink::WebString& sink_id,
+    const blink::WebSecurityOrigin& security_origin,
+    blink::WebSetSinkIdCallbacks* web_callbacks) {
+  media::SwitchOutputDeviceCB callback =
+      media::ConvertToSwitchOutputDeviceCB(web_callbacks);
+  scoped_refptr<media::AudioOutputDevice> device =
+      AudioDeviceFactory::NewOutputDevice(routing_id_, 0, sink_id.utf8(),
+                                          security_origin);
+  media::OutputDeviceStatus status = device->GetDeviceStatus();
+  device->Stop();
+  callback.Run(status);
 }
 
 }  // namespace content

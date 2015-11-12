@@ -750,6 +750,8 @@
       'audio_output_devices/HTMLMediaElementAudioOutputDevice.h',
       'audio_output_devices/SetSinkIdCallbacks.cpp',
       'audio_output_devices/SetSinkIdCallbacks.h',
+      'audio_output_devices/AudioOutputDeviceClient.cpp',
+      'audio_output_devices/AudioOutputDeviceClient.h',
       'background_sync/ServiceWorkerGlobalScopeSync.h',
       'background_sync/ServiceWorkerRegistrationSync.cpp',
       'background_sync/ServiceWorkerRegistrationSync.h',

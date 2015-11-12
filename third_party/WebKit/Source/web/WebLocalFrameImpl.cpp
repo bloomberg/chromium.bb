@@ -156,6 +156,7 @@
 #include "core/timing/DOMWindowPerformance.h"
 #include "core/timing/Performance.h"
 #include "modules/app_banner/AppBannerController.h"
+#include "modules/audio_output_devices/AudioOutputDeviceClient.h"
 #include "modules/bluetooth/BluetoothSupplement.h"
 #include "modules/geolocation/GeolocationController.h"
 #include "modules/notifications/NotificationPermissionClient.h"
@@ -219,6 +220,7 @@
 #include "public/web/WebTreeScopeType.h"
 #include "skia/ext/platform_device.h"
 #include "web/AssociatedURLLoader.h"
+#include "web/AudioOutputDeviceClientImpl.h"
 #include "web/CompositionUnderlineVectorBuilder.h"
 #include "web/FindInPageCoordinates.h"
 #include "web/GeolocationClientProxy.h"
@@ -1714,6 +1716,8 @@ void WebLocalFrameImpl::setCoreFrame(PassRefPtrWillBeRawPtr<LocalFrame> frame)
             VRController::provideTo(*m_frame, m_client ? m_client->webVRClient() : nullptr);
         if (RuntimeEnabledFeatures::wakeLockEnabled())
             ScreenWakeLock::provideTo(*m_frame, m_client ? m_client->wakeLockClient() : nullptr);
+        if (RuntimeEnabledFeatures::audioOutputDevicesEnabled())
+            provideAudioOutputDeviceClientTo(*m_frame, AudioOutputDeviceClientImpl::create());
     }
 }
 

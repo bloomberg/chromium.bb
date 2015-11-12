@@ -5,6 +5,7 @@
 #ifndef CONTENT_RENDERER_RENDER_FRAME_IMPL_H_
 #define CONTENT_RENDERER_RENDER_FRAME_IMPL_H_
 
+#include <string>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -584,6 +585,10 @@ class CONTENT_EXPORT RenderFrameImpl
                                  const blink::WebURL& url) override;
   blink::WebBluetooth* bluetooth() override;
   blink::WebUSBClient* usbClient() override;
+  void checkIfAudioSinkExistsAndIsAuthorized(
+      const blink::WebString& sink_id,
+      const blink::WebSecurityOrigin& security_origin,
+      blink::WebSetSinkIdCallbacks* web_callbacks) override;
 
 #if defined(ENABLE_WEBVR)
   blink::WebVRClient* webVRClient() override;

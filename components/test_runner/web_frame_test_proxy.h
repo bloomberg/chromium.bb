@@ -274,6 +274,14 @@ class WebFrameTestProxy : public Base {
     Base::postAccessibilityEvent(object, event);
   }
 
+  virtual void checkIfAudioSinkExistsAndIsAuthorized(
+      const blink::WebString& sink_id,
+      const blink::WebSecurityOrigin& security_origin,
+      blink::WebSetSinkIdCallbacks* web_callbacks) {
+    base_proxy_->CheckIfAudioSinkExistsAndIsAuthorized(sink_id, security_origin,
+                                                       web_callbacks);
+  }
+
  private:
   WebTestProxyBase* base_proxy_;
 

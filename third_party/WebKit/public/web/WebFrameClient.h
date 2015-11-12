@@ -49,6 +49,7 @@
 #include "public/platform/WebFileSystem.h"
 #include "public/platform/WebFileSystemType.h"
 #include "public/platform/WebSecurityOrigin.h"
+#include "public/platform/WebSetSinkIdCallbacks.h"
 #include "public/platform/WebStorageQuotaCallbacks.h"
 #include "public/platform/WebStorageQuotaType.h"
 #include "public/platform/WebURLError.h"
@@ -679,6 +680,13 @@ public:
 
     // WebUSB --------------------------------------------------------------
     virtual WebUSBClient* usbClient() { return nullptr; }
+
+
+    // Audio Output Devices API --------------------------------------------
+
+    // Checks that the given audio sink exists and is authorized. The result is provided via the callbacks.
+    // This method takes ownership of the callbacks pointer.
+    virtual void checkIfAudioSinkExistsAndIsAuthorized(const WebString& sinkId, const WebSecurityOrigin&, WebSetSinkIdCallbacks*) { BLINK_ASSERT_NOT_REACHED(); }
 
 protected:
     virtual ~WebFrameClient() { }

@@ -17,6 +17,7 @@
 #include "third_party/WebKit/public/platform/WebImage.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
 #include "third_party/WebKit/public/platform/WebScreenInfo.h"
+#include "third_party/WebKit/public/platform/WebSetSinkIdCallbacks.h"
 #include "third_party/WebKit/public/platform/WebURLError.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/web/WebAXEnums.h"
@@ -225,6 +226,10 @@ class TEST_RUNNER_EXPORT WebTestProxyBase {
                                         blink::WebSecurityOrigin target,
                                         blink::WebDOMMessageEvent event);
   void ResetInputMethod();
+  void CheckIfAudioSinkExistsAndIsAuthorized(
+      const blink::WebString& sink_id,
+      const blink::WebSecurityOrigin& security_origin,
+      blink::WebSetSinkIdCallbacks* web_callbacks);
 
   blink::WebString acceptLanguages();
 

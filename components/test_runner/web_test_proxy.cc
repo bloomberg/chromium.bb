@@ -1408,6 +1408,20 @@ void WebTestProxyBase::ResetInputMethod() {
     web_widget_->confirmComposition();
 }
 
+void WebTestProxyBase::CheckIfAudioSinkExistsAndIsAuthorized(
+    const blink::WebString& sink_id,
+    const blink::WebSecurityOrigin& security_origin,
+    blink::WebSetSinkIdCallbacks* web_callbacks) {
+  scoped_ptr<blink::WebSetSinkIdCallbacks> callback(web_callbacks);
+  std::string device_id = sink_id.utf8();
+  if (device_id == "valid" || device_id.empty())
+    callback->onSuccess();
+  else if (device_id == "unauthorized")
+    callback->onError(blink::WebSetSinkIdError::NotAuthorized);
+  else
+    callback->onError(blink::WebSetSinkIdError::NotFound);
+}
+
 blink::WebString WebTestProxyBase::acceptLanguages() {
   return blink::WebString::fromUTF8(accept_languages_);
 }
