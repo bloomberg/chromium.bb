@@ -158,13 +158,13 @@ class OfflinePageTestArchiver : public OfflinePageArchiver {
   OfflinePageTestArchiver(
       OfflinePageModelTest* test,
       const GURL& url,
-      const base::FilePath& archiver_dir,
       ArchiverResult result,
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
   ~OfflinePageTestArchiver() override;
 
   // OfflinePageArchiver implementation:
-  void CreateArchive(const CreateArchiveCallback& callback) override;
+  void CreateArchive(const base::FilePath& archives_dir,
+                     const CreateArchiveCallback& callback) override;
 
   void CompleteCreateArchive();
 
@@ -175,7 +175,7 @@ class OfflinePageTestArchiver : public OfflinePageArchiver {
  private:
   OfflinePageModelTest* test_;  // Outlive OfflinePageTestArchiver.
   GURL url_;
-  base::FilePath archiver_dir_;
+  base::FilePath archives_dir_;
   ArchiverResult result_;
   bool create_archive_called_;
   bool delayed_;
@@ -259,12 +259,10 @@ class OfflinePageModelTest
 OfflinePageTestArchiver::OfflinePageTestArchiver(
     OfflinePageModelTest* test,
     const GURL& url,
-    const base::FilePath& archiver_dir,
     ArchiverResult result,
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner)
     : test_(test),
       url_(url),
-      archiver_dir_(archiver_dir),
       result_(result),
       create_archive_called_(false),
       delayed_(false),
@@ -276,20 +274,22 @@ OfflinePageTestArchiver::~OfflinePageTestArchiver() {
 }
 
 void OfflinePageTestArchiver::CreateArchive(
+    const base::FilePath& archives_dir,
     const CreateArchiveCallback& callback) {
   create_archive_called_ = true;
   callback_ = callback;
+  archives_dir_ = archives_dir;
   if (!delayed_)
     CompleteCreateArchive();
 }
 
 void OfflinePageTestArchiver::CompleteCreateArchive() {
   DCHECK(!callback_.is_null());
-  base::FilePath archiver_path;
-  ASSERT_TRUE(base::CreateTemporaryFileInDir(archiver_dir_, &archiver_path));
-  test_->set_last_archiver_path(archiver_path);
+  base::FilePath archive_path;
+  ASSERT_TRUE(base::CreateTemporaryFileInDir(archives_dir_, &archive_path));
+  test_->set_last_archiver_path(archive_path);
   task_runner_->PostTask(FROM_HERE, base::Bind(callback_, this, result_, url_,
-                                               archiver_path, kTestFileSize));
+                                               archive_path, kTestFileSize));
 }
 
 OfflinePageModelTest::OfflinePageModelTest()
@@ -344,8 +344,8 @@ void OfflinePageModelTest::OnStoreUpdateDone(bool /* success - ignored */) {
 scoped_ptr<OfflinePageTestArchiver> OfflinePageModelTest::BuildArchiver(
     const GURL& url,
     OfflinePageArchiver::ArchiverResult result) {
-  return scoped_ptr<OfflinePageTestArchiver>(new OfflinePageTestArchiver(
-      this, url, temp_dir_.path(), result, task_runner()));
+  return scoped_ptr<OfflinePageTestArchiver>(
+      new OfflinePageTestArchiver(this, url, result, task_runner()));
 }
 
 scoped_ptr<OfflinePageMetadataStore> OfflinePageModelTest::BuildStore() {
@@ -356,7 +356,7 @@ scoped_ptr<OfflinePageMetadataStore> OfflinePageModelTest::BuildStore() {
 scoped_ptr<OfflinePageModel> OfflinePageModelTest::BuildModel(
     scoped_ptr<OfflinePageMetadataStore> store) {
   return scoped_ptr<OfflinePageModel>(
-      new OfflinePageModel(store.Pass(), task_runner()));
+      new OfflinePageModel(store.Pass(), temp_dir_.path(), task_runner()));
 }
 
 void OfflinePageModelTest::ResetModel() {

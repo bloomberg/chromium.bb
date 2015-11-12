@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -124,9 +125,9 @@ class OfflinePageModel : public KeyedService,
   static bool CanSavePage(const GURL& url);
 
   // All blocking calls/disk access will happen on the provided |task_runner|.
-  OfflinePageModel(
-      scoped_ptr<OfflinePageMetadataStore> store,
-      const scoped_refptr<base::SequencedTaskRunner>& task_runner);
+  OfflinePageModel(scoped_ptr<OfflinePageMetadataStore> store,
+                   const base::FilePath& archives_dir,
+                   const scoped_refptr<base::SequencedTaskRunner>& task_runner);
   ~OfflinePageModel() override;
 
   // Starts the OfflinePageModel and registers it as a BookmarkModelObserver.
@@ -214,6 +215,9 @@ class OfflinePageModel : public KeyedService,
                            const bookmarks::BookmarkNode* node,
                            const std::set<GURL>& removed_urls) override;
 
+  // Callback for ensuring archive directory is created.
+  void OnEnsureArchivesDirCreatedDone();
+
   // Callback for loading pages from the offline page metadata store.
   void OnLoadDone(OfflinePageMetadataStore::LoadStatus load_status,
                   const std::vector<OfflinePageItem>& offline_pages);
@@ -280,6 +284,9 @@ class OfflinePageModel : public KeyedService,
 
   // Persistent store for offline page metadata.
   scoped_ptr<OfflinePageMetadataStore> store_;
+
+  // Location where all of the archive files will be stored.
+  base::FilePath archives_dir_;
 
   // The observers.
   base::ObserverList<Observer> observers_;

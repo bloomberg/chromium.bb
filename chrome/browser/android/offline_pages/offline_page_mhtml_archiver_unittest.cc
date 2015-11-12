@@ -32,14 +32,11 @@ class TestMHTMLArchiver : public OfflinePageMHTMLArchiver {
     WEB_CONTENTS_MISSING,
   };
 
-  TestMHTMLArchiver(
-      const GURL& url,
-      const TestScenario test_scenario,
-      const base::FilePath& archive_dir);
+  TestMHTMLArchiver(const GURL& url, const TestScenario test_scenario);
   ~TestMHTMLArchiver() override;
 
  private:
-  void GenerateMHTML() override;
+  void GenerateMHTML(const base::FilePath& archives_dir) override;
 
   const GURL url_;
   const TestScenario test_scenario_;
@@ -47,19 +44,16 @@ class TestMHTMLArchiver : public OfflinePageMHTMLArchiver {
   DISALLOW_COPY_AND_ASSIGN(TestMHTMLArchiver);
 };
 
-TestMHTMLArchiver::TestMHTMLArchiver(
-    const GURL& url,
-    const TestScenario test_scenario,
-    const base::FilePath& archive_dir)
-    : OfflinePageMHTMLArchiver(archive_dir),
-      url_(url),
+TestMHTMLArchiver::TestMHTMLArchiver(const GURL& url,
+                                     const TestScenario test_scenario)
+    : url_(url),
       test_scenario_(test_scenario) {
 }
 
 TestMHTMLArchiver::~TestMHTMLArchiver() {
 }
 
-void TestMHTMLArchiver::GenerateMHTML() {
+void TestMHTMLArchiver::GenerateMHTML(const base::FilePath& archives_dir) {
   if (test_scenario_ == TestScenario::WEB_CONTENTS_MISSING) {
     ReportFailure(ArchiverResult::ERROR_CONTENT_UNAVAILABLE);
     return;
@@ -142,8 +136,7 @@ OfflinePageMHTMLArchiverTest::~OfflinePageMHTMLArchiverTest() {
 scoped_ptr<TestMHTMLArchiver> OfflinePageMHTMLArchiverTest::CreateArchiver(
     const GURL& url,
     TestMHTMLArchiver::TestScenario scenario) {
-  return scoped_ptr<TestMHTMLArchiver>(
-      new TestMHTMLArchiver(url, scenario, GetTestFilePath()));
+  return scoped_ptr<TestMHTMLArchiver>(new TestMHTMLArchiver(url, scenario));
 }
 
 void OfflinePageMHTMLArchiverTest::OnCreateArchiveDone(
@@ -172,7 +165,7 @@ TEST_F(OfflinePageMHTMLArchiverTest, WebContentsMissing) {
   scoped_ptr<TestMHTMLArchiver> archiver(
       CreateArchiver(page_url,
                      TestMHTMLArchiver::TestScenario::WEB_CONTENTS_MISSING));
-  archiver->CreateArchive(callback());
+  archiver->CreateArchive(GetTestFilePath(), callback());
 
   EXPECT_EQ(archiver.get(), last_archiver());
   EXPECT_EQ(OfflinePageArchiver::ArchiverResult::ERROR_CONTENT_UNAVAILABLE,
@@ -186,7 +179,7 @@ TEST_F(OfflinePageMHTMLArchiverTest, NotAbleToGenerateArchive) {
   scoped_ptr<TestMHTMLArchiver> archiver(
       CreateArchiver(page_url,
                      TestMHTMLArchiver::TestScenario::NOT_ABLE_TO_ARCHIVE));
-  archiver->CreateArchive(callback());
+  archiver->CreateArchive(GetTestFilePath(), callback());
 
   EXPECT_EQ(archiver.get(), last_archiver());
   EXPECT_EQ(OfflinePageArchiver::ArchiverResult::ERROR_ARCHIVE_CREATION_FAILED,
@@ -201,7 +194,7 @@ TEST_F(OfflinePageMHTMLArchiverTest, SuccessfullyCreateOfflineArchive) {
   scoped_ptr<TestMHTMLArchiver> archiver(
       CreateArchiver(page_url,
                      TestMHTMLArchiver::TestScenario::SUCCESS));
-  archiver->CreateArchive(callback());
+  archiver->CreateArchive(GetTestFilePath(), callback());
   PumpLoop();
 
   EXPECT_EQ(archiver.get(), last_archiver());

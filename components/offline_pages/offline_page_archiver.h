@@ -62,9 +62,10 @@ class OfflinePageArchiver {
 
   virtual ~OfflinePageArchiver() {}
 
-  // Starts creating the archive. Once archive is created |callback| will be
-  // called with the result and additional information.
-  virtual void CreateArchive(const CreateArchiveCallback& callback) = 0;
+  // Starts creating the archive in the |archives_dir|. Once archive is created
+  // |callback| will be called with the result and additional information.
+  virtual void CreateArchive(const base::FilePath& archives_dir,
+                             const CreateArchiveCallback& callback) = 0;
 };
 
 }  // namespace offline_pages

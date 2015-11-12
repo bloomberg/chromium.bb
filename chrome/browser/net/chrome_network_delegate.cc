@@ -34,6 +34,7 @@
 #include "chrome/browser/net/safe_search_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/task_management/task_manager_interface.h"
+#include "chrome/common/chrome_constants.h"
 #include "chrome/common/pref_names.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/data_usage/core/data_use_aggregator.h"
@@ -677,6 +678,15 @@ bool ChromeNetworkDelegate::OnCanAccessFile(const net::URLRequest& request,
   PathService::Get(base::DIR_ANDROID_EXTERNAL_STORAGE, &external_storage_path);
   if (external_storage_path.IsParent(path))
     return true;
+
+  // Allow to load offline pages, which are stored in the $PROFILE_PATH/Offline
+  // Pages/archives.
+  if (!profile_path_.empty()) {
+    const base::FilePath offline_page_archives =
+        profile_path_.Append(chrome::kOfflinePageArchviesDirname);
+    if (offline_page_archives.IsParent(path))
+      return true;
+  }
 
   // Whitelist of other allowed directories.
   static const char* const kLocalAccessWhiteList[] = {

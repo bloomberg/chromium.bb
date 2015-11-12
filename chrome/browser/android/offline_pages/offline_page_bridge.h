@@ -9,10 +9,6 @@
 #include "base/android/jni_weak_ref.h"
 #include "components/offline_pages/offline_page_model.h"
 
-namespace base {
-class FilePath;
-}
-
 namespace content {
 class BrowserContext;
 }
@@ -71,14 +67,11 @@ class OfflinePageBridge : public OfflinePageModel::Observer {
 
  private:
   void NotifyIfDoneLoading() const;
-  static base::FilePath GetDownloadsPath(
-      content::BrowserContext* browser_context);
 
   JavaObjectWeakGlobalRef weak_java_ref_;
   // Not owned.
   OfflinePageModel* offline_page_model_;
-  // Not owned.
-  content::BrowserContext* browser_context_;
+
   DISALLOW_COPY_AND_ASSIGN(OfflinePageBridge);
 };
 

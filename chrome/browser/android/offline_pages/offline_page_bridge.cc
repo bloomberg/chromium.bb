@@ -7,18 +7,15 @@
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/basictypes.h"
-#include "base/files/file_path.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/android/offline_pages/offline_page_mhtml_archiver.h"
 #include "chrome/browser/android/offline_pages/offline_page_model_factory.h"
-#include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
 #include "components/offline_pages/offline_page_feature.h"
 #include "components/offline_pages/offline_page_item.h"
 #include "components/offline_pages/offline_page_model.h"
 #include "content/public/browser/browser_context.h"
-#include "content/public/browser/download_manager.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/OfflinePageBridge_jni.h"
 #include "net/base/filename_util.h"
@@ -83,9 +80,8 @@ OfflinePageBridge::OfflinePageBridge(JNIEnv* env,
                                      jobject obj,
                                      content::BrowserContext* browser_context)
     : weak_java_ref_(env, obj),
-      offline_page_model_(OfflinePageModelFactory::GetForBrowserContext(
-          browser_context)),
-      browser_context_(browser_context) {
+      offline_page_model_(
+          OfflinePageModelFactory::GetForBrowserContext(browser_context)) {
   NotifyIfDoneLoading();
   offline_page_model_->AddObserver(this);
 }
@@ -171,8 +167,7 @@ void OfflinePageBridge::SavePage(JNIEnv* env,
   GURL url(web_contents->GetLastCommittedURL());
 
   scoped_ptr<OfflinePageArchiver> archiver(
-      new OfflinePageMHTMLArchiver(
-          web_contents, GetDownloadsPath(browser_context_)));
+      new OfflinePageMHTMLArchiver(web_contents));
 
   offline_page_model_->SavePage(
       url, bookmark_id, archiver.Pass(),
@@ -238,19 +233,6 @@ bool OfflinePageBridge::MightBeOfflineURL(const GURL& url) {
          base::EndsWith(url.spec(),
                         OfflinePageMHTMLArchiver::GetFileNameExtension(),
                         base::CompareCase::INSENSITIVE_ASCII);
-}
-
-// static
-base::FilePath OfflinePageBridge::GetDownloadsPath(
-    content::BrowserContext* browser_context) {
-  content::DownloadManager* manager =
-      content::BrowserContext::GetDownloadManager(browser_context);
-  if (!manager) {
-    DVLOG(1) << "No download manager available in offline page bridge";
-    return base::FilePath();
-  }
-
-  return DownloadPrefs::FromDownloadManager(manager)->DownloadPath();
 }
 
 static jlong Init(JNIEnv* env,

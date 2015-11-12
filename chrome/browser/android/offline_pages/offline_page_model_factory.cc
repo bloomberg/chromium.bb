@@ -10,7 +10,7 @@
 #include "base/sequenced_task_runner.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/chrome_paths.h"
+#include "chrome/common/chrome_constants.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/offline_pages/offline_page_metadata_store_impl.h"
 #include "components/offline_pages/offline_page_model.h"
@@ -39,15 +39,21 @@ OfflinePageModel* OfflinePageModelFactory::GetForBrowserContext(
 
 KeyedService* OfflinePageModelFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
+  Profile* profile = Profile::FromBrowserContext(context);
   scoped_refptr<base::SequencedTaskRunner> background_task_runner =
       content::BrowserThread::GetBlockingPool()->GetSequencedTaskRunner(
           content::BrowserThread::GetBlockingPool()->GetSequenceToken());
-  base::FilePath store_path;
-  CHECK(PathService::Get(chrome::DIR_OFFLINE_PAGE_METADATA, &store_path));
+
+  base::FilePath store_path =
+      profile->GetPath().Append(chrome::kOfflinePageMetadataDirname);
   scoped_ptr<OfflinePageMetadataStoreImpl> metadata_store(
       new OfflinePageMetadataStoreImpl(background_task_runner, store_path));
 
-  return new OfflinePageModel(metadata_store.Pass(), background_task_runner);
+  base::FilePath archives_dir =
+      profile->GetPath().Append(chrome::kOfflinePageArchviesDirname);
+
+  return new OfflinePageModel(metadata_store.Pass(), archives_dir,
+                              background_task_runner);
 }
 
 content::BrowserContext* OfflinePageModelFactory::GetBrowserContextToUse(

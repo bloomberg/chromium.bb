@@ -97,6 +97,10 @@ void FindPagesMissingArchiveFile(
   }
 }
 
+void EnsureArchivesDirCreated(const base::FilePath& archives_dir) {
+  CHECK(base::CreateDirectory(archives_dir));
+}
+
 }  // namespace
 
 // static
@@ -106,14 +110,18 @@ bool OfflinePageModel::CanSavePage(const GURL& url) {
 
 OfflinePageModel::OfflinePageModel(
     scoped_ptr<OfflinePageMetadataStore> store,
+    const base::FilePath& archives_dir,
     const scoped_refptr<base::SequencedTaskRunner>& task_runner)
     : store_(store.Pass()),
+      archives_dir_(archives_dir),
       is_loaded_(false),
       task_runner_(task_runner),
       scoped_observer_(this),
       weak_ptr_factory_(this) {
-  store_->Load(base::Bind(&OfflinePageModel::OnLoadDone,
-                          weak_ptr_factory_.GetWeakPtr()));
+  task_runner_->PostTaskAndReply(
+      FROM_HERE, base::Bind(EnsureArchivesDirCreated, archives_dir_),
+      base::Bind(&OfflinePageModel::OnEnsureArchivesDirCreatedDone,
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 OfflinePageModel::~OfflinePageModel() {
@@ -149,7 +157,8 @@ void OfflinePageModel::SavePage(const GURL& url,
   }
 
   DCHECK(archiver.get());
-  archiver->CreateArchive(base::Bind(&OfflinePageModel::OnCreateArchiveDone,
+  archiver->CreateArchive(archives_dir_,
+                          base::Bind(&OfflinePageModel::OnCreateArchiveDone,
                                      weak_ptr_factory_.GetWeakPtr(), url,
                                      bookmark_id, base::Time::Now(), callback));
   pending_archivers_.push_back(archiver.Pass());
@@ -461,6 +470,11 @@ void OfflinePageModel::BookmarkNodeRemoved(
     return;
   }
   MarkPageForDeletion(node->id(), base::Bind(&EmptyDeleteCallback));
+}
+
+void OfflinePageModel::OnEnsureArchivesDirCreatedDone() {
+  store_->Load(base::Bind(&OfflinePageModel::OnLoadDone,
+                          weak_ptr_factory_.GetWeakPtr()));
 }
 
 void OfflinePageModel::OnLoadDone(
