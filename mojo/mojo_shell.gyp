@@ -28,6 +28,10 @@
       'shell/package_manager.h',
       'shell/query_util.cc',
       'shell/query_util.h',
+      'shell/shell_application_delegate.cc',
+      'shell/shell_application_delegate.h',
+      'shell/shell_application_loader.cc',
+      'shell/shell_application_loader.h',
       'shell/static_application_loader.cc',
       'shell/static_application_loader.h',
       'shell/switches.cc',
@@ -43,6 +47,7 @@
       '<(DEPTH)/mojo/mojo_base.gyp:mojo_common_lib',
       '<(DEPTH)/mojo/mojo_base.gyp:mojo_environment_chromium',
       '<(DEPTH)/mojo/mojo_base.gyp:mojo_url_type_converters',
+      '<(DEPTH)/mojo/mojo_shell.gyp:mojo_shell_interfaces',
       '<(DEPTH)/url/url.gyp:url_lib',
     ],
   }, {
@@ -113,6 +118,17 @@
       'mojom_files': [
         'shell/capability_filter_unittest.mojom',
         'shell/test.mojom',
+      ],
+    },
+    'includes': [
+      '../third_party/mojo/mojom_bindings_generator_explicit.gypi',
+    ],
+  }, {
+    'target_name': 'mojo_shell_interfaces',
+    'type': 'none',
+    'variables': {
+      'mojom_files': [
+        'shell/application_manager.mojom',
       ],
     },
     'includes': [

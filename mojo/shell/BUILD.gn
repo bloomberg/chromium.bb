@@ -29,6 +29,10 @@ source_set("shell") {
     "package_manager.h",
     "query_util.cc",
     "query_util.h",
+    "shell_application_delegate.cc",
+    "shell_application_delegate.h",
+    "shell_application_loader.cc",
+    "shell_application_loader.h",
     "static_application_loader.cc",
     "static_application_loader.h",
     "switches.cc",
@@ -45,6 +49,7 @@ source_set("shell") {
     "//url",
   ]
   deps = [
+    ":interfaces",
     "//base/third_party/dynamic_annotations",
     "//crypto:crypto",
     "//mojo/application/public/cpp:sources",
@@ -105,5 +110,11 @@ mojom("test_bindings") {
   sources = [
     "capability_filter_unittest.mojom",
     "test.mojom",
+  ]
+}
+
+mojom("interfaces") {
+  sources = [
+    "application_manager.mojom",
   ]
 }

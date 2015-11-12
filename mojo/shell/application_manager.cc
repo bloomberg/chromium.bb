@@ -15,6 +15,7 @@
 #include "mojo/shell/fetcher.h"
 #include "mojo/shell/package_manager.h"
 #include "mojo/shell/query_util.h"
+#include "mojo/shell/shell_application_loader.h"
 #include "mojo/shell/switches.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
 
@@ -50,11 +51,7 @@ bool ApplicationManager::TestAPI::HasRunningInstanceForURL(
 
 ApplicationManager::ApplicationManager(
     scoped_ptr<PackageManager> package_manager)
-    : package_manager_(package_manager.Pass()),
-      task_runner_(nullptr),
-      weak_ptr_factory_(this) {
-  package_manager_->SetApplicationManager(this);
-}
+    : ApplicationManager(package_manager.Pass(), nullptr, nullptr) {}
 
 ApplicationManager::ApplicationManager(
     scoped_ptr<PackageManager> package_manager,
@@ -65,6 +62,8 @@ ApplicationManager::ApplicationManager(
       native_runner_factory_(native_runner_factory.Pass()),
       weak_ptr_factory_(this) {
   package_manager_->SetApplicationManager(this);
+  SetLoaderForURL(make_scoped_ptr(new ShellApplicationLoader(this)),
+                  GURL("mojo:shell"));
 }
 
 ApplicationManager::~ApplicationManager() {
