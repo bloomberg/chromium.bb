@@ -28,11 +28,11 @@ class LayerTreeDebugState;
 class OutputSurface;
 struct RendererCapabilities;
 
-// Abstract class responsible for proxying commands from the main-thread side of
-// the compositor over to the compositor implementation.
-class CC_EXPORT Proxy : public TaskRunnerProvider {
+// Abstract interface responsible for proxying commands from the main-thread
+// side of the compositor over to the compositor implementation.
+class CC_EXPORT Proxy {
  public:
-  ~Proxy() override;
+  virtual ~Proxy() {}
 
   virtual void FinishAllRendering() = 0;
 
@@ -85,13 +85,6 @@ class CC_EXPORT Proxy : public TaskRunnerProvider {
 
   // Testing hooks
   virtual bool MainFrameWillHappenForTesting() = 0;
-
- protected:
-  Proxy(scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
-        scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner);
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(Proxy);
 };
 
 }  // namespace cc

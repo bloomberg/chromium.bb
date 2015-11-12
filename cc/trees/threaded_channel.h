@@ -70,8 +70,7 @@ class CC_EXPORT ThreadedChannel : public ChannelMain, public ChannelImpl {
       // sequence. Currently ThreadProxy implements both so we pass the pointer
       // and set ProxyImpl.
       ThreadProxy* thread_proxy,
-      scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner);
+      TaskRunnerProvider* task_runner_provider);
 
   ~ThreadedChannel() override;
 
@@ -128,8 +127,7 @@ class CC_EXPORT ThreadedChannel : public ChannelMain, public ChannelImpl {
 
  protected:
   ThreadedChannel(ThreadProxy* thread_proxy,
-                  scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
-                  scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner);
+                  TaskRunnerProvider* task_runner_provider);
 
  private:
   base::SingleThreadTaskRunner* MainThreadTaskRunner() const;
@@ -139,11 +137,7 @@ class CC_EXPORT ThreadedChannel : public ChannelMain, public ChannelImpl {
 
   ProxyImpl* proxy_impl_;
 
-  // TODO(khushalsagar): Temporary variable to access proxy for assertion checks
-  // Remove this once the proxy class is split and the complete
-  // implementation for controlling communication across threads is moved to
-  // ThreadedChannel.
-  Proxy* proxy_;
+  TaskRunnerProvider* task_runner_provider_;
 
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
 

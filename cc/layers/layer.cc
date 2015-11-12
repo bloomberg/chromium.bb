@@ -1301,7 +1301,7 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
        it != copy_requests_.end();
        ++it) {
     scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner =
-        layer_tree_host()->proxy()->MainThreadTaskRunner();
+        layer_tree_host()->task_runner_provider()->MainThreadTaskRunner();
     scoped_ptr<CopyOutputRequest> original_request = copy_requests_.take(it);
     const CopyOutputRequest& original_request_ref = *original_request;
     scoped_ptr<CopyOutputRequest> main_thread_request =

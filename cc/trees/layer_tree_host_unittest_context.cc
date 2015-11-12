@@ -412,7 +412,7 @@ class LayerTreeHostClientTakeAwayOutputSurface
   }
 
   void HideAndReleaseOutputSurface() {
-    EXPECT_TRUE(layer_tree_host()->proxy()->IsMainThread());
+    EXPECT_TRUE(layer_tree_host()->task_runner_provider()->IsMainThread());
     layer_tree_host()->SetVisible(false);
     scoped_ptr<OutputSurface> surface =
         layer_tree_host()->ReleaseOutputSurface();
@@ -436,7 +436,7 @@ class LayerTreeHostClientTakeAwayOutputSurface
   }
 
   void MakeVisible() {
-    EXPECT_TRUE(layer_tree_host()->proxy()->IsMainThread());
+    EXPECT_TRUE(layer_tree_host()->task_runner_provider()->IsMainThread());
     layer_tree_host()->SetVisible(true);
   }
 
@@ -724,7 +724,7 @@ class LayerTreeHostContextTestLostContextAndEvictTextures
                           EvictTexturesOnImplThread,
                      base::Unretained(this)));
     } else {
-      DebugScopedSetImplThread impl(proxy());
+      DebugScopedSetImplThread impl(task_runner_provider());
       EvictTexturesOnImplThread();
     }
   }
@@ -1224,15 +1224,14 @@ class UIResourceLostTest : public LayerTreeHostContextTest {
   // the call to StepCompleteOnMainThread will not occur until after
   // the commit completes, because the main thread is blocked.
   void PostStepCompleteToMainThread() {
-    proxy()->MainThreadTaskRunner()->PostTask(
+    task_runner_provider()->MainThreadTaskRunner()->PostTask(
         FROM_HERE,
         base::Bind(&UIResourceLostTest::StepCompleteOnMainThreadInternal,
-                   base::Unretained(this),
-                   time_step_));
+                   base::Unretained(this), time_step_));
   }
 
   void PostLoseContextToImplThread() {
-    EXPECT_TRUE(layer_tree_host()->proxy()->IsMainThread());
+    EXPECT_TRUE(layer_tree_host()->task_runner_provider()->IsMainThread());
     ImplThreadTaskRunner()->PostTask(
         FROM_HERE,
         base::Bind(&LayerTreeHostContextTest::LoseContext,
@@ -1245,7 +1244,7 @@ class UIResourceLostTest : public LayerTreeHostContextTest {
 
  private:
   void StepCompleteOnMainThreadInternal(int step) {
-    EXPECT_TRUE(layer_tree_host()->proxy()->IsMainThread());
+    EXPECT_TRUE(layer_tree_host()->task_runner_provider()->IsMainThread());
     StepCompleteOnMainThread(step);
   }
 };
@@ -1266,7 +1265,7 @@ class UIResourceLostTestSimple : public UIResourceLostTest {
 class UIResourceLostAfterCommit : public UIResourceLostTestSimple {
  public:
   void StepCompleteOnMainThread(int step) override {
-    EXPECT_TRUE(layer_tree_host()->proxy()->IsMainThread());
+    EXPECT_TRUE(layer_tree_host()->task_runner_provider()->IsMainThread());
     switch (step) {
       case 0:
         ui_resource_ = FakeScopedUIResource::Create(layer_tree_host());
@@ -1421,7 +1420,7 @@ SINGLE_AND_MULTI_THREAD_TEST_F(UIResourceLostBeforeCommit);
 // commit.  Impl-side-painting only.
 class UIResourceLostBeforeActivateTree : public UIResourceLostTest {
   void StepCompleteOnMainThread(int step) override {
-    EXPECT_TRUE(layer_tree_host()->proxy()->IsMainThread());
+    EXPECT_TRUE(layer_tree_host()->task_runner_provider()->IsMainThread());
     switch (step) {
       case 0:
         ui_resource_ = FakeScopedUIResource::Create(layer_tree_host());
@@ -1504,7 +1503,7 @@ SINGLE_AND_MULTI_THREAD_TEST_F(UIResourceLostBeforeActivateTree);
 class UIResourceLostEviction : public UIResourceLostTestSimple {
  public:
   void StepCompleteOnMainThread(int step) override {
-    EXPECT_TRUE(layer_tree_host()->proxy()->IsMainThread());
+    EXPECT_TRUE(layer_tree_host()->task_runner_provider()->IsMainThread());
     switch (step) {
       case 0:
         ui_resource_ = FakeScopedUIResource::Create(layer_tree_host());

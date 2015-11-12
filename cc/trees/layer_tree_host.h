@@ -249,6 +249,9 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   HeadsUpDisplayLayer* hud_layer() const { return hud_layer_.get(); }
 
   Proxy* proxy() const { return proxy_.get(); }
+  TaskRunnerProvider* task_runner_provider() const {
+    return task_runner_provider_.get();
+  }
   AnimationRegistrar* animation_registrar() const {
     return animation_registrar_.get();
   }
@@ -366,7 +369,8 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
       LayerTreeHostSingleThreadClient* single_thread_client,
       scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
       scoped_ptr<BeginFrameSource> external_begin_frame_source);
-  void InitializeForTesting(scoped_ptr<Proxy> proxy_for_testing);
+  void InitializeForTesting(scoped_ptr<TaskRunnerProvider> task_runner_provider,
+                            scoped_ptr<Proxy> proxy_for_testing);
   void SetOutputSurfaceLostForTesting(bool is_lost) {
     output_surface_lost_ = is_lost;
   }
@@ -419,6 +423,7 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
 
   LayerTreeHostClient* client_;
   scoped_ptr<Proxy> proxy_;
+  scoped_ptr<TaskRunnerProvider> task_runner_provider_;
 
   int source_frame_number_;
   int meta_information_sequence_number_;

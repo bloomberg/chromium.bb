@@ -15,6 +15,7 @@
 #include "cc/trees/blocking_task_runner.h"
 #include "cc/trees/layer_tree_host_impl.h"
 #include "cc/trees/proxy.h"
+#include "cc/trees/task_runner_provider.h"
 
 namespace cc {
 
@@ -30,7 +31,7 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
   static scoped_ptr<Proxy> Create(
       LayerTreeHost* layer_tree_host,
       LayerTreeHostSingleThreadClient* client,
-      scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
+      TaskRunnerProvider* task_runner_provider_,
       scoped_ptr<BeginFrameSource> external_begin_frame_source);
   ~SingleThreadProxy() override;
 
@@ -119,11 +120,10 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
   void CompositeImmediately(base::TimeTicks frame_begin_time);
 
  protected:
-  SingleThreadProxy(
-      LayerTreeHost* layer_tree_host,
-      LayerTreeHostSingleThreadClient* client,
-      scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
-      scoped_ptr<BeginFrameSource> external_begin_frame_source);
+  SingleThreadProxy(LayerTreeHost* layer_tree_host,
+                    LayerTreeHostSingleThreadClient* client,
+                    TaskRunnerProvider* task_runner_provider,
+                    scoped_ptr<BeginFrameSource> external_begin_frame_source);
 
  private:
   void BeginMainFrame(const BeginFrameArgs& begin_frame_args);
@@ -141,6 +141,8 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
   // Accessed on main thread only.
   LayerTreeHost* layer_tree_host_;
   LayerTreeHostSingleThreadClient* client_;
+
+  TaskRunnerProvider* task_runner_provider_;
 
   // Used on the Thread, but checked on main thread during
   // initialization/shutdown.

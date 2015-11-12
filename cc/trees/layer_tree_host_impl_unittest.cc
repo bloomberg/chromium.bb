@@ -81,9 +81,7 @@ class LayerTreeHostImplTest : public testing::Test,
                               public LayerTreeHostImplClient {
  public:
   LayerTreeHostImplTest()
-      : task_runner_provider_(base::ThreadTaskRunnerHandle::Get(),
-                              base::ThreadTaskRunnerHandle::Get()),
-        always_impl_thread_(&task_runner_provider_),
+      : task_runner_provider_(base::ThreadTaskRunnerHandle::Get()),
         always_main_thread_blocked_(&task_runner_provider_),
         on_can_draw_state_changed_called_(false),
         did_notify_ready_to_activate_(false),
@@ -429,8 +427,7 @@ class LayerTreeHostImplTest : public testing::Test,
     host_impl_->DidDrawAllLayers(frame_data);
   }
 
-  TaskRunnerProvider task_runner_provider_;
-  DebugScopedSetImplThread always_impl_thread_;
+  FakeImplTaskRunnerProvider task_runner_provider_;
   DebugScopedSetMainThreadBlocked always_main_thread_blocked_;
 
   TestSharedBitmapManager shared_bitmap_manager_;

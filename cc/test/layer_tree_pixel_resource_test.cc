@@ -110,8 +110,9 @@ void LayerTreeHostPixelResourceTest::CreateResourceAndTileTaskWorkerPool(
     scoped_ptr<TileTaskWorkerPool>* tile_task_worker_pool,
     scoped_ptr<ResourcePool>* resource_pool) {
   base::SingleThreadTaskRunner* task_runner =
-      proxy()->HasImplThread() ? proxy()->ImplThreadTaskRunner()
-                               : proxy()->MainThreadTaskRunner();
+      task_runner_provider()->HasImplThread()
+          ? task_runner_provider()->ImplThreadTaskRunner()
+          : task_runner_provider()->MainThreadTaskRunner();
   DCHECK(task_runner);
   DCHECK(initialized_);
 

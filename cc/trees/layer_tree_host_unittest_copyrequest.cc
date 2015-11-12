@@ -103,7 +103,7 @@ class LayerTreeHostCopyRequestTestMultipleRequests
   }
 
   void CopyOutputCallback(size_t id, scoped_ptr<CopyOutputResult> result) {
-    EXPECT_TRUE(layer_tree_host()->proxy()->IsMainThread());
+    EXPECT_TRUE(layer_tree_host()->task_runner_provider()->IsMainThread());
     EXPECT_TRUE(result->HasBitmap());
     scoped_ptr<SkBitmap> bitmap = result->TakeBitmap().Pass();
     EXPECT_EQ(result->size().ToString(),
@@ -250,7 +250,7 @@ class LayerTreeHostCopyRequestTestLayerDestroyed
   }
 
   void CopyOutputCallback(scoped_ptr<CopyOutputResult> result) {
-    EXPECT_TRUE(layer_tree_host()->proxy()->IsMainThread());
+    EXPECT_TRUE(layer_tree_host()->task_runner_provider()->IsMainThread());
     EXPECT_TRUE(result->IsEmpty());
     ++callback_count_;
   }
@@ -307,7 +307,7 @@ class LayerTreeHostCopyRequestTestInHiddenSubtree
 
   void CopyOutputCallback(scoped_ptr<CopyOutputResult> result) {
     ++callback_count_;
-    EXPECT_TRUE(layer_tree_host()->proxy()->IsMainThread());
+    EXPECT_TRUE(layer_tree_host()->task_runner_provider()->IsMainThread());
     EXPECT_EQ(copy_layer_->bounds().ToString(), result->size().ToString())
         << callback_count_;
     switch (callback_count_) {
@@ -403,7 +403,7 @@ class LayerTreeHostTestHiddenSurfaceNotAllocatedForSubtreeCopyRequest
   }
 
   void CopyOutputCallback(scoped_ptr<CopyOutputResult> result) {
-    EXPECT_TRUE(layer_tree_host()->proxy()->IsMainThread());
+    EXPECT_TRUE(layer_tree_host()->task_runner_provider()->IsMainThread());
     EXPECT_EQ(copy_layer_->bounds().ToString(), result->size().ToString());
     EndTest();
   }
@@ -475,7 +475,7 @@ class LayerTreeHostCopyRequestTestClippedOut
   void CopyOutputCallback(scoped_ptr<CopyOutputResult> result) {
     // We should still get the content even if the copy requested layer was
     // completely clipped away.
-    EXPECT_TRUE(layer_tree_host()->proxy()->IsMainThread());
+    EXPECT_TRUE(layer_tree_host()->task_runner_provider()->IsMainThread());
     EXPECT_EQ(gfx::Size(10, 10).ToString(), result->size().ToString());
     EndTest();
   }
@@ -542,7 +542,7 @@ class LayerTreeHostTestAsyncTwoReadbacksWithoutDraw
   }
 
   void CopyOutputCallback(scoped_ptr<CopyOutputResult> result) {
-    EXPECT_TRUE(layer_tree_host()->proxy()->IsMainThread());
+    EXPECT_TRUE(layer_tree_host()->task_runner_provider()->IsMainThread());
 
     // The first frame can't be drawn.
     switch (callback_count_) {
@@ -604,7 +604,7 @@ class LayerTreeHostCopyRequestTestLostOutputSurface
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
   void CopyOutputCallback(scoped_ptr<CopyOutputResult> result) {
-    EXPECT_TRUE(layer_tree_host()->proxy()->IsMainThread());
+    EXPECT_TRUE(layer_tree_host()->task_runner_provider()->IsMainThread());
     EXPECT_EQ(gfx::Size(10, 10).ToString(), result->size().ToString());
     EXPECT_TRUE(result->HasTexture());
 

@@ -32,7 +32,9 @@ class MicroBenchmarkControllerTest : public testing::Test {
     layer_tree_host_ = FakeLayerTreeHost::Create(&layer_tree_host_client_,
                                                  &task_graph_runner_);
     layer_tree_host_->SetRootLayer(Layer::Create(LayerSettings()));
-    layer_tree_host_->InitializeForTesting(scoped_ptr<Proxy>(new FakeProxy));
+    layer_tree_host_->InitializeForTesting(
+        TaskRunnerProvider::Create(nullptr, nullptr),
+        scoped_ptr<Proxy>(new FakeProxy));
   }
 
   void TearDown() override {

@@ -105,14 +105,14 @@ class LayerTreeHostReadbackPixelTest
   }
 
   void ReadbackResultAsBitmap(scoped_ptr<CopyOutputResult> result) {
-    EXPECT_TRUE(proxy()->IsMainThread());
+    EXPECT_TRUE(task_runner_provider()->IsMainThread());
     EXPECT_TRUE(result->HasBitmap());
     result_bitmap_ = result->TakeBitmap().Pass();
     EndTest();
   }
 
   void ReadbackResultAsTexture(scoped_ptr<CopyOutputResult> result) {
-    EXPECT_TRUE(proxy()->IsMainThread());
+    EXPECT_TRUE(task_runner_provider()->IsMainThread());
     EXPECT_TRUE(result->HasTexture());
 
     TextureMailbox texture_mailbox;

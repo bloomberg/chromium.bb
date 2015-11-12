@@ -253,15 +253,21 @@ class LayerTreeTest : public testing::Test, public TestHooks {
 
   bool HasImplThread() { return !!impl_thread_; }
   base::SingleThreadTaskRunner* ImplThreadTaskRunner() {
-    DCHECK(proxy());
-    return proxy()->ImplThreadTaskRunner() ? proxy()->ImplThreadTaskRunner()
-                                           : main_task_runner_.get();
+    DCHECK(task_runner_provider());
+    base::SingleThreadTaskRunner* impl_thread_task_runner =
+        task_runner_provider()->ImplThreadTaskRunner();
+    return impl_thread_task_runner ? impl_thread_task_runner
+                                   : main_task_runner_.get();
   }
   base::SingleThreadTaskRunner* MainThreadTaskRunner() {
     return main_task_runner_.get();
   }
   Proxy* proxy() const {
     return layer_tree_host_ ? layer_tree_host_->proxy() : NULL;
+  }
+  TaskRunnerProvider* task_runner_provider() const {
+    return layer_tree_host_ ? layer_tree_host_->task_runner_provider()
+                            : nullptr;
   }
   TaskGraphRunner* task_graph_runner() const {
     return task_graph_runner_.get();

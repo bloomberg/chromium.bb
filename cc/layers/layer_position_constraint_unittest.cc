@@ -71,7 +71,9 @@ class LayerPositionConstraintTest : public testing::Test {
         child_impl_(nullptr),
         grand_child_impl_(nullptr),
         great_grand_child_impl_(nullptr) {
-    layer_tree_host_->InitializeForTesting(scoped_ptr<Proxy>(new FakeProxy));
+    layer_tree_host_->InitializeForTesting(
+        TaskRunnerProvider::Create(nullptr, nullptr),
+        scoped_ptr<Proxy>(new FakeProxy));
     CreateTreeForTest();
     fixed_to_top_left_.set_is_fixed_position(true);
     fixed_to_bottom_right_.set_is_fixed_position(true);

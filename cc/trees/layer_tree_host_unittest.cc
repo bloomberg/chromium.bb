@@ -375,7 +375,7 @@ class LayerTreeHostTestReadyToDrawVisibility : public LayerTreeHostTest {
   void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) override {
     if (!toggled_visibility_) {
       {
-        DebugScopedSetMainThread main(proxy());
+        DebugScopedSetMainThread main(task_runner_provider());
         layer_tree_host()->SetVisible(false);
       }
       toggled_visibility_ = true;
@@ -399,7 +399,7 @@ class LayerTreeHostTestReadyToDrawVisibility : public LayerTreeHostTest {
   void DidFinishImplFrameOnThread(LayerTreeHostImpl* host_impl) override {
     if (!host_impl->visible()) {
       {
-        DebugScopedSetMainThread main(proxy());
+        DebugScopedSetMainThread main(task_runner_provider());
         layer_tree_host()->SetVisible(true);
       }
       EXPECT_TRUE(host_impl->visible());

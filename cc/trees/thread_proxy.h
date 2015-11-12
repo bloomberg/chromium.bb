@@ -45,8 +45,7 @@ class CC_EXPORT ThreadProxy : public Proxy,
  public:
   static scoped_ptr<Proxy> Create(
       LayerTreeHost* layer_tree_host,
-      scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner,
+      TaskRunnerProvider* task_runner_provider,
       scoped_ptr<BeginFrameSource> external_begin_frame_source);
 
   ~ThreadProxy() override;
@@ -151,6 +150,7 @@ class CC_EXPORT ThreadProxy : public Proxy,
 
   const MainThreadOnly& main() const;
   const CompositorThreadOnly& impl() const;
+  TaskRunnerProvider* task_runner_provider() { return task_runner_provider_; }
 
   // Proxy implementation
   void FinishAllRendering() override;
@@ -239,11 +239,9 @@ class CC_EXPORT ThreadProxy : public Proxy,
   void SetChannel(scoped_ptr<ThreadedChannel> threaded_channel) override;
 
  protected:
-  ThreadProxy(
-      LayerTreeHost* layer_tree_host,
-      scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner,
-      scoped_ptr<BeginFrameSource> external_begin_frame_source);
+  ThreadProxy(LayerTreeHost* layer_tree_host,
+              TaskRunnerProvider* task_runner_provider,
+              scoped_ptr<BeginFrameSource> external_begin_frame_source);
 
  private:
   friend class ThreadProxyForTest;
@@ -308,6 +306,8 @@ class CC_EXPORT ThreadProxy : public Proxy,
   struct SchedulerStateRequest;
 
   DrawResult DrawSwapInternal(bool forced_draw);
+
+  TaskRunnerProvider* task_runner_provider_;
 
   // Use accessors instead of this variable directly.
   MainThreadOnly main_thread_only_vars_unsafe_;

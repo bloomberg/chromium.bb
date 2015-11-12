@@ -30,7 +30,9 @@ class ThreadedChannelTest : public LayerTreeTest {
                               base::Unretained(this)));
   }
 
-  virtual void StartTestOnImplThread() { DCHECK(proxy()->IsImplThread()); }
+  virtual void StartTestOnImplThread() {
+    DCHECK(task_runner_provider()->IsImplThread());
+  }
 
   void AfterTest() override {}
 

@@ -84,14 +84,16 @@ class ThreadProxyTest : public ProxyTest {
   }
 
   const ThreadProxy::MainThreadOnly& ThreadProxyMainOnly() const {
+    DCHECK(task_runner_provider());
+    DCHECK(task_runner_provider()->HasImplThread());
     DCHECK(proxy());
-    DCHECK(proxy()->HasImplThread());
     return static_cast<const ThreadProxy*>(proxy())->main();
   }
 
   const ThreadProxy::CompositorThreadOnly& ThreadProxyImplOnly() const {
+    DCHECK(task_runner_provider());
+    DCHECK(task_runner_provider()->HasImplThread());
     DCHECK(proxy());
-    DCHECK(proxy()->HasImplThread());
     return static_cast<const ThreadProxy*>(proxy())->impl();
   }
 

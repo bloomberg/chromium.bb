@@ -56,23 +56,21 @@ TEST(PictureLayerTest, NoTilesIfEmptyBounds) {
   // Intentionally skipping Update since it would normally be skipped on
   // a layer with empty bounds.
 
-  FakeProxy proxy;
-  {
-    DebugScopedSetImplThread impl_thread(&proxy);
+  FakeImplTaskRunnerProvider impl_task_runner_provider;
 
-    TestSharedBitmapManager shared_bitmap_manager;
-    FakeLayerTreeHostImpl host_impl(LayerTreeSettings(), &proxy,
-                                    &shared_bitmap_manager, &task_graph_runner);
-    host_impl.CreatePendingTree();
-    scoped_ptr<FakePictureLayerImpl> layer_impl =
-        FakePictureLayerImpl::Create(host_impl.pending_tree(), 1);
+  TestSharedBitmapManager shared_bitmap_manager;
+  FakeLayerTreeHostImpl host_impl(LayerTreeSettings(),
+                                  &impl_task_runner_provider,
+                                  &shared_bitmap_manager, &task_graph_runner);
+  host_impl.CreatePendingTree();
+  scoped_ptr<FakePictureLayerImpl> layer_impl =
+      FakePictureLayerImpl::Create(host_impl.pending_tree(), 1);
 
-    layer->PushPropertiesTo(layer_impl.get());
-    EXPECT_FALSE(layer_impl->CanHaveTilings());
-    EXPECT_TRUE(layer_impl->bounds() == gfx::Size(0, 0));
-    EXPECT_EQ(gfx::Size(), layer_impl->raster_source()->GetSize());
-    EXPECT_FALSE(layer_impl->raster_source()->HasRecordings());
-  }
+  layer->PushPropertiesTo(layer_impl.get());
+  EXPECT_FALSE(layer_impl->CanHaveTilings());
+  EXPECT_TRUE(layer_impl->bounds() == gfx::Size(0, 0));
+  EXPECT_EQ(gfx::Size(), layer_impl->raster_source()->GetSize());
+  EXPECT_FALSE(layer_impl->raster_source()->HasRecordings());
 }
 
 TEST(PictureLayerTest, SuitableForGpuRasterization) {

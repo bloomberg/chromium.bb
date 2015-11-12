@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/single_thread_task_runner.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -30,6 +31,13 @@ class BlockingTaskRunner;
 // Useful for assertion checks.
 class CC_EXPORT TaskRunnerProvider {
  public:
+  static scoped_ptr<TaskRunnerProvider> Create(
+      scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner) {
+    return make_scoped_ptr(
+        new TaskRunnerProvider(main_task_runner, impl_task_runner));
+  }
+
   base::SingleThreadTaskRunner* MainThreadTaskRunner() const;
   bool HasImplThread() const;
   base::SingleThreadTaskRunner* ImplThreadTaskRunner() const;
@@ -49,11 +57,11 @@ class CC_EXPORT TaskRunnerProvider {
     return blocking_main_thread_task_runner_.get();
   }
 
+ protected:
   TaskRunnerProvider(
       scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner);
 
- protected:
   friend class DebugScopedSetImplThread;
   friend class DebugScopedSetMainThread;
   friend class DebugScopedSetMainThreadBlocked;

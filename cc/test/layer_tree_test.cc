@@ -118,15 +118,11 @@ class ThreadProxyForTest : public ThreadProxy {
   static scoped_ptr<Proxy> Create(
       TestHooks* test_hooks,
       LayerTreeHost* host,
-      scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner,
+      TaskRunnerProvider* task_runner_provider,
       scoped_ptr<BeginFrameSource> external_begin_frame_source) {
-    return make_scoped_ptr(new ThreadProxyForTest(
-        test_hooks,
-        host,
-        main_task_runner,
-        impl_task_runner,
-        external_begin_frame_source.Pass()));
+    return make_scoped_ptr(
+        new ThreadProxyForTest(test_hooks, host, task_runner_provider,
+                               external_begin_frame_source.Pass()));
   }
 
   ~ThreadProxyForTest() override {}
@@ -339,14 +335,12 @@ class ThreadProxyForTest : public ThreadProxy {
     ThreadProxy::BeginMainFrame(begin_main_frame_state.Pass());
   };
 
-  ThreadProxyForTest(
-      TestHooks* test_hooks,
-      LayerTreeHost* host,
-      scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner,
-      scoped_ptr<BeginFrameSource> external_begin_frame_source)
-      : ThreadProxy(host, main_task_runner,
-                    impl_task_runner,
+  ThreadProxyForTest(TestHooks* test_hooks,
+                     LayerTreeHost* host,
+                     TaskRunnerProvider* task_runner_provider,
+                     scoped_ptr<BeginFrameSource> external_begin_frame_source)
+      : ThreadProxy(host,
+                    task_runner_provider,
                     external_begin_frame_source.Pass()),
         test_hooks_(test_hooks) {}
 };
@@ -358,10 +352,10 @@ class SingleThreadProxyForTest : public SingleThreadProxy {
       TestHooks* test_hooks,
       LayerTreeHost* host,
       LayerTreeHostSingleThreadClient* client,
-      scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
+      TaskRunnerProvider* task_runner_provider,
       scoped_ptr<BeginFrameSource> external_begin_frame_source) {
     return make_scoped_ptr(new SingleThreadProxyForTest(
-        test_hooks, host, client, main_task_runner,
+        test_hooks, host, client, task_runner_provider,
         external_begin_frame_source.Pass()));
   }
 
@@ -417,9 +411,11 @@ class SingleThreadProxyForTest : public SingleThreadProxy {
       TestHooks* test_hooks,
       LayerTreeHost* host,
       LayerTreeHostSingleThreadClient* client,
-      scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
+      TaskRunnerProvider* task_runner_provider,
       scoped_ptr<BeginFrameSource> external_begin_frame_source)
-      : SingleThreadProxy(host, client, main_task_runner,
+      : SingleThreadProxy(host,
+                          client,
+                          task_runner_provider,
                           external_begin_frame_source.Pass()),
         test_hooks_(test_hooks) {}
 };
@@ -431,14 +427,15 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
       TestHooks* test_hooks,
       const LayerTreeSettings& settings,
       LayerTreeHostImplClient* host_impl_client,
-      Proxy* proxy,
+      TaskRunnerProvider* task_runner_provider,
       SharedBitmapManager* shared_bitmap_manager,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
       TaskGraphRunner* task_graph_runner,
       RenderingStatsInstrumentation* stats_instrumentation) {
     return make_scoped_ptr(new LayerTreeHostImplForTesting(
-        test_hooks, settings, host_impl_client, proxy, shared_bitmap_manager,
-        gpu_memory_buffer_manager, task_graph_runner, stats_instrumentation));
+        test_hooks, settings, host_impl_client, task_runner_provider,
+        shared_bitmap_manager, gpu_memory_buffer_manager, task_graph_runner,
+        stats_instrumentation));
   }
 
  protected:
@@ -446,14 +443,14 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
       TestHooks* test_hooks,
       const LayerTreeSettings& settings,
       LayerTreeHostImplClient* host_impl_client,
-      Proxy* proxy,
+      TaskRunnerProvider* task_runner_provider,
       SharedBitmapManager* shared_bitmap_manager,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
       TaskGraphRunner* task_graph_runner,
       RenderingStatsInstrumentation* stats_instrumentation)
       : LayerTreeHostImpl(settings,
                           host_impl_client,
-                          proxy,
+                          task_runner_provider,
                           stats_instrumentation,
                           shared_bitmap_manager,
                           gpu_memory_buffer_manager,
@@ -707,29 +704,27 @@ class LayerTreeHostForTesting : public LayerTreeHost {
     params.settings = &settings;
     scoped_ptr<LayerTreeHostForTesting> layer_tree_host(
         new LayerTreeHostForTesting(test_hooks, &params));
+    scoped_ptr<TaskRunnerProvider> task_runner_provider =
+        TaskRunnerProvider::Create(main_task_runner, impl_task_runner);
+    scoped_ptr<Proxy> proxy;
     if (impl_task_runner.get()) {
-      layer_tree_host->InitializeForTesting(
-          ThreadProxyForTest::Create(test_hooks,
-                                     layer_tree_host.get(),
-                                     main_task_runner,
-                                     impl_task_runner,
-                                     external_begin_frame_source.Pass()));
+      proxy = ThreadProxyForTest::Create(test_hooks, layer_tree_host.get(),
+                                         task_runner_provider.get(),
+                                         external_begin_frame_source.Pass());
     } else {
-      layer_tree_host->InitializeForTesting(
-          SingleThreadProxyForTest::Create(
-              test_hooks,
-              layer_tree_host.get(),
-              client,
-              main_task_runner,
-              external_begin_frame_source.Pass()));
+      proxy = SingleThreadProxyForTest::Create(
+          test_hooks, layer_tree_host.get(), client, task_runner_provider.get(),
+          external_begin_frame_source.Pass());
     }
+    layer_tree_host->InitializeForTesting(task_runner_provider.Pass(),
+                                          proxy.Pass());
     return layer_tree_host.Pass();
   }
 
   scoped_ptr<LayerTreeHostImpl> CreateLayerTreeHostImpl(
       LayerTreeHostImplClient* host_impl_client) override {
     return LayerTreeHostImplForTesting::Create(
-        test_hooks_, settings(), host_impl_client, proxy(),
+        test_hooks_, settings(), host_impl_client, task_runner_provider(),
         shared_bitmap_manager(), gpu_memory_buffer_manager(),
         task_graph_runner(), rendering_stats_instrumentation());
   }
@@ -989,7 +984,7 @@ void LayerTreeTest::RealEndTest() {
 
 void LayerTreeTest::DispatchAddAnimation(Layer* layer_to_receive_animation,
                                          double animation_duration) {
-  DCHECK(!proxy() || proxy()->IsMainThread());
+  DCHECK(!task_runner_provider() || task_runner_provider()->IsMainThread());
 
   if (layer_to_receive_animation) {
     AddOpacityTransitionToLayer(
@@ -1000,7 +995,7 @@ void LayerTreeTest::DispatchAddAnimation(Layer* layer_to_receive_animation,
 void LayerTreeTest::DispatchAddAnimationToPlayer(
     AnimationPlayer* player_to_receive_animation,
     double animation_duration) {
-  DCHECK(!proxy() || proxy()->IsMainThread());
+  DCHECK(!task_runner_provider() || task_runner_provider()->IsMainThread());
 
   if (player_to_receive_animation) {
     AddOpacityTransitionToPlayer(player_to_receive_animation,
@@ -1009,55 +1004,55 @@ void LayerTreeTest::DispatchAddAnimationToPlayer(
 }
 
 void LayerTreeTest::DispatchSetDeferCommits(bool defer_commits) {
-  DCHECK(!proxy() || proxy()->IsMainThread());
+  DCHECK(!task_runner_provider() || task_runner_provider()->IsMainThread());
 
   if (layer_tree_host_)
     layer_tree_host_->SetDeferCommits(defer_commits);
 }
 
 void LayerTreeTest::DispatchSetNeedsCommit() {
-  DCHECK(!proxy() || proxy()->IsMainThread());
+  DCHECK(!task_runner_provider() || task_runner_provider()->IsMainThread());
 
   if (layer_tree_host_)
     layer_tree_host_->SetNeedsCommit();
 }
 
 void LayerTreeTest::DispatchSetNeedsUpdateLayers() {
-  DCHECK(!proxy() || proxy()->IsMainThread());
+  DCHECK(!task_runner_provider() || task_runner_provider()->IsMainThread());
 
   if (layer_tree_host_)
     layer_tree_host_->SetNeedsUpdateLayers();
 }
 
 void LayerTreeTest::DispatchSetNeedsRedraw() {
-  DCHECK(!proxy() || proxy()->IsMainThread());
+  DCHECK(!task_runner_provider() || task_runner_provider()->IsMainThread());
 
   if (layer_tree_host_)
     layer_tree_host_->SetNeedsRedraw();
 }
 
 void LayerTreeTest::DispatchSetNeedsRedrawRect(const gfx::Rect& damage_rect) {
-  DCHECK(!proxy() || proxy()->IsMainThread());
+  DCHECK(!task_runner_provider() || task_runner_provider()->IsMainThread());
 
   if (layer_tree_host_)
     layer_tree_host_->SetNeedsRedrawRect(damage_rect);
 }
 
 void LayerTreeTest::DispatchSetVisible(bool visible) {
-  DCHECK(!proxy() || proxy()->IsMainThread());
+  DCHECK(!task_runner_provider() || task_runner_provider()->IsMainThread());
   if (layer_tree_host_)
     layer_tree_host_->SetVisible(visible);
 }
 
 void LayerTreeTest::DispatchSetNextCommitForcesRedraw() {
-  DCHECK(!proxy() || proxy()->IsMainThread());
+  DCHECK(!task_runner_provider() || task_runner_provider()->IsMainThread());
 
   if (layer_tree_host_)
     layer_tree_host_->SetNextCommitForcesRedraw();
 }
 
 void LayerTreeTest::DispatchCompositeImmediately() {
-  DCHECK(!proxy() || proxy()->IsMainThread());
+  DCHECK(!task_runner_provider() || task_runner_provider()->IsMainThread());
   if (layer_tree_host_)
     layer_tree_host_->Composite(base::TimeTicks::Now());
 }
@@ -1156,11 +1151,13 @@ void LayerTreeTest::DestroyLayerTreeHost() {
 }
 
 LayerTreeHost* LayerTreeTest::layer_tree_host() {
-  // We check for a null proxy here as we sometimes ask for the layer tree host
-  // when the proxy does not exist, often for checking settings after a test has
-  // completed. For example, LTHPixelResourceTest::RunPixelResourceTest. See
-  // elsewhere in this file for other examples.
-  DCHECK(!proxy() || proxy()->IsMainThread() || proxy()->IsMainThreadBlocked());
+  // We check for a null task_runner_provider here as we sometimes ask for the
+  // layer tree host when the task_runner_provider does not exist, often for
+  // checking settings after a test has completed. For example,
+  // LTHPixelResourceTest::RunPixelResourceTest. See elsewhere in this file for
+  // other examples.
+  DCHECK(!task_runner_provider() || task_runner_provider()->IsMainThread() ||
+         task_runner_provider()->IsMainThreadBlocked());
   return layer_tree_host_.get();
 }
 

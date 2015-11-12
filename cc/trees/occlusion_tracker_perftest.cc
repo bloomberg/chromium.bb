@@ -9,6 +9,7 @@
 #include "cc/debug/lap_timer.h"
 #include "cc/layers/layer_iterator.h"
 #include "cc/layers/solid_color_layer_impl.h"
+#include "cc/test/fake_impl_task_runner_provider.h"
 #include "cc/test/fake_layer_tree_host_impl_client.h"
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/fake_proxy.h"
@@ -34,14 +35,12 @@ class OcclusionTrackerPerfTest : public testing::Test {
       : timer_(kWarmupRuns,
                base::TimeDelta::FromMilliseconds(kTimeLimitMillis),
                kTimeCheckInterval),
-        proxy_(base::ThreadTaskRunnerHandle::Get(), nullptr),
-        impl_(&proxy_),
         output_surface_(FakeOutputSurface::Create3d()) {}
   void CreateHost() {
     LayerTreeSettings settings;
-    host_impl_ = LayerTreeHostImpl::Create(settings, &client_, &proxy_, &stats_,
-                                           &shared_bitmap_manager_, nullptr,
-                                           &task_graph_runner_, 1);
+    host_impl_ = LayerTreeHostImpl::Create(
+        settings, &client_, &impl_task_runner_provider_, &stats_,
+        &shared_bitmap_manager_, nullptr, &task_graph_runner_, 1);
     host_impl_->SetVisible(true);
     host_impl_->InitializeRenderer(output_surface_.get());
 
@@ -68,8 +67,7 @@ class OcclusionTrackerPerfTest : public testing::Test {
   LapTimer timer_;
   std::string test_name_;
   FakeLayerTreeHostImplClient client_;
-  FakeProxy proxy_;
-  DebugScopedSetImplThread impl_;
+  FakeImplTaskRunnerProvider impl_task_runner_provider_;
   FakeRenderingStatsInstrumentation stats_;
   TestSharedBitmapManager shared_bitmap_manager_;
   TestTaskGraphRunner task_graph_runner_;

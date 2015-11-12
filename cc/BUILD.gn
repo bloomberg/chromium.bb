@@ -486,7 +486,6 @@ component("cc") {
     "trees/property_tree.h",
     "trees/property_tree_builder.cc",
     "trees/property_tree_builder.h",
-    "trees/proxy.cc",
     "trees/proxy.h",
     "trees/proxy_common.cc",
     "trees/proxy_common.h",
