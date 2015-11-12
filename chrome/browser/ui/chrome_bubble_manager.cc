@@ -29,6 +29,9 @@ enum BubbleType {
   // Translation-related bubbles:
   BUBBLE_TYPE_TRANSLATE = 20,  // Displays a request to translate a page.
 
+  // Permissions-related bubbles:
+  BUBBLE_TYPE_PERMISSION = 30,  // Displays a permission request to the user.
+
   // Upper boundary for metrics.
   BUBBLE_TYPE_MAX,
 };
@@ -45,6 +48,8 @@ static int GetBubbleId(BubbleReference bubble) {
     bubble_type = BUBBLE_TYPE_EXTENSION_INSTALLED;
   else if (bubble->GetName().compare("TranslateBubble") == 0)
     bubble_type = BUBBLE_TYPE_TRANSLATE;
+  else if (bubble->GetName().compare("PermissionBubble") == 0)
+    bubble_type = BUBBLE_TYPE_PERMISSION;
 
   DCHECK_NE(bubble_type, BUBBLE_TYPE_UNKNOWN);
   DCHECK_NE(bubble_type, BUBBLE_TYPE_MAX);
