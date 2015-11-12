@@ -90,6 +90,8 @@ class ExclusiveAccessBubble : public gfx::AnimationDelegate {
   base::string16 GetCurrentAllowButtonText() const;
 
   // The following strings never change.
+  // This string *may* contain the name of the key surrounded in pipe characters
+  // ('|'), which should be drawn graphically as a key, not displayed literally.
   base::string16 GetInstructionText() const;
 
   // The Manager associated with this bubble.

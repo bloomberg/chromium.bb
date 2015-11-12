@@ -165,6 +165,12 @@ base::string16 ExclusiveAccessBubble::GetCurrentAllowButtonText() const {
 }
 
 base::string16 ExclusiveAccessBubble::GetInstructionText() const {
+  if (!ExclusiveAccessManager::IsSimplifiedFullscreenUIEnabled()) {
+    return l10n_util::GetStringFUTF16(
+        IDS_FULLSCREEN_PRESS_ESC_TO_EXIT_SENTENCE,
+        l10n_util::GetStringUTF16(IDS_APP_ESC_KEY));
+  }
+
   return l10n_util::GetStringFUTF16(IDS_FULLSCREEN_PRESS_ESC_TO_EXIT,
                                     l10n_util::GetStringUTF16(IDS_APP_ESC_KEY));
 }

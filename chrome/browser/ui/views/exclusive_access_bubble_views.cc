@@ -4,7 +4,9 @@
 
 #include "chrome/browser/ui/views/exclusive_access_bubble_views.h"
 
+#include "base/i18n/case_conversion.h"
 #include "base/message_loop/message_loop.h"
+#include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -81,6 +83,75 @@ ButtonView::ButtonView(views::ButtonListener* listener,
 ButtonView::~ButtonView() {
 }
 
+// Class containing the exit instruction text. Contains fancy styling on the
+// keyboard key (not just a simple label).
+class InstructionView : public views::View {
+ public:
+  // Creates an InstructionView with specific text. |text| may contain a single
+  // segment delimited by a pair of pipes ('|'); this segment will be displayed
+  // as a keyboard key. e.g., "Press |Esc| to exit" will have "Esc" rendered as
+  // a key.
+  InstructionView(const base::string16& text,
+                  const gfx::FontList& font_list,
+                  SkColor foreground_color,
+                  SkColor background_color);
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(InstructionView);
+};
+
+InstructionView::InstructionView(const base::string16& text,
+                                 const gfx::FontList& font_list,
+                                 SkColor foreground_color,
+                                 SkColor background_color) {
+  // Parse |text|, looking for pipe-delimited segment.
+  std::vector<base::string16> segments =
+      base::SplitString(text, base::ASCIIToUTF16("|"), base::TRIM_WHITESPACE,
+                        base::SPLIT_WANT_ALL);
+  // Expect 1 or 3 pieces (either no pipe-delimited segments, or one).
+  DCHECK(segments.size() == 1 || segments.size() == 3);
+
+  // Spacing around the escape key name.
+  const int kKeyNameMarginHorizPx = 7;
+  const int kKeyNameBorderPx = 2;
+  const int kKeyNameCornerRadius = 2;
+  const int kKeyNamePaddingPx = 7;
+
+  // The |between_child_spacing| is the horizontal margin of the key name.
+  views::BoxLayout* layout = new views::BoxLayout(views::BoxLayout::kHorizontal,
+                                                  0, 0, kKeyNameMarginHorizPx);
+  SetLayoutManager(layout);
+
+  views::Label* before_key = new views::Label(segments[0], font_list);
+  before_key->SetEnabledColor(foreground_color);
+  before_key->SetBackgroundColor(background_color);
+  AddChildView(before_key);
+
+  if (segments.size() < 3)
+    return;
+
+  base::string16 key = base::i18n::ToUpper(segments[1]);
+  views::Label* key_name_label = new views::Label(key, font_list);
+  key_name_label->SetEnabledColor(foreground_color);
+  key_name_label->SetBackgroundColor(background_color);
+
+  views::View* key_name = new views::View;
+  views::BoxLayout* key_name_layout = new views::BoxLayout(
+      views::BoxLayout::kHorizontal, kKeyNamePaddingPx, kKeyNamePaddingPx, 0);
+  key_name->SetLayoutManager(key_name_layout);
+  key_name->AddChildView(key_name_label);
+  // The key name has a border around it.
+  scoped_ptr<views::Border> border(views::Border::CreateRoundedRectBorder(
+      kKeyNameBorderPx, kKeyNameCornerRadius, foreground_color));
+  key_name->SetBorder(border.Pass());
+  AddChildView(key_name);
+
+  views::Label* after_key = new views::Label(segments[2], font_list);
+  after_key->SetEnabledColor(foreground_color);
+  after_key->SetBackgroundColor(background_color);
+  AddChildView(after_key);
+}
+
 }  // namespace
 
 class ExclusiveAccessBubbleViews::ExclusiveAccessView
@@ -115,7 +186,7 @@ class ExclusiveAccessBubbleViews::ExclusiveAccessView
   ButtonView* button_view_;
   // Instruction for exiting fullscreen / mouse lock. Only present if there is
   // no link or button (always present in simplified mode).
-  views::Label* exit_instruction_;
+  InstructionView* exit_instruction_;
   const base::string16 browser_fullscreen_exit_accelerator_;
 
   DISALLOW_COPY_AND_ASSIGN(ExclusiveAccessView);
@@ -169,9 +240,8 @@ ExclusiveAccessBubbleViews::ExclusiveAccessView::ExclusiveAccessView(
   }
 
   exit_instruction_ =
-      new views::Label(bubble_->GetInstructionText(), medium_font_list);
-  exit_instruction_->SetEnabledColor(foreground_color);
-  exit_instruction_->SetBackgroundColor(background_color);
+      new InstructionView(bubble_->GetInstructionText(), medium_font_list,
+                          foreground_color, background_color);
 
   link_ = new views::Link();
   link_->SetFocusable(false);

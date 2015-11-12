@@ -224,9 +224,9 @@ const float kHideDuration = 0.7;
     exitLinkText = @"";
     exitLinkedText =
         [@" " stringByAppendingString:l10n_util::GetNSStringF(
-                                          IDS_FULLSCREEN_PRESS_ESC_TO_EXIT,
-                                          l10n_util::GetStringUTF16(
-                                              IDS_APP_ESC_KEY))];
+                                      IDS_FULLSCREEN_PRESS_ESC_TO_EXIT_SENTENCE,
+                                      l10n_util::GetStringUTF16(
+                                          IDS_APP_ESC_KEY))];
   } else {
     exitLinkText = l10n_util::GetNSString(IDS_EXIT_FULLSCREEN_MODE);
     NSString* messageText = l10n_util::GetNSStringF(
