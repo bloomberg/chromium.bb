@@ -35,7 +35,8 @@ class CompositorTimingHistory;
 class SchedulerClient {
  public:
   virtual void WillBeginImplFrame(const BeginFrameArgs& args) = 0;
-  virtual void ScheduledActionSendBeginMainFrame() = 0;
+  virtual void ScheduledActionSendBeginMainFrame(
+      const BeginFrameArgs& args) = 0;
   virtual DrawResult ScheduledActionDrawAndSwapIfPossible() = 0;
   virtual DrawResult ScheduledActionDrawAndSwapForced() = 0;
   virtual void ScheduledActionAnimate() = 0;

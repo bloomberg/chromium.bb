@@ -725,7 +725,8 @@ void SingleThreadProxy::WillBeginImplFrame(const BeginFrameArgs& args) {
   layer_tree_host_impl_->WillBeginImplFrame(args);
 }
 
-void SingleThreadProxy::ScheduledActionSendBeginMainFrame() {
+void SingleThreadProxy::ScheduledActionSendBeginMainFrame(
+    const BeginFrameArgs& begin_frame_args) {
   TRACE_EVENT0("cc", "SingleThreadProxy::ScheduledActionSendBeginMainFrame");
   // Although this proxy is single-threaded, it's problematic to synchronously
   // have BeginMainFrame happen after ScheduledActionSendBeginMainFrame.  This
@@ -738,8 +739,6 @@ void SingleThreadProxy::ScheduledActionSendBeginMainFrame() {
   DCHECK(inside_impl_frame_)
       << "BeginMainFrame should only be sent inside a BeginImplFrame";
 #endif
-  const BeginFrameArgs& begin_frame_args =
-      layer_tree_host_impl_->CurrentBeginFrameArgs();
 
   task_runner_provider_->MainThreadTaskRunner()->PostTask(
       FROM_HERE, base::Bind(&SingleThreadProxy::BeginMainFrame,

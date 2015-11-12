@@ -655,7 +655,7 @@ void Scheduler::ProcessScheduledActions() {
             begin_main_frame_args_.on_critical_path);
         state_machine_.WillSendBeginMainFrame();
         // TODO(brianderson): Pass begin_main_frame_args_ directly to client.
-        client_->ScheduledActionSendBeginMainFrame();
+        client_->ScheduledActionSendBeginMainFrame(begin_main_frame_args_);
         break;
       case SchedulerStateMachine::ACTION_COMMIT: {
         // TODO(robliao): Remove ScopedTracker below once crbug.com/461509 is

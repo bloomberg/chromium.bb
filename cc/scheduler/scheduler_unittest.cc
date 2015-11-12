@@ -63,6 +63,7 @@ class FakeSchedulerClient : public SchedulerClient {
     swap_will_happen_if_draw_happens_ = true;
     num_draws_ = 0;
     begin_frame_args_sent_to_children_ = BeginFrameArgs();
+    last_begin_main_frame_args_ = BeginFrameArgs();
   }
 
   void set_scheduler(TestScheduler* scheduler) { scheduler_ = scheduler; }
@@ -115,9 +116,15 @@ class FakeSchedulerClient : public SchedulerClient {
   }
   void DidFinishImplFrame() override {}
 
-  void ScheduledActionSendBeginMainFrame() override {
+  void ScheduledActionSendBeginMainFrame(const BeginFrameArgs& args) override {
     PushAction("ScheduledActionSendBeginMainFrame");
+    last_begin_main_frame_args_ = args;
   }
+
+  const BeginFrameArgs& last_begin_main_frame_args() {
+    return last_begin_main_frame_args_;
+  }
+
   void ScheduledActionAnimate() override {
     PushAction("ScheduledActionAnimate");
     if (animate_causes_redraw_)
@@ -204,6 +211,7 @@ class FakeSchedulerClient : public SchedulerClient {
   bool automatic_swap_ack_;
   int num_draws_;
   BeginFrameArgs begin_frame_args_sent_to_children_;
+  BeginFrameArgs last_begin_main_frame_args_;
   base::TimeTicks posted_begin_impl_frame_deadline_;
   std::vector<const char*> actions_;
   std::vector<scoped_refptr<base::trace_event::ConvertableToTraceFormat>>
@@ -3485,28 +3493,32 @@ TEST_F(SchedulerTest, ImplLatencyTakesPriority) {
   EXPECT_FALSE(scheduler_->ImplLatencyTakesPriority());
 }
 
-TEST_F(SchedulerTest, BeginFrameArgs_OnCriticalPath) {
+TEST_F(SchedulerTest, BeginMainFrameArgs_OnCriticalPath) {
   scheduler_settings_.use_external_begin_frame_source = true;
   SetUpScheduler(true);
 
   scheduler_->SetImplLatencyTakesPriority(false);
-  scheduler_->SetChildrenNeedBeginFrames(true);
+  scheduler_->SetNeedsBeginMainFrame();
 
+  client_->Reset();
+  EXPECT_FALSE(client_->last_begin_main_frame_args().IsValid());
   EXPECT_SCOPED(AdvanceFrame());
-  EXPECT_TRUE(client_->begin_frame_is_sent_to_children());
-  EXPECT_TRUE(client_->begin_frame_args_sent_to_children().on_critical_path);
+  EXPECT_TRUE(client_->last_begin_main_frame_args().IsValid());
+  EXPECT_TRUE(client_->last_begin_main_frame_args().on_critical_path);
 }
 
-TEST_F(SchedulerTest, BeginFrameArgs_NotOnCriticalPath) {
+TEST_F(SchedulerTest, BeginMainFrameArgs_NotOnCriticalPath) {
   scheduler_settings_.use_external_begin_frame_source = true;
   SetUpScheduler(true);
 
   scheduler_->SetImplLatencyTakesPriority(true);
-  scheduler_->SetChildrenNeedBeginFrames(true);
+  scheduler_->SetNeedsBeginMainFrame();
 
+  client_->Reset();
+  EXPECT_FALSE(client_->last_begin_main_frame_args().IsValid());
   EXPECT_SCOPED(AdvanceFrame());
-  EXPECT_TRUE(client_->begin_frame_is_sent_to_children());
-  EXPECT_FALSE(client_->begin_frame_args_sent_to_children().on_critical_path);
+  EXPECT_TRUE(client_->last_begin_main_frame_args().IsValid());
+  EXPECT_FALSE(client_->last_begin_main_frame_args().on_critical_path);
 }
 
 }  // namespace

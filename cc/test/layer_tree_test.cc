@@ -135,9 +135,9 @@ class ThreadProxyForTest : public ThreadProxy {
     test_hooks_->DidSetNeedsUpdateLayers();
   }
 
-  void ScheduledActionSendBeginMainFrame() override {
+  void ScheduledActionSendBeginMainFrame(const BeginFrameArgs& args) override {
     test_hooks_->ScheduledActionWillSendBeginMainFrame();
-    ThreadProxy::ScheduledActionSendBeginMainFrame();
+    ThreadProxy::ScheduledActionSendBeginMainFrame(args);
     test_hooks_->ScheduledActionSendBeginMainFrame();
   }
 
@@ -364,9 +364,9 @@ class SingleThreadProxyForTest : public SingleThreadProxy {
  private:
   TestHooks* test_hooks_;
 
-  void ScheduledActionSendBeginMainFrame() override {
+  void ScheduledActionSendBeginMainFrame(const BeginFrameArgs& args) override {
     test_hooks_->ScheduledActionWillSendBeginMainFrame();
-    SingleThreadProxy::ScheduledActionSendBeginMainFrame();
+    SingleThreadProxy::ScheduledActionSendBeginMainFrame(args);
     test_hooks_->ScheduledActionSendBeginMainFrame();
   }
 

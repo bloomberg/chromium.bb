@@ -33,7 +33,8 @@ class SurfacesScheduler : public cc::SchedulerClient {
  private:
   void WillBeginImplFrame(const cc::BeginFrameArgs& args) override;
   void DidFinishImplFrame() override;
-  void ScheduledActionSendBeginMainFrame() override;
+  void ScheduledActionSendBeginMainFrame(
+      const cc::BeginFrameArgs& args) override;
   cc::DrawResult ScheduledActionDrawAndSwapIfPossible() override;
   cc::DrawResult ScheduledActionDrawAndSwapForced() override;
   void ScheduledActionAnimate() override;

@@ -332,8 +332,7 @@ void ThreadProxy::WillBeginImplFrame(const BeginFrameArgs& args) {
     // set, that means the current frame is one past the frame in which we've
     // finished the processing.
     impl().layer_tree_host_impl->RecordMainFrameTiming(
-        impl().last_processed_begin_main_frame_args,
-        impl().layer_tree_host_impl->CurrentBeginFrameArgs());
+        impl().last_processed_begin_main_frame_args, args);
     impl().last_processed_begin_main_frame_args = BeginFrameArgs();
   }
 }
@@ -560,15 +559,15 @@ void ThreadProxy::FinishAllRenderingOnImpl(CompletionEvent* completion) {
   completion->Signal();
 }
 
-void ThreadProxy::ScheduledActionSendBeginMainFrame() {
+void ThreadProxy::ScheduledActionSendBeginMainFrame(
+    const BeginFrameArgs& args) {
   unsigned int begin_frame_id = nextBeginFrameId++;
   benchmark_instrumentation::ScopedBeginFrameTask begin_frame_task(
       benchmark_instrumentation::kSendBeginFrame, begin_frame_id);
   scoped_ptr<BeginMainFrameAndCommitState> begin_main_frame_state(
       new BeginMainFrameAndCommitState);
   begin_main_frame_state->begin_frame_id = begin_frame_id;
-  begin_main_frame_state->begin_frame_args =
-      impl().layer_tree_host_impl->CurrentBeginFrameArgs();
+  begin_main_frame_state->begin_frame_args = args;
   begin_main_frame_state->scroll_info =
       impl().layer_tree_host_impl->ProcessScrollDeltas();
   begin_main_frame_state->memory_allocation_limit_bytes =
