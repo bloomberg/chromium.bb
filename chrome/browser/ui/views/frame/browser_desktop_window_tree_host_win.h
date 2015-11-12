@@ -43,6 +43,7 @@ class BrowserDesktopWindowTreeHostWin : public BrowserDesktopWindowTreeHost,
   int GetInitialShowState() const override;
   bool GetClientAreaInsets(gfx::Insets* insets) const override;
   void HandleCreate() override;
+  void HandleDestroying() override;
   void HandleFrameChanged() override;
   bool PreHandleMSG(UINT message,
                     WPARAM w_param,

@@ -76,6 +76,9 @@ UI_BASE_EXPORT void SetRelaunchDetailsForWindow(
     const base::string16& display_name,
     HWND hwnd);
 
+// Clears the Window Property Store on an HWND.
+UI_BASE_EXPORT void ClearWindowPropertyStore(HWND hwnd);
+
 // Returns true if composition is available and turned on on the current
 // platform.
 UI_BASE_EXPORT bool IsAeroGlassEnabled();

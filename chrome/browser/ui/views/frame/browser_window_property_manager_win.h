@@ -16,19 +16,18 @@ class BrowserWindowPropertyManager {
  public:
   virtual ~BrowserWindowPropertyManager();
 
-  void UpdateWindowProperties(HWND hwnd);
-
   static scoped_ptr<BrowserWindowPropertyManager>
-      CreateBrowserWindowPropertyManager(BrowserView* view);
+      CreateBrowserWindowPropertyManager(BrowserView* view, HWND hwnd);
 
  private:
-  explicit BrowserWindowPropertyManager(BrowserView* view);
+  BrowserWindowPropertyManager(BrowserView* view, HWND hwnd);
 
+  void UpdateWindowProperties();
   void OnProfileIconVersionChange();
 
   PrefChangeRegistrar profile_pref_registrar_;
-
   BrowserView* view_;
+  const HWND hwnd_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserWindowPropertyManager);
 };
