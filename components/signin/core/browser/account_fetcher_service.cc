@@ -54,6 +54,8 @@ AccountFetcherService::AccountFetcherService()
       signin_client_(nullptr),
       invalidation_service_(nullptr),
       network_fetches_enabled_(false),
+      profile_loaded_(false),
+      refresh_tokens_loaded_(false),
       shutdown_called_(false),
       scheduled_refresh_enabled_(true),
       child_info_request_(nullptr) {}
@@ -106,17 +108,20 @@ void AccountFetcherService::FetchUserInfoBeforeSignin(
   RefreshAccountInfo(account_id, false);
 }
 
-void AccountFetcherService::SetupInvalidations(
+void AccountFetcherService::SetupInvalidationsOnProfileLoad(
     invalidation::InvalidationService* invalidation_service) {
   DCHECK(!invalidation_service_);
+  DCHECK(!profile_loaded_);
+  DCHECK(!network_fetches_enabled_);
   DCHECK(!child_info_request_);
   invalidation_service_ = invalidation_service;
+  profile_loaded_ = true;
+  MaybeEnableNetworkFetches();
 }
 
-void AccountFetcherService::DisableScheduledRefreshForTesting() {
-  DCHECK(!timer_.IsRunning());
-  DCHECK(!network_fetches_enabled_);
-  scheduled_refresh_enabled_ = false;
+void AccountFetcherService::EnableNetworkFetchesForTest() {
+  SetupInvalidationsOnProfileLoad(nullptr);
+  OnRefreshTokensLoaded();
 }
 
 void AccountFetcherService::RefreshAllAccountInfo(bool only_fetch_if_invalid) {
@@ -148,6 +153,18 @@ void AccountFetcherService::UpdateChildInfo() {
   } else {
     ResetChildInfo();
   }
+}
+
+void AccountFetcherService::MaybeEnableNetworkFetches() {
+  DCHECK(CalledOnValidThread());
+  if (!profile_loaded_ || !refresh_tokens_loaded_)
+    return;
+  if (!network_fetches_enabled_) {
+    network_fetches_enabled_ = true;
+    ScheduleNextRefresh();
+  }
+  RefreshAllAccountInfo(true);
+  UpdateChildInfo();
 }
 
 void AccountFetcherService::RefreshAllAccountsAndScheduleNext() {
@@ -318,10 +335,6 @@ void AccountFetcherService::OnRefreshTokenRevoked(
 
 void AccountFetcherService::OnRefreshTokensLoaded() {
   DCHECK(CalledOnValidThread());
-  if (!network_fetches_enabled_) {
-    network_fetches_enabled_ = true;
-    ScheduleNextRefresh();
-  }
-  RefreshAllAccountInfo(true);
-  UpdateChildInfo();
+  refresh_tokens_loaded_ = true;
+  MaybeEnableNetworkFetches();
 }

@@ -57,12 +57,13 @@ class AccountFetcherService : public KeyedService,
     return account_tracker_service_;
   }
 
-  void SetupInvalidations(
+  // It is important that network fetches are not enabled until the profile is
+  // loaded independent of when we inject the invalidation service.
+  // See http://crbug.com/441399 for more context.
+  void SetupInvalidationsOnProfileLoad(
       invalidation::InvalidationService* invalidation_service);
 
-  // base::TestSimpleTaskRunner::RunUntilIdle() does not handle recursive
-  // delayed schedule calls. Hence we disable this scheduling in tests.
-  void DisableScheduledRefreshForTesting();
+  void EnableNetworkFetchesForTest();
 
   // Called by ChildAccountInfoFetcher.
   void SetIsChildAccount(const std::string& account_id, bool is_child_account);
@@ -83,6 +84,8 @@ class AccountFetcherService : public KeyedService,
   // Called on all account state changes. Decides whether to fetch new child
   // status information or reset old values that aren't valid now.
   void UpdateChildInfo();
+
+  void MaybeEnableNetworkFetches();
 
   // Virtual so that tests can override the network fetching behaviour.
   // Further the two fetches are managed by a different refresh logic and
@@ -112,6 +115,8 @@ class AccountFetcherService : public KeyedService,
   SigninClient* signin_client_;  // Not owned.
   invalidation::InvalidationService* invalidation_service_;  // Not owned.
   bool network_fetches_enabled_;
+  bool profile_loaded_;
+  bool refresh_tokens_loaded_;
   base::Time last_updated_;
   base::OneShotTimer timer_;
   bool shutdown_called_;

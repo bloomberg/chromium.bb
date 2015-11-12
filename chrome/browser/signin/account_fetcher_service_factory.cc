@@ -47,7 +47,5 @@ KeyedService* AccountFetcherServiceFactory::BuildServiceInstanceFor(
   service->Initialize(ChromeSigninClientFactory::GetForProfile(profile),
                       ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
                       AccountTrackerServiceFactory::GetForProfile(profile));
-  if (profile->AsTestingProfile() != nullptr)
-    service->DisableScheduledRefreshForTesting();
   return service;
 }

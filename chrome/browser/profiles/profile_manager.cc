@@ -1125,7 +1125,7 @@ void ProfileManager::DoFinalInitForServices(Profile* profile,
       invalidation_provider ? invalidation_provider->GetInvalidationService()
                             : nullptr;
   AccountFetcherServiceFactory::GetForProfile(profile)
-      ->SetupInvalidations(invalidation_service);
+      ->SetupInvalidationsOnProfileLoad(invalidation_service);
   AccountReconcilorFactory::GetForProfile(profile);
 
   // Service is responsible for migration of the legacy password manager

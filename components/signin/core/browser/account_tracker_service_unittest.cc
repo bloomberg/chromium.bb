@@ -273,7 +273,7 @@ class AccountTrackerServiceTest : public testing::Test {
                                  fake_oauth2_token_service_.get(),
                                  account_tracker_.get());
 
-    account_fetcher_->OnRefreshTokensLoaded();
+    account_fetcher_->EnableNetworkFetchesForTest();
   }
 
   void TearDown() override {
@@ -454,7 +454,7 @@ TEST_F(AccountTrackerServiceTest, TokenAlreadyExists) {
   tracker.Initialize(signin_client());
 
   fetcher.Initialize(signin_client(), token_service(), &tracker);
-  fetcher.OnRefreshTokensLoaded();
+  fetcher.EnableNetworkFetchesForTest();
   ASSERT_FALSE(fetcher.IsAllUserInfoFetched());
   ASSERT_TRUE(observer.CheckEvents());
   tracker.RemoveObserver(&observer);
@@ -544,8 +544,8 @@ TEST_F(AccountTrackerServiceTest, GetAccountInfo_TokenAvailable_EnableNetwork) {
       gaia::GaiaOAuthClient::kUrlFetcherId);
   ASSERT_FALSE(fetcher);
 
-  // Enable the network fetches and refresh invalid accounts information.
-  fetcher_service.OnRefreshTokensLoaded();
+  // Enable the network to create the fetcher then issue the access token.
+  fetcher_service.EnableNetworkFetchesForTest();
 
   // Fetcher was created and executes properly.
   ReturnOAuthUrlFetchSuccess("alpha");
@@ -623,7 +623,7 @@ TEST_F(AccountTrackerServiceTest, Persistence) {
 
     FakeAccountFetcherService fetcher;
     fetcher.Initialize(signin_client(), token_service(), &tracker);
-    fetcher.OnRefreshTokensLoaded();
+    fetcher.EnableNetworkFetchesForTest();
     // Remove an account.
     // This will allow testing removal as well as child accounts which is only
     // allowed for a single account.
@@ -673,7 +673,7 @@ TEST_F(AccountTrackerServiceTest, UpgradeToFullAccountInfo) {
     tracker.Initialize(signin_client());
     AccountFetcherService fetcher;
     fetcher.Initialize(signin_client(), token_service(), &tracker);
-    fetcher.OnRefreshTokensLoaded();
+    fetcher.EnableNetworkFetchesForTest();
     SimulateTokenAvailable("incomplete");
     ReturnOAuthUrlFetchSuccessIncomplete("incomplete");
     tracker.Shutdown();
@@ -685,7 +685,7 @@ TEST_F(AccountTrackerServiceTest, UpgradeToFullAccountInfo) {
     tracker.Initialize(signin_client());
     AccountFetcherService fetcher;
     fetcher.Initialize(signin_client(), token_service(), &tracker);
-    fetcher.OnRefreshTokensLoaded();
+    fetcher.EnableNetworkFetchesForTest();
     // Validate that the loaded AccountInfo from prefs is considered invalid.
     std::vector<AccountInfo> infos = tracker.GetAccounts();
     ASSERT_EQ(1u, infos.size());
@@ -717,7 +717,7 @@ TEST_F(AccountTrackerServiceTest, UpgradeToFullAccountInfo) {
     ASSERT_TRUE(observer.CheckEvents(TrackingEvent(UPDATED, "incomplete")));
     // Enabling network fetches shouldn't cause any actual fetch since the
     // AccountInfos loaded from prefs should be valid.
-    fetcher.OnRefreshTokensLoaded();
+    fetcher.EnableNetworkFetchesForTest();
 
     std::vector<AccountInfo> infos = tracker.GetAccounts();
     ASSERT_EQ(1u, infos.size());
@@ -739,7 +739,7 @@ TEST_F(AccountTrackerServiceTest, TimerRefresh) {
     tracker.Initialize(signin_client());
     AccountFetcherService fetcher;
     fetcher.Initialize(signin_client(), token_service(), &tracker);
-    fetcher.OnRefreshTokensLoaded();
+    fetcher.EnableNetworkFetchesForTest();
     SimulateTokenAvailable("alpha");
     ReturnOAuthUrlFetchSuccess("alpha");
     SimulateTokenAvailable("beta");
@@ -769,7 +769,7 @@ TEST_F(AccountTrackerServiceTest, TimerRefresh) {
     ASSERT_TRUE(infos[0].IsValid());
     ASSERT_TRUE(infos[1].IsValid());
 
-    fetcher.OnRefreshTokensLoaded();
+    fetcher.EnableNetworkFetchesForTest();
     ASSERT_TRUE(fetcher.IsAllUserInfoFetched());
     tracker.Shutdown();
     fetcher.Shutdown();
@@ -795,7 +795,7 @@ TEST_F(AccountTrackerServiceTest, TimerRefresh) {
     ASSERT_TRUE(infos[0].IsValid());
     ASSERT_TRUE(infos[1].IsValid());
 
-    fetcher.OnRefreshTokensLoaded();
+    fetcher.EnableNetworkFetchesForTest();
     ASSERT_FALSE(fetcher.IsAllUserInfoFetched());
     tracker.Shutdown();
     fetcher.Shutdown();
@@ -811,7 +811,7 @@ TEST_F(AccountTrackerServiceTest, LegacyDottedAccountIds) {
     tracker.Initialize(signin_client());
     AccountFetcherService fetcher;
     fetcher.Initialize(signin_client(), token_service(), &tracker);
-    fetcher.OnRefreshTokensLoaded();
+    fetcher.EnableNetworkFetchesForTest();
     SimulateTokenAvailable("foo.bar@gmail.com");
     SimulateTokenAvailable("foobar@gmail.com");
     ReturnOAuthUrlFetchSuccess("foo.bar@gmail.com");
@@ -1031,7 +1031,7 @@ TEST_F(AccountTrackerServiceTest, ChildAccountBasic) {
   tracker.Initialize(signin_client());
   FakeAccountFetcherService fetcher;
   fetcher.Initialize(signin_client(), token_service(), &tracker);
-  fetcher.OnRefreshTokensLoaded();
+  fetcher.EnableNetworkFetchesForTest();
   AccountTrackerObserver observer;
   tracker.AddObserver(&observer);
   std::string child_id("child");
@@ -1062,7 +1062,7 @@ TEST_F(AccountTrackerServiceTest, ChildAccountUpdatedAndRevoked) {
   tracker.Initialize(signin_client());
   FakeAccountFetcherService fetcher;
   fetcher.Initialize(signin_client(), token_service(), &tracker);
-  fetcher.OnRefreshTokensLoaded();
+  fetcher.EnableNetworkFetchesForTest();
   AccountTrackerObserver observer;
   tracker.AddObserver(&observer);
   std::string child_id("child");
@@ -1087,7 +1087,7 @@ TEST_F(AccountTrackerServiceTest, ChildAccountUpdatedAndRevokedWithUpdate) {
   tracker.Initialize(signin_client());
   FakeAccountFetcherService fetcher;
   fetcher.Initialize(signin_client(), token_service(), &tracker);
-  fetcher.OnRefreshTokensLoaded();
+  fetcher.EnableNetworkFetchesForTest();
   AccountTrackerObserver observer;
   tracker.AddObserver(&observer);
   std::string child_id("child");
@@ -1113,7 +1113,7 @@ TEST_F(AccountTrackerServiceTest, ChildAccountUpdatedTwiceThenRevoked) {
   tracker.Initialize(signin_client());
   FakeAccountFetcherService fetcher;
   fetcher.Initialize(signin_client(), token_service(), &tracker);
-  fetcher.OnRefreshTokensLoaded();
+  fetcher.EnableNetworkFetchesForTest();
   AccountTrackerObserver observer;
   tracker.AddObserver(&observer);
   std::string child_id("child");
@@ -1141,7 +1141,7 @@ TEST_F(AccountTrackerServiceTest, ChildAccountGraduation) {
   tracker.Initialize(signin_client());
   FakeAccountFetcherService fetcher;
   fetcher.Initialize(signin_client(), token_service(), &tracker);
-  fetcher.OnRefreshTokensLoaded();
+  fetcher.EnableNetworkFetchesForTest();
   AccountTrackerObserver observer;
   tracker.AddObserver(&observer);
   std::string child_id("child");
