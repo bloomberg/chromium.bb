@@ -305,18 +305,6 @@ TEST_F(ProfilePrefStoreManagerTest, StoreValues) {
   ExpectValidationObserved(kProtectedAtomic);
 }
 
-TEST_F(ProfilePrefStoreManagerTest, GetPrefFilePathFromProfilePath) {
-  base::FilePath pref_file_path =
-      ProfilePrefStoreManager::GetPrefFilePathFromProfilePath(
-          profile_dir_.path());
-
-  EXPECT_FALSE(base::PathExists(pref_file_path));
-
-  InitializePrefs();
-
-  EXPECT_TRUE(base::PathExists(pref_file_path));
-}
-
 TEST_F(ProfilePrefStoreManagerTest, ProtectValues) {
   InitializePrefs();
 

@@ -71,12 +71,6 @@ void ProfilePrefStoreManager::RegisterProfilePrefs(
 }
 
 // static
-base::FilePath ProfilePrefStoreManager::GetPrefFilePathFromProfilePath(
-    const base::FilePath& profile_path) {
-  return profile_path.Append(chrome::kPreferencesFilename);
-}
-
-// static
 void ProfilePrefStoreManager::ResetAllPrefHashStores(PrefService* local_state) {
   PrefServiceHashStoreContents::ResetAllPrefHashStores(local_state);
 }
@@ -97,7 +91,7 @@ PersistentPrefStore* ProfilePrefStoreManager::CreateProfilePrefStore(
     TrackedPreferenceValidationDelegate* validation_delegate) {
   scoped_ptr<PrefFilter> pref_filter;
   if (!kPlatformSupportsPreferenceTracking) {
-    return new JsonPrefStore(GetPrefFilePathFromProfilePath(profile_path_),
+    return new JsonPrefStore(profile_path_.Append(chrome::kPreferencesFilename),
                              io_task_runner.get(),
                              scoped_ptr<PrefFilter>());
   }
@@ -142,7 +136,7 @@ PersistentPrefStore* ProfilePrefStoreManager::CreateProfilePrefStore(
       protected_pref_hash_filter.get();
 
   scoped_refptr<JsonPrefStore> unprotected_pref_store(
-      new JsonPrefStore(GetPrefFilePathFromProfilePath(profile_path_),
+      new JsonPrefStore(profile_path_.Append(chrome::kPreferencesFilename),
                         io_task_runner.get(),
                         unprotected_pref_hash_filter.Pass()));
   // TODO(gab): Remove kDeprecatedProtectedPreferencesFilename as an alternate
@@ -194,7 +188,7 @@ bool ProfilePrefStoreManager::InitializePrefsFromMasterPrefs(
   // This will write out to a single combined file which will be immediately
   // migrated to two files on load.
   JSONFileValueSerializer serializer(
-      GetPrefFilePathFromProfilePath(profile_path_));
+      profile_path_.Append(chrome::kPreferencesFilename));
 
   // Call Serialize (which does IO) on the main thread, which would _normally_
   // be verboten. In this case however, we require this IO to synchronously
@@ -224,7 +218,7 @@ ProfilePrefStoreManager::CreateDeprecatedCombinedProfilePrefStore(
                                          reporting_ids_count_,
                                          false));
   }
-  return new JsonPrefStore(GetPrefFilePathFromProfilePath(profile_path_),
+  return new JsonPrefStore(profile_path_.Append(chrome::kPreferencesFilename),
                            io_task_runner.get(),
                            pref_filter.Pass());
 }

@@ -60,10 +60,6 @@ class ProfilePrefStoreManager {
   // Register user prefs used by the profile preferences system.
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
-  // Determines the user preferences filename for the profile at |profile_path|.
-  static base::FilePath GetPrefFilePathFromProfilePath(
-      const base::FilePath& profile_path);
-
   // Deletes stored hashes for all profiles from |local_state|.
   static void ResetAllPrefHashStores(PrefService* local_state);
 

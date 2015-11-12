@@ -81,10 +81,6 @@ scoped_ptr<syncable_prefs::PrefServiceSyncable> CreateProfilePrefs(
     const scoped_refptr<user_prefs::PrefRegistrySyncable>& pref_registry,
     bool async);
 
-// Schedules verification of the path resolution of the preferences file under
-// |profile_path|.
-void SchedulePrefsFilePathVerification(const base::FilePath& profile_path);
-
 // Call before startup tasks kick in to ignore the presence of a domain when
 // determining the active SettingsEnforcement group. For testing only.
 void DisableDomainCheckForTesting();

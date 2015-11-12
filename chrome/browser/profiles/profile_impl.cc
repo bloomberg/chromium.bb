@@ -834,8 +834,6 @@ void ProfileImpl::OnLocaleReady() {
     net_pref_observer_.reset(new NetPrefObserver(prefs_.get()));
   }
 
-  chrome_prefs::SchedulePrefsFilePathVerification(path_);
-
   ChromeVersionService::OnProfileLoaded(prefs_.get(), IsNewProfile());
   DoFinalInit();
 }
