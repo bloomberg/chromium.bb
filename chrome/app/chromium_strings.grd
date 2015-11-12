@@ -1201,7 +1201,7 @@ and incorrect credentials. This may happen when an attacker is trying to pretend
       <!-- Offline interstitial  -->
       <if expr="not is_android and not is_ios">
         <message name="IDS_ERRORPAGES_SUMMARY_INTERNET_DISCONNECTED" desc="Summary of the error page when the network connection failed. May be followed by platform dependent instructions.">
-        Chromium can’t display the webpage because your computer isn’t connected to the Internet.
+        Chromium can't display the webpage because your computer isn't connected to the Internet.
         </message>
       </if>
 

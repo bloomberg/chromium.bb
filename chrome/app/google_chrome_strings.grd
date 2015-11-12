@@ -1203,7 +1203,7 @@ Signing in anyway will merge Chrome information like bookmarks, history, and oth
       <!-- Offline interstitial  -->
       <if expr="not is_android and not is_ios">
         <message name="IDS_ERRORPAGES_SUMMARY_INTERNET_DISCONNECTED" desc="Summary of the error page when the network connection failed. May be followed by platform dependent instructions.">
-          Google Chrome can’t display the webpage because your computer isn’t connected to the Internet.
+          Google Chrome can't display the webpage because your computer isn't connected to the Internet.
         </message>
       </if>
 
