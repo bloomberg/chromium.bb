@@ -1517,6 +1517,7 @@ class EmergeQueue(object):
   def _Status(self):
     """Print status."""
     current_time = time.time()
+    current_time_struct = time.localtime(current_time)
     no_output = True
 
     # Print interim output every minute if --show-output is used. Otherwise,
@@ -1563,7 +1564,9 @@ class EmergeQueue(object):
         if retries:
           line += "Retrying %s, " % (retries,)
       load = " ".join(str(x) for x in os.getloadavg())
-      line += ("[Time %dm%.1fs Load %s]" % (seconds / 60, seconds % 60, load))
+      line += ("[Time %s | Elapsed %dm%.1fs | Load %s]" % (
+          time.strftime('%H:%M:%S', current_time_struct), seconds / 60,
+          seconds % 60, load))
       self._Print(line)
 
   def _Finish(self, target):
