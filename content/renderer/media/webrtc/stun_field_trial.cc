@@ -58,12 +58,6 @@ NatType GetNatType(stunprober::NatType nat_type) {
   }
 }
 
-// Below 50ms, we are doing experiments at each 5ms interval. Beyond 50ms, only
-// one experiment of 100ms.
-int ClampProbingInterval(int interval_ms) {
-  return interval_ms > 50 ? 100 : interval_ms;
-}
-
 std::string HistogramName(const std::string& prefix,
                           NatType nat_type,
                           int interval_ms,
@@ -96,7 +90,7 @@ StunProberTrial::~StunProberTrial() {}
 
 void StunProberTrial::SaveHistogramData() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  NatType nat_type = NAT_TYPE_MAX;
+  NatType nat_type = NAT_TYPE_UNKNOWN;
   int interval_ms = 0;
   int count = 0;
   int total_requests_sent = 0;
@@ -110,44 +104,48 @@ void StunProberTrial::SaveHistogramData() {
       return;
 
     // Check if the NAT type is consistent.
-    if (nat_type == NAT_TYPE_MAX) {
+    if (nat_type == NAT_TYPE_UNKNOWN) {
       nat_type = GetNatType(stats.nat_type);
-      // If we can't figure out the nattype at the beginning, just return.
-      if (nat_type == NAT_TYPE_UNKNOWN)
-        return;
-    } else if (nat_type != GetNatType(stats.nat_type) &&
-               nat_type != NAT_TYPE_UNKNOWN) {
+    } else {
+      NatType type = GetNatType(stats.nat_type);
       // For subsequent probers, we might get unknown as nattype if all the
       // bindings fail, but it's ok.
-      return;
+      if (nat_type != type && type != NAT_TYPE_UNKNOWN)
+        return;
     }
 
-    // Check that the interval is consistent.
-    // Use the real probe interval for reporting, converting from nanosecond to
-    // millisecond at 5ms boundary.
-    int new_interval_ms = ClampProbingInterval(
-        round(static_cast<float>(stats.actual_request_interval_ns) / 5000) * 5);
+    // Check that the interval is consistent. Use the real probe interval for
+    // reporting, converting from nanosecond to millisecond.
+    int new_interval_ms =
+        round(static_cast<float>(stats.actual_request_interval_ns) / 1000);
     if (interval_ms == 0) {
       interval_ms = new_interval_ms;
-    } else if (interval_ms != new_interval_ms) {
-      return;
+    } else if (abs(interval_ms - new_interval_ms) > 3) {
+      DVLOG(1) << "current interval: " << new_interval_ms
+               << " is too far off from previous one: " << interval_ms;
+      continue;
     }
 
     // Sum up the total sent and recv packets.
-    total_requests_sent += stats.num_request_sent;
+    total_requests_sent += stats.raw_num_request_sent;
     total_responses_received += stats.num_response_received;
 
     if (count % batch_size_ > 0)
       continue;
 
-    if (total_requests_sent == 0) {
+    // If 50% of probers are not counted, ignore this batch.
+    // |raw_num_request_sent| should be the same for each prober.
+    if (total_requests_sent < (stats.raw_num_request_sent * batch_size_ / 2)) {
       total_responses_received = 0;
+      total_requests_sent = 0;
       continue;
     }
 
     int success_rate = total_responses_received * 100 / total_requests_sent;
+    // Use target_request_interval_ns for naming of UMA to avoid inconsistency.
     std::string histogram_name = HistogramName(
-        "BatchSuccessPercent", nat_type, interval_ms, count / batch_size_);
+        "BatchSuccessPercent", nat_type,
+        stats.target_request_interval_ns / 1000, count / batch_size_);
 
     // Mimic the same behavior as UMA_HISTOGRAM_PERCENTAGE. We can't use
     // that macro as the histogram name is determined dynamically.
@@ -157,7 +155,7 @@ void StunProberTrial::SaveHistogramData() {
     histogram->Add(success_rate);
 
     DVLOG(1) << "Histogram '" << histogram_name.c_str()
-             << "' = " << stats.success_percent;
+             << "' = " << success_rate;
 
     DVLOG(1) << "Shared Socket Mode: " << stats.shared_socket_mode;
     DVLOG(1) << "Requests sent: " << total_requests_sent;
@@ -198,7 +196,6 @@ bool StunProberTrial::ParseParameters(const std::string& param_line,
     DLOG(ERROR) << "Failed to parse interval in StartStunProbeTrial";
     return false;
   }
-  params->interval_ms = ClampProbingInterval(params->interval_ms);
   param++;
 
   if ((*param).empty()) {

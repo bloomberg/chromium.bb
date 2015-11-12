@@ -13,16 +13,16 @@ TEST(StunProbeTrial, VerifyParameterParsing) {
   StunProberTrial::Param params;
   std::string param_line;
 
-  param_line = "20/500/1/3/3/server:3478/server2:3478";
+  param_line = "20/100/1/3/3/server:3478/server2:3478";
   EXPECT_TRUE(StunProberTrial::ParseParameters(param_line, &params));
   EXPECT_EQ(params.requests_per_ip, 20);
   EXPECT_EQ(params.interval_ms, 100);
   EXPECT_EQ(params.shared_socket_mode, 1);
+  EXPECT_EQ(params.batch_size, 3);
+  EXPECT_EQ(params.total_batches, 3);
   EXPECT_EQ(params.servers.size(), 2u);
   EXPECT_EQ(params.servers[0], rtc::SocketAddress("server", 3478));
   EXPECT_EQ(params.servers[1], rtc::SocketAddress("server2", 3478));
-  EXPECT_EQ(params.batch_size, 3);
-  EXPECT_EQ(params.total_batches, 3);
   params.servers.clear();
 
   param_line = "/////server:3478";
