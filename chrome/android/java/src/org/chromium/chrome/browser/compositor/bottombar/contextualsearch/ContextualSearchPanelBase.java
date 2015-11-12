@@ -624,15 +624,7 @@ abstract class ContextualSearchPanelBase implements ContextualSearchPromoHost {
     }
 
     /**
-     * @return The Y coordinate of the close icon.
-     */
-    public float getCloseIconY() {
-        return getOffsetY() + getPeekPromoHeight()
-                + ((getSearchBarHeight() - getCloseIconDimension()) / 2);
-    }
-
-    /**
-     * @return The X coordinate of the close icon.
+     * @return The left X coordinate of the close icon.
      */
     public float getCloseIconX() {
         if (LocalizationUtils.isLayoutRtl()) {

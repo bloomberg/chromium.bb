@@ -15,6 +15,7 @@ import org.chromium.chrome.browser.compositor.scene_layer.SceneLayer;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content_public.common.TopControlsState;
+import org.chromium.ui.base.LocalizationUtils;
 import org.chromium.ui.resources.ResourceManager;
 
 /**
@@ -478,15 +479,14 @@ public class OverlayPanel extends ContextualSearchPanelAnimation
 
     /**
      * @param x The x coordinate in dp.
-     * @param y The y coordinate in dp.
-     * @return Whether the given |x| |y| coordinate is inside the close button.
+     * @return Whether the given |x| coordinate is inside the close button.
      */
-    protected boolean isCoordinateInsideCloseButton(float x, float y) {
-        boolean isInY = y >= (getCloseIconY() - CLOSE_BUTTON_TOUCH_SLOP_DP)
-                && y <= (getCloseIconY() + getCloseIconDimension() + CLOSE_BUTTON_TOUCH_SLOP_DP);
-        boolean isInX = x >= (getCloseIconX() - CLOSE_BUTTON_TOUCH_SLOP_DP)
-                && x <= (getCloseIconX() + getCloseIconDimension() + CLOSE_BUTTON_TOUCH_SLOP_DP);
-        return isInY && isInX;
+    protected boolean isCoordinateInsideCloseButton(float x) {
+        if (LocalizationUtils.isLayoutRtl()) {
+            return x <= (getCloseIconX() + getCloseIconDimension() + CLOSE_BUTTON_TOUCH_SLOP_DP);
+        } else {
+            return x >= (getCloseIconX() - CLOSE_BUTTON_TOUCH_SLOP_DP);
+        }
     }
 
     /**

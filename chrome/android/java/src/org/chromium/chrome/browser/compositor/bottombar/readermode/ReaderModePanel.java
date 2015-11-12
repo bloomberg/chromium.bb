@@ -152,7 +152,7 @@ public class ReaderModePanel extends OverlayPanel {
     @Override
     public void handleBarClick(long time, float x, float y) {
         super.handleBarClick(time, x, y);
-        if (isCoordinateInsideCloseButton(x, y)) {
+        if (isCoordinateInsideCloseButton(x)) {
             closePanel(StateChangeReason.CLOSE_BUTTON, true);
             mManagerDelegate.onCloseButtonPressed();
         } else {

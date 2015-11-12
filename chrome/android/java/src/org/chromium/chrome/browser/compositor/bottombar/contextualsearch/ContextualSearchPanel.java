@@ -276,7 +276,7 @@ public class ContextualSearchPanel extends OverlayPanel {
     public void handleBarClick(long time, float x, float y) {
         super.handleBarClick(time, x, y);
         if (isExpanded() || isMaximized()) {
-            if (isCoordinateInsideCloseButton(x, y)) {
+            if (isCoordinateInsideCloseButton(x)) {
                 closePanel(StateChangeReason.CLOSE_BUTTON, true);
             } else if (!mActivity.isCustomTab()) {
                 getManagementDelegate().promoteToTab();
