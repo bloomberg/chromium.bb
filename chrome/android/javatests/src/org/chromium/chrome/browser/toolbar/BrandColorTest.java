@@ -13,13 +13,11 @@ import android.text.TextUtils;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.SysUtils;
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.chrome.test.util.DisableInTabbedMode;
@@ -30,7 +28,6 @@ import org.chromium.content.browser.test.util.CriteriaHelper;
 /**
  * Contains tests for the brand color feature.
  */
-@CommandLineFlags.Add(ChromeSwitches.ENABLE_THEME_COLOR_IN_TABBED_MODE)
 public class BrandColorTest extends ChromeActivityTestCaseBase<ChromeActivity> {
 
     public BrandColorTest() {
