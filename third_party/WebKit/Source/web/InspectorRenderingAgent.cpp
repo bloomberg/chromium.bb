@@ -99,6 +99,7 @@ bool InspectorRenderingAgent::compositingEnabled(ErrorString* errorString)
 
 DEFINE_TRACE(InspectorRenderingAgent)
 {
+    visitor->trace(m_webLocalFrameImpl);
     InspectorBaseAgent::trace(visitor);
 }
 

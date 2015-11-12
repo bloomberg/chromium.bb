@@ -37,7 +37,7 @@ private:
     bool compositingEnabled(ErrorString*);
     WebViewImpl* webViewImpl();
 
-    WebLocalFrameImpl* m_webLocalFrameImpl;
+    RawPtrWillBeMember<WebLocalFrameImpl> m_webLocalFrameImpl;
 };
 
 

@@ -125,6 +125,7 @@ void InspectorEmulationAgent::viewportChanged()
 
 DEFINE_TRACE(InspectorEmulationAgent)
 {
+    visitor->trace(m_webLocalFrameImpl);
     InspectorBaseAgent::trace(visitor);
 }
 
