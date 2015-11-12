@@ -40,9 +40,6 @@ namespace runner {
 
 namespace {
 
-// Tag for logging.
-const char kLogTag[] = "chromium";
-
 // Command line argument for the communication fifo.
 const char kFifoPath[] = "fifo-path";
 
