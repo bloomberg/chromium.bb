@@ -48,12 +48,35 @@ class PaintLayerFilterInfo;
 
 typedef HashMap<const PaintLayer*, PaintLayerFilterInfo*> PaintLayerFilterInfoMap;
 
+// PaintLayerFilterInfo holds the filter information for painting.
+// https://drafts.fxtf.org/filters/
+//
+// Because PaintLayer is not allocated for SVG objects, SVG filters (both
+// software and hardware-accelerated) use a different code path to paint the
+// filters (SVGFilterPainer), but both code paths use the same abstraction for
+// painting non-hardware accelerated filters (FilterEffect). Hardware
+// accelerated CSS filters use WebFilterOperations, that is backed by cc.
+//
+// PaintLayerFilterInfo is allocated when filters are present and store in an
+// internal map (s_filterMap) to save memory as 'filter' should be a rare
+// property.
 class PaintLayerFilterInfo final : public DocumentResourceClient {
     USING_FAST_MALLOC(PaintLayerFilterInfo);
     WTF_MAKE_NONCOPYABLE(PaintLayerFilterInfo);
 public:
+    // Queries the PaintLayerFilterInfo for the associated PaintLayer.
+    // The function returns nullptr if there is no associated
+    // |PaintLayerFilterInfo|.
     static PaintLayerFilterInfo* filterInfoForLayer(const PaintLayer*);
+
+    // Creates a new PaintLayerFilterInfo for the associated PaintLayer.
+    // If there is one already, it returns it instead of creating a new one.
+    //
+    // This function will never return nullptr.
     static PaintLayerFilterInfo* createFilterInfoForLayerIfNeeded(PaintLayer*);
+
+    // Remove the PaintLayerFilterInfo associated with PaintLayer.
+    // If there is none, this function  does nothing.
     static void removeFilterInfoForLayer(PaintLayer*);
 
     FilterEffectBuilder* builder() const { return m_builder.get(); }
@@ -73,7 +96,13 @@ private:
     RefPtrWillBePersistent<FilterEffectBuilder> m_builder;
 
     static PaintLayerFilterInfoMap* s_filterMap;
+
+    // This field stores SVG reference filters (filter: url(#someElement)).
+    // It is used when SVG filters are applied to an HTML element via CSS.
     WillBePersistentHeapVector<RefPtrWillBeMember<Element>> m_internalSVGReferences;
+
+    // Same as m_internalSVGReferences, except that the reference belongs to a
+    // different document.
     Vector<ResourcePtr<DocumentResource>> m_externalSVGReferences;
 };
 
