@@ -100,7 +100,10 @@ static_assert(sizeof(CommandBufferEntry) == kCommandBufferEntrySize,
               "kCommandBufferEntrySize");
 
 // Command buffer is GPU_COMMAND_BUFFER_ENTRY_ALIGNMENT byte aligned.
-#pragma pack(push, GPU_COMMAND_BUFFER_ENTRY_ALIGNMENT)
+#pragma pack(push, 4)
+static_assert(GPU_COMMAND_BUFFER_ENTRY_ALIGNMENT == 4,
+              "pragma pack alignment must be equal to "
+              "GPU_COMMAND_BUFFER_ENTRY_ALIGNMENT");
 
 // Gets the address of memory just after a structure in a typesafe way. This is
 // used for IMMEDIATE commands to get the address of the place to put the data.

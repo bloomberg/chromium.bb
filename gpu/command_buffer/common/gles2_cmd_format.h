@@ -51,7 +51,10 @@ namespace gpu {
 namespace gles2 {
 
 // Command buffer is GPU_COMMAND_BUFFER_ENTRY_ALIGNMENT byte aligned.
-#pragma pack(push, GPU_COMMAND_BUFFER_ENTRY_ALIGNMENT)
+#pragma pack(push, 4)
+static_assert(GPU_COMMAND_BUFFER_ENTRY_ALIGNMENT == 4,
+              "pragma pack alignment must be equal to "
+              "GPU_COMMAND_BUFFER_ENTRY_ALIGNMENT");
 
 namespace id_namespaces {
 
@@ -249,6 +252,12 @@ struct DisjointValueSync {
 
   base::subtle::Atomic32 disjoint_count;
 };
+
+static_assert(sizeof(QuerySync) == 12, "size of QuerySync should be 12");
+static_assert(offsetof(QuerySync, process_count) == 0,
+              "offset of QuerySync.process_count should be 0");
+static_assert(offsetof(QuerySync, result) == 4,
+              "offset of QuerySync.result should be 4");
 
 static_assert(sizeof(ProgramInput) == 20, "size of ProgramInput should be 20");
 static_assert(offsetof(ProgramInput, type) == 0,
