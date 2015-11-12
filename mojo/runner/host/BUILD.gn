@@ -62,6 +62,7 @@ source_set("lib") {
     ":switches",
     "//base",
     "//base:base_static",
+    "//base:i18n",
     "//mojo/gles2",
     "//mojo/message_pump",
     "//mojo/platform_handle:platform_handle_impl",

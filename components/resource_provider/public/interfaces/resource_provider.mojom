@@ -15,7 +15,4 @@ interface ResourceProvider {
   // The result is an array of platform handles for each of the requested paths.
   // TODO(sky): this should really be map<string,handle>, but that doesn't work.
   GetResources(array<string> paths) => (array<handle> resource_handles);
-
-  // Fetch a handle to the shared version of ICU table.
-  GetICUHandle() => (handle resource_handle);
 };

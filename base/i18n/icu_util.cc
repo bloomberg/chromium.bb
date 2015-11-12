@@ -143,6 +143,7 @@ bool InitializeICUWithFileDescriptorInternal(
     return true;
   }
   if (data_fd == kInvalidPlatformFile) {
+    LOG(ERROR) << "Invalid file descriptor to ICU data received.";
     return false;
   }
 
@@ -164,6 +165,7 @@ bool InitializeICUWithFileDescriptorInternal(
 
 #if !defined(OS_NACL)
 #if ICU_UTIL_DATA_IMPL == ICU_UTIL_DATA_FILE
+#if defined(OS_ANDROID)
 bool InitializeICUWithFileDescriptor(
     PlatformFile data_fd,
     const MemoryMappedFile::Region& data_region) {
@@ -179,6 +181,28 @@ PlatformFile GetIcuDataFileHandle(MemoryMappedFile::Region* out_region) {
   *out_region = g_icudtl_region;
   return g_icudtl_pf;
 }
+#endif
+
+const uint8* GetRawIcuMemory() {
+  CHECK(g_icudtl_mapped_file);
+  return g_icudtl_mapped_file->data();
+}
+
+bool InitializeICUFromRawMemory(const uint8* raw_memory) {
+#if !defined(COMPONENT_BUILD)
+#if !defined(NDEBUG)
+  DCHECK(!g_check_called_once || !g_called_once);
+  g_called_once = true;
+#endif
+
+  UErrorCode err = U_ZERO_ERROR;
+  udata_setCommonData(const_cast<uint8*>(raw_memory), &err);
+  return err == U_ZERO_ERROR;
+#else
+  return true;
+#endif
+}
+
 #endif  // ICU_UTIL_DATA_IMPL == ICU_UTIL_DATA_FILE
 
 bool InitializeICU() {

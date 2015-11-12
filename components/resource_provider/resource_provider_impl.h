@@ -21,7 +21,6 @@ class ResourceProviderImpl : public resource_provider::ResourceProvider {
   // ResourceProvider:
   void GetResources(mojo::Array<mojo::String> paths,
                     const GetResourcesCallback& callback) override;
-  void GetICUHandle(const GetICUHandleCallback& callback) override;
 
   const base::FilePath application_path_;
   const std::string resource_provider_app_url_;

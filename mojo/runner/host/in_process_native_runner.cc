@@ -12,6 +12,7 @@
 #include "base/threading/platform_thread.h"
 #include "mojo/runner/host/native_application_support.h"
 #include "mojo/runner/host/out_of_process_native_runner.h"
+#include "mojo/runner/init.h"
 
 namespace mojo {
 namespace runner {
@@ -57,6 +58,7 @@ void InProcessNativeRunner::Run() {
   // TODO(vtl): ScopedNativeLibrary doesn't have a .get() method!
   base::NativeLibrary app_library = LoadNativeApplication(app_path_);
   app_library_.Reset(app_library);
+  CallLibraryEarlyInitialization(app_library);
   RunNativeApplication(app_library, application_request_.Pass());
   app_completed_callback_runner_.Run();
   app_completed_callback_runner_.Reset();

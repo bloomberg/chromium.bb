@@ -9,6 +9,7 @@
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/i18n/icu_util.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -24,6 +25,7 @@
 #include "mojo/runner/child/child_controller.mojom.h"
 #include "mojo/runner/host/native_application_support.h"
 #include "mojo/runner/host/switches.h"
+#include "mojo/runner/init.h"
 #include "third_party/mojo/src/mojo/edk/embedder/embedder.h"
 #include "third_party/mojo/src/mojo/edk/embedder/platform_channel_pair.h"
 #include "third_party/mojo/src/mojo/edk/embedder/process_delegate.h"
@@ -293,21 +295,16 @@ int ChildProcessMain() {
     app_library = mojo::runner::LoadNativeApplication(
         command_line.GetSwitchValuePath(switches::kChildProcess));
 
+    base::i18n::InitializeICU();
+    CallLibraryEarlyInitialization(app_library);
+
 #if defined(OS_LINUX) && !defined(OS_ANDROID)
     if (command_line.HasSwitch(switches::kEnableSandbox)) {
-      // Warm parts of base.
+      // Warm parts of base in the copy of base in the mojo runner.
       base::RandUint64();
       base::SysInfo::AmountOfPhysicalMemory();
       base::SysInfo::MaxSharedMemorySize();
       base::SysInfo::NumberOfProcessors();
-
-      // Do whatever warming that the mojo application wants.
-      typedef void (*SandboxWarmFunction)();
-      SandboxWarmFunction sandbox_warm = reinterpret_cast<SandboxWarmFunction>(
-          base::GetFunctionPointerFromNativeLibrary(app_library,
-                                                    "MojoSandboxWarm"));
-      if (sandbox_warm)
-        sandbox_warm();
 
       // TODO(erg,jln): Allowing access to all of /dev/shm/ makes it easy to
       // spy on other shared memory using processes. This is a temporary hack

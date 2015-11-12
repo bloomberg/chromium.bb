@@ -5,6 +5,8 @@
 #ifndef MOJO_RUNNER_INIT_H_
 #define MOJO_RUNNER_INIT_H_
 
+#include "base/native_library.h"
+
 namespace mojo {
 namespace runner {
 
@@ -12,6 +14,10 @@ namespace runner {
 void InitializeLogging();
 
 void WaitForDebuggerIfNecessary();
+
+// Calls "LibraryEarlyInitialization" in |app_library| if it exists. We do
+// common initialization there now.
+void CallLibraryEarlyInitialization(base::NativeLibrary app_library);
 
 }  // namespace runner
 }  // namespace mojo

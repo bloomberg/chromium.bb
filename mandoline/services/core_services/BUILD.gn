@@ -27,11 +27,6 @@ mojo_native_application("core_services") {
     }
     deps += [ ":copy_files" ]
   }
-
-  if (!is_android) {
-    deps += [ "//third_party/icu:icudata" ]
-    resources = [ "$root_out_dir/icudtl.dat" ]
-  }
 }
 
 source_set("sources") {

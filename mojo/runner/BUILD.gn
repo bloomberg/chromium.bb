@@ -52,7 +52,7 @@ source_set("mojo_runner_lib") {
     ]
     deps += [
       "//components/tracing:startup_tracing",
-      "//mojo/shell",
+      "//third_party/icu:icudata",
     ]
   } else {
     sources += [
@@ -106,6 +106,7 @@ source_set("init") {
   deps = [
     "//mojo/runner/host:switches",
     "//base",
+    "//base:i18n",
   ]
 }
 
@@ -147,6 +148,7 @@ source_set("lib") {
   public_deps = [
     ":init",
     ":switches",
+    "//mojo/shell",
   ]
 
   if (!is_component_build) {
@@ -327,10 +329,12 @@ if (is_android) {
     deps = [
       "//mojo/services/test_service:test_app",
       "//mojo/services/test_service:test_request_tracker_app",
+      "//third_party/icu:icudata",
     ]
 
     # Directories can't be specified as sources so pass manually to the script.
     args = [
+      "--files=" + rebase_path("$root_out_dir/icudtl.dat", root_build_dir),
       "--files=" + rebase_path("$root_out_dir/test_app", root_build_dir),
       "--files=" +
           rebase_path("$root_out_dir/test_request_tracker_app", root_build_dir),

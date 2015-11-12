@@ -17,8 +17,6 @@ using mojo::ScopedHandle;
 namespace resource_provider {
 namespace {
 
-const char kResourceIcudtl[] = "icudtl.dat";
-
 ScopedHandle GetHandleForPath(const base::FilePath& path) {
   if (path.empty())
     return ScopedHandle();
@@ -66,14 +64,6 @@ void ResourceProviderImpl::GetResources(mojo::Array<mojo::String> paths,
     }
   }
   callback.Run(handles.Pass());
-}
-
-void ResourceProviderImpl::GetICUHandle(const GetICUHandleCallback& callback) {
-  const base::FilePath resource_app_path(
-      GetPathForApplicationUrl(resource_provider_app_url_));
-  mojo::ScopedHandle handle = GetHandleForPath(
-      GetPathForResourceNamed(resource_app_path, kResourceIcudtl));
-  callback.Run(handle.Pass());
 }
 
 }  // namespace resource_provider
