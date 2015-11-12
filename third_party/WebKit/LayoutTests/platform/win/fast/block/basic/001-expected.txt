@@ -11,11 +11,11 @@ layer at (0,0) size 800x600
             LayoutInline {FONT} at (0,0) size 140x17 [color=#FF0000]
               LayoutText {#text} at (95,0) size 140x17
                 text run at (95,0) width 140: "More red on this line:"
-        LayoutBlockFlow (anonymous) at (2,38.72) size 780x68.91 [color=#FF0000]
-          LayoutBlockFlow {H3} at (0,0) size 780x22
+        LayoutBlockFlow (anonymous) at (2,38.72) size 780x68.91
+          LayoutBlockFlow {H3} at (0,0) size 780x22 [color=#FF0000]
             LayoutText {#text} at (0,0) size 205x21
               text run at (0,0) width 205: "Suddenly a block appears!"
-          LayoutBlockFlow {H2} at (0,41.91) size 780x27
+          LayoutBlockFlow {H2} at (0,41.91) size 780x27 [color=#FF0000]
             LayoutText {#text} at (0,0) size 194x26
               text run at (0,0) width 194: "And another block!"
         LayoutBlockFlow (anonymous) at (2,127.53) size 780x54

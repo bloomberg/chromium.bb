@@ -260,11 +260,6 @@ crbug.com/535408 fast/js/function-bind.html [ NeedsManualRebaseline ]
 
 crbug.com/552574 fast/js/regexp-caching.html [ NeedsManualRebaseline ]
 
-crbug.com/286660 fast/block/basic/001.html [ NeedsRebaseline ]
-crbug.com/286660 fast/css-generated-content/before-content-continuation-chain.html [ NeedsRebaseline ]
-crbug.com/286660 fast/css/child-style-can-override-visited-style.html [ NeedsRebaseline ]
-crbug.com/286660 tables/mozilla_expected_failures/bugs/bug56024.html [ NeedsRebaseline ]
-
 crbug.com/498539 http/tests/inspector/elements/styles/selector-line.html [ Pass Timeout ]
 crbug.com/498539 http/tests/inspector/network/network-datareceived.html [ Pass Timeout ]
 crbug.com/498539 [ Win ] inspector/tracing/decode-resize.html [ Failure Timeout ]

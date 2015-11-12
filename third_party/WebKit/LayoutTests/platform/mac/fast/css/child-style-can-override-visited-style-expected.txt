@@ -8,7 +8,7 @@ layer at (0,0) size 800x600
           text run at (0,0) width 367: "This tests that a child style can override the :visited style."
         LayoutInline {A} at (0,0) size 0x0 [color=#FF0000]
           LayoutText {#text} at (0,0) size 0x0
-      LayoutBlockFlow (anonymous) at (0,18) size 784x18 [color=#FF0000]
+      LayoutBlockFlow (anonymous) at (0,18) size 784x18
         LayoutBlockFlow {DIV} at (0,0) size 784x18 [color=#008000]
           LayoutText {#text} at (0,0) size 272x18
             text run at (0,0) width 272: "This text should be green (and underlined)"
