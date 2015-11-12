@@ -3649,8 +3649,16 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 // delay the SwapOut ACK from the A->B navigation, so that the second B->A
 // navigation is initiated before the first page receives the SwapOut ACK.
 // Ensure that the RVH(A) that's pending deletion is not reused in that case.
+// crbug.com/554825
+#if defined(THREAD_SANITIZER)
+#define MAYBE_RenderViewHostPendingDeletionIsNotReused \
+        DISABLED_RenderViewHostPendingDeletionIsNotReused
+#else
+#define MAYBE_RenderViewHostPendingDeletionIsNotReused \
+        RenderViewHostPendingDeletionIsNotReused
+#endif
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
-                       RenderViewHostPendingDeletionIsNotReused) {
+                       MAYBE_RenderViewHostPendingDeletionIsNotReused) {
   GURL a_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
   NavigateToURL(shell(), a_url);
 
