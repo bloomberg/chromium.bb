@@ -232,7 +232,8 @@ class BlinkPerfEvents(perf_benchmark.PerfBenchmark):
     return CreateStorySetFromPath(path, SKIPPED_FILE)
 
 
-@benchmark.Disabled('win8')  # http://crbug.com/462350
+@benchmark.Disabled('win8',  # http://crbug.com/462350
+                    'android') #http://crbug.com/551950
 class BlinkPerfLayout(perf_benchmark.PerfBenchmark):
   tag = 'layout'
   test = _BlinkPerfMeasurement
@@ -324,7 +325,8 @@ class BlinkPerfXMLHttpRequest(perf_benchmark.PerfBenchmark):
 
 # Disabled on Windows and ChromeOS due to https://crbug.com/521887
 # Disabled on reference builds due to https://crbug.com/530374
-@benchmark.Disabled('win', 'chromeos', 'reference')
+# Disabled on Android due to http://crbug.com/551950
+@benchmark.Disabled('win', 'chromeos', 'reference', 'android')
 class BlinkPerfPywebsocket(perf_benchmark.PerfBenchmark):
   tag = 'pywebsocket'
   test = _BlinkPerfPywebsocketMeasurement
