@@ -34,6 +34,8 @@
 #include "bindings/core/v8/V8DOMWrapper.h"
 #include "core/CoreExport.h"
 
+#include "platform/heap/Handle.h"
+
 // Chromium uses npruntime.h from the Chromium source repository under
 // third_party/npapi/bindings.
 #include <bindings/npruntime.h>
@@ -56,7 +58,7 @@ struct V8NPObject {
 public:
     NPObject object;
     v8::Persistent<v8::Object> v8Object;
-    LocalDOMWindow* rootObject;
+    RawPtrWillBeUntracedMember<LocalDOMWindow> rootObject;
 };
 
 struct PrivateIdentifier {
