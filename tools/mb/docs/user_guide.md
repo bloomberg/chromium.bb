@@ -34,30 +34,64 @@ The first positional argument must be a GN-style "source-absolute" path
 to the build directory.
 
 The second positional argument is a (normal) path to a JSON file containing
-a single object with two fields:
+a single object with the following fields:
 
-  * `files`: an array of the modified filenames to check (as
-    paths relative to the checkout root).
-  * `targets`: an array of the unqualified target names to check.
+  * `files`: an array of the modified filenames to check (as paths relative to
+    the checkout root).
+  * `test_targets`: an array of (ninja) build targets that needed to run the
+    tests we wish to run. An empty array will be treated as if there are
+    no tests that will be run.
+  * `additional_compile_targets`: an array of (ninja) build targets that
+    reflect the stuff we might want to build *in addition to* the list
+    passed in `test_targets`. Targets in this list will be treated 
+    specially, in the following way: if a given target is a "meta"
+    (GN: group, GYP: none) target like 'blink_tests' or
+    'chromium_builder_tests', or even the ninja-specific 'all' target, 
+    then only the *dependencies* of the target that are affected by
+    the modified files will be rebuilt (not the target itself, which
+    might also cause unaffected dependencies to be rebuilt). An empty
+    list will be treated as if there are no additional targets to build.
+    Empty lists for both `test_targets` and `additional_compile_targets`
+    would cause no work to be done, so will result in an error.
+  * `targets`: a legacy field that resembled a union of `compile_targets`
+    and `test_targets`. Support for this field will be removed once the
+    bots have been updated to use compile_targets and test_targets instead.
 
 The third positional argument is a (normal) path to where mb will write
 the result, also as a JSON object. This object may contain the following
 fields:
 
   * `error`: this should only be present if something failed.
-  * `targets`: the subset of the input `targets` that depend on the
-    input `files`.
-  * `build_targets`: the minimal subset of targets needed to build all
-    of `targets` that were affected.
-  * `status`: one of three strings:
-    * `"Found dependency"` (build the `build_targets`)
+  * `compile_targets`: the list of ninja targets that should be passed
+    directly to the corresponding ninja / compile.py invocation. This
+    list may contain entries that are *not* listed in the input (see
+    the description of `additional_compile_targets` above and 
+    [design_spec.md](the design spec) for how this works).
+  * `invalid_targets`: a list of any targets that were passed in
+    either of the input lists that weren't actually found in the graph.
+  * `test_targets`: the subset of the input `test_targets` that are
+    potentially out of date, indicating that the matching test steps
+    should be re-run.
+  * `targets`: a legacy field that indicates the subset of the input `targets`
+    that depend on the input `files`.
+  * `build_targets`: a legacy field that indicates the minimal subset of
+    targets needed to build all of `targets` that were affected.
+  * `status`: a field containing one of three strings:
+
+    * `"Found dependency"` (build the `compile_targets`)
     * `"No dependency"` (i.e., no build needed)
-    * `"Found dependency (all)"` (build everything, in which case
-      `targets` and `build_targets` are not returned).
+    * `"Found dependency (all)"` (`test_targets` is returned as-is;
+       `compile_targets` should contain the union of `test_targets` and
+       `additional_compile_targets`. In this case the targets do not
+       need to be pruned).
+
+See [design_spec.md](the design spec) for more details and examples; the
+differences can be subtle.  We won't even go into how the `targets` and
+`build_targets` differ from each other or from `compile_targets` and
+`test_targets`.
 
 The `-b/--builder`, `-c/--config`, `-f/--config-file`, `-m/--master`,
 `-q/--quiet`, and `-v/--verbose` flags work as documented for `mb gen`.
-
 
 ### `mb gen`
 
