@@ -305,6 +305,7 @@
     ],
     'boringssl_linux_aarch64_sources': [
       'linux-aarch64/crypto/aes/aesv8-armx64.S',
+      'linux-aarch64/crypto/bn/armv8-mont.S',
       'linux-aarch64/crypto/modes/ghashv8-armx64.S',
       'linux-aarch64/crypto/sha/sha1-armv8.S',
       'linux-aarch64/crypto/sha/sha256-armv8.S',
