@@ -77,9 +77,6 @@
           '../../file_manager/foreground/js/metadata/thumbnail_model.js',
           '../../file_manager/background/js/volume_manager.js',
           '../../file_manager/foreground/js/volume_manager_wrapper.js',
-          '../elements/control_panel.js',
-          '../elements/track_list.js',
-          '../elements/audio_player.js',
           'audio_player_model.js',
         ],
         'externs': [
@@ -92,6 +89,7 @@
           '../../externs/chrome_test.js',
           '../../externs/es6_workaround.js',
           '../../externs/es7_workaround.js',
+          '../../externs/files_elements.js',
           '../../externs/platform.js',
         ],
       },
