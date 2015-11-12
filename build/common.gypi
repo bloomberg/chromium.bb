@@ -6236,6 +6236,23 @@
                 '-fsanitize-blacklist=<(cfi_blacklist)',
               ],
             },
+          }],
+          ['_toolset=="target" and _type!="static_library"', {
+            'xcode_settings':  {
+              'OTHER_LDFLAGS': [
+                '-fsanitize=cfi-vcall',
+                '-fsanitize=cfi-derived-cast',
+                '-fsanitize=cfi-unrelated-cast',
+              ],
+            },
+          }],
+        ],
+      },
+    }],
+    ['cfi_vptr==1 and OS=="win"', {
+      'target_defaults': {
+        'target_conditions': [
+          ['_toolset=="target"', {
             'msvs_settings': {
               'VCCLCompilerTool': {
                 'AdditionalOptions': [
@@ -6259,15 +6276,6 @@
                   '-fsanitize-blacklist=../../<(make_clang_dir)/lib/clang/<!(python <(DEPTH)/tools/clang/scripts/update.py --print-clang-version)/cfi_blacklist.txt',
                 ],
               },
-            },
-          }],
-          ['_toolset=="target" and _type!="static_library"', {
-            'xcode_settings':  {
-              'OTHER_LDFLAGS': [
-                '-fsanitize=cfi-vcall',
-                '-fsanitize=cfi-derived-cast',
-                '-fsanitize=cfi-unrelated-cast',
-              ],
             },
           }],
         ],
