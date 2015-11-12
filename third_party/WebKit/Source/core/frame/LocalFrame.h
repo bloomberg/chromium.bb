@@ -235,6 +235,7 @@ private:
     // weak callback, the set itself is not on the heap and the
     // references are bare pointers (rather than WeakMembers.)
     // See LocalFrame::clearWeakMembers().
+    GC_PLUGIN_IGNORE("553613")
     HashSet<HTMLPlugInElement*> m_pluginElements;
 #endif
 
