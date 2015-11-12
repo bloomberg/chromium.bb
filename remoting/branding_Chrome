@@ -1,4 +1,3 @@
-APK_FILE_NAME=ChromeRemoteDesktop
 APK_PACKAGE_NAME=com.google.chromeremotedesktop
 DAEMON_FILE_NAME=Chrome Remote Desktop Host Service
 IT2ME_HOST_DESCRIPTION=Remote Assistance Host for Chrome Remote Desktop

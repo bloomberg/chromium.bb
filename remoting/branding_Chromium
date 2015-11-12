@@ -1,4 +1,3 @@
-APK_FILE_NAME=Chromoting
 APK_PACKAGE_NAME=org.chromium.chromoting
 DAEMON_FILE_NAME=Chromoting Host Service
 IT2ME_HOST_DESCRIPTION=Remote Assistance Host for Chromoting
