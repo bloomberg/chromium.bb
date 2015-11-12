@@ -7,10 +7,7 @@ function clear_registered_syncs(sync_manager) {
   });
 }
 
-// Clears all background sync registrations from all managers.
+// Clears all background sync registrations from the sync manager.
 function clear_all_syncs(serviceworker_registration) {
-  return Promise.all([
-    clear_registered_syncs(serviceworker_registration.sync),
-    clear_registered_syncs(serviceworker_registration.periodicSync)
-  ]);
+  return clear_registered_syncs(serviceworker_registration.sync);
 }

@@ -507,7 +507,6 @@ Starting worker: resources/global-interface-listing.js
 [Worker] interface ServiceWorkerRegistration : EventTarget
 [Worker]     getter geofencing
 [Worker]     getter onupdatefound
-[Worker]     getter periodicSync
 [Worker]     getter pushManager
 [Worker]     getter scope
 [Worker]     getter sync

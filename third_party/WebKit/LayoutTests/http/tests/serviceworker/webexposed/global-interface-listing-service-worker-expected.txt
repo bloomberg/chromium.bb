@@ -455,23 +455,6 @@ interface PerformanceObserverEntryList
     method getEntries
     method getEntriesByName
     method getEntriesByType
-interface PeriodicSyncEvent : ExtendableEvent
-    getter registration
-    method constructor
-interface PeriodicSyncManager
-    getter minPossiblePeriod
-    method constructor
-    method getRegistration
-    method getRegistrations
-    method permissionState
-    method register
-interface PeriodicSyncRegistration
-    getter minPeriod
-    getter networkState
-    getter powerState
-    getter tag
-    method constructor
-    method unregister
 interface PermissionStatus : EventTarget
     getter onchange
     getter state
@@ -576,7 +559,6 @@ interface ServiceWorkerGlobalScope : WorkerGlobalScope
 interface ServiceWorkerRegistration : EventTarget
     getter geofencing
     getter onupdatefound
-    getter periodicSync
     getter pushManager
     getter scope
     getter sync
@@ -859,7 +841,6 @@ global object
     getter oninstall
     getter onmessage
     getter onnotificationclick
-    getter onperiodicsync
     getter onpush
     getter onsync
     getter registration
@@ -875,7 +856,6 @@ global object
     setter oninstall
     setter onmessage
     setter onnotificationclick
-    setter onperiodicsync
     setter onpush
     setter onsync
 This is a testharness.js-based test.

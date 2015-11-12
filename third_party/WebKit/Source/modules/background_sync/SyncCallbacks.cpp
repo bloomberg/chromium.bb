@@ -6,7 +6,6 @@
 #include "modules/background_sync/SyncCallbacks.h"
 
 #include "bindings/core/v8/ScriptPromiseResolver.h"
-#include "modules/background_sync/PeriodicSyncRegistration.h"
 #include "modules/background_sync/SyncError.h"
 #include "modules/background_sync/SyncRegistration.h"
 #include "modules/serviceworkers/ServiceWorkerRegistration.h"
@@ -38,14 +37,7 @@ void SyncRegistrationCallbacks::onSuccess(WebPassOwnPtr<WebSyncRegistration> web
         m_resolver->resolve(v8::Null(m_resolver->scriptState()->isolate()));
         return;
     }
-    switch (registration->periodicity) {
-    case WebSyncRegistration::PeriodicityPeriodic:
-        m_resolver->resolve(PeriodicSyncRegistration::take(m_resolver.get(), registration.release(), m_serviceWorkerRegistration));
-        break;
-    case WebSyncRegistration::PeriodicityOneShot:
-        m_resolver->resolve(SyncRegistration::take(m_resolver.get(), registration.release(), m_serviceWorkerRegistration));
-        break;
-    }
+    m_resolver->resolve(SyncRegistration::take(m_resolver.get(), registration.release(), m_serviceWorkerRegistration));
 }
 
 void SyncRegistrationCallbacks::onError(const WebSyncError& error)
@@ -136,21 +128,12 @@ void SyncGetRegistrationsCallbacks::onSuccess(const WebVector<WebSyncRegistratio
         return;
     }
 
-    if (webSyncRegistrations.size() && webSyncRegistrations[0]->periodicity == WebSyncRegistration::PeriodicityOneShot) {
-        HeapVector<Member<SyncRegistration>> syncRegistrations;
-        for (auto& r : registrations) {
-            SyncRegistration* reg = SyncRegistration::take(m_resolver.get(), r.release(), m_serviceWorkerRegistration);
-            syncRegistrations.append(reg);
-        }
-        m_resolver->resolve(syncRegistrations);
-    } else {
-        HeapVector<Member<PeriodicSyncRegistration>> syncRegistrations;
-        for (auto& r : registrations) {
-            PeriodicSyncRegistration* reg = PeriodicSyncRegistration::take(m_resolver.get(), r.release(), m_serviceWorkerRegistration);
-            syncRegistrations.append(reg);
-        }
-        m_resolver->resolve(syncRegistrations);
+    HeapVector<Member<SyncRegistration>> syncRegistrations;
+    for (auto& r : registrations) {
+        SyncRegistration* reg = SyncRegistration::take(m_resolver.get(), r.release(), m_serviceWorkerRegistration);
+        syncRegistrations.append(reg);
     }
+    m_resolver->resolve(syncRegistrations);
 }
 
 void SyncGetRegistrationsCallbacks::onError(const WebSyncError& error)

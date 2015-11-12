@@ -3735,20 +3735,6 @@ interface PerformanceTiming
     getter unloadEventStart
     method constructor
     method toJSON
-interface PeriodicSyncManager
-    getter minPossiblePeriod
-    method constructor
-    method getRegistration
-    method getRegistrations
-    method permissionState
-    method register
-interface PeriodicSyncRegistration
-    getter minPeriod
-    getter networkState
-    getter powerState
-    getter tag
-    method constructor
-    method unregister
 interface PeriodicWave
     method constructor
 interface PermissionStatus : EventTarget
@@ -5059,7 +5045,6 @@ interface ServiceWorkerMessageEvent : Event
 interface ServiceWorkerRegistration : EventTarget
     getter geofencing
     getter onupdatefound
-    getter periodicSync
     getter pushManager
     getter scope
     getter sync
