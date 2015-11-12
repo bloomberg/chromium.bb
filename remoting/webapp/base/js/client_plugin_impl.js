@@ -175,7 +175,7 @@ remoting.ClientPluginImpl.prototype.onPluginCrashed_ = function(event) {
   // https://developer.chrome.com/native-client/devguide/coding/progress-events,
   // which is extremely unlikely in retail builds.  So we just log it without
   // propagating it to the UI.
-  console.error('Plugin crashed.');
+  console.error('Plugin crashed. ');
 };
 
 /** @private */

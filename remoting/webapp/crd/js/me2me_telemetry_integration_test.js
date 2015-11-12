@@ -199,6 +199,11 @@ QUnit.test('Reconnect', function() {
     session_entry_point: EntryPoint.RECONNECT_BUTTON,
     role: remoting.ChromotingEvent.Role.CLIENT,
     mode: remoting.ChromotingEvent.Mode.ME2ME,
+    previous_session: {
+      last_state: remoting.ChromotingEvent.SessionState.CLOSED,
+      last_error: remoting.ChromotingEvent.ConnectionError.NONE,
+      entry_point: EntryPoint.CONNECT_BUTTON
+    }
   });
 
   var count = 0;
@@ -274,6 +279,11 @@ QUnit.test('HOST_OFFLINE - JID refresh succeeded', function() {
     session_entry_point: EntryPoint.AUTO_RECONNECT_ON_HOST_OFFLINE,
     role: remoting.ChromotingEvent.Role.CLIENT,
     mode: remoting.ChromotingEvent.Mode.ME2ME,
+    previous_session: {
+      last_state: remoting.ChromotingEvent.SessionState.CONNECTION_FAILED,
+      last_error: remoting.ChromotingEvent.ConnectionError.HOST_OFFLINE,
+      entry_point: EntryPoint.CONNECT_BUTTON
+    }
   });
 
   var count = 0;
@@ -320,6 +330,11 @@ QUnit.test('HOST_OFFLINE - Reconnect failed', function() {
     session_entry_point:EntryPoint.AUTO_RECONNECT_ON_HOST_OFFLINE,
     role: remoting.ChromotingEvent.Role.CLIENT,
     mode: remoting.ChromotingEvent.Mode.ME2ME,
+    previous_session: {
+      last_state: remoting.ChromotingEvent.SessionState.CONNECTION_FAILED,
+      last_error: remoting.ChromotingEvent.ConnectionError.HOST_OFFLINE,
+      entry_point: EntryPoint.CONNECT_BUTTON
+    }
   }, remoting.ChromotingEvent.ConnectionError.HOST_OVERLOAD);
 
   var count = 0;
@@ -368,6 +383,11 @@ QUnit.test('Connection dropped - Auto Reconnect', function() {
     session_entry_point: EntryPoint.AUTO_RECONNECT_ON_CONNECTION_DROPPED,
     role: remoting.ChromotingEvent.Role.CLIENT,
     mode: remoting.ChromotingEvent.Mode.ME2ME,
+    previous_session: {
+      last_state: remoting.ChromotingEvent.SessionState.CLOSED,
+      last_error: remoting.ChromotingEvent.ConnectionError.CLIENT_SUSPENDED,
+      entry_point: EntryPoint.CONNECT_BUTTON
+    }
   });
 
   var count = 0;

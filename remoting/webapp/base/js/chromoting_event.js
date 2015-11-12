@@ -95,6 +95,8 @@ remoting.ChromotingEvent = function(type) {
   this.auth_method;
   /** @type {string} */
   this.raw_plugin_error;
+  /** @type {remoting.ChromotingEvent.SessionSummary} */
+  this.previous_session;
 
   this.init_();
 };
@@ -173,6 +175,27 @@ remoting.ChromotingEvent.isEndOfSession = function(event) {
 remoting.ChromotingEvent.XmppError = function(stanza) {
   /** @type {string} */
   this.raw_stanza = stanza;
+};
+
+/**
+ * See class comments on logs/proto/chromoting/chromoting_extensions.proto.
+ *
+ * @struct
+ * @constructor
+ */
+remoting.ChromotingEvent.SessionSummary = function() {
+  /** @type {string} */
+  this.session_id;
+  /** @type {remoting.ChromotingEvent.SessionState} */
+  this.last_state;
+  /** @type {remoting.ChromotingEvent.ConnectionError} */
+  this.last_error;
+  /** @type {number} */
+  this.duration;
+  /** @type {number} */
+  this.session_end_elapsed_time;
+  /** @type {remoting.ChromotingEvent.SessionEntryPoint} */
+  this.entry_point;
 };
 
 })();

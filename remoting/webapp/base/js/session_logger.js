@@ -31,7 +31,9 @@ remoting.SessionLogger = function(role, writeLogEntry) {
   /** @private */
   this.sessionIdGenerationTime_ = 0;
   /** @private */
-  this.sessionStartTime_ = new Date().getTime();
+  this.sessionStartTime_ = Date.now();
+  /** @private */
+  this.sessionEndTime_ = 0;
   /** @private {remoting.ChromotingEvent.ConnectionType} */
   this.connectionType_;
   /** @private {remoting.ChromotingEvent.SessionEntryPoint} */
@@ -52,6 +54,10 @@ remoting.SessionLogger = function(role, writeLogEntry) {
   this.mode_ = remoting.ChromotingEvent.Mode.ME2ME;
   /** @private {remoting.ChromotingEvent.AuthMethod} */
   this.authMethod_;
+  /** @private {remoting.ChromotingEvent} */
+  this.lastSessionEntry_ = null;
+  /** @private {remoting.ChromotingEvent.SessionSummary} */
+  this.previousSessionSummary_ = null;
 
   this.setSessionId_();
 };
@@ -129,11 +135,37 @@ remoting.SessionLogger.prototype.setAuthMethod = function(method) {
 };
 
 /**
+ * @param {remoting.ChromotingEvent.SessionSummary} summary
+ */
+remoting.SessionLogger.prototype.setPreviousSessionSummary =
+    function(summary) {
+  this.previousSessionSummary_ = summary;
+};
+
+/**
  * @return {string} The current session id. This is random GUID, refreshed
  *     every 24hrs.
  */
 remoting.SessionLogger.prototype.getSessionId = function() {
   return this.sessionId_;
+};
+
+/**
+ * @return {remoting.ChromotingEvent.SessionSummary} A snapshot of the current
+ *     session.
+ */
+remoting.SessionLogger.prototype.createSummary = function() {
+  var summary = new remoting.ChromotingEvent.SessionSummary();
+  summary.session_id = this.lastSessionEntry_.session_id;
+  summary.last_state = this.lastSessionEntry_.session_state;
+  summary.last_error = this.lastSessionEntry_.connection_error;
+  summary.entry_point = this.lastSessionEntry_.session_entry_point;
+  summary.duration = this.lastSessionEntry_.session_duration;
+  if (this.sessionEndTime_ > 0) {
+    summary.session_end_elapsed_time =
+        (Date.now() - this.sessionEndTime_) / 1000;
+  }
+  return summary;
 };
 
 /**
@@ -165,6 +197,14 @@ remoting.SessionLogger.prototype.logSessionStateChange =
   this.previousSessionState_ = state;
 
   this.log_(entry);
+
+  this.lastSessionEntry_ =
+      /** @type {remoting.ChromotingEvent} */ (base.deepCopy(entry));
+
+  // Update the session summary.
+  if (remoting.ChromotingEvent.isEndOfSession(entry)) {
+    this.sessionEndTime_ = Date.now();
+  }
 
   // Don't accumulate connection statistics across state changes.
   this.logAccumulatedStatistics_();
@@ -295,6 +335,9 @@ remoting.SessionLogger.prototype.fillEvent_ = function(entry) {
   }
   if (this.authMethod_ != undefined) {
     entry.auth_method = this.authMethod_;
+  }
+  if (this.previousSessionSummary_) {
+    entry.previous_session = this.previousSessionSummary_;
   }
   entry.host_version = this.hostVersion_;
   entry.host_os = this.hostOs_;

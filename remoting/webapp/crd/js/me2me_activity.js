@@ -112,7 +112,10 @@ remoting.Me2MeActivity.prototype.createLogger_ = function(entryPoint) {
  * @private
  */
 remoting.Me2MeActivity.prototype.reconnect_ = function(entryPoint) {
+  console.assert(this.logger_, 'Reconnecting without a previous session.');
+  var previousSessionSummary = this.logger_.createSummary();
   this.logger_ = this.createLogger_(entryPoint);
+  this.logger_.setPreviousSessionSummary(previousSessionSummary);
   var Event = remoting.ChromotingEvent;
   this.logger_.logSessionStateChange(Event.SessionState.STARTED);
   this.connect_();
@@ -157,12 +160,12 @@ remoting.Me2MeActivity.prototype.createCredentialsProvider_ = function() {
    */
   var requestPin = function(supportsPairing, onPinFetched) {
     // Set time when PIN was requested.
-    var authStartTime = new Date().getTime();
+    var authStartTime = Date.now();
     that.desktopActivity_.getConnectingDialog().hide();
     that.pinDialog_.show(supportsPairing).then(function(/** string */ pin) {
       remoting.setMode(remoting.AppMode.CLIENT_CONNECTING);
       // Done obtaining PIN information. Log time taken for PIN entry.
-      that.logger_.setAuthTotalTime(new Date().getTime() - authStartTime);
+      that.logger_.setAuthTotalTime(Date.now() - authStartTime);
       onPinFetched(pin);
     }).catch(remoting.Error.handler(function(/** remoting.Error */ error) {
       console.assert(error.hasTag(remoting.Error.Tag.CANCELLED),
