@@ -13,6 +13,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/safe_browsing/hit_report.h"
 #include "chrome/browser/safe_browsing/protocol_manager_helper.h"
 #include "chrome/browser/safe_browsing/safe_browsing_util.h"
 #include "net/url_request/url_fetcher_delegate.h"
@@ -40,16 +41,10 @@ class SafeBrowsingPingManager : public net::URLFetcherDelegate {
   // net::URLFetcherDelegate interface.
   void OnURLFetchComplete(const net::URLFetcher* source) override;
 
-  // For UMA users we report to Google when a SafeBrowsing interstitial is shown
-  // to the user.  |threat_type| should be one of the types known by
-  // SafeBrowsingHitUrl.
-  void ReportSafeBrowsingHit(const GURL& malicious_url,
-                             const GURL& page_url,
-                             const GURL& referrer_url,
-                             bool is_subresource,
-                             SBThreatType threat_type,
-                             const std::string& post_data,
-                             bool is_extended_reporting);
+  // Report to Google when a SafeBrowsing warning is shown to the user.
+  // |hit_report.threat_type| should be one of the types known by
+  // SafeBrowsingtHitUrl.
+  void ReportSafeBrowsingHit(const safe_browsing::HitReport& hit_report);
 
   // Users can opt-in on the SafeBrowsing interstitial to send detailed
   // threat reports. |report| is the serialized report.
@@ -76,13 +71,9 @@ class SafeBrowsingPingManager : public net::URLFetcherDelegate {
       net::URLRequestContextGetter* request_context_getter,
       const SafeBrowsingProtocolConfig& config);
 
-  // Generates URL for reporting safe browsing hits for UMA users.
-  GURL SafeBrowsingHitUrl(const GURL& malicious_url,
-                          const GURL& page_url,
-                          const GURL& referrer_url,
-                          bool is_subresource,
-                          SBThreatType threat_type,
-                          bool is_extended_reporting) const;
+  // Generates URL for reporting safe browsing hits.
+  GURL SafeBrowsingHitUrl(const safe_browsing::HitReport& hit_report) const;
+
   // Generates URL for reporting threat details for users who opt-in.
   GURL ThreatDetailsUrl() const;
 

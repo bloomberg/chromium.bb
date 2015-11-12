@@ -116,6 +116,10 @@ class FakeSafeBrowsingDatabaseManager : public TestSafeBrowsingDatabaseManager {
     return true;
   }
 
+  safe_browsing::ThreatSource GetThreatSource() const override {
+    return safe_browsing::ThreatSource::LOCAL_PVER3;
+  }
+
  private:
   ~FakeSafeBrowsingDatabaseManager() override {}
 
@@ -1007,7 +1011,7 @@ class SafeBrowsingBlockingPageIDNTest
     resource.threat_type = GetParam();
     resource.render_process_host_id = contents->GetRenderProcessHost()->GetID();
     resource.render_view_id = contents->GetRenderViewHost()->GetRoutingID();
-    resource.threat_source = SafeBrowsingUIManager::FROM_DEVICE;
+    resource.threat_source = safe_browsing::ThreatSource::LOCAL_PVER3;
 
     return SafeBrowsingBlockingPage::CreateBlockingPage(
         sb_service->ui_manager().get(), contents, resource);

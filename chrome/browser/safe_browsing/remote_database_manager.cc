@@ -126,6 +126,11 @@ bool RemoteSafeBrowsingDatabaseManager::IsSupported() const {
          is_android_field_trial_enabled_;
 }
 
+safe_browsing::ThreatSource RemoteSafeBrowsingDatabaseManager::GetThreatSource()
+    const {
+  return safe_browsing::ThreatSource::REMOTE;
+}
+
 bool RemoteSafeBrowsingDatabaseManager::ChecksAreAlwaysAsync() const {
   return true;
 }

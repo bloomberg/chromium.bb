@@ -254,7 +254,7 @@ void SafeBrowsingResourceThrottle::OnCheckBrowseUrlResult(
       &SafeBrowsingResourceThrottle::OnBlockingPageComplete, AsWeakPtr());
   resource.render_process_host_id = info->GetChildID();
   resource.render_view_id = info->GetRouteID();
-  resource.threat_source = SafeBrowsingUIManager::FROM_DEVICE;
+  resource.threat_source = database_manager_->GetThreatSource();
 
   state_ = STATE_DISPLAYING_BLOCKING_PAGE;
 

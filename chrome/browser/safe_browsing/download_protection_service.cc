@@ -178,12 +178,21 @@ class DownloadSBClient
     for (size_t i = 0; i < url_chain_.size(); ++i) {
       post_data += url_chain_[i].spec() + "\n";
     }
-    ui_manager_->MaybeReportSafeBrowsingHit(url_chain_.back(),  // malicious_url
-                                            url_chain_.front(),  // page_url
-                                            referrer_url_,
-                                            true,  // is_subresource
-                                            threat_type, post_data,
-                                            is_extended_reporting_);
+
+    safe_browsing::HitReport hit_report;
+    hit_report.malicious_url = url_chain_.back();
+    hit_report.page_url = url_chain_.front();
+    hit_report.referrer_url = referrer_url_;
+    hit_report.is_subresource = true;
+    hit_report.threat_type = threat_type;
+    // TODO(nparker) Replace this with database_manager_->GetThreatSource();
+    hit_report.threat_source = safe_browsing::ThreatSource::LOCAL_PVER3;
+    hit_report.post_data = post_data;
+    hit_report.is_extended_reporting = is_extended_reporting_;
+    hit_report.is_metrics_reporting_active =
+        safe_browsing::IsMetricsReportingActive();
+
+    ui_manager_->MaybeReportSafeBrowsingHit(hit_report);
   }
 
   void UpdateDownloadCheckStats(SBStatsType stat_type) {

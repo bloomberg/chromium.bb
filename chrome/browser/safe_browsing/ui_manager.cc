@@ -8,6 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/debug/leak_tracker.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/prefs/pref_service.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
@@ -22,7 +23,6 @@
 #include "chrome/browser/safe_browsing/threat_details.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/common/pref_names.h"
-#include "components/metrics/metrics_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
@@ -35,6 +35,7 @@
 using content::BrowserThread;
 using content::NavigationEntry;
 using content::WebContents;
+using safe_browsing::HitReport;
 
 namespace {
 
@@ -66,7 +67,7 @@ SafeBrowsingUIManager::UnsafeResource::UnsafeResource()
       threat_type(SB_THREAT_TYPE_SAFE),
       render_process_host_id(-1),
       render_view_id(-1),
-      threat_source(FROM_UNKNOWN) {
+      threat_source(safe_browsing::ThreatSource::UNKNOWN) {
 }
 
 SafeBrowsingUIManager::UnsafeResource::~UnsafeResource() { }
@@ -89,7 +90,6 @@ void SafeBrowsingUIManager::StopOnIOThread(bool shutdown) {
 void SafeBrowsingUIManager::LogPauseDelay(base::TimeDelta time) {
   UMA_HISTOGRAM_LONG_TIMES("SB2.Delay", time);
 }
-
 
 void SafeBrowsingUIManager::OnBlockingPageDone(
     const std::vector<UnsafeResource>& resources,
@@ -164,11 +164,16 @@ void SafeBrowsingUIManager::DisplayBlockingPage(
   }
 
   if (resource.threat_type != SB_THREAT_TYPE_SAFE) {
-    GURL page_url = web_contents->GetURL();
-    GURL referrer_url;
+    HitReport hit_report;
+    hit_report.malicious_url = resource.url;
+    hit_report.page_url = web_contents->GetURL();
+    hit_report.is_subresource = resource.is_subresource;
+    hit_report.threat_type = resource.threat_type;
+    hit_report.threat_source = resource.threat_source;
+
     NavigationEntry* entry = web_contents->GetController().GetActiveEntry();
     if (entry)
-      referrer_url = entry->GetReferrer().url;
+      hit_report.referrer_url = entry->GetReferrer().url;
 
     // When the malicious url is on the main frame, and resource.original_url
     // is not the same as the resource.url, that means we have a redirect from
@@ -179,21 +184,20 @@ void SafeBrowsingUIManager::DisplayBlockingPage(
     if (!resource.is_subresource &&
         !resource.original_url.is_empty() &&
         resource.original_url != resource.url) {
-      referrer_url = page_url;
-      page_url = resource.original_url;
+      hit_report.referrer_url = hit_report.page_url;
+      hit_report.page_url = resource.original_url;
     }
 
     Profile* profile =
         Profile::FromBrowserContext(web_contents->GetBrowserContext());
-    const bool is_extended_reporting =
+    hit_report.is_extended_reporting =
         profile &&
         profile->GetPrefs()->GetBoolean(
             prefs::kSafeBrowsingExtendedReportingEnabled);
+    hit_report.is_metrics_reporting_active =
+        safe_browsing::IsMetricsReportingActive();
 
-    MaybeReportSafeBrowsingHit(resource.url, page_url, referrer_url,
-                               resource.is_subresource, resource.threat_type,
-                               std::string(), /* post_data */
-                               is_extended_reporting);
+    MaybeReportSafeBrowsingHit(hit_report);
   }
 
   if (resource.threat_type != SB_THREAT_TYPE_SAFE) {
@@ -206,25 +210,32 @@ void SafeBrowsingUIManager::DisplayBlockingPage(
 // or after the warning dialog for download urls, only for
 // UMA || extended_reporting users.
 void SafeBrowsingUIManager::MaybeReportSafeBrowsingHit(
-    const GURL& malicious_url,
-    const GURL& page_url,
-    const GURL& referrer_url,
-    bool is_subresource,
-    SBThreatType threat_type,
-    const std::string& post_data,
-    bool is_extended_reporting) {
+    const HitReport& hit_report) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // Decide if we should send this report.
-  const metrics::MetricsService* metrics = g_browser_process->metrics_service();
-  const bool metrics_active = metrics && metrics->reporting_active();
-  if (metrics_active || is_extended_reporting) {
+  if (hit_report.is_metrics_reporting_active ||
+      hit_report.is_extended_reporting) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::Bind(&SafeBrowsingUIManager::ReportSafeBrowsingHitOnIOThread,
-                   this, malicious_url, page_url, referrer_url, is_subresource,
-                   threat_type, post_data, is_extended_reporting));
+                   this, hit_report));
   }
+}
+
+void SafeBrowsingUIManager::ReportSafeBrowsingHitOnIOThread(
+    const HitReport& hit_report) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  // The service may delete the ping manager (i.e. when user disabling service,
+  // etc). This happens on the IO thread.
+  if (!sb_service_ || !sb_service_->ping_manager())
+    return;
+
+  DVLOG(1) << "ReportSafeBrowsingHit: " << hit_report.malicious_url << " "
+           << hit_report.page_url << " " << hit_report.referrer_url << " "
+           << hit_report.is_subresource << " " << hit_report.threat_type;
+  sb_service_->ping_manager()->ReportSafeBrowsingHit(hit_report);
 }
 
 void SafeBrowsingUIManager::ReportInvalidCertificateChain(
@@ -247,29 +258,6 @@ void SafeBrowsingUIManager::AddObserver(Observer* observer) {
 void SafeBrowsingUIManager::RemoveObserver(Observer* observer) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   observer_list_.RemoveObserver(observer);
-}
-
-void SafeBrowsingUIManager::ReportSafeBrowsingHitOnIOThread(
-    const GURL& malicious_url,
-    const GURL& page_url,
-    const GURL& referrer_url,
-    bool is_subresource,
-    SBThreatType threat_type,
-    const std::string& post_data,
-    bool is_extended_reporting) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  // The service may delete the ping manager (i.e. when user disabling service,
-  // etc). This happens on the IO thread.
-  if (sb_service_.get() == NULL || sb_service_->ping_manager() == NULL)
-    return;
-
-  DVLOG(1) << "ReportSafeBrowsingHit: " << malicious_url << " " << page_url
-           << " " << referrer_url << " " << is_subresource << " "
-           << threat_type;
-  sb_service_->ping_manager()->ReportSafeBrowsingHit(
-      malicious_url, page_url, referrer_url, is_subresource, threat_type,
-      post_data, is_extended_reporting);
 }
 
 void SafeBrowsingUIManager::ReportInvalidCertificateChainOnIOThread(

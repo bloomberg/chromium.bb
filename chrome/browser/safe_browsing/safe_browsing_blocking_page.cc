@@ -550,11 +550,16 @@ std::string SafeBrowsingBlockingPage::GetMetricPrefix() const {
 // We populate a parallel set of metrics to differentiate some threat sources.
 std::string SafeBrowsingBlockingPage::GetExtraMetricsSuffix() const {
   switch (unsafe_resources_[0].threat_source) {
-    case SafeBrowsingUIManager::FROM_DATA_SAVER:
+    case safe_browsing::ThreatSource::DATA_SAVER:
       return "from_data_saver";
-    case SafeBrowsingUIManager::FROM_DEVICE:
+    case safe_browsing::ThreatSource::REMOTE:
+    case safe_browsing::ThreatSource::LOCAL_PVER3:
+      // REMOTE and LOCAL_PVER3 can be distinguished in the logs
+      // by platform type: Remote is mobile, local_pver3 is desktop.
       return "from_device";
-    case SafeBrowsingUIManager::FROM_UNKNOWN:
+    case safe_browsing::ThreatSource::LOCAL_PVER4:
+      return "from_device_v4";
+    case safe_browsing::ThreatSource::UNKNOWN:
       break;
   }
   NOTREACHED();

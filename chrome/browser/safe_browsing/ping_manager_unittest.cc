@@ -13,6 +13,8 @@
 
 using base::Time;
 using base::TimeDelta;
+using safe_browsing::HitReport;
+using safe_browsing::ThreatSource;
 
 static const char kUrlPrefix[] = "https://prefix.com/foo";
 static const char kClient[] = "unittest";
@@ -37,67 +39,102 @@ TEST_F(SafeBrowsingPingManagerTest, TestSafeBrowsingHitUrl) {
   config.client_name = kClient;
   config.url_prefix = kUrlPrefix;
   SafeBrowsingPingManager pm(NULL, config);
-
   pm.version_ = kAppVer;
 
-  GURL malicious_url("http://malicious.url.com");
-  GURL page_url("http://page.url.com");
-  GURL referrer_url("http://referrer.url.com");
-  EXPECT_EQ(
-      "https://prefix.com/foo/report?client=unittest&appver=1.0&"
-      "pver=3.0" +
-          key_param_ +
-          "&ext=1&evts=malblhit&evtd=http%3A%2F%2Fmalicious.url.com%2F&"
-          "evtr=http%3A%2F%2Fpage.url.com%2F&evhr=http%3A%2F%2Freferrer."
-          "url.com%2F&evtb=1",
-      pm.SafeBrowsingHitUrl(malicious_url, page_url, referrer_url, true,
-                            SB_THREAT_TYPE_URL_MALWARE, true).spec());
+  HitReport base_hp;
+  base_hp.malicious_url = GURL("http://malicious.url.com");
+  base_hp.page_url = GURL("http://page.url.com");
+  base_hp.referrer_url = GURL("http://referrer.url.com");
 
-  EXPECT_EQ(
-      "https://prefix.com/foo/report?client=unittest&appver=1.0&"
-      "pver=3.0" +
-          key_param_ +
-          "&ext=1&evts=phishblhit&"
-          "evtd=http%3A%2F%2Fmalicious.url.com%2F&"
-          "evtr=http%3A%2F%2Fpage.url.com%2F&evhr=http%3A%2F%2Freferrer."
-          "url.com%2F&evtb=0",
-      pm.SafeBrowsingHitUrl(malicious_url, page_url, referrer_url, false,
-                            SB_THREAT_TYPE_URL_PHISHING, true).spec());
+  {
+    HitReport hp(base_hp);
+    hp.threat_type = SB_THREAT_TYPE_URL_MALWARE;
+    hp.threat_source = ThreatSource::LOCAL_PVER3;
+    hp.is_subresource = true;
+    hp.is_extended_reporting = true;
+    hp.is_metrics_reporting_active = true;
 
-  EXPECT_EQ(
-      "https://prefix.com/foo/report?client=unittest&appver=1.0&"
-      "pver=3.0" +
-          key_param_ +
-          "&ext=0&evts=binurlhit&"
-          "evtd=http%3A%2F%2Fmalicious.url.com%2F&"
-          "evtr=http%3A%2F%2Fpage.url.com%2F&evhr=http%3A%2F%2Freferrer."
-          "url.com%2F&evtb=0",
-      pm.SafeBrowsingHitUrl(malicious_url, page_url, referrer_url, false,
-                            SB_THREAT_TYPE_BINARY_MALWARE_URL, false).spec());
+    EXPECT_EQ(
+        "https://prefix.com/foo/report?client=unittest&appver=1.0&"
+        "pver=3.0" +
+            key_param_ +
+            "&ext=1&evts=malblhit&evtd=http%3A%2F%2Fmalicious.url.com%2F&"
+            "evtr=http%3A%2F%2Fpage.url.com%2F&evhr=http%3A%2F%2Freferrer."
+            "url.com%2F&evtb=1&src=l3&m=1",
+        pm.SafeBrowsingHitUrl(hp).spec());
+  }
 
-  EXPECT_EQ(
-      "https://prefix.com/foo/report?client=unittest&appver=1.0&"
-      "pver=3.0" +
-          key_param_ +
-          "&ext=0&evts=phishcsdhit&"
-          "evtd=http%3A%2F%2Fmalicious.url.com%2F&"
-          "evtr=http%3A%2F%2Fpage.url.com%2F&evhr=http%3A%2F%2Freferrer."
-          "url.com%2F&evtb=0",
-      pm.SafeBrowsingHitUrl(malicious_url, page_url, referrer_url, false,
-                            SB_THREAT_TYPE_CLIENT_SIDE_PHISHING_URL,
-                            false).spec());
+  {
+    HitReport hp(base_hp);
+    hp.threat_type = SB_THREAT_TYPE_URL_PHISHING;
+    hp.threat_source = ThreatSource::DATA_SAVER;
+    hp.is_subresource = false;
+    hp.is_extended_reporting = true;
+    hp.is_metrics_reporting_active = true;
+    EXPECT_EQ(
+        "https://prefix.com/foo/report?client=unittest&appver=1.0&"
+        "pver=3.0" +
+            key_param_ +
+            "&ext=1&evts=phishblhit&"
+            "evtd=http%3A%2F%2Fmalicious.url.com%2F&"
+            "evtr=http%3A%2F%2Fpage.url.com%2F&evhr=http%3A%2F%2Freferrer."
+            "url.com%2F&evtb=0&src=ds&m=1",
+        pm.SafeBrowsingHitUrl(hp).spec());
+  }
 
-  EXPECT_EQ(
-      "https://prefix.com/foo/report?client=unittest&appver=1.0&"
-      "pver=3.0" +
-          key_param_ +
-          "&ext=0&evts=malcsdhit&"
-          "evtd=http%3A%2F%2Fmalicious.url.com%2F&"
-          "evtr=http%3A%2F%2Fpage.url.com%2F&evhr=http%3A%2F%2Freferrer."
-          "url.com%2F&evtb=1",
-      pm.SafeBrowsingHitUrl(malicious_url, page_url, referrer_url, true,
-                            SB_THREAT_TYPE_CLIENT_SIDE_MALWARE_URL,
-                            false).spec());
+  {
+    HitReport hp(base_hp);
+    hp.threat_type = SB_THREAT_TYPE_BINARY_MALWARE_URL;
+    hp.threat_source = ThreatSource::REMOTE;
+    hp.is_extended_reporting = false;
+    hp.is_metrics_reporting_active = true;
+    hp.is_subresource = false;
+    EXPECT_EQ(
+        "https://prefix.com/foo/report?client=unittest&appver=1.0&"
+        "pver=3.0" +
+            key_param_ +
+            "&ext=0&evts=binurlhit&"
+            "evtd=http%3A%2F%2Fmalicious.url.com%2F&"
+            "evtr=http%3A%2F%2Fpage.url.com%2F&evhr=http%3A%2F%2Freferrer."
+            "url.com%2F&evtb=0&src=rem&m=1",
+        pm.SafeBrowsingHitUrl(hp).spec());
+  }
+
+  {
+    HitReport hp(base_hp);
+    hp.threat_type = SB_THREAT_TYPE_CLIENT_SIDE_PHISHING_URL;
+    hp.threat_source = ThreatSource::LOCAL_PVER4;
+    hp.is_extended_reporting = false;
+    hp.is_metrics_reporting_active = false;
+    hp.is_subresource = false;
+    EXPECT_EQ(
+        "https://prefix.com/foo/report?client=unittest&appver=1.0&"
+        "pver=3.0" +
+            key_param_ +
+            "&ext=0&evts=phishcsdhit&"
+            "evtd=http%3A%2F%2Fmalicious.url.com%2F&"
+            "evtr=http%3A%2F%2Fpage.url.com%2F&evhr=http%3A%2F%2Freferrer."
+            "url.com%2F&evtb=0&src=l4&m=0",
+        pm.SafeBrowsingHitUrl(hp).spec());
+  }
+
+  {
+    HitReport hp(base_hp);
+    hp.threat_type = SB_THREAT_TYPE_CLIENT_SIDE_MALWARE_URL;
+    hp.threat_source = ThreatSource::LOCAL_PVER4;
+    hp.is_extended_reporting = false;
+    hp.is_metrics_reporting_active = false;
+    hp.is_subresource = true;
+    EXPECT_EQ(
+        "https://prefix.com/foo/report?client=unittest&appver=1.0&"
+        "pver=3.0" +
+            key_param_ +
+            "&ext=0&evts=malcsdhit&"
+            "evtd=http%3A%2F%2Fmalicious.url.com%2F&"
+            "evtr=http%3A%2F%2Fpage.url.com%2F&evhr=http%3A%2F%2Freferrer."
+            "url.com%2F&evtb=1&src=l4&m=0",
+        pm.SafeBrowsingHitUrl(hp).spec());
+  }
 }
 
 TEST_F(SafeBrowsingPingManagerTest, TestThreatDetailsUrl) {
@@ -107,9 +144,7 @@ TEST_F(SafeBrowsingPingManagerTest, TestThreatDetailsUrl) {
   SafeBrowsingPingManager pm(NULL, config);
 
   pm.version_ = kAppVer;
-  EXPECT_EQ(
-      "https://prefix.com/foo/clientreport/malware?"
-      "client=unittest&appver=1.0&pver=1.0" +
-          key_param_,
-      pm.ThreatDetailsUrl().spec());
+  EXPECT_EQ("https://prefix.com/foo/clientreport/malware?"
+            "client=unittest&appver=1.0&pver=1.0" + key_param_,
+            pm.ThreatDetailsUrl().spec());
 }

@@ -310,6 +310,11 @@ bool LocalSafeBrowsingDatabaseManager::IsSupported() const {
   return true;
 }
 
+safe_browsing::ThreatSource LocalSafeBrowsingDatabaseManager::GetThreatSource()
+    const {
+  return safe_browsing::ThreatSource::LOCAL_PVER3;
+}
+
 bool LocalSafeBrowsingDatabaseManager::ChecksAreAlwaysAsync() const {
   return false;
 }

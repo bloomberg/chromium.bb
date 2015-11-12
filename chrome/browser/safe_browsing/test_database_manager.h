@@ -19,6 +19,7 @@ class TestSafeBrowsingDatabaseManager
  public:
   // SafeBrowsingDatabaseManager implementation:
   bool IsSupported() const override;
+  safe_browsing::ThreatSource GetThreatSource() const override;
   bool ChecksAreAlwaysAsync() const override;
   bool CanCheckResourceType(content::ResourceType resource_type) const override;
   bool CanCheckUrl(const GURL& url) const override;

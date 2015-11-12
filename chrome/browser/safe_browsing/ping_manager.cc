@@ -92,27 +92,20 @@ void SafeBrowsingPingManager::OnURLFetchComplete(
   safebrowsing_reports_.erase(sit);
 }
 
-// Sends a SafeBrowsing "hit" for UMA users.
+// Sends a SafeBrowsing "hit" report.
 void SafeBrowsingPingManager::ReportSafeBrowsingHit(
-    const GURL& malicious_url,
-    const GURL& page_url,
-    const GURL& referrer_url,
-    bool is_subresource,
-    SBThreatType threat_type,
-    const std::string& post_data,
-    bool is_extended_reporting) {
-  GURL report_url =
-      SafeBrowsingHitUrl(malicious_url, page_url, referrer_url, is_subresource,
-                         threat_type, is_extended_reporting);
+    const safe_browsing::HitReport& hit_report) {
+  GURL report_url = SafeBrowsingHitUrl(hit_report);
   net::URLFetcher* report =
-      net::URLFetcher::Create(
-          report_url,
-          post_data.empty() ? net::URLFetcher::GET : net::URLFetcher::POST,
-          this).release();
+      net::URLFetcher::Create(report_url, hit_report.post_data.empty()
+                                              ? net::URLFetcher::GET
+                                              : net::URLFetcher::POST,
+                              this)
+          .release();
   report->SetLoadFlags(net::LOAD_DISABLE_CACHE);
   report->SetRequestContext(request_context_getter_.get());
-  if (!post_data.empty())
-    report->SetUploadData("text/plain", post_data);
+  if (!hit_report.post_data.empty())
+    report->SetUploadData("text/plain", hit_report.post_data);
   safebrowsing_reports_.insert(report);
   report->Start();
 }
@@ -145,23 +138,19 @@ void SafeBrowsingPingManager::SetCertificateErrorReporterForTesting(
 }
 
 GURL SafeBrowsingPingManager::SafeBrowsingHitUrl(
-    const GURL& malicious_url,
-    const GURL& page_url,
-    const GURL& referrer_url,
-    bool is_subresource,
-    SBThreatType threat_type,
-    bool is_extended_reporting) const {
-  DCHECK(threat_type == SB_THREAT_TYPE_URL_MALWARE ||
-         threat_type == SB_THREAT_TYPE_URL_PHISHING ||
-         threat_type == SB_THREAT_TYPE_URL_UNWANTED ||
-         threat_type == SB_THREAT_TYPE_BINARY_MALWARE_URL ||
-         threat_type == SB_THREAT_TYPE_CLIENT_SIDE_PHISHING_URL ||
-         threat_type == SB_THREAT_TYPE_CLIENT_SIDE_MALWARE_URL);
+    const safe_browsing::HitReport& hit_report) const {
+  DCHECK(hit_report.threat_type == SB_THREAT_TYPE_URL_MALWARE ||
+         hit_report.threat_type == SB_THREAT_TYPE_URL_PHISHING ||
+         hit_report.threat_type == SB_THREAT_TYPE_URL_UNWANTED ||
+         hit_report.threat_type == SB_THREAT_TYPE_BINARY_MALWARE_URL ||
+         hit_report.threat_type == SB_THREAT_TYPE_CLIENT_SIDE_PHISHING_URL ||
+         hit_report.threat_type == SB_THREAT_TYPE_CLIENT_SIDE_MALWARE_URL);
   std::string url = SafeBrowsingProtocolManagerHelper::ComposeUrl(
       url_prefix_, "report", client_name_, version_, std::string(),
-      is_extended_reporting);
+      hit_report.is_extended_reporting);
+
   std::string threat_list = "none";
-  switch (threat_type) {
+  switch (hit_report.threat_type) {
     case SB_THREAT_TYPE_URL_MALWARE:
       threat_list = "malblhit";
       break;
@@ -183,12 +172,33 @@ GURL SafeBrowsingPingManager::SafeBrowsingHitUrl(
     default:
       NOTREACHED();
   }
-  return GURL(base::StringPrintf("%s&evts=%s&evtd=%s&evtr=%s&evhr=%s&evtb=%d",
-      url.c_str(), threat_list.c_str(),
-      net::EscapeQueryParamValue(malicious_url.spec(), true).c_str(),
-      net::EscapeQueryParamValue(page_url.spec(), true).c_str(),
-      net::EscapeQueryParamValue(referrer_url.spec(), true).c_str(),
-      is_subresource));
+
+  std::string threat_source = "none";
+  switch (hit_report.threat_source) {
+    case safe_browsing::ThreatSource::DATA_SAVER:
+      threat_source = "ds";
+      break;
+    case safe_browsing::ThreatSource::REMOTE:
+      threat_source = "rem";
+      break;
+    case safe_browsing::ThreatSource::LOCAL_PVER3:
+      threat_source = "l3";
+      break;
+    case safe_browsing::ThreatSource::LOCAL_PVER4:
+      threat_source = "l4";
+      break;
+    case safe_browsing::ThreatSource::UNKNOWN:
+      NOTREACHED();
+  }
+
+  return GURL(base::StringPrintf(
+      "%s&evts=%s&evtd=%s&evtr=%s&evhr=%s&evtb=%d&src=%s&m=%d", url.c_str(),
+      threat_list.c_str(),
+      net::EscapeQueryParamValue(hit_report.malicious_url.spec(), true).c_str(),
+      net::EscapeQueryParamValue(hit_report.page_url.spec(), true).c_str(),
+      net::EscapeQueryParamValue(hit_report.referrer_url.spec(), true).c_str(),
+      hit_report.is_subresource, threat_source.c_str(),
+      hit_report.is_metrics_reporting_active));
 }
 
 GURL SafeBrowsingPingManager::ThreatDetailsUrl() const {

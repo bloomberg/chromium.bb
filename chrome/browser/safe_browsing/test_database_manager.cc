@@ -15,6 +15,12 @@ bool TestSafeBrowsingDatabaseManager::IsSupported() const {
   return false;
 }
 
+safe_browsing::ThreatSource TestSafeBrowsingDatabaseManager::GetThreatSource()
+    const {
+  NOTIMPLEMENTED();
+  return safe_browsing::ThreatSource::UNKNOWN;
+}
+
 bool TestSafeBrowsingDatabaseManager::ChecksAreAlwaysAsync() const {
   NOTIMPLEMENTED();
   return false;
