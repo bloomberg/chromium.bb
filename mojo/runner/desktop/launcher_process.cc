@@ -15,8 +15,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/trace_event/trace_event.h"
-#include "components/tracing/trace_config_file.h"
 #include "mojo/runner/context.h"
 #include "mojo/runner/switches.h"
 #include "mojo/shell/switches.h"
@@ -24,8 +22,7 @@
 namespace mojo {
 namespace runner {
 
-int LauncherProcessMain(int argc, char** argv) {
-  mojo::runner::Tracer tracer;
+int LauncherProcessMain(const GURL& mojo_url, const base::Closure& callback) {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (!command_line->HasSwitch(switches::kMojoSingleProcess) &&
       !command_line->HasSwitch("gtest_list_tests"))
@@ -41,14 +38,20 @@ int LauncherProcessMain(int argc, char** argv) {
     base::MessageLoop message_loop;
     base::FilePath shell_dir;
     PathService::Get(base::DIR_MODULE, &shell_dir);
-    if (!shell_context.Init(shell_dir)) {
+    if (!shell_context.Init(shell_dir))
       return 0;
-    }
 
-    message_loop.PostTask(
-        FROM_HERE,
-        base::Bind(&Context::RunCommandLineApplication,
-                   base::Unretained(&shell_context), base::Closure()));
+    if (mojo_url.is_empty()) {
+      message_loop.PostTask(
+          FROM_HERE,
+          base::Bind(&Context::RunCommandLineApplication,
+                     base::Unretained(&shell_context), base::Closure()));
+    } else {
+      message_loop.PostTask(FROM_HERE,
+                            base::Bind(&mojo::runner::Context::Run,
+                                       base::Unretained(&shell_context),
+                                       mojo_url));
+    }
     message_loop.Run();
 
     // Must be called before |message_loop| is destroyed.

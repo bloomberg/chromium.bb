@@ -44,8 +44,6 @@ source_set("mojo_runner_lib") {
 
   if (!is_android) {
     sources += [
-      "desktop/launcher_process.cc",
-      "desktop/launcher_process.h",
       "desktop/main.cc",
       "register_local_aliases.cc",
       "register_local_aliases.h",
@@ -175,6 +173,13 @@ source_set("lib") {
       ":run_android_application_function",
       "//components/mus/gles2",
       "//mojo/application/public/cpp:content_handler",
+    ]
+  } else {
+    sources += [
+      "desktop/launcher_process.cc",
+      "desktop/launcher_process.h",
+      "desktop/main_helper.cc",
+      "desktop/main_helper.h",
     ]
   }
 

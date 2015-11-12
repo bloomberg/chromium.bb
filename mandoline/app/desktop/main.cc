@@ -2,33 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/at_exit.h"
-#include "base/command_line.h"
-#include "base/debug/stack_trace.h"
-#include "base/process/launch.h"
-#include "mandoline/app/desktop/launcher_process.h"
-#include "mojo/runner/host/child_process.h"
-#include "mojo/runner/host/switches.h"
-#include "mojo/runner/init.h"
+#include "mojo/runner/desktop/main_helper.h"
 
 int main(int argc, char** argv) {
-  base::CommandLine::Init(argc, argv);
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-
-  base::AtExitManager at_exit;
-  mojo::runner::InitializeLogging();
-  mojo::runner::WaitForDebuggerIfNecessary();
-
-#if !defined(OFFICIAL_BUILD)
-  base::debug::EnableInProcessStackDumping();
-#if defined(OS_WIN)
-  base::RouteStdioToConsole(false);
-#endif
-#endif
-
-  if (command_line.HasSwitch(switches::kChildProcess))
-    return mojo::runner::ChildProcessMain();
-
-  return mandoline::LauncherProcessMain(argc, argv);
+  return mojo::runner::RunnerMain(argc, argv, GURL("mojo:desktop_ui"),
+                                  base::Closure());
 }

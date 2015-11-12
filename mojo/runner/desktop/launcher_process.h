@@ -5,11 +5,16 @@
 #ifndef MOJO_SHELL_LAUNCHER_PROCESS_H_
 #define MOJO_SHELL_LAUNCHER_PROCESS_H_
 
+#include "base/callback_forward.h"
+
+class GURL;
+
 namespace mojo {
 namespace runner {
 
 // Main method for the launcher process.
-int LauncherProcessMain(int argc, char** argv);
+// See commit in main_helper.h for explanation of the parameters.
+int LauncherProcessMain(const GURL& mojo_url, const base::Closure& callback);
 
 }  // namespace runner
 }  // namespace mojo

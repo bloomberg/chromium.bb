@@ -11,8 +11,6 @@ group("desktop") {
 executable("mandoline") {
   sources = [
     "../register_local_aliases.cc",
-    "launcher_process.cc",
-    "launcher_process.h",
     "main.cc",
   ]
 
