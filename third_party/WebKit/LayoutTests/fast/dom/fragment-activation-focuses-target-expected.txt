@@ -23,10 +23,15 @@ PASS document.activeElement is link4
 Activate a link to # and verify that the link remains focused
 PASS document.activeElement is link5
 PASS document.activeElement is link5
+Activate a link to an INPUT elemnt, verify that the INPUT is editable
+PASS document.activeElement is link6
+PASS document.activeElement is input1
+PASS input1.value is "abcXdef"
 PASS successfullyParsed is true
 
 TEST COMPLETE
-link1 link2 link3 link4 link5 
+link1 link2 link3 link4 link5 link6 
 
 fragment1
 fragment2
+

@@ -9,9 +9,11 @@
     <a href="#fragment3" id="link3" tabindex="0">link3</a>
     <a href="#top" id="link4" tabindex="0">link4</a>
     <a href="#" id="link5" tabindex="0">link5</a>
+    <a href="#input1" id="link6" tabindex="0">link6</a>
     <br><br>
     <div id="fragment1" name="fragment1" tabindex="0">fragment1</div>
     <div id="fragment2" name="fragment2">fragment2</div>
+    <input id="input1" value="abcdef">
     <script>
         description("This tests that if an in-page link is activated, focus control is transferred to the fragment if possible.");
 
@@ -62,6 +64,18 @@
         link5.click();
         shouldBe("document.activeElement", "link5");
 
+        debug("Activate a link to an INPUT elemnt, verify that the INPUT is editable");
+        var input1 = document.getElementById("input1");
+        input1.setSelectionRange(3, 3);
+        var link6 = document.getElementById("link6");
+        link6.focus();
+        shouldBe("document.activeElement", "link6");
+        link6.click();
+        shouldBe("document.activeElement", "input1");
+        if (window.eventSender) {
+            eventSender.keyDown('X');
+            shouldBeEqualToString("input1.value", "abcXdef");
+        }
         var successfullyParsed = true;
     </script>
 </body>
