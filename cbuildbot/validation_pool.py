@@ -1196,14 +1196,6 @@ class ValidationPool(object):
     # See optional args for types of changes.
     self.candidates = candidates or []
     self.non_manifest_changes = non_os_changes or []
-
-    # TODO(dgarrett): Remove this if block after pickle changes settle down.
-    if applied is None:
-      # If we received a pickle from an older version, it will use the
-      # default applied value. All candidates were already applied. Also remove
-      # applied=[] from constructor callers.
-      applied = self.candidates[:]
-
     self.applied = applied or []
 
     # Note, we hold onto these CLs since they conflict against our current CLs
