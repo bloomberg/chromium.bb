@@ -225,7 +225,9 @@ class Shell : public WebContentsDelegate,
   bool is_fullscreen_;
 
   gfx::NativeWindow window_;
-  gfx::NativeEditView url_edit_view_;
+#if defined(OS_MACOSX)
+  NSTextField* url_edit_view_;
+#endif
 
   gfx::Size content_size_;
 

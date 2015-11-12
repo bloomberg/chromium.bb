@@ -68,7 +68,9 @@ Shell::Shell(WebContents* web_contents)
       devtools_frontend_(NULL),
       is_fullscreen_(false),
       window_(NULL),
+#if defined(OS_MACOSX)
       url_edit_view_(NULL),
+#endif
       headless_(false) {
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();

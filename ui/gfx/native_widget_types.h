@@ -32,9 +32,6 @@
 //     unless you're in the IPC layer, which will be translating between
 //     NativeViewIds from the renderer and NativeViews.
 //
-//   NativeEditView: a handle to a native edit-box. The Mac folks wanted this
-//     specific typedef.
-//
 //   NativeImage: The platform-specific image type used for drawing UI elements
 //     in the browser.
 //
@@ -141,12 +138,10 @@ typedef jobject NativeEvent;
 
 #if defined(OS_WIN)
 typedef HFONT NativeFont;
-typedef HWND NativeEditView;
 typedef HDC NativeDrawingContext;
 typedef IAccessible* NativeViewAccessible;
 #elif defined(OS_IOS)
 typedef UIFont* NativeFont;
-typedef UITextField* NativeEditView;
 typedef CGContext* NativeDrawingContext;
 #ifdef __OBJC__
 typedef id NativeViewAccessible;
@@ -155,7 +150,6 @@ typedef void* NativeViewAccessible;
 #endif  // __OBJC__
 #elif defined(OS_MACOSX)
 typedef NSFont* NativeFont;
-typedef NSTextField* NativeEditView;
 typedef CGContext* NativeDrawingContext;
 #ifdef __OBJC__
 typedef id NativeViewAccessible;
@@ -164,7 +158,6 @@ typedef void* NativeViewAccessible;
 #endif  // __OBJC__
 #else  // Android, Linux, Chrome OS, etc.
 // Linux doesn't have a native font type.
-typedef void* NativeEditView;
 #if defined(USE_CAIRO)
 typedef cairo_t* NativeDrawingContext;
 #else
