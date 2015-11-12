@@ -193,7 +193,8 @@ void BluetoothLowEnergyDeviceMac::Disconnect(
   NOTIMPLEMENTED();
 }
 
-void BluetoothLowEnergyDeviceMac::Forget(const ErrorCallback& error_callback) {
+void BluetoothLowEnergyDeviceMac::Forget(const base::Closure& callback,
+                                         const ErrorCallback& error_callback) {
   NOTIMPLEMENTED();
 }
 

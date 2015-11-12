@@ -77,7 +77,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceAndroid final
   void CancelPairing() override;
   void Disconnect(const base::Closure& callback,
                   const ErrorCallback& error_callback) override;
-  void Forget(const ErrorCallback& error_callback) override;
+  void Forget(const base::Closure& callback,
+              const ErrorCallback& error_callback) override;
   void ConnectToService(
       const device::BluetoothUUID& uuid,
       const ConnectToServiceCallback& callback,

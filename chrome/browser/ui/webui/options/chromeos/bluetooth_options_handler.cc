@@ -293,9 +293,10 @@ void BluetoothOptionsHandler::UpdateDeviceCallback(
   } else if (command == kForgetCommand) {
     // Disconnect from device and delete pairing information.
     VLOG(1) << "Forget device: " << address;
-    device->Forget(base::Bind(&BluetoothOptionsHandler::ForgetError,
-                              weak_ptr_factory_.GetWeakPtr(),
-                              device->GetAddress()));
+    device->Forget(
+        base::Bind(&base::DoNothing),
+        base::Bind(&BluetoothOptionsHandler::ForgetError,
+                   weak_ptr_factory_.GetWeakPtr(), device->GetAddress()));
   } else {
     LOG(WARNING) << "Unknown updateBluetoothDevice command: " << command;
   }

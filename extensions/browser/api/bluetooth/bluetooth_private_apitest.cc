@@ -40,6 +40,7 @@ namespace {
 const char kTestExtensionId[] = "jofgjdphhceggjecimellaapdjjadibj";
 const char kAdapterName[] = "Helix";
 const char kDeviceName[] = "Red";
+const char kDeviceAddress[] = "11:12:13:14:15:16";
 
 MATCHER_P(IsFilterEqual, a, "") {
   return arg->Equals(*a);
@@ -60,13 +61,9 @@ class BluetoothPrivateApiTest : public ExtensionApiTest {
         switches::kWhitelistedExtensionID, kTestExtensionId);
     mock_adapter_ = new NiceMock<MockBluetoothAdapter>();
     event_router()->SetAdapterForTest(mock_adapter_.get());
-    mock_device_.reset(new NiceMock<MockBluetoothDevice>(mock_adapter_.get(),
-                                                         0,
-                                                         kDeviceName,
-                                                         "11:12:13:14:15:16",
-                                                         false,
-                                                         false));
-    ON_CALL(*mock_adapter_.get(), GetDevice(mock_device_->GetAddress()))
+    mock_device_.reset(new NiceMock<MockBluetoothDevice>(
+        mock_adapter_.get(), 0, kDeviceName, kDeviceAddress, false, false));
+    ON_CALL(*mock_adapter_.get(), GetDevice(kDeviceAddress))
         .WillByDefault(Return(mock_device_.get()));
     ON_CALL(*mock_adapter_.get(), IsPresent()).WillByDefault(Return(true));
   }
@@ -84,6 +81,12 @@ class BluetoothPrivateApiTest : public ExtensionApiTest {
 
   void SetPowered(bool powered, const base::Closure& callback) {
     adapter_powered_ = powered;
+    callback.Run();
+  }
+
+  void ForgetDevice(const base::Closure& callback) {
+    mock_device_.reset();
+    event_router()->SetAdapterForTest(nullptr);
     callback.Run();
   }
 
@@ -228,6 +231,14 @@ IN_PROC_BROWSER_TEST_F(BluetoothPrivateApiTest, DisconnectAll) {
       .WillOnce(InvokeCallbackArgument<1>())
       .WillOnce(InvokeCallbackArgument<0>());
   ASSERT_TRUE(RunComponentExtensionTest("bluetooth_private/disconnect"))
+      << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(BluetoothPrivateApiTest, ForgetDevice) {
+  EXPECT_CALL(*mock_device_.get(), Forget(_, _))
+      .WillOnce(
+          WithArgs<0>(Invoke(this, &BluetoothPrivateApiTest::ForgetDevice)));
+  ASSERT_TRUE(RunComponentExtensionTest("bluetooth_private/forget_device"))
       << message_;
 }
 

@@ -60,7 +60,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceWin : public BluetoothDevice {
   void CancelPairing() override;
   void Disconnect(const base::Closure& callback,
                   const ErrorCallback& error_callback) override;
-  void Forget(const ErrorCallback& error_callback) override;
+  void Forget(const base::Closure& callback,
+              const ErrorCallback& error_callback) override;
   void ConnectToService(
       const BluetoothUUID& uuid,
       const ConnectToServiceCallback& callback,

@@ -87,6 +87,7 @@ const char kInvalidPairingResponseOptions[] =
     "Invalid pairing response options";
 const char kAdapterNotPresent[] = "Failed to find a Bluetooth adapter";
 const char kDisconnectError[] = "Failed to disconnect device";
+const char kForgetDeviceError[] = "Failed to forget device";
 const char kSetDiscoveryFilterFailed[] = "Failed to set discovery filter";
 const char kPairingFailed[] = "Pairing failed";
 
@@ -345,6 +346,45 @@ void BluetoothPrivateDisconnectAllFunction::OnErrorCallback(
   else
     SetError(kDisconnectError);
 
+  SendResponse(false);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+BluetoothPrivateForgetDeviceFunction::BluetoothPrivateForgetDeviceFunction() {}
+
+BluetoothPrivateForgetDeviceFunction::~BluetoothPrivateForgetDeviceFunction() {}
+
+bool BluetoothPrivateForgetDeviceFunction::DoWork(
+    scoped_refptr<device::BluetoothAdapter> adapter) {
+  scoped_ptr<bt_private::ForgetDevice::Params> params(
+      bt_private::ForgetDevice::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+
+  device::BluetoothDevice* device = adapter->GetDevice(params->device_address);
+  if (!device) {
+    SetError(kDeviceNotFoundError);
+    SendResponse(false);
+    return true;
+  }
+
+  device->Forget(
+      base::Bind(&BluetoothPrivateForgetDeviceFunction::OnSuccessCallback,
+                 this),
+      base::Bind(&BluetoothPrivateForgetDeviceFunction::OnErrorCallback, this,
+                 adapter, params->device_address));
+
+  return true;
+}
+
+void BluetoothPrivateForgetDeviceFunction::OnSuccessCallback() {
+  SendResponse(true);
+}
+
+void BluetoothPrivateForgetDeviceFunction::OnErrorCallback(
+    scoped_refptr<device::BluetoothAdapter> adapter,
+    const std::string& device_address) {
+  SetError(kForgetDeviceError);
   SendResponse(false);
 }
 

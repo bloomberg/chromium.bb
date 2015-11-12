@@ -135,6 +135,10 @@ namespace bluetoothPrivate {
     static void disconnectAll(DOMString deviceAddress,
                               optional VoidCallback callback);
 
+    // Forgets the given device.
+    static void forgetDevice(DOMString deviceAddress,
+                             optional VoidCallback callback);
+
     // Set or clear discovery filter.
     static void setDiscoveryFilter(DiscoveryFilter discoveryFilter,
                                    optional VoidCallback callback);

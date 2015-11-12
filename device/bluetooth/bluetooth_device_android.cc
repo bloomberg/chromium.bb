@@ -181,7 +181,8 @@ void BluetoothDeviceAndroid::Disconnect(const base::Closure& callback,
   NOTIMPLEMENTED();
 }
 
-void BluetoothDeviceAndroid::Forget(const ErrorCallback& error_callback) {
+void BluetoothDeviceAndroid::Forget(const base::Closure& callback,
+                                    const ErrorCallback& error_callback) {
   NOTIMPLEMENTED();
 }
 

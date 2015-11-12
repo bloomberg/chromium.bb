@@ -376,9 +376,10 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
   // and other pairing information. The device object remains valid until
   // returning from the calling function, after which it should be assumed to
   // have been deleted. If the request fails, |error_callback| will be called.
-  // There is no callback for success because this object is often deleted
-  // before that callback would be called.
-  virtual void Forget(const ErrorCallback& error_callback) = 0;
+  // On success |callback| will be invoked, but note that the BluetoothDevice
+  // object will have been deleted at that point.
+  virtual void Forget(const base::Closure& callback,
+                      const ErrorCallback& error_callback) = 0;
 
   // Attempts to initiate an outgoing L2CAP or RFCOMM connection to the
   // advertised service on this device matching |uuid|, performing an SDP lookup

@@ -454,10 +454,11 @@ void BluetoothDeviceBlueZ::Disconnect(const base::Closure& callback,
                  weak_ptr_factory_.GetWeakPtr(), error_callback));
 }
 
-void BluetoothDeviceBlueZ::Forget(const ErrorCallback& error_callback) {
+void BluetoothDeviceBlueZ::Forget(const base::Closure& callback,
+                                  const ErrorCallback& error_callback) {
   VLOG(1) << object_path_.value() << ": Removing device";
   bluez::BluezDBusManager::Get()->GetBluetoothAdapterClient()->RemoveDevice(
-      adapter()->object_path(), object_path_, base::Bind(&base::DoNothing),
+      adapter()->object_path(), object_path_, callback,
       base::Bind(&BluetoothDeviceBlueZ::OnForgetError,
                  weak_ptr_factory_.GetWeakPtr(), error_callback));
 }

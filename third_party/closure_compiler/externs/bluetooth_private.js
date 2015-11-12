@@ -139,6 +139,14 @@ chrome.bluetoothPrivate.setPairingResponse = function(options, callback) {};
 chrome.bluetoothPrivate.disconnectAll = function(deviceAddress, callback) {};
 
 /**
+ * Forgets the given device.
+ * @param {string} deviceAddress
+ * @param {function():void=} callback
+ * @see https://developer.chrome.com/extensions/bluetoothPrivate#method-forgetDevice
+ */
+chrome.bluetoothPrivate.forgetDevice = function(deviceAddress, callback) {};
+
+/**
  * Set or clear discovery filter.
  * @param {!chrome.bluetoothPrivate.DiscoveryFilter} discoveryFilter
  * @param {function():void=} callback

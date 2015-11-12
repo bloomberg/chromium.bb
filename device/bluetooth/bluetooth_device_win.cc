@@ -158,7 +158,8 @@ void BluetoothDeviceWin::Disconnect(
   NOTIMPLEMENTED();
 }
 
-void BluetoothDeviceWin::Forget(const ErrorCallback& error_callback) {
+void BluetoothDeviceWin::Forget(const base::Closure& callback,
+                                const ErrorCallback& error_callback) {
   NOTIMPLEMENTED();
 }
 

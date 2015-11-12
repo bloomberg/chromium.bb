@@ -217,7 +217,8 @@ void BluetoothClassicDeviceMac::Disconnect(
   NOTIMPLEMENTED();
 }
 
-void BluetoothClassicDeviceMac::Forget(const ErrorCallback& error_callback) {
+void BluetoothClassicDeviceMac::Forget(const base::Closure& callback,
+                                       const ErrorCallback& error_callback) {
   NOTIMPLEMENTED();
 }
 

@@ -112,6 +112,25 @@ class BluetoothPrivateDisconnectAllFunction
   DISALLOW_COPY_AND_ASSIGN(BluetoothPrivateDisconnectAllFunction);
 };
 
+class BluetoothPrivateForgetDeviceFunction : public BluetoothExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("bluetoothPrivate.forgetDevice",
+                             BLUETOOTHPRIVATE_FORGETDEVICE);
+  BluetoothPrivateForgetDeviceFunction();
+
+  // BluetoothExtensionFunction overrides:
+  bool DoWork(scoped_refptr<device::BluetoothAdapter> adapter) override;
+
+ private:
+  ~BluetoothPrivateForgetDeviceFunction() override;
+
+  void OnSuccessCallback();
+  void OnErrorCallback(scoped_refptr<device::BluetoothAdapter> adapter,
+                       const std::string& device_address);
+
+  DISALLOW_COPY_AND_ASSIGN(BluetoothPrivateForgetDeviceFunction);
+};
+
 class BluetoothPrivateSetDiscoveryFilterFunction
     : public BluetoothExtensionFunction {
  public:
