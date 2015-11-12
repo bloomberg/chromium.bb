@@ -38,7 +38,8 @@ class _MSEMeasurement(page_test.PageTest):
 # android: See media.android.tough_video_cases below
 # xp: crbug.com/475191
 # win8: crbug.com/531618
-@benchmark.Disabled('android', 'xp', 'win8')
+# win7: crbug.com/555079
+@benchmark.Disabled('android', 'xp', 'win8', 'win7')
 class Media(perf_benchmark.PerfBenchmark):
   """Obtains media metrics for key user scenarios."""
   test = media.Media
