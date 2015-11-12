@@ -65,7 +65,7 @@
                         android:textColor="@color/fre_text_color"
                         android:textSize="@dimen/fre_normal_text_size" />
 
-                    <Switch
+                    <android.support.v7.widget.SwitchCompat
                         android:id="@+id/enable_data_saver_switch"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
