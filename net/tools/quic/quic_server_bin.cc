@@ -67,6 +67,16 @@ int main(int argc, char *argv[]) {
     }
   }
 
+  if (!line->HasSwitch("certificate_file")) {
+    LOG(ERROR) << "missing --certificate_file";
+    return 1;
+  }
+
+  if (!line->HasSwitch("key_file")) {
+    LOG(ERROR) << "missing --key_file";
+    return 1;
+  }
+
   net::IPAddressNumber ip;
   CHECK(net::ParseIPLiteralToNumber("::", &ip));
 
@@ -76,14 +86,6 @@ int main(int argc, char *argv[]) {
                         line->GetSwitchValuePath("key_file")),
       config, net::QuicSupportedVersions());
   server.SetStrikeRegisterNoStartupPeriod();
-  if (!line->HasSwitch("certificate_file")) {
-    LOG(ERROR) << "missing --certificate_file";
-    return 1;
-  }
-  if (!line->HasSwitch("key_file")) {
-    LOG(ERROR) << "missing --key_file";
-    return 1;
-  }
 
   int rc = server.Listen(net::IPEndPoint(ip, FLAGS_port));
   if (rc < 0) {
