@@ -21,9 +21,9 @@ var AUDIO_PLAYER_APP_URL = 'audio_player.html';
 var audioPlayerCreateOptions = {
   id: 'audio-player',
   type: 'panel',
-  minHeight: 48 + 73,  // 48px: track, 73px: controller
+  minHeight: 44 + 73,  // 44px: track, 73px: controller
   minWidth: 292,
-  height: 48 + 73,  // collapsed
+  height: 44 + 73,  // collapsed
   width: 292
 };
 

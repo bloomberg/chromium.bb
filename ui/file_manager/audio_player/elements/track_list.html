@@ -5,14 +5,12 @@
   -->
 
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/font-roboto/roboto.html">
 
 <dom-module id="track-list">
   <link rel="import" type="css" href="track_list.css">
   <template>
     <template is="dom-repeat" id="tracks" items="[[tracks]]">
       <div class="track" active$="[[item.active]]" index$="[[index]]" on-click="trackClicked">
-        <div class="icon"></div>
         <div class="data">
           <div class="data-title">[[item.title]]</div>
           <div class="data-artist">[[item.artist]]</div>
