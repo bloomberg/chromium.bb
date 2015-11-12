@@ -32,7 +32,7 @@ class MOJO_SYSTEM_IMPL_EXPORT SimpleDispatcher : public Dispatcher {
   void CancelAllAwakablesNoLock() override;
   MojoResult AddAwakableImplNoLock(Awakable* awakable,
                                    MojoHandleSignals signals,
-                                   uint32_t context,
+                                   uintptr_t context,
                                    HandleSignalsState* signals_state) override;
   void RemoveAwakableImplNoLock(Awakable* awakable,
                                 HandleSignalsState* signals_state) override;

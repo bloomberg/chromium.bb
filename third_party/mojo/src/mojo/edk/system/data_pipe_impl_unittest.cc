@@ -131,7 +131,7 @@ class DataPipeImplTest : public testing::Test {
   }
   MojoResult ProducerAddAwakable(Awakable* awakable,
                                  MojoHandleSignals signals,
-                                 uint32_t context,
+                                 uintptr_t context,
                                  HandleSignalsState* signals_state) {
     return dpp()->ProducerAddAwakable(awakable, signals, context,
                                       signals_state);
@@ -164,7 +164,7 @@ class DataPipeImplTest : public testing::Test {
   }
   MojoResult ConsumerAddAwakable(Awakable* awakable,
                                  MojoHandleSignals signals,
-                                 uint32_t context,
+                                 uintptr_t context,
                                  HandleSignalsState* signals_state) {
     return dpc()->ConsumerAddAwakable(awakable, signals, context,
                                       signals_state);
@@ -275,7 +275,7 @@ class RemoteDataPipeImplTestHelper : public DataPipeImplTestHelper {
                                     MOJO_WRITE_MESSAGE_FLAG_NONE));
       transport.End();
     }
-    uint32_t context = 0;
+    uintptr_t context = 0;
     ASSERT_EQ(MOJO_RESULT_OK, waiter.Wait(test::ActionDeadline(), &context));
     EXPECT_EQ(987u, context);
     HandleSignalsState hss = HandleSignalsState();
@@ -604,7 +604,7 @@ TYPED_TEST(DataPipeImplTest, SimpleReadWrite) {
 
   Waiter waiter;
   HandleSignalsState hss;
-  uint32_t context;
+  uintptr_t context;
 
   int32_t elements[10] = {};
   uint32_t num_bytes = 0u;
@@ -756,7 +756,7 @@ TYPED_TEST(DataPipeImplTest, BasicProducerWaiting) {
   Waiter pwaiter;  // For producer.
   Waiter cwaiter;  // For consumer.
   HandleSignalsState hss;
-  uint32_t context;
+  uintptr_t context;
 
   // Never readable.
   pwaiter.Init();
@@ -949,7 +949,7 @@ TYPED_TEST(DataPipeImplTest, PeerClosedProducerWaiting) {
 
   Waiter waiter;
   HandleSignalsState hss;
-  uint32_t context;
+  uintptr_t context;
 
   // Add a waiter.
   waiter.Init();
@@ -984,7 +984,7 @@ TYPED_TEST(DataPipeImplTest, PeerClosedConsumerWaiting) {
 
   Waiter waiter;
   HandleSignalsState hss;
-  uint32_t context;
+  uintptr_t context;
 
   // Add a waiter.
   waiter.Init();
@@ -1020,7 +1020,7 @@ TYPED_TEST(DataPipeImplTest, BasicConsumerWaiting) {
   Waiter waiter;
   Waiter waiter2;
   HandleSignalsState hss;
-  uint32_t context;
+  uintptr_t context;
 
   // Never writable.
   waiter.Init();
@@ -1197,7 +1197,7 @@ TYPED_TEST(DataPipeImplTest, ConsumerWaitingTwoPhase) {
 
   Waiter waiter;
   HandleSignalsState hss;
-  uint32_t context;
+  uintptr_t context;
 
   // Add waiter: not yet readable.
   waiter.Init();

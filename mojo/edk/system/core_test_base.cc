@@ -128,7 +128,7 @@ class MockDispatcher : public Dispatcher {
 
   MojoResult AddAwakableImplNoLock(Awakable* awakable,
                                    MojoHandleSignals /*signals*/,
-                                   uint32_t /*context*/,
+                                   uintptr_t /*context*/,
                                    HandleSignalsState* signals_state) override {
     info_->IncrementAddAwakableCallCount();
     lock().AssertAcquired();

@@ -21,7 +21,7 @@ namespace {
 
 TEST(AwakableListTest, BasicCancel) {
   MojoResult result;
-  uint32_t context;
+  uintptr_t context;
 
   // Cancel immediately after thread start.
   {
@@ -62,7 +62,7 @@ TEST(AwakableListTest, BasicCancel) {
 
 TEST(AwakableListTest, BasicAwakeSatisfied) {
   MojoResult result;
-  uint32_t context;
+  uintptr_t context;
 
   // Awake immediately after thread start.
   {
@@ -112,7 +112,7 @@ TEST(AwakableListTest, BasicAwakeSatisfied) {
 
 TEST(AwakableListTest, BasicAwakeUnsatisfiable) {
   MojoResult result;
-  uint32_t context;
+  uintptr_t context;
 
   // Awake (for unsatisfiability) immediately after thread start.
   {
@@ -162,10 +162,10 @@ TEST(AwakableListTest, MultipleAwakables) {
   MojoResult result2;
   MojoResult result3;
   MojoResult result4;
-  uint32_t context1;
-  uint32_t context2;
-  uint32_t context3;
-  uint32_t context4;
+  uintptr_t context1;
+  uintptr_t context2;
+  uintptr_t context3;
+  uintptr_t context4;
 
   // Cancel two awakables.
   {

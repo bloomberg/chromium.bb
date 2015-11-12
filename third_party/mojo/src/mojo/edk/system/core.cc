@@ -585,10 +585,13 @@ MojoResult Core::WaitManyInternal(const MojoHandle* handles,
   }
   uint32_t num_added = i;
 
-  if (rv == MOJO_RESULT_ALREADY_EXISTS)
+  if (rv == MOJO_RESULT_ALREADY_EXISTS) {
     rv = MOJO_RESULT_OK;  // The i-th one is already "triggered".
-  else if (rv == MOJO_RESULT_OK)
-    rv = waiter.Wait(deadline, result_index);
+  } else if (rv == MOJO_RESULT_OK) {
+    uintptr_t uintptr_result = *result_index;
+    rv = waiter.Wait(deadline, &uintptr_result);
+    *result_index = static_cast<uint32_t>(uintptr_result);
+  }
 
   // Make sure no other dispatchers try to wake |waiter| for the current
   // |Wait()|/|WaitMany()| call. (Only after doing this can |waiter| be

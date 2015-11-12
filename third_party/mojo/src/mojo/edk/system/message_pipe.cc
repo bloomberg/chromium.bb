@@ -184,7 +184,7 @@ HandleSignalsState MessagePipe::GetHandleSignalsState(unsigned port) const {
 MojoResult MessagePipe::AddAwakable(unsigned port,
                                     Awakable* awakable,
                                     MojoHandleSignals signals,
-                                    uint32_t context,
+                                    uintptr_t context,
                                     HandleSignalsState* signals_state) {
   DCHECK(port == 0 || port == 1);
 

@@ -54,7 +54,7 @@ class MOJO_SYSTEM_IMPL_EXPORT Waiter final : public Awakable {
   //     |MojoWait()|/|MojoWaitMany()| cannot or can no longer be satisfied by
   //     the corresponding handle (e.g., if the other end of a message or data
   //     pipe is closed).
-  MojoResult Wait(MojoDeadline deadline, uint32_t* context);
+  MojoResult Wait(MojoDeadline deadline, uintptr_t* context);
 
   // Wake the waiter up with the given result and context (or no-op if it's been
   // woken up already).

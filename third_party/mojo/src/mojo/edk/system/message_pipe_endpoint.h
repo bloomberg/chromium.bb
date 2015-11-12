@@ -67,7 +67,7 @@ class MOJO_SYSTEM_IMPL_EXPORT MessagePipeEndpoint {
   virtual HandleSignalsState GetHandleSignalsState() const;
   virtual MojoResult AddAwakable(Awakable* awakable,
                                  MojoHandleSignals signals,
-                                 uint32_t context,
+                                 uintptr_t context,
                                  HandleSignalsState* signals_state);
   virtual void RemoveAwakable(Awakable* awakable,
                               HandleSignalsState* signals_state);

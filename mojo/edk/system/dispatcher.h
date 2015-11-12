@@ -139,7 +139,7 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher
   //    that |signals| will ever be satisfied.
   MojoResult AddAwakable(Awakable* awakable,
                          MojoHandleSignals signals,
-                         uint32_t context,
+                         uintptr_t context,
                          HandleSignalsState* signals_state);
   // Removes an awakable from this dispatcher. (It is valid to call this
   // multiple times for the same |awakable| on the same object, so long as
@@ -261,7 +261,7 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher
   virtual HandleSignalsState GetHandleSignalsStateImplNoLock() const;
   virtual MojoResult AddAwakableImplNoLock(Awakable* awakable,
                                            MojoHandleSignals signals,
-                                           uint32_t context,
+                                           uintptr_t context,
                                            HandleSignalsState* signals_state);
   virtual void RemoveAwakableImplNoLock(Awakable* awakable,
                                         HandleSignalsState* signals_state);

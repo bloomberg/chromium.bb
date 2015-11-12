@@ -30,14 +30,14 @@ class WaitingThread : public base::SimpleThread {
         deadline_(deadline),
         done_(false),
         result_(MOJO_RESULT_UNKNOWN),
-        context_(static_cast<uint32_t>(-1)) {
+        context_(static_cast<uintptr_t>(-1)) {
     waiter_.Init();
   }
 
   ~WaitingThread() override { Join(); }
 
   void WaitUntilDone(MojoResult* result,
-                     uint32_t* context,
+                     uintptr_t* context,
                      MojoDeadline* elapsed) {
     for (;;) {
       {
@@ -60,7 +60,7 @@ class WaitingThread : public base::SimpleThread {
   void Run() override {
     test::Stopwatch stopwatch;
     MojoResult result;
-    uint32_t context = static_cast<uint32_t>(-1);
+    uintptr_t context = static_cast<uintptr_t>(-1);
     MojoDeadline elapsed;
 
     stopwatch.Start();
@@ -82,7 +82,7 @@ class WaitingThread : public base::SimpleThread {
   Mutex mutex_;
   bool done_ MOJO_GUARDED_BY(mutex_);
   MojoResult result_ MOJO_GUARDED_BY(mutex_);
-  uint32_t context_ MOJO_GUARDED_BY(mutex_);
+  uintptr_t context_ MOJO_GUARDED_BY(mutex_);
   MojoDeadline elapsed_ MOJO_GUARDED_BY(mutex_);
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(WaitingThread);
@@ -90,7 +90,7 @@ class WaitingThread : public base::SimpleThread {
 
 TEST(WaiterTest, Basic) {
   MojoResult result;
-  uint32_t context;
+  uintptr_t context;
   MojoDeadline elapsed;
 
   // Finite deadline.
@@ -149,7 +149,7 @@ TEST(WaiterTest, Basic) {
     thread.Start();
     thread.WaitUntilDone(&result, &context, &elapsed);
     EXPECT_EQ(MOJO_RESULT_DEADLINE_EXCEEDED, result);
-    EXPECT_EQ(static_cast<uint32_t>(-1), context);
+    EXPECT_EQ(static_cast<uintptr_t>(-1), context);
     EXPECT_GT(elapsed, (2 - 1) * test::EpsilonDeadline());
     EXPECT_LT(elapsed, (2 + 1) * test::EpsilonDeadline());
   }
@@ -210,7 +210,7 @@ TEST(WaiterTest, TimeOut) {
   MojoDeadline elapsed;
 
   Waiter waiter;
-  uint32_t context = 123;
+  uintptr_t context = 123;
 
   waiter.Init();
   stopwatch.Start();
@@ -241,7 +241,7 @@ TEST(WaiterTest, TimeOut) {
 // The first |Awake()| should always win.
 TEST(WaiterTest, MultipleAwakes) {
   MojoResult result;
-  uint32_t context;
+  uintptr_t context;
   MojoDeadline elapsed;
 
   {
