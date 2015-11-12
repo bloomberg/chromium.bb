@@ -21,6 +21,7 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/obsolete_system/obsolete_system.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -43,10 +44,6 @@
 #include "grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "v8/include/v8.h"
-
-#if defined(OS_MACOSX)
-#include "chrome/browser/mac/obsolete_system.h"
-#endif
 
 #if defined(OS_CHROMEOS)
 #include "base/files/file_util_proxy.h"
@@ -291,14 +288,12 @@ void HelpHandler::GetLocalizedValues(base::DictionaryValue* localized_strings) {
                                  l10n_util::GetStringUTF16(resources[i].ids));
   }
 
-#if defined(OS_MACOSX)
-  localized_strings->SetString(
-      "updateObsoleteSystem",
-      ObsoleteSystemMac::LocalizedObsoleteSystemString());
-  localized_strings->SetString(
-      "updateObsoleteSystemURL",
-      chrome::kMac32BitDeprecationURL);
-#endif
+  if (ObsoleteSystem::IsObsoleteNowOrSoon()) {
+    localized_strings->SetString("updateObsoleteSystem",
+                                 ObsoleteSystem::LocalizedObsoleteString());
+    localized_strings->SetString("updateObsoleteSystemURL",
+                                 ObsoleteSystem::GetLinkURL());
+  }
 
   localized_strings->SetString(
       "browserVersion",
@@ -453,16 +448,12 @@ void HelpHandler::OnPageLoaded(const base::ListValue* args) {
   RequestUpdate(NULL);
 #endif
 
-#if defined(OS_MACOSX)
   web_ui()->CallJavascriptFunction(
       "help.HelpPage.setObsoleteSystem",
-      base::FundamentalValue(ObsoleteSystemMac::Is32BitObsoleteNowOrSoon() &&
-                             ObsoleteSystemMac::Has32BitOnlyCPU()));
+      base::FundamentalValue(ObsoleteSystem::IsObsoleteNowOrSoon()));
   web_ui()->CallJavascriptFunction(
       "help.HelpPage.setObsoleteSystemEndOfTheLine",
-      base::FundamentalValue(ObsoleteSystemMac::Is32BitObsoleteNowOrSoon() &&
-                             ObsoleteSystemMac::Is32BitEndOfTheLine()));
-#endif
+      base::FundamentalValue(ObsoleteSystem::IsObsoleteNowOrSoon()));
 
 #if defined(OS_CHROMEOS)
   web_ui()->CallJavascriptFunction(

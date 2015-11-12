@@ -8,7 +8,7 @@
 #include "base/bind_helpers.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #import "chrome/browser/mac/keystone_glue.h"
-#include "chrome/browser/mac/obsolete_system.h"
+#include "chrome/browser/obsolete_system/obsolete_system.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -224,8 +224,7 @@ void VersionUpdaterMac::UpdateStatus(NSDictionary* dictionary) {
 }
 
 void VersionUpdaterMac::UpdateShowPromoteButton() {
-  if (ObsoleteSystemMac::Has32BitOnlyCPU() &&
-      ObsoleteSystemMac::Is32BitEndOfTheLine()) {
+  if (ObsoleteSystem::IsObsoleteNowOrSoon()) {
     // Promotion is moot upon reaching the end of the line.
     show_promote_button_ = false;
     return;

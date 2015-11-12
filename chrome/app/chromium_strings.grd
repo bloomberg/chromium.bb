@@ -230,6 +230,14 @@ If you update this file, be sure also to update google_chrome_strings.grd. -->
           This computer will no longer receive Chromium updates because its hardware is no longer supported.
         </message>
       </if>
+      <if expr="is_win">
+        <message name="IDS_WIN_XP_VISTA_OBSOLETE_SOON" desc="A message displayed on an at-launch infobar warning the user that the computer they are using is about to become unsupported.">
+          Future versions of Chromium will no longer support Windows XP or Windows Vista.
+        </message>
+        <message name="IDS_WIN_XP_VISTA_OBSOLETE_NOW" desc="A message displayed on an at-launch infobar warning the user that the computer they are using is no longer supported.">
+          Chromium may not function correctly because it is no longer supported on Windows XP or Windows Vista.
+        </message>
+      </if>
       <message name="IDS_ACCNAME_APP" desc="The accessible name for the app menu.">
         Chromium
       </message>

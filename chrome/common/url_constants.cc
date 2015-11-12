@@ -733,6 +733,9 @@ const char kChromeSearchRemoteNtpHost[] = "remote-ntp";
 const char kChromeSearchMostVisitedHost[] = "most-visited";
 const char kChromeSearchMostVisitedUrl[] = "chrome-search://most-visited/";
 
+const char kEasyUnlockLearnMoreUrl[] =
+    "https://support.google.com/chromebook/?p=smart_lock";
+
 // Google SafeSearch query parameters.
 const char kSafeSearchSafeParameter[] = "safe=active";
 const char kSafeSearchSsuiParameter[] = "ssui=on";
@@ -756,7 +759,9 @@ const char kMac32BitDeprecationURL[] =
 #endif
 #endif
 
-const char kEasyUnlockLearnMoreUrl[] =
-    "https://support.google.com/chromebook/?p=smart_lock";
+#if defined(OS_WIN)
+const char kWindowsXPVistaDeprecationURL[] =
+    "https://support.google.com/chrome/answer/95346";
+#endif
 
 }  // namespace chrome

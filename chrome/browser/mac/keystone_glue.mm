@@ -23,7 +23,6 @@
 #include "base/threading/worker_pool.h"
 #include "build/build_config.h"
 #import "chrome/browser/mac/keystone_registration.h"
-#include "chrome/browser/mac/obsolete_system.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/grit/chromium_strings.h"
@@ -1080,9 +1079,6 @@ NSString* const kVersionKey = @"KSVersion";
   // Info.plist, tag suffix components should only be appended to the tag
   // suffix in ASCII sort order.
   NSString* tagSuffix = @"";
-  if (ObsoleteSystemMac::Has32BitOnlyCPU()) {
-    tagSuffix = [tagSuffix stringByAppendingString:@"-32bit"];
-  }
   if ([self wantsFullInstaller]) {
     tagSuffix = [tagSuffix stringByAppendingString:@"-full"];
   }

@@ -530,6 +530,11 @@ extern const char kChromeSearchRemoteNtpHost[];
 extern const char kChromeSearchMostVisitedHost[];
 extern const char kChromeSearchMostVisitedUrl[];
 
+#if defined(OS_WIN) || defined(OS_CHROMEOS)
+extern const char kChromeUIDiscardsHost[];
+extern const char kChromeUIDiscardsURL[];
+#endif
+
 #if defined(OS_CHROMEOS)
 extern const char kCrosScheme[];
 #endif
@@ -539,6 +544,9 @@ extern const char kCloudPrintLearnMoreURL[];
 
 // "Learn more" URL for the Cloud Print Preview No Destinations Promotion.
 extern const char kCloudPrintNoDestinationsLearnMoreURL[];
+
+// The URL for the "Learn more" link the the Easy Unlock settings.
+extern const char kEasyUnlockLearnMoreUrl[];
 
 // Parameters that get appended to force SafeSearch.
 extern const char kSafeSearchSafeParameter[];
@@ -551,16 +559,13 @@ extern const char kMediaAccessLearnMoreUrl[];
 extern const char kLanguageSettingsLearnMoreUrl[];
 
 #if defined(OS_MACOSX)
-// The URL for the 32-bit Mac deprecation help center article
+// The URL for the 32-bit Mac deprecation help center article.
 extern const char kMac32BitDeprecationURL[];
 #endif
 
-// The URL for the "Learn more" link the the Easy Unlock settings.
-extern const char kEasyUnlockLearnMoreUrl[];
-
-#if defined(OS_WIN) || defined(OS_CHROMEOS)
-extern const char kChromeUIDiscardsHost[];
-extern const char kChromeUIDiscardsURL[];
+#if defined(OS_WIN)
+// The URL for the Windows XP/Vista deprecation help center article.
+extern const char kWindowsXPVistaDeprecationURL[];
 #endif
 
 }  // namespace chrome
