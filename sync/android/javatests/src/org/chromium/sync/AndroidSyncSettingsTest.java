@@ -357,8 +357,10 @@ public class AndroidSyncSettingsTest extends InstrumentationTestCase {
                 mSyncSettingsObserver.receivedNotification());
     }
 
-    @SmallTest
-    @Feature({"Sync"})
+    /*@SmallTest
+    @Feature({"Sync"})*/
+    // http://crbug.com/527856
+    @DisabledTest
     public void testIsSyncableOnSigninAndNotOnSignout() throws InterruptedException {
         assertTrue(mSyncContentResolverDelegate.getIsSyncable(mAccount, mAuthority) == 1);
         AndroidSyncSettings.updateAccount(mContext, null);
