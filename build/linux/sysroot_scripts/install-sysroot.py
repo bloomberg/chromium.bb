@@ -24,8 +24,13 @@ import shutil
 import subprocess
 import sys
 
-
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(os.path.dirname(os.path.dirname(os.path.join(SCRIPT_DIR))))
+import detect_host_arch
+import gyp_chromium
+import gyp_environment
+
+
 URL_PREFIX = 'http://storage.googleapis.com'
 URL_PATH = 'chrome-linux-sysroot/toolchain'
 REVISION_AMD64 = 'a2d45701cb21244b9514e420950ba6ba687fb655'
@@ -60,25 +65,29 @@ def GetSha1(filename):
   return sha1.hexdigest()
 
 
-def DetectArch(gyp_defines):
+def DetectArch(gyp_defines, is_android):
   # Check for optional target_arch and only install for that architecture.
   # If target_arch is not specified, then only install for the host
   # architecture.
-  if 'target_arch=x64' in gyp_defines:
+  target_arch = gyp_defines.get('target_arch')
+  if target_arch == 'x64':
     return 'amd64'
-  elif 'target_arch=ia32' in gyp_defines:
+  elif target_arch == 'ia32':
     return 'i386'
-  elif 'target_arch=arm' in gyp_defines:
+  elif target_arch == 'arm':
     return 'arm'
-  elif 'target_arch=mipsel' in gyp_defines:
+  elif target_arch == 'arm64':
+    return 'arm64'
+  elif target_arch == 'mipsel':
     return 'mips'
+  elif target_arch:
+    raise Exception('Unrecognized target_arch: %s' % target_arch)
+
+  if is_android:
+    return 'arm'
 
   # Figure out host arch using build/detect_host_arch.py and
   # set target_arch to host arch
-  build_dir = os.path.dirname(os.path.dirname(os.path.join(SCRIPT_DIR)))
-  sys.path.append(build_dir)
-  import detect_host_arch
-
   detected_host_arch = detect_host_arch.HostArch()
   if detected_host_arch == 'x64':
     return 'amd64'
@@ -94,22 +103,23 @@ def DetectArch(gyp_defines):
   return None
 
 
-def UsingSysroot(target_arch, gyp_defines):
+def UsingSysroot(target_arch, is_android, gyp_defines):
   # ChromeOS uses a chroot, so doesn't need a sysroot
-  if 'chromeos=1' in gyp_defines:
+  if gyp_defines.get('chromeos'):
     return False
 
-  # When cross-compiling we always use a sysroot
-  if target_arch in ('arm', 'mips', 'i386'):
+  # When cross-compiling non-Android builds we always use a sysroot
+  if not is_android and target_arch in ('arm', 'mips', 'i386'):
     return True
 
   # Setting use_sysroot=1 GYP_DEFINES forces the use of the sysroot even
   # when not cross compiling
-  if 'use_sysroot=1' in gyp_defines:
+  if gyp_defines.get('use_sysroot'):
     return True
 
   # Official builds always use the sysroot.
-  if 'branding=Chrome' in gyp_defines and 'buildtype=Official' in gyp_defines:
+  if (gyp_defines.get('branding') == 'Chrome' and
+      gyp_defines.get('buildtype') == 'Official'):
     return True
 
   return False
@@ -119,19 +129,36 @@ def main():
   if options.running_as_hook and not sys.platform.startswith('linux'):
     return 0
 
-  gyp_defines = os.environ.get('GYP_DEFINES', '')
+  gyp_environment.SetEnvironment()
+  supplemental_includes = gyp_chromium.GetSupplementalFiles()
+  gyp_defines = gyp_chromium.GetGypVars(supplemental_includes)
+  is_android = gyp_defines.get('OS') == 'android'
 
   if options.arch:
     target_arch = options.arch
   else:
-    target_arch = DetectArch(gyp_defines)
+    target_arch = DetectArch(gyp_defines, is_android)
     if not target_arch:
-      print 'Unable to detect host architecture'
+      print 'Unable to detect target architecture'
       return 1
 
-  if options.running_as_hook and not UsingSysroot(target_arch, gyp_defines):
+  if (options.running_as_hook and
+      not UsingSysroot(target_arch, is_android, gyp_defines)):
     return 0
 
+  if is_android:
+    # 32-bit Android builds require a 32-bit host sysroot for the v8 snapshot.
+    if '64' not in target_arch:
+      ret = _InstallSysroot('i386')
+      if ret:
+        return ret
+    # Always need host sysroot (which we assume is x64).
+    target_arch = 'amd64'
+
+  return _InstallSysroot(target_arch)
+
+
+def _InstallSysroot(target_arch):
   # The sysroot directory should match the one specified in build/common.gypi.
   # TODO(thestig) Consider putting this else where to avoid having to recreate
   # it on every build.
