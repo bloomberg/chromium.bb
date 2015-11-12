@@ -23,6 +23,7 @@ class TombstoneEntity : public FakeServerEntity {
   static scoped_ptr<FakeServerEntity> Create(const std::string& id);
 
   // FakeServerEntity implementation.
+  bool RequiresParentId() const override;
   std::string GetParentId() const override;
   void SerializeAsProto(sync_pb::SyncEntity* proto) const override;
   bool IsDeleted() const override;

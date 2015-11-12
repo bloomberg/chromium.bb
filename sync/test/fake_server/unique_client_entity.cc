@@ -92,6 +92,10 @@ std::string UniqueClientEntity::EffectiveIdForClientTaggedEntity(
       entity.client_defined_unique_tag());
 }
 
+bool UniqueClientEntity::RequiresParentId() const {
+  return false;
+}
+
 string UniqueClientEntity::GetParentId() const {
   // The parent ID for this type of entity should always be its ModelType's
   // root node.
@@ -101,7 +105,6 @@ string UniqueClientEntity::GetParentId() const {
 void UniqueClientEntity::SerializeAsProto(sync_pb::SyncEntity* proto) const {
   FakeServerEntity::SerializeBaseProtoFields(proto);
 
-  proto->set_parent_id_string(GetParentId());
   proto->set_client_defined_unique_tag(client_defined_unique_tag_);
   proto->set_ctime(creation_time_);
   proto->set_mtime(last_modified_time_);

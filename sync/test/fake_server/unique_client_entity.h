@@ -52,6 +52,7 @@ class UniqueClientEntity : public FakeServerEntity {
       const sync_pb::SyncEntity& entity);
 
   // FakeServerEntity implementation.
+  bool RequiresParentId() const override;
   std::string GetParentId() const override;
   void SerializeAsProto(sync_pb::SyncEntity* proto) const override;
 

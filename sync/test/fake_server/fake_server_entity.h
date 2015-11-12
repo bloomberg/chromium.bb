@@ -42,6 +42,7 @@ class FakeServerEntity {
   void SetSpecifics(const sync_pb::EntitySpecifics& updated_specifics);
 
   // Common data items needed by server
+  virtual bool RequiresParentId() const = 0;
   virtual std::string GetParentId() const = 0;
   virtual void SerializeAsProto(sync_pb::SyncEntity* proto) const = 0;
   virtual bool IsDeleted() const;

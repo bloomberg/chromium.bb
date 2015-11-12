@@ -98,6 +98,11 @@ void BookmarkEntity::SetParentId(const string& parent_id) {
   parent_id_ = parent_id;
 }
 
+bool BookmarkEntity::RequiresParentId() const {
+  // Bookmarks are stored as a hierarchy. All bookmarks must have a parent ID.
+  return true;
+}
+
 string BookmarkEntity::GetParentId() const {
   return parent_id_;
 }
@@ -108,7 +113,6 @@ void BookmarkEntity::SerializeAsProto(sync_pb::SyncEntity* proto) const {
   proto->set_originator_cache_guid(originator_cache_guid_);
   proto->set_originator_client_item_id(originator_client_item_id_);
 
-  proto->set_parent_id_string(parent_id_);
   proto->set_ctime(creation_time_);
   proto->set_mtime(last_modified_time_);
 

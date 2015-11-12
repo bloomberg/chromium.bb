@@ -131,6 +131,9 @@ void FakeServerEntity::SerializeBaseProtoFields(
   // Data via accessors
   sync_entity->set_deleted(IsDeleted());
   sync_entity->set_folder(IsFolder());
+
+  if (RequiresParentId())
+    sync_entity->set_parent_id_string(GetParentId());
 }
 
 }  // namespace fake_server

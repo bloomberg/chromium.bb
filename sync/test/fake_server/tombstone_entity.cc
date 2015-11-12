@@ -34,6 +34,10 @@ TombstoneEntity::TombstoneEntity(const string& id,
   SetSpecifics(specifics);
 }
 
+bool TombstoneEntity::RequiresParentId() const {
+  return false;
+}
+
 string TombstoneEntity::GetParentId() const {
   return string();
 }
