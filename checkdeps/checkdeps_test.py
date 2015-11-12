@@ -10,6 +10,7 @@ import os
 import unittest
 
 
+import builddeps
 import checkdeps
 import results
 
@@ -104,6 +105,12 @@ class CheckDepsTest(unittest.TestCase):
   def testCountViolationsIgnoringTempRules(self):
     self.failUnlessEqual('11', self.CountViolations(True))
 
+  def testCountViolationsWithRelativePath(self):
+    self.deps_checker.results_formatter = results.CountViolationsFormatter()
+    self.deps_checker.CheckDirectory(
+        os.path.join('checkdeps', 'testdata', 'allowed'))
+    self.failUnlessEqual('4', self.deps_checker.results_formatter.GetResults())
+
   def testTempRulesGenerator(self):
     self.deps_checker.results_formatter = results.TemporaryRulesFormatter()
     self.deps_checker.CheckDirectory(
@@ -115,6 +122,12 @@ class CheckDepsTest(unittest.TestCase):
                 u'  "!third_party/explicitly_disallowed/bad.h",',
                 u'  "!third_party/no_rule/bad.h",']
     self.failUnlessEqual(expected, temp_rules)
+
+  def testBadBaseDirectoryNotCheckoutRoot(self):
+    # This assumes git. It's not a valid test if buildtools is fetched via svn.
+    with self.assertRaises(builddeps.DepsBuilderError):
+      checkdeps.DepsChecker(being_tested=True,
+                            base_directory=os.path.dirname(__file__))
 
   def testCheckAddedIncludesAllGood(self):
     problems = self.deps_checker.CheckAddedCppIncludes(
@@ -173,6 +186,17 @@ class CheckDepsTest(unittest.TestCase):
     # the second would be for foo_unittest.cc.
     self.failUnless(len(problems) == 1)
     self.failUnless(problems[0][0].endswith('/test.cc'))
+
+  def testTraversalIsOrdered(self):
+    dirs_traversed = []
+    for rules, filenames in self.deps_checker.GetAllRulesAndFiles():
+      self.failUnlessEqual(type(filenames), list)
+      self.failUnlessEqual(filenames, sorted(filenames))
+      if filenames:
+        dir_names = set(os.path.dirname(file) for file in filenames)
+        self.failUnlessEqual(1, len(dir_names))
+        dirs_traversed.append(dir_names.pop())
+    self.failUnlessEqual(dirs_traversed, sorted(dirs_traversed))
 
 
 if __name__ == '__main__':

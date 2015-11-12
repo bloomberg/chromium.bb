@@ -99,25 +99,17 @@ class DepsGrapher(DepsBuilder):
   def DumpDependencies(self):
     """ Builds a dependency rule table and dumps the corresponding dependency
     graph to all requested formats."""
-    self._BuildDepsGraph(self.base_directory)
+    self._BuildDepsGraph()
     self._DumpDependencies()
 
-  def _BuildDepsGraph(self, full_path):
+  def _BuildDepsGraph(self):
     """Recursively traverses the source tree starting at the specified directory
     and builds a dependency graph representation in self.deps."""
-    rel_path = os.path.relpath(full_path, self.base_directory)
-    #if re.search(self.incl, rel_path) and not re.search(self.excl, rel_path):
-    rules = self.GetDirectoryRules(full_path)
-    if rules:
+    for (rules, _) in self.GetAllRulesAndFiles():
       deps = rules.AsDependencyTuples(
           include_general_rules=True,
           include_specific_rules=not self.ignore_specific_rules)
       self.deps.update(deps)
-
-    for item in sorted(os.listdir(full_path)):
-      next_full_path = os.path.join(full_path, item)
-      if os.path.isdir(next_full_path):
-        self._BuildDepsGraph(next_full_path)
 
   def _DumpDependencies(self):
     """Dumps the built dependency graph to the specified file with specified

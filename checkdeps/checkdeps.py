@@ -82,35 +82,18 @@ class DepsChecker(DepsBuilder):
     checkers = dict(
         (extension, checker)
         for checker in [java, cpp] for extension in checker.EXTENSIONS)
-    self._CheckDirectoryImpl(checkers, start_dir)
 
-  def _CheckDirectoryImpl(self, checkers, dir_name):
-    rules = self.GetDirectoryRules(dir_name)
-    if rules is None:
-      return
-
-    # Collect a list of all files and directories to check.
-    files_to_check = []
-    dirs_to_check = []
-    contents = sorted(os.listdir(dir_name))
-    for cur in contents:
-      full_name = os.path.join(dir_name, cur)
-      if os.path.isdir(full_name):
-        dirs_to_check.append(full_name)
-      elif os.path.splitext(full_name)[1] in checkers:
-        if not self._skip_tests or not _IsTestFile(cur):
-          files_to_check.append(full_name)
-
-    # First check all files in this directory.
-    for cur in files_to_check:
-      checker = checkers[os.path.splitext(cur)[1]]
-      file_status = checker.CheckFile(rules, cur)
-      if file_status.HasViolations():
-        self.results_formatter.AddError(file_status)
-
-    # Next recurse into the subdirectories.
-    for cur in dirs_to_check:
-      self._CheckDirectoryImpl(checkers, cur)
+    for rules, file_paths in self.GetAllRulesAndFiles(start_dir):
+      for full_name in file_paths:
+        if self._skip_tests and _IsTestFile(os.path.basename(full_name)):
+          continue
+        file_extension = os.path.splitext(full_name)[1]
+        if not file_extension in checkers:
+          continue
+        checker = checkers[file_extension]
+        file_status = checker.CheckFile(rules, full_name)
+        if file_status.HasViolations():
+          self.results_formatter.AddError(file_status)
 
   def CheckAddedCppIncludes(self, added_includes):
     """This is used from PRESUBMIT.py to check new #include statements added in
