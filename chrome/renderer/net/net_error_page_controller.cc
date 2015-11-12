@@ -43,6 +43,10 @@ bool NetErrorPageController::ShowSavedCopyButtonClick() {
   return ButtonClick(error_page::NetErrorHelperCore::SHOW_SAVED_COPY_BUTTON);
 }
 
+bool NetErrorPageController::ShowSavedPagesButtonClick() {
+  return ButtonClick(error_page::NetErrorHelperCore::SHOW_SAVED_PAGES_BUTTON);
+}
+
 bool NetErrorPageController::ReloadButtonClick() {
   return ButtonClick(error_page::NetErrorHelperCore::RELOAD_BUTTON);
 }
@@ -92,6 +96,8 @@ gin::ObjectTemplateBuilder NetErrorPageController::GetObjectTemplateBuilder(
              isolate)
       .SetMethod("showSavedCopyButtonClick",
                  &NetErrorPageController::ShowSavedCopyButtonClick)
+      .SetMethod("showSavedPagesButtonClick",
+                 &NetErrorPageController::ShowSavedPagesButtonClick)
       .SetMethod("reloadButtonClick",
                  &NetErrorPageController::ReloadButtonClick)
       .SetMethod("detailsButtonClick",

@@ -287,6 +287,20 @@ void TabAndroid::MakeLoadURLParams(
   }
 }
 
+bool TabAndroid::HasOfflinePages() const {
+   if (!offline_pages::IsOfflinePagesEnabled())
+    return false;
+  offline_pages::OfflinePageModel* offline_page_model =
+      offline_pages::OfflinePageModelFactory::GetForBrowserContext(
+          GetProfile());
+  return !offline_page_model->GetAllPages().empty();
+}
+
+void TabAndroid::ShowOfflinePages() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_Tab_showOfflinePages(env, weak_java_tab_.get(env).obj());
+}
+
 void TabAndroid::SwapTabContents(content::WebContents* old_contents,
                                  content::WebContents* new_contents,
                                  bool did_start_load,

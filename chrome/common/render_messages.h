@@ -322,6 +322,13 @@ IPC_MESSAGE_ROUTED1(ChromeViewMsg_NetErrorInfo,
 IPC_MESSAGE_ROUTED1(ChromeViewMsg_SetCanShowNetworkDiagnosticsDialog,
                     bool /* can_show_network_diagnostics_dialog */)
 
+#if defined(OS_ANDROID)
+// Tells the renderer whether or not an offline page exists. This is used to
+// decide if "show saved pages" button will be provided on certain error page.
+IPC_MESSAGE_ROUTED1(ChromeViewMsg_SetHasOfflinePages,
+                    bool /* has_offline_pages */)
+#endif
+
 // Provides the information needed by the renderer process to contact a
 // navigation correction service.  Handled by the NetErrorHelper.
 IPC_MESSAGE_ROUTED5(ChromeViewMsg_SetNavigationCorrectionInfo,
@@ -333,6 +340,12 @@ IPC_MESSAGE_ROUTED5(ChromeViewMsg_SetNavigationCorrectionInfo,
 
 IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_RunNetworkDiagnostics,
                     GURL /* failed_url */)
+
+#if defined(OS_ANDROID)
+// Message sent from the renderer to the browser to show the UI for offline
+// pages.
+IPC_MESSAGE_ROUTED0(ChromeViewHostMsg_ShowOfflinePages)
+#endif
 
 //-----------------------------------------------------------------------------
 // Misc messages

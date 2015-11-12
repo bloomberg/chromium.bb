@@ -102,6 +102,12 @@ class NetErrorTabHelper
   // testing.
   virtual void RunNetworkDiagnosticsHelper(const std::string& sanitized_url);
 
+  // Relates to offline pages handling.
+#if defined(OS_ANDROID)
+  void SetHasOfflinePages(content::RenderFrameHost* render_frame_host);
+  void ShowOfflinePages();
+#endif
+
   // True if the last provisional load that started was for an error page.
   bool is_error_page_;
 

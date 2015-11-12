@@ -52,6 +52,7 @@ import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.dom_distiller.ReaderModeActivityDelegate;
 import org.chromium.chrome.browser.dom_distiller.ReaderModeManager;
 import org.chromium.chrome.browser.download.ChromeDownloadDelegate;
+import org.chromium.chrome.browser.enhancedbookmarks.EnhancedBookmarkUtils;
 import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
@@ -2579,6 +2580,17 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
      */
     public String getOfflinePageOriginalUrl() {
         return isFrozen() ? null : nativeGetOfflinePageOriginalUrl(mNativeTabAndroid);
+    }
+
+    /**
+     * Shows the list of offline pages. This should only be hit when offline pages feature is
+     * enabled.
+     */
+    @CalledByNative
+    public void showOfflinePages() {
+        // The offline pages filter view will be loaded by default when offline.
+        boolean shown = EnhancedBookmarkUtils.showEnhancedBookmarkIfEnabled(mActivity);
+        assert shown;
     }
 
     /**

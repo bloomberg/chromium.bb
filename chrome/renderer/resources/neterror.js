@@ -114,6 +114,12 @@ function showSavedCopyButtonClick() {
   }
 }
 
+function showSavedPagesButtonClick() {
+  if (window.errorPageController) {
+    errorPageController.showSavedPagesButtonClick();
+  }
+}
+
 function detailsButtonClick() {
   if (window.errorPageController)
     errorPageController.detailsButtonClick();
@@ -150,13 +156,27 @@ function onDocumentLoad() {
   var reloadButton = document.getElementById('reload-button');
   var detailsButton = document.getElementById('details-button');
   var showSavedCopyButton = document.getElementById('show-saved-copy-button');
+  var showSavedPagesButton = document.getElementById('show-saved-pages-button');
+
+  // "Show save pages" button will only be provided in ERR_INTERNET_DISCONNECTED
+  // page where "Reload" button will not be provided.
+  var reloadButtonVisible = loadTimeData.valueExists('reloadButton') &&
+      loadTimeData.getValue('reloadButton').msg;
+  var showSavedCopyButtonVisible =
+      loadTimeData.valueExists('showSavedCopyButton') &&
+      loadTimeData.getValue('showSavedCopyButton').msg;
+  var showSavedPagesButtonVisible =
+      loadTimeData.valueExists('showSavedPagesButton') &&
+      loadTimeData.getValue('showSavedPagesButton').msg;
 
   var primaryButton, secondaryButton;
   if (showSavedCopyButton.primary) {
     primaryButton = showSavedCopyButton;
-    secondaryButton = reloadButton;
+    secondaryButton =
+        showSavedPagesButtonVisible ? showSavedPagesButton : reloadButton;
   } else {
-    primaryButton = reloadButton;
+    primaryButton =
+        showSavedPagesButtonVisible ? showSavedPagesButton : reloadButton;
     secondaryButton = showSavedCopyButton;
   }
 
@@ -175,7 +195,8 @@ function onDocumentLoad() {
   }
 
   if (reloadButton.style.display == 'none' &&
-      showSavedCopyButton.style.display == 'none') {
+      showSavedCopyButton.style.display == 'none' &&
+      showSavedPagesButton.style.display == 'none') {
     detailsButton.classList.add('singular');
   }
 
@@ -188,17 +209,13 @@ function onDocumentLoad() {
 </if>
 
   // Show control buttons.
-  if (loadTimeData.valueExists('reloadButton') &&
-          loadTimeData.getValue('reloadButton').msg ||
-      loadTimeData.valueExists('showSavedCopyButton') &&
-          loadTimeData.getValue('showSavedCopyButton').msg) {
+  if (reloadButtonVisible || showSavedCopyButtonVisible ||
+      showSavedPagesButtonVisible) {
     controlButtonDiv.hidden = false;
 
     // Set the secondary button state in the cases of two call to actions.
-    if (loadTimeData.valueExists('reloadButton') &&
-            loadTimeData.getValue('reloadButton').msg &&
-        loadTimeData.valueExists('showSavedCopyButton') &&
-            loadTimeData.getValue('showSavedCopyButton').msg) {
+    if ((reloadButtonVisible || showSavedPagesButtonVisible) &&
+        showSavedCopyButtonVisible) {
       secondaryButton.classList.add('secondary-button');
     }
   }

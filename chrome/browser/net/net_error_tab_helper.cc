@@ -22,6 +22,10 @@
 #include "net/base/net_errors.h"
 #include "url/gurl.h"
 
+#if defined(OS_ANDROID)
+#include "chrome/browser/android/tab_android.h"
+#endif
+
 using content::BrowserContext;
 using content::BrowserThread;
 using content::WebContents;
@@ -118,6 +122,10 @@ void NetErrorTabHelper::DidStartProvisionalLoadForFrame(
     return;
 
   is_error_page_ = is_error_page;
+
+#if defined(OS_ANDROID)
+  SetHasOfflinePages(render_frame_host);
+#endif
 }
 
 void NetErrorTabHelper::DidCommitProvisionalLoadForFrame(
@@ -167,6 +175,9 @@ bool NetErrorTabHelper::OnMessageReceived(
   IPC_BEGIN_MESSAGE_MAP(NetErrorTabHelper, message)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_RunNetworkDiagnostics,
                         RunNetworkDiagnostics)
+#if defined(OS_ANDROID)
+    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_ShowOfflinePages, ShowOfflinePages)
+#endif
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -273,5 +284,25 @@ void NetErrorTabHelper::RunNetworkDiagnosticsHelper(
     const std::string& sanitized_url) {
   ShowNetworkDiagnosticsDialog(web_contents(), sanitized_url);
 }
+
+#if defined(OS_ANDROID)
+void NetErrorTabHelper::SetHasOfflinePages(
+  content::RenderFrameHost* render_frame_host) {
+  DCHECK(web_contents());
+  TabAndroid* tab = TabAndroid::FromWebContents(web_contents());
+  bool has_offline_pages = tab && tab->HasOfflinePages();
+  render_frame_host->Send(
+      new ChromeViewMsg_SetHasOfflinePages(
+          render_frame_host->GetRoutingID(),
+          has_offline_pages));
+}
+
+void NetErrorTabHelper::ShowOfflinePages() {
+  DCHECK(web_contents());
+  TabAndroid* tab = TabAndroid::FromWebContents(web_contents());
+  if (tab)
+    tab->ShowOfflinePages();
+}
+#endif
 
 }  // namespace chrome_browser_net

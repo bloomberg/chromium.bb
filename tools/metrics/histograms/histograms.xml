@@ -67888,6 +67888,10 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="14" label="Show Cached Copy button clicked"/>
   <int value="15" label="Show Cached Page button shown"/>
   <int value="16" label="Show Cached Page button clicked"/>
+  <int value="17" label="Diagnose button clicked"/>
+  <int value="18" label="Show Saved Pages Button Shown"/>
+  <int value="19" label="Show Saved Pages Button Clicked"/>
+  <int value="20" label="Show Saved Pages Button Click Load Error"/>
 </enum>
 
 <enum name="NetInternalsUiFeature" type="int">

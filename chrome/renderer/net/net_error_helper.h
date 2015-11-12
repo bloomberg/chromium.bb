@@ -83,16 +83,19 @@ class NetErrorHelper
       const blink::WebURLError& error,
       bool is_failed_post,
       bool can_use_local_diagnostics_service,
+      bool has_offline_pages,
       scoped_ptr<error_page::ErrorPageParams> params,
       bool* reload_button_shown,
       bool* show_saved_copy_button_shown,
       bool* show_cached_copy_button_shown,
+      bool* show_saved_pages_button_shown,
       std::string* html) const override;
   void LoadErrorPage(const std::string& html, const GURL& failed_url) override;
   void EnablePageHelperFunctions() override;
   void UpdateErrorPage(const blink::WebURLError& error,
                        bool is_failed_post,
-                       bool can_use_local_diagnostics_service) override;
+                       bool can_use_local_diagnostics_service,
+                       bool has_offline_pages) override;
   void FetchNavigationCorrections(
       const GURL& navigation_correction_url,
       const std::string& navigation_correction_request_body) override;
@@ -102,6 +105,7 @@ class NetErrorHelper
   void ReloadPage(bool ignore_cache) override;
   void LoadPageFromCache(const GURL& page_url) override;
   void DiagnoseError(const GURL& page_url) override;
+  void ShowOfflinePages() override;
 
   void OnNetErrorInfo(int status);
   void OnSetCanShowNetworkDiagnosticsDialog(
@@ -117,6 +121,9 @@ class NetErrorHelper
 
   void OnTrackingRequestComplete(const blink::WebURLResponse& response,
                                  const std::string& data);
+#if defined(OS_ANDROID)
+  void OnSetHasOfflinePages(bool has_offline_pages);
+#endif
 
   scoped_ptr<content::ResourceFetcher> correction_fetcher_;
   scoped_ptr<content::ResourceFetcher> tracking_fetcher_;

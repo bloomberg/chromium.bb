@@ -145,6 +145,9 @@ bool NetErrorHelper::OnMessageReceived(const IPC::Message& message) {
                         OnSetCanShowNetworkDiagnosticsDialog);
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SetNavigationCorrectionInfo,
                         OnSetNavigationCorrectionInfo);
+#if defined(OS_ANDROID)
+    IPC_MESSAGE_HANDLER(ChromeViewMsg_SetHasOfflinePages, OnSetHasOfflinePages)
+#endif
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -171,10 +174,12 @@ void NetErrorHelper::GenerateLocalizedErrorPage(
     const blink::WebURLError& error,
     bool is_failed_post,
     bool can_show_network_diagnostics_dialog,
+    bool has_offline_pages,
     scoped_ptr<ErrorPageParams> params,
     bool* reload_button_shown,
     bool* show_saved_copy_button_shown,
     bool* show_cached_copy_button_shown,
+    bool* show_saved_pages_button_shown,
     std::string* error_html) const {
   error_html->clear();
 
@@ -189,6 +194,7 @@ void NetErrorHelper::GenerateLocalizedErrorPage(
                                error.unreachableURL, is_failed_post,
                                error.staleCopyInCache,
                                can_show_network_diagnostics_dialog,
+                               has_offline_pages,
                                RenderThread::Get()->GetLocale(),
                                render_frame()->GetRenderView()->
                                    GetAcceptLanguages(),
@@ -198,6 +204,8 @@ void NetErrorHelper::GenerateLocalizedErrorPage(
         error_strings.Get("showSavedCopyButton", nullptr);
     *show_cached_copy_button_shown =
         error_strings.Get("cacheButton", nullptr);
+    *show_saved_pages_button_shown =
+        error_strings.Get("showSavedPagesButton", nullptr);
     // "t" is the id of the template's root node.
     *error_html = webui::GetTemplatesHtml(template_html, &error_strings, "t");
   }
@@ -216,7 +224,8 @@ void NetErrorHelper::EnablePageHelperFunctions() {
 
 void NetErrorHelper::UpdateErrorPage(const blink::WebURLError& error,
                                      bool is_failed_post,
-                                     bool can_show_network_diagnostics_dialog) {
+                                     bool can_show_network_diagnostics_dialog,
+                                     bool has_offline_pages) {
   base::DictionaryValue error_strings;
   LocalizedError::GetStrings(error.reason,
                              error.domain.utf8(),
@@ -224,6 +233,7 @@ void NetErrorHelper::UpdateErrorPage(const blink::WebURLError& error,
                              is_failed_post,
                              error.staleCopyInCache,
                              can_show_network_diagnostics_dialog,
+                             has_offline_pages,
                              RenderThread::Get()->GetLocale(),
                              render_frame()->GetRenderView()->
                                  GetAcceptLanguages(),
@@ -310,6 +320,13 @@ void NetErrorHelper::DiagnoseError(const GURL& page_url) {
       render_frame()->GetRoutingID(), page_url));
 }
 
+void NetErrorHelper::ShowOfflinePages() {
+#if defined(OS_ANDROID)
+  render_frame()->Send(new ChromeViewHostMsg_ShowOfflinePages(
+      render_frame()->GetRoutingID()));
+#endif
+}
+
 void NetErrorHelper::OnNetErrorInfo(int status_num) {
   DCHECK(status_num >= 0 && status_num < error_page::DNS_PROBE_MAX);
 
@@ -353,3 +370,9 @@ void NetErrorHelper::OnTrackingRequestComplete(
     const std::string& data) {
   tracking_fetcher_.reset();
 }
+
+#if defined(OS_ANDROID)
+void NetErrorHelper::OnSetHasOfflinePages(bool has_offline_pages) {
+  core_->OnSetHasOfflinePages(has_offline_pages);
+}
+#endif

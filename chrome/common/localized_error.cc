@@ -554,6 +554,7 @@ void LocalizedError::GetStrings(int error_code,
                                 bool is_post,
                                 bool stale_copy_in_cache,
                                 bool can_show_network_diagnostics_dialog,
+                                bool has_offline_pages,
                                 const std::string& locale,
                                 const std::string& accept_languages,
                                 scoped_ptr<error_page::ErrorPageParams> params,
@@ -765,6 +766,19 @@ void LocalizedError::GetStrings(int error_code,
       show_saved_copy_button->SetString("primary", "true");
     error_strings->Set("showSavedCopyButton", show_saved_copy_button);
   }
+
+#if defined(OS_ANDROID)
+  if (has_offline_pages) {
+    base::DictionaryValue* show_saved_pages_button = new base::DictionaryValue;
+    show_saved_pages_button->SetString(
+        "msg",
+        l10n_util::GetStringUTF16(IDS_ERRORPAGES_BUTTON_SHOW_SAVED_PAGES));
+    show_saved_pages_button->SetString(
+        "title",
+        l10n_util::GetStringUTF16(IDS_ERRORPAGES_BUTTON_SHOW_SAVED_PAGES));
+    error_strings->Set("showSavedPagesButton", show_saved_pages_button);
+  }
+#endif
 
 #if defined(OS_CHROMEOS)
   // ChromeOS has its own diagnostics extension, which doesn't rely on a
