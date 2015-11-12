@@ -410,8 +410,12 @@ if (enable_nacl) {
       ":copy_test_files",
       ":nacl_tests_copy(//build/toolchain/nacl:clang_newlib_${target_cpu})",
       ":generate_nmf(//build/toolchain/nacl:glibc_${target_cpu})",
-      ":generate_nmf(//build/toolchain/nacl:newlib_pnacl)",
-      ":generate_nonsfi_nmf(//build/toolchain/nacl:newlib_pnacl_nonsfi)",
     ]
+    if (enable_pnacl) {
+      data_deps += [
+        ":generate_nmf(//build/toolchain/nacl:newlib_pnacl)",
+        ":generate_nonsfi_nmf(//build/toolchain/nacl:newlib_pnacl_nonsfi)",
+      ]
+    }
   }
 }
