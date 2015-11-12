@@ -18,6 +18,10 @@ per-file autofill_strings.grdp=isherman@chromium.org
 per-file bookmark_bar_strings.grdp=sky@chromium.org
 per-file bookmarks.gypi=sky@chromium.org
 
+per-file browser_sync.gypi=pavely@chromium.org
+per-file browser_sync.gypi=stanisc@chromium.org
+per-file browser_sync.gypi=zea@chromium.org
+
 per-file browsing_data.gypi=markusheintz@chromium.org
 per-file browsing_data.gypi=mkwst@chromium.org
 per-file browsing_data.gypi=bauerb@chromium.org
