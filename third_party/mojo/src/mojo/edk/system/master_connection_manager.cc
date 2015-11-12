@@ -334,15 +334,13 @@ MasterConnectionManager::~MasterConnectionManager() {
 }
 
 void MasterConnectionManager::Init(
-    scoped_refptr<base::TaskRunner> delegate_thread_task_runner,
     embedder::MasterProcessDelegate* master_process_delegate) {
-  DCHECK(delegate_thread_task_runner);
   DCHECK(master_process_delegate);
   DCHECK(!delegate_thread_task_runner_);
   DCHECK(!master_process_delegate_);
   DCHECK(!private_thread_.message_loop());
 
-  delegate_thread_task_runner_ = delegate_thread_task_runner;
+  delegate_thread_task_runner_ = base::MessageLoop::current()->task_runner();
   master_process_delegate_ = master_process_delegate;
   CHECK(private_thread_.StartWithOptions(
       base::Thread::Options(base::MessageLoop::TYPE_IO, 0)));

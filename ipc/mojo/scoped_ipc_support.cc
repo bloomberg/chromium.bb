@@ -104,8 +104,8 @@ void IPCSupportInitializer::Init(
     io_thread_task_runner_->PostTask(
         FROM_HERE, base::Bind(&WatchMessageLoopOnIOThread, observer_));
     mojo::embedder::InitIPCSupport(
-        mojo::embedder::ProcessType::NONE, io_thread_task_runner_, this,
-        io_thread_task_runner_, mojo::embedder::ScopedPlatformHandle());
+        mojo::embedder::ProcessType::NONE, this, io_thread_task_runner_,
+        mojo::embedder::ScopedPlatformHandle());
   }
 }
 

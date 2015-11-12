@@ -92,22 +92,6 @@ system::ChannelId MakeChannelId() {
   return static_cast<system::ChannelId>(-new_counter_value);
 }
 
-// Note: Called on the I/O thread.
-void ShutdownIPCSupportHelper() {
-  // Save these before they get nuked by |ShutdownChannelOnIOThread()|.
-  scoped_refptr<base::TaskRunner> delegate_thread_task_runner(
-      internal::g_ipc_support->delegate_thread_task_runner());
-  ProcessDelegate* process_delegate =
-      internal::g_ipc_support->process_delegate();
-
-  ShutdownIPCSupportOnIOThread();
-
-  bool ok = delegate_thread_task_runner->PostTask(
-      FROM_HERE, base::Bind(&ProcessDelegate::OnShutdownComplete,
-                            base::Unretained(process_delegate)));
-  DCHECK(ok);
-}
-
 }  // namespace
 
 void SetMaxMessageSize(size_t bytes) {
@@ -197,7 +181,6 @@ MojoResult PassWrappedPlatformHandle(MojoHandle platform_handle_wrapper_handle,
 }
 
 void InitIPCSupport(ProcessType process_type,
-                    scoped_refptr<base::TaskRunner> delegate_thread_task_runner,
                     ProcessDelegate* process_delegate,
                     scoped_refptr<base::TaskRunner> io_thread_task_runner,
                     ScopedPlatformHandle platform_handle) {
@@ -207,17 +190,14 @@ void InitIPCSupport(ProcessType process_type,
   DCHECK(!internal::g_ipc_support);
 
   internal::g_ipc_support = new system::IPCSupport(
-      internal::g_platform_support, process_type,
-      delegate_thread_task_runner, process_delegate,
+      internal::g_platform_support, process_type, process_delegate,
       io_thread_task_runner, platform_handle.Pass());
 
   // TODO(use_chrome_edk) at this point the command line to switch to the new
   // EDK might not be set yet. There's no harm in always intializing the new EDK
   // though.
   g_wrapper_process_delegate = new NewEDKProcessDelegate(process_delegate);
-  mojo::edk::InitIPCSupport(delegate_thread_task_runner,
-                            g_wrapper_process_delegate,
-                            io_thread_task_runner);
+  mojo::edk::InitIPCSupport(g_wrapper_process_delegate, io_thread_task_runner);
 }
 
 void ShutdownIPCSupportOnIOThread() {
@@ -241,8 +221,12 @@ void ShutdownIPCSupport() {
 
   DCHECK(internal::g_ipc_support);
 
-  bool ok = internal::g_ipc_support->io_thread_task_runner()->PostTask(
-      FROM_HERE, base::Bind(&ShutdownIPCSupportHelper));
+  ProcessDelegate* delegate = internal::g_ipc_support->process_delegate();
+  bool ok = internal::g_ipc_support->io_thread_task_runner()->PostTaskAndReply(
+      FROM_HERE,
+      base::Bind(&ShutdownIPCSupportOnIOThread),
+      base::Bind(&ProcessDelegate::OnShutdownComplete,
+                 base::Unretained(delegate)));
   DCHECK(ok);
 }
 

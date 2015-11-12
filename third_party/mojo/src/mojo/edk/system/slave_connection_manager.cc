@@ -42,17 +42,15 @@ SlaveConnectionManager::~SlaveConnectionManager() {
 }
 
 void SlaveConnectionManager::Init(
-    scoped_refptr<base::TaskRunner> delegate_thread_task_runner,
     embedder::SlaveProcessDelegate* slave_process_delegate,
     embedder::ScopedPlatformHandle platform_handle) {
-  DCHECK(delegate_thread_task_runner);
   DCHECK(slave_process_delegate);
   DCHECK(platform_handle.is_valid());
   DCHECK(!delegate_thread_task_runner_);
   DCHECK(!slave_process_delegate_);
   DCHECK(!private_thread_.message_loop());
 
-  delegate_thread_task_runner_ = delegate_thread_task_runner;
+  delegate_thread_task_runner_ = base::MessageLoop::current()->task_runner();
   slave_process_delegate_ = slave_process_delegate;
   CHECK(private_thread_.StartWithOptions(
       base::Thread::Options(base::MessageLoop::TYPE_IO, 0)));
