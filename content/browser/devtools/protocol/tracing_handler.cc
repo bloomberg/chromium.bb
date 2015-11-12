@@ -113,7 +113,7 @@ void TracingHandler::OnTraceDataCollected(const std::string& trace_fragment) {
   message.reserve(message.size() + trace_fragment.size() + messageSuffixSize);
   message += trace_fragment;
   message += "] } }";
-  client_->SendRawNotification(message);
+  client_->SendRawMessage(message);
 }
 
 void TracingHandler::OnTraceComplete() {

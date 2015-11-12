@@ -300,7 +300,7 @@ class DevToolsAgentTest : public RenderViewImplTest {
  public:
   void Attach() {
     std::string host_id = "host_id";
-    agent()->OnAttach(host_id, 17);
+    agent()->OnAttach(host_id);
   }
 
   void Detach() {
@@ -312,7 +312,7 @@ class DevToolsAgentTest : public RenderViewImplTest {
   }
 
   void DispatchDevToolsMessage(const std::string& message) {
-    agent()->OnDispatchOnInspectorBackend(17, message);
+    agent()->OnDispatchOnInspectorBackend(message);
   }
 
   void CloseWhilePaused() {

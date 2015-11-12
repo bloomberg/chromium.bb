@@ -44,7 +44,6 @@ bool SharedWorkerDevToolsAgent::OnMessageReceived(const IPC::Message& message) {
 }
 
 void SharedWorkerDevToolsAgent::SendDevToolsMessage(
-    int session_id,
     int call_id,
     const blink::WebString& msg,
     const blink::WebString& state) {
@@ -56,7 +55,6 @@ void SharedWorkerDevToolsAgent::SendDevToolsMessage(
 
   if (message.length() < kMaxMessageChunkSize) {
     chunk.data.swap(message);
-    chunk.session_id = session_id;
     chunk.call_id = call_id;
     chunk.post_state = post_state;
     chunk.is_last = true;
@@ -67,7 +65,6 @@ void SharedWorkerDevToolsAgent::SendDevToolsMessage(
 
   for (size_t pos = 0; pos < message.length(); pos += kMaxMessageChunkSize) {
     chunk.is_last = pos + kMaxMessageChunkSize >= message.length();
-    chunk.session_id = chunk.is_last ? session_id : 0;
     chunk.call_id = chunk.is_last ? call_id : 0;
     chunk.post_state = chunk.is_last ? post_state : std::string();
     chunk.data = message.substr(pos, kMaxMessageChunkSize);
@@ -78,15 +75,13 @@ void SharedWorkerDevToolsAgent::SendDevToolsMessage(
   }
 }
 
-void SharedWorkerDevToolsAgent::OnAttach(const std::string& host_id,
-                                         int session_id) {
-  webworker_->attachDevTools(WebString::fromUTF8(host_id), session_id);
+void SharedWorkerDevToolsAgent::OnAttach(const std::string& host_id) {
+  webworker_->attachDevTools(WebString::fromUTF8(host_id));
 }
 
 void SharedWorkerDevToolsAgent::OnReattach(const std::string& host_id,
-                                           int session_id,
                                            const std::string& state) {
-  webworker_->reattachDevTools(WebString::fromUTF8(host_id), session_id,
+  webworker_->reattachDevTools(WebString::fromUTF8(host_id),
                                WebString::fromUTF8(state));
 }
 
@@ -95,9 +90,8 @@ void SharedWorkerDevToolsAgent::OnDetach() {
 }
 
 void SharedWorkerDevToolsAgent::OnDispatchOnInspectorBackend(
-    int session_id,
     const std::string& message) {
-  webworker_->dispatchDevToolsMessage(session_id, WebString::fromUTF8(message));
+  webworker_->dispatchDevToolsMessage(WebString::fromUTF8(message));
 }
 
 bool SharedWorkerDevToolsAgent::Send(IPC::Message* message) {

@@ -85,7 +85,7 @@ public:
     WebDevToolsAgentClient* client() { return m_client; }
     InspectorOverlay* overlay() const { return m_overlay.get(); }
     void flushPendingProtocolNotifications();
-    void dispatchMessageFromFrontend(int sessionId, const String& message);
+    void dispatchMessageFromFrontend(const String& message);
     void registerAgent(PassOwnPtrWillBeRawPtr<InspectorAgent>);
     static void webViewImplClosed(WebViewImpl*);
     static void webFrameWidgetImplClosed(WebFrameWidgetImpl*);
@@ -98,11 +98,11 @@ public:
     void layerTreeViewChanged(WebLayerTreeView*);
 
     // WebDevToolsAgent implementation.
-    void attach(const WebString& hostId, int sessionId) override;
-    void reattach(const WebString& hostId, int sessionId, const WebString& savedState) override;
+    void attach(const WebString& hostId) override;
+    void reattach(const WebString& hostId, const WebString& savedState) override;
     void detach() override;
     void continueProgram() override;
-    void dispatchOnInspectorBackend(int sessionId, const WebString& message) override;
+    void dispatchOnInspectorBackend(const WebString& message) override;
     void inspectElementAt(const WebPoint&) override;
     void evaluateInWebInspector(long callId, const WebString& script) override;
     WebString evaluateInWebInspectorOverlay(const WebString& script) override;
@@ -121,7 +121,7 @@ private:
     void resumeStartup() override;
 
     // InspectorFrontendChannel implementation.
-    void sendProtocolResponse(int sessionId, int callId, PassRefPtr<JSONObject> message) override;
+    void sendProtocolResponse(int callId, PassRefPtr<JSONObject> message) override;
     void sendProtocolNotification(PassRefPtr<JSONObject> message) override;
     void flush() override;
 
@@ -159,9 +159,8 @@ private:
     InspectorAgentRegistry m_agents;
     bool m_deferredAgentsInitialized;
 
-    typedef Vector<std::pair<int, RefPtr<JSONObject>>> NotificationQueue;
+    typedef Vector<RefPtr<JSONObject>> NotificationQueue;
     NotificationQueue m_notificationQueue;
-    int m_sessionId;
     String m_stateCookie;
 
     friend class DebuggerTask;

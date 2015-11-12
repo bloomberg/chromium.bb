@@ -30,12 +30,10 @@ class EmbeddedWorkerDevToolsAgent : public IPC::Listener {
   bool OnMessageReceived(const IPC::Message& message) override;
 
  private:
-  void OnAttach(const std::string& host_id, int session_id);
-  void OnReattach(const std::string& host_id,
-                  int session_id,
-                  const std::string& state);
+  void OnAttach(const std::string& host_id);
+  void OnReattach(const std::string& host_id, const std::string& state);
   void OnDetach();
-  void OnDispatchOnInspectorBackend(int session_id, const std::string& message);
+  void OnDispatchOnInspectorBackend(const std::string& message);
 
   blink::WebEmbeddedWorker* webworker_;
   int route_id_;
