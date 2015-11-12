@@ -1,11 +1,7 @@
 {
   "Android GN": {
     "additional_compile_targets": [
-      "chrome_public_apk",
-      "chrome_public_test_apk",
-      "content_shell_apk",
-      "mandoline:all",
-      "system_webview_apk"
+      "gn_all"
     ],
     "gtest_tests": [
       {
@@ -129,13 +125,7 @@
   },
   "Android GN (dbg)": {
     "additional_compile_targets": [
-      "blimp_tests",
-      "chrome_public_apk",
-      "chrome_public_test_apk",
-      "content_shell_apk",
-      "content_shell_test_apk",
-      "mandoline:all",
-      "system_webview_apk"
+      "gn_all"
     ]
   },
   "Android Tests": {
