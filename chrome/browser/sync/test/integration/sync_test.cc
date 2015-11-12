@@ -329,14 +329,20 @@ void SyncTest::CreateProfileCallback(const base::Closure& quit_closure,
 // ProfileManager::CreateProfileAsync() for proper profile creation.
 // static
 Profile* SyncTest::MakeProfileForUISignin(
-    const base::FilePath::StringType name) {
+    const base::FilePath::StringType name,
+    bool path_outside_user_data_dir) {
   // For multi profile UI signin, profile paths should be outside user data dir.
   // Otherwise, we get an error that the profile has already signed in on this
   // device.
   // Note that prefix |name| is implemented only on Win. On other platforms the
   // com.google.Chrome.XXXXXX prefix is used.
   base::FilePath profile_path;
-  CHECK(base::CreateNewTempDirectory(name, &profile_path));
+  if (path_outside_user_data_dir) {
+    CHECK(base::CreateNewTempDirectory(name, &profile_path));
+  } else {
+    PathService::Get(chrome::DIR_USER_DATA, &profile_path);
+    profile_path = profile_path.Append(name);
+  }
 
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   base::RunLoop run_loop;
@@ -470,7 +476,9 @@ void SyncTest::InitializeInstance(int index) {
   // If running against an EXTERNAL_LIVE_SERVER, we need to signin profiles
   // using real GAIA server. This requires creating profiles with no test hooks.
   if (UsingExternalServers()) {
-    profiles_[index] = MakeProfileForUISignin(profile_name);
+    bool path_outside_user_data_dir = (num_clients_ > 1);
+    profiles_[index] =
+        MakeProfileForUISignin(profile_name, path_outside_user_data_dir);
   } else {
     // Without need of real GAIA authentication, we create new test profiles.
     profiles_[index] = MakeProfile(profile_name);
@@ -942,7 +950,8 @@ bool SyncTest::IsTestServerRunning() {
 }
 
 bool SyncTest::TestUsesSelfNotifications() {
-  return true;
+  // Default is True unless we are running against external servers.
+  return !UsingExternalServers();
 }
 
 bool SyncTest::EnableEncryption(int index) {

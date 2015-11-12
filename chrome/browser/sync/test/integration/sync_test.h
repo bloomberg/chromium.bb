@@ -272,8 +272,11 @@ class SyncTest : public InProcessBrowserTest {
 
  private:
   // Helper to ProfileManager::CreateProfileAsync that creates a new profile
-  // used for UI Signin. Blocks until profile is created.
-  static Profile* MakeProfileForUISignin(const base::FilePath::StringType name);
+  // used for UI Signin. Blocks until profile is created. If
+  // |path_outside_user_data_dir| is true then profile's path is created outside
+  // user data dir which allows signing-in multiple profiles to same account.
+  static Profile* MakeProfileForUISignin(const base::FilePath::StringType name,
+                                         bool path_outside_user_data_dir);
 
   // Callback for CreateNewProfile() method. It runs the quit_closure once
   // profile is created successfully.
