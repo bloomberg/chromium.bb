@@ -32,7 +32,6 @@
 
 #include "platform/EventTracer.h"
 #include "platform/heap/Heap.h"
-#include "wtf/CryptographicallyRandomNumber.h"
 #include "wtf/MainThread.h"
 #include <base/bind.h>
 #include <base/test/launcher/unit_test_launcher.h>

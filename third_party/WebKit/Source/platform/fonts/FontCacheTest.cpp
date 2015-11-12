@@ -16,7 +16,10 @@ class EmptyPlatform : public Platform {
 public:
     EmptyPlatform() {}
     ~EmptyPlatform() override {}
-    void cryptographicallyRandomValues(unsigned char* buffer, size_t length) override { }
+    void cryptographicallyRandomValues(unsigned char* buffer, size_t length) override
+    {
+        RELEASE_ASSERT_NOT_REACHED();
+    }
 };
 
 TEST(FontCache, getLastResortFallbackFont)

@@ -369,7 +369,7 @@ int main(int argc, char* argv[])
 
         void cryptographicallyRandomValues(unsigned char*, size_t) override
         {
-            // Do nothing: make blink::Platform use the default crypto-randoms.
+            RELEASE_ASSERT_NOT_REACHED();
         }
 
         void screenColorProfile(WebVector<char>* profile) override

@@ -338,7 +338,10 @@ private:
     class CurrentThreadPlatformMock : public Platform {
     public:
         CurrentThreadPlatformMock() { }
-        virtual void cryptographicallyRandomValues(unsigned char* buffer, size_t length) { ASSERT_NOT_REACHED(); }
+        virtual void cryptographicallyRandomValues(unsigned char* buffer, size_t length)
+        {
+            RELEASE_ASSERT_NOT_REACHED();
+        }
         WebThread* currentThread() override { return &m_currentThread; }
 
         void enterRunLoop() { m_currentThread.enterRunLoop(); }

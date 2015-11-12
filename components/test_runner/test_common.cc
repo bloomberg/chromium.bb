@@ -6,6 +6,7 @@
 
 #include "base/lazy_instance.h"
 #include "base/macros.h"
+#include "base/rand_util.h"
 #include "third_party/WebKit/public/platform/Platform.h"
 #include "third_party/WebKit/public/web/WebKit.h"
 
@@ -30,7 +31,10 @@ class MockBlinkPlatform : NON_EXPORTED_BASE(public blink::Platform) {
   }
   ~MockBlinkPlatform() override {}
   void cryptographicallyRandomValues(unsigned char* buffer,
-                                     size_t length) override {}
+                                     size_t length) override {
+    base::RandBytes(buffer, length);
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(MockBlinkPlatform);
 };

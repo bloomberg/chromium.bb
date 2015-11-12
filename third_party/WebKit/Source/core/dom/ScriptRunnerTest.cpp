@@ -103,7 +103,10 @@ public:
     {
     }
 
-    void cryptographicallyRandomValues(unsigned char* buffer, size_t length) override { }
+    void cryptographicallyRandomValues(unsigned char* buffer, size_t length) override
+    {
+        RELEASE_ASSERT_NOT_REACHED();
+    }
 
     const unsigned char* getTraceCategoryEnabledFlag(const char* categoryName) override
     {

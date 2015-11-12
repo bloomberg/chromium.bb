@@ -63,7 +63,10 @@ public:
     }
 
     // Stub for pure virtual method.
-    void cryptographicallyRandomValues(unsigned char*, size_t) override { ASSERT_NOT_REACHED(); }
+    void cryptographicallyRandomValues(unsigned char*, size_t) override
+    {
+        RELEASE_ASSERT_NOT_REACHED();
+    }
 
     void setPublicSuffix(const blink::WebString& suffix)
     {
