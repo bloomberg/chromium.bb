@@ -91,6 +91,8 @@ chrome.test.getConfig(function(config) {
         chrome.tabs.update(tabId, { url: testFailureUrl }, function() {
           var script_file = {};
           script_file.code = "document.title = 'executeScript';";
+          // The error message should contain the URL of the site for which it
+          // failed because the extension has the tabs permission.
           chrome.tabs.executeScript(tabId, script_file, fail(
               'Cannot access contents of url "' + testFailureUrl +
               '". Extension manifest must request permission to access this ' +

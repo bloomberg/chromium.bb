@@ -13,6 +13,7 @@
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/permissions_parser.h"
+#include "extensions/common/permissions/api_permission.h"
 #include "extensions/common/permissions/permission_message_provider.h"
 #include "extensions/common/switches.h"
 #include "extensions/common/url_pattern_set.h"
@@ -89,9 +90,13 @@ bool PermissionsData::IsRestrictedUrl(const GURL& document_url,
   if (!URLPattern::IsValidSchemeForExtensions(document_url.scheme()) &&
       document_url.spec() != url::kAboutBlankURL) {
     if (error) {
-      *error = ErrorUtils::FormatErrorMessage(
-                   manifest_errors::kCannotAccessPage,
-                   document_url.spec());
+      if (extension->permissions_data()->active_permissions().HasAPIPermission(
+              APIPermission::kTab)) {
+        *error = ErrorUtils::FormatErrorMessage(
+            manifest_errors::kCannotAccessPageWithUrl, document_url.spec());
+      } else {
+        *error = manifest_errors::kCannotAccessPage;
+      }
     }
     return true;
   }
@@ -349,9 +354,15 @@ PermissionsData::AccessType PermissionsData::CanRunOnPage(
     return ACCESS_WITHHELD;
 
   if (error) {
-    *error = ErrorUtils::FormatErrorMessage(manifest_errors::kCannotAccessPage,
-                                            document_url.spec());
+    if (extension->permissions_data()->active_permissions().HasAPIPermission(
+            APIPermission::kTab)) {
+      *error = ErrorUtils::FormatErrorMessage(
+          manifest_errors::kCannotAccessPageWithUrl, document_url.spec());
+    } else {
+      *error = manifest_errors::kCannotAccessPage;
+    }
   }
+
   return ACCESS_DENIED;
 }
 

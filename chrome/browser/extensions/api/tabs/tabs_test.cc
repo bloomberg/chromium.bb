@@ -1312,7 +1312,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, ExecuteScriptOnDevTools) {
           function.get(), base::StringPrintf("[%u, {\"code\": \"true\"}]",
                                              api::windows::WINDOW_ID_CURRENT),
           DevToolsWindowTesting::Get(devtools)->browser()),
-      manifest_errors::kCannotAccessPage));
+      manifest_errors::kCannotAccessPageWithUrl));
 
   DevToolsWindowTesting::CloseDevToolsWindowSync(devtools);
 }

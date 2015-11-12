@@ -19,7 +19,7 @@ chrome.test.getConfig(function(config) {
         if (chrome.runtime.lastError) {
           chrome.test.assertTrue(
               chrome.runtime.lastError.message.indexOf(
-                  'Cannot access contents of url "http://a.com:') == 0);
+                  'Cannot access contents of the page.') == 0);
           chrome.test.notifyPass();
         } else {
           // If there were no errors, then the script did run, but it should

@@ -250,6 +250,7 @@ extern const char kCannotAccessAboutUrl[];
 extern const char kCannotAccessChromeUrl[];
 extern const char kCannotAccessExtensionUrl[];
 extern const char kCannotAccessPage[];
+extern const char kCannotAccessPageWithUrl[];
 extern const char kCannotChangeExtensionID[];
 extern const char kCannotClaimAllHostsInExtent[];
 extern const char kCannotClaimAllURLsInExtent[];

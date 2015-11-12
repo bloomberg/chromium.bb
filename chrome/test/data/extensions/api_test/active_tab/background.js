@@ -56,8 +56,9 @@ chrome.browserAction.onClicked.addListener(function(tab) {
 
 chrome.webNavigation.onCompleted.addListener(function(details) {
   chrome.tabs.executeScript({ code: 'true' }, callbackFail(
-         'Cannot access contents of url "' + details.url +
-         '". Extension manifest must request permission to access this host.'));
+         'Cannot access contents of the page. ' +
+         'Extension manifest must request permission to access the ' +
+         'respective host.'));
 
   chrome.automation.getTree(callbackFail(
       'Cannot request automation tree on url "' + details.url +

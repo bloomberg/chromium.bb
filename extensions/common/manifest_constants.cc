@@ -262,7 +262,15 @@ const char kCannotAccessAboutUrl[] =
 const char kCannotAccessChromeUrl[] = "Cannot access a chrome:// URL";
 const char kCannotAccessExtensionUrl[] =
     "Cannot access a chrome-extension:// URL of different extension";
+// This deliberately does not contain a URL. Otherwise an extension can parse
+// error messages and determine the URLs of open tabs without having appropriate
+// permissions to see these URLs.
 const char kCannotAccessPage[] =
+    "Cannot access contents of the page. "
+    "Extension manifest must request permission to access the respective host.";
+// Use this error message with caution and only if the extension triggering it
+// has tabs permission. Otherwise, URLs may be leaked to extensions.
+const char kCannotAccessPageWithUrl[] =
     "Cannot access contents of url \"*\". "
     "Extension manifest must request permission to access this host.";
 const char kCannotChangeExtensionID[] =

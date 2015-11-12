@@ -133,8 +133,11 @@ void ProgrammaticScriptInjector::OnWillNotInject(
             manifest_errors::kCannotAccessAboutUrl, url_.spec(),
             effective_url_.GetOrigin().spec());
       } else {
-        error = ErrorUtils::FormatErrorMessage(
-            manifest_errors::kCannotAccessPage, url_.spec());
+        // TODO(?) It would be nice to show kCannotAccessPageWithUrl here if
+        // this is triggered by an extension with tabs permission. See
+        // https://codereview.chromium.org/1414223005/diff/1/extensions/
+        // common/manifest_constants.cc#newcode269
+        error = manifest_errors::kCannotAccessPage;
       }
       break;
     case EXTENSION_REMOVED:  // no special error here.
