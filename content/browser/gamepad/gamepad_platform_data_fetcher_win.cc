@@ -30,8 +30,6 @@ static const BYTE kDeviceSubTypeDrumKit = 8;
 static const BYTE kDeviceSubTypeGuitarBass = 11;
 static const BYTE kDeviceSubTypeArcadePad = 19;
 
-static const float kMinAxisResetValue = 0.1f;
-
 float NormalizeXInputAxis(SHORT value) {
   return ((value + 32768.f) / 32767.5f) - 1.f;
 }
