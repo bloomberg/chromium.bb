@@ -56,7 +56,7 @@ class GamepadPlatformDataFetcherWin : public GamepadDataFetcher {
   bool GetXInputDllFunctions();
 
   // Scan for connected XInput and DirectInput gamepads.
-  void EnumerateDevices(blink::WebGamepads* pads);
+  void EnumerateDevices();
   bool GetXInputPadConnectivity(int i, blink::WebGamepad* pad) const;
 
   void GetXInputPadData(int i, blink::WebGamepad* pad);
@@ -65,7 +65,6 @@ class GamepadPlatformDataFetcherWin : public GamepadDataFetcher {
   int FirstAvailableGamepadId() const;
   bool HasXInputGamepad(int index) const;
   bool HasRawInputGamepad(const HANDLE handle) const;
-  void SanitizeGamepadData(size_t index, blink::WebGamepad* pad);
 
   base::ScopedNativeLibrary xinput_dll_;
   bool xinput_available_;
@@ -82,17 +81,13 @@ class GamepadPlatformDataFetcherWin : public GamepadDataFetcher {
     RAWINPUT_CONNECTED
   };
 
-  struct PadState {
+  struct PlatformPadState {
     PadConnectionStatus status;
-    GamepadStandardMappingFunction mapper;
-
-    bool is_axes_ever_reset[blink::WebGamepad::axesLengthCap];
-    bool is_buttons_ever_reset[blink::WebGamepad::buttonsLengthCap];
 
     int xinput_index; // XInput-only
     HANDLE raw_input_handle;  // RawInput-only fields.
   };
-  PadState pad_state_[blink::WebGamepads::itemsLengthCap];
+  PlatformPadState platform_pad_state_[blink::WebGamepads::itemsLengthCap];
 
   scoped_ptr<RawInputDataFetcher> raw_input_fetcher_;
 

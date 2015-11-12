@@ -11,8 +11,6 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/browser/gamepad/gamepad_data_fetcher.h"
-#include "content/browser/gamepad/gamepad_standard_mappings.h"
-#include "third_party/WebKit/public/platform/WebGamepads.h"
 
 extern "C" {
 struct udev_device;
@@ -35,23 +33,9 @@ class GamepadPlatformDataFetcherLinux : public GamepadDataFetcher {
   void RefreshDevice(udev_device* dev);
   void EnumerateDevices();
   void ReadDeviceData(size_t index);
-  void SanitizeGamepadData(size_t index, blink::WebGamepad* pad);
 
-  struct PadState {
-    // File descriptor for the /dev/input/js* devices. -1 if not in use.
-    int device_fd;
-
-    // Functions to map from device data to standard layout, if available. May
-    // be null if no mapping is available.
-    GamepadStandardMappingFunction mapper;
-
-    bool is_axes_ever_reset[blink::WebGamepad::axesLengthCap];
-    bool is_buttons_ever_reset[blink::WebGamepad::buttonsLengthCap];
-
-    // Data that's returned to the consumer.
-    blink::WebGamepad data;
-  };
-  PadState pad_state_[blink::WebGamepads::itemsLengthCap];
+  // File descriptor for the /dev/input/js* devices. -1 if not in use.
+  int device_fd_[blink::WebGamepads::itemsLengthCap];
 
   scoped_ptr<UdevLinux> udev_;
 

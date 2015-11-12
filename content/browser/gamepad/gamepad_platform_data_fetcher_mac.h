@@ -11,10 +11,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
 #include "content/browser/gamepad/gamepad_data_fetcher.h"
-#include "content/browser/gamepad/gamepad_standard_mappings.h"
 #include "content/browser/gamepad/xbox_data_fetcher_mac.h"
 #include "content/common/gamepad_hardware_buffer.h"
-#include "third_party/WebKit/public/platform/WebGamepads.h"
 
 #include <CoreFoundation/CoreFoundation.h>
 #include <IOKit/hid/IOHIDManager.h>
@@ -76,8 +74,6 @@ class GamepadPlatformDataFetcherMac : public GamepadDataFetcher,
 
   scoped_ptr<XboxDataFetcher> xbox_fetcher_;
 
-  blink::WebGamepads data_;
-
   // Side-band data that's not passed to the consumer, but we need to maintain
   // to update data_.
   struct AssociatedData {
@@ -89,17 +85,12 @@ class GamepadPlatformDataFetcherMac : public GamepadDataFetcher,
         IOHIDElementRef axis_elements[blink::WebGamepad::axesLengthCap];
         CFIndex axis_minimums[blink::WebGamepad::axesLengthCap];
         CFIndex axis_maximums[blink::WebGamepad::axesLengthCap];
-        // Function to map from device data to standard layout, if available.
-        // May be null if no mapping is available.
-        GamepadStandardMappingFunction mapper;
       } hid;
       struct {
         XboxController* device;
         UInt32 location_id;
       } xbox;
     };
-    bool is_axes_ever_reset[blink::WebGamepad::axesLengthCap];
-    bool is_buttons_ever_reset[blink::WebGamepad::buttonsLengthCap];
   };
   AssociatedData associated_[blink::WebGamepads::itemsLengthCap];
 

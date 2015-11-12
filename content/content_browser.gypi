@@ -735,6 +735,7 @@
       'browser/frame_host/render_widget_host_view_guest.h',
       'browser/gamepad/gamepad_consumer.h',
       'browser/gamepad/gamepad_data_fetcher.h',
+      'browser/gamepad/gamepad_data_fetcher.cc',
       'browser/gamepad/gamepad_platform_data_fetcher.h',
       'browser/gamepad/gamepad_platform_data_fetcher_android.cc',
       'browser/gamepad/gamepad_platform_data_fetcher_android.h',
