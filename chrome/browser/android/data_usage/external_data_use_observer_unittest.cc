@@ -249,7 +249,7 @@ TEST_F(ExternalDataUseObserverTest, AtMostOneDataUseSubmitRequest) {
   url_regexes.push_back(
       "http://www[.]google[.]com/#q=.*|https://www[.]google[.]com/#q=.*");
 
-  external_data_use_observer()->FetchMatchingRulesCallbackOnIOThread(
+  external_data_use_observer()->FetchMatchingRulesDoneOnIOThread(
       std::vector<std::string>(url_regexes.size(), std::string()), url_regexes,
       std::vector<std::string>(url_regexes.size(), label));
   EXPECT_EQ(0U, external_data_use_observer()->buffered_data_reports_.size());
@@ -281,7 +281,7 @@ TEST_F(ExternalDataUseObserverTest, BufferSize) {
   url_regexes.push_back(
       "http://www[.]google[.]com/#q=.*|https://www[.]google[.]com/#q=.*");
 
-  external_data_use_observer()->FetchMatchingRulesCallbackOnIOThread(
+  external_data_use_observer()->FetchMatchingRulesDoneOnIOThread(
       std::vector<std::string>(url_regexes.size(), std::string()), url_regexes,
       std::vector<std::string>(url_regexes.size(), label));
 
@@ -326,7 +326,7 @@ TEST_F(ExternalDataUseObserverTest, ReportsMergedCorrectly) {
   url_regexes.push_back(
       "http://www[.]google[.]com/#q=.*|https://www[.]google[.]com/#q=.*");
 
-  external_data_use_observer()->FetchMatchingRulesCallbackOnIOThread(
+  external_data_use_observer()->FetchMatchingRulesDoneOnIOThread(
       std::vector<std::string>(url_regexes.size(), std::string()), url_regexes,
       std::vector<std::string>(url_regexes.size(), label));
 
@@ -394,7 +394,7 @@ TEST_F(ExternalDataUseObserverTest, TimestampsMergedCorrectly) {
   url_regexes.push_back(
       "http://www[.]google[.]com/#q=.*|https://www[.]google[.]com/#q=.*");
 
-  external_data_use_observer()->FetchMatchingRulesCallbackOnIOThread(
+  external_data_use_observer()->FetchMatchingRulesDoneOnIOThread(
       std::vector<std::string>(url_regexes.size(), std::string()), url_regexes,
       std::vector<std::string>(url_regexes.size(), label));
 
@@ -444,7 +444,7 @@ TEST_F(ExternalDataUseObserverTest, MultipleMatchingRules) {
   labels.push_back(label_foo);
   labels.push_back(label_bar);
 
-  external_data_use_observer()->FetchMatchingRulesCallbackOnIOThread(
+  external_data_use_observer()->FetchMatchingRulesDoneOnIOThread(
       std::vector<std::string>(url_regexes.size(), std::string()), url_regexes,
       labels);
   EXPECT_EQ(0U, external_data_use_observer()->buffered_data_reports_.size());
@@ -523,7 +523,7 @@ TEST_F(ExternalDataUseObserverTest, PeriodicFetchMatchingRules) {
   url_regexes.push_back(
       "http://www[.]google[.]com/#q=.*|https://www[.]google[.]com/#q=.*");
 
-  external_data_use_observer()->FetchMatchingRulesCallbackOnIOThread(
+  external_data_use_observer()->FetchMatchingRulesDoneOnIOThread(
       std::vector<std::string>(url_regexes.size(), std::string()), url_regexes,
       std::vector<std::string>(url_regexes.size(), label));
 
@@ -564,7 +564,7 @@ TEST_F(ExternalDataUseObserverTest, BufferDataUseReports) {
   url_regexes.push_back(
       "http://www[.]google[.]com/#q=.*|https://www[.]google[.]com/#q=.*");
 
-  external_data_use_observer()->FetchMatchingRulesCallbackOnIOThread(
+  external_data_use_observer()->FetchMatchingRulesDoneOnIOThread(
       std::vector<std::string>(url_regexes.size(), std::string()), url_regexes,
       std::vector<std::string>(url_regexes.size(), label));
 

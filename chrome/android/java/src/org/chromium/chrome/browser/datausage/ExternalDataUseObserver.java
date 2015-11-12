@@ -44,16 +44,16 @@ public class ExternalDataUseObserver {
     }
 
     /**
-    * Fetches matching rules and returns them via {@link #fetchMatchingRulesCallback}. While the
+    * Fetches matching rules and returns them via {@link #fetchMatchingRulesDone}. While the
     * fetch is underway, it is illegal to make calls to this method.
     */
     @CalledByNative
     protected void fetchMatchingRules() {
-        fetchMatchingRulesCallback(null, null, null);
+        fetchMatchingRulesDone(null, null, null);
     }
 
     /*
-     * {@link #fetchMatchingRulesCallback}  reports the result of {@link #fetchMatchingRules} to
+     * {@link #fetchMatchingRulesDone}  reports the result of {@link #fetchMatchingRules} to
      * the native.
      * @param appPackageName package name of the app that should be matched.
      * @domainPathRegex regex in RE2 syntax that is used for matching URLs.
@@ -62,13 +62,13 @@ public class ExternalDataUseObserver {
      * The three vectors are should have equal length. All three vectors may be empty which
      * implies that no matching rules are active.
      */
-    protected void fetchMatchingRulesCallback(
+    protected void fetchMatchingRulesDone(
             String[] appPackageName, String[] domainPathRegEx, String[] label) {
         // Check if native object is destroyed. This may happen at the time of Chromium shutdown.
         if (mNativeExternalDataUseObserver == 0) {
             return;
         }
-        nativeFetchMatchingRulesCallback(
+        nativeFetchMatchingRulesDone(
                 mNativeExternalDataUseObserver, appPackageName, domainPathRegEx, label);
     }
 
@@ -108,7 +108,7 @@ public class ExternalDataUseObserver {
         nativeOnReportDataUseDone(mNativeExternalDataUseObserver, success);
     }
 
-    public native void nativeFetchMatchingRulesCallback(long nativeExternalDataUseObserver,
+    public native void nativeFetchMatchingRulesDone(long nativeExternalDataUseObserver,
             String[] appPackageName, String[] domainPathRegEx, String[] label);
 
     public native void nativeOnReportDataUseDone(

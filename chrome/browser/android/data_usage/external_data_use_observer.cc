@@ -139,7 +139,7 @@ void ExternalDataUseObserver::FetchMatchingRulesOnUIThread() const {
       env, j_external_data_use_observer_.obj());
 }
 
-void ExternalDataUseObserver::FetchMatchingRulesCallback(
+void ExternalDataUseObserver::FetchMatchingRulesDone(
     JNIEnv* env,
     jobject obj,
     const base::android::JavaParamRef<jobjectArray>& app_package_name,
@@ -162,12 +162,12 @@ void ExternalDataUseObserver::FetchMatchingRulesCallback(
 
   io_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&ExternalDataUseObserver::FetchMatchingRulesCallbackOnIOThread,
+      base::Bind(&ExternalDataUseObserver::FetchMatchingRulesDoneOnIOThread,
                  GetIOWeakPtr(), app_package_name_native,
                  domain_path_regex_native, label_native));
 }
 
-void ExternalDataUseObserver::FetchMatchingRulesCallbackOnIOThread(
+void ExternalDataUseObserver::FetchMatchingRulesDoneOnIOThread(
     const std::vector<std::string>& app_package_name,
     const std::vector<std::string>& domain_path_regex,
     const std::vector<std::string>& label) {
@@ -384,6 +384,45 @@ bool ExternalDataUseObserver::Matches(const GURL& gurl,
   }
 
   return false;
+}
+
+ExternalDataUseObserver::DataUseReportKey::DataUseReportKey(
+    const std::string& label,
+    net::NetworkChangeNotifier::ConnectionType connection_type,
+    const std::string& mcc_mnc)
+    : label(label), connection_type(connection_type), mcc_mnc(mcc_mnc) {}
+
+bool ExternalDataUseObserver::DataUseReportKey::operator==(
+    const DataUseReportKey& other) const {
+  return label == other.label && connection_type == other.connection_type &&
+         mcc_mnc == other.mcc_mnc;
+}
+
+ExternalDataUseObserver::DataUseReport::DataUseReport(
+    const base::Time& start_time,
+    const base::Time& end_time,
+    int64_t bytes_downloaded,
+    int64_t bytes_uploaded)
+    : start_time(start_time),
+      end_time(end_time),
+      bytes_downloaded(bytes_downloaded),
+      bytes_uploaded(bytes_uploaded) {}
+
+size_t ExternalDataUseObserver::DataUseReportKeyHash::operator()(
+    const DataUseReportKey& k) const {
+  //  The hash is computed by hashing individual variables and combining them
+  //  using prime numbers. Prime numbers are used for multiplication because the
+  //  number of buckets used by map is always an even number. Using a prime
+  //  number ensures that for two different DataUseReportKey objects (say |j|
+  //  and |k|), if the hash value of |k.label| is equal to hash value of
+  //  |j.mcc_mnc|, then |j| and |k| map to different buckets. Large prime
+  //  numbers are used so that hash value is spread over a larger range.
+  std::hash<std::string> hash_function;
+  size_t hash = 1;
+  hash = hash * 23 + hash_function(k.label);
+  hash = hash * 43 + k.connection_type;
+  hash = hash * 83 + hash_function(k.mcc_mnc);
+  return hash;
 }
 
 ExternalDataUseObserver::MatchingRule::MatchingRule(

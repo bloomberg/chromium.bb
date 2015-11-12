@@ -73,7 +73,7 @@ class ExternalDataUseObserver : public data_usage::DataUseAggregator::Observer {
   // non-zero length. The three vectors should have equal length. The vectors
   // may be empty which implies that no matching rules are active. Must be
   // called on UI thread.
-  void FetchMatchingRulesCallback(
+  void FetchMatchingRulesDone(
       JNIEnv* env,
       jobject obj,
       const base::android::JavaParamRef<jobjectArray>& app_package_name,
@@ -113,16 +113,9 @@ class ExternalDataUseObserver : public data_usage::DataUseAggregator::Observer {
   struct DataUseReportKey {
     DataUseReportKey(const std::string& label,
                      net::NetworkChangeNotifier::ConnectionType connection_type,
-                     const std::string& mcc_mnc)
-        : label(label), connection_type(connection_type), mcc_mnc(mcc_mnc) {}
+                     const std::string& mcc_mnc);
 
-    bool operator==(const DataUseReportKey& other) const {
-      return (label == other.label &&
-              connection_type == other.connection_type &&
-              mcc_mnc == other.mcc_mnc);
-    }
-
-    virtual ~DataUseReportKey() {}
+    bool operator==(const DataUseReportKey& other) const;
 
     // Label provided by the matching rules.
     const std::string label;
@@ -148,13 +141,7 @@ class ExternalDataUseObserver : public data_usage::DataUseAggregator::Observer {
     DataUseReport(const base::Time& start_time,
                   const base::Time& end_time,
                   int64_t bytes_downloaded,
-                  int64_t bytes_uploaded)
-        : start_time(start_time),
-          end_time(end_time),
-          bytes_downloaded(bytes_downloaded),
-          bytes_uploaded(bytes_uploaded) {}
-
-    virtual ~DataUseReport() {}
+                  int64_t bytes_uploaded);
 
     // Start time of |this| data report (in UTC since the standard Java epoch of
     // 1970-01-01 00:00:00).
@@ -174,22 +161,8 @@ class ExternalDataUseObserver : public data_usage::DataUseAggregator::Observer {
   class DataUseReportKeyHash {
    public:
     // A simple heuristical hash function that satisifes the property that two
-    // equal data structures have the same hash value. The hash is computed by
-    // hashing individual variables and combining them using prime numbers.
-    // Prime numbers are used for multiplication because the number of buckets
-    // used by map is always an even number. Using a prime number ensures that
-    // for two different DataUseReportKey objects (say |j| and |k|), if the
-    // hash value of |k.label| is equal to hash value of |j.mcc_mnc|, then |j|
-    // and |k| map to different buckets. Large prime numbers are used so that
-    // hash value is spread over a larger range.
-    size_t operator()(const DataUseReportKey& k) const {
-      std::hash<std::string> hash_function;
-      size_t hash = 1;
-      hash = hash * 23 + hash_function(k.label);
-      hash = hash * 43 + k.connection_type;
-      hash = hash * 83 + hash_function(k.mcc_mnc);
-      return hash;
-    }
+    // equal data structures have the same hash value.
+    size_t operator()(const DataUseReportKey& k) const;
   };
 
   typedef base::hash_map<DataUseReportKey, DataUseReport, DataUseReportKeyHash>
@@ -231,10 +204,10 @@ class ExternalDataUseObserver : public data_usage::DataUseAggregator::Observer {
                      data_use_sequence) override;
 
   // Fetches matching rules from Java. Must be called on the UI thread. Returns
-  // result asynchronously on UI thread via FetchMatchingRulesCallback.
+  // result asynchronously on UI thread via FetchMatchingRulesDone.
   void FetchMatchingRulesOnUIThread() const;
 
-  // Called by FetchMatchingRulesCallback on IO thread when new matching rules
+  // Called by FetchMatchingRulesDone on IO thread when new matching rules
   // Adds |data_use| to buffered reports. |data_use| is the data use report
   // received from DataUseAggregator. |data_use| should not be null. |label| is
   // a non-empty label that applies to |data_use|. |start_time| and |end_time|
@@ -252,9 +225,9 @@ class ExternalDataUseObserver : public data_usage::DataUseAggregator::Observer {
   // submitted is the oldest one buffered.
   void SubmitBufferedDataUseReport();
 
-  // Called by |FetchMatchingRulesCallback| on IO thread when new matching rules
-  // have been fetched.
-  void FetchMatchingRulesCallbackOnIOThread(
+  // Called by FetchMatchingRulesDone on IO thread when new matching rules have
+  // been fetched.
+  void FetchMatchingRulesDoneOnIOThread(
       const std::vector<std::string>& app_package_name,
       const std::vector<std::string>& domain_path_regex,
       const std::vector<std::string>& label);
@@ -268,7 +241,7 @@ class ExternalDataUseObserver : public data_usage::DataUseAggregator::Observer {
   // been submitted.
   void OnReportDataUseDoneOnIOThread(bool success);
 
-  // Called by FetchMatchingRulesCallbackIO to register multiple
+  // Called by FetchMatchingRulesDoneOnIOThread to register multiple
   // case-insensitive regular expressions. If the url of the data use request
   // matches any of the regular expression, the observation is passed to the
   // Java listener.
@@ -292,7 +265,7 @@ class ExternalDataUseObserver : public data_usage::DataUseAggregator::Observer {
   // Maintains tab sessions.
   scoped_ptr<DataUseTabModel> data_use_tab_model_;
 
-  // True if callback from |FetchMatchingRulesCallback| is currently pending.
+  // True if callback from |FetchMatchingRulesDone| is currently pending.
   bool matching_rules_fetch_pending_;
 
   // True if callback from |SubmitDataUseReportCallback| is currently pending.
