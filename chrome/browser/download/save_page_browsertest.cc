@@ -12,6 +12,7 @@
 #include "base/prefs/pref_member.h"
 #include "base/prefs/pref_service.h"
 #include "base/run_loop.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/test_file_util.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
@@ -43,6 +44,7 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
+#include "net/base/filename_util.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/url_request/url_request_mock_http_job.h"
@@ -308,8 +310,12 @@ class SavePageBrowserTest : public InProcessBrowserTest {
   // Returns full paths of destination file and directory.
   void GetDestinationPaths(const std::string& prefix,
                            base::FilePath* full_file_name,
-                           base::FilePath* dir) {
-    *full_file_name = save_dir_.path().AppendASCII(prefix + ".htm");
+                           base::FilePath* dir,
+                           content::SavePageType save_page_type =
+                               content::SAVE_PAGE_TYPE_AS_COMPLETE_HTML) {
+    std::string extension =
+        (save_page_type == content::SAVE_PAGE_TYPE_AS_MHTML) ? ".mht" : ".htm";
+    *full_file_name = save_dir_.path().AppendASCII(prefix + extension);
     *dir = save_dir_.path().AppendASCII(prefix + "_files");
   }
 
@@ -350,7 +356,8 @@ class SavePageBrowserTest : public InProcessBrowserTest {
                       int expected_number_of_files,
                       base::FilePath* output_dir,
                       base::FilePath* main_file_name) {
-    GetDestinationPaths(prefix_for_output_files, main_file_name, output_dir);
+    GetDestinationPaths(prefix_for_output_files, main_file_name, output_dir,
+                        save_page_type);
     DownloadPersistedObserver persisted(
         browser()->profile(),
         base::Bind(&DownloadStoredProperly, url, *main_file_name,
@@ -784,12 +791,13 @@ class SavePageSitePerProcessBrowserTest : public SavePageBrowserTest {
 
 // Test for crbug.com/526786.
 IN_PROC_BROWSER_TEST_F(SavePageSitePerProcessBrowserTest, SaveAsCompleteHtml) {
-  GURL url(embedded_test_server()->GetURL("a.com", "/save_page/iframes.htm"));
+  GURL url(
+      embedded_test_server()->GetURL("a.com", "/save_page/frames-xsite.htm"));
   ui_test_utils::NavigateToURL(browser(), url);
 
   base::FilePath full_file_name, dir;
-  SaveCurrentTab(url, content::SAVE_PAGE_TYPE_AS_COMPLETE_HTML, "iframes", 5,
-                 &dir, &full_file_name);
+  SaveCurrentTab(url, content::SAVE_PAGE_TYPE_AS_COMPLETE_HTML,
+                 "frames-xsite-complete-html", 5, &dir, &full_file_name);
   ASSERT_FALSE(HasFailure());
 
   EXPECT_TRUE(base::DirectoryExists(dir));
@@ -814,24 +822,30 @@ IN_PROC_BROWSER_TEST_F(SavePageSitePerProcessBrowserTest, SaveAsCompleteHtml) {
   // by this particular test).
   std::string main_contents;
   ASSERT_TRUE(base::ReadFileToString(full_file_name, &main_contents));
-  EXPECT_THAT(main_contents,
-              HasSubstr("<iframe src=\"./iframes_files/a.html\"></iframe>"));
-  EXPECT_THAT(main_contents,
-              HasSubstr("<iframe src=\"./iframes_files/b.html\"></iframe>"));
-  EXPECT_THAT(main_contents,
-              HasSubstr("<img src=\"./iframes_files/1.png\">"));
+  EXPECT_THAT(
+      main_contents,
+      HasSubstr("<iframe "
+                "src=\"./frames-xsite-complete-html_files/a.html\"></iframe>"));
+  EXPECT_THAT(
+      main_contents,
+      HasSubstr("<iframe "
+                "src=\"./frames-xsite-complete-html_files/b.html\"></iframe>"));
+  EXPECT_THAT(
+      main_contents,
+      HasSubstr("<img src=\"./frames-xsite-complete-html_files/1.png\">"));
 
   // Verification of html contents.
-  EXPECT_THAT(main_contents, HasSubstr("896fd88d-a77a-4f46-afd8-24db7d5af9c2"))
-      << "Verifing if content from iframes.htm is present";
+  EXPECT_THAT(
+      main_contents,
+      HasSubstr("frames-xsite.htm: 896fd88d-a77a-4f46-afd8-24db7d5af9c2"));
   std::string a_contents;
   ASSERT_TRUE(base::ReadFileToString(dir.AppendASCII("a.html"), &a_contents));
-  EXPECT_THAT(a_contents, HasSubstr("1b8aae2b-e164-462f-bd5b-98aa366205f2"))
-      << "Verifing if content from a.htm is present";
+  EXPECT_THAT(a_contents,
+              HasSubstr("a.htm: 1b8aae2b-e164-462f-bd5b-98aa366205f2"));
   std::string b_contents;
   ASSERT_TRUE(base::ReadFileToString(dir.AppendASCII("b.html"), &b_contents));
-  EXPECT_THAT(b_contents, HasSubstr("3a35f7fa-96a9-4487-9f18-4470263907fa"))
-      << "Verifing if content from b.htm is present";
+  EXPECT_THAT(b_contents,
+              HasSubstr("b.htm: 3a35f7fa-96a9-4487-9f18-4470263907fa"));
 }
 
 // Test for crbug.com/538766.
@@ -839,38 +853,39 @@ IN_PROC_BROWSER_TEST_F(SavePageSitePerProcessBrowserTest, SaveAsCompleteHtml) {
 // (but note that the test only fails with --site-per-process flag).
 IN_PROC_BROWSER_TEST_F(SavePageSitePerProcessBrowserTest,
                        DISABLED_SaveAsMHTML) {
-  GURL url(embedded_test_server()->GetURL("a.com", "/save_page/iframes.htm"));
+  GURL url(
+      embedded_test_server()->GetURL("a.com", "/save_page/frames-xsite.htm"));
   ui_test_utils::NavigateToURL(browser(), url);
 
   base::FilePath full_file_name, dir;
-  SaveCurrentTab(url, content::SAVE_PAGE_TYPE_AS_MHTML, "iframes", -1, &dir,
-                 &full_file_name);
+  SaveCurrentTab(url, content::SAVE_PAGE_TYPE_AS_MHTML, "frames-xsite-mhtml",
+                 -1, &dir, &full_file_name);
   ASSERT_FALSE(HasFailure());
 
   std::string mhtml;
   ASSERT_TRUE(base::ReadFileToString(full_file_name, &mhtml));
 
   // Verify content of main frame, subframes and some savable resources.
-  EXPECT_THAT(mhtml, HasSubstr("896fd88d-a77a-4f46-afd8-24db7d5af9c2"))
-      << "Verifing if content from iframes.htm is present";
-  EXPECT_THAT(mhtml, HasSubstr("1b8aae2b-e164-462f-bd5b-98aa366205f2"))
-      << "Verifing if content from a.htm is present";
-  EXPECT_THAT(mhtml, HasSubstr("3a35f7fa-96a9-4487-9f18-4470263907fa"))
-      << "Verifing if content from b.htm is present";
+  EXPECT_THAT(
+      mhtml,
+      HasSubstr("frames-xsite.htm: 896fd88d-a77a-4f46-afd8-24db7d5af9c2"));
+  EXPECT_THAT(mhtml, HasSubstr("a.htm: 1b8aae2b-e164-462f-bd5b-98aa366205f2"));
+  EXPECT_THAT(mhtml, HasSubstr("b.htm: 3a35f7fa-96a9-4487-9f18-4470263907fa"));
   EXPECT_THAT(mhtml, HasSubstr("font-size: 20px;"))
-      << "Verifing if content from 1.css is present";
+      << "Verifying if content from 1.css is present";
 
   // Verify presence of URLs associated with main frame, subframes and some
   // savable resources.
   // (note that these are single-line regexes).
-  EXPECT_THAT(mhtml, ContainsRegex("Content-Location.*/save_page/iframes.htm"));
+  EXPECT_THAT(mhtml,
+              ContainsRegex("Content-Location.*/save_page/frames-xsite.htm"));
   EXPECT_THAT(mhtml, ContainsRegex("Content-Location.*/save_page/a.htm"));
   EXPECT_THAT(mhtml, ContainsRegex("Content-Location.*/save_page/b.htm"));
   EXPECT_THAT(mhtml, ContainsRegex("Content-Location.*/save_page/1.css"));
   EXPECT_THAT(mhtml, ContainsRegex("Content-Location.*/save_page/1.png"));
 
-  // Verify that 1.png appear in the output only once (despite being referred to
-  // twice - from iframes.htm and from b.htm).
+  // Verify that 1.png appears in the output only once (despite being referred
+  // to twice - from iframes.htm and from b.htm).
   int count = 0;
   size_t pos = 0;
   for (;;) {
@@ -881,6 +896,176 @@ IN_PROC_BROWSER_TEST_F(SavePageSitePerProcessBrowserTest,
     pos++;
   }
   EXPECT_EQ(1, count) << "Verify number of image/png parts in the mhtml output";
+}
+
+// Test suite that verifies that the frame tree "looks" the same before
+// and after a save-page-as.
+class SavePageMultiFrameBrowserTest : public SavePageSitePerProcessBrowserTest {
+ protected:
+  void TestMultiFramePage(content::SavePageType save_page_type,
+                          const GURL& url,
+                          int expected_number_of_frames,
+                          const std::vector<std::string>& expected_substrings) {
+    // Navigate to the test page and verify if test expectations
+    // are met (this is mostly a sanity check - a failure to meet
+    // expectations would probably mean that there is a test bug
+    // (i.e. that we got called with wrong expected_foo argument).
+    ui_test_utils::NavigateToURL(browser(), url);
+    DLOG(INFO) << "Verifying test expectations for original page... : "
+               << GetCurrentTab(browser())->GetLastCommittedURL();
+    // TODO(lukasza/paulmeyer): crbug.com/457440: Can uncomment
+    // the assertion below once find-in-page works for oop frames.
+    // AssertExpectationsAboutCurrentTab(expected_number_of_frames,
+    //                                   expected_substrings);
+
+    // Save the page.
+    base::FilePath full_file_name, dir;
+    SaveCurrentTab(url, save_page_type, "save_result", -1, &dir,
+                   &full_file_name);
+    ASSERT_FALSE(HasFailure());
+
+    // Stop the test server (to make sure the locally saved page
+    // is self-contained / won't try to open original resources).
+    ASSERT_TRUE(embedded_test_server()->ShutdownAndWaitUntilComplete());
+
+    // Open the saved page and verify if test expectations are
+    // met (i.e. if the same expectations are met for "after"
+    // [saved version of the page] as for the "before"
+    // [the original version of the page].
+    ui_test_utils::NavigateToURL(browser(),
+                                 GURL(net::FilePathToFileURL(full_file_name)));
+    DLOG(INFO) << "Verifying test expectations for saved page... : "
+               << GetCurrentTab(browser())->GetLastCommittedURL();
+    AssertExpectationsAboutCurrentTab(expected_number_of_frames,
+                                      expected_substrings);
+  }
+
+ private:
+  void AssertExpectationsAboutCurrentTab(
+      int expected_number_of_frames,
+      const std::vector<std::string>& expected_substrings) {
+    int actual_number_of_frames = 0;
+    GetCurrentTab(browser())->ForEachFrame(base::Bind(
+        &IncrementInteger, base::Unretained(&actual_number_of_frames)));
+    EXPECT_EQ(expected_number_of_frames, actual_number_of_frames);
+
+    for (const auto& expected_substring : expected_substrings) {
+      int actual_number_of_matches = ui_test_utils::FindInPage(
+          GetCurrentTab(browser()), base::UTF8ToUTF16(expected_substring),
+          true,  // |forward|
+          true,  // |case_sensitive|
+          nullptr, nullptr);
+
+      EXPECT_EQ(1, actual_number_of_matches)
+          << "Verifying if \"" << expected_substring << "\" appears "
+          << "exactly once in the web-contents text";
+    }
+
+    int actual_number_of_errors = ui_test_utils::FindInPage(
+        GetCurrentTab(browser()), base::UTF8ToUTF16("err"),
+        true,   // |forward|
+        false,  // |case_sensitive|
+        nullptr, nullptr);
+    EXPECT_EQ(0, actual_number_of_errors);
+  }
+
+  static void IncrementInteger(int* i, content::RenderFrameHost* /* unused */) {
+    (*i)++;
+  }
+};
+
+// TODO(lukasza): Pivot on mhtml-vs-complete-html using test params
+// (once all SavePageMultiFrameBrowserTest are enabled).
+
+IN_PROC_BROWSER_TEST_F(SavePageMultiFrameBrowserTest,
+                       CrossSiteFrames_CompleteHtml) {
+  std::vector<std::string> expected_substrings{
+      "frames-xsite.htm: 896fd88d-a77a-4f46-afd8-24db7d5af9c2",
+      "a.htm: 1b8aae2b-e164-462f-bd5b-98aa366205f2",
+      "b.htm: 3a35f7fa-96a9-4487-9f18-4470263907fa",
+  };
+  GURL url(
+      embedded_test_server()->GetURL("a.com", "/save_page/frames-xsite.htm"));
+  TestMultiFramePage(content::SAVE_PAGE_TYPE_AS_COMPLETE_HTML, url, 3,
+                     expected_substrings);
+}
+
+// Test for crbug.com/538766 and crbug.com/539936.
+// Disabled because both bugs are not yet fixed.
+IN_PROC_BROWSER_TEST_F(SavePageMultiFrameBrowserTest,
+                       DISABLED_CrossSiteFrames_MHTML) {
+  std::vector<std::string> expected_substrings{
+      "frames-xsite.htm: 896fd88d-a77a-4f46-afd8-24db7d5af9c2",
+      "a.htm: 1b8aae2b-e164-462f-bd5b-98aa366205f2",
+      "b.htm: 3a35f7fa-96a9-4487-9f18-4470263907fa",
+  };
+  GURL url(
+      embedded_test_server()->GetURL("a.com", "/save_page/frames-xsite.htm"));
+  TestMultiFramePage(content::SAVE_PAGE_TYPE_AS_MHTML, url, 3,
+                     expected_substrings);
+}
+
+// Test for crbug.com/553478 (complete html part).
+IN_PROC_BROWSER_TEST_F(SavePageMultiFrameBrowserTest,
+                       DISABLED_ObjectElements_CompleteHtml) {
+  // 4 = main frame + iframe + object w/ html doc + object w/ pdf doc
+  // (svg and png objects do not get a separate frame)
+  int expected_number_of_frames = 4;
+
+  std::vector<std::string> expected_substrings{
+      "frames-objects.htm: 8da13db4-a512-4d9b-b1c5-dc1c134234b9",
+      "a.htm: 1b8aae2b-e164-462f-bd5b-98aa366205f2",
+      "b.htm: 3a35f7fa-96a9-4487-9f18-4470263907fa",
+  };
+  GURL url(
+      embedded_test_server()->GetURL("a.com", "/save_page/frames-objects.htm"));
+  TestMultiFramePage(content::SAVE_PAGE_TYPE_AS_COMPLETE_HTML, url,
+                     expected_number_of_frames, expected_substrings);
+}
+
+// Test for crbug.com/553478 (mhtml part).
+// See crbug.com/553478#c3 for some MHTML-specific notes.
+IN_PROC_BROWSER_TEST_F(SavePageMultiFrameBrowserTest,
+                       DISABLED_ObjectElements_MHTML) {
+  // 4 = main frame + iframe + object w/ html doc + object w/ pdf doc
+  // (svg and png objects do not get a separate frame)
+  int expected_number_of_frames = 4;
+
+  std::vector<std::string> expected_substrings{
+      "frames-objects.htm: 8da13db4-a512-4d9b-b1c5-dc1c134234b9",
+      "a.htm: 1b8aae2b-e164-462f-bd5b-98aa366205f2",
+      "b.htm: 3a35f7fa-96a9-4487-9f18-4470263907fa",
+  };
+  GURL url(
+      embedded_test_server()->GetURL("a.com", "/save_page/frames-objects.htm"));
+  TestMultiFramePage(content::SAVE_PAGE_TYPE_AS_MHTML, url,
+                     expected_number_of_frames, expected_substrings);
+}
+
+IN_PROC_BROWSER_TEST_F(SavePageMultiFrameBrowserTest, AboutBlank_CompleteHtml) {
+  std::vector<std::string> expected_substrings{
+      "main: acb0609d-eb10-4c26-83e2-ad8afb7b0ff3",
+      "sub1: b124df3a-d39f-47a1-ae04-5bb5d0bf549e",
+      "sub2: 07014068-604d-45ae-884f-a068cfe7bc0a",
+      "sub3: 06cc8fcc-c692-4a1a-a10f-1645b746e8f4",
+  };
+  GURL url(embedded_test_server()->GetURL("a.com",
+                                          "/save_page/frames-about-blank.htm"));
+  TestMultiFramePage(content::SAVE_PAGE_TYPE_AS_COMPLETE_HTML, url, 4,
+                     expected_substrings);
+}
+
+IN_PROC_BROWSER_TEST_F(SavePageMultiFrameBrowserTest, AboutBlank_MHTML) {
+  std::vector<std::string> expected_substrings{
+      "main: acb0609d-eb10-4c26-83e2-ad8afb7b0ff3",
+      "sub1: b124df3a-d39f-47a1-ae04-5bb5d0bf549e",
+      "sub2: 07014068-604d-45ae-884f-a068cfe7bc0a",
+      "sub3: 06cc8fcc-c692-4a1a-a10f-1645b746e8f4",
+  };
+  GURL url(embedded_test_server()->GetURL("a.com",
+                                          "/save_page/frames-about-blank.htm"));
+  TestMultiFramePage(content::SAVE_PAGE_TYPE_AS_MHTML, url, 4,
+                     expected_substrings);
 }
 
 }  // namespace

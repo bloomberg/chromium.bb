@@ -83,40 +83,6 @@ IN_PROC_BROWSER_TEST_F(MHTMLGenerationTest, GenerateMHTML) {
   EXPECT_GT(file_size, 100);  // Verify the actual file size.
 }
 
-// This test verifies how MHTML serialization handles frames that have
-// the same URI (especially about:blank URI) but different content.
-// It should preserve contents of all the frames.
-IN_PROC_BROWSER_TEST_F(MHTMLGenerationTest, LocalAboutBlankSubframes) {
-  base::FilePath path(temp_dir_.path());
-  path = path.Append(FILE_PATH_LITERAL("test-local-about-blank-subframes.mht"));
-
-  GenerateMHTML(path, embedded_test_server()->GetURL(
-                          "/download/local-about-blank-subframes.html"));
-  ASSERT_FALSE(HasFailure());
-
-  std::string mhtml;
-  ASSERT_TRUE(base::ReadFileToString(path, &mhtml));
-
-  // Make sure the contents of all frames are present.
-  // 1. Check for contents (this is insufficient as it can also hit the contents
-  //    in the iframe.srcdoc attribute).
-  EXPECT_THAT(mhtml, HasSubstr("main: acb0609d-eb10-4c26-83e2-ad8afb7b0ff3"));
-  EXPECT_THAT(mhtml, HasSubstr("sub1: b124df3a-d39f-47a1-ae04-5bb5d0bf549e"));
-  EXPECT_THAT(mhtml, HasSubstr("sub2: 07014068-604d-45ae-884f-a068cfe7bc0a"));
-  EXPECT_THAT(mhtml, HasSubstr("sub3: 06cc8fcc-c692-4a1a-a10f-1645b746e8f4"));
-  // 2. Count the number of text/html mhtml parts.
-  int count = 0;
-  size_t pos = 0;
-  for (;;) {
-    pos = mhtml.find("Content-Type: text/html", pos);
-    if (pos == std::string::npos)
-      break;
-    count++;
-    pos++;
-  }
-  EXPECT_EQ(4, count) << "Verify number of text/html parts in the mhtml output";
-}
-
 IN_PROC_BROWSER_TEST_F(MHTMLGenerationTest, InvalidPath) {
   base::FilePath path(FILE_PATH_LITERAL("/invalid/file/path"));
 
