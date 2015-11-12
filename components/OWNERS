@@ -64,10 +64,12 @@ per-file cronet*=pauljensen@chromium.org
 per-file cronet*=xunjieli@chromium.org
 
 per-file data_reduction_proxy*=bengr@chromium.org
-per-file data_reduction_proxy*=marq@chromium.org
 per-file data_reduction_proxy*=bolian@chromium.org
-per-file data_reduction_proxy*=sclittle@chromium.org
+per-file data_reduction_proxy*=kundaji@chromium.org
+per-file data_reduction_proxy*=marq@chromium.org
 per-file data_reduction_proxy*=megjablon@chromium.org
+per-file data_reduction_proxy*=sclittle@chromium.org
+per-file data_reduction_proxy*=tbansal@chromium.org
 
 per-file data_usage*=bengr@chromium.org
 per-file data_usage*=sclittle@chromium.org
