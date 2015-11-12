@@ -27,15 +27,15 @@ class MultipleClientSessionsSyncTest : public SyncTest {
 
 // Timeout on Windows, see http://crbug.com/99819
 #if defined(OS_WIN)
-#define MAYBE_E2ETest_AllChanged DISABLED_E2ETest_AllChanged
+#define MAYBE_AllChanged DISABLED_AllChanged
 #define MAYBE_EncryptedAndChanged DISABLED_EncryptedAndChanged
 #else
-#define MAYBE_E2ETest_AllChanged E2ETest_AllChanged
+#define MAYBE_AllChanged AllChanged
 #define MAYBE_EncryptedAndChanged EncryptedAndChanged
 #endif
 
 IN_PROC_BROWSER_TEST_F(MultipleClientSessionsSyncTest,
-                       MAYBE_E2ETest_AllChanged) {
+                       E2E_ENABLED(MAYBE_AllChanged)) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   // Open tabs on all clients and retain window information.

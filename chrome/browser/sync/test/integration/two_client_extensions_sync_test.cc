@@ -31,19 +31,19 @@ class TwoClientExtensionsSyncTest : public SyncTest {
 };
 
 IN_PROC_BROWSER_TEST_F(TwoClientExtensionsSyncTest,
-                       StartWithNoExtensions_E2ETest) {
+                       E2E_ENABLED(StartWithNoExtensions)) {
   ASSERT_TRUE(SetupSync());
   ASSERT_TRUE(AwaitAllProfilesHaveSameExtensions());
 }
 
 // Flaky on Mac: http://crbug.com/535996
 #if defined(OS_MACOSX)
-#define MAYBE_StartWithSameExtensions_E2ETest DISABLED_StartWithSameExtensions_E2ETest
+#define MAYBE_StartWithSameExtensions DISABLED_StartWithSameExtensions
 #else
-#define MAYBE_StartWithSameExtensions_E2ETest StartWithSameExtensions_E2ETest
+#define MAYBE_StartWithSameExtensions StartWithSameExtensions
 #endif
 IN_PROC_BROWSER_TEST_F(TwoClientExtensionsSyncTest,
-                       MAYBE_StartWithSameExtensions_E2ETest) {
+                       E2E_ENABLED(MAYBE_StartWithSameExtensions)) {
   ASSERT_TRUE(SetupClients());
 
   const int kNumExtensions = 5;
@@ -127,7 +127,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientExtensionsSyncTest,
 }
 
 // TCM ID - 3637311.
-IN_PROC_BROWSER_TEST_F(TwoClientExtensionsSyncTest, Add_E2ETest) {
+IN_PROC_BROWSER_TEST_F(TwoClientExtensionsSyncTest, E2E_ENABLED(Add)) {
   ASSERT_TRUE(SetupSync());
   ASSERT_TRUE(AllProfilesHaveSameExtensions());
 

@@ -23,6 +23,22 @@
 #include "sync/test/fake_server/fake_server.h"
 #include "sync/test/local_sync_test_server.h"
 
+// The E2E tests are designed to run against real backend servers. To identify
+// those tests we use *E2ETest* test name filter and run disabled tests.
+//
+// The following macros define how a test is run:
+// - E2E_ONLY: Marks a test to run only as an E2E test against backend servers.
+//             These tests DO NOT run on regular Chromium waterfalls.
+// - E2E_ENABLED: Marks a test to run as an E2E test in addition to Chromium
+//                waterfalls.
+//
+// To disable a test from running on Chromium waterfalls, you would still use
+// the default DISABLED_test_name macro. To disable it from running as an E2E
+// test outside Chromium waterfalls you would need to remove the E2E* macro.
+#define MACRO_CONCAT(prefix, test_name) prefix ## _ ## test_name
+#define E2E_ONLY(test_name) MACRO_CONCAT(DISABLED_E2ETest, test_name)
+#define E2E_ENABLED(test_name) MACRO_CONCAT(test_name, E2ETest)
+
 class ProfileSyncService;
 class ProfileSyncServiceHarness;
 class P2PInvalidationForwarder;

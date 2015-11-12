@@ -23,7 +23,7 @@ class MultipleClientPreferencesSyncTest : public SyncTest {
   DISALLOW_COPY_AND_ASSIGN(MultipleClientPreferencesSyncTest);
 };
 
-IN_PROC_BROWSER_TEST_F(MultipleClientPreferencesSyncTest, Sanity_E2ETest) {
+IN_PROC_BROWSER_TEST_F(MultipleClientPreferencesSyncTest, E2E_ENABLED(Sanity)) {
   DisableVerifier();
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(AwaitStringPrefMatches(prefs::kHomePage));
