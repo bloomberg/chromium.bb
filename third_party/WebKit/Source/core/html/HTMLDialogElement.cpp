@@ -41,8 +41,8 @@ namespace blink {
 
 using namespace HTMLNames;
 
-// This function chooses the focused element when showModal() is invoked, as described in the spec for showModal().
-static void setFocusForModalDialog(HTMLDialogElement* dialog)
+// This function chooses the focused element when show() or showModal() is invoked, as described in their spec.
+static void setFocusForDialog(HTMLDialogElement* dialog)
 {
     Element* focusableDescendant = 0;
     Node* next = 0;
@@ -141,6 +141,12 @@ void HTMLDialogElement::show()
     if (fastHasAttribute(openAttr))
         return;
     setBooleanAttribute(openAttr, true);
+
+    // The layout must be updated here because setFocusForDialog calls
+    // Element::isFocusable, which requires an up-to-date layout.
+    document().updateLayoutIgnorePendingStylesheets();
+
+    setFocusForDialog(this);
 }
 
 void HTMLDialogElement::showModal(ExceptionState& exceptionState)
@@ -162,7 +168,7 @@ void HTMLDialogElement::showModal(ExceptionState& exceptionState)
     inertSubtreesChanged(document());
 
     forceLayoutForCentering();
-    setFocusForModalDialog(this);
+    setFocusForDialog(this);
 }
 
 void HTMLDialogElement::removedFrom(ContainerNode* insertionPoint)
