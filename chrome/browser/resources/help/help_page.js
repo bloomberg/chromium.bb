@@ -427,7 +427,7 @@ cr.define('help', function() {
      * @private
      */
     setObsoleteSystem_: function(obsolete) {
-      if (cr.isMac && $('update-obsolete-system-container')) {
+      if ($('update-obsolete-system-container')) {
         $('update-obsolete-system-container').hidden = !obsolete;
       }
     },
@@ -438,8 +438,7 @@ cr.define('help', function() {
      * @private
      */
     setObsoleteSystemEndOfTheLine_: function(endOfTheLine) {
-      if (cr.isMac &&
-          $('update-obsolete-system-container') &&
+      if ($('update-obsolete-system-container') &&
           !$('update-obsolete-system-container').hidden &&
           $('update-status-message')) {
         $('update-status-message').hidden = endOfTheLine;

@@ -233,10 +233,10 @@ chromium_strings.grd. -->
         </message>
       </if>
       <if expr="is_win">
-        <message name="IDS_WIN_XP_VISTA_OBSOLETE_SOON" desc="A message displayed on an at-launch infobar warning the user that the computer they are using is about to become unsupported.">
+        <message name="IDS_WIN_XP_VISTA_OBSOLETE_SOON" desc="A message displayed on an at-launch infobar and about:help warning the user that the computer they are using is about to become unsupported.">
           This computer will soon stop receiving Google Chrome updates because Windows XP and Windows Vista are no longer supported.
         </message>
-        <message name="IDS_WIN_XP_VISTA_OBSOLETE_NOW" desc="A message displayed on an at-launch infobar warning the user that the computer they are using is no longer supported.">
+        <message name="IDS_WIN_XP_VISTA_OBSOLETE_NOW" desc="A message displayed on an at-launch infobar and about:help warning the user that the computer they are using is no longer supported.">
           This computer will no longer receive Google Chrome updates because Windows XP and Windows Vista are no longer supported.
         </message>
       </if>
