@@ -76,8 +76,8 @@ scoped_ptr<ui::MenuModel> CreateMultiUserContextMenu(aura::Window* window) {
     // If this window is not owned, we don't show the menu addition.
     chrome::MultiUserWindowManager* manager =
         chrome::MultiUserWindowManager::GetInstance();
-    const std::string user_id = manager->GetWindowOwner(window);
-    if (user_id.empty() || !window)
+    const AccountId& account_id = manager->GetWindowOwner(window);
+    if (!account_id.is_valid() || !window)
       return model.Pass();
     chromeos::MultiUserContextMenuChromeos* menu =
         new chromeos::MultiUserContextMenuChromeos(window);
@@ -105,8 +105,8 @@ void OnAcceptTeleportWarning(const AccountId& account_id,
   ash::MultiProfileUMA::RecordTeleportAction(
       ash::MultiProfileUMA::TELEPORT_WINDOW_CAPTION_MENU);
 
-  chrome::MultiUserWindowManager::GetInstance()->ShowWindowForUser(
-      window_, account_id.GetUserEmail());
+  chrome::MultiUserWindowManager::GetInstance()->ShowWindowForUser(window_,
+                                                                   account_id);
 }
 
 void ExecuteVisitDesktopCommand(int command_id, aura::Window* window) {
@@ -131,9 +131,9 @@ void ExecuteVisitDesktopCommand(int command_id, aura::Window* window) {
       for (user_manager::UserList::const_iterator it = logged_in_users.begin();
            it != logged_in_users.end();
            ++it) {
-        if (multi_user_util::GetProfileFromUserID(
-            multi_user_util::GetUserIDFromEmail((*it)->email()))->GetPrefs()->
-            GetBoolean(prefs::kMultiProfileWarningShowDismissed)) {
+        if (multi_user_util::GetProfileFromAccountId((*it)->GetAccountId())
+                ->GetPrefs()
+                ->GetBoolean(prefs::kMultiProfileWarningShowDismissed)) {
           bool active_user_show_option =
               ProfileManager::GetActiveUserProfile()->
               GetPrefs()->GetBoolean(prefs::kMultiProfileWarningShowDismissed);

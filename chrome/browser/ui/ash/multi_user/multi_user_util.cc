@@ -10,6 +10,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "components/signin/core/account_id/account_id.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 
 #if defined(OS_CHROMEOS)
@@ -19,18 +20,19 @@
 
 namespace multi_user_util {
 
-std::string GetUserIDFromProfile(Profile* profile) {
-  return GetUserIDFromEmail(
+AccountId GetAccountIdFromProfile(Profile* profile) {
+  return GetAccountIdFromEmail(
       profile->GetOriginalProfile()->GetProfileUserName());
 }
 
-std::string GetUserIDFromEmail(const std::string& email) {
+AccountId GetAccountIdFromEmail(const std::string& email) {
   // |email| and profile name could be empty if not yet logged in or guest mode.
-  return email.empty() ?
-      email : gaia::CanonicalizeEmail(gaia::SanitizeEmail(email));
+  return email.empty() ? EmptyAccountId()
+                       : AccountId::FromUserEmail(gaia::CanonicalizeEmail(
+                             gaia::SanitizeEmail(email)));
 }
 
-Profile* GetProfileFromUserID(const std::string& user_id) {
+Profile* GetProfileFromAccountId(const AccountId& account_id) {
   // Unit tests can end up here without a |g_browser_process|.
   if (!g_browser_process || !g_browser_process->profile_manager())
     return NULL;
@@ -40,7 +42,7 @@ Profile* GetProfileFromUserID(const std::string& user_id) {
 
   std::vector<Profile*>::const_iterator profile_iterator = profiles.begin();
   for (; profile_iterator != profiles.end(); ++profile_iterator) {
-    if (GetUserIDFromProfile(*profile_iterator) == user_id)
+    if (GetAccountIdFromProfile(*profile_iterator) == account_id)
       return *profile_iterator;
   }
   return NULL;
@@ -52,19 +54,18 @@ Profile* GetProfileFromWindow(aura::Window* window) {
       chrome::MultiUserWindowManager::GetInstance();
   // We might come here before the manager got created - or in a unit test.
   if (!manager)
-    return NULL;
-  const std::string user_id = manager->GetUserPresentingWindow(window);
-  return user_id.empty() ? NULL :
-                           multi_user_util::GetProfileFromUserID(user_id);
+    return nullptr;
+  const AccountId account_id = manager->GetUserPresentingWindow(window);
+  return account_id.is_valid() ? GetProfileFromAccountId(account_id) : nullptr;
 #else
-  return NULL;
+  return nullptr;
 #endif
 }
 
 bool IsProfileFromActiveUser(Profile* profile) {
 #if defined(OS_CHROMEOS)
-  return GetUserIDFromProfile(profile) ==
-         user_manager::UserManager::Get()->GetActiveUser()->email();
+  return GetAccountIdFromProfile(profile) ==
+         user_manager::UserManager::Get()->GetActiveUser()->GetAccountId();
 #else
   // In non Chrome OS configurations this will be always true since this only
   // makes sense in separate desktop mode.
@@ -72,21 +73,24 @@ bool IsProfileFromActiveUser(Profile* profile) {
 #endif
 }
 
-const std::string& GetCurrentUserId() {
+const AccountId GetCurrentAccountId() {
 #if defined(OS_CHROMEOS)
-  return user_manager::UserManager::Get()->GetActiveUser()->email();
-#else
-  return base::EmptyString();
+  const user_manager::User* user =
+      user_manager::UserManager::Get()->GetActiveUser();
+  // In unit tests user login phase is usually skipped.
+  if (user)
+    return user->GetAccountId();
 #endif
+  return EmptyAccountId();
 }
 
 // Move the window to the current user's desktop.
 void MoveWindowToCurrentDesktop(aura::Window* window) {
 #if defined(OS_CHROMEOS)
   if (!chrome::MultiUserWindowManager::GetInstance()->IsWindowOnDesktopOfUser(
-          window, GetCurrentUserId())) {
+          window, GetCurrentAccountId())) {
     chrome::MultiUserWindowManager::GetInstance()->ShowWindowForUser(
-      window, GetCurrentUserId());
+        window, GetCurrentAccountId());
   }
 #endif
 }

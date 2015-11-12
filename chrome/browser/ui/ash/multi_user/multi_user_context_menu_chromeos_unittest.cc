@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_chromeos.h"
 #include "chrome/common/chrome_switches.h"
+#include "components/signin/core/account_id/account_id.h"
 #include "ui/base/models/menu_model.h"
 #include "ui/base/ui_base_types.h"
 
@@ -59,7 +60,8 @@ void MultiUserContextMenuChromeOSTest::SetUp() {
   window_ = CreateTestWindowInShellWithId(0);
   window_->Show();
 
-  multi_user_window_manager_ = new chrome::MultiUserWindowManagerChromeOS("A");
+  multi_user_window_manager_ =
+      new chrome::MultiUserWindowManagerChromeOS(AccountId::FromUserEmail("A"));
   multi_user_window_manager_->Init();
   chrome::MultiUserWindowManager::SetInstanceForTest(multi_user_window_manager_,
         chrome::MultiUserWindowManager::MULTI_PROFILE_MODE_SEPARATED);
@@ -86,7 +88,8 @@ TEST_F(MultiUserContextMenuChromeOSTest, UnownedWindow) {
 TEST_F(MultiUserContextMenuChromeOSTest, OwnedWindow) {
   // Make the window owned and check that there is no menu (since only a single
   // user exists).
-  multi_user_window_manager()->SetWindowOwner(window(), "A");
+  multi_user_window_manager()->SetWindowOwner(window(),
+                                              AccountId::FromUserEmail("A"));
   EXPECT_EQ(NULL, CreateMultiUserContextMenu(window()).get());
 
   // After adding another user a menu should get created.

@@ -13,6 +13,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "ui/gfx/image/image_skia.h"
 
+class AccountId;
+
 namespace ash {
 namespace test {
 
@@ -27,7 +29,7 @@ class TestSessionStateDelegate : public SessionStateDelegate {
   void set_session_state(SessionState session_state) {
     session_state_ = session_state;
   }
-  void AddUser(const std::string& user_id);
+  void AddUser(const AccountId& account_id);
   const user_manager::UserInfo* GetActiveUserInfo() const;
 
   // SessionStateDelegate:
@@ -45,7 +47,7 @@ class TestSessionStateDelegate : public SessionStateDelegate {
       ash::UserIndex index) const override;
   bool ShouldShowAvatar(aura::Window* window) const override;
   gfx::ImageSkia GetAvatarImageForWindow(aura::Window* window) const override;
-  void SwitchActiveUser(const std::string& user_id) override;
+  void SwitchActiveUser(const AccountId& account_id) override;
   void CycleActiveUser(CycleUser cycle_user) override;
   bool IsMultiProfileAllowedByPrimaryUserPolicy() const override;
   void AddSessionStateObserver(ash::SessionStateObserver* observer) override;

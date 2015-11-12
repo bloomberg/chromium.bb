@@ -71,7 +71,7 @@ gfx::ImageSkia SessionStateDelegate::GetAvatarImageForWindow(
   return gfx::ImageSkia();
 }
 
-void SessionStateDelegate::SwitchActiveUser(const std::string& user_id) {
+void SessionStateDelegate::SwitchActiveUser(const AccountId& account_id) {
   NOTIMPLEMENTED();
 }
 

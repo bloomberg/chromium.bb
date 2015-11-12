@@ -9,6 +9,7 @@
 #include "chrome/browser/extensions/app_icon_loader_impl.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/signin/core/account_id/account_id.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/notification.h"
@@ -118,7 +119,8 @@ NotificationManager::CreateNotification() {
   message_center::NotifierId notifier_id(
       message_center::NotifierId::SYSTEM_COMPONENT,
       file_system_info_.mount_path().value());
-  notifier_id.profile_id = multi_user_util::GetUserIDFromProfile(profile_);
+  notifier_id.profile_id =
+      multi_user_util::GetAccountIdFromProfile(profile_).GetUserEmail();
 
   scoped_ptr<message_center::Notification> notification(
       new message_center::Notification(

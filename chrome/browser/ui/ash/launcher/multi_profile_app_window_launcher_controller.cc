@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
 #include "chrome/browser/ui/host_desktop.h"
+#include "components/signin/core/account_id/account_id.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/native_app_window.h"
 #include "ui/aura/window.h"
@@ -86,7 +87,7 @@ void MultiProfileAppWindowLauncherController::OnAppWindowAdded(
   if (!multi_user_util::IsProfileFromActiveUser(profile) &&
       UserHasAppOnActiveDesktop(app_window)) {
     chrome::MultiUserWindowManager::GetInstance()->ShowWindowForUser(
-        app_window->GetNativeWindow(), multi_user_util::GetCurrentUserId());
+        app_window->GetNativeWindow(), multi_user_util::GetCurrentAccountId());
   }
 }
 
@@ -147,7 +148,7 @@ bool MultiProfileAppWindowLauncherController::UserHasAppOnActiveDesktop(
   const std::string& app_id = app_window->extension_id();
   content::BrowserContext* app_context = app_window->browser_context();
   DCHECK(!app_context->IsOffTheRecord());
-  const std::string& current_user = multi_user_util::GetCurrentUserId();
+  const AccountId current_account_id = multi_user_util::GetCurrentAccountId();
   chrome::MultiUserWindowManager* manager =
       chrome::MultiUserWindowManager::GetInstance();
   for (AppWindowList::iterator it = app_window_list_.begin();
@@ -156,7 +157,7 @@ bool MultiProfileAppWindowLauncherController::UserHasAppOnActiveDesktop(
     extensions::AppWindow* other_window = *it;
     DCHECK(!other_window->browser_context()->IsOffTheRecord());
     if (manager->IsWindowOnDesktopOfUser(other_window->GetNativeWindow(),
-                                         current_user) &&
+                                         current_account_id) &&
         app_id == other_window->extension_id() &&
         app_context == other_window->browser_context()) {
       return true;

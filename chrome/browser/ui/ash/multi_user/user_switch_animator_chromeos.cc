@@ -102,14 +102,14 @@ void PutMruWindowLast(std::vector<aura::Window*>* window_list) {
 
 UserSwitchAnimatorChromeOS::UserSwitchAnimatorChromeOS(
     MultiUserWindowManagerChromeOS* owner,
-    const std::string& new_user_id,
+    const AccountId& new_account_id,
     int animation_speed_ms)
     : owner_(owner),
-      new_user_id_(new_user_id),
+      new_account_id_(new_account_id),
       animation_speed_ms_(animation_speed_ms),
       animation_step_(ANIMATION_STEP_HIDE_OLD_USER),
       screen_cover_(GetScreenCover(NULL)),
-      windows_by_user_id_() {
+      windows_by_account_id_() {
   BuildUserToWindowsListMap();
   AdvanceUserTransitionAnimation();
 
@@ -193,20 +193,22 @@ void UserSwitchAnimatorChromeOS::TransitionWallpaper(
     wallpaper_delegate->SetAnimationDurationOverride(
         std::max(duration, kMinimalAnimationTimeMS));
     if (screen_cover_ != NEW_USER_COVERS_SCREEN) {
-      chromeos::WallpaperManager::Get()->SetUserWallpaperNow(new_user_id_);
-      wallpaper_user_id_ =
+      chromeos::WallpaperManager::Get()->SetUserWallpaperNow(
+          new_account_id_.GetUserEmail());
+      wallpaper_user_id_for_test_ =
           (NO_USER_COVERS_SCREEN == screen_cover_ ? "->" : "") +
-          new_user_id_;
+          new_account_id_.GetUserEmail();
     }
   } else if (animation_step == ANIMATION_STEP_FINALIZE) {
     // Revert the wallpaper cross dissolve animation duration back to the
     // default.
     if (screen_cover_ == NEW_USER_COVERS_SCREEN)
-      chromeos::WallpaperManager::Get()->SetUserWallpaperNow(new_user_id_);
+      chromeos::WallpaperManager::Get()->SetUserWallpaperNow(
+          new_account_id_.GetUserEmail());
 
     // Coming here the wallpaper user id is the final result. No matter how we
     // got here.
-    wallpaper_user_id_ = new_user_id_;
+    wallpaper_user_id_for_test_ = new_account_id_.GetUserEmail();
     wallpaper_delegate->SetAnimationDurationOverride(0);
   }
 }
@@ -221,7 +223,8 @@ void UserSwitchAnimatorChromeOS::TransitionUserShelf(
   if (animation_step == ANIMATION_STEP_SHOW_NEW_USER) {
     // Some unit tests have no ChromeLauncherController.
     if (chrome_launcher_controller)
-      chrome_launcher_controller->ActiveUserChanged(new_user_id_);
+      chrome_launcher_controller->ActiveUserChanged(
+          new_account_id_.GetUserEmail());
     // Hide the black rectangle on top of each shelf again.
     aura::Window::Windows root_windows = ash::Shell::GetAllRootWindows();
     for (aura::Window::Windows::const_iterator iter = root_windows.begin();
@@ -265,7 +268,7 @@ void UserSwitchAnimatorChromeOS::TransitionUserShelf(
     if (GetScreenCover(*iter) != NO_USER_COVERS_SCREEN &&
         (!chrome_launcher_controller ||
          !chrome_launcher_controller->ShelfBoundsChangesProbablyWithUser(
-             *iter, new_user_id_))) {
+             *iter, new_account_id_.GetUserEmail()))) {
       ash::ShelfWidget* shelf =
           ash::RootWindowController::ForWindow(*iter)->shelf();
       shelf->HideShelfBehindBlackBar(true, duration_override);
@@ -290,9 +293,9 @@ void UserSwitchAnimatorChromeOS::TransitionWindows(
   switch (animation_step) {
     case ANIMATION_STEP_HIDE_OLD_USER: {
       // Hide the old users.
-      for (auto& user_pair : windows_by_user_id_) {
-        auto& show_for_user_id = user_pair.first;
-        if (show_for_user_id == new_user_id_)
+      for (auto& user_pair : windows_by_account_id_) {
+        auto& show_for_account_id = user_pair.first;
+        if (show_for_account_id == new_account_id_)
           continue;
 
         bool found_foreground_maximized_window = false;
@@ -307,12 +310,13 @@ void UserSwitchAnimatorChromeOS::TransitionWindows(
           auto window_state = ash::wm::GetWindowState(window);
 
           // Minimized visiting windows (minimized windows with an owner
-          // different than that of the for_show_user_id) should retrun to their
+          // different than that of the for_show_account_id) should retrun to
+          // their
           // original owners' desktops.
           MultiUserWindowManagerChromeOS::WindowToEntryMap::const_iterator itr =
               owner_->window_to_entry().find(window);
           DCHECK(itr != owner_->window_to_entry().end());
-          if (show_for_user_id != itr->second->owner() &&
+          if (show_for_account_id != itr->second->owner() &&
               window_state->IsMinimized()) {
             owner_->ShowWindowForUserIntern(window, itr->second->owner());
             window_state->Unminimize();
@@ -342,8 +346,8 @@ void UserSwitchAnimatorChromeOS::TransitionWindows(
       }
 
       // Show new user.
-      auto new_user_itr = windows_by_user_id_.find(new_user_id_);
-      if (new_user_itr == windows_by_user_id_.end())
+      auto new_user_itr = windows_by_account_id_.find(new_account_id_);
+      if (new_user_itr == windows_by_account_id_.end())
         return;
 
       for (auto& window : new_user_itr->second) {
@@ -369,7 +373,7 @@ void UserSwitchAnimatorChromeOS::TransitionWindows(
       if (!mru_list.empty()) {
         aura::Window* window = mru_list[0];
         ash::wm::WindowState* window_state = ash::wm::GetWindowState(window);
-        if (owner_->IsWindowOnDesktopOfUser(window, new_user_id_) &&
+        if (owner_->IsWindowOnDesktopOfUser(window, new_account_id_) &&
             !window_state->IsMinimized()) {
           // Several unit tests come here without an activation client.
           aura::client::ActivationClient* client =
@@ -388,7 +392,7 @@ void UserSwitchAnimatorChromeOS::TransitionWindows(
           client->ActivateWindow(nullptr);
       }
 
-      owner_->notification_blocker()->ActiveUserChanged(new_user_id_);
+      owner_->notification_blocker()->ActiveUserChanged(new_account_id_);
       break;
     }
     case ANIMATION_STEP_ENDED:
@@ -412,7 +416,7 @@ UserSwitchAnimatorChromeOS::GetScreenCover(aura::Window* root_window) {
         return BOTH_USERS_COVER_SCREEN;
       else
         cover = OLD_USER_COVERS_SCREEN;
-    } else if (owner_->IsWindowOnDesktopOfUser(window, new_user_id_) &&
+    } else if (owner_->IsWindowOnDesktopOfUser(window, new_account_id_) &&
                CoversScreen(window)) {
       if (cover == OLD_USER_COVERS_SCREEN)
         return BOTH_USERS_COVER_SCREEN;
@@ -425,11 +429,11 @@ UserSwitchAnimatorChromeOS::GetScreenCover(aura::Window* root_window) {
 
 void UserSwitchAnimatorChromeOS::BuildUserToWindowsListMap() {
   // This is to be called only at the time this animation is constructed.
-  DCHECK(windows_by_user_id_.empty());
+  DCHECK(windows_by_account_id_.empty());
 
   // For each unique parent window, we enumerate its children windows, and
   // for each child if it's in the |window_to_entry()| map, we add it to the
-  // |windows_by_user_id_| map.
+  // |windows_by_account_id_| map.
   // This gives us a list of windows per each user that is in the same order
   // they were created in their parent windows.
   std::set<aura::Window*> parent_windows;
@@ -441,7 +445,7 @@ void UserSwitchAnimatorChromeOS::BuildUserToWindowsListMap() {
       for (auto& child_window : parent_window->children()) {
         auto itr = window_to_entry_map.find(child_window);
         if (itr != window_to_entry_map.end()) {
-          windows_by_user_id_[itr->second->show_for_user()].push_back(
+          windows_by_account_id_[itr->second->show_for_user()].push_back(
               child_window);
         }
       }

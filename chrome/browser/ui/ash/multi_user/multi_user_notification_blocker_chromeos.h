@@ -9,6 +9,7 @@
 #include <set>
 #include <string>
 
+#include "components/signin/core/account_id/account_id.h"
 #include "ui/message_center/notification_blocker.h"
 
 // A notification blocker for per-profile stream switching. Owned and controlled
@@ -18,11 +19,11 @@ class MultiUserNotificationBlockerChromeOS
  public:
   MultiUserNotificationBlockerChromeOS(
       message_center::MessageCenter* message_center,
-      const std::string& initial_user_id);
+      const AccountId& initial_account_id);
   ~MultiUserNotificationBlockerChromeOS() override;
 
   // Called by MultiUserWindowManager when the active user has changed.
-  void ActiveUserChanged(const std::string& user_id);
+  void ActiveUserChanged(const AccountId& account_id);
 
   // message_center::NotificationBlocker overrides:
   bool ShouldShowNotification(
@@ -34,8 +35,8 @@ class MultiUserNotificationBlockerChromeOS
   // Returns true if this blocker is actively working.
   bool IsActive() const;
 
-  std::string active_user_id_;
-  std::map<std::string, bool> quiet_modes_;
+  AccountId active_account_id_;
+  std::map<AccountId, bool> quiet_modes_;
 
   DISALLOW_COPY_AND_ASSIGN(MultiUserNotificationBlockerChromeOS);
 };

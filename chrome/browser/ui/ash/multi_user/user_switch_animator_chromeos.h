@@ -10,6 +10,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/timer/timer.h"
+#include "components/signin/core/account_id/account_id.h"
 #include "ui/aura/window.h"
 
 namespace chrome {
@@ -32,7 +33,7 @@ class UserSwitchAnimatorChromeOS {
   };
 
   UserSwitchAnimatorChromeOS(MultiUserWindowManagerChromeOS* owner,
-                             const std::string& new_user_id,
+                             const AccountId& new_account_id,
                              int animation_speed_ms);
   ~UserSwitchAnimatorChromeOS();
 
@@ -45,7 +46,9 @@ class UserSwitchAnimatorChromeOS {
 
   // Returns the user id for which the wallpaper is currently shown.
   // If a wallpaper is transitioning to B it will be returned as "->B".
-  const std::string& wallpaper_user_id_for_test() { return wallpaper_user_id_; }
+  const std::string& wallpaper_user_id_for_test() {
+    return wallpaper_user_id_for_test_;
+  }
 
   // Advances the user switch animation to the next step. It reads the current
   // step from |animation_step_| and increments it thereafter. When
@@ -95,7 +98,7 @@ class UserSwitchAnimatorChromeOS {
   MultiUserWindowManagerChromeOS* owner_;
 
   // The new user to set.
-  std::string new_user_id_;
+  AccountId new_account_id_;
 
   // The animation speed in ms. If 0, animations are disabled.
   int animation_speed_ms_;
@@ -107,15 +110,15 @@ class UserSwitchAnimatorChromeOS {
   TransitioningScreenCover screen_cover_;
 
   // Mapping users IDs to the list of windows to show for these users.
-  typedef std::map<std::string, aura::Window::Windows> UserToWindowsMap;
-  UserToWindowsMap windows_by_user_id_;
+  typedef std::map<AccountId, aura::Window::Windows> UserToWindowsMap;
+  UserToWindowsMap windows_by_account_id_;
 
   // A timer which watches to executes the second part of a "user changed"
   // animation. Note that this timer exists only during such an animation.
   scoped_ptr<base::Timer> user_changed_animation_timer_;
 
   // For unit tests: Check which wallpaper was set.
-  std::string wallpaper_user_id_;
+  std::string wallpaper_user_id_for_test_;
 
   DISALLOW_COPY_AND_ASSIGN(UserSwitchAnimatorChromeOS);
 };

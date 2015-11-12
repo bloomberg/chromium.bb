@@ -228,8 +228,8 @@ class AppObserver : public extensions::AppWindowRegistry::Observer {
   void OnAppWindowAdded(extensions::AppWindow* app_window) override {
     aura::Window* window = app_window->GetNativeWindow();
     DCHECK(window);
-    MultiUserWindowManagerChromeOS::GetInstance()->SetWindowOwner(window,
-                                                                  user_id_);
+    MultiUserWindowManagerChromeOS::GetInstance()->SetWindowOwner(
+        window, AccountId::FromUserEmail(user_id_));
   }
 
  private:
@@ -245,13 +245,13 @@ class AppObserver : public extensions::AppWindowRegistry::Observer {
 };
 
 MultiUserWindowManagerChromeOS::MultiUserWindowManagerChromeOS(
-    const std::string& current_user_id)
-    : current_user_id_(current_user_id),
+    const AccountId& current_account_id)
+    : current_account_id_(current_account_id),
       notification_blocker_(new MultiUserNotificationBlockerChromeOS(
-          message_center::MessageCenter::Get(), current_user_id)),
+          message_center::MessageCenter::Get(),
+          current_account_id)),
       suppress_visibility_changes_(false),
-      animation_speed_(ANIMATION_SPEED_NORMAL) {
-}
+      animation_speed_(ANIMATION_SPEED_NORMAL) {}
 
 MultiUserWindowManagerChromeOS::~MultiUserWindowManagerChromeOS() {
   // When the MultiUserWindowManager gets destroyed, ash::Shell is mostly gone.
@@ -268,14 +268,15 @@ MultiUserWindowManagerChromeOS::~MultiUserWindowManagerChromeOS() {
   }
 
   // Remove all app observers.
-  UserIDToAppWindowObserver::iterator app_observer_iterator =
-      user_id_to_app_observer_.begin();
-  while (app_observer_iterator != user_id_to_app_observer_.end()) {
-    Profile* profile = multi_user_util::GetProfileFromUserID(
-        app_observer_iterator->first);
-    CHECK(profile) << "profile not found for:" << app_observer_iterator->first;
+  AccountIdToAppWindowObserver::iterator app_observer_iterator =
+      account_id_to_app_observer_.begin();
+  while (app_observer_iterator != account_id_to_app_observer_.end()) {
+    Profile* profile =
+        multi_user_util::GetProfileFromAccountId(app_observer_iterator->first);
+    CHECK(profile) << "profile not found for:"
+                   << app_observer_iterator->first.GetUserEmail();
     RemoveUser(app_observer_iterator->first, profile);
-    app_observer_iterator = user_id_to_app_observer_.begin();
+    app_observer_iterator = account_id_to_app_observer_.begin();
   }
 
   if (ash::Shell::HasInstance())
@@ -286,8 +287,8 @@ MultiUserWindowManagerChromeOS::~MultiUserWindowManagerChromeOS() {
 void MultiUserWindowManagerChromeOS::Init() {
   // Since we are setting the SessionStateObserver and adding the user, this
   // function should get called only once.
-  DCHECK(user_id_to_app_observer_.find(current_user_id_) ==
-             user_id_to_app_observer_.end());
+  DCHECK(account_id_to_app_observer_.find(current_account_id_) ==
+         account_id_to_app_observer_.end());
 
   // Add a session state observer to be able to monitor session changes.
   if (ash::Shell::HasInstance()) {
@@ -301,21 +302,22 @@ void MultiUserWindowManagerChromeOS::Init() {
                  content::NotificationService::AllSources());
 
   // Add an app window observer & all already running apps.
-  Profile* profile = multi_user_util::GetProfileFromUserID(current_user_id_);
+  Profile* profile =
+      multi_user_util::GetProfileFromAccountId(current_account_id_);
   if (profile)
     AddUser(profile);
 }
 
 void MultiUserWindowManagerChromeOS::SetWindowOwner(
     aura::Window* window,
-    const std::string& user_id) {
+    const AccountId& account_id) {
   // Make sure the window is valid and there was no owner yet.
   DCHECK(window);
-  DCHECK(!user_id.empty());
-  if (GetWindowOwner(window) == user_id)
+  DCHECK(account_id.is_valid());
+  if (GetWindowOwner(window) == account_id)
     return;
   DCHECK(GetWindowOwner(window).empty());
-  window_to_entry_[window] = new WindowEntry(user_id);
+  window_to_entry_[window] = new WindowEntry(account_id);
 
   // Remember the initial visibility of the window.
   window_to_entry_[window]->set_show(window->IsVisible());
@@ -327,7 +329,7 @@ void MultiUserWindowManagerChromeOS::SetWindowOwner(
   // Check if this window was created due to a user interaction. If it was,
   // transfer it to the current user.
   if (IsProcessingUserEvent())
-    window_to_entry_[window]->set_show_for_user(current_user_id_);
+    window_to_entry_[window]->set_show_for_user(current_account_id_);
 
   // Add all transient children to our set of windows. Note that the function
   // will add the children but not the owner to the transient children map.
@@ -336,31 +338,31 @@ void MultiUserWindowManagerChromeOS::SetWindowOwner(
   // Notify entry adding.
   FOR_EACH_OBSERVER(Observer, observers_, OnOwnerEntryAdded(window));
 
-  if (!IsWindowOnDesktopOfUser(window, current_user_id_))
+  if (!IsWindowOnDesktopOfUser(window, current_account_id_))
     SetWindowVisibility(window, false, 0);
 }
 
-const std::string& MultiUserWindowManagerChromeOS::GetWindowOwner(
+const AccountId& MultiUserWindowManagerChromeOS::GetWindowOwner(
     aura::Window* window) const {
   WindowToEntryMap::const_iterator it = window_to_entry_.find(window);
-  return it != window_to_entry_.end() ? it->second->owner()
-                                      : base::EmptyString();
+  return it != window_to_entry_.end() ? it->second->owner() : EmptyAccountId();
 }
 
 void MultiUserWindowManagerChromeOS::ShowWindowForUser(
     aura::Window* window,
-    const std::string& user_id) {
-  std::string previous_owner(GetUserPresentingWindow(window));
-  if (!ShowWindowForUserIntern(window, user_id))
+    const AccountId& account_id) {
+  const AccountId previous_owner(GetUserPresentingWindow(window));
+  if (!ShowWindowForUserIntern(window, account_id))
     return;
   // The window switched to a new desktop and we have to switch to that desktop,
   // but only when it was on the visible desktop and the the target is not the
   // visible desktop.
-  if (user_id == current_user_id_ || previous_owner != current_user_id_)
+  if (account_id == current_account_id_ ||
+      previous_owner != current_account_id_)
     return;
 
   ash::Shell::GetInstance()->session_state_delegate()->SwitchActiveUser(
-      user_id);
+      account_id);
 }
 
 bool MultiUserWindowManagerChromeOS::AreWindowsSharedAmongUsers() const {
@@ -373,50 +375,52 @@ bool MultiUserWindowManagerChromeOS::AreWindowsSharedAmongUsers() const {
 }
 
 void MultiUserWindowManagerChromeOS::GetOwnersOfVisibleWindows(
-    std::set<std::string>* user_ids) const {
+    std::set<AccountId>* account_ids) const {
   for (WindowToEntryMap::const_iterator it = window_to_entry_.begin();
        it != window_to_entry_.end();
        ++it) {
     if (it->first->IsVisible())
-      user_ids->insert(it->second->owner());
+      account_ids->insert(it->second->owner());
   }
 }
 
 bool MultiUserWindowManagerChromeOS::IsWindowOnDesktopOfUser(
     aura::Window* window,
-    const std::string& user_id) const {
-  const std::string& presenting_user = GetUserPresentingWindow(window);
-  return presenting_user.empty() || presenting_user == user_id;
+    const AccountId& account_id) const {
+  const AccountId& presenting_user = GetUserPresentingWindow(window);
+  return (!presenting_user.is_valid()) || presenting_user == account_id;
 }
 
-const std::string& MultiUserWindowManagerChromeOS::GetUserPresentingWindow(
+const AccountId& MultiUserWindowManagerChromeOS::GetUserPresentingWindow(
     aura::Window* window) const {
   WindowToEntryMap::const_iterator it = window_to_entry_.find(window);
   // If the window is not owned by anyone it is shown on all desktops and we
   // return the empty string.
   if (it == window_to_entry_.end())
-    return base::EmptyString();
+    return EmptyAccountId();
   // Otherwise we ask the object for its desktop.
   return it->second->show_for_user();
 }
 
 void MultiUserWindowManagerChromeOS::AddUser(content::BrowserContext* context) {
   Profile* profile = Profile::FromBrowserContext(context);
-  const std::string& user_id = multi_user_util::GetUserIDFromProfile(profile);
-  if (user_id_to_app_observer_.find(user_id) != user_id_to_app_observer_.end())
+  const AccountId& account_id(
+      multi_user_util::GetAccountIdFromProfile(profile));
+  if (account_id_to_app_observer_.find(account_id) !=
+      account_id_to_app_observer_.end())
     return;
 
   scoped_ptr<KeyedServiceShutdownNotifier::Subscription> notification =
       MultiUserWindowManagerCrOSShutdownNotifierFactory::GetInstance()
           ->Get(profile)
           ->Subscribe(base::Bind(&MultiUserWindowManagerChromeOS::RemoveUser,
-                                 base::Unretained(this), user_id,
+                                 base::Unretained(this), account_id,
                                  base::Unretained(profile)));
 
-  user_id_to_app_observer_[user_id] =
-      new AppObserver(user_id, notification.release());
+  account_id_to_app_observer_[account_id] =
+      new AppObserver(account_id.GetUserEmail(), notification.release());
   extensions::AppWindowRegistry::Get(profile)
-      ->AddObserver(user_id_to_app_observer_[user_id]);
+      ->AddObserver(account_id_to_app_observer_[account_id]);
 
   // Account all existing application windows of this user accordingly.
   const extensions::AppWindowRegistry::AppWindowList& app_windows =
@@ -424,7 +428,7 @@ void MultiUserWindowManagerChromeOS::AddUser(content::BrowserContext* context) {
   extensions::AppWindowRegistry::AppWindowList::const_iterator it =
       app_windows.begin();
   for (; it != app_windows.end(); ++it)
-    user_id_to_app_observer_[user_id]->OnAppWindowAdded(*it);
+    account_id_to_app_observer_[account_id]->OnAppWindowAdded(*it);
 
   // Account all existing browser windows of this user accordingly.
   BrowserList* browser_list = BrowserList::GetInstance(HOST_DESKTOP_TYPE_ASH);
@@ -434,7 +438,7 @@ void MultiUserWindowManagerChromeOS::AddUser(content::BrowserContext* context) {
       AddBrowserWindow(*browser_it);
   }
   // When adding another user to the session, we auto switch users.
-  if (user_id_to_app_observer_.size() == 1)
+  if (account_id_to_app_observer_.size() == 1)
     return;
 
   // Don't do anything special in case of user session restore after crash.
@@ -445,7 +449,7 @@ void MultiUserWindowManagerChromeOS::AddUser(content::BrowserContext* context) {
     // Immediately hide the windows of the current user.
     base::AutoReset<AnimationSpeed> animation_speed(&animation_speed_,
                                                     ANIMATION_SPEED_DISABLED);
-    ActiveUserChanged(user_id);
+    ActiveUserChanged(account_id);
   }
 }
 
@@ -458,18 +462,17 @@ void MultiUserWindowManagerChromeOS::RemoveObserver(Observer* observer) {
 }
 
 void MultiUserWindowManagerChromeOS::ActiveUserChanged(
-    const std::string& user_id) {
+    const AccountId& account_id) {
   // This needs to be set before the animation starts.
-  current_user_id_ = user_id;
+  current_account_id_ = account_id;
 
   // Here to avoid a very nasty race condition, we must destruct any previously
   // created animation before creating a new one. Otherwise, the newly
   // constructed will hide all windows of the old user in the first step of the
   // animation only to be reshown again by the destructor of the old animation.
   animation_.reset();
-  animation_.reset(
-      new UserSwitchAnimatorChromeOS(
-          this, user_id, GetAdjustedAnimationTimeInMS(kUserFadeTimeMS)));
+  animation_.reset(new UserSwitchAnimatorChromeOS(
+      this, account_id, GetAdjustedAnimationTimeInMS(kUserFadeTimeMS)));
   // Call notifier here instead of observing ActiveUserChanged because
   // this must happen after MultiUserWindowManagerChromeOS is notified.
   ash::Shell::GetInstance()
@@ -523,13 +526,13 @@ void MultiUserWindowManagerChromeOS::OnWindowVisibilityChanged(
     return;
 
   // Don't allow to make the window visible if it shouldn't be.
-  if (visible && !IsWindowOnDesktopOfUser(window, current_user_id_)) {
+  if (visible && !IsWindowOnDesktopOfUser(window, current_account_id_)) {
     SetWindowVisibility(window, false, 0);
     return;
   }
   aura::Window* owned_parent = GetOwningWindowInTransientChain(window);
   if (owned_parent && owned_parent != window && visible &&
-      !IsWindowOnDesktopOfUser(owned_parent, current_user_id_))
+      !IsWindowOnDesktopOfUser(owned_parent, current_account_id_))
     SetWindowVisibility(window, false, 0);
 }
 
@@ -575,24 +578,23 @@ bool MultiUserWindowManagerChromeOS::IsAnimationRunningForTest() {
   return animation_.get() != NULL && !animation_->IsAnimationFinished();
 }
 
-const std::string& MultiUserWindowManagerChromeOS::GetCurrentUserForTest()
-    const {
-  return current_user_id_;
+const AccountId& MultiUserWindowManagerChromeOS::GetCurrentUserForTest() const {
+  return current_account_id_;
 }
 
 bool MultiUserWindowManagerChromeOS::ShowWindowForUserIntern(
     aura::Window* window,
-    const std::string& user_id) {
+    const AccountId& account_id) {
   // If there is either no owner, or the owner is the current user, no action
   // is required.
-  const std::string& owner = GetWindowOwner(window);
-  if (owner.empty() ||
-      (owner == user_id && IsWindowOnDesktopOfUser(window, user_id)))
+  const AccountId& owner = GetWindowOwner(window);
+  if ((!owner.is_valid()) ||
+      (owner == account_id && IsWindowOnDesktopOfUser(window, account_id)))
     return false;
 
   bool minimized = ash::wm::GetWindowState(window)->IsMinimized();
   // Check that we are not trying to transfer ownership of a minimized window.
-  if (user_id != owner && minimized)
+  if (account_id != owner && minimized)
     return false;
 
   if (minimized) {
@@ -606,10 +608,10 @@ bool MultiUserWindowManagerChromeOS::ShowWindowForUserIntern(
   }
 
   WindowToEntryMap::iterator it = window_to_entry_.find(window);
-  it->second->set_show_for_user(user_id);
+  it->second->set_show_for_user(account_id);
 
   // Show the window if the added user is the current one.
-  if (user_id == current_user_id_) {
+  if (account_id == current_account_id_) {
     // Only show the window if it should be shown according to its state.
     if (it->second->show())
       SetWindowVisibility(window, true, kTeleportAnimationTimeMS);
@@ -639,15 +641,15 @@ void MultiUserWindowManagerChromeOS::SetWindowVisibility(
     if (window->parent() == system_modal_container) {
       // The window is system modal and we need to find the parent which owns
       // it so that we can switch to the desktop accordingly.
-      std::string user_id = GetUserPresentingWindow(window);
-      if (user_id.empty()) {
+      AccountId account_id = GetUserPresentingWindow(window);
+      if (!account_id.is_valid()) {
         aura::Window* owning_window = GetOwningWindowInTransientChain(window);
         DCHECK(owning_window);
-        user_id = GetUserPresentingWindow(owning_window);
-        DCHECK(!user_id.empty());
+        account_id = GetUserPresentingWindow(owning_window);
+        DCHECK(account_id.is_valid());
       }
       ash::Shell::GetInstance()->session_state_delegate()->SwitchActiveUser(
-          user_id);
+          account_id);
       return;
     }
   }
@@ -668,7 +670,7 @@ void MultiUserWindowManagerChromeOS::AddBrowserWindow(Browser* browser) {
   if (!browser->window() || !browser->window()->GetNativeWindow())
     return;
   SetWindowOwner(browser->window()->GetNativeWindow(),
-                 multi_user_util::GetUserIDFromProfile(browser->profile()));
+                 multi_user_util::GetAccountIdFromProfile(browser->profile()));
 }
 
 void MultiUserWindowManagerChromeOS::ShowWithTransientChildrenRecursive(
@@ -723,7 +725,7 @@ void MultiUserWindowManagerChromeOS::AddTransientOwnerRecursive(
   // Hide the window if it should not be shown. Note that this hide operation
   // will hide recursively this and all children - but we have already collected
   // their initial view state.
-  if (!IsWindowOnDesktopOfUser(owned_parent, current_user_id_))
+  if (!IsWindowOnDesktopOfUser(owned_parent, current_account_id_))
     SetWindowVisibility(window, false, kAnimationTimeMS);
 }
 
@@ -787,20 +789,20 @@ int MultiUserWindowManagerChromeOS::GetAdjustedAnimationTimeInMS(
       (animation_speed_ == ANIMATION_SPEED_FAST ? 10 : 0);
 }
 
-void MultiUserWindowManagerChromeOS::RemoveUser(const std::string& user_id,
+void MultiUserWindowManagerChromeOS::RemoveUser(const AccountId& account_id,
                                                 Profile* profile) {
-  UserIDToAppWindowObserver::iterator app_observer_iterator =
-      user_id_to_app_observer_.find(user_id);
-  DCHECK(app_observer_iterator != user_id_to_app_observer_.end())
-      << "User id '" << user_id << "', profile=" << profile
+  AccountIdToAppWindowObserver::iterator app_observer_iterator =
+      account_id_to_app_observer_.find(account_id);
+  DCHECK(app_observer_iterator != account_id_to_app_observer_.end())
+      << "User id '" << account_id.GetUserEmail() << "', profile=" << profile
       << " was not found.";
-  if (app_observer_iterator == user_id_to_app_observer_.end())
+  if (app_observer_iterator == account_id_to_app_observer_.end())
     return;
 
   extensions::AppWindowRegistry::Get(profile)
       ->RemoveObserver(app_observer_iterator->second);
   delete app_observer_iterator->second;
-  user_id_to_app_observer_.erase(app_observer_iterator);
+  account_id_to_app_observer_.erase(app_observer_iterator);
 }
 
 }  // namespace chrome

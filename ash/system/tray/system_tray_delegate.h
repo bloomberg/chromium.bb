@@ -18,6 +18,8 @@
 #include "base/strings/string16.h"
 #include "ui/gfx/image/image_skia.h"
 
+class AccountId;
+
 namespace base {
 class TimeDelta;
 class TimeTicks;
@@ -314,7 +316,7 @@ class ASH_EXPORT SystemTrayDelegate {
 
   // Returns accounts delegate for given user. May return nullptr.
   virtual tray::UserAccountsDelegate* GetUserAccountsDelegate(
-      const std::string& user_id);
+      const AccountId& account_id);
 
   // Adding observers that are notified when supervised info is being changed.
   virtual void AddCustodianInfoTrayObserver(

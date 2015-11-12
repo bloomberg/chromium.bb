@@ -31,6 +31,7 @@
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
+#include "components/signin/core/account_id/account_id.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -136,7 +137,7 @@ class SystemTrayDelegateChromeOS
   void ActiveUserWasChanged() override;
   bool IsSearchKeyMappedToCapsLock() override;
   ash::tray::UserAccountsDelegate* GetUserAccountsDelegate(
-      const std::string& user_id) override;
+      const AccountId& account_id) override;
   void AddCustodianInfoTrayObserver(
       ash::CustodianInfoTrayObserver* observer) override;
   void RemoveCustodianInfoTrayObserver(
@@ -249,8 +250,8 @@ class SystemTrayDelegateChromeOS
   void OnStoreError(policy::CloudPolicyStore* store) override;
 
   // Overridden from ash::SessionStateObserver
-  void UserAddedToSession(const std::string& user_id) override;
-  void ActiveUserChanged(const std::string& user_id) override;
+  void UserAddedToSession(const AccountId& account_id) override;
+  void ActiveUserChanged(const AccountId& account_id) override;
 
   // Overridden from chrome::BrowserListObserver:
   void OnBrowserRemoved(Browser* browser) override;
@@ -292,8 +293,7 @@ class SystemTrayDelegateChromeOS
   scoped_ptr<ash::NetworkingConfigDelegate> networking_config_delegate_;
   scoped_ptr<ash::VolumeControlDelegate> volume_control_delegate_;
   scoped_ptr<AccessibilityStatusSubscription> accessibility_subscription_;
-  base::ScopedPtrHashMap<std::string,
-                         scoped_ptr<ash::tray::UserAccountsDelegate>>
+  base::ScopedPtrMap<AccountId, scoped_ptr<ash::tray::UserAccountsDelegate>>
       accounts_delegates_;
   scoped_ptr<ShutdownPolicyHandler> shutdown_policy_handler_;
   scoped_ptr<ash::VPNDelegate> vpn_delegate_;

@@ -6,15 +6,15 @@
 
 #include "ash/system/system_notifier.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
+#include "components/signin/core/account_id/account_id.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/notifier_settings.h"
 
 MultiUserNotificationBlockerChromeOS::MultiUserNotificationBlockerChromeOS(
     message_center::MessageCenter* message_center,
-    const std::string& initial_user_id)
+    const AccountId& initial_account_id)
     : NotificationBlocker(message_center),
-      active_user_id_(initial_user_id) {
-}
+      active_account_id_(initial_account_id) {}
 
 MultiUserNotificationBlockerChromeOS::~MultiUserNotificationBlockerChromeOS() {
 }
@@ -27,7 +27,7 @@ bool MultiUserNotificationBlockerChromeOS::ShouldShowNotification(
   if (ash::system_notifier::IsAshSystemNotifier(notifier_id))
     return true;
 
-  return notifier_id.profile_id == active_user_id_;
+  return AccountId::FromUserEmail(notifier_id.profile_id) == active_account_id_;
 }
 
 bool MultiUserNotificationBlockerChromeOS::ShouldShowNotificationAsPopup(
@@ -36,14 +36,14 @@ bool MultiUserNotificationBlockerChromeOS::ShouldShowNotificationAsPopup(
 }
 
 void MultiUserNotificationBlockerChromeOS::ActiveUserChanged(
-    const std::string& user_id) {
-  if (active_user_id_ == user_id)
+    const AccountId& account_id) {
+  if (active_account_id_ == account_id)
     return;
 
-  quiet_modes_[active_user_id_] = message_center()->IsQuietMode();
-  active_user_id_ = user_id;
-  std::map<std::string, bool>::const_iterator iter =
-      quiet_modes_.find(active_user_id_);
+  quiet_modes_[active_account_id_] = message_center()->IsQuietMode();
+  active_account_id_ = account_id;
+  std::map<AccountId, bool>::const_iterator iter =
+      quiet_modes_.find(active_account_id_);
   if (iter != quiet_modes_.end() &&
       iter->second != message_center()->IsQuietMode()) {
     message_center()->SetQuietMode(iter->second);

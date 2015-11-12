@@ -11,15 +11,17 @@
 #include "ash/session/session_state_delegate.h"
 #include "base/basictypes.h"
 
+class AccountId;
+
 namespace ash {
 
 class ASH_EXPORT SessionStateObserver {
  public:
   // Called when active user has changed.
-  virtual void ActiveUserChanged(const std::string& user_id) {}
+  virtual void ActiveUserChanged(const AccountId& account_id) {}
 
   // Called when another user gets added to the existing session.
-  virtual void UserAddedToSession(const std::string& user_id) {}
+  virtual void UserAddedToSession(const AccountId& account_id) {}
 
   // Called when session state is changed.
   virtual void SessionStateChanged(SessionStateDelegate::SessionState state) {}

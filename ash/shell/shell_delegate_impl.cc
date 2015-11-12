@@ -117,7 +117,7 @@ class SessionStateDelegateImpl : public SessionStateDelegate {
   gfx::ImageSkia GetAvatarImageForWindow(aura::Window* window) const override {
     return gfx::ImageSkia();
   }
-  void SwitchActiveUser(const std::string& user_id) override {}
+  void SwitchActiveUser(const AccountId& account_id) override {}
   void CycleActiveUser(CycleUser cycle_user) override {}
   bool IsMultiProfileAllowedByPrimaryUserPolicy() const override {
     return true;

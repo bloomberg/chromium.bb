@@ -30,6 +30,7 @@
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_chromeos.h"
+#include "components/signin/core/account_id/account_id.h"
 #endif
 
 namespace message_center {
@@ -114,7 +115,8 @@ TEST_F(MessageCenterNotificationManagerTest, UpdateNotification) {
 #if defined(OS_CHROMEOS)
 TEST_F(MessageCenterNotificationManagerTest, MultiUserUpdates) {
   TestingProfile profile;
-  std::string active_user_id = multi_user_util::GetUserIDFromProfile(&profile);
+  const AccountId active_user_id(
+      multi_user_util::GetAccountIdFromProfile(&profile));
   chrome::MultiUserWindowManagerChromeOS* multi_user_window_manager =
       new chrome::MultiUserWindowManagerChromeOS(active_user_id);
   multi_user_window_manager->Init();

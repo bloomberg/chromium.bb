@@ -158,14 +158,16 @@ gfx::ImageSkia SessionStateDelegateChromeos::GetAvatarImageForWindow(
 }
 
 void SessionStateDelegateChromeos::SwitchActiveUser(
-    const std::string& user_id) {
+    const AccountId& account_id) {
   // Disallow switching to an already active user since that might crash.
   // Also check that we got a user id and not an email address.
-  DCHECK_EQ(user_id,
-            gaia::CanonicalizeEmail(gaia::SanitizeEmail(user_id)));
-  if (user_id == user_manager::UserManager::Get()->GetActiveUser()->email())
+  DCHECK_EQ(
+      account_id.GetUserEmail(),
+      gaia::CanonicalizeEmail(gaia::SanitizeEmail(account_id.GetUserEmail())));
+  if (account_id ==
+      user_manager::UserManager::Get()->GetActiveUser()->GetAccountId())
     return;
-  TryToSwitchUser(user_id);
+  TryToSwitchUser(account_id);
 }
 
 void SessionStateDelegateChromeos::CycleActiveUser(CycleUser cycle_user) {
@@ -176,14 +178,14 @@ void SessionStateDelegateChromeos::CycleActiveUser(CycleUser cycle_user) {
   const user_manager::UserList& logged_in_users =
       user_manager::UserManager::Get()->GetLoggedInUsers();
 
-  std::string user_id =
-      user_manager::UserManager::Get()->GetActiveUser()->email();
+  AccountId account_id =
+      user_manager::UserManager::Get()->GetActiveUser()->GetAccountId();
 
   // Get an iterator positioned at the active user.
   user_manager::UserList::const_iterator it;
   for (it = logged_in_users.begin();
        it != logged_in_users.end(); ++it) {
-    if ((*it)->email() == user_id)
+    if ((*it)->GetAccountId() == account_id)
       break;
   }
 
@@ -196,19 +198,19 @@ void SessionStateDelegateChromeos::CycleActiveUser(CycleUser cycle_user) {
   switch (cycle_user) {
     case CYCLE_TO_NEXT_USER:
       if (++it == logged_in_users.end())
-        user_id = (*logged_in_users.begin())->email();
+        account_id = (*logged_in_users.begin())->GetAccountId();
       else
-        user_id = (*it)->email();
+        account_id = (*it)->GetAccountId();
       break;
     case CYCLE_TO_PREVIOUS_USER:
       if (it == logged_in_users.begin())
         it = logged_in_users.end();
-      user_id = (*(--it))->email();
+      account_id = (*(--it))->GetAccountId();
       break;
   }
 
-  // Switch using the transformed |user_id|.
-  TryToSwitchUser(user_id);
+  // Switch using the transformed |account_id|.
+  TryToSwitchUser(account_id);
 }
 
 bool SessionStateDelegateChromeos::IsMultiProfileAllowedByPrimaryUserPolicy()
@@ -234,16 +236,14 @@ void SessionStateDelegateChromeos::LoggedInStateChanged() {
 
 void SessionStateDelegateChromeos::ActiveUserChanged(
     const user_manager::User* active_user) {
-  FOR_EACH_OBSERVER(ash::SessionStateObserver,
-                    session_state_observer_list_,
-                    ActiveUserChanged(active_user->email()));
+  FOR_EACH_OBSERVER(ash::SessionStateObserver, session_state_observer_list_,
+                    ActiveUserChanged(active_user->GetAccountId()));
 }
 
 void SessionStateDelegateChromeos::UserAddedToSession(
     const user_manager::User* added_user) {
-  FOR_EACH_OBSERVER(ash::SessionStateObserver,
-                    session_state_observer_list_,
-                    UserAddedToSession(added_user->email()));
+  FOR_EACH_OBSERVER(ash::SessionStateObserver, session_state_observer_list_,
+                    UserAddedToSession(added_user->GetAccountId()));
 }
 
 void SessionStateDelegateChromeos::OnUserAddingStarted() {
@@ -269,12 +269,11 @@ void SessionStateDelegateChromeos::NotifySessionStateChanged() {
                     SessionStateChanged(session_state_));
 }
 
-void DoSwitchUser(const std::string& user_id) {
-  user_manager::UserManager::Get()->SwitchActiveUser(
-      AccountId::FromUserEmail(user_id));
+void DoSwitchUser(const AccountId& account_id) {
+  user_manager::UserManager::Get()->SwitchActiveUser(account_id);
 }
 
 void SessionStateDelegateChromeos::TryToSwitchUser(
-    const std::string& user_id) {
-  ash::TrySwitchingActiveUser(base::Bind(&DoSwitchUser, user_id));
+    const AccountId& account_id) {
+  ash::TrySwitchingActiveUser(base::Bind(&DoSwitchUser, account_id));
 }

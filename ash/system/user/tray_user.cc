@@ -119,7 +119,7 @@ views::View* TrayUser::CreateDetailedView(user::LoginStatus status) {
                                    ->GetAccountId();
   tray::UserAccountsDelegate* delegate =
       Shell::GetInstance()->system_tray_delegate()->GetUserAccountsDelegate(
-          account_id.GetUserEmail());
+          account_id);
   if (!delegate)
     return nullptr;
   return new tray::AccountsDetailedView(this, status, delegate);

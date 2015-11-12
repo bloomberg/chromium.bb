@@ -575,10 +575,10 @@ void SystemTrayDelegateChromeOS::ShowUserLogin() {
     for (user_manager::UserList::const_iterator it = logged_in_users.begin();
          it != logged_in_users.end();
          ++it) {
-      show_intro &= !multi_user_util::GetProfileFromUserID(
-                         multi_user_util::GetUserIDFromEmail((*it)->email()))
-                         ->GetPrefs()
-                         ->GetBoolean(prefs::kMultiProfileNeverShowIntro);
+      show_intro &=
+          !multi_user_util::GetProfileFromAccountId((*it)->GetAccountId())
+               ->GetPrefs()
+               ->GetBoolean(prefs::kMultiProfileNeverShowIntro);
       if (!show_intro)
         break;
     }
@@ -818,18 +818,19 @@ bool SystemTrayDelegateChromeOS::IsSearchKeyMappedToCapsLock() {
 
 ash::tray::UserAccountsDelegate*
 SystemTrayDelegateChromeOS::GetUserAccountsDelegate(
-    const std::string& user_id) {
-  if (!accounts_delegates_.contains(user_id)) {
-    const user_manager::User* user = user_manager::UserManager::Get()->FindUser(
-        AccountId::FromUserEmail(user_id));
+    const AccountId& account_id) {
+  auto it = accounts_delegates_.find(account_id);
+  if (it == accounts_delegates_.end()) {
+    const user_manager::User* user =
+        user_manager::UserManager::Get()->FindUser(account_id);
     Profile* user_profile = ProfileHelper::Get()->GetProfileByUserUnsafe(user);
     CHECK(user_profile);
     accounts_delegates_.set(
-        user_id,
-        scoped_ptr<ash::tray::UserAccountsDelegate>(
-            new UserAccountsDelegateChromeOS(user_profile)));
+        account_id, scoped_ptr<ash::tray::UserAccountsDelegate>(
+                        new UserAccountsDelegateChromeOS(user_profile)));
+    it = accounts_delegates_.find(account_id);
   }
-  return accounts_delegates_.get(user_id);
+  return it->second;
 }
 
 void SystemTrayDelegateChromeOS::AddCustodianInfoTrayObserver(
@@ -1253,13 +1254,12 @@ void SystemTrayDelegateChromeOS::OnStoreError(policy::CloudPolicyStore* store) {
 
 // Overridden from ash::SessionStateObserver
 void SystemTrayDelegateChromeOS::UserAddedToSession(
-    const std::string& user_id) {
+    const AccountId& /*account_id*/) {
   GetSystemTrayNotifier()->NotifyUserAddedToSession();
 }
 
 void SystemTrayDelegateChromeOS::ActiveUserChanged(
-    const std::string& /* user_id */) {
-}
+    const AccountId& /* user_id */) {}
 
 // Overridden from chrome::BrowserListObserver.
 void SystemTrayDelegateChromeOS::OnBrowserRemoved(Browser* browser) {

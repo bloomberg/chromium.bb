@@ -235,8 +235,8 @@ void WallpaperPrivateApiMultiUserUnittest::TearDown() {
 void WallpaperPrivateApiMultiUserUnittest::SetUpMultiUserWindowManager(
     const AccountId& active_account_id,
     chrome::MultiUserWindowManager::MultiProfileMode mode) {
-  multi_user_window_manager_ = new chrome::MultiUserWindowManagerChromeOS(
-      active_account_id.GetUserEmail());
+  multi_user_window_manager_ =
+      new chrome::MultiUserWindowManagerChromeOS(active_account_id);
   multi_user_window_manager_->Init();
   chrome::MultiUserWindowManager::SetInstanceForTest(
       multi_user_window_manager_, mode);
@@ -249,8 +249,7 @@ void WallpaperPrivateApiMultiUserUnittest::SetUpMultiUserWindowManager(
 void WallpaperPrivateApiMultiUserUnittest::SwitchActiveUser(
     const AccountId& active_account_id) {
   fake_user_manager()->SwitchActiveUser(active_account_id);
-  multi_user_window_manager_->ActiveUserChanged(
-      active_account_id.GetUserEmail());
+  multi_user_window_manager_->ActiveUserChanged(active_account_id);
 }
 
 // In multi profile mode, user may open wallpaper picker in one profile and
@@ -273,18 +272,13 @@ TEST_F(WallpaperPrivateApiMultiUserUnittest, HideAndRestoreWindowsTwoUsers) {
   ash::wm::WindowState* window3_state = ash::wm::GetWindowState(window3.get());
   ash::wm::WindowState* window4_state = ash::wm::GetWindowState(window4.get());
 
-  multi_user_window_manager()->SetWindowOwner(window0.get(),
-                                              test_account_id1_.GetUserEmail());
-  multi_user_window_manager()->SetWindowOwner(window1.get(),
-                                              test_account_id1_.GetUserEmail());
+  multi_user_window_manager()->SetWindowOwner(window0.get(), test_account_id1_);
+  multi_user_window_manager()->SetWindowOwner(window1.get(), test_account_id1_);
 
   // Set some windows to an inactive owner.
-  multi_user_window_manager()->SetWindowOwner(window2.get(),
-                                              test_account_id2_.GetUserEmail());
-  multi_user_window_manager()->SetWindowOwner(window3.get(),
-                                              test_account_id2_.GetUserEmail());
-  multi_user_window_manager()->SetWindowOwner(window4.get(),
-                                              test_account_id2_.GetUserEmail());
+  multi_user_window_manager()->SetWindowOwner(window2.get(), test_account_id2_);
+  multi_user_window_manager()->SetWindowOwner(window3.get(), test_account_id2_);
+  multi_user_window_manager()->SetWindowOwner(window4.get(), test_account_id2_);
 
   EXPECT_FALSE(window0_state->IsMinimized());
   EXPECT_FALSE(window1_state->IsMinimized());
@@ -377,20 +371,16 @@ TEST_F(WallpaperPrivateApiMultiUserUnittest, HideTeleportedWindow) {
   ash::wm::WindowState* window2_state = ash::wm::GetWindowState(window2.get());
   ash::wm::WindowState* window3_state = ash::wm::GetWindowState(window3.get());
 
-  multi_user_window_manager()->SetWindowOwner(window0.get(),
-                                              test_account_id1_.GetUserEmail());
-  multi_user_window_manager()->SetWindowOwner(window1.get(),
-                                              test_account_id1_.GetUserEmail());
+  multi_user_window_manager()->SetWindowOwner(window0.get(), test_account_id1_);
+  multi_user_window_manager()->SetWindowOwner(window1.get(), test_account_id1_);
 
   // Set some windows to an inactive owner.
-  multi_user_window_manager()->SetWindowOwner(window2.get(),
-                                              test_account_id2_.GetUserEmail());
-  multi_user_window_manager()->SetWindowOwner(window3.get(),
-                                              test_account_id2_.GetUserEmail());
+  multi_user_window_manager()->SetWindowOwner(window2.get(), test_account_id2_);
+  multi_user_window_manager()->SetWindowOwner(window3.get(), test_account_id2_);
 
   // Teleport window2 to kTestAccount1.
-  multi_user_window_manager()->ShowWindowForUser(
-      window2.get(), test_account_id1_.GetUserEmail());
+  multi_user_window_manager()->ShowWindowForUser(window2.get(),
+                                                 test_account_id1_);
 
   // Initial window state. All windows shouldn't be minimized.
   EXPECT_FALSE(window0_state->IsMinimized());

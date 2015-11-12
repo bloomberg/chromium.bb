@@ -6,21 +6,23 @@
 
 #include "base/logging.h"
 #include "base/strings/string_util.h"
+#include "components/signin/core/account_id/account_id.h"
 
 namespace chrome {
 
 void MultiUserWindowManagerStub::SetWindowOwner(aura::Window* window,
-                                               const std::string& user_id) {
+                                                const AccountId& account_id) {
   NOTIMPLEMENTED();
 }
 
-const std::string& MultiUserWindowManagerStub::GetWindowOwner(
+const AccountId& MultiUserWindowManagerStub::GetWindowOwner(
     aura::Window* window) const {
-  return base::EmptyString();
+  return EmptyAccountId();
 }
 
-void MultiUserWindowManagerStub::ShowWindowForUser(aura::Window* window,
-                                                  const std::string& user_id) {
+void MultiUserWindowManagerStub::ShowWindowForUser(
+    aura::Window* window,
+    const AccountId& account_id) {
   NOTIMPLEMENTED();
 }
 
@@ -29,18 +31,17 @@ bool MultiUserWindowManagerStub::AreWindowsSharedAmongUsers() const {
 }
 
 void MultiUserWindowManagerStub::GetOwnersOfVisibleWindows(
-    std::set<std::string>* user_ids) const {
-}
+    std::set<AccountId>* account_ids) const {}
 
 bool MultiUserWindowManagerStub::IsWindowOnDesktopOfUser(
     aura::Window* window,
-    const std::string& user_id) const {
+    const AccountId& account_id) const {
   return true;
 }
 
-const std::string& MultiUserWindowManagerStub::GetUserPresentingWindow(
+const AccountId& MultiUserWindowManagerStub::GetUserPresentingWindow(
     aura::Window* window) const {
-  return base::EmptyString();
+  return EmptyAccountId();
 }
 
 void MultiUserWindowManagerStub::AddUser(content::BrowserContext* context) {

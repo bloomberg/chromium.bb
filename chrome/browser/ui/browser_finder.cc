@@ -15,6 +15,7 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
+#include "components/signin/core/account_id/account_id.h"
 #endif
 
 using content::WebContents;
@@ -54,11 +55,12 @@ bool BrowserMatches(Browser* browser,
       chrome::MultiUserWindowManager::GetInstance();
   Profile* shown_profile = nullptr;
   if (window_manager) {
-    const std::string& shown_user_id = window_manager->GetUserPresentingWindow(
+    const AccountId& shown_account_id = window_manager->GetUserPresentingWindow(
         browser->window()->GetNativeWindow());
-    shown_profile = shown_user_id.empty()
-                        ? nullptr
-                        : multi_user_util::GetProfileFromUserID(shown_user_id);
+    shown_profile =
+        shown_account_id.is_valid()
+            ? multi_user_util::GetProfileFromAccountId(shown_account_id)
+            : nullptr;
   }
 #endif
 

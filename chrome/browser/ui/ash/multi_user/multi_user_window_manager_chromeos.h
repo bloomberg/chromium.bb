@@ -13,6 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
+#include "components/signin/core/account_id/account_id.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/aura/window_observer.h"
@@ -69,34 +70,31 @@ class MultiUserWindowManagerChromeOS
     ANIMATION_SPEED_DISABLED  // Unit tests which do not require animations.
   };
 
-  // Create the manager and use |active_user_id| as the active user.
-  explicit MultiUserWindowManagerChromeOS(const std::string& active_user_id);
+  // Create the manager and use |active_account_id| as the active user.
+  explicit MultiUserWindowManagerChromeOS(const AccountId& active_account_id);
   ~MultiUserWindowManagerChromeOS() override;
 
   // Initializes the manager after its creation. Should only be called once.
   void Init();
 
   // MultiUserWindowManager overrides:
-  void SetWindowOwner(
-      aura::Window* window, const std::string& user_id) override;
-  const std::string& GetWindowOwner(
-      aura::Window* window) const override;
-  void ShowWindowForUser(
-      aura::Window* window, const std::string& user_id) override;
+  void SetWindowOwner(aura::Window* window,
+                      const AccountId& account_id) override;
+  const AccountId& GetWindowOwner(aura::Window* window) const override;
+  void ShowWindowForUser(aura::Window* window,
+                         const AccountId& account_id) override;
   bool AreWindowsSharedAmongUsers() const override;
   void GetOwnersOfVisibleWindows(
-      std::set<std::string>* user_ids) const override;
-  bool IsWindowOnDesktopOfUser(
-      aura::Window* window,
-      const std::string& user_id) const override;
-  const std::string& GetUserPresentingWindow(
-      aura::Window* window) const override;
+      std::set<AccountId>* account_ids) const override;
+  bool IsWindowOnDesktopOfUser(aura::Window* window,
+                               const AccountId& account_id) const override;
+  const AccountId& GetUserPresentingWindow(aura::Window* window) const override;
   void AddUser(content::BrowserContext* context) override;
   void AddObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;
 
   // SessionStateObserver overrides:
-  void ActiveUserChanged(const std::string& user_id) override;
+  void ActiveUserChanged(const AccountId& account_id) override;
 
   // WindowObserver overrides:
   void OnWindowDestroyed(aura::Window* window) override;
@@ -121,32 +119,30 @@ class MultiUserWindowManagerChromeOS
   bool IsAnimationRunningForTest();
 
   // Returns the current user for unit tests.
-  const std::string& GetCurrentUserForTest() const;
+  const AccountId& GetCurrentUserForTest() const;
 
  protected:
   friend class UserSwitchAnimatorChromeOS;
 
   class WindowEntry {
    public:
-    explicit WindowEntry(const std::string& user_id)
-        : owner_(user_id),
-          show_for_user_(user_id),
-          show_(true) {}
+    explicit WindowEntry(const AccountId& account_id)
+        : owner_(account_id), show_for_user_(account_id), show_(true) {}
     virtual ~WindowEntry() {}
 
     // Returns the owner of this window. This cannot be changed.
-    const std::string& owner() const { return owner_; }
+    const AccountId& owner() const { return owner_; }
 
     // Returns the user for which this should be shown.
-    const std::string& show_for_user() const { return show_for_user_; }
+    const AccountId& show_for_user() const { return show_for_user_; }
 
     // Returns if the window should be shown for the "show user" or not.
     bool show() const { return show_; }
 
     // Set the user which will display the window on the owned desktop. If
     // an empty user id gets passed the owner will be used.
-    void set_show_for_user(const std::string& user_id) {
-      show_for_user_ = user_id.empty() ? owner_ : user_id;
+    void set_show_for_user(const AccountId& account_id) {
+      show_for_user_ = account_id.is_valid() ? account_id : owner_;
     }
 
     // Sets if the window gets shown for the active user or not.
@@ -154,10 +150,10 @@ class MultiUserWindowManagerChromeOS
 
    private:
     // The user id of the owner of this window.
-    const std::string owner_;
+    const AccountId owner_;
 
     // The user id of the user on which desktop the window gets shown.
-    std::string show_for_user_;
+    AccountId show_for_user_;
 
     // True if the window should be visible for the user which shows the window.
     bool show_;
@@ -170,7 +166,7 @@ class MultiUserWindowManagerChromeOS
   // Show a window for a user without switching the user.
   // Returns true when the window moved to a new desktop.
   bool ShowWindowForUserIntern(aura::Window* window,
-                               const std::string& user_id);
+                               const AccountId& account_id);
 
   // Show / hide the given window. Note: By not doing this within the functions,
   // this allows to either switching to different ways to show/hide and / or to
@@ -192,7 +188,7 @@ class MultiUserWindowManagerChromeOS
   friend class ::MultiUserNotificationBlockerChromeOSTest;
   friend class ash::test::MultiUserWindowManagerChromeOSTest;
 
-  typedef std::map<std::string, AppObserver*> UserIDToAppWindowObserver;
+  typedef std::map<AccountId, AppObserver*> AccountIdToAppWindowObserver;
   typedef std::map<aura::Window*, bool> TransientWindowToVisibility;
 
   // Add a browser window to the system so that the owner can be remembered.
@@ -227,18 +223,18 @@ class MultiUserWindowManagerChromeOS
   // from the passed |default_time_in_ms|.
   int GetAdjustedAnimationTimeInMS(int default_time_in_ms) const;
 
-  // This is called when KeyedService (for |iser_id| and |profile|) is
+  // This is called when KeyedService (for |account_id| and |profile|) is
   // destroyed, or when MultiUserWindowManagerChromeOS is destroyed.
   // This happens on shutdown, before profile prefs are stored to
   // disk.
-  void RemoveUser(const std::string& user_id, Profile* profile);
+  void RemoveUser(const AccountId& account_id, Profile* profile);
 
   // A lookup to see to which user the given window belongs to, where and if it
   // should get shown.
   WindowToEntryMap window_to_entry_;
 
   // A list of all known users and their app window observers.
-  UserIDToAppWindowObserver user_id_to_app_observer_;
+  AccountIdToAppWindowObserver account_id_to_app_observer_;
 
   // An observer list to be notified upon window owner changes.
   base::ObserverList<Observer> observers_;
@@ -249,7 +245,7 @@ class MultiUserWindowManagerChromeOS
   // The currently selected active user. It is used to find the proper
   // visibility state in various cases. The state is stored here instead of
   // being read from the user manager to be in sync while a switch occurs.
-  std::string current_user_id_;
+  AccountId current_account_id_;
 
   // The blocker which controls the desktop notification visibility based on the
   // current multi-user status.

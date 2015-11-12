@@ -9,6 +9,7 @@
 #include <set>
 #include <string>
 
+class AccountId;
 class Browser;
 
 namespace content {
@@ -96,12 +97,12 @@ class MultiUserWindowManager {
   // A user switch will automatically change the visibility - and - if the
   // current user is not the owner it will immediately hidden. If the window
   // had already be registered this function will run into a DCHECK violation.
-  virtual void SetWindowOwner(
-      aura::Window* window, const std::string& user_id) = 0;
+  virtual void SetWindowOwner(aura::Window* window,
+                              const AccountId& account_id) = 0;
 
-  // See who owns this window. The return value is the user id or an empty
-  // string if not assigned yet.
-  virtual const std::string& GetWindowOwner(aura::Window* window) const = 0;
+  // See who owns this window. The return value is the user account id or an
+  // empty AccountId if not assigned yet.
+  virtual const AccountId& GetWindowOwner(aura::Window* window) const = 0;
 
   // Allows to show an owned window for another users. If the window is not
   // owned, this call will return immediately. (The FileManager for example
@@ -109,24 +110,24 @@ class MultiUserWindowManager {
   // Note that a window can only be shown on one desktop at a time. Note that
   // when the window gets minimized, it will automatically fall back to the
   // owner's desktop.
-  virtual void ShowWindowForUser(
-      aura::Window* window, const std::string& user_id) = 0;
+  virtual void ShowWindowForUser(aura::Window* window,
+                                 const AccountId& account_id) = 0;
 
   // Returns true when windows are shared among users.
   virtual bool AreWindowsSharedAmongUsers() const = 0;
 
-  // Get the owners for the visible windows and set them to |user_ids|.
+  // Get the owners for the visible windows and set them to |account_ids|.
   virtual void GetOwnersOfVisibleWindows(
-      std::set<std::string>* user_ids) const = 0;
+      std::set<AccountId>* account_ids) const = 0;
 
   // A query call for a given window to see if it is on the given user's
   // desktop.
   virtual bool IsWindowOnDesktopOfUser(aura::Window* window,
-                                       const std::string& user_id) const = 0;
+                                       const AccountId& account_id) const = 0;
 
   // Get the user on which the window is currently shown. If an empty string is
   // passed back the window will be presented for every user.
-  virtual const std::string& GetUserPresentingWindow(
+  virtual const AccountId& GetUserPresentingWindow(
       aura::Window* window) const = 0;
 
   // Adds user to monitor starting and running V1/V2 application windows.

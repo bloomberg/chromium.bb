@@ -29,6 +29,8 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 
+class AccountId;
+
 namespace chromeos {
 
 namespace {
@@ -107,7 +109,7 @@ class MagnificationManagerImpl : public MagnificationManager,
   void SetProfileForTest(Profile* profile) override { SetProfile(profile); }
 
   // SessionStateObserver overrides:
-  void ActiveUserChanged(const std::string& user_id) override {
+  void ActiveUserChanged(const AccountId& account_id) override {
     SetProfile(ProfileManager::GetActiveUserProfile());
   }
 

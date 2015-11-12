@@ -10,6 +10,8 @@
 #include "ash/ash_export.h"
 #include "ash/session/session_types.h"
 
+class AccountId;
+
 namespace aura {
 class Window;
 }
@@ -113,9 +115,9 @@ class ASH_EXPORT SessionStateDelegate {
   virtual gfx::ImageSkia GetAvatarImageForWindow(
       aura::Window* window) const = 0;
 
-  // Switches to another active user with |user_id|
+  // Switches to another active user with |account_id|
   // (if that user has already signed in).
-  virtual void SwitchActiveUser(const std::string& user_id) = 0;
+  virtual void SwitchActiveUser(const AccountId& account_id) = 0;
 
   // Switches the active user to the next or previous user, with the same
   // ordering as GetLoggedInUsers.

@@ -47,8 +47,7 @@ MultiUserWindowManager* MultiUserWindowManager::CreateInstance() {
         new MultiUserWindowManagerChromeOS(ash::Shell::GetInstance()
                                                ->session_state_delegate()
                                                ->GetUserInfo(0)
-                                               ->GetAccountId()
-                                               .GetUserEmail());
+                                               ->GetAccountId());
     g_instance = manager;
     manager->Init();
     multi_user_mode_ = MULTI_PROFILE_MODE_SEPARATED;

@@ -11,6 +11,7 @@
 #include "chrome/test/base/test_browser_window_aura.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "components/signin/core/account_id/account_id.h"
 
 namespace test {
 
@@ -35,7 +36,7 @@ class BrowserFinderChromeOSTest : public BrowserWithTestWindowTest {
   chrome::MultiUserWindowManagerChromeOS* GetUserWindowManager() {
     if (!multi_user_window_manager_) {
       multi_user_window_manager_ =
-          new chrome::MultiUserWindowManagerChromeOS(kTestAccount1);
+          new chrome::MultiUserWindowManagerChromeOS(test_account_id1_);
       multi_user_window_manager_->Init();
       chrome::MultiUserWindowManager::SetInstanceForTest(
           multi_user_window_manager_,
@@ -44,15 +45,20 @@ class BrowserFinderChromeOSTest : public BrowserWithTestWindowTest {
     return multi_user_window_manager_;
   }
 
+  AccountId test_account_id1_ = EmptyAccountId();
+  AccountId test_account_id2_ = EmptyAccountId();
+
  private:
   void SetUp() override {
     profile_manager_.reset(
         new TestingProfileManager(TestingBrowserProcess::GetGlobal()));
     ASSERT_TRUE(profile_manager_->SetUp());
+    test_account_id1_ = AccountId::FromUserEmail(kTestAccount1);
+    test_account_id2_ = AccountId::FromUserEmail(kTestAccount2);
     profile_manager_->SetLoggedIn(true);
     chromeos::WallpaperManager::Initialize();
     BrowserWithTestWindowTest::SetUp();
-    second_profile_ = CreateMultiUserProfile(kTestAccount2);
+    second_profile_ = CreateMultiUserProfile(test_account_id2_.GetUserEmail());
   }
 
   void TearDown() override {
@@ -66,7 +72,7 @@ class BrowserFinderChromeOSTest : public BrowserWithTestWindowTest {
   }
 
   TestingProfile* CreateProfile() override {
-    return CreateMultiUserProfile(kTestAccount1);
+    return CreateMultiUserProfile(test_account_id1_.GetUserEmail());
   }
 
   void DestroyProfile(TestingProfile* test_profile) override {
@@ -113,7 +119,7 @@ TEST_F(BrowserFinderChromeOSTest, FindBrowserOwnedByAnotherProfile) {
   scoped_ptr<Browser> browser(
       chrome::CreateBrowserWithAuraTestWindowForParams(nullptr, &params));
   GetUserWindowManager()->SetWindowOwner(browser->window()->GetNativeWindow(),
-                                         kTestAccount1);
+                                         test_account_id1_);
   EXPECT_EQ(1u,
             chrome::GetBrowserCount(profile(), chrome::HOST_DESKTOP_TYPE_ASH));
   EXPECT_TRUE(
@@ -124,7 +130,7 @@ TEST_F(BrowserFinderChromeOSTest, FindBrowserOwnedByAnotherProfile) {
   // Move the browser window to another user's desktop. Then no window should
   // be available for the current profile.
   GetUserWindowManager()->ShowWindowForUser(
-      browser->window()->GetNativeWindow(), kTestAccount2);
+      browser->window()->GetNativeWindow(), test_account_id2_);
   EXPECT_EQ(0u,
             chrome::GetBrowserCount(profile(), chrome::HOST_DESKTOP_TYPE_ASH));
   EXPECT_FALSE(

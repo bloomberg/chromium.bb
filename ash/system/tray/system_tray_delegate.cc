@@ -259,7 +259,7 @@ bool SystemTrayDelegate::IsSearchKeyMappedToCapsLock() {
 }
 
 tray::UserAccountsDelegate* SystemTrayDelegate::GetUserAccountsDelegate(
-    const std::string& user_id) {
+    const AccountId& account_id) {
   return nullptr;
 }
 

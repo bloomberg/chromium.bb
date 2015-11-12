@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
+#include "components/signin/core/account_id/account_id.h"
 
 // This is a test implementation of a MultiUserWindowManager which allows to
 // test a visiting window on another desktop. It will install and remove itself
@@ -16,24 +17,23 @@
 class TestMultiUserWindowManager : public chrome::MultiUserWindowManager {
  public:
   TestMultiUserWindowManager(Browser* visiting_browser,
-                             const std::string& desktop_owner);
+                             const AccountId& desktop_owner);
   ~TestMultiUserWindowManager() override;
 
   aura::Window* created_window() { return created_window_; }
 
   // MultiUserWindowManager overrides:
   void SetWindowOwner(aura::Window* window,
-                      const std::string& user_id) override;
-  const std::string& GetWindowOwner(aura::Window* window) const override;
+                      const AccountId& account_id) override;
+  const AccountId& GetWindowOwner(aura::Window* window) const override;
   void ShowWindowForUser(aura::Window* window,
-                         const std::string& user_id) override;
+                         const AccountId& account_id) override;
   bool AreWindowsSharedAmongUsers() const override;
   void GetOwnersOfVisibleWindows(
-      std::set<std::string>* user_ids) const override;
+      std::set<AccountId>* account_ids) const override;
   bool IsWindowOnDesktopOfUser(aura::Window* window,
-                               const std::string& user_id) const override;
-  const std::string& GetUserPresentingWindow(
-      aura::Window* window) const override;
+                               const AccountId& account_id) const override;
+  const AccountId& GetUserPresentingWindow(aura::Window* window) const override;
   void AddUser(content::BrowserContext* profile) override;
   void AddObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;
@@ -42,15 +42,15 @@ class TestMultiUserWindowManager : public chrome::MultiUserWindowManager {
   // The window of the visiting browser.
   aura::Window* browser_window_;
   // The owner of the visiting browser.
-  std::string browser_owner_;
+  AccountId browser_owner_;
   // The owner of the currently shown desktop.
-  std::string desktop_owner_;
+  AccountId desktop_owner_;
   // The created window.
   aura::Window* created_window_;
   // The location of the window.
-  std::string created_window_shown_for_;
+  AccountId created_window_shown_for_;
   // The current selected active user.
-  std::string current_user_id_;
+  AccountId current_account_id_;
 
   DISALLOW_COPY_AND_ASSIGN(TestMultiUserWindowManager);
 };

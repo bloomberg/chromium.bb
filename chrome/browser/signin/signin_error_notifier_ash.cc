@@ -26,6 +26,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/signin/core/account_id/account_id.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -174,7 +175,8 @@ void SigninErrorNotifier::OnErrorChanged() {
       kProfileSigninNotificationId);
 
   // Set |profile_id| for multi-user notification blocker.
-  notifier_id.profile_id = multi_user_util::GetUserIDFromProfile(profile_);
+  notifier_id.profile_id =
+      multi_user_util::GetAccountIdFromProfile(profile_).GetUserEmail();
 
   Notification notification(
       message_center::NOTIFICATION_TYPE_SIMPLE,

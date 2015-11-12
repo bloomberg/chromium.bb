@@ -955,7 +955,7 @@ void AccessibilityManager::SetProfile(Profile* profile) {
   UpdateVirtualKeyboardFromPref();
 }
 
-void AccessibilityManager::ActiveUserChanged(const std::string& user_id) {
+void AccessibilityManager::ActiveUserChanged(const AccountId& account_id) {
   SetProfile(ProfileManager::GetActiveUserProfile());
 }
 

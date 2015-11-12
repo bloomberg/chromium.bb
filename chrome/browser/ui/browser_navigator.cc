@@ -39,6 +39,7 @@
 
 #if defined(USE_ASH)
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
+#include "components/signin/core/account_id/account_id.h"
 #endif
 
 #if defined(USE_AURA)
@@ -446,14 +447,14 @@ void Navigate(NavigateParams* params) {
     if (manager) {
       aura::Window* src_window = source_browser->window()->GetNativeWindow();
       aura::Window* new_window = params->browser->window()->GetNativeWindow();
-      const std::string& src_user =
+      const AccountId& src_account_id =
           manager->GetUserPresentingWindow(src_window);
-      if (src_user != manager->GetUserPresentingWindow(new_window)) {
+      if (src_account_id != manager->GetUserPresentingWindow(new_window)) {
         // Once the window gets presented, it should be shown on the same
         // desktop as the desktop of the creating browser. Note that this
         // command will not show the window if it wasn't shown yet by the
         // browser creation.
-        manager->ShowWindowForUser(new_window, src_user);
+        manager->ShowWindowForUser(new_window, src_account_id);
       }
     }
   }

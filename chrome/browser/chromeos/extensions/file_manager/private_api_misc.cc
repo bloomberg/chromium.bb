@@ -40,6 +40,7 @@
 #include "chromeos/settings/timezone_settings.h"
 #include "components/drive/drive_pref_names.h"
 #include "components/drive/event_logger.h"
+#include "components/signin/core/account_id/account_id.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/user_manager/user_manager.h"
@@ -88,7 +89,8 @@ GetLoggedInProfileInfoList() {
     // Make a ProfileInfo.
     linked_ptr<api::file_manager_private::ProfileInfo> profile_info(
         new api::file_manager_private::ProfileInfo());
-    profile_info->profile_id = multi_user_util::GetUserIDFromProfile(profile);
+    profile_info->profile_id =
+        multi_user_util::GetAccountIdFromProfile(profile).GetUserEmail();
     profile_info->display_name = UTF16ToUTF8(user->GetDisplayName());
     // TODO(hirono): Remove the property from the profile_info.
     profile_info->is_current_profile = true;
@@ -376,17 +378,18 @@ bool FileManagerPrivateGetProfilesFunction::RunSync() {
   AppWindow* const app_window = GetCurrentAppWindow(this);
   chrome::MultiUserWindowManager* const window_manager =
       chrome::MultiUserWindowManager::GetInstance();
-  const std::string current_profile_id =
-      multi_user_util::GetUserIDFromProfile(GetProfile());
-  const std::string display_profile_id =
-      window_manager && app_window ? window_manager->GetUserPresentingWindow(
-                                         app_window->GetNativeWindow())
-                                   : "";
+  const AccountId current_profile_id =
+      multi_user_util::GetAccountIdFromProfile(GetProfile());
+  const AccountId display_profile_id =
+      window_manager && app_window
+          ? window_manager->GetUserPresentingWindow(
+                app_window->GetNativeWindow())
+          : EmptyAccountId();
 
   results_ = api::file_manager_private::GetProfiles::Results::Create(
-      profiles,
-      current_profile_id,
-      display_profile_id.empty() ? current_profile_id : display_profile_id);
+      profiles, current_profile_id.GetUserEmail(),
+      display_profile_id.is_valid() ? display_profile_id.GetUserEmail()
+                                    : current_profile_id.GetUserEmail());
   return true;
 }
 

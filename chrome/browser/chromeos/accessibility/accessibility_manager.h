@@ -164,7 +164,7 @@ class AccessibilityManager
   bool IsBrailleDisplayConnected() const;
 
   // SessionStateObserver overrides:
-  void ActiveUserChanged(const std::string& user_id) override;
+  void ActiveUserChanged(const AccountId& account_id) override;
 
   // ShellObserver overrides:
   void OnAppTerminating() override;

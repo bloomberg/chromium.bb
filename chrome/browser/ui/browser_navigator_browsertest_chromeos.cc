@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chromeos/chromeos_switches.h"
+#include "components/signin/core/account_id/account_id.h"
 #include "content/public/browser/web_contents.h"
 
 namespace {
@@ -73,9 +74,10 @@ IN_PROC_BROWSER_TEST_F(BrowserGuestSessionNavigatorTest,
   // Test 1: Test that a browser created from a visiting browser will be on the
   // same visiting desktop.
   {
-    const std::string desktop_user_id = "desktop_user_id@fake.com";
+    const AccountId desktop_account_id(
+        AccountId::FromUserEmail("desktop_user_id@fake.com"));
     TestMultiUserWindowManager* manager =
-        new TestMultiUserWindowManager(browser(), desktop_user_id);
+        new TestMultiUserWindowManager(browser(), desktop_account_id);
 
     EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
 
@@ -92,14 +94,14 @@ IN_PROC_BROWSER_TEST_F(BrowserGuestSessionNavigatorTest,
 
     aura::Window* created_window = manager->created_window();
     ASSERT_TRUE(created_window);
-    EXPECT_TRUE(manager->IsWindowOnDesktopOfUser(created_window,
-                                                 desktop_user_id));
+    EXPECT_TRUE(
+        manager->IsWindowOnDesktopOfUser(created_window, desktop_account_id));
   }
   // Test 2: Test that a window which is not visiting does not cause an owner
   // assignment of a newly created browser.
   {
-    std::string browser_owner =
-        multi_user_util::GetUserIDFromProfile(browser()->profile());
+    const AccountId browser_owner =
+        multi_user_util::GetAccountIdFromProfile(browser()->profile());
     TestMultiUserWindowManager* manager =
         new TestMultiUserWindowManager(browser(), browser_owner);
 

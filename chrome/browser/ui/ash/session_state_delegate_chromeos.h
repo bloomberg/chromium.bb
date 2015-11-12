@@ -42,7 +42,7 @@ class SessionStateDelegateChromeos
       ash::UserIndex index) const override;
   bool ShouldShowAvatar(aura::Window* window) const override;
   gfx::ImageSkia GetAvatarImageForWindow(aura::Window* window) const override;
-  void SwitchActiveUser(const std::string& user_id) override;
+  void SwitchActiveUser(const AccountId& account_id) override;
   void CycleActiveUser(CycleUser cycle_user) override;
   bool IsMultiProfileAllowedByPrimaryUserPolicy() const override;
   void AddSessionStateObserver(ash::SessionStateObserver* observer) override;
@@ -70,7 +70,7 @@ class SessionStateDelegateChromeos
 
   // Switches to a new user. This call might show a dialog asking the user if he
   // wants to stop desktop casting before switching.
-  void TryToSwitchUser(const std::string& user_id);
+  void TryToSwitchUser(const AccountId& account_id);
 
   // List of observers is only used on Chrome OS for now.
   base::ObserverList<ash::SessionStateObserver> session_state_observer_list_;

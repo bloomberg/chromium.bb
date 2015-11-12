@@ -78,8 +78,7 @@ void SwitchUser(ash::UserIndex user_index) {
       ash::Shell::GetInstance()->session_state_delegate();
   ash::MultiProfileUMA::RecordSwitchActiveUser(
       ash::MultiProfileUMA::SWITCH_ACTIVE_USER_BY_TRAY);
-  delegate->SwitchActiveUser(
-      delegate->GetUserInfo(user_index)->GetAccountId().GetUserEmail());
+  delegate->SwitchActiveUser(delegate->GetUserInfo(user_index)->GetAccountId());
 }
 
 class LogoutButton : public TrayPopupLabelButton {

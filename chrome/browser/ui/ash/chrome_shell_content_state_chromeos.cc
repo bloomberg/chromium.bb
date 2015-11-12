@@ -9,6 +9,7 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
+#include "components/signin/core/account_id/account_id.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_context.h"
 
@@ -25,18 +26,20 @@ content::BrowserContext* ChromeShellContentState::GetBrowserContextByIndex(
 
 content::BrowserContext* ChromeShellContentState::GetBrowserContextForWindow(
     aura::Window* window) {
-  const std::string& user_id =
+  const AccountId& account_id =
       chrome::MultiUserWindowManager::GetInstance()->GetWindowOwner(window);
-  return user_id.empty() ? nullptr
-                         : multi_user_util::GetProfileFromUserID(user_id);
+  return account_id.is_valid()
+             ? multi_user_util::GetProfileFromAccountId(account_id)
+             : nullptr;
 }
 
 content::BrowserContext*
 ChromeShellContentState::GetUserPresentingBrowserContextForWindow(
     aura::Window* window) {
-  const std::string& user_id =
+  const AccountId& account_id =
       chrome::MultiUserWindowManager::GetInstance()->GetUserPresentingWindow(
           window);
-  return user_id.empty() ? nullptr
-                         : multi_user_util::GetProfileFromUserID(user_id);
+  return account_id.is_valid()
+             ? multi_user_util::GetProfileFromAccountId(account_id)
+             : nullptr;
 }

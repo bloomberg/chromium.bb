@@ -68,6 +68,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/favicon/content/content_favicon_driver.h"
+#include "components/signin/core/account_id/account_id.h"
 #include "components/syncable_prefs/pref_service_syncable.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
@@ -310,8 +311,8 @@ class ChromeLauncherControllerUserSwitchObserver
 
 void ChromeLauncherControllerUserSwitchObserver::UserAddedToSession(
     const user_manager::User* active_user) {
-  Profile* profile = multi_user_util::GetProfileFromUserID(
-      active_user->email());
+  Profile* profile =
+      multi_user_util::GetProfileFromAccountId(active_user->GetAccountId());
   // If we do not have a profile yet, we postpone forwarding the notification
   // until it is loaded.
   if (!profile)
@@ -324,7 +325,8 @@ void ChromeLauncherControllerUserSwitchObserver::OnUserProfileReadyToSwitch(
     Profile* profile) {
   if (!added_user_ids_waiting_for_profiles_.empty()) {
     // Check if the profile is from a user which was on the waiting list.
-    std::string user_id = multi_user_util::GetUserIDFromProfile(profile);
+    std::string user_id =
+        multi_user_util::GetAccountIdFromProfile(profile).GetUserEmail();
     std::set<std::string>::iterator it = std::find(
         added_user_ids_waiting_for_profiles_.begin(),
         added_user_ids_waiting_for_profiles_.end(),
@@ -1056,14 +1058,14 @@ ChromeLauncherController::ActivateWindowOrMinimizeIfActive(
   if (chrome::MultiUserWindowManager::GetMultiProfileMode() ==
           chrome::MultiUserWindowManager::MULTI_PROFILE_MODE_SEPARATED) {
     aura::Window* native_window = window->GetNativeWindow();
-    const std::string& current_user =
-        multi_user_util::GetUserIDFromProfile(profile());
+    const AccountId& current_account_id =
+        multi_user_util::GetAccountIdFromProfile(profile());
     chrome::MultiUserWindowManager* manager =
         chrome::MultiUserWindowManager::GetInstance();
-    if (!manager->IsWindowOnDesktopOfUser(native_window, current_user)) {
+    if (!manager->IsWindowOnDesktopOfUser(native_window, current_account_id)) {
       ash::MultiProfileUMA::RecordTeleportAction(
           ash::MultiProfileUMA::TELEPORT_WINDOW_RETURN_BY_LAUNCHER);
-      manager->ShowWindowForUser(native_window, current_user);
+      manager->ShowWindowForUser(native_window, current_account_id);
       window->Activate();
       return ash::ShelfItemDelegate::kExistingWindowActivated;
     }
@@ -1406,8 +1408,9 @@ void ChromeLauncherController::RememberUnpinnedRunningApplicationOrder() {
     if (type == ash::TYPE_WINDOWED_APP || type == ash::TYPE_PLATFORM_APP)
       list.push_back(GetAppIDForShelfID(model_->items()[i].id));
   }
-  last_used_running_application_order_[
-      multi_user_util::GetUserIDFromProfile(profile_)] = list;
+  const std::string user_email =
+      multi_user_util::GetAccountIdFromProfile(profile_).GetUserEmail();
+  last_used_running_application_order_[user_email] = list;
 }
 
 void ChromeLauncherController::RestoreUnpinnedRunningApplicationOrder(
@@ -1465,7 +1468,8 @@ bool ChromeLauncherController::IsBrowserFromActiveUser(Browser* browser) {
 bool ChromeLauncherController::ShelfBoundsChangesProbablyWithUser(
     aura::Window* root_window,
     const std::string& user_id) const {
-  Profile* other_profile = multi_user_util::GetProfileFromUserID(user_id);
+  Profile* other_profile = multi_user_util::GetProfileFromAccountId(
+      AccountId::FromUserEmail(user_id));
   DCHECK_NE(other_profile, profile_);
 
   // Note: The Auto hide state from preferences is not the same as the actual

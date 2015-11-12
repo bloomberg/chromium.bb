@@ -21,11 +21,16 @@ namespace test {
 
 namespace {
 
-// The the "canonicalized" Account ID from a given |email| address.
-AccountId GetAccountIdFromEmail(const std::string& email) {
+// Returns the "canonicalized" email from a given |email| address.
+std::string GetUserIdFromEmail(const std::string& email) {
   std::string user_id = email;
   std::transform(user_id.begin(), user_id.end(), user_id.begin(), ::tolower);
-  return AccountId::FromUserEmail(user_id);
+  return user_id;
+}
+
+// Returns Account ID from a given |email| address.
+AccountId GetAccountIdFromEmail(const std::string& email) {
+  return AccountId::FromUserEmail(GetUserIdFromEmail(email));
 }
 
 }  // namespace
@@ -101,8 +106,8 @@ TestSessionStateDelegate::~TestSessionStateDelegate() {
   STLDeleteElements(&user_list_);
 }
 
-void TestSessionStateDelegate::AddUser(const std::string& user_id) {
-  user_list_.push_back(new MockUserInfo(user_id));
+void TestSessionStateDelegate::AddUser(const AccountId& account_id) {
+  user_list_.push_back(new MockUserInfo(account_id.GetUserEmail()));
 }
 
 const user_manager::UserInfo* TestSessionStateDelegate::GetActiveUserInfo()
@@ -216,10 +221,10 @@ gfx::ImageSkia TestSessionStateDelegate::GetAvatarImageForWindow(
   return gfx::ImageSkia();
 }
 
-void TestSessionStateDelegate::SwitchActiveUser(const std::string& user_id) {
-  const AccountId account_id(GetAccountIdFromEmail(user_id));
+void TestSessionStateDelegate::SwitchActiveUser(const AccountId& account_id) {
   // Make sure this is a user id and not an email address.
-  EXPECT_EQ(user_id, account_id.GetUserEmail());
+  EXPECT_EQ(account_id.GetUserEmail(),
+            GetUserIdFromEmail(account_id.GetUserEmail()));
   active_user_index_ = 0;
   for (std::vector<MockUserInfo*>::iterator iter = user_list_.begin();
        iter != user_list_.end();
@@ -233,7 +238,7 @@ void TestSessionStateDelegate::SwitchActiveUser(const std::string& user_id) {
 }
 
 void TestSessionStateDelegate::CycleActiveUser(CycleUser cycle_user) {
-  SwitchActiveUser("someone@tray");
+  SwitchActiveUser(AccountId::FromUserEmail("someone@tray"));
 }
 
 bool TestSessionStateDelegate::IsMultiProfileAllowedByPrimaryUserPolicy()
