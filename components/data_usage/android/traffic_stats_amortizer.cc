@@ -19,7 +19,7 @@ namespace android {
 namespace {
 
 // Convenience typedef.
-typedef std::vector<std::pair<linked_ptr<DataUse>,
+typedef std::vector<std::pair<scoped_ptr<DataUse>,
                               DataUseAmortizer::AmortizationCompleteCallback>>
     DataUseBuffer;
 
@@ -147,7 +147,8 @@ void TrafficStatsAmortizer::AmortizeDataUse(
   // TODO(sclittle): Combine consecutive buffered DataUse objects that are
   // identical except for byte counts and have the same callback.
   buffered_data_use_.push_back(
-      std::make_pair(linked_ptr<DataUse>(data_use.release()), callback));
+      std::pair<scoped_ptr<DataUse>, AmortizationCompleteCallback>(
+          data_use.Pass(), callback));
 
   AddPreAmortizationBytes(tx_bytes, rx_bytes);
 }

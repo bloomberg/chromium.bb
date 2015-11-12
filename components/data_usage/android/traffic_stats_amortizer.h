@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
@@ -124,9 +123,8 @@ class TrafficStatsAmortizer : public DataUseAmortizer {
 
   // Buffer of pre-amortization data use that has accumulated since the last
   // time amortization was performed, paired with the callbacks for each DataUse
-  // object. Only the |buffered_data_use_| may hold linked_ptrs to the DataUse
-  // objects, so that these linked_ptrs can be released later.
-  std::vector<std::pair<linked_ptr<DataUse>, AmortizationCompleteCallback>>
+  // object.
+  std::vector<std::pair<scoped_ptr<DataUse>, AmortizationCompleteCallback>>
       buffered_data_use_;
 
   // Indicates if TrafficStats byte counts were available during the last time
