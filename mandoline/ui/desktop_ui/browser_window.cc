@@ -25,6 +25,7 @@
 #include "ui/mojo/init/ui_init.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/label_button.h"
+#include "ui/views/layout/layout_manager.h"
 #include "ui/views/mus/aura_init.h"
 #include "ui/views/mus/display_converter.h"
 #include "ui/views/mus/native_widget_mus.h"
@@ -67,6 +68,25 @@ class ProgressView : public views::View {
   bool loading_;
 
   DISALLOW_COPY_AND_ASSIGN(ProgressView);
+};
+
+class BrowserWindow::LayoutManagerImpl : public views::LayoutManager {
+ public:
+  explicit LayoutManagerImpl(BrowserWindow* window) : window_(window) {}
+  ~LayoutManagerImpl() override {}
+
+ private:
+  // views::LayoutManager:
+  gfx::Size GetPreferredSize(const views::View* view) const override {
+    return gfx::Size();
+  }
+  void Layout(views::View* host) override {
+    window_->Layout(host);
+  }
+
+  BrowserWindow* window_;
+
+  DISALLOW_COPY_AND_ASSIGN(LayoutManagerImpl);
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -339,42 +359,6 @@ void BrowserWindow::Create(mojo::ApplicationConnection* connection,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// BrowserWindow, views::LayoutManager implementation:
-
-gfx::Size BrowserWindow::GetPreferredSize(const views::View* view) const {
-  return gfx::Size();
-}
-
-void BrowserWindow::Layout(views::View* host) {
-  // TODO(fsamuel): All bounds should be in physical pixels.
-  gfx::Rect bounds_in_physical_pixels(host->bounds());
-  float inverse_device_pixel_ratio =
-      1.0f / root_->viewport_metrics().device_pixel_ratio;
-
-  gfx::Rect toolbar_bounds = gfx::ScaleToEnclosingRect(
-      bounds_in_physical_pixels, inverse_device_pixel_ratio);
-  toolbar_bounds.Inset(10, 10, 10, toolbar_bounds.height() - 40);
-  toolbar_view_->SetBoundsRect(toolbar_bounds);
-
-  find_bar_view_->SetBoundsRect(toolbar_bounds);
-
-  gfx::Rect progress_bar_bounds(toolbar_bounds.x(), toolbar_bounds.bottom() + 2,
-                                toolbar_bounds.width(), 5);
-
-  // The content view bounds are in physical pixels.
-  gfx::Rect content_bounds(DIPSToPixels(progress_bar_bounds.x()),
-                           DIPSToPixels(progress_bar_bounds.bottom() + 10), 0,
-                           0);
-  content_bounds.set_width(DIPSToPixels(progress_bar_bounds.width()));
-  content_bounds.set_height(host->bounds().height() - content_bounds.y() -
-                            DIPSToPixels(10));
-  content_->SetBounds(content_bounds);
-
-  // The omnibox view bounds are in physical pixels.
-  omnibox_view_->SetBounds(bounds_in_physical_pixels);
-}
-
-////////////////////////////////////////////////////////////////////////////////
 // BrowserWindow, FindBarDelegate implementation:
 
 void BrowserWindow::OnDoFind(const std::string& find, bool forward) {
@@ -408,7 +392,8 @@ void BrowserWindow::Init(mus::Window* root) {
   progress_bar_ = new ProgressView;
   widget_delegate->GetContentsView()->AddChildView(toolbar_view_);
   widget_delegate->GetContentsView()->AddChildView(progress_bar_);
-  widget_delegate->GetContentsView()->SetLayoutManager(this);
+  widget_delegate->GetContentsView()->SetLayoutManager(
+      new LayoutManagerImpl(this));
 
   find_bar_view_ = new FindBarView(this);
   widget_delegate->GetContentsView()->AddChildView(find_bar_view_);
@@ -435,6 +420,35 @@ void BrowserWindow::EmbedOmnibox() {
   //             currently prevents the embedded app from changing window z for
   //             its own window.
   omnibox_view_->MoveToFront();
+}
+
+void BrowserWindow::Layout(views::View* host) {
+  // TODO(fsamuel): All bounds should be in physical pixels.
+  gfx::Rect bounds_in_physical_pixels(host->bounds());
+  float inverse_device_pixel_ratio =
+      1.0f / root_->viewport_metrics().device_pixel_ratio;
+
+  gfx::Rect toolbar_bounds = gfx::ScaleToEnclosingRect(
+      bounds_in_physical_pixels, inverse_device_pixel_ratio);
+  toolbar_bounds.Inset(10, 10, 10, toolbar_bounds.height() - 40);
+  toolbar_view_->SetBoundsRect(toolbar_bounds);
+
+  find_bar_view_->SetBoundsRect(toolbar_bounds);
+
+  gfx::Rect progress_bar_bounds(toolbar_bounds.x(), toolbar_bounds.bottom() + 2,
+                                toolbar_bounds.width(), 5);
+
+  // The content view bounds are in physical pixels.
+  gfx::Rect content_bounds(DIPSToPixels(progress_bar_bounds.x()),
+                           DIPSToPixels(progress_bar_bounds.bottom() + 10), 0,
+                           0);
+  content_bounds.set_width(DIPSToPixels(progress_bar_bounds.width()));
+  content_bounds.set_height(host->bounds().height() - content_bounds.y() -
+                            DIPSToPixels(10));
+  content_->SetBounds(content_bounds);
+
+  // The omnibox view bounds are in physical pixels.
+  omnibox_view_->SetBounds(bounds_in_physical_pixels);
 }
 
 }  // namespace mandoline

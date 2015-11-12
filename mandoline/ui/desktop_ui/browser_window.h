@@ -15,7 +15,6 @@
 #include "mandoline/ui/desktop_ui/public/interfaces/view_embedder.mojom.h"
 #include "mojo/application/public/cpp/interface_factory.h"
 #include "mojo/common/weak_binding_set.h"
-#include "ui/views/layout/layout_manager.h"
 #include "url/gurl.h"
 
 namespace mojo {
@@ -31,6 +30,7 @@ class UIInit;
 
 namespace views {
 class AuraInit;
+class View;
 }
 
 namespace mandoline {
@@ -45,7 +45,6 @@ class BrowserWindow : public mus::WindowTreeDelegate,
                       public web_view::mojom::WebViewClient,
                       public ViewEmbedder,
                       public mojo::InterfaceFactory<ViewEmbedder>,
-                      public views::LayoutManager,
                       public FindBarDelegate {
  public:
   BrowserWindow(mojo::ApplicationImpl* app,
@@ -61,6 +60,8 @@ class BrowserWindow : public mus::WindowTreeDelegate,
   void GoForward();
 
  private:
+  class LayoutManagerImpl;
+
   ~BrowserWindow() override;
 
   float DIPSToPixels(float value) const;
@@ -93,16 +94,14 @@ class BrowserWindow : public mus::WindowTreeDelegate,
               mojo::InterfaceRequest<ViewEmbedder> request) override;
 
 
-  // Overridden from views::LayoutManager:
-  gfx::Size GetPreferredSize(const views::View* view) const override;
-  void Layout(views::View* host) override;
-
   // Overridden from FindBarDelegate:
   void OnDoFind(const std::string& find, bool forward) override;
   void OnHideFindBar() override;
 
   void Init(mus::Window* root);
   void EmbedOmnibox();
+
+  void Layout(views::View* host);
 
   mojo::ApplicationImpl* app_;
   scoped_ptr<ui::mojo::UIInit> ui_init_;
