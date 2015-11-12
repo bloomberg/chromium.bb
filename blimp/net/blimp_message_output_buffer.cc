@@ -17,7 +17,7 @@ BlimpMessageOutputBuffer::~BlimpMessageOutputBuffer() {
 }
 
 void BlimpMessageOutputBuffer::ProcessMessage(
-    const BlimpMessage& message,
+    scoped_ptr<BlimpMessage> message,
     const net::CompletionCallback& callback) {
   NOTIMPLEMENTED();
 }

@@ -5,6 +5,7 @@
 #ifndef BLIMP_NET_BLIMP_MESSAGE_PROCESSOR_H_
 #define BLIMP_NET_BLIMP_MESSAGE_PROCESSOR_H_
 
+#include "base/memory/scoped_ptr.h"
 #include "net/base/completion_callback.h"
 
 namespace blimp {
@@ -21,7 +22,7 @@ class BlimpMessageProcessor {
 
   // Processes the BlimpMessage asynchronously.
   // The result of the operation is returned to the caller via |callback|.
-  virtual void ProcessMessage(const BlimpMessage& message,
+  virtual void ProcessMessage(scoped_ptr<BlimpMessage> message,
                               const net::CompletionCallback& callback) = 0;
 };
 

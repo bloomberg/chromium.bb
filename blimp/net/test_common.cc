@@ -21,6 +21,12 @@ MockBlimpMessageProcessor::MockBlimpMessageProcessor() {}
 
 MockBlimpMessageProcessor::~MockBlimpMessageProcessor() {}
 
+void MockBlimpMessageProcessor::ProcessMessage(
+    scoped_ptr<BlimpMessage> message,
+    const net::CompletionCallback& callback) {
+  MockableProcessMessage(*message, callback);
+}
+
 std::string EncodeHeader(size_t size) {
   scoped_ptr<char[]> serialized(new char[kPacketHeaderSizeBytes]);
   uint32 net_size = base::HostToNet32(size);

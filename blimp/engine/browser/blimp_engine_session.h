@@ -55,7 +55,7 @@ class BlimpEngineSession : public BlimpMessageProcessor,
 
   // BlimpMessageProcessor implementation.
   // TODO(haibinlu): Delete this and move to BlimpMessageDemultiplexer.
-  void ProcessMessage(const BlimpMessage& message,
+  void ProcessMessage(scoped_ptr<BlimpMessage> message,
                       const net::CompletionCallback& callback) override;
 
  private:

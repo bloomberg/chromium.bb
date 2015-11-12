@@ -33,7 +33,7 @@ class BLIMP_NET_EXPORT BlimpMessageOutputBuffer
   // BlimpMessageProcessor implementation.
   // |callback|, if set, will be called once the remote end has acknowledged the
   // receipt of |message|.
-  void ProcessMessage(const BlimpMessage& message,
+  void ProcessMessage(scoped_ptr<BlimpMessage> message,
                       const net::CompletionCallback& callback) override;
 
   // MessageCheckpointObserver implementation.

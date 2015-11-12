@@ -77,7 +77,12 @@ class MockBlimpMessageProcessor : public BlimpMessageProcessor {
 
   ~MockBlimpMessageProcessor() override;
 
-  MOCK_METHOD2(ProcessMessage,
+  // Adapts calls from ProcessMessage to MockableProcessMessage by
+  // unboxing the |message| scoped_ptr for GMock compatibility.
+  void ProcessMessage(scoped_ptr<BlimpMessage> message,
+                      const net::CompletionCallback& callback) override;
+
+  MOCK_METHOD2(MockableProcessMessage,
                void(const BlimpMessage& message,
                     const net::CompletionCallback& callback));
 };

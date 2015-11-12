@@ -42,16 +42,16 @@ void BlimpBrowserMainParts::PreMainMessageLoopRun() {
   // TODO(haibinlu): Create EngineConnectionManager to accept new connections.
   // TODO(haibinlu): Remove these test messages and switch to using the
   // MessageDispatcher for incoming messages.
-  BlimpMessage message;
-  message.set_type(BlimpMessage::CONTROL);
-  message.mutable_control()->set_type(ControlMessage::CREATE_TAB);
-  engine_session_->ProcessMessage(message, net::CompletionCallback());
-  message.clear_control();
-  message.set_type(BlimpMessage::NAVIGATION);
-  message.mutable_navigation()->set_type(NavigationMessage::LOAD_URL);
-  message.mutable_navigation()->mutable_load_url()->set_url(
+  scoped_ptr<BlimpMessage> message(new BlimpMessage);
+  message->set_type(BlimpMessage::CONTROL);
+  message->mutable_control()->set_type(ControlMessage::CREATE_TAB);
+  engine_session_->ProcessMessage(message.Pass(), net::CompletionCallback());
+  message.reset(new BlimpMessage);
+  message->set_type(BlimpMessage::NAVIGATION);
+  message->mutable_navigation()->set_type(NavigationMessage::LOAD_URL);
+  message->mutable_navigation()->mutable_load_url()->set_url(
       "https://www.google.com/");
-  engine_session_->ProcessMessage(message, net::CompletionCallback());
+  engine_session_->ProcessMessage(message.Pass(), net::CompletionCallback());
 }
 
 void BlimpBrowserMainParts::PostMainMessageLoopRun() {

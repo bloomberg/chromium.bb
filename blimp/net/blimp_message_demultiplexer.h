@@ -32,7 +32,7 @@ class BLIMP_NET_EXPORT BlimpMessageDemultiplexer
   void AddProcessor(BlimpMessage::Type type, BlimpMessageProcessor* handler);
 
   // BlimpMessageProcessor implementation.
-  void ProcessMessage(const BlimpMessage& message,
+  void ProcessMessage(scoped_ptr<BlimpMessage> message,
                       const net::CompletionCallback& callback) override;
 
  private:

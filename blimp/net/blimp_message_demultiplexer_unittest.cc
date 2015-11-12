@@ -23,14 +23,19 @@ namespace blimp {
 
 class BlimpMessageDemultiplexerTest : public testing::Test {
  public:
+  BlimpMessageDemultiplexerTest()
+      : input_msg_(new BlimpMessage), compositor_msg_(new BlimpMessage) {}
+
   void SetUp() override {
     demux_.AddProcessor(BlimpMessage::INPUT, &receiver1_);
     demux_.AddProcessor(BlimpMessage::COMPOSITOR, &receiver2_);
+    input_msg_->set_type(BlimpMessage::INPUT);
+    compositor_msg_->set_type(BlimpMessage::COMPOSITOR);
   }
 
  protected:
-  BlimpMessage input_msg_;
-  BlimpMessage compositor_msg_;
+  scoped_ptr<BlimpMessage> input_msg_;
+  scoped_ptr<BlimpMessage> compositor_msg_;
   MockBlimpMessageProcessor receiver1_;
   MockBlimpMessageProcessor receiver2_;
   net::CompletionCallback captured_cb_;
@@ -38,21 +43,19 @@ class BlimpMessageDemultiplexerTest : public testing::Test {
 };
 
 TEST_F(BlimpMessageDemultiplexerTest, ProcessMessageOK) {
-  EXPECT_CALL(receiver1_, ProcessMessage(Ref(input_msg_), _))
+  EXPECT_CALL(receiver1_, MockableProcessMessage(Ref(*input_msg_), _))
       .WillOnce(SaveArg<1>(&captured_cb_));
-  input_msg_.set_type(BlimpMessage::INPUT);
   net::TestCompletionCallback cb;
-  demux_.ProcessMessage(input_msg_, cb.callback());
+  demux_.ProcessMessage(input_msg_.Pass(), cb.callback());
   captured_cb_.Run(net::OK);
   EXPECT_EQ(net::OK, cb.WaitForResult());
 }
 
 TEST_F(BlimpMessageDemultiplexerTest, ProcessMessageFailed) {
-  EXPECT_CALL(receiver2_, ProcessMessage(Ref(compositor_msg_), _))
+  EXPECT_CALL(receiver2_, MockableProcessMessage(Ref(*compositor_msg_), _))
       .WillOnce(SaveArg<1>(&captured_cb_));
-  compositor_msg_.set_type(BlimpMessage::COMPOSITOR);
   net::TestCompletionCallback cb2;
-  demux_.ProcessMessage(compositor_msg_, cb2.callback());
+  demux_.ProcessMessage(compositor_msg_.Pass(), cb2.callback());
   captured_cb_.Run(net::ERR_FAILED);
   EXPECT_EQ(net::ERR_FAILED, cb2.WaitForResult());
 }

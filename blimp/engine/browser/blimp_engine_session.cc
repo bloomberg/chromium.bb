@@ -135,35 +135,35 @@ void BlimpEngineSession::Reload(const int target_tab_id) {
 }
 
 void BlimpEngineSession::ProcessMessage(
-    const BlimpMessage& message,
+    scoped_ptr<BlimpMessage> message,
     const net::CompletionCallback& callback) {
-  DCHECK(message.type() == BlimpMessage::CONTROL ||
-         message.type() == BlimpMessage::NAVIGATION);
+  DCHECK(message->type() == BlimpMessage::CONTROL ||
+         message->type() == BlimpMessage::NAVIGATION);
 
-  if (message.type() == BlimpMessage::CONTROL) {
-    switch (message.control().type()) {
+  if (message->type() == BlimpMessage::CONTROL) {
+    switch (message->control().type()) {
       case ControlMessage::CREATE_TAB:
-        CreateWebContents(message.target_tab_id());
+        CreateWebContents(message->target_tab_id());
         break;
       case ControlMessage::CLOSE_TAB:
-        CloseWebContents(message.target_tab_id());
+        CloseWebContents(message->target_tab_id());
       default:
         NOTIMPLEMENTED();
     }
-  } else if (message.type() == BlimpMessage::NAVIGATION && web_contents_) {
-    switch (message.navigation().type()) {
+  } else if (message->type() == BlimpMessage::NAVIGATION && web_contents_) {
+    switch (message->navigation().type()) {
       case NavigationMessage::LOAD_URL:
-        LoadUrl(message.target_tab_id(),
-                GURL(message.navigation().load_url().url()));
+        LoadUrl(message->target_tab_id(),
+                GURL(message->navigation().load_url().url()));
         break;
       case NavigationMessage::GO_BACK:
-        GoBack(message.target_tab_id());
+        GoBack(message->target_tab_id());
         break;
       case NavigationMessage::GO_FORWARD:
-        GoForward(message.target_tab_id());
+        GoForward(message->target_tab_id());
         break;
       case NavigationMessage::RELOAD:
-        Reload(message.target_tab_id());
+        Reload(message->target_tab_id());
         break;
       default:
         NOTIMPLEMENTED();

@@ -33,18 +33,18 @@ void BlimpMessageDemultiplexer::AddProcessor(BlimpMessage::Type type,
 }
 
 void BlimpMessageDemultiplexer::ProcessMessage(
-    const BlimpMessage& message,
+    scoped_ptr<BlimpMessage> message,
     const net::CompletionCallback& callback) {
-  auto receiver_iter = feature_receiver_map_.find(message.type());
+  auto receiver_iter = feature_receiver_map_.find(message->type());
   if (receiver_iter == feature_receiver_map_.end()) {
     DLOG(FATAL) << "No registered receiver for "
-                << BlimpMessageToDebugString(message) << ".";
+                << BlimpMessageToDebugString(*message) << ".";
     if (!callback.is_null()) {
       callback.Run(net::ERR_NOT_IMPLEMENTED);
     }
   }
 
-  receiver_iter->second->ProcessMessage(message, callback);
+  receiver_iter->second->ProcessMessage(message.Pass(), callback);
 }
 
 }  // namespace blimp
