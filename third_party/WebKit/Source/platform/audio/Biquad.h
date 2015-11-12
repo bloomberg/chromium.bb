@@ -63,14 +63,6 @@ public:
     void setAllpassParams(double frequency, double Q);
     void setNotchParams(double frequency, double Q);
 
-    // Set the biquad coefficients given a single zero (other zero will be conjugate)
-    // and a single pole (other pole will be conjugate)
-    void setZeroPolePairs(const std::complex<double>& zero, const std::complex<double>& pole);
-
-    // Set the biquad coefficients given a single pole (other pole will be conjugate)
-    // (The zeroes will be the inverse of the poles)
-    void setAllpassPole(const std::complex<double>&);
-
     // Resets filter state
     void reset();
 

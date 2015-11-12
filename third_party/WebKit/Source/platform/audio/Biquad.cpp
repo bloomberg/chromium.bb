@@ -524,27 +524,6 @@ void Biquad::setBandpassParams(double frequency, double Q)
     }
 }
 
-void Biquad::setZeroPolePairs(const std::complex<double>&zero, const std::complex<double>&pole)
-{
-    double b0 = 1;
-    double b1 = -2 * zero.real();
-
-    double zeroMag = abs(zero);
-    double b2 = zeroMag * zeroMag;
-
-    double a1 = -2 * pole.real();
-
-    double poleMag = abs(pole);
-    double a2 = poleMag * poleMag;
-    setNormalizedCoefficients(b0, b1, b2, 1, a1, a2);
-}
-
-void Biquad::setAllpassPole(const std::complex<double>&pole)
-{
-    std::complex<double> zero = std::complex<double>(1, 0) / pole;
-    setZeroPolePairs(zero, pole);
-}
-
 void Biquad::getFrequencyResponse(int nFrequencies,
                                   const float* frequency,
                                   float* magResponse,
