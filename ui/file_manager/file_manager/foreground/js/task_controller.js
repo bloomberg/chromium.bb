@@ -185,26 +185,32 @@ TaskController.prototype.onTaskItemClicked_ = function(event) {
  * @private
  */
 TaskController.prototype.changeDefaultTask_ = function(selection, task) {
-  chrome.fileManagerPrivate.setDefaultTask(
-      task.taskId,
-      selection.entries,
-      assert(selection.mimeTypes),
-      util.checkAPIError);
-  this.metadataUpdateController_.refreshCurrentDirectoryMetadata();
+  var entries = selection.entries;
 
-  // Update task menu button unless the task button was updated other selection.
-  if (this.selectionHandler_.selection === selection) {
-    this.tasks_ = null;
-    this.getFileTasks()
-        .then(function(tasks) {
-          tasks.display(this.ui_.taskMenuButton);
-        }.bind(this))
-        .catch(function(error) {
-          if (error)
-            console.error(error.stack || error);
-        });
-  }
-  this.selectionHandler_.onFileSelectionChanged();
+  Promise.all(entries.map((entry) => this.getMimeType_(entry))).then(function(
+      mimeTypes) {
+    chrome.fileManagerPrivate.setDefaultTask(
+        task.taskId,
+        entries,
+        mimeTypes,
+        util.checkAPIError);
+    this.metadataUpdateController_.refreshCurrentDirectoryMetadata();
+
+    // Update task menu button unless the task button was updated other
+    // selection.
+    if (this.selectionHandler_.selection === selection) {
+      this.tasks_ = null;
+      this.getFileTasks()
+          .then(function(tasks) {
+            tasks.display(this.ui_.taskMenuButton);
+          }.bind(this))
+          .catch(function(error) {
+            if (error)
+              console.error(error.stack || error);
+          });
+    }
+    this.selectionHandler_.onFileSelectionChanged();
+  }.bind(this));
 };
 
 /**
