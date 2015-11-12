@@ -332,14 +332,14 @@ AudioPlayer.HEADER_HEIGHT = 33;  // 32px + border 1px
  * @type {number}
  * @const
  */
-AudioPlayer.TRACK_HEIGHT = 48;
+AudioPlayer.TRACK_HEIGHT = 44;
 
 /**
  * Controls bar height in pixels.
  * @type {number}
  * @const
  */
-AudioPlayer.CONTROLS_HEIGHT = 96;
+AudioPlayer.CONTROLS_HEIGHT = 73;  // 72px + border 1px
 
 /**
  * Default number of items in the expanded mode.
