@@ -18,9 +18,10 @@ import org.chromium.base.Callback;
  */
 public interface AccountManagerDelegate {
     /**
-     * Use the asynchronous getAccountsByType(String, Callback<Account[]>) instead.
+     * This method is deprecated; please use the asynchronous version below instead.
+     *
+     * See http://crbug.com/517697 for details.
      */
-    @Deprecated
     Account[] getAccountsByType(String type);
 
     void getAccountsByType(String type, Callback<Account[]> callback);

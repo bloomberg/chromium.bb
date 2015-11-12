@@ -151,8 +151,9 @@ public class AccountManagerHelper {
     }
 
     /**
-     * Use the asynchronous version below instead. See http://crbug.com/517697.
-     * @deprecated
+     * This method is deprecated; please use the asynchronous version below instead.
+     *
+     * See http://crbug.com/517697 for details.
      */
     public List<String> getGoogleAccountNames() {
         List<String> accountNames = new ArrayList<String>();
@@ -179,8 +180,9 @@ public class AccountManagerHelper {
     }
 
     /**
-     * Use the asynchronous version below instead. See http://crbug.com/517697.
-     * @deprecated
+     * This method is deprecated; please use the asynchronous version below instead.
+     *
+     * See http://crbug.com/517697 for details.
      */
     public Account[] getGoogleAccounts() {
         return mAccountManager.getAccountsByType(GOOGLE_ACCOUNT_TYPE);
@@ -194,8 +196,9 @@ public class AccountManagerHelper {
     }
 
     /**
-     * Use the asynchronous version below instead. See http://crbug.com/517697.
-     * @deprecated
+     * This method is deprecated; please use the asynchronous version below instead.
+     *
+     * See http://crbug.com/517697 for details.
      */
     public boolean hasGoogleAccounts() {
         return getGoogleAccounts().length > 0;
@@ -227,8 +230,9 @@ public class AccountManagerHelper {
     }
 
     /**
-     * Use the asynchronous version below instead. See http://crbug.com/517697.
-     * @deprecated
+     * This method is deprecated; please use the asynchronous version below instead.
+     *
+     * See http://crbug.com/517697 for details.
      */
     public Account getAccountFromName(String accountName) {
         String canonicalName = canonicalizeName(accountName);
@@ -262,8 +266,9 @@ public class AccountManagerHelper {
     }
 
     /**
-     * Use the asynchronous version below instead. See http://crbug.com/517697.
-     * @deprecated
+     * This method is deprecated; please use the asynchronous version below instead.
+     *
+     * See http://crbug.com/517697 for details.
      */
     public boolean hasAccountForName(String accountName) {
         return getAccountFromName(accountName) != null;
@@ -282,7 +287,9 @@ public class AccountManagerHelper {
     }
 
     /**
-     * @return Whether or not there is an account authenticator for Google accounts.
+     * This method is deprecated; please use the asynchronous version below instead.
+     *
+     * See http://crbug.com/517697 for details.
      */
     public boolean hasGoogleAccountAuthenticator() {
         AuthenticatorDescription[] descs = mAccountManager.getAuthenticatorTypes();
