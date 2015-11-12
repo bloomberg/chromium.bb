@@ -27,13 +27,19 @@ async_test(function(test) {
         })
         .then(function(pushSubscription) {
             var reflectedObject = JSON.parse(JSON.stringify(pushSubscription));
-            var expectedProperties = ['endpoint'];
 
-            assert_equals(expectedProperties.length,
-                          Object.getOwnPropertyNames(reflectedObject).length);
+            assert_own_property(reflectedObject, 'endpoint');
+            assert_equals(reflectedObject.endpoint, pushSubscription.endpoint);
 
-            for (var key of expectedProperties)
-                assert_equals(reflectedObject[key], pushSubscription[key]);
+            assert_own_property(reflectedObject, 'keys');
+            assert_own_property(reflectedObject.keys, 'p256dh');
+
+            var key = btoa(String.fromCharCode.apply(null, new Uint8Array(pushSubscription.getKey('p256dh'))));
+
+            // Convert |key| to the base64url alphabet by replacing non-URL safe characters.
+            key = key.replace(/\//g, '_').replace(/\+/g, '-');
+
+            assert_equals(reflectedObject.keys.p256dh, key);
 
             return service_worker_unregister_and_done(test, workerScope);
         })

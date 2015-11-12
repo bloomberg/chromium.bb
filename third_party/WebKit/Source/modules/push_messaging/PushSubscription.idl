@@ -18,5 +18,5 @@ enum PushEncryptionKeyName {
     [RuntimeEnabled=PushMessagingData] ArrayBuffer? getKey(PushEncryptionKeyName name);
     [CallWith=ScriptState] Promise<boolean> unsubscribe();
 
-    serializer = { attribute };
+    serializer;
 };
