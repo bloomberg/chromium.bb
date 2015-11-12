@@ -127,9 +127,11 @@ public class DeferredStartupHandler {
             ChromePreferenceManager.getInstance(application).setCustomTabsEnabled(true);
         }
 
-        // Start Physical Web
+        // Start or stop Physical Web
         if (PhysicalWeb.featureIsEnabled()) {
             PhysicalWeb.startPhysicalWeb(application);
+        } else {
+            PhysicalWeb.stopPhysicalWeb(application);
         }
 
         mDeferredStartupComplete = true;

@@ -18,6 +18,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.notifications.NotificationConstants;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -90,6 +91,15 @@ public class UrlManager {
         return getCachedUrls();
     }
 
+    /**
+     * Forget all stored URLs and clear the notification.
+     */
+    public void clearUrls() {
+        Set<String> emptySet = Collections.emptySet();
+        putCachedUrls(emptySet);
+        updateNotification(emptySet);
+    }
+
     private Set<String> getCachedUrls() {
         // Check the version.
         SharedPreferences prefs = mContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
@@ -121,6 +131,11 @@ public class UrlManager {
     }
 
     private void updateNotification(Set<String> urls) {
+        if (urls.isEmpty()) {
+            mNotificationManager.cancel(NotificationConstants.NOTIFICATION_ID_PHYSICAL_WEB);
+            return;
+        }
+
         mPwsClient.resolve(urls, new PwsClient.ResolveScanCallback() {
             @Override
             public void onPwsResults(Collection<PwsResult> pwsResults) {

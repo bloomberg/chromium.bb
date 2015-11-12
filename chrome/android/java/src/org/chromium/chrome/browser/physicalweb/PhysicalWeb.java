@@ -4,6 +4,9 @@
 
 package org.chromium.chrome.browser.physicalweb;
 
+import android.content.Context;
+import android.os.AsyncTask;
+
 import org.chromium.base.CommandLine;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -35,5 +38,27 @@ public class PhysicalWeb {
     public static void startPhysicalWeb(ChromeApplication application) {
         PhysicalWebBleClient physicalWebBleClient = PhysicalWebBleClient.getInstance(application);
         physicalWebBleClient.subscribe();
+        clearUrlsAsync(application);
+    }
+
+    /**
+     * Stop the Physical Web feature.
+     * @param application An instance of {@link ChromeApplication}, used to get the
+     * appropriate PhysicalWebBleClient implementation.
+     */
+    public static void stopPhysicalWeb(ChromeApplication application) {
+        PhysicalWebBleClient physicalWebBleClient = PhysicalWebBleClient.getInstance(application);
+        physicalWebBleClient.unsubscribe();
+        clearUrlsAsync(application);
+    }
+
+    private static void clearUrlsAsync(final Context context) {
+        Runnable task = new Runnable() {
+            @Override
+            public void run() {
+                UrlManager.getInstance(context).clearUrls();
+            }
+        };
+        AsyncTask.THREAD_POOL_EXECUTOR.execute(task);
     }
 }

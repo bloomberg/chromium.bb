@@ -38,4 +38,12 @@ public class PhysicalWebBleClient {
     void subscribe() {
         Log.d(TAG, "subscribing in empty client");
     }
+
+    /**
+     * Cancel subscription to URLs broadcasted from BLE beacons.
+     * This currently does nothing and should be overridden by a subclass.
+     */
+    void unsubscribe() {
+        Log.d(TAG, "unsubscribing in empty client");
+    }
 }
