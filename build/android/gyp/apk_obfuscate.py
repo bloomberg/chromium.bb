@@ -85,6 +85,7 @@ def DoProguard(options):
   proguard = proguard_util.ProguardCmdBuilder(options.proguard_jar_path)
   proguard.outjar(options.obfuscated_jar_path)
 
+  library_classpath = [options.android_sdk_jar]
   input_jars = build_utils.ParseGypList(options.input_jars_paths)
 
   exclude_paths = []
@@ -93,14 +94,29 @@ def DoProguard(options):
     # configs should only contain the process_resources.py generated config.
     assert len(configs) == 1, (
         'test apks should not have custom proguard configs: ' + str(configs))
-    proguard.tested_apk_info(options.tested_apk_obfuscated_jar_path + '.info')
+    tested_jar_info = build_utils.ReadJson(
+        options.tested_apk_obfuscated_jar_path + '.info')
+    exclude_paths = tested_jar_info['inputs']
+    configs = tested_jar_info['configs']
 
-  proguard.libraryjars([options.android_sdk_jar])
+    proguard.is_test(True)
+    proguard.mapping(options.tested_apk_obfuscated_jar_path + '.mapping')
+    library_classpath.append(options.tested_apk_obfuscated_jar_path)
+
+  proguard.libraryjars(library_classpath)
   proguard_injars = [p for p in input_jars if p not in exclude_paths]
   proguard.injars(proguard_injars)
   proguard.configs(configs)
 
   proguard.CheckOutput()
+
+  this_info = {
+    'inputs': proguard_injars,
+    'configs': configs
+  }
+
+  build_utils.WriteJson(
+      this_info, options.obfuscated_jar_path + '.info')
 
 
 def main(argv):

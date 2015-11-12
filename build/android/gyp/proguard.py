@@ -26,8 +26,6 @@ def _ParseOptions(args):
   parser.add_option('--is-test', action='store_true',
       help='If true, extra proguard options for instrumentation tests will be '
       'added.')
-  parser.add_option('--tested-apk-info', help='Path to the proguard .info file '
-      'for the tested apk')
   parser.add_option('--classpath', action='append',
                     help='Classpath for proguard.')
   parser.add_option('--stamp', help='Path to touch on success.')
@@ -54,8 +52,8 @@ def main(args):
   if options.mapping:
     proguard.mapping(options.mapping)
 
-  if options.tested_apk_info:
-    proguard.tested_apk_info(options.tested_apk_info)
+  if options.is_test:
+    proguard.is_test(True)
 
   classpath = list(set(options.classpath))
   proguard.libraryjars(classpath)
