@@ -2197,7 +2197,6 @@ cr.define('options', function() {
     'showTouchpadControls',
     'toggleExtensionIndicators',
     'updateAccountPicture',
-    'updateAutoLaunchState',
     'updateDefaultBrowserState',
     'updateEasyUnlock',
     'updateManagesSupervisedUsers',
