@@ -2477,13 +2477,22 @@ function testFindAPI() {
 
   var loadstopListener2 = function(e) {
     embedder.test.assertEq(webview.src, "about:blank");
-    embedder.test.succeed();
+    // Test find results when looking for nothing.
+    webview.find("", {}, function(results) {
+      embedder.test.assertEq(results.numberOfMatches, 0);
+      embedder.test.assertEq(results.activeMatchOrdinal, 0);
+      embedder.test.assertEq(results.selectionRect.left, 0);
+      embedder.test.assertEq(results.selectionRect.top, 0);
+      embedder.test.assertEq(results.selectionRect.width, 0);
+      embedder.test.assertEq(results.selectionRect.height, 0);
+
+      embedder.test.succeed();
+    });
   }
 
   var loadstopListener1 = function(e) {
     // Test find results.
     webview.find("dog", {}, function(results) {
-      callbackTest = true;
       embedder.test.assertEq(results.numberOfMatches, 100);
       embedder.test.assertTrue(results.selectionRect.width > 0);
       embedder.test.assertTrue(results.selectionRect.height > 0);

@@ -18,14 +18,12 @@ namespace android_webview {
 
 FindHelper::FindHelper(WebContents* web_contents)
     : WebContentsObserver(web_contents),
-      listener_(NULL),
+      listener_(nullptr),
       async_find_started_(false),
-      sync_find_started_(false),
       find_request_id_counter_(0),
       current_request_id_(0),
       last_match_count_(-1),
-      last_active_ordinal_(-1),
-      weak_factory_(this) {
+      last_active_ordinal_(-1) {
 }
 
 FindHelper::~FindHelper() {
@@ -39,32 +37,36 @@ void FindHelper::FindAllAsync(const base::string16& search_string) {
   // Stop any ongoing asynchronous request.
   web_contents()->StopFinding(content::STOP_FIND_ACTION_KEEP_SELECTION);
 
-  sync_find_started_ = false;
   async_find_started_ = true;
+
+  StartNewRequest(search_string);
+
+  if (MaybeHandleEmptySearch(search_string))
+    return;
 
   WebFindOptions options;
   options.forward = true;
   options.matchCase = false;
   options.findNext = false;
 
-  StartNewRequest(search_string);
   web_contents()->Find(current_request_id_, search_string, options);
 }
 
 void FindHelper::HandleFindReply(int request_id,
-                                   int match_count,
-                                   int active_ordinal,
-                                   bool finished) {
-  if ((!async_find_started_ && !sync_find_started_) ||
-      request_id != current_request_id_) {
+                                 int match_count,
+                                 int active_ordinal,
+                                 bool finished) {
+  if (!async_find_started_ || request_id != current_request_id_)
     return;
-  }
 
   NotifyResults(active_ordinal, match_count, finished);
 }
 
 void FindHelper::FindNext(bool forward) {
-  if (!sync_find_started_ && !async_find_started_)
+  if (!async_find_started_)
+    return;
+
+  if (MaybeHandleEmptySearch(last_search_string_))
     return;
 
   WebFindOptions options;
@@ -78,11 +80,19 @@ void FindHelper::FindNext(bool forward) {
 void FindHelper::ClearMatches() {
   web_contents()->StopFinding(content::STOP_FIND_ACTION_CLEAR_SELECTION);
 
-  sync_find_started_ = false;
   async_find_started_ = false;
   last_search_string_.clear();
   last_match_count_ = -1;
   last_active_ordinal_ = -1;
+}
+
+bool FindHelper::MaybeHandleEmptySearch(const base::string16& search_string) {
+  if (!search_string.empty())
+    return false;
+
+  web_contents()->StopFinding(content::STOP_FIND_ACTION_CLEAR_SELECTION);
+  NotifyResults(0, 0, true);
+  return true;
 }
 
 void FindHelper::StartNewRequest(const base::string16& search_string) {
@@ -93,9 +103,9 @@ void FindHelper::StartNewRequest(const base::string16& search_string) {
 }
 
 void FindHelper::NotifyResults(int active_ordinal,
-                                 int match_count,
-                                 bool finished) {
-  // Match count or ordinal values set to -1 refer to the received replies.
+                               int match_count,
+                               bool finished) {
+  // Match count or ordinal values set to -1 refer to received replies.
   if (match_count == -1)
     match_count = last_match_count_;
   else

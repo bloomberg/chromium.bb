@@ -26,6 +26,10 @@ PP_Bool StartFind(PP_Instance instance,
   void* object = Instance::GetPerInstanceObject(instance, kPPPFindInterface);
   if (!object)
     return PP_FALSE;
+  if (!text || text[0] == '\0') {
+    PP_NOTREACHED();
+    return PP_FALSE;
+  }
   bool return_value = static_cast<Find_Private*>(object)->StartFind(
       text, PP_ToBool(case_sensitive));
   return PP_FromBool(return_value);

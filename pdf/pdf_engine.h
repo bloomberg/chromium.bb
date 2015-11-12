@@ -209,7 +209,7 @@ class PDFEngine {
       uint32_t page_range_count,
       const PP_PrintSettings_Dev& print_settings) = 0;
   virtual void PrintEnd() = 0;
-  virtual void StartFind(const char* text, bool case_sensitive) = 0;
+  virtual void StartFind(const std::string& text, bool case_sensitive) = 0;
   virtual bool SelectFindResult(bool forward) = 0;
   virtual void StopFind() = 0;
   virtual void ZoomUpdated(double new_zoom_level) = 0;

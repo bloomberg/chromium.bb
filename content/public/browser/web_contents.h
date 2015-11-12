@@ -640,7 +640,7 @@ class WebContents : public PageNavigator,
   // removed since we can then embed iframes in different processes.
   virtual bool IsSubframe() const = 0;
 
-  // Finds text on a page.
+  // Finds text on a page. |search_text| should not be empty.
   virtual void Find(int request_id,
                     const base::string16& search_text,
                     const blink::WebFindOptions& options) = 0;

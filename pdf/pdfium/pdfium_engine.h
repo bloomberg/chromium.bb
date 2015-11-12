@@ -66,7 +66,7 @@ class PDFiumEngine : public PDFEngine,
       uint32_t page_range_count,
       const PP_PrintSettings_Dev& print_settings);
   virtual void PrintEnd();
-  virtual void StartFind(const char* text, bool case_sensitive);
+  virtual void StartFind(const std::string& text, bool case_sensitive);
   virtual bool SelectFindResult(bool forward);
   virtual void StopFind();
   virtual void ZoomUpdated(double new_zoom_level);

@@ -5,7 +5,6 @@
 #ifndef ANDROID_WEBVIEW_BROWSER_FIND_HELPER_H_
 #define ANDROID_WEBVIEW_BROWSER_FIND_HELPER_H_
 
-#include "base/memory/weak_ptr.h"
 #include "content/public/browser/web_contents_observer.h"
 
 namespace android_webview {
@@ -28,7 +27,7 @@ class FindHelper : public content::WebContentsObserver {
   ~FindHelper() override;
 
   // Sets the listener to receive find result updates.
-  // Does not own the listener and must set to NULL when invalid.
+  // Does not own the listener and must set to nullptr when invalid.
   void SetListener(Listener* listener);
 
   // Asynchronous API.
@@ -44,6 +43,7 @@ class FindHelper : public content::WebContentsObserver {
 
  private:
   void StartNewRequest(const base::string16& search_string);
+  bool MaybeHandleEmptySearch(const base::string16& search_string);
   void NotifyResults(int active_ordinal, int match_count, bool finished);
 
   // Listener results are reported to.
@@ -51,7 +51,6 @@ class FindHelper : public content::WebContentsObserver {
 
   // Used to check the validity of FindNext operations.
   bool async_find_started_;
-  bool sync_find_started_;
 
   // Used to provide different ids to each request and for result
   // verification in asynchronous calls.
@@ -62,9 +61,6 @@ class FindHelper : public content::WebContentsObserver {
   base::string16 last_search_string_;
   int last_match_count_;
   int last_active_ordinal_;
-
-  // Used to post synchronous result notifications to ourselves.
-  base::WeakPtrFactory<FindHelper> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FindHelper);
 };

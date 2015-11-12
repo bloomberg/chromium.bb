@@ -132,6 +132,13 @@ void WebViewFindHelper::Find(
   if (!full_options->findNext)
     current_find_session_ = insert_result.first->second;
 
+  // Handle the empty |search_text| case internally.
+  if (search_text.empty()) {
+    guest_web_contents->StopFinding(content::STOP_FIND_ACTION_CLEAR_SELECTION);
+    FindReply(current_find_request_id_, 0, gfx::Rect(), 0, true);
+    return;
+  }
+
   guest_web_contents->Find(current_find_request_id_,
                            search_text, *full_options);
 }

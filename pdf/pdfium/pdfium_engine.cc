@@ -1232,7 +1232,7 @@ void PDFiumEngine::UnsupportedFeature(int type) {
 }
 
 void PDFiumEngine::ContinueFind(int32_t result) {
-  StartFind(current_find_text_.c_str(), !!result);
+  StartFind(current_find_text_, result != 0);
 }
 
 bool PDFiumEngine::HandleEvent(const pp::InputEvent& event) {
@@ -1909,16 +1909,20 @@ bool PDFiumEngine::OnChar(const pp::KeyboardInputEvent& event) {
       event.GetModifiers());
 }
 
-void PDFiumEngine::StartFind(const char* text, bool case_sensitive) {
-  // We can get a call to StartFind before we have any page information (i.e.
+void PDFiumEngine::StartFind(const std::string& text, bool case_sensitive) {
+  // If the caller asks StartFind() to search for no text, then this is an
+  // error on the part of the caller. The PPAPI Find_Private interface
+  // guarantees it is not empty, so this should never happen.
+  DCHECK(!text.empty());
+
+  // If StartFind() gets called before we have any page information (i.e.
   // before the first call to LoadDocument has happened). Handle this case.
   if (pages_.empty())
     return;
 
-  bool first_search = false;
+  bool first_search = (current_find_text_ != text);
   int character_to_start_searching_from = 0;
-  if (current_find_text_ != text) {  // First time we search for this text.
-    first_search = true;
+  if (first_search) {
     std::vector<PDFiumRange> old_selection = selection_;
     StopFind();
     current_find_text_ = text;
@@ -3432,7 +3436,7 @@ void PDFiumEngine::RotateInternal() {
   if (!current_find_text.empty()) {
     // Clear the UI.
     client_->NotifyNumberOfFindResultsChanged(0, false);
-    StartFind(current_find_text.c_str(), false);
+    StartFind(current_find_text, false);
   }
 }
 
