@@ -166,15 +166,8 @@ var TrackInfo;
     trackClicked: function(event) {
       var index = ~~event.currentTarget.getAttribute('index');
       var track = this.tracks[index];
-      if (track) {
-        if (event.target.classList.contains('icon')) {
-          // If the play icon on the track is clicked, change the current track
-          // and start playing it regardless of current play state.
-          this.selectTrack(track, true /* force to play */);
-        } else {
-          this.selectTrack(track, false /* force to play */);
-        }
-      }
+      if (track)
+        this.selectTrack(track);
     },
 
     /**
@@ -257,10 +250,8 @@ var TrackInfo;
      * Sets the current track.
      * @param {!TrackInfo} track TrackInfo to be set as the current
      *     track.
-     * @param {boolean} forcePlay True if the track should be played regardless
-     *     of the current play state (paused/played).
      */
-    selectTrack: function(track, forcePlay) {
+    selectTrack: function(track) {
       var index = -1;
       for (var i = 0; i < this.tracks.length; i++) {
         if (this.tracks[i].url === track.url) {
@@ -270,13 +261,10 @@ var TrackInfo;
       }
       if (index >= 0) {
         // TODO(yoshiki): Clean up the flow and the code around here.
-        if (this.currentTrackIndex === index) {
+        if (this.currentTrackIndex == index)
           this.replayCurrentTrack();
-        } else {
+        else
           this.currentTrackIndex = index;
-          if (forcePlay)
-            this.fire('play');
-        }
       }
     },
 
