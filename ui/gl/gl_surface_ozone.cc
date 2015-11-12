@@ -388,9 +388,14 @@ void GLSurfaceOzoneSurfaceless::SubmitFrame() {
     unsubmitted_frames_.weak_erase(unsubmitted_frames_.begin());
     swap_buffers_pending_ = true;
 
-    last_swap_buffers_result_ =
-        frame->ScheduleOverlayPlanes(widget_) &&
-        ozone_surface_->OnSwapBuffersAsync(frame->callback);
+    if (!frame->ScheduleOverlayPlanes(widget_)) {
+      // |callback| is a wrapper for SwapCompleted(). Call it to properly
+      // propagate the failed state.
+      frame->callback.Run(gfx::SwapResult::SWAP_FAILED);
+      return;
+    }
+
+    ozone_surface_->OnSwapBuffersAsync(frame->callback);
   }
 }
 
@@ -413,6 +418,10 @@ void GLSurfaceOzoneSurfaceless::SwapCompleted(
     gfx::SwapResult result) {
   callback.Run(result);
   swap_buffers_pending_ = false;
+  if (result == gfx::SwapResult::SWAP_FAILED) {
+    last_swap_buffers_result_ = false;
+    return;
+  }
 
   SubmitFrame();
 }

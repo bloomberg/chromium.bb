@@ -40,11 +40,10 @@ bool GbmSurfaceless::OnSwapBuffers() {
   return false;
 }
 
-bool GbmSurfaceless::OnSwapBuffersAsync(
+void GbmSurfaceless::OnSwapBuffersAsync(
     const SwapCompletionCallback& callback) {
   window_->SchedulePageFlip(planes_, callback);
   planes_.clear();
-  return true;
 }
 
 scoped_ptr<gfx::VSyncProvider> GbmSurfaceless::CreateVSyncProvider() {

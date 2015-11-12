@@ -20,7 +20,7 @@ class SurfaceOzoneEglCast : public SurfaceOzoneEGL {
   // SurfaceOzoneEGL implementation:
   intptr_t GetNativeWindow() override;
   bool OnSwapBuffers() override;
-  bool OnSwapBuffersAsync(const SwapCompletionCallback& callback) override;
+  void OnSwapBuffersAsync(const SwapCompletionCallback& callback) override;
   bool ResizeNativeWindow(const gfx::Size& viewport_size) override;
   scoped_ptr<gfx::VSyncProvider> CreateVSyncProvider() override;
 

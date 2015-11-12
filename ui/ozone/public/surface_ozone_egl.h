@@ -46,7 +46,7 @@ class OZONE_BASE_EXPORT SurfaceOzoneEGL {
   // be used to present the new front buffer if the platform requires this.
   // The callback should be run on the calling thread
   // (i.e. same thread SwapBuffersAsync is called).
-  virtual bool OnSwapBuffersAsync(const SwapCompletionCallback& callback) = 0;
+  virtual void OnSwapBuffersAsync(const SwapCompletionCallback& callback) = 0;
 
   // Returns a gfx::VsyncProvider for this surface. Note that this may be
   // called after we have entered the sandbox so if there are operations (e.g.

@@ -21,10 +21,9 @@ bool SurfaceOzoneEglCast::OnSwapBuffers() {
   return true;
 }
 
-bool SurfaceOzoneEglCast::OnSwapBuffersAsync(
+void SurfaceOzoneEglCast::OnSwapBuffersAsync(
     const SwapCompletionCallback& callback) {
   callback.Run(gfx::SwapResult::SWAP_ACK);
-  return true;
 }
 
 bool SurfaceOzoneEglCast::ResizeNativeWindow(const gfx::Size& viewport_size) {
