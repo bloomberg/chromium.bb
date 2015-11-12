@@ -71,6 +71,12 @@ if (is_win) {
         visual_studio_path + "/vc/lib",
         rebase_path("$target_gen_dir/allocator"),
         current_cpu,
+
+        # The environment file in the build directory. This is required because
+        # the Windows toolchain setup saves the VC paths and such so that
+        # running "mc.exe" will work with the configured toolchain. This file
+        # is in the root build dir.
+        "environment.$current_cpu",
       ]
     }
 
