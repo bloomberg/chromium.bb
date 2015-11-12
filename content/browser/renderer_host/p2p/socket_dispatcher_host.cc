@@ -8,20 +8,35 @@
 #include "base/stl_util.h"
 #include "content/browser/renderer_host/p2p/socket_host.h"
 #include "content/common/p2p_messages.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_context.h"
 #include "net/base/address_list.h"
 #include "net/base/completion_callback.h"
+#include "net/base/ip_address_number.h"
 #include "net/base/net_errors.h"
 #include "net/base/network_interfaces.h"
 #include "net/base/sys_addrinfo.h"
 #include "net/dns/single_request_host_resolver.h"
 #include "net/log/net_log.h"
+#include "net/socket/client_socket_factory.h"
+#include "net/udp/datagram_client_socket.h"
 #include "net/url_request/url_request_context_getter.h"
 
 using content::BrowserMessageFilter;
 using content::BrowserThread;
 
 namespace content {
+
+namespace {
+
+// Used by GetDefaultLocalAddress as the target to connect to for getting the
+// default local address. They are public DNS servers on the internet.
+const uint8_t kPublicIPv4Host[] = {8, 8, 8, 8};
+const uint8_t kPublicIPv6Host[] = {
+    0x20, 0x01, 0x48, 0x60, 0x48, 0x60, 0, 0, 0, 0, 0, 0, 0, 0, 0x88, 0x88};
+const int kPublicPort = 53;  // DNS port.
+
+}  // namespace
 
 const size_t kMaximumPacketSize = 32768;
 
@@ -321,14 +336,53 @@ void P2PSocketDispatcherHost::OnDestroySocket(int socket_id) {
 void P2PSocketDispatcherHost::DoGetNetworkList() {
   net::NetworkInterfaceList list;
   net::GetNetworkList(&list, net::EXCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES);
+  default_ipv4_local_address_ = GetDefaultLocalAddress(AF_INET);
+  default_ipv6_local_address_ = GetDefaultLocalAddress(AF_INET6);
   BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE, base::Bind(
-          &P2PSocketDispatcherHost::SendNetworkList, this, list));
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&P2PSocketDispatcherHost::SendNetworkList, this, list,
+                 default_ipv4_local_address_, default_ipv6_local_address_));
 }
 
 void P2PSocketDispatcherHost::SendNetworkList(
-    const net::NetworkInterfaceList& list) {
-  Send(new P2PMsg_NetworkListChanged(list));
+    const net::NetworkInterfaceList& list,
+    const net::IPAddressNumber& default_ipv4_local_address,
+    const net::IPAddressNumber& default_ipv6_local_address) {
+  Send(new P2PMsg_NetworkListChanged(list, default_ipv4_local_address,
+                                     default_ipv6_local_address));
+}
+
+net::IPAddressNumber P2PSocketDispatcherHost::GetDefaultLocalAddress(
+    int family) {
+  DCHECK(family == AF_INET || family == AF_INET6);
+
+  // Creation and connection of a UDP socket might be janky.
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+
+  scoped_ptr<net::DatagramClientSocket> socket(
+      net::ClientSocketFactory::GetDefaultFactory()->CreateDatagramClientSocket(
+          net::DatagramSocket::DEFAULT_BIND, net::RandIntCallback(), NULL,
+          net::NetLog::Source()));
+
+  net::IPAddressNumber ip_address_number;
+  if (family == AF_INET) {
+    ip_address_number.assign(kPublicIPv4Host,
+                             kPublicIPv4Host + net::kIPv4AddressSize);
+  } else {
+    ip_address_number.assign(kPublicIPv6Host,
+                             kPublicIPv6Host + net::kIPv6AddressSize);
+  }
+
+  if (socket->Connect(net::IPEndPoint(ip_address_number, kPublicPort)) !=
+      net::OK) {
+    return net::IPAddressNumber();
+  }
+
+  net::IPEndPoint local_address;
+  if (socket->GetLocalAddress(&local_address) != net::OK)
+    return net::IPAddressNumber();
+
+  return local_address.address();
 }
 
 void P2PSocketDispatcherHost::OnAddressResolved(

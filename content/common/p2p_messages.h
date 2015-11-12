@@ -58,8 +58,10 @@ IPC_STRUCT_TRAITS_END()
 
 // P2P Socket messages sent from the browser to the renderer.
 
-IPC_MESSAGE_CONTROL1(P2PMsg_NetworkListChanged,
-                     net::NetworkInterfaceList /* networks */)
+IPC_MESSAGE_CONTROL3(P2PMsg_NetworkListChanged,
+                     net::NetworkInterfaceList /* networks */,
+                     net::IPAddressNumber /* default_ipv4_local_address */,
+                     net::IPAddressNumber /* default_ipv6_local_address */)
 
 IPC_MESSAGE_CONTROL2(P2PMsg_GetHostAddressResult,
                      int32 /* request_id */,

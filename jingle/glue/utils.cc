@@ -33,6 +33,22 @@ bool SocketAddressToIPEndPoint(const rtc::SocketAddress& address,
       ip_endpoint->FromSockAddr(reinterpret_cast<sockaddr*>(&addr), size);
 }
 
+rtc::IPAddress IPAddressNumberToIPAddress(
+    const net::IPAddressNumber& ip_address_number) {
+  if (ip_address_number.size() == net::kIPv4AddressSize) {
+    uint32_t address;
+    memcpy(&address, &ip_address_number[0], sizeof(uint32_t));
+    address = rtc::NetworkToHost32(address);
+    return rtc::IPAddress(address);
+  }
+  if (ip_address_number.size() == net::kIPv6AddressSize) {
+    in6_addr address;
+    memcpy(&address, &ip_address_number[0], sizeof(in6_addr));
+    return rtc::IPAddress(address);
+  }
+  return rtc::IPAddress();
+}
+
 std::string SerializeP2PCandidate(const cricket::Candidate& candidate) {
   // TODO(sergeyu): Use SDP to format candidates?
   base::DictionaryValue value;

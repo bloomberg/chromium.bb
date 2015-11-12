@@ -93,7 +93,10 @@ class CONTENT_EXPORT P2PSocketDispatcher : public IPC::MessageFilter,
   void UnregisterHostAddressRequest(int id);
 
   // Incoming message handlers.
-  void OnNetworkListChanged(const net::NetworkInterfaceList& networks);
+  void OnNetworkListChanged(
+      const net::NetworkInterfaceList& networks,
+      const net::IPAddressNumber& default_ipv4_local_address,
+      const net::IPAddressNumber& default_ipv6_local_address);
   void OnGetHostAddressResult(int32 request_id,
                               const net::IPAddressList& addresses);
   void OnSocketCreated(int socket_id,

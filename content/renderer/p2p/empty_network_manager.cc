@@ -12,7 +12,8 @@
 
 namespace content {
 
-EmptyNetworkManager::EmptyNetworkManager() : weak_ptr_factory_(this) {
+EmptyNetworkManager::EmptyNetworkManager(rtc::NetworkManager* network_manager)
+    : network_manager_(network_manager), weak_ptr_factory_(this) {
   thread_checker_.DetachFromThread();
   set_enumeration_permission(ENUMERATION_BLOCKED);
 }
@@ -35,6 +36,12 @@ void EmptyNetworkManager::StopUpdating() {
 void EmptyNetworkManager::GetNetworks(NetworkList* networks) const {
   DCHECK(thread_checker_.CalledOnValidThread());
   networks->clear();
+}
+
+bool EmptyNetworkManager::GetDefaultLocalAddress(
+    int family,
+    rtc::IPAddress* ipaddress) const {
+  return network_manager_->GetDefaultLocalAddress(family, ipaddress);
 }
 
 void EmptyNetworkManager::FireEvent() {

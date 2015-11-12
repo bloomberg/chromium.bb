@@ -188,7 +188,7 @@ class P2PPortAllocatorFactory
       }
       network_manager.reset(filtering_network_manager);
     } else {
-      network_manager.reset(new EmptyNetworkManager());
+      network_manager.reset(new EmptyNetworkManager(network_manager_));
     }
 
     return new P2PPortAllocator(socket_dispatcher_, network_manager.Pass(),

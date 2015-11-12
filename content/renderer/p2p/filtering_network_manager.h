@@ -52,6 +52,8 @@ class FilteringNetworkManager : public rtc::NetworkManagerBase,
   void StartUpdating() override;
   void StopUpdating() override;
   void GetNetworks(NetworkList* networks) const override;
+  bool GetDefaultLocalAddress(int family,
+                              rtc::IPAddress* ipaddress) const override;
 
  private:
   // Receive callback from MediaPermission when the permission status is

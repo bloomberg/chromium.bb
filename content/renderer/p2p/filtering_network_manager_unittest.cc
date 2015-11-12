@@ -138,7 +138,8 @@ class FilteringNetworkManagerTest : public testing::Test,
       filtering_network_manager->Initialize();
       network_manager_.reset(filtering_network_manager);
     } else {
-      network_manager_.reset(new EmptyNetworkManager());
+      network_manager_.reset(
+          new EmptyNetworkManager(mock_network_manager_.get()));
     }
     network_manager_->SignalNetworksChanged.connect(
         this, &FilteringNetworkManagerTest::OnNetworksChanged);

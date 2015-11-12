@@ -25,11 +25,15 @@ class IpcNetworkManager : public rtc::NetworkManagerBase,
   CONTENT_EXPORT IpcNetworkManager(NetworkListManager* network_list_manager);
   ~IpcNetworkManager() override;
 
+  // rtc:::NetworkManager:
   void StartUpdating() override;
   void StopUpdating() override;
 
   // P2PSocketDispatcher::NetworkListObserver interface.
-  void OnNetworkListChanged(const net::NetworkInterfaceList& list) override;
+  void OnNetworkListChanged(
+      const net::NetworkInterfaceList& list,
+      const net::IPAddressNumber& default_ipv4_local_address,
+      const net::IPAddressNumber& default_ipv6_local_address) override;
 
  private:
   void SendNetworksChangedSignal();

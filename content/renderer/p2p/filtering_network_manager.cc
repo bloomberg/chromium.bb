@@ -93,6 +93,12 @@ void FilteringNetworkManager::GetNetworks(NetworkList* networks) const {
   VLOG(3) << "GetNetworks() returns " << networks->size() << " networks.";
 }
 
+bool FilteringNetworkManager::GetDefaultLocalAddress(
+    int family,
+    rtc::IPAddress* ipaddress) const {
+  return network_manager_->GetDefaultLocalAddress(family, ipaddress);
+}
+
 void FilteringNetworkManager::OnPermissionStatus(bool granted) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_GT(pending_permission_checks_, 0);

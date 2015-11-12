@@ -78,7 +78,8 @@ TEST_F(IpcNetworkManagerTest, DISABLED_TestMergeNetworkList) {
                             64,
                             net::IP_ADDRESS_ATTRIBUTE_NONE));
 
-  network_manager_->OnNetworkListChanged(list);
+  network_manager_->OnNetworkListChanged(list, net::IPAddressNumber(),
+                                         net::IPAddressNumber());
   network_manager_->GetNetworks(&networks);
   EXPECT_EQ(1uL, networks.size());
   EXPECT_EQ(2uL, networks[0]->GetIPs().size());
@@ -95,7 +96,8 @@ TEST_F(IpcNetworkManagerTest, DISABLED_TestMergeNetworkList) {
                             48,
                             net::IP_ADDRESS_ATTRIBUTE_NONE));
 
-  network_manager_->OnNetworkListChanged(list);
+  network_manager_->OnNetworkListChanged(list, net::IPAddressNumber(),
+                                         net::IPAddressNumber());
 
   network_manager_->GetNetworks(&networks);
 
