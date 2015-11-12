@@ -123,12 +123,63 @@ static const unsigned char asciiLineBreakTable[][(asciiLineBreakTableLastChar - 
     { B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0), 0, B(0, 0, 0, 0, 0, 0, 0, 0), 0, 0, 0, B(0, 0, 0, 0, 0, 0, 0, 0), 0, 0, 0, B(0, 0, 0, 0, 0, 0, 0, 0) }, // DEL
 };
 
+// Line breaking table for CSS word-break: break-all. This table differs from
+// asciiLineBreakTable in:
+// - Indices are Line Breaking Classes defined in UAX#14 Unicode Line Breaking
+//   Algorithm: http://unicode.org/reports/tr14/#DescriptionOfProperties
+// - 1 indicates additional break opportunities. 0 indicates to fallback to
+//   normal line break, not "prohibit break."
+static const unsigned char breakAllLineBreakClassTable[][U_LB_COUNT / 8 + 1] = {
+    // XX AI AL B2 BA BB BK CB    CL CM CR EX GL HY ID IN    IS LF NS NU OP PO PR QU    SA SG SP SY ZW NL WJ H2    H3 JL JT JV CP CJ HL RI
+    { B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0) }, // XX
+    { B(0, 1, 1, 0, 1, 0, 0, 0), B(0, 0, 0, 0, 0, 1, 0, 0), B(0, 0, 0, 1, 1, 0, 1, 0), B(1, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 1, 0) }, // AI
+    { B(0, 1, 1, 0, 1, 0, 0, 0), B(0, 0, 0, 0, 0, 1, 0, 0), B(0, 0, 0, 1, 1, 0, 1, 0), B(1, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 1, 0) }, // AL
+    { B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0) }, // B2
+    { B(0, 1, 1, 0, 1, 0, 0, 0), B(0, 0, 0, 0, 0, 1, 0, 0), B(0, 0, 0, 1, 1, 0, 1, 0), B(1, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 1, 0) }, // BA
+    { B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0) }, // BB
+    { B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0) }, // BK
+    { B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0) }, // CB
+    { B(0, 1, 1, 0, 1, 0, 0, 0), B(0, 0, 0, 0, 0, 1, 0, 0), B(0, 0, 0, 1, 0, 0, 1, 0), B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 1, 0) }, // CL
+    { B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0) }, // CM
+    { B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0) }, // CR
+    { B(0, 1, 1, 0, 1, 0, 0, 0), B(0, 0, 0, 0, 0, 1, 0, 0), B(0, 0, 0, 1, 0, 1, 1, 0), B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 1, 0) }, // EX
+    { B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0) }, // GL
+    { B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 1, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0) }, // HY
+    { B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0) }, // ID
+    { B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0) }, // IN
+    { B(0, 1, 1, 0, 1, 0, 0, 0), B(0, 0, 0, 0, 0, 1, 0, 0), B(0, 0, 0, 1, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 1, 0) }, // IS
+    { B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0) }, // LF
+    { B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0) }, // NS
+    { B(0, 1, 1, 0, 1, 0, 0, 0), B(0, 0, 0, 0, 0, 1, 0, 0), B(0, 0, 0, 1, 1, 0, 1, 0), B(1, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 1, 0) }, // NU
+    { B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0) }, // OP
+    { B(0, 1, 1, 0, 1, 0, 0, 0), B(0, 0, 0, 0, 0, 1, 0, 0), B(0, 0, 0, 1, 0, 1, 1, 0), B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 1, 0) }, // PO
+    { B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 1, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0) }, // PR
+    { B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0) }, // QU
+    { B(0, 1, 1, 0, 1, 0, 0, 0), B(0, 0, 0, 0, 0, 1, 0, 0), B(0, 0, 0, 1, 1, 0, 1, 0), B(1, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 1, 0) }, // SA
+    { B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0) }, // SG
+    { B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0) }, // SP
+    { B(0, 1, 1, 0, 1, 0, 0, 0), B(0, 0, 0, 0, 0, 1, 0, 0), B(0, 0, 0, 1, 1, 0, 1, 0), B(1, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 1, 0) }, // SY
+    { B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0) }, // ZW
+    { B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0) }, // NL
+    { B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0) }, // WJ
+    { B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0) }, // H2
+    { B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0) }, // H3
+    { B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0) }, // JL
+    { B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0) }, // JT
+    { B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0) }, // JV
+    { B(0, 1, 1, 0, 1, 0, 0, 0), B(0, 0, 0, 0, 0, 1, 0, 0), B(0, 0, 0, 1, 0, 0, 1, 0), B(1, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 1, 0) }, // CP
+    { B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0) }, // CJ
+    { B(0, 1, 1, 0, 1, 0, 0, 0), B(0, 0, 0, 0, 0, 1, 0, 0), B(0, 0, 0, 1, 1, 0, 1, 0), B(1, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 1, 0) }, // HL
+    { B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0), B(0, 0, 0, 0, 0, 0, 0, 0) }, // RI
+};
+
 #undef B
 #undef F
 #undef DI
 #undef AL
 
 static_assert(WTF_ARRAY_LENGTH(asciiLineBreakTable) == asciiLineBreakTableLastChar - asciiLineBreakTableFirstChar + 1, "asciiLineBreakTable should be consistent");
+static_assert(WTF_ARRAY_LENGTH(breakAllLineBreakClassTable) == U_LB_COUNT, "breakAllLineBreakClassTable should be consistent");
 
 static inline bool shouldBreakAfter(UChar lastCh, UChar ch, UChar nextCh)
 {
@@ -149,12 +200,29 @@ static inline bool shouldBreakAfter(UChar lastCh, UChar ch, UChar nextCh)
     return false;
 }
 
+static inline ULineBreak lineBreakPropertyValue(UChar lastCh, UChar ch)
+{
+    if (ch == '+') // IE tailors '+' to AL-like class when break-all is enabled.
+        return U_LB_ALPHABETIC;
+    UChar32 ch32 = U16_IS_LEAD(lastCh) && U16_IS_TRAIL(ch) ? U16_GET_SUPPLEMENTARY(lastCh, ch) : ch;
+    return static_cast<ULineBreak>(u_getIntPropertyValue(ch32, UCHAR_LINE_BREAK));
+}
+
+static inline bool shouldBreakAfterBreakAll(ULineBreak lastLineBreak, ULineBreak lineBreak)
+{
+    if (lineBreak >= 0 && lineBreak < U_LB_COUNT && lastLineBreak >= 0 && lastLineBreak < U_LB_COUNT) {
+        const unsigned char* tableRow = breakAllLineBreakClassTable[lastLineBreak];
+        return tableRow[lineBreak / 8] & (1 << (lineBreak % 8));
+    }
+    return false;
+}
+
 inline bool needsLineBreakIterator(UChar ch)
 {
     return ch > asciiLineBreakTableLastChar && ch != noBreakSpaceCharacter;
 }
 
-template<typename CharacterType>
+template<typename CharacterType, LineBreakType lineBreakType>
 static inline int nextBreakablePosition(LazyLineBreakIterator& lazyBreakIterator, const CharacterType* str, unsigned length, int pos)
 {
     int len = static_cast<int>(length);
@@ -162,12 +230,23 @@ static inline int nextBreakablePosition(LazyLineBreakIterator& lazyBreakIterator
 
     CharacterType lastLastCh = pos > 1 ? str[pos - 2] : static_cast<CharacterType>(lazyBreakIterator.secondToLastCharacter());
     CharacterType lastCh = pos > 0 ? str[pos - 1] : static_cast<CharacterType>(lazyBreakIterator.lastCharacter());
+    ULineBreak lastLineBreak;
+    if (lineBreakType == LineBreakType::BreakAll)
+        lastLineBreak = lineBreakPropertyValue(lastLastCh, lastCh);
     unsigned priorContextLength = lazyBreakIterator.priorContextLength();
     for (int i = pos; i < len; i++) {
         CharacterType ch = str[i];
 
         if (isBreakableSpace(ch) || shouldBreakAfter(lastLastCh, lastCh, ch))
             return i;
+
+        if (lineBreakType == LineBreakType::BreakAll && !U16_IS_LEAD(ch)) {
+            ULineBreak lineBreak = lineBreakPropertyValue(lastCh, ch);
+            if (shouldBreakAfterBreakAll(lastLineBreak, lineBreak))
+                return i > pos && U16_IS_TRAIL(ch) ? i - 1 : i;
+            if (lineBreak != U_LB_COMBINING_MARK)
+                lastLineBreak = lineBreak;
+        }
 
         if (needsLineBreakIterator(ch) || needsLineBreakIterator(lastCh)) {
             if (nextBreak < i) {
@@ -190,38 +269,6 @@ static inline int nextBreakablePosition(LazyLineBreakIterator& lazyBreakIterator
         lastCh = ch;
     }
 
-    return len;
-}
-
-static inline bool isUnicodeCategoryLetterOrNumber(UChar lastCh, UChar ch)
-{
-    UChar32 ch32 = U16_IS_LEAD(lastCh) && U16_IS_TRAIL(ch) ? U16_GET_SUPPLEMENTARY(lastCh, ch) : ch;
-    return (U_MASK(u_charType(ch32)) & (U_GC_L_MASK | U_GC_N_MASK));
-}
-
-template<typename CharacterType>
-static inline int nextBreakablePositionBreakAllInternal(LazyLineBreakIterator& lazyBreakIterator, const CharacterType* str, unsigned length, int pos)
-{
-    int len = static_cast<int>(length);
-    CharacterType lastLastCh = pos > 1 ? str[pos - 2] : static_cast<CharacterType>(lazyBreakIterator.secondToLastCharacter());
-    CharacterType lastCh = pos > 0 ? str[pos - 1] : static_cast<CharacterType>(lazyBreakIterator.lastCharacter());
-    bool lastIsLetterOrNumber = isUnicodeCategoryLetterOrNumber(lastLastCh, lastCh);
-    for (int i = pos; i < len; ++i) {
-        CharacterType ch = str[i];
-
-        if (isBreakableSpace(ch) || shouldBreakAfter(lastLastCh, lastCh, ch))
-            return i;
-
-        if (!U16_IS_LEAD(ch)) {
-            bool isLetterOrNumber = isUnicodeCategoryLetterOrNumber(lastCh, ch);
-            if (isLetterOrNumber && lastIsLetterOrNumber)
-                return i > pos && U16_IS_TRAIL(ch) ? i - 1 : i;
-            lastIsLetterOrNumber = isLetterOrNumber;
-        }
-
-        lastLastCh = lastCh;
-        lastCh = ch;
-    }
     return len;
 }
 
@@ -272,24 +319,28 @@ static inline int nextBreakablePositionKeepAllInternal(LazyLineBreakIterator& la
     return len;
 }
 
+template <LineBreakType lineBreakType>
+static inline int nextBreakablePosition(LazyLineBreakIterator& lazyBreakIterator, const String& string, int pos)
+{
+    if (string.is8Bit())
+        return nextBreakablePosition<LChar, lineBreakType>(lazyBreakIterator, string.characters8(), string.length(), pos);
+    return nextBreakablePosition<UChar, lineBreakType>(lazyBreakIterator, string.characters16(), string.length(), pos);
+}
+
 int LazyLineBreakIterator::nextBreakablePositionIgnoringNBSP(int pos)
 {
-    if (m_string.is8Bit())
-        return nextBreakablePosition<LChar>(*this, m_string.characters8(), m_string.length(), pos);
-    return nextBreakablePosition<UChar>(*this, m_string.characters16(), m_string.length(), pos);
+    return nextBreakablePosition<LineBreakType::Normal>(*this, m_string, pos);
 }
 
 int LazyLineBreakIterator::nextBreakablePositionBreakAll(int pos)
 {
-    if (m_string.is8Bit())
-        return nextBreakablePositionBreakAllInternal<LChar>(*this, m_string.characters8(), m_string.length(), pos);
-    return nextBreakablePositionBreakAllInternal<UChar>(*this, m_string.characters16(), m_string.length(), pos);
+    return nextBreakablePosition<LineBreakType::BreakAll>(*this, m_string, pos);
 }
 
 int LazyLineBreakIterator::nextBreakablePositionKeepAll(int pos)
 {
     if (m_string.is8Bit())
-        return nextBreakablePosition<LChar>(*this, m_string.characters8(), m_string.length(), pos);
+        return nextBreakablePosition<LChar, LineBreakType::Normal>(*this, m_string.characters8(), m_string.length(), pos);
     return nextBreakablePositionKeepAllInternal(*this, m_string.characters16(), m_string.length(), pos);
 }
 
