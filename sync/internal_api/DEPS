@@ -17,5 +17,6 @@ include_rules = [
   "+sync/syncable",
   "+sync/test",
   "+sync/util",
+  "+third_party/leveldatabase",  # for ModelTypeStore implementation
   "+third_party/zlib",  # For UniquePosition compression
 ]

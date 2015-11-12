@@ -300,6 +300,7 @@
         'internal_api/js_mutation_event_observer_unittest.cc',
         'internal_api/js_sync_encryption_handler_observer_unittest.cc',
         'internal_api/js_sync_manager_observer_unittest.cc',
+        'internal_api/model_type_store_backend_unittest.cc',
         'internal_api/model_type_store_impl_unittest.cc',
         'internal_api/protocol_event_buffer_unittest.cc',
         'internal_api/public/base/attachment_id_proto_unittest.cc',

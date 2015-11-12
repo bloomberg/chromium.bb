@@ -10,6 +10,7 @@
 #include "base/task_runner_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "sync/internal_api/public/model_type_store_backend.h"
+#include "third_party/leveldatabase/src/include/leveldb/env.h"
 
 namespace syncer_v2 {
 
@@ -44,10 +45,22 @@ void ModelTypeStoreImpl::CreateInMemoryStoreForTest(
       base::ThreadTaskRunnerHandle::Get();
 
   scoped_ptr<ModelTypeStoreBackend> backend(new ModelTypeStoreBackend());
+  scoped_ptr<leveldb::Env> env = ModelTypeStoreBackend::CreateInMemoryEnv();
+
+  std::string path;
+  env->GetTestDirectory(&path);
+  path += "/in-memory";
+
+  // Env ownership will be passed to backend, but we still need to keep pointer
+  // for Init call.
+  leveldb::Env* env_ptr = env.get();
+  backend->TakeEnvOwnership(env.Pass());
   scoped_ptr<ModelTypeStoreImpl> store(
       new ModelTypeStoreImpl(backend.Pass(), task_runner));
-  auto task = base::Bind(&ModelTypeStoreBackend::Init,
-                         base::Unretained(store->backend_.get()));
+
+  auto task =
+      base::Bind(&ModelTypeStoreBackend::Init,
+                 base::Unretained(store->backend_.get()), path, env_ptr);
   auto reply = base::Bind(&ModelTypeStoreImpl::BackendInitDone, callback,
                           base::Passed(&store));
 
