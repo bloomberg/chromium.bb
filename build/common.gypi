@@ -6002,6 +6002,9 @@
         # Limited to Windows because lld-link is the driver that is
         # compatible with link.exe.
         ['LD', '<(make_clang_dir)/bin/lld-link'],
+        # lld-link includes a replacement for lib.exe that can produce thin
+        # archives and understands bitcode (for use_lto==1).
+        ['AR', '<(make_clang_dir)/bin/lld-link /lib /llvmlibthin'],
       ],
     }],
     ['OS=="android" and clang==0', {
@@ -6087,6 +6090,15 @@
             ],
           }],
         ],
+        'msvs_settings': {
+          'VCCLCompilerTool': {
+            'AdditionalOptions': [
+              # TODO(pcc): Add LTO support to clang-cl driver and use it here.
+              '-Xclang',
+              '-emit-llvm-bc',
+            ],
+          },
+        },
       },
     }],
     # Apply a lower LTO optimization level as the default is too slow.
@@ -6106,6 +6118,13 @@
             },
           }],
         ],
+        'msvs_settings': {
+          'VCLinkerTool': {
+            'AdditionalOptions': [
+              '/opt:lldlto=1',
+            ],
+          },
+        },
       },
     }],
     ['use_lto==1 and clang==1 and target_arch=="arm"', {
