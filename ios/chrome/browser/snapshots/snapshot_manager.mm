@@ -54,7 +54,7 @@ BOOL ViewHierarchyContainsWKWebView(UIView* view) {
   CGContextSaveGState(context);
   CGContextTranslateCTM(context, -rect.origin.x, -rect.origin.y);
   if (useDrawViewHierarchy) {
-    [view drawViewHierarchyInRect:view.bounds afterScreenUpdates:YES];
+    [view drawViewHierarchyInRect:view.bounds afterScreenUpdates:NO];
   } else {
     [[view layer] renderInContext:context];
   }
