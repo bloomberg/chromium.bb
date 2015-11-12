@@ -15,6 +15,8 @@ namespace extensions {
 namespace {
 
 const char kEnableMediaRouterExperiment[] = "EnableMediaRouter";
+const char kEnableMediaRouterWithCastExtensionExperiment[] =
+    "EnableMediaRouterWithCastExtension";
 const char kExtensionActionRedesignExperiment[] = "ExtensionActionRedesign";
 
 class CommonSwitches {
@@ -52,7 +54,11 @@ class CommonSwitches {
         // chrome/common/chrome_switches.cc, but we can't depend on chrome here.
         media_router("media-router",
                      kEnableMediaRouterExperiment,
-                     FeatureSwitch::DEFAULT_DISABLED) {
+                     FeatureSwitch::DEFAULT_DISABLED),
+        media_router_with_cast_extension(
+            "media-router",
+            kEnableMediaRouterWithCastExtensionExperiment,
+            FeatureSwitch::DEFAULT_DISABLED) {
   }
 
   // Enables extensions to be easily installed from sites other than the web
@@ -73,6 +79,7 @@ class CommonSwitches {
   FeatureSwitch embedded_extension_options;
   FeatureSwitch trace_app_source;
   FeatureSwitch media_router;
+  FeatureSwitch media_router_with_cast_extension;
 };
 
 base::LazyInstance<CommonSwitches> g_common_switches =
@@ -116,6 +123,9 @@ FeatureSwitch* FeatureSwitch::trace_app_source() {
 }
 FeatureSwitch* FeatureSwitch::media_router() {
   return &g_common_switches.Get().media_router;
+}
+FeatureSwitch* FeatureSwitch::media_router_with_cast_extension() {
+  return &g_common_switches.Get().media_router_with_cast_extension;
 }
 
 FeatureSwitch::ScopedOverride::ScopedOverride(FeatureSwitch* feature,

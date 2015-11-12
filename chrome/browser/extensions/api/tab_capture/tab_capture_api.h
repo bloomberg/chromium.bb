@@ -14,6 +14,11 @@
 
 namespace extensions {
 
+// Extension ids for stable / beta cast extensions. Included in
+// |kChromecastExtensionIds|.
+extern const char* const kBetaChromecastExtensionId;
+extern const char* const kStableChromecastExtensionId;
+
 // Extension ids for the chromecast.
 extern const char* const kChromecastExtensionIds[6];
 

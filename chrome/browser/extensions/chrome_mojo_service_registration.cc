@@ -26,12 +26,14 @@ void RegisterChromeServicesForFrame(content::RenderFrameHost* render_frame_host,
   DCHECK(extension);
 
 #if defined(ENABLE_MEDIA_ROUTER)
-  if (media_router::MediaRouterEnabled()) {
+  content::BrowserContext* context =
+      render_frame_host->GetProcess()->GetBrowserContext();
+  if (media_router::MediaRouterEnabled(context)) {
     if (extension->permissions_data()->HasAPIPermission(
             APIPermission::kMediaRouterPrivate)) {
-      render_frame_host->GetServiceRegistry()->AddService(base::Bind(
-          media_router::MediaRouterMojoImpl::BindToRequest, extension->id(),
-          render_frame_host->GetProcess()->GetBrowserContext()));
+      render_frame_host->GetServiceRegistry()->AddService(
+          base::Bind(media_router::MediaRouterMojoImpl::BindToRequest,
+                     extension->id(), context));
     }
   }
 #endif  // defined(ENABLE_MEDIA_ROUTER)

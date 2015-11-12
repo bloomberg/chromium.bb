@@ -5,10 +5,14 @@
 #ifndef CHROME_BROWSER_MEDIA_ROUTER_MEDIA_ROUTER_FEATURE_H_
 #define CHROME_BROWSER_MEDIA_ROUTER_MEDIA_ROUTER_FEATURE_H_
 
+namespace content {
+class BrowserContext;
+}
+
 namespace media_router {
 
-// Returns true if Media Router is enabled.
-bool MediaRouterEnabled();
+// Returns true if Media Router is enabled for |context|.
+bool MediaRouterEnabled(content::BrowserContext* context);
 
 }  // namespace media_router
 

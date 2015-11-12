@@ -589,7 +589,7 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
 #endif
 #if defined(ENABLE_MEDIA_ROUTER) && !defined(OS_ANDROID)
   if (url.host() == chrome::kChromeUIMediaRouterHost &&
-      media_router::MediaRouterEnabled()) {
+      media_router::MediaRouterEnabled(profile)) {
     return &NewWebUI<media_router::MediaRouterUI>;
   }
 #endif

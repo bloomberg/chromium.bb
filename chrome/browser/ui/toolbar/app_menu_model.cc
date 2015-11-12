@@ -880,8 +880,8 @@ void AppMenuModel::Build() {
 
   CreateZoomMenu();
   AddItemWithStringId(IDC_PRINT, IDS_PRINT);
-  if (media_router::MediaRouterEnabled() &&
-      !browser()->profile()->IsOffTheRecord()) {
+  if (!browser()->profile()->IsOffTheRecord() &&
+      media_router::MediaRouterEnabled(browser()->profile())) {
     AddItemWithStringId(IDC_ROUTE_MEDIA, IDS_MEDIA_ROUTER_MENU_ITEM_TITLE);
   }
 

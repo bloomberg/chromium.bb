@@ -932,8 +932,8 @@ bool CanBasicPrint(Browser* browser) {
 #endif  // ENABLE_BASIC_PRINTING
 
 bool CanRouteMedia(Browser* browser) {
-  if (!media_router::MediaRouterEnabled() ||
-      browser->profile()->IsOffTheRecord())
+  Profile* profile = browser->profile();
+  if (profile->IsOffTheRecord() || !media_router::MediaRouterEnabled(profile))
     return false;
 
   // Do not allow user to open Media Router dialog when there is already an

@@ -132,6 +132,11 @@ void AddMediaStreamSourceConstraints(content::WebContents* target_contents,
 
 }  // namespace
 
+const char* const kBetaChromecastExtensionId =
+    "dliochdbjfkdbacpmhlcpmleaejidimm";
+const char* const kStableChromecastExtensionId =
+    "boadgeojelhgndaghljhdicfkmllpafd";
+
 // Whitelisted extensions that do not check for a browser action grant because
 // they provide API's. If there are additional extension ids that need
 // whitelisting and are *not* the Chromecast extension, add them to a new
@@ -143,8 +148,8 @@ const char* const kChromecastExtensionIds[] = {
     "enhhojjnijigcajfphajepfemndkmdlo",  // Dev
     "fmfcbgogabcbclcofgocippekhfcmgfj",  // Staging
     "hfaagokkkhdbgiakmmlclaapfelnkoah",  // Canary
-    "dliochdbjfkdbacpmhlcpmleaejidimm",  // Google Cast Beta
-    "boadgeojelhgndaghljhdicfkmllpafd",  // Google Cast Stable
+    kBetaChromecastExtensionId,          // Google Cast Beta
+    kStableChromecastExtensionId,        // Google Cast Stable
     "hlgmmjhlnlapooncikdpiiokdjcdpjme",  // Test cast extension
 };
 

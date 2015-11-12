@@ -53,7 +53,7 @@ void ExternalComponentLoader::StartLoading() {
 #endif
 
 #if defined(ENABLE_MEDIA_ROUTER) && defined(GOOGLE_CHROME_BUILD)
-  if (media_router::MediaRouterEnabled())
+  if (media_router::MediaRouterEnabled(profile_))
     AddExternalExtension(extension_misc::kMediaRouterStableExtensionId);
 #endif  // defined(ENABLE_MEDIA_ROUTER) && defined(GOOGLE_CHROME_BUILD)
 

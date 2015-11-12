@@ -46,7 +46,7 @@ std::set<std::string> ComponentToolbarActionsFactory::GetComponentIds(
   if (!extensions::FeatureSwitch::extension_action_redesign()->IsEnabled())
     return component_ids;
 
-  if (media_router::MediaRouterEnabled() && !profile->IsOffTheRecord())
+  if (!profile->IsOffTheRecord() && media_router::MediaRouterEnabled(profile))
     component_ids.insert(kMediaRouterActionId);
 
   return component_ids;
