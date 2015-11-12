@@ -1909,7 +1909,7 @@
           'includes': [ '../build/java.gypi' ],
         },
         {
-          # TODO(GN)
+          # GN: //content/test:content_browsertests_manifest
           'target_name': 'content_browsertests_manifest',
           'type': 'none',
           'variables': {
@@ -1919,7 +1919,7 @@
           'includes': [ '../build/android/jinja_template.gypi' ],
         },
         {
-          # TODO(GN)
+          # GN: //content/test:content_browsertests_apk
           'target_name': 'content_browsertests_apk',
           'type': 'none',
           'dependencies': [

@@ -264,6 +264,36 @@ if (!is_ios) {
   }
 }  # !is_ios
 
+if (is_android) {
+  jinja_template("content_browsertests_manifest") {
+    testonly = true
+    input =
+        "//content/shell/android/browsertests_apk/AndroidManifest.xml.jinja2"
+    output =
+        "${target_gen_dir}/content_browsertests_manifest/AndroidManifest.xml"
+  }
+
+  android_library("content_browsertests_java") {
+    testonly = true
+    DEPRECATED_java_in_dir = "//content/shell/android/browsertests_apk/src"
+    deps = [
+      ":content_browsertests_resources",
+      "//base:base_java",
+      "//content/public/android:content_java",
+      "//content/public/test/android:content_java_test_support",
+      "//content/shell/android:content_shell_browsertests_java",
+      "//testing/android/native_test:native_test_java",
+      "//ui/android:ui_java",
+    ]
+  }
+
+  android_resources("content_browsertests_resources") {
+    testonly = true
+    resource_dirs = [ "//content/shell/android/browsertests_apk/res" ]
+    custom_package = "org.chromium.content_browsertests_apk"
+  }
+}
+
 # TODO(GYP): Delete this after we've converted everything to GN.
 # The _run targets exist only for compatibility w/ GYP.
 group("content_browsertests_run") {
@@ -417,6 +447,14 @@ test("content_browsertests") {
       "//content/shell:content_shell_lib",
       "//testing/android/native_test:native_test_support",
     ]
+    apk_deps = [
+      ":content_browsertests_java",
+      ":content_browsertests_manifest",
+      "//content/shell/android:content_shell_assets",
+    ]
+    android_manifest =
+        "${target_gen_dir}/content_browsertests_manifest/AndroidManifest.xml"
+    isolate_file = "//content/content_browsertests.isolate"
 
     use_default_launcher = false
   }
