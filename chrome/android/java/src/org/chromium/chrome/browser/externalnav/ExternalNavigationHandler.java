@@ -9,6 +9,7 @@ import android.content.ComponentName;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.StrictMode;
+import android.os.SystemClock;
 import android.provider.Browser;
 import android.text.TextUtils;
 import android.webkit.WebView;
@@ -16,6 +17,7 @@ import android.webkit.WebView;
 import org.chromium.base.CommandLine;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.IntentHandler;
@@ -26,6 +28,7 @@ import org.chromium.ui.base.PageTransition;
 
 import java.net.URI;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Logic related to the URL overriding/intercepting functionality.
@@ -39,6 +42,8 @@ public class ExternalNavigationHandler {
 
     @VisibleForTesting
     public static final String EXTRA_BROWSER_FALLBACK_URL = "browser_fallback_url";
+    @VisibleForTesting
+    static boolean sReportingDisabledForTests = false;
 
     private final ExternalNavigationDelegate mDelegate;
 
@@ -100,8 +105,10 @@ public class ExternalNavigationHandler {
             browserFallbackUrl = null;
         }
 
+        long time = SystemClock.elapsedRealtime();
         OverrideUrlLoadingResult result = shouldOverrideUrlLoadingInternal(
                 params, intent, hasBrowserFallbackUrl, browserFallbackUrl);
+        maybeLogExecutionTime(time);
 
         if (result == OverrideUrlLoadingResult.NO_OVERRIDE && hasBrowserFallbackUrl
                 && (params.getRedirectHandler() == null
@@ -110,6 +117,13 @@ public class ExternalNavigationHandler {
             return clobberCurrentTabWithFallbackUrl(browserFallbackUrl, params);
         }
         return result;
+    }
+
+    private void maybeLogExecutionTime(long time) {
+        if (!sReportingDisabledForTests) {
+            RecordHistogram.recordTimesHistogram("Android.StrictMode.OverrideUrlLoadingTime",
+                    SystemClock.elapsedRealtime() - time, TimeUnit.MILLISECONDS);
+        }
     }
 
     private OverrideUrlLoadingResult shouldOverrideUrlLoadingInternal(

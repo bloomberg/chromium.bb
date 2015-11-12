@@ -302,6 +302,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Android.StrictMode.OverrideUrlLoadingTime"
+    units="milliseconds">
+  <owner>yfriedman@chromium.org</owner>
+  <owner>wnwen@chromium.org</owner>
+  <summary>
+    Measures the amount of time due to a StrictMode violation from calling out
+    to Android activity manager.
+  </summary>
+</histogram>
+
 <histogram name="AndroidTabCloseUndo.Toast"
     enum="AndroidTabCloseUndoToastEvent">
   <owner>dtrainor@chromium.org</owner>

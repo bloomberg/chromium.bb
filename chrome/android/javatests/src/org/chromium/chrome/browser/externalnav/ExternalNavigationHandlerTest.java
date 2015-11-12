@@ -85,6 +85,7 @@ public class ExternalNavigationHandlerTest extends InstrumentationTestCase {
         super.setUp();
         mDelegate.setContext(getInstrumentation().getContext());
         CommandLine.init(new String[0]);
+        ExternalNavigationHandler.sReportingDisabledForTests = true;
     }
 
     @SmallTest
