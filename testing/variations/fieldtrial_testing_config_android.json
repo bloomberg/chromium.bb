@@ -241,7 +241,8 @@
         {
             "group_name": "Enabled",
             "params": {
-                "enabled": "true"
+                "enabled": "true",
+                "types_to_check": "0,1,3,6,7,8,9,10,11,13,14,15"
             }
         },
         {
