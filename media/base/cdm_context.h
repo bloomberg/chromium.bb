@@ -68,6 +68,19 @@ typedef base::Callback<void(bool)> CdmAttachedCB;
 // A dummy implementation of CdmAttachedCB.
 MEDIA_EXPORT void IgnoreCdmAttached(bool success);
 
+// Callback to notify that a CDM is ready. CdmAttachedCB is called when the CDM
+// has been completely attached to the media pipeline.
+typedef base::Callback<void(CdmContext*, const CdmAttachedCB&)> CdmReadyCB;
+
+// Callback to set/cancel a CdmReadyCB.
+// Calling this callback with a non-null callback registers CDM ready
+// notification. When the CDM is ready, notification will be sent
+// through the provided callback.
+// Calling this callback with a null callback cancels previously registered CDM
+// ready notification. Any previously provided callback will be fired
+// immediately with NULL.
+typedef base::Callback<void(const CdmReadyCB&)> SetCdmReadyCB;
+
 }  // namespace media
 
 #endif  // MEDIA_BASE_CDM_CONTEXT_H_

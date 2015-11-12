@@ -22,6 +22,7 @@ using ::testing::InvokeWithoutArgs;
 using ::testing::NiceMock;
 using ::testing::Return;
 using ::testing::SaveArg;
+using ::testing::StrictMock;
 
 static const int kNumConfigs = 4;
 static const int kNumBuffersInOneConfig = 5;
@@ -30,10 +31,10 @@ static const int kNumBuffersInOneConfig = 5;
 // times across multiple test files. Sadly we can't use static for them.
 namespace {
 
-ACTION_P3(ExecuteCallbackWithVerifier, decryptor, done_cb, verifier) {
+ACTION_P3(ExecuteCallbackWithVerifier, cdm_context, done_cb, verifier) {
   // verifier must be called first since |done_cb| call will invoke it as well.
   verifier->RecordACalled();
-  arg0.Run(decryptor, done_cb);
+  arg0.Run(cdm_context, done_cb);
 }
 
 ACTION_P(ReportCallback, verifier) {
@@ -65,23 +66,26 @@ class VideoFrameStreamTest
       : demuxer_stream_(new FakeDemuxerStream(kNumConfigs,
                                               kNumBuffersInOneConfig,
                                               GetParam().is_encrypted)),
+        cdm_context_(new StrictMock<MockCdmContext>()),
         decryptor_(new NiceMock<MockDecryptor>()),
-        decoder1_(new FakeVideoDecoder(
-            GetParam().decoding_delay,
-            GetParam().parallel_decoding,
-            base::Bind(&VideoFrameStreamTest::OnBytesDecoded,
-                       base::Unretained(this)))),
-        decoder2_(new FakeVideoDecoder(
-            GetParam().decoding_delay,
-            GetParam().parallel_decoding,
-            base::Bind(&VideoFrameStreamTest::OnBytesDecoded,
-                       base::Unretained(this)))),
-        decoder3_(new FakeVideoDecoder(
-            GetParam().decoding_delay,
-            GetParam().parallel_decoding,
-            base::Bind(&VideoFrameStreamTest::OnBytesDecoded,
-                       base::Unretained(this)))),
-
+        decoder1_(
+            new FakeVideoDecoder(GetParam().decoding_delay,
+                                 GetParam().parallel_decoding,
+                                 base::Bind(
+                                     &VideoFrameStreamTest::OnBytesDecoded,
+                                     base::Unretained(this)))),
+        decoder2_(
+            new FakeVideoDecoder(GetParam().decoding_delay,
+                                 GetParam().parallel_decoding,
+                                 base::Bind(
+                                     &VideoFrameStreamTest::OnBytesDecoded,
+                                     base::Unretained(this)))),
+        decoder3_(
+            new FakeVideoDecoder(GetParam().decoding_delay,
+                                 GetParam().parallel_decoding,
+                                 base::Bind(
+                                     &VideoFrameStreamTest::OnBytesDecoded,
+                                     base::Unretained(this)))),
         is_initialized_(false),
         num_decoded_frames_(0),
         pending_initialize_(false),
@@ -97,6 +101,9 @@ class VideoFrameStreamTest
 
     video_frame_stream_.reset(new VideoFrameStream(
         message_loop_.task_runner(), decoders.Pass(), new MediaLog()));
+
+    EXPECT_CALL(*cdm_context_, GetDecryptor())
+        .WillRepeatedly(Return(decryptor_.get()));
 
     // Decryptor can only decrypt (not decrypt-and-decode) so that
     // DecryptingDemuxerStream will be used.
@@ -124,8 +131,8 @@ class VideoFrameStreamTest
   }
 
   MOCK_METHOD1(OnNewSpliceBuffer, void(base::TimeDelta));
-  MOCK_METHOD1(SetDecryptorReadyCallback, void(const media::DecryptorReadyCB&));
-  MOCK_METHOD1(DecryptorSet, void(bool));
+  MOCK_METHOD1(SetCdmReadyCallback, void(const media::CdmReadyCB&));
+  MOCK_METHOD1(CdmSet, void(bool));
   MOCK_METHOD0(OnWaitingForDecryptionKey, void(void));
 
   void OnStatistics(const PipelineStatistics& statistics) {
@@ -155,7 +162,7 @@ class VideoFrameStreamTest
     video_frame_stream_->Initialize(
         demuxer_stream_.get(), base::Bind(&VideoFrameStreamTest::OnInitialized,
                                           base::Unretained(this)),
-        base::Bind(&VideoFrameStreamTest::SetDecryptorReadyCallback,
+        base::Bind(&VideoFrameStreamTest::SetCdmReadyCallback,
                    base::Unretained(this)),
         base::Bind(&VideoFrameStreamTest::OnStatistics, base::Unretained(this)),
         base::Bind(&VideoFrameStreamTest::OnWaitingForDecryptionKey,
@@ -246,15 +253,13 @@ class VideoFrameStreamTest
     DECODER_RESET
   };
 
-  void ExpectDecryptorNotification() {
-    EXPECT_CALL(*this, SetDecryptorReadyCallback(_))
+  void ExpectCdmNotification() {
+    EXPECT_CALL(*this, SetCdmReadyCallback(_))
         .WillRepeatedly(ExecuteCallbackWithVerifier(
-            decryptor_.get(),
-            base::Bind(&VideoFrameStreamTest::DecryptorSet,
-                       base::Unretained(this)),
+            cdm_context_.get(),
+            base::Bind(&VideoFrameStreamTest::CdmSet, base::Unretained(this)),
             &verifier_));
-    EXPECT_CALL(*this, DecryptorSet(true))
-        .WillRepeatedly(ReportCallback(&verifier_));
+    EXPECT_CALL(*this, CdmSet(true)).WillRepeatedly(ReportCallback(&verifier_));
   }
 
   void EnterPendingState(PendingState state) {
@@ -275,9 +280,8 @@ class VideoFrameStreamTest
         break;
 
       case SET_DECRYPTOR:
-        // Hold DecryptorReadyCB.
-        EXPECT_CALL(*this, SetDecryptorReadyCallback(_))
-            .Times(2);
+        // Hold CdmReadyCB.
+        EXPECT_CALL(*this, SetCdmReadyCallback(_)).Times(2);
         // Initialize will fail because no decryptor is available.
         InitializeVideoFrameStream();
         break;
@@ -285,13 +289,13 @@ class VideoFrameStreamTest
       case DECRYPTOR_NO_KEY:
         if (GetParam().is_encrypted)
           EXPECT_CALL(*this, OnWaitingForDecryptionKey());
-        ExpectDecryptorNotification();
+        ExpectCdmNotification();
         has_no_key_ = true;
         ReadOneFrame();
         break;
 
       case DECODER_INIT:
-        ExpectDecryptorNotification();
+        ExpectCdmNotification();
         decoder->HoldNextInit();
         InitializeVideoFrameStream();
         break;
@@ -387,9 +391,11 @@ class VideoFrameStreamTest
 
   scoped_ptr<VideoFrameStream> video_frame_stream_;
   scoped_ptr<FakeDemuxerStream> demuxer_stream_;
+  scoped_ptr<StrictMock<MockCdmContext>> cdm_context_;
+
   // Use NiceMock since we don't care about most of calls on the decryptor,
   // e.g. RegisterNewKeyCB().
-  scoped_ptr<NiceMock<MockDecryptor> > decryptor_;
+  scoped_ptr<NiceMock<MockDecryptor>> decryptor_;
   // Three decoders are needed to test that decoder fallback can occur more than
   // once on a config change. They are owned by |video_frame_stream_|.
   FakeVideoDecoder* decoder1_;

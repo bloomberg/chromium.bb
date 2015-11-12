@@ -34,17 +34,16 @@ static inline bool IsOutOfSync(const base::TimeDelta& timestamp_1,
 DecryptingAudioDecoder::DecryptingAudioDecoder(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     const scoped_refptr<MediaLog>& media_log,
-    const SetDecryptorReadyCB& set_decryptor_ready_cb,
+    const SetCdmReadyCB& set_cdm_ready_cb,
     const base::Closure& waiting_for_decryption_key_cb)
     : task_runner_(task_runner),
       media_log_(media_log),
       state_(kUninitialized),
       waiting_for_decryption_key_cb_(waiting_for_decryption_key_cb),
-      set_decryptor_ready_cb_(set_decryptor_ready_cb),
+      set_cdm_ready_cb_(set_cdm_ready_cb),
       decryptor_(NULL),
       key_added_while_decode_pending_(false),
-      weak_factory_(this) {
-}
+      weak_factory_(this) {}
 
 std::string DecryptingAudioDecoder::GetDisplayName() const {
   return "DecryptingAudioDecoder";
@@ -78,8 +77,8 @@ void DecryptingAudioDecoder::Initialize(const AudioDecoderConfig& config,
 
   if (state_ == kUninitialized) {
     state_ = kDecryptorRequested;
-    set_decryptor_ready_cb_.Run(BindToCurrentLoop(
-        base::Bind(&DecryptingAudioDecoder::SetDecryptor, weak_this_)));
+    set_cdm_ready_cb_.Run(BindToCurrentLoop(
+        base::Bind(&DecryptingAudioDecoder::SetCdm, weak_this_)));
     return;
   }
 
@@ -161,8 +160,8 @@ DecryptingAudioDecoder::~DecryptingAudioDecoder() {
     decryptor_->DeinitializeDecoder(Decryptor::kAudio);
     decryptor_ = NULL;
   }
-  if (!set_decryptor_ready_cb_.is_null())
-    base::ResetAndReturn(&set_decryptor_ready_cb_).Run(DecryptorReadyCB());
+  if (!set_cdm_ready_cb_.is_null())
+    base::ResetAndReturn(&set_cdm_ready_cb_).Run(CdmReadyCB());
   pending_buffer_to_decode_ = NULL;
   if (!init_cb_.is_null())
     base::ResetAndReturn(&init_cb_).Run(false);
@@ -172,29 +171,28 @@ DecryptingAudioDecoder::~DecryptingAudioDecoder() {
     base::ResetAndReturn(&reset_cb_).Run();
 }
 
-void DecryptingAudioDecoder::SetDecryptor(
-    Decryptor* decryptor,
-    const DecryptorAttachedCB& decryptor_attached_cb) {
-  DVLOG(2) << "SetDecryptor()";
+void DecryptingAudioDecoder::SetCdm(CdmContext* cdm_context,
+                                    const CdmAttachedCB& cdm_attached_cb) {
+  DVLOG(2) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(state_, kDecryptorRequested) << state_;
   DCHECK(!init_cb_.is_null());
-  DCHECK(!set_decryptor_ready_cb_.is_null());
+  DCHECK(!set_cdm_ready_cb_.is_null());
 
-  set_decryptor_ready_cb_.Reset();
+  set_cdm_ready_cb_.Reset();
 
-  if (!decryptor) {
+  if (!cdm_context || !cdm_context->GetDecryptor()) {
     MEDIA_LOG(DEBUG, media_log_) << GetDisplayName() << ": no decryptor set";
     base::ResetAndReturn(&init_cb_).Run(false);
     state_ = kError;
-    decryptor_attached_cb.Run(false);
+    cdm_attached_cb.Run(false);
     return;
   }
 
-  decryptor_ = decryptor;
+  decryptor_ = cdm_context->GetDecryptor();
 
   InitializeDecoder();
-  decryptor_attached_cb.Run(true);
+  cdm_attached_cb.Run(true);
 }
 
 void DecryptingAudioDecoder::InitializeDecoder() {

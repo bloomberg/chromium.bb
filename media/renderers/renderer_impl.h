@@ -85,11 +85,11 @@ class MEDIA_EXPORT RendererImpl : public Renderer {
   bool GetWallClockTimes(const std::vector<base::TimeDelta>& media_timestamps,
                          std::vector<base::TimeTicks>* wall_clock_times);
 
-  // Requests that this object notifies when a decryptor is ready through the
-  // |decryptor_ready_cb| provided.
-  // If |decryptor_ready_cb| is null, the existing callback will be fired with
+  // Requests that this object notifies when a CDM is ready through the
+  // |cdm_ready_cb| provided.
+  // If |cdm_ready_cb| is null, the existing callback will be fired with
   // nullptr immediately and reset.
-  void SetDecryptorReadyCallback(const DecryptorReadyCB& decryptor_ready_cb);
+  void SetCdmReadyCallback(const CdmReadyCB& cdm_ready_cb);
 
   // Helper functions and callbacks for Initialize().
   void InitializeAudioRenderer();
@@ -170,12 +170,12 @@ class MEDIA_EXPORT RendererImpl : public Renderer {
   CdmContext* cdm_context_;
 
   // Callback registered by filters (decoder or demuxer) to be informed of a
-  // Decryptor.
+  // CDM.
   // Note: We could have multiple filters registering this callback. One
   // callback is okay because:
   // 1, We always initialize filters in sequence.
   // 2, Filter initialization will not finish until this callback is satisfied.
-  DecryptorReadyCB decryptor_ready_cb_;
+  CdmReadyCB cdm_ready_cb_;
 
   bool underflow_disabled_for_testing_;
   bool clockless_video_playback_enabled_for_testing_;

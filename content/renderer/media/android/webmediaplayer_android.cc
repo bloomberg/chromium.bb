@@ -186,19 +186,18 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
       needs_establish_peer_(true),
       has_size_info_(false),
       // Threaded compositing isn't enabled universally yet.
-      compositor_task_runner_(
-          params.compositor_task_runner()
-              ? params.compositor_task_runner()
-              : base::ThreadTaskRunnerHandle::Get()),
+      compositor_task_runner_(params.compositor_task_runner()
+                                  ? params.compositor_task_runner()
+                                  : base::ThreadTaskRunnerHandle::Get()),
       stream_texture_factory_(factory),
       needs_external_surface_(false),
       is_fullscreen_(false),
-      video_frame_provider_client_(NULL),
+      video_frame_provider_client_(nullptr),
       player_type_(MEDIA_PLAYER_TYPE_URL),
       is_remote_(false),
       media_log_(params.media_log()),
       init_data_type_(media::EmeInitDataType::UNKNOWN),
-      cdm_context_(NULL),
+      cdm_context_(nullptr),
       allow_stored_credentials_(false),
       is_local_resource_(false),
       interpolator_(&default_tick_clock_),
@@ -326,7 +325,7 @@ void WebMediaPlayerAndroid::DoLoad(LoadType load_type,
                      weak_factory_.GetWeakPtr()),
           base::Bind(&WebMediaPlayerAndroid::OnEncryptedMediaInitData,
                      weak_factory_.GetWeakPtr()),
-          base::Bind(&WebMediaPlayerAndroid::SetDecryptorReadyCB,
+          base::Bind(&WebMediaPlayerAndroid::SetCdmReadyCB,
                      weak_factory_.GetWeakPtr()),
           base::Bind(&WebMediaPlayerAndroid::UpdateNetworkState,
                      weak_factory_.GetWeakPtr()),
@@ -1711,12 +1710,12 @@ void WebMediaPlayerAndroid::setContentDecryptionModule(
   cdm_context_ = media::ToWebContentDecryptionModuleImpl(cdm)->GetCdmContext();
 
   if (is_player_initialized_) {
-    SetCdmInternal(media::BindToCurrentLoop(
+    SetCdmInternal(
         base::Bind(&WebMediaPlayerAndroid::ContentDecryptionModuleAttached,
-                   weak_factory_.GetWeakPtr(), result)));
+                   weak_factory_.GetWeakPtr(), result));
   } else {
     // No pipeline/decoder connected, so resolve the promise. When something
-    // is connected, setting the CDM will happen in SetDecryptorReadyCB().
+    // is connected, setting the CDM will happen in SetCdmReadyCB().
     ContentDecryptionModuleAttached(result, true);
   }
 }
@@ -1830,70 +1829,69 @@ void WebMediaPlayerAndroid::OnCdmContextReady(media::CdmContext* cdm_context) {
 
 void WebMediaPlayerAndroid::SetCdmInternal(
     const media::CdmAttachedCB& cdm_attached_cb) {
+  DCHECK(main_thread_checker_.CalledOnValidThread());
   DCHECK(cdm_context_ && is_player_initialized_);
   DCHECK(cdm_context_->GetDecryptor() ||
          cdm_context_->GetCdmId() != media::CdmContext::kInvalidCdmId)
       << "CDM should support either a Decryptor or a CDM ID.";
 
-  media::Decryptor* decryptor = cdm_context_->GetDecryptor();
-
-  // Note:
-  // - If |decryptor| is non-null, only handles |decryptor_ready_cb_| and
-  //   ignores the CDM ID.
-  // - If |decryptor| is null (in which case the CDM ID should be valid),
-  //   returns any pending |decryptor_ready_cb_| with null, so that
-  //   MediaSourceDelegate will fall back to use a browser side (IPC-based) CDM,
-  //   then calls SetCdm() through the |player_manager_|.
-
-  if (decryptor) {
-    if (!decryptor_ready_cb_.is_null()) {
-      base::ResetAndReturn(&decryptor_ready_cb_)
-          .Run(decryptor, cdm_attached_cb);
-    } else {
-      cdm_attached_cb.Run(true);
-    }
+  if (cdm_ready_cb_.is_null()) {
+    cdm_attached_cb.Run(true);
     return;
   }
 
-  // |decryptor| is null.
-  if (!decryptor_ready_cb_.is_null()) {
-    base::ResetAndReturn(&decryptor_ready_cb_)
-        .Run(nullptr, base::Bind(&media::IgnoreCdmAttached));
+  // Satisfy |cdm_ready_cb_|. Use BindToCurrentLoop() since the callback could
+  // be fired on other threads.
+  base::ResetAndReturn(&cdm_ready_cb_)
+      .Run(cdm_context_, media::BindToCurrentLoop(base::Bind(
+                             &WebMediaPlayerAndroid::OnCdmAttached,
+                             weak_factory_.GetWeakPtr(), cdm_attached_cb)));
+}
+
+void WebMediaPlayerAndroid::OnCdmAttached(
+    const media::CdmAttachedCB& cdm_attached_cb,
+    bool success) {
+  DCHECK(main_thread_checker_.CalledOnValidThread());
+
+  if (!success) {
+    if (cdm_context_->GetCdmId() == media::CdmContext::kInvalidCdmId) {
+      NOTREACHED() << "CDM cannot be attached to media player.";
+      cdm_attached_cb.Run(false);
+      return;
+    }
+
+    // If the CDM is not attached (e.g. the CDM does not support a Decryptor),
+    // MediaSourceDelegate will fall back to use a browser side (IPC-based) CDM.
+    player_manager_->SetCdm(player_id_, cdm_context_->GetCdmId());
   }
 
-  DCHECK(cdm_context_->GetCdmId() != media::CdmContext::kInvalidCdmId);
-  player_manager_->SetCdm(player_id_, cdm_context_->GetCdmId());
   cdm_attached_cb.Run(true);
 }
 
-void WebMediaPlayerAndroid::SetDecryptorReadyCB(
-    const media::DecryptorReadyCB& decryptor_ready_cb) {
+void WebMediaPlayerAndroid::SetCdmReadyCB(
+    const media::CdmReadyCB& cdm_ready_cb) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   DCHECK(is_player_initialized_);
 
-  // Cancels the previous decryptor request.
-  if (decryptor_ready_cb.is_null()) {
-    if (!decryptor_ready_cb_.is_null()) {
-      base::ResetAndReturn(&decryptor_ready_cb_)
-          .Run(NULL, base::Bind(&media::IgnoreCdmAttached));
+  // Cancels the previous CDM request.
+  if (cdm_ready_cb.is_null()) {
+    if (!cdm_ready_cb_.is_null()) {
+      base::ResetAndReturn(&cdm_ready_cb_)
+          .Run(nullptr, base::Bind(&media::IgnoreCdmAttached));
     }
     return;
   }
 
-  // TODO(xhwang): Support multiple decryptor notification request (e.g. from
+  // TODO(xhwang): Support multiple CDM notification request (e.g. from
   // video and audio). The current implementation is okay for the current
   // media pipeline since we initialize audio and video decoders in sequence.
-  // But WebMediaPlayerImpl should not depend on media pipeline's implementation
-  // detail.
-  DCHECK(decryptor_ready_cb_.is_null());
+  // But WebMediaPlayerAndroid should not depend on media pipeline's
+  // implementation detail.
+  DCHECK(cdm_ready_cb_.is_null());
+  cdm_ready_cb_ = cdm_ready_cb;
 
-  if (cdm_context_) {
-    decryptor_ready_cb.Run(cdm_context_->GetDecryptor(),
-                           base::Bind(&media::IgnoreCdmAttached));
-    return;
-  }
-
-  decryptor_ready_cb_ = decryptor_ready_cb;
+  if (cdm_context_)
+    SetCdmInternal(base::Bind(&media::IgnoreCdmAttached));
 }
 
 bool WebMediaPlayerAndroid::supportsOverlayFullscreenVideo() {

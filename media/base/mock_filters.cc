@@ -108,4 +108,12 @@ MockDecryptor::MockDecryptor() {}
 
 MockDecryptor::~MockDecryptor() {}
 
+MockCdmContext::MockCdmContext() {}
+
+MockCdmContext::~MockCdmContext() {}
+
+int MockCdmContext::GetCdmId() const {
+  return CdmContext::kInvalidCdmId;
+}
+
 }  // namespace media

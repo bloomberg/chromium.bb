@@ -13,7 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
-#include "media/base/decryptor.h"
+#include "media/base/cdm_context.h"
 #include "media/base/demuxer.h"
 #include "media/base/media_keys.h"
 #include "media/base/pipeline_status.h"
@@ -60,7 +60,7 @@ class MediaSourceDelegate : public media::DemuxerHost {
       const MediaSourceOpenedCB& media_source_opened_cb,
       const media::Demuxer::EncryptedMediaInitDataCB&
           encrypted_media_init_data_cb,
-      const media::SetDecryptorReadyCB& set_decryptor_ready_cb,
+      const media::SetCdmReadyCB& set_cdm_ready_cb,
       const UpdateNetworkStateCB& update_network_state_cb,
       const DurationChangeCB& duration_change_cb,
       const base::Closure& waiting_for_decryption_key_cb);
@@ -186,7 +186,7 @@ class MediaSourceDelegate : public media::DemuxerHost {
   scoped_ptr<media::ChunkDemuxer> chunk_demuxer_;
   bool is_demuxer_ready_;
 
-  media::SetDecryptorReadyCB set_decryptor_ready_cb_;
+  media::SetCdmReadyCB set_cdm_ready_cb_;
 
   scoped_ptr<media::DecryptingDemuxerStream> audio_decrypting_demuxer_stream_;
   scoped_ptr<media::DecryptingDemuxerStream> video_decrypting_demuxer_stream_;

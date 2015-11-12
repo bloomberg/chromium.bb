@@ -5,6 +5,8 @@
 #ifndef MEDIA_FILTERS_DECODER_STREAM_H_
 #define MEDIA_FILTERS_DECODER_STREAM_H_
 
+#include <list>
+
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
@@ -12,7 +14,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "media/base/audio_decoder.h"
-#include "media/base/decryptor.h"
+#include "media/base/cdm_context.h"
 #include "media/base/demuxer_stream.h"
 #include "media/base/media_export.h"
 #include "media/base/media_log.h"
@@ -65,7 +67,7 @@ class MEDIA_EXPORT DecoderStream {
   // through |init_cb|. Note that |init_cb| is always called asynchronously.
   void Initialize(DemuxerStream* stream,
                   const InitCB& init_cb,
-                  const SetDecryptorReadyCB& set_decryptor_ready_cb,
+                  const SetCdmReadyCB& set_cdm_ready_cb,
                   const StatisticsCB& statistics_cb,
                   const base::Closure& waiting_for_decryption_key_cb);
 
@@ -129,7 +131,7 @@ class MEDIA_EXPORT DecoderStream {
     STATE_ERROR
   };
 
-  void SelectDecoder(const SetDecryptorReadyCB& set_decryptor_ready_cb);
+  void SelectDecoder(const SetCdmReadyCB& set_cdm_ready_cb);
 
   // Called when |decoder_selector| selected the |selected_decoder|.
   // |decrypting_demuxer_stream| was also populated if a DecryptingDemuxerStream

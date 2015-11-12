@@ -121,13 +121,12 @@ void RendererImpl::SetCdm(CdmContext* cdm_context,
 
   cdm_context_ = cdm_context;
 
-  if (decryptor_ready_cb_.is_null()) {
+  if (cdm_ready_cb_.is_null()) {
     cdm_attached_cb.Run(true);
     return;
   }
 
-  base::ResetAndReturn(&decryptor_ready_cb_)
-      .Run(cdm_context->GetDecryptor(), cdm_attached_cb);
+  base::ResetAndReturn(&cdm_ready_cb_).Run(cdm_context, cdm_attached_cb);
 }
 
 void RendererImpl::Flush(const base::Closure& flush_cb) {
@@ -253,27 +252,25 @@ bool RendererImpl::GetWallClockTimes(
   return time_source_->GetWallClockTimes(media_timestamps, wall_clock_times);
 }
 
-void RendererImpl::SetDecryptorReadyCallback(
-    const DecryptorReadyCB& decryptor_ready_cb) {
-  // Cancels the previous decryptor request.
-  if (decryptor_ready_cb.is_null()) {
-    if (!decryptor_ready_cb_.is_null()) {
-      base::ResetAndReturn(&decryptor_ready_cb_)
+void RendererImpl::SetCdmReadyCallback(const CdmReadyCB& cdm_ready_cb) {
+  // Cancels the previous CDM request.
+  if (cdm_ready_cb.is_null()) {
+    if (!cdm_ready_cb_.is_null()) {
+      base::ResetAndReturn(&cdm_ready_cb_)
           .Run(nullptr, base::Bind(IgnoreCdmAttached));
     }
     return;
   }
 
   // We initialize audio and video decoders in sequence.
-  DCHECK(decryptor_ready_cb_.is_null());
+  DCHECK(cdm_ready_cb_.is_null());
 
   if (cdm_context_) {
-    decryptor_ready_cb.Run(cdm_context_->GetDecryptor(),
-                           base::Bind(IgnoreCdmAttached));
+    cdm_ready_cb.Run(cdm_context_, base::Bind(IgnoreCdmAttached));
     return;
   }
 
-  decryptor_ready_cb_ = decryptor_ready_cb;
+  cdm_ready_cb_ = cdm_ready_cb;
 }
 
 void RendererImpl::InitializeAudioRenderer() {
@@ -295,7 +292,7 @@ void RendererImpl::InitializeAudioRenderer() {
   // happen at any time and all future calls must guard against STATE_ERROR.
   audio_renderer_->Initialize(
       demuxer_stream_provider_->GetStream(DemuxerStream::AUDIO), done_cb,
-      base::Bind(&RendererImpl::SetDecryptorReadyCallback, weak_this_),
+      base::Bind(&RendererImpl::SetCdmReadyCallback, weak_this_),
       base::Bind(&RendererImpl::OnUpdateStatistics, weak_this_),
       base::Bind(&RendererImpl::OnBufferingStateChanged, weak_this_,
                  &audio_buffering_state_),
@@ -342,7 +339,7 @@ void RendererImpl::InitializeVideoRenderer() {
 
   video_renderer_->Initialize(
       demuxer_stream_provider_->GetStream(DemuxerStream::VIDEO), done_cb,
-      base::Bind(&RendererImpl::SetDecryptorReadyCallback, weak_this_),
+      base::Bind(&RendererImpl::SetCdmReadyCallback, weak_this_),
       base::Bind(&RendererImpl::OnUpdateStatistics, weak_this_),
       base::Bind(&RendererImpl::OnBufferingStateChanged, weak_this_,
                  &video_buffering_state_),

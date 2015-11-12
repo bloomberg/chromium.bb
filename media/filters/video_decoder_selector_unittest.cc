@@ -24,10 +24,10 @@ using ::testing::StrictMock;
 // times across multiple test files. Sadly we can't use static for them.
 namespace {
 
-ACTION_P3(ExecuteCallbackWithVerifier, decryptor, done_cb, verifier) {
+ACTION_P3(ExecuteCallbackWithVerifier, cdm_context, done_cb, verifier) {
   // verifier must be called first since |done_cb| call will invoke it as well.
   verifier->RecordACalled();
-  arg0.Run(decryptor, done_cb);
+  arg0.Run(cdm_context, done_cb);
 }
 
 ACTION_P(ReportCallback, verifier) {
@@ -60,21 +60,25 @@ class VideoDecoderSelectorTest : public ::testing::Test {
   VideoDecoderSelectorTest()
       : demuxer_stream_(
             new StrictMock<MockDemuxerStream>(DemuxerStream::VIDEO)),
+        cdm_context_(new StrictMock<MockCdmContext>()),
         decryptor_(new NiceMock<MockDecryptor>()),
         decoder_1_(new StrictMock<MockVideoDecoder>()),
         decoder_2_(new StrictMock<MockVideoDecoder>()) {
     all_decoders_.push_back(decoder_1_);
     all_decoders_.push_back(decoder_2_);
+
+    EXPECT_CALL(*cdm_context_, GetDecryptor())
+        .WillRepeatedly(Return(decryptor_.get()));
   }
 
   ~VideoDecoderSelectorTest() {
     message_loop_.RunUntilIdle();
   }
 
-  MOCK_METHOD1(SetDecryptorReadyCallback, void(const media::DecryptorReadyCB&));
+  MOCK_METHOD1(SetCdmReadyCallback, void(const media::CdmReadyCB&));
   MOCK_METHOD2(OnDecoderSelected,
                void(VideoDecoder*, DecryptingDemuxerStream*));
-  MOCK_METHOD1(DecryptorSet, void(bool));
+  MOCK_METHOD1(CdmSet, void(bool));
 
   void MockOnDecoderSelected(
       scoped_ptr<VideoDecoder> decoder,
@@ -96,13 +100,12 @@ class VideoDecoderSelectorTest : public ::testing::Test {
                                  int num_decoders) {
     if (decryptor_capability == kDecryptOnly ||
         decryptor_capability == kDecryptAndDecode) {
-      EXPECT_CALL(*this, SetDecryptorReadyCallback(_))
+      EXPECT_CALL(*this, SetCdmReadyCallback(_))
           .WillRepeatedly(ExecuteCallbackWithVerifier(
-              decryptor_.get(),
-              base::Bind(&VideoDecoderSelectorTest::DecryptorSet,
-                         base::Unretained(this)),
+              cdm_context_.get(), base::Bind(&VideoDecoderSelectorTest::CdmSet,
+                                             base::Unretained(this)),
               &verifier_));
-      EXPECT_CALL(*this, DecryptorSet(true))
+      EXPECT_CALL(*this, CdmSet(true))
           .WillRepeatedly(ReportCallback(&verifier_));
 
       if (decryptor_capability == kDecryptOnly) {
@@ -113,11 +116,10 @@ class VideoDecoderSelectorTest : public ::testing::Test {
             .WillRepeatedly(RunCallback<1>(true));
       }
     } else if (decryptor_capability == kHoldSetDecryptor) {
-      // Set and cancel DecryptorReadyCB but the callback is never fired.
-      EXPECT_CALL(*this, SetDecryptorReadyCallback(_))
-          .Times(2);
+      // Set and cancel CdmReadyCB but the callback is never fired.
+      EXPECT_CALL(*this, SetCdmReadyCallback(_)).Times(2);
     } else if (decryptor_capability == kNoDecryptor) {
-      EXPECT_CALL(*this, SetDecryptorReadyCallback(_))
+      EXPECT_CALL(*this, SetCdmReadyCallback(_))
           .WillRepeatedly(
               RunCallback<0>(nullptr, base::Bind(&IgnoreCdmAttached)));
     }
@@ -134,7 +136,7 @@ class VideoDecoderSelectorTest : public ::testing::Test {
   void SelectDecoder() {
     decoder_selector_->SelectDecoder(
         demuxer_stream_.get(),
-        base::Bind(&VideoDecoderSelectorTest::SetDecryptorReadyCallback,
+        base::Bind(&VideoDecoderSelectorTest::SetCdmReadyCallback,
                    base::Unretained(this)),
         base::Bind(&VideoDecoderSelectorTest::MockOnDecoderSelected,
                    base::Unretained(this)),
@@ -163,11 +165,13 @@ class VideoDecoderSelectorTest : public ::testing::Test {
 
   // Declare |decoder_selector_| after |demuxer_stream_| and |decryptor_| since
   // |demuxer_stream_| and |decryptor_| should outlive |decoder_selector_|.
-  scoped_ptr<StrictMock<MockDemuxerStream> > demuxer_stream_;
+  scoped_ptr<StrictMock<MockDemuxerStream>> demuxer_stream_;
+
+  scoped_ptr<StrictMock<MockCdmContext>> cdm_context_;
 
   // Use NiceMock since we don't care about most of calls on the decryptor, e.g.
   // RegisterNewKeyCB().
-  scoped_ptr<NiceMock<MockDecryptor> > decryptor_;
+  scoped_ptr<NiceMock<MockDecryptor>> decryptor_;
 
   scoped_ptr<VideoDecoderSelector> decoder_selector_;
 

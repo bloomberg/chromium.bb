@@ -320,15 +320,18 @@ class WebMediaPlayerAndroid : public blink::WebMediaPlayer,
   void OnCdmContextReady(media::CdmContext* cdm_context);
 
   // Sets the CDM. Should only be called when |is_player_initialized_| is true
-  // and a new non-null |cdm_context_| is available. Fires |cdm_attached_cb_|
-  // with the result after the CDM is attached.
+  // and a new non-null |cdm_context_| is available. Fires |cdm_attached_cb_| on
+  // the main thread with the result after the CDM is attached.
   void SetCdmInternal(const media::CdmAttachedCB& cdm_attached_cb);
 
-  // Requests that this object notifies when a decryptor is ready through the
-  // |decryptor_ready_cb| provided.
-  // If |decryptor_ready_cb| is null, the existing callback will be fired with
+  // Called when the CDM is attached.
+  void OnCdmAttached(const media::CdmAttachedCB& cdm_attached_cb, bool success);
+
+  // Requests that this object notifies when a CDM is ready through the
+  // |cdm_ready_cb| provided.
+  // If |cdm_ready_cb| is null, the existing callback will be fired with
   // NULL immediately and reset.
-  void SetDecryptorReadyCB(const media::DecryptorReadyCB& decryptor_ready_cb);
+  void SetCdmReadyCB(const media::CdmReadyCB& cdm_ready_cb);
 
   // Called when the ContentDecryptionModule has been attached to the
   // pipeline/decoders.
@@ -509,7 +512,7 @@ class WebMediaPlayerAndroid : public blink::WebMediaPlayer,
   // side CDM will be used. This is similar to WebMediaPlayerImpl. For other key
   // systems, a browser side CDM will be used and we set CDM by calling
   // player_manager_->SetCdm() directly.
-  media::DecryptorReadyCB decryptor_ready_cb_;
+  media::CdmReadyCB cdm_ready_cb_;
 
   SkBitmap bitmap_;
 

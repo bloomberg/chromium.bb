@@ -89,7 +89,7 @@ template <DemuxerStream::Type StreamType>
 void DecoderStream<StreamType>::Initialize(
     DemuxerStream* stream,
     const InitCB& init_cb,
-    const SetDecryptorReadyCB& set_decryptor_ready_cb,
+    const SetCdmReadyCB& set_cdm_ready_cb,
     const StatisticsCB& statistics_cb,
     const base::Closure& waiting_for_decryption_key_cb) {
   FUNCTION_DVLOG(2);
@@ -104,7 +104,7 @@ void DecoderStream<StreamType>::Initialize(
   stream_ = stream;
 
   state_ = STATE_INITIALIZING;
-  SelectDecoder(set_decryptor_ready_cb);
+  SelectDecoder(set_cdm_ready_cb);
 }
 
 template <DemuxerStream::Type StreamType>
@@ -215,9 +215,9 @@ bool DecoderStream<StreamType>::CanDecodeMore() const {
 
 template <DemuxerStream::Type StreamType>
 void DecoderStream<StreamType>::SelectDecoder(
-    const SetDecryptorReadyCB& set_decryptor_ready_cb) {
+    const SetCdmReadyCB& set_cdm_ready_cb) {
   decoder_selector_->SelectDecoder(
-      stream_, set_decryptor_ready_cb,
+      stream_, set_cdm_ready_cb,
       base::Bind(&DecoderStream<StreamType>::OnDecoderSelected,
                  weak_factory_.GetWeakPtr()),
       base::Bind(&DecoderStream<StreamType>::OnDecodeOutputReady,
@@ -542,7 +542,7 @@ void DecoderStream<StreamType>::OnDecoderReinitialized(bool success) {
     // once is safe.
     // For simplicity, don't attempt to fall back to a decryptor. Calling this
     // with a null callback ensures that one won't be selected.
-    SelectDecoder(SetDecryptorReadyCB());
+    SelectDecoder(SetCdmReadyCB());
   } else {
     CompleteDecoderReinitialization(true);
   }

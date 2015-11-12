@@ -308,7 +308,7 @@ void AudioRendererImpl::StartPlaying() {
 void AudioRendererImpl::Initialize(
     DemuxerStream* stream,
     const PipelineStatusCB& init_cb,
-    const SetDecryptorReadyCB& set_decryptor_ready_cb,
+    const SetCdmReadyCB& set_cdm_ready_cb,
     const StatisticsCB& statistics_cb,
     const BufferingStateCB& buffering_state_cb,
     const base::Closure& ended_cb,
@@ -367,7 +367,7 @@ void AudioRendererImpl::Initialize(
   audio_buffer_stream_->Initialize(
       stream, base::Bind(&AudioRendererImpl::OnAudioBufferStreamInitialized,
                          weak_factory_.GetWeakPtr()),
-      set_decryptor_ready_cb, statistics_cb, waiting_for_decryption_key_cb);
+      set_cdm_ready_cb, statistics_cb, waiting_for_decryption_key_cb);
 }
 
 void AudioRendererImpl::OnAudioBufferStreamInitialized(bool success) {

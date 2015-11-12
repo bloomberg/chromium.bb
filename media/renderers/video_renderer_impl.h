@@ -62,7 +62,7 @@ class MEDIA_EXPORT VideoRendererImpl
   // VideoRenderer implementation.
   void Initialize(DemuxerStream* stream,
                   const PipelineStatusCB& init_cb,
-                  const SetDecryptorReadyCB& set_decryptor_ready_cb,
+                  const SetCdmReadyCB& set_cdm_ready_cb,
                   const StatisticsCB& statistics_cb,
                   const BufferingStateCB& buffering_state_cb,
                   const base::Closure& ended_cb,
