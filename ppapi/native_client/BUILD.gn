@@ -41,12 +41,12 @@ if (is_nacl) {
 
   # TODO(phosek): We can remove this ugliness if we change the
   # IRT file name in components/nacl/browser/nacl_browser.cc
-  if (target_cpu == "x86") {
+  if (current_cpu == "x86") {
     irt_cpu = "x86_32"
-  } else if (target_cpu == "x64") {
+  } else if (current_cpu == "x64") {
     irt_cpu = "x86_64"
   } else {
-    irt_cpu = target_cpu
+    irt_cpu = current_cpu
   }
   irt_name = "nacl_irt_" + irt_cpu + ".nexe"
 
@@ -69,6 +69,10 @@ if (is_nacl) {
     ]
 
     objcopy = "${nacl_toolprefix}objcopy"
+    if (host_os == "win") {
+      objcopy += ".exe"
+    }
+
     irt_stripped = "${root_out_dir}/nacl_irt.nexe"
     irt_debug = get_target_outputs(":nacl_irt_debug")
     irt_debug = irt_debug[0]
@@ -100,4 +104,12 @@ group("irt") {
     ":nacl_irt_debuglink(//build/toolchain/nacl:irt_${target_cpu})",
     ":nacl_irt_debug(//build/toolchain/nacl:irt_${target_cpu})",
   ]
+
+  # On 32-bit Windows, we also ship the 64-bit IRT.
+  if (is_win && target_cpu == "x86") {
+    public_deps += [
+      ":nacl_irt_debuglink(//build/toolchain/nacl:irt_x64)",
+      ":nacl_irt_debug(//build/toolchain/nacl:irt_x64)",
+    ]
+  }
 }
