@@ -1023,6 +1023,32 @@ Press any key to continue exploring.
     Failed to retrieve space info
   </message>
 
+<!-- Common for Audio player and Media player -->
+  <message name="IDS_MEDIA_PLAYER_PLAY_BUTTON_LABEL" desc="Label for the Play button of media players (audio player / video player).">
+    Play
+  </message>
+  <message name="IDS_MEDIA_PLAYER_PAUSE_BUTTON_LABEL" desc="Label for the Pause button of media player (audio player / video player).">
+    Pause
+  </message>
+  <message name="IDS_MEDIA_PLAYER_MUTE_BUTTON_LABEL" desc="Label for the Mute button of media player (audio player / video player).">
+    Mute
+  </message>
+  <message name="IDS_MEDIA_PLAYER_UNMUTE_BUTTON_LABEL" desc="Label for the Unmute button of media player (audio player / video player).">
+    Unmute
+  </message>
+  <message name="IDS_MEDIA_PLAYER_PREVIOUS_BUTTON_LABEL" desc="Label for the Previous button, which is used to select previous video in the video player, or select previous track in the audio player.">
+    Previous
+  </message>
+  <message name="IDS_MEDIA_PLAYER_NEXT_BUTTON_LABEL" desc="Label for the Next button, which is used to select previous video in the video player, or select previous track in the audio player.">
+    Next
+  </message>
+  <message name="IDS_MEDIA_PLAYER_SEEK_SLIDER_LABEL" desc="Label for the seek bar of media player.">
+    Seek slider
+  </message>
+  <message name="IDS_MEDIA_PLAYER_VOLUME_SLIDER_LABEL" desc="Label for the volume slider of media player.">
+    Volume slider
+  </message>
+
 <!-- Video Player -->
   <message name="IDS_VIDEO_PLAYER_PLAY_THIS_COMPUTER" desc="In the video player app, message of menu item which is shown at the top of the list of Chromecasts. This menuitem is to play the video on this computer (locally), intead of on TVs with Chromecast.">
     This computer
@@ -1044,6 +1070,12 @@ Press any key to continue exploring.
   </message>
   <message name="IDS_VIDEO_PLAYER_LOOPED_MODE" desc="In the video player app, message informing that the movie will be played in a loop.">
     This video will keep playing until the cows come home.
+  </message>
+  <message name="IDS_VIDEO_PLAYER_FULL_SCREEN_BUTTON_LABEL" desc="Label for a button which is used to enter full screen mode in video player.">
+    Full screen
+  </message>
+  <message name="IDS_VIDEO_PLAYER_EXIT_FULL_SCREEN_BUTTON_LABEL" desc="Label for a button which is used to exit full screen mode in video player.">
+    Exit full screen
   </message>
 
 <!-- Imageburn Strings -->

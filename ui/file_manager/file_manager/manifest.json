@@ -158,6 +158,8 @@
     "common/js/path_util.js",
     "common/js/util.js",
     "common/js/volume_manager_common.js",
+    "foreground/elements/files_icon_button.html",
+    "foreground/elements/files_icon_button.js",
     "foreground/elements/files_ripple.html",
     "foreground/elements/files_ripple.js",
     "foreground/elements/files_toast.html",

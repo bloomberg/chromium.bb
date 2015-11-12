@@ -120,12 +120,14 @@ MediaControls.formatTime_ = function(timeInSec) {
  *
  * @param {string} className Class name.
  * @param {HTMLElement=} opt_parent Parent element or container if undefined.
+ * @param {string=} opt_tagName Tag name of the control. 'div' if undefined.
  * @return {!HTMLElement} The new control element.
  */
-MediaControls.prototype.createControl = function(className, opt_parent) {
+MediaControls.prototype.createControl =
+    function(className, opt_parent, opt_tagName) {
   var parent = opt_parent || this.container_;
-  var control = assertInstanceof(this.document_.createElement('div'),
-      HTMLDivElement);
+  var control = /** @type {!HTMLElement} */
+      (this.document_.createElement(opt_tagName || 'div'));
   control.className = className;
   parent.appendChild(control);
   return control;
@@ -144,7 +146,7 @@ MediaControls.prototype.createButton = function(
     className, opt_handler, opt_parent, opt_numStates) {
   opt_numStates = opt_numStates || 1;
 
-  var button = this.createControl(className, opt_parent);
+  var button = this.createControl(className, opt_parent, 'files-icon-button');
   button.classList.add('media-button');
 
   button.setAttribute('state', MediaControls.ButtonStateType.DEFAULT);
@@ -230,6 +232,8 @@ MediaControls.prototype.onPlayButtonClicked = function(event) {
 MediaControls.prototype.initPlayButton = function(opt_parent) {
   this.playButton_ = this.createButton('play media-control',
       this.onPlayButtonClicked.bind(this), opt_parent, 3 /* States. */);
+  this.playButton_.setAttribute('aria-label',
+      str('MEDIA_PLAYER_PLAY_BUTTON_LABEL'));
 };
 
 /*
@@ -258,6 +262,8 @@ MediaControls.prototype.initTimeControls = function(opt_parent) {
       document.createElement('paper-slider'));
   this.progressSlider_.classList.add('progress', 'media-control');
   this.progressSlider_.max = MediaControls.PROGRESS_RANGE;
+  this.progressSlider_.setAttribute('aria-label',
+      str('MEDIA_PLAYER_SEEK_SLIDER_LABEL'));
   this.progressSlider_.addEventListener('change', function(event) {
     this.onProgressChange_(this.progressSlider_.ratio);
   }.bind(this));
@@ -385,10 +391,14 @@ MediaControls.prototype.initVolumeControls = function(opt_parent) {
   this.soundButton_ = this.createButton('sound media-control',
       this.onSoundButtonClick_.bind(this), volumeControls);
   this.soundButton_.setAttribute('level', 3);  // max level.
+  this.soundButton_.setAttribute('aria-label',
+      str('MEDIA_PLAYER_MUTE_BUTTON_LABEL'));
 
   this.volume_ = /** @type {!PaperSliderElement} */ (
       document.createElement('paper-slider'));
   this.volume_.classList.add('volume', 'media-control');
+  this.volume_.setAttribute('aria-label',
+      str('MEDIA_PLAYER_VOLUME_SLIDER_LABEL'));
   this.volume_.addEventListener('change', function(event) {
     this.onVolumeChange_(this.volume_.ratio);
   }.bind(this));
@@ -406,9 +416,13 @@ MediaControls.prototype.initVolumeControls = function(opt_parent) {
 MediaControls.prototype.onSoundButtonClick_ = function() {
   if (this.media_.volume == 0) {
     this.volume_.value = (this.savedVolume_ || 1) * this.volume_.max;
+    this.soundButton_.setAttribute('aria-label',
+        str('MEDIA_PLAYER_MUTE_BUTTON_LABEL'));
   } else {
     this.savedVolume_ = this.media_.volume;
     this.volume_.value = 0;
+    this.soundButton_.setAttribute('aria-label',
+        str('MEDIA_PLAYER_UNMUTE_BUTTON_LABEL'));
   }
   this.onVolumeChange_(this.volume_.ratio);
 };
@@ -435,6 +449,9 @@ MediaControls.prototype.onVolumeChange_ = function(value) {
 
   this.media_.volume = value;
   this.soundButton_.setAttribute('level', MediaControls.getVolumeLevel_(value));
+  this.soundButton_.setAttribute('aria-label',
+      value === 0 ? str('MEDIA_PLAYER_UNMUTE_BUTTON_LABEL')
+                  : str('MEDIA_PLAYER_MUTE_BUTTON_LABEL'));
 };
 
 /**
@@ -589,12 +606,18 @@ MediaControls.prototype.updatePlayButtonState_ = function(playing) {
       this.progressSlider_.value === this.progressSlider_.max) {
     this.playButton_.setAttribute('state',
                                   MediaControls.ButtonStateType.ENDED);
+    this.playButton_.setAttribute('aria-label',
+        str('MEDIA_PLAYER_PLAY_BUTTON_LABEL'));
   } else if (playing) {
     this.playButton_.setAttribute('state',
                                   MediaControls.ButtonStateType.PLAYING);
+    this.playButton_.setAttribute('aria-label',
+        str('MEDIA_PLAYER_PAUSE_BUTTON_LABEL'));
   } else {
     this.playButton_.setAttribute('state',
                                   MediaControls.ButtonStateType.DEFAULT);
+    this.playButton_.setAttribute('aria-label',
+        str('MEDIA_PLAYER_PLAY_BUTTON_LABEL'));
   }
 };
 
@@ -649,8 +672,6 @@ MediaControls.prototype.clearState = function() {
  *
  * @param {!HTMLElement} containerElement The container for the controls.
  * @param {function(Event)} onMediaError Function to display an error message.
- * @param {function(string):string} stringFunction Function providing localized
- *     strings.
  * @param {function(Event)=} opt_fullScreenToggle Function to toggle fullscreen
  *     mode.
  * @param {HTMLElement=} opt_stateIconParent The parent for the icon that
@@ -659,10 +680,9 @@ MediaControls.prototype.clearState = function() {
  * @struct
  * @extends {MediaControls}
  */
-function VideoControls(containerElement, onMediaError, stringFunction,
-    opt_fullScreenToggle, opt_stateIconParent) {
+function VideoControls(
+    containerElement, onMediaError, opt_fullScreenToggle, opt_stateIconParent) {
   MediaControls.call(this, containerElement, onMediaError);
-  this.stringFunction_ = stringFunction;
 
   this.container_.classList.add('video-controls');
   this.initPlayButton();
@@ -670,15 +690,22 @@ function VideoControls(containerElement, onMediaError, stringFunction,
   this.initVolumeControls();
 
   // Create the cast button.
-  this.castButton_ = this.createButton('cast menubutton');
+  // We need to use <button> since cr.ui.MenuButton.decorate modifies prototype
+  // chain, by which <files-icon-button> will not work correctly.
+  // TODO(fukino): Find a way to use files-icon-button consistently.
+  this.castButton_ = this.createControl(
+      'cast media-button', undefined, 'button');
   this.castButton_.setAttribute('menu', '#cast-menu');
-  this.castButton_.setAttribute(
-      'label', this.stringFunction_('VIDEO_PLAYER_PLAY_ON'));
+  this.castButton_.setAttribute('aria-label', str('VIDEO_PLAYER_PLAY_ON'));
+  this.castButton_.setAttribute('state', MediaControls.ButtonStateType.DEFAULT);
+  this.castButton_.appendChild(document.createElement('files-ripple'));
   cr.ui.decorate(this.castButton_, cr.ui.MenuButton);
 
   if (opt_fullScreenToggle) {
     this.fullscreenButton_ =
         this.createButton('fullscreen', opt_fullScreenToggle);
+    this.fullscreenButton_.setAttribute('aria-label',
+        str('VIDEO_PLAYER_FULL_SCREEN_BUTTON_LABEL'));
   }
 
   if (opt_stateIconParent) {
@@ -744,7 +771,7 @@ VideoControls.prototype.showIconFeedback_ = function() {
  */
 VideoControls.prototype.showTextBanner_ = function(identifier) {
   this.textBanner_.removeAttribute('visible');
-  this.textBanner_.textContent = this.stringFunction_(identifier);
+  this.textBanner_.textContent = str(identifier);
 
   setTimeout(function() {
     var onAnimationEnd = function(event) {
@@ -888,4 +915,22 @@ VideoControls.prototype.updateStyle = function() {
   hideBelow('.volume', 275);
   hideBelow('.volume-controls', 210);
   hideBelow('.fullscreen', 150);
+};
+
+/**
+ * Updates video control when the window is fullscreened or restored.
+ * @param {boolean} fullscreen True if the window gets fullscreened.
+ */
+VideoControls.prototype.onFullScreenChanged = function(fullscreen) {
+  if (fullscreen) {
+    this.container_.setAttribute('fullscreen', '');
+  } else {
+    this.container_.removeAttribute('fullscreen');
+  }
+
+  if (this.fullscreenButton_) {
+    this.fullscreenButton_.setAttribute('aria-label',
+        fullscreen ? str('VIDEO_PLAYER_EXIT_FULL_SCREEN_BUTTON_LABEL')
+                   : str('VIDEO_PLAYER_FULL_SCREEN_BUTTON_LABEL'));;
+  }
 };
