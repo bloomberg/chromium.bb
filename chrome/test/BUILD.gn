@@ -667,6 +667,7 @@ if (!is_android) {
 
       # Field trial config
       "//tools/variations/",
+      "//testing/variations/",
 
       # For isolate contract.
       "//testing/scripts/common.py",

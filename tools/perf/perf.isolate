@@ -12,6 +12,7 @@
          './',
           # Field trial configs
           '../variations/',
+          '../../testing/variations/',
         ],
       },
     }],
