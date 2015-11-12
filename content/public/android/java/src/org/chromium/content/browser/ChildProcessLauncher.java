@@ -411,6 +411,8 @@ public class ChildProcessLauncher {
 
     @CalledByNative
     private static void registerViewSurface(int surfaceId, Surface surface) {
+        if (!surface.isValid())
+            throw new RuntimeException("Attempting to register invalid Surface.");
         sViewSurfaceMap.put(surfaceId, surface);
     }
 

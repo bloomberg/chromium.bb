@@ -30,6 +30,7 @@ import org.chromium.content.browser.ChildProcessLauncher;
 import org.chromium.content.browser.FileDescriptorInfo;
 import org.chromium.content.common.IChildProcessCallback;
 import org.chromium.content.common.IChildProcessService;
+import org.chromium.content.common.SurfaceWrapper;
 
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicReference;
@@ -331,7 +332,8 @@ public class ChildProcessService extends Service {
         }
 
         try {
-            return mCallback.getViewSurface(surfaceId).getSurface();
+            SurfaceWrapper wrapper = mCallback.getViewSurface(surfaceId);
+            return wrapper != null ? wrapper.getSurface() : null;
         } catch (RemoteException e) {
             Log.e(TAG, "Unable to call getViewSurface: %s", e);
             return null;
