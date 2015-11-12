@@ -186,11 +186,10 @@ void AppSearchProvider::OnExtensionUninstalled(
     const extensions::Extension* extension,
     extensions::UninstallReason reason) {
   RefreshApps();
-  if (!update_results_factory_.HasWeakPtrs()) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&AppSearchProvider::UpdateResults,
-                              update_results_factory_.GetWeakPtr()));
-  }
+
+  // This should not be batched as the UI needs to immediately be informed of
+  // deleted extensions to prevent use-after-frees.
+  UpdateResults();
 }
 
 }  // namespace app_list
