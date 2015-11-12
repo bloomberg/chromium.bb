@@ -21,7 +21,9 @@ class MemoryMobile(perf_benchmark.PerfBenchmark):
 
 # Disable on yosemite due to crbug.com/517806
 # Disable on reference due to crbug.com/539728
-@benchmark.Disabled('yosemite', 'reference')
+# Disable on all Mac as it's also failing on 10.11 and retina.
+# crbug.com/555045
+@benchmark.Disabled('mac', 'reference')
 class MemoryTop7Stress(perf_benchmark.PerfBenchmark):
   """Use (recorded) real world web sites and measure memory consumption."""
   test = memory.Memory
