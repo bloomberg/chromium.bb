@@ -5,7 +5,6 @@
 #ifndef CONTENT_BROWSER_DEVTOOLS_PROTOCOL_EMULATION_HANDLER_H_
 #define CONTENT_BROWSER_DEVTOOLS_PROTOCOL_EMULATION_HANDLER_H_
 
-#include "base/timer/timer.h"
 #include "content/browser/devtools/protocol/devtools_protocol_dispatcher.h"
 #include "content/browser/devtools/protocol/page_handler.h"
 #include "third_party/WebKit/public/web/WebDeviceEmulationParams.h"
@@ -33,7 +32,6 @@ class EmulationHandler : public page::PageHandler::ScreencastListener {
 
   void SetRenderFrameHost(RenderFrameHostImpl* host);
   void Detached();
-  void OnSwapCompositorFrame();
 
   Response SetGeolocationOverride(double* latitude,
                                   double* longitude,
@@ -61,18 +59,13 @@ class EmulationHandler : public page::PageHandler::ScreencastListener {
  private:
   WebContentsImpl* GetWebContents();
   void UpdateTouchEventEmulationState();
-
-  void DeviceEmulationNeedsUpdate();
-  void ApplyDeviceEmulationState();
+  void UpdateDeviceEmulationState();
 
   bool touch_emulation_enabled_;
   std::string touch_emulation_configuration_;
 
   bool device_emulation_enabled_;
   blink::WebDeviceEmulationParams device_emulation_params_;
-  bool device_emulation_needs_update_;
-  bool device_emulation_waiting_for_frame_;
-  scoped_ptr<base::Timer> frame_timer_;
 
   page::PageHandler* page_handler_;
   RenderFrameHostImpl* host_;

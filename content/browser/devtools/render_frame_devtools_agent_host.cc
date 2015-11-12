@@ -716,8 +716,6 @@ void RenderFrameDevToolsAgentHost::OnSwapCompositorFrame(
     page_handler_->OnSwapCompositorFrame(base::get<1>(param).metadata);
   if (input_handler_)
     input_handler_->OnSwapCompositorFrame(base::get<1>(param).metadata);
-  if (emulation_handler_)
-    emulation_handler_->OnSwapCompositorFrame();
   if (frame_trace_recorder_ && tracing_handler_->did_initiate_recording()) {
     frame_trace_recorder_->OnSwapCompositorFrame(
         current_ ? current_->host() : nullptr,
@@ -731,8 +729,6 @@ void RenderFrameDevToolsAgentHost::SynchronousSwapCompositorFrame(
     page_handler_->OnSynchronousSwapCompositorFrame(frame_metadata);
   if (input_handler_)
     input_handler_->OnSwapCompositorFrame(frame_metadata);
-  if (emulation_handler_)
-    emulation_handler_->OnSwapCompositorFrame();
   if (frame_trace_recorder_ && tracing_handler_->did_initiate_recording()) {
     frame_trace_recorder_->OnSynchronousSwapCompositorFrame(
         current_ ? current_->host() : nullptr,

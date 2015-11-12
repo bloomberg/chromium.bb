@@ -35,19 +35,11 @@ ui::GestureProviderConfigType TouchEmulationConfigurationToType(
   return result;
 }
 
-// When continuously applying device emulation, we wait for compositor frame
-// before applying new values. If the frame does not arrive during this
-// timeout, we proceed anyway.
-const int kFrameTimeoutMs = 67;
-
 }  // namespace
 
 EmulationHandler::EmulationHandler(page::PageHandler* page_handler)
     : touch_emulation_enabled_(false),
       device_emulation_enabled_(false),
-      device_emulation_needs_update_(false),
-      device_emulation_waiting_for_frame_(false),
-      frame_timer_(new base::Timer(false, false)),
       page_handler_(page_handler),
       host_(nullptr)
 {
@@ -67,14 +59,14 @@ void EmulationHandler::SetRenderFrameHost(RenderFrameHostImpl* host) {
 
   host_ = host;
   UpdateTouchEventEmulationState();
-  ApplyDeviceEmulationState();
+  UpdateDeviceEmulationState();
 }
 
 void EmulationHandler::Detached() {
   touch_emulation_enabled_ = false;
   device_emulation_enabled_ = false;
   UpdateTouchEventEmulationState();
-  ApplyDeviceEmulationState();
+  UpdateDeviceEmulationState();
 }
 
 Response EmulationHandler::SetGeolocationOverride(
@@ -200,7 +192,7 @@ Response EmulationHandler::SetDeviceMetricsOverride(
 
   device_emulation_enabled_ = true;
   device_emulation_params_ = params;
-  DeviceEmulationNeedsUpdate();
+  UpdateDeviceEmulationState();
   return Response::OK();
 }
 
@@ -209,7 +201,7 @@ Response EmulationHandler::ClearDeviceMetricsOverride() {
     return Response::OK();
 
   device_emulation_enabled_ = false;
-  DeviceEmulationNeedsUpdate();
+  UpdateDeviceEmulationState();
   return Response::OK();
 }
 
@@ -233,31 +225,11 @@ void EmulationHandler::UpdateTouchEventEmulationState() {
     GetWebContents()->SetForceDisableOverscrollContent(enabled);
 }
 
-void EmulationHandler::DeviceEmulationNeedsUpdate() {
-  device_emulation_needs_update_ = true;
-  if (!device_emulation_waiting_for_frame_)
-    ApplyDeviceEmulationState();
-}
-
-void EmulationHandler::OnSwapCompositorFrame() {
-  frame_timer_->Stop();
-  device_emulation_waiting_for_frame_ = false;
-  if (device_emulation_needs_update_)
-    ApplyDeviceEmulationState();
-}
-
-void EmulationHandler::ApplyDeviceEmulationState() {
-  device_emulation_needs_update_ = false;
+void EmulationHandler::UpdateDeviceEmulationState() {
   RenderWidgetHostImpl* widget_host =
       host_ ? host_->GetRenderWidgetHost() : nullptr;
   if (!widget_host)
     return;
-  device_emulation_waiting_for_frame_ = true;
-  frame_timer_->Start(
-      FROM_HERE,
-      base::TimeDelta::FromMilliseconds(kFrameTimeoutMs),
-      base::Bind(&EmulationHandler::OnSwapCompositorFrame,
-                 base::Unretained(this)));
   if (device_emulation_enabled_) {
     widget_host->Send(new ViewMsg_EnableDeviceEmulation(
         widget_host->GetRoutingID(), device_emulation_params_));
