@@ -5,15 +5,15 @@
 {
   'variables': {
     'internal_ozone_platform_deps': [
-      'ozone_platform_test',
+      'ozone_platform_headless',
     ],
     'internal_ozone_platforms': [
-      'test'
+      'headless'
     ],
   },
   'targets': [
     {
-      'target_name': 'ozone_platform_test',
+      'target_name': 'ozone_platform_headless',
       'type': 'static_library',
       'defines': [
         'OZONE_IMPLEMENTATION',
@@ -27,16 +27,16 @@
         '../gfx/gfx.gyp:gfx',
       ],
       'sources': [
-        'client_native_pixmap_factory_test.cc',
-        'client_native_pixmap_factory_test.h',
-        'ozone_platform_test.cc',
-        'ozone_platform_test.h',
-        'test_surface_factory.cc',
-        'test_surface_factory.h',
-        'test_window.cc',
-        'test_window.h',
-        'test_window_manager.cc',
-        'test_window_manager.h',
+        'client_native_pixmap_factory_headless.cc',
+        'client_native_pixmap_factory_headless.h',
+        'ozone_platform_headless.cc',
+        'ozone_platform_headless.h',
+        'headless_surface_factory.cc',
+        'headless_surface_factory.h',
+        'headless_window.cc',
+        'headless_window.h',
+        'headless_window_manager.cc',
+        'headless_window_manager.h',
       ],
     },
   ],

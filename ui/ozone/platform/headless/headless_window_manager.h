@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_OZONE_PLATFORM_TEST_TEST_WINDOW_MANAGER_H_
-#define UI_OZONE_PLATFORM_TEST_TEST_WINDOW_MANAGER_H_
+#ifndef UI_OZONE_PLATFORM_HEADLESS_HEADLESS_WINDOW_MANAGER_H_
+#define UI_OZONE_PLATFORM_HEADLESS_HEADLESS_WINDOW_MANAGER_H_
 
 #include "base/files/file_path.h"
 #include "base/id_map.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "ui/gfx/native_widget_types.h"
@@ -14,24 +15,24 @@
 
 namespace ui {
 
-class TestWindow;
+class HeadlessWindow;
 
-class TestWindowManager {
+class HeadlessWindowManager {
  public:
-  explicit TestWindowManager(const base::FilePath& dump_location);
-  ~TestWindowManager();
+  explicit HeadlessWindowManager(const base::FilePath& dump_location);
+  ~HeadlessWindowManager();
 
   // Initialize (mainly check that we have a place to write output to).
   void Initialize();
 
   // Register a new window. Returns the window id.
-  int32_t AddWindow(TestWindow* window);
+  int32_t AddWindow(HeadlessWindow* window);
 
   // Remove a window.
-  void RemoveWindow(int32_t window_id, TestWindow* window);
+  void RemoveWindow(int32_t window_id, HeadlessWindow* window);
 
   // Find a window object by id;
-  TestWindow* GetWindow(int32_t window_id);
+  HeadlessWindow* GetWindow(int32_t window_id);
 
   // User-supplied path for images.
   base::FilePath base_path() const;
@@ -39,12 +40,12 @@ class TestWindowManager {
  private:
   base::FilePath location_;
 
-  IDMap<TestWindow> windows_;
+  IDMap<HeadlessWindow> windows_;
   base::ThreadChecker thread_checker_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestWindowManager);
+  DISALLOW_COPY_AND_ASSIGN(HeadlessWindowManager);
 };
 
 }  // namespace ui
 
-#endif  // UI_OZONE_PLATFORM_TEST_TEST_WINDOW_MANAGER_H_
+#endif  // UI_OZONE_PLATFORM_HEADLESS_HEADLESS_WINDOW_MANAGER_H_

@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_OZONE_PLATFORM_TEST_TEST_WINDOW_H_
-#define UI_OZONE_PLATFORM_TEST_TEST_WINDOW_H_
+#ifndef UI_OZONE_PLATFORM_HEADLESS_HEADLESS_WINDOW_H_
+#define UI_OZONE_PLATFORM_HEADLESS_HEADLESS_WINDOW_H_
 
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/platform_window/platform_window.h"
@@ -13,14 +14,14 @@
 namespace ui {
 
 class PlatformWindowDelegate;
-class TestWindowManager;
+class HeadlessWindowManager;
 
-class TestWindow : public PlatformWindow {
+class HeadlessWindow : public PlatformWindow {
  public:
-  TestWindow(PlatformWindowDelegate* delegate,
-             TestWindowManager* manager,
-             const gfx::Rect& bounds);
-  ~TestWindow() override;
+  HeadlessWindow(PlatformWindowDelegate* delegate,
+                 HeadlessWindowManager* manager,
+                 const gfx::Rect& bounds);
+  ~HeadlessWindow() override;
 
   // Path for image file for this window.
   base::FilePath path();
@@ -45,13 +46,13 @@ class TestWindow : public PlatformWindow {
 
  private:
   PlatformWindowDelegate* delegate_;
-  TestWindowManager* manager_;
+  HeadlessWindowManager* manager_;
   gfx::Rect bounds_;
   gfx::AcceleratedWidget widget_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestWindow);
+  DISALLOW_COPY_AND_ASSIGN(HeadlessWindow);
 };
 
 }  // namespace ui
 
-#endif  // UI_OZONE_PLATFORM_TEST_TEST_WINDOW_H_
+#endif  // UI_OZONE_PLATFORM_HEADLESS_HEADLESS_WINDOW_H_

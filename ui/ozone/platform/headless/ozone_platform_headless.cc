@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/ozone/platform/test/ozone_platform_test.h"
+#include "ui/ozone/platform/headless/ozone_platform_headless.h"
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
@@ -12,9 +12,9 @@
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/ozone/common/native_display_delegate_ozone.h"
 #include "ui/ozone/common/stub_overlay_manager.h"
-#include "ui/ozone/platform/test/test_surface_factory.h"
-#include "ui/ozone/platform/test/test_window.h"
-#include "ui/ozone/platform/test/test_window_manager.h"
+#include "ui/ozone/platform/headless/headless_surface_factory.h"
+#include "ui/ozone/platform/headless/headless_window.h"
+#include "ui/ozone/platform/headless/headless_window_manager.h"
 #include "ui/ozone/public/cursor_factory_ozone.h"
 #include "ui/ozone/public/gpu_platform_support.h"
 #include "ui/ozone/public/gpu_platform_support_host.h"
@@ -27,24 +27,24 @@ namespace ui {
 
 namespace {
 
-// A test implementation of PlatformEventSource that we can instantiate to make
+// A headless implementation of PlatformEventSource that we can instantiate to
+// make
 // sure that the PlatformEventSource has an instance while in unit tests.
-class TestPlatformEventSource : public ui::PlatformEventSource {
+class HeadlessPlatformEventSource : public ui::PlatformEventSource {
  public:
-  TestPlatformEventSource() {}
-  ~TestPlatformEventSource() override {}
+  HeadlessPlatformEventSource() {}
+  ~HeadlessPlatformEventSource() override {}
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(TestPlatformEventSource);
+  DISALLOW_COPY_AND_ASSIGN(HeadlessPlatformEventSource);
 };
 
-// OzonePlatform for testing
-//
-// This platform dumps images to a file for testing purposes.
-class OzonePlatformTest : public OzonePlatform {
+// OzonePlatform for headless mode
+class OzonePlatformHeadless : public OzonePlatform {
  public:
-  OzonePlatformTest(const base::FilePath& dump_file) : file_path_(dump_file) {}
-  ~OzonePlatformTest() override {}
+  OzonePlatformHeadless(const base::FilePath& dump_file)
+      : file_path_(dump_file) {}
+  ~OzonePlatformHeadless() override {}
 
   // OzonePlatform:
   ui::SurfaceFactoryOzone* GetSurfaceFactoryOzone() override {
@@ -72,7 +72,7 @@ class OzonePlatformTest : public OzonePlatform {
       PlatformWindowDelegate* delegate,
       const gfx::Rect& bounds) override {
     return make_scoped_ptr<PlatformWindow>(
-        new TestWindow(delegate, window_manager_.get(), bounds));
+        new HeadlessWindow(delegate, window_manager_.get(), bounds));
   }
   scoped_ptr<NativeDisplayDelegate> CreateNativeDisplayDelegate() override {
     return make_scoped_ptr(new NativeDisplayDelegateOzone());
@@ -82,12 +82,12 @@ class OzonePlatformTest : public OzonePlatform {
   }
 
   void InitializeUI() override {
-    window_manager_.reset(new TestWindowManager(file_path_));
+    window_manager_.reset(new HeadlessWindowManager(file_path_));
     window_manager_->Initialize();
-    surface_factory_.reset(new TestSurfaceFactory(window_manager_.get()));
+    surface_factory_.reset(new HeadlessSurfaceFactory(window_manager_.get()));
     // This unbreaks tests that create their own.
     if (!PlatformEventSource::GetInstance())
-      platform_event_source_.reset(new TestPlatformEventSource);
+      platform_event_source_.reset(new HeadlessPlatformEventSource);
     KeyboardLayoutEngineManager::SetKeyboardLayoutEngine(
         make_scoped_ptr(new StubKeyboardLayoutEngine()));
 
@@ -99,13 +99,13 @@ class OzonePlatformTest : public OzonePlatform {
 
   void InitializeGPU() override {
     if (!surface_factory_)
-      surface_factory_.reset(new TestSurfaceFactory());
+      surface_factory_.reset(new HeadlessSurfaceFactory());
     gpu_platform_support_.reset(CreateStubGpuPlatformSupport());
   }
 
  private:
-  scoped_ptr<TestWindowManager> window_manager_;
-  scoped_ptr<TestSurfaceFactory> surface_factory_;
+  scoped_ptr<HeadlessWindowManager> window_manager_;
+  scoped_ptr<HeadlessSurfaceFactory> surface_factory_;
   scoped_ptr<PlatformEventSource> platform_event_source_;
   scoped_ptr<CursorFactoryOzone> cursor_factory_ozone_;
   scoped_ptr<InputController> input_controller_;
@@ -114,17 +114,17 @@ class OzonePlatformTest : public OzonePlatform {
   scoped_ptr<OverlayManagerOzone> overlay_manager_;
   base::FilePath file_path_;
 
-  DISALLOW_COPY_AND_ASSIGN(OzonePlatformTest);
+  DISALLOW_COPY_AND_ASSIGN(OzonePlatformHeadless);
 };
 
 }  // namespace
 
-OzonePlatform* CreateOzonePlatformTest() {
+OzonePlatform* CreateOzonePlatformHeadless() {
   base::CommandLine* cmd = base::CommandLine::ForCurrentProcess();
   base::FilePath location;
   if (cmd->HasSwitch(switches::kOzoneDumpFile))
     location = cmd->GetSwitchValuePath(switches::kOzoneDumpFile);
-  return new OzonePlatformTest(location);
+  return new OzonePlatformHeadless(location);
 }
 
 }  // namespace ui

@@ -2,20 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_OZONE_PLATFORM_TEST_TEST_SURFACE_FACTORY_H_
-#define UI_OZONE_PLATFORM_TEST_TEST_SURFACE_FACTORY_H_
+#ifndef UI_OZONE_PLATFORM_HEADLESS_HEADLESS_SURFACE_FACTORY_H_
+#define UI_OZONE_PLATFORM_HEADLESS_HEADLESS_SURFACE_FACTORY_H_
 
+#include "base/macros.h"
 #include "ui/ozone/public/surface_factory_ozone.h"
 
 namespace ui {
 
-class TestWindowManager;
+class HeadlessWindowManager;
 
-class TestSurfaceFactory : public SurfaceFactoryOzone {
+class HeadlessSurfaceFactory : public SurfaceFactoryOzone {
  public:
-  TestSurfaceFactory();
-  explicit TestSurfaceFactory(TestWindowManager* window_manager);
-  ~TestSurfaceFactory() override;
+  HeadlessSurfaceFactory();
+  explicit HeadlessSurfaceFactory(HeadlessWindowManager* window_manager);
+  ~HeadlessSurfaceFactory() override;
 
   // SurfaceFactoryOzone:
   scoped_ptr<SurfaceOzoneCanvas> CreateCanvasForWidget(
@@ -25,11 +26,11 @@ class TestSurfaceFactory : public SurfaceFactoryOzone {
       SetGLGetProcAddressProcCallback set_gl_get_proc_address) override;
 
  private:
-  TestWindowManager* window_manager_;
+  HeadlessWindowManager* window_manager_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestSurfaceFactory);
+  DISALLOW_COPY_AND_ASSIGN(HeadlessSurfaceFactory);
 };
 
 }  // namespace ui
 
-#endif  // UI_OZONE_PLATFORM_TEST_TEST_SURFACE_FACTORY_H_
+#endif  // UI_OZONE_PLATFORM_HEADLESS_HEADLESS_SURFACE_FACTORY_H_

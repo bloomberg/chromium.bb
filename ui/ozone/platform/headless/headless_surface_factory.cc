@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/ozone/platform/test/test_surface_factory.h"
+#include "ui/ozone/platform/headless/headless_surface_factory.h"
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
@@ -14,8 +14,8 @@
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/vsync_provider.h"
-#include "ui/ozone/platform/test/test_window.h"
-#include "ui/ozone/platform/test/test_window_manager.h"
+#include "ui/ozone/platform/headless/headless_window.h"
+#include "ui/ozone/platform/headless/headless_window_manager.h"
 #include "ui/ozone/public/surface_ozone_canvas.h"
 
 namespace ui {
@@ -31,6 +31,7 @@ void WriteDataToFile(const base::FilePath& location, const SkBitmap& bitmap) {
                   png_data.size());
 }
 
+// TODO(altimin): Find a proper way to capture rendering output.
 class FileSurface : public SurfaceOzoneCanvas {
  public:
   FileSurface(const base::FilePath& location) : location_(location) {}
@@ -66,20 +67,22 @@ class FileSurface : public SurfaceOzoneCanvas {
 
 }  // namespace
 
-TestSurfaceFactory::TestSurfaceFactory() : TestSurfaceFactory(nullptr) {}
+HeadlessSurfaceFactory::HeadlessSurfaceFactory()
+    : HeadlessSurfaceFactory(nullptr) {}
 
-TestSurfaceFactory::TestSurfaceFactory(TestWindowManager* window_manager)
+HeadlessSurfaceFactory::HeadlessSurfaceFactory(
+    HeadlessWindowManager* window_manager)
     : window_manager_(window_manager) {}
 
-TestSurfaceFactory::~TestSurfaceFactory() {}
+HeadlessSurfaceFactory::~HeadlessSurfaceFactory() {}
 
-scoped_ptr<SurfaceOzoneCanvas> TestSurfaceFactory::CreateCanvasForWidget(
+scoped_ptr<SurfaceOzoneCanvas> HeadlessSurfaceFactory::CreateCanvasForWidget(
     gfx::AcceleratedWidget widget) {
-  TestWindow* window = window_manager_->GetWindow(widget);
+  HeadlessWindow* window = window_manager_->GetWindow(widget);
   return make_scoped_ptr<SurfaceOzoneCanvas>(new FileSurface(window->path()));
 }
 
-bool TestSurfaceFactory::LoadEGLGLES2Bindings(
+bool HeadlessSurfaceFactory::LoadEGLGLES2Bindings(
     AddGLLibraryCallback add_gl_library,
     SetGLGetProcAddressProcCallback set_gl_get_proc_address) {
   return false;

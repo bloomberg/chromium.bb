@@ -240,9 +240,9 @@
         'platform/drm/gbm.gypi',
       ],
     }],
-    ['<(ozone_platform_test) == 1', {
+    ['<(ozone_platform_headless) == 1', {
       'includes': [
-        'platform/test/test.gypi',
+        'platform/headless/headless.gypi',
       ],
     }],
   ],

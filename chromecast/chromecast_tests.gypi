@@ -396,7 +396,7 @@
           'variables': {
             'test_generator_py': '<(DEPTH)/chromecast/tools/build/generate_test_lists.py',
             'test_inputs_dir': '<(SHARED_INTERMEDIATE_DIR)/chromecast/tests',
-            'test_additional_options': '--ozone-platform=test'
+            'test_additional_options': '--ozone-platform=headless'
           },
           'actions': [
             {

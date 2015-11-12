@@ -1535,7 +1535,7 @@
     'ozone_platform_egltest%': 0,
     'ozone_platform_gbm%': 0,
     'ozone_platform_ozonex%': 0,
-    'ozone_platform_test%': 0,
+    'ozone_platform_headless%': 0,
 
     # Experiment: http://crbug.com/426914
     'envoy%': 0,
@@ -2363,13 +2363,13 @@
       }],
 
       ['use_ozone==1 and ozone_auto_platforms==1', {
-        # Use test as the default platform.
-        'ozone_platform%': 'test',
+        # Use headless as the default platform.
+        'ozone_platform%': 'headless',
 
         # Build all platforms whose deps are in install-build-deps.sh.
         # Only these platforms will be compile tested by buildbots.
         'ozone_platform_gbm%': 1,
-        'ozone_platform_test%': 1,
+        'ozone_platform_headless%': 1,
         'ozone_platform_egltest%': 1,
       }],
 

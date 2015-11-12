@@ -52,7 +52,7 @@ MediaOzonePlatform* CreateMediaOzonePlatformGbm() {
   return new MediaOzonePlatformStub;
 }
 
-MediaOzonePlatform* CreateMediaOzonePlatformTest() {
+MediaOzonePlatform* CreateMediaOzonePlatformHeadless() {
   return new MediaOzonePlatformStub;
 }
 
