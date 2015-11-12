@@ -69,8 +69,13 @@ bool PasswordManagerClient::IsOffTheRecord() const {
   return false;
 }
 
-PasswordManager* PasswordManagerClient::GetPasswordManager() {
+const PasswordManager* PasswordManagerClient::GetPasswordManager() const {
   return nullptr;
+}
+
+PasswordManager* PasswordManagerClient::GetPasswordManager() {
+  return const_cast<PasswordManager*>(
+      static_cast<const PasswordManagerClient*>(this)->GetPasswordManager());
 }
 
 autofill::AutofillManager*

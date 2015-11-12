@@ -154,8 +154,10 @@ class PasswordManagerClient {
   // If this browsing session should not be persisted.
   virtual bool IsOffTheRecord() const;
 
-  // Returns the PasswordManager associated with this client.
-  virtual PasswordManager* GetPasswordManager();
+  // Returns the PasswordManager associated with this client. The non-const
+  // version calls the const one.
+  PasswordManager* GetPasswordManager();
+  virtual const PasswordManager* GetPasswordManager() const;
 
   // Returns the AutofillManager for the main frame.
   virtual autofill::AutofillManager* GetAutofillManagerForMainFrame();

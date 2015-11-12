@@ -2561,7 +2561,8 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
   // auth dialog, also create a mock observer, for a different realm.
   MockLoginModelObserver mock_login_model_observer;
   PasswordManager* password_manager =
-      ChromePasswordManagerClient::FromWebContents(WebContents())
+      static_cast<password_manager::PasswordManagerClient*>(
+          ChromePasswordManagerClient::FromWebContents(WebContents()))
           ->GetPasswordManager();
   autofill::PasswordForm other_form(creds);
   other_form.signon_realm = "https://example.com/other realm";

@@ -74,7 +74,7 @@ class ChromePasswordManagerClient
   bool WasLastNavigationHTTPError() const override;
   bool DidLastPageLoadEncounterSSLErrors() const override;
   bool IsOffTheRecord() const override;
-  password_manager::PasswordManager* GetPasswordManager() override;
+  const password_manager::PasswordManager* GetPasswordManager() const override;
   autofill::AutofillManager* GetAutofillManagerForMainFrame() override;
   const GURL& GetMainFrameURL() const override;
   bool IsUpdatePasswordUIEnabled() const override;

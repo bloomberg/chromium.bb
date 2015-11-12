@@ -391,8 +391,8 @@ bool ChromePasswordManagerClient::IsOffTheRecord() const {
   return web_contents()->GetBrowserContext()->IsOffTheRecord();
 }
 
-password_manager::PasswordManager*
-ChromePasswordManagerClient::GetPasswordManager() {
+const password_manager::PasswordManager*
+ChromePasswordManagerClient::GetPasswordManager() const {
   return &password_manager_;
 }
 

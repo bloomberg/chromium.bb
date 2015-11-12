@@ -236,7 +236,7 @@ WebContents* LoginHandler::GetWebContentsForLogin() const {
 }
 
 password_manager::PasswordManager* LoginHandler::GetPasswordManagerForLogin() {
-  ChromePasswordManagerClient* client =
+  password_manager::PasswordManagerClient* client =
       ChromePasswordManagerClient::FromWebContents(GetWebContentsForLogin());
   return client ? client->GetPasswordManager() : nullptr;
 }
