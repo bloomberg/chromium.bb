@@ -7,7 +7,6 @@ package org.chromium.android_webview.test;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Rect;
-import android.test.FlakyTest;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.util.Base64;
 
@@ -136,10 +135,10 @@ public class VisualStateTest extends AwTestBase {
         ch.waitForCallback(chCount);
     }
 
-    @FlakyTest
-    // crbug.com/554655
-    // @Feature({"AndroidWebView"})
-    // @SmallTest
+    @Feature({"AndroidWebView"})
+    @SmallTest
+    // Run in single-process mode only. Blocked by software draws support crbug.com/545611.
+    @ParameterizedTest.Set
     public void testVisualStateCallbackWaitsForContentsToBeOnScreen() throws Throwable {
         // This test loads a page with a blue background color. It then waits for the DOM tree
         // in blink to contain the contents of the blue page (which happens when the onPageFinished
