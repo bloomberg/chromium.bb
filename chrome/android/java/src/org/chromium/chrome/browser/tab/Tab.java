@@ -2435,6 +2435,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         enableHidingTopControls &= !webContents.isShowingInterstitialPage();
         enableHidingTopControls &= (mFullscreenManager != null);
         enableHidingTopControls &= DeviceClassManager.enableFullscreen();
+        enableHidingTopControls &= !DeviceClassManager.isAutoHidingToolbarDisabled(mActivity);
         enableHidingTopControls &= !mIsFullscreenWaitingForLoad;
 
         return enableHidingTopControls;

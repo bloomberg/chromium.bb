@@ -88,6 +88,14 @@
             "group_name": "Enabled"
         }
     ],
+    "DisableAutoHidingToolbar": [
+        {
+            "group_name": "Enabled",
+            "params": {
+                "disable_auto_hiding_toolbar_threshold": "800"
+            }
+        }
+    ],
     "EnableMediaThreadForMediaPlayback": [
         {
             "group_name": "Enabled"

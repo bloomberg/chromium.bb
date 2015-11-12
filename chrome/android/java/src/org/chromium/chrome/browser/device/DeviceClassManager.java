@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.device;
 
 import android.content.Context;
+import android.text.TextUtils;
 import android.view.accessibility.AccessibilityManager;
 
 import org.chromium.base.ApplicationStatus;
@@ -12,6 +13,7 @@ import org.chromium.base.CommandLine;
 import org.chromium.base.SysUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.components.variations.VariationsAssociatedData;
 import org.chromium.ui.base.DeviceFormFactor;
 
 /**
@@ -19,6 +21,12 @@ import org.chromium.ui.base.DeviceFormFactor;
  * devices.
  */
 public class DeviceClassManager {
+    private static final String DISABLE_AUTO_HIDING_FIELD_TRIAL_NAME = "DisableAutoHidingToolbar";
+    private static final String DISABLE_AUTO_HIDING_TOOLBAR_THRESHOLD_COMMAND =
+            "disable-auto-hiding-toolbar-threshold";
+    private static final String DISABLE_AUTO_HIDING_TOOLBAR_THRESHOLD_PARAM =
+            "disable_auto_hiding_toolbar_threshold";
+
     private static DeviceClassManager sInstance;
 
     // Set of features that can be enabled/disabled
@@ -33,6 +41,7 @@ public class DeviceClassManager {
     private boolean mDisableDomainReliability;
 
     private final boolean mEnableFullscreen;
+    private Boolean mDisableAutoHidingToolbar;
 
     private static DeviceClassManager getInstance() {
         if (sInstance == null) {
@@ -163,5 +172,34 @@ public class DeviceClassManager {
                 && manager.isTouchExplorationEnabled();
         TraceEvent.end("DeviceClassManager::isAccessibilityModeEnabled");
         return enabled;
+    }
+
+    /**
+     * @param context A {@link Context} instance.
+     * @return Whether auto-hiding the toolbar is disabled.
+     */
+    public static boolean isAutoHidingToolbarDisabled(Context context) {
+        if (getInstance().mDisableAutoHidingToolbar == null) {
+            getInstance().mDisableAutoHidingToolbar = false;
+            String value = CommandLine.getInstance().getSwitchValue(
+                    DISABLE_AUTO_HIDING_TOOLBAR_THRESHOLD_COMMAND);
+            if (TextUtils.isEmpty(value)) {
+                value = VariationsAssociatedData.getVariationParamValue(
+                        DISABLE_AUTO_HIDING_FIELD_TRIAL_NAME,
+                        DISABLE_AUTO_HIDING_TOOLBAR_THRESHOLD_PARAM);
+            }
+            if (!TextUtils.isEmpty(value)) {
+                try {
+                    int threshold = Integer.parseInt(value);
+                    int smallestScreenDp =
+                            context.getResources().getConfiguration().smallestScreenWidthDp;
+                    if (smallestScreenDp >= threshold) {
+                        getInstance().mDisableAutoHidingToolbar = true;
+                    }
+                } catch (NumberFormatException e) {
+                }
+            }
+        }
+        return getInstance().mDisableAutoHidingToolbar;
     }
 }

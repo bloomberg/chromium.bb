@@ -15365,6 +15365,14 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
       <message name="IDS_DATA_USE_LEARN_MORE_LINK_URL" desc="URL for the 'Learn more' link in the the dialog shown when data use tracking has ended." formatter_data="android_java">
         <!-- Intentionally empty. This is overridden via Finch. -->
       </message>
+
+      <!-- Disable Auto-Hiding Toolbar Flags -->
+      <message name="IDS_FLAGS_DISABLE_AUTO_HIDING_TOOLBAR_NAME" desc="Name of the flag to disable auto-hiding the toolbar.">
+        Disable auto-hiding the toolbar
+      </message>
+      <message name="IDS_FLAGS_DISABLE_AUTO_HIDING_TOOLBAR_DESCRIPTION" desc="Description of the flag to disable auto-hiding the toolbar.">
+        When enabled, the toolbar will never be hidden due to scrolling. It will still be hidden if page contents go fullscreen.
+      </message>
     </if>
 
     </messages>

@@ -317,6 +317,7 @@ extern const char kEnableHungRendererInfoBar[];
 extern const char kEnablePhysicalWeb[];
 extern const char kProgressBarAnimation[];
 extern const char kEnableThemeColorInTabbedMode[];
+extern const char kDisableAutoHidingToolbarThreshold[];
 #endif  // defined(OS_ANDROID)
 
 #if defined(USE_ASH)
