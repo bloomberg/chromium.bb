@@ -2212,13 +2212,8 @@
               # no need to load it dynamically.
               'clang_dynlib_flags%': '',
             }],
-            # https://crbug.com/441916
-            ['OS=="android" or OS=="linux" or OS=="mac"', {
-              'clang_plugin_args%': '-Xclang -plugin-arg-find-bad-constructs -Xclang check-templates ',
-            }, { # OS != "linux"
-              'clang_plugin_args%': ''
-            }],
           ],
+          'clang_plugin_args%': '-Xclang -plugin-arg-find-bad-constructs -Xclang check-templates ',
         },
         # If you change these, also change build/config/clang/BUILD.gn.
         'clang_chrome_plugins_flags%':

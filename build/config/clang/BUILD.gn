@@ -31,21 +31,15 @@ config("find_bad_constructs") {
       ]
     }
 
-    # https://crbug.com/441916
-    if (is_android || is_linux || is_mac) {
-      cflags += [
-        "-Xclang",
-        "-plugin-arg-find-bad-constructs",
-        "-Xclang",
-        "check-templates",
-      ]
-    }
-
     cflags += [
       "-Xclang",
       "-add-plugin",
       "-Xclang",
       "find-bad-constructs",
+      "-Xclang",
+      "-plugin-arg-find-bad-constructs",
+      "-Xclang",
+      "check-templates",
     ]
   }
 }
