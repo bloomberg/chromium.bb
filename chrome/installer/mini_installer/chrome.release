@@ -74,4 +74,3 @@ PepperFlash\pepflashplayer.dll: %(VersionDir)s\PepperFlash\
 # packaged in this directory.
 Logo.png: %(VersionDir)s\VisualElements\
 SmallLogo.png: %(VersionDir)s\VisualElements\
-splash-620x300.png: %(VersionDir)s\VisualElements\
