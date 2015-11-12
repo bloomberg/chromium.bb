@@ -747,3 +747,51 @@ name=bug_554520
 *!gl::State::~State
 *!`anonymous namespace'::ValidationESTest_DrawElementsWithMaxIndexGivesError_Test::TestBody
 *!testing::internal::HandleExceptionsInMethodIfSupported<>
+
+HANDLE LEAK
+name=bug_555058_a
+system call NtCreateUserProcess
+KERNEL32.dll!CreateProcessInternalW
+KERNEL32.dll!CreateProcessW
+base.dll!base::LaunchProcess
+base.dll!base::LaunchProcess
+content.dll!content::StartSandboxedProcess
+content.dll!content::`anonymous namespace'::LaunchOnLauncherThread
+content.dll!base::internal::InvokeHelper<>::MakeItSo
+content.dll!base::internal::Invoker<>::Run
+base.dll!base::debug::TaskAnnotator::RunTask
+base.dll!base::MessageLoop::RunTask
+base.dll!base::MessageLoop::DeferOrRunPendingTask
+base.dll!base::MessageLoop::DoWork
+base.dll!base::MessagePumpDefault::Run
+base.dll!base::MessageLoop::RunHandler
+base.dll!base::MessageLoop::Run
+base.dll!base::Thread::Run
+content.dll!content::BrowserThreadImpl::ProcessLauncherThreadRun
+content.dll!content::BrowserThreadImpl::Run
+base.dll!base::Thread::ThreadMain
+base.dll!base::`anonymous namespace'::ThreadFunc
+KERNEL32.dll!BaseThreadInitThunk
+
+HANDLE LEAK
+name=bug_555058_b
+system call NtDuplicateObject
+KERNELBASE.dll!DuplicateHandle
+KERNEL32.dll!DuplicateHandle
+*!sandbox::BrokerServicesBase::AddTargetPeer
+content.dll!content::StartSandboxedProcess
+content.dll!content::`anonymous namespace'::LaunchOnLauncherThread
+content.dll!base::internal::InvokeHelper<>::MakeItSo
+content.dll!base::internal::Invoker<>::Run
+base.dll!base::debug::TaskAnnotator::RunTask
+base.dll!base::MessageLoop::RunTask
+base.dll!base::MessageLoop::DeferOrRunPendingTask
+base.dll!base::MessageLoop::DoWork
+base.dll!base::MessagePumpDefault::Run
+base.dll!base::MessageLoop::RunHandler
+base.dll!base::MessageLoop::Run
+base.dll!base::Thread::Run
+content.dll!content::BrowserThreadImpl::ProcessLauncherThreadRun
+content.dll!content::BrowserThreadImpl::Run
+base.dll!base::Thread::ThreadMain
+base.dll!base::`anonymous namespace'::ThreadFunc
