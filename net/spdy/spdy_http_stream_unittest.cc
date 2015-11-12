@@ -34,6 +34,19 @@ namespace net {
 
 namespace {
 
+enum TestCase {
+  // Test using the SPDY/3.1 protocol.
+  kTestCaseSPDY31,
+
+  // Test using the HTTP/2 protocol, without specifying a stream
+  // dependency based on the RequestPriority.
+  kTestCaseHTTP2NoPriorityDependencies,
+
+  // Test using the HTTP/2 protocol, specifying a stream
+  // dependency based on the RequestPriority.
+  kTestCaseHTTP2PriorityDependencies
+};
+
 // Tests the load timing of a stream that's connected and is not the first
 // request sent on a connection.
 void TestLoadTimingReused(const HttpStream& stream) {
@@ -64,15 +77,29 @@ void TestLoadTimingNotReused(const HttpStream& stream) {
 }  // namespace
 
 class SpdyHttpStreamTest : public testing::Test,
-                           public testing::WithParamInterface<NextProto> {
+                           public testing::WithParamInterface<TestCase> {
  public:
   SpdyHttpStreamTest()
-      : spdy_util_(GetParam()),
-        session_deps_(GetParam()) {
+      : spdy_util_(GetProtocol(), GetDependenciesFromPriority()),
+        session_deps_(GetProtocol()) {
+    SpdySession::SetPriorityDependencyDefaultForTesting(
+        GetDependenciesFromPriority());
     session_deps_.net_log = &net_log_;
   }
 
+  ~SpdyHttpStreamTest() {
+    SpdySession::SetPriorityDependencyDefaultForTesting(false);
+  }
+
  protected:
+  NextProto GetProtocol() const {
+    return GetParam() == kTestCaseSPDY31 ? kProtoSPDY31 : kProtoHTTP2;
+  }
+
+  bool GetDependenciesFromPriority() const {
+    return GetParam() == kTestCaseHTTP2PriorityDependencies;
+  }
+
   void TearDown() override {
     crypto::ECSignatureCreator::SetFactoryForTesting(NULL);
     base::MessageLoop::current()->RunUntilIdle();
@@ -110,10 +137,11 @@ class SpdyHttpStreamTest : public testing::Test,
   MockECSignatureCreatorFactory ec_signature_creator_factory_;
 };
 
-INSTANTIATE_TEST_CASE_P(NextProto,
+INSTANTIATE_TEST_CASE_P(ProtoPlusDepend,
                         SpdyHttpStreamTest,
-                        testing::Values(kProtoSPDY31,
-                                        kProtoHTTP2));
+                        testing::Values(kTestCaseSPDY31,
+                                        kTestCaseHTTP2NoPriorityDependencies,
+                                        kTestCaseHTTP2PriorityDependencies));
 
 // SpdyHttpStream::GetUploadProgress() should still work even before the
 // stream is initialized.

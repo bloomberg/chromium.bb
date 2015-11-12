@@ -736,12 +736,15 @@ void SpdySessionPoolPeer::SetStreamInitialRecvWindowSize(size_t window) {
   pool_->stream_max_recv_window_size_ = window;
 }
 
-SpdyTestUtil::SpdyTestUtil(NextProto protocol)
+SpdyTestUtil::SpdyTestUtil(NextProto protocol, bool dependency_priorities)
     : protocol_(protocol),
       spdy_version_(NextProtoToSpdyMajorVersion(protocol)),
-      default_url_(GURL(kDefaultURL)) {
+      default_url_(GURL(kDefaultURL)),
+      dependency_priorities_(dependency_priorities) {
   DCHECK(next_proto_is_spdy(protocol)) << "Invalid protocol: " << protocol;
 }
+
+SpdyTestUtil::~SpdyTestUtil() {}
 
 void SpdyTestUtil::AddUrlToHeaderBlock(base::StringPiece url,
                                        SpdyHeaderBlock* headers) const {
@@ -963,11 +966,10 @@ SpdyFrame* SpdyTestUtil::ConstructSpdyRstStream(
   return CreateFramer(false)->SerializeRstStream(rst_ir);
 }
 
-SpdyFrame* SpdyTestUtil::ConstructSpdyGet(
-    const char* const url,
-    bool compressed,
-    SpdyStreamId stream_id,
-    RequestPriority request_priority) const {
+SpdyFrame* SpdyTestUtil::ConstructSpdyGet(const char* const url,
+                                          bool compressed,
+                                          SpdyStreamId stream_id,
+                                          RequestPriority request_priority) {
   scoped_ptr<SpdyHeaderBlock> block(ConstructGetHeaderBlock(url));
   return ConstructSpdySyn(
       stream_id, *block, request_priority, compressed, true);
@@ -978,7 +980,7 @@ SpdyFrame* SpdyTestUtil::ConstructSpdyGet(const char* const extra_headers[],
                                           bool compressed,
                                           int stream_id,
                                           RequestPriority request_priority,
-                                          bool direct) const {
+                                          bool direct) {
   SpdyHeaderBlock block;
   MaybeAddVersionHeader(&block);
   block[GetMethodKey()] = "GET";
@@ -992,7 +994,7 @@ SpdyFrame* SpdyTestUtil::ConstructSpdyConnect(
     int extra_header_count,
     int stream_id,
     RequestPriority priority,
-    const HostPortPair& host_port_pair) const {
+    const HostPortPair& host_port_pair) {
   SpdyHeaderBlock block;
   MaybeAddVersionHeader(&block);
   block[GetMethodKey()] = "CONNECT";
@@ -1136,7 +1138,20 @@ SpdyFrame* SpdyTestUtil::ConstructSpdySyn(int stream_id,
                                           const SpdyHeaderBlock& block,
                                           RequestPriority priority,
                                           bool compressed,
-                                          bool fin) const {
+                                          bool fin) {
+  // Get the stream id of the next highest priority request
+  // (most recent request of the same priority, or last request of
+  // an earlier priority).
+  int parent_stream_id = 0;
+  for (int q = priority; q >= IDLE; --q) {
+    if (!priority_to_stream_id_list_[q].empty()) {
+      parent_stream_id = priority_to_stream_id_list_[q].back();
+      break;
+    }
+  }
+
+  priority_to_stream_id_list_[priority].push_back(stream_id);
+
   if (protocol_ < kProtoHTTP2) {
     SpdySynStreamIR syn_stream(stream_id);
     syn_stream.set_header_block(block);
@@ -1150,6 +1165,10 @@ SpdyFrame* SpdyTestUtil::ConstructSpdySyn(int stream_id,
     headers.set_has_priority(true);
     headers.set_priority(
         ConvertRequestPriorityToSpdyPriority(priority, spdy_version()));
+    if (dependency_priorities_) {
+      headers.set_parent_stream_id(parent_stream_id);
+      headers.set_exclusive(true);
+    }
     headers.set_fin(fin);
     return CreateFramer(compressed)->SerializeFrame(headers);
   }
@@ -1272,6 +1291,20 @@ SpdyFrame* SpdyTestUtil::ConstructWrappedSpdyFrame(
     int stream_id) {
   return ConstructSpdyBodyFrame(stream_id, frame->data(),
                                 frame->size(), false);
+}
+
+void SpdyTestUtil::UpdateWithStreamDestruction(int stream_id) {
+  for (auto priority_it = priority_to_stream_id_list_.begin();
+       priority_it != priority_to_stream_id_list_.end(); ++priority_it) {
+    for (auto stream_it = priority_it->second.begin();
+         stream_it != priority_it->second.end(); ++stream_it) {
+      if (*stream_it == stream_id) {
+        priority_it->second.erase(stream_it);
+        return;
+      }
+    }
+  }
+  NOTREACHED();
 }
 
 const SpdyHeaderInfo SpdyTestUtil::MakeSpdyHeader(SpdyFrameType type) {

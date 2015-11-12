@@ -39,6 +39,10 @@
 
 namespace net {
 
+namespace test {
+class SpdyStreamTest;
+}
+
 // This is somewhat arbitrary and not really fixed, but it will always work
 // reasonably with ethernet. Chop the world into 2-packet chunks.  This is
 // somewhat arbitrary, but is reasonably small and ensures that we elicit
@@ -517,9 +521,15 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   bool CloseOneIdleConnection() override;
 
  private:
+  friend class test::SpdyStreamTest;
   friend class base::RefCounted<SpdySession>;
-  friend class SpdyStreamRequest;
+  friend class HttpNetworkTransactionTest;
+  friend class HttpProxyClientSocketPoolTest;
+  friend class SpdyHttpStreamTest;
+  friend class SpdyNetworkTransactionTest;
+  friend class SpdyProxyClientSocketTest;
   friend class SpdySessionTest;
+  friend class SpdyStreamRequest;
 
   // Allow tests to access our innards for testing purposes.
   FRIEND_TEST_ALL_PREFIXES(SpdySessionTest, ClientPing);
@@ -548,6 +558,7 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   FRIEND_TEST_ALL_PREFIXES(SpdySessionTest,
                            CancelReservedStreamOnHeadersReceived);
   FRIEND_TEST_ALL_PREFIXES(SpdySessionTest, RejectInvalidUnknownFrames);
+  FRIEND_TEST_ALL_PREFIXES(SpdySessionPoolTest, IPAddressChanged);
 
   typedef std::deque<base::WeakPtr<SpdyStreamRequest> >
       PendingStreamRequestQueue;
@@ -958,6 +969,10 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
 
   size_t max_concurrent_streams() const { return max_concurrent_streams_; }
 
+  // Set whether priority->dependency conversion is enabled
+  // by default for all future SpdySessions.
+  static void SetPriorityDependencyDefaultForTesting(bool enable);
+
   // Whether Do{Read,Write}Loop() is in the call stack. Useful for
   // making sure we don't destroy ourselves prematurely in that case.
   bool in_io_loop_;
@@ -1003,6 +1018,14 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   // them into a separate ActiveStreamMap, and not deliver network events to
   // them?
   ActiveStreamMap active_streams_;
+
+  // Per-priority map from stream id to all active streams.  This map will
+  // contain the same set of streams as |active_streams_|.  It is used for
+  // setting dependencies to match incoming requests RequestPriority.
+  //
+  // |active_streams_by_priority_| does *not* own its SpdyStream objects.
+  std::map<SpdyStreamId, SpdyStream*>
+      active_streams_by_priority_[NUM_PRIORITIES];
 
   // (Bijective) map from the URL to the ID of the streams that have
   // already started to be pushed by the server, but do not have
@@ -1181,6 +1204,10 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   HostPortPair trusted_spdy_proxy_;
 
   TimeFunc time_func_;
+
+  // Should priority-based dependency information be sent in stream header
+  // frames.
+  bool send_priority_dependency_;
 
   // Used for posting asynchronous IO tasks.  We use this even though
   // SpdySession is refcounted because we don't need to keep the SpdySession

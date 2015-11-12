@@ -34,13 +34,28 @@ namespace test {
 
 namespace {
 
+enum TestCase {
+  // Test using the SPDY/3.1 protocol.
+  kTestCaseSPDY31,
+
+  // Test using the HTTP/2 protocol, without specifying a stream
+  // dependency based on the RequestPriority.
+  kTestCaseHTTP2NoPriorityDependencies,
+
+  // Test using the HTTP/2 protocol, specifying a stream
+  // dependency based on the RequestPriority.
+  kTestCaseHTTP2PriorityDependencies
+};
+
 const char kStreamUrl[] = "http://www.example.org/";
 const char kPostBody[] = "\0hello!\xff";
 const size_t kPostBodyLength = arraysize(kPostBody);
 const base::StringPiece kPostBodyStringPiece(kPostBody, kPostBodyLength);
 
+}  // namespace
+
 class SpdyStreamTest : public ::testing::Test,
-                       public ::testing::WithParamInterface<NextProto> {
+                       public ::testing::WithParamInterface<TestCase> {
  protected:
   // A function that takes a SpdyStream and the number of bytes which
   // will unstall the next frame completely.
@@ -48,9 +63,16 @@ class SpdyStreamTest : public ::testing::Test,
       UnstallFunction;
 
   SpdyStreamTest()
-      : spdy_util_(GetParam()),
-        session_deps_(GetParam()),
-        offset_(0) {}
+      : spdy_util_(GetProtocol(), GetDependenciesFromPriority()),
+        session_deps_(GetProtocol()),
+        offset_(0) {
+    SpdySession::SetPriorityDependencyDefaultForTesting(
+        GetDependenciesFromPriority());
+  }
+
+  ~SpdyStreamTest() {
+    SpdySession::SetPriorityDependencyDefaultForTesting(false);
+  }
 
   base::WeakPtr<SpdySession> CreateDefaultSpdySession() {
     SpdySessionKey key(HostPortPair("www.example.org", 80),
@@ -59,6 +81,14 @@ class SpdyStreamTest : public ::testing::Test,
   }
 
   void TearDown() override { base::MessageLoop::current()->RunUntilIdle(); }
+
+  NextProto GetProtocol() const {
+    return GetParam() == kTestCaseSPDY31 ? kProtoSPDY31 : kProtoHTTP2;
+  }
+
+  bool GetDependenciesFromPriority() const {
+    return GetParam() == kTestCaseHTTP2PriorityDependencies;
+  }
 
   void RunResumeAfterUnstallRequestResponseTest(
       const UnstallFunction& unstall_function);
@@ -108,10 +138,11 @@ class SpdyStreamTest : public ::testing::Test,
   int offset_;
 };
 
-INSTANTIATE_TEST_CASE_P(NextProto,
+INSTANTIATE_TEST_CASE_P(ProtoPlusDepend,
                         SpdyStreamTest,
-                        testing::Values(kProtoSPDY31,
-                                        kProtoHTTP2));
+                        testing::Values(kTestCaseSPDY31,
+                                        kTestCaseHTTP2NoPriorityDependencies,
+                                        kTestCaseHTTP2PriorityDependencies));
 
 TEST_P(SpdyStreamTest, SendDataAfterOpen) {
   GURL url(kStreamUrl);
@@ -1126,8 +1157,6 @@ TEST_P(SpdyStreamTest, ReceivedBytes) {
 
   EXPECT_EQ(ERR_CONNECTION_CLOSED, delegate.WaitForClose());
 }
-
-}  // namespace
 
 }  // namespace test
 

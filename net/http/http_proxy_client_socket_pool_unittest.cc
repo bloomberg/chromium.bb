@@ -41,16 +41,19 @@ enum HttpProxyType {
 struct HttpProxyClientSocketPoolTestParams {
   HttpProxyClientSocketPoolTestParams()
       : proxy_type(HTTP),
-        protocol(kProtoSPDY31) {}
+        protocol(kProtoSPDY31),
+        priority_to_dependency(false) {}
 
-  HttpProxyClientSocketPoolTestParams(
-      HttpProxyType proxy_type,
-      NextProto protocol)
+  HttpProxyClientSocketPoolTestParams(HttpProxyType proxy_type,
+                                      NextProto protocol,
+                                      bool priority_to_dependency)
       : proxy_type(proxy_type),
-        protocol(protocol) {}
+        protocol(protocol),
+        priority_to_dependency(priority_to_dependency) {}
 
   HttpProxyType proxy_type;
   NextProto protocol;
+  bool priority_to_dependency;
 };
 
 typedef ::testing::TestWithParam<HttpProxyType> TestWithHttpParam;
@@ -149,6 +152,7 @@ class TestProxyDelegate : public ProxyDelegate {
   std::string on_tunnel_headers_received_status_line_;
 };
 
+}  // namespace
 
 class HttpProxyClientSocketPoolTest
     : public ::testing::TestWithParam<HttpProxyClientSocketPoolTestParams> {
@@ -173,14 +177,18 @@ class HttpProxyClientSocketPoolTest
                          session_deps_.ssl_config_service.get(),
                          BoundNetLog().net_log()),
         session_(CreateNetworkSession()),
-        spdy_util_(GetParam().protocol),
+        spdy_util_(GetParam().protocol, GetParam().priority_to_dependency),
         pool_(kMaxSockets,
               kMaxSocketsPerGroup,
               &transport_socket_pool_,
               &ssl_socket_pool_,
-              NULL) {}
+              NULL) {
+    SpdySession::SetPriorityDependencyDefaultForTesting(
+        GetParam().priority_to_dependency);
+  }
 
   virtual ~HttpProxyClientSocketPoolTest() {
+    SpdySession::SetPriorityDependencyDefaultForTesting(false);
   }
 
   void AddAuthToCache() {
@@ -323,12 +331,16 @@ class HttpProxyClientSocketPoolTest
 INSTANTIATE_TEST_CASE_P(
     HttpProxyClientSocketPoolTests,
     HttpProxyClientSocketPoolTest,
-    ::testing::Values(HttpProxyClientSocketPoolTestParams(HTTP, kProtoSPDY31),
-                      HttpProxyClientSocketPoolTestParams(HTTPS, kProtoSPDY31),
-                      HttpProxyClientSocketPoolTestParams(SPDY, kProtoSPDY31),
-                      HttpProxyClientSocketPoolTestParams(HTTP, kProtoHTTP2),
-                      HttpProxyClientSocketPoolTestParams(HTTPS, kProtoHTTP2),
-                      HttpProxyClientSocketPoolTestParams(SPDY, kProtoHTTP2)));
+    ::testing::Values(
+        HttpProxyClientSocketPoolTestParams(HTTP, kProtoSPDY31, false),
+        HttpProxyClientSocketPoolTestParams(HTTPS, kProtoSPDY31, false),
+        HttpProxyClientSocketPoolTestParams(SPDY, kProtoSPDY31, false),
+        HttpProxyClientSocketPoolTestParams(HTTP, kProtoHTTP2, false),
+        HttpProxyClientSocketPoolTestParams(HTTP, kProtoHTTP2, true),
+        HttpProxyClientSocketPoolTestParams(HTTPS, kProtoHTTP2, false),
+        HttpProxyClientSocketPoolTestParams(HTTPS, kProtoHTTP2, true),
+        HttpProxyClientSocketPoolTestParams(SPDY, kProtoHTTP2, false),
+        HttpProxyClientSocketPoolTestParams(SPDY, kProtoHTTP2, true)));
 
 TEST_P(HttpProxyClientSocketPoolTest, NoTunnel) {
   Initialize(NULL, 0, NULL, 0, NULL, 0, NULL, 0);
@@ -811,7 +823,5 @@ TEST_P(HttpProxyClientSocketPoolTest, TunnelSetupRedirect) {
 }
 
 // It would be nice to also test the timeouts in HttpProxyClientSocketPool.
-
-}  // namespace
 
 }  // namespace net

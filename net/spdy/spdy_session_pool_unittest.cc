@@ -20,8 +20,6 @@
 
 namespace net {
 
-namespace {
-
 class SpdySessionPoolTest : public ::testing::Test,
                             public ::testing::WithParamInterface<NextProto> {
  protected:
@@ -510,7 +508,13 @@ TEST_P(SpdySessionPoolTest, IPPoolingCloseIdleSessions) {
 TEST_P(SpdySessionPoolTest, IPAddressChanged) {
   MockConnect connect_data(SYNCHRONOUS, OK);
   session_deps_.host_resolver->set_synchronous_mode(true);
-  SpdyTestUtil spdy_util(GetParam());
+
+  // This isn't testing anything having to do with SPDY frames; we
+  // can ignore issues of how dependencies are set.  We default to
+  // setting them (when doing the appropriate protocol) since that's
+  // where we're eventually headed for all HTTP/2 connections.
+  SpdyTestUtil spdy_util(GetParam(), true);
+  SpdySession::SetPriorityDependencyDefaultForTesting(true);
 
   MockRead reads[] = {
       MockRead(SYNCHRONOUS, ERR_IO_PENDING)  // Stall forever.
@@ -613,8 +617,7 @@ TEST_P(SpdySessionPoolTest, IPAddressChanged) {
   EXPECT_TRUE(delegateB.StreamIsClosed());
   EXPECT_EQ(ERR_NETWORK_CHANGED, delegateB.WaitForClose());
 #endif  // defined(OS_ANDROID) || defined(OS_WIN) || defined(OS_IOS)
+  SpdySession::SetPriorityDependencyDefaultForTesting(false);
 }
-
-}  // namespace
 
 }  // namespace net
