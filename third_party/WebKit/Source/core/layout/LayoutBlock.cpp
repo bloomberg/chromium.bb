@@ -765,7 +765,7 @@ void LayoutBlock::removeChild(LayoutObject* oldChild)
             setContinuation(nullptr);
             destroy();
         }
-    } else if (!beingDestroyed() && !oldChild->isFloatingOrOutOfFlowPositioned() && isLayoutBlockFlow()) {
+    } else if (!beingDestroyed() && !oldChild->isFloatingOrOutOfFlowPositioned() && isLayoutBlockFlow() && !oldChild->isAnonymousBlock()) {
         // If the child we're removing means that we can now treat all children as inline without the need for anonymous blocks, then do that.
         makeChildrenInlineIfPossible();
     }
