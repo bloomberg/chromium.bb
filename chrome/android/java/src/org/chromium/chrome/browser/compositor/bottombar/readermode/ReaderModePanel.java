@@ -113,9 +113,8 @@ public class ReaderModePanel extends OverlayPanel {
         // top controls height).
         updateTopControlsState();
 
-        // TODO(mdjones): Uncomment this when other changes have merged!
-        //mSceneLayer.update(resourceManager, this,
-        //    0, getBarTextViewId(), null, 0, mReaderBarTextOpacity, null);
+        mSceneLayer.update(resourceManager, this, ContextualSearchSceneLayer.READER_MODE_PANEL,
+                0, getBarTextViewId(), null, 0, mReaderBarTextOpacity, null);
     }
 
     /**
