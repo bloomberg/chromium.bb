@@ -108,7 +108,6 @@ class MediaRouterUI : public ConstrainedWebDialogUI,
   bool HasPendingRouteRequest() const {
     return current_route_request_id_ != -1;
   }
-  const GURL& frame_url() const { return frame_url_; }
   const std::vector<MediaSinkWithCastModes>& sinks() const { return sinks_; }
   const std::vector<MediaRoute>& routes() const { return routes_; }
   const std::set<MediaCastMode>& cast_modes() const { return cast_modes_; }
@@ -175,6 +174,10 @@ class MediaRouterUI : public ConstrainedWebDialogUI,
   // |handler_|.
   void UpdateCastModes();
 
+  // Returns the default presentation request's frame URL if there is one.
+  // Otherwise returns an empty GURL.
+  GURL GetFrameURL() const;
+
   // Owned by the |web_ui| passed in the ctor, and guaranteed to be deleted
   // only after it has deleted |this|.
   MediaRouterWebUIMessageHandler* handler_;
@@ -199,7 +202,6 @@ class MediaRouterUI : public ConstrainedWebDialogUI,
   std::vector<MediaSinkWithCastModes> sinks_;
   std::vector<MediaRoute> routes_;
   CastModeSet cast_modes_;
-  GURL frame_url_;
 
   scoped_ptr<QueryResultManager> query_result_manager_;
 

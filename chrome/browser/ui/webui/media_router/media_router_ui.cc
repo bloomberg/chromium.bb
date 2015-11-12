@@ -246,9 +246,7 @@ void MediaRouterUI::UpdateCastModes() {
   query_result_manager_->GetSupportedCastModes(&cast_modes_);
   if (ui_initialized_) {
     handler_->UpdateCastModes(
-        cast_modes_, presentation_request_
-                         ? GetHostFromURL(presentation_request_->frame_url())
-                         : std::string());
+        cast_modes_, GetHostFromURL(GetFrameURL()));
   }
 }
 
@@ -401,7 +399,8 @@ void MediaRouterUI::RouteCreationTimeout() {
   requesting_route_for_default_source_ = false;
   current_route_request_id_ = -1;
 
-  base::string16 host = base::UTF8ToUTF16(GetTruncatedHostFromURL(frame_url_));
+  base::string16 host = base::UTF8ToUTF16(GetTruncatedHostFromURL(
+      GetFrameURL()));
 
   // TODO(apacible): Update error messages based on current cast mode
   // (e.g. desktop).
@@ -419,8 +418,13 @@ void MediaRouterUI::RouteCreationTimeout() {
   handler_->NotifyRouteCreationTimeout();
 }
 
+GURL MediaRouterUI::GetFrameURL() const {
+  return presentation_request_ ? presentation_request_->frame_url() :
+      GURL();
+}
+
 std::string MediaRouterUI::GetFrameURLHost() const {
-  return GetHostFromURL(frame_url_);
+  return GetHostFromURL(GetFrameURL());
 }
 
 const std::string& MediaRouterUI::GetRouteProviderExtensionId() const {
