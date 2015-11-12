@@ -156,7 +156,7 @@ public class DownloadManagerServiceTest extends InstrumentationTestCase {
         }
 
         @Override
-        public void onDownloadFailed(String filename) {
+        public void onDownloadFailed(String errorMessage, boolean showAllDownloads) {
             mFailed = true;
         }
     }

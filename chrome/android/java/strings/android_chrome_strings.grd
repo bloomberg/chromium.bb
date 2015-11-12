@@ -1452,8 +1452,26 @@ You are signing in with a managed account and giving its administrator control o
       <message name="IDS_DOWNLOAD_NOTIFICATION_COMPLETED" desc="Download notification to be displayed when a download completes.">
         Download complete.
       </message>
-      <message name="IDS_DOWNLOAD_FAILED_MESSAGE" desc="Transient message shown when a file download has failed." meaning="Android">
-        <ph name="FILE_NAME">%1$s<ex>http://abc.com/test.pdf</ex></ph> download failed
+      <message name="IDS_DOWNLOAD_FAILED_REASON_FILE_ALREADY_EXISTS" desc="Message to explain that the download failed because file already exists.">
+        <ph name="FILE_NAME">%1$s<ex>http://abc.com/test.pdf</ex></ph> download prevented because file already exists.
+      </message>
+      <message name="IDS_DOWNLOAD_FAILED_REASON_FILE_SYSTEM_ERROR" desc="Message to explain that the download failed because unknown file system error.">
+        <ph name="FILE_NAME">%1$s<ex>http://abc.com/test.pdf</ex></ph> download failed due to file system errors.
+      </message>
+      <message name="IDS_DOWNLOAD_FAILED_REASON_INSUFFICIENT_SPACE" desc="Message to explain that the download failed because insufficient storage space.">
+        <ph name="FILE_NAME">%1$s<ex>http://abc.com/test.pdf</ex></ph> download failed due to lack of storage space.
+      </message>
+      <message name="IDS_DOWNLOAD_FAILED_REASON_NETWORK_FAILURES" desc="Message to explain that the download failed because of network failure.">
+        <ph name="FILE_NAME">%1$s<ex>http://abc.com/test.pdf</ex></ph> download failed due to network failures.
+      </message>
+      <message name="IDS_DOWNLOAD_FAILED_REASON_SERVER_ISSUES" desc="Message to explain that the download failed because of server issues.">
+        <ph name="FILE_NAME">%1$s<ex>http://abc.com/test.pdf</ex></ph> download failed due to server issues.
+      </message>
+      <message name="IDS_DOWNLOAD_FAILED_REASON_STORAGE_NOT_FOUND" desc="Message to explain that the download failed because no storage is found.">
+        <ph name="FILE_NAME">%1$s<ex>http://abc.com/test.pdf</ex></ph> download failed due to missing SD Card.
+      </message>
+      <message name="IDS_DOWNLOAD_FAILED_REASON_UNKNOWN_ERROR" desc="Message to explain that the download failed because unkown error.">
+        <ph name="FILE_NAME">%1$s<ex>http://abc.com/test.pdf</ex></ph> download failed due to an unknwon error.
       </message>
       <message name="IDS_DOWNLOAD_PENDING" desc="Message in the list of items which have received download requests telling their status. This message states that the download has not yet begun [CHAR LIMIT=30]">
         Downloading…

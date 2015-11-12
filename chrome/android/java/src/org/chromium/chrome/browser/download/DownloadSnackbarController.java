@@ -28,6 +28,10 @@ public class DownloadSnackbarController implements SnackbarManager.SnackbarContr
     @Override
     @SuppressWarnings("unchecked")
     public void onAction(Object actionData) {
+        if (actionData == null) {
+            DownloadManagerService.openDownloadsPage(mContext);
+            return;
+        }
         Pair<DownloadInfo, Long> download = (Pair<DownloadInfo, Long>) actionData;
         DownloadManagerService manager = DownloadManagerService.getDownloadManagerService(mContext);
         manager.openDownloadedContent(download.second);
@@ -56,11 +60,13 @@ public class DownloadSnackbarController implements SnackbarManager.SnackbarContr
                 R.string.download_succeeded_message, downloadInfo.getFileName()), this);
         // TODO(qinmin): Coalesce snackbars if multiple downloads finish at the same time.
         snackbar.setDuration(SNACKBAR_DURATION_IN_MILLISECONDS).setSingleLine(false);
+        Pair<DownloadInfo, Long> actionData = null;
         if (canBeResolved) {
-            snackbar.setAction(
-                    mContext.getString(R.string.open_downloaded_label),
-                    Pair.create(downloadInfo, downloadId));
+            actionData = Pair.create(downloadInfo, downloadId);
         }
+        // Show downloads app if the download cannot be resolved to any activity.
+        snackbar.setAction(
+                mContext.getString(R.string.open_downloaded_label), actionData);
         getSnackbarManager().showSnackbar(snackbar);
     }
 
@@ -68,14 +74,19 @@ public class DownloadSnackbarController implements SnackbarManager.SnackbarContr
      * Called to display the download failed snackbar.
      *
      * @param filename File name of the failed download.
+     * @param whether to show all downloads in case the failure is caused by duplicated files.
      */
-    public void onDownloadFailed(String filename) {
+    public void onDownloadFailed(String errorMessage, boolean showAllDownloads) {
         if (getSnackbarManager() == null) return;
         // TODO(qinmin): Coalesce snackbars if multiple downloads finish at the same time.
-        String message = mContext.getString(R.string.download_failed_message, filename);
-        Snackbar snackbar = Snackbar.make(message, this)
+        Snackbar snackbar = Snackbar.make(errorMessage, this)
                 .setSingleLine(false)
                 .setDuration(SNACKBAR_DURATION_IN_MILLISECONDS);
+        if (showAllDownloads) {
+            snackbar.setAction(
+                    mContext.getString(R.string.open_downloaded_label),
+                    null);
+        }
         getSnackbarManager().showSnackbar(snackbar);
     }
 

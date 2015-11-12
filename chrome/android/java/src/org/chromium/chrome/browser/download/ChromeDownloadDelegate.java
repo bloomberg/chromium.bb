@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.download;
 
 import android.Manifest.permission;
 import android.app.Activity;
+import android.app.DownloadManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -475,17 +476,20 @@ public class ChromeDownloadDelegate
             String filename, String fullDirPath, String externalStorageStatus) {
         if (fullDirPath == null) {
             Log.e(TAG, "Download failed: no SD card");
-            alertDownloadFailure(filename);
+            alertDownloadFailure(
+                    filename, DownloadManager.ERROR_DEVICE_NOT_FOUND);
             return false;
         }
         if (!externalStorageStatus.equals(Environment.MEDIA_MOUNTED)) {
+            int reason = DownloadManager.ERROR_DEVICE_NOT_FOUND;
             // Check to see if the SDCard is busy, same as the music app
             if (externalStorageStatus.equals(Environment.MEDIA_SHARED)) {
                 Log.e(TAG, "Download failed: SD card unavailable");
+                reason = DownloadManager.ERROR_FILE_ERROR;
             } else {
                 Log.e(TAG, "Download failed: no SD card");
             }
-            alertDownloadFailure(filename);
+            alertDownloadFailure(filename, reason);
             return false;
         }
         return true;
@@ -495,10 +499,11 @@ public class ChromeDownloadDelegate
      * Alerts user of download failure.
      *
      * @param fileName Name of the download file.
+     * @param reason Reason of failure defined in {@link DownloadManager}
      */
-    private void alertDownloadFailure(String fileName) {
+    private void alertDownloadFailure(String fileName, int reason) {
         DownloadManagerService.getDownloadManagerService(
-                mContext.getApplicationContext()).onDownloadFailed(fileName);
+                mContext.getApplicationContext()).onDownloadFailed(fileName, reason);
     }
 
     /**
