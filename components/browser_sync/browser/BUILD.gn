@@ -8,6 +8,8 @@ source_set("browser") {
   sources = [
     "profile_sync_service.cc",
     "profile_sync_service.h",
+    "signin_confirmation_helper.cc",
+    "signin_confirmation_helper.h",
   ]
 
   deps = [

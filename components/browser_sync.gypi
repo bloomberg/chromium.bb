@@ -35,6 +35,8 @@
         # Note: file list duplicated in GN build.
         'browser_sync/browser/profile_sync_service.cc',
         'browser_sync/browser/profile_sync_service.h',
+        'browser_sync/browser/signin_confirmation_helper.cc',
+        'browser_sync/browser/signin_confirmation_helper.h',
       ],
     },
     {

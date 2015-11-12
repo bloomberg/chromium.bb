@@ -6,17 +6,12 @@
 
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
-#include "base/prefs/pref_service.h"
-#include "base/strings/string16.h"
-#include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/bookmarks/browser/bookmark_model.h"
-#include "components/history/core/browser/history_backend.h"
-#include "components/history/core/browser/history_db_task.h"
+#include "components/browser_sync/browser/signin_confirmation_helper.h"
 #include "components/history/core/browser/history_service.h"
-#include "components/history/core/browser/history_types.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/native_theme/native_theme.h"
@@ -36,144 +31,12 @@ namespace {
 
 const int kHistoryEntriesBeforeNewProfilePrompt = 10;
 
-// Determines whether a profile has any typed URLs in its history.
-class HasTypedURLsTask : public history::HistoryDBTask {
- public:
-  explicit HasTypedURLsTask(const base::Callback<void(bool)>& cb)
-      : has_typed_urls_(false), cb_(cb) {
-  }
-
-  bool RunOnDBThread(history::HistoryBackend* backend,
-                     history::HistoryDatabase* db) override {
-    history::URLRows rows;
-    backend->GetAllTypedURLs(&rows);
-    if (!rows.empty()) {
-      DVLOG(1) << "ProfileSigninConfirmationHelper: profile contains "
-               << rows.size() << " typed URLs";
-      has_typed_urls_ = true;
-    }
-    return true;
-  }
-
-  void DoneRunOnMainThread() override { cb_.Run(has_typed_urls_); }
-
- private:
-  ~HasTypedURLsTask() override {}
-
-  bool has_typed_urls_;
-  base::Callback<void(bool)> cb_;
-};
-
 bool HasBookmarks(Profile* profile) {
   BookmarkModel* bookmarks = BookmarkModelFactory::GetForProfile(profile);
   bool has_bookmarks = bookmarks && bookmarks->HasBookmarks();
   if (has_bookmarks)
-    DVLOG(1) << "ProfileSigninConfirmationHelper: profile contains bookmarks";
+    DVLOG(1) << "SigninConfirmationHelper: profile contains bookmarks";
   return has_bookmarks;
-}
-
-// Helper functions for Chrome profile signin.
-class ProfileSigninConfirmationHelper {
- public:
-  ProfileSigninConfirmationHelper(
-      Profile* profile,
-      const base::Callback<void(bool)>& return_result);
-  void CheckHasHistory(int max_entries);
-  void CheckHasTypedURLs();
-
- private:
-  // Deletes itself.
-  ~ProfileSigninConfirmationHelper();
-
-  void OnHistoryQueryResults(size_t max_entries,
-                             history::QueryResults* results);
-  void ReturnResult(bool result);
-
-  // Weak pointer to the profile being signed-in.
-  Profile* profile_;
-
-  // Used for async tasks.
-  base::CancelableTaskTracker task_tracker_;
-
-  // Keep track of how many async requests are pending.
-  int pending_requests_;
-
-  // Callback to pass the result back to the caller.
-  const base::Callback<void(bool)> return_result_;
-
-  DISALLOW_COPY_AND_ASSIGN(ProfileSigninConfirmationHelper);
-};
-
-ProfileSigninConfirmationHelper::ProfileSigninConfirmationHelper(
-    Profile* profile,
-    const base::Callback<void(bool)>& return_result)
-    : profile_(profile),
-      pending_requests_(0),
-      return_result_(return_result) {
-}
-
-ProfileSigninConfirmationHelper::~ProfileSigninConfirmationHelper() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-}
-
-void ProfileSigninConfirmationHelper::OnHistoryQueryResults(
-    size_t max_entries,
-    history::QueryResults* results) {
-  history::QueryResults owned_results;
-  results->Swap(&owned_results);
-  bool too_much_history = owned_results.size() >= max_entries;
-  if (too_much_history) {
-    DVLOG(1) << "ProfileSigninConfirmationHelper: profile contains "
-             << owned_results.size() << " history entries";
-  }
-  ReturnResult(too_much_history);
-}
-
-void ProfileSigninConfirmationHelper::CheckHasHistory(int max_entries) {
-  history::HistoryService* service =
-      HistoryServiceFactory::GetForProfileWithoutCreating(profile_);
-  pending_requests_++;
-  if (!service) {
-    ReturnResult(false);
-    return;
-  }
-  history::QueryOptions opts;
-  opts.max_count = max_entries;
-  service->QueryHistory(
-      base::string16(),
-      opts,
-      base::Bind(&ProfileSigninConfirmationHelper::OnHistoryQueryResults,
-                 base::Unretained(this),
-                 max_entries),
-      &task_tracker_);
-}
-
-void ProfileSigninConfirmationHelper::CheckHasTypedURLs() {
-  history::HistoryService* service =
-      HistoryServiceFactory::GetForProfileWithoutCreating(profile_);
-  pending_requests_++;
-  if (!service) {
-    ReturnResult(false);
-    return;
-  }
-  service->ScheduleDBTask(
-      scoped_ptr<history::HistoryDBTask>(new HasTypedURLsTask(
-          base::Bind(&ProfileSigninConfirmationHelper::ReturnResult,
-                     base::Unretained(this)))),
-      &task_tracker_);
-}
-
-void ProfileSigninConfirmationHelper::ReturnResult(bool result) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  // Pass |true| into the callback as soon as one of the tasks passes a
-  // result of |true|, otherwise pass the last returned result.
-  if (--pending_requests_ == 0 || result) {
-    return_result_.Run(result);
-
-    // This leaks at shutdown if the HistoryService is destroyed, but
-    // the process is going to die anyway.
-    delete this;
-  }
 }
 
 }  // namespace
@@ -237,9 +100,11 @@ void CheckShouldPromptForNewProfile(
     return_result.Run(true);
     return;
   }
+  history::HistoryService* service =
+      HistoryServiceFactory::GetForProfileWithoutCreating(profile);
   // Fire asynchronous queries for profile data.
-  ProfileSigninConfirmationHelper* helper =
-      new ProfileSigninConfirmationHelper(profile, return_result);
+  sync_driver::SigninConfirmationHelper* helper =
+      new sync_driver::SigninConfirmationHelper(service, return_result);
   helper->CheckHasHistory(kHistoryEntriesBeforeNewProfilePrompt);
   helper->CheckHasTypedURLs();
 }
