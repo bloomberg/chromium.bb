@@ -246,6 +246,24 @@ void AddResetStrings(content::WebUIDataSource* html_source) {
   html_source->AddString(
       "resetPageLearnMoreUrl",
       chrome::kResetProfileSettingsLearnMoreURL);
+
+#if defined(OS_CHROMEOS)
+  html_source->AddLocalizedString(
+      "powerwashTitle", IDS_OPTIONS_FACTORY_RESET);
+  html_source->AddString(
+      "powerwashDescription",
+      l10n_util::GetStringFUTF16(
+          IDS_OPTIONS_FACTORY_RESET_DESCRIPTION,
+          l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
+  html_source->AddLocalizedString(
+      "powerwashDialogTitle", IDS_OPTIONS_FACTORY_RESET_HEADING);
+  html_source->AddLocalizedString(
+      "powerwashDialogBody", IDS_OPTIONS_FACTORY_RESET_WARNING);
+  html_source->AddLocalizedString(
+      "powerwashDialogButton", IDS_RELAUNCH_BUTTON);
+  html_source->AddLocalizedString(
+      "powerwashLearnMoreUrl", IDS_FACTORY_RESET_HELP_URL);
+#endif
 }
 
 void AddDateTimeStrings(content::WebUIDataSource* html_source) {

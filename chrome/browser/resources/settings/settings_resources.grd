@@ -223,6 +223,12 @@
       <structure name="IDR_SETTINGS_DOWNLOADS_PAGE_JS"
                  file="downloads_page/downloads_page.js"
                  type="chrome_html" />
+      <structure name="IDR_SETTINGS_POWERWASH_DIALOG_HTML"
+                 file="reset_page/powerwash_dialog.html"
+                 type="chrome_html" />
+      <structure name="IDR_SETTINGS_POWERWASH_DIALOG_JS"
+                 file="reset_page/powerwash_dialog.js"
+                 type="chrome_html" />
       <structure name="IDR_SETTINGS_RESET_PAGE_HTML"
                  file="reset_page/reset_page.html"
                  type="chrome_html" />

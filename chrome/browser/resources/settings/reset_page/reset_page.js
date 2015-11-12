@@ -23,8 +23,23 @@ Polymer({
 
 
   /** @private */
-  onShowDialog_: function() {
-     var dialog = document.createElement('settings-reset-profile-dialog');
+  onShowResetProfileDialog_: function() {
+     this.showDialog_('settings-reset-profile-dialog');
+  },
+
+  /** @private */
+  onShowPowerwashDialog_: function() {
+     this.showDialog_('settings-powerwash-dialog');
+  },
+
+
+  /**
+   * Creates and shows the specified dialog.
+   * @param {string} dialogName
+   * @private
+   */
+  showDialog_: function(dialogName) {
+     var dialog = document.createElement(dialogName);
      this.shadowRoot.appendChild(dialog);
      dialog.open();
 
