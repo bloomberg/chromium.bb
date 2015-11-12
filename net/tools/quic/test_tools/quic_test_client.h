@@ -161,6 +161,10 @@ class QuicTestClient : public SimpleClient, public QuicSpdyStream::Visitor {
   // or the empty string if no certificate was presented.
   const std::string& cert_common_name() const;
 
+  // cert_sct returns the signed timestamp of the server's certificate,
+  // or the empty string if no signed timestamp was presented.
+  const std::string& cert_sct() const;
+
   // Get the server config map.
   QuicTagValueMap GetServerConfig() const;
 

@@ -455,21 +455,21 @@ TEST_P(QuicServerSessionTest, BandwidthResumptionExperiment) {
   CachedNetworkParameters cached_network_params;
   cached_network_params.set_bandwidth_estimate_bytes_per_second(1);
   cached_network_params.set_serving_region("different serving region");
-  crypto_stream->set_previous_cached_network_params(cached_network_params);
+  crypto_stream->SetPreviousCachedNetworkParams(cached_network_params);
   EXPECT_CALL(*connection_, ResumeConnectionState(_, _)).Times(0);
   session_->OnConfigNegotiated();
 
   // Same serving region, but timestamp is too old, should have no effect.
   cached_network_params.set_serving_region(kTestServingRegion);
   cached_network_params.set_timestamp(0);
-  crypto_stream->set_previous_cached_network_params(cached_network_params);
+  crypto_stream->SetPreviousCachedNetworkParams(cached_network_params);
   EXPECT_CALL(*connection_, ResumeConnectionState(_, _)).Times(0);
   session_->OnConfigNegotiated();
 
   // Same serving region, and timestamp is recent: estimate is stored.
   cached_network_params.set_timestamp(
       connection_->clock()->WallNow().ToUNIXSeconds());
-  crypto_stream->set_previous_cached_network_params(cached_network_params);
+  crypto_stream->SetPreviousCachedNetworkParams(cached_network_params);
   EXPECT_CALL(*connection_, ResumeConnectionState(_, _)).Times(1);
   session_->OnConfigNegotiated();
 }

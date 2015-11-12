@@ -125,6 +125,9 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
     // channel_id_enabled controls whether the server config will indicate
     // support for ChannelIDs.
     bool channel_id_enabled;
+    // token_binding_enabled controls whether the server config will indicate
+    // support for Token Binding.
+    bool token_binding_enabled;
     // id contains the server config id for the resulting config. If empty, a
     // random id is generated.
     std::string id;

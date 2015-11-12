@@ -82,6 +82,7 @@ class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
 
     // SetProof stores a certificate chain and signature.
     void SetProof(const std::vector<std::string>& certs,
+                  base::StringPiece cert_sct,
                   base::StringPiece signature);
 
     // Clears all the data.
@@ -103,12 +104,15 @@ class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
     const std::string& server_config() const;
     const std::string& source_address_token() const;
     const std::vector<std::string>& certs() const;
+    const std::string& cert_sct() const;
     const std::string& signature() const;
     bool proof_valid() const;
     uint64 generation_counter() const;
     const ProofVerifyDetails* proof_verify_details() const;
 
     void set_source_address_token(base::StringPiece token);
+
+    void set_cert_sct(base::StringPiece cert_sct);
 
     // Adds the connection ID to the queue of server-designated connection-ids.
     void add_server_designated_connection_id(QuicConnectionId connection_id);
@@ -150,6 +154,7 @@ class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
     bool Initialize(base::StringPiece server_config,
                     base::StringPiece source_address_token,
                     const std::vector<std::string>& certs,
+                    const std::string& cert_sct,
                     base::StringPiece signature,
                     QuicWallTime now);
 
@@ -158,6 +163,7 @@ class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
     std::string source_address_token_;  // An opaque proof of IP ownership.
     std::vector<std::string> certs_;    // A list of certificates in leaf-first
                                         // order.
+    std::string cert_sct_;              // Signed timestamp of the leaf cert.
     std::string server_config_sig_;     // A signature of |server_config_|.
     bool server_config_valid_;          // True if |server_config_| is correctly
                                         // signed and |certs_| has been
@@ -238,6 +244,7 @@ class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
   // reject reason for secure vs insecure QUIC.
   QuicErrorCode ProcessRejection(const CryptoHandshakeMessage& rej,
                                  QuicWallTime now,
+                                 QuicVersion version,
                                  CachedState* cached,
                                  QuicCryptoNegotiatedParameters* out_params,
                                  std::string* error_details);
@@ -267,6 +274,7 @@ class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
   QuicErrorCode ProcessServerConfigUpdate(
       const CryptoHandshakeMessage& server_update,
       QuicWallTime now,
+      const QuicVersion version,
       CachedState* cached,
       QuicCryptoNegotiatedParameters* out_params,
       std::string* error_details);
@@ -322,6 +330,7 @@ class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
   QuicErrorCode CacheNewServerConfig(
       const CryptoHandshakeMessage& message,
       QuicWallTime now,
+      const QuicVersion version,
       const std::vector<std::string>& cached_certs,
       CachedState* cached,
       std::string* error_details);

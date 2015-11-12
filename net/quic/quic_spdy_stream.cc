@@ -14,6 +14,10 @@ using std::min;
 
 namespace net {
 
+#define ENDPOINT                                                               \
+  (session()->perspective() == Perspective::IS_SERVER ? "Server: " : "Client:" \
+                                                                     " ")
+
 namespace {
 
 // This is somewhat arbitrary.  It's possible, but unlikely, we will either fail
@@ -37,6 +41,29 @@ QuicSpdyStream::QuicSpdyStream(QuicStreamId id, QuicSpdySession* spdy_session)
 }
 
 QuicSpdyStream::~QuicSpdyStream() {}
+
+void QuicSpdyStream::CloseWriteSide() {
+  if (version() > QUIC_VERSION_28 && !fin_received() && !rst_received() &&
+      sequencer()->ignore_read_data() && !rst_sent()) {
+    DCHECK(fin_sent());
+    // Tell the peer to stop sending further data.
+    DVLOG(1) << ENDPOINT << "Send QUIC_STREAM_NO_ERROR on stream " << id();
+    Reset(QUIC_STREAM_NO_ERROR);
+  }
+
+  ReliableQuicStream::CloseWriteSide();
+}
+
+void QuicSpdyStream::StopReading() {
+  if (version() > QUIC_VERSION_28 && !fin_received() && !rst_received() &&
+      write_side_closed() && !rst_sent()) {
+    DCHECK(fin_sent());
+    // Tell the peer to stop sending further data.
+    DVLOG(1) << ENDPOINT << "Send QUIC_STREAM_NO_ERROR on stream " << id();
+    Reset(QUIC_STREAM_NO_ERROR);
+  }
+  ReliableQuicStream::StopReading();
+}
 
 size_t QuicSpdyStream::WriteHeaders(
     const SpdyHeaderBlock& header_block,

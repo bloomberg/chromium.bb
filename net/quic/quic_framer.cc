@@ -477,11 +477,12 @@ QuicEncryptedPacket* QuicFramer::BuildPublicResetPacket(
   return new QuicEncryptedPacket(buffer.release(), len, true);
 }
 
+// static
 QuicEncryptedPacket* QuicFramer::BuildVersionNegotiationPacket(
-    const QuicPacketPublicHeader& header,
-    const QuicVersionVector& supported_versions) {
-  DCHECK(header.version_flag);
-  size_t len = GetVersionNegotiationPacketSize(supported_versions.size());
+    QuicConnectionId connection_id,
+    const QuicVersionVector& versions) {
+  DCHECK(!versions.empty());
+  size_t len = GetVersionNegotiationPacketSize(versions.size());
   scoped_ptr<char[]> buffer(new char[len]);
   QuicDataWriter writer(len, buffer.get());
 
@@ -491,12 +492,12 @@ QuicEncryptedPacket* QuicFramer::BuildVersionNegotiationPacket(
     return nullptr;
   }
 
-  if (!writer.WriteUInt64(header.connection_id)) {
+  if (!writer.WriteUInt64(connection_id)) {
     return nullptr;
   }
 
-  for (size_t i = 0; i < supported_versions.size(); ++i) {
-    if (!writer.WriteUInt32(QuicVersionToQuicTag(supported_versions[i]))) {
+  for (QuicVersion version : versions) {
+    if (!writer.WriteUInt32(QuicVersionToQuicTag(version))) {
       return nullptr;
     }
   }

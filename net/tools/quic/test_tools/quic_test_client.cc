@@ -46,6 +46,7 @@ class RecordingProofVerifier : public ProofVerifier {
   QuicAsyncStatus VerifyProof(const string& hostname,
                               const string& server_config,
                               const vector<string>& certs,
+                              const string& cert_sct,
                               const string& signature,
                               const ProofVerifyContext* context,
                               string* error_details,
@@ -71,13 +72,18 @@ class RecordingProofVerifier : public ProofVerifier {
     //    }
     //
     //    common_name_ = cert->subject().GetDisplayName();
+    cert_sct_ = cert_sct;
+
     return QUIC_SUCCESS;
   }
 
   const string& common_name() const { return common_name_; }
 
+  const string& cert_sct() const { return cert_sct_; }
+
  private:
   string common_name_;
+  string cert_sct_;
 };
 
 }  // anonymous namespace
@@ -385,6 +391,11 @@ MockableQuicClient* QuicTestClient::client() { return client_.get(); }
 const string& QuicTestClient::cert_common_name() const {
   return reinterpret_cast<RecordingProofVerifier*>(client_->proof_verifier())
       ->common_name();
+}
+
+const string& QuicTestClient::cert_sct() const {
+  return reinterpret_cast<RecordingProofVerifier*>(client_->proof_verifier())
+      ->cert_sct();
 }
 
 QuicTagValueMap QuicTestClient::GetServerConfig() const {

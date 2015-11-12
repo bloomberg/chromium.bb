@@ -304,9 +304,10 @@ class NET_EXPORT_PRIVATE QuicFramer {
   static QuicEncryptedPacket* BuildPublicResetPacket(
       const QuicPublicResetPacket& packet);
 
-  QuicEncryptedPacket* BuildVersionNegotiationPacket(
-      const QuicPacketPublicHeader& header,
-      const QuicVersionVector& supported_versions);
+  // Returns a new version negotiation packet, owned by the caller.
+  static QuicEncryptedPacket* BuildVersionNegotiationPacket(
+      QuicConnectionId connection_id,
+      const QuicVersionVector& versions);
 
   // SetDecrypter sets the primary decrypter, replacing any that already exists,
   // and takes ownership. If an alternative decrypter is in place then the

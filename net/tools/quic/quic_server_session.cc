@@ -35,7 +35,7 @@ void QuicServerSession::Initialize() {
   QuicSpdySession::Initialize();
 }
 
-QuicCryptoServerStream* QuicServerSession::CreateQuicCryptoServerStream(
+QuicCryptoServerStreamBase* QuicServerSession::CreateQuicCryptoServerStream(
     const QuicCryptoServerConfig* crypto_config) {
   return new QuicCryptoServerStream(crypto_config, this);
 }
@@ -51,7 +51,7 @@ void QuicServerSession::OnConfigNegotiated() {
   // region, then pass it to the sent packet manager in preparation for possible
   // bandwidth resumption.
   const CachedNetworkParameters* cached_network_params =
-      crypto_stream_->previous_cached_network_params();
+      crypto_stream_->PreviousCachedNetworkParams();
   const bool last_bandwidth_resumption =
       ContainsQuicTag(config()->ReceivedConnectionOptions(), kBWRE);
   const bool max_bandwidth_resumption =
@@ -210,7 +210,7 @@ QuicSpdyStream* QuicServerSession::CreateOutgoingDynamicStream() {
   return nullptr;
 }
 
-QuicCryptoServerStream* QuicServerSession::GetCryptoStream() {
+QuicCryptoServerStreamBase* QuicServerSession::GetCryptoStream() {
   return crypto_stream_.get();
 }
 

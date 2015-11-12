@@ -32,7 +32,7 @@ void ServerHelloNotifier::OnPacketRetransmitted(int /*retransmitted_bytes*/) {}
 QuicCryptoServerStream::QuicCryptoServerStream(
     const QuicCryptoServerConfig* crypto_config,
     QuicSession* session)
-    : QuicCryptoStream(session),
+    : QuicCryptoServerStreamBase(session),
       crypto_config_(crypto_config),
       validate_client_hello_cb_(nullptr),
       num_handshake_messages_(0),
@@ -57,7 +57,7 @@ void QuicCryptoServerStream::CancelOutstandingCallbacks() {
 
 void QuicCryptoServerStream::OnHandshakeMessage(
     const CryptoHandshakeMessage& message) {
-  QuicCryptoStream::OnHandshakeMessage(message);
+  QuicCryptoServerStreamBase::OnHandshakeMessage(message);
   ++num_handshake_messages_;
 
   // Do not process handshake messages after the handshake is confirmed.
@@ -110,8 +110,8 @@ void QuicCryptoServerStream::FinishProcessingHandshakeMessage(
 
   if (reply.tag() != kSHLO) {
     if (reply.tag() == kSREJ) {
-      DCHECK(use_stateless_rejects_if_peer_supported());
-      DCHECK(peer_supports_stateless_rejects());
+      DCHECK(use_stateless_rejects_if_peer_supported_);
+      DCHECK(peer_supports_stateless_rejects_);
       // Before sending the SREJ, cause the connection to save crypto packets
       // so that they can be added to the time wait list manager and
       // retransmitted.
@@ -120,8 +120,8 @@ void QuicCryptoServerStream::FinishProcessingHandshakeMessage(
     SendHandshakeMessage(reply);
 
     if (reply.tag() == kSREJ) {
-      DCHECK(use_stateless_rejects_if_peer_supported());
-      DCHECK(peer_supports_stateless_rejects());
+      DCHECK(use_stateless_rejects_if_peer_supported_);
+      DCHECK(peer_supports_stateless_rejects_);
       DCHECK(!handshake_confirmed());
       DVLOG(1) << "Closing connection "
                << session()->connection()->connection_id()
@@ -212,7 +212,37 @@ void QuicCryptoServerStream::OnServerHelloAcked() {
   session()->connection()->OnHandshakeComplete();
 }
 
-void QuicCryptoServerStream::set_previous_cached_network_params(
+uint8 QuicCryptoServerStream::NumHandshakeMessages() const {
+  return num_handshake_messages_;
+}
+
+uint8 QuicCryptoServerStream::NumHandshakeMessagesWithServerNonces() const {
+  return num_handshake_messages_with_server_nonces_;
+}
+
+int QuicCryptoServerStream::NumServerConfigUpdateMessagesSent() const {
+  return num_server_config_update_messages_sent_;
+}
+
+const CachedNetworkParameters*
+QuicCryptoServerStream::PreviousCachedNetworkParams() const {
+  return previous_cached_network_params_.get();
+}
+
+bool QuicCryptoServerStream::UseStatelessRejectsIfPeerSupported() const {
+  return use_stateless_rejects_if_peer_supported_;
+}
+
+bool QuicCryptoServerStream::PeerSupportsStatelessRejects() const {
+  return peer_supports_stateless_rejects_;
+}
+
+void QuicCryptoServerStream::SetPeerSupportsStatelessRejects(
+    bool peer_supports_stateless_rejects) {
+  peer_supports_stateless_rejects_ = peer_supports_stateless_rejects;
+}
+
+void QuicCryptoServerStream::SetPreviousCachedNetworkParams(
     CachedNetworkParameters cached_network_params) {
   previous_cached_network_params_.reset(
       new CachedNetworkParameters(cached_network_params));
@@ -280,11 +310,6 @@ QuicErrorCode QuicCryptoServerStream::ProcessClientHello(
 }
 
 void QuicCryptoServerStream::OverrideQuicConfigDefaults(QuicConfig* config) {
-}
-
-const CachedNetworkParameters*
-QuicCryptoServerStream::previous_cached_network_params() const {
-  return previous_cached_network_params_.get();
 }
 
 QuicCryptoServerStream::ValidateCallback::ValidateCallback(

@@ -72,7 +72,7 @@ void RunVerification(ProofVerifier* verifier,
       new TestProofVerifierCallback(&comp_callback, &ok, &error_details);
 
   QuicAsyncStatus status = verifier->VerifyProof(
-      hostname, server_config, certs, proof, verify_context.get(),
+      hostname, server_config, certs, "", proof, verify_context.get(),
       &error_details, &details, callback);
 
   switch (status) {

@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/rand_util.h"
 #include "net/base/ip_endpoint.h"
+#include "net/quic/quic_flags.h"
 #include "net/quic/quic_frame_list.h"
 #include "net/quic/quic_utils.h"
 #include "net/quic/reliable_quic_stream.h"
@@ -59,8 +60,13 @@ namespace {
 static const char kPayload[] =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 
-class QuicStreamSequencerTest : public ::testing::Test {
+class QuicStreamSequencerTest : public ::testing::TestWithParam<bool> {
  public:
+  void SetUp() override {
+    FLAGS_quic_use_stream_sequencer_buffer = GetParam();
+    sequencer_.reset(new QuicStreamSequencer(&stream_, &clock_));
+  }
+
   void ConsumeData(size_t num_bytes) {
     char buffer[1024];
     ASSERT_GT(arraysize(buffer), num_bytes);
@@ -74,38 +80,50 @@ class QuicStreamSequencerTest : public ::testing::Test {
   QuicStreamSequencerTest()
       : connection_(new MockConnection(&helper_, Perspective::IS_CLIENT)),
         session_(connection_),
-        stream_(&session_, 1),
-        sequencer_(new QuicStreamSequencer(&stream_, &clock_)) {}
+        stream_(&session_, 1) {}
 
-  bool VerifyReadableRegion(const char** expected) {
+  // Verify that the data in first region match with the expected[0].
+  bool VerifyReadableRegion(const vector<string>& expected) {
     iovec iovecs[1];
-    QuicTime timestamp = clock_.ApproximateNow();
-    if (sequencer_->GetReadableRegion(iovecs, &timestamp)) {
-      return (VerifyIovecs(iovecs, 1, expected, 1));
+    if (sequencer_->GetReadableRegions(iovecs, 1)) {
+      return (VerifyIovecs(iovecs, 1, vector<string>{expected[0]}));
     }
     return false;
   }
 
-  bool VerifyReadableRegions(const char** expected, size_t num_expected) {
+  // Verify that the data in each of currently readable regions match with each
+  // item given in |expected|.
+  bool VerifyReadableRegions(const vector<string>& expected) {
     iovec iovecs[5];
     size_t num_iovecs =
         sequencer_->GetReadableRegions(iovecs, arraysize(iovecs));
     return VerifyReadableRegion(expected) &&
-           VerifyIovecs(iovecs, num_iovecs, expected, num_expected);
+           VerifyIovecs(iovecs, num_iovecs, expected);
   }
 
   bool VerifyIovecs(iovec* iovecs,
                     size_t num_iovecs,
-                    const char** expected,
-                    size_t num_expected) {
-    if (num_expected != num_iovecs) {
-      LOG(ERROR) << "Incorrect number of iovecs.  Expected: " << num_expected
-                 << " Actual: " << num_iovecs;
-      return false;
-    }
-    for (size_t i = 0; i < num_expected; ++i) {
-      if (!VerifyIovec(iovecs[i], expected[i])) {
+                    const vector<string>& expected) {
+    if (!FLAGS_quic_use_stream_sequencer_buffer) {
+      if (expected.size() != num_iovecs) {
+        LOG(ERROR) << "Incorrect number of iovecs.  Expected: "
+                   << expected.size() << " Actual: " << num_iovecs;
         return false;
+      }
+
+      for (size_t i = 0; i < num_iovecs; ++i) {
+        if (!VerifyIovec(iovecs[i], expected[i])) {
+          return false;
+        }
+      }
+    } else {
+      int start_position = 0;
+      for (size_t i = 0; i < num_iovecs; ++i) {
+        if (!VerifyIovec(iovecs[i], expected[0].substr(start_position,
+                                                       iovecs[i].iov_len))) {
+          return false;
+        }
+        start_position += iovecs[i].iov_len;
       }
     }
     return true;
@@ -155,9 +173,13 @@ class QuicStreamSequencerTest : public ::testing::Test {
   scoped_ptr<QuicStreamSequencer> sequencer_;
 };
 
+INSTANTIATE_TEST_CASE_P(QuicStreamSequencerTests,
+                        QuicStreamSequencerTest,
+                        ::testing::Values(false, true));
+
 // TODO(rch): reorder these tests so they build on each other.
 
-TEST_F(QuicStreamSequencerTest, RejectOldFrame) {
+TEST_P(QuicStreamSequencerTest, RejectOldFrame) {
   EXPECT_CALL(stream_, OnDataAvailable())
       .WillOnce(testing::Invoke(
           CreateFunctor(this, &QuicStreamSequencerTest::ConsumeData, 3)));
@@ -173,7 +195,7 @@ TEST_F(QuicStreamSequencerTest, RejectOldFrame) {
   EXPECT_EQ(0u, NumBufferedBytes());
 }
 
-TEST_F(QuicStreamSequencerTest, RejectBufferedFrame) {
+TEST_P(QuicStreamSequencerTest, RejectBufferedFrame) {
   EXPECT_CALL(stream_, OnDataAvailable());
 
   OnFrame(0, "abc");
@@ -186,7 +208,7 @@ TEST_F(QuicStreamSequencerTest, RejectBufferedFrame) {
   EXPECT_EQ(3u, NumBufferedBytes());
 }
 
-TEST_F(QuicStreamSequencerTest, FullFrameConsumed) {
+TEST_P(QuicStreamSequencerTest, FullFrameConsumed) {
   EXPECT_CALL(stream_, OnDataAvailable())
       .WillOnce(testing::Invoke(
           CreateFunctor(this, &QuicStreamSequencerTest::ConsumeData, 3)));
@@ -196,7 +218,7 @@ TEST_F(QuicStreamSequencerTest, FullFrameConsumed) {
   EXPECT_EQ(3u, sequencer_->NumBytesConsumed());
 }
 
-TEST_F(QuicStreamSequencerTest, BlockedThenFullFrameConsumed) {
+TEST_P(QuicStreamSequencerTest, BlockedThenFullFrameConsumed) {
   sequencer_->SetBlockedUntilFlush();
 
   OnFrame(0, "abc");
@@ -218,7 +240,7 @@ TEST_F(QuicStreamSequencerTest, BlockedThenFullFrameConsumed) {
   EXPECT_TRUE(sequencer_->IsClosed());
 }
 
-TEST_F(QuicStreamSequencerTest, BlockedThenFullFrameAndFinConsumed) {
+TEST_P(QuicStreamSequencerTest, BlockedThenFullFrameAndFinConsumed) {
   sequencer_->SetBlockedUntilFlush();
 
   OnFinFrame(0, "abc");
@@ -235,7 +257,7 @@ TEST_F(QuicStreamSequencerTest, BlockedThenFullFrameAndFinConsumed) {
   EXPECT_EQ(3u, sequencer_->NumBytesConsumed());
 }
 
-TEST_F(QuicStreamSequencerTest, EmptyFrame) {
+TEST_P(QuicStreamSequencerTest, EmptyFrame) {
   EXPECT_CALL(stream_,
               CloseConnectionWithDetails(QUIC_INVALID_STREAM_FRAME, _));
   OnFrame(0, "");
@@ -243,14 +265,14 @@ TEST_F(QuicStreamSequencerTest, EmptyFrame) {
   EXPECT_EQ(0u, sequencer_->NumBytesConsumed());
 }
 
-TEST_F(QuicStreamSequencerTest, EmptyFinFrame) {
+TEST_P(QuicStreamSequencerTest, EmptyFinFrame) {
   EXPECT_CALL(stream_, OnDataAvailable());
   OnFinFrame(0, "");
   EXPECT_EQ(0u, NumBufferedBytes());
   EXPECT_EQ(0u, sequencer_->NumBytesConsumed());
 }
 
-TEST_F(QuicStreamSequencerTest, PartialFrameConsumed) {
+TEST_P(QuicStreamSequencerTest, PartialFrameConsumed) {
   EXPECT_CALL(stream_, OnDataAvailable())
       .WillOnce(testing::Invoke(
           CreateFunctor(this, &QuicStreamSequencerTest::ConsumeData, 2)));
@@ -260,7 +282,7 @@ TEST_F(QuicStreamSequencerTest, PartialFrameConsumed) {
   EXPECT_EQ(2u, sequencer_->NumBytesConsumed());
 }
 
-TEST_F(QuicStreamSequencerTest, NextxFrameNotConsumed) {
+TEST_P(QuicStreamSequencerTest, NextxFrameNotConsumed) {
   EXPECT_CALL(stream_, OnDataAvailable());
 
   OnFrame(0, "abc");
@@ -269,14 +291,14 @@ TEST_F(QuicStreamSequencerTest, NextxFrameNotConsumed) {
   EXPECT_EQ(0, sequencer_->num_early_frames_received());
 }
 
-TEST_F(QuicStreamSequencerTest, FutureFrameNotProcessed) {
+TEST_P(QuicStreamSequencerTest, FutureFrameNotProcessed) {
   OnFrame(3, "abc");
   EXPECT_EQ(3u, NumBufferedBytes());
   EXPECT_EQ(0u, sequencer_->NumBytesConsumed());
   EXPECT_EQ(1, sequencer_->num_early_frames_received());
 }
 
-TEST_F(QuicStreamSequencerTest, OutOfOrderFrameProcessed) {
+TEST_P(QuicStreamSequencerTest, OutOfOrderFrameProcessed) {
   // Buffer the first
   OnFrame(6, "ghi");
   EXPECT_EQ(3u, NumBufferedBytes());
@@ -300,7 +322,7 @@ TEST_F(QuicStreamSequencerTest, OutOfOrderFrameProcessed) {
   EXPECT_EQ(0u, NumBufferedBytes());
 }
 
-TEST_F(QuicStreamSequencerTest, BasicHalfCloseOrdered) {
+TEST_P(QuicStreamSequencerTest, BasicHalfCloseOrdered) {
   InSequence s;
 
   EXPECT_CALL(stream_, OnDataAvailable())
@@ -311,7 +333,7 @@ TEST_F(QuicStreamSequencerTest, BasicHalfCloseOrdered) {
   EXPECT_EQ(3u, QuicStreamSequencerPeer::GetCloseOffset(sequencer_.get()));
 }
 
-TEST_F(QuicStreamSequencerTest, BasicHalfCloseUnorderedWithFlush) {
+TEST_P(QuicStreamSequencerTest, BasicHalfCloseUnorderedWithFlush) {
   OnFinFrame(6, "");
   EXPECT_EQ(6u, QuicStreamSequencerPeer::GetCloseOffset(sequencer_.get()));
 
@@ -324,7 +346,7 @@ TEST_F(QuicStreamSequencerTest, BasicHalfCloseUnorderedWithFlush) {
   EXPECT_TRUE(sequencer_->IsClosed());
 }
 
-TEST_F(QuicStreamSequencerTest, BasicHalfUnordered) {
+TEST_P(QuicStreamSequencerTest, BasicHalfUnordered) {
   OnFinFrame(3, "");
   EXPECT_EQ(3u, QuicStreamSequencerPeer::GetCloseOffset(sequencer_.get()));
 
@@ -336,7 +358,7 @@ TEST_F(QuicStreamSequencerTest, BasicHalfUnordered) {
   EXPECT_TRUE(sequencer_->IsClosed());
 }
 
-TEST_F(QuicStreamSequencerTest, TerminateWithReadv) {
+TEST_P(QuicStreamSequencerTest, TerminateWithReadv) {
   char buffer[3];
 
   OnFinFrame(3, "");
@@ -353,7 +375,7 @@ TEST_F(QuicStreamSequencerTest, TerminateWithReadv) {
   EXPECT_TRUE(sequencer_->IsClosed());
 }
 
-TEST_F(QuicStreamSequencerTest, MutipleOffsets) {
+TEST_P(QuicStreamSequencerTest, MutipleOffsets) {
   OnFinFrame(3, "");
   EXPECT_EQ(3u, QuicStreamSequencerPeer::GetCloseOffset(sequencer_.get()));
 
@@ -410,7 +432,7 @@ class QuicSequencerRandomTest : public QuicStreamSequencerTest {
 
 // All frames are processed as soon as we have sequential data.
 // Infinite buffering, so all frames are acked right away.
-TEST_F(QuicSequencerRandomTest, RandomFramesNoDroppingNoBackup) {
+TEST_P(QuicSequencerRandomTest, RandomFramesNoDroppingNoBackup) {
   InSequence s;
   EXPECT_CALL(stream_, OnDataAvailable())
       .Times(AnyNumber())
@@ -429,7 +451,7 @@ TEST_F(QuicSequencerRandomTest, RandomFramesNoDroppingNoBackup) {
   EXPECT_EQ(kPayload, output_);
 }
 
-TEST_F(QuicSequencerRandomTest, RandomFramesNoDroppingBackup) {
+TEST_P(QuicSequencerRandomTest, RandomFramesNoDroppingBackup) {
   char buffer[10];
   iovec iov[2];
   iov[0].iov_base = &buffer[0];
@@ -475,7 +497,7 @@ TEST_F(QuicSequencerRandomTest, RandomFramesNoDroppingBackup) {
 }
 
 // Same as above, just using a different method for reading.
-TEST_F(QuicStreamSequencerTest, MarkConsumed) {
+TEST_P(QuicStreamSequencerTest, MarkConsumed) {
   InSequence s;
   EXPECT_CALL(stream_, OnDataAvailable());
 
@@ -487,35 +509,50 @@ TEST_F(QuicStreamSequencerTest, MarkConsumed) {
   EXPECT_EQ(9u, sequencer_->NumBytesBuffered());
 
   // Peek into the data.
-  const char* expected[] = {"abc", "def", "ghi"};
-  ASSERT_TRUE(VerifyReadableRegions(expected, arraysize(expected)));
+  vector<string> expected;
+  if (FLAGS_quic_use_stream_sequencer_buffer) {
+    expected = vector<string>{"abcdefghi"};
+  } else {
+    expected = vector<string>{"abc", "def", "ghi"};
+  }
+  ASSERT_TRUE(VerifyReadableRegions(expected));
 
   // Consume 1 byte.
   sequencer_->MarkConsumed(1);
   EXPECT_EQ(1u, stream_.flow_controller()->bytes_consumed());
   // Verify data.
-  const char* expected2[] = {"bc", "def", "ghi"};
-  ASSERT_TRUE(VerifyReadableRegions(expected2, arraysize(expected2)));
+  vector<string> expected2;
+  if (FLAGS_quic_use_stream_sequencer_buffer) {
+    expected2 = vector<string>{"bcdefghi"};
+  } else {
+    expected2 = vector<string>{"bc", "def", "ghi"};
+  }
+  ASSERT_TRUE(VerifyReadableRegions(expected2));
   EXPECT_EQ(8u, sequencer_->NumBytesBuffered());
 
   // Consume 2 bytes.
   sequencer_->MarkConsumed(2);
   EXPECT_EQ(3u, stream_.flow_controller()->bytes_consumed());
   // Verify data.
-  const char* expected3[] = {"def", "ghi"};
-  ASSERT_TRUE(VerifyReadableRegions(expected3, arraysize(expected3)));
+  vector<string> expected3;
+  if (FLAGS_quic_use_stream_sequencer_buffer) {
+    expected3 = vector<string>{"defghi"};
+  } else {
+    expected3 = vector<string>{"def", "ghi"};
+  }
+  ASSERT_TRUE(VerifyReadableRegions(expected3));
   EXPECT_EQ(6u, sequencer_->NumBytesBuffered());
 
   // Consume 5 bytes.
   sequencer_->MarkConsumed(5);
   EXPECT_EQ(8u, stream_.flow_controller()->bytes_consumed());
   // Verify data.
-  const char* expected4[] = {"i"};
-  ASSERT_TRUE(VerifyReadableRegions(expected4, arraysize(expected4)));
+  vector<string> expected4{"i"};
+  ASSERT_TRUE(VerifyReadableRegions(expected4));
   EXPECT_EQ(1u, sequencer_->NumBytesBuffered());
 }
 
-TEST_F(QuicStreamSequencerTest, MarkConsumedError) {
+TEST_P(QuicStreamSequencerTest, MarkConsumedError) {
   EXPECT_CALL(stream_, OnDataAvailable());
 
   OnFrame(0, "abc");
@@ -523,8 +560,8 @@ TEST_F(QuicStreamSequencerTest, MarkConsumedError) {
 
   // Peek into the data.  Only the first chunk should be readable because of the
   // missing data.
-  const char* expected[] = {"abc"};
-  ASSERT_TRUE(VerifyReadableRegions(expected, arraysize(expected)));
+  vector<string> expected{"abc"};
+  ASSERT_TRUE(VerifyReadableRegions(expected));
 
   // Now, attempt to mark consumed more data than was readable and expect the
   // stream to be closed.
@@ -534,7 +571,7 @@ TEST_F(QuicStreamSequencerTest, MarkConsumedError) {
                 " expect to consume: 4, but not enough bytes available.");
 }
 
-TEST_F(QuicStreamSequencerTest, MarkConsumedWithMissingPacket) {
+TEST_P(QuicStreamSequencerTest, MarkConsumedWithMissingPacket) {
   InSequence s;
   EXPECT_CALL(stream_, OnDataAvailable());
 
@@ -543,8 +580,13 @@ TEST_F(QuicStreamSequencerTest, MarkConsumedWithMissingPacket) {
   // Missing packet: 6, ghi.
   OnFrame(9, "jkl");
 
-  const char* expected[] = {"abc", "def"};
-  ASSERT_TRUE(VerifyReadableRegions(expected, arraysize(expected)));
+  vector<string> expected;
+  if (FLAGS_quic_use_stream_sequencer_buffer) {
+    expected = vector<string>{"abcdef"};
+  } else {
+    expected = vector<string>{"abc", "def"};
+  }
+  ASSERT_TRUE(VerifyReadableRegions(expected));
 
   sequencer_->MarkConsumed(6);
 }
@@ -597,7 +639,7 @@ TEST(QuicFrameListTest, FrameOverlapsBufferedData) {
       QuicStreamFrame(1, false, kBufferedOffset + kBufferedDataLength, data)));
 }
 
-TEST_F(QuicStreamSequencerTest, DontAcceptOverlappingFrames) {
+TEST_P(QuicStreamSequencerTest, DontAcceptOverlappingFrames) {
   // The peer should never send us non-identical stream frames which contain
   // overlapping byte ranges - if they do, we close the connection.
 
@@ -610,7 +652,7 @@ TEST_F(QuicStreamSequencerTest, DontAcceptOverlappingFrames) {
   sequencer_->OnStreamFrame(frame2);
 }
 
-TEST_F(QuicStreamSequencerTest, InOrderTimestamps) {
+TEST_P(QuicStreamSequencerTest, InOrderTimestamps) {
   // This test verifies that timestamps returned by
   // GetReadableRegion() are in the correct sequence when frames
   // arrive at the sequencer in order.
@@ -651,7 +693,7 @@ TEST_F(QuicStreamSequencerTest, InOrderTimestamps) {
   EXPECT_EQ(0u, sequencer_->NumBytesBuffered());
 }
 
-TEST_F(QuicStreamSequencerTest, OutOfOrderTimestamps) {
+TEST_P(QuicStreamSequencerTest, OutOfOrderTimestamps) {
   // This test verifies that timestamps returned by
   // GetReadableRegion() are in the correct sequence when frames
   // arrive at the sequencer out of order.

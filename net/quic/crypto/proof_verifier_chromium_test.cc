@@ -161,7 +161,7 @@ TEST(ProofVerifierChromiumTest, FailsIfCertFails) {
 
   DummyProofVerifierCallback* callback = new DummyProofVerifierCallback;
   QuicAsyncStatus status = proof_verifier.VerifyProof(
-      kTestHostname, kTestConfig, certs, GetTestSignature(),
+      kTestHostname, kTestConfig, certs, "", GetTestSignature(),
       verify_context.get(), &error_details, &details, callback);
   ASSERT_EQ(QUIC_FAILURE, status);
   delete callback;
@@ -183,7 +183,7 @@ TEST(ProofVerifierChromiumTest, FailsIfSignatureFails) {
 
   DummyProofVerifierCallback* callback = new DummyProofVerifierCallback;
   QuicAsyncStatus status = proof_verifier.VerifyProof(
-      kTestHostname, kTestConfig, certs, kTestConfig, verify_context.get(),
+      kTestHostname, kTestConfig, certs, "", kTestConfig, verify_context.get(),
       &error_details, &details, callback);
   ASSERT_EQ(QUIC_FAILURE, status);
   delete callback;
@@ -214,7 +214,7 @@ TEST(ProofVerifierChromiumTest, PreservesEVIfNoPolicy) {
 
   DummyProofVerifierCallback* callback = new DummyProofVerifierCallback;
   QuicAsyncStatus status = proof_verifier.VerifyProof(
-      kTestHostname, kTestConfig, certs, GetTestSignature(),
+      kTestHostname, kTestConfig, certs, "", GetTestSignature(),
       verify_context.get(), &error_details, &details, callback);
   ASSERT_EQ(QUIC_SUCCESS, status);
   delete callback;
@@ -254,7 +254,7 @@ TEST(ProofVerifierChromiumTest, PreservesEVIfAllowed) {
 
   DummyProofVerifierCallback* callback = new DummyProofVerifierCallback;
   QuicAsyncStatus status = proof_verifier.VerifyProof(
-      kTestHostname, kTestConfig, certs, GetTestSignature(),
+      kTestHostname, kTestConfig, certs, "", GetTestSignature(),
       verify_context.get(), &error_details, &details, callback);
   ASSERT_EQ(QUIC_SUCCESS, status);
   delete callback;
@@ -294,7 +294,7 @@ TEST(ProofVerifierChromiumTest, StripsEVIfNotAllowed) {
 
   DummyProofVerifierCallback* callback = new DummyProofVerifierCallback;
   QuicAsyncStatus status = proof_verifier.VerifyProof(
-      kTestHostname, kTestConfig, certs, GetTestSignature(),
+      kTestHostname, kTestConfig, certs, "", GetTestSignature(),
       verify_context.get(), &error_details, &details, callback);
   ASSERT_EQ(QUIC_SUCCESS, status);
   delete callback;
@@ -335,7 +335,7 @@ TEST(ProofVerifierChromiumTest, IgnoresPolicyEnforcerIfNotEV) {
 
   DummyProofVerifierCallback* callback = new DummyProofVerifierCallback;
   QuicAsyncStatus status = proof_verifier.VerifyProof(
-      kTestHostname, kTestConfig, certs, GetTestSignature(),
+      kTestHostname, kTestConfig, certs, "", GetTestSignature(),
       verify_context.get(), &error_details, &details, callback);
   ASSERT_EQ(QUIC_SUCCESS, status);
   delete callback;

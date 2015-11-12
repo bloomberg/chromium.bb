@@ -85,6 +85,18 @@ class NET_EXPORT_PRIVATE CryptoUtils {
       const QuicVersionVector& negotiated_versions,
       std::string* error_details);
 
+  // Validates that |client_hello| is actually a CHLO and that this is not part
+  // of a downgrade attack.
+  // This includes verifiying versions and detecting downgrade attacks.
+  //
+  // Returns QUIC_NO_ERROR if this is the case or returns the appropriate error
+  // code and sets |error_details|.
+  static QuicErrorCode ValidateClientHello(
+      const CryptoHandshakeMessage& client_hello,
+      QuicVersion version,
+      const QuicVersionVector& supported_versions,
+      std::string* error_details);
+
  private:
   DISALLOW_COPY_AND_ASSIGN(CryptoUtils);
 };

@@ -599,13 +599,8 @@ SerializedPacket QuicPacketCreator::SerializeFec(char* buffer,
 QuicEncryptedPacket* QuicPacketCreator::SerializeVersionNegotiationPacket(
     const QuicVersionVector& supported_versions) {
   DCHECK_EQ(Perspective::IS_SERVER, framer_->perspective());
-  QuicPacketPublicHeader header;
-  header.connection_id = connection_id_;
-  header.reset_flag = false;
-  header.version_flag = true;
-  header.versions = supported_versions;
-  QuicEncryptedPacket* encrypted =
-      framer_->BuildVersionNegotiationPacket(header, supported_versions);
+  QuicEncryptedPacket* encrypted = QuicFramer::BuildVersionNegotiationPacket(
+      connection_id_, supported_versions);
   DCHECK(encrypted);
   DCHECK_GE(max_packet_length_, encrypted->length());
   return encrypted;

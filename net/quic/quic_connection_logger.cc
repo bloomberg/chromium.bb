@@ -438,13 +438,13 @@ void QuicConnectionLogger::OnPacketSent(
     QuicPacketNumber original_packet_number,
     EncryptionLevel level,
     TransmissionType transmission_type,
-    const QuicEncryptedPacket& packet,
+    size_t encrypted_length,
     QuicTime sent_time) {
   if (original_packet_number == 0) {
     net_log_.AddEvent(
         NetLog::TYPE_QUIC_SESSION_PACKET_SENT,
-        base::Bind(&NetLogQuicPacketSentCallback, serialized_packet,
-                   level, transmission_type, packet.length(), sent_time));
+        base::Bind(&NetLogQuicPacketSentCallback, serialized_packet, level,
+                   transmission_type, encrypted_length, sent_time));
   }  else {
     net_log_.AddEvent(
         NetLog::TYPE_QUIC_SESSION_PACKET_RETRANSMITTED,

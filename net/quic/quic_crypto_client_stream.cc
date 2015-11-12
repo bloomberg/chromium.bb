@@ -155,10 +155,8 @@ void QuicCryptoClientStream::HandleServerConfigUpdateMessage(
   QuicCryptoClientConfig::CachedState* cached =
       crypto_config_->LookupOrCreate(server_id_);
   QuicErrorCode error = crypto_config_->ProcessServerConfigUpdate(
-      server_config_update,
-      session()->connection()->clock()->WallNow(),
-      cached,
-      &crypto_negotiated_params_,
+      server_config_update, session()->connection()->clock()->WallNow(),
+      session()->connection()->version(), cached, &crypto_negotiated_params_,
       &error_details);
 
   if (error != QUIC_NO_ERROR) {
@@ -370,8 +368,9 @@ void QuicCryptoClientStream::DoReceiveREJ(
   stateless_reject_received_ = in->tag() == kSREJ;
   string error_details;
   QuicErrorCode error = crypto_config_->ProcessRejection(
-      *in, session()->connection()->clock()->WallNow(), cached,
-      &crypto_negotiated_params_, &error_details);
+      *in, session()->connection()->clock()->WallNow(),
+      session()->connection()->version(), cached, &crypto_negotiated_params_,
+      &error_details);
 
   if (error != QUIC_NO_ERROR) {
     next_state_ = STATE_NONE;
@@ -406,8 +405,8 @@ QuicAsyncStatus QuicCryptoClientStream::DoVerifyProof(
 
   QuicAsyncStatus status = verifier->VerifyProof(
       server_id_.host(), cached->server_config(), cached->certs(),
-      cached->signature(), verify_context_.get(), &verify_error_details_,
-      &verify_details_, proof_verify_callback);
+      cached->cert_sct(), cached->signature(), verify_context_.get(),
+      &verify_error_details_, &verify_details_, proof_verify_callback);
 
   switch (status) {
     case QUIC_PENDING:

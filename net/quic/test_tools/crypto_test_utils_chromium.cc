@@ -137,6 +137,7 @@ class FakeProofVerifier : public TestProofVerifierChromium {
   QuicAsyncStatus VerifyProof(const std::string& hostname,
                               const std::string& server_config,
                               const std::vector<std::string>& certs,
+                              const std::string& cert_sct,
                               const std::string& signature,
                               const ProofVerifyContext* verify_context,
                               std::string* error_details,

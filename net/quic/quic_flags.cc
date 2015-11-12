@@ -84,10 +84,6 @@ bool FLAGS_quic_read_packets_full_recvmmsg = true;
 // Net.QuicSession.HeadersHOLBlockedTime.
 bool FLAGS_quic_measure_headers_hol_blocking_time = true;
 
-// If true, skip a check for mismatched stream IDs inside
-// ReliableQuicStream::OnStreamFrame.
-bool FLAGS_quic_stop_checking_for_mismatch_ids = true;
-
 // Disable QUIC's userspace pacing.
 bool FLAGS_quic_disable_pacing = false;
 
@@ -119,3 +115,11 @@ bool FLAGS_quic_disable_non_nat_address_migration = true;
 // If true, QUIC connections will timeout when packets are not being recieved,
 // even if they are being sent.
 bool FLAGS_quic_use_new_idle_timeout = true;
+
+// If true, replace QuicFrameList with StreamSequencerBuffer as underlying data
+// structure for QuicStreamSequencer bufferring.
+bool FLAGS_quic_use_stream_sequencer_buffer = true;
+
+// If true, don't send QUIC packets if the send alarm is set.
+// Disabled until b/25638635 is resolved.
+bool FLAGS_respect_send_alarm = false;

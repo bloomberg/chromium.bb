@@ -91,8 +91,9 @@ class QuicChromiumClientSessionTest
   void CompleteCryptoHandshake() {
     ASSERT_EQ(ERR_IO_PENDING,
               session_.CryptoConnect(false, callback_.callback()));
-    CryptoTestUtils::HandshakeWithFakeServer(&helper_, connection_,
-                                             session_.GetCryptoStream());
+    CryptoTestUtils::FakeServerOptions server_options;
+    CryptoTestUtils::HandshakeWithFakeServer(
+        &helper_, connection_, session_.GetCryptoStream(), server_options);
     ASSERT_EQ(OK, callback_.WaitForResult());
   }
 

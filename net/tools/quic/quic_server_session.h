@@ -70,7 +70,7 @@ class QuicServerSession : public QuicSpdySession {
 
   void Initialize() override;
 
-  const QuicCryptoServerStream* crypto_stream() const {
+  const QuicCryptoServerStreamBase* crypto_stream() const {
     return crypto_stream_.get();
   }
 
@@ -81,14 +81,14 @@ class QuicServerSession : public QuicSpdySession {
     if (GetCryptoStream() == nullptr) {
       return false;
     }
-    return GetCryptoStream()->use_stateless_rejects_if_peer_supported();
+    return GetCryptoStream()->UseStatelessRejectsIfPeerSupported();
   }
 
   bool PeerSupportsStatelessRejects() {
     if (GetCryptoStream() == nullptr) {
       return false;
     }
-    return GetCryptoStream()->peer_supports_stateless_rejects();
+    return GetCryptoStream()->PeerSupportsStatelessRejects();
   }
 
   void set_serving_region(const std::string& serving_region) {
@@ -99,21 +99,23 @@ class QuicServerSession : public QuicSpdySession {
   // QuicSession methods:
   QuicSpdyStream* CreateIncomingDynamicStream(QuicStreamId id) override;
   QuicSpdyStream* CreateOutgoingDynamicStream() override;
-  QuicCryptoServerStream* GetCryptoStream() override;
+  QuicCryptoServerStreamBase* GetCryptoStream() override;
 
   // If we should create an incoming stream, returns true. Otherwise
   // does error handling, including communicating the error to the client and
   // possibly closing the connection, and returns false.
   virtual bool ShouldCreateIncomingDynamicStream(QuicStreamId id);
 
-  virtual QuicCryptoServerStream* CreateQuicCryptoServerStream(
+  virtual QuicCryptoServerStreamBase* CreateQuicCryptoServerStream(
       const QuicCryptoServerConfig* crypto_config);
+
+  const QuicCryptoServerConfig* crypto_config() { return crypto_config_; }
 
  private:
   friend class test::QuicServerSessionPeer;
 
   const QuicCryptoServerConfig* crypto_config_;
-  scoped_ptr<QuicCryptoServerStream> crypto_stream_;
+  scoped_ptr<QuicCryptoServerStreamBase> crypto_stream_;
   QuicServerSessionVisitor* visitor_;
 
   // Whether bandwidth resumption is enabled for this connection.

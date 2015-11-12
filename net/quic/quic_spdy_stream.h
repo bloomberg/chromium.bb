@@ -54,6 +54,11 @@ class NET_EXPORT_PRIVATE QuicSpdyStream : public ReliableQuicStream {
   QuicSpdyStream(QuicStreamId id, QuicSpdySession* spdy_session);
   ~QuicSpdyStream() override;
 
+  // Override the base class to send QUIC_STREAM_NO_ERROR to the peer
+  // when the stream has not received all the data.
+  void CloseWriteSide() override;
+  void StopReading() override;
+
   // ReliableQuicStream implementation
   void OnClose() override;
 

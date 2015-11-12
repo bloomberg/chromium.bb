@@ -213,6 +213,9 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
   // Enables pacing if it has not already been enabled.
   void EnablePacing();
 
+  // Called when peer address changes and the connection migrates.
+  void OnConnectionMigration(PeerAddressChangeType type);
+
   bool using_pacing() const { return using_pacing_; }
 
   void set_debug_delegate(DebugDelegate* debug_delegate) {

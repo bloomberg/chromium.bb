@@ -12,7 +12,9 @@
 #include "net/quic/quic_clock.h"
 #include "net/quic/quic_flags.h"
 #include "net/quic/quic_frame_list.h"
+#include "net/quic/quic_protocol.h"
 #include "net/quic/reliable_quic_stream.h"
+#include "net/quic/stream_sequencer_buffer.h"
 
 using std::min;
 using std::numeric_limits;
@@ -23,14 +25,21 @@ namespace net {
 QuicStreamSequencer::QuicStreamSequencer(ReliableQuicStream* quic_stream,
                                          const QuicClock* clock)
     : stream_(quic_stream),
-      buffered_frames_(new QuicFrameList()),
       close_offset_(numeric_limits<QuicStreamOffset>::max()),
       blocked_(false),
       num_frames_received_(0),
       num_duplicate_frames_received_(0),
       num_early_frames_received_(0),
       clock_(clock),
-      ignore_read_data_(false) {}
+      ignore_read_data_(false) {
+  if (FLAGS_quic_use_stream_sequencer_buffer) {
+    DVLOG(1) << "Use StreamSequencerBuffer for stream: " << stream_->id();
+    buffered_frames_.reset(
+        new StreamSequencerBuffer(kStreamReceiveWindowLimit));
+  } else {
+    buffered_frames_.reset(new QuicFrameList());
+  }
+}
 
 QuicStreamSequencer::~QuicStreamSequencer() {}
 

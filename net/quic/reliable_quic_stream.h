@@ -105,10 +105,16 @@ class NET_EXPORT_PRIVATE ReliableQuicStream {
   }
   bool write_side_closed() const { return write_side_closed_; }
 
+  bool rst_received() { return rst_received_; }
+  bool rst_sent() { return rst_sent_; }
+  bool fin_received() { return fin_received_; }
+  bool fin_sent() { return fin_sent_; }
+
   uint64 stream_bytes_read() const { return stream_bytes_read_; }
   uint64 stream_bytes_written() const { return stream_bytes_written_; }
 
   void set_fin_sent(bool fin_sent) { fin_sent_ = fin_sent; }
+  void set_fin_received(bool fin_received) { fin_received_ = fin_received; }
   void set_rst_sent(bool rst_sent) { rst_sent_ = rst_sent; }
 
   void set_fec_policy(FecPolicy fec_policy) { fec_policy_ = fec_policy; }
@@ -189,7 +195,7 @@ class NET_EXPORT_PRIVATE ReliableQuicStream {
   // Close the write side of the socket.  Further writes will fail.
   // Can be called by the subclass or internally.
   // Does not send a FIN.  May cause the stream to be closed.
-  void CloseWriteSide();
+  virtual void CloseWriteSide();
 
   // Helper method that returns FecProtection to use when writing.
   FecProtection GetFecProtection();

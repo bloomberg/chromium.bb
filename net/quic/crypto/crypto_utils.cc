@@ -201,4 +201,38 @@ QuicErrorCode CryptoUtils::ValidateServerHello(
   return QUIC_NO_ERROR;
 }
 
+QuicErrorCode CryptoUtils::ValidateClientHello(
+    const CryptoHandshakeMessage& client_hello,
+    QuicVersion version,
+    const QuicVersionVector& supported_versions,
+    string* error_details) {
+  if (client_hello.tag() != kCHLO) {
+    *error_details = "Bad tag";
+    return QUIC_INVALID_CRYPTO_MESSAGE_TYPE;
+  }
+
+  // If the client's preferred version is not the version we are currently
+  // speaking, then the client went through a version negotiation.  In this
+  // case, we need to make sure that we actually do not support this version
+  // and that it wasn't a downgrade attack.
+  QuicTag client_version_tag;
+  if (client_hello.GetUint32(kVER, &client_version_tag) != QUIC_NO_ERROR) {
+    *error_details = "client hello missing version list";
+    return QUIC_INVALID_CRYPTO_MESSAGE_PARAMETER;
+  }
+  QuicVersion client_version = QuicTagToQuicVersion(client_version_tag);
+  if (client_version != version) {
+    // Just because client_version is a valid version enum doesn't mean that
+    // this server actually supports that version, so we check to see if
+    // it's actually in the supported versions list.
+    for (size_t i = 0; i < supported_versions.size(); ++i) {
+      if (client_version == supported_versions[i]) {
+        *error_details = "Downgrade attack detected";
+        return QUIC_VERSION_NEGOTIATION_MISMATCH;
+      }
+    }
+  }
+  return QUIC_NO_ERROR;
+}
+
 }  // namespace net

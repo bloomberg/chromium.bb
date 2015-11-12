@@ -545,6 +545,7 @@ class MockSendAlgorithm : public SendAlgorithmInterface {
                     QuicByteCount,
                     HasRetransmittableData));
   MOCK_METHOD1(OnRetransmissionTimeout, void(bool));
+  MOCK_METHOD0(OnConnectionMigration, void());
   MOCK_METHOD0(RevertRetransmissionTimeout, void());
   MOCK_CONST_METHOD3(TimeUntilSend,
                      QuicTime::Delta(QuicTime now,
@@ -691,7 +692,7 @@ class MockQuicConnectionDebugVisitor : public QuicConnectionDebugVisitor {
                     QuicPacketNumber,
                     EncryptionLevel,
                     TransmissionType,
-                    const QuicEncryptedPacket&,
+                    size_t encrypted_length,
                     QuicTime));
 
   MOCK_METHOD3(OnPacketReceived,

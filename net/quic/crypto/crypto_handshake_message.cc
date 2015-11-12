@@ -249,6 +249,7 @@ string CryptoHandshakeMessage::DebugStringInternal(size_t indent) const {
           done = true;
         }
         break;
+      case kTBKP:
       case kKEXS:
       case kAEAD:
       case kCOPT:

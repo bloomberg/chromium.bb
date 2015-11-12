@@ -158,7 +158,7 @@ class NET_EXPORT_PRIVATE QuicConnectionDebugVisitor
                             QuicPacketNumber original_packet_number,
                             EncryptionLevel level,
                             TransmissionType transmission_type,
-                            const QuicEncryptedPacket& packet,
+                            size_t encrypted_length,
                             QuicTime sent_time) {}
 
   // Called when a packet has been received, but before it is

@@ -129,6 +129,7 @@ struct NET_EXPORT_PRIVATE QuicCryptoNegotiatedParameters {
   // bytes of x coordinate, followed by 32 bytes of y coordinate. Both values
   // are big-endian and the pair is a P-256 public key.
   std::string channel_id;
+  QuicTag token_binding_key_param;
 
   // Used when generating proof signature when sending server config updates.
   bool x509_ecdsa_supported;
@@ -178,6 +179,10 @@ class NET_EXPORT_PRIVATE QuicCryptoConfig {
   QuicTagVector kexs;
   // Authenticated encryption with associated data (AEAD) algorithms.
   QuicTagVector aead;
+
+  // Supported Token Binding key parameters that can be negotiated in the client
+  // hello.
+  QuicTagVector tb_key_params;
 
   const CommonCertSets* common_cert_sets;
 

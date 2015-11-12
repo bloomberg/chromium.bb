@@ -77,11 +77,13 @@ class QuicSpdyServerStreamPeer : public QuicSpdyServerStream {
 
 namespace {
 
-class QuicSpdyServerStreamTest : public ::testing::Test {
+class QuicSpdyServerStreamTest : public ::testing::TestWithParam<QuicVersion> {
  public:
   QuicSpdyServerStreamTest()
       : connection_(
-            new StrictMock<MockConnection>(&helper_, Perspective::IS_SERVER)),
+            new StrictMock<MockConnection>(&helper_,
+                                           Perspective::IS_SERVER,
+                                           SupportedVersions(GetParam()))),
         session_(connection_),
         body_("hello world") {
     SpdyHeaderBlock request_headers;
@@ -144,7 +146,11 @@ QuicConsumedData ConsumeAllData(
   return QuicConsumedData(data.total_length, fin);
 }
 
-TEST_F(QuicSpdyServerStreamTest, TestFraming) {
+INSTANTIATE_TEST_CASE_P(Tests,
+                        QuicSpdyServerStreamTest,
+                        ::testing::ValuesIn(QuicSupportedVersions()));
+
+TEST_P(QuicSpdyServerStreamTest, TestFraming) {
   EXPECT_CALL(session_, WritevData(_, _, _, _, _, _)).Times(AnyNumber()).
       WillRepeatedly(Invoke(ConsumeAllData));
   stream_->OnStreamHeaders(headers_string_);
@@ -157,7 +163,7 @@ TEST_F(QuicSpdyServerStreamTest, TestFraming) {
   EXPECT_EQ(body_, StreamBody());
 }
 
-TEST_F(QuicSpdyServerStreamTest, TestFramingOnePacket) {
+TEST_P(QuicSpdyServerStreamTest, TestFramingOnePacket) {
   EXPECT_CALL(session_, WritevData(_, _, _, _, _, _)).Times(AnyNumber()).
       WillRepeatedly(Invoke(ConsumeAllData));
 
@@ -171,12 +177,32 @@ TEST_F(QuicSpdyServerStreamTest, TestFramingOnePacket) {
   EXPECT_EQ(body_, StreamBody());
 }
 
-TEST_F(QuicSpdyServerStreamTest, TestFramingExtraData) {
+TEST_P(QuicSpdyServerStreamTest, SendQuicRstStreamNoErrorInStopReading) {
+  EXPECT_CALL(session_, WritevData(_, _, _, _, _, _))
+      .Times(AnyNumber())
+      .WillRepeatedly(Invoke(ConsumeAllData));
+
+  EXPECT_FALSE(stream_->fin_received());
+  EXPECT_FALSE(stream_->rst_received());
+
+  stream_->set_fin_sent(true);
+  stream_->CloseWriteSide();
+
+  if (GetParam() > QUIC_VERSION_28) {
+    EXPECT_CALL(session_, SendRstStream(_, QUIC_STREAM_NO_ERROR, _)).Times(1);
+  } else {
+    EXPECT_CALL(session_, SendRstStream(_, QUIC_STREAM_NO_ERROR, _)).Times(0);
+  }
+  stream_->StopReading();
+}
+
+TEST_P(QuicSpdyServerStreamTest, TestFramingExtraData) {
   string large_body = "hello world!!!!!!";
 
   // We'll automatically write out an error (headers + body)
   EXPECT_CALL(session_, WritevData(_, _, _, _, _, _)).Times(AnyNumber()).
       WillRepeatedly(Invoke(ConsumeAllData));
+  EXPECT_CALL(session_, SendRstStream(_, QUIC_STREAM_NO_ERROR, _)).Times(0);
 
   stream_->OnStreamHeaders(headers_string_);
   stream_->OnStreamHeadersComplete(false, headers_string_.size());
@@ -185,13 +211,13 @@ TEST_F(QuicSpdyServerStreamTest, TestFramingExtraData) {
   // Content length is still 11.  This will register as an error and we won't
   // accept the bytes.
   stream_->OnStreamFrame(
-      QuicStreamFrame(stream_->id(), /*fin=*/false, body_.size(), large_body));
+      QuicStreamFrame(stream_->id(), /*fin=*/true, body_.size(), large_body));
   EXPECT_EQ("11", StreamHeadersValue("content-length"));
   EXPECT_EQ("/", StreamHeadersValue(":path"));
   EXPECT_EQ("POST", StreamHeadersValue(":method"));
 }
 
-TEST_F(QuicSpdyServerStreamTest, TestSendResponse) {
+TEST_P(QuicSpdyServerStreamTest, TestSendResponse) {
   SpdyHeaderBlock* request_headers = stream_->mutable_headers();
   (*request_headers)[":path"] = "/foo";
   (*request_headers)[":authority"] = "";
@@ -201,6 +227,7 @@ TEST_F(QuicSpdyServerStreamTest, TestSendResponse) {
   response_headers_[":version"] = "HTTP/1.1";
   response_headers_[":status"] = "200 OK";
   response_headers_["content-length"] = "3";
+  stream_->set_fin_received(true);
 
   InSequence s;
   EXPECT_CALL(session_, WritevData(kHeadersStreamId, _, 0, false, _, nullptr));
@@ -217,10 +244,13 @@ TEST_F(QuicSpdyServerStreamTest, TestSendResponse) {
   EXPECT_TRUE(stream_->write_side_closed());
 }
 
-TEST_F(QuicSpdyServerStreamTest, TestSendErrorResponse) {
+TEST_P(QuicSpdyServerStreamTest, TestSendErrorResponse) {
+  EXPECT_CALL(session_, SendRstStream(_, QUIC_STREAM_NO_ERROR, _)).Times(0);
+
   response_headers_[":version"] = "HTTP/1.1";
   response_headers_[":status"] = "500 Server Error";
   response_headers_["content-length"] = "3";
+  stream_->set_fin_received(true);
 
   InSequence s;
   EXPECT_CALL(session_, WritevData(kHeadersStreamId, _, 0, false, _, nullptr));
@@ -237,7 +267,9 @@ TEST_F(QuicSpdyServerStreamTest, TestSendErrorResponse) {
   EXPECT_TRUE(stream_->write_side_closed());
 }
 
-TEST_F(QuicSpdyServerStreamTest, InvalidMultipleContentLength) {
+TEST_P(QuicSpdyServerStreamTest, InvalidMultipleContentLength) {
+  EXPECT_CALL(session_, SendRstStream(_, QUIC_STREAM_NO_ERROR, _)).Times(0);
+
   SpdyHeaderBlock request_headers;
   // \000 is a way to write the null byte when followed by a literal digit.
   request_headers["content-length"] = StringPiece("11\00012", 5);
@@ -247,20 +279,17 @@ TEST_F(QuicSpdyServerStreamTest, InvalidMultipleContentLength) {
   EXPECT_CALL(session_, WritevData(_, _, _, _, _, _))
       .Times(AnyNumber())
       .WillRepeatedly(Invoke(ConsumeAllData));
-
   stream_->OnStreamHeaders(headers_string_);
-  stream_->OnStreamHeadersComplete(false, headers_string_.size());
+  stream_->OnStreamHeadersComplete(true, headers_string_.size());
 
-  if (!FLAGS_quic_implement_stop_reading) {
-    EXPECT_TRUE(ReliableQuicStreamPeer::read_side_closed(stream_));
-  } else {
-    EXPECT_FALSE(ReliableQuicStreamPeer::read_side_closed(stream_));
-  }
+  EXPECT_TRUE(ReliableQuicStreamPeer::read_side_closed(stream_));
   EXPECT_TRUE(stream_->reading_stopped());
   EXPECT_TRUE(stream_->write_side_closed());
 }
 
-TEST_F(QuicSpdyServerStreamTest, InvalidLeadingNullContentLength) {
+TEST_P(QuicSpdyServerStreamTest, InvalidLeadingNullContentLength) {
+  EXPECT_CALL(session_, SendRstStream(_, QUIC_STREAM_NO_ERROR, _)).Times(0);
+
   SpdyHeaderBlock request_headers;
   // \000 is a way to write the null byte when followed by a literal digit.
   request_headers["content-length"] = StringPiece("\00012", 3);
@@ -270,20 +299,15 @@ TEST_F(QuicSpdyServerStreamTest, InvalidLeadingNullContentLength) {
   EXPECT_CALL(session_, WritevData(_, _, _, _, _, _))
       .Times(AnyNumber())
       .WillRepeatedly(Invoke(ConsumeAllData));
-
   stream_->OnStreamHeaders(headers_string_);
-  stream_->OnStreamHeadersComplete(false, headers_string_.size());
+  stream_->OnStreamHeadersComplete(true, headers_string_.size());
 
-  if (!FLAGS_quic_implement_stop_reading) {
-    EXPECT_TRUE(ReliableQuicStreamPeer::read_side_closed(stream_));
-  } else {
-    EXPECT_FALSE(ReliableQuicStreamPeer::read_side_closed(stream_));
-  }
+  EXPECT_TRUE(ReliableQuicStreamPeer::read_side_closed(stream_));
   EXPECT_TRUE(stream_->reading_stopped());
   EXPECT_TRUE(stream_->write_side_closed());
 }
 
-TEST_F(QuicSpdyServerStreamTest, ValidMultipleContentLength) {
+TEST_P(QuicSpdyServerStreamTest, ValidMultipleContentLength) {
   SpdyHeaderBlock request_headers;
   // \000 is a way to write the null byte when followed by a literal digit.
   request_headers["content-length"] = StringPiece("11\00011", 5);
@@ -299,7 +323,46 @@ TEST_F(QuicSpdyServerStreamTest, ValidMultipleContentLength) {
   EXPECT_FALSE(stream_->write_side_closed());
 }
 
-TEST_F(QuicSpdyServerStreamTest, InvalidHeadersWithFin) {
+TEST_P(QuicSpdyServerStreamTest, SendQuicRstStreamNoErrorWithEarlyResponse) {
+  response_headers_[":version"] = "HTTP/1.1";
+  response_headers_[":status"] = "500 Server Error";
+  response_headers_["content-length"] = "3";
+
+  InSequence s;
+
+  EXPECT_CALL(session_, WritevData(kHeadersStreamId, _, 0, false, _, nullptr));
+  EXPECT_CALL(session_, WritevData(_, _, _, _, _, _))
+      .Times(1)
+      .WillOnce(Return(QuicConsumedData(3, true)));
+  if (GetParam() > QUIC_VERSION_28) {
+    EXPECT_CALL(session_, SendRstStream(_, QUIC_STREAM_NO_ERROR, _)).Times(1);
+  } else {
+    EXPECT_CALL(session_, SendRstStream(_, QUIC_STREAM_NO_ERROR, _)).Times(0);
+  }
+  EXPECT_FALSE(stream_->fin_received());
+  QuicSpdyServerStreamPeer::SendErrorResponse(stream_);
+  EXPECT_TRUE(stream_->reading_stopped());
+  EXPECT_TRUE(stream_->write_side_closed());
+}
+
+TEST_P(QuicSpdyServerStreamTest, DoNotSendQuicRstStreamNoErrorWithRstReceived) {
+  response_headers_[":version"] = "HTTP/1.1";
+  response_headers_[":status"] = "500 Server Error";
+  response_headers_["content-length"] = "3";
+
+  InSequence s;
+  EXPECT_FALSE(stream_->reading_stopped());
+
+  EXPECT_CALL(session_, SendRstStream(_, QUIC_STREAM_NO_ERROR, _)).Times(0);
+  EXPECT_CALL(session_, SendRstStream(_, QUIC_RST_ACKNOWLEDGEMENT, _)).Times(1);
+  QuicRstStreamFrame rst_frame(stream_->id(), QUIC_STREAM_CANCELLED, 1234);
+  stream_->OnStreamReset(rst_frame);
+
+  EXPECT_TRUE(stream_->reading_stopped());
+  EXPECT_TRUE(stream_->write_side_closed());
+}
+
+TEST_P(QuicSpdyServerStreamTest, InvalidHeadersWithFin) {
   char arr[] = {
     0x3a, 0x68, 0x6f, 0x73,  // :hos
     0x74, 0x00, 0x00, 0x00,  // t...

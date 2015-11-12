@@ -935,4 +935,19 @@ void QuicSentPacketManager::EnablePacing() {
                        kInitialUnpacedBurst));
 }
 
+void QuicSentPacketManager::OnConnectionMigration(PeerAddressChangeType type) {
+  if (type == UNKNOWN) {
+    return;
+  }
+
+  if (type == NAT_PORT_REBINDING || type == IPV4_SUBNET_REBINDING) {
+    // Rtt and cwnd do not need to be reset when the peer address change is
+    // considered to be caused by NATs.
+    return;
+  }
+
+  rtt_stats_.OnConnectionMigration();
+  send_algorithm_->OnConnectionMigration();
+}
+
 }  // namespace net

@@ -28,7 +28,6 @@ NET_EXPORT_PRIVATE extern bool FLAGS_shift_quic_cubic_epoch_when_app_limited;
 NET_EXPORT_PRIVATE extern bool FLAGS_allow_many_available_streams;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_read_packets_full_recvmmsg;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_measure_headers_hol_blocking_time;
-NET_EXPORT_PRIVATE extern bool FLAGS_quic_stop_checking_for_mismatch_ids;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_disable_pacing;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_fix_fin_accounting;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_implement_stop_reading;
@@ -37,5 +36,6 @@ NET_EXPORT_PRIVATE extern bool FLAGS_quic_count_unfinished_as_open_streams;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_packet_creator_prefetch;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_disable_non_nat_address_migration;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_use_new_idle_timeout;
-
+NET_EXPORT_PRIVATE extern bool FLAGS_quic_use_stream_sequencer_buffer;
+NET_EXPORT_PRIVATE extern bool FLAGS_respect_send_alarm;
 #endif  // NET_QUIC_QUIC_FLAGS_H_

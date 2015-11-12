@@ -100,11 +100,6 @@ void ReliableQuicStream::OnStreamFrame(const QuicStreamFrame& frame) {
     }
   }
 
-  if (!FLAGS_quic_stop_checking_for_mismatch_ids && frame.stream_id != id_) {
-    session_->connection()->SendConnectionClose(QUIC_INTERNAL_ERROR);
-    return;
-  }
-
   if (frame.fin) {
     fin_received_ = true;
     if (fin_sent_) {
@@ -186,7 +181,6 @@ void ReliableQuicStream::OnFinRead() {
 }
 
 void ReliableQuicStream::Reset(QuicRstStreamErrorCode error) {
-  DCHECK_NE(QUIC_STREAM_NO_ERROR, error);
   stream_error_ = error;
   // Sending a RstStream results in calling CloseStream.
   session()->SendRstStream(id(), error, stream_bytes_written_);

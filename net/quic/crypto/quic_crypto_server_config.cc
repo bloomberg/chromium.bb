@@ -205,6 +205,7 @@ void ValidateClientHelloResultCallback::Run(const Result* result) {
 QuicCryptoServerConfig::ConfigOptions::ConfigOptions()
     : expiry_time(QuicWallTime::Zero()),
       channel_id_enabled(false),
+      token_binding_enabled(false),
       p256(false) {}
 
 QuicCryptoServerConfig::QuicCryptoServerConfig(
@@ -320,6 +321,10 @@ QuicServerConfigProtobuf* QuicCryptoServerConfig::GenerateConfig(
 
   if (options.channel_id_enabled) {
     msg.SetTaglist(kPDMD, kCHID, 0);
+  }
+
+  if (options.token_binding_enabled) {
+    msg.SetTaglist(kTBKP, kP256, 0);
   }
 
   if (options.id.empty()) {
@@ -547,27 +552,10 @@ QuicErrorCode QuicCryptoServerConfig::ProcessClientHello(
       validate_chlo_result.client_hello;
   const ClientHelloInfo& info = validate_chlo_result.info;
 
-  // If the client's preferred version is not the version we are currently
-  // speaking, then the client went through a version negotiation.  In this
-  // case, we need to make sure that we actually do not support this version
-  // and that it wasn't a downgrade attack.
-  QuicTag client_version_tag;
-  if (client_hello.GetUint32(kVER, &client_version_tag) != QUIC_NO_ERROR) {
-    *error_details = "client hello missing version list";
-    return QUIC_INVALID_CRYPTO_MESSAGE_PARAMETER;
-  }
-  QuicVersion client_version = QuicTagToQuicVersion(client_version_tag);
-  if (client_version != version) {
-    // Just because client_version is a valid version enum doesn't mean that
-    // this server actually supports that version, so we check to see if
-    // it's actually in the supported versions list.
-    for (size_t i = 0; i < supported_versions.size(); ++i) {
-      if (client_version == supported_versions[i]) {
-        *error_details = "Downgrade attack detected";
-        return QUIC_VERSION_NEGOTIATION_MISMATCH;
-      }
-    }
-  }
+  QuicErrorCode valid = CryptoUtils::ValidateClientHello(
+      client_hello, version, supported_versions, error_details);
+  if (valid != QUIC_NO_ERROR)
+    return valid;
 
   StringPiece requested_scid;
   client_hello.GetStringPiece(kSCID, &requested_scid);
@@ -656,6 +644,25 @@ QuicErrorCode QuicCryptoServerConfig::ProcessClientHello(
           &key_exchange_index)) {
     *error_details = "Unsupported AEAD or KEXS";
     return QUIC_CRYPTO_NO_SUPPORT;
+  }
+
+  if (!requested_config->tb_key_params.empty()) {
+    const QuicTag* their_tbkps;
+    size_t num_their_tbkps;
+    switch (client_hello.GetTaglist(kTBKP, &their_tbkps, &num_their_tbkps)) {
+      case QUIC_CRYPTO_MESSAGE_PARAMETER_NOT_FOUND:
+        break;
+      case QUIC_NO_ERROR:
+        if (QuicUtils::FindMutualTag(
+                requested_config->tb_key_params, their_tbkps, num_their_tbkps,
+                QuicUtils::LOCAL_PRIORITY, &params->token_binding_key_param,
+                nullptr)) {
+          break;
+        }
+      default:
+        *error_details = "Invalid Token Binding key parameter";
+        return QUIC_INVALID_CRYPTO_MESSAGE_PARAMETER;
+    }
   }
 
   StringPiece public_value;
@@ -1317,6 +1324,17 @@ QuicCryptoServerConfig::ParseConfigProtobuf(
     LOG(WARNING) << "Server config message is missing KEXS";
     return nullptr;
   }
+
+  const QuicTag* tbkp_tags;
+  size_t tbkp_len;
+  QuicErrorCode err;
+  if ((err = msg->GetTaglist(kTBKP, &tbkp_tags, &tbkp_len)) !=
+          QUIC_CRYPTO_MESSAGE_PARAMETER_NOT_FOUND &&
+      err != QUIC_NO_ERROR) {
+    LOG(WARNING) << "Server config message is missing or has invalid TBKP";
+    return nullptr;
+  }
+  config->tb_key_params = vector<QuicTag>(tbkp_tags, tbkp_tags + tbkp_len);
 
   StringPiece orbit;
   if (!msg->GetStringPiece(kORBT, &orbit)) {

@@ -49,6 +49,16 @@ class QuicTestServer : public QuicServer {
                                                QuicSpdySession* session) = 0;
   };
 
+  class CryptoStreamFactory {
+   public:
+    virtual ~CryptoStreamFactory() {}
+
+    // Returns a new QuicCryptoServerStreamBase owned by the caller
+    virtual QuicCryptoServerStreamBase* CreateCryptoStream(
+        const QuicCryptoServerConfig* crypto_config,
+        QuicSpdySession* session) = 0;
+  };
+
   explicit QuicTestServer(ProofSource* proof_source);
   QuicTestServer(ProofSource* proof_source,
                  const QuicConfig& config,
@@ -58,12 +68,17 @@ class QuicTestServer : public QuicServer {
   QuicDispatcher* CreateQuicDispatcher() override;
 
   // Sets a custom session factory, owned by the caller, for easy custom
-  // session logic. This is incompatible with setting a stream factory.
+  // session logic. This is incompatible with setting a stream factory or a
+  // crypto stream factory.
   void SetSessionFactory(SessionFactory* factory);
 
   // Sets a custom stream factory, owned by the caller, for easy custom
   // stream logic. This is incompatible with setting a session factory.
   void SetSpdyStreamFactory(StreamFactory* factory);
+
+  // Sets a custom crypto stream factory, owned by the caller, for easy custom
+  // crypto logic.  This is incompatible with setting a session factory.
+  void SetCryptoStreamFactory(CryptoStreamFactory* factory);
 };
 
 // Useful test sessions for the QuicTestServer.

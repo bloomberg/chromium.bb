@@ -28,23 +28,38 @@ namespace test {
 
 class CustomStreamSession : public QuicServerSession {
  public:
-  CustomStreamSession(const QuicConfig& config,
-                      QuicConnection* connection,
-                      QuicServerSessionVisitor* visitor,
-                      const QuicCryptoServerConfig* crypto_config,
-                      QuicTestServer::StreamFactory* factory)
+  CustomStreamSession(
+      const QuicConfig& config,
+      QuicConnection* connection,
+      QuicServerSessionVisitor* visitor,
+      const QuicCryptoServerConfig* crypto_config,
+      QuicTestServer::StreamFactory* factory,
+      QuicTestServer::CryptoStreamFactory* crypto_stream_factory)
       : QuicServerSession(config, connection, visitor, crypto_config),
-        stream_factory_(factory) {}
+        stream_factory_(factory),
+        crypto_stream_factory_(crypto_stream_factory) {}
 
   QuicSpdyStream* CreateIncomingDynamicStream(QuicStreamId id) override {
     if (!ShouldCreateIncomingDynamicStream(id)) {
       return nullptr;
     }
-    return stream_factory_->CreateStream(id, this);
+    if (stream_factory_) {
+      return stream_factory_->CreateStream(id, this);
+    }
+    return QuicServerSession::CreateIncomingDynamicStream(id);
+  }
+
+  QuicCryptoServerStreamBase* CreateQuicCryptoServerStream(
+      const QuicCryptoServerConfig* crypto_config) override {
+    if (crypto_stream_factory_) {
+      return crypto_stream_factory_->CreateCryptoStream(crypto_config, this);
+    }
+    return QuicServerSession::CreateQuicCryptoServerStream(crypto_config);
   }
 
  private:
-  QuicTestServer::StreamFactory* stream_factory_;  // Not owned.
+  QuicTestServer::StreamFactory* stream_factory_;               // Not owned.
+  QuicTestServer::CryptoStreamFactory* crypto_stream_factory_;  // Not owned.
 };
 
 class QuicTestDispatcher : public QuicDispatcher {
@@ -56,11 +71,13 @@ class QuicTestDispatcher : public QuicDispatcher {
                      QuicConnectionHelperInterface* helper)
       : QuicDispatcher(config, crypto_config, versions, factory, helper),
         session_factory_(nullptr),
-        stream_factory_(nullptr) {}
+        stream_factory_(nullptr),
+        crypto_stream_factory_(nullptr) {}
 
   QuicServerSession* CreateQuicSession(QuicConnectionId id,
                                        const IPEndPoint& client) override {
-    if (session_factory_ == nullptr && stream_factory_ == nullptr) {
+    if (session_factory_ == nullptr && stream_factory_ == nullptr &&
+        crypto_stream_factory_ == nullptr) {
       return QuicDispatcher::CreateQuicSession(id, client);
     }
     QuicConnection* connection = new QuicConnection(
@@ -68,9 +85,10 @@ class QuicTestDispatcher : public QuicDispatcher {
         /* owns_writer= */ true, Perspective::IS_SERVER, supported_versions());
 
     QuicServerSession* session = nullptr;
-    if (stream_factory_ != nullptr) {
-      session = new CustomStreamSession(config(), connection, this,
-                                        crypto_config(), stream_factory_);
+    if (stream_factory_ != nullptr || crypto_stream_factory_ != nullptr) {
+      session =
+          new CustomStreamSession(config(), connection, this, crypto_config(),
+                                  stream_factory_, crypto_stream_factory_);
     } else {
       session = session_factory_->CreateSession(config(), connection, this,
                                                 crypto_config());
@@ -82,6 +100,7 @@ class QuicTestDispatcher : public QuicDispatcher {
   void set_session_factory(QuicTestServer::SessionFactory* factory) {
     DCHECK(session_factory_ == nullptr);
     DCHECK(stream_factory_ == nullptr);
+    DCHECK(crypto_stream_factory_ == nullptr);
     session_factory_ = factory;
   }
 
@@ -91,13 +110,20 @@ class QuicTestDispatcher : public QuicDispatcher {
     stream_factory_ = factory;
   }
 
+  void set_crypto_stream_factory(QuicTestServer::CryptoStreamFactory* factory) {
+    DCHECK(session_factory_ == nullptr);
+    DCHECK(crypto_stream_factory_ == nullptr);
+    crypto_stream_factory_ = factory;
+  }
+
   QuicTestServer::SessionFactory* session_factory() { return session_factory_; }
 
   QuicTestServer::StreamFactory* stream_factory() { return stream_factory_; }
 
  private:
-  QuicTestServer::SessionFactory* session_factory_;  // Not owned.
-  QuicTestServer::StreamFactory* stream_factory_;    // Not owned.
+  QuicTestServer::SessionFactory* session_factory_;             // Not owned.
+  QuicTestServer::StreamFactory* stream_factory_;               // Not owned.
+  QuicTestServer::CryptoStreamFactory* crypto_stream_factory_;  // Not owned.
 };
 
 QuicTestServer::QuicTestServer(ProofSource* proof_source)
@@ -122,6 +148,11 @@ void QuicTestServer::SetSessionFactory(SessionFactory* factory) {
 
 void QuicTestServer::SetSpdyStreamFactory(StreamFactory* factory) {
   static_cast<QuicTestDispatcher*>(dispatcher())->set_stream_factory(factory);
+}
+
+void QuicTestServer::SetCryptoStreamFactory(CryptoStreamFactory* factory) {
+  static_cast<QuicTestDispatcher*>(dispatcher())
+      ->set_crypto_stream_factory(factory);
 }
 
 ///////////////////////////   TEST SESSIONS ///////////////////////////////

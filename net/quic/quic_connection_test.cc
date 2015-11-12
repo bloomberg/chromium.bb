@@ -2426,10 +2426,34 @@ TEST_P(QuicConnectionTest, DoNotSendQueuedPacketForResetStream) {
   connection_.SendStreamDataWithString(stream_id, "foo", 0, !kFin, nullptr);
 
   // Now that there is a queued packet, reset the stream.
-  connection_.SendRstStream(stream_id, QUIC_STREAM_NO_ERROR, 14);
+  connection_.SendRstStream(stream_id, QUIC_ERROR_PROCESSING_STREAM, 14);
 
   // Unblock the connection and verify that only the RST_STREAM is sent.
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(1);
+  writer_->SetWritable();
+  connection_.OnCanWrite();
+  EXPECT_EQ(1u, writer_->frame_count());
+  EXPECT_EQ(1u, writer_->rst_stream_frames().size());
+}
+
+TEST_P(QuicConnectionTest, SendQueuedPacketForQuicRstStreamNoError) {
+  // Block the connection to queue the packet.
+  BlockOnNextWrite();
+
+  QuicStreamId stream_id = 2;
+  connection_.SendStreamDataWithString(stream_id, "foo", 0, !kFin, nullptr);
+
+  // Now that there is a queued packet, reset the stream.
+  connection_.SendRstStream(stream_id, QUIC_STREAM_NO_ERROR, 14);
+
+  // Unblock the connection and verify that the RST_STREAM is sent and the data
+  // packet is sent on QUIC_VERSION_29 or later versions.
+  if (version() > QUIC_VERSION_28) {
+    EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _))
+        .Times(AtLeast(2));
+  } else {
+    EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(1);
+  }
   writer_->SetWritable();
   connection_.OnCanWrite();
   EXPECT_EQ(1u, writer_->frame_count());
@@ -2444,7 +2468,7 @@ TEST_P(QuicConnectionTest, DoNotRetransmitForResetStreamOnNack) {
   SendStreamDataToPeer(stream_id, "fooos", 7, !kFin, &last_packet);
 
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(1);
-  connection_.SendRstStream(stream_id, QUIC_STREAM_NO_ERROR, 14);
+  connection_.SendRstStream(stream_id, QUIC_ERROR_PROCESSING_STREAM, 14);
 
   // Lose a packet and ensure it does not trigger retransmission.
   QuicAckFrame nack_two = InitAckFrame(last_packet);
@@ -2459,7 +2483,53 @@ TEST_P(QuicConnectionTest, DoNotRetransmitForResetStreamOnNack) {
   ProcessAckPacket(&nack_two);
 }
 
+TEST_P(QuicConnectionTest, RetransmitForQuicRstStreamNoErrorOnNack) {
+  QuicStreamId stream_id = 2;
+  QuicPacketNumber last_packet;
+  SendStreamDataToPeer(stream_id, "foo", 0, !kFin, &last_packet);
+  SendStreamDataToPeer(stream_id, "foos", 3, !kFin, &last_packet);
+  SendStreamDataToPeer(stream_id, "fooos", 7, !kFin, &last_packet);
+
+  EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(1);
+  connection_.SendRstStream(stream_id, QUIC_STREAM_NO_ERROR, 14);
+
+  // Lose a packet, ensure it triggers retransmission on QUIC_VERSION_29
+  // or later versions.
+  QuicAckFrame nack_two = InitAckFrame(last_packet);
+  NackPacket(last_packet - 1, &nack_two);
+  PacketNumberSet lost_packets;
+  lost_packets.insert(last_packet - 1);
+  EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
+  EXPECT_CALL(*loss_algorithm_, DetectLostPackets(_, _, _, _))
+      .WillOnce(Return(lost_packets));
+  EXPECT_CALL(*send_algorithm_, OnCongestionEvent(true, _, _, _));
+  if (version() > QUIC_VERSION_28) {
+    EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _))
+        .Times(AtLeast(1));
+  } else {
+    EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(0);
+  }
+  ProcessAckPacket(&nack_two);
+}
+
 TEST_P(QuicConnectionTest, DoNotRetransmitForResetStreamOnRTO) {
+  QuicStreamId stream_id = 2;
+  QuicPacketNumber last_packet;
+  SendStreamDataToPeer(stream_id, "foo", 0, !kFin, &last_packet);
+
+  EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(1);
+  connection_.SendRstStream(stream_id, QUIC_ERROR_PROCESSING_STREAM, 14);
+
+  // Fire the RTO and verify that the RST_STREAM is resent, not stream data.
+  EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(1);
+  clock_.AdvanceTime(DefaultRetransmissionTime());
+  connection_.GetRetransmissionAlarm()->Fire();
+  EXPECT_EQ(1u, writer_->frame_count());
+  EXPECT_EQ(1u, writer_->rst_stream_frames().size());
+  EXPECT_EQ(stream_id, writer_->rst_stream_frames().front().stream_id);
+}
+
+TEST_P(QuicConnectionTest, RetransmitForQuicRstStreamNoErrorOnRTO) {
   QuicStreamId stream_id = 2;
   QuicPacketNumber last_packet;
   SendStreamDataToPeer(stream_id, "foo", 0, !kFin, &last_packet);
@@ -2467,8 +2537,14 @@ TEST_P(QuicConnectionTest, DoNotRetransmitForResetStreamOnRTO) {
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(1);
   connection_.SendRstStream(stream_id, QUIC_STREAM_NO_ERROR, 14);
 
-  // Fire the RTO and verify that the RST_STREAM is resent, not stream data.
-  EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(1);
+  // Fire the RTO and verify that the RST_STREAM is resent, the stream data
+  // is only sent on QUIC_VERSION_29 or later versions.
+  if (version() > QUIC_VERSION_28) {
+    EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _))
+        .Times(AtLeast(2));
+  } else {
+    EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(1);
+  }
   clock_.AdvanceTime(DefaultRetransmissionTime());
   connection_.GetRetransmissionAlarm()->Fire();
   EXPECT_EQ(1u, writer_->frame_count());
@@ -2496,7 +2572,7 @@ TEST_P(QuicConnectionTest, DoNotSendPendingRetransmissionForResetStream) {
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(0);
   ProcessAckPacket(&ack);
 
-  connection_.SendRstStream(stream_id, QUIC_STREAM_NO_ERROR, 14);
+  connection_.SendRstStream(stream_id, QUIC_ERROR_PROCESSING_STREAM, 14);
 
   // Unblock the connection and verify that the RST_STREAM is sent but not the
   // second data packet nor a retransmit.
@@ -2506,6 +2582,48 @@ TEST_P(QuicConnectionTest, DoNotSendPendingRetransmissionForResetStream) {
   EXPECT_EQ(1u, writer_->frame_count());
   EXPECT_EQ(1u, writer_->rst_stream_frames().size());
   EXPECT_EQ(stream_id, writer_->rst_stream_frames().front().stream_id);
+}
+
+TEST_P(QuicConnectionTest, SendPendingRetransmissionForQuicRstStreamNoError) {
+  QuicStreamId stream_id = 2;
+  QuicPacketNumber last_packet;
+  SendStreamDataToPeer(stream_id, "foo", 0, !kFin, &last_packet);
+  SendStreamDataToPeer(stream_id, "foos", 3, !kFin, &last_packet);
+  BlockOnNextWrite();
+  connection_.SendStreamDataWithString(stream_id, "fooos", 7, !kFin, nullptr);
+
+  // Lose a packet which will trigger a pending retransmission.
+  QuicAckFrame ack = InitAckFrame(last_packet);
+  NackPacket(last_packet - 1, &ack);
+  PacketNumberSet lost_packets;
+  lost_packets.insert(last_packet - 1);
+  EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
+  EXPECT_CALL(*loss_algorithm_, DetectLostPackets(_, _, _, _))
+      .WillOnce(Return(lost_packets));
+  EXPECT_CALL(*send_algorithm_, OnCongestionEvent(true, _, _, _));
+  EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(0);
+  ProcessAckPacket(&ack);
+
+  connection_.SendRstStream(stream_id, QUIC_STREAM_NO_ERROR, 14);
+
+  // Unblock the connection and verify that the RST_STREAM is sent and the
+  // second data packet or a retransmit is only sent on QUIC_VERSION_29 or
+  // later versions.
+  if (version() > QUIC_VERSION_28) {
+    EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _))
+        .Times(AtLeast(2));
+  } else {
+    EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(1);
+  }
+  writer_->SetWritable();
+  connection_.OnCanWrite();
+  EXPECT_EQ(1u, writer_->frame_count());
+  if (version() > QUIC_VERSION_28) {
+    EXPECT_EQ(0u, writer_->rst_stream_frames().size());
+  } else {
+    EXPECT_EQ(1u, writer_->rst_stream_frames().size());
+    EXPECT_EQ(stream_id, writer_->rst_stream_frames().front().stream_id);
+  }
 }
 
 TEST_P(QuicConnectionTest, DiscardRetransmit) {
@@ -4551,24 +4669,17 @@ TEST_P(QuicConnectionTest, ClientHandlesVersionNegotiation) {
   QuicConnectionPeer::GetFramer(&connection_)->set_version_for_tests(
       QUIC_VERSION_UNSUPPORTED);
 
-  QuicPacketHeader header;
-  header.public_header.connection_id = connection_id_;
-  header.public_header.version_flag = true;
-  header.packet_number = 12;
-
-  QuicVersionVector supported_versions;
-  for (size_t i = 0; i < arraysize(kSupportedQuicVersions); ++i) {
-    supported_versions.push_back(kSupportedQuicVersions[i]);
-  }
-
   // Send a version negotiation packet.
   scoped_ptr<QuicEncryptedPacket> encrypted(
-      framer_.BuildVersionNegotiationPacket(
-          header.public_header, supported_versions));
+      framer_.BuildVersionNegotiationPacket(connection_id_,
+                                            QuicSupportedVersions()));
   connection_.ProcessUdpPacket(kSelfAddress, kPeerAddress, *encrypted);
 
   // Now force another packet.  The connection should transition into
   // NEGOTIATED_VERSION state and tell the packet creator to StopSendingVersion.
+  QuicPacketHeader header;
+  header.public_header.connection_id = connection_id_;
+  header.packet_number = 12;
   header.public_header.version_flag = false;
   QuicFrames frames;
   frames.push_back(QuicFrame(&frame1_));
@@ -4587,24 +4698,14 @@ TEST_P(QuicConnectionTest, ClientHandlesVersionNegotiation) {
 }
 
 TEST_P(QuicConnectionTest, BadVersionNegotiation) {
-  QuicPacketHeader header;
-  header.public_header.connection_id = connection_id_;
-  header.public_header.version_flag = true;
-  header.packet_number = 12;
-
-  QuicVersionVector supported_versions;
-  for (size_t i = 0; i < arraysize(kSupportedQuicVersions); ++i) {
-    supported_versions.push_back(kSupportedQuicVersions[i]);
-  }
-
   // Send a version negotiation packet with the version the client started with.
   // It should be rejected.
   EXPECT_CALL(visitor_,
               OnConnectionClosed(QUIC_INVALID_VERSION_NEGOTIATION_PACKET,
                                  false));
   scoped_ptr<QuicEncryptedPacket> encrypted(
-      framer_.BuildVersionNegotiationPacket(
-          header.public_header, supported_versions));
+      framer_.BuildVersionNegotiationPacket(connection_id_,
+                                            QuicSupportedVersions()));
   connection_.ProcessUdpPacket(kSelfAddress, kPeerAddress, *encrypted);
 }
 

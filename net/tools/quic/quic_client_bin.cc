@@ -19,7 +19,7 @@
 //   quic_client https://www.google.com --port=443  --host=${IP}
 //
 // Use a specific version:
-//   quic_client http://www.google.com --version=23  --host=${IP}
+//   quic_client http://www.google.com --quic_version=23  --host=${IP}
 //
 // Send a POST instead of a GET:
 //   quic_client http://www.google.com --body="this is a POST body" --host=${IP}

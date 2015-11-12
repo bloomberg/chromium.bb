@@ -46,7 +46,8 @@ class QuicCryptoClientStreamTest : public ::testing::Test {
 
   void CompleteCryptoHandshake() {
     stream()->CryptoConnect();
-    CryptoTestUtils::HandshakeWithFakeServer(&helper_, connection_, stream());
+    CryptoTestUtils::HandshakeWithFakeServer(&helper_, connection_, stream(),
+                                             server_options_);
   }
 
   void ConstructHandshakeMessage() {
@@ -63,6 +64,7 @@ class QuicCryptoClientStreamTest : public ::testing::Test {
   CryptoHandshakeMessage message_;
   scoped_ptr<QuicData> message_data_;
   QuicCryptoClientConfig crypto_config_;
+  CryptoTestUtils::FakeServerOptions server_options_;
 };
 
 TEST_F(QuicCryptoClientStreamTest, NotInitiallyConected) {
@@ -195,6 +197,42 @@ TEST_F(QuicCryptoClientStreamTest, ServerConfigUpdateBeforeHandshake) {
                                           /*offset=*/0, data->AsStringPiece()));
 }
 
+TEST_F(QuicCryptoClientStreamTest, TokenBindingNegotiation) {
+  server_options_.token_binding_enabled = true;
+  crypto_config_.tb_key_params.push_back(kP256);
+
+  CompleteCryptoHandshake();
+  EXPECT_TRUE(stream()->encryption_established());
+  EXPECT_TRUE(stream()->handshake_confirmed());
+  EXPECT_EQ(kP256,
+            stream()->crypto_negotiated_params().token_binding_key_param);
+}
+
+TEST_F(QuicCryptoClientStreamTest, NoTokenBindingWithoutServerSupport) {
+  crypto_config_.tb_key_params.push_back(kP256);
+
+  CompleteCryptoHandshake();
+  EXPECT_TRUE(stream()->encryption_established());
+  EXPECT_TRUE(stream()->handshake_confirmed());
+  EXPECT_EQ(0u, stream()->crypto_negotiated_params().token_binding_key_param);
+}
+
+TEST_F(QuicCryptoClientStreamTest, NoTokenBindingWithoutClientSupport) {
+  server_options_.token_binding_enabled = true;
+
+  CompleteCryptoHandshake();
+  EXPECT_TRUE(stream()->encryption_established());
+  EXPECT_TRUE(stream()->handshake_confirmed());
+  EXPECT_EQ(0u, stream()->crypto_negotiated_params().token_binding_key_param);
+}
+
+TEST_F(QuicCryptoClientStreamTest, TokenBindingNotNegotiated) {
+  CompleteCryptoHandshake();
+  EXPECT_TRUE(stream()->encryption_established());
+  EXPECT_TRUE(stream()->handshake_confirmed());
+  EXPECT_EQ(0u, stream()->crypto_negotiated_params().token_binding_key_param);
+}
+
 class QuicCryptoClientStreamStatelessTest : public ::testing::Test {
  public:
   QuicCryptoClientStreamStatelessTest()
@@ -232,9 +270,10 @@ class QuicCryptoClientStreamStatelessTest : public ::testing::Test {
                                &server_connection_, &server_session);
     CHECK(server_session);
     server_session_.reset(server_session);
+    CryptoTestUtils::FakeServerOptions options;
     CryptoTestUtils::SetupCryptoServerConfigForTest(
         server_connection_->clock(), server_connection_->random_generator(),
-        server_session_->config(), &server_crypto_config_);
+        server_session_->config(), &server_crypto_config_, options);
     FLAGS_enable_quic_stateless_reject_support = true;
   }
 
@@ -265,8 +304,8 @@ TEST_F(QuicCryptoClientStreamStatelessTest, StatelessReject) {
   InitializeFakeStatelessRejectServer();
   AdvanceHandshakeWithFakeServer();
 
-  EXPECT_EQ(1, server_stream()->num_handshake_messages());
-  EXPECT_EQ(0, server_stream()->num_handshake_messages_with_server_nonces());
+  EXPECT_EQ(1, server_stream()->NumHandshakeMessages());
+  EXPECT_EQ(0, server_stream()->NumHandshakeMessagesWithServerNonces());
 
   EXPECT_FALSE(client_session_->GetCryptoStream()->encryption_established());
   EXPECT_FALSE(client_session_->GetCryptoStream()->handshake_confirmed());

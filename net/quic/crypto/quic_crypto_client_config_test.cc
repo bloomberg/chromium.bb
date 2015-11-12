@@ -319,7 +319,7 @@ TEST(QuicCryptoClientConfigTest, ClearCachedStates) {
   // TODO(rch): Populate other fields of |state|.
   vector<string> certs(1);
   certs[0] = "Hello Cert";
-  state->SetProof(certs, "signature");
+  state->SetProof(certs, "cert_sct", "signature");
   state->set_source_address_token("TOKEN");
   state->SetProofValid();
   EXPECT_EQ(1u, state->generation_counter());
@@ -341,6 +341,7 @@ TEST(QuicCryptoClientConfigTest, ClearCachedStates) {
   EXPECT_FALSE(cleared_cache->proof_valid());
   EXPECT_TRUE(cleared_cache->server_config().empty());
   EXPECT_TRUE(cleared_cache->certs().empty());
+  EXPECT_TRUE(cleared_cache->cert_sct().empty());
   EXPECT_TRUE(cleared_cache->signature().empty());
   EXPECT_EQ(2u, cleared_cache->generation_counter());
 }
@@ -388,9 +389,10 @@ TEST(QuicCryptoClientConfigTest, ProcessReject) {
   QuicCryptoNegotiatedParameters out_params;
   string error;
   QuicCryptoClientConfig config(CryptoTestUtils::ProofVerifierForTesting());
-  EXPECT_EQ(QUIC_NO_ERROR, config.ProcessRejection(
-                               rej, QuicWallTime::FromUNIXSeconds(0), &cached,
-                               &out_params, &error));
+  EXPECT_EQ(QUIC_NO_ERROR,
+            config.ProcessRejection(rej, QuicWallTime::FromUNIXSeconds(0),
+                                    QuicSupportedVersions().front(), &cached,
+                                    &out_params, &error));
   EXPECT_FALSE(cached.has_server_designated_connection_id());
   EXPECT_FALSE(cached.has_server_nonce());
 }
@@ -409,9 +411,10 @@ TEST(QuicCryptoClientConfigTest, ProcessStatelessReject) {
   QuicCryptoNegotiatedParameters out_params;
   string error;
   QuicCryptoClientConfig config(CryptoTestUtils::ProofVerifierForTesting());
-  EXPECT_EQ(QUIC_NO_ERROR, config.ProcessRejection(
-                               rej, QuicWallTime::FromUNIXSeconds(0), &cached,
-                               &out_params, &error));
+  EXPECT_EQ(QUIC_NO_ERROR,
+            config.ProcessRejection(rej, QuicWallTime::FromUNIXSeconds(0),
+                                    QuicSupportedVersions().front(), &cached,
+                                    &out_params, &error));
   EXPECT_TRUE(cached.has_server_designated_connection_id());
   EXPECT_EQ(kConnectionId, cached.GetNextServerDesignatedConnectionId());
   EXPECT_EQ(server_nonce, cached.GetNextServerNonce());
@@ -428,10 +431,10 @@ TEST(QuicCryptoClientConfigTest, BadlyFormattedStatelessReject) {
   QuicCryptoNegotiatedParameters out_params;
   string error;
   QuicCryptoClientConfig config(CryptoTestUtils::ProofVerifierForTesting());
-  EXPECT_EQ(
-      QUIC_CRYPTO_MESSAGE_PARAMETER_NOT_FOUND,
-      config.ProcessRejection(rej, QuicWallTime::FromUNIXSeconds(0), &cached,
-                              &out_params, &error));
+  EXPECT_EQ(QUIC_CRYPTO_MESSAGE_PARAMETER_NOT_FOUND,
+            config.ProcessRejection(rej, QuicWallTime::FromUNIXSeconds(0),
+                                    QuicSupportedVersions().front(), &cached,
+                                    &out_params, &error));
   EXPECT_FALSE(cached.has_server_designated_connection_id());
   EXPECT_EQ("Missing kRCID", error);
 }

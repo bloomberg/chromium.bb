@@ -54,6 +54,16 @@ class CryptoTestUtils {
     virtual void RunPendingCallbacks() = 0;
   };
 
+  // FakeServerOptions bundles together a number of options for configuring the
+  // server in HandshakeWithFakeServer.
+  struct FakeServerOptions {
+    FakeServerOptions();
+
+    // If token_binding_enabled is true, then the server will attempt to
+    // negotiate Token Binding.
+    bool token_binding_enabled;
+  };
+
   // FakeClientOptions bundles together a number of options for configuring
   // HandshakeWithFakeClient.
   struct FakeClientOptions {
@@ -66,12 +76,17 @@ class CryptoTestUtils {
     // If channel_id_source_async is true then the client will use an async
     // ChannelIDSource for testing. Ignored if channel_id_enabled is false.
     bool channel_id_source_async;
+
+    // If token_binding_enabled is true, then the client will attempt to
+    // negotiate Token Binding.
+    bool token_binding_enabled;
   };
 
   // returns: the number of client hellos that the client sent.
   static int HandshakeWithFakeServer(MockConnectionHelper* helper,
                                      PacketSavingConnection* client_conn,
-                                     QuicCryptoClientStream* client);
+                                     QuicCryptoClientStream* client,
+                                     const FakeServerOptions& options);
 
   // returns: the number of client hellos that the client sent.
   static int HandshakeWithFakeClient(MockConnectionHelper* helper,
@@ -86,7 +101,8 @@ class CryptoTestUtils {
       const QuicClock* clock,
       QuicRandom* rand,
       QuicConfig* config,
-      QuicCryptoServerConfig* crypto_config);
+      QuicCryptoServerConfig* crypto_config,
+      const FakeServerOptions& options);
 
   // CommunicateHandshakeMessages moves messages from |a| to |b| and back until
   // |a|'s handshake has completed.
@@ -164,6 +180,15 @@ class CryptoTestUtils {
   // This ChannelIDSource works in synchronous mode, i.e., its GetChannelIDKey
   // method never returns QUIC_PENDING.
   static ChannelIDSource* ChannelIDSourceForTesting();
+
+  // MovePackets parses crypto handshake messages from packet number
+  // |*inout_packet_index| through to the last packet (or until a packet fails
+  // to decrypt) and has |dest_stream| process them. |*inout_packet_index| is
+  // updated with an index one greater than the last packet processed.
+  static void MovePackets(PacketSavingConnection* source_conn,
+                          size_t* inout_packet_index,
+                          QuicCryptoStream* dest_stream,
+                          PacketSavingConnection* dest_conn);
 
  private:
   static void CompareClientAndServerKeys(QuicCryptoClientStream* client,

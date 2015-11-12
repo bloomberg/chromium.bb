@@ -44,7 +44,7 @@ class NET_EXPORT_PRIVATE QuicConnectionLogger
                     QuicPacketNumber original_packet_number,
                     EncryptionLevel level,
                     TransmissionType transmission_type,
-                    const QuicEncryptedPacket& packet,
+                    size_t encrypted_length,
                     QuicTime sent_time) override;
   void OnPacketReceived(const IPEndPoint& self_address,
                         const IPEndPoint& peer_address,

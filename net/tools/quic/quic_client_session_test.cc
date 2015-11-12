@@ -62,7 +62,9 @@ class ToolsQuicClientSessionTest
     session_->CryptoConnect();
     QuicCryptoClientStream* stream =
         static_cast<QuicCryptoClientStream*>(session_->GetCryptoStream());
-    CryptoTestUtils::HandshakeWithFakeServer(&helper_, connection_, stream);
+    CryptoTestUtils::FakeServerOptions options;
+    CryptoTestUtils::HandshakeWithFakeServer(&helper_, connection_, stream,
+                                             options);
   }
 
   QuicCryptoClientConfig crypto_config_;

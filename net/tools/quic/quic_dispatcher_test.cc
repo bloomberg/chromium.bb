@@ -64,10 +64,12 @@ class TestQuicSpdyServerSession : public QuicServerSession {
     crypto_stream_ = crypto_stream;
   }
 
-  QuicCryptoServerStream* GetCryptoStream() override { return crypto_stream_; }
+  QuicCryptoServerStreamBase* GetCryptoStream() override {
+    return crypto_stream_;
+  }
 
  private:
-  QuicCryptoServerStream* crypto_stream_;
+  QuicCryptoServerStreamBase* crypto_stream_;
 
   DISALLOW_COPY_AND_ASSIGN(TestQuicSpdyServerSession);
 };
@@ -408,7 +410,7 @@ class QuicDispatcherStatelessRejectTest
     session1_->SetCryptoStream(crypto_stream1_);
     crypto_stream1_->set_handshake_confirmed_for_testing(
         GetParam().crypto_handshake_successful);
-    crypto_stream1_->set_peer_supports_stateless_rejects(
+    crypto_stream1_->SetPeerSupportsStatelessRejects(
         GetParam().client_supports_statelesss_rejects);
     return session1_;
   }
