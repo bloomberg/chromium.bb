@@ -10,7 +10,7 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/array.h"
+#include "mojo/public/cpp/bindings/array.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace mus {

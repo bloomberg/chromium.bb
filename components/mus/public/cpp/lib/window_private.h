@@ -6,7 +6,7 @@
 #define COMPONENTS_MUS_PUBLIC_CPP_LIB_WINDOW_PRIVATE_H_
 
 #include "components/mus/public/cpp/window.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/array.h"
+#include "mojo/public/cpp/bindings/array.h"
 
 namespace mus {
 
