@@ -13,6 +13,9 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/test/content_browser_test.h"
 #include "gpu/blink/webgraphicscontext3d_in_process_command_buffer_impl.h"
+#include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/core/SkSurface.h"
+#include "third_party/skia/include/gpu/GrContext.h"
 #include "ui/gl/gl_switches.h"
 
 namespace {
@@ -193,6 +196,50 @@ IN_PROC_BROWSER_TEST_F(BrowserGpuChannelHostFactoryTest,
   EXPECT_EQ(gpu_channel.get(), GetGpuChannel());
 }
 #endif
+
+// Test fails on Windows because GPU Channel set-up does not work.
+#if !defined(OS_WIN)
+#define MAYBE_GrContextKeepsGpuChannelAlive GrContextKeepsGpuChannelAlive
+#else
+#define MAYBE_GrContextKeepsGpuChannelAlive \
+    DISABLED_GrContextKeepsGpuChannelAlive
+#endif
+IN_PROC_BROWSER_TEST_F(BrowserGpuChannelHostFactoryTest,
+                       MAYBE_GrContextKeepsGpuChannelAlive) {
+  // Test for crbug.com/551143
+  // This test verifies that holding a reference to the GrContext created by
+  // a ContextProviderCommandBuffer will keep the gpu channel alive after the
+  // provider has been destroyed. Without this behavior, user code would have
+  // to be careful to destroy objects in the right order to avoid using freed
+  // memory as a function pointer in the GrContext's GrGLInterface instance.
+  DCHECK(!IsChannelEstablished());
+  EstablishAndWait();
+
+  // Step 2: verify that holding onto the provider's GrContext will
+  // retain the host after provider is destroyed.
+  scoped_refptr<ContextProviderCommandBuffer> provider =
+      ContextProviderCommandBuffer::Create(CreateContext(),
+                                           OFFSCREEN_CONTEXT_FOR_TESTING);
+  EXPECT_TRUE(provider->BindToCurrentThread());
+
+  skia::RefPtr<GrContext> gr_context = skia::SharePtr(provider->GrContext());
+  provider = nullptr;
+
+  SkImageInfo info = SkImageInfo::MakeN32Premul(100, 100);
+  skia::RefPtr<SkSurface> surface = skia::AdoptRef(SkSurface::NewRenderTarget(
+      gr_context.get(), SkSurface::kNo_Budgeted, info));
+  gr_context = nullptr;
+
+  // use the canvas after the provider and grcontext have been locally
+  // unref'ed. This should work just fine thanks to SkSurface_Gpu ref'ing
+  // the GrContext, which is ref'ing the GrGLInterfaceForWebGraphicsContext3D,
+  // which owns the commandbuffer instance.
+  SkPaint greenFillPaint;
+  greenFillPaint.setColor(SK_ColorGREEN);
+  greenFillPaint.setStyle(SkPaint::kFill_Style);
+  // Passes by not crashing
+  surface->getCanvas()->drawRect(SkRect::MakeWH(100, 100), greenFillPaint);
+}
 
 // Test fails on Chromeos + Mac, flaky on Windows because UI Compositor
 // establishes a GPU channel.

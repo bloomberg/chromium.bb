@@ -12,8 +12,8 @@ struct GrGLInterface;
 namespace skia_bindings {
 
 // The GPU back-end for skia requires pointers to GL functions. This function
-// returns a binding for skia-gpu to the cmd buffers GL.
-GrGLInterface* CreateCommandBufferSkiaGLBinding();
+// initializes bindings for skia-gpu to the cmd buffers GL.
+void InitCommandBufferSkiaGLBinding(GrGLInterface*);
 
 }  // namespace skia
 

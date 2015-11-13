@@ -451,8 +451,6 @@ public:
     // GL_EXT_draw_buffers
     virtual void drawBuffersEXT(WGC3Dsizei n, const WGC3Denum* bufs) { }
 
-    virtual GrGLInterface* createGrGLInterface() { return nullptr; }
-
     // GL_CHROMIUM_image
     virtual void destroyImageCHROMIUM(WGC3Duint imageId) { }
 

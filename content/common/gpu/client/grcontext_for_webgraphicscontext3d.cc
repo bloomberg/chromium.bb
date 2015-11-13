@@ -8,8 +8,8 @@
 #include "base/trace_event/trace_event.h"
 #include "gpu/blink/webgraphicscontext3d_impl.h"
 #include "gpu/command_buffer/client/gles2_lib.h"
+#include "gpu/skia_bindings/gl_bindings_skia_cmd_buffer.h"
 #include "third_party/skia/include/gpu/GrContext.h"
-#include "third_party/skia/include/gpu/gl/GrGLInterface.h"
 
 using gpu_blink::WebGraphicsContext3DImpl;
 
@@ -32,32 +32,28 @@ base::LazyInstance<GLES2Initializer> g_gles2_initializer =
     LAZY_INSTANCE_INITIALIZER;
 
 void BindWebGraphicsContext3DGLContextCallback(const GrGLInterface* interface) {
-  gles2::SetGLContext(reinterpret_cast<WebGraphicsContext3DImpl*>(
-                          interface->fCallbackData)->GetGLInterface());
+  gles2::SetGLContext(static_cast<const GrGLInterfaceForWebGraphicsContext3D*>(
+                          interface)->WebContext3D()->GetGLInterface());
 }
 
 }  // namespace anonymous
 
 GrContextForWebGraphicsContext3D::GrContextForWebGraphicsContext3D(
-    WebGraphicsContext3DImpl* context3d) {
-  if (!context3d)
+    skia::RefPtr<GrGLInterfaceForWebGraphicsContext3D> gr_interface) {
+  if (!gr_interface || !gr_interface->WebContext3D())
     return;
 
   // Ensure the gles2 library is initialized first in a thread safe way.
   g_gles2_initializer.Get();
-  gles2::SetGLContext(context3d->GetGLInterface());
-  skia::RefPtr<GrGLInterface> interface = skia::AdoptRef(
-      context3d->createGrGLInterface());
-  if (!interface)
-    return;
+  gles2::SetGLContext(gr_interface->WebContext3D()->GetGLInterface());
 
-  interface->fCallback = BindWebGraphicsContext3DGLContextCallback;
-  interface->fCallbackData =
-      reinterpret_cast<GrGLInterfaceCallbackData>(context3d);
+  skia_bindings::InitCommandBufferSkiaGLBinding(gr_interface.get());
+
+  gr_interface->fCallback = BindWebGraphicsContext3DGLContextCallback;
 
   gr_context_ = skia::AdoptRef(GrContext::Create(
       kOpenGL_GrBackend,
-      reinterpret_cast<GrBackendContext>(interface.get())));
+      reinterpret_cast<GrBackendContext>(gr_interface.get())));
   if (gr_context_) {
     // The limit of the number of GPU resources we hold in the GrContext's
     // GPU cache.
@@ -85,6 +81,24 @@ void GrContextForWebGraphicsContext3D::FreeGpuResources() {
         TRACE_EVENT_SCOPE_THREAD);
     gr_context_->freeGpuResources();
   }
+}
+
+GrGLInterfaceForWebGraphicsContext3D::GrGLInterfaceForWebGraphicsContext3D(
+    scoped_ptr<gpu_blink::WebGraphicsContext3DImpl> context3d)
+    : context3d_(context3d.Pass()) {
+}
+
+void GrGLInterfaceForWebGraphicsContext3D::BindToCurrentThread() {
+  context_thread_checker_.DetachFromThread();
+}
+
+GrGLInterfaceForWebGraphicsContext3D::~GrGLInterfaceForWebGraphicsContext3D() {
+  DCHECK(context_thread_checker_.CalledOnValidThread());
+#if !defined(NDEBUG)
+  // Set all the function pointers to zero, in order to crash if function
+  // pointers are used after free.
+  memset(&fFunctions, 0, sizeof(GrGLInterface::Functions));
+#endif
 }
 
 }  // namespace content

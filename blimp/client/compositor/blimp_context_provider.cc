@@ -113,8 +113,8 @@ class GrContext* BlimpContextProvider::GrContext() {
   g_gles2_initializer.Get();
   gles2::SetGLContext(ContextGL());
 
-  skia::RefPtr<GrGLInterface> interface =
-      skia::AdoptRef(skia_bindings::CreateCommandBufferSkiaGLBinding());
+  skia::RefPtr<GrGLInterface> interface = skia::AdoptRef(new GrGLInterface);
+  skia_bindings::InitCommandBufferSkiaGLBinding(interface.get());
   interface->fCallback = BindGrContextCallback;
   interface->fCallbackData = reinterpret_cast<GrGLInterfaceCallbackData>(this);
 

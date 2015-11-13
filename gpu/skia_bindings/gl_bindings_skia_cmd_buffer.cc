@@ -15,8 +15,7 @@
 
 namespace skia_bindings {
 
-GrGLInterface* CreateCommandBufferSkiaGLBinding() {
-  GrGLInterface* interface = new GrGLInterface;
+void InitCommandBufferSkiaGLBinding(GrGLInterface* interface) {
   interface->fStandard = kGLES_GrGLStandard;
   interface->fExtensions.init(kGLES_GrGLStandard,
                               glGetString,
@@ -180,8 +179,6 @@ GrGLInterface* CreateCommandBufferSkiaGLBinding() {
         glProgramPathFragmentInputGenCHROMIUM;
     functions->fBindFragmentInputLocation = glBindFragmentInputLocationCHROMIUM;
   }
-
-  return interface;
 }
 
 }  // namespace skia

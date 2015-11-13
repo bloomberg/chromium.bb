@@ -932,8 +932,6 @@ class GPU_BLINK_EXPORT WebGraphicsContext3DImpl
   bool isContextLost() override;
   blink::WGC3Denum getGraphicsResetStatusARB() override;
 
-  GrGLInterface* createGrGLInterface() override;
-
   ::gpu::gles2::GLES2Interface* GetGLInterface() {
     return gl_;
   }
