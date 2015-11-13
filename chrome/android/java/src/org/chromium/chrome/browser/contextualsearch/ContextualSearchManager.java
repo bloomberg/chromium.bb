@@ -119,6 +119,8 @@ public class ContextualSearchManager extends ContextualSearchObservable
      */
     private boolean mShouldLoadDelayedSearch;
 
+    private boolean mIsShowingPeekPromo;
+    private boolean mWouldShowPeekPromo;
     private boolean mIsShowingPromo;
     private boolean mDidLogPromoOutcome;
 
@@ -384,6 +386,10 @@ public class ContextualSearchManager extends ContextualSearchObservable
 
         mSearchRequest = null;
 
+        if (mIsShowingPeekPromo || mWouldShowPeekPromo) {
+            mPolicy.logPeekPromoMetrics(mIsShowingPeekPromo, mWouldShowPeekPromo);
+        }
+
         if (mIsShowingPromo && !mDidLogPromoOutcome) {
             logPromoOutcome();
         }
@@ -506,8 +512,9 @@ public class ContextualSearchManager extends ContextualSearchObservable
         // Show the Peek Promo only when the Panel wasn't previously visible, provided
         // the policy allows it.
         if (!mSearchPanel.isShowing()) {
-            boolean isPeekPromoAvailable = mPolicy.isPeekPromoAvailable(mSelectionController);
-            if (isPeekPromoAvailable) {
+            mWouldShowPeekPromo = mPolicy.isPeekPromoConditionSatisfied(mSelectionController);
+            mIsShowingPeekPromo = mPolicy.isPeekPromoAvailable(mSelectionController);
+            if (mIsShowingPeekPromo) {
                 mSearchPanel.showPeekPromo();
                 mPolicy.registerPeekPromoSeen();
             }

@@ -41572,6 +41572,48 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Search.ContextualSearchPeekPromoCount" units="count">
+  <owner>donnd@chromium.org</owner>
+  <owner>pedrosimonetti@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <summary>
+    The number of times the Peek Promo was seen. This histogram will be emitted
+    when the Panel closes. The panel is always visible when the Peek Promo is
+    shown, so this histogram will always be emitted after a Promo is shown
+    (except in the case of a crash). This histogram does not care whether the
+    Panel was opened.
+  </summary>
+</histogram>
+
+<histogram name="Search.ContextualSearchPeekPromoCountUntilOpened"
+    units="count">
+  <owner>donnd@chromium.org</owner>
+  <owner>pedrosimonetti@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <summary>
+    The number of times the Peek Promo was seen until the Panel was opened. This
+    histogram will be emitted when the Panel closes, if the Panel was opened
+    with the Peek Promo visible. If the Panel is not opened, nothing will be
+    emitted.
+  </summary>
+</histogram>
+
+<histogram name="Search.ContextualSearchPeekPromoOutcome"
+    enum="ContextualSearchPeekPromoOutcome">
+  <owner>donnd@chromium.org</owner>
+  <owner>pedrosimonetti@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <summary>
+    The outcome of the Contextual Search Peek Promo for those who have seen the
+    promo and for those who would have seen the promo if it was enabled, so we
+    can compare the effect of the promo on users opening the Panel. This
+    histogram will be emitted when the Panel closes, if the conditions to
+    display the Peek Promo are met, regardless of whether the Peek Promo was
+    actually visible (the Promo is controlled by Finch) and regardless of
+    whether the Panel was opened.
+  </summary>
+</histogram>
+
 <histogram name="Search.ContextualSearchShouldTranslate"
     enum="ContextualSearchShouldTranslate">
   <owner>donnd@chromium.org</owner>
@@ -56073,6 +56115,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="5" label="Animated, not seen, from long press"/>
   <int value="6" label="Not animated, seen, from long press"/>
   <int value="7" label="Not animated, not seen, from long press"/>
+</enum>
+
+<enum name="ContextualSearchPeekPromoOutcome" type="int">
+  <summary>The outcome of the Contextual Search Peek Promo.</summary>
+  <int value="0" label="Peek Promo was seen, Panel was opened"/>
+  <int value="1" label="Peek Promo was seen, Panel was not opened"/>
+  <int value="2" label="Peek Promo was not seen, Panel was opened"/>
+  <int value="3" label="Peek Promo was not seen, Panel was not opened"/>
 </enum>
 
 <enum name="ContextualSearchShouldTranslate" type="int">

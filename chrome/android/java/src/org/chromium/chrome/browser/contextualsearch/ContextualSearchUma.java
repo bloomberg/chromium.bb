@@ -144,6 +144,13 @@ public class ContextualSearchUma {
     private static final int RESULTS_NOT_SEEN_FROM_LONG_PRESS = 3;
     private static final int RESULTS_BY_GESTURE_BOUNDARY = 4;
 
+    // Constants used to log UMA "enum" histograms with details about the Peek Promo Outcome.
+    private static final int PEEK_PROMO_OUTCOME_SEEN_OPENED = 0;
+    private static final int PEEK_PROMO_OUTCOME_SEEN_NOT_OPENED = 1;
+    private static final int PEEK_PROMO_OUTCOME_NOT_SEEN_OPENED = 2;
+    private static final int PEEK_PROMO_OUTCOME_NOT_SEEN_NOT_OPENED = 3;
+    private static final int PEEK_PROMO_OUTCOME_BOUNDARY = 4;
+
     // Constants used to log UMA "enum" histograms with details about whether search results
     // were seen, and what the original triggering gesture was.
     private static final int PROMO_ENABLED_FROM_TAP = 0;
@@ -603,6 +610,42 @@ public class ContextualSearchUma {
     public static void logPreferenceChange(boolean enabled) {
         RecordHistogram.recordEnumeratedHistogram("Search.ContextualSearchPreferenceStateChange",
                 enabled ? PREFERENCE_ENABLED : PREFERENCE_DISABLED, PREFERENCE_HISTOGRAM_BOUNDARY);
+    }
+
+    /**
+     * Logs the number of times the Peek Promo was seen.
+     * @param count Number of times the Peek Promo was seen.
+     * @param hasOpenedPanel Whether the Panel was opened.
+     */
+    public static void logPeekPromoShowCount(int count, boolean hasOpenedPanel) {
+        RecordHistogram.recordCountHistogram("Search.ContextualSearchPeekPromoCount", count);
+        if (hasOpenedPanel) {
+            RecordHistogram.recordCountHistogram(
+                    "Search.ContextualSearchPeekPromoCountUntilOpened", count);
+        }
+    }
+
+    /**
+     * Logs the Peek Promo Outcome.
+     * @param wasPromoSeen Whether the Peek Promo was seen.
+     * @param wouldHaveShownPromo Whether the Promo would have shown.
+     * @param hasOpenedPanel Whether the Panel was opened.
+     */
+    public static void logPeekPromoOutcome(boolean wasPromoSeen, boolean wouldHaveShownPromo,
+            boolean hasOpenedPanel) {
+        int outcome = -1;
+        if (wasPromoSeen) {
+            outcome = hasOpenedPanel
+                    ? PEEK_PROMO_OUTCOME_SEEN_OPENED : PEEK_PROMO_OUTCOME_SEEN_NOT_OPENED;
+        } else if (wouldHaveShownPromo) {
+            outcome = hasOpenedPanel
+                    ? PEEK_PROMO_OUTCOME_NOT_SEEN_OPENED : PEEK_PROMO_OUTCOME_NOT_SEEN_NOT_OPENED;
+        }
+
+        if (outcome != -1) {
+            RecordHistogram.recordEnumeratedHistogram("Search.ContextualSearchPeekPromoOutcome",
+                    outcome, PEEK_PROMO_OUTCOME_BOUNDARY);
+        }
     }
 
     /**
