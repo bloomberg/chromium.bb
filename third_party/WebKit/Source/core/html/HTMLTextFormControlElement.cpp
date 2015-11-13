@@ -237,11 +237,6 @@ void HTMLTextFormControlElement::setRangeText(const String& replacement, unsigne
         text.insert(replacement, start);
 
     setInnerEditorValue(text);
-
-    // FIXME: What should happen to the value (as in value()) if there's no layoutObject?
-    if (!layoutObject())
-        return;
-
     subtreeHasChanged();
 
     if (selectionMode == "select") {
@@ -351,16 +346,15 @@ static int indexForPosition(HTMLElement* innerEditor, const Position& passedPosi
 
 void HTMLTextFormControlElement::setSelectionRange(int start, int end, TextFieldSelectionDirection direction, NeedToDispatchSelectEvent eventBehaviour, SelectionOption selectionOption)
 {
-    if (openShadowRoot() || !isTextFormControl() || !inDocument())
+    if (openShadowRoot() || !isTextFormControl())
         return;
-
     const int editorValueLength = static_cast<int>(innerEditorValue().length());
     ASSERT(editorValueLength >= 0);
     end = std::max(std::min(end, editorValueLength), 0);
     start = std::min(std::max(start, 0), end);
     cacheSelection(start, end, direction);
 
-    if (selectionOption == NotChangeSelection || (selectionOption == ChangeSelectionIfFocused && document().focusedElement() != this)) {
+    if (selectionOption == NotChangeSelection || (selectionOption == ChangeSelectionIfFocused && document().focusedElement() != this) || !inDocument()) {
         if (eventBehaviour == DispatchSelectEvent)
             scheduleSelectEvent();
         return;

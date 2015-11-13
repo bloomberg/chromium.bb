@@ -486,8 +486,6 @@ String TextFieldInputType::convertFromVisibleValue(const String& visibleValue) c
 
 void TextFieldInputType::subtreeHasChanged()
 {
-    ASSERT(element().layoutObject());
-
     bool wasChanged = element().wasChangedSinceLastFormControlChangeEvent();
     element().setChangedSinceLastFormControlChangeEvent(true);
 

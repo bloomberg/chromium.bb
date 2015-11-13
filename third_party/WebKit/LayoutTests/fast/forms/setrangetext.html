@@ -7,6 +7,8 @@
 </head>
 <body>
 <script>
+// TODO(tkent): This should be merged to imported/web-platform-tests/html/
+// semantics/forms/textfieldselection/textfieldselection-setRangeText.html
 description("Test setRangeText() method on common input types.");
 
 runTestsShouldPass("input", { type: "password" });
@@ -14,13 +16,6 @@ runTestsShouldPass("input", { type: "tel" });
 runTestsShouldPass("input", { type: "text" });
 runTestsShouldPass("input", { type: "text", dir: "rtl" });
 runTestsShouldPass("input", { type: "url" });
-
-debug("<hr>");
-debug("Check that setRangeText() on disconnected elements doesn't crash and has proper values.");
-element = document.createElement("input");
-evalAndLog("element.value = '0123456789'");
-evalAndLog("element.setRangeText('ABC', 0, 0, 'select')");
-shouldBeEqualToString("element.value", "ABC0123456789");
 
 runTestsShouldFail("input", { type: "button" });
 runTestsShouldFail("input", { type: "checkbox" });
