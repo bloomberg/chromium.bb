@@ -113,7 +113,6 @@
       'WebBindings.cpp',
       'WebBlob.cpp',
       'WebCache.cpp',
-      'WebColorName.cpp',
       'WebColorSuggestion.cpp',
       'WebCryptoNormalize.cpp',
       'WebCustomElement.cpp',

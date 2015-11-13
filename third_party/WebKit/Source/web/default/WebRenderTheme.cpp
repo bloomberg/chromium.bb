@@ -31,14 +31,23 @@
 #include "config.h"
 #include "public/web/default/WebRenderTheme.h"
 
+#include "core/layout/LayoutTheme.h"
 #include "core/layout/LayoutThemeDefault.h"
-#include "public/web/WebView.h"
+#include "platform/graphics/Color.h"
+#include "public/platform/WebColor.h"
 
 namespace blink {
+
+// TODO(esprehn): Make sense of LayoutThemeDefault and LayoutTheme::theme().
 
 void setCaretBlinkInterval(double interval)
 {
     LayoutThemeDefault::setCaretBlinkInterval(interval);
+}
+
+void setFocusRingColor(WebColor color)
+{
+    LayoutTheme::theme().setCustomFocusRingColor(color);
 }
 
 } // namespace blink

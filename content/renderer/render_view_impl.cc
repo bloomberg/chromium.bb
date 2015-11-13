@@ -129,7 +129,6 @@
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
 #include "third_party/WebKit/public/web/WebAXObject.h"
-#include "third_party/WebKit/public/web/WebColorName.h"
 #include "third_party/WebKit/public/web/WebColorSuggestion.h"
 #include "third_party/WebKit/public/web/WebDOMEvent.h"
 #include "third_party/WebKit/public/web/WebDOMMessageEvent.h"
@@ -217,7 +216,6 @@ using blink::WebApplicationCacheHost;
 using blink::WebApplicationCacheHostClient;
 using blink::WebCString;
 using blink::WebColor;
-using blink::WebColorName;
 using blink::WebConsoleMessage;
 using blink::WebData;
 using blink::WebDataSource;
@@ -2708,8 +2706,7 @@ void RenderViewImpl::OnSetRendererPrefs(
 
 #if defined(USE_DEFAULT_RENDER_THEME)
   if (renderer_prefs.use_custom_colors) {
-    WebColorName name = blink::WebColorWebkitFocusRingColor;
-    blink::setNamedColors(&name, &renderer_prefs.focus_ring_color, 1);
+    blink::setFocusRingColor(renderer_prefs.focus_ring_color);
     blink::setCaretBlinkInterval(renderer_prefs.caret_blink_interval);
 
     if (webview()) {

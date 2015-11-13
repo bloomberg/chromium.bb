@@ -344,7 +344,6 @@
       "web/WebCache.h",
       "web/WebColorChooser.h",
       "web/WebColorChooserClient.h",
-      "web/WebColorName.h",
       "web/WebColorSuggestion.h",
       "web/WebCompositionUnderline.h",
       "web/WebConsoleMessage.h",

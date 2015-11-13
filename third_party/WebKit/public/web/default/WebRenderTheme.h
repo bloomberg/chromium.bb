@@ -31,12 +31,15 @@
 #ifndef WebRenderTheme_h
 #define WebRenderTheme_h
 
+#include "../../platform/WebColor.h"
 #include "../../platform/WebCommon.h"
 
 namespace blink {
 
 // Set caret blink interval for text input areas.
 BLINK_EXPORT void setCaretBlinkInterval(double);
+
+BLINK_EXPORT void setFocusRingColor(WebColor);
 
 } // namespace blink
 
