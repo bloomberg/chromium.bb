@@ -59,6 +59,17 @@ bool AreCountersEnabled() {
   return true;
 }
 
+// A helper function to display the size of cache in units of MB or higher.
+// We need this, as 1 MB is the lowest nonzero cache size displayed by the
+// counter.
+base::string16 FormatBytesMBOrHigher(BrowsingDataCounter::ResultInt bytes) {
+  if (ui::GetByteDisplayUnits(bytes) >= ui::DataUnits::DATA_UNITS_MEBIBYTE)
+    return ui::FormatBytes(bytes);
+
+  return ui::FormatBytesWithUnits(
+      bytes, ui::DataUnits::DATA_UNITS_MEBIBYTE, true);
+}
+
 }  // namespace
 
 namespace options {
@@ -170,15 +181,13 @@ base::string16 ClearBrowserDataHandler::GetCounterTextFromResult(
     // a subset of cache (i.e. a finite time interval), and almost zero (< 1MB).
     static const int kBytesInAMegabyte = 1024 * 1024;
     if (cache_size_bytes >= kBytesInAMegabyte) {
-      base::string16 formatted_size = ui::FormatBytes(cache_size_bytes);
+      base::string16 formatted_size = FormatBytesMBOrHigher(cache_size_bytes);
       text = time_period == BrowsingDataRemover::EVERYTHING
           ? formatted_size
           : l10n_util::GetStringFUTF16(IDS_DEL_CACHE_COUNTER_UPPER_ESTIMATE,
                                        formatted_size);
     } else {
-      base::string16 formatted_size = ui::FormatBytes(kBytesInAMegabyte);
-      text = l10n_util::GetStringFUTF16(IDS_DEL_CACHE_COUNTER_UPPER_ESTIMATE,
-                                        formatted_size);
+      text = l10n_util::GetStringUTF16(IDS_DEL_CACHE_COUNTER_ALMOST_EMPTY);
     }
 
   } else if (pref_name == prefs::kDeleteBrowsingHistory) {
