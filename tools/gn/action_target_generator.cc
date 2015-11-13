@@ -85,9 +85,9 @@ void ActionTargetGenerator::DoRun() {
     return;
   }
   if (!target_->action_values().uses_rsp_file() && has_rsp_file_name) {
-    *err_ = Err(function_call_, "Missing response_file_content definition.",
+    *err_ = Err(function_call_, "Missing response_file_contents definition.",
         "This target uses {{response_file_name}} in the args, but does not\n"
-        "define response_file_content which means the response file\n"
+        "define response_file_contents which means the response file\n"
         "will be empty.");
     return;
   }
