@@ -118,4 +118,8 @@ source_set("unit_tests") {
     "//components/compression",
     "//testing/gtest",
   ]
+
+  if (is_android) {
+    deps += [ "//components/variations/android:variations_java" ]
+  }
 }
