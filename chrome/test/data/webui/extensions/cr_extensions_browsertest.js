@@ -48,40 +48,40 @@ CrExtensionsBrowserTest.prototype = {
 
 TEST_F('CrExtensionsBrowserTest', 'ExtensionSidebarLayoutTest', function() {
   extension_sidebar_tests.registerTests();
-  mocha.grep(assert(extension_sidebar_tests.testNames.Layout)).run();
+  mocha.grep(assert(extension_sidebar_tests.TestNames.Layout)).run();
 });
 TEST_F('CrExtensionsBrowserTest', 'ExtensionSidebarClickHandlerTest',
        function() {
   extension_sidebar_tests.registerTests();
-  mocha.grep(assert(extension_sidebar_tests.testNames.ClickHandlers)).run();
+  mocha.grep(assert(extension_sidebar_tests.TestNames.ClickHandlers)).run();
 });
 
 function CrExtensionsBrowserTestWithInstalledExtension() {}
 
 TEST_F('CrExtensionsBrowserTest', 'ExtensionItemNormalStateTest', function() {
   extension_item_tests.registerTests();
-  var testNames = extension_item_tests.testNames;
-  mocha.grep(assert(testNames.ElementVisibilityNormalState)).run();
+  var TestNames = extension_item_tests.TestNames;
+  mocha.grep(assert(TestNames.ElementVisibilityNormalState)).run();
 });
 
 TEST_F('CrExtensionsBrowserTest', 'ExtensionItemDetailStateTest', function() {
   extension_item_tests.registerTests();
-  var testNames = extension_item_tests.testNames;
-  mocha.grep(assert(testNames.ElementVisibilityDetailState)).run();
+  var TestNames = extension_item_tests.TestNames;
+  mocha.grep(assert(TestNames.ElementVisibilityDetailState)).run();
 });
 
 TEST_F('CrExtensionsBrowserTest', 'ExtensionItemDeveloperStateTest',
        function() {
   extension_item_tests.registerTests();
-  var testNames = extension_item_tests.testNames;
-  mocha.grep(assert(testNames.ElementVisibilityDeveloperState)).run();
+  var TestNames = extension_item_tests.TestNames;
+  mocha.grep(assert(TestNames.ElementVisibilityDeveloperState)).run();
 });
 
 TEST_F('CrExtensionsBrowserTest', 'ExtensionItemClickableItemsTest',
        function() {
   extension_item_tests.registerTests();
-  var testNames = extension_item_tests.testNames;
-  mocha.grep(assert(testNames.ClickableItems)).run();
+  var TestNames = extension_item_tests.TestNames;
+  mocha.grep(assert(TestNames.ClickableItems)).run();
 });
 
 CrExtensionsBrowserTestWithInstalledExtension.prototype = {
@@ -97,21 +97,21 @@ CrExtensionsBrowserTestWithInstalledExtension.prototype = {
 TEST_F('CrExtensionsBrowserTestWithInstalledExtension',
        'ExtensionServiceToggleEnableTest', function() {
   extension_service_tests.registerTests();
-  mocha.grep(assert(extension_service_tests.testNames.EnableAndDisable)).run();
+  mocha.grep(assert(extension_service_tests.TestNames.EnableAndDisable)).run();
 });
 TEST_F('CrExtensionsBrowserTestWithInstalledExtension',
        'ExtensionServiceToggleIncognitoTest', function() {
   extension_service_tests.registerTests();
   mocha.grep(
-      assert(extension_service_tests.testNames.ToggleIncognitoMode)).run();
+      assert(extension_service_tests.TestNames.ToggleIncognitoMode)).run();
 });
 TEST_F('CrExtensionsBrowserTestWithInstalledExtension',
        'ExtensionServiceUninstallTest', function() {
   extension_service_tests.registerTests();
-  mocha.grep(assert(extension_service_tests.testNames.Uninstall)).run();
+  mocha.grep(assert(extension_service_tests.TestNames.Uninstall)).run();
 });
 TEST_F('CrExtensionsBrowserTestWithInstalledExtension',
        'ExtensionServiceProfileSettingsTest', function() {
   extension_service_tests.registerTests();
-  mocha.grep(assert(extension_service_tests.testNames.ProfileSettings)).run();
+  mocha.grep(assert(extension_service_tests.TestNames.ProfileSettings)).run();
 });

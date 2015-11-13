@@ -124,7 +124,8 @@ cr.define('extension_item_tests', function() {
     testElementsVisibility(item, devElements, false);
   }
 
-  var testNames = {
+  /** @enum {string} */
+  var TestNames = {
     ElementVisibilityNormalState: 'element visibility: normal state',
     ElementVisibilityDetailState:
         'element visibility: after tapping show details',
@@ -156,7 +157,7 @@ cr.define('extension_item_tests', function() {
         document.body.appendChild(item);
       });
 
-      test(assert(testNames.ElementVisibilityNormalState), function() {
+      test(assert(TestNames.ElementVisibilityNormalState), function() {
         testNormalElementsAreVisible(item);
         testDetailElementsAreHidden(item);
         testDeveloperElementsAreHidden(item);
@@ -168,14 +169,14 @@ cr.define('extension_item_tests', function() {
         expectEquals('Disabled', item.$.enabled.textContent);
       });
 
-      test(assert(testNames.ElementVisibilityDetailState), function() {
+      test(assert(TestNames.ElementVisibilityDetailState), function() {
         MockInteractions.tap(item.$['show-details']);
         testNormalElementsAreVisible(item);
         testDetailElementsAreVisible(item);
         testDeveloperElementsAreHidden(item);
       });
 
-      test(assert(testNames.ElementVisibilityDeveloperState), function() {
+      test(assert(TestNames.ElementVisibilityDeveloperState), function() {
         MockInteractions.tap(item.$['show-details']);
         item.set('inDevMode', true);
 
@@ -191,7 +192,7 @@ cr.define('extension_item_tests', function() {
       });
 
       /** Tests that the delegate methods are correctly called. */
-      test(assert(testNames.ClickableItems), function() {
+      test(assert(TestNames.ClickableItems), function() {
         MockInteractions.tap(item.$['show-details']);
         item.set('inDevMode', true);
 
@@ -216,6 +217,6 @@ cr.define('extension_item_tests', function() {
 
   return {
     registerTests: registerTests,
-    testNames: testNames,
+    TestNames: TestNames,
   };
 });

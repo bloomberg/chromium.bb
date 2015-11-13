@@ -58,7 +58,8 @@ cr.define('extension_service_tests', function() {
                function() { return true; });
   }
 
-  var testNames = {
+  /** @enum {string} */
+  var TestNames = {
     EnableAndDisable: 'enable and disable',
     ToggleIncognitoMode: 'toggle incognito mode',
     Uninstall: 'uninstall',
@@ -92,7 +93,7 @@ cr.define('extension_service_tests', function() {
         manager = document.getElementsByTagName('extensions-manager')[0];
       });
 
-      test(testNames.EnableAndDisable, function(done) {
+      test(assert(TestNames.EnableAndDisable), function(done) {
         var item = manager.getItem(kExtensionId);
         assertTrue(!!item);
         expectEquals(kExtensionId, item.id);
@@ -115,7 +116,7 @@ cr.define('extension_service_tests', function() {
         });
       });
 
-      test(testNames.ToggleIncognitoMode, function(done) {
+      test(assert(TestNames.ToggleIncognitoMode), function(done) {
         var item = manager.getItem(kExtensionId);
         assertTrue(!!item);
         expectTrue(item.data.incognitoAccess.isEnabled);
@@ -141,7 +142,7 @@ cr.define('extension_service_tests', function() {
         });
       });
 
-      test(testNames.Uninstall, function(done) {
+      test(assert(TestNames.Uninstall), function(done) {
         var item = manager.getItem(kExtensionId);
         assertTrue(!!item);
         var uninstallListener =
@@ -155,7 +156,7 @@ cr.define('extension_service_tests', function() {
         });
       });
 
-      test(testNames.ProfileSettings, function(done) {
+      test(assert(TestNames.ProfileSettings), function(done) {
         var item = manager.getItem(kExtensionId);
         assertTrue(!!item);
         expectFalse(item.inDevMode);
@@ -180,6 +181,6 @@ cr.define('extension_service_tests', function() {
   return {
     ChangeListener: ChangeListener,
     registerTests: registerTests,
-    testNames: testNames,
+    TestNames: TestNames,
   };
 });

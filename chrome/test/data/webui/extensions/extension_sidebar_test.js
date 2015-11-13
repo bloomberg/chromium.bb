@@ -28,7 +28,8 @@ cr.define('extension_sidebar_tests', function() {
     updateAllExtensions: function() {},
   };
 
-  var testNames = {
+  /** @enum {string} */
+  var TestNames = {
     Layout: 'layout',
     ClickHandlers: 'click handlers',
   };
@@ -52,7 +53,7 @@ cr.define('extension_sidebar_tests', function() {
         sidebar.setDelegate(mockDelegate);
       });
 
-      test(testNames.Layout, function() {
+      test(assert(TestNames.Layout), function() {
         var testVisible = extension_test_util.testVisible.bind(null, sidebar);
         testVisible('#load-unpacked', false);
         testVisible('#pack-extensions', false);
@@ -66,7 +67,7 @@ cr.define('extension_sidebar_tests', function() {
         testVisible('#update-now', true);
       });
 
-      test(testNames.ClickHandlers, function() {
+      test(assert(TestNames.ClickHandlers), function() {
         sidebar.set('inDevMode', true);
         Polymer.dom.flush();
 
@@ -88,6 +89,6 @@ cr.define('extension_sidebar_tests', function() {
 
   return {
     registerTests: registerTests,
-    testNames: testNames,
+    TestNames: TestNames,
   };
 });
