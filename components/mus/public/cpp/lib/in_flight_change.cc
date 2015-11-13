@@ -9,42 +9,80 @@
 
 namespace mus {
 
-InFlightChange::InFlightChange(Id window_id, ChangeType type)
-    : window_id_(window_id), change_type_(type) {}
+// InFlightChange -------------------------------------------------------------
+
+InFlightChange::InFlightChange(Window* window, ChangeType type)
+    : window_(window), change_type_(type) {}
 
 InFlightChange::~InFlightChange() {}
 
-InFlightBoundsChange::InFlightBoundsChange(WindowTreeConnection* tree,
-                                           Id window_id,
+bool InFlightChange::Matches(const InFlightChange& change) const {
+  DCHECK(change.window_ == window_ && change.change_type_ == change_type_);
+  return true;
+}
+
+void InFlightChange::ChangeFailed() {}
+
+// InFlightBoundsChange -------------------------------------------------------
+
+InFlightBoundsChange::InFlightBoundsChange(Window* window,
                                            const gfx::Rect& revert_bounds)
-    : InFlightChange(window_id, ChangeType::BOUNDS),
-      tree_(tree),
+    : InFlightChange(window, ChangeType::BOUNDS),
       revert_bounds_(revert_bounds) {}
 
-void InFlightBoundsChange::PreviousChangeCompleted(InFlightChange* change,
-                                                   bool success) {
-  if (!success)
-    revert_bounds_ = static_cast<InFlightBoundsChange*>(change)->revert_bounds_;
+void InFlightBoundsChange::SetRevertValueFrom(const InFlightChange& change) {
+  revert_bounds_ =
+      static_cast<const InFlightBoundsChange&>(change).revert_bounds_;
 }
 
 void InFlightBoundsChange::Revert() {
-  Window* window = tree_->GetWindowById(window_id());
-  if (window)
-    WindowPrivate(window).LocalSetBounds(window->bounds(), revert_bounds_);
+  WindowPrivate(window()).LocalSetBounds(window()->bounds(), revert_bounds_);
 }
 
-CrashInFlightChange::CrashInFlightChange(Id window_id, ChangeType type)
-    : InFlightChange(window_id, type) {}
+// CrashInFlightChange --------------------------------------------------------
+
+CrashInFlightChange::CrashInFlightChange(Window* window, ChangeType type)
+    : InFlightChange(window, type) {}
 
 CrashInFlightChange::~CrashInFlightChange() {}
 
-void CrashInFlightChange::PreviousChangeCompleted(InFlightChange* change,
-                                                  bool success) {
-  CHECK(success);
+void CrashInFlightChange::SetRevertValueFrom(const InFlightChange& change) {
+  CHECK(false);
+}
+
+void CrashInFlightChange::ChangeFailed() {
+  CHECK(false);
 }
 
 void CrashInFlightChange::Revert() {
   CHECK(false);
+}
+
+// InFlightPropertyChange -----------------------------------------------------
+
+InFlightPropertyChange::InFlightPropertyChange(
+    Window* window,
+    const std::string& property_name,
+    const mojo::Array<uint8_t>& revert_value)
+    : InFlightChange(window, ChangeType::PROPERTY),
+      property_name_(property_name),
+      revert_value_(revert_value.Clone()) {}
+
+InFlightPropertyChange::~InFlightPropertyChange() {}
+
+bool InFlightPropertyChange::Matches(const InFlightChange& change) const {
+  return static_cast<const InFlightPropertyChange&>(change).property_name_ ==
+         property_name_;
+}
+
+void InFlightPropertyChange::SetRevertValueFrom(const InFlightChange& change) {
+  revert_value_ =
+      static_cast<const InFlightPropertyChange&>(change).revert_value_.Clone();
+}
+
+void InFlightPropertyChange::Revert() {
+  WindowPrivate(window())
+      .LocalSetSharedProperty(property_name_, revert_value_.Pass());
 }
 
 }  // namespace mus

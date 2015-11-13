@@ -100,6 +100,15 @@ bool WindowManagerApplication::OnWmSetBounds(mus::Window* window,
   return true;
 }
 
+bool WindowManagerApplication::OnWmSetProperty(
+    mus::Window* window,
+    const std::string& name,
+    scoped_ptr<std::vector<uint8_t>>* new_data) {
+  // TODO(sky): constrain this to set of keys we know about and return false
+  // otherwise.
+  return true;
+}
+
 void WindowManagerApplication::CreateContainers() {
   for (uint16_t container =
            static_cast<uint16_t>(ash::mojom::CONTAINER_ALL_USER_BACKGROUND);

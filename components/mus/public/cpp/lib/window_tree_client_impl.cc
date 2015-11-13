@@ -170,22 +170,20 @@ void WindowTreeClientImpl::RemoveChild(Id child_id, Id parent_id) {
   tree_->RemoveWindowFromParent(child_id, ActionCompletedCallback());
 }
 
-void WindowTreeClientImpl::AddTransientWindow(Id window_id,
+void WindowTreeClientImpl::AddTransientWindow(Window* window,
                                               Id transient_window_id) {
   DCHECK(tree_);
   const uint32_t change_id = ScheduleInFlightChange(make_scoped_ptr(
-      new CrashInFlightChange(window_id, ChangeType::ADD_TRANSIENT_WINDOW)));
-  tree_->AddTransientWindow(change_id, window_id, transient_window_id);
+      new CrashInFlightChange(window, ChangeType::ADD_TRANSIENT_WINDOW)));
+  tree_->AddTransientWindow(change_id, window->id(), transient_window_id);
 }
 
-void WindowTreeClientImpl::RemoveTransientWindow(Id transient_window_id,
-                                                 Id transient_parent_id) {
+void WindowTreeClientImpl::RemoveTransientWindowFromParent(Window* window) {
   DCHECK(tree_);
   const uint32_t change_id =
       ScheduleInFlightChange(make_scoped_ptr(new CrashInFlightChange(
-          transient_window_id,
-          ChangeType::REMOVE_TRANSIENT_WINDOW_FROM_PARENT)));
-  tree_->RemoveTransientWindowFromParent(change_id, transient_window_id);
+          window, ChangeType::REMOVE_TRANSIENT_WINDOW_FROM_PARENT)));
+  tree_->RemoveTransientWindowFromParent(change_id, window->id());
 }
 
 void WindowTreeClientImpl::Reorder(Id window_id,
@@ -200,13 +198,13 @@ bool WindowTreeClientImpl::OwnsWindow(Id id) const {
   return HiWord(id) == connection_id_;
 }
 
-void WindowTreeClientImpl::SetBounds(Id window_id,
+void WindowTreeClientImpl::SetBounds(Window* window,
                                      const gfx::Rect& old_bounds,
                                      const gfx::Rect& bounds) {
   DCHECK(tree_);
   const uint32_t change_id = ScheduleInFlightChange(
-      make_scoped_ptr(new InFlightBoundsChange(this, window_id, old_bounds)));
-  tree_->SetWindowBounds(change_id, window_id, mojo::Rect::From(bounds));
+      make_scoped_ptr(new InFlightBoundsChange(window, old_bounds)));
+  tree_->SetWindowBounds(change_id, window->id(), mojo::Rect::From(bounds));
 }
 
 void WindowTreeClientImpl::SetClientArea(Id window_id,
@@ -227,13 +225,19 @@ void WindowTreeClientImpl::SetVisible(Id window_id, bool visible) {
   tree_->SetWindowVisibility(window_id, visible, ActionCompletedCallback());
 }
 
-void WindowTreeClientImpl::SetProperty(Id window_id,
+void WindowTreeClientImpl::SetProperty(Window* window,
                                        const std::string& name,
-                                       const std::vector<uint8_t>& data) {
+                                       mojo::Array<uint8_t> data) {
   DCHECK(tree_);
-  tree_->SetWindowProperty(window_id, mojo::String(name),
-                           mojo::Array<uint8_t>::From(data),
-                           ActionCompletedCallback());
+
+  mojo::Array<uint8_t> old_value;
+  if (window->HasSharedProperty(name))
+    old_value = mojo::Array<uint8_t>::From(window->properties_[name]);
+
+  const uint32_t change_id = ScheduleInFlightChange(
+      make_scoped_ptr(new InFlightPropertyChange(window, name, old_value)));
+  tree_->SetWindowProperty(change_id, window->id(), mojo::String(name),
+                           data.Pass());
 }
 
 void WindowTreeClientImpl::SetWindowTextInputState(
@@ -284,7 +288,7 @@ void WindowTreeClientImpl::RemoveWindow(Id window_id) {
   // Remove any InFlightChanges associated with the window.
   std::set<uint32_t> in_flight_change_ids;
   for (const auto& pair : in_flight_map_) {
-    if (pair.second->window_id() == window_id)
+    if (pair.second->window()->id() == window_id)
       in_flight_change_ids.insert(pair.first);
   }
   for (auto change_id : in_flight_change_ids)
@@ -318,21 +322,12 @@ void WindowTreeClientImpl::SetResizeBehavior(
   tree_->SetResizeBehavior(window_id, resize_behavior);
 }
 
-Id WindowTreeClientImpl::CreateWindowOnServer() {
-  DCHECK(tree_);
-  const Id window_id = MakeTransportId(connection_id_, next_window_id_++);
-  const uint32_t change_id = ScheduleInFlightChange(make_scoped_ptr(
-      new CrashInFlightChange(window_id, ChangeType::NEW_WINDOW)));
-  tree_->NewWindow(change_id, window_id);
-  return window_id;
-}
-
 InFlightChange* WindowTreeClientImpl::GetOldestInFlightChangeMatching(
-    Id window_id,
-    ChangeType change_type) {
+    const InFlightChange& change) {
   for (auto& pair : in_flight_map_) {
-    if (pair.second->window_id() == window_id &&
-        pair.second->change_type() == change_type) {
+    if (pair.second->window() == change.window() &&
+        pair.second->change_type() == change.change_type() &&
+        pair.second->Matches(change)) {
       return pair.second;
     }
   }
@@ -344,6 +339,16 @@ uint32_t WindowTreeClientImpl::ScheduleInFlightChange(
   const uint32_t change_id = next_change_id_++;
   in_flight_map_.set(change_id, change.Pass());
   return change_id;
+}
+
+bool WindowTreeClientImpl::ApplyServerChangeToExistingInFlightChange(
+    const InFlightChange& change) {
+  InFlightChange* existing_change = GetOldestInFlightChangeMatching(change);
+  if (!existing_change)
+    return false;
+
+  existing_change->SetRevertValueFrom(change);
+  return true;
 }
 
 void WindowTreeClientImpl::OnEmbedImpl(mojom::WindowTree* window_tree,
@@ -381,8 +386,14 @@ Window* WindowTreeClientImpl::GetFocusedWindow() {
 }
 
 Window* WindowTreeClientImpl::NewWindow() {
-  Window* window = new Window(this, CreateWindowOnServer());
+  DCHECK(tree_);
+  Window* window =
+      new Window(this, MakeTransportId(connection_id_, next_window_id_++));
   AddWindow(window);
+
+  const uint32_t change_id = ScheduleInFlightChange(
+      make_scoped_ptr(new CrashInFlightChange(window, ChangeType::NEW_WINDOW)));
+  tree_->NewWindow(change_id, window->id());
   return window;
 }
 
@@ -426,17 +437,14 @@ void WindowTreeClientImpl::OnUnembed() {
 void WindowTreeClientImpl::OnWindowBoundsChanged(Id window_id,
                                                  mojo::RectPtr old_bounds,
                                                  mojo::RectPtr new_bounds) {
-  InFlightChange* change =
-      GetOldestInFlightChangeMatching(window_id, ChangeType::BOUNDS);
-  if (change) {
-    static_cast<InFlightBoundsChange*>(change)
-        ->set_revert_bounds(new_bounds.To<gfx::Rect>());
-    // Wait for the change we initiated on the server to complete before
-    // deciding if |new_bounds| should be applied.
-    return;
-  }
-
   Window* window = GetWindowById(window_id);
+  if (!window)
+    return;
+
+  InFlightBoundsChange new_change(window, new_bounds.To<gfx::Rect>());
+  if (ApplyServerChangeToExistingInFlightChange(new_change))
+    return;
+
   WindowPrivate(window)
       .LocalSetBounds(old_bounds.To<gfx::Rect>(), new_bounds.To<gfx::Rect>());
 }
@@ -554,15 +562,14 @@ void WindowTreeClientImpl::OnWindowSharedPropertyChanged(
     const mojo::String& name,
     mojo::Array<uint8_t> new_data) {
   Window* window = GetWindowById(window_id);
-  if (window) {
-    std::vector<uint8_t> data;
-    std::vector<uint8_t>* data_ptr = NULL;
-    if (!new_data.is_null()) {
-      data = new_data.To<std::vector<uint8_t>>();
-      data_ptr = &data;
-    }
-    WindowPrivate(window).LocalSetSharedProperty(name, data_ptr);
-  }
+  if (!window)
+    return;
+
+  InFlightPropertyChange new_change(window, name, new_data);
+  if (ApplyServerChangeToExistingInFlightChange(new_change))
+    return;
+
+  WindowPrivate(window).LocalSetSharedProperty(name, new_data.Pass());
 }
 
 void WindowTreeClientImpl::OnWindowInputEvent(
@@ -599,16 +606,20 @@ void WindowTreeClientImpl::OnChangeCompleted(uint32 change_id, bool success) {
   if (!change)
     return;
 
-  InFlightChange* next_change = GetOldestInFlightChangeMatching(
-      change->window_id(), change->change_type());
-  if (next_change)
-    next_change->PreviousChangeCompleted(change.get(), success);
-  else if (!success)
+  if (!success)
+    change->ChangeFailed();
+
+  InFlightChange* next_change = GetOldestInFlightChangeMatching(*change);
+  if (next_change) {
+    if (!success)
+      next_change->SetRevertValueFrom(*change);
+  } else if (!success) {
     change->Revert();
+  }
 }
 
-void WindowTreeClientImpl::WmSetBounds(uint32 change_id,
-                                       uint32 window_id,
+void WindowTreeClientImpl::WmSetBounds(uint32_t change_id,
+                                       Id window_id,
                                        mojo::RectPtr transit_bounds) {
   Window* window = GetWindowById(window_id);
   bool result = false;
@@ -621,6 +632,29 @@ void WindowTreeClientImpl::WmSetBounds(uint32 change_id,
       // the client applies the bounds we set below.
       result = bounds == transit_bounds.To<gfx::Rect>();
       window->SetBounds(bounds);
+    }
+  }
+  tree_->WmResponse(change_id, result);
+}
+
+void WindowTreeClientImpl::WmSetProperty(uint32_t change_id,
+                                         Id window_id,
+                                         const mojo::String& name,
+                                         mojo::Array<uint8_t> transit_data) {
+  Window* window = GetWindowById(window_id);
+  bool result = false;
+  if (window) {
+    DCHECK(window_manager_delegate_);
+    scoped_ptr<std::vector<uint8_t>> data;
+    if (!transit_data.is_null()) {
+      data.reset(
+          new std::vector<uint8_t>(transit_data.To<std::vector<uint8_t>>()));
+    }
+    result = window_manager_delegate_->OnWmSetProperty(window, name, &data);
+    if (result) {
+      // If the resulting bounds differ return false. Returning false ensures
+      // the client applies the bounds we set below.
+      window->SetSharedPropertyInternal(name, data.get());
     }
   }
   tree_->WmResponse(change_id, result);

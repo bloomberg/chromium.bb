@@ -156,21 +156,6 @@ bool SetWindowVisibility(WindowTree* ws, Id window_id, bool visible) {
   return result;
 }
 
-bool SetWindowProperty(WindowTree* ws,
-                       Id window_id,
-                       const std::string& name,
-                       const std::vector<uint8_t>* data) {
-  base::RunLoop run_loop;
-  bool result = false;
-  Array<uint8_t> mojo_data;
-  if (data)
-    mojo_data = Array<uint8_t>::From(*data);
-  ws->SetWindowProperty(window_id, name, mojo_data.Pass(),
-                        base::Bind(&BoolResultCallback, &run_loop, &result));
-  run_loop.Run();
-  return result;
-}
-
 // Utility functions -----------------------------------------------------------
 
 const Id kNullParentId = 0;
@@ -266,6 +251,17 @@ class TestWindowTreeClientImpl : public mojom::WindowTreeClient,
   }
 
   void set_root_window(Id root_window_id) { root_window_id_ = root_window_id; }
+
+  bool SetWindowProperty(Id window_id,
+                         const std::string& name,
+                         const std::vector<uint8_t>* data) {
+    Array<uint8_t> mojo_data;
+    if (data)
+      mojo_data = Array<uint8_t>::From(*data);
+    const uint32_t change_id = GetAndAdvanceChangeId();
+    tree()->SetWindowProperty(change_id, window_id, name, mojo_data.Pass());
+    return WaitForChangeCompleted(change_id);
+  }
 
  private:
   // Used when running a nested MessageLoop.
@@ -373,6 +369,10 @@ class TestWindowTreeClientImpl : public mojom::WindowTreeClient,
   void WmSetBounds(uint32_t change_id,
                    Id window_id,
                    mojo::RectPtr bounds) override {}
+  void WmSetProperty(uint32_t change_id,
+                     Id window_id,
+                     const mojo::String& name,
+                     mojo::Array<uint8_t> transit_data) override {}
 
   TestChangeTracker tracker_;
 
@@ -1537,7 +1537,7 @@ TEST_F(WindowTreeAppTest, SetWindowProperty) {
   // Set properties on 1.
   changes2()->clear();
   std::vector<uint8_t> one(1, '1');
-  ASSERT_TRUE(SetWindowProperty(ws1(), window_1_1, "one", &one));
+  ASSERT_TRUE(ws_client1()->SetWindowProperty(window_1_1, "one", &one));
   {
     ws_client2_->WaitForChangeCount(1);
     EXPECT_EQ(
@@ -1556,7 +1556,7 @@ TEST_F(WindowTreeAppTest, SetWindowProperty) {
 
   changes2()->clear();
   // Set back to null.
-  ASSERT_TRUE(SetWindowProperty(ws1(), window_1_1, "one", NULL));
+  ASSERT_TRUE(ws_client1()->SetWindowProperty(window_1_1, "one", NULL));
   {
     ws_client2_->WaitForChangeCount(1);
     EXPECT_EQ("PropertyChanged window=" + IdToString(window_1_1) +

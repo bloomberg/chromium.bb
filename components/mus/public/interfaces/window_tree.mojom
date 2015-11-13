@@ -109,9 +109,10 @@ interface WindowTree {
 
   // Sets an individual named property. Setting an individual property to null
   // deletes the property.
-  SetWindowProperty(uint32 window_id,
+  SetWindowProperty(uint32 change_id,
+                    uint32 window_id,
                     string name,
-                    array<uint8>? value) => (bool success);
+                    array<uint8>? value);
 
   // Requests a Surface for a particular window.
   RequestSurface(uint32 window_id,
@@ -329,4 +330,8 @@ interface WindowTreeClient {
   // Calls to SetWindowBounds() for windows owned by the window manager end up
   // here. The window manager should reply with WmResponse() as appropriate.
   WmSetBounds(uint32 change_id, uint32 window_id, mojo.Rect bounds);
+  WmSetProperty(uint32 change_id,
+                uint32 window_id,
+                string name,
+                array<uint8>? value);
 };

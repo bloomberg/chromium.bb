@@ -34,10 +34,10 @@ class TestWindowTree : public mojom::WindowTree {
       uint32_t window_id,
       bool visible,
       const SetWindowVisibilityCallback& callback) override;
-  void SetWindowProperty(uint32_t window_id,
+  void SetWindowProperty(uint32_t change_id,
+                         uint32_t window_id,
                          const mojo::String& name,
-                         mojo::Array<uint8_t> value,
-                         const SetWindowPropertyCallback& callback) override;
+                         mojo::Array<uint8_t> value) override;
   void RequestSurface(uint32_t window_id,
                       mojom::SurfaceType type,
                       mojo::InterfaceRequest<mojom::Surface> surface,

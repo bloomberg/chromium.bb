@@ -5,6 +5,10 @@
 #ifndef COMPONENTS_MUS_PUBLIC_CPP_WINDOW_MANAGER_DELEGATE_H_
 #define COMPONENTS_MUS_PUBLIC_CPP_WINDOW_MANAGER_DELEGATE_H_
 
+#include <vector>
+
+#include "base/memory/scoped_ptr.h"
+
 namespace gfx {
 class Rect;
 }
@@ -24,6 +28,13 @@ class WindowManagerDelegate {
   // NOTE: This should not change the bounds of |window|. Instead return the
   // bounds the window should be in |bounds|.
   virtual bool OnWmSetBounds(Window* window, gfx::Rect* bounds) = 0;
+
+  // A client requested the shared property named |name| to change to
+  // |new_data|. Return true to allow the change to |new_data|, false
+  // otherwise.
+  virtual bool OnWmSetProperty(Window* window,
+                               const std::string& name,
+                               scoped_ptr<std::vector<uint8_t>>* new_data) = 0;
 
  protected:
   virtual ~WindowManagerDelegate() {}

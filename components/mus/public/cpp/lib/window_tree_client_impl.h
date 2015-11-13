@@ -50,8 +50,8 @@ class WindowTreeClientImpl : public WindowTreeConnection,
   void AddChild(Id child_id, Id parent_id);
   void RemoveChild(Id child_id, Id parent_id);
 
-  void AddTransientWindow(Id window_id, Id transient_window_id);
-  void RemoveTransientWindow(Id transient_window_id, Id transient_parent_id);
+  void AddTransientWindow(Window* window, Id transient_window_id);
+  void RemoveTransientWindowFromParent(Window* window);
 
   void Reorder(Id window_id,
                Id relative_window_id,
@@ -60,15 +60,15 @@ class WindowTreeClientImpl : public WindowTreeConnection,
   // Returns true if the specified window was created by this connection.
   bool OwnsWindow(Id id) const;
 
-  void SetBounds(Id window_id,
+  void SetBounds(Window* window,
                  const gfx::Rect& old_bounds,
                  const gfx::Rect& bounds);
   void SetClientArea(Id window_id, const gfx::Insets& client_area);
   void SetFocus(Id window_id);
   void SetVisible(Id window_id, bool visible);
-  void SetProperty(Id window_id,
+  void SetProperty(Window* window,
                    const std::string& name,
-                   const std::vector<uint8_t>& data);
+                   mojo::Array<uint8_t> data);
   void SetWindowTextInputState(Id window_id, mojo::TextInputStatePtr state);
   void SetImeVisibility(Id window_id,
                         bool visible,
@@ -112,13 +112,15 @@ class WindowTreeClientImpl : public WindowTreeConnection,
 
   using InFlightMap = base::ScopedPtrMap<uint32_t, scoped_ptr<InFlightChange>>;
 
-  Id CreateWindowOnServer();
-
-  // Returns the oldest InFlightChange matching the supplied arguments.
-  InFlightChange* GetOldestInFlightChangeMatching(Id window_id,
-                                                  ChangeType change_type);
+  // Returns the oldest InFlightChange that matches |change|.
+  InFlightChange* GetOldestInFlightChangeMatching(const InFlightChange& change);
 
   uint32_t ScheduleInFlightChange(scoped_ptr<InFlightChange> change);
+
+  // Returns true if there is an InFlightChange that matches |change|. If there
+  // is an existing change SetRevertValueFrom() is invoked on it. Returns false
+  // if there is no InFlightChange matching |change|.
+  bool ApplyServerChangeToExistingInFlightChange(const InFlightChange& change);
 
   // OnEmbed() calls into this. Exposed as a separate function for testing.
   void OnEmbedImpl(mojom::WindowTree* window_tree,
@@ -174,10 +176,14 @@ class WindowTreeClientImpl : public WindowTreeConnection,
                           mojom::EventPtr event,
                           const mojo::Callback<void()>& callback) override;
   void OnWindowFocused(Id focused_window_id) override;
-  void OnChangeCompleted(uint32 change_id, bool success) override;
-  void WmSetBounds(uint32 change_id,
-                   uint32 window_id,
+  void OnChangeCompleted(uint32_t change_id, bool success) override;
+  void WmSetBounds(uint32_t change_id,
+                   Id window_id,
                    mojo::RectPtr transit_bounds) override;
+  void WmSetProperty(uint32_t change_id,
+                     Id window_id,
+                     const mojo::String& name,
+                     mojo::Array<uint8_t> transit_data) override;
 
   void OnActionCompleted(bool success);
 

@@ -20,6 +20,15 @@
 
 namespace mus {
 
+mojo::Array<uint8_t> Int32ToPropertyTransportValue(int32_t value) {
+  const std::vector<uint8_t> bytes =
+      mojo::TypeConverter<const std::vector<uint8_t>, int32_t>::Convert(value);
+  mojo::Array<uint8_t> transport_value;
+  transport_value.resize(bytes.size());
+  memcpy(&transport_value.front(), &(bytes.front()), bytes.size());
+  return transport_value.Pass();
+}
+
 class TestWindowTreeDelegate : public WindowTreeDelegate {
  public:
   TestWindowTreeDelegate() {}
@@ -165,6 +174,58 @@ TEST_F(WindowTreeClientImplTest, TwoInFlightBoundsChangesBothCanceled) {
   // bounds.
   setup.window_tree_client()->OnChangeCompleted(change_id2, false);
   EXPECT_EQ(original_bounds, root->bounds());
+}
+
+// Verifies properties are reverted if the server replied that the change
+// failed.
+TEST_F(WindowTreeClientImplTest, SetPropertyFailed) {
+  WindowTreeSetup setup;
+  Window* root = setup.window_tree_connection()->GetRoot();
+  ASSERT_TRUE(root);
+  ASSERT_FALSE(root->HasSharedProperty("foo"));
+  const int32_t new_value = 11;
+  root->SetSharedProperty("foo", new_value);
+  ASSERT_TRUE(root->HasSharedProperty("foo"));
+  EXPECT_EQ(new_value, root->GetSharedProperty<int32_t>("foo"));
+  uint32_t change_id;
+  ASSERT_TRUE(setup.window_tree()->GetAndClearChangeId(&change_id));
+  setup.window_tree_client()->OnChangeCompleted(change_id, false);
+  EXPECT_FALSE(root->HasSharedProperty("foo"));
+}
+
+// Simulates a property change, and while the property change is in flight the
+// server replies with a new property and the original property change fails.
+TEST_F(WindowTreeClientImplTest, SetPropertyFailedWithPendingChange) {
+  WindowTreeSetup setup;
+  Window* root = setup.window_tree_connection()->GetRoot();
+  ASSERT_TRUE(root);
+  const int32_t value1 = 11;
+  root->SetSharedProperty("foo", value1);
+  ASSERT_TRUE(root->HasSharedProperty("foo"));
+  EXPECT_EQ(value1, root->GetSharedProperty<int32_t>("foo"));
+  uint32_t change_id;
+  ASSERT_TRUE(setup.window_tree()->GetAndClearChangeId(&change_id));
+
+  // Simulate the server responding with a different value.
+  const int32_t server_value = 12;
+  setup.window_tree_client()->OnWindowSharedPropertyChanged(
+      root->id(), "foo", Int32ToPropertyTransportValue(server_value));
+
+  // This shouldn't trigger the property changing yet.
+  ASSERT_TRUE(root->HasSharedProperty("foo"));
+  EXPECT_EQ(value1, root->GetSharedProperty<int32_t>("foo"));
+
+  // Tell the client the change failed, which should trigger failing to the
+  // most recent value from server.
+  setup.window_tree_client()->OnChangeCompleted(change_id, false);
+  ASSERT_TRUE(root->HasSharedProperty("foo"));
+  EXPECT_EQ(server_value, root->GetSharedProperty<int32_t>("foo"));
+
+  // Simulate server changing back to value1. Should take immediately.
+  setup.window_tree_client()->OnWindowSharedPropertyChanged(
+      root->id(), "foo", Int32ToPropertyTransportValue(value1));
+  ASSERT_TRUE(root->HasSharedProperty("foo"));
+  EXPECT_EQ(value1, root->GetSharedProperty<int32_t>("foo"));
 }
 
 }  // namespace mus

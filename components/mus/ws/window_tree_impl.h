@@ -218,10 +218,10 @@ class WindowTreeImpl : public mojom::WindowTree, public AccessPolicyDelegate {
   void SetWindowVisibility(Id window_id,
                            bool visible,
                            const mojo::Callback<void(bool)>& callback) override;
-  void SetWindowProperty(Id window_id,
+  void SetWindowProperty(uint32_t change_id,
+                         Id window_id,
                          const mojo::String& name,
-                         mojo::Array<uint8_t> value,
-                         const mojo::Callback<void(bool)>& callback) override;
+                         mojo::Array<uint8_t> value) override;
   void RequestSurface(Id window_id,
                       mojom::SurfaceType type,
                       mojo::InterfaceRequest<mojom::Surface> surface,

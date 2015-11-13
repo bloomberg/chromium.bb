@@ -189,7 +189,7 @@ void Window::SetBounds(const gfx::Rect& bounds) {
     return;
   if (connection_)
     static_cast<WindowTreeClientImpl*>(connection_)
-        ->SetBounds(id_, bounds_, bounds);
+        ->SetBounds(this, bounds_, bounds);
   LocalSetBounds(bounds_, bounds);
 }
 
@@ -281,7 +281,7 @@ void Window::AddTransientWindow(Window* transient_window) {
   LocalAddTransientWindow(transient_window);
   if (connection_)
     static_cast<WindowTreeClientImpl*>(connection_)
-        ->AddTransientWindow(id_, transient_window->id());
+        ->AddTransientWindow(this, transient_window->id());
 }
 
 void Window::RemoveTransientWindow(Window* transient_window) {
@@ -290,7 +290,7 @@ void Window::RemoveTransientWindow(Window* transient_window) {
   LocalRemoveTransientWindow(transient_window);
   if (connection_) {
     static_cast<WindowTreeClientImpl*>(connection_)
-        ->RemoveTransientWindow(transient_window->id(), id_);
+        ->RemoveTransientWindowFromParent(transient_window);
   }
 }
 
@@ -487,8 +487,9 @@ Window::Window(WindowTreeConnection* connection, Id id)
 
 void Window::SetSharedPropertyInternal(const std::string& name,
                                        const std::vector<uint8_t>* value) {
-  LocalSetSharedProperty(name, value);
-  // TODO: add test coverage of this (450303).
+  if (!OwnsWindowOrIsRoot(this))
+    return;
+
   if (connection_) {
     mojo::Array<uint8_t> transport_value;
     if (value) {
@@ -496,9 +497,11 @@ void Window::SetSharedPropertyInternal(const std::string& name,
       if (value->size())
         memcpy(&transport_value.front(), &(value->front()), value->size());
     }
+    // TODO: add test coverage of this (450303).
     static_cast<WindowTreeClientImpl*>(connection_)
-        ->SetProperty(id_, name, transport_value.Pass());
+        ->SetProperty(this, name, transport_value.Pass());
   }
+  LocalSetSharedProperty(name, value);
 }
 
 int64 Window::SetLocalPropertyInternal(const void* key,

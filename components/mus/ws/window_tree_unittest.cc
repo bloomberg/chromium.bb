@@ -127,6 +127,10 @@ class TestWindowTreeClient : public mus::mojom::WindowTreeClient {
   void WmSetBounds(uint32_t change_id,
                    Id window_id,
                    mojo::RectPtr bounds) override {}
+  void WmSetProperty(uint32_t change_id,
+                     Id window_id,
+                     const mojo::String& name,
+                     mojo::Array<uint8_t> transit_data) override {}
 
   TestChangeTracker tracker_;
 

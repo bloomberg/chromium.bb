@@ -75,6 +75,9 @@ class WindowManagerApplication
 
   // WindowManagerDelegate:
   bool OnWmSetBounds(mus::Window* window, gfx::Rect* bounds) override;
+  bool OnWmSetProperty(mus::Window* window,
+                       const std::string& name,
+                       scoped_ptr<std::vector<uint8_t>>* new_data) override;
 
   // Sets up the window containers used for z-space management.
   void CreateContainers();

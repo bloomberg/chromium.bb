@@ -725,12 +725,18 @@ void WindowTreeImpl::SetWindowVisibility(Id transport_window_id,
                                    visible));
 }
 
-void WindowTreeImpl::SetWindowProperty(
-    uint32_t window_id,
-    const mojo::String& name,
-    mojo::Array<uint8_t> value,
-    const mojo::Callback<void(bool)>& callback) {
+void WindowTreeImpl::SetWindowProperty(uint32_t change_id,
+                                       uint32_t window_id,
+                                       const mojo::String& name,
+                                       mojo::Array<uint8_t> value) {
   ServerWindow* window = GetWindow(WindowIdFromTransportId(window_id));
+  if (window && ShouldRouteToWindowManager(window)) {
+    const uint32_t wm_change_id =
+        connection_manager_->GenerateWindowManagerChangeId(this, change_id);
+    GetHost()->GetWindowTree()->client_->WmSetProperty(wm_change_id, window_id,
+                                                       name, value.Pass());
+    return;
+  }
   const bool success = window && access_policy_->CanSetWindowProperties(window);
   if (success) {
     Operation op(this, connection_manager_, OperationType::SET_WINDOW_PROPERTY);
@@ -741,7 +747,7 @@ void WindowTreeImpl::SetWindowProperty(
       window->SetProperty(name, &data);
     }
   }
-  callback.Run(success);
+  client_->OnChangeCompleted(change_id, success);
 }
 
 void WindowTreeImpl::RequestSurface(

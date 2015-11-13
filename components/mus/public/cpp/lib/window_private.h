@@ -6,6 +6,7 @@
 #define COMPONENTS_MUS_PUBLIC_CPP_LIB_WINDOW_PRIVATE_H_
 
 #include "components/mus/public/cpp/window.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/array.h"
 
 namespace mus {
 
@@ -68,7 +69,9 @@ class WindowPrivate {
   void LocalSetDrawn(bool drawn) { window_->LocalSetDrawn(drawn); }
   void LocalSetVisible(bool visible) { window_->LocalSetVisible(visible); }
   void LocalSetSharedProperty(const std::string& name,
-                              const std::vector<uint8_t>* data){
+                              mojo::Array<uint8_t> new_data);
+  void LocalSetSharedProperty(const std::string& name,
+                              const std::vector<uint8_t>* data) {
     window_->LocalSetSharedProperty(name, data);
   }
   void NotifyWindowStackingChanged() { window_->NotifyWindowStackingChanged(); }

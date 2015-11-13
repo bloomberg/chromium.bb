@@ -40,11 +40,13 @@ void TestWindowTree::SetWindowVisibility(
     bool visible,
     const SetWindowVisibilityCallback& callback) {}
 
-void TestWindowTree::SetWindowProperty(
-    uint32_t window_id,
-    const mojo::String& name,
-    mojo::Array<uint8_t> value,
-    const SetWindowPropertyCallback& callback) {}
+void TestWindowTree::SetWindowProperty(uint32_t change_id,
+                                       uint32_t window_id,
+                                       const mojo::String& name,
+                                       mojo::Array<uint8_t> value) {
+  got_change_ = true;
+  change_id_ = change_id;
+}
 
 void TestWindowTree::RequestSurface(
     uint32_t window_id,
