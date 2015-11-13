@@ -716,7 +716,8 @@ scoped_ptr<PrivetURLFetcher> PrivetHTTPClientImpl::CreateURLFetcher(
     net::URLFetcher::RequestType request_type,
     PrivetURLFetcher::Delegate* delegate) {
   GURL::Replacements replacements;
-  replacements.SetHostStr(host_port_.host());
+  std::string host = host_port_.HostForURL();
+  replacements.SetHostStr(host);
   std::string port = base::UintToString(host_port_.port());
   replacements.SetPortStr(port);
   std::string scheme = IsInHttpsMode() ? "https" : "http";

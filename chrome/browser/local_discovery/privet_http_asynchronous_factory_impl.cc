@@ -14,21 +14,6 @@
 
 namespace local_discovery {
 
-namespace {
-
-std::string IPAddressToHostString(const net::IPAddressNumber& address) {
-  std::string address_str = net::IPAddressToString(address);
-
-  // IPv6 addresses need to be surrounded by brackets.
-  if (address.size() == net::kIPv6AddressSize) {
-    address_str = base::StringPrintf("[%s]", address_str.c_str());
-  }
-
-  return address_str;
-}
-
-}  // namespace
-
 PrivetHTTPAsynchronousFactoryImpl::PrivetHTTPAsynchronousFactoryImpl(
     net::URLRequestContextGetter* request_context)
     : request_context_(request_context) {
@@ -119,7 +104,7 @@ void PrivetHTTPAsynchronousFactoryImpl::ResolutionImpl::DomainResolveComplete(
   DCHECK(!address.empty());
 
   net::HostPortPair new_address =
-      net::HostPortPair(IPAddressToHostString(address), port);
+      net::HostPortPair::FromIPEndPoint(net::IPEndPoint(address, port));
   callback.Run(scoped_ptr<PrivetHTTPClient>(
       new PrivetHTTPClientImpl(name_, new_address, request_context_.get())));
 }

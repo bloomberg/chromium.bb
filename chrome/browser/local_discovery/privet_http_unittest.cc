@@ -33,8 +33,10 @@ namespace local_discovery {
 
 namespace {
 
-using testing::StrictMock;
 using testing::NiceMock;
+using testing::StrictMock;
+using testing::TestWithParam;
+using testing::ValuesIn;
 
 using content::BrowserThread;
 using net::EmbeddedTestServer;
@@ -227,13 +229,15 @@ const char kSampleCJTDuplex[] =
     "}";
 #endif  // ENABLE_PRINT_PREVIEW
 
+const char* const kTestParams[] = {"8.8.4.4", "2001:4860:4860::8888"};
+
 // Return the representation of the given JSON that would be outputted by
 // JSONWriter. This ensures the same JSON values are represented by the same
 // string.
 std::string NormalizeJson(const std::string& json) {
   std::string result = json;
   scoped_ptr<base::Value> value = base::JSONReader::Read(result);
-  DCHECK(value);
+  DCHECK(value) << result;
   base::JSONWriter::Write(*value, &result);
   return result;
 }
@@ -252,22 +256,25 @@ class MockTestURLFetcherFactoryDelegate
   MOCK_METHOD1(OnRequestEnd, void(int fetcher_id));
 };
 
-class PrivetHTTPTest : public ::testing::Test {
+class PrivetHTTPTest : public TestWithParam<const char*> {
  public:
   PrivetHTTPTest() {
     PrivetURLFetcher::ResetTokenMapForTests();
 
     request_context_ = new net::TestURLRequestContextGetter(
         base::ThreadTaskRunnerHandle::Get());
-    privet_client_ =
-        PrivetV1HTTPClient::CreateDefault(make_scoped_ptr<PrivetHTTPClient>(
-            new PrivetHTTPClientImpl("sampleDevice._privet._tcp.local",
-                                     net::HostPortPair("10.0.0.8", 6006),
-                                     request_context_.get())));
+    privet_client_ = PrivetV1HTTPClient::CreateDefault(
+        make_scoped_ptr<PrivetHTTPClient>(new PrivetHTTPClientImpl(
+            "sampleDevice._privet._tcp.local",
+            net::HostPortPair(GetParam(), 6006), request_context_.get())));
     fetcher_factory_.SetDelegateForTests(&fetcher_delegate_);
   }
 
-  virtual ~PrivetHTTPTest() {
+  GURL GetUrl(const std::string& path) const {
+    std::string host = GetParam();
+    if (host.find(":") != std::string::npos)
+      host = "[" + host + "]";
+    return GURL("http://" + host + ":6006" + path);
   }
 
   bool SuccessfulResponseToURL(const GURL& url,
@@ -359,9 +366,6 @@ class PrivetHTTPTest : public ::testing::Test {
 
 class MockJSONCallback{
  public:
-  MockJSONCallback() {}
-  ~MockJSONCallback() {}
-
   void OnPrivetJSONDone(const base::DictionaryValue* value) {
     if (!value) {
       value_.reset();
@@ -385,11 +389,6 @@ class MockJSONCallback{
 
 class MockRegisterDelegate : public PrivetRegisterOperation::Delegate {
  public:
-  MockRegisterDelegate() {
-  }
-  ~MockRegisterDelegate() {
-  }
-
   void OnPrivetRegisterClaimToken(
       PrivetRegisterOperation* operation,
       const std::string& token,
@@ -428,9 +427,6 @@ class MockRegisterDelegate : public PrivetRegisterOperation::Delegate {
 
 class MockLocalPrintDelegate : public PrivetLocalPrintOperation::Delegate {
  public:
-  MockLocalPrintDelegate() {}
-  ~MockLocalPrintDelegate() {}
-
   virtual void OnPrivetPrintingDone(
       const PrivetLocalPrintOperation* print_operation) {
     OnPrivetPrintingDoneInternal();
@@ -448,10 +444,6 @@ class MockLocalPrintDelegate : public PrivetLocalPrintOperation::Delegate {
 
 class PrivetInfoTest : public PrivetHTTPTest {
  public:
-  PrivetInfoTest() {}
-
-  ~PrivetInfoTest() override {}
-
   void SetUp() override {
     info_operation_ = privet_client_->CreateInfoOperation(
         info_callback_.callback());
@@ -462,13 +454,14 @@ class PrivetInfoTest : public PrivetHTTPTest {
   StrictMock<MockJSONCallback> info_callback_;
 };
 
-TEST_F(PrivetInfoTest, SuccessfulInfo) {
+INSTANTIATE_TEST_CASE_P(PrivetTests, PrivetInfoTest, ValuesIn(kTestParams));
+
+TEST_P(PrivetInfoTest, SuccessfulInfo) {
   info_operation_->Start();
 
   net::TestURLFetcher* fetcher = fetcher_factory_.GetFetcherByID(0);
   ASSERT_TRUE(fetcher != NULL);
-  EXPECT_EQ(GURL("http://10.0.0.8:6006/privet/info"),
-            fetcher->GetOriginalURL());
+  EXPECT_EQ(GetUrl("/privet/info"), fetcher->GetOriginalURL());
 
   fetcher->SetResponseString(kSampleInfoResponse);
   fetcher->set_status(net::URLRequestStatus(net::URLRequestStatus::SUCCESS,
@@ -479,7 +472,7 @@ TEST_F(PrivetInfoTest, SuccessfulInfo) {
   fetcher->delegate()->OnURLFetchComplete(fetcher);
 }
 
-TEST_F(PrivetInfoTest, InfoFailureHTTP) {
+TEST_P(PrivetInfoTest, InfoFailureHTTP) {
   info_operation_->Start();
 
   net::TestURLFetcher* fetcher = fetcher_factory_.GetFetcherByID(0);
@@ -494,11 +487,6 @@ TEST_F(PrivetInfoTest, InfoFailureHTTP) {
 
 class PrivetRegisterTest : public PrivetHTTPTest {
  public:
-  PrivetRegisterTest() {
-  }
-  ~PrivetRegisterTest() override {
-  }
-
   void SetUp() override {
     info_operation_ = privet_client_->CreateInfoOperation(
         info_callback_.callback());
@@ -530,83 +518,78 @@ class PrivetRegisterTest : public PrivetHTTPTest {
   StrictMock<MockRegisterDelegate> register_delegate_;
 };
 
-TEST_F(PrivetRegisterTest, RegisterSuccessSimple) {
+TEST_P(PrivetRegisterTest, RegisterSuccessSimple) {
   register_operation_->Start();
 
-  EXPECT_TRUE(SuccessfulResponseToURL(
-      GURL("http://10.0.0.8:6006/privet/info"),
-      kSampleInfoResponse));
+  EXPECT_TRUE(
+      SuccessfulResponseToURL(GetUrl("/privet/info"), kSampleInfoResponse));
 
-  EXPECT_TRUE(SuccessfulResponseToURL(
-      GURL("http://10.0.0.8:6006/privet/register?"
-           "action=start&user=example%40google.com"),
-      kSampleRegisterStartResponse));
+  EXPECT_TRUE(
+      SuccessfulResponseToURL(GetUrl("/privet/register?"
+                                     "action=start&user=example%40google.com"),
+                              kSampleRegisterStartResponse));
 
   EXPECT_CALL(register_delegate_, OnPrivetRegisterClaimTokenInternal(
       "MySampleToken",
       GURL("https://domain.com/SoMeUrL")));
 
   EXPECT_TRUE(SuccessfulResponseToURL(
-      GURL("http://10.0.0.8:6006/privet/register?"
-           "action=getClaimToken&user=example%40google.com"),
+      GetUrl("/privet/register?"
+             "action=getClaimToken&user=example%40google.com"),
       kSampleRegisterGetClaimTokenResponse));
 
   register_operation_->CompleteRegistration();
 
   EXPECT_TRUE(SuccessfulResponseToURL(
-      GURL("http://10.0.0.8:6006/privet/register?"
-           "action=complete&user=example%40google.com"),
+      GetUrl("/privet/register?"
+             "action=complete&user=example%40google.com"),
       kSampleRegisterCompleteResponse));
 
   EXPECT_CALL(register_delegate_, OnPrivetRegisterDoneInternal(
       "MyDeviceID"));
 
-  EXPECT_TRUE(SuccessfulResponseToURL(
-      GURL("http://10.0.0.8:6006/privet/info"),
-      kSampleInfoResponseRegistered));
+  EXPECT_TRUE(SuccessfulResponseToURL(GetUrl("/privet/info"),
+                                      kSampleInfoResponseRegistered));
 }
 
-TEST_F(PrivetRegisterTest, RegisterXSRFFailure) {
+TEST_P(PrivetRegisterTest, RegisterXSRFFailure) {
   register_operation_->Start();
 
-  EXPECT_TRUE(SuccessfulResponseToURL(
-      GURL("http://10.0.0.8:6006/privet/info"),
-      kSampleInfoResponse));
+  EXPECT_TRUE(
+      SuccessfulResponseToURL(GetUrl("/privet/info"), kSampleInfoResponse));
+
+  EXPECT_TRUE(
+      SuccessfulResponseToURL(GetUrl("/privet/register?"
+                                     "action=start&user=example%40google.com"),
+                              kSampleRegisterStartResponse));
 
   EXPECT_TRUE(SuccessfulResponseToURL(
-      GURL("http://10.0.0.8:6006/privet/register?"
-           "action=start&user=example%40google.com"),
-      kSampleRegisterStartResponse));
-
-  EXPECT_TRUE(SuccessfulResponseToURL(
-      GURL("http://10.0.0.8:6006/privet/register?"
-           "action=getClaimToken&user=example%40google.com"),
+      GetUrl("/privet/register?"
+             "action=getClaimToken&user=example%40google.com"),
       kSampleXPrivetErrorResponse));
 
-  EXPECT_TRUE(SuccessfulResponseToURL(
-      GURL("http://10.0.0.8:6006/privet/info"),
-      kSampleInfoResponse));
+  EXPECT_TRUE(
+      SuccessfulResponseToURL(GetUrl("/privet/info"), kSampleInfoResponse));
 
   EXPECT_CALL(register_delegate_, OnPrivetRegisterClaimTokenInternal(
       "MySampleToken", GURL("https://domain.com/SoMeUrL")));
 
   EXPECT_TRUE(SuccessfulResponseToURL(
-      GURL("http://10.0.0.8:6006/privet/register?"
-           "action=getClaimToken&user=example%40google.com"),
+      GetUrl("/privet/register?"
+             "action=getClaimToken&user=example%40google.com"),
       kSampleRegisterGetClaimTokenResponse));
 }
 
-TEST_F(PrivetRegisterTest, TransientFailure) {
+TEST_P(PrivetRegisterTest, TransientFailure) {
   register_operation_->Start();
 
-  EXPECT_TRUE(SuccessfulResponseToURL(
-      GURL("http://10.0.0.8:6006/privet/info"),
-      kSampleInfoResponse));
+  EXPECT_TRUE(
+      SuccessfulResponseToURL(GetUrl("/privet/info"), kSampleInfoResponse));
 
-  EXPECT_TRUE(SuccessfulResponseToURL(
-      GURL("http://10.0.0.8:6006/privet/register?"
-           "action=start&user=example%40google.com"),
-      kSampleRegisterErrorTransient));
+  EXPECT_TRUE(
+      SuccessfulResponseToURL(GetUrl("/privet/register?"
+                                     "action=start&user=example%40google.com"),
+                              kSampleRegisterErrorTransient));
 
   EXPECT_CALL(fetcher_delegate_, OnRequestStart(0));
 
@@ -614,23 +597,22 @@ TEST_F(PrivetRegisterTest, TransientFailure) {
 
   testing::Mock::VerifyAndClearExpectations(&fetcher_delegate_);
 
-  EXPECT_TRUE(SuccessfulResponseToURL(
-      GURL("http://10.0.0.8:6006/privet/register?"
-           "action=start&user=example%40google.com"),
-      kSampleRegisterStartResponse));
+  EXPECT_TRUE(
+      SuccessfulResponseToURL(GetUrl("/privet/register?"
+                                     "action=start&user=example%40google.com"),
+                              kSampleRegisterStartResponse));
 }
 
-TEST_F(PrivetRegisterTest, PermanentFailure) {
+TEST_P(PrivetRegisterTest, PermanentFailure) {
   register_operation_->Start();
 
-  EXPECT_TRUE(SuccessfulResponseToURL(
-      GURL("http://10.0.0.8:6006/privet/info"),
-      kSampleInfoResponse));
+  EXPECT_TRUE(
+      SuccessfulResponseToURL(GetUrl("/privet/info"), kSampleInfoResponse));
 
-  EXPECT_TRUE(SuccessfulResponseToURL(
-      GURL("http://10.0.0.8:6006/privet/register?"
-           "action=start&user=example%40google.com"),
-      kSampleRegisterStartResponse));
+  EXPECT_TRUE(
+      SuccessfulResponseToURL(GetUrl("/privet/register?"
+                                     "action=start&user=example%40google.com"),
+                              kSampleRegisterStartResponse));
 
   EXPECT_CALL(register_delegate_,
               OnPrivetRegisterErrorInternal(
@@ -639,12 +621,12 @@ TEST_F(PrivetRegisterTest, PermanentFailure) {
                   200));
 
   EXPECT_TRUE(SuccessfulResponseToURL(
-      GURL("http://10.0.0.8:6006/privet/register?"
-           "action=getClaimToken&user=example%40google.com"),
+      GetUrl("/privet/register?"
+             "action=getClaimToken&user=example%40google.com"),
       kSampleRegisterErrorPermanent));
 }
 
-TEST_F(PrivetRegisterTest, InfoFailure) {
+TEST_P(PrivetRegisterTest, InfoFailure) {
   register_operation_->Start();
 
   EXPECT_CALL(register_delegate_,
@@ -653,29 +635,27 @@ TEST_F(PrivetRegisterTest, InfoFailure) {
                   PrivetRegisterOperation::FAILURE_TOKEN,
                   -1));
 
-  EXPECT_TRUE(SuccessfulResponseToURL(
-      GURL("http://10.0.0.8:6006/privet/info"),
-      kSampleInfoResponseBadJson));
+  EXPECT_TRUE(SuccessfulResponseToURL(GetUrl("/privet/info"),
+                                      kSampleInfoResponseBadJson));
 }
 
-TEST_F(PrivetRegisterTest, RegisterCancel) {
+TEST_P(PrivetRegisterTest, RegisterCancel) {
   register_operation_->Start();
 
-  EXPECT_TRUE(SuccessfulResponseToURL(
-      GURL("http://10.0.0.8:6006/privet/info"),
-      kSampleInfoResponse));
+  EXPECT_TRUE(
+      SuccessfulResponseToURL(GetUrl("/privet/info"), kSampleInfoResponse));
 
-  EXPECT_TRUE(SuccessfulResponseToURL(
-      GURL("http://10.0.0.8:6006/privet/register?"
-           "action=start&user=example%40google.com"),
-      kSampleRegisterStartResponse));
+  EXPECT_TRUE(
+      SuccessfulResponseToURL(GetUrl("/privet/register?"
+                                     "action=start&user=example%40google.com"),
+                              kSampleRegisterStartResponse));
 
   register_operation_->Cancel();
 
-  EXPECT_TRUE(SuccessfulResponseToURL(
-      GURL("http://10.0.0.8:6006/privet/register?"
-           "action=cancel&user=example%40google.com"),
-      kSampleRegisterCancelResponse));
+  EXPECT_TRUE(
+      SuccessfulResponseToURL(GetUrl("/privet/register?"
+                                     "action=cancel&user=example%40google.com"),
+                              kSampleRegisterCancelResponse));
 
   // Must keep mocks alive for 3 seconds so the cancelation object can be
   // deleted.
@@ -684,10 +664,6 @@ TEST_F(PrivetRegisterTest, RegisterCancel) {
 
 class PrivetCapabilitiesTest : public PrivetHTTPTest {
  public:
-  PrivetCapabilitiesTest() {}
-
-  ~PrivetCapabilitiesTest() override {}
-
   void SetUp() override {
     capabilities_operation_ = privet_client_->CreateCapabilitiesOperation(
         capabilities_callback_.callback());
@@ -698,36 +674,36 @@ class PrivetCapabilitiesTest : public PrivetHTTPTest {
   StrictMock<MockJSONCallback> capabilities_callback_;
 };
 
-TEST_F(PrivetCapabilitiesTest, SuccessfulCapabilities) {
+INSTANTIATE_TEST_CASE_P(PrivetTests,
+                        PrivetCapabilitiesTest,
+                        ValuesIn(kTestParams));
+
+TEST_P(PrivetCapabilitiesTest, SuccessfulCapabilities) {
   capabilities_operation_->Start();
 
-  EXPECT_TRUE(SuccessfulResponseToURL(
-      GURL("http://10.0.0.8:6006/privet/info"),
-      kSampleInfoResponse));
+  EXPECT_TRUE(
+      SuccessfulResponseToURL(GetUrl("/privet/info"), kSampleInfoResponse));
 
   EXPECT_CALL(capabilities_callback_, OnPrivetJSONDoneInternal());
 
-  EXPECT_TRUE(SuccessfulResponseToURL(
-      GURL("http://10.0.0.8:6006/privet/capabilities"),
-      kSampleCapabilitiesResponse));
+  EXPECT_TRUE(SuccessfulResponseToURL(GetUrl("/privet/capabilities"),
+                                      kSampleCapabilitiesResponse));
 
   std::string version;
   EXPECT_TRUE(capabilities_callback_.value()->GetString("version", &version));
   EXPECT_EQ("1.0", version);
 }
 
-TEST_F(PrivetCapabilitiesTest, CacheToken) {
+TEST_P(PrivetCapabilitiesTest, CacheToken) {
   capabilities_operation_->Start();
 
-  EXPECT_TRUE(SuccessfulResponseToURL(
-      GURL("http://10.0.0.8:6006/privet/info"),
-      kSampleInfoResponse));
+  EXPECT_TRUE(
+      SuccessfulResponseToURL(GetUrl("/privet/info"), kSampleInfoResponse));
 
   EXPECT_CALL(capabilities_callback_, OnPrivetJSONDoneInternal());
 
-  EXPECT_TRUE(SuccessfulResponseToURL(
-      GURL("http://10.0.0.8:6006/privet/capabilities"),
-      kSampleCapabilitiesResponse));
+  EXPECT_TRUE(SuccessfulResponseToURL(GetUrl("/privet/capabilities"),
+                                      kSampleCapabilitiesResponse));
 
   capabilities_operation_ = privet_client_->CreateCapabilitiesOperation(
       capabilities_callback_.callback());
@@ -736,31 +712,26 @@ TEST_F(PrivetCapabilitiesTest, CacheToken) {
 
   EXPECT_CALL(capabilities_callback_, OnPrivetJSONDoneInternal());
 
-  EXPECT_TRUE(SuccessfulResponseToURL(
-      GURL("http://10.0.0.8:6006/privet/capabilities"),
-      kSampleCapabilitiesResponse));
+  EXPECT_TRUE(SuccessfulResponseToURL(GetUrl("/privet/capabilities"),
+                                      kSampleCapabilitiesResponse));
 }
 
-TEST_F(PrivetCapabilitiesTest, BadToken) {
+TEST_P(PrivetCapabilitiesTest, BadToken) {
   capabilities_operation_->Start();
 
-  EXPECT_TRUE(SuccessfulResponseToURL(
-      GURL("http://10.0.0.8:6006/privet/info"),
-      kSampleInfoResponse));
+  EXPECT_TRUE(
+      SuccessfulResponseToURL(GetUrl("/privet/info"), kSampleInfoResponse));
 
-  EXPECT_TRUE(SuccessfulResponseToURL(
-      GURL("http://10.0.0.8:6006/privet/capabilities"),
-      kSampleXPrivetErrorResponse));
+  EXPECT_TRUE(SuccessfulResponseToURL(GetUrl("/privet/capabilities"),
+                                      kSampleXPrivetErrorResponse));
 
-  EXPECT_TRUE(SuccessfulResponseToURL(
-      GURL("http://10.0.0.8:6006/privet/info"),
-      kSampleInfoResponse));
+  EXPECT_TRUE(
+      SuccessfulResponseToURL(GetUrl("/privet/info"), kSampleInfoResponse));
 
   EXPECT_CALL(capabilities_callback_, OnPrivetJSONDoneInternal());
 
-  EXPECT_TRUE(SuccessfulResponseToURL(
-      GURL("http://10.0.0.8:6006/privet/capabilities"),
-      kSampleCapabilitiesResponse));
+  EXPECT_TRUE(SuccessfulResponseToURL(GetUrl("/privet/capabilities"),
+                                      kSampleCapabilitiesResponse));
 }
 
 #if defined(ENABLE_PRINT_PREVIEW)
@@ -770,11 +741,6 @@ TEST_F(PrivetCapabilitiesTest, BadToken) {
 // request is uploading a file that is based on this pattern.
 class FakePWGRasterConverter : public PWGRasterConverter {
  public:
-  FakePWGRasterConverter() {
-  }
-
-  ~FakePWGRasterConverter() override {}
-
   void Start(base::RefCountedMemory* data,
              const printing::PdfRenderSettings& conversion_settings,
              const printing::PwgRasterSettings& bitmap_settings,
@@ -794,10 +760,6 @@ class FakePWGRasterConverter : public PWGRasterConverter {
 
 class PrivetLocalPrintTest : public PrivetHTTPTest {
  public:
-  PrivetLocalPrintTest() {}
-
-  ~PrivetLocalPrintTest() override {}
-
   void SetUp() override {
     PrivetURLFetcher::ResetTokenMapForTests();
 
@@ -825,7 +787,11 @@ class PrivetLocalPrintTest : public PrivetHTTPTest {
   FakePWGRasterConverter* pwg_converter_;
 };
 
-TEST_F(PrivetLocalPrintTest, SuccessfulLocalPrint) {
+INSTANTIATE_TEST_CASE_P(PrivetTests,
+                        PrivetLocalPrintTest,
+                        ValuesIn(kTestParams));
+
+TEST_P(PrivetLocalPrintTest, SuccessfulLocalPrint) {
   local_print_operation_->SetUsername("sample@gmail.com");
   local_print_operation_->SetJobname("Sample job name");
   local_print_operation_->SetData(RefCountedBytesFromString(
@@ -833,25 +799,23 @@ TEST_F(PrivetLocalPrintTest, SuccessfulLocalPrint) {
   local_print_operation_->SetCapabilities(kSampleCapabilitiesResponse);
   local_print_operation_->Start();
 
-  EXPECT_TRUE(SuccessfulResponseToURL(
-      GURL("http://10.0.0.8:6006/privet/info"),
-      kSampleInfoResponse));
+  EXPECT_TRUE(
+      SuccessfulResponseToURL(GetUrl("/privet/info"), kSampleInfoResponse));
 
-  EXPECT_TRUE(SuccessfulResponseToURL(GURL("http://10.0.0.8:6006/privet/info"),
-                                      kSampleInfoResponse));
+  EXPECT_TRUE(
+      SuccessfulResponseToURL(GetUrl("/privet/info"), kSampleInfoResponse));
 
   EXPECT_CALL(local_print_delegate_, OnPrivetPrintingDoneInternal());
 
   // TODO(noamsml): Is encoding spaces as pluses standard?
   EXPECT_TRUE(SuccessfulResponseToURLAndData(
-      GURL("http://10.0.0.8:6006/privet/printer/submitdoc?"
-           "client_name=Chrome&user_name=sample%40gmail.com&"
-           "job_name=Sample+job+name"),
-      "Sample print data",
-      kSampleLocalPrintResponse));
+      GetUrl("/privet/printer/submitdoc?"
+             "client_name=Chrome&user_name=sample%40gmail.com&"
+             "job_name=Sample+job+name"),
+      "Sample print data", kSampleLocalPrintResponse));
 }
 
-TEST_F(PrivetLocalPrintTest, SuccessfulLocalPrintWithAnyMimetype) {
+TEST_P(PrivetLocalPrintTest, SuccessfulLocalPrintWithAnyMimetype) {
   local_print_operation_->SetUsername("sample@gmail.com");
   local_print_operation_->SetJobname("Sample job name");
   local_print_operation_->SetData(
@@ -860,25 +824,23 @@ TEST_F(PrivetLocalPrintTest, SuccessfulLocalPrintWithAnyMimetype) {
       kSampleCapabilitiesResponseWithAnyMimetype);
   local_print_operation_->Start();
 
-  EXPECT_TRUE(SuccessfulResponseToURL(
-      GURL("http://10.0.0.8:6006/privet/info"),
-      kSampleInfoResponse));
+  EXPECT_TRUE(
+      SuccessfulResponseToURL(GetUrl("/privet/info"), kSampleInfoResponse));
 
-  EXPECT_TRUE(SuccessfulResponseToURL(GURL("http://10.0.0.8:6006/privet/info"),
-                                      kSampleInfoResponse));
+  EXPECT_TRUE(
+      SuccessfulResponseToURL(GetUrl("/privet/info"), kSampleInfoResponse));
 
   EXPECT_CALL(local_print_delegate_, OnPrivetPrintingDoneInternal());
 
   // TODO(noamsml): Is encoding spaces as pluses standard?
   EXPECT_TRUE(SuccessfulResponseToURLAndData(
-      GURL("http://10.0.0.8:6006/privet/printer/submitdoc?"
-           "client_name=Chrome&user_name=sample%40gmail.com&"
-           "job_name=Sample+job+name"),
-      "Sample print data",
-      kSampleLocalPrintResponse));
+      GetUrl("/privet/printer/submitdoc?"
+             "client_name=Chrome&user_name=sample%40gmail.com&"
+             "job_name=Sample+job+name"),
+      "Sample print data", kSampleLocalPrintResponse));
 }
 
-TEST_F(PrivetLocalPrintTest, SuccessfulPWGLocalPrint) {
+TEST_P(PrivetLocalPrintTest, SuccessfulPWGLocalPrint) {
   local_print_operation_->SetUsername("sample@gmail.com");
   local_print_operation_->SetJobname("Sample job name");
   local_print_operation_->SetData(
@@ -886,20 +848,19 @@ TEST_F(PrivetLocalPrintTest, SuccessfulPWGLocalPrint) {
   local_print_operation_->SetCapabilities(kSampleCapabilitiesResponsePWGOnly);
   local_print_operation_->Start();
 
-  EXPECT_TRUE(SuccessfulResponseToURL(
-      GURL("http://10.0.0.8:6006/privet/info"),
-      kSampleInfoResponse));
+  EXPECT_TRUE(
+      SuccessfulResponseToURL(GetUrl("/privet/info"), kSampleInfoResponse));
 
-  EXPECT_TRUE(SuccessfulResponseToURL(GURL("http://10.0.0.8:6006/privet/info"),
-                                      kSampleInfoResponse));
+  EXPECT_TRUE(
+      SuccessfulResponseToURL(GetUrl("/privet/info"), kSampleInfoResponse));
 
   EXPECT_CALL(local_print_delegate_, OnPrivetPrintingDoneInternal());
 
   // TODO(noamsml): Is encoding spaces as pluses standard?
   EXPECT_TRUE(SuccessfulResponseToURLAndFilePath(
-      GURL("http://10.0.0.8:6006/privet/printer/submitdoc?"
-           "client_name=Chrome&user_name=sample%40gmail.com"
-           "&job_name=Sample+job+name"),
+      GetUrl("/privet/printer/submitdoc?"
+             "client_name=Chrome&user_name=sample%40gmail.com"
+             "&job_name=Sample+job+name"),
       base::FilePath(FILE_PATH_LITERAL("path/to/test.pdf")),
       kSampleLocalPrintResponse));
 
@@ -909,7 +870,7 @@ TEST_F(PrivetLocalPrintTest, SuccessfulPWGLocalPrint) {
   EXPECT_FALSE(pwg_converter_->bitmap_settings().reverse_page_order);
 }
 
-TEST_F(PrivetLocalPrintTest, SuccessfulPWGLocalPrintDuplex) {
+TEST_P(PrivetLocalPrintTest, SuccessfulPWGLocalPrintDuplex) {
   local_print_operation_->SetUsername("sample@gmail.com");
   local_print_operation_->SetJobname("Sample job name");
   local_print_operation_->SetData(RefCountedBytesFromString("path/to/"));
@@ -918,25 +879,23 @@ TEST_F(PrivetLocalPrintTest, SuccessfulPWGLocalPrintDuplex) {
       kSampleCapabilitiesResponsePWGSettings);
   local_print_operation_->Start();
 
-  EXPECT_TRUE(SuccessfulResponseToURL(GURL("http://10.0.0.8:6006/privet/info"),
+  EXPECT_TRUE(SuccessfulResponseToURL(GetUrl("/privet/info"),
                                       kSampleInfoResponseWithCreatejob));
 
-  EXPECT_TRUE(SuccessfulResponseToURL(GURL("http://10.0.0.8:6006/privet/info"),
-                                      kSampleInfoResponse));
+  EXPECT_TRUE(
+      SuccessfulResponseToURL(GetUrl("/privet/info"), kSampleInfoResponse));
 
   EXPECT_TRUE(SuccessfulResponseToURLAndJSONData(
-      GURL("http://10.0.0.8:6006/privet/printer/createjob"),
-      kSampleCJTDuplex,
+      GetUrl("/privet/printer/createjob"), kSampleCJTDuplex,
       kSampleCreatejobResponse));
 
   EXPECT_CALL(local_print_delegate_, OnPrivetPrintingDoneInternal());
 
   // TODO(noamsml): Is encoding spaces as pluses standard?
   EXPECT_TRUE(SuccessfulResponseToURLAndFilePath(
-      GURL(
-          "http://10.0.0.8:6006/privet/printer/submitdoc?"
-          "client_name=Chrome&user_name=sample%40gmail.com"
-          "&job_name=Sample+job+name&job_id=1234"),
+      GetUrl("/privet/printer/submitdoc?"
+             "client_name=Chrome&user_name=sample%40gmail.com"
+             "&job_name=Sample+job+name&job_id=1234"),
       base::FilePath(FILE_PATH_LITERAL("path/to/test.pdf")),
       kSampleLocalPrintResponse));
 
@@ -946,7 +905,7 @@ TEST_F(PrivetLocalPrintTest, SuccessfulPWGLocalPrintDuplex) {
   EXPECT_TRUE(pwg_converter_->bitmap_settings().reverse_page_order);
 }
 
-TEST_F(PrivetLocalPrintTest, SuccessfulLocalPrintWithCreatejob) {
+TEST_P(PrivetLocalPrintTest, SuccessfulLocalPrintWithCreatejob) {
   local_print_operation_->SetUsername("sample@gmail.com");
   local_print_operation_->SetJobname("Sample job name");
   local_print_operation_->SetTicket(kSampleCJT);
@@ -955,30 +914,27 @@ TEST_F(PrivetLocalPrintTest, SuccessfulLocalPrintWithCreatejob) {
   local_print_operation_->SetCapabilities(kSampleCapabilitiesResponse);
   local_print_operation_->Start();
 
-  EXPECT_TRUE(SuccessfulResponseToURL(
-      GURL("http://10.0.0.8:6006/privet/info"),
-      kSampleInfoResponseWithCreatejob));
+  EXPECT_TRUE(SuccessfulResponseToURL(GetUrl("/privet/info"),
+                                      kSampleInfoResponseWithCreatejob));
 
-  EXPECT_TRUE(SuccessfulResponseToURL(GURL("http://10.0.0.8:6006/privet/info"),
-                                      kSampleInfoResponse));
+  EXPECT_TRUE(
+      SuccessfulResponseToURL(GetUrl("/privet/info"), kSampleInfoResponse));
 
-  EXPECT_TRUE(SuccessfulResponseToURLAndJSONData(
-      GURL("http://10.0.0.8:6006/privet/printer/createjob"),
-      kSampleCJT,
-      kSampleCreatejobResponse));
+  EXPECT_TRUE(
+      SuccessfulResponseToURLAndJSONData(GetUrl("/privet/printer/createjob"),
+                                         kSampleCJT, kSampleCreatejobResponse));
 
   EXPECT_CALL(local_print_delegate_, OnPrivetPrintingDoneInternal());
 
   // TODO(noamsml): Is encoding spaces as pluses standard?
   EXPECT_TRUE(SuccessfulResponseToURLAndData(
-      GURL("http://10.0.0.8:6006/privet/printer/submitdoc?"
-           "client_name=Chrome&user_name=sample%40gmail.com&"
-           "job_name=Sample+job+name&job_id=1234"),
-      "Sample print data",
-      kSampleLocalPrintResponse));
+      GetUrl("/privet/printer/submitdoc?"
+             "client_name=Chrome&user_name=sample%40gmail.com&"
+             "job_name=Sample+job+name&job_id=1234"),
+      "Sample print data", kSampleLocalPrintResponse));
 }
 
-TEST_F(PrivetLocalPrintTest, SuccessfulLocalPrintWithOverlongName) {
+TEST_P(PrivetLocalPrintTest, SuccessfulLocalPrintWithOverlongName) {
   local_print_operation_->SetUsername("sample@gmail.com");
   local_print_operation_->SetJobname(
       "123456789:123456789:123456789:123456789:123456789:123456789:123456789:");
@@ -988,31 +944,28 @@ TEST_F(PrivetLocalPrintTest, SuccessfulLocalPrintWithOverlongName) {
       RefCountedBytesFromString("Sample print data"));
   local_print_operation_->Start();
 
-  EXPECT_TRUE(SuccessfulResponseToURL(GURL("http://10.0.0.8:6006/privet/info"),
+  EXPECT_TRUE(SuccessfulResponseToURL(GetUrl("/privet/info"),
                                       kSampleInfoResponseWithCreatejob));
 
-  EXPECT_TRUE(SuccessfulResponseToURL(GURL("http://10.0.0.8:6006/privet/info"),
-                                      kSampleInfoResponse));
+  EXPECT_TRUE(
+      SuccessfulResponseToURL(GetUrl("/privet/info"), kSampleInfoResponse));
 
-  EXPECT_TRUE(SuccessfulResponseToURLAndJSONData(
-      GURL("http://10.0.0.8:6006/privet/printer/createjob"),
-      kSampleCJT,
-      kSampleCreatejobResponse));
+  EXPECT_TRUE(
+      SuccessfulResponseToURLAndJSONData(GetUrl("/privet/printer/createjob"),
+                                         kSampleCJT, kSampleCreatejobResponse));
 
   EXPECT_CALL(local_print_delegate_, OnPrivetPrintingDoneInternal());
 
   // TODO(noamsml): Is encoding spaces as pluses standard?
   EXPECT_TRUE(SuccessfulResponseToURLAndData(
-      GURL(
-          "http://10.0.0.8:6006/privet/printer/submitdoc?"
-          "client_name=Chrome&user_name=sample%40gmail.com&"
-          "job_name=123456789%3A123456789%3A123456789%3A1...123456789"
-          "%3A123456789%3A123456789%3A&job_id=1234"),
-      "Sample print data",
-      kSampleLocalPrintResponse));
+      GetUrl("/privet/printer/submitdoc?"
+             "client_name=Chrome&user_name=sample%40gmail.com&"
+             "job_name=123456789%3A123456789%3A123456789%3A1...123456789"
+             "%3A123456789%3A123456789%3A&job_id=1234"),
+      "Sample print data", kSampleLocalPrintResponse));
 }
 
-TEST_F(PrivetLocalPrintTest, PDFPrintInvalidDocumentTypeRetry) {
+TEST_P(PrivetLocalPrintTest, PDFPrintInvalidDocumentTypeRetry) {
   local_print_operation_->SetUsername("sample@gmail.com");
   local_print_operation_->SetJobname("Sample job name");
   local_print_operation_->SetTicket(kSampleCJT);
@@ -1021,37 +974,34 @@ TEST_F(PrivetLocalPrintTest, PDFPrintInvalidDocumentTypeRetry) {
       RefCountedBytesFromString("sample/path/"));
   local_print_operation_->Start();
 
-  EXPECT_TRUE(SuccessfulResponseToURL(
-      GURL("http://10.0.0.8:6006/privet/info"),
-      kSampleInfoResponseWithCreatejob));
+  EXPECT_TRUE(SuccessfulResponseToURL(GetUrl("/privet/info"),
+                                      kSampleInfoResponseWithCreatejob));
 
-  EXPECT_TRUE(SuccessfulResponseToURL(GURL("http://10.0.0.8:6006/privet/info"),
-                                      kSampleInfoResponse));
+  EXPECT_TRUE(
+      SuccessfulResponseToURL(GetUrl("/privet/info"), kSampleInfoResponse));
 
-  EXPECT_TRUE(SuccessfulResponseToURLAndJSONData(
-      GURL("http://10.0.0.8:6006/privet/printer/createjob"),
-      kSampleCJT,
-      kSampleCreatejobResponse));
+  EXPECT_TRUE(
+      SuccessfulResponseToURLAndJSONData(GetUrl("/privet/printer/createjob"),
+                                         kSampleCJT, kSampleCreatejobResponse));
 
   // TODO(noamsml): Is encoding spaces as pluses standard?
   EXPECT_TRUE(SuccessfulResponseToURLAndData(
-      GURL("http://10.0.0.8:6006/privet/printer/submitdoc?"
-           "client_name=Chrome&user_name=sample%40gmail.com&"
-           "job_name=Sample+job+name&job_id=1234"),
-      "sample/path/",
-      kSampleInvalidDocumentTypeResponse));
+      GetUrl("/privet/printer/submitdoc?"
+             "client_name=Chrome&user_name=sample%40gmail.com&"
+             "job_name=Sample+job+name&job_id=1234"),
+      "sample/path/", kSampleInvalidDocumentTypeResponse));
 
   EXPECT_CALL(local_print_delegate_, OnPrivetPrintingDoneInternal());
 
   EXPECT_TRUE(SuccessfulResponseToURLAndFilePath(
-      GURL("http://10.0.0.8:6006/privet/printer/submitdoc?"
-           "client_name=Chrome&user_name=sample%40gmail.com&"
-           "job_name=Sample+job+name&job_id=1234"),
+      GetUrl("/privet/printer/submitdoc?"
+             "client_name=Chrome&user_name=sample%40gmail.com&"
+             "job_name=Sample+job+name&job_id=1234"),
       base::FilePath(FILE_PATH_LITERAL("sample/path/test.pdf")),
       kSampleLocalPrintResponse));
 }
 
-TEST_F(PrivetLocalPrintTest, LocalPrintRetryOnInvalidJobID) {
+TEST_P(PrivetLocalPrintTest, LocalPrintRetryOnInvalidJobID) {
   local_print_operation_->SetUsername("sample@gmail.com");
   local_print_operation_->SetJobname("Sample job name");
   local_print_operation_->SetTicket(kSampleCJT);
@@ -1060,30 +1010,26 @@ TEST_F(PrivetLocalPrintTest, LocalPrintRetryOnInvalidJobID) {
       RefCountedBytesFromString("Sample print data"));
   local_print_operation_->Start();
 
-  EXPECT_TRUE(SuccessfulResponseToURL(
-      GURL("http://10.0.0.8:6006/privet/info"),
-      kSampleInfoResponseWithCreatejob));
+  EXPECT_TRUE(SuccessfulResponseToURL(GetUrl("/privet/info"),
+                                      kSampleInfoResponseWithCreatejob));
 
-  EXPECT_TRUE(SuccessfulResponseToURL(GURL("http://10.0.0.8:6006/privet/info"),
-                                      kSampleInfoResponse));
+  EXPECT_TRUE(
+      SuccessfulResponseToURL(GetUrl("/privet/info"), kSampleInfoResponse));
 
-  EXPECT_TRUE(SuccessfulResponseToURLAndJSONData(
-      GURL("http://10.0.0.8:6006/privet/printer/createjob"),
-      kSampleCJT,
-      kSampleCreatejobResponse));
+  EXPECT_TRUE(
+      SuccessfulResponseToURLAndJSONData(GetUrl("/privet/printer/createjob"),
+                                         kSampleCJT, kSampleCreatejobResponse));
 
   EXPECT_TRUE(SuccessfulResponseToURLAndData(
-      GURL("http://10.0.0.8:6006/privet/printer/submitdoc?"
-           "client_name=Chrome&user_name=sample%40gmail.com&"
-           "job_name=Sample+job+name&job_id=1234"),
-      "Sample print data",
-      kSampleErrorResponsePrinterBusy));
+      GetUrl("/privet/printer/submitdoc?"
+             "client_name=Chrome&user_name=sample%40gmail.com&"
+             "job_name=Sample+job+name&job_id=1234"),
+      "Sample print data", kSampleErrorResponsePrinterBusy));
 
   RunFor(base::TimeDelta::FromSeconds(3));
 
-  EXPECT_TRUE(SuccessfulResponseToURL(
-      GURL("http://10.0.0.8:6006/privet/printer/createjob"),
-      kSampleCreatejobResponse));
+  EXPECT_TRUE(SuccessfulResponseToURL(GetUrl("/privet/printer/createjob"),
+                                      kSampleCreatejobResponse));
 }
 #endif  // ENABLE_PRINT_PREVIEW
 
