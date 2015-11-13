@@ -37,15 +37,12 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/bubble/bubble_controller.h"
-#include "components/bubble/bubble_ui.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #include "extensions/browser/install/extension_install_ui.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/feature_switch.h"
 #import "skia/ext/skia_utils_mac.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMUILocalizerAndLayoutTweaker.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #import "ui/base/cocoa/controls/hyperlink_text_view.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -53,19 +50,18 @@ using content::BrowserThread;
 using extensions::BundleInstaller;
 using extensions::Extension;
 
-class ExtensionInstalledBubbleBridge : public BubbleUi {
+class ExtensionInstalledBubbleBridge
+    : public ExtensionInstalledBubble::ExtensionInstalledBubbleUi {
  public:
   explicit ExtensionInstalledBubbleBridge(
       ExtensionInstalledBubbleController* controller);
   ~ExtensionInstalledBubbleBridge() override;
 
  private:
-  // BubbleUi:
-  void Show(BubbleReference bubble_reference) override;
-  void Close() override;
-  void UpdateAnchorPosition() override;
+  // ExtensionInstalledBubble::ExtensionInstalledBubbleUi:
+  void Show() override;
 
-  // Weak reference to the controller. |controller_| will outlive the bridge.
+  // The (owning) installed bubble controller.
   ExtensionInstalledBubbleController* controller_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionInstalledBubbleBridge);
@@ -79,35 +75,14 @@ ExtensionInstalledBubbleBridge::ExtensionInstalledBubbleBridge(
 ExtensionInstalledBubbleBridge::~ExtensionInstalledBubbleBridge() {
 }
 
-// Cocoa specific implementation.
-bool ExtensionInstalledBubble::ShouldShow() {
+// static
+bool ExtensionInstalledBubble::ExtensionInstalledBubbleUi::ShouldShow(
+    ExtensionInstalledBubble* bubble) {
   return true;
 }
 
-// Implemented here to create the platform specific instance of the BubbleUi.
-scoped_ptr<BubbleUi> ExtensionInstalledBubble::BuildBubbleUi() {
-  // |controller| is owned by the parent window.
-  ExtensionInstalledBubbleController* controller =
-      [[ExtensionInstalledBubbleController alloc]
-          initWithParentWindow:browser()->window()->GetNativeWindow()
-               extensionBubble:this];
-
-  // The bridge to the C++ object that performs shared logic across platforms.
-  // This tells the controller when to show the bubble.
-  return make_scoped_ptr(new ExtensionInstalledBubbleBridge(controller));
-}
-
-void ExtensionInstalledBubbleBridge::Show(BubbleReference bubble_reference) {
-  [controller_ setBubbleReference:bubble_reference];
+void ExtensionInstalledBubbleBridge::Show() {
   [controller_ showWindow:controller_];
-}
-
-void ExtensionInstalledBubbleBridge::Close() {
-  [controller_ close];
-}
-
-void ExtensionInstalledBubbleBridge::UpdateAnchorPosition() {
-  [controller_ updateAnchorPosition];
 }
 
 @implementation ExtensionInstalledBubbleController
@@ -141,7 +116,11 @@ void ExtensionInstalledBubbleBridge::UpdateAnchorPosition() {
       type_ = extension_installed_bubble::kGeneric;
     }
 
-    installedBubble_ = extensionBubble;
+    // Start showing window only after extension has fully loaded.
+    installedBubbleBridge_.reset(new ExtensionInstalledBubbleBridge(self));
+    installedBubble_.reset(extensionBubble);
+    installedBubble_->SetBubbleUi(installedBubbleBridge_.get());
+    installedBubble_->IgnoreBrowserClosing();
   }
   return self;
 }
@@ -196,7 +175,7 @@ void ExtensionInstalledBubbleBridge::UpdateAnchorPosition() {
   // Turn off page action icon preview when the window closes, unless we
   // already removed it when the window resigned key status.
   [self removePageActionPreviewIfNecessary];
-  browser_ = nullptr;
+  browser_ = NULL;
   [closeButton_ setTrackingEnabled:NO];
   [promo_ setDelegate:nil];
   [super windowWillClose:notification];
@@ -214,10 +193,7 @@ void ExtensionInstalledBubbleBridge::UpdateAnchorPosition() {
 
 - (IBAction)closeWindow:(id)sender {
   DCHECK([[self window] isVisible]);
-  DCHECK([self bubbleReference]);
-  bool didClose =
-      [self bubbleReference]->CloseBubble(BUBBLE_CLOSE_USER_DISMISSED);
-  DCHECK(didClose);
+  [self close];
 }
 
 - (BOOL)textView:(NSTextView*)aTextView
@@ -333,7 +309,8 @@ void ExtensionInstalledBubbleBridge::UpdateAnchorPosition() {
   [self setMessageFrames:newWindowHeight];
 
   // Find window origin, taking into account bubble size and arrow location.
-  [self updateAnchorPosition];
+  self.anchorPoint =
+      [self.parentWindow convertBaseToScreen:[self calculateArrowPoint]];
   [super showWindow:sender];
 }
 
@@ -626,15 +603,8 @@ void ExtensionInstalledBubbleBridge::UpdateAnchorPosition() {
   return appShortcutLink_;
 }
 
-- (void)updateAnchorPosition {
-  self.anchorPoint =
-      [self.parentWindow convertBaseToScreen:[self calculateArrowPoint]];
-}
-
 - (IBAction)onManageShortcutClicked:(id)sender {
-  DCHECK([self bubbleReference]);
-  bool didClose = [self bubbleReference]->CloseBubble(BUBBLE_CLOSE_ACCEPTED);
-  DCHECK(didClose);
+  [self close];
   std::string configure_url = chrome::kChromeUIExtensionsURL;
   configure_url += chrome::kExtensionConfigureCommandsSubPage;
   chrome::NavigateParams params(chrome::GetSingletonTabNavigateParams(

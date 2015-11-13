@@ -5,9 +5,9 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_EXTENSIONS_EXTENSION_INSTALLED_BUBBLE_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_EXTENSIONS_EXTENSION_INSTALLED_BUBBLE_VIEW_H_
 
-#include "base/macros.h"
+#include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/extensions/extension_installed_bubble.h"
-#include "components/bubble/bubble_reference.h"
 #include "ui/views/bubble/bubble_delegate.h"
 
 class Browser;
@@ -25,27 +25,34 @@ class Extension;
 //                      bar which is shown while the Bubble is shown.
 //    GENERIC        -> The app menu. This case includes pageActions that don't
 //                      specify a default icon.
-class ExtensionInstalledBubbleView : public views::BubbleDelegateView {
+class ExtensionInstalledBubbleView
+    : public ExtensionInstalledBubble::ExtensionInstalledBubbleUi,
+      public views::BubbleDelegateView {
  public:
-  ExtensionInstalledBubbleView(ExtensionInstalledBubble* bubble,
-                               BubbleReference bubble_reference);
-  ~ExtensionInstalledBubbleView() override;
-
-  // Recalculate the anchor position for this bubble.
-  void UpdateAnchorView();
-
-  // views::BubbleDelegateView:
-  void WindowClosing() override;
-  gfx::Rect GetAnchorRect() const override;
-  void OnWidgetClosing(views::Widget* widget) override;
-  void OnWidgetActivationChanged(views::Widget* widget, bool active) override;
-  bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
+  // Creates the ExtensionInstalledBubbleView and schedules it to be shown once
+  // the extension has loaded. |extension| is the installed extension. |browser|
+  // is the browser window which will host the bubble. |icon| is the install
+  // icon of the extension.
+  static void Show(const extensions::Extension* extension,
+                   Browser* browser,
+                   const SkBitmap& icon);
 
  private:
-  BubbleReference bubble_reference_;
-  const extensions::Extension* extension_;
-  Browser* browser_;
-  ExtensionInstalledBubble::BubbleType type_;
+  explicit ExtensionInstalledBubbleView(
+      scoped_ptr<ExtensionInstalledBubble> bubble);
+
+  ~ExtensionInstalledBubbleView() override;
+
+  // ExtensionInstalledBubble::ExtensionInstalledBubbleUi:
+  void Show() override;
+
+  // views::WidgetDelegate:
+  void WindowClosing() override;
+
+  // views::BubbleDelegate:
+  gfx::Rect GetAnchorRect() const override;
+
+  scoped_ptr<ExtensionInstalledBubble> bubble_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionInstalledBubbleView);
 };
