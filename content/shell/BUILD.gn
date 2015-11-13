@@ -21,6 +21,13 @@ declare_args() {
   content_shell_version = "19.77.34.5"
 }
 
+config("content_shell_lib_warnings") {
+  if (is_clang) {
+    # TODO(thakis): Remove this once http://crbug.com/383820 is figured out
+    cflags = [ "-Wno-nonnull" ]
+  }
+}
+
 static_library("content_shell_lib") {
   testonly = true
   sources = [
@@ -171,16 +178,12 @@ static_library("content_shell_lib") {
   ]
 
   configs += [
+    ":content_shell_lib_warnings",
     "//build/config:precompiled_headers",
 
     # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
     "//build/config/compiler:no_size_t_to_int_warning",
   ]
-
-  if (is_clang) {
-    # TODO(thakis): Remove this once http://crbug.com/383820 is figured out
-    cflags = [ "-Wno-nonnull" ]
-  }
 
   defines = [ "CONTENT_SHELL_VERSION=\"$content_shell_version\"" ]
 
