@@ -263,7 +263,7 @@ class BuildStagesResultsTest(cros_test_lib.TestCase):
         ('GetAttr', results_lib.Results.SUCCESS),
         ('GetAttr', results_lib.Results.SUCCESS),
     ]
-    self._verifyRunResults(expectedResults, max_time=30.0)
+    self._verifyRunResults(expectedResults, max_time=90.0)
 
     # Make sure run attribute propagated up to the top, too.
     value = self._run.attrs.GetParallel('unittest_value')
