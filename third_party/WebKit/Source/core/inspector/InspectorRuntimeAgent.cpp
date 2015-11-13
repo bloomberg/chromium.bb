@@ -40,7 +40,6 @@
 #include "core/inspector/v8/V8Debugger.h"
 #include "core/inspector/v8/V8RuntimeAgent.h"
 #include "platform/JSONValues.h"
-#include "wtf/Optional.h"
 
 using blink::TypeBuilder::Runtime::ExecutionContextDescription;
 
@@ -99,17 +98,17 @@ void InspectorRuntimeAgent::restore()
 void InspectorRuntimeAgent::evaluate(ErrorString* errorString, const String& expression, const String* const objectGroup, const bool* const includeCommandLineAPI, const bool* const doNotPauseOnExceptionsAndMuteConsole, const int* optExecutionContextId, const bool* const returnByValue, const bool* generatePreview, RefPtr<TypeBuilder::Runtime::RemoteObject>& result, TypeBuilder::OptOutput<bool>* wasThrown, RefPtr<TypeBuilder::Debugger::ExceptionDetails>& exceptionDetails)
 {
     int executionContextId = optExecutionContextId ? *optExecutionContextId : m_injectedScriptManager->injectedScriptIdFor(defaultScriptState());
-    Optional<MuteConsoleScope<InspectorRuntimeAgent>> muteScope;
+    MuteConsoleScope<InspectorRuntimeAgent> muteScope;
     if (asBool(doNotPauseOnExceptionsAndMuteConsole))
-        muteScope.emplace(this);
+        muteScope.enter(this);
     m_v8RuntimeAgent->evaluate(errorString, expression, objectGroup, includeCommandLineAPI, doNotPauseOnExceptionsAndMuteConsole, &executionContextId, returnByValue, generatePreview, result, wasThrown, exceptionDetails);
 }
 
 void InspectorRuntimeAgent::callFunctionOn(ErrorString* errorString, const String& objectId, const String& expression, const RefPtr<JSONArray>* const optionalArguments, const bool* const doNotPauseOnExceptionsAndMuteConsole, const bool* const returnByValue, const bool* generatePreview, RefPtr<TypeBuilder::Runtime::RemoteObject>& result, TypeBuilder::OptOutput<bool>* wasThrown)
 {
-    Optional<MuteConsoleScope<InspectorRuntimeAgent>> muteScope;
+    MuteConsoleScope<InspectorRuntimeAgent> muteScope;
     if (asBool(doNotPauseOnExceptionsAndMuteConsole))
-        muteScope.emplace(this);
+        muteScope.enter(this);
     m_v8RuntimeAgent->callFunctionOn(errorString, objectId, expression, optionalArguments, doNotPauseOnExceptionsAndMuteConsole, returnByValue, generatePreview, result, wasThrown);
 }
 

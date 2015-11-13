@@ -5,22 +5,44 @@
 #ifndef MuteConsoleScope_h
 #define MuteConsoleScope_h
 
+#include "platform/heap/Handle.h"
+
 namespace blink {
 
 template <class T>
 class MuteConsoleScope {
+    STACK_ALLOCATED();
 public:
-    explicit MuteConsoleScope(T* agent) : m_agent(agent)
+    MuteConsoleScope()
     {
-        m_agent->muteConsole();
+    }
+    explicit MuteConsoleScope(T* agent)
+    {
+        enter(agent);
     }
     ~MuteConsoleScope()
     {
+        exit();
+    }
+
+    void enter(T* agent)
+    {
+        ASSERT(!m_agent);
+        m_agent = agent;
+        m_agent->muteConsole();
+    }
+
+    void exit()
+    {
+        if (!m_agent)
+            return;
+
         m_agent->unmuteConsole();
+        m_agent = nullptr;
     }
 
 private:
-    T* m_agent;
+    RawPtrWillBeMember<T> m_agent = nullptr;
 };
 
 } // namespace blink

@@ -37,7 +37,6 @@
 #include "core/inspector/ScriptAsyncCallStack.h"
 #include "core/inspector/v8/V8Debugger.h"
 #include "platform/ScriptForbiddenScope.h"
-#include "wtf/Optional.h"
 
 namespace blink {
 
@@ -187,9 +186,9 @@ void InspectorDebuggerAgent::setPauseOnExceptions(ErrorString* errorString, cons
 
 void InspectorDebuggerAgent::evaluateOnCallFrame(ErrorString* errorString, const String& inCallFrameId, const String& inExpression, const String* inObjectGroup, const bool* inIncludeCommandLineAPI, const bool* inDoNotPauseOnExceptionsAndMuteConsole, const bool* inReturnByValue, const bool* inGeneratePreview, RefPtr<TypeBuilder::Runtime::RemoteObject>& outResult, TypeBuilder::OptOutput<bool>* optOutWasThrown, RefPtr<TypeBuilder::Debugger::ExceptionDetails>& optOutExceptionDetails)
 {
-    Optional<MuteConsoleScope<InspectorDebuggerAgent>> muteScope;
+    MuteConsoleScope<InspectorDebuggerAgent> muteScope;
     if (asBool(inDoNotPauseOnExceptionsAndMuteConsole))
-        muteScope.emplace(this);
+        muteScope.enter(this);
     m_v8DebuggerAgent->evaluateOnCallFrame(errorString, inCallFrameId, inExpression, inObjectGroup, inIncludeCommandLineAPI, inDoNotPauseOnExceptionsAndMuteConsole, inReturnByValue, inGeneratePreview, outResult, optOutWasThrown, optOutExceptionDetails);
 }
 
@@ -200,9 +199,9 @@ void InspectorDebuggerAgent::compileScript(ErrorString* errorString, const Strin
 
 void InspectorDebuggerAgent::runScript(ErrorString* errorString, const String& inScriptId, int inExecutionContextId, const String* inObjectGroup, const bool* inDoNotPauseOnExceptionsAndMuteConsole, RefPtr<TypeBuilder::Runtime::RemoteObject>& outResult, RefPtr<TypeBuilder::Debugger::ExceptionDetails>& optOutExceptionDetails)
 {
-    Optional<MuteConsoleScope<InspectorDebuggerAgent>> muteScope;
+    MuteConsoleScope<InspectorDebuggerAgent> muteScope;
     if (asBool(inDoNotPauseOnExceptionsAndMuteConsole))
-        muteScope.emplace(this);
+        muteScope.enter(this);
     m_v8DebuggerAgent->runScript(errorString, inScriptId, inExecutionContextId, inObjectGroup, inDoNotPauseOnExceptionsAndMuteConsole, outResult, optOutExceptionDetails);
 }
 
