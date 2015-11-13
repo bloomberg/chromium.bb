@@ -141,7 +141,6 @@
         'core/common/schema_registry_tracking_policy_provider.cc',
         'core/common/schema_registry_tracking_policy_provider.h',
         'policy_export.h',
-        'policy/policy_risk_tag.h'
       ],
       'conditions': [
         ['OS=="android"', {

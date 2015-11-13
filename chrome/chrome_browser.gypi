@@ -301,7 +301,7 @@
       'browser/background_sync/background_sync_controller_factory.cc',
       'browser/background_sync/background_sync_controller_factory.h',
       'browser/background_sync/background_sync_controller_impl.cc',
-      'browser/background_sync/background_sync_controller_implh.h',
+      'browser/background_sync/background_sync_controller_impl.h',
       'browser/bad_message.cc',
       'browser/bad_message.h',
       'browser/banners/app_banner_data_fetcher.cc',

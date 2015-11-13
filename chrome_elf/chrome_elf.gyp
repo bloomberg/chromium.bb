@@ -122,7 +122,6 @@
         '..',
       ],
       'sources': [
-        'chrome_elf_types.h',
         'chrome_elf_util.cc',
         'chrome_elf_util.h',
         'thunk_getter.cc',
