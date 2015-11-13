@@ -11,29 +11,37 @@
 #include "chrome/browser/local_discovery/service_discovery_client_mac.h"
 #include "chrome/common/local_discovery/service_discovery_client.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "net/base/ip_endpoint.h"
+#include "net/base/net_util.h"
 #include "testing/gtest_mac.h"
 
 @interface TestNSNetService : NSNetService {
  @private
   NSData* data_;
+  NSArray* addresses_;
 }
-- (id) initWithData:(NSData *)data;
+- (id)initWithData:(NSData*)data;
+- (void)setAddresses:(NSArray*)addresses;
 @end
 
 @implementation TestNSNetService
 
--(id) initWithData:(NSData *)data {
+- (id)initWithData:(NSData*)data {
   if ((self = [super init])) {
     data_ = data;
   }
   return self;
 }
 
-- (NSArray *)addresses {
-  return [NSMutableArray array];
+- (void)setAddresses:(NSArray*)addresses {
+  addresses_ = addresses;
 }
 
-- (NSData *)TXTRecordData {
+- (NSArray*)addresses {
+  return addresses_;
+}
+
+- (NSData*)TXTRecordData {
   return data_;
 }
 
@@ -111,10 +119,21 @@ TEST_F(ServiceDiscoveryClientMacTest, ServiceResolver) {
                  base::Unretained(this)));
 
   const uint8 record_bytes[] = { 2, 'a', 'b', 3, 'd', '=', 'e' };
-  base::scoped_nsobject<NSNetService> test_service(
-      [[TestNSNetService alloc] initWithData:
-          [[NSData alloc] initWithBytes:record_bytes
-                          length:arraysize(record_bytes)]]);
+  base::scoped_nsobject<TestNSNetService> test_service([[TestNSNetService alloc]
+      initWithData:[[NSData alloc] initWithBytes:record_bytes
+                                          length:arraysize(record_bytes)]]);
+
+  const std::string kIp = "2001:4860:4860::8844";
+  const uint16_t kPort = 4321;
+  net::IPAddressNumber ip_address;
+  ASSERT_TRUE(net::ParseIPLiteralToNumber(kIp, &ip_address));
+  net::IPEndPoint endpoint(ip_address, kPort);
+  net::SockaddrStorage storage;
+  ASSERT_TRUE(endpoint.ToSockAddr(storage.addr, &storage.addr_len));
+  NSData* discoveryHost =
+      [NSData dataWithBytes:storage.addr length:storage.addr_len];
+  NSArray* addresses = @[ discoveryHost ];
+  [test_service setAddresses:addresses];
 
   ServiceResolverImplMac* resolver_impl =
       static_cast<ServiceResolverImplMac*>(resolver.get());
@@ -128,6 +147,8 @@ TEST_F(ServiceDiscoveryClientMacTest, ServiceResolver) {
 
   EXPECT_EQ(1, num_resolves_);
   EXPECT_EQ(2u, last_service_description_.metadata.size());
+  EXPECT_EQ(kIp, last_service_description_.address.host());
+  EXPECT_EQ(kPort, last_service_description_.address.port());
 }
 
 }  // namespace local_discovery

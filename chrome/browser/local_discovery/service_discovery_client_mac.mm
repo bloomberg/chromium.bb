@@ -8,12 +8,14 @@
 #import <Foundation/Foundation.h>
 #import <net/if_dl.h>
 
+#include "base/debug/dump_without_crashing.h"
 #include "base/memory/singleton.h"
 #include "base/metrics/histogram.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "net/base/ip_address_number.h"
+#include "net/base/ip_endpoint.h"
 
 using local_discovery::ServiceWatcherImplMac;
 using local_discovery::ServiceResolverImplMac;
@@ -334,33 +336,42 @@ ServiceResolverImplMac::NetServiceContainer::StartResolvingOnDiscoveryThread() {
 
 void ServiceResolverImplMac::NetServiceContainer::OnResolveUpdate(
     RequestStatus status) {
-  if (status == STATUS_SUCCESS) {
-    service_description_.service_name = service_name_;
-
-    for (NSData* address in [service_ addresses]) {
-      const void* bytes = [address bytes];
-      // TODO(justinlin): Handle IPv6 addresses?
-      if (static_cast<const sockaddr*>(bytes)->sa_family == AF_INET) {
-        const sockaddr_in* sock = static_cast<const sockaddr_in*>(bytes);
-        char addr[INET_ADDRSTRLEN];
-        inet_ntop(AF_INET, &sock->sin_addr, addr, INET_ADDRSTRLEN);
-        service_description_.address =
-            net::HostPortPair(addr, ntohs(sock->sin_port));
-        net::ParseIPLiteralToNumber(addr, &service_description_.ip_address);
-        break;
-      }
-    }
-
-    ParseTxtRecord([service_ TXTRecordData], &service_description_.metadata);
-
-    // TODO(justinlin): Implement last_seen.
-    service_description_.last_seen = base::Time::Now();
-    callback_runner_->PostTask(
-        FROM_HERE, base::Bind(callback_, status, service_description_));
-  } else {
+  if (status != STATUS_SUCCESS) {
     callback_runner_->PostTask(
         FROM_HERE, base::Bind(callback_, status, ServiceDescription()));
+    return;
   }
+
+  service_description_.service_name = service_name_;
+
+  for (NSData* address in [service_ addresses]) {
+    const void* bytes = [address bytes];
+    int length = [address length];
+    const sockaddr* socket = static_cast<const sockaddr*>(bytes);
+    net::IPEndPoint end_point;
+    if (end_point.FromSockAddr(socket, length)) {
+      service_description_.address =
+          net::HostPortPair::FromIPEndPoint(end_point);
+      break;
+    }
+  }
+
+  if (service_description_.address.host().empty()) {
+    NOTREACHED() << service_name_;
+    // Unexpected, but could be a reason for crbug.com/513505
+    base::debug::DumpWithoutCrashing();
+    callback_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(callback_, STATUS_KNOWN_NONEXISTENT, ServiceDescription()));
+    return;
+  }
+
+  ParseTxtRecord([service_ TXTRecordData], &service_description_.metadata);
+
+  // TODO(justinlin): Implement last_seen.
+  service_description_.last_seen = base::Time::Now();
+  callback_runner_->PostTask(
+      FROM_HERE, base::Bind(callback_, status, service_description_));
 }
 
 void ServiceResolverImplMac::NetServiceContainer::SetServiceForTesting(

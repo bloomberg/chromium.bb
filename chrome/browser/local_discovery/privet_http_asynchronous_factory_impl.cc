@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/local_discovery/privet_http_impl.h"
 #include "chrome/browser/local_discovery/service_discovery_shared_client.h"
@@ -67,10 +68,18 @@ void PrivetHTTPAsynchronousFactoryImpl::ResolutionImpl::Start(
     const ResultCallback& callback) {
 #if defined(OS_MACOSX)
   net::IPAddressNumber ip_address;
-  DCHECK(net::ParseIPLiteralToNumber(address.host(), &ip_address));
-  // MAC already has IP there.
-  callback.Run(scoped_ptr<PrivetHTTPClient>(
-      new PrivetHTTPClientImpl(name_, address, request_context_.get())));
+  if (!net::ParseIPLiteralToNumber(address.host(), &ip_address)) {
+    NOTREACHED() << address.ToString();
+    // Unexpected, but could be a reason for crbug.com/513505
+    base::debug::DumpWithoutCrashing();
+    return callback.Run(scoped_ptr<PrivetHTTPClient>());
+  }
+
+  // OSX already has IP there.
+  callback.Run(scoped_ptr<PrivetHTTPClient>(new PrivetHTTPClientImpl(
+      name_, net::HostPortPair::FromIPEndPoint(
+                 net::IPEndPoint(ip_address, address.port())),
+      request_context_.get())));
 #else  // OS_MACOSX
   net::AddressFamily address_family = net::ADDRESS_FAMILY_UNSPECIFIED;
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(

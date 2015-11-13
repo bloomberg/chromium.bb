@@ -118,7 +118,7 @@ class PrivetURLFetcher : public net::URLFetcherDelegate {
   void RequestTokenRefresh();
   void RefreshToken(const std::string& token);
 
-  GURL url_;
+  const GURL url_;
   net::URLFetcher::RequestType request_type_;
   scoped_refptr<net::URLRequestContextGetter> context_getter_;
   Delegate* delegate_;
