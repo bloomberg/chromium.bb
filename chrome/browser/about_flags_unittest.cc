@@ -817,6 +817,18 @@ TEST_F(AboutFlagsTest, NoSeparators) {
   }
 }
 
+TEST_F(AboutFlagsTest, GetFlagFeatureEntries) {
+  base::ListValue supported_entries;
+  base::ListValue unsupported_entries;
+  GetFlagFeatureEntries(&flags_storage_, kGeneralAccessFlagsOnly,
+                        &supported_entries, &unsupported_entries);
+  // All |kEntries| except for |kFlags3| should be supported.
+  EXPECT_EQ(6u, supported_entries.GetSize());
+  EXPECT_EQ(1u, unsupported_entries.GetSize());
+  EXPECT_EQ(arraysize(kEntries),
+            supported_entries.GetSize() + unsupported_entries.GetSize());
+}
+
 class AboutFlagsHistogramTest : public ::testing::Test {
  protected:
   // This is a helper function to check that all IDs in enum LoginCustomFlags in
