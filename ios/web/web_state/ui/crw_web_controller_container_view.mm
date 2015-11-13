@@ -89,9 +89,8 @@
 #pragma mark - CRWWebControllerContainerView
 
 @interface CRWWebControllerContainerView () {
-  // The proxy for the content added to the container.  It is owned by the web
-  // controller.
-  base::WeakNSObject<CRWWebViewProxyImpl> _webViewProxy;
+  // The delegate passed on initialization.
+  base::WeakNSProtocol<id<CRWWebControllerContainerViewDelegate>> _delegate;
   // Backing objects for corresponding properties.
   base::scoped_nsobject<CRWWebViewContentView> _webViewContentView;
   base::scoped_nsprotocol<id<CRWNativeContent>> _nativeController;
@@ -110,15 +109,25 @@
 @property(nonatomic, retain, readonly)
     CRWToolbarContainerView* toolbarContainerView;
 
+// Convenience getter for the proxy object.
+@property(nonatomic, readonly) CRWWebViewProxyImpl* contentViewProxy;
+
+// Returns |self.bounds| after being inset at the top by the header height
+// returned by the delegate.  This is only used to lay out native controllers,
+// as the header height is already accounted for in the scroll view content
+// insets for other CRWContentViews.
+@property(nonatomic, readonly) CGRect visibleFrame;
+
 @end
 
 @implementation CRWWebControllerContainerView
 
-- (instancetype)initWithContentViewProxy:(CRWWebViewProxyImpl*)proxy {
+- (instancetype)initWithDelegate:
+        (id<CRWWebControllerContainerViewDelegate>)delegate {
   self = [super initWithFrame:CGRectZero];
   if (self) {
-    DCHECK(proxy);
-    _webViewProxy.reset(proxy);
+    DCHECK(delegate);
+    _delegate.reset(delegate);
     self.backgroundColor = [UIColor whiteColor];
     self.autoresizingMask =
         UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
@@ -137,7 +146,7 @@
 }
 
 - (void)dealloc {
-  [_webViewProxy setContentView:nil];
+  self.contentViewProxy.contentView = nil;
   [super dealloc];
 }
 
@@ -151,7 +160,6 @@
   if (![_webViewContentView isEqual:webViewContentView]) {
     [_webViewContentView removeFromSuperview];
     _webViewContentView.reset([webViewContentView retain]);
-    [self addSubview:_webViewContentView];
   }
 }
 
@@ -162,11 +170,11 @@
 - (void)setNativeController:(id<CRWNativeContent>)nativeController {
   if (![_nativeController isEqual:nativeController]) {
     base::WeakNSProtocol<id> oldController(_nativeController);
-    [[_nativeController view] removeFromSuperview];
+    [[oldController view] removeFromSuperview];
     _nativeController.reset([nativeController retain]);
-    [self addSubview:[_nativeController view]];
-    [[_nativeController view] setNeedsUpdateConstraints];
-    DCHECK(!oldController);
+    // TODO(crbug.com/503297): Re-enable this DCHECK once native controller
+    // leaks are fixed.
+    //    DCHECK(!oldController);
   }
 }
 
@@ -178,7 +186,6 @@
   if (![_transientContentView isEqual:transientContentView]) {
     [_transientContentView removeFromSuperview];
     _transientContentView.reset([transientContentView retain]);
-    [self addSubview:_transientContentView];
   }
 }
 
@@ -186,7 +193,6 @@
   if (![_toolbarContainerView isEqual:toolbarContainerView]) {
     [_toolbarContainerView removeFromSuperview];
     _toolbarContainerView.reset([toolbarContainerView retain]);
-    [self addSubview:_toolbarContainerView];
   }
 }
 
@@ -194,19 +200,51 @@
   return _toolbarContainerView.get();
 }
 
+- (CRWWebViewProxyImpl*)contentViewProxy {
+  return [_delegate contentViewProxyForContainerView:self];
+}
+
+- (CGRect)visibleFrame {
+  CGFloat headerHeight = [_delegate headerHeightForContainerView:self];
+  return UIEdgeInsetsInsetRect(self.bounds,
+                               UIEdgeInsetsMake(headerHeight, 0, 0, 0));
+}
+
 #pragma mark Layout
 
 - (void)layoutSubviews {
   [super layoutSubviews];
 
-  // Resize displayed content to the container's bounds.
-  self.webViewContentView.frame = self.bounds;
-  [self.nativeController view].frame = self.bounds;
-  self.transientContentView.frame = self.bounds;
+  // webViewcontentView layout.
+  if (self.webViewContentView) {
+    if (!self.webViewContentView.superview)
+      [self addSubview:self.webViewContentView];
+    self.webViewContentView.frame = self.bounds;
+  }
+
+  // nativeController layout.
+  if (self.nativeController) {
+    UIView* nativeView = [self.nativeController view];
+    if (!nativeView.superview) {
+      [self addSubview:nativeView];
+      [nativeView setNeedsUpdateConstraints];
+    }
+    nativeView.frame = self.visibleFrame;
+  }
+
+  // transientContentView layout.
+  if (self.transientContentView) {
+    if (!self.transientContentView.superview)
+      [self addSubview:self.transientContentView];
+    self.transientContentView.frame = self.bounds;
+  }
 
   // Bottom align the toolbars with the bottom of the container.
   if (self.toolbarContainerView) {
-    [self bringSubviewToFront:self.toolbarContainerView];
+    if (!self.toolbarContainerView.superview)
+      [self addSubview:self.toolbarContainerView];
+    else
+      [self bringSubviewToFront:self.toolbarContainerView];
     CGSize toolbarContainerSize =
         [self.toolbarContainerView sizeThatFits:self.bounds.size];
     self.toolbarContainerView.frame =
@@ -228,7 +266,7 @@
   self.nativeController = nil;
   self.transientContentView = nil;
   [self removeAllToolbars];
-  [_webViewProxy setContentView:nil];
+  self.contentViewProxy.contentView = nil;
 }
 
 - (void)displayWebViewContentView:(CRWWebViewContentView*)webViewContentView {
@@ -236,7 +274,7 @@
   self.webViewContentView = webViewContentView;
   self.nativeController = nil;
   self.transientContentView = nil;
-  [_webViewProxy setContentView:self.webViewContentView];
+  self.contentViewProxy.contentView = self.webViewContentView;
   [self setNeedsLayout];
 }
 
@@ -245,20 +283,20 @@
   self.webViewContentView = nil;
   self.nativeController = nativeController;
   self.transientContentView = nil;
-  [_webViewProxy setContentView:nil];
+  self.contentViewProxy.contentView = nil;
   [self setNeedsLayout];
 }
 
 - (void)displayTransientContent:(CRWContentView*)transientContentView {
   DCHECK(transientContentView);
   self.transientContentView = transientContentView;
-  [_webViewProxy setContentView:self.transientContentView];
+  self.contentViewProxy.contentView = self.transientContentView;
   [self setNeedsLayout];
 }
 
 - (void)clearTransientContentView {
   self.transientContentView = nil;
-  [_webViewProxy setContentView:self.webViewContentView];
+  self.contentViewProxy.contentView = self.webViewContentView;
 }
 
 #pragma mark Toolbars

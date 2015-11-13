@@ -166,15 +166,17 @@ void CancelAllTouches(UIScrollView* web_scroll_view) {
 }  // namespace
 
 @interface CRWWebController () <CRWNativeContentDelegate,
+                                CRWWebControllerContainerViewDelegate,
                                 CRWWebViewScrollViewProxyObserver> {
   base::WeakNSProtocol<id<CRWWebDelegate>> _delegate;
   base::WeakNSProtocol<id<CRWWebUserInterfaceDelegate>> _UIDelegate;
   base::WeakNSProtocol<id<CRWNativeContentProvider>> _nativeProvider;
   base::WeakNSProtocol<id<CRWSwipeRecognizerProvider>> _swipeRecognizerProvider;
-  base::scoped_nsobject<CRWWebControllerContainerView> _containerView;
   // The CRWWebViewProxy is the wrapper to give components access to the
   // web view in a controlled and limited way.
   base::scoped_nsobject<CRWWebViewProxyImpl> _webViewProxy;
+  // The view used to display content.  Must outlive |_webViewProxy|.
+  base::scoped_nsobject<CRWWebControllerContainerView> _containerView;
   // If |_contentView| contains a native view rather than a web view, this
   // is its controller. If it's a web view, this is nil.
   base::scoped_nsprotocol<id<CRWNativeContent>> _nativeController;
@@ -1550,8 +1552,8 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     // native or web). Note, this needs to be created with a non-zero size
     // to allow for (native) subviews with autosize constraints to be correctly
     // processed.
-    _containerView.reset([[CRWWebControllerContainerView alloc]
-        initWithContentViewProxy:_webViewProxy]);
+    _containerView.reset(
+        [[CRWWebControllerContainerView alloc] initWithDelegate:self]);
     self.containerView.frame = [[UIScreen mainScreen] bounds];
     [self.containerView addGestureRecognizer:[self touchTrackingRecognizer]];
     [self.containerView setAccessibilityIdentifier:web::kContainerViewID];
@@ -1918,6 +1920,19 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   // TODO(stuartmorgan): Remove this temporary bridge to the helper function
   // once the referrer handling moves into the subclasses.
   return web::ReferrerPolicyFromString(policy);
+}
+
+#pragma mark -
+#pragma mark CRWWebControllerContainerViewDelegate
+
+- (CRWWebViewProxyImpl*)contentViewProxyForContainerView:
+        (CRWWebControllerContainerView*)containerView {
+  return _webViewProxy.get();
+}
+
+- (CGFloat)headerHeightForContainerView:
+        (CRWWebControllerContainerView*)containerView {
+  return [self headerHeight];
 }
 
 #pragma mark -

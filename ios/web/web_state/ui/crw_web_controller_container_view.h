@@ -9,9 +9,23 @@
 
 #include "ios/web/public/web_state/ui/crw_content_view.h"
 
+@class CRWWebControllerContainerView;
 @class CRWWebViewContentView;
 @class CRWWebViewProxyImpl;
 @protocol CRWNativeContent;
+
+@protocol CRWWebControllerContainerViewDelegate<NSObject>
+
+// Returns the proxy object that's backed by the CRWContentView displayed by
+// |containerView|.
+- (CRWWebViewProxyImpl*)contentViewProxyForContainerView:
+        (CRWWebControllerContainerView*)containerView;
+
+// Returns the height for any toolbars that overlap the top |containerView|.
+- (CGFloat)headerHeightForContainerView:
+        (CRWWebControllerContainerView*)containerView;
+
+@end
 
 // Container view class that manages the display of content within
 // CRWWebController.
@@ -28,7 +42,8 @@
 
 // Designated initializer.  |proxy|'s content view will be updated as different
 // content is added to the container.
-- (instancetype)initWithContentViewProxy:(CRWWebViewProxyImpl*)proxy
+- (instancetype)initWithDelegate:
+        (id<CRWWebControllerContainerViewDelegate>)delegate
     NS_DESIGNATED_INITIALIZER;
 
 // CRWWebControllerContainerView should be initialized via

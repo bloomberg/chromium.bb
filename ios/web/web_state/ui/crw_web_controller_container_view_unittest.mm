@@ -28,21 +28,52 @@ const CGFloat kTestToolbarViewHeight = 50.0f;
 }
 @end
 
+// Test CRWWebControllerContainerViewDelegate implementation.
+@interface TestWebControllerContainerViewDelegate
+    : NSObject<CRWWebControllerContainerViewDelegate> {
+  base::scoped_nsobject<CRWWebViewProxyImpl> _proxy;
+}
+- (instancetype)initWithContentViewProxy:(CRWWebViewProxyImpl*)proxy;
+@end
+
+@implementation TestWebControllerContainerViewDelegate
+
+- (instancetype)initWithContentViewProxy:(CRWWebViewProxyImpl*)proxy {
+  if ((self = [super init]))
+    _proxy.reset([proxy retain]);
+  return self;
+}
+
+- (CRWWebViewProxyImpl*)contentViewProxyForContainerView:
+        (CRWWebControllerContainerView*)containerView {
+  return _proxy.get();
+}
+
+- (CGFloat)headerHeightForContainerView:
+        (CRWWebControllerContainerView*)containerView {
+  return 0;
+}
+
+@end
+
 #pragma mark - CRWWebControllerContainerViewTest
 
 class CRWWebControllerContainerViewTest : public PlatformTest {
  protected:
   void SetUp() override {
     PlatformTest::SetUp();
-    mock_web_view_proxy_.reset(
-        [[OCMockObject niceMockForClass:[CRWWebViewProxyImpl class]] retain]);
-    container_view_.reset([[CRWWebControllerContainerView alloc]
-        initWithContentViewProxy:mock_web_view_proxy_]);
+    CRWWebViewProxyImpl* proxy =
+        [OCMockObject niceMockForClass:[CRWWebViewProxyImpl class]];
+    delegate_.reset([[TestWebControllerContainerViewDelegate alloc]
+        initWithContentViewProxy:proxy]);
+    container_view_.reset(
+        [[CRWWebControllerContainerView alloc] initWithDelegate:delegate_]);
     [container_view_ setFrame:kContainerViewFrame];
   }
 
-  // The web view proxy object (required for designated initializer).
-  base::scoped_nsobject<id> mock_web_view_proxy_;
+  // The CRWWebControllerContainerViewDelegate (required for designated
+  // initializer).
+  base::scoped_nsobject<TestWebControllerContainerViewDelegate> delegate_;
   // The container view being tested.
   base::scoped_nsobject<CRWWebControllerContainerView> container_view_;
 };
