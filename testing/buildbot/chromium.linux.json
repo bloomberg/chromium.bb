@@ -302,9 +302,7 @@
   },
   "Linux Builder (dbg)": {
     "additional_compile_targets": [
-      "blimp",
-      "mandoline:all",
-      "remoting_all"
+      "gn_all"
     ]
   },
   "Linux Tests": {
