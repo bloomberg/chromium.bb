@@ -46,6 +46,7 @@ class FakeUpdateClient : public update_client::UpdateClient {
     return false;
   }
   bool IsUpdating(const std::string& id) const override { return false; }
+  void Stop() override {}
 
  protected:
   friend class base::RefCounted<FakeUpdateClient>;

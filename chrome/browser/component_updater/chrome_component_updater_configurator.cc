@@ -123,12 +123,16 @@ bool ChromeConfigurator::UseBackgroundDownloader() const {
   return configurator_impl_.UseBackgroundDownloader();
 }
 
+// Returns a task runner to run blocking tasks. The task runner continues to run
+// after the browser shuts down, until the OS terminates the process. This
+// imposes certain requirements for the code using the task runner, such as
+// not accessing any global browser state while the code is running.
 scoped_refptr<base::SequencedTaskRunner>
 ChromeConfigurator::GetSequencedTaskRunner() const {
   return content::BrowserThread::GetBlockingPool()
       ->GetSequencedTaskRunnerWithShutdownBehavior(
           content::BrowserThread::GetBlockingPool()->GetSequenceToken(),
-          base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
+          base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN);
 }
 
 }  // namespace

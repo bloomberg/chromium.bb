@@ -140,7 +140,9 @@ class Configurator;
 struct CrxUpdateItem;
 
 enum Error {
+  ERROR_UPDATE_INVALID_ARGUMENT = -1,
   ERROR_UPDATE_IN_PROGRESS = 1,
+  ERROR_UPDATE_CANCELED = 2,
 };
 
 // Defines an interface for a generic CRX installer.
@@ -295,6 +297,12 @@ class UpdateClient : public base::RefCounted<UpdateClient> {
 
   // Returns true if the |id| is found in any running task.
   virtual bool IsUpdating(const std::string& id) const = 0;
+
+  // Cancels the queued updates and makes a best effort to stop updates in
+  // progress as soon as possible. Some updates may not be stopped, in which
+  // case, the updates will run to completion. Calling this function has no
+  // effect if updates are not currently executed or queued up.
+  virtual void Stop() = 0;
 
  protected:
   friend class base::RefCounted<UpdateClient>;
