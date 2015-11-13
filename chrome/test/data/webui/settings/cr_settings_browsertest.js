@@ -34,8 +34,18 @@ CrSettingsBrowserTest.prototype = {
   ]),
 };
 
+// Have to include command_line.h manually due to GEN calls below.
+GEN('#include "base/command_line.h"');
+
+// Times out on memory bots. http://crbug.com/534718
+GEN('#if defined(MEMORY_SANITIZER)');
+GEN('#define MAYBE_CrSettingsTest DISABLED_CrSettingsTest');
+GEN('#else');
+GEN('#define MAYBE_CrSettingsTest CrSettingsTest');
+GEN('#endif');
+
 // Runs all tests.
-TEST_F('CrSettingsBrowserTest', 'DISABLED_CrSettingsTest', function() {
+TEST_F('CrSettingsBrowserTest', 'MAYBE_CrSettingsTest', function() {
   // Register mocha tests for each element.
   settings_checkbox.registerTests();
   settings_prefs.registerTests();
