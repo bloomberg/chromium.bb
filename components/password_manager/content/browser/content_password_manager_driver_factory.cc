@@ -89,8 +89,6 @@ void ContentPasswordManagerDriverFactory::RenderFrameDeleted(
 bool ContentPasswordManagerDriverFactory::OnMessageReceived(
     const IPC::Message& message,
     content::RenderFrameHost* render_frame_host) {
-  if (!render_frame_host->IsRenderFrameLive())
-    return false;
   return frame_driver_map_.find(render_frame_host)
       ->second->HandleMessage(message);
 }
@@ -99,11 +97,6 @@ void ContentPasswordManagerDriverFactory::DidNavigateAnyFrame(
     content::RenderFrameHost* render_frame_host,
     const content::LoadCommittedDetails& details,
     const content::FrameNavigateParams& params) {
-  // TODO(vabr): Remove those as soon as http://crbug.com/554479 is clarified.
-  CHECK(render_frame_host->IsRenderFrameLive());
-  CHECK(ContainsKey(frame_driver_map_, render_frame_host));
-  if (!render_frame_host->IsRenderFrameLive())
-    return;
   frame_driver_map_.find(render_frame_host)
       ->second->DidNavigateFrame(details, params);
 }
