@@ -1877,12 +1877,13 @@ void LayoutText::invalidateDisplayItemClients(const LayoutBoxModelObject& paintI
 {
     LayoutObject::invalidateDisplayItemClients(paintInvalidationContainer, invalidationReason, paintInvalidationRect);
 
-    // TODO(wangxianzhu): Pass current bounds of text boxes to PaintController. crbug.com/547119.
+    // Use the paintInvalidationRect of LayoutText for inline boxes, which saves the cost to calculate paint invalidation rect
+    // for every inline box. This won't cause more rasterization invalidations because the whole LayoutText is being invalidated.
     for (InlineTextBox* box = firstTextBox(); box; box = box->nextTextBox()) {
-        paintInvalidationContainer.invalidateDisplayItemClientOnBacking(*box, invalidationReason, nullptr);
+        paintInvalidationContainer.invalidateDisplayItemClientOnBacking(*box, invalidationReason, paintInvalidationRect);
         if (box->truncation() != cNoTruncation) {
             if (EllipsisBox* ellipsisBox = box->root().ellipsisBox())
-                paintInvalidationContainer.invalidateDisplayItemClientOnBacking(*ellipsisBox, invalidationReason, nullptr);
+                paintInvalidationContainer.invalidateDisplayItemClientOnBacking(*ellipsisBox, invalidationReason, paintInvalidationRect);
         }
     }
 }
