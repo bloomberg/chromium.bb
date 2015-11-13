@@ -124,7 +124,7 @@ void HidDeviceManager::GetApiDevices(
         FROM_HERE, base::Bind(callback, base::Passed(&devices)));
   } else {
     pending_enumerations_.push_back(
-        new GetApiDevicesParams(extension, filters, callback));
+        make_scoped_ptr(new GetApiDevicesParams(extension, filters, callback)));
   }
 }
 
@@ -312,7 +312,7 @@ void HidDeviceManager::OnEnumerationComplete(
   }
   enumeration_ready_ = true;
 
-  for (const GetApiDevicesParams* params : pending_enumerations_) {
+  for (const auto& params : pending_enumerations_) {
     scoped_ptr<base::ListValue> devices =
         CreateApiDeviceList(params->extension, params->filters);
     params->callback.Run(devices.Pass());

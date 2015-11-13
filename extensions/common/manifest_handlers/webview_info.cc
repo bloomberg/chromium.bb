@@ -71,7 +71,7 @@ bool WebviewInfo::IsResourceWebviewAccessible(
   if (!webview_info)
     return false;
 
-  for (const PartitionItem* item : webview_info->partition_items_) {
+  for (const auto& item : webview_info->partition_items_) {
     if (item->Matches(partition_id) &&
         extension->ResourceMatches(item->accessible_resources(),
                                    relative_path)) {
@@ -83,7 +83,7 @@ bool WebviewInfo::IsResourceWebviewAccessible(
 }
 
 void WebviewInfo::AddPartitionItem(scoped_ptr<PartitionItem> item) {
-  partition_items_.push_back(item.release());
+  partition_items_.push_back(item.Pass());
 }
 
 WebviewHandler::WebviewHandler() {

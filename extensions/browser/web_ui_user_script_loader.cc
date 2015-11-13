@@ -98,7 +98,7 @@ void WebUIUserScriptLoader::LoadScripts(
     OnWebUIURLFetchComplete();
     return;
   }
-  for (auto fetcher : fetchers_)
+  for (const auto& fetcher : fetchers_)
     fetcher->Start();
 }
 

@@ -5,8 +5,9 @@
 #ifndef EXTENSIONS_BROWSER_MOJO_STASH_BACKEND_H_
 #define EXTENSIONS_BROWSER_MOJO_STASH_BACKEND_H_
 
+#include <vector>
+
 #include "base/callback.h"
-#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "extensions/common/mojo/stash.mojom.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
@@ -37,7 +38,7 @@ class StashBackend {
   void OnHandleReady();
 
   // The objects that have been stashed.
-  ScopedVector<StashEntry> stashed_objects_;
+  std::vector<scoped_ptr<StashEntry>> stashed_objects_;
 
   // The callback to call when a handle is readable.
   const base::Closure on_handle_readable_;

@@ -13,7 +13,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_vector.h"
 #include "base/values.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/features/feature.h"
@@ -203,7 +202,7 @@ class SimpleFeature : public Feature {
   bool component_extensions_auto_granted_;
   std::string command_line_switch_;
 
-  ScopedVector<SimpleFeatureFilter> filters_;;
+  std::vector<scoped_ptr<SimpleFeatureFilter>> filters_;
 
   DISALLOW_COPY_AND_ASSIGN(SimpleFeature);
 };

@@ -4,6 +4,8 @@
 
 #include "extensions/browser/mojo/stash_backend.h"
 
+#include <vector>
+
 #include "base/bind.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/environment/async_waiter.h"
@@ -79,7 +81,7 @@ class StashBackend::StashEntry {
   void OnHandleReady(MojoResult result);
 
   // The waiters that are waiting for handles to be readable.
-  ScopedVector<mojo::AsyncWaiter> waiters_;
+  std::vector<scoped_ptr<mojo::AsyncWaiter>> waiters_;
 
   StashedObjectPtr stashed_object_;
 
@@ -99,11 +101,11 @@ StashBackend::~StashBackend() {
 
 void StashBackend::AddToStash(mojo::Array<StashedObjectPtr> stashed_objects) {
   for (size_t i = 0; i < stashed_objects.size(); i++) {
-    stashed_objects_.push_back(
-        new StashEntry(stashed_objects[i].Pass(),
-                       has_notified_ ? base::Closure()
-                                     : base::Bind(&StashBackend::OnHandleReady,
-                                                  weak_factory_.GetWeakPtr())));
+    stashed_objects_.push_back(make_scoped_ptr(new StashEntry(
+        stashed_objects[i].Pass(),
+        has_notified_ ? base::Closure()
+                      : base::Bind(&StashBackend::OnHandleReady,
+                                   weak_factory_.GetWeakPtr()))));
   }
 }
 
@@ -139,10 +141,10 @@ StashBackend::StashEntry::StashEntry(StashedObjectPtr stashed_object,
     return;
 
   for (size_t i = 0; i < stashed_object_->stashed_handles.size(); i++) {
-    waiters_.push_back(new mojo::AsyncWaiter(
+    waiters_.push_back(make_scoped_ptr(new mojo::AsyncWaiter(
         stashed_object_->stashed_handles[i].get(), MOJO_HANDLE_SIGNAL_READABLE,
         base::Bind(&StashBackend::StashEntry::OnHandleReady,
-                   base::Unretained(this))));
+                   base::Unretained(this)))));
   }
 }
 

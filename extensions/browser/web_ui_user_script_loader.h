@@ -5,9 +5,10 @@
 #ifndef EXTENSIONS_BROWSER_WEB_UI_USER_SCRIPT_LOADER_H_
 #define EXTENSIONS_BROWSER_WEB_UI_USER_SCRIPT_LOADER_H_
 
+#include <vector>
+
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_vector.h"
 #include "extensions/browser/user_script_loader.h"
 
 class WebUIURLFetcher;
@@ -64,7 +65,7 @@ class WebUIUserScriptLoader : public extensions::UserScriptLoader {
 
   LoadScriptsCallback scripts_loaded_callback_;
 
-  ScopedVector<WebUIURLFetcher> fetchers_;
+  std::vector<scoped_ptr<WebUIURLFetcher>> fetchers_;
 
   DISALLOW_COPY_AND_ASSIGN(WebUIUserScriptLoader);
 };

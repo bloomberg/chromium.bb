@@ -105,10 +105,10 @@ class UsbDevicePermissionsPrompt : public DevicePermissionsPrompt::Prompt,
     DevicePermissionsManager* permissions_manager =
         DevicePermissionsManager::Get(browser_context());
     std::vector<scoped_refptr<UsbDevice>> devices;
-    for (const DeviceInfo* device : devices_) {
+    for (const auto& device : devices_) {
       if (device->granted()) {
         const UsbDeviceInfo* usb_device =
-            static_cast<const UsbDeviceInfo*>(device);
+            static_cast<const UsbDeviceInfo*>(device.get());
         devices.push_back(usb_device->device());
         if (permissions_manager) {
           permissions_manager->AllowUsbDevice(extension()->id(),
@@ -135,7 +135,8 @@ class UsbDevicePermissionsPrompt : public DevicePermissionsPrompt::Prompt,
 
   void OnDeviceRemoved(scoped_refptr<UsbDevice> device) override {
     for (auto it = devices_.begin(); it != devices_.end(); ++it) {
-      const UsbDeviceInfo* entry = static_cast<const UsbDeviceInfo*>(*it);
+      const UsbDeviceInfo* entry =
+          static_cast<const UsbDeviceInfo*>((*it).get());
       if (entry->device() == device) {
         devices_.erase(it);
         if (observer()) {
@@ -219,10 +220,10 @@ class HidDevicePermissionsPrompt : public DevicePermissionsPrompt::Prompt,
     DevicePermissionsManager* permissions_manager =
         DevicePermissionsManager::Get(browser_context());
     std::vector<scoped_refptr<device::HidDeviceInfo>> devices;
-    for (const DeviceInfo* device : devices_) {
+    for (const auto& device : devices_) {
       if (device->granted()) {
         const HidDeviceInfo* hid_device =
-            static_cast<const HidDeviceInfo*>(device);
+            static_cast<const HidDeviceInfo*>(device.get());
         devices.push_back(hid_device->device());
         if (permissions_manager) {
           permissions_manager->AllowHidDevice(extension()->id(),
@@ -258,7 +259,8 @@ class HidDevicePermissionsPrompt : public DevicePermissionsPrompt::Prompt,
 
   void OnDeviceRemoved(scoped_refptr<device::HidDeviceInfo> device) override {
     for (auto it = devices_.begin(); it != devices_.end(); ++it) {
-      const HidDeviceInfo* entry = static_cast<const HidDeviceInfo*>(*it);
+      const HidDeviceInfo* entry =
+          static_cast<const HidDeviceInfo*>((*it).get());
       if (entry->device() == device) {
         devices_.erase(it);
         if (observer()) {

@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 #include <limits>
+#include <vector>
 
 #include "base/bind.h"
-#include "base/memory/scoped_vector.h"
 #include "base/run_loop.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/browser/deferred_start_render_host.h"
@@ -66,9 +66,8 @@ class LoadMonitoringExtensionHostQueueTest : public ExtensionsTest {
   // Creates a new DeferredStartRenderHost. Ownership is held by this class,
   // not passed to caller.
   StubDeferredStartRenderHost* CreateHost() {
-    StubDeferredStartRenderHost* stub = new StubDeferredStartRenderHost();
-    stubs_.push_back(stub);
-    return stub;
+    stubs_.push_back(make_scoped_ptr(new StubDeferredStartRenderHost()));
+    return stubs_.back().get();
   }
 
   // Our single LoadMonitoringExtensionHostQueue instance.
@@ -100,7 +99,7 @@ class LoadMonitoringExtensionHostQueueTest : public ExtensionsTest {
 
   content::TestBrowserThreadBundle thread_bundle_;
   scoped_ptr<LoadMonitoringExtensionHostQueue> queue_;
-  ScopedVector<StubDeferredStartRenderHost> stubs_;
+  std::vector<scoped_ptr<StubDeferredStartRenderHost>> stubs_;
 
   // Set after the queue has finished monitoring.
   bool finished_;

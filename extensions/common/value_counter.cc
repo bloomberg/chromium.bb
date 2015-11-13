@@ -25,19 +25,18 @@ ValueCounter::~ValueCounter() {
 }
 
 bool ValueCounter::Add(const base::Value& value) {
-  for (Entry* entry : entries_) {
+  for (const auto& entry : entries_) {
     if (entry->value->Equals(&value)) {
       ++entry->count;
       return false;
     }
   }
-  entries_.push_back(new Entry(value.CreateDeepCopy()));
+  entries_.push_back(make_scoped_ptr(new Entry(value.CreateDeepCopy())));
   return true;
 }
 
 bool ValueCounter::Remove(const base::Value& value) {
-  for (ScopedVector<Entry>::iterator it = entries_.begin();
-       it != entries_.end(); ++it) {
+  for (auto it = entries_.begin(); it != entries_.end(); ++it) {
     if ((*it)->value->Equals(&value)) {
       if (--(*it)->count == 0) {
         std::swap(*it, entries_.back());

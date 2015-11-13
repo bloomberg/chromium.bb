@@ -6,11 +6,11 @@
 #define EXTENSIONS_BROWSER_API_HID_HID_DEVICE_MANAGER_H_
 
 #include <map>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_vector.h"
 #include "base/scoped_observer.h"
 #include "base/threading/thread_checker.h"
 #include "device/hid/hid_service.h"
@@ -119,7 +119,7 @@ class HidDeviceManager : public BrowserContextKeyedAPI,
   ScopedObserver<device::HidService, device::HidService::Observer>
       hid_service_observer_;
   bool enumeration_ready_ = false;
-  ScopedVector<GetApiDevicesParams> pending_enumerations_;
+  std::vector<scoped_ptr<GetApiDevicesParams>> pending_enumerations_;
   int next_resource_id_ = 0;
   ResourceIdToDeviceIdMap device_ids_;
   DeviceIdToResourceIdMap resource_ids_;

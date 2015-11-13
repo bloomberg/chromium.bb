@@ -6,8 +6,10 @@
 #define EXTENSIONS_COMMON_MANIFEST_HANDLERS_WEBVIEW_INFO_H_
 
 #include <string>
+#include <vector>
 
-#include "base/memory/scoped_vector.h"
+#include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_handler.h"
 
@@ -34,7 +36,9 @@ class WebviewInfo : public Extension::ManifestData {
 
  private:
   std::string extension_id_;
-  ScopedVector<PartitionItem> partition_items_;
+  std::vector<scoped_ptr<PartitionItem>> partition_items_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebviewInfo);
 };
 
 // Parses the "webview" manifest key.

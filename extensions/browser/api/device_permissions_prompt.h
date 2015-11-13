@@ -10,7 +10,7 @@
 #include "base/callback_forward.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_vector.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 
 namespace content {
@@ -106,7 +106,7 @@ class DevicePermissionsPrompt {
 
     // Subclasses may fill this with a particular subclass of DeviceInfo and may
     // assume that only that instances of that type are stored here.
-    ScopedVector<DeviceInfo> devices_;
+    std::vector<scoped_ptr<DeviceInfo>> devices_;
 
    private:
     friend class base::RefCounted<Prompt>;
