@@ -24,15 +24,17 @@ source_set("os_crypt") {
     "//crypto:platform",
   ]
 
-  if (is_mac) {
+  if (is_mac || is_ios) {
     sources -= [ "os_crypt_posix.cc" ]
   }
 
   if (is_ios) {
+    set_sources_assignment_filter([])
     sources += [
       "keychain_password_mac.mm",
       "os_crypt_mac.mm",
     ]
+    set_sources_assignment_filter(sources_assignment_filter)
   }
 }
 
