@@ -18,4 +18,4 @@ import sys
 if len(sys.argv) < 3:
   print "Incorrect args."
   sys.exit(1)
-subprocess.call(["flock", "--", sys.argv[1], "bash"] + sys.argv[2:])
+sys.exit(subprocess.call(["flock", "--", sys.argv[1], "bash"] + sys.argv[2:]))
