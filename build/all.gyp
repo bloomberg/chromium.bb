@@ -30,7 +30,6 @@
         '../testing/gtest.gyp:*',
         '../third_party/icu/icu.gyp:*',
         '../third_party/libxml/libxml.gyp:*',
-        '../third_party/openh264/tests/openh264_unittests.gyp:*',
         '../third_party/sqlite/sqlite.gyp:*',
         '../third_party/zlib/zlib.gyp:*',
         '../ui/accessibility/accessibility.gyp:*',

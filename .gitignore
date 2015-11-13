@@ -367,6 +367,7 @@ v8.log
 /third_party/nss
 /third_party/omaha/src/omaha
 /third_party/openmax_dl/
+/third_party/openh264/src
 /third_party/opus/src
 /third_party/pdfsqueeze
 /third_party/pdfium

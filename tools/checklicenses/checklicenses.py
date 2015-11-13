@@ -458,6 +458,10 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
     'third_party/modp_b64': [
         'UNKNOWN',
     ],
+    # Missing license headers in openh264 sources: https://github.com/cisco/openh264/issues/2233
+    'third_party/openh264/src': [
+        'UNKNOWN',
+    ],
     'third_party/openmax_dl/dl' : [
         'Khronos Group',
     ],

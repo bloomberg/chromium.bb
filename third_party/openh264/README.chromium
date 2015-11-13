@@ -3,7 +3,7 @@ Short Name: openh264
 URL: http://www.openh264.org/
 Version: v.1.4.0
 License: 2-Clause BSD
-License File: LICENSE
+License File: src/LICENSE
 Security Critical: yes
 
 Description:
@@ -15,6 +15,3 @@ Cisco's H.264 video codec implementation.
 
 Local Modifications:
 N/A
-
-   Note: OpenH264 src has not yet been pulled in. A proper README.chromium file
-   was added anyway due to presubmit check.
