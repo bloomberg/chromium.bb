@@ -1632,7 +1632,6 @@ def GetConfig():
       'stumpy',
       'tricky',
       'veyron_pinky',
-      'whirlwind',
       'wolf',
       'x86-alex',
       'x86-generic',
