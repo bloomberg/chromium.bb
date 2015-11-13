@@ -4100,9 +4100,6 @@ Even if you have downloaded files from this website before, the website might ha
         <message name="IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE_LIST" desc="Permission string for access to a list of USB devices.">
           Access any of these USB devices
         </message>
-        <message name="IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE_LIST_ITEM" desc="Line item for a USB device listed under IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE_LIST.">
-          <ph name="DEVICE_NAME_AND_VENDOR">$1<ex>SoundKnob from Griffin Technology</ex></ph>
-        </message>
         <message name="IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE_LIST_ITEM_UNKNOWN_PRODUCT" desc="Line item for a USB device listed under IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE_LIST that has an unknown product ID.">
           unknown devices from <ph name="VENDOR_NAME">$1<ex>Griffin Technology</ex></ph>
         </message>

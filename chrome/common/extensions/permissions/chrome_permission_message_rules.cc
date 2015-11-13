@@ -217,14 +217,9 @@ class USBDevicesFormatter : public ChromePermissionMessageFormatter {
       const PermissionIDSet& permissions) const {
     DCHECK(permissions.size() > 1);
     // Put all the individual items into submessages.
-    std::vector<base::string16> submessages;
-    std::vector<base::string16> devices =
+    std::vector<base::string16> submessages =
         permissions.GetAllPermissionsWithID(APIPermission::kUsbDevice)
             .GetAllPermissionParameters();
-    for (const base::string16& device : devices) {
-      submessages.push_back(l10n_util::GetStringFUTF16(
-          IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE_LIST_ITEM, device));
-    }
     std::vector<base::string16> vendors =
         permissions.GetAllPermissionsWithID(
                        APIPermission::kUsbDeviceUnknownProduct)
