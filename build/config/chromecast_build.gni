@@ -8,8 +8,14 @@ declare_args() {
   # Set this true for a Chromecast build. Chromecast builds are supported on
   # Linux and Android.
   is_chromecast = false
+
+  # Set this true for an audio-only Chromecast build.
+  disable_display = false
 }
 
 # Assert that Chromecast is being built for a supported platform.
 assert(is_linux || is_android || !is_chromecast,
        "Chromecast builds are not supported on $target_os")
+
+# Assert that disable_display is not true on a non-Chromecast build.
+assert(!disable_display || is_chromecast)

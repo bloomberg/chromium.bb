@@ -30,16 +30,21 @@ declare_args() {
 
   if (ozone_auto_platforms) {
     if (is_chromecast) {
-      # The default platform used at runtime is "cast".
-      ozone_platform = "cast"
-      ozone_platform_cast = true
       ozone_platform_headless = true
+      if (disable_display) {
+        # Audio-only builds should use the "headless" platform by default.
+        ozone_platform = "headless"
+      } else {
+        # Builds with video should default to the "cast" platform.
+        ozone_platform_cast = true
+        ozone_platform = "cast"
 
-      # For desktop Chromecast builds, override the default "cast" platform with
-      # --ozone_platform=egltest
-      if (target_os == "linux" && target_cpu != "arm") {
-        ozone_platform_egltest = true
-        ozone_platform_ozonex = true
+        # For desktop Chromecast builds, override the default "cast" platform with
+        # --ozone_platform=egltest
+        if (target_os == "linux" && target_cpu != "arm") {
+          ozone_platform_egltest = true
+          ozone_platform_ozonex = true
+        }
       }
     } else {
       # Use headless as the default platform.
