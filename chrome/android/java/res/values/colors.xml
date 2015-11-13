@@ -97,6 +97,11 @@
     <color name="ntp_list_header_text">#333</color>
     <color name="ntp_list_header_subtext">#969696</color>
     <color name="ntp_list_header_subtext_active">#7cadff</color>
+    <color name="snippets_publisher_name_color">#7f7f7f</color>
+    <color name="snippets_text_color">#7f7f7f</color>
+    <color name="snippets_list_header_text_color">#7f7f7f</color>
+    <color name="snippets_headline_text_color">#000000</color>
+    <color name="snippets_read_more_link_color">@color/light_active_color</color>
 
     <!-- Signin promo screen colors -->
     <color name="illustration_background_color">#4FC3F7</color>

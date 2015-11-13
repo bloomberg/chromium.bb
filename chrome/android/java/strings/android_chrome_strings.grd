@@ -1748,6 +1748,12 @@ Just open Chrome on your computer, go to the menu, and select “Sign in to Chro
       <message name="IDS_REMOVE_ALL" desc="Context menu option to clear the list of recently closed tabs">
         Remove all
       </message>
+      <message name="IDS_SNIPPETS_HEADER" desc="Header for a group of content snippets">
+        For readers of <ph name="PUBLISHER">%1$s<ex>The New York Times</ex></ph>
+      </message>
+      <message name="IDS_SNIPPETS_NTP_READ_MORE_LINK_TEXT" desc="Link to an article this snippet is describing">
+        Read more
+      </message>
 
       <!-- Toolbar button strings -->
       <message name="IDS_OPEN_TABS" desc="Text for button to enter the tab switcher and show tabs that are open on this device">

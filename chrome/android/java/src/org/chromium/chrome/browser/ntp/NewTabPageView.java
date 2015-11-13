@@ -15,6 +15,8 @@ import android.net.Uri;
 import android.os.Build;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
@@ -32,8 +34,10 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import org.chromium.base.CommandLine;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.favicon.FaviconHelper.FaviconImageCallback;
 import org.chromium.chrome.browser.favicon.FaviconHelper.IconAvailabilityCallback;
 import org.chromium.chrome.browser.favicon.LargeIconBridge.LargeIconCallback;
@@ -41,6 +45,7 @@ import org.chromium.chrome.browser.ntp.LogoBridge.Logo;
 import org.chromium.chrome.browser.ntp.LogoBridge.LogoObserver;
 import org.chromium.chrome.browser.ntp.MostVisitedItem.MostVisitedItemManager;
 import org.chromium.chrome.browser.ntp.NewTabPage.OnSearchBoxScrollListener;
+import org.chromium.chrome.browser.ntp.snippets.SnippetsManager;
 import org.chromium.chrome.browser.preferences.DocumentModeManager;
 import org.chromium.chrome.browser.profiles.MostVisitedSites.MostVisitedURLsObserver;
 import org.chromium.chrome.browser.profiles.MostVisitedSites.ThumbnailCallback;
@@ -73,12 +78,14 @@ public class NewTabPageView extends FrameLayout
     private View mMostVisitedPlaceholder;
     private View mOptOutView;
     private View mNoSearchLogoSpacer;
+    private RecyclerView mSnippetsView;
 
     private OnSearchBoxScrollListener mSearchBoxScrollListener;
 
     private NewTabPageManager mManager;
     private MostVisitedDesign mMostVisitedDesign;
     private MostVisitedItem[] mMostVisitedItems;
+    private SnippetsManager mSnippetsManager;
     private boolean mFirstShow = true;
     private boolean mSearchProviderHasLogo = true;
     private boolean mHasReceivedMostVisitedSites;
@@ -123,6 +130,9 @@ public class NewTabPageView extends FrameLayout
 
         /** Opens the recent tabs page in the current tab. */
         void navigateToRecentTabs();
+
+        /** Opens a given URL in the current tab. */
+        void open(String url);
 
         /**
          * Animates the search box up into the omnibox and bring up the keyboard.
@@ -307,6 +317,14 @@ public class NewTabPageView extends FrameLayout
                 mMostVisitedDesign.getNumberOfTiles(searchProviderHasLogo));
 
         if (mManager.shouldShowOptOutPromo()) showOptOutPromo();
+
+        // Set up snippets
+        if (CommandLine.getInstance().hasSwitch(ChromeSwitches.ENABLE_NTP_SNIPPETS)) {
+            mSnippetsView = (RecyclerView) findViewById(R.id.snippets_card_list);
+            mSnippetsView.setVisibility(View.VISIBLE);
+            mSnippetsView.setLayoutManager(new LinearLayoutManager(getContext()));
+            mSnippetsManager = new SnippetsManager(mManager, mSnippetsView);
+        }
     }
 
     private int getTabsMovedIllustration() {

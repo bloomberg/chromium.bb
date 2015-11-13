@@ -18,10 +18,12 @@ import android.view.MenuItem.OnMenuItemClickListener;
 import android.view.View;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.CommandLine;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.NativePage;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.compositor.layouts.content.InvalidationAwareThumbnailProvider;
@@ -244,7 +246,12 @@ public class NewTabPage
         public void open(MostVisitedItem item) {
             if (mIsDestroyed) return;
             recordOpenedMostVisitedItem(item);
-            mTab.loadUrl(new LoadUrlParams(item.getUrl(), PageTransition.AUTO_BOOKMARK));
+            open(item.getUrl());
+        }
+
+        @Override
+        public void open(String url) {
+            mTab.loadUrl(new LoadUrlParams(url, PageTransition.AUTO_BOOKMARK));
         }
 
         @Override
@@ -476,8 +483,13 @@ public class NewTabPage
     }
 
     private void updateSearchProviderHasLogo() {
-        mSearchProviderHasLogo = !mOptOutPromoShown
-                && TemplateUrlService.getInstance().isDefaultSearchEngineGoogle();
+        if (CommandLine.getInstance().hasSwitch(ChromeSwitches.ENABLE_NTP_SNIPPETS)) {
+            mSearchProviderHasLogo = false;
+            if (mNewTabPageView != null) mNewTabPageView.setSearchProviderHasLogo(false);
+        } else {
+            mSearchProviderHasLogo = !mOptOutPromoShown
+                    && TemplateUrlService.getInstance().isDefaultSearchEngineGoogle();
+        }
     }
 
     private void onSearchEngineUpdated() {

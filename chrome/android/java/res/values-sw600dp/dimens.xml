@@ -7,7 +7,7 @@
     <!-- Menu Dimensions -->
     <!-- Necessary to align the menu icon with the actual button. -->
     <dimen name="menu_negative_software_vertical_offset">6dp</dimen>
-    
+
     <!-- Tab title -->
     <dimen name="tab_title_favicon_start_padding">0dp</dimen>
     <dimen name="tab_title_favicon_end_padding">5dp</dimen>
@@ -45,6 +45,7 @@
     <!-- NTP dimensions -->
     <dimen name="most_visited_spacing">16dp</dimen>
     <dimen name="ntp_logo_height">180dp</dimen>
+    <dimen name="snippets_thumbnail_size">120dp</dimen>
 
     <!-- Recent tabs page -->
     <dimen name="recent_tabs_visible_separator_padding">28dp</dimen>

@@ -126,6 +126,13 @@
                 android:inflatedId="@+id/most_visited_placeholder"
                 android:layout="@layout/most_visited_placeholder" />
 
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/snippets_card_list"
+                android:scrollbars="none"
+                android:visibility="gone"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
+
             <!-- Spacer -->
             <View
                 android:id="@+id/ntp_bottom_spacer"
