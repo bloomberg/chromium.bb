@@ -22,23 +22,39 @@ revisions = exec_script("//native_client/build/get_toolchain_revision.py",
                         "trim list lines")
 nacl_x86_glibc_rev = revisions[0]
 nacl_arm_glibc_rev = revisions[1]
-pnacl_newlib_rev = revisions[2]
 
-nacl_toolchain("newlib_pnacl") {
-  toolchain_package = "pnacl_newlib"
-  toolchain_revision = pnacl_newlib_rev
-  toolchain_cpu = "pnacl"
-  toolprefix =
-      rebase_path("${nacl_toolchain_dir}/${toolchain_package}/bin/pnacl-",
-                  root_build_dir)
+# TODO(mcgrathr): Uncomment this when
+# https://code.google.com/p/chromium/issues/detail?id=555724 is fixed.
+#pnacl_newlib_rev = revisions[2]
 
+template("pnacl_toolchain") {
+  assert(defined(invoker.strip), "Must define strip")
+  assert(defined(invoker.executable_extension),
+         "Must define executable_extension")
+
+  # TODO(mcgrathr): See above.
+  pnacl_newlib_rev = revisions[2]
+
+  nacl_toolchain(target_name) {
+    toolchain_package = "pnacl_newlib"
+    toolchain_revision = pnacl_newlib_rev
+    toolchain_cpu = "pnacl"
+    toolprefix =
+        rebase_path("${nacl_toolchain_dir}/${toolchain_package}/bin/pnacl-",
+                    root_build_dir)
+
+    is_clang = true
+    cc = toolprefix + "clang"
+    cxx = toolprefix + "clang++"
+    ar = toolprefix + "ar"
+    ld = cxx
+    strip = toolprefix + invoker.strip
+    executable_extension = invoker.executable_extension
+  }
+}
+
+pnacl_toolchain("newlib_pnacl") {
   executable_extension = ".pexe"
-
-  is_clang = true
-  cc = toolprefix + "clang"
-  cxx = toolprefix + "clang++"
-  ar = toolprefix + "ar"
-  ld = cxx
 
   # The pnacl-finalize tool turns a .pexe.debug file into a .pexe file.
   # It's very similar in purpose to the traditional "strip" utility: it
@@ -47,23 +63,13 @@ nacl_toolchain("newlib_pnacl") {
   # you ever actually want to use other than pnacl-finalize, so just
   # make pnacl-finalize the strip tool rather than adding an additional
   # step like "postlink" to run pnacl-finalize.
-  strip = toolprefix + "finalize"
+  strip = "finalize"
 }
 
-nacl_toolchain("newlib_pnacl_nonsfi") {
-  toolchain_package = "pnacl_newlib"
-  toolchain_revision = pnacl_newlib_rev
-  toolchain_cpu = "pnacl"
-  toolprefix =
-      rebase_path("${nacl_toolchain_dir}/${toolchain_package}/bin/pnacl-",
-                  root_build_dir)
-
-  is_clang = true
-  cc = toolprefix + "clang"
-  cxx = toolprefix + "clang++"
-  ar = toolprefix + "ar"
-  ld = cxx
+pnacl_toolchain("newlib_pnacl_nonsfi") {
   executable_extension = ""
+
+  strip = "strip"
 }
 
 template("nacl_glibc_toolchain") {
@@ -114,6 +120,9 @@ template("nacl_clang_toolchain") {
   toolchain_cpu = target_name
   assert(defined(invoker.toolchain_tuple), "Must define toolchain_tuple")
 
+  # TODO(mcgrathr): See above.
+  pnacl_newlib_rev = revisions[2]
+
   toolchain_package = "pnacl_newlib"
   toolchain_revision = pnacl_newlib_rev
   toolprefix = rebase_path("${nacl_toolchain_dir}/${toolchain_package}/bin/" +
@@ -132,6 +141,9 @@ template("nacl_clang_toolchain") {
 template("nacl_irt_toolchain") {
   toolchain_cpu = target_name
   assert(defined(invoker.toolchain_tuple), "Must define toolchain_tuple")
+
+  # TODO(mcgrathr): See above.
+  pnacl_newlib_rev = revisions[2]
 
   toolchain_package = "pnacl_newlib"
   toolchain_revision = pnacl_newlib_rev
