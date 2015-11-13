@@ -573,6 +573,7 @@ class DownloadProtectionService::CheckClientDownloadRequest
     } else {
       DVLOG(1) << "Zip analysis failed for " << item_->GetFullPath().value();
     }
+    UMA_HISTOGRAM_BOOLEAN("SBClientDownload.ZipFileSuccess", results.success);
     UMA_HISTOGRAM_BOOLEAN("SBClientDownload.ZipFileHasExecutable",
                           archived_executable_);
     UMA_HISTOGRAM_BOOLEAN("SBClientDownload.ZipFileHasArchiveButNoExecutable",

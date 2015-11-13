@@ -40283,6 +40283,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="SBClientDownload.ZipFileSuccess" enum="BooleanSuccess">
+  <owner>nparker@chromium.org</owner>
+  <summary>
+    For each zip file analyzed by the SafeBrowsing download service, records if
+    the unpacking was 100% successful.
+  </summary>
+</histogram>
+
 <histogram name="SBClientMalware.ClassificationStart" enum="BooleanHit">
   <owner>noelutz@chromium.org</owner>
   <summary>
