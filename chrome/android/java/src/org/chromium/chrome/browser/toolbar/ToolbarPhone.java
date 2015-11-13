@@ -648,7 +648,7 @@ public class ToolbarPhone extends ToolbarLayout
 
     // NewTabPage.OnSearchBoxScrollListener
     @Override
-    public void onScrollChanged(float scrollPercentage) {
+    public void onNtpScrollChanged(float scrollPercentage) {
         if (scrollPercentage == mNtpSearchBoxScrollPercent) return;
 
         mNtpSearchBoxScrollPercent = scrollPercentage;
@@ -794,6 +794,7 @@ public class ToolbarPhone extends ToolbarLayout
                         ? LOCATION_BAR_TRANSPARENT_BACKGROUND_ALPHA : 255;
         setAncestorsShouldClipChildren(true);
         mNtpSearchBoxScrollPercent = UNINITIALIZED_PERCENT;
+        updateUrlExpansionPercent();
     }
 
     private void updateNtpTransitionAnimation(NewTabPage ntp) {

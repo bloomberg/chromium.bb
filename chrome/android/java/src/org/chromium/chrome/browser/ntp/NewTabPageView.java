@@ -403,7 +403,7 @@ public class NewTabPageView extends FrameLayout
         updateVisualsForToolbarTransition(percentage);
 
         if (mSearchBoxScrollListener != null) {
-            mSearchBoxScrollListener.onScrollChanged(percentage);
+            mSearchBoxScrollListener.onNtpScrollChanged(percentage);
         }
     }
 

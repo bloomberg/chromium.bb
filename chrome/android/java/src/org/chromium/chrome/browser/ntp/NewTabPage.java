@@ -120,7 +120,7 @@ public class NewTabPage
          *
          * @param scrollPercentage The percentage the search box has been scrolled off the page.
          */
-        void onScrollChanged(float scrollPercentage);
+        void onNtpScrollChanged(float scrollPercentage);
     }
 
     /**
