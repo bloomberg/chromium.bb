@@ -39,6 +39,4 @@ source_set("pipeline") {
     "//media",
     "//third_party/boringssl",
   ]
-
-  configs += [ "//chromecast:config" ]
 }

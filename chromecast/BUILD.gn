@@ -15,23 +15,10 @@ declare_args() {
   use_chromecast_webui = true
 }
 
-# TODO(slan): This target is being used far too broadly. We should reduce the
-# uses of this config to targets that actually need it. (b/23814594)
-config("config") {
-  defines = []
-
-  if (use_playready) {
-    defines += [ "PLAYREADY_CDM_AVAILABLE" ]
+if (use_playready) {
+  config("playready_config") {
+    defines = [ "PLAYREADY_CDM_AVAILABLE" ]
   }
-}
-
-component("chromecast") {
-  deps = [
-    "//chromecast/base",
-    "//chromecast/base/metrics",
-    "//chromecast/crash",
-    "//chromecast/media",
-  ]
 }
 
 # A list of all public test() binaries. This is an organizational target that

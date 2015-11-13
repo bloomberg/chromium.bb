@@ -30,8 +30,6 @@ source_set("base") {
     "simple_media_task_runner.h",
   ]
 
-  configs += [ "//chromecast:config" ]
-
   public_deps = [
     "//chromecast/public/media",
   ]

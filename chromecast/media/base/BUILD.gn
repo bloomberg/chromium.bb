@@ -16,8 +16,6 @@ source_set("message_loop") {
     "//chromecast/public/media",
   ]
 
-  configs += [ "//chromecast:config" ]
-
   deps = [
     "//base",
     "//chromecast/media/base:libcast_media_1.0",
@@ -31,7 +29,9 @@ source_set("key_systems") {
     "key_systems_common.h",
   ]
 
-  configs += [ "//chromecast:config" ]
+  if (use_playready) {
+    public_configs = [ "//chromecast:playready_config" ]
+  }
 
   deps = [
     "//base",
@@ -61,8 +61,6 @@ source_set("base") {
     ":message_loop",
     "//chromecast/public/media",
   ]
-
-  configs += [ "//chromecast:config" ]
 
   deps = [
     ":libcast_media_1.0",
@@ -100,8 +98,6 @@ source_set("libcast_media_1.0_default_core") {
     "cast_media_default.cc",
   ]
 
-  configs += [ "//chromecast:config" ]
-
   public_deps = [
     "//chromecast/public",
     "//chromecast/public/media",
@@ -122,8 +118,6 @@ shared_library("libcast_media_1.0_default") {
   sources = [
     "cast_media_default.cc",
   ]
-
-  configs += [ "//chromecast:config" ]
 
   public_deps = [
     "//chromecast/public",

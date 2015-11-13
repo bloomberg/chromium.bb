@@ -11,8 +11,6 @@ source_set("crypto") {
     "signature_cache.h",
   ]
 
-  configs += [ "//chromecast:config" ]
-
   deps = [
     "//base",
   ]

@@ -37,8 +37,6 @@ source_set("base") {
     "task_runner_impl.h",
   ]
 
-  configs += [ "//chromecast:config" ]
-
   public_deps = [
     "//chromecast/base/metrics",
     "//chromecast/public",

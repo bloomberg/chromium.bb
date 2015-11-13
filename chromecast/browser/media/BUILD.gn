@@ -18,6 +18,10 @@ source_set("media") {
     "media_pipeline_host.h",
   ]
 
+  if (use_playready) {
+    public_configs = [ "//chromecast:playready_config" ]
+  }
+
   deps = [
     "//base",
     "//chromecast/base",

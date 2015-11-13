@@ -20,6 +20,4 @@ source_set("backend") {
   deps = [
     "//base",
   ]
-
-  configs += [ "//chromecast:config" ]
 }

@@ -2,10 +2,15 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//chromecast/chromecast.gni")
+
+# GYP target: chromecast/media.gyp:media_cdm
 source_set("cdm") {
   sources = [
     "browser_cdm_cast.cc",
     "browser_cdm_cast.h",
+    "chromecast_init_data.cc",
+    "chromecast_init_data.h",
   ]
 
   deps = [
@@ -14,5 +19,12 @@ source_set("cdm") {
     "//media",
   ]
 
-  configs += [ "//chromecast:config" ]
+  if (is_android && use_playready) {
+    sources += [
+      "playready_drm_delegate_android.cc",
+      "playready_drm_delegate_android.h",
+    ]
+
+    deps += [ "//media/base/android" ]
+  }
 }

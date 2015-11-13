@@ -27,8 +27,6 @@ source_set("crash") {
     "linux/synchronized_minidump_manager.h",
   ]
 
-  configs += [ "//chromecast:config" ]
-
   deps = [
     "//base",
     "//breakpad:client",

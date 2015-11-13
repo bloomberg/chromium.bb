@@ -34,8 +34,6 @@ source_set("cast_crash_client") {
     "linux/cast_crash_reporter_client.h",
   ]
 
-  configs += [ "//chromecast:config" ]
-
   deps = [
     "//base",
     "//chromecast/base",

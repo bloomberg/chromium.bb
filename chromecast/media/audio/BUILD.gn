@@ -12,8 +12,6 @@ source_set("audio") {
     "cast_audio_output_stream.h",
   ]
 
-  configs += [ "//chromecast:config" ]
-
   deps = [
     "//base",
     "//chromecast/base",

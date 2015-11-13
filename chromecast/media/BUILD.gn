@@ -36,8 +36,6 @@ test("cast_media_unittests") {
     "cma/test/run_all_unittests.cc",
   ]
 
-  configs += [ "//chromecast:config" ]
-
   deps = [
     ":media",
     "//chromecast/media/audio",
