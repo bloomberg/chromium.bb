@@ -137,73 +137,49 @@ std::string SearchProvider::GetSuggestMetadata(const AutocompleteMatch& match) {
   return match.GetAdditionalInfo(kSuggestMetadataKey);
 }
 
-void SearchProvider::ResetSession() {
-  set_field_trial_triggered_in_session(false);
-}
-
-void SearchProvider::OnTemplateURLServiceChanged() {
-  // Only update matches at this time if we haven't already claimed we're done
-  // processing the query.
-  if (done_)
+void SearchProvider::RegisterDisplayedAnswers(
+    const AutocompleteResult& result) {
+  if (result.empty())
     return;
 
-  // Check that the engines we're using weren't renamed or deleted.  (In short,
-  // require that an engine still exists with the keywords in use.)  For each
-  // deleted engine, cancel the in-flight request if any, drop its suggestions,
-  // and, in the case when the default provider was affected, point the cached
-  // default provider keyword name at the new name for the default provider.
+  // The answer must be in the first or second slot to be considered. It should
+  // only be in the second slot if AutocompleteController ranked a local search
+  // history or a verbatim item higher than the answer.
+  AutocompleteResult::const_iterator match = result.begin();
+  if (match->answer_contents.empty() && result.size() > 1)
+    ++match;
+  if (match->answer_contents.empty() || match->answer_type.empty() ||
+      match->fill_into_edit.empty())
+    return;
 
-  // Get...ProviderURL() looks up the provider using the cached keyword name
-  // stored in |providers_|.
-  const TemplateURL* template_url = providers_.GetDefaultProviderURL();
-  if (!template_url) {
-    CancelFetcher(&default_fetcher_);
-    default_results_.Clear();
-    providers_.set(client()
-                       ->GetTemplateURLService()
-                       ->GetDefaultSearchProvider()
-                       ->keyword(),
-                   providers_.keyword_provider());
-  }
-  template_url = providers_.GetKeywordProviderURL();
-  if (!providers_.keyword_provider().empty() && !template_url) {
-    CancelFetcher(&keyword_fetcher_);
-    keyword_results_.Clear();
-    providers_.set(providers_.default_provider(), base::string16());
-  }
-  // It's possible the template URL changed without changing associated keyword.
-  // Hence, it's always necessary to update matches to use the new template
-  // URL.  (One could cache the template URL and only call UpdateMatches() and
-  // OnProviderUpdate() if a keyword was deleted/renamed or the template URL
-  // was changed.  That would save extra calls to these functions.  However,
-  // this is uncommon and not likely to be worth the extra work.)
-  UpdateMatches();
-  listener_->OnProviderUpdate(true);  // always pretend something changed
+  // Valid answer encountered, cache it for further queries.
+  answers_cache_.UpdateRecentAnswers(match->fill_into_edit, match->answer_type);
+}
+
+// static
+int SearchProvider::CalculateRelevanceForKeywordVerbatim(
+    metrics::OmniboxInputType::Type type,
+    bool allow_exact_keyword_match,
+    bool prefer_keyword) {
+  // This function is responsible for scoring verbatim query matches
+  // for non-extension substituting keywords.
+  // KeywordProvider::CalculateRelevance() scores all other types of
+  // keyword verbatim matches.
+  if (allow_exact_keyword_match && prefer_keyword)
+    return 1500;
+  return (allow_exact_keyword_match &&
+          (type == metrics::OmniboxInputType::QUERY)) ?
+      1450 : 1100;
+}
+
+void SearchProvider::ResetSession() {
+  set_field_trial_triggered_in_session(false);
 }
 
 SearchProvider::~SearchProvider() {
   TemplateURLService* template_url_service = client()->GetTemplateURLService();
   if (template_url_service)
     template_url_service->RemoveObserver(this);
-}
-
-// static
-int SearchProvider::CalculateRelevanceForKeywordVerbatim(
-    metrics::OmniboxInputType::Type type,
-    bool prefer_keyword) {
-  // This function is responsible for scoring verbatim query matches
-  // for non-extension keywords.  KeywordProvider::CalculateRelevance()
-  // scores verbatim query matches for extension keywords, as well as
-  // for keyword matches (i.e., suggestions of a keyword itself, not a
-  // suggestion of a query on a keyword search engine).  These two
-  // functions are currently in sync, but there's no reason we
-  // couldn't decide in the future to score verbatim matches
-  // differently for extension and non-extension keywords.  If you
-  // make such a change, however, you should update this comment to
-  // describe it, so it's clear why the functions diverge.
-  if (prefer_keyword)
-    return 1500;
-  return (type == metrics::OmniboxInputType::QUERY) ? 1450 : 1100;
 }
 
 // static
@@ -366,6 +342,46 @@ void SearchProvider::RecordDeletionResult(bool success) {
     base::RecordAction(
         base::UserMetricsAction("Omnibox.ServerSuggestDelete.Failure"));
   }
+}
+
+void SearchProvider::OnTemplateURLServiceChanged() {
+  // Only update matches at this time if we haven't already claimed we're done
+  // processing the query.
+  if (done_)
+    return;
+
+  // Check that the engines we're using weren't renamed or deleted.  (In short,
+  // require that an engine still exists with the keywords in use.)  For each
+  // deleted engine, cancel the in-flight request if any, drop its suggestions,
+  // and, in the case when the default provider was affected, point the cached
+  // default provider keyword name at the new name for the default provider.
+
+  // Get...ProviderURL() looks up the provider using the cached keyword name
+  // stored in |providers_|.
+  const TemplateURL* template_url = providers_.GetDefaultProviderURL();
+  if (!template_url) {
+    CancelFetcher(&default_fetcher_);
+    default_results_.Clear();
+    providers_.set(client()
+                       ->GetTemplateURLService()
+                       ->GetDefaultSearchProvider()
+                       ->keyword(),
+                   providers_.keyword_provider());
+  }
+  template_url = providers_.GetKeywordProviderURL();
+  if (!providers_.keyword_provider().empty() && !template_url) {
+    CancelFetcher(&keyword_fetcher_);
+    keyword_results_.Clear();
+    providers_.set(providers_.default_provider(), base::string16());
+  }
+  // It's possible the template URL changed without changing associated keyword.
+  // Hence, it's always necessary to update matches to use the new template
+  // URL.  (One could cache the template URL and only call UpdateMatches() and
+  // OnProviderUpdate() if a keyword was deleted/renamed or the template URL
+  // was changed.  That would save extra calls to these functions.  However,
+  // this is uncommon and not likely to be worth the extra work.)
+  UpdateMatches();
+  listener_->OnProviderUpdate(true);  // always pretend something changed
 }
 
 void SearchProvider::OnURLFetchComplete(const net::URLFetcher* source) {
@@ -1324,6 +1340,7 @@ int SearchProvider::GetKeywordVerbatimRelevance(
   return use_server_relevance ?
       keyword_results_.verbatim_relevance :
       CalculateRelevanceForKeywordVerbatim(keyword_input_.type(),
+                                           true,
                                            keyword_input_.prefer_keyword());
 }
 
@@ -1470,25 +1487,6 @@ std::string SearchProvider::GetSessionToken() {
   token_expiration_time_ = current_time + base::TimeDelta::FromSeconds(60);
 
   return current_token_;
-}
-
-void SearchProvider::RegisterDisplayedAnswers(
-    const AutocompleteResult& result) {
-  if (result.empty())
-    return;
-
-  // The answer must be in the first or second slot to be considered. It should
-  // only be in the second slot if AutocompleteController ranked a local search
-  // history or a verbatim item higher than the answer.
-  AutocompleteResult::const_iterator match = result.begin();
-  if (match->answer_contents.empty() && result.size() > 1)
-    ++match;
-  if (match->answer_contents.empty() || match->answer_type.empty() ||
-      match->fill_into_edit.empty())
-    return;
-
-  // Valid answer encountered, cache it for further queries.
-  answers_cache_.UpdateRecentAnswers(match->fill_into_edit, match->answer_type);
 }
 
 AnswersQueryData SearchProvider::FindAnswersPrefetchData() {

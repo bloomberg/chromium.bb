@@ -320,6 +320,28 @@ class OmniboxFieldTrial {
   static bool PreventUWYTDefaultForNonURLInputs();
 
   // ---------------------------------------------------------
+  // For the aggressive keyword matching experiment that's part of the bundled
+  // omnibox field trial.
+
+  // Returns whether KeywordProvider should consider the registry portion
+  // (e.g., co.uk) of keywords that look like hostnames as an important part of
+  // the keyword name for matching purposes.  Returns true if the experiment
+  // isn't active.
+  static bool KeywordRequiresRegistry();
+
+  // For keywords that look like hostnames, returns whether KeywordProvider
+  // should require users to type a prefix of the hostname to match against
+  // them, rather than just the domain name portion.  In other words, returns
+  // whether the prefix before the domain name should be considered important
+  // for matching purposes.  Returns true if the experiment isn't active.
+  static bool KeywordRequiresPrefixMatch();
+
+  // Returns the relevance score that KeywordProvider should assign to keywords
+  // with sufficiently-complete matches, i.e., the user has typed all of the
+  // important part of the keyword.  Returns -1 if the experiment isn't active.
+  static int KeywordScoreForSufficientlyCompleteMatch();
+
+  // ---------------------------------------------------------
   // Exposed publicly for the sake of unittests.
   static const char kBundledExperimentFieldTrialName[];
   // Rule names used by the bundled experiment.
@@ -341,6 +363,9 @@ class OmniboxFieldTrial {
   static const char kHQPNumTitleWordsRule[];
   static const char kHQPAlsoDoHUPLikeScoringRule[];
   static const char kPreventUWYTDefaultForNonURLInputsRule[];
+  static const char kKeywordRequiresRegistryRule[];
+  static const char kKeywordRequiresPrefixMatchRule[];
+  static const char kKeywordScoreForSufficientlyCompleteMatchRule[];
 
   // Parameter names used by the HUP new scoring experiments.
   static const char kHUPNewScoringEnabledParam[];

@@ -440,6 +440,35 @@ bool OmniboxFieldTrial::PreventUWYTDefaultForNonURLInputs() {
       kPreventUWYTDefaultForNonURLInputsRule) == "true";
 }
 
+bool OmniboxFieldTrial::KeywordRequiresRegistry() {
+  const std::string& value = variations::GetVariationParamValue(
+      kBundledExperimentFieldTrialName,
+      kKeywordRequiresRegistryRule);
+  return value.empty() || (value == "true");
+}
+
+bool OmniboxFieldTrial::KeywordRequiresPrefixMatch() {
+  const std::string& value = variations::GetVariationParamValue(
+      kBundledExperimentFieldTrialName,
+      kKeywordRequiresPrefixMatchRule);
+  return value.empty() || (value == "true");
+}
+
+int OmniboxFieldTrial::KeywordScoreForSufficientlyCompleteMatch() {
+  std::string value_str = variations::GetVariationParamValue(
+      kBundledExperimentFieldTrialName,
+      kKeywordScoreForSufficientlyCompleteMatchRule);
+  if (value_str.empty())
+    return -1;
+  // This is a best-effort conversion; we trust the hand-crafted parameters
+  // downloaded from the server to be perfect.  There's no need for handle
+  // errors smartly.
+  int value;
+  base::StringToInt(value_str, &value);
+  return value;
+}
+
+
 const char OmniboxFieldTrial::kBundledExperimentFieldTrialName[] =
     "OmniboxBundledExperimentV1";
 const char OmniboxFieldTrial::kDisableProvidersRule[] = "DisableProviders";
@@ -469,6 +498,12 @@ const char OmniboxFieldTrial::kHQPAlsoDoHUPLikeScoringRule[] =
     "HQPAlsoDoHUPLikeScoring";
 const char OmniboxFieldTrial::kPreventUWYTDefaultForNonURLInputsRule[] =
     "PreventUWYTDefaultForNonURLInputs";
+const char OmniboxFieldTrial::kKeywordRequiresRegistryRule[] =
+    "KeywordRequiresRegistry";
+const char OmniboxFieldTrial::kKeywordRequiresPrefixMatchRule[] =
+    "KeywordRequiresPrefixMatch";
+const char OmniboxFieldTrial::kKeywordScoreForSufficientlyCompleteMatchRule[] =
+    "KeywordScoreForSufficientlyCompleteMatch";
 
 const char OmniboxFieldTrial::kHUPNewScoringEnabledParam[] =
     "HUPExperimentalScoringEnabled";

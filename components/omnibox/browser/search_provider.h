@@ -66,6 +66,15 @@ class SearchProvider : public BaseSearchProvider,
   // match for Autocomplete and registers the contained answer data, if any.
   void RegisterDisplayedAnswers(const AutocompleteResult& result);
 
+  // Calculates the relevance score for the keyword verbatim result (if the
+  // input matches one of the profile's keywords).  If
+  // |allow_exact_keyword_match| is false, the relevance for complete
+  // keywords that support replacements is degraded.
+  static int CalculateRelevanceForKeywordVerbatim(
+      metrics::OmniboxInputType::Type type,
+      bool allow_exact_keyword_match,
+      bool prefer_keyword);
+
   // AutocompleteProvider:
   void ResetSession() override;
 
@@ -141,12 +150,6 @@ class SearchProvider : public BaseSearchProvider,
   class CompareScoredResults;
 
   typedef std::vector<history::KeywordSearchTermVisit> HistoryResults;
-
-  // Calculates the relevance score for the keyword verbatim result (if the
-  // input matches one of the profile's keyword).
-  static int CalculateRelevanceForKeywordVerbatim(
-      metrics::OmniboxInputType::Type type,
-      bool prefer_keyword);
 
   // A helper function for UpdateAllOldResults().
   static void UpdateOldResults(bool minimal_changes,

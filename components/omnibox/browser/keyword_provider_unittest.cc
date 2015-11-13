@@ -4,15 +4,19 @@
 
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/field_trial.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/metrics/proto/omnibox_event.pb.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/autocomplete_scheme_classifier.h"
 #include "components/omnibox/browser/keyword_provider.h"
 #include "components/omnibox/browser/mock_autocomplete_provider_client.h"
+#include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/search_engines/search_engines_switches.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
+#include "components/variations/entropy_provider.h"
+#include "components/variations/variations_associated_data.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -48,10 +52,22 @@ class KeywordProviderTest : public testing::Test {
     const MatchType<ResultType> output[3];
   };
 
-  KeywordProviderTest() : kw_provider_(NULL) { }
+  KeywordProviderTest() : kw_provider_(NULL) {
+    // Destroy the existing FieldTrialList before creating a new one to avoid
+    // a DCHECK.
+    field_trial_list_.reset();
+    field_trial_list_.reset(new base::FieldTrialList(
+        new metrics::SHA1EntropyProvider("foo")));
+    variations::testing::ClearAllVariationParams();
+  }
   ~KeywordProviderTest() override {}
 
-  void SetUp() override;
+  // Should be called at least once during a test case.  This is a separate
+  // function from SetUp() because the client may want to set parameters
+  // (e.g., field trials) before initializing TemplateURLService and the
+  // related internal variables here.
+  void SetUpClientAndKeywordProvider();
+
   void TearDown() override;
 
   template<class ResultType>
@@ -62,6 +78,7 @@ class KeywordProviderTest : public testing::Test {
  protected:
   static const TemplateURLService::Initializer kTestData[];
 
+  scoped_ptr<base::FieldTrialList> field_trial_list_;
   scoped_refptr<KeywordProvider> kw_provider_;
   scoped_ptr<MockAutocompleteProviderClient> client_;
 };
@@ -76,9 +93,18 @@ const TemplateURLService::Initializer KeywordProviderTest::kTestData[] = {
   { "www", " +%2B?={searchTerms}foo ", "www" },
   { "nonsub", "http://nonsubstituting-keyword.com/", "nonsub" },
   { "z", "{searchTerms}=z", "z" },
+  { "host.site.com", "http://host.site.com/?q={searchTerms}", "host.site.com" },
+  { "ignoremelong.domain.com",
+    "http://ignoremelong.domain.com/?q={searchTerms}",
+    "ignoremelong.domain.com" },
+  { "ignoreme.domain2.com",
+    "http://ignoreme.domain2.com/?q={searchTerms}",
+    "ignoreme.domain2.com" },
+  { "fooshort.com", "http://fooshort.com/?q={searchTerms}", "fooshort.com" },
+  { "foolong.co.uk", "http://foolong.co.uk/?q={searchTerms}", "foolong.co.uk" },
 };
 
-void KeywordProviderTest::SetUp() {
+void KeywordProviderTest::SetUpClientAndKeywordProvider() {
   scoped_ptr<TemplateURLService> template_url_service(
       new TemplateURLService(kTestData, arraysize(kTestData)));
   client_.reset(new MockAutocompleteProviderClient());
@@ -151,12 +177,27 @@ TEST_F(KeywordProviderTest, Edit) {
       { { ASCIIToUTF16("aa "), false },
         { ASCIIToUTF16("ab "), false },
         { ASCIIToUTF16("aaaa "), false } } },
+    { ASCIIToUTF16("foo hello"), 2,
+      { { ASCIIToUTF16("fooshort.com hello"), false },
+        { ASCIIToUTF16("foolong.co.uk hello"), false },
+        kEmptyMatch } },
     // Exact matches should prevent returning inexact matches.  Also, the
     // verbatim query for this keyword match should not be returned.  (It's
     // returned by SearchProvider.)
     { ASCIIToUTF16("aaaa foo"), 0,
       { kEmptyMatch, kEmptyMatch, kEmptyMatch } },
     { ASCIIToUTF16("www.aaaa foo"), 0,
+      { kEmptyMatch, kEmptyMatch, kEmptyMatch } },
+
+    // Matches should be retrieved by typing the prefix of the keyword, not the
+    // domain name.
+    { ASCIIToUTF16("host foo"), 1,
+      { { ASCIIToUTF16("host.site.com foo"), false },
+        kEmptyMatch, kEmptyMatch } },
+    { ASCIIToUTF16("host.site foo"), 1,
+      { { ASCIIToUTF16("host.site.com foo"), false },
+        kEmptyMatch, kEmptyMatch } },
+    { ASCIIToUTF16("site foo"), 0,
       { kEmptyMatch, kEmptyMatch, kEmptyMatch } },
 
     // Clean up keyword input properly.  "http" and "https" are the only
@@ -190,8 +231,105 @@ TEST_F(KeywordProviderTest, Edit) {
       { { ASCIIToUTF16("nonsub"), true }, kEmptyMatch, kEmptyMatch } },
   };
 
+  SetUpClientAndKeywordProvider();
   RunTest<base::string16>(edit_cases, arraysize(edit_cases),
-                    &AutocompleteMatch::fill_into_edit);
+                          &AutocompleteMatch::fill_into_edit);
+}
+
+TEST_F(KeywordProviderTest, DomainMatches) {
+  const MatchType<base::string16> kEmptyMatch = { base::string16(), false };
+  TestData<base::string16> edit_cases[] = {
+    // Searching for a nonexistent prefix should give nothing.
+    { ASCIIToUTF16("Not Found"), 0,
+      { kEmptyMatch, kEmptyMatch, kEmptyMatch } },
+    { ASCIIToUTF16("aaaaaNot Found"), 0,
+      { kEmptyMatch, kEmptyMatch, kEmptyMatch } },
+
+    // Matches should be limited to three and sorted in quality order.
+    // This order depends on whether we're using the pre-domain-name text
+    // for matching--when matching the domain, we sort by the length of the
+    // domain, not the length of the whole keyword.
+    { ASCIIToUTF16("ignore foo"), 2,
+      { { ASCIIToUTF16("ignoreme.domain2.com foo"), false },
+        { ASCIIToUTF16("ignoremelong.domain.com foo"), false },
+        kEmptyMatch } },
+    { ASCIIToUTF16("dom foo"), 2,
+      { { ASCIIToUTF16("ignoremelong.domain.com foo"), false },
+        { ASCIIToUTF16("ignoreme.domain2.com foo"), false },
+        kEmptyMatch } },
+
+    // Matches should be retrieved by typing the domain name, not only
+    // a prefix to the keyword.
+    { ASCIIToUTF16("host foo"), 1,
+      { { ASCIIToUTF16("host.site.com foo"), false },
+        kEmptyMatch, kEmptyMatch } },
+    { ASCIIToUTF16("host.site foo"), 1,
+      { { ASCIIToUTF16("host.site.com foo"), false },
+        kEmptyMatch, kEmptyMatch } },
+    { ASCIIToUTF16("site foo"), 1,
+      { { ASCIIToUTF16("host.site.com foo"), false },
+        kEmptyMatch, kEmptyMatch } },
+  };
+
+  // Add a rule enabling matching in the domain name of keywords (i.e.,
+  // non-prefix matching).
+  {
+    std::map<std::string, std::string> params;
+    params[OmniboxFieldTrial::kKeywordRequiresPrefixMatchRule] = "false";
+    ASSERT_TRUE(variations::AssociateVariationParams(
+        OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A", params));
+  }
+  base::FieldTrialList::CreateFieldTrial(
+      OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A");
+
+  SetUpClientAndKeywordProvider();
+  RunTest<base::string16>(edit_cases, arraysize(edit_cases),
+                          &AutocompleteMatch::fill_into_edit);
+}
+
+TEST_F(KeywordProviderTest, IgnoreRegistryForScoring) {
+  const MatchType<base::string16> kEmptyMatch = { base::string16(), false };
+  TestData<base::string16> edit_cases[] = {
+    // Matches should be limited to three and sorted in quality order.
+    // When ignoring the registry length, this order of suggestions should
+    // result (sorted by keyword length sans registry).  The "Edit" test case
+    // has this exact test for when not ignoring the registry to check that
+    // the other order (shorter full keyword) results there.
+    { ASCIIToUTF16("foo hello"), 2,
+      { { ASCIIToUTF16("foolong.co.uk hello"), false },
+        { ASCIIToUTF16("fooshort.com hello"), false },
+        kEmptyMatch } },
+
+    // Keywords that don't have full hostnames should keep the same order
+    // as normal.
+    { ASCIIToUTF16("aaa"), 2,
+      { { ASCIIToUTF16("aaaa "), false },
+        { ASCIIToUTF16("aaaaa "), false },
+        kEmptyMatch } },
+    { ASCIIToUTF16("a 1 2 3"), 3,
+     { { ASCIIToUTF16("aa 1 2 3"), false },
+       { ASCIIToUTF16("ab 1 2 3"), false },
+       { ASCIIToUTF16("aaaa 1 2 3"), false } } },
+    { ASCIIToUTF16("www.a"), 3,
+      { { ASCIIToUTF16("aa "), false },
+        { ASCIIToUTF16("ab "), false },
+        { ASCIIToUTF16("aaaa "), false } } },
+  };
+
+  // Add a rule to make matching in the registry portion of a keyword
+  // unimportant.
+  {
+    std::map<std::string, std::string> params;
+    params[OmniboxFieldTrial::kKeywordRequiresRegistryRule] = "false";
+    ASSERT_TRUE(variations::AssociateVariationParams(
+        OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A", params));
+  }
+  base::FieldTrialList::CreateFieldTrial(
+      OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A");
+
+  SetUpClientAndKeywordProvider();
+  RunTest<base::string16>(edit_cases, arraysize(edit_cases),
+                          &AutocompleteMatch::fill_into_edit);
 }
 
 TEST_F(KeywordProviderTest, URL) {
@@ -225,6 +363,7 @@ TEST_F(KeywordProviderTest, URL) {
         kEmptyMatch } },
   };
 
+  SetUpClientAndKeywordProvider();
   RunTest<GURL>(url_cases, arraysize(url_cases),
                 &AutocompleteMatch::destination_url);
 }
@@ -268,11 +407,13 @@ TEST_F(KeywordProviderTest, Contents) {
         { ASCIIToUTF16("Search aaaa for 1 2+ 3"), false } } },
   };
 
+  SetUpClientAndKeywordProvider();
   RunTest<base::string16>(contents_cases, arraysize(contents_cases),
-                    &AutocompleteMatch::contents);
+                          &AutocompleteMatch::contents);
 }
 
 TEST_F(KeywordProviderTest, AddKeyword) {
+  SetUpClientAndKeywordProvider();
   TemplateURLData data;
   data.SetShortName(ASCIIToUTF16("Test"));
   base::string16 keyword(ASCIIToUTF16("foo"));
@@ -286,6 +427,7 @@ TEST_F(KeywordProviderTest, AddKeyword) {
 }
 
 TEST_F(KeywordProviderTest, RemoveKeyword) {
+  SetUpClientAndKeywordProvider();
   TemplateURLService* template_url_service = client_->GetTemplateURLService();
   base::string16 url(ASCIIToUTF16("http://aaaa/?aaaa=1&b={searchTerms}&c"));
   template_url_service->Remove(
@@ -295,6 +437,7 @@ TEST_F(KeywordProviderTest, RemoveKeyword) {
 }
 
 TEST_F(KeywordProviderTest, GetKeywordForInput) {
+  SetUpClientAndKeywordProvider();
   EXPECT_EQ(ASCIIToUTF16("aa"),
       kw_provider_->GetKeywordForText(ASCIIToUTF16("aa")));
   EXPECT_EQ(base::string16(),
@@ -344,6 +487,7 @@ TEST_F(KeywordProviderTest, GetSubstitutingTemplateURLForInput) {
     { "aa foo", base::string16::npos, false, "", "aa foo",
       base::string16::npos },
   };
+  SetUpClientAndKeywordProvider();
   for (size_t i = 0; i < arraysize(cases); i++) {
     AutocompleteInput input(ASCIIToUTF16(cases[i].text),
                             cases[i].cursor_position, std::string(), GURL(),
@@ -375,11 +519,13 @@ TEST_F(KeywordProviderTest, ExtraQueryParams) {
         { GURL("http://aaaa/?aaaa=1&b=1+2+3&c"), false } } },
   };
 
+  SetUpClientAndKeywordProvider();
   RunTest<GURL>(url_cases, arraysize(url_cases),
                 &AutocompleteMatch::destination_url);
 }
 
 TEST_F(KeywordProviderTest, DoesNotProvideMatchesOnFocus) {
+  SetUpClientAndKeywordProvider();
   AutocompleteInput input(ASCIIToUTF16("aaa"), base::string16::npos,
                           std::string(), GURL(),
                           metrics::OmniboxEventProto::INVALID_SPEC, true, false,
