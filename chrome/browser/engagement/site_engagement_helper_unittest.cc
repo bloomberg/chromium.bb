@@ -66,7 +66,13 @@ class SiteEngagementHelperTest : public BrowserWithTestWindowTest {
     helper->input_tracker_.SetPauseTimerForTesting(timer.Pass());
   }
 
-  bool IsTracking(SiteEngagementHelper* helper) {
+  // Set a pause timer on the input tracker for test purposes.
+  void SetMediaTrackerPauseTimer(SiteEngagementHelper* helper,
+                                 scoped_ptr<base::Timer> timer) {
+    helper->media_tracker_.SetPauseTimerForTesting(timer.Pass());
+  }
+
+  bool IsTrackingInput(SiteEngagementHelper* helper) {
     return helper->input_tracker_.is_tracking();
   }
 
@@ -204,18 +210,72 @@ TEST_F(SiteEngagementHelperTest, MediaEngagement) {
   content::WebContents* web_contents =
     browser()->tab_strip_model()->GetActiveWebContents();
 
+  base::MockTimer* media_tracker_timer = new base::MockTimer(true, false);
   scoped_ptr<SiteEngagementHelper> helper(CreateHelper(web_contents));
+  SetMediaTrackerPauseTimer(helper.get(), make_scoped_ptr(media_tracker_timer));
   SiteEngagementService* service =
     SiteEngagementServiceFactory::GetForProfile(browser()->profile());
   DCHECK(service);
 
   NavigateWithDisposition(url1, CURRENT_TAB);
-  // Start media playing before tracking begins
   MediaStartedPlaying(helper.get());
-  TrackingStarted(helper.get());
 
+  EXPECT_DOUBLE_EQ(0.50, service->GetScore(url1));
+  EXPECT_EQ(0, service->GetScore(url2));
+  EXPECT_TRUE(media_tracker_timer->IsRunning());
+
+  media_tracker_timer->Fire();
   EXPECT_DOUBLE_EQ(0.52, service->GetScore(url1));
   EXPECT_EQ(0, service->GetScore(url2));
+  EXPECT_TRUE(media_tracker_timer->IsRunning());
+
+  web_contents->WasHidden();
+  media_tracker_timer->Fire();
+  EXPECT_DOUBLE_EQ(0.53, service->GetScore(url1));
+  EXPECT_EQ(0, service->GetScore(url2));
+  EXPECT_TRUE(media_tracker_timer->IsRunning());
+
+  MediaPaused(helper.get());
+  media_tracker_timer->Fire();
+  EXPECT_DOUBLE_EQ(0.53, service->GetScore(url1));
+  EXPECT_EQ(0, service->GetScore(url2));
+  EXPECT_TRUE(media_tracker_timer->IsRunning());
+
+  web_contents->WasShown();
+  media_tracker_timer->Fire();
+  EXPECT_DOUBLE_EQ(0.53, service->GetScore(url1));
+  EXPECT_EQ(0, service->GetScore(url2));
+  EXPECT_TRUE(media_tracker_timer->IsRunning());
+
+  MediaStartedPlaying(helper.get());
+  media_tracker_timer->Fire();
+  EXPECT_DOUBLE_EQ(0.55, service->GetScore(url1));
+  EXPECT_EQ(0, service->GetScore(url2));
+  EXPECT_TRUE(media_tracker_timer->IsRunning());
+
+  NavigateWithDisposition(url2, CURRENT_TAB);
+  EXPECT_DOUBLE_EQ(0.55, service->GetScore(url1));
+  EXPECT_EQ(0.5, service->GetScore(url2));
+  EXPECT_FALSE(media_tracker_timer->IsRunning());
+
+  MediaStartedPlaying(helper.get());
+  media_tracker_timer->Fire();
+  EXPECT_DOUBLE_EQ(0.55, service->GetScore(url1));
+  EXPECT_EQ(0.52, service->GetScore(url2));
+  EXPECT_TRUE(media_tracker_timer->IsRunning());
+
+  web_contents->WasHidden();
+  media_tracker_timer->Fire();
+  EXPECT_DOUBLE_EQ(0.55, service->GetScore(url1));
+  EXPECT_EQ(0.53, service->GetScore(url2));
+  EXPECT_TRUE(media_tracker_timer->IsRunning());
+
+  MediaPaused(helper.get());
+  web_contents->WasShown();
+  media_tracker_timer->Fire();
+  EXPECT_DOUBLE_EQ(0.55, service->GetScore(url1));
+  EXPECT_EQ(0.53, service->GetScore(url2));
+  EXPECT_TRUE(media_tracker_timer->IsRunning());
 }
 
 TEST_F(SiteEngagementHelperTest, MixedInputEngagementAccumulation) {
@@ -332,8 +392,10 @@ TEST_F(SiteEngagementHelperTest, CheckTimerAndCallbacks) {
     browser()->tab_strip_model()->GetActiveWebContents();
 
   base::MockTimer* input_tracker_timer = new base::MockTimer(true, false);
+  base::MockTimer* media_tracker_timer = new base::MockTimer(true, false);
   scoped_ptr<SiteEngagementHelper> helper(CreateHelper(web_contents));
   SetInputTrackerPauseTimer(helper.get(), make_scoped_ptr(input_tracker_timer));
+  SetMediaTrackerPauseTimer(helper.get(), make_scoped_ptr(media_tracker_timer));
 
   SiteEngagementService* service =
     SiteEngagementServiceFactory::GetForProfile(browser()->profile());
@@ -343,61 +405,95 @@ TEST_F(SiteEngagementHelperTest, CheckTimerAndCallbacks) {
   EXPECT_DOUBLE_EQ(0.5, service->GetScore(url1));
   EXPECT_EQ(0, service->GetScore(url2));
 
-  // Timer should be running for navigation delay.
+  // Input timer should be running for navigation delay, but media timer is
+  // inactive.
   EXPECT_TRUE(input_tracker_timer->IsRunning());
-  EXPECT_FALSE(IsTracking(helper.get()));
-  input_tracker_timer->Fire();
+  EXPECT_FALSE(IsTrackingInput(helper.get()));
+  EXPECT_FALSE(media_tracker_timer->IsRunning());
 
-  // Timer should start running again after input.
+  // Media timer starts once media is detected as playing.
+  MediaStartedPlaying(helper.get());
+  EXPECT_TRUE(media_tracker_timer->IsRunning());
+
+  input_tracker_timer->Fire();
+  media_tracker_timer->Fire();
+  EXPECT_DOUBLE_EQ(0.52, service->GetScore(url1));
+  EXPECT_EQ(0, service->GetScore(url2));
+
+  // Input timer should start running again after input, but the media timer
+  // keeps running.
   EXPECT_FALSE(input_tracker_timer->IsRunning());
-  EXPECT_TRUE(IsTracking(helper.get()));
+  EXPECT_TRUE(IsTrackingInput(helper.get()));
+  EXPECT_TRUE(media_tracker_timer->IsRunning());
+
   HandleUserInput(helper.get(), blink::WebInputEvent::RawKeyDown);
   EXPECT_TRUE(input_tracker_timer->IsRunning());
-  EXPECT_FALSE(IsTracking(helper.get()));
+  EXPECT_FALSE(IsTrackingInput(helper.get()));
+  EXPECT_TRUE(media_tracker_timer->IsRunning());
 
-  EXPECT_DOUBLE_EQ(0.55, service->GetScore(url1));
+  EXPECT_DOUBLE_EQ(0.57, service->GetScore(url1));
   EXPECT_EQ(0, service->GetScore(url2));
 
   input_tracker_timer->Fire();
   EXPECT_FALSE(input_tracker_timer->IsRunning());
-  EXPECT_TRUE(IsTracking(helper.get()));
+  EXPECT_TRUE(IsTrackingInput(helper.get()));
+  EXPECT_TRUE(media_tracker_timer->IsRunning());
 
   // Timer should start running again after input.
   HandleUserInput(helper.get(), blink::WebInputEvent::GestureTapDown);
   EXPECT_TRUE(input_tracker_timer->IsRunning());
-  EXPECT_FALSE(IsTracking(helper.get()));
+  EXPECT_FALSE(IsTrackingInput(helper.get()));
+  EXPECT_TRUE(media_tracker_timer->IsRunning());
 
-  EXPECT_DOUBLE_EQ(0.6, service->GetScore(url1));
+  EXPECT_DOUBLE_EQ(0.62, service->GetScore(url1));
   EXPECT_EQ(0, service->GetScore(url2));
 
   input_tracker_timer->Fire();
   EXPECT_FALSE(input_tracker_timer->IsRunning());
-  EXPECT_TRUE(IsTracking(helper.get()));
+  EXPECT_TRUE(IsTrackingInput(helper.get()));
 
-  // Timer should be running for navigation delay.
+  media_tracker_timer->Fire();
+  EXPECT_TRUE(media_tracker_timer->IsRunning());
+  EXPECT_DOUBLE_EQ(0.64, service->GetScore(url1));
+  EXPECT_EQ(0, service->GetScore(url2));
+
+  // Timer should be running for navigation delay. Media is disabled again.
   NavigateWithDisposition(url2, CURRENT_TAB);
   EXPECT_TRUE(input_tracker_timer->IsRunning());
-  EXPECT_FALSE(IsTracking(helper.get()));
+  EXPECT_FALSE(IsTrackingInput(helper.get()));
+  EXPECT_FALSE(media_tracker_timer->IsRunning());
 
-  EXPECT_DOUBLE_EQ(0.6, service->GetScore(url1));
+  EXPECT_DOUBLE_EQ(0.64, service->GetScore(url1));
   EXPECT_DOUBLE_EQ(0.5, service->GetScore(url2));
+  EXPECT_DOUBLE_EQ(1.14, service->GetTotalEngagementPoints());
 
   input_tracker_timer->Fire();
   EXPECT_FALSE(input_tracker_timer->IsRunning());
-  EXPECT_TRUE(IsTracking(helper.get()));
+  EXPECT_TRUE(IsTrackingInput(helper.get()));
+  EXPECT_FALSE(media_tracker_timer->IsRunning());
 
   HandleUserInput(helper.get(), blink::WebInputEvent::MouseDown);
   EXPECT_TRUE(input_tracker_timer->IsRunning());
-  EXPECT_FALSE(IsTracking(helper.get()));
+  EXPECT_FALSE(IsTrackingInput(helper.get()));
+  EXPECT_FALSE(media_tracker_timer->IsRunning());
 
-  EXPECT_DOUBLE_EQ(0.6, service->GetScore(url1));
+  MediaStartedPlaying(helper.get());
+  EXPECT_TRUE(media_tracker_timer->IsRunning());
+
+  EXPECT_DOUBLE_EQ(0.64, service->GetScore(url1));
   EXPECT_DOUBLE_EQ(0.55, service->GetScore(url2));
-  EXPECT_DOUBLE_EQ(1.15, service->GetTotalEngagementPoints());
+  EXPECT_DOUBLE_EQ(1.19, service->GetTotalEngagementPoints());
+
+  EXPECT_TRUE(media_tracker_timer->IsRunning());
+  media_tracker_timer->Fire();
+  EXPECT_DOUBLE_EQ(0.64, service->GetScore(url1));
+  EXPECT_DOUBLE_EQ(0.57, service->GetScore(url2));
+  EXPECT_DOUBLE_EQ(1.21, service->GetTotalEngagementPoints());
 }
 
-// Ensure that navigation does not trigger input tracking until after a delay.
-// We must manually call WasShown/WasHidden as they are not triggered
-// automatically in this test environment.
+// Ensure that navigation and tab activation/hiding does not trigger input
+// tracking until after a delay. We must manually call WasShown/WasHidden as
+// they are not triggered automatically in this test environment.
 TEST_F(SiteEngagementHelperTest, ShowAndHide) {
   AddTab(browser(), GURL("about:blank"));
   GURL url1("https://www.google.com/");
@@ -406,28 +502,49 @@ TEST_F(SiteEngagementHelperTest, ShowAndHide) {
       browser()->tab_strip_model()->GetActiveWebContents();
 
   base::MockTimer* input_tracker_timer = new base::MockTimer(true, false);
+  base::MockTimer* media_tracker_timer = new base::MockTimer(true, false);
   scoped_ptr<SiteEngagementHelper> helper(CreateHelper(web_contents));
   SetInputTrackerPauseTimer(helper.get(), make_scoped_ptr(input_tracker_timer));
+  SetMediaTrackerPauseTimer(helper.get(), make_scoped_ptr(media_tracker_timer));
 
   NavigateWithDisposition(url1, CURRENT_TAB);
   input_tracker_timer->Fire();
 
-  EXPECT_FALSE(input_tracker_timer->IsRunning());
-  EXPECT_TRUE(IsTracking(helper.get()));
-
-  // Hiding the tab should stop input tracking.
+  // Hiding the tab should stop input tracking. Media tracking remains inactive.
   web_contents->WasHidden();
   EXPECT_FALSE(input_tracker_timer->IsRunning());
-  EXPECT_FALSE(IsTracking(helper.get()));
+  EXPECT_FALSE(media_tracker_timer->IsRunning());
+  EXPECT_FALSE(IsTrackingInput(helper.get()));
 
-  // Showing the tab should start tracking again after another delay.
+  // Showing the tab should start tracking again after another delay. Media
+  // tracking remains inactive.
   web_contents->WasShown();
   EXPECT_TRUE(input_tracker_timer->IsRunning());
-  EXPECT_FALSE(IsTracking(helper.get()));
+  EXPECT_FALSE(media_tracker_timer->IsRunning());
+  EXPECT_FALSE(IsTrackingInput(helper.get()));
+
+  // Start media tracking.
+  MediaStartedPlaying(helper.get());
+  EXPECT_TRUE(media_tracker_timer->IsRunning());
+
+  // Hiding the tab should stop input tracking, but not media tracking.
+  web_contents->WasHidden();
+  EXPECT_FALSE(input_tracker_timer->IsRunning());
+  EXPECT_TRUE(media_tracker_timer->IsRunning());
+  EXPECT_FALSE(IsTrackingInput(helper.get()));
+
+  // Showing the tab should start tracking again after another delay. Media
+  // tracking continues.
+  web_contents->WasShown();
+  EXPECT_TRUE(input_tracker_timer->IsRunning());
+  EXPECT_TRUE(media_tracker_timer->IsRunning());
+  EXPECT_FALSE(IsTrackingInput(helper.get()));
 
   input_tracker_timer->Fire();
+  media_tracker_timer->Fire();
   EXPECT_FALSE(input_tracker_timer->IsRunning());
-  EXPECT_TRUE(IsTracking(helper.get()));
+  EXPECT_TRUE(media_tracker_timer->IsRunning());
+  EXPECT_TRUE(IsTrackingInput(helper.get()));
 }
 
 // Ensure tracking behavior is correct for multiple navigations in a single tab.
@@ -445,20 +562,20 @@ TEST_F(SiteEngagementHelperTest, SingleTabNavigation) {
   // Navigation should start the initial delay timer.
   NavigateWithDisposition(url1, CURRENT_TAB);
   EXPECT_TRUE(input_tracker_timer->IsRunning());
-  EXPECT_FALSE(IsTracking(helper.get()));
+  EXPECT_FALSE(IsTrackingInput(helper.get()));
 
   // Navigating before the timer fires should simply reset the timer.
   NavigateWithDisposition(url2, CURRENT_TAB);
   EXPECT_TRUE(input_tracker_timer->IsRunning());
-  EXPECT_FALSE(IsTracking(helper.get()));
+  EXPECT_FALSE(IsTrackingInput(helper.get()));
 
   // When the timer fires, callbacks are added.
   input_tracker_timer->Fire();
   EXPECT_FALSE(input_tracker_timer->IsRunning());
-  EXPECT_TRUE(IsTracking(helper.get()));
+  EXPECT_TRUE(IsTrackingInput(helper.get()));
 
   // Navigation should start the initial delay timer again.
   NavigateWithDisposition(url1, CURRENT_TAB);
   EXPECT_TRUE(input_tracker_timer->IsRunning());
-  EXPECT_FALSE(IsTracking(helper.get()));
+  EXPECT_FALSE(IsTrackingInput(helper.get()));
 }

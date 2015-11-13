@@ -16,6 +16,7 @@ namespace {
 
 int g_seconds_to_pause_engagement_detection = 10;
 int g_seconds_delay_after_navigation = 10;
+int g_seconds_delay_after_media_starts = 10;
 int g_seconds_delay_after_show = 5;
 
 }  // anonymous namespace
@@ -42,6 +43,10 @@ void SiteEngagementHelper::PeriodicTracker::Pause() {
 void SiteEngagementHelper::PeriodicTracker::Stop() {
   TrackingStopped();
   pause_timer_->Stop();
+}
+
+bool SiteEngagementHelper::PeriodicTracker::IsTimerRunning() {
+  return pause_timer_->IsRunning();
 }
 
 void SiteEngagementHelper::PeriodicTracker::SetPauseTimerForTesting(
@@ -118,7 +123,10 @@ void SiteEngagementHelper::MediaTracker::TrackingStarted() {
 }
 
 void SiteEngagementHelper::MediaTracker::MediaStartedPlaying() {
+  // Only begin engagement detection when media actually starts playing.
   is_playing_ = true;
+  if (!IsTimerRunning())
+    Start(base::TimeDelta::FromSeconds(g_seconds_delay_after_media_starts));
 }
 
 void SiteEngagementHelper::MediaTracker::MediaPaused() {
@@ -196,19 +204,15 @@ void SiteEngagementHelper::DidNavigateMainFrame(
   if (service)
     service->HandleNavigation(params.url, params.transition);
 
-  base::TimeDelta delay =
-      base::TimeDelta::FromSeconds(g_seconds_delay_after_navigation);
-  input_tracker_.Start(delay);
-  media_tracker_.Start(delay);
+  input_tracker_.Start(
+      base::TimeDelta::FromSeconds(g_seconds_delay_after_navigation));
 }
 
 void SiteEngagementHelper::WasShown() {
   // Ensure that the input callbacks are registered when we come into view.
   if (record_engagement_) {
-    base::TimeDelta delay =
-        base::TimeDelta::FromSeconds(g_seconds_delay_after_show);
-    input_tracker_.Start(delay);
-    media_tracker_.Start(delay);
+    input_tracker_.Start(
+        base::TimeDelta::FromSeconds(g_seconds_delay_after_show));
   }
 }
 

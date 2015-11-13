@@ -39,28 +39,31 @@ class SiteEngagementHelper
  private:
   // Class to encapsulate the periodic detection of site engagement.
   //
-  // All engagement detection begins at some constant time delta following
-  // navigation or tab activation. Once engagement is recorded, detection is
-  // suspended for another constant time delta. For sites to continually record
-  // engagement, this overall design requires:
+  // Engagement detection begins at some constant time delta following
+  // navigation, tab activation, or media starting to play. Once engagement is
+  // recorded, detection is suspended for another constant time delta. For sites
+  // to continually record engagement, this overall design requires:
   //
   // 1. engagement at a non-trivial time after a site loads
-  // 2. continual engagement over a non-trivial length of time
+  // 2. continual engagement over a non-trivial duration of time
   class PeriodicTracker {
    public:
     explicit PeriodicTracker(SiteEngagementHelper* helper);
     virtual ~PeriodicTracker();
 
-    // Begin tracking input after |initial_delay|.
+    // Begin tracking after |initial_delay|.
     void Start(base::TimeDelta initial_delay);
 
-    // Pause listening for user input, restarting listening after a delay.
+    // Pause tracking and restart after a delay.
     void Pause();
 
-    // Stop listening for user input.
+    // Stop tracking.
     void Stop();
 
-    // Set the timer object for testing purposes.
+    // Returns true if the timer is currently running.
+    bool IsTimerRunning();
+
+    // Set the timer object for testing.
     void SetPauseTimerForTesting(scoped_ptr<base::Timer> timer);
 
     SiteEngagementHelper* helper() { return helper_; }
@@ -89,8 +92,7 @@ class SiteEngagementHelper
   //
   // After an initial delay, the input tracker begins listening to
   // DidGetUserInteraction. When user input is signaled, site engagement is
-  // recorded, and the tracker sleeps for
-  // |g_seconds_to_pause_engagement_detection|.
+  // recorded, and the tracker sleeps for a delay period.
   class InputTracker : public PeriodicTracker,
                        public content::WebContentsObserver {
    public:
@@ -119,10 +121,10 @@ class SiteEngagementHelper
   // WebContents. Media which has been muted will also accumulate engagement
   // more slowly.
   //
-  // The tracker continually notes the visible/hidden state of the WebContents
-  // that it observes, as well as whether media is playing. After an initial
-  // delay, the tracker wakes up every |g_seconds_to_pause_engagement_detection|
-  // and records engagement if media is currently playing.
+  // When media begins playing in the main frame of a tab, the tracker is
+  // triggered with an initial delay. It then wakes up every
+  // |g_seconds_to_pause_engagement_detection| and notes the visible/hidden
+  // state of the tab, as well as whether media is still playing.
   class MediaTracker : public PeriodicTracker,
                        public content::WebContentsObserver {
    public:
