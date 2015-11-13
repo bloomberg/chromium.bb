@@ -215,6 +215,10 @@ class ASH_EXPORT ShelfLayoutManager
   // Is the shelf's alignment horizontal?
   bool IsHorizontalAlignment() const;
 
+  // Set the height of the ChromeVox panel, which takes away space from the
+  // available work area from the top of the screen.
+  void SetChromeVoxPanelHeight(int height);
+
   // Returns a ShelfLayoutManager on the display which has a shelf for
   // given |window|. See RootWindowController::ForShelf for more info.
   static ShelfLayoutManager* ForShelf(aura::Window* window);
@@ -411,6 +415,10 @@ class ASH_EXPORT ShelfLayoutManager
   // The bounds within the root window not occupied by the shelf nor the virtual
   // keyboard.
   gfx::Rect user_work_area_bounds_;
+
+  // The height of the ChromeVox panel at the top of the screen, which
+  // needs to be removed from the available work area.
+  int chromevox_panel_height_;
 
   // The show hide animation duration override or 0 for default.
   int duration_override_in_ms_;

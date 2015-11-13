@@ -9,6 +9,7 @@
 #include "ash/high_contrast/high_contrast_controller.h"
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/session/session_state_delegate.h"
+#include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
 #include "ash/sticky_keys/sticky_keys_controller.h"
 #include "ash/system/tray/system_tray_notifier.h"
@@ -270,6 +271,33 @@ void UnloadChromeVoxExtension(Profile* profile) {
 
 }  // namespace
 
+class ChromeVoxPanelWidgetObserver : public views::WidgetObserver {
+ public:
+  ChromeVoxPanelWidgetObserver(views::Widget* widget,
+                               AccessibilityManager* manager)
+      : widget_(widget), manager_(manager) {
+    widget_->AddObserver(this);
+  }
+
+  void OnWidgetClosing(views::Widget* widget) override {
+    CHECK_EQ(widget_, widget);
+    widget->RemoveObserver(this);
+    manager_->OnChromeVoxPanelClosing();
+  }
+
+  void OnWidgetDestroying(views::Widget* widget) override {
+    CHECK_EQ(widget_, widget);
+    widget->RemoveObserver(this);
+    manager_->OnChromeVoxPanelDestroying();
+  }
+
+ private:
+  views::Widget* widget_;
+  AccessibilityManager* manager_;
+
+  DISALLOW_COPY_AND_ASSIGN(ChromeVoxPanelWidgetObserver);
+};
+
 ///////////////////////////////////////////////////////////////////////////////
 // AccessibilityStatusEventDetails
 
@@ -377,6 +405,7 @@ AccessibilityManager::AccessibilityManager()
       braille_display_connected_(false),
       scoped_braille_observer_(this),
       braille_ime_current_(false),
+      chromevox_panel_(nullptr),
       weak_ptr_factory_(this) {
   notification_registrar_.Add(this,
                               chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
@@ -419,6 +448,11 @@ AccessibilityManager::~AccessibilityManager() {
       ui::A11Y_NOTIFICATION_NONE);
   NotifyAccessibilityStatusChanged(details);
   input_method::InputMethodManager::Get()->RemoveObserver(this);
+
+  if (chromevox_panel_) {
+    chromevox_panel_->Close();
+    chromevox_panel_ = nullptr;
+  }
 }
 
 bool AccessibilityManager::ShouldShowAccessibilityMenu() {
@@ -636,6 +670,11 @@ void AccessibilityManager::LoadChromeVoxToLockScreen(
 }
 
 void AccessibilityManager::UnloadChromeVox() {
+  if (chromevox_panel_) {
+    chromevox_panel_->Close();
+    chromevox_panel_ = nullptr;
+  }
+
   if (chrome_vox_loaded_on_lock_screen_)
     UnloadChromeVoxFromLockScreen();
 
@@ -1138,6 +1177,12 @@ void AccessibilityManager::PostLoadChromeVox(Profile* profile) {
 
   should_speak_chrome_vox_announcements_on_user_screen_ =
       chrome_vox_loaded_on_lock_screen_;
+
+  if (!chromevox_panel_) {
+    chromevox_panel_ = new ChromeVoxPanel(profile_);
+    chromevox_panel_widget_observer_.reset(
+        new ChromeVoxPanelWidgetObserver(chromevox_panel_->GetWidget(), this));
+  }
 }
 
 void AccessibilityManager::PostUnloadChromeVox(Profile* profile) {
@@ -1146,6 +1191,18 @@ void AccessibilityManager::PostUnloadChromeVox(Profile* profile) {
   // Clear the accessibility focus ring.
   AccessibilityFocusRingController::GetInstance()->SetFocusRing(
       std::vector<gfx::Rect>());
+}
+
+void AccessibilityManager::OnChromeVoxPanelClosing() {
+  aura::Window* root_window = chromevox_panel_->GetRootWindow();
+  chromevox_panel_widget_observer_.reset(nullptr);
+  chromevox_panel_ = nullptr;
+  ash::ShelfLayoutManager::ForShelf(root_window)->SetChromeVoxPanelHeight(0);
+}
+
+void AccessibilityManager::OnChromeVoxPanelDestroying() {
+  chromevox_panel_widget_observer_.reset(nullptr);
+  chromevox_panel_ = nullptr;
 }
 
 }  // namespace chromeos

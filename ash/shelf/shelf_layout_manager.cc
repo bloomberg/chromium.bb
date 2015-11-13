@@ -196,6 +196,7 @@ ShelfLayoutManager::ShelfLayoutManager(ShelfWidget* shelf)
       gesture_drag_amount_(0.f),
       gesture_drag_auto_hide_state_(SHELF_AUTO_HIDE_SHOWN),
       update_shelf_observer_(NULL),
+      chromevox_panel_height_(0),
       duration_override_in_ms_(0) {
   Shell::GetInstance()->AddShellObserver(this);
   Shell::GetInstance()->lock_state_controller()->AddObserver(this);
@@ -541,6 +542,11 @@ bool ShelfLayoutManager::IsHorizontalAlignment() const {
          GetAlignment() == SHELF_ALIGNMENT_TOP;
 }
 
+void ShelfLayoutManager::SetChromeVoxPanelHeight(int height) {
+  chromevox_panel_height_ = height;
+  LayoutShelf();
+}
+
 // static
 ShelfLayoutManager* ShelfLayoutManager::ForShelf(aura::Window* window) {
   ShelfWidget* shelf = RootWindowController::ForShelf(window)->shelf();
@@ -832,6 +838,12 @@ void ShelfLayoutManager::CalculateTargetBounds(
         0, (dock_bounds_.x() > 0 ? 0 : dock_bounds_.width()),
         0, (dock_bounds_.x() > 0 ? dock_bounds_.width() : 0));
     target_bounds->work_area_insets += dock_insets;
+  }
+
+  // Also push in the work area insets for the ChromeVox panel if it's visible.
+  if (chromevox_panel_height_) {
+    gfx::Insets chromevox_insets(chromevox_panel_height_, 0, 0, 0);
+    target_bounds->work_area_insets += chromevox_insets;
   }
 
   target_bounds->opacity =

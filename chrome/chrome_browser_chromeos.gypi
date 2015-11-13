@@ -13,6 +13,8 @@
         'browser/chromeos/accessibility/accessibility_manager.h',
         'browser/chromeos/accessibility/accessibility_util.cc',
         'browser/chromeos/accessibility/accessibility_util.h',
+        'browser/chromeos/accessibility/chromevox_panel.cc',
+        'browser/chromeos/accessibility/chromevox_panel.h',
         'browser/chromeos/accessibility/magnification_manager.cc',
         'browser/chromeos/accessibility/magnification_manager.h',
         'browser/chromeos/accessibility/spoken_feedback_event_rewriter.cc',
