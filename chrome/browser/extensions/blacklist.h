@@ -53,12 +53,13 @@ class Blacklist : public KeyedService,
   class ScopedDatabaseManagerForTest {
    public:
     explicit ScopedDatabaseManagerForTest(
-        scoped_refptr<SafeBrowsingDatabaseManager> database_manager);
+        scoped_refptr<safe_browsing::SafeBrowsingDatabaseManager>
+            database_manager);
 
     ~ScopedDatabaseManagerForTest();
 
    private:
-    scoped_refptr<SafeBrowsingDatabaseManager> original_;
+    scoped_refptr<safe_browsing::SafeBrowsingDatabaseManager> original_;
 
     DISALLOW_COPY_AND_ASSIGN(ScopedDatabaseManagerForTest);
   };
@@ -116,8 +117,10 @@ class Blacklist : public KeyedService,
  private:
   // Use via ScopedDatabaseManagerForTest.
   static void SetDatabaseManager(
-      scoped_refptr<SafeBrowsingDatabaseManager> database_manager);
-  static scoped_refptr<SafeBrowsingDatabaseManager> GetDatabaseManager();
+      scoped_refptr<safe_browsing::SafeBrowsingDatabaseManager>
+          database_manager);
+  static scoped_refptr<safe_browsing::SafeBrowsingDatabaseManager>
+      GetDatabaseManager();
 
   // content::NotificationObserver
   void Observe(int type,

@@ -30,6 +30,8 @@ static const char* kBadURL = "http://www.badguys.com/";
 static const char* kBadURL2 = "http://www.badguys2.com/";
 static const char* kBadURL3 = "http://www.badguys3.com/";
 
+namespace safe_browsing {
+
 namespace {
 
 // A SafeBrowingBlockingPage class that does not create windows.
@@ -684,3 +686,5 @@ TEST_F(SafeBrowsingBlockingPageTest, MalwareReportsToggling) {
   EXPECT_FALSE(profile->GetPrefs()->GetBoolean(
       prefs::kSafeBrowsingExtendedReportingEnabled));
 }
+
+}  // namespace safe_browsing

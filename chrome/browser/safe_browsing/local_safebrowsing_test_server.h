@@ -10,6 +10,8 @@
 #include "base/files/file_path.h"
 #include "net/test/spawned_test_server/local_test_server.h"
 
+namespace safe_browsing {
+
 // Runs a Python-based safebrowsing test server on the same machine in which the
 // LocalSafeBrowsingTestServer runs.
 class LocalSafeBrowsingTestServer : public net::LocalTestServer {
@@ -34,5 +36,7 @@ class LocalSafeBrowsingTestServer : public net::LocalTestServer {
 
   DISALLOW_COPY_AND_ASSIGN(LocalSafeBrowsingTestServer);
 };
+
+}  // namespace safe_browsing
 
 #endif  // CHROME_BROWSER_SAFE_BROWSING_LOCAL_SAFEBROWSING_TEST_SERVER_H_

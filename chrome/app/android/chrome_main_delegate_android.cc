@@ -22,6 +22,7 @@
 
 #if defined(SAFE_BROWSING_DB_REMOTE)
 #include "chrome/browser/safe_browsing/safe_browsing_api_handler.h"
+using safe_browsing::SafeBrowsingApiHandler;
 #endif
 
 namespace {

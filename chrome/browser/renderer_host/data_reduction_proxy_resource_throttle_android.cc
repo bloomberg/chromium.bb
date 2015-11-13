@@ -21,6 +21,9 @@
 
 using content::BrowserThread;
 using content::ResourceThrottle;
+using safe_browsing::SafeBrowsingService;
+using safe_browsing::SafeBrowsingUIManager;
+using safe_browsing::SBThreatType;
 
 // TODO(eroman): Downgrade these CHECK()s to DCHECKs once there is more
 //               unit test coverage.
@@ -72,7 +75,7 @@ void DataReductionProxyResourceThrottle::WillRedirectRequest(
 
   // We need to check the new URL before following the redirect.
   SBThreatType threat_type = CheckUrl();
-  if (threat_type == SB_THREAT_TYPE_SAFE)
+  if (threat_type == safe_browsing::SB_THREAT_TYPE_SAFE)
     return;
 
   if (request_->load_flags() & net::LOAD_PREFETCH) {
@@ -149,22 +152,23 @@ void DataReductionProxyResourceThrottle::OnBlockingPageComplete(bool proceed) {
 }
 
 SBThreatType DataReductionProxyResourceThrottle::CheckUrl() {
-  SBThreatType result = SB_THREAT_TYPE_SAFE;
+  SBThreatType result = safe_browsing::SB_THREAT_TYPE_SAFE;
 
   // TODO(sgurun) Check for spdy proxy origin.
   if (request_->response_headers() == NULL)
     return result;
 
   if (request_->response_headers()->HasHeader("X-Phishing-Url"))
-    result = SB_THREAT_TYPE_URL_PHISHING;
+    result = safe_browsing::SB_THREAT_TYPE_URL_PHISHING;
   else if (request_->response_headers()->HasHeader("X-Malware-Url"))
-    result = SB_THREAT_TYPE_URL_MALWARE;
+    result = safe_browsing::SB_THREAT_TYPE_URL_MALWARE;
 
   // If safe browsing is disabled and the request is sent to the DRP server,
   // we need to break the redirect loop by setting the extra header.
-  if (result != SB_THREAT_TYPE_SAFE && !safe_browsing_->enabled()) {
+  if (result != safe_browsing::SB_THREAT_TYPE_SAFE &&
+      !safe_browsing_->enabled()) {
     request_->SetExtraRequestHeaderByName(kUnsafeUrlProceedHeader, "1", true);
-    result = SB_THREAT_TYPE_SAFE;
+    result = safe_browsing::SB_THREAT_TYPE_SAFE;
   }
 
   return result;

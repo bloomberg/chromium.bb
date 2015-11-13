@@ -33,12 +33,15 @@ class PrefRegistrySimple;
 class PrefService;
 class Profile;
 class ProfileManager;
-class SafeBrowsingService;
 class StatusTray;
 class WatchDogThread;
 #if defined(ENABLE_WEBRTC)
 class WebRtcLogUploader;
 #endif
+
+namespace safe_browsing {
+class SafeBrowsingService;
+}
 
 namespace variations {
 class VariationsService;
@@ -212,7 +215,7 @@ class BrowserProcess {
   virtual StatusTray* status_tray() = 0;
 
   // Returns the SafeBrowsing service.
-  virtual SafeBrowsingService* safe_browsing_service() = 0;
+  virtual safe_browsing::SafeBrowsingService* safe_browsing_service() = 0;
 
   // Returns an object which handles communication with the SafeBrowsing
   // client-side detection servers.

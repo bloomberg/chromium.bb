@@ -20,6 +20,8 @@ static const char kUrlPrefix[] = "https://prefix.com/foo";
 static const char kClient[] = "unittest";
 static const char kAppVer[] = "1.0";
 
+namespace safe_browsing {
+
 class SafeBrowsingPingManagerTest : public testing::Test {
  protected:
   std::string key_param_;
@@ -148,3 +150,5 @@ TEST_F(SafeBrowsingPingManagerTest, TestThreatDetailsUrl) {
             "client=unittest&appver=1.0&pver=1.0" + key_param_,
             pm.ThreatDetailsUrl().spec());
 }
+
+}  // namespace safe_browsing

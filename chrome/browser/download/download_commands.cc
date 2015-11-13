@@ -189,7 +189,7 @@ void DownloadCommands::ExecuteCommand(Command command) {
 #if defined(FULL_SAFE_BROWSING)
       using safe_browsing::DownloadProtectionService;
 
-      SafeBrowsingService* sb_service =
+      safe_browsing::SafeBrowsingService* sb_service =
           g_browser_process->safe_browsing_service();
       DownloadProtectionService* protection_service =
           (sb_service ? sb_service->download_protection_service() : nullptr);

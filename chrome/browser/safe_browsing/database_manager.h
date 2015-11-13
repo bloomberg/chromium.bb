@@ -20,6 +20,8 @@
 #include "content/public/common/resource_type.h"
 #include "url/gurl.h"
 
+namespace safe_browsing {
+
 // Interface to either the locally-managed or a remotely-managed database.
 class SafeBrowsingDatabaseManager
     : public base::RefCountedThreadSafe<SafeBrowsingDatabaseManager> {
@@ -137,5 +139,7 @@ class SafeBrowsingDatabaseManager
 
   friend class base::RefCountedThreadSafe<SafeBrowsingDatabaseManager>;
 };  // class SafeBrowsingDatabaseManager
+
+}  // namespace safe_browsing
 
 #endif  // CHROME_BROWSER_SAFE_BROWSING_DATABASE_MANAGER_H_

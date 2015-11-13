@@ -64,6 +64,8 @@ const std::string kChunkPayload2(kRawChunkPayload2, sizeof(kRawChunkPayload2));
 
 }  // namespace
 
+namespace safe_browsing {
+
 class SafeBrowsingProtocolManagerTest : public testing::Test {
  protected:
   std::string key_param_;
@@ -178,26 +180,23 @@ TEST_F(SafeBrowsingProtocolManagerTest, TestChunkStrings) {
   phish.subs = "16,32,64-96";
   EXPECT_EQ(base::StringPrintf("%s;a:1,4,6,8-20,99:s:16,32,64-96\n",
                                kDefaultPhishList),
-            safe_browsing::FormatList(phish));
+            FormatList(phish));
 
   // Add chunks only.
   phish.subs = "";
-  EXPECT_EQ(base::StringPrintf("%s;a:1,4,6,8-20,99\n",
-                               kDefaultPhishList),
-            safe_browsing::FormatList(phish));
+  EXPECT_EQ(base::StringPrintf("%s;a:1,4,6,8-20,99\n", kDefaultPhishList),
+            FormatList(phish));
 
   // Sub chunks only.
   phish.adds = "";
   phish.subs = "16,32,64-96";
-  EXPECT_EQ(base::StringPrintf("%s;s:16,32,64-96\n",
-                               kDefaultPhishList),
-            safe_browsing::FormatList(phish));
+  EXPECT_EQ(base::StringPrintf("%s;s:16,32,64-96\n", kDefaultPhishList),
+            FormatList(phish));
 
   // No chunks of either type.
   phish.adds = "";
   phish.subs = "";
-  EXPECT_EQ(base::StringPrintf("%s;\n", kDefaultPhishList),
-            safe_browsing::FormatList(phish));
+  EXPECT_EQ(base::StringPrintf("%s;\n", kDefaultPhishList), FormatList(phish));
 }
 
 TEST_F(SafeBrowsingProtocolManagerTest, TestGetHashBackOffTimes) {
@@ -408,7 +407,7 @@ TEST_F(SafeBrowsingProtocolManagerTest, ExistingDatabase) {
   net::TestURLFetcherFactory url_fetcher_factory;
 
   std::vector<SBListChunkRanges> ranges;
-  SBListChunkRanges range_phish(safe_browsing::kPhishingList);
+  SBListChunkRanges range_phish(kPhishingList);
   range_phish.adds = "adds_phish";
   range_phish.subs = "subs_phish";
   ranges.push_back(range_phish);
@@ -1131,3 +1130,5 @@ TEST_F(SafeBrowsingProtocolManagerTest, MultipleRedirectResponsesWithChunks) {
 
   EXPECT_TRUE(pm->IsUpdateScheduled());
 }
+
+}  // namespace safe_browsing

@@ -76,7 +76,7 @@ class TestingBrowserProcess : public BrowserProcess {
   void set_background_mode_manager_for_test(
       scoped_ptr<BackgroundModeManager> manager) override;
   StatusTray* status_tray() override;
-  SafeBrowsingService* safe_browsing_service() override;
+  safe_browsing::SafeBrowsingService* safe_browsing_service() override;
   safe_browsing::ClientSideDetectionService* safe_browsing_detection_service()
       override;
   net::URLRequestContextGetter* system_request_context() override;
@@ -132,7 +132,7 @@ class TestingBrowserProcess : public BrowserProcess {
   void SetLocalState(PrefService* local_state);
   void SetProfileManager(ProfileManager* profile_manager);
   void SetIOThread(IOThread* io_thread);
-  void SetSafeBrowsingService(SafeBrowsingService* sb_service);
+  void SetSafeBrowsingService(safe_browsing::SafeBrowsingService* sb_service);
   void SetSystemRequestContext(net::URLRequestContextGetter* context_getter);
   void SetNotificationUIManager(
       scoped_ptr<NotificationUIManager> notification_ui_manager);
@@ -168,7 +168,7 @@ class TestingBrowserProcess : public BrowserProcess {
       print_preview_dialog_controller_;
 #endif
 
-  scoped_refptr<SafeBrowsingService> sb_service_;
+  scoped_refptr<safe_browsing::SafeBrowsingService> sb_service_;
 #endif  // !defined(OS_IOS)
 
   scoped_ptr<network_time::NetworkTimeTracker> network_time_tracker_;

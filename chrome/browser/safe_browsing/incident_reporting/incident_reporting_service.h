@@ -28,8 +28,6 @@
 #include "content/public/browser/notification_registrar.h"
 
 class Profile;
-class SafeBrowsingDatabaseManager;
-class SafeBrowsingService;
 class TrackedPreferenceValidationDelegate;
 
 namespace base {
@@ -56,6 +54,8 @@ class ClientIncidentReport_ExtensionData;
 class ClientIncidentReport_IncidentData;
 class Incident;
 class IncidentReceiver;
+class SafeBrowsingDatabaseManager;
+class SafeBrowsingService;
 
 // A class that manages the collection of incidents and submission of incident
 // reports to the safe browsing client-side detection service. The service
@@ -71,9 +71,10 @@ class IncidentReceiver;
 // remaining are uploaded in an incident report.
 class IncidentReportingService : public content::NotificationObserver {
  public:
-  IncidentReportingService(SafeBrowsingService* safe_browsing_service,
-                           const scoped_refptr<net::URLRequestContextGetter>&
-                               request_context_getter);
+  IncidentReportingService(
+      SafeBrowsingService* safe_browsing_service,
+      const scoped_refptr<net::URLRequestContextGetter>&
+          request_context_getter);
 
   // All incident collection, data collection, and uploads in progress are
   // dropped at destruction.

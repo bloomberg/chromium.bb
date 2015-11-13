@@ -59,6 +59,8 @@ using content::BrowserThread;
 #error This test requires the SAFE_BROWSING_DB_LOCAL implementation.
 #endif
 
+namespace safe_browsing {
+
 namespace {
 
 const base::FilePath::CharType kDataFile[] =
@@ -578,3 +580,5 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServerTest,
             safe_browsing_helper->VerifyTestComplete(test_server(), last_step));
   EXPECT_EQ("yes", safe_browsing_helper->response_data());
 }
+
+}  // namespace safe_browsing

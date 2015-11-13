@@ -13,6 +13,8 @@
 
 class GlobalErrorService;
 
+namespace safe_browsing {
+
 // Encapsulates UI-related functionality for the software removal tool (SRT)
 // prompt. The UI consists of two parts: (1.) the profile reset (pop-up) bubble,
 // and (2.) a menu item in the wrench menu (provided by being a GlobalError).
@@ -74,5 +76,7 @@ class SRTGlobalError : public GlobalErrorWithStandardBubble {
 
   DISALLOW_COPY_AND_ASSIGN(SRTGlobalError);
 };
+
+}  // namespace safe_browsing
 
 #endif  // CHROME_BROWSER_SAFE_BROWSING_SRT_GLOBAL_ERROR_WIN_H_

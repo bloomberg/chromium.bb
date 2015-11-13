@@ -18,10 +18,9 @@
 namespace extensions {
 
 FakeSafeBrowsingDatabaseManager::FakeSafeBrowsingDatabaseManager(bool enabled)
-    : LocalSafeBrowsingDatabaseManager(
-          make_scoped_refptr(SafeBrowsingService::CreateSafeBrowsingService())),
-      enabled_(enabled) {
-}
+    : LocalSafeBrowsingDatabaseManager(make_scoped_refptr(
+          safe_browsing::SafeBrowsingService::CreateSafeBrowsingService())),
+      enabled_(enabled) {}
 
 FakeSafeBrowsingDatabaseManager::~FakeSafeBrowsingDatabaseManager() {
 }
@@ -97,23 +96,22 @@ bool FakeSafeBrowsingDatabaseManager::CheckExtensionIDs(
   // OnCheckExtensionsResult directly because it's protected. Grr!
   std::vector<std::string> extension_ids_vector(extension_ids.begin(),
                                                 extension_ids.end());
-  std::vector<SBFullHash> extension_id_hashes;
+  std::vector<safe_browsing::SBFullHash> extension_id_hashes;
   std::transform(extension_ids_vector.begin(), extension_ids_vector.end(),
                  std::back_inserter(extension_id_hashes),
                  safe_browsing::StringToSBFullHash);
 
   scoped_ptr<SafeBrowsingCheck> safe_browsing_check(
-      new SafeBrowsingCheck(
-          std::vector<GURL>(),
-          extension_id_hashes,
-          client,
-          safe_browsing::EXTENSIONBLACKLIST,
-          std::vector<SBThreatType>(1, SB_THREAT_TYPE_EXTENSION)));
+      new SafeBrowsingCheck(std::vector<GURL>(), extension_id_hashes, client,
+                            safe_browsing::EXTENSIONBLACKLIST,
+                            std::vector<safe_browsing::SBThreatType>(
+                                1, safe_browsing::SB_THREAT_TYPE_EXTENSION)));
 
   for (size_t i = 0; i < extension_ids_vector.size(); ++i) {
     const std::string& extension_id = extension_ids_vector[i];
     if (unsafe_ids_.count(extension_id))
-      safe_browsing_check->full_hash_results[i] = SB_THREAT_TYPE_EXTENSION;
+      safe_browsing_check->full_hash_results[i] =
+          safe_browsing::SB_THREAT_TYPE_EXTENSION;
   }
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(

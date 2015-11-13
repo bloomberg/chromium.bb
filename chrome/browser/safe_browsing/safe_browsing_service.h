@@ -30,14 +30,6 @@
 class PrefChangeRegistrar;
 class PrefService;
 class Profile;
-struct SafeBrowsingProtocolConfig;
-class SafeBrowsingDatabaseManager;
-class SafeBrowsingPingManager;
-class SafeBrowsingProtocolManager;
-class SafeBrowsingProtocolManagerDelegate;
-class SafeBrowsingServiceFactory;
-class SafeBrowsingUIManager;
-class SafeBrowsingURLRequestContextGetter;
 class TrackedPreferenceValidationDelegate;
 
 namespace base {
@@ -57,13 +49,20 @@ class URLRequestContextGetter;
 namespace safe_browsing {
 class ClientSideDetectionService;
 class DownloadProtectionService;
+struct SafeBrowsingProtocolConfig;
+class SafeBrowsingDatabaseManager;
+class SafeBrowsingPingManager;
+class SafeBrowsingProtocolManager;
+class SafeBrowsingProtocolManagerDelegate;
+class SafeBrowsingServiceFactory;
+class SafeBrowsingUIManager;
+class SafeBrowsingURLRequestContextGetter;
 
 #if defined(FULL_SAFE_BROWSING)
 class IncidentReportingService;
 class OffDomainInclusionDetector;
 class ResourceRequestDetector;
 #endif
-}  // namespace safe_browsing
 
 // Construction needs to happen on the main thread.
 // The SafeBrowsingService owns both the UI and Database managers which do
@@ -115,16 +114,14 @@ class SafeBrowsingService
     return enabled_by_prefs_;
   }
 
-  safe_browsing::ClientSideDetectionService*
-      safe_browsing_detection_service() const {
+  ClientSideDetectionService* safe_browsing_detection_service() const {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     return csd_service_.get();
   }
 
   // The DownloadProtectionService is not valid after the SafeBrowsingService
   // is destroyed.
-  safe_browsing::DownloadProtectionService*
-      download_protection_service() const {
+  DownloadProtectionService* download_protection_service() const {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     return download_service_.get();
   }
@@ -149,8 +146,7 @@ class SafeBrowsingService
   // Registers |callback| to be run after some delay following process launch.
   // |callback| will be dropped if the service is not applicable for the
   // process.
-  void RegisterDelayedAnalysisCallback(
-      const safe_browsing::DelayedAnalysisCallback& callback);
+  void RegisterDelayedAnalysisCallback(const DelayedAnalysisCallback& callback);
 #endif
 
   // Adds |download_manager| to the set monitored by safe browsing.
@@ -180,8 +176,7 @@ class SafeBrowsingService
   virtual SafeBrowsingUIManager* CreateUIManager();
 
 #if defined(FULL_SAFE_BROWSING)
-  virtual safe_browsing::IncidentReportingService*
-  CreateIncidentReportingService();
+  virtual IncidentReportingService* CreateIncidentReportingService();
 #endif
 
   // Registers all the delayed analysis with the incident reporting service.
@@ -287,15 +282,15 @@ class SafeBrowsingService
   // The ClientSideDetectionService is managed by the SafeBrowsingService,
   // since its running state and lifecycle depends on SafeBrowsingService's.
   // Accessed on UI thread.
-  scoped_ptr<safe_browsing::ClientSideDetectionService> csd_service_;
+  scoped_ptr<ClientSideDetectionService> csd_service_;
 
   // The DownloadProtectionService is managed by the SafeBrowsingService,
   // since its running state and lifecycle depends on SafeBrowsingService's.
   // Accessed on UI thread.
-  scoped_ptr<safe_browsing::DownloadProtectionService> download_service_;
+  scoped_ptr<DownloadProtectionService> download_service_;
 
 #if defined(FULL_SAFE_BROWSING)
-  scoped_ptr<safe_browsing::IncidentReportingService> incident_service_;
+  scoped_ptr<IncidentReportingService> incident_service_;
 #endif
 
   // The UI manager handles showing interstitials.  Accessed on both UI and IO
@@ -307,10 +302,9 @@ class SafeBrowsingService
   scoped_refptr<SafeBrowsingDatabaseManager> database_manager_;
 
 #if defined(FULL_SAFE_BROWSING)
-  scoped_ptr<safe_browsing::OffDomainInclusionDetector>
-      off_domain_inclusion_detector_;
+  scoped_ptr<OffDomainInclusionDetector> off_domain_inclusion_detector_;
 
-  scoped_ptr<safe_browsing::ResourceRequestDetector> resource_request_detector_;
+  scoped_ptr<ResourceRequestDetector> resource_request_detector_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingService);
@@ -325,5 +319,7 @@ class SafeBrowsingServiceFactory {
  private:
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingServiceFactory);
 };
+
+}  // namespace safe_browsing
 
 #endif  // CHROME_BROWSER_SAFE_BROWSING_SAFE_BROWSING_SERVICE_H_

@@ -28,6 +28,7 @@ class SSLInfo;
 class URLRequestContextGetter;
 }  // namespace net
 
+namespace safe_browsing {
 
 class SafeBrowsingPingManager : public net::URLFetcherDelegate {
  public:
@@ -99,5 +100,7 @@ class SafeBrowsingPingManager : public net::URLFetcherDelegate {
 
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingPingManager);
 };
+
+}  // namespace safe_browsing
 
 #endif  // CHROME_BROWSER_SAFE_BROWSING_PING_MANAGER_H_

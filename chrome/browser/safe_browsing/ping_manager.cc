@@ -33,6 +33,8 @@ const char kExtendedReportingUploadUrlSecure[] =
     "https://sb-ssl.google.com/safebrowsing/clientreport/chrome-certs";
 }  // namespace
 
+namespace safe_browsing {
+
 // SafeBrowsingPingManager implementation ----------------------------------
 
 // static
@@ -214,3 +216,5 @@ GURL SafeBrowsingPingManager::ThreatDetailsUrl() const {
   }
   return GURL(url);
 }
+
+}  // namespace safe_browsing

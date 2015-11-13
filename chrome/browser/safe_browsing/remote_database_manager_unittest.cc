@@ -12,6 +12,8 @@
 #include "components/variations/variations_associated_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace safe_browsing {
+
 namespace {
 
 class TestSafeBrowsingApiHandler : public SafeBrowsingApiHandler {
@@ -20,6 +22,8 @@ class TestSafeBrowsingApiHandler : public SafeBrowsingApiHandler {
                      const GURL& url,
                      const std::vector<SBThreatType>& threat_types) override {}
 };
+
+}  // namespace
 
 class RemoteDatabaseManagerTest : public testing::Test {
  protected:
@@ -95,4 +99,4 @@ TEST_F(RemoteDatabaseManagerTest, TypesToCheckFromTrial) {
   EXPECT_TRUE(db_->CanCheckResourceType(content::RESOURCE_TYPE_WORKER));
 }
 
-}  // namespace
+}  // namespace safe_browsing

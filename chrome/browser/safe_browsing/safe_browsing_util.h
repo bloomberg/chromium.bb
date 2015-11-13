@@ -19,8 +19,8 @@
 #include "components/safe_browsing_db/util.h"
 
 namespace safe_browsing {
+
 class ChunkData;
-};
 
 // Container for holding a chunk URL and the list it belongs to.
 struct ChunkUrl {
@@ -37,7 +37,7 @@ class SBChunkData {
   // Create with manufactured data, for testing only.
   // TODO(shess): Right now the test code calling this is in an anonymous
   // namespace.  Figure out how to shift this into private:.
-  explicit SBChunkData(safe_browsing::ChunkData* chunk_data);
+  explicit SBChunkData(ChunkData* chunk_data);
 
   // Read serialized ChunkData, returning true if the parse suceeded.
   bool ParseFrom(const unsigned char* data, size_t length);
@@ -58,7 +58,7 @@ class SBChunkData {
 
  private:
   // Protocol buffer sent from server.
-  scoped_ptr<safe_browsing::ChunkData> chunk_data_;
+  scoped_ptr<ChunkData> chunk_data_;
 
   DISALLOW_COPY_AND_ASSIGN(SBChunkData);
 };
@@ -81,5 +81,7 @@ struct SBChunkDelete {
   bool is_sub_del;
   std::vector<ChunkRange> chunk_del;
 };
+
+}  // namespace safe_browsing
 
 #endif  // CHROME_BROWSER_SAFE_BROWSING_SAFE_BROWSING_UTIL_H_

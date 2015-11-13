@@ -58,8 +58,7 @@ struct OffDomainInclusionDetector::OffDomainInclusionInfo {
 OffDomainInclusionDetector::OffDomainInclusionDetector(
     const scoped_refptr<SafeBrowsingDatabaseManager>& database_manager)
     : OffDomainInclusionDetector(database_manager,
-                                 ReportAnalysisEventCallback()) {
-}
+                                 ReportAnalysisEventCallback()) {}
 
 OffDomainInclusionDetector::OffDomainInclusionDetector(
     const scoped_refptr<SafeBrowsingDatabaseManager>& database_manager,

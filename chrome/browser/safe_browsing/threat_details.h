@@ -29,19 +29,20 @@ namespace net {
 class URLRequestContextGetter;
 }
 
-class ThreatDetailsCacheCollector;
-class ThreatDetailsRedirectsCollector;
-class ThreatDetailsFactory;
 class Profile;
 struct SafeBrowsingHostMsg_ThreatDOMDetails_Node;
 
 namespace safe_browsing {
+
 // Maps a URL to its Resource.
+class ThreatDetailsCacheCollector;
+class ThreatDetailsRedirectsCollector;
+class ThreatDetailsFactory;
+
 typedef base::hash_map<
     std::string,
-    linked_ptr<safe_browsing::ClientSafeBrowsingReportRequest::Resource>>
+    linked_ptr<ClientSafeBrowsingReportRequest::Resource>>
     ResourceMap;
-}
 
 class ThreatDetails : public base::RefCountedThreadSafe<ThreatDetails>,
                       public content::WebContentsObserver {
@@ -90,7 +91,7 @@ class ThreatDetails : public base::RefCountedThreadSafe<ThreatDetails>,
   Profile* profile_;
 
   // The report protocol buffer.
-  scoped_ptr<safe_browsing::ClientSafeBrowsingReportRequest> report_;
+  scoped_ptr<ClientSafeBrowsingReportRequest> report_;
 
   // Used to get a pointer to the HTTP cache.
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
@@ -107,8 +108,8 @@ class ThreatDetails : public base::RefCountedThreadSafe<ThreatDetails>,
   // Finds an existing Resource for the given url, or creates a new
   // one if not found, and adds it to |resources_|. Returns the
   // found/created resource.
-  safe_browsing::ClientSafeBrowsingReportRequest::Resource*
-  FindOrCreateResource(const GURL& url);
+  ClientSafeBrowsingReportRequest::Resource* FindOrCreateResource(
+      const GURL& url);
 
   // Adds a Resource to resources_ with the given parent-child
   // relationship. |parent| and |tagname| can be empty, |children| can be NULL.
@@ -129,7 +130,7 @@ class ThreatDetails : public base::RefCountedThreadSafe<ThreatDetails>,
 
   // For every Url we collect we create a Resource message. We keep
   // them in a map so we can avoid duplicates.
-  safe_browsing::ResourceMap resources_;
+  ResourceMap resources_;
 
   // Result from the cache extractor.
   bool cache_result_;
@@ -170,5 +171,7 @@ class ThreatDetailsFactory {
       content::WebContents* web_contents,
       const SafeBrowsingUIManager::UnsafeResource& unsafe_resource) = 0;
 };
+
+}  // namespace safe_browsing
 
 #endif  // CHROME_BROWSER_SAFE_BROWSING_THREAT_DETAILS_H_

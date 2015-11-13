@@ -945,7 +945,8 @@ void DownloadItemView::OpenDownload() {
 
 bool DownloadItemView::SubmitDownloadToFeedbackService() {
 #if defined(FULL_SAFE_BROWSING)
-  SafeBrowsingService* sb_service = g_browser_process->safe_browsing_service();
+  safe_browsing::SafeBrowsingService* sb_service =
+      g_browser_process->safe_browsing_service();
   if (!sb_service)
     return false;
   safe_browsing::DownloadProtectionService* download_protection_service =

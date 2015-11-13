@@ -2,9 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SAFE_BROWSING_UI_MANAGER_UNITTEST_CC_
-#define CHROME_BROWSER_SAFE_BROWSING_UI_MANAGER_UNITTEST_CC_
-
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/safe_browsing_util.h"
@@ -22,6 +19,8 @@
 static const char* kGoodURL = "https://www.good.com";
 static const char* kBadURL = "https://www.malware.com";
 static const char* kBadURLWithPath = "https://www.malware.com/index.html";
+
+namespace safe_browsing {
 
 class SafeBrowsingUIManagerTest : public ChromeRenderViewHostTestHarness {
  public:
@@ -103,4 +102,4 @@ TEST_F(SafeBrowsingUIManagerTest, WhitelistIgnoresThreatType) {
   EXPECT_TRUE(IsWhitelisted(resource_phishing));
 }
 
-#endif  // CHROME_BROWSER_SAFE_BROWSING_UI_MANAGER_UNITTEST_CC_
+}  // namespace safe_browsing

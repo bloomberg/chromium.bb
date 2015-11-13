@@ -37,6 +37,8 @@ class URLFetcher;
 class URLRequestContextGetter;
 }  // namespace net
 
+namespace safe_browsing {
+
 class SBProtocolManagerFactory;
 class SafeBrowsingProtocolManagerDelegate;
 
@@ -438,5 +440,7 @@ class SafeBrowsingProtocolManagerDelegate {
   virtual void DeleteChunks(
       scoped_ptr<std::vector<SBChunkDelete> > chunk_deletes) = 0;
 };
+
+}  // namespace safe_browsing
 
 #endif  // CHROME_BROWSER_SAFE_BROWSING_PROTOCOL_MANAGER_H_

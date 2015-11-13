@@ -23,18 +23,19 @@
 #include "net/url_request/url_request_status.h"
 
 using content::BrowserThread;
-using safe_browsing::ClientSafeBrowsingReportRequest;
 
 // Only send small files for now, a better strategy would use the size
 // of the whole report and the user's bandwidth.
 static const uint32 kMaxBodySizeBytes = 1024;
+
+namespace safe_browsing {
 
 ThreatDetailsCacheCollector::ThreatDetailsCacheCollector()
     : resources_(NULL), result_(NULL), has_started_(false) {}
 
 void ThreatDetailsCacheCollector::StartCacheCollection(
     net::URLRequestContextGetter* request_context_getter,
-    safe_browsing::ResourceMap* resources,
+    ResourceMap* resources,
     bool* result,
     const base::Closure& callback) {
   // Start the data collection from the HTTP cache. We use a URLFetcher
@@ -89,7 +90,7 @@ void ThreatDetailsCacheCollector::OpenEntry() {
 
 ClientSafeBrowsingReportRequest::Resource*
 ThreatDetailsCacheCollector::GetResource(const GURL& url) {
-  safe_browsing::ResourceMap::iterator it = resources_->find(url.spec());
+  ResourceMap::iterator it = resources_->find(url.spec());
   if (it != resources_->end()) {
     return it->second.get();
   }
@@ -201,3 +202,5 @@ void ThreatDetailsCacheCollector::AllDone(bool success) {
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, callback_);
   callback_.Reset();
 }
+
+}  // namespace safe_browsing

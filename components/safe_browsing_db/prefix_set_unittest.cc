@@ -23,14 +23,14 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
+namespace safe_browsing {
+
 namespace {
 
 const SBPrefix kHighBitClear = 1000u * 1000u * 1000u;
 const SBPrefix kHighBitSet = 3u * 1000u * 1000u * 1000u;
 
 }  // namespace
-
-namespace safe_browsing {
 
 class PrefixSetTest : public PlatformTest {
  protected:

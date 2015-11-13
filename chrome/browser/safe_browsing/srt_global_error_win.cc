@@ -29,6 +29,8 @@ using base::SingleThreadTaskRunner;
 using base::ThreadTaskRunnerHandle;
 using content::BrowserThread;
 
+namespace safe_browsing {
+
 namespace {
 
 // Used as a backup plan in case the SRT executable was not successfully
@@ -105,14 +107,13 @@ base::string16 SRTGlobalError::MenuItemLabel() {
 }
 
 void SRTGlobalError::ExecuteMenuItem(Browser* browser) {
-  safe_browsing::RecordSRTPromptHistogram(
-      safe_browsing::SRT_PROMPT_SHOWN_FROM_MENU);
+  RecordSRTPromptHistogram(SRT_PROMPT_SHOWN_FROM_MENU);
   show_dismiss_button_ = true;
   ShowBubbleView(browser);
 }
 
 void SRTGlobalError::ShowBubbleView(Browser* browser) {
-  safe_browsing::RecordSRTPromptHistogram(safe_browsing::SRT_PROMPT_SHOWN);
+  RecordSRTPromptHistogram(SRT_PROMPT_SHOWN);
   GlobalErrorWithStandardBubble::ShowBubbleView(browser);
 }
 
@@ -137,8 +138,7 @@ base::string16 SRTGlobalError::GetBubbleViewAcceptButtonLabel() {
 }
 
 bool SRTGlobalError::ShouldAddElevationIconToAcceptButton() {
-  return !downloaded_path_.empty() &&
-         safe_browsing::SRTPromptNeedsElevationIcon();
+  return !downloaded_path_.empty() && SRTPromptNeedsElevationIcon();
 }
 
 base::string16 SRTGlobalError::GetBubbleViewCancelButtonLabel() {
@@ -152,20 +152,20 @@ void SRTGlobalError::OnBubbleViewDidClose(Browser* browser) {
   // called in those cases and will prevent the base class from calling virtual
   // methods. This DCHECK makes sure that behavior won't change.
   DCHECK(!interacted_);
-  safe_browsing::RecordSRTPromptHistogram(safe_browsing::SRT_PROMPT_CLOSED);
+  RecordSRTPromptHistogram(SRT_PROMPT_CLOSED);
   g_browser_process->local_state()->SetBoolean(prefs::kSwReporterPendingPrompt,
                                                true);
 }
 
 void SRTGlobalError::BubbleViewAcceptButtonPressed(Browser* browser) {
-  safe_browsing::RecordSRTPromptHistogram(safe_browsing::SRT_PROMPT_ACCEPTED);
+  RecordSRTPromptHistogram(SRT_PROMPT_ACCEPTED);
   interacted_ = true;
   global_error_service_->RemoveGlobalError(this);
   MaybeExecuteSRT();
 }
 
 void SRTGlobalError::BubbleViewCancelButtonPressed(Browser* browser) {
-  safe_browsing::RecordSRTPromptHistogram(safe_browsing::SRT_PROMPT_DENIED);
+  RecordSRTPromptHistogram(SRT_PROMPT_DENIED);
   interacted_ = true;
   global_error_service_->RemoveGlobalError(this);
 
@@ -196,7 +196,7 @@ void SRTGlobalError::MaybeExecuteSRT() {
 }
 
 void SRTGlobalError::FallbackToDownloadPage() {
-  safe_browsing::RecordSRTPromptHistogram(safe_browsing::SRT_PROMPT_FALLBACK);
+  RecordSRTPromptHistogram(SRT_PROMPT_FALLBACK);
 
   chrome::HostDesktopType desktop_type = chrome::GetActiveDesktop();
   Browser* browser = chrome::FindLastActiveWithHostDesktopType(desktop_type);
@@ -218,3 +218,5 @@ void SRTGlobalError::DestroySelf() {
                                                false);
   delete this;
 }
+
+}  // namespace safe_browsing

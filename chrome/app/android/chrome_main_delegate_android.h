@@ -9,7 +9,9 @@
 #include "chrome/app/chrome_main_delegate.h"
 #include "content/public/browser/browser_main_runner.h"
 
+namespace safe_browsing {
 class SafeBrowsingApiHandler;
+}
 
 // Android override of ChromeMainDelegate
 class ChromeMainDelegateAndroid : public ChromeMainDelegate {
@@ -28,14 +30,14 @@ class ChromeMainDelegateAndroid : public ChromeMainDelegate {
   void ProcessExiting(const std::string& process_type) override;
 
 #if defined(SAFE_BROWSING_DB_REMOTE)
-  virtual SafeBrowsingApiHandler* CreateSafeBrowsingApiHandler();
+  virtual safe_browsing::SafeBrowsingApiHandler* CreateSafeBrowsingApiHandler();
 #endif
 
  private:
   scoped_ptr<content::BrowserMainRunner> browser_runner_;
 
 #if defined(SAFE_BROWSING_DB_REMOTE)
-  scoped_ptr<SafeBrowsingApiHandler> safe_browsing_api_handler_;
+  scoped_ptr<safe_browsing::SafeBrowsingApiHandler> safe_browsing_api_handler_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(ChromeMainDelegateAndroid);

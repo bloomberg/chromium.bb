@@ -71,10 +71,11 @@ void RemoveSessionCookiesForProfile(Profile* profile) {
                  make_scoped_refptr(profile->GetRequestContext())));
 }
 
-void ChangeAppStatusOnIOThread(SafeBrowsingService* sb_service,
+void ChangeAppStatusOnIOThread(safe_browsing::SafeBrowsingService* sb_service,
                                jboolean foreground) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  SafeBrowsingProtocolManager* proto_manager = sb_service->protocol_manager();
+  safe_browsing::SafeBrowsingProtocolManager* proto_manager =
+      sb_service->protocol_manager();
   if (proto_manager)
     proto_manager->SetAppInForeground(foreground);
 }

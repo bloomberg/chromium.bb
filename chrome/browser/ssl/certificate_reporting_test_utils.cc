@@ -27,6 +27,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
+using safe_browsing::SafeBrowsingService;
+using safe_browsing::SafeBrowsingUIManager;
+
 namespace {
 
 void SetMockReporter(

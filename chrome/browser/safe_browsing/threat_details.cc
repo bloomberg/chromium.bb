@@ -22,10 +22,11 @@
 using content::BrowserThread;
 using content::NavigationEntry;
 using content::WebContents;
-using safe_browsing::ClientSafeBrowsingReportRequest;
 
 // Keep in sync with KMaxNodes in renderer/safe_browsing/threat_dom_details
 static const uint32 kMaxDomNodes = 500;
+
+namespace safe_browsing {
 
 // static
 ThreatDetailsFactory* ThreatDetails::factory_ = NULL;
@@ -129,7 +130,7 @@ bool ThreatDetails::IsReportableUrl(const GURL& url) const {
 //
 ClientSafeBrowsingReportRequest::Resource* ThreatDetails::FindOrCreateResource(
     const GURL& url) {
-  safe_browsing::ResourceMap::iterator it = resources_.find(url.spec());
+  ResourceMap::iterator it = resources_.find(url.spec());
   if (it != resources_.end())
     return it->second.get();
 
@@ -277,7 +278,7 @@ void ThreatDetails::FinishCollection(bool did_proceed, int num_visit) {
   did_proceed_ = did_proceed;
   num_visits_ = num_visit;
   std::vector<GURL> urls;
-  for (safe_browsing::ResourceMap::const_iterator it = resources_.begin();
+  for (ResourceMap::const_iterator it = resources_.begin();
        it != resources_.end(); ++it) {
     urls.push_back(GURL(it->first));
   }
@@ -287,7 +288,7 @@ void ThreatDetails::FinishCollection(bool did_proceed, int num_visit) {
 
 void ThreatDetails::OnRedirectionCollectionReady() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  const std::vector<safe_browsing::RedirectChain>& redirects =
+  const std::vector<RedirectChain>& redirects =
       redirects_collector_->GetCollectedUrls();
 
   for (size_t i = 0; i < redirects.size(); ++i)
@@ -309,7 +310,7 @@ void ThreatDetails::AddRedirectUrlList(const std::vector<GURL>& urls) {
 void ThreatDetails::OnCacheCollectionReady() {
   DVLOG(1) << "OnCacheCollectionReady.";
   // Add all the urls in our |resources_| maps to the |report_| protocol buffer.
-  for (safe_browsing::ResourceMap::const_iterator it = resources_.begin();
+  for (ResourceMap::const_iterator it = resources_.begin();
        it != resources_.end(); ++it) {
     ClientSafeBrowsingReportRequest::Resource* pb_resource =
         report_->add_resources();
@@ -339,3 +340,5 @@ void ThreatDetails::OnCacheCollectionReady() {
   }
   ui_manager_->SendSerializedThreatDetails(serialized);
 }
+
+}  // namespace safe_browsing

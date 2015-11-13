@@ -15,6 +15,8 @@
 #include "base/files/scoped_file.h"
 #include "base/sequenced_task_runner.h"
 
+namespace safe_browsing {
+
 // Implement SafeBrowsingStore in terms of a flat file.  The file
 // format is pretty literal:
 //
@@ -154,7 +156,7 @@ class SafeBrowsingStoreFile : public SafeBrowsingStore {
 
   bool BeginUpdate() override;
   bool FinishUpdate(
-      safe_browsing::PrefixSetBuilder* builder,
+      PrefixSetBuilder* builder,
       std::vector<SBAddFullHash>* add_full_hashes_result) override;
   bool CancelUpdate() override;
 
@@ -189,7 +191,7 @@ class SafeBrowsingStoreFile : public SafeBrowsingStore {
 
   // Does the actual update for FinishUpdate(), so that FinishUpdate() can clean
   // up correctly in case of error.
-  virtual bool DoUpdate(safe_browsing::PrefixSetBuilder* builder,
+  virtual bool DoUpdate(PrefixSetBuilder* builder,
                         std::vector<SBAddFullHash>* add_full_hashes_result);
 
   // Some very lucky users have an original-format file still in their
@@ -278,5 +280,7 @@ class SafeBrowsingStoreFile : public SafeBrowsingStore {
 
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingStoreFile);
 };
+
+}  // namespace safe_browsing
 
 #endif  // CHROME_BROWSER_SAFE_BROWSING_SAFE_BROWSING_STORE_FILE_H_

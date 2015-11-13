@@ -100,7 +100,7 @@ TEST_F(MacSignatureEvaluatorTest, SimpleTest) {
   // This is a simple test that checks the validity of a signed executable.
   // There is no designated requirement: we only check the embedded signature.
   base::FilePath path = testdata_path_.AppendASCII("signedexecutablefat");
-  safe_browsing::MacSignatureEvaluator evaluator(path);
+  MacSignatureEvaluator evaluator(path);
   ASSERT_TRUE(evaluator.Initialize());
 
   ClientIncidentReport_IncidentData_BinaryIntegrityIncident incident;
@@ -113,7 +113,7 @@ TEST_F(MacSignatureEvaluatorTest, SimpleTestWithDR) {
   base::FilePath path = testdata_path_.AppendASCII("signedexecutablefat");
   std::string requirement(
       "certificate leaf[subject.CN]=\"untrusted@goat.local\"");
-  safe_browsing::MacSignatureEvaluator evaluator(path, requirement);
+  MacSignatureEvaluator evaluator(path, requirement);
   ASSERT_TRUE(evaluator.Initialize());
 
   ClientIncidentReport_IncidentData_BinaryIntegrityIncident incident;
@@ -124,7 +124,7 @@ TEST_F(MacSignatureEvaluatorTest, SimpleTestWithDR) {
 TEST_F(MacSignatureEvaluatorTest, SimpleTestWithBadDR) {
   // Now test with a designated requirement that does not describe the signer.
   base::FilePath path = testdata_path_.AppendASCII("signedexecutablefat");
-  safe_browsing::MacSignatureEvaluator evaluator(path, "anchor apple");
+  MacSignatureEvaluator evaluator(path, "anchor apple");
   ASSERT_TRUE(evaluator.Initialize());
 
   ClientIncidentReport_IncidentData_BinaryIntegrityIncident incident;
@@ -141,7 +141,7 @@ TEST_F(MacSignatureEvaluatorTest, SimpleBundleTest) {
 
   std::string requirement(
       "certificate leaf[subject.CN]=\"untrusted@goat.local\"");
-  safe_browsing::MacSignatureEvaluator evaluator(path, requirement);
+  MacSignatureEvaluator evaluator(path, requirement);
   ASSERT_TRUE(evaluator.Initialize());
 
   ClientIncidentReport_IncidentData_BinaryIntegrityIncident incident;
@@ -155,7 +155,7 @@ TEST_F(MacSignatureEvaluatorTest, ModifiedMainExecTest32) {
 
   std::string requirement(
       "certificate leaf[subject.CN]=\"untrusted@goat.local\"");
-  safe_browsing::MacSignatureEvaluator evaluator(path, requirement);
+  MacSignatureEvaluator evaluator(path, requirement);
   ASSERT_TRUE(evaluator.Initialize());
 
   ClientIncidentReport_IncidentData_BinaryIntegrityIncident incident;
@@ -184,7 +184,7 @@ TEST_F(MacSignatureEvaluatorTest, ModifiedMainExecTest64) {
 
   std::string requirement(
       "certificate leaf[subject.CN]=\"untrusted@goat.local\"");
-  safe_browsing::MacSignatureEvaluator evaluator(path, requirement);
+  MacSignatureEvaluator evaluator(path, requirement);
   ASSERT_TRUE(evaluator.Initialize());
 
   ClientIncidentReport_IncidentData_BinaryIntegrityIncident incident;
@@ -211,7 +211,7 @@ TEST_F(MacSignatureEvaluatorTest, ModifiedBundleAndExecTest) {
 
   std::string requirement(
       "certificate leaf[subject.CN]=\"untrusted@goat.local\"");
-  safe_browsing::MacSignatureEvaluator evaluator(path, requirement);
+  MacSignatureEvaluator evaluator(path, requirement);
   ASSERT_TRUE(evaluator.Initialize());
 
   ClientIncidentReport_IncidentData_BinaryIntegrityIncident incident;
@@ -247,7 +247,7 @@ TEST_F(MacSignatureEvaluatorTest, ModifiedBundleTest) {
 
   std::string requirement(
       "certificate leaf[subject.CN]=\"untrusted@goat.local\"");
-  safe_browsing::MacSignatureEvaluator evaluator(copied_path, requirement);
+  MacSignatureEvaluator evaluator(copied_path, requirement);
   ASSERT_TRUE(evaluator.Initialize());
 
   ClientIncidentReport_IncidentData_BinaryIntegrityIncident incident;

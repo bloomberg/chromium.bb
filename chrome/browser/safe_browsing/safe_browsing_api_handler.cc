@@ -4,6 +4,8 @@
 
 #include "chrome/browser/safe_browsing/safe_browsing_api_handler.h"
 
+namespace safe_browsing {
+
 SafeBrowsingApiHandler* SafeBrowsingApiHandler::instance_ = NULL;
 
 // static
@@ -15,3 +17,5 @@ void SafeBrowsingApiHandler::SetInstance(SafeBrowsingApiHandler* instance) {
 SafeBrowsingApiHandler* SafeBrowsingApiHandler::GetInstance() {
   return instance_;
 }
+
+}  // namespace safe_browsing

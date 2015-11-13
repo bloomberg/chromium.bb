@@ -877,8 +877,8 @@ StatusTray* BrowserProcessImpl::status_tray() {
   return status_tray_.get();
 }
 
-
-SafeBrowsingService* BrowserProcessImpl::safe_browsing_service() {
+safe_browsing::SafeBrowsingService*
+BrowserProcessImpl::safe_browsing_service() {
   DCHECK(CalledOnValidThread());
   if (!created_safe_browsing_service_)
     CreateSafeBrowsingService();
@@ -1165,7 +1165,8 @@ void BrowserProcessImpl::CreateSafeBrowsingService() {
   // Set this flag to true so that we don't retry indefinitely to
   // create the service class if there was an error.
   created_safe_browsing_service_ = true;
-  safe_browsing_service_ = SafeBrowsingService::CreateSafeBrowsingService();
+  safe_browsing_service_ =
+      safe_browsing::SafeBrowsingService::CreateSafeBrowsingService();
   safe_browsing_service_->Initialize();
 }
 

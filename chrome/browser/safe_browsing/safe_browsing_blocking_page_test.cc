@@ -52,6 +52,8 @@ using content::InterstitialPage;
 using content::NavigationController;
 using content::WebContents;
 
+namespace safe_browsing {
+
 namespace {
 
 const char kEmptyPage[] = "empty.html";
@@ -92,7 +94,7 @@ class FakeSafeBrowsingDatabaseManager : public TestSafeBrowsingDatabaseManager {
         std::vector<GURL>(1, gurl),
         std::vector<SBFullHash>(),
         client,
-        safe_browsing::MALWARE,
+        MALWARE,
         expected_threats);
     sb_check.url_results[0] = badurls[gurl.spec()];
     sb_check.OnSafeBrowsingResult();
@@ -749,7 +751,7 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest,
   if (expect_threat_details) {
     threat_report_sent_runner->Run();
     std::string serialized = GetReportSent();
-    safe_browsing::ClientSafeBrowsingReportRequest report;
+    ClientSafeBrowsingReportRequest report;
     ASSERT_TRUE(report.ParseFromString(serialized));
     // Verify the report is complete.
     EXPECT_TRUE(report.complete());
@@ -1028,3 +1030,5 @@ INSTANTIATE_TEST_CASE_P(SafeBrowsingBlockingPageIDNTestWithThreatType,
                         testing::Values(SB_THREAT_TYPE_URL_MALWARE,
                                         SB_THREAT_TYPE_URL_PHISHING,
                                         SB_THREAT_TYPE_URL_UNWANTED));
+
+}  // namespace safe_browsing

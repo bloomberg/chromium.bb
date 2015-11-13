@@ -21,11 +21,11 @@
 #include "chrome/browser/safe_browsing/safe_browsing_store.h"
 #include "components/safe_browsing_db/util.h"
 
-namespace safe_browsing {
-class PrefixSet;
-}
-
 class GURL;
+
+namespace safe_browsing {
+
+class PrefixSet;
 class SafeBrowsingDatabase;
 
 // Factory for creating SafeBrowsingDatabase. Tests implement this factory
@@ -433,8 +433,8 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
     // PrefixSets to speed up lookups for particularly large lists. The
     // PrefixSet themselves are never modified, instead a new one is swapped in
     // on update.
-    scoped_ptr<const safe_browsing::PrefixSet> browse_prefix_set_;
-    scoped_ptr<const safe_browsing::PrefixSet> unwanted_software_prefix_set_;
+    scoped_ptr<const PrefixSet> browse_prefix_set_;
+    scoped_ptr<const PrefixSet> unwanted_software_prefix_set_;
 
     // Cache of gethash results for prefix stores. Entries should not be used if
     // they are older than their expire_after field.  Cached misses will have
@@ -591,10 +591,10 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
 
   // Helpers for InsertChunks().
   void InsertAddChunk(SafeBrowsingStore* store,
-                      safe_browsing::ListType list_id,
+                      ListType list_id,
                       const SBChunkData& chunk);
   void InsertSubChunk(SafeBrowsingStore* store,
-                      safe_browsing::ListType list_id,
+                      ListType list_id,
                       const SBChunkData& chunk);
 
   // Updates the |store| and stores the result on disk under |store_filename|.
@@ -676,5 +676,7 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
   // thread.
   base::WeakPtrFactory<SafeBrowsingDatabaseNew> reset_factory_;
 };
+
+}  // namespace safe_browsing
 
 #endif  // CHROME_BROWSER_SAFE_BROWSING_SAFE_BROWSING_DATABASE_H_

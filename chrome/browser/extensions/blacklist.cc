@@ -25,6 +25,7 @@
 #include "extensions/browser/extension_prefs.h"
 
 using content::BrowserThread;
+using safe_browsing::SafeBrowsingDatabaseManager;
 
 namespace extensions {
 
@@ -163,8 +164,7 @@ Blacklist::Blacklist(ExtensionPrefs* prefs) {
       g_database_manager.Get().get();
   if (database_manager.get()) {
     registrar_.Add(
-        this,
-        chrome::NOTIFICATION_SAFE_BROWSING_UPDATE_COMPLETE,
+        this, chrome::NOTIFICATION_SAFE_BROWSING_UPDATE_COMPLETE,
         content::Source<SafeBrowsingDatabaseManager>(database_manager.get()));
   }
 

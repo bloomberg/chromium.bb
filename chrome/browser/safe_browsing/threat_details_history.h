@@ -23,11 +23,11 @@
 #include "content/public/browser/notification_registrar.h"
 #include "net/base/completion_callback.h"
 
-namespace safe_browsing {
-typedef std::vector<GURL> RedirectChain;
-}
-
 class Profile;
+
+namespace safe_browsing {
+
+typedef std::vector<GURL> RedirectChain;
 
 class ThreatDetailsRedirectsCollector
     : public base::RefCountedThreadSafe<
@@ -47,7 +47,7 @@ class ThreatDetailsRedirectsCollector
   bool HasStarted() const;
 
   // Returns the redirect urls we get from history service
-  const std::vector<safe_browsing::RedirectChain>& GetCollectedUrls() const;
+  const std::vector<RedirectChain>& GetCollectedUrls() const;
 
   // content::NotificationObserver
   void Observe(int type,
@@ -85,11 +85,13 @@ class ThreatDetailsRedirectsCollector
   // The iterator goes over urls_
   std::vector<GURL>::iterator urls_it_;
   // The collected directs from history service
-  std::vector<safe_browsing::RedirectChain> redirects_urls_;
+  std::vector<RedirectChain> redirects_urls_;
 
   content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(ThreatDetailsRedirectsCollector);
 };
+
+}  // namespace safe_browsing
 
 #endif  // CHROME_BROWSER_SAFE_BROWSING_THREAT_DETAILS_HISTORY_H_

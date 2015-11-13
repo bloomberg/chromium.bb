@@ -21,6 +21,7 @@
 #include "net/url_request/url_request.h"
 
 using net::NetLog;
+using safe_browsing::SafeBrowsingUIManager;
 
 namespace {
 
@@ -71,7 +72,7 @@ scoped_ptr<base::Value> NetLogStringCallback(
 SafeBrowsingResourceThrottle* SafeBrowsingResourceThrottle::MaybeCreate(
     net::URLRequest* request,
     content::ResourceType resource_type,
-    SafeBrowsingService* sb_service) {
+    safe_browsing::SafeBrowsingService* sb_service) {
   if (sb_service->database_manager()->IsSupported()) {
     return new SafeBrowsingResourceThrottle(request, resource_type, sb_service);
   }
@@ -81,10 +82,10 @@ SafeBrowsingResourceThrottle* SafeBrowsingResourceThrottle::MaybeCreate(
 SafeBrowsingResourceThrottle::SafeBrowsingResourceThrottle(
     const net::URLRequest* request,
     content::ResourceType resource_type,
-    SafeBrowsingService* sb_service)
+    safe_browsing::SafeBrowsingService* sb_service)
     : state_(STATE_NONE),
       defer_state_(DEFERRED_NONE),
-      threat_type_(SB_THREAT_TYPE_SAFE),
+      threat_type_(safe_browsing::SB_THREAT_TYPE_SAFE),
       database_manager_(sb_service->database_manager()),
       ui_manager_(sb_service->ui_manager()),
       request_(request),
@@ -201,7 +202,7 @@ const char* SafeBrowsingResourceThrottle::GetNameForLogging() const {
 // the URL has been classified.
 void SafeBrowsingResourceThrottle::OnCheckBrowseUrlResult(
     const GURL& url,
-    SBThreatType threat_type,
+    safe_browsing::SBThreatType threat_type,
     const std::string& metadata) {
   CHECK_EQ(state_, STATE_CHECKING_URL);
   CHECK_EQ(url, url_being_checked_);
@@ -213,10 +214,11 @@ void SafeBrowsingResourceThrottle::OnCheckBrowseUrlResult(
   if (defer_state_ != DEFERRED_NONE) {
     EndNetLogEvent(NetLog::TYPE_SAFE_BROWSING_DEFERRED, nullptr, nullptr);
   }
-  EndNetLogEvent(NetLog::TYPE_SAFE_BROWSING_CHECKING_URL, "result",
-                 threat_type_ == SB_THREAT_TYPE_SAFE ? "safe" : "unsafe");
+  EndNetLogEvent(
+      NetLog::TYPE_SAFE_BROWSING_CHECKING_URL, "result",
+      threat_type_ == safe_browsing::SB_THREAT_TYPE_SAFE ? "safe" : "unsafe");
 
-  if (threat_type == SB_THREAT_TYPE_SAFE) {
+  if (threat_type == safe_browsing::SB_THREAT_TYPE_SAFE) {
     RecordHistogramResourceTypeSafe(resource_type_);
     if (defer_state_ != DEFERRED_NONE) {
       // Log how much time the safe browsing check cost us.
@@ -304,7 +306,7 @@ void SafeBrowsingResourceThrottle::OnBlockingPageComplete(bool proceed) {
   state_ = STATE_NONE;
 
   if (proceed) {
-    threat_type_ = SB_THREAT_TYPE_SAFE;
+    threat_type_ = safe_browsing::SB_THREAT_TYPE_SAFE;
     if (defer_state_ != DEFERRED_NONE) {
       ResumeRequest();
     }
@@ -329,7 +331,7 @@ bool SafeBrowsingResourceThrottle::CheckUrl(const GURL& url) {
 
   if (succeeded_synchronously) {
     RecordHistogramResourceTypeSafe(resource_type_);
-    threat_type_ = SB_THREAT_TYPE_SAFE;
+    threat_type_ = safe_browsing::SB_THREAT_TYPE_SAFE;
     ui_manager_->LogPauseDelay(base::TimeDelta());  // No delay.
     return true;
   }
@@ -354,7 +356,7 @@ void SafeBrowsingResourceThrottle::OnCheckUrlTimeout() {
 
   database_manager_->CancelCheck(this);
   OnCheckBrowseUrlResult(
-      url_being_checked_, SB_THREAT_TYPE_SAFE, std::string());
+      url_being_checked_, safe_browsing::SB_THREAT_TYPE_SAFE, std::string());
 }
 
 void SafeBrowsingResourceThrottle::ResumeRequest() {

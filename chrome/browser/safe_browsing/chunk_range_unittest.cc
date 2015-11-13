@@ -8,6 +8,8 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace safe_browsing {
+
 // Test various configurations of chunk numbers.
 TEST(SafeBrowsingChunkRangeTest, TestChunksToRangeString) {
   std::vector<int> chunks;
@@ -163,3 +165,5 @@ TEST(SafeBrowsingChunkRangeTest, TestSearchChunkRanges) {
   EXPECT_FALSE(IsChunkInRange(990, ranges));
   EXPECT_FALSE(IsChunkInRange(2000, ranges));
 }
+
+}  // namespace safe_browsing

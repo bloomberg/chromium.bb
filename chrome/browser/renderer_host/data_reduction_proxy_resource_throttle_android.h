@@ -52,11 +52,11 @@ class DataReductionProxyResourceThrottle
       net::URLRequest* request,
       content::ResourceContext* resource_context,
       content::ResourceType resource_type,
-      SafeBrowsingService* sb_service);
+      safe_browsing::SafeBrowsingService* sb_service);
 
   DataReductionProxyResourceThrottle(net::URLRequest* request,
                             content::ResourceType resource_type,
-                            SafeBrowsingService* safe_browsing);
+                            safe_browsing::SafeBrowsingService* safe_browsing);
 
   // content::ResourceThrottle implementation (called on IO thread).
   void WillRedirectRequest(const net::RedirectInfo& redirect_info,
@@ -78,14 +78,14 @@ class DataReductionProxyResourceThrottle
   void OnBlockingPageComplete(bool proceed);
 
   // Returns the threat type.
-  SBThreatType CheckUrl();
+  safe_browsing::SBThreatType CheckUrl();
 
   // Starts displaying the safe browsing interstitial page if it is not
   // prerendering. Called on the UI thread.
   static void StartDisplayingBlockingPage(
       const base::WeakPtr<DataReductionProxyResourceThrottle>& throttle,
-      scoped_refptr<SafeBrowsingUIManager> ui_manager,
-      const SafeBrowsingUIManager::UnsafeResource& resource);
+      scoped_refptr<safe_browsing::SafeBrowsingUIManager> ui_manager,
+      const safe_browsing::SafeBrowsingUIManager::UnsafeResource& resource);
 
   // Resumes the request, by continuing the deferred action (either starting the
   // request, or following a redirect).
@@ -96,7 +96,7 @@ class DataReductionProxyResourceThrottle
   // The redirect chain for this resource.
   std::vector<GURL> redirect_urls_;
 
-  scoped_refptr<SafeBrowsingService> safe_browsing_;
+  scoped_refptr<safe_browsing::SafeBrowsingService> safe_browsing_;
   net::URLRequest* request_;
   const bool is_subresource_;
   const bool is_subframe_;

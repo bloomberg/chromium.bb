@@ -126,6 +126,9 @@ using content::TestNavigationObserver;
 using content::WebContents;
 using content::WebContentsObserver;
 using net::NetworkChangeNotifier;
+using safe_browsing::LocalSafeBrowsingDatabaseManager;
+using safe_browsing::SafeBrowsingService;
+using safe_browsing::SBThreatType;
 using task_manager::browsertest_util::WaitForTaskManagerRows;
 
 // Prerender tests work as follows:
@@ -718,7 +721,7 @@ class FakeSafeBrowsingDatabaseManager
  public:
   explicit FakeSafeBrowsingDatabaseManager(SafeBrowsingService* service)
       : LocalSafeBrowsingDatabaseManager(service),
-        threat_type_(SB_THREAT_TYPE_SAFE) {}
+        threat_type_(safe_browsing::SB_THREAT_TYPE_SAFE) {}
 
   // Called on the IO thread to check if the given url is safe or not.  If we
   // can synchronously determine that the url is safe, CheckUrl returns true.
@@ -730,7 +733,7 @@ class FakeSafeBrowsingDatabaseManager
   // client, and false will be returned).
   // Overrides SafeBrowsingDatabaseManager::CheckBrowseUrl.
   bool CheckBrowseUrl(const GURL& gurl, Client* client) override {
-    if (gurl != url_ || threat_type_ == SB_THREAT_TYPE_SAFE)
+    if (gurl != url_ || threat_type_ == safe_browsing::SB_THREAT_TYPE_SAFE)
       return true;
 
     BrowserThread::PostTask(
@@ -750,13 +753,13 @@ class FakeSafeBrowsingDatabaseManager
 
   void OnCheckBrowseURLDone(const GURL& gurl, Client* client) {
     std::vector<SBThreatType> expected_threats;
-    expected_threats.push_back(SB_THREAT_TYPE_URL_MALWARE);
-    expected_threats.push_back(SB_THREAT_TYPE_URL_PHISHING);
+    expected_threats.push_back(safe_browsing::SB_THREAT_TYPE_URL_MALWARE);
+    expected_threats.push_back(safe_browsing::SB_THREAT_TYPE_URL_PHISHING);
     // TODO(nparker): Replace SafeBrowsingCheck w/ a call to
     // client->OnCheckBrowseUrlResult()
     LocalSafeBrowsingDatabaseManager::SafeBrowsingCheck sb_check(
         std::vector<GURL>(1, gurl),
-        std::vector<SBFullHash>(),
+        std::vector<safe_browsing::SBFullHash>(),
         client,
         safe_browsing::MALWARE,
         expected_threats);
@@ -782,7 +785,7 @@ class FakeSafeBrowsingService : public SafeBrowsingService {
  protected:
   ~FakeSafeBrowsingService() override {}
 
-  SafeBrowsingDatabaseManager* CreateDatabaseManager() override {
+  safe_browsing::SafeBrowsingDatabaseManager* CreateDatabaseManager() override {
     fake_database_manager_ = new FakeSafeBrowsingDatabaseManager(this);
     return fake_database_manager_;
   }
@@ -794,7 +797,8 @@ class FakeSafeBrowsingService : public SafeBrowsingService {
 };
 
 // Factory that creates FakeSafeBrowsingService instances.
-class TestSafeBrowsingServiceFactory : public SafeBrowsingServiceFactory {
+class TestSafeBrowsingServiceFactory
+    : public safe_browsing::SafeBrowsingServiceFactory {
  public:
   TestSafeBrowsingServiceFactory() :
       most_recent_service_(NULL) { }
@@ -3048,7 +3052,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderSSLClientCertIframe) {
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderSafeBrowsingTopLevel) {
   GURL url = test_server()->GetURL("files/prerender/prerender_page.html");
   GetFakeSafeBrowsingDatabaseManager()->SetThreatTypeForUrl(
-      url, SB_THREAT_TYPE_URL_MALWARE);
+      url, safe_browsing::SB_THREAT_TYPE_URL_MALWARE);
   PrerenderTestURL("files/prerender/prerender_page.html",
                    FINAL_STATUS_SAFE_BROWSING, 0);
 }
@@ -3058,7 +3062,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
                        PrerenderSafeBrowsingServerRedirect) {
   GURL url = test_server()->GetURL("files/prerender/prerender_page.html");
   GetFakeSafeBrowsingDatabaseManager()->SetThreatTypeForUrl(
-      url, SB_THREAT_TYPE_URL_MALWARE);
+      url, safe_browsing::SB_THREAT_TYPE_URL_MALWARE);
   PrerenderTestURL(CreateServerRedirect("files/prerender/prerender_page.html"),
                    FINAL_STATUS_SAFE_BROWSING,
                    0);
@@ -3069,7 +3073,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
                        PrerenderSafeBrowsingClientRedirect) {
   GURL url = test_server()->GetURL("files/prerender/prerender_page.html");
   GetFakeSafeBrowsingDatabaseManager()->SetThreatTypeForUrl(
-      url, SB_THREAT_TYPE_URL_MALWARE);
+      url, safe_browsing::SB_THREAT_TYPE_URL_MALWARE);
   PrerenderTestURL(CreateClientRedirect("files/prerender/prerender_page.html"),
                    FINAL_STATUS_SAFE_BROWSING,
                    1);
@@ -3079,7 +3083,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderSafeBrowsingSubresource) {
   GURL image_url = test_server()->GetURL("files/prerender/image.jpeg");
   GetFakeSafeBrowsingDatabaseManager()->SetThreatTypeForUrl(
-      image_url, SB_THREAT_TYPE_URL_MALWARE);
+      image_url, safe_browsing::SB_THREAT_TYPE_URL_MALWARE);
   std::vector<net::SpawnedTestServer::StringPair> replacement_text;
   replacement_text.push_back(
       std::make_pair("REPLACE_WITH_IMAGE_URL", image_url.spec()));
@@ -3098,7 +3102,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderSafeBrowsingIframe) {
   GURL iframe_url = test_server()->GetURL(
       "files/prerender/prerender_embedded_content.html");
   GetFakeSafeBrowsingDatabaseManager()->SetThreatTypeForUrl(
-      iframe_url, SB_THREAT_TYPE_URL_MALWARE);
+      iframe_url, safe_browsing::SB_THREAT_TYPE_URL_MALWARE);
   std::vector<net::SpawnedTestServer::StringPair> replacement_text;
   replacement_text.push_back(
       std::make_pair("REPLACE_WITH_URL", iframe_url.spec()));

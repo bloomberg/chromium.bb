@@ -348,8 +348,8 @@ class RemoveSafeBrowsingCookieTester : public RemoveCookieTester {
  public:
   RemoveSafeBrowsingCookieTester()
       : browser_process_(TestingBrowserProcess::GetGlobal()) {
-    scoped_refptr<SafeBrowsingService> sb_service =
-        SafeBrowsingService::CreateSafeBrowsingService();
+    scoped_refptr<safe_browsing::SafeBrowsingService> sb_service =
+        safe_browsing::SafeBrowsingService::CreateSafeBrowsingService();
     browser_process_->SetSafeBrowsingService(sb_service.get());
     sb_service->Initialize();
     base::MessageLoop::current()->RunUntilIdle();

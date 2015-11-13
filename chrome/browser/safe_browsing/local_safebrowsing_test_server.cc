@@ -12,6 +12,8 @@
 #include "net/test/python_utils.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 
+namespace safe_browsing {
+
 LocalSafeBrowsingTestServer::LocalSafeBrowsingTestServer(
     const base::FilePath& data_file)
     : net::LocalTestServer(net::SpawnedTestServer::TYPE_HTTP,
@@ -58,3 +60,5 @@ bool LocalSafeBrowsingTestServer::GenerateAdditionalArguments(
   arguments->SetString("data-file", data_file_.value());
   return true;
 }
+
+}  // namespace safe_browsing

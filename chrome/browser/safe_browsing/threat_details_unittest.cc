@@ -33,6 +33,13 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 
+using content::BrowserThread;
+using content::WebContents;
+
+namespace safe_browsing {
+
+namespace {
+
 // Mixture of HTTP and HTTPS.  No special treatment for HTTPS.
 static const char* kOriginalLandingURL =
     "http://www.originallandingpage.com/with/path";
@@ -59,9 +66,6 @@ static const char* kLandingData =
 
 using content::BrowserThread;
 using content::WebContents;
-using safe_browsing::ClientSafeBrowsingReportRequest;
-
-namespace {
 
 void WriteHeaders(disk_cache::Entry* entry, const std::string& headers) {
   net::HttpResponseInfo responseinfo;
@@ -175,7 +179,7 @@ class MockSafeBrowsingUIManager : public SafeBrowsingUIManager {
   DISALLOW_COPY_AND_ASSIGN(MockSafeBrowsingUIManager);
 };
 
-}  // namespace.
+}  // namespace
 
 class ThreatDetailsTest : public ChromeRenderViewHostTestHarness {
  public:
@@ -575,10 +579,10 @@ TEST_F(ThreatDetailsTest, HTTPCache) {
       expected.add_resources();
   pb_resource->set_id(0);
   pb_resource->set_url(kLandingURL);
-  safe_browsing::ClientSafeBrowsingReportRequest::HTTPResponse* pb_response =
+  ClientSafeBrowsingReportRequest::HTTPResponse* pb_response =
       pb_resource->mutable_response();
   pb_response->mutable_firstline()->set_code(200);
-  safe_browsing::ClientSafeBrowsingReportRequest::HTTPHeader* pb_header =
+  ClientSafeBrowsingReportRequest::HTTPHeader* pb_header =
       pb_response->add_headers();
   pb_header->set_name("Content-Type");
   pb_header->set_value("text/html");
@@ -718,3 +722,5 @@ TEST_F(ThreatDetailsTest, HistoryServiceUrls) {
 
   VerifyResults(actual, expected);
 }
+
+}  // namespace safe_browsing

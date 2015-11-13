@@ -26,8 +26,10 @@ base::FilePath GetRootDirectory() {
 
 }  // namespace
 
+namespace safe_browsing {
+
 TEST(SafeBrowsingPathSanitizerTest, HomeDirectoryIsNotEmpty) {
-  safe_browsing::PathSanitizer path_sanitizer;
+  PathSanitizer path_sanitizer;
 
   ASSERT_FALSE(path_sanitizer.GetHomeDirectory().empty());
 }
@@ -38,7 +40,7 @@ TEST(SafeBrowsingPathSanitizerTest, DontStripHomeDirectoryTest) {
       GetRootDirectory().Append(FILE_PATH_LITERAL("not_in_home_directory.ext"));
   base::FilePath path_expected = path;
 
-  safe_browsing::PathSanitizer path_sanitizer;
+  PathSanitizer path_sanitizer;
   path_sanitizer.StripHomeDirectory(&path);
 
   ASSERT_EQ(path.value(), path_expected.value());
@@ -46,7 +48,7 @@ TEST(SafeBrowsingPathSanitizerTest, DontStripHomeDirectoryTest) {
 
 TEST(SafeBrowsingPathSanitizerTest, DoStripHomeDirectoryTest) {
   // Test with path in home directory.
-  safe_browsing::PathSanitizer path_sanitizer;
+  PathSanitizer path_sanitizer;
 
   base::FilePath path = path_sanitizer.GetHomeDirectory().Append(
       FILE_PATH_LITERAL("in_home_directory.ext"));
@@ -57,3 +59,5 @@ TEST(SafeBrowsingPathSanitizerTest, DoStripHomeDirectoryTest) {
 
   ASSERT_EQ(path.value(), path_expected.value());
 }
+
+}  // namespace safe_browsing

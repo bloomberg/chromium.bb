@@ -80,8 +80,9 @@ void BlacklistStateFetcher::SendRequest(const std::string& id) {
 }
 
 void BlacklistStateFetcher::SetSafeBrowsingConfig(
-    const SafeBrowsingProtocolConfig& config) {
-  safe_browsing_config_.reset(new SafeBrowsingProtocolConfig(config));
+    const safe_browsing::SafeBrowsingProtocolConfig& config) {
+  safe_browsing_config_.reset(
+      new safe_browsing::SafeBrowsingProtocolConfig(config));
 }
 
 void BlacklistStateFetcher::SetURLRequestContextForTest(
@@ -155,4 +156,3 @@ void BlacklistStateFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
 }
 
 }  // namespace extensions
-

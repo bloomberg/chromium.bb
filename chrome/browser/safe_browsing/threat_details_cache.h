@@ -29,9 +29,8 @@ namespace safe_browsing {
 // Maps a URL to its Resource.
 typedef base::hash_map<
     std::string,
-    linked_ptr<safe_browsing::ClientSafeBrowsingReportRequest::Resource>>
+    linked_ptr<ClientSafeBrowsingReportRequest::Resource>>
     ResourceMap;
-}
 
 class ThreatDetailsCacheCollector
     : public base::RefCountedThreadSafe<ThreatDetailsCacheCollector>,
@@ -44,7 +43,7 @@ class ThreatDetailsCacheCollector
   // for the lifetime of this object.
   void StartCacheCollection(
       net::URLRequestContextGetter* request_context_getter,
-      safe_browsing::ResourceMap* resources,
+      ResourceMap* resources,
       bool* result,
       const base::Closure& callback);
 
@@ -63,10 +62,10 @@ class ThreatDetailsCacheCollector
 
   // Points to the url for which we are fetching the HTTP cache entry or
   // redirect chain.
-  safe_browsing::ResourceMap::iterator resources_it_;
+  ResourceMap::iterator resources_it_;
 
   // Points to the resources_ map in the ThreatDetails.
-  safe_browsing::ResourceMap* resources_;
+  ResourceMap* resources_;
 
   // Points to the cache_result_ in the ThreatDetails.
   bool* result_;
@@ -85,7 +84,7 @@ class ThreatDetailsCacheCollector
   scoped_ptr<net::URLFetcher> current_fetch_;
 
   // Returns the resource from resources_ that corresponds to |url|
-  safe_browsing::ClientSafeBrowsingReportRequest::Resource* GetResource(
+  ClientSafeBrowsingReportRequest::Resource* GetResource(
       const GURL& url);
 
   // Creates a new URLFetcher and starts it.
@@ -93,12 +92,12 @@ class ThreatDetailsCacheCollector
 
   // Read the HTTP response from |source| and add it to |pb_resource|.
   void ReadResponse(
-      safe_browsing::ClientSafeBrowsingReportRequest::Resource* pb_resource,
+      ClientSafeBrowsingReportRequest::Resource* pb_resource,
       const net::URLFetcher* source);
 
   // Read the body |data| and add it to |pb_resource|.
   void ReadData(
-      safe_browsing::ClientSafeBrowsingReportRequest::Resource* pb_resource,
+      ClientSafeBrowsingReportRequest::Resource* pb_resource,
       const std::string& data);
 
   // Called when we are done.
@@ -107,5 +106,7 @@ class ThreatDetailsCacheCollector
   // Advances to the next entry in resources_it_.
   void AdvanceEntry();
 };
+
+}  // namespace safe_browsing
 
 #endif  // CHROME_BROWSER_SAFE_BROWSING_THREAT_DETAILS_CACHE_H_

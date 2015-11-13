@@ -90,6 +90,8 @@ void RemoveDeleted(ItemsT* items, const base::hash_set<int32>& del_set) {
 
 }  // namespace
 
+namespace safe_browsing {
+
 void SBProcessSubs(SBAddPrefixes* add_prefixes,
                    SBSubPrefixes* sub_prefixes,
                    std::vector<SBAddFullHash>* add_full_hashes,
@@ -129,3 +131,5 @@ void SBProcessSubs(SBAddPrefixes* add_prefixes,
   RemoveDeleted(add_full_hashes, add_chunks_deleted);
   RemoveDeleted(sub_full_hashes, sub_chunks_deleted);
 }
+
+}  // namespace safe_browsing

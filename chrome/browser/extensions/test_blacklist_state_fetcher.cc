@@ -18,8 +18,8 @@ static const char kBackupNetworkUrlPrefix[] = "https://alt3-prefix.com/foo";
 static const char kClient[] = "unittest";
 static const char kAppVer[] = "1.0";
 
-SafeBrowsingProtocolConfig CreateSafeBrowsingProtocolConfig() {
-  SafeBrowsingProtocolConfig config;
+safe_browsing::SafeBrowsingProtocolConfig CreateSafeBrowsingProtocolConfig() {
+  safe_browsing::SafeBrowsingProtocolConfig config;
   config.client_name = kClient;
   config.url_prefix = kUrlPrefix;
   config.backup_connect_error_url_prefix = kBackupConnectUrlPrefix;

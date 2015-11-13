@@ -10,19 +10,20 @@
 #include "url/gurl.h"
 #include "url/url_util.h"
 
+namespace safe_browsing {
+
 // Utility functions -----------------------------------------------------------
 
 namespace {
 bool IsKnownList(const std::string& name) {
-  for (size_t i = 0; i < arraysize(safe_browsing::kAllLists); ++i) {
-    if (!strcmp(safe_browsing::kAllLists[i], name.c_str())) {
+  for (size_t i = 0; i < arraysize(kAllLists); ++i) {
+    if (!strcmp(kAllLists[i], name.c_str())) {
       return true;
     }
   }
   return false;
 }
 }  // namespace
-
 
 // SBCachedFullHashResult ------------------------------------------------------
 
@@ -34,8 +35,6 @@ SBCachedFullHashResult::SBCachedFullHashResult(
 
 SBCachedFullHashResult::~SBCachedFullHashResult() {}
 
-
-namespace safe_browsing {
 
 // Listnames that browser can process.
 const char kMalwareList[] = "goog-malware-shavar";

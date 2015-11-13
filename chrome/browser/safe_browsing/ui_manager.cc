@@ -60,6 +60,8 @@ class WhitelistUrlSet : public base::SupportsUserData::Data {
 
 }  // namespace
 
+namespace safe_browsing {
+
 // SafeBrowsingUIManager::UnsafeResource ---------------------------------------
 
 SafeBrowsingUIManager::UnsafeResource::UnsafeResource()
@@ -118,12 +120,12 @@ void SafeBrowsingUIManager::DisplayBlockingPage(
     // applied to malware sites tagged as "landing sites" (see "Types of
     // Malware sites" under
     // https://developers.google.com/safe-browsing/developers_guide_v3#UserWarnings).
-    safe_browsing::MalwarePatternType proto;
+    MalwarePatternType proto;
     if (resource.threat_type == SB_THREAT_TYPE_URL_UNWANTED ||
         (resource.threat_type == SB_THREAT_TYPE_URL_MALWARE &&
          !resource.threat_metadata.empty() &&
          proto.ParseFromString(resource.threat_metadata) &&
-         proto.pattern_type() == safe_browsing::MalwarePatternType::LANDING)) {
+         proto.pattern_type() == MalwarePatternType::LANDING)) {
       if (!resource.callback.is_null()) {
         BrowserThread::PostTask(
             BrowserThread::IO, FROM_HERE, base::Bind(resource.callback, true));
@@ -323,3 +325,5 @@ bool SafeBrowsingUIManager::IsWhitelisted(const UnsafeResource& resource) {
     return false;
   return site_list->Contains(maybe_whitelisted_url);
 }
+
+}  // namespace safe_browsing

@@ -27,26 +27,26 @@ class SRTFetcherTest : public InProcessBrowserTest {
   void SetUpInProcessBrowserTestFixture() override {
     task_runner_ = new base::TestSimpleTaskRunner;
 
-    SetReporterLauncherForTesting(
-        base::Bind(&SRTFetcherTest::ReporterLauncher, base::Unretained(this)));
-    SetPromptTriggerForTesting(
-        base::Bind(&SRTFetcherTest::PromptTrigger, base::Unretained(this)));
+    SetReporterLauncherForTesting(base::Bind(
+        &SRTFetcherTest::ReporterLauncherForTesting, base::Unretained(this)));
+    SetPromptTriggerForTesting(base::Bind(
+        &SRTFetcherTest::PromptTriggerForTesting, base::Unretained(this)));
   }
 
   void TearDownInProcessBrowserTestFixture() override {
-    SetReporterLauncherForTesting(safe_browsing::ReporterLauncher());
-    SetPromptTriggerForTesting(safe_browsing::PromptTrigger());
+    SetReporterLauncherForTesting(ReporterLauncher());
+    SetPromptTriggerForTesting(PromptTrigger());
   }
 
   void RunReporter() {
     RunSwReporter(base::FilePath(), "bla", task_runner_, task_runner_);
   }
 
-  void PromptTrigger(Browser* browser, const std::string& version) {
+  void PromptTriggerForTesting(Browser* browser, const std::string& version) {
     prompt_trigger_called_ = true;
   }
 
-  int ReporterLauncher(const base::FilePath& exe_path,
+  int ReporterLauncherForTesting(const base::FilePath& exe_path,
                        const std::string& version) {
     reporter_launched_ = true;
     return exit_code_to_report_;

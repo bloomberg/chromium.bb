@@ -17,6 +17,8 @@
 #include <string>
 #include <vector>
 
+namespace safe_browsing {
+
 // ChunkRange ------------------------------------------------------------------
 // Each ChunkRange represents a continuous range of chunk numbers [start, stop].
 
@@ -57,5 +59,7 @@ void ChunksToRangeString(const std::vector<int>& chunks, std::string* result);
 
 // Tests if a chunk number is contained a sorted vector of ChunkRanges.
 bool IsChunkInRange(int chunk_number, const std::vector<ChunkRange>& ranges);
+
+}  // namespace safe_browsing
 
 #endif  // CHROME_BROWSER_SAFE_BROWSING_CHUNK_RANGE_H_

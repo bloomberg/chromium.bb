@@ -39,6 +39,8 @@
 
 using content::BrowserThread;
 
+namespace safe_browsing {
+
 namespace {
 
 // Timeout for match checks, e.g. download URLs, hashes.
@@ -48,7 +50,7 @@ const int kCheckTimeoutMs = 10000;
 // |true| if there were any prefix hits in |full_hashes|.
 void RecordGetHashCheckStatus(
     bool hit,
-    safe_browsing::ListType check_type,
+    ListType check_type,
     const std::vector<SBFullHashResult>& full_hashes) {
   SafeBrowsingProtocolManager::ResultType result;
   if (full_hashes.empty()) {
@@ -58,7 +60,7 @@ void RecordGetHashCheckStatus(
   } else {
     result = SafeBrowsingProtocolManager::GET_HASH_FULL_HASH_MISS;
   }
-  bool is_download = check_type == safe_browsing::BINURL;
+  bool is_download = check_type == BINURL;
   SafeBrowsingProtocolManager::RecordGetHashResult(is_download, result);
 }
 
@@ -72,32 +74,32 @@ bool IsExpectedThreat(
 
 // Return the severest list id from the results in |full_hashes| which matches
 // |hash|, or INVALID if none match.
-safe_browsing::ListType GetHashSeverestThreatListType(
+ListType GetHashSeverestThreatListType(
     const SBFullHash& hash,
     const std::vector<SBFullHashResult>& full_hashes,
     size_t* index) {
-  safe_browsing::ListType pending_threat = safe_browsing::INVALID;
+  ListType pending_threat = INVALID;
   for (size_t i = 0; i < full_hashes.size(); ++i) {
-    if (safe_browsing::SBFullHashEqual(hash, full_hashes[i].hash)) {
-      const safe_browsing::ListType threat =
-          static_cast<safe_browsing::ListType>(full_hashes[i].list_id);
+    if (SBFullHashEqual(hash, full_hashes[i].hash)) {
+      const ListType threat =
+          static_cast<ListType>(full_hashes[i].list_id);
       switch (threat) {
-        case safe_browsing::INVALID:
+        case INVALID:
           // |full_hashes| should never contain INVALID as a |list_id|.
           NOTREACHED();
           break;
-        case safe_browsing::MALWARE:                  // Falls through.
-        case safe_browsing::PHISH:                    // Falls through.
-        case safe_browsing::BINURL:                   // Falls through.
-        case safe_browsing::CSDWHITELIST:             // Falls through.
-        case safe_browsing::DOWNLOADWHITELIST:        // Falls through.
-        case safe_browsing::INCLUSIONWHITELIST:       // Falls through.
-        case safe_browsing::EXTENSIONBLACKLIST:       // Falls through.
-        case safe_browsing::IPBLACKLIST:
+        case MALWARE:                  // Falls through.
+        case PHISH:                    // Falls through.
+        case BINURL:                   // Falls through.
+        case CSDWHITELIST:             // Falls through.
+        case DOWNLOADWHITELIST:        // Falls through.
+        case INCLUSIONWHITELIST:       // Falls through.
+        case EXTENSIONBLACKLIST:       // Falls through.
+        case IPBLACKLIST:
           if (index)
             *index = i;
           return threat;
-        case safe_browsing::UNWANTEDURL:
+        case UNWANTEDURL:
           // UNWANTEDURL is considered less severe than other threats, keep
           // looking.
           pending_threat = threat;
@@ -113,34 +115,34 @@ safe_browsing::ListType GetHashSeverestThreatListType(
 // Given a URL, compare all the possible host + path full hashes to the set of
 // provided full hashes.  Returns the list id of the severest matching result
 // from |full_hashes|, or INVALID if none match.
-safe_browsing::ListType GetUrlSeverestThreatListType(
+ListType GetUrlSeverestThreatListType(
     const GURL& url,
     const std::vector<SBFullHashResult>& full_hashes,
     size_t* index) {
   if (full_hashes.empty())
-    return safe_browsing::INVALID;
+    return INVALID;
 
   std::vector<std::string> patterns;
-  safe_browsing::GeneratePatternsToCheck(url, &patterns);
+  GeneratePatternsToCheck(url, &patterns);
 
-  safe_browsing::ListType pending_threat = safe_browsing::INVALID;
+  ListType pending_threat = INVALID;
   for (size_t i = 0; i < patterns.size(); ++i) {
-    safe_browsing::ListType threat = GetHashSeverestThreatListType(
-        safe_browsing::SBFullHashForString(patterns[i]), full_hashes, index);
+    ListType threat = GetHashSeverestThreatListType(
+        SBFullHashForString(patterns[i]), full_hashes, index);
     switch (threat) {
-      case safe_browsing::INVALID:
+      case INVALID:
         // Ignore patterns with no matching threat.
         break;
-      case safe_browsing::MALWARE:                  // Falls through.
-      case safe_browsing::PHISH:                    // Falls through.
-      case safe_browsing::BINURL:                   // Falls through.
-      case safe_browsing::CSDWHITELIST:             // Falls through.
-      case safe_browsing::DOWNLOADWHITELIST:        // Falls through.
-      case safe_browsing::INCLUSIONWHITELIST:       // Falls through.
-      case safe_browsing::EXTENSIONBLACKLIST:       // Falls through.
-      case safe_browsing::IPBLACKLIST:
+      case MALWARE:                  // Falls through.
+      case PHISH:                    // Falls through.
+      case BINURL:                   // Falls through.
+      case CSDWHITELIST:             // Falls through.
+      case DOWNLOADWHITELIST:        // Falls through.
+      case INCLUSIONWHITELIST:       // Falls through.
+      case EXTENSIONBLACKLIST:       // Falls through.
+      case IPBLACKLIST:
         return threat;
-      case safe_browsing::UNWANTEDURL:
+      case UNWANTEDURL:
         // UNWANTEDURL is considered less severe than other threats, keep
         // looking.
         pending_threat = threat;
@@ -150,17 +152,17 @@ safe_browsing::ListType GetUrlSeverestThreatListType(
   return pending_threat;
 }
 
-SBThreatType GetThreatTypeFromListType(safe_browsing::ListType list_type) {
+SBThreatType GetThreatTypeFromListType(ListType list_type) {
   switch (list_type) {
-    case safe_browsing::PHISH:
+    case PHISH:
       return SB_THREAT_TYPE_URL_PHISHING;
-    case safe_browsing::MALWARE:
+    case MALWARE:
       return SB_THREAT_TYPE_URL_MALWARE;
-    case safe_browsing::UNWANTEDURL:
+    case UNWANTEDURL:
       return SB_THREAT_TYPE_URL_UNWANTED;
-    case safe_browsing::BINURL:
+    case BINURL:
       return SB_THREAT_TYPE_BINARY_MALWARE_URL;
-    case safe_browsing::EXTENSIONBLACKLIST:
+    case EXTENSIONBLACKLIST:
       return SB_THREAT_TYPE_EXTENSION;
     default:
       DVLOG(1) << "Unknown safe browsing list id " << list_type;
@@ -191,7 +193,7 @@ LocalSafeBrowsingDatabaseManager::SafeBrowsingCheck::SafeBrowsingCheck(
     const std::vector<GURL>& urls,
     const std::vector<SBFullHash>& full_hashes,
     Client* client,
-    safe_browsing::ListType check_type,
+    ListType check_type,
     const std::vector<SBThreatType>& expected_threats)
     : urls(urls),
       url_results(urls.size(), SB_THREAT_TYPE_SAFE),
@@ -219,14 +221,14 @@ void LocalSafeBrowsingDatabaseManager::SafeBrowsingCheck::
   if (!urls.empty()) {
     DCHECK(full_hashes.empty());
     switch (check_type) {
-      case safe_browsing::MALWARE:
-      case safe_browsing::PHISH:
-      case safe_browsing::UNWANTEDURL:
+      case MALWARE:
+      case PHISH:
+      case UNWANTEDURL:
         DCHECK_EQ(1u, urls.size());
         client->OnCheckBrowseUrlResult(urls[0], url_results[0],
                                        url_metadata[0]);
         break;
-      case safe_browsing::BINURL:
+      case BINURL:
         DCHECK_EQ(urls.size(), url_results.size());
         client->OnCheckDownloadUrlResult(
             urls, *std::max_element(url_results.begin(), url_results.end()));
@@ -236,11 +238,11 @@ void LocalSafeBrowsingDatabaseManager::SafeBrowsingCheck::
     }
   } else if (!full_hashes.empty()) {
     switch (check_type) {
-      case safe_browsing::EXTENSIONBLACKLIST: {
+      case EXTENSIONBLACKLIST: {
         std::set<std::string> unsafe_extension_ids;
         for (size_t i = 0; i < full_hashes.size(); ++i) {
           std::string extension_id =
-              safe_browsing::SBFullHashToString(full_hashes[i]);
+              SBFullHashToString(full_hashes[i]);
           if (full_hash_results[i] == SB_THREAT_TYPE_EXTENSION)
             unsafe_extension_ids.insert(extension_id);
         }
@@ -344,7 +346,7 @@ bool LocalSafeBrowsingDatabaseManager::CheckDownloadUrl(
       new SafeBrowsingCheck(url_chain,
                             std::vector<SBFullHash>(),
                             client,
-                            safe_browsing::BINURL,
+                            BINURL,
                             std::vector<SBThreatType>(1,
                                 SB_THREAT_TYPE_BINARY_MALWARE_URL));
   std::vector<SBPrefix> prefixes;
@@ -357,8 +359,7 @@ bool LocalSafeBrowsingDatabaseManager::CheckDownloadUrl(
 }
 
 bool LocalSafeBrowsingDatabaseManager::CheckExtensionIDs(
-    const std::set<std::string>& extension_ids,
-    Client* client) {
+    const std::set<std::string>& extension_ids, Client* client) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (!enabled_ || !enable_extension_blacklist_)
@@ -367,7 +368,7 @@ bool LocalSafeBrowsingDatabaseManager::CheckExtensionIDs(
   std::vector<SBFullHash> extension_id_hashes;
   std::transform(extension_ids.begin(), extension_ids.end(),
                  std::back_inserter(extension_id_hashes),
-                 safe_browsing::StringToSBFullHash);
+                 StringToSBFullHash);
   std::vector<SBPrefix> prefixes;
   for (const SBFullHash& hash : extension_id_hashes)
     prefixes.push_back(hash.prefix);
@@ -376,7 +377,7 @@ bool LocalSafeBrowsingDatabaseManager::CheckExtensionIDs(
       std::vector<GURL>(),
       extension_id_hashes,
       client,
-      safe_browsing::EXTENSIONBLACKLIST,
+      EXTENSIONBLACKLIST,
       std::vector<SBThreatType>(1, SB_THREAT_TYPE_EXTENSION));
   StartSafeBrowsingCheck(
       check,
@@ -464,7 +465,7 @@ bool LocalSafeBrowsingDatabaseManager::CheckBrowseUrl(const GURL& url,
 
   const base::TimeTicks start = base::TimeTicks::Now();
   if (!MakeDatabaseAvailable()) {
-    QueuedCheck queued_check(safe_browsing::MALWARE,  // or PHISH
+    QueuedCheck queued_check(MALWARE,  // or PHISH
                              client,
                              url,
                              expected_threats,
@@ -515,7 +516,7 @@ bool LocalSafeBrowsingDatabaseManager::CheckBrowseUrl(const GURL& url,
   SafeBrowsingCheck* check = new SafeBrowsingCheck(std::vector<GURL>(1, url),
                                                    std::vector<SBFullHash>(),
                                                    client,
-                                                   safe_browsing::MALWARE,
+                                                   MALWARE,
                                                    expected_threats);
   check->need_get_hash = cache_hits.empty();
   check->prefix_hits.swap(prefix_hits);
@@ -677,7 +678,7 @@ void LocalSafeBrowsingDatabaseManager::NotifyDatabaseUpdateFinished(
 }
 
 LocalSafeBrowsingDatabaseManager::QueuedCheck::QueuedCheck(
-    const safe_browsing::ListType check_type,
+    const ListType check_type,
     Client* client,
     const GURL& url,
     const std::vector<SBThreatType>& expected_threats,
@@ -877,7 +878,7 @@ void LocalSafeBrowsingDatabaseManager::RequestFullHash(
   if (!enabled_)
     return;
 
-  bool is_download = check->check_type == safe_browsing::BINURL;
+  bool is_download = check->check_type == BINURL;
   sb_service_->protocol_manager()->GetFullHash(
       check->prefix_hits,
       base::Bind(&LocalSafeBrowsingDatabaseManager::HandleGetHashResults,
@@ -1030,7 +1031,7 @@ void LocalSafeBrowsingDatabaseManager::OnHandleGetHashResults(
     SafeBrowsingCheck* check,
     const std::vector<SBFullHashResult>& full_hashes) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  safe_browsing::ListType check_type = check->check_type;
+  ListType check_type = check->check_type;
   SBPrefix prefix = check->prefix_hits[0];
   GetHashRequests::iterator it = gethash_requests_.find(prefix);
   if (check->prefix_hits.size() > 1 || it == gethash_requests_.end()) {
@@ -1194,3 +1195,5 @@ void LocalSafeBrowsingDatabaseManager::StartSafeBrowsingCheck(
 bool LocalSafeBrowsingDatabaseManager::download_protection_enabled() const {
   return enable_download_protection_;
 }
+
+}  // namespace safe_browsing

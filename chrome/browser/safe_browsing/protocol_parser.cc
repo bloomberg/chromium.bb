@@ -19,6 +19,8 @@
 #include "chrome/browser/safe_browsing/protocol_parser.h"
 #include "chrome/browser/safe_browsing/safe_browsing_util.h"
 
+namespace safe_browsing {
+
 namespace {
 
 // Helper class for scanning a buffer.
@@ -131,9 +133,10 @@ class BufferReader {
   DISALLOW_COPY_AND_ASSIGN(BufferReader);
 };
 
-bool ParseGetHashMetadata(size_t hash_count,
-                          BufferReader* reader,
-                          std::vector<SBFullHashResult>* full_hashes) {
+bool ParseGetHashMetadata(
+    size_t hash_count,
+    BufferReader* reader,
+    std::vector<SBFullHashResult>* full_hashes) {
   for (size_t i = 0; i < hash_count; ++i) {
     base::StringPiece line;
     if (!reader->GetLine(&line))
@@ -156,8 +159,6 @@ bool ParseGetHashMetadata(size_t hash_count,
 }
 
 }  // namespace
-
-namespace safe_browsing {
 
 // BODY          = CACHELIFETIME LF HASHENTRY* EOF
 // CACHELIFETIME = DIGIT+
@@ -199,7 +200,7 @@ bool ParseGetHash(const char* chunk_data,
       return false;
 
     SBFullHashResult full_hash;
-    full_hash.list_id = safe_browsing::GetListId(cmd_parts[0]);
+    full_hash.list_id = GetListId(cmd_parts[0]);
 
     size_t hash_len;
     if (!base::StringToSizeT(cmd_parts[1], &hash_len))

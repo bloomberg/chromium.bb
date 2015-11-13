@@ -50,6 +50,8 @@ using content::OpenURLParams;
 using content::Referrer;
 using content::WebContents;
 
+namespace safe_browsing {
+
 namespace {
 
 // For malware interstitial pages, we link the problematic URL to Google's
@@ -729,3 +731,5 @@ void SafeBrowsingBlockingPage::PopulatePhishingLoadTimeData(
 
   PopulateExtendedReportingOption(load_time_data);
 }
+
+}  // namespace safe_browsing

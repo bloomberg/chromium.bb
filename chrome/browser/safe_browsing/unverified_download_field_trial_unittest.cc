@@ -56,9 +56,9 @@ class ScopedFieldTrialState {
 // Verify some test assumptions. Namely, that kSafeFilename is not a supported
 // binary file and that kHandledFilename is.
 TEST(UnverifiedDownloadFieldTrialTest, Assumptions) {
-  EXPECT_TRUE(safe_browsing::download_protection_util::IsSupportedBinaryFile(
+  EXPECT_TRUE(download_protection_util::IsSupportedBinaryFile(
       base::FilePath(kHandledFilename)));
-  EXPECT_FALSE(safe_browsing::download_protection_util::IsSupportedBinaryFile(
+  EXPECT_FALSE(download_protection_util::IsSupportedBinaryFile(
       base::FilePath(kSafeFilename)));
 }
 
@@ -68,9 +68,9 @@ TEST(UnverifiedDownloadFieldTrialTest, Assumptions) {
 TEST(UnverifiedDownloadFieldTrialTest, CommandLine_DisallowDangerous) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kDisallowUncheckedDangerousDownloads);
-  EXPECT_TRUE(safe_browsing::IsUnverifiedDownloadAllowedByFieldTrial(
+  EXPECT_TRUE(IsUnverifiedDownloadAllowedByFieldTrial(
       base::FilePath(kSafeFilename)));
-  EXPECT_FALSE(safe_browsing::IsUnverifiedDownloadAllowedByFieldTrial(
+  EXPECT_FALSE(IsUnverifiedDownloadAllowedByFieldTrial(
       base::FilePath(kHandledFilename)));
 }
 
@@ -82,11 +82,11 @@ TEST(UnverifiedDownloadFieldTrialTest, WildCardBlacklist) {
   ScopedFieldTrialState field_trial(
       kUnverifiedDownloadFieldTrialDisableByParameter, parameters);
 
-  EXPECT_FALSE(safe_browsing::IsUnverifiedDownloadAllowedByFieldTrial(
+  EXPECT_FALSE(IsUnverifiedDownloadAllowedByFieldTrial(
       base::FilePath(kSafeFilename)));
-  EXPECT_FALSE(safe_browsing::IsUnverifiedDownloadAllowedByFieldTrial(
+  EXPECT_FALSE(IsUnverifiedDownloadAllowedByFieldTrial(
       base::FilePath(kHandledFilename)));
-  EXPECT_FALSE(safe_browsing::IsUnverifiedDownloadAllowedByFieldTrial(
+  EXPECT_FALSE(IsUnverifiedDownloadAllowedByFieldTrial(
       base::FilePath(FILE_PATH_LITERAL("foo.xyz"))));
 }
 
@@ -101,9 +101,9 @@ TEST(UnverifiedDownloadFieldTrialTest, BlacklistVsCommandline) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kAllowUncheckedDangerousDownloads);
 
-  EXPECT_TRUE(safe_browsing::IsUnverifiedDownloadAllowedByFieldTrial(
+  EXPECT_TRUE(IsUnverifiedDownloadAllowedByFieldTrial(
       base::FilePath(kSafeFilename)));
-  EXPECT_TRUE(safe_browsing::IsUnverifiedDownloadAllowedByFieldTrial(
+  EXPECT_TRUE(IsUnverifiedDownloadAllowedByFieldTrial(
       base::FilePath(kHandledFilename)));
 }
 
@@ -118,11 +118,11 @@ TEST(UnverifiedDownloadFieldTrialTest, WhitelistVsCommandline) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kDisallowUncheckedDangerousDownloads);
 
-  EXPECT_FALSE(safe_browsing::IsUnverifiedDownloadAllowedByFieldTrial(
+  EXPECT_FALSE(IsUnverifiedDownloadAllowedByFieldTrial(
       base::FilePath(FILE_PATH_LITERAL("foo.foo"))));
-  EXPECT_FALSE(safe_browsing::IsUnverifiedDownloadAllowedByFieldTrial(
+  EXPECT_FALSE(IsUnverifiedDownloadAllowedByFieldTrial(
       base::FilePath(FILE_PATH_LITERAL("foo.exe"))));
-  EXPECT_TRUE(safe_browsing::IsUnverifiedDownloadAllowedByFieldTrial(
+  EXPECT_TRUE(IsUnverifiedDownloadAllowedByFieldTrial(
       base::FilePath(FILE_PATH_LITERAL("foo.txt"))));
 }
 
@@ -134,11 +134,11 @@ TEST(UnverifiedDownloadFieldTrialTest, WildcardOnlyByItself) {
   ScopedFieldTrialState field_trial(
       kUnverifiedDownloadFieldTrialDisableByParameter, parameters);
 
-  EXPECT_FALSE(safe_browsing::IsUnverifiedDownloadAllowedByFieldTrial(
+  EXPECT_FALSE(IsUnverifiedDownloadAllowedByFieldTrial(
       base::FilePath(FILE_PATH_LITERAL("foo.foo"))));
-  EXPECT_TRUE(safe_browsing::IsUnverifiedDownloadAllowedByFieldTrial(
+  EXPECT_TRUE(IsUnverifiedDownloadAllowedByFieldTrial(
       base::FilePath(FILE_PATH_LITERAL("foo.xyz"))));
-  EXPECT_TRUE(safe_browsing::IsUnverifiedDownloadAllowedByFieldTrial(
+  EXPECT_TRUE(IsUnverifiedDownloadAllowedByFieldTrial(
       base::FilePath(FILE_PATH_LITERAL("foo.txt"))));
 }
 
@@ -150,15 +150,15 @@ TEST(UnverifiedDownloadFieldTrialTest, WhitelistVsBlacklist) {
   ScopedFieldTrialState field_trial(
       kUnverifiedDownloadFieldTrialDisableByParameter, parameters);
 
-  EXPECT_TRUE(safe_browsing::IsUnverifiedDownloadAllowedByFieldTrial(
+  EXPECT_TRUE(IsUnverifiedDownloadAllowedByFieldTrial(
       base::FilePath(kSafeFilename)));
-  EXPECT_TRUE(safe_browsing::IsUnverifiedDownloadAllowedByFieldTrial(
+  EXPECT_TRUE(IsUnverifiedDownloadAllowedByFieldTrial(
       base::FilePath(kHandledFilename)));
-  EXPECT_TRUE(safe_browsing::IsUnverifiedDownloadAllowedByFieldTrial(
+  EXPECT_TRUE(IsUnverifiedDownloadAllowedByFieldTrial(
       base::FilePath(FILE_PATH_LITERAL("foo.xyz"))));
-  EXPECT_FALSE(safe_browsing::IsUnverifiedDownloadAllowedByFieldTrial(
+  EXPECT_FALSE(IsUnverifiedDownloadAllowedByFieldTrial(
       base::FilePath(FILE_PATH_LITERAL("foo.abc"))));
-  EXPECT_FALSE(safe_browsing::IsUnverifiedDownloadAllowedByFieldTrial(
+  EXPECT_FALSE(IsUnverifiedDownloadAllowedByFieldTrial(
       base::FilePath(FILE_PATH_LITERAL("foo.def"))));
 }
 
@@ -167,9 +167,9 @@ TEST(UnverifiedDownloadFieldTrialTest, MissingParameters) {
   ScopedFieldTrialState field_trial(
       kUnverifiedDownloadFieldTrialDisableByParameter);
 
-  EXPECT_TRUE(safe_browsing::IsUnverifiedDownloadAllowedByFieldTrial(
+  EXPECT_TRUE(IsUnverifiedDownloadAllowedByFieldTrial(
       base::FilePath(kSafeFilename)));
-  EXPECT_TRUE(safe_browsing::IsUnverifiedDownloadAllowedByFieldTrial(
+  EXPECT_TRUE(IsUnverifiedDownloadAllowedByFieldTrial(
       base::FilePath(kHandledFilename)));
 }
 
@@ -183,9 +183,9 @@ TEST(UnverifiedDownloadFieldTrialTest, MalformedParameters) {
   ScopedFieldTrialState field_trial(
       kUnverifiedDownloadFieldTrialDisableByParameter, parameters);
 
-  EXPECT_TRUE(safe_browsing::IsUnverifiedDownloadAllowedByFieldTrial(
+  EXPECT_TRUE(IsUnverifiedDownloadAllowedByFieldTrial(
       base::FilePath(kSafeFilename)));
-  EXPECT_TRUE(safe_browsing::IsUnverifiedDownloadAllowedByFieldTrial(
+  EXPECT_TRUE(IsUnverifiedDownloadAllowedByFieldTrial(
       base::FilePath(kHandledFilename)));
 }
 
@@ -199,9 +199,9 @@ TEST(UnverifiedDownloadFieldTrialTest, DisableByParam_Empty) {
   ScopedFieldTrialState field_trial(
       kUnverifiedDownloadFieldTrialDisableByParameter, parameters);
 
-  EXPECT_TRUE(safe_browsing::IsUnverifiedDownloadAllowedByFieldTrial(
+  EXPECT_TRUE(IsUnverifiedDownloadAllowedByFieldTrial(
       base::FilePath(kSafeFilename)));
-  EXPECT_TRUE(safe_browsing::IsUnverifiedDownloadAllowedByFieldTrial(
+  EXPECT_TRUE(IsUnverifiedDownloadAllowedByFieldTrial(
       base::FilePath(kHandledFilename)));
 }
 
@@ -212,13 +212,13 @@ TEST(UnverifiedDownloadFieldTrialTest, CaseInsensitive) {
   ScopedFieldTrialState field_trial(
       kUnverifiedDownloadFieldTrialDisableByParameter, parameters);
 
-  EXPECT_FALSE(safe_browsing::IsUnverifiedDownloadAllowedByFieldTrial(
+  EXPECT_FALSE(IsUnverifiedDownloadAllowedByFieldTrial(
       base::FilePath(FILE_PATH_LITERAL("foo.abc"))));
-  EXPECT_FALSE(safe_browsing::IsUnverifiedDownloadAllowedByFieldTrial(
+  EXPECT_FALSE(IsUnverifiedDownloadAllowedByFieldTrial(
       base::FilePath(FILE_PATH_LITERAL("FOO.ABC"))));
-  EXPECT_FALSE(safe_browsing::IsUnverifiedDownloadAllowedByFieldTrial(
+  EXPECT_FALSE(IsUnverifiedDownloadAllowedByFieldTrial(
       base::FilePath(FILE_PATH_LITERAL("FOO.XYZ"))));
-  EXPECT_TRUE(safe_browsing::IsUnverifiedDownloadAllowedByFieldTrial(
+  EXPECT_TRUE(IsUnverifiedDownloadAllowedByFieldTrial(
       base::FilePath(FILE_PATH_LITERAL("FOO.txt"))));
 }
 
@@ -231,15 +231,15 @@ TEST(UnverifiedDownloadFieldTrialTest, WhitelistVsBlacklistVsSBTypes) {
   ScopedFieldTrialState field_trial(
       kUnverifiedDownloadFieldTrialDisableByParameter, parameters);
 
-  EXPECT_TRUE(safe_browsing::IsUnverifiedDownloadAllowedByFieldTrial(
+  EXPECT_TRUE(IsUnverifiedDownloadAllowedByFieldTrial(
       base::FilePath(kSafeFilename)));
-  EXPECT_FALSE(safe_browsing::IsUnverifiedDownloadAllowedByFieldTrial(
+  EXPECT_FALSE(IsUnverifiedDownloadAllowedByFieldTrial(
       base::FilePath(kHandledFilename)));
-  EXPECT_TRUE(safe_browsing::IsUnverifiedDownloadAllowedByFieldTrial(
+  EXPECT_TRUE(IsUnverifiedDownloadAllowedByFieldTrial(
       base::FilePath(FILE_PATH_LITERAL("foo.xyz"))));
-  EXPECT_FALSE(safe_browsing::IsUnverifiedDownloadAllowedByFieldTrial(
+  EXPECT_FALSE(IsUnverifiedDownloadAllowedByFieldTrial(
       base::FilePath(FILE_PATH_LITERAL("foo.abc"))));
-  EXPECT_FALSE(safe_browsing::IsUnverifiedDownloadAllowedByFieldTrial(
+  EXPECT_FALSE(IsUnverifiedDownloadAllowedByFieldTrial(
       base::FilePath(FILE_PATH_LITERAL("foo.def"))));
 }
 
@@ -251,9 +251,9 @@ TEST(UnverifiedDownloadFieldTrialTest, DisableSBTypesEmpty) {
   ScopedFieldTrialState field_trial(
       kUnverifiedDownloadFieldTrialDisableByParameter, parameters);
 
-  EXPECT_TRUE(safe_browsing::IsUnverifiedDownloadAllowedByFieldTrial(
+  EXPECT_TRUE(IsUnverifiedDownloadAllowedByFieldTrial(
       base::FilePath(kSafeFilename)));
-  EXPECT_TRUE(safe_browsing::IsUnverifiedDownloadAllowedByFieldTrial(
+  EXPECT_TRUE(IsUnverifiedDownloadAllowedByFieldTrial(
       base::FilePath(kHandledFilename)));
 }
 
@@ -266,11 +266,11 @@ TEST(UnverifiedDownloadFieldTrialTest, ListsOverrideSBTypes) {
   ScopedFieldTrialState field_trial(
       kUnverifiedDownloadFieldTrialDisableByParameter, parameters);
 
-  EXPECT_TRUE(safe_browsing::IsUnverifiedDownloadAllowedByFieldTrial(
+  EXPECT_TRUE(IsUnverifiedDownloadAllowedByFieldTrial(
       base::FilePath(kSafeFilename)));
-  EXPECT_TRUE(safe_browsing::IsUnverifiedDownloadAllowedByFieldTrial(
+  EXPECT_TRUE(IsUnverifiedDownloadAllowedByFieldTrial(
       base::FilePath(kHandledFilename)));
-  EXPECT_FALSE(safe_browsing::IsUnverifiedDownloadAllowedByFieldTrial(
+  EXPECT_FALSE(IsUnverifiedDownloadAllowedByFieldTrial(
       base::FilePath(FILE_PATH_LITERAL("foo.abc"))));
 }
 
@@ -284,11 +284,11 @@ TEST(UnverifiedDownloadFieldTrialTest, FieldTrialGroupPrefix) {
       std::string(kUnverifiedDownloadFieldTrialDisableByParameter) + "FooBar",
       parameters);
 
-  EXPECT_TRUE(safe_browsing::IsUnverifiedDownloadAllowedByFieldTrial(
+  EXPECT_TRUE(IsUnverifiedDownloadAllowedByFieldTrial(
       base::FilePath(kSafeFilename)));
-  EXPECT_FALSE(safe_browsing::IsUnverifiedDownloadAllowedByFieldTrial(
+  EXPECT_FALSE(IsUnverifiedDownloadAllowedByFieldTrial(
       base::FilePath(kHandledFilename)));
-  EXPECT_FALSE(safe_browsing::IsUnverifiedDownloadAllowedByFieldTrial(
+  EXPECT_FALSE(IsUnverifiedDownloadAllowedByFieldTrial(
       base::FilePath(FILE_PATH_LITERAL("foo.abc"))));
 }
 

@@ -15,6 +15,8 @@
 #include "chrome/browser/safe_browsing/safe_browsing_util.h"
 #include "url/gurl.h"
 
+namespace safe_browsing {
+
 class SafeBrowsingApiHandler {
  public:
   // Singleton interface.
@@ -35,4 +37,7 @@ class SafeBrowsingApiHandler {
   // Pointer not owned.
   static SafeBrowsingApiHandler* instance_;
 };
+
+}  // namespace safe_browsing
+
 #endif  // CHROME_BROWSER_SAFE_BROWSING_SAFE_BROWSING_API_HANDLER_H_

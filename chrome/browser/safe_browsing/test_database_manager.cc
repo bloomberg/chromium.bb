@@ -10,6 +10,8 @@
 
 #include "base/logging.h"
 
+namespace safe_browsing {
+
 bool TestSafeBrowsingDatabaseManager::IsSupported() const {
   NOTIMPLEMENTED();
   return false;
@@ -110,3 +112,5 @@ void TestSafeBrowsingDatabaseManager::StartOnIOThread() {
 
 void TestSafeBrowsingDatabaseManager::StopOnIOThread(bool shutdown) {
 }
+
+}  // namespace safe_browsing

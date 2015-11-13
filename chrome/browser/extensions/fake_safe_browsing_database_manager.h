@@ -17,7 +17,7 @@ namespace extensions {
 // By default it is disabled (returning true and ignoring |unsafe_ids_|);
 // call set_enabled to enable it.
 class FakeSafeBrowsingDatabaseManager
-    : public LocalSafeBrowsingDatabaseManager {
+    : public safe_browsing::LocalSafeBrowsingDatabaseManager {
  public:
   explicit FakeSafeBrowsingDatabaseManager(bool enabled);
 

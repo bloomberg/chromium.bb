@@ -62,7 +62,7 @@ class URLRequest;
 // WillProcessReponse once.
 class SafeBrowsingResourceThrottle
     : public content::ResourceThrottle,
-      public SafeBrowsingDatabaseManager::Client,
+      public safe_browsing::SafeBrowsingDatabaseManager::Client,
       public base::SupportsWeakPtr<SafeBrowsingResourceThrottle> {
  public:
   // Will construct a SafeBrowsingResourceThrottle, or return NULL
@@ -70,7 +70,7 @@ class SafeBrowsingResourceThrottle
   static SafeBrowsingResourceThrottle* MaybeCreate(
       net::URLRequest* request,
       content::ResourceType resource_type,
-      SafeBrowsingService* sb_service);
+      safe_browsing::SafeBrowsingService* sb_service);
 
   // content::ResourceThrottle implementation (called on IO thread):
   void WillStartRequest(bool* defer) override;
@@ -82,13 +82,13 @@ class SafeBrowsingResourceThrottle
 
   // SafeBrowsingDabaseManager::Client implementation (called on IO thread):
   void OnCheckBrowseUrlResult(const GURL& url,
-                              SBThreatType result,
+                              safe_browsing::SBThreatType result,
                               const std::string& metadata) override;
 
  protected:
   SafeBrowsingResourceThrottle(const net::URLRequest* request,
                                content::ResourceType resource_type,
-                               SafeBrowsingService* sb_service);
+                               safe_browsing::SafeBrowsingService* sb_service);
 
  private:
   // Describes what phase of the check a throttle is in.
@@ -128,8 +128,8 @@ class SafeBrowsingResourceThrottle
   // prerendering. Called on the UI thread.
   static void StartDisplayingBlockingPage(
       const base::WeakPtr<SafeBrowsingResourceThrottle>& throttle,
-      scoped_refptr<SafeBrowsingUIManager> ui_manager,
-      const SafeBrowsingUIManager::UnsafeResource& resource);
+      scoped_refptr<safe_browsing::SafeBrowsingUIManager> ui_manager,
+      const safe_browsing::SafeBrowsingUIManager::UnsafeResource& resource);
 
   // Called on the IO thread if the request turned out to be for a prerendered
   // page.
@@ -153,7 +153,7 @@ class SafeBrowsingResourceThrottle
 
   // The result of the most recent safe browsing check. Only valid to read this
   // when state_ != STATE_CHECKING_URL.
-  SBThreatType threat_type_;
+  safe_browsing::SBThreatType threat_type_;
 
   // The time when we started deferring the request.
   base::TimeTicks defer_start_time_;
@@ -169,8 +169,8 @@ class SafeBrowsingResourceThrottle
   GURL unchecked_redirect_url_;
   GURL url_being_checked_;
 
-  scoped_refptr<SafeBrowsingDatabaseManager> database_manager_;
-  scoped_refptr<SafeBrowsingUIManager> ui_manager_;
+  scoped_refptr<safe_browsing::SafeBrowsingDatabaseManager> database_manager_;
+  scoped_refptr<safe_browsing::SafeBrowsingUIManager> ui_manager_;
   const net::URLRequest* request_;
   const content::ResourceType resource_type_;
   net::BoundNetLog bound_net_log_;

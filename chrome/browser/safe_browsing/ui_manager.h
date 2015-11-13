@@ -20,8 +20,6 @@
 #include "chrome/browser/safe_browsing/safe_browsing_util.h"
 #include "url/gurl.h"
 
-class SafeBrowsingService;
-
 namespace base {
 class Thread;
 }  // namespace base
@@ -29,6 +27,10 @@ class Thread;
 namespace net {
 class SSLInfo;
 }  // namespace net
+
+namespace safe_browsing {
+
+class SafeBrowsingService;
 
 // Construction needs to happen on the main thread.
 class SafeBrowsingUIManager
@@ -156,5 +158,7 @@ class SafeBrowsingUIManager
 
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingUIManager);
 };
+
+}  // namespace safe_browsing
 
 #endif  // CHROME_BROWSER_SAFE_BROWSING_UI_MANAGER_H_

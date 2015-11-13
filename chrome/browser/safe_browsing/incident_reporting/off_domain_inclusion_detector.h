@@ -14,7 +14,6 @@
 #include "content/public/common/resource_type.h"
 
 class Profile;
-class SafeBrowsingDatabaseManager;
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -25,6 +24,8 @@ class URLRequest;
 }
 
 namespace safe_browsing {
+
+class SafeBrowsingDatabaseManager;
 
 // Observes network requests and reports suspicious activity.
 class OffDomainInclusionDetector {

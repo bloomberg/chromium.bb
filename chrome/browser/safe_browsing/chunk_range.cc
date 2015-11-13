@@ -13,6 +13,8 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 
+namespace safe_browsing {
+
 ChunkRange::ChunkRange(int start) : start_(start), stop_(start) {
 }
 
@@ -112,3 +114,5 @@ bool IsChunkInRange(int chunk_number, const std::vector<ChunkRange>& ranges) {
 
   return false;
 }
+
+}  // namespace safe_browsing

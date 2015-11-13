@@ -15,13 +15,13 @@
 #include "base/time/time.h"
 #include "chrome/browser/safe_browsing/safe_browsing_util.h"
 
-namespace safe_browsing {
-class PrefixSetBuilder;
-};
-
 namespace base {
 class FilePath;
 }
+
+namespace safe_browsing {
+
+class PrefixSetBuilder;
 
 // SafeBrowsingStore provides a storage abstraction for the
 // safe-browsing data used to build the bloom filter.  The items
@@ -218,7 +218,7 @@ class SafeBrowsingStore {
   // permanent storage.  The resulting add prefixes and hashes will be
   // stored in |add_prefixes_result| and |add_full_hashes_result|.
   virtual bool FinishUpdate(
-      safe_browsing::PrefixSetBuilder* builder,
+      PrefixSetBuilder* builder,
       std::vector<SBAddFullHash>* add_full_hashes_result) = 0;
 
   // Cancel the update in process and remove any temporary disk
@@ -228,5 +228,7 @@ class SafeBrowsingStore {
  private:
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingStore);
 };
+
+}  // namespace safe_browsing
 
 #endif  // CHROME_BROWSER_SAFE_BROWSING_SAFE_BROWSING_STORE_H_

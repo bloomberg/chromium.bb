@@ -201,10 +201,7 @@ ACTION_P(CheckDownloadUrlDone, threat_type) {
   // client->OnCheckDownloadUrlResult(..) directly.
   LocalSafeBrowsingDatabaseManager::SafeBrowsingCheck* check =
       new LocalSafeBrowsingDatabaseManager::SafeBrowsingCheck(
-          arg0,
-          std::vector<SBFullHash>(),
-          arg1,
-          safe_browsing::BINURL,
+          arg0, std::vector<SBFullHash>(), arg1, BINURL,
           std::vector<SBThreatType>(1, SB_THREAT_TYPE_BINARY_MALWARE_URL));
   for (size_t i = 0; i < check->url_results.size(); ++i)
     check->url_results[i] = threat_type;

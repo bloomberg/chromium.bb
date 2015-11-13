@@ -12,6 +12,8 @@
 #include "net/test/python_utils.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 
+namespace safe_browsing {
+
 LocalTwoPhaseTestServer::LocalTwoPhaseTestServer()
     : net::LocalTestServer(net::SpawnedTestServer::TYPE_HTTP,
                            net::SpawnedTestServer::kLocalhost,
@@ -35,3 +37,5 @@ bool LocalTwoPhaseTestServer::GetTestServerPath(
       "two_phase_testserver.py"));
   return true;
 }
+
+}  // namespace safe_browsing

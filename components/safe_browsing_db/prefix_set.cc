@@ -13,6 +13,8 @@
 #include "base/metrics/histogram.h"
 #include "base/metrics/sparse_histogram.h"
 
+namespace safe_browsing {
+
 namespace {
 
 // |kMagic| should be reasonably unique, and not match itself across
@@ -75,8 +77,6 @@ size_t EstimateFinalCount(SBPrefix current_prefix, size_t current_count) {
 }
 
 }  // namespace
-
-namespace safe_browsing {
 
 // For |std::upper_bound()| to find a prefix w/in a vector of pairs.
 // static

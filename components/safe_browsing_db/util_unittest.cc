@@ -9,12 +9,16 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
+namespace safe_browsing {
+
 namespace {
 
 bool VectorContains(const std::vector<std::string>& data,
                     const std::string& str) {
   return std::find(data.begin(), data.end(), str) != data.end();
 }
+
+}  // namespace
 
 // Tests that we generate the required host/path combinations for testing
 // according to the Safe Browsing spec.
@@ -24,8 +28,8 @@ TEST(SafeBrowsingDbUtilTest, UrlParsing) {
   std::vector<std::string> hosts, paths;
 
   GURL url("http://a.b.c/1/2.html?param=1");
-  safe_browsing::GenerateHostsToCheck(url, &hosts);
-  safe_browsing::GeneratePathsToCheck(url, &paths);
+  GenerateHostsToCheck(url, &hosts);
+  GeneratePathsToCheck(url, &paths);
   EXPECT_EQ(hosts.size(), static_cast<size_t>(2));
   EXPECT_EQ(paths.size(), static_cast<size_t>(4));
   EXPECT_EQ(hosts[0], "b.c");
@@ -37,8 +41,8 @@ TEST(SafeBrowsingDbUtilTest, UrlParsing) {
   EXPECT_TRUE(VectorContains(paths, "/"));
 
   url = GURL("http://a.b.c.d.e.f.g/1.html");
-  safe_browsing::GenerateHostsToCheck(url, &hosts);
-  safe_browsing::GeneratePathsToCheck(url, &paths);
+  GenerateHostsToCheck(url, &hosts);
+  GeneratePathsToCheck(url, &paths);
   EXPECT_EQ(hosts.size(), static_cast<size_t>(5));
   EXPECT_EQ(paths.size(), static_cast<size_t>(2));
   EXPECT_EQ(hosts[0], "f.g");
@@ -50,7 +54,7 @@ TEST(SafeBrowsingDbUtilTest, UrlParsing) {
   EXPECT_TRUE(VectorContains(paths, "/"));
 
   url = GURL("http://a.b/saw-cgi/eBayISAPI.dll/");
-  safe_browsing::GeneratePathsToCheck(url, &paths);
+  GeneratePathsToCheck(url, &paths);
   EXPECT_EQ(paths.size(), static_cast<size_t>(3));
   EXPECT_TRUE(VectorContains(paths, "/saw-cgi/eBayISAPI.dll/"));
   EXPECT_TRUE(VectorContains(paths, "/saw-cgi/"));
@@ -265,75 +269,65 @@ TEST(SafeBrowsingDbUtilTest, CanonicalizeUrl) {
     std::string canonicalized_hostname;
     std::string canonicalized_path;
     std::string canonicalized_query;
-    safe_browsing::CanonicalizeUrl(url, &canonicalized_hostname,
-        &canonicalized_path, &canonicalized_query);
+    CanonicalizeUrl(url, &canonicalized_hostname, &canonicalized_path,
+                    &canonicalized_query);
 
-    EXPECT_EQ(tests[i].expected_canonicalized_hostname,
-              canonicalized_hostname);
-    EXPECT_EQ(tests[i].expected_canonicalized_path,
-              canonicalized_path);
-    EXPECT_EQ(tests[i].expected_canonicalized_query,
-              canonicalized_query);
+    EXPECT_EQ(tests[i].expected_canonicalized_hostname, canonicalized_hostname);
+    EXPECT_EQ(tests[i].expected_canonicalized_path, canonicalized_path);
+    EXPECT_EQ(tests[i].expected_canonicalized_query, canonicalized_query);
   }
 }
 
 TEST(SafeBrowsingDbUtilTest, ListIdListNameConversion) {
   std::string list_name;
-  EXPECT_FALSE(safe_browsing::GetListName(safe_browsing::INVALID,
-                                               &list_name));
-  EXPECT_TRUE(safe_browsing::GetListName(safe_browsing::MALWARE,
-                                              &list_name));
-  EXPECT_EQ(list_name, std::string(safe_browsing::kMalwareList));
-  EXPECT_EQ(safe_browsing::MALWARE,
-            safe_browsing::GetListId(list_name));
+  EXPECT_FALSE(GetListName(INVALID, &list_name));
+  EXPECT_TRUE(GetListName(MALWARE, &list_name));
+  EXPECT_EQ(list_name, std::string(kMalwareList));
+  EXPECT_EQ(MALWARE, GetListId(list_name));
 
-  EXPECT_TRUE(safe_browsing::GetListName(safe_browsing::PHISH,
-                                              &list_name));
-  EXPECT_EQ(list_name, std::string(safe_browsing::kPhishingList));
-  EXPECT_EQ(safe_browsing::PHISH,
-            safe_browsing::GetListId(list_name));
+  EXPECT_TRUE(GetListName(PHISH, &list_name));
+  EXPECT_EQ(list_name, std::string(kPhishingList));
+  EXPECT_EQ(PHISH, GetListId(list_name));
 
-  EXPECT_TRUE(safe_browsing::GetListName(safe_browsing::BINURL,
-                                              &list_name));
-  EXPECT_EQ(list_name, std::string(safe_browsing::kBinUrlList));
-  EXPECT_EQ(safe_browsing::BINURL,
-            safe_browsing::GetListId(list_name));
+  EXPECT_TRUE(GetListName(BINURL, &list_name));
+  EXPECT_EQ(list_name, std::string(kBinUrlList));
+  EXPECT_EQ(BINURL, GetListId(list_name));
 }
 
 // Since the ids are saved in file, we need to make sure they don't change.
 // Since only the last bit of each id is saved in file together with
 // chunkids, this checks only last bit.
 TEST(SafeBrowsingDbUtilTest, ListIdVerification) {
-  EXPECT_EQ(0, safe_browsing::MALWARE % 2);
-  EXPECT_EQ(1, safe_browsing::PHISH % 2);
-  EXPECT_EQ(0, safe_browsing::BINURL %2);
+  EXPECT_EQ(0, MALWARE % 2);
+  EXPECT_EQ(1, PHISH % 2);
+  EXPECT_EQ(0, BINURL % 2);
 }
 
 TEST(SafeBrowsingDbUtilTest, StringToSBFullHashAndSBFullHashToString) {
   // 31 chars plus the last \0 as full_hash.
   const std::string hash_in = "12345678902234567890323456789012";
-  SBFullHash hash_out = safe_browsing::StringToSBFullHash(hash_in);
+  SBFullHash hash_out = StringToSBFullHash(hash_in);
   EXPECT_EQ(0x34333231U, hash_out.prefix);
   EXPECT_EQ(0, memcmp(hash_in.data(), hash_out.full_hash, sizeof(SBFullHash)));
 
-  std::string hash_final = safe_browsing::SBFullHashToString(hash_out);
+  std::string hash_final = SBFullHashToString(hash_out);
   EXPECT_EQ(hash_in, hash_final);
 }
 
 TEST(SafeBrowsingDbUtilTest, FullHashOperators) {
-  const SBFullHash kHash1 = safe_browsing::SBFullHashForString("one");
-  const SBFullHash kHash2 = safe_browsing::SBFullHashForString("two");
+  const SBFullHash kHash1 = SBFullHashForString("one");
+  const SBFullHash kHash2 = SBFullHashForString("two");
 
-  EXPECT_TRUE(safe_browsing::SBFullHashEqual(kHash1, kHash1));
-  EXPECT_TRUE(safe_browsing::SBFullHashEqual(kHash2, kHash2));
-  EXPECT_FALSE(safe_browsing::SBFullHashEqual(kHash1, kHash2));
-  EXPECT_FALSE(safe_browsing::SBFullHashEqual(kHash2, kHash1));
+  EXPECT_TRUE(SBFullHashEqual(kHash1, kHash1));
+  EXPECT_TRUE(SBFullHashEqual(kHash2, kHash2));
+  EXPECT_FALSE(SBFullHashEqual(kHash1, kHash2));
+  EXPECT_FALSE(SBFullHashEqual(kHash2, kHash1));
 
-  EXPECT_FALSE(safe_browsing::SBFullHashLess(kHash1, kHash2));
-  EXPECT_TRUE(safe_browsing::SBFullHashLess(kHash2, kHash1));
+  EXPECT_FALSE(SBFullHashLess(kHash1, kHash2));
+  EXPECT_TRUE(SBFullHashLess(kHash2, kHash1));
 
-  EXPECT_FALSE(safe_browsing::SBFullHashLess(kHash1, kHash1));
-  EXPECT_FALSE(safe_browsing::SBFullHashLess(kHash2, kHash2));
+  EXPECT_FALSE(SBFullHashLess(kHash1, kHash1));
+  EXPECT_FALSE(SBFullHashLess(kHash2, kHash2));
 }
 
-}  // namespace
+}  // namespace safe_browsing

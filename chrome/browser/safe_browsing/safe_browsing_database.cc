@@ -31,8 +31,8 @@
 #endif
 
 using content::BrowserThread;
-using safe_browsing::PrefixSet;
-using safe_browsing::PrefixSetBuilder;
+
+namespace safe_browsing {
 
 namespace {
 
@@ -107,7 +107,7 @@ int DecodeChunkId(int encoded_chunk_id) {
   return encoded_chunk_id >> 1;
 }
 int EncodeChunkId(const int chunk, const int list_id) {
-  DCHECK_NE(list_id, safe_browsing::INVALID);
+  DCHECK_NE(list_id, INVALID);
   return chunk << 1 | list_id % 2;
 }
 
@@ -128,27 +128,25 @@ void UrlToFullHashes(const GURL& url,
   if (url.HostIsIPAddress()) {
     hosts.push_back(url.host());
   } else {
-    safe_browsing::GenerateHostsToCheck(url, &hosts);
+    GenerateHostsToCheck(url, &hosts);
   }
 
   std::vector<std::string> paths;
-  safe_browsing::GeneratePathsToCheck(url, &paths);
+  GeneratePathsToCheck(url, &paths);
 
   for (size_t i = 0; i < hosts.size(); ++i) {
     for (size_t j = 0; j < paths.size(); ++j) {
       const std::string& path = paths[j];
-      full_hashes->push_back(safe_browsing::SBFullHashForString(
-          hosts[i] + path));
+      full_hashes->push_back(
+          SBFullHashForString(hosts[i] + path));
 
       // We may have /foo as path-prefix in the whitelist which should
       // also match with /foo/bar and /foo?bar.  Hence, for every path
       // that ends in '/' we also add the path without the slash.
-      if (include_whitelist_hashes &&
-          path.size() > 1 &&
+      if (include_whitelist_hashes && path.size() > 1 &&
           path[path.size() - 1] == '/') {
-        full_hashes->push_back(
-            safe_browsing::SBFullHashForString(
-                hosts[i] + path.substr(0, path.size() - 1)));
+        full_hashes->push_back(SBFullHashForString(
+            hosts[i] + path.substr(0, path.size() - 1)));
       }
     }
   }
@@ -172,8 +170,7 @@ bool MatchAddPrefixes(SafeBrowsingStore* store,
        iter != add_prefixes.end(); ++iter) {
     for (size_t j = 0; j < prefixes.size(); ++j) {
       const SBPrefix& prefix = prefixes[j];
-      if (prefix == iter->prefix &&
-          GetListIdBit(iter->chunk_id) == list_bit) {
+      if (prefix == iter->prefix && GetListIdBit(iter->chunk_id) == list_bit) {
         prefix_hits->push_back(prefix);
         found_match = true;
       }
@@ -194,7 +191,7 @@ void GetChunkRanges(const std::vector<int>& chunks,
   // line, this code has to somehow handle corruption.
   DCHECK_EQ(2U, list_ranges->size());
 
-  std::vector<std::vector<int> > decoded_chunks(list_ranges->size());
+  std::vector<std::vector<int>> decoded_chunks(list_ranges->size());
   for (std::vector<int>::const_iterator iter = chunks.begin();
        iter != chunks.end(); ++iter) {
     int mod_list_id = GetListIdBit(*iter);
@@ -232,29 +229,29 @@ void UpdateChunkRanges(SafeBrowsingStore* store,
 
   for (size_t i = 0; i < listnames.size(); ++i) {
     const std::string& listname = listnames[i];
-    DCHECK_EQ(safe_browsing::GetListId(listname) % 2,
-              static_cast<int>(i % 2));
-    DCHECK_NE(safe_browsing::GetListId(listname),
-              safe_browsing::INVALID);
+    DCHECK_EQ(GetListId(listname) % 2, static_cast<int>(i % 2));
+    DCHECK_NE(GetListId(listname), INVALID);
     lists->push_back(SBListChunkRanges(listname));
     lists->back().adds.swap(adds[i]);
     lists->back().subs.swap(subs[i]);
   }
 }
 
-void UpdateChunkRangesForLists(SafeBrowsingStore* store,
-                               const std::string& listname0,
-                               const std::string& listname1,
-                               std::vector<SBListChunkRanges>* lists) {
+void UpdateChunkRangesForLists(
+    SafeBrowsingStore* store,
+    const std::string& listname0,
+    const std::string& listname1,
+    std::vector<SBListChunkRanges>* lists) {
   std::vector<std::string> listnames;
   listnames.push_back(listname0);
   listnames.push_back(listname1);
   UpdateChunkRanges(store, listnames, lists);
 }
 
-void UpdateChunkRangesForList(SafeBrowsingStore* store,
-                              const std::string& listname,
-                              std::vector<SBListChunkRanges>* lists) {
+void UpdateChunkRangesForList(
+    SafeBrowsingStore* store,
+    const std::string& listname,
+    std::vector<SBListChunkRanges>* lists) {
   UpdateChunkRanges(store, std::vector<std::string>(1, listname), lists);
 }
 
@@ -276,8 +273,8 @@ bool GetCachedFullHash(std::map<SBPrefix, SBCachedFullHashResult>* cache,
                        const base::Time& expire_base,
                        std::vector<SBFullHashResult>* results) {
   // First check if there is a valid cached result for this prefix.
-  std::map<SBPrefix, SBCachedFullHashResult>::iterator
-      citer = cache->find(full_hash.prefix);
+  std::map<SBPrefix, SBCachedFullHashResult>::iterator citer =
+      cache->find(full_hash.prefix);
   if (citer == cache->end())
     return false;
 
@@ -289,9 +286,10 @@ bool GetCachedFullHash(std::map<SBPrefix, SBCachedFullHashResult>* cache,
   }
 
   // Find full-hash matches.
-  std::vector<SBFullHashResult>& cached_hashes = cached_result.full_hashes;
+  std::vector<SBFullHashResult>& cached_hashes =
+      cached_result.full_hashes;
   for (size_t i = 0; i < cached_hashes.size(); ++i) {
-    if (safe_browsing::SBFullHashEqual(full_hash, cached_hashes[i].hash))
+    if (SBFullHashEqual(full_hash, cached_hashes[i].hash))
       results->push_back(cached_hashes[i]);
   }
 
@@ -330,7 +328,7 @@ class SafeBrowsingDatabaseFactoryImpl : public SafeBrowsingDatabaseFactory {
         CreateStore(enable_unwanted_software_list, db_task_runner));
   }
 
-  SafeBrowsingDatabaseFactoryImpl() { }
+  SafeBrowsingDatabaseFactoryImpl() {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingDatabaseFactoryImpl);
@@ -362,8 +360,7 @@ SafeBrowsingDatabase* SafeBrowsingDatabase::Create(
       enable_unwanted_software_list);
 }
 
-SafeBrowsingDatabase::~SafeBrowsingDatabase() {
-}
+SafeBrowsingDatabase::~SafeBrowsingDatabase() {}
 
 // static
 base::FilePath SafeBrowsingDatabase::BrowseDBFilename(
@@ -447,22 +444,21 @@ SafeBrowsingStore* SafeBrowsingDatabaseNew::GetStore(const int list_id) {
   // Stores are not thread safe.
   DCHECK(db_task_runner_->RunsTasksOnCurrentThread());
 
-  if (list_id == safe_browsing::PHISH ||
-      list_id == safe_browsing::MALWARE) {
+  if (list_id == PHISH || list_id == MALWARE) {
     return browse_store_.get();
-  } else if (list_id == safe_browsing::BINURL) {
+  } else if (list_id == BINURL) {
     return download_store_.get();
-  } else if (list_id == safe_browsing::CSDWHITELIST) {
+  } else if (list_id == CSDWHITELIST) {
     return csd_whitelist_store_.get();
-  } else if (list_id == safe_browsing::DOWNLOADWHITELIST) {
+  } else if (list_id == DOWNLOADWHITELIST) {
     return download_whitelist_store_.get();
-  } else if (list_id == safe_browsing::INCLUSIONWHITELIST) {
+  } else if (list_id == INCLUSIONWHITELIST) {
     return inclusion_whitelist_store_.get();
-  } else if (list_id == safe_browsing::EXTENSIONBLACKLIST) {
+  } else if (list_id == EXTENSIONBLACKLIST) {
     return extension_blacklist_store_.get();
-  } else if (list_id == safe_browsing::IPBLACKLIST) {
+  } else if (list_id == IPBLACKLIST) {
     return ip_blacklist_store_.get();
-  } else if (list_id == safe_browsing::UNWANTEDURL) {
+  } else if (list_id == UNWANTEDURL) {
     return unwanted_software_store_.get();
   }
   return NULL;
@@ -607,21 +603,17 @@ class SafeBrowsingDatabaseNew::ThreadSafeStateManager::WriteTransaction {
 
 SafeBrowsingDatabaseNew::ThreadSafeStateManager::ThreadSafeStateManager(
     const scoped_refptr<const base::SequencedTaskRunner>& db_task_runner)
-    : db_task_runner_(db_task_runner) {
-}
+    : db_task_runner_(db_task_runner) {}
 
-SafeBrowsingDatabaseNew::ThreadSafeStateManager::~ThreadSafeStateManager() {
-}
+SafeBrowsingDatabaseNew::ThreadSafeStateManager::~ThreadSafeStateManager() {}
 
 SafeBrowsingDatabaseNew::DatabaseStateManager::DatabaseStateManager(
     const scoped_refptr<const base::SequencedTaskRunner>& db_task_runner)
     : db_task_runner_(db_task_runner),
       corruption_detected_(false),
-      change_detected_(false) {
-}
+      change_detected_(false) {}
 
-SafeBrowsingDatabaseNew::DatabaseStateManager::~DatabaseStateManager() {
-}
+SafeBrowsingDatabaseNew::DatabaseStateManager::~DatabaseStateManager() {}
 
 scoped_ptr<SafeBrowsingDatabaseNew::ReadTransaction>
 SafeBrowsingDatabaseNew::ThreadSafeStateManager::BeginReadTransaction() {
@@ -916,9 +908,7 @@ bool SafeBrowsingDatabaseNew::ContainsDownloadUrlPrefixes(
   if (!download_store_.get())
     return false;
 
-  return MatchAddPrefixes(download_store_.get(),
-                          safe_browsing::BINURL % 2,
-                          prefixes,
+  return MatchAddPrefixes(download_store_.get(), BINURL % 2, prefixes,
                           prefix_hits);
 }
 
@@ -949,9 +939,7 @@ bool SafeBrowsingDatabaseNew::ContainsExtensionPrefixes(
     return false;
 
   return MatchAddPrefixes(extension_blacklist_store_.get(),
-                          safe_browsing::EXTENSIONBLACKLIST % 2,
-                          prefixes,
-                          prefix_hits);
+                          EXTENSIONBLACKLIST % 2, prefixes, prefix_hits);
 }
 
 bool SafeBrowsingDatabaseNew::ContainsMalwareIP(const std::string& ip_address) {
@@ -989,7 +977,7 @@ bool SafeBrowsingDatabaseNew::ContainsMalwareIP(const std::string& ip_address) {
 bool SafeBrowsingDatabaseNew::ContainsDownloadWhitelistedString(
     const std::string& str) {
   std::vector<SBFullHash> hashes;
-  hashes.push_back(safe_browsing::SBFullHashForString(str));
+  hashes.push_back(SBFullHashForString(str));
   return ContainsWhitelistedHashes(SBWhitelistId::DOWNLOAD, hashes);
 }
 
@@ -1003,7 +991,7 @@ bool SafeBrowsingDatabaseNew::ContainsWhitelistedHashes(
   for (std::vector<SBFullHash>::const_iterator it = hashes.begin();
        it != hashes.end(); ++it) {
     if (std::binary_search(whitelist->first.begin(), whitelist->first.end(),
-                           *it, safe_browsing::SBFullHashLess)) {
+                           *it, SBFullHashLess)) {
       return true;
     }
   }
@@ -1011,10 +999,9 @@ bool SafeBrowsingDatabaseNew::ContainsWhitelistedHashes(
 }
 
 // Helper to insert add-chunk entries.
-void SafeBrowsingDatabaseNew::InsertAddChunk(
-    SafeBrowsingStore* store,
-    const safe_browsing::ListType list_id,
-    const SBChunkData& chunk_data) {
+void SafeBrowsingDatabaseNew::InsertAddChunk(SafeBrowsingStore* store,
+                                             const ListType list_id,
+                                             const SBChunkData& chunk_data) {
   DCHECK(db_task_runner_->RunsTasksOnCurrentThread());
   DCHECK(store);
 
@@ -1040,10 +1027,9 @@ void SafeBrowsingDatabaseNew::InsertAddChunk(
 }
 
 // Helper to insert sub-chunk entries.
-void SafeBrowsingDatabaseNew::InsertSubChunk(
-    SafeBrowsingStore* store,
-    const safe_browsing::ListType list_id,
-    const SBChunkData& chunk_data) {
+void SafeBrowsingDatabaseNew::InsertSubChunk(SafeBrowsingStore* store,
+                                             const ListType list_id,
+                                             const SBChunkData& chunk_data) {
   DCHECK(db_task_runner_->RunsTasksOnCurrentThread());
   DCHECK(store);
 
@@ -1085,11 +1071,11 @@ void SafeBrowsingDatabaseNew::InsertChunks(
   const base::TimeTicks before = base::TimeTicks::Now();
 
   // TODO(shess): The caller should just pass list_id.
-  const safe_browsing::ListType list_id =
-      safe_browsing::GetListId(list_name);
+  const ListType list_id = GetListId(list_name);
 
   SafeBrowsingStore* store = GetStore(list_id);
-  if (!store) return;
+  if (!store)
+    return;
 
   db_state_manager_.set_change_detected();
 
@@ -1118,11 +1104,11 @@ void SafeBrowsingDatabaseNew::DeleteChunks(
     return;
 
   const std::string& list_name = chunk_deletes.front().list_name;
-  const safe_browsing::ListType list_id =
-      safe_browsing::GetListId(list_name);
+  const ListType list_id = GetListId(list_name);
 
   SafeBrowsingStore* store = GetStore(list_id);
-  if (!store) return;
+  if (!store)
+    return;
 
   db_state_manager_.set_change_detected();
 
@@ -1222,35 +1208,29 @@ bool SafeBrowsingDatabaseNew::UpdateStarted(
   // successful or not).
   state_manager_.BeginWriteTransaction()->clear_prefix_gethash_cache();
 
-  UpdateChunkRangesForLists(browse_store_.get(),
-                            safe_browsing::kMalwareList,
-                            safe_browsing::kPhishingList,
+  UpdateChunkRangesForLists(browse_store_.get(), kMalwareList, kPhishingList,
                             lists);
 
   // NOTE(shess): |download_store_| used to contain kBinHashList, which has been
   // deprecated.  Code to delete the list from the store shows ~15k hits/day as
   // of Feb 2014, so it has been removed.  Everything _should_ be resilient to
   // extra data of that sort.
-  UpdateChunkRangesForList(download_store_.get(),
-                           safe_browsing::kBinUrlList, lists);
+  UpdateChunkRangesForList(download_store_.get(), kBinUrlList, lists);
 
-  UpdateChunkRangesForList(csd_whitelist_store_.get(),
-                           safe_browsing::kCsdWhiteList, lists);
+  UpdateChunkRangesForList(csd_whitelist_store_.get(), kCsdWhiteList, lists);
 
-  UpdateChunkRangesForList(download_whitelist_store_.get(),
-                           safe_browsing::kDownloadWhiteList, lists);
+  UpdateChunkRangesForList(download_whitelist_store_.get(), kDownloadWhiteList,
+                           lists);
 
   UpdateChunkRangesForList(inclusion_whitelist_store_.get(),
-                           safe_browsing::kInclusionWhitelist, lists);
+                           kInclusionWhitelist, lists);
 
   UpdateChunkRangesForList(extension_blacklist_store_.get(),
-                           safe_browsing::kExtensionBlacklist, lists);
+                           kExtensionBlacklist, lists);
 
-  UpdateChunkRangesForList(ip_blacklist_store_.get(),
-                           safe_browsing::kIPBlacklist, lists);
+  UpdateChunkRangesForList(ip_blacklist_store_.get(), kIPBlacklist, lists);
 
-  UpdateChunkRangesForList(unwanted_software_store_.get(),
-                           safe_browsing::kUnwantedUrlList,
+  UpdateChunkRangesForList(unwanted_software_store_.get(), kUnwantedUrlList,
                            lists);
 
   db_state_manager_.reset_corruption_detected();
@@ -1479,10 +1459,12 @@ void SafeBrowsingDatabaseNew::UpdatePrefixSetUrlStore(
   if (got_counters && metric->GetIOCounters(&io_after)) {
     UMA_HISTOGRAM_COUNTS("SB2.BuildReadKilobytes",
                          static_cast<int>(io_after.ReadTransferCount -
-                                          io_before.ReadTransferCount) / 1024);
+                                          io_before.ReadTransferCount) /
+                             1024);
     UMA_HISTOGRAM_COUNTS("SB2.BuildWriteKilobytes",
                          static_cast<int>(io_after.WriteTransferCount -
-                                          io_before.WriteTransferCount) / 1024);
+                                          io_before.WriteTransferCount) /
+                             1024);
     UMA_HISTOGRAM_COUNTS("SB2.BuildReadOperations",
                          static_cast<int>(io_after.ReadOperationCount -
                                           io_before.ReadOperationCount));
@@ -1602,18 +1584,20 @@ bool SafeBrowsingDatabaseNew::Delete() {
   if (!r2)
     RecordFailure(FAILURE_DATABASE_STORE_DELETE);
 
-  const bool r3 = csd_whitelist_store_.get() ?
-      csd_whitelist_store_->Delete() : true;
+  const bool r3 =
+      csd_whitelist_store_.get() ? csd_whitelist_store_->Delete() : true;
   if (!r3)
     RecordFailure(FAILURE_DATABASE_STORE_DELETE);
 
-  const bool r4 = download_whitelist_store_.get() ?
-      download_whitelist_store_->Delete() : true;
+  const bool r4 = download_whitelist_store_.get()
+                      ? download_whitelist_store_->Delete()
+                      : true;
   if (!r4)
     RecordFailure(FAILURE_DATABASE_STORE_DELETE);
 
-  const bool r5 = inclusion_whitelist_store_.get() ?
-      inclusion_whitelist_store_->Delete() : true;
+  const bool r5 = inclusion_whitelist_store_.get()
+                      ? inclusion_whitelist_store_->Delete()
+                      : true;
   if (!r5)
     RecordFailure(FAILURE_DATABASE_STORE_DELETE);
 
@@ -1697,13 +1681,11 @@ void SafeBrowsingDatabaseNew::LoadWhitelist(
        it != full_hashes.end(); ++it) {
     new_whitelist.push_back(it->full_hash);
   }
-  std::sort(new_whitelist.begin(), new_whitelist.end(),
-            safe_browsing::SBFullHashLess);
+  std::sort(new_whitelist.begin(), new_whitelist.end(), SBFullHashLess);
 
-  SBFullHash kill_switch = safe_browsing::SBFullHashForString(
-      kWhitelistKillSwitchUrl);
+  SBFullHash kill_switch = SBFullHashForString(kWhitelistKillSwitchUrl);
   if (std::binary_search(new_whitelist.begin(), new_whitelist.end(),
-                         kill_switch, safe_browsing::SBFullHashLess)) {
+                         kill_switch, SBFullHashLess)) {
     // The kill switch is whitelisted hence we whitelist all URLs.
     state_manager_.BeginWriteTransaction()->WhitelistEverything(whitelist_id);
   } else {
@@ -1718,8 +1700,7 @@ void SafeBrowsingDatabaseNew::LoadIpBlacklist(
 
   IPBlacklist new_blacklist;
   for (std::vector<SBAddFullHash>::const_iterator it = full_hashes.begin();
-       it != full_hashes.end();
-       ++it) {
+       it != full_hashes.end(); ++it) {
     const char* full_hash = it->full_hash.full_hash;
     DCHECK_EQ(crypto::kSHA256Length, arraysize(it->full_hash.full_hash));
     // The format of the IP blacklist is:
@@ -1753,8 +1734,7 @@ void SafeBrowsingDatabaseNew::LoadIpBlacklist(
 }
 
 bool SafeBrowsingDatabaseNew::IsMalwareIPMatchKillSwitchOn() {
-  SBFullHash malware_kill_switch = safe_browsing::SBFullHashForString(
-      kMalwareIPKillSwitchUrl);
+  SBFullHash malware_kill_switch = SBFullHashForString(kMalwareIPKillSwitchUrl);
   std::vector<SBFullHash> full_hashes;
   full_hashes.push_back(malware_kill_switch);
   return ContainsWhitelistedHashes(SBWhitelistId::CSD, full_hashes);
@@ -1827,3 +1807,5 @@ void SafeBrowsingDatabaseNew::RecordFileSizeHistogram(
 
   histogram_pointer->Add(file_size_kilobytes);
 }
+
+}  // namespace safe_browsing

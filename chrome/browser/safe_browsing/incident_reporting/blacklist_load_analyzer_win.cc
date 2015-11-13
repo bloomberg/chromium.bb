@@ -64,7 +64,7 @@ void VerifyBlacklistLoadState(scoped_ptr<IncidentReceiver> incident_receiver) {
       blacklist_load->set_path(base::WideToUTF8(sanitized_path.value()));
 
       // Digest.
-      scoped_refptr<safe_browsing::BinaryFeatureExtractor>
+      scoped_refptr<BinaryFeatureExtractor>
           binary_feature_extractor(new BinaryFeatureExtractor());
       base::TimeTicks start_time = base::TimeTicks::Now();
       binary_feature_extractor->ExtractDigest(module_path,

@@ -19,6 +19,8 @@
 #include "chrome/browser/safe_browsing/test_database_manager.h"
 #endif
 
+using safe_browsing::SafeBrowsingService;
+
 namespace {
 
 class TestSelectFileDialogFactory final : public ui::SelectFileDialogFactory {
@@ -122,7 +124,8 @@ class TestSelectFileDialogFactory final : public ui::SelectFileDialogFactory {
   Mode mode_;
 };
 
-class FakeDatabaseManager : public TestSafeBrowsingDatabaseManager {
+class FakeDatabaseManager
+    : public safe_browsing::TestSafeBrowsingDatabaseManager {
  public:
   bool IsSupported() const override { return true; }
   bool MatchDownloadWhitelistUrl(const GURL& url) override {
@@ -137,20 +140,22 @@ class FakeDatabaseManager : public TestSafeBrowsingDatabaseManager {
 
 class TestSafeBrowsingService : public SafeBrowsingService {
  public:
-  SafeBrowsingDatabaseManager* CreateDatabaseManager() override {
+  safe_browsing::SafeBrowsingDatabaseManager* CreateDatabaseManager() override {
     return new FakeDatabaseManager();
   }
 
  protected:
   ~TestSafeBrowsingService() override {}
 
-  SafeBrowsingProtocolManagerDelegate* GetProtocolManagerDelegate() override {
+  safe_browsing::SafeBrowsingProtocolManagerDelegate*
+      GetProtocolManagerDelegate() override {
     // Our FakeDatabaseManager doesn't implement this delegate.
     return NULL;
   }
 };
 
-class TestSafeBrowsingServiceFactory : public SafeBrowsingServiceFactory {
+class TestSafeBrowsingServiceFactory
+    : public safe_browsing::SafeBrowsingServiceFactory {
  public:
   SafeBrowsingService* CreateSafeBrowsingService() override {
     SafeBrowsingService* service = new TestSafeBrowsingService();

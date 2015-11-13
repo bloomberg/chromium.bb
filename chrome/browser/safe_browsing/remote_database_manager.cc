@@ -26,6 +26,8 @@ const char kAndroidTypesToCheckParam[] = "types_to_check";
 
 }  // namespace
 
+namespace safe_browsing {
+
 //
 // RemoteSafeBrowsingDatabaseManager::ClientRequest methods
 //
@@ -268,3 +270,5 @@ void RemoteSafeBrowsingDatabaseManager::StopOnIOThread(bool shutdown) {
   }
   enabled_ = false;
 }
+
+}  // namespace safe_browsing

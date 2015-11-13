@@ -7,15 +7,17 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace safe_browsing {
+
 namespace {
 
-const SBFullHash kHash1 = safe_browsing::SBFullHashForString("one");
-const SBFullHash kHash2 = safe_browsing::SBFullHashForString("two");
-const SBFullHash kHash3 = safe_browsing::SBFullHashForString("three");
-const SBFullHash kHash4 = safe_browsing::SBFullHashForString("four");
-const SBFullHash kHash5 = safe_browsing::SBFullHashForString("five");
-const SBFullHash kHash6 = safe_browsing::SBFullHashForString("six");
-const SBFullHash kHash7 = safe_browsing::SBFullHashForString("seven");
+const SBFullHash kHash1 = SBFullHashForString("one");
+const SBFullHash kHash2 = SBFullHashForString("two");
+const SBFullHash kHash3 = SBFullHashForString("three");
+const SBFullHash kHash4 = SBFullHashForString("four");
+const SBFullHash kHash5 = SBFullHashForString("five");
+const SBFullHash kHash6 = SBFullHashForString("six");
+const SBFullHash kHash7 = SBFullHashForString("seven");
 
 const int kAddChunk1 = 1;  // Use different chunk numbers just in case.
 const int kSubChunk1 = 2;
@@ -53,6 +55,8 @@ void ProcessHelper(SBAddPrefixes* add_prefixes,
   SBProcessSubs(add_prefixes, sub_prefixes, add_full_hashes, sub_full_hashes,
                 add_chunks_deleted, sub_chunks_deleted);
 }
+
+}  // namespace
 
 TEST(SafeBrowsingStoreTest, SBAddPrefixLess) {
   // prefix dominates.
@@ -218,9 +222,9 @@ TEST(SafeBrowsingStoreTest, SBProcessSubsKnockout) {
 
   ASSERT_EQ(2U, add_hashes.size());
   EXPECT_EQ(kAddChunk5, add_hashes[0].chunk_id);
-  EXPECT_TRUE(safe_browsing::SBFullHashEqual(kHash4, add_hashes[0].full_hash));
+  EXPECT_TRUE(SBFullHashEqual(kHash4, add_hashes[0].full_hash));
   EXPECT_EQ(kAddChunk6, add_hashes[1].chunk_id);
-  EXPECT_TRUE(safe_browsing::SBFullHashEqual(kHash6, add_hashes[1].full_hash));
+  EXPECT_TRUE(SBFullHashEqual(kHash6, add_hashes[1].full_hash));
 
   ASSERT_EQ(1U, sub_prefixes.size());
   EXPECT_EQ(kSubChunk4, sub_prefixes[0].chunk_id);
@@ -230,7 +234,7 @@ TEST(SafeBrowsingStoreTest, SBProcessSubsKnockout) {
   ASSERT_EQ(1U, sub_hashes.size());
   EXPECT_EQ(kSubChunk3, sub_hashes[0].chunk_id);
   EXPECT_EQ(kAddChunk3, sub_hashes[0].add_chunk_id);
-  EXPECT_TRUE(safe_browsing::SBFullHashEqual(kHash7, sub_hashes[0].full_hash));
+  EXPECT_TRUE(SBFullHashEqual(kHash7, sub_hashes[0].full_hash));
 }
 
 // Test chunk deletions, and ordering of deletions WRT subs knocking
@@ -275,7 +279,7 @@ TEST(SafeBrowsingStoreTest, SBProcessSubsDeleteChunk) {
 
   ASSERT_EQ(1U, add_hashes.size());
   EXPECT_EQ(kAddChunk1, add_hashes[0].chunk_id);
-  EXPECT_TRUE(safe_browsing::SBFullHashEqual(kHash6, add_hashes[0].full_hash));
+  EXPECT_TRUE(SBFullHashEqual(kHash6, add_hashes[0].full_hash));
 
   EXPECT_TRUE(sub_prefixes.empty());
   EXPECT_TRUE(sub_hashes.empty());
@@ -301,4 +305,4 @@ TEST(SafeBrowsingStoreTest, Y2K38) {
     << " (int32)time_t is running out.";
 }
 
-}  // namespace
+}  // namespace safe_browsing

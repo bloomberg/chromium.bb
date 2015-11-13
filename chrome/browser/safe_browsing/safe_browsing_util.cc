@@ -9,6 +9,8 @@
 #include "chrome/browser/safe_browsing/chunk.pb.h"
 #include "components/google/core/browser/google_util.h"
 
+namespace safe_browsing {
+
 // SBChunkData -----------------------------------------------------------------
 
 // TODO(shess): Right now this contains a scoped_ptr<ChunkData> so that the
@@ -20,7 +22,7 @@
 SBChunkData::SBChunkData() {
 }
 
-SBChunkData::SBChunkData(safe_browsing::ChunkData* raw_data)
+SBChunkData::SBChunkData(ChunkData* raw_data)
     : chunk_data_(raw_data) {
   DCHECK(chunk_data_.get());
 }
@@ -29,19 +31,19 @@ SBChunkData::~SBChunkData() {
 }
 
 bool SBChunkData::ParseFrom(const unsigned char* data, size_t length) {
-  scoped_ptr<safe_browsing::ChunkData> chunk(new safe_browsing::ChunkData());
+  scoped_ptr<ChunkData> chunk(new ChunkData());
   if (!chunk->ParseFromArray(data, length))
     return false;
 
-  if (chunk->chunk_type() != safe_browsing::ChunkData::ADD &&
-      chunk->chunk_type() != safe_browsing::ChunkData::SUB) {
+  if (chunk->chunk_type() != ChunkData::ADD &&
+      chunk->chunk_type() != ChunkData::SUB) {
     return false;
   }
 
   size_t hash_size = 0;
-  if (chunk->prefix_type() == safe_browsing::ChunkData::PREFIX_4B) {
+  if (chunk->prefix_type() == ChunkData::PREFIX_4B) {
     hash_size = sizeof(SBPrefix);
-  } else if (chunk->prefix_type() == safe_browsing::ChunkData::FULL_32B) {
+  } else if (chunk->prefix_type() == ChunkData::FULL_32B) {
     hash_size = sizeof(SBFullHash);
   } else {
     return false;
@@ -51,7 +53,7 @@ bool SBChunkData::ParseFrom(const unsigned char* data, size_t length) {
   if (hash_count * hash_size != chunk->hashes().size())
     return false;
 
-  if (chunk->chunk_type() == safe_browsing::ChunkData::SUB &&
+  if (chunk->chunk_type() == ChunkData::SUB &&
       static_cast<size_t>(chunk->add_numbers_size()) != hash_count) {
     return false;
   }
@@ -65,11 +67,11 @@ int SBChunkData::ChunkNumber() const {
 }
 
 bool SBChunkData::IsAdd() const {
-  return chunk_data_->chunk_type() == safe_browsing::ChunkData::ADD;
+  return chunk_data_->chunk_type() == ChunkData::ADD;
 }
 
 bool SBChunkData::IsSub() const {
-  return chunk_data_->chunk_type() == safe_browsing::ChunkData::SUB;
+  return chunk_data_->chunk_type() == ChunkData::SUB;
 }
 
 int SBChunkData::AddChunkNumberAt(size_t i) const {
@@ -80,7 +82,7 @@ int SBChunkData::AddChunkNumberAt(size_t i) const {
 }
 
 bool SBChunkData::IsPrefix() const {
-  return chunk_data_->prefix_type() == safe_browsing::ChunkData::PREFIX_4B;
+  return chunk_data_->prefix_type() == ChunkData::PREFIX_4B;
 }
 
 size_t SBChunkData::PrefixCount() const {
@@ -99,7 +101,7 @@ SBPrefix SBChunkData::PrefixAt(size_t i) const {
 }
 
 bool SBChunkData::IsFullHash() const {
-  return chunk_data_->prefix_type() == safe_browsing::ChunkData::FULL_32B;
+  return chunk_data_->prefix_type() == ChunkData::FULL_32B;
 }
 
 size_t SBChunkData::FullHashCount() const {
@@ -128,3 +130,5 @@ SBListChunkRanges::SBListChunkRanges(const std::string& n)
 SBChunkDelete::SBChunkDelete() : is_sub_del(false) {}
 
 SBChunkDelete::~SBChunkDelete() {}
+
+}  // namespace safe_browsing

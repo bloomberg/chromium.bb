@@ -16,6 +16,8 @@
 #include "google_apis/google_api_keys.h"
 #include "net/base/escape.h"
 
+namespace safe_browsing {
+
 SafeBrowsingProtocolConfig::SafeBrowsingProtocolConfig()
     : disable_auto_update(false) {}
 
@@ -71,3 +73,5 @@ std::string SafeBrowsingProtocolManagerHelper::ComposeUrl(
   }
   return url;
 }
+
+}  // namespace safe_browsing

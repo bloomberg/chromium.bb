@@ -40,12 +40,14 @@
 #include "content/public/browser/interstitial_page_delegate.h"
 #include "url/gurl.h"
 
-class ThreatDetails;
-class SafeBrowsingBlockingPageFactory;
-
 namespace base {
 class MessageLoop;
 }
+
+namespace safe_browsing {
+
+class SafeBrowsingBlockingPageFactory;
+class ThreatDetails;
 
 class SafeBrowsingBlockingPage : public SecurityInterstitialPage {
  public:
@@ -206,5 +208,7 @@ class SafeBrowsingBlockingPageFactory {
       content::WebContents* web_contents,
       const SafeBrowsingBlockingPage::UnsafeResourceList& unsafe_resources) = 0;
 };
+
+}  // namespace safe_browsing
 
 #endif  // CHROME_BROWSER_SAFE_BROWSING_SAFE_BROWSING_BLOCKING_PAGE_H_

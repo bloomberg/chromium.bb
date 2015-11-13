@@ -561,7 +561,8 @@ void HandleBlockedPopupOnUIThread(const BlockedWindowParams& params) {
 class SafeBrowsingSSLCertReporter : public SSLCertReporter {
  public:
   explicit SafeBrowsingSSLCertReporter(
-      const scoped_refptr<SafeBrowsingUIManager>& safe_browsing_ui_manager)
+      const scoped_refptr<safe_browsing::SafeBrowsingUIManager>&
+          safe_browsing_ui_manager)
       : safe_browsing_ui_manager_(safe_browsing_ui_manager) {}
   ~SafeBrowsingSSLCertReporter() override {}
 
@@ -575,7 +576,8 @@ class SafeBrowsingSSLCertReporter : public SSLCertReporter {
   }
 
  private:
-  const scoped_refptr<SafeBrowsingUIManager> safe_browsing_ui_manager_;
+  const scoped_refptr<safe_browsing::SafeBrowsingUIManager>
+      safe_browsing_ui_manager_;
 };
 
 #if defined(OS_ANDROID)
@@ -1987,7 +1989,7 @@ void ChromeContentBrowserClient::AllowCertificateError(
   if (expired_previous_decision)
     options_mask |= SSLBlockingPage::EXPIRED_BUT_PREVIOUSLY_ALLOWED;
 
-  SafeBrowsingService* safe_browsing_service =
+  safe_browsing::SafeBrowsingService* safe_browsing_service =
       g_browser_process->safe_browsing_service();
   scoped_ptr<SafeBrowsingSSLCertReporter> cert_reporter(
       new SafeBrowsingSSLCertReporter(safe_browsing_service

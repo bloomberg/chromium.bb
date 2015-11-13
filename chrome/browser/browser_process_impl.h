@@ -126,7 +126,7 @@ class BrowserProcessImpl : public BrowserProcess,
   void set_background_mode_manager_for_test(
       scoped_ptr<BackgroundModeManager> manager) override;
   StatusTray* status_tray() override;
-  SafeBrowsingService* safe_browsing_service() override;
+  safe_browsing::SafeBrowsingService* safe_browsing_service() override;
   safe_browsing::ClientSideDetectionService* safe_browsing_detection_service()
       override;
 
@@ -242,7 +242,7 @@ class BrowserProcessImpl : public BrowserProcess,
 #endif
 
   bool created_safe_browsing_service_;
-  scoped_refptr<SafeBrowsingService> safe_browsing_service_;
+  scoped_refptr<safe_browsing::SafeBrowsingService> safe_browsing_service_;
 
   unsigned int module_ref_count_;
   bool did_start_;

@@ -18,6 +18,8 @@
 
 using content::BrowserThread;
 
+namespace safe_browsing {
+
 ThreatDetailsRedirectsCollector::ThreatDetailsRedirectsCollector(
     Profile* profile)
     : profile_(profile), has_started_(false) {
@@ -50,7 +52,7 @@ bool ThreatDetailsRedirectsCollector::HasStarted() const {
   return has_started_;
 }
 
-const std::vector<safe_browsing::RedirectChain>&
+const std::vector<RedirectChain>&
 ThreatDetailsRedirectsCollector::GetCollectedUrls() const {
   return redirects_urls_;
 }
@@ -124,3 +126,5 @@ void ThreatDetailsRedirectsCollector::AllDone() {
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, callback_);
   callback_.Reset();
 }
+
+}  // namespace safe_browsing

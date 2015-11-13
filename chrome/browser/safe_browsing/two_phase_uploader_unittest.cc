@@ -17,6 +17,8 @@
 using content::BrowserThread;
 using content::MessageLoopRunner;
 
+namespace safe_browsing {
+
 namespace {
 
 class Delegate {
@@ -187,3 +189,5 @@ TEST_F(TwoPhaseUploaderTest, PhaseTwoConnectionClosed) {
   EXPECT_EQ(net::URLFetcher::RESPONSE_CODE_INVALID, delegate.response_code_);
   EXPECT_EQ("", delegate.response_);
 }
+
+}  // namespace safe_browsing

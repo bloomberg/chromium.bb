@@ -27,18 +27,17 @@
 #include "components/safe_browsing_db/util.h"
 #include "url/gurl.h"
 
-class SafeBrowsingService;
-class SafeBrowsingDatabase;
-
 namespace net {
 class URLRequestContext;
 class URLRequestContextGetter;
 }
 
 namespace safe_browsing {
+
+class SafeBrowsingService;
+class SafeBrowsingDatabase;
 class ClientSideDetectionService;
 class DownloadProtectionService;
-}
 
 // Implemetation that manages a local database on disk.
 //
@@ -57,7 +56,7 @@ class LocalSafeBrowsingDatabaseManager
     SafeBrowsingCheck(const std::vector<GURL>& urls,
                       const std::vector<SBFullHash>& full_hashes,
                       Client* client,
-                      safe_browsing::ListType check_type,
+                      ListType check_type,
                       const std::vector<SBThreatType>& expected_threats);
     ~SafeBrowsingCheck();
 
@@ -74,7 +73,7 @@ class LocalSafeBrowsingDatabaseManager
     bool is_extended_reporting;
     bool need_get_hash;
     base::TimeTicks start;  // When check was sent to SB service.
-    safe_browsing::ListType check_type;  // See comment in constructor.
+    ListType check_type;  // See comment in constructor.
     std::vector<SBThreatType> expected_threats;
     std::vector<SBPrefix> prefix_hits;
     std::vector<SBFullHashResult> cache_hits;
@@ -155,13 +154,13 @@ class LocalSafeBrowsingDatabaseManager
 
   // Clients that we've queued up for checking later once the database is ready.
   struct QueuedCheck {
-    QueuedCheck(const safe_browsing::ListType check_type,
+    QueuedCheck(const ListType check_type,
                 Client* client,
                 const GURL& url,
                 const std::vector<SBThreatType>& expected_threats,
                 const base::TimeTicks& start);
     ~QueuedCheck();
-    safe_browsing::ListType check_type;
+    ListType check_type;
     Client* client;
     GURL url;
     std::vector<SBThreatType> expected_threats;
@@ -362,5 +361,7 @@ class LocalSafeBrowsingDatabaseManager
 
   DISALLOW_COPY_AND_ASSIGN(LocalSafeBrowsingDatabaseManager);
 };  // class LocalSafeBrowsingDatabaseManager
+
+}  // namespace safe_browsing
 
 #endif  // CHROME_BROWSER_SAFE_BROWSING_LOCAL_DATABASE_MANAGER_H_

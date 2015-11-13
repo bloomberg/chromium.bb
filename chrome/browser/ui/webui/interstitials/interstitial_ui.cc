@@ -174,9 +174,10 @@ BadClockBlockingPage* CreateBadClockBlockingPage(
                                   base::Callback<void(bool)>());
 }
 
-SafeBrowsingBlockingPage* CreateSafeBrowsingBlockingPage(
+safe_browsing::SafeBrowsingBlockingPage* CreateSafeBrowsingBlockingPage(
     content::WebContents* web_contents) {
-  SBThreatType threat_type = SB_THREAT_TYPE_URL_MALWARE;
+  safe_browsing::SBThreatType threat_type =
+      safe_browsing::SB_THREAT_TYPE_URL_MALWARE;
   GURL request_url("http://example.com");
   std::string url_param;
   if (net::GetValueForKeyInQuery(web_contents->GetURL(),
@@ -190,13 +191,13 @@ SafeBrowsingBlockingPage* CreateSafeBrowsingBlockingPage(
                                  "type",
                                  &type_param)) {
     if (type_param == "malware") {
-      threat_type =  SB_THREAT_TYPE_URL_MALWARE;
+      threat_type =  safe_browsing::SB_THREAT_TYPE_URL_MALWARE;
     } else if (type_param == "phishing") {
-      threat_type = SB_THREAT_TYPE_URL_PHISHING;
+      threat_type = safe_browsing::SB_THREAT_TYPE_URL_PHISHING;
     } else if (type_param == "clientside_malware") {
-      threat_type = SB_THREAT_TYPE_CLIENT_SIDE_MALWARE_URL;
+      threat_type = safe_browsing::SB_THREAT_TYPE_CLIENT_SIDE_MALWARE_URL;
     } else if (type_param == "clientside_phishing") {
-      threat_type = SB_THREAT_TYPE_CLIENT_SIDE_PHISHING_URL;
+      threat_type = safe_browsing::SB_THREAT_TYPE_CLIENT_SIDE_PHISHING_URL;
       // Interstitials for client side phishing urls load after the page loads
       // (see SafeBrowsingBlockingPage::IsMainPageLoadBlocked), so there should
       // either be a new navigation entry, or there shouldn't be any pending
@@ -206,11 +207,11 @@ SafeBrowsingBlockingPage* CreateSafeBrowsingBlockingPage(
       controller->DiscardNonCommittedEntries();
     }
   }
-  SafeBrowsingBlockingPage::UnsafeResource resource;
+  safe_browsing::SafeBrowsingBlockingPage::UnsafeResource resource;
   resource.url = request_url;
   resource.threat_type =  threat_type;
   // Create a blocking page without showing the interstitial.
-  return SafeBrowsingBlockingPage::CreateBlockingPage(
+  return safe_browsing::SafeBrowsingBlockingPage::CreateBlockingPage(
       g_browser_process->safe_browsing_service()->ui_manager().get(),
       web_contents,
       resource);

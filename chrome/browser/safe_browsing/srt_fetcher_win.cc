@@ -477,8 +477,7 @@ class ReporterRunner : public chrome::BrowserListObserver {
     // prompt to be added to Chrome's menu.
     if (local_state->GetBoolean(prefs::kSwReporterPendingPrompt)) {
       days_between_reporter_runs_ = kDaysBetweenSwReporterRunsForPendingPrompt;
-      safe_browsing::RecordReporterStepHistogram(
-          safe_browsing::SW_REPORTER_RAN_DAILY);
+      RecordReporterStepHistogram(SW_REPORTER_RAN_DAILY);
     } else {
       days_between_reporter_runs_ = kDaysBetweenSuccessfulSwReporterRuns;
     }

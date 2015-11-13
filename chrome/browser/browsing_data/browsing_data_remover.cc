@@ -495,7 +495,7 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
     // hours/days to the safebrowsing cookies since they aren't the result of
     // any user action.
     if (delete_begin_ == base::Time()) {
-      SafeBrowsingService* sb_service =
+      safe_browsing::SafeBrowsingService* sb_service =
           g_browser_process->safe_browsing_service();
       if (sb_service) {
         net::URLRequestContextGetter* sb_context =

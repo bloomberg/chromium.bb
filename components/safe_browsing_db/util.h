@@ -15,8 +15,9 @@
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
 
-
 class GURL;
+
+namespace safe_browsing {
 
 // Different types of threats that SafeBrowsing protects against.
 enum SBThreatType {
@@ -48,7 +49,6 @@ enum SBThreatType {
 };
 
 
-// TODO(vakh): Move all these declarations under safe_browsing namespace.
 // A truncated hash's type.
 typedef uint32 SBPrefix;
 
@@ -75,9 +75,6 @@ struct SBCachedFullHashResult {
   base::Time expire_after;
   std::vector<SBFullHashResult> full_hashes;
 };
-
-
-namespace safe_browsing {
 
 // SafeBrowsing list names.
 extern const char kMalwareList[];

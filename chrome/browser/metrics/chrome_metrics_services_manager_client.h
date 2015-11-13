@@ -49,7 +49,8 @@ class ChromeMetricsServicesManagerClient
   PrefService* local_state_;
 
   // Subscription to SafeBrowsing service state changes.
-  scoped_ptr<SafeBrowsingService::StateSubscription> sb_state_subscription_;
+  scoped_ptr<safe_browsing::SafeBrowsingService::StateSubscription>
+      sb_state_subscription_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeMetricsServicesManagerClient);
 };
