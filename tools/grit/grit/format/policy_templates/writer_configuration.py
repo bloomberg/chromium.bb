@@ -26,6 +26,7 @@ def GetConfigurationForBuild(defines):
       'app_name': 'Chromium',
       'frame_name': 'Chromium Frame',
       'os_name': 'Chromium OS',
+      'webview_name': 'Chromium WebView',
       'win_reg_mandatory_key_name': 'Software\\Policies\\Chromium',
       'win_reg_recommended_key_name':
           'Software\\Policies\\Chromium\\Recommended',
@@ -41,6 +42,7 @@ def GetConfigurationForBuild(defines):
       'app_name': 'Google Chrome',
       'frame_name': 'Google Chrome Frame',
       'os_name': 'Google Chrome OS',
+      'webview_name': 'Android System WebView',
       'win_reg_mandatory_key_name': 'Software\\Policies\\Google\\Chrome',
       'win_reg_recommended_key_name':
           'Software\\Policies\\Google\\Chrome\\Recommended',
@@ -58,4 +60,5 @@ def GetConfigurationForBuild(defines):
   config['win_supported_os'] = 'SUPPORTED_WINXPSP2'
   if 'mac_bundle_id' in defines:
     config['mac_bundle_id'] = defines['mac_bundle_id']
+  config['android_webview_restriction_prefix'] = 'com.android.browser:'
   return config

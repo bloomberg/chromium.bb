@@ -63,12 +63,12 @@ class PolicyTemplateGenerator:
       supported_on: The list with its items converted to dictionaries. E.g.:
       [{
         'product': 'chrome',
-        'platform': 'win',
+        'platforms': 'win',
         'since_version': '8',
         'until_version': '10'
       }, {
         'product': 'chrome_frame',
-        'platform': 'win',
+        'platforms': 'win',
         'since_version': '10',
         'until_version': ''
       }]
@@ -88,10 +88,11 @@ class PolicyTemplateGenerator:
       else:
         # e.g.: 'chrome_frame:7-'
         product, platform = {
-          'android':      ('chrome',        'android'),
-          'chrome_os':    ('chrome_os',     'chrome_os'),
-          'chrome_frame': ('chrome_frame',  'win'),
-          'ios':          ('chrome',        'ios'),
+          'android':         ('chrome',        'android'),
+          'webview_android': ('webview',       'android'),
+          'chrome_os':       ('chrome_os',     'chrome_os'),
+          'chrome_frame':    ('chrome_frame',  'win'),
+          'ios':             ('chrome',        'ios'),
         }[product_platform_part]
         platforms = [platform]
       since_version, until_version = version_part.split('-')

@@ -91,15 +91,20 @@ class TemplateWriter(object):
     '''Checks if the given policy can be mandatory.'''
     return policy.get('features', {}).get('can_be_mandatory', True)
 
-  def IsPolicySupportedOnPlatform(self, policy, platform):
-    '''Checks if |policy| is supported on |platform|.
+  def IsPolicySupportedOnPlatform(self, policy, platform, product=None):
+    '''Checks if |policy| is supported on |product| for |platform|. If not
+    specified, only the platform support is checked.
 
     Args:
       policy: The dictionary of the policy.
       platform: The platform to check; one of 'win', 'mac', 'linux' or
         'chrome_os'.
+      product: Optional product to check; one of 'chrome', 'chrome_frame',
+        'chrome_os', 'webview'
     '''
-    is_supported = lambda x: platform in x['platforms']
+    is_supported = lambda x: (platform in x['platforms'] and
+                             (not product or product in x['product']))
+
     return any(filter(is_supported, policy['supported_on']))
 
   def _GetChromiumVersionString(self):

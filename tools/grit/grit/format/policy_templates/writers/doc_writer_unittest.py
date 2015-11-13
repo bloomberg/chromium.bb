@@ -37,6 +37,8 @@ class DocWriterUnittest(writer_unittest_common.WriterUnittestCommon):
         'app_name': 'Chrome',
         'frame_name': 'Chrome Frame',
         'os_name': 'Chrome OS',
+        'webview_name': 'WebView',
+        'android_webview_restriction_prefix': 'mock.prefix:',
         'win_reg_mandatory_key_name': 'MockKey',
         'win_reg_recommended_key_name': 'MockKeyRec',
         'build': 'test_product',
@@ -57,6 +59,9 @@ class DocWriterUnittest(writer_unittest_common.WriterUnittestCommon):
       'doc_mac_linux_pref_name': {'text': '_test_mac_linux_pref_name'},
       'doc_android_restriction_name': {
         'text': '_test_android_restriction_name'
+      },
+      'doc_android_webview_restriction_name': {
+        'text': '_test_android_webview_restriction_name'
       },
       'doc_note': {'text': '_test_note'},
       'doc_name_column_title': {'text': '_test_name_column_title'},
@@ -418,6 +423,11 @@ See <a href="http://policy-explanation.example.com">http://policy-explanation.ex
         'since_version': '30',
         'until_version': '',
       }, {
+        'product': 'webview',
+        'platforms': ['android'],
+        'since_version': '47',
+        'until_version': '',
+      }, {
         'product': 'chrome',
         'platforms': ['ios'],
         'since_version': '34',
@@ -439,11 +449,14 @@ See <a href="http://policy-explanation.example.com">http://policy-explanation.ex
         '<dd style="style_.monospace;">TestPolicyName</dd>'
       '<dt style="style_dt;">_test_android_restriction_name</dt>'
         '<dd style="style_.monospace;">TestPolicyName</dd>'
+      '<dt style="style_dt;">_test_android_webview_restriction_name</dt>'
+        '<dd style="style_.monospace;">mock.prefix:TestPolicyName</dd>'
       '<dt style="style_dt;">_test_supported_on</dt>'
       '<dd>'
         '<ul style="style_ul;">'
           '<li>Chrome (Windows, Mac, Linux) ...8...</li>'
           '<li>Chrome (Android) ...30...</li>'
+          '<li>WebView (Android) ...47...</li>'
           '<li>Chrome (iOS) ...34...</li>'
         '</ul>'
       '</dd>'

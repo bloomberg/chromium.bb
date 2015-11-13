@@ -519,11 +519,18 @@ class DocWriter(xml_formatted_writer.XMLFormattedWriter):
             'mac_linux_pref_name',
             policy['name'],
             ['.monospace'])
-      if self.IsPolicySupportedOnPlatform(policy, 'android'):
+      if self.IsPolicySupportedOnPlatform(policy, 'android', 'chrome'):
         self._AddPolicyAttribute(
             dl,
             'android_restriction_name',
             policy['name'],
+            ['.monospace'])
+      if self.IsPolicySupportedOnPlatform(policy, 'android', 'webview'):
+        restriction_prefix = self.config['android_webview_restriction_prefix']
+        self._AddPolicyAttribute(
+            dl,
+            'android_webview_restriction_name',
+            restriction_prefix + policy['name'],
             ['.monospace'])
     dd = self._AddPolicyAttribute(dl, 'supported_on')
     self._AddSupportedOnList(dd, policy['supported_on'])
@@ -685,6 +692,7 @@ class DocWriter(xml_formatted_writer.XMLFormattedWriter):
       'chrome': self.config['app_name'],
       'chrome_frame': self.config['frame_name'],
       'chrome_os': self.config['os_name'],
+      'webview': self.config['webview_name'],
     }
     # Human-readable names of supported features. Each supported feature has
     # a 'doc_feature_X' entry in |self.messages|.
