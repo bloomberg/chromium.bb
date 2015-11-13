@@ -31,7 +31,6 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarManageable;
 import org.chromium.components.bookmarks.BookmarkId;
-import org.chromium.components.variations.VariationsAssociatedData;
 import org.chromium.ui.base.DeviceFormFactor;
 
 import java.io.UnsupportedEncodingException;
@@ -51,8 +50,6 @@ import java.util.Stack;
 public class EnhancedBookmarkManager implements EnhancedBookmarkDelegate {
     private static final String PREF_LAST_USED_URL = "enhanced_bookmark_last_used_url";
     private static final int FAVICON_MAX_CACHE_SIZE_BYTES = 10 * 1024 * 1024; // 10MB
-    private static final String FIELD_TRIAL_NAME = "EnhancedBookmarks";
-    private static final String DEFAULT_FOLDER = "default_folder";
 
     private Activity mActivity;
     private ViewGroup mMainView;
@@ -547,14 +544,7 @@ public class EnhancedBookmarkManager implements EnhancedBookmarkDelegate {
             state.mUrl = url;
 
             if (url.equals(UrlConstants.BOOKMARKS_URL)) {
-                if (VariationsAssociatedData
-                        .getVariationParamValue(FIELD_TRIAL_NAME, DEFAULT_FOLDER)
-                        .equals("mobile")) {
-                    state.mFolder = bookmarkModel.getMobileFolderId();
-                    state.mState = STATE_FOLDER;
-                } else {
-                    state.mState = STATE_ALL_BOOKMARKS;
-                }
+                state.mState = STATE_ALL_BOOKMARKS;
             } else if (url.startsWith(UrlConstants.BOOKMARKS_FOLDER_URL)) {
                 String suffix = decodeSuffix(url, UrlConstants.BOOKMARKS_FOLDER_URL);
                 if (!suffix.isEmpty()) {
