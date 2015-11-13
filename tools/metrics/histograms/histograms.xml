@@ -46372,6 +46372,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Sync.ExtraSyncDataCount" units="entries">
+  <owner>gangwu@chromium.org</owner>
+  <summary>
+    Counts the total number of extra copies of sync data in memory. This count
+    is emitted once, after loading Sync Directory. The count will indicate how
+    many Directory entities fail to share client and server specifics.
+  </summary>
+</histogram>
+
 <histogram name="Sync.FaviconCacheLookupSucceeded" enum="BooleanSuccess">
   <owner>zea@chromium.org</owner>
   <summary>Whether a sync favicon cache lookup succeeded or not.</summary>

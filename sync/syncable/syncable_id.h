@@ -106,7 +106,8 @@ class SYNC_EXPORT Id {
   static Id GetRoot();
 
  private:
-  friend scoped_ptr<EntryKernel> UnpackEntry(sql::Statement* statement);
+  friend scoped_ptr<EntryKernel> UnpackEntry(sql::Statement* statement,
+                                             int* total_created_entries);
   friend void BindFields(const EntryKernel& entry,
                          sql::Statement* statement);
   SYNC_EXPORT_PRIVATE friend std::ostream& operator<<(std::ostream& out,
