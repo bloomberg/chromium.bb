@@ -8,6 +8,7 @@
   -webkit-padding-start: 25px;
   padding-bottom: 25px;
   padding-top: 15px;
+  z-index: 1;
 }
 
 .checkboxrow {
