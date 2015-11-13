@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "content/public/common/content_switches.h"
 #include "content/renderer/media/media_stream_audio_processor_options.h"
@@ -105,6 +106,17 @@ bool IsDelayAgnosticAecEnabled() {
     return false;
 
   return (group_name == "Enabled" || group_name == "DefaultEnabled");
+}
+
+// Checks if the default minimum starting volume value for the AGC is overridden
+// on the command line.
+bool GetStartupMinVolumeForAgc(int* startup_min_volume) {
+  DCHECK(startup_min_volume);
+  std::string min_volume_str(
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kAgcStartupMinVolume));
+  return !min_volume_str.empty() &&
+         base::StringToInt(min_volume_str, startup_min_volume);
 }
 
 }  // namespace
@@ -526,6 +538,16 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
     // Only enable beamforming if we have at least two mics.
     config.Set<webrtc::Beamforming>(
         new webrtc::Beamforming(geometry.size() > 1, geometry));
+  }
+
+  // If the experimental AGC is enabled, check for overridden config params.
+  if (audio_constraints.GetProperty(
+          MediaAudioConstraints::kGoogExperimentalAutoGainControl)) {
+    int startup_min_volume = 0;
+    if (GetStartupMinVolumeForAgc(&startup_min_volume)) {
+      config.Set<webrtc::ExperimentalAgc>(
+          new webrtc::ExperimentalAgc(true, startup_min_volume));
+    }
   }
 
   // Create and configure the webrtc::AudioProcessing.

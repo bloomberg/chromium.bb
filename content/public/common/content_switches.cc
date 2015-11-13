@@ -10,6 +10,13 @@ namespace switches {
 // have an effect. 0 disables MSAA.
 const char kAcceleratedCanvas2dMSAASampleCount[] = "canvas-msaa-sample-count";
 
+// Override the default minimum starting volume of the Automatic Gain Control
+// algorithm in WebRTC used with audio tracks from getUserMedia.
+// The valid range is 12-255. Values outside that range will be clamped
+// to the lowest or highest valid value inside WebRTC.
+// TODO(tommi): Remove this switch when crbug.com/555577 is fixed.
+const char kAgcStartupMinVolume[] = "agc-startup-min-volume";
+
 // By default, file:// URIs cannot read other file:// URIs. This is an
 // override for developers who need the old behavior for testing.
 const char kAllowFileAccessFromFiles[]      = "allow-file-access-from-files";
