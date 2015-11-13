@@ -18,7 +18,6 @@ group("all_components") {
   visibility = [ "//:*" ]  # Only for the root targets to bring in.
 
   deps = [
-    "//components/bitmap_uploader",
     "//components/bookmarks/browser",
     "//components/bookmarks/common",
     "//components/bookmarks/managed",
@@ -49,6 +48,7 @@ group("all_components") {
 
   if (!is_ios) {
     deps += [
+      "//components/bitmap_uploader",
       "//components/dom_distiller/core",
       "//components/enhanced_bookmarks",
       "//components/certificate_reporting",
