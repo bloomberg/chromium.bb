@@ -10,6 +10,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/values.h"
+#include "components/dom_distiller/content/browser/distillability_driver.h"
 #include "components/dom_distiller/content/browser/distiller_javascript_utils.h"
 #include "components/dom_distiller/core/distillable_page_detector.h"
 #include "components/dom_distiller/core/experiments.h"
@@ -96,6 +97,17 @@ void IsDistillablePageForDetector(content::WebContents* web_contents,
   RunIsolatedJavaScript(
       main_frame, extract_features_js,
       base::Bind(OnExtractFeaturesJsResult, detector, callback));
+}
+
+void setDelegate(content::WebContents* web_contents,
+                 DistillabilityDelegate delegate) {
+  CHECK(web_contents);
+  DistillabilityDriver::CreateForWebContents(web_contents);
+
+  DistillabilityDriver *driver =
+      DistillabilityDriver::FromWebContents(web_contents);
+  CHECK(driver);
+  driver->SetDelegate(delegate);
 }
 
 }  // namespace dom_distiller

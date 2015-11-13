@@ -58,6 +58,7 @@
 #include "components/autofill/content/renderer/password_generation_agent.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
+#include "components/dom_distiller/content/renderer/distillability_agent.h"
 #include "components/dom_distiller/content/renderer/distiller_js_render_frame_observer.h"
 #include "components/dom_distiller/core/url_constants.h"
 #include "components/nacl/renderer/ppb_nacl_private.h"
@@ -529,6 +530,10 @@ void ChromeContentRendererClient::RenderFrameCreated(
   // Set up a mojo service to test if this page is a distiller page.
   new dom_distiller::DistillerJsRenderFrameObserver(
       render_frame, chrome::ISOLATED_WORLD_ID_CHROME_INTERNAL);
+
+  // Create DistillabilityAgent to send distillability updates to
+  // DistillabilityDriver in the browser process.
+  new dom_distiller::DistillabilityAgent(render_frame);
 
   PasswordAutofillAgent* password_autofill_agent =
       new PasswordAutofillAgent(render_frame);

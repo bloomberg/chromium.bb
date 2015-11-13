@@ -22,6 +22,14 @@ void OnIsPageDistillableResult(
       base::android::AttachCurrentThread(), callback_holder->obj(),
       isDistillable);
 }
+
+void OnIsPageDistillableUpdate(
+    ScopedJavaGlobalRef<jobject>* callback_holder,
+    bool isDistillable, bool isLast) {
+  Java_DistillablePageUtils_callOnIsPageDistillableUpdate(
+      base::android::AttachCurrentThread(), callback_holder->obj(),
+      isDistillable, isLast);
+}
 }  // namespace
 
 static void IsPageDistillable(JNIEnv* env,
@@ -44,6 +52,26 @@ static void IsPageDistillable(JNIEnv* env,
   IsDistillablePage(
       web_contents, is_mobile_optimized,
       base::Bind(OnIsPageDistillableResult, base::Passed(&callback_holder)));
+}
+
+static void SetDelegate(JNIEnv* env,
+                        const JavaParamRef<jclass>& jcaller,
+                        const JavaParamRef<jobject>& webContents,
+                        const JavaParamRef<jobject>& callback) {
+  content::WebContents* web_contents(
+      content::WebContents::FromJavaWebContents(webContents));
+  if (!web_contents) {
+    return;
+  }
+
+  // TODO(wychen): check memory management
+  ScopedJavaGlobalRef<jobject>* callback_holder(
+      new ScopedJavaGlobalRef<jobject>());
+  callback_holder->Reset(env, callback);
+
+  DistillabilityDelegate delegate =
+      base::Bind(OnIsPageDistillableUpdate, base::Owned(callback_holder));
+  setDelegate(web_contents, delegate);
 }
 
 bool RegisterDistillablePageUtils(JNIEnv* env) {

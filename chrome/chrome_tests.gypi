@@ -106,6 +106,7 @@
       'browser/devtools/devtools_window_testing.cc',
       'browser/devtools/devtools_window_testing.h',
       'browser/do_not_track_browsertest.cc',
+      'browser/dom_distiller/distillable_page_utils_browsertest.cc',
       'browser/dom_distiller/dom_distiller_viewer_source_browsertest.cc',
       'browser/dom_distiller/tab_utils_browsertest.cc',
       'browser/download/download_browsertest.cc',

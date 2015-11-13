@@ -28,6 +28,12 @@ void IsOpenGraphArticle(content::WebContents* web_contents,
 void IsDistillablePageForDetector(content::WebContents* web_contents,
                                   const DistillablePageDetector* detector,
                                   base::Callback<void(bool)> callback);
+
+typedef base::Callback<void(bool, bool)> DistillabilityDelegate;
+
+// Set the delegate to receive the result of whether the page is distillable.
+void setDelegate(content::WebContents* web_contents,
+                 DistillabilityDelegate delegate);
 }
 
 #endif  // COMPONENTS_DOM_DISTILLER_CONTENT_BROWSER_DISTILLABLE_PAGE_UTILS_H_
