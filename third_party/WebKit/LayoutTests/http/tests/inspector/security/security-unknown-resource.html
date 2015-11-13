@@ -1,0 +1,20 @@
+<html>
+<head>
+<script src="../inspector-test.js"></script>
+<script src="../security-test.js"></script>
+<script>
+function test()
+{
+    var request = new WebInspector.NetworkRequest(InspectorTest.mainTarget, 0, "http://unknown", "https://foo.test", 0, 0, null);
+    InspectorTest.dispatchRequestFinished(request);
+
+    InspectorTest.dumpSecurityPanelSidebarOrigins();
+
+    InspectorTest.completeTest();
+}
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests that requests to unresolved origins result in unknown security state and show up in the sidebar origin list.</p>
+</body>
+</html>
