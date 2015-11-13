@@ -375,7 +375,10 @@ bool MediaRouterMojoImpl::RegisterMediaSinksObserver(
   if (availability_ != interfaces::MediaRouter::SINK_AVAILABILITY_UNAVAILABLE) {
     RunOrDefer(base::Bind(&MediaRouterMojoImpl::DoStartObservingMediaSinks,
                           base::Unretained(this), source_id));
+  } else {
+    observer->OnSinksReceived(std::vector<MediaSink>());
   }
+
   return true;
 }
 

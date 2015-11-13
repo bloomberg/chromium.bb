@@ -171,7 +171,7 @@ bool PresentationFrame::SetScreenAvailabilityListener(
   sinks_observer_.reset(
       new PresentationMediaSinksObserver(router_, listener, source));
 
-  if (!sinks_observer_->is_active()) {
+  if (!sinks_observer_->Init()) {
     sinks_observer_.reset();
     listener->OnScreenAvailabilityNotSupported();
     return false;

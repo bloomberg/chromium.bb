@@ -76,6 +76,7 @@ void MediaRouterE2EBrowserTest::CreateMediaRoute(
     content::WebContents* web_contents) {
   DCHECK(media_router_);
   observer_.reset(new TestMediaSinksObserver(media_router_, source));
+  observer_->Init();
 
   DVLOG(1) << "Receiver name: " << receiver_;
   // Wait for MediaSinks compatible with |source| to be discovered.

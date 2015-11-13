@@ -11,13 +11,21 @@ namespace media_router {
 
 MediaSinksObserver::MediaSinksObserver(MediaRouter* router,
                                        const MediaSource& source)
-    : source_(source), router_(router) {
+    : source_(source), router_(router), initialized_(false) {
   DCHECK(router_);
-  is_active_ = router_->RegisterMediaSinksObserver(this);
 }
 
 MediaSinksObserver::~MediaSinksObserver() {
-  router_->UnregisterMediaSinksObserver(this);
+  if (initialized_)
+    router_->UnregisterMediaSinksObserver(this);
+}
+
+bool MediaSinksObserver::Init() {
+  if (initialized_)
+    return true;
+
+  initialized_ = router_->RegisterMediaSinksObserver(this);
+  return initialized_;
 }
 
 }  // namespace media_router
