@@ -29,6 +29,7 @@
 #include <string.h>
 
 #ifdef ENABLE_EGL
+#include <wayland-egl.h>
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
 #endif
