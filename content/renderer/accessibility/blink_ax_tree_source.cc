@@ -146,7 +146,7 @@ AXContentTreeData BlinkAXTreeSource::GetTreeData() const {
 
   const WebDocumentType& doctype = document.doctype();
   if (!doctype.isNull())
-    tree_data.doctype = UTF16ToUTF8(base::StringPiece16(doctype.name()));
+    tree_data.doctype = doctype.name().utf8();
 
   WebAXObject anchor_object, focus_object;
   int anchor_offset, focus_offset;
@@ -263,17 +263,13 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
   dst->state = AXStateFromBlink(src);
   dst->location = src.boundingBoxRect();
   dst->id = src.axID();
-  std::string name = UTF16ToUTF8(base::StringPiece16(src.deprecatedTitle()));
+  std::string name = src.deprecatedTitle().utf8();
 
   std::string value;
   if (src.valueDescription().length()) {
-    dst->AddStringAttribute(ui::AX_ATTR_VALUE,
-                            UTF16ToUTF8(base::StringPiece16(
-                                src.valueDescription())));
+    dst->AddStringAttribute(ui::AX_ATTR_VALUE, src.valueDescription().utf8());
   } else {
-    dst->AddStringAttribute(
-        ui::AX_ATTR_VALUE,
-        UTF16ToUTF8(base::StringPiece16(src.stringValue())));
+    dst->AddStringAttribute(ui::AX_ATTR_VALUE, src.stringValue().utf8());
   }
 
   if (dst->role == ui::AX_ROLE_COLOR_WELL)
@@ -298,7 +294,7 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
   if (src.invalidState() == blink::WebAXInvalidStateOther) {
     dst->AddStringAttribute(
         ui::AX_ATTR_ARIA_INVALID_VALUE,
-        UTF16ToUTF8(base::StringPiece16(src.ariaInvalidValue())));
+        src.ariaInvalidValue().utf8());
   }
 
   if (src.textDirection()) {
@@ -337,18 +333,16 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
   }
 
   if (src.accessKey().length()) {
-    dst->AddStringAttribute(ui::AX_ATTR_ACCESS_KEY,
-    UTF16ToUTF8(base::StringPiece16(src.accessKey())));
+    dst->AddStringAttribute(ui::AX_ATTR_ACCESS_KEY, src.accessKey().utf8());
   }
 
-  if (src.actionVerb().length())
-    dst->AddStringAttribute(
-        ui::AX_ATTR_ACTION,
-        UTF16ToUTF8(base::StringPiece16(src.actionVerb())));
+  if (src.actionVerb().length()) {
+    dst->AddStringAttribute(ui::AX_ATTR_ACTION, src.actionVerb().utf8());
+  }
   if (src.ariaAutoComplete().length())
     dst->AddStringAttribute(
         ui::AX_ATTR_AUTO_COMPLETE,
-        UTF16ToUTF8(base::StringPiece16(src.ariaAutoComplete())));
+        src.ariaAutoComplete().utf8());
   if (src.isAriaReadOnly())
     dst->AddBoolAttribute(ui::AX_ATTR_ARIA_READONLY, true);
   if (src.isButtonStateMixed())
@@ -358,27 +352,24 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
   if (src.deprecatedAccessibilityDescription().length()) {
     dst->AddStringAttribute(
         ui::AX_ATTR_DESCRIPTION,
-        UTF16ToUTF8(base::StringPiece16(
-            src.deprecatedAccessibilityDescription())));
+        src.deprecatedAccessibilityDescription().utf8());
   }
   if (src.hasComputedStyle()) {
     dst->AddStringAttribute(
         ui::AX_ATTR_DISPLAY,
-        UTF16ToUTF8(base::StringPiece16(src.computedStyleDisplay())));
+        src.computedStyleDisplay().utf8());
   }
   if (src.deprecatedHelpText().length())
-    dst->AddStringAttribute(
-        ui::AX_ATTR_HELP,
-        UTF16ToUTF8(base::StringPiece16((src.deprecatedHelpText()))));
+    dst->AddStringAttribute(ui::AX_ATTR_HELP, src.deprecatedHelpText().utf8());
   if (src.deprecatedPlaceholder().length()) {
     dst->AddStringAttribute(
         ui::AX_ATTR_PLACEHOLDER,
-        UTF16ToUTF8(base::StringPiece16(src.deprecatedPlaceholder())));
+        src.deprecatedPlaceholder().utf8());
   }
   if (src.keyboardShortcut().length()) {
     dst->AddStringAttribute(
         ui::AX_ATTR_SHORTCUT,
-        UTF16ToUTF8(base::StringPiece16(src.keyboardShortcut())));
+        src.keyboardShortcut().utf8());
   }
   if (!src.deprecatedTitleUIElement().isDetached()) {
     dst->AddIntAttribute(ui::AX_ATTR_TITLE_UI_ELEMENT,
@@ -428,13 +419,11 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
     // a WebElement method that returns the original lower cased tagName.
     dst->AddStringAttribute(
         ui::AX_ATTR_HTML_TAG,
-        base::ToLowerASCII(UTF16ToUTF8(
-            base::StringPiece16(element.tagName()))));
+        base::ToLowerASCII(element.tagName().utf8()));
     for (unsigned i = 0; i < element.attributeCount(); ++i) {
-      std::string name = base::ToLowerASCII(UTF16ToUTF8(
-          base::StringPiece16(element.attributeLocalName(i))));
-      std::string value =
-          UTF16ToUTF8(base::StringPiece16(element.attributeValue(i)));
+      std::string name = base::ToLowerASCII(
+          element.attributeLocalName(i).utf8());
+      std::string value = element.attributeValue(i).utf8();
       dst->html_attributes.push_back(std::make_pair(name, value));
     }
 
@@ -457,7 +446,7 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
     if (element.hasAttribute("role")) {
       dst->AddStringAttribute(
           ui::AX_ATTR_ROLE,
-          UTF16ToUTF8(base::StringPiece16(element.getAttribute("role"))));
+          element.getAttribute("role").utf8());
     } else {
       std::string role = GetEquivalentAriaRoleString(dst->role);
       if (!role.empty())
@@ -497,21 +486,21 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
     if (!src.liveRegionStatus().isEmpty()) {
       dst->AddStringAttribute(
           ui::AX_ATTR_LIVE_STATUS,
-          UTF16ToUTF8(base::StringPiece16(src.liveRegionStatus())));
+          src.liveRegionStatus().utf8());
     }
     dst->AddStringAttribute(
         ui::AX_ATTR_LIVE_RELEVANT,
-        UTF16ToUTF8(base::StringPiece16(src.liveRegionRelevant())));
+        src.liveRegionRelevant().utf8());
     dst->AddBoolAttribute(ui::AX_ATTR_CONTAINER_LIVE_ATOMIC,
                           src.containerLiveRegionAtomic());
     dst->AddBoolAttribute(ui::AX_ATTR_CONTAINER_LIVE_BUSY,
                           src.containerLiveRegionBusy());
     dst->AddStringAttribute(
         ui::AX_ATTR_CONTAINER_LIVE_STATUS,
-        UTF16ToUTF8(base::StringPiece16(src.containerLiveRegionStatus())));
+        src.containerLiveRegionStatus().utf8());
     dst->AddStringAttribute(
         ui::AX_ATTR_CONTAINER_LIVE_RELEVANT,
-        UTF16ToUTF8(base::StringPiece16(src.containerLiveRegionRelevant())));
+        src.containerLiveRegionRelevant().utf8());
   }
 
   if (dst->role == ui::AX_ROLE_PROGRESS_INDICATOR ||
@@ -530,7 +519,7 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
     dst->AddStringAttribute(ui::AX_ATTR_HTML_TAG, "#document");
     const WebDocument& document = src.document();
     if (name.empty())
-      name = UTF16ToUTF8(base::StringPiece16(document.title()));
+      name = document.title().utf8();
   }
 
   if (dst->role == ui::AX_ROLE_TABLE) {
