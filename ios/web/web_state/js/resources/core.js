@@ -431,6 +431,19 @@ goog.require('__crWeb.message');
     return anchor.href;
   };
 
+  // Tracks whether user is in the middle of scrolling/dragging. If user is
+  // scrolling, ignore window.scrollTo() until user stops scrolling.
+  var webViewScrollViewIsDragging_ = false;
+  __gCrWeb['setWebViewScrollViewIsDragging'] = function(state) {
+    webViewScrollViewIsDragging_ = state;
+  };
+  var originalWindowScrollTo = window.scrollTo;
+  window.scrollTo = function(x, y) {
+    if (webViewScrollViewIsDragging_)
+      return;
+    originalWindowScrollTo(x, y);
+  };
+
   // Intercept window.close calls.
   window.close = function() {
     invokeOnHost_({'command': 'window.close.self'});

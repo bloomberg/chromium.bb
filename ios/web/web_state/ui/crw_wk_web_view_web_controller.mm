@@ -29,6 +29,7 @@
 #include "ios/web/public/ssl_status.h"
 #include "ios/web/public/url_util.h"
 #include "ios/web/public/web_client.h"
+#import "ios/web/public/web_state/crw_web_view_scroll_view_proxy.h"
 #import "ios/web/public/web_state/js/crw_js_injection_manager.h"
 #import "ios/web/public/web_state/ui/crw_native_content_provider.h"
 #import "ios/web/public/web_state/ui/crw_web_view_content_view.h"
@@ -1358,6 +1359,27 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
   // as the WKWebView will automatically retry these loads.
   WKWebViewErrorSource source = WKWebViewErrorSourceFromError(error);
   return source != NAVIGATION;
+}
+
+#pragma mark -
+#pragma mark CRWWebViewScrollViewProxyObserver
+
+// Under WKWebView, JavaScript can execute asynchronously. User can start
+// scrolling and calls to window.scrollTo executed during scrolling will be
+// treated as "during user interaction" and can cause app to go fullscreen.
+// This is a workaround to use this webViewScrollViewIsDragging flag to ignore
+// window.scrollTo while user is scrolling. See crbug.com/554257
+- (void)webViewScrollViewWillBeginDragging:
+    (CRWWebViewScrollViewProxy*)webViewScrollViewProxy {
+  [self evaluateJavaScript:@"__gCrWeb.setWebViewScrollViewIsDragging(true)"
+       stringResultHandler:nil];
+}
+
+- (void)webViewScrollViewDidEndDragging:
+            (CRWWebViewScrollViewProxy*)webViewScrollViewProxy
+                         willDecelerate:(BOOL)decelerate {
+  [self evaluateJavaScript:@"__gCrWeb.setWebViewScrollViewIsDragging(false)"
+       stringResultHandler:nil];
 }
 
 #pragma mark -
