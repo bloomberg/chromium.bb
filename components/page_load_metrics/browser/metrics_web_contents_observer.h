@@ -158,6 +158,15 @@ enum InternalErrorLoadEvent {
   ERR_LAST_ENTRY
 };
 
+// This class serves as a functional interface to various chrome// features.
+// Impl version is defined in chrome/browser/page_load_metrics.
+class PageLoadMetricsEmbedderInterface {
+ public:
+  virtual ~PageLoadMetricsEmbedderInterface() {}
+  virtual rappor::RapporService* GetRapporService() = 0;
+  virtual bool IsPrerendering(content::WebContents* web_contents) = 0;
+};
+
 // This class tracks a given page load, starting from navigation start /
 // provisional load, until a new navigation commits or the navigation fails. It
 // also records RAPPOR/UMA about the page load.
@@ -165,9 +174,10 @@ enum InternalErrorLoadEvent {
 // well as a committed PageLoadTracker.
 class PageLoadTracker {
  public:
-  // Caller must guarantee that the observers pointer outlives this class.
+  // Caller must guarantee that the observers and embedder_interface pointers
+  // outlives this class.
   PageLoadTracker(bool in_foreground,
-                  rappor::RapporService* const rappor_service,
+                  PageLoadMetricsEmbedderInterface* embedder_interface,
                   base::ObserverList<PageLoadMetricsObserver, true>* observers);
   ~PageLoadTracker();
   void Commit(content::NavigationHandle* navigation_handle);
@@ -201,10 +211,8 @@ class PageLoadTracker {
   PageLoadTiming timing_;
   GURL url_;
 
-  // This RapporService is owned by and shares a lifetime with
-  // g_browser_process's MetricsServicesManager. It can be NULL. The underlying
-  // RapporService will be freed when the when the browser process is killed.
-  rappor::RapporService* const rappor_service_;
+  // Interface to chrome features. Must outlive the class.
+  PageLoadMetricsEmbedderInterface* const embedder_interface_;
 
   // List of observers. This must outlive the class.
   base::ObserverList<PageLoadMetricsObserver, true>* observers_;
@@ -224,9 +232,10 @@ class MetricsWebContentsObserver
   // outlive the WebContents.
   static MetricsWebContentsObserver* CreateForWebContents(
       content::WebContents* web_contents,
-      rappor::RapporService* rappor_service);
-  MetricsWebContentsObserver(content::WebContents* web_contents,
-                             rappor::RapporService* rappor_service);
+      scoped_ptr<PageLoadMetricsEmbedderInterface> embedder_interface);
+  MetricsWebContentsObserver(
+      content::WebContents* web_contents,
+      scoped_ptr<PageLoadMetricsEmbedderInterface> embedder_interface);
   ~MetricsWebContentsObserver() override;
 
   void AddObserver(PageLoadMetricsObserver* observer) override;
@@ -261,7 +270,7 @@ class MetricsWebContentsObserver
       provisional_loads_;
   scoped_ptr<PageLoadTracker> committed_load_;
 
-  rappor::RapporService* const rappor_service_;
+  scoped_ptr<PageLoadMetricsEmbedderInterface> embedder_interface_;
   base::ObserverList<PageLoadMetricsObserver, true> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(MetricsWebContentsObserver);

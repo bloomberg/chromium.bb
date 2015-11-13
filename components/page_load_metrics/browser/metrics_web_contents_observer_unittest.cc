@@ -27,6 +27,25 @@ const char kDefaultTestUrl2[] = "https://whatever.com";
 
 }  //  namespace
 
+class TestPageLoadMetricsEmbedderInterface
+    : public PageLoadMetricsEmbedderInterface {
+ public:
+  TestPageLoadMetricsEmbedderInterface() : is_prerendering_(false) {}
+  rappor::TestRapporService* GetRapporService() override {
+    return &rappor_tester_;
+  }
+  bool IsPrerendering(content::WebContents* web_contents) override {
+    return is_prerendering_;
+  }
+  void set_is_prerendering(bool is_prerendering) {
+    is_prerendering_ = is_prerendering;
+  }
+
+ private:
+  bool is_prerendering_;
+  rappor::TestRapporService rappor_tester_;
+};
+
 class MetricsWebContentsObserverTest
     : public content::RenderViewHostTestHarness {
  public:
@@ -43,8 +62,9 @@ class MetricsWebContentsObserverTest
   }
 
   void AttachObserver() {
-    observer_.reset(
-        new MetricsWebContentsObserver(web_contents(), &rappor_tester_));
+    embedder_interface_ = new TestPageLoadMetricsEmbedderInterface();
+    observer_.reset(new MetricsWebContentsObserver(
+        web_contents(), make_scoped_ptr(embedder_interface_)));
     observer_->WasShown();
   }
 
@@ -97,7 +117,7 @@ class MetricsWebContentsObserverTest
 
  protected:
   base::HistogramTester histogram_tester_;
-  rappor::TestRapporService rappor_tester_;
+  TestPageLoadMetricsEmbedderInterface* embedder_interface_;
   scoped_ptr<MetricsWebContentsObserver> observer_;
 
  private:
@@ -314,6 +334,23 @@ TEST_F(MetricsWebContentsObserverTest, BackgroundDifferentHistogram) {
   histogram_tester_.ExpectTotalCount(kHistogramNameLoad, 0);
   histogram_tester_.ExpectTotalCount(kHistogramNameFirstLayout, 0);
   histogram_tester_.ExpectTotalCount(kHistogramNameFirstTextPaint, 0);
+}
+
+TEST_F(MetricsWebContentsObserverTest, DontLogPrerender) {
+  PageLoadTiming timing;
+  timing.navigation_start = base::Time::FromDoubleT(1);
+  timing.first_layout = base::TimeDelta::FromMilliseconds(10);
+  content::WebContentsTester* web_contents_tester =
+      content::WebContentsTester::For(web_contents());
+  embedder_interface_->set_is_prerendering(true);
+
+  web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl));
+  observer_->OnMessageReceived(
+      PageLoadMetricsMsg_TimingUpdated(observer_->routing_id(), timing),
+      web_contents()->GetMainFrame());
+
+  web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl2));
+  AssertNoHistogramsLogged();
 }
 
 TEST_F(MetricsWebContentsObserverTest, OnlyBackgroundLaterEvents) {
@@ -618,7 +655,8 @@ TEST_F(MetricsWebContentsObserverTest, ObservePartialNavigation) {
 
 TEST_F(MetricsWebContentsObserverTest, NoRappor) {
   rappor::TestSample::Shadow* sample_obj =
-      rappor_tester_.GetRecordedSampleForMetric(kRapporMetricsNameCoarseTiming);
+      embedder_interface_->GetRapporService()->GetRecordedSampleForMetric(
+          kRapporMetricsNameCoarseTiming);
   EXPECT_EQ(sample_obj, nullptr);
 }
 
@@ -638,7 +676,8 @@ TEST_F(MetricsWebContentsObserverTest, RapporLongPageLoad) {
   // Navigate again to force logging RAPPOR.
   web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl2));
   rappor::TestSample::Shadow* sample_obj =
-      rappor_tester_.GetRecordedSampleForMetric(kRapporMetricsNameCoarseTiming);
+      embedder_interface_->GetRapporService()->GetRecordedSampleForMetric(
+          kRapporMetricsNameCoarseTiming);
   const auto& string_it = sample_obj->string_fields.find("Domain");
   EXPECT_NE(string_it, sample_obj->string_fields.end());
   EXPECT_EQ(rappor::GetDomainAndRegistrySampleFromGURL(GURL(kDefaultTestUrl)),
@@ -665,7 +704,8 @@ TEST_F(MetricsWebContentsObserverTest, RapporQuickPageLoad) {
   // Navigate again to force logging RAPPOR.
   web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl2));
   rappor::TestSample::Shadow* sample_obj =
-      rappor_tester_.GetRecordedSampleForMetric(kRapporMetricsNameCoarseTiming);
+      embedder_interface_->GetRapporService()->GetRecordedSampleForMetric(
+          kRapporMetricsNameCoarseTiming);
   const auto& string_it = sample_obj->string_fields.find("Domain");
   EXPECT_NE(string_it, sample_obj->string_fields.end());
   EXPECT_EQ(rappor::GetDomainAndRegistrySampleFromGURL(GURL(kDefaultTestUrl)),

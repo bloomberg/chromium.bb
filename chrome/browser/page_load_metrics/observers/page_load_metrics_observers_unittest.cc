@@ -18,6 +18,16 @@ const char kHistogramNameFromGWSFirstTextPaint[] =
 
 }  // namespace
 
+class TestPageLoadMetricsEmbedderInterface
+    : public page_load_metrics::PageLoadMetricsEmbedderInterface {
+ public:
+  TestPageLoadMetricsEmbedderInterface() {}
+  rappor::RapporService* GetRapporService() override { return nullptr; }
+  bool IsPrerendering(content::WebContents* web_contents) override {
+    return false;
+  }
+};
+
 class TestFromGWSPageLoadMetricsObserver
     : public FromGWSPageLoadMetricsObserver {
  public:
@@ -46,7 +56,8 @@ class PageLoadMetricsObserverTest : public ChromeRenderViewHostTestHarness {
     NavigateAndCommit(GURL("http://www.google.com"));
     observer_ =
         make_scoped_ptr(new page_load_metrics::MetricsWebContentsObserver(
-            web_contents(), nullptr));
+            web_contents(),
+            make_scoped_ptr(new TestPageLoadMetricsEmbedderInterface())));
     observer_->WasShown();
 
     // Add PageLoadMetricsObservers here.

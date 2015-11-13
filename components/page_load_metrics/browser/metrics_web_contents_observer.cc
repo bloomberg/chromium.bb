@@ -121,11 +121,11 @@ uint64_t RapporHistogramBucketIndex(const base::TimeDelta& time) {
 
 PageLoadTracker::PageLoadTracker(
     bool in_foreground,
-    rappor::RapporService* const rappor_service,
+    PageLoadMetricsEmbedderInterface* embedder_interface,
     base::ObserverList<PageLoadMetricsObserver, true>* observers)
     : has_commit_(false),
       started_in_foreground_(in_foreground),
-      rappor_service_(rappor_service),
+      embedder_interface_(embedder_interface),
       observers_(observers) {}
 
 PageLoadTracker::~PageLoadTracker() {
@@ -347,14 +347,16 @@ void PageLoadTracker::RecordCommittedEvent(CommittedLoadEvent event,
 
 void PageLoadTracker::RecordRappor() {
   DCHECK(!GetCommittedURL().is_empty());
-  if (!rappor_service_)
+  rappor::RapporService* rappor_service =
+      embedder_interface_->GetRapporService();
+  if (!rappor_service)
     return;
   base::TimeDelta first_contentful_paint = GetFirstContentfulPaint(timing_);
   // Log the eTLD+1 of sites that show poor loading performance.
   if (!first_contentful_paint.is_zero() &&
       first_contentful_paint < GetBackgroundDelta()) {
     scoped_ptr<rappor::Sample> sample =
-        rappor_service_->CreateSample(rappor::UMA_RAPPOR_TYPE);
+        rappor_service->CreateSample(rappor::UMA_RAPPOR_TYPE);
     sample->SetStringField("Domain", rappor::GetDomainAndRegistrySampleFromGURL(
                                          GetCommittedURL()));
     uint64_t bucket_index = RapporHistogramBucketIndex(first_contentful_paint);
@@ -363,7 +365,7 @@ void PageLoadTracker::RecordRappor() {
     // The IsSlow flag is just a one bit boolean if the first layout was > 10s.
     sample->SetFlagsField("IsSlow", first_contentful_paint.InSecondsF() >= 10,
                           1);
-    rappor_service_->RecordSampleObj(
+    rappor_service->RecordSampleObj(
         "PageLoad.CoarseTiming.NavigationToFirstContentfulPaint",
         sample.Pass());
   }
@@ -372,19 +374,20 @@ void PageLoadTracker::RecordRappor() {
 // static
 MetricsWebContentsObserver::MetricsWebContentsObserver(
     content::WebContents* web_contents,
-    rappor::RapporService* rappor_service)
+    scoped_ptr<PageLoadMetricsEmbedderInterface> embedder_interface)
     : content::WebContentsObserver(web_contents),
       in_foreground_(false),
-      rappor_service_(rappor_service) {}
+      embedder_interface_(embedder_interface.Pass()) {}
 
 MetricsWebContentsObserver* MetricsWebContentsObserver::CreateForWebContents(
     content::WebContents* web_contents,
-    rappor::RapporService* rappor_service) {
+    scoped_ptr<PageLoadMetricsEmbedderInterface> embedder_interface) {
   DCHECK(web_contents);
 
   MetricsWebContentsObserver* metrics = FromWebContents(web_contents);
   if (!metrics) {
-    metrics = new MetricsWebContentsObserver(web_contents, rappor_service);
+    metrics =
+        new MetricsWebContentsObserver(web_contents, embedder_interface.Pass());
     web_contents->SetUserData(UserDataKey(), metrics);
   }
   return metrics;
@@ -425,16 +428,19 @@ void MetricsWebContentsObserver::DidStartNavigation(
     content::NavigationHandle* navigation_handle) {
   if (!navigation_handle->IsInMainFrame())
     return;
+  if (embedder_interface_->IsPrerendering(web_contents()))
+    return;
   // We can have two provisional loads in some cases. E.g. a same-site
   // navigation can have a concurrent cross-process navigation started
   // from the omnibox.
   DCHECK_GT(2ul, provisional_loads_.size());
-  // Passing a raw pointer to observers_ is safe because the
-  // MetricsWebContentsObserver owns the PageLoadMetricsObserver list and is
-  // torn down after the PageLoadTracker.
-  provisional_loads_.insert(navigation_handle,
-                            make_scoped_ptr(new PageLoadTracker(
-                                in_foreground_, rappor_service_, &observers_)));
+  // Passing raw pointers to observers_ and embedder_interface_ is safe because
+  // the MetricsWebContentsObserver owns them both list and they are torn down
+  // after the PageLoadTracker.
+  provisional_loads_.insert(
+      navigation_handle,
+      make_scoped_ptr(new PageLoadTracker(
+          in_foreground_, embedder_interface_.get(), &observers_)));
 }
 
 void MetricsWebContentsObserver::DidFinishNavigation(
