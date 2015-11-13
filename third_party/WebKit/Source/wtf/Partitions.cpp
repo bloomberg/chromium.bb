@@ -67,18 +67,26 @@ void Partitions::initialize(HistogramEnumerationFunction histogramEnumeration)
 
 void Partitions::shutdown()
 {
+    spinLockLock(&s_initializationLock);
+
     // We could ASSERT here for a memory leak within the partition, but it leads
     // to very hard to diagnose ASSERTs, so it's best to leave leak checking for
     // the valgrind and heapcheck bots, which run without partitions.
-    (void) m_layoutAllocator.shutdown();
-    (void) m_nodeAllocator.shutdown();
-    (void) m_bufferAllocator.shutdown();
-    (void) m_fastMallocAllocator.shutdown();
+    if (s_initialized) {
+        (void) m_layoutAllocator.shutdown();
+        (void) m_nodeAllocator.shutdown();
+        (void) m_bufferAllocator.shutdown();
+        (void) m_fastMallocAllocator.shutdown();
+    }
+
+    spinLockUnlock(&s_initializationLock);
 }
 
 void Partitions::decommitFreeableMemory()
 {
-    ASSERT(isMainThread());
+    RELEASE_ASSERT(isMainThread());
+    if (!s_initialized)
+        return;
 
     partitionPurgeMemoryGeneric(bufferPartition(), PartitionPurgeDecommitEmptyPages);
     partitionPurgeMemoryGeneric(fastMallocPartition(), PartitionPurgeDecommitEmptyPages);

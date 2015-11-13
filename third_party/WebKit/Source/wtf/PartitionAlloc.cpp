@@ -166,9 +166,9 @@ void partitionAllocInit(PartitionRoot* root, size_t numBuckets, size_t maxAlloca
 
 void partitionAllocGenericInit(PartitionRootGeneric* root)
 {
-    partitionAllocBaseInit(root);
+    spinLockLock(&root->lock);
 
-    root->lock = 0;
+    partitionAllocBaseInit(root);
 
     // Precalculate some shift and mask constants used in the hot path.
     // Example: malloc(41) == 101001 binary.
@@ -243,6 +243,8 @@ void partitionAllocGenericInit(PartitionRootGeneric* root)
     // And there's one last bucket lookup that will be hit for e.g. malloc(-1),
     // which tries to overflow to a non-existant order.
     *bucketPtr = &PartitionRootGeneric::gPagedBucket;
+
+    spinLockUnlock(&root->lock);
 }
 
 static bool partitionAllocShutdownBucket(PartitionBucket* bucket)
