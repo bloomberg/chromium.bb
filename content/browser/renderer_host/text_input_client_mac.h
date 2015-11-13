@@ -57,9 +57,6 @@ class CONTENT_EXPORT TextInputClientMac {
   //
   // Returns NSNotFound if the request times out or is not completed.
   NSUInteger GetCharacterIndexAtPoint(RenderWidgetHost* rwh, gfx::Point point);
-  // Returns nil if the request times out or is completed.
-  NSAttributedString* GetAttributedSubstringFromRange(
-      RenderWidgetHost* rwh, NSRange range);
   // Returns NSZeroRect if the request times out or is not completed. The result
   // is in WebKit coordinates.
   NSRect GetFirstRectForRange(RenderWidgetHost* rwh, NSRange range);
