@@ -268,15 +268,6 @@ function openAndWaitForClosingDialog(
               'selectVolume', windowId, [volumeName]);
         }).
         then(function() {
-          // Previous 'selectVolume' changed the focus state of this dialog.
-          // To simulate the dialog as if the volume was selected without
-          // clicking the volume list, bring back the focus state here.
-          var queryForDefaultFocus = dialogParams.type === 'saveFile' ?
-              '#filename-input-textbox' : '#file-list';
-          return remoteCall.callRemoteTestUtil(
-              'focus', windowId, [queryForDefaultFocus]);
-        }).
-        then(function() {
           var expectedRows = TestEntryInfo.getExpectedRows(expectedSet);
           return remoteCall.waitForFiles(windowId, expectedRows);
         }).

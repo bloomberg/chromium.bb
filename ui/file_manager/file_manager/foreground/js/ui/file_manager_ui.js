@@ -396,11 +396,6 @@ FileManagerUI.prototype.initDirectoryTree = function(directoryTree) {
   observer.observe(this.progressCenterPanel.element,
                    /** @type {MutationObserverInit} */
                    ({subtree: true, attributes: true, childList: true}));
-
-  // Focus the file list pane when a directory item is activated by user input.
-  this.directoryTree.addEventListener('activate-tree-item', function(event) {
-    this.listContainer.focus();
-  }.bind(this));
 };
 
 /**

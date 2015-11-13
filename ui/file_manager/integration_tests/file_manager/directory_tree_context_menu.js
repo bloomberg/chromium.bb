@@ -108,11 +108,6 @@ function navigateWithDirectoryTree(windowId, path) {
     // Wait until Files.app is navigated to the path.
     return remoteCall.waitUntilCurrentDirectoryIsChanged(
         windowId, `/Downloads${path}`);
-  }).then(function() {
-    // Bring back the focus to directory tree, since the content pane has been
-    // focused by clicking the directory item.
-    return remoteCall.callRemoteTestUtil(
-        'focus', windowId, ['#directory-tree']);
   });
 }
 
