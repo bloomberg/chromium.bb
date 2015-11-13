@@ -41,6 +41,9 @@ class ChildProcessHost {
   ChildProcessHost(base::TaskRunner* launch_process_runner,
                    bool start_sandboxed,
                    const base::FilePath& app_path);
+  // Allows a ChildProcessHost to be instantiated for an existing channel
+  // created by someone else (e.g. an app that launched its own process).
+  explicit ChildProcessHost(ScopedHandle channel);
   virtual ~ChildProcessHost();
 
   // |Start()|s the child process; calls |DidStart()| (on the thread on which

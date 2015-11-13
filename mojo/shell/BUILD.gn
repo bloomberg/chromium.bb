@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//mojo/public/mojo_application.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//testing/test.gni")
 
@@ -108,6 +109,7 @@ test("mojo_shell_unittests") {
 
 mojom("test_bindings") {
   sources = [
+    "application_manager_apptests.mojom",
     "capability_filter_unittest.mojom",
     "test.mojom",
   ]
@@ -116,5 +118,67 @@ mojom("test_bindings") {
 mojom("interfaces") {
   sources = [
     "application_manager.mojom",
+  ]
+}
+
+mojo_native_application("apptests") {
+  output_name = "mojo_shell_apptests"
+  testonly = true
+
+  sources = [
+    "application_manager_apptest.cc",
+  ]
+
+  deps = [
+    ":test_bindings",
+    "//base",
+    "//base/test:test_config",
+    "//mojo/application/public/cpp:sources",
+    "//mojo/application/public/cpp:test_support",
+    "//mojo/common:common_base",
+    "//mojo/converters/network",
+  ]
+
+  data_deps = [
+    ":application_manager_apptest_driver",
+    ":application_manager_apptest_target",
+  ]
+}
+
+executable("application_manager_apptest_driver") {
+  testonly = true
+
+  sources = [
+    "application_manager_apptest_driver.cc",
+  ]
+
+  deps = [
+    ":test_bindings",
+    "//base",
+    "//base:base_static",
+    "//mojo/application/public/cpp",
+    "//mojo/common:common_base",
+    "//mojo/converters/network",
+    "//mojo/runner:init",
+    "//mojo/runner/child:test_native_main",
+    "//mojo/shell:interfaces",
+    "//third_party/mojo/src/mojo/edk/system",
+  ]
+}
+
+executable("application_manager_apptest_target") {
+  testonly = true
+
+  sources = [
+    "application_manager_apptest_target.cc",
+  ]
+
+  deps = [
+    ":test_bindings",
+    "//base",
+    "//mojo/application/public/cpp",
+    "//mojo/common:common_base",
+    "//mojo/converters/network",
+    "//mojo/runner/child:test_native_main",
   ]
 }

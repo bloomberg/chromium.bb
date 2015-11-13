@@ -7,44 +7,33 @@
 #include "mojo/application/public/cpp/application_connection.h"
 #include "mojo/application/public/cpp/application_delegate.h"
 #include "mojo/application/public/cpp/application_impl.h"
-#include "mojo/application/public/cpp/interface_factory.h"
-#include "mojo/common/weak_binding_set.h"
+#include "mojo/converters/network/network_type_converters.h"
 #include "mojo/runner/child/test_native_main.h"
-#include "mojo/runner/child/test_native_service.mojom.h"
 #include "mojo/runner/init.h"
+#include "mojo/shell/application_manager_apptests.mojom.h"
+
+using mojo::shell::test::mojom::CreateInstanceForHandleTestPtr;
 
 namespace {
 
-class TargetApplicationDelegate
-    : public mojo::ApplicationDelegate,
-      public mojo::runner::test::TestNativeService,
-      public mojo::InterfaceFactory<mojo::runner::test::TestNativeService> {
+class TargetApplicationDelegate : public mojo::ApplicationDelegate {
  public:
   TargetApplicationDelegate() {}
   ~TargetApplicationDelegate() override {}
 
  private:
   // mojo::ApplicationDelegate:
-  void Initialize(mojo::ApplicationImpl* app) override {}
+  void Initialize(mojo::ApplicationImpl* app) override {
+    CreateInstanceForHandleTestPtr service;
+    app->ConnectToService(
+        mojo::URLRequest::From(std::string("mojo:mojo_shell_apptests")),
+        &service);
+    service->Ping("From Target");
+  }
   bool ConfigureIncomingConnection(
       mojo::ApplicationConnection* connection) override {
-    connection->AddService<mojo::runner::test::TestNativeService>(this);
     return true;
   }
-
-  // mojo::runner::test::TestNativeService:
-  void Invert(bool from_driver, const InvertCallback& callback) override {
-    callback.Run(!from_driver);
-  }
-
-  // mojo::InterfaceFactory<mojo::runner::test::TestNativeService>:
-  void Create(mojo::ApplicationConnection* connection,
-              mojo::InterfaceRequest<mojo::runner::test::TestNativeService>
-                  request) override {
-    bindings_.AddBinding(this, request.Pass());
-  }
-
-  mojo::WeakBindingSet<mojo::runner::test::TestNativeService> bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(TargetApplicationDelegate);
 };

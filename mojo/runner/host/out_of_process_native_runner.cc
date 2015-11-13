@@ -20,7 +20,7 @@ OutOfProcessNativeRunner::OutOfProcessNativeRunner(
     : launch_process_runner_(launch_process_runner) {}
 
 OutOfProcessNativeRunner::~OutOfProcessNativeRunner() {
-  if (child_process_host_)
+  if (child_process_host_ && !app_path_.empty())
     child_process_host_->Join();
 }
 
@@ -38,6 +38,16 @@ void OutOfProcessNativeRunner::Start(
       new ChildProcessHost(launch_process_runner_, start_sandboxed, app_path));
   child_process_host_->Start();
 
+  child_process_host_->StartApp(
+      application_request.Pass(),
+      base::Bind(&OutOfProcessNativeRunner::AppCompleted,
+                 base::Unretained(this)));
+}
+
+void OutOfProcessNativeRunner::InitHost(
+    ScopedHandle channel,
+    InterfaceRequest<Application> application_request) {
+  child_process_host_.reset(new ChildProcessHost(channel.Pass()));
   child_process_host_->StartApp(
       application_request.Pass(),
       base::Bind(&OutOfProcessNativeRunner::AppCompleted,

@@ -5,6 +5,7 @@
 #include "mojo/shell/shell_application_delegate.h"
 
 #include "mojo/application/public/cpp/application_connection.h"
+#include "mojo/shell/application_manager.h"
 
 namespace mojo {
 namespace shell {
@@ -27,8 +28,11 @@ void ShellApplicationDelegate::Create(
   bindings_.AddBinding(this, request.Pass());
 }
 
-void ShellApplicationDelegate::CreateInstanceForHandle(ScopedHandle channel) {
-  // TODO(beng): create the instance.
+void ShellApplicationDelegate::CreateInstanceForHandle(
+    ScopedHandle channel,
+    const String& url,
+    const String& qualifier) {
+  manager_->CreateInstanceForHandle(channel.Pass(), GURL(url), qualifier);
 }
 
 }  // namespace shell

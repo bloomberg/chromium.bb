@@ -29,11 +29,13 @@ class InProcessNativeRunner : public shell::NativeRunner,
   InProcessNativeRunner();
   ~InProcessNativeRunner() override;
 
-  // |NativeRunner| method:
+  // NativeRunner:
   void Start(const base::FilePath& app_path,
              bool start_sandboxed,
              InterfaceRequest<Application> application_request,
              const base::Closure& app_completed_callback) override;
+  void InitHost(ScopedHandle channel,
+                InterfaceRequest<Application> application_request) override;
 
  private:
   // |base::DelegateSimpleThread::Delegate| method:
