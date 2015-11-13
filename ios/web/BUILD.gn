@@ -2,13 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# GN build of //ios/web only supports building with the web implementation of
-# WebThread as opposed to GYP build that allow using a shim implementation based
-# on top of BrowserThread.
-#
-# See ios/web/ios_web.gyp for more information on how gyp supports this. The
-# gn targets will fold the target selection in the gyp "incomplete" targets.
-
 import("//testing/test.gni")
 import("//ios/web/js_compile.gni")
 
@@ -27,9 +20,6 @@ config("config") {
 
 source_set("web") {
   deps = [
-    ":core",
-    ":js_resources",
-    ":user_agent",
     "//base",
     "//components/url_formatter",
     "//ios/net",
@@ -40,6 +30,9 @@ source_set("web") {
     "//ui/gfx/geometry:geometry",
     "//ui/resources",
     "//url",
+    ":core",
+    ":js_resources",
+    ":user_agent",
   ]
 
   sources = [
@@ -84,6 +77,8 @@ source_set("web") {
     "navigation/time_smoother.h",
     "navigation/web_load_params.h",
     "navigation/web_load_params.mm",
+    "net/cert_host_pair.cc",
+    "net/cert_host_pair.h",
     "net/cert_policy.cc",
     "net/cert_store_impl.cc",
     "net/cert_store_impl.h",
@@ -107,8 +102,6 @@ source_set("web") {
     "net/clients/crw_redirect_network_client_factory.mm",
     "net/cookie_notification_bridge.h",
     "net/cookie_notification_bridge.mm",
-    "net/crw_cert_policy_cache.h",
-    "net/crw_cert_policy_cache.mm",
     "net/crw_cert_verification_controller.h",
     "net/crw_cert_verification_controller.mm",
     "net/crw_request_tracker_delegate.h",
@@ -383,14 +376,14 @@ test("ios_web_unittests") {
   deps = [
     "//base",
     "//base/test:test_support",
+    "//ios/testing:ocmock_support",
     "//net:test_support",
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/ocmock",
     "//ui/base:test_support",
-    "//ios/testing:ocmock_support",
-    ":web",
     ":test_support",
+    ":web",
   ]
 
   sources = [
@@ -406,12 +399,12 @@ test("ios_web_unittests") {
     "navigation/navigation_item_impl_unittest.mm",
     "navigation/navigation_manager_impl_unittest.mm",
     "navigation/nscoder_util_unittest.mm",
+    "net/cert_host_pair_unittest.cc",
     "net/cert_policy_unittest.cc",
     "net/cert_verifier_block_adapter_unittest.cc",
     "net/clients/crw_csp_network_client_unittest.mm",
     "net/clients/crw_js_injection_network_client_unittest.mm",
     "net/clients/crw_passkit_network_client_unittest.mm",
-    "net/crw_cert_policy_cache_unittest.mm",
     "net/crw_cert_verification_controller_unittest.mm",
     "net/crw_url_verifying_protocol_handler_unittest.mm",
     "net/request_group_util_unittest.mm",
