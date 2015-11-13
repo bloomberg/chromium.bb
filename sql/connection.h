@@ -466,6 +466,10 @@ class SQL_EXPORT Connection : public base::trace_event::MemoryDumpProvider {
   // tests.
   static bool ShouldIgnoreSqliteError(int error);
 
+  // Additionally ignores errors which are unlikely to be caused by problems
+  // with the syntax of a SQL statement, or problems with the database schema.
+  static bool ShouldIgnoreSqliteCompileError(int error);
+
   // base::trace_event::MemoryDumpProvider implementation.
   bool OnMemoryDump(
       const base::trace_event::MemoryDumpArgs& args,

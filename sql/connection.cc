@@ -232,6 +232,23 @@ bool Connection::ShouldIgnoreSqliteError(int error) {
   return current_ignorer_cb_->Run(error);
 }
 
+// static
+bool Connection::ShouldIgnoreSqliteCompileError(int error) {
+  // Put this first in case tests need to see that the check happened.
+  if (ShouldIgnoreSqliteError(error))
+    return true;
+
+  // Trim extended error codes.
+  int basic_error = error & 0xff;
+
+  // These errors relate more to the runtime context of the system than to
+  // errors with a SQL statement or with the schema, so they aren't generally
+  // interesting to flag.  This list is not comprehensive.
+  return basic_error == SQLITE_BUSY ||
+      basic_error == SQLITE_NOTADB ||
+      basic_error == SQLITE_CORRUPT;
+}
+
 bool Connection::OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
                               base::trace_event::ProcessMemoryDump* pmd) {
   if (args.level_of_detail ==
@@ -1339,7 +1356,7 @@ scoped_refptr<Connection::StatementRef> Connection::GetUniqueStatement(
   int rc = sqlite3_prepare_v2(db_, sql, -1, &stmt, NULL);
   if (rc != SQLITE_OK) {
     // This is evidence of a syntax error in the incoming SQL.
-    if (!ShouldIgnoreSqliteError(rc))
+    if (!ShouldIgnoreSqliteCompileError(rc))
       DLOG(FATAL) << "SQL compile error " << GetErrorMessage();
 
     // It could also be database corruption.
@@ -1349,6 +1366,8 @@ scoped_refptr<Connection::StatementRef> Connection::GetUniqueStatement(
   return new StatementRef(this, stmt, true);
 }
 
+// TODO(shess): Unify this with GetUniqueStatement().  The only difference that
+// seems legitimate is not passing |this| to StatementRef.
 scoped_refptr<Connection::StatementRef> Connection::GetUntrackedStatement(
     const char* sql) const {
   // Return inactive statement.
@@ -1359,7 +1378,7 @@ scoped_refptr<Connection::StatementRef> Connection::GetUntrackedStatement(
   int rc = sqlite3_prepare_v2(db_, sql, -1, &stmt, NULL);
   if (rc != SQLITE_OK) {
     // This is evidence of a syntax error in the incoming SQL.
-    if (!ShouldIgnoreSqliteError(rc))
+    if (!ShouldIgnoreSqliteCompileError(rc))
       DLOG(FATAL) << "SQL compile error " << GetErrorMessage();
     return new StatementRef(NULL, NULL, false);
   }
@@ -1766,7 +1785,11 @@ int Connection::OnSqliteError(int err, sql::Statement *stmt, const char* sql) {
     sql = stmt->GetSQLStatement();
   if (!sql)
     sql = "-- unknown";
-  LOG(ERROR) << histogram_tag_ << " sqlite error " << err
+
+  std::string id = histogram_tag_;
+  if (id.empty())
+    id = DbPath().BaseName().AsUTF8Unsafe();
+  LOG(ERROR) << id << " sqlite error " << err
              << ", errno " << GetLastErrno()
              << ": " << GetErrorMessage()
              << ", sql: " << sql;
