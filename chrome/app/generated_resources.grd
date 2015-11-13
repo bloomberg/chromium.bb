@@ -351,6 +351,9 @@ are declared in build/common.gypi.
       <message name="IDS_WEBSITE_SETTINGS_UNKNOWN_TRANSPORT" desc="Text that is displayed in the header of the Website Settings popup if Chrome cannot determine what kind of transport the website used. This string must be the same as IDS_WEBSITE_SETTINGS_NON_SECURE_TRANSPORT.">
         Your connection to this site is not private.
       </message>
+      <message name="IDS_WEBSITE_SETTINGS_DETAILS_LINK" desc="Link in the Website Settings that opens up additional security details about the current page in the DevTools Security panel.">
+        Details
+      </message>
       <message name="IDS_WEBSITE_SETTINGS_CT_ERROR" desc="Text that is displayed in the header of the Website Settings popup if the website has provided Signed Certificate Timestamps but none are valid.">
         This site supplied invalid Certificate Transparency information.
       </message>

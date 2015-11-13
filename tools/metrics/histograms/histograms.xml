@@ -76594,6 +76594,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="7" label="Transparency viewer opened"/>
   <int value="8" label="Connection help opened"/>
   <int value="9" label="Site settings opened"/>
+  <int value="10" label="Security details opened"/>
 </enum>
 
 <enum name="WebSocketHandshakeResult" type="int">

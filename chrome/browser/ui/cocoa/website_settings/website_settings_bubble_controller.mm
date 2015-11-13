@@ -13,6 +13,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/sys_string_conversions.h"
 #import "chrome/browser/certificate_viewer.h"
+#include "chrome/browser/devtools/devtools_toggle_action.h"
+#include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
@@ -443,6 +445,15 @@ NSPoint AnchorPointForWindow(NSWindow* parent) {
                                   bold:NO
                                 toView:contentView_
                                atPoint:controlOrigin];
+  controlOrigin.y +=
+      NSHeight([identityStatusField_ frame]) + kConnectionHeadlineSpacing;
+
+  NSString* securityDetailsButtonText =
+      l10n_util::GetNSString(IDS_WEBSITE_SETTINGS_DETAILS_LINK);
+  securityDetailsButton_ = [self addLinkButtonWithText:securityDetailsButtonText
+                                                toView:contentView_];
+  [securityDetailsButton_ setTarget:self];
+  [securityDetailsButton_ setAction:@selector(showSecurityPanel:)];
 
   // Create the tab view and its two tabs.
 
@@ -560,9 +571,20 @@ NSPoint AnchorPointForWindow(NSWindow* parent) {
       NEW_FOREGROUND_TAB, ui::PAGE_TRANSITION_LINK, false));
 }
 
+// Handler for the site settings button below the list of permissions.
+- (void)showSecurityPanel:(id)sender {
+  DCHECK(webContents_);
+  DCHECK(presenter_);
+  presenter_->RecordWebsiteSettingsAction(
+      WebsiteSettings::WEBSITE_SETTINGS_SECURITY_DETAILS_OPENED);
+  DevToolsWindow::OpenDevToolsWindow(webContents_,
+                                     DevToolsToggleAction::ShowSecurityPanel());
+}
+
 // Handler for the link button to show certificate information.
 - (void)showCertificateInfo:(id)sender {
   DCHECK(certificateId_);
+  DCHECK(presenter_);
   presenter_->RecordWebsiteSettingsAction(
       WebsiteSettings::WEBSITE_SETTINGS_CERTIFICATE_DIALOG_OPENED);
   ShowCertificateViewerByID(webContents_, [self parentWindow], certificateId_);
@@ -675,6 +697,10 @@ NSPoint AnchorPointForWindow(NSWindow* parent) {
   CGFloat yPos = NSMaxY([identityField_ frame]) + kConnectionHeadlineSpacing;
   yPos = [self setYPositionOfView:identityStatusField_ to:yPos];
 
+  [siteSettingsButton_ setFrameOrigin:NSMakePoint(kFramePadding, yPos)];
+  yPos = NSMaxY([identityStatusField_ frame]) + kConnectionHeadlineSpacing;
+  yPos = [self setYPositionOfView:securityDetailsButton_ to:yPos];
+
   // Lay out the Permissions tab.
 
   yPos = [self setYPositionOfView:cookiesView_ to:kFramePadding];
@@ -728,7 +754,10 @@ NSPoint AnchorPointForWindow(NSWindow* parent) {
 
   // Adjust the tab view size and place it below the identity status.
 
-  yPos = NSMaxY([identityStatusField_ frame]) + kTabStripTopSpacing;
+  yPos = NSMaxY([identityStatusField_ frame]) + kVerticalSpacing;
+  yPos = [self setYPositionOfView:segmentedControl_ to:yPos];
+
+  yPos = NSMaxY([securityDetailsButton_ frame]) + kTabStripTopSpacing;
   yPos = [self setYPositionOfView:segmentedControl_ to:yPos];
 
   CGFloat connectionTabHeight = NSMaxY([helpButton_ frame]) + kVerticalSpacing;

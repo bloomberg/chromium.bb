@@ -36,6 +36,9 @@ class WebContents;
   // Display the identity status (e.g. verified, not verified).
   NSTextField* identityStatusField_;
 
+  // The link button for opening the DevTools Security panel for details.
+  NSButton* securityDetailsButton_;
+
   // The main content view for the Permissions tab.
   NSView* permissionsTabContentView_;
 
