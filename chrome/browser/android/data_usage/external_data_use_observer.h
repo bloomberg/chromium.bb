@@ -91,6 +91,10 @@ class ExternalDataUseObserver : public data_usage::DataUseAggregator::Observer {
   // matching rule's label.
   bool Matches(const GURL& gurl, std::string* label) const;
 
+  DataUseTabModel* data_use_tab_model() const {
+    return data_use_tab_model_.get();
+  }
+
  private:
   FRIEND_TEST_ALL_PREFIXES(ExternalDataUseObserverTest, SingleRegex);
   FRIEND_TEST_ALL_PREFIXES(ExternalDataUseObserverTest, TwoRegex);
