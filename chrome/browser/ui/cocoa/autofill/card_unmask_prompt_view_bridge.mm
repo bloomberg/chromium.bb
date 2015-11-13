@@ -88,7 +88,7 @@ void CardUnmaskPromptViewBridge::Show() {
   base::scoped_nsobject<CustomConstrainedWindowSheet> sheet(
       [[CustomConstrainedWindowSheet alloc] initWithCustomWindow:window]);
   constrained_window_.reset(
-      CreateAndShowWebModalDialogMac(this, web_contents_, sheet));
+      new ConstrainedWindowMac(this, web_contents_, sheet));
 }
 
 void CardUnmaskPromptViewBridge::ControllerGone() {

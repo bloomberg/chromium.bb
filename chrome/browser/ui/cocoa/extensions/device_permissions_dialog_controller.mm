@@ -34,7 +34,7 @@ DevicePermissionsDialogController::DevicePermissionsDialogController(
   base::scoped_nsobject<CustomConstrainedWindowSheet> sheet(
       [[CustomConstrainedWindowSheet alloc] initWithCustomWindow:window]);
   constrained_window_.reset(
-      CreateAndShowWebModalDialogMac(this, web_contents, sheet));
+      new ConstrainedWindowMac(this, web_contents, sheet));
 }
 
 DevicePermissionsDialogController::~DevicePermissionsDialogController() {

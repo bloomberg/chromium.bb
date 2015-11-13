@@ -176,7 +176,7 @@ void ShowSSLClientCertificateSelector(
   }
 
   constrainedWindow_.reset(
-      CreateAndShowWebModalDialogMac(observer_.get(), webContents, self));
+      new ConstrainedWindowMac(observer_.get(), webContents, self));
   observer_->StartObserving();
 }
 
@@ -253,10 +253,6 @@ void ShowSSLClientCertificateSelector(
 }
 
 - (void)updateSheetPosition {
-  // NOOP
-}
-
-- (void)resizeWithNewSize:(NSSize)size {
   // NOOP
 }
 

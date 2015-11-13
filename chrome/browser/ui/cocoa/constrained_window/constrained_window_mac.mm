@@ -9,54 +9,32 @@
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_sheet.h"
 #import "chrome/browser/ui/cocoa/single_web_contents_dialog_manager_cocoa.h"
 #include "components/guest_view/browser/guest_view_base.h"
+#include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/browser_thread.h"
 
 using web_modal::WebContentsModalDialogManager;
-
-ConstrainedWindowMac* CreateAndShowWebModalDialogMac(
-    ConstrainedWindowMacDelegate* delegate,
-    content::WebContents* web_contents,
-    id<ConstrainedWindowSheet> sheet) {
-  ConstrainedWindowMac* window =
-      new ConstrainedWindowMac(delegate, web_contents, sheet);
-  window->ShowWebContentsModalDialog();
-  return window;
-}
-
-ConstrainedWindowMac* CreateWebModalDialogMac(
-    ConstrainedWindowMacDelegate* delegate,
-    content::WebContents* web_contents,
-    id<ConstrainedWindowSheet> sheet) {
-  return new ConstrainedWindowMac(delegate, web_contents, sheet);
-}
 
 ConstrainedWindowMac::ConstrainedWindowMac(
     ConstrainedWindowMacDelegate* delegate,
     content::WebContents* web_contents,
     id<ConstrainedWindowSheet> sheet)
-    : delegate_(delegate),
-      sheet_([sheet retain]) {
+    : delegate_(delegate) {
   DCHECK(sheet);
 
   // |web_contents| may be embedded within a chain of nested GuestViews. If it
   // is, follow the chain of embedders to the outermost WebContents and use it.
-  web_contents_ =
+  web_contents =
       guest_view::GuestViewBase::GetTopLevelWebContents(web_contents);
 
-  native_manager_.reset(
-      new SingleWebContentsDialogManagerCocoa(this, sheet_.get(),
-                                              GetDialogManager()));
+  auto manager = WebContentsModalDialogManager::FromWebContents(web_contents);
+  scoped_ptr<SingleWebContentsDialogManagerCocoa> native_manager(
+      new SingleWebContentsDialogManagerCocoa(this, sheet, manager));
+  manager->ShowDialogWithManager([sheet sheetWindow], native_manager.Pass());
 }
 
 ConstrainedWindowMac::~ConstrainedWindowMac() {
   CHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  native_manager_.reset();
   DCHECK(!manager_);
-}
-
-void ConstrainedWindowMac::ShowWebContentsModalDialog() {
-  GetDialogManager()->ShowDialogWithManager(
-      [sheet_.get() sheetWindow], native_manager_.Pass());
 }
 
 void ConstrainedWindowMac::CloseWebContentsModalDialog() {
@@ -67,9 +45,4 @@ void ConstrainedWindowMac::CloseWebContentsModalDialog() {
 void ConstrainedWindowMac::OnDialogClosing() {
   if (delegate_)
     delegate_->OnConstrainedWindowClosed(this);
-}
-
-WebContentsModalDialogManager* ConstrainedWindowMac::GetDialogManager() {
-  DCHECK(web_contents_);
-  return WebContentsModalDialogManager::FromWebContents(web_contents_);
 }
