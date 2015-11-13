@@ -254,7 +254,7 @@ DirectoryItem.prototype.handleClick = function(e) {
     return;
   }
 
-  cr.dispatchSimpleEvent(this, 'click-tree-item', true);
+  cr.dispatchSimpleEvent(this, 'activate-tree-item', true);
   this.directoryModel_.activateDirectoryEntry(this.entry);
 };
 
@@ -366,8 +366,10 @@ DirectoryItem.prototype.doDropTargetAction = function() {
  * Change current directory to the entry of this item.
  */
 DirectoryItem.prototype.activate = function() {
-  if (this.entry)
+  if (this.entry) {
     this.parentTree_.directoryModel.activateDirectoryEntry(this.entry);
+    cr.dispatchSimpleEvent(this, 'activate-tree-item', true);
+  }
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -532,6 +534,7 @@ VolumeItem.prototype.activate = function() {
     if (!util.isSameEntry(directoryModel.getCurrentDirEntry(), entry)) {
       metrics.recordUserAction('FolderShortcut.Navigate');
       directoryModel.changeDirectoryEntry(entry);
+      cr.dispatchSimpleEvent(this, 'activate-tree-item', true);
     }
     // In case of failure in resolveDisplayRoot() in the volume's constructor,
     // update the volume's children here.
@@ -786,8 +789,6 @@ ShortcutItem.prototype.handleClick = function(e) {
   if (e.button === 2)
     return;
 
-  cr.dispatchSimpleEvent(this, 'click-tree-item', true);
-
   this.activate();
   // Resets file selection when a volume is clicked.
   this.parentTree_.directoryModel.clearSelection();
@@ -821,6 +822,7 @@ ShortcutItem.prototype.activate = function() {
     if (!util.isSameEntry(directoryModel.getCurrentDirEntry(), entry)) {
       metrics.recordUserAction('FolderShortcut.Navigate');
       directoryModel.changeDirectoryEntry(entry);
+      cr.dispatchSimpleEvent(this, 'activate-tree-item', true);
     }
   }.bind(this);
 
