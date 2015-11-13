@@ -1416,7 +1416,6 @@
           ],
           'sources': [
             '<@(policy_unittest_sources)',
-            'search_engines/default_search_policy_handler_unittest.cc',
             'sync_driver/sync_policy_handler_unittest.cc',
           ],
           'conditions': [
@@ -1455,6 +1454,11 @@
                 'policy/core/common/mac_util_unittest.cc',
               ],
             }],
+          ],
+        }, {  # configuration_policy!=1
+          'sources!': [
+            'search_engines/default_search_policy_handler_unittest.cc',
+            'sync_driver/sync_policy_handler_unittest.cc',
           ],
         }],
         ['enable_plugins == 1', {

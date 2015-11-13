@@ -211,76 +211,76 @@ source_set("common") {
   }
 }
 
-source_set("unit_tests") {
-  testonly = true
-  sources = [
-    "async_policy_provider_unittest.cc",
-    "cloud/cloud_policy_client_unittest.cc",
-    "cloud/cloud_policy_constants_unittest.cc",
-    "cloud/cloud_policy_core_unittest.cc",
-    "cloud/cloud_policy_manager_unittest.cc",
-    "cloud/cloud_policy_refresh_scheduler_unittest.cc",
-    "cloud/cloud_policy_service_unittest.cc",
-    "cloud/cloud_policy_validator_unittest.cc",
-    "cloud/component_cloud_policy_service_unittest.cc",
-    "cloud/component_cloud_policy_store_unittest.cc",
-    "cloud/component_cloud_policy_updater_unittest.cc",
-    "cloud/device_management_service_unittest.cc",
-    "cloud/external_policy_data_fetcher_unittest.cc",
-    "cloud/external_policy_data_updater_unittest.cc",
-    "cloud/policy_header_io_helper_unittest.cc",
-    "cloud/policy_header_service_unittest.cc",
-    "cloud/resource_cache_unittest.cc",
-    "cloud/user_cloud_policy_manager_unittest.cc",
-    "cloud/user_cloud_policy_store_unittest.cc",
-    "cloud/user_info_fetcher_unittest.cc",
-    "config_dir_policy_loader_unittest.cc",
-    "generate_policy_source_unittest.cc",
-    "policy_bundle_unittest.cc",
-    "policy_loader_ios_unittest.mm",
-    "policy_loader_mac_unittest.cc",
-    "policy_loader_win_unittest.cc",
-    "policy_map_unittest.cc",
-    "policy_service_impl_unittest.cc",
-    "policy_statistics_collector_unittest.cc",
-    "preg_parser_win_unittest.cc",
-    "registry_dict_win_unittest.cc",
-    "remote_commands/remote_commands_queue_unittest.cc",
-    "remote_commands/remote_commands_service_unittest.cc",
-    "schema_map_unittest.cc",
-    "schema_registry_tracking_policy_provider_unittest.cc",
-    "schema_registry_unittest.cc",
-    "schema_unittest.cc",
-  ]
-
-  if (is_chromeos) {
-    sources -= [
-      "cloud/user_cloud_policy_manager_unittest.cc",
-      "cloud/user_cloud_policy_store_unittest.cc",
-    ]
-  }
-
-  if (is_android) {
-    sources -= [ "async_policy_provider_unittest.cc" ]
-  }
-
-  if (is_android || is_ios) {
-    sources -= [
+if (enable_configuration_policy) {
+  source_set("unit_tests") {
+    testonly = true
+    sources = [
+      "async_policy_provider_unittest.cc",
+      "cloud/cloud_policy_client_unittest.cc",
+      "cloud/cloud_policy_constants_unittest.cc",
+      "cloud/cloud_policy_core_unittest.cc",
+      "cloud/cloud_policy_manager_unittest.cc",
+      "cloud/cloud_policy_refresh_scheduler_unittest.cc",
+      "cloud/cloud_policy_service_unittest.cc",
+      "cloud/cloud_policy_validator_unittest.cc",
       "cloud/component_cloud_policy_service_unittest.cc",
       "cloud/component_cloud_policy_store_unittest.cc",
       "cloud/component_cloud_policy_updater_unittest.cc",
+      "cloud/device_management_service_unittest.cc",
       "cloud/external_policy_data_fetcher_unittest.cc",
       "cloud/external_policy_data_updater_unittest.cc",
+      "cloud/policy_header_io_helper_unittest.cc",
+      "cloud/policy_header_service_unittest.cc",
       "cloud/resource_cache_unittest.cc",
+      "cloud/user_cloud_policy_manager_unittest.cc",
+      "cloud/user_cloud_policy_store_unittest.cc",
+      "cloud/user_info_fetcher_unittest.cc",
       "config_dir_policy_loader_unittest.cc",
+      "generate_policy_source_unittest.cc",
+      "policy_bundle_unittest.cc",
+      "policy_loader_ios_unittest.mm",
+      "policy_loader_mac_unittest.cc",
+      "policy_loader_win_unittest.cc",
+      "policy_map_unittest.cc",
+      "policy_service_impl_unittest.cc",
+      "policy_statistics_collector_unittest.cc",
+      "preg_parser_win_unittest.cc",
+      "registry_dict_win_unittest.cc",
+      "remote_commands/remote_commands_queue_unittest.cc",
+      "remote_commands/remote_commands_service_unittest.cc",
+      "schema_map_unittest.cc",
+      "schema_registry_tracking_policy_provider_unittest.cc",
+      "schema_registry_unittest.cc",
+      "schema_unittest.cc",
     ]
-  }
 
-  deps = [
-    "//testing/gmock",
-    "//testing/gtest",
-  ]
-  if (enable_configuration_policy) {
-    deps += [ "//components/policy:policy_component_test_support" ]
+    if (is_chromeos) {
+      sources -= [
+        "cloud/user_cloud_policy_manager_unittest.cc",
+        "cloud/user_cloud_policy_store_unittest.cc",
+      ]
+    }
+
+    if (is_android) {
+      sources -= [ "async_policy_provider_unittest.cc" ]
+    }
+
+    if (is_android || is_ios) {
+      sources -= [
+        "cloud/component_cloud_policy_service_unittest.cc",
+        "cloud/component_cloud_policy_store_unittest.cc",
+        "cloud/component_cloud_policy_updater_unittest.cc",
+        "cloud/external_policy_data_fetcher_unittest.cc",
+        "cloud/external_policy_data_updater_unittest.cc",
+        "cloud/resource_cache_unittest.cc",
+        "config_dir_policy_loader_unittest.cc",
+      ]
+    }
+
+    deps = [
+      "//components/policy:policy_component_test_support",
+      "//testing/gmock",
+      "//testing/gtest",
+    ]
   }
 }
