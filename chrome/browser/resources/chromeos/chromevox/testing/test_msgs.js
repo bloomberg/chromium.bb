@@ -47,6 +47,14 @@ TestMsgs.getMsg = function(messageId, opt_subs) {
   }
 
   var messageString = message.message;
+  var placeholders = message.placeholders;
+  if (placeholders) {
+    for (name in placeholders) {
+      messageString = messageString.replace(
+          '$' + name + '$',
+          placeholders[name].content);
+    }
+  }
   if (opt_subs) {
     // Unshift a null to make opt_subs and message.placeholders line up.
     for (var i = 0; i < opt_subs.length; i++) {
