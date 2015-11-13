@@ -1606,6 +1606,153 @@ static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeTextStrokeWidth(CSSParse
     return consumeLineWidth(range, cssParserMode);
 }
 
+static bool consumeTranslate3d(CSSParserTokenRange& args, CSSParserMode cssParserMode, RefPtrWillBeRawPtr<CSSFunctionValue>& transformValue)
+{
+    unsigned numberOfArguments = 2;
+    RefPtrWillBeRawPtr<CSSValue> parsedValue;
+    do {
+        parsedValue = consumeLengthOrPercent(args, cssParserMode, ValueRangeAll);
+        if (!parsedValue)
+            return false;
+        transformValue->append(parsedValue);
+        if (!consumeCommaIncludingWhitespace(args))
+            return false;
+    } while (--numberOfArguments);
+    parsedValue = consumeLength(args, cssParserMode, ValueRangeAll);
+    if (!parsedValue)
+        return false;
+    transformValue->append(parsedValue);
+    return true;
+}
+
+static bool consumeNumbers(CSSParserTokenRange& args, RefPtrWillBeRawPtr<CSSFunctionValue>& transformValue, unsigned numberOfArguments)
+{
+    do {
+        RefPtrWillBeRawPtr<CSSValue> parsedValue = consumeNumber(args, ValueRangeAll);
+        if (!parsedValue)
+            return false;
+        transformValue->append(parsedValue);
+        if (--numberOfArguments && !consumeCommaIncludingWhitespace(args))
+            return false;
+    } while (numberOfArguments);
+    return true;
+}
+
+static bool consumePerspective(CSSParserTokenRange& args, CSSParserMode cssParserMode, RefPtrWillBeRawPtr<CSSFunctionValue>& transformValue, bool useLegacyParsing)
+{
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> parsedValue = consumeLength(args, cssParserMode, ValueRangeNonNegative);
+    if (!parsedValue && useLegacyParsing) {
+        double perspective;
+        if (!consumeNumberRaw(args, perspective) || perspective < 0)
+            return false;
+        parsedValue = cssValuePool().createValue(perspective, CSSPrimitiveValue::UnitType::Pixels);
+    }
+    if (!parsedValue)
+        return false;
+    transformValue->append(parsedValue);
+    return true;
+}
+
+static PassRefPtrWillBeRawPtr<CSSValue> consumeTransformValue(CSSParserTokenRange& range, CSSParserMode cssParserMode, bool useLegacyParsing)
+{
+    CSSValueID functionId = range.peek().functionId();
+    if (functionId == CSSValueInvalid)
+        return nullptr;
+    CSSParserTokenRange args = consumeFunction(range);
+    if (args.atEnd())
+        return nullptr;
+    RefPtrWillBeRawPtr<CSSFunctionValue> transformValue = CSSFunctionValue::create(functionId);
+    RefPtrWillBeRawPtr<CSSValue> parsedValue = nullptr;
+    switch (functionId) {
+    case CSSValueRotate:
+    case CSSValueRotateX:
+    case CSSValueRotateY:
+    case CSSValueRotateZ:
+    case CSSValueSkewX:
+    case CSSValueSkewY:
+    case CSSValueSkew:
+        parsedValue = consumeAngle(args, cssParserMode);
+        if (!parsedValue)
+            return nullptr;
+        if (functionId == CSSValueSkew && consumeCommaIncludingWhitespace(args)) {
+            transformValue->append(parsedValue);
+            parsedValue = consumeAngle(args, cssParserMode);
+        }
+        break;
+    case CSSValueScaleX:
+    case CSSValueScaleY:
+    case CSSValueScaleZ:
+    case CSSValueScale:
+        parsedValue = consumeNumber(args, ValueRangeAll);
+        if (!parsedValue)
+            return nullptr;
+        if (functionId == CSSValueScale && consumeCommaIncludingWhitespace(args)) {
+            transformValue->append(parsedValue);
+            parsedValue = consumeNumber(args, ValueRangeAll);
+        }
+        break;
+    case CSSValuePerspective:
+        if (!consumePerspective(args, cssParserMode, transformValue, useLegacyParsing))
+            return nullptr;
+        break;
+    case CSSValueTranslateX:
+    case CSSValueTranslateY:
+    case CSSValueTranslate:
+        parsedValue = consumeLengthOrPercent(args, cssParserMode, ValueRangeAll);
+        if (!parsedValue)
+            return nullptr;
+        if (functionId == CSSValueTranslate && consumeCommaIncludingWhitespace(args)) {
+            transformValue->append(parsedValue);
+            parsedValue = consumeLengthOrPercent(args, cssParserMode, ValueRangeAll);
+        }
+        break;
+    case CSSValueTranslateZ:
+        parsedValue = consumeLength(args, cssParserMode, ValueRangeAll);
+        break;
+    case CSSValueMatrix:
+    case CSSValueMatrix3d:
+        if (!consumeNumbers(args, transformValue, (functionId == CSSValueMatrix3d) ? 16 : 6))
+            return nullptr;
+        break;
+    case CSSValueScale3d:
+        if (!consumeNumbers(args, transformValue, 3))
+            return nullptr;
+        break;
+    case CSSValueRotate3d:
+        if (!consumeNumbers(args, transformValue, 3) || !consumeCommaIncludingWhitespace(args))
+            return nullptr;
+        parsedValue = consumeAngle(args, cssParserMode);
+        break;
+    case CSSValueTranslate3d:
+        if (!consumeTranslate3d(args, cssParserMode, transformValue))
+            return nullptr;
+        break;
+    default:
+        return nullptr;
+    }
+    if (parsedValue)
+        transformValue->append(parsedValue);
+    if (!args.atEnd())
+        return nullptr;
+    return transformValue.release();
+}
+
+static PassRefPtrWillBeRawPtr<CSSValue> consumeTransform(CSSParserTokenRange& range, CSSParserMode cssParserMode, bool useLegacyParsing)
+{
+    if (range.peek().id() == CSSValueNone)
+        return consumeIdent(range);
+
+    RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
+    do {
+        RefPtrWillBeRawPtr<CSSValue> parsedTransformValue = consumeTransformValue(range, cssParserMode, useLegacyParsing);
+        if (!parsedTransformValue)
+            return nullptr;
+        list->append(parsedTransformValue.release());
+    } while (!range.atEnd());
+
+    return list.release();
+}
+
 PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSPropertyID unresolvedProperty)
 {
     CSSPropertyID property = resolveCSSPropertyID(unresolvedProperty);
@@ -1752,6 +1899,8 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSProperty
         return consumeLength(m_range, m_context.mode(), ValueRangeAll);
     case CSSPropertyOutlineWidth:
         return consumeLineWidth(m_range, m_context.mode());
+    case CSSPropertyTransform:
+        return consumeTransform(m_range, m_context.mode(), unresolvedProperty == CSSPropertyAliasWebkitTransform);
     default:
         return nullptr;
     }

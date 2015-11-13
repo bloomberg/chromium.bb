@@ -773,12 +773,6 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     case CSSPropertyOrder:
         validPrimitive = validUnit(value, FInteger);
         break;
-    case CSSPropertyTransform:
-        if (id == CSSValueNone)
-            validPrimitive = true;
-        else
-            parsedValue = parseTransform(unresolvedProperty == CSSPropertyAliasWebkitTransform);
-        break;
     case CSSPropertyTransformOrigin: {
         RefPtrWillBeRawPtr<CSSValueList> list = parseTransformOrigin();
         if (!list)
@@ -1172,6 +1166,7 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     case CSSPropertyWebkitTextStroke:
     case CSSPropertyWebkitTextStrokeColor:
     case CSSPropertyWebkitTextStrokeWidth:
+    case CSSPropertyTransform:
         validPrimitive = false;
         break;
 
@@ -5690,197 +5685,6 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parsePaintOrder() const
     }
 
     return paintOrderList.release();
-}
-
-class TransformOperationInfo {
-public:
-    TransformOperationInfo(CSSValueID id)
-        : m_validID(true)
-        , m_allowSingleArgument(false)
-        , m_argCount(1)
-        , m_unit(CSSPropertyParser::FUnknown)
-    {
-        switch (id) {
-        case CSSValueSkew:
-            m_unit = CSSPropertyParser::FAngle;
-            m_allowSingleArgument = true;
-            m_argCount = 3;
-            break;
-        case CSSValueScale:
-            m_unit = CSSPropertyParser::FNumber;
-            m_allowSingleArgument = true;
-            m_argCount = 3;
-            break;
-        case CSSValueSkewX:
-            m_unit = CSSPropertyParser::FAngle;
-            break;
-        case CSSValueSkewY:
-            m_unit = CSSPropertyParser::FAngle;
-            break;
-        case CSSValueMatrix:
-            m_unit = CSSPropertyParser::FNumber;
-            m_argCount = 11;
-            break;
-        case CSSValueRotate:
-            m_unit = CSSPropertyParser::FAngle;
-            break;
-        case CSSValueScaleX:
-            m_unit = CSSPropertyParser::FNumber;
-            break;
-        case CSSValueScaleY:
-            m_unit = CSSPropertyParser::FNumber;
-            break;
-        case CSSValueScaleZ:
-            m_unit = CSSPropertyParser::FNumber;
-            break;
-        case CSSValueScale3d:
-            m_unit = CSSPropertyParser::FNumber;
-            m_argCount = 5;
-            break;
-        case CSSValueRotateX:
-            m_unit = CSSPropertyParser::FAngle;
-            break;
-        case CSSValueRotateY:
-            m_unit = CSSPropertyParser::FAngle;
-            break;
-        case CSSValueRotateZ:
-            m_unit = CSSPropertyParser::FAngle;
-            break;
-        case CSSValueMatrix3d:
-            m_unit = CSSPropertyParser::FNumber;
-            m_argCount = 31;
-            break;
-        case CSSValueRotate3d:
-            m_unit = CSSPropertyParser::FNumber;
-            m_argCount = 7;
-            break;
-        case CSSValueTranslate:
-            m_unit = CSSPropertyParser::FLength | CSSPropertyParser::FPercent;
-            m_allowSingleArgument = true;
-            m_argCount = 3;
-            break;
-        case CSSValueTranslateX:
-            m_unit = CSSPropertyParser::FLength | CSSPropertyParser::FPercent;
-            break;
-        case CSSValueTranslateY:
-            m_unit = CSSPropertyParser::FLength | CSSPropertyParser::FPercent;
-            break;
-        case CSSValueTranslateZ:
-            m_unit = CSSPropertyParser::FLength | CSSPropertyParser::FPercent;
-            break;
-        case CSSValuePerspective:
-            m_unit = CSSPropertyParser::FNumber;
-            break;
-        case CSSValueTranslate3d:
-            m_unit = CSSPropertyParser::FLength | CSSPropertyParser::FPercent;
-            m_argCount = 5;
-            break;
-        default:
-            m_validID = false;
-            break;
-        }
-    }
-
-    bool validID() const { return m_validID; }
-    unsigned argCount() const { return m_argCount; }
-    CSSPropertyParser::Units unit() const { return m_unit; }
-
-    bool hasCorrectArgCount(unsigned argCount) { return m_argCount == argCount || (m_allowSingleArgument && argCount == 1); }
-
-private:
-    bool m_validID;
-    bool m_allowSingleArgument;
-    unsigned m_argCount;
-    CSSPropertyParser::Units m_unit;
-};
-
-PassRefPtrWillBeRawPtr<CSSValueList> CSSPropertyParser::parseTransform(bool useLegacyParsing)
-{
-    if (!m_valueList)
-        return nullptr;
-
-    RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
-    for (CSSParserValue* value = m_valueList->current(); value; value = m_valueList->next()) {
-        RefPtrWillBeRawPtr<CSSValue> parsedTransformValue = parseTransformValue(useLegacyParsing, value);
-        if (!parsedTransformValue)
-            return nullptr;
-
-        list->append(parsedTransformValue.release());
-    }
-
-    return list.release();
-}
-
-PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseTransformValue(bool useLegacyParsing, CSSParserValue *value)
-{
-    if (value->m_unit != CSSParserValue::Function || !value->function)
-        return nullptr;
-
-    // Every primitive requires at least one argument.
-    CSSParserValueList* args = value->function->args.get();
-    if (!args)
-        return nullptr;
-
-    // See if the specified primitive is one we understand.
-    CSSValueID type = value->function->id;
-    TransformOperationInfo info(type);
-    if (!info.validID())
-        return nullptr;
-
-    if (!info.hasCorrectArgCount(args->size()))
-        return nullptr;
-
-    // The transform is a list of functional primitives that specify transform operations.
-    // We collect a list of CSSFunctionValues, where each value specifies a single operation.
-
-    // Create the new CSSFunctionValue for this operation and add it to our list.
-    RefPtrWillBeRawPtr<CSSFunctionValue> transformValue = CSSFunctionValue::create(type);
-
-    // Snag our values.
-    CSSParserValue* a = args->current();
-    unsigned argNumber = 0;
-    while (a) {
-        CSSPropertyParser::Units unit = info.unit();
-
-        if (type == CSSValueRotate3d && argNumber == 3) {
-            // 4th param of rotate3d() is an angle rather than a bare number, validate it as such
-            if (!validUnit(a, FAngle, HTMLStandardMode))
-                return nullptr;
-        } else if (type == CSSValueTranslate3d && argNumber == 2) {
-            // 3rd param of translate3d() cannot be a percentage
-            if (!validUnit(a, FLength, HTMLStandardMode))
-                return nullptr;
-        } else if (type == CSSValueTranslateZ && !argNumber) {
-            // 1st param of translateZ() cannot be a percentage
-            if (!validUnit(a, FLength, HTMLStandardMode))
-                return nullptr;
-        } else if (type == CSSValuePerspective && !argNumber) {
-            // 1st param of perspective() must be a non-negative number (deprecated) or length.
-            if (!validUnit(a, FLength | FNonNeg, HTMLStandardMode)) {
-                if (useLegacyParsing && validUnit(a, FNumber | FNonNeg, HTMLStandardMode)) {
-                    a->setUnit(CSSPrimitiveValue::UnitType::Pixels);
-                } else {
-                    return nullptr;
-                }
-            }
-        } else if (!validUnit(a, unit, HTMLStandardMode)) {
-            return nullptr;
-        }
-
-        // Add the value to the current transform operation.
-        transformValue->append(createPrimitiveNumericValue(a));
-
-        a = args->next();
-        if (!a)
-            break;
-        if (!isComma(a))
-            return nullptr;
-        a = args->next();
-
-        argNumber++;
-    }
-
-    return transformValue.release();
 }
 
 } // namespace blink

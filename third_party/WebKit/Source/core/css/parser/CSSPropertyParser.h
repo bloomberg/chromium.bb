@@ -233,8 +233,6 @@ private:
     PassRefPtrWillBeRawPtr<CSSFunctionValue> parseBuiltinFilterArguments(CSSParserValueList*, CSSValueID);
 
     PassRefPtrWillBeRawPtr<CSSValueList> parseTransformOrigin();
-    PassRefPtrWillBeRawPtr<CSSValueList> parseTransform(bool useLegacyParsing);
-    PassRefPtrWillBeRawPtr<CSSValue> parseTransformValue(bool useLegacyParsing, CSSParserValue*);
 
     bool parseCalculation(CSSParserValue*, ValueRange);
 
