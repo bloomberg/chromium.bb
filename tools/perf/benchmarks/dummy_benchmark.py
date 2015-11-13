@@ -5,6 +5,8 @@
 Benchmarks in this file is created for the purpose of testing telemetry
 integration with perf dashboard and bisect bot. The number they produce aren't
 meant to represent any actual performance data of the browser.
+
+For more information about these dummy benchmarks, see: https://goo.gl/WvZiiW
 """
 
 import random
