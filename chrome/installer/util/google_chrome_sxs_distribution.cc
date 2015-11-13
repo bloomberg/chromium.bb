@@ -37,10 +37,8 @@ base::string16 GoogleChromeSxSDistribution::GetShortcutName(
     ShortcutType shortcut_type) {
   switch (shortcut_type) {
     case SHORTCUT_CHROME_ALTERNATE:
-      // This should never be called. Returning the same string as Google Chrome
-      // preserves behavior, but it will result in a naming collision.
-      NOTREACHED();
-      return GoogleChromeDistribution::GetShortcutName(shortcut_type);
+      // There is no alternate shortcut name on SxS Chrome.
+      return base::string16();
     case SHORTCUT_APP_LAUNCHER:
       return installer::GetLocalizedString(
           IDS_APP_LIST_SHORTCUT_NAME_CANARY_BASE);

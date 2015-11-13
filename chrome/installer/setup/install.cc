@@ -374,20 +374,21 @@ void CreateOrUpdateShortcuts(
 
   if (!do_not_create_desktop_shortcut ||
       shortcut_operation == ShellUtil::SHELL_SHORTCUT_REPLACE_EXISTING) {
+    const base::string16 alternate_shortcut_name =
+        dist->GetShortcutName(BrowserDistribution::SHORTCUT_CHROME_ALTERNATE);
+
     ShellUtil::ShortcutProperties desktop_properties(base_properties);
-    if (alternate_desktop_shortcut) {
-      desktop_properties.set_shortcut_name(
-          dist->GetShortcutName(
-              BrowserDistribution::SHORTCUT_CHROME_ALTERNATE));
-    }
+    if (alternate_desktop_shortcut && !alternate_shortcut_name.empty())
+      desktop_properties.set_shortcut_name(alternate_shortcut_name);
     ExecuteAndLogShortcutOperation(
         ShellUtil::SHORTCUT_LOCATION_DESKTOP, dist, desktop_properties,
         shortcut_operation);
 
     // On update there is no harm in always trying to update the alternate
-    // Desktop shortcut.
+    // Desktop shortcut (if it exists for this distribution).
     if (!alternate_desktop_shortcut &&
-        shortcut_operation == ShellUtil::SHELL_SHORTCUT_REPLACE_EXISTING) {
+        shortcut_operation == ShellUtil::SHELL_SHORTCUT_REPLACE_EXISTING &&
+        !alternate_shortcut_name.empty()) {
       desktop_properties.set_shortcut_name(
           dist->GetShortcutName(
               BrowserDistribution::SHORTCUT_CHROME_ALTERNATE));

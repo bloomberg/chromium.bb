@@ -82,7 +82,8 @@ class BrowserDistribution {
   virtual base::string16 GetDisplayName();
 
   // Returns the localized name of the shortcut identified by |shortcut_type|
-  // for this distribution.
+  // for this distribution or empty string if |shortcut_type| is unsupported
+  // by this BrowserDistribution.
   virtual base::string16 GetShortcutName(ShortcutType shortcut_type);
 
   // Returns the index of the icon for the product identified by
