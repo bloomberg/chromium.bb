@@ -1678,6 +1678,7 @@ def GetConfig():
 
   # Jetstream devices run unique hw tests
   _paladin_jetstream_hwtest_boards = frozenset([
+      'whirlwind',
   ])
 
   _paladin_moblab_hwtest_boards = frozenset([
