@@ -53,7 +53,7 @@ const char kFederationField[] = "federation";
 // origin is secure or not.
 void CopyOriginInfoOfPasswordForm(const autofill::PasswordForm& form,
                                   const std::string& languages,
-                                  scoped_ptr<base::DictionaryValue>& entry) {
+                                  base::DictionaryValue* entry) {
   entry->SetString(
       kOriginField,
       url_formatter::FormatUrl(
@@ -223,7 +223,7 @@ void PasswordManagerHandler::SetPasswordList(
   base::string16 placeholder(base::ASCIIToUTF16("        "));
   for (const autofill::PasswordForm* saved_password : password_list) {
     scoped_ptr<base::DictionaryValue> entry(new base::DictionaryValue);
-    CopyOriginInfoOfPasswordForm(*saved_password, languages_, entry);
+    CopyOriginInfoOfPasswordForm(*saved_password, languages_, entry.get());
 
     entry->SetString(kUsernameField, saved_password->username_value);
     if (show_passwords) {
@@ -254,7 +254,7 @@ void PasswordManagerHandler::SetPasswordExceptionList(
   base::ListValue entries;
   for (const autofill::PasswordForm* exception : password_exception_list) {
     scoped_ptr<base::DictionaryValue> entry(new base::DictionaryValue);
-    CopyOriginInfoOfPasswordForm(*exception, languages_, entry);
+    CopyOriginInfoOfPasswordForm(*exception, languages_, entry.get());
     entries.Append(entry.release());
   }
 

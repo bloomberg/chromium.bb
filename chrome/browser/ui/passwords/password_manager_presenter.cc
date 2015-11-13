@@ -131,7 +131,7 @@ void PasswordManagerPresenter::RemovePasswordException(size_t index) {
 }
 
 void PasswordManagerPresenter::RequestShowPassword(size_t index) {
-#if !defined(OS_ANDROID) // This is never called on Android.
+#if !defined(OS_ANDROID)  // This is never called on Android.
   if (index >= password_list_.size()) {
     // |index| out of bounds might come from a compromised renderer, don't let
     // it crash the browser. http://crbug.com/362054

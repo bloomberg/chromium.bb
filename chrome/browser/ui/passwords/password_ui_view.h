@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_PASSWORDS_PASSWORD_UI_VIEW_H_
 #define CHROME_BROWSER_UI_PASSWORDS_PASSWORD_UI_VIEW_H_
 
+#include <string>
+
 #include "base/memory/scoped_vector.h"
 #include "ui/gfx/native_widget_types.h"
 
