@@ -84,7 +84,7 @@ bool FFmpegH265ToAnnexBBitstreamConverter::ConvertPacket(AVPacket* packet) {
   memcpy(dest_packet.data, &input_frame[0], input_frame.size());
 
   // At the end we must destroy the old packet.
-  av_free_packet(packet);
+  av_packet_unref(packet);
   *packet = dest_packet;  // Finally, replace the values in the input packet.
 
   return true;

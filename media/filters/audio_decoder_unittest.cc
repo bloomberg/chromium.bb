@@ -147,7 +147,7 @@ class AudioDecoderTest : public testing::TestWithParam<DecoderTestData> {
     EXPECT_EQ(GetParam().first_packet_pts, packet.pts);
     start_timestamp_ = ConvertFromTimeBase(
         reader_->GetAVStreamForTesting()->time_base, packet.pts);
-    av_free_packet(&packet);
+    av_packet_unref(&packet);
 
     // Seek back to the beginning.
     ASSERT_TRUE(reader_->SeekForTesting(start_timestamp_));
@@ -197,7 +197,7 @@ class AudioDecoderTest : public testing::TestWithParam<DecoderTestData> {
       SetDiscardPadding(&packet, buffer, GetParam().samples_per_second);
 
     // DecodeBuffer() shouldn't need the original packet since it uses the copy.
-    av_free_packet(&packet);
+    av_packet_unref(&packet);
     DecodeBuffer(buffer);
   }
 

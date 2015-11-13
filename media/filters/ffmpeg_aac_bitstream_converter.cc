@@ -230,7 +230,7 @@ bool FFmpegAACBitstreamConverter::ConvertPacket(AVPacket* packet) {
   av_packet_copy_props(&dest_packet, packet);
 
   // Release the old packet.
-  av_free_packet(packet);
+  av_packet_unref(packet);
   *packet = dest_packet;  // Finally, replace the values in the input packet.
 
   return true;

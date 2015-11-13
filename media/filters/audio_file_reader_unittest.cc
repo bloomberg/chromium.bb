@@ -73,7 +73,7 @@ class AudioFileReaderTest : public testing::Test {
           EXPECT_EQ(packet_md5_hashes_[j], md5_hash) << "j = " << j;
         }
 
-        av_free_packet(&packet);
+        av_packet_unref(&packet);
       }
       ASSERT_TRUE(reader_->SeekForTesting(start_timestamp));
     }

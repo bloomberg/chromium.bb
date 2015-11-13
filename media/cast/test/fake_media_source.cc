@@ -441,7 +441,7 @@ void FakeMediaSource::DecodeAudio(ScopedAVPacket packet) {
   AVFrame* avframe = av_frame_alloc();
 
   // Make a shallow copy of packet so we can slide packet.data as frames are
-  // decoded from the packet; otherwise av_free_packet() will corrupt memory.
+  // decoded from the packet; otherwise av_packet_unref() will corrupt memory.
   AVPacket packet_temp = *packet.get();
 
   do {

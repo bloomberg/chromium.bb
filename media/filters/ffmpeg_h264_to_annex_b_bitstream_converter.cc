@@ -71,7 +71,7 @@ bool FFmpegH264ToAnnexBBitstreamConverter::ConvertPacket(AVPacket* packet) {
     configuration_processed_ = true;
 
   // At the end we must destroy the old packet.
-  av_free_packet(packet);
+  av_packet_unref(packet);
   *packet = dest_packet;  // Finally, replace the values in the input packet.
 
   return true;
