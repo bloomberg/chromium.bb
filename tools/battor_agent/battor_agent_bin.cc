@@ -15,6 +15,7 @@
 #include "device/serial/serial.mojom.h"
 #include "tools/battor_agent/battor_agent.h"
 
+using std::cerr;
 using std::cout;
 using std::endl;
 using std::string;
@@ -28,7 +29,7 @@ namespace {
 static const base::TimeDelta COMMAND_TIMEOUT = base::TimeDelta::FromSeconds(10);
 
 void PrintUsage() {
-  cout << "Usage: battor_agent <command> <arguments>" << endl
+  cerr << "Usage: battor_agent <command> <arguments>" << endl
        << endl
        << "Commands:" << endl
        << endl
@@ -51,78 +52,28 @@ string GetArg(int argnum, int argc, char* argv[]) {
   return argv[argnum];
 }
 
-// Checks if a send error occurred and, if it did, prints the error and exits
+// Checks if an error occurred and, if it did, prints the error and exits
 // with an error code.
-void CheckSendError(SendError error) {
-  if (error != device::serial::SEND_ERROR_NONE) {
-    printf("Error occured while sending: %d", error);
+void CheckError(battor::BattOrAgent::BattOrError error) {
+  if (error != battor::BattOrAgent::BATTOR_ERROR_NONE) {
+    cerr << "Error when communicating with the BattOr: " << error << endl;
     exit(1);
   }
-}
-
-// Checks if a receive error occurred and, if it did, prints the error and exits
-// with an error code.
-void CheckReceiveError(ReceiveError error) {
-  if (error != device::serial::RECEIVE_ERROR_NONE) {
-    cout << "Error occured while receiving: " << error << endl;
-    exit(1);
-  }
-}
-
-void OnStartTracingComplete(base::WaitableEvent* complete_event,
-                            SendError error) {
-  CheckSendError(error);
-  cout << "Tracing successfully started." << endl;
-  complete_event->Signal();
-}
-
-void OnStopTracingComplete(string* trace_output,
-                           base::WaitableEvent* complete_event,
-                           SendError send_error,
-                           ReceiveError receive_error) {
-  CheckSendError(send_error);
-  CheckReceiveError(receive_error);
-  cout << *trace_output << endl;
-  complete_event->Signal();
-}
-
-void OnRecordClockSyncMarkerComplete(base::WaitableEvent* complete_event,
-                                     SendError send_error,
-                                     ReceiveError receive_error) {
-  CheckSendError(send_error);
-  CheckReceiveError(receive_error);
-  // TODO(charliea): Write time to STDOUT.
-  cout << "Successfully recorded clock sync marker." << endl;
-  complete_event->Signal();
-}
-
-void OnIssueClockSyncMarkerComplete(base::WaitableEvent* complete_event,
-                                    SendError error) {
-  CheckSendError(error);
-  cout << "Successfully issued clock sync marker." << endl;
-  complete_event->Signal();
 }
 
 void StartTracing(int argc, char* argv[]) {
   string path = GetArg(2, argc, argv);
   battor::BattOrAgent agent(path);
-  base::WaitableEvent command_complete_event(false, false);
 
-  agent.StartTracing(
-      base::Bind(&OnStartTracingComplete, &command_complete_event));
-  command_complete_event.TimedWait(COMMAND_TIMEOUT);
+  CheckError(agent.StartTracing());
 }
 
 void StopTracing(int argc, char* argv[]) {
   string path = GetArg(2, argc, argv);
   string trace_output;
   battor::BattOrAgent agent(path);
-  base::WaitableEvent command_complete_event(false, false);
 
-  agent.StopTracing(&trace_output,
-                    base::Bind(&OnStopTracingComplete, &trace_output,
-                               &command_complete_event));
-  command_complete_event.TimedWait(COMMAND_TIMEOUT);
+  CheckError(agent.StopTracing(&trace_output));
 }
 
 void SupportsExplicitClockSync() {
@@ -132,24 +83,18 @@ void SupportsExplicitClockSync() {
 void RecordClockSyncMarker(int argc, char* argv[]) {
   string path = GetArg(2, argc, argv);
   string marker = GetArg(3, argc, argv);
-  base::WaitableEvent command_complete_event(false, false);
   battor::BattOrAgent agent(path);
 
   // TODO(charliea): Write time to STDOUT.
-  agent.RecordClockSyncMarker(
-      marker,
-      base::Bind(&OnRecordClockSyncMarkerComplete, &command_complete_event));
-  command_complete_event.TimedWait(COMMAND_TIMEOUT);
+  CheckError(agent.RecordClockSyncMarker(marker));
+  // TODO(charliea): Write time to STDOUT.
 }
 
 void IssueClockSyncMarker(int argc, char* argv[]) {
   string path = GetArg(2, argc, argv);
-  base::WaitableEvent command_complete_event(false, false);
   battor::BattOrAgent agent(path);
 
-  agent.IssueClockSyncMarker(
-      base::Bind(&OnIssueClockSyncMarkerComplete, &command_complete_event));
-  command_complete_event.TimedWait(COMMAND_TIMEOUT);
+  CheckError(agent.IssueClockSyncMarker());
 }
 
 }  // namespace

@@ -22,29 +22,26 @@ BattOrAgent::~BattOrAgent() {
   // TODO(charliea): Close the serial connection with the BattOr.
 }
 
-void BattOrAgent::StartTracing(const SendCallback& callback) {
+BattOrAgent::BattOrError BattOrAgent::StartTracing() {
   // TODO(charliea): Tell the BattOr to start tracing.
-  callback.Run(device::serial::SEND_ERROR_NONE);
+  return BATTOR_ERROR_NONE;
 }
 
-void BattOrAgent::StopTracing(std::string* trace_output,
-                              const SendReceiveCallback& callback) {
+BattOrAgent::BattOrError BattOrAgent::StopTracing(std::string* trace_output) {
   // TODO(charliea): Tell the BattOr to stop tracing.
   *trace_output = "battor trace output";
-  callback.Run(device::serial::SEND_ERROR_NONE,
-               device::serial::RECEIVE_ERROR_NONE);
+  return BATTOR_ERROR_NONE;
 }
 
-void BattOrAgent::RecordClockSyncMarker(const std::string& marker,
-                                        const SendReceiveCallback& callback) {
+BattOrAgent::BattOrError BattOrAgent::RecordClockSyncMarker(
+    const std::string& marker) {
   // TODO(charliea): Tell the BattOr to record the specified clock sync marker.
-  callback.Run(device::serial::SEND_ERROR_NONE,
-               device::serial::RECEIVE_ERROR_NONE);
+  return BATTOR_ERROR_NONE;
 }
 
-void BattOrAgent::IssueClockSyncMarker(const SendCallback& callback) {
+BattOrAgent::BattOrError BattOrAgent::IssueClockSyncMarker() {
   // TODO(charliea): Tell atrace to issue a clock sync marker.
-  callback.Run(device::serial::SEND_ERROR_NONE);
+  return BATTOR_ERROR_NONE;
 }
 
 }  // namespace battor
