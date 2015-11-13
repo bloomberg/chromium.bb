@@ -465,6 +465,7 @@ TEST_F(EmbedderTest, MAYBE_MultiprocessChannels) {
 }
 
 MOJO_MULTIPROCESS_TEST_CHILD_TEST(MultiprocessChannelsClient) {
+  base::MessageLoop message_loop;
   ScopedPlatformHandle client_platform_handle =
       test::MultiprocessTestHelper::client_platform_handle.Pass();
   EXPECT_TRUE(client_platform_handle.is_valid());

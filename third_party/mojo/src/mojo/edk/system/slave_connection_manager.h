@@ -50,8 +50,7 @@ class MOJO_SYSTEM_IMPL_EXPORT SlaveConnectionManager final
   // |delegate_thread_task_runner| should be the task runner for the "delegate
   // thread", on which |slave_process_delegate|'s methods will be called. Both
   // must stay alive at least until after |Shutdown()| has been called.
-  void Init(scoped_refptr<base::TaskRunner> delegate_thread_task_runner,
-            embedder::SlaveProcessDelegate* slave_process_delegate,
+  void Init(embedder::SlaveProcessDelegate* slave_process_delegate,
             embedder::ScopedPlatformHandle platform_handle);
 
   // |ConnectionManager| methods:

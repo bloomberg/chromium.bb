@@ -69,8 +69,8 @@ TEST(ChildProcessHostTest, MAYBE_StartJoin) {
 
   ProcessDelegate delegate;
   embedder::InitIPCSupport(
-      embedder::ProcessType::NONE, base::MessageLoop::current()->task_runner(),
-      &delegate, io_thread.task_runner(), embedder::ScopedPlatformHandle());
+      embedder::ProcessType::NONE, &delegate, io_thread.task_runner(),
+      embedder::ScopedPlatformHandle());
 
   TestChildProcessHost child_process_host(blocking_pool.get());
   child_process_host.Start();

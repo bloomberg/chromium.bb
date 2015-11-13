@@ -18,15 +18,12 @@ namespace system {
 IPCSupport::IPCSupport(
     embedder::PlatformSupport* platform_support,
     embedder::ProcessType process_type,
-    scoped_refptr<base::TaskRunner> delegate_thread_task_runner,
     embedder::ProcessDelegate* process_delegate,
     scoped_refptr<base::TaskRunner> io_thread_task_runner,
     embedder::ScopedPlatformHandle platform_handle)
     : process_type_(process_type),
-      delegate_thread_task_runner_(delegate_thread_task_runner.Pass()),
       process_delegate_(process_delegate),
       io_thread_task_runner_(io_thread_task_runner.Pass()) {
-  DCHECK(delegate_thread_task_runner_);
   DCHECK(io_thread_task_runner_);
 
   switch (process_type_) {
@@ -43,7 +40,6 @@ IPCSupport::IPCSupport(
           new system::MasterConnectionManager(platform_support));
       static_cast<system::MasterConnectionManager*>(connection_manager_.get())
           ->Init(
-              delegate_thread_task_runner_,
               static_cast<embedder::MasterProcessDelegate*>(process_delegate_));
       break;
     case embedder::ProcessType::SLAVE:
@@ -51,7 +47,6 @@ IPCSupport::IPCSupport(
           new system::SlaveConnectionManager(platform_support));
       static_cast<system::SlaveConnectionManager*>(connection_manager_.get())
           ->Init(
-              delegate_thread_task_runner_,
               static_cast<embedder::SlaveProcessDelegate*>(process_delegate_),
               platform_handle.Pass());
       break;
@@ -78,7 +73,6 @@ void IPCSupport::ShutdownOnIOThread() {
 
   io_thread_task_runner_ = nullptr;
   process_delegate_ = nullptr;
-  delegate_thread_task_runner_ = nullptr;
   process_type_ = embedder::ProcessType::UNINITIALIZED;
 }
 

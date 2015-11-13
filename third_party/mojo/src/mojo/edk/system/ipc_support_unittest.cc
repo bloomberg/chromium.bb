@@ -12,6 +12,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/test_io_thread.h"
 #include "base/test/test_timeouts.h"
@@ -118,14 +119,14 @@ scoped_refptr<MessagePipeDispatcher> SendMessagePipeDispatcher(
 
 class TestMasterProcessDelegate : public embedder::MasterProcessDelegate {
  public:
-  TestMasterProcessDelegate()
-      : on_slave_disconnect_event_(false, false) {}  // Auto reset.
+  TestMasterProcessDelegate() : slave_disconnected_(false) {}
   ~TestMasterProcessDelegate() override {}
 
   // Warning: There's only one slave disconnect event (which resets
   // automatically).
-  bool TryWaitForOnSlaveDisconnect() {
-    return on_slave_disconnect_event_.TimedWait(TestTimeouts::action_timeout());
+  void TryWaitForOnSlaveDisconnect() {
+    if (!slave_disconnected_)
+      run_loop_.Run();
   }
 
  private:
@@ -133,10 +134,13 @@ class TestMasterProcessDelegate : public embedder::MasterProcessDelegate {
   void OnShutdownComplete() override { NOTREACHED(); }
 
   void OnSlaveDisconnect(embedder::SlaveInfo /*slave_info*/) override {
-    on_slave_disconnect_event_.Signal();
+    slave_disconnected_ = true;
+    if (run_loop_.running())
+      run_loop_.Quit();
   }
 
-  base::WaitableEvent on_slave_disconnect_event_;
+  bool slave_disconnected_;
+  base::RunLoop run_loop_;
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(TestMasterProcessDelegate);
 };
@@ -229,7 +233,6 @@ class TestSlave {
       : test_io_thread_(test_io_thread),
         slave_ipc_support_(platform_support,
                            embedder::ProcessType::SLAVE,
-                           test_io_thread->task_runner(),
                            &slave_process_delegate_,
                            test_io_thread->task_runner(),
                            platform_handle.Pass()),
@@ -335,7 +338,7 @@ class TestSlaveSetup {
 
     slave_->ShutdownChannelToMaster();
     slave_->ShutdownIPCSupport();
-    EXPECT_TRUE(master_process_delegate_->TryWaitForOnSlaveDisconnect());
+    master_process_delegate_->TryWaitForOnSlaveDisconnect();
     slave_connection_->ShutdownChannelToSlave();
 
     slave_.reset();
@@ -372,7 +375,6 @@ class IPCSupportTest : public testing::Test {
       : test_io_thread_(base::TestIOThread::kAutoStart),
         master_ipc_support_(&platform_support_,
                             embedder::ProcessType::MASTER,
-                            test_io_thread_.task_runner(),
                             &master_process_delegate_,
                             test_io_thread_.task_runner(),
                             embedder::ScopedPlatformHandle()) {}
@@ -402,6 +404,7 @@ class IPCSupportTest : public testing::Test {
   IPCSupport& master_ipc_support() { return master_ipc_support_; }
 
  private:
+  base::MessageLoop message_loop_;
   embedder::SimplePlatformSupport platform_support_;
   base::TestIOThread test_io_thread_;
 
@@ -600,8 +603,8 @@ TEST_F(IPCSupportTest, MasterSlaveInternal) {
   // Note: Run process delegate methods on the I/O thread.
   IPCSupport slave_ipc_support(
       &platform_support(), embedder::ProcessType::SLAVE,
-      test_io_thread().task_runner(), &slave_process_delegate,
-      test_io_thread().task_runner(), channel_pair.PassClientHandle());
+      &slave_process_delegate, test_io_thread().task_runner(),
+      channel_pair.PassClientHandle());
 
   embedder::ScopedPlatformHandle slave_second_platform_handle =
       slave_ipc_support.ConnectToMasterInternal(connection_id);
@@ -625,7 +628,7 @@ TEST_F(IPCSupportTest, MasterSlaveInternal) {
       FROM_HERE, base::Bind(&IPCSupport::ShutdownOnIOThread,
                             base::Unretained(&slave_ipc_support)));
 
-  EXPECT_TRUE(master_process_delegate().TryWaitForOnSlaveDisconnect());
+  master_process_delegate().TryWaitForOnSlaveDisconnect();
 
   ShutdownMasterIPCSupport();
 }
@@ -671,7 +674,7 @@ TEST_F(IPCSupportTest, MAYBE_MultiprocessMasterSlaveInternal) {
   EXPECT_EQ(1u, n);
   EXPECT_EQ('!', c);
 
-  EXPECT_TRUE(master_process_delegate().TryWaitForOnSlaveDisconnect());
+  master_process_delegate().TryWaitForOnSlaveDisconnect();
   EXPECT_TRUE(multiprocess_test_helper.WaitForChildTestShutdown());
 
   ShutdownMasterIPCSupport();
@@ -683,12 +686,12 @@ MOJO_MULTIPROCESS_TEST_CHILD_TEST(MultiprocessMasterSlaveInternal) {
   ASSERT_TRUE(client_platform_handle.is_valid());
 
   embedder::SimplePlatformSupport platform_support;
+  base::MessageLoop message_loop;
   base::TestIOThread test_io_thread(base::TestIOThread::kAutoStart);
   TestSlaveProcessDelegate slave_process_delegate;
   // Note: Run process delegate methods on the I/O thread.
   IPCSupport ipc_support(&platform_support, embedder::ProcessType::SLAVE,
-                         test_io_thread.task_runner(), &slave_process_delegate,
-                         test_io_thread.task_runner(),
+                         &slave_process_delegate, test_io_thread.task_runner(),
                          client_platform_handle.Pass());
 
   const base::CommandLine& command_line =

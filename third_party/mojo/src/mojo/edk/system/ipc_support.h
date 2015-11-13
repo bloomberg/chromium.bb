@@ -64,7 +64,6 @@ class MOJO_SYSTEM_IMPL_EXPORT IPCSupport {
   // called.
   IPCSupport(embedder::PlatformSupport* platform_support,
              embedder::ProcessType process_type,
-             scoped_refptr<base::TaskRunner> delegate_thread_task_runner,
              embedder::ProcessDelegate* process_delegate,
              scoped_refptr<base::TaskRunner> io_thread_task_runner,
              embedder::ScopedPlatformHandle platform_handle);
@@ -125,9 +124,6 @@ class MOJO_SYSTEM_IMPL_EXPORT IPCSupport {
   embedder::ProcessDelegate* process_delegate() const {
     return process_delegate_;
   }
-  base::TaskRunner* delegate_thread_task_runner() const {
-    return delegate_thread_task_runner_.get();
-  }
   base::TaskRunner* io_thread_task_runner() const {
     return io_thread_task_runner_.get();
   }
@@ -165,7 +161,6 @@ class MOJO_SYSTEM_IMPL_EXPORT IPCSupport {
 
   // These are all set on construction and reset by |ShutdownOnIOThread()|.
   embedder::ProcessType process_type_;
-  scoped_refptr<base::TaskRunner> delegate_thread_task_runner_;
   embedder::ProcessDelegate* process_delegate_;
   scoped_refptr<base::TaskRunner> io_thread_task_runner_;
 

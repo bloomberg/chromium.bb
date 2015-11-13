@@ -74,14 +74,12 @@ PassWrappedPlatformHandle(MojoHandle platform_handle_wrapper_handle,
 
 // Initializes a process of the given type; to be called after |Init()|.
 //   - |process_delegate| must be a process delegate of the appropriate type
-//     corresponding to |process_type|; its methods will be called on
-//     |delegate_thread_task_runner|.
-//   - |delegate_thread_task_runner|, |process_delegate|, and
-//     |io_thread_task_runner| should live at least until
-//     |ShutdownIPCSupport()|'s callback has been run or
+//     corresponding to |process_type|; its methods will be called on the same
+//     thread as Shutdown.
+//   - |process_delegate|, and |io_thread_task_runner| should live at least
+//     until |ShutdownIPCSupport()|'s callback has been run or
 //     |ShutdownIPCSupportOnIOThread()| has completed.
 MOJO_SYSTEM_IMPL_EXPORT void InitIPCSupport(
-    scoped_refptr<base::TaskRunner> delegate_thread_task_runner,
     ProcessDelegate* process_delegate,
     scoped_refptr<base::TaskRunner> io_thread_task_runner);
 

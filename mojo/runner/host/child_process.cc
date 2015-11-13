@@ -111,6 +111,12 @@ class AppContext : public embedder::ProcessDelegate {
     io_runner_ = io_thread_.task_runner().get();
     CHECK(io_runner_.get());
 
+    // TODO(vtl): This should be SLAVE, not NONE.
+    // This must be created before controller_thread_ since MessagePumpMojo will
+    // create a message pipe which requires this code to be run first.
+    embedder::InitIPCSupport(embedder::ProcessType::NONE, this, io_runner_,
+                             embedder::ScopedPlatformHandle());
+
     // Create and start our controller thread.
     base::Thread::Options controller_thread_options;
     controller_thread_options.message_loop_type =
@@ -120,11 +126,6 @@ class AppContext : public embedder::ProcessDelegate {
     CHECK(controller_thread_.StartWithOptions(controller_thread_options));
     controller_runner_ = controller_thread_.task_runner().get();
     CHECK(controller_runner_.get());
-
-    // TODO(vtl): This should be SLAVE, not NONE.
-    embedder::InitIPCSupport(embedder::ProcessType::NONE, controller_runner_,
-                             this, io_runner_,
-                             embedder::ScopedPlatformHandle());
   }
 
   void Shutdown() {
@@ -330,7 +331,6 @@ int ChildProcessMain() {
 
   AppContext app_context;
   app_context.Init();
-
   Blocker blocker;
   app_context.controller_runner()->PostTask(
       FROM_HERE,
