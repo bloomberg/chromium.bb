@@ -56,7 +56,7 @@ void WebBluetoothImpl::readValue(
 
 void WebBluetoothImpl::writeValue(
     const blink::WebString& characteristic_instance_id,
-    const std::vector<uint8_t>& value,
+    const blink::WebVector<uint8_t>& value,
     blink::WebBluetoothWriteValueCallbacks* callbacks) {
   GetDispatcher()->writeValue(characteristic_instance_id, value, callbacks);
 }

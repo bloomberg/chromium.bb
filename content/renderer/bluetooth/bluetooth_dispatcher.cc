@@ -253,12 +253,13 @@ void BluetoothDispatcher::readValue(
 
 void BluetoothDispatcher::writeValue(
     const blink::WebString& characteristic_instance_id,
-    const std::vector<uint8_t>& value,
+    const blink::WebVector<uint8_t>& value,
     blink::WebBluetoothWriteValueCallbacks* callbacks) {
   int request_id = pending_write_value_requests_.Add(callbacks);
 
   Send(new BluetoothHostMsg_WriteValue(
-      CurrentWorkerId(), request_id, characteristic_instance_id.utf8(), value));
+      CurrentWorkerId(), request_id, characteristic_instance_id.utf8(),
+      std::vector<uint8_t>(value.begin(), value.end())));
 }
 
 void BluetoothDispatcher::startNotifications(

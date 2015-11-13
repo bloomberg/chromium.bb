@@ -10,7 +10,6 @@
 #include "public/platform/WebString.h"
 #include "public/platform/WebVector.h"
 #include "public/platform/modules/bluetooth/WebBluetoothError.h"
-#include <vector>
 
 namespace blink {
 
@@ -78,8 +77,8 @@ public:
     virtual void readValue(const WebString& characteristicInstanceID,
         WebBluetoothReadValueCallbacks*) { }
     virtual void writeValue(const WebString& characteristicInstanceID,
-        const std::vector<uint8_t>& value,
-        WebBluetoothWriteValueCallbacks*) { }
+        const WebVector<uint8_t>& value,
+        WebBluetoothWriteValueCallbacks*) {}
     virtual void startNotifications(const WebString& characteristicInstanceID,
         WebBluetoothGATTCharacteristic*,
         WebBluetoothNotificationsCallbacks*) {}

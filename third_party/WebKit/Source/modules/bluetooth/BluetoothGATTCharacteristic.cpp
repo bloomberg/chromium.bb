@@ -107,13 +107,14 @@ ScriptPromise BluetoothGATTCharacteristic::writeValue(ScriptState* scriptState, 
     // Partial implementation of writeValue algorithm:
     // https://webbluetoothchrome.github.io/web-bluetooth/#dom-bluetoothgattcharacteristic-writevalue
 
-    // Let valueVector be a copy of the bytes held by value.
-    std::vector<uint8_t> valueVector(value.bytes(), value.bytes() + value.byteLength());
     // If bytes is more than 512 bytes long (the maximum length of an attribute
     // value, per Long Attribute Values) return a promise rejected with an
     // InvalidModificationError and abort.
-    if (valueVector.size() > 512)
+    if (value.byteLength() > 512)
         return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(InvalidModificationError, "Value can't exceed 512 bytes."));
+
+    // Let valueVector be a copy of the bytes held by value.
+    WebVector<uint8_t> valueVector(value.bytes(), value.byteLength());
 
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
 
