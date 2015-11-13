@@ -61,7 +61,7 @@ body.platform-linux {
     background-color: rgba(0, 0, 0, 0.31);
 }
 
-#canvas, #labels-canvas, #layout-editor-matched-nodes-canvas {
+#canvas, #layout-editor-matched-nodes-canvas {
     pointer-events: none;
 }
 
@@ -146,12 +146,216 @@ body.platform-linux {
     color: rgb(153, 69, 0);
 }
 
-.editor-anchor {
-    height: 12px;
-    width: 12px;
+.wall {
+    position: absolute;
+    z-index: -2;
+    opacity: 0.2;
+    pointer-events: none;
+}
+
+.wall.horizontal {
+    width: 8px;
+    height: 16px;
+}
+
+.wall.vertical {
+    height: 8px;
+    width: 16px;
+}
+
+.wall.padding {
+    background: repeating-linear-gradient(45deg, #FFFFFF 2px, #FFFFFF 4px, rgba(147, 196, 125, 1) 2px, rgba(147, 196, 125, 1) 10px)
+
+}
+
+.wall.margin {
+    background: repeating-linear-gradient(45deg, #FFFFFF 2px, #FFFFFF 4px, rgba(246, 178, 107, 1) 4px, rgba(246, 178, 107, 1) 10px)
+}
+
+.wall.highlighted {
+    z-index: 1;
+    opacity: 1;
+}
+
+.blur-rect {
+    position: absolute;
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+.control-lane {
     position: absolute;
 }
 
+.control-lane.padding {
+    background-color: rgba(147, 196, 125, 0.1);
+}
+
+.control-lane.margin {
+    background-color: rgba(246, 178, 107, 0.1);
+}
+
+.editor-anchor {
+    position: absolute;
+    -webkit-filter: drop-shadow(0px 1px 1px rgba(0, 0, 0, 0.34));
+}
+
+.editor-anchor.vertical {
+    height: 6px;
+    width: 16px;
+}
+
+.editor-anchor.horizontal {
+    width: 6px;
+    height: 16px;
+}
+
+.editor-anchor.horizontal::before {
+    content: "";
+    position: absolute;
+    height: 8px;
+    border-right: 2px dotted rgba(255, 255, 255, 0.4);
+    top: 4px;
+    left: 2px;
+}
+
+.editor-anchor.vertical::before {
+    content: "";
+    position: absolute;
+    width: 8px;
+    border-right: 2px dotted rgba(255, 255, 255, 0.4);
+    top: 2px;
+    left: 4px;
+}
+
+.editor-anchor.vertical:hover {
+    cursor: ns-resize;
+}
+
+.editor-anchor.horizontal:hover {
+    cursor: ew-resize;
+}
+
+.editor-anchor.padding {
+    background-color: rgb(107, 213, 0);
+}
+
+.editor-anchor.margin {
+    background-color: rgb(246, 167, 35);
+}
+
+.editor-anchor:hover {
+    z-index: 3;
+}
+
+.editor-anchor.padding.highlighted {
+    background-color: rgba(147, 196, 125, 1);
+}
+
+.editor-anchor.margin.highlighted {
+    background-color: rgba(246, 178, 107, 1);
+}
+
+.guide-line.horizontal {
+    border-top: dashed 1px;
+}
+
+.guide-line.vertical {
+    border-left: dashed 1px;
+}
+
+.guide-line.padding {
+    border-color: rgba(147, 196, 125, 0.56);
+}
+
+.guide-line.margin {
+    border-color: rgba(246, 178, 107, 0.56);
+}
+
+.guide-line.content {
+    border-color: rgba(147, 147, 147, 0.56)
+}
+
+.guide-line {
+    position: absolute;
+    pointer-events: none;
+}
+
+.label {
+    position: absolute;
+    font-size: 10px;
+    font-family: Arial, Roboto;
+    color: white;
+    line-height: 1em;
+    padding: 2px 5px;
+    -webkit-filter: drop-shadow(0px 1px 1px rgba(0, 0, 0, 0.34));
+    border-radius: 2px;
+    min-width: 30px;
+    z-index: 5;
+}
+
+.label.padding {
+    background-color: rgb(91, 181, 0);
+}
+
+.label.margin {
+    background-color: rgb(246, 167, 35);
+}
+
+.label.disabled {
+    background-color: rgb(159, 188, 191);
+}
+
+.label .dimension {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.label .name {
+    color: rgba(255, 255, 255, 0.7);
+    display: none;
+    border-radius: 4px;
+}
+
+.label.full .name {
+    display: inline;
+    z-index: 5;
+}
+
+.label::before {
+    content: '';
+    display: block;
+    position: absolute;
+    width: 0;
+    height: 0;
+    border-top: 6px solid transparent;
+    border-bottom: 6px solid transparent;
+    top: 1px;
+}
+
+.label.right-arrow::before {
+    border-left-width: 6px;
+    border-left-style: solid;
+    border-right: none;
+    left: auto;
+    right: -6px;
+}
+
+.label.left-arrow::before {
+    border-left: none;
+    border-right-width: 6px;
+    border-right-style: solid;
+    left: -6px;
+    right: auto;
+}
+
+.label.padding::before {
+    border-left-color: rgb(91, 181, 0);
+    border-right-color: rgb(91, 181, 0);
+}
+
+.label.margin::before {
+    border-left-color: rgb(246, 167, 35);
+    border-right-color: rgb(246, 167, 35);
+}
 
 /* Material */
 .hidden {
@@ -449,7 +653,6 @@ function reset(resetData)
     document.body.classList.remove("dimmed");
 
     window._gridPainted = false;
-    delete window.hoverableAreas;
 
     if (window.layoutEditor)
         window.layoutEditor.reset();
@@ -727,11 +930,9 @@ function drawHighlight(highlight, context)
 
     var bounds = emptyBounds();
 
-    var areasDescription = new Map();
     for (var paths = highlight.paths.slice(); paths.length;) {
         var path = paths.pop();
-        var canvasPath = drawPath(context, path.path, path.fillColor, path.outlineColor, bounds);
-        areasDescription.set(path.name, canvasPath);
+        drawPath(context, path.path, path.fillColor, path.outlineColor, bounds);
         if (paths.length) {
             context.save();
             context.globalCompositeOperation = "destination-out";
@@ -757,7 +958,7 @@ function drawHighlight(highlight, context)
     }
     context.restore();
 
-    return { areasDescription: areasDescription, bounds: bounds };
+    return { bounds: bounds };
 }
 
 function setPlatform(platform)
@@ -811,7 +1012,7 @@ function onDocumentKeyDown(event)
 function showLayoutEditor(info)
 {
     if (!window.layoutEditor)
-        window.layoutEditor = new LayoutEditor(canvas);
+        window.layoutEditor = new LayoutEditor();
 
     window.layoutEditor.setState(info);
 }
@@ -824,88 +1025,387 @@ function setSelectorInLayoutEditor(selectorInfo)
     window.layoutEditor.setSelector(selectorInfo);
 }
 
-function LayoutEditor(mainCanvas)
+/**
+ * @constructor
+ */
+function LayoutEditor()
 {
     this._boundConsumeEvent = this._consumeEvent.bind(this);
-    this._boundMouseMove = this._onMouseMove.bind(this);
     this._boundStrayClick = this._onStrayClick.bind(this);
     this._boundKeyDown = this._onKeyDown.bind(this);
     this._boundMouseWheel = this._onMouseWheel.bind(this);
 
-    this._anchorsByType = new Map();
-    this._hoverableAreas = new Map();
-    this._elementsBounds = emptyBounds();
-    this._editorElement = document.getElementById("editor");
+    this._paddingBounds = this._defaultBounds();
+    this._contentBounds = this._defaultBounds();
+    this._marginBounds = this._defaultBounds();
+    this._element = document.getElementById("editor");
+    this._editorElement = this._element.createChild("div");
+    this._selectorTooltipElement = this._element.createChild("div", "selector-tooltip-element");
     this._matchedNodesCanvas = createCanvas("layout-editor-matched-nodes-canvas");
-    mainCanvas.parentElement.insertBefore(this._matchedNodesCanvas, mainCanvas);
+    this._editorElement.parentElement.insertBefore(this._matchedNodesCanvas, this._editorElement);
 
-    this._labelsCanvas = createCanvas("labels-canvas");
-    mainCanvas.parentElement.insertBefore(this._labelsCanvas, mainCanvas.nextSibling);
-    this._mainContext = mainCanvas.getContext("2d");
+    this._wallsElements = new Map();
+    this._labelsElements = new Map();
+    this._anchorsElements = new Map();
+    this._anchorsInfo = new Map();
 }
 
+/**
+ * @typedef {{
+ *      type: string,
+ *      propertyName: number,
+ *      propertyValue: {value: number, unit: string, growInside: boolean, mutable: boolean}
+ * }}
+ */
+LayoutEditor.AnchorInfo;
+
+/**
+ * @typedef {{
+ *      left: number,
+ *      top: number,
+ *      right: number,
+ *      bottom: number
+ * }}
+ */
+LayoutEditor.Bounds;
+
+/**
+ * @typedef {{
+ *      orientation: string,
+ *      border1: string,
+ *      border2: string,
+ *      dimension1: string,
+ *      dimension2: string
+ * }}
+ */
+LayoutEditor.Bounds;
+
+/**
+ * @typedef {{
+ *      p1: !Point,
+ *      p2: !Point,
+ *      p3: !Point,
+ *      p4: !Point
+ * }}
+ */
+LayoutEditor.Quad;
+
+/**
+ * @typedef {{
+ *      contentQuad: !LayoutEditor.Quad,
+ *      marginQuad: !LayoutEditor.Quad,
+ *      paddingQuad: !LayoutEditor.Quad,
+ *      anchors: !Array.<!LayoutEditor.AnchorInfo>
+ * }}
+ */
+LayoutEditor.Info;
+
+LayoutEditor._controlLaneWidth = 16;
+LayoutEditor._wallWidth = 8;
+LayoutEditor._handleWidth = 8;
+LayoutEditor._labelOffset = 12;
+
 LayoutEditor.prototype = {
+    /**
+     * @return {!LayoutEditor.Bounds}
+     */
+    _defaultBounds: function ()
+    {
+        var bounds = {
+            left: Number.MAX_VALUE,
+            top: Number.MAX_VALUE,
+            right: Number.MIN_VALUE,
+            bottom: Number.MIN_VALUE,
+        };
+        return bounds;
+    },
+
     reset: function()
     {
-        this._anchorsByType.clear();
-        this._hoverableAreas.clear();
-        this._elementsBounds = emptyBounds();
+        this._anchorsInfo.clear();
+        this._anchorsElements.clear();
+        this._wallsElements.clear();
+        this._labelsElements.clear();
+        this._paddingBounds = this._defaultBounds();
+        this._contentBounds = this._defaultBounds();
+        this._marginBounds = this._defaultBounds();
 
         resetCanvas(this._matchedNodesCanvas);
-        this._resetLabelCanvas();
+        document.body.style.cursor = "";
 
-        this._editorElement.style.visibility = "hidden";
-        this._editorElement.textContent = "";
-
-        if (this._selectorTooltipElement) {
-            this._selectorTooltipElement.remove();
-            delete this._selectorTooltipElement;
-        }
+        this._editorElement.removeChildren();
+        this._selectorTooltipElement.removeChildren();
 
         document.removeEventListener("mousedown", this._boundConsumeEvent);
-        document.removeEventListener("mousemove", this._boundMouseMove);
         document.removeEventListener("mouseup", this._boundConsumeEvent);
         document.removeEventListener("click", this._boundStrayClick);
         document.removeEventListener("keydown", this._boundKeyDown);
         document.removeEventListener("mousewheel", this._boundMouseWheel);
+        document.removeEventListener("mousemove", this._boundConsumeEvent);
     },
 
+    /**
+     * @param {!LayoutEditor.Info} info
+     */
     setState: function(info)
     {
-        var highlightDescription = drawHighlight(info.nodeHighlight, this._mainContext);
-        this._hoverableAreas = highlightDescription.areasDescription;
-        this._elementsBounds = highlightDescription.bounds;
-
         this._editorElement.style.visibility = "visible";
-        var anchors = info.anchors;
-        this._anchorsByType.clear();
-        var selectedAnchorInfo = null;
-        for (var i = 0; i < anchors.length; ++i) {
-            var anchorInfo = anchors[i];
-            if (!this._anchorsByType.get(anchorInfo.type))
-                this._anchorsByType.set(anchorInfo.type, []);
-            this._anchorsByType.get(anchorInfo.type).push(anchorInfo);
-            this._editorElement.appendChild(this._createAnchor(anchorInfo));
-            if (anchorInfo.propertyName === this._draggedPropertyName)
-                selectedAnchorInfo = anchorInfo;
+
+        function buildBounds(quad)
+        {
+            var bounds = this._defaultBounds();
+            for (var i = 1; i <= 4; ++i) {
+                var point = quad["p" + i];
+                bounds.left = Math.min(bounds.left, point.x);
+                bounds.right = Math.max(bounds.right, point.x);
+                bounds.top = Math.min(bounds.top, point.y);
+                bounds.bottom = Math.max(bounds.bottom, point.y);
+            }
+            return bounds;
         }
 
-        if (selectedAnchorInfo)
-            this._showLabels(selectedAnchorInfo.type, selectedAnchorInfo.propertyName);
+        this._contentBounds = buildBounds.call(this, info.contentQuad);
+        this._paddingBounds = buildBounds.call(this, info.paddingQuad);
+        this._marginBounds = buildBounds.call(this, info.marginQuad);
+
+        this._anchorsInfo = new Map();
+        for (var i = 0; i < info.anchors.length; ++i)
+            this._anchorsInfo.set(info.anchors[i].propertyName, info.anchors[i])
 
         document.addEventListener("mousedown", this._boundConsumeEvent);
-        document.addEventListener("mousemove", this._boundMouseMove);
         document.addEventListener("mouseup", this._boundConsumeEvent);
         document.addEventListener("click", this._boundStrayClick);
         document.addEventListener("keydown", this._boundKeyDown);
         document.addEventListener("mousewheel", this._boundMouseWheel);
+
+        this._createBlurWindow();
+        this._createGuideLines();
+        this._createControlLanes(info.anchors);
+        document.addEventListener("mousemove", this._boundConsumeEvent);
+
+        if (this._draggedPropertyName) {
+            document.body.style.cursor = (this._draggedPropertyName.endsWith("left") || this._draggedPropertyName.endsWith("right")) ? "ew-resize" : "ns-resize";
+            this._toggleHighlightedState(this._draggedPropertyName, true);
+        }
+    },
+
+    _createBlurWindow: function()
+    {
+        var left = this._editorElement.createChild("div", "blur-rect");
+        left.style.height = canvasHeight + "px";
+        left.style.width = this._marginBounds.left + "px";
+        var top = this._editorElement.createChild("div", "blur-rect");
+        top.style.left = this._marginBounds.left + "px";
+        top.style.width = canvasWidth - this._marginBounds.left + "px";
+        top.style.height = this._marginBounds.top  + "px";
+        var right = this._editorElement.createChild("div", "blur-rect");
+        right.style.left = this._marginBounds.right + "px";
+        right.style.top = this._marginBounds.top + "px";
+        right.style.width = (canvasWidth - this._marginBounds.right) + "px";
+        right.style.height = (canvasHeight - this._marginBounds.top) + "px";
+        var bottom = this._editorElement.createChild("div", "blur-rect");
+        bottom.style.left = this._marginBounds.left + "px";
+        bottom.style.top = this._marginBounds.bottom + "px";
+        bottom.style.width = this._marginBounds.right - this._marginBounds.left + "px";
+        bottom.style.height = canvasHeight - this._marginBounds.bottom + "px";
+        top.addEventListener("click", this._boundStrayClick);
+        bottom.addEventListener("click", this._boundStrayClick);
+        left.addEventListener("click", this._boundStrayClick);
+        right.addEventListener("click", this._boundStrayClick);
+    },
+
+    _createGuideLines: function()
+    {
+        /**
+         * @param {number} x
+         * @param {string} type
+         * @this {LayoutEditor}
+         */
+        function verticalLine(x, type)
+        {
+            var verticalElement = this._editorElement.createChild("div", "guide-line vertical");
+            verticalElement.classList.add(type);
+            verticalElement.style.height = canvasHeight + "px";
+            verticalElement.style.top = "0px";
+            verticalElement.style.left = x + "px";
+        }
+
+        /**
+         * @param {number} y
+         * @param {string} type
+         * @this {LayoutEditor}
+         */
+        function horizontalLine(y, type)
+        {
+            var horizontalElement = this._editorElement.createChild("div", "guide-line horizontal");
+            horizontalElement.classList.add(type);
+            horizontalElement.style.width = canvasWidth + "px";
+            horizontalElement.style.left = "0px";
+            horizontalElement.style.top = y + "px";
+        }
+
+        /**
+         * @param {!LayoutEditor.Bounds} bounds
+         * @param {string} type
+         * @this {LayoutEditor}
+         */
+        function guideLines(bounds, type)
+        {
+            verticalLine.call(this, bounds.left, type);
+            verticalLine.call(this, bounds.right, type);
+            horizontalLine.call(this, bounds.top, type);
+            horizontalLine.call(this, bounds.bottom, type);
+        }
+
+        guideLines.call(this, this._contentBounds, "content");
+        guideLines.call(this, this._paddingBounds, "padding");
+        guideLines.call(this, this._marginBounds, "margin");
+    },
+
+    /**
+     * @param {!Element} parent
+     * @param {!Element} anchorElement
+     * @param {!LayoutEditor.AnchorInfo} anchorInfo
+     */
+    _createLabel: function(parent, anchorElement, anchorInfo)
+    {
+        var label = parent.createChild("div", "label " + anchorInfo.type);
+        var nameElement = label.createChild("span", "name");
+        var anchorName = anchorInfo.propertyName;
+        nameElement.textContent = anchorName + ": ";
+        var valueElement = label.createChild("span", "value");
+        valueElement.textContent = String(parseFloat(anchorInfo.propertyValue.value.toFixed(2)));
+        var dimensionElement = label.createChild("span", "dimension");
+        dimensionElement.textContent = "\u2009" + anchorInfo.propertyValue.unit;
+
+        var leftX = anchorElement.offsetLeft - LayoutEditor._labelOffset - label.offsetWidth;
+        var fitLeft = leftX > 0;
+        var rightX = anchorElement.offsetLeft + anchorElement.offsetWidth  + LayoutEditor._labelOffset;
+        var fitRight = rightX + label.offsetWidth < canvasWidth;
+        var growsInside = anchorInfo.propertyValue.growInside;
+        var toLeft = anchorName.endsWith("right") && growsInside ||  anchorName.endsWith("left") && !growsInside;
+        var startPosition;
+        if (!fitLeft || (!toLeft && fitRight)) {
+            startPosition = rightX;
+            label.classList.add("left-arrow");
+        } else {
+            startPosition = leftX;
+            label.classList.add("right-arrow");
+        }
+
+        var y = anchorElement.offsetTop + anchorElement.offsetHeight / 2;
+        label.style.left = (startPosition | 0) + "px";
+        label.style.top = ((y - label.offsetHeight / 2) | 0) + "px";
+
+        label.classList.add("hidden");
+        return label;
+    },
+
+    /**
+     * @param {string} anchorName
+     * @param {boolean} highlighted
+     */
+    _toggleHighlightedState: function(anchorName, highlighted)
+    {
+        this._anchorsElements.get(anchorName).classList.toggle("highlighted", highlighted);
+        this._wallsElements.get(anchorName).classList.toggle("highlighted", highlighted);
+        this._labelsElements.get(anchorName).classList.toggle("hidden", !highlighted);
+    },
+
+    _createControlLanes: function()
+    {
+        var descriptionH = {orientation: "horizontal", border1: "left", border2: "top", dimension1: "width", dimension2: "height"};
+        var descriptionV = {orientation: "vertical", border1: "top", border2: "left", dimension1: "height", dimension2: "width"};
+        var sidesByOrientation = {horizontal : ["left", "right"], vertical : ["top", "bottom"]};
+
+        /**
+         * @param {!Element} parent
+         * @param {!LayoutEditor.Bounds} innerBox
+         * @param {!LayoutEditor.Bounds} outerBox
+         * @param {string} type
+         * @param {string} side
+         * @param {!LayoutEditor.Description} description
+         * @param {number} border2Position
+         * @this {LayoutEditor}
+         */
+        function createAnchorWithWall(parent, innerBox, outerBox, type, side, description, border2Position)
+        {
+            var anchorName = type + "-" + side;
+            var anchorInfo = this._anchorsInfo.get(anchorName);
+            var growsInside = anchorInfo.propertyValue.growInside;
+
+            var anchorPosition = (growsInside ? innerBox[side] : outerBox[side]);
+            var anchorElement = parent.createChild("div", "editor-anchor " + description.orientation + " " + type);
+            var handleHalf = LayoutEditor._handleWidth / 2;
+            anchorElement.style[description.border1] = (anchorPosition - handleHalf) + "px";
+            anchorElement.style[description.border2] = border2Position + "px";
+            this._anchorsElements.set(anchorName, anchorElement);
+
+            if (anchorInfo.propertyValue.mutable)
+                anchorElement.addEventListener("mousedown", this._onAnchorMouseDown.bind(this, anchorName));
+
+            anchorElement.addEventListener("mouseenter", this._toggleHighlightedState.bind(this, anchorName, true));
+            anchorElement.addEventListener("mouseleave", this._toggleHighlightedState.bind(this, anchorName, false));
+
+            var wallElement = parent.createChild("div", "wall " + description.orientation + " " + type);
+            var wallPosition = (growsInside ? outerBox[side] : innerBox[side]);
+            var minSide = (side === "left" || side === "top");
+            wallPosition += (minSide === growsInside) ? - handleHalf - LayoutEditor._wallWidth : handleHalf;
+            wallElement.style[description.border1] = wallPosition + "px";
+            wallElement.style[description.border2] = border2Position + "px";
+            
+            this._wallsElements.set(anchorName, wallElement);
+
+            var labelElement = this._createLabel(parent, anchorElement, anchorInfo);
+            this._labelsElements.set(anchorName, labelElement);
+        }
+
+        /**
+         * @param {!Element} parent
+         * @param {!LayoutEditor.Bounds} innerBox
+         * @param {!LayoutEditor.Bounds} outerBox
+         * @param {string} type
+         * @param {!LayoutEditor.Description} description
+         * @param {number} border2Position
+         * @this {LayoutEditor}
+         */
+        function createLane(parent, innerBox, outerBox, type, description, border2Position)
+        {
+            var verticalElement = parent.createChild("div", "control-lane " + type);
+            var sides = sidesByOrientation[description.orientation];
+            verticalElement.style[description.border1] = outerBox[sides[0]] + "px";
+            verticalElement.style[description.border2] = border2Position + "px";
+            verticalElement.style[description.dimension1] = (outerBox[sides[1]] - outerBox[sides[0]]) + "px";
+            verticalElement.style[description.dimension2] = LayoutEditor._controlLaneWidth + "px";
+            createAnchorWithWall.call(this, parent, innerBox, outerBox, type, sides[0], description, border2Position);
+            createAnchorWithWall.call(this, parent, innerBox, outerBox, type, sides[1], description, border2Position);
+        }
+
+        var yPosition = 0;
+        var xPosition = 0;
+        if (this._marginBounds.bottom + 2 * LayoutEditor._controlLaneWidth <= canvasHeight)
+            yPosition = this._marginBounds.bottom;
+        else if (this._marginBounds.top - 2 * LayoutEditor._controlLaneWidth >= 0)
+            yPosition = this._marginBounds.top - 2 * LayoutEditor._controlLaneWidth;
+        else
+            yPosition = (this._contentBounds.top + this._contentBounds.bottom) / 2;
+
+        if (this._marginBounds.left - 2 * LayoutEditor._controlLaneWidth >= 0)
+            xPosition = this._marginBounds.left - 2 * LayoutEditor._controlLaneWidth;
+        else if (this._marginBounds.right + 2 * LayoutEditor._controlLaneWidth <= canvasWidth)
+            xPosition = this._marginBounds.right;
+        else
+            xPosition = (this._contentBounds.right + this._contentBounds.left) / 2;
+
+        createLane.call(this, this._editorElement, this._contentBounds, this._paddingBounds, "padding", descriptionH, yPosition);
+        createLane.call(this, this._editorElement, this._paddingBounds, this._marginBounds, "margin", descriptionH, yPosition + LayoutEditor._controlLaneWidth);
+        createLane.call(this, this._editorElement, this._contentBounds, this._paddingBounds, "padding", descriptionV, xPosition);
+        createLane.call(this, this._editorElement, this._paddingBounds, this._marginBounds, "margin", descriptionV, xPosition + LayoutEditor._controlLaneWidth);
     },
 
     setSelector: function(selectorInfo)
     {
-        if (this._selectorTooltipElement)
-            this._selectorTooltipElement.remove();
-
+        this._selectorTooltipElement.removeChildren();
         var containerElement = createElement("div");
 
         for (var i = (selectorInfo.medias || []).length - 1; i >= 0; --i)
@@ -914,8 +1414,10 @@ LayoutEditor.prototype = {
         var selectorElement = containerElement.createChild("div", "layout-editor-selector-tooltip");
         selectorElement.textContent = selectorInfo.selector.trimEnd(50);
 
-        this._selectorTooltipElement = document.body.insertBefore(createElement("div"), this._editorElement);
-        _createMaterialTooltip(this._selectorTooltipElement, this._elementsBounds, containerElement);
+        var margin = 40;
+        var bounds = {minX: this._marginBounds.left, maxX: this._marginBounds.right,
+                minY: this._marginBounds.top - margin, maxY: this._marginBounds.bottom + margin};
+        _createMaterialTooltip(this._selectorTooltipElement, bounds, containerElement);
         resetCanvas(this._matchedNodesCanvas);
 
         if (!selectorInfo.nodes)
@@ -925,49 +1427,58 @@ LayoutEditor.prototype = {
             drawHighlight(nodeHighlight, this._matchedNodesCanvas.getContext("2d"));
     },
 
-    _createAnchor: function(anchorInfo)
-    {
-        var handleWidth = 5;
-        this._mainContext.save();
-        this._mainContext.shadowColor = "rgba(0, 0, 0, 0.34)";
-        this._mainContext.shadowBlur = 2;
-        this._mainContext.fillStyle = this._anchorColorForProperty(anchorInfo);
-        this._mainContext.beginPath();
-        this._mainContext.arc(anchorInfo.x, anchorInfo.y, handleWidth, 0, 2 * Math.PI);
-        this._mainContext.fill();
-        this._mainContext.restore();
-
-        var anchorElement = createElement("div", "editor-anchor");
-        anchorElement.style.left = anchorInfo.x - handleWidth + "px";
-        anchorElement.style.top = anchorInfo.y - handleWidth + "px";
-        if (anchorInfo.propertyValue.mutable)
-            anchorElement.addEventListener("mousedown", this._onAnchorMouseDown.bind(this, anchorInfo));
-        anchorElement.addEventListener("mousemove", this._onAnchorMouseMove.bind(this, anchorInfo));
-        return anchorElement;
-    },
-
     _calculateDelta: function(deltaVector, moveDelta)
     {
         return scalarProduct(deltaVector, moveDelta) / Math.sqrt(scalarProduct(deltaVector, deltaVector));
     },
 
-    _onAnchorMouseDown: function(anchorInfo, event)
+    /**
+     * @param {string} anchorName
+     * @return {!Point}
+     */
+    _defaultDeltaVector: function(anchorName)
+    {
+        if (anchorName.endsWith("right"))
+            return new Point(1, 0);
+        if (anchorName.endsWith("left"))
+            return new Point(-1, 0);
+        if (anchorName.endsWith("top"))
+            return new Point(0, -1);
+        if (anchorName.endsWith("bottom"))
+            return new Point(0, 1);
+    },
+
+    /**
+     * @param {string} anchorName
+     * @param {!Event} event
+     */
+    _onAnchorMouseDown: function(anchorName, event)
     {
         // Only drag upon left button. Right will likely cause a context menu. So will ctrl-click on mac.
         if (event.button || (window.platform == "mac" && event.ctrlKey))
             return;
 
         event.preventDefault();
-        this._boundDragMove = this._onDragMove.bind(this, new Point(event.screenX, event.screenY), anchorInfo.deltaVector);
+        var deltaVector = this._defaultDeltaVector(anchorName);
+        var anchorInfo = this._anchorsInfo.get(anchorName);
+        if (anchorInfo.propertyValue.growInside)
+            deltaVector = new Point(-deltaVector.x, -deltaVector.y);
+
+        this._boundDragMove = this._onDragMove.bind(this, new Point(event.screenX, event.screenY), deltaVector);
         this._boundDragEnd = this._onDragEnd.bind(this);
         document.addEventListener("mousemove", this._boundDragMove);
         document.addEventListener("mouseup", this._boundDragEnd);
-        InspectorOverlayHost.startPropertyChange(anchorInfo.propertyName);
+        InspectorOverlayHost.startPropertyChange(anchorName);
         this._preciseDrag = !!event.shiftKey;
-        this._draggedPropertyName = anchorInfo.propertyName;
-        this._showLabels(anchorInfo.type, anchorInfo.propertyName);
+        this._draggedPropertyName = anchorName;
+        this._toggleHighlightedState(anchorName, true);
     },
 
+    /**
+     * @param {!Point} mouseDownPoint
+     * @param {!Point} deltaVector
+     * @param {!Event} event
+     */
     _onDragMove: function(mouseDownPoint, deltaVector, event)
     {
         if (event.buttons !== 1) {
@@ -989,181 +1500,35 @@ LayoutEditor.prototype = {
         InspectorOverlayHost.changeProperty(this._calculateDelta(deltaVector, new Point(event.screenX - mouseDownPoint.x, event.screenY - mouseDownPoint.y)) / preciseFactor);
     },
 
+    /**
+     * @param {!Event} event
+     */
     _onDragEnd: function(event)
     {
         document.removeEventListener("mousemove", this._boundDragMove);
         document.removeEventListener("mouseup", this._boundDragEnd);
         delete this._boundDragMove;
         delete this._boundDragEnd;
+        this._toggleHighlightedState(this._draggedPropertyName, false);
+        document.body.style.cursor = "";
         delete this._draggedPropertyName;
         delete this._preciseDrag;
         event.preventDefault();
         InspectorOverlayHost.endPropertyChange();
-        this._resetLabelCanvas();
     },
 
-    _showLabel: function(anchorInfo, showLongDescription)
-    {
-        var context = this._labelsCanvas.getContext("2d");
-        var secondaryColor = "rgba(255, 255, 255, 0.7)";
-        var labelColor = this._labelColorForProperty(anchorInfo);
-        var textDescription = [
-            {string: String(parseFloat(anchorInfo.propertyValue.value.toFixed(2))), color: "white"},
-            {string: "\u2009" + anchorInfo.propertyValue.unit, color: secondaryColor}
-        ];
-
-        if (showLongDescription)
-            textDescription.splice(0, 0, {string: anchorInfo.propertyName + ": ", color: secondaryColor});
-        this._drawLabel(context, anchorInfo.x, anchorInfo.y, labelColor, textDescription, anchorInfo.deltaVector.x < 0);
-    },
-
-    _showLabels: function(type, fullLabelName)
-    {
-        if (this._labelCanvasState && this._labelCanvasState.type === type && this._labelCanvasState.fullLabelName === fullLabelName)
-            return;
-
-        this._resetLabelCanvas();
-        this._labelCanvasState = {type: type, fullLabelName: fullLabelName};
-        var anchors = this._anchorsByType.get(type) || [];
-        var selectedAnchorInfo = null;
-
-        for (var anchorInfo of anchors) {
-            if (fullLabelName !== anchorInfo.propertyName)
-                this._showLabel(anchorInfo, false);
-            else
-                selectedAnchorInfo = anchorInfo;
-        }
-
-        if (!selectedAnchorInfo)
-            return;
-
-        this._showLabel(selectedAnchorInfo, true);
-        document.body.style.cursor = this._chooseAnchorPointer(selectedAnchorInfo.deltaVector);
-    },
-
-    _onAnchorMouseMove: function(anchorInfo, event)
-    {
-        if (this._draggedPropertyName)
-            return;
-
-        event.preventDefault();
-        event.stopPropagation();
-        this._showLabels(anchorInfo.type, anchorInfo.propertyName);
-    },
-
-    _drawLabel: function(context, anchorX, anchorY, labelColor, textDescription, toLeft)
-    {
-        var paddingX = 6;
-        var paddingY = 4;
-        var borderRadius = 2;
-        var arrowWidth = 6;
-        var offsetX = 6;
-        var fontSize = 10;
-
-        var wholeString = "";
-        for (var part of textDescription)
-            wholeString += part.string;
-
-        context.save();
-        context.font = fontSize + "px Arial, Roboto";
-
-        var textWidth = context.measureText(wholeString).width;
-        var fullWidth = textWidth + offsetX + arrowWidth + paddingX;
-        var height = fontSize + paddingY;
-        var fitRight = anchorX + fullWidth < viewportSize.width;
-        var fitLeft = anchorX - fullWidth > 0;
-        var mirror = !fitLeft || (!toLeft && fitRight);
-
-        var arrowX = -offsetX;
-        var arrowY = 0;
-        var right = arrowX - arrowWidth;
-        var top = arrowY - height / 2;
-        var bottom = arrowY + height / 2;
-        var left = -fullWidth;
-
-        context.save();
-        context.translate(anchorX, anchorY);
-        if (mirror)
-            context.scale(-1, 1);
-
-        context.fillStyle = labelColor;
-        context.shadowColor = "rgba(0, 0, 0, 0.34)";
-        context.shadowOffsetY = 1;
-        context.shadowBlur = 1;
-        context.beginPath();
-        context.moveTo(arrowX, arrowY);
-        context.lineTo(right, bottom);
-        context.lineTo(left + borderRadius, bottom);
-        context.quadraticCurveTo(left, bottom, left, bottom - borderRadius);
-        context.lineTo(left, top + borderRadius);
-        context.quadraticCurveTo(left, top, left + borderRadius, top);
-        context.lineTo(right, top);
-        context.lineTo(arrowX, arrowY);
-        context.closePath();
-        context.fill();
-        context.restore();
-
-        var textX = 0;
-        if (mirror)
-            textX = anchorX - right + paddingX / 2;
-        else
-            textX = anchorX + left + paddingX / 2;
-
-        var textY = anchorY + top + fontSize;
-        for (var part of textDescription) {
-            context.fillStyle = part.color;
-            context.fillText(part.string, textX, textY);
-            textX += context.measureText(part.string).width;
-        }
-        context.restore();
-    },
-
-    _labelColorForProperty: function(anchorInfo)
-    {
-        // TODO: find a better color
-        if (!anchorInfo.propertyValue.mutable)
-            return "rgb(159, 188, 191)";
-
-        var propertyName = anchorInfo.propertyName;
-        if (propertyName.startsWith("margin"))
-            return "rgb(246, 167, 35)";
-        return "rgb(91, 181, 0)";
-    },
-
-    _anchorColorForProperty: function(anchorInfo)
-    {
-        // TODO: find a better color
-        if (!anchorInfo.propertyValue.mutable)
-            return "rgb(159, 188, 191)";
-
-        var propertyName = anchorInfo.propertyName;
-        if (propertyName.startsWith("margin"))
-            return "rgb(246, 167, 35)";
-        return "rgb(107, 213, 0)";
-    },
-
-    _onMouseMove: function(event)
-    {
-        event.preventDefault();
-        if (!this._hoverableAreas.size)
-            return;
-        var types = ["padding", "margin"];
-        for (var type of types) {
-            var path = this._hoverableAreas.get(type);
-            if (path && this._mainContext.isPointInPath(path, deviceScaleFactor * event.x, deviceScaleFactor * event.y)) {
-                this._showLabels(type);
-                return;
-            }
-        }
-        this._resetLabelCanvas();
-    },
-
+    /**
+     * @param {!Event} event
+     */
     _onStrayClick: function(event)
     {
         event.preventDefault();
         InspectorOverlayHost.clearSelection(true);
     },
 
+    /**
+     * @param {!Event} event
+     */
     _onKeyDown: function(event)
     {
         if (this._draggedPropertyName)
@@ -1176,6 +1541,9 @@ LayoutEditor.prototype = {
         }
     },
 
+    /**
+     * @param {!Event} event
+     */
     _onMouseWheel: function(event)
     {
         event.preventDefault();
@@ -1185,37 +1553,20 @@ LayoutEditor.prototype = {
             InspectorOverlayHost.nextSelector();
     },
 
+    /**
+     * @param {!Event} event
+     */
     _consumeEvent: function(event)
     {
         event.preventDefault();
-    },
-
-    _resetLabelCanvas: function()
-    {
-        delete this._labelCanvasState;
-        resetCanvas(this._labelsCanvas);
-        if (!this._draggedPropertyName && document.body.style.cursor)
-            document.body.style.cursor = "";
-    },
-
-    _chooseAnchorPointer: function(direction)
-    {
-        var pointers = [{name: "ns-resize", vector: new Point(0, -1)}, {name: "ew-resize", vector: new Point(-1, 0)},
-            {name: "ns-resize", vector: new Point(0, 1)}, {name: "ew-resize", vector: new Point(1, 0)}];
-
-        var maxValue = scalarProduct(direction, pointers[0].vector);
-        var maxIndex = 0;
-        for (var i = 1; i < pointers.length; ++i) {
-            var currentValue = scalarProduct(direction, pointers[i].vector);
-            if (currentValue > maxValue) {
-                maxValue = currentValue;
-                maxIndex = i;
-            }
-        }
-        return pointers[maxIndex].name;
     }
 }
 
+/**
+ * @constructor
+ * @param {number} x
+ * @param {number} y
+ */
 function Point(x, y)
 {
     this.x = x;
@@ -1238,6 +1589,7 @@ function scalarProduct(v1, v2)
 Element.prototype.createChild = function(tagName, className)
 {
     var element = createElement(tagName, className);
+    element.addEventListener("click", function(e) { e.stopPropagation(); }, false);
     this.appendChild(element);
     return element;
 }

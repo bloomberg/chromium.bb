@@ -42,19 +42,20 @@ public:
     void commitChanges();
     void nextSelector();
     void previousSelector();
-    void rebuild() const;
+    void rebuild();
     DECLARE_TRACE();
 
 private:
     LayoutEditor(Element*, InspectorCSSAgent*, InspectorDOMAgent*, ScriptController*);
     RefPtrWillBeRawPtr<CSSPrimitiveValue> getPropertyCSSValue(CSSPropertyID) const;
-    PassRefPtr<JSONObject> createValueDescription(const String&) const;
-    void appendAnchorFor(JSONArray*, const String&, const String&, const FloatPoint&, const FloatPoint&) const;
+    PassRefPtr<JSONObject> createValueDescription(const String&);
+    void appendAnchorFor(JSONArray*, const String&, const String&);
     bool setCSSPropertyValueInCurrentRule(const String&);
     bool currentStyleIsInline() const;
     void pushSelectorInfoInOverlay() const;
     void evaluateInOverlay(const String&, PassRefPtr<JSONValue>) const;
     PassRefPtr<JSONObject> currentSelectorInfo() const;
+    bool growInside(String propertyName, CSSPrimitiveValue*);
 
     RefPtrWillBeMember<Element> m_element;
     RawPtrWillBeMember<InspectorCSSAgent> m_cssAgent;
@@ -67,6 +68,7 @@ private:
     bool m_isDirty;
 
     RefPtrWillBeMember<CSSRuleList> m_matchedRules;
+    HashMap<String, bool> m_growsInside;
     // When m_currentRuleIndex == m_matchedRules.length(), current style is inline style.
     unsigned m_currentRuleIndex;
 };
