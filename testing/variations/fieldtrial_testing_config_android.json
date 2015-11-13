@@ -307,7 +307,7 @@
             "params": {
                 "Enabled": "true",
                 "Optimize": "true",
-                "Sample_Probability": "100"
+                "Sample_Probability": "50"
             }
         }
     ],
