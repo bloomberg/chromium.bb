@@ -66,6 +66,7 @@
 #include "core/page/SpatialNavigation.h"
 #include "platform/PlatformMouseEvent.h"
 #include "platform/PopupMenu.h"
+#include "platform/TraceEvent.h"
 #include "platform/text/PlatformLocale.h"
 
 using namespace WTF::Unicode;
@@ -797,6 +798,7 @@ void HTMLSelectElement::setRecalcListItems()
 
 void HTMLSelectElement::recalcListItems(bool updateSelectedStates) const
 {
+    TRACE_EVENT0("blink", "HTMLSelectElement::recalcListItems");
     m_listItems.clear();
 
     m_shouldRecalcListItems = false;
@@ -962,6 +964,7 @@ void HTMLSelectElement::optionRemoved(const HTMLOptionElement& option)
 // operations.
 void HTMLSelectElement::selectOption(int optionIndex, SelectOptionFlags flags)
 {
+    TRACE_EVENT0("blink", "HTMLSelectElement::selectOption");
     bool shouldDeselect = !m_multiple || (flags & DeselectOtherOptions);
 
     const WillBeHeapVector<RawPtrWillBeMember<HTMLElement>>& items = listItems();
