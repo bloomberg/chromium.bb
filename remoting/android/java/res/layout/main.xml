@@ -39,6 +39,7 @@
                     android:layout_height="wrap_content"
                     android:layout_width="wrap_content"
                     android:src="@drawable/empty_host_list"
+                    android:padding="16dp"
                     android:contentDescription="@null"/>
                 <TextView
                     android:gravity="center"
@@ -47,10 +48,16 @@
                     android:text="@string/host_list_empty_android"
                     style="@style/EmptyStateText"/>
                 <TextView
-                    android:id="@+id/host_setup_link_android"
                     android:gravity="center"
                     android:layout_height="wrap_content"
                     android:layout_width="match_parent"
+                    android:text="@string/host_list_empty_instructions_android"
+                    style="@style/EmptyStateText.Detail"/>
+                <Button
+                    android:id="@+id/host_setup_link_android"
+                    android:gravity="center"
+                    android:layout_height="wrap_content"
+                    android:layout_width="wrap_content"
                     android:text="@string/host_setup_link_android"
                     style="@style/EmptyStateText.Hyperlink"/>
             </LinearLayout>

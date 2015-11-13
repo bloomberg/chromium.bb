@@ -24,13 +24,18 @@
         <item name="android:statusBarColor">@android:color/transparent</item>
     </style>
 
-    <style name="EmptyStateText" parent="@android:style/TextAppearance.Large">
-        <item name="android:textColor">#888</item>
+    <style name="EmptyStateText" parent="@android:style/TextAppearance">
+        <item name="android:textColor">#616161</item>
+        <item name="android:textSize">22sp</item>
     </style>
-    <style name="EmptyStateText.Hyperlink" parent="@style/EmptyStateText">
-        <item name="android:textColor">@android:color/holo_blue_light</item>
-        <item name="android:textStyle">italic</item>
+    <style name="EmptyStateText.Detail" parent="EmptyStateText">
+        <item name="android:textSize">18sp</item>
     </style>
+    <style name="EmptyStateText.Hyperlink" parent="@style/Widget.AppCompat.Button.Borderless">
+        <item name="android:textColor">#4285F4</item>
+        <item name="android:textSize">18sp</item>
+    </style>
+
     <style name="NavigationTextStyle">
         <item name="android:textColor">#212121</item>
         <item name="android:fontFamily">sans-serif-medium</item>

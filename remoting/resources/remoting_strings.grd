@@ -576,11 +576,14 @@
         <message desc="Menu item to select the Trackpad input mode. In this mode, the mouse cursor is visible and the screen acts as a laptop's trackpad." name="IDS_SELECT_TRACKPAD_MODE" formatter_data="android_java">
           Trackpad mode
         </message>
-        <message desc="Message displayed to the user if there are no hosts registered to their account" name="IDS_HOST_LIST_EMPTY_ANDROID" formatter_data="android_java">
-          You have no computers registered.
+        <message desc="Message displayed in the Android application if the user has not setup any computers for remote access." name="IDS_HOST_LIST_EMPTY_ANDROID" formatter_data="android_java">
+          There's nothing to connect to.
         </message>
-        <message desc="Message displayed to the user if there are no hosts registered to their account. This is styled to look like a hyperlink. When a user activates the link, they are taken to a web page that explains how to set up a Chromoting host." name="IDS_HOST_SETUP_LINK_ANDROID" formatter_data="android_java">
-          Learn how to set up a computer for remote access.
+        <message desc="Instruction displayed in the Android application if the user has not setup any computers for remote access. It appears after some larger text which states that the user has no computers to connect to." name="IDS_HOST_LIST_EMPTY_INSTRUCTIONS_ANDROID" formatter_data="android_java">
+          You need to first setup your computer for remote access.
+        </message>
+        <message desc="This button appears below some text which explains that the user needs to setup a computer for remote access. When a user activates the button, they are taken to a web page that explains how to set up a Chromoting host." name="IDS_HOST_SETUP_LINK_ANDROID" formatter_data="android_java">
+          Learn how
         </message>
         <message desc="Title of the authentication dialog" name="IDS_TITLE_AUTHENTICATE" formatter_data="android_java">
           Authenticate to host
