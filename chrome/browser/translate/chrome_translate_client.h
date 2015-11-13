@@ -89,8 +89,8 @@ class ChromeTranslateClient
       scoped_ptr<translate::TranslateInfoBarDelegate> delegate) const override;
 #endif
   void ShowTranslateUI(translate::TranslateStep step,
-                       const std::string source_language,
-                       const std::string target_language,
+                       const std::string& source_language,
+                       const std::string& target_language,
                        translate::TranslateErrors::Type error_type,
                        bool triggered_from_menu) override;
   bool IsTranslatableURL(const GURL& url) override;

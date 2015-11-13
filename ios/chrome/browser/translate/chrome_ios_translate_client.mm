@@ -91,8 +91,8 @@ scoped_ptr<infobars::InfoBar> ChromeIOSTranslateClient::CreateInfoBar(
 
 void ChromeIOSTranslateClient::ShowTranslateUI(
     translate::TranslateStep step,
-    const std::string source_language,
-    const std::string target_language,
+    const std::string& source_language,
+    const std::string& target_language,
     translate::TranslateErrors::Type error_type,
     bool triggered_from_menu) {
   DCHECK(web_state());

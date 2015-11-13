@@ -57,8 +57,8 @@ class TranslateClient {
   // Called when the embedder should present UI to the user corresponding to the
   // user's current |step|.
   virtual void ShowTranslateUI(translate::TranslateStep step,
-                               const std::string source_language,
-                               const std::string target_language,
+                               const std::string& source_language,
+                               const std::string& target_language,
                                TranslateErrors::Type error_type,
                                bool triggered_from_menu) = 0;
 

@@ -119,7 +119,7 @@ class DevToolsHttpHandler {
                        const net::HttpServerRequestInfo& request);
 
   // Returns the front end url without the host at the beginning.
-  std::string GetFrontendURLInternal(const std::string target_id,
+  std::string GetFrontendURLInternal(const std::string& target_id,
                                      const std::string& host);
 
   base::DictionaryValue* SerializeDescriptor(

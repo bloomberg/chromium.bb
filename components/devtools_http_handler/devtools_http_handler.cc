@@ -492,7 +492,7 @@ void ServerWrapper::OnClose(int connection_id) {
 }
 
 std::string DevToolsHttpHandler::GetFrontendURLInternal(
-    const std::string id,
+    const std::string& id,
     const std::string& host) {
   return base::StringPrintf(
       "%s%sws=%s%s%s",
