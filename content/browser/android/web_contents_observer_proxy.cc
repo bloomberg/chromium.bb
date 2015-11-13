@@ -87,8 +87,10 @@ void WebContentsObserverProxy::DidStartLoading() {
 void WebContentsObserverProxy::DidStopLoading() {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj(java_observer_);
+  std::string url_string = web_contents()->GetLastCommittedURL().spec();
+  SetToBaseURLForDataURLIfNeeded(&url_string);
   ScopedJavaLocalRef<jstring> jstring_url(ConvertUTF8ToJavaString(
-      env, web_contents()->GetLastCommittedURL().spec()));
+      env, url_string));
   Java_WebContentsObserverProxy_didStopLoading(env, obj.obj(),
                                                jstring_url.obj());
 }
@@ -205,11 +207,7 @@ void WebContentsObserverProxy::DidFinishLoad(RenderFrameHost* render_frame_host,
   ScopedJavaLocalRef<jobject> obj(java_observer_);
 
   std::string url_string = validated_url.spec();
-  NavigationEntry* entry =
-      web_contents()->GetController().GetLastCommittedEntry();
-  // Note that GetBaseURLForDataURL is only used by the Android WebView.
-  if (entry && !entry->GetBaseURLForDataURL().is_empty())
-    url_string = entry->GetBaseURLForDataURL().possibly_invalid_spec();
+  SetToBaseURLForDataURLIfNeeded(&url_string);
 
   ScopedJavaLocalRef<jstring> jstring_url(
       ConvertUTF8ToJavaString(env, url_string));
@@ -298,6 +296,15 @@ void WebContentsObserverProxy::MediaSessionStateChanged(bool is_controllable,
 
   Java_WebContentsObserverProxy_mediaSessionStateChanged(
       env, obj.obj(), is_controllable, is_suspended);
+}
+
+void WebContentsObserverProxy::SetToBaseURLForDataURLIfNeeded(
+    std::string* url) {
+  NavigationEntry* entry =
+      web_contents()->GetController().GetLastCommittedEntry();
+  // Note that GetBaseURLForDataURL is only used by the Android WebView.
+  if (entry && !entry->GetBaseURLForDataURL().is_empty())
+    *url = entry->GetBaseURLForDataURL().possibly_invalid_spec();
 }
 
 bool RegisterWebContentsObserverProxy(JNIEnv* env) {

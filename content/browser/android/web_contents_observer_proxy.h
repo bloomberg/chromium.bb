@@ -73,6 +73,7 @@ class WebContentsObserverProxy : public WebContentsObserver {
       NavigationController::ReloadType reload_type) override;
   void MediaSessionStateChanged(bool is_controllable,
                                 bool is_suspended) override;
+  void SetToBaseURLForDataURLIfNeeded(std::string* url);
 
   void DidFailLoadInternal(bool is_provisional_load,
                            bool is_main_frame,

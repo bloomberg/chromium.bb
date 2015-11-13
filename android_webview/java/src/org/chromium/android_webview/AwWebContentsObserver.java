@@ -26,6 +26,9 @@ public class AwWebContentsObserver extends WebContentsObserver {
     // Whether this webcontents has ever committed any navigation.
     private boolean mCommittedNavigation;
 
+    // Temporarily stores the URL passed the last time to didFinishLoad callback.
+    private String mLastDidFinishLoadUrl;
+
     public AwWebContentsObserver(
             WebContents webContents, AwContents awContents, AwContentsClient awContentsClient) {
         super(webContents);
@@ -33,15 +36,31 @@ public class AwWebContentsObserver extends WebContentsObserver {
         mAwContentsClient = new WeakReference<>(awContentsClient);
     }
 
+    private AwContentsClient getClientIfNeedToFireCallback(String validatedUrl) {
+        AwContentsClient client = mAwContentsClient.get();
+        if (client != null) {
+            String unreachableWebDataUrl = AwContentsStatics.getUnreachableWebDataUrl();
+            if (unreachableWebDataUrl == null || !unreachableWebDataUrl.equals(validatedUrl)) {
+                return client;
+            }
+        }
+        return null;
+    }
+
     @Override
     public void didFinishLoad(long frameId, String validatedUrl, boolean isMainFrame) {
-        AwContentsClient client = mAwContentsClient.get();
-        if (client == null) return;
-        String unreachableWebDataUrl = AwContentsStatics.getUnreachableWebDataUrl();
-        boolean isErrorUrl =
-                unreachableWebDataUrl != null && unreachableWebDataUrl.equals(validatedUrl);
-        if (isMainFrame && !isErrorUrl) {
+        if (isMainFrame && getClientIfNeedToFireCallback(validatedUrl) != null) {
+            mLastDidFinishLoadUrl = validatedUrl;
+        }
+    }
+
+    @Override
+    public void didStopLoading(String validatedUrl) {
+        if (validatedUrl.length() == 0) validatedUrl = "about:blank";
+        AwContentsClient client = getClientIfNeedToFireCallback(validatedUrl);
+        if (client != null && validatedUrl.equals(mLastDidFinishLoadUrl)) {
             client.getCallbackHelper().postOnPageFinished(validatedUrl);
+            mLastDidFinishLoadUrl = null;
         }
     }
 
