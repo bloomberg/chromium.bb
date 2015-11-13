@@ -45,7 +45,7 @@ void SimpleThumbnailCrop::ProcessBitmap(
   if (bitmap.isNull() || bitmap.empty())
     return;
 
-  ClipResult clip_result;
+  ClipResult clip_result = context->clip_result();
   SkBitmap thumbnail = CreateThumbnail(
       bitmap,
       ComputeTargetSizeAtMaximumScale(target_size_),
