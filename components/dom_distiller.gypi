@@ -5,6 +5,24 @@
 {
   'targets': [
     {
+      # GN version: //components/dom_distiller/content:content_common
+      'target_name': 'dom_distiller_content_common',
+      'type': 'static_library',
+      'include_dirs': [
+        '..',
+      ],
+      'dependencies': [
+        '../base/base.gyp:base',
+        '../content/content.gyp:content_common',
+        '../ipc/ipc.gyp:ipc',
+        '../url/url.gyp:url_lib',
+      ],
+      'sources': [
+        'dom_distiller/content/common/distiller_messages.cc',
+        'dom_distiller/content/common/distiller_messages.h',
+      ],
+    },
+    {
       # GN version: //components/dom_distiller/webui
       'target_name': 'dom_distiller_webui',
       'type': 'static_library',
@@ -182,6 +200,7 @@
           'target_name': 'dom_distiller_content_browser',
           'type': 'static_library',
           'dependencies': [
+            'dom_distiller_content_common',
             'dom_distiller_core',
             'dom_distiller_mojo_bindings',
             'dom_distiller_protos',
@@ -201,6 +220,8 @@
             '..',
           ],
           'sources': [
+            'dom_distiller/content/browser/distillability_driver.cc',
+            'dom_distiller/content/browser/distillability_driver.h',
             'dom_distiller/content/browser/distillable_page_utils.cc',
             'dom_distiller/content/browser/distillable_page_utils.h',
             'dom_distiller/content/browser/distillable_page_utils_android.cc',
@@ -231,7 +252,9 @@
           'target_name': 'dom_distiller_content_renderer',
           'type': 'static_library',
           'dependencies': [
+            'dom_distiller_content_common',
             'dom_distiller_mojo_bindings',
+            'dom_distiller_protos',
             '../base/base.gyp:base',
             '../content/content.gyp:content_browser',
             '../gin/gin.gyp:gin',
@@ -241,7 +264,12 @@
           'include_dirs': [
             '..',
           ],
+          'export_dependent_settings': [
+            'dom_distiller_protos',
+          ],
           'sources': [
+            'dom_distiller/content/renderer/distillability_agent.cc',
+            'dom_distiller/content/renderer/distillability_agent.h',
             'dom_distiller/content/renderer/distiller_js_render_frame_observer.cc',
             'dom_distiller/content/renderer/distiller_js_render_frame_observer.h',
             'dom_distiller/content/renderer/distiller_native_javascript.cc',
