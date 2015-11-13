@@ -59,6 +59,7 @@ ac.cr, 0
 ac.cy, 0
 ac.gn, 0
 ac.id, 0
+ac.il, 0
 ac.im, 0
 ac.in, 0
 ac.ir, 0
@@ -511,6 +512,7 @@ barrel-of-knowledge.info, 4
 barrell-of-knowledge.info, 4
 barum.no, 0
 bas.it, 0
+baseball, 0
 baseball.museum, 0
 basel.museum, 0
 bashkiria.ru, 0
@@ -887,6 +889,7 @@ catania.it, 0
 catanzaro.it, 0
 catering, 0
 catering.aero, 0
+catholic, 0
 cb.it, 0
 cba, 0
 cbg.ru, 0
@@ -1078,6 +1081,7 @@ claims, 0
 cleaning, 0
 click, 0
 clinic, 0
+clinique, 0
 clinton.museum, 0
 clock.museum, 0
 clothing, 0
@@ -1120,6 +1124,7 @@ co.gl, 0
 co.gy, 0
 co.hu, 0
 co.id, 0
+co.il, 0
 co.im, 0
 co.in, 0
 co.ir, 0
@@ -1313,6 +1318,7 @@ community, 0
 community.museum, 0
 como.it, 0
 company, 0
+compare, 0
 compute-1.amazonaws.com, 4
 compute.amazonaws.cn, 4
 compute.amazonaws.com, 4
@@ -1481,6 +1487,7 @@ discovery.museum, 0
 dish, 0
 divtasvuodna.no, 0
 divttasvuotna.no, 0
+diy, 0
 dj, 0
 dk, 0
 dk.eu.org, 4
@@ -2348,6 +2355,7 @@ gov.gn, 0
 gov.gr, 0
 gov.hk, 0
 gov.ie, 0
+gov.il, 0
 gov.in, 0
 gov.iq, 0
 gov.ir, 0
@@ -2827,6 +2835,7 @@ id.lv, 0
 id.ly, 0
 id.us, 0
 ide.kyoto.jp, 0
+idf.il, 0
 idrett.no, 0
 idv.hk, 0
 idv.tw, 0
@@ -2859,7 +2868,7 @@ iki.fi, 4
 iki.nagasaki.jp, 0
 ikoma.nara.jp, 0
 ikusaka.nagano.jp, 0
-il, 2
+il, 0
 il.eu.org, 4
 il.us, 0
 ilawa.pl, 0
@@ -3239,6 +3248,7 @@ k12.ga.us, 0
 k12.gu.us, 0
 k12.ia.us, 0
 k12.id.us, 0
+k12.il, 0
 k12.il.us, 0
 k12.in.us, 0
 k12.ks.us, 0
@@ -3721,6 +3731,7 @@ lahppi.no, 0
 lajolla.museum, 0
 lakas.hu, 0
 lamborghini, 0
+lamer, 0
 lanbib.se, 0
 lancashire.museum, 0
 lancaster, 0
@@ -4409,6 +4420,7 @@ mulhouse.museum, 0
 multichoice, 0
 munakata.fukuoka.jp, 0
 muncie.museum, 0
+muni.il, 0
 muosat.no, 0
 mup.gov.pl, 0
 murakami.niigata.jp, 0
@@ -4658,6 +4670,7 @@ net.hk, 0
 net.hn, 0
 net.ht, 0
 net.id, 0
+net.il, 0
 net.im, 0
 net.in, 0
 net.iq, 0
@@ -4765,6 +4778,7 @@ ngo, 0
 ngo.lk, 0
 ngo.ph, 0
 ngo.za, 0
+ngrok.io, 4
 nh.us, 0
 nhk, 0
 nhs.uk, 0
@@ -4816,6 +4830,7 @@ nishiokoppe.hokkaido.jp, 0
 nishitosa.kochi.jp, 0
 nishiwaki.hyogo.jp, 0
 nissan, 0
+nissay, 0
 nissedal.no, 0
 nisshin.aichi.jp, 0
 nittedal.no, 0
@@ -5144,6 +5159,7 @@ org.hk, 0
 org.hn, 0
 org.ht, 0
 org.hu, 0
+org.il, 0
 org.im, 0
 org.in, 0
 org.iq, 0
@@ -5235,6 +5251,7 @@ org.ws, 0
 org.za, 0
 organic, 0
 orientexpress, 0
+origins, 0
 oristano.it, 0
 orkanger.no, 0
 orkdal.no, 0
@@ -5556,6 +5573,7 @@ pv.it, 0
 pvt.ge, 0
 pvt.k12.ma.us, 0
 pw, 0
+pwc, 0
 py, 0
 pyatigorsk.ru, 0
 pz.it, 0
@@ -5959,6 +5977,7 @@ sekigahara.gifu.jp, 0
 sekikawa.niigata.jp, 0
 sel.no, 0
 selbu.no, 0
+select, 0
 selfip.biz, 4
 selfip.com, 4
 selfip.info, 4
@@ -6874,6 +6893,7 @@ umig.gov.pl, 0
 unazuki.toyama.jp, 0
 unbi.ba, 0
 undersea.museum, 0
+unicom, 0
 union.aero, 0
 univ.sn, 0
 university, 0
@@ -7194,6 +7214,7 @@ works.aero, 0
 workshop.museum, 0
 world, 0
 worse-than.tv, 4
+wow, 0
 writesthisblog.com, 4
 wroc.pl, 4
 wroclaw.pl, 0
@@ -7257,6 +7278,7 @@ xn--6qq986b3xl, 0
 xn--7t0a264c.jp, 0
 xn--80adxhks, 0
 xn--80ao21a, 0
+xn--80aqecdr1a, 0
 xn--80asehdb, 0
 xn--80aswg, 0
 xn--80au.xn--90a3ac, 0
@@ -7352,6 +7374,7 @@ xn--ggaviika-8ya47h.no, 0
 xn--gildeskl-g0a.no, 0
 xn--givuotna-8ya.no, 0
 xn--gjvik-wua.no, 0
+xn--gk3at1e, 0
 xn--gls-elac.no, 0
 xn--gmq050i.hk, 0
 xn--gmqw5a.hk, 0
@@ -7449,6 +7472,7 @@ xn--mgbc0a9azcg, 0
 xn--mgbca7dzdo, 0
 xn--mgberp4a5d4a87g, 0
 xn--mgberp4a5d4ar, 0
+xn--mgbi4ecexp, 0
 xn--mgbpl2fh, 0
 xn--mgbqly7c0a67fbc, 0
 xn--mgbqly7cvafr, 0
@@ -7565,6 +7589,7 @@ xn--stjrdalshalsen-sqb.no, 0
 xn--stre-toten-zcb.no, 0
 xn--t60b56a, 0
 xn--tckwe, 0
+xn--tiq49xqyj, 0
 xn--tjme-hra.no, 0
 xn--tn0ag.hk, 0
 xn--tnsberg-q1a.no, 0
