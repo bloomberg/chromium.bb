@@ -445,11 +445,10 @@
       'Win GN (dbg)': 'gn_debug_bot_minimal_symbols_x86',
     },
     'client.skia': {
-      'Linux Builder': 'swarming_gyp_release_bot',
-      'Linux Builder-Trybot': 'swarming_gyp_release_bot',
-      'Linux Tests': 'swarming_gyp_release_bot',
+      'Linux Builder': 'swarming_gn_release_bot',
+      'Linux Builder-Trybot': 'swarming_gn_release_bot',
+      'Linux Tests': 'swarming_gn_release_bot',
     },
-
     'client.v8.fyi': {
       'Linux Debug Builder': 'gn_debug_bot',
       'V8 Linux GN': 'gn_release_bot',
