@@ -8,7 +8,7 @@
 #include <map>
 #include <set>
 
-#include "third_party/mojo/src/mojo/public/cpp/bindings/array.h"
+#include "mojo/public/cpp/bindings/array.h"
 
 namespace mojo {
 namespace shell {

@@ -6,10 +6,10 @@
 #define MOJO_SERVICES_TRACING_TRACE_RECORDER_IMPL_H_
 
 #include "base/macros.h"
+#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/string.h"
 #include "mojo/services/tracing/public/interfaces/tracing.mojom.h"
 #include "mojo/services/tracing/trace_data_sink.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/string.h"
 
 namespace tracing {
 

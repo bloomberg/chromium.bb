@@ -8,9 +8,9 @@
 #include "base/test/test_io_thread.h"
 #include "base/time/time.h"
 #include "mojo/edk/test/scoped_ipc_support.h"
+#include "mojo/public/c/system/types.h"
+#include "mojo/public/cpp/system/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/mojo/src/mojo/public/c/system/types.h"
-#include "third_party/mojo/src/mojo/public/cpp/system/macros.h"
 
 namespace mojo {
 namespace edk {

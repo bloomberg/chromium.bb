@@ -9,11 +9,11 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/threading/simple_thread.h"
+#include "mojo/public/c/system/types.h"
+#include "mojo/public/cpp/system/macros.h"
 #include "third_party/mojo/src/mojo/edk/system/dispatcher.h"
 #include "third_party/mojo/src/mojo/edk/system/handle_signals_state.h"
 #include "third_party/mojo/src/mojo/edk/system/waiter.h"
-#include "third_party/mojo/src/mojo/public/c/system/types.h"
-#include "third_party/mojo/src/mojo/public/cpp/system/macros.h"
 
 namespace mojo {
 namespace system {

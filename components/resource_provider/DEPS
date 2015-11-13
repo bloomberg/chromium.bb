@@ -3,5 +3,5 @@ include_rules = [
   "+mojo/common",
   "+mojo/converters",
   "+mojo/platform_handle",
-  "+third_party/mojo/src/mojo/public",
+  "+mojo/public",
 ]

@@ -6,7 +6,7 @@
 #define MOJO_MESSAGE_PUMP_MESSAGE_PUMP_MOJO_HANDLER_H_
 
 #include "mojo/message_pump/mojo_message_pump_export.h"
-#include "third_party/mojo/src/mojo/public/cpp/system/core.h"
+#include "mojo/public/cpp/system/core.h"
 
 namespace mojo {
 namespace common {

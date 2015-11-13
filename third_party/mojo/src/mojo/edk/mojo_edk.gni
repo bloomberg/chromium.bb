@@ -2,14 +2,13 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("../public/mojo_sdk.gni")
+import("//mojo/public/mojo_sdk.gni")
 
 # A mojo_edk_source_set is a mojo_sdk_source_set that does not restrict
 # external dependencies and understands the following additional variables, all
 # of which admit a list of the relevant elements specified relative to the
 # location of the Mojo EDK:
 # mojo_edk_configs
-# allow_circular_mojo_edk_includes_from
 # mojo_edk_public_deps
 # mojo_edk_deps
 
@@ -26,7 +25,7 @@ template("mojo_edk_source_set") {
       visibility = invoker.visibility
     }
     if (defined(invoker.mojo_edk_visibility)) {
-      mojo_sdk_visibility = invoker.mojo_edk_visibility
+      mojo_edk_visibility = invoker.mojo_edk_visibility
     }
     if (defined(invoker.testonly)) {
       testonly = invoker.testonly
@@ -50,7 +49,7 @@ template("mojo_edk_source_set") {
         # Check that the EDK config was not mistakenly given as an absolute
         # path.
         assert(get_path_info(edk_config, "abspath") != edk_config)
-        configs += [ rebase_path(edk_config, ".", mojo_root) ]
+        configs += [ rebase_path(edk_config, ".", "//third_party/mojo/src") ]
       }
     }
 
@@ -58,25 +57,15 @@ template("mojo_edk_source_set") {
     if (defined(invoker.allow_circular_includes_from)) {
       allow_circular_includes_from += invoker.allow_circular_includes_from
     }
-    if (defined(invoker.allow_circular_mojo_edk_includes_from)) {
-      foreach(edk_target, invoker.allow_circular_mojo_edk_includes_from) {
-        # Check that the EDK target was not mistakenly given as an absolute
-        # path.
-        assert(get_path_info(edk_target, "abspath") != edk_target)
-        allow_circular_includes_from +=
-            [ rebase_path(edk_target, ".", mojo_root) ]
-      }
-    }
 
     if (defined(invoker.public_deps)) {
       public_deps = invoker.public_deps
     }
-    mojo_sdk_public_deps = []
+    mojo_edk_public_deps = []
     if (defined(invoker.mojo_edk_public_deps)) {
-      # The EDK is required to be a sibling of the SDK, so the relative
-      # dependencies are rewritten in the same way.
-      mojo_sdk_public_deps = invoker.mojo_edk_public_deps
+      mojo_edk_public_deps += invoker.mojo_edk_public_deps
     }
+    mojo_sdk_public_deps = []
     if (defined(invoker.mojo_sdk_public_deps)) {
       mojo_sdk_public_deps += invoker.mojo_sdk_public_deps
     }
@@ -84,12 +73,13 @@ template("mojo_edk_source_set") {
     if (defined(invoker.deps)) {
       deps = invoker.deps
     }
-    mojo_sdk_deps = []
+    mojo_edk_deps = []
     if (defined(invoker.mojo_edk_deps)) {
       # The EDK is required to be a sibling of the SDK, so the relative
       # dependencies are rewritten in the same way.
-      mojo_sdk_deps = invoker.mojo_edk_deps
+      mojo_edk_deps += invoker.mojo_edk_deps
     }
+    mojo_sdk_deps = []
     if (defined(invoker.mojo_sdk_deps)) {
       mojo_sdk_deps += invoker.mojo_sdk_deps
     }

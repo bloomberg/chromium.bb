@@ -7,8 +7,8 @@
 
 #include "base/compiler_specific.h"
 #include "mojo/application/public/cpp/app_lifetime_helper.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/services/network/public/interfaces/url_loader_factory.mojom.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/strong_binding.h"
 
 namespace mojo {
 class NetworkContext;

@@ -7,9 +7,9 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "net/base/completion_callback.h"
 #include "net/proxy/proxy_resolver_factory.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
 
 namespace net {
 class HostResolver;

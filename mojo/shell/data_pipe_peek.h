@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "third_party/mojo/src/mojo/public/cpp/system/core.h"
+#include "mojo/public/cpp/system/core.h"
 
 namespace mojo {
 namespace shell {

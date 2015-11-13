@@ -10,8 +10,8 @@
 #include "base/message_loop/message_loop.h"
 #include "mojo/application/public/cpp/application_delegate.h"
 #include "mojo/application/public/cpp/lib/service_registry.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/interface_ptr.h"
-#include "third_party/mojo/src/mojo/public/cpp/environment/logging.h"
+#include "mojo/public/cpp/bindings/interface_ptr.h"
+#include "mojo/public/cpp/environment/logging.h"
 
 namespace mojo {
 

@@ -10,8 +10,8 @@
 #include "content/public/common/content_constants.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest.h"
 #include "extensions/common/constants.h"
+#include "mojo/public/cpp/bindings/map.h"
 #include "net/http/http_response_headers.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/map.h"
 
 namespace extensions {
 namespace {

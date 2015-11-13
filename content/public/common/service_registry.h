@@ -11,9 +11,9 @@
 #include "base/callback.h"
 #include "base/strings/string_piece.h"
 #include "content/common/content_export.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/interface_ptr.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/interface_request.h"
-#include "third_party/mojo/src/mojo/public/cpp/system/core.h"
+#include "mojo/public/cpp/bindings/interface_ptr.h"
+#include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/system/core.h"
 
 namespace content {
 

@@ -5,10 +5,10 @@
 #ifndef COMPONENTS_HTML_VIEWER_BLINK_BASIC_TYPE_CONVERTERS_H_
 #define COMPONENTS_HTML_VIEWER_BLINK_BASIC_TYPE_CONVERTERS_H_
 
-#include "third_party/mojo/src/mojo/public/cpp/bindings/type_converter.h"
+#include "mojo/public/cpp/bindings/type_converter.h"
 
+#include "mojo/public/cpp/bindings/array.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/array.h"
 #include "ui/mojo/geometry/geometry.mojom.h"
 
 namespace blink {

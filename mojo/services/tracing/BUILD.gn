@@ -14,7 +14,7 @@ mojo_native_application("tracing") {
   deps = [
     ":lib",
     "//mojo/application/public/cpp",
-    "//third_party/mojo/src/mojo/public/cpp/system",
+    "//mojo/public/cpp/system",
   ]
 }
 

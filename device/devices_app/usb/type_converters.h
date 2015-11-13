@@ -13,8 +13,8 @@
 #include "device/usb/usb_device_filter.h"
 #include "device/usb/usb_device_handle.h"
 #include "device/usb/webusb_descriptors.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/array.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/type_converter.h"
+#include "mojo/public/cpp/bindings/array.h"
+#include "mojo/public/cpp/bindings/type_converter.h"
 
 // Type converters to convert objects between internal device/usb data types and
 // public Mojo interface data types.

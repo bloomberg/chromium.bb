@@ -26,8 +26,8 @@
 #include "mojo/application/public/cpp/connect.h"
 #include "mojo/application/public/interfaces/shell.mojom.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
+#include "mojo/public/cpp/system/data_pipe.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
-#include "third_party/mojo/src/mojo/public/cpp/system/data_pipe.h"
 #include "ui/gfx/geometry/dip_util.h"
 #include "ui/gfx/geometry/size.h"
 

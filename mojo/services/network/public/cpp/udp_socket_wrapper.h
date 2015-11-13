@@ -7,8 +7,8 @@
 
 #include <queue>
 
+#include "mojo/public/cpp/bindings/binding.h"
 #include "network/public/interfaces/udp_socket.mojom.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
 
 namespace mojo {
 

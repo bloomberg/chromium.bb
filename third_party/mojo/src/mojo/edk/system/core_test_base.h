@@ -5,11 +5,11 @@
 #ifndef THIRD_PARTY_MOJO_SRC_MOJO_EDK_SYSTEM_CORE_TEST_BASE_H_
 #define THIRD_PARTY_MOJO_SRC_MOJO_EDK_SYSTEM_CORE_TEST_BASE_H_
 
+#include "mojo/public/c/system/types.h"
+#include "mojo/public/cpp/system/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/mojo/src/mojo/edk/embedder/simple_platform_support.h"
 #include "third_party/mojo/src/mojo/edk/system/mutex.h"
-#include "third_party/mojo/src/mojo/public/c/system/types.h"
-#include "third_party/mojo/src/mojo/public/cpp/system/macros.h"
 
 namespace mojo {
 namespace system {

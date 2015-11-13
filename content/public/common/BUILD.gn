@@ -4,7 +4,7 @@
 
 import("//build/config/features.gni")
 import("//content/common/common.gni")
-import("//third_party/mojo/src/mojo/public/tools/bindings/mojom.gni")
+import("//mojo/public/tools/bindings/mojom.gni")
 
 # See //content/BUILD.gn for how this works.
 group("common") {
@@ -75,7 +75,7 @@ source_set("common_sources") {
 
   public_deps = [
     "//content/common",
-    "//third_party/mojo/src/mojo/public/cpp/bindings",
+    "//mojo/public/cpp/bindings",
   ]
   deps = [
     "//net",

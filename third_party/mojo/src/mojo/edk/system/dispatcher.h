@@ -13,16 +13,16 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "mojo/public/c/system/buffer.h"
+#include "mojo/public/c/system/data_pipe.h"
+#include "mojo/public/c/system/message_pipe.h"
+#include "mojo/public/c/system/types.h"
+#include "mojo/public/cpp/system/macros.h"
 #include "third_party/mojo/src/mojo/edk/embedder/platform_handle_vector.h"
 #include "third_party/mojo/src/mojo/edk/system/handle_signals_state.h"
 #include "third_party/mojo/src/mojo/edk/system/memory.h"
 #include "third_party/mojo/src/mojo/edk/system/mutex.h"
 #include "third_party/mojo/src/mojo/edk/system/system_impl_export.h"
-#include "third_party/mojo/src/mojo/public/c/system/buffer.h"
-#include "third_party/mojo/src/mojo/public/c/system/data_pipe.h"
-#include "third_party/mojo/src/mojo/public/c/system/message_pipe.h"
-#include "third_party/mojo/src/mojo/public/c/system/types.h"
-#include "third_party/mojo/src/mojo/public/cpp/system/macros.h"
 
 namespace mojo {
 

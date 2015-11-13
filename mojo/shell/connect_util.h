@@ -5,8 +5,8 @@
 #ifndef MOJO_SHELL_CONNECT_UTIL_H_
 #define MOJO_SHELL_CONNECT_UTIL_H_
 
-#include "third_party/mojo/src/mojo/public/cpp/bindings/interface_ptr.h"
-#include "third_party/mojo/src/mojo/public/cpp/system/handle.h"
+#include "mojo/public/cpp/bindings/interface_ptr.h"
+#include "mojo/public/cpp/system/handle.h"
 
 class GURL;
 

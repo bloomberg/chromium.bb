@@ -179,12 +179,12 @@ source_set("unit_tests") {
     "//components/resources",
     "//crypto:platform",
     "//dbus",
+    "//mojo/public/cpp/system:system",
     "//skia",
     "//sync",
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/leveldatabase",
-    "//third_party/mojo/src/mojo/public/cpp/system:system",
     "//ui/chromeos/resources",
   ]
 }

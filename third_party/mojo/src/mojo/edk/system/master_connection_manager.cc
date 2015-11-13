@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/synchronization/waitable_event.h"
+#include "mojo/public/cpp/system/macros.h"
 #include "third_party/mojo/src/mojo/edk/embedder/master_process_delegate.h"
 #include "third_party/mojo/src/mojo/edk/embedder/platform_channel_pair.h"
 #include "third_party/mojo/src/mojo/edk/embedder/platform_handle.h"
@@ -18,7 +19,6 @@
 #include "third_party/mojo/src/mojo/edk/system/message_in_transit.h"
 #include "third_party/mojo/src/mojo/edk/system/raw_channel.h"
 #include "third_party/mojo/src/mojo/edk/system/transport_data.h"
-#include "third_party/mojo/src/mojo/public/cpp/system/macros.h"
 
 namespace mojo {
 namespace system {

@@ -12,9 +12,9 @@
 #include "base/run_loop.h"
 #include "base/time/time.h"
 #include "mojo/message_pump/message_pump_mojo.h"
+#include "mojo/public/cpp/test_support/test_support.h"
+#include "mojo/public/cpp/test_support/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/mojo/src/mojo/public/cpp/test_support/test_support.h"
-#include "third_party/mojo/src/mojo/public/cpp/test_support/test_utils.h"
 
 namespace mojo {
 namespace common {

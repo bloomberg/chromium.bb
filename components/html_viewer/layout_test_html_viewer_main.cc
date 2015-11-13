@@ -4,7 +4,7 @@
 
 #include "components/html_viewer/layout_test_html_viewer.h"
 #include "mojo/application/public/cpp/application_runner.h"
-#include "third_party/mojo/src/mojo/public/c/system/main.h"
+#include "mojo/public/c/system/main.h"
 
 MojoResult MojoMain(MojoHandle shell_handle) {
   mojo::ApplicationRunner runner(new html_viewer::LayoutTestHTMLViewer);

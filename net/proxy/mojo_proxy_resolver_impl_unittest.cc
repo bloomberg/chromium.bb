@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/run_loop.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "net/base/net_errors.h"
 #include "net/proxy/mock_proxy_resolver.h"
 #include "net/proxy/mojo_proxy_type_converters.h"
@@ -16,7 +17,6 @@
 #include "net/proxy/proxy_server.h"
 #include "net/test/event_waiter.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
 
 namespace net {
 namespace {

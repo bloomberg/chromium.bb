@@ -4,7 +4,7 @@
 
 import("//build/config/ui.gni")
 import("//mojo/public/mojo_application.gni")
-import("//third_party/mojo/src/mojo/public/tools/bindings/mojom.gni")
+import("//mojo/public/tools/bindings/mojom.gni")
 
 mojo_native_application("desktop_ui") {
   sources = [
@@ -42,10 +42,10 @@ source_set("lib") {
     "//mojo/application/public/cpp:sources",
     "//mojo/common:common_base",
     "//mojo/converters/geometry",
+    "//mojo/public/cpp/bindings",
     "//mojo/services/tracing/public/cpp",
     "//mojo/services/tracing/public/interfaces",
     "//skia",
-    "//third_party/mojo/src/mojo/public/cpp/bindings",
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//ui/mojo/init",

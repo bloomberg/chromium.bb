@@ -16,7 +16,7 @@ source_set("lib") {
     "//mojo/application/public/cpp",
     "//mojo/common:common_base",
     "//mojo/platform_handle",
-    "//third_party/mojo/src/mojo/public/cpp/bindings",
+    "//mojo/public/cpp/bindings",
   ]
 
   public_deps = [
@@ -35,6 +35,6 @@ mojo_native_application("font_service") {
     "//mojo/application/public/cpp",
     "//mojo/common",
     "//mojo/common:common_base",
-    "//third_party/mojo/src/mojo/public/cpp/bindings:callback",
+    "//mojo/public/cpp/bindings:callback",
   ]
 }

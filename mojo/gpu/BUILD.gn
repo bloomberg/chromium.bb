@@ -13,6 +13,6 @@ source_set("mojo_gles2_implementation") {
   deps = [
     "//base",
     "//gpu/command_buffer/client:gles2_interface",
-    "//third_party/mojo/src/mojo/public/c/gles2",
+    "//mojo/public/c/gles2",
   ]
 }

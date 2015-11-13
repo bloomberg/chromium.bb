@@ -9,10 +9,10 @@ include_rules = [
   "+mojo/common",
   "+mojo/logging",
   "+mojo/message_pump",
+  "+mojo/public",
   "+mojo/services/network",
   "+mojo/services/tracing",
   "+net",
-  "+third_party/mojo/src/mojo/public",
   "+third_party/mojo_services/src/clipboard",
   "+third_party/mojo_services/src/content_handler/public",
 ]

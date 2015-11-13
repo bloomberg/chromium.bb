@@ -15,13 +15,13 @@
 #include "components/html_viewer/replicated_frame_state.h"
 #include "components/mus/public/cpp/window_observer.h"
 #include "components/web_view/public/interfaces/frame.mojom.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/services/tracing/public/interfaces/tracing.mojom.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/web/WebFrameClient.h"
 #include "third_party/WebKit/public/web/WebRemoteFrameClient.h"
 #include "third_party/WebKit/public/web/WebSandboxFlags.h"
 #include "third_party/WebKit/public/web/WebTextInputInfo.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
 
 namespace cc_blink {
 class WebLayerImpl;

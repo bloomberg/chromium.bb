@@ -10,10 +10,10 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "mojo/application/public/cpp/app_lifetime_helper.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/services/network/public/interfaces/udp_socket.mojom.h"
 #include "net/base/ip_endpoint.h"
 #include "net/udp/udp_socket.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/strong_binding.h"
 
 namespace net {
 class IOBuffer;

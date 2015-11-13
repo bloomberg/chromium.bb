@@ -20,7 +20,7 @@
 #include "components/web_view/navigation_controller_delegate.h"
 #include "components/web_view/public/interfaces/frame.mojom.h"
 #include "components/web_view/public/interfaces/web_view.mojom.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace mojo {
 class ApplicationImpl;

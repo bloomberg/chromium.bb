@@ -22,8 +22,8 @@ source_set("headers") {
     "//gpu/command_buffer/client",
     "//gpu/command_buffer/client:gles2_implementation",
     "//gpu/command_buffer/common",
-    "//third_party/mojo/src/mojo/public/c/gles2",
-    "//third_party/mojo/src/mojo/public/cpp/bindings",
+    "//mojo/public/c/gles2",
+    "//mojo/public/cpp/bindings",
   ]
 }
 
@@ -61,10 +61,10 @@ component("gles2") {
     "//gpu/command_buffer/common",
     "//mojo/environment:chromium",
     "//mojo/platform_handle:for_component",
-    "//third_party/mojo/src/mojo/public/c/gles2",
-    "//third_party/mojo/src/mojo/public/c/system:for_component",
-    "//third_party/mojo/src/mojo/public/cpp/bindings",
-    "//third_party/mojo/src/mojo/public/cpp/system",
+    "//mojo/public/c/gles2",
+    "//mojo/public/c/system:for_component",
+    "//mojo/public/cpp/bindings",
+    "//mojo/public/cpp/system",
   ]
 
   if (!is_component_build) {

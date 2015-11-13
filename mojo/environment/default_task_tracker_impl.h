@@ -6,7 +6,7 @@
 #define MOJO_ENVIRONMENT_DEFAULT_TASK_TRACKER_IMPL_H_
 
 #include "mojo/environment/mojo_environment_impl_export.h"
-#include "third_party/mojo/src/mojo/public/cpp/environment/task_tracker.h"
+#include "mojo/public/cpp/environment/task_tracker.h"
 
 namespace mojo {
 namespace internal {

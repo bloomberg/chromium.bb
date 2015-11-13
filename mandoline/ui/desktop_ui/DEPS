@@ -5,10 +5,10 @@ include_rules = [
   "+mojo/application",
   "+mojo/common",
   "+mojo/converters",
+  "+mojo/public",
   "+mojo/runner",
   "+mojo/services/network/public",
   "+mojo/services/tracing/public",
-  "+third_party/mojo/src/mojo/public",
   "+third_party/mojo_services",
   "+ui",
 ]

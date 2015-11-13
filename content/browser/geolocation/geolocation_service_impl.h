@@ -6,7 +6,7 @@
 #include "content/browser/geolocation/geolocation_provider_impl.h"
 #include "content/common/geolocation_service.mojom.h"
 #include "content/public/common/mojo_geoposition.mojom.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/binding.h"
 
 #ifndef CONTENT_BROWSER_GEOLOCATION_GEOLOCATION_SERVICE_IMPL_H_
 #define CONTENT_BROWSER_GEOLOCATION_GEOLOCATION_SERVICE_IMPL_H_

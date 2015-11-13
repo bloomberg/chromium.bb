@@ -45,10 +45,10 @@ source_set("sources") {
     "//mojo/application/public/cpp",
     "//mojo/logging",
     "//mojo/message_pump",
+    "//mojo/public/cpp/bindings",
     "//mojo/services/tracing:lib",
     "//mojo/services/tracing/public/cpp",
     "//third_party/icu",
-    "//third_party/mojo/src/mojo/public/cpp/bindings",
     "//url",
   ]
 

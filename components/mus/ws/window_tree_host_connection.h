@@ -10,7 +10,7 @@
 #include "components/mus/public/interfaces/window_tree_host.mojom.h"
 #include "components/mus/ws/window_tree_host_delegate.h"
 #include "components/mus/ws/window_tree_host_impl.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/binding.h"
 
 namespace mus {
 

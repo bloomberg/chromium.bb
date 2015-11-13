@@ -45,8 +45,8 @@ android_library("content_shell_java") {
     "//base:base_java",
     "//content/public/android:content_java",
     "//media/base/android:media_java",
+    "//mojo/public/java:system",
     "//net/android:net_java",
-    "//third_party/mojo/src/mojo/public/java:system",
     "//ui/android:ui_java",
     ":content_shell_java_resources",
   ]

@@ -12,7 +12,7 @@
 #include "mojo/application/public/cpp/lib/service_connector_registry.h"
 #include "mojo/application/public/interfaces/service_provider.mojom.h"
 #include "mojo/application/public/interfaces/shell.mojom.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/binding.h"
 
 namespace mojo {
 namespace internal {

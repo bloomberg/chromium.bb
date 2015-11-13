@@ -14,8 +14,8 @@
 #include "components/mus/public/cpp/output_surface.h"
 #include "components/mus/public/cpp/window.h"
 #include "mojo/converters/surfaces/surfaces_type_converters.h"
+#include "mojo/public/c/gles2/gles2.h"
 #include "third_party/WebKit/public/web/WebWidget.h"
-#include "third_party/mojo/src/mojo/public/c/gles2/gles2.h"
 #include "ui/gfx/buffer_types.h"
 
 namespace html_viewer {

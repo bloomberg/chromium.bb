@@ -11,7 +11,7 @@
 #include "mojo/edk/system/test_utils.h"
 #include "mojo/edk/test/multiprocess_test_helper.h"
 #include "mojo/edk/test/scoped_ipc_support.h"
-#include "third_party/mojo/src/mojo/public/cpp/system/macros.h"
+#include "mojo/public/cpp/system/macros.h"
 
 namespace mojo {
 namespace edk {

@@ -10,8 +10,8 @@
 
 #include "base/macros.h"
 #include "components/devtools_service/public/interfaces/devtools_service.mojom.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "third_party/WebKit/public/web/WebDevToolsAgentClient.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
 
 namespace blink {
 class WebLocalFrame;

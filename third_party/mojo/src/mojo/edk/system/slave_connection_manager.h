@@ -9,13 +9,13 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
+#include "mojo/public/cpp/system/macros.h"
 #include "third_party/mojo/src/mojo/edk/embedder/scoped_platform_handle.h"
 #include "third_party/mojo/src/mojo/edk/embedder/slave_process_delegate.h"
 #include "third_party/mojo/src/mojo/edk/system/connection_manager.h"
 #include "third_party/mojo/src/mojo/edk/system/mutex.h"
 #include "third_party/mojo/src/mojo/edk/system/raw_channel.h"
 #include "third_party/mojo/src/mojo/edk/system/system_impl_export.h"
-#include "third_party/mojo/src/mojo/public/cpp/system/macros.h"
 
 namespace base {
 class TaskRunner;

@@ -7,7 +7,7 @@
 
 #include "ipc/ipc_export.h"
 #include "ipc/ipc_message.h"
-#include "third_party/mojo/src/mojo/public/cpp/system/message_pipe.h"
+#include "mojo/public/cpp/system/message_pipe.h"
 
 namespace IPC {
 

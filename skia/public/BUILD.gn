@@ -14,7 +14,7 @@ source_set("public") {
 
   deps = [
     "//base",
+    "//mojo/public/cpp/bindings",
     "//skia",
-    "//third_party/mojo/src/mojo/public/cpp/bindings",
   ]
 }

@@ -2,8 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 #
+
+import("//mojo/public/tools/bindings/mojom.gni")
 import("//testing/test.gni")
-import("//third_party/mojo/src/mojo/public/tools/bindings/mojom.gni")
 
 gypi_values = exec_script("//build/gypi_to_gn.py",
                           [ rebase_path("media_router.gypi") ],
@@ -27,7 +28,7 @@ static_library("router") {
     deps += [
       ":mojo_bindings",
       "//extensions/browser",
-      "//third_party/mojo/src/mojo/public/cpp/bindings",
+      "//mojo/public/cpp/bindings",
     ]
     sources += rebase_path(gypi_values.media_router_non_android_sources,
                            ".",

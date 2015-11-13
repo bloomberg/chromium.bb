@@ -6,9 +6,9 @@
 #define THIRD_PARTY_MOJO_SRC_MOJO_EDK_EMBEDDER_SCOPED_PLATFORM_HANDLE_H_
 
 #include "base/move.h"
+#include "mojo/public/c/system/macros.h"
 #include "third_party/mojo/src/mojo/edk/embedder/platform_handle.h"
 #include "third_party/mojo/src/mojo/edk/system/system_impl_export.h"
-#include "third_party/mojo/src/mojo/public/c/system/macros.h"
 
 namespace mojo {
 namespace embedder {

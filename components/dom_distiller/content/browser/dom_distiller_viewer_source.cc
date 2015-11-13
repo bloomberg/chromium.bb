@@ -35,9 +35,9 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/service_registry.h"
 #include "grit/components_strings.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/base/url_util.h"
 #include "net/url_request/url_request.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/strong_binding.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace dom_distiller {

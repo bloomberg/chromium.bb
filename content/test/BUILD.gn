@@ -8,8 +8,8 @@ import("//build/config/features.gni")
 import("//build/config/ui.gni")
 import("//build_overrides/v8.gni")
 import("//media/media_options.gni")
+import("//mojo/public/tools/bindings/mojom.gni")
 import("//testing/test.gni")
-import("//third_party/mojo/src/mojo/public/tools/bindings/mojom.gni")
 
 content_tests_gypi_values =
     exec_script("//build/gypi_to_gn.py",
@@ -378,6 +378,8 @@ test("content_browsertests") {
     "//media:shared_memory_support",
     "//mojo/application/public/cpp:cpp_for_chromium",
     "//mojo/environment:chromium",
+    "//mojo/public/cpp/bindings",
+    "//mojo/public/js",
     "//mojo/test:test_support",
     "//net:test_support",
     "//ppapi/host",
@@ -386,8 +388,6 @@ test("content_browsertests") {
     "//ppapi/shared_impl",
     "//third_party/mojo/src/mojo/edk/system",
     "//third_party/mojo/src/mojo/edk/test:test_support",
-    "//third_party/mojo/src/mojo/public/cpp/bindings",
-    "//third_party/mojo/src/mojo/public/js",
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/WebKit/public:blink",
@@ -568,6 +568,7 @@ test("content_unittests") {
     "//device/battery",
     "//device/battery:mojo_bindings",
     "//mojo/environment:chromium",
+    "//mojo/public/cpp/bindings",
     "//net:extras",
     "//net:test_support",
     "//skia",
@@ -576,7 +577,6 @@ test("content_unittests") {
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/mojo/src/mojo/edk/test:test_support",
-    "//third_party/mojo/src/mojo/public/cpp/bindings",
     "//third_party/re2",
     "//ui/accessibility",
     "//ui/base",

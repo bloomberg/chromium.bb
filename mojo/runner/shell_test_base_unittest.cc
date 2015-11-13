@@ -9,11 +9,11 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "mojo/public/cpp/bindings/interface_ptr.h"
+#include "mojo/public/cpp/system/core.h"
 #include "mojo/services/test_service/test_request_tracker.mojom.h"
 #include "mojo/services/test_service/test_service.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/interface_ptr.h"
-#include "third_party/mojo/src/mojo/public/cpp/system/core.h"
 #include "url/gurl.h"
 
 using mojo::test::ServiceReport;

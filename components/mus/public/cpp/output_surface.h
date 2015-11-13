@@ -10,7 +10,7 @@
 #include "cc/surfaces/surface_id.h"
 #include "components/mus/public/cpp/window_surface.h"
 #include "components/mus/public/cpp/window_surface_client.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/binding.h"
 
 namespace mus {
 

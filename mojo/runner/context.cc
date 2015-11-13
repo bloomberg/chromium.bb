@@ -28,6 +28,7 @@
 #include "mojo/application/public/cpp/application_delegate.h"
 #include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/package_manager/package_manager_impl.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/runner/host/in_process_native_runner.h"
 #include "mojo/runner/host/out_of_process_native_runner.h"
 #include "mojo/runner/register_local_aliases.h"
@@ -43,7 +44,6 @@
 #include "mojo/shell/switches.h"
 #include "mojo/util/filename_util.h"
 #include "third_party/mojo/src/mojo/edk/embedder/embedder.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/strong_binding.h"
 #include "url/gurl.h"
 
 namespace mojo {

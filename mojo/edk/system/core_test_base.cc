@@ -11,7 +11,7 @@
 #include "mojo/edk/system/configuration.h"
 #include "mojo/edk/system/core.h"
 #include "mojo/edk/system/dispatcher.h"
-#include "third_party/mojo/src/mojo/public/cpp/system/macros.h"
+#include "mojo/public/cpp/system/macros.h"
 
 namespace mojo {
 namespace edk {

@@ -7,8 +7,8 @@
 
 #include "components/dom_distiller/content/browser/distiller_ui_handle.h"
 #include "components/dom_distiller/content/common/distiller_javascript_service.mojom.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/string.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/string.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace dom_distiller {
 

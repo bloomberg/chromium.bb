@@ -14,11 +14,11 @@
 #include "mojo/edk/system/handle_table.h"
 #include "mojo/edk/system/mapping_table.h"
 #include "mojo/edk/system/system_impl_export.h"
-#include "third_party/mojo/src/mojo/public/c/system/buffer.h"
-#include "third_party/mojo/src/mojo/public/c/system/data_pipe.h"
-#include "third_party/mojo/src/mojo/public/c/system/message_pipe.h"
-#include "third_party/mojo/src/mojo/public/c/system/types.h"
-#include "third_party/mojo/src/mojo/public/cpp/system/macros.h"
+#include "mojo/public/c/system/buffer.h"
+#include "mojo/public/c/system/data_pipe.h"
+#include "mojo/public/c/system/message_pipe.h"
+#include "mojo/public/c/system/types.h"
+#include "mojo/public/cpp/system/macros.h"
 
 namespace mojo {
 
@@ -69,7 +69,7 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
   // API functions, referenced below.
 
   // These methods correspond to the API functions defined in
-  // "third_party/mojo/src/mojo/public/c/system/functions.h":
+  // "mojo/public/c/system/functions.h":
   MojoTimeTicks GetTimeTicksNow();
   MojoResult Close(MojoHandle handle);
   MojoResult Wait(MojoHandle handle,
@@ -84,7 +84,7 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
                       MojoHandleSignalsState* signals_states);
 
   // These methods correspond to the API functions defined in
-  // "third_party/mojo/src/mojo/public/c/system/message_pipe.h":
+  // "mojo/public/c/system/message_pipe.h":
   MojoResult CreateMessagePipe(
       const MojoCreateMessagePipeOptions* options,
       MojoHandle* message_pipe_handle0,
@@ -103,7 +103,7 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
                          MojoReadMessageFlags flags);
 
   // These methods correspond to the API functions defined in
-  // "third_party/mojo/src/mojo/public/c/system/data_pipe.h":
+  // "mojo/public/c/system/data_pipe.h":
   MojoResult CreateDataPipe(
       const MojoCreateDataPipeOptions* options,
       MojoHandle* data_pipe_producer_handle,
@@ -130,7 +130,7 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
                          uint32_t num_bytes_read);
 
   // These methods correspond to the API functions defined in
-  // "third_party/mojo/src/mojo/public/c/system/buffer.h":
+  // "mojo/public/c/system/buffer.h":
   MojoResult CreateSharedBuffer(
       const MojoCreateSharedBufferOptions* options,
       uint64_t num_bytes,

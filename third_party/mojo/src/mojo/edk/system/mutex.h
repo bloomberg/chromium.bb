@@ -14,9 +14,9 @@
 
 #include "base/synchronization/lock_impl.h"
 #include "base/threading/platform_thread.h"
+#include "mojo/public/cpp/system/macros.h"
 #include "third_party/mojo/src/mojo/edk/system/system_impl_export.h"
 #include "third_party/mojo/src/mojo/edk/system/thread_annotations.h"
-#include "third_party/mojo/src/mojo/public/cpp/system/macros.h"
 
 namespace mojo {
 namespace system {

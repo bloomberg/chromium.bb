@@ -13,7 +13,7 @@
 
 #include "base/logging.h"
 #include "base/strings/string_util.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/string.h"
+#include "mojo/public/cpp/bindings/string.h"
 
 #if defined(OS_WIN)
 #include "base/strings/utf_string_conversions.h"

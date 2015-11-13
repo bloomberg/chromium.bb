@@ -53,10 +53,10 @@ mojo_native_application("apptests") {
     "//components/filesystem/public/interfaces",
     "//mojo/application/public/cpp:sources",
     "//mojo/application/public/cpp:test_support",
+    "//mojo/public/cpp/bindings",
     "//sql",
     "//sql:redirection_header",
     "//sql:test_support",
     "//testing/gtest:gtest",
-    "//third_party/mojo/src/mojo/public/cpp/bindings",
   ]
 }

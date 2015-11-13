@@ -5,8 +5,8 @@
 #ifndef MOJO_COMMON_URL_TYPE_CONVERTERS_H_
 #define MOJO_COMMON_URL_TYPE_CONVERTERS_H_
 
-#include "third_party/mojo/src/mojo/public/cpp/bindings/string.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/type_converter.h"
+#include "mojo/public/cpp/bindings/string.h"
+#include "mojo/public/cpp/bindings/type_converter.h"
 
 class GURL;
 

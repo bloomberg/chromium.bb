@@ -12,9 +12,9 @@
 #include "mojo/application/public/cpp/interface_factory.h"
 #include "mojo/application/public/cpp/service_provider_impl.h"
 #include "mojo/common/weak_binding_set.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/shell/application_loader.h"
 #include "mojo/shell/package_manager.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/strong_binding.h"
 
 namespace mojo {
 namespace shell {

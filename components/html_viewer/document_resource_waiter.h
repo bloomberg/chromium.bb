@@ -10,8 +10,8 @@
 #include "components/html_viewer/html_frame_tree_manager_observer.h"
 #include "components/mus/public/cpp/window_observer.h"
 #include "components/web_view/public/interfaces/frame.mojom.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/services/network/public/interfaces/url_loader.mojom.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
 
 namespace html_viewer {
 

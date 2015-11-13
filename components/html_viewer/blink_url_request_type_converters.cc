@@ -5,9 +5,9 @@
 #include "components/html_viewer/blink_url_request_type_converters.h"
 
 #include "base/strings/string_util.h"
+#include "mojo/public/cpp/system/data_pipe.h"
 #include "third_party/WebKit/public/platform/WebHTTPHeaderVisitor.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
-#include "third_party/mojo/src/mojo/public/cpp/system/data_pipe.h"
 
 namespace mojo {
 namespace {

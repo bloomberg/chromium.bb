@@ -4,7 +4,7 @@
 
 import("//build/config/ui.gni")
 import("//mojo/public/mojo_application.gni")
-import("//third_party/mojo/src/mojo/public/tools/bindings/mojom.gni")
+import("//mojo/public/tools/bindings/mojom.gni")
 import("//tools/grit/repack.gni")
 
 mojo_native_application("views_examples") {
@@ -22,8 +22,8 @@ mojo_native_application("views_examples") {
     "//mojo/application/public/cpp:sources",
     "//mojo/converters/geometry",
     "//mojo/converters/network",
+    "//mojo/public/cpp/bindings",
     "//skia",
-    "//third_party/mojo/src/mojo/public/cpp/bindings",
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//ui/views",

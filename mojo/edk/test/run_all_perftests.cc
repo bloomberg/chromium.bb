@@ -6,7 +6,7 @@
 #include "base/test/perf_test_suite.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/test/test_support_impl.h"
-#include "third_party/mojo/src/mojo/public/tests/test_support_private.h"
+#include "mojo/public/tests/test_support_private.h"
 
 int main(int argc, char** argv) {
   mojo::edk::Init();

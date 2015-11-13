@@ -13,7 +13,7 @@
 #include "mojo/application/public/cpp/application_delegate.h"
 #include "mojo/application/public/cpp/application_runner.h"
 #include "mojo/application/public/interfaces/application.mojom.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/interface_request.h"
 
 namespace mojo {
 namespace shell {

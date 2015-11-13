@@ -9,7 +9,7 @@
 #include "base/memory/weak_ptr.h"
 #include "content/common/service_port_service.mojom.h"
 #include "content/public/child/worker_thread.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace blink {
 class WebServiceWorkerContextProxy;

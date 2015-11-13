@@ -10,7 +10,7 @@
 #include "base/memory/scoped_vector.h"
 #include "content/browser/background_sync/background_sync_manager.h"
 #include "content/common/background_sync_service.mojom.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/binding.h"
 
 namespace content {
 

@@ -7,9 +7,9 @@
 
 #include "base/callback_helpers.h"
 #include "base/memory/scoped_ptr.h"
+#include "mojo/public/cpp/bindings/interface_request.h"
 #include "net/interfaces/host_resolver_service.mojom.h"
 #include "net/interfaces/proxy_resolver_service.mojom.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/interface_request.h"
 
 namespace net {
 

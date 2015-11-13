@@ -9,7 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "media/mojo/interfaces/content_decryption_module.mojom.h"
 #include "media/mojo/interfaces/media_types.mojom.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/type_converter.h"
+#include "mojo/public/cpp/bindings/type_converter.h"
 
 namespace media {
 class AudioDecoderConfig;

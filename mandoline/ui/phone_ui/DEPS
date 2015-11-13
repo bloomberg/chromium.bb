@@ -4,7 +4,7 @@ include_rules = [
   "+mojo/application",
   "+mojo/common",
   "+mojo/converters",
+  "+mojo/public",
   "+mojo/services/network/public",
-  "+third_party/mojo/src/mojo/public",
   "+ui",
 ]

@@ -8,10 +8,10 @@
 #include "base/macros.h"
 #include "components/mus/public/interfaces/command_buffer.mojom.h"
 #include "gpu/blink/webgraphicscontext3d_impl.h"
+#include "mojo/public/c/gles2/gles2.h"
+#include "mojo/public/cpp/system/core.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
 #include "third_party/WebKit/public/platform/WebString.h"
-#include "third_party/mojo/src/mojo/public/c/gles2/gles2.h"
-#include "third_party/mojo/src/mojo/public/cpp/system/core.h"
 #include "url/gurl.h"
 
 namespace mojo {

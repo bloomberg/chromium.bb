@@ -4,7 +4,7 @@
 
 import("//build/config/features.gni")
 import("//build/json_schema_api.gni")
-import("//third_party/mojo/src/mojo/public/tools/bindings/mojom.gni")
+import("//mojo/public/tools/bindings/mojom.gni")
 import("schemas.gni")
 
 assert(enable_extensions)

@@ -5,7 +5,7 @@
 #include "base/macros.h"
 #include "components/filesystem/file_system_app.h"
 #include "mojo/application/public/cpp/application_runner.h"
-#include "third_party/mojo/src/mojo/public/c/system/main.h"
+#include "mojo/public/c/system/main.h"
 
 MojoResult MojoMain(MojoHandle application_request) {
   mojo::ApplicationRunner runner(new filesystem::FileSystemApp());

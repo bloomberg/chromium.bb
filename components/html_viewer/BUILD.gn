@@ -183,13 +183,13 @@ source_set("lib") {
     "//mojo/logging",
     "//mojo/message_pump",
     "//mojo/platform_handle",
+    "//mojo/public/cpp/environment:environment",
     "//mojo/services/network/public/cpp",
     "//mojo/services/network/public/interfaces",
     "//mojo/services/tracing/public/cpp",
     "//mojo/services/tracing/public/interfaces",
     "//net",
     "//skia",
-    "//third_party/mojo/src/mojo/public/cpp/environment:environment",
     "//third_party/mojo_services/src/accessibility/public/interfaces",
     "//third_party/WebKit/public:image_resources",
     "//third_party/WebKit/public:resources",
@@ -210,8 +210,8 @@ source_set("lib") {
 
   public_deps = [
     "//components/mus/public/cpp",
+    "//mojo/public/cpp/bindings",
     "//third_party/WebKit/public:blink",
-    "//third_party/mojo/src/mojo/public/cpp/bindings",
   ]
 
   if (is_win) {
@@ -273,9 +273,9 @@ mojo_native_application("layout_test_html_viewer") {
     "//components/test_runner",
     "//components/web_view/test_runner/public/interfaces",
     "//mojo/application/public/cpp:sources",
+    "//mojo/public/c/system:for_shared_library",
     "//third_party/WebKit/public:blink",
     "//third_party/WebKit/public:test_support",
-    "//third_party/mojo/src/mojo/public/c/system:for_shared_library",
     "//ui/base",
     "//url",
   ]
@@ -367,10 +367,10 @@ mojo_native_application("apptests") {
     "//components/web_view/public/interfaces",
     "//mojo/application/public/cpp:sources",
     "//mojo/application/public/cpp:test_support",
+    "//mojo/public/c/system:for_shared_library",
     "//net:test_support",
     "//testing/gtest",
     "//third_party/mojo_services/src/accessibility/public/interfaces",
-    "//third_party/mojo/src/mojo/public/c/system:for_shared_library",
   ]
 
   data_deps = [

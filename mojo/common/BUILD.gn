@@ -32,7 +32,7 @@ component("common_base") {
   defines = [ "MOJO_COMMON_IMPLEMENTATION" ]
 
   public_deps = [
-    "//third_party/mojo/src/mojo/public/cpp/system",
+    "//mojo/public/cpp/system",
   ]
 
   deps = [
@@ -40,9 +40,9 @@ component("common_base") {
     "//base/third_party/dynamic_annotations",
     "//mojo/environment:chromium",
     "//mojo/message_pump",
-    "//third_party/mojo/src/mojo/public/c/system:for_component",
-    "//third_party/mojo/src/mojo/public/cpp/bindings",
-    "//third_party/mojo/src/mojo/public/cpp/environment",
+    "//mojo/public/c/system:for_component",
+    "//mojo/public/cpp/bindings",
+    "//mojo/public/cpp/environment",
   ]
 }
 
@@ -59,7 +59,7 @@ source_set("url_type_converters") {
     ":common_base",
     "//base",
     "//base/third_party/dynamic_annotations",
-    "//third_party/mojo/src/mojo/public/cpp/bindings",
+    "//mojo/public/cpp/bindings",
     "//url",
   ]
 }
@@ -82,11 +82,11 @@ test("mojo_common_unittests") {
     "//base/test:test_support",
     "//mojo/environment:chromium",
     "//mojo/message_pump",
+    "//mojo/public/cpp/bindings",
+    "//mojo/public/cpp/test_support:test_utils",
     "//testing/gtest",
     "//third_party/mojo/src/mojo/edk/test:run_all_unittests",
     "//third_party/mojo/src/mojo/edk/test:test_support",
-    "//third_party/mojo/src/mojo/public/cpp/bindings",
-    "//third_party/mojo/src/mojo/public/cpp/test_support:test_utils",
     "//url",
   ]
 
@@ -105,9 +105,9 @@ test("mojo_common_perftests") {
     "//base",
     "//mojo/environment:chromium",
     "//mojo/message_pump",
+    "//mojo/public/cpp/test_support:test_utils",
     "//testing/gtest",
     "//third_party/mojo/src/mojo/edk/test:run_all_perftests",
-    "//third_party/mojo/src/mojo/public/cpp/test_support:test_utils",
   ]
 
   sources = [

@@ -10,7 +10,7 @@ executable("battor_agent") {
     ":battor_agent_lib",
     "//base",
     "//device/serial",
-    "//third_party/mojo/src/mojo/public/c/system:for_shared_library",
+    "//mojo/public/c/system:for_shared_library",
   ]
 }
 

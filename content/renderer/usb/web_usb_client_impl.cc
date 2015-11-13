@@ -14,14 +14,14 @@
 #include "content/public/common/service_registry.h"
 #include "content/renderer/usb/type_converters.h"
 #include "content/renderer/usb/web_usb_device_impl.h"
+#include "mojo/public/cpp/bindings/array.h"
+#include "mojo/public/cpp/bindings/interface_request.h"
 #include "third_party/WebKit/public/platform/WebCallbacks.h"
 #include "third_party/WebKit/public/platform/WebPassOwnPtr.h"
 #include "third_party/WebKit/public/platform/modules/webusb/WebUSBDeviceFilter.h"
 #include "third_party/WebKit/public/platform/modules/webusb/WebUSBDeviceInfo.h"
 #include "third_party/WebKit/public/platform/modules/webusb/WebUSBDeviceRequestOptions.h"
 #include "third_party/WebKit/public/platform/modules/webusb/WebUSBError.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/array.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/interface_request.h"
 
 namespace content {
 

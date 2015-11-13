@@ -5,9 +5,9 @@
 #ifndef COMPONENTS_HTML_VIEWER_HTML_FRAME_PROPERTIES_H_
 #define COMPONENTS_HTML_VIEWER_HTML_FRAME_PROPERTIES_H_
 
-#include "third_party/mojo/src/mojo/public/cpp/bindings/array.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/map.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/string.h"
+#include "mojo/public/cpp/bindings/array.h"
+#include "mojo/public/cpp/bindings/map.h"
+#include "mojo/public/cpp/bindings/string.h"
 
 namespace blink {
 class WebFrame;

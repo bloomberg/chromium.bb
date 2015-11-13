@@ -7,7 +7,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "device/serial/serial.mojom.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/array.h"
+#include "mojo/public/cpp/bindings/array.h"
 
 namespace device {
 

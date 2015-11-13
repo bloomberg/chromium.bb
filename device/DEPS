@@ -1,6 +1,6 @@
 include_rules = [
   "+chromeos",
   "+components/device_event_log",
-  "+third_party/mojo/src/mojo/public",
+  "+mojo/public",
   "+third_party/ocmock",
 ]

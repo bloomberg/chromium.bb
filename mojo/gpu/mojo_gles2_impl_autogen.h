@@ -14,7 +14,7 @@
 #define MOJO_GPU_MOJO_GLES2_IMPL_AUTOGEN_H_
 
 #include "gpu/command_buffer/client/gles2_interface.h"
-#include "third_party/mojo/src/mojo/public/c/gles2/gles2.h"
+#include "mojo/public/c/gles2/gles2.h"
 
 namespace mojo {
 

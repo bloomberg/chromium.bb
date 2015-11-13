@@ -15,7 +15,7 @@
 #include "content/browser/background_sync/background_sync_registration_options.h"
 #include "content/common/background_sync_service.mojom.h"
 #include "content/common/content_export.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/type_converter.h"
+#include "mojo/public/cpp/bindings/type_converter.h"
 
 namespace content {
 

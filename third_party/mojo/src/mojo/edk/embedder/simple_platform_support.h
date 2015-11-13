@@ -5,9 +5,9 @@
 #ifndef THIRD_PARTY_MOJO_SRC_MOJO_EDK_EMBEDDER_SIMPLE_PLATFORM_SUPPORT_H_
 #define THIRD_PARTY_MOJO_SRC_MOJO_EDK_EMBEDDER_SIMPLE_PLATFORM_SUPPORT_H_
 
+#include "mojo/public/cpp/system/macros.h"
 #include "third_party/mojo/src/mojo/edk/embedder/platform_support.h"
 #include "third_party/mojo/src/mojo/edk/system/system_impl_export.h"
-#include "third_party/mojo/src/mojo/public/cpp/system/macros.h"
 
 namespace mojo {
 namespace embedder {

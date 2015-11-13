@@ -5,7 +5,7 @@
 #include "mojo/application/public/cpp/service_provider_impl.h"
 
 #include "mojo/application/public/cpp/service_connector.h"
-#include "third_party/mojo/src/mojo/public/cpp/environment/logging.h"
+#include "mojo/public/cpp/environment/logging.h"
 
 namespace mojo {
 

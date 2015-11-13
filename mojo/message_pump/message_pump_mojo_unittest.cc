@@ -7,8 +7,8 @@
 #include "base/message_loop/message_loop_test.h"
 #include "base/run_loop.h"
 #include "mojo/message_pump/message_pump_mojo_handler.h"
+#include "mojo/public/cpp/system/core.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/mojo/src/mojo/public/cpp/system/core.h"
 
 namespace mojo {
 namespace common {

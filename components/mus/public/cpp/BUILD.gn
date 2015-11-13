@@ -56,9 +56,9 @@ source_set("cpp") {
     "//mojo/converters/surfaces",
     "//mojo/gles2:headers",
     "//mojo/gpu:mojo_gles2_implementation",
-    "//third_party/mojo/src/mojo/public/cpp/bindings:bindings",
-    "//third_party/mojo/src/mojo/public/cpp/environment",
-    "//third_party/mojo/src/mojo/public/cpp/system",
+    "//mojo/public/cpp/bindings:bindings",
+    "//mojo/public/cpp/environment",
+    "//mojo/public/cpp/system",
     "//ui/gfx/geometry",
     "//ui/mojo/geometry:interfaces",
   ]

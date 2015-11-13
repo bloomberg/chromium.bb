@@ -26,7 +26,7 @@
 #include "mojo/edk/embedder/platform_handle.h"
 #include "mojo/edk/embedder/platform_handle_vector.h"
 #include "mojo/edk/system/transport_data.h"
-#include "third_party/mojo/src/mojo/public/cpp/system/macros.h"
+#include "mojo/public/cpp/system/macros.h"
 
 #if !defined(SO_PEEK_OFF)
 #define SO_PEEK_OFF 42

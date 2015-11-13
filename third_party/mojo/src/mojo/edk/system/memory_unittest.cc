@@ -9,8 +9,8 @@
 
 #include <limits>
 
+#include "mojo/public/c/system/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/mojo/src/mojo/public/c/system/macros.h"
 
 namespace mojo {
 namespace system {

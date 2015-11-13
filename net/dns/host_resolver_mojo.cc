@@ -4,11 +4,11 @@
 
 #include "net/dns/host_resolver_mojo.h"
 
+#include "mojo/public/cpp/bindings/binding.h"
 #include "net/base/address_list.h"
 #include "net/base/net_errors.h"
 #include "net/dns/mojo_host_type_converters.h"
 #include "net/log/net_log.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
 
 namespace net {
 namespace {

@@ -32,7 +32,7 @@ component("surfaces") {
     "//gpu",
     "//ui/gfx/geometry",
     "//mojo/environment:chromium",
+    "//mojo/public/c/system:for_component",
     "//skia",
-    "//third_party/mojo/src/mojo/public/c/system:for_component",
   ]
 }

@@ -17,12 +17,12 @@
 #include "base/memory/scoped_vector.h"
 #include "base/rand_util.h"
 #include "base/threading/simple_thread.h"
+#include "mojo/public/cpp/system/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/mojo/src/mojo/edk/system/message_pipe.h"
 #include "third_party/mojo/src/mojo/edk/system/test_utils.h"
 #include "third_party/mojo/src/mojo/edk/system/waiter.h"
 #include "third_party/mojo/src/mojo/edk/system/waiter_test_utils.h"
-#include "third_party/mojo/src/mojo/public/cpp/system/macros.h"
 
 namespace mojo {
 namespace system {

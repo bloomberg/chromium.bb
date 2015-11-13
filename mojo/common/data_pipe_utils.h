@@ -9,7 +9,7 @@
 
 #include "base/callback_forward.h"
 #include "mojo/common/mojo_common_export.h"
-#include "third_party/mojo/src/mojo/public/cpp/system/core.h"
+#include "mojo/public/cpp/system/core.h"
 
 namespace base {
 class FilePath;

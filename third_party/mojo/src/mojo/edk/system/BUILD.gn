@@ -126,13 +126,13 @@ component("system") {
     "../embedder",
     "../embedder:delegates",
     "../embedder:platform",
-    "../../public/c/system",
-    "../../public/cpp/system",
 
     # TODO(use_chrome_edk): so that EDK in third_party can choose the EDK in
     # src/mojo if the command line flag is specified. It has to since we can
     # only have one definition of the Mojo primitives.
     "//mojo/edk/system",
+    "//mojo/public/c/system",
+    "//mojo/public/cpp/system",
   ]
 
   deps = [
@@ -220,10 +220,10 @@ test("mojo_system_unittests") {
     ":system",
     ":test_utils",
     "../embedder:embedder_unittests",
-    "../../public/cpp/environment:standalone",
     "../test:test_support",
     "//base",
     "//base/test:test_support",
+    "//mojo/public/cpp/environment:standalone",
     "//testing/gtest",
   ]
 
@@ -240,11 +240,11 @@ test("mojo_message_pipe_perftests") {
   deps = [
     ":system",
     ":test_utils",
-    "../../public/cpp/environment:standalone",
     "../test:test_support",
     "//base",
     "//base/test:test_support",
     "//base/test:test_support_perf",
+    "//mojo/public/cpp/environment:standalone",
     "//testing/gtest",
   ]
 }

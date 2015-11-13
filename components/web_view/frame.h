@@ -14,7 +14,7 @@
 #include "components/mus/public/cpp/types.h"
 #include "components/mus/public/cpp/window_observer.h"
 #include "components/web_view/public/interfaces/frame.mojom.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/binding.h"
 
 class GURL;
 

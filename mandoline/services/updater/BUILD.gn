@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 import("//mojo/public/mojo_application.gni")
-import("//third_party/mojo/src/mojo/public/tools/bindings/mojom.gni")
+import("//mojo/public/tools/bindings/mojom.gni")
 
 mojo_native_application("updater") {
   sources = [
@@ -17,8 +17,8 @@ mojo_native_application("updater") {
     "//base",
     "//components/update_client",
     "//mojo/application/public/cpp",
+    "//mojo/public/cpp/system",
     "//mojo/services/updater",
-    "//third_party/mojo/src/mojo/public/cpp/system",
     "//url",
   ]
 }

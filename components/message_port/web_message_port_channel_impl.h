@@ -7,8 +7,8 @@
 
 #include "base/basictypes.h"
 #include "mojo/message_pump/handle_watcher.h"
+#include "mojo/public/cpp/system/message_pipe.h"
 #include "third_party/WebKit/public/platform/WebMessagePortChannel.h"
-#include "third_party/mojo/src/mojo/public/cpp/system/message_pipe.h"
 
 namespace message_port {
 

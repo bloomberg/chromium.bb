@@ -9,7 +9,7 @@
 #include "media/base/cdm_promise.h"
 #include "media/mojo/interfaces/content_decryption_module.mojom.h"
 #include "media/mojo/services/mojo_type_trait.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/callback.h"
+#include "mojo/public/cpp/bindings/callback.h"
 
 namespace media {
 

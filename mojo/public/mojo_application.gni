@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 import("//build/toolchain/toolchain.gni")
-import("mojo.gni")
 
 # Generate a binary Mojo application in a self-named directory.
 # Application resources are copied to a "resources" directory alongside the app.
@@ -83,24 +82,11 @@ template("mojo_native_application") {
         data_deps += invoker.data_deps
       }
 
-      # Copy any necessary prebuilt artifacts.
-      if (mojo_use_prebuilt_mojo_shell) {
-        data_deps +=
-            [ rebase_path("mojo/public/tools:copy_mojo_shell", ".", mojo_root) ]
-      }
-      if (mojo_use_prebuilt_network_service) {
-        data_deps += [ rebase_path("mojo/public/tools:copy_network_service",
-                                   ".",
-                                   mojo_root) ]
-      }
-
-      deps = rebase_path([
-                           "mojo/public/gles2:for_shared_library",
-                           "mojo/public/c/system:for_shared_library",
-                         ],
-                         ".",
-                         mojo_root)
-      deps += [ "//mojo/platform_handle:for_shared_library" ]
+      deps = [
+        "//mojo/platform_handle:for_shared_library",
+        "//mojo/public/gles2:for_shared_library",
+        "//mojo/public/c/system:for_shared_library",
+      ]
 
       deps += mojo_deps
       if (defined(invoker.public_deps)) {
@@ -200,23 +186,11 @@ template("mojo_native_application") {
         data_deps = invoker.data_deps
       }
 
-      # Copy any necessary prebuilt artifacts.
-      if (mojo_use_prebuilt_mojo_shell) {
-        data_deps +=
-            [ rebase_path("mojo/public/tools:copy_mojo_shell", ".", mojo_root) ]
-      }
-      if (mojo_use_prebuilt_network_service) {
-        data_deps += [ rebase_path("mojo/public/tools:copy_network_service",
-                                   ".",
-                                   mojo_root) ]
-      }
+      deps = [
+        "//mojo/public/c/system",
+        "//mojo/public/platform/nacl:system",
+      ]
 
-      deps = rebase_path([
-                           "mojo/public/c/system",
-                           "mojo/public/platform/nacl:system",
-                         ],
-                         ".",
-                         mojo_root)
       deps += mojo_deps
       if (defined(invoker.public_deps)) {
         public_deps = invoker.public_deps
@@ -260,7 +234,7 @@ template("mojo_native_application") {
         visibility = invoker.visibility
       }
 
-      script = rebase_path("mojo/public/tools/prepend.py", ".", mojo_root)
+      script = "//mojo/public/tools/prepend.py"
 
       input_path = "${root_out_dir}/${nexe_name}"
       inputs = [
@@ -361,7 +335,7 @@ if (is_android) {
     }
 
     action(target_name) {
-      script = rebase_path("mojo/public/tools/prepend.py", ".", mojo_root)
+      script = "//mojo/public/tools/prepend.py"
 
       base_target_name = target_name
       if (defined(invoker.output_name)) {

@@ -10,7 +10,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "ipc/ipc_export.h"
-#include "third_party/mojo/src/mojo/public/c/system/types.h"
+#include "mojo/public/c/system/types.h"
 
 namespace IPC {
 namespace internal {

@@ -11,8 +11,8 @@
 #include "components/filesystem/public/interfaces/file.mojom.h"
 #include "components/filesystem/public/interfaces/file_system.mojom.h"
 #include "components/filesystem/public/interfaces/types.mojom.h"
+#include "mojo/public/cpp/bindings/lib/template_util.h"
 #include "mojo/util/capture_util.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/lib/template_util.h"
 #include "third_party/sqlite/sqlite3.h"
 
 using mojo::Capture;

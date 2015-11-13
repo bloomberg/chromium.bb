@@ -8,6 +8,8 @@
 
 #include "base/logging.h"
 #include "base/time/time.h"
+#include "mojo/public/c/system/macros.h"
+#include "mojo/public/cpp/system/macros.h"
 #include "third_party/mojo/src/mojo/edk/embedder/platform_shared_buffer.h"
 #include "third_party/mojo/src/mojo/edk/embedder/platform_support.h"
 #include "third_party/mojo/src/mojo/edk/system/async_waiter.h"
@@ -22,8 +24,6 @@
 #include "third_party/mojo/src/mojo/edk/system/message_pipe_dispatcher.h"
 #include "third_party/mojo/src/mojo/edk/system/shared_buffer_dispatcher.h"
 #include "third_party/mojo/src/mojo/edk/system/waiter.h"
-#include "third_party/mojo/src/mojo/public/c/system/macros.h"
-#include "third_party/mojo/src/mojo/public/cpp/system/macros.h"
 
 namespace mojo {
 namespace system {

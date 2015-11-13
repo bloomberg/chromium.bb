@@ -8,8 +8,8 @@ include_rules = [
   "+mojo/application/public",
   "+mojo/common",
   "+mojo/converters/geometry",
+  "+mojo/public",
   "+mojo/services/network/public/interfaces",
   "+mojo/services/tracing/public/interfaces",
   "+mojo/util",
-  "+third_party/mojo/src/mojo/public",
 ]

@@ -7,8 +7,8 @@
 
 #include "device/devices_app/usb/public/interfaces/permission_provider.mojom.h"
 #include "mojo/common/weak_binding_set.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/array.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/array.h"
+#include "mojo/public/cpp/bindings/interface_request.h"
 
 namespace content {
 class RenderFrameHost;

@@ -17,7 +17,7 @@ group("mojo") {
     # TODO(GYP): Figure out if this needs to be supported. Right now
     # it won't work on x86 official builds because it needs stuff in the
     # sysroot that doesn't exist.
-    deps += [ "//third_party/mojo/src/mojo/public" ]
+    deps += [ "//mojo/public" ]
   }
 
   if (is_android) {

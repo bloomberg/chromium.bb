@@ -6,10 +6,10 @@
 #define SERVICES_TEST_SERVICE_TEST_TIME_SERVICE_IMPL_H_
 
 #include "base/memory/scoped_ptr.h"
+#include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/system/macros.h"
 #include "mojo/services/test_service/test_service.mojom.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/interface_request.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/strong_binding.h"
-#include "third_party/mojo/src/mojo/public/cpp/system/macros.h"
 
 namespace mojo {
 

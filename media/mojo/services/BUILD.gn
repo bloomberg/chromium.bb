@@ -43,7 +43,7 @@ source_set("converters") {
     "//mojo/common",
     "//mojo/converters/geometry",
     "//mojo/environment:chromium",
-    "//third_party/mojo/src/mojo/public/c/system:for_component",
+    "//mojo/public/c/system:for_component",
     "//ui/mojo/geometry:interfaces",
   ]
 }
@@ -74,7 +74,7 @@ source_set("proxy") {
     "//mojo/application/public/interfaces",
     "//mojo/common",
     "//mojo/environment:chromium",
-    "//third_party/mojo/src/mojo/public/c/system:for_component",
+    "//mojo/public/c/system:for_component",
   ]
 }
 
@@ -108,7 +108,7 @@ source_set("cdm_service") {
     "//mojo/application/public/interfaces",
     "//mojo/common",
     "//mojo/environment:chromium",
-    "//third_party/mojo/src/mojo/public/c/system:for_component",
+    "//mojo/public/c/system:for_component",
   ]
 
   sources = [
@@ -162,7 +162,7 @@ source_set("application") {
     ":renderer_service",
     "//base",
     "//mojo/application/public/cpp",
-    "//third_party/mojo/src/mojo/public/c/system:for_component",
+    "//mojo/public/c/system:for_component",
   ]
 }
 
@@ -191,7 +191,7 @@ mojo_native_application("media") {
 
   deps = [
     ":application",
-    "//third_party/mojo/src/mojo/public/c/system:for_shared_library",
+    "//mojo/public/c/system:for_shared_library",
   ]
 }
 

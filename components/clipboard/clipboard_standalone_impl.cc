@@ -6,9 +6,9 @@
 
 #include <string.h>
 
-#include "third_party/mojo/src/mojo/public/cpp/bindings/array.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/callback.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/string.h"
+#include "mojo/public/cpp/bindings/array.h"
+#include "mojo/public/cpp/bindings/callback.h"
+#include "mojo/public/cpp/bindings/string.h"
 
 using mojo::Array;
 using mojo::Map;

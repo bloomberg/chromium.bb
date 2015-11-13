@@ -4,7 +4,7 @@
 
 #include "components/mus/example/mock_sysui/mock_sysui.h"
 #include "mojo/application/public/cpp/application_runner.h"
-#include "third_party/mojo/src/mojo/public/c/system/main.h"
+#include "mojo/public/c/system/main.h"
 
 MojoResult MojoMain(MojoHandle shell_handle) {
   mojo::ApplicationRunner runner(new MockSysUI);

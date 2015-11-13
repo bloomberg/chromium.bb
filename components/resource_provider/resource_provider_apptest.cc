@@ -15,8 +15,8 @@
 #include "mojo/application/public/cpp/service_provider_impl.h"
 #include "mojo/common/common_type_converters.h"
 #include "mojo/platform_handle/platform_handle_functions.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/array.h"
-#include "third_party/mojo/src/mojo/public/cpp/system/macros.h"
+#include "mojo/public/cpp/bindings/array.h"
+#include "mojo/public/cpp/system/macros.h"
 
 namespace resource_provider {
 namespace {

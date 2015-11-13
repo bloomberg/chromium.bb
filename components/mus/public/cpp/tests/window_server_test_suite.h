@@ -6,7 +6,7 @@
 #define COMPONENTS_MUS_PUBLIC_CPP_TESTS_WINDOW_SERVER_TEST_SUITE_H_
 
 #include "base/test/test_suite.h"
-#include "third_party/mojo/src/mojo/public/cpp/system/macros.h"
+#include "mojo/public/cpp/system/macros.h"
 
 namespace mus {
 

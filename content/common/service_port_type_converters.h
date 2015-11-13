@@ -8,7 +8,7 @@
 #include "content/common/content_export.h"
 #include "content/common/service_port_service.mojom.h"
 #include "content/public/common/message_port_types.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/type_converter.h"
+#include "mojo/public/cpp/bindings/type_converter.h"
 
 namespace mojo {
 

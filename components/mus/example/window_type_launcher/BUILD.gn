@@ -4,7 +4,7 @@
 
 import("//build/config/ui.gni")
 import("//mojo/public/mojo_application.gni")
-import("//third_party/mojo/src/mojo/public/tools/bindings/mojom.gni")
+import("//mojo/public/tools/bindings/mojom.gni")
 import("//tools/grit/repack.gni")
 
 executable("window_type_launcher") {
@@ -27,11 +27,11 @@ executable("window_type_launcher") {
     "//mojo/converters/geometry",
     "//mojo/converters/network",
     "//mojo/message_pump",
+    "//mojo/public/cpp/bindings",
     "//mojo/runner/child:lib",
     "//mojo/runner:init",
     "//skia",
     "//third_party/mojo/src/mojo/edk/system",
-    "//third_party/mojo/src/mojo/public/cpp/bindings",
     "//ui/aura",
     "//ui/gfx",
     "//ui/gfx/geometry",

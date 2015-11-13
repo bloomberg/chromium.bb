@@ -42,11 +42,11 @@
       }],
     ],
     'mojo_public_system_unittest_sources': [
-      '<(DEPTH)/third_party/mojo/src/mojo/public/c/system/tests/core_unittest.cc',
-      '<(DEPTH)/third_party/mojo/src/mojo/public/c/system/tests/core_unittest_pure_c.c',
-      '<(DEPTH)/third_party/mojo/src/mojo/public/c/system/tests/macros_unittest.cc',
-      '<(DEPTH)/third_party/mojo/src/mojo/public/cpp/system/tests/core_unittest.cc',
-      '<(DEPTH)/third_party/mojo/src/mojo/public/cpp/system/tests/macros_unittest.cc',
+      '<(DEPTH)/mojo/public/c/system/tests/core_unittest.cc',
+      '<(DEPTH)/mojo/public/c/system/tests/core_unittest_pure_c.c',
+      '<(DEPTH)/mojo/public/c/system/tests/macros_unittest.cc',
+      '<(DEPTH)/mojo/public/cpp/system/tests/core_unittest.cc',
+      '<(DEPTH)/mojo/public/cpp/system/tests/macros_unittest.cc',
     ],
   },
 }

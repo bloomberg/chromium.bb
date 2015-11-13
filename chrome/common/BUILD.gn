@@ -2,9 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//tools/grit/grit_rule.gni")
-import("//third_party/mojo/src/mojo/public/tools/bindings/mojom.gni")
 import("//chrome/version.gni")
+import("//mojo/public/tools/bindings/mojom.gni")
+import("//tools/grit/grit_rule.gni")
 
 gypi_values = exec_script("//build/gypi_to_gn.py",
                           [ rebase_path("../chrome_common.gypi") ],
@@ -120,9 +120,9 @@ static_library("common") {
       "//components/signin/core/common",
       "//components/translate/content/common",
       "//media",
+      "//mojo/public/cpp/bindings",
       "//ipc",
       "//third_party/re2",
-      "//third_party/mojo/src/mojo/public/cpp/bindings",
       "//third_party/widevine/cdm:version_h",
     ]
   }

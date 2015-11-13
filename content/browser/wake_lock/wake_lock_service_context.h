@@ -14,7 +14,7 @@
 #include "content/browser/wake_lock/wake_lock_service_impl.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/interface_request.h"
 
 namespace content {
 

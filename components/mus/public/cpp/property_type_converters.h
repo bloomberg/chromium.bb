@@ -8,7 +8,7 @@
 #include <stdint.h>
 #include <vector>
 
-#include "third_party/mojo/src/mojo/public/cpp/bindings/type_converter.h"
+#include "mojo/public/cpp/bindings/type_converter.h"
 
 namespace gfx {
 class Rect;

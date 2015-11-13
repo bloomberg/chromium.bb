@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "third_party/mojo/src/mojo/public/cpp/system/macros.h"
+#include "mojo/public/cpp/system/macros.h"
 
 namespace mojo {
 

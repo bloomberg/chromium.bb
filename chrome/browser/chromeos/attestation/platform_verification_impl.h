@@ -13,7 +13,7 @@
 #include "chrome/browser/chromeos/attestation/platform_verification_flow.h"
 #include "content/public/browser/render_frame_host.h"
 #include "media/mojo/interfaces/platform_verification.mojom.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace chromeos {
 namespace attestation {

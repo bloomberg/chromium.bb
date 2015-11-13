@@ -9,7 +9,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "mojo/message_pump/handle_watcher.h"
-#include "third_party/mojo/src/mojo/public/cpp/system/data_pipe.h"
+#include "mojo/public/cpp/system/data_pipe.h"
 
 namespace mojo {
 

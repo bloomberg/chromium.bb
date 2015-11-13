@@ -7,7 +7,7 @@
 
 #include "mojo/platform_handle/platform_handle.h"
 #include "mojo/platform_handle/platform_handle_exports.h"
-#include "third_party/mojo/src/mojo/public/c/system/types.h"
+#include "mojo/public/c/system/types.h"
 
 extern "C" {
 

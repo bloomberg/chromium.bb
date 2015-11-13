@@ -9,7 +9,7 @@
 #include "extensions/renderer/api_test_base.h"
 #include "gin/dictionary.h"
 #include "grit/extensions_renderer_resources.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/lib/message_builder.h"
+#include "mojo/public/cpp/bindings/lib/message_builder.h"
 
 // A test launcher for tests for the stash client defined in
 // extensions/test/data/stash_client_unittest.js.

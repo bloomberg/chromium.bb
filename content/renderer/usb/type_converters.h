@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/mojo/src/mojo/public/cpp/bindings/type_converter.h"
+#include "mojo/public/cpp/bindings/type_converter.h"
 
 #include "device/devices_app/usb/public/interfaces/device.mojom.h"
 #include "device/devices_app/usb/public/interfaces/device_manager.mojom.h"

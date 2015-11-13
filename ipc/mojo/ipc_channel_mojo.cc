@@ -17,8 +17,8 @@
 #include "ipc/mojo/ipc_mojo_bootstrap.h"
 #include "ipc/mojo/ipc_mojo_handle_attachment.h"
 #include "mojo/edk/embedder/embedder.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "third_party/mojo/src/mojo/edk/embedder/embedder.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
 
 #if defined(OS_POSIX) && !defined(OS_NACL)
 #include "ipc/ipc_platform_file_attachment_posix.h"

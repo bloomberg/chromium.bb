@@ -5,8 +5,8 @@
 #ifndef NET_PROXY_MOJO_PROXY_TYPE_CONVERTERS_H_
 #define NET_PROXY_MOJO_PROXY_TYPE_CONVERTERS_H_
 
+#include "mojo/public/cpp/bindings/type_converter.h"
 #include "net/interfaces/proxy_resolver_service.mojom.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/type_converter.h"
 
 namespace net {
 class ProxyInfo;

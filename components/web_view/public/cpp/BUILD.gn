@@ -14,7 +14,7 @@ source_set("cpp") {
     "//components/web_view/public/interfaces",
     "//mojo/application/public/cpp",
     "//mojo/converters/geometry",
-    "//third_party/mojo/src/mojo/public/cpp/bindings",
-    "//third_party/mojo/src/mojo/public/cpp/system",
+    "//mojo/public/cpp/bindings",
+    "//mojo/public/cpp/system",
   ]
 }

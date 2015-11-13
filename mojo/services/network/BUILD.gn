@@ -97,6 +97,7 @@ source_set("lib") {
     "//mojo/common:common_base",
     "//mojo/common:url_type_converters",
     "//mojo/message_pump",
+    "//mojo/public/cpp/system:system",
     "//mojo/services/network/public/cpp",
     "//mojo/services/network/public/interfaces",
     "//net",
@@ -104,7 +105,6 @@ source_set("lib") {
     "//net:http_server",
     "//url",
     "//sql/mojo",
-    "//third_party/mojo/src/mojo/public/cpp/system:system",
   ]
 }
 
@@ -119,10 +119,10 @@ source_set("sources") {
     ":lib",
     "//base",
     "//mojo/application/public/cpp",
+    "//mojo/public/c/system:for_shared_library",
+    "//mojo/public/cpp/bindings:bindings",
     "//mojo/services/network/public/cpp",
     "//mojo/services/network/public/interfaces",
-    "//third_party/mojo/src/mojo/public/c/system:for_shared_library",
-    "//third_party/mojo/src/mojo/public/cpp/bindings:bindings",
   ]
 }
 
@@ -144,11 +144,11 @@ mojo_native_application("apptests") {
     "//mojo/application/public/cpp:test_support",
     "//mojo/common:common_base",
     "//mojo/message_pump",
+    "//mojo/public/cpp/bindings:callback",
     "//mojo/services/network/public/cpp",
     "//mojo/services/network/public/interfaces",
     "//net",
     "//net:test_support",
     "//testing/gtest",
-    "//third_party/mojo/src/mojo/public/cpp/bindings:callback",
   ]
 }

@@ -17,9 +17,9 @@
 #include "device/devices_app/usb/public/interfaces/device_manager.mojom.h"
 #include "device/devices_app/usb/public/interfaces/permission_provider.mojom.h"
 #include "device/usb/usb_service.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/array.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/array.h"
+#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/interface_request.h"
 
 namespace base {
 class SequencedTaskRunner;

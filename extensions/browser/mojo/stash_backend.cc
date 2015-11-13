@@ -5,8 +5,8 @@
 #include "extensions/browser/mojo/stash_backend.h"
 
 #include "base/bind.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/strong_binding.h"
-#include "third_party/mojo/src/mojo/public/cpp/environment/async_waiter.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/environment/async_waiter.h"
 
 namespace extensions {
 namespace {

@@ -6,7 +6,7 @@
 #define MOJO_ENVIRONMENT_DEFAULT_LOGGER_IMPL_H_
 
 #include "mojo/environment/mojo_environment_impl_export.h"
-#include "third_party/mojo/src/mojo/public/c/environment/logger.h"
+#include "mojo/public/c/environment/logger.h"
 
 namespace mojo {
 namespace internal {

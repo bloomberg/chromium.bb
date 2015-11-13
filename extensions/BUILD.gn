@@ -193,12 +193,12 @@ test("extensions_unittests") {
     "//extensions/utility",
     "//mojo/application/public/interfaces",
     "//mojo/environment:chromium",
+    "//mojo/public/cpp/bindings",
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/leveldatabase",
     "//third_party/mojo/src/mojo/edk/js",
     "//third_party/mojo/src/mojo/edk/system",
-    "//third_party/mojo/src/mojo/public/cpp/bindings",
   ]
 
   data_deps = [
@@ -262,11 +262,11 @@ test("extensions_browsertests") {
     "//device/bluetooth:mocks",
     "//device/usb:mocks",
     "//mojo/environment:chromium",
+    "//mojo/public/cpp/bindings",
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/mojo/src/mojo/edk/js",
     "//third_party/mojo/src/mojo/edk/system",
-    "//third_party/mojo/src/mojo/public/cpp/bindings",
   ]
 
   data_deps = [

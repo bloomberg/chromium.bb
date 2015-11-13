@@ -25,9 +25,9 @@ source_set("utility") {
     "//mojo/application/public/cpp:cpp_for_chromium",
     "//mojo/application/public/interfaces",
     "//mojo/common",
+    "//mojo/public/cpp/bindings",
     "//mojo/shell",
     "//third_party/WebKit/public:blink_headers",
-    "//third_party/mojo/src/mojo/public/cpp/bindings",
     "//url",
   ]
 

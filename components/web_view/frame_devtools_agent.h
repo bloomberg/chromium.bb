@@ -12,7 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "components/devtools_service/public/interfaces/devtools_service.mojom.h"
 #include "components/web_view/frame.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/binding.h"
 
 namespace base {
 class DictionaryValue;

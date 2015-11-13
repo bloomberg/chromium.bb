@@ -9,9 +9,9 @@
 #include "device/serial/data_sender.h"
 #include "device/serial/data_sink_receiver.h"
 #include "device/serial/data_stream.mojom.h"
+#include "mojo/public/cpp/bindings/interface_ptr.h"
+#include "mojo/public/cpp/environment/async_waiter.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/interface_ptr.h"
-#include "third_party/mojo/src/mojo/public/cpp/environment/async_waiter.h"
 
 namespace device {
 

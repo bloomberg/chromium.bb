@@ -8,10 +8,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/common/background_sync_service.mojom.h"
 #include "content/common/content_export.h"
+#include "mojo/public/cpp/bindings/type_converter.h"
 #include "third_party/WebKit/public/platform/modules/background_sync/WebSyncError.h"
 #include "third_party/WebKit/public/platform/modules/background_sync/WebSyncRegistration.h"
 #include "third_party/WebKit/public/web/modules/serviceworker/WebServiceWorkerContextProxy.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/type_converter.h"
 
 namespace mojo {
 

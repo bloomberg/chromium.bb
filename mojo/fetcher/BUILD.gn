@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//third_party/mojo/src/mojo/public/tools/bindings/mojom.gni")
+import("//mojo/public/tools/bindings/mojom.gni")
 
 source_set("fetcher") {
   sources = [
@@ -26,9 +26,9 @@ source_set("fetcher") {
     "//base",
     "//mojo/application/public/interfaces",
     "//mojo/common",
+    "//mojo/public/cpp/bindings",
     "//mojo/services/network/public/interfaces",
     "//mojo/services/updater",
-    "//third_party/mojo/src/mojo/public/cpp/bindings",
     "//url",
   ]
   deps = [

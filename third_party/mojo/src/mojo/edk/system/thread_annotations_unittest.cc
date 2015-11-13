@@ -12,9 +12,9 @@
 
 #include "third_party/mojo/src/mojo/edk/system/thread_annotations.h"
 
+#include "mojo/public/cpp/system/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/mojo/src/mojo/edk/system/mutex.h"
-#include "third_party/mojo/src/mojo/public/cpp/system/macros.h"
 
 // Uncomment these to enable particular compilation failure tests.
 // #define NC_GUARDED_BY

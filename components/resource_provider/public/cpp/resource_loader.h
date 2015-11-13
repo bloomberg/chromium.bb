@@ -14,8 +14,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "components/resource_provider/public/interfaces/resource_provider.mojom.h"
 #include "mojo/platform_handle/platform_handle.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/array.h"
-#include "third_party/mojo/src/mojo/public/cpp/system/handle.h"
+#include "mojo/public/cpp/bindings/array.h"
+#include "mojo/public/cpp/system/handle.h"
 
 namespace base {
 class File;

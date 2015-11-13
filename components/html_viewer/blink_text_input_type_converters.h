@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_HTML_VIEWER_BLINK_TEXT_INPUT_TYPE_CONVERTERS_H_
 #define COMPONENTS_HTML_VIEWER_BLINK_TEXT_INPUT_TYPE_CONVERTERS_H_
 
-#include "third_party/mojo/src/mojo/public/cpp/bindings/type_converter.h"
+#include "mojo/public/cpp/bindings/type_converter.h"
 #include "third_party/WebKit/public/web/WebTextInputType.h"
 #include "ui/mojo/ime/text_input_state.mojom.h"
 

@@ -14,14 +14,14 @@
 #include "mojo/application/public/interfaces/application.mojom.h"
 #include "mojo/application/public/interfaces/service_provider.mojom.h"
 #include "mojo/application/public/interfaces/shell.mojom.h"
+#include "mojo/public/cpp/bindings/interface_ptr_info.h"
+#include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/shell/application_loader.h"
 #include "mojo/shell/capability_filter.h"
 #include "mojo/shell/connect_to_application_params.h"
 #include "mojo/shell/fetcher.h"
 #include "mojo/shell/identity.h"
 #include "mojo/shell/native_runner.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/interface_ptr_info.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/interface_request.h"
 #include "url/gurl.h"
 
 namespace base {

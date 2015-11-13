@@ -9,7 +9,7 @@
 #include "content/public/test/test_mojo_service.mojom.h"
 #include "mojo/application/public/cpp/application_delegate.h"
 #include "mojo/application/public/cpp/interface_factory.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "url/gurl.h"
 
 namespace content {

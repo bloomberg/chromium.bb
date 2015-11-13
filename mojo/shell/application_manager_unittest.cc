@@ -13,6 +13,7 @@
 #include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/application/public/cpp/interface_factory.h"
 #include "mojo/application/public/interfaces/service_provider.mojom.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/shell/application_loader.h"
 #include "mojo/shell/application_manager.h"
 #include "mojo/shell/connect_util.h"
@@ -21,7 +22,6 @@
 #include "mojo/shell/test.mojom.h"
 #include "mojo/shell/test_package_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/strong_binding.h"
 
 namespace mojo {
 namespace shell {

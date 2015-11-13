@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "components/html_viewer/blink_basic_type_converters.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/services/network/public/cpp/web_socket_read_queue.h"
 #include "mojo/services/network/public/cpp/web_socket_write_queue.h"
 #include "mojo/services/network/public/interfaces/web_socket_factory.mojom.h"
@@ -17,7 +18,6 @@
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
 
 using blink::WebSecurityOrigin;
 using blink::WebSocketHandle;

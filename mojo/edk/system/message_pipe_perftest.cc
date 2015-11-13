@@ -12,9 +12,9 @@
 #include "mojo/edk/system/message_pipe_test_utils.h"
 #include "mojo/edk/system/test_utils.h"
 #include "mojo/edk/test/test_utils.h"
+#include "mojo/public/c/system/functions.h"
+#include "mojo/public/cpp/system/message_pipe.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/mojo/src/mojo/public/c/system/functions.h"
-#include "third_party/mojo/src/mojo/public/cpp/system/message_pipe.h"
 
 namespace mojo {
 namespace edk {

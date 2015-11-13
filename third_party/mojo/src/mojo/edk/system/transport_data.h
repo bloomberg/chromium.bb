@@ -12,11 +12,11 @@
 #include "base/memory/aligned_memory.h"
 #include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
+#include "mojo/public/cpp/system/macros.h"
 #include "third_party/mojo/src/mojo/edk/embedder/platform_handle.h"
 #include "third_party/mojo/src/mojo/edk/embedder/platform_handle_vector.h"
 #include "third_party/mojo/src/mojo/edk/system/dispatcher.h"
 #include "third_party/mojo/src/mojo/edk/system/system_impl_export.h"
-#include "third_party/mojo/src/mojo/public/cpp/system/macros.h"
 
 namespace mojo {
 namespace system {

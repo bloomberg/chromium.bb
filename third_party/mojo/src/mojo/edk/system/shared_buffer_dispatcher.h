@@ -5,11 +5,11 @@
 #ifndef THIRD_PARTY_MOJO_SRC_MOJO_EDK_SYSTEM_SHARED_BUFFER_DISPATCHER_H_
 #define THIRD_PARTY_MOJO_SRC_MOJO_EDK_SYSTEM_SHARED_BUFFER_DISPATCHER_H_
 
+#include "mojo/public/cpp/system/macros.h"
 #include "third_party/mojo/src/mojo/edk/embedder/platform_shared_buffer.h"
 #include "third_party/mojo/src/mojo/edk/system/memory.h"
 #include "third_party/mojo/src/mojo/edk/system/simple_dispatcher.h"
 #include "third_party/mojo/src/mojo/edk/system/system_impl_export.h"
-#include "third_party/mojo/src/mojo/public/cpp/system/macros.h"
 
 namespace mojo {
 

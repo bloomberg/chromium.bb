@@ -13,7 +13,7 @@
 #include "base/timer/timer.h"
 #include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "components/mus/ws/display_manager_delegate.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/callback.h"
+#include "mojo/public/cpp/bindings/callback.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/platform_window/platform_window_delegate.h"
 

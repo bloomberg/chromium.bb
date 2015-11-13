@@ -11,8 +11,8 @@
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/test/scoped_ipc_support.h"
 #include "mojo/edk/test/test_support_impl.h"
+#include "mojo/public/tests/test_support_private.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/mojo/src/mojo/public/tests/test_support_private.h"
 
 int main(int argc, char** argv) {
 #if !defined(OS_ANDROID)

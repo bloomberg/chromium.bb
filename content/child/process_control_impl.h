@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "content/common/process_control.mojom.h"
 #include "mojo/application/public/interfaces/application.mojom.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/interface_request.h"
 
 class GURL;
 

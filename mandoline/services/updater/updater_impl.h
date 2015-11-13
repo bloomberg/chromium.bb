@@ -7,8 +7,8 @@
 
 #include "base/macros.h"
 #include "mojo/application/public/cpp/application_impl.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/services/updater/updater.mojom.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/strong_binding.h"
 
 namespace updater {
 

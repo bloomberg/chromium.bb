@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 import("../mojo_edk.gni")
-import("//mojo/public/mojo.gni")
 import("//testing/test.gni")
 
 mojo_edk_source_set("test_support") {
@@ -96,59 +95,46 @@ group("public_tests") {
     ":mojo_public_system_unittests",
     ":mojo_public_utility_unittests",
   ]
-
-  if (mojo_use_application_in_sdk) {
-    deps += [ ":mojo_public_application_unittests" ]
-  }
-}
-
-if (mojo_use_application_in_sdk) {
-  test("mojo_public_application_unittests") {
-    deps = [
-      ":run_all_unittests",
-      "../../public/cpp/application/tests",
-    ]
-  }
 }
 
 test("mojo_public_bindings_unittests") {
   deps = [
     ":run_all_unittests",
-    "../../public/cpp/bindings/tests",
+    "//mojo/public/cpp/bindings/tests",
   ]
 }
 
 test("mojo_public_bindings_perftests") {
   deps = [
     ":run_all_perftests",
-    "../../public/cpp/bindings/tests:perftests",
+    "//mojo/public/cpp/bindings/tests:perftests",
   ]
 }
 
 test("mojo_public_environment_unittests") {
   deps = [
     ":run_all_unittests",
-    "../../public/cpp/environment/tests",
+    "//mojo/public/cpp/environment/tests",
   ]
 }
 
 test("mojo_public_system_perftests") {
   deps = [
     ":run_all_perftests",
-    "../../public/c/system/tests:perftests",
+    "//mojo/public/c/system/tests:perftests",
   ]
 }
 
 test("mojo_public_system_unittests") {
   deps = [
     ":run_all_unittests",
-    "../../public/cpp/system/tests",
+    "//mojo/public/cpp/system/tests",
   ]
 }
 
 test("mojo_public_utility_unittests") {
   deps = [
     ":run_all_unittests",
-    "../../public/cpp/utility/tests",
+    "//mojo/public/cpp/utility/tests",
   ]
 }

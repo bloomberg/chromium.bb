@@ -8,8 +8,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "components/mus/public/interfaces/compositor_frame.mojom.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/interface_ptr_info.h"
+#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/interface_ptr_info.h"
 
 namespace mus {
 

@@ -17,7 +17,7 @@
 #include "media/base/pipeline_status.h"
 #include "media/mojo/interfaces/renderer.mojom.h"
 #include "media/mojo/services/mojo_cdm_service_context.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace mojo {
 class ApplicationConnection;

@@ -16,6 +16,6 @@ source_set("bitmap_uploader") {
     "//components/mus/public/cpp",
     "//gpu",
     "//mojo/converters/surfaces",
-    "//third_party/mojo/src/mojo/public/c/gles2",
+    "//mojo/public/c/gles2",
   ]
 }

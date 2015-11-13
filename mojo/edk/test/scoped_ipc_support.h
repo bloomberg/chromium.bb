@@ -11,7 +11,7 @@
 #include "base/task_runner.h"
 #include "mojo/edk/embedder/process_delegate.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
-#include "third_party/mojo/src/mojo/public/cpp/system/macros.h"
+#include "mojo/public/cpp/system/macros.h"
 
 namespace mojo {
 namespace edk {

@@ -6,7 +6,7 @@
 #define COMPONENTS_WEB_VIEW_LOCAL_FIND_OPTIONS_H_
 
 #include "components/web_view/public/interfaces/frame.mojom.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/type_converter.h"
+#include "mojo/public/cpp/bindings/type_converter.h"
 
 namespace web_view {
 

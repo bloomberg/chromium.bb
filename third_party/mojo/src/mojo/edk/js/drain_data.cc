@@ -9,8 +9,8 @@
 #include "gin/dictionary.h"
 #include "gin/per_context_data.h"
 #include "gin/per_isolate_data.h"
-#include "third_party/mojo/src/mojo/public/cpp/environment/environment.h"
-#include "third_party/mojo/src/mojo/public/cpp/system/core.h"
+#include "mojo/public/cpp/environment/environment.h"
+#include "mojo/public/cpp/system/core.h"
 
 namespace mojo {
 namespace js {

@@ -4,5 +4,4 @@ include_rules = [
   "+testing",
   "+third_party/mojo/src/mojo/edk",
   "-third_party/mojo/src/mojo/edk/system",
-  "+third_party/mojo/src/mojo/public",
 ]

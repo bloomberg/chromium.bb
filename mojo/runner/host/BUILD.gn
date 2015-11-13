@@ -4,8 +4,8 @@
 
 import("//mojo/generate_mojo_shell_assets_list.gni")
 import("//mojo/public/mojo_application.gni")
+import("//mojo/public/tools/bindings/mojom.gni")
 import("//testing/test.gni")
-import("//third_party/mojo/src/mojo/public/tools/bindings/mojom.gni")
 
 group("host") {
   testonly = true

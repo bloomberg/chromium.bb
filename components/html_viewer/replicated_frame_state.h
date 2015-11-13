@@ -5,12 +5,12 @@
 #ifndef COMPONENTS_HTML_VIEWER_REPLICATED_FRAME_STATE_H_
 #define COMPONENTS_HTML_VIEWER_REPLICATED_FRAME_STATE_H_
 
+#include "mojo/public/cpp/bindings/array.h"
+#include "mojo/public/cpp/bindings/map.h"
+#include "mojo/public/cpp/bindings/string.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/web/WebSandboxFlags.h"
 #include "third_party/WebKit/public/web/WebTreeScopeType.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/array.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/map.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/string.h"
 #include "url/origin.h"
 
 namespace html_viewer {

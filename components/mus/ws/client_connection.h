@@ -7,7 +7,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "components/mus/public/interfaces/window_tree.mojom.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/binding.h"
 
 namespace mus {
 

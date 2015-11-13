@@ -33,9 +33,9 @@
 #if !defined(OS_ANDROID)
 #include "chrome/common/resource_usage_reporter.mojom.h"
 #include "chrome/utility/profile_import_handler.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/proxy/mojo_proxy_resolver_factory_impl.h"
 #include "net/proxy/proxy_resolver_v8.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/strong_binding.h"
 #endif
 
 #if defined(OS_WIN)

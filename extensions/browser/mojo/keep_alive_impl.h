@@ -9,8 +9,8 @@
 #include "base/scoped_observer.h"
 #include "extensions/browser/extension_registry_observer.h"
 #include "extensions/common/mojo/keep_alive.mojom.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/interface_request.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace content {
 class BrowserContext;

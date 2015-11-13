@@ -15,7 +15,7 @@ android_library("application") {
   ]
   deps = [
     "//mojo/application/public/interfaces:interfaces_java",
-    "//third_party/mojo/src/mojo/public/java:bindings",
-    "//third_party/mojo/src/mojo/public/java:system",
+    "//mojo/public/java:bindings",
+    "//mojo/public/java:system",
   ]
 }

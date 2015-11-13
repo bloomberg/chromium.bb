@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//third_party/mojo/src/mojo/public/mojo_sdk.gni")
+import("//mojo/public/mojo_sdk.gni")
 
 mojo_sdk_source_set("cpp") {
   restrict_external_deps = false
@@ -22,7 +22,7 @@ mojo_sdk_source_set("cpp") {
     "//mojo/application/public/cpp",
     "//mojo/environment:chromium",
     "//mojo/message_pump",
-    "//third_party/mojo/src/mojo/public/c/system",
-    "//third_party/mojo/src/mojo/public/cpp/system",
+    "//mojo/public/c/system",
+    "//mojo/public/cpp/system",
   ]
 }

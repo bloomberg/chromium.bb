@@ -19,7 +19,7 @@
 #include "mojo/edk/embedder/embedder_internal.h"
 #include "mojo/edk/embedder/platform_handle.h"
 #include "mojo/edk/system/transport_data.h"
-#include "third_party/mojo/src/mojo/public/cpp/system/macros.h"
+#include "mojo/public/cpp/system/macros.h"
 
 #define STATUS_CANCELLED 0xC0000120
 #define STATUS_PIPE_BROKEN 0xC000014B

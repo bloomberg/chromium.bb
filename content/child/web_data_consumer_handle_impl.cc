@@ -7,7 +7,7 @@
 #include <limits>
 #include "base/bind.h"
 #include "base/logging.h"
-#include "third_party/mojo/src/mojo/public/c/system/types.h"
+#include "mojo/public/c/system/types.h"
 
 namespace content {
 

@@ -7,8 +7,8 @@
 
 #include "base/memory/scoped_vector.h"
 #include "gin/runner.h"
-#include "third_party/mojo/src/mojo/public/c/environment/async_waiter.h"
-#include "third_party/mojo/src/mojo/public/cpp/system/core.h"
+#include "mojo/public/c/environment/async_waiter.h"
+#include "mojo/public/cpp/system/core.h"
 #include "v8/include/v8.h"
 
 namespace mojo {

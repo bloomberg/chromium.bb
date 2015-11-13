@@ -12,10 +12,10 @@
 #include "mojo/application/public/cpp/interface_factory.h"
 #include "mojo/common/weak_binding_set.h"
 #include "mojo/common/weak_interface_ptr_set.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/services/tracing/public/interfaces/tracing.mojom.h"
 #include "mojo/services/tracing/trace_data_sink.h"
 #include "mojo/services/tracing/trace_recorder_impl.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/strong_binding.h"
 
 namespace tracing {
 

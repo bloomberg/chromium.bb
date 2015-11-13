@@ -12,8 +12,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "ipc/ipc_message.h"
-#include "third_party/mojo/src/mojo/public/c/environment/async_waiter.h"
-#include "third_party/mojo/src/mojo/public/cpp/system/core.h"
+#include "mojo/public/c/environment/async_waiter.h"
+#include "mojo/public/cpp/system/core.h"
 
 namespace IPC {
 namespace internal {

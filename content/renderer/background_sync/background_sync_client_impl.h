@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "content/common/background_sync_service.mojom.h"
 #include "content/common/content_export.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace content {
 

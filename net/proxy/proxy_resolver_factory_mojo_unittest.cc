@@ -16,6 +16,7 @@
 #include "base/stl_util.h"
 #include "base/values.h"
 #include "mojo/common/common_type_converters.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "net/base/load_states.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
@@ -29,7 +30,6 @@
 #include "net/proxy/proxy_resolver_script_data.h"
 #include "net/test/event_waiter.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
 #include "url/gurl.h"
 
 namespace net {

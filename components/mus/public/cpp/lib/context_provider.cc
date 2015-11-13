@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "mojo/gles2/gles2_context.h"
 #include "mojo/gpu/mojo_gles2_impl_autogen.h"
-#include "third_party/mojo/src/mojo/public/cpp/environment/environment.h"
+#include "mojo/public/cpp/environment/environment.h"
 
 namespace mus {
 

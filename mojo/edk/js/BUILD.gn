@@ -45,8 +45,8 @@ mojo_edk_source_set("js") {
   ]
 
   deps = [
-    "//third_party/mojo/src/mojo/public/cpp/environment",
-    "//third_party/mojo/src/mojo/public/cpp/system",
+    "//mojo/public/cpp/environment",
+    "//mojo/public/cpp/system",
   ]
 }
 
@@ -59,7 +59,7 @@ mojo_edk_source_set("js_unittests") {
   deps = [
     "//mojo/edk/js",
     "//mojo/edk/test:test_support",
+    "//mojo/public/cpp/system",
     "//testing/gtest",
-    "//third_party/mojo/src/mojo/public/cpp/system",
   ]
 }

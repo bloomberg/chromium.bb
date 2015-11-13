@@ -6,9 +6,9 @@
 #define THIRD_PARTY_MOJO_SRC_MOJO_EDK_SYSTEM_DATA_PIPE_CONSUMER_DISPATCHER_H_
 
 #include "base/memory/ref_counted.h"
+#include "mojo/public/cpp/system/macros.h"
 #include "third_party/mojo/src/mojo/edk/system/dispatcher.h"
 #include "third_party/mojo/src/mojo/edk/system/system_impl_export.h"
-#include "third_party/mojo/src/mojo/public/cpp/system/macros.h"
 
 namespace mojo {
 namespace system {

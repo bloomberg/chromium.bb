@@ -9,7 +9,7 @@
 #include <set>
 
 #include "components/mus/public/cpp/window_observer.h"
-#include "third_party/mojo/src/mojo/public/cpp/system/macros.h"
+#include "mojo/public/cpp/system/macros.h"
 
 namespace mus {
 

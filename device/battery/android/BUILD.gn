@@ -15,8 +15,8 @@ android_library("battery_monitor_android") {
   deps = [
     "//base:base_java",
     "//device/battery:mojo_bindings_java",
+    "//mojo/public/java:bindings",
+    "//mojo/public/java:system",
     "//third_party/jsr-305:jsr_305_javalib",
-    "//third_party/mojo/src/mojo/public/java:bindings",
-    "//third_party/mojo/src/mojo/public/java:system",
   ]
 }

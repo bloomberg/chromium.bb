@@ -6,11 +6,11 @@
 #include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/application/public/cpp/application_runner.h"
 #include "mojo/application/public/cpp/interface_factory.h"
+#include "mojo/public/c/system/main.h"
+#include "mojo/public/cpp/bindings/callback.h"
+#include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/runner/test/pingable.mojom.h"
-#include "third_party/mojo/src/mojo/public/c/system/main.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/callback.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/interface_request.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/strong_binding.h"
 
 namespace mojo {
 

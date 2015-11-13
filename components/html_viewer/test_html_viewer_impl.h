@@ -9,7 +9,7 @@
 
 #include "base/basictypes.h"
 #include "components/html_viewer/public/interfaces/test_html_viewer.mojom.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/binding.h"
 
 namespace blink {
 class WebLocalFrame;

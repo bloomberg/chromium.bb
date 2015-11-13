@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/mojo/src/mojo/public/c/gles2/gles2.h"
+#include "mojo/public/c/gles2/gles2.h"
 
 #include "base/lazy_instance.h"
 #include "base/threading/thread_local.h"
@@ -11,7 +11,7 @@
 #include "mojo/gles2/gles2_context.h"
 // Even though this isn't used here, we need to include it to get the symbols to
 // be exported in component build.
-#include "third_party/mojo/src/mojo/public/c/gles2/chromium_extension.h"
+#include "mojo/public/c/gles2/chromium_extension.h"
 
 using gles2::GLES2Context;
 
@@ -94,8 +94,8 @@ void* MojoGLES2GetContextSupport(MojoGLES2Context context) {
     DCHECK(g_gpu_interface.Get().Get());                           \
     return g_gpu_interface.Get().Get()->Function ARGUMENTS;        \
   }
-#include "third_party/mojo/src/mojo/public/c/gles2/gles2_call_visitor_autogen.h"
-#include "third_party/mojo/src/mojo/public/c/gles2/gles2_call_visitor_chromium_extension_autogen.h"
+#include "mojo/public/c/gles2/gles2_call_visitor_autogen.h"
+#include "mojo/public/c/gles2/gles2_call_visitor_chromium_extension_autogen.h"
 #undef VISIT_GL_CALL
 
 }  // extern "C"

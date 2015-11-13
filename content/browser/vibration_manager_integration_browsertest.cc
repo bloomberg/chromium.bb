@@ -10,7 +10,7 @@
 #include "content/shell/browser/shell.h"
 #include "content/shell/browser/shell_content_browser_client.h"
 #include "device/vibration/vibration_manager.mojom.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 
 // These tests run against a dummy implementation of the VibrationManager
 // service. That is, they verify that the service implementation is correctly

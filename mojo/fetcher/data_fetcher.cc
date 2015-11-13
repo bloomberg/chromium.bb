@@ -10,8 +10,8 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/thread_task_runner_handle.h"
+#include "mojo/public/cpp/system/data_pipe.h"
 #include "net/base/data_url.h"
-#include "third_party/mojo/src/mojo/public/cpp/system/data_pipe.h"
 
 namespace mojo {
 namespace fetcher {

@@ -9,7 +9,7 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/test/test_support_android.h"
 #include "jni/ValidationTestUtil_jni.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/tests/validation_test_input_parser.h"
+#include "mojo/public/cpp/bindings/tests/validation_test_input_parser.h"
 
 namespace mojo {
 namespace android {

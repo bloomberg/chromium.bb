@@ -12,7 +12,7 @@ component("geometry") {
   ]
   deps = [
     "//mojo/environment:chromium",
-    "//third_party/mojo/src/mojo/public/c/system:for_component",
+    "//mojo/public/c/system:for_component",
     "//ui/mojo/geometry:interfaces",
   ]
 

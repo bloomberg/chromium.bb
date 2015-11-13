@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/interface_ptr.h"
+#include "mojo/public/cpp/bindings/interface_ptr.h"
 
 namespace mojo {
 

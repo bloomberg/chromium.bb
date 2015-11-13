@@ -4,7 +4,7 @@ include_rules = [
   "+components/test_runner",
   "+components/web_view/public",
   "+mojo/application/public",
+  "+mojo/public",
   "+mojo/runner",
-  "+third_party/mojo/src/mojo/public",
   "+ui/gfx",
 ]

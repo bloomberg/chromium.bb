@@ -4,7 +4,7 @@
 
 import("//build/config/ui.gni")
 import("//mojo/public/mojo_application.gni")
-import("//third_party/mojo/src/mojo/public/tools/bindings/mojom.gni")
+import("//mojo/public/tools/bindings/mojom.gni")
 
 group("wm") {
   testonly = true
@@ -115,9 +115,9 @@ source_set("unittests") {
     "//mojo/converters/input_events",
     "//mojo/gles2",
     "//mojo/platform_handle",
+    "//mojo/public/cpp/system",
     "//testing/gtest",
     "//third_party/mojo/src/mojo/edk/system",
-    "//third_party/mojo/src/mojo/public/cpp/system",
     "//ui/events",
     "//ui/gfx/geometry",
     "//ui/gfx:test_support",

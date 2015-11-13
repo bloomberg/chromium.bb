@@ -9,7 +9,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/common/bindings_policy.h"
-#include "third_party/mojo/src/mojo/public/cpp/system/core.h"
+#include "mojo/public/cpp/system/core.h"
 
 MojoWebUIControllerBase::MojoWebUIControllerBase(content::WebUI* contents)
     : WebUIController(contents), mojo_data_source_(NULL) {

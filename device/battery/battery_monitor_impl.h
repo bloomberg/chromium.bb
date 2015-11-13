@@ -9,7 +9,7 @@
 #include "device/battery/battery_export.h"
 #include "device/battery/battery_monitor.mojom.h"
 #include "device/battery/battery_status_service.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace device {
 

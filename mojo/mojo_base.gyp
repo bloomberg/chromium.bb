@@ -156,13 +156,13 @@
       ],
       'sources': [
         # TODO(vtl): This is kind of ugly. (See TODO in logging.h.)
-        "../third_party/mojo/src/mojo/public/cpp/environment/async_waiter.h",
-        "../third_party/mojo/src/mojo/public/cpp/environment/lib/async_waiter.cc",
-        "../third_party/mojo/src/mojo/public/cpp/environment/lib/logging.cc",
-        "../third_party/mojo/src/mojo/public/cpp/environment/lib/scoped_task_tracking.cc",
-        "../third_party/mojo/src/mojo/public/cpp/environment/lib/scoped_task_tracking.cc",
-        "../third_party/mojo/src/mojo/public/cpp/environment/logging.h",
-        "../third_party/mojo/src/mojo/public/cpp/environment/task_tracker.h",
+        "../mojo/public/cpp/environment/async_waiter.h",
+        "../mojo/public/cpp/environment/lib/async_waiter.cc",
+        "../mojo/public/cpp/environment/lib/logging.cc",
+        "../mojo/public/cpp/environment/lib/scoped_task_tracking.cc",
+        "../mojo/public/cpp/environment/lib/scoped_task_tracking.cc",
+        "../mojo/public/cpp/environment/logging.h",
+        "../mojo/public/cpp/environment/task_tracker.h",
         'environment/environment.cc',
       ],
       'include_dirs': [

@@ -15,8 +15,8 @@
 #include "base/process/process.h"
 #include "base/synchronization/lock.h"
 #include "base/win/windows_version.h"
+#include "mojo/public/cpp/system/macros.h"
 #include "third_party/mojo/src/mojo/edk/embedder/platform_handle.h"
-#include "third_party/mojo/src/mojo/public/cpp/system/macros.h"
 
 namespace mojo {
 namespace system {

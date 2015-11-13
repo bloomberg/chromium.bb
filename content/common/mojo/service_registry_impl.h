@@ -15,8 +15,8 @@
 #include "base/memory/weak_ptr.h"
 #include "content/public/common/service_registry.h"
 #include "mojo/application/public/interfaces/service_provider.mojom.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
-#include "third_party/mojo/src/mojo/public/cpp/system/core.h"
+#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/system/core.h"
 
 namespace content {
 

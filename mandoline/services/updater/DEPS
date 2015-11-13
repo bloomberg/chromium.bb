@@ -6,6 +6,4 @@ include_rules = [
   "+mojo/public/cpp/bindings",
   "+mojo/services/network",
   "+mojo/services/updater",
-  "+third_party/mojo/src/mojo/public/c/system",
-  "+third_party/mojo/src/mojo/public/cpp/bindings",
 ]

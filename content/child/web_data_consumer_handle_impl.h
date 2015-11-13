@@ -8,8 +8,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
 #include "mojo/message_pump/handle_watcher.h"
+#include "mojo/public/cpp/system/data_pipe.h"
 #include "third_party/WebKit/public/platform/WebDataConsumerHandle.h"
-#include "third_party/mojo/src/mojo/public/cpp/system/data_pipe.h"
 
 namespace content {
 

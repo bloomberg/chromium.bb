@@ -9,6 +9,7 @@
 #include "base/run_loop.h"
 #include "mojo/application/public/cpp/application_test_base.h"
 #include "mojo/message_pump/message_pump_mojo.h"
+#include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/services/network/network_context.h"
 #include "mojo/services/network/url_loader_impl.h"
 #include "net/base/net_errors.h"
@@ -17,7 +18,6 @@
 #include "net/url_request/url_request_status.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/interface_request.h"
 
 namespace mojo {
 

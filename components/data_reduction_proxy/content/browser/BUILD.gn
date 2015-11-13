@@ -70,8 +70,8 @@ source_set("unit_tests") {
     ]
 
     deps += [
+      "//mojo/public/cpp/bindings",
       "//skia",
-      "//third_party/mojo/src/mojo/public/cpp/bindings",
     ]
   }
 }

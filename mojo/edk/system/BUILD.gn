@@ -4,7 +4,7 @@
 
 import("../mojo_edk.gni")
 import("//testing/test.gni")
-import("../../../third_party/mojo/src/mojo/public/tools/bindings/mojom.gni")
+import("../../../mojo/public/tools/bindings/mojom.gni")
 
 if (is_android) {
   import("//build/config/android/config.gni")
@@ -94,8 +94,8 @@ static_library("system") {
     "../embedder",
     "../embedder:delegates",
     "../embedder:platform",
-    "../../../third_party/mojo/src/mojo/public/c/system",
-    "../../../third_party/mojo/src/mojo/public/cpp/system",
+    "../../../mojo/public/c/system",
+    "../../../mojo/public/cpp/system",
   ]
 
   deps = [
@@ -131,8 +131,8 @@ mojo_edk_source_set("test_utils") {
   ]
 
   public_deps = [
-    "//third_party/mojo/src/mojo/public/c/system",
-    "//third_party/mojo/src/mojo/public/cpp/system",
+    "//mojo/public/c/system",
+    "//mojo/public/cpp/system",
   ]
 
   deps = [
@@ -179,7 +179,7 @@ test("mojo_system_unittests2") {
 
     # TODO(use_chrome_edk): remove "2"
     "../embedder:embedder_unittests2",
-    "../../../third_party/mojo/src/mojo/public/cpp/environment:standalone",
+    "../../../mojo/public/cpp/environment:standalone",
     "../test:test_support",
     "//base",
     "//base/test:test_support",
@@ -206,7 +206,7 @@ test("mojo_message_pipe_perftests2") {
     ":test_utils",
     "../test:test_support",
     "../test:run_all_perftests",
-    "../../../third_party/mojo/src/mojo/public/cpp/environment:standalone",
+    "../../../mojo/public/cpp/environment:standalone",
     "//base",
     "//base/test:test_support",
     "//testing/gtest",

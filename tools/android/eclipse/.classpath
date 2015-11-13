@@ -62,6 +62,8 @@ to the classpath for downstream development. See "additional_entries" below.
     <classpathentry kind="src" path="media/base/android/java/src"/>
     <classpathentry kind="src" path="mojo/android/system/src"/>
     <classpathentry kind="src" path="mojo/android/javatests/src"/>
+    <classpathentry kind="src" path="mojo/public/java/bindings/src"/>
+    <classpathentry kind="src" path="mojo/public/java/system/src"/>
     <classpathentry kind="src" path="net/android/java/src"/>
     <classpathentry kind="src" path="net/android/javatests/src"/>
     <classpathentry kind="src" path="net/test/android/javatests/src"/>
@@ -85,8 +87,6 @@ to the classpath for downstream development. See "additional_entries" below.
     <classpathentry kind="src" path="third_party/junit/src/src/main/java"/>
     <classpathentry kind="src" path="third_party/mockito/src/cglib-and-asm/src"/>
     <classpathentry kind="src" path="third_party/mockito/src/src"/>
-    <classpathentry kind="src" path="third_party/mojo/src/mojo/public/java/bindings/src"/>
-    <classpathentry kind="src" path="third_party/mojo/src/mojo/public/java/system/src"/>
     <classpathentry kind="src" path="tools/android/findbugs_plugin/src"/>
     <classpathentry kind="src" path="tools/android/findbugs_plugin/test/java/src"/>
     <classpathentry kind="src" path="tools/android/memconsumer/java/src"/>

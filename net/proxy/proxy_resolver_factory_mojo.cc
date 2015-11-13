@@ -13,6 +13,7 @@
 #include "base/values.h"
 #include "mojo/common/common_type_converters.h"
 #include "mojo/common/url_type_converters.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "net/base/load_states.h"
 #include "net/base/net_errors.h"
 #include "net/dns/mojo_host_resolver_impl.h"
@@ -24,7 +25,6 @@
 #include "net/proxy/proxy_resolver.h"
 #include "net/proxy/proxy_resolver_error_observer.h"
 #include "net/proxy/proxy_resolver_script_data.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
 
 namespace net {
 namespace {

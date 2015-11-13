@@ -1,6 +1,6 @@
 include_rules = [
   "+mojo/application",
   "+mojo/common",
+  "+mojo/public",
   "+third_party/mojo_services/src/clipboard",
-  "+third_party/mojo/src/mojo/public",
 ]

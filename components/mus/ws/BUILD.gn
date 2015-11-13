@@ -71,8 +71,8 @@ source_set("lib") {
     "//mojo/converters/ime",
     "//mojo/converters/input_events",
     "//mojo/converters/surfaces",
+    "//mojo/public/cpp/bindings:callback",
     "//mojo/services/tracing/public/cpp",
-    "//third_party/mojo/src/mojo/public/cpp/bindings:callback",
     "//ui/events",
     "//ui/events/platform",
     "//ui/gfx",
@@ -98,7 +98,7 @@ source_set("test_support") {
     "//components/mus/public/cpp:common",
     "//components/mus/public/interfaces",
     "//mojo/common",
-    "//third_party/mojo/src/mojo/public/cpp/bindings:bindings",
+    "//mojo/public/cpp/bindings:bindings",
     "//ui/mojo/geometry:interfaces",
   ]
 }
@@ -140,8 +140,8 @@ test("window_manager_unittests") {
     "//mojo/environment:chromium",
     "//mojo/gles2",
     "//mojo/platform_handle",
+    "//mojo/public/cpp/bindings:bindings",
     "//third_party/mojo/src/mojo/edk/test:run_all_unittests",
-    "//third_party/mojo/src/mojo/public/cpp/bindings:bindings",
     "//ui/mojo/geometry:interfaces",
     "//testing/gtest",
     "//ui/events",

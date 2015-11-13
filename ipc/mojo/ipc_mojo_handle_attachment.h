@@ -8,7 +8,7 @@
 #include "base/files/file.h"
 #include "ipc/ipc_export.h"
 #include "ipc/ipc_message_attachment.h"
-#include "third_party/mojo/src/mojo/public/cpp/system/handle.h"
+#include "mojo/public/cpp/system/handle.h"
 
 namespace IPC {
 

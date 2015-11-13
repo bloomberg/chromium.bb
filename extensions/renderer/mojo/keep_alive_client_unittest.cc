@@ -5,7 +5,7 @@
 #include "extensions/common/mojo/keep_alive.mojom.h"
 #include "extensions/renderer/api_test_base.h"
 #include "grit/extensions_renderer_resources.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 
 // A test launcher for tests for the stash client defined in
 // extensions/test/data/keep_alive_client_unittest.js.

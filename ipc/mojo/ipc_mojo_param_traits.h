@@ -9,7 +9,7 @@
 
 #include "ipc/ipc_export.h"
 #include "ipc/ipc_param_traits.h"
-#include "third_party/mojo/src/mojo/public/cpp/system/message_pipe.h"
+#include "mojo/public/cpp/system/message_pipe.h"
 
 namespace base {
 class PickleIterator;

@@ -2,8 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# See comments in third_party/mojo/src/mojo/public/c/system/BUILD.gn which this
-# is based on.
+# See comments in mojo/public/c/system/BUILD.gn which this is based on.
 # Summary: depend on this target to use the platform handle functions without
 # linking against a specific implementation.
 # For component targets, add //mojo/platform_handle:for_component to your deps
@@ -16,7 +15,7 @@ source_set("platform_handle") {
     "platform_handle_functions.h",
   ]
   deps = [
-    "//third_party/mojo/src/mojo/public/c/system",
+    "//mojo/public/c/system",
   ]
 }
 
@@ -31,8 +30,8 @@ component("platform_handle_impl") {
   defines = [ "PLATFORM_HANDLE_IMPLEMENTATION" ]
   deps = [
     "//base",
+    "//mojo/public/c/system:for_component",
     "//third_party/mojo/src/mojo/edk/embedder:headers",
-    "//third_party/mojo/src/mojo/public/c/system:for_component",
   ]
 }
 
@@ -46,7 +45,7 @@ source_set("platform_handle_thunks") {
   ]
   defines = [ "PLATFORM_HANDLE_IMPLEMENTATION" ]
   deps = [
-    "//third_party/mojo/src/mojo/public/c/system",
+    "//mojo/public/c/system",
   ]
 }
 

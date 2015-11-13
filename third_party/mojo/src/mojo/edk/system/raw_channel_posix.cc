@@ -18,11 +18,11 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/synchronization/lock.h"
+#include "mojo/public/cpp/system/macros.h"
 #include "third_party/mojo/src/mojo/edk/embedder/platform_channel_utils_posix.h"
 #include "third_party/mojo/src/mojo/edk/embedder/platform_handle.h"
 #include "third_party/mojo/src/mojo/edk/embedder/platform_handle_vector.h"
 #include "third_party/mojo/src/mojo/edk/system/transport_data.h"
-#include "third_party/mojo/src/mojo/public/cpp/system/macros.h"
 
 namespace mojo {
 namespace system {

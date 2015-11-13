@@ -11,7 +11,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "device/usb/usb_device.h"
 #include "mojo/common/url_type_converters.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/array.h"
+#include "mojo/public/cpp/bindings/array.h"
 
 namespace mojo {
 

@@ -8,12 +8,12 @@
 #include "mojo/application/public/cpp/application_connection.h"
 #include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/application/public/cpp/application_test_base.h"
+#include "mojo/public/cpp/bindings/callback.h"
 #include "mojo/services/network/public/cpp/udp_socket_wrapper.h"
 #include "mojo/services/network/public/interfaces/network_service.mojom.h"
 #include "mojo/services/network/public/interfaces/udp_socket.mojom.h"
 #include "net/base/net_errors.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/callback.h"
 
 namespace mojo {
 namespace service {

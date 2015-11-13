@@ -6,7 +6,7 @@
 #define COMPONENTS_MUS_WS_DISPLAY_MANAGER_FACTORY_H_
 
 #include "components/mus/gles2/gpu_state.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/callback.h"
+#include "mojo/public/cpp/bindings/callback.h"
 
 namespace mojo {
 class ApplicationImpl;

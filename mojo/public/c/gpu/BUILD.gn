@@ -1,0 +1,50 @@
+# Copyright 2015 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("../../mojo_sdk.gni")
+
+config("gpu_configs") {
+  include_dirs = [ "." ]
+  defines = [ "GLES2_USE_MOJO" ]
+}
+
+group("gpu") {
+  public_configs = [ ":gpu_configs" ]
+
+  deps = [
+    ":MGL",
+    "../../platform/native:mgl_thunks",
+    "../../platform/native:gles2",
+  ]
+}
+
+group("gpu_onscreen") {
+  public_deps = [
+    ":MGL_onscreen",
+  ]
+
+  deps = [
+    ":gpu",
+    "../../platform/native:mgl_onscreen_thunks",
+  ]
+}
+
+mojo_sdk_source_set("MGL") {
+  sources = [
+    "MGL/mgl.h",
+    "MGL/mgl_types.h",
+  ]
+
+  mojo_sdk_public_deps = [ "mojo/public/c/system" ]
+}
+
+mojo_sdk_source_set("MGL_onscreen") {
+  sources = [
+    "MGL/mgl_onscreen.h",
+  ]
+
+  public_deps = [
+    ":MGL",
+  ]
+}

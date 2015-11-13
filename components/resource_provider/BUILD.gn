@@ -34,7 +34,7 @@ if (is_android) {
       "//components/resource_provider/public/interfaces",
       "//mojo/environment:chromium",
       "//mojo/platform_handle:for_shared_library",
-      "//third_party/mojo/src/mojo/public/c/system:for_shared_library",
+      "//mojo/public/c/system:for_shared_library",
       "//url",
     ]
   }

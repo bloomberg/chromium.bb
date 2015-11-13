@@ -784,8 +784,8 @@ if (use_v8_in_net && !is_android) {
       ":net",
       "//base",
       "//mojo/common",
+      "//mojo/public/cpp/bindings",
       "//net/interfaces",
-      "//third_party/mojo/src/mojo/public/cpp/bindings",
 
       # NOTE(amistry): As long as we support in-process Mojo v8 PAC, we need
       # this dependency since in_process_mojo_proxy_resolver_factory creates
@@ -805,8 +805,8 @@ if (use_v8_in_net && !is_android) {
 
     public_deps = [
       ":net",
+      "//mojo/public/cpp/bindings",
       "//net/interfaces",
-      "//third_party/mojo/src/mojo/public/cpp/bindings",
     ]
   }
 
@@ -829,8 +829,8 @@ if (use_v8_in_net && !is_android) {
       ":mojo_type_converters",
       ":net",
       "//mojo/common",
+      "//mojo/public/cpp/bindings",
       "//net/interfaces",
-      "//third_party/mojo/src/mojo/public/cpp/bindings",
     ]
   }
 }

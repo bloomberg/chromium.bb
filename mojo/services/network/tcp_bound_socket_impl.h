@@ -7,9 +7,9 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "mojo/application/public/cpp/app_lifetime_helper.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/services/network/public/interfaces/tcp_bound_socket.mojom.h"
 #include "net/socket/tcp_socket.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/strong_binding.h"
 
 namespace mojo {
 

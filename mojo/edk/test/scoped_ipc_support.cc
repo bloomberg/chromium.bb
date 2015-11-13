@@ -32,8 +32,7 @@ void ScopedIPCSupportHelper::Init(
     scoped_refptr<base::TaskRunner> io_thread_task_runner) {
   io_thread_task_runner_ = io_thread_task_runner;
   // Note: Run delegate methods on the I/O thread.
-  InitIPCSupport(io_thread_task_runner_, process_delegate,
-                 io_thread_task_runner_);
+  InitIPCSupport(process_delegate, io_thread_task_runner_);
 }
 
 void ScopedIPCSupportHelper::OnShutdownCompleteImpl() {

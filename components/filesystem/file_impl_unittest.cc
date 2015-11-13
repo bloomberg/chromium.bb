@@ -7,9 +7,9 @@
 #include "base/files/file.h"
 #include "components/filesystem/files_test_base.h"
 #include "mojo/platform_handle/platform_handle_functions.h"
+#include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/type_converter.h"
 #include "mojo/util/capture_util.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/interface_request.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/type_converter.h"
 
 using mojo::Capture;
 

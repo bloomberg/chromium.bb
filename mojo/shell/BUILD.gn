@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//third_party/mojo/src/mojo/public/tools/bindings/mojom.gni")
+import("//mojo/public/tools/bindings/mojom.gni")
 import("//testing/test.gni")
 
 source_set("shell") {
@@ -43,7 +43,7 @@ source_set("shell") {
     "//base",
     "//mojo/application/public/interfaces",
     "//mojo/common",
-    "//third_party/mojo/src/mojo/public/cpp/bindings",
+    "//mojo/public/cpp/bindings",
     "//mojo/services/network/public/interfaces",
     "//mojo/services/updater",
     "//url",
@@ -98,9 +98,9 @@ test("mojo_shell_unittests") {
     "//mojo/application/public/cpp",
     "//mojo/fetcher",
     "//mojo/package_manager",
+    "//mojo/public/cpp/system",
     "//mojo/util:filename_util",
     "//third_party/mojo/src/mojo/edk/test:run_all_unittests",
-    "//third_party/mojo/src/mojo/public/cpp/system",
     "//testing/gtest",
     "//url",
   ]

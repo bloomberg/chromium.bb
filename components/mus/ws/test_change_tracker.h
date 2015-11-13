@@ -11,7 +11,7 @@
 #include "base/basictypes.h"
 #include "components/mus/public/cpp/types.h"
 #include "components/mus/public/interfaces/window_tree.mojom.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/array.h"
+#include "mojo/public/cpp/bindings/array.h"
 #include "ui/mojo/geometry/geometry.mojom.h"
 
 namespace mus {

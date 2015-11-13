@@ -6,8 +6,8 @@
 #define COMPONENTS_HTML_VIEWER_BLINK_FIND_TYPE_CONVERTERS_H_
 
 #include "components/web_view/public/interfaces/frame.mojom.h"
+#include "mojo/public/cpp/bindings/type_converter.h"
 #include "third_party/WebKit/public/web/WebFindOptions.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/type_converter.h"
 
 namespace mojo {
 

@@ -4,7 +4,7 @@
 
 #include "media/mojo/services/mojo_media_application.h"
 #include "mojo/application/public/cpp/application_runner.h"
-#include "third_party/mojo/src/mojo/public/c/system/main.h"
+#include "mojo/public/c/system/main.h"
 
 MojoResult MojoMain(MojoHandle mojo_handle) {
   // Create MojoMediaApplication and enable logging.

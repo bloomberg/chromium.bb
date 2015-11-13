@@ -9,7 +9,7 @@
 #include "content/common/mojo/channel_init.h"
 #include "content/common/mojo/mojo_messages.h"
 #include "ipc/ipc_message.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/interface_ptr.h"
+#include "mojo/public/cpp/bindings/interface_ptr.h"
 
 namespace content {
 

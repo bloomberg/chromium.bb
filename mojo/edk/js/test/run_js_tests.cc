@@ -10,8 +10,8 @@
 #include "gin/test/gtest.h"
 #include "mojo/edk/js/core.h"
 #include "mojo/edk/js/support.h"
+#include "mojo/public/cpp/environment/environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/mojo/src/mojo/public/cpp/environment/environment.h"
 
 namespace mojo {
 namespace edk {

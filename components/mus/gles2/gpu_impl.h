@@ -11,8 +11,8 @@
 #include "components/mus/gles2/gpu_state.h"
 #include "components/mus/public/interfaces/command_buffer.mojom.h"
 #include "components/mus/public/interfaces/gpu.mojom.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/interface_request.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "ui/mojo/geometry/geometry.mojom.h"
 
 namespace mus {

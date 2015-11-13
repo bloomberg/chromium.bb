@@ -11,8 +11,8 @@
 #include "base/i18n/icu_util.h"
 #include "base/rand_util.h"
 #include "base/sys_info.h"
+#include "mojo/public/c/system/types.h"
 #include "third_party/icu/source/i18n/unicode/timezone.h"
-#include "third_party/mojo/src/mojo/public/c/system/types.h"
 
 extern "C" {
 #if defined(WIN32)

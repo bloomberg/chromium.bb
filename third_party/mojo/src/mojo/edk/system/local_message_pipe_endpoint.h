@@ -5,12 +5,12 @@
 #ifndef THIRD_PARTY_MOJO_SRC_MOJO_EDK_SYSTEM_LOCAL_MESSAGE_PIPE_ENDPOINT_H_
 #define THIRD_PARTY_MOJO_SRC_MOJO_EDK_SYSTEM_LOCAL_MESSAGE_PIPE_ENDPOINT_H_
 
+#include "mojo/public/cpp/system/macros.h"
 #include "third_party/mojo/src/mojo/edk/system/awakable_list.h"
 #include "third_party/mojo/src/mojo/edk/system/handle_signals_state.h"
 #include "third_party/mojo/src/mojo/edk/system/message_in_transit_queue.h"
 #include "third_party/mojo/src/mojo/edk/system/message_pipe_endpoint.h"
 #include "third_party/mojo/src/mojo/edk/system/system_impl_export.h"
-#include "third_party/mojo/src/mojo/public/cpp/system/macros.h"
 
 namespace mojo {
 namespace system {

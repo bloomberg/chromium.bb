@@ -10,13 +10,13 @@ source_set("chromium") {
     "environment.cc",
 
     # TODO(vtl): This is kind of ugly. (See TODO in logging.h.)
-    "//third_party/mojo/src/mojo/public/cpp/environment/async_waiter.h",
-    "//third_party/mojo/src/mojo/public/cpp/environment/lib/async_waiter.cc",
-    "//third_party/mojo/src/mojo/public/cpp/environment/lib/logging.cc",
-    "//third_party/mojo/src/mojo/public/cpp/environment/lib/scoped_task_tracking.cc",
-    "//third_party/mojo/src/mojo/public/cpp/environment/lib/scoped_task_tracking.h",
-    "//third_party/mojo/src/mojo/public/cpp/environment/logging.h",
-    "//third_party/mojo/src/mojo/public/cpp/environment/task_tracker.h",
+    "//mojo/public/cpp/environment/async_waiter.h",
+    "//mojo/public/cpp/environment/lib/async_waiter.cc",
+    "//mojo/public/cpp/environment/lib/logging.cc",
+    "//mojo/public/cpp/environment/lib/scoped_task_tracking.cc",
+    "//mojo/public/cpp/environment/lib/scoped_task_tracking.h",
+    "//mojo/public/cpp/environment/logging.h",
+    "//mojo/public/cpp/environment/task_tracker.h",
   ]
 
   public_deps = [
@@ -24,10 +24,10 @@ source_set("chromium") {
   ]
 
   deps = [
-    "//third_party/mojo/src/mojo/public/c/environment",
-    "//third_party/mojo/src/mojo/public/cpp/bindings:callback",
-    "//third_party/mojo/src/mojo/public/cpp/environment",
-    "//third_party/mojo/src/mojo/public/cpp/system",
+    "//mojo/public/c/environment",
+    "//mojo/public/cpp/bindings:callback",
+    "//mojo/public/cpp/environment",
+    "//mojo/public/cpp/system",
   ]
 }
 
@@ -53,7 +53,7 @@ component("chromium_impl") {
     "//base",
     "//base/third_party/dynamic_annotations",
     "//mojo/message_pump",
-    "//third_party/mojo/src/mojo/public/c/system:for_component",
-    "//third_party/mojo/src/mojo/public/cpp/environment:environment",
+    "//mojo/public/c/system:for_component",
+    "//mojo/public/cpp/environment:environment",
   ]
 }

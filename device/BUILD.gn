@@ -63,11 +63,11 @@ test("device_unittests") {
     "//device/bluetooth:mocks",
     "//device/nfc",
     "//mojo/environment:chromium",
+    "//mojo/public/cpp/bindings",
     "//net",
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/mojo/src/mojo/edk/system",
-    "//third_party/mojo/src/mojo/public/cpp/bindings",
     "//url",
   ]
 
