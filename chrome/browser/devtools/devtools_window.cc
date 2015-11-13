@@ -1196,11 +1196,18 @@ BrowserWindow* DevToolsWindow::GetInspectedBrowserWindow() {
 
 void DevToolsWindow::DoAction(const DevToolsToggleAction& action) {
   switch (action.type()) {
-    case DevToolsToggleAction::kShowConsole:
-      bindings_->CallClientFunction(
-          "DevToolsAPI.showConsole", NULL, NULL, NULL);
+    case DevToolsToggleAction::kShowConsole: {
+      base::StringValue panel_name("console");
+      bindings_->CallClientFunction("DevToolsAPI.showPanel", &panel_name, NULL,
+                                    NULL);
       break;
-
+    }
+    case DevToolsToggleAction::kShowSecurityPanel: {
+      base::StringValue panel_name("security");
+      bindings_->CallClientFunction("DevToolsAPI.showPanel", &panel_name, NULL,
+                                    NULL);
+      break;
+    }
     case DevToolsToggleAction::kInspect:
       bindings_->CallClientFunction(
           "DevToolsAPI.enterInspectElementMode", NULL, NULL, NULL);
