@@ -6,6 +6,8 @@
 
 #if defined(USE_PLATFORM_STATE_STORE)
 
+#include "base/json/json_reader.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -26,19 +28,20 @@ const uint8_t kTestData[] = {
 
 // Returns a dict with some sample data in it.
 scoped_ptr<base::DictionaryValue> CreateTestIncidentsSentPref() {
-  scoped_ptr<base::DictionaryValue> incidents_sent(new base::DictionaryValue);
+  static const char kData[] =
+      "{"
+      "\"2\":{\"spam\":\"1234\",\"blorf\":\"5\"},"
+      "\"0\":{\"whaa\":\"0\",\"wha?\":\"9876\"}"
+      "}";
+  base::JSONReader reader;
 
-  scoped_ptr<base::DictionaryValue> type_dict(new base::DictionaryValue);
-  type_dict->SetStringWithoutPathExpansion("spam", "1234");
-  type_dict->SetStringWithoutPathExpansion("blorf", "5");
-  incidents_sent->SetWithoutPathExpansion("2", type_dict.release());
-
-  type_dict.reset(new base::DictionaryValue);
-  type_dict->SetStringWithoutPathExpansion("whaa", "0");
-  type_dict->SetStringWithoutPathExpansion("wha?", "9876");
-  incidents_sent->SetWithoutPathExpansion("0", type_dict.release());
-
-  return incidents_sent.Pass();
+  scoped_ptr<base::Value> root(reader.Read(kData));
+  EXPECT_TRUE(root);
+  base::DictionaryValue* incidents_sent = nullptr;
+  EXPECT_TRUE(root->GetAsDictionary(&incidents_sent));
+  // Relinquish ownership to |incidents_sent|.
+  ignore_result(root.release());
+  return make_scoped_ptr(incidents_sent);
 }
 
 }  // namespace
