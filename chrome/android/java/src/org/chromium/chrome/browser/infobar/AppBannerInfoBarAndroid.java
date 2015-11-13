@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.infobar;
 
 import android.content.Context;
-import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.support.v4.view.ViewCompat;
 import android.view.LayoutInflater;
@@ -69,11 +68,7 @@ public class AppBannerInfoBarAndroid extends ConfirmInfoBar implements View.OnCl
 
         mButton = layout.getPrimaryButton();
         mIconView = layout.getIcon();
-
-        Resources res = getContext().getResources();
-        int iconSize = res.getDimensionPixelSize(R.dimen.webapp_home_screen_icon_size);
-        int iconSpacing = res.getDimensionPixelSize(R.dimen.app_banner_icon_spacing);
-        layout.setIconSizeAndSpacing(iconSize, iconSize, iconSpacing);
+        layout.setIsUsingBigIcon();
 
         mTitleView = (ViewGroup) LayoutInflater.from(getContext()).inflate(
                 R.layout.app_banner_title, null);

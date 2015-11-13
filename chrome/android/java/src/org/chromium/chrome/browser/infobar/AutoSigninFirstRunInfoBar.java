@@ -6,10 +6,8 @@ package org.chromium.chrome.browser.infobar;
 
 import android.text.Spannable;
 import android.text.SpannableString;
-import android.text.method.LinkMovementMethod;
 import android.text.style.ClickableSpan;
 import android.view.View;
-import android.widget.TextView;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.R;
@@ -55,11 +53,9 @@ public class AutoSigninFirstRunInfoBar extends ConfirmInfoBar {
                 }
             }, mExplanationLinkStart, mExplanationLinkEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
         }
-        // TODO(melandory): Implement correct (as in mocks) margin for the first run
-        // experience text.
-        TextView firstRunExperienceMessageView = new TextView(getContext());
-        firstRunExperienceMessageView.setText(explanation, TextView.BufferType.SPANNABLE);
-        firstRunExperienceMessageView.setMovementMethod(LinkMovementMethod.getInstance());
-        layout.setCustomContent(firstRunExperienceMessageView);
+
+        InfoBarControlLayout controlLayout = new InfoBarControlLayout(getContext());
+        controlLayout.addDescription(explanation);
+        layout.setCustomContent(controlLayout);
     }
 }

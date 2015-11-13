@@ -12,7 +12,6 @@ import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
 import android.text.style.ClickableSpan;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.CheckBox;
 
 import org.chromium.base.annotations.CalledByNative;
@@ -192,8 +191,7 @@ public class TranslateInfoBar extends InfoBar implements SubPanelListener {
                 && !needsAlwaysPanel()
                 && !mOptions.triggeredFromMenu()) {
             // Fully expanded version of the "Always Translate" InfoBar.
-            ViewGroup subLayout = TranslateAlwaysPanel.createAlwaysToggle(context, mOptions);
-            layout.setCustomContent(subLayout);
+            layout.setCustomContent(TranslateAlwaysPanel.createAlwaysToggle(context, mOptions));
         }
     }
 

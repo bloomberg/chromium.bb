@@ -8,12 +8,9 @@ import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.TextUtils;
 import android.text.style.ClickableSpan;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.TextView;
 
 import org.chromium.base.annotations.CalledByNative;
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ResourceId;
 
 /**
@@ -61,11 +58,9 @@ public class SavePasswordInfoBar extends ConfirmInfoBar {
         }
 
         if (!TextUtils.isEmpty(mFirstRunExperienceMessage)) {
-            TextView firstRunExperienceMessageView =
-                    (TextView) LayoutInflater.from(getContext())
-                            .inflate(R.layout.smart_lock_save_prompt_first_run, null);
-            firstRunExperienceMessageView.setText(mFirstRunExperienceMessage);
-            layout.setCustomContent(firstRunExperienceMessageView);
+            InfoBarControlLayout controlLayout = new InfoBarControlLayout(getContext());
+            controlLayout.addDescription(mFirstRunExperienceMessage);
+            layout.setCustomContent(controlLayout);
         }
     }
 }

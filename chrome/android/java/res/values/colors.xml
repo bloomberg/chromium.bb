@@ -20,6 +20,7 @@
     <color name="infobar_background_separator">#afafaf</color>
     <color name="infobar_accent_blue">#4285f4</color>
     <color name="infobar_tertiary_button_text">#969696</color>
+    <color name="infobar_descriptive_text_color">#646464</color>
 
     <!-- Snackbar colors -->
     <color name="snackbar_background_color">#282C32</color>

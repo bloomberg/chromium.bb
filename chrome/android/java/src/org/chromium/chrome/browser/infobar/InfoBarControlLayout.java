@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.infobar;
 import android.content.Context;
 import android.content.res.Resources;
 import android.support.v7.widget.SwitchCompat;
+import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -181,7 +182,7 @@ public class InfoBarControlLayout extends ViewGroup {
     }
 
     /**
-     * Creates a standard spinner.
+     * Creates a standard spinner and adds it to the layout.
      *
      * The layout currently consists of just the Spinner control, but this may change as the spec
      * is updated.
@@ -195,6 +196,18 @@ public class InfoBarControlLayout extends ViewGroup {
         addView(spinner, new ControlLayoutParams());
         spinner.setId(spinnerId);
         return spinner;
+    }
+
+    /**
+     * Creates and adds a control with additional text describing what an InfoBar is for.
+     */
+    public View addDescription(CharSequence message) {
+        TextView descriptionView = (TextView) LayoutInflater.from(getContext()).inflate(
+                R.layout.infobar_control_description, this, false);
+        addView(descriptionView, new ControlLayoutParams());
+        descriptionView.setText(message);
+        descriptionView.setMovementMethod(LinkMovementMethod.getInstance());
+        return descriptionView;
     }
 
     /**

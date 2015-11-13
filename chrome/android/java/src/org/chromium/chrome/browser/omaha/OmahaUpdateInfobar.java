@@ -70,8 +70,8 @@ public class OmahaUpdateInfobar extends ConfirmInfoBar {
 
     public OmahaUpdateInfobar(Context activityContext, String message, String buttonMessage,
                 String url) {
-        super(new DismissListener(), R.drawable.infobar_warning, null, message, null, buttonMessage,
-                null);
+        super(new DismissListener(), R.drawable.infobar_update_uma, null, message, null,
+                buttonMessage, null);
         mActivityContext = activityContext;
         mUrl = url;
         mShownTime = SystemClock.uptimeMillis();
