@@ -30,6 +30,8 @@ component("blimp_net") {
     "stream_socket_connection.h",
     "tcp_client_transport.cc",
     "tcp_client_transport.h",
+    "tcp_engine_transport.cc",
+    "tcp_engine_transport.h",
   ]
 
   defines = [ "BLIMP_NET_IMPLEMENTATION=1" ]
@@ -48,6 +50,7 @@ source_set("unit_tests") {
     "blimp_message_demultiplexer_unittest.cc",
     "stream_packet_reader_unittest.cc",
     "stream_packet_writer_unittest.cc",
+    "tcp_transport_unittest.cc",
     "test_common.cc",
     "test_common.h",
   ]

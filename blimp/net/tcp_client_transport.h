@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "blimp/net/blimp_net_export.h"
 #include "blimp/net/blimp_transport.h"
 #include "net/base/address_list.h"
 #include "net/base/net_errors.h"
@@ -23,7 +24,7 @@ class BlimpConnection;
 
 // BlimpTransport which creates a TCP connection to one of the specified
 // |addresses| on each call to Connect().
-class TCPClientTransport : public BlimpTransport {
+class BLIMP_NET_EXPORT TCPClientTransport : public BlimpTransport {
  public:
   TCPClientTransport(const net::AddressList& addresses, net::NetLog* net_log);
   ~TCPClientTransport() override;
