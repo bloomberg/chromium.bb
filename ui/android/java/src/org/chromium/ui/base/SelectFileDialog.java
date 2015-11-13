@@ -23,6 +23,7 @@ import org.chromium.base.ContentUriUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.MainDex;
 import org.chromium.ui.R;
 import org.chromium.ui.UiUtils;
 
@@ -37,6 +38,7 @@ import java.util.List;
  * a set of accepted file types. The path of the selected file is passed to the native dialog.
  */
 @JNINamespace("ui")
+@MainDex
 public class SelectFileDialog
         implements WindowAndroid.IntentCallback, WindowAndroid.PermissionCallback {
     private static final String TAG = "SelectFileDialog";

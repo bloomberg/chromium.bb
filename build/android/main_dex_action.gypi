@@ -21,7 +21,7 @@
 {
   'message': 'Generating main dex classes list for <(jar_path)',
   'variables': {
-    'jar_path%': '',
+    'jar_paths%': [],
     'output_path%': '',
     'main_dex_list_script': '<(DEPTH)/build/android/gyp/main_dex_list.py',
     'main_dex_rules_path': '<(DEPTH)/build/android/main_dex_classes.flags',
@@ -30,6 +30,7 @@
     '<(jar_path)',
     '<(main_dex_list_script)',
     '<(main_dex_rules_path)',
+    '<(multidex_configuration_path)',
   ],
   'outputs': [
     '<(output_path)',
@@ -39,6 +40,7 @@
     '--main-dex-list-path', '<(output_path)',
     '--android-sdk-tools', '<(android_sdk_tools)',
     '--main-dex-rules-path', '<(main_dex_rules_path)',
-    '<(jar_path)',
+    '--multidex-configuration-path', '<(multidex_configuration_path)',
+    '<@(jar_paths)',
   ]
 }

@@ -1,3 +1,7 @@
 -keep @**.MainDex class * {
   *;
 }
+
+-keepclasseswithmembers class * {
+  public static ** asInterface(android.os.IBinder);
+}

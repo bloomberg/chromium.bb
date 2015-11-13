@@ -4,6 +4,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import json
 import logging
 import optparse
 import os
@@ -12,14 +13,6 @@ import tempfile
 import zipfile
 
 from util import build_utils
-
-
-def _CreateCombinedMainDexList(main_dex_list_paths):
-  main_dex_list = []
-  for m in main_dex_list_paths:
-    with open(m) as main_dex_list_file:
-      main_dex_list.extend(l for l in main_dex_list_file if l)
-  return '\n'.join(main_dex_list)
 
 
 def _RemoveUnwantedFilesFromZip(dex_path):
@@ -56,32 +49,35 @@ def _ParseArgs(args):
                           'is enabled.'))
   parser.add_option('--no-locals',
                     help='Exclude locals list from the dex file.')
-  parser.add_option('--multi-dex', default=False, action='store_true',
-                    help='Create multiple dex files.')
   parser.add_option('--incremental',
                     action='store_true',
                     help='Enable incremental builds when possible.')
   parser.add_option('--inputs', help='A list of additional input paths.')
   parser.add_option('--excluded-paths',
                     help='A list of paths to exclude from the dex file.')
-  parser.add_option('--main-dex-list-paths',
-                    help='A list of paths containing a list of the classes to '
+  parser.add_option('--main-dex-list-path',
+                    help='A file containing a list of the classes to '
                          'include in the main dex.')
+  parser.add_option('--multidex-configuration-path',
+                    help='A JSON file containing multidex build configuration.')
 
   options, paths = parser.parse_args(args)
 
   required_options = ('android_sdk_tools',)
   build_utils.CheckOptions(options, parser, required=required_options)
 
-  if options.multi_dex and not options.main_dex_list_paths:
-    logging.warning('--multi-dex is unused without --main-dex-list-paths')
-    options.multi_dex = False
-  elif options.main_dex_list_paths and not options.multi_dex:
-    logging.warning('--main-dex-list-paths is unused without --multi-dex')
+  options.multi_dex = False
+  if options.multidex_configuration_path:
+    with open(options.multidex_configuration_path) as multidex_config_file:
+      multidex_config = json.loads(multidex_config_file.read())
+    options.multi_dex = multidex_config.get('enabled', False)
 
-  if options.main_dex_list_paths:
-    options.main_dex_list_paths = build_utils.ParseGypList(
-        options.main_dex_list_paths)
+  if options.multi_dex and not options.main_dex_list_path:
+    logging.warning('multidex cannot be enabled without --main-dex-list-path')
+    options.multi_dex = False
+  elif options.main_dex_list_path and not options.multi_dex:
+    logging.warning('--main-dex-list-path is unused if multidex is not enabled')
+
   if options.inputs:
     options.inputs = build_utils.ParseGypList(options.inputs)
   if options.excluded_paths:
@@ -101,11 +97,7 @@ def _RunDx(changes, options, dex_cmd, paths):
   with build_utils.TempDir() as classes_temp_dir:
     # --multi-dex is incompatible with --incremental.
     if options.multi_dex:
-      combined_main_dex_list = tempfile.NamedTemporaryFile(suffix='.txt')
-      combined_main_dex_list.write(
-          _CreateCombinedMainDexList(options.main_dex_list_paths))
-      combined_main_dex_list.flush()
-      dex_cmd.append('--main-dex-list=%s' % combined_main_dex_list.name)
+      dex_cmd.append('--main-dex-list=%s' % options.main_dex_list_path)
     else:
       # Use --incremental when .class files are added or modified (never when
       # removed).
@@ -173,7 +165,7 @@ def main(args):
     dex_cmd.append('--no-locals')
 
   if options.multi_dex:
-    input_paths.extend(options.main_dex_list_paths)
+    input_paths.append(options.main_dex_list_path)
     dex_cmd += [
       '--multi-dex',
       '--minimal-main-dex',

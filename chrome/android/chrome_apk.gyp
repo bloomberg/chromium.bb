@@ -200,6 +200,8 @@
         'native_lib_target': 'libchrome_public',
         'java_in_dir': 'java',
         'resource_dir': '../../chrome/android/java/res_chromium',
+        'enable_multidex': 1,
+        'enable_multidex_configurations': ['Debug'],
         'conditions': [
           # Only attempt loading the library from the APK for 64 bit devices
           # until the number of 32 bit devices which don't support this

@@ -1460,6 +1460,22 @@
           'includes': [ '../build/android/java_cpp_template.gypi' ],
         },
         {
+          # GN: //base:base_multidex_gen
+          'target_name': 'base_multidex_gen',
+          'type': 'none',
+          'sources': [
+            'android/java/templates/ChromiumMultiDex.template',
+          ],
+          'variables': {
+            'package_name': 'org/chromium/base/multidex',
+            'template_deps': [],
+            'additional_gcc_preprocess_options': [
+              '--defines', 'CONFIGURATION_NAME_<(CONFIGURATION_NAME)',
+            ],
+          },
+          'includes': ['../build/android/java_cpp_template.gypi'],
+        },
+        {
           # GN: //base:base_android_java_enums_srcjar
           'target_name': 'base_java_library_process_type',
           'type': 'none',
@@ -1481,6 +1497,7 @@
             'base_java_library_load_from_apk_status_codes',
             'base_java_library_process_type',
             'base_java_memory_pressure_level',
+            'base_multidex_gen',
             'base_native_libraries_gen',
             '../third_party/android_tools/android_tools.gyp:android_support_multidex_javalib',
             '../third_party/jsr-305/jsr-305.gyp:jsr_305_javalib',

@@ -11,6 +11,7 @@ import android.os.Environment;
 import android.os.StrictMode;
 
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.MainDex;
 
 import java.io.File;
 import java.util.concurrent.ExecutionException;
@@ -18,6 +19,7 @@ import java.util.concurrent.ExecutionException;
 /**
  * This class provides the path related methods for the native library.
  */
+@MainDex
 public abstract class PathUtils {
     private static final String THUMBNAIL_DIRECTORY = "textures";
 

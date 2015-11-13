@@ -6,6 +6,8 @@ package org.chromium.sync.notifier;
 
 import android.util.Base64;
 
+import org.chromium.base.annotations.MainDex;
+
 import java.util.Random;
 
 /**
@@ -15,6 +17,7 @@ import java.util.Random;
  * blocking" feature.  That's unfortunate, but better than using a hard-coded ID.  A hard-coded ID
  * could prevent invalidations from being delivered.
  */
+@MainDex
 class RandomizedInvalidationClientNameGenerator implements InvalidationClientNameGenerator {
     private static final Random RANDOM = new Random();
 

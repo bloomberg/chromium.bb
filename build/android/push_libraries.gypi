@@ -44,6 +44,6 @@
     '--device-dir=<(device_library_dir)',
     '--libraries=@FileArg(<(ordered_libraries_file):libraries)',
     '--stamp=<(push_stamp)',
-    '--configuration-name=<(configuration_name)',
+    '--configuration-name=<(CONFIGURATION_NAME)',
   ],
 }

@@ -5,6 +5,7 @@
 # found in the LICENSE file.
 
 import argparse
+import json
 import os
 import sys
 import tempfile
@@ -27,11 +28,26 @@ def main():
                            'main dex.')
   parser.add_argument('--main-dex-list-path', required=True,
                       help='The main dex list file to generate.')
+  parser.add_argument('--enabled-configurations',
+                      help='The build configurations for which a main dex list'
+                           ' should be generated.')
+  parser.add_argument('--configuration-name',
+                      help='The current build configuration.')
+  parser.add_argument('--multidex-configuration-path',
+                      help='A JSON file containing multidex build '
+                           'configuration.')
   parser.add_argument('paths', nargs='+',
                       help='JARs for which a main dex list should be '
                            'generated.')
 
   args = parser.parse_args()
+
+  if args.multidex_configuration_path:
+    with open(args.multidex_configuration_path) as multidex_config_file:
+      multidex_config = json.loads(multidex_config_file.read())
+
+    if not multidex_config.get('enabled', False):
+      return 0
 
   with open(args.main_dex_list_path, 'w') as main_dex_list_file:
 
@@ -58,7 +74,7 @@ def main():
 
       main_dex_list = ''
       try:
-        build_utils.CheckOutput(proguard_cmd)
+        build_utils.CheckOutput(proguard_cmd, print_stderr=False)
 
         java_cmd = [
           'java', '-cp', dx_jar,

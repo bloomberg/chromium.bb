@@ -10,6 +10,8 @@ import android.content.Context;
 import android.os.Bundle;
 import android.view.Window;
 
+import org.chromium.base.multidex.ChromiumMultiDex;
+
 /**
  * Basic application functionality that should be shared among all browser applications.
  */
@@ -24,6 +26,12 @@ public class BaseChromiumApplication extends Application {
 
     protected BaseChromiumApplication(boolean shouldInitializeApplicationStatusTracking) {
         mShouldInitializeApplicationStatusTracking = shouldInitializeApplicationStatusTracking;
+    }
+
+    @Override
+    protected void attachBaseContext(Context base) {
+        super.attachBaseContext(base);
+        ChromiumMultiDex.install(this);
     }
 
     /**

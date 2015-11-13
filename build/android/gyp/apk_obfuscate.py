@@ -10,12 +10,20 @@ If proguard is not enabled or 'Release' is not in the configuration name,
 obfuscation will be a no-op.
 """
 
+import json
 import optparse
 import os
 import sys
+import tempfile
 
 from util import build_utils
 from util import proguard_util
+
+
+_PROGUARD_KEEP_CLASS = '''-keep class %s {
+  *;
+}
+'''
 
 
 def ParseArgs(argv):
@@ -55,6 +63,12 @@ def ParseArgs(argv):
                     'code.')
 
   parser.add_option('--stamp', help='File to touch on success')
+
+  parser.add_option('--main-dex-list-path',
+                    help='The list of classes to retain in the main dex. '
+                         'These will not be obfuscated.')
+  parser.add_option('--multidex-configuration-path',
+                    help='A JSON file containing multidex build configuration.')
 
   (options, args) = parser.parse_args(argv)
 
@@ -98,9 +112,39 @@ def DoProguard(options):
   proguard.libraryjars([options.android_sdk_jar])
   proguard_injars = [p for p in input_jars if p not in exclude_paths]
   proguard.injars(proguard_injars)
-  proguard.configs(configs)
 
+  multidex_config = _PossibleMultidexConfig(options)
+  if multidex_config:
+    configs.append(multidex_config)
+
+  proguard.configs(configs)
   proguard.CheckOutput()
+
+
+def _PossibleMultidexConfig(options):
+  if not options.multidex_configuration_path:
+    return None
+
+  with open(options.multidex_configuration_path) as multidex_config_file:
+    multidex_config = json.loads(multidex_config_file.read())
+
+  if not (multidex_config.get('enabled') and options.main_dex_list_path):
+    return None
+
+  main_dex_list_config = ''
+  with open(options.main_dex_list_path) as main_dex_list:
+    for clazz in (l.strip() for l in main_dex_list):
+      if clazz.endswith('.class'):
+        clazz = clazz[:-len('.class')]
+      clazz = clazz.replace('/', '.')
+      main_dex_list_config += (_PROGUARD_KEEP_CLASS % clazz)
+  with tempfile.NamedTemporaryFile(
+      delete=False,
+      dir=os.path.dirname(options.main_dex_list_path),
+      prefix='main_dex_list_proguard',
+      suffix='.flags') as main_dex_config_file:
+    main_dex_config_file.write(main_dex_list_config)
+  return main_dex_config_file.name
 
 
 def main(argv):

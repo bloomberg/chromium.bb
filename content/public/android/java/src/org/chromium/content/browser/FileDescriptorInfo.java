@@ -8,10 +8,13 @@ import android.os.Parcel;
 import android.os.ParcelFileDescriptor;
 import android.os.Parcelable;
 
+import org.chromium.base.annotations.MainDex;
+
 /**
  * Parcelable class that contains file descriptor and file region information to
  * be passed to child processes.
  */
+@MainDex
 public final class FileDescriptorInfo implements Parcelable {
     public final int mId;
     public final ParcelFileDescriptor mFd;

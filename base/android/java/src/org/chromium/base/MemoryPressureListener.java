@@ -10,6 +10,7 @@ import android.content.Context;
 import android.content.res.Configuration;
 
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.MainDex;
 
 
 /**
@@ -17,6 +18,7 @@ import org.chromium.base.annotations.CalledByNative;
  * It registers a ComponentCallbacks2 with the system, and dispatches into
  * native for levels that are considered actionable.
  */
+@MainDex
 public class MemoryPressureListener {
     /**
      * Sending an intent with this action to Chrome will cause it to issue a call to onLowMemory

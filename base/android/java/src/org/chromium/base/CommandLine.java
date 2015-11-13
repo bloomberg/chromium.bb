@@ -7,6 +7,8 @@ package org.chromium.base;
 import android.text.TextUtils;
 import android.util.Log;
 
+import org.chromium.base.annotations.MainDex;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -25,6 +27,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * file at a specific location early during startup. Applications each define their own files, e.g.,
  * ContentShellApplication.COMMAND_LINE_FILE.
 **/
+@MainDex
 public abstract class CommandLine {
     /**
      * Allows classes who cache command line flags to be notified when those arguments are updated

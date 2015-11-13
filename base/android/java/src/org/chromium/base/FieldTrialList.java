@@ -4,9 +4,12 @@
 
 package org.chromium.base;
 
+import org.chromium.base.annotations.MainDex;
+
 /**
  * Helper to get field trial information.
  */
+@MainDex
 public class FieldTrialList {
 
     private FieldTrialList() {}

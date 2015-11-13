@@ -11,6 +11,7 @@ import org.chromium.base.Log;
 import org.chromium.base.SysUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.MainDex;
 
 import java.util.HashMap;
 import java.util.Locale;
@@ -31,6 +32,7 @@ import javax.annotation.Nullable;
  *
  * For more on the operations performed by the Linker, see {@link Linker}.
  */
+@MainDex
 class LegacyLinker extends Linker {
     // Log tag for this class.
     private static final String TAG = "LibraryLoader";

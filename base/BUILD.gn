@@ -1650,6 +1650,7 @@ if (is_android) {
   android_library("base_java") {
     srcjar_deps = [
       ":base_android_java_enums_srcjar",
+      ":base_multidex_gen",
       ":base_native_libraries_gen",
     ]
 
@@ -1723,6 +1724,14 @@ if (is_android) {
       "android/library_loader/library_loader_hooks.h",
       "memory/memory_pressure_listener.h",
     ]
+  }
+
+  # GYP: //base/base.gyp:base_multidex_gen
+  java_cpp_template("base_multidex_gen") {
+    sources = [
+      "android/java/templates/ChromiumMultiDex.template",
+    ]
+    package_name = "org/chromium/base/multidex"
   }
 
   # GYP: //base/base.gyp:base_native_libraries_gen

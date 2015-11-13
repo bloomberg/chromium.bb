@@ -12,6 +12,7 @@ import android.util.SparseArray;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.MainDex;
 import org.chromium.ui.resources.ResourceLoader.ResourceLoaderCallback;
 import org.chromium.ui.resources.dynamics.DynamicResource;
 import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
@@ -25,6 +26,7 @@ import org.chromium.ui.resources.system.SystemResourceLoader;
  * This class does not hold any resource state, but passes it directly to native as they are loaded.
  */
 @JNINamespace("ui")
+@MainDex
 public class ResourceManager implements ResourceLoaderCallback {
     private final SparseArray<ResourceLoader> mResourceLoaders = new SparseArray<ResourceLoader>();
     private final SparseArray<SparseArray<LayoutResource>> mLoadedResources =

@@ -30,6 +30,7 @@ public class ChromiumMultiDex {
      *  @param context The application context.
      */
     @VisibleForTesting
+#if defined(CONFIGURATION_NAME_Debug)
     public static void install(Context context) {
         try {
             // TODO(jbudorick): Back out this version check once support for K & below works.
@@ -54,5 +55,9 @@ public class ChromiumMultiDex {
             throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
         return (boolean) Process.class.getMethod("isIsolated").invoke(null);
     }
+#else
+    public static void install(Context context) {
+    }
+#endif
 
 }

@@ -9,6 +9,7 @@ import android.content.Context;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.MainDex;
 
 import java.util.concurrent.FutureTask;
 
@@ -20,6 +21,7 @@ import java.util.concurrent.FutureTask;
  * content/browser/geolocation/android_location_api_adapter.h.
  * Based on android.webkit.GeolocationService.java
  */
+@MainDex
 @VisibleForTesting
 public class LocationProviderAdapter {
 
