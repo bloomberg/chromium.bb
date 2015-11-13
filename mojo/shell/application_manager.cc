@@ -89,7 +89,7 @@ void ApplicationManager::ConnectToApplication(
   ApplicationLoader* loader = GetLoaderForURL(params->target().url());
   if (loader) {
     GURL url = params->target().url();
-    loader->Load(url, CreateAndConnectToInstance(params.Pass(), nullptr));
+    loader->Load(url, CreateInstance(params.Pass(), nullptr));
     return;
   }
 
@@ -110,55 +110,29 @@ bool ApplicationManager::ConnectToRunningApplication(
   return true;
 }
 
-ApplicationInstance* ApplicationManager::GetApplicationInstance(
-    const Identity& identity) const {
-  const auto& it = identity_to_instance_.find(identity);
-  return it != identity_to_instance_.end() ? it->second : nullptr;
-}
-
-void ApplicationManager::CreateInstanceForHandle(ScopedHandle channel,
-                                                 const GURL& url,
-                                                 const std::string& qualifier) {
-  // Instances created by others are considered unique, and thus have no
-  // identity. As such they cannot be connected to by anyone else, and so we
-  // never call ConnectToClient().
-  Identity target_id(url, qualifier, GetPermissiveCapabilityFilter());
-  InterfaceRequest<Application> application_request =
-      CreateInstance(target_id, base::Closure(), nullptr);
-  NativeRunner* runner =
-      native_runner_factory_->Create(base::FilePath()).release();
-  native_runners_.push_back(runner);
-  runner->InitHost(channel.Pass(), application_request.Pass());
-}
-
-InterfaceRequest<Application> ApplicationManager::CreateAndConnectToInstance(
+InterfaceRequest<Application> ApplicationManager::CreateInstance(
     scoped_ptr<ConnectToApplicationParams> params,
     ApplicationInstance** resulting_instance) {
-  ApplicationInstance* instance = nullptr;
-  InterfaceRequest<Application> application_request =
-      CreateInstance(params->target(), params->on_application_end(), &instance);
+  Identity target_id = params->target();
+  ApplicationPtr application;
+  InterfaceRequest<Application> application_request = GetProxy(&application);
+  ApplicationInstance* instance = new ApplicationInstance(
+      application.Pass(), this, target_id, Shell::kInvalidContentHandlerID,
+      params->on_application_end());
+  DCHECK(identity_to_instance_.find(target_id) ==
+         identity_to_instance_.end());
+  identity_to_instance_[target_id] = instance;
+  instance->InitializeApplication();
   instance->ConnectToClient(params.Pass());
   if (resulting_instance)
     *resulting_instance = instance;
   return application_request.Pass();
 }
 
-InterfaceRequest<Application> ApplicationManager::CreateInstance(
-    const Identity& target_id,
-    const base::Closure& on_application_end,
-    ApplicationInstance** resulting_instance) {
-  ApplicationPtr application;
-  InterfaceRequest<Application> application_request = GetProxy(&application);
-  ApplicationInstance* instance = new ApplicationInstance(
-      application.Pass(), this, target_id, Shell::kInvalidContentHandlerID,
-      on_application_end);
-  DCHECK(identity_to_instance_.find(target_id) ==
-         identity_to_instance_.end());
-  identity_to_instance_[target_id] = instance;
-  instance->InitializeApplication();
-  if (resulting_instance)
-    *resulting_instance = instance;
-  return application_request.Pass();
+ApplicationInstance* ApplicationManager::GetApplicationInstance(
+    const Identity& identity) const {
+  const auto& it = identity_to_instance_.find(identity);
+  return it != identity_to_instance_.end() ? it->second : nullptr;
 }
 
 void ApplicationManager::HandleFetchCallback(
@@ -197,8 +171,7 @@ void ApplicationManager::HandleFetchCallback(
       params->connect_callback();
   params->set_connect_callback(EmptyConnectCallback());
   ApplicationInstance* app = nullptr;
-  InterfaceRequest<Application> request(
-      CreateAndConnectToInstance(params.Pass(), &app));
+  InterfaceRequest<Application> request(CreateInstance(params.Pass(), &app));
 
   uint32_t content_handler_id = package_manager_->HandleWithContentHandler(
       fetcher.get(), source, target.url(), target.filter(), &request);

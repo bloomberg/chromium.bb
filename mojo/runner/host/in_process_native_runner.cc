@@ -50,12 +50,6 @@ void InProcessNativeRunner::Start(
   thread_->Start();
 }
 
-void InProcessNativeRunner::InitHost(
-    ScopedHandle channel,
-    InterfaceRequest<Application> application_request) {
-  NOTREACHED();  // Can't host another process in this runner.
-}
-
 void InProcessNativeRunner::Run() {
   DVLOG(2) << "Loading/running Mojo app in process from library: "
            << app_path_.value()

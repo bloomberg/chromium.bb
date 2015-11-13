@@ -92,10 +92,6 @@ class ApplicationManager {
 
   ApplicationInstance* GetApplicationInstance(const Identity& identity) const;
 
-  void CreateInstanceForHandle(ScopedHandle channel,
-                               const GURL& url,
-                               const std::string& qualifier);
-
  private:
   using IdentityToInstanceMap = std::map<Identity, ApplicationInstance*>;
   using URLToLoaderMap = std::map<GURL, ApplicationLoader*>;
@@ -104,13 +100,9 @@ class ApplicationManager {
   bool ConnectToRunningApplication(
       scoped_ptr<ConnectToApplicationParams>* params);
 
-  InterfaceRequest<Application> CreateAndConnectToInstance(
+  InterfaceRequest<Application> CreateInstance(
       scoped_ptr<ConnectToApplicationParams> params,
       ApplicationInstance** instance);
-  InterfaceRequest<Application> CreateInstance(
-      const Identity& target_id,
-      const base::Closure& on_application_end,
-      ApplicationInstance** resulting_instance);
 
   // Called once |fetcher| has found app. |params->app_url()| is the url of
   // the requested application before any mappings/resolution have been applied.

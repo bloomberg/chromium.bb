@@ -10,6 +10,5 @@ interface ApplicationManager {
   // initialization. This assumes the target process will bind the other end of
   // channel to an implementation of ChildController and bind an Application
   // request there.
-  // TODO(beng): we should probably have an Identity mojom struct.
-  CreateInstanceForHandle(handle channel, string url, string qualifier);
+  CreateInstanceForHandle(handle channel);
 };

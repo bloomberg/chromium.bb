@@ -42,26 +42,6 @@ mojom("interfaces") {
   import_dirs = [ "//mojo/services" ]
 }
 
-source_set("test_native_main") {
-  sources = [
-    "test_native_main.cc",
-    "test_native_main.h",
-  ]
-
-  public_deps = [
-    "//mojo/runner:init",
-  ]
-
-  deps = [
-    "//base",
-    "//mojo/application/public/cpp",
-    "//mojo/gles2",
-    "//mojo/message_pump",
-    "//mojo/runner/child:lib",
-    "//third_party/mojo/src/mojo/edk/system",
-  ]
-}
-
 mojom("apptest_interfaces") {
   sources = [
     "test_native_service.mojom",
@@ -109,9 +89,14 @@ executable("native_target") {
   deps = [
     ":apptest_interfaces",
     ":lib",
-    ":test_native_main",
     "//base",
+    "//base:base_static",
     "//mojo/application/public/cpp",
+    "//mojo/application/public/interfaces",
     "//mojo/common:common_base",
+    "//mojo/gles2",
+    "//mojo/message_pump",
+    "//mojo/runner:init",
+    "//third_party/mojo/src/mojo/edk/system",
   ]
 }

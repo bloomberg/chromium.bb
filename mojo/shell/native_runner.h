@@ -38,11 +38,6 @@ class NativeRunner {
                      bool start_sandboxed,
                      InterfaceRequest<Application> application_request,
                      const base::Closure& app_completed_callback) = 0;
-
-  // Like Start(), but used to initialize the host for a child process started
-  // by someone else. Provides |application_request| via |channel|.
-  virtual void InitHost(ScopedHandle channel,
-                        InterfaceRequest<Application> application_request) = 0;
 };
 
 class NativeRunnerFactory {
