@@ -1068,6 +1068,7 @@ void HTMLSelectElement::dispatchBlurEvent(Element* newFocusedElement, WebFocusTy
     // This matches other browsers' behavior.
     if (usesMenuList())
         dispatchInputAndChangeEventForMenuList();
+    m_lastOnChangeSelection.clear();
     HTMLFormControlElementWithState::dispatchBlurEvent(newFocusedElement, type, sourceCapabilities);
 }
 
@@ -1494,6 +1495,9 @@ void HTMLSelectElement::listBoxDefaultEventHandler(Event* event)
 
         if (Page* page = document().page())
             page->autoscrollController().startAutoscrollForSelection(layoutObject());
+        // Mousedown didn't happen in this element.
+        if (m_lastOnChangeSelection.isEmpty())
+            return;
 
         int listIndex = listIndexForEventTargetOption(*mouseEvent);
         if (listIndex >= 0) {
