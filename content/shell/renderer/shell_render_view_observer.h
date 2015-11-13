@@ -5,17 +5,14 @@
 #ifndef CONTENT_SHELL_RENDERER_SHELL_RENDER_VIEW_OBSERVER_H_
 #define CONTENT_SHELL_RENDERER_SHELL_RENDER_VIEW_OBSERVER_H_
 
-#include <string>
-#include "base/memory/scoped_ptr.h"
 #include "content/public/renderer/render_view_observer.h"
 
 namespace blink {
-class WebFrame;
+class WebLocalFrame;
 }
 
 namespace content {
 
-class IPCEcho;
 class RenderView;
 
 
@@ -25,14 +22,9 @@ class ShellRenderViewObserver : public RenderViewObserver {
   ~ShellRenderViewObserver() override;
 
  private:
-  // Message handlers.
-  void OnEchoPong(int id, const std::string& body);
-
   // RenderViewObserver implementation.
-  bool OnMessageReceived(const IPC::Message& message) override;
   void DidClearWindowObject(blink::WebLocalFrame* frame) override;
 
-  scoped_ptr<IPCEcho> ipc_echo_;
   DISALLOW_COPY_AND_ASSIGN(ShellRenderViewObserver);
 };
 

@@ -32,9 +32,6 @@ const char kCrashOnFailure[] = "crash-on-failure";
 // each LayoutBlockFlow to be dumped as well.
 const char kDumpLineBoxTrees[] = "dump-line-box-trees";
 
-// Expose window.ipcTester object for testing
-const char kExposeIpcEcho[] = "expose-ipc-echo";
-
 // Enable accelerated 2D canvas.
 const char kEnableAccelerated2DCanvas[] = "enable-accelerated-2d-canvas";
 
