@@ -28,8 +28,10 @@ _XML_QUOTE_ESCAPES = {
     u"'":  u'&apos;',
     u'"':  u'&quot;',
 }
+# See http://www.w3.org/TR/xml/#charsets
 _XML_BAD_CHAR_REGEX = lazy_re.compile(u'[^\u0009\u000A\u000D'
-                                      u'\u0020-\uD7FF\uE000-\uFFFD]')
+                                      u'\u0020-\uD7FF\uE000-\uFFFD'
+                                      u'\U00010000-\U0010FFFF]')
 
 
 def _XmlEscape(s):
@@ -40,7 +42,11 @@ def _XmlEscape(s):
   if not type(s) == unicode:
     s = unicode(s)
   result = saxutils.escape(s, _XML_QUOTE_ESCAPES)
-  return _XML_BAD_CHAR_REGEX.sub(u'', result).encode('utf-8')
+  illegal_chars = _XML_BAD_CHAR_REGEX.search(result)
+  if illegal_chars:
+    raise Exception('String contains characters disallowed in XML: %s' %
+                    repr(result))
+  return result.encode('utf-8')
 
 
 def _WriteAttribute(file, name, value):

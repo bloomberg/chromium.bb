@@ -37,18 +37,23 @@ class XmbUnittest(unittest.TestCase):
             <message name="IDS_BONGOBINGO">
               Yibbee
             </message>
+            <message name="IDS_UNICODE">
+              Ol\xe1, \u4eca\u65e5\u306f! \U0001F60A
+            </message>
           </messages>
           <structures>
             <structure type="dialog" name="IDD_SPACYBOX" encoding="utf-16" file="grit/testdata/klonk.rc" />
           </structures>
         </release>
-      </grit>'''), '.')
+      </grit>'''.encode('utf-8')), '.')
     self.xmb_file = StringIO.StringIO()
 
   def testNormalOutput(self):
     xmb.OutputXmb().Process(self.res_tree, self.xmb_file)
-    output = self.xmb_file.getvalue()
-    self.failUnless(output.count('Joi') and output.count('Yibbee'))
+    output = self.xmb_file.getvalue().decode('utf-8')
+    self.failUnless(output.count('Joi'))
+    self.failUnless(output.count('Yibbee'))
+    self.failUnless(output.count(u'Ol\xe1, \u4eca\u65e5\u306f! \U0001F60A'))
 
   def testLimitList(self):
     limit_file = StringIO.StringIO(
