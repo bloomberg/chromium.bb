@@ -10,7 +10,6 @@
 
 #include "base/compiler_specific.h"
 #include "components/enhanced_bookmarks/bookmark_server_service.h"
-#include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "components/signin/core/browser/signin_manager_base.h"
 #include "components/sync_driver/sync_service_observer.h"
 #include "net/url_request/url_fetcher.h"
