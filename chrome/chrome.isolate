@@ -110,6 +110,13 @@
         ],
       },
     }],
+    ['OS=="win" and component=="shared_library" and (CONFIGURATION_NAME=="Debug" or CONFIGURATION_NAME=="Debug_x64")', {
+      'variables': {
+        'files': [
+          '<(PRODUCT_DIR)/crcrypto.dll',
+        ],
+      },
+    }],
     ['OS=="win" and component=="static_library"', {
       'variables': {
         'files': [
