@@ -191,12 +191,14 @@ public class EnhancedBookmarkUtils {
 
             @Override
             public void onDismissNoAction(Object actionData) {
+                RecordUserAction.record("EnhancedBookmarks.EditAfterCreateButtonNotClicked");
                 // This method will be called only if the snackbar is dismissed by timeout.
                 bookmarkModel.destroy();
             }
 
             @Override
             public void onAction(Object actionData) {
+                RecordUserAction.record("EnhancedBookmarks.EditAfterCreateButtonClicked");
                 // Show edit activity with the name of parent folder highlighted.
                 startEditActivity(activity, bookmarkId, null);
                 bookmarkModel.destroy();

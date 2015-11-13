@@ -9428,6 +9428,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="EnhancedBookmarks.AllBookmarksCount">
+  <owner>ianwen@chromium.org</owner>
+  <owner>kkimlabs@chromium.org</owner>
+  <summary>Number of bookmarks the user has. Android only.</summary>
+</histogram>
+
 <histogram name="EnhancedBookmarks.SyncExperimentState"
     enum="BookmarksExperimentState">
   <obsolete>
@@ -29864,6 +29870,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     Whether an attempt to load the offline pages metadata store was successful.
   </summary>
+</histogram>
+
+<histogram name="OfflinePages.OfflinePageCount">
+  <owner>fgorski@chromium.org</owner>
+  <owner>jianli@chromium.org</owner>
+  <summary>Number of offline pages the user has. Android only.</summary>
 </histogram>
 
 <histogram name="OfflinePages.PageLifetime" units="minutes">

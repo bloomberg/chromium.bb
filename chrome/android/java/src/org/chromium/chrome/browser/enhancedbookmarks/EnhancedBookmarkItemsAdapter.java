@@ -12,6 +12,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import org.chromium.base.annotations.SuppressFBWarnings;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.bookmark.BookmarksBridge.BookmarkItem;
 import org.chromium.chrome.browser.bookmark.BookmarksBridge.BookmarkModelObserver;
@@ -326,7 +327,11 @@ class EnhancedBookmarkItemsAdapter extends RecyclerView.Adapter<RecyclerView.Vie
 
     @Override
     public void onAllBookmarksStateSet() {
-        setBookmarks(null, mDelegate.getModel().getAllBookmarkIDsOrderedByCreationDate());
+        List<BookmarkId> bookmarkIds =
+                mDelegate.getModel().getAllBookmarkIDsOrderedByCreationDate();
+        RecordHistogram.recordCountHistogram("EnhancedBookmarks.AllBookmarksCount",
+                bookmarkIds.size());
+        setBookmarks(null, bookmarkIds);
     }
 
     @Override
@@ -338,6 +343,8 @@ class EnhancedBookmarkItemsAdapter extends RecyclerView.Adapter<RecyclerView.Vie
     @Override
     public void onFilterStateSet(EnhancedBookmarkFilter filter) {
         assert filter == EnhancedBookmarkFilter.OFFLINE_PAGES;
+        List<BookmarkId> bookmarkIds = mDelegate.getModel().getBookmarkIDsByFilter(filter);
+        RecordHistogram.recordCountHistogram("OfflinePages.OfflinePageCount", bookmarkIds.size());
         setBookmarks(null, mDelegate.getModel().getBookmarkIDsByFilter(filter));
         mDelegate.getModel().getOfflinePageBridge().checkOfflinePageMetadata();
     }

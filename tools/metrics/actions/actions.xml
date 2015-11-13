@@ -3004,6 +3004,24 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="EnhancedBookmarks.EditAfterCreateButtonClicked">
+  <owner>kkimlabs@chromium.org</owner>
+  <owner>ianwen@chromium.org</owner>
+  <owner>fgorski@chromium.org</owner>
+  <description>
+    User clicked the Edit button on a snackbar after a bookmark was created.
+  </description>
+</action>
+
+<action name="EnhancedBookmarks.EditAfterCreateButtonNotClicked">
+  <owner>kkimlabs@chromium.org</owner>
+  <owner>ianwen@chromium.org</owner>
+  <owner>fgorski@chromium.org</owner>
+  <description>
+    User ignored the Edit button on a snackbar after a bookmark was created.
+  </description>
+</action>
+
 <action name="EnterFullScreenWithWrenchMenu">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
