@@ -276,7 +276,8 @@ void MediaRouterWebUIMessageHandler::OnRequestInitialData(
 
   const std::set<MediaCastMode> cast_modes = media_router_ui_->cast_modes();
   scoped_ptr<base::ListValue> cast_modes_list(
-      CastModesToValue(cast_modes, media_router_ui_->GetFrameURLHost()));
+      CastModesToValue(cast_modes,
+                       media_router_ui_->GetPresentationRequestSourceName()));
   initial_data.Set("castModes", cast_modes_list.release());
   if (!cast_modes.empty()) {
     initial_data.SetInteger("initialCastModeType",

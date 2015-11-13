@@ -6,6 +6,11 @@
 #include "chrome/browser/media/router/media_route.h"
 #include "chrome/browser/media/router/mock_media_router.h"
 #include "chrome/browser/ui/webui/media_router/media_router_ui.h"
+#include "extensions/browser/extension_registry.h"
+#include "extensions/common/extension.h"
+#include "extensions/common/extension_builder.h"
+#include "extensions/common/test_util.h"
+#include "extensions/common/value_builder.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -55,4 +60,37 @@ TEST_F(MediaRouterUITest, UIMediaRoutesObserverFiltersNonDisplayRoutes) {
   observer.reset();
 }
 
+TEST_F(MediaRouterUITest, GetExtensionNameExtensionPresent) {
+  std::string id = "extensionid";
+  GURL url = GURL("chrome-extension://" + id);
+  scoped_ptr<extensions::ExtensionRegistry> registry =
+      make_scoped_ptr(new extensions::ExtensionRegistry(nullptr));
+  scoped_refptr<extensions::Extension> app =
+      extensions::test_util::BuildApp(extensions::ExtensionBuilder().Pass())
+          .MergeManifest(
+              extensions::DictionaryBuilder().Set("name", "test app name"))
+          .SetID(id)
+          .Build();
+
+  ASSERT_TRUE(registry->AddEnabled(app));
+  EXPECT_EQ("test app name",
+            MediaRouterUI::GetExtensionName(url, registry.get()));
+}
+
+TEST_F(MediaRouterUITest, GetExtensionNameEmptyWhenNotInstalled) {
+  std::string id = "extensionid";
+  GURL url = GURL("chrome-extension://" + id);
+  scoped_ptr<extensions::ExtensionRegistry> registry =
+      make_scoped_ptr(new extensions::ExtensionRegistry(nullptr));
+
+  EXPECT_EQ("", MediaRouterUI::GetExtensionName(url, registry.get()));
+}
+
+TEST_F(MediaRouterUITest, GetExtensionNameEmptyWhenNotExtensionURL) {
+  GURL url = GURL("https://www.google.com");
+  scoped_ptr<extensions::ExtensionRegistry> registry =
+      make_scoped_ptr(new extensions::ExtensionRegistry(nullptr));
+
+  EXPECT_EQ("", MediaRouterUI::GetExtensionName(url, registry.get()));
+}
 }  // namespace media_router

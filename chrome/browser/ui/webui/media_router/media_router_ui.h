@@ -27,6 +27,10 @@ namespace content {
 class WebContents;
 }  // namespace content
 
+namespace extensions {
+class ExtensionRegistry;
+}  // namespace extensions
+
 namespace media_router {
 
 class IssuesObserver;
@@ -104,7 +108,8 @@ class MediaRouterUI : public ConstrainedWebDialogUI,
   void ClearIssue(const Issue::Id& issue_id);
 
   // Returns the hostname of the default source's parent frame URL.
-  std::string GetFrameURLHost() const;
+  std::string GetPresentationRequestSourceName() const;
+  std::string GetTruncatedPresentationRequestSourceName() const;
   bool HasPendingRouteRequest() const {
     return current_route_request_id_ != -1;
   }
@@ -119,6 +124,11 @@ class MediaRouterUI : public ConstrainedWebDialogUI,
  private:
   FRIEND_TEST_ALL_PREFIXES(MediaRouterUITest,
                            UIMediaRoutesObserverFiltersNonDisplayRoutes);
+  FRIEND_TEST_ALL_PREFIXES(MediaRouterUITest, GetExtensionNameExtensionPresent);
+  FRIEND_TEST_ALL_PREFIXES(MediaRouterUITest,
+                           GetExtensionNameEmptyWhenNotInstalled);
+  FRIEND_TEST_ALL_PREFIXES(MediaRouterUITest,
+                           GetExtensionNameEmptyWhenNotExtensionURL);
 
   class UIIssuesObserver;
   class UIMediaRoutesObserver : public MediaRoutesObserver {
@@ -138,6 +148,9 @@ class MediaRouterUI : public ConstrainedWebDialogUI,
 
     DISALLOW_COPY_AND_ASSIGN(UIMediaRoutesObserver);
   };
+
+  static std::string GetExtensionName(const GURL& url,
+                                      extensions::ExtensionRegistry* registry);
 
   // QueryResultManager::Observer
   void OnResultsUpdated(
