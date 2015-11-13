@@ -124,6 +124,9 @@ IPC_SYNC_MESSAGE_ROUTED2_2(SyncCompositorMsg_DemandDrawHw,
                            content::SyncCompositorCommonRendererParams,
                            cc::CompositorFrame)
 
+IPC_MESSAGE_ROUTED1(SyncCompositorMsg_UpdateState,
+                    content::SyncCompositorCommonBrowserParams)
+
 IPC_MESSAGE_ROUTED1(SyncCompositorHostMsg_UpdateState,
                     content::SyncCompositorCommonRendererParams)
 

@@ -10,6 +10,7 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/android/sync_compositor_messages.h"
 #include "content/public/browser/android/synchronous_compositor_client.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_view_host.h"
 #include "ipc/ipc_sender.h"
 
@@ -20,6 +21,8 @@ SynchronousCompositorHost::SynchronousCompositorHost(
     SynchronousCompositorClient* client)
     : rwhva_(rwhva),
       client_(client),
+      ui_task_runner_(
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI)),
       routing_id_(rwhva_->GetRenderWidgetHost()->GetRoutingID()),
       sender_(rwhva_->GetRenderWidgetHost()),
       is_active_(false),
@@ -28,7 +31,8 @@ SynchronousCompositorHost::SynchronousCompositorHost(
       need_animate_scroll_(false),
       need_invalidate_(false),
       need_begin_frame_(false),
-      did_activate_pending_tree_(false) {
+      did_activate_pending_tree_(false),
+      weak_ptr_factory_(this) {
   client_->DidInitializeCompositor(this);
 }
 
@@ -96,7 +100,7 @@ void SynchronousCompositorHost::SetMemoryPolicy(size_t bytes_limit) {
   if (bytes_limit_ == bytes_limit)
     return;
   bytes_limit_ = bytes_limit;
-  // TODO(boliu): Handle not in draw.
+  SendAsyncCompositorStateIfNeeded();
 }
 
 void SynchronousCompositorHost::DidChangeRootLayerScrollOffset(
@@ -104,7 +108,24 @@ void SynchronousCompositorHost::DidChangeRootLayerScrollOffset(
   if (root_scroll_offset_ == root_offset)
     return;
   root_scroll_offset_ = root_offset;
-  // TODO(boliu): Handle async.
+  SendAsyncCompositorStateIfNeeded();
+}
+
+void SynchronousCompositorHost::SendAsyncCompositorStateIfNeeded() {
+  if (weak_ptr_factory_.HasWeakPtrs())
+    return;
+
+  ui_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&SynchronousCompositorHost::UpdateStateTask,
+                            weak_ptr_factory_.GetWeakPtr()));
+}
+
+void SynchronousCompositorHost::UpdateStateTask() {
+  SyncCompositorCommonBrowserParams common_browser_params;
+  PopulateCommonParams(&common_browser_params);
+  sender_->Send(
+      new SyncCompositorMsg_UpdateState(routing_id_, common_browser_params));
+  DCHECK(!weak_ptr_factory_.HasWeakPtrs());
 }
 
 void SynchronousCompositorHost::SetIsActive(bool is_active) {
@@ -175,6 +196,7 @@ void SynchronousCompositorHost::PopulateCommonParams(
   params->bytes_limit = bytes_limit_;
   params->root_scroll_offset = root_scroll_offset_;
   params->ack.resources.swap(returned_resources_);
+  weak_ptr_factory_.InvalidateWeakPtrs();
 }
 
 void SynchronousCompositorHost::ProcessCommonParams(

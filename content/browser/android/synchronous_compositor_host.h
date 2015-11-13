@@ -6,6 +6,8 @@
 #define CONTENT_BROWSER_ANDROID_SYNCHRONOUS_COMPOSITOR_HOST_H_
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
+#include "base/single_thread_task_runner.h"
 #include "cc/output/compositor_frame.h"
 #include "content/browser/android/synchronous_compositor_base.h"
 #include "ui/gfx/geometry/scroll_offset.h"
@@ -59,9 +61,12 @@ class SynchronousCompositorHost : public SynchronousCompositorBase {
   void UpdateFrameMetaData(const cc::CompositorFrameMetadata& frame_metadata);
   void OnOverScroll(const SyncCompositorCommonRendererParams& params,
                     const DidOverscrollParams& over_scroll_params);
+  void SendAsyncCompositorStateIfNeeded();
+  void UpdateStateTask();
 
   RenderWidgetHostViewAndroid* const rwhva_;
   SynchronousCompositorClient* const client_;
+  const scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
   const int routing_id_;
   IPC::Sender* const sender_;
 
@@ -79,6 +84,7 @@ class SynchronousCompositorHost : public SynchronousCompositorBase {
   bool need_begin_frame_;
   bool did_activate_pending_tree_;
 
+  base::WeakPtrFactory<SynchronousCompositorHost> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(SynchronousCompositorHost);
 };
 
