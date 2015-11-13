@@ -2184,11 +2184,10 @@ void WebViewImpl::setFocus(bool enable)
     m_page->focusController().setFocused(enable);
     if (enable) {
         m_page->focusController().setActive(true);
-        RefPtrWillBeRawPtr<Frame> focusedFrame = m_page->focusController().focusedFrame();
-        if (focusedFrame && focusedFrame->isLocalFrame()) {
-            LocalFrame* localFrame = toLocalFrame(focusedFrame.get());
-            Element* element = localFrame->document()->focusedElement();
-            if (element && localFrame->selection().selection().isNone()) {
+        RefPtrWillBeRawPtr<LocalFrame> focusedFrame = m_page->focusController().focusedFrame();
+        if (focusedFrame) {
+            Element* element = focusedFrame->document()->focusedElement();
+            if (element && focusedFrame->selection().selection().isNone()) {
                 // If the selection was cleared while the WebView was not
                 // focused, then the focus element shows with a focus ring but
                 // no caret and does respond to keyboard inputs.
@@ -2200,7 +2199,7 @@ void WebViewImpl::setFocus(bool enable)
                     // instead. Note that this has the side effect of moving the
                     // caret back to the beginning of the text.
                     Position position(element, 0);
-                    localFrame->selection().setSelection(VisibleSelection(position, SEL_DEFAULT_AFFINITY));
+                    focusedFrame->selection().setSelection(VisibleSelection(position, SEL_DEFAULT_AFFINITY));
                 }
             }
         }
@@ -2217,16 +2216,16 @@ void WebViewImpl::setFocus(bool enable)
         if (!frame)
             return;
 
-        RefPtrWillBeRawPtr<Frame> focusedFrame = m_page->focusController().focusedFrame();
-        if (focusedFrame && focusedFrame->isLocalFrame()) {
+        RefPtrWillBeRawPtr<LocalFrame> focusedFrame = m_page->focusController().focusedFrame();
+        if (focusedFrame) {
             // Finish an ongoing composition to delete the composition node.
-            if (toLocalFrame(focusedFrame.get())->inputMethodController().hasComposition()) {
-                WebAutofillClient* autofillClient = WebLocalFrameImpl::fromFrame(toLocalFrame(focusedFrame.get()))->autofillClient();
+            if (focusedFrame->inputMethodController().hasComposition()) {
+                WebAutofillClient* autofillClient = WebLocalFrameImpl::fromFrame(focusedFrame.get())->autofillClient();
 
                 if (autofillClient)
                     autofillClient->setIgnoreTextChanges(true);
 
-                toLocalFrame(focusedFrame.get())->inputMethodController().confirmComposition();
+                focusedFrame->inputMethodController().confirmComposition();
 
                 if (autofillClient)
                     autofillClient->setIgnoreTextChanges(false);
@@ -2398,17 +2397,16 @@ WebTextInputInfo WebViewImpl::textInputInfo()
 
 WebTextInputType WebViewImpl::textInputType()
 {
-    Frame* focusedFrame = m_page->focusController().focusedFrame();
-    if (!focusedFrame || !focusedFrame->isLocalFrame())
+    LocalFrame* focusedFrame = m_page->focusController().focusedFrame();
+    if (!focusedFrame)
         return WebTextInputTypeNone;
 
     // It's important to preserve the equivalence of textInputInfo().type and textInputType(),
     // so perform the same rootEditableElement() existence check here for consistency.
-    LocalFrame* focused = toLocalFrame(focusedFrame);
-    if (!focused || !focused->selection().selection().rootEditableElement())
+    if (!focusedFrame || !focusedFrame->selection().selection().rootEditableElement())
         return WebTextInputTypeNone;
 
-    Document* document = focused->document();
+    Document* document = focusedFrame->document();
     if (!document)
         return WebTextInputTypeNone;
 
@@ -4072,11 +4070,11 @@ WebPageImportanceSignals* WebViewImpl::pageImportanceSignals()
 
 Element* WebViewImpl::focusedElement() const
 {
-    Frame* frame = m_page->focusController().focusedFrame();
-    if (!frame || !frame->isLocalFrame())
+    LocalFrame* frame = m_page->focusController().focusedFrame();
+    if (!frame)
         return nullptr;
 
-    Document* document = toLocalFrame(frame)->document();
+    Document* document = frame->document();
     if (!document)
         return nullptr;
 
