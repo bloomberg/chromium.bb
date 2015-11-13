@@ -896,6 +896,17 @@ bool Validator::ValidateGlobalNetworkConfiguration(
     }
   }
 
+  if (result->HasKey(kAllowOnlyPolicyNetworksToConnect)) {
+    // The kAllowOnlyPolicyNetworksToConnect field is only allowed in device
+    // policy.
+    if (onc_source_ != ::onc::ONC_SOURCE_DEVICE_POLICY) {
+      error_or_warning_found_ = true;
+      LOG(ERROR)
+          << "AllowOnlyPolicyNetworksToConnect only allowed in device policy.";
+      return false;
+    }
+  }
+
   // Ensure the list contains only legitimate network type identifiers.
   const char* const kValidNetworkTypeValues[] = {kCellular, kEthernet, kWiFi,
                                                  kWimax};
