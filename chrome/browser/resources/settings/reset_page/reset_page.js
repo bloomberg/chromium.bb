@@ -24,7 +24,7 @@ Polymer({
   properties: {
     allowPowerwash_: {
       type: Boolean,
-      value: loadTimeData.getBoolean('allowPowerwash')
+      value: cr.isChromeOS ? loadTimeData.getBoolean('allowPowerwash') : false
     },
   },
 

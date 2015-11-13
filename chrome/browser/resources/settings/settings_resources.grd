@@ -231,7 +231,8 @@
                  type="chrome_html" />
       <structure name="IDR_SETTINGS_RESET_PAGE_HTML"
                  file="reset_page/reset_page.html"
-                 type="chrome_html" />
+                 type="chrome_html"
+                 flattenhtml="true" />
       <structure name="IDR_SETTINGS_RESET_PAGE_JS"
                  file="reset_page/reset_page.js"
                  type="chrome_html" />
