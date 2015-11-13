@@ -1044,6 +1044,12 @@ void WebGLRenderingContextBase::initializeNewContext()
     m_maxTextureLevel = WebGLTexture::computeLevelCount(m_maxTextureSize, m_maxTextureSize, 1);
     m_maxCubeMapTextureSize = 0;
     webContext()->getIntegerv(GL_MAX_CUBE_MAP_TEXTURE_SIZE, &m_maxCubeMapTextureSize);
+    m_max3DTextureSize = 0;
+    m_max3DTextureLevel = 0;
+    if (isWebGL2OrHigher()) {
+        webContext()->getIntegerv(GL_MAX_3D_TEXTURE_SIZE, &m_max3DTextureSize);
+        m_max3DTextureLevel = WebGLTexture::computeLevelCount(m_max3DTextureSize, m_max3DTextureSize, m_max3DTextureSize);
+    }
     m_maxCubeMapTextureLevel = WebGLTexture::computeLevelCount(m_maxCubeMapTextureSize, m_maxCubeMapTextureSize, 1);
     m_maxRenderbufferSize = 0;
     webContext()->getIntegerv(GL_MAX_RENDERBUFFER_SIZE, &m_maxRenderbufferSize);
@@ -1941,7 +1947,7 @@ void WebGLRenderingContextBase::copyTexImage2D(GLenum target, GLint level, GLenu
         return;
     if (!validateTexFuncLevel("copyTexImage2D", target, level))
         return;
-    if (!validateTexFuncParameters("copyTexImage2D", NotTexSubImage2D, target, level, internalformat, width, height, border, internalformat, GL_UNSIGNED_BYTE))
+    if (!validateTexFuncParameters("copyTexImage2D", NotTexSubImage2D, target, level, internalformat, width, height, 1, border, internalformat, GL_UNSIGNED_BYTE))
         return;
     if (!validateSettableTexFormat("copyTexImage2D", internalformat))
         return;
@@ -4197,7 +4203,7 @@ bool WebGLRenderingContextBase::validateTexFunc(const char* functionName, TexIma
 
     if (internalformat == 0)
         internalformat = texture->getInternalFormat(target, level);
-    if (!validateTexFuncParameters(functionName, functionType, target, level, internalformat, width, height, border, format, type))
+    if (!validateTexFuncParameters(functionName, functionType, target, level, internalformat, width, height, 1, border, format, type))
         return false;
 
     if (functionType == NotTexSubImage2D) {
@@ -5641,10 +5647,10 @@ bool WebGLRenderingContextBase::validateTexFuncLevel(const char* functionName, G
 }
 
 bool WebGLRenderingContextBase::validateTexFuncDimensions(const char* functionName, TexImageFunctionType functionType,
-    GLenum target, GLint level, GLsizei width, GLsizei height)
+    GLenum target, GLint level, GLsizei width, GLsizei height, GLsizei depth)
 {
-    if (width < 0 || height < 0) {
-        synthesizeGLError(GL_INVALID_VALUE, functionName, "width or height < 0");
+    if (width < 0 || height < 0 || depth < 0) {
+        synthesizeGLError(GL_INVALID_VALUE, functionName, "width, height or depth < 0");
         return false;
     }
 
@@ -5672,6 +5678,15 @@ bool WebGLRenderingContextBase::validateTexFuncDimensions(const char* functionNa
             return false;
         }
         break;
+    case GL_TEXTURE_3D:
+    case GL_TEXTURE_2D_ARRAY:
+        if (isWebGL2OrHigher()) {
+            if (width > (m_max3DTextureSize >> level) || height > (m_max3DTextureSize >> level) || depth > (m_max3DTextureSize >> level)) {
+                synthesizeGLError(GL_INVALID_VALUE, functionName, "width, height or depth out of range");
+                return false;
+            }
+            break;
+        }
     default:
         synthesizeGLError(GL_INVALID_ENUM, functionName, "invalid target");
         return false;
@@ -5680,7 +5695,7 @@ bool WebGLRenderingContextBase::validateTexFuncDimensions(const char* functionNa
 }
 
 bool WebGLRenderingContextBase::validateTexFuncParameters(const char* functionName, TexImageFunctionType functionType, GLenum target,
-    GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type)
+    GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLsizei depth, GLint border, GLenum format, GLenum type)
 {
     // We absolutely have to validate the format and type combination.
     // The texImage2D entry points taking HTMLImage, etc. will produce
@@ -5688,7 +5703,7 @@ bool WebGLRenderingContextBase::validateTexFuncParameters(const char* functionNa
     if (!validateTexFuncFormatAndType(functionName, internalformat, format, type, level))
         return false;
 
-    if (!validateTexFuncDimensions(functionName, functionType, target, level, width, height))
+    if (!validateTexFuncDimensions(functionName, functionType, target, level, width, height, depth))
         return false;
 
     if (border) {
@@ -5952,7 +5967,7 @@ bool WebGLRenderingContextBase::validateCompressedTexFuncData(const char* functi
 
 bool WebGLRenderingContextBase::validateCompressedTexDimensions(const char* functionName, TexImageFunctionType functionType, GLenum target, GLint level, GLsizei width, GLsizei height, GLenum format)
 {
-    if (!validateTexFuncDimensions(functionName, functionType, target, level, width, height))
+    if (!validateTexFuncDimensions(functionName, functionType, target, level, width, height, 1))
         return false;
 
     bool widthValid = false;

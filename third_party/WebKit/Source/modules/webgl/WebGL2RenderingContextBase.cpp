@@ -144,10 +144,6 @@ void WebGL2RenderingContextBase::initializeNewContext()
     m_currentBooleanOcclusionQuery = nullptr;
     m_currentTransformFeedbackPrimitivesWrittenQuery = nullptr;
 
-    m_max3DTextureSize = 0;
-    webContext()->getIntegerv(GL_MAX_3D_TEXTURE_SIZE, &m_max3DTextureSize);
-    m_max3DTextureLevel = WebGLTexture::computeLevelCount(m_max3DTextureSize, m_max3DTextureSize, m_max3DTextureSize);
-
     m_maxArrayTextureLayers = 0;
     webContext()->getIntegerv(GL_MAX_ARRAY_TEXTURE_LAYERS, &m_maxArrayTextureLayers);
 
@@ -644,7 +640,7 @@ void WebGL2RenderingContextBase::texStorage3D(GLenum target, GLsizei levels, GLe
     tex->setTexStorageInfo(target, levels, internalformat, width, height, depth);
 }
 
-bool WebGL2RenderingContextBase::validateTexImage3D(const char* functionName, GLenum target, GLint level, GLenum internalformat, GLenum format, GLenum type)
+bool WebGL2RenderingContextBase::validateTexImage3D(const char* functionName, GLenum target, GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLsizei depth, GLint border, GLenum format, GLenum type)
 {
     switch (target) {
     case GL_TEXTURE_3D:
@@ -658,7 +654,7 @@ bool WebGL2RenderingContextBase::validateTexImage3D(const char* functionName, GL
     if (!validateTexFuncLevel(functionName, target, level))
         return false;
 
-    if (!validateTexFuncFormatAndType(functionName, internalformat, format, type, level))
+    if (!validateTexFuncParameters(functionName, NotTexSubImage2D, target, level, internalformat, width, height, depth, border, format, type))
         return false;
 
     return true;
@@ -666,7 +662,7 @@ bool WebGL2RenderingContextBase::validateTexImage3D(const char* functionName, GL
 
 void WebGL2RenderingContextBase::texImage3D(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLsizei depth, GLint border, GLenum format, GLenum type, DOMArrayBufferView* pixels)
 {
-    if (isContextLost() || !validateTexImage3D("texImage3D", target, level, internalformat, format, type)
+    if (isContextLost() || !validateTexImage3D("texImage3D", target, level, internalformat, width, height, depth, border, format, type)
         || !validateTexFuncData("texImage3D", level, width, height, format, type, pixels, NullAllowed))
         return;
 
