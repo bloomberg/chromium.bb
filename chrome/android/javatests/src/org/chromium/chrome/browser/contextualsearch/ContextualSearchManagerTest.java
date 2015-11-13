@@ -749,12 +749,12 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
         // TODO(pedrosimonetti): This is not reliable. Find a better approach.
         // We use the far right side (x == 0.9f) to prevent simulating a tap on top of an
         // existing long-press selection (the pins are a tap target). This might not work on RTL.
-        // We are using y == 0.2f because otherwise it will fail for long press cases.
+        // We are using y == 0.35f because otherwise it will fail for long press cases.
         // It might be better to get the position of the Panel and tap just about outside
         // the Panel. I suspect some Flaky tests are caused by this problem (ones involving
         // long press and trying to close with the bar peeking, with a long press selection
         // established).
-        tapBasePage(0.9f, 0.2f);
+        tapBasePage(0.9f, 0.35f);
         waitForPanelToCloseAndAssert();
     }
 

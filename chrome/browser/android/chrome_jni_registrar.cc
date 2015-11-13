@@ -22,7 +22,6 @@
 #include "chrome/browser/android/compositor/compositor_view.h"
 #include "chrome/browser/android/compositor/layer_title_cache.h"
 #include "chrome/browser/android/compositor/scene_layer/contextual_search_scene_layer.h"
-#include "chrome/browser/android/compositor/scene_layer/reader_mode_scene_layer.h"
 #include "chrome/browser/android/compositor/scene_layer/scene_layer.h"
 #include "chrome/browser/android/compositor/scene_layer/static_tab_scene_layer.h"
 #include "chrome/browser/android/compositor/scene_layer/tab_list_scene_layer.h"
@@ -314,7 +313,6 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"ProfileDownloader", RegisterProfileDownloader},
     {"ProfileSyncService", ProfileSyncServiceAndroid::Register},
     {"RapporServiceBridge", rappor::RegisterRapporServiceBridge},
-    {"ReaderModeSceneLayer", RegisterReaderModeSceneLayer},
     {"RecentlyClosedBridge", RecentlyClosedTabsBridge::Register},
     {"RecordCastAction", remote_media::RegisterRecordCastAction},
     {"RemoteMediaPlayerBridge",

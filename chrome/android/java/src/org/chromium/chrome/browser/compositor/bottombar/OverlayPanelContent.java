@@ -354,7 +354,7 @@ public class OverlayPanelContent {
         if (isVisible) {
             // If the last call to loadUrl was sepcified to be delayed, load it now.
             if (!TextUtils.isEmpty(mPendingUrl)) {
-                loadUrl(mPendingUrl, false);
+                loadUrl(mPendingUrl, true);
             }
 
             // The CVC is created with the search request, but if none was made we'll need

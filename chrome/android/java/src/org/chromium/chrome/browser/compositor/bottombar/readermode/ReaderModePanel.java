@@ -140,6 +140,8 @@ public class ReaderModePanel extends OverlayPanel {
             if (mManagerDelegate != null) {
                 setChromeActivity(mManagerDelegate.getChromeActivity());
                 initializeUiState();
+                // TODO(mdjones): Improve the base page movement API so that the default behavior
+                // is to hide the toolbar; this function call should not be necessary here.
                 updateBasePageTargetY();
             }
         }

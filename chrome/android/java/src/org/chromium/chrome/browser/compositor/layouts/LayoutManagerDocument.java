@@ -18,6 +18,7 @@ import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelContentViewDelegate;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManager;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel;
+import org.chromium.chrome.browser.compositor.bottombar.readermode.ReaderModePanel;
 import org.chromium.chrome.browser.compositor.layouts.components.LayoutTab;
 import org.chromium.chrome.browser.compositor.layouts.components.VirtualView;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
@@ -35,11 +36,7 @@ import org.chromium.chrome.browser.contextualsearch.ContextualSearchManagementDe
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchStaticEventFilter;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchStaticEventFilter.ContextualSearchTapHandler;
 import org.chromium.chrome.browser.device.DeviceClassManager;
-import org.chromium.chrome.browser.dom_distiller.ReaderModeEdgeSwipeHandler;
-import org.chromium.chrome.browser.dom_distiller.ReaderModePanel;
-import org.chromium.chrome.browser.dom_distiller.ReaderModeStaticEventFilter;
-import org.chromium.chrome.browser.dom_distiller.ReaderModeStaticEventFilter.ReaderModePanelSelector;
-import org.chromium.chrome.browser.dom_distiller.ReaderModeStaticEventFilter.ReaderModeTapHandler;
+import org.chromium.chrome.browser.dom_distiller.ReaderModeManagerDelegate;
 import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
@@ -60,8 +57,7 @@ import java.util.List;
  * driving all {@link Layout}s that get shown via the {@link LayoutManager}.
  */
 public class LayoutManagerDocument extends LayoutManager
-        implements ContextualSearchTapHandler, OverlayPanelContentViewDelegate,
-                ReaderModeTapHandler {
+        implements ContextualSearchTapHandler, OverlayPanelContentViewDelegate {
     // Layouts
     /** A {@link Layout} used for showing a normal web page. */
     protected final StaticLayout mStaticLayout;
@@ -77,17 +73,16 @@ public class LayoutManagerDocument extends LayoutManager
     /** A {@link GestureHandler} that will delegate all events to {@link #getActiveLayout()}. */
     protected final GestureHandler mGestureHandler;
     private final EdgeSwipeHandler mOverlayPanelEdgeSwipeHandler;
-    private final EdgeSwipeHandler mReaderModeEdgeSwipeHandler;
 
     // Internal State
     private final SparseArray<LayoutTab> mTabCache = new SparseArray<LayoutTab>();
     private final ContextualSearchPanel mContextualSearchPanel;
+    private final ReaderModePanel mReaderModePanel;
     private final OverlayPanelManager mOverlayPanelManager;
     /** A delegate for interacting with the Contextual Search manager. */
     protected ContextualSearchManagementDelegate mContextualSearchDelegate;
 
     @SuppressWarnings("unused") private TabModelSelectorTabObserver mTabModelSelectorTabObserver;
-    private final ReaderModePanelSelector mReaderModePanelSelector;
 
     /**
      * Creates a {@link LayoutManagerDocument} instance.
@@ -100,22 +95,10 @@ public class LayoutManagerDocument extends LayoutManager
 
         mOverlayPanelManager = new OverlayPanelManager();
         mContextualSearchPanel = new ContextualSearchPanel(context, this, mOverlayPanelManager);
-
-        mReaderModePanelSelector = new ReaderModePanelSelector() {
-            @Override
-            public ReaderModePanel getActiveReaderModePanel() {
-                if (mStaticLayout == null || !mStaticLayout.isActive()) return null;
-                ReaderModePanel panel = mStaticLayout.getReaderModePanel();
-                if (panel == null) return null;
-                if (!panel.isShowing() || !panel.isReaderModeCurrentlyAllowed()) return null;
-                return panel;
-            }
-        };
+        mReaderModePanel = new ReaderModePanel(context, this, mOverlayPanelManager, this);
 
         // Build Event Filter Handlers
         mOverlayPanelEdgeSwipeHandler = new OverlayPanelEdgeSwipeHandler(this);
-        mReaderModeEdgeSwipeHandler = new ReaderModeEdgeSwipeHandler(
-                mReaderModePanelSelector, this);
         mGestureHandler = new GestureHandlerLayoutDelegate(this);
         mToolbarSwipeHandler = new ToolbarSwipeHandler(this);
 
@@ -126,11 +109,8 @@ public class LayoutManagerDocument extends LayoutManager
                 context, this, mGestureHandler, mOverlayPanelManager);
         EventFilter contextualSearchStaticEventFilter = new ContextualSearchStaticEventFilter(
                 context, this, mOverlayPanelManager, mOverlayPanelEdgeSwipeHandler, this);
-        EventFilter readerModeStaticEventFilter = new ReaderModeStaticEventFilter(
-                context, this, mReaderModePanelSelector, mReaderModeEdgeSwipeHandler, this);
         EventFilter staticCascadeEventFilter = new CascadeEventFilter(context, this,
-                new EventFilter[] {readerModeStaticEventFilter, contextualSearchStaticEventFilter,
-                        mStaticEdgeEventFilter});
+                new EventFilter[] {contextualSearchStaticEventFilter, mStaticEdgeEventFilter});
 
         // Build Layouts
         mStaticLayout = new StaticLayout(
@@ -148,6 +128,7 @@ public class LayoutManagerDocument extends LayoutManager
     public void init(TabModelSelector selector, TabCreatorManager creator,
             TabContentManager content, ViewGroup androidContentContainer,
             ContextualSearchManagementDelegate contextualSearchDelegate,
+            ReaderModeManagerDelegate readerModeDelegate,
             DynamicResourceLoader dynamicResourceLoader) {
         // Save state
         mContextualSearchDelegate = contextualSearchDelegate;
@@ -168,6 +149,14 @@ public class LayoutManagerDocument extends LayoutManager
             contextualSearchDelegate.setContextualSearchPanel(mContextualSearchPanel);
         }
 
+        mReaderModePanel.setManagerDelegate(readerModeDelegate);
+        // TODO(mdjones): The manager should be responsible for passing the resource loader to all
+        // panels.
+        mReaderModePanel.setDynamicResourceLoader(dynamicResourceLoader);
+        if (readerModeDelegate != null) {
+            readerModeDelegate.setReaderModePanel(mReaderModePanel);
+        }
+
         mTabModelSelectorTabObserver = new TabModelSelectorTabObserver(selector) {
             @Override
             public void onContentChanged(Tab tab) {
@@ -186,7 +175,7 @@ public class LayoutManagerDocument extends LayoutManager
         };
 
         super.init(selector, creator, content, androidContentContainer, contextualSearchDelegate,
-                dynamicResourceLoader);
+                readerModeDelegate, dynamicResourceLoader);
     }
 
     @Override
@@ -320,6 +309,7 @@ public class LayoutManagerDocument extends LayoutManager
         if (getActiveLayout() == mContextualSearchLayout) return;
 
         OverlayPanel panel = mOverlayPanelManager.getActivePanel();
+        if (panel == null) return;
 
         // When not in compatibility mode, tapping on the Search Bar will expand the Panel,
         // therefore we must start showing the ContextualSearchLayout.
@@ -328,11 +318,11 @@ public class LayoutManagerDocument extends LayoutManager
         // ContextualSearchLayout. Coordinate with dtrainor@ to solve this. It might be
         // necessary for the ContextualSearchPanel to be able to trigger the display of the
         // ContextualSearchLayout.
-        if (panel != null && panel.supportsContextualSearchLayout()) {
+        if (panel.supportsContextualSearchLayout()) {
             showContextualSearchLayout(true);
         }
 
-        mOverlayPanelManager.getActivePanel().handleClick(time, x, y);
+        panel.handleClick(time, x, y);
     }
 
     @Override
@@ -452,11 +442,5 @@ public class LayoutManagerDocument extends LayoutManager
 
             return direction == ScrollDirection.LEFT || direction == ScrollDirection.RIGHT;
         }
-    }
-
-    @Override
-    public void handleTapReaderModeBar(long time, float x, float y) {
-        ReaderModePanel activePanel = mReaderModePanelSelector.getActiveReaderModePanel();
-        if (activePanel != null) activePanel.handleClick(time, x, y);
     }
 }

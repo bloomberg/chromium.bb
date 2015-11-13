@@ -473,7 +473,6 @@ public class ContextualSearchManager extends ContextualSearchObservable
             // If the user action was not a long-press, immediately start loading content.
             mShouldLoadDelayedSearch = false;
         }
-
         if (isTap && mPolicy.shouldPreviousTapResolve(
                 mNetworkCommunicator.getBasePageUrl())) {
             mNetworkCommunicator.startSearchTermResolutionRequest(
@@ -698,7 +697,6 @@ public class ContextualSearchManager extends ContextualSearchObservable
     public void handleSearchTermResolutionResponse(boolean isNetworkUnavailable, int responseCode,
             String searchTerm, String displayText, String alternateTerm, boolean doPreventPreload,
             int selectionStartAdjust, int selectionEndAdjust, String contextLanguage) {
-        if (!mSearchPanel.isShowing()) return;
 
         // Show an appropriate message for what to search for.
         String message;

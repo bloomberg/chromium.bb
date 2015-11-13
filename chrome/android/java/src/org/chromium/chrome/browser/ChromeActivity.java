@@ -75,7 +75,6 @@ import org.chromium.chrome.browser.contextualsearch.ContextualSearchManager.Cont
 import org.chromium.chrome.browser.datausage.DataUseTabUIManager;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.dom_distiller.DistilledPagePrefsView;
-import org.chromium.chrome.browser.dom_distiller.ReaderModeActivityDelegate;
 import org.chromium.chrome.browser.dom_distiller.ReaderModeManager;
 import org.chromium.chrome.browser.enhancedbookmarks.EnhancedBookmarkUtils;
 import org.chromium.chrome.browser.enhancedbookmarks.EnhancedBookmarksModel;
@@ -208,7 +207,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     private ChromeFullscreenManager mFullscreenManager;
     private CompositorViewHolder mCompositorViewHolder;
     private ContextualSearchManager mContextualSearchManager;
-    private ReaderModeActivityDelegate mReaderModeActivityDelegate;
+    private ReaderModeManager mReaderModeManager;
     private SnackbarManager mSnackbarManager;
     private LoFiBarPopupController mLoFiBarPopupController;
     private DataUseSnackbarController mDataUseSnackbarController;
@@ -447,7 +446,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         }
 
         if (ReaderModeManager.isEnabled(this)) {
-            mReaderModeActivityDelegate = new ReaderModeActivityDelegate(this);
+            mReaderModeManager = new ReaderModeManager(getTabModelSelector(), this);
         }
 
         TraceEvent.end("ChromeActivity:CompositorInitialization");
@@ -753,9 +752,9 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     @SuppressLint("NewApi")
     @Override
     protected final void onDestroy() {
-        if (mReaderModeActivityDelegate != null) {
-            mReaderModeActivityDelegate.destroy();
-            mReaderModeActivityDelegate = null;
+        if (mReaderModeManager != null) {
+            mReaderModeManager.destroy();
+            mReaderModeManager = null;
         }
 
         if (mContextualSearchManager != null) {
@@ -1200,14 +1199,6 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     }
 
     /**
-     * @return A {@link ReaderModeActivityDelegate} instance or {@code null} if reader mode is
-     *         not enabled.
-     */
-    public ReaderModeActivityDelegate getReaderModeActivityDelegate() {
-        return mReaderModeActivityDelegate;
-    }
-
-    /**
      * Create a full-screen manager to be used by this activity.
      * @param controlContainer The control container that will be controlled by the full-screen
      *                         manager.
@@ -1259,12 +1250,6 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             mContextualSearchManager.setSearchContentViewDelegate(layoutManager);
         }
 
-        if (mReaderModeActivityDelegate != null) {
-            mReaderModeActivityDelegate.initialize(contentContainer);
-            mReaderModeActivityDelegate.setDynamicResourceLoader(
-                    mCompositorViewHolder.getDynamicResourceLoader());
-        }
-
         layoutManager.addSceneChangeObserver(this);
         mCompositorViewHolder.setLayoutManager(layoutManager);
         mCompositorViewHolder.setFocusable(false);
@@ -1272,7 +1257,8 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         mCompositorViewHolder.setFullscreenHandler(mFullscreenManager);
         mCompositorViewHolder.setUrlBar(urlBar);
         mCompositorViewHolder.onFinishNativeInitialization(getTabModelSelector(), this,
-                getTabContentManager(), contentContainer, mContextualSearchManager);
+                getTabContentManager(), contentContainer, mContextualSearchManager,
+                mReaderModeManager);
 
         if (controlContainer != null
                 && DeviceClassManager.enableToolbarSwipe(FeatureUtilities.isDocumentMode(this))) {
@@ -1289,7 +1275,10 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
 
     @Override
     public void onOrientationChange(int orientation) {
+        // TODO(mdjones): Orientation change for panels should not be handled here. The event
+        // should probably be passed to the OverlayPanelManager.
         if (mContextualSearchManager != null) mContextualSearchManager.onOrientationChange();
+        if (mReaderModeManager != null) mReaderModeManager.onOrientationChange();
         if (mToolbarManager != null) mToolbarManager.onOrientationChange();
     }
 

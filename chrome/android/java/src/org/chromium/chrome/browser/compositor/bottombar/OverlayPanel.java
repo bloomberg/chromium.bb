@@ -64,7 +64,12 @@ public class OverlayPanel extends ContextualSearchPanelAnimation
         OPTOUT,
         CLOSE_BUTTON,
         SUPPRESS,
-        UNSUPPRESS;
+        UNSUPPRESS,
+        FULLSCREEN_ENTERED,
+        FULLSCREEN_EXITED,
+        INFOBAR_SHOWN,
+        INFOBAR_HIDDEN,
+        CONTENT_CHANGED;
     }
 
     /**

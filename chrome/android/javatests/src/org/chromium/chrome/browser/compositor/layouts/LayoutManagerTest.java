@@ -131,7 +131,7 @@ public class LayoutManagerTest extends InstrumentationTestCase
                     }
                 });
         mManager = mManagerPhone;
-        mManager.init(mTabModelSelector, null, null, container, null, null);
+        mManager.init(mTabModelSelector, null, null, container, null, null, null);
         initializeMotionEvent();
     }
 
