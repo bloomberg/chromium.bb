@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <string>
 #include <unordered_map>
 
 #include "base/gtest_prod_util.h"
@@ -51,6 +52,12 @@ class DataUseUITabModel : public KeyedService {
   // IO thread. The tab could either have been closed or evicted from the memory
   // by Android.
   void ReportTabClosure(int32_t tab_id);
+
+  // Reports a custom tab navigation to the DataUseTabModel on the IO thread.
+  // Includes the |tab_id|, |url|, and |package_name| for the navigation.
+  void ReportCustomTabInitialNavigation(int32_t tab_id,
+                                        const std::string& url,
+                                        const std::string& package_name);
 
   // Returns true if data use tracking has been started for the tab with id
   // |tab_id|. Calling this function resets the state of the tab.

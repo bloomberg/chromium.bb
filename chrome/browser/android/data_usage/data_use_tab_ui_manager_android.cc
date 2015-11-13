@@ -4,7 +4,13 @@
 
 #include "chrome/browser/android/data_usage/data_use_tab_ui_manager_android.h"
 
+#include <string>
+
 #include "base/android/jni_android.h"
+#include "base/android/jni_string.h"
+#include "chrome/browser/android/data_usage/data_use_ui_tab_model.h"
+#include "chrome/browser/android/data_usage/data_use_ui_tab_model_factory.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
 #include "jni/DataUseTabUIManager_jni.h"
 
@@ -13,9 +19,11 @@ jboolean CheckDataUseTrackingStarted(JNIEnv* env,
                                      const JavaParamRef<jclass>& clazz,
                                      jint tab_id,
                                      const JavaParamRef<jobject>& jprofile) {
-  // TODO(megjablon): Get the DataUseTabUIManager which is a keyed service and
-  // ask it if data use tracking has started.
-  // Profile* profile = ProfileAndroid::FromProfileAndroid(jprofile);
+  Profile* profile = ProfileAndroid::FromProfileAndroid(jprofile);
+  chrome::android::DataUseUITabModel* data_use_ui_tab_model =
+      chrome::android::DataUseUITabModelFactory::GetForBrowserContext(profile);
+  if (data_use_ui_tab_model)
+    return data_use_ui_tab_model->HasDataUseTrackingStarted(tab_id);
   return false;
 }
 
@@ -24,9 +32,11 @@ jboolean CheckDataUseTrackingEnded(JNIEnv* env,
                                    const JavaParamRef<jclass>& clazz,
                                    jint tab_id,
                                    const JavaParamRef<jobject>& jprofile) {
-  // TODO(megjablon): Get the DataUseTabUIManager which is a keyed service and
-  // ask it if data use tracking has ended.
-  // Profile* profile = ProfileAndroid::FromProfileAndroid(jprofile);
+  Profile* profile = ProfileAndroid::FromProfileAndroid(jprofile);
+  chrome::android::DataUseUITabModel* data_use_ui_tab_model =
+      chrome::android::DataUseUITabModelFactory::GetForBrowserContext(profile);
+  if (data_use_ui_tab_model)
+    return data_use_ui_tab_model->HasDataUseTrackingEnded(tab_id);
   return false;
 }
 
@@ -35,10 +45,16 @@ void OnCustomTabInitialNavigation(JNIEnv* env,
                                   const JavaParamRef<jclass>& clazz,
                                   jint tab_id,
                                   const JavaParamRef<jstring>& url,
-                                  const JavaParamRef<jstring>& packageName,
+                                  const JavaParamRef<jstring>& package_name,
                                   const JavaParamRef<jobject>& jprofile) {
-  // TODO(megjablon): Get the DataUseTabUIManager which is a keyed service and
-  // tell it about the custom tab package.
+  Profile* profile = ProfileAndroid::FromProfileAndroid(jprofile);
+  chrome::android::DataUseUITabModel* data_use_ui_tab_model =
+      chrome::android::DataUseUITabModelFactory::GetForBrowserContext(profile);
+  if (data_use_ui_tab_model) {
+    data_use_ui_tab_model->ReportCustomTabInitialNavigation(
+        tab_id, ConvertJavaStringToUTF8(env, url),
+        ConvertJavaStringToUTF8(env, package_name));
+  }
 }
 
 bool RegisterDataUseTabUIManager(JNIEnv* env) {

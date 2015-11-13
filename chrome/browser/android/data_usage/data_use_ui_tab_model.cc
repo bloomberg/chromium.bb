@@ -47,6 +47,13 @@ void DataUseUITabModel::ReportTabClosure(int32_t tab_id) {
   tab_events_.erase(it);
 }
 
+void DataUseUITabModel::ReportCustomTabInitialNavigation(
+    int32_t tab_id,
+    const std::string& url,
+    const std::string& package_name) {
+  // TODO(tbansal): Post to DataUseTabModel on IO thread.
+}
+
 void DataUseUITabModel::OnTrackingStarted(int32_t tab_id) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   DCHECK(thread_checker_.CalledOnValidThread());
