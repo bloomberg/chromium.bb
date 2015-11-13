@@ -30,7 +30,10 @@ function waitUntilDeviceAvailable() {
     if (availability.value) {
       sendResult(true, '');
     } else {
-      sendResult(false, 'device unavailable');
+      availability.onchange = function(newAvailability) {
+        if (newAvailability)
+          sendResult(true, '');
+      }
     }
   }).catch(function(){
     sendResult(false, 'got error');
