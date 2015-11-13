@@ -25,7 +25,6 @@ FontFallbackIterator::FontFallbackIterator(const FontDescription& description, P
     , m_currentFontDataIndex(0)
     , m_segmentedIndex(0)
     , m_fallbackStage(FontGroupFonts)
-    , m_currentFamily(&description.family())
 {
 }
 
@@ -102,13 +101,8 @@ const FontDataRange FontFallbackIterator::next(const Vector<UChar32>& hintList)
     if (!fontData->isSegmented()) {
         // Skip forward to the next font family for the next call to next().
         m_currentFontDataIndex++;
-        m_currentFamily = m_currentFamily->next();
         if (!fontData->isLoading()) {
             RefPtr<SimpleFontData> nonSegmented = const_cast<SimpleFontData*>(toSimpleFontData(fontData));
-            // TODO crbug.com/546465: Investigate if we might need to do
-            // something like
-            // toSimpleFontData(fontData)->customFontData()->beginLoadIfNeeded()
-            // here to trigger loading.
             return FontDataRange(nonSegmented);
         }
         return next(hintList);
@@ -125,18 +119,17 @@ const FontDataRange FontFallbackIterator::next(const Vector<UChar32>& hintList)
     ASSERT(m_segmentedIndex < segmented->numRanges());
     FontDataRange currentRange = segmented->rangeAt(m_segmentedIndex);
     m_segmentedIndex++;
-    AtomicString segmentedFamily = m_currentFamily->family();
 
     if (m_segmentedIndex == segmented->numRanges()) {
         // Switch from iterating over a segmented face to the next family from
         // the font-family: group of fonts.
         m_fallbackStage = FontGroupFonts;
         m_currentFontDataIndex++;
-        m_currentFamily = m_currentFamily->next();
     }
 
     if (rangeContributesForHint(hintList, currentRange)) {
-        willUseRange(segmentedFamily, currentRange);
+        if (currentRange.fontData()->customFontData())
+            currentRange.fontData()->customFontData()->beginLoadIfNeeded();
         if (!currentRange.fontData()->isLoading())
             return currentRange;
         m_loadingCustomFontForRanges.append(currentRange);

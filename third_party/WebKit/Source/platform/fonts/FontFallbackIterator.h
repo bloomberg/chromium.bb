@@ -63,7 +63,6 @@ private:
     };
 
     FallbackStage m_fallbackStage;
-    const FontFamily* m_currentFamily;
     HashMap<UChar32, RefPtr<SimpleFontData>> m_visitedSystemFonts;
     Vector<FontDataRange> m_loadingCustomFontForRanges;
 };
