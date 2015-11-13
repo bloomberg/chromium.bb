@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_vector.h"
 #include "base/metrics/histogram.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/rand_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
@@ -23,12 +24,6 @@
 #include "third_party/libyuv/include/libyuv.h"
 #include "third_party/webrtc/system_wrappers/include/tick_util.h"
 
-#define NOTIFY_ERROR(x)                             \
-  do {                                              \
-    DLOG(ERROR) << "calling NotifyError(): " << x;  \
-    NotifyError(x);                                 \
-  } while (0)
-
 namespace content {
 
 namespace {
@@ -36,7 +31,8 @@ namespace {
 // Translate from webrtc::VideoCodecType and webrtc::VideoCodec to
 // media::VideoCodecProfile.
 media::VideoCodecProfile WebRTCVideoCodecToVideoCodecProfile(
-    webrtc::VideoCodecType type, const webrtc::VideoCodec* codec_settings) {
+    webrtc::VideoCodecType type,
+    const webrtc::VideoCodec* codec_settings) {
   DCHECK_EQ(type, codec_settings->codecType);
   switch (type) {
     case webrtc::kVideoCodecVP8:
@@ -158,6 +154,11 @@ class RTCVideoEncoder::Impl
 
   ~Impl() override;
 
+  // Logs the |error| and |str| sent from |location| and NotifyError()s forward.
+  void LogAndNotifyError(const tracked_objects::Location& location,
+                         const std::string& str,
+                         media::VideoEncodeAccelerator::Error error);
+
   // Perform encoding on an input frame from the input queue.
   void EncodeOneFrame();
 
@@ -168,6 +169,9 @@ class RTCVideoEncoder::Impl
   // Set up/signal |async_waiter_| and |async_retval_|; see declarations below.
   void RegisterAsyncWaiter(base::WaitableEvent* waiter, int32_t* retval);
   void SignalAsyncWaiter(int32_t retval);
+
+  // Checks if the bitrate would overflow when passing from kbps to bps.
+  bool IsBitrateTooHigh(uint32 bitrate);
 
   base::ThreadChecker thread_checker_;
 
@@ -247,20 +251,20 @@ void RTCVideoEncoder::Impl::CreateAndInitializeVEA(
   RegisterAsyncWaiter(async_waiter, async_retval);
 
   // Check for overflow converting bitrate (kilobits/sec) to bits/sec.
-  if (bitrate > kuint32max / 1000) {
-    NOTIFY_ERROR(media::VideoEncodeAccelerator::kInvalidArgumentError);
+  if (IsBitrateTooHigh(bitrate))
     return;
-  }
 
   video_encoder_ = gpu_factories_->CreateVideoEncodeAccelerator().Pass();
   if (!video_encoder_) {
-    NOTIFY_ERROR(media::VideoEncodeAccelerator::kPlatformFailureError);
+    LogAndNotifyError(FROM_HERE, "Error creating VideoEncodeAccelerator",
+                      media::VideoEncodeAccelerator::kPlatformFailureError);
     return;
   }
   input_visible_size_ = input_visible_size;
   if (!video_encoder_->Initialize(media::PIXEL_FORMAT_I420, input_visible_size_,
                                   profile, bitrate * 1000, this)) {
-    NOTIFY_ERROR(media::VideoEncodeAccelerator::kInvalidArgumentError);
+    LogAndNotifyError(FROM_HERE, "Error initializing video_encoder",
+                      media::VideoEncodeAccelerator::kInvalidArgumentError);
     return;
   }
 }
@@ -325,10 +329,8 @@ void RTCVideoEncoder::Impl::RequestEncodingParametersChange(uint32 bitrate,
   DCHECK(thread_checker_.CalledOnValidThread());
 
   // Check for overflow converting bitrate (kilobits/sec) to bits/sec.
-  if (bitrate > kuint32max / 1000) {
-    NOTIFY_ERROR(media::VideoEncodeAccelerator::kInvalidArgumentError);
+  if (IsBitrateTooHigh(bitrate))
     return;
-  }
 
   if (video_encoder_)
     video_encoder_->RequestEncodingParametersChange(bitrate * 1000, framerate);
@@ -359,9 +361,8 @@ void RTCVideoEncoder::Impl::RequireBitstreamBuffers(
         gpu_factories_->CreateSharedMemory(media::VideoFrame::AllocationSize(
             media::PIXEL_FORMAT_I420, input_coded_size));
     if (!shm) {
-      DLOG(ERROR) << "Impl::RequireBitstreamBuffers(): "
-                     "failed to create input buffer " << i;
-      NOTIFY_ERROR(media::VideoEncodeAccelerator::kPlatformFailureError);
+      LogAndNotifyError(FROM_HERE, "failed to create input buffer ",
+                        media::VideoEncodeAccelerator::kPlatformFailureError);
       return;
     }
     input_buffers_.push_back(shm.release());
@@ -372,9 +373,8 @@ void RTCVideoEncoder::Impl::RequireBitstreamBuffers(
     scoped_ptr<base::SharedMemory> shm =
         gpu_factories_->CreateSharedMemory(output_buffer_size);
     if (!shm) {
-      DLOG(ERROR) << "Impl::RequireBitstreamBuffers(): "
-                     "failed to create output buffer " << i;
-      NOTIFY_ERROR(media::VideoEncodeAccelerator::kPlatformFailureError);
+      LogAndNotifyError(FROM_HERE, "failed to create output buffer",
+                        media::VideoEncodeAccelerator::kPlatformFailureError);
       return;
     }
     output_buffers_.push_back(shm.release());
@@ -400,16 +400,14 @@ void RTCVideoEncoder::Impl::BitstreamBufferReady(int32 bitstream_buffer_id,
 
   if (bitstream_buffer_id < 0 ||
       bitstream_buffer_id >= static_cast<int>(output_buffers_.size())) {
-    DLOG(ERROR) << "Impl::BitstreamBufferReady(): invalid bitstream_buffer_id="
-                << bitstream_buffer_id;
-    NOTIFY_ERROR(media::VideoEncodeAccelerator::kPlatformFailureError);
+    LogAndNotifyError(FROM_HERE, "invalid bitstream_buffer_id",
+                      media::VideoEncodeAccelerator::kPlatformFailureError);
     return;
   }
   base::SharedMemory* output_buffer = output_buffers_[bitstream_buffer_id];
   if (payload_size > output_buffer->mapped_size()) {
-    DLOG(ERROR) << "Impl::BitstreamBufferReady(): invalid payload_size="
-                << payload_size;
-    NOTIFY_ERROR(media::VideoEncodeAccelerator::kPlatformFailureError);
+    LogAndNotifyError(FROM_HERE, "invalid payload_size",
+                      media::VideoEncodeAccelerator::kPlatformFailureError);
     return;
   }
   output_buffers_free_count_--;
@@ -445,7 +443,6 @@ void RTCVideoEncoder::Impl::BitstreamBufferReady(int32 bitstream_buffer_id,
 
 void RTCVideoEncoder::Impl::NotifyError(
     media::VideoEncodeAccelerator::Error error) {
-  DVLOG(3) << "Impl::NotifyError(): error=" << error;
   DCHECK(thread_checker_.CalledOnValidThread());
   int32_t retval;
   switch (error) {
@@ -468,6 +465,19 @@ void RTCVideoEncoder::Impl::NotifyError(
 }
 
 RTCVideoEncoder::Impl::~Impl() { DCHECK(!video_encoder_); }
+
+void RTCVideoEncoder::Impl::LogAndNotifyError(
+    const tracked_objects::Location& location,
+    const std::string& str,
+    media::VideoEncodeAccelerator::Error error) {
+  static const char* kErrorNames[] = {
+      "kIllegalStateError", "kInvalidArgumentError", "kPlatformFailureError"};
+  static_assert(
+      arraysize(kErrorNames) == media::VideoEncodeAccelerator::kErrorMax + 1,
+      "Different number of errors and textual descriptions");
+  DLOG(ERROR) << location.ToString() << kErrorNames[error] << " - " << str;
+  NotifyError(error);
+}
 
 void RTCVideoEncoder::Impl::EncodeOneFrame() {
   DVLOG(3) << "Impl::EncodeOneFrame()";
@@ -502,8 +512,8 @@ void RTCVideoEncoder::Impl::EncodeOneFrame() {
         input_buffer->mapped_size(), input_buffer->handle(), 0,
         base::TimeDelta());
     if (!frame.get()) {
-      DLOG(ERROR) << "Impl::EncodeOneFrame(): failed to create frame";
-      NOTIFY_ERROR(media::VideoEncodeAccelerator::kPlatformFailureError);
+      LogAndNotifyError(FROM_HERE, "failed to create frame",
+                        media::VideoEncodeAccelerator::kPlatformFailureError);
       return;
     }
     // Do a strided copy of the input frame to match the input requirements for
@@ -522,8 +532,8 @@ void RTCVideoEncoder::Impl::EncodeOneFrame() {
                          frame->data(media::VideoFrame::kVPlane),
                          frame->stride(media::VideoFrame::kVPlane),
                          next_frame->width(), next_frame->height())) {
-      DLOG(ERROR) << "Failed to copy buffer";
-      NOTIFY_ERROR(media::VideoEncodeAccelerator::kPlatformFailureError);
+      LogAndNotifyError(FROM_HERE, "Failed to copy buffer",
+                        media::VideoEncodeAccelerator::kPlatformFailureError);
       return;
     }
   }
@@ -561,13 +571,13 @@ void RTCVideoEncoder::Impl::SignalAsyncWaiter(int32_t retval) {
   async_waiter_ = NULL;
 }
 
-#undef NOTIFY_ERROR
-
-////////////////////////////////////////////////////////////////////////////////
-//
-// RTCVideoEncoder
-//
-////////////////////////////////////////////////////////////////////////////////
+bool RTCVideoEncoder::Impl::IsBitrateTooHigh(uint32 bitrate) {
+  if (base::IsValueInRangeForNumericType<uint32>(bitrate * UINT64_C(1000)))
+    return false;
+  LogAndNotifyError(FROM_HERE, "Overflow converting bitrate from kbps to bps",
+                    media::VideoEncodeAccelerator::kInvalidArgumentError);
+  return true;
+}
 
 RTCVideoEncoder::RTCVideoEncoder(
     webrtc::VideoCodecType type,

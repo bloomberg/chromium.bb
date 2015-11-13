@@ -89,7 +89,6 @@ class CONTENT_EXPORT RTCVideoDecoder
   void NotifyError(media::VideoDecodeAccelerator::Error error) override;
 
  private:
-  class SHMBuffer;
   // Metadata of a bitstream buffer.
   struct BufferData {
     BufferData(int32 bitstream_buffer_id,
@@ -125,7 +124,7 @@ class CONTENT_EXPORT RTCVideoDecoder
 
   // Saves a WebRTC buffer in |decode_buffers_| for decode.
   void SaveToDecodeBuffers_Locked(const webrtc::EncodedImage& input_image,
-                                  scoped_ptr<SHMBuffer> shm_buffer,
+                                  scoped_ptr<base::SharedMemory> shm_buffer,
                                   const BufferData& buffer_data);
 
   // Saves a WebRTC buffer in |pending_buffers_| waiting for SHM available.
@@ -163,10 +162,10 @@ class CONTENT_EXPORT RTCVideoDecoder
   // Gets a shared-memory segment of at least |min_size| bytes from
   // |available_shm_segments_|. Returns NULL if there is no buffer or the
   // buffer is not big enough.
-  scoped_ptr<SHMBuffer> GetSHM_Locked(size_t min_size);
+  scoped_ptr<base::SharedMemory> GetSHM_Locked(size_t min_size);
 
   // Returns a shared-memory segment to the available pool.
-  void PutSHM_Locked(scoped_ptr<SHMBuffer> shm_buffer);
+  void PutSHM_Locked(scoped_ptr<base::SharedMemory> shm_buffer);
 
   // Allocates |count| shared memory buffers of |size| bytes.
   void CreateSHM(size_t count, size_t size);
@@ -212,7 +211,7 @@ class CONTENT_EXPORT RTCVideoDecoder
   // The size of the incoming video frames.
   gfx::Size frame_size_;
 
-  media::GpuVideoAcceleratorFactories* factories_;
+  media::GpuVideoAcceleratorFactories* const factories_;
 
   // The texture target used for decoded pictures.
   uint32 decoder_texture_target_;
@@ -222,7 +221,7 @@ class CONTENT_EXPORT RTCVideoDecoder
 
   // A map from bitstream buffer IDs to bitstream buffers that are being
   // processed by VDA. The map owns SHM buffers.
-  std::map<int32, SHMBuffer*> bitstream_buffers_in_decoder_;
+  std::map<int32, base::SharedMemory*> bitstream_buffers_in_decoder_;
 
   // A map from picture buffer IDs to texture-backed picture buffers.
   std::map<int32, media::PictureBuffer> assigned_picture_buffers_;
@@ -255,15 +254,15 @@ class CONTENT_EXPORT RTCVideoDecoder
   // round-trip to the browser process, we keep allocation out of the
   // steady-state of the decoder. The vector owns SHM buffers. Guarded by
   // |lock_|.
-  std::vector<SHMBuffer*> available_shm_segments_;
+  std::vector<base::SharedMemory*> available_shm_segments_;
 
   // A queue storing WebRTC encoding images (and their metadata) that are
   // waiting for the shared memory. Guarded by |lock_|.
-  std::deque<std::pair<webrtc::EncodedImage, BufferData> > pending_buffers_;
+  std::deque<std::pair<webrtc::EncodedImage, BufferData>> pending_buffers_;
 
   // A queue storing buffers (and their metadata) that will be sent to VDA for
   // decode. The queue owns SHM buffers. Guarded by |lock_|.
-  std::deque<std::pair<SHMBuffer*, BufferData> > decode_buffers_;
+  std::deque<std::pair<base::SharedMemory*, BufferData>> decode_buffers_;
 
   // The id that will be given to the next bitstream buffer. Guarded by |lock_|.
   int32 next_bitstream_buffer_id_;
