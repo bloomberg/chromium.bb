@@ -91,6 +91,8 @@ class PowerMetric(Metric):
     self._StopInternal()
 
   def Close(self):
+    # TODO(rnephew): Remove when crbug.com/553601 is solved.
+    logging.info('Closing power monitors')
     if self._platform.IsMonitoringPower():
       self._platform.StopMonitoringPower()
 
