@@ -25,6 +25,7 @@ public class ContextualSearchPanelMetrics {
     private boolean mIsSerpNavigation;
     private boolean mWasActivatedByTap;
     private boolean mIsSearchPanelFullyPreloaded;
+    private boolean mWasIconSpriteAnimated;
     private long mSearchStartTimeNs;
     private long mSearchViewStartTimeNs;
 
@@ -65,6 +66,9 @@ public class ContextualSearchPanelMetrics {
             } else {
                 ContextualSearchUma.logResultsSeen(mWasSearchContentViewSeen, mWasActivatedByTap);
             }
+
+            ContextualSearchUma.logIconSpriteAnimated(mWasIconSpriteAnimated,
+                    mWasSearchContentViewSeen, mWasActivatedByTap);
         }
         if (isStartingSearch) {
             mSearchStartTimeNs = System.nanoTime();
@@ -151,6 +155,13 @@ public class ContextualSearchPanelMetrics {
      */
     public void setIsPromoActive(boolean shown) {
         mIsPromoActive = shown;
+    }
+
+    /**
+     * @param wasIconSpriteAnimated Whether the search provider icon sprite was animated.
+     */
+    public void setWasIconSpriteAnimated(boolean wasIconSpriteAnimated) {
+        mWasIconSpriteAnimated = wasIconSpriteAnimated;
     }
 
     /**

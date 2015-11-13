@@ -41533,6 +41533,18 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Search.ContextualSearchIconSpriteAnimated"
+    enum="ContextualSearchIconSpriteAnimated">
+  <owner>donnd@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <summary>
+    Whether search results were seen, whether the search provider icon sprite
+    was animated when the panel first appeared, and the triggering gesture. If
+    animation is disabled due to a field trial, we still log
+    &quot;animated&quot; if the animation would have run otherwise.
+  </summary>
+</histogram>
+
 <histogram name="Search.ContextualSearchShouldTranslate"
     enum="ContextualSearchShouldTranslate">
   <owner>donnd@chromium.org</owner>
@@ -56023,6 +56035,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="17" label="Search web for..."/>
   <int value="18" label="Save media as"/>
   <int value="19" label="Share image"/>
+</enum>
+
+<enum name="ContextualSearchIconSpriteAnimated" type="int">
+  <int value="0" label="Animated, seen, from tap"/>
+  <int value="1" label="Animated, not seen, from tap"/>
+  <int value="2" label="Not animated, seen, from tap"/>
+  <int value="3" label="Not animated, not seen, from tap"/>
+  <int value="4" label="Animated, seen, from long press"/>
+  <int value="5" label="Animated, not seen, from long press"/>
+  <int value="6" label="Not animated, seen, from long press"/>
+  <int value="7" label="Not animated, not seen, from long press"/>
 </enum>
 
 <enum name="ContextualSearchShouldTranslate" type="int">

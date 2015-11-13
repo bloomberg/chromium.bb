@@ -333,7 +333,7 @@ class ContextualSearchPolicy {
      * @return Whether the search provider icon should be animated.
      */
     boolean shouldAnimateSearchProviderIcon(SelectionType selectionType, boolean isShowing) {
-        if (isShowing || ContextualSearchFieldTrial.areExtraSearchBarAnimationsDisabled()) {
+        if (isShowing) {
             return false;
         }
 

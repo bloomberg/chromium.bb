@@ -518,7 +518,8 @@ public class ContextualSearchManager extends ContextualSearchObservable
         // peekPanel(). If the sprite should be animated, the animation will begin after the panel
         // finishes peeking. If it should not be animated, the icon will be drawn right away.
         mSearchPanel.setShouldAnimateIconSprite(mPolicy.shouldAnimateSearchProviderIcon(
-                mSelectionController.getSelectionType(), mSearchPanel.isShowing()));
+                mSelectionController.getSelectionType(), mSearchPanel.isShowing()),
+                ContextualSearchFieldTrial.areExtraSearchBarAnimationsDisabled());
 
         // Note: now that the contextual search has properly started, set the promo involvement.
         if (mPolicy.isPromoAvailable()) {

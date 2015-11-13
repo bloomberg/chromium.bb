@@ -221,7 +221,10 @@ public class ContextualSearchPanel extends OverlayPanel {
                 getPeekPromoControl().animateAppearance();
             }
             if (getIconSpriteControl().shouldAnimateAppearance()) {
+                mPanelMetrics.setWasIconSpriteAnimated(true);
                 getIconSpriteControl().animateApperance();
+            } else {
+                mPanelMetrics.setWasIconSpriteAnimated(false);
             }
         }
 
@@ -677,9 +680,13 @@ public class ContextualSearchPanel extends OverlayPanel {
 
     /**
      * @param shouldAnimateIconSprite Whether the search provider icon sprite should be animated.
+     * @param isAnimationDisabledByTrial Whether animating the search provider icon is disabled by a
+     *                                   field trial.
      */
-    public void setShouldAnimateIconSprite(boolean shouldAnimateIconSprite) {
-        getIconSpriteControl().setShouldAnimateAppearance(shouldAnimateIconSprite);
+    public void setShouldAnimateIconSprite(boolean shouldAnimateIconSprite,
+            boolean isAnimationDisabledByTrial) {
+        getIconSpriteControl().setShouldAnimateAppearance(shouldAnimateIconSprite,
+                isAnimationDisabledByTrial);
     }
 
     // ============================================================================================
