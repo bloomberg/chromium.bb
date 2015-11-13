@@ -7,7 +7,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "ios/web/public/test/web_test_util.h"
-#include "ios/web/test/web_test.h"
+#import "ios/web/test/web_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
 

@@ -7,7 +7,7 @@
 #include "base/mac/scoped_nsobject.h"
 #import "ios/web/public/test/test_web_client.h"
 #include "ios/web/public/test/web_test_util.h"
-#include "ios/web/test/web_test.h"
+#import "ios/web/test/web_test.h"
 #import "ios/web/test/wk_web_view_crash_utils.h"
 
 namespace {

@@ -7,7 +7,7 @@
 #include "ios/web/public/test/web_test_util.h"
 #import "ios/web/public/web_state/js/crw_js_injection_manager.h"
 #import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
-#include "ios/web/test/web_test.h"
+#import "ios/web/test/web_test.h"
 #import "testing/gtest_mac.h"
 
 // Testing class of JsInjectioManager that has no dependencies.

@@ -8,7 +8,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/test/ios/wait_util.h"
 #include "ios/web/public/web_thread.h"
-#include "ios/web/test/web_test.h"
+#import "ios/web/test/web_test.h"
 #import "ios/web/web_state/wk_web_view_security_util.h"
 #include "net/base/test_data_directory.h"
 #include "net/cert/mock_cert_verifier.h"

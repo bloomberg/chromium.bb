@@ -25,7 +25,7 @@
 #import "ios/web/public/web_state/ui/crw_content_view.h"
 #import "ios/web/public/web_state/ui/crw_web_view_content_view.h"
 #include "ios/web/public/web_state/url_verification_constants.h"
-#include "ios/web/test/web_test.h"
+#import "ios/web/test/web_test.h"
 #import "ios/web/test/wk_web_view_crash_utils.h"
 #include "ios/web/web_state/blocked_popup_info.h"
 #import "ios/web/web_state/js/crw_js_invoke_parameter_queue.h"

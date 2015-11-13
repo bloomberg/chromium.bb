@@ -9,7 +9,7 @@
 #include "ios/web/public/test/test_browser_state.h"
 #import "ios/web/public/test/test_web_client.h"
 #include "ios/web/public/test/web_test_util.h"
-#include "ios/web/test/web_test.h"
+#import "ios/web/test/web_test.h"
 #include "third_party/ocmock/OCMock/OCMock.h"
 #include "third_party/ocmock/gtest_support.h"
 

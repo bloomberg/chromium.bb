@@ -15,7 +15,7 @@
 #import "ios/web/public/web_state/js/crw_js_injection_manager.h"
 #import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
 #import "ios/web/test/crw_fake_web_controller_observer.h"
-#include "ios/web/test/web_test.h"
+#import "ios/web/test/web_test.h"
 #include "testing/gtest_mac.h"
 
 namespace {

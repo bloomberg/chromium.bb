@@ -19,7 +19,7 @@
 #import "ios/web/web_state/ui/crw_simple_web_view_controller.h"
 #import "ios/web/web_state/ui/crw_static_file_web_view.h"
 #import "ios/web/web_state/ui/wk_web_view_configuration_provider.h"
-#include "ios/web/test/web_test.h"
+#import "ios/web/test/web_test.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest_mac.h"
 
