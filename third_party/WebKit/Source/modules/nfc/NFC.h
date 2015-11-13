@@ -22,7 +22,11 @@ class NFC final
 
 public:
     static NFC* create(LocalFrame*);
+#if ENABLE(OILPAN)
+    ~NFC();
+#else
     ~NFC() override;
+#endif
 
     // Get an adapter object providing NFC functionality.
     ScriptPromise requestAdapter(ScriptState*);
