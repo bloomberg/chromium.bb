@@ -4,6 +4,7 @@
 
 #include "chrome/browser/browsing_data/browsing_data_service_worker_helper.h"
 
+#include <tuple>
 #include <vector>
 
 #include "base/bind.h"
@@ -96,9 +97,7 @@ CannedBrowsingDataServiceWorkerHelper::PendingServiceWorkerUsageInfo::
 
 bool CannedBrowsingDataServiceWorkerHelper::PendingServiceWorkerUsageInfo::
 operator<(const PendingServiceWorkerUsageInfo& other) const {
-  if (origin == other.origin)
-    return scopes < other.scopes;
-  return origin < other.origin;
+  return std::tie(origin, scopes) < std::tie(other.origin, other.scopes);
 }
 
 CannedBrowsingDataServiceWorkerHelper::CannedBrowsingDataServiceWorkerHelper(

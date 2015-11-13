@@ -4,6 +4,7 @@
 
 #include "chrome/browser/browsing_data/browsing_data_database_helper.h"
 
+#include <tuple>
 #include <vector>
 
 #include "base/bind.h"
@@ -121,9 +122,7 @@ CannedBrowsingDataDatabaseHelper::PendingDatabaseInfo::~PendingDatabaseInfo() {}
 
 bool CannedBrowsingDataDatabaseHelper::PendingDatabaseInfo::operator<(
     const PendingDatabaseInfo& other) const {
-  if (origin == other.origin)
-    return name < other.name;
-  return origin < other.origin;
+  return std::tie(origin, name) < std::tie(other.origin, other.name);
 }
 
 CannedBrowsingDataDatabaseHelper::CannedBrowsingDataDatabaseHelper(

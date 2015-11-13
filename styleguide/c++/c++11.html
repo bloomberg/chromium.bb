@@ -280,6 +280,14 @@ Parameter pack</a></td>
 <td>TODO</td>
 <td>Allows getting rid of <a href="http://crbug.com/554289">ScopedVector</a></td>
 </tr>
+
+<tr>
+<td>Lexicographical struct comparison</td>
+<td><code>tie(a, b, c) &lt;<br>&nbsp; tie(rhs.a, rhs.b, rhs.c)</code></td>
+<td>Idiom for <code>operator&lt;</code> implementation</td>
+<td><a href="http://en.cppreference.com/w/cpp/utility/tuple/tie">std::tie</a></td>
+<td>General use of <code>std::tuple</code>, and <code>std::tie</code> for unpacking or multiple assignments is still not allowed. <a href="https://groups.google.com/a/chromium.org/d/topic/cxx/3DZ64dIMRTY/discussion">Discussion thread</a></td>
+</tr>
 </tbody>
 </table>
 
@@ -928,8 +936,8 @@ Declaring functions</a></td>
 <td>Tuples</td>
 <td><code>std::tuple</code></td>
 <td>A fixed-size ordered collection of values of mixed types</td>
-<td>TODO: documentation link</td>
-<td></td>
+<td><a href="http://en.cppreference.com/w/cpp/utility/tuple">std::tuple</a></td>
+<td><a href="https://crbug.com/554987">Tracking bug</a> to plan moving from <code>base::Tuple</code> to <code>std::tuple</code>. See also <code>std::tie</code></td>
 </tr>
 
 <tr>

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/browsing_data/browsing_data_indexed_db_helper.h"
 
+#include <tuple>
 #include <vector>
 
 #include "base/bind.h"
@@ -80,9 +81,7 @@ PendingIndexedDBInfo::~PendingIndexedDBInfo() {
 
 bool CannedBrowsingDataIndexedDBHelper::PendingIndexedDBInfo::operator<(
     const PendingIndexedDBInfo& other) const {
-  if (origin == other.origin)
-    return name < other.name;
-  return origin < other.origin;
+  return std::tie(origin, name) < std::tie(other.origin, other.name);
 }
 
 CannedBrowsingDataIndexedDBHelper::CannedBrowsingDataIndexedDBHelper(
