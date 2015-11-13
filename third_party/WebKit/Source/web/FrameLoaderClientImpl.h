@@ -182,7 +182,7 @@ private:
 
     bool isFrameLoaderClientImpl() const override { return true; }
 
-    PassOwnPtr<WebPluginLoadObserver> pluginLoadObserver(DocumentLoader*);
+    PassOwnPtrWillBeRawPtr<WebPluginLoadObserver> pluginLoadObserver(DocumentLoader*);
 
     // The WebFrame that owns this object and manages its lifetime. Therefore,
     // the web frame object is guaranteed to exist.

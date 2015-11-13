@@ -497,9 +497,10 @@ void WebPluginContainerImpl::loadFrameRequest(const WebURLRequest& request, cons
         // FIXME: This is a bit of hack to allow us to observe completion of
         // our frame request.  It would be better to evolve FrameLoader to
         // support a completion callback instead.
-        OwnPtr<WebPluginLoadObserver> observer = adoptPtr(new WebPluginLoadObserver(this, request.url(), notifyData));
-        // FIXME: Calling get here is dangerous! What if observer is freed?
+        OwnPtrWillBeRawPtr<WebPluginLoadObserver> observer = WebPluginLoadObserver::create(this, request.url(), notifyData);
+#if !ENABLE(OILPAN)
         m_pluginLoadObservers.append(observer.get());
+#endif
         WebDataSourceImpl::setNextPluginLoadObserver(observer.release());
     }
 
@@ -679,6 +680,7 @@ bool WebPluginContainerImpl::wantsWheelEvents()
     return m_wantsWheelEvents;
 }
 
+#if !ENABLE(OILPAN)
 void WebPluginContainerImpl::willDestroyPluginLoadObserver(WebPluginLoadObserver* observer)
 {
     size_t pos = m_pluginLoadObservers.find(observer);
@@ -686,6 +688,7 @@ void WebPluginContainerImpl::willDestroyPluginLoadObserver(WebPluginLoadObserver
         return;
     m_pluginLoadObservers.remove(pos);
 }
+#endif
 
 // Private methods -------------------------------------------------------------
 
@@ -722,21 +725,25 @@ void WebPluginContainerImpl::dispose()
     if (m_element && m_touchEventRequestType != TouchEventRequestTypeNone && m_element->document().frameHost())
         m_element->document().frameHost()->eventHandlerRegistry().didRemoveEventHandler(*m_element, EventHandlerRegistry::TouchEvent);
 
-    for (size_t i = 0; i < m_pluginLoadObservers.size(); ++i)
-        m_pluginLoadObservers[i]->clearPluginContainer();
+#if !ENABLE(OILPAN)
+    for (const auto& observer : m_pluginLoadObservers)
+        observer->clearPluginContainer();
+#endif
 
     if (m_webPlugin) {
         RELEASE_ASSERT(!m_webPlugin->container() || m_webPlugin->container() == this);
         m_webPlugin->destroy();
+        m_webPlugin = nullptr;
     }
-    m_webPlugin = nullptr;
 
     if (m_webLayer) {
         GraphicsLayer::unregisterContentsLayer(m_webLayer);
         m_webLayer = nullptr;
     }
 
+#if !ENABLE(OILPAN)
     m_pluginLoadObservers.clear();
+#endif
     m_element = nullptr;
 }
 

@@ -38,9 +38,9 @@
 
 namespace blink {
 
-static OwnPtr<WebPluginLoadObserver>& nextPluginLoadObserver()
+static OwnPtrWillBePersistent<WebPluginLoadObserver>& nextPluginLoadObserver()
 {
-    DEFINE_STATIC_LOCAL(OwnPtr<WebPluginLoadObserver>, nextPluginLoadObserver, ());
+    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<WebPluginLoadObserver>, nextPluginLoadObserver, ());
     return nextPluginLoadObserver;
 }
 
@@ -137,7 +137,7 @@ WebNavigationType WebDataSourceImpl::toWebNavigationType(NavigationType type)
     }
 }
 
-void WebDataSourceImpl::setNextPluginLoadObserver(PassOwnPtr<WebPluginLoadObserver> observer)
+void WebDataSourceImpl::setNextPluginLoadObserver(PassOwnPtrWillBeRawPtr<WebPluginLoadObserver> observer)
 {
     nextPluginLoadObserver() = observer;
 }
@@ -175,6 +175,7 @@ void WebDataSourceImpl::detachFromFrame()
 
 DEFINE_TRACE(WebDataSourceImpl)
 {
+    visitor->trace(m_pluginLoadObserver);
     DocumentLoader::trace(visitor);
 }
 

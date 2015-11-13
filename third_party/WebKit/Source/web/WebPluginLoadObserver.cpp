@@ -38,20 +38,31 @@ namespace blink {
 
 WebPluginLoadObserver::~WebPluginLoadObserver()
 {
+#if !ENABLE(OILPAN)
     if (m_pluginContainer)
         m_pluginContainer->willDestroyPluginLoadObserver(this);
+#endif
+}
+
+DEFINE_TRACE(WebPluginLoadObserver)
+{
+    visitor->trace(m_pluginContainer);
 }
 
 void WebPluginLoadObserver::didFinishLoading()
 {
-    if (m_pluginContainer)
-        m_pluginContainer->plugin()->didFinishLoadingFrameRequest(m_notifyURL, m_notifyData);
+    if (!m_pluginContainer)
+        return;
+    if (WebPlugin* plugin = m_pluginContainer->plugin())
+        plugin->didFinishLoadingFrameRequest(m_notifyURL, m_notifyData);
 }
 
 void WebPluginLoadObserver::didFailLoading(const WebURLError& error)
 {
-    if (m_pluginContainer)
-        m_pluginContainer->plugin()->didFailLoadingFrameRequest(m_notifyURL, m_notifyData, error);
+    if (!m_pluginContainer)
+        return;
+    if (WebPlugin* plugin = m_pluginContainer->plugin())
+        plugin->didFailLoadingFrameRequest(m_notifyURL, m_notifyData, error);
 }
 
 } // namespace blink

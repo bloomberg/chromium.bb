@@ -472,7 +472,7 @@ void FrameLoaderClientImpl::dispatchDidCommitLoad(HistoryItem* item, HistoryComm
 void FrameLoaderClientImpl::dispatchDidFailProvisionalLoad(
     const ResourceError& error, HistoryCommitType commitType)
 {
-    OwnPtr<WebPluginLoadObserver> observer = pluginLoadObserver(m_webFrame->frame()->loader().provisionalDocumentLoader());
+    OwnPtrWillBeRawPtr<WebPluginLoadObserver> observer = pluginLoadObserver(m_webFrame->frame()->loader().provisionalDocumentLoader());
     m_webFrame->didFail(error, true, commitType);
     if (observer)
         observer->didFailLoading(error);
@@ -480,7 +480,7 @@ void FrameLoaderClientImpl::dispatchDidFailProvisionalLoad(
 
 void FrameLoaderClientImpl::dispatchDidFailLoad(const ResourceError& error, HistoryCommitType commitType)
 {
-    OwnPtr<WebPluginLoadObserver> observer = pluginLoadObserver(m_webFrame->frame()->loader().documentLoader());
+    OwnPtrWillBeRawPtr<WebPluginLoadObserver> observer = pluginLoadObserver(m_webFrame->frame()->loader().documentLoader());
     m_webFrame->didFail(error, false, commitType);
     if (observer)
         observer->didFailLoading(error);
@@ -492,7 +492,7 @@ void FrameLoaderClientImpl::dispatchDidFailLoad(const ResourceError& error, Hist
 
 void FrameLoaderClientImpl::dispatchDidFinishLoad()
 {
-    OwnPtr<WebPluginLoadObserver> observer = pluginLoadObserver(m_webFrame->frame()->loader().documentLoader());
+    OwnPtrWillBeRawPtr<WebPluginLoadObserver> observer = pluginLoadObserver(m_webFrame->frame()->loader().documentLoader());
 
     if (m_webFrame->client())
         m_webFrame->client()->didFinishLoad(m_webFrame);
@@ -838,7 +838,7 @@ ObjectContentType FrameLoaderClientImpl::objectContentType(
     return ObjectContentNone;
 }
 
-PassOwnPtr<WebPluginLoadObserver> FrameLoaderClientImpl::pluginLoadObserver(DocumentLoader* loader)
+PassOwnPtrWillBeRawPtr<WebPluginLoadObserver> FrameLoaderClientImpl::pluginLoadObserver(DocumentLoader* loader)
 {
     return WebDataSourceImpl::fromDocumentLoader(loader)->releasePluginLoadObserver();
 }

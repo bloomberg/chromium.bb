@@ -114,7 +114,8 @@ public:
     WebPoint rootFrameToLocalPoint(const WebPoint&) override;
     WebPoint localToRootFramePoint(const WebPoint&) override;
 
-    // This cannot be null.
+    // Non-Oilpan, this cannot be null. With Oilpan, it will be
+    // null when in a disposed state, pending finalization during the next GC.
     WebPlugin* plugin() override { return m_webPlugin; }
     void setPlugin(WebPlugin*) override;
 
@@ -154,7 +155,9 @@ public:
     void didFinishLoading() override;
     void didFailLoading(const ResourceError&) override;
 
+#if !ENABLE(OILPAN)
     void willDestroyPluginLoadObserver(WebPluginLoadObserver*);
+#endif
 
     DECLARE_VIRTUAL_TRACE();
     void dispose() override;
@@ -198,7 +201,9 @@ private:
 
     RawPtrWillBeMember<HTMLPlugInElement> m_element;
     WebPlugin* m_webPlugin;
+#if !ENABLE(OILPAN)
     Vector<WebPluginLoadObserver*> m_pluginLoadObservers;
+#endif
 
     WebLayer* m_webLayer;
 

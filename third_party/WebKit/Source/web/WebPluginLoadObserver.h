@@ -31,6 +31,7 @@
 #ifndef WebPluginLoadObserver_h
 #define WebPluginLoadObserver_h
 
+#include "platform/heap/Handle.h"
 #include "public/platform/WebURL.h"
 
 namespace blink {
@@ -38,26 +39,33 @@ namespace blink {
 class WebPluginContainerImpl;
 struct WebURLError;
 
-class WebPluginLoadObserver {
+class WebPluginLoadObserver final : public NoBaseWillBeGarbageCollectedFinalized<WebPluginLoadObserver> {
 public:
-    WebPluginLoadObserver(WebPluginContainerImpl* pluginContainer,
-                          const WebURL& notifyURL, void* notifyData)
+    static PassOwnPtrWillBeRawPtr<WebPluginLoadObserver> create(WebPluginContainerImpl* pluginContainer, const WebURL& notifyURL, void* notifyData)
+    {
+        return adoptPtrWillBeNoop(new WebPluginLoadObserver(pluginContainer, notifyURL, notifyData));
+    }
+    ~WebPluginLoadObserver();
+
+    const WebURL& url() const { return m_notifyURL; }
+
+#if !ENABLE(OILPAN)
+    void clearPluginContainer() { m_pluginContainer = nullptr; }
+#endif
+    void didFinishLoading();
+    void didFailLoading(const WebURLError&);
+
+    DECLARE_TRACE();
+
+private:
+    WebPluginLoadObserver(WebPluginContainerImpl* pluginContainer, const WebURL& notifyURL, void* notifyData)
         : m_pluginContainer(pluginContainer)
         , m_notifyURL(notifyURL)
         , m_notifyData(notifyData)
     {
     }
 
-    ~WebPluginLoadObserver();
-
-    const WebURL& url() const { return m_notifyURL; }
-
-    void clearPluginContainer() { m_pluginContainer = 0; }
-    void didFinishLoading();
-    void didFailLoading(const WebURLError&);
-
-private:
-    WebPluginContainerImpl* m_pluginContainer;
+    RawPtrWillBeWeakMember<WebPluginContainerImpl> m_pluginContainer;
     WebURL m_notifyURL;
     void* m_notifyData;
 };
