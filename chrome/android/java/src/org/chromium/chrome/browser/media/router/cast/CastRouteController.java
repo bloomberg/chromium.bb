@@ -454,6 +454,8 @@ public class CastRouteController implements RouteController, MediaNotificationLi
             String messageType = jsonMessage.getString("type");
             if ("client_connect".equals(messageType)) {
                 success = handleClientConnectMessage(jsonMessage);
+            } else if ("leave_session".equals(messageType)) {
+                success = handleLeaveSessionMessage(jsonMessage);
             } else if ("v2_message".equals(messageType)) {
                 success = handleCastV2Message(jsonMessage);
             } else if ("app_message".equals(messageType)) {
@@ -481,6 +483,34 @@ public class CastRouteController implements RouteController, MediaNotificationLi
 
         mRouteDelegate.onMessage(mMediaRouteId, buildInternalMessage(
                 "new_session", buildSessionMessage(), clientId, INVALID_SEQUENCE_NUMBER));
+        return true;
+    }
+
+    // An example of the leave_session message.
+    //    {
+    //        "type": "leave_message",
+    //        "message": "<cast session id>",
+    //        "sequenceNumber": 0,  // optional
+    //        "timeoutMillis": 0,
+    //        "clientId": "<client id>"
+    //    }
+    private boolean handleLeaveSessionMessage(JSONObject jsonMessage) throws JSONException {
+        String clientId = jsonMessage.getString("clientId");
+
+        if (!mClients.contains(clientId)) return false;
+
+        String sessionId = jsonMessage.getString("message");
+        if (!mSessionId.equals(sessionId)) return false;
+
+        int sequenceNumber = jsonMessage.optInt("sequenceNumber", INVALID_SEQUENCE_NUMBER);
+
+        // TODO(avayvod): "leave" the other clients with the matching origin/tab id.
+        // See https://crbug.com/549957.
+        mRouteDelegate.onMessage(mMediaRouteId,
+                buildInternalMessage("leave_session", null, clientId, sequenceNumber));
+
+        mClients.remove(clientId);
+
         return true;
     }
 
