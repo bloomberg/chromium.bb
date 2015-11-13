@@ -73961,6 +73961,33 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="6" label="EVENT_BEGIN">Explicit transactions begun.</int>
   <int value="7" label="EVENT_COMMIT">Explicit transactions committed.</int>
   <int value="8" label="EVENT_ROLLBACK">Explicit transactions rolled back.</int>
+  <int value="9" label="EVENT_MMAP_META_MISSING">
+    No meta table in mmap probe.
+  </int>
+  <int value="10" label="EVENT_MMAP_META_FAILURE_READ">
+    Failed to read meta table in mmap probe.
+  </int>
+  <int value="11" label="EVENT_MMAP_META_FAILURE_UPDATE">
+    Failed to update meta table in mmap probe.
+  </int>
+  <int value="12" label="EVENT_MMAP_VFS_FAILURE">
+    Failed to access SQLite vfs in mmap probe.
+  </int>
+  <int value="13" label="EVENT_MMAP_FAILED">
+    Found cached failure status in mmap probe.
+  </int>
+  <int value="14" label="EVENT_MMAP_FAILED_NEW">
+    Error while reading database in mmap probe.
+  </int>
+  <int value="15" label="EVENT_MMAP_SUCCESS_NEW">
+    Successfully read to end of database in mmap probe.
+  </int>
+  <int value="16" label="EVENT_MMAP_SUCCESS_PARTIAL">
+    Successfully read some of database in mmap probe.
+  </int>
+  <int value="17" label="EVENT_MMAP_SUCCESS_NO_PROGRESS">
+    Exhausted read quota in mmap probe.
+  </int>
 </enum>
 
 <enum name="SqliteVersionDeprecation" type="int">
