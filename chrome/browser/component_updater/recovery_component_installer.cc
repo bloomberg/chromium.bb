@@ -315,6 +315,21 @@ bool RecoveryComponentInstaller::RunInstallCommand(
 }
 #endif  // defined(OS_WIN)
 
+#if defined(OS_POSIX)
+// Sets the POSIX executable permissions on a file
+bool SetPosixExecutablePermission(const base::FilePath& path) {
+  int permissions = 0;
+  if (!base::GetPosixFilePermissions(path, &permissions))
+    return false;
+  const int kExecutableMask = base::FILE_PERMISSION_EXECUTE_BY_USER |
+                              base::FILE_PERMISSION_EXECUTE_BY_GROUP |
+                              base::FILE_PERMISSION_EXECUTE_BY_OTHERS;
+  if ((permissions & kExecutableMask) == kExecutableMask)
+    return true;  // No need to update
+  return base::SetPosixFilePermissions(path, permissions | kExecutableMask);
+}
+#endif  // defined(OS_POSIX)
+
 bool RecoveryComponentInstaller::Install(const base::DictionaryValue& manifest,
                                          const base::FilePath& unpack_path) {
   std::string name;
@@ -334,7 +349,7 @@ bool RecoveryComponentInstaller::Install(const base::DictionaryValue& manifest,
   if (!PathService::Get(DIR_RECOVERY_BASE, &path))
     return false;
   if (!base::PathExists(path) && !base::CreateDirectory(path))
-      return false;
+    return false;
   path = path.AppendASCII(version.GetString());
   if (base::PathExists(path) && !base::DeleteFile(path, true))
     return false;
@@ -346,6 +361,17 @@ bool RecoveryComponentInstaller::Install(const base::DictionaryValue& manifest,
   base::FilePath main_file = path.Append(kRecoveryFileName);
   if (!base::PathExists(main_file))
     return false;
+
+#if defined(OS_POSIX)
+  // The current version of the CRX unzipping does not restore
+  // correctly the executable flags/permissions. See https://crbug.com/555011
+  if (!SetPosixExecutablePermission(main_file)) {
+    DVLOG(1) << "Recovery component failed to set the executable "
+                "permission on the file: "
+             << main_file.value();
+    return false;
+  }
+#endif
 
   // Run the recovery component.
   const bool is_deferred_run = false;
