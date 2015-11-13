@@ -24,9 +24,12 @@
 
 using extensions::ExtensionRegistry;
 
-BrowserWindowPropertyManager::BrowserWindowPropertyManager(BrowserView* view)
-    : view_(view) {
-  DCHECK(view_);
+BrowserWindowPropertyManager::BrowserWindowPropertyManager(BrowserView* view,
+                                                           HWND hwnd)
+    : view_(view),
+      hwnd_(hwnd) {
+  // At this point, the HWND is unavailable from BrowserView.
+  DCHECK(hwnd);
   profile_pref_registrar_.Init(view_->browser()->profile()->GetPrefs());
 
   // Monitor the profile icon version on Windows so that we can set the browser
@@ -38,10 +41,10 @@ BrowserWindowPropertyManager::BrowserWindowPropertyManager(BrowserView* view)
 }
 
 BrowserWindowPropertyManager::~BrowserWindowPropertyManager() {
+  ui::win::ClearWindowPropertyStore(hwnd_);
 }
 
-void BrowserWindowPropertyManager::UpdateWindowProperties(HWND hwnd) {
-  DCHECK(hwnd);
+void BrowserWindowPropertyManager::UpdateWindowProperties() {
   Browser* browser = view_->browser();
   Profile* profile = browser->profile();
 
@@ -65,8 +68,8 @@ void BrowserWindowPropertyManager::UpdateWindowProperties(HWND hwnd) {
         web_app::GetExtensionIdFromApplicationName(browser->app_name()),
         ExtensionRegistry::EVERYTHING);
     if (extension) {
-      ui::win::SetAppIdForWindow(app_id, hwnd);
-      web_app::UpdateRelaunchDetailsForApp(profile, extension, hwnd);
+      ui::win::SetAppIdForWindow(app_id, hwnd_);
+      web_app::UpdateRelaunchDetailsForApp(profile, extension, hwnd_);
       return;
     }
   }
@@ -92,22 +95,23 @@ void BrowserWindowPropertyManager::UpdateWindowProperties(HWND hwnd) {
       icon_path_string,
       command_line_string,
       pinned_name,
-      hwnd);
+      hwnd_);
 }
 
 // static
 scoped_ptr<BrowserWindowPropertyManager>
     BrowserWindowPropertyManager::CreateBrowserWindowPropertyManager(
-        BrowserView* view) {
+        BrowserView* view, HWND hwnd) {
   if (base::win::GetVersion() < base::win::VERSION_WIN7 ||
-      view->browser()->host_desktop_type() == chrome::HOST_DESKTOP_TYPE_ASH) {
+      view->browser()->host_desktop_type() == chrome::HOST_DESKTOP_TYPE_ASH)
     return scoped_ptr<BrowserWindowPropertyManager>();
-  }
 
-  return scoped_ptr<BrowserWindowPropertyManager>(
-      new BrowserWindowPropertyManager(view));
+  scoped_ptr<BrowserWindowPropertyManager> browser_window_property_manager(
+      new BrowserWindowPropertyManager(view, hwnd));
+  browser_window_property_manager->UpdateWindowProperties();
+  return browser_window_property_manager.Pass();
 }
 
 void BrowserWindowPropertyManager::OnProfileIconVersionChange() {
-  UpdateWindowProperties(views::HWNDForNativeWindow(view_->GetNativeWindow()));
+  UpdateWindowProperties();
 }

@@ -2046,3 +2046,20 @@ content.dll!content::RenderThreadImpl::AllocateSharedMemory
 ...
 content.dll!content::WebGraphicsContext3DCommandBufferImpl::CreateContext
 content.dll!content::WebGraphicsContext3DCommandBufferImpl::MaybeInitializeGL
+
+UNADDRESSABLE ACCESS
+name=https://github.com/DynamoRIO/drmemory/issues/1817
+system call NtUserBuildPropList parameter #1
+
+UNINITIALIZED READ
+name=https://github.com/DynamoRIO/drmemory/issues/1816
+USER32.dll!DdeEnableCallback
+USER32.dll!EnumPropsExW
+SHELL32.dll!SHGetIconOverlayIndexA
+
+# This is the same as the above uninitialized read when the symbols get fixed.
+UNINITIALIZED READ
+name=https://github.com/DynamoRIO/drmemory/issues/1815
+USER32.dll!InternalEnumProps
+USER32.dll!EnumPropsExW
+SHELL32.dll!CWindowPropStore::GetCount
