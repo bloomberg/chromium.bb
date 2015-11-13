@@ -8,14 +8,20 @@
 #include "base/memory/memory_pressure_listener.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_message_filter.h"
+#include "content/public/common/process_type.h"
 
 namespace content {
+
+class BrowserChildProcessHost;
+class RenderProcessHost;
 
 // This class sends memory messages from the browser process.
 // See also: child_memory_message_filter.h
 class CONTENT_EXPORT MemoryMessageFilter : public BrowserMessageFilter {
  public:
-  MemoryMessageFilter();
+  MemoryMessageFilter(const BrowserChildProcessHost* child_process_host,
+                      ProcessType process_type);
+  MemoryMessageFilter(const RenderProcessHost* render_process_host);
 
   // BrowserMessageFilter implementation.
   void OnFilterAdded(IPC::Sender* sender) override;
@@ -29,9 +35,21 @@ class CONTENT_EXPORT MemoryMessageFilter : public BrowserMessageFilter {
       base::MemoryPressureListener::MemoryPressureLevel level);
 
  protected:
+  friend class MemoryPressureController;
+
   ~MemoryMessageFilter() override;
 
+  const void* process_host() const { return process_host_; }
+  ProcessType process_type() const { return process_type_; }
+
  private:
+  // The untyped process host and ProcessType associated with this filter
+  // instance. The process host is stored as untyped because it is only used as
+  // a key in MemoryPressureController; at no point is it ever deferenced to
+  // invoke any members on a process host.
+  const void* process_host_;
+  ProcessType process_type_;
+
   DISALLOW_COPY_AND_ASSIGN(MemoryMessageFilter);
 };
 
