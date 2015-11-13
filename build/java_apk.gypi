@@ -1119,7 +1119,7 @@
           ],
           'variables': {
             'dex_additional_options': [
-              '--main-dex-list-path', '<(main_dex_list_path)'
+              '--main-dex-list-path', '<(main_dex_list_path)',
               '--multidex-configuration-path', '<(multidex_configuration_path)',
             ],
           },
