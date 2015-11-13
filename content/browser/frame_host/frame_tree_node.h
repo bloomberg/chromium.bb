@@ -6,11 +6,11 @@
 #define CONTENT_BROWSER_FRAME_HOST_FRAME_TREE_NODE_H_
 
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_vector.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/frame_host/render_frame_host_manager.h"
 #include "content/common/content_export.h"
@@ -109,7 +109,7 @@ class CONTENT_EXPORT FrameTreeNode {
   void SetOpener(FrameTreeNode* opener);
 
   FrameTreeNode* child_at(size_t index) const {
-    return children_[index];
+    return children_[index].get();
   }
 
   const GURL& current_url() const {
@@ -266,7 +266,7 @@ class CONTENT_EXPORT FrameTreeNode {
   scoped_ptr<OpenerDestroyedObserver> opener_observer_;
 
   // The immediate children of this specific frame.
-  ScopedVector<FrameTreeNode> children_;
+  std::vector<scoped_ptr<FrameTreeNode>> children_;
 
   // Track the current frame's last committed URL.
   // TODO(creis): Consider storing a reference to the last committed

@@ -147,33 +147,28 @@ void FrameTreeNode::AddChild(scoped_ptr<FrameTreeNode> child,
   if (SiteIsolationPolicy::AreCrossProcessFramesPossible())
     render_manager_.CreateProxiesForChildFrame(child.get());
 
-  children_.push_back(child.release());
+  children_.push_back(child.Pass());
 }
 
 void FrameTreeNode::RemoveChild(FrameTreeNode* child) {
-  std::vector<FrameTreeNode*>::iterator iter;
-  for (iter = children_.begin(); iter != children_.end(); ++iter) {
-    if ((*iter) == child)
-      break;
-  }
-
-  if (iter != children_.end()) {
-    // Subtle: we need to make sure the node is gone from the tree before
-    // observers are notified of its deletion.
-    scoped_ptr<FrameTreeNode> node_to_delete(*iter);
-    children_.weak_erase(iter);
-    node_to_delete.reset();
+  for (auto iter = children_.begin(); iter != children_.end(); ++iter) {
+    if (iter->get() == child) {
+      // Subtle: we need to make sure the node is gone from the tree before
+      // observers are notified of its deletion.
+      scoped_ptr<FrameTreeNode> node_to_delete(iter->Pass());
+      children_.erase(iter);
+      node_to_delete.reset();
+      return;
+    }
   }
 }
 
 void FrameTreeNode::ResetForNewProcess() {
   current_url_ = GURL();
 
-  // The children may not have been cleared if a cross-process navigation
-  // commits before the old process cleans everything up.  Make sure the child
-  // nodes get deleted before swapping to a new process.
-  ScopedVector<FrameTreeNode> old_children = children_.Pass();
-  old_children.clear();  // May notify observers.
+  // Remove child nodes from the tree, then delete them. This destruction
+  // operation will notify observers.
+  std::vector<scoped_ptr<FrameTreeNode>>().swap(children_);
 }
 
 void FrameTreeNode::SetOpener(FrameTreeNode* opener) {
