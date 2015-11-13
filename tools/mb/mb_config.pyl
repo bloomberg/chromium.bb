@@ -455,6 +455,9 @@
       'V8 Linux GN': 'gn_release_bot',
       'V8 Android GN (dbg)': 'android_gn_debug_bot',
     },
+    'official.desktop': {
+      'precise64': 'gn_official',
+    },
     'tryserver.blink': {
       'android_blink_compile_dbg': 'android_gyp_debug_bot',
       'android_blink_compile_rel': 'android_gyp_release_trybot',
