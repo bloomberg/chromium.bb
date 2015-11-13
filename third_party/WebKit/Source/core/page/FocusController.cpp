@@ -641,6 +641,14 @@ HTMLFrameOwnerElement* FocusController::focusedFrameOwnerElement(LocalFrame& cur
     return nullptr;
 }
 
+bool FocusController::isDocumentFocused(const Document& document) const
+{
+    if (!isActive() || !isFocused())
+        return false;
+
+    return m_focusedFrame && m_focusedFrame->tree().isDescendantOf(document.frame());
+}
+
 void FocusController::setFocused(bool focused)
 {
     if (isFocused() == focused)

@@ -38,6 +38,7 @@ namespace blink {
 
 struct FocusCandidate;
 struct FocusParams;
+class Document;
 class Element;
 class Frame;
 class HTMLFrameOwnerElement;
@@ -60,6 +61,10 @@ public:
     // An HTMLFrameOwnerElement is considered focused if the frame it owns, or
     // one of its descendant frames, is currently focused.
     HTMLFrameOwnerElement* focusedFrameOwnerElement(LocalFrame& currentFrame) const;
+
+    // Determines whether the provided Document has focus according to
+    // http://www.w3.org/TR/html5/editing.html#dom-document-hasfocus
+    bool isDocumentFocused(const Document&) const;
 
     bool setInitialFocus(WebFocusType);
     bool advanceFocus(WebFocusType type, InputDeviceCapabilities* sourceCapabilities = nullptr) { return advanceFocus(type, false, sourceCapabilities); }

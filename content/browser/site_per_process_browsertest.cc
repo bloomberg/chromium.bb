@@ -3853,6 +3853,78 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, DocumentActiveElement) {
                                  grandchild->current_url().spec());
 }
 
+// Check that document.hasFocus() works properly with out-of-process iframes.
+// The test builds a page with four cross-site frames and then focuses them one
+// by one, checking the value of document.hasFocus() in all frames.  For any
+// given focused frame, document.hasFocus() should return true for that frame
+// and all its ancestor frames.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, DocumentHasFocus) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b(c),d)"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+
+  EXPECT_EQ(
+      " Site A ------------ proxies for B C D\n"
+      "   |--Site B ------- proxies for A C D\n"
+      "   |    +--Site C -- proxies for A B D\n"
+      "   +--Site D ------- proxies for A B C\n"
+      "Where A = http://a.com/\n"
+      "      B = http://b.com/\n"
+      "      C = http://c.com/\n"
+      "      D = http://d.com/",
+      DepictFrameTree(root));
+
+  FrameTreeNode* child1 = root->child_at(0);
+  FrameTreeNode* child2 = root->child_at(1);
+  FrameTreeNode* grandchild = root->child_at(0)->child_at(0);
+
+  // Helper function to check document.hasFocus() for a given frame.
+  auto document_has_focus = [](FrameTreeNode* node) {
+    bool hasFocus = false;
+    EXPECT_TRUE(ExecuteScriptAndExtractBool(
+        node->current_frame_host(),
+        "window.domAutomationController.send(document.hasFocus())",
+        &hasFocus));
+    return hasFocus;
+  };
+
+  // The main frame should be focused to start with.
+  EXPECT_EQ(root, root->frame_tree()->GetFocusedFrame());
+
+  EXPECT_TRUE(document_has_focus(root));
+  EXPECT_FALSE(document_has_focus(child1));
+  EXPECT_FALSE(document_has_focus(grandchild));
+  EXPECT_FALSE(document_has_focus(child2));
+
+  FocusFrame(child1);
+  EXPECT_EQ(child1, root->frame_tree()->GetFocusedFrame());
+
+  EXPECT_TRUE(document_has_focus(root));
+  EXPECT_TRUE(document_has_focus(child1));
+  EXPECT_FALSE(document_has_focus(grandchild));
+  EXPECT_FALSE(document_has_focus(child2));
+
+  FocusFrame(grandchild);
+  EXPECT_EQ(grandchild, root->frame_tree()->GetFocusedFrame());
+
+  EXPECT_TRUE(document_has_focus(root));
+  EXPECT_TRUE(document_has_focus(child1));
+  EXPECT_TRUE(document_has_focus(grandchild));
+  EXPECT_FALSE(document_has_focus(child2));
+
+  FocusFrame(child2);
+  EXPECT_EQ(child2, root->frame_tree()->GetFocusedFrame());
+
+  EXPECT_TRUE(document_has_focus(root));
+  EXPECT_FALSE(document_has_focus(child1));
+  EXPECT_FALSE(document_has_focus(grandchild));
+  EXPECT_TRUE(document_has_focus(child2));
+}
+
 // There are no cursors on Android.
 #if !defined(OS_ANDROID)
 class CursorMessageFilter : public content::BrowserMessageFilter {
