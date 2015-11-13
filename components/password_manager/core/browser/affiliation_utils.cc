@@ -338,13 +338,18 @@ bool IsValidAndroidFacetURI(const std::string& url) {
 
 std::string GetHumanReadableOrigin(const autofill::PasswordForm& password_form,
                                    const std::string& languages) {
-  password_manager::FacetURI facet_uri =
-      password_manager::FacetURI::FromPotentiallyInvalidSpec(
-          password_form.signon_realm);
+  FacetURI facet_uri =
+      FacetURI::FromPotentiallyInvalidSpec(password_form.signon_realm);
   if (facet_uri.IsValidAndroidFacetURI())
-    return facet_uri.scheme() + "://" + facet_uri.android_package_name();
+    return GetHumanReadableOriginForAndroidUri(facet_uri);
+
   return base::UTF16ToUTF8(url_formatter::FormatUrlForSecurityDisplay(
       password_form.origin, languages));
+}
+
+std::string GetHumanReadableOriginForAndroidUri(const FacetURI facet_uri) {
+  DCHECK(facet_uri.IsValidAndroidFacetURI());
+  return facet_uri.scheme() + "://" + facet_uri.android_package_name();
 }
 
 }  // namespace password_manager

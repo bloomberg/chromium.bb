@@ -8,6 +8,8 @@
 
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/autofill/core/common/password_form.h"
+#include "components/password_manager/core/browser/affiliation_utils.h"
 #include "components/url_formatter/elide_url.h"
 
 namespace password_manager {
@@ -19,9 +21,17 @@ const char* const kRemovedPrefixes[] = {"m.", "mobile.", "www."};
 
 }  // namespace
 
-std::string GetShownOrigin(const GURL& url, const std::string& languages) {
-  std::string original = base::UTF16ToUTF8(
-      url_formatter::FormatUrlForSecurityDisplayOmitScheme(url, languages));
+std::string GetShownOrigin(const autofill::PasswordForm& password_form,
+                           const std::string& languages) {
+  password_manager::FacetURI facet_uri =
+      password_manager::FacetURI::FromPotentiallyInvalidSpec(
+          password_form.signon_realm);
+  if (facet_uri.IsValidAndroidFacetURI())
+    return GetHumanReadableOriginForAndroidUri(facet_uri);
+
+  std::string original =
+      base::UTF16ToUTF8(url_formatter::FormatUrlForSecurityDisplayOmitScheme(
+          password_form.origin, languages));
   base::StringPiece result = original;
   for (base::StringPiece prefix : kRemovedPrefixes) {
     if (base::StartsWith(result, prefix,

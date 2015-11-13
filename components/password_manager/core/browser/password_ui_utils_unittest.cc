@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/password_ui_utils.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
@@ -29,9 +30,22 @@ TEST(GetShownOriginTest, RemovePrefixes) {
       {"https://WWW.Example.DE", "example.de"}};
 
   for (const auto& test_case : kTestCases) {
-    EXPECT_EQ(test_case.output, GetShownOrigin(GURL(test_case.input), ""))
+    autofill::PasswordForm password_form;
+    password_form.signon_realm = "https://non.android.signon.com";
+    password_form.origin = GURL(test_case.input);
+    EXPECT_EQ(test_case.output, GetShownOrigin(password_form, ""))
         << "for input " << test_case.input;
   }
+}
+
+TEST(GetShownOriginTest, OriginFromAndroidForm) {
+  autofill::PasswordForm android_form;
+  android_form.signon_realm =
+      "android://"
+      "m3HSJL1i83hdltRq0-o9czGb-8KJDKra4t_"
+      "3JRlnPKcjI8PZm6XBHXx6zG4UuMXaDEZjR1wuXDre9G9zvN7AQw=="
+      "@com.example.android";
+  EXPECT_EQ(GetShownOrigin(android_form, ""), "android://com.example.android");
 }
 
 }  // namespace password_manager

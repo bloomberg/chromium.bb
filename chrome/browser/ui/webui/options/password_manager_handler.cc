@@ -51,17 +51,17 @@ const char kFederationField[] = "federation";
 
 // Copies from |form| to |entry| the origin, shown origin and whether the
 // origin is secure or not.
-void copyOriginInfoOfPasswordForm(const autofill::PasswordForm* form,
+void CopyOriginInfoOfPasswordForm(const autofill::PasswordForm& form,
                                   const std::string& languages,
                                   scoped_ptr<base::DictionaryValue>& entry) {
   entry->SetString(
       kOriginField,
       url_formatter::FormatUrl(
-          form->origin, languages, url_formatter::kFormatUrlOmitNothing,
+          form.origin, languages, url_formatter::kFormatUrlOmitNothing,
           net::UnescapeRule::SPACES, nullptr, nullptr, nullptr));
   entry->SetString(kShownUrlField,
-                   password_manager::GetShownOrigin(form->origin, languages));
-  entry->SetBoolean(kIsSecureField, content::IsOriginSecure(form->origin));
+                   password_manager::GetShownOrigin(form, languages));
+  entry->SetBoolean(kIsSecureField, content::IsOriginSecure(form.origin));
 }
 
 }  // namespace
@@ -223,7 +223,7 @@ void PasswordManagerHandler::SetPasswordList(
   base::string16 placeholder(base::ASCIIToUTF16("        "));
   for (const autofill::PasswordForm* saved_password : password_list) {
     scoped_ptr<base::DictionaryValue> entry(new base::DictionaryValue);
-    copyOriginInfoOfPasswordForm(saved_password, languages_, entry);
+    CopyOriginInfoOfPasswordForm(*saved_password, languages_, entry);
 
     entry->SetString(kUsernameField, saved_password->username_value);
     if (show_passwords) {
@@ -254,7 +254,7 @@ void PasswordManagerHandler::SetPasswordExceptionList(
   base::ListValue entries;
   for (const autofill::PasswordForm* exception : password_exception_list) {
     scoped_ptr<base::DictionaryValue> entry(new base::DictionaryValue);
-    copyOriginInfoOfPasswordForm(exception, languages_, entry);
+    CopyOriginInfoOfPasswordForm(*exception, languages_, entry);
     entries.Append(entry.release());
   }
 

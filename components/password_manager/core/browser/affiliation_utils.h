@@ -205,6 +205,9 @@ bool IsAffiliationRequestsForDummyFacetsEnabled(
 std::string GetHumanReadableOrigin(const autofill::PasswordForm& password_form,
                                    const std::string& languages);
 
+// Returns the Android origin URI for presenting to a user.
+std::string GetHumanReadableOriginForAndroidUri(const FacetURI facet_uri);
+
 // For logging use only.
 std::ostream& operator<<(std::ostream& os, const FacetURI& facet_uri);
 

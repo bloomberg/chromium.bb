@@ -11,12 +11,18 @@
 
 #include "url/gurl.h"
 
+namespace autofill {
+struct PasswordForm;
+}
+
 namespace password_manager {
 
 // Returns a string suitable for security display to the user (just like
-// |FormatUrlForSecurityDisplayOmitScheme| based on |url| and |languages|) and
-// without prefixes "m.", "mobile." or "www.".
-std::string GetShownOrigin(const GURL& url, const std::string& languages);
+// |FormatUrlForSecurityDisplayOmitScheme| based on origin of |password_form|
+// and |languages|) and without prefixes "m.", "mobile." or "www.". For Android
+// URIs, returns the result of GetHumanReadableOriginForAndroidUri.
+std::string GetShownOrigin(const autofill::PasswordForm& password_form,
+                           const std::string& languages);
 
 }  // namespace password_manager
 
