@@ -176,6 +176,26 @@
         "SpiderOak2",
         "SpiderOak3"
       ]
+    },
+    {
+      "name": "yahoo",
+      "static_spki_hashes": [
+         "VeriSignClass2_G2",
+         "VeriSignClass2_G3",
+         "VeriSignClass3_G3",
+         "VeriSignClass3_G4",
+         "VeriSignClass3_G5",
+         "VeriSignUniversal",
+         "GeoTrustGlobal",
+         "GeoTrustPrimary",
+         "GeoTrustPrimary_G2",
+         "GeoTrustPrimary_G3",
+         "GeoTrustUniversal",
+         "DigiCertGlobalRoot",
+         "DigiCertEVRoot",
+         "YahooBackup1",
+         "YahooBackup2"
+      ]
     }
   ],
 
@@ -1348,7 +1368,7 @@
     { "name": "tw.search.yahoo.com", "include_subdomains": false, "mode": "force-https" },
     { "name": "ua.search.yahoo.com", "include_subdomains": false, "mode": "force-https" },
     { "name": "uk.search.yahoo.com", "include_subdomains": false, "mode": "force-https" },
-    { "name": "search.yahoo.com", "include_subdomains": false, "mode": "force-https" },
+    { "name": "search.yahoo.com", "include_subdomains": false, "mode": "force-https", "pins": "yahoo" },
     { "name": "uy.search.yahoo.com", "include_subdomains": false, "mode": "force-https" },
     { "name": "uz.search.yahoo.com", "include_subdomains": false, "mode": "force-https" },
     { "name": "ve.search.yahoo.com", "include_subdomains": false, "mode": "force-https" },
@@ -1356,9 +1376,9 @@
     { "name": "xa.search.yahoo.com", "include_subdomains": false, "mode": "force-https" },
     { "name": "za.search.yahoo.com", "include_subdomains": false, "mode": "force-https" },
     { "name": "zh.search.yahoo.com", "include_subdomains": false, "mode": "force-https" },
-    { "name": "login.yahoo.com", "include_subdomains": true, "mode": "force-https" },
-    { "name": "mail.yahoo.com", "include_subdomains": false, "mode": "force-https" },
-    { "name": "edit.yahoo.com", "include_subdomains": true, "mode": "force-https" },
+    { "name": "login.yahoo.com", "include_subdomains": true, "mode": "force-https", "pins": "yahoo" },
+    { "name": "mail.yahoo.com", "include_subdomains": false, "mode": "force-https", "pins": "yahoo" },
+    { "name": "edit.yahoo.com", "include_subdomains": true, "mode": "force-https", "pins": "yahoo" },
     { "name": "ahoyconference.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "balcan-underground.net", "include_subdomains": true, "mode": "force-https" },
     { "name": "baldwinkoo.com", "include_subdomains": true, "mode": "force-https" },
@@ -4528,6 +4548,7 @@
     "WITHYOUTUBE_COM",
     "WITHGOOGLE_COM",
     "G4W_CO",
-    "BADSSL_COM"
+    "BADSSL_COM",
+    "YAHOO_COM"
   ]
 }
