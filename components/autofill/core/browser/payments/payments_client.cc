@@ -106,7 +106,61 @@ scoped_ptr<base::DictionaryValue> BuildRiskDictionary(
 
   risk_data->SetString("value", encoded_risk_data);
 
-  return risk_data.Pass();
+  return risk_data;
+}
+
+scoped_ptr<base::DictionaryValue> BuildAddressDictionary(
+    const AutofillProfile& profile,
+    const std::string& app_locale) {
+  scoped_ptr<base::DictionaryValue> address(new base::DictionaryValue());
+
+  scoped_ptr<base::DictionaryValue> postal_address(new base::DictionaryValue());
+  postal_address->SetString(
+      "recipient_name", profile.GetInfo(AutofillType(NAME_FULL), app_locale));
+
+  scoped_ptr<base::ListValue> address_lines(new base::ListValue());
+  const base::string16 address_line1 =
+      profile.GetInfo(AutofillType(ADDRESS_HOME_LINE1), app_locale);
+  if (!address_line1.empty())
+    address_lines->AppendString(address_line1);
+  const base::string16 address_line2 =
+      profile.GetInfo(AutofillType(ADDRESS_HOME_LINE2), app_locale);
+  if (!address_line2.empty())
+    address_lines->AppendString(address_line2);
+  const base::string16 address_line3 =
+      profile.GetInfo(AutofillType(ADDRESS_HOME_LINE3), app_locale);
+  if (!address_line3.empty())
+    address_lines->AppendString(address_line3);
+  if (!address_lines->empty())
+    postal_address->Set("address_line", address_lines.Pass());
+
+  const base::string16 city =
+      profile.GetInfo(AutofillType(ADDRESS_HOME_CITY), app_locale);
+  if (!city.empty())
+    postal_address->SetString("locality_name", city);
+
+  const base::string16 state =
+      profile.GetInfo(AutofillType(ADDRESS_HOME_STATE), app_locale);
+  if (!state.empty())
+    postal_address->SetString("administrative_area_name", state);
+
+  postal_address->SetString(
+      "postal_code_number",
+      profile.GetInfo(AutofillType(ADDRESS_HOME_ZIP), app_locale));
+
+  // Use GetRawInfo to get a country code instead of the country name:
+  const base::string16 country_code = profile.GetRawInfo(ADDRESS_HOME_COUNTRY);
+  if (!country_code.empty())
+    postal_address->SetString("country_name_code", country_code);
+
+  address->Set("postal_address", postal_address.Pass());
+
+  const base::string16 phone_number =
+      profile.GetInfo(AutofillType(PHONE_HOME_WHOLE_NUMBER), app_locale);
+  if (!phone_number.empty())
+    address->SetString("phone_number", phone_number);
+
+  return address;
 }
 
 class UnmaskCardRequest : public PaymentsRequest {
@@ -232,33 +286,35 @@ class UploadCardRequest : public PaymentsRequest {
     request_dict.Set("risk_data_encoded",
                      BuildRiskDictionary(request_details_.risk_data));
 
+    const std::string& app_locale = request_details_.app_locale;
     scoped_ptr<base::DictionaryValue> context(new base::DictionaryValue());
-    context->SetString("language_code", request_details_.app_locale);
+    context->SetString("language_code", app_locale);
     request_dict.Set("context", context.Pass());
 
-    request_dict.SetString(
-        "cardholder_name",
-        request_details_.card.GetInfo(AutofillType(CREDIT_CARD_NAME),
-                                      request_details_.app_locale));
+    request_dict.SetString("cardholder_name",
+                           request_details_.card.GetInfo(
+                               AutofillType(CREDIT_CARD_NAME), app_locale));
 
-    // TODO(jdonnelly): Get address(es) from the current session or available
-    // profiles and add to the request.
+    scoped_ptr<base::ListValue> addresses(new base::ListValue());
+    for (const AutofillProfile& profile : request_details_.profiles) {
+      addresses->Append(BuildAddressDictionary(profile, app_locale));
+    }
+    request_dict.Set("address", addresses.Pass());
 
     request_dict.SetString("context_token", request_details_.context_token);
 
     int value = 0;
     base::string16 exp_month = request_details_.card.GetInfo(
-        AutofillType(CREDIT_CARD_EXP_MONTH), request_details_.app_locale);
+        AutofillType(CREDIT_CARD_EXP_MONTH), app_locale);
     base::string16 exp_year = request_details_.card.GetInfo(
-        AutofillType(CREDIT_CARD_EXP_4_DIGIT_YEAR),
-        request_details_.app_locale);
+        AutofillType(CREDIT_CARD_EXP_4_DIGIT_YEAR), app_locale);
     if (base::StringToInt(exp_month, &value))
       request_dict.SetInteger("expiration_month", value);
     if (base::StringToInt(exp_year, &value))
       request_dict.SetInteger("expiration_year", value);
 
     base::string16 pan = request_details_.card.GetInfo(
-        AutofillType(CREDIT_CARD_NUMBER), request_details_.app_locale);
+        AutofillType(CREDIT_CARD_NUMBER), app_locale);
     std::string json_request;
     base::JSONWriter::Write(request_dict, &json_request);
     std::string request_content = base::StringPrintf(

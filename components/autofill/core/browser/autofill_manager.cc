@@ -926,28 +926,60 @@ void AutofillManager::ImportFormData(const FormStructure& submitted_form) {
         return;
     }
 
-    // Check for a CVC in order to determine whether we can prompt the user to
-    // upload their card.
-    for (const auto& field : submitted_form) {
-      if (field->Type().GetStorableType() == CREDIT_CARD_VERIFICATION_CODE) {
-        upload_request_.cvc = field->value;
-        break;
+    upload_request_ = payments::PaymentsClient::UploadRequestDetails();
+    if (IsCreditCardUploadEnabled()) {
+      // Check for a CVC in order to determine whether we can prompt the user to
+      // upload their card.
+      for (const auto& field : submitted_form) {
+        if (field->Type().GetStorableType() == CREDIT_CARD_VERIFICATION_CODE) {
+          upload_request_.cvc = field->value;
+          break;
+        }
       }
+
+      // Upload also requires recently used or modified profiles with matching
+      // names.
+      upload_request_.profiles =
+          GetProfilesForCreditCardUpload(*imported_credit_card);
     }
 
-    if (!upload_request_.cvc.empty() && IsCreditCardUploadEnabled()) {
-      // Initiate the upload flow if a CVC was entered into the form and the
-      // feature is enabled.
-      upload_request_ = payments::PaymentsClient::UploadRequestDetails();
+    if (!upload_request_.cvc.empty() && !upload_request_.profiles.empty()) {
       upload_request_.card = *imported_credit_card;
       payments_client_->GetUploadDetails(app_locale_);
     } else {
-      // Otherwise, prompt the user for local save.
+      // If upload isn't enabled or not possible, prompt the user for local
+      // save.
       client_->ConfirmSaveCreditCardLocally(base::Bind(
           base::IgnoreResult(&PersonalDataManager::SaveImportedCreditCard),
           base::Unretained(personal_data_), *imported_credit_card));
     }
   }
+}
+
+std::vector<AutofillProfile> AutofillManager::GetProfilesForCreditCardUpload(
+    const CreditCard& card) {
+  std::vector<AutofillProfile> profiles;
+  const base::Time now = base::Time::Now();
+  const base::TimeDelta fifteen_minutes = base::TimeDelta::FromMinutes(15);
+
+  for (AutofillProfile* profile : personal_data_->GetProfiles()) {
+    if ((now - profile->use_date()) > fifteen_minutes &&
+        (now - profile->modification_date()) > fifteen_minutes) {
+      continue;
+    }
+
+    if (profile->GetInfo(AutofillType(NAME_FULL), app_locale_) !=
+        card.GetInfo(AutofillType(CREDIT_CARD_NAME), app_locale_)) {
+      continue;
+    }
+
+    if (profile->GetRawInfo(ADDRESS_HOME_ZIP).empty())
+      continue;
+
+    profiles.push_back(*profile);
+  }
+
+  return profiles;
 }
 
 // Note that |submitted_form| is passed as a pointer rather than as a reference

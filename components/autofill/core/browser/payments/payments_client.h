@@ -9,6 +9,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "components/autofill/core/browser/autofill_client.h"
+#include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/card_unmask_delegate.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "google_apis/gaia/oauth2_token_service.h"
@@ -76,6 +77,7 @@ class PaymentsClient : public net::URLFetcherDelegate,
 
     CreditCard card;
     base::string16 cvc;
+    std::vector<AutofillProfile> profiles;
     base::string16 context_token;
     std::string risk_data;
     std::string app_locale;

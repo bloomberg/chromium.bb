@@ -373,6 +373,12 @@ class AutofillManager : public AutofillDownloadManager::Observer,
   // Imports the form data, submitted by the user, into |personal_data_|.
   void ImportFormData(const FormStructure& submitted_form);
 
+  // Returns all web profiles known to the personal data manager whose names
+  // match the name on |card| and that have been created or used within the last
+  // 15 minutes.
+  std::vector<AutofillProfile> GetProfilesForCreditCardUpload(
+      const CreditCard& card);
+
   // If |initial_interaction_timestamp_| is unset or is set to a later time than
   // |interaction_timestamp|, updates the cached timestamp.  The latter check is
   // needed because IPC messages can arrive out of order.
