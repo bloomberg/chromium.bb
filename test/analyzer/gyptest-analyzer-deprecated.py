@@ -72,12 +72,16 @@ def run_analyzer4(*args, **kw):
 def EnsureContains(matched=False, build_targets=set()):
   """Verifies output contains |build_targets|."""
   result = _ReadOutputFileContents()
-  if result.get('error', None):
+  if 'error' in result:
     print 'unexpected error', result.get('error')
     test.fail_test()
 
-  if result.get('invalid_targets', None):
+  if 'invalid_targets' in result:
     print 'unexpected invalid_targets', result.get('invalid_targets')
+    test.fail_test()
+
+  if not 'targets' in result:
+    print 'targets not output, error'
     test.fail_test()
 
   # TODO(sky): nuke when get rid of targets.
@@ -120,6 +124,14 @@ def EnsureMatchedAll(targets):
     print 'actual targets:', actual_targets, '\nexpected targets:', targets
     test.fail_test()
 
+  if 'compile_targets' in result:
+    print 'unexpected compile_targets'
+    test.fail_test()
+
+  if 'test_targets' in result:
+    print 'unexpected test_targets'
+    test.fail_test()
+
 
 def EnsureError(expected_error_string):
   """Verifies output contains the error string."""
@@ -146,6 +158,11 @@ def EnsureInvalidTargets(expected_invalid_targets):
         '\nexpected :', expected_invalid_targets
     test.fail_test()
 
+# File that isn't referenced anywhere, along with empty targets shouldn't
+# have invalid_targets.
+_CreateConfigFile(['unrefed_name'], [])
+run_analyzer()
+EnsureContains(matched=False)
 
 # Two targets, A and B (both static_libraries) and A depends upon B. If a file
 # in B changes, then both A and B are output. It is not strictly necessary that

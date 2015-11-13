@@ -268,7 +268,7 @@ class Config(object):
     if not isinstance(config, dict):
       raise Exception('config_path must be a JSON file containing a dictionary')
     self.files = config.get('files', [])
-    if config.get('targets'):
+    if 'targets' in config:
       self.targets = set(config.get('targets'))
       self.deprecated_mode = True
     else:
@@ -818,9 +818,12 @@ def GenerateOutput(target_list, target_dicts, data, params):
                                   target_list, target_dicts, toplevel_dir,
                                   params['build_files'])
     if not calculator.is_build_impacted():
-      _WriteOutput(params, test_targets=[], compile_targets=[],
-                   status=no_dependency_string,
-                   invalid_targets=calculator.invalid_targets)
+      result_dict = { 'status': no_dependency_string,
+                      'test_targets': [],
+                      'compile_targets': [] }
+      if calculator.invalid_targets:
+        result_dict['invalid_targets'] = calculator.invalid_targets
+      _WriteOutput(params, **result_dict)
       return
 
     test_target_names = calculator.find_matching_test_target_names()

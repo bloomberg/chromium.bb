@@ -74,11 +74,11 @@ def run_analyzer4(*args, **kw):
 def EnsureContains(matched=False, compile_targets=set(), test_targets=set()):
   """Verifies output contains |compile_targets|."""
   result = _ReadOutputFileContents()
-  if result.get('error', None):
+  if 'error' in result:
     print 'unexpected error', result.get('error')
     test.fail_test()
 
-  if result.get('invalid_targets', None):
+  if 'invalid_targets' in result:
     print 'unexpected invalid_targets', result.get('invalid_targets')
     test.fail_test()
 
@@ -104,11 +104,11 @@ def EnsureContains(matched=False, compile_targets=set(), test_targets=set()):
 
 def EnsureMatchedAll(compile_targets, test_targets=set()):
   result = _ReadOutputFileContents()
-  if result.get('error', None):
+  if 'error' in result:
     print 'unexpected error', result.get('error')
     test.fail_test()
 
-  if result.get('invalid_targets', None):
+  if 'invalid_targets' in result:
     print 'unexpected invalid_targets', result.get('invalid_targets')
     test.fail_test()
 
