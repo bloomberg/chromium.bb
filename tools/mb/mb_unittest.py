@@ -220,6 +220,26 @@ class UnitTest(unittest.TestCase):
       'build_targets': ['foo_unittests']
     })
 
+  def test_gn_analyze_new_logic(self):
+    files = {'/tmp/in.json': """{\
+               "files": ["foo/foo_unittest.cc"],
+               "test_targets": ["foo_unittests", "bar_unittests"],
+               "additional_compile_targets": []
+             }"""}
+
+    mbw = self.fake_mbw(files)
+    mbw.Call = lambda cmd, env=None, buffer_output=True: (
+        0, 'out/Default/foo_unittests\n', '')
+
+    self.check(['analyze', '-c', 'gn_debug', '//out/Default',
+                '/tmp/in.json', '/tmp/out.json'], mbw=mbw, ret=0)
+    out = json.loads(mbw.files['/tmp/out.json'])
+    self.assertEqual(out, {
+      'status': 'Found dependency',
+      'compile_targets': ['foo_unittests'],
+      'test_targets': ['foo_unittests']
+    })
+
   def test_gn_analyze_all(self):
     files = {'/tmp/in.json': """{\
                "files": ["foo/foo_unittest.cc"],
@@ -233,6 +253,24 @@ class UnitTest(unittest.TestCase):
     out = json.loads(mbw.files['/tmp/out.json'])
     self.assertEqual(out, {
       'status': 'Found dependency (all)',
+    })
+
+  def test_gn_analyze_all_new_logic(self):
+    files = {'/tmp/in.json': """{\
+               "files": ["foo/foo_unittest.cc"],
+               "test_targets": ["bar_unittests"],
+               "additional_compile_targets": ["all"]
+             }"""}
+    mbw = self.fake_mbw(files)
+    mbw.Call = lambda cmd, env=None, buffer_output=True: (
+        0, 'out/Default/foo_unittests\n', '')
+    self.check(['analyze', '-c', 'gn_debug', '//out/Default',
+                '/tmp/in.json', '/tmp/out.json'], mbw=mbw, ret=0)
+    out = json.loads(mbw.files['/tmp/out.json'])
+    self.assertEqual(out, {
+      'status': 'Found dependency (all)',
+      'compile_targets': ['all', 'bar_unittests'],
+      'test_targets': ['bar_unittests'],
     })
 
   def test_gn_analyze_missing_file(self):
@@ -254,6 +292,28 @@ class UnitTest(unittest.TestCase):
       'build_targets': [],
       'targets': [],
       'status': 'No dependency',
+    })
+
+  def test_gn_analyze_missing_file_new_logic(self):
+    files = {'/tmp/in.json': """{\
+               "files": ["foo/foo_unittest.cc"],
+               "test_targets": ["bar_unittests"],
+               "additional_compile_targets": []
+             }"""}
+    mbw = self.fake_mbw(files)
+    mbw.cmds = [
+        (0, '', ''),
+        (1, 'The input matches no targets, configs, or files\n', ''),
+        (1, 'The input matches no targets, configs, or files\n', ''),
+    ]
+
+    self.check(['analyze', '-c', 'gn_debug', '//out/Default',
+                '/tmp/in.json', '/tmp/out.json'], mbw=mbw, ret=0)
+    out = json.loads(mbw.files['/tmp/out.json'])
+    self.assertEqual(out, {
+      'status': 'No dependency',
+      'compile_targets': [],
+      'test_targets': [],
     })
 
   def test_gn_gen(self):

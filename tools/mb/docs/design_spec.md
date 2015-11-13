@@ -187,8 +187,11 @@ treat this as an error, if so desired.
 
 Any of the three inputs may be an empty list:
 
-* It doesn't make sense to call analyze at all if no files were modified,
-  so this should probably return an error.
+* It normally doesn't make sense to call analyze at all if no files
+  were modified, but in rare cases we can hit a race where we try to
+  test a patch after it has already been committed, in which case
+  the list of modified files is empty. We should return 'no dependency'
+  in that case.
 
 * Passing an empty list for one or the other of test_targets and
   additional_compile_targets is perfectly sensible: in the former case,

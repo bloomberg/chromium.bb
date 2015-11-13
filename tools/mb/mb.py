@@ -773,24 +773,43 @@ class MetaBuildWrapper(object):
     if ret:
       return ret
 
-    inp = self.ReadInputJSON(['files', 'targets'])
+    # TODO(dpranke): add 'test_targets' and 'additional_compile_targets'
+    # as required keys once the recipe has been converted over.
+    # See crbug.com/552146.
+    inp = self.ReadInputJSON(['files'])
     if self.args.verbose:
       self.Print()
       self.Print('analyze input:')
       self.PrintJSON(inp)
       self.Print()
 
+    use_new_logic = ('test_targets' in inp and
+                     'additional_compile_targets' in inp)
+    if use_new_logic:
+      # TODO(crbug.com/555273) - currently GN treats targets and
+      # additional_compile_targets identically since we can't tell the
+      # difference between a target that is a group in GN and one that isn't.
+      # We should eventually fix this and treat the two types differently.
+      targets = (set(inp['test_targets']) |
+                 set(inp['additional_compile_targets']))
+    else:
+      targets = set(inp['targets'])
+
     output_path = self.args.output_path[0]
 
     # Bail out early if a GN file was modified, since 'gn refs' won't know
-    # what to do about it.
-    if any(f.endswith('.gn') or f.endswith('.gni') for f in inp['files']):
-      self.WriteJSON({'status': 'Found dependency (all)'}, output_path)
-      return 0
-
-    # Bail out early if 'all' was asked for, since 'gn refs' won't recognize it.
-    if 'all' in inp['targets']:
-      self.WriteJSON({'status': 'Found dependency (all)'}, output_path)
+    # what to do about it. Also, bail out early if 'all' was asked for,
+    # since we can't deal with it yet.
+    if (any(f.endswith('.gn') or f.endswith('.gni') for f in inp['files']) or
+        'all' in targets):
+      if use_new_logic:
+        self.WriteJSON({
+              'status': 'Found dependency (all)',
+              'compile_targets': sorted(targets),
+              'test_targets': sorted(targets & set(inp['test_targets'])),
+            }, output_path)
+      else:
+        self.WriteJSON({'status': 'Found dependency (all)'}, output_path)
       return 0
 
     # This shouldn't normally happen, but could due to unusual race conditions,
@@ -798,9 +817,18 @@ class MetaBuildWrapper(object):
     # the patch has landed.
     if not inp['files']:
       self.Print('Warning: No files modified in patch, bailing out early.')
-      self.WriteJSON({'targets': [],
-                      'build_targets': [],
-                      'status': 'No dependency'}, output_path)
+      if use_new_logic:
+        self.WriteJSON({
+              'status': 'No dependency',
+              'compile_targets': [],
+              'test_targets': [],
+            }, output_path)
+      else:
+        self.WriteJSON({
+              'status': 'No dependency',
+              'targets': [],
+              'build_targets': [],
+            }, output_path)
       return 0
 
     ret = 0
@@ -808,7 +836,7 @@ class MetaBuildWrapper(object):
     response_file.write('\n'.join(inp['files']) + '\n')
     response_file.close()
 
-    matching_targets = []
+    matching_targets = set()
     try:
       cmd = self.GNCmd('refs', self.args.path[0]) + [
           '@%s' % response_file.name, '--all', '--as=output']
@@ -819,8 +847,8 @@ class MetaBuildWrapper(object):
       build_dir = self.ToSrcRelPath(self.args.path[0]) + self.sep
       for output in out.splitlines():
         build_output = output.replace(build_dir, '')
-        if build_output in inp['targets']:
-          matching_targets.append(build_output)
+        if build_output in targets:
+          matching_targets.add(build_output)
 
       cmd = self.GNCmd('refs', self.args.path[0]) + [
           '@%s' % response_file.name, '--all']
@@ -833,25 +861,40 @@ class MetaBuildWrapper(object):
         # We want to accept 'chrome/android:chrome_public_apk' and
         # just 'chrome_public_apk'. This may result in too many targets
         # getting built, but we can adjust that later if need be.
-        for input_target in inp['targets']:
+        for input_target in targets:
           if (input_target == build_target or
               build_target.endswith(':' + input_target)):
-            matching_targets.append(input_target)
+            matching_targets.add(input_target)
     finally:
       self.RemoveFile(response_file.name)
 
     if matching_targets:
-      # TODO: it could be that a target X might depend on a target Y
-      # and both would be listed in the input, but we would only need
-      # to specify target X as a build_target (whereas both X and Y are
-      # targets). I'm not sure if that optimization is generally worth it.
-      self.WriteJSON({'targets': sorted(set(matching_targets)),
-                      'build_targets': sorted(set(matching_targets)),
-                      'status': 'Found dependency'}, output_path)
+      if use_new_logic:
+        self.WriteJSON({
+              'status': 'Found dependency',
+              'compile_targets': sorted(matching_targets),
+              'test_targets': sorted(matching_targets &
+                                     set(inp['test_targets'])),
+            }, output_path)
+      else:
+        self.WriteJSON({
+            'status': 'Found dependency',
+            'targets': sorted(matching_targets),
+            'build_targets': sorted(matching_targets),
+        }, output_path)
     else:
-      self.WriteJSON({'targets': [],
-                      'build_targets': [],
-                      'status': 'No dependency'}, output_path)
+      if use_new_logic:
+        self.WriteJSON({
+            'status': 'No dependency',
+            'compile_targets': [],
+            'test_targets': [],
+        }, output_path)
+      else:
+        self.WriteJSON({
+            'status': 'No dependency',
+            'targets': [],
+            'build_targets': [],
+        }, output_path)
 
     if self.args.verbose:
       outp = json.loads(self.ReadFile(output_path))
