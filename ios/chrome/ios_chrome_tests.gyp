@@ -114,6 +114,8 @@
         'browser/sync/sync_setup_service_mock.h',
         'test/block_cleanup_test.h',
         'test/block_cleanup_test.mm',
+        'test/ios_chrome_scoped_testing_local_state.cc',
+        'test/ios_chrome_scoped_testing_local_state.h',
         'test/ios_chrome_unit_test_suite.cc',
         'test/ios_chrome_unit_test_suite.h',
         'test/run_all_unittests.cc',
