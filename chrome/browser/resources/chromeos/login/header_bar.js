@@ -289,12 +289,8 @@ cr.define('login', function() {
      */
     updateUI_: function() {
       var gaiaIsActive = (this.signinUIState_ == SIGNIN_UI_STATE.GAIA_SIGNIN);
-      var gaiaIsActiveWithBackButton =
-          gaiaIsActive && $('gaia-navigation').backVisible;
       var enrollmentIsActive =
           (this.signinUIState_ == SIGNIN_UI_STATE.ENROLLMENT);
-      var enrollmentIsActiveWithBackButton =
-          enrollmentIsActive && $('oauth-enroll-navigation').backVisible;
       var accountPickerIsActive =
           (this.signinUIState_ == SIGNIN_UI_STATE.ACCOUNT_PICKER);
       var supervisedUserCreationDialogIsActive =
@@ -333,9 +329,9 @@ cr.define('login', function() {
           wrongHWIDWarningIsActive ||
           isSamlPasswordConfirm ||
           isMultiProfilesUI ||
-          (gaiaIsActive && $('gaia-signin').cancelable) ||
-          enrollmentIsActiveWithBackButton ||
-          gaiaIsActiveWithBackButton;
+          (gaiaIsActive && $('gaia-signin').closable) ||
+          (enrollmentIsActive && !$('oauth-enrollment').isAtTheBeginning()) ||
+          (gaiaIsActive && !$('gaia-signin').isAtTheBeginning());
       $('restart-header-bar-item').hidden = !this.showReboot_;
       $('shutdown-header-bar-item').hidden = !this.showShutdown_;
       $('sign-out-user-item').hidden = !isLockScreen;

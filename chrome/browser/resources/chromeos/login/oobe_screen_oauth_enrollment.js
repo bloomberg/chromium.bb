@@ -57,6 +57,13 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
      */
     navigation_: undefined,
 
+    /**
+     * Value contained in the last received 'backButton' event.
+     * @type {boolean}
+     * @private
+     */
+    lastBackMessageValue_: false,
+
     /** @override */
     decorate: function() {
       this.navigation_ = $('oauth-enroll-navigation');
@@ -93,18 +100,19 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
               $('oauth-saml-notice-message').textContent =
                   loadTimeData.getStringF('samlNotice',
                                           this.authenticator_.authDomain);
-              this.navigation_.backVisible = false;
             }
             this.classList.toggle('saml', isSAML);
             if (Oobe.getInstance().currentScreen == this)
               Oobe.getInstance().updateScreenSize(this);
+            this.lastBackMessageValue_ = false;
+            this.updateControlsState();
           }).bind(this));
 
       this.authenticator_.addEventListener('backButton',
           (function(e) {
-            this.navigation_.backVisible = !!e.detail;
+            this.lastBackMessageValue_ = !!e.detail;
             $('oauth-enroll-auth-view').focus();
-            $('login-header-bar').updateUI_();
+            this.updateControlsState();
           }).bind(this));
 
       this.authenticator_.insecureContentBlockedCallback =
@@ -241,12 +249,6 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
       this.classList.toggle('oauth-enroll-state-' + this.currentStep_, false);
       this.classList.toggle('oauth-enroll-state-' + step, true);
 
-      this.navigation_.backVisible = false;
-      this.navigation_.closeVisible = this.isManualEnrollment_ &&
-          (step == STEP_SIGNIN || step == STEP_ERROR);
-      this.navigation_.refreshVisible =
-          !this.isManualEnrollment_ && step == STEP_SIGNIN;
-
       if (step == STEP_SIGNIN) {
         $('oauth-enroll-auth-view').focus();
       } else if (step == STEP_ERROR) {
@@ -258,7 +260,10 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
       } else if (step == STEP_ATTRIBUTE_PROMPT_ERROR) {
         $('oauth-enroll-attribute-prompt-error-card').submitButton.focus();
       }
+
       this.currentStep_ = step;
+      this.lastBackMessageValue_ = false;
+      this.updateControlsState();
     },
 
     /**
@@ -279,7 +284,9 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
     },
 
     doReload: function() {
+      this.lastBackMessageValue_ = false;
       this.authenticator_.reload();
+      this.updateControlsState();
     },
 
     /**
@@ -307,6 +314,30 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
       chrome.send('oauthEnrollAttributes',
                   [$('oauth-enroll-asset-id').value,
                    $('oauth-enroll-location').value]);
+    },
+
+    /**
+     * Returns true if we are at the begging of enrollment flow (i.e. the email
+     * page).
+     *
+     * @type {boolean}
+     */
+    isAtTheBeginning: function() {
+      return !this.navigation_.backVisible && this.currentStep_ == STEP_SIGNIN;
+    },
+
+    /**
+     * Updates visibility of navigation buttons.
+     */
+    updateControlsState: function() {
+      this.navigation_.backVisible = this.currentStep_ == STEP_SIGNIN &&
+                                     this.lastBackMessageValue_;
+      this.navigation_.refreshVisible = this.isAtTheBeginning() &&
+                                        !this.isManualEnrollment_;
+      this.navigation_.closeVisible = (this.currentStep_ == STEP_SIGNIN ||
+                                       this.currentStep_ == STEP_ERROR) &&
+                                      !this.navigation_.refreshVisible;
+      $('login-header-bar').updateUI_();
     }
   };
 });

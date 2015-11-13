@@ -27,17 +27,20 @@ class WebviewLoginTest : public OobeBaseTest {
   }
 
   void ExpectIdentifierPage() {
-    // First page: no back button, no close button, #identifier input field.
+    // First page: no back button, no close button, refresh button, #identifier
+    // input field.
     JsExpect("!$('gaia-navigation').backVisible");
     JsExpect("!$('gaia-navigation').closeVisible");
+    JsExpect("$('gaia-navigation').refreshVisible");
     JsExpect("$('signin-frame').src.indexOf('#identifier') != -1");
   }
 
   void ExpectPasswordPage() {
-    // Second page: back button, no close button, #challengepassword input
-    // field.
+    // Second page: back button, close button, no refresh button,
+    // #challengepassword input field.
     JsExpect("$('gaia-navigation').backVisible");
-    JsExpect("!$('gaia-navigation').closeVisible");
+    JsExpect("$('gaia-navigation').closeVisible");
+    JsExpect("!$('gaia-navigation').refreshVisible");
     JsExpect("$('signin-frame').src.indexOf('#challengepassword') != -1");
   }
 

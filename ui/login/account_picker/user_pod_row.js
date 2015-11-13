@@ -2523,7 +2523,7 @@ cr.define('login', function() {
                 SIGNIN_UI_STATE.GAIA_SIGNIN &&
             emptyPodRow &&
             this.pods.length > 0) {
-          login.GaiaSigninScreen.updateCancelButtonState();
+          login.GaiaSigninScreen.updateControlsState();
         }
       }
     },
