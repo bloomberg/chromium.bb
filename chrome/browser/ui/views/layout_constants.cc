@@ -9,8 +9,7 @@
 
 int GetLayoutConstant(LayoutConstant constant) {
   const int kFindBarVerticalOffset[] = {1, 6, 6};
-  // The -1 means the label and the icon will overlap by a pixel.
-  const int kIconLabelViewInternalPadding[] = {3, -1, -1};
+  const int kIconLabelViewInternalPadding[] = {3, 2, 2};
   const int kIconLabelViewTrailingPadding[] = {2, 8, 8};
   const int kLocationBarBorderThickness[] = {2, 1, 1};
   const int kLocationBarBubbleHorizontalPadding[] = {1, 4, 4};

@@ -110,3 +110,14 @@ void SelectedKeywordView::SetKeyword(const base::string16& keyword) {
 const char* SelectedKeywordView::GetClassName() const {
   return "SelectedKeywordView";
 }
+
+int SelectedKeywordView::GetImageAndPaddingWidth() const {
+  int width = IconLabelBubbleView::GetImageAndPaddingWidth();
+  // Squeeze the icon and label closer to account for intrinsic padding in the
+  // icon.
+  if (ui::MaterialDesignController::IsModeMaterial() && width > 0)
+    width -= 3;
+
+  DCHECK_GT(width, 0);
+  return width;
+}

@@ -68,6 +68,10 @@ class IconLabelBubbleView : public views::View {
   // full-width view and can be used to animate the width of the view.
   virtual double WidthMultiplier() const;
 
+  // Returns the amount of horizontal space needed to draw the image and its
+  // padding before the label.
+  virtual int GetImageAndPaddingWidth() const;
+
   // views::View:
   gfx::Size GetPreferredSize() const override;
   void Layout() override;

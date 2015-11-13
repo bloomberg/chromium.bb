@@ -86,6 +86,13 @@ double IconLabelBubbleView::WidthMultiplier() const {
   return 1.0;
 }
 
+int IconLabelBubbleView::GetImageAndPaddingWidth() const {
+  const int image_width = image_->GetPreferredSize().width();
+  return image_width
+             ? image_width + GetLayoutConstant(ICON_LABEL_VIEW_INTERNAL_PADDING)
+             : 0;
+}
+
 gfx::Size IconLabelBubbleView::GetPreferredSize() const {
   // Height will be ignored by the LocationBarView.
   return GetSizeForLabelWidth(label_->GetPreferredSize().width());
@@ -102,9 +109,7 @@ void IconLabelBubbleView::Layout() {
                              GetBubbleOuterPadding(icon_has_enough_padding)),
                     0, image_->GetPreferredSize().width(), height());
 
-  const int padding = GetLayoutConstant(ICON_LABEL_VIEW_INTERNAL_PADDING);
-  int pre_label_width =
-      GetBubbleOuterPadding(true) + (image_width ? (image_width + padding) : 0);
+  int pre_label_width = GetBubbleOuterPadding(true) + GetImageAndPaddingWidth();
   label_->SetBounds(pre_label_width, 0,
                     width() - pre_label_width - GetBubbleOuterPadding(false),
                     height());
@@ -126,12 +131,9 @@ void IconLabelBubbleView::OnNativeThemeChanged(
 gfx::Size IconLabelBubbleView::GetSizeForLabelWidth(int width) const {
   gfx::Size size(image_->GetPreferredSize());
   if (ShouldShowBackground()) {
-    const int image_width = image_->GetPreferredSize().width();
-    const int padding = GetLayoutConstant(ICON_LABEL_VIEW_INTERNAL_PADDING);
-    const int non_label_width =
-        GetBubbleOuterPadding(true) +
-        (image_width ? (image_width + padding) : 0) +
-        GetBubbleOuterPadding(false);
+    const int non_label_width = GetBubbleOuterPadding(true) +
+                                GetImageAndPaddingWidth() +
+                                GetBubbleOuterPadding(false);
     size = gfx::Size(WidthMultiplier() * (width + non_label_width), 0);
     if (!ui::MaterialDesignController::IsModeMaterial())
       size.SetToMax(background_painter_->GetMinimumSize());
