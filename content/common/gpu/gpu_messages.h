@@ -678,12 +678,15 @@ IPC_SYNC_MESSAGE_ROUTED2_1(GpuCommandBufferMsg_CreateStreamTexture,
 // Accelerated Video Decoder Messages
 // These messages are sent from Renderer process to GPU process.
 
+// Set a CDM on the decoder to handle encrypted buffers.
+IPC_MESSAGE_ROUTED1(AcceleratedVideoDecoderMsg_SetCdm,
+                    int32_t) /* CDM ID */
+
 // Send input buffer for decoding.
 IPC_MESSAGE_ROUTED1(AcceleratedVideoDecoderMsg_Decode,
                     AcceleratedVideoDecoderMsg_Decode_Params)
 
-// Sent from Renderer process to the GPU process to give the texture IDs for
-// the textures the decoder will use for output.
+// Give the texture IDs for the textures the decoder will use for output.
 IPC_MESSAGE_ROUTED2(AcceleratedVideoDecoderMsg_AssignPictureBuffers,
                     std::vector<int32>,  /* Picture buffer ID */
                     std::vector<uint32>) /* Texture ID */
@@ -707,6 +710,10 @@ IPC_MESSAGE_ROUTED0(AcceleratedVideoDecoderMsg_Destroy)
 // These messages are sent from GPU process to Renderer process.
 // Inform AcceleratedVideoDecoderHost that AcceleratedVideoDecoder has been
 // created.
+
+// Notify the CDM setting result.
+IPC_MESSAGE_ROUTED1(AcceleratedVideoDecoderHostMsg_CdmAttached,
+                    bool) /* success */
 
 // Accelerated video decoder has consumed input buffer from transfer buffer.
 IPC_MESSAGE_ROUTED1(AcceleratedVideoDecoderHostMsg_BitstreamBufferProcessed,

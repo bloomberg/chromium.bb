@@ -94,8 +94,9 @@ class CONTENT_EXPORT AndroidVideoDecodeAccelerator
 
   ~AndroidVideoDecodeAccelerator() override;
 
-  // Does not take ownership of |client| which must outlive |*this|.
+  // media::VideoDecodeAccelerator implementation:
   bool Initialize(media::VideoCodecProfile profile, Client* client) override;
+  void SetCdm(int cdm_id) override;
   void Decode(const media::BitstreamBuffer& bitstream_buffer) override;
   void AssignPictureBuffers(
       const std::vector<media::PictureBuffer>& buffers) override;
@@ -105,7 +106,7 @@ class CONTENT_EXPORT AndroidVideoDecodeAccelerator
   void Destroy() override;
   bool CanDecodeOnIOThread() override;
 
-  // AndroidVideoDecodeStateProvider
+  // AVDAStateProvider implementation:
   const gfx::Size& GetSize() const override;
   const base::ThreadChecker& ThreadChecker() const override;
   base::WeakPtr<gpu::gles2::GLES2Decoder> GetGlDecoder() const override;
@@ -145,6 +146,9 @@ class CONTENT_EXPORT AndroidVideoDecodeAccelerator
 
   // Requests picture buffers from the client.
   void RequestPictureBuffers();
+
+  // Notifies the client of the CDM setting result.
+  void NotifyCdmAttached(bool success);
 
   // Notifies the client about the availability of a picture.
   void NotifyPictureReady(const media::Picture& picture);

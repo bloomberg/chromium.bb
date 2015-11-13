@@ -9,7 +9,15 @@
 
 namespace media {
 
+void VideoDecodeAccelerator::Client::NotifyCdmAttached(bool success) {
+  NOTREACHED() << "By default CDM is not supported.";
+}
+
 VideoDecodeAccelerator::~VideoDecodeAccelerator() {}
+
+void VideoDecodeAccelerator::SetCdm(int cdm_id) {
+  NOTREACHED() << "By default CDM is not supported.";
+}
 
 bool VideoDecodeAccelerator::CanDecodeOnIOThread() {
   // GPU process subclasses must override this.

@@ -60,6 +60,11 @@ class MEDIA_EXPORT VideoDecodeAccelerator {
   // implements.
   class MEDIA_EXPORT Client {
    public:
+    // SetCdm completion callback to indicate whether the CDM is successfully
+    // attached to the decoder. The default implementation is a no-op since most
+    // VDAs don't support encrypted video.
+    virtual void NotifyCdmAttached(bool success);
+
     // Callback to tell client how many and what size of buffers to provide.
     // Note that the actual count provided through AssignPictureBuffers() can be
     // larger than the value requested.
@@ -97,11 +102,24 @@ class MEDIA_EXPORT VideoDecodeAccelerator {
   // Initializes the video decoder with specific configuration.  Called once per
   // decoder construction.  This call is synchronous and returns true iff
   // initialization is successful.
+  //
+  // For encrpyted video, the decoder needs a CDM to be able to decode encrypted
+  // buffers. SetCdm() should be called after Initialize() to set such a CDM.
+  // Client::NotifyCdmAttached() will then be called to indicate whether the CDM
+  // is successfully attached to the decoder. Only when a CDM is successfully
+  // attached can we start to decode.
+  //
   // Parameters:
   //  |profile| is the video stream's format profile.
-  //  |client| is the client of this video decoder.  The provided pointer must
-  //  be valid until Destroy() is called.
+  //  |client| is the client of this video decoder. Does not take ownership of
+  //  |client| which must be valid until Destroy() is called.
   virtual bool Initialize(VideoCodecProfile profile, Client* client) = 0;
+
+  // Sets a CDM to be used by the decoder to decode encrypted buffers.
+  // Client::NotifyCdmAttached() will then be called to indicate whether the CDM
+  // is successfully attached to the decoder. The default implementation is a
+  // no-op since most VDAs don't support encrypted video.
+  virtual void SetCdm(int cdm_id);
 
   // Decodes given bitstream buffer that contains at most one frame.  Once
   // decoder is done with processing |bitstream_buffer| it will call

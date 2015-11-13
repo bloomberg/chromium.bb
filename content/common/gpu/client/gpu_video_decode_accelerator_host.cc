@@ -46,6 +46,8 @@ bool GpuVideoDecodeAcceleratorHost::OnMessageReceived(const IPC::Message& msg) {
   DCHECK(CalledOnValidThread());
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(GpuVideoDecodeAcceleratorHost, msg)
+    IPC_MESSAGE_HANDLER(AcceleratedVideoDecoderHostMsg_CdmAttached,
+                        OnCdmAttached)
     IPC_MESSAGE_HANDLER(AcceleratedVideoDecoderHostMsg_BitstreamBufferProcessed,
                         OnBitstreamBufferProcessed)
     IPC_MESSAGE_HANDLER(AcceleratedVideoDecoderHostMsg_ProvidePictureBuffers,
@@ -102,6 +104,13 @@ bool GpuVideoDecodeAcceleratorHost::Initialize(media::VideoCodecProfile profile,
   }
   decoder_route_id_ = route_id;
   return true;
+}
+
+void GpuVideoDecodeAcceleratorHost::SetCdm(int cdm_id) {
+  DCHECK(CalledOnValidThread());
+  if (!channel_)
+    return;
+  Send(new AcceleratedVideoDecoderMsg_SetCdm(decoder_route_id_, cdm_id));
 }
 
 void GpuVideoDecodeAcceleratorHost::Decode(
@@ -207,6 +216,12 @@ void GpuVideoDecodeAcceleratorHost::Send(IPC::Message* message) {
     DLOG(ERROR) << "Send(" << message_type << ") failed";
     PostNotifyError(PLATFORM_FAILURE);
   }
+}
+
+void GpuVideoDecodeAcceleratorHost::OnCdmAttached(bool success) {
+  DCHECK(CalledOnValidThread());
+  if (client_)
+    client_->NotifyCdmAttached(success);
 }
 
 void GpuVideoDecodeAcceleratorHost::OnBitstreamBufferProcessed(

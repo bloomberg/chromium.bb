@@ -138,6 +138,12 @@ bool AndroidVideoDecodeAccelerator::Initialize(media::VideoCodecProfile profile,
   return true;
 }
 
+void AndroidVideoDecodeAccelerator::SetCdm(int /* cdm_id */) {
+  // TODO(xhwang): Implement CDM setting here.
+  NOTIMPLEMENTED();
+  NotifyCdmAttached(false);
+}
+
 void AndroidVideoDecodeAccelerator::DoIOTask() {
   DCHECK(thread_checker_.CalledOnValidThread());
   TRACE_EVENT0("media", "AVDA::DoIOTask");
@@ -581,6 +587,10 @@ void AndroidVideoDecodeAccelerator::PostError(
       from_here, base::Bind(&AndroidVideoDecodeAccelerator::NotifyError,
                             weak_this_factory_.GetWeakPtr(), error));
   state_ = ERROR;
+}
+
+void AndroidVideoDecodeAccelerator::NotifyCdmAttached(bool success) {
+  client_->NotifyCdmAttached(success);
 }
 
 void AndroidVideoDecodeAccelerator::NotifyPictureReady(

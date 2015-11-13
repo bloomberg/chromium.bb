@@ -36,6 +36,7 @@ class GpuVideoDecodeAcceleratorHost
 
   // media::VideoDecodeAccelerator implementation.
   bool Initialize(media::VideoCodecProfile profile, Client* client) override;
+  void SetCdm(int cdm_id) override;
   void Decode(const media::BitstreamBuffer& bitstream_buffer) override;
   void AssignPictureBuffers(
       const std::vector<media::PictureBuffer>& buffers) override;
@@ -58,6 +59,7 @@ class GpuVideoDecodeAcceleratorHost
 
   // IPC handlers, proxying media::VideoDecodeAccelerator::Client for the GPU
   // process.  Should not be called directly.
+  void OnCdmAttached(bool success);
   void OnBitstreamBufferProcessed(int32 bitstream_buffer_id);
   void OnProvidePictureBuffer(uint32 num_requested_buffers,
                               const gfx::Size& dimensions,
