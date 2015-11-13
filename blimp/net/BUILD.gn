@@ -9,6 +9,8 @@ component("blimp_net") {
     "blimp_message_checkpoint_observer.h",
     "blimp_message_demultiplexer.cc",
     "blimp_message_demultiplexer.h",
+    "blimp_message_multiplexer.cc",
+    "blimp_message_multiplexer.h",
     "blimp_message_output_buffer.cc",
     "blimp_message_output_buffer.h",
     "blimp_message_processor.h",
@@ -48,6 +50,7 @@ source_set("unit_tests") {
 
   sources = [
     "blimp_message_demultiplexer_unittest.cc",
+    "blimp_message_multiplexer_unittest.cc",
     "stream_packet_reader_unittest.cc",
     "stream_packet_writer_unittest.cc",
     "tcp_transport_unittest.cc",
