@@ -45,11 +45,6 @@ const char kSwitchUrlSource[] = "url-source";
 // Disables differential updates.
 const char kSwitchDisableDeltaUpdates[] = "disable-delta-updates";
 
-#if defined(OS_WIN)
-// Disables background downloads.
-const char kSwitchDisableBackgroundDownloads[] = "disable-background-downloads";
-#endif  // defined(OS_WIN)
-
 // Returns true if and only if |test| is contained in |vec|.
 bool HasSwitchValue(const std::vector<std::string>& vec, const char* test) {
   if (vec.empty())
