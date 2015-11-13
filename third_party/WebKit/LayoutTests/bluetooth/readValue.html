@@ -9,8 +9,8 @@ test(t => { assert_true(window.testRunner instanceof Object); t.done(); },
      'window.testRunner is required for the following tests.');
 
 promise_test(() => {
-  testRunner.setBluetoothMockDataSet('GenericAccessAdapter');
-  return requestDeviceWithKeyDown({filters: [{services: ['generic_access']}]})
+  testRunner.setBluetoothMockDataSet('HeartRateAdapter');
+  return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}]})
     .then(device => device.connectGATT())
     .then(gattServer => gattServer.getPrimaryService('generic_access'))
     .then(service => service.getCharacteristic('gap.device_name'))
@@ -25,13 +25,13 @@ promise_test(() => {
 }, 'Device goes out of range. Reject with NetworkError.');
 
 promise_test(() => {
-  testRunner.setBluetoothMockDataSet('GenericAccessAdapter');
-  return requestDeviceWithKeyDown({filters: [{services: ['generic_access']}]})
+  testRunner.setBluetoothMockDataSet('HeartRateAdapter');
+  return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}]})
     .then(device => device.connectGATT())
     .then(gattServer => gattServer.getPrimaryService('generic_access'))
     .then(service => service.getCharacteristic('gap.device_name'))
     .then(characteristic => {
-      testRunner.setBluetoothMockDataSet('MissingServiceGenericAccessAdapter');
+      testRunner.setBluetoothMockDataSet('MissingServiceHeartRateAdapter');
       return assert_promise_rejects_with_message(
         characteristic.readValue(), new DOMException(
           'GATT Service no longer exists.',
@@ -41,14 +41,14 @@ promise_test(() => {
 }, 'Service gets removed. Reject with InvalidStateError.');
 
 promise_test(() => {
-  testRunner.setBluetoothMockDataSet('GenericAccessAdapter');
-  return requestDeviceWithKeyDown({filters: [{services: ['generic_access']}]})
+  testRunner.setBluetoothMockDataSet('HeartRateAdapter');
+  return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}]})
     .then(device => device.connectGATT())
     .then(gattService => gattService.getPrimaryService('generic_access'))
     .then(service => service.getCharacteristic('gap.device_name'))
     .then(characteristic => {
       testRunner.setBluetoothMockDataSet(
-        'MissingCharacteristicGenericAccessAdapter');
+        'MissingCharacteristicHeartRateAdapter');
       return assert_promise_rejects_with_message(
         characteristic.readValue(), new DOMException(
           'GATT Characteristic no longer exists.',
@@ -74,8 +74,8 @@ gatt_errors_tests.forEach(testSpec => {
 });
 
 promise_test(() => {
-  testRunner.setBluetoothMockDataSet('GenericAccessAdapter');
-  return requestDeviceWithKeyDown({filters: [{services: ['generic_access']}]})
+  testRunner.setBluetoothMockDataSet('HeartRateAdapter');
+  return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}]})
     .then(device => device.connectGATT())
     .then(gattServer => gattServer.getPrimaryService('generic_access'))
     .then(service => service.getCharacteristic('gap.device_name'))
@@ -83,7 +83,7 @@ promise_test(() => {
     .then(value => {
       let decoder = new TextDecoder('utf-8');
       let value_str = decoder.decode(value);
-      assert_equals(value_str, 'Generic Access Device');
+      assert_equals(value_str, 'Heart Rate Device');
     });
 }, 'Request for characteristic. Should return right characteristic');
 </script>

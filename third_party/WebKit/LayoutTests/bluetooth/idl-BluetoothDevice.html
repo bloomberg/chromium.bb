@@ -30,7 +30,7 @@ promise_test(() => {
       device.productVersion = 'overwritten';
       device.paired = 'overwritten';
       device.uuids = 'overwritten';
-      assert_equals(device.id, '00:00:00:00:00:03');
+      assert_equals(device.id, '00:00:00:00:00:00');
       assert_equals(device.name, 'Heart Rate Device');
       assert_equals(device.deviceClass, 0x1F00);
       assert_equals(device.vendorIDSource, 'bluetooth');
@@ -38,8 +38,8 @@ promise_test(() => {
       assert_equals(device.productID, 1);
       assert_equals(device.productVersion, 2);
       assert_equals(device.paired, true);
-      assert_equals(device.uuids[0], generic_access.uuid);
-      assert_equals(device.uuids[1], heart_rate.uuid);
+      assert_equals(device.uuids.length, 1);
+      assert_equals(device.uuids[0], heart_rate.uuid);
     });
 }, 'BluetoothDevice attributes.');
 </script>

@@ -9,8 +9,8 @@ test(t => { assert_true(window.testRunner instanceof Object); t.done(); },
      'window.testRunner is required for the following tests.');
 
 promise_test(() => {
-  testRunner.setBluetoothMockDataSet('GenericAccessAdapter');
-  return requestDeviceWithKeyDown({filters: [{services: ['generic_access']}]})
+  testRunner.setBluetoothMockDataSet('HeartRateAdapter');
+  return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}]})
     .then(device => {
       testRunner.setBluetoothMockDataSet('EmptyAdapter');
       return assert_promise_rejects_with_message(
@@ -83,8 +83,8 @@ promise_test(() => {
 });
 
 promise_test(() => {
-  testRunner.setBluetoothMockDataSet('GenericAccessAdapter');
-  return requestDeviceWithKeyDown({filters: [{services: ['generic_access']}]})
+  testRunner.setBluetoothMockDataSet('HeartRateAdapter');
+  return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}]})
     .then(device => device.connectGATT())
     .then(gattServer => assert_true(gattServer.connected));
 }, 'Device will connect');

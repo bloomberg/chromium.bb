@@ -68,11 +68,11 @@ promise_test(() => {
 }, 'Reject with NotFoundError if there are no devices around.');
 
 promise_test(() => {
-  testRunner.setBluetoothMockDataSet('GenericAccessAdapter');
+  testRunner.setBluetoothMockDataSet('HeartRateAdapter');
   return Promise.all([
-    requestDeviceWithKeyDown({filters: [{services: [generic_access.alias]}]}),
-    requestDeviceWithKeyDown({filters: [{services: [generic_access.name]}]}),
-    requestDeviceWithKeyDown({filters: [{services: [generic_access.uuid]}]})
+    requestDeviceWithKeyDown({filters: [{services: [heart_rate.alias]}]}),
+    requestDeviceWithKeyDown({filters: [{services: [heart_rate.name]}]}),
+    requestDeviceWithKeyDown({filters: [{services: [heart_rate.uuid]}]})
   ]).then(devices => {
     devices.forEach(device => {
       assert_equals(device.constructor.name, 'BluetoothDevice');
@@ -81,17 +81,17 @@ promise_test(() => {
 }, 'Mock will resolve.');
 
 promise_test(() => {
-  testRunner.setBluetoothMockDataSet('GenericAccessAdapter');
+  testRunner.setBluetoothMockDataSet('HeartRateAdapter');
   return assert_promise_rejects(
-    navigator.bluetooth.requestDevice({filters: [{services: ['generic_access']}]}),
+    navigator.bluetooth.requestDevice({filters: [{services: ['heart_rate']}]}),
     new DOMException('', 'SecurityError'));
 }, 'Requires a user gesture.');
 
 promise_test(() => {
-  testRunner.setBluetoothMockDataSet('GenericAccessAdapter');
+  testRunner.setBluetoothMockDataSet('HeartRateAdapter');
   return callWithKeyDown(() => {
-    var first = navigator.bluetooth.requestDevice({filters: [{services: ['generic_access']}]});
-    var second = navigator.bluetooth.requestDevice({filters: [{services: ['generic_access']}]});
+    var first = navigator.bluetooth.requestDevice({filters: [{services: ['heart_rate']}]});
+    var second = navigator.bluetooth.requestDevice({filters: [{services: ['heart_rate']}]});
     return Promise.all([
       first.then(device => assert_equals(device.constructor.name, 'BluetoothDevice')),
       assert_promise_rejects(second, new DOMException('', 'SecurityError')),
@@ -100,11 +100,11 @@ promise_test(() => {
 }, 'Consumes a user gesture.');
 
 promise_test(() => {
-  testRunner.setBluetoothMockDataSet('GenericAccessAdapter');
+  testRunner.setBluetoothMockDataSet('HeartRateAdapter');
   return Promise.all([
-    requestDeviceWithKeyDown({filters: [{services: [generic_access.alias]}]}),
-    requestDeviceWithKeyDown({filters: [{services: [generic_access.name]}]}),
-    requestDeviceWithKeyDown({filters: [{services: [generic_access.uuid]}]})
+    requestDeviceWithKeyDown({filters: [{services: [heart_rate.alias]}]}),
+    requestDeviceWithKeyDown({filters: [{services: [heart_rate.name]}]}),
+    requestDeviceWithKeyDown({filters: [{services: [heart_rate.uuid]}]})
   ]).then(devices => {
     // requestDevice should return the same object if it was created
     // earlier. https://crbug.com/495270
@@ -125,7 +125,7 @@ promise_test(() => {
       {services: ['glucose', 'heart_rate']}
     ],
     // The optionalServices shouldn't affect the platform's scan.
-    optionalServices: [generic_access.name]
+    optionalServices: ['generic_access']
   });
 }, 'Filters restrict the platform\'s Bluetooth scan.');
 
@@ -163,8 +163,8 @@ promise_test(() => {
 promise_test(() => {
   testRunner.setBluetoothMockDataSet('GlucoseHeartRateAdapter');
   return requestDeviceWithKeyDown({
-    filters: [{services: ['generic_access', 'heart_rate']}]
-  }).then(device => assert_equals(device.name, 'Heart Rate Device'));
+    filters: [{services: ['glucose', 'tx_power']}]
+  }).then(device => assert_equals(device.name, 'Glucose Device'));
 }, 'Filter with 2 services returns a matching device.');
 
 promise_test(() => {
@@ -181,7 +181,7 @@ promise_test(() => {
   // support both services to pass the filter, and neither has a Battery
   // service.
   return assert_promise_rejects(requestDeviceWithKeyDown({
-    filters: [{services: ['generic_access', 'battery_service']}]
+    filters: [{services: ['heart_rate', 'battery_service']}]
   }), new DOMException('', 'NotFoundError'));
 }, 'Too-strict filters do prevent matching.');
 

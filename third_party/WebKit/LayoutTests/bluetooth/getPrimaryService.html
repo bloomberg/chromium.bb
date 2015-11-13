@@ -9,8 +9,8 @@ test(t => { assert_true(window.testRunner instanceof Object); t.done(); },
      'window.testRunner is required for the following tests.');
 
 promise_test(() => {
-  testRunner.setBluetoothMockDataSet('GenericAccessAdapter');
-  return requestDeviceWithKeyDown({filters: [{services: ['generic_access']}]})
+  testRunner.setBluetoothMockDataSet('HeartRateAdapter');
+  return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}]})
     .then(device => device.connectGATT())
     .then(gattServer => {
       testRunner.setBluetoothMockDataSet('EmptyAdapter');
@@ -23,21 +23,29 @@ promise_test(() => {
 }, 'Device goes out of range. Reject with NetworkError.');
 
 promise_test(() => {
-  testRunner.setBluetoothMockDataSet('GenericAccessAdapter');
+  testRunner.setBluetoothMockDataSet('HeartRateAdapter');
   let expected = new DOMException('Service not found in device.',
                                   'NotFoundError');
-  return requestDeviceWithKeyDown({filters: [{services: ['generic_access']}]})
+  return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}]})
     .then(device => device.connectGATT())
     .then(gattServer => Promise.all(
       [assert_promise_rejects_with_message(
-        gattServer.getPrimaryService(heart_rate.alias), expected),
+        gattServer.getPrimaryService(glucose.alias), expected),
        assert_promise_rejects_with_message(
-         gattServer.getPrimaryService(heart_rate.name), expected),
+         gattServer.getPrimaryService(glucose.name), expected),
        assert_promise_rejects_with_message(
-         gattServer.getPrimaryService(heart_rate.uuid), expected)]));
+         gattServer.getPrimaryService(glucose.uuid), expected)]));
 }, 'Request for wrong service. Reject with NotFoundError.');
 
 promise_test(() => {
+  // Because state doesn't get cleaned after each test in a file, we need to
+  // clean it ourselves. In this case, the services for a HeartRateDevice had
+  // been discovered in the previous test, since the state doesn't get cleaned
+  // it appears as if the services had been discovered for the device in this
+  // test.
+  // TODO(ortuno): split tests into different files.
+  // http://crbug.com/554240
+  testRunner.setBluetoothMockDataSet('');
   testRunner.setBluetoothMockDataSet('DelayedServicesDiscoveryAdapter');
   return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}]})
     .then(device => device.connectGATT())
@@ -48,6 +56,14 @@ promise_test(() => {
 }, 'Request for service. Must return even when the services are not immediately discovered');
 
 promise_test(() => {
+  // Because state doesn't get cleaned after each test in a file, we need to
+  // clean it ourselves. In this case, the services for a HeartRateDevice had
+  // been discovered in the previous test, since the state doesn't get cleaned
+  // it appears as if the services had been discovered for the device in this
+  // test.
+  // TODO(ortuno): split tests into different files.
+  // http://crbug.com/554240
+  testRunner.setBluetoothMockDataSet('');
   testRunner.setBluetoothMockDataSet('DelayedServicesDiscoveryAdapter');
   return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}]})
     .then(device => device.connectGATT())
@@ -60,8 +76,8 @@ promise_test(() => {
    ' are not immediately discovered');
 
 promise_test(function() {
-  testRunner.setBluetoothMockDataSet('GenericAccessAdapter');
-  return requestDeviceWithKeyDown({filters: [{services: ['generic_access']}]})
+  testRunner.setBluetoothMockDataSet('HeartRateAdapter');
+  return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}]})
     .then(device => device.connectGATT())
     .then(gattServer => Promise.all(
       [gattServer.getPrimaryService(generic_access.alias),
@@ -78,8 +94,8 @@ promise_test(function() {
 }, 'Request for service. Should return right service');
 
 promise_test(() => {
-  testRunner.setBluetoothMockDataSet('GenericAccessAdapter');
-  return requestDeviceWithKeyDown({filters: [{services: ['generic_access']}]})
+  testRunner.setBluetoothMockDataSet('HeartRateAdapter');
+  return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}]})
     .then(device => device.connectGATT())
     .then(gattServer => Promise.all(
       [gattServer.getPrimaryService(generic_access.alias),
@@ -100,8 +116,8 @@ promise_test(() => {
 }, 'Calls to get the same service should return the same object.');
 
 promise_test(() => {
-  testRunner.setBluetoothMockDataSet('GenericAccessAdapter');
-  return requestDeviceWithKeyDown({filters: [{services: ['generic_access']}]})
+  testRunner.setBluetoothMockDataSet('HeartRateAdapter');
+  return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}]})
     .then(device => device.connectGATT())
     .then(gattServer => {
       return assert_promise_rejects_with_message(
