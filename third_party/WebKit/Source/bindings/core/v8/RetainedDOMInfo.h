@@ -32,6 +32,7 @@
 #define RetainedDOMInfo_h
 
 #include "bindings/core/v8/RetainedObjectInfo.h"
+#include "platform/heap/Handle.h"
 #include <v8-profiler.h>
 
 namespace blink {
@@ -56,6 +57,7 @@ public:
 private:
     // V8 guarantees to keep RetainedObjectInfos alive only during a GC or heap snapshotting round, when renderer
     // doesn't get control. This allows us to use raw pointers.
+    GC_PLUGIN_IGNORE("553613")
     Node* m_root;
 };
 
