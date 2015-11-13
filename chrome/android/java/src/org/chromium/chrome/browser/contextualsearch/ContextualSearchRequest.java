@@ -5,14 +5,12 @@
 package org.chromium.chrome.browser.contextualsearch;
 
 import android.net.Uri;
-import android.text.TextUtils;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Locale;
 
 import javax.annotation.Nullable;
 
@@ -37,6 +35,8 @@ class ContextualSearchRequest {
     private static final String GWS_QUERY_PARAM = "q";
     private static final String CTXS_PARAM_PATTERN = "(ctxs=[^&]+)";
     private static final String CTXR_PARAM = "ctxr";
+    private static final String CTXSL_TRANS_PARAM = "ctxsl_trans";
+    private static final String CTXSL_TRANS_PARAM_VALUE = "1";
     @VisibleForTesting static final String TLITE_SOURCE_LANGUAGE_PARAM = "tlitesl";
     private static final String TLITE_TARGET_LANGUAGE_PARAM = "tlitetl";
     private static final String TLITE_QUERY_PARAM = "tlitetxt";
@@ -203,39 +203,20 @@ class ContextualSearchRequest {
      * @return A {@link Uri} that has additional parameters for Translate appropriately set.
      */
     private Uri makeTranslateUri(Uri baseUri, String sourceLanguage, String targetLanguage) {
-        // TODO(donnd): update to work for non-English.  See also getTranslateQuery.
-        if (!TextUtils.equals(targetLanguage, Locale.ENGLISH.getLanguage())) return baseUri;
         Uri resultUri = baseUri;
         if (!sourceLanguage.isEmpty() || !targetLanguage.isEmpty()) {
-            // We must replace the q= param, and there seems to be no good way other than clearing
-            // all the query params and adding them all back in, changing q=.
-            Uri.Builder builder = baseUri.buildUpon().clearQuery();
-            String query = null;
-            for (String param : baseUri.getQueryParameterNames()) {
-                String value = baseUri.getQueryParameter(param);
-                if (TextUtils.equals(param, GWS_QUERY_PARAM)) {
-                    query = value;
-                    value = getTranslateQuery();
-                }
-                builder.appendQueryParameter(param, value);
-            }
+            Uri.Builder builder = baseUri.buildUpon();
             if (!sourceLanguage.isEmpty()) {
                 builder.appendQueryParameter(TLITE_SOURCE_LANGUAGE_PARAM, sourceLanguage);
             }
             if (!targetLanguage.isEmpty()) {
                 builder.appendQueryParameter(TLITE_TARGET_LANGUAGE_PARAM, targetLanguage);
             }
-            builder.appendQueryParameter(TLITE_QUERY_PARAM, query);
+            builder.appendQueryParameter(
+                    TLITE_QUERY_PARAM, baseUri.getQueryParameter(GWS_QUERY_PARAM));
+            builder.appendQueryParameter(CTXSL_TRANS_PARAM, CTXSL_TRANS_PARAM_VALUE);
             resultUri = builder.build();
         }
         return resultUri;
-    }
-
-    /**
-     * TODO(donnd): This translate API is evolving.  Update this code!
-     * TODO(donnd): As of Oct 2015 this will only work on production GWS to translate into English.
-     */
-    private String getTranslateQuery() {
-        return "Translate";
     }
 }

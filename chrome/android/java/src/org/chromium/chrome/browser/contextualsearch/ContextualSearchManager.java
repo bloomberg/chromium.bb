@@ -480,7 +480,7 @@ public class ContextualSearchManager extends ContextualSearchObservable
                     mSelectionController.getSelectedText());
             didRequestSurroundings = true;
             // Cache the target languages in case they are needed for translation.
-            if (mPolicy.isTranslationEnabled()) getTargetLanguages();
+            if (!mPolicy.disableForceTranslationOnebox()) getReadableLanguages();
         } else {
             boolean shouldPrefetch = mPolicy.shouldPrefetchSearchResult(isTap);
             mSearchRequest = new ContextualSearchRequest(mSelectionController.getSelectedText(),
@@ -730,11 +730,14 @@ public class ContextualSearchManager extends ContextualSearchObservable
             boolean shouldPreload = !doPreventPreload && mPolicy.shouldPrefetchSearchResult(true);
             mSearchRequest = new ContextualSearchRequest(searchTerm, alternateTerm, shouldPreload);
             // Trigger translation, if enabled.
-            if (!contextLanguage.isEmpty() && mPolicy.isTranslationEnabled()) {
-                List<String> targetLanguages = getTargetLanguages();
-                if (mPolicy.needsTranslation(contextLanguage, targetLanguages)) {
-                    mSearchRequest.forceTranslation(
-                            contextLanguage, mPolicy.bestTargetLanguage(targetLanguages));
+            if (!contextLanguage.isEmpty()) {
+                if (mPolicy.needsTranslation(contextLanguage, getReadableLanguages())) {
+                    boolean doForceTranslate = !mPolicy.disableForceTranslationOnebox();
+                    if (doForceTranslate) {
+                        mSearchRequest.forceTranslation(contextLanguage,
+                                mPolicy.bestTargetLanguage(getWritableLanguages()));
+                    }
+                    ContextualSearchUma.logTranslateOnebox(doForceTranslate);
                 }
             }
             mDidStartLoadingResolvedSearchRequest = false;
@@ -789,11 +792,12 @@ public class ContextualSearchManager extends ContextualSearchObservable
     // ============================================================================================
 
     /**
-     * Gets the list of target languages for the current user, with the first
+     * Gets the list of readable languages for the current user, with the first
      * item in the list being the user's primary language.
+     * We assume that the user can read all languages that they can write.
      * @return The {@link List} of languages the user understands with their primary language first.
      */
-    private List<String> getTargetLanguages() {
+    private List<String> getReadableLanguages() {
         // May be cached.
         if (mTargetLanguages != null) return mTargetLanguages;
 
@@ -804,13 +808,10 @@ public class ContextualSearchManager extends ContextualSearchObservable
         uniqueLanguages.add(
                 trimLocaleToLanguage(nativeGetTargetLanguage(mNativeContextualSearchManagerPtr)));
 
-        // Next add languages the user knows how to type.
-        Context context = mActivity.getApplicationContext();
-        List<String> locales = context != null
-                ? new ArrayList<String>(UiUtils.getIMELocales(context))
-                : new ArrayList<String>();
-        for (int i = 0; i < locales.size(); i++) {
-            uniqueLanguages.add(trimLocaleToLanguage(locales.get(i)));
+        // Next add languages the user knows how to write.
+        List<String> writable = getWritableLanguages();
+        for (int i = 0; i < writable.size(); i++) {
+            uniqueLanguages.add(trimLocaleToLanguage(writable.get(i)));
         }
 
         // Add the accept languages last, since they are a weaker hint than presence of a keyboard.
@@ -820,6 +821,22 @@ public class ContextualSearchManager extends ContextualSearchObservable
         }
         mTargetLanguages = new ArrayList<String>(uniqueLanguages);
         return mTargetLanguages;
+    }
+
+    /**
+     * Gets the list of writable languages for the current user, based on their IME keyboards.
+     * @return An ordered {@link List} of languages the user reads.
+     */
+    private List<String> getWritableLanguages() {
+        List<String> result = new ArrayList<String>();
+        Context context = mActivity.getApplicationContext();
+        List<String> locales = context != null
+                ? new ArrayList<String>(UiUtils.getIMELocales(context))
+                : new ArrayList<String>();
+        for (int i = 0; i < locales.size(); i++) {
+            result.add(trimLocaleToLanguage(locales.get(i)));
+        }
+        return result;
     }
 
     /**

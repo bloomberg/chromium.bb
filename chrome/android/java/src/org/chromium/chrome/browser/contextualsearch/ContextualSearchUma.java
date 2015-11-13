@@ -170,11 +170,15 @@ public class ContextualSearchUma {
     private static final int RESOLVED_MULTI_WORD = 1;
     private static final int RESOLVED_BOUNDARY = 2;
 
-    // Constants used to log UMA "enum" histograms for paritally / fully loaded.
+    // Constants used to log UMA "enum" histograms for partially / fully loaded.
     private static final int PARTIALLY_LOADED = 0;
     private static final int FULLY_LOADED = 1;
     private static final int LOADED_BOUNDARY = 2;
 
+    // Constants used to log UMA "enum" histograms for triggering the Translate Onebox.
+    private static final int DID_FORCE_TRANSLATE = 0;
+    private static final int WOULD_FORCE_TRANSLATE = 1;
+    private static final int FORCE_TRANSLATE_BOUNDARY = 2;
 
     /**
      * Key used in maps from {state, reason} to state entry (exit) logging code.
@@ -734,6 +738,17 @@ public class ContextualSearchUma {
             default:
                 break;
         }
+    }
+
+    /**
+     * Logs that the conditions are right to force the translation one-box, and whether it
+     * was actually forced or not.
+     * @param didForceTranslate Whether the translation onebox was forced.
+     */
+    public static void logTranslateOnebox(boolean didForceTranslate) {
+        int code = didForceTranslate ? DID_FORCE_TRANSLATE : WOULD_FORCE_TRANSLATE;
+        RecordHistogram.recordEnumeratedHistogram(
+                "Search.ContextualSearchShouldTranslate", code, FORCE_TRANSLATE_BOUNDARY);
     }
 
     /**

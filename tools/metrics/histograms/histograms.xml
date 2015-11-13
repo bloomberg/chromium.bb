@@ -41528,6 +41528,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Search.ContextualSearchShouldTranslate"
+    enum="ContextualSearchShouldTranslate">
+  <owner>donnd@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <summary>
+    Emitted when a translate one-box should be forced, to indicate if it
+    actually was forced or simply would have been forced if not disabled by a
+    flag in the variations_service.
+  </summary>
+</histogram>
+
 <histogram name="Search.DefaultSearchChangeOrigin"
     enum="DefaultSearchChangeOrigin">
   <owner>mathp@chromium.org</owner>
@@ -55998,6 +56009,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="17" label="Search web for..."/>
   <int value="18" label="Save media as"/>
   <int value="19" label="Share image"/>
+</enum>
+
+<enum name="ContextualSearchShouldTranslate" type="int">
+  <summary>
+    Notes when a translation one-box should be forced by Contextual Search.
+  </summary>
+  <int value="0" label="Did force a translation"/>
+  <int value="1" label="Would force a translation (if not disabled)"/>
 </enum>
 
 <enum name="CookieDeletionCause" type="int">

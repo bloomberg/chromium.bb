@@ -426,10 +426,12 @@ class ContextualSearchPolicy {
      * Determines the best target language.
      */
     String bestTargetLanguage(List<String> targetLanguages) {
-        // For now, we just return the first language, unless it's English (due to over-usage).
+        // For now, we just return the first language, unless it's English
+        // (due to over-usage).
         // TODO(donnd): Improve this logic. Determining the right language seems non-trivial.
         // E.g. If this language doesn't match the user's server preferences, they might see a page
         // in one language and the one box translation in another, which might be confusing.
+        // Also this logic should only apply on Android, where English setup is over used.
         if (TextUtils.equals(targetLanguages.get(0), Locale.ENGLISH.getLanguage())
                 && targetLanguages.size() > 1) {
             return targetLanguages.get(1);
@@ -439,10 +441,10 @@ class ContextualSearchPolicy {
     }
 
     /**
-     * @return Whether translation should be enabled or not.
+     * @return Whether forcing a translation Onebox is disabled.
      */
-    boolean isTranslationEnabled() {
-        return ContextualSearchFieldTrial.isTranslationOneboxEnabled();
+    boolean disableForceTranslationOnebox() {
+        return ContextualSearchFieldTrial.disableForceTranslationOnebox();
     }
 
     /**

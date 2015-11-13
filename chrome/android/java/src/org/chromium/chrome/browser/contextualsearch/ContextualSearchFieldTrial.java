@@ -32,13 +32,13 @@ public class ContextualSearchFieldTrial {
 
     // Translation.
     @VisibleForTesting
-    static final String TRANSLATION_ONEBOX_ENABLED = "translation_onebox_enabled";
+    static final String DISABLE_FORCE_TRANSLATION_ONEBOX = "disable_force_translation_onebox";
 
     // Cached values to avoid repeated and redundant JNI operations.
     private static Boolean sEnabled;
     private static Boolean sIsPeekPromoEnabled;
     private static Integer sPeekPromoMaxCount;
-    private static Boolean sIsTranslationOneboxEnabled;
+    private static Boolean sDisableForceTranslationOnebox;
 
     /**
      * Don't instantiate.
@@ -130,13 +130,13 @@ public class ContextualSearchFieldTrial {
     }
 
     /**
-     * @return Whether triggering a translation Onebox in the SERP is enabled.
+     * @return Whether forcing a translation Onebox is disabled.
      */
-    static boolean isTranslationOneboxEnabled() {
-        if (sIsTranslationOneboxEnabled == null) {
-            sIsTranslationOneboxEnabled = getBooleanParam(TRANSLATION_ONEBOX_ENABLED);
+    static boolean disableForceTranslationOnebox() {
+        if (sDisableForceTranslationOnebox == null) {
+            sDisableForceTranslationOnebox = getBooleanParam(DISABLE_FORCE_TRANSLATION_ONEBOX);
         }
-        return sIsTranslationOneboxEnabled.booleanValue();
+        return sDisableForceTranslationOnebox.booleanValue();
     }
 
     // --------------------------------------------------------------------------------------------

@@ -455,12 +455,6 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
         String message = "but there was no loaded URL!";
         if (mFakeServer != null) {
             doesMatch = mFakeServer.getLoadedUrl().contains("q=" + searchTerm);
-            // TODO(donnd): remove the following line once the Translate API is updated!
-            // The current Translate API requires a change to the query parameter so
-            // checking it for the search term does not work.  We plan to fix this very
-            // soon, and this workaround allows tests to work until then, but needs to be
-            // removed when we switch to the new API.  See crbug.com/413717.
-            doesMatch = doesMatch || mFakeServer.getLoadedUrl().contains("tlitetxt=" + searchTerm);
             message = "in URL: " + mFakeServer.getLoadedUrl();
         }
         assertTrue("Expected to find searchTerm " + searchTerm + ", " + message, doesMatch);
@@ -2568,13 +2562,14 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
     @SmallTest
     @Feature({"ContextualSearch"})
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
-    @CommandLineFlags.Add(ContextualSearchFieldTrial.TRANSLATION_ONEBOX_ENABLED + "=true")
     public void testTapWithLanguage() throws InterruptedException, TimeoutException {
-        // Tapping a german word should trigger translation.
+        // Tapping a German word should trigger translation.
         simulateTapSearch("german");
 
         // Make sure we tried to trigger translate.
-        assertTrue(mManager.getRequest().isTranslationForced());
+        assertTrue("Translation was not forced with the current request URL: "
+                        + mManager.getRequest().getSearchUrl(),
+                mManager.getRequest().isTranslationForced());
     }
 
     /**
@@ -2583,7 +2578,6 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
     @SmallTest
     @Feature({"ContextualSearch"})
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
-    @CommandLineFlags.Add(ContextualSearchFieldTrial.TRANSLATION_ONEBOX_ENABLED + "=true")
     public void testTapWithoutLanguage() throws InterruptedException, TimeoutException {
         // Tapping an English word should NOT trigger translation.
         simulateTapSearch("search");
