@@ -2639,6 +2639,8 @@
       'browser/local_discovery/cloud_print_printer_list.h',
       'browser/local_discovery/device_description.cc',
       'browser/local_discovery/device_description.h',
+      'browser/local_discovery/endpoint_resolver.cc',
+      'browser/local_discovery/endpoint_resolver.h',
       'browser/local_discovery/gcd_api_flow.cc',
       'browser/local_discovery/gcd_api_flow.h',
       'browser/local_discovery/gcd_api_flow_impl.cc',

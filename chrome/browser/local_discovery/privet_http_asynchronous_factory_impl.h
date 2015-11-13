@@ -5,13 +5,13 @@
 #ifndef CHROME_BROWSER_LOCAL_DISCOVERY_PRIVET_HTTP_ASYNCHRONOUS_FACTORY_IMPL_H_
 #define CHROME_BROWSER_LOCAL_DISCOVERY_PRIVET_HTTP_ASYNCHRONOUS_FACTORY_IMPL_H_
 
+#include "base/macros.h"
 #include "chrome/browser/local_discovery/privet_http.h"
 #include "chrome/browser/local_discovery/privet_http_asynchronous_factory.h"
-#include "chrome/common/local_discovery/service_discovery_client.h"
 
 namespace local_discovery {
 
-class ServiceDiscoverySharedClient;
+class EndpointResolver;
 
 class PrivetHTTPAsynchronousFactoryImpl : public PrivetHTTPAsynchronousFactory {
  public:
@@ -37,24 +37,18 @@ class PrivetHTTPAsynchronousFactoryImpl : public PrivetHTTPAsynchronousFactory {
     const std::string& GetName() override;
 
    private:
-    void ServiceResolveComplete(const ResultCallback& callback,
-                                ServiceResolver::RequestStatus result,
-                                const ServiceDescription& description);
-
-    void DomainResolveComplete(uint16 port,
-                               const ResultCallback& callback,
-                               bool success,
-                               const net::IPAddressNumber& address_ipv4,
-                               const net::IPAddressNumber& address_ipv6);
-
+    void ResolveComplete(const ResultCallback& callback,
+                         const net::IPEndPoint& endpoint);
     std::string name_;
     scoped_refptr<net::URLRequestContextGetter> request_context_;
-    scoped_refptr<ServiceDiscoverySharedClient> service_discovery_client_;
-    scoped_ptr<ServiceResolver> service_resolver_;
-    scoped_ptr<LocalDomainResolver> domain_resolver_;
+    scoped_ptr<EndpointResolver> endpoint_resolver_;
+
+    DISALLOW_COPY_AND_ASSIGN(ResolutionImpl);
   };
 
   scoped_refptr<net::URLRequestContextGetter> request_context_;
+
+  DISALLOW_COPY_AND_ASSIGN(PrivetHTTPAsynchronousFactoryImpl);
 };
 
 }  // namespace local_discovery
