@@ -55,7 +55,7 @@ ExtensionInstallDialogController::ExtensionInstallDialogController(
 
   base::scoped_nsobject<CustomConstrainedWindowSheet> sheet(
       [[CustomConstrainedWindowSheet alloc] initWithCustomWindow:window]);
-  constrained_window_.reset(new ConstrainedWindowMac(
+  constrained_window_.reset(CreateAndShowWebModalDialogMac(
       this, show_params->GetParentWebContents(), sheet));
 
   std::string event_name = ExperienceSamplingEvent::kExtensionInstallDialog;

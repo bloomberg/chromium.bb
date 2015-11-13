@@ -77,7 +77,7 @@ class LoginHandlerMac : public LoginHandler,
     base::scoped_nsobject<CustomConstrainedWindowSheet> sheet(
         [[CustomConstrainedWindowSheet alloc]
             initWithCustomWindow:[sheet_controller_ window]]);
-    constrained_window_.reset(new ConstrainedWindowMac(
+    constrained_window_.reset(CreateAndShowWebModalDialogMac(
         this, requesting_contents, sheet));
 
     NotifyAuthNeeded();
