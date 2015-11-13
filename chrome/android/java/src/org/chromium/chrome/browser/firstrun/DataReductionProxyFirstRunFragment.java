@@ -5,12 +5,12 @@
 package org.chromium.chrome.browser.firstrun;
 
 import android.os.Bundle;
+import android.support.v7.widget.SwitchCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.Switch;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
@@ -31,7 +31,7 @@ public class DataReductionProxyFirstRunFragment extends FirstRunPage {
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        final Switch enableDataSaverSwitch = (Switch) view
+        final SwitchCompat enableDataSaverSwitch = (SwitchCompat) view
                 .findViewById(R.id.enable_data_saver_switch);
         Button nextButton = (Button) view.findViewById(R.id.next_button);
 
