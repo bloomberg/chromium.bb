@@ -79,7 +79,7 @@ function test()
     dumpRecords();
 
     InspectorTest.addResult("Filtered by 'bar':");
-    var textFilterUI = panel._filters._textFilterUI;
+    var textFilterUI = panel._filtersControl._textFilterUI;
     textFilterUI.setValue("bar");
     dumpRecords();
 
