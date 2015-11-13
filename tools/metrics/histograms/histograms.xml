@@ -54325,8 +54325,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <enum name="AutoLaunchState" type="int">
   <int value="0" label="AUTO_LAUNCH_NONE"/>
   <int value="1" label="AUTO_LAUNCH_BACKGROUND"/>
-  <int value="2" label="AUTO_LAUNCH_FOREGROUND"/>
-  <int value="3" label="AUTO_LAUNCH_FOREGROUND_USELESS"/>
+  <int value="2" label="[Deprecated] AUTO_LAUNCH_FOREGROUND"/>
+  <int value="3" label="[Deprecated] AUTO_LAUNCH_FOREGROUND_USELESS"/>
 </enum>
 
 <enum name="BackgroundModeMenuItem" type="int">

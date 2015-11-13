@@ -496,14 +496,9 @@ void StartupBrowserCreatorImpl::ProcessLaunchURLs(
     bool process_startup,
     const std::vector<GURL>& urls_to_open,
     chrome::HostDesktopType desktop_type) {
-  // If we're starting up in "background mode" (no open browser window) then
-  // don't open any browser windows, unless kAutoLaunchAtStartup is also
-  // specified.
-  if (process_startup &&
-      command_line_.HasSwitch(switches::kNoStartupWindow) &&
-      !command_line_.HasSwitch(switches::kAutoLaunchAtStartup)) {
+  // Don't open any browser windows if we're starting up in "background mode".
+  if (process_startup && command_line_.HasSwitch(switches::kNoStartupWindow))
     return;
-  }
 
   // Determine whether or not this launch must include the welcome page.
   InitializeWelcomeRunType(urls_to_open);

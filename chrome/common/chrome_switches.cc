@@ -105,10 +105,6 @@ const char kAuthExtensionPath[]             = "auth-ext-path";
 // Whitelist for Negotiate Auth servers
 const char kAuthServerWhitelist[]           = "auth-server-whitelist";
 
-// A flag that is used to tell Chrome that it was launched automatically at
-// computer startup and not by some user action.
-const char kAutoLaunchAtStartup[]           = "auto-launch-at-startup";
-
 // This flag makes Chrome auto-select the provided choice when an extension asks
 // permission to start desktop capture. Should only be used for tests. For
 // instance, --auto-select-desktop-capture-source="Entire screen" will

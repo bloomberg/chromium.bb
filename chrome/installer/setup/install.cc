@@ -26,7 +26,6 @@
 #include "chrome/installer/setup/setup_constants.h"
 #include "chrome/installer/setup/setup_util.h"
 #include "chrome/installer/setup/update_active_setup_version_work_item.h"
-#include "chrome/installer/util/auto_launch_util.h"
 #include "chrome/installer/util/beacons.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/create_reg_key_work_item.h"
@@ -550,22 +549,6 @@ InstallStatus InstallOrUpdateProduct(
 
       RegisterChromeOnMachine(installer_state, *chrome_product,
           make_chrome_default || force_chrome_default_for_user);
-
-      // Configure auto-launch.
-      if (result == FIRST_INSTALL_SUCCESS) {
-        installer_state.UpdateStage(installer::CONFIGURE_AUTO_LAUNCH);
-
-        // Add auto-launch key if specified in master_preferences.
-        bool auto_launch_chrome = false;
-        prefs.GetBool(
-            installer::master_preferences::kAutoLaunchChrome,
-            &auto_launch_chrome);
-        if (auto_launch_chrome) {
-          auto_launch_util::EnableForegroundStartAtLogin(
-              base::ASCIIToUTF16(chrome::kInitialProfile),
-              installer_state.target_path());
-        }
-      }
 
       if (!installer_state.system_install()) {
         DCHECK_EQ(chrome_product->distribution(),

@@ -214,7 +214,6 @@ void ChromeLauncher::Run() {
       cmd.AppendSwitch(switches::kNoServiceAutorun);
 
       // Optional.
-      cmd.AppendSwitch(switches::kAutoLaunchAtStartup);
       cmd.AppendSwitch(switches::kDisableDefaultApps);
       cmd.AppendSwitch(switches::kDisableExtensions);
       cmd.AppendSwitch(switches::kDisableGpu);

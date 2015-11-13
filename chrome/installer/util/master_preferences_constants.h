@@ -17,9 +17,6 @@ namespace master_preferences {
 
 // Boolean. Use alternate text for the shortcut. Cmd line override present.
 extern const char kAltShortcutText[];
-// Boolean. Whether to instruct the installer to auto-launch chrome on computer
-// startup. The default (if not provided) is |false|.
-extern const char kAutoLaunchChrome[];
 // Boolean. This is to be a Chrome install. (When using MultiInstall)
 extern const char kChrome[];
 // Integer. Icon index from chrome.exe to use for shortcuts.

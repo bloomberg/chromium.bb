@@ -8,9 +8,6 @@ namespace installer {
 
 namespace switches {
 
-// Whether to set Chrome to launch at computer startup.
-const char kAutoLaunchChrome[] = "auto-launch-chrome";
-
 // Install Chrome.
 // Currently this is only required when used in combination with kMultiInstall.
 const char kChrome[] = "chrome";

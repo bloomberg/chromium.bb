@@ -42,7 +42,6 @@ extern const char kAppModeAuthCode[];
 extern const char kAppModeOAuth2Token[];
 extern const char kAuthExtensionPath[];
 extern const char kAuthServerWhitelist[];
-extern const char kAutoLaunchAtStartup[];
 extern const char kAutoSelectDesktopCaptureSource[];
 extern const char kBypassAppBannerEngagementChecks[];
 extern const char kCertificateTransparencyLog[];

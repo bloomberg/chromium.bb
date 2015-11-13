@@ -125,8 +125,6 @@ void MasterPreferences::InitializeFromCommandLine(
     const char* cmd_line_switch;
     const char* distribution_switch;
   } translate_switches[] = {
-    { installer::switches::kAutoLaunchChrome,
-      installer::master_preferences::kAutoLaunchChrome },
     { installer::switches::kChrome,
       installer::master_preferences::kChrome },
     { installer::switches::kDisableLogging,

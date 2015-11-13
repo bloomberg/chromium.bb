@@ -118,7 +118,7 @@ enum InstallerStage {
   REGISTERING_CHROME = 13,         // Performing Chrome registration.
   REMOVING_OLD_VERSIONS = 14,      // Deleting old version directories.
   FINISHING = 15,                  // Finishing the install.
-  CONFIGURE_AUTO_LAUNCH = 16,      // Configuring Chrome to auto-launch.
+  // CONFIGURE_AUTO_LAUNCH = 16,
   CREATING_VISUAL_MANIFEST = 17,   // Creating VisualElementsManifest.xml
   // DEFERRING_TO_HIGHER_VERSION = 18,
   UNINSTALLING_BINARIES = 19,      // Uninstalling unused binaries.
@@ -133,7 +133,6 @@ COMPILE_ASSERT(UNINSTALLING_CHROME_FRAME == 20,
 
 namespace switches {
 
-extern const char kAutoLaunchChrome[];
 extern const char kChrome[];
 extern const char kChromeFrame[];
 extern const char kChromeSxS[];
