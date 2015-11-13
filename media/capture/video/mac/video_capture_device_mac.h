@@ -74,7 +74,8 @@ class VideoCaptureDeviceMac : public VideoCaptureDevice {
                     int video_frame_length,
                     const VideoCaptureFormat& frame_format,
                     int aspect_numerator,
-                    int aspect_denominator);
+                    int aspect_denominator,
+                    base::TimeDelta timestamp);
 
   // Forwarder to VideoCaptureDevice::Client::OnError().
   void ReceiveError(const tracked_objects::Location& from_here,
@@ -107,6 +108,9 @@ class VideoCaptureDeviceMac : public VideoCaptureDevice {
   InternalState state_;
 
   id<PlatformVideoCapturingMac> capture_device_;
+
+  base::TimeDelta first_timestamp_;
+  base::TimeTicks first_aligned_timestamp_;
 
   // Used with Bind and PostTask to ensure that methods aren't called after the
   // VideoCaptureDeviceMac is destroyed.

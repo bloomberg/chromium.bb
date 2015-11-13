@@ -51,6 +51,8 @@ class CoreMediaLibraryInternal {
   typedef CFArrayRef (*CMSampleBufferGetSampleAttachmentsArrayMethod)(
       CoreMediaGlue::CMSampleBufferRef,
       Boolean);
+  typedef CoreMediaGlue::CMTime (*CMSampleBufferGetPresentationTimeStampMethod)(
+      CoreMediaGlue::CMSampleBufferRef);
 
   typedef FourCharCode (*CMFormatDescriptionGetMediaSubTypeMethod)(
       CoreMediaGlue::CMFormatDescriptionRef desc);
@@ -112,6 +114,10 @@ class CoreMediaLibraryInternal {
         reinterpret_cast<CMSampleBufferGetSampleAttachmentsArrayMethod>(
             dlsym(library_handle, "CMSampleBufferGetSampleAttachmentsArray"));
     CHECK(cm_sample_buffer_get_sample_attachments_array_method_) << dlerror();
+    cm_sample_buffer_get_presentation_timestamp_method_ =
+        reinterpret_cast<CMSampleBufferGetPresentationTimeStampMethod>(
+            dlsym(library_handle, "CMSampleBufferGetPresentationTimeStamp"));
+    CHECK(cm_sample_buffer_get_presentation_timestamp_method_) << dlerror();
     k_cm_sample_attachment_key_not_sync_ = reinterpret_cast<CFStringRef*>(
         dlsym(library_handle, "kCMSampleAttachmentKey_NotSync"));
     CHECK(k_cm_sample_attachment_key_not_sync_) << dlerror();
@@ -168,6 +174,10 @@ class CoreMediaLibraryInternal {
   cm_sample_buffer_get_sample_attachments_array_method() const {
     return cm_sample_buffer_get_sample_attachments_array_method_;
   }
+  const CMSampleBufferGetPresentationTimeStampMethod&
+  cm_sample_buffer_get_presentation_timestamp_method() const {
+    return cm_sample_buffer_get_presentation_timestamp_method_;
+  }
   CFStringRef* const& k_cm_sample_attachment_key_not_sync() const {
     return k_cm_sample_attachment_key_not_sync_;
   }
@@ -208,6 +218,8 @@ class CoreMediaLibraryInternal {
       cm_video_format_description_get_dimensions_method_;
   CMVideoFormatDescriptionGetH264ParameterSetAtIndexMethod
       cm_video_format_description_get_h264_parameter_set_at_index_method_;
+  CMSampleBufferGetPresentationTimeStampMethod
+      cm_sample_buffer_get_presentation_timestamp_method_;
 
   DISALLOW_COPY_AND_ASSIGN(CoreMediaLibraryInternal);
 };
@@ -298,6 +310,13 @@ CFArrayRef CoreMediaGlue::CMSampleBufferGetSampleAttachmentsArray(
   return g_coremedia_handle.Get()
       .cm_sample_buffer_get_sample_attachments_array_method()(
           sbuf, createIfNecessary);
+}
+
+// static
+CoreMediaGlue::CMTime CoreMediaGlue::CMSampleBufferGetPresentationTimeStamp(
+    CMSampleBufferRef sbuf) {
+  return g_coremedia_handle.Get()
+      .cm_sample_buffer_get_presentation_timestamp_method()(sbuf);
 }
 
 // static

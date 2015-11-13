@@ -95,6 +95,7 @@ class MEDIA_EXPORT CoreMediaGlue {
       CMSampleBufferRef sbuf,
       Boolean createIfNecessary);
   static CFStringRef kCMSampleAttachmentKey_NotSync();
+  static CMTime CMSampleBufferGetPresentationTimeStamp(CMSampleBufferRef sbuf);
 
   // Originally from CMFormatDescription.h.
   static FourCharCode CMFormatDescriptionGetMediaSubType(

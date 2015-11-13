@@ -9,6 +9,7 @@
 #include "base/debug/crash_logging.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "media/base/timestamp_constants.h"
 #include "media/base/video_capture_types.h"
 #include "media/capture/video/mac/video_capture_device_mac.h"
 #include "media/capture/video/video_capture_device.h"
@@ -326,8 +327,17 @@
     }
 
     // Deliver the captured video frame.
+    const QTTime qt_timestamp = [sampleBuffer presentationTime];
+    base::TimeDelta timestamp;
+    if (!(qt_timestamp.flags & kQTTimeIsIndefinite) && qt_timestamp.timeScale) {
+      timestamp = base::TimeDelta::FromMicroseconds(
+          qt_timestamp.timeValue * base::TimeTicks::kMicrosecondsPerSecond /
+          qt_timestamp.timeScale);
+    } else {
+      timestamp = media::kNoTimestamp();
+    }
     frameReceiver_->ReceiveFrame(addressToPass, frameSize, captureFormat,
-                                 aspectNumerator, aspectDenominator);
+                                 aspectNumerator, aspectDenominator, timestamp);
 
     CVPixelBufferUnlockBaseAddress(videoFrame, kLockFlags);
   }

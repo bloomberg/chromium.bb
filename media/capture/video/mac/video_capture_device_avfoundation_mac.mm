@@ -4,11 +4,13 @@
 
 #import "media/capture/video/mac/video_capture_device_avfoundation_mac.h"
 
+#import <CoreMedia/CoreMedia.h>
 #import <CoreVideo/CoreVideo.h>
 
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
+#include "media/base/timestamp_constants.h"
 #include "media/base/video_capture_types.h"
 #include "media/capture/video/mac/video_capture_device_mac.h"
 #include "ui/gfx/geometry/size.h"
@@ -329,9 +331,18 @@ didOutputSampleBuffer:(CoreMediaGlue::CMSampleBufferRef)sampleBuffer
 
   {
     base::AutoLock lock(lock_);
+    const CoreMediaGlue::CMTime cm_timestamp =
+        CoreMediaGlue::CMSampleBufferGetPresentationTimeStamp(sampleBuffer);
+    const base::TimeDelta timestamp =
+        CMTIME_IS_VALID(cm_timestamp)
+            ? base::TimeDelta::FromMicroseconds(
+                  cm_timestamp.value * base::TimeTicks::kMicrosecondsPerSecond /
+                  cm_timestamp.timescale)
+            : media::kNoTimestamp();
+
     if (frameReceiver_ && baseAddress) {
       frameReceiver_->ReceiveFrame(reinterpret_cast<uint8_t*>(baseAddress),
-                                   frameSize, captureFormat, 0, 0);
+                                   frameSize, captureFormat, 0, 0, timestamp);
     }
   }
 

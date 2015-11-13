@@ -18,6 +18,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #import "media/base/mac/avfoundation_glue.h"
+#include "media/base/timestamp_constants.h"
 #import "media/capture/video/mac/platform_video_capturing_mac.h"
 #import "media/capture/video/mac/video_capture_device_avfoundation_mac.h"
 #import "media/capture/video/mac/video_capture_device_qtkit_mac.h"
@@ -344,6 +345,7 @@ VideoCaptureDeviceMac::VideoCaptureDeviceMac(const Name& device_name)
       task_runner_(base::ThreadTaskRunnerHandle::Get()),
       state_(kNotInitialized),
       capture_device_(nil),
+      first_timestamp_(media::kNoTimestamp()),
       weak_factory_(this) {
   // Avoid reconfiguring AVFoundation or blacklisted devices.
   final_resolution_selected_ = AVFoundationGlue::IsAVFoundationSupported() ||
@@ -464,7 +466,8 @@ void VideoCaptureDeviceMac::ReceiveFrame(const uint8* video_frame,
                                          int video_frame_length,
                                          const VideoCaptureFormat& frame_format,
                                          int aspect_numerator,
-                                         int aspect_denominator) {
+                                         int aspect_denominator,
+                                         base::TimeDelta timestamp) {
   // This method is safe to call from a device capture thread, i.e. any thread
   // controlled by QTKit/AVFoundation.
   if (!final_resolution_selected_) {
@@ -536,8 +539,18 @@ void VideoCaptureDeviceMac::ReceiveFrame(const uint8* video_frame,
     return;
   }
 
+  base::TimeTicks aligned_timestamp;
+  if (timestamp == media::kNoTimestamp()) {
+    aligned_timestamp = base::TimeTicks::Now();
+  } else {
+    if (first_timestamp_ == media::kNoTimestamp()) {
+      first_timestamp_ = timestamp;
+      first_aligned_timestamp_ = base::TimeTicks::Now();
+    }
+    aligned_timestamp = first_aligned_timestamp_ + timestamp - first_timestamp_;
+  }
   client_->OnIncomingCapturedData(video_frame, video_frame_length, frame_format,
-                                  0, base::TimeTicks::Now());
+                                  0, aligned_timestamp);
 }
 
 void VideoCaptureDeviceMac::ReceiveError(
