@@ -13,6 +13,7 @@ config("config") {
     "-nostdinc++",
     "-pthread",
     "-std=c++11",
+    "-DLIBCXX_BUILDING_LIBCXXABI",
   ]
 }
 
