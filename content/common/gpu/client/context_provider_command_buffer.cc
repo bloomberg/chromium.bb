@@ -119,7 +119,7 @@ void ContextProviderCommandBuffer::DetachFromThread() {
 gpu::gles2::GLES2Interface* ContextProviderCommandBuffer::ContextGL() {
   DCHECK(lost_context_callback_proxy_);  // Is bound to thread.
 
-  return WebContext3D()->GetImplementation();
+  return WebContext3DNoChecks()->GetImplementation();
 }
 
 gpu::ContextSupport* ContextProviderCommandBuffer::ContextSupport() {
