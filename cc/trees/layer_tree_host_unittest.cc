@@ -4776,8 +4776,11 @@ class LayerTreeHostTestBeginMainFrameTimeIsAlsoImplTime
   int will_begin_impl_frame_count_;
 };
 
-SINGLE_AND_MULTI_THREAD_TEST_F(
-    LayerTreeHostTestBeginMainFrameTimeIsAlsoImplTime);
+// TODO(mithro): Re-enable the multi-threaded version of this test
+// http://crbug.com/537621
+// SINGLE_AND_MULTI_THREAD_TEST_F(
+//    LayerTreeHostTestBeginMainFrameTimeIsAlsoImplTime);
+SINGLE_THREAD_TEST_F(LayerTreeHostTestBeginMainFrameTimeIsAlsoImplTime);
 
 class LayerTreeHostTestSendBeginFramesToChildren : public LayerTreeHostTest {
  public:
