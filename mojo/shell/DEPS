@@ -1,3 +1,14 @@
 include_rules = [
   "-mojo/runner",
 ]
+
+specific_include_rules = {
+  "application_manager_apptest_driver.cc": [
+    "+mojo/runner/child",
+    "+mojo/runner/init.h",
+  ],
+  "application_manager_apptest_target.cc": [
+    "+mojo/runner/child",
+    "+mojo/runner/init.h",
+  ],
+}

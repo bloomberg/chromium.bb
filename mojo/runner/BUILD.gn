@@ -104,6 +104,7 @@ source_set("init") {
   deps = [
     "//mojo/runner/host:switches",
     "//base",
+    "//base:base_static",
     "//base:i18n",
   ]
 }

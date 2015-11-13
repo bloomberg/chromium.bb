@@ -39,8 +39,20 @@ ChildProcessHost::ChildProcessHost(base::TaskRunner* launch_process_runner,
   CHECK(platform_channel_.is_valid());
 }
 
+ChildProcessHost::ChildProcessHost(ScopedHandle channel)
+    : launch_process_runner_(nullptr),
+      start_sandboxed_(false),
+      channel_info_(nullptr),
+      start_child_process_event_(false, false),
+      weak_factory_(this) {
+  CHECK(channel.is_valid());
+  ScopedMessagePipeHandle handle(MessagePipeHandle(channel.release().value()));
+  controller_.Bind(InterfacePtrInfo<ChildController>(handle.Pass(), 0u));
+}
+
 ChildProcessHost::~ChildProcessHost() {
-  CHECK(!controller_) << "Destroying ChildProcessHost before calling Join";
+  if (!app_path_.empty())
+    CHECK(!controller_) << "Destroying ChildProcessHost before calling Join";
 }
 
 void ChildProcessHost::Start() {

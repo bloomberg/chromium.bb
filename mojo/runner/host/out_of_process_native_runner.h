@@ -27,11 +27,13 @@ class OutOfProcessNativeRunner : public shell::NativeRunner {
   explicit OutOfProcessNativeRunner(base::TaskRunner* launch_process_runner);
   ~OutOfProcessNativeRunner() override;
 
-  // |NativeRunner| method:
+  // NativeRunner:
   void Start(const base::FilePath& app_path,
              bool start_sandboxed,
              InterfaceRequest<Application> application_request,
              const base::Closure& app_completed_callback) override;
+  void InitHost(ScopedHandle channel,
+                InterfaceRequest<Application> application_request) override;
 
  private:
   // |ChildController::StartApp()| callback:
