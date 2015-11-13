@@ -111,7 +111,7 @@ remoting.AppConnectedView.prototype.dispose = function() {
  */
 remoting.AppConnectedView.prototype.resizeHostToClientArea_ = function() {
   var hostDesktop = this.plugin_.hostDesktop();
-  var desktopScale = this.host_.options.desktopScale;
+  var desktopScale = this.host_.options.getDesktopScale();
   hostDesktop.resize(window.innerWidth * desktopScale,
                      window.innerHeight * desktopScale,
                      window.devicePixelRatio);
@@ -134,7 +134,7 @@ remoting.AppConnectedView.prototype.onDesktopSizeChanged_ =
   var clientArea = { width: window.innerWidth, height: window.innerHeight };
   var newSize = remoting.Viewport.choosePluginSize(
       clientArea, window.devicePixelRatio,
-      hostSize, hostDpi, this.host_.options.desktopScale,
+      hostSize, hostDpi, this.host_.options.getDesktopScale(),
       true /* fullscreen */ , true /* shrinkToFit */ );
 
   this.plugin_.element().style.width = newSize.width + 'px';

@@ -28,10 +28,12 @@
     'ar_feedback_consent_html_all_js_files': [
       'webapp/app_remoting/js/feedback_consent.js',
       'webapp/base/js/base.js',
+      'webapp/base/js/chromoting_event.js',
       'webapp/base/js/error.js',
       'webapp/base/js/identity.js',
       'webapp/base/js/oauth2_api.js',
       'webapp/base/js/oauth2_api_impl.js',
+      'webapp/base/js/platform.js',
       'webapp/base/js/plugin_settings.js',
       'webapp/base/js/l10n.js',
       'webapp/base/js/xhr.js',

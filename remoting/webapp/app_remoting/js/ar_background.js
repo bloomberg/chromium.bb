@@ -15,7 +15,7 @@ var mainWindow = null;
  */
 var contextMenuIds = {};
 
-/** @param {chrome.app.runtime.LaunchData=} opt_launchData */
+/** @param {Object=} opt_launchData */
 function createWindow(opt_launchData) {
   // If there is already a window, give it focus.
   if (mainWindow) {

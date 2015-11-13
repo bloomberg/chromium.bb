@@ -648,10 +648,12 @@ ar_feedback_consent_html_js_files = [ "app_remoting/js/feedback_consent.js" ]
 ar_feedback_consent_html_all_js_files = [
   "app_remoting/js/feedback_consent.js",
   "base/js/base.js",
+  "base/js/chromoting_event.js",
   "base/js/error.js",
   "base/js/identity.js",
   "base/js/oauth2_api.js",
   "base/js/oauth2_api_impl.js",
+  "base/js/platform.js",
   "base/js/plugin_settings.js",
   "base/js/l10n.js",
   "base/js/xhr.js",
