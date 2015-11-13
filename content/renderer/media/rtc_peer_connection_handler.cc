@@ -796,10 +796,8 @@ RTCPeerConnectionHandler::RTCPeerConnectionHandler(
     blink::WebRTCPeerConnectionHandlerClient* client,
     PeerConnectionDependencyFactory* dependency_factory)
     : client_(client),
-      is_closed_(false),
       dependency_factory_(dependency_factory),
       weak_factory_(this) {
-  CHECK(client_),
   g_peer_connection_handlers.Get().insert(this);
 }
 
@@ -819,13 +817,13 @@ RTCPeerConnectionHandler::~RTCPeerConnectionHandler() {
 
 // static
 void RTCPeerConnectionHandler::DestructAllHandlers() {
-  // Copy g_peer_connection_handlers since releasePeerConnectionHandler will
-  // remove an item.
   std::set<RTCPeerConnectionHandler*> handlers(
       g_peer_connection_handlers.Get().begin(),
       g_peer_connection_handlers.Get().end());
-  for (auto* handler : handlers)
-    handler->client_->releasePeerConnectionHandler();
+  for (auto handler : handlers) {
+    if (handler->client_)
+      handler->client_->releasePeerConnectionHandler();
+  }
 }
 
 // static
@@ -1311,7 +1309,7 @@ void RTCPeerConnectionHandler::GetStats(
 
 void RTCPeerConnectionHandler::CloseClientPeerConnection() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (!is_closed_)
+  if (client_)
     client_->closePeerConnection();
 }
 
@@ -1382,7 +1380,7 @@ void RTCPeerConnectionHandler::stop() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DVLOG(1) << "RTCPeerConnectionHandler::stop";
 
-  if (!is_closed_ || !native_peer_connection_.get())
+  if (!client_ || !native_peer_connection_.get())
     return;  // Already stopped.
 
   if (peer_connection_tracker_)
@@ -1390,8 +1388,9 @@ void RTCPeerConnectionHandler::stop() {
 
   native_peer_connection_->Close();
 
-  // This object may no longer forward call backs to blink.
-  is_closed_ = true;
+  // The client_ pointer is not considered valid after this point and no further
+  // callbacks must be made.
+  client_ = nullptr;
 }
 
 void RTCPeerConnectionHandler::OnSignalingChange(
@@ -1403,7 +1402,7 @@ void RTCPeerConnectionHandler::OnSignalingChange(
       GetWebKitSignalingState(new_state);
   if (peer_connection_tracker_)
     peer_connection_tracker_->TrackSignalingStateChange(this, state);
-  if (!is_closed_)
+  if (client_)
     client_->didChangeSignalingState(state);
 }
 
@@ -1439,7 +1438,7 @@ void RTCPeerConnectionHandler::OnIceConnectionChange(
       GetWebKitIceConnectionState(new_state);
   if (peer_connection_tracker_)
     peer_connection_tracker_->TrackIceConnectionStateChange(this, state);
-  if (!is_closed_)
+  if(client_)
     client_->didChangeICEConnectionState(state);
 }
 
@@ -1452,7 +1451,7 @@ void RTCPeerConnectionHandler::OnIceGatheringChange(
   if (new_state == webrtc::PeerConnectionInterface::kIceGatheringComplete) {
     // If ICE gathering is completed, generate a NULL ICE candidate,
     // to signal end of candidates.
-    if (!is_closed_) {
+    if (client_) {
       blink::WebRTCICECandidate null_candidate;
       client_->didGenerateICECandidate(null_candidate);
     }
@@ -1509,7 +1508,7 @@ void RTCPeerConnectionHandler::OnAddStream(
 
   track_metrics_.AddStream(MediaStreamTrackMetrics::RECEIVED_STREAM,
                            s->webrtc_stream().get());
-  if (!is_closed_)
+  if (client_)
     client_->didAddRemoteStream(s->webkit_stream());
 }
 
@@ -1537,7 +1536,7 @@ void RTCPeerConnectionHandler::OnRemoveStream(
         this, webkit_stream, PeerConnectionTracker::SOURCE_REMOTE);
   }
 
-  if (!is_closed_)
+  if (client_)
     client_->didRemoveRemoteStream(webkit_stream);
 }
 
@@ -1551,7 +1550,7 @@ void RTCPeerConnectionHandler::OnDataChannel(
         this, handler->channel().get(), PeerConnectionTracker::SOURCE_REMOTE);
   }
 
-  if (!is_closed_)
+  if (client_)
     client_->didAddRemoteDataChannel(handler.release());
 }
 
@@ -1580,7 +1579,7 @@ void RTCPeerConnectionHandler::OnIceCandidate(
       NOTREACHED();
     }
   }
-  if (!is_closed_)
+  if (client_)
     client_->didGenerateICECandidate(web_candidate);
 }
 
