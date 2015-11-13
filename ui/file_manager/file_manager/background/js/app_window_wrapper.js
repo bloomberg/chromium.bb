@@ -136,8 +136,10 @@ AppWindowWrapper.prototype.launch = function(appState, reopen, opt_callback) {
     // Apply the last bounds.
     if (lastBounds)
       this.options_.bounds = lastBounds;
-    if (isMaximized)
-      this.options_.state = 'maximized';
+
+    // Overwrite maximized state with remembered last window state.
+    if (isMaximized !== undefined)
+      this.options_.state = isMaximized ? 'maximized' : undefined;
 
     // Create a window.
     chrome.app.window.create(this.url_, this.options_, function(appWindow) {
