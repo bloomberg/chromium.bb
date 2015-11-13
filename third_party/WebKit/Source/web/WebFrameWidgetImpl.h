@@ -88,7 +88,7 @@ public:
     bool hasTouchEventHandlersAt(const WebPoint&) override;
 
     void applyViewportDeltas(
-        const WebFloatSize& pinchViewportDelta,
+        const WebFloatSize& visualViewportDelta,
         const WebFloatSize& mainFrameDelta,
         const WebFloatSize& elasticOverscrollDelta,
         float pageScaleDelta,

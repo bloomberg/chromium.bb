@@ -692,7 +692,7 @@ void RenderWidgetCompositor::registerViewportLayers(
     const blink::WebLayer* outerViewportScrollLayer) {
   layer_tree_host_->RegisterViewportLayers(
       // TODO(bokan): This check can probably be removed now, but it looks
-      // like overscroll elasticity may still be NULL until PinchViewport
+      // like overscroll elasticity may still be NULL until VisualViewport
       // registers its layers.
       // The scroll elasticity layer will only exist when using pinch virtual
       // viewports.
@@ -704,7 +704,7 @@ void RenderWidgetCompositor::registerViewportLayers(
       static_cast<const cc_blink::WebLayerImpl*>(innerViewportScrollLayer)
           ->layer(),
       // TODO(bokan): This check can probably be removed now, but it looks
-      // like overscroll elasticity may still be NULL until PinchViewport
+      // like overscroll elasticity may still be NULL until VisualViewport
       // registers its layers.
       // The outer viewport layer will only exist when using pinch virtual
       // viewports.

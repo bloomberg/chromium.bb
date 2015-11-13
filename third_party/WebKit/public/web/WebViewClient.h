@@ -199,7 +199,7 @@ public:
     virtual void didUpdateLayout() { }
 
     // Return true to swallow the input event if the embedder will start a disambiguation popup
-    virtual bool didTapMultipleTargets(const WebSize& pinchViewportOffset, const WebRect& touchRect, const WebVector<WebRect>& targetRects) { return false; }
+    virtual bool didTapMultipleTargets(const WebSize& visualViewportOffset, const WebRect& touchRect, const WebVector<WebRect>& targetRects) { return false; }
 
     // Returns comma separated list of accept languages.
     virtual WebString acceptLanguages() { return WebString(); }

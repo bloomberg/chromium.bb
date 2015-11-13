@@ -57,7 +57,7 @@ public:
     void setCursorVisibilityState(bool isVisible) override;
     bool hasTouchEventHandlersAt(const WebPoint&) override;
     void applyViewportDeltas(
-        const WebFloatSize& pinchViewportDelta,
+        const WebFloatSize& visualViewportDelta,
         const WebFloatSize& layoutViewportDelta,
         const WebFloatSize& elasticOverscrollDelta,
         float scaleFactor,

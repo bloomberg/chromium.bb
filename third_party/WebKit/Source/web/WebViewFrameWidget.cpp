@@ -123,13 +123,13 @@ bool WebViewFrameWidget::hasTouchEventHandlersAt(const WebPoint& point)
 }
 
 void WebViewFrameWidget::applyViewportDeltas(
-    const WebFloatSize& pinchViewportDelta,
+    const WebFloatSize& visualViewportDelta,
     const WebFloatSize& layoutViewportDelta,
     const WebFloatSize& elasticOverscrollDelta,
     float scaleFactor,
     float topControlsShownRatioDelta)
 {
-    return m_webView->applyViewportDeltas(pinchViewportDelta, layoutViewportDelta, elasticOverscrollDelta, scaleFactor, topControlsShownRatioDelta);
+    return m_webView->applyViewportDeltas(visualViewportDelta, layoutViewportDelta, elasticOverscrollDelta, scaleFactor, topControlsShownRatioDelta);
 }
 
 void WebViewFrameWidget::recordFrameTimingEvent(FrameTimingEventType eventType, int64_t rectId, const WebVector<WebFrameTimingEvent>& events)
