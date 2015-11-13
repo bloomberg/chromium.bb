@@ -116,10 +116,11 @@ class ExtensionInstalledBubbleControllerTest : public CocoaProfileTest {
   }
 
   ExtensionInstalledBubbleControllerForTest* CreateController() {
+    extension_bubble_.reset(
+        new ExtensionInstalledBubble(extension_.get(), browser(), icon_));
     return [[ExtensionInstalledBubbleControllerForTest alloc]
         initWithParentWindow:window_
-             extensionBubble:new ExtensionInstalledBubble(extension_.get(),
-                                                          browser(), icon_)];
+             extensionBubble:extension_bubble_.get()];
   }
 
   // Required to initialize the extension installed bubble.
@@ -129,6 +130,9 @@ class ExtensionInstalledBubbleControllerTest : public CocoaProfileTest {
 
   // Skeleton extension to be tested; reinitialized for each test.
   scoped_refptr<Extension> extension_;
+
+  // The bubble that tests are run on.
+  scoped_ptr<ExtensionInstalledBubble> extension_bubble_;
 
   // The icon_ to be loaded into the bubble window.
   SkBitmap icon_;

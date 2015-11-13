@@ -15,7 +15,6 @@ class Browser;
 class GURL;
 class LoginHandler;
 class Profile;
-class SkBitmap;
 
 namespace bookmarks {
 class BookmarkBubbleObserver;
@@ -55,14 +54,6 @@ namespace chrome {
 gfx::NativeWindow ShowWebDialog(gfx::NativeView parent,
                                 content::BrowserContext* context,
                                 ui::WebDialogDelegate* delegate);
-
-// Creates the ExtensionInstalledBubble and schedules it to be shown once
-// the extension has loaded. |extension| is the installed extension. |browser|
-// is the browser window which will host the bubble. |icon| is the install
-// icon of the extension.
-void ShowExtensionInstalledBubble(const extensions::Extension* extension,
-                                  Browser* browser,
-                                  const SkBitmap& icon);
 
 // Shows or hides the Task Manager. |browser| can be NULL when called from Ash.
 void ShowTaskManager(Browser* browser);

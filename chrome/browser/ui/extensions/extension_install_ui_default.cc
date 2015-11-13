@@ -16,12 +16,12 @@
 #include "chrome/browser/ui/app_list/app_list_service.h"
 #include "chrome/browser/ui/app_list/app_list_util.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/extensions/extension_installed_bubble.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/browser/ui/simple_message_box.h"
@@ -68,7 +68,7 @@ void ShowExtensionInstalledBubble(const extensions::Extension* extension,
                                   const SkBitmap& icon) {
   Browser* browser = FindOrCreateVisibleBrowser(profile);
   if (browser)
-    chrome::ShowExtensionInstalledBubble(extension, browser, icon);
+    ExtensionInstalledBubble::ShowBubble(extension, browser, icon);
 }
 
 // Helper class to put up an infobar when installation fails.

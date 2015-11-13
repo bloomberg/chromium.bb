@@ -7,8 +7,8 @@
 #include <string>
 
 #include "base/bind.h"
-#include "base/location.h"
-#include "base/single_thread_task_runner.h"
+#include "base/memory/weak_ptr.h"
+#include "base/scoped_observer.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -20,10 +20,11 @@
 #include "chrome/common/extensions/api/omnibox/omnibox_handler.h"
 #include "chrome/common/extensions/command.h"
 #include "chrome/grit/generated_resources.h"
-#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
 #include "extensions/browser/extension_registry.h"
-#include "extensions/common/extension.h"
+#include "extensions/browser/extension_registry_observer.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using extensions::Extension;
@@ -34,6 +35,108 @@ namespace {
 const int kAnimationWaitMs = 50;
 // How often we retry when waiting for browser action animation to end.
 const int kAnimationWaitRetries = 10;
+
+// Class responsible for showing the bubble after it's installed. Owns itself.
+class ExtensionInstalledBubbleObserver
+    : public content::NotificationObserver,
+      public extensions::ExtensionRegistryObserver {
+ public:
+  explicit ExtensionInstalledBubbleObserver(
+      scoped_ptr<ExtensionInstalledBubble> bubble)
+      : bubble_(bubble.Pass()),
+        extension_registry_observer_(this),
+        animation_wait_retries_(0),
+        weak_factory_(this) {
+    // |extension| has been initialized but not loaded at this point. We need to
+    // wait on showing the Bubble until the EXTENSION_LOADED gets fired.
+    extension_registry_observer_.Add(
+        extensions::ExtensionRegistry::Get(bubble_->browser()->profile()));
+
+    registrar_.Add(this, chrome::NOTIFICATION_BROWSER_CLOSING,
+                   content::Source<Browser>(bubble_->browser()));
+  }
+
+ private:
+  ~ExtensionInstalledBubbleObserver() override {}
+
+  // content::NotificationObserver:
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override {
+    DCHECK_EQ(type, chrome::NOTIFICATION_BROWSER_CLOSING)
+        << "Received unexpected notification";
+    // Browser is closing before the bubble was shown.
+    // TODO(hcarmona): Look into logging this with the BubbleManager.
+    delete this;
+  }
+
+  // extensions::ExtensionRegistryObserver:
+  void OnExtensionLoaded(content::BrowserContext* browser_context,
+                         const extensions::Extension* extension) override {
+    if (extension == bubble_->extension()) {
+      bubble_->OnExtensionLoaded();
+      // PostTask to ourself to allow all EXTENSION_LOADED Observers to run.
+      // Only then can we be sure that a BrowserAction or PageAction has had
+      // views created which we can inspect for the purpose of previewing of
+      // pointing to them.
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::Bind(&ExtensionInstalledBubbleObserver::Show,
+                                weak_factory_.GetWeakPtr()));
+    }
+  }
+
+  void OnExtensionUnloaded(
+      content::BrowserContext* browser_context,
+      const extensions::Extension* extension,
+      extensions::UnloadedExtensionInfo::Reason reason) override {
+    if (extension == bubble_->extension()) {
+      // Extension is going away.
+      delete this;
+    }
+  }
+
+  // Called internally via PostTask to show the bubble.
+  void Show() {
+    DCHECK(bubble_);
+    // TODO(hcarmona): Investigate having the BubbleManager query the bubble
+    // for |ShouldShow|. This is important because the BubbleManager may decide
+    // to delay showing the bubble.
+    if (bubble_->ShouldShow()) {
+      // Must be 2 lines because the manager will take ownership of bubble.
+      BubbleManager* manager = bubble_->browser()->GetBubbleManager();
+      manager->ShowBubble(bubble_.Pass());
+      delete this;
+      return;
+    }
+    if (animation_wait_retries_++ < kAnimationWaitRetries) {
+      base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+          FROM_HERE, base::Bind(&ExtensionInstalledBubbleObserver::Show,
+                                weak_factory_.GetWeakPtr()),
+          base::TimeDelta::FromMilliseconds(kAnimationWaitMs));
+    } else {
+      // Retries are over; won't try again.
+      // TODO(hcarmona): Look into logging this with the BubbleManager.
+      delete this;
+    }
+  }
+
+  // The bubble that will be shown when the extension has finished installing.
+  scoped_ptr<ExtensionInstalledBubble> bubble_;
+
+  ScopedObserver<extensions::ExtensionRegistry,
+                 extensions::ExtensionRegistryObserver>
+      extension_registry_observer_;
+
+  content::NotificationRegistrar registrar_;
+
+  // The number of times to retry showing the bubble if the bubble_->browser()
+  // action toolbar is animating.
+  int animation_wait_retries_;
+
+  base::WeakPtrFactory<ExtensionInstalledBubbleObserver> weak_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(ExtensionInstalledBubbleObserver);
+};
 
 // Returns the keybinding for an extension command, or a null if none exists.
 scoped_ptr<extensions::Command> GetCommand(
@@ -59,16 +162,21 @@ scoped_ptr<extensions::Command> GetCommand(
 
 }  // namespace
 
+// static
+void ExtensionInstalledBubble::ShowBubble(
+    const extensions::Extension* extension,
+    Browser* browser,
+    const SkBitmap& icon) {
+  // The ExtensionInstalledBubbleObserver will delete itself when the
+  // ExtensionInstalledBubble is shown or when it can't be shown anymore.
+  new ExtensionInstalledBubbleObserver(
+      make_scoped_ptr(new ExtensionInstalledBubble(extension, browser, icon)));
+}
+
 ExtensionInstalledBubble::ExtensionInstalledBubble(const Extension* extension,
                                                    Browser* browser,
                                                    const SkBitmap& icon)
-    : bubble_ui_(nullptr),
-      extension_(extension),
-      browser_(browser),
-      icon_(icon),
-      extension_registry_observer_(this),
-      animation_wait_retries_(0),
-      weak_factory_(this) {
+    : extension_(extension), browser_(browser), icon_(icon) {
   if (!extensions::OmniboxInfo::GetKeyword(extension).empty())
     type_ = OMNIBOX_KEYWORD;
   else if (extensions::ActionInfo::GetBrowserActionInfo(extension))
@@ -78,24 +186,17 @@ ExtensionInstalledBubble::ExtensionInstalledBubble(const Extension* extension,
     type_ = PAGE_ACTION;
   else
     type_ = GENERIC;
-
-  // |extension| has been initialized but not loaded at this point. We need
-  // to wait on showing the Bubble until not only the EXTENSION_LOADED gets
-  // fired, but all of the EXTENSION_LOADED Observers have run. Only then can we
-  // be sure that a BrowserAction or PageAction has had views created which we
-  // can inspect for the purpose of previewing of pointing to them.
-  extension_registry_observer_.Add(
-      extensions::ExtensionRegistry::Get(browser->profile()));
-
-  registrar_.Add(this, chrome::NOTIFICATION_BROWSER_CLOSING,
-      content::Source<Browser>(browser));
 }
 
 ExtensionInstalledBubble::~ExtensionInstalledBubble() {}
 
-void ExtensionInstalledBubble::IgnoreBrowserClosing() {
-  registrar_.Remove(this, chrome::NOTIFICATION_BROWSER_CLOSING,
-                    content::Source<Browser>(browser_));
+bool ExtensionInstalledBubble::ShouldClose(BubbleCloseReason reason) const {
+  // Installing an extension triggers a navigation event that should be ignored.
+  return reason != BUBBLE_CLOSE_NAVIGATED;
+}
+
+std::string ExtensionInstalledBubble::GetName() const {
+  return "ExtensionInstalled";
 }
 
 base::string16 ExtensionInstalledBubble::GetHowToUseDescription() const {
@@ -128,58 +229,6 @@ base::string16 ExtensionInstalledBubble::GetHowToUseDescription() const {
       l10n_util::GetStringFUTF16(message_id, extra);
 }
 
-void ExtensionInstalledBubble::SetBubbleUi(
-    ExtensionInstalledBubbleUi* bubble_ui) {
-  DCHECK(!bubble_ui_);
-  DCHECK(bubble_ui);
-  bubble_ui_ = bubble_ui;
-}
-
-void ExtensionInstalledBubble::ShowInternal() {
-  if (ExtensionInstalledBubbleUi::ShouldShow(this)) {
-    DCHECK(bubble_ui_);
-    bubble_ui_->Show();
-    return;
-  }
-  if (animation_wait_retries_++ < kAnimationWaitRetries) {
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, base::Bind(&ExtensionInstalledBubble::ShowInternal,
-                              weak_factory_.GetWeakPtr()),
-        base::TimeDelta::FromMilliseconds(kAnimationWaitMs));
-  }
-}
-
-void ExtensionInstalledBubble::OnExtensionLoaded(
-    content::BrowserContext* browser_context,
-    const extensions::Extension* extension) {
-  if (extension == extension_) {
-    // Parse the extension command, if one exists.
-    action_command_ = GetCommand(extension_->id(), browser_->profile(), type_);
-
-    animation_wait_retries_ = 0;
-    // PostTask to ourself to allow all EXTENSION_LOADED Observers to run.
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&ExtensionInstalledBubble::ShowInternal,
-                              weak_factory_.GetWeakPtr()));
-  }
-}
-
-void ExtensionInstalledBubble::OnExtensionUnloaded(
-    content::BrowserContext* browser_context,
-    const extensions::Extension* extension,
-    extensions::UnloadedExtensionInfo::Reason reason) {
-  if (extension == extension_) {
-    // Extension is going away, make sure ShowInternal won't be called.
-    weak_factory_.InvalidateWeakPtrs();
-    extension_ = NULL;
-  }
-}
-
-void ExtensionInstalledBubble::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  DCHECK_EQ(type, chrome::NOTIFICATION_BROWSER_CLOSING)
-      << "Received unexpected notification";
-  delete bubble_ui_;
+void ExtensionInstalledBubble::OnExtensionLoaded() {
+  action_command_ = GetCommand(extension_->id(), browser_->profile(), type_);
 }
