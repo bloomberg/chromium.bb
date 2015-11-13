@@ -426,7 +426,7 @@ WebContents* WebContentsState::RestoreContentsFromByteBuffer(
     return NULL;
 
   Profile* profile = ProfileManager::GetActiveUserProfile();
-  ScopedVector<content::NavigationEntry> scoped_entries =
+  std::vector<scoped_ptr<content::NavigationEntry>> entries =
       sessions::ContentSerializedNavigationBuilder::ToNavigationEntries(
           navigations, profile);
 
@@ -436,9 +436,8 @@ WebContents* WebContentsState::RestoreContentsFromByteBuffer(
   params.initially_hidden = initially_hidden;
   scoped_ptr<WebContents> web_contents(WebContents::Create(params));
   web_contents->GetController().Restore(
-      current_entry_index,
-      NavigationController::RESTORE_CURRENT_SESSION,
-      &scoped_entries);
+      current_entry_index, NavigationController::RESTORE_CURRENT_SESSION,
+      &entries);
   return web_contents.release();
 }
 

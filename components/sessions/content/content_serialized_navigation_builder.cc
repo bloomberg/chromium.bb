@@ -85,19 +85,18 @@ ContentSerializedNavigationBuilder::ToNavigationEntry(
 }
 
 // static
-ScopedVector<content::NavigationEntry>
+std::vector<scoped_ptr<content::NavigationEntry>>
 ContentSerializedNavigationBuilder::ToNavigationEntries(
     const std::vector<SerializedNavigationEntry>& navigations,
     content::BrowserContext* browser_context) {
   int page_id = 0;
-  ScopedVector<content::NavigationEntry> entries;
-  for (std::vector<SerializedNavigationEntry>::const_iterator
-       it = navigations.begin(); it != navigations.end(); ++it) {
-    entries.push_back(
-        ToNavigationEntry(&(*it), page_id, browser_context).release());
+  std::vector<scoped_ptr<content::NavigationEntry>> entries;
+  entries.reserve(navigations.size());
+  for (const auto& navigation : navigations) {
+    entries.push_back(ToNavigationEntry(&navigation, page_id, browser_context));
     ++page_id;
   }
-  return entries.Pass();
+  return entries;
 }
 
 }  // namespace sessions

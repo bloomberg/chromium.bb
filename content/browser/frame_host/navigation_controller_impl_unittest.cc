@@ -2762,7 +2762,7 @@ TEST_F(NavigationControllerTest, EnforceMaxNavigationCount) {
 TEST_F(NavigationControllerTest, RestoreNavigate) {
   // Create a NavigationController with a restored set of tabs.
   GURL url("http://foo");
-  ScopedVector<NavigationEntry> entries;
+  std::vector<scoped_ptr<NavigationEntry>> entries;
   scoped_ptr<NavigationEntry> entry =
       NavigationControllerImpl::CreateNavigationEntry(
           url, Referrer(), ui::PAGE_TRANSITION_RELOAD, false, std::string(),
@@ -2835,7 +2835,7 @@ TEST_F(NavigationControllerTest, RestoreNavigate) {
 TEST_F(NavigationControllerTest, RestoreNavigateAfterFailure) {
   // Create a NavigationController with a restored set of tabs.
   GURL url("http://foo");
-  ScopedVector<NavigationEntry> entries;
+  std::vector<scoped_ptr<NavigationEntry>> entries;
   scoped_ptr<NavigationEntry> new_entry =
       NavigationControllerImpl::CreateNavigationEntry(
           url, Referrer(), ui::PAGE_TRANSITION_RELOAD, false, std::string(),
@@ -4345,7 +4345,7 @@ TEST_F(NavigationControllerTest, CopyRestoredStateAndNavigate) {
   };
   const GURL kInitialUrl("http://site3.com");
 
-  ScopedVector<NavigationEntry> entries;
+  std::vector<scoped_ptr<NavigationEntry>> entries;
   for (size_t i = 0; i < arraysize(kRestoredUrls); ++i) {
     scoped_ptr<NavigationEntry> entry =
         NavigationControllerImpl::CreateNavigationEntry(

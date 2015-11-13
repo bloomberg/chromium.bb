@@ -127,7 +127,7 @@ NavigationEntryImpl::RestoreType ControllerRestoreTypeToEntryType(
 // Configure all the NavigationEntries in entries for restore. This resets
 // the transition type to reload and makes sure the content state isn't empty.
 void ConfigureEntriesForRestore(
-    ScopedVector<NavigationEntryImpl>* entries,
+    std::vector<scoped_ptr<NavigationEntryImpl>>* entries,
     NavigationController::RestoreType type) {
   for (size_t i = 0; i < entries->size(); ++i) {
     // Use a transition type of reload so that we don't incorrectly increase
@@ -135,7 +135,7 @@ void ConfigureEntriesForRestore(
     (*entries)[i]->SetTransitionType(ui::PAGE_TRANSITION_RELOAD);
     (*entries)[i]->set_restore_type(ControllerRestoreTypeToEntryType(type));
     // NOTE(darin): This code is only needed for backwards compat.
-    SetPageStateIfEmpty((*entries)[i]);
+    SetPageStateIfEmpty((*entries)[i].get());
   }
 }
 
@@ -268,19 +268,20 @@ void NavigationControllerImpl::SetBrowserContext(
 void NavigationControllerImpl::Restore(
     int selected_navigation,
     RestoreType type,
-    ScopedVector<NavigationEntry>* entries) {
+    std::vector<scoped_ptr<NavigationEntry>>* entries) {
   // Verify that this controller is unused and that the input is valid.
   DCHECK(GetEntryCount() == 0 && !GetPendingEntry());
   DCHECK(selected_navigation >= 0 &&
          selected_navigation < static_cast<int>(entries->size()));
 
   needs_reload_ = true;
-  for (size_t i = 0; i < entries->size(); ++i) {
-    NavigationEntryImpl* entry =
-        NavigationEntryImpl::FromNavigationEntry((*entries)[i]);
-    entries_.push_back(entry);
-  }
-  entries->weak_clear();
+  entries_.reserve(entries->size());
+  for (auto& entry : *entries)
+    entries_.push_back(NavigationEntryImpl::FromNavigationEntry(entry.Pass()));
+
+  // At this point, the |entries| is full of empty scoped_ptrs, so it can be
+  // cleared out safely.
+  entries->clear();
 
   // And finish the restore.
   FinishRestore(selected_navigation, type);
@@ -422,13 +423,13 @@ bool NavigationControllerImpl::IsInitialBlankNavigation() const {
 NavigationEntryImpl* NavigationControllerImpl::GetEntryWithPageID(
   SiteInstance* instance, int32 page_id) const {
   int index = GetEntryIndexWithPageID(instance, page_id);
-  return (index != -1) ? entries_[index] : nullptr;
+  return (index != -1) ? entries_[index].get() : nullptr;
 }
 
 NavigationEntryImpl*
 NavigationControllerImpl::GetEntryWithUniqueID(int nav_entry_id) const {
   int index = GetEntryIndexWithUniqueID(nav_entry_id);
-  return (index != -1) ? entries_[index] : nullptr;
+  return (index != -1) ? entries_[index].get() : nullptr;
 }
 
 void NavigationControllerImpl::LoadEntry(
@@ -452,7 +453,7 @@ void NavigationControllerImpl::SetPendingEntry(
 
 NavigationEntryImpl* NavigationControllerImpl::GetActiveEntry() const {
   if (transient_entry_index_ != -1)
-    return entries_[transient_entry_index_];
+    return entries_[transient_entry_index_].get();
   if (pending_entry_)
     return pending_entry_;
   return GetLastCommittedEntry();
@@ -460,7 +461,7 @@ NavigationEntryImpl* NavigationControllerImpl::GetActiveEntry() const {
 
 NavigationEntryImpl* NavigationControllerImpl::GetVisibleEntry() const {
   if (transient_entry_index_ != -1)
-    return entries_[transient_entry_index_];
+    return entries_[transient_entry_index_].get();
   // The pending entry is safe to return for new (non-history), browser-
   // initiated navigations.  Most renderer-initiated navigations should not
   // show the pending entry, to prevent URL spoof attacks.
@@ -502,7 +503,7 @@ int NavigationControllerImpl::GetCurrentEntryIndex() const {
 NavigationEntryImpl* NavigationControllerImpl::GetLastCommittedEntry() const {
   if (last_committed_entry_index_ == -1)
     return NULL;
-  return entries_[last_committed_entry_index_];
+  return entries_[last_committed_entry_index_].get();
 }
 
 bool NavigationControllerImpl::CanViewSource() const {
@@ -529,7 +530,7 @@ NavigationEntryImpl* NavigationControllerImpl::GetEntryAtIndex(
   if (index < 0 || index >= GetEntryCount())
     return nullptr;
 
-  return entries_[index];
+  return entries_[index].get();
 }
 
 NavigationEntryImpl* NavigationControllerImpl::GetEntryAtOffset(
@@ -1343,11 +1344,11 @@ bool NavigationControllerImpl::RendererDidNavigateAutoSubframe(
 
 int NavigationControllerImpl::GetIndexOfEntry(
     const NavigationEntryImpl* entry) const {
-  const NavigationEntries::const_iterator i(std::find(
-      entries_.begin(),
-      entries_.end(),
-      entry));
-  return (i == entries_.end()) ? -1 : static_cast<int>(i - entries_.begin());
+  for (size_t i = 0; i < entries_.size(); ++i) {
+    if (entries_[i].get() == entry)
+      return i;
+  }
+  return -1;
 }
 
 // There are two general cases where a navigation is "in page":
@@ -1666,11 +1667,7 @@ void NavigationControllerImpl::InsertOrReplaceEntry(
   if (replace && current_size > 0) {
     int32 page_id = entry->GetPageID();
 
-    // ScopedVectors don't automatically delete the replaced value, so make sure
-    // the previous value gets deleted.
-    scoped_ptr<NavigationEntryImpl> old_entry(
-        entries_[last_committed_entry_index_]);
-    entries_[last_committed_entry_index_] = entry.release();
+    entries_[last_committed_entry_index_] = entry.Pass();
 
     // This is a new page ID, so we need everybody to know about it.
     delegate_->UpdateMaxPageID(page_id);
@@ -1752,7 +1749,7 @@ void NavigationControllerImpl::NavigateToPendingEntry(ReloadType reload_type) {
   // For session history navigations only the pending_entry_index_ is set.
   if (!pending_entry_) {
     CHECK_NE(pending_entry_index_, -1);
-    pending_entry_ = entries_[pending_entry_index_];
+    pending_entry_ = entries_[pending_entry_index_].get();
   }
 
   // Any renderer-side debug URLs or javascript: URLs should be ignored if the
@@ -1999,7 +1996,7 @@ int NavigationControllerImpl::GetEntryIndexWithUniqueID(
 NavigationEntryImpl* NavigationControllerImpl::GetTransientEntry() const {
   if (transient_entry_index_ == -1)
     return NULL;
-  return entries_[transient_entry_index_];
+  return entries_[transient_entry_index_].get();
 }
 
 void NavigationControllerImpl::SetTransientEntry(
@@ -2010,7 +2007,7 @@ void NavigationControllerImpl::SetTransientEntry(
     index = last_committed_entry_index_ + 1;
   DiscardTransientEntry();
   entries_.insert(entries_.begin() + index,
-                  NavigationEntryImpl::FromNavigationEntry(entry.release()));
+                  NavigationEntryImpl::FromNavigationEntry(entry.Pass()));
   transient_entry_index_ = index;
   delegate_->NotifyNavigationStateChanged(INVALIDATE_TYPE_ALL);
 }

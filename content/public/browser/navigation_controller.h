@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_vector.h"
 #include "base/strings/string16.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/global_request_id.h"
@@ -227,7 +226,7 @@ class NavigationController {
   // restore.
   virtual void Restore(int selected_navigation,
                        RestoreType type,
-                       ScopedVector<NavigationEntry>* entries) = 0;
+                       std::vector<scoped_ptr<NavigationEntry>>* entries) = 0;
 
   // Entries -------------------------------------------------------------------
 

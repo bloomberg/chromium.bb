@@ -838,7 +838,7 @@ TEST_F(WebContentsImplTest, NavigateFromRestoredSitelessUrl) {
   // SiteInstance.
   browser_client.set_assign_site_for_url(false);
   const GURL native_url("non-site-url://stuffandthings");
-  ScopedVector<NavigationEntry> entries;
+  std::vector<scoped_ptr<NavigationEntry>> entries;
   scoped_ptr<NavigationEntry> new_entry =
       NavigationControllerImpl::CreateNavigationEntry(
           native_url, Referrer(), ui::PAGE_TRANSITION_LINK, false,
@@ -888,7 +888,7 @@ TEST_F(WebContentsImplTest, NavigateFromRestoredRegularUrl) {
   // ShouldAssignSiteForUrl override is disabled (i.e. returns true).
   browser_client.set_assign_site_for_url(true);
   const GURL regular_url("http://www.yahoo.com");
-  ScopedVector<NavigationEntry> entries;
+  std::vector<scoped_ptr<NavigationEntry>> entries;
   scoped_ptr<NavigationEntry> new_entry =
       NavigationControllerImpl::CreateNavigationEntry(
           regular_url, Referrer(), ui::PAGE_TRANSITION_LINK, false,

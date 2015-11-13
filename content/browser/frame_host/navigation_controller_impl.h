@@ -5,10 +5,11 @@
 #ifndef CONTENT_BROWSER_FRAME_HOST_NAVIGATION_CONTROLLER_IMPL_H_
 #define CONTENT_BROWSER_FRAME_HOST_NAVIGATION_CONTROLLER_IMPL_H_
 
+#include <vector>
+
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
-#include "base/memory/scoped_vector.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/browser/frame_host/navigation_controller_delegate.h"
@@ -40,7 +41,7 @@ class CONTENT_EXPORT NavigationControllerImpl
   void SetBrowserContext(BrowserContext* browser_context) override;
   void Restore(int selected_navigation,
                RestoreType type,
-               ScopedVector<NavigationEntry>* entries) override;
+               std::vector<scoped_ptr<NavigationEntry>>* entries) override;
   NavigationEntryImpl* GetActiveEntry() const override;
   NavigationEntryImpl* GetVisibleEntry() const override;
   int GetCurrentEntryIndex() const override;
@@ -352,9 +353,8 @@ class CONTENT_EXPORT NavigationControllerImpl
   // The user browser context associated with this controller.
   BrowserContext* browser_context_;
 
-  // List of NavigationEntry for this tab
-  using NavigationEntries = ScopedVector<NavigationEntryImpl>;
-  NavigationEntries entries_;
+  // List of |NavigationEntry|s for this controller.
+  std::vector<scoped_ptr<NavigationEntryImpl>> entries_;
 
   // An entry we haven't gotten a response for yet.  This will be discarded
   // when we navigate again.  It's used only so we know what the currently
