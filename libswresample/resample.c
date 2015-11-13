@@ -32,9 +32,8 @@
  * 0th order modified bessel function of the first kind.
  */
 static double bessel(double x){
-    double v=1;
     double lastv=0;
-    double t=1;
+    double t, v;
     int i;
     static const double inv[100]={
  1.0/( 1* 1), 1.0/( 2* 2), 1.0/( 3* 3), 1.0/( 4* 4), 1.0/( 5* 5), 1.0/( 6* 6), 1.0/( 7* 7), 1.0/( 8* 8), 1.0/( 9* 9), 1.0/(10*10),
@@ -50,11 +49,15 @@ static double bessel(double x){
     };
 
     x= x*x/4;
-    for(i=0; v != lastv; i++){
-        lastv=v;
+    t = x;
+    v = 1 + x;
+    for(i=1; v != lastv; i+=2){
         t *= x*inv[i];
         v += t;
-        av_assert2(i<99);
+        lastv=v;
+        t *= x*inv[i + 1];
+        v += t;
+        av_assert2(i<98);
     }
     return v;
 }
@@ -71,7 +74,7 @@ static int build_filter(ResampleContext *c, void *filter, double factor, int tap
                         int filter_type, int kaiser_beta){
     int ph, i;
     double x, y, w;
-    double *tab = av_malloc_array(tap_count,  sizeof(*tab));
+    double *tab = av_malloc_array(tap_count+1,  sizeof(*tab));
     const int center= (tap_count-1)/2;
 
     if (!tab)
@@ -81,9 +84,10 @@ static int build_filter(ResampleContext *c, void *filter, double factor, int tap
     if (factor > 1.0)
         factor = 1.0;
 
-    for(ph=0;ph<phase_count;ph++) {
+    av_assert0(phase_count == 1 || phase_count % 2 == 0);
+    for(ph = 0; ph <= phase_count / 2; ph++) {
         double norm = 0;
-        for(i=0;i<tap_count;i++) {
+        for(i=0;i<=tap_count;i++) {
             x = M_PI * ((double)(i - center) - (double)ph / phase_count) * factor;
             if (x == 0) y = 1.0;
             else        y = sin(x) / x;
@@ -107,7 +111,8 @@ static int build_filter(ResampleContext *c, void *filter, double factor, int tap
             }
 
             tab[i] = y;
-            norm += y;
+            if (i < tap_count)
+                norm += y;
         }
 
         /* normalize so that an uniform color remains the same */
@@ -115,18 +120,52 @@ static int build_filter(ResampleContext *c, void *filter, double factor, int tap
         case AV_SAMPLE_FMT_S16P:
             for(i=0;i<tap_count;i++)
                 ((int16_t*)filter)[ph * alloc + i] = av_clip(lrintf(tab[i] * scale / norm), INT16_MIN, INT16_MAX);
+            if (tap_count % 2 == 0) {
+                for (i = 0; i < tap_count; i++)
+                    ((int16_t*)filter)[(phase_count-ph) * alloc + tap_count-1-i] = ((int16_t*)filter)[ph * alloc + i];
+            }
+            else {
+                for (i = 1; i <= tap_count; i++)
+                    ((int16_t*)filter)[(phase_count-ph) * alloc + tap_count-i] =
+                        av_clip(lrintf(tab[i] * scale / (norm - tab[0] + tab[tap_count])), INT16_MIN, INT16_MAX);
+            }
             break;
         case AV_SAMPLE_FMT_S32P:
             for(i=0;i<tap_count;i++)
                 ((int32_t*)filter)[ph * alloc + i] = av_clipl_int32(llrint(tab[i] * scale / norm));
+            if (tap_count % 2 == 0) {
+                for (i = 0; i < tap_count; i++)
+                    ((int32_t*)filter)[(phase_count-ph) * alloc + tap_count-1-i] = ((int32_t*)filter)[ph * alloc + i];
+            }
+            else {
+                for (i = 1; i <= tap_count; i++)
+                    ((int32_t*)filter)[(phase_count-ph) * alloc + tap_count-i] =
+                        av_clipl_int32(llrint(tab[i] * scale / (norm - tab[0] + tab[tap_count])));
+            }
             break;
         case AV_SAMPLE_FMT_FLTP:
             for(i=0;i<tap_count;i++)
                 ((float*)filter)[ph * alloc + i] = tab[i] * scale / norm;
+            if (tap_count % 2 == 0) {
+                for (i = 0; i < tap_count; i++)
+                    ((float*)filter)[(phase_count-ph) * alloc + tap_count-1-i] = ((float*)filter)[ph * alloc + i];
+            }
+            else {
+                for (i = 1; i <= tap_count; i++)
+                    ((float*)filter)[(phase_count-ph) * alloc + tap_count-i] = tab[i] * scale / (norm - tab[0] + tab[tap_count]);
+            }
             break;
         case AV_SAMPLE_FMT_DBLP:
             for(i=0;i<tap_count;i++)
                 ((double*)filter)[ph * alloc + i] = tab[i] * scale / norm;
+            if (tap_count % 2 == 0) {
+                for (i = 0; i < tap_count; i++)
+                    ((double*)filter)[(phase_count-ph) * alloc + tap_count-1-i] = ((double*)filter)[ph * alloc + i];
+            }
+            else {
+                for (i = 1; i <= tap_count; i++)
+                    ((double*)filter)[(phase_count-ph) * alloc + tap_count-i] = tab[i] * scale / (norm - tab[0] + tab[tap_count]);
+            }
             break;
         }
     }

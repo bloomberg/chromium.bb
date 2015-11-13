@@ -866,7 +866,7 @@ extern const uint8_t ff_dither_8x8_220[9][8];
 
 extern const int32_t ff_yuv2rgb_coeffs[8][4];
 
-extern const AVClass sws_context_class;
+extern const AVClass ff_sws_context_class;
 
 /**
  * Set c->swscale to an unscaled converter if one exists for the specific
@@ -1013,7 +1013,8 @@ typedef struct VScalerContext
 } VScalerContext;
 
 // warp input lines in the form (src + width*i + j) to slice format (line[i][j])
-int ff_init_slice_from_src(SwsSlice * s, uint8_t *src[4], int stride[4], int srcW, int lumY, int lumH, int chrY, int chrH);
+// relative=true means first line src[x][0] otherwise first line is src[x][lum/crh Y]
+int ff_init_slice_from_src(SwsSlice * s, uint8_t *src[4], int stride[4], int srcW, int lumY, int lumH, int chrY, int chrH, int relative);
 
 // Initialize scaler filter descriptor chain
 int ff_init_filters(SwsContext *c);

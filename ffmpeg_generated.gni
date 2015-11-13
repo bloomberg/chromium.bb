@@ -23,6 +23,7 @@ if ((is_android && current_cpu == "arm" && ffmpeg_branding == "Chrome") || (is_a
     "libavcodec/bitstream.c",
     "libavcodec/bitstream_filter.c",
     "libavcodec/codec_desc.c",
+    "libavcodec/d3d11va.c",
     "libavcodec/dirac.c",
     "libavcodec/dv_profile.c",
     "libavcodec/fft_fixed.c",
@@ -74,6 +75,7 @@ if ((is_android && current_cpu == "arm" && ffmpeg_branding == "Chrome") || (is_a
     "libavformat/mux.c",
     "libavformat/oggdec.c",
     "libavformat/oggparsecelt.c",
+    "libavformat/oggparsedaala.c",
     "libavformat/oggparsedirac.c",
     "libavformat/oggparseflac.c",
     "libavformat/oggparseogm.c",
@@ -632,6 +634,7 @@ if ((is_linux && current_cpu == "x64" && ffmpeg_branding == "ChromeOS") || (is_l
     "libavcodec/x86/me_cmp.asm",
     "libavcodec/x86/pixblockdsp.asm",
     "libavcodec/x86/qpeldsp.asm",
+    "libavcodec/x86/simple_idct10.asm",
     "libavcodec/x86/xvididct.asm",
   ]
 }

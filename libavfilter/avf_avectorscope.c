@@ -126,24 +126,21 @@ static int query_formats(AVFilterContext *ctx)
     AVFilterLink *outlink = ctx->outputs[0];
     static const enum AVSampleFormat sample_fmts[] = { AV_SAMPLE_FMT_S16, AV_SAMPLE_FMT_FLT, AV_SAMPLE_FMT_NONE };
     static const enum AVPixelFormat pix_fmts[] = { AV_PIX_FMT_RGBA, AV_PIX_FMT_NONE };
+    int ret;
 
     formats = ff_make_format_list(sample_fmts);
-    if (!formats)
-        return AVERROR(ENOMEM);
-    ff_formats_ref(formats, &inlink->out_formats);
-
-    ff_add_channel_layout(&layout, AV_CH_LAYOUT_STEREO);
-    ff_channel_layouts_ref(layout, &inlink->out_channel_layouts);
+    if ((ret = ff_formats_ref         (formats, &inlink->out_formats        )) < 0 ||
+        (ret = ff_add_channel_layout  (&layout, AV_CH_LAYOUT_STEREO         )) < 0 ||
+        (ret = ff_channel_layouts_ref (layout , &inlink->out_channel_layouts)) < 0)
+        return ret;
 
     formats = ff_all_samplerates();
-    if (!formats)
-        return AVERROR(ENOMEM);
-    ff_formats_ref(formats, &inlink->out_samplerates);
+    if ((ret = ff_formats_ref(formats, &inlink->out_samplerates)) < 0)
+        return ret;
 
     formats = ff_make_format_list(pix_fmts);
-    if (!formats)
-        return AVERROR(ENOMEM);
-    ff_formats_ref(formats, &outlink->in_formats);
+    if ((ret = ff_formats_ref(formats, &outlink->in_formats)) < 0)
+        return ret;
 
     return 0;
 }
@@ -223,7 +220,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *insamples)
                 cx = sx * sqrtf(1 - 0.5*sy*sy);
                 cy = sy * sqrtf(1 - 0.5*sx*sx);
                 x = hw + hw * FFSIGN(cx + cy) * (cx - cy) * .7;
-                y = s->h - s->h * FFABS(cx + cy) * .7;
+                y = s->h - s->h * fabsf(cx + cy) * .7;
             }
 
             draw_dot(s, x, y);
@@ -247,7 +244,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *insamples)
                 cx = sx * sqrtf(1 - 0.5 * sy * sy);
                 cy = sy * sqrtf(1 - 0.5 * sx * sx);
                 x = hw + hw * FFSIGN(cx + cy) * (cx - cy) * .7;
-                y = s->h - s->h * FFABS(cx + cy) * .7;
+                y = s->h - s->h * fabsf(cx + cy) * .7;
             }
 
             draw_dot(s, x, y);

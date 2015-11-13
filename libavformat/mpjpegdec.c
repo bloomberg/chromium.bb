@@ -56,11 +56,20 @@ static void trim_right(char* p)
 static int split_tag_value(char **tag, char **value, char *line)
 {
     char *p = line;
+    int  foundData = 0;
 
-    while (*p != '\0' && *p != ':')
+    *tag = NULL;
+    *value = NULL;
+
+
+    while (*p != '\0' && *p != ':') {
+        if (!av_isspace(*p)) {
+            foundData = 1;
+        }
         p++;
+    }
     if (*p != ':')
-        return AVERROR_INVALIDDATA;
+        return foundData ? AVERROR_INVALIDDATA : 0;
 
     *p   = '\0';
     *tag = line;
@@ -77,27 +86,11 @@ static int split_tag_value(char **tag, char **value, char *line)
     return 0;
 }
 
-static int check_content_type(char *line)
-{
-    char *tag, *value;
-    int ret = split_tag_value(&tag, &value, line);
-
-    if (ret < 0)
-        return ret;
-
-    if (av_strcasecmp(tag, "Content-type") ||
-        av_strcasecmp(value, "image/jpeg"))
-        return AVERROR_INVALIDDATA;
-
-    return 0;
-}
-
 static int parse_multipart_header(AVIOContext *pb, void *log_ctx);
 
 static int mpjpeg_read_probe(AVProbeData *p)
 {
     AVIOContext *pb;
-    char line[128] = { 0 };
     int ret = 0;
 
     if (p->buf_size < 2 || p->buf[0] != '-' || p->buf[1] != '-')
@@ -105,7 +98,7 @@ static int mpjpeg_read_probe(AVProbeData *p)
 
     pb = avio_alloc_context(p->buf, p->buf_size, 0, NULL, NULL, NULL, NULL);
     if (!pb)
-        return AVERROR(ENOMEM);
+        return 0;
 
     ret = (parse_multipart_header(pb, NULL)>0)?AVPROBE_SCORE_MAX:0;
 
@@ -160,9 +153,19 @@ static int parse_multipart_header(AVIOContext *pb, void *log_ctx)
     int found_content_type = 0;
     int ret, size = -1;
 
+    // get the CRLF as empty string
     ret = get_line(pb, line, sizeof(line));
     if (ret < 0)
         return ret;
+
+    /* some implementation do not provide the required
+     * initial CRLF (see rfc1341 7.2.1)
+     */
+    if (!line[0]) {
+        ret = get_line(pb, line, sizeof(line));
+        if (ret < 0)
+            return ret;
+    }
 
     if (strncmp(line, "--", 2))
         return AVERROR_INVALIDDATA;
@@ -183,6 +186,8 @@ static int parse_multipart_header(AVIOContext *pb, void *log_ctx)
         ret = split_tag_value(&tag, &value, line);
         if (ret < 0)
             return ret;
+        if (value==NULL || tag==NULL)
+            break;
 
         if (!av_strcasecmp(tag, "Content-type")) {
             if (av_strcasecmp(value, "image/jpeg")) {
@@ -220,9 +225,6 @@ static int mpjpeg_read_packet(AVFormatContext *s, AVPacket *pkt)
     ret = av_get_packet(s->pb, pkt, size);
     if (ret < 0)
         return ret;
-
-    // trailing empty line
-    avio_skip(s->pb, 2);
 
     return 0;
 }

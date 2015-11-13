@@ -32,6 +32,7 @@
 #include "audio.h"
 #include "avfilter.h"
 #include "formats.h"
+#include "hermite.h"
 #include "internal.h"
 
 typedef struct SidechainCompressContext {
@@ -88,29 +89,6 @@ static av_cold int init(AVFilterContext *ctx)
     s->compressed_knee_stop = (s->knee_stop - s->thres) / s->ratio + s->thres;
 
     return 0;
-}
-
-static inline float hermite_interpolation(float x, float x0, float x1,
-                                          float p0, float p1,
-                                          float m0, float m1)
-{
-    float width = x1 - x0;
-    float t = (x - x0) / width;
-    float t2, t3;
-    float ct0, ct1, ct2, ct3;
-
-    m0 *= width;
-    m1 *= width;
-
-    t2 = t*t;
-    t3 = t2*t;
-    ct0 = p0;
-    ct1 = m0;
-
-    ct2 = -3 * p0 - 2 * m0 + 3 * p1 - m1;
-    ct3 = 2 * p0 + m0  - 2 * p1 + m1;
-
-    return ct3 * t3 + ct2 * t2 + ct1 * t + ct0;
 }
 
 // A fake infinity value (because real infinity may break some hosts)
@@ -176,14 +154,14 @@ static int filter_frame(AVFilterLink *link, AVFrame *frame)
     for (i = 0; i < nb_samples; i++) {
         double abs_sample, gain = 1.0;
 
-        abs_sample = FFABS(scsrc[0]);
+        abs_sample = fabs(scsrc[0]);
 
         if (s->link == 1) {
             for (c = 1; c < sclink->channels; c++)
-                abs_sample = FFMAX(FFABS(scsrc[c]), abs_sample);
+                abs_sample = FFMAX(fabs(scsrc[c]), abs_sample);
         } else {
             for (c = 1; c < sclink->channels; c++)
-                abs_sample += FFABS(scsrc[c]);
+                abs_sample += fabs(scsrc[c]);
 
             abs_sample /= sclink->channels;
         }
@@ -251,28 +229,21 @@ static int query_formats(AVFilterContext *ctx)
             return AVERROR(EAGAIN);
     }
 
-    ff_add_channel_layout(&layouts, ctx->inputs[0]->in_channel_layouts->channel_layouts[0]);
-    if (!layouts)
-        return AVERROR(ENOMEM);
-    ff_channel_layouts_ref(layouts, &ctx->outputs[0]->in_channel_layouts);
+    if ((ret = ff_add_channel_layout(&layouts, ctx->inputs[0]->in_channel_layouts->channel_layouts[0])) < 0 ||
+        (ret = ff_channel_layouts_ref(layouts, &ctx->outputs[0]->in_channel_layouts)) < 0)
+        return ret;
 
     for (i = 0; i < 2; i++) {
         layouts = ff_all_channel_counts();
-        if (!layouts)
-            return AVERROR(ENOMEM);
-        ff_channel_layouts_ref(layouts, &ctx->inputs[i]->out_channel_layouts);
+        if ((ret = ff_channel_layouts_ref(layouts, &ctx->inputs[i]->out_channel_layouts)) < 0)
+            return ret;
     }
 
     formats = ff_make_format_list(sample_fmts);
-    if (!formats)
-        return AVERROR(ENOMEM);
-    ret = ff_set_common_formats(ctx, formats);
-    if (ret < 0)
+    if ((ret = ff_set_common_formats(ctx, formats)) < 0)
         return ret;
 
     formats = ff_all_samplerates();
-    if (!formats)
-        return AVERROR(ENOMEM);
     return ff_set_common_samplerates(ctx, formats);
 }
 
@@ -294,8 +265,8 @@ static int config_output(AVFilterLink *outlink)
     outlink->channel_layout = ctx->inputs[0]->channel_layout;
     outlink->channels = ctx->inputs[0]->channels;
 
-    s->attack_coeff = FFMIN(1.f, 1.f / (s->attack * outlink->sample_rate / 4000.f));
-    s->release_coeff = FFMIN(1.f, 1.f / (s->release * outlink->sample_rate / 4000.f));
+    s->attack_coeff = FFMIN(1., 1. / (s->attack * outlink->sample_rate / 4000.));
+    s->release_coeff = FFMIN(1., 1. / (s->release * outlink->sample_rate / 4000.));
 
     return 0;
 }

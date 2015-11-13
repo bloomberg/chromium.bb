@@ -54,6 +54,7 @@
           'libavcodec/x86/me_cmp.asm',
           'libavcodec/x86/pixblockdsp.asm',
           'libavcodec/x86/qpeldsp.asm',
+          'libavcodec/x86/simple_idct10.asm',
           'libavcodec/x86/xvididct.asm',
         ],
       }],  # (OS == "linux" and target_arch == "ia32" and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "x64" and ffmpeg_branding == "ChromeOS")
@@ -507,6 +508,7 @@
           'libavcodec/bitstream.c',
           'libavcodec/bitstream_filter.c',
           'libavcodec/codec_desc.c',
+          'libavcodec/d3d11va.c',
           'libavcodec/dirac.c',
           'libavcodec/dv_profile.c',
           'libavcodec/fft_fixed.c',
@@ -558,6 +560,7 @@
           'libavformat/mux.c',
           'libavformat/oggdec.c',
           'libavformat/oggparsecelt.c',
+          'libavformat/oggparsedaala.c',
           'libavformat/oggparsedirac.c',
           'libavformat/oggparseflac.c',
           'libavformat/oggparseogm.c',

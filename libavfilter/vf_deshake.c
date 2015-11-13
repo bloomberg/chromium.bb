@@ -57,6 +57,7 @@
 #include "libavutil/mem.h"
 #include "libavutil/opt.h"
 #include "libavutil/pixdesc.h"
+#include "libavutil/qsort.h"
 
 #include "deshake.h"
 #include "deshake_opencl.h"
@@ -91,9 +92,9 @@ static const AVOption deshake_options[] = {
 
 AVFILTER_DEFINE_CLASS(deshake);
 
-static int cmp(const double *a, const double *b)
+static int cmp(const void *a, const void *b)
 {
-    return *a < *b ? -1 : ( *a > *b ? 1 : 0 );
+    return FFDIFFSIGN(*(const double *)a, *(const double *)b);
 }
 
 /**
@@ -105,7 +106,7 @@ static double clean_mean(double *values, int count)
     int cut = count / 5;
     int x;
 
-    qsort(values, count, sizeof(double), (void*)cmp);
+    AV_QSORT(values, count, double, cmp);
 
     for (x = cut; x < count - cut; x++) {
         mean += values[x];

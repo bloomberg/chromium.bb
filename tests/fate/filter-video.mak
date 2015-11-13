@@ -349,6 +349,10 @@ fate-filter-scale200: CMD = video_filter "scale=w=200:h=200"
 FATE_FILTER_VSYNTH-$(CONFIG_SCALE_FILTER) += fate-filter-scale500
 fate-filter-scale500: CMD = video_filter "scale=w=500:h=500"
 
+FATE_FILTER_VSYNTH-$(CONFIG_SCALE_FILTER) += fate-filter-scalechroma
+fate-filter-scalechroma: tests/data/vsynth1.yuv
+fate-filter-scalechroma: CMD = framecrc -flags bitexact -s 352x288 -pix_fmt yuv444p -i tests/data/vsynth1.yuv -pix_fmt yuv420p -sws_flags +bitexact -vf scale=out_v_chr_pos=33:out_h_chr_pos=151
+
 FATE_FILTER_VSYNTH-$(CONFIG_VFLIP_FILTER) += fate-filter-vflip
 fate-filter-vflip: CMD = video_filter "vflip"
 
@@ -480,7 +484,7 @@ fate-filter-tile: CMD = video_filter "tile=3x3:nb_frames=5:padding=7:margin=2"
 
 
 tests/pixfmts.mak: TAG = GEN
-tests/pixfmts.mak: ffmpeg$(EXESUF)
+tests/pixfmts.mak: ffmpeg$(PROGSSUF)$(EXESUF)
 	$(M)printf "PIXFMTS = " > $@
 	$(Q)$(TARGET_EXEC) $(TARGET_PATH)/$< -pix_fmts list 2> /dev/null | awk 'NR > 8 && /^IO/ { printf $$2 " " }' >> $@
 	$(Q)printf "\n" >> $@
@@ -575,7 +579,7 @@ FATE_AVCONV-$(call DEMDEC, IMAGE2, PGMYUV) += $(FATE_FILTER_VSYNTH-yes)
 #
 # Metadata tests
 #
-FILTER_METADATA_COMMAND = ffprobe$(EXESUF) -of compact=p=0 -show_entries frame=pkt_pts:frame_tags -bitexact -f lavfi
+FILTER_METADATA_COMMAND = ffprobe$(PROGSSUF)$(EXESUF) -of compact=p=0 -show_entries frame=pkt_pts:frame_tags -bitexact -f lavfi
 
 SCENEDETECT_DEPS = FFPROBE LAVFI_INDEV MOVIE_FILTER SELECT_FILTER SCALE_FILTER \
                    AVCODEC AVDEVICE MOV_DEMUXER SVQ3_DECODER ZLIB

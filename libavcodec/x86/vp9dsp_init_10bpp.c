@@ -1,4 +1,8 @@
 /*
+ * VP9 SIMD optimizations
+ *
+ * Copyright (c) 2013 Ronald S. Bultje <rsbultje gmail com>
+ *
  * This file is part of FFmpeg.
  *
  * FFmpeg is free software; you can redistribute it and/or
@@ -16,25 +20,6 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include "bit_depth_template.c"
-
-static void FUNCC(get_pixels)(int16_t *av_restrict block, const uint8_t *_pixels,
-                              ptrdiff_t line_size)
-{
-    const pixel *pixels = (const pixel *) _pixels;
-    int i;
-
-    /* read the pixels */
-    for (i = 0; i < 8; i++) {
-        block[0] = pixels[0];
-        block[1] = pixels[1];
-        block[2] = pixels[2];
-        block[3] = pixels[3];
-        block[4] = pixels[4];
-        block[5] = pixels[5];
-        block[6] = pixels[6];
-        block[7] = pixels[7];
-        pixels  += line_size / sizeof(pixel);
-        block   += 8;
-    }
-}
+#define BPC 10
+#define INIT_FUNC ff_vp9dsp_init_10bpp_x86
+#include "vp9dsp_init_16bpp_template.c"

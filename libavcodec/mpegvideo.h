@@ -58,19 +58,9 @@
 #include "libavutil/opt.h"
 #include "libavutil/timecode.h"
 
-#define FRAME_SKIPPED 100 ///< return value for header parsers if frame is not coded
-
-#define MAX_FCODE 7
-
 #define MAX_THREADS 32
 
 #define MAX_B_FRAMES 16
-
-#define ME_MAP_SIZE 64
-
-#define MAX_MB_BYTES (30*16*16*3/8 + 120)
-
-#define INPLACE_OFFSET 16
 
 /* Start codes. */
 #define SEQ_END_CODE            0x000001b7
@@ -309,6 +299,7 @@ typedef struct MpegEncContext {
     uint16_t chroma_intra_matrix[64];
     uint16_t inter_matrix[64];
     uint16_t chroma_inter_matrix[64];
+    int force_duplicated_matrix; ///< Force duplication of mjpeg matrices, useful for rtp streaming
 
     int intra_quant_bias;    ///< bias for the quantizer
     int inter_quant_bias;    ///< bias for the quantizer
@@ -606,6 +597,7 @@ typedef struct MpegEncContext {
 { "zero", NULL, 0, AV_OPT_TYPE_CONST, { .i64 = FF_ME_ZERO }, 0, 0, FF_MPV_OPT_FLAGS, "motion_est" }, \
 { "epzs", NULL, 0, AV_OPT_TYPE_CONST, { .i64 = FF_ME_EPZS }, 0, 0, FF_MPV_OPT_FLAGS, "motion_est" }, \
 { "xone", NULL, 0, AV_OPT_TYPE_CONST, { .i64 = FF_ME_XONE }, 0, 0, FF_MPV_OPT_FLAGS, "motion_est" }, \
+{ "force_duplicated_matrix", "Always write luma and chroma matrix for mjpeg, useful for rtp streaming.", FF_MPV_OFFSET(force_duplicated_matrix), AV_OPT_TYPE_BOOL, {.i64 = 0 }, 0, 1, FF_MPV_OPT_FLAGS },   \
 
 extern const AVOption ff_mpv_generic_options[];
 
@@ -668,7 +660,8 @@ int ff_dct_encode_init(MpegEncContext *s);
 void ff_convert_matrix(MpegEncContext *s, int (*qmat)[64], uint16_t (*qmat16)[2][64],
                        const uint16_t *quant_matrix, int bias, int qmin, int qmax, int intra);
 int ff_dct_quantize_c(MpegEncContext *s, int16_t *block, int n, int qscale, int *overflow);
-
+void ff_block_permute(int16_t *block, uint8_t *permutation,
+                      const uint8_t *scantable, int last);
 void ff_init_block_index(MpegEncContext *s);
 
 void ff_mpv_motion(MpegEncContext *s,

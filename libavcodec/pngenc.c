@@ -31,6 +31,7 @@
 #include "libavutil/libm.h"
 #include "libavutil/opt.h"
 #include "libavutil/color_utils.h"
+#include "libavutil/stereo3d.h"
 
 #include <zlib.h>
 
@@ -340,6 +341,7 @@ static int png_get_gama(enum AVColorTransferCharacteristic trc, uint8_t *buf)
 
 static int encode_headers(AVCodecContext *avctx, const AVFrame *pict)
 {
+    AVFrameSideData *side_data;
     PNGEncContext *s = avctx->priv_data;
 
     /* write png header */
@@ -363,6 +365,23 @@ static int encode_headers(AVCodecContext *avctx, const AVFrame *pict)
       s->buf[8] = 0; /* unit specifier is unknown */
     }
     png_write_chunk(&s->bytestream, MKTAG('p', 'H', 'Y', 's'), s->buf, 9);
+
+    /* write stereoscopic information */
+    side_data = av_frame_get_side_data(pict, AV_FRAME_DATA_STEREO3D);
+    if (side_data) {
+        AVStereo3D *stereo3d = (AVStereo3D *)side_data->data;
+        switch (stereo3d->type) {
+            case AV_STEREO3D_SIDEBYSIDE:
+                s->buf[0] = ((stereo3d->flags & AV_STEREO3D_FLAG_INVERT) == 0) ? 1 : 0;
+                png_write_chunk(&s->bytestream, MKTAG('s', 'T', 'E', 'R'), s->buf, 1);
+                break;
+            case AV_STEREO3D_2D:
+                break;
+            default:
+                av_log(avctx, AV_LOG_WARNING, "Only side-by-side stereo3d flag can be defined within sTER chunk\n");
+                break;
+        }
+    }
 
     /* write colorspace information */
     if (pict->color_primaries == AVCOL_PRI_BT709 &&
@@ -817,7 +836,7 @@ static int encode_apng(AVCodecContext *avctx, AVPacket *pkt,
     int ret;
     int enc_row_size;
     size_t max_packet_size;
-    APNGFctlChunk fctl_chunk;
+    APNGFctlChunk fctl_chunk = {0};
 
     if (pict && avctx->codec_id == AV_CODEC_ID_APNG && s->color_type == PNG_COLOR_TYPE_PALETTE) {
         uint32_t checksum = ~av_crc(av_crc_get_table(AV_CRC_32_IEEE_LE), ~0U, pict->data[1], 256 * sizeof(uint32_t));
@@ -842,6 +861,9 @@ static int encode_apng(AVCodecContext *avctx, AVPacket *pkt,
         return AVERROR(ENOMEM);
 
     if (avctx->frame_number == 0) {
+        if (!pict)
+            return AVERROR(EINVAL);
+
         s->bytestream = avctx->extradata = av_malloc(FF_MIN_BUFFER_SIZE);
         if (!avctx->extradata)
             return AVERROR(ENOMEM);

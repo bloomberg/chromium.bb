@@ -57,7 +57,7 @@
 #ifdef TRACE
 #   define ff_tlog(ctx, ...) av_log(ctx, AV_LOG_TRACE, __VA_ARGS__)
 #else
-#   define ff_tlog(ctx, ...) ((void)0)
+#   define ff_tlog(ctx, ...) do {} while(0)
 #endif
 
 
@@ -178,11 +178,11 @@ unsigned int avpriv_toupper4(unsigned int x);
 int ff_init_buffer_info(AVCodecContext *s, AVFrame *frame);
 
 
-void avpriv_color_frame(AVFrame *frame, const int color[4]);
+void ff_color_frame(AVFrame *frame, const int color[4]);
 
 extern volatile int ff_avcodec_locked;
 int ff_lock_avcodec(AVCodecContext *log_ctx, const AVCodec *codec);
-int ff_unlock_avcodec(void);
+int ff_unlock_avcodec(const AVCodec *codec);
 
 int avpriv_lock_avformat(void);
 int avpriv_unlock_avformat(void);

@@ -223,7 +223,7 @@ static int blend_frames16(AVFilterContext *ctx, float interpolate,
     }
     // decide if the shot-change detection allows us to blend two frames
     if (interpolate_scene_score < s->scene_score && copy_src2) {
-        uint16_t src2_factor = FFABS(interpolate) * (1 << (s->bitdepth - 8));
+        uint16_t src2_factor = fabsf(interpolate) * (1 << (s->bitdepth - 8));
         uint16_t src1_factor = s->max - src2_factor;
         const int half = s->max / 2;
         const int uv = (s->max + 1) * half;
@@ -287,7 +287,7 @@ static int blend_frames8(AVFilterContext *ctx, float interpolate,
     }
     // decide if the shot-change detection allows us to blend two frames
     if (interpolate_scene_score < s->scene_score && copy_src2) {
-        uint16_t src2_factor = FFABS(interpolate);
+        uint16_t src2_factor = fabsf(interpolate);
         uint16_t src1_factor = 256 - src2_factor;
         int plane, line, pixel;
 
@@ -639,7 +639,6 @@ static int config_output(AVFilterLink *outlink)
 
     outlink->frame_rate = s->dest_frame_rate;
     outlink->time_base = s->dest_time_base;
-    outlink->flags |= FF_LINK_FLAG_REQUEST_LOOP;
 
     ff_dlog(ctx,
            "config_output() output time base:%u/%u (%f) w:%d h:%d\n",

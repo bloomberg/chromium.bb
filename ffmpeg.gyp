@@ -199,8 +199,16 @@
             '_POSIX_C_SOURCE=200112',
             '_XOPEN_SOURCE=600',
             'PIC',
-            # Disable deprecated features which generate spammy warnings.
-            # None currently.
+            # Disable deprecated features that generate spammy warnings.
+            # BUILD.gn & media/ffmpeg/ffmpeg_common.h must be kept in sync.
+            'FF_API_CONVERGENCE_DURATION=0',
+            # Upstream libavcodec/utils.c still uses the deprecated
+            # av_dup_packet(), causing deprecation warnings.
+            # The normal fix for such things is to disable the feature as below,
+            # but the upstream code does not yet compile with it disabled.
+            # (In this case, the fix is replacing the call with a new function.)
+            # In the meantime, we directly disable those warnings in the C file.
+            # 'FF_API_AVPACKET_OLD_API=0',
           ],
           'variables': {
             'clang_warning_flags': [

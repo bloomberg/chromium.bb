@@ -14,9 +14,8 @@ int avcodec_decode_video2(AVCodecContext *avctx, AVFrame *picture, int *got_pict
 int avcodec_open2(AVCodecContext *avctx, const AVCodec *codec, AVDictionary **options);
 int avcodec_close(AVCodecContext *avctx);
 const char *avcodec_get_name(enum AVCodecID id);
-void av_free_packet(AVPacket *pkt);
+void av_packet_unref(AVPacket *pkt);
 void av_init_packet(AVPacket *pkt);
-int av_dup_packet(AVPacket *pkt);
 void avcodec_flush_buffers(AVCodecContext *avctx);
 void av_register_bitstream_filter(AVBitStreamFilter *bsf);
 AVBitStreamFilterContext *av_bitstream_filter_init(const char *name);

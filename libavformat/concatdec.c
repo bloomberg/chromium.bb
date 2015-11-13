@@ -314,7 +314,7 @@ static int open_file(AVFormatContext *avf, unsigned fileno)
         file->start_time = !fileno ? 0 :
                            cat->files[fileno - 1].start_time +
                            cat->files[fileno - 1].duration;
-    file->file_start_time = (avf->start_time == AV_NOPTS_VALUE) ? 0 : avf->start_time;
+    file->file_start_time = (cat->avf->start_time == AV_NOPTS_VALUE) ? 0 : cat->avf->start_time;
     file->file_inpoint = (file->inpoint == AV_NOPTS_VALUE) ? file->file_start_time : file->inpoint;
     if ((ret = match_streams(avf)) < 0)
         return ret;
@@ -389,14 +389,14 @@ static int concat_read_header(AVFormatContext *avf)
                 file->outpoint = dur;
         } else if (!strcmp(keyword, "file_packet_metadata")) {
             char *metadata;
-            metadata = av_get_token((const char **)&cursor, SPACE_CHARS);
-            if (!metadata) {
-                av_log(avf, AV_LOG_ERROR, "Line %d: packet metadata required\n", line);
-                FAIL(AVERROR_INVALIDDATA);
-            }
             if (!file) {
                 av_log(avf, AV_LOG_ERROR, "Line %d: %s without file\n",
                        line, keyword);
+                FAIL(AVERROR_INVALIDDATA);
+            }
+            metadata = av_get_token((const char **)&cursor, SPACE_CHARS);
+            if (!metadata) {
+                av_log(avf, AV_LOG_ERROR, "Line %d: packet metadata required\n", line);
                 FAIL(AVERROR_INVALIDDATA);
             }
             if ((ret = av_dict_parse_string(&file->metadata, metadata, "=", "", 0)) < 0) {
@@ -511,7 +511,7 @@ static int filter_packet(AVFormatContext *avf, ConcatStream *cs, AVPacket *pkt)
             ret = 1;
         }
         if (ret > 0) {
-            av_free_packet(pkt);
+            av_packet_unref(pkt);
             pkt2.buf = av_buffer_create(pkt2.data, pkt2.size,
                                         av_buffer_default_free, NULL, 0);
             if (!pkt2.buf) {

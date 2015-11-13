@@ -118,14 +118,15 @@ static av_cold void uninit(AVFilterContext *ctx)
 static int query_formats(AVFilterContext *ctx)
 {
     AVFilterFormats *formats = NULL;
-    int fmt;
+    int fmt, ret;
 
     for (fmt = 0; av_pix_fmt_desc_get(fmt); fmt++) {
         const AVPixFmtDescriptor *desc = av_pix_fmt_desc_get(fmt);
         if (!(desc->flags & (AV_PIX_FMT_FLAG_HWACCEL | AV_PIX_FMT_FLAG_BITSTREAM | AV_PIX_FMT_FLAG_PAL)) &&
             (desc->flags & AV_PIX_FMT_FLAG_PLANAR || desc->nb_components == 1) &&
-            (!(desc->flags & AV_PIX_FMT_FLAG_BE) == !HAVE_BIGENDIAN || desc->comp[0].depth == 8))
-            ff_add_format(&formats, fmt);
+            (!(desc->flags & AV_PIX_FMT_FLAG_BE) == !HAVE_BIGENDIAN || desc->comp[0].depth == 8) &&
+            (ret = ff_add_format(&formats, fmt)) < 0)
+            return ret;
     }
 
     return ff_set_common_formats(ctx, formats);
@@ -203,75 +204,53 @@ static int config_input(AVFilterLink *inlink)
     return 0;
 }
 
-static inline void blur8(uint8_t *dst, int dst_step, const uint8_t *src, int src_step,
-                        int len, int radius)
-{
-    /* Naive boxblur would sum source pixels from x-radius .. x+radius
-     * for destination pixel x. That would be O(radius*width).
-     * If you now look at what source pixels represent 2 consecutive
-     * output pixels, then you see they are almost identical and only
-     * differ by 2 pixels, like:
-     * src0       111111111
-     * dst0           1
-     * src1        111111111
-     * dst1            1
-     * src0-src1  1       -1
-     * so when you know one output pixel you can find the next by just adding
-     * and subtracting 1 input pixel.
-     * The following code adopts this faster variant.
-     */
-    const int length = radius*2 + 1;
-    const int inv = ((1<<16) + length/2)/length;
-    int x, sum = src[radius*src_step];
-
-    for (x = 0; x < radius; x++)
-        sum += src[x*src_step]<<1;
-
-    sum = sum*inv + (1<<15);
-
-    for (x = 0; x <= radius; x++) {
-        sum += (src[(radius+x)*src_step] - src[(radius-x)*src_step])*inv;
-        dst[x*dst_step] = sum>>16;
-    }
-
-    for (; x < len-radius; x++) {
-        sum += (src[(radius+x)*src_step] - src[(x-radius-1)*src_step])*inv;
-        dst[x*dst_step] = sum >>16;
-    }
-
-    for (; x < len; x++) {
-        sum += (src[(2*len-radius-x-1)*src_step] - src[(x-radius-1)*src_step])*inv;
-        dst[x*dst_step] = sum>>16;
-    }
+/* Naive boxblur would sum source pixels from x-radius .. x+radius
+ * for destination pixel x. That would be O(radius*width).
+ * If you now look at what source pixels represent 2 consecutive
+ * output pixels, then you see they are almost identical and only
+ * differ by 2 pixels, like:
+ * src0       111111111
+ * dst0           1
+ * src1        111111111
+ * dst1            1
+ * src0-src1  1       -1
+ * so when you know one output pixel you can find the next by just adding
+ * and subtracting 1 input pixel.
+ * The following code adopts this faster variant.
+ */
+#define BLUR(type, depth)                                                   \
+static inline void blur ## depth(type *dst, int dst_step, const type *src,  \
+                                 int src_step, int len, int radius)         \
+{                                                                           \
+    const int length = radius*2 + 1;                                        \
+    const int inv = ((1<<16) + length/2)/length;                            \
+    int x, sum = src[radius*src_step];                                      \
+                                                                            \
+    for (x = 0; x < radius; x++)                                            \
+        sum += src[x*src_step]<<1;                                          \
+                                                                            \
+    sum = sum*inv + (1<<15);                                                \
+                                                                            \
+    for (x = 0; x <= radius; x++) {                                         \
+        sum += (src[(radius+x)*src_step] - src[(radius-x)*src_step])*inv;   \
+        dst[x*dst_step] = sum>>16;                                          \
+    }                                                                       \
+                                                                            \
+    for (; x < len-radius; x++) {                                           \
+        sum += (src[(radius+x)*src_step] - src[(x-radius-1)*src_step])*inv; \
+        dst[x*dst_step] = sum >>16;                                         \
+    }                                                                       \
+                                                                            \
+    for (; x < len; x++) {                                                  \
+        sum += (src[(2*len-radius-x-1)*src_step] - src[(x-radius-1)*src_step])*inv; \
+        dst[x*dst_step] = sum>>16;                                          \
+    }                                                                       \
 }
 
-static inline void blur16(uint16_t *dst, int dst_step, const uint16_t *src, int src_step,
-                          int len, int radius)
-{
-    const int length = radius*2 + 1;
-    const int inv = ((1<<16) + length/2)/length;
-    int x, sum = src[radius*src_step];
+BLUR(uint8_t,   8)
+BLUR(uint16_t, 16)
 
-    for (x = 0; x < radius; x++)
-        sum += src[x*src_step]<<1;
-
-    sum = sum*inv + (1<<15);
-
-    for (x = 0; x <= radius; x++) {
-        sum += (src[(radius+x)*src_step] - src[(radius-x)*src_step])*inv;
-        dst[x*dst_step] = sum>>16;
-    }
-
-    for (; x < len-radius; x++) {
-        sum += (src[(radius+x)*src_step] - src[(x-radius-1)*src_step])*inv;
-        dst[x*dst_step] = sum >>16;
-    }
-
-    for (; x < len; x++) {
-        sum += (src[(2*len-radius-x-1)*src_step] - src[(x-radius-1)*src_step])*inv;
-        dst[x*dst_step] = sum>>16;
-    }
-}
+#undef BLUR
 
 static inline void blur(uint8_t *dst, int dst_step, const uint8_t *src, int src_step,
                         int len, int radius, int pixsize)

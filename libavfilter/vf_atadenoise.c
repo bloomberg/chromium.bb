@@ -285,12 +285,6 @@ static int config_input(AVFilterLink *inlink)
     return 0;
 }
 
-static int config_output(AVFilterLink *outlink)
-{
-    outlink->flags |= FF_LINK_FLAG_REQUEST_LOOP;
-    return 0;
-}
-
 static int filter_frame(AVFilterLink *inlink, AVFrame *buf)
 {
     AVFilterContext *ctx = inlink->dst;
@@ -301,13 +295,14 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *buf)
 
     if (s->q.available != s->size) {
         if (s->q.available < s->mid) {
-            out = ff_get_video_buffer(outlink, outlink->w, outlink->h);
-            if (!out)
-                return AVERROR(ENOMEM);
-
-            for (i = 0; i < s->mid; i++)
-                ff_bufqueue_add(ctx, &s->q, av_frame_clone(out));
-            av_frame_free(&out);
+            for (i = 0; i < s->mid; i++) {
+                out = av_frame_clone(buf);
+                if (!out) {
+                    av_frame_free(&buf);
+                    return AVERROR(ENOMEM);
+                }
+                ff_bufqueue_add(ctx, &s->q, out);
+            }
         }
         if (s->q.available < s->size) {
             ff_bufqueue_add(ctx, &s->q, buf);
@@ -368,7 +363,7 @@ static int request_frame(AVFilterLink *outlink)
     ret = ff_request_frame(ctx->inputs[0]);
 
     if (ret == AVERROR_EOF && !ctx->is_disabled && s->available) {
-        AVFrame *buf = ff_get_video_buffer(outlink, outlink->w, outlink->h);
+        AVFrame *buf = av_frame_clone(ff_bufqueue_peek(&s->q, s->available));
         if (!buf)
             return AVERROR(ENOMEM);
 
@@ -401,7 +396,6 @@ static const AVFilterPad outputs[] = {
         .name          = "default",
         .type          = AVMEDIA_TYPE_VIDEO,
         .request_frame = request_frame,
-        .config_props  = config_output,
     },
     { NULL }
 };

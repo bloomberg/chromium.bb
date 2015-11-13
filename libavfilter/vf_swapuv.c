@@ -24,6 +24,7 @@
  */
 
 #include "libavutil/pixdesc.h"
+#include "libavutil/version.h"
 #include "avfilter.h"
 #include "formats.h"
 #include "internal.h"
@@ -33,8 +34,13 @@ static void do_swap(AVFrame *frame)
 {
     FFSWAP(uint8_t*,     frame->data[1],     frame->data[2]);
     FFSWAP(int,          frame->linesize[1], frame->linesize[2]);
-    FFSWAP(uint64_t,     frame->error[1],    frame->error[2]);
     FFSWAP(AVBufferRef*, frame->buf[1],      frame->buf[2]);
+
+#if FF_API_ERROR_FRAME
+FF_DISABLE_DEPRECATION_WARNINGS
+    FFSWAP(uint64_t,     frame->error[1],    frame->error[2]);
+FF_ENABLE_DEPRECATION_WARNINGS
+#endif
 }
 
 static AVFrame *get_video_buffer(AVFilterLink *link, int w, int h)
@@ -71,12 +77,12 @@ static int is_planar_yuv(const AVPixFmtDescriptor *desc)
 static int query_formats(AVFilterContext *ctx)
 {
     AVFilterFormats *formats = NULL;
-    int fmt;
+    int fmt, ret;
 
     for (fmt = 0; av_pix_fmt_desc_get(fmt); fmt++) {
         const AVPixFmtDescriptor *desc = av_pix_fmt_desc_get(fmt);
-        if (is_planar_yuv(desc))
-            ff_add_format(&formats, fmt);
+        if (is_planar_yuv(desc) && (ret = ff_add_format(&formats, fmt)) < 0)
+            return ret;
     }
 
     return ff_set_common_formats(ctx, formats);

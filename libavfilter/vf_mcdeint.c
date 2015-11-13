@@ -1,6 +1,8 @@
 /*
  * Copyright (c) 2006 Michael Niedermayer <michaelni@gmx.at>
  *
+ * This file is part of FFmpeg.
+ *
  * FFmpeg is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -275,7 +277,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *inpic)
     mcdeint->parity ^= 1;
 
 end:
-    av_free_packet(&pkt);
+    av_packet_unref(&pkt);
     av_frame_free(&inpic);
     if (ret < 0) {
         av_frame_free(&outpic);

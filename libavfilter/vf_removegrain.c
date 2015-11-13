@@ -24,6 +24,7 @@
 #include "libavutil/imgutils.h"
 #include "libavutil/opt.h"
 #include "libavutil/pixdesc.h"
+#include "libavutil/qsort.h"
 #include "avfilter.h"
 #include "formats.h"
 #include "internal.h"
@@ -82,17 +83,16 @@ static int mode01(int c, int a1, int a2, int a3, int a4, int a5, int a6, int a7,
 
 static int cmp_int(const void *p1, const void *p2)
 {
-    int left = *(const int *)p1;
+    int left  = *(const int *)p1;
     int right = *(const int *)p2;
-
-    return ((left > right) - (left < right));
+    return FFDIFFSIGN(left, right);
 }
 
 static int mode02(int c, int a1, int a2, int a3, int a4, int a5, int a6, int a7, int a8)
 {
     int a[8] = { a1, a2, a3, a4, a5, a6, a7, a8 };
 
-    qsort(&a, 8, sizeof(a[0]), cmp_int);
+    AV_QSORT(a, 8, int, cmp_int);
 
     return av_clip(c, a[2 - 1 ], a[7 - 1]);
 }
@@ -101,7 +101,7 @@ static int mode03(int c, int a1, int a2, int a3, int a4, int a5, int a6, int a7,
 {
     int a[8] = { a1, a2, a3, a4, a5, a6, a7, a8 };
 
-    qsort(&a, 8, sizeof(a[0]), cmp_int);
+    AV_QSORT(a, 8, int, cmp_int);
 
     return av_clip(c, a[3 - 1 ], a[6 - 1]);
 }
@@ -110,7 +110,7 @@ static int mode04(int c, int a1, int a2, int a3, int a4, int a5, int a6, int a7,
 {
     int a[8] = { a1, a2, a3, a4, a5, a6, a7, a8 };
 
-    qsort(&a, 8, sizeof(a[0]), cmp_int);
+    AV_QSORT(a, 8, int, cmp_int);
 
     return av_clip(c, a[4 - 1 ], a[5 - 1]);
 }
