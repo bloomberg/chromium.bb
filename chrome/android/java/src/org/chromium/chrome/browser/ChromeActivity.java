@@ -40,6 +40,9 @@ import android.view.WindowManager;
 import android.view.accessibility.AccessibilityManager;
 import android.view.accessibility.AccessibilityManager.AccessibilityStateChangeListener;
 import android.view.accessibility.AccessibilityManager.TouchExplorationStateChangeListener;
+import android.view.inputmethod.InputMethodInfo;
+import android.view.inputmethod.InputMethodManager;
+import android.view.inputmethod.InputMethodSubtype;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.BaseSwitches;
@@ -134,6 +137,8 @@ import org.chromium.ui.base.ActivityWindowAndroid;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.base.WindowAndroid;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
@@ -678,6 +683,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
                     mInflateInitialLayoutDurationMs, TimeUnit.MILLISECONDS);
             mToolbarManager.onDeferredStartup(getOnCreateTimestampMs(), simpleName);
         }
+        recordKeyboardLocaleUma();
     }
 
     @Override
@@ -1535,6 +1541,34 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
                 return null;
             }
         }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+    }
+
+    private void recordKeyboardLocaleUma() {
+        InputMethodManager imm =
+                (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+        List<InputMethodInfo> ims = imm.getEnabledInputMethodList();
+        ArrayList<String> uniqueLanguages = new ArrayList<String>();
+        for (InputMethodInfo method : ims) {
+            List<InputMethodSubtype> submethods =
+                    imm.getEnabledInputMethodSubtypeList(method, true);
+            for (InputMethodSubtype submethod : submethods) {
+                if (submethod.getMode().equals("keyboard")) {
+                    String language = submethod.getLocale().split("_")[0];
+                    if (!uniqueLanguages.contains(language)) {
+                        uniqueLanguages.add(language);
+                    }
+                }
+            }
+        }
+        RecordHistogram.recordCountHistogram("InputMethod.ActiveCount", uniqueLanguages.size());
+
+        InputMethodSubtype current = imm.getCurrentInputMethodSubtype();
+        Locale currentSystemLocale = Locale.getDefault();
+        if (current.getLocale() != null && Locale.getDefault() != null) {
+            boolean match = currentSystemLocale.getLanguage().equalsIgnoreCase(
+                    current.getLocale().split("_")[0]);
+            RecordHistogram.recordBooleanHistogram("InputMethod.MatchesSystemLanguage", match);
+        }
     }
 
     @Override

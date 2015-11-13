@@ -15671,8 +15671,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>shuchen@chromium.org</owner>
   <summary>
     The number of active input methods. Recorded when the user logs in to Chrome
-    OS. The active input methods are selected by user in the language settings
-    page.
+    OS or each cold start of Chrome on Android. The active input methods are
+    selected by user in the language settings page on Chrome OS and in system
+    language settings on Android.
   </summary>
 </histogram>
 
@@ -15741,6 +15742,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="InputMethod.ImeSwitch" enum="IMESwitchType">
   <owner>shuchen@chromium.org</owner>
   <summary>The trigger type of input method switches by user.</summary>
+</histogram>
+
+<histogram name="InputMethod.MatchesSystemLanguage" enum="BooleanMatched">
+  <owner>aurimas@chromium.org</owner>
+  <summary>
+    Whether the currently selected keyboard language matches the system
+    language. Recorded once with every cold start of Chrome for Android.
+  </summary>
 </histogram>
 
 <histogram name="InputMethod.PkCommit.Index">
