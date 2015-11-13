@@ -99,8 +99,9 @@ int main(int argc, char** argv) {
     CHECK(io_thread.StartWithOptions(io_thread_options));
 
     mojo::embedder::InitIPCSupport(
-        mojo::embedder::ProcessType::NONE, &process_delegate,
-        io_thread.task_runner().get(), mojo::embedder::ScopedPlatformHandle());
+        mojo::embedder::ProcessType::NONE, io_thread.task_runner().get(),
+        &process_delegate, io_thread.task_runner().get(),
+        mojo::embedder::ScopedPlatformHandle());
 
     mojo::InterfaceRequest<mojo::Application> application_request;
     scoped_ptr<mojo::runner::RunnerConnection> connection(

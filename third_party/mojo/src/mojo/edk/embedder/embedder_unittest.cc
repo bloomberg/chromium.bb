@@ -140,7 +140,6 @@ class EmbedderTest : public testing::Test {
 
   void TearDown() override { EXPECT_TRUE(test::Shutdown()); }
 
-  base::MessageLoop message_loop_;
   base::TestIOThread test_io_thread_;
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(EmbedderTest);
@@ -495,7 +494,6 @@ TEST_F(EmbedderTest, ChannelShutdownRace_MessagePipePassing) {
 }
 
 MOJO_MULTIPROCESS_TEST_CHILD_TEST(MultiprocessMasterSlave) {
-  base::MessageLoop message_loop;
   ScopedPlatformHandle client_platform_handle =
       mojo::test::MultiprocessTestHelper::client_platform_handle.Pass();
   EXPECT_TRUE(client_platform_handle.is_valid());
@@ -691,7 +689,6 @@ TEST_F(EmbedderTest, MAYBE_MultiprocessChannels) {
 }
 
 MOJO_MULTIPROCESS_TEST_CHILD_TEST(MultiprocessChannelsClient) {
-  base::MessageLoop message_loop;
   ScopedPlatformHandle client_platform_handle =
       mojo::test::MultiprocessTestHelper::client_platform_handle.Pass();
   EXPECT_TRUE(client_platform_handle.is_valid());

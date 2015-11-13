@@ -208,9 +208,9 @@ bool Context::Init(const base::FilePath& shell_file_root) {
       new TaskRunners(base::MessageLoop::current()->task_runner()));
 
   // TODO(vtl): This should be MASTER, not NONE.
-  embedder::InitIPCSupport(embedder::ProcessType::NONE, this,
-                           task_runners_->io_runner(),
-                           embedder::ScopedPlatformHandle());
+  embedder::InitIPCSupport(
+      embedder::ProcessType::NONE, task_runners_->shell_runner(), this,
+      task_runners_->io_runner(), embedder::ScopedPlatformHandle());
 
   package_manager_ = new package_manager::PackageManagerImpl(
       shell_file_root, task_runners_->blocking_pool());
