@@ -19,6 +19,7 @@ namespace dom_distiller {
 class DistillablePageDetector {
  public:
   static const DistillablePageDetector* GetDefault();
+  static const DistillablePageDetector* GetNewModel();
   explicit DistillablePageDetector(scoped_ptr<AdaBoostProto> proto);
   ~DistillablePageDetector();
 

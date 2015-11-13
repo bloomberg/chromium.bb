@@ -24,6 +24,20 @@ const DistillablePageDetector* DistillablePageDetector::GetDefault() {
   return detector;
 }
 
+const DistillablePageDetector* DistillablePageDetector::GetNewModel() {
+  static DistillablePageDetector* detector = nullptr;
+  if (!detector) {
+    std::string serialized_proto =
+        ResourceBundle::GetSharedInstance()
+            .GetRawDataResource(IDR_DISTILLABLE_PAGE_SERIALIZED_MODEL_NEW)
+            .as_string();
+    scoped_ptr<AdaBoostProto> proto(new AdaBoostProto);
+    CHECK(proto->ParseFromString(serialized_proto));
+    detector = new DistillablePageDetector(proto.Pass());
+  }
+  return detector;
+}
+
 DistillablePageDetector::DistillablePageDetector(
     scoped_ptr<AdaBoostProto> proto)
     : proto_(proto.Pass()), threshold_(0.0) {
