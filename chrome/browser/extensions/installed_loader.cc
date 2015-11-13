@@ -13,7 +13,6 @@
 #include "base/trace_event/trace_event.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
@@ -333,6 +332,7 @@ void InstalledLoader::RecordExtensionsMetrics() {
   int theme_count = 0;
   int page_action_count = 0;
   int browser_action_count = 0;
+  int no_action_count = 0;
   int disabled_for_permissions_count = 0;
   int non_webstore_ntp_override_count = 0;
   int incognito_allowed_count = 0;
@@ -342,8 +342,6 @@ void InstalledLoader::RecordExtensionsMetrics() {
   int eventless_event_pages_count = 0;
 
   const ExtensionSet& extensions = extension_registry_->enabled_extensions();
-  ExtensionActionManager* extension_action_manager =
-      ExtensionActionManager::Get(profile);
   for (ExtensionSet::const_iterator iter = extensions.begin();
        iter != extensions.end();
        ++iter) {
@@ -497,11 +495,16 @@ void InstalledLoader::RecordExtensionsMetrics() {
         break;
     }
 
-    if (extension_action_manager->GetPageAction(*extension))
+    // We check the manifest key (instead of the ExtensionActionManager) because
+    // we want to know how many extensions have a given type of action as part
+    // of their code, rather than as part of the extension action redesign
+    // (which gives each extension an action).
+    if (extension->manifest()->HasKey(manifest_keys::kPageAction))
       ++page_action_count;
-
-    if (extension_action_manager->GetBrowserAction(*extension))
+    else if (extension->manifest()->HasKey(manifest_keys::kBrowserAction))
       ++browser_action_count;
+    else
+      ++no_action_count;
 
     RecordCreationFlags(extension);
 
@@ -591,6 +594,8 @@ void InstalledLoader::RecordExtensionsMetrics() {
                            page_action_count);
   UMA_HISTOGRAM_COUNTS_100("Extensions.LoadBrowserAction",
                            browser_action_count);
+  UMA_HISTOGRAM_COUNTS_100("Extensions.LoadNoExtensionAction",
+                           no_action_count);
   UMA_HISTOGRAM_COUNTS_100("Extensions.DisabledForPermissions",
                            disabled_for_permissions_count);
   UMA_HISTOGRAM_COUNTS_100("Extensions.NonWebStoreNewTabPageOverrides",

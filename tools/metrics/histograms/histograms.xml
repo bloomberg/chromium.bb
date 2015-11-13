@@ -12302,16 +12302,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Extensions.LoadAll">
   <owner>kalman@chromium.org</owner>
-  <summary>
-    The number of extensions and themes loaded at browser startup.
-  </summary>
+  <summary>The number of extensions and themes loaded at profile open.</summary>
 </histogram>
 
 <histogram name="Extensions.LoadAllComponentTime" units="milliseconds">
   <owner>kalman@chromium.org</owner>
   <summary>
-    Time taken to load all component extensions at browser startup. This happens
-    as part of the total initialization time of ExtensionService, measured in
+    Time taken to load all component extensions at profile open. This happens as
+    part of the total initialization time of ExtensionService, measured in
     Extensions.ExtensionServiceInitTime.
   </summary>
 </histogram>
@@ -12319,7 +12317,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="Extensions.LoadAllTime" units="milliseconds">
   <owner>kalman@chromium.org</owner>
   <summary>
-    Time taken to load all non-component extensions at browser startup. This
+    Time taken to load all non-component extensions at profile open. This
     happens as part of the total initialization time of ExtensionService,
     measured in Extensions.ExtensionServiceInitTime.
   </summary>
@@ -12328,35 +12326,35 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="Extensions.LoadAllTime2" units="milliseconds">
   <owner>kalman@chromium.org</owner>
   <summary>
-    Time taken to load all non-component extensions at browser startup and
-    record metrics. This happens as part of the total initialization time of
+    Time taken to load all non-component extensions at profile open and record
+    metrics. This happens as part of the total initialization time of
     ExtensionService, measured in Extensions.ExtensionServiceInitTime.
   </summary>
 </histogram>
 
 <histogram name="Extensions.LoadApp">
   <owner>kalman@chromium.org</owner>
-  <summary>The number of apps loaded by each user at startup time.</summary>
+  <summary>The number of apps loaded by each user at profile open.</summary>
 </histogram>
 
 <histogram name="Extensions.LoadAppExternal">
   <owner>kalman@chromium.org</owner>
   <summary>
-    The number of externally managed apps loaded by each user at startup time.
+    The number of externally managed apps loaded by each user at profile open.
   </summary>
 </histogram>
 
 <histogram name="Extensions.LoadAppUser">
   <owner>kalman@chromium.org</owner>
   <summary>
-    The number of user-installed apps loaded by each user at startup time.
+    The number of user-installed apps loaded by each user at profile open.
   </summary>
 </histogram>
 
 <histogram name="Extensions.LoadBrowserAction">
   <owner>kalman@chromium.org</owner>
   <summary>
-    The number of browser action extensions loaded at browser startup.
+    The number of browser action extensions loaded at profile open.
   </summary>
 </histogram>
 
@@ -12366,73 +12364,80 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     Deprecated as of 4/2015. Replaced by ManagedUsers.Whitelist.Count.
   </obsolete>
   <summary>
-    The number of content-pack extensions loaded at browser startup.
+    The number of content-pack extensions loaded at profile open.
   </summary>
 </histogram>
 
 <histogram name="Extensions.LoadCreationFlags" enum="ExtensionCreationFlags">
   <owner>calamity@chromium.org</owner>
   <summary>
-    The creation flags of all extensions loaded at startup time grouped by
+    The creation flags of all extensions loaded at profile open grouped by
     Extension::InitFromValueFlags.
   </summary>
 </histogram>
 
 <histogram name="Extensions.LoadExtension">
   <owner>kalman@chromium.org</owner>
-  <summary>The number of extensions loaded at browser startup.</summary>
+  <summary>The number of extensions loaded at profile open.</summary>
 </histogram>
 
 <histogram name="Extensions.LoadExtensionExternal">
   <owner>kalman@chromium.org</owner>
   <summary>
-    The number of externally managed extensions loaded at browser startup.
+    The number of externally managed extensions loaded at profile open.
   </summary>
 </histogram>
 
 <histogram name="Extensions.LoadExtensionUser">
   <owner>kalman@chromium.org</owner>
   <summary>
-    The number of user-installed extensions loaded at browser startup.
+    The number of user-installed extensions loaded at profile open.
   </summary>
 </histogram>
 
 <histogram name="Extensions.LoadExternal">
   <owner>kalman@chromium.org</owner>
   <summary>
-    The number of externally managed extensions and apps loaded at browser
-    startup.
+    The number of externally managed extensions and apps loaded at profile open.
   </summary>
 </histogram>
 
 <histogram name="Extensions.LoadHostedApp">
   <owner>kalman@chromium.org</owner>
   <summary>
-    The number of hosted apps loaded by each user at startup time.
+    The number of hosted apps loaded by each user at profile open.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.LoadNoExtensionAction">
+  <owner>rdevlin.cronin@chromium.org</owner>
+  <summary>
+    The number of extensions that had neither a page nor browser action
+    specified in their manifest. Recorded at profile open.
   </summary>
 </histogram>
 
 <histogram name="Extensions.LoadPackagedApp">
   <owner>kalman@chromium.org</owner>
   <summary>
-    The number of legacy packaged apps loaded by each user at startup time.
+    The number of legacy packaged apps loaded by each user at profile open.
   </summary>
 </histogram>
 
 <histogram name="Extensions.LoadPlatformApp">
   <owner>kalman@chromium.org</owner>
-  <summary>The number of platform apps loaded at browser startup.</summary>
+  <summary>The number of platform apps loaded at profile open.</summary>
 </histogram>
 
 <histogram name="Extensions.LoadTheme">
   <owner>kalman@chromium.org</owner>
-  <summary>The number of themes loaded at browser startup.</summary>
+  <summary>The number of themes loaded at profile open.</summary>
 </histogram>
 
 <histogram name="Extensions.LoadType" enum="ExtensionType">
   <owner>kalman@chromium.org</owner>
   <summary>
-    The number of extensions loaded at startup time grouped by
+    The number of extensions loaded at profile open grouped by
     Extension::HistogramType.
   </summary>
 </histogram>
@@ -12440,7 +12445,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="Extensions.LoadUserScript">
   <owner>kalman@chromium.org</owner>
   <summary>
-    The number of converted user scripts loaded at browser startup.
+    The number of converted user scripts loaded at profile open.
   </summary>
 </histogram>
 
