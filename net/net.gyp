@@ -62,11 +62,11 @@
             '<(SHARED_INTERMEDIATE_DIR)/net/<(RULE_INPUT_DIRNAME)/<(RULE_INPUT_ROOT)-inc.cc',
           ],
           'inputs': [
-            'tools/tld_cleanup/make_dafsa.py',
+            'tools/dafsa/make_dafsa.py',
           ],
           'action': [
             'python',
-            'tools/tld_cleanup/make_dafsa.py',
+            'tools/dafsa/make_dafsa.py',
             '<(RULE_INPUT_PATH)',
             '<(SHARED_INTERMEDIATE_DIR)/net/<(RULE_INPUT_DIRNAME)/<(RULE_INPUT_ROOT)-inc.cc',
           ],

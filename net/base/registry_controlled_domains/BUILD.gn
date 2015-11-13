@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 action_foreach("registry_controlled_domains") {
-  script = "//net/tools/tld_cleanup/make_dafsa.py"
+  script = "//net/tools/dafsa/make_dafsa.py"
   sources = [
     "effective_tld_names.gperf",
     "effective_tld_names_unittest1.gperf",

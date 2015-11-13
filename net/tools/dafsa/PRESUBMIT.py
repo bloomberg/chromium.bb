@@ -3,13 +3,13 @@
 # found in the LICENSE file.
 
 
-"""Chromium presubmit script for src/net/tools/tld_cleanup."""
+"""Chromium presubmit script for src/net/tools/dafsa."""
 
 
 def _RunMakeDafsaTests(input_api, output_api):
   """Runs unittest for make_dafsa if any related file has been modified."""
-  files = ('net/tools/tld_cleanup/make_dafsa.py',
-           'net/tools/tld_cleanup/make_dafsa_unittest.py')
+  files = ('net/tools/dafsa/make_dafsa.py',
+           'net/tools/dafsa/make_dafsa_unittest.py')
   if not any(f in input_api.LocalPaths() for f in files):
     return []
   test_path = input_api.os_path.join(input_api.PresubmitLocalPath(),
