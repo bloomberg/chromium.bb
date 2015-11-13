@@ -11,16 +11,15 @@
 
 namespace blink {
 
-NFC::NFC(ExecutionContext* context, LocalFrame* frame)
-    : ActiveDOMObject(context)
-    , DOMWindowProperty(frame)
+NFC::NFC(LocalFrame* frame)
+    : LocalFrameLifecycleObserver(frame)
+    , PageLifecycleObserver(frame ? frame->page() : 0)
 {
 }
 
-NFC* NFC::create(ExecutionContext* context, LocalFrame* frame)
+NFC* NFC::create(LocalFrame* frame)
 {
-    NFC* nfc = new NFC(context, frame);
-    nfc->suspendIfNeeded();
+    NFC* nfc = new NFC(frame);
     return nfc;
 }
 
@@ -34,10 +33,22 @@ ScriptPromise NFC::requestAdapter(ScriptState* scriptState)
     return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(NotSupportedError));
 }
 
+void NFC::willDetachFrameHost()
+{
+    // TODO(shalamov): To be implemented.
+}
+
+void NFC::pageVisibilityChanged()
+{
+    // TODO(shalamov): To be implemented. When visibility is lost,
+    // NFC operations should be suspended.
+    // https://w3c.github.io/web-nfc/#nfc-suspended
+}
+
 DEFINE_TRACE(NFC)
 {
-    ActiveDOMObject::trace(visitor);
-    DOMWindowProperty::trace(visitor);
+    LocalFrameLifecycleObserver::trace(visitor);
+    PageLifecycleObserver::trace(visitor);
 }
 
 } // namespace blink

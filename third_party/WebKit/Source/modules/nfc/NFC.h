@@ -7,31 +7,37 @@
 
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptWrappable.h"
-#include "core/dom/ActiveDOMObject.h"
-#include "core/frame/DOMWindowProperty.h"
-#include "platform/heap/Handle.h"
+#include "core/frame/LocalFrameLifecycleObserver.h"
+#include "core/page/PageLifecycleObserver.h"
 
 namespace blink {
 
 class NFC final
     : public GarbageCollectedFinalized<NFC>
     , public ScriptWrappable
-    , public ActiveDOMObject
-    , public DOMWindowProperty {
+    , public LocalFrameLifecycleObserver
+    , public PageLifecycleObserver {
     DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(NFC);
 
 public:
-    static NFC* create(ExecutionContext*, LocalFrame*);
+    static NFC* create(LocalFrame*);
     ~NFC() override;
 
     // Get an adapter object providing NFC functionality.
     ScriptPromise requestAdapter(ScriptState*);
 
+    // Implementation of LocalFrameLifecycleObserver.
+    void willDetachFrameHost() override;
+
+    // Implementation of PageLifecycleObserver
+    void pageVisibilityChanged() override;
+
+    // Interface required by garbage collection.
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    NFC(ExecutionContext*, LocalFrame*);
+    NFC(LocalFrame*);
 };
 
 } // namespace blink

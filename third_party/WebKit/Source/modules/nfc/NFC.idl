@@ -6,7 +6,6 @@
 
 [
   GarbageCollected,
-  ActiveDOMObject,
   RuntimeEnabled=WebNFC,
 ] interface NFC {
    [CallWith=ScriptState] Promise<NFCAdapter> requestAdapter ();

@@ -12,7 +12,6 @@ namespace blink {
 
 class NFC;
 class Navigator;
-class ExecutionContext;
 
 class NavigatorNFC final
     : public GarbageCollected<NavigatorNFC>
@@ -23,7 +22,7 @@ public:
     // Gets, or creates, NavigatorNFC supplement on Navigator.
     static NavigatorNFC& from(Navigator&);
 
-    static NFC* nfc(ExecutionContext*, Navigator&);
+    static NFC* nfc(Navigator&);
 
     DECLARE_TRACE();
 

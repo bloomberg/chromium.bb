@@ -7,5 +7,5 @@
 [
   RuntimeEnabled=WebNFC,
 ] partial interface Navigator {
-    [CallWith=ExecutionContext] readonly attribute NFC nfc;
+    readonly attribute NFC nfc;
 };

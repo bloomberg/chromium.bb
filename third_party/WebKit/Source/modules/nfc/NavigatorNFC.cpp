@@ -29,13 +29,13 @@ NavigatorNFC& NavigatorNFC::from(Navigator& navigator)
     return *supplement;
 }
 
-NFC* NavigatorNFC::nfc(ExecutionContext* context, Navigator& navigator)
+NFC* NavigatorNFC::nfc(Navigator& navigator)
 {
     NavigatorNFC& self = NavigatorNFC::from(navigator);
     if (!self.m_nfc) {
         if (!navigator.frame())
             return nullptr;
-        self.m_nfc = NFC::create(context, navigator.frame());
+        self.m_nfc = NFC::create(navigator.frame());
     }
     return self.m_nfc.get();
 }
