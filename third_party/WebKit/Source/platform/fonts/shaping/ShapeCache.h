@@ -27,7 +27,7 @@
 #ifndef ShapeCache_h
 #define ShapeCache_h
 
-#include "platform/fonts/shaping/HarfBuzzShaper.h"
+#include "platform/fonts/shaping/ShapeResult.h"
 #include "platform/text/TextRun.h"
 #include "wtf/Forward.h"
 #include "wtf/HashFunctions.h"
@@ -40,7 +40,6 @@ namespace blink {
 class Font;
 class GlyphBuffer;
 class SimpleFontData;
-class HarfBuzzShaper;
 
 struct ShapeCacheEntry {
     ShapeCacheEntry()
@@ -171,10 +170,8 @@ private:
             value = &addResult.storedValue->value;
         }
 
-        // Cache hit: ramp up by sampling the next few words.
-        if (!isNewEntry) {
+        if (!isNewEntry)
             return value;
-        }
 
         if (m_singleCharMap.size() + m_shortStringMap.size() < s_maxSize) {
             return value;

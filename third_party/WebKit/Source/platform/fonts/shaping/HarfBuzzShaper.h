@@ -32,6 +32,7 @@
 #define HarfBuzzShaper_h
 
 #include "hb.h"
+#include "platform/fonts/shaping/ShapeResult.h"
 #include "platform/fonts/shaping/Shaper.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/FloatRect.h"
@@ -51,70 +52,6 @@ class Font;
 class GlyphBuffer;
 class SimpleFontData;
 class HarfBuzzShaper;
-
-class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
-public:
-    static PassRefPtr<ShapeResult> create(const Font* font,
-        unsigned numCharacters, TextDirection direction)
-    {
-        return adoptRef(new ShapeResult(font, numCharacters, direction));
-    }
-    static PassRefPtr<ShapeResult> createForTabulationCharacters(const Font*,
-        const TextRun&, float positionOffset, unsigned count);
-    ~ShapeResult();
-
-    float width() { return m_width; }
-    FloatRect bounds() { return m_glyphBoundingBox; }
-    unsigned numCharacters() const { return m_numCharacters; }
-    void fallbackFonts(HashSet<const SimpleFontData*>*) const;
-
-    static int offsetForPosition(Vector<RefPtr<ShapeResult>>&,
-        const TextRun&, float targetX);
-    static float fillGlyphBuffer(Vector<RefPtr<ShapeResult>>&,
-        GlyphBuffer*, const TextRun&, unsigned from, unsigned to);
-    static float fillGlyphBufferForTextEmphasis(Vector<RefPtr<ShapeResult>>&,
-        GlyphBuffer*, const TextRun&, const GlyphData* emphasisData,
-        unsigned from, unsigned to);
-    static FloatRect selectionRect(Vector<RefPtr<ShapeResult>>&,
-        TextDirection, float totalWidth, const FloatPoint&, int height,
-        unsigned from, unsigned to);
-
-    unsigned numberOfRunsForTesting() const;
-    bool runInfoForTesting(unsigned runIndex, unsigned& startIndex,
-        unsigned& numGlyphs, hb_script_t&);
-    uint16_t glyphForTesting(unsigned runIndex, size_t glyphIndex);
-    float advanceForTesting(unsigned runIndex, size_t glyphIndex);
-
-private:
-    struct RunInfo;
-
-    ShapeResult(const Font*, unsigned numCharacters, TextDirection);
-
-    int offsetForPosition(float targetX);
-    template<TextDirection>
-    float fillGlyphBufferForRun(GlyphBuffer*, const RunInfo*,
-        float initialAdvance, unsigned from, unsigned to, unsigned runOffset);
-
-    float fillGlyphBufferForTextEmphasisRun(GlyphBuffer*, const RunInfo*,
-        const TextRun&, const GlyphData*, float initialAdvance,
-        unsigned from, unsigned to, unsigned runOffset);
-
-    float m_width;
-    FloatRect m_glyphBoundingBox;
-    Vector<OwnPtr<RunInfo>> m_runs;
-    RefPtr<SimpleFontData> m_primaryFont;
-
-    unsigned m_numCharacters;
-    unsigned m_numGlyphs : 31;
-
-    // Overall direction for the TextRun, dictates which order each individual
-    // sub run (represented by RunInfo structs in the m_runs vector) can have a
-    // different text direction.
-    unsigned m_direction : 1;
-
-    friend class HarfBuzzShaper;
-};
-
 
 // Shaping text runs is split into several stages: Run segmentation, shaping the
 // initial segment, identify shaped and non-shaped sequences of the shaping

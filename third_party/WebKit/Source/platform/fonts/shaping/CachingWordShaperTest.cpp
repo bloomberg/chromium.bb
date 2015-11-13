@@ -7,6 +7,7 @@
 #include "platform/fonts/FontCache.h"
 #include "platform/fonts/GlyphBuffer.h"
 #include "platform/fonts/shaping/CachingWordShapeIterator.h"
+#include "platform/fonts/shaping/ShapeResultTestInfo.h"
 #include <gtest/gtest.h>
 
 namespace blink {
@@ -42,6 +43,11 @@ protected:
     hb_script_t script = HB_SCRIPT_INVALID;
 };
 
+static inline ShapeResultTestInfo* testInfo(RefPtr<ShapeResult>& result)
+{
+    return static_cast<ShapeResultTestInfo*>(result.get());
+}
+
 TEST_F(CachingWordShaperTest, LatinLeftToRightByWord)
 {
     TextRun textRun(reinterpret_cast<const LChar*>("ABC DEF."), 8);
@@ -49,19 +55,19 @@ TEST_F(CachingWordShaperTest, LatinLeftToRightByWord)
     RefPtr<ShapeResult> result;
     CachingWordShapeIterator iterator(cache, textRun, font);
     ASSERT_TRUE(iterator.next(&result));
-    ASSERT_TRUE(result->runInfoForTesting(0, startIndex, numGlyphs, script));
+    ASSERT_TRUE(testInfo(result)->runInfoForTesting(0, startIndex, numGlyphs, script));
     EXPECT_EQ(0u, startIndex);
     EXPECT_EQ(3u, numGlyphs);
     EXPECT_EQ(HB_SCRIPT_LATIN, script);
 
     ASSERT_TRUE(iterator.next(&result));
-    ASSERT_TRUE(result->runInfoForTesting(0, startIndex, numGlyphs, script));
+    ASSERT_TRUE(testInfo(result)->runInfoForTesting(0, startIndex, numGlyphs, script));
     EXPECT_EQ(0u, startIndex);
     EXPECT_EQ(1u, numGlyphs);
     EXPECT_EQ(HB_SCRIPT_COMMON, script);
 
     ASSERT_TRUE(iterator.next(&result));
-    ASSERT_TRUE(result->runInfoForTesting(0, startIndex, numGlyphs, script));
+    ASSERT_TRUE(testInfo(result)->runInfoForTesting(0, startIndex, numGlyphs, script));
     EXPECT_EQ(0u, startIndex);
     EXPECT_EQ(4u, numGlyphs);
     EXPECT_EQ(HB_SCRIPT_LATIN, script);
@@ -78,21 +84,21 @@ TEST_F(CachingWordShaperTest, CommonAccentLeftToRightByWord)
     RefPtr<ShapeResult> result;
     CachingWordShapeIterator iterator(cache, textRun, font);
     ASSERT_TRUE(iterator.next(&result));
-    ASSERT_TRUE(result->runInfoForTesting(0, startIndex, numGlyphs, script));
+    ASSERT_TRUE(testInfo(result)->runInfoForTesting(0, startIndex, numGlyphs, script));
     EXPECT_EQ(0u, offset + startIndex);
     EXPECT_EQ(3u, numGlyphs);
     EXPECT_EQ(HB_SCRIPT_COMMON, script);
     offset += result->numCharacters();
 
     ASSERT_TRUE(iterator.next(&result));
-    ASSERT_TRUE(result->runInfoForTesting(0, startIndex, numGlyphs, script));
+    ASSERT_TRUE(testInfo(result)->runInfoForTesting(0, startIndex, numGlyphs, script));
     EXPECT_EQ(3u, offset + startIndex);
     EXPECT_EQ(1u, numGlyphs);
     EXPECT_EQ(HB_SCRIPT_COMMON, script);
     offset += result->numCharacters();
 
     ASSERT_TRUE(iterator.next(&result));
-    ASSERT_TRUE(result->runInfoForTesting(0, startIndex, numGlyphs, script));
+    ASSERT_TRUE(testInfo(result)->runInfoForTesting(0, startIndex, numGlyphs, script));
     EXPECT_EQ(4u, offset + startIndex);
     EXPECT_EQ(1u, numGlyphs);
     EXPECT_EQ(HB_SCRIPT_COMMON, script);

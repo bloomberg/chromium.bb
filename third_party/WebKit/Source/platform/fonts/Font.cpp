@@ -35,6 +35,7 @@
 #include "platform/fonts/GlyphBuffer.h"
 #include "platform/fonts/GlyphPageTreeNode.h"
 #include "platform/fonts/SimpleFontData.h"
+#include "platform/fonts/shaping/CachingWordShaper.h"
 #include "platform/fonts/shaping/HarfBuzzFace.h"
 #include "platform/fonts/shaping/HarfBuzzShaper.h"
 #include "platform/fonts/shaping/SimpleShaper.h"

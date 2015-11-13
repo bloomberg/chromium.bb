@@ -31,6 +31,7 @@
 #include "config.h"
 #include "platform/fonts/shaping/Shaper.h"
 
+#include "platform/fonts/Font.h"
 #include "platform/fonts/GlyphBuffer.h"
 #include "platform/fonts/GlyphPage.h"
 #include "platform/text/TextRun.h"
@@ -72,6 +73,16 @@ void Shaper::addEmphasisMark(GlyphBuffer* buffer, float midGlyphOffset) const
         buffer->add(m_emphasisSubstitutionData->glyph, emphasisFontData,
             FloatPoint(-m_emphasisGlyphCenter.x(), midGlyphOffset - m_emphasisGlyphCenter.y()));
     }
+}
+
+void Shaper::trackNonPrimaryFallbackFont(const SimpleFontData* fontData)
+{
+    ASSERT(m_fallbackFonts);
+
+    if (fontData == m_font->primaryFont())
+        return;
+
+    m_fallbackFonts->add(fontData);
 }
 
 } // namespace blink

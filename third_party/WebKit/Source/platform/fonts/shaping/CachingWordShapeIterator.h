@@ -26,6 +26,7 @@
 #ifndef CachingWordShapeIterator_h
 #define CachingWordShapeIterator_h
 
+#include "platform/fonts/Font.h"
 #include "platform/fonts/SimpleFontData.h"
 #include "platform/fonts/shaping/CachingWordShapeIterator.h"
 #include "platform/fonts/shaping/HarfBuzzShaper.h"
