@@ -63,9 +63,9 @@ bool MoveTreeWorkItem::Do() {
         } else {
           // We failed to move the source tree to the backup path. This is odd
           // but just fall through and attempt the regular behaviour as well.
-          LOG(ERROR) << "Failed to backup source " << source_path_.value()
-                     << " to backup path " << backup.value()
-                     << " for duplicate trees. Trying regular Move instead.";
+          PLOG(ERROR) << "Failed to backup source " << source_path_.value()
+                      << " to backup path " << backup.value()
+                      << " for duplicate trees. Trying regular Move instead.";
         }
       } else {
         VLOG(1) << "Source path " << source_path_.value()
@@ -100,18 +100,19 @@ bool MoveTreeWorkItem::Do() {
 }
 
 void MoveTreeWorkItem::Rollback() {
-  if (moved_to_dest_path_ && !base::Move(dest_path_, source_path_))
-    LOG(ERROR) << "Can not move " << dest_path_.value()
-               << " to " << source_path_.value();
+  if (moved_to_dest_path_ && !base::Move(dest_path_, source_path_)) {
+    PLOG(ERROR) << "Can not move " << dest_path_.value()
+                << " to " << source_path_.value();
+  }
 
   base::FilePath backup = backup_path_.path().Append(dest_path_.BaseName());
   if (moved_to_backup_ && !base::Move(backup, dest_path_)) {
-    LOG(ERROR) << "failed move " << backup.value()
-               << " to " << dest_path_.value();
+    PLOG(ERROR) << "failed move " << backup.value()
+                << " to " << dest_path_.value();
   }
 
   if (source_moved_to_backup_ && !base::Move(backup, source_path_)) {
-    LOG(ERROR) << "Can not restore " << backup.value()
-               << " to " << source_path_.value();
+    PLOG(ERROR) << "Can not restore " << backup.value()
+                << " to " << source_path_.value();
   }
 }
