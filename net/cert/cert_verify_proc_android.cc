@@ -101,6 +101,8 @@ bool VerifyFromAndroidTrustManager(const std::vector<std::string>& cert_bytes,
                sig_alg == NID_dsaWithSHA1_2 || sig_alg == NID_sha1WithRSA ||
                sig_alg == NID_ecdsa_with_SHA1) {
       verify_result->has_sha1 = true;
+      if (i == 0)
+        verify_result->has_sha1_leaf = true;
     }
   }
 

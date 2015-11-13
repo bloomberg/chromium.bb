@@ -158,6 +158,10 @@ unit tests.
 - sha1_2016.pem
     Used to test the handling of SHA1 certificates expiring in 2016.
 
+- sha1_dec_2015.pem
+- sha1_jan_2016.pem
+    Used to test enforcement of the Baseline Requirements' policies on SHA-1.
+
 - 10_year_validity.pem
 - 11_year_validity.pem
 - 39_months_after_2015_04.pem

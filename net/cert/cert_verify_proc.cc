@@ -165,6 +165,18 @@ bool ExaminePublicKeys(const scoped_refptr<X509Certificate>& cert,
   return weak_key;
 }
 
+// Beginning with Ballot 118, ratified in the Baseline Requirements v1.2.1,
+// CAs MUST NOT issue SHA-1 certificates beginning on 1 January 2016.
+bool IsPastSHA1DeprecationDate(const X509Certificate& cert) {
+  const base::Time& start = cert.valid_start();
+  if (start.is_max() || start.is_null())
+    return true;
+  // 2016-01-01 00:00:00 UTC.
+  const base::Time kSHA1DeprecationDate =
+      base::Time::FromInternalValue(INT64_C(13096080000000000));
+  return start >= kSHA1DeprecationDate;
+}
+
 }  // namespace
 
 // static
@@ -262,8 +274,19 @@ int CertVerifyProc::Verify(X509Certificate* cert,
     rv = MapCertStatusToNetError(verify_result->cert_status);
   }
 
+  if (verify_result->has_sha1)
+    verify_result->cert_status |= CERT_STATUS_SHA1_SIGNATURE_PRESENT;
+
   // Flag certificates using weak signature algorithms.
-  if (verify_result->has_md5) {
+  // The CA/Browser Forum Baseline Requirements (beginning with v1.2.1)
+  // prohibits SHA-1 certificates from being issued beginning on
+  // 1 January 2016. Ideally, all of SHA-1 in new certificates would be
+  // disabled on this date, but enterprises need more time to transition.
+  // As the risk is greatest for publicly trusted certificates, prevent
+  // those certificates from being trusted from that date forward.
+  if (verify_result->has_md5 ||
+      (verify_result->has_sha1_leaf && verify_result->is_issued_by_known_root &&
+       IsPastSHA1DeprecationDate(*cert))) {
     verify_result->cert_status |= CERT_STATUS_WEAK_SIGNATURE_ALGORITHM;
     // Avoid replacing a more serious error, such as an OS/library failure,
     // by ensuring that if verification failed, it failed with a certificate
@@ -271,9 +294,6 @@ int CertVerifyProc::Verify(X509Certificate* cert,
     if (rv == OK || IsCertificateError(rv))
       rv = MapCertStatusToNetError(verify_result->cert_status);
   }
-
-  if (verify_result->has_sha1)
-    verify_result->cert_status |= CERT_STATUS_SHA1_SIGNATURE_PRESENT;
 
   // Flag certificates from publicly-trusted CAs that are issued to intranet
   // hosts. While the CA/Browser Forum Baseline Requirements (v1.1) permit

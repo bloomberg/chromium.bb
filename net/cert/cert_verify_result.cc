@@ -22,6 +22,7 @@ void CertVerifyResult::Reset() {
   has_md4 = false;
   has_md5 = false;
   has_sha1 = false;
+  has_sha1_leaf = false;
   is_issued_by_known_root = false;
   is_issued_by_additional_trust_anchor = false;
   common_name_fallback_used = false;

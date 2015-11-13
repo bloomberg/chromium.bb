@@ -165,7 +165,7 @@ void GetCertChainInfo(CERTCertList* cert_list,
 
   CERTCertificate* verified_cert = NULL;
   std::vector<CERTCertificate*> verified_chain;
-  int i = 0;
+  size_t i = 0;
   for (CERTCertListNode* node = CERT_LIST_HEAD(cert_list);
        !CERT_LIST_END(node, cert_list);
        node = CERT_LIST_NEXT(node), ++i) {
@@ -215,6 +215,8 @@ void GetCertChainInfo(CERTCertList* cert_list,
       case SEC_OID_ANSIX9_DSA_SIGNATURE_WITH_SHA1_DIGEST:
       case SEC_OID_ANSIX962_ECDSA_SHA1_SIGNATURE:
         verify_result->has_sha1 = true;
+        if (i == 0)
+          verify_result->has_sha1_leaf = true;
         break;
       default:
         break;

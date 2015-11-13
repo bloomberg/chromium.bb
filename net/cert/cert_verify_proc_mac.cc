@@ -192,6 +192,7 @@ void GetCertChainInfo(CFArrayRef cert_chain,
   verify_result->has_md4 = false;
   verify_result->has_md5 = false;
   verify_result->has_sha1 = false;
+  verify_result->has_sha1_leaf = false;
 
   SecCertificateRef verified_cert = NULL;
   std::vector<SecCertificateRef> verified_chain;
@@ -252,8 +253,10 @@ void GetCertChainInfo(CFArrayRef cert_chain,
                CSSMOIDEqual(alg_oid, &CSSMOID_SHA1WithDSA_JDK) ||
                CSSMOIDEqual(alg_oid, &CSSMOID_ECDSA_WithSHA1)) {
       verify_result->has_sha1 = true;
-      if (i == 0)
+      if (i == 0) {
+        verify_result->has_sha1_leaf = true;
         *leaf_is_weak = true;
+      }
     }
   }
   if (!verified_cert) {

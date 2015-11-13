@@ -183,6 +183,32 @@ CA_COMMON_NAME="Test Root CA" \
     -out ../certificates/sha1_2016.pem \
     -config ca.cnf
 
+## SHA1 certificate issued the last second before the SHA-1 deprecation date.
+try openssl req -config ../scripts/ee.cnf -sha1 \
+  -newkey rsa:2048 -text -out out/sha1_dec_2015.req
+CA_COMMON_NAME="Test Root CA" \
+  try openssl ca \
+    -batch \
+    -extensions user_cert \
+    -startdate 151231235959Z \
+    -enddate   161230000000Z \
+    -in out/sha1_dec_2015.req \
+    -out ../certificates/sha1_dec_2015.pem \
+    -config ca.cnf
+
+## SHA1 certificate issued on the SHA-1 deprecation date.
+try openssl req -config ../scripts/ee.cnf -sha1 \
+  -newkey rsa:2048 -text -out out/sha1_jan_2016.req
+CA_COMMON_NAME="Test Root CA" \
+  try openssl ca \
+    -batch \
+    -extensions user_cert \
+    -startdate 160101000000Z \
+    -enddate   161230000000Z \
+    -in out/sha1_jan_2016.req \
+    -out ../certificates/sha1_jan_2016.pem \
+    -config ca.cnf
+
 ## Validity too long unit test support.
 try openssl req -config ../scripts/ee.cnf \
   -newkey rsa:2048 -text -out ../certificates/10_year_validity.req

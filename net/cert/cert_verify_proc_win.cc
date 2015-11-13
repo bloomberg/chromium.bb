@@ -295,7 +295,7 @@ void GetCertChainInfo(PCCERT_CHAIN_CONTEXT chain_context,
     return;
 
   PCERT_SIMPLE_CHAIN first_chain = chain_context->rgpChain[0];
-  int num_elements = first_chain->cElement;
+  DWORD num_elements = first_chain->cElement;
   PCERT_CHAIN_ELEMENT* element = first_chain->rgpElement;
 
   PCCERT_CONTEXT verified_cert = NULL;
@@ -316,7 +316,7 @@ void GetCertChainInfo(PCCERT_CHAIN_CONTEXT chain_context,
     num_elements -= 1;
   }
 
-  for (int i = 0; i < num_elements; ++i) {
+  for (DWORD i = 0; i < num_elements; ++i) {
     PCCERT_CONTEXT cert = element[i]->pCertContext;
     if (i == 0) {
       verified_cert = cert;
@@ -341,6 +341,8 @@ void GetCertChainInfo(PCCERT_CHAIN_CONTEXT chain_context,
       // id-dsa-with-sha1: 1.2.840.10040.4.3
       // ecdsa-with-SHA1: 1.2.840.10045.4.1
       verify_result->has_sha1 = true;
+      if (i == 0)
+        verify_result->has_sha1_leaf = true;
     }
   }
 
