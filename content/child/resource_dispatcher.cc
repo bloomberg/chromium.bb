@@ -101,12 +101,6 @@ bool ResourceDispatcher::OnMessageReceived(const IPC::Message& message) {
     return true;
   }
 
-  // TODO(erikchen): Temporary debugging for http://crbug.com/550938.
-  if (message.type() == ResourceMsg_SetDataBuffer::ID)
-    request_info->has_received_buffer = true;
-  if (message.type() == ResourceMsg_DataReceived::ID)
-    CHECK(request_info->has_received_buffer);
-
   if (request_info->is_deferred) {
     request_info->deferred_message_queue.push_back(new IPC::Message(message));
     return true;
@@ -198,7 +192,6 @@ void ResourceDispatcher::OnSetDataBuffer(int request_id,
 
   request_info->buffer.reset(
       new base::SharedMemory(shm_handle, true));  // read only
-  request_info->has_processed_buffer = true;
   request_info->received_data_factory =
       make_scoped_refptr(new SharedMemoryReceivedDataFactory(
           message_sender_, request_id, request_info->buffer));
@@ -231,11 +224,6 @@ void ResourceDispatcher::OnReceivedData(int request_id,
   PendingRequestInfo* request_info = GetPendingRequestInfo(request_id);
   bool send_ack = true;
   if (request_info && data_length > 0) {
-    // TODO(erikchen): Temporary debugging. http://crbug.com/550938.
-    CHECK(request_info->has_processed_buffer);
-    CHECK(!request_info->has_destroyed_buffer);
-    CHECK(request_info->buffer.get());
-
     CHECK(base::SharedMemory::IsHandleValid(request_info->buffer->handle()));
     CHECK_GE(request_info->buffer_size, data_offset + data_length);
 
@@ -354,7 +342,6 @@ void ResourceDispatcher::OnRequestComplete(
     return;
   request_info->completion_time = ConsumeIOTimestamp();
   request_info->buffer.reset();
-  request_info->has_destroyed_buffer = true;
   if (request_info->received_data_factory)
     request_info->received_data_factory->Stop();
   request_info->received_data_factory = nullptr;
@@ -517,10 +504,7 @@ ResourceDispatcher::PendingRequestInfo::PendingRequestInfo(
       frame_origin(frame_origin),
       response_url(request_url),
       download_to_file(download_to_file),
-      request_start(base::TimeTicks::Now()),
-      has_received_buffer(false),
-      has_processed_buffer(false),
-      has_destroyed_buffer(false) {
+      request_start(base::TimeTicks::Now()) {
 }
 
 ResourceDispatcher::PendingRequestInfo::~PendingRequestInfo() {

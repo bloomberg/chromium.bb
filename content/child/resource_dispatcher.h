@@ -173,11 +173,6 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
     scoped_refptr<SharedMemoryReceivedDataFactory> received_data_factory;
     linked_ptr<SiteIsolationResponseMetaData> site_isolation_metadata;
     int buffer_size;
-
-    // TODO(erikchen): Temporary debugging for http://crbug.com/550938.
-    bool has_received_buffer;
-    bool has_processed_buffer;
-    bool has_destroyed_buffer;
   };
   typedef base::hash_map<int, PendingRequestInfo> PendingRequestList;
 
