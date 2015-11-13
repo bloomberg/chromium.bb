@@ -1,5 +1,2 @@
 asvitkine@chromium.org
 holte@chromium.org
-
-# Metrics changes should always be reviewed by owners.
-per-file rappor.xml=set noparent

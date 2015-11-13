@@ -1,8 +1,0 @@
-asvitkine@chromium.org
-isherman@chromium.org
-jwd@chromium.org
-mpearson@chromium.org
-rkaplow@chromium.org
-
-# Metrics changes should always be reviewed by owners.
-per-file actions.xml=set noparent
