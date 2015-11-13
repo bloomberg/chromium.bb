@@ -9,7 +9,6 @@
   'variables': {
     'command': [
       '<(PRODUCT_DIR)/bin/run_chrome_public_test_apk',
-      '--enable-platform-mode',
       '-e', 'local', '--apk-under-test',
       '<(PRODUCT_DIR)/apks/ChromePublic.apk',
     ],
