@@ -32,6 +32,9 @@ class ChromeMessagesJsonFormatUnittest(unittest.TestCase):
       <message name="IDS_PLACEHOLDERS">
               <ph name="ERROR_COUNT">%1$d<ex>1</ex></ph> error, <ph name="WARNING_COUNT">%2$d<ex>1</ex></ph> warning
       </message>
+      <message name="IDS_PLACEHOLDERS_SUBSTITUTED_BY_GETMESSAGE">
+              <ph name="BEGIN">$1<ex>a</ex></ph>test<ph name="END">$2<ex>b</ex></ph>
+      </message>
       <message name="IDS_STARTS_WITH_SPACE">
               ''' (<ph name="COUNT">%d<ex>2</ex></ph>)
       </message>
@@ -63,6 +66,17 @@ class ChromeMessagesJsonFormatUnittest(unittest.TestCase):
   },
   "PLACEHOLDERS": {
     "message": "%1$d error, %2$d warning"
+  },
+  "PLACEHOLDERS_SUBSTITUTED_BY_GETMESSAGE": {
+    "message": "$1$test$2$",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      },
+      "2": {
+        "content": "$2"
+      }
+    }
   },
   "STARTS_WITH_SPACE": {
     "message": " (%d)"
