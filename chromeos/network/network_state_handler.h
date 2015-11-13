@@ -103,6 +103,13 @@ class CHROMEOS_EXPORT NetworkStateHandler
       bool enabled,
       const network_handler::ErrorCallback& error_callback);
 
+  // Asynchronously sets the list of prohibited technologies. The accepted
+  // values are the shill network technology identifiers. See also
+  // chromeos::onc::Validator::ValidateGlobalNetworkConfiguration().
+  void SetProhibitedTechnologies(
+      const std::vector<std::string>& prohibited_technologies,
+      const network_handler::ErrorCallback& error_callback);
+
   // Finds and returns a device state by |device_path| or NULL if not found.
   const DeviceState* GetDeviceState(const std::string& device_path) const;
 

@@ -9,6 +9,7 @@
 #include <map>
 #include <set>
 #include <string>
+#include <vector>
 
 #include "base/memory/weak_ptr.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
@@ -122,6 +123,13 @@ class CHROMEOS_EXPORT ShillPropertyHandler
       bool enabled,
       const network_handler::ErrorCallback& error_callback);
 
+  // Asynchronously sets the prohibited state for every network technology
+  // listed in |technologies|. Note: Modifies Manager state. Calls
+  // |error_callback| on failure.
+  void SetProhibitedTechnologies(
+      const std::vector<std::string>& technologies,
+      const network_handler::ErrorCallback& error_callback);
+
   // Sets the list of devices on which portal check is enabled.
   void SetCheckPortalList(const std::string& check_portal_list);
 
@@ -214,6 +222,8 @@ class CHROMEOS_EXPORT ShillPropertyHandler
                            DBusMethodCallStatus call_status,
                            const base::DictionaryValue& properties);
 
+  void SetProhibitedTechnologiesEnforced(bool enforced);
+
   // Pointer to containing class (owns this)
   Listener* listener_;
 
@@ -237,6 +247,7 @@ class CHROMEOS_EXPORT ShillPropertyHandler
   std::set<std::string> available_technologies_;
   std::set<std::string> enabled_technologies_;
   std::set<std::string> enabling_technologies_;
+  std::set<std::string> prohibited_technologies_;
   std::set<std::string> uninitialized_technologies_;
 
   DISALLOW_COPY_AND_ASSIGN(ShillPropertyHandler);

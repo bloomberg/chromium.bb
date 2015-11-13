@@ -65,6 +65,7 @@ class CHROMEOS_EXPORT NetworkProfileHandler
   friend class ClientCertResolverTest;
   friend class NetworkConnectionHandlerTest;
   friend class NetworkHandler;
+  friend class ProhibitedTechnologiesHandlerTest;
   NetworkProfileHandler();
 
   // Add ShillManagerClient property observer and request initial list.

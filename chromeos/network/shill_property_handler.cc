@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/format_macros.h"
 #include "base/stl_util.h"
+#include "base/strings/string_util.h"
 #include "base/values.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/shill_device_client.h"
@@ -104,8 +105,7 @@ class ShillPropertyObserver : public ShillPropertyChangedObserver {
 
 ShillPropertyHandler::ShillPropertyHandler(Listener* listener)
     : listener_(listener),
-      shill_manager_(DBusThreadManager::Get()->GetShillManagerClient()) {
-}
+      shill_manager_(DBusThreadManager::Get()->GetShillManagerClient()) {}
 
 ShillPropertyHandler::~ShillPropertyHandler() {
   // Delete network service observers.
@@ -153,6 +153,14 @@ void ShillPropertyHandler::SetTechnologyEnabled(
     bool enabled,
     const network_handler::ErrorCallback& error_callback) {
   if (enabled) {
+    if (prohibited_technologies_.find(technology) !=
+        prohibited_technologies_.end()) {
+      chromeos::network_handler::RunErrorCallback(
+          error_callback, "", "prohibited_technologies",
+          "Ignored: Attempt to enable prohibited network technology " +
+              technology);
+      return;
+    }
     enabling_technologies_.insert(technology);
     shill_manager_->EnableTechnology(
         technology, base::Bind(&base::DoNothing),
@@ -167,6 +175,35 @@ void ShillPropertyHandler::SetTechnologyEnabled(
         base::Bind(&network_handler::ShillErrorCallbackFunction,
                    "SetTechnologyEnabled Failed", technology, error_callback));
   }
+}
+
+void ShillPropertyHandler::SetProhibitedTechnologies(
+    const std::vector<std::string>& prohibited_technologies,
+    const network_handler::ErrorCallback& error_callback) {
+  prohibited_technologies_.clear();
+  prohibited_technologies_.insert(prohibited_technologies.begin(),
+                                  prohibited_technologies.end());
+
+  // Remove technologies from the other lists.
+  // And manually disable them.
+  for (const auto& technology : prohibited_technologies) {
+    enabling_technologies_.erase(technology);
+    enabled_technologies_.erase(technology);
+    shill_manager_->DisableTechnology(
+        technology, base::Bind(&base::DoNothing),
+        base::Bind(&network_handler::ShillErrorCallbackFunction,
+                   "DisableTechnology Failed", technology, error_callback));
+  }
+
+  // Send updated prohibited technology list to shill.
+  const std::string prohibited_list =
+      base::JoinString(prohibited_technologies, ",");
+  base::StringValue value(prohibited_list);
+  shill_manager_->SetProperty(
+      "ProhibitedTechnologies", value, base::Bind(&base::DoNothing),
+      base::Bind(&network_handler::ShillErrorCallbackFunction,
+                 "SetTechnologiesProhibited Failed", prohibited_list,
+                 error_callback));
 }
 
 void ShillPropertyHandler::SetCheckPortalList(

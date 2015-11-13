@@ -112,6 +112,7 @@ class CHROMEOS_EXPORT ManagedNetworkConfigurationHandlerImpl
   friend class ManagedNetworkConfigurationHandlerTest;
   friend class NetworkConnectionHandlerTest;
   friend class NetworkHandler;
+  friend class ProhibitedTechnologiesHandlerTest;
 
   struct Policies;
   typedef base::Callback<void(const std::string& service_path,
@@ -130,7 +131,8 @@ class CHROMEOS_EXPORT ManagedNetworkConfigurationHandlerImpl
   void Init(NetworkStateHandler* network_state_handler,
             NetworkProfileHandler* network_profile_handler,
             NetworkConfigurationHandler* network_configuration_handler,
-            NetworkDeviceHandler* network_device_handler);
+            NetworkDeviceHandler* network_device_handler,
+            ProhibitedTechnologiesHandler* prohibitied_technologies_handler);
 
   // Sends the response to the caller of GetManagedProperties.
   void SendManagedProperties(
@@ -201,6 +203,7 @@ class CHROMEOS_EXPORT ManagedNetworkConfigurationHandlerImpl
   NetworkProfileHandler* network_profile_handler_;
   NetworkConfigurationHandler* network_configuration_handler_;
   NetworkDeviceHandler* network_device_handler_;
+  ProhibitedTechnologiesHandler* prohibited_technologies_handler_;
 
   // Owns the currently running PolicyApplicators.
   UserToPolicyApplicatorMap policy_applicators_;

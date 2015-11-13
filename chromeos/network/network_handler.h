@@ -27,6 +27,7 @@ class NetworkDeviceHandlerImpl;
 class NetworkProfileHandler;
 class NetworkStateHandler;
 class NetworkSmsHandler;
+class ProhibitedTechnologiesHandler;
 
 // Class for handling initialization and access to chromeos network handlers.
 // This class should NOT be used in unit tests. Instead, construct individual
@@ -61,6 +62,7 @@ class CHROMEOS_EXPORT NetworkHandler {
   NetworkConnectionHandler* network_connection_handler();
   NetworkSmsHandler* network_sms_handler();
   GeolocationHandler* geolocation_handler();
+  ProhibitedTechnologiesHandler* prohibited_technologies_handler();
 
  private:
   NetworkHandler();
@@ -83,6 +85,7 @@ class CHROMEOS_EXPORT NetworkHandler {
   scoped_ptr<AutoConnectHandler> auto_connect_handler_;
   scoped_ptr<NetworkSmsHandler> network_sms_handler_;
   scoped_ptr<GeolocationHandler> geolocation_handler_;
+  scoped_ptr<ProhibitedTechnologiesHandler> prohibited_technologies_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkHandler);
 };

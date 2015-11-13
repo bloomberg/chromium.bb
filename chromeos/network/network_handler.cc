@@ -21,6 +21,7 @@
 #include "chromeos/network/network_sms_handler.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_state_handler_observer.h"
+#include "chromeos/network/prohibited_technologies_handler.h"
 
 namespace chromeos {
 
@@ -36,6 +37,7 @@ NetworkHandler::NetworkHandler()
   network_configuration_handler_.reset(new NetworkConfigurationHandler());
   managed_network_configuration_handler_.reset(
       new ManagedNetworkConfigurationHandlerImpl());
+  prohibited_technologies_handler_.reset(new ProhibitedTechnologiesHandler());
   if (CertLoader::IsInitialized()) {
     auto_connect_handler_.reset(new AutoConnectHandler());
     network_cert_migrator_.reset(new NetworkCertMigrator());
@@ -57,10 +59,9 @@ void NetworkHandler::Init() {
   network_configuration_handler_->Init(network_state_handler_.get(),
                                        network_device_handler_.get());
   managed_network_configuration_handler_->Init(
-      network_state_handler_.get(),
-      network_profile_handler_.get(),
-      network_configuration_handler_.get(),
-      network_device_handler_.get());
+      network_state_handler_.get(), network_profile_handler_.get(),
+      network_configuration_handler_.get(), network_device_handler_.get(),
+      prohibited_technologies_handler_.get());
   network_connection_handler_->Init(
       network_state_handler_.get(),
       network_configuration_handler_.get(),
@@ -77,6 +78,9 @@ void NetworkHandler::Init() {
                                 network_state_handler_.get(),
                                 managed_network_configuration_handler_.get());
   }
+  prohibited_technologies_handler_->Init(
+      managed_network_configuration_handler_.get(),
+      network_state_handler_.get());
   network_sms_handler_->Init();
   geolocation_handler_->Init();
 }
@@ -142,6 +146,11 @@ NetworkSmsHandler* NetworkHandler::network_sms_handler() {
 
 GeolocationHandler* NetworkHandler::geolocation_handler() {
   return geolocation_handler_.get();
+}
+
+ProhibitedTechnologiesHandler*
+NetworkHandler::prohibited_technologies_handler() {
+  return prohibited_technologies_handler_.get();
 }
 
 }  // namespace chromeos

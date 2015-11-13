@@ -140,11 +140,11 @@ class ClientCertResolverTest : public testing::Test,
 
     network_profile_handler_->Init();
     network_config_handler_->Init(network_state_handler_.get(),
-                                  NULL /* network_device_handler */);
-    managed_config_handler_->Init(network_state_handler_.get(),
-                                  network_profile_handler_.get(),
-                                  network_config_handler_.get(),
-                                  NULL /* network_device_handler */);
+                                  nullptr /* network_device_handler */);
+    managed_config_handler_->Init(
+        network_state_handler_.get(), network_profile_handler_.get(),
+        network_config_handler_.get(), nullptr /* network_device_handler */,
+        nullptr /* prohibited_technologies_handler */);
     // Run all notifications before starting the cert loader to reduce run time.
     base::RunLoop().RunUntilIdle();
 

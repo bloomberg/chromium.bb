@@ -121,7 +121,8 @@ class AutoConnectHandlerTest : public testing::Test {
     managed_config_handler_.reset(new ManagedNetworkConfigurationHandlerImpl());
     managed_config_handler_->Init(
         network_state_handler_.get(), network_profile_handler_.get(),
-        network_config_handler_.get(), nullptr /* network_device_handler */);
+        network_config_handler_.get(), nullptr /* network_device_handler */,
+        nullptr /* prohibited_technologies_handler */);
 
     client_cert_resolver_.reset(new ClientCertResolver());
     client_cert_resolver_->Init(network_state_handler_.get(),

@@ -887,11 +887,11 @@ bool Validator::ValidateGlobalNetworkConfiguration(
   const base::ListValue* disabled_network_types = NULL;
   if (result->GetListWithoutPathExpansion(kDisableNetworkTypes,
                                           &disabled_network_types)) {
-    // The kDisableNetworkTypes field is only allowed in user policy.
+    // The kDisableNetworkTypes field is only allowed in device policy.
     if (!disabled_network_types->empty() &&
-        onc_source_ != ::onc::ONC_SOURCE_USER_POLICY) {
+        onc_source_ != ::onc::ONC_SOURCE_DEVICE_POLICY) {
       error_or_warning_found_ = true;
-      LOG(ERROR) << "Disabled network types only allowed in user policy.";
+      LOG(ERROR) << "Disabled network types only allowed in device policy.";
       return false;
     }
   }

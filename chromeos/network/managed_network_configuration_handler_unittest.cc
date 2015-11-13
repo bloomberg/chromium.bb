@@ -260,14 +260,13 @@ class ManagedNetworkConfigurationHandlerTest : public testing::Test {
     network_configuration_handler_.reset(
         NetworkConfigurationHandler::InitializeForTest(
             network_state_handler_.get(),
-            NULL /* no NetworkDeviceHandler */));
+            nullptr /* no NetworkDeviceHandler */));
     managed_network_configuration_handler_.reset(
         new ManagedNetworkConfigurationHandlerImpl());
     managed_network_configuration_handler_->Init(
-        network_state_handler_.get(),
-        network_profile_handler_.get(),
-        network_configuration_handler_.get(),
-        NULL /* no DeviceHandler */);
+        network_state_handler_.get(), network_profile_handler_.get(),
+        network_configuration_handler_.get(), nullptr /* no DeviceHandler */,
+        nullptr /* no ProhibitedTechnologiesHandler */);
     managed_network_configuration_handler_->AddObserver(&policy_observer_);
 
     message_loop_.RunUntilIdle();
@@ -337,7 +336,10 @@ class ManagedNetworkConfigurationHandlerTest : public testing::Test {
     // These calls occur in NetworkConfigurationHandler.
     EXPECT_CALL(*mock_manager_client_, GetProperties(_)).Times(AnyNumber());
     EXPECT_CALL(*mock_manager_client_,
-                AddPropertyChangedObserver(_)).Times(AnyNumber());
+                SetProperty("ProhibitedTechnologies", _, _, _))
+        .Times(AnyNumber());
+    EXPECT_CALL(*mock_manager_client_, AddPropertyChangedObserver(_))
+        .Times(AnyNumber());
     EXPECT_CALL(*mock_manager_client_,
                 RemovePropertyChangedObserver(_)).Times(AnyNumber());
   }

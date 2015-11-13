@@ -149,11 +149,11 @@ INSTANTIATE_TEST_CASE_P(
                   &kToplevelConfigurationSignature,
                   true,
                   ::onc::ONC_SOURCE_DEVICE_POLICY),
-        // Disabled technologies are only allowed for user policies.
+        // Disabled technologies are only allowed for device policies.
         OncParams("managed_toplevel_with_disabled_technologies.onc",
                   &kToplevelConfigurationSignature,
                   true,
-                  ::onc::ONC_SOURCE_USER_POLICY),
+                  ::onc::ONC_SOURCE_DEVICE_POLICY),
         // AllowOnlyPolicyNetworksToConnect is only allowed for device policies.
         OncParams("managed_toplevel_with_only_managed.onc",
                   &kToplevelConfigurationSignature,
