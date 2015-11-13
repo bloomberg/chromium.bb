@@ -350,6 +350,8 @@ void LayoutListItem::positionListMarker()
         LayoutUnit lineTop = root.lineTop();
         LayoutUnit lineBottom = root.lineBottom();
 
+        // TODO(jchaffraix): Propagating the overflow to the line boxes seems
+        // pretty wrong (https://crbug.com/554160).
         // FIXME: Need to account for relative positioning in the layout overflow.
         if (style()->isLeftToRightDirection()) {
             LayoutUnit leftLineOffset = logicalLeftOffsetForLine(blockOffset, logicalLeftOffsetForLine(blockOffset, false), false);
@@ -370,7 +372,7 @@ void LayoutListItem::positionListMarker()
                     if (box == root)
                         adjustOverflow = true;
                 }
-                box->setOverflowFromLogicalRects(newLogicalLayoutOverflowRect, newLogicalVisualOverflowRect, lineTop, lineBottom);
+                box->overrideOverflowFromLogicalRects(newLogicalLayoutOverflowRect, newLogicalVisualOverflowRect, lineTop, lineBottom);
                 if (box->boxModelObject().hasSelfPaintingLayer())
                     hitSelfPaintingLayer = true;
             }
@@ -391,7 +393,7 @@ void LayoutListItem::positionListMarker()
                     if (box == root)
                         adjustOverflow = true;
                 }
-                box->setOverflowFromLogicalRects(newLogicalLayoutOverflowRect, newLogicalVisualOverflowRect, lineTop, lineBottom);
+                box->overrideOverflowFromLogicalRects(newLogicalLayoutOverflowRect, newLogicalVisualOverflowRect, lineTop, lineBottom);
 
                 if (box->boxModelObject().hasSelfPaintingLayer())
                     hitSelfPaintingLayer = true;

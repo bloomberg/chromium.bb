@@ -940,6 +940,7 @@ void InlineFlowBox::computeOverflow(LayoutUnit lineTop, LayoutUnit lineBottom, G
 
 void InlineFlowBox::setLayoutOverflow(const LayoutRect& rect, const LayoutRect& frameBox)
 {
+    ASSERT(!knownToHaveNoOverflow());
     if (frameBox.contains(rect) || rect.isEmpty())
         return;
 
@@ -951,6 +952,7 @@ void InlineFlowBox::setLayoutOverflow(const LayoutRect& rect, const LayoutRect& 
 
 void InlineFlowBox::setVisualOverflow(const LayoutRect& rect, const LayoutRect& frameBox)
 {
+    ASSERT(!knownToHaveNoOverflow());
     if (frameBox.contains(rect) || rect.isEmpty())
         return;
 
@@ -962,6 +964,7 @@ void InlineFlowBox::setVisualOverflow(const LayoutRect& rect, const LayoutRect& 
 
 void InlineFlowBox::setOverflowFromLogicalRects(const LayoutRect& logicalLayoutOverflow, const LayoutRect& logicalVisualOverflow, LayoutUnit lineTop, LayoutUnit lineBottom)
 {
+    ASSERT(!knownToHaveNoOverflow());
     LayoutRect frameBox = frameRectIncludingLineHeight(lineTop, lineBottom);
 
     LayoutRect layoutOverflow(isHorizontal() ? logicalLayoutOverflow : logicalLayoutOverflow.transposedRect());

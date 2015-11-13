@@ -255,8 +255,6 @@ public:
         return result;
     }
 
-    void setOverflowFromLogicalRects(const LayoutRect& logicalLayoutOverflow, const LayoutRect& logicalVisualOverflow, LayoutUnit lineTop, LayoutUnit lineBottom);
-
     LayoutRect frameRectIncludingLineHeight(LayoutUnit lineTop, LayoutUnit lineBottom) const
     {
         if (isHorizontal())
@@ -280,6 +278,14 @@ public:
     bool isFirstAfterPageBreak() const { return m_isFirstAfterPageBreak; }
     void setIsFirstAfterPageBreak(bool isFirstAfterPageBreak) { m_isFirstAfterPageBreak = isFirstAfterPageBreak; }
 
+    // Some callers (LayoutListItem) needs to set extra overflow on their line box.
+    void overrideOverflowFromLogicalRects(const LayoutRect& logicalLayoutOverflow, const LayoutRect& logicalVisualOverflow, LayoutUnit lineTop, LayoutUnit lineBottom)
+    {
+        // If we are setting an overflow, then we can't pretend not to have an overflow.
+        clearKnownToHaveNoOverflow();
+        setOverflowFromLogicalRects(logicalLayoutOverflow, logicalVisualOverflow, lineTop, lineBottom);
+    }
+
 private:
     void placeBoxRangeInInlineDirection(InlineBox* firstChild, InlineBox* lastChild,
         LayoutUnit& logicalLeft, LayoutUnit& minLogicalLeft, LayoutUnit& maxLogicalRight, bool& needsWordSpacing);
@@ -299,6 +305,8 @@ private:
 
     void setLayoutOverflow(const LayoutRect&, const LayoutRect&);
     void setVisualOverflow(const LayoutRect&, const LayoutRect&);
+
+    void setOverflowFromLogicalRects(const LayoutRect& logicalLayoutOverflow, const LayoutRect& logicalVisualOverflow, LayoutUnit lineTop, LayoutUnit lineBottom);
 
 protected:
     OwnPtr<OverflowModel> m_overflow;

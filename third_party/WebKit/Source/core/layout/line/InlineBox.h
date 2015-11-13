@@ -351,6 +351,13 @@ public:
         ADD_BOOLEAN_BITFIELD(endsWithBreak, EndsWithBreak); // Whether the line ends with a <br>.
         // shared between RootInlineBox and InlineTextBox
         ADD_BOOLEAN_BITFIELD(hasSelectedChildrenOrCanHaveLeadingExpansion, HasSelectedChildrenOrCanHaveLeadingExpansion);
+
+        // This boolean will never be set if there is potential for overflow,
+        // but it will be eagerly cleared in the opposite case. As such, it's
+        // a conservative tracking of the absence of overflow.
+        //
+        // For whether we have overflow, callers should use m_overflow on
+        // InlineFlowBox.
         ADD_BOOLEAN_BITFIELD(knownToHaveNoOverflow, KnownToHaveNoOverflow);
         ADD_BOOLEAN_BITFIELD(hasEllipsisBoxOrHyphen, HasEllipsisBoxOrHyphen);
         // for InlineTextBox
