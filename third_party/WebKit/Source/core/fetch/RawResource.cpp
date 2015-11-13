@@ -151,7 +151,9 @@ void RawResource::responseReceived(const ResourceResponse& response, PassOwnPtr<
 
     // If we successfully revalidated, we won't get appendData() calls.
     // Forward the data to clients now instead.
-    if (isSuccessfulRevalidation) {
+    // Note: |m_data| can be null when no data is appended to the original
+    // resource.
+    if (isSuccessfulRevalidation && m_data) {
         ResourceClientWalker<RawResourceClient> w(m_clients);
         while (RawResourceClient* c = w.next())
             c->dataReceived(this, m_data->data(), m_data->size());

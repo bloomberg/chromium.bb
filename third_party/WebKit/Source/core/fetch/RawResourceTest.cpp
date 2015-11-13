@@ -60,30 +60,7 @@ TEST(RawResourceTest, DontIgnoreAcceptForCacheReuse)
     ASSERT_FALSE(jpegResource->canReuse(pngRequest));
 }
 
-TEST(RawResourceTest, RevalidationSucceeded)
-{
-    ResourcePtr<Resource> resource = new RawResource(ResourceRequest("data:text/html,"), Resource::Raw);
-    ResourceResponse response;
-    response.setHTTPStatusCode(200);
-    resource->responseReceived(response, nullptr);
-    const char data[5] = "abcd";
-    resource->appendData(data, 4);
-    resource->finish();
-    memoryCache()->add(resource.get());
-
-    // Simulate a successful revalidation.
-    resource->setRevalidatingRequest(ResourceRequest("data:text/html,"));
-    ResourceResponse revalidatingResponse;
-    revalidatingResponse.setHTTPStatusCode(304);
-    resource->responseReceived(revalidatingResponse, nullptr);
-    EXPECT_FALSE(resource->isCacheValidator());
-    EXPECT_EQ(200, resource->response().httpStatusCode());
-    EXPECT_EQ(4u, resource->resourceBuffer()->size());
-    EXPECT_EQ(memoryCache()->resourceForURL(KURL(ParsedURLString, "data:text/html,")), resource.get());
-    memoryCache()->remove(resource.get());
-}
-
-class DummyClient : public RawResourceClient {
+class DummyClient final : public RawResourceClient {
 public:
     DummyClient() : m_called(false) {}
     ~DummyClient() override {}
@@ -95,9 +72,16 @@ public:
     }
     String debugName() const override { return "DummyClient"; }
 
+    void dataReceived(Resource*, const char* data, unsigned length) override
+    {
+        m_data.append(data, length);
+    }
+
     bool called() { return m_called; }
+    const Vector<char>& data() { return m_data; }
 private:
     bool m_called;
+    Vector<char> m_data;
 };
 
 // This client adds another client when notified.
@@ -129,6 +113,68 @@ private:
     ResourcePtr<Resource> m_resource;
     Timer<AddingClient> m_removeClientTimer;
 };
+
+TEST(RawResourceTest, RevalidationSucceeded)
+{
+    ResourcePtr<Resource> resource = new RawResource(ResourceRequest("data:text/html,"), Resource::Raw);
+    ResourceResponse response;
+    response.setHTTPStatusCode(200);
+    resource->responseReceived(response, nullptr);
+    const char data[5] = "abcd";
+    resource->appendData(data, 4);
+    resource->finish();
+    memoryCache()->add(resource.get());
+
+    // Simulate a successful revalidation.
+    resource->setRevalidatingRequest(ResourceRequest("data:text/html,"));
+
+    OwnPtr<DummyClient> client = adoptPtr(new DummyClient);
+    resource->addClient(client.get());
+
+    ResourceResponse revalidatingResponse;
+    revalidatingResponse.setHTTPStatusCode(304);
+    resource->responseReceived(revalidatingResponse, nullptr);
+    EXPECT_FALSE(resource->isCacheValidator());
+    EXPECT_EQ(200, resource->response().httpStatusCode());
+    EXPECT_EQ(4u, resource->resourceBuffer()->size());
+    EXPECT_EQ(memoryCache()->resourceForURL(KURL(ParsedURLString, "data:text/html,")), resource.get());
+    memoryCache()->remove(resource.get());
+
+    resource->removeClient(client.get());
+    EXPECT_FALSE(resource->hasClients());
+    EXPECT_FALSE(client->called());
+    EXPECT_EQ("abcd", String(client->data().data(), client->data().size()));
+}
+
+TEST(RawResourceTest, RevalidationSucceededForResourceWithoutBody)
+{
+    ResourcePtr<Resource> resource = new RawResource(ResourceRequest("data:text/html,"), Resource::Raw);
+    ResourceResponse response;
+    response.setHTTPStatusCode(200);
+    resource->responseReceived(response, nullptr);
+    resource->finish();
+    memoryCache()->add(resource.get());
+
+    // Simulate a successful revalidation.
+    resource->setRevalidatingRequest(ResourceRequest("data:text/html,"));
+
+    OwnPtr<DummyClient> client = adoptPtr(new DummyClient);
+    resource->addClient(client.get());
+
+    ResourceResponse revalidatingResponse;
+    revalidatingResponse.setHTTPStatusCode(304);
+    resource->responseReceived(revalidatingResponse, nullptr);
+    EXPECT_FALSE(resource->isCacheValidator());
+    EXPECT_EQ(200, resource->response().httpStatusCode());
+    EXPECT_EQ(nullptr, resource->resourceBuffer());
+    EXPECT_EQ(memoryCache()->resourceForURL(KURL(ParsedURLString, "data:text/html,")), resource.get());
+    memoryCache()->remove(resource.get());
+
+    resource->removeClient(client.get());
+    EXPECT_FALSE(resource->hasClients());
+    EXPECT_FALSE(client->called());
+    EXPECT_EQ(0u, client->data().size());
+}
 
 TEST(RawResourceTest, AddClientDuringCallback)
 {
