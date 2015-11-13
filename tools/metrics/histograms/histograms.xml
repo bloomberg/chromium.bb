@@ -29855,6 +29855,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Result of removing an offline copy for a page.</summary>
 </histogram>
 
+<histogram name="OfflinePages.IncognitoSave" enum="Boolean">
+  <owner>jianli@chromium.org</owner>
+  <summary>
+    Whether the page that was being saved offline was in incognito mode.
+  </summary>
+</histogram>
+
 <histogram name="OfflinePages.LoadStatus" enum="OfflinePagesLoadStatus">
   <owner>jianli@chromium.org</owner>
   <summary>

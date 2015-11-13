@@ -8,6 +8,7 @@ import android.content.Context;
 
 import org.chromium.base.ObserverList;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.ChromeBrowserProviderClient;
 import org.chromium.chrome.browser.bookmark.BookmarksBridge;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
@@ -236,6 +237,8 @@ public class EnhancedBookmarksModel extends BookmarksBridge {
             final AddBookmarkCallback callback) {
         assert bookmarkId.getId() != ChromeBrowserProviderClient.INVALID_BOOKMARK_ID;
         if (mOfflinePageBridge != null) {
+            RecordHistogram.recordBooleanHistogram("OfflinePages.IncognitoSave",
+                    webContents.isIncognito());
             mOfflinePageBridge.savePage(webContents, bookmarkId, new SavePageCallback() {
                 @Override
                 public void onSavePageDone(int savePageResult, String url) {
