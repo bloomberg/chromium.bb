@@ -46,8 +46,8 @@ private:
     bool m_allRequestsStarted;
     bool m_started;
     RawPtrWillBeMember<LocalFrame> m_inspectedFrame;
-    HashSet<ResourceClient*> m_pendingResourceClients;
-    Vector<ResourcePtr<Resource> > m_resources;
+    WillBeHeapHashSet<RawPtrWillBeMember<ResourceClient>> m_pendingResourceClients;
+    Vector<ResourcePtr<Resource>> m_resources;
 
     friend class ResourceClient;
 };
