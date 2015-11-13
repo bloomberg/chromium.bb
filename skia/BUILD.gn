@@ -554,7 +554,7 @@ if (current_cpu == "x86" || current_cpu == "x64") {
   }
   source_set("skia_opts_avx") {
     sources = gypi_skia_opts.avx_sources
-    if (!is_win || is_clang) {
+    if (!is_win) {
       cflags = [ "-mavx" ]
     }
     if (is_win) {
@@ -570,7 +570,7 @@ if (current_cpu == "x86" || current_cpu == "x64") {
   }
   source_set("skia_opts_avx2") {
     sources = gypi_skia_opts.avx2_sources
-    if (!is_win || is_clang) {
+    if (!is_win) {
       cflags = [ "-mavx2" ]
     }
     if (is_win) {
