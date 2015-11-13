@@ -216,7 +216,7 @@ cr.define('media_router_container', function() {
       // Tests that |container| returns to SINK_LIST view and arrow drop icon
       // toggles after a cast mode is selected.
       test('select cast mode', function(done) {
-        container.castModeList_ = fakeCastModeListWithNonDefaultModesOnly;
+        container.castModeList = fakeCastModeListWithNonDefaultModesOnly;
 
         MockInteractions.tap(container.$['container-header'].
             $['arrow-drop-icon']);
@@ -252,7 +252,7 @@ cr.define('media_router_container', function() {
             container.selectCastModeHeaderText_);
         assertEquals(fakeCastModeList[1].description, container.headerText);
 
-        container.castModeList_ = fakeCastModeListWithNonDefaultModesOnly;
+        container.castModeList = fakeCastModeListWithNonDefaultModesOnly;
         setTimeout(function() {
           var castModeList =
               container.$['cast-mode-list'].querySelectorAll('paper-item');
@@ -275,7 +275,7 @@ cr.define('media_router_container', function() {
       // Tests the header text when updated with a cast mode list with a mix of
       // default and non-default cast modes.
       test('cast modes with one default mode', function(done) {
-        container.castModeList_ = fakeCastModeList;
+        container.castModeList = fakeCastModeList;
 
         setTimeout(function() {
           var castModeList =
