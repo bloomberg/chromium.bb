@@ -21,6 +21,12 @@
 Polymer({
   is: 'settings-reset-page',
 
+  properties: {
+    allowPowerwash_: {
+      type: Boolean,
+      value: loadTimeData.getBoolean('allowPowerwash')
+    },
+  },
 
   /** @private */
   onShowResetProfileDialog_: function() {

@@ -23,6 +23,19 @@
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_ui.h"
+#include "content/public/browser/web_ui_data_source.h"
+
+#if defined(OS_CHROMEOS)
+#include "base/prefs/pref_service.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_process_platform_part.h"
+#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
+#include "chrome/browser/chromeos/reset/metrics.h"
+#include "chrome/common/pref_names.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/power_manager_client.h"
+#include "components/user_manager/user_manager.h"
+#endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_WIN)
 #include "chrome/browser/profile_resetter/triggered_profile_resetter.h"
@@ -31,14 +44,22 @@
 
 namespace settings {
 
-ResetSettingsHandler::ResetSettingsHandler(content::WebUI* web_ui)
-    : automatic_profile_resetter_(NULL),
-      has_shown_confirmation_dialog_(false) {
+ResetSettingsHandler::ResetSettingsHandler(
+    content::WebUIDataSource* html_source, content::WebUI* web_ui) {
   google_brand::GetBrand(&brandcode_);
   Profile* profile = Profile::FromWebUI(web_ui);
   resetter_.reset(new ProfileResetter(profile));
   automatic_profile_resetter_ =
       AutomaticProfileResetterFactory::GetForBrowserContext(profile);
+
+#if defined(OS_CHROMEOS)
+  policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  allow_powerwash_ = !connector->IsEnterpriseManaged() &&
+      !user_manager::UserManager::Get()->IsLoggedInAsGuest() &&
+      !user_manager::UserManager::Get()->IsLoggedInAsSupervisedUser();
+  html_source->AddBoolean("allowPowerwash", allow_powerwash_);
+#endif  // defined(OS_CHROMEOS)
 }
 
 ResetSettingsHandler::~ResetSettingsHandler() {
@@ -58,6 +79,16 @@ void ResetSettingsHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("onHideResetProfileDialog",
       base::Bind(&ResetSettingsHandler::OnHideResetProfileDialog,
                  base::Unretained(this)));
+#if defined(OS_CHROMEOS)
+  web_ui()->RegisterMessageCallback(
+       "onPowerwashDialogShow",
+       base::Bind(&ResetSettingsHandler::OnShowPowerwashDialog,
+                  base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "requestFactoryResetRestart",
+      base::Bind(&ResetSettingsHandler::HandleFactoryResetRestart,
+                 base::Unretained(this)));
+#endif  // defined(OS_CHROMEOS)
 }
 
 void ResetSettingsHandler::HandleResetProfileSettings(
@@ -176,5 +207,29 @@ void ResetSettingsHandler::UpdateFeedbackUI() {
   web_ui()->CallJavascriptFunction(
       "SettingsResetPage.setFeedbackInfo", feedback_info);
 }
+
+#if defined(OS_CHROMEOS)
+void ResetSettingsHandler::OnShowPowerwashDialog(
+     const base::ListValue* args) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "Reset.ChromeOS.PowerwashDialogShown",
+      chromeos::reset::DIALOG_FROM_OPTIONS,
+      chromeos::reset::DIALOG_VIEW_TYPE_SIZE);
+}
+
+void ResetSettingsHandler::HandleFactoryResetRestart(
+    const base::ListValue* args) {
+  if (!allow_powerwash_)
+    return;
+
+  PrefService* prefs = g_browser_process->local_state();
+  prefs->SetBoolean(prefs::kFactoryResetRequested, true);
+  prefs->CommitPendingWrite();
+
+  // Perform sign out. Current chrome process will then terminate, new one will
+  // be launched (as if it was a restart).
+  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RequestRestart();
+}
+#endif  // defined(OS_CHROMEOS)
 
 }  // namespace settings

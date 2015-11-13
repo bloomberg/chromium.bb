@@ -40,12 +40,13 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
   AddSettingsPageUIHandler(new DownloadsHandler());
   AddSettingsPageUIHandler(new FontHandler(web_ui));
   AddSettingsPageUIHandler(new LanguagesHandler(web_ui));
-  AddSettingsPageUIHandler(new ResetSettingsHandler(web_ui));
   AddSettingsPageUIHandler(new StartupPagesHandler(web_ui));
   AddSettingsPageUIHandler(new SyncHandler(Profile::FromWebUI(web_ui)));
 
   content::WebUIDataSource* html_source =
       content::WebUIDataSource::Create(chrome::kChromeUIMdSettingsHost);
+
+  AddSettingsPageUIHandler(new ResetSettingsHandler(html_source, web_ui));
 
   // Add all settings resources.
   for (size_t i = 0; i < kSettingsResourcesSize; ++i) {

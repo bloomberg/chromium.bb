@@ -14,7 +14,7 @@
       <div i18n-content="resetPageDescription"></div>
     </div>
 <if expr="chromeos">
-    <div on-tap="onShowPowerwashDialog_">
+    <div on-tap="onShowPowerwashDialog_" hidden="[[!allowPowerwash_]]">
       <div i18n-content="powerwashTitle"></div>
       <div i18n-content="powerwashDescription"></div>
     </div>

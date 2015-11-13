@@ -18,6 +18,10 @@ class DictionaryValue;
 class ListValue;
 }  // namespace base
 
+namespace content {
+class WebUIDataSource;
+}
+
 class AutomaticProfileResetter;
 class BrandcodeConfigFetcher;
 class ProfileResetter;
@@ -25,13 +29,15 @@ class ResettableSettingsSnapshot;
 
 namespace settings {
 
-// Handler for both the 'Reset Profile Settings' overlay page and also the
-// corresponding banner that is shown at the top of the options page.
+// Handler for
+//  1) 'Reset Profile Settings' dialog
+//  2) 'Powerwash' dialog (ChromeOS only)
 class ResetSettingsHandler
     : public SettingsPageUIHandler,
       public base::SupportsWeakPtr<ResetSettingsHandler> {
  public:
-  explicit ResetSettingsHandler(content::WebUI* web_ui);
+  explicit ResetSettingsHandler(
+      content::WebUIDataSource* html_source, content::WebUI* web_ui);
   ~ResetSettingsHandler() override;
 
   // WebUIMessageHandler implementation.
@@ -60,13 +66,25 @@ class ResetSettingsHandler
   // Sets new values for the feedback area.
   void UpdateFeedbackUI();
 
+#if defined(OS_CHROMEOS)
+  // Will be called when powerwash dialog is shown.
+  void OnShowPowerwashDialog(const base::ListValue* args);
+
+  // Sets a pref indicating that a factory reset is requested and then requests
+  // a restart.
+  void HandleFactoryResetRestart(const base::ListValue* args);
+
+  // Whether factory reset can be performed.
+  bool allow_powerwash_ = false;
+#endif  // defined(OS_CHROMEOS)
+
   // Destroyed with the Profile, thus it should outlive us. This will be NULL if
   // the underlying profile is off-the-record (e.g. in Guest mode on Chrome OS).
-  AutomaticProfileResetter* automatic_profile_resetter_;
+  AutomaticProfileResetter* automatic_profile_resetter_ = nullptr;
 
   // Records whether or not the Profile Reset confirmation dialog was opened at
   // least once during the lifetime of the settings page.
-  bool has_shown_confirmation_dialog_;
+  bool has_shown_confirmation_dialog_ = false;
 
   scoped_ptr<ProfileResetter> resetter_;
 
