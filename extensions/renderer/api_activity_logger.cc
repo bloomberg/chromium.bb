@@ -38,10 +38,10 @@ void APIActivityLogger::LogEvent(
 void APIActivityLogger::LogInternal(
     const CallType call_type,
     const v8::FunctionCallbackInfo<v8::Value>& args) {
-  DCHECK_GT(args.Length(), 2);
-  DCHECK(args[0]->IsString());
-  DCHECK(args[1]->IsString());
-  DCHECK(args[2]->IsArray());
+  CHECK_GT(args.Length(), 2);
+  CHECK(args[0]->IsString());
+  CHECK(args[1]->IsString());
+  CHECK(args[2]->IsArray());
 
   std::string ext_id = *v8::String::Utf8Value(args[0]);
   ExtensionHostMsg_APIActionOrEvent_Params params;

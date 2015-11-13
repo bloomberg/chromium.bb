@@ -20,7 +20,8 @@ bool SetProperty(v8::Isolate* isolate,
                  v8::Local<v8::Object> object,
                  KeyType key,
                  v8::Local<v8::Value> value) {
-  auto maybe = object->Set(isolate->GetCurrentContext(), key, value);
+  auto maybe =
+      object->DefineOwnProperty(isolate->GetCurrentContext(), key, value);
   return !maybe.IsNothing() && maybe.FromJust();
 }
 

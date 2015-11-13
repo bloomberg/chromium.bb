@@ -138,6 +138,32 @@ IN_PROC_BROWSER_TEST_F(ExtensionBindingsApiTest, NoExportOverriding) {
   EXPECT_EQ("success", result);
 }
 
+IN_PROC_BROWSER_TEST_F(ExtensionBindingsApiTest, NoGinDefineOverriding) {
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+
+  // We need to create runtime bindings in the web page. An extension that's
+  // externally connectable will do that for us.
+  ASSERT_TRUE(LoadExtension(
+      test_data_dir_.AppendASCII("bindings")
+                    .AppendASCII("externally_connectable_everywhere")));
+
+  ui_test_utils::NavigateToURL(
+      browser(),
+      embedded_test_server()->GetURL(
+          "/extensions/api_test/bindings/override_gin_define.html"));
+  ASSERT_FALSE(
+      browser()->tab_strip_model()->GetActiveWebContents()->IsCrashed());
+
+  // See chrome/test/data/extensions/api_test/bindings/override_gin_define.html.
+  std::string result;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+      browser()->tab_strip_model()->GetActiveWebContents(),
+      "window.domAutomationController.send("
+          "document.getElementById('status').textContent.trim());",
+      &result));
+  EXPECT_EQ("success", result);
+}
+
 IN_PROC_BROWSER_TEST_F(ExtensionBindingsApiTest, HandlerFunctionTypeChecking) {
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
   ui_test_utils::NavigateToURL(

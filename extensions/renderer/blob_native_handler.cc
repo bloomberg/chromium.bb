@@ -14,7 +14,7 @@ namespace {
 
 // Expects a single Blob argument. Returns the Blob's UUID.
 void GetBlobUuid(const v8::FunctionCallbackInfo<v8::Value>& args) {
-  DCHECK_EQ(1, args.Length());
+  CHECK_EQ(1, args.Length());
   blink::WebBlob blob = blink::WebBlob::fromV8Value(args[0]);
   args.GetReturnValue().Set(
       v8::String::NewFromUtf8(args.GetIsolate(), blob.uuid().utf8().data()));
@@ -38,10 +38,10 @@ BlobNativeHandler::BlobNativeHandler(ScriptContext* context)
 // a separate flow to avoid leaking Blobs if the script context is destroyed.
 void BlobNativeHandler::TakeBrowserProcessBlob(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
-  DCHECK_EQ(3, args.Length());
-  DCHECK(args[0]->IsString());
-  DCHECK(args[1]->IsString());
-  DCHECK(args[2]->IsInt32());
+  CHECK_EQ(3, args.Length());
+  CHECK(args[0]->IsString());
+  CHECK(args[1]->IsString());
+  CHECK(args[2]->IsInt32());
   std::string uuid(*v8::String::Utf8Value(args[0]));
   std::string type(*v8::String::Utf8Value(args[1]));
   blink::WebBlob blob =

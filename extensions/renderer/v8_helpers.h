@@ -7,6 +7,7 @@
 
 #include <string.h>
 
+#include "base/strings/string_number_conversions.h"
 #include "v8/include/v8.h"
 
 namespace extensions {
@@ -56,19 +57,13 @@ inline bool IsEmptyOrUndefied(v8::Local<v8::Value> value) {
   return value.IsEmpty() || value->IsUndefined();
 }
 
-// SetProperty() family wraps V8::Object::Set(). Returns true on success.
+// SetProperty() family wraps V8::Object::DefineOwnProperty().
+// Returns true on success.
 inline bool SetProperty(v8::Local<v8::Context> context,
                         v8::Local<v8::Object> object,
-                        v8::Local<v8::Value> key,
+                        v8::Local<v8::String> key,
                         v8::Local<v8::Value> value) {
-  return IsTrue(object->Set(context, key, value));
-}
-
-inline bool SetProperty(v8::Local<v8::Context> context,
-                        v8::Local<v8::Object> object,
-                        uint32_t index,
-                        v8::Local<v8::Value> value) {
-  return IsTrue(object->Set(context, index, value));
+  return IsTrue(object->DefineOwnProperty(context, key, value));
 }
 
 inline bool SetProperty(v8::Local<v8::Context> context,
@@ -79,6 +74,13 @@ inline bool SetProperty(v8::Local<v8::Context> context,
   if (!ToV8String(context->GetIsolate(), key, &v8_key))
     return false;
   return SetProperty(context, object, v8_key, value);
+}
+
+inline bool SetProperty(v8::Local<v8::Context> context,
+                        v8::Local<v8::Object> object,
+                        uint32_t index,
+                        v8::Local<v8::Value> value) {
+  return SetProperty(context, object, base::UintToString(index).c_str(), value);
 }
 
 // GetProperty() family calls V8::Object::Get() and extracts a value from

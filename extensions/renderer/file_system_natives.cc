@@ -31,8 +31,8 @@ FileSystemNatives::FileSystemNatives(ScriptContext* context)
 
 void FileSystemNatives::GetIsolatedFileSystem(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
-  DCHECK(args.Length() == 1 || args.Length() == 2);
-  DCHECK(args[0]->IsString());
+  CHECK(args.Length() == 1 || args.Length() == 2);
+  CHECK(args[0]->IsString());
   std::string file_system_id(*v8::String::Utf8Value(args[0]));
   blink::WebLocalFrame* webframe =
       blink::WebLocalFrame::frameForContext(context()->v8_context());
@@ -49,7 +49,7 @@ void FileSystemNatives::GetIsolatedFileSystem(
   // system at which to root the DOMFileSystem we're returning to the caller.
   std::string optional_root_name;
   if (args.Length() == 2) {
-    DCHECK(args[1]->IsString());
+    CHECK(args[1]->IsString());
     optional_root_name = *v8::String::Utf8Value(args[1]);
   }
 
@@ -66,8 +66,8 @@ void FileSystemNatives::GetIsolatedFileSystem(
 
 void FileSystemNatives::GetFileEntry(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
-  DCHECK(args.Length() == 5);
-  DCHECK(args[0]->IsString());
+  CHECK_EQ(5, args.Length());
+  CHECK(args[0]->IsString());
   std::string type_string = *v8::String::Utf8Value(args[0]);
   blink::WebFileSystemType type;
   bool is_valid_type = storage::GetFileSystemPublicType(type_string, &type);
@@ -76,16 +76,16 @@ void FileSystemNatives::GetFileEntry(
     return;
   }
 
-  DCHECK(args[1]->IsString());
-  DCHECK(args[2]->IsString());
-  DCHECK(args[3]->IsString());
+  CHECK(args[1]->IsString());
+  CHECK(args[2]->IsString());
+  CHECK(args[3]->IsString());
   std::string file_system_name(*v8::String::Utf8Value(args[1]));
   GURL file_system_root_url(*v8::String::Utf8Value(args[2]));
   std::string file_path_string(*v8::String::Utf8Value(args[3]));
   base::FilePath file_path = base::FilePath::FromUTF8Unsafe(file_path_string);
   DCHECK(storage::VirtualPath::IsAbsolute(file_path.value()));
 
-  DCHECK(args[4]->IsBoolean());
+  CHECK(args[4]->IsBoolean());
   blink::WebDOMFileSystem::EntryType entry_type =
       args[4]->BooleanValue() ? blink::WebDOMFileSystem::EntryTypeDirectory
                               : blink::WebDOMFileSystem::EntryTypeFile;
