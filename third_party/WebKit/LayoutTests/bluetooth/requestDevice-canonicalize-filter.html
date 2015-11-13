@@ -6,7 +6,7 @@
 <script>
 'use strict';
 
-test(function(t) { assert_true(window.testRunner instanceof Object); t.done(); },
+test(t => { assert_true(window.testRunner instanceof Object); t.done(); },
      'window.testRunner is required for the following tests.');
 
 promise_test(() => {
@@ -42,11 +42,10 @@ promise_test(() => {
 
 promise_test(() => {
   testRunner.setBluetoothMockDataSet('EmptyAdapter');
-  let expected = {
-    name: 'TypeError',
-    message: 'Failed to execute \'requestDevice\' on \'Bluetooth\': A device '
-           + 'name can\'t be longer than 248 bytes.'
-  };
+  let expected = new DOMException(
+    'Failed to execute \'requestDevice\' on \'Bluetooth\': A device ' +
+    'name can\'t be longer than 248 bytes.',
+    'TypeError');
   let name_too_long = generate_string(249, 'a');
   return assert_promise_rejects_with_message(
     requestDeviceWithKeyDown({filters: [{name: name_too_long}]}),
@@ -55,13 +54,12 @@ promise_test(() => {
 
 promise_test(() => {
   testRunner.setBluetoothMockDataSet('EmptyAdapter');
-  let expected = {
-    name: 'NotFoundError',
-    message: 'Failed to execute \'requestDevice\' on \'Bluetooth\': ' +
-             'A \'name\' or \'namePrefix\' longer than 29 bytes ' +
-             'results in no devices being found, because a device can\'t ' +
-             'advertise a name longer than 29 bytes.'
-  };
+  let expected = new DOMException(
+    'Failed to execute \'requestDevice\' on \'Bluetooth\': ' +
+    'A \'name\' or \'namePrefix\' longer than 29 bytes ' +
+    'results in no devices being found, because a device can\'t ' +
+    'advertise a name longer than 29 bytes.',
+    'NotFoundError');
   let name_too_long = generate_string(30, 'a');
   return assert_promise_rejects_with_message(
     requestDeviceWithKeyDown({filters: [{name: name_too_long}]}),
@@ -97,23 +95,21 @@ promise_test(() => {
         'NotFoundError.',
   chars: 10, // \u2764's UTF-8 respresentation is 3 bytes long.
              // 10 chars * 3 bytes/char = 30 bytes
-  expected: {
-    name: 'NotFoundError',
-    message: 'Failed to execute \'requestDevice\' on \'Bluetooth\': ' +
-             'A \'name\' or \'namePrefix\' longer than 29 bytes ' +
-             'results in no devices being found, because a device can\'t ' +
-             'advertise a name longer than 29 bytes.'
-  }
+  expected: new DOMException(
+    'Failed to execute \'requestDevice\' on \'Bluetooth\': ' +
+    'A \'name\' or \'namePrefix\' longer than 29 bytes ' +
+    'results in no devices being found, because a device can\'t ' +
+    'advertise a name longer than 29 bytes.',
+    'NotFoundError')
 }, {
   test_name: 'Unicode string with utf8 representation greater than 248 must throw ' +
         'TypeError.',
   chars: 83, // \u2764's UTF-8 respresentation is 3 bytes long.
              // 83 chars * 3 bytes/char = 249 bytes
-  expected: {
-    name: 'TypeError',
-    message: 'Failed to execute \'requestDevice\' on \'Bluetooth\': ' +
-             'A device name can\'t be longer than 248 bytes.'
-  }
+  expected: new DOMException(
+    'Failed to execute \'requestDevice\' on \'Bluetooth\': ' +
+    'A device name can\'t be longer than 248 bytes.',
+    'TypeError')
 }].forEach(t => {
   let unicode_name = generate_string(t.chars, '\u2764');
   promise_test(() => {

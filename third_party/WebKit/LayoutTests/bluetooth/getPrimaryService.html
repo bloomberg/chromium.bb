@@ -15,19 +15,17 @@ promise_test(() => {
     .then(gattServer => {
       testRunner.setBluetoothMockDataSet('EmptyAdapter');
       return assert_promise_rejects_with_message(
-        gattServer.getPrimaryService('generic_access'), {
-          name: 'NetworkError',
-          message: 'Bluetooth Device is no longer in range.'
-        }, 'Device went out of range.');
+        gattServer.getPrimaryService('generic_access'),
+        new DOMException('Bluetooth Device is no longer in range.',
+                         'NetworkError'),
+        'Device went out of range.');
     });
 }, 'Device goes out of range. Reject with NetworkError.');
 
-promise_test(function() {
+promise_test(() => {
   testRunner.setBluetoothMockDataSet('GenericAccessAdapter');
-  let expected = {
-    name: 'NotFoundError',
-    message: 'Service not found in device.'
-  };
+  let expected = new DOMException('Service not found in device.',
+                                  'NotFoundError');
   return requestDeviceWithKeyDown({filters: [{services: ['generic_access']}]})
     .then(device => device.connectGATT())
     .then(gattServer => Promise.all(
@@ -56,7 +54,7 @@ promise_test(() => {
     .then(gattServer => {
       return assert_promise_rejects_with_message(
         gattServer.getPrimaryService('battery_service'),
-        {name: 'NotFoundError', message: 'Service not found in device.'});
+        new DOMException('Service not found in device.', 'NotFoundError'));
     });
 }, 'Request for wrong service. Must reject with NotFoundError even when the services' +
    ' are not immediately discovered');
@@ -79,7 +77,7 @@ promise_test(function() {
     });
 }, 'Request for service. Should return right service');
 
-promise_test(function() {
+promise_test(() => {
   testRunner.setBluetoothMockDataSet('GenericAccessAdapter');
   return requestDeviceWithKeyDown({filters: [{services: ['generic_access']}]})
     .then(device => device.connectGATT())
@@ -107,18 +105,18 @@ promise_test(() => {
     .then(device => device.connectGATT())
     .then(gattServer => {
       return assert_promise_rejects_with_message(
-        gattServer.getPrimaryService('wrong_name'), {
-          name: 'SyntaxError',
-          message: 'Failed to execute \'getPrimaryService\' on ' +
-                   '\'BluetoothGATTRemoteServer\': Invalid Service name: ' +
-                   '\'wrong_name\'. ' +
-                   'It must be a valid UUID alias (e.g. 0x1234), ' +
-                   'UUID (lowercase hex characters e.g. ' +
-                   '\'00001234-0000-1000-8000-00805f9b34fb\'), ' +
-                   'or recognized standard name from ' +
-                   'https://developer.bluetooth.org/gatt/services/Pages/ServicesHome.aspx' +
-                   ' e.g. \'alert_notification\'.'
-        }, 'Wrong Service name passed.');
+        gattServer.getPrimaryService('wrong_name'), new DOMException(
+          'Failed to execute \'getPrimaryService\' on ' +
+          '\'BluetoothGATTRemoteServer\': Invalid Service name: ' +
+          '\'wrong_name\'. ' +
+          'It must be a valid UUID alias (e.g. 0x1234), ' +
+          'UUID (lowercase hex characters e.g. ' +
+          '\'00001234-0000-1000-8000-00805f9b34fb\'), ' +
+          'or recognized standard name from ' +
+          'https://developer.bluetooth.org/gatt/services/Pages/ServicesHome.aspx' +
+          ' e.g. \'alert_notification\'.',
+          'SyntaxError'),
+        'Wrong Service name passed.');
     });
 }, 'Wrong Service name. Reject with SyntaxError.');
 </script>

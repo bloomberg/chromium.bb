@@ -16,7 +16,7 @@ test(t => { assert_true(window.testRunner instanceof Object); t.done(); },
 promise_test(() => {
   testRunner.setBluetoothMockDataSet('GlucoseHeartRateAdapter');
   return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}]})
-    .then(function(device) {
+    .then(device => {
       assert_equals(device.constructor.name, 'BluetoothDevice');
 
       // Attempt (and fail) to overwrite all members, verifying they are

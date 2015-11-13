@@ -156,4 +156,20 @@ promise_test(() => {
    .then(characteristic => characteristic.stopNotifications())
    .then(() => runGarbageCollection());
 }, "Stop without starting.");
+
+gatt_errors_tests.forEach(testSpec => {
+  promise_test(() => {
+    testRunner.setBluetoothMockDataSet('FailingGATTOperationsAdapter');
+    return requestDeviceWithKeyDown({filters: [{services: [errorUUID(0xA0)]}]})
+      .then(device => device.connectGATT())
+      .then(gattServer => gattServer.getPrimaryService(errorUUID(0xA0)))
+      .then(service => service.getCharacteristic(testSpec.uuid))
+      .then(characteristic => {
+        return assert_promise_rejects_with_message(
+          characteristic.startNotifications(),
+          testSpec.error,
+          'Trying to write to a characteristic failed.');
+      });
+  }, testSpec.testName);
+});
 </script>

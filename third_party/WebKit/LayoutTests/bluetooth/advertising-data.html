@@ -5,7 +5,7 @@
 <script>
 'use strict';
 
-test(function(t) { assert_true(window.testRunner instanceof Object); t.done(); },
+test(t => { assert_true(window.testRunner instanceof Object); t.done(); },
      'window.testRunner is required for the following tests.');
 // Tests that we are handling values returned from the underlying platform
 // correctly. Only meant to be used by chromium.

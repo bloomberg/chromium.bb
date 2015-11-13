@@ -38,6 +38,70 @@ var battery_level = {
   uuid: '00002a19-0000-1000-8000-00805f9b34fb'
 };
 
+// The following tests make sure the Web Bluetooth implementation
+// responds correctly to the different types of errors the
+// underlying platform might return for GATT operations.
+
+// Each browser should map these characteristics to specific code paths
+// that result in different errors thus increasing code coverage
+// when testing. Therefore some of these characteristics might not be useful
+// for all browsers.
+//
+// TODO(ortuno): According to the testing spec errorUUID(0x101) to
+// errorUUID(0x1ff) should be use for the uuids of the characteristics.
+var gatt_errors_tests = [{
+  testName: 'GATT Error: Unknown.',
+  uuid: errorUUID(0xA1),
+  error: new DOMException(
+      'GATT Error Unknown.',
+      'NotSupportedError')
+}, {
+  testName: 'GATT Error: Failed.',
+  uuid: errorUUID(0xA2),
+  error: new DOMException(
+      'GATT operation failed for unknown reason.',
+      'NotSupportedError')
+}, {
+  testName: 'GATT Error: In Progress.',
+  uuid: errorUUID(0xA3),
+  error: new DOMException(
+      'GATT operation already in progress.',
+      'NetworkError')
+}, {
+  testName: 'GATT Error: Invalid Length.',
+  uuid: errorUUID(0xA4),
+  error: new DOMException(
+      'GATT Error: invalid attribute length.',
+      'InvalidModificationError')
+}, {
+  testName: 'GATT Error: Not Permitted.',
+  uuid: errorUUID(0xA5),
+  error: new DOMException(
+      'GATT operation not permitted.',
+      'NotSupportedError')
+}, {
+  testName: 'GATT Error: Not Authorized.',
+  uuid: errorUUID(0xA6),
+  error: new DOMException(
+      'GATT operation not authorized.',
+      'SecurityError')
+}, {
+  testName: 'GATT Error: Not Paired.',
+  uuid: errorUUID(0xA7),
+  // TODO(ortuno): Change to InsufficientAuthenticationError or similiar
+  // once https://github.com/WebBluetoothCG/web-bluetooth/issues/137 is
+  // resolved.
+  error: new DOMException(
+      'GATT Error: Not paired.',
+      'NetworkError')
+}, {
+  testName: 'GATT Error: Not Supported.',
+  uuid: errorUUID(0xA8),
+  error: new DOMException(
+      'GATT Error: Not supported.',
+      'NotSupportedError')
+}];
+
 // TODO(jyasskin): Upstream this to testharness.js: https://crbug.com/509058.
 function callWithKeyDown(functionCalledOnKeyPress) {
   return new Promise(resolve => {

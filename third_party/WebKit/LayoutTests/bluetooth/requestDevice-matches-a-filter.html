@@ -6,7 +6,7 @@
 <script>
 'use strict';
 
-test(function(t) { assert_true(window.testRunner instanceof Object); t.done(); },
+test(t => { assert_true(window.testRunner instanceof Object); t.done(); },
      'window.testRunner is required for the following tests.');
 
 let matching_services = [heart_rate.uuid];
@@ -63,7 +63,7 @@ let non_matching_namePrefix = 'Some';
   promise_test(() => {
     testRunner.setBluetoothMockDataSet('GlucoseHeartRateAdapter');
     return assert_promise_rejects(requestDeviceWithKeyDown(args),
-                                  'NotFoundError');
+                                  new DOMException('', 'NotFoundError'));
   }, 'If at least one filter doesn\'t match the promise must reject.');
 });
 
@@ -98,7 +98,7 @@ let non_matching_namePrefix = 'Some';
   promise_test(() => {
     testRunner.setBluetoothMockDataSet('GlucoseHeartRateAdapter');
     return assert_promise_rejects(requestDeviceWithKeyDown(args),
-                                  'NotFoundError');
+                                  new DOMException('', 'NotFoundError'));
   }, 'If a present filter\'s member doesn\'t match the device, ' +
      'the device doesn\'t match the filter.');
 });
