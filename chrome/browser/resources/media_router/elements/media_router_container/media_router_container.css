@@ -2,6 +2,10 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
+:root {
+  --container-header-height: 52px;
+}
+
 .active-sink {
   color: rgb(33, 150, 243);
 }
@@ -19,12 +23,19 @@
   padding-top: 4px;
 }
 
+#container-header {
+  position: fixed;
+  width: 100%;
+  z-index: 1;
+}
+
 #device-missing {
   align-items: center;
   background-color: white;
   display: flex;
   height: 120px;
   justify-content: center;
+  margin-top: var(--container-header-height);
 }
 
 #device-missing a {
@@ -33,6 +44,7 @@
 }
 
 #issue-banner {
+  margin-top: var(--container-header-height);
   width: 100%;
   z-index: 1;
 }
@@ -58,6 +70,7 @@ paper-item:hover {
 paper-menu {
   -webkit-user-select: none;
   color: rgba(0, 0, 0, 0.87);
+  margin-top: var(--container-header-height);
   overflow-x: hidden;
   overflow-y: auto;
   padding-bottom: 12px;
@@ -87,10 +100,6 @@ paper-menu {
   font-weight: normal;
 }
 
-#sink-list {
-  max-height: 320px;
-}
-
 .sink-text {
   -webkit-padding-end: 26px;
   line-height: normal;
@@ -98,4 +107,8 @@ paper-menu {
   text-overflow: ellipsis;
   white-space: nowrap;
   width: 250px;
+}
+
+#route-details {
+  margin-top: var(--container-header-height);
 }

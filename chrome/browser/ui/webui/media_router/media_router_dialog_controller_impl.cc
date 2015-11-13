@@ -34,10 +34,12 @@ using content::WebUIMessageHandler;
 using ui::WebDialogDelegate;
 
 namespace {
+#if defined(OS_MACOSX)
+const int kFixedHeight = 265;
+#else
 const int kMaxHeight = 400;
-#if !defined(OS_MACOSX)
 const int kMinHeight = 80;
-#endif  // !defined(OS_MACOSX)
+#endif
 const int kWidth = 340;
 }
 
@@ -104,7 +106,7 @@ void MediaRouterDialogDelegate::GetDialogSize(gfx::Size* size) const {
   DCHECK(size);
   // TODO(apacible): Remove after autoresizing is implemented for OSX.
 #if defined(OS_MACOSX)
-  *size = gfx::Size(kWidth, kMaxHeight);
+  *size = gfx::Size(kWidth, kFixedHeight);
 #else
   // size is not used because the dialog is auto-resizeable.
   *size = gfx::Size();
