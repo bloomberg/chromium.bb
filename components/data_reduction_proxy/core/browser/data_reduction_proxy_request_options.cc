@@ -331,11 +331,10 @@ void DataReductionProxyRequestOptions::PopulateConfigResponse(
   std::string session;
   std::string credentials;
   base::Time now = Now();
-  base::Time expiration_time = now + base::TimeDelta::FromHours(24);
   ComputeCredentials(now, &session, &credentials);
   config->set_session_key(CreateLocalSessionKey(session, credentials));
-  config_parser::TimetoTimestamp(expiration_time,
-                                 config->mutable_refresh_time());
+  config_parser::TimeDeltatoDuration(base::TimeDelta::FromHours(24),
+                                     config->mutable_refresh_duration());
 }
 
 void DataReductionProxyRequestOptions::SetCredentials(

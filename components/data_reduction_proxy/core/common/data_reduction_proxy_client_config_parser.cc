@@ -44,12 +44,26 @@ void TimetoTimestamp(const base::Time& time, Timestamp* timestamp) {
   timestamp->set_nanos(0);
 }
 
+void TimeDeltatoDuration(const base::TimeDelta& time_delta,
+                         Duration* duration) {
+  duration->set_seconds(time_delta.InSeconds());
+  // Discard fractional seconds; it isn't worth the code effort to
+  // calculate it.
+  duration->set_nanos(0);
+}
+
 base::Time TimestampToTime(const Timestamp& timestamp) {
   base::Time t = base::Time::UnixEpoch();
   t += base::TimeDelta::FromSeconds(timestamp.seconds());
   t += base::TimeDelta::FromMicroseconds(
       timestamp.nanos() / base::Time::kNanosecondsPerMicrosecond);
   return t;
+}
+
+base::TimeDelta DurationToTimeDelta(const Duration& duration) {
+  return base::TimeDelta::FromSeconds(duration.seconds()) +
+         base::TimeDelta::FromMicroseconds(
+             duration.nanos() / base::Time::kNanosecondsPerMicrosecond);
 }
 
 }  // namespace config_parser

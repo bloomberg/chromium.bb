@@ -122,8 +122,7 @@ class DataReductionProxyConfigServiceClient
   // should be retrieved. |backoff_delay| must be non-negative.
   base::TimeDelta CalculateNextConfigRefreshTime(
       bool fetch_succeeded,
-      const base::Time& config_expiration,
-      const base::Time& now,
+      const base::TimeDelta& config_expiration,
       const base::TimeDelta& backoff_delay) const;
 
   // Populates the parameters for the client config field trial if the session

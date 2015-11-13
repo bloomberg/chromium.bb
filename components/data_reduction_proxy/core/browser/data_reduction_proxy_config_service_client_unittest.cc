@@ -61,21 +61,16 @@ namespace {
 
 class RequestOptionsPopulator {
  public:
-  RequestOptionsPopulator(const base::Time& expiration_time,
-                          const base::TimeDelta& increment)
-      : expiration_time_(expiration_time),
-        increment_(increment) {
-  }
+  RequestOptionsPopulator(const base::TimeDelta& increment)
+      : increment_(increment) {}
 
   void PopulateResponse(ClientConfig* config) {
     config->set_session_key("abcdef|1234-5678-12345678");
-    config_parser::TimetoTimestamp(expiration_time_,
-                                   config->mutable_refresh_time());
-    expiration_time_ += increment_;
+    config_parser::TimeDeltatoDuration(increment_,
+                                       config->mutable_refresh_duration());
   }
 
  private:
-  base::Time expiration_time_;
   base::TimeDelta increment_;
 };
 
@@ -87,8 +82,8 @@ void StoreSerializedConfig(const std::string& value) {
 
 // Creates a new ClientConfig from the given parameters.
 ClientConfig CreateConfig(const std::string& session_key,
-                          int64 expire_seconds,
-                          int64 expire_nanoseconds,
+                          int64 expire_duration_seconds,
+                          int64 expire_duration_nanoseconds,
                           ProxyServer_ProxyScheme primary_scheme,
                           const std::string& primary_host,
                           int primary_port,
@@ -98,8 +93,8 @@ ClientConfig CreateConfig(const std::string& session_key,
   ClientConfig config;
 
   config.set_session_key(session_key);
-  config.mutable_refresh_time()->set_seconds(expire_seconds);
-  config.mutable_refresh_time()->set_nanos(expire_nanoseconds);
+  config.mutable_refresh_duration()->set_seconds(expire_duration_seconds);
+  config.mutable_refresh_duration()->set_nanos(expire_duration_nanoseconds);
   ProxyServer* primary_proxy =
       config.mutable_proxy_config()->add_http_proxy_servers();
   primary_proxy->set_scheme(primary_scheme);
@@ -306,9 +301,7 @@ TEST_F(DataReductionProxyConfigServiceClientTest, TestConstructStaticResponse) {
 TEST_F(DataReductionProxyConfigServiceClientTest, SuccessfulLoop) {
   // Use a local/static config.
   config_client()->SetConfigServiceURL(GURL());
-  RequestOptionsPopulator populator(
-      base::Time::UnixEpoch() + base::TimeDelta::FromDays(1),
-      base::TimeDelta::FromDays(1));
+  RequestOptionsPopulator populator(base::TimeDelta::FromDays(1));
   SetDataReductionProxyEnabled(true);
   EXPECT_TRUE(configurator()->proxies_for_http().empty());
   EXPECT_TRUE(configurator()->proxies_for_https().empty());
@@ -325,8 +318,9 @@ TEST_F(DataReductionProxyConfigServiceClientTest, SuccessfulLoop) {
   config_client()->SetNow(base::Time::UnixEpoch() + base::TimeDelta::FromDays(1)
                           + base::TimeDelta::FromSeconds(5));
   config_client()->RetrieveConfig();
-  EXPECT_EQ(base::TimeDelta::FromDays(1) - base::TimeDelta::FromSeconds(5),
-            config_client()->GetDelay());
+  // Now that we use a duration, fetching 5s after expiration should still
+  // give a 1d delay.
+  EXPECT_EQ(base::TimeDelta::FromDays(1), config_client()->GetDelay());
   EXPECT_THAT(configurator()->proxies_for_http(),
               testing::ContainerEq(enabled_proxies_for_http()));
   EXPECT_TRUE(configurator()->proxies_for_https().empty());
@@ -382,9 +376,7 @@ TEST_F(DataReductionProxyConfigServiceClientTest, DevRolloutAndQuic) {
     mock_socket_factory()->AddSocketDataProvider(&socket_data_provider);
     config_client()->SetConfigServiceURL(GURL("http://configservice.com"));
 
-    RequestOptionsPopulator populator(
-        base::Time::UnixEpoch() + base::TimeDelta::FromDays(1),
-        base::TimeDelta::FromDays(1));
+    RequestOptionsPopulator populator(base::TimeDelta::FromDays(1));
     SetDataReductionProxyEnabled(true);
 
     config_client()->RetrieveConfig();
@@ -414,9 +406,7 @@ TEST_F(DataReductionProxyConfigServiceClientTest, DevRolloutAndQuic) {
 TEST_F(DataReductionProxyConfigServiceClientTest, SuccessfulLoopShortDuration) {
   // Use a local/static config.
   config_client()->SetConfigServiceURL(GURL());
-  RequestOptionsPopulator populator(
-      base::Time::UnixEpoch() + base::TimeDelta::FromSeconds(1),
-      base::TimeDelta::FromSeconds(1));
+  RequestOptionsPopulator populator(base::TimeDelta::FromSeconds(1));
   SetDataReductionProxyEnabled(true);
   EXPECT_TRUE(configurator()->proxies_for_http().empty());
   EXPECT_TRUE(configurator()->proxies_for_https().empty());
@@ -454,9 +444,7 @@ TEST_F(DataReductionProxyConfigServiceClientTest, EnsureBackoff) {
 TEST_F(DataReductionProxyConfigServiceClientTest, ConfigDisabled) {
   // Use a local/static config.
   config_client()->SetConfigServiceURL(GURL());
-  RequestOptionsPopulator populator(
-      base::Time::UnixEpoch() + base::TimeDelta::FromDays(1),
-      base::TimeDelta::FromDays(1));
+  RequestOptionsPopulator populator(base::TimeDelta::FromDays(1));
   SetDataReductionProxyEnabled(false);
   EXPECT_TRUE(configurator()->proxies_for_http().empty());
   EXPECT_TRUE(configurator()->proxies_for_https().empty());

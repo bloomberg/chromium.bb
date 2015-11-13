@@ -160,15 +160,13 @@ DataReductionProxyConfigServiceClient::
 base::TimeDelta
 DataReductionProxyConfigServiceClient::CalculateNextConfigRefreshTime(
     bool fetch_succeeded,
-    const base::Time& config_expiration,
-    const base::Time& now,
+    const base::TimeDelta& config_expiration_delta,
     const base::TimeDelta& backoff_delay) const {
   DCHECK(backoff_delay >= base::TimeDelta());
   if (fetch_succeeded) {
-    base::TimeDelta success_delay = config_expiration - now;
-    return std::max(
-        backoff_delay,
-        std::max(success_delay, minimum_refresh_interval_on_success()));
+    return std::max(backoff_delay,
+                    std::max(config_expiration_delta,
+                             minimum_refresh_interval_on_success()));
   }
 
   return backoff_delay;
@@ -394,9 +392,10 @@ void DataReductionProxyConfigServiceClient::HandleResponse(
     succeeded = ParseAndApplyProxyConfig(config);
   }
 
-  base::Time expiration_time;
+  base::TimeDelta expiration_time_delta;
   if (succeeded) {
-    expiration_time = config_parser::TimestampToTime(config.refresh_time());
+    expiration_time_delta =
+        config_parser::DurationToTimeDelta(config.refresh_duration());
   }
 
   if (!use_local_config_ && succeeded) {
@@ -414,7 +413,7 @@ void DataReductionProxyConfigServiceClient::HandleResponse(
 
   GetBackoffEntry()->InformOfRequest(succeeded);
   base::TimeDelta next_config_refresh_time =
-      CalculateNextConfigRefreshTime(succeeded, expiration_time, Now(),
+      CalculateNextConfigRefreshTime(succeeded, expiration_time_delta,
                                      GetBackoffEntry()->GetTimeUntilRelease());
   SetConfigRefreshTimer(next_config_refresh_time);
   event_creator_->EndConfigRequest(

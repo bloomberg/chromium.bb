@@ -10,6 +10,7 @@
 
 namespace base {
 class Time;
+class TimeDelta;
 }
 
 namespace data_reduction_proxy {
@@ -24,10 +25,20 @@ net::ProxyServer::Scheme SchemeFromProxyScheme(
 ProxyServer_ProxyScheme ProxySchemeFromScheme(net::ProxyServer::Scheme scheme);
 
 // Returns the |Timestamp| representation of |time|.
+// As an optimization, this currently does not population timestamp.nanos;
+// the resolution is seconds.
 void TimetoTimestamp(const base::Time& time, Timestamp* timestamp);
 
 // Returns the |base::Time| representation of |timestamp|.
 base::Time TimestampToTime(const Timestamp& timestamp);
+
+// Returns the |Duration| representation of |time_delta|.
+// As an optimization, this currently does not population duration.nanos;
+// the resolution is seconds.
+void TimeDeltatoDuration(const base::TimeDelta& time_delta, Duration* duration);
+
+// Returns the |base::TimeDelta| representation of |duration|.
+base::TimeDelta DurationToTimeDelta(const Duration& duration);
 
 }  // namespace config_parser
 

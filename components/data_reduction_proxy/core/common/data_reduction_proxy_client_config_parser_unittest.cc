@@ -66,6 +66,33 @@ TEST_F(DataReductionProxyClientConfigParserTest, TimetoTimestamp) {
   }
 }
 
+TEST_F(DataReductionProxyClientConfigParserTest, TimeDeltaToFromDuration) {
+  const struct {
+    std::string test_name;
+    base::TimeDelta time_delta;
+    int64 seconds;
+    int32 nanos;
+  } tests[] = {
+      {
+          "Second", base::TimeDelta::FromSeconds(1), 1, 0,
+      },
+      {
+          "-1 Second", base::TimeDelta::FromSeconds(-1), -1, 0,
+      },
+  };
+
+  for (const auto& test : tests) {
+    Duration duration;
+    config_parser::TimeDeltatoDuration(test.time_delta, &duration);
+    EXPECT_EQ(test.seconds, duration.seconds()) << test.test_name;
+    EXPECT_EQ(test.nanos, duration.nanos()) << test.test_name;
+    duration.set_seconds(test.seconds);
+    duration.set_nanos(test.nanos);
+    EXPECT_EQ(test.time_delta, config_parser::DurationToTimeDelta(duration))
+        << test.test_name;
+  }
+}
+
 TEST_F(DataReductionProxyClientConfigParserTest, TimestampToTime) {
   const struct {
     std::string test_name;
