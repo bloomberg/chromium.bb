@@ -394,6 +394,10 @@ WebUIIOS* WebStateImpl::CreateWebUIIOS(const GURL& url) {
   return NULL;
 }
 
+void WebStateImpl::SetContentsMimeType(const std::string& mime_type) {
+  mime_type_ = mime_type;
+}
+
 void WebStateImpl::ExecuteJavaScriptAsync(const base::string16& javascript) {
   DCHECK(Configured());
   [web_controller_ evaluateJavaScript:base::SysUTF16ToNSString(javascript)
