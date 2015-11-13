@@ -9,7 +9,7 @@
 }
 
 #gaia-signin.full-width {
-  padding: 47px 0 0;
+  padding: 44px 0 0;
   width: 562px;
 }
 
@@ -55,19 +55,20 @@
 }
 
 #saml-notice-container {
-  -webkit-margin-start: 19px;
+  align-items: center;
+  box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.17);
+  display: flex;
+  height: 44px;
+  justify-content: center;
   left: 0;
   position: absolute;
   right: 0;
-  text-align: center;
-  text-align: start;
-  top: 15px;
+  top: 0;
 }
 
 #saml-notice-message {
   color: rgb(106, 106, 106);
   font-size: 13px;
-  margin: 0 auto;
 }
 
 #gaia-whitelist-error {

@@ -10,7 +10,7 @@
 }
 
 #oauth-enrollment.saml {
-  padding-top: 47px;
+  padding-top: 44px;
   width: 562px;
 }
 
@@ -77,12 +77,15 @@
 }
 
 #oauth-saml-notice-container {
-  -webkit-margin-start: 19px;
+  align-items: center;
+  box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.17);
+  display: flex;
+  height: 44px;
+  justify-content: center;
   left: 0;
   position: absolute;
   right: 0;
-  text-align: start;
-  top: 15px;
+  top: 0;
 }
 
 #oauth-enrollment:not(.saml) #oauth-saml-notice-container {
@@ -92,7 +95,6 @@
 #oauth-saml-notice-message {
   color: rgb(106, 106, 106);
   font-size: 13px;
-  margin: 0 auto;
 }
 
 #oauth-enroll-attribute-prompt-message {
