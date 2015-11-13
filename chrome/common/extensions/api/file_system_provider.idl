@@ -485,7 +485,7 @@ namespace fileSystemProvider {
   [nocompile] callback MetadataCallback = void(EntryMetadata metadata);
 
   // Success callback for the $(ref:onGetActionsRequested) event.
-  [nocompile, nodoc] callback ActionsCallback = void(Action[] actions);
+  [nocompile] callback ActionsCallback = void(Action[] actions);
 
   // Success callback for the $(ref:onReadDirectoryRequested) event. If more
   // entries will be returned, then <code>hasMore</code> must be true, and it
@@ -596,7 +596,7 @@ namespace fileSystemProvider {
     // should be returned. The actions must be returned with the
     // <code>successCallback</code> call. In case of an error,
     // <code>errorCallback</code> must be called.
-    [maxListeners=1, nodoc] static void onGetActionsRequested(
+    [maxListeners=1] static void onGetActionsRequested(
         GetActionsRequestedOptions options,
         ActionsCallback successCallback,
         ProviderErrorCallback errorCallback);
@@ -735,7 +735,7 @@ namespace fileSystemProvider {
     // Raised when executing an action for a set of files or directories is\
     // requested. After the action is completed, <code>successCallback</code>
     // must be called. On error, <code>errorCallback</code> must be called.
-    [maxListeners=1, nodoc] static void onExecuteActionRequested(
+    [maxListeners=1] static void onExecuteActionRequested(
       ExecuteActionRequestedOptions options,
       ProviderSuccessCallback successCallback,
       ProviderErrorCallback errorCallback);
