@@ -57,7 +57,7 @@ class BuildUnittest(unittest.TestCase):
       self.failUnlessEqual(1, len(deps))
       self.failUnlessEqual(deps[0],
           util.PathFromRoot('grit/testdata/substitute.xmb'))
-      
+
   def testGenerateDepFileWithResourceIds(self):
     output_dir = tempfile.mkdtemp()
     builder = build.RcBuilder()
@@ -67,11 +67,11 @@ class BuildUnittest(unittest.TestCase):
         self.verbose = False
         self.extra_verbose = False
     expected_dep_file = os.path.join(output_dir, 'substitute_no_ids.grd.d')
-    builder.Run(DummyOpts(), 
-		['-f', util.PathFromRoot('grit/testdata/resource_ids'),
-		'-o', output_dir,
-		'--depdir', output_dir,
-		'--depfile', expected_dep_file])
+    builder.Run(DummyOpts(),
+        ['-f', util.PathFromRoot('grit/testdata/resource_ids'),
+        '-o', output_dir,
+        '--depdir', output_dir,
+        '--depfile', expected_dep_file])
 
     self.failUnless(os.path.isfile(expected_dep_file))
     with open(expected_dep_file) as f:

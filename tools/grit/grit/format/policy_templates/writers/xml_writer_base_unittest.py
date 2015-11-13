@@ -28,7 +28,7 @@ class XmlWriterBaseTest(unittest.TestCase):
     # function which produces new lines around string literals. This has been
     # fixed in Precise which has Python 2.7.3 but we have to keep compatibility
     # with both for now.
-    text_re = re.compile('>\n\s+([^<>\s].*?)\n\s*</', re.DOTALL)    
+    text_re = re.compile('>\n\s+([^<>\s].*?)\n\s*</', re.DOTALL)
     return text_re.sub('>\g<1></', raw_pretty_xml)
 
   def AssertXMLEquals(self, output, expected_output):

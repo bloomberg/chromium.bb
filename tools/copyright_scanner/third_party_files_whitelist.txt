@@ -208,6 +208,3 @@ components/test_runner/helper/layout_test_helper_mac.mm
 # Bundles of existing code.
 chrome/browser/resources/md_downloads/crisper.js
 chrome/browser/resources/md_downloads/vulcanized.html
-# Contains "copyright" in a test string.
-# TODO(thakis): Change the test string and remove this entry again.
-tools/grit/grit/tclib_unittest.py

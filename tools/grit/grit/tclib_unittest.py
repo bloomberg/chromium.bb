@@ -70,7 +70,6 @@ class TclibUnittest(unittest.TestCase):
     # This has Windows line endings.  That is on purpose.
     id = grit.extern.tclib.GenerateMessageId(
       'Google Desktop for Enterprise\r\n'
-      'Copyright (C) 2006 Google Inc.\r\n'
       'All Rights Reserved\r\n'
       '\r\n'
       '---------\r\n'
@@ -155,7 +154,7 @@ class TclibUnittest(unittest.TestCase):
       'you can get to the preferences, add the following line to your \r\n'
       'notes.ini file:\r\n'
       'GDSNoIndexHistory=1\r\n')
-    self.failUnless(id == '8961534701379422820')
+    self.failUnless(id == '3138901326664699350')
 
   def testPlaceholderNameChecking(self):
     try:

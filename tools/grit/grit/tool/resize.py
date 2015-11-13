@@ -22,38 +22,38 @@ from grit.tool import interface
 PROJECT_TEMPLATE = '''\
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
-	ProjectType="Visual C++"
-	Version="7.10"
-	Name="[[DIALOG_NAME]]"
-	ProjectGUID="[[PROJECT_GUID]]"
-	Keyword="Win32Proj">
-	<Platforms>
-		<Platform
-			Name="Win32"/>
-	</Platforms>
-	<Configurations>
-		<Configuration
-			Name="Debug|Win32"
-			OutputDirectory="Debug"
-			IntermediateDirectory="Debug"
-			ConfigurationType="1"
-			CharacterSet="2">
-		</Configuration>
-	</Configurations>
-	<References>
-	</References>
-	<Files>
-		<Filter
-			Name="Resource Files"
-			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx"
-			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}">
-			<File
-				RelativePath=".\[[DIALOG_NAME]].rc">
-			</File>
-		</Filter>
-	</Files>
-	<Globals>
-	</Globals>
+  ProjectType="Visual C++"
+  Version="7.10"
+  Name="[[DIALOG_NAME]]"
+  ProjectGUID="[[PROJECT_GUID]]"
+  Keyword="Win32Proj">
+  <Platforms>
+    <Platform
+      Name="Win32"/>
+  </Platforms>
+  <Configurations>
+    <Configuration
+      Name="Debug|Win32"
+      OutputDirectory="Debug"
+      IntermediateDirectory="Debug"
+      ConfigurationType="1"
+      CharacterSet="2">
+    </Configuration>
+  </Configurations>
+  <References>
+  </References>
+  <Files>
+    <Filter
+      Name="Resource Files"
+      Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx"
+      UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}">
+      <File
+        RelativePath=".\[[DIALOG_NAME]].rc">
+      </File>
+    </Filter>
+  </Files>
+  <Globals>
+  </Globals>
 </VisualStudioProject>'''
 
 

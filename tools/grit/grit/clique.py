@@ -275,8 +275,8 @@ class CustomType(object):
 class OneOffCustomType(CustomType):
   '''A very simple custom type that performs the validation expressed by
   the input expression on all languages including the source language.
-  The expression can access the variables 'lang', 'msg' and 'text()' where 'lang'
-  is the language of 'msg', 'msg' is the message or translation being
+  The expression can access the variables 'lang', 'msg' and 'text()' where
+  'lang' is the language of 'msg', 'msg' is the message or translation being
   validated and 'text()' returns the real contents of 'msg' (for shorthand).
   '''
   def __init__(self, expression):
@@ -308,7 +308,8 @@ class MessageClique(object):
   # A pattern to match messages that are empty or whitespace only.
   WHITESPACE_MESSAGE = lazy_re.compile(u'^\s*$')
 
-  def __init__(self, uber_clique, message, translateable=True, custom_type=None):
+  def __init__(self, uber_clique, message, translateable=True,
+               custom_type=None):
     '''Create a new clique initialized with just a message.
 
     Note that messages with a body comprised only of whitespace will implicitly
@@ -365,7 +366,8 @@ class MessageClique(object):
     if custom_type and not custom_type.Validate(self.GetMessage()):
       raise exception.InvalidMessage(self.GetMessage().GetRealContent())
 
-  def MessageForLanguage(self, lang, pseudo_if_no_match=True, fallback_to_english=False):
+  def MessageForLanguage(self, lang, pseudo_if_no_match=True,
+                         fallback_to_english=False):
     '''Returns the message/translation for the specified language, providing
     a pseudotranslation if there is no available translation and a pseudo-
     translation is requested.
@@ -475,7 +477,8 @@ class MessageClique(object):
                                    text=translation.GetPresentableContent(),
                                    placeholders=original.GetPlaceholders())
 
-    if self.custom_type and not self.custom_type.ValidateAndModify(language, transl_msg):
+    if (self.custom_type and
+        not self.custom_type.ValidateAndModify(language, transl_msg)):
       print "WARNING: %s translation failed validation: %s" % (
         language, transl_msg.GetId())
 

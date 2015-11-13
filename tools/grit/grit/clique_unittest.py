@@ -59,7 +59,8 @@ class MessageCliqueUnittest(unittest.TestCase):
 
     rex = re.compile('fr|de|bingo')
     self.failUnless(len(c.AllMessagesThatMatch(rex, False)) == 2)
-    self.failUnless(c.AllMessagesThatMatch(rex, True)[pseudo.PSEUDO_LANG] != None)
+    self.failUnless(
+        c.AllMessagesThatMatch(rex, True)[pseudo.PSEUDO_LANG] is not None)
 
   def testBestClique(self):
     factory = clique.UberClique()
