@@ -7,7 +7,7 @@
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
-#include "base/synchronization/waitable_event.h"
+#include "base/run_loop.h"
 #include "base/task_runner.h"
 #include "mojo/edk/embedder/process_delegate.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
@@ -32,8 +32,7 @@ class ScopedIPCSupportHelper {
  private:
   scoped_refptr<base::TaskRunner> io_thread_task_runner_;
 
-  // Set after shut down.
-  base::WaitableEvent event_;
+  base::RunLoop run_loop_;
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(ScopedIPCSupportHelper);
 };

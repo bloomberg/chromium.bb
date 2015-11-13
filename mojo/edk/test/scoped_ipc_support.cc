@@ -13,8 +13,7 @@ namespace test {
 
 namespace internal {
 
-ScopedIPCSupportHelper::ScopedIPCSupportHelper()
-    : event_(true, false) {  // Manual reset.
+ScopedIPCSupportHelper::ScopedIPCSupportHelper() {
 }
 
 ScopedIPCSupportHelper::~ScopedIPCSupportHelper() {
@@ -23,7 +22,7 @@ ScopedIPCSupportHelper::~ScopedIPCSupportHelper() {
     ShutdownIPCSupportOnIOThread();
   } else {
     ShutdownIPCSupportAndWaitForNoChannels();
-    event_.Wait();
+    run_loop_.Run();
   }
 }
 
@@ -31,12 +30,11 @@ void ScopedIPCSupportHelper::Init(
     ProcessDelegate* process_delegate,
     scoped_refptr<base::TaskRunner> io_thread_task_runner) {
   io_thread_task_runner_ = io_thread_task_runner;
-  // Note: Run delegate methods on the I/O thread.
   InitIPCSupport(process_delegate, io_thread_task_runner_);
 }
 
 void ScopedIPCSupportHelper::OnShutdownCompleteImpl() {
-  event_.Signal();
+  run_loop_.Quit();
 }
 
 }  // namespace internal
