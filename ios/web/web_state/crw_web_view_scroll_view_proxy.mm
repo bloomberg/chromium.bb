@@ -174,6 +174,10 @@
 - (void)scrollViewWillBeginDragging:(UIScrollView*)scrollView {
   DCHECK_EQ(_scrollView, scrollView);
   [_observers webViewScrollViewWillBeginDragging:self];
+
+  // TODO(crbug.com/555723) Remove this once the fix to
+  // https://bugs.webkit.org/show_bug.cgi?id=148086 makes it's way in to iOS.
+  scrollView.decelerationRate = UIScrollViewDecelerationRateNormal;
 }
 
 - (void)scrollViewWillEndDragging:(UIScrollView*)scrollView
