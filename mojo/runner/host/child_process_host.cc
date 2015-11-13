@@ -23,6 +23,10 @@
 #include "sandbox/linux/services/namespace_sandbox.h"
 #endif
 
+#if defined(OS_WIN)
+#include "base/win/windows_version.h"
+#endif
+
 namespace mojo {
 namespace runner {
 
@@ -135,7 +139,14 @@ void ChildProcessHost::DoLaunch() {
 
   base::LaunchOptions options;
 #if defined(OS_WIN)
-  options.handles_to_inherit = &handle_passing_info;
+  if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
+    options.handles_to_inherit = &handle_passing_info;
+  } else {
+#if defined(OFFICIAL_BUILD)
+    CHECK(false) << "Launching mojo process with inherit_handles is insecure!";
+#endif
+    options.inherit_handles = true;
+  }
   options.stdin_handle = INVALID_HANDLE_VALUE;
   options.stdout_handle = GetStdHandle(STD_OUTPUT_HANDLE);
   options.stderr_handle = GetStdHandle(STD_ERROR_HANDLE);

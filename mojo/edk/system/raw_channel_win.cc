@@ -14,6 +14,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/process/process.h"
 #include "base/synchronization/lock.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/windows_version.h"
 #include "mojo/edk/embedder/embedder_internal.h"
@@ -81,6 +82,11 @@ class VistaOrHigherFunctions {
 
 base::LazyInstance<VistaOrHigherFunctions> g_vista_or_higher_functions =
     LAZY_INSTANCE_INITIALIZER;
+
+void CancelOnIO(HANDLE handle, base::WaitableEvent* event) {
+  CancelIo(handle);
+  event->Signal();
+}
 
 class RawChannelWin final : public RawChannel {
  public:
@@ -230,10 +236,22 @@ class RawChannelWin final : public RawChannel {
         std::vector<char>* serialized_write_buffer,
         bool* write_error) {
       // Cancel pending IO calls.
+      bool is_xp = false;
       if (g_vista_or_higher_functions.Get().is_vista_or_higher()) {
         g_vista_or_higher_functions.Get().CancelIoEx(handle(), nullptr);
       } else {
-        CHECK(false) << "TODO(jam): handle XP";
+        is_xp = true;
+        if (pending_read_) {
+          if (internal::g_io_thread_task_runner->RunsTasksOnCurrentThread()) {
+            CancelIo(handle());
+          } else {
+            base::WaitableEvent event(false, false);
+            internal::g_io_thread_task_runner->PostTask(
+                FROM_HERE,
+                base::Bind(&CancelOnIO, handle(), &event));
+            event.Wait();
+          }
+        }
       }
 
       size_t additional_bytes_read = 0;
@@ -270,7 +288,11 @@ class RawChannelWin final : public RawChannel {
       size_t additional_platform_handles_written = 0;
       *write_error = owner_->pending_write_error();
       if (pending_write_) {
-        bool wait = false;
+        // If we had a pending write, then on XP we just wait till it completes.
+        // We use limited size buffers, so Windows should always find paged pool
+        // memory to finish the writes.
+        // TODO(jam): use background thread to verify that we don't hang here?
+        bool wait = is_xp;
         UnregisterWaitEx(write_wait_object_, INVALID_HANDLE_VALUE);
         write_wait_object_ = NULL;
         if (!write_event_signalled_)
@@ -777,8 +799,9 @@ bool RawChannel::IsOtherEndOf(RawChannel* other) {
     std::wstring filepath2(fileinfo2->FileName, fileinfo2->FileNameLength / 2);
     return filepath1 == filepath2;
   } else {
-    // TODO: XP: see http://stackoverflow.com/questions/65170/how-to-get-name-associated-with-open-handle/5286888#5286888
-    CHECK(false) << "TODO(jam): handle XP";
+    // This is to catch developer errors. Let them be caught on Vista and above,
+    // i.e. no point in implementing this on XP since support for it will be
+    // removed in early 2016.
     return false;
   }
 }

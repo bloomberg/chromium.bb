@@ -11,6 +11,10 @@
 #include "build/build_config.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
 
+#if defined(OS_WIN)
+#include "base/win/windows_version.h"
+#endif
+
 namespace mojo {
 namespace edk {
 namespace test {
@@ -59,7 +63,10 @@ void MultiprocessTestHelper::StartChildWithExtraSwitch(
   options.fds_to_remap = &handle_passing_info;
 #elif defined(OS_WIN)
   options.start_hidden = true;
-  options.handles_to_inherit = &handle_passing_info;
+  if (base::win::GetVersion() >= base::win::VERSION_VISTA)
+    options.handles_to_inherit = &handle_passing_info;
+  else
+    options.inherit_handles = true;
 #else
 #error "Not supported yet."
 #endif

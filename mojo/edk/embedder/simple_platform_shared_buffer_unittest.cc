@@ -8,8 +8,13 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/sys_info.h"
 #include "mojo/public/cpp/system/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+#if defined(OS_WIN)
+#include "base/win/windows_version.h"
+#endif
 
 namespace mojo {
 namespace edk {
@@ -128,13 +133,15 @@ TEST(SimplePlatformSharedBufferTest, InvalidMappings) {
 TEST(SimplePlatformSharedBufferTest, TooBig) {
   // If |size_t| is 32-bit, it's quite possible/likely that |Create()| succeeds
   // (since it only involves creating a 4 GB file).
-  const size_t kMaxSizeT = std::numeric_limits<size_t>::max();
+  size_t max_size = std::numeric_limits<size_t>::max();
+  if (max_size > static_cast<size_t>(base::SysInfo::AmountOfVirtualMemory()))
+    max_size = static_cast<size_t>(base::SysInfo::AmountOfVirtualMemory());
   scoped_refptr<SimplePlatformSharedBuffer> buffer(
-      SimplePlatformSharedBuffer::Create(kMaxSizeT));
+      SimplePlatformSharedBuffer::Create(max_size));
   // But, assuming |sizeof(size_t) == sizeof(void*)|, mapping all of it should
   // always fail.
   if (buffer)
-    EXPECT_FALSE(buffer->Map(0, kMaxSizeT));
+    EXPECT_FALSE(buffer->Map(0, max_size));
 }
 
 // Tests that separate mappings get distinct addresses.

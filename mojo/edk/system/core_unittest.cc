@@ -15,6 +15,10 @@
 #include "mojo/edk/system/test_utils.h"
 #include "mojo/public/cpp/system/macros.h"
 
+#if defined(OS_WIN)
+#include "base/win/windows_version.h"
+#endif
+
 namespace mojo {
 namespace edk {
 namespace {
@@ -714,10 +718,16 @@ TEST_F(CoreTest, MessagePipeBasicLocalHandlePassing1) {
             core()->WriteMessage(h_passing[0], kHello, kHelloSize,
                                  &h_passing[0], 1,
                                  MOJO_WRITE_MESSAGE_FLAG_NONE));
+#if defined(OS_WIN)
+  if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
+#endif
   ASSERT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
             core()->WriteMessage(h_passing[0], kHello, kHelloSize,
                                  &h_passing[1], 1,
                                  MOJO_WRITE_MESSAGE_FLAG_NONE));
+#if defined(OS_WIN)
+  }
+#endif
 
   MojoHandle h_passed[2];
   ASSERT_EQ(MOJO_RESULT_OK,

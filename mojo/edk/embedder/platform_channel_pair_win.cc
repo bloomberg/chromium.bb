@@ -89,9 +89,8 @@ void PlatformChannelPair::PrepareToPassClientHandleToChildProcess(
   DCHECK(handle_passing_info);
   DCHECK(client_handle_.is_valid());
 
-  CHECK_GE(base::win::GetVersion(), base::win::VERSION_VISTA);
-
-  handle_passing_info->push_back(client_handle_.get().handle);
+  if (base::win::GetVersion() >= base::win::VERSION_VISTA)
+    handle_passing_info->push_back(client_handle_.get().handle);
 
   // Log a warning if the command line already has the switch, but "clobber" it
   // anyway, since it's reasonably likely that all the switches were just copied
