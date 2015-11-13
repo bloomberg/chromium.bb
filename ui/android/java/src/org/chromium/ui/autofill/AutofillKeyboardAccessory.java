@@ -72,10 +72,8 @@ public class AutofillKeyboardAccessory extends LinearLayout
             AutofillSuggestion suggestion = suggestions[i];
             assert !TextUtils.isEmpty(suggestion.getLabel());
 
-            // Negative suggestion ID indiciates a tool like "settings" or "scan credit card."
-            // Non-negative suggestion ID indicates suggestions that can be filled into the form.
             View touchTarget;
-            if (suggestion.getSuggestionId() < 0 && suggestion.getIconId() != 0) {
+            if (!suggestion.isFillable() && suggestion.getIconId() != 0) {
                 touchTarget = LayoutInflater.from(getContext()).inflate(
                         R.layout.autofill_keyboard_accessory_icon, this, false);
 
@@ -90,7 +88,11 @@ public class AutofillKeyboardAccessory extends LinearLayout
 
                 TextView label = (TextView) touchTarget.findViewById(
                         R.id.autofill_keyboard_accessory_item_label);
-                label.setMaxWidth(mMaximumLabelWidthPx);
+
+                if (suggestion.isFillable()) {
+                    label.setMaxWidth(mMaximumLabelWidthPx);
+                }
+
                 label.setText(suggestion.getLabel());
                 if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
                     label.setTypeface(Typeface.DEFAULT_BOLD);
@@ -102,6 +104,7 @@ public class AutofillKeyboardAccessory extends LinearLayout
                 }
 
                 if (!TextUtils.isEmpty(suggestion.getSublabel())) {
+                    assert suggestion.isFillable();
                     TextView sublabel = (TextView) touchTarget.findViewById(
                             R.id.autofill_keyboard_accessory_item_sublabel);
                     sublabel.setText(suggestion.getSublabel());

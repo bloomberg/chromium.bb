@@ -64,4 +64,10 @@ public class AutofillSuggestion implements DropdownItem {
     public boolean isDeletable() {
         return mDeletable;
     }
+
+    public boolean isFillable() {
+        // Negative suggestion ID indiciates a tool like "settings" or "scan credit card."
+        // Non-negative suggestion ID indicates suggestions that can be filled into the form.
+        return mSuggestionId >= 0;
+    }
 }
