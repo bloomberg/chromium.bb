@@ -323,8 +323,11 @@ void AudioHandler::processIfNecessary(size_t framesToProcess)
         if (silentInputs && propagatesSilence()) {
             silenceOutputs();
         } else {
-            process(framesToProcess);
+            // Unsilence the outputs first because the processing of the node may cause the outputs
+            // to go silent and we want to propagate that hint to the downstream nodes!  (For
+            // example, a Gain node with a gain of 0 will want to silence its output.)
             unsilenceOutputs();
+            process(framesToProcess);
         }
     }
 }
