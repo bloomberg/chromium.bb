@@ -53,12 +53,14 @@ MessageCenterNotificationManager::MessageCenterNotificationManager(
   message_center_->SetNotifierSettingsProvider(settings_provider_.get());
 
 #if defined(OS_CHROMEOS)
-  blockers_.push_back(
-      new LoginStateNotificationBlockerChromeOS(message_center));
+  blockers_.push_back(make_scoped_ptr(
+      new LoginStateNotificationBlockerChromeOS(message_center)));
 #else
-  blockers_.push_back(new ScreenLockNotificationBlocker(message_center));
+  blockers_.push_back(make_scoped_ptr(
+      new ScreenLockNotificationBlocker(message_center)));
 #endif
-  blockers_.push_back(new FullscreenNotificationBlocker(message_center));
+  blockers_.push_back(make_scoped_ptr(
+      new FullscreenNotificationBlocker(message_center)));
 
 #if defined(OS_WIN) || defined(OS_MACOSX) \
   || (defined(OS_LINUX) && !defined(OS_CHROMEOS))

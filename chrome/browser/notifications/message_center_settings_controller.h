@@ -10,7 +10,6 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/extensions/app_icon_loader.h"
@@ -127,7 +126,9 @@ class MessageCenterSettingsController
 
   // The list of all configurable notifier groups. This is each profile that is
   // loaded (and in the ProfileInfoCache - so no incognito profiles go here).
-  ScopedVector<message_center::ProfileNotifierGroup> notifier_groups_;
+  std::vector<scoped_ptr<message_center::ProfileNotifierGroup>>
+      notifier_groups_;
+
   size_t current_notifier_group_;
 
   content::NotificationRegistrar registrar_;

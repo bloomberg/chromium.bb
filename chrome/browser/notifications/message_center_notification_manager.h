@@ -7,10 +7,10 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -110,7 +110,7 @@ class MessageCenterNotificationManager
   scoped_ptr<message_center::NotifierSettingsProvider> settings_provider_;
 
   // To own the blockers.
-  ScopedVector<message_center::NotificationBlocker> blockers_;
+  std::vector<scoped_ptr<message_center::NotificationBlocker>> blockers_;
 
   NotificationSystemObserver system_observer_;
 
