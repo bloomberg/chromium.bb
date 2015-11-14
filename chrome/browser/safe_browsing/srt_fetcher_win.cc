@@ -298,8 +298,12 @@ void MaybeFetchSRT(Browser* browser, const std::string& reporter_version) {
     return;
   }
 
-  if (!incoming_seed.empty())
+  if (!incoming_seed.empty() && incoming_seed != old_seed) {
     prefs->SetString(prefs::kSwReporterPromptSeed, incoming_seed);
+    // Forget about pending prompts if prompt seed has changed.
+    if (local_state)
+      local_state->SetBoolean(prefs::kSwReporterPendingPrompt, false);
+  }
   prefs->SetString(prefs::kSwReporterPromptVersion, reporter_version);
 
   // Download the SRT.
