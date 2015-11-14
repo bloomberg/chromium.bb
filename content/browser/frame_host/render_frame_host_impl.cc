@@ -472,8 +472,8 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(FrameHostMsg_AddMessageToConsole, OnAddMessageToConsole)
     IPC_MESSAGE_HANDLER(FrameHostMsg_Detach, OnDetach)
     IPC_MESSAGE_HANDLER(FrameHostMsg_FrameFocused, OnFrameFocused)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_DidStartProvisionalLoadForFrame,
-                        OnDidStartProvisionalLoadForFrame)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_DidStartProvisionalLoad,
+                        OnDidStartProvisionalLoad)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidFailProvisionalLoadWithError,
                         OnDidFailProvisionalLoadWithError)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidFailLoadWithError,
@@ -816,7 +816,7 @@ void RenderFrameHostImpl::OnDocumentOnLoadCompleted(
   delegate_->DocumentOnLoadCompleted(this);
 }
 
-void RenderFrameHostImpl::OnDidStartProvisionalLoadForFrame(const GURL& url) {
+void RenderFrameHostImpl::OnDidStartProvisionalLoad(const GURL& url) {
   frame_tree_node_->navigator()->DidStartProvisionalLoad(
       this, url);
 }

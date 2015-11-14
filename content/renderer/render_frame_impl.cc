@@ -2738,8 +2738,8 @@ void RenderFrameImpl::didStartProvisionalLoad(blink::WebLocalFrame* frame,
                     DidStartProvisionalLoad(frame));
   FOR_EACH_OBSERVER(RenderFrameObserver, observers_, DidStartProvisionalLoad());
 
-  Send(new FrameHostMsg_DidStartProvisionalLoadForFrame(
-       routing_id_, ds->request().url()));
+  Send(new FrameHostMsg_DidStartProvisionalLoad(routing_id_,
+                                                ds->request().url()));
 }
 
 void RenderFrameImpl::didReceiveServerRedirectForProvisionalLoad(
@@ -4350,8 +4350,8 @@ void RenderFrameImpl::OnFailedNavigation(
 
   // Inform the browser of the start of the provisional load. This is needed so
   // that the load is properly tracked by the WebNavigation API.
-  Send(new FrameHostMsg_DidStartProvisionalLoadForFrame(
-      routing_id_, common_params.url));
+  Send(
+      new FrameHostMsg_DidStartProvisionalLoad(routing_id_, common_params.url));
 
   // Send the provisional load failure.
   blink::WebURLError error =

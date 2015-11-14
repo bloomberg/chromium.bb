@@ -515,7 +515,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void OnDocumentOnLoadCompleted(
       FrameMsg_UILoadMetricsReportType::Value report_type,
       base::TimeTicks ui_timestamp);
-  void OnDidStartProvisionalLoadForFrame(const GURL& url);
+  void OnDidStartProvisionalLoad(const GURL& url);
   void OnDidFailProvisionalLoadWithError(
       const FrameHostMsg_DidFailProvisionalLoadWithError_Params& params);
   void OnDidFailLoadWithError(
