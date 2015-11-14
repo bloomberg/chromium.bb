@@ -5,7 +5,6 @@
 #ifndef MEDIA_FILTERS_DECODER_STREAM_TRAITS_H_
 #define MEDIA_FILTERS_DECODER_STREAM_TRAITS_H_
 
-#include "media/base/cdm_context.h"
 #include "media/base/demuxer_stream.h"
 #include "media/base/pipeline_status.h"
 
@@ -33,7 +32,6 @@ struct DecoderStreamTraits<DemuxerStream::AUDIO> {
   static std::string ToString();
   static void InitializeDecoder(DecoderType* decoder,
                                 DemuxerStream* stream,
-                                const SetCdmReadyCB& set_cdm_ready_cb,
                                 const InitCB& init_cb,
                                 const OutputCB& output_cb);
   static bool NeedsBitstreamConversion(DecoderType* decoder) { return false; }
@@ -53,7 +51,6 @@ struct DecoderStreamTraits<DemuxerStream::VIDEO> {
   static std::string ToString();
   static void InitializeDecoder(DecoderType* decoder,
                                 DemuxerStream* stream,
-                                const SetCdmReadyCB& set_cdm_ready_cb,
                                 const InitCB& init_cb,
                                 const OutputCB& output_cb);
   static bool NeedsBitstreamConversion(DecoderType* decoder);

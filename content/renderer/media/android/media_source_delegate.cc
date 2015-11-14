@@ -520,9 +520,10 @@ void MediaSourceDelegate::InitAudioDecryptingDemuxerStream() {
   DCHECK(!set_cdm_ready_cb_.is_null());
 
   audio_decrypting_demuxer_stream_.reset(new media::DecryptingDemuxerStream(
-      media_task_runner_, media_log_, waiting_for_decryption_key_cb_));
+      media_task_runner_, media_log_, set_cdm_ready_cb_,
+      waiting_for_decryption_key_cb_));
   audio_decrypting_demuxer_stream_->Initialize(
-      audio_stream_, set_cdm_ready_cb_,
+      audio_stream_,
       base::Bind(&MediaSourceDelegate::OnAudioDecryptingDemuxerStreamInitDone,
                  media_weak_factory_.GetWeakPtr()));
 }
@@ -533,9 +534,10 @@ void MediaSourceDelegate::InitVideoDecryptingDemuxerStream() {
   DCHECK(!set_cdm_ready_cb_.is_null());
 
   video_decrypting_demuxer_stream_.reset(new media::DecryptingDemuxerStream(
-      media_task_runner_, media_log_, waiting_for_decryption_key_cb_));
+      media_task_runner_, media_log_, set_cdm_ready_cb_,
+      waiting_for_decryption_key_cb_));
   video_decrypting_demuxer_stream_->Initialize(
-      video_stream_, set_cdm_ready_cb_,
+      video_stream_,
       base::Bind(&MediaSourceDelegate::OnVideoDecryptingDemuxerStreamInitDone,
                  media_weak_factory_.GetWeakPtr()));
 }

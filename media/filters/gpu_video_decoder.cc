@@ -121,10 +121,8 @@ std::string GpuVideoDecoder::GetDisplayName() const {
   return kDecoderName;
 }
 
-// TODO(xhwang): Support CDM setting using |set_cdm_ready_cb|.
 void GpuVideoDecoder::Initialize(const VideoDecoderConfig& config,
                                  bool /* low_delay */,
-                                 const SetCdmReadyCB& /* set_cdm_ready_cb */,
                                  const InitCB& init_cb,
                                  const OutputCB& output_cb) {
   DVLOG(3) << "Initialize()";
