@@ -36,7 +36,15 @@ template("generate_nmf") {
                              "testonly",
                            ])
 
+    objdump = rebase_path("${nacl_toolprefix}objdump")
+    if (host_os == "win") {
+      objdump += ".exe"
+    }
+
     script = "//native_client_sdk/src/tools/create_nmf.py"
+    inputs = [
+      objdump,
+    ]
     sources = executables
     outputs = [
       nmf,
@@ -80,7 +88,7 @@ template("generate_nmf") {
     }
     args = [
              "--no-default-libpath",
-             "--objdump=" + rebase_path("${nacl_toolprefix}objdump"),
+             "--objdump=" + objdump,
              "--output=" + rebase_path(nmf, root_build_dir),
            ] + nmfflags + rebase_path(sources, root_build_dir)
     if (is_nacl_glibc && current_cpu == "arm") {

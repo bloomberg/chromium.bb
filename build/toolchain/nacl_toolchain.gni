@@ -42,8 +42,10 @@ template("nacl_toolchain") {
                              "is_nacl_glibc",
                              "ld",
                              "link_outputs",
-                             "symbol_level",
+                             "nm",
+                             "readelf",
                              "strip",
+                             "symbol_level",
                              "toolchain_cpu",
                            ])
 
