@@ -260,13 +260,6 @@ void MediaControls::reset()
     m_fullScreenButton->setIsWanted(shouldShowFullscreenButton(mediaElement()));
 
     refreshCastButtonVisibilityWithoutUpdate();
-
-    // Set the panel width here, and force a layout, before the controls update.
-    // This would be harmless for the !useNewUi case too, but it causes
-    // compositing/geometry/video-fixed-scrolling.html to fail with two extra
-    // 0 height nodes in the render tree.
-    if (useNewUi)
-        m_panelWidth = m_panel->clientWidth();
 }
 
 LayoutObject* MediaControls::layoutObjectForTextTrackLayout()
@@ -652,9 +645,6 @@ void MediaControls::computeWhichControlsFit()
     if (!RuntimeEnabledFeatures::newMediaPlaybackUiEnabled())
         return;
 
-    if (!m_panelWidth)
-        return;
-
     // Controls that we'll hide / show, in order of decreasing priority.
     MediaControlElement* elements[] = {
         m_playButton.get(),
@@ -667,6 +657,18 @@ void MediaControls::computeWhichControlsFit()
         m_muteButton.get(),
         m_durationDisplay.get(),
     };
+
+    if (!m_panelWidth) {
+        // No layout yet -- hide everything, then make them show up later.
+        // This prevents the wrong controls from being shown briefly
+        // immediately after the first layout and paint, but before we have
+        // a chance to revise them.
+        for (MediaControlElement* element : elements) {
+            if (element)
+                element->setDoesFit(false);
+        }
+        return;
+    }
 
     int usedWidth = 0;
     bool droppedCastButton = false;
