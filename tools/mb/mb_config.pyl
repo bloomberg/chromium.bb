@@ -350,6 +350,9 @@
     'chrome': {
       'precise64': 'gn_official',
     },
+    'chrome.continuous': {
+      'precise64 trunk': 'gn_official',
+    },
     'chromium': {
       'Win': 'noswarming_gyp_release_bot',
       'Mac': 'noswarming_gyp_release_bot_mac_strip',
@@ -456,6 +459,9 @@
     },
     'official.desktop': {
       'precise64': 'gn_official',
+    },
+    'official.desktop.continuous': {
+      'precise64 trunk': 'gn_official',
     },
     'tryserver.blink': {
       'android_blink_compile_dbg': 'android_gyp_debug_bot',
