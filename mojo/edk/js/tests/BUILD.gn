@@ -2,10 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("../../mojo_edk.gni")
 import("../../../../mojo/public/tools/bindings/mojom.gni")
 
-mojo_edk_source_set("js_to_cpp_tests") {
+source_set("js_to_cpp_tests") {
   testonly = true
 
   deps = [

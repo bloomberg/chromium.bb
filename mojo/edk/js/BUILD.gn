@@ -2,8 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("../mojo_edk.gni")
-
 # TODO(hansmuller): The organization of tests in this directory is weird:
 #   * Really, js_unittests tests public stuff, so that should live in public
 #     and be reworked as some sort of apptest.
@@ -19,7 +17,7 @@ group("tests") {
   ]
 }
 
-mojo_edk_source_set("js") {
+source_set("js") {
   sources = [
     "core.cc",
     "core.h",
@@ -50,7 +48,7 @@ mojo_edk_source_set("js") {
   ]
 }
 
-mojo_edk_source_set("js_unittests") {
+source_set("js_unittests") {
   testonly = true
   sources = [
     "handle_unittest.cc",

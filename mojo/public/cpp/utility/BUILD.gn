@@ -2,9 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("../../mojo_sdk.gni")
-
-mojo_sdk_source_set("utility") {
+source_set("utility") {
   sources = [
     "lib/mutex.cc",
     "lib/run_loop.cc",
@@ -18,9 +16,9 @@ mojo_sdk_source_set("utility") {
     "thread.h",
   ]
 
-  mojo_sdk_deps = [
-    "mojo/public/cpp/bindings:callback",
-    "mojo/public/cpp/system",
+  deps = [
+    "//mojo/public/cpp/bindings:callback",
+    "//mojo/public/cpp/system",
   ]
 
   if (is_win) {

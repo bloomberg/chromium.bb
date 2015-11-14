@@ -2,9 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("../mojo_edk.gni")
-
-mojo_edk_source_set("headers") {
+source_set("headers") {
   sources = [
     "channel_info_forward.h",
     "configuration.h",
@@ -13,10 +11,13 @@ mojo_edk_source_set("headers") {
   ]
 }
 
-mojo_edk_source_set("embedder") {
+source_set("embedder") {
   # This isn't really a standalone target; it must be linked into the
   # mojo_system_impl component.
-  mojo_edk_visibility = [ "mojo/edk/system" ]
+  visibility = [
+    "//components/nacl",
+    "//third_party/mojo/src/mojo/edk/system",
+  ]
 
   sources = [
     "embedder.cc",
@@ -35,27 +36,27 @@ mojo_edk_source_set("embedder") {
     "MOJO_SYSTEM_IMPLEMENTATION",
   ]
 
-  mojo_edk_configs = [ "mojo/edk/system:system_config" ]
+  configs += [ "//third_party/mojo/src/mojo/edk/system:system_config" ]
 
   public_deps = [
     ":delegates",
     ":headers",
     ":platform",
+    "//mojo/public/cpp/system",
   ]
-
-  mojo_sdk_public_deps = [ "mojo/public/cpp/system" ]
 
   deps = [
     "//base",
   ]
 }
 
-mojo_edk_source_set("platform") {
+source_set("platform") {
   # This isn't really a standalone target; it must be linked into the
   # mojo_system_impl component.
-  visibility = [ ":embedder" ]
-
-  mojo_edk_visibility = [ "mojo/edk/system" ]
+  visibility = [
+    ":embedder",
+    "//third_party/mojo/src/mojo/edk/system",
+  ]
 
   sources = [
     "platform_channel_pair.cc",
@@ -84,9 +85,11 @@ mojo_edk_source_set("platform") {
 
   defines = [ "MOJO_SYSTEM_IMPL_IMPLEMENTATION" ]
 
-  mojo_edk_configs = [ "mojo/edk/system:system_config" ]
+  configs += [ "//third_party/mojo/src/mojo/edk/system:system_config" ]
 
-  mojo_sdk_public_deps = [ "mojo/public/cpp/system" ]
+  public_deps = [
+    "//mojo/public/cpp/system",
+  ]
 
   deps = [
     "//base",
@@ -97,12 +100,13 @@ mojo_edk_source_set("platform") {
   }
 }
 
-mojo_edk_source_set("delegates") {
+source_set("delegates") {
   # This isn't really a standalone target; it must be linked into the
   # mojo_system_impl component.
-  visibility = [ ":embedder" ]
-
-  mojo_edk_visibility = [ "mojo/edk/system" ]
+  visibility = [
+    ":embedder",
+    "//third_party/mojo/src/mojo/edk/system",
+  ]
 
   sources = [
     "master_process_delegate.h",
@@ -114,14 +118,15 @@ mojo_edk_source_set("delegates") {
 
   defines = [ "MOJO_SYSTEM_IMPL_IMPLEMENTATION" ]
 
-  mojo_edk_configs = [ "mojo/edk/system:system_config" ]
+  configs += [ "//third_party/mojo/src/mojo/edk/system:system_config" ]
 
-  mojo_sdk_public_deps = [ "mojo/public/cpp/system" ]
+  public_deps = [
+    "//mojo/public/cpp/system",
+  ]
 }
 
-mojo_edk_source_set("embedder_unittests") {
+source_set("embedder_unittests") {
   testonly = true
-  mojo_edk_visibility = [ "mojo/edk/system:mojo_system_unittests" ]
 
   sources = [
     "embedder_unittest.cc",
@@ -133,11 +138,8 @@ mojo_edk_source_set("embedder_unittests") {
     "//base",
     "//base/test:test_support",
     "//testing/gtest",
-  ]
-
-  mojo_edk_deps = [
-    "mojo/edk/test:test_support",
-    "mojo/edk/system",
-    "mojo/edk/system:test_utils",
+    "//third_party/mojo/src/mojo/edk/test:test_support",
+    "//third_party/mojo/src/mojo/edk/system",
+    "//third_party/mojo/src/mojo/edk/system:test_utils",
   ]
 }

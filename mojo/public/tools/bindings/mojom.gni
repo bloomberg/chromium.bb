@@ -2,17 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("../../mojo_sdk.gni")
-
 # Generate C++/JavaScript/Java source files from mojom files. The output files
 # will go under the generated file directory tree with the same path as each
 # input file.
-#
-# If a mojom target is intended for use in a client repo where the location of
-# the Mojo SDK will be different than its location in the Mojo repo,
-# dependencies on the SDK should be specified relative to the parent directory
-# of the Mojo public SDK in |mojo_sdk_deps| rather than via absolute paths in
-# |deps|.
 #
 # Parameters:
 #
@@ -22,18 +14,8 @@ import("../../mojo_sdk.gni")
 #   deps (optional)
 #       Note: this can contain only other mojom targets.
 #
-#   mojo_sdk_deps (optional)
-#       List of deps specified relative to the parent directory of the Mojo
-#       public SDK. These deps will be added as ordinary deps rebased to the
-#       current directory.
-#
 #   public_deps (optional)
 #       Note: this can contain only other mojom targets.
-#
-#   mojo_sdk_public_deps (optional)
-#       List of public deps specified relative to the parent directory of the
-#       Mojo public SDK. These deps will be added as ordinary public deps
-#       rebased to the current directory.
 #
 #   import_dirs (optional)
 #       List of import directories that will get added when processing sources.
@@ -49,8 +31,7 @@ import("../../mojo_sdk.gni")
 template("mojom") {
   assert(
       defined(invoker.sources) || defined(invoker.deps) ||
-          defined(invoker.public_deps) || defined(invoker.mojo_sdk_deps) ||
-          defined(invoker.mojo_sdk_public_deps),
+          defined(invoker.public_deps),
       "\"sources\" or \"deps\" must be defined for the $target_name template.")
 
   cpp_sources_suffix = "cpp_sources"
@@ -132,24 +113,6 @@ template("mojom") {
         [ "{{source_gen_dir}}/{{source_name_part}}.mojom.srcjar" ]
   }
 
-  rebased_mojo_sdk_public_deps = []
-  if (defined(invoker.mojo_sdk_public_deps)) {
-    foreach(sdk_dep, invoker.mojo_sdk_public_deps) {
-      # Check that the SDK dep was not mistakenly given as an absolute path.
-      assert(get_path_info(sdk_dep, "abspath") != sdk_dep)
-      rebased_mojo_sdk_public_deps += [ rebase_path(sdk_dep, ".", "//") ]
-    }
-  }
-
-  rebased_mojo_sdk_deps = []
-  if (defined(invoker.mojo_sdk_deps)) {
-    foreach(sdk_dep, invoker.mojo_sdk_deps) {
-      # Check that the SDK dep was not mistakenly given as an absolute path.
-      assert(get_path_info(sdk_dep, "abspath") != sdk_dep)
-      rebased_mojo_sdk_deps += [ rebase_path(sdk_dep, ".", "//") ]
-    }
-  }
-
   if (defined(invoker.sources)) {
     generator_target_name = target_name + "__generator"
     action_foreach(generator_target_name) {
@@ -197,7 +160,6 @@ template("mojom") {
     if (defined(invoker.sources)) {
       public_deps += [ ":${cpp_sources_target_name}" ]
     }
-    public_deps += rebased_mojo_sdk_public_deps
     if (defined(invoker.public_deps)) {
       public_deps += invoker.public_deps
     }
@@ -206,20 +168,12 @@ template("mojom") {
     if (defined(invoker.sources)) {
       public_deps += [ ":$generator_target_name" ]
     }
-    deps += rebased_mojo_sdk_deps
     if (defined(invoker.deps)) {
       deps += invoker.deps
     }
-    if (defined(invoker.mojo_sdk_deps)) {
-      foreach(sdk_dep, invoker.mojo_sdk_deps) {
-        # Check that the SDK dep was not mistakenly given as an absolute path.
-        assert(get_path_info(sdk_dep, "abspath") != sdk_dep)
-        deps += [ rebase_path(sdk_dep, ".", "//") ]
-      }
-    }
   }
 
-  all_deps = rebased_mojo_sdk_deps + rebased_mojo_sdk_public_deps
+  all_deps = []
   if (defined(invoker.deps)) {
     all_deps += invoker.deps
   }

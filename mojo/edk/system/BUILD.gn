@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("../mojo_edk.gni")
 import("//testing/test.gni")
 import("../../../mojo/public/tools/bindings/mojom.gni")
 
@@ -122,7 +121,7 @@ group("tests") {
   ]
 }
 
-mojo_edk_source_set("test_utils") {
+source_set("test_utils") {
   testonly = true
 
   sources = [

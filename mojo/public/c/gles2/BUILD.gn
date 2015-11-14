@@ -2,13 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("../../mojo_sdk.gni")
-
 config("gles2_config") {
   defines = [ "GLES2_USE_MOJO" ]
 }
 
-mojo_sdk_source_set("gles2") {
+source_set("gles2") {
   sources = [
     "chromium_extension.h",
     "gles2.h",
@@ -20,8 +18,8 @@ mojo_sdk_source_set("gles2") {
 
   public_configs = [ ":gles2_config" ]
 
-  mojo_sdk_public_deps = [
-    "mojo/public/c/environment",
-    "mojo/public/c/system",
+  public_deps = [
+    "//mojo/public/c/environment",
+    "//mojo/public/c/system",
   ]
 }

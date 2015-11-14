@@ -3,9 +3,8 @@
 # found in the LICENSE file.
 
 import("../../../mojo_application.gni")
-import("../../../mojo_sdk.gni")
 
-mojo_sdk_source_set("tests") {
+source_set("tests") {
   testonly = true
 
   sources = [
@@ -39,22 +38,19 @@ mojo_sdk_source_set("tests") {
     ":mojo_public_bindings_test_utils",
     "//mojo/environment:chromium",
     "//mojo/message_pump",
+    "//mojo/public/cpp/bindings",
+    "//mojo/public/cpp/bindings:callback",
+    "//mojo/public/cpp/system",
+    "//mojo/public/cpp/test_support:test_utils",
+    "//mojo/public/cpp/utility",
+    "//mojo/public/interfaces/bindings/tests:test_associated_interfaces",
+    "//mojo/public/interfaces/bindings/tests:test_interfaces",
+    "//mojo/public/interfaces/bindings/tests:test_interfaces_experimental",
     "//testing/gtest",
-  ]
-
-  mojo_sdk_deps = [
-    "mojo/public/cpp/bindings",
-    "mojo/public/cpp/bindings:callback",
-    "mojo/public/cpp/system",
-    "mojo/public/cpp/test_support:test_utils",
-    "mojo/public/cpp/utility",
-    "mojo/public/interfaces/bindings/tests:test_associated_interfaces",
-    "mojo/public/interfaces/bindings/tests:test_interfaces",
-    "mojo/public/interfaces/bindings/tests:test_interfaces_experimental",
   ]
 }
 
-mojo_sdk_source_set("perftests") {
+source_set("perftests") {
   testonly = true
 
   sources = [
@@ -62,25 +58,24 @@ mojo_sdk_source_set("perftests") {
   ]
 
   deps = [
+    "//mojo/public/cpp/bindings",
+    "//mojo/public/cpp/bindings:callback",
+    "//mojo/public/cpp/environment:standalone",
+    "//mojo/public/cpp/system",
+    "//mojo/public/cpp/test_support:test_utils",
+    "//mojo/public/cpp/utility",
+    "//mojo/public/interfaces/bindings/tests:test_interfaces",
     "//testing/gtest",
-  ]
-
-  mojo_sdk_deps = [
-    "mojo/public/cpp/bindings",
-    "mojo/public/cpp/bindings:callback",
-    "mojo/public/cpp/environment:standalone",
-    "mojo/public/cpp/system",
-    "mojo/public/cpp/test_support:test_utils",
-    "mojo/public/cpp/utility",
-    "mojo/public/interfaces/bindings/tests:test_interfaces",
   ]
 }
 
-mojo_sdk_source_set("mojo_public_bindings_test_utils") {
+source_set("mojo_public_bindings_test_utils") {
   sources = [
     "validation_test_input_parser.cc",
     "validation_test_input_parser.h",
   ]
 
-  mojo_sdk_deps = [ "mojo/public/c/system" ]
+  deps = [
+    "//mojo/public/c/system",
+  ]
 }

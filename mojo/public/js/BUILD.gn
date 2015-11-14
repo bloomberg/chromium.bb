@@ -2,9 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("../mojo_sdk.gni")
-
-mojo_sdk_source_set("js") {
+source_set("js") {
   sources = [
     "constants.cc",
     "constants.h",

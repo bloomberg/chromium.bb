@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("../mojo_edk.gni")
 import("//testing/test.gni")
 
 if (is_android) {
@@ -151,7 +150,7 @@ group("tests") {
   ]
 }
 
-mojo_edk_source_set("test_utils") {
+source_set("test_utils") {
   testonly = true
 
   sources = [
@@ -159,9 +158,9 @@ mojo_edk_source_set("test_utils") {
     "test_utils.h",
   ]
 
-  mojo_sdk_public_deps = [
-    "mojo/public/c/system",
-    "mojo/public/cpp/system",
+  public_deps = [
+    "//mojo/public/c/system",
+    "//mojo/public/cpp/system",
   ]
 
   deps = [

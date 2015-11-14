@@ -2,9 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("../../mojo_sdk.gni")
-
-mojo_sdk_source_set("bindings") {
+source_set("bindings") {
   sources = [
     "array.h",
     "associated_interface_ptr_info.h",
@@ -67,19 +65,16 @@ mojo_sdk_source_set("bindings") {
 
   public_deps = [
     ":callback",
+    "//mojo/public/cpp/system",
   ]
 
-  mojo_sdk_public_deps = [
-    "mojo/public/cpp/system",
-  ]
-
-  mojo_sdk_deps = [
-    "mojo/public/cpp/environment",
-    "mojo/public/interfaces/bindings:bindings_cpp_sources",
+  deps = [
+    "//mojo/public/cpp/environment",
+    "//mojo/public/interfaces/bindings:bindings_cpp_sources",
   ]
 }
 
-mojo_sdk_source_set("callback") {
+source_set("callback") {
   sources = [
     "callback.h",
     "lib/callback_internal.h",
@@ -91,5 +86,7 @@ mojo_sdk_source_set("callback") {
     "lib/thread_checker_posix.h",
   ]
 
-  mojo_sdk_deps = [ "mojo/public/cpp/system" ]
+  deps = [
+    "//mojo/public/cpp/system",
+  ]
 }

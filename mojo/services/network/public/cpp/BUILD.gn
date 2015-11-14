@@ -2,10 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//mojo/public/mojo_sdk.gni")
-
-mojo_sdk_source_set("cpp") {
-  restrict_external_deps = false
+source_set("cpp") {
   public_configs = [ "../../../public/build/config:mojo_services" ]
   sources = [
     "udp_socket_wrapper.cc",

@@ -2,10 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//mojo/edk/mojo_edk.gni")
 import("//testing/test.gni")
 
-mojo_edk_source_set("test_support") {
+source_set("test_support") {
   testonly = true
   sources = [
     "multiprocess_test_helper.cc",
@@ -29,7 +28,7 @@ mojo_edk_source_set("test_support") {
   ]
 }
 
-mojo_edk_source_set("run_all_unittests") {
+source_set("run_all_unittests") {
   testonly = true
   sources = [
     "run_all_unittests.cc",
@@ -49,7 +48,7 @@ mojo_edk_source_set("run_all_unittests") {
   ]
 }
 
-mojo_edk_source_set("run_all_perftests") {
+source_set("run_all_perftests") {
   testonly = true
   deps = [
     ":test_support_impl",
@@ -67,7 +66,7 @@ mojo_edk_source_set("run_all_perftests") {
   ]
 }
 
-mojo_edk_source_set("test_support_impl") {
+source_set("test_support_impl") {
   testonly = true
   deps = [
     "//base",

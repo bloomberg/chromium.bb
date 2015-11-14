@@ -2,13 +2,13 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("../../mojo_sdk.gni")
-
-mojo_sdk_source_set("environment") {
+source_set("environment") {
   sources = [
     "async_waiter.h",
     "logger.h",
   ]
 
-  mojo_sdk_deps = [ "mojo/public/c/system" ]
+  deps = [
+    "//mojo/public/c/system",
+  ]
 }

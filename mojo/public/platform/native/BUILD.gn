@@ -4,15 +4,15 @@
 
 assert(!defined(is_nacl) || !is_nacl)
 
-import("../../mojo_sdk.gni")
-
-mojo_sdk_source_set("system") {
+source_set("system") {
   sources = [
     "system_thunks.cc",
     "system_thunks.h",
   ]
   defines = [ "MOJO_SYSTEM_IMPLEMENTATION" ]
-  mojo_sdk_deps = [ "mojo/public/c/system" ]
+  deps = [
+    "//mojo/public/c/system",
+  ]
 
   # The GYP target analogous to this one builds this code into a
   # static library.  When building for Android, both the GYP and GN
@@ -24,7 +24,7 @@ mojo_sdk_source_set("system") {
   # source_set here, this flag change is not needed.
 }
 
-mojo_sdk_source_set("gles2") {
+source_set("gles2") {
   sources = [
     "gles2_impl_chromium_extension_thunks.cc",
     "gles2_impl_chromium_extension_thunks.h",
@@ -36,12 +36,12 @@ mojo_sdk_source_set("gles2") {
 
   defines = [ "MOJO_GLES2_IMPLEMENTATION" ]
 
-  configs = [ "//third_party/khronos:khronos_headers" ]
+  configs += [ "//third_party/khronos:khronos_headers" ]
 
-  mojo_sdk_deps = [
-    "mojo/public/c/gles2",
-    "mojo/public/c/environment",
-    "mojo/public/c/system",
+  deps = [
+    "//mojo/public/c/gles2",
+    "//mojo/public/c/environment",
+    "//mojo/public/c/system",
   ]
 
   if (is_mac) {
@@ -50,24 +50,28 @@ mojo_sdk_source_set("gles2") {
   }
 }
 
-mojo_sdk_source_set("gpu_thunks") {
+source_set("gpu_thunks") {
   sources = []
 }
 
-mojo_sdk_source_set("mgl_thunks") {
+source_set("mgl_thunks") {
   sources = [
     "mgl_thunks.c",
     "mgl_thunks.h",
   ]
 
-  mojo_sdk_deps = [ "mojo/public/c/gpu:MGL" ]
+  deps = [
+    "//mojo/public/c/gpu:MGL",
+  ]
 }
 
-mojo_sdk_source_set("mgl_onscreen_thunks") {
+source_set("mgl_onscreen_thunks") {
   sources = [
     "mgl_onscreen_thunks.c",
     "mgl_onscreen_thunks.h",
   ]
 
-  mojo_sdk_deps = [ "mojo/public/c/gpu:MGL_onscreen" ]
+  deps = [
+    "//mojo/public/c/gpu:MGL_onscreen",
+  ]
 }

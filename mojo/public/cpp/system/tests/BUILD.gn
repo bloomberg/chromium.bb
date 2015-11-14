@@ -2,9 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("../../../mojo_sdk.gni")
-
-mojo_sdk_source_set("tests") {
+source_set("tests") {
   testonly = true
 
   sources = [
@@ -13,13 +11,10 @@ mojo_sdk_source_set("tests") {
   ]
 
   deps = [
+    "//mojo/public/c/system/tests",
+    "//mojo/public/cpp/environment:standalone",
+    "//mojo/public/cpp/system",
+    "//mojo/public/cpp/test_support:test_utils",
     "//testing/gtest",
-  ]
-
-  mojo_sdk_deps = [
-    "mojo/public/c/system/tests",
-    "mojo/public/cpp/environment:standalone",
-    "mojo/public/cpp/system",
-    "mojo/public/cpp/test_support:test_utils",
   ]
 }

@@ -2,10 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("../mojo_edk.gni")
 import("//testing/test.gni")
 
-mojo_edk_source_set("test_support") {
+source_set("test_support") {
   testonly = true
   sources = [
     "multiprocess_test_helper.cc",
@@ -21,14 +20,15 @@ mojo_edk_source_set("test_support") {
     "//base",
     "//base/test:test_support",
     "//testing/gtest",
+    "//third_party/mojo/src/mojo/edk/system",
   ]
 
-  mojo_edk_deps = [ "mojo/edk/system" ]
-
-  mojo_sdk_public_deps = [ "mojo/public/cpp/system" ]
+  public_deps = [
+    "//mojo/public/cpp/system",
+  ]
 }
 
-mojo_edk_source_set("run_all_unittests") {
+source_set("run_all_unittests") {
   testonly = true
   sources = [
     "run_all_unittests.cc",
@@ -38,41 +38,35 @@ mojo_edk_source_set("run_all_unittests") {
     ":test_support_impl",
     "//base",
     "//base/test:test_support",
+    "//mojo/public/c/test_support",
     "//testing/gtest",
+    "//third_party/mojo/src/mojo/edk/system",
   ]
-
-  mojo_edk_deps = [ "mojo/edk/system" ]
-
-  mojo_sdk_deps = [ "mojo/public/c/test_support" ]
 }
 
-mojo_edk_source_set("run_all_perftests") {
+source_set("run_all_perftests") {
   testonly = true
   deps = [
     ":test_support_impl",
     "//base",
     "//base/test:test_support",
+    "//mojo/public/c/test_support",
+    "//third_party/mojo/src/mojo/edk/system",
   ]
-
-  mojo_edk_deps = [ "mojo/edk/system" ]
-
-  mojo_sdk_deps = [ "mojo/public/c/test_support" ]
 
   sources = [
     "run_all_perftests.cc",
   ]
 }
 
-mojo_edk_source_set("test_support_impl") {
+source_set("test_support_impl") {
   testonly = true
   deps = [
     "//base",
     "//base/test:test_support",
+    "//mojo/public/c/test_support",
+    "//mojo/public/cpp/system",
   ]
-
-  mojo_sdk_deps = [ "mojo/public/c/test_support" ]
-
-  mojo_sdk_public_deps = [ "mojo/public/cpp/system" ]
 
   sources = [
     "test_support_impl.cc",

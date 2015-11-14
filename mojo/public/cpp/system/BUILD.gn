@@ -2,9 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("../../mojo_sdk.gni")
-
-mojo_sdk_source_set("system") {
+source_set("system") {
   sources = [
     "buffer.h",
     "core.h",
@@ -15,5 +13,7 @@ mojo_sdk_source_set("system") {
     "message_pipe.h",
   ]
 
-  mojo_sdk_public_deps = [ "mojo/public/c/system" ]
+  public_deps = [
+    "//mojo/public/c/system",
+  ]
 }

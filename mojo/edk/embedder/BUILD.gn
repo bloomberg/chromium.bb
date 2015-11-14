@@ -2,9 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("../mojo_edk.gni")
-
-mojo_edk_source_set("embedder") {
+source_set("embedder") {
   # This isn't really a standalone target; it must be linked into the
   # mojo_system_impl component.
   visibility = [
@@ -32,7 +30,7 @@ mojo_edk_source_set("embedder") {
     "MOJO_SYSTEM_IMPLEMENTATION",
   ]
 
-  configs = [ "//mojo/edk/system:system_config" ]
+  configs += [ "//mojo/edk/system:system_config" ]
 
   public_deps = [
     ":delegates",
@@ -45,7 +43,7 @@ mojo_edk_source_set("embedder") {
   ]
 }
 
-mojo_edk_source_set("platform") {
+source_set("platform") {
   # This isn't really a standalone target; it must be linked into the
   # mojo_system_impl component.
   visibility = [
@@ -80,7 +78,7 @@ mojo_edk_source_set("platform") {
 
   defines = [ "MOJO_SYSTEM_IMPL_IMPLEMENTATION" ]
 
-  configs = [ "//mojo/edk/system:system_config" ]
+  configs += [ "//mojo/edk/system:system_config" ]
 
   public_deps = [
     "//mojo/public/cpp/system",
@@ -95,7 +93,7 @@ mojo_edk_source_set("platform") {
   }
 }
 
-mojo_edk_source_set("delegates") {
+source_set("delegates") {
   # This isn't really a standalone target; it must be linked into the
   # mojo_system_impl component.
   visibility = [
@@ -109,7 +107,7 @@ mojo_edk_source_set("delegates") {
 
   defines = [ "MOJO_SYSTEM_IMPL_IMPLEMENTATION" ]
 
-  configs = [ "//mojo/edk/system:system_config" ]
+  configs += [ "//mojo/edk/system:system_config" ]
 
   public_deps = [
     "//mojo/public/cpp/system",
@@ -117,7 +115,7 @@ mojo_edk_source_set("delegates") {
 }
 
 # TODO(use_chrome_edk): remove "2"
-mojo_edk_source_set("embedder_unittests2") {
+source_set("embedder_unittests2") {
   testonly = true
 
   # TODO(use_chrome_edk): remove "2". Also enable this visibility check when we
