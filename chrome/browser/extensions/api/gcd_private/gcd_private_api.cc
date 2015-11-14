@@ -9,8 +9,9 @@
 #include "base/memory/linked_ptr.h"
 #include "base/thread_task_runner_handle.h"
 #include "chrome/browser/extensions/api/gcd_private/privet_v3_session.h"
+#include "chrome/browser/local_discovery/endpoint_resolver.h"
 #include "chrome/browser/local_discovery/privet_http.h"
-#include "chrome/browser/local_discovery/privet_http_asynchronous_factory.h"
+#include "chrome/browser/local_discovery/privet_http_impl.h"
 #include "chrome/browser/local_discovery/service_discovery_shared_client.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
@@ -84,16 +85,17 @@ class GcdPrivateAPIImpl {
                            const base::DictionaryValue& input,
                            const MessageResponseCallback& callback);
 
-  void OnServiceResolved(int session_id,
+  void OnServiceResolved(const std::string& service_name,
+                         int session_id,
                          const CreateSessionCallback& callback,
-                         scoped_ptr<local_discovery::PrivetHTTPClient> client);
+                         const net::IPEndPoint& endpoint);
 
   scoped_refptr<local_discovery::ServiceDiscoverySharedClient>
       service_discovery_client_;
 
   struct SessionInfo {
     linked_ptr<PrivetV3Session> session;
-    linked_ptr<local_discovery::PrivetHTTPResolution> http_resolution;
+    linked_ptr<local_discovery::EndpointResolver> resolver;
   };
 
   std::map<int, SessionInfo> sessions_;
@@ -130,26 +132,27 @@ void GcdPrivateAPIImpl::CreateSession(const std::string& service_name,
     return callback.Run(session_id, gcd_private::STATUS_SESSIONERROR,
                         base::DictionaryValue());
   }
-  scoped_ptr<local_discovery::PrivetHTTPAsynchronousFactory> factory(
-      local_discovery::PrivetHTTPAsynchronousFactory::CreateInstance(
-          browser_context_->GetRequestContext()));
   auto& session_data = sessions_[session_id];
-  session_data.http_resolution.reset(
-      factory->CreatePrivetHTTP(service_name).release());
-  session_data.http_resolution->Start(
+  session_data.resolver.reset(new local_discovery::EndpointResolver());
+  session_data.resolver->Start(
+      service_name,
       base::Bind(&GcdPrivateAPIImpl::OnServiceResolved, base::Unretained(this),
-                 session_id, callback));
+                 service_name, session_id, callback));
 }
 
-void GcdPrivateAPIImpl::OnServiceResolved(
-    int session_id,
-    const CreateSessionCallback& callback,
-    scoped_ptr<local_discovery::PrivetHTTPClient> client) {
-  if (!client) {
+void GcdPrivateAPIImpl::OnServiceResolved(const std::string& service_name,
+                                          int session_id,
+                                          const CreateSessionCallback& callback,
+                                          const net::IPEndPoint& endpoint) {
+  if (endpoint.address().empty()) {
     return callback.Run(session_id, gcd_private::STATUS_SERVICERESOLUTIONERROR,
                         base::DictionaryValue());
   }
   auto& session_data = sessions_[session_id];
+  net::HostPortPair host_port = net::HostPortPair::FromIPEndPoint(endpoint);
+  scoped_ptr<local_discovery::PrivetHTTPClient> client(
+      new local_discovery::PrivetHTTPClientImpl(
+          service_name, host_port, browser_context_->GetRequestContext()));
   session_data.session.reset(new PrivetV3Session(client.Pass()));
   session_data.session->Init(base::Bind(callback, session_id));
 }
