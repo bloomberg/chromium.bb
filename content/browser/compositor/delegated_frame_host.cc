@@ -600,7 +600,7 @@ static void CopyFromCompositingSurfaceFinished(
   if (result) {
     GLHelper* gl_helper = ImageTransportFactory::GetInstance()->GetGLHelper();
     if (gl_helper)
-      sync_token = gpu::SyncToken(gl_helper->InsertSyncPoint());
+      gl_helper->GenerateSyncToken(&sync_token);
   }
   const bool lost_resource = !sync_token.HasData();
   release_callback->Run(sync_token, lost_resource);
@@ -735,7 +735,7 @@ void DelegatedFrameHost::CopyFromCompositingSurfaceFinishedForVideo(
   gpu::SyncToken sync_token;
   if (result) {
     GLHelper* gl_helper = ImageTransportFactory::GetInstance()->GetGLHelper();
-    sync_token = gpu::SyncToken(gl_helper->InsertSyncPoint());
+    gl_helper->GenerateSyncToken(&sync_token);
   }
   if (release_callback) {
     // A release callback means the texture came from the compositor, so there

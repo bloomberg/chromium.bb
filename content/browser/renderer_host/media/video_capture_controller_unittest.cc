@@ -534,8 +534,8 @@ TEST_F(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
                                      media::PIXEL_STORAGE_TEXTURE);
     ASSERT_TRUE(buffer.get());
 #if !defined(OS_ANDROID)
-    mailbox_synctokens[i] = gpu::SyncToken(
-        ImageTransportFactory::GetInstance()->GetGLHelper()->InsertSyncPoint());
+    ImageTransportFactory::GetInstance()->GetGLHelper()->GenerateSyncToken(
+        &mailbox_synctokens[i]);
 #endif
     device_->OnIncomingCapturedVideoFrame(
         buffer.Pass(),

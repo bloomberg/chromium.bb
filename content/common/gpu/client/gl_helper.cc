@@ -952,8 +952,6 @@ void GLHelper::DeleteTexture(GLuint texture_id) {
   gl_->DeleteTextures(1, &texture_id);
 }
 
-uint32 GLHelper::InsertSyncPoint() { return gl_->InsertSyncPointCHROMIUM(); }
-
 void GLHelper::GenerateSyncToken(gpu::SyncToken* sync_token) {
   const uint64_t fence_sync = gl_->InsertFenceSyncCHROMIUM();
   gl_->ShallowFlushCHROMIUM();
@@ -969,8 +967,11 @@ gpu::MailboxHolder GLHelper::ProduceMailboxHolderFromTexture(
   gpu::Mailbox mailbox;
   gl_->GenMailboxCHROMIUM(mailbox.name);
   gl_->ProduceTextureDirectCHROMIUM(texture_id, GL_TEXTURE_2D, mailbox.name);
-  return gpu::MailboxHolder(mailbox, gpu::SyncToken(InsertSyncPoint()),
-                            GL_TEXTURE_2D);
+
+  gpu::SyncToken sync_token;
+  GenerateSyncToken(&sync_token);
+
+  return gpu::MailboxHolder(mailbox, sync_token, GL_TEXTURE_2D);
 }
 
 GLuint GLHelper::ConsumeMailboxToTexture(const gpu::Mailbox& mailbox,

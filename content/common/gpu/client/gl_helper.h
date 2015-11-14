@@ -244,9 +244,6 @@ class CONTENT_EXPORT GLHelper {
   // Deletes a texture.
   void DeleteTexture(GLuint texture_id);
 
-  // Insert a sync point into the GL command buffer.
-  uint32 InsertSyncPoint();
-
   // Inserts a fence sync, flushes, and generates a sync token.
   void GenerateSyncToken(gpu::SyncToken* sync_token);
 
