@@ -6664,6 +6664,14 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Enables the use of an AppContainer on sandboxed processes to improve security.
         </message>
       </if>
+      <if expr="toolkit_views">
+        <message name="IDS_FLAGS_AUTOFILL_CREDIT_CARD_UPLOAD_NAME" desc="Name of the flag to enable uploading Autofill credit cards.">
+          Enable offering upload of Autofilled credit cards
+        </message>
+        <message name="IDS_FLAGS_AUTOFILL_CREDIT_CARD_UPLOAD_DESCRIPTION" desc="Description of the flag to enable uploading Autofill credit cards.">
+          Enables a new option to upload credit cards to Google Payments for sync to all Chrome devices.
+        </message>
+      </if>
 
       <!-- WebRTC logs -->
       <message name="IDS_WEBRTC_LOGS_TITLE" desc="Title for the chrome://webrtc-logs page.">

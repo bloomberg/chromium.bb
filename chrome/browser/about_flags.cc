@@ -2124,6 +2124,15 @@ const FeatureEntry kFeatureEntries[] = {
      SINGLE_VALUE_TYPE_AND_VALUE(switches::kDisableAutoHidingToolbarThreshold,
                                  "0")},
 #endif
+#if defined(TOOLKIT_VIEWS)
+    {"enable-autofill-credit-card-upload",
+     IDS_FLAGS_AUTOFILL_CREDIT_CARD_UPLOAD_NAME,
+     IDS_FLAGS_AUTOFILL_CREDIT_CARD_UPLOAD_DESCRIPTION,
+     kOsCrOS | kOsWin | kOsLinux,
+     ENABLE_DISABLE_VALUE_TYPE(
+         autofill::switches::kEnableOfferUploadCreditCards,
+         autofill::switches::kDisableOfferUploadCreditCards)},
+#endif  // defined(TOOLKIT_VIEWS)
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms.xml. See note in
     // histograms.xml and don't forget to run AboutFlagsHistogramTest unit test.
