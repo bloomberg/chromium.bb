@@ -51,7 +51,6 @@ private:
     PassRefPtr<JSONObject> createValueDescription(const String&);
     void appendAnchorFor(JSONArray*, const String&, const String&);
     bool setCSSPropertyValueInCurrentRule(const String&);
-    bool currentStyleIsInline() const;
     void pushSelectorInfoInOverlay() const;
     void evaluateInOverlay(const String&, PassRefPtr<JSONValue>) const;
     PassRefPtr<JSONObject> currentSelectorInfo() const;
@@ -67,9 +66,8 @@ private:
     CSSPrimitiveValue::UnitType m_valueUnitType;
     bool m_isDirty;
 
-    RefPtrWillBeMember<CSSRuleList> m_matchedRules;
+    WillBeHeapVector<RefPtrWillBeMember<CSSStyleDeclaration>> m_matchedStyles;
     HashMap<String, bool> m_growsInside;
-    // When m_currentRuleIndex == m_matchedRules.length(), current style is inline style.
     unsigned m_currentRuleIndex;
 };
 

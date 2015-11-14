@@ -771,10 +771,10 @@ void InspectorOverlay::inspect(Node* node)
 
 void InspectorOverlay::initializeLayoutEditorIfNeeded(Node* node)
 {
-    if (node && node->isElementNode() && m_inspectMode == InspectorDOMAgent::ShowLayoutEditor && !m_layoutEditor) {
-        m_layoutEditor = LayoutEditor::create(toElement(node), m_cssAgent, m_domAgent, &overlayMainFrame()->script());
-        toChromeClientImpl(m_webViewImpl->page()->chromeClient()).setCursorOverridden(true);
-    }
+    if (m_inspectMode != InspectorDOMAgent::ShowLayoutEditor || !node || !node->isElementNode() || !node->ownerDocument()->isActive())
+        return;
+    m_layoutEditor = LayoutEditor::create(toElement(node), m_cssAgent, m_domAgent, &overlayMainFrame()->script());
+    toChromeClientImpl(m_webViewImpl->page()->chromeClient()).setCursorOverridden(true);
 }
 
 } // namespace blink

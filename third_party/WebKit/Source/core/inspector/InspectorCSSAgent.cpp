@@ -113,29 +113,19 @@ String createShorthandValue(Document* document, const String& shorthand, const S
     return style->getPropertyValue(shorthand);
 }
 
-PassRefPtrWillBeRawPtr<CSSRuleList> filterDuplicateRules(RefPtrWillBeRawPtr<CSSRuleList> ruleList)
+WillBeHeapVector<RefPtrWillBeMember<CSSStyleRule>> filterDuplicateRules(RefPtrWillBeRawPtr<CSSRuleList> ruleList)
 {
-    RefPtrWillBeRawPtr<StaticCSSRuleList> uniqRuleList = StaticCSSRuleList::create();
-    if (!ruleList)
-        return uniqRuleList.release();
-
-    WillBeHeapHashSet<RawPtrWillBeMember<CSSStyleRule>> uniqRulesSet;
-    WillBeHeapVector<RefPtrWillBeMember<CSSRule>> uniqRules;
-    for (unsigned i = ruleList->length(); i > 0; --i) {
+    WillBeHeapVector<RefPtrWillBeMember<CSSStyleRule>> uniqRules;
+    WillBeHeapHashSet<RawPtrWillBeMember<CSSRule>> uniqRulesSet;
+    for (unsigned i = ruleList ? ruleList->length() : 0; i > 0; --i) {
         CSSRule* rule = ruleList->item(i - 1);
-        if (!rule || rule->type() != CSSRule::STYLE_RULE)
+        if (!rule || rule->type() != CSSRule::STYLE_RULE || uniqRulesSet.contains(rule))
             continue;
-
-        CSSStyleRule* styleRule = toCSSStyleRule(rule);
-        if (uniqRulesSet.contains(styleRule))
-            continue;
-        uniqRulesSet.add(styleRule);
-        uniqRules.append(styleRule);
+        uniqRulesSet.add(rule);
+        uniqRules.append(toCSSStyleRule(rule));
     }
-
-    for (unsigned i = uniqRules.size(); i > 0; --i)
-        uniqRuleList->rules().append(uniqRules[i - 1]);
-    return uniqRuleList.release();
+    uniqRules.reverse();
+    return uniqRules;
 }
 
 // Get the elements which overlap the given rectangle.
@@ -1643,10 +1633,9 @@ PassRefPtr<TypeBuilder::Array<TypeBuilder::CSS::RuleMatch> > InspectorCSSAgent::
     if (!ruleList)
         return result.release();
 
-    RefPtrWillBeRawPtr<CSSRuleList> uniqRules = filterDuplicateRules(ruleList);
-
-    for (unsigned i = 0; i < uniqRules->length(); ++i) {
-        CSSStyleRule* rule = asCSSStyleRule(uniqRules->item(i));
+    WillBeHeapVector<RefPtrWillBeMember<CSSStyleRule>> uniqRules = filterDuplicateRules(ruleList);
+    for (unsigned i = 0; i < uniqRules.size(); ++i) {
+        CSSStyleRule* rule = uniqRules.at(i).get();
         RefPtr<TypeBuilder::CSS::CSSRule> ruleObject = buildObjectForRule(rule);
         if (!ruleObject)
             continue;
@@ -1768,63 +1757,46 @@ void InspectorCSSAgent::resetPseudoStates()
         document->setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::Inspector));
 }
 
-PassRefPtrWillBeRawPtr<CSSRuleList> InspectorCSSAgent::matchedRulesList(Element* element)
+WillBeHeapVector<RefPtrWillBeMember<CSSStyleDeclaration>> InspectorCSSAgent::matchingStyles(Element* element)
 {
-    PseudoId elementPseudoId = element->pseudoId();
-    if (elementPseudoId) {
-        element = element->parentOrShadowHostElement();
-        if (!element)
-            return nullptr;
-    }
-
-    Document* ownerDocument = element->ownerDocument();
-    // A non-active document has no styles.
-    if (!ownerDocument->isActive())
-        return nullptr;
-
-    StyleResolver& styleResolver = ownerDocument->ensureStyleResolver();
+    PseudoId pseudoId = element->pseudoId();
+    if (pseudoId)
+        element = element->parentElement();
+    StyleResolver& styleResolver = element->ownerDocument()->ensureStyleResolver();
     element->updateDistribution();
-    return filterDuplicateRules(styleResolver.pseudoCSSRulesForElement(element, elementPseudoId, StyleResolver::AllCSSRules));
+
+    WillBeHeapVector<RefPtrWillBeMember<CSSStyleRule>> rules = filterDuplicateRules(styleResolver.pseudoCSSRulesForElement(element, pseudoId, StyleResolver::AllCSSRules));
+    WillBeHeapVector<RefPtrWillBeMember<CSSStyleDeclaration>> styles;
+    if (element->style())
+        styles.append(element->style());
+    for (unsigned i = rules.size(); i > 0; --i) {
+        CSSStyleSheet* parentStyleSheet = rules.at(i - 1)->parentStyleSheet();
+        if (!parentStyleSheet || !parentStyleSheet->ownerNode())
+            continue; // User agent.
+        styles.append(rules.at(i - 1)->style());
+    }
+    return styles;
 }
 
-PassRefPtrWillBeRawPtr<CSSStyleDeclaration> InspectorCSSAgent::findEffectiveDeclaration(CSSPropertyID propertyId, CSSRuleList* ruleList, CSSStyleDeclaration* inlineStyle)
+PassRefPtrWillBeRawPtr<CSSStyleDeclaration> InspectorCSSAgent::findEffectiveDeclaration(CSSPropertyID propertyId, const WillBeHeapVector<RefPtrWillBeMember<CSSStyleDeclaration>>& styles)
 {
-    if (!ruleList && !inlineStyle)
+    if (!styles.size())
         return nullptr;
 
     String longhand = getPropertyNameString(propertyId);
     RefPtrWillBeRawPtr<CSSStyleDeclaration> foundStyle = nullptr;
-    bool isImportant = false;
 
-    if (inlineStyle && !inlineStyle->getPropertyValue(longhand).isEmpty()) {
-        foundStyle = inlineStyle;
-        isImportant = inlineStyle->getPropertyPriority(longhand) == "important";
-    }
-
-    for (unsigned i = 0, size = ruleList ? ruleList->length() : 0; i < size; ++i) {
-        if (isImportant)
-            break;
-
-        if (ruleList->item(size - i - 1)->type() != CSSRule::STYLE_RULE)
-            continue;
-
-        CSSStyleRule* rule = toCSSStyleRule(ruleList->item(size - i - 1));
-        if (!rule)
-            continue;
-
-        CSSStyleDeclaration* style = rule->style();
-        if (!style)
-            continue;
-
+    for (unsigned i = 0; i < styles.size(); ++i) {
+        CSSStyleDeclaration* style = styles.at(i).get();
         if (style->getPropertyValue(longhand).isEmpty())
             continue;
-
-        isImportant = style->getPropertyPriority(longhand) == "important";
-        if (isImportant || !foundStyle)
+        if (style->getPropertyPriority(longhand) == "important")
+            return style;
+        if (!foundStyle)
             foundStyle = style;
     }
 
-    return foundStyle.release();
+    return foundStyle ? foundStyle.get() : styles.at(0).get();
 }
 
 void InspectorCSSAgent::setCSSPropertyValue(ErrorString* errorString, Element* element, RefPtrWillBeRawPtr<CSSStyleDeclaration> style, CSSPropertyID propertyId, const String& value, bool forceImportant)
@@ -1907,7 +1879,7 @@ void InspectorCSSAgent::setEffectivePropertyValueForNode(ErrorString* errorStrin
 {
     // TODO: move testing from CSSAgent to layout editor.
     Element* element = elementForId(errorString, nodeId);
-    if (!element)
+    if (!element || element->pseudoId())
         return;
 
     CSSPropertyID property = cssPropertyID(propertyName);
@@ -1923,18 +1895,13 @@ void InspectorCSSAgent::setEffectivePropertyValueForNode(ErrorString* errorStrin
     }
 
     CSSPropertyID propertyId = cssPropertyID(propertyName);
-    CSSStyleDeclaration* inlineStyle = element->style();
-    RefPtrWillBeRawPtr<CSSRuleList> ruleList = matchedRulesList(element);
-    RefPtrWillBeRawPtr<CSSStyleDeclaration> foundStyle = findEffectiveDeclaration(propertyId, ruleList.get(), inlineStyle);
-    if (!foundStyle || !foundStyle->parentStyleSheet())
-        foundStyle = inlineStyle;
-
-    if (!foundStyle) {
+    RefPtrWillBeRawPtr<CSSStyleDeclaration> style = findEffectiveDeclaration(propertyId, matchingStyles(element));
+    if (!style) {
         *errorString = "Can't find a style to edit";
         return;
     }
 
-    setCSSPropertyValue(errorString, element, foundStyle.get(), propertyId, value);
+    setCSSPropertyValue(errorString, element, style.get(), propertyId, value);
 }
 
 void InspectorCSSAgent::getBackgroundColors(ErrorString* errorString, int nodeId, RefPtr<TypeBuilder::Array<String>>& result)

@@ -150,10 +150,10 @@ public:
     PassRefPtr<TypeBuilder::CSS::CSSMedia> buildMediaObject(const MediaList*, MediaListSource, const String&, CSSStyleSheet*);
     PassRefPtr<TypeBuilder::Array<TypeBuilder::CSS::CSSMedia> > buildMediaListChain(CSSRule*);
 
-    PassRefPtrWillBeRawPtr<CSSStyleDeclaration> findEffectiveDeclaration(CSSPropertyID, CSSRuleList* matchedRulesList, CSSStyleDeclaration* inlineStyle);
+    PassRefPtrWillBeRawPtr<CSSStyleDeclaration> findEffectiveDeclaration(CSSPropertyID, const WillBeHeapVector<RefPtrWillBeMember<CSSStyleDeclaration>>& styles);
     void setCSSPropertyValue(ErrorString*, Element*, RefPtrWillBeRawPtr<CSSStyleDeclaration>, CSSPropertyID, const String& value, bool forceImportant = false);
 
-    PassRefPtrWillBeRawPtr<CSSRuleList> matchedRulesList(Element*);
+    WillBeHeapVector<RefPtrWillBeMember<CSSStyleDeclaration>> matchingStyles(Element*);
     String styleSheetId(CSSStyleSheet*);
 private:
     class StyleSheetAction;

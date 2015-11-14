@@ -398,12 +398,12 @@ String InspectorAnimationAgent::createCSSId(Animation& animation)
     }
 
     Element* element = effect->target();
-    RefPtrWillBeRawPtr<CSSRuleList> ruleList = m_cssAgent->matchedRulesList(element);
+    WillBeHeapVector<RefPtrWillBeMember<CSSStyleDeclaration>> styles = m_cssAgent->matchingStyles(element);
     OwnPtr<WebCryptoDigestor> digestor = createDigestor(HashAlgorithmSha1);
     addStringToDigestor(digestor.get(), String::number(type));
     addStringToDigestor(digestor.get(), effect->name());
     for (CSSPropertyID property : cssProperties) {
-        RefPtrWillBeRawPtr<CSSStyleDeclaration> style = m_cssAgent->findEffectiveDeclaration(property, ruleList.get(), element->style());
+        RefPtrWillBeRawPtr<CSSStyleDeclaration> style = m_cssAgent->findEffectiveDeclaration(property, styles);
         // Ignore inline styles.
         if (!style || !style->parentStyleSheet() || !style->parentRule() || style->parentRule()->type() != CSSRule::STYLE_RULE)
             continue;
