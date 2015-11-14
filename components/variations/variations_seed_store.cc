@@ -17,10 +17,6 @@
 #include "crypto/signature_verifier.h"
 #include "third_party/protobuf/src/google/protobuf/io/coded_stream.h"
 
-#if defined(OS_ANDROID)
-#include "components/variations/android/variations_seed_bridge.h"
-#endif  // OS_ANDROID
-
 namespace variations {
 
 namespace {
@@ -388,6 +384,7 @@ void VariationsSeedStore::ImportFirstRunJavaSeed() {
     LOG(WARNING) << "First run variations seed is invalid.";
     return;
   }
+  // TODO(agulenko): Clear Java prefs.
   RecordFirstRunResult(FIRST_RUN_SEED_IMPORT_SUCCESS);
 }
 #endif  // OS_ANDROID
@@ -466,16 +463,6 @@ bool VariationsSeedStore::StoreSeedDataNoDelta(
   // TODO(asvitkine): This pref is no longer being used. Remove it completely
   // in M45+.
   local_state_->ClearPref(prefs::kVariationsSeed);
-
-#if defined(OS_ANDROID)
-  // If currently we do not have any stored pref then we mark seed storing as
-  // successful on the Java side of Chrome for Android to avoid repeated seed
-  // fetches and clear preferences on the Java side.
-  if (local_state_->GetString(prefs::kVariationsCompressedSeed).empty()) {
-    android::MarkVariationsSeedAsStored();
-    android::ClearJavaFirstRunPrefs();
-  }
-#endif
 
   // Update the saved country code only if one was returned from the server.
   // Prefer the country code that was transmitted in the header over the one in

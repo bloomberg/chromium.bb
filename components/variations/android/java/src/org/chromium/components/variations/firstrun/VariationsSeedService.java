@@ -27,36 +27,17 @@ public class VariationsSeedService extends IntentService {
     private static final int READ_TIMEOUT = 10000; // time in ms
     private static final int REQUEST_TIMEOUT = 15000; // time in ms
 
-    // Static variable that indicates a status of the variations seed fetch. If one request is in
-    // progress, we do not start another fetch.
-    private static boolean sFetchInProgress = false;
-
     public VariationsSeedService() {
         super(TAG);
     }
 
     @Override
     public void onHandleIntent(Intent intent) {
-        // Check if any variations seed fetch is in progress, or the seed has been already fetched,
-        // or seed has been successfully stored on the C++ side.
-        if (sFetchInProgress || VariationsSeedBridge.hasJavaPref(getApplicationContext())
-                || VariationsSeedBridge.hasNativePref(getApplicationContext())) {
-            return;
-        }
-        setFetchInProgressFlagValue(true);
         try {
             downloadContent(new URL(VARIATIONS_SERVER_URL));
         } catch (MalformedURLException e) {
             Log.w(TAG, "Variations server URL is malformed.", e);
-        } finally {
-            setFetchInProgressFlagValue(false);
         }
-    }
-
-    // Separate function is needed to avoid FINDBUGS build error (assigning value to static variable
-    // from non-static onHandleIntent() method).
-    private static void setFetchInProgressFlagValue(boolean value) {
-        sFetchInProgress = value;
     }
 
     private boolean downloadContent(URL variationsServerUrl) {

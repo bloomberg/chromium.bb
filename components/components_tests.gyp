@@ -1185,8 +1185,6 @@
             ['OS=="android"', {
               'dependencies': [
                 '../build/android/ndk.gyp:cpu_features',
-                'components.gyp:variations_java',
-                'components.gyp:variations_jni_headers',
               ],
             }],
             ['OS=="android" and configuration_policy == 1', {

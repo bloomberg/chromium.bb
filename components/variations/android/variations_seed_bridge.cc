@@ -55,16 +55,5 @@ void GetVariationsFirstRunSeed(std::string* seed_data,
   *seed_country = ConvertJavaStringToUTF8(j_seed_country);
 }
 
-void ClearJavaFirstRunPrefs() {
-  JNIEnv* env = AttachCurrentThread();
-  Java_VariationsSeedBridge_clearFirstRunPrefs(env, GetApplicationContext());
-}
-
-void MarkVariationsSeedAsStored() {
-  JNIEnv* env = AttachCurrentThread();
-  Java_VariationsSeedBridge_markVariationsSeedAsStored(env,
-                                                       GetApplicationContext());
-}
-
 }  // namespace android
 }  // namespace variations
