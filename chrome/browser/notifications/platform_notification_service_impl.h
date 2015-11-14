@@ -45,7 +45,7 @@ class PlatformNotificationServiceImpl
       content::BrowserContext* browser_context,
       int64_t persistent_notification_id,
       const GURL& origin,
-      int action_index) const;
+      int action_index);
 
   // To be called when a persistent notification has been closed. The data
   // associated with the notification has to be pruned from the database in this

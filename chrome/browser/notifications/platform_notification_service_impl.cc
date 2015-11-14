@@ -62,6 +62,10 @@ using message_center::NotifierId;
 
 namespace {
 
+// Invalid id for a renderer process. Used in cases where we need to check for
+// permission without having an associated renderer process yet.
+const int kInvalidRenderProcessId = -1;
+
 // Callback to provide when deleting the data associated with persistent Web
 // Notifications from the notification database.
 void OnPersistentNotificationDataDeleted(bool success) {
@@ -100,8 +104,20 @@ void PlatformNotificationServiceImpl::OnPersistentNotificationClick(
     BrowserContext* browser_context,
     int64_t persistent_notification_id,
     const GURL& origin,
-    int action_index) const {
+    int action_index) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  blink::WebNotificationPermission permission =
+      CheckPermissionOnUIThread(browser_context, origin,
+                                kInvalidRenderProcessId);
+
+  // TODO(peter): Change this to a CHECK() when Issue 555572 is resolved.
+  // Also change this method to be const again.
+  if (permission != blink::WebNotificationPermissionAllowed) {
+    content::RecordAction(base::UserMetricsAction(
+        "Notifications.Persistent.ClickedWithoutPermission"));
+    return;
+  }
+
   content::RecordAction(
       base::UserMetricsAction("Notifications.Persistent.Clicked"));
 

@@ -8712,6 +8712,14 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Notifications.Persistent.ClickedWithoutPermission">
+  <owner>peter@chromium.org</owner>
+  <description>
+    Recorded when a persistent notification gets clicked on by the user, but the
+    user has revoked notification permission for the origin since it was shown.
+  </description>
+</action>
+
 <action name="Notifications.Persistent.Closed">
   <owner>peter@chromium.org</owner>
   <description>
