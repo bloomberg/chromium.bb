@@ -33,7 +33,9 @@ HoleFrameFactory::HoleFrameFactory(
       gl->GenMailboxCHROMIUM(mailbox_.name);
       gl->ProduceTextureDirectCHROMIUM(texture_, GL_TEXTURE_2D, mailbox_.name);
 
-      sync_token_ = gpu::SyncToken(gl->InsertSyncPointCHROMIUM());
+      const GLuint64 fence_sync = gl->InsertFenceSyncCHROMIUM();
+      gl->ShallowFlushCHROMIUM();
+      gl->GenSyncTokenCHROMIUM(fence_sync, sync_token_.GetData());
     }
   }
 }
