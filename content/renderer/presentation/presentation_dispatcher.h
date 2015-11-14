@@ -76,8 +76,8 @@ class CONTENT_EXPORT PresentationDispatcher
                     const blink::WebString& presentationId,
                     const uint8* data,
                     size_t length) override;
-  void closeSession(const blink::WebString& presentationUrl,
-                    const blink::WebString& presentationId) override;
+  void terminateSession(const blink::WebString& presentationUrl,
+                        const blink::WebString& presentationId) override;
   void getAvailability(
       const blink::WebString& availabilityUrl,
       blink::WebPresentationAvailabilityCallbacks* callbacks) override;

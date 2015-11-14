@@ -52,8 +52,8 @@ public:
     // Embedder copies the |data| and the ownership is not transferred.
     virtual void sendBlobData(const WebString& presentationUrl, const WebString& presentationId, const uint8_t* data, size_t length) = 0;
 
-    // Called when the frame requests to close an existing session.
-    virtual void closeSession(const WebString& presentationUrl, const WebString& presentationId) = 0;
+    // Called when the frame requests to terminate an existing session.
+    virtual void terminateSession(const WebString& presentationUrl, const WebString& presentationId) = 0;
 
     // Called when the frame wants to know the availability of a presentation
     // display for |availabilityUrl|.  The ownership of the callbacks argument

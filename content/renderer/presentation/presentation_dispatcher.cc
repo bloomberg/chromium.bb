@@ -205,7 +205,7 @@ void PresentationDispatcher::HandleSendMessageRequests(bool success) {
   }
 }
 
-void PresentationDispatcher::closeSession(
+void PresentationDispatcher::terminateSession(
     const blink::WebString& presentationUrl,
     const blink::WebString& presentationId) {
   ConnectToPresentationServiceIfNeeded();

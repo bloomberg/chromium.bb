@@ -314,13 +314,13 @@ void PresentationConnection::didReceiveBinaryMessage(const uint8_t* data, size_t
     ASSERT_NOT_REACHED();
 }
 
-void PresentationConnection::close()
+void PresentationConnection::terminate()
 {
     if (m_state != WebPresentationConnectionState::Connected)
         return;
     WebPresentationClient* client = presentationClient(executionContext());
     if (client)
-        client->closeSession(m_url, m_id);
+        client->terminateSession(m_url, m_id);
 
     // Cancel current Blob loading if any.
     if (m_blobLoader) {

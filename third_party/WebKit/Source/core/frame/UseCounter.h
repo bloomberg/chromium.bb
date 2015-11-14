@@ -788,7 +788,7 @@ public:
         PresentationRequestReconnect = 930,
         PresentationRequestGetAvailability = 931,
         PresentationRequestConnectionAvailableEventListener = 932,
-        PresentationConnectionClose = 933,
+        PresentationConnectionTerminate = 933,
         PresentationConnectionSend = 934,
         PresentationConnectionStateChangeEventListener = 935,
         PresentationConnectionMessageEventListener = 936,

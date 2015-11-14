@@ -52,7 +52,7 @@ public:
     void send(PassRefPtr<DOMArrayBuffer>, ExceptionState&);
     void send(PassRefPtr<DOMArrayBufferView>, ExceptionState&);
     void send(Blob*, ExceptionState&);
-    void close();
+    void terminate();
 
     String binaryType() const;
     void setBinaryType(const String&);

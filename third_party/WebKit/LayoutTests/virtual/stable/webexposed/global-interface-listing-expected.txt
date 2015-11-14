@@ -3273,9 +3273,9 @@ interface PresentationConnection : EventTarget
     getter onmessage
     getter onstatechange
     getter state
-    method close
     method constructor
     method send
+    method terminate
     setter binaryType
     setter onmessage
     setter onstatechange
