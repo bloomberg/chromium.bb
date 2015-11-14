@@ -873,6 +873,17 @@ public:
         SelectionDeleteDromDocument = 1011,
         SelectionDOMString = 1012,
         InputTypeRangeVerticalAppearance = 1013,
+        CSSFilterReference = 1014,
+        CSSFilterGrayscale = 1015,
+        CSSFilterSepia = 1016,
+        CSSFilterSaturate = 1017,
+        CSSFilterHueRotate = 1018,
+        CSSFilterInvert = 1019,
+        CSSFilterOpacity = 1020,
+        CSSFilterBrightness = 1021,
+        CSSFilterContrast = 1022,
+        CSSFilterBlur = 1023,
+        CSSFilterDropShadow = 1024,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

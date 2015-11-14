@@ -61979,6 +61979,34 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="994" label="MeterElementWithNoneAppearance"/>
   <int value="995" label="MeterElementWithRatingAppearance"/>
   <int value="996" label="MeterElementWithRelevancyAppearance"/>
+  <int value="997" label="SelectionAnchorNode"/>
+  <int value="998" label="SelectionAnchorOffset"/>
+  <int value="999" label="SelectionFocusNode"/>
+  <int value="1000" label="SelectionFocusOffset"/>
+  <int value="1001" label="SelectionIsCollapsed"/>
+  <int value="1002" label="SelectionRangeCount"/>
+  <int value="1003" label="SelectionGetRangeAt"/>
+  <int value="1004" label="SelectionAddRange"/>
+  <int value="1005" label="SelectionRemoveAllRanges"/>
+  <int value="1006" label="SelectionCollapse"/>
+  <int value="1007" label="SelectionCollapseToStart"/>
+  <int value="1008" label="SelectionCollapseToEnd"/>
+  <int value="1009" label="SelectionExtend"/>
+  <int value="1010" label="SelectionSelectAllChildren"/>
+  <int value="1011" label="SelectionDeleteDromDocument"/>
+  <int value="1012" label="SelectionDOMString"/>
+  <int value="1013" label="InputTypeRangeVerticalAppearance"/>
+  <int value="1014" label="CSSFilterReference"/>
+  <int value="1015" label="CSSFilterGrayscale"/>
+  <int value="1016" label="CSSFilterSepia"/>
+  <int value="1017" label="CSSFilterSaturate"/>
+  <int value="1018" label="CSSFilterHueRotate"/>
+  <int value="1019" label="CSSFilterInvert"/>
+  <int value="1020" label="CSSFilterOpacity"/>
+  <int value="1021" label="CSSFilterBrightness"/>
+  <int value="1022" label="CSSFilterContrast"/>
+  <int value="1023" label="CSSFilterBlur"/>
+  <int value="1024" label="CSSFilterDropShadow"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">
