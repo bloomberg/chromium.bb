@@ -126,7 +126,15 @@ void AddBluetoothStrings(content::WebUIDataSource* html_source) {
   html_source->AddLocalizedString(
       "bluetoothPageTitle", IDS_SETTINGS_BLUETOOTH);
   html_source->AddLocalizedString(
-      "enableBluetooth", IDS_SETTINGS_BLUETOOTH_ENABLE);
+      "bluetoothEnable", IDS_SETTINGS_BLUETOOTH_ENABLE);
+  html_source->AddLocalizedString(
+      "bluetoothConnect", IDS_OPTIONS_SETTINGS_BLUETOOTH_CONNECT);
+  html_source->AddLocalizedString(
+      "bluetoothAddDevice", IDS_OPTIONS_SETTINGS_ADD_BLUETOOTH_DEVICE);
+  html_source->AddLocalizedString(
+      "bluetoothNoDevices", IDS_OPTIONS_SETTINGS_BLUETOOTH_NO_DEVICES);
+  html_source->AddLocalizedString(
+      "bluetoothConnecting", IDS_OPTIONS_SETTINGS_BLUETOOTH_CONNECTING);
 }
 #endif
 

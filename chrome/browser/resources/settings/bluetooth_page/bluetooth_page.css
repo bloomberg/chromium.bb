@@ -5,3 +5,24 @@
 iron-icon {
   -webkit-margin-end: 10px;
 }
+
+#deviceList {
+  border: lightgrey solid 1px;
+  margin: 10px 0;
+  max-height: 400px;
+  padding: 10px;
+}
+
+div.iron-selected,
+div.device:hover {
+  background-color: lightgrey;
+}
+
+div.device:not(:hover) .hover-only {
+  visibility: hidden;
+}
+
+span.name[connected],
+span.name[connecting] {
+  font-weight: bold;
+}
