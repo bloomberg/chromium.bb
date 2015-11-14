@@ -42,11 +42,10 @@ syncer::ImmutableChangeRecordList
 }
 
 AbstractProfileSyncServiceTest::AbstractProfileSyncServiceTest()
+    // Purposefully do not use a real FILE thread, see crbug/550013.
     : thread_bundle_(content::TestBrowserThreadBundle::REAL_DB_THREAD |
-                     content::TestBrowserThreadBundle::REAL_FILE_THREAD |
                      content::TestBrowserThreadBundle::REAL_IO_THREAD),
-      sync_service_(NULL) {
-}
+      sync_service_(NULL) {}
 
 AbstractProfileSyncServiceTest::~AbstractProfileSyncServiceTest() {}
 

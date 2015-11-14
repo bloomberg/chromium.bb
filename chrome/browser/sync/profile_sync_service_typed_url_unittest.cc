@@ -377,7 +377,8 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
                                 favicon_urls));
   }
 
-  static bool URLsEqual(history::URLRow& lhs, history::URLRow& rhs) {
+  static bool URLsEqual(const history::URLRow& lhs,
+                        const history::URLRow& rhs) {
     // Only verify the fields we explicitly sync (i.e. don't verify typed_count
     // or visit_count because we rely on the history DB to manage those values
     // and they are left unchanged by HistoryBackendMock).
@@ -429,7 +430,7 @@ void AddTypedUrlEntries(ProfileSyncServiceTypedUrlTest* test,
   }
 }
 
-} // namespace
+}  // namespace
 
 TEST_F(ProfileSyncServiceTypedUrlTest, EmptyNativeEmptySync) {
   EXPECT_CALL((*history_backend_.get()), GetAllTypedURLs(_)).

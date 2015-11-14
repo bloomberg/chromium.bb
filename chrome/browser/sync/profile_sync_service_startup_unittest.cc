@@ -107,8 +107,8 @@ class TestProfileSyncServiceNoBackup : public ProfileSyncService {
 class ProfileSyncServiceStartupTest : public testing::Test {
  public:
   ProfileSyncServiceStartupTest()
+      // Purposefully do not use a real FILE thread, see crbug/550013.
       : thread_bundle_(content::TestBrowserThreadBundle::REAL_DB_THREAD |
-                       content::TestBrowserThreadBundle::REAL_FILE_THREAD |
                        content::TestBrowserThreadBundle::REAL_IO_THREAD),
         profile_manager_(TestingBrowserProcess::GetGlobal()),
         sync_(NULL) {}
@@ -255,8 +255,7 @@ class ProfileSyncServiceStartupCrosTest : public ProfileSyncServiceStartupTest {
   }
 };
 
-// http://crbug.com/550013
-TEST_F(ProfileSyncServiceStartupTest, DISABLED_StartFirstTime) {
+TEST_F(ProfileSyncServiceStartupTest, StartFirstTime) {
   // We've never completed startup.
   profile_->GetPrefs()->ClearPref(sync_driver::prefs::kSyncHasSetupCompleted);
   CreateSyncService();
@@ -374,13 +373,7 @@ TEST_F(ProfileSyncServiceStartupTest, DISABLED_StartInvalidCredentials) {
   EXPECT_TRUE(sync_->IsSyncActive());
 }
 
-#if defined(OS_WIN)
-// http://crbug.com/396402
-#define MAYBE_StartCrosNoCredentials DISABLED_StartCrosNoCredentials
-#else
-#define MAYBE_StartCrosNoCredentials StartCrosNoCredentials
-#endif
-TEST_F(ProfileSyncServiceStartupCrosTest, MAYBE_StartCrosNoCredentials) {
+TEST_F(ProfileSyncServiceStartupCrosTest, StartCrosNoCredentials) {
   EXPECT_CALL(*GetSyncApiComponentFactoryMock(),
               CreateDataTypeManager(_, _, _, _, _))
       .Times(0);
@@ -399,8 +392,7 @@ TEST_F(ProfileSyncServiceStartupCrosTest, MAYBE_StartCrosNoCredentials) {
   EXPECT_FALSE(sync_->IsSyncActive());
 }
 
-// http://crbug.com/550013
-TEST_F(ProfileSyncServiceStartupCrosTest, DISABLED_StartFirstTime) {
+TEST_F(ProfileSyncServiceStartupCrosTest, StartFirstTime) {
   SetUpSyncBackendHost();
   DataTypeManagerMock* data_type_manager = SetUpDataTypeManager();
   profile_->GetPrefs()->ClearPref(sync_driver::prefs::kSyncHasSetupCompleted);
@@ -417,13 +409,7 @@ TEST_F(ProfileSyncServiceStartupCrosTest, DISABLED_StartFirstTime) {
   EXPECT_TRUE(sync_->IsSyncActive());
 }
 
-#if defined(OS_WIN)
-// http://crbug.com/396402
-#define MAYBE_StartNormal DISABLED_StartNormal
-#else
-#define MAYBE_StartNormal StartNormal
-#endif
-TEST_F(ProfileSyncServiceStartupTest, MAYBE_StartNormal) {
+TEST_F(ProfileSyncServiceStartupTest, StartNormal) {
   // Pre load the tokens
   CreateSyncService();
   std::string account_id =
@@ -445,8 +431,7 @@ TEST_F(ProfileSyncServiceStartupTest, MAYBE_StartNormal) {
 // Test that we can recover from a case where a bug in the code resulted in
 // OnUserChoseDatatypes not being properly called and datatype preferences
 // therefore being left unset.
-// http://crbug.com/550013
-TEST_F(ProfileSyncServiceStartupTest, DISABLED_StartRecoverDatatypePrefs) {
+TEST_F(ProfileSyncServiceStartupTest, StartRecoverDatatypePrefs) {
   // Clear the datatype preference fields (simulating bug 154940).
   profile_->GetPrefs()->ClearPref(
       sync_driver::prefs::kSyncKeepEverythingSynced);
@@ -479,13 +464,7 @@ TEST_F(ProfileSyncServiceStartupTest, DISABLED_StartRecoverDatatypePrefs) {
 
 // Verify that the recovery of datatype preferences doesn't overwrite a valid
 // case where only bookmarks are enabled.
-#if defined(OS_WIN)
-// http://crbug.com/396402
-#define MAYBE_StartDontRecoverDatatypePrefs DISABLED_StartDontRecoverDatatypePrefs
-#else
-#define MAYBE_StartDontRecoverDatatypePrefs StartDontRecoverDatatypePrefs
-#endif
-TEST_F(ProfileSyncServiceStartupTest, MAYBE_StartDontRecoverDatatypePrefs) {
+TEST_F(ProfileSyncServiceStartupTest, StartDontRecoverDatatypePrefs) {
   // Explicitly set Keep Everything Synced to false and have only bookmarks
   // enabled.
   profile_->GetPrefs()->SetBoolean(
@@ -510,13 +489,7 @@ TEST_F(ProfileSyncServiceStartupTest, MAYBE_StartDontRecoverDatatypePrefs) {
       sync_driver::prefs::kSyncKeepEverythingSynced));
 }
 
-#if defined(OS_WIN)
-// http://crbug.com/396402
-#define MAYBE_ManagedStartup DISABLED_ManagedStartup
-#else
-#define MAYBE_ManagedStartup ManagedStartup
-#endif
-TEST_F(ProfileSyncServiceStartupTest, MAYBE_ManagedStartup) {
+TEST_F(ProfileSyncServiceStartupTest, ManagedStartup) {
   // Service should not be started by Initialize() since it's managed.
   profile_->GetPrefs()->SetString(prefs::kGoogleServicesAccountId,
                                   kEmail);
@@ -532,8 +505,7 @@ TEST_F(ProfileSyncServiceStartupTest, MAYBE_ManagedStartup) {
   sync_->Initialize();
 }
 
-// http://crbug.com/550013
-TEST_F(ProfileSyncServiceStartupTest, DISABLED_SwitchManaged) {
+TEST_F(ProfileSyncServiceStartupTest, SwitchManaged) {
   CreateSyncService();
   std::string account_id =
       SimulateTestUserSignin(profile_, fake_signin(), sync_);
@@ -563,8 +535,7 @@ TEST_F(ProfileSyncServiceStartupTest, DISABLED_SwitchManaged) {
   profile_->GetPrefs()->ClearPref(sync_driver::prefs::kSyncManaged);
 }
 
-// http://crbug.com/550013
-TEST_F(ProfileSyncServiceStartupTest, DISABLED_StartFailure) {
+TEST_F(ProfileSyncServiceStartupTest, StartFailure) {
   CreateSyncService();
   std::string account_id =
       SimulateTestUserSignin(profile_, fake_signin(), sync_);
@@ -590,8 +561,7 @@ TEST_F(ProfileSyncServiceStartupTest, DISABLED_StartFailure) {
   EXPECT_TRUE(sync_->HasUnrecoverableError());
 }
 
-// http://crbug.com/550013
-TEST_F(ProfileSyncServiceStartupTest, DISABLED_StartDownloadFailed) {
+TEST_F(ProfileSyncServiceStartupTest, StartDownloadFailed) {
   // Pre load the tokens
   CreateSyncService();
   std::string account_id =
