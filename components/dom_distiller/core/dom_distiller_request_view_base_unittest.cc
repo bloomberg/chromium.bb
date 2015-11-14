@@ -211,10 +211,6 @@ TEST_F(DomDistillerRequestViewTest, TestLoadingIndicator) {
   TestRequestViewHandle handle(distilled_page_prefs_.get());
   handle.TakeViewerHandle(NULL);
 
-  // The loading indicator should show before any content is displayed.
-  EXPECT_THAT(handle.GetJavaScriptBuffer(), HasSubstr(show_loader));
-  handle.ClearJavaScriptBuffer();
-
   std::vector<scoped_refptr<ArticleDistillationUpdate::RefCountedPageProto>>
       pages;
   scoped_refptr<base::RefCountedData<DistilledPageProto>> page_proto =

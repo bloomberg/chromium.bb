@@ -199,6 +199,10 @@ void DomDistillerViewerSource::StartDataRequest(
     std::string css = viewer::GetCss();
     callback.Run(base::RefCountedString::TakeString(&css));
     return;
+  } else if (kViewerLoadingImagePath == path) {
+    std::string image = viewer::GetLoadingImage();
+    callback.Run(base::RefCountedString::TakeString(&image));
+    return;
   } else if (base::StartsWith(path, kViewerSaveFontScalingPath,
                               base::CompareCase::SENSITIVE)) {
     double scale = 1.0;
@@ -259,6 +263,8 @@ std::string DomDistillerViewerSource::GetMimeType(
     const std::string& path) const {
   if (kViewerCssPath == path) {
     return "text/css";
+  } else if (kViewerLoadingImagePath == path) {
+    return "image/svg+xml";
   }
   return "text/html";
 }

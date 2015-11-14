@@ -110,12 +110,15 @@ std::string ReplaceHtmlTemplateValues(
   std::vector<std::string> substitutions;
 
   std::ostringstream css;
+  std::ostringstream svg;
 #if defined(OS_IOS)
   // On iOS the content is inlined as there is no API to detect those requests
   // and return the local data once a page is loaded.
   css << "<style>" << viewer::GetCss() << viewer::GetIOSCss() << "</style>";
+  svg << viewer::GetLoadingImage();
 #else
   css << "<link rel=\"stylesheet\" href=\"/" << kViewerCssPath << "\">";
+  svg << "<img src=\"/" << kViewerLoadingImagePath << "\">";
 #endif  // defined(OS_IOS)
 
   substitutions.push_back(
@@ -131,10 +134,12 @@ std::string ReplaceHtmlTemplateValues(
       l10n_util::GetStringUTF8(
           IDS_DOM_DISTILLER_JAVASCRIPT_DISABLED_CONTENT));                // $5
 
-  substitutions.push_back(original_url);                                  // $6
+  substitutions.push_back(svg.str());                                     // $6
+
+  substitutions.push_back(original_url);                                  // $7
   substitutions.push_back(
       l10n_util::GetStringUTF8(
-          IDS_DOM_DISTILLER_VIEWER_CLOSE_READER_VIEW));                   // $7
+          IDS_DOM_DISTILLER_VIEWER_CLOSE_READER_VIEW));                   // $8
 
   return base::ReplaceStringPlaceholders(html_template, substitutions, NULL);
 }
@@ -187,6 +192,7 @@ const std::string GetErrorPageJs() {
   base::JSONWriter::Write(value, &output);
   page_update += "addToPage(" + output + ");";
   page_update += GetSetTextDirectionJs(std::string("auto"));
+  page_update += GetToggleLoadingIndicatorJs(true);
   if (ShouldShowFeedbackForm()) {
     page_update += GetShowFeedbackFormJs();
   }
@@ -242,6 +248,11 @@ const std::string GetUnsafeArticleContentJs(
 const std::string GetCss() {
   return ResourceBundle::GetSharedInstance().GetRawDataResource(
           IDR_DISTILLER_CSS).as_string();
+}
+
+const std::string GetLoadingImage() {
+  return ResourceBundle::GetSharedInstance().GetRawDataResource(
+          IDR_DISTILLER_LOADING_IMAGE).as_string();
 }
 
 const std::string GetIOSCss() {

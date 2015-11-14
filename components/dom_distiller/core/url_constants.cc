@@ -10,6 +10,7 @@ const char kDomDistillerScheme[] = "chrome-distiller";
 const char kEntryIdKey[] = "entry_id";
 const char kUrlKey[] = "url";
 const char kViewerCssPath[] = "dom_distiller_viewer.css";
+const char kViewerLoadingImagePath[] = "dom_distiller_material_spinner.svg";
 const char kViewerSaveFontScalingPath[] = "savefontscaling/";
 
 }  // namespace dom_distiller

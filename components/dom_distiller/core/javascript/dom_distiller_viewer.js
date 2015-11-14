@@ -48,7 +48,6 @@ function fillYouTubePlaceholders() {
 function showLoadingIndicator(isLastPage) {
   document.getElementById('loadingIndicator').className =
       isLastPage ? 'hidden' : 'visible';
-  updateLoadingIndicator(isLastPage);
 }
 
 // Sets the title.
@@ -119,24 +118,6 @@ function updateToolbarColor() {
 function useFontScaling(scaling) {
   pincher.useFontScaling(scaling);
 }
-
-var updateLoadingIndicator = function() {
-  var colors = ["red", "yellow", "green", "blue"];
-  return function(isLastPage) {
-    if (!isLastPage && typeof this.colorShuffle == "undefined") {
-      var loader = document.getElementById("loader");
-      if (loader) {
-        var colorIndex = -1;
-        this.colorShuffle = setInterval(function() {
-          colorIndex = (colorIndex + 1) % colors.length;
-          loader.className = colors[colorIndex];
-        }, 600);
-      }
-    } else if (isLastPage && typeof this.colorShuffle != "undefined") {
-      clearInterval(this.colorShuffle);
-    }
-  };
-}();
 
 /**
  * Show the distiller feedback form.

@@ -118,7 +118,6 @@ void DomDistillerRequestViewBase::TakeViewerHandle(
   // Getting the viewer handle means this is not an error page, send
   // the viewer JavaScript and show the loading indicator.
   SendCommonJavaScript();
-  SendJavaScript(viewer::GetToggleLoadingIndicatorJs(false));
 }
 
 void DomDistillerRequestViewBase::SendCommonJavaScript() {

@@ -69,6 +69,9 @@ const std::string GetToggleLoadingIndicatorJs(const bool is_last_page);
 // Returns the default CSS to be used for a viewer.
 const std::string GetCss();
 
+// Returns the animated SVG loading image for a viewer.
+const std::string GetLoadingImage();
+
 // Returns the iOS specific CSS to be used for the distiller viewer.
 const std::string GetIOSCss();
 
