@@ -34,6 +34,10 @@ void ChildTraceMessageFilter::OnFilterAdded(IPC::Sender* sender) {
       this);
 }
 
+void ChildTraceMessageFilter::SetSenderForTesting(IPC::Sender* sender) {
+  sender_ = sender;
+}
+
 void ChildTraceMessageFilter::OnFilterRemoved() {
   ChildMemoryDumpManagerDelegateImpl::GetInstance()->SetChildTraceMessageFilter(
       nullptr);
@@ -306,10 +310,6 @@ void ChildTraceMessageFilter::OnSetUMACallback(
     base::HistogramBase::Sample max;
     base::HistogramBase::Count count;
     sample_iterator->Get(&min, &max, &count);
-    if (count == 0) {
-      sample_iterator->Next();
-      continue;
-    }
 
     if (min >= histogram_lower_value && max <= histogram_upper_value) {
       ipc_task_runner_->PostTask(
@@ -322,7 +322,10 @@ void ChildTraceMessageFilter::OnSetUMACallback(
           base::Bind(
               &ChildTraceMessageFilter::SendAbortBackgroundTracingMessage,
               this));
+      break;
     }
+
+    sample_iterator->Next();
   }
 }
 

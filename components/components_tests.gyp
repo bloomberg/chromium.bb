@@ -97,6 +97,9 @@
     'certificate_transparency_unittest_sources': [
       'certificate_transparency/log_proof_fetcher_unittest.cc',
     ],
+    'child_trace_message_filter_unittest_sources': [
+      'tracing/child_trace_message_filter_unittest.cc',
+    ],
     'cloud_devices_unittest_sources': [
       'cloud_devices/common/cloud_devices_urls_unittest.cc',
       'cloud_devices/common/printer_description_unittest.cc',
@@ -859,6 +862,7 @@
         '<@(bubble_unittest_sources)',
         '<@(captive_portal_unittest_sources)',
         '<@(certificate_reporting_unittest_sources)',
+        '<@(child_trace_message_filter_unittest_sources)',
         '<@(cloud_devices_unittest_sources)',
         '<@(component_updater_unittest_sources)',
         '<@(compression_unittest_sources)',

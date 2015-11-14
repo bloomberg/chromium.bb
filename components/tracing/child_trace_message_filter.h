@@ -42,6 +42,8 @@ class TRACING_EXPORT ChildTraceMessageFilter : public IPC::MessageFilter {
   ~ChildTraceMessageFilter() override;
 
  private:
+  friend class ChildTraceMessageFilterTest;
+
   // Message handlers.
   void OnBeginTracing(const std::string& trace_config_str,
                       base::TimeTicks browser_time,
@@ -83,6 +85,8 @@ class TRACING_EXPORT ChildTraceMessageFilter : public IPC::MessageFilter {
       bool has_more_events);
 
   void OnProcessMemoryDumpDone(uint64 dump_guid, bool success);
+
+  void SetSenderForTesting(IPC::Sender* sender);
 
   IPC::Sender* sender_;
   base::SingleThreadTaskRunner* ipc_task_runner_;
