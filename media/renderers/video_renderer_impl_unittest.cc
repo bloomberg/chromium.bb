@@ -114,9 +114,9 @@ class VideoRendererImplTest
                       bool expect_to_success) {
     if (low_delay)
       demuxer_stream_.set_liveness(DemuxerStream::LIVENESS_LIVE);
-    EXPECT_CALL(*decoder_, Initialize(_, _, _, _))
+    EXPECT_CALL(*decoder_, Initialize(_, _, _, _, _))
         .WillOnce(
-            DoAll(SaveArg<3>(&output_cb_), RunCallback<2>(expect_to_success)));
+            DoAll(SaveArg<4>(&output_cb_), RunCallback<3>(expect_to_success)));
     EXPECT_CALL(*this, OnWaitingForDecryptionKey()).Times(0);
     renderer_->Initialize(
         &demuxer_stream_, status_cb, SetCdmReadyCB(),

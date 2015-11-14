@@ -86,9 +86,10 @@ class MockVideoDecoder : public VideoDecoder {
 
   // VideoDecoder implementation.
   virtual std::string GetDisplayName() const;
-  MOCK_METHOD4(Initialize,
+  MOCK_METHOD5(Initialize,
                void(const VideoDecoderConfig& config,
                     bool low_delay,
+                    const SetCdmReadyCB& set_cdm_ready_cb,
                     const InitCB& init_cb,
                     const OutputCB& output_cb));
   MOCK_METHOD2(Decode, void(const scoped_refptr<DecoderBuffer>& buffer,
@@ -107,8 +108,9 @@ class MockAudioDecoder : public AudioDecoder {
 
   // AudioDecoder implementation.
   virtual std::string GetDisplayName() const;
-  MOCK_METHOD3(Initialize,
+  MOCK_METHOD4(Initialize,
                void(const AudioDecoderConfig& config,
+                    const SetCdmReadyCB& set_cdm_ready_cb,
                     const InitCB& init_cb,
                     const OutputCB& output_cb));
   MOCK_METHOD2(Decode,

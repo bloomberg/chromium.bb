@@ -63,8 +63,6 @@ class DecryptingDemuxerStreamTest : public testing::Test {
       : demuxer_stream_(new DecryptingDemuxerStream(
             message_loop_.task_runner(),
             new MediaLog(),
-            base::Bind(&DecryptingDemuxerStreamTest::RequestCdmNotification,
-                       base::Unretained(this)),
             base::Bind(&DecryptingDemuxerStreamTest::OnWaitingForDecryptionKey,
                        base::Unretained(this)))),
         cdm_context_(new StrictMock<MockCdmContext>()),
@@ -88,16 +86,22 @@ class DecryptingDemuxerStreamTest : public testing::Test {
   void InitializeAudioAndExpectStatus(const AudioDecoderConfig& config,
                                       PipelineStatus status) {
     input_audio_stream_->set_audio_decoder_config(config);
-    demuxer_stream_->Initialize(input_audio_stream_.get(),
-                                NewExpectedStatusCB(status));
+    demuxer_stream_->Initialize(
+        input_audio_stream_.get(),
+        base::Bind(&DecryptingDemuxerStreamTest::RequestCdmNotification,
+                   base::Unretained(this)),
+        NewExpectedStatusCB(status));
     message_loop_.RunUntilIdle();
   }
 
   void InitializeVideoAndExpectStatus(const VideoDecoderConfig& config,
                                       PipelineStatus status) {
     input_video_stream_->set_video_decoder_config(config);
-    demuxer_stream_->Initialize(input_video_stream_.get(),
-                                NewExpectedStatusCB(status));
+    demuxer_stream_->Initialize(
+        input_video_stream_.get(),
+        base::Bind(&DecryptingDemuxerStreamTest::RequestCdmNotification,
+                   base::Unretained(this)),
+        NewExpectedStatusCB(status));
     message_loop_.RunUntilIdle();
   }
 

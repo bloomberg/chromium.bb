@@ -33,13 +33,14 @@ class MEDIA_EXPORT DecryptingDemuxerStream : public DemuxerStream {
   DecryptingDemuxerStream(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
       const scoped_refptr<MediaLog>& media_log,
-      const SetCdmReadyCB& set_cdm_ready_cb,
       const base::Closure& waiting_for_decryption_key_cb);
 
   // Cancels all pending operations immediately and fires all pending callbacks.
   ~DecryptingDemuxerStream() override;
 
-  void Initialize(DemuxerStream* stream, const PipelineStatusCB& status_cb);
+  void Initialize(DemuxerStream* stream,
+                  const SetCdmReadyCB& set_cdm_ready_cb,
+                  const PipelineStatusCB& status_cb);
 
   // Cancels all pending operations and fires all pending callbacks. If in
   // kPendingDemuxerRead or kPendingDecrypt state, waits for the pending

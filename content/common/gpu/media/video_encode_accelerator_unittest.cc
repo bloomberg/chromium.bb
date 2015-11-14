@@ -27,6 +27,7 @@
 #include "content/common/gpu/media/video_accelerator_unittest_helpers.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/bitstream_buffer.h"
+#include "media/base/cdm_context.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/media_util.h"
 #include "media/base/test_data_util.h"
@@ -670,8 +671,9 @@ void VideoFrameQualityValidator::Initialize(const gfx::Size& coded_size,
     LOG_ASSERT(0) << "Invalid profile " << profile_;
 
   decoder_->Initialize(
-      config, false, base::Bind(&VideoFrameQualityValidator::InitializeCB,
-                                base::Unretained(this)),
+      config, false, media::SetCdmReadyCB(),
+      base::Bind(&VideoFrameQualityValidator::InitializeCB,
+                 base::Unretained(this)),
       base::Bind(&VideoFrameQualityValidator::VerifyOutputFrame,
                  base::Unretained(this)));
 }

@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "media/base/audio_decoder_config.h"
+#include "media/base/cdm_context.h"
 #include "media/base/channel_layout.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/media_export.h"
@@ -56,9 +57,15 @@ class MEDIA_EXPORT AudioDecoder {
 
   // Initializes an AudioDecoder with the given DemuxerStream, executing the
   // callback upon completion.
+  //
+  // |set_cdm_ready_cb| can be used to set/cancel a CdmReadyCB with which the
+  // decoder can be notified when a CDM is ready. The decoder can use the CDM to
+  // handle encrypted video stream.
+  //
   //  |init_cb| is used to return initialization status.
   //  |output_cb| is called for decoded audio buffers (see Decode()).
   virtual void Initialize(const AudioDecoderConfig& config,
+                          const SetCdmReadyCB& set_cdm_ready_cb,
                           const InitCB& init_cb,
                           const OutputCB& output_cb) = 0;
 

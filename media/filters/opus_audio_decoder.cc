@@ -132,6 +132,7 @@ std::string OpusAudioDecoder::GetDisplayName() const {
 }
 
 void OpusAudioDecoder::Initialize(const AudioDecoderConfig& config,
+                                  const SetCdmReadyCB& /* set_cdm_ready_cb */,
                                   const InitCB& init_cb,
                                   const OutputCB& output_cb) {
   DCHECK(task_runner_->BelongsToCurrentThread());

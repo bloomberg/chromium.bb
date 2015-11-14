@@ -28,14 +28,12 @@ static bool IsStreamValidAndEncrypted(DemuxerStream* stream) {
 DecryptingDemuxerStream::DecryptingDemuxerStream(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     const scoped_refptr<MediaLog>& media_log,
-    const SetCdmReadyCB& set_cdm_ready_cb,
     const base::Closure& waiting_for_decryption_key_cb)
     : task_runner_(task_runner),
       media_log_(media_log),
       state_(kUninitialized),
       waiting_for_decryption_key_cb_(waiting_for_decryption_key_cb),
       demuxer_stream_(NULL),
-      set_cdm_ready_cb_(set_cdm_ready_cb),
       decryptor_(NULL),
       key_added_while_decrypt_pending_(false),
       weak_factory_(this) {}
@@ -45,6 +43,7 @@ std::string DecryptingDemuxerStream::GetDisplayName() const {
 }
 
 void DecryptingDemuxerStream::Initialize(DemuxerStream* stream,
+                                         const SetCdmReadyCB& set_cdm_ready_cb,
                                          const PipelineStatusCB& status_cb) {
   DVLOG(2) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
@@ -53,6 +52,7 @@ void DecryptingDemuxerStream::Initialize(DemuxerStream* stream,
   DCHECK(!demuxer_stream_);
   weak_this_ = weak_factory_.GetWeakPtr();
   demuxer_stream_ = stream;
+  set_cdm_ready_cb_ = set_cdm_ready_cb;
   init_cb_ = BindToCurrentLoop(status_cb);
 
   InitializeDecoderConfig();

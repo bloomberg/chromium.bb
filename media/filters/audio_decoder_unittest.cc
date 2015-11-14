@@ -170,7 +170,7 @@ class AudioDecoderTest : public testing::TestWithParam<DecoderTestData> {
   void InitializeDecoderWithResult(const AudioDecoderConfig& config,
                                    bool success) {
     decoder_->Initialize(
-        config, NewExpectedBoolCB(success),
+        config, SetCdmReadyCB(), NewExpectedBoolCB(success),
         base::Bind(&AudioDecoderTest::OnDecoderOutput, base::Unretained(this)));
     base::RunLoop().RunUntilIdle();
   }

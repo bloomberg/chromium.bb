@@ -35,13 +35,13 @@ class MEDIA_EXPORT DecryptingAudioDecoder : public AudioDecoder {
   DecryptingAudioDecoder(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
       const scoped_refptr<MediaLog>& media_log,
-      const SetCdmReadyCB& set_cdm_ready_cb,
       const base::Closure& waiting_for_decryption_key_cb);
   ~DecryptingAudioDecoder() override;
 
   // AudioDecoder implementation.
   std::string GetDisplayName() const override;
   void Initialize(const AudioDecoderConfig& config,
+                  const SetCdmReadyCB& set_cdm_ready_cb,
                   const InitCB& init_cb,
                   const OutputCB& output_cb) override;
   void Decode(const scoped_refptr<DecoderBuffer>& buffer,

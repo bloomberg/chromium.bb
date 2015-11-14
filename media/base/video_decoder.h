@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
+#include "media/base/cdm_context.h"
 #include "media/base/media_export.h"
 #include "media/base/pipeline_status.h"
 #include "ui/gfx/geometry/size.h"
@@ -63,6 +64,10 @@ class MEDIA_EXPORT VideoDecoder {
   // Initialization should fail if |low_delay| is true and the decoder cannot
   // satisfy the requirements above.
   //
+  // |set_cdm_ready_cb| can be used to set/cancel a CdmReadyCB with which the
+  // decoder can be notified when a CDM is ready. The decoder can use the CDM to
+  // handle encrypted video stream.
+  //
   // Note:
   // 1) The VideoDecoder will be reinitialized if it was initialized before.
   //    Upon reinitialization, all internal buffered frames will be dropped.
@@ -70,6 +75,7 @@ class MEDIA_EXPORT VideoDecoder {
   // 3) No VideoDecoder calls should be made before |init_cb| is executed.
   virtual void Initialize(const VideoDecoderConfig& config,
                           bool low_delay,
+                          const SetCdmReadyCB& set_cdm_ready_cb,
                           const InitCB& init_cb,
                           const OutputCB& output_cb) = 0;
 

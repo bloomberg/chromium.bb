@@ -31,7 +31,6 @@ class MEDIA_EXPORT DecryptingVideoDecoder : public VideoDecoder {
   DecryptingVideoDecoder(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
       const scoped_refptr<MediaLog>& media_log,
-      const SetCdmReadyCB& set_cdm_ready_cb,
       const base::Closure& waiting_for_decryption_key_cb);
   ~DecryptingVideoDecoder() override;
 
@@ -39,6 +38,7 @@ class MEDIA_EXPORT DecryptingVideoDecoder : public VideoDecoder {
   std::string GetDisplayName() const override;
   void Initialize(const VideoDecoderConfig& config,
                   bool low_delay,
+                  const SetCdmReadyCB& set_cdm_ready_cb,
                   const InitCB& init_cb,
                   const OutputCB& output_cb) override;
   void Decode(const scoped_refptr<DecoderBuffer>& buffer,
