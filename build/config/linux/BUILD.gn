@@ -60,6 +60,10 @@ pkg_config("dbus") {
   packages = [ "dbus-1" ]
 }
 
+pkg_config("libffi") {
+  packages = [ "libffi" ]
+}
+
 config("x11") {
   libs = [
     "X11",

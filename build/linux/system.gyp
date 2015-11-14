@@ -1268,5 +1268,26 @@
         }],
       ],
     },
+    {
+      'target_name': 'libffi',
+      'type': 'none',
+      'conditions': [
+        ['_toolset=="target"', {
+          'direct_dependent_settings': {
+            'cflags': [
+              '<!@(<(pkg-config) --cflags libffi)',
+            ],
+          },
+          'link_settings': {
+            'ldflags': [
+              '<!@(<(pkg-config) --libs-only-L --libs-only-other libffi)',
+            ],
+            'libraries': [
+              '<!@(<(pkg-config) --libs-only-l libffi)',
+            ],
+          },
+        }],
+      ],
+    },
   ],
 }

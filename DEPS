@@ -415,6 +415,10 @@ deps_os = {
     # Graphics buffer allocator for Chrome OS.
     'src/third_party/minigbm/src':
      Var('chromium_git') + '/chromiumos/platform/minigbm.git' + '@' + 'f9d2ab79a15a1bb6a1307f3b608964c81c27791b',
+
+    # Display server protocol for Linux.
+    'src/third_party/wayland/src':
+     Var('chromium_git') + '/external/wayland/wayland.git' + '@' + 'b05668f0ad64ad9ba82e124965163daed4172ead',
   },
   'android': {
     'src/third_party/android_protobuf/src':
