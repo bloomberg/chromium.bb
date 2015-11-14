@@ -29,6 +29,16 @@ public:
 
     LineLayoutBox() { }
 
+    LayoutPoint location() const
+    {
+        return toBox()->location();
+    }
+
+    LayoutSize size() const
+    {
+        return toBox()->size();
+    }
+
     void setLogicalHeight(LayoutUnit size)
     {
         toBox()->setLogicalHeight(size);

@@ -233,7 +233,8 @@ public:
     int columnGap() const;
 
     // Accessors for logical width/height and margins in the containing block's block-flow direction.
-    LayoutUnit logicalWidthForChild(const LayoutBox& child) const { return isHorizontalWritingMode() ? child.size().width() : child.size().height(); }
+    LayoutUnit logicalWidthForChild(const LayoutBox& child) const { return logicalWidthForChildSize(child.size()); }
+    LayoutUnit logicalWidthForChildSize(LayoutSize childSize) const { return isHorizontalWritingMode() ? childSize.width() : childSize.height(); }
     LayoutUnit logicalHeightForChild(const LayoutBox& child) const { return isHorizontalWritingMode() ? child.size().height() : child.size().width(); }
     LayoutSize logicalSizeForChild(const LayoutBox& child) const { return isHorizontalWritingMode() ? child.size() : child.size().transposedSize(); }
     LayoutUnit logicalTopForChild(const LayoutBox& child) const { return isHorizontalWritingMode() ? child.location().y() : child.location().x(); }

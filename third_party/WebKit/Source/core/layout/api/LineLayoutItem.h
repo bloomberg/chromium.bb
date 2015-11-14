@@ -309,6 +309,11 @@ public:
         return m_layoutObject->selectionBackgroundColor();
     }
 
+    bool isInFlowPositioned() const
+    {
+        return m_layoutObject->isInFlowPositioned();
+    }
+
     PositionWithAffinity positionForPoint(const LayoutPoint& point)
     {
         return m_layoutObject->positionForPoint(point);

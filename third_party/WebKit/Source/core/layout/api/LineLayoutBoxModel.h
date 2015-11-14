@@ -178,6 +178,11 @@ public:
         return toBoxModel()->boxShadowShouldBeAppliedToBackground(bleedAvoidance, inlineFlowBox);
     }
 
+    LayoutSize offsetForInFlowPosition() const
+    {
+        return toBoxModel()->offsetForInFlowPosition();
+    }
+
 private:
     LayoutBoxModelObject* toBoxModel() { return toLayoutBoxModelObject(layoutObject()); }
     const LayoutBoxModelObject* toBoxModel() const { return toLayoutBoxModelObject(layoutObject()); }
