@@ -5,10 +5,10 @@
 #ifndef CC_OUTPUT_BSP_TREE_H_
 #define CC_OUTPUT_BSP_TREE_H_
 
+#include <deque>
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
-#include "cc/base/scoped_ptr_deque.h"
 #include "cc/base/scoped_ptr_vector.h"
 #include "cc/output/bsp_compare_result.h"
 #include "cc/quads/draw_polygon.h"
@@ -31,7 +31,7 @@ struct BspNode {
 
 class CC_EXPORT BspTree {
  public:
-  explicit BspTree(ScopedPtrDeque<DrawPolygon>* list);
+  explicit BspTree(std::deque<scoped_ptr<DrawPolygon>>* list);
   scoped_ptr<BspNode>& root() { return root_; }
 
   template <typename ActionHandlerType>
@@ -47,7 +47,7 @@ class CC_EXPORT BspTree {
   scoped_ptr<BspNode> root_;
 
   void FromList(ScopedPtrVector<DrawPolygon>* list);
-  void BuildTree(BspNode* node, ScopedPtrDeque<DrawPolygon>* data);
+  void BuildTree(BspNode* node, std::deque<scoped_ptr<DrawPolygon>>* data);
 
   template <typename ActionHandlerType>
   void WalkInOrderAction(ActionHandlerType* action_handler,

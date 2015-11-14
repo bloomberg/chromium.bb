@@ -17,6 +17,7 @@
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "base/trace_event/trace_event.h"
+#include "cc/base/container_util.h"
 #include "cc/base/math_util.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/compositor_frame_metadata.h"
@@ -474,12 +475,12 @@ void GLRenderer::BeginDrawingFrame(DrawingFrame* frame) {
       if (pending_sync_queries_.front()->IsPending())
         break;
 
-      available_sync_queries_.push_back(pending_sync_queries_.take_front());
+      available_sync_queries_.push_back(PopFront(&pending_sync_queries_));
     }
 
     current_sync_query_ = available_sync_queries_.empty()
                               ? make_scoped_ptr(new SyncQuery(gl_))
-                              : available_sync_queries_.take_front();
+                              : PopFront(&available_sync_queries_);
 
     read_lock_fence = current_sync_query_->Begin();
   } else {

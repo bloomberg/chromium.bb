@@ -11,7 +11,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "cc/base/cc_export.h"
-#include "cc/base/scoped_ptr_deque.h"
 #include "cc/output/renderer.h"
 #include "cc/resources/resource.h"
 #include "cc/resources/resource_format.h"
@@ -117,7 +116,7 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider {
   size_t total_resource_count_;
 
   // Holds most recently used resources at the front of the queue.
-  using ResourceDeque = ScopedPtrDeque<PoolResource>;
+  using ResourceDeque = std::deque<scoped_ptr<PoolResource>>;
   ResourceDeque unused_resources_;
   ResourceDeque busy_resources_;
 

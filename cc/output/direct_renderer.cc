@@ -404,10 +404,11 @@ void DirectRenderer::DoDrawPolygon(const DrawPolygon& poly,
   }
 }
 
-void DirectRenderer::FlushPolygons(ScopedPtrDeque<DrawPolygon>* poly_list,
-                                   DrawingFrame* frame,
-                                   const gfx::Rect& render_pass_scissor,
-                                   bool use_render_pass_scissor) {
+void DirectRenderer::FlushPolygons(
+    std::deque<scoped_ptr<DrawPolygon>>* poly_list,
+    DrawingFrame* frame,
+    const gfx::Rect& render_pass_scissor,
+    bool use_render_pass_scissor) {
   if (poly_list->empty()) {
     return;
   }
@@ -473,7 +474,7 @@ void DirectRenderer::DrawRenderPass(DrawingFrame* frame,
       MoveFromDrawToWindowSpace(frame, render_pass_scissor_in_draw_space));
 
   const QuadList& quad_list = render_pass->quad_list;
-  ScopedPtrDeque<DrawPolygon> poly_list;
+  std::deque<scoped_ptr<DrawPolygon>> poly_list;
 
   int next_polygon_id = 0;
   int last_sorting_context_id = 0;

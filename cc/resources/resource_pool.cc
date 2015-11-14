@@ -10,6 +10,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/trace_event/memory_dump_manager.h"
+#include "cc/base/container_util.h"
 #include "cc/resources/resource_provider.h"
 #include "cc/resources/resource_util.h"
 #include "cc/resources/scoped_resource.h"
@@ -79,7 +80,7 @@ ResourcePool::~ResourcePool() {
   DCHECK_EQ(0u, in_use_resources_.size());
 
   while (!busy_resources_.empty()) {
-    DidFinishUsingResource(busy_resources_.take_back());
+    DidFinishUsingResource(PopBack(&busy_resources_));
   }
 
   SetResourceUsageLimits(0, 0);
@@ -96,7 +97,7 @@ Resource* ResourcePool::AcquireResource(const gfx::Size& size,
   // LRU resources within kResourceExpirationDelayMs.
   for (ResourceDeque::iterator it = unused_resources_.begin();
        it != unused_resources_.end(); ++it) {
-    ScopedResource* resource = *it;
+    ScopedResource* resource = it->get();
     DCHECK(resource_provider_->CanLockForWrite(resource->id()));
 
     if (resource->format() != format)
@@ -105,7 +106,8 @@ Resource* ResourcePool::AcquireResource(const gfx::Size& size,
       continue;
 
     // Transfer resource to |in_use_resources_|.
-    in_use_resources_.set(resource->id(), unused_resources_.take(it));
+    in_use_resources_.set(resource->id(), it->Pass());
+    unused_resources_.erase(it);
     in_use_memory_usage_bytes_ += ResourceUtil::UncheckedSizeInBytes<size_t>(
         resource->size(), resource->format());
     return resource;
@@ -137,18 +139,20 @@ Resource* ResourcePool::AcquireResource(const gfx::Size& size,
 Resource* ResourcePool::TryAcquireResourceWithContentId(uint64_t content_id) {
   DCHECK(content_id);
 
-  auto it = std::find_if(unused_resources_.begin(), unused_resources_.end(),
-                         [content_id](const PoolResource* pool_resource) {
-                           return pool_resource->content_id() == content_id;
-                         });
+  auto it =
+      std::find_if(unused_resources_.begin(), unused_resources_.end(),
+                   [content_id](const scoped_ptr<PoolResource>& pool_resource) {
+                     return pool_resource->content_id() == content_id;
+                   });
   if (it == unused_resources_.end())
     return nullptr;
 
-  Resource* resource = *it;
+  Resource* resource = it->get();
   DCHECK(resource_provider_->CanLockForWrite(resource->id()));
 
   // Transfer resource to |in_use_resources_|.
-  in_use_resources_.set(resource->id(), unused_resources_.take(it));
+  in_use_resources_.set(resource->id(), it->Pass());
+  unused_resources_.erase(it);
   in_use_memory_usage_bytes_ += ResourceUtil::UncheckedSizeInBytes<size_t>(
       resource->size(), resource->format());
   return resource;
@@ -192,7 +196,7 @@ void ResourcePool::ReduceResourceUsage() {
     // can't be locked for write might also not be truly free-able.
     // We can free the resource here but it doesn't mean that the
     // memory is necessarily returned to the OS.
-    DeleteResource(unused_resources_.take_back());
+    DeleteResource(PopBack(&unused_resources_));
   }
 }
 
@@ -214,13 +218,15 @@ void ResourcePool::DeleteResource(scoped_ptr<PoolResource> resource) {
 void ResourcePool::CheckBusyResources() {
   for (size_t i = 0; i < busy_resources_.size();) {
     ResourceDeque::iterator it(busy_resources_.begin() + i);
-    PoolResource* resource = *it;
+    PoolResource* resource = it->get();
 
     if (resource_provider_->CanLockForWrite(resource->id())) {
-      DidFinishUsingResource(busy_resources_.take(it));
+      DidFinishUsingResource(it->Pass());
+      busy_resources_.erase(it);
     } else if (resource_provider_->IsLost(resource->id())) {
       // Remove lost resources from pool.
-      DeleteResource(busy_resources_.take(it));
+      DeleteResource(it->Pass());
+      busy_resources_.erase(it);
     } else {
       ++i;
     }
@@ -270,7 +276,7 @@ void ResourcePool::EvictResourcesNotUsedSince(base::TimeTicks time_limit) {
     if (unused_resources_.back()->last_usage() > time_limit)
       return;
 
-    DeleteResource(unused_resources_.take_back());
+    DeleteResource(PopBack(&unused_resources_));
   }
 
   // Also free busy resources older than the delay. With a sufficiently large
@@ -281,7 +287,7 @@ void ResourcePool::EvictResourcesNotUsedSince(base::TimeTicks time_limit) {
     if (busy_resources_.back()->last_usage() > time_limit)
       return;
 
-    DeleteResource(busy_resources_.take_back());
+    DeleteResource(PopBack(&busy_resources_));
   }
 }
 

@@ -5,6 +5,7 @@
 #ifndef CC_RASTER_ONE_COPY_TILE_TASK_WORKER_POOL_H_
 #define CC_RASTER_ONE_COPY_TILE_TASK_WORKER_POOL_H_
 
+#include <deque>
 #include <set>
 
 #include "base/memory/weak_ptr.h"
@@ -12,7 +13,6 @@
 #include "base/time/time.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "base/values.h"
-#include "cc/base/scoped_ptr_deque.h"
 #include "cc/output/context_provider.h"
 #include "cc/raster/tile_task_runner.h"
 #include "cc/raster/tile_task_worker_pool.h"
@@ -152,7 +152,7 @@ class CC_EXPORT OneCopyTileTaskWorkerPool
   // |lock_| must be acquired when accessing the following members.
   using StagingBufferSet = std::set<const StagingBuffer*>;
   StagingBufferSet buffers_;
-  using StagingBufferDeque = ScopedPtrDeque<StagingBuffer>;
+  using StagingBufferDeque = std::deque<scoped_ptr<StagingBuffer>>;
   StagingBufferDeque free_buffers_;
   StagingBufferDeque busy_buffers_;
   int bytes_scheduled_since_last_flush_;

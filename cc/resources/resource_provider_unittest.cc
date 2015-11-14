@@ -5,6 +5,7 @@
 #include "cc/resources/resource_provider.h"
 
 #include <algorithm>
+#include <deque>
 #include <map>
 #include <set>
 #include <vector>
@@ -13,7 +14,6 @@
 #include "base/containers/hash_tables.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
-#include "cc/base/scoped_ptr_deque.h"
 #include "cc/output/output_surface.h"
 #include "cc/resources/returned_resource.h"
 #include "cc/resources/shared_bitmap_manager.h"
@@ -182,12 +182,11 @@ class ResourceProviderContext : public TestWebGraphicsContext3D {
     uint32 sync_point = shared_data_->InsertSyncPoint();
     // Commit the produceTextureCHROMIUM calls at this point, so that
     // they're associated with the sync point.
-    for (PendingProduceTextureList::iterator it =
-             pending_produce_textures_.begin();
-         it != pending_produce_textures_.end();
-         ++it) {
-      shared_data_->ProduceTexture((*it)->mailbox, gpu::SyncToken(sync_point),
-                                   (*it)->texture);
+    for (const scoped_ptr<PendingProduceTexture>& pending_texture :
+         pending_produce_textures_) {
+      shared_data_->ProduceTexture(pending_texture->mailbox,
+                                   gpu::SyncToken(sync_point),
+                                   pending_texture->texture);
     }
     pending_produce_textures_.clear();
     return sync_point;
@@ -357,10 +356,9 @@ class ResourceProviderContext : public TestWebGraphicsContext3D {
     GLbyte mailbox[GL_MAILBOX_SIZE_CHROMIUM];
     scoped_refptr<TestTexture> texture;
   };
-  typedef ScopedPtrDeque<PendingProduceTexture> PendingProduceTextureList;
   ContextSharedData* shared_data_;
   gpu::SyncToken last_waited_sync_token_;
-  PendingProduceTextureList pending_produce_textures_;
+  std::deque<scoped_ptr<PendingProduceTexture>> pending_produce_textures_;
 };
 
 void GetResourcePixels(ResourceProvider* resource_provider,

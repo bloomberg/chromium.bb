@@ -12,6 +12,7 @@
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
+#include "cc/base/container_util.h"
 #include "cc/base/math_util.h"
 #include "cc/debug/traced_value.h"
 #include "cc/raster/raster_buffer.h"
@@ -613,8 +614,8 @@ OneCopyTileTaskWorkerPool::AcquireStagingBuffer(const Resource* resource,
       if (!CheckForQueryResult(gl, busy_buffers_.front()->query_id))
         break;
 
-      MarkStagingBufferAsFree(busy_buffers_.front());
-      free_buffers_.push_back(busy_buffers_.take_front());
+      MarkStagingBufferAsFree(busy_buffers_.front().get());
+      free_buffers_.push_back(PopFront(&busy_buffers_));
     }
   }
 
@@ -628,14 +629,14 @@ OneCopyTileTaskWorkerPool::AcquireStagingBuffer(const Resource* resource,
 
     if (resource_provider_->use_sync_query()) {
       WaitForQueryResult(gl, busy_buffers_.front()->query_id);
-      MarkStagingBufferAsFree(busy_buffers_.front());
-      free_buffers_.push_back(busy_buffers_.take_front());
+      MarkStagingBufferAsFree(busy_buffers_.front().get());
+      free_buffers_.push_back(PopFront(&busy_buffers_));
     } else {
       // Fall-back to glFinish if CHROMIUM_sync_query is not available.
       gl->Finish();
       while (!busy_buffers_.empty()) {
-        MarkStagingBufferAsFree(busy_buffers_.front());
-        free_buffers_.push_back(busy_buffers_.take_front());
+        MarkStagingBufferAsFree(busy_buffers_.front().get());
+        free_buffers_.push_back(PopFront(&busy_buffers_));
       }
     }
   }
@@ -643,13 +644,14 @@ OneCopyTileTaskWorkerPool::AcquireStagingBuffer(const Resource* resource,
   // Find a staging buffer that allows us to perform partial raster when
   // using persistent GpuMemoryBuffers.
   if (use_partial_raster_ && previous_content_id) {
-    StagingBufferDeque::iterator it =
-        std::find_if(free_buffers_.begin(), free_buffers_.end(),
-                     [previous_content_id](const StagingBuffer* buffer) {
-                       return buffer->content_id == previous_content_id;
-                     });
+    StagingBufferDeque::iterator it = std::find_if(
+        free_buffers_.begin(), free_buffers_.end(),
+        [previous_content_id](const scoped_ptr<StagingBuffer>& buffer) {
+          return buffer->content_id == previous_content_id;
+        });
     if (it != free_buffers_.end()) {
-      staging_buffer = free_buffers_.take(it);
+      staging_buffer = it->Pass();
+      free_buffers_.erase(it);
       MarkStagingBufferAsBusy(staging_buffer.get());
     }
   }
@@ -658,12 +660,13 @@ OneCopyTileTaskWorkerPool::AcquireStagingBuffer(const Resource* resource,
   if (!staging_buffer) {
     StagingBufferDeque::iterator it =
         std::find_if(free_buffers_.begin(), free_buffers_.end(),
-                     [resource](const StagingBuffer* buffer) {
+                     [resource](const scoped_ptr<StagingBuffer>& buffer) {
                        return buffer->size == resource->size() &&
                               buffer->format == resource->format();
                      });
     if (it != free_buffers_.end()) {
-      staging_buffer = free_buffers_.take(it);
+      staging_buffer = it->Pass();
+      free_buffers_.erase(it);
       MarkStagingBufferAsBusy(staging_buffer.get());
     }
   }
@@ -681,9 +684,9 @@ OneCopyTileTaskWorkerPool::AcquireStagingBuffer(const Resource* resource,
       break;
 
     free_buffers_.front()->DestroyGLResources(gl);
-    MarkStagingBufferAsBusy(free_buffers_.front());
-    RemoveStagingBuffer(free_buffers_.front());
-    free_buffers_.take_front();
+    MarkStagingBufferAsBusy(free_buffers_.front().get());
+    RemoveStagingBuffer(free_buffers_.front().get());
+    free_buffers_.pop_front();
   }
 
   return staging_buffer.Pass();
@@ -763,9 +766,9 @@ void OneCopyTileTaskWorkerPool::ReleaseBuffersNotUsedSince(
         return;
 
       free_buffers_.front()->DestroyGLResources(gl);
-      MarkStagingBufferAsBusy(free_buffers_.front());
-      RemoveStagingBuffer(free_buffers_.front());
-      free_buffers_.take_front();
+      MarkStagingBufferAsBusy(free_buffers_.front().get());
+      RemoveStagingBuffer(free_buffers_.front().get());
+      free_buffers_.pop_front();
     }
 
     while (!busy_buffers_.empty()) {
@@ -773,8 +776,8 @@ void OneCopyTileTaskWorkerPool::ReleaseBuffersNotUsedSince(
         return;
 
       busy_buffers_.front()->DestroyGLResources(gl);
-      RemoveStagingBuffer(busy_buffers_.front());
-      busy_buffers_.take_front();
+      RemoveStagingBuffer(busy_buffers_.front().get());
+      busy_buffers_.pop_front();
     }
   }
 }

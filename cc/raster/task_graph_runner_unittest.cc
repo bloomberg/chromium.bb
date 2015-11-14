@@ -4,12 +4,13 @@
 
 #include "cc/raster/task_graph_runner.h"
 
+#include <deque>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/simple_thread.h"
-#include "cc/base/scoped_ptr_deque.h"
+#include "cc/base/container_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cc {
@@ -181,8 +182,8 @@ class TaskGraphRunnerTest : public TaskGraphRunnerTestBase,
   }
   void TearDown() override {
     task_graph_runner_->Shutdown();
-    while (workers_.size()) {
-      scoped_ptr<base::DelegateSimpleThread> worker = workers_.take_front();
+    while (!workers_.empty()) {
+      scoped_ptr<base::DelegateSimpleThread> worker = PopFront(&workers_);
       worker->Join();
     }
   }
@@ -191,7 +192,7 @@ class TaskGraphRunnerTest : public TaskGraphRunnerTestBase,
   // Overridden from base::DelegateSimpleThread::Delegate:
   void Run() override { task_graph_runner_->Run(); }
 
-  ScopedPtrDeque<base::DelegateSimpleThread> workers_;
+  std::deque<scoped_ptr<base::DelegateSimpleThread>> workers_;
 };
 
 TEST_P(TaskGraphRunnerTest, Basic) {
