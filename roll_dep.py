@@ -67,7 +67,8 @@ def should_show_log(upstream_url):
   return True
 
 
-def roll(root, deps_dir, roll_to, key, reviewers, bug, no_log, log_limit):
+def roll(root, deps_dir, roll_to, key, reviewers, bug, no_log, log_limit,
+         ignore_dirty_tree=False):
   deps = os.path.join(root, 'DEPS')
   try:
     with open(deps, 'rb') as f:
@@ -76,7 +77,7 @@ def roll(root, deps_dir, roll_to, key, reviewers, bug, no_log, log_limit):
     raise Error('Ensure the script is run in the directory '
                 'containing DEPS file.')
 
-  if not is_pristine(root):
+  if not ignore_dirty_tree and not is_pristine(root):
     raise Error('Ensure %s is clean first.' % root)
 
   full_dir = os.path.normpath(os.path.join(os.path.dirname(root), deps_dir))
@@ -170,6 +171,9 @@ def roll(root, deps_dir, roll_to, key, reviewers, bug, no_log, log_limit):
 def main():
   parser = argparse.ArgumentParser(description=__doc__)
   parser.add_argument(
+      '--ignore-dirty-tree', action='store_true',
+      help='Roll anyways, even if there is a diff.')
+  parser.add_argument(
       '-r', '--reviewer',
       help='To specify multiple reviewers, use comma separated list, e.g. '
            '-r joe,jane,john. Defaults to @chromium.org')
@@ -204,7 +208,8 @@ def main():
         reviewers,
         args.bug,
         args.no_log,
-        args.log_limit)
+        args.log_limit,
+        args.ignore_dirty_tree)
 
   except Error as e:
     sys.stderr.write('error: %s\n' % e)
