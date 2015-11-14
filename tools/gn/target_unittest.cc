@@ -234,6 +234,31 @@ TEST(Target, InheritCompleteStaticLibNoIheritedStaticLibDeps) {
   ASSERT_FALSE(a.OnResolved(&err));
 }
 
+TEST(Target, NoActionDepPropgation) {
+  TestWithScope setup;
+  Err err;
+
+  // Create a dependency chain:
+  //   A (exe) -> B (action) -> C (source_set)
+  {
+    TestTarget a(setup, "//foo:a", Target::EXECUTABLE);
+    TestTarget b(setup, "//foo:b", Target::ACTION);
+    TestTarget c(setup, "//foo:c", Target::SOURCE_SET);
+
+    a.private_deps().push_back(LabelTargetPair(&b));
+    b.private_deps().push_back(LabelTargetPair(&c));
+
+    ASSERT_TRUE(c.OnResolved(&err));
+    ASSERT_TRUE(b.OnResolved(&err));
+    ASSERT_TRUE(a.OnResolved(&err));
+
+    // The executable should not have inherited the source set across the
+    // action.
+    std::vector<const Target*> libs = a.inherited_libraries().GetOrdered();
+    ASSERT_TRUE(libs.empty());
+  }
+}
+
 TEST(Target, GetComputedOutputName) {
   TestWithScope setup;
   Err err;

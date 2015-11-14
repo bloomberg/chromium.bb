@@ -68,7 +68,9 @@ class Target : public Item {
   // Can be linked into other targets.
   bool IsLinkable() const;
 
-  // Can have dependencies linked in.
+  // True if the target links dependencies rather than propogated up the graph.
+  // This is also true of action and copy steps even though they don't link
+  // dependencies, because they also don't propogate libraries up.
   bool IsFinal() const;
 
   // Will be the empty string to use the target label as the output name.

@@ -198,6 +198,9 @@ bool Target::IsFinal() const {
   return output_type_ == EXECUTABLE ||
          output_type_ == SHARED_LIBRARY ||
          output_type_ == LOADABLE_MODULE ||
+         output_type_ == ACTION ||
+         output_type_ == ACTION_FOREACH ||
+         output_type_ == COPY_FILES ||
          (output_type_ == STATIC_LIBRARY && complete_static_lib_);
 }
 
@@ -322,17 +325,13 @@ void Target::PullPublicConfigsFrom(const Target* from) {
 
 void Target::PullRecursiveHardDeps() {
   for (const auto& pair : GetDeps(DEPS_LINKED)) {
+    // Direct hard dependencies.
     if (pair.ptr->hard_dep())
       recursive_hard_deps_.insert(pair.ptr);
 
-    // Android STL doesn't like insert(begin, end) so do it manually.
-    // TODO(brettw) this can be changed to
-    // insert(iter.target()->begin(), iter.target()->end())
-    // when Android uses a better STL.
-    for (std::set<const Target*>::const_iterator cur =
-             pair.ptr->recursive_hard_deps().begin();
-         cur != pair.ptr->recursive_hard_deps().end(); ++cur)
-      recursive_hard_deps_.insert(*cur);
+    // Recursive hard dependencies of all dependencies.
+    recursive_hard_deps_.insert(pair.ptr->recursive_hard_deps().begin(),
+                                pair.ptr->recursive_hard_deps().end());
   }
 }
 

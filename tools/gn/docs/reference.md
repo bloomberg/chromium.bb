@@ -437,7 +437,7 @@
           Prints the label of the target.
       output
           Prints the first output file for the target relative to the
-          current directory.
+          root build directory.
 
   --testonly=(true|false)
       Restrict outputs to targets with the testonly flag set
@@ -581,7 +581,7 @@
           Prints the label of the target.
       output
           Prints the first output file for the target relative to the
-          current directory.
+          root build directory.
 
   --all-toolchains
       Matches all toolchains. When set, if the label pattern does not
@@ -636,9 +636,12 @@
   The two targets can appear in either order: paths will be found going
   in either direction.
 
-  Each dependency will be annotated with its type. By default, only the
-  first path encountered will be printed, which is not necessarily the
-  shortest path.
+  By default, a single path will be printed. If there is a path with
+  only public dependencies, the shortest public path will be printed.
+  Otherwise, the shortest path using either public or private
+  dependencies will be printed. If --with-data is specified, data deps
+  will also be considered. If there are multiple shortest paths, an
+  arbitrary one will be selected.
 
 ```
 
@@ -646,7 +649,16 @@
 
 ```
   --all
-     Prints all paths found rather than just the first one.
+     Prints all paths found rather than just the first one. Public paths
+     will be printed first in order of increasing length, followed by
+     non-public paths in order of increasing length.
+
+  --public
+     Considers only public paths. Can't be used with --with-data.
+
+  --with-data
+     Additionally follows data deps. Without this flag, only public and
+     private linked deps will be followed. Can't be used with --public.
 
 ```
 
@@ -719,7 +731,7 @@
           Prints the label of the target.
       output
           Prints the first output file for the target relative to the
-          current directory.
+          root build directory.
 
   -q
      Quiet. If nothing matches, don't print any output. Without this
@@ -817,6 +829,9 @@
   if an input file changes) by writing a depfile when the script is run
   (see "gn help depfile"). This is more flexible than "inputs".
 
+  If the command line length is very long, you can use response files
+  to pass args to your script. See "gn help response_file_contents".
+
   It is recommended you put inputs to your script in the "sources"
   variable, and stuff like other Python files required to run your
   script in the "inputs" variable.
@@ -858,8 +873,8 @@
 ### **Variables**
 
 ```
-  args, console, data, data_deps, depfile, deps, outputs*, script*,
-  inputs, sources
+  args, console, data, data_deps, depfile, deps, inputs, outputs*,
+  response_file_contents, script*, sources
   * = required
 
 ```
@@ -907,6 +922,9 @@
   listed in the "inputs" variable. These files are treated as
   dependencies of each script invocation.
 
+  If the command line length is very long, you can use response files
+  to pass args to your script. See "gn help response_file_contents".
+
   You can dynamically write input dependencies (for incremental rebuilds
   if an input file changes) by writing a depfile when the script is run
   (see "gn help depfile"). This is more flexible than "inputs".
@@ -945,8 +963,8 @@
 ### **Variables**
 
 ```
-  args, console, data, data_deps, depfile, deps, outputs*, script*,
-  inputs, sources*
+  args, console, data, data_deps, depfile, deps, inputs, outputs*,
+  response_file_contents, script*, sources*
   * = required
 
 ```
@@ -2553,6 +2571,13 @@
         omitted from the label for targets in the default toolchain, and
         will be included for targets in other toolchains.
 
+    {{label_name}}
+        The short name of the label of the target. This is the part
+        after the colon. For "//foo/bar:baz" this will be "baz".
+        Unlike {{target_output_name}}, this is not affected by the
+        "output_prefix" in the tool or the "output_name" set
+        on the target.
+
     {{output}}
         The relative path and name of the output(s) of the current
         build step. If there is more than one output, this will expand
@@ -2570,6 +2595,7 @@
         The short name of the current target with no path information,
         or the value of the "output_name" variable if one is specified
         in the target. This will include the "output_prefix" if any.
+        See also {{label_name}}.
         Example: "libfoo" for the target named "foo" and an
         output prefix for the linker tool of "lib".
 
@@ -2868,12 +2894,17 @@
   written, the file will not be updated. This will prevent unnecessary
   rebuilds of targets that depend on this file.
 
+  One use for write_file is to write a list of inputs to an script
+  that might be too long for the command line. However, it is
+  preferrable to use response files for this purpose. See
+  "gn help response_file_contents".
+
   TODO(brettw) we probably need an optional third argument to control
   list formatting.
 
 ```
 
-### **Arguments**:
+### **Arguments**
 
 ```
   filename
@@ -3789,14 +3820,34 @@
 ```
   A list of target labels.
 
-  Specifies private dependencies of a target. Shared and dynamic
-  libraries will be linked into the current target.
+  Specifies private dependencies of a target. Private dependencies are
+  propagated up the dependency tree and linked to dependant targets, but
+  do not grant the ability to include headers from the dependency.
+  Public configs are not forwarded.
 
-  These dependencies are private in that it does not grant dependent
-  targets the ability to include headers from the dependency, and direct
-  dependent configs are not forwarded.
+```
 
-  See also "public_deps" and "data_deps".
+### **Details of dependency propagation**
+
+```
+  Source sets, shared libraries, and non-complete static libraries
+  will be propagated up the dependency tree across groups, non-complete
+  static libraries and source sets.
+
+  Executables, shared libraries, and complete static libraries will
+  link all propagated targets and stop propagation. Actions and copy
+  steps also stop propagation, allowing them to take a library as an
+  input but not force dependants to link to it.
+
+  Propagation of all_dependent_configs and public_configs happens
+  independently of target type. all_dependent_configs are always
+  propagated across all types of targets, and public_configs
+  are always propagated across public deps of all types of targets.
+
+  Data dependencies are propagated differently. See
+  "gn help data_deps" and "gn help runtime_deps".
+
+  See also "public_deps".
 
 
 ```
@@ -4011,9 +4062,12 @@
   When constructing the linker command, the "lib_prefix" attribute of
   the linker tool in the current toolchain will be prepended to each
   library. So your BUILD file should not specify the switch prefix
-  (like "-l"). On Mac, libraries ending in ".framework" will be
-  special-cased: the switch "-framework" will be prepended instead of
-  the lib_prefix, and the ".framework" suffix will be trimmed.
+  (like "-l").
+
+  Libraries ending in ".framework" will be special-cased: the switch
+  "-framework" will be prepended instead of the lib_prefix, and the
+  ".framework" suffix will be trimmed. This is to support the way Mac
+  links framework dependencies.
 
   libs and lib_dirs work differently than other flags in two respects.
   First, then are inherited across static library boundaries until a
@@ -4298,9 +4352,9 @@
 ## **public_deps**: Declare public dependencies.
 
 ```
-  Public dependencies are like private dependencies ("deps") but
-  additionally express that the current target exposes the listed deps
-  as part of its public API.
+  Public dependencies are like private dependencies (see
+  "gn help deps") but additionally express that the current target
+  exposes the listed deps as part of its public API.
 
   This has several ramifications:
 
@@ -4347,6 +4401,47 @@
   shared_library("b") {
     deps = [ ":super_secret_implementation_details" ]
     public_deps = [ ":c" ]
+  }
+
+
+```
+## **response_file_contents**: Contents of a response file for actions.
+
+```
+  Sometimes the arguments passed to a script can be too long for the
+  system's command-line capabilities. This is especially the case on
+  Windows where the maximum command-line length is less than 8K. A
+  response file allows you to pass an unlimited amount of data to a
+  script in a temporary file for an action or action_foreach target.
+
+  If the response_file_contents variable is defined and non-empty, the
+  list will be treated as script args (including possibly substitution
+  patterns) that will be written to a temporary file at build time.
+  The name of the temporary file will be substituted for
+  "{{response_file_name}}" in the script args.
+
+  The response file contents will always be quoted and escaped
+  according to Unix shell rules. To parse the response file, the Python
+  script should use "shlex.split(file_contents)".
+
+```
+
+### **Example**
+
+```
+  action("process_lots_of_files") {
+    script = "process.py",
+    inputs = [ ... huge list of files ... ]
+
+    # Write all the inputs to a response file for the script. Also,
+    # make the paths relative to the script working directory.
+    response_file_contents = rebase_path(inputs, root_build_dir)
+
+    # The script expects the name of the response file in --file-list.
+    args = [
+      "--enable-foo",
+      "--file-list={{response_file_name}}",
+    ]
   }
 
 
