@@ -10,7 +10,7 @@
 
 #include "base/callback.h"
 #include "base/observer_list.h"
-#include "components/mus/public/cpp/types.h"
+#include "components/mus/common/types.h"
 #include "components/mus/public/interfaces/mus_constants.mojom.h"
 #include "components/mus/public/interfaces/surface_id.mojom.h"
 #include "components/mus/public/interfaces/window_tree.mojom.h"

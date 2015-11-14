@@ -8,7 +8,7 @@
 #include <set>
 
 #include "base/macros.h"
-#include "components/mus/public/cpp/types.h"
+#include "components/mus/common/types.h"
 
 namespace mus {
 namespace ws {

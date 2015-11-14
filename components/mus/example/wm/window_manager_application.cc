@@ -4,11 +4,11 @@
 
 #include "components/mus/example/wm/window_manager_application.h"
 
+#include "components/mus/common/util.h"
 #include "components/mus/example/wm/background_layout.h"
 #include "components/mus/example/wm/shelf_layout.h"
 #include "components/mus/example/wm/window_layout.h"
 #include "components/mus/example/wm/window_manager_impl.h"
-#include "components/mus/public/cpp/util.h"
 #include "components/mus/public/cpp/window.h"
 #include "components/mus/public/cpp/window_tree_connection.h"
 #include "components/mus/public/cpp/window_tree_host_factory.h"

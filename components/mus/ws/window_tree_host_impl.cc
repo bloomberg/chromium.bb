@@ -5,7 +5,7 @@
 #include "components/mus/ws/window_tree_host_impl.h"
 
 #include "base/strings/utf_string_conversions.h"
-#include "components/mus/public/cpp/types.h"
+#include "components/mus/common/types.h"
 #include "components/mus/ws/connection_manager.h"
 #include "components/mus/ws/display_manager.h"
 #include "components/mus/ws/focus_controller.h"

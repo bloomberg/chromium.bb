@@ -41,6 +41,7 @@ source_set("example_wm_lib") {
   deps = [
     "//base",
     "//components/mus/example/wm/public/interfaces",
+    "//components/mus/common",
     "//components/mus/public/cpp",
     "//components/mus/public/interfaces",
     "//mojo/application/public/cpp",

@@ -4,7 +4,11 @@
 
 source_set("common") {
   sources = [
+    "args.cc",
+    "args.h",
     "transient_window_utils.h",
+    "types.h",
+    "util.h",
   ]
   deps = [
     "//components/mus/public/interfaces",

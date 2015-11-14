@@ -1,5 +1,6 @@
 include_rules = [
   "+components/bitmap_uploader",
+  "+components/mus/common",
   "+components/mus/public",
   "+components/web_view/public",
   "+gpu/GLES2",

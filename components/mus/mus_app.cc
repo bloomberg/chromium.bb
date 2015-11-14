@@ -5,8 +5,8 @@
 #include "components/mus/mus_app.h"
 
 #include "base/stl_util.h"
+#include "components/mus/common/args.h"
 #include "components/mus/gles2/gpu_impl.h"
-#include "components/mus/public/cpp/args.h"
 #include "components/mus/surfaces/surfaces_scheduler.h"
 #include "components/mus/ws/client_connection.h"
 #include "components/mus/ws/connection_manager.h"

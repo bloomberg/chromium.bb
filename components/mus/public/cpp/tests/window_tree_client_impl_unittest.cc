@@ -5,11 +5,11 @@
 #include "components/mus/public/cpp/lib/window_tree_client_impl.h"
 
 #include "base/logging.h"
+#include "components/mus/common/util.h"
 #include "components/mus/public/cpp/lib/window_private.h"
 #include "components/mus/public/cpp/property_type_converters.h"
 #include "components/mus/public/cpp/tests/test_window.h"
 #include "components/mus/public/cpp/tests/test_window_tree.h"
-#include "components/mus/public/cpp/util.h"
 #include "components/mus/public/cpp/window.h"
 #include "components/mus/public/cpp/window_observer.h"
 #include "components/mus/public/cpp/window_property.h"

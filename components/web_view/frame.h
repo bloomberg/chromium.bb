@@ -11,7 +11,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
-#include "components/mus/public/cpp/types.h"
+#include "components/mus/common/types.h"
 #include "components/mus/public/cpp/window_observer.h"
 #include "components/web_view/public/interfaces/frame.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"

@@ -5,8 +5,8 @@
 #ifndef COMPONENTS_MUS_WS_IDS_H_
 #define COMPONENTS_MUS_WS_IDS_H_
 
-#include "components/mus/public/cpp/types.h"
-#include "components/mus/public/cpp/util.h"
+#include "components/mus/common/types.h"
+#include "components/mus/common/util.h"
 
 namespace mus {
 

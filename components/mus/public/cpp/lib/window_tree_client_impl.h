@@ -6,7 +6,7 @@
 #define COMPONENTS_MUS_PUBLIC_CPP_LIB_WINDOW_TREE_CLIENT_IMPL_H_
 
 #include "base/containers/scoped_ptr_map.h"
-#include "components/mus/public/cpp/types.h"
+#include "components/mus/common/types.h"
 #include "components/mus/public/cpp/window.h"
 #include "components/mus/public/cpp/window_tree_connection.h"
 #include "components/mus/public/interfaces/window_tree.mojom.h"

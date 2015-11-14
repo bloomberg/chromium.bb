@@ -6,7 +6,7 @@
 
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "components/mus/public/cpp/util.h"
+#include "components/mus/common/util.h"
 #include "mojo/common/common_type_converters.h"
 
 using mojo::Array;

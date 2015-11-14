@@ -8,7 +8,7 @@
 #include <set>
 
 #include "base/macros.h"
-#include "components/mus/public/cpp/types.h"
+#include "components/mus/common/types.h"
 #include "components/mus/public/cpp/window_observer.h"
 #include "components/mus/public/interfaces/window_manager.mojom.h"
 

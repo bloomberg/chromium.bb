@@ -5,9 +5,9 @@
 #include "components/mus/public/cpp/lib/window_tree_client_impl.h"
 
 #include "base/bind.h"
+#include "components/mus/common/util.h"
 #include "components/mus/public/cpp/lib/in_flight_change.h"
 #include "components/mus/public/cpp/lib/window_private.h"
-#include "components/mus/public/cpp/util.h"
 #include "components/mus/public/cpp/window_manager_delegate.h"
 #include "components/mus/public/cpp/window_observer.h"
 #include "components/mus/public/cpp/window_tree_connection.h"

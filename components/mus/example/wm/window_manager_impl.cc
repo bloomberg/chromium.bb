@@ -4,13 +4,13 @@
 
 #include "components/mus/example/wm/window_manager_impl.h"
 
+#include "components/mus/common/types.h"
 #include "components/mus/example/wm/move_loop.h"
 #include "components/mus/example/wm/non_client_frame_controller.h"
 #include "components/mus/example/wm/property_util.h"
 #include "components/mus/example/wm/public/interfaces/container.mojom.h"
 #include "components/mus/example/wm/window_manager_application.h"
 #include "components/mus/public/cpp/property_type_converters.h"
-#include "components/mus/public/cpp/types.h"
 #include "components/mus/public/cpp/window.h"
 #include "components/mus/public/cpp/window_property.h"
 #include "components/mus/public/cpp/window_tree_connection.h"

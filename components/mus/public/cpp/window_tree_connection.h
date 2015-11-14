@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "components/mus/public/cpp/types.h"
+#include "components/mus/common/types.h"
 #include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 

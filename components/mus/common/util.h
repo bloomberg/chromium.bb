@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_MUS_PUBLIC_CPP_UTIL_H_
-#define COMPONENTS_MUS_PUBLIC_CPP_UTIL_H_
+#ifndef COMPONENTS_MUS_COMMON_UTIL_H_
+#define COMPONENTS_MUS_COMMON_UTIL_H_
 
-#include "components/mus/public/cpp/types.h"
+#include "components/mus/common/types.h"
 
 // TODO(beng): #$*&@#(@ MacOSX SDK!
 #if defined(HiWord)
@@ -27,4 +27,4 @@ inline uint16_t LoWord(uint32_t id) {
 
 }  // namespace mus
 
-#endif  // COMPONENTS_MUS_PUBLIC_CPP_UTIL_H_
+#endif  // COMPONENTS_MUS_COMMON_UTIL_H_

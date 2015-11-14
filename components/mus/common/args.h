@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_MUS_PUBLIC_CPP_ARGS_H_
-#define COMPONENTS_MUS_PUBLIC_CPP_ARGS_H_
+#ifndef COMPONENTS_MUS_COMMON_ARGS_H_
+#define COMPONENTS_MUS_COMMON_ARGS_H_
 
 namespace mus {
 
@@ -13,4 +13,4 @@ extern const char kUseX11TestConfig[];
 
 }  // namespace mus
 
-#endif  // COMPONENTS_MUS_PUBLIC_CPP_ARGS_H_
+#endif  // COMPONENTS_MUS_COMMON_ARGS_H_

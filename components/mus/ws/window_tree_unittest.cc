@@ -6,8 +6,8 @@
 #include <vector>
 
 #include "base/message_loop/message_loop.h"
-#include "components/mus/public/cpp/types.h"
-#include "components/mus/public/cpp/util.h"
+#include "components/mus/common/types.h"
+#include "components/mus/common/util.h"
 #include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "components/mus/surfaces/surfaces_state.h"
 #include "components/mus/ws/client_connection.h"

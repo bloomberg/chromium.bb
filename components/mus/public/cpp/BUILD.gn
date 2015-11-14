@@ -39,7 +39,6 @@ source_set("cpp") {
   ]
 
   public_deps = [
-    ":common",
     "../interfaces",
     "//mojo/services/network/public/interfaces",
   ]
@@ -65,14 +64,5 @@ source_set("cpp") {
 
   data_deps = [
     "//components/mus",
-  ]
-}
-
-source_set("common") {
-  sources = [
-    "args.h",
-    "lib/args.cc",
-    "types.h",
-    "util.h",
   ]
 }

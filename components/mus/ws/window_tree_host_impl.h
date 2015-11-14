@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "components/mus/public/cpp/types.h"
+#include "components/mus/common/types.h"
 #include "components/mus/public/interfaces/window_tree_host.mojom.h"
 #include "components/mus/ws/display_manager.h"
 #include "components/mus/ws/event_dispatcher.h"
