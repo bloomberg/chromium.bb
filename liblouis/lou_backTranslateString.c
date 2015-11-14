@@ -53,25 +53,37 @@ static int *outputPositions;
 static int *inputPositions;
 static int cursorPosition;
 static int cursorStatus;
+static const TranslationTableRule **appliedRules;
+static int maxAppliedRules;
+static int appliedRulesCount;
 
 int EXPORT_CALL
-lou_backTranslateString (const char *tableList, const widechar
-			 * inbuf,
-			 int *inlen, widechar * outbuf, int *outlen, 
-			 formtype
-			 *typeform, char *spacing, int modex)
+lou_backTranslateString (const char *tableList, const widechar * inbuf,
+			 int *inlen, widechar * outbuf, int *outlen,
+			 formtype *typeform, char *spacing, int modex)
 {
   return lou_backTranslate (tableList, inbuf, inlen, outbuf, outlen,
 			    typeform, spacing, NULL, NULL, NULL, modex);
 }
 
 int EXPORT_CALL
-lou_backTranslate (const char *tableList, const
-		   widechar
-		   * inbuf,
+lou_backTranslate (const char *tableList, const widechar *inbuf,
 		   int *inlen, widechar * outbuf, int *outlen,
-		   formtype *typeform, char *spacing, int
-		   *outputPos, int *inputPos, int *cursorPos, int modex)
+		   formtype *typeform, char *spacing, int *outputPos,
+		   int *inputPos, int *cursorPos, int modex)
+{
+  return backTranslateWithTracing(tableList, inbuf, inlen, outbuf, outlen,
+				  typeform, spacing, outputPos, inputPos,
+				  cursorPos, modex, NULL, NULL);
+}
+
+int
+backTranslateWithTracing (const char *tableList, const widechar * inbuf,
+			  int *inlen, widechar * outbuf,
+			  int *outlen, formtype *typeform,
+			  char *spacing, int *outputPos,
+			  int *inputPos, int *cursorPos, int modex,
+			  const TranslationTableRule **rules, int *rulesLen)
 {
   int k;
   int goodTrans = 1;
@@ -125,6 +137,17 @@ lou_backTranslate (const char *tableList, const
     {
       if (!(passbuf2 = liblouis_allocMem (alloc_passbuf2, srcmax, destmax)))
 	return 0;
+    }
+  appliedRulesCount = 0;
+  if (rules != NULL && rulesLen != NULL)
+    {
+      appliedRules = rules;
+      maxAppliedRules = *rulesLen;
+    }
+  else
+    {
+      appliedRules = NULL;
+      maxAppliedRules = 0;
     }
   currentPass = table->numPasses;
   if ((mode & pass1Only))
@@ -296,6 +319,8 @@ lou_backTranslate (const char *tableList, const
     }
   if (cursorPos != NULL)
     *cursorPos = cursorPosition;
+  if (rulesLen != NULL)
+    *rulesLen = appliedRulesCount;
   return goodTrans;
 }
 
@@ -1007,6 +1032,8 @@ makeCorrections ()
 	  currentOutput[dest++] = currentInput[src++];
 	  break;
 	case CTO_Correct:
+	  if (appliedRules != NULL && appliedRulesCount < maxAppliedRules)
+	    appliedRules[appliedRulesCount++] = currentRule;
 	  if (!back_passDoAction ())
 	    goto failure;
 	  src = endReplace;
@@ -1033,6 +1060,8 @@ backTranslateString ()
 /*the main translation loop */
       back_setBefore ();
       back_selectRule ();
+      if (appliedRules != NULL && appliedRulesCount < maxAppliedRules)
+	appliedRules[appliedRulesCount++] = currentRule;
       /* processing before replacement */
       switch (currentOpcode)
 	{
@@ -1616,6 +1645,8 @@ translatePass ()
 	case CTO_Pass2:
 	case CTO_Pass3:
 	case CTO_Pass4:
+	  if (appliedRules != NULL && appliedRulesCount < maxAppliedRules)
+	    appliedRules[appliedRulesCount++] = currentRule;
 	  if (!back_passDoAction ())
 	    goto failure;
 	  src = endReplace;

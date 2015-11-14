@@ -53,24 +53,22 @@ lou_translateString (const char *tableList, const widechar
 }
 
 int EXPORT_CALL
-lou_translate (const char *tableList, const widechar
-	       * inbufx,
+lou_translate (const char *tableList, const widechar * inbufx,
 	       int *inlen, widechar * outbuf, int *outlen,
 	       formtype *typeform, char *spacing, int *outputPos,
 	       int *inputPos, int *cursorPos, int modex)
 {
-  return trace_translate (tableList, inbufx, inlen, outbuf, outlen,
-			  typeform, spacing, outputPos, inputPos, cursorPos,
-			  NULL, NULL, modex);
+  return translateWithTracing (tableList, inbufx, inlen, outbuf, outlen,
+			       typeform, spacing, outputPos, inputPos, cursorPos,
+			       modex, NULL, NULL);
 }
 
 int
-trace_translate (const char *tableList, const widechar * inbufx,
-		 int *inlen, widechar * outbuf, int *outlen,
-		 formtype *typeform, char *spacing, int *outputPos,
-		 int *inputPos, int *cursorPos,
-		 const TranslationTableRule ** rules, int *rulesLen,
-		 int modex)
+translateWithTracing (const char *tableList, const widechar * inbufx,
+		      int *inlen, widechar * outbuf, int *outlen,
+		      formtype *typeform, char *spacing, int *outputPos,
+		      int *inputPos, int *cursorPos, int modex,
+		      const TranslationTableRule **rules, int *rulesLen)
 {
   int k;
   int goodTrans = 1;
@@ -1837,8 +1835,9 @@ translateString ()
       if (!insertIndicators ())
         goto failure;
       for_selectRule ();
-      if (appliedRules != NULL && appliedRulesCount < maxAppliedRules)
-        appliedRules[appliedRulesCount++] = transRule;
+      if (transOpcode != CTO_Context)
+	if (appliedRules != NULL && appliedRulesCount < maxAppliedRules)
+	  appliedRules[appliedRulesCount++] = transRule;
       srcIncremented = 1;
       prevSrc = src;
       switch (transOpcode)        /*Rules that pre-empt context and swap */
