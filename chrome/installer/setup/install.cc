@@ -283,7 +283,7 @@ bool CreateVisualElementsManifest(const base::FilePath& src_path,
         "      ShowNameOnSquare150x150Logo='on'\r\n"
         "      Square150x150Logo='%ls\\Logo.png'\r\n"
         "      Square70x70Logo='%ls\\SmallLogo.png'\r\n"
-        "      ForegroundText='light'>\r\n"
+        "      ForegroundText='light'\r\n"
         "      BackgroundColor='#323232'/>\r\n"
         "</Application>\r\n";
 
