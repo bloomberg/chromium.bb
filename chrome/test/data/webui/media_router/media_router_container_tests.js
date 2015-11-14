@@ -391,21 +391,18 @@ cr.define('media_router_container', function() {
         container.showCastModeList_();
         checkElementsVisibleWithId(['cast-mode-list',
                                     'container-header',
-                                    'device-missing',
-                                    'sink-list']);
+                                    'device-missing']);
 
         // Set a non-blocking issue. The issue should stay hidden.
         container.issue = fakeNonBlockingIssue;
         checkElementsVisibleWithId(['cast-mode-list',
                                     'container-header',
-                                    'device-missing',
-                                    'sink-list']);
+                                    'device-missing']);
 
         // Set a blocking issue. The issue should stay hidden.
         container.issue = fakeBlockingIssue;
         checkElementsVisibleWithId(['container-header',
-                                    'device-missing',
-                                    'sink-list']);
+                                    'device-missing']);
       });
 
 
@@ -414,8 +411,7 @@ cr.define('media_router_container', function() {
         container.showRouteDetails_();
         checkElementsVisibleWithId(['container-header',
                                     'device-missing',
-                                    'route-details',
-                                    'sink-list']);
+                                    'route-details']);
       });
 
       // Tests for expected visible UI when the view is ROUTE_DETAILS, and there
@@ -429,8 +425,7 @@ cr.define('media_router_container', function() {
           checkElementsVisibleWithId(['container-header',
                                       'device-missing',
                                       'issue-banner',
-                                      'route-details',
-                                      'sink-list']);
+                                      'route-details']);
           done();
         });
       });
@@ -446,8 +441,7 @@ cr.define('media_router_container', function() {
         setTimeout(function() {
           checkElementsVisibleWithId(['container-header',
                                       'device-missing',
-                                      'issue-banner',
-                                      'sink-list']);
+                                      'issue-banner']);
           done();
          });
       });
@@ -457,7 +451,6 @@ cr.define('media_router_container', function() {
         container.showSinkList_();
         checkElementsVisibleWithId(['container-header',
                                     'device-missing',
-                                    'sink-list',
                                     'sink-list-view']);
 
         // Set an non-empty sink list.

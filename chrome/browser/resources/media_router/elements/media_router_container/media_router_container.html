@@ -69,7 +69,7 @@
         </a>
       </div>
       <paper-menu id="sink-list"
-          hidden$="[[computeSinkListHidden_(currentView_, issue)]]">
+          hidden$="[[computeSinkListHidden_(sinksToShow_)]]">
         <template is="dom-repeat" id="sinkList" items="[[sinksToShow_]]">
           <paper-item class="sink" on-click="onSinkClick_">
             <div class="sink-content">
