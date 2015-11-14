@@ -240,6 +240,8 @@
         'apk_name': 'ChromeSyncShell',
         'native_lib_target': 'libchrome_sync_shell',
         'java_in_dir': 'java',
+        'enable_multidex': 1,
+        'enable_multidex_configurations': ['Debug'],
         'conditions': [
           # Only attempt loading the library from the APK for 64 bit devices
           # until the number of 32 bit devices which don't support this
