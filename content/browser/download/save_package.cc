@@ -1085,11 +1085,14 @@ void SavePackage::GetSerializedHtmlWithLocalLinksForFrame(
     }
   }
 
+  base::FilePath directory = target_tree_node->IsMainFrame()
+                                 ? saved_main_directory_path_.BaseName()
+                                 : base::FilePath();
+
   // Ask target frame to serialize itself.
   RenderFrameHostImpl* target = target_tree_node->current_frame_host();
   target->Send(new FrameMsg_GetSerializedHtmlWithLocalLinks(
-      target->GetRoutingID(), saved_links, saved_file_paths,
-      saved_main_directory_path_.BaseName()));
+      target->GetRoutingID(), saved_links, saved_file_paths, directory));
 }
 
 // Process the serialized HTML content data of a specified frame

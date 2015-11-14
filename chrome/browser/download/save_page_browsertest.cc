@@ -900,12 +900,15 @@ IN_PROC_BROWSER_TEST_F(SavePageSitePerProcessBrowserTest,
 
 // Test suite that verifies that the frame tree "looks" the same before
 // and after a save-page-as.
-class SavePageMultiFrameBrowserTest : public SavePageSitePerProcessBrowserTest {
+class SavePageMultiFrameBrowserTest
+    : public SavePageSitePerProcessBrowserTest,
+      public ::testing::WithParamInterface<content::SavePageType> {
  protected:
   void TestMultiFramePage(content::SavePageType save_page_type,
                           const GURL& url,
                           int expected_number_of_frames,
-                          const std::vector<std::string>& expected_substrings) {
+                          const std::vector<std::string>& expected_substrings,
+                          bool skip_verification_of_original_page = false) {
     // Navigate to the test page and verify if test expectations
     // are met (this is mostly a sanity check - a failure to meet
     // expectations would probably mean that there is a test bug
@@ -913,10 +916,10 @@ class SavePageMultiFrameBrowserTest : public SavePageSitePerProcessBrowserTest {
     ui_test_utils::NavigateToURL(browser(), url);
     DLOG(INFO) << "Verifying test expectations for original page... : "
                << GetCurrentTab(browser())->GetLastCommittedURL();
-    // TODO(lukasza/paulmeyer): crbug.com/457440: Can uncomment
-    // the assertion below once find-in-page works for oop frames.
-    // AssertExpectationsAboutCurrentTab(expected_number_of_frames,
-    //                                   expected_substrings);
+    if (!skip_verification_of_original_page) {
+      AssertExpectationsAboutCurrentTab(expected_number_of_frames,
+                                        expected_substrings);
+    }
 
     // Save the page.
     base::FilePath full_file_name, dir;
@@ -974,40 +977,37 @@ class SavePageMultiFrameBrowserTest : public SavePageSitePerProcessBrowserTest {
   }
 };
 
-// TODO(lukasza): Pivot on mhtml-vs-complete-html using test params
-// (once all SavePageMultiFrameBrowserTest are enabled).
+// Test coverage for OOPIFs for CompleteHtml (crbug.com/526786) and
+// MHTML (crbug.com/538766) as well as for redirected iframes saved
+// as MHTML (crbug.com/539936).
+IN_PROC_BROWSER_TEST_P(SavePageMultiFrameBrowserTest, CrossSite) {
+  content::SavePageType save_page_type = GetParam();
 
-IN_PROC_BROWSER_TEST_F(SavePageMultiFrameBrowserTest,
-                       CrossSiteFrames_CompleteHtml) {
   std::vector<std::string> expected_substrings{
       "frames-xsite.htm: 896fd88d-a77a-4f46-afd8-24db7d5af9c2",
       "a.htm: 1b8aae2b-e164-462f-bd5b-98aa366205f2",
       "b.htm: 3a35f7fa-96a9-4487-9f18-4470263907fa",
   };
+
   GURL url(
       embedded_test_server()->GetURL("a.com", "/save_page/frames-xsite.htm"));
-  TestMultiFramePage(content::SAVE_PAGE_TYPE_AS_COMPLETE_HTML, url, 3,
-                     expected_substrings);
+
+  // TODO(lukasza): crbug.com/538766: Enable CrossSite testing of MHTML.
+  if (save_page_type == content::SAVE_PAGE_TYPE_AS_MHTML)
+    return;
+
+  // TODO(lukasza/paulmeyer): crbug.com/457440: Can enable verification
+  // of the original page once find-in-page works for OOP frames.
+  bool skip_verification_of_original_page = true;
+
+  TestMultiFramePage(save_page_type, url, 3, expected_substrings,
+                     skip_verification_of_original_page);
 }
 
-// Test for crbug.com/538766 and crbug.com/539936.
-// Disabled because both bugs are not yet fixed.
-IN_PROC_BROWSER_TEST_F(SavePageMultiFrameBrowserTest,
-                       DISABLED_CrossSiteFrames_MHTML) {
-  std::vector<std::string> expected_substrings{
-      "frames-xsite.htm: 896fd88d-a77a-4f46-afd8-24db7d5af9c2",
-      "a.htm: 1b8aae2b-e164-462f-bd5b-98aa366205f2",
-      "b.htm: 3a35f7fa-96a9-4487-9f18-4470263907fa",
-  };
-  GURL url(
-      embedded_test_server()->GetURL("a.com", "/save_page/frames-xsite.htm"));
-  TestMultiFramePage(content::SAVE_PAGE_TYPE_AS_MHTML, url, 3,
-                     expected_substrings);
-}
+// Test for crbug.com/553478.
+IN_PROC_BROWSER_TEST_P(SavePageMultiFrameBrowserTest, DISABLED_ObjectElements) {
+  content::SavePageType save_page_type = GetParam();
 
-// Test for crbug.com/553478 (complete html part).
-IN_PROC_BROWSER_TEST_F(SavePageMultiFrameBrowserTest,
-                       DISABLED_ObjectElements_CompleteHtml) {
   // 4 = main frame + iframe + object w/ html doc + object w/ pdf doc
   // (svg and png objects do not get a separate frame)
   int expected_number_of_frames = 4;
@@ -1017,55 +1017,50 @@ IN_PROC_BROWSER_TEST_F(SavePageMultiFrameBrowserTest,
       "a.htm: 1b8aae2b-e164-462f-bd5b-98aa366205f2",
       "b.htm: 3a35f7fa-96a9-4487-9f18-4470263907fa",
   };
+
   GURL url(
       embedded_test_server()->GetURL("a.com", "/save_page/frames-objects.htm"));
-  TestMultiFramePage(content::SAVE_PAGE_TYPE_AS_COMPLETE_HTML, url,
-                     expected_number_of_frames, expected_substrings);
+
+  TestMultiFramePage(save_page_type, url, expected_number_of_frames,
+                     expected_substrings);
 }
 
-// Test for crbug.com/553478 (mhtml part).
-// See crbug.com/553478#c3 for some MHTML-specific notes.
-IN_PROC_BROWSER_TEST_F(SavePageMultiFrameBrowserTest,
-                       DISABLED_ObjectElements_MHTML) {
-  // 4 = main frame + iframe + object w/ html doc + object w/ pdf doc
-  // (svg and png objects do not get a separate frame)
-  int expected_number_of_frames = 4;
+IN_PROC_BROWSER_TEST_P(SavePageMultiFrameBrowserTest, AboutBlank) {
+  content::SavePageType save_page_type = GetParam();
 
   std::vector<std::string> expected_substrings{
-      "frames-objects.htm: 8da13db4-a512-4d9b-b1c5-dc1c134234b9",
-      "a.htm: 1b8aae2b-e164-462f-bd5b-98aa366205f2",
+      "main: acb0609d-eb10-4c26-83e2-ad8afb7b0ff3",
+      "sub1: b124df3a-d39f-47a1-ae04-5bb5d0bf549e",
+      "sub2: 07014068-604d-45ae-884f-a068cfe7bc0a",
+      "sub3: 06cc8fcc-c692-4a1a-a10f-1645b746e8f4",
+  };
+
+  GURL url(embedded_test_server()->GetURL("a.com",
+                                          "/save_page/frames-about-blank.htm"));
+
+  TestMultiFramePage(save_page_type, url, 4, expected_substrings);
+}
+
+// Test for crbug.com/554666.
+IN_PROC_BROWSER_TEST_P(SavePageMultiFrameBrowserTest, NestedFrames) {
+  content::SavePageType save_page_type = GetParam();
+
+  std::vector<std::string> expected_substrings{
+      "frames-nested.htm: 4388232f-8d45-4d2e-9807-721b381be153",
+      "frames-nested2.htm: 6d23dc47-f283-4977-96ec-66bcf72301a4",
       "b.htm: 3a35f7fa-96a9-4487-9f18-4470263907fa",
   };
+
   GURL url(
-      embedded_test_server()->GetURL("a.com", "/save_page/frames-objects.htm"));
-  TestMultiFramePage(content::SAVE_PAGE_TYPE_AS_MHTML, url,
-                     expected_number_of_frames, expected_substrings);
+      embedded_test_server()->GetURL("a.com", "/save_page/frames-nested.htm"));
+
+  TestMultiFramePage(save_page_type, url, 3, expected_substrings);
 }
 
-IN_PROC_BROWSER_TEST_F(SavePageMultiFrameBrowserTest, AboutBlank_CompleteHtml) {
-  std::vector<std::string> expected_substrings{
-      "main: acb0609d-eb10-4c26-83e2-ad8afb7b0ff3",
-      "sub1: b124df3a-d39f-47a1-ae04-5bb5d0bf549e",
-      "sub2: 07014068-604d-45ae-884f-a068cfe7bc0a",
-      "sub3: 06cc8fcc-c692-4a1a-a10f-1645b746e8f4",
-  };
-  GURL url(embedded_test_server()->GetURL("a.com",
-                                          "/save_page/frames-about-blank.htm"));
-  TestMultiFramePage(content::SAVE_PAGE_TYPE_AS_COMPLETE_HTML, url, 4,
-                     expected_substrings);
-}
-
-IN_PROC_BROWSER_TEST_F(SavePageMultiFrameBrowserTest, AboutBlank_MHTML) {
-  std::vector<std::string> expected_substrings{
-      "main: acb0609d-eb10-4c26-83e2-ad8afb7b0ff3",
-      "sub1: b124df3a-d39f-47a1-ae04-5bb5d0bf549e",
-      "sub2: 07014068-604d-45ae-884f-a068cfe7bc0a",
-      "sub3: 06cc8fcc-c692-4a1a-a10f-1645b746e8f4",
-  };
-  GURL url(embedded_test_server()->GetURL("a.com",
-                                          "/save_page/frames-about-blank.htm"));
-  TestMultiFramePage(content::SAVE_PAGE_TYPE_AS_MHTML, url, 4,
-                     expected_substrings);
-}
+INSTANTIATE_TEST_CASE_P(
+    ,
+    SavePageMultiFrameBrowserTest,
+    ::testing::Values(content::SAVE_PAGE_TYPE_AS_COMPLETE_HTML,
+                      content::SAVE_PAGE_TYPE_AS_MHTML));
 
 }  // namespace
