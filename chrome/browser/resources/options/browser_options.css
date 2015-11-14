@@ -42,6 +42,7 @@ html[dir=rtl] #account-picture-wrapper {
 
 #account-picture {
   height: 56px;
+  object-fit: cover;
   vertical-align: middle;
   width: 56px;
 }
