@@ -85,7 +85,7 @@ class MediaRouterMojoImpl : public MediaRouter,
   void AddIssue(const Issue& issue) override;
   void ClearIssue(const Issue::Id& issue_id) override;
   void OnPresentationSessionDetached(const MediaRoute::Id& route_id) override;
-  bool HasLocalRoute() const override;
+  bool HasLocalDisplayRoute() const override;
 
   const std::string& media_route_provider_extension_id() const {
     return media_route_provider_extension_id_;
@@ -109,6 +109,7 @@ class MediaRouterMojoImpl : public MediaRouter,
   FRIEND_TEST_ALL_PREFIXES(MediaRouterMojoImplTest,
                            RegisterAndUnregisterMediaRoutesObserver);
   FRIEND_TEST_ALL_PREFIXES(MediaRouterMojoImplTest, HandleIssue);
+  FRIEND_TEST_ALL_PREFIXES(MediaRouterMojoImplTest, HasLocalRoute);
   FRIEND_TEST_ALL_PREFIXES(MediaRouterMojoExtensionTest,
                            DeferredBindingAndSuspension);
   FRIEND_TEST_ALL_PREFIXES(MediaRouterMojoExtensionTest,
@@ -265,7 +266,7 @@ class MediaRouterMojoImpl : public MediaRouter,
     interfaces::MediaRoutePtr media_route,
     const mojo::String& error_text);
 
-  void UpdateHasLocalRoute(bool has_local_route);
+  void UpdateHasLocalDisplayRoute(bool has_local_display_route);
 
   // Callback invoked by |event_page_tracker_| after an attempt to wake the
   // component extension. If |success| is false, the pending request queue is
@@ -338,8 +339,8 @@ class MediaRouterMojoImpl : public MediaRouter,
   // therefore stale.
   std::string instance_id_;
 
-  // Set to true if there are routes started on this instance.
-  bool has_local_route_;
+  // Set to true if there are displayable routes started on this instance.
+  bool has_local_display_route_;
 
   // Observes local routes in order to notify LocalMediaRoutesObservers when
   // there are no more local routes.

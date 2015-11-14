@@ -118,8 +118,9 @@ class MediaRouter : public KeyedService {
   virtual void OnPresentationSessionDetached(
       const MediaRoute::Id& route_id) = 0;
 
-  // Returns whether or not there is currently an active local route.
-  virtual bool HasLocalRoute() const = 0;
+  // Returns whether or not there is currently an active local displayable
+  // route.
+  virtual bool HasLocalDisplayRoute() const = 0;
 
  private:
   friend class IssuesObserver;

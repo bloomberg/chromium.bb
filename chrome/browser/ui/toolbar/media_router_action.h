@@ -54,7 +54,7 @@ class MediaRouterAction : public ToolbarActionViewController,
   void OnIssueUpdated(const media_router::Issue* issue) override;
 
   // media_router::LocalMediaRoutesObserver:
-  void OnHasLocalRouteUpdated(bool has_local_route) override;
+  void OnHasLocalDisplayRouteUpdated(bool has_local_display_route) override;
 
   // ToolbarStripModelObserver:
   void ActiveTabChanged(content::WebContents* old_contents,
@@ -103,8 +103,8 @@ class MediaRouterAction : public ToolbarActionViewController,
   // in OnIssueUpdated(), which is called by the IssueManager.
   scoped_ptr<media_router::Issue> issue_;
 
-  // Whether a local active route exists.
-  bool has_local_route_;
+  // Whether a local displayable active route exists.
+  bool has_local_display_route_;
 
   ToolbarActionViewDelegate* delegate_;
 

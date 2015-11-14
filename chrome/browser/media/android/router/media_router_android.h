@@ -51,7 +51,7 @@ class MediaRouterAndroid : public MediaRouter {
   void AddIssue(const Issue& issue) override;
   void ClearIssue(const Issue::Id& issue_id) override;
   void OnPresentationSessionDetached(const MediaRoute::Id& route_id) override;
-  bool HasLocalRoute() const override;
+  bool HasLocalDisplayRoute() const override;
 
   // The methods called by the Java counterpart.
 

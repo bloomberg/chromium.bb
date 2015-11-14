@@ -209,7 +209,7 @@ void MediaRouterAndroid::OnPresentationSessionDetached(
       env, java_media_router_.obj(), jroute_id.obj());
 }
 
-bool MediaRouterAndroid::HasLocalRoute() const {
+bool MediaRouterAndroid::HasLocalDisplayRoute() const {
   NOTIMPLEMENTED();
   return false;
 }

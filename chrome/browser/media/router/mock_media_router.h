@@ -54,7 +54,7 @@ class MockMediaRouter : public MediaRouter {
   MOCK_METHOD1(ClearIssue, void(const Issue::Id& issue_id));
   MOCK_METHOD1(OnPresentationSessionDetached,
                void(const MediaRoute::Id& route_id));
-  MOCK_CONST_METHOD0(HasLocalRoute, bool());
+  MOCK_CONST_METHOD0(HasLocalDisplayRoute, bool());
   MOCK_METHOD1(RegisterIssuesObserver, void(IssuesObserver* observer));
   MOCK_METHOD1(UnregisterIssuesObserver, void(IssuesObserver* observer));
   MOCK_METHOD1(RegisterMediaSinksObserver, bool(MediaSinksObserver* observer));

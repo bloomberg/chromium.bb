@@ -175,6 +175,8 @@ TEST_F(MediaRouterMojoImplTest, CreateRoute) {
   route->media_sink_id = kSinkId;
   route->media_route_id = kRouteId;
   route->description = kDescription;
+  route->is_local = true;
+  route->for_display = true;
 
   // Use a lambda function as an invocation target here to work around
   // a limitation with GMock::Invoke that prevents it from using move-only types
@@ -189,6 +191,9 @@ TEST_F(MediaRouterMojoImplTest, CreateRoute) {
           const interfaces::MediaRouteProvider::CreateRouteCallback& cb) {
         cb.Run(route.Pass(), mojo::String());
       }));
+
+  // MediaRouterMojoImpl will start observing local displayable routes as a
+  // result of having one created.
   EXPECT_CALL(mock_media_route_provider_, StartObservingMediaRoutes());
 
   RouteResponseCallbackHandler handler;
@@ -231,6 +236,8 @@ TEST_F(MediaRouterMojoImplTest, JoinRoute) {
   route->media_sink_id = kSinkId;
   route->media_route_id = kRouteId;
   route->description = kDescription;
+  route->is_local = true;
+  route->for_display = true;
 
   // Use a lambda function as an invocation target here to work around
   // a limitation with GMock::Invoke that prevents it from using move-only types
@@ -244,6 +251,9 @@ TEST_F(MediaRouterMojoImplTest, JoinRoute) {
           const interfaces::MediaRouteProvider::JoinRouteCallback& cb) {
         cb.Run(route.Pass(), mojo::String());
       }));
+
+  // MediaRouterMojoImpl will start observing local displayable routes as a
+  // result of having one created.
   EXPECT_CALL(mock_media_route_provider_, StartObservingMediaRoutes());
 
   RouteResponseCallbackHandler handler;
@@ -751,6 +761,49 @@ TEST_F(MediaRouterMojoImplTest, PresentationConnectionStateObserver) {
       route_id,
       PresentationConnectionState::PRESENTATION_CONNECTION_STATE_TERMINATED);
   ProcessEventLoop();
+}
+
+TEST_F(MediaRouterMojoImplTest, HasLocalRoute) {
+  EXPECT_FALSE(router()->HasLocalDisplayRoute());
+  interfaces::MediaRoutePtr mojo_route1 = interfaces::MediaRoute::New();
+  mojo_route1->media_route_id = "routeId1";
+  mojo_route1->media_sink_id = "sinkId";
+  mojo_route1->is_local = false;
+  mojo_route1->for_display = false;
+  router()->RouteResponseReceived("presentationId1",
+                                  std::vector<MediaRouteResponseCallback>(),
+                                  mojo_route1.Pass(), "");
+  EXPECT_FALSE(router()->HasLocalDisplayRoute());
+
+  interfaces::MediaRoutePtr mojo_route2 = interfaces::MediaRoute::New();
+  mojo_route2->media_route_id = "routeId2";
+  mojo_route2->media_sink_id = "sinkId";
+  mojo_route2->is_local = false;
+  mojo_route2->for_display = true;
+  router()->RouteResponseReceived("presentationId2",
+                                  std::vector<MediaRouteResponseCallback>(),
+                                  mojo_route2.Pass(), "");
+  EXPECT_FALSE(router()->HasLocalDisplayRoute());
+
+  interfaces::MediaRoutePtr mojo_route3 = interfaces::MediaRoute::New();
+  mojo_route3->media_route_id = "routeId3";
+  mojo_route3->media_sink_id = "sinkId";
+  mojo_route3->is_local = true;
+  mojo_route3->for_display = false;
+  router()->RouteResponseReceived("presentationId3",
+                                  std::vector<MediaRouteResponseCallback>(),
+                                  mojo_route3.Pass(), "");
+  EXPECT_FALSE(router()->HasLocalDisplayRoute());
+
+  interfaces::MediaRoutePtr mojo_route4 = interfaces::MediaRoute::New();
+  mojo_route4->media_route_id = "routeId4";
+  mojo_route4->media_sink_id = "sinkId";
+  mojo_route4->is_local = true;
+  mojo_route4->for_display = true;
+  router()->RouteResponseReceived("presentationId4",
+                                  std::vector<MediaRouteResponseCallback>(),
+                                  mojo_route4.Pass(), "");
+  EXPECT_TRUE(router()->HasLocalDisplayRoute());
 }
 
 TEST_F(MediaRouterMojoImplTest, QueuedWhileAsleep) {

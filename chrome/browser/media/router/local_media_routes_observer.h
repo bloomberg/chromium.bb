@@ -11,15 +11,15 @@ namespace media_router {
 
 class MediaRouter;
 
-// Base class for observing whether local routes exist in the Media Router.
+// Base class for observing whether local displayable routes exist in the Media
+// Router.
 class LocalMediaRoutesObserver {
  public:
   explicit LocalMediaRoutesObserver(MediaRouter* router);
   virtual ~LocalMediaRoutesObserver();
 
-  // Called when a local route has been successfully created or if there has
-  // been an update to the list of routes.
-  virtual void OnHasLocalRouteUpdated(bool has_local_route) {}
+  // Called when |router_| now has, or no longer have, local display routes.
+  virtual void OnHasLocalDisplayRouteUpdated(bool has_local_route) {}
 
  private:
   MediaRouter* const router_;

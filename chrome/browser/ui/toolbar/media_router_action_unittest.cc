@@ -195,12 +195,12 @@ TEST_F(MediaRouterActionUnitTest, UpdateRoutes) {
       idle_icon(), action()->GetIcon(nullptr, gfx::Size())));
 
   // Update |current_icon_| since there is a local route.
-  action()->OnHasLocalRouteUpdated(true);
+  action()->OnHasLocalDisplayRouteUpdated(true);
   EXPECT_TRUE(gfx::test::AreImagesEqual(
       active_icon(), action()->GetIcon(nullptr, gfx::Size())));
 
   // Update |current_icon_| since there are no local routes.
-  action()->OnHasLocalRouteUpdated(false);
+  action()->OnHasLocalDisplayRouteUpdated(false);
   EXPECT_TRUE(gfx::test::AreImagesEqual(
       idle_icon(), action()->GetIcon(nullptr, gfx::Size())));
 }
@@ -218,12 +218,12 @@ TEST_F(MediaRouterActionUnitTest, UpdateIssuesAndRoutes) {
       idle_icon(), action()->GetIcon(nullptr, gfx::Size())));
 
   // Non-local routes also do not have an effect on |current_icon_|.
-  action()->OnHasLocalRouteUpdated(false);
+  action()->OnHasLocalDisplayRouteUpdated(false);
   EXPECT_TRUE(gfx::test::AreImagesEqual(
       idle_icon(), action()->GetIcon(nullptr, gfx::Size())));
 
   // Update |current_icon_| since there is a local route.
-  action()->OnHasLocalRouteUpdated(true);
+  action()->OnHasLocalDisplayRouteUpdated(true);
   EXPECT_TRUE(gfx::test::AreImagesEqual(
       active_icon(), action()->GetIcon(nullptr, gfx::Size())));
 
@@ -234,7 +234,7 @@ TEST_F(MediaRouterActionUnitTest, UpdateIssuesAndRoutes) {
       warning_icon(), action()->GetIcon(nullptr, gfx::Size())));
 
   // Closing a local route makes no difference to |current_icon_|.
-  action()->OnHasLocalRouteUpdated(false);
+  action()->OnHasLocalDisplayRouteUpdated(false);
   EXPECT_TRUE(gfx::test::AreImagesEqual(
       warning_icon(), action()->GetIcon(nullptr, gfx::Size())));
 
@@ -244,7 +244,7 @@ TEST_F(MediaRouterActionUnitTest, UpdateIssuesAndRoutes) {
       error_icon(), action()->GetIcon(nullptr, gfx::Size())));
 
   // Fatal issues still take precedent over local routes.
-  action()->OnHasLocalRouteUpdated(true);
+  action()->OnHasLocalDisplayRouteUpdated(true);
   EXPECT_TRUE(gfx::test::AreImagesEqual(
       error_icon(), action()->GetIcon(nullptr, gfx::Size())));
 
@@ -255,7 +255,7 @@ TEST_F(MediaRouterActionUnitTest, UpdateIssuesAndRoutes) {
       active_icon(), action()->GetIcon(nullptr, gfx::Size())));
 
   // Update |current_icon_| when the local route is closed.
-  action()->OnHasLocalRouteUpdated(false);
+  action()->OnHasLocalDisplayRouteUpdated(false);
   EXPECT_TRUE(gfx::test::AreImagesEqual(
       idle_icon(), action()->GetIcon(nullptr, gfx::Size())));
 }

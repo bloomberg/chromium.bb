@@ -50,7 +50,7 @@ MediaRouterAction::MediaRouterAction(Browser* browser)
           ui::ResourceBundle::GetSharedInstance()
               .GetImageNamed(IDR_MEDIA_ROUTER_WARNING_ICON)),
       current_icon_(&media_router_idle_icon_),
-      has_local_route_(false),
+      has_local_display_route_(false),
       delegate_(nullptr),
       browser_(browser),
       platform_delegate_(MediaRouterActionPlatformDelegate::Create(browser)),
@@ -61,7 +61,8 @@ MediaRouterAction::MediaRouterAction(Browser* browser)
   tab_strip_model_observer_.Add(browser_->tab_strip_model());
 
   RegisterObserver();
-  OnHasLocalRouteUpdated(GetMediaRouter(browser)->HasLocalRoute());
+  OnHasLocalDisplayRouteUpdated(
+      GetMediaRouter(browser)->HasLocalDisplayRoute());
 }
 
 MediaRouterAction::~MediaRouterAction() {
@@ -158,8 +159,9 @@ void MediaRouterAction::OnIssueUpdated(const media_router::Issue* issue) {
   MaybeUpdateIcon();
 }
 
-void MediaRouterAction::OnHasLocalRouteUpdated(bool has_local_route) {
-  has_local_route_ = has_local_route;
+void MediaRouterAction::OnHasLocalDisplayRouteUpdated(
+    bool has_local_display_route) {
+  has_local_display_route_ = has_local_display_route;
   MaybeUpdateIcon();
 }
 
@@ -237,6 +239,6 @@ const gfx::Image* MediaRouterAction::GetCurrentIcon() const {
       return &media_router_warning_icon_;
   }
 
-  return has_local_route_ ?
-      &media_router_active_icon_ : &media_router_idle_icon_;
+  return has_local_display_route_ ? &media_router_active_icon_
+                                  : &media_router_idle_icon_;
 }
