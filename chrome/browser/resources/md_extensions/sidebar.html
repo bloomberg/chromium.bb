@@ -9,15 +9,18 @@
 <dom-module id="extensions-sidebar">
   <template>
     <paper-menu id="section-menu">
-      <paper-item class="section-menu-item" id="sections-extensions">
+      <paper-item class="section-menu-item" id="sections-extensions"
+          on-tap="onExtensionsTap_">
         <iron-icon icon="extension"></iron-icon>
         <span i18n-content="sidebarExtensions"></span>
       </paper-item>
-      <paper-item class="section-menu-item" id="sections-apps">
+      <paper-item class="section-menu-item" id="sections-apps"
+          on-tap="onAppsTap_">
         <iron-icon icon="apps"></iron-icon>
         <span i18n-content="sidebarApps"></span>
       </paper-item>
-      <paper-item class="section-menu-item" id="sections-websites">
+      <paper-item class="section-menu-item" id="sections-websites"
+          on-tap="onWebsitesTap_">
         <iron-icon icon="cloud"></iron-icon>
         <span i18n-content="sidebarWebsites"></span>
       </paper-item>

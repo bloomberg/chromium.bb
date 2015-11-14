@@ -8,6 +8,7 @@ cr.define('extension_sidebar_tests', function() {
    * A mock delegate for the sidebar.
    * @constructor
    * @implements {extensions.SidebarDelegate}
+   * @implements {extensions.SidebarScrollDelegate}
    * @extends {extension_test_util.ClickMock}
    */
   function MockDelegate() {}
@@ -26,6 +27,15 @@ cr.define('extension_sidebar_tests', function() {
 
     /** @override */
     updateAllExtensions: function() {},
+
+    /** @override */
+    scrollToExtensions: function() {},
+
+    /** @override */
+    scrollToApps: function() {},
+
+    /** @override */
+    scrollToWebsites: function() {},
   };
 
   /** @enum {string} */
@@ -51,6 +61,7 @@ cr.define('extension_sidebar_tests', function() {
         sidebar = document.querySelector('extensions-manager').sidebar;
         mockDelegate = new MockDelegate();
         sidebar.setDelegate(mockDelegate);
+        sidebar.setScrollDelegate(mockDelegate);
       });
 
       test(assert(TestNames.Layout), function() {
@@ -83,6 +94,12 @@ cr.define('extension_sidebar_tests', function() {
             sidebar.$$('#pack-extensions'), 'packExtension', []);
         mockDelegate.testClickingCalls(
             sidebar.$$('#update-now'), 'updateAllExtensions', []);
+        mockDelegate.testClickingCalls(
+            sidebar.$$('#sections-extensions'), 'scrollToExtensions', []);
+        mockDelegate.testClickingCalls(
+            sidebar.$$('#sections-apps'), 'scrollToApps', []);
+        mockDelegate.testClickingCalls(
+            sidebar.$$('#sections-websites'), 'scrollToWebsites', []);
       });
     });
   }

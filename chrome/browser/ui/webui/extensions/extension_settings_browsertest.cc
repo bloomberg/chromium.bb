@@ -82,6 +82,16 @@ void ExtensionSettingsUIBrowserTest::InstallPackagedApp() {
       test_data_dir_.AppendASCII("packaged_app")));
 }
 
+void ExtensionSettingsUIBrowserTest::InstallHostedApp() {
+  EXPECT_TRUE(InstallUnpackedExtension(
+      test_data_dir_.AppendASCII("hosted_app")));
+}
+
+void ExtensionSettingsUIBrowserTest::InstallPlatformApp() {
+  EXPECT_TRUE(InstallUnpackedExtension(
+      test_data_dir_.AppendASCII("platform_apps").AppendASCII("minimal")));
+}
+
 void ExtensionSettingsUIBrowserTest::AddManagedPolicyProvider() {
   auto* extension_service = extensions::ExtensionSystem::Get(GetProfile());
   extension_service->management_policy()->RegisterProvider(&policy_provider_);

@@ -115,3 +115,28 @@ TEST_F('CrExtensionsBrowserTestWithInstalledExtension',
   extension_service_tests.registerTests();
   mocha.grep(assert(extension_service_tests.TestNames.ProfileSettings)).run();
 });
+
+function CrExtensionsBrowserTestWithMultipleExtensionTypesInstalled() {}
+
+CrExtensionsBrowserTestWithMultipleExtensionTypesInstalled.prototype = {
+  __proto__: CrExtensionsBrowserTest.prototype,
+
+  /** @override */
+  testGenPreamble: function() {
+    GEN('  InstallGoodExtension();');
+    GEN('  InstallPackagedApp();');
+    GEN('  InstallHostedApp();');
+    GEN('  InstallPlatformApp();');
+  },
+
+  /** @override */
+  extraLibraries: CrExtensionsBrowserTest.prototype.extraLibraries.concat([
+    'extension_manager_test.js',
+  ]),
+};
+
+TEST_F('CrExtensionsBrowserTestWithMultipleExtensionTypesInstalled',
+       'ExtensionManagerSplitSectionsTest', function() {
+  extension_manager_tests.registerTests();
+  mocha.grep(assert(extension_manager_tests.TestNames.SplitSections)).run();
+});

@@ -15,6 +15,7 @@ cr.define('extensions', function() {
     ready: function() {
       this.sidebar = this.$$('extensions-sidebar');
       extensions.Service.getInstance().managerReady(this);
+      this.sidebar.setScrollDelegate(new ScrollHelper(this));
     },
 
     /**
@@ -26,8 +27,28 @@ cr.define('extensions', function() {
      *     not present, the item is appended to the end of the list.
      */
     addItem: function(extension, delegate, opt_index) {
+      var listId;
+      var ExtensionType = chrome.developerPrivate.ExtensionType;
+      switch (extension.type) {
+        case ExtensionType.HOSTED_APP:
+        case ExtensionType.LEGACY_PACKAGED_APP:
+          listId = 'websites-list';
+          break;
+        case ExtensionType.PLATFORM_APP:
+          listId = 'apps-list';
+          break;
+        case ExtensionType.EXTENSION:
+        case ExtensionType.SHARED_MODULE:
+          listId = 'extensions-list';
+          break;
+        case ExtensionType.THEME:
+          assertNotReached(
+              'Don\'t send themes to the chrome://extensions page');
+          break;
+      }
+      assert(listId);
       var extensionItem = new extensions.Item(extension, delegate);
-      var itemList = this.$['item-list'];
+      var itemList = this.$[listId];
       var refNode = opt_index !== undefined ?
           itemList.children[opt_index] : undefined;
       itemList.insertBefore(extensionItem, refNode);
@@ -59,6 +80,35 @@ cr.define('extensions', function() {
           callback);
      },
   });
+
+  /**
+   * @param {extensions.Manager} manager
+   * @constructor
+   * @implements {extensions.SidebarScrollDelegate}
+   */
+  function ScrollHelper(manager) {
+    this.items_ = manager.$.items;
+  }
+
+  ScrollHelper.prototype = {
+    /** @override */
+    scrollToExtensions: function() {
+      this.items_.scrollTop =
+          this.items_.querySelector('#extensions-header').offsetTop;
+    },
+
+    /** @override */
+    scrollToApps: function() {
+      this.items_.scrollTop =
+          this.items_.querySelector('#apps-header').offsetTop;
+    },
+
+    /** @override */
+    scrollToWebsites: function() {
+      this.items_.scrollTop =
+          this.items_.querySelector('#websites-header').offsetTop;
+    },
+  };
 
   return {Manager: Manager};
 });
