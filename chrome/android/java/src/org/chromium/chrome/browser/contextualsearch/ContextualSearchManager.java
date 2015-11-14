@@ -409,7 +409,8 @@ public class ContextualSearchManager extends ContextualSearchObservable
                 && (reason == StateChangeReason.BACK_PRESS
                 || reason == StateChangeReason.BASE_PAGE_SCROLL
                 || reason == StateChangeReason.SWIPE
-                || reason == StateChangeReason.FLING);
+                || reason == StateChangeReason.FLING
+                || reason == StateChangeReason.CLOSE_BUTTON);
     }
 
     /**
