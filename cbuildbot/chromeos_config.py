@@ -398,6 +398,7 @@ _x86_internal_release_boards = frozenset([
     'clapper',
     'cranky',
     'cyan',
+    'edgar',
     'enguarde',
     'expresso',
     'falco',
@@ -599,6 +600,7 @@ _waterfall_config_map = {
         'storm-release-group',
         'strago-release-group',
         'strago-b-release-group',
+        'strago-c-release-group',
         'veyron-d-release-group',
 
         # Experimental Canaries
@@ -2619,6 +2621,12 @@ def GetConfig():
       important=False,
   )
 
+  _AddGroupConfig(
+      'strago-c', 'edgar', (
+      ),
+      important=False,
+  )
+
   # oak-based boards
   _AddGroupConfig(
       'oak', 'oak', (
@@ -2726,6 +2734,7 @@ def GetConfig():
       'daisy',
       'daisy_skate',
       'daisy_spring',
+      'edgar',
       'enguarde',
       'expresso',
       'falco',
