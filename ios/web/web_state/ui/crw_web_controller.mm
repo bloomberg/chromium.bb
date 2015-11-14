@@ -1800,9 +1800,8 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   // the web view.
   web::NavigationItemImpl* currentItem =
       self.currentSessionEntry.navigationItemImpl;
-  NSString* state = currentItem->GetSerializedStateObject();
-  if (state.length)
-    [self setPushedOrReplacedURL:currentItem->GetURL() stateObject:state];
+  [self setPushedOrReplacedURL:currentItem->GetURL()
+                   stateObject:currentItem->GetSerializedStateObject()];
   // Only load the new URL if the current entry was not created by a JavaScript
   // window.history.pushState() call from |fromEntry|.
   if (![_webStateImpl->GetNavigationManagerImpl().GetSessionController()
