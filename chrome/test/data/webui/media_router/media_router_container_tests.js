@@ -93,16 +93,9 @@ cr.define('media_router_container', function() {
         assertEquals(hidden, element.hidden);
       };
 
-      // Checks whether |expected| and the text in the |elementId| element
-      // are equal.
+      // Checks whether |expected| and the text in the |element| are equal.
       var checkElementText = function(expected, element) {
         assertEquals(expected.trim(), element.textContent.trim());
-      };
-
-      // Checks whether |expected| and the text in the |elementId| element
-      // are equal given an id.
-      var checkElementTextWithId = function(expected, elementId) {
-        checkElementText(expected, container.$[elementId]);
       };
 
       // Checks whether |expected| and the |property| in |container| are equal.
@@ -146,6 +139,8 @@ cr.define('media_router_container', function() {
           new media_router.Route('id 2', 'sink id 2', 'Title 2', 1, true),
         ];
 
+        // Note: These need to be in-order by name to prevent shuffling.
+        // Sorting of sinks by name is tested separately.
         fakeSinkList = [
           new media_router.Sink('sink id 1', 'Sink 1',
               media_router.SinkIconType.CAST,
@@ -567,6 +562,61 @@ cr.define('media_router_container', function() {
             done();
           });
          });
+      });
+
+      // Tests that sinks provided in some random order will be sorted by name
+      // when shown to the user.
+      test('sinks are shown sorted by name', function(done) {
+        var outOfOrderSinks = [
+          new media_router.Sink('6543', 'Sleepy',
+              media_router.SinkIconType.CAST,
+              media_router.SinkStatus.ACTIVE, [1]),
+          new media_router.Sink('543', 'Happy',
+              media_router.SinkIconType.CAST,
+              media_router.SinkStatus.ACTIVE, [1]),
+          new media_router.Sink('43', 'Bashful',
+              media_router.SinkIconType.CAST,
+              media_router.SinkStatus.ACTIVE, [1]),
+          new media_router.Sink('2', 'George',
+              media_router.SinkIconType.CAST_AUDIO,
+              media_router.SinkStatus.ACTIVE, [1]),
+          new media_router.Sink('1', 'George',
+              media_router.SinkIconType.CAST,
+              media_router.SinkStatus.ACTIVE, [1]),
+          new media_router.Sink('3', 'George',
+              media_router.SinkIconType.HANGOUT,
+              media_router.SinkStatus.ACTIVE, [1]),
+        ];
+
+        container.allSinks = outOfOrderSinks;
+
+        setTimeout(function() {
+          var sinkList =
+              container.$['sink-list'].querySelectorAll('paper-item');
+
+          assertEquals(6, sinkList.length);
+          checkElementText('Bashful', sinkList[0]);
+          checkElementText('George', sinkList[1]);
+          checkElementText('George', sinkList[2]);
+          checkElementText('George', sinkList[3]);
+          checkElementText('Happy', sinkList[4]);
+          checkElementText('Sleepy', sinkList[5]);
+
+          // There are three George's, so check that the first has id '1', the
+          // second has id '2', and the third has id '3'.  The icons are used to
+          // determine which is which.
+          assertEquals(
+              container.computeSinkIcon_(outOfOrderSinks[4]),
+              sinkList[1].querySelector('iron-icon').icon);
+          assertEquals(
+              container.computeSinkIcon_(outOfOrderSinks[3]),
+              sinkList[2].querySelector('iron-icon').icon);
+          assertEquals(
+              container.computeSinkIcon_(outOfOrderSinks[5]),
+              sinkList[3].querySelector('iron-icon').icon);
+
+          done();
+        });
       });
     });
   }

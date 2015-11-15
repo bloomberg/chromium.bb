@@ -692,16 +692,28 @@ Polymer({
   /**
    * Rebuilds the list of sinks to be shown for the current cast mode.
    * A sink should be shown if it is compatible with the current cast mode, or
-   * if the sink is associated with a route.
+   * if the sink is associated with a route.  The resulting list is sorted by
+   * name.
    */
   rebuildSinksToShow_: function() {
     var sinksToShow = [];
-    this.allSinks.forEach(function(element, index, array) {
+    this.allSinks.forEach(function(element) {
       if (element.castModes.indexOf(this.selectedCastModeValue_) != -1 ||
           this.sinkToRouteMap_[element.id]) {
         sinksToShow.push(element);
       }
     }, this);
+
+    // Sort the |sinksToShow| by name.  If any two devices have the same name,
+    // use their IDs to stabilize the ordering.
+    sinksToShow.sort(function(a, b) {
+      var ordering = a.name.localeCompare(b.name);
+      if (ordering != 0) {
+        return ordering;
+      }
+      return (a.id < b.id) ? -1 : ((a.id == b.id) ? 0 : 1);
+    });
+
     this.sinksToShow_ = sinksToShow;
   },
 
