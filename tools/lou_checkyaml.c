@@ -566,6 +566,18 @@ main(int argc, char *argv[]) {
 
   file_name = argv[1];
 
+  char *dir_name = strdup(file_name);
+  int i = strlen(dir_name);
+  while (i > 0) {
+    if (dir_name[i - 1] == '/') {
+      i--;
+      break;
+    }
+    i--;
+  }
+  dir_name[i] = '\0';
+  chdir(dir_name);
+
   assert(yaml_parser_initialize(&parser));
 
   yaml_parser_set_input_file(&parser, file);
