@@ -92,6 +92,18 @@ grit("strings") {
     "address_input_strings_zh-TW.pak",
   ]
 
+  if (is_ios) {
+    # iOS uses "pt" for pt-BR" and "es-MX" for "es-419".
+    outputs -= [
+      "address_input_strings_pt-BR.pak",
+      "address_input_strings_es-419.pak",
+    ]
+    outputs += [
+      "address_input_strings_pt.pak",
+      "address_input_strings_es-MX.pak",
+    ]
+  }
+
   configs = [ ":no-newline-eof-warning" ]
 }
 
