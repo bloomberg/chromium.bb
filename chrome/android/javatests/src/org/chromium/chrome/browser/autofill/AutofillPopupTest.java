@@ -176,7 +176,7 @@ public class AutofillPopupTest extends ChromeActivityTestCaseBase<ChromeActivity
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                viewCore.getInputConnectionForTest().setComposingText(
+                viewCore.getImeAdapterForTest().getInputConnectionForTest().setComposingText(
                         inputText, 1);
             }
         });

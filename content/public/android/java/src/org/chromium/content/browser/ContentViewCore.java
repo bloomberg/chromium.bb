@@ -25,8 +25,6 @@ import android.os.Handler;
 import android.os.ResultReceiver;
 import android.os.SystemClock;
 import android.provider.Browser;
-import android.text.Editable;
-import android.text.Selection;
 import android.text.TextUtils;
 import android.util.Pair;
 import android.util.TypedValue;
@@ -61,11 +59,9 @@ import org.chromium.content.browser.accessibility.BrowserAccessibilityManager;
 import org.chromium.content.browser.accessibility.captioning.CaptioningBridgeFactory;
 import org.chromium.content.browser.accessibility.captioning.SystemCaptioningBridge;
 import org.chromium.content.browser.accessibility.captioning.TextTrackSettings;
-import org.chromium.content.browser.input.AdapterInputConnection;
 import org.chromium.content.browser.input.FloatingPastePopupMenu;
 import org.chromium.content.browser.input.GamepadList;
 import org.chromium.content.browser.input.ImeAdapter;
-import org.chromium.content.browser.input.ImeAdapter.AdapterInputConnectionFactory;
 import org.chromium.content.browser.input.InputMethodManagerWrapper;
 import org.chromium.content.browser.input.JoystickScrollProvider;
 import org.chromium.content.browser.input.LegacyPastePopupMenu;
@@ -478,8 +474,6 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
 
     // Only valid when focused on a text / password field.
     private ImeAdapter mImeAdapter;
-    private ImeAdapter.AdapterInputConnectionFactory mAdapterInputConnectionFactory;
-    private AdapterInputConnection mInputConnection;
 
     // Lazily created paste popup menu, triggered either via long press in an
     // editable region or from tapping the insertion handle.
@@ -569,12 +563,6 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
     private SmartClipDataListener mSmartClipDataListener = null;
     private final ObserverList<ContainerViewObserver> mContainerViewObservers;
 
-    // This holds the state of editable text (e.g. contents of <input>, contenteditable) of
-    // a focused element.
-    // Every time the user, IME, javascript (Blink), autofill etc. modifies the content, the new
-    //  state must be reflected to this to keep consistency.
-    private final Editable mEditable;
-
     /**
      * PID used to indicate an invalid render process.
      */
@@ -623,7 +611,6 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
      */
     public ContentViewCore(Context context) {
         mContext = context;
-        mAdapterInputConnectionFactory = new AdapterInputConnectionFactory();
         mRenderCoordinates = new RenderCoordinates();
         mJoystickScrollProvider = new JoystickScrollProvider(this);
         float deviceScaleFactor = getContext().getResources().getDisplayMetrics().density;
@@ -639,8 +626,6 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
         mGestureStateListeners = new ObserverList<GestureStateListener>();
         mGestureStateListenersIterator = mGestureStateListeners.rewindableIterator();
 
-        mEditable = Editable.Factory.getInstance().newEditable("");
-        Selection.setSelection(mEditable, 0);
         mContainerViewObservers = new ObserverList<ContainerViewObserver>();
         // Deep copy newConfig so that we can notice the difference.
         mCurrentConfig = new Configuration(getContext().getResources().getConfiguration());
@@ -721,19 +706,9 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
         return mImeAdapter;
     }
 
-    @VisibleForTesting
-    public void setAdapterInputConnectionFactory(AdapterInputConnectionFactory factory) {
-        mAdapterInputConnectionFactory = factory;
-    }
-
-    @VisibleForTesting
-    public AdapterInputConnection getInputConnectionForTest() {
-        return mInputConnection;
-    }
-
     private ImeAdapter createImeAdapter() {
-        return new ImeAdapter(new InputMethodManagerWrapper(mContext),
-                new ImeAdapter.ImeAdapterDelegate() {
+        return new ImeAdapter(
+                new InputMethodManagerWrapper(mContext), new ImeAdapter.ImeAdapterDelegate() {
                     @Override
                     public void onImeEvent() {
                         mPopupZoomer.hide(true);
@@ -796,8 +771,7 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
                             }
                         };
                     }
-                }
-        );
+                });
     }
 
     /**
@@ -840,7 +814,7 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
     }
 
     @VisibleForTesting
-    void createContentViewAndroidDelegate() {
+    public void createContentViewAndroidDelegate() {
         mViewAndroidDelegate = new ContentViewAndroidDelegate(mContainerView, mRenderCoordinates);
     }
 
@@ -868,7 +842,6 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
             if (mContainerView != null) {
                 assert mOverscrollRefreshHandler == null;
                 mPastePopupMenu = null;
-                mInputConnection = null;
                 hidePopupsAndClearSelection();
             }
 
@@ -1452,17 +1425,6 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
         hidePopups();
     }
 
-    private void clearUserSelection() {
-        if (mFocusedNodeEditable) {
-            if (mInputConnection != null) {
-                int selectionEnd = Selection.getSelectionEnd(mEditable);
-                mInputConnection.setSelection(selectionEnd, selectionEnd);
-            }
-        } else if (mWebContents != null) {
-            mWebContents.unselect();
-        }
-    }
-
     private void hidePopups() {
         hideSelectActionMode();
         hidePastePopup();
@@ -1540,37 +1502,7 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
      * @see View#onCreateInputConnection(EditorInfo)
      */
     public InputConnection onCreateInputConnection(EditorInfo outAttrs) {
-        // Android View framework will check whether the user can compose text by calling this
-        // function at view attachment. Especially in the case of hardware keyboard, connection can
-        // be made regardless of whether we have called showSoftInput(), and therefore we need
-        // to check the availability ourselves here.
-        // If we return null here, hardware keyboard will not be connected through input connection,
-        // but key events will go through View#dispatchKeyEvent(), and the user won't get any
-        // recommendation from text composition, which is what we expect.
-        if (!mImeAdapter.canCreateInputConnection()) {
-            mInputConnection = null;
-            return null;
-        }
-
-        if (!mImeAdapter.hasTextInputType()) {
-            // Although onCheckIsTextEditor will return false in this case, the EditorInfo
-            // is still used by the InputMethodService. Need to make sure the IME doesn't
-            // enter fullscreen mode.
-            outAttrs.imeOptions = EditorInfo.IME_FLAG_NO_FULLSCREEN;
-        }
-        mInputConnection = mAdapterInputConnectionFactory.get(mContainerView, mImeAdapter,
-                mEditable, outAttrs);
-        return mInputConnection;
-    }
-
-    @VisibleForTesting
-    public AdapterInputConnection getAdapterInputConnectionForTest() {
-        return mInputConnection;
-    }
-
-    @VisibleForTesting
-    public Editable getEditableForTest() {
-        return mEditable;
+        return mImeAdapter.onCreateInputConnection(outAttrs);
     }
 
     /**
@@ -1692,7 +1624,7 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
                 // Clear the selection. The selection is cleared on destroying IME
                 // and also here since we may receive destroy first, for example
                 // when focus is lost in webview.
-                clearUserSelection();
+                clearSelection();
             }
         }
         if (mNativeContentViewCore != 0) nativeSetFocus(mNativeContentViewCore, gainFocus);
@@ -2147,7 +2079,7 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
                     mActionMode = null;
                     if (mUnselectAllOnActionModeDismiss) {
                         dismissTextHandles();
-                        clearUserSelection();
+                        clearSelection();
                     }
                     if (!supportsFloatingActionMode()) {
                         getContentViewClient().onContextualActionBarHidden();
@@ -2264,11 +2196,16 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
     }
 
     /**
-     * Clears the current text selection.
+     * Clears the current text selection. Note that we will try to move cursor to selection
+     * end if applicable.
      */
     public void clearSelection() {
-        // This method can be called during shutdown, guard against null accordingly.
-        if (mWebContents != null) mWebContents.unselect();
+        if (mFocusedNodeEditable) {
+            mImeAdapter.moveCursorToSelectionEnd();
+        } else {
+            // This method can be called during shutdown, guard against null accordingly.
+            if (mWebContents != null) mWebContents.unselect();
+        }
     }
 
     /**
@@ -2482,11 +2419,8 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
             mImeAdapter.attach(nativeImeAdapterAndroid);
             mImeAdapter.updateKeyboardVisibility(
                     textInputType, textInputFlags, showImeIfNeeded);
-
-            if (mInputConnection != null) {
-                mInputConnection.updateState(text, selectionStart, selectionEnd, compositionStart,
-                        compositionEnd, isNonImeChange);
-            }
+            mImeAdapter.updateState(text, selectionStart, selectionEnd, compositionStart,
+                    compositionEnd, isNonImeChange);
 
             if (mActionMode != null) {
                 final boolean actionModeConfigurationChanged =

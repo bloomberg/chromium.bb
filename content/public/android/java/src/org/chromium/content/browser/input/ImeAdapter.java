@@ -8,6 +8,7 @@ import android.content.res.Configuration;
 import android.os.ResultReceiver;
 import android.os.SystemClock;
 import android.text.Editable;
+import android.text.Selection;
 import android.text.SpannableString;
 import android.text.style.BackgroundColorSpan;
 import android.text.style.CharacterStyle;
@@ -90,7 +91,14 @@ public class ImeAdapter {
     private long mNativeImeAdapterAndroid;
     private InputMethodManagerWrapper mInputMethodManagerWrapper;
     private AdapterInputConnection mInputConnection;
+    private AdapterInputConnectionFactory mInputConnectionFactory;
     private final ImeAdapterDelegate mViewEmbedder;
+
+    // This holds the state of editable text (e.g. contents of <input>, contenteditable) of
+    // a focused element.
+    // Every time the user, IME, javascript (Blink), autofill etc. modifies the content, the new
+    // state must be reflected to this to keep consistency.
+    private final Editable mEditable;
 
     private int mTextInputType = TextInputType.NONE;
     private int mTextInputFlags;
@@ -103,16 +111,45 @@ public class ImeAdapter {
     public ImeAdapter(InputMethodManagerWrapper wrapper, ImeAdapterDelegate embedder) {
         mInputMethodManagerWrapper = wrapper;
         mViewEmbedder = embedder;
+        mInputConnectionFactory = new AdapterInputConnectionFactory();
+        mEditable = Editable.Factory.getInstance().newEditable("");
+        Selection.setSelection(mEditable, 0);
     }
 
     /**
      * Default factory for AdapterInputConnection classes.
      */
     public static class AdapterInputConnectionFactory {
-        public AdapterInputConnection get(View view, ImeAdapter imeAdapter,
-                Editable editable, EditorInfo outAttrs) {
-            return new AdapterInputConnection(view, imeAdapter, editable, outAttrs);
+        public AdapterInputConnection get(View view, ImeAdapter imeAdapter, int initialSelStart,
+                int initialSelEnd, EditorInfo outAttrs) {
+            return new AdapterInputConnection(
+                    view, imeAdapter, initialSelStart, initialSelEnd, outAttrs);
         }
+    }
+
+    /**
+     * @see View#onCreateInputConnection(EditorInfo)
+     */
+    public AdapterInputConnection onCreateInputConnection(EditorInfo outAttrs) {
+        // Without this line, some third-party IMEs will try to compose text even when
+        // not on an editable node. Even when we return null here, key events can still go through
+        // ImeAdapter#dispatchKeyEvent().
+        if (mTextInputType == TextInputType.NONE) {
+            mInputConnection = null;
+            return null;
+        }
+
+        if (!isTextInputType(mTextInputType)) {
+            // Although onCheckIsTextEditor will return false in this case, the EditorInfo
+            // is still used by the InputMethodService. Need to make sure the IME doesn't
+            // enter fullscreen mode.
+            outAttrs.imeOptions = EditorInfo.IME_FLAG_NO_FULLSCREEN;
+        }
+        int initialSelStart = Selection.getSelectionStart(mEditable);
+        int initialSelEnd = outAttrs.initialSelEnd = Selection.getSelectionEnd(mEditable);
+        mInputConnection = mInputConnectionFactory.get(
+                mViewEmbedder.getAttachedView(), this, initialSelStart, initialSelEnd, outAttrs);
+        return mInputConnection;
     }
 
     /**
@@ -134,12 +171,32 @@ public class ImeAdapter {
         return mInputMethodManagerWrapper;
     }
 
+    @VisibleForTesting
+    void setInputConnectionFactory(AdapterInputConnectionFactory factory) {
+        mInputConnectionFactory = factory;
+    }
+
     /**
      * Set the current active InputConnection when a new InputConnection is constructed.
      * @param inputConnection The input connection that is currently used with IME.
      */
     void setInputConnection(AdapterInputConnection inputConnection) {
         mInputConnection = inputConnection;
+    }
+
+    /**
+     * Get the current input connection for testing purposes.
+     */
+    @VisibleForTesting
+    public AdapterInputConnection getInputConnectionForTest() {
+        return mInputConnection;
+    }
+
+    /**
+     * @return The Editable instance that will be shared across AdapterInputConnection instances.
+     */
+    Editable getEditable() {
+        return mEditable;
     }
 
     /**
@@ -198,9 +255,7 @@ public class ImeAdapter {
         if (mTextInputType != textInputType) {
             mTextInputType = textInputType;
             // No need to restart if we are going to hide anyways.
-            if (textInputType != TextInputType.NONE) {
-                mInputMethodManagerWrapper.restartInput(mViewEmbedder.getAttachedView());
-            }
+            if (textInputType != TextInputType.NONE) restartInput();
         }
 
         // There is no API for us to get notified of user's dismissal of keyboard.
@@ -210,6 +265,28 @@ public class ImeAdapter {
         } else {
             hideKeyboard();
         }
+    }
+
+    /**
+     * Updates internal representation of the text being edited and its selection and composition
+     * properties.
+     *
+     * @param text The String contents of the field being edited.
+     * @param selectionStart The character offset of the selection start, or the caret position if
+     *                       there is no selection.
+     * @param selectionEnd The character offset of the selection end, or the caret position if there
+     *                     is no selection.
+     * @param compositionStart The character offset of the composition start, or -1 if there is no
+     *                         composition.
+     * @param compositionEnd The character offset of the composition end, or -1 if there is no
+     *                       selection.
+     * @param isNonImeChange True when the update was caused by non-IME (e.g. Javascript).
+     */
+    public void updateState(String text, int selectionStart, int selectionEnd, int compositionStart,
+            int compositionEnd, boolean isNonImeChange) {
+        if (mInputConnection == null) return;
+        mInputConnection.updateState(text, selectionStart, selectionEnd, compositionStart,
+                compositionEnd, isNonImeChange);
     }
 
     /**
@@ -231,7 +308,7 @@ public class ImeAdapter {
     /**
      * Show soft keyboard only if it is the current keyboard configuration.
      */
-    public void showSoftKeyboard() {
+    private void showSoftKeyboard() {
         Log.d(TAG, "showSoftKeyboard");
         mInputMethodManagerWrapper.showSoftInput(
                 mViewEmbedder.getAttachedView(), 0, mViewEmbedder.getNewShowKeyboardReceiver());
@@ -244,7 +321,7 @@ public class ImeAdapter {
     /**
      * Hide soft keyboard.
      */
-    public void hideKeyboard() {
+    private void hideKeyboard() {
         Log.d(TAG, "hideKeyboard");
         View view = mViewEmbedder.getAttachedView();
         if (mInputMethodManagerWrapper.isActive(view)) {
@@ -252,8 +329,9 @@ public class ImeAdapter {
             // and ImeAdapter even after input method goes away and result gets received.
             mInputMethodManagerWrapper.hideSoftInputFromWindow(view.getWindowToken(), 0, null);
         }
+        // Detach input connection by returning null from onCreateInputConnection().
         if (mTextInputType == TextInputType.NONE && mInputConnection != null) {
-            mInputConnection.restartInput();
+            restartInput();
         }
     }
 
@@ -263,7 +341,7 @@ public class ImeAdapter {
     public void onKeyboardConfigurationChanged() {
         Log.d(TAG, "onKeyboardConfigurationChanged: mTextInputType [%d]", mTextInputType);
         if (mTextInputType != TextInputType.NONE) {
-            mInputMethodManagerWrapper.restartInput(mViewEmbedder.getAttachedView());
+            restartInput();
             // By default, we show soft keyboard on keyboard changes. This is useful
             // when the user switches from hardware keyboard to software keyboard.
             // TODO(changwan): check if we can skip this for hardware keyboard configurations.
@@ -281,11 +359,14 @@ public class ImeAdapter {
     }
 
     /**
-     * @return Whether input can be shown on the current focus (e.g. on an input box
-     *         or on a contenteditable).
+     * Move cursor to the end of the current selection.
      */
-    public boolean canCreateInputConnection() {
-        return mTextInputType != TextInputType.NONE;
+    public void moveCursorToSelectionEnd() {
+        Log.d(TAG, "movecursorToEnd");
+        if (mInputConnection != null) {
+            int selectionEnd = Selection.getSelectionEnd(mEditable);
+            mInputConnection.setSelection(selectionEnd, selectionEnd);
+        }
     }
 
     @VisibleForTesting
@@ -308,6 +389,28 @@ public class ImeAdapter {
             return mInputConnection.sendKeyEvent(event);
         }
         return sendKeyEvent(event);
+    }
+
+    /**
+     * Update selection to input method manager.
+     *
+     * @param selectionStart The selection start.
+     * @param selectionEnd The selection end.
+     * @param compositionStart The composition start.
+     * @param compositionEnd The composition end.
+     */
+    void updateSelection(
+            int selectionStart, int selectionEnd, int compositionStart, int compositionEnd) {
+        mInputMethodManagerWrapper.updateSelection(mViewEmbedder.getAttachedView(), selectionStart,
+                selectionEnd, compositionStart, compositionEnd);
+    }
+
+    /**
+     * Restart input (finish composition and change EditorInfo, such as input type).
+     */
+    void restartInput() {
+        mInputMethodManagerWrapper.restartInput(mViewEmbedder.getAttachedView());
+        if (mInputConnection != null) mInputConnection.onRestartInput();
     }
 
     /**
@@ -441,7 +544,7 @@ public class ImeAdapter {
     private void focusedNodeChanged(boolean isEditable) {
         Log.d(TAG, "focusedNodeChanged: isEditable [%b]", isEditable);
         if (mTextInputType != TextInputType.NONE && mInputConnection != null && isEditable) {
-            mInputConnection.restartInput();
+            restartInput();
         }
     }
 
@@ -468,7 +571,7 @@ public class ImeAdapter {
     @CalledByNative
     private void cancelComposition() {
         Log.d(TAG, "cancelComposition");
-        if (mInputConnection != null) mInputConnection.restartInput();
+        if (mInputConnection != null) restartInput();
     }
 
     @CalledByNative

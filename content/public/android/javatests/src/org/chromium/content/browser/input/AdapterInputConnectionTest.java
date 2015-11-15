@@ -9,13 +9,11 @@ import android.os.IBinder;
 import android.os.ResultReceiver;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.test.suitebuilder.annotation.SmallTest;
-import android.text.Editable;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.input.AdapterInputConnection.ImeState;
-import org.chromium.content.browser.input.ImeAdapter.ImeAdapterDelegate;
 import org.chromium.content_shell_apk.ContentShellTestBase;
 
 import java.util.ArrayList;
@@ -27,7 +25,6 @@ public class AdapterInputConnectionTest extends ContentShellTestBase {
 
     private AdapterInputConnection mConnection;
     private TestInputMethodManagerWrapper mWrapper;
-    private Editable mEditable;
     private TestImeAdapter mImeAdapter;
 
     @Override
@@ -37,9 +34,8 @@ public class AdapterInputConnectionTest extends ContentShellTestBase {
         assertTrue("Page failed to load", waitForActiveShellToBeDoneLoading());
         mWrapper = new TestInputMethodManagerWrapper(getActivity());
         mImeAdapter = new TestImeAdapter(mWrapper, new TestImeAdapterDelegate());
-        mEditable = Editable.Factory.getInstance().newEditable("");
         mConnection = new AdapterInputConnection(
-                getContentViewCore().getContainerView(), mImeAdapter, mEditable, new EditorInfo());
+                getContentViewCore().getContainerView(), mImeAdapter, 0, 0, new EditorInfo());
     }
 
     @SmallTest

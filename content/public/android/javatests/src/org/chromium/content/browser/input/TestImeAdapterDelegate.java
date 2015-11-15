@@ -13,6 +13,16 @@ import org.chromium.content.browser.input.ImeAdapter.ImeAdapterDelegate;
  * An empty ImeAdapterDelegate used for testing.
  */
 public class TestImeAdapterDelegate implements ImeAdapterDelegate {
+    private final View mView;
+
+    public TestImeAdapterDelegate() {
+        this(null);
+    }
+
+    public TestImeAdapterDelegate(View view) {
+        mView = view;
+    }
+
     @Override
     public void onImeEvent() {}
 
@@ -26,7 +36,7 @@ public class TestImeAdapterDelegate implements ImeAdapterDelegate {
 
     @Override
     public View getAttachedView() {
-        return null;
+        return mView;
     }
 
     @Override

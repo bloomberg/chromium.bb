@@ -412,6 +412,29 @@ public class ContentViewCoreSelectionTest extends ContentShellTestBase {
     }
 
     @SmallTest
+    @Feature({"TextSelection", "TextInput"})
+    public void testCursorPositionAfterHidingActionMode() throws Exception {
+        DOMUtils.longPressNode(this, mContentViewCore, "textarea");
+        assertWaitForSelectActionBarVisible(true);
+        assertTrue(mContentViewCore.hasSelection());
+        assertNotNull(mContentViewCore.getSelectActionHandler());
+        selectActionBarSelectAll();
+        assertTrue(mContentViewCore.hasSelection());
+        assertWaitForSelectActionBarVisible(true);
+        assertEquals(mContentViewCore.getSelectedText(), "SampleTextArea");
+        hideSelectActionMode();
+        assertWaitForSelectActionBarVisible(false);
+        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return "SampleTextArea".equals(mContentViewCore.getImeAdapterForTest()
+                        .getInputConnectionForTest()
+                        .getTextBeforeCursor(50, 0));
+            }
+        }));
+    }
+
+    @SmallTest
     @Feature({"TextSelection"})
     public void testSelectActionBarPlainTextPaste() throws Exception {
         copyStringToClipboard("SampleTextToCopy");
@@ -558,6 +581,15 @@ public class ContentViewCoreSelectionTest extends ContentShellTestBase {
             @Override
             public void run() {
                 mContentViewCore.getSelectActionHandler().share();
+            }
+        });
+    }
+
+    private void hideSelectActionMode() {
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                mContentViewCore.hideSelectActionMode();
             }
         });
     }

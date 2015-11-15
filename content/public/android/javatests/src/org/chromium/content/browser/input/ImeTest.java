@@ -11,8 +11,6 @@ import android.content.Context;
 import android.content.res.Configuration;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.test.suitebuilder.annotation.SmallTest;
-import android.text.Editable;
-import android.text.Selection;
 import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.View;
@@ -79,7 +77,7 @@ public class ImeTest extends ContentShellTestBase {
         getImeAdapter().setInputMethodManagerWrapperForTest(mInputMethodManagerWrapper);
         assertEquals(0, mInputMethodManagerWrapper.getShowSoftInputCounter());
         mConnectionFactory = new TestAdapterInputConnectionFactory();
-        mContentViewCore.setAdapterInputConnectionFactory(mConnectionFactory);
+        getImeAdapter().setInputConnectionFactory(mConnectionFactory);
 
         mCallbackContainer = new TestCallbackHelperContainer(mContentViewCore);
         // TODO(aurimas) remove this wait once crbug.com/179511 is fixed.
@@ -194,13 +192,15 @@ public class ImeTest extends ContentShellTestBase {
         // showSoftInput() on input_text. restartInput() on input_number1 due to focus change,
         // and restartInput() on input_text later.
         // TODO(changwan): reduce unnecessary restart input.
-        waitForKeyboardStates(3, 1, 5, new Integer[] {TextInputType.NUMBER, TextInputType.NUMBER,
-                TextInputType.NUMBER, TextInputType.TEXT});
+        waitForKeyboardStates(3, 1, 5, new Integer[] {
+                TextInputType.NUMBER, TextInputType.NUMBER, TextInputType.NUMBER,
+                TextInputType.TEXT});
 
         focusElement("input_radio", false);
         // hideSoftInput(), restartInput()
-        waitForKeyboardStates(3, 2, 6, new Integer[] {TextInputType.NUMBER, TextInputType.NUMBER,
-                TextInputType.NUMBER, TextInputType.TEXT});
+        waitForKeyboardStates(3, 2, 6, new Integer[] {
+                TextInputType.NUMBER, TextInputType.NUMBER, TextInputType.NUMBER,
+                TextInputType.TEXT});
     }
 
     private void waitForKeyboardStates(int show, int hide, int restart, Integer[] history)
@@ -255,7 +255,7 @@ public class ImeTest extends ContentShellTestBase {
         selectAll();
         copy();
         assertWaitForKeyboardStatus(true);
-        assertEquals(11, Selection.getSelectionEnd(mContentViewCore.getEditableForTest()));
+        assertEquals(11, mInputMethodManagerWrapper.getSelection().end());
     }
 
     @SmallTest
@@ -373,20 +373,30 @@ public class ImeTest extends ContentShellTestBase {
         setComposingText("a", 1);
         waitForKeyboardStates(1, 0, 1, new Integer[] {TextInputType.TEXT});
         detachPhysicalKeyboard();
+        assertWaitForKeyboardStatus(true);
         // Now we really show soft keyboard. We also call restartInput when configuration changes.
         waitForKeyboardStates(2, 0, 2, new Integer[] {TextInputType.TEXT, TextInputType.TEXT});
 
-        // Reload the page, then the focus will be lost.
+        // Reload the page, then focus will be lost and keyboard should be hidden.
         getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
                 getActivity().getActiveShell().loadUrl(DATA_URL);
             }
         });
+        // Depending on the timing, hideSoftInput and restartInput call counts may vary here
+        // because render widget gets restarted. But the end result should be the same.
+        assertWaitForKeyboardStatus(false);
 
         detachPhysicalKeyboard();
+
         // We should not show soft keyboard here because focus has been lost.
-        waitForKeyboardStates(2, 1, 2, new Integer[] {TextInputType.TEXT, TextInputType.TEXT});
+        assertFalse(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return mInputMethodManagerWrapper.isShowWithoutHideOutstanding();
+            }
+        }));
     }
 
     @SmallTest
@@ -932,7 +942,7 @@ public class ImeTest extends ContentShellTestBase {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                mConnection.restartInput();
+                mImeAdapter.restartInput();
             }
         });
         // We don't do anything when input gets restarted. But we depend on Android's
@@ -958,8 +968,9 @@ public class ImeTest extends ContentShellTestBase {
         assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
+                boolean hasConnection = getAdapterInputConnection() != null;
                 return show == mInputMethodManagerWrapper.isShowWithoutHideOutstanding()
-                        && (!show || getAdapterInputConnection() != null);
+                        && show == hasConnection;
             }
         }));
     }
@@ -1044,7 +1055,7 @@ public class ImeTest extends ContentShellTestBase {
     }
 
     private AdapterInputConnection getAdapterInputConnection() {
-        return mContentViewCore.getInputConnectionForTest();
+        return mContentViewCore.getImeAdapterForTest().getInputConnectionForTest();
     }
 
     private void copy() {
@@ -1205,11 +1216,11 @@ public class ImeTest extends ContentShellTestBase {
         private final List<Integer> mTextInputTypeList = new ArrayList<>();
 
         @Override
-        public AdapterInputConnection get(View view, ImeAdapter imeAdapter,
-                Editable editable, EditorInfo outAttrs) {
+        public AdapterInputConnection get(View view, ImeAdapter imeAdapter, int initialSelStart,
+                int initialSelEnd, EditorInfo outAttrs) {
             mTextInputTypeList.add(imeAdapter.getTextInputType());
             return new TestAdapterInputConnection(
-                    mImeStateList, view, imeAdapter, editable, outAttrs);
+                    mImeStateList, view, imeAdapter, initialSelStart, initialSelEnd, outAttrs);
         }
 
         public List<TestImeState> getImeStateList() {
@@ -1231,8 +1242,9 @@ public class ImeTest extends ContentShellTestBase {
         private final List<TestImeState> mImeStateList;
 
         public TestAdapterInputConnection(List<TestImeState> imeStateList, View view,
-                ImeAdapter imeAdapter, Editable editable, EditorInfo outAttrs) {
-            super(view, imeAdapter, editable, outAttrs);
+                ImeAdapter imeAdapter, int initialSelStart, int initialSelEnd,
+                EditorInfo outAttrs) {
+            super(view, imeAdapter, initialSelStart, initialSelEnd, outAttrs);
             mImeStateList = imeStateList;
         }
 
