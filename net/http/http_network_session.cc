@@ -119,7 +119,7 @@ HttpNetworkSession::Params::Params()
       quic_threshold_timeouts_streams_open(0),
       quic_close_sessions_on_ip_change(false),
       proxy_delegate(NULL) {
-  quic_supported_versions.push_back(QUIC_VERSION_27);
+  quic_supported_versions.push_back(QUIC_VERSION_25);
 }
 
 HttpNetworkSession::Params::~Params() {}
