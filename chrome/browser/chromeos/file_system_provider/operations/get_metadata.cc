@@ -32,10 +32,10 @@ bool ConvertRequestValueToFileInfo(scoped_ptr<RequestValue> value,
 
   output->name = params->metadata.name;
   output->is_directory = params->metadata.is_directory;
-  output->size = static_cast<int64>(params->metadata.size);
+  output->size = static_cast<int64>(*params->metadata.size);
 
   std::string input_modification_time;
-  if (!params->metadata.modification_time.additional_properties.GetString(
+  if (!params->metadata.modification_time->additional_properties.GetString(
           "value", &input_modification_time)) {
     NOTREACHED();
   }
@@ -65,7 +65,8 @@ bool ValidateIDLEntryMetadata(
     return false;
 
   std::string input_modification_time;
-  if (!metadata.modification_time.additional_properties.GetString(
+  if (metadata.modification_time.get() &&
+      !metadata.modification_time->additional_properties.GetString(
           "value", &input_modification_time)) {
     return false;
   }

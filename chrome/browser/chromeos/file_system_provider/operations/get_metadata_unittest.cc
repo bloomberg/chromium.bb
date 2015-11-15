@@ -92,6 +92,9 @@ class CallbackLogger {
 
 }  // namespace
 
+using ModificationTime =
+    extensions::api::file_system_provider::EntryMetadata::ModificationTime;
+
 class FileSystemProviderOperationsGetMetadataTest : public testing::Test {
  protected:
   FileSystemProviderOperationsGetMetadataTest() {}
@@ -127,7 +130,8 @@ TEST_F(FileSystemProviderOperationsGetMetadataTest, ValidateIDLEntryMetadata) {
   {
     EntryMetadata metadata;
     metadata.name = kValidFileName;
-    metadata.modification_time.additional_properties.SetString(
+    metadata.modification_time.reset(new ModificationTime());
+    metadata.modification_time->additional_properties.SetString(
         "value", "invalid-date-time");  // Invalid modification time is OK.
     metadata.thumbnail.reset(new std::string(kValidThumbnailUrl));
     EXPECT_TRUE(ValidateIDLEntryMetadata(metadata, false /* root_path */));
@@ -137,7 +141,8 @@ TEST_F(FileSystemProviderOperationsGetMetadataTest, ValidateIDLEntryMetadata) {
   {
     EntryMetadata metadata;
     metadata.name = kValidFileName;
-    metadata.modification_time.additional_properties.SetString(
+    metadata.modification_time.reset(new ModificationTime());
+    metadata.modification_time->additional_properties.SetString(
         "value", "invalid-date-time");  // Invalid modification time is OK.
     EXPECT_TRUE(ValidateIDLEntryMetadata(metadata, false /* root_path */));
   }
@@ -146,7 +151,8 @@ TEST_F(FileSystemProviderOperationsGetMetadataTest, ValidateIDLEntryMetadata) {
   {
     EntryMetadata metadata;
     metadata.name = "";
-    metadata.modification_time.additional_properties.SetString(
+    metadata.modification_time.reset(new ModificationTime());
+    metadata.modification_time->additional_properties.SetString(
         "value", "invalid-date-time");  // Invalid modification time is OK.
     EXPECT_TRUE(ValidateIDLEntryMetadata(metadata, true /* root_path */));
   }
@@ -155,7 +161,8 @@ TEST_F(FileSystemProviderOperationsGetMetadataTest, ValidateIDLEntryMetadata) {
   {
     EntryMetadata metadata;
     metadata.name = "hello/world";
-    metadata.modification_time.additional_properties.SetString(
+    metadata.modification_time.reset(new ModificationTime());
+    metadata.modification_time->additional_properties.SetString(
         "value", "invalid-date-time");  // Invalid modification time is OK.
     metadata.thumbnail.reset(new std::string(kValidThumbnailUrl));
     EXPECT_FALSE(ValidateIDLEntryMetadata(metadata, false /* root_path */));
@@ -165,25 +172,27 @@ TEST_F(FileSystemProviderOperationsGetMetadataTest, ValidateIDLEntryMetadata) {
   {
     EntryMetadata metadata;
     metadata.name = "";
-    metadata.modification_time.additional_properties.SetString(
+    metadata.modification_time.reset(new ModificationTime());
+    metadata.modification_time->additional_properties.SetString(
         "value", "invalid-date-time");  // Invalid modification time is OK.
     metadata.thumbnail.reset(new std::string(kValidThumbnailUrl));
     EXPECT_FALSE(ValidateIDLEntryMetadata(metadata, false /* root_path */));
   }
 
-  // Missing date time.
+  // Missing last modification time is allowed.
   {
     EntryMetadata metadata;
     metadata.name = kValidFileName;
     metadata.thumbnail.reset(new std::string(kValidThumbnailUrl));
-    EXPECT_FALSE(ValidateIDLEntryMetadata(metadata, false /* root_path */));
+    EXPECT_TRUE(ValidateIDLEntryMetadata(metadata, false /* root_path */));
   }
 
   // Invalid thumbnail.
   {
     EntryMetadata metadata;
     metadata.name = kValidFileName;
-    metadata.modification_time.additional_properties.SetString(
+    metadata.modification_time.reset(new ModificationTime());
+    metadata.modification_time->additional_properties.SetString(
         "value", "invalid-date-time");  // Invalid modification time is OK.
     metadata.thumbnail.reset(new std::string("http://invalid-scheme"));
     EXPECT_FALSE(ValidateIDLEntryMetadata(metadata, false /* root_path */));

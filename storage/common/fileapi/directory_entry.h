@@ -22,15 +22,10 @@ struct STORAGE_COMMON_EXPORT DirectoryEntry {
   };
 
   DirectoryEntry();
-  DirectoryEntry(const std::string& name,
-                 DirectoryEntryType type,
-                 int64 size,
-                 const base::Time& last_modified_time);
+  DirectoryEntry(const std::string& name, DirectoryEntryType type);
 
   base::FilePath::StringType name;
   bool is_directory;
-  int64 size;
-  base::Time last_modified_time;
 };
 
 }  // namespace storage

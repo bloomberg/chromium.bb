@@ -61,11 +61,12 @@ namespace fileSystemProvider {
     // it must be empty.
     DOMString name;
 
-    // File size in bytes.
-    double size;
+    // File size in bytes. Required for <code>OnGetMetadataRequested</code>.
+    double? size;
 
-    // The last modified time of this entry.
-    [instanceOf=Date] object modificationTime;
+    // The last modified time of this entry. Required for
+    // <code>OnGetMetadataRequested</code>.
+    [instanceOf=Date] object? modificationTime;
 
     // Mime type for the entry.
     DOMString? mimeType;

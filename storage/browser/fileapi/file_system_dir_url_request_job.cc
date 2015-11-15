@@ -143,15 +143,52 @@ void FileSystemDirURLRequestJob::DidReadDirectory(
     data_.append(net::GetDirectoryListingHeader(title));
   }
 
-  typedef std::vector<DirectoryEntry>::const_iterator EntryIterator;
-  for (EntryIterator it = entries.begin(); it != entries.end(); ++it) {
-    const base::string16& name = base::FilePath(it->name).LossyDisplayName();
-    data_.append(net::GetDirectoryListingEntry(
-        name, std::string(), it->is_directory, it->size,
-        it->last_modified_time));
-  }
+  entries_.insert(entries_.end(), entries.begin(), entries.end());
 
   if (!has_more) {
+    if (entries_.size()) {
+      GetMetadata(0);
+    } else {
+      set_expected_content_size(data_.size());
+      NotifyHeadersComplete();
+    }
+  }
+}
+
+void FileSystemDirURLRequestJob::GetMetadata(size_t index) {
+  const DirectoryEntry& entry = entries_[index];
+  const FileSystemURL url = file_system_context_->CreateCrackedFileSystemURL(
+      url_.origin(), url_.type(),
+      url_.path().Append(base::FilePath(entry.name)));
+  DCHECK(url.is_valid());
+  file_system_context_->operation_runner()->GetMetadata(
+      url,
+      base::Bind(&FileSystemDirURLRequestJob::DidGetMetadata, this, index));
+}
+
+void FileSystemDirURLRequestJob::DidGetMetadata(
+    size_t index,
+    base::File::Error result,
+    const base::File::Info& file_info) {
+  if (result != base::File::FILE_OK) {
+    int rv = net::ERR_FILE_NOT_FOUND;
+    if (result == base::File::FILE_ERROR_INVALID_URL)
+      rv = net::ERR_INVALID_URL;
+    NotifyDone(URLRequestStatus(URLRequestStatus::FAILED, rv));
+  }
+
+  if (!request_)
+    return;
+
+  const DirectoryEntry& entry = entries_[index];
+  const base::string16& name = base::FilePath(entry.name).LossyDisplayName();
+  data_.append(net::GetDirectoryListingEntry(name, std::string(),
+                                             entry.is_directory, file_info.size,
+                                             file_info.last_modified));
+
+  if (index < entries_.size() - 1) {
+    GetMetadata(index + 1);
+  } else {
     set_expected_content_size(data_.size());
     NotifyHeadersComplete();
   }

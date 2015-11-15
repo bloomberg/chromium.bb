@@ -17,6 +17,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/media_galleries/fileapi/mtp_device_async_delegate.h"
+#include "chrome/browser/media_galleries/linux/mtp_device_task_helper.h"
 #include "content/public/browser/browser_thread.h"
 #include "storage/browser/fileapi/async_file_util.h"
 
@@ -62,7 +63,7 @@ class MTPDeviceDelegateImplLinux : public MTPDeviceAsyncDelegate {
   typedef std::map<uint32, MTPFileNode*> FileIdToMTPFileNodeMap;
 
   // Maps file paths to file info.
-  typedef std::map<base::FilePath, storage::DirectoryEntry> FileInfoCache;
+  typedef std::map<base::FilePath, MTPDeviceTaskHelper::MTPEntry> FileInfoCache;
 
   typedef base::Closure DeleteObjectSuccessCallback;
 
@@ -200,7 +201,7 @@ class MTPDeviceDelegateImplLinux : public MTPDeviceAsyncDelegate {
       const bool exclusive,
       const CreateDirectorySuccessCallback& success_callback,
       const ErrorCallback& error_callback,
-      const storage::AsyncFileUtil::EntryList& /* file_list */,
+      const storage::AsyncFileUtil::EntryList& entries,
       const bool has_more);
 
   // Called when ReadDirectory succeeds.
@@ -209,7 +210,7 @@ class MTPDeviceDelegateImplLinux : public MTPDeviceAsyncDelegate {
       const uint32 directory_id,
       const DeleteDirectorySuccessCallback& success_callback,
       const ErrorCallback& error_callback,
-      const storage::AsyncFileUtil::EntryList& entries,
+      const MTPDeviceTaskHelper::MTPEntries& entries,
       const bool has_more);
 
   // Calls DeleteObjectOnUIThread on UI thread.
@@ -348,7 +349,7 @@ class MTPDeviceDelegateImplLinux : public MTPDeviceAsyncDelegate {
   // |has_more| is true if there are more file entries to read.
   void OnDidReadDirectory(uint32 dir_id,
                           const ReadDirectorySuccessCallback& success_callback,
-                          const storage::AsyncFileUtil::EntryList& file_list,
+                          const MTPDeviceTaskHelper::MTPEntries& mtp_entries,
                           bool has_more);
 
   // Called when WriteDataIntoSnapshotFile() succeeds.
@@ -377,9 +378,10 @@ class MTPDeviceDelegateImplLinux : public MTPDeviceAsyncDelegate {
                       const base::File::Info& file_info, int bytes_read);
 
   // Called when FillFileCache() succeeds.
-  void OnDidFillFileCache(const base::FilePath& path,
-                          const storage::AsyncFileUtil::EntryList& file_list,
-                          bool has_more);
+  void OnDidFillFileCache(
+      const base::FilePath& path,
+      const storage::AsyncFileUtil::EntryList& /* entries */,
+      bool has_more);
 
   // Called when FillFileCache() fails.
   void OnFillFileCacheFailed(base::File::Error error);

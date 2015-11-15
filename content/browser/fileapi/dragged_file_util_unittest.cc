@@ -374,8 +374,6 @@ TEST_F(DraggedFileUtilTest, ReadDirectoryTest) {
       storage::DirectoryEntry entry;
       entry.is_directory = file_info.IsDirectory();
       entry.name = current.BaseName().value();
-      entry.size = file_info.GetSize();
-      entry.last_modified_time = file_info.GetLastModifiedTime();
       expected_entry_map[entry.name] = entry;
 
 #if defined(OS_POSIX)
@@ -403,9 +401,6 @@ TEST_F(DraggedFileUtilTest, ReadDirectoryTest) {
       EXPECT_TRUE(found != expected_entry_map.end());
       EXPECT_EQ(found->second.name, entry.name);
       EXPECT_EQ(found->second.is_directory, entry.is_directory);
-      EXPECT_EQ(found->second.size, entry.size);
-      EXPECT_EQ(found->second.last_modified_time.ToDoubleT(),
-                entry.last_modified_time.ToDoubleT());
     }
   }
 }

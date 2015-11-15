@@ -60,12 +60,14 @@ function annotateMetadata(metadata) {
   var result = {
     isDirectory: metadata.isDirectory,
     name: metadata.name,
-    size: metadata.size,
-    modificationTime: annotateDate(metadata.modificationTime)
   };
-  if ('mimeType' in metadata)
+  if (metadata.size !== undefined)
+    result.size = metadata.size;
+  if (metadata.modificationTime !== undefined)
+    result.modificationTime = annotateDate(metadata.modificationTime);
+  if (metadata.mimeType !== undefined)
     result.mimeType = metadata.mimeType;
-  if ('thumbnail' in metadata)
+  if (metadata.thumbnail !== undefined)
     result.thumbnail = metadata.thumbnail;
   return result;
 }
@@ -102,6 +104,13 @@ eventBindings.registerArgumentMassager(
       var options = args[0];
       var onSuccessCallback = function(metadata) {
         var error;
+        // TODO(mtomasz): Remove the following two fields once crbug.com/413161
+        // is landed.
+        if (options.size !== undefined)
+          error = 'Size is required for this event.';
+        if (options.modificationTime !== undefined)
+          error = 'Last modified time is required for this event.';
+
         // It is invalid to return a thumbnail when it's not requested. The
         // restriction is added in order to avoid fetching the thumbnail while
         // it's not needed.

@@ -246,9 +246,8 @@ base::File::Error IPhotoFileUtil::ReadDirectorySync(
 
   // Root directory. Child is the /Albums dir.
   if (components.size() == 0) {
-    file_list->push_back(DirectoryEntry(kIPhotoAlbumsDir,
-                                        DirectoryEntry::DIRECTORY,
-                                        0, base::Time()));
+    file_list->push_back(
+        DirectoryEntry(kIPhotoAlbumsDir, DirectoryEntry::DIRECTORY));
     return base::File::FILE_OK;
   }
 
@@ -259,8 +258,7 @@ base::File::Error IPhotoFileUtil::ReadDirectorySync(
           GetDataProvider()->GetAlbumNames();
       for (std::vector<std::string>::const_iterator it = albums.begin();
            it != albums.end(); it++) {
-        file_list->push_back(DirectoryEntry(*it, DirectoryEntry::DIRECTORY,
-                                            0, base::Time()));
+        file_list->push_back(DirectoryEntry(*it, DirectoryEntry::DIRECTORY));
       }
       return base::File::FILE_OK;
     } else if (components.size() == 2) {
@@ -271,9 +269,8 @@ base::File::Error IPhotoFileUtil::ReadDirectorySync(
 
       // Album dirs contain all photos in them.
       if (GetDataProvider()->HasOriginals(components[1])) {
-        file_list->push_back(DirectoryEntry(kIPhotoOriginalsDir,
-                                            DirectoryEntry::DIRECTORY,
-                                            0, base::Time()));
+        file_list->push_back(
+            DirectoryEntry(kIPhotoOriginalsDir, DirectoryEntry::DIRECTORY));
       }
       std::map<std::string, base::FilePath> locations =
           GetDataProvider()->GetAlbumContents(components[1]);
@@ -283,8 +280,7 @@ base::File::Error IPhotoFileUtil::ReadDirectorySync(
         base::File::Info info;
         if (!base::GetFileInfo(it->second, &info))
           return base::File::FILE_ERROR_IO;
-        file_list->push_back(DirectoryEntry(it->first, DirectoryEntry::FILE,
-                                            info.size, info.last_modified));
+        file_list->push_back(DirectoryEntry(it->first, DirectoryEntry::FILE));
       }
       return base::File::FILE_OK;
     } else if (components.size() == 3 &&
@@ -298,8 +294,7 @@ base::File::Error IPhotoFileUtil::ReadDirectorySync(
         base::File::Info info;
         if (!base::GetFileInfo(it->second, &info))
           return base::File::FILE_ERROR_IO;
-        file_list->push_back(DirectoryEntry(it->first, DirectoryEntry::FILE,
-                                            info.size, info.last_modified));
+        file_list->push_back(DirectoryEntry(it->first, DirectoryEntry::FILE));
       }
       return base::File::FILE_OK;
     }

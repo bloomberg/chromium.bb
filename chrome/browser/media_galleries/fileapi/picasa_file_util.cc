@@ -207,11 +207,9 @@ base::File::Error PicasaFileUtil::ReadDirectorySync(
     case 0: {
       // Root directory.
       file_list->push_back(
-          DirectoryEntry(kPicasaDirAlbums, DirectoryEntry::DIRECTORY, 0,
-                         base::Time()));
+          DirectoryEntry(kPicasaDirAlbums, DirectoryEntry::DIRECTORY));
       file_list->push_back(
-          DirectoryEntry(kPicasaDirFolders, DirectoryEntry::DIRECTORY, 0,
-                         base::Time()));
+          DirectoryEntry(kPicasaDirFolders, DirectoryEntry::DIRECTORY));
       break;
     }
     case 1:
@@ -223,8 +221,7 @@ base::File::Error PicasaFileUtil::ReadDirectorySync(
         for (AlbumMap::const_iterator it = albums->begin();
              it != albums->end(); ++it) {
           file_list->push_back(
-              DirectoryEntry(it->first, DirectoryEntry::DIRECTORY, 0,
-                             it->second.timestamp));
+              DirectoryEntry(it->first, DirectoryEntry::DIRECTORY));
         }
       } else if (components[0] == kPicasaDirFolders) {
         scoped_ptr<AlbumMap> folders = GetDataProvider()->GetFolders();
@@ -234,8 +231,7 @@ base::File::Error PicasaFileUtil::ReadDirectorySync(
         for (AlbumMap::const_iterator it = folders->begin();
              it != folders->end(); ++it) {
           file_list->push_back(
-              DirectoryEntry(it->first, DirectoryEntry::DIRECTORY, 0,
-                             it->second.timestamp));
+              DirectoryEntry(it->first, DirectoryEntry::DIRECTORY));
         }
       }
       break;
@@ -265,8 +261,7 @@ base::File::Error PicasaFileUtil::ReadDirectorySync(
             continue;
           }
 
-          file_list->push_back(DirectoryEntry(
-              it->first, DirectoryEntry::FILE, info.size, info.last_modified));
+          file_list->push_back(DirectoryEntry(it->first, DirectoryEntry::FILE));
         }
       }
 

@@ -16,7 +16,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
-#include "chrome/browser/media_galleries/linux/mtp_device_task_helper.h"
 #include "chrome/browser/media_galleries/linux/mtp_device_task_helper_map_service.h"
 #include "chrome/browser/media_galleries/linux/snapshot_file_details.h"
 #include "net/base/io_buffer.h"
@@ -554,15 +553,8 @@ void MTPDeviceDelegateImplLinux::GetFileInfo(
   if (it != file_info_cache_.end()) {
     // TODO(thestig): This code is repeated in several places. Combine them.
     // e.g. c/b/media_galleries/win/mtp_device_operations_util.cc
-    const storage::DirectoryEntry& cached_file_entry = it->second;
-    base::File::Info info;
-    info.size = cached_file_entry.size;
-    info.is_directory = cached_file_entry.is_directory;
-    info.is_symbolic_link = false;
-    info.last_modified = cached_file_entry.last_modified_time;
-    info.creation_time = base::Time();
-
-    success_callback.Run(info);
+    const MTPDeviceTaskHelper::MTPEntry& cached_file_entry = it->second;
+    success_callback.Run(cached_file_entry.file_info);
     return;
   }
   base::Closure closure =
@@ -1225,7 +1217,7 @@ void MTPDeviceDelegateImplLinux::OnDidReadDirectoryToCreateDirectory(
     const bool exclusive,
     const CreateDirectorySuccessCallback& success_callback,
     const ErrorCallback& error_callback,
-    const storage::AsyncFileUtil::EntryList& /* file_list */,
+    const storage::AsyncFileUtil::EntryList& /* entries */,
     const bool has_more) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
@@ -1245,7 +1237,7 @@ void MTPDeviceDelegateImplLinux::OnDidReadDirectoryToDeleteDirectory(
     const uint32 directory_id,
     const DeleteDirectorySuccessCallback& success_callback,
     const ErrorCallback& error_callback,
-    const storage::AsyncFileUtil::EntryList& entries,
+    const MTPDeviceTaskHelper::MTPEntries& entries,
     const bool has_more) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK(!has_more);
@@ -1570,7 +1562,7 @@ void MTPDeviceDelegateImplLinux::OnCreateParentDirectoryErrorToCreateDirectory(
 void MTPDeviceDelegateImplLinux::OnDidReadDirectory(
     uint32 dir_id,
     const ReadDirectorySuccessCallback& success_callback,
-    const storage::AsyncFileUtil::EntryList& file_list,
+    const MTPDeviceTaskHelper::MTPEntries& mtp_entries,
     bool has_more) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
@@ -1586,33 +1578,25 @@ void MTPDeviceDelegateImplLinux::OnDidReadDirectory(
     parent_node = parent_node->parent();
   }
   base::FilePath dir_path = device_path_;
-  for (size_t i = 0; i < dir_path_parts.size(); ++i)
-    dir_path = dir_path.Append(dir_path_parts[i]);
+  for (const auto& dir_path_part : dir_path_parts)
+    dir_path = dir_path.Append(dir_path_part);
 
-  storage::AsyncFileUtil::EntryList normalized_file_list;
-  for (size_t i = 0; i < file_list.size(); ++i) {
-    normalized_file_list.push_back(file_list[i]);
-    storage::DirectoryEntry& entry = normalized_file_list.back();
-
-    // |entry.name| has the file id encoded in it. Decode here.
-    size_t separator_idx = entry.name.find_last_of(',');
-    DCHECK_NE(std::string::npos, separator_idx);
-    std::string file_id_str = entry.name.substr(separator_idx);
-    file_id_str = file_id_str.substr(1);  // Get rid of the comma.
-    uint32 file_id = 0;
-    bool ret = base::StringToUint(file_id_str, &file_id);
-    DCHECK(ret);
-    entry.name = entry.name.substr(0, separator_idx);
+  storage::AsyncFileUtil::EntryList file_list;
+  for (const auto& mtp_entry : mtp_entries) {
+    storage::DirectoryEntry entry;
+    entry.name = mtp_entry.name;
+    entry.is_directory = mtp_entry.file_info.is_directory;
+    file_list.push_back(entry);
 
     // Refresh the in memory tree.
-    dir_node->EnsureChildExists(entry.name, file_id);
+    dir_node->EnsureChildExists(entry.name, mtp_entry.file_id);
     child_nodes_seen_.insert(entry.name);
 
     // Add to |file_info_cache_|.
-    file_info_cache_[dir_path.Append(entry.name)] = entry;
+    file_info_cache_[dir_path.Append(entry.name)] = mtp_entry;
   }
 
-  success_callback.Run(normalized_file_list, has_more);
+  success_callback.Run(file_list, has_more);
   if (has_more)
     return;  // Wait to be called again.
 
@@ -1654,7 +1638,7 @@ void MTPDeviceDelegateImplLinux::OnDidReadBytes(
 
 void MTPDeviceDelegateImplLinux::OnDidFillFileCache(
     const base::FilePath& path,
-    const storage::AsyncFileUtil::EntryList& /* file_list */,
+    const storage::AsyncFileUtil::EntryList& /* entries */,
     bool has_more) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK(path.IsParent(pending_tasks_.front().path));

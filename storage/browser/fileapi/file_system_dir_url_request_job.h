@@ -51,6 +51,14 @@ class STORAGE_EXPORT FileSystemDirURLRequestJob : public net::URLRequestJob {
                         const std::vector<DirectoryEntry>& entries,
                         bool has_more);
 
+  // Reads metadata for the |index|-th entry in the directory. Must be called
+  // after |entries_| is filled.
+  void GetMetadata(size_t index);
+  void DidGetMetadata(size_t index,
+                      base::File::Error result,
+                      const base::File::Info& file_info);
+
+  std::vector<DirectoryEntry> entries_;
   std::string data_;
   FileSystemURL url_;
   const std::string storage_domain_;

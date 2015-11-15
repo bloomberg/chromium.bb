@@ -400,11 +400,9 @@ TEST_F(MTPDeviceDelegateImplMacTest, TestGetFileInfo) {
   EXPECT_EQ(base::File::FILE_OK, ReadDir(base::FilePath(kDevicePath)));
 
   ASSERT_EQ(2U, file_list_.size());
-  EXPECT_EQ(time1, file_list_[0].last_modified_time);
   EXPECT_FALSE(file_list_[0].is_directory);
   EXPECT_EQ("name1", file_list_[0].name);
 
-  EXPECT_EQ(time1, file_list_[1].last_modified_time);
   EXPECT_FALSE(file_list_[1].is_directory);
   EXPECT_EQ("name2", file_list_[1].name);
 }
@@ -433,11 +431,9 @@ TEST_F(MTPDeviceDelegateImplMacTest, TestDirectoriesAndSorting) {
   ASSERT_EQ(4U, file_list_.size());
   EXPECT_EQ("dir1", file_list_[0].name);
   EXPECT_EQ("dir2", file_list_[1].name);
-  EXPECT_EQ(time1, file_list_[2].last_modified_time);
   EXPECT_FALSE(file_list_[2].is_directory);
   EXPECT_EQ("name1", file_list_[2].name);
 
-  EXPECT_EQ(time1, file_list_[3].last_modified_time);
   EXPECT_FALSE(file_list_[3].is_directory);
   EXPECT_EQ("name2", file_list_[3].name);
 }

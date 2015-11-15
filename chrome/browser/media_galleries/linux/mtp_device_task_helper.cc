@@ -7,8 +7,6 @@
 #include <algorithm>
 
 #include "base/logging.h"
-#include "base/numerics/safe_conversions.h"
-#include "base/strings/string_number_conversions.h"
 #include "chrome/browser/media_galleries/linux/mtp_device_object_enumerator.h"
 #include "chrome/browser/media_galleries/linux/mtp_read_file_worker.h"
 #include "chrome/browser/media_galleries/linux/snapshot_file_details.h"
@@ -168,6 +166,8 @@ void MTPDeviceTaskHelper::RenameObject(
                  error_callback));
 }
 
+MTPDeviceTaskHelper::MTPEntry::MTPEntry() : file_id(0) {}
+
 // TODO(yawano) storage_name is not used, delete it.
 void MTPDeviceTaskHelper::CopyFileFromLocal(
     const std::string& storage_name,
@@ -260,20 +260,17 @@ void MTPDeviceTaskHelper::OnDidReadDirectory(
   if (error)
     return HandleDeviceError(error_callback, base::File::FILE_ERROR_FAILED);
 
-  storage::AsyncFileUtil::EntryList entries;
+  MTPEntries entries;
   base::FilePath current;
   MTPDeviceObjectEnumerator file_enum(file_entries);
   while (!(current = file_enum.Next()).empty()) {
-    storage::DirectoryEntry entry;
+    MTPEntry entry;
     entry.name = storage::VirtualPath::BaseName(current).value();
-    uint32 file_id = 0;
-    bool ret = file_enum.GetEntryId(&file_id);
+    bool ret = file_enum.GetEntryId(&entry.file_id);
     DCHECK(ret);
-    entry.name.push_back(',');
-    entry.name += base::UintToString(file_id);
-    entry.is_directory = file_enum.IsDirectory();
-    entry.size = file_enum.Size();
-    entry.last_modified_time = file_enum.LastModifiedTime();
+    entry.file_info.is_directory = file_enum.IsDirectory();
+    entry.file_info.size = file_enum.Size();
+    entry.file_info.last_modified = file_enum.LastModifiedTime();
     entries.push_back(entry);
   }
   content::BrowserThread::PostTask(

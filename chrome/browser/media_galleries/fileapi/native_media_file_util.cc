@@ -579,8 +579,6 @@ base::File::Error NativeMediaFileUtil::ReadDirectorySync(
     storage::DirectoryEntry entry;
     entry.is_directory = info.IsDirectory();
     entry.name = enum_path.BaseName().value();
-    entry.size = info.GetSize();
-    entry.last_modified_time = info.GetLastModifiedTime();
 
     file_list->push_back(entry);
   }

@@ -203,8 +203,6 @@ base::File::Error ReadDirectoryOnBlockingPoolThread(
     storage::DirectoryEntry entry;
     entry.is_directory = file_enum->IsDirectory();
     entry.name = storage::VirtualPath::BaseName(current).value();
-    entry.size = file_enum->Size();
-    entry.last_modified_time = file_enum->LastModifiedTime();
     entries->push_back(entry);
   }
   return error;

@@ -467,8 +467,6 @@ void MTPDeviceDelegateImplMac::NotifyReadDir() {
       storage::DirectoryEntry entry;
       entry.name = relative_path.value();
       entry.is_directory = info.is_directory;
-      entry.size = info.size;
-      entry.last_modified_time = info.last_modified;
       entry_list.push_back(entry);
     }
 

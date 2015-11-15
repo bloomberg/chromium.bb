@@ -82,9 +82,6 @@ void RunReadDirectoryCallbackWithEntries(
 
     const PlatformFileInfoProto& file_info = resource_entry.file_info();
     entry.is_directory = file_info.is_directory();
-    entry.size = file_info.size();
-    entry.last_modified_time =
-        base::Time::FromInternalValue(file_info.last_modified());
     entries.push_back(entry);
   }
 

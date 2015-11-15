@@ -136,11 +136,9 @@ AbortCallback FakeProvidedFileSystem::ReadDirectory(
     if (file_path == directory_path || directory_path.IsParent(file_path)) {
       const EntryMetadata* const metadata = it->second->metadata.get();
       entry_list.push_back(storage::DirectoryEntry(
-          metadata->name,
-          metadata->is_directory ? storage::DirectoryEntry::DIRECTORY
-                                 : storage::DirectoryEntry::FILE,
-          metadata->size,
-          metadata->modification_time));
+          metadata->name, metadata->is_directory
+                              ? storage::DirectoryEntry::DIRECTORY
+                              : storage::DirectoryEntry::FILE));
     }
   }
 

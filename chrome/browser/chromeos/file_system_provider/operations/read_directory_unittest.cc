@@ -185,11 +185,7 @@ TEST_F(FileSystemProviderOperationsReadDirectoryTest, OnSuccess) {
       "  [\n"
       "    {\n"
       "      \"isDirectory\": false,\n"
-      "      \"name\": \"blueberries.txt\",\n"
-      "      \"size\": 4096,\n"
-      "      \"modificationTime\": {\n"
-      "        \"value\": \"Thu Apr 24 00:46:52 UTC 2014\"\n"
-      "      }\n"
+      "      \"name\": \"blueberries.txt\"\n"
       "    }\n"
       "  ],\n"
       "  false,\n"  // has_more
@@ -209,11 +205,6 @@ TEST_F(FileSystemProviderOperationsReadDirectoryTest, OnSuccess) {
   const storage::DirectoryEntry entry = event->entry_list()[0];
   EXPECT_FALSE(entry.is_directory);
   EXPECT_EQ("blueberries.txt", entry.name);
-  EXPECT_EQ(4096, entry.size);
-  base::Time expected_time;
-  EXPECT_TRUE(
-      base::Time::FromString("Thu Apr 24 00:46:52 UTC 2014", &expected_time));
-  EXPECT_EQ(expected_time, entry.last_modified_time);
 }
 
 TEST_F(FileSystemProviderOperationsReadDirectoryTest,
@@ -241,11 +232,7 @@ TEST_F(FileSystemProviderOperationsReadDirectoryTest,
       "  [\n"
       "    {\n"
       "      \"isDirectory\": false,\n"
-      "      \"name\": \"blue/berries.txt\",\n"
-      "      \"size\": 4096,\n"
-      "      \"modificationTime\": {\n"
-      "        \"value\": \"Thu Apr 24 00:46:52 UTC 2014\"\n"
-      "      }\n"
+      "      \"name\": \"blue/berries.txt\"\n"
       "    }\n"
       "  ],\n"
       "  false,\n"  // has_more

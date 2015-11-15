@@ -26,6 +26,16 @@ struct SnapshotRequestInfo;
 // MTP device storage.
 class MTPDeviceTaskHelper {
  public:
+  struct MTPEntry {
+    MTPEntry();
+
+    uint32_t file_id;
+    std::string name;
+    base::File::Info file_info;
+  };
+
+  typedef std::vector<MTPEntry> MTPEntries;
+
   typedef base::Callback<void(bool succeeded)> OpenStorageCallback;
 
   typedef MTPDeviceAsyncDelegate::GetFileInfoSuccessCallback
@@ -33,10 +43,8 @@ class MTPDeviceTaskHelper {
 
   typedef base::Closure CreateDirectorySuccessCallback;
 
-  // NOTE: The file names in the entry list have their file id appended at the
-  // end. e.g. foo.jpg with file id 45 becomes foo.jpg,45.
-  typedef base::Callback<void(const storage::AsyncFileUtil::EntryList& entries,
-                              bool has_more)> ReadDirectorySuccessCallback;
+  typedef base::Callback<void(const MTPEntries& entries, bool has_more)>
+      ReadDirectorySuccessCallback;
 
   typedef base::Closure RenameObjectSuccessCallback;
 

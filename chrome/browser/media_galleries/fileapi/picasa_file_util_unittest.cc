@@ -303,12 +303,6 @@ class PicasaFileUtilTest : public testing::Test {
     for (size_t i = 0; i < contents.size(); ++i) {
       EXPECT_TRUE(contents[i].is_directory);
 
-      // Because the timestamp is written out as a floating point Microsoft
-      // variant time, we only expect it to be accurate to within a second.
-      base::TimeDelta delta = test_folders[i]->folder_info().timestamp -
-                              contents[i].last_modified_time;
-      EXPECT_LT(delta, base::TimeDelta::FromSeconds(1));
-
       FileSystemOperation::FileEntryList folder_contents;
       FileSystemURL folder_url = CreateURL(
           std::string(kPicasaDirFolders) + "/" +
@@ -441,7 +435,6 @@ TEST_F(PicasaFileUtilTest, NameDeduplication) {
   for (size_t i = 0; i < contents.size(); ++i) {
     EXPECT_EQ(expected_names[i],
               base::FilePath(contents[i].name).AsUTF8Unsafe());
-    EXPECT_EQ(test_folders[i]->timestamp(), contents[i].last_modified_time);
     EXPECT_TRUE(contents[i].is_directory);
   }
 }
@@ -460,9 +453,6 @@ TEST_F(PicasaFileUtilTest, RootFolders) {
 
   EXPECT_TRUE(contents.front().is_directory);
   EXPECT_TRUE(contents.back().is_directory);
-
-  EXPECT_EQ(0, contents.front().size);
-  EXPECT_EQ(0, contents.back().size);
 
   EXPECT_EQ(FILE_PATH_LITERAL("albums"), contents.front().name);
   EXPECT_EQ(FILE_PATH_LITERAL("folders"), contents.back().name);

@@ -35,17 +35,6 @@ bool ConvertRequestValueToEntryList(scoped_ptr<RequestValue> value,
     storage::DirectoryEntry output_entry;
     output_entry.is_directory = entry_metadata->is_directory;
     output_entry.name = entry_metadata->name;
-    output_entry.size = static_cast<int64>(entry_metadata->size);
-
-    std::string input_modification_time;
-    if (!entry_metadata->modification_time.additional_properties.GetString(
-            "value", &input_modification_time)) {
-      NOTREACHED();
-    }
-    if (!base::Time::FromString(input_modification_time.c_str(),
-                                &output_entry.last_modified_time)) {
-      NOTREACHED();
-    }
 
     output->push_back(output_entry);
   }
