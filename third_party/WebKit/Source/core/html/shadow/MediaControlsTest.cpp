@@ -11,6 +11,7 @@
 #include "core/dom/ElementTraversal.h"
 #include "core/html/HTMLVideoElement.h"
 #include "core/testing/DummyPageHolder.h"
+#include "platform/heap/Handle.h"
 #include <gtest/gtest.h>
 
 namespace blink {
@@ -67,7 +68,7 @@ protected:
 
 private:
     OwnPtr<DummyPageHolder> m_pageHolder;
-    MediaControls* m_mediaControls;
+    RawPtrWillBePersistent<MediaControls> m_mediaControls;
 };
 
 TEST_F(MediaControlsTest, HideAndShow)
