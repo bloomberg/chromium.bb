@@ -540,16 +540,42 @@ void OfflinePageModel::OnRemoveOfflinePagesDone(
   // Delete the offline page from the in memory cache regardless of success in
   // store.
   base::Time now = base::Time::Now();
+  int64 total_size = 0;
   for (int64 bookmark_id : bookmark_ids) {
     auto iter = offline_pages_.find(bookmark_id);
     if (iter == offline_pages_.end())
       continue;
-    UMA_HISTOGRAM_CUSTOM_COUNTS("OfflinePages.PageLifetime",
-                                (now - iter->second.creation_time).InMinutes(),
-                                1,
-                                base::TimeDelta::FromDays(365).InMinutes(),
-                                100);
+    total_size += iter->second.file_size;
+    UMA_HISTOGRAM_CUSTOM_COUNTS(
+        "OfflinePages.PageLifetime",
+        (now - iter->second.creation_time).InMinutes(),
+        1,
+        base::TimeDelta::FromDays(365).InMinutes(),
+        100);
+    UMA_HISTOGRAM_CUSTOM_COUNTS(
+        "OfflinePages.DeletePage.TimeSinceLastOpen",
+        (now - iter->second.last_access_time).InMinutes(),
+        1,
+        base::TimeDelta::FromDays(365).InMinutes(),
+        100);
+    UMA_HISTOGRAM_CUSTOM_COUNTS(
+        "OfflinePages.DeletePage.LastOpenToCreated",
+        (iter->second.last_access_time - iter->second.creation_time).
+            InMinutes(),
+        1,
+        base::TimeDelta::FromDays(365).InMinutes(),
+        100);
+    UMA_HISTOGRAM_MEMORY_KB(
+        "OfflinePages.DeletePage.PageSize", iter->second.file_size / 1024);
+    UMA_HISTOGRAM_COUNTS(
+        "OfflinePages.DeletePage.AccessCount", iter->second.access_count);
     offline_pages_.erase(iter);
+  }
+  if (bookmark_ids.size() > 1) {
+    UMA_HISTOGRAM_COUNTS(
+        "OfflinePages.BatchDelete.Count", bookmark_ids.size());
+    UMA_HISTOGRAM_MEMORY_KB(
+        "OfflinePages.BatchDelete.TotalPageSize", total_size / 1024);
   }
   // Deleting multiple pages always succeeds when it gets to this point.
   InformDeletePageDone(
