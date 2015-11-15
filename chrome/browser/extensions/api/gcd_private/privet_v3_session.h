@@ -49,8 +49,9 @@ class PrivetV3Session {
                               const base::DictionaryValue& response)>
       MessageCallback;
 
-  explicit PrivetV3Session(
-      scoped_ptr<local_discovery::PrivetHTTPClient> client);
+  PrivetV3Session(
+      const scoped_refptr<net::URLRequestContextGetter>& context_getter,
+      const net::HostPortPair& host_port);
   ~PrivetV3Session();
 
   // Initializes session. Queries /privet/info and returns supported pairing

@@ -10,6 +10,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "chrome/browser/local_discovery/privet_http.h"
 #include "chrome/common/chrome_switches.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "crypto/hmac.h"
 #include "crypto/p224_spake.h"
@@ -48,47 +49,13 @@ const char kInfoResponse[] =
     "  \"crypto\":[\"p224_spake2\"]"
     "}}";
 
-class MockPrivetHTTPClient : public PrivetHTTPClient {
- public:
-  MockPrivetHTTPClient() {
-    request_context_ = new net::TestURLRequestContextGetter(
-        base::ThreadTaskRunnerHandle::Get());
-  }
-
-  MOCK_METHOD0(GetName, const std::string&());
-  MOCK_METHOD1(
-      CreateInfoOperationPtr,
-      PrivetJSONOperation*(const PrivetJSONOperation::ResultCallback&));
-  MOCK_METHOD2(SwitchToHttps, void(uint16_t, const net::SHA256HashValue&));
-  MOCK_CONST_METHOD0(IsInHttpsMode, bool());
-  MOCK_CONST_METHOD0(GetHost, std::string());
-
-  void RefreshPrivetToken(
-      const PrivetURLFetcher::TokenCallback& callback) override {
-    FAIL();
-  }
-
-  scoped_ptr<PrivetJSONOperation> CreateInfoOperation(
-      const PrivetJSONOperation::ResultCallback& callback) override {
-    return make_scoped_ptr(CreateInfoOperationPtr(callback));
-  }
-
-  scoped_ptr<PrivetURLFetcher> CreateURLFetcher(
-      const GURL& url,
-      net::URLFetcher::RequestType request_type,
-      PrivetURLFetcher::Delegate* delegate) override {
-    return make_scoped_ptr(new PrivetURLFetcher(
-        url, request_type, request_context_.get(), delegate));
-  }
-
-  scoped_refptr<net::TestURLRequestContextGetter> request_context_;
-};
-
 }  // namespace
 
 class PrivetV3SessionTest : public testing::Test {
  public:
-  PrivetV3SessionTest() : fetcher_factory_(nullptr) {}
+  PrivetV3SessionTest()
+      : thread_bundle_(content::TestBrowserThreadBundle::REAL_IO_THREAD),
+        fetcher_factory_(nullptr) {}
 
   void OnInitialized(Result result, const base::DictionaryValue& info) {
     info_.MergeDictionary(&info);
@@ -106,21 +73,21 @@ class PrivetV3SessionTest : public testing::Test {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kEnablePrivetV3);
 
-    http_client_ = new StrictMock<MockPrivetHTTPClient>();
-    session_.reset(new PrivetV3Session(make_scoped_ptr(http_client_)));
+    scoped_refptr<net::TestURLRequestContextGetter> context_getter =
+        new net::TestURLRequestContextGetter(
+            content::BrowserThread::GetMessageLoopProxyForThread(
+                content::BrowserThread::IO));
+
+    session_.reset(
+        new PrivetV3Session(context_getter, net::HostPortPair("host", 80)));
 
     session_->on_post_data_ =
         base::Bind(&PrivetV3SessionTest::OnPostData, base::Unretained(this));
-
-    EXPECT_CALL(*http_client_, IsInHttpsMode()).WillRepeatedly(Return(false));
-    EXPECT_CALL(*http_client_, GetHost()).WillRepeatedly(Return("1.1.1.1"));
   }
 
-  base::MessageLoop loop_;
+  content::TestBrowserThreadBundle thread_bundle_;
   net::FakeURLFetcherFactory fetcher_factory_;
-  StrictMock<MockPrivetHTTPClient>* http_client_ = nullptr;
   base::DictionaryValue info_;
-  base::Closure quit_closure_;
   scoped_ptr<PrivetV3Session> session_;
 };
 
@@ -234,14 +201,6 @@ TEST_F(PrivetV3SessionTest, Pairing) {
   ASSERT_EQ(sizeof(sha_fingerprint.data), fingerprint.size());
   memcpy(sha_fingerprint.data, fingerprint.data(), fingerprint.size());
 
-  EXPECT_CALL(*http_client_,
-              SwitchToHttps(443, Field(&net::SHA256HashValue::data,
-                                       ElementsAreArray(sha_fingerprint.data))))
-      .WillOnce(InvokeWithoutArgs([this]() {
-        EXPECT_CALL(*http_client_, IsInHttpsMode())
-            .WillRepeatedly(Return(true));
-      }));
-
   EXPECT_CALL(*this, OnCodeConfirmed(Result::STATUS_SUCCESS)).Times(1);
   EXPECT_CALL(*this, OnPostData(_))
       .WillOnce(Invoke(
@@ -291,7 +250,7 @@ TEST_F(PrivetV3SessionTest, Pairing) {
         EXPECT_TRUE(hmac.Verify("testId", access_token));
 
         fetcher_factory_.SetFakeResponse(
-            GURL("http://host/privet/v3/auth"),
+            GURL("https://host/privet/v3/auth"),
             "{\"accessToken\":\"567\",\"tokenType\":\"testType\","
             "\"scope\":\"owner\"}",
             net::HTTP_OK, net::URLRequestStatus::SUCCESS);
@@ -314,8 +273,6 @@ TEST_F(PrivetV3SessionTest, Cancel) {
   session_->Init(
       base::Bind(&PrivetV3SessionTest::OnInitialized, base::Unretained(this)));
   base::RunLoop().RunUntilIdle();
-
-  EXPECT_CALL(*http_client_, IsInHttpsMode()).WillRepeatedly(Return(false));
 
   EXPECT_CALL(*this, OnPairingStarted(Result::STATUS_SUCCESS)).Times(1);
   EXPECT_CALL(*this, OnPostData(_))
@@ -342,6 +299,9 @@ TEST_F(PrivetV3SessionTest, Cancel) {
         std::string session_id;
         EXPECT_TRUE(data.GetString("sessionId", &session_id));
       }));
+
+  session_.reset();
+  base::RunLoop().RunUntilIdle();
 }
 
 // TODO(vitalybuka): replace PrivetHTTPClient with regular URL fetcher and

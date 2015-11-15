@@ -103,8 +103,12 @@ class PrivetURLFetcher : public net::URLFetcherDelegate {
   void SetUploadFilePath(const std::string& upload_content_type,
                          const base::FilePath& upload_file_path);
 
-  const GURL& url() const { return url_fetcher_->GetOriginalURL(); }
-  int response_code() const { return url_fetcher_->GetResponseCode(); }
+  const GURL& url() const {
+    return url_fetcher_ ? url_fetcher_->GetOriginalURL() : url_;
+  }
+  int response_code() const {
+    return url_fetcher_ ? url_fetcher_->GetResponseCode() : -1;
+  }
 
  private:
   void OnURLFetchCompleteParseData(const net::URLFetcher* source);

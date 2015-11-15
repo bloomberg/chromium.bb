@@ -12,6 +12,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "chrome/browser/local_discovery/privet_constants.h"
 #include "chrome/browser/local_discovery/privet_http.h"
+#include "chrome/browser/local_discovery/privet_http_impl.h"
 #include "chrome/browser/local_discovery/privet_url_fetcher.h"
 #include "chrome/common/cloud_print/cloud_print_constants.h"
 #include "crypto/hmac.h"
@@ -198,6 +199,7 @@ void PrivetV3Session::FetcherDelegate::ReplyAndDestroyItself(
                               base::Unretained(this)));
     session_.reset();
   }
+  url_fetcher_.reset();
 }
 
 void PrivetV3Session::FetcherDelegate::OnTimeout() {
@@ -207,8 +209,12 @@ void PrivetV3Session::FetcherDelegate::OnTimeout() {
 }
 
 PrivetV3Session::PrivetV3Session(
-    scoped_ptr<local_discovery::PrivetHTTPClient> client)
-    : client_(client.Pass()), weak_ptr_factory_(this) {}
+    const scoped_refptr<net::URLRequestContextGetter>& context_getter,
+    const net::HostPortPair& host_port)
+    : client_(new local_discovery::PrivetHTTPClientImpl("",
+                                                        host_port,
+                                                        context_getter)),
+      weak_ptr_factory_(this) {}
 
 PrivetV3Session::~PrivetV3Session() {
   Cancel();
