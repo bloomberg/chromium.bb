@@ -137,6 +137,13 @@ class WebUITestWebUIControllerFactory : public WebUIControllerFactory {
   }
 };
 
+// Timestamps logged close to each other under low resolution timers
+// are more likely to record the same value. Allow for this by relaxing
+// constraints on systems with these timers.
+bool TimeTicksGT(const base::TimeTicks& x, const base::TimeTicks& y) {
+  return base::TimeTicks::IsHighResolution() ? x > y : x >= y;
+}
+
 }  // namespace
 
 class RenderViewImplTest : public RenderViewTest {
@@ -166,6 +173,37 @@ class RenderViewImplTest : public RenderViewTest {
 
   TestRenderFrame* frame() {
     return static_cast<TestRenderFrame*>(view()->GetMainRenderFrame());
+  }
+
+  void GoToOffsetWithParams(int offset,
+                            const PageState& state,
+                            const CommonNavigationParams common_params,
+                            const StartNavigationParams start_params,
+                            RequestNavigationParams request_params) {
+    EXPECT_TRUE(common_params.transition & ui::PAGE_TRANSITION_FORWARD_BACK);
+    int pending_offset = offset + view()->history_list_offset_;
+
+    request_params.page_state = state;
+    request_params.page_id = view()->page_id_ + offset;
+    request_params.nav_entry_id = pending_offset + 1;
+    request_params.pending_history_list_offset = pending_offset;
+    request_params.current_history_list_offset = view()->history_list_offset_;
+    request_params.current_history_list_length = view()->history_list_length_;
+    frame()->Navigate(common_params, start_params, request_params);
+
+    // The load actually happens asynchronously, so we pump messages to process
+    // the pending continuation.
+    FrameLoadWaiter(frame()).Wait();
+  }
+
+  template<class T>
+  typename T::Param ProcessAndReadIPC() {
+    ProcessPendingMessages();
+    const IPC::Message* message =
+        render_thread_->sink().GetUniqueMessageMatching(T::ID);
+    typename T::Param param;
+    T::Read(message, &param);
+    return param;
   }
 
   // Sends IPC messages that emulates a key-press event.
@@ -2282,6 +2320,91 @@ TEST_F(RenderViewImplTest, NavigationStartOverride) {
   base::Time late_nav_reported_start =
       base::Time::FromDoubleT(GetMainFrame()->performance().navigationStart());
   EXPECT_LE(late_nav_reported_start, after_navigation);
+}
+
+TEST_F(RenderViewImplTest, RendererNavigationStartTransmittedToBrowser) {
+  base::TimeTicks lower_bound_navigation_start;
+  frame()->GetWebFrame()->loadHTMLString(
+      "hello world", blink::WebURL(GURL("data:text/html,")));
+  ProcessPendingMessages();
+  const IPC::Message* frame_navigate_msg =
+      render_thread_->sink().GetUniqueMessageMatching(
+          FrameHostMsg_DidStartProvisionalLoad::ID);
+  FrameHostMsg_DidStartProvisionalLoad::Param host_nav_params;
+  FrameHostMsg_DidStartProvisionalLoad::Read(frame_navigate_msg,
+                                                     &host_nav_params);
+  base::TimeTicks transmitted_start = base::get<1>(host_nav_params);
+  EXPECT_FALSE(transmitted_start.is_null());
+  EXPECT_LT(lower_bound_navigation_start, transmitted_start);
+}
+
+TEST_F(RenderViewImplTest, BrowserNavigationStartNotUsedForReload) {
+  const char url_string[] = "data:text/html,<div>Page</div>";
+  // Navigate once, then reload.
+  LoadHTML(url_string);
+  ProcessPendingMessages();
+  render_thread_->sink().ClearMessages();
+
+  CommonNavigationParams common_params;
+  common_params.url = GURL(url_string);
+  common_params.navigation_type =
+      FrameMsg_Navigate_Type::RELOAD_ORIGINAL_REQUEST_URL;
+  common_params.transition = ui::PAGE_TRANSITION_RELOAD;
+
+  frame()->Navigate(common_params, StartNavigationParams(),
+                    RequestNavigationParams());
+
+  FrameHostMsg_DidStartProvisionalLoad::Param host_nav_params =
+      ProcessAndReadIPC<FrameHostMsg_DidStartProvisionalLoad>();
+  // The true timestamp is later than the browser initiated one.
+  EXPECT_PRED2(TimeTicksGT, base::get<1>(host_nav_params),
+               common_params.navigation_start);
+}
+
+TEST_F(RenderViewImplTest, BrowserNavigationStartNotUsedForHistoryNavigation) {
+  LoadHTML("<div id=pagename>Page A</div>");
+  LoadHTML("<div id=pagename>Page B</div>");
+  PageState back_state =
+      HistoryEntryToPageState(view()->history_controller()->GetCurrentEntry());
+  LoadHTML("<div id=pagename>Page C</div>");
+  PageState forward_state =
+      HistoryEntryToPageState(view()->history_controller()->GetCurrentEntry());
+  ProcessPendingMessages();
+  render_thread_->sink().ClearMessages();
+
+  CommonNavigationParams common_params;
+  common_params.transition = ui::PAGE_TRANSITION_FORWARD_BACK;
+  // Go back.
+  GoToOffsetWithParams(-1, back_state, common_params, StartNavigationParams(),
+                       RequestNavigationParams());
+  FrameHostMsg_DidStartProvisionalLoad::Param host_nav_params =
+      ProcessAndReadIPC<FrameHostMsg_DidStartProvisionalLoad>();
+  EXPECT_PRED2(TimeTicksGT, base::get<1>(host_nav_params),
+               common_params.navigation_start);
+  render_thread_->sink().ClearMessages();
+
+  // Go forward.
+  GoToOffsetWithParams(1, forward_state, common_params,
+                             StartNavigationParams(),
+                             RequestNavigationParams());
+  FrameHostMsg_DidStartProvisionalLoad::Param host_nav_params2 =
+      ProcessAndReadIPC<FrameHostMsg_DidStartProvisionalLoad>();
+  EXPECT_PRED2(TimeTicksGT, base::get<1>(host_nav_params2),
+               common_params.navigation_start);
+}
+
+TEST_F(RenderViewImplTest, BrowserNavigationStartSuccessfullyTransmitted) {
+  CommonNavigationParams common_params;
+  common_params.url = GURL("data:text/html,<div>Page</div>");
+  common_params.navigation_type = FrameMsg_Navigate_Type::NORMAL;
+  common_params.transition = ui::PAGE_TRANSITION_TYPED;
+
+  frame()->Navigate(common_params, StartNavigationParams(),
+                    RequestNavigationParams());
+
+  FrameHostMsg_DidStartProvisionalLoad::Param host_nav_params =
+      ProcessAndReadIPC<FrameHostMsg_DidStartProvisionalLoad>();
+  EXPECT_EQ(base::get<1>(host_nav_params), common_params.navigation_start);
 }
 
 TEST_F(RenderViewImplTest, PreferredSizeZoomed) {

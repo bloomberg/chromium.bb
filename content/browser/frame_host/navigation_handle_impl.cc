@@ -33,13 +33,16 @@ void UpdateThrottleCheckResult(
 // static
 scoped_ptr<NavigationHandleImpl> NavigationHandleImpl::Create(
     const GURL& url,
-    FrameTreeNode* frame_tree_node) {
+    FrameTreeNode* frame_tree_node,
+    const base::TimeTicks& navigation_start) {
   return scoped_ptr<NavigationHandleImpl>(
-      new NavigationHandleImpl(url, frame_tree_node));
+      new NavigationHandleImpl(url, frame_tree_node, navigation_start));
 }
 
-NavigationHandleImpl::NavigationHandleImpl(const GURL& url,
-                                           FrameTreeNode* frame_tree_node)
+NavigationHandleImpl::NavigationHandleImpl(
+    const GURL& url,
+    FrameTreeNode* frame_tree_node,
+    const base::TimeTicks& navigation_start)
     : url_(url),
       is_post_(false),
       has_user_gesture_(false),
@@ -51,7 +54,9 @@ NavigationHandleImpl::NavigationHandleImpl(const GURL& url,
       state_(INITIAL),
       is_transferring_(false),
       frame_tree_node_(frame_tree_node),
-      next_index_(0) {
+      next_index_(0),
+      navigation_start_(navigation_start) {
+  DCHECK(!navigation_start.is_null());
   // PlzNavigate
   // Initialize the ServiceWorkerNavigationHandle if it can be created for this
   // frame.

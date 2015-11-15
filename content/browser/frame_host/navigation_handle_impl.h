@@ -57,9 +57,14 @@ struct NavigationRequestInfo;
 // the RenderFrameHost still apply.
 class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
  public:
+  // |navigation_start| comes from the DidStartProvisionalLoad IPC, which tracks
+  // both renderer-initiated and browser-initiated navigation start.
+  // PlzNavigate: This value always comes from the CommonNavigationParams
+  // associated with this navigation.
   static scoped_ptr<NavigationHandleImpl> Create(
       const GURL& url,
-      FrameTreeNode* frame_tree_node);
+      FrameTreeNode* frame_tree_node,
+      const base::TimeTicks& navigation_start);
   ~NavigationHandleImpl() override;
 
   // NavigationHandle implementation:
@@ -89,6 +94,11 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
       bool new_method_is_post,
       const GURL& new_referrer_url,
       bool new_is_external_protocol) override;
+
+  // The time the navigation started, recorded either in the renderer or browser
+  // process. Corresponds to Navigation Timing API.
+  // TODO(csharrison): Add this to the public class and mark this override.
+  const base::TimeTicks& navigation_start() { return navigation_start_; }
 
   NavigatorDelegate* GetDelegate() const;
 
@@ -162,7 +172,8 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   };
 
   NavigationHandleImpl(const GURL& url,
-                       FrameTreeNode* frame_tree_node);
+                       FrameTreeNode* frame_tree_node,
+                       const base::TimeTicks& navigation_start);
 
   NavigationThrottle::ThrottleCheckResult CheckWillStartRequest();
   NavigationThrottle::ThrottleCheckResult CheckWillRedirectRequest();
@@ -196,6 +207,9 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
 
   // The index of the next throttle to check.
   size_t next_index_;
+
+  // The time this navigation started.
+  const base::TimeTicks navigation_start_;
 
   // This callback will be run when all throttle checks have been performed.
   ThrottleChecksFinishedCallback complete_callback_;

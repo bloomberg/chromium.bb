@@ -119,7 +119,8 @@ NavigationController* NavigatorImpl::GetController() {
 
 void NavigatorImpl::DidStartProvisionalLoad(
     RenderFrameHostImpl* render_frame_host,
-    const GURL& url) {
+    const GURL& url,
+    const base::TimeTicks& navigation_start) {
   bool is_main_frame = render_frame_host->frame_tree_node()->IsMainFrame();
   bool is_error_page = (url.spec() == kUnreachableWebDataURL);
   bool is_iframe_srcdoc = (url.spec() == kAboutSrcDocURL);
@@ -160,7 +161,7 @@ void NavigatorImpl::DidStartProvisionalLoad(
   }
 
   render_frame_host->SetNavigationHandle(NavigationHandleImpl::Create(
-      validated_url, render_frame_host->frame_tree_node()));
+      validated_url, render_frame_host->frame_tree_node(), navigation_start));
 }
 
 void NavigatorImpl::DidFailProvisionalLoadWithError(

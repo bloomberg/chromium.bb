@@ -24,7 +24,8 @@ scoped_ptr<NavigationHandle> NavigationHandle::CreateNavigationHandleForTesting(
     RenderFrameHost* render_frame_host) {
   scoped_ptr<NavigationHandleImpl> handle_impl = NavigationHandleImpl::Create(
       url,
-      static_cast<RenderFrameHostImpl*>(render_frame_host)->frame_tree_node());
+      static_cast<RenderFrameHostImpl*>(render_frame_host)->frame_tree_node(),
+      base::TimeTicks::Now());
   return scoped_ptr<NavigationHandle>(handle_impl.Pass());
 }
 

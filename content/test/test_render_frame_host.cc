@@ -99,7 +99,7 @@ void TestRenderFrameHost::SimulateNavigationStart(const GURL& url) {
   }
 
   OnDidStartLoading(true);
-  OnDidStartProvisionalLoad(url);
+  OnDidStartProvisionalLoad(url, base::TimeTicks::Now());
 }
 
 void TestRenderFrameHost::SimulateRedirect(const GURL& new_url) {
@@ -179,7 +179,7 @@ void TestRenderFrameHost::SimulateNavigationError(const GURL& url,
 void TestRenderFrameHost::SimulateNavigationErrorPageCommit() {
   CHECK(navigation_handle());
   GURL error_url = GURL(kUnreachableWebDataURL);
-  OnDidStartProvisionalLoad(error_url);
+  OnDidStartProvisionalLoad(error_url, base::TimeTicks::Now());
   FrameHostMsg_DidCommitProvisionalLoad_Params params;
   params.page_id = ComputeNextPageID();
   params.nav_entry_id = 0;
@@ -268,7 +268,7 @@ void TestRenderFrameHost::SendNavigateWithParameters(
   // so we keep a copy of it to use below.
   GURL url_copy(url);
   OnDidStartLoading(true);
-  OnDidStartProvisionalLoad(url_copy);
+  OnDidStartProvisionalLoad(url_copy, base::TimeTicks::Now());
 
   FrameHostMsg_DidCommitProvisionalLoad_Params params;
   params.page_id = page_id;

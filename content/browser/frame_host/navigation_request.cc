@@ -218,7 +218,7 @@ void NavigationRequest::BeginNavigation() {
 
 void NavigationRequest::CreateNavigationHandle() {
   navigation_handle_ = NavigationHandleImpl::Create(
-      common_params_.url, frame_tree_node_);
+      common_params_.url, frame_tree_node_, common_params_.navigation_start);
 }
 
 void NavigationRequest::TransferNavigationHandleOwnership(

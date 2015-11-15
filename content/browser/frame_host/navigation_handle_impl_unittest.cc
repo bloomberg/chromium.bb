@@ -54,7 +54,7 @@ class NavigationHandleImplTest : public RenderViewHostImplTestHarness {
   void SetUp() override {
     RenderViewHostImplTestHarness::SetUp();
     test_handle_ = NavigationHandleImpl::Create(
-        GURL(), main_test_rfh()->frame_tree_node());
+        GURL(), main_test_rfh()->frame_tree_node(), base::TimeTicks::Now());
   }
 
   void TearDown() override {
