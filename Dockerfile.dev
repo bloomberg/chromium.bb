@@ -1,0 +1,14 @@
+FROM debian:wheezy
+# doesn't work: FROM debian:jessie
+
+MAINTAINER Liblouis Maintainers "liblouis-liblouisxml@freelists.org"
+
+# developer environment
+RUN apt-get update
+RUN apt-get install -y make autoconf automake libtool pkg-config
+
+# for cross-compiling
+RUN apt-get install -y mingw32 mingw-w64 libc6-dev-i386
+
+ADD . /root/src/liblouis
+WORKDIR /root/src/liblouis
