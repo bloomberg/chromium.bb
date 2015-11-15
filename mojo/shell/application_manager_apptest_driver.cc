@@ -117,9 +117,9 @@ class TargetApplicationDelegate : public mojo::ApplicationDelegate,
   void DidCreateChannel(mojo::embedder::ChannelInfo* channel_info) {}
 
   mojo::ApplicationImpl* app_;
-  base::WeakPtrFactory<TargetApplicationDelegate> weak_factory_;
   base::Process target_;
   mojo::WeakBindingSet<Driver> bindings_;
+  base::WeakPtrFactory<TargetApplicationDelegate> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(TargetApplicationDelegate);
 };
