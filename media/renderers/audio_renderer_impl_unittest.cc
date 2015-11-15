@@ -54,7 +54,7 @@ static int kInputSamplesPerSecond = 5000;
 static int kOutputSamplesPerSecond = 10000;
 
 ACTION_P(EnterPendingDecoderInitStateAction, test) {
-  test->EnterPendingDecoderInitState(arg1);
+  test->EnterPendingDecoderInitState(arg2);
 }
 
 class AudioRendererImplTest : public ::testing::Test {
@@ -109,8 +109,8 @@ class AudioRendererImplTest : public ::testing::Test {
   }
 
   void ExpectUnsupportedAudioDecoder() {
-    EXPECT_CALL(*decoder_, Initialize(_, _, _))
-        .WillOnce(DoAll(SaveArg<2>(&output_cb_), RunCallback<1>(false)));
+    EXPECT_CALL(*decoder_, Initialize(_, _, _, _))
+        .WillOnce(DoAll(SaveArg<3>(&output_cb_), RunCallback<2>(false)));
   }
 
   void OnStatistics(const PipelineStatistics& stats) {
@@ -136,8 +136,8 @@ class AudioRendererImplTest : public ::testing::Test {
   }
 
   void Initialize() {
-    EXPECT_CALL(*decoder_, Initialize(_, _, _))
-        .WillOnce(DoAll(SaveArg<2>(&output_cb_), RunCallback<1>(true)));
+    EXPECT_CALL(*decoder_, Initialize(_, _, _, _))
+        .WillOnce(DoAll(SaveArg<3>(&output_cb_), RunCallback<2>(true)));
     InitializeWithStatus(PIPELINE_OK);
 
     next_timestamp_.reset(new AudioTimestampHelper(kInputSamplesPerSecond));
@@ -155,7 +155,8 @@ class AudioRendererImplTest : public ::testing::Test {
   }
 
   void InitializeAndDestroy() {
-    EXPECT_CALL(*decoder_, Initialize(_, _, _)).WillOnce(RunCallback<1>(true));
+    EXPECT_CALL(*decoder_, Initialize(_, _, _, _))
+        .WillOnce(RunCallback<2>(true));
 
     WaitableMessageLoopEvent event;
     InitializeRenderer(event.GetPipelineStatusCB());
@@ -168,7 +169,7 @@ class AudioRendererImplTest : public ::testing::Test {
   }
 
   void InitializeAndDestroyDuringDecoderInit() {
-    EXPECT_CALL(*decoder_, Initialize(_, _, _))
+    EXPECT_CALL(*decoder_, Initialize(_, _, _, _))
         .WillOnce(EnterPendingDecoderInitStateAction(this));
 
     WaitableMessageLoopEvent event;

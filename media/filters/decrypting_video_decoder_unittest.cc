@@ -57,8 +57,6 @@ class DecryptingVideoDecoderTest : public testing::Test {
       : decoder_(new DecryptingVideoDecoder(
             message_loop_.task_runner(),
             new MediaLog(),
-            base::Bind(&DecryptingVideoDecoderTest::RequestCdmNotification,
-                       base::Unretained(this)),
             base::Bind(&DecryptingVideoDecoderTest::OnWaitingForDecryptionKey,
                        base::Unretained(this)))),
         cdm_context_(new StrictMock<MockCdmContext>()),
@@ -97,9 +95,13 @@ class DecryptingVideoDecoderTest : public testing::Test {
   // can succeed or fail.
   void InitializeAndExpectResult(const VideoDecoderConfig& config,
                                  bool success) {
-    decoder_->Initialize(config, false, NewExpectedBoolCB(success),
-                         base::Bind(&DecryptingVideoDecoderTest::FrameReady,
-                                    base::Unretained(this)));
+    decoder_->Initialize(
+        config, false,
+        base::Bind(&DecryptingVideoDecoderTest::RequestCdmNotification,
+                   base::Unretained(this)),
+        NewExpectedBoolCB(success),
+        base::Bind(&DecryptingVideoDecoderTest::FrameReady,
+                   base::Unretained(this)));
     message_loop_.RunUntilIdle();
   }
 
@@ -428,10 +430,13 @@ TEST_F(DecryptingVideoDecoderTest, Destroy_DuringDecryptorRequested) {
   CdmReadyCB cdm_ready_cb;
   EXPECT_CALL(*this, RequestCdmNotification(_))
       .WillOnce(SaveArg<0>(&cdm_ready_cb));
-  decoder_->Initialize(TestVideoConfig::NormalEncrypted(), false,
-                       NewExpectedBoolCB(false),
-                       base::Bind(&DecryptingVideoDecoderTest::FrameReady,
-                                  base::Unretained(this)));
+  decoder_->Initialize(
+      TestVideoConfig::NormalEncrypted(), false,
+      base::Bind(&DecryptingVideoDecoderTest::RequestCdmNotification,
+                 base::Unretained(this)),
+      NewExpectedBoolCB(false),
+      base::Bind(&DecryptingVideoDecoderTest::FrameReady,
+                 base::Unretained(this)));
   message_loop_.RunUntilIdle();
   // |cdm_ready_cb| is saved but not called here.
   EXPECT_FALSE(cdm_ready_cb.is_null());

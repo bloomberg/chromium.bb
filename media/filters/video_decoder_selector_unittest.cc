@@ -205,8 +205,8 @@ TEST_F(VideoDecoderSelectorTest, ClearStream_NoDecryptor_OneClearDecoder) {
   UseClearStream();
   InitializeDecoderSelector(kNoDecryptor, 1);
 
-  EXPECT_CALL(*decoder_1_, Initialize(ClearConfig(), _, _, _))
-      .WillOnce(RunCallback<2>(true));
+  EXPECT_CALL(*decoder_1_, Initialize(ClearConfig(), _, _, _, _))
+      .WillOnce(RunCallback<3>(true));
   EXPECT_CALL(*this, OnDecoderSelected(decoder_1_, IsNull()));
 
   SelectDecoder();
@@ -217,7 +217,7 @@ TEST_F(VideoDecoderSelectorTest,
   UseClearStream();
   InitializeDecoderSelector(kNoDecryptor, 1);
 
-  EXPECT_CALL(*decoder_1_, Initialize(ClearConfig(), _, _, _));
+  EXPECT_CALL(*decoder_1_, Initialize(ClearConfig(), _, _, _, _));
 
   SelectDecoderAndDestroy();
 }
@@ -228,10 +228,10 @@ TEST_F(VideoDecoderSelectorTest, ClearStream_NoDecryptor_MultipleClearDecoder) {
   UseClearStream();
   InitializeDecoderSelector(kNoDecryptor, 2);
 
-  EXPECT_CALL(*decoder_1_, Initialize(ClearConfig(), _, _, _))
-      .WillOnce(RunCallback<2>(false));
-  EXPECT_CALL(*decoder_2_, Initialize(ClearConfig(), _, _, _))
-      .WillOnce(RunCallback<2>(true));
+  EXPECT_CALL(*decoder_1_, Initialize(ClearConfig(), _, _, _, _))
+      .WillOnce(RunCallback<3>(false));
+  EXPECT_CALL(*decoder_2_, Initialize(ClearConfig(), _, _, _, _))
+      .WillOnce(RunCallback<3>(true));
   EXPECT_CALL(*this, OnDecoderSelected(decoder_2_, IsNull()));
 
   SelectDecoder();
@@ -242,9 +242,9 @@ TEST_F(VideoDecoderSelectorTest,
   UseClearStream();
   InitializeDecoderSelector(kNoDecryptor, 2);
 
-  EXPECT_CALL(*decoder_1_, Initialize(ClearConfig(), _, _, _))
-      .WillOnce(RunCallback<2>(false));
-  EXPECT_CALL(*decoder_2_, Initialize(ClearConfig(), _, _, _));
+  EXPECT_CALL(*decoder_1_, Initialize(ClearConfig(), _, _, _, _))
+      .WillOnce(RunCallback<3>(false));
+  EXPECT_CALL(*decoder_2_, Initialize(ClearConfig(), _, _, _, _));
 
   SelectDecoderAndDestroy();
 }
@@ -255,8 +255,8 @@ TEST_F(VideoDecoderSelectorTest, ClearStream_HasDecryptor) {
   UseClearStream();
   InitializeDecoderSelector(kDecryptOnly, 1);
 
-  EXPECT_CALL(*decoder_1_, Initialize(ClearConfig(), _, _, _))
-      .WillOnce(RunCallback<2>(true));
+  EXPECT_CALL(*decoder_1_, Initialize(ClearConfig(), _, _, _, _))
+      .WillOnce(RunCallback<3>(true));
   EXPECT_CALL(*this, OnDecoderSelected(decoder_1_, IsNull()));
 
   SelectDecoder();
@@ -266,7 +266,7 @@ TEST_F(VideoDecoderSelectorTest, Destroy_ClearStream_HasDecryptor) {
   UseClearStream();
   InitializeDecoderSelector(kDecryptOnly, 1);
 
-  EXPECT_CALL(*decoder_1_, Initialize(ClearConfig(), _, _, _));
+  EXPECT_CALL(*decoder_1_, Initialize(ClearConfig(), _, _, _, _));
 
   SelectDecoderAndDestroy();
 }
@@ -277,8 +277,8 @@ TEST_F(VideoDecoderSelectorTest, EncryptedStream_NoDecryptor_OneClearDecoder) {
   UseEncryptedStream();
   InitializeDecoderSelector(kNoDecryptor, 1);
 
-  EXPECT_CALL(*decoder_1_, Initialize(EncryptedConfig(), _, _, _))
-      .WillOnce(RunCallback<2>(false));
+  EXPECT_CALL(*decoder_1_, Initialize(EncryptedConfig(), _, _, _, _))
+      .WillOnce(RunCallback<3>(false));
   EXPECT_CALL(*this, OnDecoderSelected(IsNull(), IsNull()));
 
   SelectDecoder();
@@ -289,7 +289,7 @@ TEST_F(VideoDecoderSelectorTest,
   UseEncryptedStream();
   InitializeDecoderSelector(kNoDecryptor, 1);
 
-  EXPECT_CALL(*decoder_1_, Initialize(EncryptedConfig(), _, _, _));
+  EXPECT_CALL(*decoder_1_, Initialize(EncryptedConfig(), _, _, _, _));
 
   SelectDecoderAndDestroy();
 }
@@ -300,10 +300,10 @@ TEST_F(VideoDecoderSelectorTest, EncryptedStream_NoDecryptor_MultipleDecoders) {
   UseEncryptedStream();
   InitializeDecoderSelector(kNoDecryptor, 2);
 
-  EXPECT_CALL(*decoder_1_, Initialize(EncryptedConfig(), _, _, _))
-      .WillOnce(RunCallback<2>(false));
-  EXPECT_CALL(*decoder_2_, Initialize(EncryptedConfig(), _, _, _))
-      .WillOnce(RunCallback<2>(true));
+  EXPECT_CALL(*decoder_1_, Initialize(EncryptedConfig(), _, _, _, _))
+      .WillOnce(RunCallback<3>(false));
+  EXPECT_CALL(*decoder_2_, Initialize(EncryptedConfig(), _, _, _, _))
+      .WillOnce(RunCallback<3>(true));
   EXPECT_CALL(*this, OnDecoderSelected(decoder_2_, IsNull()));
 
   SelectDecoder();
@@ -314,9 +314,9 @@ TEST_F(VideoDecoderSelectorTest,
   UseEncryptedStream();
   InitializeDecoderSelector(kNoDecryptor, 2);
 
-  EXPECT_CALL(*decoder_1_, Initialize(EncryptedConfig(), _, _, _))
-      .WillOnce(RunCallback<2>(false));
-  EXPECT_CALL(*decoder_2_, Initialize(EncryptedConfig(), _, _, _));
+  EXPECT_CALL(*decoder_1_, Initialize(EncryptedConfig(), _, _, _, _))
+      .WillOnce(RunCallback<3>(false));
+  EXPECT_CALL(*decoder_2_, Initialize(EncryptedConfig(), _, _, _, _));
 
   SelectDecoderAndDestroy();
 }
@@ -348,8 +348,8 @@ TEST_F(VideoDecoderSelectorTest, EncryptedStream_DecryptOnly_OneClearDecoder) {
 
   // Since we use DecryptingDemuxerStream, the decoder will be initialized with
   // a clear config.
-  EXPECT_CALL(*decoder_1_, Initialize(ClearConfig(), _, _, _))
-      .WillOnce(RunCallback<2>(true));
+  EXPECT_CALL(*decoder_1_, Initialize(ClearConfig(), _, _, _, _))
+      .WillOnce(RunCallback<3>(true));
   EXPECT_CALL(*this, OnDecoderSelected(decoder_1_, NotNull()));
 
   SelectDecoder();
@@ -360,7 +360,7 @@ TEST_F(VideoDecoderSelectorTest,
   UseEncryptedStream();
   InitializeDecoderSelector(kDecryptOnly, 1);
 
-  EXPECT_CALL(*decoder_1_, Initialize(ClearConfig(), _, _, _));
+  EXPECT_CALL(*decoder_1_, Initialize(ClearConfig(), _, _, _, _));
 
   SelectDecoderAndDestroy();
 }
@@ -373,10 +373,10 @@ TEST_F(VideoDecoderSelectorTest,
   UseEncryptedStream();
   InitializeDecoderSelector(kDecryptOnly, 2);
 
-  EXPECT_CALL(*decoder_1_, Initialize(ClearConfig(), _, _, _))
-      .WillOnce(RunCallback<2>(false));
-  EXPECT_CALL(*decoder_2_, Initialize(ClearConfig(), _, _, _))
-      .WillOnce(RunCallback<2>(true));
+  EXPECT_CALL(*decoder_1_, Initialize(ClearConfig(), _, _, _, _))
+      .WillOnce(RunCallback<3>(false));
+  EXPECT_CALL(*decoder_2_, Initialize(ClearConfig(), _, _, _, _))
+      .WillOnce(RunCallback<3>(true));
   EXPECT_CALL(*this, OnDecoderSelected(decoder_2_, NotNull()));
 
   SelectDecoder();
@@ -387,9 +387,9 @@ TEST_F(VideoDecoderSelectorTest,
   UseEncryptedStream();
   InitializeDecoderSelector(kDecryptOnly, 2);
 
-  EXPECT_CALL(*decoder_1_, Initialize(ClearConfig(), _, _, _))
-      .WillOnce(RunCallback<2>(false));
-  EXPECT_CALL(*decoder_2_, Initialize(ClearConfig(), _, _, _));
+  EXPECT_CALL(*decoder_1_, Initialize(ClearConfig(), _, _, _, _))
+      .WillOnce(RunCallback<3>(false));
+  EXPECT_CALL(*decoder_2_, Initialize(ClearConfig(), _, _, _, _));
 
   SelectDecoderAndDestroy();
 }
@@ -407,8 +407,8 @@ TEST_F(VideoDecoderSelectorTest, EncryptedStream_DecryptAndDecode) {
 #else
   // A DecryptingDemuxerStream will be created. The clear decoder will be
   // initialized and returned.
-  EXPECT_CALL(*decoder_1_, Initialize(ClearConfig(), _, _, _))
-      .WillOnce(RunCallback<2>(true));
+  EXPECT_CALL(*decoder_1_, Initialize(ClearConfig(), _, _, _, _))
+      .WillOnce(RunCallback<3>(true));
   EXPECT_CALL(*this, OnDecoderSelected(NotNull(), NotNull()));
 #endif
 

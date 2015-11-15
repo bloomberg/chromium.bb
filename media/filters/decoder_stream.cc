@@ -516,8 +516,9 @@ void DecoderStream<StreamType>::ReinitializeDecoder() {
   DCHECK_EQ(pending_decode_requests_, 0);
 
   state_ = STATE_REINITIALIZING_DECODER;
+  // Decoders should not need CDMs during reinitialization.
   DecoderStreamTraits<StreamType>::InitializeDecoder(
-      decoder_.get(), stream_,
+      decoder_.get(), stream_, SetCdmReadyCB(),
       base::Bind(&DecoderStream<StreamType>::OnDecoderReinitialized,
                  weak_factory_.GetWeakPtr()),
       base::Bind(&DecoderStream<StreamType>::OnDecodeOutputReady,
@@ -540,8 +541,8 @@ void DecoderStream<StreamType>::OnDecoderReinitialized(bool success) {
     // Reinitialization failed. Try to fall back to one of the remaining
     // decoders. This will consume at least one decoder so doing it more than
     // once is safe.
-    // For simplicity, don't attempt to fall back to a decryptor. Calling this
-    // with a null callback ensures that one won't be selected.
+    // For simplicity, don't attempt to fall back to a decrypting decoder.
+    // Calling this with a null callback ensures that one won't be selected.
     SelectDecoder(SetCdmReadyCB());
   } else {
     CompleteDecoderReinitialization(true);

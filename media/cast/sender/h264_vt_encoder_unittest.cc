@@ -12,6 +12,7 @@
 #include "base/test/power_monitor_test_base.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/test/test_suite.h"
+#include "media/base/cdm_context.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/media.h"
 #include "media/base/media_switches.h"
@@ -135,7 +136,8 @@ class EndToEndFrameChecker
         count_frames_checked_(0) {
     bool decoder_init_result;
     decoder_.Initialize(
-        config, false, base::Bind(&SaveDecoderInitResult, &decoder_init_result),
+        config, false, media::SetCdmReadyCB(),
+        base::Bind(&SaveDecoderInitResult, &decoder_init_result),
         base::Bind(&EndToEndFrameChecker::CompareFrameWithExpected,
                    base::Unretained(this)));
     base::MessageLoop::current()->RunUntilIdle();
