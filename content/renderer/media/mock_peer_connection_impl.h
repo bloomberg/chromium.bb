@@ -61,9 +61,8 @@ class MockPeerConnectionImpl : public webrtc::PeerConnectionInterface {
     NOTIMPLEMENTED();
     return PeerConnectionInterface::kIceGatheringNew;
   }
-  void Close() override {
-    NOTIMPLEMENTED();
-  }
+
+  MOCK_METHOD0(Close, void());
 
   const webrtc::SessionDescriptionInterface* local_description() const override;
   const webrtc::SessionDescriptionInterface* remote_description()

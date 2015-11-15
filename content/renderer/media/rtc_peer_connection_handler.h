@@ -225,8 +225,14 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
 
   base::ThreadChecker thread_checker_;
 
-  // |client_| is a weak pointer, and is valid until stop() has returned.
-  blink::WebRTCPeerConnectionHandlerClient* client_;
+  // |client_| is a weak pointer to the blink object (blink::RTCPeerConnection)
+  // that owns this object.
+  // It is valid for the lifetime of this object.
+  blink::WebRTCPeerConnectionHandlerClient* const client_;
+  // True if this PeerConnection has been closed.
+  // After the PeerConnection has been closed, this object may no longer
+  // forward callbacks to blink.
+  bool is_closed_;
 
   // |dependency_factory_| is a raw pointer, and is valid for the lifetime of
   // RenderThreadImpl.

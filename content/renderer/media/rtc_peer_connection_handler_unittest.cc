@@ -231,6 +231,7 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
 
     mock_peer_connection_ = pc_handler_->native_peer_connection();
     ASSERT_TRUE(mock_peer_connection_);
+    EXPECT_CALL(*mock_peer_connection_, Close());
   }
 
   void TearDown() override {
@@ -334,6 +335,11 @@ TEST_F(RTCPeerConnectionHandlerTest, Destruct) {
   pc_handler_.reset(NULL);
 }
 
+TEST_F(RTCPeerConnectionHandlerTest, DestructAllHandlers) {
+  EXPECT_CALL(*mock_client_.get(), releasePeerConnectionHandler())
+      .Times(1);
+  RTCPeerConnectionHandler::DestructAllHandlers();
+}
 TEST_F(RTCPeerConnectionHandlerTest, CreateOffer) {
   blink::WebRTCSessionDescriptionRequest request;
   blink::WebMediaConstraints options;
