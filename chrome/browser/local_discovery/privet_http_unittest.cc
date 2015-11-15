@@ -2,32 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/bind.h"
-#include "base/command_line.h"
+#include "chrome/browser/local_discovery/privet_http.h"
+
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
-#include "base/location.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
-#include "base/thread_task_runner_handle.h"
-#include "chrome/browser/extensions/api/gcd_private/privet_v3_context_getter.h"
 #include "chrome/browser/local_discovery/privet_http_impl.h"
-#include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
-#include "net/base/host_port_pair.h"
-#include "net/base/net_errors.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/url_request/test_url_fetcher_factory.h"
-#include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_test_util.h"
-#include "printing/pwg_raster_settings.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(ENABLE_PRINT_PREVIEW)
 #include "chrome/browser/local_discovery/pwg_raster_converter.h"
+#include "printing/pwg_raster_settings.h"
 #endif  // ENABLE_PRINT_PREVIEW
 
 namespace local_discovery {
@@ -1041,8 +1032,19 @@ class PrivetHttpWithServerTest : public ::testing::Test,
       : thread_bundle_(content::TestBrowserThreadBundle::REAL_IO_THREAD) {}
 
   void SetUp() override {
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kEnablePrivetV3);
+    context_getter_ = new net::TestURLRequestContextGetter(
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
+
+    server_.reset(new EmbeddedTestServer(EmbeddedTestServer::TYPE_HTTP));
+    ASSERT_TRUE(server_->InitializeAndWaitUntilReady());
+
+    base::FilePath test_data_dir;
+    ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &test_data_dir));
+    server_->ServeFilesFromDirectory(
+        test_data_dir.Append(FILE_PATH_LITERAL("chrome/test/data")));
+
+    client_.reset(new PrivetHTTPClientImpl("test", server_->host_port_pair(),
+                                           context_getter_));
   }
 
   void OnError(PrivetURLFetcher* fetcher,
@@ -1072,24 +1074,7 @@ class PrivetHttpWithServerTest : public ::testing::Test,
     return true;
   }
 
-  void CreateServer(EmbeddedTestServer::Type type) {
-    server_.reset(new EmbeddedTestServer(type));
-    ASSERT_TRUE(server_->InitializeAndWaitUntilReady());
-
-    base::FilePath test_data_dir;
-    ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &test_data_dir));
-    server_->ServeFilesFromDirectory(
-        test_data_dir.Append(FILE_PATH_LITERAL("chrome/test/data")));
-  }
-
-  void CreateClient() {
-    context_getter_ = new extensions::PrivetV3ContextGetter(
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
-    client_.reset(new PrivetHTTPClientImpl("test", server_->host_port_pair(),
-                                           context_getter_));
-  }
-
-  void Run() {
+  bool Run() {
     success_ = false;
     done_ = false;
 
@@ -1106,13 +1091,14 @@ class PrivetHttpWithServerTest : public ::testing::Test,
     run_loop.Run();
 
     EXPECT_TRUE(done_);
+    return success_;
   }
 
   bool success_ = false;
   bool done_ = false;
   PrivetURLFetcher::ErrorType error_ = PrivetURLFetcher::ErrorType();
   content::TestBrowserThreadBundle thread_bundle_;
-  scoped_refptr<extensions::PrivetV3ContextGetter> context_getter_;
+  scoped_refptr<net::TestURLRequestContextGetter> context_getter_;
   scoped_ptr<EmbeddedTestServer> server_;
   scoped_ptr<PrivetHTTPClientImpl> client_;
 
@@ -1120,47 +1106,7 @@ class PrivetHttpWithServerTest : public ::testing::Test,
 };
 
 TEST_F(PrivetHttpWithServerTest, HttpServer) {
-  CreateServer(EmbeddedTestServer::TYPE_HTTP);
-
-  CreateClient();
-  Run();
-  EXPECT_TRUE(success_);
-
-  CreateClient();
-  client_->SwitchToHttps(server_->host_port_pair().port());
-  Run();
-  EXPECT_FALSE(success_);
-  EXPECT_EQ(PrivetURLFetcher::UNKNOWN_ERROR, error_);
-}
-
-TEST_F(PrivetHttpWithServerTest, HttpsServer) {
-  CreateServer(EmbeddedTestServer::TYPE_HTTPS);
-
-  CreateClient();
-  Run();
-  EXPECT_FALSE(success_);
-  EXPECT_EQ(PrivetURLFetcher::UNKNOWN_ERROR, error_);
-
-  CreateClient();
-  net::SHA256HashValue fingerprint =
-      net::X509Certificate::CalculateFingerprint256(
-          server_->GetCertificate()->os_cert_handle());
-  {
-    base::RunLoop run_loop;
-    context_getter_->AddPairedHost(client_->GetHost(), fingerprint,
-                                   run_loop.QuitClosure());
-    run_loop.Run();
-  }
-  client_->SwitchToHttps(server_->host_port_pair().port());
-  Run();
-  EXPECT_TRUE(success_);
-
-  CreateClient();
-  fingerprint = {};
-  client_->SwitchToHttps(server_->host_port_pair().port());
-  Run();
-  EXPECT_FALSE(success_);
-  EXPECT_EQ(PrivetURLFetcher::REQUEST_CANCELED, error_);
+  EXPECT_TRUE(Run());
 }
 
 }  // namespace

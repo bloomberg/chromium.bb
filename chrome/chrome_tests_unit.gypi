@@ -624,6 +624,7 @@
       'browser/extensions/api/file_handlers/api_file_handler_util_unittest.cc',
       'browser/extensions/api/file_handlers/mime_util_unittest.cc',
       'browser/extensions/api/file_system/file_system_api_unittest.cc',
+      'browser/extensions/api/gcd_private/privet_v3_context_getter_unittest.cc',
       'browser/extensions/api/gcd_private/privet_v3_session_unittest.cc',
       'browser/extensions/api/identity/extension_token_key_unittest.cc',
       'browser/extensions/api/identity/gaia_web_auth_flow_unittest.cc',
