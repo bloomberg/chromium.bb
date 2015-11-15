@@ -12,3 +12,6 @@ pkgconfig_DATA = liblouis.pc
 
 EXTRA_DIST = liblouis.pc README.windows HACKING
 
+# .dockerignore
+.dockerignore : .gitignore
+	sed -e 's|^\([^/#]\)|# \1|' -e 's|^/||' $< >$@

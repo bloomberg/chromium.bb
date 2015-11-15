@@ -146,6 +146,11 @@ directory of the liblouis source:
 
   docker build -t liblouis/liblouis .
 
+A .dockerignore file is required if you want to compile the source both on te host and in the Docker
+container. The .dockerignore file can be updated from .gitignore with:
+
+  make .dockerignore
+
 ** How to run tests
 Tests are run with
 
