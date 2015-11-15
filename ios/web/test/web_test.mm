@@ -83,24 +83,14 @@ void WebTestWithWebController::LoadHtml(NSString* html) {
 }
 
 void WebTestWithWebController::LoadHtml(const std::string& html) {
-  NSString* load_check = [NSString stringWithFormat:
-      @"<p style=\"display: none;\">%d</p>", s_html_load_count++];
-
+  NSString* load_check = CreateLoadCheck();
   std::string marked_html = html + [load_check UTF8String];
   std::string encoded_html;
   base::Base64Encode(marked_html, &encoded_html);
-  GURL url("data:text/html;base64," + encoded_html);
+  GURL url("data:text/html;charset=utf8;base64," + encoded_html);
   LoadURL(url);
 
-  // Data URLs sometimes lock up navigation, so if the loaded page is not the
-  // one expected, reset the web view. In some cases, document or document.body
-  // does not exist either; also reset in those cases.
-  NSString* inner_html = RunJavaScript(
-      @"(document && document.body && document.body.innerHTML) || 'undefined'");
-  if ([inner_html rangeOfString:load_check].location == NSNotFound) {
-    [webController_ setWebUsageEnabled:NO];
-    [webController_ setWebUsageEnabled:YES];
-    [webController_ triggerPendingLoad];
+  if (ResetPageIfNavigationStalled(load_check)) {
     LoadHtml(html);
   }
 }
@@ -247,6 +237,24 @@ void WebTestWithWebController::WillProcessTask(
 void WebTestWithWebController::DidProcessTask(
     const base::PendingTask& pending_task) {
   processed_a_task_ = true;
+}
+
+bool WebTestWithWebController::ResetPageIfNavigationStalled(
+    NSString* load_check) {
+  NSString* inner_html = RunJavaScript(
+      @"(document && document.body && document.body.innerHTML) || 'undefined'");
+  if ([inner_html rangeOfString:load_check].location == NSNotFound) {
+    [webController_ setWebUsageEnabled:NO];
+    [webController_ setWebUsageEnabled:YES];
+    [webController_ triggerPendingLoad];
+    return true;
+  }
+  return false;
+}
+
+NSString* WebTestWithWebController::CreateLoadCheck() {
+  return [NSString stringWithFormat:@"<p style=\"display: none;\">%d</p>",
+                                    s_html_load_count++];
 }
 
 #pragma mark -

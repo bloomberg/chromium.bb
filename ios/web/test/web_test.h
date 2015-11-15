@@ -107,6 +107,16 @@ class WebTestWithWebController : public WebTest,
   base::scoped_nsobject<CRWWebController> webController_;
   // true if a task has been processed.
   bool processed_a_task_;
+
+ private:
+  // LoadURL() for data URLs sometimes lock up navigation, so if the loaded page
+  // is not the one expected, reset the web view. In some cases, document or
+  // document.body does not exist either; also reset in those cases.
+  // Returns true if a reset occurred. One may want to load the page again.
+  bool ResetPageIfNavigationStalled(NSString* load_check);
+  // Creates a unique HTML element to look for in
+  // ResetPageIfNavigationStalled().
+  NSString* CreateLoadCheck();
 };
 
 #pragma mark -
@@ -136,4 +146,4 @@ class WebTestWithWKWebViewWebController : public WebTestWithWebController {
 
 }  // namespace web
 
-#endif // IOS_WEB_TEST_WEB_TEST_H_
+#endif  // IOS_WEB_TEST_WEB_TEST_H_
