@@ -23,6 +23,10 @@ public class ReaderModeTabInfo {
     // back from distiller and the user has already loaded a new URL.
     private String mCurrentUrl;
 
+    // The distillability heuristics now use a callback to notify the manager that a page can
+    // be distilled. This flag is used to detect if the callback is set for this tab.
+    private boolean mIsCallbackSet;
+
     /**
      * @param observer The WebContentsObserver for the tab this object represents.
      */
@@ -77,6 +81,20 @@ public class ReaderModeTabInfo {
      */
     public String getUrl() {
         return mCurrentUrl;
+    }
+
+    /**
+     * @return If the distillability callback is set for this object's tab.
+     */
+    public boolean isCallbackSet() {
+        return mIsCallbackSet;
+    }
+
+    /**
+     * @param isSet Set if this object's tab has a distillability callback.
+     */
+    public void setIsCallbackSet(boolean isSet) {
+        mIsCallbackSet = isSet;
     }
 }
 

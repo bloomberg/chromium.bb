@@ -153,6 +153,9 @@ public class ReaderModeManager extends TabModelSelectorTabObserver
             tabInfo.setWebContentsObserver(createWebContentsObserver(shownTab.getWebContents()));
         }
 
+        // Make sure there is a distillability delegate set on the WebContents.
+        setDistillabilityCallback();
+
         requestReaderPanelShow(StateChangeReason.UNKNOWN);
     }
 
@@ -205,6 +208,8 @@ public class ReaderModeManager extends TabModelSelectorTabObserver
                 mReaderModePageUrl = tab.getUrl();
                 mReaderModePanel.closePanel(StateChangeReason.CONTENT_CHANGED, true);
             }
+            // Make sure there is a distillability delegate set on the WebContents.
+            setDistillabilityCallback();
         }
 
         if (tab.getInfoBarContainer() != null) tab.getInfoBarContainer().addObserver(this);
@@ -297,27 +302,6 @@ public class ReaderModeManager extends TabModelSelectorTabObserver
 
         return new WebContentsObserver(webContents) {
             @Override
-            public void didFinishLoad(long frameId, String validatedUrl, boolean isMainFrame) {
-                if (!isMainFrame) return;
-                if (DomDistillerUrlUtils.isDistilledPage(
-                        mTabModelSelector.getTabById(readerTabId).getUrl())) {
-                    return;
-                }
-                updateStatusBasedOnReaderModeCriteria(true);
-            }
-
-            @Override
-            public void didFailLoad(boolean isProvisionalLoad, boolean isMainFrame, int errorCode,
-                        String description, String failingUrl, boolean wasIgnoredByHandler) {
-                if (!isMainFrame) return;
-                if (DomDistillerUrlUtils.isDistilledPage(
-                        mTabModelSelector.getTabById(readerTabId).getUrl())) {
-                    return;
-                }
-                updateStatusBasedOnReaderModeCriteria(true);
-            }
-
-            @Override
             public void didStartProvisionalLoadForFrame(long frameId, long parentFrameId,
                     boolean isMainFrame, String validatedUrl, boolean isErrorPage,
                     boolean isIframeSrcdoc) {
@@ -345,8 +329,6 @@ public class ReaderModeManager extends TabModelSelectorTabObserver
                                 mReaderModePageUrl))) {
                     mTabStatusMap.get(readerTabId).setStatus(NOT_POSSIBLE);
                     mIsUmaRecorded = false;
-                    // Do not call updateStatusBasedOnReaderModeCriteria here.
-                    // For ADABOOST_MODEL, it is unlikely to get valid info at this event.
                 }
                 mReaderModePageUrl = null;
                 if (mTabStatusMap.containsKey(readerTabId)
@@ -406,8 +388,9 @@ public class ReaderModeManager extends TabModelSelectorTabObserver
                 TabModel.TabLaunchType.FROM_LINK, mChromeActivity.getActivityTab());
     }
 
-    // Updates reader mode status based on whether or not the page should be viewed in reader mode.
-    private void updateStatusBasedOnReaderModeCriteria(final boolean forceRecord) {
+    // Set the callback for updating reader mode status based on whether or not the page should
+    // be viewed in reader mode.
+    private void setDistillabilityCallback() {
         Tab currentTab = mTabModelSelector.getCurrentTab();
         if (currentTab == null || currentTab.getWebContents() == null
                 || currentTab.getContentViewCore() == null) {
@@ -415,11 +398,14 @@ public class ReaderModeManager extends TabModelSelectorTabObserver
         }
 
         final int readerTabId = currentTab.getId();
-        DistillablePageUtils.isPageDistillable(currentTab.getWebContents(),
-                currentTab.getContentViewCore().getIsMobileOptimizedHint(),
-                new DistillablePageUtils.PageDistillableCallback() {
+        if (mTabStatusMap.get(readerTabId).isCallbackSet()) {
+            return;
+        }
+
+        DistillablePageUtils.setDelegate(currentTab.getWebContents(),
+                new DistillablePageUtils.PageDistillableDelegate() {
                     @Override
-                    public void onIsPageDistillableResult(boolean isDistillable) {
+                    public void onIsPageDistillableResult(boolean isDistillable, boolean isLast) {
                         if (!mTabStatusMap.containsKey(readerTabId)) return;
                         ReaderModeTabInfo tabInfo = mTabStatusMap.get(readerTabId);
 
@@ -437,8 +423,7 @@ public class ReaderModeManager extends TabModelSelectorTabObserver
                         } else {
                             tabInfo.setStatus(NOT_POSSIBLE);
                         }
-                        if (!mIsUmaRecorded
-                                && (tabInfo.getStatus() == POSSIBLE || forceRecord)) {
+                        if (!mIsUmaRecorded && (tabInfo.getStatus() == POSSIBLE || isLast)) {
                             mIsUmaRecorded = true;
                             RecordHistogram.recordBooleanHistogram(
                                     "DomDistiller.PageDistillable",
@@ -446,6 +431,7 @@ public class ReaderModeManager extends TabModelSelectorTabObserver
                         }
                     }
                 });
+        mTabStatusMap.get(readerTabId).setIsCallbackSet(true);
     }
 
     /**
