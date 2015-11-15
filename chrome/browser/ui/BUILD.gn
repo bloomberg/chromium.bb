@@ -389,6 +389,7 @@ source_set("ui") {
     deps += [
       "//chrome/browser/metro_utils",
       "//chrome/installer/util:strings",
+      "//components/search_engines",
       "//google_update",
       "//third_party/wtl",
       "//third_party/iaccessible2",

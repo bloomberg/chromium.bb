@@ -92,6 +92,8 @@
 
 #if defined(OS_WIN)
 #include "chrome/browser/metrics/jumplist_metrics_win.h"
+#include "components/search_engines/detect_desktop_search_win.h"
+#include "components/search_engines/search_engines_switches.h"
 #endif
 
 #if defined(ENABLE_PRINT_PREVIEW)
@@ -549,6 +551,26 @@ std::vector<GURL> StartupBrowserCreator::GetURLsFromCommandLine(
     // Allow it until this bug is fixed.
     //  http://code.google.com/p/chromium/issues/detail?id=60641
     GURL url = GURL(param.MaybeAsASCII());
+
+#if defined(OS_WIN)
+    if (command_line.HasSwitch(
+            switches::kUseDefaultSearchProviderForDesktopSearch)) {
+      TemplateURLService* template_url_service =
+          TemplateURLServiceFactory::GetForProfile(profile);
+      DCHECK(template_url_service);
+      base::string16 search_terms;
+      if (DetectWindowsDesktopSearch(
+              url, template_url_service->search_terms_data(), &search_terms)) {
+        GURL search_url(GetDefaultSearchURLForSearchTerms(template_url_service,
+                                                          search_terms));
+        if (search_url.is_valid()) {
+          urls.push_back(search_url);
+          continue;
+        }
+      }
+    }
+#endif  // defined(OS_WIN)
+
     // http://crbug.com/371030: Only use URLFixerUpper if we don't have a valid
     // URL, otherwise we will look in the current directory for a file named
     // 'about' if the browser was started with a about:foo argument.

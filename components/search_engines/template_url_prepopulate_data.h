@@ -26,6 +26,8 @@ class PrefRegistrySyncable;
 
 namespace TemplateURLPrepopulateData {
 
+struct PrepopulatedEngine;
+
 extern const int kMaxPrepopulatedEngineID;
 
 void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
@@ -41,6 +43,10 @@ int GetDataVersion(PrefService* prefs);
 ScopedVector<TemplateURLData> GetPrepopulatedEngines(
     PrefService* prefs,
     size_t* default_search_provider_index);
+
+// Returns a TemplateURLData for the specified prepopulated engine.
+scoped_ptr<TemplateURLData> MakeTemplateURLDataFromPrepopulatedEngine(
+    const PrepopulatedEngine& engine);
 
 // Removes prepopulated engines and their version stored in user prefs.
 void ClearPrepopulatedEnginesInPrefs(PrefService* prefs);

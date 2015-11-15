@@ -1079,34 +1079,6 @@ ScopedVector<TemplateURLData> GetPrepopulatedTemplateURLData(
   return t_urls.Pass();
 }
 
-scoped_ptr<TemplateURLData>
-    MakePrepopulatedTemplateURLDataFromPrepopulateEngine(
-        const PrepopulatedEngine& engine) {
-  base::ListValue alternate_urls;
-  if (engine.alternate_urls) {
-    for (size_t i = 0; i < engine.alternate_urls_size; ++i)
-      alternate_urls.AppendString(std::string(engine.alternate_urls[i]));
-  }
-
-  return MakePrepopulatedTemplateURLData(base::WideToUTF16(engine.name),
-                                         base::WideToUTF16(engine.keyword),
-                                         engine.search_url,
-                                         engine.suggest_url,
-                                         engine.instant_url,
-                                         engine.image_url,
-                                         engine.new_tab_url,
-                                         engine.contextual_search_url,
-                                         engine.search_url_post_params,
-                                         engine.suggest_url_post_params,
-                                         engine.instant_url_post_params,
-                                         engine.image_url_post_params,
-                                         engine.favicon_url,
-                                         engine.encoding,
-                                         alternate_urls,
-                                         engine.search_terms_replacement_key,
-                                         engine.id);
-}
-
 bool SameDomain(const GURL& given_url, const GURL& prepopulated_url) {
   return prepopulated_url.is_valid() &&
       net::registry_controlled_domains::SameDomainOrHost(
@@ -1145,10 +1117,28 @@ ScopedVector<TemplateURLData> GetPrepopulatedEngines(
   size_t num_engines;
   GetPrepopulationSetFromCountryID(prefs, &engines, &num_engines);
   for (size_t i = 0; i != num_engines; ++i) {
-    t_urls.push_back(MakePrepopulatedTemplateURLDataFromPrepopulateEngine(
-                         *engines[i]).release());
+    t_urls.push_back(
+        MakeTemplateURLDataFromPrepopulatedEngine(*engines[i]).release());
   }
   return t_urls.Pass();
+}
+
+scoped_ptr<TemplateURLData> MakeTemplateURLDataFromPrepopulatedEngine(
+    const PrepopulatedEngine& engine) {
+  base::ListValue alternate_urls;
+  if (engine.alternate_urls) {
+    for (size_t i = 0; i < engine.alternate_urls_size; ++i)
+      alternate_urls.AppendString(std::string(engine.alternate_urls[i]));
+  }
+
+  return MakePrepopulatedTemplateURLData(
+      base::WideToUTF16(engine.name), base::WideToUTF16(engine.keyword),
+      engine.search_url, engine.suggest_url, engine.instant_url,
+      engine.image_url, engine.new_tab_url, engine.contextual_search_url,
+      engine.search_url_post_params, engine.suggest_url_post_params,
+      engine.instant_url_post_params, engine.image_url_post_params,
+      engine.favicon_url, engine.encoding, alternate_urls,
+      engine.search_terms_replacement_key, engine.id);
 }
 
 void ClearPrepopulatedEnginesInPrefs(PrefService* prefs) {
