@@ -16,6 +16,8 @@ import org.chromium.chrome.browser.bookmark.BookmarksBridge;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.bookmarks.BookmarkType;
+import org.chromium.components.offlinepages.DeletePageResult;
+import org.chromium.components.offlinepages.SavePageResult;
 import org.chromium.content_public.browser.WebContents;
 
 import java.util.ArrayList;
@@ -89,6 +91,14 @@ public final class OfflinePageBridge {
         public void offlinePageDeleted(BookmarkId bookmarkId) {}
     }
 
+    private static long getTotalSize(List<OfflinePageItem> offlinePages) {
+        long totalSize = 0;
+        for (OfflinePageItem offlinePage : offlinePages) {
+            totalSize += offlinePage.getFileSize();
+        }
+        return totalSize;
+    }
+
     private static void recordFreeSpaceHistograms(
             final String percentageName, final String bytesName) {
         new AsyncTask<Void, Void, Void>() {
@@ -99,6 +109,43 @@ public final class OfflinePageBridge {
                 RecordHistogram.recordEnumeratedHistogram(percentageName, percentage, 101);
                 int bytesInMB = (int) (OfflinePageUtils.getFreeSpaceInBytes() / (1024 * 1024));
                 RecordHistogram.recordCustomCountHistogram(bytesName, bytesInMB, 1, 500000, 50);
+                return null;
+            }
+        }.execute();
+    }
+
+    /**
+     * Records histograms related to the cost of storage. It is meant to be used after user
+     * takes an action: save, delete or delete in bulk.
+     *
+     * @param totalPageSizeBefore Total size of the pages before the action was taken.
+     * @param totalPageSizeAfter Total size of the pages after the action was taken.
+     */
+    private static void recordStorageHistograms(
+            final long totalPageSizeBefore, final long totalPageSizeAfter) {
+        new AsyncTask<Void, Void, Void>() {
+            @Override
+            protected Void doInBackground(Void... params) {
+                // Total space taken by offline pages.
+                int totalPageSizeInMB = (int) (totalPageSizeAfter / (1024 * 1024));
+                RecordHistogram.recordCustomCountHistogram(
+                        "OfflinePages.TotalPageSize", totalPageSizeInMB, 1, 10000, 50);
+
+                // How much of the total space the offline pages take.
+                int totalPageSizePercentage = (int) (1.0 * totalPageSizeAfter
+                        / OfflinePageUtils.getTotalSpaceInBytes() * 100);
+                RecordHistogram.recordEnumeratedHistogram(
+                        "OfflinePages.TotalPageSizePercentage", totalPageSizePercentage, 101);
+                if (totalPageSizeBefore > 0) {
+                    // If the user is deleting the pages, perhaps they are running out of free
+                    // space. Report the size before the operation, where a base for calculation
+                    // of total free space includes space taken by offline pages.
+                    int percentageOfFree = (int) (1.0 * totalPageSizeBefore
+                            / (totalPageSizeBefore + OfflinePageUtils.getFreeSpaceInBytes()) * 100);
+                    RecordHistogram.recordEnumeratedHistogram(
+                            "OfflinePages.DeletePage.TotalPageSizeAsPercentageOfFreeSpace",
+                            percentageOfFree, 101);
+                }
                 return null;
             }
         }.execute();
@@ -198,9 +245,19 @@ public final class OfflinePageBridge {
         assert mIsNativeOfflinePageModelLoaded;
         assert webContents != null;
 
+        SavePageCallback callbackWrapper = new SavePageCallback() {
+            @Override
+            public void onSavePageDone(int savePageResult, String url) {
+                if (savePageResult == SavePageResult.SUCCESS) {
+                    long totalPageSizeAfter = getTotalSize(getAllPages());
+                    recordStorageHistograms(0, totalPageSizeAfter);
+                }
+                callback.onSavePageDone(savePageResult, url);
+            }
+        };
         recordFreeSpaceHistograms(
                 "OfflinePages.SavePage.FreeSpacePercentage", "OfflinePages.SavePage.FreeSpaceMB");
-        nativeSavePage(mNativeOfflinePageBridge, callback, webContents, bookmarkId.getId());
+        nativeSavePage(mNativeOfflinePageBridge, callbackWrapper, webContents, bookmarkId.getId());
     }
 
     /**
@@ -221,12 +278,14 @@ public final class OfflinePageBridge {
      * @see DeletePageCallback
      */
     @VisibleForTesting
-    public void deletePage(final BookmarkId bookmarkId, final DeletePageCallback callback) {
+    public void deletePage(final BookmarkId bookmarkId, DeletePageCallback callback) {
         assert mIsNativeOfflinePageModelLoaded;
 
         recordFreeSpaceHistograms("OfflinePages.DeletePage.FreeSpacePercentage",
                 "OfflinePages.DeletePage.FreeSpaceMB");
-        nativeDeletePage(mNativeOfflinePageBridge, callback, bookmarkId.getId());
+
+        DeletePageCallback callbackWrapper = wrapCallbackWithHistogramReporting(callback);
+        nativeDeletePage(mNativeOfflinePageBridge, callbackWrapper, bookmarkId.getId());
     }
 
     /**
@@ -242,7 +301,12 @@ public final class OfflinePageBridge {
         for (int i = 0; i < ids.length; i++) {
             ids[i] = bookmarkIds.get(i).getId();
         }
-        nativeDeletePages(mNativeOfflinePageBridge, callback, ids);
+
+        recordFreeSpaceHistograms("OfflinePages.DeletePage.FreeSpacePercentage",
+                "OfflinePages.DeletePage.FreeSpaceMB");
+
+        DeletePageCallback callbackWrapper = wrapCallbackWithHistogramReporting(callback);
+        nativeDeletePages(mNativeOfflinePageBridge, callbackWrapper, ids);
     }
 
     /**
@@ -268,6 +332,21 @@ public final class OfflinePageBridge {
      */
     public void checkOfflinePageMetadata() {
         nativeCheckMetadataConsistency(mNativeOfflinePageBridge);
+    }
+
+    private DeletePageCallback wrapCallbackWithHistogramReporting(
+            final DeletePageCallback callback) {
+        final long totalPageSizeBefore = getTotalSize(getAllPages());
+        return new DeletePageCallback() {
+            @Override
+            public void onDeletePageDone(int deletePageResult) {
+                if (deletePageResult == DeletePageResult.SUCCESS) {
+                    long totalPageSizeAfter = getTotalSize(getAllPages());
+                    recordStorageHistograms(totalPageSizeBefore, totalPageSizeAfter);
+                }
+                callback.onDeletePageDone(deletePageResult);
+            }
+        };
     }
 
     @CalledByNative

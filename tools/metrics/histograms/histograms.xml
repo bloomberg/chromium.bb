@@ -29849,6 +29849,24 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="OfflinePages.DeletePage.TotalPageSizeAsPercentageOfFreeSpace"
+    units="%">
+  <owner>fgorski@chromium.org</owner>
+  <owner>jianli@chromium.org</owner>
+  <summary>
+    The percentage of space taken by offline pages from the free space that
+    could be available, if the feature was not present. I.e. considering
+    situation where the user has: Free Space, Offline content, other apps and
+    data. This is a percentage of: Offline content / (Offline content + Free
+    Space).
+
+    The value will be recorded after user deletes a single or multiple offline
+    pages. In case pages are removed in bulk, this value will be reported once.
+    This value is only reported with deleting, as we are trying to infer if lack
+    of free space might have caused the user to delete.
+  </summary>
+</histogram>
+
 <histogram name="OfflinePages.DeletePageResult"
     enum="OfflinePagesDeletePageResult">
   <owner>jianli@chromium.org</owner>
@@ -29950,6 +29968,30 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>jianli@chromium.org</owner>
   <summary>
     The amount of time taken to save an offline copy for a page.
+  </summary>
+</histogram>
+
+<histogram name="OfflinePages.TotalPageSize" units="MB">
+  <owner>fgorski@chromium.org</owner>
+  <owner>jianli@chromium.org</owner>
+  <summary>
+    Total size of all the offline pages saved by the user.
+
+    This value is recorded whenever the number of pages change, meaning after a
+    page is added or removed. If pages are removed in bulk, this value will be
+    reported only once.
+  </summary>
+</histogram>
+
+<histogram name="OfflinePages.TotalPageSizePercentage" units="%">
+  <owner>fgorski@chromium.org</owner>
+  <owner>jianli@chromium.org</owner>
+  <summary>
+    Total size of all the offline pages saved by the user as a percentage of
+    total storage size.
+
+    This value is recorded whenever the number of pages change, meaning after a
+    page is added or removed.
   </summary>
 </histogram>
 
