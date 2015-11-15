@@ -358,6 +358,15 @@ TEST_F(AlternateProtocolServerPropertiesTest, ProbabilityExcluded) {
   EXPECT_FALSE(HasAlternativeService(test_host_port_pair));
 }
 
+TEST_F(AlternateProtocolServerPropertiesTest, ZeroProbabilityAlwaysExcluded) {
+  impl_.SetAlternativeServiceProbabilityThreshold(0.0);
+
+  HostPortPair test_host_port_pair("foo", 80);
+  const AlternativeService alternative_service(NPN_HTTP_2, "foo", 443);
+  SetAlternativeService(test_host_port_pair, alternative_service, 0);
+  EXPECT_FALSE(HasAlternativeService(test_host_port_pair));
+}
+
 TEST_F(AlternateProtocolServerPropertiesTest, Initialize) {
   // |test_host_port_pair1| has one alternative service, which is non-broken,
   // and thus will be removed by InitializeAlternativeServiceServers().

@@ -294,7 +294,8 @@ AlternativeServiceVector HttpServerPropertiesImpl::GetAlternativeServices(
         it = map_it->second.erase(it);
         continue;
       }
-      if (it->probability < alternative_service_probability_threshold_) {
+      if (it->probability == 0 ||
+          it->probability < alternative_service_probability_threshold_) {
         ++it;
         continue;
       }
