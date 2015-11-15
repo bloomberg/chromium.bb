@@ -427,10 +427,15 @@ QuicAsyncStatus QuicCryptoClientStream::DoVerifyProof(
 void QuicCryptoClientStream::DoVerifyProofComplete(
     QuicCryptoClientConfig::CachedState* cached) {
   if (!verify_ok_) {
-    next_state_ = STATE_NONE;
     if (verify_details_.get()) {
       client_session()->OnProofVerifyDetailsAvailable(*verify_details_);
     }
+    if (num_client_hellos_ == 0) {
+      cached->Clear();
+      next_state_ = STATE_INITIALIZE;
+      return;
+    }
+    next_state_ = STATE_NONE;
     UMA_HISTOGRAM_BOOLEAN("Net.QuicVerifyProofFailed.HandshakeConfirmed",
                           handshake_confirmed());
     CloseConnectionWithDetails(

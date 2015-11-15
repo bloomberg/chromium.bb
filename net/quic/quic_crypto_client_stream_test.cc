@@ -19,6 +19,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using std::string;
+using std::vector;
 
 namespace net {
 namespace test {
@@ -129,6 +130,26 @@ TEST_F(QuicCryptoClientStreamTest, ExpiredServerConfig) {
   // server config.
   connection_->AdvanceTime(
       QuicTime::Delta::FromSeconds(60 * 60 * 24 * 365 * 5));
+
+  stream()->CryptoConnect();
+  // Check that a client hello was sent.
+  ASSERT_EQ(1u, connection_->encrypted_packets_.size());
+}
+
+TEST_F(QuicCryptoClientStreamTest, InvalidCachedServerConfig) {
+  // Seed the config with a cached server config.
+  CompleteCryptoHandshake();
+
+  // Recreate connection with the new config.
+  CreateConnection();
+
+  QuicCryptoClientConfig::CachedState* state =
+      crypto_config_.LookupOrCreate(server_id_);
+
+  vector<string> certs = state->certs();
+  string cert_sct = state->cert_sct();
+  string signature = state->signature();
+  state->SetProof(certs, cert_sct, signature + signature);
 
   stream()->CryptoConnect();
   // Check that a client hello was sent.
