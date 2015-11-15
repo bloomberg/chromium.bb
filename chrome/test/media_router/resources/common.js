@@ -65,8 +65,8 @@ function checkSession() {
         sendResult(true, '');
       }
     }).catch(function() {
-      // close old session if exists
-      startedSession && startedSession.close();
+      // terminate old session if exists
+      startedSession && startedSession.terminate();
       sendResult(false, 'Failed to start session');
     })
   }
@@ -98,11 +98,11 @@ function checkStartFailed(expectedErrorName, expectedErrorMessageSubstring) {
 }
 
 /**
- * Stops current session.
+ * Terminates current session.
  */
-function stopSession() {
+function terminateSession() {
   if (startedSession) {
-    startedSession.close();
+    startedSession.terminate();
   }
   sendResult(true, '');
 }

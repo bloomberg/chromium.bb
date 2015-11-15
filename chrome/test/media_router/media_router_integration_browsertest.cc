@@ -38,7 +38,7 @@ const char kTestSinkName[] = "test-sink-1";
 const char kCheckSessionScript[] = "checkSession();";
 const char kCheckStartFailedScript[] = "checkStartFailed('%s', '%s');";
 const char kStartSessionScript[] = "startSession();";
-const char kStopSessionScript[] = "stopSession()";
+const char kTerminateSessionScript[] = "terminateSession()";
 const char kWaitDeviceScript[] = "waitUntilDeviceAvailable();";
 const char kChooseSinkScript[] =
     "var sinks = document.getElementById('media-router-container')."
@@ -332,7 +332,7 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest, MANUAL_Basic) {
       GetDefaultRequestSessionId(web_contents));
   EXPECT_EQ(session_id, default_request_session_id);
 
-  ExecuteJavaScriptAPI(web_contents, kStopSessionScript);
+  ExecuteJavaScriptAPI(web_contents, kTerminateSessionScript);
 }
 
 IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
