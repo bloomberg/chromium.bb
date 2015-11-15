@@ -96,7 +96,8 @@ class TargetApplicationDelegate : public mojo::ApplicationDelegate,
   #endif
     target_ = base::LaunchProcess(child_command_line, options);
   }
-  bool ConfigureIncomingConnection(mojo::ApplicationConnection* connection) {
+  bool ConfigureIncomingConnection(
+      mojo::ApplicationConnection* connection) override {
     connection->AddService<Driver>(this);
     return true;
   }
