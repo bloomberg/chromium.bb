@@ -1,0 +1,113 @@
+{
+   "compressedsizeformat": {
+      "message": "संपीड़न के बाद: \u003Cb>$1 बाइट\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatgb": {
+      "message": "संपीड़न के बाद: \u003Cb>$1 GB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatkb": {
+      "message": "संपीड़न के बाद: \u003Cb>$1 KB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatmb": {
+      "message": "संपीड़न के बाद: \u003Cb>$1 MB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "datasavingspercentformat": {
+      "message": "$1%",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "disabledatasaverlabel": {
+      "message": "डेटा बचतकर्ता बंद करें"
+   },
+   "enabledatasaverlabel": {
+      "message": "डेटा बचतकर्ता चालू करें"
+   },
+   "extdesc": {
+      "message": "आपके द्वारा देखे जाने वाले पृष्ठों को ऑप्टिमाइज़ करने के लिए Google सर्वर का उपयोग करके डेटा उपयोग को कम करें."
+   },
+   "extname": {
+      "message": "डेटा बचतकर्ता"
+   },
+   "extnamebeta": {
+      "message": "डेटा सर्वर (बीटा)"
+   },
+   "helpandfeedback": {
+      "message": "सहायता और फ़ीडबैक"
+   },
+   "incognitomessage": {
+      "message": "इस एक्सटेंशन का उपयोग गुप्त मोड में नहीं किया जा सकता."
+   },
+   "info1": {
+      "message": "Google का उपयोग कर देखे जाने वाले पृष्ठ अनुकूलित करके डेटा पर कम खर्च करें."
+   },
+   "info2": {
+      "message": "HTTPS या गुप्त मोड से ऐक्‍सेस किए गए पृष्ठों को Google द्वारा अनुकूलित नहीं किया जाएगा या देखा नहीं जाएगा."
+   },
+   "learnmorelinktext": {
+      "message": "और जानें"
+   },
+   "originalsizeformat": {
+      "message": "मूल आकार: \u003Cb>$1 बाइट\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatgb": {
+      "message": "मूल आकार: \u003Cb>$1 GB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatkb": {
+      "message": "मूल आकार: \u003Cb>$1 KB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatmb": {
+      "message": "मूल आकार: \u003Cb>$1 MB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "reducedatausagelabel": {
+      "message": "डेटा उपयोग में कमी लाना"
+   },
+   "reportissue": {
+      "message": "समस्या की रिपोर्ट करना"
+   },
+   "versionnotcompatible": {
+      "message": "Chrome का यह वर्शन इस एक्‍सटेंशन से संगत नहीं है. कृपया Chrome को नवीनतम वर्शन में अपडेट करें. M41 बीटा पहला समर्थित वर्शन है."
+   }
+}

@@ -1,0 +1,113 @@
+{
+   "compressedsizeformat": {
+      "message": "После компримовања: \u003Cb>$1 B\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatgb": {
+      "message": "После компримовања: \u003Cb>$1 GB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatkb": {
+      "message": "После компримовања: \u003Cb>$1 kB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatmb": {
+      "message": "После компримовања: \u003Cb>$1 MB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "datasavingspercentformat": {
+      "message": "$1%",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "disabledatasaverlabel": {
+      "message": "Искључи Уштеду података"
+   },
+   "enabledatasaverlabel": {
+      "message": "Укључи Уштеду података"
+   },
+   "extdesc": {
+      "message": "Смањује потрошњу података помоћу Google сервера за оптимизацију страница које посећујете."
+   },
+   "extname": {
+      "message": "Уштеда података"
+   },
+   "extnamebeta": {
+      "message": "Уштеда података (бета)"
+   },
+   "helpandfeedback": {
+      "message": "Помоћ и повратне информације"
+   },
+   "incognitomessage": {
+      "message": "Овај додатак не може да се користи у режиму без архивирања."
+   },
+   "info1": {
+      "message": "Трошите мање на податке тако што ћете користити Google за оптимизацију страница које посећујете."
+   },
+   "info2": {
+      "message": "Google неће оптимизовати нити видети странице којима се приступа помоћу HTTPS-а или у режиму без архивирања."
+   },
+   "learnmorelinktext": {
+      "message": "Сазнајте више"
+   },
+   "originalsizeformat": {
+      "message": "Оригинална величина: \u003Cb>$1 B\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatgb": {
+      "message": "Оригинална величина: \u003Cb>$1 GB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatkb": {
+      "message": "Оригинална величина: \u003Cb>$1 kB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatmb": {
+      "message": "Оригинална величина: \u003Cb>$1 MB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "reducedatausagelabel": {
+      "message": "Смањење потрошње података"
+   },
+   "reportissue": {
+      "message": "Пријави проблем"
+   },
+   "versionnotcompatible": {
+      "message": "Ова верзија Chrome-а није компатибилна са овим додатком. Ажурирајте Chrome на најновију верзију. M41 Beta је прва подржана верзија."
+   }
+}

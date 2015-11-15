@@ -1,0 +1,113 @@
+{
+   "compressedsizeformat": {
+      "message": "След компресиране: \u003Cb>$1 байта\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatgb": {
+      "message": "След компресиране: \u003Cb>$1 ГБ\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatkb": {
+      "message": "След компресиране: \u003Cb>$1 КБ\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatmb": {
+      "message": "След компресиране: \u003Cb>$1 МБ\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "datasavingspercentformat": {
+      "message": "$1%",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "disabledatasaverlabel": {
+      "message": "Изключване на „Икономия на данни“"
+   },
+   "enabledatasaverlabel": {
+      "message": "Включване на „Икономия на данни“"
+   },
+   "extdesc": {
+      "message": "Намалява преноса на данни, като използва сървърите на Google за оптимизиране на посещаваните от вас страници."
+   },
+   "extname": {
+      "message": "Икономия на данни"
+   },
+   "extnamebeta": {
+      "message": "Икономия на данни (бета)"
+   },
+   "helpandfeedback": {
+      "message": "Помощ и отзиви"
+   },
+   "incognitomessage": {
+      "message": "Това разширение не може да се използва в режим „инкогнито“."
+   },
+   "info1": {
+      "message": "Намалете разходите за данни, като използвате Google за оптимизиране на посещаваните страници."
+   },
+   "info2": {
+      "message": "Не оптимизираме, нито виждаме страниците, отваряни с HTTPS или в режим „инкогнито“."
+   },
+   "learnmorelinktext": {
+      "message": "Научете повече"
+   },
+   "originalsizeformat": {
+      "message": "Първоначален размер: \u003Cb>$1 байта\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatgb": {
+      "message": "Първоначален размер: \u003Cb>$1 ГБ\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatkb": {
+      "message": "Първоначален размер: \u003Cb>$1 КБ\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatmb": {
+      "message": "Първоначален размер: \u003Cb>$1 МБ\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "reducedatausagelabel": {
+      "message": "Намаляване на използването на данни"
+   },
+   "reportissue": {
+      "message": "Подаване на сигнал за проблем"
+   },
+   "versionnotcompatible": {
+      "message": "Тази версия на Chrome не е съвместима с разширението. Моля, актуализирайте браузъра до последната версия. Първата поддържана е M41 бета."
+   }
+}

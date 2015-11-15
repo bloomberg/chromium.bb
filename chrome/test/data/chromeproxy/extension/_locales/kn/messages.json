@@ -1,0 +1,113 @@
+{
+   "compressedsizeformat": {
+      "message": "ಕುಗ್ಗಿಸಿದ ನಂತರ: \u003Cb>$1 ಬೈಟ್ಸ್\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatgb": {
+      "message": "ಕುಗ್ಗಿಸಿದ ನಂತರ: \u003Cb>$1 GB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatkb": {
+      "message": "ಕುಗ್ಗಿಸಿದ ನಂತರ: \u003Cb>$1 KB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatmb": {
+      "message": "ಕುಗ್ಗಿಸಿದ ನಂತರ: \u003Cb>$1 MB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "datasavingspercentformat": {
+      "message": "$1%",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "disabledatasaverlabel": {
+      "message": "ಡೇಟಾ ಉಳಿಸುವಿಕೆ ಆಫ್ ಮಾಡಿ"
+   },
+   "enabledatasaverlabel": {
+      "message": "ಡೇಟಾ ಉಳಿಸುವಿಕೆ ಆನ್ ಮಾಡಿ"
+   },
+   "extdesc": {
+      "message": "ನೀವು ಭೇಟಿ ನೀಡುವ ಪುಟಗಳನ್ನು ಆಪ್ಟಿಮೈಸ್ ಮಾಡಲು Google ಸರ್ವರ್‌ಗಳನ್ನು ಬಳಸುವ ಮೂಲಕ ಡೇಟಾ ಬಳಕೆಯನ್ನು ಕಡಿಮೆ ಮಾಡುತ್ತದೆ."
+   },
+   "extname": {
+      "message": "ಡೇಟಾ ಉಳಿಸುವಿಕೆ"
+   },
+   "extnamebeta": {
+      "message": "ಡೇಟಾ ಉಳಿಸುವಿಕೆ (ಬೀಟಾ)"
+   },
+   "helpandfeedback": {
+      "message": "ಸಹಾಯ ಮತ್ತು ಪ್ರತಿಕ್ರಿಯೆ"
+   },
+   "incognitomessage": {
+      "message": "ಈ ವಿಸ್ತರಣೆಯನ್ನು ಅಜ್ಞಾತ ಮೋಡ್‌ನಲ್ಲಿ ಬಳಸಲಾಗುವುದಿಲ್ಲ."
+   },
+   "info1": {
+      "message": "ನೀವು ಭೇಟಿ ಮಾಡಿದ ಪುಟಗಳನ್ನು ಆಪ್ಟಿಮೈಜ್ ಮಾಡಲು Google ಬಳಸಿಕೊಂಡು ಡೇಟಾಗೆ ಕಡಿಮೆ ವ್ಯಯಿಸಿ."
+   },
+   "info2": {
+      "message": "HTTPS ಅಥವಾ ಅಜ್ಞಾತದಲ್ಲಿ ಪ್ರವೇಶಹೊಂದಿದ ಪುಟಗಳನ್ನು ಆಪ್ಟಿಮೈಜ್ ಮಾಡಲಾಗುವುದಿಲ್ಲ ಅಥವಾ Google ಗೆ ಗೋಚರಿಸುವುದಿಲ್ಲ."
+   },
+   "learnmorelinktext": {
+      "message": "ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ"
+   },
+   "originalsizeformat": {
+      "message": "ಮೂಲ ಗಾತ್ರ: \u003Cb>\u003C/b> ಬೈಟ್ಸ್$1",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatgb": {
+      "message": "ಮೂಲ ಗಾತ್ರ: \u003Cb>$1 GB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatkb": {
+      "message": "ಮೂಲ ಗಾತ್ರ: \u003Cb>$1 KB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatmb": {
+      "message": "ಮೂಲ ಗಾತ್ರ: \u003Cb>$1 MB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "reducedatausagelabel": {
+      "message": "ಡೇಟಾ ಬಳಕೆ ಕಡಿಮೆ ಮಾಡಿ"
+   },
+   "reportissue": {
+      "message": "ಸಮಸ್ಯೆ ವರದಿಮಾಡಿ"
+   },
+   "versionnotcompatible": {
+      "message": "ಈ ವಿಸ್ತರಣೆಯ ಜೊತೆಗೆ Chrome ನ ಈ ಆವೃತ್ತಿಯು ಹೊಂದಾಣಿಕೆಯಾಗುವುದಿಲ್ಲ. ದಯವಿಟ್ಟು ಇತ್ತೀಚಿನ ಆವೃತ್ತಿಗೆ Chrome ಅನ್ನು ನವೀಕರಿಸಿ. M41 ಬೀಟಾ ಮೊದಲ ಬೆಂಬಲಿತ ಆವೃತ್ತಿಯಾಗಿದೆ."
+   }
+}

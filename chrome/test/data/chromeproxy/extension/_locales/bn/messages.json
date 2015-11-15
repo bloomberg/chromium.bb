@@ -1,0 +1,113 @@
+{
+   "compressedsizeformat": {
+      "message": "সংকোচনের পরে: \u003Cb>$1 বাইটস\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatgb": {
+      "message": "সংকোচন পরে: \u003Cb>$1 GB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatkb": {
+      "message": "সংকোচন পরে: \u003Cb>$1 KB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatmb": {
+      "message": "সংকোচন পরে: \u003Cb>$1 MB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "datasavingspercentformat": {
+      "message": "$1%",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "disabledatasaverlabel": {
+      "message": "ডেটা সেভার বন্ধ করুন"
+   },
+   "enabledatasaverlabel": {
+      "message": "ডেটা সেভার চালু করুন"
+   },
+   "extdesc": {
+      "message": "আপনার দর্শিত পৃষ্ঠাগুলি অপ্টিমাইজ করতে Google সার্ভারগুলি ব্যবহার করে আপনার ডেটার ব্যবহার কম করুন৷"
+   },
+   "extname": {
+      "message": "ডেটা সেভার"
+   },
+   "extnamebeta": {
+      "message": "ডেটা সেভার (বিটা)"
+   },
+   "helpandfeedback": {
+      "message": "সহায়তা এবং প্রতিক্রিয়া"
+   },
+   "incognitomessage": {
+      "message": "ছদ্মবেশি মোডে এই এক্সটেনশানটি ব্যবহার করা যাবে না৷"
+   },
+   "info1": {
+      "message": "আপনি যে পৃষ্ঠাগুলি দেখেন সেগুলি Google দ্বারা অপ্টিমাইজ করতে কম ডেটা খরচ করে।"
+   },
+   "info2": {
+      "message": "HTTPS বা ছদ্মবেশ ধরে অ্যাক্সেস করা পৃষ্ঠা Google দ্বারা অপ্টিমাইজ বা দেখা যাবে না।"
+   },
+   "learnmorelinktext": {
+      "message": "আরো জানুন"
+   },
+   "originalsizeformat": {
+      "message": "মূল আকার: \u003Cb>$1 বাইটস\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatgb": {
+      "message": "মূল আকার: \u003Cb>$1 GB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatkb": {
+      "message": "মূল আকার: \u003Cb>$1 KB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatmb": {
+      "message": "মূল আকার: \u003Cb>$1 MB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "reducedatausagelabel": {
+      "message": "ডেটার ব্যবহার হ্রাস করুন"
+   },
+   "reportissue": {
+      "message": "কোনো সমস্যার প্রতিবেদন করুন"
+   },
+   "versionnotcompatible": {
+      "message": "Chrome এর এই সংস্করণটি এই এক্সটেনশনটির সাথে সঙ্গতিপূর্ণ নয়৷ দয়া করে Chrome এর সাম্প্রতিক সংস্করণে আপডেট করুন৷ M41 বিটা হ'ল প্রথম সমর্থিত সংস্করণ৷"
+   }
+}

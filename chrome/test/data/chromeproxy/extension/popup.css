@@ -1,0 +1,121 @@
+/* Copyright 2015 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+body {
+  margin: 20px 20px 8px 20px;
+  width: 278px;
+  direction: __MSG_@@bidi_dir__;
+}
+
+#ext_name {
+  font-size: 14px;
+  font-weight: bold;
+}
+
+#data_savings_heading, #graph_start_date, #graph_end_date {
+  font-size: 14px;
+}
+
+#original_data_size, #compressed_data_size {
+  text-align: __MSG_@@bidi_end_edge__;
+  font-size: 12px;
+}
+
+#data_savings_graph {
+  margin-bottom: 8px;
+}
+
+#data_savings_percent {
+  font-size: 36px;
+  float: __MSG_@@bidi_start_edge__;
+  margin-__MSG_@@bidi_end_edge__: 10px;
+}
+
+#original_data_size {
+  margin: 4px 0 4px 0;
+}
+
+#learn_more, #help_feedback {
+  display: block;
+  padding: 8px 0;
+  outline: 0;
+  margin-top: 16px;
+}
+
+#proxy_off {
+  margin-top: 8px;
+}
+
+#proxy_on {
+  margin-top: 24px;
+}
+
+#graph_start_date {
+  float: left;
+}
+
+#graph_end_date {
+  float: right;
+}
+
+#info2 {
+  margin: 8px 0 24px 0;
+}
+
+.data_savings_sizes {
+  float: __MSG_@@bidi_end_edge__;
+}
+
+.data_savings_numbers {
+  margin: 20px 0 12px 0;
+}
+
+.alert {
+  margin-__MSG_@@bidi_end_edge__: 5px;
+}
+
+#enable_proxy{
+  font-size: 12px;
+  font-weight: bold;
+  color: #FFF;
+  border-radius: 2px;
+  padding: 8px;
+  display: inline-block;
+  margin-top: 9px;
+  outline: 0;
+  text-decoration: initial;
+}
+
+#chrome_incompatible_message, #incognito_message, #info1, #info2, #learn_more {
+  font-size: 12px;
+}
+
+a#enable_proxy:link, a#enable_proxy:visited, a#enable_proxy:hover {
+  background: #4285F4;
+}
+
+a#enable_proxy:hover {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+a#enable_proxy:active {
+  background: #3a7ce9;
+}
+
+#disable_proxy {
+  font-size: 12px;
+  padding: 8px 0;
+  display: inline-block;
+  margin-top: 9px;
+  outline: 0;
+}
+
+a#disable_proxy:link, a#disable_proxy:visited, a#disable_proxy:hover {
+  color: #0000EE;
+}
+
+a#disable_proxy:active {
+  color: #052577;
+}
+

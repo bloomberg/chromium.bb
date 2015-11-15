@@ -1,0 +1,113 @@
+{
+   "compressedsizeformat": {
+      "message": "Sıkıştırmadan sonra: \u003Cb>$1 bayt\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatgb": {
+      "message": "Sıkıştırmadan sonra: \u003Cb>$1 GB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatkb": {
+      "message": "Sıkıştırmadan sonra: \u003Cb>$1 KB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatmb": {
+      "message": "Sıkıştırmadan sonra: \u003Cb>$1 MB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "datasavingspercentformat": {
+      "message": "%$1",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "disabledatasaverlabel": {
+      "message": "Veri Tasarrufu'nu Kapat"
+   },
+   "enabledatasaverlabel": {
+      "message": "Veri Tasarrufu'nu Aç"
+   },
+   "extdesc": {
+      "message": "Ziyaret ettiğiniz sayfaları optimize etmek için Google sunucularını kullanarak veri kullanımını azaltır."
+   },
+   "extname": {
+      "message": "Veri Tasarrufu"
+   },
+   "extnamebeta": {
+      "message": "Veri Tasarrufu (Beta)"
+   },
+   "helpandfeedback": {
+      "message": "Yardım ve Geri Bildirim"
+   },
+   "incognitomessage": {
+      "message": "Bu uzantı, gizli modda kullanılamaz."
+   },
+   "info1": {
+      "message": "Ziyaret ettiğiniz sayfaları optimize etmek için Google'ı kullanarak daha az veri harcayın."
+   },
+   "info2": {
+      "message": "HTTPS veya gizli modla erişilen sayfalar Google tarafından optimize edilmez veya görülmez."
+   },
+   "learnmorelinktext": {
+      "message": "Daha fazla bilgi edinin"
+   },
+   "originalsizeformat": {
+      "message": "Orijinal boyut: \u003Cb>$1 bayt\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatgb": {
+      "message": "Orijinal boyut: \u003Cb>$1 GB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatkb": {
+      "message": "Orijinal boyut: \u003Cb>$1 KB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatmb": {
+      "message": "Orijinal boyut: \u003Cb>$1 MB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "reducedatausagelabel": {
+      "message": "Veri kullanımını azalt"
+   },
+   "reportissue": {
+      "message": "Sorun bildir"
+   },
+   "versionnotcompatible": {
+      "message": "Chrome'un bu sürümü bu uzantıyla uyumlu değil. Lütfen Chrome'u son sürüme güncelleyin. M41 Beta, desteklenen ilk sürümdür."
+   }
+}

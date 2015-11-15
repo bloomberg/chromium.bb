@@ -1,0 +1,113 @@
+{
+   "compressedsizeformat": {
+      "message": "Nach der Komprimierung: \u003Cb>$1 Byte\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatgb": {
+      "message": "Nach der Komprimierung: \u003Cb>$1 GB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatkb": {
+      "message": "Nach der Komprimierung: \u003Cb>$1 KB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatmb": {
+      "message": "Nach der Komprimierung: \u003Cb>$1 MB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "datasavingspercentformat": {
+      "message": "$1 %",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "disabledatasaverlabel": {
+      "message": "Datenkomprimierung deaktivieren"
+   },
+   "enabledatasaverlabel": {
+      "message": "Datenkomprimierung aktivieren"
+   },
+   "extdesc": {
+      "message": "Reduziert die Datennutzung, indem besuchte Seiten über die Google-Server optimiert werden"
+   },
+   "extname": {
+      "message": "Datenkomprimierung"
+   },
+   "extnamebeta": {
+      "message": "Datenkomprimierung (Beta)"
+   },
+   "helpandfeedback": {
+      "message": "Hilfe und Feedback"
+   },
+   "incognitomessage": {
+      "message": "Diese Erweiterung kann nicht im Inkognito-Modus verwendet werden."
+   },
+   "info1": {
+      "message": "Mit Google besuchte Seiten optimieren und so den Datenverbrauch verringern"
+   },
+   "info2": {
+      "message": "Über HTTPS oder den Inkognito-Modus aufgerufene Seiten werden von Google nicht optimiert oder protokolliert."
+   },
+   "learnmorelinktext": {
+      "message": "Weitere Informationen"
+   },
+   "originalsizeformat": {
+      "message": "Ursprüngliche Größe: \u003Cb>$1 Byte\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatgb": {
+      "message": "Ursprüngliche Größe: \u003Cb>$1 GB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatkb": {
+      "message": "Ursprüngliche Größe: \u003Cb>$1 KB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatmb": {
+      "message": "Ursprüngliche Größe: \u003Cb>$1 MB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "reducedatausagelabel": {
+      "message": "Datennutzung reduzieren"
+   },
+   "reportissue": {
+      "message": "Problem melden"
+   },
+   "versionnotcompatible": {
+      "message": "Diese Version von Chrome ist nicht mit dieser Erweiterung kompatibel. Bitte aktualisieren Sie Chrome auf die neueste Version. M41 Beta ist die erste unterstützte Version."
+   }
+}

@@ -1,0 +1,113 @@
+{
+   "compressedsizeformat": {
+      "message": "بعد الضغط: \u003Cb>$1 بايت\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatgb": {
+      "message": "بعد الضغط: \u003Cb>$1 غيغابايت\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatkb": {
+      "message": "بعد الضغط: \u003Cb>$1 كيلوبايت\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatmb": {
+      "message": "بعد الضغط: \u003Cb>$1 ميغابايت\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "datasavingspercentformat": {
+      "message": "$1%",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "disabledatasaverlabel": {
+      "message": "إيقاف توفير البيانات"
+   },
+   "enabledatasaverlabel": {
+      "message": "تشغيل توفير البيانات"
+   },
+   "extdesc": {
+      "message": "تقليل استخدام البيانات باستخدام خوادم Google لتحسين الصفحات التي تزورها."
+   },
+   "extname": {
+      "message": "توفير البيانات"
+   },
+   "extnamebeta": {
+      "message": "توفير البيانات (تجريبي)"
+   },
+   "helpandfeedback": {
+      "message": "المساعدة والتعليقات"
+   },
+   "incognitomessage": {
+      "message": "لا يمكن استخدام هذه الإضافة في وضع التصفح المتخفي."
+   },
+   "info1": {
+      "message": "يمكنك تخفيض الاستهلاك المتعلق بالبيانات من خلال استخدام Google لتحسين الصفحات التي تزورها."
+   },
+   "info2": {
+      "message": "لن يتم تحسين الصفحات التي يتم الدخول إليها باستخدام HTTPS أو التصفح المتخفي، ولن يكتشفها متصفح Google."
+   },
+   "learnmorelinktext": {
+      "message": "مزيد من المعلومات"
+   },
+   "originalsizeformat": {
+      "message": "الحجم الأصلي: \u003Cb>$1 بايت\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatgb": {
+      "message": "الحجم الأصلي: \u003Cb>$1 غيغابايت\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatkb": {
+      "message": "الحجم الأصلي: \u003Cb>$1 كيلوبايت\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatmb": {
+      "message": "الحجم الأصلي: \u003Cb>$1 ميغابايت\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "reducedatausagelabel": {
+      "message": "تقليل استخدام البيانات"
+   },
+   "reportissue": {
+      "message": "الإبلاغ عن مشكلة"
+   },
+   "versionnotcompatible": {
+      "message": "لا يتوافق هذا الإصدار من Chrome مع هذه الإضافة. يُرجى تحديث Chrome لأحدث إصدار. الإصدار التجريبي M41 هو الإصدار المدعوم الأول."
+   }
+}

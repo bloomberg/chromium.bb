@@ -1,0 +1,113 @@
+{
+   "compressedsizeformat": {
+      "message": "Pärast tihendamist: \u003Cb>$1 baiti\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatgb": {
+      "message": "Pärast tihendamist: \u003Cb>$1 GB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatkb": {
+      "message": "Pärast tihendamist: \u003Cb>$1 kB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatmb": {
+      "message": "Pärast tihendamist: \u003Cb>$1 MB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "datasavingspercentformat": {
+      "message": "$1%",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "disabledatasaverlabel": {
+      "message": "Lülita Andmemahu säästja välja"
+   },
+   "enabledatasaverlabel": {
+      "message": "Lülita Andmemahu säästja sisse"
+   },
+   "extdesc": {
+      "message": "Vähendab andmekasutust, kasutades Google'i servereid külastatavate lehtede optimeerimiseks."
+   },
+   "extname": {
+      "message": "Andmemahu säästja"
+   },
+   "extnamebeta": {
+      "message": "Data Saver (beeta)"
+   },
+   "helpandfeedback": {
+      "message": "Abi ja tagasiside"
+   },
+   "incognitomessage": {
+      "message": "Seda laiendust ei saa kasutada inkognito režiimis."
+   },
+   "info1": {
+      "message": "Kulutage vähem aega andmete peale, kasutades Google'it külastatavate lehtede optimeerimiseks."
+   },
+   "info2": {
+      "message": "Funktsiooniga HTTPS või Inkognito avatud lehti Google ei optimeeri ega näe."
+   },
+   "learnmorelinktext": {
+      "message": "Lisateave"
+   },
+   "originalsizeformat": {
+      "message": "Algne suurus: \u003Cb>$1 baiti\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatgb": {
+      "message": "Algne suurus: \u003Cb>$1 GB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatkb": {
+      "message": "Algne suurus: \u003Cb>$1 kB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatmb": {
+      "message": "Algne suurus: \u003Cb>$1 MB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "reducedatausagelabel": {
+      "message": "Andmekasutuse vähendamine"
+   },
+   "reportissue": {
+      "message": "Probleemist teavitamine"
+   },
+   "versionnotcompatible": {
+      "message": "See Chrome'i versioon ei ühildu selle laiendusega. Värskendage Chrome uusimale versioonile. Esimene toetatud versioon on M41 beeta."
+   }
+}

@@ -1,0 +1,113 @@
+{
+   "compressedsizeformat": {
+      "message": "После сжатия: \u003Cb>$1 Б\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatgb": {
+      "message": "После сжатия: \u003Cb>$1 ГБ\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatkb": {
+      "message": "После сжатия: \u003Cb>$1 КБ\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatmb": {
+      "message": "После сжатия: \u003Cb>$1 МБ\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "datasavingspercentformat": {
+      "message": "$1%",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "disabledatasaverlabel": {
+      "message": "Отключить режим экономии трафика"
+   },
+   "enabledatasaverlabel": {
+      "message": "Включить режим экономии трафика"
+   },
+   "extdesc": {
+      "message": "Сокращает трафик, получаемый при загрузке страниц, с помощью серверов Google. Не работает с HTTPS-запросами и в режиме инкогнито."
+   },
+   "extname": {
+      "message": "Экономия трафика"
+   },
+   "extnamebeta": {
+      "message": "Экономия трафика (бета)"
+   },
+   "helpandfeedback": {
+      "message": "Прочитать справку или оставить отзыв"
+   },
+   "incognitomessage": {
+      "message": "Это расширение не работает в режиме инкогнито."
+   },
+   "info1": {
+      "message": "Экономьте на трафике, разрешая Google оптимизировать посещаемые страницы."
+   },
+   "info2": {
+      "message": "Нам недоступны страницы, открытые через HTTPS или в режиме инкогнито, поэтому их нельзя оптимизировать."
+   },
+   "learnmorelinktext": {
+      "message": "Подробнее..."
+   },
+   "originalsizeformat": {
+      "message": "Исходный размер: \u003Cb>$1 Б\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatgb": {
+      "message": "Исходный размер: \u003Cb>$1 ГБ\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatkb": {
+      "message": "Исходный размер: \u003Cb>$1 КБ\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatmb": {
+      "message": "Исходный размер: \u003Cb>$1 МБ\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "reducedatausagelabel": {
+      "message": "Оптимизация трафика"
+   },
+   "reportissue": {
+      "message": "Сообщить о проблеме"
+   },
+   "versionnotcompatible": {
+      "message": "Установленная версия Chrome не совместима с этим расширением. Обновите браузер до версии M41 Beta или старше."
+   }
+}

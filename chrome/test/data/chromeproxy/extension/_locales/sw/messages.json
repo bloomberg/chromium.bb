@@ -1,0 +1,113 @@
+{
+   "compressedsizeformat": {
+      "message": "Baada ya kushindiliwa: \u003Cb>baiti $1 \u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatgb": {
+      "message": "Baada ya kushindiliwa: \u003Cb>GB $1 \u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatkb": {
+      "message": "Baada ya kushindiliwa: \u003Cb>KB $1 \u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatmb": {
+      "message": "Baada ya kushindiliwa: \u003Cb>MB $1 \u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "datasavingspercentformat": {
+      "message": "$1%",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "disabledatasaverlabel": {
+      "message": "Zima Kiokoa Data"
+   },
+   "enabledatasaverlabel": {
+      "message": "Washa Kiokoa Data"
+   },
+   "extdesc": {
+      "message": "Hupunguza matumizi ya data kwa kutumia seva za Google kuboresha kurasa unazotembelea."
+   },
+   "extname": {
+      "message": "Kiokoa Data"
+   },
+   "extnamebeta": {
+      "message": "Kiokoa Data (Beta)"
+   },
+   "helpandfeedback": {
+      "message": "Usaidizi na Maoni"
+   },
+   "incognitomessage": {
+      "message": "Kiendelezi hiki hakiwezi kutumiwa katika hali fiche."
+   },
+   "info1": {
+      "message": "Tumia hela chache kununua data kwa kutumia Google ili kuboresha kurasa unazotembelea."
+   },
+   "info2": {
+      "message": "Kurasa zilizofikiwa kwa HTTPS au Hali Fiche hazitaboreshwa au kuonekana na Google."
+   },
+   "learnmorelinktext": {
+      "message": "Pata maelezo zaidi"
+   },
+   "originalsizeformat": {
+      "message": "Ukubwa asili: \u003Cb>baiti $1 \u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatgb": {
+      "message": "Ukubwa asili: \u003Cb>GB $1 \u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatkb": {
+      "message": "Ukubwa asili: \u003Cb>KB $1 \u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatmb": {
+      "message": "Ukubwa asili: \u003Cb>MB $1 \u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "reducedatausagelabel": {
+      "message": "Punguza kiasi cha data unachotumia"
+   },
+   "reportissue": {
+      "message": "Ripoti tatizo"
+   },
+   "versionnotcompatible": {
+      "message": "Toleo hili la Chrome halitumiwi pamoja na kiendelezi hiki. Tafadhali pata toleo jipya la Chrome. M41 Beta ni toleo la kwanza linalotumika."
+   }
+}

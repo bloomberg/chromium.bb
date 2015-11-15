@@ -1,0 +1,113 @@
+{
+   "compressedsizeformat": {
+      "message": "Després de la compressió: \u003Cb>$1 bytes\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatgb": {
+      "message": "Després de la compressió: \u003Cb>$1 GB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatkb": {
+      "message": "Després de la compressió: \u003Cb>$1 kB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatmb": {
+      "message": "Després de la compressió: \u003Cb>$1 MB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "datasavingspercentformat": {
+      "message": "$1 %",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "disabledatasaverlabel": {
+      "message": "Desactiva Economitzador de dades"
+   },
+   "enabledatasaverlabel": {
+      "message": "Activa Economitzador de dades"
+   },
+   "extdesc": {
+      "message": "Redueix l'ús de dades utilitzant servidors de Google per optimitzar les pàgines que visiteu."
+   },
+   "extname": {
+      "message": "Economitzador de dades"
+   },
+   "extnamebeta": {
+      "message": "Economitzador de dades (beta)"
+   },
+   "helpandfeedback": {
+      "message": "Ajuda i suggeriments"
+   },
+   "incognitomessage": {
+      "message": "Aquesta extensió no es pot utilitzar en mode d'incògnit."
+   },
+   "info1": {
+      "message": "Optimitzeu les pàgines que visiteu fent servir Google per reduir l'ús de dades."
+   },
+   "info2": {
+      "message": "Google no optimitzarà ni veurà pàgines a què hàgiu accedit en mode d'incògnit o amb HTTPS."
+   },
+   "learnmorelinktext": {
+      "message": "Més informació"
+   },
+   "originalsizeformat": {
+      "message": "Mida original: \u003Cb>$1 bytes\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatgb": {
+      "message": "Mida original: \u003Cb>$1 GB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatkb": {
+      "message": "Mida original: \u003Cb>$1 kB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatmb": {
+      "message": "Mida original: \u003Cb>$1 MB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "reducedatausagelabel": {
+      "message": "Reducció de l'ús de dades"
+   },
+   "reportissue": {
+      "message": "Informa d'un problema"
+   },
+   "versionnotcompatible": {
+      "message": "Aquesta versió de Chrome no és compatible amb aquesta extensió. Actualitzeu Chrome a la darrera versió. La versió M41 Beta és la primera que és compatible."
+   }
+}

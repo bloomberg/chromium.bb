@@ -1,0 +1,113 @@
+{
+   "compressedsizeformat": {
+      "message": "圧縮後: \u003Cb>$1 バイト\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatgb": {
+      "message": "圧縮後: \u003Cb>$1 GB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatkb": {
+      "message": "圧縮後: \u003Cb>$1 KB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatmb": {
+      "message": "圧縮後: \u003Cb>$1 MB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "datasavingspercentformat": {
+      "message": "$1%",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "disabledatasaverlabel": {
+      "message": "データセーバーをオフにする"
+   },
+   "enabledatasaverlabel": {
+      "message": "データセーバーをオンにする"
+   },
+   "extdesc": {
+      "message": "アクセス先ページを最適に表示するためにGoogleのサーバーを使ってデータ使用量を削減します。"
+   },
+   "extname": {
+      "message": "データセーバー"
+   },
+   "extnamebeta": {
+      "message": "データセーバー（ベータ版）"
+   },
+   "helpandfeedback": {
+      "message": "ヘルプとフィードバック"
+   },
+   "incognitomessage": {
+      "message": "この拡張機能はシークレットモードでは使用できません。"
+   },
+   "info1": {
+      "message": "Googleを使用してデータ費用を抑え、アクセスしたページを最適化します。"
+   },
+   "info2": {
+      "message": "HTTPSやシークレットモードでアクセスしたページについては、Googleによる最適化や確認は行われません。"
+   },
+   "learnmorelinktext": {
+      "message": "詳しくはこちら"
+   },
+   "originalsizeformat": {
+      "message": "元のサイズ: \u003Cb>$1 バイト\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatgb": {
+      "message": "元のサイズ: \u003Cb>$1 GB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatkb": {
+      "message": "元のサイズ: \u003Cb>$1 KB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatmb": {
+      "message": "元のサイズ: \u003Cb>$1 MB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "reducedatausagelabel": {
+      "message": "データ使用量を節約する"
+   },
+   "reportissue": {
+      "message": "問題を報告"
+   },
+   "versionnotcompatible": {
+      "message": "Chrome のこのバージョンではこの拡張機能を使用できません。Chrome を最新バージョンに更新してください。サポートされている最初のバージョンは M41 ベータ版です。"
+   }
+}

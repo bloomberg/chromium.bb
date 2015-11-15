@@ -1,0 +1,192 @@
+{
+   "compressedSizeFormat": {
+      "description": "Message to display compressed size of the content which was browsed using this extension.",
+      "message": "After compression: $beginBold$$size$ bytes$endBold$",
+      "placeholders": {
+         "beginBold": {
+            "content": "\u003Cb>"
+         },
+         "endBold": {
+            "content": "\u003C/b>"
+         },
+         "size": {
+            "content": "$1",
+            "example": "229"
+         }
+      }
+   },
+   "compressedSizeFormatGb": {
+      "description": "Message to display compressed size of the content which was browsed using this extension.",
+      "message": "After compression: $beginBold$$size$ GB$endBold$",
+      "placeholders": {
+         "beginBold": {
+            "content": "\u003Cb>"
+         },
+         "endBold": {
+            "content": "\u003C/b>"
+         },
+         "size": {
+            "content": "$1",
+            "example": "229"
+         }
+      }
+   },
+   "compressedSizeFormatKb": {
+      "description": "Message to display compressed size of the content which was browsed using this extension.",
+      "message": "After compression: $beginBold$$size$ KB$endBold$",
+      "placeholders": {
+         "beginBold": {
+            "content": "\u003Cb>"
+         },
+         "endBold": {
+            "content": "\u003C/b>"
+         },
+         "size": {
+            "content": "$1",
+            "example": "229"
+         }
+      }
+   },
+   "compressedSizeFormatMb": {
+      "description": "Message to display compressed size of the content which was browsed using this extension.",
+      "message": "After compression: $beginBold$$size$ MB$endBold$",
+      "placeholders": {
+         "beginBold": {
+            "content": "\u003Cb>"
+         },
+         "endBold": {
+            "content": "\u003C/b>"
+         },
+         "size": {
+            "content": "$1",
+            "example": "229"
+         }
+      }
+   },
+   "dataSavingsPercentFormat": {
+      "description": "Message to display data savings obtained by using this extension.",
+      "message": "$dataSavings$%",
+      "placeholders": {
+         "dataSavings": {
+            "content": "$1",
+            "example": "26"
+         }
+      }
+   },
+   "disableDataSaverLabel": {
+      "description": "Label on button to turn off data saver.",
+      "message": "Turn Off Data Saver"
+   },
+   "enableDataSaverLabel": {
+      "description": "Label on button to turn on data saver.",
+      "message": "Turn On Data Saver"
+   },
+   "extDesc": {
+      "description": "Description of this Chrome extension. Displayed in Chrome Web Store. [CHAR LIMIT=132]",
+      "message": "Reduces data usage by using Google servers to optimize pages you visit."
+   },
+   "extName": {
+      "description": "Name of this Chrome extension. [CHAR LIMIT=45]",
+      "message": "Data Saver"
+   },
+   "extNameBeta": {
+      "description": "Name of this Chrome extension when in beta. [CHAR LIMIT=45]",
+      "message": "Data Saver (Beta)"
+   },
+   "helpAndFeedback": {
+      "description": "Text in the link which takes users to documentation regarding getting help and providing feedback. [CHAR LIMIT=45]",
+      "message": "Help and Feedback"
+   },
+   "incognitoMessage": {
+      "description": "Message shown to users when they attempt to use this extension in incognito mode.",
+      "message": "This extension cannot be used in incognito mode."
+   },
+   "info1": {
+      "description": "Information regarding how this extension works.",
+      "message": "Spend less on data by using Google to optimize the pages you visit."
+   },
+   "info2": {
+      "description": "Information regarding how this extension works with HTTPS and Incognito mode.",
+      "message": "Pages accessed with HTTPS or Incognito will not be optimized or seen by Google."
+   },
+   "learnMoreLinkText": {
+      "description": "Text in the link which takes users to more information about this extension.",
+      "message": "Learn more"
+   },
+   "originalSizeFormat": {
+      "description": "Message to display original size of the content which was browsed using this extension.",
+      "message": "Original size: $beginBold$$size$ bytes$endBold$",
+      "placeholders": {
+         "beginBold": {
+            "content": "\u003Cb>"
+         },
+         "endBold": {
+            "content": "\u003C/b>"
+         },
+         "size": {
+            "content": "$1",
+            "example": "263"
+         }
+      }
+   },
+   "originalSizeFormatGb": {
+      "description": "Message to display original size of the content which was browsed using this extension.",
+      "message": "Original size: $beginBold$$size$ GB$endBold$",
+      "placeholders": {
+         "beginBold": {
+            "content": "\u003Cb>"
+         },
+         "endBold": {
+            "content": "\u003C/b>"
+         },
+         "size": {
+            "content": "$1",
+            "example": "263"
+         }
+      }
+   },
+   "originalSizeFormatKb": {
+      "description": "Message to display original size of the content which was browsed using this extension.",
+      "message": "Original size: $beginBold$$size$ KB$endBold$",
+      "placeholders": {
+         "beginBold": {
+            "content": "\u003Cb>"
+         },
+         "endBold": {
+            "content": "\u003C/b>"
+         },
+         "size": {
+            "content": "$1",
+            "example": "263"
+         }
+      }
+   },
+   "originalSizeFormatMb": {
+      "description": "Message to display original size of the content which was browsed using this extension.",
+      "message": "Original size: $beginBold$$size$ MB$endBold$",
+      "placeholders": {
+         "beginBold": {
+            "content": "\u003Cb>"
+         },
+         "endBold": {
+            "content": "\u003C/b>"
+         },
+         "size": {
+            "content": "$1",
+            "example": "263"
+         }
+      }
+   },
+   "reduceDataUsageLabel": {
+      "description": "Label for UI element used to toggle reduce data usage feature.",
+      "message": "Reduce data usage"
+   },
+   "reportIssue": {
+      "description": "Text in the link which takes users to documentation regarding reporting bugs. [CHAR LIMIT=45]",
+      "message": "Report an issue"
+   },
+   "versionNotCompatible": {
+      "description": "Message shown to users when the version of Chrome is not compatible with this extension.",
+      "message": "This version of Chrome is not compatible with this extension. Please update Chrome to the latest version. M41 Beta is the first supported version."
+   }
+}

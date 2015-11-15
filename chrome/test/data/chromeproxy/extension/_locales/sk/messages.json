@@ -1,0 +1,113 @@
+{
+   "compressedsizeformat": {
+      "message": "Po kompresii: \u003Cb>$1 B\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatgb": {
+      "message": "Po kompresii: \u003Cb>$1 GB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatkb": {
+      "message": "Po kompresii: \u003Cb>$1 kB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatmb": {
+      "message": "Po kompresii: \u003Cb>$1 MB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "datasavingspercentformat": {
+      "message": "$1 %",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "disabledatasaverlabel": {
+      "message": "Vypnúť Šetrič dát"
+   },
+   "enabledatasaverlabel": {
+      "message": "Zapnúť Šetrič dát"
+   },
+   "extdesc": {
+      "message": "Znižuje spotrebu dát tak, že pomocou severov Google optimalizuje stránky, ktoré navštívite."
+   },
+   "extname": {
+      "message": "Šetrič dát"
+   },
+   "extnamebeta": {
+      "message": "Šetrič dát (beta)"
+   },
+   "helpandfeedback": {
+      "message": "Pomocník a spätná väzba"
+   },
+   "incognitomessage": {
+      "message": "Toto rozšírenie nie je možné použiť v režime inkognito."
+   },
+   "info1": {
+      "message": "Využite službu Google na optimalizáciu navštívených stránok a ušetrite za dátové pripojenie."
+   },
+   "info2": {
+      "message": "Google neoptimalizuje ani nerozpozná stránky, ku ktorým pristupujete prostredníctvom protokolu HTTPS alebo v režime inkognito."
+   },
+   "learnmorelinktext": {
+      "message": "Viac informácií"
+   },
+   "originalsizeformat": {
+      "message": "Pôvodná veľkosť: \u003Cb>$1 B\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatgb": {
+      "message": "Pôvodná veľkosť: \u003Cb>$1 GB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatkb": {
+      "message": "Pôvodná veľkosť: \u003Cb>$1 kB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatmb": {
+      "message": "Pôvodná veľkosť: \u003Cb>$1 MB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "reducedatausagelabel": {
+      "message": "Znížiť využitie dát"
+   },
+   "reportissue": {
+      "message": "Nahlásiť problém"
+   },
+   "versionnotcompatible": {
+      "message": "Táto verzia prehliadača Chrome nie je kompatibilná s týmto rozšírením. Aktualizujte prehliadač Chrome na najnovšiu verziu. Najnižšia podporovaná verzia je M41 Beta."
+   }
+}

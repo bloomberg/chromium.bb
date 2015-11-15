@@ -1,0 +1,113 @@
+{
+   "compressedsizeformat": {
+      "message": "સંકુચન પછી: \u003Cb>$1 બાઇટ્સ\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatgb": {
+      "message": "સંકુચન પછી: \u003Cb>$1GB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatkb": {
+      "message": "સંકુચન પછી: \u003Cb>$1 KB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatmb": {
+      "message": "સંકુચન પછી: \u003Cb>$1 MB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "datasavingspercentformat": {
+      "message": "$1%",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "disabledatasaverlabel": {
+      "message": "ડેટા સેવર બંધ કરો"
+   },
+   "enabledatasaverlabel": {
+      "message": "ડેટા સેવર ચાલુ કરો"
+   },
+   "extdesc": {
+      "message": "તમે મુલાકાત લો છો તે પૃષ્ઠોને ઓપ્ટિમાઇઝ કરવા માટે Google સર્વર્સનો ઉપયોગ કરીને ડેટા વપરાશ ઘટાડે છે."
+   },
+   "extname": {
+      "message": "ડેટા સેવર"
+   },
+   "extnamebeta": {
+      "message": "ડેટા સેવર (બીટા)"
+   },
+   "helpandfeedback": {
+      "message": "સહાય અને પ્રતિસાદ"
+   },
+   "incognitomessage": {
+      "message": "આ એક્સટેન્શનનો છુપા મોડમાં ઉપયોગ કરી શકાતો નથી."
+   },
+   "info1": {
+      "message": "તમે મુલાકાત લો છો તે પૃષ્ઠો ઓપ્ટિમાઇઝ કરવા માટે Google નો ઉપયોગ કરીને ડેટા પર ઓછો ખર્ચ કરો."
+   },
+   "info2": {
+      "message": "HTTPS અથવા છુપા મોડ વડે ઍક્સેસ કરવામાં આવેલા પૃષ્ઠો ઓપ્ટિમાઇઝ થશે નહીં અથવા Google દ્વારા જોવામાં આવશે નહીં."
+   },
+   "learnmorelinktext": {
+      "message": "વધુ જાણો"
+   },
+   "originalsizeformat": {
+      "message": "મૂળ કદ: \u003Cb>$1 બાઇટ્સ\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatgb": {
+      "message": "મૂળ કદ: \u003Cb>$1 GB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatkb": {
+      "message": "મૂળ કદ: \u003Cb>$1 KB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatmb": {
+      "message": "મૂળ કદ: \u003Cb>$1 MB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "reducedatausagelabel": {
+      "message": "ડેટા વપરાશ ઘટાડો"
+   },
+   "reportissue": {
+      "message": "સમસ્યાની જાણ કરો"
+   },
+   "versionnotcompatible": {
+      "message": "આ એક્સ્ટેન્શન સાથે Chrome નું આ સંસ્કરણ સુસંગત નથી. કૃપા કરીને Chrome ને નવીનતમ સંસ્કરણ પર અપડેટ કરો. M41 બીટા એ પ્રથમ સમર્થિત સંસ્કરણ છે."
+   }
+}

@@ -1,0 +1,113 @@
+{
+   "compressedsizeformat": {
+      "message": "കംപ്രഷനുശേഷം: \u003Cb>$1 ബൈറ്റുകൾ\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatgb": {
+      "message": "കംപ്രഷനുശേഷം: \u003Cb>$1 GB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatkb": {
+      "message": "കംപ്രഷനുശേഷം: \u003Cb>$1 KB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatmb": {
+      "message": "കംപ്രഷനുശേഷം: \u003Cb>$1 MB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "datasavingspercentformat": {
+      "message": "$1%",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "disabledatasaverlabel": {
+      "message": "ഡാറ്റ സേവർ ഓഫാക്കുക"
+   },
+   "enabledatasaverlabel": {
+      "message": "ഡാറ്റ സേവർ ഓണാക്കുക"
+   },
+   "extdesc": {
+      "message": "നിങ്ങൾ സന്ദർശിക്കുന്ന പേജുകൾ അനുരൂപമാക്കാൻ Google സെർവറുകൾ ഉപയോഗിച്ച് ഡാറ്റാ ഉപയോഗം കുറയ്‌ക്കുന്നു."
+   },
+   "extname": {
+      "message": "ഡാറ്റ സേവർ"
+   },
+   "extnamebeta": {
+      "message": "ഡാറ്റാ സേവർ (ബീറ്റ)"
+   },
+   "helpandfeedback": {
+      "message": "സഹായവും ഫീഡ്‌ബാക്കും"
+   },
+   "incognitomessage": {
+      "message": "ആൾമാറാട്ട മോഡിൽ ഈ വിപുലീകരണം ഉപയോഗിക്കാനാവില്ല."
+   },
+   "info1": {
+      "message": "നിങ്ങൾ സന്ദർശിക്കുന്ന പേജുകൾ അനുരൂപമാക്കാൻ Google ഉപയോഗിക്കുന്നതിലൂടെ കുറച്ചുമാത്രം ഡാറ്റ ചെലവഴിക്കുക."
+   },
+   "info2": {
+      "message": "HTTPS-ലോ ആൾമാറാട്ടത്തിലോ ആക്‌സസ്സുചെയ്ത പേജുകൾ Google അനുരൂപമാക്കുകയോ കാണുകയോ ചെയ്യില്ല."
+   },
+   "learnmorelinktext": {
+      "message": "കൂടുതലറിയുക"
+   },
+   "originalsizeformat": {
+      "message": "ഒറിജിനൽ വലുപ്പം: \u003Cb>$1 ബൈറ്റുകൾ\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatgb": {
+      "message": "ഒറിജിനൽ വലുപ്പം: \u003Cb>$1 GB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatkb": {
+      "message": "ഒറിജിനൽ വലുപ്പം: \u003Cb>$1 KB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatmb": {
+      "message": "ഒറിജിനൽ വലുപ്പം: \u003Cb>$1 MB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "reducedatausagelabel": {
+      "message": "ഡാറ്റ ഉപയോഗം കുറയ്ക്കുക"
+   },
+   "reportissue": {
+      "message": "ഒരു പ്രശ്‌നം റിപ്പോർട്ടുചെയ്യുക"
+   },
+   "versionnotcompatible": {
+      "message": "Chrome-ന്റെ ഈ പതിപ്പ് ഈ വിപുലീകരണത്തിന് അനുയോജ്യമല്ല. ഏറ്റവും പുതിയ പതിപ്പിലേക്ക് Chrome അപ്‌ഡേറ്റുചെയ്യുക. ആദ്യം പിന്തുണയ്ക്കുന്ന പതിപ്പ് M41 ബീറ്റയാണ്."
+   }
+}

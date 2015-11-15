@@ -1,0 +1,113 @@
+{
+   "compressedsizeformat": {
+      "message": "Pēc saspiešanas: \u003Cb>$1 baiti\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatgb": {
+      "message": "Pēc saspiešanas: \u003Cb>$1 GB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatkb": {
+      "message": "Pēc saspiešanas: \u003Cb>$1 KB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatmb": {
+      "message": "Pēc saspiešanas: \u003Cb>$1 MB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "datasavingspercentformat": {
+      "message": "$1%",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "disabledatasaverlabel": {
+      "message": "Izslēgt Datu lietojuma samazinātāju"
+   },
+   "enabledatasaverlabel": {
+      "message": "Ieslēgt Datu lietojuma samazinātāju"
+   },
+   "extdesc": {
+      "message": "Izmantojot Google serverus, samazina datu lietojumu, lai optimizētu apmeklētās lapas."
+   },
+   "extname": {
+      "message": "Datu lietojuma samazinātājs"
+   },
+   "extnamebeta": {
+      "message": "Datu lietojuma samazinātājs (Beta)"
+   },
+   "helpandfeedback": {
+      "message": "Palīdzība un atsauksmes"
+   },
+   "incognitomessage": {
+      "message": "Šo paplašinājumu nevar izmantot inkognito režīmā."
+   },
+   "info1": {
+      "message": "Tērējiet mazāk līdzekļu par datu pārraidi, apmeklēto lapu optimizēšanai izmantojot Google."
+   },
+   "info2": {
+      "message": "Lapas, kuru atvēršanai tika izmantots protokols HTTPS vai inkognito režīms, netiks optimizētas, un Google tās nevarēs skatīt."
+   },
+   "learnmorelinktext": {
+      "message": "Uzziniet vairāk"
+   },
+   "originalsizeformat": {
+      "message": "Sākotnējais lielums: \u003Cb>$1 baiti\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatgb": {
+      "message": "Sākotnējais lielums: \u003Cb>$1 GB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatkb": {
+      "message": "Sākotnējais lielums: \u003Cb>$1 KB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatmb": {
+      "message": "Sākotnējais lielums: \u003Cb>$1 MB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "reducedatausagelabel": {
+      "message": "Datu lietojuma samazināšana"
+   },
+   "reportissue": {
+      "message": "Ziņot par problēmu"
+   },
+   "versionnotcompatible": {
+      "message": "Izmantotā Chrome versija nav saderīga ar šo paplašinājumu. Lūdzu, atjauniniet pārlūku Chrome uz jaunāko versiju. Pirmā atbalstītā versija ir M41 beta versija."
+   }
+}

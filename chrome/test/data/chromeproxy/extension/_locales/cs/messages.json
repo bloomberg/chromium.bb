@@ -1,0 +1,113 @@
+{
+   "compressedsizeformat": {
+      "message": "Po kompresi: \u003Cb>$1 B\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatgb": {
+      "message": "Po kompresi: \u003Cb>$1 GB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatkb": {
+      "message": "Po kompresi: \u003Cb>$1 kB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatmb": {
+      "message": "Po kompresi: \u003Cb>$1 MB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "datasavingspercentformat": {
+      "message": "$1 %",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "disabledatasaverlabel": {
+      "message": "Vypnout Spořič dat"
+   },
+   "enabledatasaverlabel": {
+      "message": "Zapnout Spořič dat"
+   },
+   "extdesc": {
+      "message": "Snižuje množství dat tím, že stránky optimalizuje pomocí serverů Google."
+   },
+   "extname": {
+      "message": "Spořič dat"
+   },
+   "extnamebeta": {
+      "message": "Spořič dat (beta)"
+   },
+   "helpandfeedback": {
+      "message": "Nápověda a zpětná vazba"
+   },
+   "incognitomessage": {
+      "message": "Toto rozšíření nelze používat v anonymním režimu."
+   },
+   "info1": {
+      "message": "Využijte Google k optimalizaci navštěvovaných stránek a utrácejte za data méně."
+   },
+   "info2": {
+      "message": "Stránky zobrazené prostřednictvím protokolu HTTPS nebo v anonymním režimu nebudou pro Google viditelné a nebudou optimalizovány."
+   },
+   "learnmorelinktext": {
+      "message": "Další informace"
+   },
+   "originalsizeformat": {
+      "message": "Původní velikost: \u003Cb>$1 B\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatgb": {
+      "message": "Původní velikost: \u003Cb>$1 GB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatkb": {
+      "message": "Původní velikost: \u003Cb>$1 kB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatmb": {
+      "message": "Původní velikost: \u003Cb>$1 MB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "reducedatausagelabel": {
+      "message": "Snížit využití dat"
+   },
+   "reportissue": {
+      "message": "Nahlásit problém"
+   },
+   "versionnotcompatible": {
+      "message": "Tato verze Chromu s tímto rozšířením není kompatibilní. Aktualizujte Chrome na nejnovější verzi. První podporovanou verzí je M41 Beta."
+   }
+}

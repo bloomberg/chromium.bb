@@ -1,0 +1,113 @@
+{
+   "compressedsizeformat": {
+      "message": "Efter komprimering: \u003Cb>$1 byte\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatgb": {
+      "message": "Efter komprimering: \u003Cb>$1 GB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatkb": {
+      "message": "Efter komprimering: \u003Cb>$1 KB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatmb": {
+      "message": "Efter komprimering: \u003Cb>$1 MB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "datasavingspercentformat": {
+      "message": "$1 %",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "disabledatasaverlabel": {
+      "message": "Slå datasparefunktionen fra"
+   },
+   "enabledatasaverlabel": {
+      "message": "Slå datasparefunktionen til"
+   },
+   "extdesc": {
+      "message": "Reducerer dataforbrug ved at anvende Googles servere til at optimere sider, du besøger."
+   },
+   "extname": {
+      "message": "Datasparefunktion"
+   },
+   "extnamebeta": {
+      "message": "Datasparefunktion (beta)"
+   },
+   "helpandfeedback": {
+      "message": "Hjælp og feedback"
+   },
+   "incognitomessage": {
+      "message": "Denne udvidelse kan ikke bruges i inkognitotilstand."
+   },
+   "info1": {
+      "message": "Spar penge på data ved at bruge Google til at optimere de sider, du besøger."
+   },
+   "info2": {
+      "message": "Google optimerer og viser ikke sider, der besøges via HTTPS eller inkognito."
+   },
+   "learnmorelinktext": {
+      "message": "Få flere oplysninger"
+   },
+   "originalsizeformat": {
+      "message": "Oprindelig størrelse: \u003Cb>$1 byte\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatgb": {
+      "message": "Oprindelig størrelse: \u003Cb>$1 GB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatkb": {
+      "message": "Oprindelig størrelse: \u003Cb>$1 KB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatmb": {
+      "message": "Oprindelig størrelse: \u003Cb>$1 MB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "reducedatausagelabel": {
+      "message": "Reducer dataforbruget"
+   },
+   "reportissue": {
+      "message": "Rapportér et problem"
+   },
+   "versionnotcompatible": {
+      "message": "Denne version af Chrome er ikke kompatibel med udvidelsen. Opdater Chrome til den nyeste version. M41 beta er den første understøttede version."
+   }
+}

@@ -1,0 +1,113 @@
+{
+   "compressedsizeformat": {
+      "message": "Tömörítést követően: \u003Cb>$1 bájt\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatgb": {
+      "message": "Tömörítést követően: \u003Cb>$1 GB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatkb": {
+      "message": "Tömörítést követően: \u003Cb>$1 kB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatmb": {
+      "message": "Tömörítést követően: \u003Cb>$1 MB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "datasavingspercentformat": {
+      "message": "$1%",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "disabledatasaverlabel": {
+      "message": "Az Adatforgalom-csökkentő kikapcsolása"
+   },
+   "enabledatasaverlabel": {
+      "message": "Az Adatforgalom-csökkentő bekapcsolása"
+   },
+   "extdesc": {
+      "message": "Csökkenti az adathasználatot azáltal, hogy a Google szerverei optimalizálják az Ön által felkeresett oldalakat."
+   },
+   "extname": {
+      "message": "Adatforgalom-csökkentő"
+   },
+   "extnamebeta": {
+      "message": "Adatforgalom-csökkentő (béta)"
+   },
+   "helpandfeedback": {
+      "message": "Súgó és visszajelzés"
+   },
+   "incognitomessage": {
+      "message": "Ez a bővítmény nem használható inkognitómódban."
+   },
+   "info1": {
+      "message": "Kisebb az adatforgalom, ha a Google optimalizálja a felkeresett oldalakat."
+   },
+   "info2": {
+      "message": "A HTTPS vagy inkognitómód segítségével megnyitott oldalakat a Google nem optimalizálja és nem látja."
+   },
+   "learnmorelinktext": {
+      "message": "További információ"
+   },
+   "originalsizeformat": {
+      "message": "Eredeti méret: \u003Cb>$1 bájt\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatgb": {
+      "message": "Eredeti méret: \u003Cb>$1 GB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatkb": {
+      "message": "Eredeti méret: \u003Cb>$1 kB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatmb": {
+      "message": "Eredeti méret: \u003Cb>$1 MB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "reducedatausagelabel": {
+      "message": "Adathasználat csökkentése"
+   },
+   "reportissue": {
+      "message": "Hibabejelentés"
+   },
+   "versionnotcompatible": {
+      "message": "A Chrome ezen verziója nem kompatibilis ezzel a bővítménnyel. Kérjük, frissítse a Chrome-ot a legújabb verzióra. Az első támogatott verzió az M41 Beta."
+   }
+}

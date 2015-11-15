@@ -1,0 +1,113 @@
+{
+   "compressedsizeformat": {
+      "message": "Suglaudinus: \u003Cb>$1 B\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatgb": {
+      "message": "Suglaudinus: \u003Cb>$1 GB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatkb": {
+      "message": "Suglaudinus: \u003Cb>$1 KB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatmb": {
+      "message": "Suglaudinus: \u003Cb>$1 MB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "datasavingspercentformat": {
+      "message": "$1 %",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "disabledatasaverlabel": {
+      "message": "Išjungti Duomenų taupymo priemonę"
+   },
+   "enabledatasaverlabel": {
+      "message": "Įjungti Duomenų taupymo priemonę"
+   },
+   "extdesc": {
+      "message": "Puslapiai optimizuojami naudojant „Google“ serverius, todėl naudojama mažiau duomenų."
+   },
+   "extname": {
+      "message": "Duomenų taupymo priemonė"
+   },
+   "extnamebeta": {
+      "message": "Duomenų taupymo priemonė (beta versija)"
+   },
+   "helpandfeedback": {
+      "message": "Pagalba ir atsiliepimai"
+   },
+   "incognitomessage": {
+      "message": "Plėtinio negalima naudoti inkognito režimu."
+   },
+   "info1": {
+      "message": "Išleiskite mažiau duomenims naudodami „Google“, kad optimizuotumėte puslapius, kuriuose lankotės."
+   },
+   "info2": {
+      "message": "Naudojant HTTPS arba inkognito režimą pasiekti puslapiai nebus optimizuojami ir „Google“ jų nematys."
+   },
+   "learnmorelinktext": {
+      "message": "Sužinokite daugiau"
+   },
+   "originalsizeformat": {
+      "message": "Pradinis dydis: \u003Cb>$1 B\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatgb": {
+      "message": "Pradinis dydis: \u003Cb>$1 GB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatkb": {
+      "message": "Pradinis dydis: \u003Cb>$1 KB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatmb": {
+      "message": "Pradinis dydis: \u003Cb>$1 MB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "reducedatausagelabel": {
+      "message": "Duomenų naudojimo mažinimas"
+   },
+   "reportissue": {
+      "message": "Pranešti apie problemą"
+   },
+   "versionnotcompatible": {
+      "message": "Šios versijos „Chrome“ nesuderinama su šiuo plėtiniu. Atnaujinkite „Chrome“ į naujausią versiją. M41 beta versija yra pirmoji palaikoma versija."
+   }
+}

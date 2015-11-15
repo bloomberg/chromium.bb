@@ -1,0 +1,113 @@
+{
+   "compressedsizeformat": {
+      "message": "หลังการบีบอัด: \u003Cb>$1 ไบต์\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatgb": {
+      "message": "หลังการบีบอัด: \u003Cb>$1 GB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatkb": {
+      "message": "หลังการบีบอัด: \u003Cb>$1 KB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatmb": {
+      "message": "หลังการบีบอัด: \u003Cb>$1 MB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "datasavingspercentformat": {
+      "message": "$1%",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "disabledatasaverlabel": {
+      "message": "ปิดโปรแกรมประหยัดอินเทอร์เน็ต"
+   },
+   "enabledatasaverlabel": {
+      "message": "เปิดโปรแกรมประหยัดอินเทอร์เน็ต"
+   },
+   "extdesc": {
+      "message": "ลดการใช้ข้อมูลโดยให้เซิร์ฟเวอร์ Google เพิ่มประสิทธิภาพให้กับหน้าที่คุณเข้าชม"
+   },
+   "extname": {
+      "message": "โปรแกรมประหยัดอินเทอร์เน็ต"
+   },
+   "extnamebeta": {
+      "message": "โปรแกรมประหยัดอินเทอร์เน็ต (เบต้า)"
+   },
+   "helpandfeedback": {
+      "message": "ความช่วยเหลือและความคิดเห็น"
+   },
+   "incognitomessage": {
+      "message": "ไม่สามารถใช้ส่วนขยายนี้ในโหมดไม่ระบุตัวตน"
+   },
+   "info1": {
+      "message": "ใช้ข้อมูลน้อยลงโดยใช้ Google เพื่อเพิ่มประสิทธิภาพหน้าที่คุณเข้าชม"
+   },
+   "info2": {
+      "message": "Google จะไม่เห็นและจะไม่มีการเพิ่มประสิทธิภาพหน้าที่เข้าถึงด้วย HTTPS หรือโหมดไม่ระบุตัวตน"
+   },
+   "learnmorelinktext": {
+      "message": "เรียนรู้เพิ่มเติม"
+   },
+   "originalsizeformat": {
+      "message": "ขนาดเดิม: \u003Cb>$1 ไบต์\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatgb": {
+      "message": "ขนาดเดิม: \u003Cb>$1 GB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatkb": {
+      "message": "ขนาดเดิม: \u003Cb>$1 KB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatmb": {
+      "message": "ขนาดเดิม: \u003Cb>$1 MB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "reducedatausagelabel": {
+      "message": "ลดการใช้อินเทอร์เน็ต"
+   },
+   "reportissue": {
+      "message": "รายงานปัญหา"
+   },
+   "versionnotcompatible": {
+      "message": "Chrome เวอร์ชันนี้ไม่สามารถใช้ร่วมกับส่วนขยายนี้ โปรดอัปเดต Chrome ให้เป็นเวอร์ชันล่าสุด M41 เบต้าคือเวอร์ชันแรกที่ได้รับการสนับสนุน"
+   }
+}

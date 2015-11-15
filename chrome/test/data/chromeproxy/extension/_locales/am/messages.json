@@ -1,0 +1,113 @@
+{
+   "compressedsizeformat": {
+      "message": "ከታመቀ በኋላ፦ \u003Cb>$1 ባይት\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatgb": {
+      "message": "ከእጨቃ በኋላ፦ \u003Cb>$1 ጊባ\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatkb": {
+      "message": "ከእጨቃ በኋላ፦ \u003Cb>$1 ኪባ\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatmb": {
+      "message": "ከእጨቃ በኋላ፦ \u003Cb>$1 ሜባ\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "datasavingspercentformat": {
+      "message": "$1%",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "disabledatasaverlabel": {
+      "message": "የውሂብ አስቀማጭን አጥፋ"
+   },
+   "enabledatasaverlabel": {
+      "message": "የውሂብ አስቀማጭን አብራ"
+   },
+   "extdesc": {
+      "message": "የሚጎበኙዋቸውን ገጾች ለማላቅ Google አገልጋዮችን በመጠቀም የውሂብ አጠቃቀምን ይቀንሱ።"
+   },
+   "extname": {
+      "message": "የውሂብ አስቀማጭ"
+   },
+   "extnamebeta": {
+      "message": "ውሂብ ቆጣቢ (ቅድመ-ይሁንታ)"
+   },
+   "helpandfeedback": {
+      "message": "እገዛ እና ግብረመልስ"
+   },
+   "incognitomessage": {
+      "message": "ይህ ቅጥያ ማንነት በማያሳውቅ ሁነታ ላይ መጠቀም አይቻልም።"
+   },
+   "info1": {
+      "message": "Google የጎበኟቸውን ገጾች እንዲያመቻች በመጠቀም በውሂብ ላይ ያነሰ ያጥፉ።"
+   },
+   "info2": {
+      "message": "በHTTPS ወይም ማንነት በማያሳውቅ ሁነታ የተደረሰባቸው ገጾች በGoogle አይመቻቹም ወይም አይታዩም።"
+   },
+   "learnmorelinktext": {
+      "message": "ተጨማሪ ለመረዳት"
+   },
+   "originalsizeformat": {
+      "message": "የመጀመሪያ መጠን፦ \u003Cb>$1 ባይት\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatgb": {
+      "message": "የመጀመሪያ መጠን፦ \u003Cb>$1 ጊባ\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatkb": {
+      "message": "የመጀመሪያ መጠን፦ \u003Cb>$1 ኪባ\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatmb": {
+      "message": "የመጀመሪያ መጠን፦ \u003Cb>$1 ሜባ\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "reducedatausagelabel": {
+      "message": "የውሂብ አጠቃቀም ቀንስ"
+   },
+   "reportissue": {
+      "message": "ችግር ሪፖርት ያድርጉ"
+   },
+   "versionnotcompatible": {
+      "message": "ይህ የChrome ስሪት ከዚህ ቅጥያ ጋር ተኳዃኝ አይደለም። እባክዎ Chromeን ወደ ቅርብ ጊዜው ስሪት ያዘምኑት። M41 Beta የመጀመሪያው የሚደገፍ ስሪት ነው።"
+   }
+}

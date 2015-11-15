@@ -1,0 +1,113 @@
+{
+   "compressedsizeformat": {
+      "message": "संक्षेपानंतर: \u003Cb>$1 बाइट\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatgb": {
+      "message": "संक्षेपानंतर: \u003Cb>$1 GB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatkb": {
+      "message": "संक्षेपानंतर: \u003Cb>$1 KB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatmb": {
+      "message": "संक्षेपानंतर: \u003Cb>$1 MB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "datasavingspercentformat": {
+      "message": "$1%",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "disabledatasaverlabel": {
+      "message": "डेटा बचतकर्ता बंद करा"
+   },
+   "enabledatasaverlabel": {
+      "message": "डेटा बचतकर्ता चालू करा"
+   },
+   "extdesc": {
+      "message": "आपण भेट देता ती पृष्ठे ऑप्टिमाइझ करण्यासाठी Google सर्व्हर वापरून डेटा वापर कमी करते."
+   },
+   "extname": {
+      "message": "डेटा बचतकर्ता"
+   },
+   "extnamebeta": {
+      "message": "डेटा बचतकर्ता (बीटा)"
+   },
+   "helpandfeedback": {
+      "message": "मदत आणि अभिप्राय"
+   },
+   "incognitomessage": {
+      "message": "हा विस्‍तार गुप्त मोडमध्‍ये वापरला जाऊ शकत नाही."
+   },
+   "info1": {
+      "message": "आपण भेट देता ती पृष्ठे ऑप्टिमाइझ करण्यासाठी Google वापरून डेटावर कमी खर्च करा."
+   },
+   "info2": {
+      "message": "HTTPS किंवा गुप्त सह प्रवेश केलेली पृष्ठे Google द्वारे ऑप्टिमाइझ केली जाणार नाहीत किंवा पाहिली जाणार नाहीत."
+   },
+   "learnmorelinktext": {
+      "message": "अधिक जाणून घ्या"
+   },
+   "originalsizeformat": {
+      "message": "मूळ आकार: \u003Cb>$1 बाइट\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatgb": {
+      "message": "मूळ आकार: \u003Cb>$1 GB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatkb": {
+      "message": "मूळ आकार: \u003Cb>$1 KB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatmb": {
+      "message": "मूळ आकार: \u003Cb>$1 MB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "reducedatausagelabel": {
+      "message": "डेटा वापर कमी करा"
+   },
+   "reportissue": {
+      "message": "समस्येचा अहवाल द्या"
+   },
+   "versionnotcompatible": {
+      "message": "Chrome ची ही आवृत्ती या विस्तारासह सुसंगत नाही. कृपया नवीनतम आवृत्तीवर Chrome अद्यतनित करा. M41 बीटा ही प्रथम समर्थित आवृत्ती आहे."
+   }
+}

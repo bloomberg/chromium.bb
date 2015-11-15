@@ -1,0 +1,113 @@
+{
+   "compressedsizeformat": {
+      "message": "Pagkatapos ma-compress: \u003Cb>$1 bytes\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatgb": {
+      "message": "Pagkatapos ma-compress: \u003Cb>$1 GB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatkb": {
+      "message": "Pagkatapos ma-compress: \u003Cb>$1 KB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatmb": {
+      "message": "Pagkatapos ma-compress: \u003Cb>$1 MB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "datasavingspercentformat": {
+      "message": "$1%",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "disabledatasaverlabel": {
+      "message": "I-off ang Data Saver"
+   },
+   "enabledatasaverlabel": {
+      "message": "I-on ang Data Saver"
+   },
+   "extdesc": {
+      "message": "Binabawasan ang paggamit ng data sa pamamagitan ng paggamit sa mga server ng Google upang i-optimize ang mga page na binibisita mo."
+   },
+   "extname": {
+      "message": "Data Saver"
+   },
+   "extnamebeta": {
+      "message": "Data Saver (Beta)"
+   },
+   "helpandfeedback": {
+      "message": "Tulong at Feedback"
+   },
+   "incognitomessage": {
+      "message": "Hindi magagamit ang extension na ito sa incognito mode."
+   },
+   "info1": {
+      "message": "Gumastos nang mas mababa sa data sa pamamagitan ng paggamit ng Google upang i-optimize ang mga page na binibisita mo."
+   },
+   "info2": {
+      "message": "Ang mga page na in-access sa HTTPS o Incognito ay hindi mao-optimize o makikita ng Google."
+   },
+   "learnmorelinktext": {
+      "message": "Matuto nang higit pa"
+   },
+   "originalsizeformat": {
+      "message": "Orihinal na laki: \u003Cb>$1 bytes\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatgb": {
+      "message": "Orihinal na laki: \u003Cb>$1 GB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatkb": {
+      "message": "Orihinal na laki: \u003Cb>$1 KB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatmb": {
+      "message": "Orihinal na laki: \u003Cb>$1 MB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "reducedatausagelabel": {
+      "message": "Bawasan ang paggamit ng data"
+   },
+   "reportissue": {
+      "message": "Mag-ulat ng isyu"
+   },
+   "versionnotcompatible": {
+      "message": "Ang bersyong ito ng Chrome ay hindi gumagana sa extension na ito. Paki-update ang Chrome sa pinakabagong bersyon. Ang M41 Beta ay ang unang sinusuportahang bersyon."
+   }
+}

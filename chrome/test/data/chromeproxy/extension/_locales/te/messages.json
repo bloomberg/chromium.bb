@@ -1,0 +1,113 @@
+{
+   "compressedsizeformat": {
+      "message": "కుదింపు తర్వాత: \u003Cb>$1 బైట్‌లు\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatgb": {
+      "message": "కుదింపు తర్వాత: \u003Cb>$1 GB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatkb": {
+      "message": "కుదింపు తర్వాత: \u003Cb>$1 KB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatmb": {
+      "message": "కుదింపు తర్వాత: \u003Cb>$1 MB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "datasavingspercentformat": {
+      "message": "$1%",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "disabledatasaverlabel": {
+      "message": "డేటా సేవర్‌ని ఆఫ్ చేయి"
+   },
+   "enabledatasaverlabel": {
+      "message": "డేటా సేవర్‌ని ఆన్ చేయి"
+   },
+   "extdesc": {
+      "message": "మీరు సందర్శించే పేజీలను అనుకూలపరచడానికి Google సర్వర్‌లను ఉపయోగించడం ద్వారా డేటా వినియోగాన్ని తగ్గిస్తుంది."
+   },
+   "extname": {
+      "message": "డేటా సేవర్"
+   },
+   "extnamebeta": {
+      "message": "డేటా సేవర్ (బీటా)"
+   },
+   "helpandfeedback": {
+      "message": "సహాయం మరియు అభిప్రాయం"
+   },
+   "incognitomessage": {
+      "message": "ఈ పొడిగింపుని అజ్ఞాత మోడ్‌లో ఉపయోగించలేరు."
+   },
+   "info1": {
+      "message": "మీరు సందర్శించే పేజీలను అనుకూలీకరించడానికి Googleని ఉపయోగించడం ద్వారా డేటా వినియోగం తగ్గించండి."
+   },
+   "info2": {
+      "message": "HTTPSతో లేదా అజ్ఞాతంగా ప్రాప్యత చేసే పేజీలను Google అనుకూలీకరించలేదు లేదా చూడలేదు."
+   },
+   "learnmorelinktext": {
+      "message": "మరింత తెలుసుకోండి"
+   },
+   "originalsizeformat": {
+      "message": "అసలు పరిమాణం: \u003Cb>$1 బైట్‌లు\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatgb": {
+      "message": "అసలు పరిమాణం: \u003Cb>$1 GB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatkb": {
+      "message": "అసలు పరిమాణం: \u003Cb>$1 KB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatmb": {
+      "message": "అసలు పరిమాణం: \u003Cb>$1 MB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "reducedatausagelabel": {
+      "message": "డేటా వినియోగాన్ని తగ్గించండి"
+   },
+   "reportissue": {
+      "message": "సమస్యను నివేదించండి"
+   },
+   "versionnotcompatible": {
+      "message": "ఈ Chrome సంస్కరణ ఈ పొడిగింపుకి అనుకూలంగా లేదు. దయచేసి Chromeని తాజా సంస్కరణకి నవీకరించండి. M41 బీటా మద్దతు గల మొదటి సంస్కరణ."
+   }
+}

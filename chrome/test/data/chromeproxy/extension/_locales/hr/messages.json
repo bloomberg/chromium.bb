@@ -1,0 +1,113 @@
+{
+   "compressedsizeformat": {
+      "message": "Nakon kompresije: \u003Cb>$1 B\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatgb": {
+      "message": "Nakon kompresije: \u003Cb>$1 GB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatkb": {
+      "message": "Nakon kompresije: \u003Cb>$1 kB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatmb": {
+      "message": "Nakon kompresije: \u003Cb>$1 MB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "datasavingspercentformat": {
+      "message": "$1%",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "disabledatasaverlabel": {
+      "message": "Isključi uštedu podataka"
+   },
+   "enabledatasaverlabel": {
+      "message": "Uključi uštedu podataka"
+   },
+   "extdesc": {
+      "message": "Smanjuje potrošnju podataka upotrebljavajući Googleove poslužitelje za optimizaciju posjećenih stranica."
+   },
+   "extname": {
+      "message": "Ušteda podataka"
+   },
+   "extnamebeta": {
+      "message": "Ušteda podataka (Beta)"
+   },
+   "helpandfeedback": {
+      "message": "Pomoć i povratne informacije"
+   },
+   "incognitomessage": {
+      "message": "To se proširenje ne može upotrebljavati anonimno."
+   },
+   "info1": {
+      "message": "Google može optimizirati posjećene stranice radi uštede pri prijenosu podataka."
+   },
+   "info2": {
+      "message": "Google neće optimizirati niti vidjeti stranice kojima se pristupi HTTPS-om ili anonimno."
+   },
+   "learnmorelinktext": {
+      "message": "Saznajte više"
+   },
+   "originalsizeformat": {
+      "message": "Izvorna veličina: \u003Cb>$1 B\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatgb": {
+      "message": "Izvorna veličina: \u003Cb>$1 GB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatkb": {
+      "message": "Izvorna veličina: \u003Cb>$1 kB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatmb": {
+      "message": "Izvorna veličina: \u003Cb>$1 MB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "reducedatausagelabel": {
+      "message": "Smanji podatkovni promet"
+   },
+   "reportissue": {
+      "message": "Prijava problema"
+   },
+   "versionnotcompatible": {
+      "message": "Ova verzija Chromea nije kompatibilna s ovim proširenjem. Ažurirajte Chrome na najnoviju verziju. Prva je podržana verzija M41 Beta."
+   }
+}

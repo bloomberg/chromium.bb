@@ -1,0 +1,113 @@
+{
+   "compressedsizeformat": {
+      "message": "לאחר דחיסה: \u003Cb>$1 בייטים\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatgb": {
+      "message": "לאחר דחיסה: \u003Cb>‎$1 GB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatkb": {
+      "message": "לאחר דחיסה: \u003Cb>‎$1 KB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatmb": {
+      "message": "לאחר דחיסה: \u003Cb>‎$1 MB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "datasavingspercentformat": {
+      "message": "‎$1%‎",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "disabledatasaverlabel": {
+      "message": "כבה את חוסך הנתונים (Data Saver)"
+   },
+   "enabledatasaverlabel": {
+      "message": "הפעל את חוסך הנתונים (Data Saver)"
+   },
+   "extdesc": {
+      "message": "מפחית את צריכת הנתונים על ידי שימוש בשרתי Google כדי לבצע אופטימיזציה של הדפים שבהם אתה מבקר."
+   },
+   "extname": {
+      "message": "חוסך הנתונים (Data Saver)"
+   },
+   "extnamebeta": {
+      "message": "חוסך הנתונים (Data Saver) (ביטא)"
+   },
+   "helpandfeedback": {
+      "message": "עזרה ומשוב"
+   },
+   "incognitomessage": {
+      "message": "לא ניתן להשתמש בתוסף הזה במצב גלישה בסתר."
+   },
+   "info1": {
+      "message": "חסוך בהוצאות על נתונים על ידי שימוש ב-Google לביצוע אופטימיזציה של דפים שאתה מבקר בהם."
+   },
+   "info2": {
+      "message": "Google לא תראה או תבצע אופטימיזציה של דפים שהגישה אליהם בוצעה דרך HTTPS או במצב גלישה בסתר."
+   },
+   "learnmorelinktext": {
+      "message": "למידע נוסף"
+   },
+   "originalsizeformat": {
+      "message": "גודל מקורי: \u003Cb>$1 בייטים\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatgb": {
+      "message": "גודל מקורי: \u003Cb>‎$1 GB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatkb": {
+      "message": "גודל מקורי: \u003Cb>‎$1 KB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatmb": {
+      "message": "גודל מקורי: \u003Cb>‎$1 MB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "reducedatausagelabel": {
+      "message": "הפחת את צריכת הנתונים"
+   },
+   "reportissue": {
+      "message": "דווח על בעיה"
+   },
+   "versionnotcompatible": {
+      "message": "הגרסה הזו של Chrome אינה תואמת לתוסף הזה. עדכן את Chrome לגרסה האחרונה. תמיכה קיימת החל מגרסהM41 ביטא."
+   }
+}

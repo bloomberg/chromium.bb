@@ -1,0 +1,113 @@
+{
+   "compressedsizeformat": {
+      "message": "சுருக்கிய பிறகு: \u003Cb>$1 பைட்டுகள்\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatgb": {
+      "message": "சுருக்கிய பிறகு: \u003Cb>$1 ஜி.பை.\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatkb": {
+      "message": "சுருக்கிய பிறகு: \u003Cb>$1 கி.பை.\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatmb": {
+      "message": "சுருக்கிய பிறகு: \u003Cb>$1 மெ.பை.\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "datasavingspercentformat": {
+      "message": "$1%",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "disabledatasaverlabel": {
+      "message": "தரவுச் சேமிப்பானை முடக்கு"
+   },
+   "enabledatasaverlabel": {
+      "message": "தரவுச் சேமிப்பானை இயக்கு"
+   },
+   "extdesc": {
+      "message": "நீங்கள் பார்வையிடும் பக்கங்களை Google சேவையகங்களைப் பயன்படுத்தி உகந்ததாக்குவதன் மூலம் தரவுப் பயன்பாட்டைக் குறைக்கும்."
+   },
+   "extname": {
+      "message": "தரவு சேமிப்பான்"
+   },
+   "extnamebeta": {
+      "message": "தரவு சேமிப்பான் (பீட்டா)"
+   },
+   "helpandfeedback": {
+      "message": "உதவி மற்றும் கருத்து"
+   },
+   "incognitomessage": {
+      "message": "இந்த நீட்டிப்பை மறைநிலையில் பயன்படுத்த முடியாது."
+   },
+   "info1": {
+      "message": "நீங்கள் பார்வையிடும் பக்கங்களை உகப்பாக்க Googleஐப் பயன்படுத்துவதன் மூலம், தரவைக் குறைவாகச் செலவழிக்கலாம்."
+   },
+   "info2": {
+      "message": "HTTPS அல்லது மறைநிலை மூலம் அணுகப்படும் பக்கங்களை Google ஆல் மேம்படுத்த அல்லது பார்க்க முடியாது."
+   },
+   "learnmorelinktext": {
+      "message": "மேலும் அறிக"
+   },
+   "originalsizeformat": {
+      "message": "அசல் அளவு: \u003Cb>$1 பைட்டுகள்\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatgb": {
+      "message": "அசல் அளவு: \u003Cb>$1 ஜி.பை.\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatkb": {
+      "message": "அசல் அளவு: \u003Cb>$1 கி.பை.\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatmb": {
+      "message": "அசல் அளவு: \u003Cb>$1 மெ.பை.\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "reducedatausagelabel": {
+      "message": "தரவுப் பயன்பாட்டைக் குறை"
+   },
+   "reportissue": {
+      "message": "சிக்கலைப் புகாரளி"
+   },
+   "versionnotcompatible": {
+      "message": "இந்த நீட்டிப்புடன் Chrome இன் இந்தப் பதிப்பு இணக்கமற்றது. சமீபத்திய Chrome பதிப்பிற்குப் புதுப்பிக்கவும். M41 பீட்டா என்பதே இதை ஆதரிக்கும் முதல் பதிப்பாகும்."
+   }
+}

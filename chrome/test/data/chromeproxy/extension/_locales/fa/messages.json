@@ -1,0 +1,113 @@
+{
+   "compressedsizeformat": {
+      "message": "پس از فشرده‌سازی: \u003Cb>$1 بایت\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatgb": {
+      "message": "پس از فشرده‌سازی: \u003Cb>$1 گیگابایت\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatkb": {
+      "message": "پس از فشرده‌سازی: \u003Cb>$1 کیلوبایت\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatmb": {
+      "message": "پس از فشرده‌سازی: \u003Cb>$1 مگابایت\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "datasavingspercentformat": {
+      "message": "$1٪",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "disabledatasaverlabel": {
+      "message": "خاموش کردن صرفه‌جویی در مصرف داده"
+   },
+   "enabledatasaverlabel": {
+      "message": "روشن کردن صرفه‌جویی در مصرف داده"
+   },
+   "extdesc": {
+      "message": "با استفاده از سرورهای Google جهت بهینه کردن صفحاتی که بازدید می‌کنید، مصرف داده را کاهش می‌دهد."
+   },
+   "extname": {
+      "message": "صرفه‌جویی در مصرف داده"
+   },
+   "extnamebeta": {
+      "message": "صرفه‌جویی در مصرف داده (بتا)"
+   },
+   "helpandfeedback": {
+      "message": "راهنما و بازخورد"
+   },
+   "incognitomessage": {
+      "message": "این افزونه نمی‌تواند در حالت ناشناس استفاده شود."
+   },
+   "info1": {
+      "message": "با استفاده از Google برای بهینه‌سازی صفحاتی که بازدید می‌کنید، هزینه مصرف داده‌ را کاهش دهید."
+   },
+   "info2": {
+      "message": "Google صفحات بازدیدشده با HTTPS یا حالت ناشناس را بهینه یا مشاهده نمی‌کند."
+   },
+   "learnmorelinktext": {
+      "message": "بیشتر بدانید"
+   },
+   "originalsizeformat": {
+      "message": "اندازه اصلی: \u003Cb>$1 بایت\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatgb": {
+      "message": "اندازه اصلی: \u003Cb>$1 گیگابایت\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatkb": {
+      "message": "اندازه اصلی: \u003Cb>$1 کیلوبایت\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatmb": {
+      "message": "اندازه اصلی: \u003Cb>$1 مگابایت\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "reducedatausagelabel": {
+      "message": "کاهش مصرف داده"
+   },
+   "reportissue": {
+      "message": "گزارش مشکل"
+   },
+   "versionnotcompatible": {
+      "message": "این نسخه از Chrome با این افزونه سازگار نیست. لطفاً Chrome را به آخرین نسخه به‌روزرسانی کنید. M41 بتا اولین نسخه پشتیبانی شده است."
+   }
+}

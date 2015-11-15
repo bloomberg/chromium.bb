@@ -1,0 +1,113 @@
+{
+   "compressedsizeformat": {
+      "message": "压缩后：\u003Cb>$1 B\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatgb": {
+      "message": "压缩后：\u003Cb>$1 GB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatkb": {
+      "message": "压缩后：\u003Cb>$1 KB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatmb": {
+      "message": "压缩后：\u003Cb>$1 MB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "datasavingspercentformat": {
+      "message": "$1%",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "disabledatasaverlabel": {
+      "message": "关闭流量节省程序"
+   },
+   "enabledatasaverlabel": {
+      "message": "开启流量节省程序"
+   },
+   "extdesc": {
+      "message": "使用 Google 服务器优化您访问的网页，从而减少数据流量消耗。"
+   },
+   "extname": {
+      "message": "流量节省程序"
+   },
+   "extnamebeta": {
+      "message": "流量节省程序（测试版）"
+   },
+   "helpandfeedback": {
+      "message": "帮助和反馈"
+   },
+   "incognitomessage": {
+      "message": "在隐身模式下无法使用此扩展程序。"
+   },
+   "info1": {
+      "message": "让 Google 帮您优化所访问的网页，减少流量消耗。"
+   },
+   "info2": {
+      "message": "Google 不会优化（也看不到）采用 HTTPS 协议或以隐身模式访问的网页。"
+   },
+   "learnmorelinktext": {
+      "message": "了解详情"
+   },
+   "originalsizeformat": {
+      "message": "原始大小：\u003Cb>$1 B\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatgb": {
+      "message": "原始大小：\u003Cb>$1 GB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatkb": {
+      "message": "原始大小：\u003Cb>$1 KB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatmb": {
+      "message": "原始大小：\u003Cb>$1 MB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "reducedatausagelabel": {
+      "message": "减少流量消耗"
+   },
+   "reportissue": {
+      "message": "报告问题"
+   },
+   "versionnotcompatible": {
+      "message": "该版本的 Chrome 与此扩展程序不兼容。请将 Chrome 更新至最新版本。受支持的最低版本是 M41 Beta 版。"
+   }
+}

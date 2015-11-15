@@ -1,0 +1,113 @@
+{
+   "compressedsizeformat": {
+      "message": "Na compressie: \u003Cb>$1 bytes\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatgb": {
+      "message": "Na compressie: \u003Cb>$1 GB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatkb": {
+      "message": "Na compressie: \u003Cb>$1 KB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatmb": {
+      "message": "Na compressie: \u003Cb>$1 MB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "datasavingspercentformat": {
+      "message": "$1%",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "disabledatasaverlabel": {
+      "message": "Databesparing uitschakelen"
+   },
+   "enabledatasaverlabel": {
+      "message": "Databesparing inschakelen"
+   },
+   "extdesc": {
+      "message": "Beperkt het gegevensverbruik door Google-servers te gebruiken om pagina's te optimaliseren die je bezoekt."
+   },
+   "extname": {
+      "message": "Databesparing"
+   },
+   "extnamebeta": {
+      "message": "Databesparing (bèta)"
+   },
+   "helpandfeedback": {
+      "message": "Help en feedback"
+   },
+   "incognitomessage": {
+      "message": "Deze extensie kan niet worden gebruikt in de incognitomodus."
+   },
+   "info1": {
+      "message": "Geef minder uit aan dataverkeer door Google te gebruiken om de door jou bezochte pagina's te optimaliseren."
+   },
+   "info2": {
+      "message": "Pagina's die via HTTPS of incognito worden geopend, worden niet geoptimaliseerd of gedetecteerd door Google."
+   },
+   "learnmorelinktext": {
+      "message": "Meer informatie"
+   },
+   "originalsizeformat": {
+      "message": "Oorspronkelijke grootte: \u003Cb>$1 bytes\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatgb": {
+      "message": "Oorspronkelijke grootte: \u003Cb>$1 GB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatkb": {
+      "message": "Oorspronkelijke grootte: \u003Cb>$1 KB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatmb": {
+      "message": "Oorspronkelijke grootte: \u003Cb>$1 MB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "reducedatausagelabel": {
+      "message": "Gegevensgebruik beperken"
+   },
+   "reportissue": {
+      "message": "Een probleem melden"
+   },
+   "versionnotcompatible": {
+      "message": "Deze versie van Chrome is niet compatibel met deze extensie. Update Chrome naar de nieuwste versie. M41 (bèta) is de eerste ondersteunde versie."
+   }
+}

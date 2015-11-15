@@ -1,0 +1,113 @@
+{
+   "compressedsizeformat": {
+      "message": "Efter komprimering: \u003Cb>$1 byte\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatgb": {
+      "message": "Efter komprimering: \u003Cb>$1 GB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatkb": {
+      "message": "Efter komprimering: \u003Cb>$1 kB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatmb": {
+      "message": "Efter komprimering: \u003Cb>$1 MB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "datasavingspercentformat": {
+      "message": "$1 %",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "disabledatasaverlabel": {
+      "message": "Inaktivera Databesparing"
+   },
+   "enabledatasaverlabel": {
+      "message": "Aktivera Databesparing"
+   },
+   "extdesc": {
+      "message": "Minskar dataanvändningen genom att använda Googles servrar för att optimera sidorna som du besöker."
+   },
+   "extname": {
+      "message": "Databesparing"
+   },
+   "extnamebeta": {
+      "message": "Databesparing (beta)"
+   },
+   "helpandfeedback": {
+      "message": "Hjälp och feedback"
+   },
+   "incognitomessage": {
+      "message": "Det här tillägget kan inte användas i inkognitoläge."
+   },
+   "info1": {
+      "message": "Minska datakostnaderna genom att låta Google optimera sidorna du besöker."
+   },
+   "info2": {
+      "message": "Google varken optimerar eller ser sidor som öppnas med HTTPS eller i inkognitoläge."
+   },
+   "learnmorelinktext": {
+      "message": "Läs mer"
+   },
+   "originalsizeformat": {
+      "message": "Originalstorlek: \u003Cb>$1 byte\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatgb": {
+      "message": "Originalstorlek: \u003Cb>$1 GB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatkb": {
+      "message": "Originalstorlek: \u003Cb>$1 kB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatmb": {
+      "message": "Originalstorlek: \u003Cb>$1 MB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "reducedatausagelabel": {
+      "message": "Minska dataanvändning"
+   },
+   "reportissue": {
+      "message": "Rapportera ett problem"
+   },
+   "versionnotcompatible": {
+      "message": "Den här versionen av Chrome är inte kompatibel med tillägget. Uppdatera Chrome till den senaste versionen. M41 Beta är den första versionen som stöds."
+   }
+}

@@ -1,0 +1,113 @@
+{
+   "compressedsizeformat": {
+      "message": "After compression: \u003Cb>$1 bytes\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatgb": {
+      "message": "After compression: \u003Cb>$1 GB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatkb": {
+      "message": "After compression: \u003Cb>$1 KB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatmb": {
+      "message": "After compression: \u003Cb>$1 MB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "datasavingspercentformat": {
+      "message": "$1%",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "disabledatasaverlabel": {
+      "message": "Turn off Data Saver"
+   },
+   "enabledatasaverlabel": {
+      "message": "Turn on Data Saver"
+   },
+   "extdesc": {
+      "message": "Reduces data usage by using Google servers to optimize pages you visit."
+   },
+   "extname": {
+      "message": "Data Saver"
+   },
+   "extnamebeta": {
+      "message": "Data Saver (Beta)"
+   },
+   "helpandfeedback": {
+      "message": "Help and feedback"
+   },
+   "incognitomessage": {
+      "message": "This extension cannot be used in incognito mode."
+   },
+   "info1": {
+      "message": "Spend less on data by using Google to optimise the pages that you visit."
+   },
+   "info2": {
+      "message": "Pages accessed with HTTPS or Incognito will not be optimised or seen by Google."
+   },
+   "learnmorelinktext": {
+      "message": "Learn more"
+   },
+   "originalsizeformat": {
+      "message": "Original size: \u003Cb>$1 bytes\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatgb": {
+      "message": "Original size: \u003Cb>$1 GB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatkb": {
+      "message": "Original size: \u003Cb>$1 KB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatmb": {
+      "message": "Original size: \u003Cb>$1 MB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "reducedatausagelabel": {
+      "message": "Reduce data usage"
+   },
+   "reportissue": {
+      "message": "Report an issue"
+   },
+   "versionnotcompatible": {
+      "message": "This version of Chrome is not compatible with this extension. Please update Chrome to the latest version. M41 Beta is the first supported version."
+   }
+}

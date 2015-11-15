@@ -1,0 +1,113 @@
+{
+   "compressedsizeformat": {
+      "message": "Selepas pemampatan: \u003Cb>$1 bait\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatgb": {
+      "message": "Selepas pemampatan: \u003Cb>$1 GB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatkb": {
+      "message": "Selepas pemampatan: \u003Cb>$1 KB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatmb": {
+      "message": "Selepas pemampatan: \u003Cb>$1 MB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "datasavingspercentformat": {
+      "message": "$1%",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "disabledatasaverlabel": {
+      "message": "Matikan Penjimat Data"
+   },
+   "enabledatasaverlabel": {
+      "message": "Hidupkan Penjimat Data"
+   },
+   "extdesc": {
+      "message": "Mengurangkan penggunaan data oleh pelayan Google untuk mengoptimumkan halaman yang akan anda lawati."
+   },
+   "extname": {
+      "message": "Penjimat Data"
+   },
+   "extnamebeta": {
+      "message": "Penjimat Data (Beta)"
+   },
+   "helpandfeedback": {
+      "message": "Bantuan dan Maklum Balas"
+   },
+   "incognitomessage": {
+      "message": "Sambungan ini tidak boleh digunakan dalam mod inkognito."
+   },
+   "info1": {
+      "message": "Kurangkan penggunaan data dengan menggunakan Google untuk mengoptimumkan halaman yang anda lawati."
+   },
+   "info2": {
+      "message": "Halaman yang telah diakses dengan HTTPS atau Inkognito tidak akan dioptimumkan atau dilihat oleh Google."
+   },
+   "learnmorelinktext": {
+      "message": "Ketahui lebih lanjut"
+   },
+   "originalsizeformat": {
+      "message": "Saiz asal: \u003Cb>$1 bait\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatgb": {
+      "message": "Saiz asal: \u003Cb>$1 GB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatkb": {
+      "message": "Saiz asal: \u003Cb>$1 KB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatmb": {
+      "message": "Saiz asal: \u003Cb>$1 MB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "reducedatausagelabel": {
+      "message": "Kurangkan penggunaan data"
+   },
+   "reportissue": {
+      "message": "Laporkan isu"
+   },
+   "versionnotcompatible": {
+      "message": "Versi Chrome ini tidak serasi dengan sambungan ini. Sila kemas kini Chrome kepada versi yang terkini. M41 Beta ialah versi pertama yang disokong."
+   }
+}

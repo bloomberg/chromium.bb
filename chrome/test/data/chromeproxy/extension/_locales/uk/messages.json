@@ -1,0 +1,113 @@
+{
+   "compressedsizeformat": {
+      "message": "Після стиснення: \u003Cb>$1 б\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatgb": {
+      "message": "Після стиснення: \u003Cb>$1 Гб\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatkb": {
+      "message": "Після стиснення: \u003Cb>$1 Кб\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatmb": {
+      "message": "Після стиснення: \u003Cb>$1 Мб\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "datasavingspercentformat": {
+      "message": "$1%",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "disabledatasaverlabel": {
+      "message": "Вимкнути режим заощадження трафіку"
+   },
+   "enabledatasaverlabel": {
+      "message": "Увімкнути режим заощадження трафіку"
+   },
+   "extdesc": {
+      "message": "Оптимізує сторінки на серверах Google, щоб зменшити трафік."
+   },
+   "extname": {
+      "message": "Заощадження трафіку"
+   },
+   "extnamebeta": {
+      "message": "Заощадження трафіку (бета-версія)"
+   },
+   "helpandfeedback": {
+      "message": "Довідка й відгуки"
+   },
+   "incognitomessage": {
+      "message": "Це розширення не можна використовувати в режимі анонімного перегляду."
+   },
+   "info1": {
+      "message": "Google оптимізує сторінки, які ви відвідуєте, і ви економите трафік."
+   },
+   "info2": {
+      "message": "Google не зможе оптимізувати чи бачити сторінки, які відкриваються через HTTPS або в режимі анонімного перегляду."
+   },
+   "learnmorelinktext": {
+      "message": "Докладніше"
+   },
+   "originalsizeformat": {
+      "message": "Початковий розмір: \u003Cb>$1 б\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatgb": {
+      "message": "Початковий розмір: \u003Cb>$1 Гб\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatkb": {
+      "message": "Початковий розмір: \u003Cb>$1 Кб\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatmb": {
+      "message": "Початковий розмір: \u003Cb>$1 Мб\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "reducedatausagelabel": {
+      "message": "Зменшення використання трафіку"
+   },
+   "reportissue": {
+      "message": "Повідомити про проблему"
+   },
+   "versionnotcompatible": {
+      "message": "Ваша версія Chrome несумісна з цим розширенням. Установіть останню версію Chrome. Перша сумісна версія – M41 (бета-версія)."
+   }
+}

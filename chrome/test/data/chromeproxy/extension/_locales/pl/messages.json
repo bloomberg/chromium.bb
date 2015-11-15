@@ -1,0 +1,113 @@
+{
+   "compressedsizeformat": {
+      "message": "Po skompresowaniu: \u003Cb>$1 bajty(ów)\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatgb": {
+      "message": "Po skompresowaniu: \u003Cb>$1 GB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatkb": {
+      "message": "Po skompresowaniu: \u003Cb>$1 KB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatmb": {
+      "message": "Po skompresowaniu: \u003Cb>$1 MB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "datasavingspercentformat": {
+      "message": "$1%",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "disabledatasaverlabel": {
+      "message": "Wyłącz Oszczędzanie danych"
+   },
+   "enabledatasaverlabel": {
+      "message": "Włącz Oszczędzanie danych"
+   },
+   "extdesc": {
+      "message": "Zmniejsza użycie danych dzięki wykorzystaniu serwerów Google do optymalizowania odwiedzanych stron."
+   },
+   "extname": {
+      "message": "Oszczędzanie danych"
+   },
+   "extnamebeta": {
+      "message": "Oszczędzanie danych (beta)"
+   },
+   "helpandfeedback": {
+      "message": "Pomoc i opinie"
+   },
+   "incognitomessage": {
+      "message": "Z tego rozszerzenia nie można korzystać w trybie incognito."
+   },
+   "info1": {
+      "message": "Wydawaj mniej na przesyłanie danych, używając optymalizowania przeglądanych stron przez Google."
+   },
+   "info2": {
+      "message": "Google nie optymalizuje ani nie widzi stron, z którymi łączysz się przez HTTPS lub które przeglądasz w trybie incognito."
+   },
+   "learnmorelinktext": {
+      "message": "Więcej informacji"
+   },
+   "originalsizeformat": {
+      "message": "Oryginalny rozmiar: \u003Cb>$1 bajty(ów)\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatgb": {
+      "message": "Oryginalny rozmiar: \u003Cb>$1 GB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatkb": {
+      "message": "Oryginalny rozmiar: \u003Cb>$1 KB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatmb": {
+      "message": "Oryginalny rozmiar: \u003Cb>$1 MB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "reducedatausagelabel": {
+      "message": "Ogranicz ilość danych"
+   },
+   "reportissue": {
+      "message": "Zgłoś problem"
+   },
+   "versionnotcompatible": {
+      "message": "Ta wersja Chrome jest niezgodna z tym rozszerzeniem. Zaktualizuj Chrome do najnowszej wersji. Pierwsza obsługiwana wersja to M41 Beta."
+   }
+}

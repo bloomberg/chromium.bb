@@ -1,0 +1,113 @@
+{
+   "compressedsizeformat": {
+      "message": "Pakkaamisen jälkeen: \u003Cb>$1 tavua\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatgb": {
+      "message": "Pakkaamisen jälkeen: \u003Cb>$1 Gt\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatkb": {
+      "message": "Pakkaamisen jälkeen: \u003Cb>$1 Kt\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatmb": {
+      "message": "Pakkaamisen jälkeen: \u003Cb>$1 Mt\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "datasavingspercentformat": {
+      "message": "$1 %",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "disabledatasaverlabel": {
+      "message": "Poista Data Saver käytöstä"
+   },
+   "enabledatasaverlabel": {
+      "message": "Ota Data Saver käyttöön"
+   },
+   "extdesc": {
+      "message": "Vähentää tiedonsiirron määrää optimoimalla käyttämäsi sivut Google-palvelimien avulla."
+   },
+   "extname": {
+      "message": "Data Saver"
+   },
+   "extnamebeta": {
+      "message": "Data Saver (beta)"
+   },
+   "helpandfeedback": {
+      "message": "Ohjeet ja palaute"
+   },
+   "incognitomessage": {
+      "message": "Laajennusta ei voi käyttää incognito-tilassa."
+   },
+   "info1": {
+      "message": "Säästä tiedonsiirrossa optimoimalla käyttämäsi sivut Googlen avulla."
+   },
+   "info2": {
+      "message": "Google ei optimoi tai näe HTTPS- tai incognito-tilassa käytettyjä sivuja."
+   },
+   "learnmorelinktext": {
+      "message": "Lisätietoja"
+   },
+   "originalsizeformat": {
+      "message": "Alkuperäinen koko: \u003Cb>$1 tavua\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatgb": {
+      "message": "Alkuperäinen koko: \u003Cb>$1 Gt\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatkb": {
+      "message": "Alkuperäinen koko: \u003Cb>$1 Kt\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatmb": {
+      "message": "Alkuperäinen koko: \u003Cb>$1 Mt\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "reducedatausagelabel": {
+      "message": "Tiedonsiirron vähentäminen"
+   },
+   "reportissue": {
+      "message": "Ilmoita ongelmasta"
+   },
+   "versionnotcompatible": {
+      "message": "Tämä Chrome-versio ei ole yhteensopiva tämän laajennuksen kanssa. Päivitä Chrome sen uusimpaan versioon. M41 Beta on ensimmäinen tuettu versio."
+   }
+}

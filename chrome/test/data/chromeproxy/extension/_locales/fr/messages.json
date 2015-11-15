@@ -1,0 +1,113 @@
+{
+   "compressedsizeformat": {
+      "message": "Après compression : \u003Cb>$1 octets\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatgb": {
+      "message": "Après compression : \u003Cb>$1 Go\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatkb": {
+      "message": "Après compression : \u003Cb>$1 Ko\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatmb": {
+      "message": "Après compression : \u003Cb>$1 Mo\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "datasavingspercentformat": {
+      "message": "$1 %",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "disabledatasaverlabel": {
+      "message": "Désactiver Économiseur de données"
+   },
+   "enabledatasaverlabel": {
+      "message": "Activer Économiseur de données"
+   },
+   "extdesc": {
+      "message": "Réduit la consommation des données en utilisant les serveurs de Google pour optimiser les pages que vous consultez."
+   },
+   "extname": {
+      "message": "Économiseur de données"
+   },
+   "extnamebeta": {
+      "message": "Économiseur de données (version bêta)"
+   },
+   "helpandfeedback": {
+      "message": "Aide et commentaires"
+   },
+   "incognitomessage": {
+      "message": "Impossible d'utiliser cette extension en mode navigation privée."
+   },
+   "info1": {
+      "message": "Consommez moins de données grâce à l'optimisation des pages par Google."
+   },
+   "info2": {
+      "message": "Le HTTPS et la navigation privée empêchent la détection et l'optimisation des pages."
+   },
+   "learnmorelinktext": {
+      "message": "En savoir plus"
+   },
+   "originalsizeformat": {
+      "message": "Taille originale : \u003Cb>$1 octets\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatgb": {
+      "message": "Taille originale : \u003Cb>$1 Go\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatkb": {
+      "message": "Taille originale : \u003Cb>$1 Ko\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatmb": {
+      "message": "Taille originale : \u003Cb>$1 Mo\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "reducedatausagelabel": {
+      "message": "Réduire la consommation des données"
+   },
+   "reportissue": {
+      "message": "Signaler un problème"
+   },
+   "versionnotcompatible": {
+      "message": "Cette version de Chrome n'est pas compatible avec cette extension. Veuillez mettre à jour Chrome pour utiliser la dernière version. La première version compatible est la version bêta M41."
+   }
+}

@@ -1,0 +1,113 @@
+{
+   "compressedsizeformat": {
+      "message": "După comprimare: \u003Cb>$1 B\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatgb": {
+      "message": "După comprimare: \u003Cb>$1 GB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatkb": {
+      "message": "După comprimare: \u003Cb>$1 KB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatmb": {
+      "message": "După comprimare: \u003Cb>$1 MB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "datasavingspercentformat": {
+      "message": "$1%",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "disabledatasaverlabel": {
+      "message": "Dezactivează Economizorul de date"
+   },
+   "enabledatasaverlabel": {
+      "message": "Activează Economizorul de date"
+   },
+   "extdesc": {
+      "message": "Reduce utilizarea de date folosind serverele Google pentru a optimiza paginile pe care le accesezi."
+   },
+   "extname": {
+      "message": "Economizor de date"
+   },
+   "extnamebeta": {
+      "message": "Economizor de date (beta)"
+   },
+   "helpandfeedback": {
+      "message": "Ajutor și feedback"
+   },
+   "incognitomessage": {
+      "message": "Extensia nu poate fi folosită în modul incognito."
+   },
+   "info1": {
+      "message": "Reduce volumul de date transferat optimizând cu Google paginile accesate."
+   },
+   "info2": {
+      "message": "Google nu va vedea și nu va optimiza paginile accesate prin HTTPS sau incognito."
+   },
+   "learnmorelinktext": {
+      "message": "Află mai multe"
+   },
+   "originalsizeformat": {
+      "message": "Dimensiune inițială: \u003Cb>$1 B\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatgb": {
+      "message": "Dimensiune inițială: \u003Cb>$1 GB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatkb": {
+      "message": "Dimensiune inițială: \u003Cb>$1 KB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatmb": {
+      "message": "Dimensiune inițială: \u003Cb>$1 MB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "reducedatausagelabel": {
+      "message": "Redu utilizarea datelor"
+   },
+   "reportissue": {
+      "message": "Raportează o problemă"
+   },
+   "versionnotcompatible": {
+      "message": "Versiunea Chrome nu este compatibilă cu această extensie. Actualizează la cea mai recentă versiune Chrome. M41 Beta este prima versiune compatibilă."
+   }
+}

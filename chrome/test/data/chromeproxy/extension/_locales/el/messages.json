@@ -1,0 +1,113 @@
+{
+   "compressedsizeformat": {
+      "message": "Μετά τη συμπίεση: \u003Cb>$1 byte\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatgb": {
+      "message": "Μετά τη συμπίεση: \u003Cb>$1 GB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatkb": {
+      "message": "Μετά τη συμπίεση: \u003Cb>$1 KB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatmb": {
+      "message": "Μετά τη συμπίεση: \u003Cb>$1 MB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "datasavingspercentformat": {
+      "message": "$1 %",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "disabledatasaverlabel": {
+      "message": "Απενεργοποίηση Εξοικονόμησης δεδομένων"
+   },
+   "enabledatasaverlabel": {
+      "message": "Ενεργοποίηση Εξοικονόμησης δεδομένων"
+   },
+   "extdesc": {
+      "message": "Περιορίζει τη χρήση δεδομένων, αξιοποιώντας τους διακομιστές της Google για να βελτιστοποιήσει τις σελίδες που επισκέπτεστε."
+   },
+   "extname": {
+      "message": "Εξοικονόμηση δεδομένων"
+   },
+   "extnamebeta": {
+      "message": "Εξοικονόμηση δεδομένων (Beta)"
+   },
+   "helpandfeedback": {
+      "message": "Βοήθεια και σχόλια"
+   },
+   "incognitomessage": {
+      "message": "Αυτή η επέκταση δεν μπορεί να χρησιμοποιηθεί σε κατάσταση ανώνυμης περιήγησης."
+   },
+   "info1": {
+      "message": "Ξοδέψτε λιγότερα δεδομένα αξιοποιώντας τη βελτιστοποίηση των σελίδων που επισκέπτεστε από την Google."
+   },
+   "info2": {
+      "message": "Οι σελίδες στις οποίες αποκτάτε πρόσβαση μέσω του HTTPS ή της Ανώνυμης περιήγησης δεν θα βελτιστοποιηθούν ή δεν θα είναι ορατές από την Google."
+   },
+   "learnmorelinktext": {
+      "message": "Μάθετε περισσότερα"
+   },
+   "originalsizeformat": {
+      "message": "Αρχικό μέγεθος: \u003Cb>$1 byte\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatgb": {
+      "message": "Αρχικό μέγεθος: \u003Cb>$1 GB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatkb": {
+      "message": "Αρχικό μέγεθος: \u003Cb>$1 KB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatmb": {
+      "message": "Αρχικό μέγεθος: \u003Cb>$1 MB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "reducedatausagelabel": {
+      "message": "Μείωση χρήσης δεδομένων"
+   },
+   "reportissue": {
+      "message": "Αναφορά ζητήματος"
+   },
+   "versionnotcompatible": {
+      "message": "Αυτή η έκδοση του Chrome δεν είναι συμβατή με αυτήν την επέκταση. Ενημερώστε το Chrome στην πιο πρόσφατη έκδοση. Το M41 Beta είναι η πρώτη έκδοση που υποστηρίζεται."
+   }
+}

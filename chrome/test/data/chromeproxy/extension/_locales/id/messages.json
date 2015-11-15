@@ -1,0 +1,113 @@
+{
+   "compressedsizeformat": {
+      "message": "Setelah kompresi: \u003Cb>$1 byte\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatgb": {
+      "message": "Setelah kompresi: \u003Cb>$1 GB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatkb": {
+      "message": "Setelah kompresi: \u003Cb>$1 KB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "compressedsizeformatmb": {
+      "message": "Setelah kompresi: \u003Cb>$1 MB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "datasavingspercentformat": {
+      "message": "$1%",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "disabledatasaverlabel": {
+      "message": "Nonaktifkan Penghemat Data"
+   },
+   "enabledatasaverlabel": {
+      "message": "Aktifkan Penghemat Data"
+   },
+   "extdesc": {
+      "message": "Mengurangi penggunaan data dengan menggunakan server Google untuk mengoptimalkan laman yang Anda kunjungi."
+   },
+   "extname": {
+      "message": "Penghemat Data"
+   },
+   "extnamebeta": {
+      "message": "Penghemat Data (Beta)"
+   },
+   "helpandfeedback": {
+      "message": "Bantuan dan Masukan"
+   },
+   "incognitomessage": {
+      "message": "Ekstensi ini tidak dapat digunakan dalam mode penyamaran."
+   },
+   "info1": {
+      "message": "Menghemat data dengan menggunakan Google untuk mengoptimalkan laman yang Anda kunjungi."
+   },
+   "info2": {
+      "message": "Laman yang diakses dengan HTTPS atau Penyamaran tidak akan dioptimalkan atau dilihat oleh Google."
+   },
+   "learnmorelinktext": {
+      "message": "Pelajari lebih lanjut"
+   },
+   "originalsizeformat": {
+      "message": "Ukuran asli: \u003Cb>$1 byte\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatgb": {
+      "message": "Ukuran asli: \u003Cb>$1 GB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatkb": {
+      "message": "Ukuran asli: \u003Cb>$1 KB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "originalsizeformatmb": {
+      "message": "Ukuran asli: \u003Cb>$1 MB\u003C/b>",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
+   },
+   "reducedatausagelabel": {
+      "message": "Kurangi penggunaan data"
+   },
+   "reportissue": {
+      "message": "Laporkan masalah"
+   },
+   "versionnotcompatible": {
+      "message": "Versi Chrome ini tidak kompatibel dengan ekstensi berikut. Perbarui Chrome ke versi terbaru. M41 Beta adalah versi pertama yang didukung."
+   }
+}
