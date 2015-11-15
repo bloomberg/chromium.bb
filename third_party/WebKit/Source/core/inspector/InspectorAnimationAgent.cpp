@@ -304,6 +304,8 @@ void InspectorAnimationAgent::setTiming(ErrorString* errorString, const String& 
     if (!animation)
         return;
 
+    animation = animationClone(animation);
+
     AnimationType type = m_idToAnimationType.get(animationId);
     if (type == AnimationType::CSSTransition) {
         KeyframeEffect* effect = toKeyframeEffect(animation->effect());
@@ -323,7 +325,7 @@ void InspectorAnimationAgent::setTiming(ErrorString* errorString, const String& 
         UnrestrictedDoubleOrString unrestrictedDuration;
         unrestrictedDuration.setUnrestrictedDouble(duration + delay);
         timing->setDuration(unrestrictedDuration);
-    } else if (type == AnimationType::WebAnimation) {
+    } else {
         AnimationEffectTiming* timing = animation->effect()->timing();
         UnrestrictedDoubleOrString unrestrictedDuration;
         unrestrictedDuration.setUnrestrictedDouble(duration);
