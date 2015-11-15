@@ -2,12 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "tools/gn/exec_process.h"
+
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/process/kill.h"
 #include "base/process/launch.h"
 #include "base/process/process.h"
+#include "build/build_config.h"
 
 #if defined(OS_WIN)
 #include <windows.h>
