@@ -146,7 +146,7 @@ NavigatorContentUtils::~NavigatorContentUtils()
 {
 }
 
-PassOwnPtrWillBeRawPtr<NavigatorContentUtils> NavigatorContentUtils::create(PassOwnPtr<NavigatorContentUtilsClient> client)
+PassOwnPtrWillBeRawPtr<NavigatorContentUtils> NavigatorContentUtils::create(PassOwnPtrWillBeRawPtr<NavigatorContentUtilsClient> client)
 {
     return adoptPtrWillBeNoop(new NavigatorContentUtils(client));
 }
@@ -230,7 +230,7 @@ const char* NavigatorContentUtils::supplementName()
     return "NavigatorContentUtils";
 }
 
-void provideNavigatorContentUtilsTo(LocalFrame& frame, PassOwnPtr<NavigatorContentUtilsClient> client)
+void provideNavigatorContentUtilsTo(LocalFrame& frame, PassOwnPtrWillBeRawPtr<NavigatorContentUtilsClient> client)
 {
     NavigatorContentUtils::provideTo(frame, NavigatorContentUtils::supplementName(), NavigatorContentUtils::create(client));
 }

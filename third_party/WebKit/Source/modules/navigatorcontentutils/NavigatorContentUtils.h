@@ -53,20 +53,25 @@ public:
     static String isProtocolHandlerRegistered(Navigator&, const String& scheme, const String& url, ExceptionState&);
     static void unregisterProtocolHandler(Navigator&, const String& scheme, const String& url, ExceptionState&);
 
-    static PassOwnPtrWillBeRawPtr<NavigatorContentUtils> create(PassOwnPtr<NavigatorContentUtilsClient>);
+    static PassOwnPtrWillBeRawPtr<NavigatorContentUtils> create(PassOwnPtrWillBeRawPtr<NavigatorContentUtilsClient>);
 
-    DEFINE_INLINE_VIRTUAL_TRACE() { WillBeHeapSupplement<LocalFrame>::trace(visitor); }
+    DEFINE_INLINE_VIRTUAL_TRACE()
+    {
+        visitor->trace(m_client);
+        WillBeHeapSupplement<LocalFrame>::trace(visitor);
+    }
 
-    void setClientForTest(PassOwnPtr<NavigatorContentUtilsClient> client) { m_client = client; }
+    void setClientForTest(PassOwnPtrWillBeRawPtr<NavigatorContentUtilsClient> client) { m_client = client; }
 
 private:
-    explicit NavigatorContentUtils(PassOwnPtr<NavigatorContentUtilsClient> client)
+    explicit NavigatorContentUtils(PassOwnPtrWillBeRawPtr<NavigatorContentUtilsClient> client)
         : m_client(client)
-    { }
+    {
+    }
 
     NavigatorContentUtilsClient* client() { return m_client.get(); }
 
-    OwnPtr<NavigatorContentUtilsClient> m_client;
+    OwnPtrWillBeMember<NavigatorContentUtilsClient> m_client;
 };
 
 } // namespace blink

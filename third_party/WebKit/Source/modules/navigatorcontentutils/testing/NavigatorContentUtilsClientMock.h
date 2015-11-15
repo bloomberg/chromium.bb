@@ -6,6 +6,7 @@
 #define NavigatorContentUtilsClientMock_h
 
 #include "modules/navigatorcontentutils/NavigatorContentUtilsClient.h"
+#include "platform/heap/Handle.h"
 #include "wtf/HashSet.h"
 #include "wtf/text/WTFString.h"
 
@@ -16,7 +17,11 @@ class KURL;
 // Provides a mock object for the navigatorcontentutils client.
 class NavigatorContentUtilsClientMock final : public NavigatorContentUtilsClient {
 public:
-    NavigatorContentUtilsClientMock() { }
+    static PassOwnPtrWillBeRawPtr<NavigatorContentUtilsClientMock> create()
+    {
+        return adoptPtrWillBeNoop(new NavigatorContentUtilsClientMock);
+    }
+
     ~NavigatorContentUtilsClientMock() override { }
 
     virtual void registerProtocolHandler(const String& scheme, const KURL&, const String& title);
@@ -25,6 +30,8 @@ public:
     virtual void unregisterProtocolHandler(const String& scheme, const KURL&);
 
 private:
+    NavigatorContentUtilsClientMock() { }
+
     typedef struct {
         String scheme;
         KURL url;

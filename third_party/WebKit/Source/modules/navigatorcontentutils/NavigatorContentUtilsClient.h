@@ -27,6 +27,7 @@
 #define NavigatorContentUtilsClient_h
 
 #include "modules/ModulesExport.h"
+#include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
 #include "wtf/Allocator.h"
 #include "wtf/text/WTFString.h"
@@ -35,8 +36,8 @@ namespace blink {
 
 class LocalFrame;
 
-class NavigatorContentUtilsClient {
-    USING_FAST_MALLOC(NavigatorContentUtilsClient);
+class NavigatorContentUtilsClient : public NoBaseWillBeGarbageCollectedFinalized<NavigatorContentUtilsClient> {
+    USING_FAST_MALLOC_WILL_BE_REMOVED(NavigatorContentUtilsClient);
 public:
     virtual ~NavigatorContentUtilsClient() { }
     virtual void registerProtocolHandler(const String& scheme, const KURL&, const String& title) = 0;
@@ -49,10 +50,12 @@ public:
 
     virtual CustomHandlersState isProtocolHandlerRegistered(const String& scheme, const KURL&) = 0;
     virtual void unregisterProtocolHandler(const String& scheme, const KURL&) = 0;
+
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
 };
 
-MODULES_EXPORT void provideNavigatorContentUtilsTo(LocalFrame&, PassOwnPtr<NavigatorContentUtilsClient>);
+MODULES_EXPORT void provideNavigatorContentUtilsTo(LocalFrame&, PassOwnPtrWillBeRawPtr<NavigatorContentUtilsClient>);
 
-}
+} // namespace blink
 
 #endif // NavigatorContentUtilsClient_h
