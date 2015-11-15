@@ -141,7 +141,7 @@ class ShellIntegrationWinMigrateShortcutTest : public testing::Test {
 
     // Shortcut 4 is like shortcut 1, but it's appid is of the same size as the
     // expected appid.
-    base::string16 same_size_as_chrome_app_id(L'1', chrome_app_id_.size());
+    base::string16 same_size_as_chrome_app_id(chrome_app_id_.size(), L'1');
     temp_properties.set_target(chrome_exe_);
     temp_properties.set_app_id(same_size_as_chrome_app_id);
     ASSERT_NO_FATAL_FAILURE(
