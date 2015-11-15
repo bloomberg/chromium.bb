@@ -253,9 +253,7 @@ class PrivetHTTPClientImpl : public PrivetHTTPClient {
       PrivetURLFetcher::Delegate* delegate) override;
   void RefreshPrivetToken(
       const PrivetURLFetcher::TokenCallback& token_callback) override;
-  void SwitchToHttps(
-      uint16_t port,
-      const net::SHA256HashValue& certificate_fingerprint) override;
+  void SwitchToHttps(uint16_t port) override;
   bool IsInHttpsMode() const override;
   std::string GetHost() const override;
 

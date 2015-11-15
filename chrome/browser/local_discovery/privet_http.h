@@ -75,9 +75,7 @@ class PrivetHTTPClient {
   // fingerprint.
   // For more information on this protocol:
   // https://developers.google.com/cloud-devices/v1/reference/local-api/pairing_start
-  virtual void SwitchToHttps(
-      uint16_t port,
-      const net::SHA256HashValue& certificate_fingerprint) = 0;
+  virtual void SwitchToHttps(uint16_t port) = 0;
 
   virtual bool IsInHttpsMode() const = 0;
 

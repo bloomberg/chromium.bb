@@ -32,6 +32,8 @@ class PrivetURLFetcher;
 
 namespace extensions {
 
+class PrivetV3ContextGetter;
+
 // Manages secure communication between browser and local Privet device.
 class PrivetV3Session {
  private:
@@ -49,9 +51,8 @@ class PrivetV3Session {
                               const base::DictionaryValue& response)>
       MessageCallback;
 
-  PrivetV3Session(
-      const scoped_refptr<net::URLRequestContextGetter>& context_getter,
-      const net::HostPortPair& host_port);
+  PrivetV3Session(const scoped_refptr<PrivetV3ContextGetter>& context_getter,
+                  const net::HostPortPair& host_port);
   ~PrivetV3Session();
 
   // Initializes session. Queries /privet/info and returns supported pairing
@@ -83,6 +84,8 @@ class PrivetV3Session {
   void OnPairingConfirmDone(const ResultCallback& callback,
                             Result result,
                             const base::DictionaryValue& response);
+  void OnPairedHostAddedToContext(const std::string& auth_code,
+                                  const ResultCallback& callback);
   void OnAuthenticateDone(const ResultCallback& callback,
                           Result result,
                           const base::DictionaryValue& response);
@@ -101,6 +104,9 @@ class PrivetV3Session {
 
   // Creates instances of PrivetURLFetcher.
   scoped_ptr<local_discovery::PrivetHTTPClient> client_;
+
+  // Provides context for client_.
+  scoped_refptr<PrivetV3ContextGetter> context_getter_;
 
   // Current authentication token.
   std::string privet_auth_token_;

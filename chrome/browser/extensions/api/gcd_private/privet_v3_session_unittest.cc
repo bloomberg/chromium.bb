@@ -8,6 +8,7 @@
 #include "base/command_line.h"
 #include "base/strings/stringprintf.h"
 #include "base/thread_task_runner_handle.h"
+#include "chrome/browser/extensions/api/gcd_private/privet_v3_context_getter.h"
 #include "chrome/browser/local_discovery/privet_http.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -73,10 +74,8 @@ class PrivetV3SessionTest : public testing::Test {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kEnablePrivetV3);
 
-    scoped_refptr<net::TestURLRequestContextGetter> context_getter =
-        new net::TestURLRequestContextGetter(
-            content::BrowserThread::GetMessageLoopProxyForThread(
-                content::BrowserThread::IO));
+    scoped_refptr<PrivetV3ContextGetter> context_getter =
+        new PrivetV3ContextGetter(base::ThreadTaskRunnerHandle::Get());
 
     session_.reset(
         new PrivetV3Session(context_getter, net::HostPortPair("host", 80)));

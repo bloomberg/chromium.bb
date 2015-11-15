@@ -739,13 +739,9 @@ void PrivetHTTPClientImpl::RefreshPrivetToken(
   }
 }
 
-void PrivetHTTPClientImpl::SwitchToHttps(
-    uint16_t port,
-    const net::SHA256HashValue& certificate_fingerprint) {
+void PrivetHTTPClientImpl::SwitchToHttps(uint16_t port) {
   use_https_ = true;
   host_port_.set_port(port);
-  context_getter_ = new extensions::PrivetV3ContextGetter(
-      context_getter_->GetNetworkTaskRunner(), certificate_fingerprint);
 }
 
 bool PrivetHTTPClientImpl::IsInHttpsMode() const {

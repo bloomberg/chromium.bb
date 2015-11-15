@@ -8,6 +8,7 @@
 #include "base/lazy_instance.h"
 #include "base/memory/linked_ptr.h"
 #include "base/thread_task_runner_handle.h"
+#include "chrome/browser/extensions/api/gcd_private/privet_v3_context_getter.h"
 #include "chrome/browser/extensions/api/gcd_private/privet_v3_session.h"
 #include "chrome/browser/local_discovery/endpoint_resolver.h"
 #include "chrome/browser/local_discovery/service_discovery_shared_client.h"
@@ -101,11 +102,12 @@ class GcdPrivateAPIImpl {
 
   content::BrowserContext* const browser_context_;
 
+  scoped_refptr<PrivetV3ContextGetter> context_getter_;
+
   base::WeakPtrFactory<GcdPrivateAPIImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(GcdPrivateAPIImpl);
 };
-
 
 GcdPrivateAPIImpl::GcdPrivateAPIImpl(content::BrowserContext* context)
     : browser_context_(context) {
@@ -145,9 +147,14 @@ void GcdPrivateAPIImpl::OnServiceResolved(int session_id,
                         base::DictionaryValue());
   }
   auto& session_data = sessions_[session_id];
-  session_data.session.reset(
-      new PrivetV3Session(browser_context_->GetRequestContext(),
-                          net::HostPortPair::FromIPEndPoint(endpoint)));
+
+  if (!context_getter_) {
+    context_getter_ = new PrivetV3ContextGetter(
+        browser_context_->GetRequestContext()->GetNetworkTaskRunner());
+  }
+
+  session_data.session.reset(new PrivetV3Session(
+      context_getter_, net::HostPortPair::FromIPEndPoint(endpoint)));
   session_data.session->Init(base::Bind(callback, session_id));
 }
 

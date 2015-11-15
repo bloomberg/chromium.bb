@@ -25,21 +25,35 @@ namespace extensions {
 class PrivetV3ContextGetter : public net::URLRequestContextGetter {
  public:
   PrivetV3ContextGetter(
-      const scoped_refptr<base::SingleThreadTaskRunner>& net_task_runner,
-      const net::SHA256HashValue& certificate_fingerprint);
+      const scoped_refptr<base::SingleThreadTaskRunner>& net_task_runner);
 
   net::URLRequestContext* GetURLRequestContext() override;
 
   scoped_refptr<base::SingleThreadTaskRunner> GetNetworkTaskRunner()
       const override;
 
+  void AddPairedHost(const std::string& host,
+                     const net::SHA256HashValue& certificate_fingerprint,
+                     const base::Closure& callback);
+
  protected:
   ~PrivetV3ContextGetter() override;
 
  private:
-  scoped_ptr<net::CertVerifier> verifier_;
+  class CertVerifier;
+
+  void InitOnNetThread();
+  void AddPairedHostOnNetThread(
+      const std::string& host,
+      const net::SHA256HashValue& certificate_fingerprint);
+
+  // Owned by context_
+  CertVerifier* cert_verifier_ = nullptr;
   scoped_ptr<net::URLRequestContext> context_;
+
   scoped_refptr<base::SingleThreadTaskRunner> net_task_runner_;
+
+  base::WeakPtrFactory<PrivetV3ContextGetter> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PrivetV3ContextGetter);
 };

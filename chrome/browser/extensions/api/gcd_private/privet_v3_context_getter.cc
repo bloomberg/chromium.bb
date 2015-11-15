@@ -19,11 +19,9 @@ namespace extensions {
 // Class verifies certificate by its fingerprint received using different
 // channel. It's the only know information about device with self-signed
 // certificate.
-class FingerprintVerifier : public net::CertVerifier {
+class PrivetV3ContextGetter::CertVerifier : public net::CertVerifier {
  public:
-  explicit FingerprintVerifier(
-      const net::SHA256HashValue& certificate_fingerprint)
-      : certificate_fingerprint_(certificate_fingerprint) {}
+  CertVerifier() {}
 
   int Verify(net::X509Certificate* cert,
              const std::string& hostname,
@@ -39,45 +37,73 @@ class FingerprintVerifier : public net::CertVerifier {
     verify_result->verified_cert = cert;
     verify_result->cert_status = net::CERT_STATUS_INVALID;
 
+    auto it = fingerprints_.find(hostname);
+    if (it == fingerprints_.end())
+      return net::ERR_CERT_INVALID;
+
     auto fingerprint =
         net::X509Certificate::CalculateFingerprint256(cert->os_cert_handle());
+    return it->second.Equals(fingerprint) ? net::OK : net::ERR_CERT_INVALID;
+  }
 
-    return certificate_fingerprint_.Equals(fingerprint) ? net::OK
-                                                        : net::ERR_CERT_INVALID;
+  void AddPairedHost(const std::string& host,
+                     const net::SHA256HashValue& certificate_fingerprint) {
+    fingerprints_[host] = certificate_fingerprint;
   }
 
  private:
-  net::SHA256HashValue certificate_fingerprint_;
+  std::map<std::string, net::SHA256HashValue> fingerprints_;
 
-  DISALLOW_COPY_AND_ASSIGN(FingerprintVerifier);
+  DISALLOW_COPY_AND_ASSIGN(CertVerifier);
 };
 
 PrivetV3ContextGetter::PrivetV3ContextGetter(
-    const scoped_refptr<base::SingleThreadTaskRunner>& net_task_runner,
-    const net::SHA256HashValue& certificate_fingerprint)
-    : verifier_(new FingerprintVerifier(certificate_fingerprint)),
-      net_task_runner_(net_task_runner) {
+    const scoped_refptr<base::SingleThreadTaskRunner>& net_task_runner)
+    : net_task_runner_(net_task_runner), weak_ptr_factory_(this) {
   CHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnablePrivetV3));
 }
 
 net::URLRequestContext* PrivetV3ContextGetter::GetURLRequestContext() {
-  DCHECK(net_task_runner_->BelongsToCurrentThread());
-  if (!context_) {
-    net::URLRequestContextBuilder builder;
-    builder.set_proxy_service(net::ProxyService::CreateDirect());
-    builder.SetSpdyAndQuicEnabled(false, false);
-    builder.DisableHttpCache();
-    builder.SetCertVerifier(verifier_.Pass());
-    builder.set_user_agent(::GetUserAgent());
-    context_ = builder.Build();
-  }
+  InitOnNetThread();
   return context_.get();
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>
 PrivetV3ContextGetter::GetNetworkTaskRunner() const {
   return net_task_runner_;
+}
+
+void PrivetV3ContextGetter::InitOnNetThread() {
+  DCHECK(net_task_runner_->BelongsToCurrentThread());
+  if (!context_) {
+    net::URLRequestContextBuilder builder;
+    builder.set_proxy_service(net::ProxyService::CreateDirect());
+    builder.SetSpdyAndQuicEnabled(false, false);
+    builder.DisableHttpCache();
+    cert_verifier_ = new CertVerifier();
+    builder.SetCertVerifier(make_scoped_ptr(cert_verifier_));
+    builder.set_user_agent(::GetUserAgent());
+    context_ = builder.Build();
+  }
+}
+
+void PrivetV3ContextGetter::AddPairedHost(
+    const std::string& host,
+    const net::SHA256HashValue& certificate_fingerprint,
+    const base::Closure& callback) {
+  net_task_runner_->PostTaskAndReply(
+      FROM_HERE,
+      base::Bind(&PrivetV3ContextGetter::AddPairedHostOnNetThread,
+                 weak_ptr_factory_.GetWeakPtr(), host, certificate_fingerprint),
+      callback);
+}
+
+void PrivetV3ContextGetter::AddPairedHostOnNetThread(
+    const std::string& host,
+    const net::SHA256HashValue& certificate_fingerprint) {
+  InitOnNetThread();
+  cert_verifier_->AddPairedHost(host, certificate_fingerprint);
 }
 
 PrivetV3ContextGetter::~PrivetV3ContextGetter() {

@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
+#include "chrome/browser/extensions/api/gcd_private/privet_v3_context_getter.h"
 #include "chrome/browser/local_discovery/privet_constants.h"
 #include "chrome/browser/local_discovery/privet_http.h"
 #include "chrome/browser/local_discovery/privet_http_impl.h"
@@ -209,12 +210,15 @@ void PrivetV3Session::FetcherDelegate::OnTimeout() {
 }
 
 PrivetV3Session::PrivetV3Session(
-    const scoped_refptr<net::URLRequestContextGetter>& context_getter,
+    const scoped_refptr<PrivetV3ContextGetter>& context_getter,
     const net::HostPortPair& host_port)
     : client_(new local_discovery::PrivetHTTPClientImpl("",
                                                         host_port,
                                                         context_getter)),
-      weak_ptr_factory_(this) {}
+      context_getter_(context_getter),
+      weak_ptr_factory_(this) {
+  CHECK(context_getter_);
+}
 
 PrivetV3Session::~PrivetV3Session() {
   Cancel();
@@ -367,9 +371,18 @@ void PrivetV3Session::OnPairingConfirmDone(
     return callback.Run(Result::STATUS_SESSIONERROR);
   }
 
-  // From now use only https with fixed certificate.
   VLOG(1) << "Expected certificate: " << fingerprint;
-  client_->SwitchToHttps(https_port_, hash);
+  context_getter_->AddPairedHost(
+      client_->GetHost(), hash,
+      base::Bind(&PrivetV3Session::OnPairedHostAddedToContext,
+                 weak_ptr_factory_.GetWeakPtr(), auth_code, callback));
+}
+
+void PrivetV3Session::OnPairedHostAddedToContext(
+    const std::string& auth_code,
+    const ResultCallback& callback) {
+  // Now use https with fixed certificate.
+  client_->SwitchToHttps(https_port_);
 
   std::string auth_code_base64;
   base::Base64Encode(auth_code, &auth_code_base64);

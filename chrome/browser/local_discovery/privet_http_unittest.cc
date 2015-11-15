@@ -11,6 +11,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
+#include "chrome/browser/extensions/api/gcd_private/privet_v3_context_getter.h"
 #include "chrome/browser/local_discovery/privet_http_impl.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
@@ -1042,8 +1043,6 @@ class PrivetHttpWithServerTest : public ::testing::Test,
   void SetUp() override {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kEnablePrivetV3);
-    context_getter_ = new net::TestURLRequestContextGetter(
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
   }
 
   void OnError(PrivetURLFetcher* fetcher,
@@ -1084,6 +1083,8 @@ class PrivetHttpWithServerTest : public ::testing::Test,
   }
 
   void CreateClient() {
+    context_getter_ = new extensions::PrivetV3ContextGetter(
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
     client_.reset(new PrivetHTTPClientImpl("test", server_->host_port_pair(),
                                            context_getter_));
   }
@@ -1111,7 +1112,7 @@ class PrivetHttpWithServerTest : public ::testing::Test,
   bool done_ = false;
   PrivetURLFetcher::ErrorType error_ = PrivetURLFetcher::ErrorType();
   content::TestBrowserThreadBundle thread_bundle_;
-  scoped_refptr<net::TestURLRequestContextGetter> context_getter_;
+  scoped_refptr<extensions::PrivetV3ContextGetter> context_getter_;
   scoped_ptr<EmbeddedTestServer> server_;
   scoped_ptr<PrivetHTTPClientImpl> client_;
 
@@ -1126,8 +1127,7 @@ TEST_F(PrivetHttpWithServerTest, HttpServer) {
   EXPECT_TRUE(success_);
 
   CreateClient();
-  net::SHA256HashValue fingerprint = {};
-  client_->SwitchToHttps(server_->host_port_pair().port(), fingerprint);
+  client_->SwitchToHttps(server_->host_port_pair().port());
   Run();
   EXPECT_FALSE(success_);
   EXPECT_EQ(PrivetURLFetcher::UNKNOWN_ERROR, error_);
@@ -1145,13 +1145,19 @@ TEST_F(PrivetHttpWithServerTest, HttpsServer) {
   net::SHA256HashValue fingerprint =
       net::X509Certificate::CalculateFingerprint256(
           server_->GetCertificate()->os_cert_handle());
-  client_->SwitchToHttps(server_->host_port_pair().port(), fingerprint);
+  {
+    base::RunLoop run_loop;
+    context_getter_->AddPairedHost(client_->GetHost(), fingerprint,
+                                   run_loop.QuitClosure());
+    run_loop.Run();
+  }
+  client_->SwitchToHttps(server_->host_port_pair().port());
   Run();
   EXPECT_TRUE(success_);
 
   CreateClient();
   fingerprint = {};
-  client_->SwitchToHttps(server_->host_port_pair().port(), fingerprint);
+  client_->SwitchToHttps(server_->host_port_pair().port());
   Run();
   EXPECT_FALSE(success_);
   EXPECT_EQ(PrivetURLFetcher::REQUEST_CANCELED, error_);
