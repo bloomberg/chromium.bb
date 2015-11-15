@@ -13,6 +13,7 @@
 #include "components/mus/public/interfaces/window_manager.mojom.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/platform_window/platform_window_delegate.h"
+#include "ui/views/mus/mus_export.h"
 #include "ui/views/widget/native_widget_private.h"
 
 namespace aura {
@@ -49,8 +50,9 @@ class WindowTreeHostMus;
 // aura::Window in a hierarchy is created without a delegate by the
 // aura::WindowTreeHost, we must create a child aura::Window in this class
 // (content_) and attach it to the root.
-class NativeWidgetMus : public internal::NativeWidgetPrivate,
-                        public aura::WindowDelegate {
+class VIEWS_MUS_EXPORT NativeWidgetMus
+    : public internal::NativeWidgetPrivate,
+      public aura::WindowDelegate {
  public:
   NativeWidgetMus(internal::NativeWidgetDelegate* delegate,
                   mojo::Shell* shell,

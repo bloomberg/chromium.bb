@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "ui/gfx/display.h"
+#include "ui/views/mus/mus_export.h"
 
 namespace mus {
 class Window;
@@ -15,7 +16,8 @@ class Window;
 
 namespace views {
 
-std::vector<gfx::Display> GetDisplaysFromWindow(mus::Window* window);
+std::vector<gfx::Display> VIEWS_MUS_EXPORT GetDisplaysFromWindow(
+    mus::Window* window);
 
 }  // namespace views
 

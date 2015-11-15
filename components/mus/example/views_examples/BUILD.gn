@@ -18,6 +18,7 @@ mojo_native_application("views_examples") {
 
   deps = [
     "//base",
+    "//components/mus/public/interfaces",
     "//mojo/application/public/cpp",
     "//mojo/application/public/cpp:sources",
     "//mojo/converters/geometry",

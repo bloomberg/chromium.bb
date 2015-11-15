@@ -21,6 +21,7 @@ executable("window_type_launcher") {
     ":window_type_launcher_resources",
     "//base",
     "//base:base_static",
+    "//components/mus/public/interfaces",
     "//mojo/application/public/cpp",
     "//mojo/application/public/interfaces",
     "//mojo/common:common_base",

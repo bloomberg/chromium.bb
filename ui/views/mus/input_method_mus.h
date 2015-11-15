@@ -7,13 +7,15 @@
 #ifndef UI_VIEWS_MUS_INPUT_METHOD_MUS_H_
 #define UI_VIEWS_MUS_INPUT_METHOD_MUS_H_
 
+#include "ui/views/mus/mus_export.h"
+
 namespace mus {
 class Window;
 }  // namespace mojo
 
 namespace views {
 
-class InputMethodMUS : public ui::InputMethodBase {
+class VIEWS_MUS_EXPORT InputMethodMUS : public ui::InputMethodBase {
  public:
   InputMethodMUS(ui::internal::InputMethodDelegate* delegate,
                  mus::Window* window);

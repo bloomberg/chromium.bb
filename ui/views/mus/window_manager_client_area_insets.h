@@ -6,10 +6,11 @@
 #define UI_VIEWS_MUS_WINDOW_MANAGER_CLIENT_AREA_INSETS_H_
 
 #include "ui/gfx/geometry/insets.h"
+#include "ui/views/mus/mus_export.h"
 
 namespace views {
 
-struct WindowManagerClientAreaInsets {
+struct VIEWS_MUS_EXPORT WindowManagerClientAreaInsets {
   gfx::Insets normal_insets;
   gfx::Insets maximized_insets;
 };

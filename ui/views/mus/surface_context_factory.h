@@ -9,6 +9,7 @@
 #include "components/mus/gles2/raster_thread_helper.h"
 #include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "ui/compositor/compositor.h"
+#include "ui/views/mus/mus_export.h"
 #include "ui/views/mus/surface_binding.h"
 
 namespace mojo {
@@ -21,7 +22,7 @@ class Window;
 
 namespace views {
 
-class SurfaceContextFactory : public ui::ContextFactory {
+class VIEWS_MUS_EXPORT SurfaceContextFactory : public ui::ContextFactory {
  public:
   SurfaceContextFactory(mojo::Shell* shell,
                         mus::Window* window,

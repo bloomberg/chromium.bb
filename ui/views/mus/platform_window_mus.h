@@ -11,11 +11,13 @@
 #include "base/macros.h"
 #include "components/mus/public/cpp/window_observer.h"
 #include "ui/platform_window/platform_window.h"
+#include "ui/views/mus/mus_export.h"
 
 namespace views {
 
-class PlatformWindowMus : public ui::PlatformWindow,
-                          public mus::WindowObserver {
+class VIEWS_MUS_EXPORT PlatformWindowMus
+    : public NON_EXPORTED_BASE(ui::PlatformWindow),
+      public mus::WindowObserver {
  public:
   PlatformWindowMus(ui::PlatformWindowDelegate* delegate,
                     mus::Window* mus_window);

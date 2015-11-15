@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "ui/aura/window_tree_host_platform.h"
+#include "ui/views/mus/mus_export.h"
 
 class SkBitmap;
 
@@ -30,7 +31,7 @@ class NativeWidgetMus;
 class PlatformWindowMus;
 class SurfaceContextFactory;
 
-class WindowTreeHostMus : public aura::WindowTreeHostPlatform {
+class VIEWS_MUS_EXPORT WindowTreeHostMus : public aura::WindowTreeHostPlatform {
  public:
   WindowTreeHostMus(mojo::Shell* shell,
                     NativeWidgetMus* native_widget_,

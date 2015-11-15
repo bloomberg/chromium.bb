@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "skia/ext/refptr.h"
+#include "ui/views/mus/mus_export.h"
 
 namespace font_service {
 class FontLoader;
@@ -24,7 +25,7 @@ class ViewsDelegate;
 
 // Sets up necessary state for aura when run with the viewmanager.
 // |resource_file| is the path to the apk file containing the resources.
-class AuraInit {
+class VIEWS_MUS_EXPORT AuraInit {
  public:
   AuraInit(mojo::ApplicationImpl* app, const std::string& resource_file);
   ~AuraInit();

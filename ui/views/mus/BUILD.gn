@@ -4,7 +4,7 @@
 
 import("//tools/grit/repack.gni")
 
-source_set("mus") {
+component("mus") {
   sources = [
     "aura_init.cc",
     "aura_init.h",
@@ -12,6 +12,7 @@ source_set("mus") {
     "display_converter.h",
     "input_method_mus.cc",
     "input_method_mus.h",
+    "mus_export.h",
     "native_widget_mus.cc",
     "native_widget_mus.h",
     "platform_window_mus.cc",
@@ -26,6 +27,8 @@ source_set("mus") {
     "window_tree_host_mus.cc",
     "window_tree_host_mus.h",
   ]
+
+  defines = [ "VIEWS_MUS_IMPLEMENTATION" ]
 
   public_deps = [
     ":resources",
@@ -65,6 +68,14 @@ source_set("mus") {
     "//ui/views",
     "//ui/wm",
   ]
+
+  if (is_component_build) {
+    deps += [
+      "//mojo/gles2",
+      "//mojo/platform_handle:platform_handle_impl",
+      "//third_party/mojo/src/mojo/edk/system",
+    ]
+  }
 
   data_deps = [
     "//components/resource_provider",
