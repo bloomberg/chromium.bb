@@ -7,7 +7,7 @@
 # grit itself changes.
 action("grit_sources") {
   depfile = "$target_out_dir/grit_sources.d"
-  script = "//build/secondary/tools/grit/stamp_grit_sources.py"
+  script = "stamp_grit_sources.py"
 
   inputs = [
     "grit.py",
