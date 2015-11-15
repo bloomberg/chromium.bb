@@ -592,13 +592,6 @@ void Page::willBeDestroyed()
 
     mainFrame->detach(FrameDetachType::Remove);
 
-    if (mainFrame->isLocalFrame()) {
-        toLocalFrame(mainFrame.get())->setView(nullptr);
-    } else {
-        ASSERT(m_mainFrame->isRemoteFrame());
-        toRemoteFrame(mainFrame.get())->setView(nullptr);
-    }
-
     ASSERT(allPages().contains(this));
     allPages().remove(this);
     ordinaryPages().remove(this);
