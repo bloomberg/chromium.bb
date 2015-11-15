@@ -34,26 +34,43 @@ class RapporService;
 namespace page_load_metrics {
 
 // These constants are for keeping the tests in sync.
-const char kHistogramNameFirstLayout[] =
-    "PageLoad.Timing2.NavigationToFirstLayout";
-const char kHistogramNameFirstTextPaint[] =
+const char kHistogramFirstLayout[] = "PageLoad.Timing2.NavigationToFirstLayout";
+const char kHistogramFirstTextPaint[] =
     "PageLoad.Timing2.NavigationToFirstTextPaint";
-const char kHistogramNameDomContent[] =
+const char kHistogramDomContentLoaded[] =
     "PageLoad.Timing2.NavigationToDOMContentLoadedEventFired";
-const char kHistogramNameLoad[] = "PageLoad.Timing2.NavigationToLoadEventFired";
-const char kBGHistogramNameFirstLayout[] =
+const char kHistogramLoad[] = "PageLoad.Timing2.NavigationToLoadEventFired";
+const char kHistogramFirstPaint[] = "PageLoad.Timing2.NavigationToFirstPaint";
+const char kHistogramFirstImagePaint[] =
+    "PageLoad.Timing2.NavigationToFirstImagePaint";
+const char kHistogramFirstContentfulPaint[] =
+    "PageLoad.Timing2.NavigationToFirstContentfulPaint";
+const char kBackgroundHistogramFirstLayout[] =
     "PageLoad.Timing2.NavigationToFirstLayout.Background";
-const char kBGHistogramNameFirstTextPaint[] =
+const char kBackgroundHistogramFirstTextPaint[] =
     "PageLoad.Timing2.NavigationToFirstTextPaint.Background";
-const char kBGHistogramNameDomContent[] =
+const char kBackgroundHistogramDomContentLoaded[] =
     "PageLoad.Timing2.NavigationToDOMContentLoadedEventFired.Background";
-const char kBGHistogramNameLoad[] =
+const char kBackgroundHistogramLoad[] =
     "PageLoad.Timing2.NavigationToLoadEventFired.Background";
+const char kBackgroundHistogramFirstPaint[] =
+    "PageLoad.Timing2.NavigationToFirstPaint.Background";
+const char kBackgroundHistogramFirstImagePaint[] =
+    "PageLoad.Timing2.NavigationToFirstImagePaint.Background.";
+const char kBackgroundHistogramFirstContentfulPaint[] =
+    "PageLoad.Timing2.NavigationToFirstContentfulPaint.Background";
+
+const char kHistogramFirstBackground[] =
+    "PageLoad.Timing2.NavigationToFirstBackground";
+const char kHistogramFirstForeground[] =
+    "PageLoad.Timing2.NavigationToFirstForeground";
 
 const char kProvisionalEvents[] = "PageLoad.Events.Provisional";
 const char kCommittedEvents[] = "PageLoad.Events.Committed";
-const char kBGProvisionalEvents[] = "PageLoad.Events.Provisional.Background";
-const char kBGCommittedEvents[] = "PageLoad.Events.Committed.Background";
+const char kBackgroundProvisionalEvents[] =
+    "PageLoad.Events.Provisional.Background";
+const char kBackgroundCommittedEvents[] =
+    "PageLoad.Events.Committed.Background";
 
 const char kErrorEvents[] = "PageLoad.Events.InternalError";
 

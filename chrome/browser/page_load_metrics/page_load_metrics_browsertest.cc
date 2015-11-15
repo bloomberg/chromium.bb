@@ -24,9 +24,9 @@ class MetricsWebContentsObserverBrowserTest : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(MetricsWebContentsObserverBrowserTest, NoNavigation) {
   ASSERT_TRUE(test_server()->Start());
 
-  histogram_tester_.ExpectTotalCount(kHistogramNameDomContent, 0);
-  histogram_tester_.ExpectTotalCount(kHistogramNameLoad, 0);
-  histogram_tester_.ExpectTotalCount(kHistogramNameFirstLayout, 0);
+  histogram_tester_.ExpectTotalCount(kHistogramDomContentLoaded, 0);
+  histogram_tester_.ExpectTotalCount(kHistogramLoad, 0);
+  histogram_tester_.ExpectTotalCount(kHistogramFirstLayout, 0);
 }
 
 IN_PROC_BROWSER_TEST_F(MetricsWebContentsObserverBrowserTest, NewPage) {
@@ -37,9 +37,9 @@ IN_PROC_BROWSER_TEST_F(MetricsWebContentsObserverBrowserTest, NewPage) {
   ui_test_utils::NavigateToURL(browser(),
                                test_server()->GetURL("/title2.html"));
 
-  histogram_tester_.ExpectTotalCount(kHistogramNameDomContent, 1);
-  histogram_tester_.ExpectTotalCount(kHistogramNameLoad, 1);
-  histogram_tester_.ExpectTotalCount(kHistogramNameFirstLayout, 1);
+  histogram_tester_.ExpectTotalCount(kHistogramDomContentLoaded, 1);
+  histogram_tester_.ExpectTotalCount(kHistogramLoad, 1);
+  histogram_tester_.ExpectTotalCount(kHistogramFirstLayout, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(MetricsWebContentsObserverBrowserTest, AnchorLink) {
@@ -52,9 +52,9 @@ IN_PROC_BROWSER_TEST_F(MetricsWebContentsObserverBrowserTest, AnchorLink) {
   ui_test_utils::NavigateToURL(browser(),
                                test_server()->GetURL("/title2.html"));
 
-  histogram_tester_.ExpectTotalCount(kHistogramNameDomContent, 1);
-  histogram_tester_.ExpectTotalCount(kHistogramNameLoad, 1);
-  histogram_tester_.ExpectTotalCount(kHistogramNameFirstLayout, 1);
+  histogram_tester_.ExpectTotalCount(kHistogramDomContentLoaded, 1);
+  histogram_tester_.ExpectTotalCount(kHistogramLoad, 1);
+  histogram_tester_.ExpectTotalCount(kHistogramFirstLayout, 1);
 }
 
 }  // namespace page_load_metrics
