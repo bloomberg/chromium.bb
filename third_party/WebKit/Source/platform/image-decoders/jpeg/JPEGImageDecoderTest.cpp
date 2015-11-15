@@ -231,13 +231,19 @@ TEST(JPEGImageDecoderTest, yuv)
     ASSERT_FALSE(decoder->canDecodeToYUV());
 }
 
-TEST(JPEGImageDecoderTest, byteByByte)
+TEST(JPEGImageDecoderTest, byteByByteBaselineJPEGWithColorProfileAndRestartMarkers)
 {
-    testByteByByteDecode(&createDecoder, "/LayoutTests/fast/images/resources/lenna.jpg", 1u, cAnimationNone);
-    // Progressive image
-    testByteByByteDecode(&createDecoder, "/LayoutTests/fast/images/resources/flowchart.jpg", 1u, cAnimationNone);
-    // Image with restart markers
-    testByteByByteDecode(&createDecoder, "/LayoutTests/fast/images/resources/red-at-12-oclock-with-color-profile.jpg", 1u, cAnimationNone);
+    testByteByByteDecode(&createDecoder, "/LayoutTests/fast/images/resources/small-square-with-colorspin-profile.jpg", 1u, cAnimationNone);
+}
+
+TEST(JPEGImageDecoderTest, byteByByteProgressiveJPEG)
+{
+    testByteByByteDecode(&createDecoder, "/LayoutTests/fast/images/resources/bug106024.jpg", 1u, cAnimationNone);
+}
+
+TEST(JPEGImageDecoderTest, byteByByteRGBJPEGWithAdobeMarkers)
+{
+    testByteByByteDecode(&createDecoder, "/LayoutTests/fast/images/resources/rgb-jpeg-with-adobe-marker-only.jpg", 1u, cAnimationNone);
 }
 
 // This test verifies that calling SharedBuffer::mergeSegmentsIntoBuffer() does

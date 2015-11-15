@@ -62,6 +62,7 @@ void testByteByByteDecode(DecoderCreator createDecoder, const char* file, size_t
 {
     RefPtr<SharedBuffer> data = readFile(file);
     ASSERT_TRUE(data.get());
+    ASSERT_TRUE(data->data());
 
     Vector<unsigned> baselineHashes;
     createDecodingBaseline(createDecoder, data.get(), &baselineHashes);
@@ -72,9 +73,14 @@ void testByteByByteDecode(DecoderCreator createDecoder, const char* file, size_t
     size_t framesDecoded = 0;
 
     // Pass data to decoder byte by byte.
+    RefPtr<SharedBuffer> sourceData[2] = { SharedBuffer::create(), SharedBuffer::create() };
+    const char* source = data->data();
+
     for (size_t length = 1; length <= data->size() && !decoder->failed(); ++length) {
-        RefPtr<SharedBuffer> tempData = SharedBuffer::create(data->data(), length);
-        decoder->setData(tempData.get(), length == data->size());
+        sourceData[0]->append(source, 1);
+        sourceData[1]->append(source++, 1);
+        // Alternate the buffers to cover the JPEGImageDecoder::onSetData restart code.
+        decoder->setData(sourceData[length & 1].get(), length == data->size());
 
         EXPECT_LE(frameCount, decoder->frameCount());
         frameCount = decoder->frameCount();
