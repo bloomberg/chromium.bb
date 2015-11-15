@@ -139,11 +139,11 @@ static void GetOrigins(JNIEnv* env,
   }
 }
 
-static jint GetSettingForOrigin(JNIEnv* env,
-                                ContentSettingsType content_type,
-                                jstring origin,
-                                jstring embedder,
-                                jboolean is_incognito) {
+static ContentSetting GetSettingForOrigin(JNIEnv* env,
+                                          ContentSettingsType content_type,
+                                          jstring origin,
+                                          jstring embedder,
+                                          jboolean is_incognito) {
   GURL url(ConvertJavaStringToUTF8(env, origin));
   GURL embedder_url(ConvertJavaStringToUTF8(env, embedder));
   ContentSetting setting =
@@ -156,19 +156,9 @@ static void SetSettingForOrigin(JNIEnv* env,
                                 ContentSettingsType content_type,
                                 jstring origin,
                                 ContentSettingsPattern secondary_pattern,
-                                jint value,
+                                ContentSetting setting,
                                 jboolean is_incognito) {
   GURL url(ConvertJavaStringToUTF8(env, origin));
-  ContentSetting setting = CONTENT_SETTING_DEFAULT;
-  switch (value) {
-    case -1: break;
-    case 0: setting = CONTENT_SETTING_DEFAULT; break;
-    case 1: setting = CONTENT_SETTING_ALLOW; break;
-    case 2: setting = CONTENT_SETTING_BLOCK; break;
-    default:
-      // Note: CONTENT_SETTINGS_ASK is not and should not be supported.
-      NOTREACHED();
-  }
   GetHostContentSettingsMap(is_incognito)
       ->SetContentSetting(ContentSettingsPattern::FromURLNoWildcard(url),
                           secondary_pattern, content_type, std::string(),
@@ -201,7 +191,7 @@ static void SetFullscreenSettingForOrigin(JNIEnv* env,
   GURL embedder_url(ConvertJavaStringToUTF8(env, embedder));
   SetSettingForOrigin(env, CONTENT_SETTINGS_TYPE_FULLSCREEN, origin,
                       ContentSettingsPattern::FromURLNoWildcard(embedder_url),
-                      value, is_incognito);
+                      (ContentSetting) value, is_incognito);
 }
 
 static void GetGeolocationOrigins(JNIEnv* env,
@@ -231,7 +221,7 @@ static void SetGeolocationSettingForOrigin(
   GURL embedder_url(ConvertJavaStringToUTF8(env, embedder));
   SetSettingForOrigin(env, CONTENT_SETTINGS_TYPE_GEOLOCATION, origin,
                       ContentSettingsPattern::FromURLNoWildcard(embedder_url),
-                      value, is_incognito);
+                      (ContentSetting) value, is_incognito);
 }
 
 static void GetMidiOrigins(JNIEnv* env,
@@ -258,7 +248,7 @@ static void SetMidiSettingForOrigin(JNIEnv* env,
   GURL embedder_url(ConvertJavaStringToUTF8(env, embedder));
   SetSettingForOrigin(env, CONTENT_SETTINGS_TYPE_MIDI_SYSEX, origin,
                       ContentSettingsPattern::FromURLNoWildcard(embedder_url),
-                      value, is_incognito);
+                      (ContentSetting) value, is_incognito);
 }
 
 static void GetProtectedMediaIdentifierOrigins(
@@ -291,7 +281,7 @@ static void SetProtectedMediaIdentifierSettingForOrigin(
   SetSettingForOrigin(env, CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER,
                       origin,
                       ContentSettingsPattern::FromURLNoWildcard(embedder_url),
-                      value, is_incognito);
+                      (ContentSetting) value, is_incognito);
 }
 
 static void GetPushNotificationOrigins(JNIEnv* env,
@@ -322,19 +312,17 @@ static void SetPushNotificationSettingForOrigin(
   // permission types. See https://crbug.com/416894.
   Profile* profile = GetActiveUserProfile(is_incognito);
   GURL url = GURL(ConvertJavaStringToUTF8(env, origin));
-  ContentSetting setting = CONTENT_SETTING_DEFAULT;
-  switch (value) {
-    case -1:
+  ContentSetting setting = (ContentSetting) value;
+  switch (setting) {
+    case CONTENT_SETTING_DEFAULT:
       DesktopNotificationProfileUtil::ClearSetting(
           profile, ContentSettingsPattern::FromURLNoWildcard(url));
       break;
-    case 1:
+    case CONTENT_SETTING_ALLOW:
       DesktopNotificationProfileUtil::GrantPermission(profile, url);
-      setting = CONTENT_SETTING_ALLOW;
       break;
-    case 2:
+    case CONTENT_SETTING_BLOCK:
       DesktopNotificationProfileUtil::DenyPermission(profile, url);
-      setting = CONTENT_SETTING_BLOCK;
       break;
     default:
       NOTREACHED();
@@ -382,7 +370,8 @@ static void SetMicrophoneSettingForOrigin(JNIEnv* env,
                                           jint value,
                                           jboolean is_incognito) {
   SetSettingForOrigin(env, CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC, origin,
-                      ContentSettingsPattern::Wildcard(), value, is_incognito);
+                      ContentSettingsPattern::Wildcard(),
+                      (ContentSetting) value, is_incognito);
 }
 
 static void SetCameraSettingForOrigin(JNIEnv* env,
@@ -392,7 +381,8 @@ static void SetCameraSettingForOrigin(JNIEnv* env,
                                       jint value,
                                       jboolean is_incognito) {
   SetSettingForOrigin(env, CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA, origin,
-                      ContentSettingsPattern::Wildcard(), value, is_incognito);
+                      ContentSettingsPattern::Wildcard(),
+                      (ContentSetting) value, is_incognito);
 }
 
 static scoped_refptr<content_settings::CookieSettings> GetCookieSettings() {

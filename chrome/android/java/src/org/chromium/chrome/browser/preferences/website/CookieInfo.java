@@ -18,8 +18,8 @@ public class CookieInfo extends PermissionInfo {
     }
 
     protected void setNativePreferenceValue(
-            String origin, String embedder, int value, boolean isIncognito) {
+            String origin, String embedder, ContentSetting value, boolean isIncognito) {
         WebsitePreferenceBridge.nativeSetCookieSettingForOrigin(
-                origin, embedder, value, isIncognito);
+                origin, embedder, value.toInt(), isIncognito);
     }
 }
