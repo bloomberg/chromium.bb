@@ -104,6 +104,8 @@ source_set("browser") {
             ],
             ".")
 
+    defines += [ "MOJO_SHELL_CLIENT" ]
+
     # Non-iOS deps.
     deps += [
       "//cc",
@@ -417,6 +419,7 @@ source_set("browser") {
       "//ui/aura",
       "//ui/aura_extra",
       "//ui/strings",
+      "//ui/views/mus:for_component",
       "//ui/wm",
     ]
   } else {  # Not aura.

@@ -26,7 +26,6 @@
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/infobars/infobar_service.h"
-#include "chrome/browser/mojo_runner_util.h"
 #include "chrome/browser/native_window_notification_source.h"
 #include "chrome/browser/profiles/avatar_menu.h"
 #include "chrome/browser/profiles/profile.h"
@@ -169,6 +168,10 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
+#endif
+
+#if defined(MOJO_SHELL_CLIENT)
+#include "content/public/common/mojo_shell_connection.h"
 #endif
 
 using base::TimeDelta;
@@ -2389,8 +2392,10 @@ void BrowserView::LoadAccelerators() {
   // TODO(beng): for some reason GetFocusManager() returns null in this case,
   //             investigate, but for now just disable accelerators in this
   //             mode.
-  if (IsRunningInMojoRunner())
+#if defined(MOJO_SHELL_CLIENT)
+  if (content::MojoShellConnection::Get())
     return;
+#endif
 
   views::FocusManager* focus_manager = GetFocusManager();
   DCHECK(focus_manager);

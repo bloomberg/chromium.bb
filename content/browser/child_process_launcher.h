@@ -107,6 +107,15 @@ class CONTENT_EXPORT ChildProcessLauncher : public base::NonThreadSafe {
 #endif
               base::Process process);
 
+#if defined(MOJO_SHELL_CLIENT)
+  // When this process is run from an external Mojo shell, this function will
+  // create a channel and pass one end to the spawned process and register the
+  // other end with the external shell, allowing the spawned process to bind an
+  // Application request from the shell.
+  void CreateMojoShellChannel(base::CommandLine* command_line,
+                              int child_process_id);
+#endif
+
   Client* client_;
   BrowserThread::ID client_thread_id_;
   base::Process process_;

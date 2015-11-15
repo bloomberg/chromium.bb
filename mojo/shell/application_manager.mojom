@@ -11,5 +11,10 @@ interface ApplicationManager {
   // channel to an implementation of ChildController and bind an Application
   // request there.
   // TODO(beng): we should probably have an Identity mojom struct.
+  // TODO(beng): for this to be used in production, it's going to have to take
+  //             a fully qualified Identity complete with CapabilityFilter,
+  //             otherwise child processes registered with the shell will be
+  //             able to request any application/service.
+  //             http://crbug.com/555392
   CreateInstanceForHandle(handle channel, string url, string qualifier);
 };

@@ -50,7 +50,7 @@ source_set("lib") {
     "//ui/gfx/geometry",
     "//ui/mojo/init",
     "//ui/views",
-    "//ui/views/mus",
+    "//ui/views/mus:for_mojo_application",
     "//url",
   ]
 }

@@ -2,6 +2,7 @@ include_rules = [
   # Allow inclusion of specific components that we depend on. We may only
   # depend on components which we share with the mojo html_viewer.
   "+components/mime_util",
+  "+components/mus/public/interfaces",
   "+components/scheduler/common",
   "+components/tracing",
   "+components/url_formatter",
@@ -20,6 +21,7 @@ include_rules = [
   "+mojo",
   "+sql",
   "+ui/aura_extra",
+  "+ui/views/mus",  # http://crbug.com/555767
   "+ui/webui",
   "+win8/util",
 

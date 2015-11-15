@@ -50,7 +50,7 @@ source_set("example_wm_lib") {
     "//skia",
     "//ui/mojo/init",
     "//ui/views",
-    "//ui/views/mus",
+    "//ui/views/mus:for_mojo_application",
   ]
 }
 

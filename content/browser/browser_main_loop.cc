@@ -170,6 +170,14 @@
 #include "crypto/nss_util.h"
 #endif
 
+#if defined(MOJO_SHELL_CLIENT)
+#include "components/mus/public/interfaces/window_manager.mojom.h"
+#include "content/common/mojo/mojo_shell_connection_impl.h"
+#include "mojo/application/public/cpp/application_impl.h"
+#include "mojo/converters/network/network_type_converters.h"
+#include "ui/views/mus/window_manager_connection.h"
+#endif
+
 // One of the linux specific headers defines this as a macro.
 #ifdef DestroyAll
 #undef DestroyAll
@@ -903,6 +911,21 @@ int BrowserMainLoop::CreateThreads() {
 }
 
 int BrowserMainLoop::PreMainMessageLoopRun() {
+#if defined(MOJO_SHELL_CLIENT)
+  if (IsRunningInMojoShell()) {
+    MojoShellConnectionImpl::Create();
+#if defined(USE_AURA)
+    mus::mojom::WindowManagerPtr window_manager;
+    mojo::ApplicationImpl* application =
+        MojoShellConnection::Get()->GetApplication();
+    application->ConnectToService(
+        mojo::URLRequest::From(std::string("mojo:example_wm")),
+        &window_manager);
+    views::WindowManagerConnection::Create(window_manager.Pass(), application);
+#endif
+  }
+#endif
+
   if (parts_) {
     TRACE_EVENT0("startup",
         "BrowserMainLoop::CreateThreads:PreMainMessageLoopRun");
@@ -949,6 +972,9 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
       base::Bind(base::IgnoreResult(&base::ThreadRestrictions::SetIOAllowed),
                  true));
 
+#if defined(MOJO_SHELL_CLIENT)
+  MojoShellConnection::Destroy();
+#endif
   mojo_ipc_support_.reset();
   mojo_shell_context_.reset();
 

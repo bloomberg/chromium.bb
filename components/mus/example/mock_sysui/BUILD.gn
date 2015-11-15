@@ -23,7 +23,7 @@ mojo_native_application("mock_sysui") {
     "//mojo/converters/network",
     "//skia",
     "//ui/views",
-    "//ui/views/mus",
+    "//ui/views/mus:for_mojo_application",
   ]
 
   resources = [ "$root_out_dir/views_mus_resources.pak" ]

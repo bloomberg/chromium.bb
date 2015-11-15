@@ -13,6 +13,7 @@
 #include "base/metrics/histogram.h"
 #include "base/process/process.h"
 #include "base/profiler/scoped_tracker.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
 #include "content/public/browser/content_browser_client.h"
@@ -45,6 +46,17 @@
 #include "base/posix/global_descriptors.h"
 #include "content/browser/file_descriptor_info_impl.h"
 #include "gin/v8_initializer.h"
+#endif
+
+#if defined(MOJO_SHELL_CLIENT)
+#include "base/thread_task_runner_handle.h"
+#include "content/public/common/mojo_shell_connection.h"
+#include "mojo/application/public/cpp/application_impl.h"
+#include "mojo/converters/network/network_type_converters.h"
+#include "mojo/shell/application_manager.mojom.h"
+#include "third_party/mojo/src/mojo/edk/embedder/embedder.h"
+#include "third_party/mojo/src/mojo/edk/embedder/platform_channel_pair.h"
+#include "third_party/mojo/src/mojo/edk/embedder/scoped_platform_handle.h"
 #endif
 
 namespace content {
@@ -321,7 +333,11 @@ void SetProcessBackgroundedOnLauncherThread(base::Process process,
 #endif
 }
 
-}  // anonymous namespace
+#if defined(MOJO_SHELL_CLIENT)
+void DidCreateChannel(mojo::embedder::ChannelInfo* info) {}
+#endif
+
+}  // namespace
 
 ChildProcessLauncher::ChildProcessLauncher(
     SandboxedProcessLauncherDelegate* delegate,
@@ -363,6 +379,10 @@ void ChildProcessLauncher::Launch(
     base::CommandLine* cmd_line,
     int child_process_id) {
   DCHECK(CalledOnValidThread());
+
+#if defined(MOJO_SHELL_CLIENT)
+  CreateMojoShellChannel(cmd_line, child_process_id);
+#endif
 
 #if defined(OS_ANDROID)
   // Android only supports renderer, sandboxed utility and gpu.
@@ -502,6 +522,46 @@ void ChildProcessLauncher::Notify(
     client_->OnProcessLaunchFailed();
   }
 }
+
+#if defined(MOJO_SHELL_CLIENT)
+void ChildProcessLauncher::CreateMojoShellChannel(
+    base::CommandLine* command_line,
+    int child_process_id) {
+  // Some process types get created before the main message loop.
+  if (!MojoShellConnection::Get())
+    return;
+
+  // Create the channel to be shared with the target process.
+  mojo::embedder::HandlePassingInformation handle_passing_info;
+  mojo::embedder::PlatformChannelPair platform_channel_pair;
+
+  // Give one end to the shell so that it can create an instance.
+  mojo::embedder::ScopedPlatformHandle platform_channel =
+      platform_channel_pair.PassServerHandle();
+  mojo::ScopedMessagePipeHandle handle(mojo::embedder::CreateChannel(
+      platform_channel.Pass(), base::Bind(&DidCreateChannel),
+      base::ThreadTaskRunnerHandle::Get()));
+  mojo::shell::mojom::ApplicationManagerPtr application_manager;
+  MojoShellConnection::Get()->GetApplication()->ConnectToService(
+      mojo::URLRequest::From(std::string("mojo:shell")),
+      &application_manager);
+  // The content of the URL/qualifier we pass is actually meaningless, it's only
+  // important that they're unique per process.
+  // TODO(beng): We need to specify a restrictive CapabilityFilter here that
+  //             matches the needs of the target process. Figure out where that
+  //             specification is best determined (not here, this is a common
+  //             chokepoint for all process types) and how to wire it through.
+  //             http://crbug.com/555393
+  application_manager->CreateInstanceForHandle(
+      mojo::ScopedHandle(mojo::Handle(handle.release().value())),
+      "exe:chrome_renderer",  // See above about how this string is meaningless.
+      base::IntToString(child_process_id));
+
+  // Put the other end on the command line used to launch the target.
+  platform_channel_pair.PrepareToPassClientHandleToChildProcess(
+      command_line, &handle_passing_info);
+}
+#endif  // defined(MOJO_SHELL_CLIENT)
 
 bool ChildProcessLauncher::IsStarting() {
   // TODO(crbug.com/469248): This fails in some tests.

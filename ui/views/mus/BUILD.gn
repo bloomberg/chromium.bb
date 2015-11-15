@@ -5,6 +5,8 @@
 import("//tools/grit/repack.gni")
 
 component("mus") {
+  output_name = "ui_views_mus_lib"
+
   sources = [
     "aura_init.cc",
     "aura_init.h",
@@ -53,6 +55,8 @@ component("mus") {
     "//mojo/converters/input_events",
     "//mojo/converters/network",
     "//mojo/converters/surfaces",
+    "//mojo/platform_handle:for_component",
+    "//mojo/public/c/system:for_component",
     "//mojo/public/cpp/bindings",
     "//third_party/icu",
     "//ui/aura",
@@ -68,14 +72,6 @@ component("mus") {
     "//ui/views",
     "//ui/wm",
   ]
-
-  if (is_component_build) {
-    deps += [
-      "//mojo/gles2",
-      "//mojo/platform_handle:platform_handle_impl",
-      "//third_party/mojo/src/mojo/edk/system",
-    ]
-  }
 
   data_deps = [
     "//components/resource_provider",
@@ -99,5 +95,31 @@ repack("resources") {
     "//ui/strings",
     "//ui/resources",
     "//ui/views/resources",
+  ]
+}
+
+group("for_mojo_application") {
+  public_deps = [
+    ":mus",
+  ]
+}
+
+group("for_shared_library") {
+  public_deps = [
+    ":mus",
+  ]
+  if (!is_component_build) {
+    deps = [
+      "//mojo/gles2",
+    ]
+  }
+}
+
+group("for_component") {
+  public_deps = [
+    ":mus",
+  ]
+  deps = [
+    "//mojo/gles2",
   ]
 }

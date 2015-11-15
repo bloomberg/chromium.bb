@@ -37,7 +37,7 @@ executable("window_type_launcher") {
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//ui/views",
-    "//ui/views/mus",
+    "//ui/views/mus:for_shared_library",
   ]
 
   data_deps = [

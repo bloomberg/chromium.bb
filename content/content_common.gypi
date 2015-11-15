@@ -91,6 +91,7 @@
       'public/common/message_port_types.h',
       'public/common/mojo_channel_switches.cc',
       'public/common/mojo_channel_switches.h',
+      'public/common/mojo_shell_connection.h',
       'public/common/navigator_connect_client.cc',
       'public/common/navigator_connect_client.h',
       'public/common/origin_util.h',

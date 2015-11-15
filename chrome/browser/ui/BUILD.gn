@@ -299,6 +299,7 @@ source_set("ui") {
       "//ui/keyboard:resources",
       "//ui/wm",
     ]
+    defines += [ "MOJO_SHELL_CLIENT" ]
     if (!is_chromeos) {
       sources += rebase_path(gypi_values.chrome_browser_ui_aura_non_chromeos,
                              ".",
