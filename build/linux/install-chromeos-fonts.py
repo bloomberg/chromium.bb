@@ -12,10 +12,21 @@ import shutil
 import subprocess
 import sys
 
-# Taken from the media-fonts/notofonts ebuild in chromiumos-overlay.
-VERSION = '20140815'
-URL = ('https://commondatastorage.googleapis.com/chromeos-localmirror/'
-       'distfiles/notofonts-%s.tar.bz2') % (VERSION)
+URL_TEMPLATE = ('https://commondatastorage.googleapis.com/chromeos-localmirror/'
+                'distfiles/%(name)s-%(version)s.tar.bz2')
+
+# Taken from the media-fonts/<name> ebuilds in chromiumos-overlay.
+SOURCES = [
+  {
+    'name': 'notofonts',
+    'version': '20150706'
+  }, {
+    'name': 'robotofonts',
+    'version': '20150625'
+  }
+]
+
+URLS = sorted([URL_TEMPLATE % d for d in SOURCES])
 FONTS_DIR = '/usr/local/share/fonts'
 
 def main(args):
@@ -36,7 +47,7 @@ def main(args):
   stamp = os.path.join(dest_dir, ".stamp02")
   if os.path.exists(stamp):
     with open(stamp) as s:
-      if s.read() == URL:
+      if s.read() == '\n'.join(URLS):
         print "Chrome OS fonts already up-to-date in %s." % dest_dir
         return 0
 
@@ -46,11 +57,12 @@ def main(args):
   os.chmod(dest_dir, 0755)
 
   print "Installing Chrome OS fonts to %s." % dest_dir
-  tarball = os.path.join(dest_dir, os.path.basename(URL))
-  subprocess.check_call(['curl', '-L', URL, '-o', tarball])
-  subprocess.check_call(['tar', '--no-same-owner', '--no-same-permissions',
-                         '-xf', tarball, '-C', dest_dir])
-  os.remove(tarball)
+  for url in URLS:
+    tarball = os.path.join(dest_dir, os.path.basename(url))
+    subprocess.check_call(['curl', '-L', url, '-o', tarball])
+    subprocess.check_call(['tar', '--no-same-owner', '--no-same-permissions',
+                           '-xf', tarball, '-C', dest_dir])
+    os.remove(tarball)
 
   readme = os.path.join(dest_dir, "README")
   with open(readme, 'w') as s:
@@ -59,7 +71,7 @@ def main(args):
     s.write("Script: %s\n" % __file__)
 
   with open(stamp, 'w') as s:
-    s.write(URL)
+    s.write('\n'.join(URLS))
 
   for base, dirs, files in os.walk(dest_dir):
     for dir in dirs:
