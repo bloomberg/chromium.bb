@@ -47,7 +47,6 @@
         'net/request_tracker_impl_unittest.mm',
         'net/web_http_protocol_handler_delegate_unittest.mm',
         'public/referrer_util_unittest.cc',
-        'public/test/http_server_unittest.mm',
         'string_util_unittest.cc',
         'test/crw_fake_web_controller_observer_unittest.mm',
         'test/run_all_unittests.cc',
