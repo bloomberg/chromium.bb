@@ -202,12 +202,6 @@ void CommandBufferLocal::SetSurfaceVisible(bool visible) {
   NOTIMPLEMENTED();
 }
 
-uint32_t CommandBufferLocal::CreateStreamTexture(uint32_t texture_id) {
-  // TODO(piman)
-  NOTIMPLEMENTED();
-  return 0;
-}
-
 void CommandBufferLocal::SetLock(base::Lock* lock) {
   NOTIMPLEMENTED();
 }

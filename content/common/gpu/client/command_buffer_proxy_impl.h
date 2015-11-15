@@ -119,7 +119,6 @@ class CommandBufferProxyImpl
                        const base::Closure& callback) override;
   void SignalQuery(uint32 query, const base::Closure& callback) override;
   void SetSurfaceVisible(bool visible) override;
-  uint32 CreateStreamTexture(uint32 texture_id) override;
   void SetLock(base::Lock* lock) override;
   bool IsGpuChannelLost() override;
   gpu::CommandBufferNamespace GetNamespaceID() const override;
@@ -170,6 +169,7 @@ class CommandBufferProxyImpl
   base::SharedMemoryHandle GetSharedStateHandle() const {
     return shared_state_shm_->handle();
   }
+  uint32 CreateStreamTexture(uint32 texture_id);
 
  private:
   typedef std::map<int32, scoped_refptr<gpu::Buffer> > TransferBufferMap;

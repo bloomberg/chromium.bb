@@ -179,7 +179,8 @@ StreamTextureProxy* StreamTextureFactorySynchronousImpl::CreateProxy() {
 }
 
 void StreamTextureFactorySynchronousImpl::EstablishPeer(int32 stream_id,
-                                                        int player_id) {
+                                                        int player_id,
+                                                        int frame_id) {
   DCHECK(context_provider_.get());
   scoped_refptr<gfx::SurfaceTexture> surface_texture =
       context_provider_->GetSurfaceTexture(stream_id);
@@ -200,8 +201,8 @@ unsigned StreamTextureFactorySynchronousImpl::CreateStreamTexture(
   unsigned stream_id = 0;
   GLES2Interface* gl = context_provider_->ContextGL();
   gl->GenTextures(1, texture_id);
-  stream_id = gl->CreateStreamTextureCHROMIUM(*texture_id);
-
+  gl->ShallowFlushCHROMIUM();
+  stream_id = context_provider_->CreateStreamTexture(*texture_id);
   gl->GenMailboxCHROMIUM(texture_mailbox->name);
   gl->ProduceTextureDirectCHROMIUM(
       *texture_id, texture_target, texture_mailbox->name);

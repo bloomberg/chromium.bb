@@ -492,11 +492,6 @@ void GLManager::SetSurfaceVisible(bool visible) {
   NOTIMPLEMENTED();
 }
 
-uint32 GLManager::CreateStreamTexture(uint32 texture_id) {
-  NOTIMPLEMENTED();
-  return 0;
-}
-
 void GLManager::SetLock(base::Lock*) {
   NOTIMPLEMENTED();
 }

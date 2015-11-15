@@ -5231,31 +5231,18 @@ WebMediaPlayer* RenderFrameImpl::CreateAndroidWebMediaPlayer(
           SynchronousCompositorFactory::GetInstance()) {
     stream_texture_factory = factory->CreateStreamTextureFactory(routing_id_);
   } else {
-    GpuChannelHost* gpu_channel_host =
-        RenderThreadImpl::current()->EstablishGpuChannelSync(
-            CAUSE_FOR_GPU_LAUNCH_VIDEODECODEACCELERATOR_INITIALIZE);
-
-    if (!gpu_channel_host) {
-      LOG(ERROR) << "Failed to establish GPU channel for media player";
+    stream_texture_factory =
+        RenderThreadImpl::current()->GetStreamTexureFactory();
+    if (!stream_texture_factory.get()) {
+      LOG(ERROR) << "Failed to get stream texture factory!";
       return NULL;
     }
-
-    scoped_refptr<cc_blink::ContextProviderWebContext> context_provider =
-        RenderThreadImpl::current()->SharedMainThreadContextProvider();
-
-    if (!context_provider.get()) {
-      LOG(ERROR) << "Failed to get context3d for media player";
-      return NULL;
-    }
-
-    stream_texture_factory = StreamTextureFactoryImpl::Create(
-        context_provider, gpu_channel_host, routing_id_);
   }
 
   return new WebMediaPlayerAndroid(frame_, client, encrypted_client,
                                    GetWebMediaPlayerDelegate()->AsWeakPtr(),
                                    GetMediaPlayerManager(), GetCdmFactory(),
-                                   stream_texture_factory, params);
+                                   stream_texture_factory, routing_id_, params);
 }
 
 RendererMediaPlayerManager* RenderFrameImpl::GetMediaPlayerManager() {

@@ -153,7 +153,6 @@ VISIT_GL_CALL(GetProgramInfoCHROMIUM,
               void,
               (GLuint program, GLsizei bufsize, GLsizei* size, void* info),
               (program, bufsize, size, info))
-VISIT_GL_CALL(CreateStreamTextureCHROMIUM, GLuint, (GLuint texture), (texture))
 VISIT_GL_CALL(
     CreateImageCHROMIUM,
     GLuint,

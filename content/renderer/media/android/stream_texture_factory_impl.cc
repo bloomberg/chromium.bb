@@ -5,6 +5,7 @@
 #include "content/renderer/media/android/stream_texture_factory_impl.h"
 
 #include "cc/output/context_provider.h"
+#include "content/common/gpu/client/context_provider_command_buffer.h"
 #include "content/common/gpu/client/gpu_channel_host.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/renderer/gpu/stream_texture_host_android.h"
@@ -110,19 +111,15 @@ void StreamTextureProxyImpl::OnMatrixChanged(const float matrix[16]) {
 
 // static
 scoped_refptr<StreamTextureFactoryImpl> StreamTextureFactoryImpl::Create(
-    const scoped_refptr<cc::ContextProvider>& context_provider,
-    GpuChannelHost* channel,
-    int frame_id) {
-  return new StreamTextureFactoryImpl(context_provider, channel, frame_id);
+    const scoped_refptr<ContextProviderCommandBuffer>& context_provider,
+    GpuChannelHost* channel) {
+  return new StreamTextureFactoryImpl(context_provider, channel);
 }
 
 StreamTextureFactoryImpl::StreamTextureFactoryImpl(
-    const scoped_refptr<cc::ContextProvider>& context_provider,
-    GpuChannelHost* channel,
-    int frame_id)
-    : context_provider_(context_provider),
-      channel_(channel),
-      frame_id_(frame_id) {
+    const scoped_refptr<ContextProviderCommandBuffer>& context_provider,
+    GpuChannelHost* channel)
+    : context_provider_(context_provider), channel_(channel) {
   DCHECK(channel);
 }
 
@@ -134,10 +131,12 @@ StreamTextureProxy* StreamTextureFactoryImpl::CreateProxy() {
   return new StreamTextureProxyImpl(host);
 }
 
-void StreamTextureFactoryImpl::EstablishPeer(int32 stream_id, int player_id) {
+void StreamTextureFactoryImpl::EstablishPeer(int32 stream_id,
+                                             int player_id,
+                                             int frame_id) {
   DCHECK(channel_.get());
   channel_->Send(
-      new GpuStreamTextureMsg_EstablishPeer(stream_id, frame_id_, player_id));
+      new GpuStreamTextureMsg_EstablishPeer(stream_id, frame_id, player_id));
 }
 
 unsigned StreamTextureFactoryImpl::CreateStreamTexture(
@@ -147,9 +146,9 @@ unsigned StreamTextureFactoryImpl::CreateStreamTexture(
   GLuint stream_id = 0;
   gpu::gles2::GLES2Interface* gl = context_provider_->ContextGL();
   gl->GenTextures(1, texture_id);
-
-  stream_id = gl->CreateStreamTextureCHROMIUM(*texture_id);
-
+  gl->ShallowFlushCHROMIUM();
+  stream_id = context_provider_->GetCommandBufferProxy()->CreateStreamTexture(
+      *texture_id);
   gl->GenMailboxCHROMIUM(texture_mailbox->name);
   gl->ProduceTextureDirectCHROMIUM(
       *texture_id, texture_target, texture_mailbox->name);

@@ -95,6 +95,7 @@ class WebMediaPlayerAndroid : public blink::WebMediaPlayer,
       RendererMediaPlayerManager* player_manager,
       media::CdmFactory* cdm_factory,
       scoped_refptr<StreamTextureFactory> factory,
+      int frame_id,
       const media::WebMediaPlayerParams& params);
   virtual ~WebMediaPlayerAndroid();
 
@@ -530,6 +531,8 @@ class WebMediaPlayerAndroid : public blink::WebMediaPlayer,
   media::TimeDeltaInterpolator interpolator_;
 
   scoped_ptr<MediaSourceDelegate> media_source_delegate_;
+
+  int frame_id_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<WebMediaPlayerAndroid> weak_factory_;

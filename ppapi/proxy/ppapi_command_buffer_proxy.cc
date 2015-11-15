@@ -170,11 +170,6 @@ void PpapiCommandBufferProxy::DestroyTransferBuffer(int32 id) {
       ppapi::API_ID_PPB_GRAPHICS_3D, resource_, id));
 }
 
-uint32 PpapiCommandBufferProxy::CreateStreamTexture(uint32 texture_id) {
-  NOTREACHED();
-  return 0;
-}
-
 void PpapiCommandBufferProxy::SetLock(base::Lock*) {
   NOTIMPLEMENTED();
 }

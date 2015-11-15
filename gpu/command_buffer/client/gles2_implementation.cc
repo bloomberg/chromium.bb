@@ -4864,15 +4864,6 @@ void GLES2Implementation::GetTransformFeedbackVaryingsCHROMIUM(
   memcpy(info, &result[0], result.size());
 }
 
-GLuint GLES2Implementation::CreateStreamTextureCHROMIUM(GLuint texture) {
-  GPU_CLIENT_SINGLE_THREAD_CHECK();
-  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] CreateStreamTextureCHROMIUM("
-      << texture << ")");
-  TRACE_EVENT0("gpu", "GLES2::CreateStreamTextureCHROMIUM");
-  helper_->CommandBufferHelper::Flush();
-  return gpu_control_->CreateStreamTexture(texture);
-}
-
 void GLES2Implementation::PostSubBufferCHROMIUM(
     GLint x, GLint y, GLint width, GLint height) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();

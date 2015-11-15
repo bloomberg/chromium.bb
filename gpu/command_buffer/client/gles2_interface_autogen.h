@@ -665,7 +665,6 @@ virtual void GetUniformsES3CHROMIUM(GLuint program,
                                     GLsizei bufsize,
                                     GLsizei* size,
                                     void* info) = 0;
-virtual GLuint CreateStreamTextureCHROMIUM(GLuint texture) = 0;
 virtual GLuint CreateImageCHROMIUM(ClientBuffer buffer,
                                    GLsizei width,
                                    GLsizei height,

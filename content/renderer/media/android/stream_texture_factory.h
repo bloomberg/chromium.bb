@@ -60,7 +60,7 @@ class StreamTextureFactory : public base::RefCounted<StreamTextureFactory> {
   // object for the given stream_id. After the the surface is created,
   // it will be passed back to the WebMediaPlayerAndroid object identified by
   // the player_id.
-  virtual void EstablishPeer(int32 stream_id, int player_id) = 0;
+  virtual void EstablishPeer(int32 stream_id, int player_id, int frame_id) = 0;
 
   // Creates a StreamTexture and returns its id.  Sets |*texture_id| to the
   // client-side id of the StreamTexture. The texture is produced into

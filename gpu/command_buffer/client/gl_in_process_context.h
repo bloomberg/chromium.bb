@@ -81,6 +81,7 @@ class GL_IN_PROCESS_CONTEXT_EXPORT GLInProcessContext {
 #if defined(OS_ANDROID)
   virtual scoped_refptr<gfx::SurfaceTexture> GetSurfaceTexture(
       uint32 stream_id) = 0;
+  virtual uint32 CreateStreamTexture(uint32 texture_id) = 0;
 #endif
 };
 

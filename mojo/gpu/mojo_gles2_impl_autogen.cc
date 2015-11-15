@@ -1447,10 +1447,6 @@ void MojoGLES2Impl::GetUniformsES3CHROMIUM(GLuint program,
                                            void* info) {
   NOTREACHED() << "Unimplemented GetUniformsES3CHROMIUM.";
 }
-GLuint MojoGLES2Impl::CreateStreamTextureCHROMIUM(GLuint texture) {
-  MojoGLES2MakeCurrent(context_);
-  return glCreateStreamTextureCHROMIUM(texture);
-}
 GLuint MojoGLES2Impl::CreateImageCHROMIUM(ClientBuffer buffer,
                                           GLsizei width,
                                           GLsizei height,

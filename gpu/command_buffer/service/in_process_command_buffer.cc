@@ -951,19 +951,6 @@ void InProcessCommandBuffer::SignalQueryOnGpuThread(
 
 void InProcessCommandBuffer::SetSurfaceVisible(bool visible) {}
 
-uint32 InProcessCommandBuffer::CreateStreamTexture(uint32 texture_id) {
-  base::WaitableEvent completion(true, false);
-  uint32 stream_id = 0;
-  base::Callback<uint32(void)> task =
-      base::Bind(&InProcessCommandBuffer::CreateStreamTextureOnGpuThread,
-                 base::Unretained(this),
-                 texture_id);
-  QueueTask(
-      base::Bind(&RunTaskWithResult<uint32>, task, &stream_id, &completion));
-  completion.Wait();
-  return stream_id;
-}
-
 void InProcessCommandBuffer::SetLock(base::Lock*) {
 }
 
@@ -1081,6 +1068,18 @@ scoped_refptr<gfx::SurfaceTexture>
 InProcessCommandBuffer::GetSurfaceTexture(uint32 stream_id) {
   DCHECK(stream_texture_manager_);
   return stream_texture_manager_->GetSurfaceTexture(stream_id);
+}
+
+uint32 InProcessCommandBuffer::CreateStreamTexture(uint32 texture_id) {
+  base::WaitableEvent completion(true, false);
+  uint32 stream_id = 0;
+  base::Callback<uint32(void)> task =
+      base::Bind(&InProcessCommandBuffer::CreateStreamTextureOnGpuThread,
+                 base::Unretained(this), texture_id);
+  QueueTask(
+      base::Bind(&RunTaskWithResult<uint32>, task, &stream_id, &completion));
+  completion.Wait();
+  return stream_id;
 }
 #endif
 

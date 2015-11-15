@@ -1887,12 +1887,6 @@ void GLES2TraceImplementation::GetUniformsES3CHROMIUM(GLuint program,
   gl_->GetUniformsES3CHROMIUM(program, bufsize, size, info);
 }
 
-GLuint GLES2TraceImplementation::CreateStreamTextureCHROMIUM(GLuint texture) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu",
-                                "GLES2Trace::CreateStreamTextureCHROMIUM");
-  return gl_->CreateStreamTextureCHROMIUM(texture);
-}
-
 GLuint GLES2TraceImplementation::CreateImageCHROMIUM(ClientBuffer buffer,
                                                      GLsizei width,
                                                      GLsizei height,

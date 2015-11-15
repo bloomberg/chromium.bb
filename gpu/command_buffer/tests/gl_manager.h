@@ -129,7 +129,6 @@ class GLManager : private GpuControl {
                        const base::Closure& callback) override;
   void SignalQuery(uint32 query, const base::Closure& callback) override;
   void SetSurfaceVisible(bool visible) override;
-  uint32 CreateStreamTexture(uint32 texture_id) override;
   void SetLock(base::Lock*) override;
   bool IsGpuChannelLost() override;
   gpu::CommandBufferNamespace GetNamespaceID() const override;

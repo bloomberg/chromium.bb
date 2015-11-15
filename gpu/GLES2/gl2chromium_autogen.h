@@ -285,7 +285,6 @@
 #define glGetTransformFeedbackVaryingsCHROMIUM \
   GLES2_GET_FUN(GetTransformFeedbackVaryingsCHROMIUM)
 #define glGetUniformsES3CHROMIUM GLES2_GET_FUN(GetUniformsES3CHROMIUM)
-#define glCreateStreamTextureCHROMIUM GLES2_GET_FUN(CreateStreamTextureCHROMIUM)
 #define glCreateImageCHROMIUM GLES2_GET_FUN(CreateImageCHROMIUM)
 #define glDestroyImageCHROMIUM GLES2_GET_FUN(DestroyImageCHROMIUM)
 #define glCreateGpuMemoryBufferImageCHROMIUM \

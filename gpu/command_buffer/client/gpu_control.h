@@ -77,10 +77,6 @@ class GPU_EXPORT GpuControl {
 
   virtual void SetSurfaceVisible(bool visible) = 0;
 
-  // Attaches an external stream to the texture given by |texture_id| and
-  // returns a stream identifier.
-  virtual uint32_t CreateStreamTexture(uint32_t texture_id) = 0;
-
   // Sets a lock this will be held on every callback from the GPU
   // implementation. This lock must be set and must be held on every call into
   // the GPU implementation if it is to be used from multiple threads. This

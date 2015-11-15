@@ -362,12 +362,6 @@ void CommandBufferClientImpl::SetSurfaceVisible(bool visible) {
   NOTIMPLEMENTED();
 }
 
-uint32_t CommandBufferClientImpl::CreateStreamTexture(uint32_t texture_id) {
-  // TODO(piman)
-  NOTIMPLEMENTED();
-  return 0;
-}
-
 void CommandBufferClientImpl::DidLoseContext(int32_t lost_reason) {
   last_state_.error = gpu::error::kLostContext;
   last_state_.context_lost_reason =

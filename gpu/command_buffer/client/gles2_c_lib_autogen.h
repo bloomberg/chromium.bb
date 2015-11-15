@@ -1294,9 +1294,6 @@ void GL_APIENTRY GLES2GetUniformsES3CHROMIUM(GLuint program,
                                              void* info) {
   gles2::GetGLContext()->GetUniformsES3CHROMIUM(program, bufsize, size, info);
 }
-GLuint GL_APIENTRY GLES2CreateStreamTextureCHROMIUM(GLuint texture) {
-  return gles2::GetGLContext()->CreateStreamTextureCHROMIUM(texture);
-}
 GLuint GL_APIENTRY GLES2CreateImageCHROMIUM(ClientBuffer buffer,
                                             GLsizei width,
                                             GLsizei height,
@@ -2690,10 +2687,6 @@ extern const NameToFunc g_gles2_function_table[] = {
     {
         "glGetUniformsES3CHROMIUM",
         reinterpret_cast<GLES2FunctionPointer>(glGetUniformsES3CHROMIUM),
-    },
-    {
-        "glCreateStreamTextureCHROMIUM",
-        reinterpret_cast<GLES2FunctionPointer>(glCreateStreamTextureCHROMIUM),
     },
     {
         "glCreateImageCHROMIUM",

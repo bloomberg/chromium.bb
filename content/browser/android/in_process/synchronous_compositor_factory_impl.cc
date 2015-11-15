@@ -98,6 +98,10 @@ class SynchronousCompositorFactoryImpl::VideoContextProvider
     return gl_in_process_context_->GetSurfaceTexture(stream_id);
   }
 
+  uint32 CreateStreamTexture(uint32 texture_id) override {
+    return gl_in_process_context_->CreateStreamTexture(texture_id);
+  }
+
   gpu::gles2::GLES2Interface* ContextGL() override {
     return context_provider_->ContextGL();
   }

@@ -116,6 +116,7 @@ class WebGraphicsContext3DCommandBufferImpl;
 class WebRTCIdentityService;
 
 #if defined(OS_ANDROID)
+class StreamTextureFactory;
 class SynchronousCompositorFilter;
 #endif
 
@@ -288,6 +289,8 @@ class CONTENT_EXPORT RenderThreadImpl
   SynchronousCompositorFilter* sync_compositor_message_filter() {
     return sync_compositor_message_filter_.get();
   }
+
+  scoped_refptr<StreamTextureFactory> GetStreamTexureFactory();
 #endif
 
   // Creates the embedder implementation of WebMediaStreamCenter.
@@ -612,12 +615,12 @@ class CONTENT_EXPORT RenderThreadImpl
 
 #if defined(OS_ANDROID)
   scoped_refptr<SynchronousCompositorFilter> sync_compositor_message_filter_;
+  scoped_refptr<StreamTextureFactory> stream_texture_factory_;
 #endif
 
   scoped_refptr<BluetoothMessageFilter> bluetooth_message_filter_;
 
-  scoped_refptr<cc_blink::ContextProviderWebContext>
-      shared_main_thread_contexts_;
+  scoped_refptr<ContextProviderCommandBuffer> shared_main_thread_contexts_;
 
   base::ObserverList<RenderProcessObserver> observers_;
 

@@ -30,6 +30,8 @@ class StreamTextureFactorySynchronousImpl : public StreamTextureFactory {
     virtual scoped_refptr<gfx::SurfaceTexture> GetSurfaceTexture(
         uint32 stream_id) = 0;
 
+    virtual uint32 CreateStreamTexture(uint32 texture_id) = 0;
+
     virtual gpu::gles2::GLES2Interface* ContextGL() = 0;
 
     virtual void AddObserver(StreamTextureFactoryContextObserver* obs) = 0;
@@ -48,7 +50,7 @@ class StreamTextureFactorySynchronousImpl : public StreamTextureFactory {
       int frame_id);
 
   StreamTextureProxy* CreateProxy() override;
-  void EstablishPeer(int32 stream_id, int player_id) override;
+  void EstablishPeer(int32 stream_id, int player_id, int frame_id) override;
   unsigned CreateStreamTexture(unsigned texture_target,
                                unsigned* texture_id,
                                gpu::Mailbox* texture_mailbox) override;

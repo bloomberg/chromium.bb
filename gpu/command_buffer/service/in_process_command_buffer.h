@@ -125,7 +125,6 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
                        const base::Closure& callback) override;
   void SignalQuery(uint32 query_id, const base::Closure& callback) override;
   void SetSurfaceVisible(bool visible) override;
-  uint32 CreateStreamTexture(uint32 texture_id) override;
   void SetLock(base::Lock*) override;
   bool IsGpuChannelLost() override;
   CommandBufferNamespace GetNamespaceID() const override;
@@ -177,6 +176,7 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
 #if defined(OS_ANDROID)
   scoped_refptr<gfx::SurfaceTexture> GetSurfaceTexture(
       uint32 stream_id);
+  uint32 CreateStreamTexture(uint32 texture_id);
 #endif
 
  private:

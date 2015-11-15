@@ -163,6 +163,7 @@
 #include "content/renderer/android/synchronous_compositor_factory.h"
 #include "content/renderer/android/synchronous_compositor_filter.h"
 #include "content/renderer/media/android/renderer_demuxer_android.h"
+#include "content/renderer/media/android/stream_texture_factory_impl.h"
 #endif
 
 #if defined(OS_MACOSX)
@@ -868,6 +869,7 @@ void RenderThreadImpl::Shutdown() {
     RemoveFilter(sync_compositor_message_filter_.get());
     sync_compositor_message_filter_ = nullptr;
   }
+  stream_texture_factory_ = nullptr;
 #endif
 
   media_thread_.reset();
@@ -1467,6 +1469,30 @@ RenderThreadImpl::SharedMainThreadContextProvider() {
   }
   return shared_main_thread_contexts_;
 }
+
+#if defined(OS_ANDROID)
+scoped_refptr<StreamTextureFactory> RenderThreadImpl::GetStreamTexureFactory() {
+  DCHECK(IsMainThread());
+  if (!stream_texture_factory_.get() ||
+      stream_texture_factory_->ContextGL()->GetGraphicsResetStatusKHR() !=
+          GL_NO_ERROR) {
+    if (!SharedMainThreadContextProvider().get()) {
+      stream_texture_factory_ = NULL;
+      return NULL;
+    }
+    scoped_refptr<GpuChannelHost> gpu_channel_host(EstablishGpuChannelSync(
+        CAUSE_FOR_GPU_LAUNCH_VIDEODECODEACCELERATOR_INITIALIZE));
+    if (!gpu_channel_host.get()) {
+      LOG(ERROR) << "Failed to establish GPU channel for media player";
+      stream_texture_factory_ = NULL;
+    } else {
+      stream_texture_factory_ = StreamTextureFactoryImpl::Create(
+          shared_main_thread_contexts_, gpu_channel_host.get());
+    }
+  }
+  return stream_texture_factory_;
+}
+#endif
 
 AudioRendererMixerManager* RenderThreadImpl::GetAudioRendererMixerManager() {
   if (!audio_renderer_mixer_manager_) {

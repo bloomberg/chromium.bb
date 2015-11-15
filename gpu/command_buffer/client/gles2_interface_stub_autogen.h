@@ -642,7 +642,6 @@ void GetUniformsES3CHROMIUM(GLuint program,
                             GLsizei bufsize,
                             GLsizei* size,
                             void* info) override;
-GLuint CreateStreamTextureCHROMIUM(GLuint texture) override;
 GLuint CreateImageCHROMIUM(ClientBuffer buffer,
                            GLsizei width,
                            GLsizei height,

@@ -668,7 +668,6 @@ class MojoGLES2Impl : public gpu::gles2::GLES2Interface {
                               GLsizei bufsize,
                               GLsizei* size,
                               void* info) override;
-  GLuint CreateStreamTextureCHROMIUM(GLuint texture) override;
   GLuint CreateImageCHROMIUM(ClientBuffer buffer,
                              GLsizei width,
                              GLsizei height,

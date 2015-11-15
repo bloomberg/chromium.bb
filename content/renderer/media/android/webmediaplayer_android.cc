@@ -161,6 +161,7 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
     RendererMediaPlayerManager* player_manager,
     media::CdmFactory* cdm_factory,
     scoped_refptr<StreamTextureFactory> factory,
+    int frame_id,
     const media::WebMediaPlayerParams& params)
     : RenderFrameObserver(RenderFrame::FromWebFrame(frame)),
       frame_(frame),
@@ -201,6 +202,7 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
       allow_stored_credentials_(false),
       is_local_resource_(false),
       interpolator_(&default_tick_clock_),
+      frame_id_(frame_id),
       weak_factory_(this) {
   DCHECK(player_manager_);
   DCHECK(cdm_factory_);
@@ -1388,7 +1390,7 @@ void WebMediaPlayerAndroid::EstablishSurfaceTexturePeer() {
     return;
 
   if (stream_texture_factory_.get() && stream_id_)
-    stream_texture_factory_->EstablishPeer(stream_id_, player_id_);
+    stream_texture_factory_->EstablishPeer(stream_id_, player_id_, frame_id_);
 
   // Set the deferred size because the size was changed in remote mode.
   if (!is_remote_ && cached_stream_texture_size_ != natural_size_) {

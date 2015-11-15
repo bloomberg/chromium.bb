@@ -72,6 +72,7 @@ class GLInProcessContextImpl
 #if defined(OS_ANDROID)
   scoped_refptr<gfx::SurfaceTexture> GetSurfaceTexture(
       uint32 stream_id) override;
+  uint32 CreateStreamTexture(uint32 texture_id) override;
 #endif
 
  private:
@@ -265,6 +266,10 @@ void GLInProcessContextImpl::Destroy() {
 scoped_refptr<gfx::SurfaceTexture>
 GLInProcessContextImpl::GetSurfaceTexture(uint32 stream_id) {
   return command_buffer_->GetSurfaceTexture(stream_id);
+}
+
+uint32 GLInProcessContextImpl::CreateStreamTexture(uint32 texture_id) {
+  return command_buffer_->CreateStreamTexture(texture_id);
 }
 #endif
 

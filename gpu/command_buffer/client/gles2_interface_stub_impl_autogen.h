@@ -883,9 +883,6 @@ void GLES2InterfaceStub::GetUniformsES3CHROMIUM(GLuint /* program */,
                                                 GLsizei /* bufsize */,
                                                 GLsizei* /* size */,
                                                 void* /* info */) {}
-GLuint GLES2InterfaceStub::CreateStreamTextureCHROMIUM(GLuint /* texture */) {
-  return 0;
-}
 GLuint GLES2InterfaceStub::CreateImageCHROMIUM(ClientBuffer /* buffer */,
                                                GLsizei /* width */,
                                                GLsizei /* height */,

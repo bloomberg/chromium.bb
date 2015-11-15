@@ -332,11 +332,6 @@ void Display::SetSurfaceVisible(bool visible) {
   NOTIMPLEMENTED();
 }
 
-uint32 Display::CreateStreamTexture(uint32 texture_id) {
-  NOTIMPLEMENTED();
-  return 0;
-}
-
 void Display::SetLock(base::Lock*) {
   NOTIMPLEMENTED();
 }
