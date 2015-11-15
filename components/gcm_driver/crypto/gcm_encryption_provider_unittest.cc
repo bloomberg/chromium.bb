@@ -18,7 +18,7 @@
 #include "components/gcm_driver/common/gcm_messages.h"
 #include "components/gcm_driver/crypto/gcm_key_store.h"
 #include "components/gcm_driver/crypto/gcm_message_cryptographer.h"
-#include "crypto/curve25519.h"
+#include "components/gcm_driver/crypto/p256_key_util.h"
 #include "crypto/random.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -33,7 +33,8 @@ const char kValidEncryptionHeader[] =
 const char kInvalidEncryptionHeader[] = "keyid";
 
 const char kValidEncryptionKeyHeader[] =
-    "keyid=foo;dh=NjU0MzIxMDk4NzY1NDMyMTEyMzQ1Njc4OTAxMjM0NTY";
+    "keyid=foo;dh=BL_UGhfudEkXMUd4U4-D4nP5KHxKjQHsW6j88ybbehXM7fqi1OMFefDUEi0eJ"
+    "vsKfyVBWYkQjH-lSPJKxjAyslg";
 const char kInvalidEncryptionKeyHeader[] = "keyid";
 
 // TODO(peter): Unify the Base64Url implementations. https://crbug.com/536745.
@@ -231,7 +232,7 @@ TEST_F(GCMEncryptionProviderTest, VerifiesExistingKeys) {
   // Getting (or creating) the public key will be done asynchronously.
   base::RunLoop().RunUntilIdle();
 
-  ASSERT_EQ(crypto::curve25519::kBytes, public_key.size());
+  ASSERT_GT(public_key.size(), 0u);
 
   ASSERT_NO_FATAL_FAILURE(Decrypt(message));
   ASSERT_EQ(DECRYPTION_FAILED, decryption_result());
@@ -263,11 +264,11 @@ TEST_F(GCMEncryptionProviderTest, EncryptionRoundTrip) {
   // Creating the public keys will be done asynchronously.
   base::RunLoop().RunUntilIdle();
 
-  ASSERT_EQ(crypto::curve25519::kScalarBytes, pair.private_key().size());
-  ASSERT_EQ(crypto::curve25519::kBytes, pair.public_key().size());
+  ASSERT_GT(pair.public_key().size(), 0u);
+  ASSERT_GT(server_pair.public_key().size(), 0u);
 
-  ASSERT_EQ(crypto::curve25519::kScalarBytes, server_pair.private_key().size());
-  ASSERT_EQ(crypto::curve25519::kBytes, server_pair.public_key().size());
+  ASSERT_GT(pair.private_key().size(), 0u);
+  ASSERT_GT(server_pair.private_key().size(), 0u);
 
   std::string salt;
 
@@ -275,14 +276,10 @@ TEST_F(GCMEncryptionProviderTest, EncryptionRoundTrip) {
   // calculate the shared secret for the message.
   crypto::RandBytes(base::WriteInto(&salt, 16 + 1), 16);
 
-  uint8_t shared_key[crypto::curve25519::kBytes];
-  crypto::curve25519::ScalarMult(
-      reinterpret_cast<const unsigned char*>(server_pair.private_key().data()),
-      reinterpret_cast<const unsigned char*>(pair.public_key().data()),
-      shared_key);
-
-  base::StringPiece shared_key_string_piece(
-      reinterpret_cast<char*>(shared_key), crypto::curve25519::kBytes);
+  std::string shared_secret;
+  ASSERT_TRUE(ComputeSharedP256Secret(
+      pair.private_key(), pair.public_key_x509(), server_pair.public_key(),
+      &shared_secret));
 
   IncomingMessage message;
   size_t record_size;
@@ -290,8 +287,8 @@ TEST_F(GCMEncryptionProviderTest, EncryptionRoundTrip) {
   // Encrypts the |kExampleMessage| using the generated shared key and the
   // random |salt|, storing the result in |record_size| and the message.
   GCMMessageCryptographer cryptographer;
-  ASSERT_TRUE(cryptographer.Encrypt(kExampleMessage, shared_key_string_piece,
-                                    salt, &record_size, &message.raw_data));
+  ASSERT_TRUE(cryptographer.Encrypt(kExampleMessage, shared_secret, salt,
+                                    &record_size, &message.raw_data));
 
   std::string encoded_salt, encoded_key;
 

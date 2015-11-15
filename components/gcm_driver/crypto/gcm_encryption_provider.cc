@@ -13,8 +13,8 @@
 #include "components/gcm_driver/crypto/encryption_header_parsers.h"
 #include "components/gcm_driver/crypto/gcm_key_store.h"
 #include "components/gcm_driver/crypto/gcm_message_cryptographer.h"
+#include "components/gcm_driver/crypto/p256_key_util.h"
 #include "components/gcm_driver/crypto/proto/gcm_encryption_data.pb.h"
-#include "crypto/curve25519.h"
 
 namespace gcm {
 
@@ -113,7 +113,7 @@ void GCMEncryptionProvider::DecryptMessage(
   }
 
   if (encryption_key_header_values.size() != 1u ||
-      encryption_key_header_values[0].dh.size() != crypto::curve25519::kBytes) {
+      !encryption_key_header_values[0].dh.size()) {
     DLOG(ERROR) << "Invalid values supplied in the Encryption-Key header";
     failure_callback.Run(DECRYPTION_FAILURE_INVALID_ENCRYPTION_KEY_HEADER);
     return;
@@ -138,7 +138,7 @@ void GCMEncryptionProvider::DidGetPublicKey(const std::string& app_id,
     return;
   }
 
-  DCHECK_EQ(KeyPair::ECDH_CURVE_25519, pair.type());
+  DCHECK_EQ(KeyPair::ECDH_P256, pair.type());
   callback.Run(pair.public_key());
 }
 
@@ -150,7 +150,7 @@ void GCMEncryptionProvider::DidCreatePublicKey(
     return;
   }
 
-  DCHECK_EQ(KeyPair::ECDH_CURVE_25519, pair.type());
+  DCHECK_EQ(KeyPair::ECDH_P256, pair.type());
   callback.Run(pair.public_key());
 }
 
@@ -168,24 +168,21 @@ void GCMEncryptionProvider::DecryptMessageWithKey(
     return;
   }
 
-  DCHECK_EQ(KeyPair::ECDH_CURVE_25519, pair.type());
+  DCHECK_EQ(KeyPair::ECDH_P256, pair.type());
 
-  uint8_t shared_key[crypto::curve25519::kBytes];
-
-  // Calculate the shared secret for the message.
-  crypto::curve25519::ScalarMult(
-      reinterpret_cast<const unsigned char*>(pair.private_key().data()),
-      reinterpret_cast<const unsigned char*>(dh.data()),
-      shared_key);
-
-  base::StringPiece shared_key_string_piece(
-      reinterpret_cast<char*>(shared_key), crypto::curve25519::kBytes);
+  std::string shared_secret;
+  if (!ComputeSharedP256Secret(pair.private_key(), pair.public_key_x509(), dh,
+                               &shared_secret)) {
+    DLOG(ERROR) << "Unable to calculate the shared secret.";
+    failure_callback.Run(DECRYPTION_FAILURE_INVALID_PUBLIC_KEY);
+    return;
+  }
 
   std::string plaintext;
 
   GCMMessageCryptographer cryptographer;
-  if (!cryptographer.Decrypt(message.raw_data, shared_key_string_piece, salt,
-                             rs, &plaintext)) {
+  if (!cryptographer.Decrypt(message.raw_data, shared_secret, salt, rs,
+                             &plaintext)) {
     DLOG(ERROR) << "Unable to decrypt the incoming data.";
     failure_callback.Run(DECRYPTION_FAILURE_INVALID_PAYLOAD);
     return;

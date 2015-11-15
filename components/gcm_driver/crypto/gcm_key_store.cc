@@ -7,8 +7,8 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "components/gcm_driver/crypto/p256_key_util.h"
 #include "components/leveldb_proto/proto_database_impl.h"
-#include "crypto/curve25519.h"
 #include "crypto/random.h"
 
 namespace gcm {
@@ -73,23 +73,23 @@ void GCMKeyStore::CreateKeysAfterInitialize(const std::string& app_id,
   // Only allow creating new keys if no keys currently exist.
   DCHECK_EQ(0u, key_pairs_.count(app_id));
 
-  // Create a Curve25519 private/public key-pair.
-  uint8_t private_key[crypto::curve25519::kScalarBytes];
-  uint8_t public_key[crypto::curve25519::kBytes];
+  std::string private_key, public_key_x509, public_key;
+  if (!CreateP256KeyPair(&private_key, &public_key_x509, &public_key)) {
+    NOTREACHED() << "Unable to initialize a P-256 key pair.";
 
-  crypto::RandBytes(private_key, sizeof(private_key));
-
-  // Compute the |public_key| based on the |private_key|.
-  crypto::curve25519::ScalarBaseMult(private_key, public_key);
+    callback.Run(KeyPair());
+    return;
+  }
 
   // Store the keys in a new EncryptionData object.
   EncryptionData encryption_data;
   encryption_data.set_app_id(app_id);
 
   KeyPair* pair = encryption_data.add_keys();
-  pair->set_type(KeyPair::ECDH_CURVE_25519);
-  pair->set_private_key(private_key, sizeof(private_key));
-  pair->set_public_key(public_key, sizeof(public_key));
+  pair->set_type(KeyPair::ECDH_P256);
+  pair->set_private_key(private_key);
+  pair->set_public_key_x509(public_key_x509);
+  pair->set_public_key(public_key);
 
   using EntryVectorType =
       leveldb_proto::ProtoDatabase<EncryptionData>::KeyEntryVector;

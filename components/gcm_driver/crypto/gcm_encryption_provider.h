@@ -47,6 +47,9 @@ class GCMEncryptionProvider {
     // No public/private key-pair was associated with the app_id.
     DECRYPTION_FAILURE_NO_KEYS,
 
+    // The public key provided in the Encryption-Key header is invalid.
+    DECRYPTION_FAILURE_INVALID_PUBLIC_KEY,
+
     // The payload could not be decrypted as AES-128-GCM.
     DECRYPTION_FAILURE_INVALID_PAYLOAD
   };

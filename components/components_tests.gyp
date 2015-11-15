@@ -259,6 +259,7 @@
       'gcm_driver/crypto/gcm_encryption_provider_unittest.cc',
       'gcm_driver/crypto/gcm_key_store_unittest.cc',
       'gcm_driver/crypto/gcm_message_cryptographer_unittest.cc',
+      'gcm_driver/crypto/p256_key_util_unittest.cc',
     ],
     'google_unittest_sources': [
       'google/core/browser/google_url_tracker_unittest.cc',

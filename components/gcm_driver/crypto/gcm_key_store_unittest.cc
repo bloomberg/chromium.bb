@@ -9,7 +9,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/thread_task_runner_handle.h"
-#include "crypto/curve25519.h"
+#include "components/gcm_driver/crypto/p256_key_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace gcm {
@@ -89,12 +89,11 @@ TEST_F(GCMKeyStoreTest, CreateAndGetKeys) {
   base::RunLoop().RunUntilIdle();
 
   ASSERT_TRUE(pair.IsInitialized());
-
   ASSERT_TRUE(pair.has_private_key());
-  EXPECT_EQ(crypto::curve25519::kScalarBytes, pair.private_key().size());
-
   ASSERT_TRUE(pair.has_public_key());
-  EXPECT_EQ(crypto::curve25519::kBytes, pair.public_key().size());
+
+  EXPECT_GT(pair.public_key().size(), 0u);
+  EXPECT_GT(pair.private_key().size(), 0u);
 
   KeyPair read_pair;
   gcm_key_store()->GetKeys(kFakeAppId,

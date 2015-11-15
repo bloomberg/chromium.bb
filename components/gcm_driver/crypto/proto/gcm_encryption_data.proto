@@ -9,21 +9,24 @@ option optimize_for = LITE_RUNTIME;
 package gcm;
 
 // Stores a public/private key-pair.
-// Next tag: 3
+// Next tag: 5
 message KeyPair {
   // The type of key used for key agreement. Currently only the ECDH key
-  // agreement scheme is supported, using Curve 25519.
+  // agreement scheme is supported, using NIST P-256.
   enum KeyType {
-    ECDH_CURVE_25519 = 0;
+    ECDH_P256 = 0;
   }
 
   required KeyType type = 1;
 
   // The private key matching the size requirements of |type|.
-  required bytes private_key = 2;
+  optional bytes private_key = 2;
 
-  // The public key matching the size requirements of |type|.
-  required bytes public_key = 3;
+  // The public key as an X.509 SubjectPublicKeyInfo block.
+  optional bytes public_key_x509 = 3;
+
+  // The public key as an uncompressed EC point according to SEC 2.3.3.
+  optional bytes public_key = 4;
 }
 
 // Stores a vector of public/private key-pairs associated with an app id.
@@ -33,7 +36,7 @@ message KeyPair {
 // in case we need to force-cycle all keys, allowing the old keys to remain
 // valid for a period of time enabling the web app to update.
 //
-// Next tag: 2 
+// Next tag: 3
 message EncryptionData {
   // The app id to whom this encryption data belongs.
   required string app_id = 1;
