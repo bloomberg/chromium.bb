@@ -89,3 +89,22 @@
    fun:_ZN4base6Thread10ThreadMainEv
    fun:_ZN4base12_GLOBAL__N_110ThreadFuncEPv
 }
+{
+   b_555798_a
+   Memcheck:Leak
+   fun:malloc
+   fun:strdup
+   obj:*
+   ...
+   fun:*LoadNativeLibrary*
+   fun:*CdmAdapterTest*
+}
+{
+   b_555798_b
+   Memcheck:Leak
+   fun:_Znw*
+   obj:*
+   ...
+   fun:*LoadNativeLibrary*
+   fun:*CdmAdapterTest*
+}
