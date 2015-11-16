@@ -61,7 +61,6 @@
 #include "public/platform/WebURL.h"
 #include "public/web/WebAXObject.h"
 #include "public/web/WebDOMEvent.h"
-#include "public/web/WebDocumentType.h"
 #include "public/web/WebElement.h"
 #include "public/web/WebElementCollection.h"
 #include "public/web/WebFormElement.h"
@@ -209,11 +208,6 @@ WebElement WebDocument::getElementById(const WebString& id) const
 WebElement WebDocument::focusedElement() const
 {
     return WebElement(constUnwrap<Document>()->focusedElement());
-}
-
-WebDocumentType WebDocument::doctype() const
-{
-    return WebDocumentType(constUnwrap<Document>()->doctype());
 }
 
 void WebDocument::insertStyleSheet(const WebString& sourceCode)

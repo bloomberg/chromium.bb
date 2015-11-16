@@ -84,6 +84,7 @@ public:
     BLINK_EXPORT bool hasChildNodes() const;
     BLINK_EXPORT bool isLink() const;
     BLINK_EXPORT bool isDocumentNode() const;
+    BLINK_EXPORT bool isDocumentTypeNode() const;
     BLINK_EXPORT bool isCommentNode() const;
     BLINK_EXPORT bool isTextNode() const;
     BLINK_EXPORT bool isFocusable() const;

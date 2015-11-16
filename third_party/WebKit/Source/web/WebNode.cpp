@@ -213,6 +213,11 @@ bool WebNode::isDocumentNode() const
     return m_private->isDocumentNode();
 }
 
+bool WebNode::isDocumentTypeNode() const
+{
+    return m_private->nodeType() == Node::DOCUMENT_TYPE_NODE;
+}
+
 void WebNode::dispatchEvent(const WebDOMEvent& event)
 {
     if (!event.isNull())

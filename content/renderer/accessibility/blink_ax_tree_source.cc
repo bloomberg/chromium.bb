@@ -23,7 +23,6 @@
 #include "third_party/WebKit/public/web/WebAXEnums.h"
 #include "third_party/WebKit/public/web/WebAXObject.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
-#include "third_party/WebKit/public/web/WebDocumentType.h"
 #include "third_party/WebKit/public/web/WebElement.h"
 #include "third_party/WebKit/public/web/WebFormControlElement.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
@@ -37,7 +36,6 @@ using base::ASCIIToUTF16;
 using base::UTF16ToUTF8;
 using blink::WebAXObject;
 using blink::WebDocument;
-using blink::WebDocumentType;
 using blink::WebElement;
 using blink::WebFrame;
 using blink::WebLocalFrame;
@@ -143,10 +141,7 @@ AXContentTreeData BlinkAXTreeSource::GetTreeData() const {
   tree_data.mimetype = document.isXHTMLDocument() ? "text/xhtml" : "text/html";
   tree_data.loaded = root.isLoaded();
   tree_data.loading_progress = root.estimatedLoadingProgress();
-
-  const WebDocumentType& doctype = document.doctype();
-  if (!doctype.isNull())
-    tree_data.doctype = doctype.name().utf8();
+  tree_data.doctype = "html";
 
   WebAXObject anchor_object, focus_object;
   int anchor_offset, focus_offset;

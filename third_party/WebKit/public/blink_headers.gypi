@@ -372,7 +372,6 @@
       "web/WebDevToolsFrontendClient.h",
       "web/WebDeviceEmulationParams.h",
       "web/WebDocument.h",
-      "web/WebDocumentType.h",
       "web/WebDragOperation.h",
       "web/WebDragStatus.h",
       "web/WebDraggableRegion.h",

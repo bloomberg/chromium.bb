@@ -28,7 +28,6 @@
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
-#include "third_party/WebKit/public/web/WebDocumentType.h"
 #include "third_party/WebKit/public/web/WebElement.h"
 #include "third_party/WebKit/public/web/WebElementCollection.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
@@ -55,7 +54,7 @@ using blink::WebVector;
 namespace content {
 
 bool HasDocType(const WebDocument& doc) {
-  return !doc.doctype().isNull();
+  return doc.firstChild().isDocumentTypeNode();
 }
 
 // Helper function for checking whether input node is META tag. Return true

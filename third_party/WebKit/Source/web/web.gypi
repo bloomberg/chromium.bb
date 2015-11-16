@@ -133,7 +133,6 @@
       'WebDevToolsFrontendImpl.cpp',
       'WebDevToolsFrontendImpl.h',
       'WebDocument.cpp',
-      'WebDocumentType.cpp',
       'WebElement.cpp',
       'WebElementCollection.cpp',
       'WebEmbeddedWorkerImpl.cpp',
