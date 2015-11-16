@@ -11,7 +11,7 @@
 #include "base/tracked_objects.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/search_engines/template_url_service_factory_test_util.h"
-#include "chrome/test/base/profile_mock.h"
+#include "chrome/test/base/testing_profile.h"
 #include "components/search_engines/search_engine_data_type_controller.h"
 #include "components/sync_driver/data_type_controller_mock.h"
 #include "components/sync_driver/fake_generic_change_processor.h"

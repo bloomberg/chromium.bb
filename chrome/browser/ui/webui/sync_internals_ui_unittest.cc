@@ -12,7 +12,6 @@
 #include "base/values.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
-#include "chrome/test/base/profile_mock.h"
 #include "content/public/browser/web_ui_controller.h"
 #include "content/public/test/test_browser_thread.h"
 #include "sync/js/js_arg_list.h"
@@ -28,6 +27,8 @@ using base::ASCIIToUTF16;
 // SyncInternalsUI::HandleJSEvent/HandleJsReply prefix the given function with
 // "chrome.sync." and postfix it with ".fire" or ".handleReply".
 // http://crbug.com/110517
+// Also, instead of using ProfileMock, call SetTestingFactoryAndUse on the
+// PasswordStoreFactory to set up a particular store during testing.
 /*
 
 namespace {

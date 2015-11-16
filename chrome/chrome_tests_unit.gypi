@@ -1810,8 +1810,6 @@
         'test/base/find_in_page_observer.h',
         'test/base/history_index_restore_observer.cc',
         'test/base/history_index_restore_observer.h',
-        'test/base/profile_mock.cc',
-        'test/base/profile_mock.h',
         'test/base/scoped_browser_locale.cc',
         'test/base/scoped_browser_locale.h',
         'test/base/scoped_bundle_swizzler_mac.h',
