@@ -7,6 +7,8 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "gpu/config/gpu_driver_bug_workaround_type.h"
+#include "gpu/config/gpu_switches.h"
+#include "gpu/config/gpu_util.h"
 
 namespace gpu {
 
@@ -58,6 +60,15 @@ void GpuDriverBugList::AppendWorkaroundsFromCommandLine(
     std::set<int>* workarounds,
     const base::CommandLine& command_line) {
   DCHECK(workarounds);
+
+  if (command_line.HasSwitch(switches::kGpuDriverBugWorkarounds)) {
+    std::string cmd_workarounds_str =
+        command_line.GetSwitchValueASCII(switches::kGpuDriverBugWorkarounds);
+    std::set<int> cmd_workarounds;
+    gpu::StringToFeatureSet(cmd_workarounds_str, &cmd_workarounds);
+    workarounds->insert(cmd_workarounds.begin(), cmd_workarounds.end());
+  }
+
   for (int i = 0; i < NUMBER_OF_GPU_DRIVER_BUG_WORKAROUND_TYPES; i++) {
     if (command_line.HasSwitch(kFeatureList[i].name)) {
       // Check for disabling workaround flag.
