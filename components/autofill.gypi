@@ -43,9 +43,9 @@
         'autofill/core/common/form_field_data_predictions.h',
         'autofill/core/common/password_form.cc',
         'autofill/core/common/password_form.h',
+        'autofill/core/common/password_form_field_prediction_map.h',
         'autofill/core/common/password_form_fill_data.cc',
         'autofill/core/common/password_form_fill_data.h',
-        'autofill/core/common/password_form_field_prediction_map.h',
         'autofill/core/common/password_generation_util.cc',
         'autofill/core/common/password_generation_util.h',
         'autofill/core/common/save_password_progress_logger.cc',
@@ -230,6 +230,17 @@
 
       # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
       'msvs_disabled_warnings': [4267, ],
+
+      'conditions': [
+        ['OS=="ios"', {
+          'sources': [
+            'autofill/core/browser/autofill_field_trial_ios.cc',
+            'autofill/core/browser/autofill_field_trial_ios.h',
+            'autofill/core/browser/keyboard_accessory_metrics_logger.h',
+            'autofill/core/browser/keyboard_accessory_metrics_logger.mm',
+          ],
+        }]
+      ],
     },
 
     {
@@ -437,6 +448,7 @@
     ['OS == "ios"', {
       'targets': [
         {
+          # GN version: //components/autofill/ios/browser
           'target_name': 'autofill_ios_browser',
           'type': 'static_library',
           'include_dirs': [
@@ -456,21 +468,18 @@
             'autofill/ios/browser/autofill_driver_ios_bridge.h',
             'autofill/ios/browser/credit_card_util.h',
             'autofill/ios/browser/credit_card_util.mm',
-            'autofill/ios/browser/autofill_field_trial_ios.cc',
-            'autofill/ios/browser/autofill_field_trial_ios.h',
             'autofill/ios/browser/form_suggestion.h',
             'autofill/ios/browser/form_suggestion.mm',
             'autofill/ios/browser/js_autofill_manager.h',
             'autofill/ios/browser/js_autofill_manager.mm',
             'autofill/ios/browser/js_suggestion_manager.h',
             'autofill/ios/browser/js_suggestion_manager.mm',
-            'autofill/ios/browser/keyboard_accessory_metrics_logger.h',
-            'autofill/ios/browser/keyboard_accessory_metrics_logger.mm',
             'autofill/ios/browser/personal_data_manager_observer_bridge.h',
             'autofill/ios/browser/personal_data_manager_observer_bridge.mm',
           ],
         },
         {
+          # GN version: //components/autofill/ios/browser:injected_js
           'target_name': 'autofill_ios_injected_js',
           'type': 'none',
           'sources': [

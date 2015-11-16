@@ -18,6 +18,8 @@ group("all_components") {
   visibility = [ "//:*" ]  # Only for the root targets to bring in.
 
   deps = [
+    "//components/autofill/core/browser",
+    "//components/autofill/core/common",
     "//components/bookmarks/browser",
     "//components/bookmarks/common",
     "//components/bookmarks/managed",
@@ -214,6 +216,8 @@ group("all_components") {
         "//components/wifi_sync",
       ]
     }
+  } else {
+    deps += [ "//components/autofill/ios/browser" ]
   }
 
   if (toolkit_views) {
@@ -312,6 +316,8 @@ test("components_unittests") {
   deps = [
     "//base",
     "//base/test:test_support",
+    "//components/autofill/core/browser:unit_tests",
+    "//components/autofill/core/common:unit_tests",
     "//components/bookmarks/browser:unit_tests",
     "//components/bookmarks/managed:unit_tests",
     "//components/compression:unit_tests",
@@ -356,8 +362,6 @@ test("components_unittests") {
       "//components/auto_login_parser:unit_tests",
       "//components/autofill/content/browser:unit_tests",
       "//components/autofill/content/renderer:unit_tests",
-      "//components/autofill/core/browser:unit_tests",
-      "//components/autofill/core/common:unit_tests",
       "//components/bubble:unit_tests",
       "//components/captive_portal:unit_tests",
       "//components/cloud_devices/common:unit_tests",

@@ -48,6 +48,7 @@ source_set("browser") {
     "log_router.h",
     "login_database.cc",
     "login_database.h",
+    "login_database_ios.cc",
     "login_database_mac.cc",
     "login_database_posix.cc",
     "login_database_win.cc",
@@ -125,9 +126,7 @@ source_set("browser") {
     "//url",
   ]
 
-  if (is_mac) {
-    # TODO(blundell): Provide the iOS login DB implementation and then
-    # also exclude the POSIX one from iOS. http://crbug.com/341429
+  if (is_mac || is_ios) {
     sources -= [ "login_database_posix.cc" ]
   }
 

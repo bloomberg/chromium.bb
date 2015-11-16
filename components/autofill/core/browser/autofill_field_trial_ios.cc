@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/autofill/ios/browser/autofill_field_trial_ios.h"
+#include "components/autofill/core/browser/autofill_field_trial_ios.h"
 
 #include "base/command_line.h"
 #include "base/metrics/field_trial.h"

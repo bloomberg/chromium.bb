@@ -59,8 +59,8 @@
 #include "url/gurl.h"
 
 #if defined(OS_IOS)
-#include "components/autofill/ios/browser/autofill_field_trial_ios.h"
-#include "components/autofill/ios/browser/keyboard_accessory_metrics_logger.h"
+#include "components/autofill/core/browser/autofill_field_trial_ios.h"
+#include "components/autofill/core/browser/keyboard_accessory_metrics_logger.h"
 #endif
 
 namespace autofill {

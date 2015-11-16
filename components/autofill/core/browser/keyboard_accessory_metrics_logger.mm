@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "components/autofill/ios/browser/keyboard_accessory_metrics_logger.h"
+#import "components/autofill/core/browser/keyboard_accessory_metrics_logger.h"
 
 #import <UIKit/UIKit.h>
 
