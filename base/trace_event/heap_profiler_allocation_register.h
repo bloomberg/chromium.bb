@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_TRACE_EVENT_MEMORY_PROFILER_ALLOCATION_REGISTER_H_
-#define BASE_TRACE_EVENT_MEMORY_PROFILER_ALLOCATION_REGISTER_H_
+#ifndef BASE_TRACE_EVENT_HEAP_PROFILER_ALLOCATION_REGISTER_H_
+#define BASE_TRACE_EVENT_HEAP_PROFILER_ALLOCATION_REGISTER_H_
 
 #include <stdint.h>
 
 #include "base/logging.h"
-#include "base/trace_event/memory_profiler_allocation_context.h"
+#include "base/macros.h"
+#include "base/trace_event/heap_profiler_allocation_context.h"
 
 namespace base {
 namespace trace_event {
@@ -116,9 +117,9 @@ class BASE_EXPORT AllocationRegister {
   // Returns a value in the range [0, kNumBuckets - 1] (inclusive).
   static uint32_t Hash(void* address);
 
-  // Allocates a region of virtual address space of |min_size| rounded up to the
-  // system page size. The memory is zeroed by the system. A guard page is added
-  // after the end.
+  // Allocates a region of virtual address space of |size| rounded up to the
+  // system page size. The memory is zeroed by the system. A guard page is
+  // added after the end.
   static void* AllocateVirtualMemory(size_t size);
 
   // Frees a region of virtual address space allocated by a call to
@@ -142,7 +143,7 @@ class BASE_EXPORT AllocationRegister {
   Cell* const cells_;
 
   // The array of indices into |cells_|. |buckets_[Hash(address)]| will contain
-  // the index of the head of the linked list for |Hash(key)|. A value of 0
+  // the index of the head of the linked list for |Hash(address)|. A value of 0
   // indicates an empty list. This array is backed by mmapped memory.
   CellIndex* const buckets_;
 
@@ -161,4 +162,4 @@ class BASE_EXPORT AllocationRegister {
 }  // namespace trace_event
 }  // namespace base
 
-#endif  // BASE_TRACE_EVENT_MEMORY_PROFILER_ALLOCATION_REGISTER_H_
+#endif  // BASE_TRACE_EVENT_HEAP_PROFILER_ALLOCATION_REGISTER_H_

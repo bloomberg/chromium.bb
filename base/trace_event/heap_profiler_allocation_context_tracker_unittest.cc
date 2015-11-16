@@ -3,7 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/memory/ref_counted.h"
-#include "base/trace_event/memory_profiler_allocation_context.h"
+#include "base/trace_event/heap_profiler_allocation_context.h"
+#include "base/trace_event/heap_profiler_allocation_context_tracker.h"
 #include "base/trace_event/trace_event.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -17,12 +18,6 @@ const char kDonut[] = "Donut";
 const char kEclair[] = "Eclair";
 const char kFroyo[] = "Froyo";
 const char kGingerbread[] = "Gingerbread";
-
-const char kBrowserMain[] = "BrowserMain";
-const char kRendererMain[] = "RendererMain";
-const char kCreateWidget[] = "CreateWidget";
-const char kInitialize[] = "Initialize";
-const char kMalloc[] = "malloc";
 
 // Returns a pointer past the end of the fixed-size array |array| of |T| of
 // length |N|, identical to C++11 |std::end|.
@@ -60,7 +55,7 @@ void AssertBacktraceEmpty() {
     ASSERT_EQ(nullptr, frame);
 }
 
-class AllocationContextTest : public testing::Test {
+class AllocationContextTrackerTest : public testing::Test {
  public:
   void SetUp() override {
     TraceConfig config("");
@@ -74,12 +69,10 @@ class AllocationContextTest : public testing::Test {
   }
 };
 
-class StackFrameDeduplicatorTest : public testing::Test {};
-
 // Check that |TRACE_EVENT| macros push and pop to the pseudo stack correctly.
 // Also check that |GetContextSnapshot| fills the backtrace with null pointers
 // when the pseudo stack height is less than the capacity.
-TEST_F(AllocationContextTest, PseudoStackScopedTrace) {
+TEST_F(AllocationContextTrackerTest, PseudoStackScopedTrace) {
   StackFrame c = kCupcake;
   StackFrame d = kDonut;
   StackFrame e = kEclair;
@@ -122,7 +115,7 @@ TEST_F(AllocationContextTest, PseudoStackScopedTrace) {
 
 // Same as |PseudoStackScopedTrace|, but now test the |TRACE_EVENT_BEGIN| and
 // |TRACE_EVENT_END| macros.
-TEST_F(AllocationContextTest, PseudoStackBeginEndTrace) {
+TEST_F(AllocationContextTrackerTest, PseudoStackBeginEndTrace) {
   StackFrame c = kCupcake;
   StackFrame d = kDonut;
   StackFrame e = kEclair;
@@ -160,7 +153,7 @@ TEST_F(AllocationContextTest, PseudoStackBeginEndTrace) {
   AssertBacktraceEmpty();
 }
 
-TEST_F(AllocationContextTest, PseudoStackMixedTrace) {
+TEST_F(AllocationContextTrackerTest, PseudoStackMixedTrace) {
   StackFrame c = kCupcake;
   StackFrame d = kDonut;
   StackFrame e = kEclair;
@@ -198,7 +191,7 @@ TEST_F(AllocationContextTest, PseudoStackMixedTrace) {
   AssertBacktraceEmpty();
 }
 
-TEST_F(AllocationContextTest, BacktraceTakesTop) {
+TEST_F(AllocationContextTrackerTest, BacktraceTakesTop) {
   // Push 12 events onto the pseudo stack.
   TRACE_EVENT0("Testing", kCupcake);
   TRACE_EVENT0("Testing", kCupcake);
@@ -229,103 +222,6 @@ TEST_F(AllocationContextTest, BacktraceTakesTop) {
     ASSERT_EQ(kCupcake, ctx.backtrace.frames[0]);
     ASSERT_EQ(kFroyo, ctx.backtrace.frames[11]);
   }
-}
-
-TEST_F(StackFrameDeduplicatorTest, SingleBacktrace) {
-  Backtrace bt = {
-      {kBrowserMain, kCreateWidget, kMalloc, 0, 0, 0, 0, 0, 0, 0, 0, 0}};
-
-  // The call tree should look like this (index in brackets).
-  //
-  // BrowserMain [0]
-  // + CreateWidget [1]
-  //   + malloc [2]
-
-  scoped_refptr<StackFrameDeduplicator> dedup = new StackFrameDeduplicator;
-  ASSERT_EQ(2, dedup->Insert(bt));
-
-  auto iter = dedup->begin();
-  ASSERT_EQ(kBrowserMain, (iter + 0)->frame);
-  ASSERT_EQ(-1, (iter + 0)->parent_frame_index);
-
-  ASSERT_EQ(kCreateWidget, (iter + 1)->frame);
-  ASSERT_EQ(0, (iter + 1)->parent_frame_index);
-
-  ASSERT_EQ(kMalloc, (iter + 2)->frame);
-  ASSERT_EQ(1, (iter + 2)->parent_frame_index);
-
-  ASSERT_EQ(iter + 3, dedup->end());
-}
-
-// Test that there can be different call trees (there can be multiple bottom
-// frames). Also verify that frames with the same name but a different caller
-// are represented as distinct nodes.
-TEST_F(StackFrameDeduplicatorTest, MultipleRoots) {
-  Backtrace bt0 = {{kBrowserMain, kCreateWidget, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}};
-  Backtrace bt1 = {{kRendererMain, kCreateWidget, 0, 0, 0, 0, 0, 0, 0, 0, 0}};
-
-  // The call tree should look like this (index in brackets).
-  //
-  // BrowserMain [0]
-  // + CreateWidget [1]
-  // RendererMain [2]
-  // + CreateWidget [3]
-  //
-  // Note that there will be two instances of Donut, with different parents.
-
-  scoped_refptr<StackFrameDeduplicator> dedup = new StackFrameDeduplicator;
-  ASSERT_EQ(1, dedup->Insert(bt0));
-  ASSERT_EQ(3, dedup->Insert(bt1));
-
-  auto iter = dedup->begin();
-  ASSERT_EQ(kBrowserMain, (iter + 0)->frame);
-  ASSERT_EQ(-1, (iter + 0)->parent_frame_index);
-
-  ASSERT_EQ(kCreateWidget, (iter + 1)->frame);
-  ASSERT_EQ(0, (iter + 1)->parent_frame_index);
-
-  ASSERT_EQ(kRendererMain, (iter + 2)->frame);
-  ASSERT_EQ(-1, (iter + 2)->parent_frame_index);
-
-  ASSERT_EQ(kCreateWidget, (iter + 3)->frame);
-  ASSERT_EQ(2, (iter + 3)->parent_frame_index);
-
-  ASSERT_EQ(iter + 4, dedup->end());
-}
-
-TEST_F(StackFrameDeduplicatorTest, Deduplication) {
-  Backtrace bt0 = {{kBrowserMain, kCreateWidget, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}};
-  Backtrace bt1 = {{kBrowserMain, kInitialize, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}};
-
-  // The call tree should look like this (index in brackets).
-  //
-  // BrowserMain [0]
-  // + CreateWidget [1]
-  // + Initialize [2]
-  //
-  // Note that Cupcake will be re-used.
-
-  scoped_refptr<StackFrameDeduplicator> dedup = new StackFrameDeduplicator;
-  ASSERT_EQ(1, dedup->Insert(bt0));
-  ASSERT_EQ(2, dedup->Insert(bt1));
-
-  auto iter = dedup->begin();
-  ASSERT_EQ(kBrowserMain, (iter + 0)->frame);
-  ASSERT_EQ(-1, (iter + 0)->parent_frame_index);
-
-  ASSERT_EQ(kCreateWidget, (iter + 1)->frame);
-  ASSERT_EQ(0, (iter + 1)->parent_frame_index);
-
-  ASSERT_EQ(kInitialize, (iter + 2)->frame);
-  ASSERT_EQ(0, (iter + 2)->parent_frame_index);
-
-  ASSERT_EQ(iter + 3, dedup->end());
-
-  // Inserting the same backtrace again should return the index of the existing
-  // node.
-  ASSERT_EQ(1, dedup->Insert(bt0));
-  ASSERT_EQ(2, dedup->Insert(bt1));
-  ASSERT_EQ(dedup->begin() + 3, dedup->end());
 }
 
 }  // namespace trace_event

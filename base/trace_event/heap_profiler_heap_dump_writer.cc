@@ -2,14 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/trace_event/memory_profiler_heap_dump_writer.h"
+#include "base/trace_event/heap_profiler_heap_dump_writer.h"
 
 #include <algorithm>
 #include <iterator>
+#include <utility>
+#include <vector>
 
 #include "base/format_macros.h"
 #include "base/strings/stringprintf.h"
-#include "base/trace_event/memory_profiler_allocation_register.h"
+#include "base/trace_event/heap_profiler_stack_frame_deduplicator.h"
 #include "base/trace_event/trace_event_argument.h"
 
 namespace base {
@@ -25,8 +27,10 @@ bool PairSizeGt(const std::pair<T, size_t>& lhs,
   return lhs.second > rhs.second;
 }
 
+// Converts a |hash_map<T, size_t>| into a vector of (T, size_t) pairs that is
+// ordered from high |size_t| to low |size_t|.
 template <typename T>
-std::vector<std::pair<T, size_t>> SortDescending(
+std::vector<std::pair<T, size_t>> SortBySizeDescending(
     const hash_map<T, size_t>& grouped) {
   std::vector<std::pair<T, size_t>> sorted;
   std::copy(grouped.begin(), grouped.end(), std::back_inserter(sorted));
@@ -60,9 +64,8 @@ scoped_refptr<TracedValue> HeapDumpWriter::WriteHeapDump() {
     bytes_by_type[context_size.first.type_id] += context_size.second;
   }
 
-  // Sort the backtraces and type IDs by size.
-  auto sorted_bytes_by_backtrace = SortDescending(bytes_by_backtrace);
-  auto sorted_bytes_by_type = SortDescending(bytes_by_type);
+  auto sorted_bytes_by_backtrace = SortBySizeDescending(bytes_by_backtrace);
+  auto sorted_bytes_by_type = SortBySizeDescending(bytes_by_type);
 
   traced_value_->BeginArray("entries");
 

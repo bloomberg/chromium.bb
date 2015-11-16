@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/trace_event/memory_profiler_allocation_register.h"
+#include "base/trace_event/heap_profiler_allocation_register.h"
 
 #include "base/process/process_metrics.h"
+#include "base/trace_event/heap_profiler_allocation_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {

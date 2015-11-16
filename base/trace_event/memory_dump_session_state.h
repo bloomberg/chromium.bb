@@ -5,16 +5,12 @@
 #ifndef BASE_TRACE_EVENT_MEMORY_DUMP_SESSION_STATE_H_
 #define BASE_TRACE_EVENT_MEMORY_DUMP_SESSION_STATE_H_
 
-#include <string>
-
 #include "base/base_export.h"
 #include "base/memory/ref_counted.h"
-#include "base/trace_event/memory_profiler_allocation_context.h"
+#include "base/trace_event/heap_profiler_stack_frame_deduplicator.h"
 
 namespace base {
 namespace trace_event {
-
-class StackFrameDeduplicator;
 
 // Container for state variables that should be shared across all the memory
 // dumps in a tracing session.

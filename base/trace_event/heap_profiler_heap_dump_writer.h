@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_TRACE_EVENT_MEMORY_PROFILER_HEAP_DUMP_WRITER_H_
-#define BASE_TRACE_EVENT_MEMORY_PROFILER_HEAP_DUMP_WRITER_H_
+#ifndef BASE_TRACE_EVENT_HEAP_PROFILER_HEAP_DUMP_WRITER_H_
+#define BASE_TRACE_EVENT_HEAP_PROFILER_HEAP_DUMP_WRITER_H_
 
 #include <string>
 
@@ -11,13 +11,13 @@
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/trace_event/memory_profiler_allocation_context.h"
+#include "base/trace_event/heap_profiler_allocation_context.h"
 
 namespace base {
 namespace trace_event {
 
-class AllocationRegister;
 class TracedValue;
+class StackFrameDeduplicator;
 
 // Helper class to dump a snapshot of an |AllocationRegister| or other heap
 // bookkeeping structure into a |TracedValue|. This class is intended to be
@@ -72,4 +72,4 @@ class BASE_EXPORT HeapDumpWriter {
 }  // namespace trace_event
 }  // namespace base
 
-#endif  // BASE_TRACE_EVENT_MEMORY_PROFILER_HEAP_DUMP_WRITER_H_
+#endif  // BASE_TRACE_EVENT_HEAP_PROFILER_HEAP_DUMP_WRITER_H_

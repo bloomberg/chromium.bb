@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/trace_event/memory_profiler_allocation_register.h"
+#include "base/trace_event/heap_profiler_allocation_register.h"
 
 #include "base/trace_event/trace_event_memory_overhead.h"
 
@@ -113,7 +113,7 @@ AllocationRegister::CellIndex* AllocationRegister::Lookup(void* address) {
   // The list head is in |buckets_| at the hash offset.
   CellIndex* idx_ptr = &buckets_[Hash(address)];
 
-  // Chase down the list until the cell that holds |key| is found,
+  // Chase down the list until the cell that holds |address| is found,
   // or until the list ends.
   while (*idx_ptr != 0 && cells_[*idx_ptr].allocation.address != address)
     idx_ptr = &cells_[*idx_ptr].next;

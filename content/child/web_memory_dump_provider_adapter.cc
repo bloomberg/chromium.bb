@@ -6,8 +6,10 @@
 
 #include "base/lazy_instance.h"
 #include "base/synchronization/lock.h"
-#include "base/trace_event/memory_profiler_allocation_register.h"
-#include "base/trace_event/memory_profiler_heap_dump_writer.h"
+#include "base/trace_event/heap_profiler_allocation_context.h"
+#include "base/trace_event/heap_profiler_allocation_context_tracker.h"
+#include "base/trace_event/heap_profiler_allocation_register.h"
+#include "base/trace_event/heap_profiler_heap_dump_writer.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "base/trace_event/trace_event_memory_overhead.h"
