@@ -300,6 +300,8 @@ void HTMLAnchorElement::setRel(const AtomicString& value)
     // FIXME: Add link relations as they are implemented
     if (newLinkRelations.contains("noreferrer"))
         m_linkRelations |= RelationNoReferrer;
+    if (newLinkRelations.contains("noopener"))
+        m_linkRelations |= RelationNoOpener;
 }
 
 const AtomicString& HTMLAnchorElement::name() const
@@ -371,6 +373,8 @@ void HTMLAnchorElement::handleClick(Event* event)
             frameRequest.setShouldSendReferrer(NeverSendReferrer);
             frameRequest.setShouldSetOpener(NeverSetOpener);
         }
+        if (hasRel(RelationNoOpener))
+            frameRequest.setShouldSetOpener(NeverSetOpener);
         frame->loader().load(frameRequest);
     }
 }
