@@ -207,6 +207,7 @@ HTMLDocumentParser::~HTMLDocumentParser()
 DEFINE_TRACE(HTMLDocumentParser)
 {
     visitor->trace(m_treeBuilder);
+    visitor->trace(m_parserScheduler);
     visitor->trace(m_xssAuditorDelegate);
     visitor->trace(m_scriptRunner);
     visitor->trace(m_preloader);

@@ -70,12 +70,13 @@ private:
     size_t m_processedElementTokens;
 };
 
-class HTMLParserScheduler {
-    WTF_MAKE_NONCOPYABLE(HTMLParserScheduler); USING_FAST_MALLOC(HTMLParserScheduler);
+class HTMLParserScheduler final : public NoBaseWillBeGarbageCollectedFinalized<HTMLParserScheduler> {
+    WTF_MAKE_NONCOPYABLE(HTMLParserScheduler);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(HTMLParserScheduler);
 public:
-    static PassOwnPtr<HTMLParserScheduler> create(HTMLDocumentParser* parser, WebTaskRunner* loadingTaskRunner)
+    static PassOwnPtrWillBeRawPtr<HTMLParserScheduler> create(HTMLDocumentParser* parser, WebTaskRunner* loadingTaskRunner)
     {
-        return adoptPtr(new HTMLParserScheduler(parser, loadingTaskRunner));
+        return adoptPtrWillBeNoop(new HTMLParserScheduler(parser, loadingTaskRunner));
     }
     ~HTMLParserScheduler();
 
@@ -98,13 +99,15 @@ public:
 
     void detach(); // Clear active tasks if any.
 
+    DECLARE_TRACE();
+
 private:
     HTMLParserScheduler(HTMLDocumentParser*, WebTaskRunner*);
 
     bool shouldYield(const SpeculationsPumpSession&, bool startingScript) const;
     void continueParsing();
 
-    HTMLDocumentParser* m_parser;
+    RawPtrWillBeMember<HTMLDocumentParser> m_parser;
     OwnPtr<WebTaskRunner> m_loadingTaskRunner;
 
     OwnPtr<CancellableTaskFactory> m_cancellableContinueParse;
