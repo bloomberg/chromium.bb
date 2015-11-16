@@ -394,7 +394,6 @@ class SmoothnessToughImageDecodeCases(_Smoothness):
   def Name(cls):
     return 'smoothness.tough_image_decode_cases'
 
-@benchmark.Disabled('android')  # http://crbug.com/513699
 class SmoothnessImageDecodingCases(_Smoothness):
   """Measures decoding statistics for jpeg images.
   """
