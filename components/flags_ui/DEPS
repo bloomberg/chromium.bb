@@ -1,0 +1,4 @@
+include_rules = [
+  "+grit/components_strings.h",
+  "+ui/base",
+]

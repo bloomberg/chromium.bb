@@ -11,8 +11,17 @@
       'include_dirs': [
         '..',
       ],
+      'dependencies': [
+        '../base/base.gyp:base',
+        '../base/base.gyp:base_prefs',
+        '../components/components_strings.gyp:components_strings',
+        '../ui/base/ui_base.gyp:ui_base',
+      ],
       'sources': [
         # Note: sources list duplicated in GN build.
+        'flags_ui/feature_entry.cc',
+        'flags_ui/feature_entry.h',
+        'flags_ui/feature_entry_macros.h',
         'flags_ui/flags_ui_constants.cc',
         'flags_ui/flags_ui_constants.h',
         'flags_ui/flags_ui_pref_names.cc',

@@ -4,6 +4,9 @@
 
 source_set("flags_ui") {
   sources = [
+    "feature_entry.cc",
+    "feature_entry.h",
+    "feature_entry_macros.h",
     "flags_storage.h",
     "flags_ui_constants.cc",
     "flags_ui_constants.h",
@@ -16,5 +19,7 @@ source_set("flags_ui") {
   deps = [
     "//base",
     "//base:prefs",
+    "//components/strings",
+    "//ui/base",
   ]
 }

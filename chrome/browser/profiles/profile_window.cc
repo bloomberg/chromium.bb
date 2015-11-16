@@ -467,12 +467,12 @@ void EnableNewProfileManagementPreview(Profile* profile) {
 #else
   // TODO(rogerta): instead of setting experiment flags and command line
   // args, we should set a profile preference.
-  const about_flags::FeatureEntry entry = {
+  const flags_ui::FeatureEntry entry = {
       kNewProfileManagementExperimentInternalName,
       0,  // string id for title of experiment
       0,  // string id for description of experiment
       0,  // supported platforms
-      about_flags::FeatureEntry::ENABLE_DISABLE_VALUE,
+      flags_ui::FeatureEntry::ENABLE_DISABLE_VALUE,
       switches::kEnableNewProfileManagement,
       "",  // not used with ENABLE_DISABLE_VALUE type
       switches::kDisableNewProfileManagement,

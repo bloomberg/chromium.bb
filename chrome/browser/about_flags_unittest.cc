@@ -26,6 +26,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/libxml/chromium/libxml_utils.h"
 
+using flags_ui::FeatureEntry;
+
 namespace about_flags {
 
 namespace {
@@ -528,7 +530,8 @@ TEST_F(AboutFlagsTest, RemoveFlagSwitches_Features) {
     testing::ClearState();
 
     const std::string entry_name = base::StringPrintf(
-        "%s%s%d", kFlags7, testing::kMultiSeparator, cases[i].enabled_choice);
+        "%s%s%d", kFlags7, flags_ui::testing::kMultiSeparator,
+        cases[i].enabled_choice);
     SetFeatureEntryEnabled(&flags_storage_, entry_name, true);
 
     ConvertFlagsToSwitches(&flags_storage_, &command_line, kAddSentinels);
@@ -813,7 +816,8 @@ TEST_F(AboutFlagsTest, NoSeparators) {
   const FeatureEntry* entries = testing::GetFeatureEntries(&count);
   for (size_t i = 0; i < count; ++i) {
     std::string name = entries[i].internal_name;
-    EXPECT_EQ(std::string::npos, name.find(testing::kMultiSeparator)) << i;
+    EXPECT_EQ(std::string::npos, name.find(flags_ui::testing::kMultiSeparator))
+        << i;
   }
 }
 

@@ -31,6 +31,7 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/dom_distiller/core/dom_distiller_switches.h"
 #include "components/enhanced_bookmarks/enhanced_bookmark_switches.h"
+#include "components/flags_ui/feature_entry_macros.h"
 #include "components/flags_ui/flags_storage.h"
 #include "components/metrics/metrics_hashes.h"
 #include "components/nacl/common/nacl_switches.h"
@@ -45,6 +46,7 @@
 #include "components/version_info/version_info.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/common/content_switches.h"
+#include "grit/components_strings.h"
 #include "media/base/media_switches.h"
 #include "media/midi/midi_switches.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -86,33 +88,9 @@
 #include "ui/ozone/public/ozone_switches.h"
 #endif
 
-namespace about_flags {
+using flags_ui::FeatureEntry;
 
-// Macros to simplify specifying the type. Please refer to the comments on
-// FeatureEntry::Type in the header file, which explain the different entry
-// types and when they should be used.
-#define SINGLE_VALUE_TYPE_AND_VALUE(command_line_switch, switch_value)    \
-  FeatureEntry::SINGLE_VALUE, command_line_switch, switch_value, nullptr, \
-      nullptr, nullptr, nullptr, 0
-#define SINGLE_VALUE_TYPE(command_line_switch) \
-    SINGLE_VALUE_TYPE_AND_VALUE(command_line_switch, "")
-#define SINGLE_DISABLE_VALUE_TYPE_AND_VALUE(command_line_switch, switch_value) \
-  FeatureEntry::SINGLE_DISABLE_VALUE, command_line_switch, switch_value,       \
-      nullptr, nullptr, nullptr, nullptr, 0
-#define SINGLE_DISABLE_VALUE_TYPE(command_line_switch) \
-    SINGLE_DISABLE_VALUE_TYPE_AND_VALUE(command_line_switch, "")
-#define ENABLE_DISABLE_VALUE_TYPE_AND_VALUE(enable_switch, enable_value,   \
-                                            disable_switch, disable_value) \
-  FeatureEntry::ENABLE_DISABLE_VALUE, enable_switch, enable_value,         \
-      disable_switch, disable_value, nullptr, nullptr, 3
-#define ENABLE_DISABLE_VALUE_TYPE(enable_switch, disable_switch) \
-    ENABLE_DISABLE_VALUE_TYPE_AND_VALUE(enable_switch, "", disable_switch, "")
-#define MULTI_VALUE_TYPE(choices)                                         \
-  FeatureEntry::MULTI_VALUE, nullptr, nullptr, nullptr, nullptr, nullptr, \
-      choices, arraysize(choices)
-#define FEATURE_VALUE_TYPE(feature)                                \
-  FeatureEntry::FEATURE_VALUE, nullptr, nullptr, nullptr, nullptr, \
-      &feature, nullptr, 3
+namespace about_flags {
 
 namespace {
 
@@ -2452,35 +2430,6 @@ base::Value* CreateChoiceData(
 
 }  // namespace
 
-std::string FeatureEntry::NameForChoice(int index) const {
-  DCHECK(type == FeatureEntry::MULTI_VALUE ||
-         type == FeatureEntry::ENABLE_DISABLE_VALUE ||
-         type == FeatureEntry::FEATURE_VALUE);
-  DCHECK_LT(index, num_choices);
-  return std::string(internal_name) + testing::kMultiSeparator +
-         base::IntToString(index);
-}
-
-base::string16 FeatureEntry::DescriptionForChoice(int index) const {
-  DCHECK(type == FeatureEntry::MULTI_VALUE ||
-         type == FeatureEntry::ENABLE_DISABLE_VALUE ||
-         type == FeatureEntry::FEATURE_VALUE);
-  DCHECK_LT(index, num_choices);
-  int description_id;
-  if (type == FeatureEntry::ENABLE_DISABLE_VALUE ||
-      type == FeatureEntry::FEATURE_VALUE) {
-    const int kEnableDisableDescriptionIds[] = {
-      IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT,
-      IDS_GENERIC_EXPERIMENT_CHOICE_ENABLED,
-      IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED,
-    };
-    description_id = kEnableDisableDescriptionIds[index];
-  } else {
-    description_id = choices[index].description_id;
-  }
-  return l10n_util::GetStringUTF16(description_id);
-}
-
 void ConvertFlagsToSwitches(flags_ui::FlagsStorage* flags_storage,
                             base::CommandLine* command_line,
                             SentinelsMode sentinels) {
@@ -2729,7 +2678,7 @@ bool FlagsState::IsRestartNeededToCommitChanges() {
 void FlagsState::SetFeatureEntryEnabled(flags_ui::FlagsStorage* flags_storage,
                                         const std::string& internal_name,
                                         bool enable) {
-  size_t at_index = internal_name.find(testing::kMultiSeparator);
+  size_t at_index = internal_name.find(flags_ui::testing::kMultiSeparator);
   if (at_index != std::string::npos) {
     DCHECK(enable);
     // We're being asked to enable a multi-choice entry. Disable the
@@ -2955,10 +2904,6 @@ void FlagsState::MergeFeatureCommandLineSwitch(
 }  // namespace
 
 namespace testing {
-
-// WARNING: '@' is also used in the html file. If you update this constant you
-// also need to update the html file.
-const char kMultiSeparator[] = "@";
 
 const base::HistogramBase::Sample kBadSwitchFormatHistogramId = 0;
 
