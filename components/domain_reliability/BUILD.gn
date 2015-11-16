@@ -75,7 +75,6 @@ component("domain_reliability") {
     "//base",
     "//components/data_use_measurement/core",
     "//components/keyed_service/core",
-    "//content/public/browser",
     "//net",
     "//url",
   ]
