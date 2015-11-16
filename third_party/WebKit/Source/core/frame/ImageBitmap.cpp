@@ -152,6 +152,30 @@ PassRefPtr<SkImage> ImageBitmap::cropImage(PassRefPtr<SkImage> image, const IntR
     return adoptRef(surface->newImageSnapshot());
 }
 
+unsigned long ImageBitmap::width() const
+{
+    if (!m_image)
+        return 0;
+    ASSERT(m_image->width() > 0);
+    return m_image->width();
+}
+
+unsigned long ImageBitmap::height() const
+{
+    if (!m_image)
+        return 0;
+    ASSERT(m_image->height() > 0);
+    return m_image->height();
+}
+
+IntSize ImageBitmap::size() const
+{
+    if (!m_image)
+        return IntSize();
+    ASSERT(m_image->width() > 0 && m_image->height() > 0);
+    return IntSize(m_image->width(), m_image->height());
+}
+
 void ImageBitmap::notifyImageSourceChanged()
 {
 }

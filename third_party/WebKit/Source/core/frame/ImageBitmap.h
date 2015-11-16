@@ -35,9 +35,9 @@ public:
     static PassRefPtrWillBeRawPtr<ImageBitmap> create(Image*, const IntRect&);
 
     SkImage* skImage() const { return (m_image) ? m_image.get() : nullptr; }
-    int width() const { return (m_image) ? m_image->width(): 0; }
-    int height() const { return (m_image) ? m_image->height(): 0; }
-    IntSize size() const { return (m_image) ? IntSize(m_image->width(), m_image->height()) : IntSize(); }
+    unsigned long width() const;
+    unsigned long height() const;
+    IntSize size() const;
 
     ~ImageBitmap() override;
 

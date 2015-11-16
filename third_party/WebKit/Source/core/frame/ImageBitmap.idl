@@ -8,7 +8,6 @@
     // TODO(philipj): Exposed=(Window,Worker)
     WillBeGarbageCollected,
 ] interface ImageBitmap {
-    // TODO(philipj): width/height should be unsigned long.
-    readonly attribute long width;
-    readonly attribute long height;
+    readonly attribute unsigned long width;
+    readonly attribute unsigned long height;
 };
