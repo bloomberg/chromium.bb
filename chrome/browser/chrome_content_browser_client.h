@@ -169,6 +169,8 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
                                 content::ResourceContext* context) override;
 #endif  // defined(ENABLE_WEBRTC)
 
+  bool AllowKeygen(const GURL& url, content::ResourceContext* context) override;
+
   net::URLRequestContext* OverrideRequestContextForURL(
       const GURL& url,
       content::ResourceContext* context) override;

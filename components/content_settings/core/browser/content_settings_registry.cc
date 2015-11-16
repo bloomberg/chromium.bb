@@ -234,6 +234,12 @@ void ContentSettingsRegistry::Init() {
            ValidSettings(CONTENT_SETTING_ALLOW, CONTENT_SETTING_BLOCK),
            WebsiteSettingsInfo::REQUESTING_ORIGIN_ONLY_SCOPE);
 
+  Register(CONTENT_SETTINGS_TYPE_KEYGEN, "keygen",
+           CONTENT_SETTING_BLOCK, WebsiteSettingsInfo::SYNCABLE,
+           WhitelistedSchemes(),
+           ValidSettings(CONTENT_SETTING_ALLOW, CONTENT_SETTING_BLOCK),
+           WebsiteSettingsInfo::REQUESTING_ORIGIN_ONLY_SCOPE);
+
   // Content settings that aren't used to store any data. TODO(raymes): use a
   // different mechanism rather than content settings to represent these.
   // Since nothing is stored in them, there is no real point in them being a

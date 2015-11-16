@@ -90,6 +90,9 @@ TEST_F(HostContentSettingsMapTest, DefaultValues) {
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             host_content_settings_map->GetDefaultContentSetting(
                 CONTENT_SETTINGS_TYPE_POPUPS, NULL));
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            host_content_settings_map->GetDefaultContentSetting(
+                CONTENT_SETTINGS_TYPE_KEYGEN, NULL));
 }
 
 TEST_F(HostContentSettingsMapTest, IndividualSettings) {
@@ -174,6 +177,12 @@ TEST_F(HostContentSettingsMapTest, IndividualSettings) {
   EXPECT_EQ(CONTENT_SETTING_ASK,
             host_content_settings_map->GetContentSetting(
                 host, host, CONTENT_SETTINGS_TYPE_MOUSELOCK, std::string()));
+  host_content_settings_map->SetContentSetting(
+      pattern, ContentSettingsPattern::Wildcard(), CONTENT_SETTINGS_TYPE_KEYGEN,
+      std::string(), CONTENT_SETTING_ALLOW);
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            host_content_settings_map->GetContentSetting(
+                host, host, CONTENT_SETTINGS_TYPE_KEYGEN, std::string()));
 
   // Check returning all hosts for a setting.
   ContentSettingsPattern pattern2 =
@@ -577,6 +586,25 @@ TEST_F(HostContentSettingsMapTest, HostTrimEndingDotCheck) {
                                                    host_ending_with_dot,
                                                    CONTENT_SETTINGS_TYPE_POPUPS,
                                                    std::string()));
+
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            host_content_settings_map->GetContentSetting(
+                host_ending_with_dot, host_ending_with_dot,
+                CONTENT_SETTINGS_TYPE_KEYGEN, std::string()));
+  host_content_settings_map->SetContentSetting(
+      pattern, ContentSettingsPattern::Wildcard(), CONTENT_SETTINGS_TYPE_KEYGEN,
+      std::string(), CONTENT_SETTING_ALLOW);
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            host_content_settings_map->GetContentSetting(
+                host_ending_with_dot, host_ending_with_dot,
+                CONTENT_SETTINGS_TYPE_KEYGEN, std::string()));
+  host_content_settings_map->SetContentSetting(
+      pattern, ContentSettingsPattern::Wildcard(), CONTENT_SETTINGS_TYPE_KEYGEN,
+      std::string(), CONTENT_SETTING_DEFAULT);
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            host_content_settings_map->GetContentSetting(
+                host_ending_with_dot, host_ending_with_dot,
+                CONTENT_SETTINGS_TYPE_KEYGEN, std::string()));
 }
 
 TEST_F(HostContentSettingsMapTest, NestedSettings) {
@@ -643,6 +671,9 @@ TEST_F(HostContentSettingsMapTest, NestedSettings) {
   EXPECT_EQ(CONTENT_SETTING_ASK,
             host_content_settings_map->GetContentSetting(
                 host, host, CONTENT_SETTINGS_TYPE_MOUSELOCK, std::string()));
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            host_content_settings_map->GetContentSetting(
+                host, host, CONTENT_SETTINGS_TYPE_KEYGEN, std::string()));
 }
 
 TEST_F(HostContentSettingsMapTest, OffTheRecord) {
@@ -793,6 +824,23 @@ TEST_F(HostContentSettingsMapTest, ManagedDefaultContentSetting) {
             host_content_settings_map->GetDefaultContentSetting(
                 CONTENT_SETTINGS_TYPE_PLUGINS, NULL));
 #endif
+
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            host_content_settings_map->GetDefaultContentSetting(
+                CONTENT_SETTINGS_TYPE_KEYGEN, NULL));
+
+  // Set managed-default content setting through the coresponding preferences.
+  prefs->SetManagedPref(prefs::kManagedDefaultKeygenSetting,
+                        new base::FundamentalValue(CONTENT_SETTING_ALLOW));
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            host_content_settings_map->GetDefaultContentSetting(
+                CONTENT_SETTINGS_TYPE_KEYGEN, NULL));
+
+  // Remove managed-default content settings preferences.
+  prefs->RemoveManagedPref(prefs::kManagedDefaultKeygenSetting);
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            host_content_settings_map->GetDefaultContentSetting(
+                CONTENT_SETTINGS_TYPE_KEYGEN, NULL));
 }
 
 TEST_F(HostContentSettingsMapTest,

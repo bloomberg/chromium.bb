@@ -52,7 +52,11 @@ const PrefsForManagedContentSettingsMapEntry
         {prefs::kManagedPopupsAllowedForUrls, CONTENT_SETTINGS_TYPE_POPUPS,
          CONTENT_SETTING_ALLOW},
         {prefs::kManagedPopupsBlockedForUrls, CONTENT_SETTINGS_TYPE_POPUPS,
-         CONTENT_SETTING_BLOCK}};
+         CONTENT_SETTING_BLOCK},
+        {prefs::kManagedKeygenAllowedForUrls,
+         CONTENT_SETTINGS_TYPE_KEYGEN, CONTENT_SETTING_ALLOW},
+        {prefs::kManagedKeygenBlockedForUrls,
+         CONTENT_SETTINGS_TYPE_KEYGEN, CONTENT_SETTING_BLOCK}};
 
 }  // namespace
 
@@ -82,6 +86,7 @@ const PolicyProvider::PrefsForManagedDefaultMapEntry
          prefs::kManagedDefaultNotificationsSetting},
         {CONTENT_SETTINGS_TYPE_PLUGINS, prefs::kManagedDefaultPluginsSetting},
         {CONTENT_SETTINGS_TYPE_POPUPS, prefs::kManagedDefaultPopupsSetting},
+        {CONTENT_SETTINGS_TYPE_KEYGEN, prefs::kManagedDefaultKeygenSetting},
 };
 
 // static
@@ -101,6 +106,8 @@ void PolicyProvider::RegisterProfilePrefs(
   registry->RegisterListPref(prefs::kManagedPluginsBlockedForUrls);
   registry->RegisterListPref(prefs::kManagedPopupsAllowedForUrls);
   registry->RegisterListPref(prefs::kManagedPopupsBlockedForUrls);
+  registry->RegisterListPref(prefs::kManagedKeygenAllowedForUrls);
+  registry->RegisterListPref(prefs::kManagedKeygenBlockedForUrls);
   // Preferences for default content setting policies. If a policy is not set of
   // the corresponding preferences below is set to CONTENT_SETTING_DEFAULT.
   registry->RegisterIntegerPref(prefs::kManagedDefaultCookiesSetting,
@@ -118,6 +125,8 @@ void PolicyProvider::RegisterProfilePrefs(
   registry->RegisterIntegerPref(prefs::kManagedDefaultPluginsSetting,
                                 CONTENT_SETTING_DEFAULT);
   registry->RegisterIntegerPref(prefs::kManagedDefaultPopupsSetting,
+                                CONTENT_SETTING_DEFAULT);
+  registry->RegisterIntegerPref(prefs::kManagedDefaultKeygenSetting,
                                 CONTENT_SETTING_DEFAULT);
 }
 
@@ -138,7 +147,6 @@ PolicyProvider::PolicyProvider(PrefService* prefs) : prefs_(prefs) {
   pref_change_registrar_.Add(prefs::kManagedImagesBlockedForUrls, callback);
   pref_change_registrar_.Add(prefs::kManagedJavaScriptAllowedForUrls, callback);
   pref_change_registrar_.Add(prefs::kManagedJavaScriptBlockedForUrls, callback);
-
   pref_change_registrar_.Add(
       prefs::kManagedNotificationsAllowedForUrls, callback);
   pref_change_registrar_.Add(
@@ -147,6 +155,8 @@ PolicyProvider::PolicyProvider(PrefService* prefs) : prefs_(prefs) {
   pref_change_registrar_.Add(prefs::kManagedPluginsBlockedForUrls, callback);
   pref_change_registrar_.Add(prefs::kManagedPopupsAllowedForUrls, callback);
   pref_change_registrar_.Add(prefs::kManagedPopupsBlockedForUrls, callback);
+  pref_change_registrar_.Add(prefs::kManagedKeygenAllowedForUrls, callback);
+  pref_change_registrar_.Add(prefs::kManagedKeygenBlockedForUrls, callback);
   // The following preferences are only used to indicate if a default content
   // setting is managed and to hold the managed default setting value. If the
   // value for any of the following preferences is set then the corresponding
@@ -165,6 +175,7 @@ PolicyProvider::PolicyProvider(PrefService* prefs) : prefs_(prefs) {
       prefs::kManagedDefaultMediaStreamSetting, callback);
   pref_change_registrar_.Add(prefs::kManagedDefaultPluginsSetting, callback);
   pref_change_registrar_.Add(prefs::kManagedDefaultPopupsSetting, callback);
+  pref_change_registrar_.Add(prefs::kManagedDefaultKeygenSetting, callback);
 }
 
 PolicyProvider::~PolicyProvider() {
@@ -395,7 +406,9 @@ void PolicyProvider::OnPreferenceChanged(const std::string& name) {
       name == prefs::kManagedPluginsAllowedForUrls ||
       name == prefs::kManagedPluginsBlockedForUrls ||
       name == prefs::kManagedPopupsAllowedForUrls ||
-      name == prefs::kManagedPopupsBlockedForUrls) {
+      name == prefs::kManagedPopupsBlockedForUrls ||
+      name == prefs::kManagedKeygenAllowedForUrls ||
+      name == prefs::kManagedKeygenBlockedForUrls) {
     ReadManagedContentSettings(true);
     ReadManagedDefaultSettings();
   }

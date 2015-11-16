@@ -253,7 +253,8 @@ bool TabSpecificContentSettings::IsContentBlocked(
       content_type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA ||
       content_type == CONTENT_SETTINGS_TYPE_PPAPI_BROKER ||
       content_type == CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS ||
-      content_type == CONTENT_SETTINGS_TYPE_MIDI_SYSEX) {
+      content_type == CONTENT_SETTINGS_TYPE_MIDI_SYSEX ||
+      content_type == CONTENT_SETTINGS_TYPE_KEYGEN) {
     const auto& it = content_settings_status_.find(content_type);
     if (it != content_settings_status_.end())
       return it->second.blocked;

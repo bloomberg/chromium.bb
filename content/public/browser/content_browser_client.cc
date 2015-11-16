@@ -217,6 +217,11 @@ bool ContentBrowserClient::AllowWebRTCIdentityCache(const GURL& url,
 }
 #endif  // defined(ENABLE_WEBRTC)
 
+bool ContentBrowserClient::AllowKeygen(const GURL& url,
+                                       content::ResourceContext* context) {
+  return true;
+}
+
 QuotaPermissionContext* ContentBrowserClient::CreateQuotaPermissionContext() {
   return nullptr;
 }

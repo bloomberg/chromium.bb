@@ -405,6 +405,9 @@ class CONTENT_EXPORT ContentBrowserClient {
                                         ResourceContext* context);
 #endif  // defined(ENABLE_WEBRTC)
 
+  // Allow the embedder to control whether we can use <keygen>.
+  virtual bool AllowKeygen(const GURL& url, content::ResourceContext* context);
+
   // Allow the embedder to override the request context based on the URL for
   // certain operations, like cookie access. Returns nullptr to indicate the
   // regular request context should be used.

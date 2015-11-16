@@ -1918,6 +1918,17 @@ bool ChromeContentBrowserClient::AllowWebRTCIdentityCache(
 }
 #endif  // defined(ENABLE_WEBRTC)
 
+bool ChromeContentBrowserClient::AllowKeygen(
+    const GURL& url,
+    content::ResourceContext* context) {
+  HostContentSettingsMap* content_settings =
+      ProfileIOData::FromResourceContext(context)->GetHostContentSettingsMap();
+
+  return content_settings->GetContentSetting(
+             url, url, CONTENT_SETTINGS_TYPE_KEYGEN, std::string()) ==
+         CONTENT_SETTING_ALLOW;
+}
+
 net::URLRequestContext*
 ChromeContentBrowserClient::OverrideRequestContextForURL(
     const GURL& url, content::ResourceContext* context) {
