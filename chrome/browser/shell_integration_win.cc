@@ -14,7 +14,6 @@
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/message_loop/message_loop.h"
-#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/process/launch.h"
@@ -43,7 +42,6 @@
 #include "chrome/installer/util/util_constants.h"
 #include "chrome/installer/util/work_item.h"
 #include "chrome/installer/util/work_item_list.h"
-#include "components/variations/variations_associated_data.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
@@ -51,10 +49,6 @@ using content::BrowserThread;
 namespace {
 
 const wchar_t kAppListAppNameSuffix[] = L"AppList";
-
-const char kAsyncSetAsDefaultExperimentName[] = "AsyncSetAsDefault";
-const char kEnableAsyncSetAsDefault[] = "enable-async-set-as-default";
-const char kDisableAsyncSetAsDefault[] = "disable-async-set-as-default";
 
 // Helper function for ShellIntegration::GetAppId to generates profile id
 // from profile path. "profile_id" is composed of sanitized basenames of
@@ -269,22 +263,6 @@ void ResetDefaultBrowser() {
   }
 }
 
-// Returns true if the AsyncSetAsDefault field trial is activated.
-bool IsAsyncSetAsDefaultEnabled() {
-  using base::CommandLine;
-
-  // Note: It's important to query the field trial state first, to ensure that
-  // UMA reports the correct group.
-  const std::string group_name =
-      base::FieldTrialList::FindFullName("AsyncSetAsDefault");
-  if (CommandLine::ForCurrentProcess()->HasSwitch(kDisableAsyncSetAsDefault))
-    return false;
-  if (CommandLine::ForCurrentProcess()->HasSwitch(kEnableAsyncSetAsDefault))
-    return true;
-
-  return base::StartsWith(group_name, "Enabled", base::CompareCase::SENSITIVE);
-}
-
 bool RegisterBrowser() {
   base::FilePath chrome_exe;
   if (!PathService::Get(base::FILE_EXE, &chrome_exe)) {
@@ -301,8 +279,7 @@ bool RegisterBrowser() {
 
 // static
 bool ShellIntegration::IsSetAsDefaultAsynchronous() {
-  return base::win::GetVersion() >= base::win::VERSION_WIN10 &&
-         IsAsyncSetAsDefaultEnabled();
+  return base::win::GetVersion() >= base::win::VERSION_WIN10;
 }
 
 bool ShellIntegration::SetAsDefaultBrowser() {
@@ -686,8 +663,7 @@ bool ShellIntegration::DefaultBrowserWorker::InitializeSetAsDefault() {
   //    instead call OnSetAsDefaultAttemptComplete(), passing true to indicate
   //    success.
   // 5. If Chrome is not selected, the url is opened in the selected browser.
-  //    After a certain amount of time, we notify the observer that the
-  //    process failed.
+  //    After two minutes, we notify the observer that the process failed.
 
   if (!StartupBrowserCreator::SetDefaultBrowserCallback(
           base::Bind(&DefaultBrowserWorker::OnSetAsDefaultAttemptComplete, this,
@@ -705,15 +681,8 @@ bool ShellIntegration::DefaultBrowserWorker::InitializeSetAsDefault() {
   // Start the timer.
   if (!async_timer_)
     async_timer_.reset(new base::OneShotTimer());
-  std::string value = variations::GetVariationParamValue(
-      kAsyncSetAsDefaultExperimentName, "TimerDuration");
-  int seconds = 0;
-  if (!value.empty())
-    base::StringToInt(value, &seconds);
-  if (!seconds)
-    seconds = 120;  // Default value of 2 minutes.
   async_timer_->Start(
-      FROM_HERE, base::TimeDelta::FromSeconds(seconds),
+      FROM_HERE, base::TimeDelta::FromMinutes(2),
       base::Bind(&DefaultBrowserWorker::OnSetAsDefaultAttemptComplete, this,
                  AttemptResult::FAILURE));
   return true;
