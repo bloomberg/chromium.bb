@@ -151,7 +151,8 @@ public:
     PassRefPtr<TypeBuilder::Array<TypeBuilder::CSS::CSSMedia> > buildMediaListChain(CSSRule*);
 
     PassRefPtrWillBeRawPtr<CSSStyleDeclaration> findEffectiveDeclaration(CSSPropertyID, const WillBeHeapVector<RefPtrWillBeMember<CSSStyleDeclaration>>& styles);
-    void setCSSPropertyValue(ErrorString*, Element*, RefPtrWillBeRawPtr<CSSStyleDeclaration>, CSSPropertyID, const String& value, bool forceImportant = false);
+    void setLayoutEditorValue(ErrorString*, Element*, RefPtrWillBeRawPtr<CSSStyleDeclaration>, CSSPropertyID, const String& value, bool forceImportant = false);
+    void layoutEditorItemSelected(Element*, RefPtrWillBeRawPtr<CSSStyleDeclaration>);
 
     WillBeHeapVector<RefPtrWillBeMember<CSSStyleDeclaration>> matchingStyles(Element*);
     String styleSheetId(CSSStyleSheet*);

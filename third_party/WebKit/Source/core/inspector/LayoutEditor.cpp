@@ -188,7 +188,7 @@ void LayoutEditor::rebuild()
     object->setObject("marginQuad", quadToJSON(margin));
     object->setObject("borderQuad", quadToJSON(border));
     evaluateInOverlay("showLayoutEditor", object.release());
-    pushSelectorInfoInOverlay();
+    editableSelectorUpdated(false);
 }
 
 RefPtrWillBeRawPtr<CSSPrimitiveValue> LayoutEditor::getPropertyCSSValue(CSSPropertyID property) const
@@ -347,7 +347,7 @@ void LayoutEditor::nextSelector()
         return;
 
     ++m_currentRuleIndex;
-    pushSelectorInfoInOverlay();
+    editableSelectorUpdated(true);
 }
 
 void LayoutEditor::previousSelector()
@@ -356,18 +356,20 @@ void LayoutEditor::previousSelector()
         return;
 
     --m_currentRuleIndex;
-    pushSelectorInfoInOverlay();
+    editableSelectorUpdated(true);
 }
 
-void LayoutEditor::pushSelectorInfoInOverlay() const
+void LayoutEditor::editableSelectorUpdated(bool hasChanged) const
 {
-    evaluateInOverlay("setSelectorInLayoutEditor", currentSelectorInfo());
+    CSSStyleDeclaration* style = m_matchedStyles.at(m_currentRuleIndex).get();
+    evaluateInOverlay("setSelectorInLayoutEditor", currentSelectorInfo(style));
+    if (hasChanged)
+        m_cssAgent->layoutEditorItemSelected(m_element.get(), style);
 }
 
-PassRefPtr<JSONObject> LayoutEditor::currentSelectorInfo() const
+PassRefPtr<JSONObject> LayoutEditor::currentSelectorInfo(CSSStyleDeclaration* style) const
 {
     RefPtr<JSONObject> object = JSONObject::create();
-    CSSStyleDeclaration* style = m_matchedStyles.at(m_currentRuleIndex).get();
     CSSStyleRule* rule = style->parentRule() ? toCSSStyleRule(style->parentRule()) : nullptr;
     String currentSelectorText = rule ? rule->selectorText() : "element.style";
     object->setString("selector", currentSelectorText);
@@ -408,7 +410,7 @@ PassRefPtr<JSONObject> LayoutEditor::currentSelectorInfo() const
 bool LayoutEditor::setCSSPropertyValueInCurrentRule(const String& value)
 {
     String errorString;
-    m_cssAgent->setCSSPropertyValue(&errorString, m_element.get(), m_matchedStyles.at(m_currentRuleIndex), m_changingProperty, value, false);
+    m_cssAgent->setLayoutEditorValue(&errorString, m_element.get(), m_matchedStyles.at(m_currentRuleIndex), m_changingProperty, value, false);
     return errorString.isEmpty();
 }
 

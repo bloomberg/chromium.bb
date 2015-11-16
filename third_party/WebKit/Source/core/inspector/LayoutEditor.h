@@ -51,9 +51,9 @@ private:
     PassRefPtr<JSONObject> createValueDescription(const String&);
     void appendAnchorFor(JSONArray*, const String&, const String&);
     bool setCSSPropertyValueInCurrentRule(const String&);
-    void pushSelectorInfoInOverlay() const;
+    void editableSelectorUpdated(bool hasChanged) const;
     void evaluateInOverlay(const String&, PassRefPtr<JSONValue>) const;
-    PassRefPtr<JSONObject> currentSelectorInfo() const;
+    PassRefPtr<JSONObject> currentSelectorInfo(CSSStyleDeclaration*) const;
     bool growInside(String propertyName, CSSPrimitiveValue*);
 
     RefPtrWillBeMember<Element> m_element;
