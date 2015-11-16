@@ -2364,11 +2364,9 @@ TEST_F(RenderViewImplTest, BrowserNavigationStartNotUsedForReload) {
 TEST_F(RenderViewImplTest, BrowserNavigationStartNotUsedForHistoryNavigation) {
   LoadHTML("<div id=pagename>Page A</div>");
   LoadHTML("<div id=pagename>Page B</div>");
-  PageState back_state =
-      HistoryEntryToPageState(view()->history_controller()->GetCurrentEntry());
+  PageState back_state = GetCurrentPageState();
   LoadHTML("<div id=pagename>Page C</div>");
-  PageState forward_state =
-      HistoryEntryToPageState(view()->history_controller()->GetCurrentEntry());
+  PageState forward_state = GetCurrentPageState();
   ProcessPendingMessages();
   render_thread_->sink().ClearMessages();
 
