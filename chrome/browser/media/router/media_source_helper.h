@@ -19,6 +19,8 @@ MediaSource MediaSourceForCastApp(const std::string& app_id);
 MediaSource MediaSourceForPresentationUrl(const std::string& presentation_url);
 
 // Returns true if |source| outputs its content via mirroring.
+bool IsDesktopMirroringMediaSource(const MediaSource& source);
+bool IsTabMirroringMediaSource(const MediaSource& source);
 bool IsMirroringMediaSource(const MediaSource& source);
 
 // Checks that |source| is a parseable URN and is of a known type.

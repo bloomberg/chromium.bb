@@ -28,6 +28,9 @@ class ASH_EXPORT TrayCast : public SystemTrayItem, public ShellObserver {
   friend class TrayCastTestAPI;
   void StartCastForTest(const std::string& receiver_id);
   void StopCastForTest();
+  // Returns the id of the item we are currently displaying in the cast view.
+  // This assumes that the cast view is active.
+  const std::string& GetDisplayedCastId();
   const views::View* GetDefaultView() const;
   enum ChildViewId { TRAY_VIEW = 1, SELECT_VIEW, CAST_VIEW };
 
@@ -49,7 +52,7 @@ class ASH_EXPORT TrayCast : public SystemTrayItem, public ShellObserver {
   // Callback used to enable/disable the begin casting view depending on
   // if we have any cast receivers.
   void OnReceiversUpdated(
-      const CastConfigDelegate::ReceiversAndActivites& receivers_activities);
+      const CastConfigDelegate::ReceiversAndActivities& receivers_activities);
 
   // This makes sure that the current view displayed in the tray is the correct
   // one, depending on if we are currently casting. If we're casting, then a
@@ -58,7 +61,7 @@ class ASH_EXPORT TrayCast : public SystemTrayItem, public ShellObserver {
   // casting session.
   void UpdatePrimaryView();
 
-  CastConfigDelegate::ReceiversAndActivites receivers_and_activities_;
+  CastConfigDelegate::ReceiversAndActivities receivers_and_activities_;
   CastConfigDelegate::DeviceUpdateSubscription device_update_subscription_;
   bool is_casting_ = false;
 

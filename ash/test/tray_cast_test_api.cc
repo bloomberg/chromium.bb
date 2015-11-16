@@ -29,6 +29,10 @@ bool TrayCastTestAPI::IsTraySelectViewVisible() const {
   return IsViewDrawn(TrayCast::SELECT_VIEW);
 }
 
+std::string TrayCastTestAPI::GetDisplayedCastId() const {
+  return tray_cast_->GetDisplayedCastId();
+}
+
 void TrayCastTestAPI::StartCast(const std::string& receiver_id) {
   return tray_cast_->StartCastForTest(receiver_id);
 }
@@ -39,6 +43,10 @@ void TrayCastTestAPI::StopCast() {
 
 void TrayCastTestAPI::OnCastingSessionStartedOrStopped(bool is_casting) {
   tray_cast_->OnCastingSessionStartedOrStopped(is_casting);
+}
+
+void TrayCastTestAPI::ReleaseConfigCallbacks() {
+  tray_cast_->device_update_subscription_.reset();
 }
 
 bool TrayCastTestAPI::IsViewDrawn(TrayCast::ChildViewId id) const {

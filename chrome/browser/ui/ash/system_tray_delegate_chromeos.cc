@@ -70,6 +70,7 @@
 #include "chrome/browser/supervised_user/supervised_user_service.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
 #include "chrome/browser/ui/ash/cast_config_delegate_chromeos.h"
+#include "chrome/browser/ui/ash/cast_config_delegate_media_router.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/ash/networking_config_delegate_chromeos.h"
 #include "chrome/browser/ui/ash/system_tray_delegate_utils.h"
@@ -167,6 +168,12 @@ void BluetoothDeviceConnectError(
     device::BluetoothDevice::ConnectErrorCode error_code) {
 }
 
+scoped_ptr<ash::CastConfigDelegate> CreateCastConfigDelegate() {
+  if (CastConfigDelegateMediaRouter::IsEnabled())
+    return make_scoped_ptr(new CastConfigDelegateMediaRouter());
+  return make_scoped_ptr(new CastConfigDelegateChromeos());
+}
+
 void ShowSettingsSubPageForActiveUser(const std::string& sub_page) {
   chrome::ShowSettingsSubPageForProfile(
       ProfileManager::GetActiveUserProfile(), sub_page);
@@ -189,7 +196,7 @@ SystemTrayDelegateChromeOS::SystemTrayDelegateChromeOS()
       have_session_length_limit_(false),
       should_run_bluetooth_discovery_(false),
       session_started_(false),
-      cast_config_delegate_(new CastConfigDelegateChromeos()),
+      cast_config_delegate_(CreateCastConfigDelegate()),
       networking_config_delegate_(new NetworkingConfigDelegateChromeos()),
       volume_control_delegate_(new VolumeController()),
       vpn_delegate_(new VPNDelegateChromeOS),

@@ -101,10 +101,14 @@ class CastCastView : public views::View, public views::ButtonListener {
 
   void StopCasting();
 
+  const std::string& displayed_activity_id() const {
+    return displayed_activity_id_;
+  }
+
   // Updates the label for the stop view to include information about the
   // current device that is being casted.
   void UpdateLabel(
-      const CastConfigDelegate::ReceiversAndActivites& receivers_activities);
+      const CastConfigDelegate::ReceiversAndActivities& receivers_activities);
 
  private:
   // Overridden from views::View.
@@ -113,6 +117,10 @@ class CastCastView : public views::View, public views::ButtonListener {
 
   // Overridden from views::ButtonListener.
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
+
+  // The cast activity id that we are displaying. If the user stops a cast, we
+  // send this value to the config delegate so that we stop the right cast.
+  std::string displayed_activity_id_;
 
   views::ImageView* icon_;
   views::Label* label_;
@@ -188,17 +196,20 @@ void CastCastView::Layout() {
 }
 
 void CastCastView::StopCasting() {
-  GetCastConfigDelegate()->StopCasting();
+  GetCastConfigDelegate()->StopCasting(displayed_activity_id_);
   Shell::GetInstance()->metrics()->RecordUserMetricsAction(
       ash::UMA_STATUS_AREA_CAST_STOP_CAST);
 }
 
 void CastCastView::UpdateLabel(
-    const CastConfigDelegate::ReceiversAndActivites& receivers_activities) {
+    const CastConfigDelegate::ReceiversAndActivities& receivers_activities) {
   for (auto& i : receivers_activities) {
     const CastConfigDelegate::Receiver& receiver = i.receiver;
     const CastConfigDelegate::Activity& activity = i.activity;
+
     if (!activity.id.empty()) {
+      displayed_activity_id_ = activity.id;
+
       // We want to display different labels inside of the title depending on
       // what we are actually casting - either the desktop, a tab, or a fallback
       // that catches everything else (ie, an extension tab).
@@ -215,7 +226,12 @@ void CastCastView::UpdateLabel(
 
       PreferredSizeChanged();
       Layout();
-      break;
+
+      // If this machine is the source of the activity, then we want to display
+      // it over any other activity. There can be multiple activities if other
+      // devices on the network are casting at the same time.
+      if (activity.is_local_source)
+        break;
     }
   }
 }
@@ -234,7 +250,7 @@ class CastDuplexView : public views::View {
   CastDuplexView(
       SystemTrayItem* owner,
       bool show_more,
-      const CastConfigDelegate::ReceiversAndActivites& receivers_activities);
+      const CastConfigDelegate::ReceiversAndActivities& receivers_activities);
   ~CastDuplexView() override;
 
   // Activate either the casting or select view.
@@ -262,7 +278,7 @@ class CastDuplexView : public views::View {
 CastDuplexView::CastDuplexView(
     SystemTrayItem* owner,
     bool show_more,
-    const CastConfigDelegate::ReceiversAndActivites& receivers_activities) {
+    const CastConfigDelegate::ReceiversAndActivities& receivers_activities) {
   select_view_ = new CastSelectDefaultView(owner, show_more);
   cast_view_ = new CastCastView();
   cast_view_->UpdateLabel(receivers_activities);
@@ -364,7 +380,7 @@ class CastDetailedView : public TrayDetailsView, public ViewClickListener {
  public:
   CastDetailedView(SystemTrayItem* owner,
                    user::LoginStatus login,
-                   const CastConfigDelegate::ReceiversAndActivites&
+                   const CastConfigDelegate::ReceiversAndActivities&
                        receivers_and_activities);
   ~CastDetailedView() override;
 
@@ -373,7 +389,7 @@ class CastDetailedView : public TrayDetailsView, public ViewClickListener {
   void SimulateViewClickedForTest(const std::string& receiver_id);
 
   // Updates the list of available receivers.
-  void UpdateReceiverList(const CastConfigDelegate::ReceiversAndActivites&
+  void UpdateReceiverList(const CastConfigDelegate::ReceiversAndActivities&
                               new_receivers_and_activities);
 
  private:
@@ -404,7 +420,7 @@ class CastDetailedView : public TrayDetailsView, public ViewClickListener {
 CastDetailedView::CastDetailedView(
     SystemTrayItem* owner,
     user::LoginStatus login,
-    const CastConfigDelegate::ReceiversAndActivites& receivers_and_activities)
+    const CastConfigDelegate::ReceiversAndActivities& receivers_and_activities)
     : TrayDetailsView(owner), login_(login), weak_ptr_factory_(this) {
   CreateItems();
   UpdateReceiverList(receivers_and_activities);
@@ -425,12 +441,13 @@ void CastDetailedView::SimulateViewClickedForTest(
 
 void CastDetailedView::CreateItems() {
   CreateScrollableList();
-  AppendSettingsEntries();
+  if (GetCastConfigDelegate()->HasOptions())
+    AppendSettingsEntries();
   AppendHeaderEntry();
 }
 
 void CastDetailedView::UpdateReceiverList(
-    const CastConfigDelegate::ReceiversAndActivites&
+    const CastConfigDelegate::ReceiversAndActivities&
         new_receivers_and_activities) {
   // Add/update existing.
   for (auto i = new_receivers_and_activities.begin();
@@ -553,6 +570,10 @@ void TrayCast::StopCastForTest() {
   default_->cast_view()->StopCasting();
 }
 
+const std::string& TrayCast::GetDisplayedCastId() {
+  return default_->cast_view()->displayed_activity_id();
+}
+
 const views::View* TrayCast::GetDefaultView() const {
   return default_;
 }
@@ -625,7 +646,7 @@ bool TrayCast::HasCastExtension() {
 }
 
 void TrayCast::OnReceiversUpdated(
-    const CastConfigDelegate::ReceiversAndActivites& receivers_activities) {
+    const CastConfigDelegate::ReceiversAndActivities& receivers_activities) {
   receivers_and_activities_ = receivers_activities;
 
   if (default_) {

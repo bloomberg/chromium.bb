@@ -92,7 +92,7 @@ void CastConfigDelegateChromeos::CastToReceiver(
       ->DispatchEventToExtension(FindCastExtension()->id(), event.Pass());
 }
 
-void CastConfigDelegateChromeos::StopCasting() {
+void CastConfigDelegateChromeos::StopCasting(const std::string& activity_id) {
   scoped_ptr<base::ListValue> args =
       extensions::api::cast_devices_private::StopCast::Create("user-stop");
   scoped_ptr<extensions::Event> event(new extensions::Event(
@@ -101,6 +101,10 @@ void CastConfigDelegateChromeos::StopCasting() {
       args.Pass()));
   extensions::EventRouter::Get(GetProfile())
       ->DispatchEventToExtension(FindCastExtension()->id(), event.Pass());
+}
+
+bool CastConfigDelegateChromeos::HasOptions() const {
+  return true;
 }
 
 void CastConfigDelegateChromeos::LaunchCastOptions() {

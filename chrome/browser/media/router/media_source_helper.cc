@@ -33,11 +33,19 @@ MediaSource MediaSourceForPresentationUrl(const std::string& presentation_url) {
   return MediaSource(presentation_url);
 }
 
-bool IsMirroringMediaSource(const MediaSource& source) {
+bool IsDesktopMirroringMediaSource(const MediaSource& source) {
   return base::StartsWith(source.id(), kDesktopMediaUrn,
-                          base::CompareCase::SENSITIVE) ||
-         base::StartsWith(source.id(), kTabMediaUrnPrefix,
                           base::CompareCase::SENSITIVE);
+}
+
+bool IsTabMirroringMediaSource(const MediaSource& source) {
+  return base::StartsWith(source.id(), kTabMediaUrnPrefix,
+                          base::CompareCase::SENSITIVE);
+}
+
+bool IsMirroringMediaSource(const MediaSource& source) {
+  return IsDesktopMirroringMediaSource(source) ||
+         IsTabMirroringMediaSource(source);
 }
 
 bool IsValidMediaSource(const MediaSource& source) {

@@ -9,6 +9,8 @@
 namespace media_router {
 
 TEST(MediaSourcesTest, IsMirroringMediaSource) {
+  EXPECT_TRUE(IsTabMirroringMediaSource(MediaSourceForTab(123)));
+  EXPECT_TRUE(IsDesktopMirroringMediaSource(MediaSourceForDesktop()));
   EXPECT_TRUE(IsMirroringMediaSource(MediaSourceForTab(123)));
   EXPECT_TRUE(IsMirroringMediaSource(MediaSourceForDesktop()));
   EXPECT_FALSE(IsMirroringMediaSource(MediaSourceForCastApp("CastApp")));

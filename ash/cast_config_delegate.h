@@ -51,10 +51,15 @@ class CastConfigDelegate {
     std::string id;
     base::string16 title;
 
+    // Is the activity source this computer? ie, are we mirroring the display?
+    bool is_local_source = false;
+
     // The id for the tab we are casting. Could be one of the TabId values,
     // or a value >= 0 that represents that tab index of the tab we are
     // casting. We default to casting the desktop, as a tab may not
     // necessarily exist.
+    // TODO(jdufault): Remove tab_id once the CastConfigDelegateChromeos is
+    // gone. See crbug.com/551132.
     int tab_id = TabId::DESKTOP;
   };
 
@@ -67,15 +72,17 @@ class CastConfigDelegate {
   };
 
   // The key is the receiver id.
-  using ReceiversAndActivites = std::vector<ReceiverAndActivity>;
+  using ReceiversAndActivities = std::vector<ReceiverAndActivity>;
   using ReceiversAndActivitesCallback =
-      base::Callback<void(const ReceiversAndActivites&)>;
+      base::Callback<void(const ReceiversAndActivities&)>;
   using DeviceUpdateSubscription = scoped_ptr<
-      base::CallbackList<void(const ReceiversAndActivites&)>::Subscription>;
+      base::CallbackList<void(const ReceiversAndActivities&)>::Subscription>;
 
   virtual ~CastConfigDelegate() {}
 
   // Returns true if cast extension is installed.
+  // TODO(jdufault): Remove this function once the CastConfigDelegateChromeos is
+  // gone. See crbug.com/551132.
   virtual bool HasCastExtension() const = 0;
 
   // Adds a listener that will get invoked whenever the receivers or their
@@ -90,10 +97,18 @@ class CastConfigDelegate {
   // Cast to a receiver specified by |receiver_id|.
   virtual void CastToReceiver(const std::string& receiver_id) = 0;
 
-  // Stop an ongoing cast (this should be a user initiated stop).
-  virtual void StopCasting() = 0;
+  // Stop an ongoing cast (this should be a user initiated stop). |activity_id|
+  // is the identifier of the activity/route that should be stopped.
+  virtual void StopCasting(const std::string& activity_id) = 0;
+
+  // Does the device have a settings page?
+  // TODO(jdufault): Remove this function once the CastConfigDelegateChromeos is
+  // gone. See crbug.com/551132.
+  virtual bool HasOptions() const = 0;
 
   // Opens Options page for cast.
+  // TODO(jdufault): Remove this function once the CastConfigDelegateChromeos is
+  // gone. See crbug.com/551132.
   virtual void LaunchCastOptions() = 0;
 
  private:

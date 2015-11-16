@@ -27,6 +27,10 @@ class TrayCastTestAPI {
   bool IsTrayCastViewVisible() const;
   bool IsTraySelectViewVisible() const;
 
+  // Assumes that IsTrayCastViewVisible. Returns the id that will be sent to
+  // the delegate to stop the cast.
+  std::string GetDisplayedCastId() const;
+
   // Start a new cast to the given receiver.
   void StartCast(const std::string& receiver_id);
   void StopCast();
@@ -35,6 +39,10 @@ class TrayCastTestAPI {
   // this function manually, as there is no actual casting going on. In a real
   // environment, this method is invoked by the casting system in Chrome.
   void OnCastingSessionStartedOrStopped(bool is_casting);
+
+  // Release callback hooks in config delegate. They will get re-registered if
+  // the tray is used again.
+  void ReleaseConfigCallbacks();
 
  private:
   bool IsViewDrawn(TrayCast::ChildViewId id) const;

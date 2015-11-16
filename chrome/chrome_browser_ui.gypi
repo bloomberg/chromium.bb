@@ -522,6 +522,8 @@
       'browser/ui/ash/ash_util.h',
       'browser/ui/ash/cast_config_delegate_chromeos.cc',
       'browser/ui/ash/cast_config_delegate_chromeos.h',
+      'browser/ui/ash/cast_config_delegate_media_router.cc',
+      'browser/ui/ash/cast_config_delegate_media_router.h',
       'browser/ui/ash/chrome_keyboard_ui.cc',
       'browser/ui/ash/chrome_keyboard_ui.h',
       'browser/ui/ash/chrome_launcher_prefs.cc',

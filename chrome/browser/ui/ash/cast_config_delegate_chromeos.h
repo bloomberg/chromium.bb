@@ -18,17 +18,17 @@ namespace chromeos {
 class CastConfigDelegateChromeos : public ash::CastConfigDelegate {
  public:
   CastConfigDelegateChromeos();
-
- private:
   ~CastConfigDelegateChromeos() override;
 
+ private:
   // CastConfigDelegate:
   bool HasCastExtension() const override;
   DeviceUpdateSubscription RegisterDeviceUpdateObserver(
       const ReceiversAndActivitesCallback& callback) override;
   void RequestDeviceRefresh() override;
   void CastToReceiver(const std::string& receiver_id) override;
-  void StopCasting() override;
+  void StopCasting(const std::string& activity_id) override;
+  bool HasOptions() const override;
   void LaunchCastOptions() override;
 
   DISALLOW_COPY_AND_ASSIGN(CastConfigDelegateChromeos);
