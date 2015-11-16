@@ -38,13 +38,14 @@ source_set("unit_tests") {
     "sync_username_test_base.h",
   ]
   deps = [
-    ":browser",
     "//components/pref_registry",
     "//components/signin/core/common",
+    "//components/sync_driver:test_support",
     "//components/syncable_prefs",
     "//components/syncable_prefs:test_support",
     "//sync",
     "//testing/gmock",
     "//testing/gtest",
+    ":browser",
   ]
 }

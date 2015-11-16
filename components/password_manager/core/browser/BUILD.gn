@@ -208,6 +208,7 @@ source_set("unit_tests") {
   ]
   deps = [
     ":test_support",
+    "//sql:test_support",
     "//testing/gmock",
     "//testing/gtest",
   ]
