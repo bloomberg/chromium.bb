@@ -2757,20 +2757,6 @@
    fun:_ZN3net16HostResolverImpl*
 }
 {
-   bug_387993
-   Memcheck:Uninitialized
-   fun:_ZN11SkBaseMutex7acquireEv
-   fun:_ZN18SkAutoMutexAcquireC2EP11SkBaseMutex
-   fun:_ZN18SkAutoMutexAcquireC1EP11SkBaseMutex
-   fun:_ZN12SkGlyphCache10VisitCacheEP10SkTypefacePK12SkDescriptorPFbPKS_PvES7_
-   fun:_ZN12SkGlyphCache11DetachCacheEP10SkTypefacePK12SkDescriptor
-   fun:_ZL14DetachDescProcP10SkTypefacePK12SkDescriptorPv
-   fun:_ZNK7SkPaint14descriptorProcEPK18SkDevicePropertiesPK8SkMatrixPFvP10SkTypefacePK12SkDescriptorPvESB_b
-   fun:_ZNK7SkPaint11detachCacheEPK18SkDevicePropertiesPK8SkMatrixb
-   fun:_ZN16SkAutoGlyphCacheC2ERK7SkPaintPK18SkDevicePropertiesPK8SkMatrix
-   fun:_ZN16SkAutoGlyphCacheC1ERK7SkPaintPK18SkDevicePropertiesPK8SkMatrix
-}
-{
    bug_388013
    Memcheck:Leak
    fun:_Znw*
