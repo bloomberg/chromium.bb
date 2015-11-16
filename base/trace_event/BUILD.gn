@@ -114,6 +114,7 @@ source_set("trace_event_unittests") {
   sources = [
     "heap_profiler_allocation_context_tracker_unittest.cc",
     "heap_profiler_allocation_register_unittest.cc",
+    "heap_profiler_heap_dump_writer_unittest.cc",
     "heap_profiler_stack_frame_deduplicator_unittest.cc",
     "java_heap_dump_provider_android_unittest.cc",
     "memory_allocator_dump_unittest.cc",

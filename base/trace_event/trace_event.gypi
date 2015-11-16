@@ -70,6 +70,7 @@
     'trace_event_test_sources' : [
       'trace_event/heap_profiler_allocation_context_tracker_unittest.cc',
       'trace_event/heap_profiler_allocation_register_unittest.cc',
+      'trace_event/heap_profiler_heap_dump_writer_unittest.cc',
       'trace_event/heap_profiler_stack_frame_deduplicator_unittest.cc',
       'trace_event/java_heap_dump_provider_android_unittest.cc',
       'trace_event/memory_allocator_dump_unittest.cc',
