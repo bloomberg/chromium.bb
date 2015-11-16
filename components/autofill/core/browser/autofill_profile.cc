@@ -543,7 +543,8 @@ bool AutofillProfile::OverwriteWith(const AutofillProfile& profile,
           CanonicalizeProfileString(
               profile.GetRawInfo(ADDRESS_HOME_STREET_ADDRESS)),
           CanonicalizeProfileString(GetRawInfo(ADDRESS_HOME_STREET_ADDRESS))) &&
-      profile.GetRawInfo(ADDRESS_HOME_LINE2) == base::UTF8ToUTF16("")) {
+      !GetRawInfo(ADDRESS_HOME_LINE2).empty() &&
+      profile.GetRawInfo(ADDRESS_HOME_LINE2).empty()) {
     field_types.erase(ADDRESS_HOME_LINE1);
     field_types.erase(ADDRESS_HOME_LINE2);
   }
