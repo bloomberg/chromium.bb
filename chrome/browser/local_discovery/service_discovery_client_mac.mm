@@ -357,9 +357,7 @@ void ServiceResolverImplMac::NetServiceContainer::OnResolveUpdate(
   }
 
   if (service_description_.address.host().empty()) {
-    NOTREACHED() << service_name_;
-    // Unexpected, but could be a reason for crbug.com/513505
-    base::debug::DumpWithoutCrashing();
+    VLOG(1) << "Service IP is not resolved: " << service_name_;
     callback_runner_->PostTask(
         FROM_HERE,
         base::Bind(callback_, STATUS_KNOWN_NONEXISTENT, ServiceDescription()));
