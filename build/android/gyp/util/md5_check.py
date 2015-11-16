@@ -397,5 +397,6 @@ def _ExtractZipEntries(path):
     for zip_info in zip_file.infolist():
       # Skip directories and empty files.
       if zip_info.CRC:
-        entries.append((zip_info.filename, zip_info.CRC))
+        entries.append(
+            (zip_info.filename, zip_info.CRC + zip_info.compress_type))
   return entries
