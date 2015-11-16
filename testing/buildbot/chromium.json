@@ -2,6 +2,9 @@
   "Linux x64": {
     "scripts": [
       {
+        "args": [
+          "linux-release-64/sizes"
+        ],
         "name": "sizes",
         "script": "sizes.py"
       }
