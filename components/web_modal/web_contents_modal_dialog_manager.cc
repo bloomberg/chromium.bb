@@ -178,10 +178,7 @@ void WebContentsModalDialogManager::WebContentsDestroyed() {
 }
 
 void WebContentsModalDialogManager::DidAttachInterstitialPage() {
-  // TODO(wittman): Test closing on interstitial webui works properly on Mac.
-#if defined(USE_AURA)
   CloseAllDialogs();
-#endif
 }
 
 }  // namespace web_modal

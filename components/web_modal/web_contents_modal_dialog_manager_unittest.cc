@@ -253,21 +253,11 @@ TEST_F(WebContentsModalDialogManagerTest, InterstitialPage) {
 
   test_api->DidAttachInterstitialPage();
 
-#if defined(USE_AURA)
   EXPECT_EQ(NativeManagerTracker::CLOSED, tracker1.state_);
   EXPECT_EQ(NativeManagerTracker::CLOSED, tracker2.state_);
-#else
-  EXPECT_EQ(NativeManagerTracker::SHOWN, tracker1.state_);
-  EXPECT_EQ(NativeManagerTracker::NOT_SHOWN, tracker2.state_);
-#endif
 
   EXPECT_TRUE(tracker1.was_shown_);
   EXPECT_FALSE(tracker2.was_shown_);
-
-#if !defined(USE_AURA)
-  native_manager1->StopTracking();
-  native_manager2->StopTracking();
-#endif
 }
 
 
