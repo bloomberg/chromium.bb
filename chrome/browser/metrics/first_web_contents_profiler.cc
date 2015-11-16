@@ -20,32 +20,29 @@
 #include "components/startup_metric_utils/browser/startup_metric_utils.h"
 #include "content/public/browser/navigation_handle.h"
 
-scoped_ptr<FirstWebContentsProfiler>
-FirstWebContentsProfiler::CreateProfilerForFirstWebContents(
-    Delegate* delegate) {
-  DCHECK(delegate);
-  for (chrome::BrowserIterator iterator; !iterator.done(); iterator.Next()) {
-    Browser* browser = *iterator;
+// static
+void FirstWebContentsProfiler::Start() {
+  for (chrome::BrowserIterator browser_it; !browser_it.done();
+       browser_it.Next()) {
     content::WebContents* web_contents =
-        browser->tab_strip_model()->GetActiveWebContents();
+        browser_it->tab_strip_model()->GetActiveWebContents();
     if (web_contents) {
-      return scoped_ptr<FirstWebContentsProfiler>(
-          new FirstWebContentsProfiler(web_contents, delegate));
+      // FirstWebContentsProfiler owns itself and is also bound to
+      // |web_contents|'s lifetime by observing WebContentsDestroyed().
+      new FirstWebContentsProfiler(web_contents);
+      return;
     }
   }
-  return nullptr;
 }
 
 FirstWebContentsProfiler::FirstWebContentsProfiler(
-    content::WebContents* web_contents,
-    Delegate* delegate)
+    content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
       collected_paint_metric_(false),
       collected_load_metric_(false),
       collected_main_navigation_start_metric_(false),
       collected_main_navigation_finished_metric_(false),
-      finished_(false),
-      delegate_(delegate) {}
+      finished_(false) {}
 
 void FirstWebContentsProfiler::DidFirstVisuallyNonEmptyPaint() {
   if (collected_paint_metric_)
@@ -177,7 +174,7 @@ void FirstWebContentsProfiler::FinishedCollectingMetrics(
   if (IsFinishedCollectingMetrics() ||
       finish_reason == FinishReason::ABANDON_CONTENT_DESTROYED ||
       finish_reason == FinishReason::ABANDON_BLOCKING_UI) {
-    delegate_->ProfilerFinishedCollectingMetrics();
+    delete this;
   }
 }
 

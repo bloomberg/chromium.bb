@@ -26,6 +26,10 @@
 #include "ui/events/event_switches.h"
 #include "ui/gfx/screen.h"
 
+#if !defined(OS_ANDROID)
+#include "chrome/browser/metrics/first_web_contents_profiler.h"
+#endif  // !defined(OS_ANDROID)
+
 #if defined(OS_ANDROID) && defined(__arm__)
 #include <cpu-features.h>
 #endif  // defined(OS_ANDROID) && defined(__arm__)
@@ -343,8 +347,7 @@ void ChromeBrowserMainExtraPartsMetrics::PostBrowserStart() {
   is_screen_observer_ = true;
 
 #if !defined(OS_ANDROID)
-  first_web_contents_profiler_ =
-      FirstWebContentsProfiler::CreateProfilerForFirstWebContents(this).Pass();
+  FirstWebContentsProfiler::Start();
 #endif  // !defined(OS_ANDROID)
 }
 
@@ -362,12 +365,6 @@ void ChromeBrowserMainExtraPartsMetrics::OnDisplayMetricsChanged(
     const gfx::Display& display,
     uint32_t changed_metrics) {
 }
-
-#if !defined(OS_ANDROID)
-void ChromeBrowserMainExtraPartsMetrics::ProfilerFinishedCollectingMetrics() {
-  first_web_contents_profiler_.reset();
-}
-#endif  // !defined(OS_ANDROID)
 
 void ChromeBrowserMainExtraPartsMetrics::EmitDisplaysChangedMetric() {
   int display_count = gfx::Screen::GetNativeScreen()->GetNumDisplays();
