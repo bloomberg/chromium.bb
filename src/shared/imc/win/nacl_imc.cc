@@ -57,8 +57,6 @@ static const char kPipePrefix[] = "\\\\.\\pipe\\chrome.nacl.";
 
 static const size_t kPipePrefixSize =
     sizeof kPipePrefix / sizeof kPipePrefix[0];
-static const size_t kOldPipePrefixSize =
-    sizeof kOldPipePrefix / sizeof kOldPipePrefix[0];
 
 static const int kPipePathMax = kPipePrefixSize + NACL_PATH_MAX + 1;
 static const int kOutBufferSize = 4096;  /* TBD */
