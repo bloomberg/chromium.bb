@@ -31,6 +31,7 @@
 #ifndef WebSettingsImpl_h
 #define WebSettingsImpl_h
 
+#include "platform/heap/Handle.h"
 #include "public/web/WebSettings.h"
 
 namespace blink {
@@ -207,7 +208,7 @@ public:
 
 private:
     Settings* m_settings;
-    DevToolsEmulator* m_devToolsEmulator;
+    RawPtrWillBeUntracedMember<DevToolsEmulator> m_devToolsEmulator;
     bool m_showFPSCounter;
     bool m_showPaintRects;
     bool m_renderVSyncNotificationEnabled;
