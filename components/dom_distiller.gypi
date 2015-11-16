@@ -284,6 +284,7 @@
     ['OS=="ios"', {
       'targets': [
         {
+          # GN version: //components/dom_distiller/ios
           'target_name': 'dom_distiller_ios',
           'type': 'static_library',
           'dependencies': [
