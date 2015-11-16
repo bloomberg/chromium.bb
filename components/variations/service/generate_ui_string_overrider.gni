@@ -46,12 +46,17 @@ template("generate_ui_string_overrider") {
       deps = invoker.deps
     }
 
-    args = [
-             "-N" + invoker.namespace,
-             "-o" + rebase_path(root_gen_dir, root_build_dir),
-             "-H" + rebase_path(header_filename, root_gen_dir),
-             "-S" + rebase_path(source_filename, root_gen_dir),
-           ] + rebase_path(inputs, root_build_dir)
+    args = []
+
+    if (defined(invoker.namespace) && invoker.namespace != "") {
+      args += [ "-N" + invoker.namespace ]
+    }
+
+    args += [
+              "-o" + rebase_path(root_gen_dir, root_build_dir),
+              "-H" + rebase_path(header_filename, root_gen_dir),
+              "-S" + rebase_path(source_filename, root_gen_dir),
+            ] + rebase_path(inputs, root_build_dir)
   }
 
   source_set(target_name) {
