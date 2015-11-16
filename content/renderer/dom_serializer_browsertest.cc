@@ -54,33 +54,6 @@ using blink::WebVector;
 
 namespace content {
 
-// Iterate recursively over sub-frames to find one with with a given url.
-WebFrame* FindSubFrameByURL(WebView* web_view, const GURL& url) {
-  if (!web_view->mainFrame())
-    return NULL;
-
-  std::vector<WebFrame*> stack;
-  stack.push_back(web_view->mainFrame());
-
-  while (!stack.empty()) {
-    WebFrame* current_frame = stack.back();
-    stack.pop_back();
-    if (GURL(current_frame->document().url()) == url)
-      return current_frame;
-    WebElementCollection all = current_frame->document().all();
-    for (WebElement element = all.firstItem();
-         !element.isNull(); element = all.nextItem()) {
-      // Check frame tag and iframe tag
-      if (!element.hasHTMLTagName("frame") && !element.hasHTMLTagName("iframe"))
-        continue;
-      WebFrame* sub_frame = WebLocalFrame::fromFrameOwnerElement(element);
-      if (sub_frame)
-        stack.push_back(sub_frame);
-    }
-  }
-  return NULL;
-}
-
 bool HasDocType(const WebDocument& doc) {
   return !doc.doctype().isNull();
 }
@@ -199,6 +172,15 @@ class DomSerializerTests : public ContentBrowserTest,
     return GetWebView()->mainFrame();
   }
 
+  WebFrame* FindSubFrameByURL(const GURL& url) {
+    for (WebFrame* frame = GetWebView()->mainFrame(); frame;
+        frame = frame->traverseNext(false)) {
+      if (GURL(frame->document().url()) == url)
+        return frame;
+    }
+    return nullptr;
+  }
+
   // Load web page according to input content and relative URLs within
   // the document.
   void LoadContents(const std::string& contents,
@@ -229,7 +211,7 @@ class DomSerializerTests : public ContentBrowserTest,
   // Serialize DOM belonging to a frame with the specified |frame_url|.
   void SerializeDomForURL(const GURL& frame_url) {
     // Find corresponding WebFrame according to frame_url.
-    WebFrame* web_frame = FindSubFrameByURL(GetWebView(), frame_url);
+    WebFrame* web_frame = FindSubFrameByURL(frame_url);
     ASSERT_TRUE(web_frame != NULL);
     WebVector<WebURL> links;
     links.assign(&frame_url, 1);
@@ -248,7 +230,7 @@ class DomSerializerTests : public ContentBrowserTest,
 
   void SerializeHTMLDOMWithDocTypeOnRenderer(const GURL& file_url) {
     // Make sure original contents have document type.
-    WebFrame* web_frame = FindSubFrameByURL(GetWebView(), file_url);
+    WebFrame* web_frame = FindSubFrameByURL(file_url);
     ASSERT_TRUE(web_frame != NULL);
     WebDocument doc = web_frame->document();
     ASSERT_TRUE(HasDocType(doc));
@@ -266,7 +248,7 @@ class DomSerializerTests : public ContentBrowserTest,
 
   void SerializeHTMLDOMWithoutDocTypeOnRenderer(const GURL& file_url) {
     // Make sure original contents do not have document type.
-    WebFrame* web_frame = FindSubFrameByURL(GetWebView(), file_url);
+    WebFrame* web_frame = FindSubFrameByURL(file_url);
     ASSERT_TRUE(web_frame != NULL);
     WebDocument doc = web_frame->document();
     ASSERT_TRUE(!HasDocType(doc));
@@ -312,7 +294,7 @@ class DomSerializerTests : public ContentBrowserTest,
   void SerializeHTMLDOMWithNoMetaCharsetInOriginalDocOnRenderer(
       const GURL& file_url) {
     // Make sure there is no META charset declaration in original document.
-    WebFrame* web_frame = FindSubFrameByURL(GetWebView(), file_url);
+    WebFrame* web_frame = FindSubFrameByURL(file_url);
     ASSERT_TRUE(web_frame != NULL);
     WebDocument doc = web_frame->document();
     ASSERT_TRUE(doc.isHTMLDocument());
@@ -362,7 +344,7 @@ class DomSerializerTests : public ContentBrowserTest,
       const GURL& file_url) {
     // Make sure there are multiple META charset declarations in original
     // document.
-    WebFrame* web_frame = FindSubFrameByURL(GetWebView(), file_url);
+    WebFrame* web_frame = FindSubFrameByURL(file_url);
     ASSERT_TRUE(web_frame != NULL);
     WebDocument doc = web_frame->document();
     ASSERT_TRUE(doc.isHTMLDocument());
@@ -426,7 +408,7 @@ class DomSerializerTests : public ContentBrowserTest,
     LoadContents(original_contents, file_url, WebString());
 
     // Get BODY's text content in DOM.
-    WebFrame* web_frame = FindSubFrameByURL(GetWebView(), file_url);
+    WebFrame* web_frame = FindSubFrameByURL(file_url);
     ASSERT_TRUE(web_frame != NULL);
     WebDocument doc = web_frame->document();
     ASSERT_TRUE(doc.isHTMLDocument());
@@ -478,7 +460,7 @@ class DomSerializerTests : public ContentBrowserTest,
     // Load the test contents.
     LoadContents(original_contents, file_url, WebString());
     // Get value of BODY's title attribute in DOM.
-    WebFrame* web_frame = FindSubFrameByURL(GetWebView(), file_url);
+    WebFrame* web_frame = FindSubFrameByURL(file_url);
     ASSERT_TRUE(web_frame != NULL);
     WebDocument doc = web_frame->document();
     ASSERT_TRUE(doc.isHTMLDocument());
@@ -512,7 +494,7 @@ class DomSerializerTests : public ContentBrowserTest,
 
   void SerializeHTMLDOMWithNonStandardEntitiesOnRenderer(const GURL& file_url) {
     // Get value of BODY's title attribute in DOM.
-    WebFrame* web_frame = FindSubFrameByURL(GetWebView(), file_url);
+    WebFrame* web_frame = FindSubFrameByURL(file_url);
     WebDocument doc = web_frame->document();
     ASSERT_TRUE(doc.isHTMLDocument());
     WebElement body_element = doc.body();
@@ -544,7 +526,7 @@ class DomSerializerTests : public ContentBrowserTest,
     // Since for this test, we assume there is no savable sub-resource links for
     // this test file, also all links are relative URLs in this test file, so we
     // need to check those relative URLs and make sure document has BASE tag.
-    WebFrame* web_frame = FindSubFrameByURL(GetWebView(), file_url);
+    WebFrame* web_frame = FindSubFrameByURL(file_url);
     ASSERT_TRUE(web_frame != NULL);
     WebDocument doc = web_frame->document();
     ASSERT_TRUE(doc.isHTMLDocument());
@@ -678,7 +660,7 @@ class DomSerializerTests : public ContentBrowserTest,
 
   void SubResourceForElementsInNonHTMLNamespaceOnRenderer(
       const GURL& file_url) {
-    WebFrame* web_frame = FindSubFrameByURL(GetWebView(), file_url);
+    WebFrame* web_frame = FindSubFrameByURL(file_url);
     ASSERT_TRUE(web_frame != NULL);
     WebDocument doc = web_frame->document();
     WebNode lastNodeInBody = doc.body().lastChild();
