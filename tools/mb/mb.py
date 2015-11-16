@@ -620,7 +620,7 @@ class MetaBuildWrapper(object):
   def RunGYPAnalyze(self, vals):
     output_dir = self.ParseGYPConfigPath(self.args.path[0])
     if self.args.verbose:
-      inp = self.ReadInputJSON(['files', 'targets'])
+      inp = self.ReadInputJSON(['files'])
       self.Print()
       self.Print('analyze input:')
       self.PrintJSON(inp)
