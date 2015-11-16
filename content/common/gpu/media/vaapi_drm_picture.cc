@@ -162,7 +162,7 @@ bool VaapiDrmPicture::Initialize() {
                                           texture_id());
   scoped_refptr<gfx::GLImageOzoneNativePixmap> image(
       new gfx::GLImageOzoneNativePixmap(size(), GL_BGRA_EXT));
-  if (!image->Initialize(pixmap_.get())) {
+  if (!image->Initialize(pixmap_.get(), pixmap_->GetBufferFormat())) {
     LOG(ERROR) << "Failed to create GLImage";
     return false;
   }

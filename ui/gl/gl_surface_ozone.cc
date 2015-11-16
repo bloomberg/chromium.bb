@@ -584,7 +584,7 @@ bool GLSurfaceOzoneSurfacelessSurfaceImpl::CreatePixmaps() {
       return false;
     scoped_refptr<GLImageOzoneNativePixmap> image =
         new GLImageOzoneNativePixmap(GetSize(), GL_BGRA_EXT);
-    if (!image->Initialize(pixmap.get()))
+    if (!image->Initialize(pixmap.get(), gfx::BufferFormat::BGRA_8888))
       return false;
     images_[i] = image;
     // Bind image to texture.

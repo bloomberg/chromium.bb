@@ -15,7 +15,7 @@ class GL_EXPORT GLImageOzoneNativePixmap : public gl::GLImageEGL {
  public:
   GLImageOzoneNativePixmap(const Size& size, unsigned internalformat);
 
-  bool Initialize(ui::NativePixmap* pixmap);
+  bool Initialize(ui::NativePixmap* pixmap, BufferFormat format);
 
   // Overridden from GLImage:
   unsigned GetInternalFormat() override;

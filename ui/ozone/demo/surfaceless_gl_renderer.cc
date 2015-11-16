@@ -43,7 +43,7 @@ bool SurfacelessGlRenderer::BufferWrapper::Initialize(
                                gfx::BufferUsage::SCANOUT);
   scoped_refptr<gfx::GLImageOzoneNativePixmap> image(
       new gfx::GLImageOzoneNativePixmap(size, GL_RGB));
-  if (!image->Initialize(pixmap.get())) {
+  if (!image->Initialize(pixmap.get(), gfx::BufferFormat::BGRX_8888)) {
     LOG(ERROR) << "Failed to create GLImage";
     return false;
   }
