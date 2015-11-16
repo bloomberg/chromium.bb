@@ -19,7 +19,7 @@ struct InterpolationComponent {
         , nonInterpolableValue(nonInterpolableValue)
     { }
 
-    InterpolationComponent(const void* null) { ASSERT(null == 0); }
+    InterpolationComponent(std::nullptr_t) { }
 
     InterpolationComponent(InterpolationComponent&& other)
         : interpolableValue(other.interpolableValue.release())
@@ -41,7 +41,7 @@ struct PairwiseInterpolationComponent {
         , nonInterpolableValue(nonInterpolableValue)
     { }
 
-    PairwiseInterpolationComponent(const void* null) { ASSERT(null == 0); }
+    PairwiseInterpolationComponent(std::nullptr_t) { }
 
     PairwiseInterpolationComponent(PairwiseInterpolationComponent&& other)
         : startInterpolableValue(other.startInterpolableValue.release())
