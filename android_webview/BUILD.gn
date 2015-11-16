@@ -5,16 +5,8 @@
 import("//build/config/android/config.gni")
 import("//build/config/android/rules.gni")
 import("//build/config/locales.gni")
-import("//build_overrides/v8.gni")
-import("//third_party/icu/config.gni")
 import("//tools/grit/repack.gni")
 import("webview_repack_locales.gni")
-
-if (current_cpu == "arm" || current_cpu == "x86" || current_cpu == "mipsel") {
-  arch_suffix = 32
-} else {
-  arch_suffix = 64
-}
 
 group("android_webview") {
   deps = [
@@ -115,58 +107,28 @@ repack("repack_pack") {
   output = "$target_gen_dir/webviewchromium.pak"
 }
 
-copy("rename_natives_blob") {
-  sources = [
-    "$root_out_dir/natives_blob.bin",
-  ]
-  outputs = [
-    "$target_gen_dir/natives_blob_$arch_suffix.bin",
-  ]
-  deps = [
-    "//v8",
-  ]
-}
-
-copy("rename_snapshot_blob") {
-  sources = [
-    "$root_out_dir/snapshot_blob.bin",
-  ]
-  outputs = [
-    "$target_gen_dir/snapshot_blob_$arch_suffix.bin",
-  ]
-  deps = [
-    "//v8",
-  ]
-}
-
-android_webview_assets_dir = "$root_build_dir/android_webview_assets"
 webview_license_path = "$target_gen_dir/webview_licenses.notice"
 
-copy_ex("assets") {
-  clear_dir = true
-  dest = android_webview_assets_dir
+android_assets("uncompressed_assets") {
   sources = [
     "$target_gen_dir/webviewchromium.pak",
-    webview_license_path,
   ]
   deps = [
     ":repack_pack",
-    ":generate_webview_license_notice",
   ]
-  if (icu_use_data_file) {
-    sources += [ "$root_build_dir/icudtl.dat" ]
-    deps += [ "//third_party/icu:icudata" ]
-  }
-  if (v8_use_external_startup_data) {
-    sources += [
-      "$target_gen_dir/natives_blob_$arch_suffix.bin",
-      "$target_gen_dir/snapshot_blob_$arch_suffix.bin",
-    ]
-    deps += [
-      ":rename_natives_blob",
-      ":rename_snapshot_blob",
-    ]
-  }
+  disable_compression = true
+}
+
+android_assets("assets") {
+  sources = [
+    webview_license_path,
+  ]
+  deps = [
+    ":generate_webview_license_notice",
+    ":uncompressed_assets",
+    "//third_party/icu:icu_assets",
+    "//v8:v8_external_startup_data_assets",
+  ]
 }
 
 action("generate_webview_license_notice") {
@@ -683,7 +645,6 @@ android_apk("system_webview_apk") {
   android_manifest = get_target_outputs(":system_webview_manifest")
   android_manifest = android_manifest[1]
   android_manifest_dep = ":system_webview_manifest"
-  asset_location = android_webview_assets_dir
   chromium_code = true
   deps = [
     ":system_webview_resources",
