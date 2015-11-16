@@ -12,6 +12,15 @@
 
 namespace {
 
+base::TimeDelta GetFirstContentfulPaint(
+    const page_load_metrics::PageLoadTiming& timing) {
+  if (timing.first_text_paint.is_zero())
+    return timing.first_image_paint;
+  if (timing.first_image_paint.is_zero())
+    return timing.first_text_paint;
+  return std::min(timing.first_text_paint, timing.first_image_paint);
+}
+
 bool IsFromGoogle(const GURL& url) {
   const char kGoogleSearchHostnamePrefix[] = "www.";
   std::string domain = net::registry_controlled_domains::GetDomainAndRegistry(
@@ -97,6 +106,22 @@ void FromGWSPageLoadMetricsObserver::OnComplete(
     PAGE_LOAD_HISTOGRAM(
         "PageLoad.Clients.FromGWS.Timing2.NavigationToFirstTextPaint",
         timing.first_text_paint);
+  }
+  if (ShouldLogEvent(timing.first_image_paint, first_background)) {
+    PAGE_LOAD_HISTOGRAM(
+        "PageLoad.Clients.FromGWS.Timing2.NavigationToFirstImagePaint",
+        timing.first_image_paint);
+  }
+  if (ShouldLogEvent(timing.first_paint, first_background)) {
+    PAGE_LOAD_HISTOGRAM(
+        "PageLoad.Clients.FromGWS.Timing2.NavigationToFirstPaint",
+        timing.first_paint);
+  }
+  base::TimeDelta first_contentful_paint = GetFirstContentfulPaint(timing);
+  if (ShouldLogEvent(first_contentful_paint, first_background)) {
+    PAGE_LOAD_HISTOGRAM(
+        "PageLoad.Clients.FromGWS.Timing2.NavigationToFirstContentfulPaint",
+        first_contentful_paint);
   }
 }
 
