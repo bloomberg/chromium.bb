@@ -271,6 +271,11 @@ def ConfigureHostArch(host):
       # a --build switch to ensure things build correctly.
       configure_args.append('--build=' + host)
 
+  if HostIsMac(host):
+    # This fixes a failure in building GCC's insn-attrtab.c with newer Mac
+    # SDK versions.
+    extra_cc_args.append('-fbracket-depth=1000')
+
   extra_cxx_args = list(extra_cc_args)
   if fnmatch.fnmatch(host, '*-linux*'):
     # Avoid shipping binaries with a runtime dependency on
@@ -705,7 +710,12 @@ def HostTools(host, target):
                       # includes 64-bit secondary targets for 64-bit hosts.
                       '--enable-targets=arm-nacl,i686-nacl,x86_64-nacl',
                       '--enable-deterministic-archives',
-                      '--enable-gold',
+                      # TODO(mcgrathr): gold disabled on Mac hosts because
+                      # of newer OSX SDK problems with binutils' safe-ctype.h
+                      # vs <string>.  Reenable when we have an upstream fix
+                      # merged.
+                      WindowsAlternate('--enable-gold', '--enable-gold',
+                                       '--disable-gold'),
                       ] + WindowsAlternate([], ['--enable-plugins']))
               ] + DummyDirCommands(binutils_dummy_dirs) + [
               command.Command(MakeCommand(host)),
