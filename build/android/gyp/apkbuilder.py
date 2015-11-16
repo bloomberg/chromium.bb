@@ -48,16 +48,19 @@ def _ParseArgs(args):
                       default=[])
   parser.add_argument('--android-abi',
                       help='Android architecture to use for native libraries')
-  parser.add_argument('--create-placeholder-lib',
-                      action='store_true',
-                      help='Whether to add a dummy library file')
+  parser.add_argument('--native-lib-placeholders',
+                      help='GYP-list of native library placeholders to add.',
+                      default='[]')
   options = parser.parse_args(args)
-  if not options.android_abi and (options.native_libs_dir or
-                                  options.create_placeholder_lib):
-    raise Exception('Must specify --android-abi with --native-libs-dir')
   options.assets = build_utils.ParseGypList(options.assets)
   options.uncompressed_assets = build_utils.ParseGypList(
       options.uncompressed_assets)
+  options.native_lib_placeholders = build_utils.ParseGypList(
+      options.native_lib_placeholders)
+
+  if not options.android_abi and (options.native_libs_dir or
+                                  options.native_lib_placeholders):
+    raise Exception('Must specify --android-abi with --native-libs-dir')
   return options
 
 
@@ -119,7 +122,7 @@ def main(args):
   if options.dex_file:
     input_paths.append(options.dex_file)
 
-  input_strings = [options.create_placeholder_lib, options.android_abi]
+  input_strings = [options.android_abi, options.native_lib_placeholders]
 
   for path in itertools.chain(options.assets, options.uncompressed_assets):
     src_path, dest_path = _SplitAssetPath(path)
@@ -141,10 +144,11 @@ def main(args):
         for path in native_libs:
           basename = os.path.basename(path)
           apk.write(path, 'lib/%s/%s' % (options.android_abi, basename))
-        if options.create_placeholder_lib:
+        for name in options.native_lib_placeholders:
           # Make it non-empty so that its checksum is non-zero and is not
           # ignored by md5_check.
-          apk.writestr('lib/%s/libplaceholder.so' % options.android_abi, ':-)')
+          apk.writestr('lib/%s/%s' % (options.android_abi, name), ':)',
+                       zipfile.ZIP_STORED)
         if options.dex_file:
           apk.write(options.dex_file, 'classes.dex')
 

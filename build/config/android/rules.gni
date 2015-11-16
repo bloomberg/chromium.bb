@@ -1186,6 +1186,8 @@ template("android_java_prebuilt") {
 #   native_libs: List paths of native libraries to include in this apk. If these
 #     libraries depend on other shared_library targets, those dependencies will
 #     also be included in the apk.
+#   native_lib_placeholders: List of placeholder filenames to add to the apk
+#     (optional).
 #   apk_under_test: For an instrumentation test apk, this is the target of the
 #     tested apk.
 #   include_all_resources - If true include all resource IDs in all generated
@@ -1655,6 +1657,12 @@ template("android_apk") {
 
     if (_native_libs != [] && !_create_abi_split) {
       native_libs_dir = _native_libs_dir
+
+      # Placeholders are not necessary for L+, so add them here, but don't
+      # bother to create them in the case of splits.
+      # http://crbug.com/395038
+      forward_variables_from(invoker, [ "native_lib_placeholders" ])
+
       deps += [ ":$_prepare_native_target_name" ]
     }
   }
