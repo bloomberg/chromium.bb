@@ -126,6 +126,11 @@ void LayoutRubyRun::addChild(LayoutObject* child, LayoutObject* beforeChild)
             LayoutRubyRun* newRun = staticCreateRubyRun(ruby);
             ruby->addChild(newRun, this);
             newRun->addChild(child);
+
+            // Make sure we don't leave anything in the percentage descendant
+            // map before moving the children to the new base.
+            if (hasPercentHeightDescendants())
+                clearPercentHeightDescendantsFrom(this);
             rubyBaseSafe()->moveChildren(newRun->rubyBaseSafe(), beforeChild);
         }
     } else {

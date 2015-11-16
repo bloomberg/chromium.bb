@@ -63,6 +63,8 @@ void LayoutRubyBase::moveChildren(LayoutRubyBase* toBase, LayoutObject* beforeCh
     // This function removes all children that are before (!) beforeChild
     // and appends them to toBase.
     ASSERT_ARG(toBase, toBase);
+    // Callers should have handled the percent height descendant map.
+    ASSERT(!hasPercentHeightDescendants());
 
     if (beforeChild && beforeChild->parent() != this)
         beforeChild = splitAnonymousBoxesAroundChild(beforeChild);
