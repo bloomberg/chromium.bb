@@ -33,7 +33,6 @@ Untuk mendapatkan maklumat tentang privasi, sila lihat Dasar Privasi Google (htt
 <translation id="1770394049404108959">Saya tidak boleh membuka aplikasi ini.</translation>
 <translation id="177096447311351977">IP Saluran untuk klien: <ph name="CLIENT_GAIA_IDENTIFIER" /> ip='<ph name="CLIENT_IP_ADDRESS_AND_PORT" />' host_ip='<ph name="HOST_IP_ADDRESS_AND_PORT" />' channel='<ph name="CHANNEL_TYPE" />' connection='<ph name="CONNECTION_TYPE" />'.</translation>
 <translation id="1779766957982586368">Tutup tetingkap</translation>
-<translation id="1818475040640568770">Anda tidak mempunyai komputer yang berdaftar.</translation>
 <translation id="1841799852846221389">Melumpuhkan sambungan jauh untuk komputer ini…</translation>
 <translation id="189172778771606813">Tutup laci navigasi</translation>
 <translation id="195619862187186579">Reka letak papan kekunci</translation>
@@ -87,8 +86,6 @@ Untuk mendapatkan maklumat tentang privasi, sila lihat Dasar Privasi Google (htt
 <translation id="2926340305933667314">Gagal melumpuhkan akses jauh kepada komputer ini. Sila cuba lagi kemudian.</translation>
 <translation id="2930135165929238380">Beberapa komponen yang diperlukan didapati hilang. Sila pergi ke chrome://plugins dan pastikan Klien Natif didayakan.</translation>
 <translation id="2939145106548231838">Sahkan kepada hos</translation>
-<translation id="2998137343848432918">• Skrin Kredit ditambahkan.
-• Masalah apabila beralih kepada skrin penuh dengan papan kekunci kelihatan dibetulkan.</translation>
 <translation id="3020807351229499221">Gagal mengemas kini PIN. Sila cuba lagi kemudian.</translation>
 <translation id="3025388528294795783">Untuk membantu kami menyelesaikan masalah anda, sila beritahu kami masalahnya:</translation>
 <translation id="3027681561976217984">Mod sentuh</translation>
@@ -171,7 +168,6 @@ Jauh Chrome</translation>
 <translation id="518094545883702183">Maklumat ini hanya digunakan untuk mendiagnosis masalah yang anda laporkan, hanya tersedia kepada seseorang yang menyiasat laporan anda dan dikekalkan selama tidak lebih daripada 30 hari.</translation>
 <translation id="5222676887888702881">Log keluar</translation>
 <translation id="5254120496627797685">Tindakan meninggalkan halaman ini akan menamatkan sesi Desktop Jauh Chrome anda.</translation>
-<translation id="5285241842433869526">Ketahui cara menyediakan komputer untuk akses jauh.</translation>
 <translation id="5308380583665731573">Sambung</translation>
 <translation id="5363265567587775042">Minta pemilik komputer yang ingin anda gunakan itu supaya mengklik “<ph name="SHARE" />” dan memberi anda kod aksesnya.</translation>
 <translation id="5379087427956679853">Desktop Jauh Chrome membolehkan anda berkongsi komputer anda dengan selamat melalui Web. Kedua-dua pengguna perlu menjalankan apl Desktop Jauh Chrome, yang boleh didapati di <ph name="URL" />.</translation>

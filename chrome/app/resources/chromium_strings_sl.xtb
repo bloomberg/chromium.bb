@@ -34,6 +34,7 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="1967743265616885482">Modul z istim imenom je že bil v sporu s Chromiumom.</translation>
 <translation id="2077129598763517140">Uporabi strojno pospeševanje, če je na voljo</translation>
 <translation id="2097986737970966220">Odpri Chromium na namizju</translation>
+<translation id="2117181891440368863">Chromium je preveril, da je potrdilo tega spletnega mesta izdal izdajatelj <ph name="ISSUER" />. Strežnik je poslal podatke o preglednosti potrdila, vendar so bili neveljavni.</translation>
 <translation id="2119636228670142020">O sistemu &amp;Chromium OS</translation>
 <translation id="2158734852934720349">Odprtokodne licence za Chromium OS</translation>
 <translation id="2233513990531887259">Znova zaženi v prostornem načinu Chromiuma</translation>
@@ -48,13 +49,11 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="2558641060352364164">To spletno mesto uporablja vtičnik Chromium Frame, za katerega podpora kmalu ne bo več na voljo. Odstranite ga in nadgradite na sodoben brskalnik.</translation>
 <translation id="2572494885440352020">Pomoč za Chromium</translation>
 <translation id="2602806952220118310">Chrome – Obvestila</translation>
-<translation id="2615699638672665509">Ta računalnik bo kmalu prenehal prejemati posodobitve za Chromium, ker njegova strojna oprema ni več podprta.</translation>
 <translation id="2636877269779209383">Chromium potrebuje dostop do kamere, če želite, da temu spletnemu mestu omogoči dostop do nje.</translation>
 <translation id="2648074677641340862">Napaka v operacijskem sistemu med namestitvijo. Znova prenesite Chromium.</translation>
 <translation id="2673087257647337101">Samo še malo. Znova zaženite Chromium, da dokončate posodobitev.</translation>
 <translation id="2685838254101182273">Chromium se ne posodablja več in ne podpira več te različice operacijskega sistema.</translation>
 <translation id="2705212601509139398">To spletno mesto uporablja vtičnik Chromium Frame, za katerega podpora kmalu ne bo več na voljo. Odstranite ga in prenesite sodoben brskalnik.</translation>
-<translation id="2732467638532545152">Vaš računalnik uporablja staro različico sistema Microsoft Windows, ki ne more obdelati varnostnega potrdila tega spletnega mesta. Zaradi te težave Chromium ne more ugotoviti, ali je prišlo potrdilo s spletnega mesta <ph name="SITE" /> ali od nekoga v vašem omrežju, ki se izdaja za spletno mesto <ph name="SITE" />. Posodobite sistem Microsoft Windows v računalniku na novejšo različico.</translation>
 <translation id="2770231113462710648">Spremeni privzeti brskalnik na:</translation>
 <translation id="2801146392936645542">Datoteka <ph name="FILE_NAME" /> je zlonamerna, zato jo je Chromium blokiral.</translation>
 <translation id="2847479871509788944">Odstranitev iz Chromiuma ...</translation>
@@ -86,8 +85,6 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="3582788516608077514">Posodabljanje Chromiuma ...</translation>
 <translation id="358997566136285270">Logotip Chromiuma</translation>
 <translation id="3595526210123705352">Če znova zaženete v načinu sistema Windows 8, se bodo aplikacije za Chromium zaprle in znova zagnale.</translation>
-<translation id="3656661827369545115">Samodejni zagon Chromiuma ob zagonu računalnika</translation>
-<translation id="3736987306260231966">Chromium ne more prikazati spletne strani, ker računalnik nima internetne povezave.</translation>
 <translation id="3738139272394829648">Dotaknite se za iskanje</translation>
 <translation id="3744899669254331632">Spletnega mesta <ph name="SITE" /> trenutno ne morete obiskati, ker je poslalo šifrirane poverilnice, ki jih Chromium ne more obdelati. Napake v omrežju in napadi so običajno začasni, zato bo ta stran verjetno delovala pozneje.</translation>
 <translation id="3748537968684000502">Ogledujete si varno stran Chromiuma.</translation>
@@ -108,7 +105,6 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="4285930937574705105">Namestitev ni bila izvedena zaradi nedoločene napake. Če se Chromium trenutno izvaja, ga zaprite in poskusite znova.</translation>
 <translation id="4330585738697551178">Za ta modul je znano, da je v sporu s Chromiumom.</translation>
 <translation id="4423735387467980091">Prilagajanje in nadziranje Chromiuma</translation>
-<translation id="442817494342774222">Chromium se samodejno zažene ob zagonu računalnika.</translation>
 <translation id="4458285410772214805">Odjavite se in znova prijavite, da bodo te spremembe začele veljati.</translation>
 <translation id="4488676065623537541">Vaše podrobnosti za obračun so shranjene v Chromium.</translation>
 <translation id="4559775032954821361">Odprite
@@ -179,6 +175,7 @@ Nekatere funkcije morda ne bodo na voljo. Določite drug imenik profila ali upor
 <translation id="6734080038664603509">Posodobi &amp;Chromium</translation>
 <translation id="6757767188268205357">Ne nadleguj me</translation>
 <translation id="6810143991807788455">Pomagajte izboljšati Chromium s poročanjem o trenutnih nastavitvah</translation>
+<translation id="6838494703713445896">Chromium je preveril, da je potrdilo tega spletnega mesta izdal izdajatelj <ph name="ISSUER" />. Strežnik je poslal veljavne podatke o preglednosti potrdila.</translation>
 <translation id="6883876366448858277">pošlje besedo in njeno sobesedilo Iskanju Google ter vrne definicije, slike in druge rezultate iskanja.</translation>
 <translation id="6893813176749746474">Chromium je posodobljen, vendar ga niste uporabljali najmanj 30 dni.</translation>
 <translation id="6900895776413482243">Če znova zaženete v prostornem načinu Chromiuma, se bodo aplikacije za Chromium zaprle in znova zagnale.</translation>
@@ -191,6 +188,7 @@ Nekatere funkcije morda ne bodo na voljo. Določite drug imenik profila ali upor
 <translation id="7066436765290594559">Chromium OS ni mogel sinhronizirati podatkov. Posodobite sinhronizacijsko geslo.</translation>
 <translation id="7138853919861947730">Chromium lahko za boljšo izkušnjo brskanja uporablja spletne storitve.</translation>
 <translation id="7162152143154757523">Chromium omogoča pametnejše črkovanje, tako da vaše vnose v brskalnik pošilja v Googlove strežnike in s tem omogoči, da uporabljate isto tehnologijo preverjanja črkovanja, kot jo uporablja Googlovo iskanje.</translation>
+<translation id="7178626992616222740">Chromium je preveril, da je potrdilo tega spletnega mesta izdal izdajatelj <ph name="ISSUER" />. Strežnik je poslal podatke o preglednosti potrdila, vendar Chromium ni prepoznal nobenega od dnevnikov o preglednosti potrdila.</translation>
 <translation id="7196020411877309443">Zakaj je to prikazano?</translation>
 <translation id="7205698830395646142">Skrij v meniju Chromiuma</translation>
 <translation id="7211828883345145708">Omogoča dodatne bližnjične tipke, ki so koristne za odpravljanje napak v Chromiumu.</translation>
@@ -216,13 +214,13 @@ Chromium ne more obnoviti vaših nastavitev.</translation>
 <translation id="7723128346970903111">Ko je zastavica omogočena, bo uporabljen potek prijave v Chromiumu na podlagi oznake »iframe«, v nasprotnem primeru pa potek na podlagi spletnega pogleda.</translation>
 <translation id="7729447699958282447">Chromium ni mogel sinhronizirati podatkov, ker sinhronizacija ni na voljo za vašo domeno.</translation>
 <translation id="7747138024166251722">Namestitvenemu programu ni uspelo ustvariti začasnega imenika. Preverite, ali je na disku dovolj prostora in ali imate dovoljenje za namestitev programske opreme.</translation>
+<translation id="7918535023914021398">Chromium je preveril, da je potrdilo tega spletnega mesta izdal izdajatelj <ph name="ISSUER" />. Strežnik ni poslal nobenih podatkov o preglednosti potrdila.</translation>
 <translation id="7937630085815544518">V Chromium ste bili prijavljeni kot <ph name="USER_EMAIL_ADDRESS" />. Pri vnovični prijavi uporabite isti račun.</translation>
 <translation id="7962572577636132072">Chromium se samodejno posodablja, zato boste vedno imeli najnovejšo različico.</translation>
 <translation id="7979877361127045932">Skrij v meniju Chromiuma</translation>
 <translation id="8030318113982266900">Posodabljanje naprave na kanal <ph name="CHANNEL_NAME" /> ...</translation>
 <translation id="8033665941300843262">Chromium potrebuje dostop do dovoljenj, če želite, da temu spletnemu mestu omogoči dostop do njih.</translation>
 <translation id="805745970029938373">Vsa obvestila aplikacij za Chromium, razširitev in spletnih mest lahko vidite tukaj.</translation>
-<translation id="811857857463334932">Ta računalnik ne bo več prejemal posodobitev za Chromium, ker njegova strojna oprema ni več podprta.</translation>
 <translation id="8134284582177628525">Če imate ta računalnik v skupni rabi z osebo <ph name="PROFILE_NAME" />, se dodajte v Chromium, če želite brskati ločeno. V nasprotnem primeru prekinite povezavo z njenim Google Računom.</translation>
 <translation id="8187289872471304532">Odprite
           Aplikacije &gt; Sistemske nastavitve &gt; Omrežje &gt; Dodatno &gt; Namestniški strežniki

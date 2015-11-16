@@ -32,6 +32,7 @@
 <translation id="1967743265616885482">Samanniminen moduuli on aiheuttanut aiemmin ristiriitoja Chromiumin kanssa.</translation>
 <translation id="2077129598763517140">Käytä laitteistokiihdytystä, jos mahdollista</translation>
 <translation id="2097986737970966220">Avaa Chromium työpöydällä</translation>
+<translation id="2117181891440368863">Chromium vahvisti, että <ph name="ISSUER" /> on myöntänyt tämän sivuston varmenteen. Palvelin lähetti Certificate Transparency -tiedot, mutta ne eivät pidä paikkaansa.</translation>
 <translation id="2119636228670142020">Tietoja &amp;Chromium-käyttöjärjestelmästä</translation>
 <translation id="2158734852934720349">Chromium-käyttöjärjestelmän avoimen lähdekoodin lisenssit</translation>
 <translation id="2233513990531887259">Käynnistä Chromium uudelleen immersiivisessä tilassa</translation>
@@ -46,13 +47,11 @@
 <translation id="2558641060352364164">Tämä sivusto käyttää Chromium-kehyslaajennusta, jonka tukeminen lopetetaan pian. Poista se ja asenna uudempi selain.</translation>
 <translation id="2572494885440352020">Chromium Helper</translation>
 <translation id="2602806952220118310">Chromium – ilmoitukset</translation>
-<translation id="2615699638672665509">Tämän tietokoneen Chromium-päivitykset päättyvät pian, sillä sen laitteistoa ei enää tueta.</translation>
 <translation id="2636877269779209383">Chromium tarvitsee kameran käyttöoikeuden, jotta voi jakaa sen sivustolle.</translation>
 <translation id="2648074677641340862">Asennuksessa ilmeni käyttöjärjestelmävirhe. Lataa Chromium uudelleen.</translation>
 <translation id="2673087257647337101">Lähes valmista! Viimeistele päivitys käynnistämällä Chromium uudelleen.</translation>
 <translation id="2685838254101182273">Chromium on lakannut päivittymästä, eikä se enää tue käyttöjärjestelmäsi tätä versiota.</translation>
 <translation id="2705212601509139398">Tämä sivusto käyttää Chromium-kehyslaajennusta, jonka tukeminen lopetetaan pian. Poista se ja lataa yhteensopiva selain.</translation>
-<translation id="2732467638532545152">Tietokoneesi Microsoft Windowsin versio ei voi käsitellä verkkosivustosi suojausvarmennetta. Siksi Chromium ei voi päätellä, onko varmenne peräisin sivustolta <ph name="SITE" /> vai verkostosi sisäiseltä taholta, joka esittää olevansa <ph name="SITE" />. Päivitä tietokoneesi Windows-versio uudempaan.</translation>
 <translation id="2770231113462710648">Vaihda oletusselaimeksi:</translation>
 <translation id="2801146392936645542"><ph name="FILE_NAME" /> on haitallinen, ja Chromium on estänyt sen.</translation>
 <translation id="2847479871509788944">Poista Chromiumista…</translation>
@@ -85,8 +84,6 @@ ja virheelliset tiedot. Joko hyökkääjä yrittää esiintyä sivustona <ph nam
 <translation id="3582788516608077514">Päivitetään Chromiumia...</translation>
 <translation id="358997566136285270">Chromium-logo</translation>
 <translation id="3595526210123705352">Jos käynnistät selaimen uudelleen Windows 8 -tilassa, Chromium-sovelluksesi suljetaan ja käynnistetään uudelleen.</translation>
-<translation id="3656661827369545115">Käynnistä Chromium automaattisesti tietokoneen käynnistyessä</translation>
-<translation id="3736987306260231966">Chromium ei voit näyttää verkkosivua, koska tietokoneesi ei ole yhteydessä internetiin.</translation>
 <translation id="3738139272394829648">Koskettamalla hakeminen</translation>
 <translation id="3744899669254331632">Et voi siirtyä sivustoon <ph name="SITE" /> tällä hetkellä, koska sivusto lähetti salatut kirjautumistiedot, joita Chromium ei osaa käsitellä. Verkkovirheet ja hyökkäykset ovat yleensä väliaikaisia, joten sivu toimii luultavasti myöhemmin.</translation>
 <translation id="3748537968684000502">Katselet suojattua Chromium-sivua.</translation>
@@ -107,7 +104,6 @@ ja virheelliset tiedot. Joko hyökkääjä yrittää esiintyä sivustona <ph nam
 <translation id="4285930937574705105">Asennus epäonnistui tuntemattoman virheen takia. Jos Chromium on tällä hetkellä käynnissä, sulje se ja yritä uudelleen.</translation>
 <translation id="4330585738697551178">Tämän moduulin tiedetään aiheuttavan ristiriitoja Chromiumin kanssa.</translation>
 <translation id="4423735387467980091">Chromiumin muokkaus ja hallinta</translation>
-<translation id="442817494342774222">Chromium on asetettu käynnistymään automaattisesti tietokoneen käynnistyksen yhteydessä.</translation>
 <translation id="4458285410772214805">Kirjaudu ulos ja kirjaudu uudelleen sisään, jotta muutos tulee voimaan.</translation>
 <translation id="4488676065623537541">Laskutustietosi on tallennettu Chromiumiin.</translation>
 <translation id="4559775032954821361">Avaa
@@ -178,6 +174,7 @@ Kaikki ominaisuudet eivät ehkä ole käytettävissä. Määritä jokin muu prof
 <translation id="6734080038664603509">Päivitä &amp;Chromium</translation>
 <translation id="6757767188268205357">Älä häiritse</translation>
 <translation id="6810143991807788455">Auta parantamaan Chromiumia ilmoittamalla nykyiset asetukset.</translation>
+<translation id="6838494703713445896">Chromium vahvisti, että <ph name="ISSUER" /> on myöntänyt tämän sivuston varmenteen. Palvelin lähetti paikkansa pitävät Certificate Transparency -tiedot.</translation>
 <translation id="6883876366448858277">lähettää sanan ja sen kontekstin Google-hakuun ja palauttaa määritelmiä, kuvia ja muita hakutuloksia.</translation>
 <translation id="6893813176749746474">Chromium on päivitetty, mutta et ole käyttänyt sitä ainakaan 30 päivään.</translation>
 <translation id="6900895776413482243">Jos käynnistät selaimen uudelleen Chromiumin immersiivisessä tilassa, Chromium-sovelluksesi suljetaan ja käynnistetään uudelleen.</translation>
@@ -190,6 +187,7 @@ Kaikki ominaisuudet eivät ehkä ole käytettävissä. Määritä jokin muu prof
 <translation id="7066436765290594559">Chromium-käyttöjärjestelmä ei voi synkronoida tietoja. Päivitä synkronoinnin tunnuslause.</translation>
 <translation id="7138853919861947730">Chromium voi käyttää verkkopalveluita parantaakseen selauskokemusta.</translation>
 <translation id="7162152143154757523">Chromium voi tarjota älykkäämmän oikeinkirjoituksen tarkistuspalvelun lähettämällä selaimeen kirjoittamasi tekstin Googlen palvelimille. Näin voit käyttää Google-haun kanssa samaa oikeinkirjoituksen tarkistustekniikkaa.</translation>
+<translation id="7178626992616222740">Chromium vahvisti, että <ph name="ISSUER" /> on myöntänyt tämän sivuston varmenteen. Palvelin lähetti Certificate Transparency -tiedot, mutta Chromium ei tunnistanut Certificate Transparency -lokitietoja.</translation>
 <translation id="7196020411877309443">Miksi minulle näytetään tämä ilmoitus?</translation>
 <translation id="7205698830395646142">Piilota Chromium-valikossa</translation>
 <translation id="7211828883345145708">Ottaa käyttöön lisää pikanäppäimiä, joiden avulla voi suorittaa Chromiumin vianetsintää.</translation>
@@ -215,13 +213,13 @@ Chromium ei voi palauttaa asetuksiasi.</translation>
 <translation id="7723128346970903111">Kun tämä on käytössä, iframe-pohjaiset Chromiumin kirjautumistyönkulut ovat käytössä. Muuten käytetään verkkonäkymäpohjaisia työnkulkuja.</translation>
 <translation id="7729447699958282447">Chromium ei voinut synkronoida tietoja, koska synkronointi ei ole käytettävissä verkkotunnuksessasi.</translation>
 <translation id="7747138024166251722">Asennusohjelma ei pystynyt luomaan väliaikaista hakemistoa. Tarkista, että käytettävissä on riittävästi levytilaa ja että sinulla on oikeus asentaa ohjelmia.</translation>
+<translation id="7918535023914021398">Chromium vahvisti, että <ph name="ISSUER" /> on myöntänyt tämän sivuston varmenteen. Palvelin ei lähettänyt Certificate Transparency -tietoja.</translation>
 <translation id="7937630085815544518">Chromiumiin kirjautunut käyttäjä: <ph name="USER_EMAIL_ADDRESS" />. Kirjaudu uudelleen sisään samalla tilillä.</translation>
 <translation id="7962572577636132072">Chromium päivitetään automaattisesti, joten käytössäsi on aina uusin versio.</translation>
 <translation id="7979877361127045932">Piilota Chromium-valikossa</translation>
 <translation id="8030318113982266900">Päivitetään laitteeseen kanavaa <ph name="CHANNEL_NAME" />…</translation>
 <translation id="8033665941300843262">Chromium tarvitsee lupien käyttöoikeuden, jotta voi jakaa sen sivustolle.</translation>
 <translation id="805745970029938373">Täällä näet kaikki ilmoituksesi Chromium-sovelluksista, laajennuksista ja verkkosivustoista.</translation>
-<translation id="811857857463334932">Tämän tietokoneen Chromium-päivitykset päättyvät, sillä sen laitteistoa ei enää tueta.</translation>
 <translation id="8134284582177628525">Jos jaat tämän tietokoneen henkilön <ph name="PROFILE_NAME" /> kanssa, lisää itsesi Chromiumiin, jotta voitte selata erikseen. Muuten sinun on irrotettava hänen Google-tilinsä.</translation>
 <translation id="8187289872471304532">Avaa
           Sovellukset &gt; Järjestelmäasetukset &gt; Verkko &gt; Lisäasetukset &gt; Välityspalvelimet

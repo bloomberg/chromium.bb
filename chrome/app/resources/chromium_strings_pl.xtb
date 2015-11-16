@@ -32,6 +32,7 @@
 <translation id="1967743265616885482">Znane są przypadki konfliktu modułu o takiej nazwie z Chromium.</translation>
 <translation id="2077129598763517140">Użyj akceleracji sprzętowej, gdy jest dostępna</translation>
 <translation id="2097986737970966220">Otwórz Chromium na pulpicie</translation>
+<translation id="2117181891440368863">Chromium sprawdził, że wydawcą certyfikatu tej witryny jest <ph name="ISSUER" />. Serwer dostarczył informacje o certyfikacie, korzystając z protokołu Certificate Transparency, ale były one nieprawidłowe.</translation>
 <translation id="2119636228670142020">System operacyjny &amp;Chromium – informacje</translation>
 <translation id="2158734852934720349">Licencje oprogramowania typu open source w Chromium OS</translation>
 <translation id="2233513990531887259">Uruchom ponownie w trybie pojemnym Chromium</translation>
@@ -46,13 +47,11 @@
 <translation id="2558641060352364164">Ta strona korzysta z wtyczki Chromium Frame, która wkrótce nie będzie obsługiwana. Odinstaluj wtyczkę i przejdź na nowoczesną przeglądarkę.</translation>
 <translation id="2572494885440352020">Pomoc Chromium</translation>
 <translation id="2602806952220118310">Chromium – powiadomienia</translation>
-<translation id="2615699638672665509">Ten komputer wkrótce przestanie otrzymywać aktualizacje Chromium, ponieważ zawiera sprzęt, który nie jest już obsługiwany.</translation>
 <translation id="2636877269779209383">Chromium potrzebuje dostępu do kamery, by móc ją udostępnić tej stronie.</translation>
 <translation id="2648074677641340862">Podczas instalacji wystąpił błąd systemu operacyjnego. Pobierz Chromium ponownie.</translation>
 <translation id="2673087257647337101">Prawie aktualny. Uruchom ponownie Chromium, by zakończyć aktualizację.</translation>
 <translation id="2685838254101182273">Chromium nie jest już aktualizowany ani nie obsługuje tej wersji systemu operacyjnego.</translation>
 <translation id="2705212601509139398">Ta strona korzysta z wtyczki Chromium Frame, która wkrótce nie będzie obsługiwana. Odinstaluj wtyczkę i pobierz zgodną przeglądarkę.</translation>
-<translation id="2732467638532545152">Twój komputer ma starą wersję Microsoft Windows, która nie potrafi przetworzyć certyfikatu bezpieczeństwa tej witryny. Przez ten problem Chromium nie może ustalić, czy ten certyfikat pochodzi z <ph name="SITE" /> czy od kogoś w Twojej sieci podszywającego się pod <ph name="SITE" />. Zaktualizuj Windows na komputerze do nowszej wersji.</translation>
 <translation id="2770231113462710648">Zmień przeglądarkę domyślną na:</translation>
 <translation id="2801146392936645542">Plik <ph name="FILE_NAME" /> jest złośliwy i został zablokowany przez Chromium.</translation>
 <translation id="2847479871509788944">Usuń z Chromium...</translation>
@@ -82,8 +81,6 @@
 <translation id="3582788516608077514">Aktualizowanie Chromium...</translation>
 <translation id="358997566136285270">Logo Chromium</translation>
 <translation id="3595526210123705352">Ponowne uruchomienie w trybie Windows 8 spowoduje zamknięcie i ponowne otwarcie aplikacji Chromium.</translation>
-<translation id="3656661827369545115">Uruchamiaj Chromium automatycznie po włączeniu komputera</translation>
-<translation id="3736987306260231966">Chromium nie może wyświetlić strony internetowej, bo komputer nie ma połączenia z internetem.</translation>
 <translation id="3738139272394829648">Dotknij, by wyszukać</translation>
 <translation id="3744899669254331632">Nie możesz teraz odwiedzić strony <ph name="SITE" />, ponieważ wysłała ona zaszyfrowane dane logowania, których Chromium nie może przetworzyć. Błędy sieciowe i ataki są zazwyczaj tymczasowe, więc prawdopodobnie strona będzie dostępna później.</translation>
 <translation id="3748537968684000502">Przeglądasz bezpieczną stronę Chromium.</translation>
@@ -104,7 +101,6 @@
 <translation id="4285930937574705105">Instalacja nie powiodła się z powodu nieokreślonego błędu. Jeśli Chromium jest aktualnie uruchomiony, zamknij go i spróbuj ponownie.</translation>
 <translation id="4330585738697551178">Znane są przypadki konfliktu tego modułu z Chromium.</translation>
 <translation id="4423735387467980091">Dostosowywanie i kontrolowanie Chromium</translation>
-<translation id="442817494342774222">Chromium uruchamia się automatycznie po włączeniu komputera.</translation>
 <translation id="4458285410772214805">Wyloguj się i zaloguj ponownie, by zmiana zaczęła obowiązywać.</translation>
 <translation id="4488676065623537541">Szczegóły płatności zostały zapisane w Chromium.</translation>
 <translation id="4559775032954821361">Wybierz
@@ -175,6 +171,7 @@ Niektóre funkcje mogą być niedostępne. Podaj inny katalog z profilem lub uż
 <translation id="6734080038664603509">Aktualizuj &amp;Chromium</translation>
 <translation id="6757767188268205357">Nie proponuj więcej</translation>
 <translation id="6810143991807788455">Pomóż ulepszyć Chromium, zgłaszając bieżące ustawienia</translation>
+<translation id="6838494703713445896">Chromium sprawdził, że wydawcą certyfikatu tej witryny jest <ph name="ISSUER" />. Serwer dostarczył poprawne informacje o certyfikacie, korzystając z protokołu Certificate Transparency.</translation>
 <translation id="6883876366448858277">przesyła słowo i jego kontekst do wyszukiwarki Google, by wyświetlić definicje, zdjęcia i inne wyniki wyszukiwania.</translation>
 <translation id="6893813176749746474">Przeglądarka Chromium została zaktualizowana, ale nie była przez Ciebie używana przez co najmniej 30 dni.</translation>
 <translation id="6900895776413482243">Ponowne uruchomienie Chromium w trybie pojemnym spowoduje zamknięcie i ponowne otwarcie aplikacji Chromium.</translation>
@@ -187,6 +184,7 @@ Niektóre funkcje mogą być niedostępne. Podaj inny katalog z profilem lub uż
 <translation id="7066436765290594559">System operacyjny Chromium nie może zsynchronizować danych. Zaktualizuj hasło synchronizacji.</translation>
 <translation id="7138853919861947730">Chromium może poprawić wygodę użytkownika, korzystając z usług internetowych.</translation>
 <translation id="7162152143154757523">Chromium może lepiej sprawdzać pisownię, przesyłając do serwerów Google tekst, który wpisujesz w przeglądarce. Dzięki temu możesz korzystać z tej samej technologii sprawdzania pisowni co wyszukiwarka Google.</translation>
+<translation id="7178626992616222740">Chromium sprawdził, że wydawcą certyfikatu tej witryny jest <ph name="ISSUER" />. Serwer dostarczył informacje o certyfikacie, korzystając z protokołu Certificate Transparency, ale Chromium nie rozpoznał żadnego z dzienników.</translation>
 <translation id="7196020411877309443">Dlaczego wyświetla mi się to okienko?</translation>
 <translation id="7205698830395646142">Ukryj w menu Chromium</translation>
 <translation id="7211828883345145708">Włącza dodatkowe skróty klawiszowe, które przydają się przy debugowaniu Chromium.</translation>
@@ -212,13 +210,13 @@ Chromium nie może odzyskać ustawień.</translation>
 <translation id="7723128346970903111">Gdy ta funkcja jest włączona, używany będzie proces logowania w Chromium oparty na iframe. Jeśli nie, logowanie będzie oparte na WebView.</translation>
 <translation id="7729447699958282447">Chromium nie może zsynchronizować danych, ponieważ synchronizacja jest niedostępna w Twojej domenie.</translation>
 <translation id="7747138024166251722">Instalator nie mógł utworzyć katalogu tymczasowego. Sprawdź, czy na dysku jest dość wolnego miejsca oraz sprawdź, czy posiadasz uprawnienia do instalowania programów.</translation>
+<translation id="7918535023914021398">Chromium sprawdził, że wydawcą certyfikatu tej witryny jest <ph name="ISSUER" />. Serwer nie dostarczył informacji o certyfikacie, korzystając z protokołu Certificate Transparency.</translation>
 <translation id="7937630085815544518">Byłeś zalogowany w Chromium jako <ph name="USER_EMAIL_ADDRESS" />. Zaloguj się ponownie, korzystając z tego samego konta.</translation>
 <translation id="7962572577636132072">Chromium aktualizuje się automatycznie, więc zawsze masz najnowszą wersję.</translation>
 <translation id="7979877361127045932">Ukryj w menu Chromium</translation>
 <translation id="8030318113982266900">Aktualizuję Twoje urządzenie do kanału: <ph name="CHANNEL_NAME" />...</translation>
 <translation id="8033665941300843262">Chromium potrzebuje dostępu do uprawnień, by móc je udostępnić tej stronie.</translation>
 <translation id="805745970029938373">Tutaj możesz zobaczyć wszystkie powiadomienia z aplikacji, rozszerzeń i stron internetowych w Chromium.</translation>
-<translation id="811857857463334932">Ten komputer nie będzie otrzymywać aktualizacji Chromium, ponieważ zawiera sprzęt, który nie jest już obsługiwany.</translation>
 <translation id="8134284582177628525">Jeśli korzystasz z tego komputera wraz z użytkownikiem <ph name="PROFILE_NAME" />, dodaj siebie do Chromium, by używać niezależnych ustawień przeglądarki. Możesz też odłączyć konto Google tego użytkownika.</translation>
 <translation id="8187289872471304532">Wybierz
           Aplikacje &gt; Ustawienia systemowe &gt; Sieć &gt; Zaawansowane &gt; Serwery proxy

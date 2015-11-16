@@ -33,7 +33,6 @@ Gizlilikle ilgili daha fazla bilgi edinmek için lütfen Google Gizlilik Politik
 <translation id="1770394049404108959">Uygulamayı açamıyorum.</translation>
 <translation id="177096447311351977">İstemci için kanal IP'si: <ph name="CLIENT_GAIA_IDENTIFIER" /> ip="<ph name="CLIENT_IP_ADDRESS_AND_PORT" />" host_ip="<ph name="HOST_IP_ADDRESS_AND_PORT" />" channel="<ph name="CHANNEL_TYPE" />" connection="<ph name="CONNECTION_TYPE" />".</translation>
 <translation id="1779766957982586368">Pencereyi kapat</translation>
-<translation id="1818475040640568770">Kayıtlı bilgisayarınız yok.</translation>
 <translation id="1841799852846221389">Bu bilgisayara uzaktan bağlantılar devre dışı bırakılıyor…</translation>
 <translation id="189172778771606813">Gezinme çekmecesini kapat</translation>
 <translation id="195619862187186579">Klavye düzenleri</translation>
@@ -87,8 +86,6 @@ Gizlilikle ilgili daha fazla bilgi edinmek için lütfen Google Gizlilik Politik
 <translation id="2926340305933667314">Bu bilgisayara uzaktan erişim devre dışı bırakılamadı. Lütfen daha sonra tekrar deneyin.</translation>
 <translation id="2930135165929238380">Bazı gerekli bileşenler eksik. Lütfen chrome://plugins adresine gidin ve Native Client'in etkinleştirildiğinden emin olun.</translation>
 <translation id="2939145106548231838">Ana makineyle kimlik doğrulaması yap</translation>
-<translation id="2998137343848432918">• Jenerik ekranı eklendi.
-• Klavye görünürken tam ekrana geçmeyle ilgili bir sorun düzeltildi.</translation>
 <translation id="3020807351229499221">PIN güncellenemedi. Lütfen daha sonra tekrar deneyin.</translation>
 <translation id="3025388528294795783">Sorununuzu çözmemize yardımcı olmak için lütfen bize nasıl bir sorun olduğunu bildirin:</translation>
 <translation id="3027681561976217984">Dokunma modu</translation>
@@ -124,6 +121,7 @@ Ana Makinesi</translation>
 <translation id="3950820424414687140">Oturum açın</translation>
 <translation id="3989511127559254552">Devam etmek için öncelikle bilgisayarınıza genişletilmiş erişim izinleri vermelisiniz. Bunu yalnızca bir kez yapmanız yeterlidir.</translation>
 <translation id="4006787130661126000">Bu bilgisayara erişmek için Chrome Uzaktan Masaüstü uygulamasını kullanmak istiyorsanız uzaktan bağlantıları etkinleştirmelisiniz.</translation>
+<translation id="405887016757208221">Uzak bilgisayar, oturumu ilk kullanıma hazırlayamadı. Sorun devam ederse lütfen ana makineyi tekrar yapılandırmayı deneyin.</translation>
 <translation id="4068946408131579958">Tüm bağlantılar</translation>
 <translation id="409800995205263688">NOT: Politika ayarları, yalnızca ağınızdaki bilgisayarlar arasındaki bağlantılara izin veriyor.</translation>
 <translation id="4155497795971509630">Bazı gerekli bileşenler eksik. Lütfen yazılımın en son sürümünü yüklediğinizden emin olun ve tekrar deneyin.</translation>
@@ -170,7 +168,6 @@ Masaüstü Ana Makinesi</translation>
 <translation id="518094545883702183">Bu bilgi yalnızca bildirdiğiniz sorunun teşhisi için kullanılır, yalnızca raporunuzu araştıran kişi tarafından görülebilir ve en fazla 30 gün tutulur.</translation>
 <translation id="5222676887888702881">Çıkış</translation>
 <translation id="5254120496627797685">Bu sayfadan ayrılırsanız Chrome Uzaktan Masaüstü oturumunuz sonlanır.</translation>
-<translation id="5285241842433869526">Bir bilgisayarın uzaktan erişim için nasıl ayarlanacağını öğrenin.</translation>
 <translation id="5308380583665731573">Bağlan</translation>
 <translation id="5363265567587775042">Bilgisayarına erişmek istediğiniz kullanıcıdan “<ph name="SHARE" />” öğesini tıklamasını ve size erişim kodunu vermesini isteyin.</translation>
 <translation id="5379087427956679853">Chrome Uzaktan Masaüstü, bilgisayarınızı Web üzerinden güvenli bir şekilde paylaşabilmenize olanak sağlar. Her iki kullanıcının da Chrome Uzaktan Masaüstü uygulamasını çalıştırıyor olması gerekir. Uygulamayı <ph name="URL" /> adresinde bulabilirsiniz.</translation>
@@ -258,6 +255,7 @@ Masaüstü Ana Makinesi</translation>
 <translation id="7869445566579231750">Bu uygulamayı çalıştırmak için izniniz yok.</translation>
 <translation id="7948001860594368197">Ekran seçenekleri</translation>
 <translation id="7970576581263377361">Kimlik doğrulama başarısız oldu. Lütfen Chromium'da tekrar oturum açın.</translation>
+<translation id="7981525049612125370">Uzak oturumun süresi sona erdi.</translation>
 <translation id="8041721485428375115">Chrome Uzaktan Masaüstü Ana Makine Yükleyicisi'ni indirerek Google <ph name="LINK_BEGIN" />Hizmet Şartları<ph name="LINK_END" />'nı kabul etmiş olursunuz.</translation>
 <translation id="8073845705237259513">Chrome Uzaktan Masaüstü'nü kullanmak için cihazınıza Google Hesabı eklemeniz gerekir.</translation>
 <translation id="80739703311984697">Uzak ana makine üçüncü taraf bir web sitesine kimlik doğrulama işlemi yapmanızı gerektiriyor. Devam etmek üzere şu adrese erişim için Chromoting'e ek izinler vermelisiniz:</translation>

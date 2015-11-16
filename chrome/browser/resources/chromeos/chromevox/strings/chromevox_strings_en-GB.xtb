@@ -41,6 +41,7 @@
 <translation id="1452236308086741652"><ph name="VALUE" />, password text box</translation>
 <translation id="1467432559032391204">Left</translation>
 <translation id="1474557363159888097">No previous anchor.</translation>
+<translation id="1499041187027566160">volume up</translation>
 <translation id="1502086903961450562">Previous graphic</translation>
 <translation id="1506187449813838456">Increase pitch</translation>
 <translation id="151784044608172266">Next Sentence</translation>
@@ -128,6 +129,7 @@
 <translation id="2639750663247012216">ChromeVox modifier</translation>
 <translation id="2644542693584024604">misspelled</translation>
 <translation id="2667291555398229137">Click the item under a routing key</translation>
+<translation id="267442004702508783">refresh</translation>
 <translation id="2697408785920771974">autoinl</translation>
 <translation id="2704429362613743330">{COUNT,plural, =1{open paren}other{# open parens}}</translation>
 <translation id="2705875883745373140">Not pressed</translation>
@@ -463,6 +465,7 @@
 <translation id="5683155931978483559">Previous tick box</translation>
 <translation id="5684277895745049190">List</translation>
 <translation id="5700650669149824506">No previous level 4 heading.</translation>
+<translation id="5703716265115423771">volume down</translation>
 <translation id="5709192780268610569">No long description</translation>
 <translation id="5712244464475377681">popbtn</translation>
 <translation id="5712338278108304766">Next table column</translation>
@@ -527,6 +530,7 @@
 <translation id="6459511626086141404">Flat keymap</translation>
 <translation id="6468049171101508116">Next button</translation>
 <translation id="6491972999578897419">Change the current voice by selecting an option from the list below.</translation>
+<translation id="6493991254603208962">Brightness down</translation>
 <translation id="6508059270146105198">Move braille display to bottom of page</translation>
 <translation id="6536864053412760904">Math ML Token</translation>
 <translation id="6550720799683018100">Change the current keymap by selecting an option from the list below.</translation>
@@ -565,6 +569,7 @@
 <translation id="7031651751836475482">lstitm</translation>
 <translation id="7037042857287298941">Previous list</translation>
 <translation id="7041173719775863268">End selection</translation>
+<translation id="7086377898680121060">Brightness up</translation>
 <translation id="7095834689119144465">Edit text numeric only</translation>
 <translation id="7096001299300236431">Previous media</translation>
 <translation id="7116595520562830928">multln</translation>
@@ -659,6 +664,7 @@
 <translation id="8153880621934657047">Not inside table.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{underscore}other{# underscores}}</translation>
 <translation id="8179976553408161302">Enter</translation>
+<translation id="8186185314313222077">toggle full screen</translation>
 <translation id="81960742267269908">cut.</translation>
 <translation id="8199231515320852133">Announce the headers of the current cell</translation>
 <translation id="820417203470636242">Empty cell.</translation>
@@ -679,12 +685,14 @@
 <translation id="844681116543532394">No previous tick box.</translation>
 <translation id="8455868257606149352">Max <ph name="X" /></translation>
 <translation id="84575901236241018">has access key, <ph name="KEY" /></translation>
+<translation id="8476508772960940536">window overview</translation>
 <translation id="8503360654911991865">Decrease navigation granularity</translation>
 <translation id="8520472399088452386">Spin button</translation>
 <translation id="8538744478902126321">Make a guess at the row header of the current cell</translation>
 <translation id="8540054775867439484">Wrapped to top</translation>
 <translation id="8548973727659841685">Character</translation>
 <translation id="8561322612995434619">has pop up</translation>
+<translation id="8571096049907249734">multsel</translation>
 <translation id="8584721346566392021">h5</translation>
 <translation id="8587549812518406253">Next list item</translation>
 <translation id="860150890330522909"><ph name="NAME" /> tick box ticked</translation>
@@ -692,6 +700,7 @@
 <translation id="8631359288236106450">selected <ph name="COUNT" /> items</translation>
 <translation id="8638532244051952400">Announce current cell co-ordinates</translation>
 <translation id="8650576015643545550">No previous list.</translation>
+<translation id="8651481478098336970">volume mute</translation>
 <translation id="8653031188082306838">urled</translation>
 <translation id="8653646212587894517">Show links list</translation>
 <translation id="8664519043722036194">seconds</translation>

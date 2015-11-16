@@ -53,6 +53,9 @@
 <translation id="1221359380862872747">Carica gli URL specificati all'accesso demo</translation>
 <translation id="1240643596769627465">Consente di specificare l'URL del motore di ricerca utilizzato per fornire risultati immediati. L'URL deve contenere la stringa "<ph name="SEARCH_TERM_MARKER" />", che sarà sostituita in fase di query dal testo inserito dall'utente fino a quel momento. Questa norma è facoltativa. Se non viene impostata, non verranno restituiti risultati di ricerca immediati. Questa norma viene rispettata soltanto se è attiva la norma "DefaultSearchProviderEnabled".</translation>
 <translation id="1265053460044691532">Limita il tempo per cui un utente autenticato tramite SAML può eseguire l'accesso offline</translation>
+<translation id="1291880496936992484">Avviso. RC4 sarà rimosso completamente da <ph name="PRODUCT_NAME" /> dopo la versione 52 (nel periodo di settembre 2016), dopodiché questa norma non sarà più attiva.
+
+      Se la norma non viene impostata o se viene impostata su false, i pacchetti di crittografia RC4 in TLS non saranno attivati. In alternativa, la norma può essere impostata su true per mantenere la compatibilità con un server obsoleto. Si tratta di una soluzione temporanea ed è necessario configurare nuovamente il server.</translation>
 <translation id="1297182715641689552">Utilizza uno script proxy .pac</translation>
 <translation id="1300635491585192248">Prevedi le azioni di rete su qualsiasi rete che non sia
           cellulare</translation>
@@ -456,6 +459,9 @@ Se l'impostazione viene disattivata, la funzione Navigazione sicura non è mai a
 Se l'impostazione viene attivata o disattivata, gli utenti non potranno modificare o ignorare l'impostazione "Attiva protezione contro phishing e malware" di <ph name="PRODUCT_NAME" />.
 
 Se la norma non viene impostata l'impostazione verrà attivata ma gli utenti potranno modificarla.</translation>
+<translation id="2801230735743888564">Consente di attivare il gioco del dinosauro quando il dispositivo è offline.
+
+      Se questa norma viene impostata su False, gli utenti non potranno giocare al gioco del dinosauro quando il dispositivo è offline. Se viene impostata su True, gli utenti potranno giocare. Se la norma non viene impostata, gli utenti non potranno giocare al gioco del dinosauro su sistemi Chrome OS registrati, ma potranno giocarvi in altre circostanze.</translation>
 <translation id="2805707493867224476">Consenti la visualizzazione di popup in tutti i siti</translation>
 <translation id="2808013382476173118">Consente di attivare l'utilizzo di server STUN quando i client remoti tentano di stabilire una connessione con questo computer.
 
@@ -705,6 +711,13 @@ Questa norma viene rispettata soltanto se viene attivata la norma "DefaultSearch
 <translation id="3780152581321609624">Includi porta non standard in Kerberos SPN</translation>
 <translation id="3788662722837364290">Impostazioni di gestione dell'alimentazione quando l'utente diventa inattivo</translation>
 <translation id="3793095274466276777">Configura i controlli del browser predefinito in <ph name="PRODUCT_NAME" /> e impedisce agli utenti di modificarli. Se attivi questa impostazione, all'avvio <ph name="PRODUCT_NAME" /> verifica sempre di essere il browser predefinito e, se possibile, si registra automaticamente. Se l'impostazione è disattivata, <ph name="PRODUCT_NAME" /> non potrà mai verificare di essere il browser predefinitoe disattiva i controlli utente per rendere attiva l'opzione. Se l'impostazione non è configurata, <ph name="PRODUCT_NAME" /> consente all'utente di controllare se il browser predefinito è impostato e, in caso contrario, se devono essere visualizzate le notifiche per gli utenti.</translation>
+<translation id="3800626789999016379">Consente di configurare la directory che <ph name="PRODUCT_NAME" /> utilizza per il download dei file.
+
+      Se la norma viene impostata, <ph name="PRODUCT_NAME" /> utilizza la directory fornita, indipendentemente dal fatto che l'utente ne abbia specificata una o abbia attivato il flag da attivare ogni volta per il percorso di download.
+
+      Visita il sito https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables per consultare un elenco di variabili utilizzabili.
+
+      Se la norma non viene impostata, viene utilizzata la directory di download predefinita e l'utente può modificarla.</translation>
 <translation id="3805659594028420438">Attiva estensione di certificati associati al dominio TLS (obsoleta)</translation>
 <translation id="3806576699227917885">Consente la riproduzione dell'audio.
 
@@ -818,6 +831,13 @@ Questa norma è facoltativa. Se non viene impostata, la richiesta di ricerca di 
 Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled" è attiva.</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 o versione successiva</translation>
 <translation id="4325690621216251241">Aggiungi un pulsante di uscita all'area di notifica</translation>
+<translation id="4349746760316962317">Consente di configurare la directory che <ph name="PRODUCT_NAME" /> utilizza per archiviare i file memorizzati nella cache sul disco.
+
+      Se la norma viene impostata, <ph name="PRODUCT_NAME" /> utilizza la directory fornita, indipendentemente dal fatto che l'utente abbia specificato o meno il flag "--disk-cache-dir".
+
+      Visita il sito https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables per consultare un elenco di variabili utilizzabili.
+
+      Se la norma non viene impostata, viene utilizzata la directory della cache predefinita e l'utente può ignorarla con il flag della riga di comando "--disk-cache-dir".</translation>
 <translation id="436581050240847513">Riporta interfacce di rete del dispositivo</translation>
 <translation id="4372704773119750918">Non permettere all'utente aziendale di far parte del profilo multiplo (principale o secondario)</translation>
 <translation id="4377599627073874279">Consenti la visualizzazione di tutte le immagini in tutti i siti</translation>
@@ -877,6 +897,11 @@ Se questa norma non viene impostata, l'impostazione verrà attivata ma gli utent
 <translation id="4665897631924472251">Impostazioni di gestione delle estensioni</translation>
 <translation id="4668325077104657568">Impostazione immagini predefinite</translation>
 <translation id="467236746355332046">Funzionalità supportate:</translation>
+<translation id="4674167212832291997">Consente di personalizzare l'elenco di pattern URL per i quali il rendering deve sempre essere eseguito da <ph name="PRODUCT_FRAME_NAME" />.
+
+          Se la norma non viene impostata, verrà utilizzato per tutti i siti il renderer predefinito specificato dalla norma "ChromeFrameRendererSettings".
+
+          Per avere pattern di esempio, visita il sito https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="467449052039111439">Apri un elenco di URL</translation>
 <translation id="4680961954980851756">Abilita Compilazione automatica</translation>
 <translation id="4723829699367336876">Abilita attraversamento firewall da client di accesso remoto</translation>
@@ -966,6 +991,14 @@ Se questa norma viene impostata, consente di specificare l'azione compiuta da <p
 Se questa norma non viene impostata, viene compiuta l'azione predefinita, vale a dire la sospensione.
 
 Se l'azione viene sospesa, <ph name="PRODUCT_OS_NAME" /> può essere configurato separatamente per bloccare o non bloccare lo schermo prima della sospensione.</translation>
+<translation id="5111712393799006197">Consente di configurare la directory che <ph name="PRODUCT_NAME" /> utilizza per memorizzare i dati dell'utente.
+
+      Se la norma viene impostata, <ph name="PRODUCT_NAME" /> utilizza la directory fornita, indipendentemente dal fatto che l'utente abbia specificato o meno il flag "--user-data-dir".
+
+      Visita il sito https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables per consultare un elenco di variabili utilizzabili.
+
+      Se la norma non viene impostata, viene utilizzato il percorso del profilo predefinito e l'utente può ignorarlo con il flag della riga di comando "--user-data-dir".</translation>
+<translation id="5130288486815037971">Attiva o meno i pacchetti di crittografia RC4 in TLS</translation>
 <translation id="5141670636904227950">Impostazione tipo di ingrandimento dello schermo predefinito attivato nella schermata di accesso</translation>
 <translation id="5142301680741828703">Visualizza sempre i seguenti schemi di URL in <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="5148753489738115745">Consente di specificare dei parametri aggiuntivi da utilizzare quando <ph name="PRODUCT_FRAME_NAME" /> avvia <ph name="PRODUCT_NAME" />.
@@ -1134,6 +1167,20 @@ Il valore della norma deve essere specificato in millisecondi.</translation>
 <translation id="5809728392451418079">Imposta il nome visualizzato per gli account del dispositivo</translation>
 <translation id="5814301096961727113">Impostazione stato predefinito della lettura vocale nella schermata di accesso</translation>
 <translation id="5815129011704381141">Riavvia automaticamente dopo l'aggiornamento</translation>
+<translation id="5815353477778354428">Consente di configurare la directory che <ph name="PRODUCT_FRAME_NAME" /> utilizza per memorizzare i dati dell'utente.
+
+      Se la norma viene impostata, <ph name="PRODUCT_FRAME_NAME" /> utilizza la directory fornita.
+
+      Visita il sito https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables per consultare un elenco di variabili utilizzabili.
+
+      Se la norma non viene impostata, viene utilizzata la directory del profilo predefinita.</translation>
+<translation id="5819660021114910752">Consente di specificare il fuso orario da utilizzare per il dispositivo. Gli utenti possono sostituire il fuso orario specificato per la sessione corrente. Tuttavia, dopo la disconnessione viene ripristinato il fuso orario specificato. Se viene specificato un valore non valido, la norma viene attivata comunque utilizzando il valore "GMT". Se viene specificata una stringa vuota, la norma viene ignorata.
+
+      Se la norma non viene utilizzata, rimane in uso il fuso orario attivo, ma gli utenti possono modificarlo e tale modifica è persistente. La modifica di un utente incide sulla schermata di accesso e su tutti gli altri utenti.
+
+      Sui nuovi dispositivi è impostato il fuso orario "US/Pacific".
+
+      Il formato del valore segue quello dei nomi dei fusi orari dello "IANA Time Zone Database" (visita il sito "https://en.wikipedia.org/wiki/Tz_database"). In particolare, gran parte dei fusi orari può essere indicata come "continent/large_city" o "ocean/large_city".</translation>
 <translation id="5826047473100157858">Consente di specificare se l'utente può aprire o meno le pagine in modalità di navigazione in incognito in <ph name="PRODUCT_NAME" />. Se viene selezionata l'opzione "Attiva" o la norma non viene impostata, le pagine possono essere aperte in modalità di navigazione in incognito. Se viene selezionata l'opzione "Non attiva", le pagine non possono essere aperte in modalità di navigazione in incognito. Se viene selezionata l'opzione "Forzata", le pagine possono essere aperte SOLTANTO in modalità di navigazione in incognito.</translation>
 <translation id="5836064773277134605">Limita l'intervallo di porte UDP utilizzate dall'host di accesso remoto</translation>
 <translation id="5845159892130426052">Abilita API ShowModalDialog mediante 2015.04.30</translation>
@@ -1223,6 +1270,7 @@ Se il periodo di tempo non viene impostato, viene utilizzato un periodo di tempo
 La modalità di blocco dello schermo per inattività consigliata è l'attivazione del blocco schermo in caso di sospensione e la sospensione di <ph name="PRODUCT_OS_NAME" /> una volta trascorso il ritardo di inattività. Questa norma dovrebbe essere utilizzata soltanto quando il blocco dello schermo deve avvenire molto prima della sospensione o quando non si desidera attivare la sospensione in caso di inattività.
 
 Il valore della norma deve essere specificato in millisecondi. I valori devono essere minori del ritardo di inattività.</translation>
+<translation id="6111936128861357925">Attiva il gioco del dinosauro</translation>
 <translation id="6114416803310251055">obsoleto</translation>
 <translation id="6145799962557135888">Consente di impostare un elenco di pattern URL che specificano i siti in cui è consentita l'esecuzione di JavaScript. Se questa norma non viene impostata, per tutti i siti verrà utilizzato il valore predefinito globale della norma "DefaultJavaScriptSetting", se è impostata, oppure verrà utilizzata la configurazione personale dell'utente.</translation>
 <translation id="6151775819333710697">
@@ -1747,6 +1795,17 @@ Se la norma non viene configurata, la modalità ad alto contrasto viene inizialm
 
       Se questa norma non viene impostata, non ci saranno eccezioni alla blacklist dalla norma "URLBlacklist".</translation>
 <translation id="8176035528522326671">Consenti all'utente aziendale di essere solo l'utente multiprofilo principale (comportamento predefinito per gli utenti gestiti dall'azienda)</translation>
+<translation id="8191318459035150777">Consente di configurare l'URL della pagina iniziale predefinita di <ph name="PRODUCT_NAME" /> e di impedire agli utenti di modificarlo.
+
+          La pagina iniziale è la pagina che viene aperta tramite il pulsante Pagina iniziale. Le pagine che si aprono all'avvio sono stabilite dalle norme RestoreOnStartup.
+
+          La pagina iniziale può essere un URL specificato qui oppure la pagina Nuova scheda. Se viene impostata la pagina Nuova scheda, questa norma non viene applicata.
+
+          Se questa impostazione viene attivata, gli utenti non possono cambiare l'URL della pagina iniziale di <ph name="PRODUCT_NAME" />, ma possono scegliere come pagina iniziale la pagina Nuova scheda.
+
+          Se questa norma non viene impostata, e non viene impostata neanche la norma HomepageIsNewTabPage, l'utente potrà scegliere la pagina iniziale che preferisce.
+
+          Questa norma non è disponibile su istanze di Windows che non fanno parte di un dominio Active Directory.</translation>
 <translation id="8197918588508433925">Questa norma specifica le estensioni autorizzate a utilizzare chrome.enterprise.platformKeysPrivate.challengeUserKey() dell'API Enterprise Platform Keys per l'attestazione da remoto. Le estensioni devono essere aggiunte a questo elenco per utilizzare l'API.
 
           Se un'estensione non è presente nell'elenco o l'elenco non è impostato, la chiamata all'API non riuscirà e verrà generato un codice di errore.</translation>
@@ -1788,6 +1847,11 @@ Se questa norma non viene impostata, le pagine saranno sottoposte a scansione pe
 <translation id="8465065632133292531">Parametri per l'URL istantaneo che utilizza POST</translation>
 <translation id="847472800012384958">Non consentire la visualizzazione di popup nei siti</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
+<translation id="8484458986062090479">Consente di personalizzare l'elenco di pattern URL per i quali il rendering deve sempre essere eseguito dal browser host.
+
+          Se la norma non viene impostata, viene utilizzato per tutti i siti il renderer predefinito specificato dalla norma "ChromeFrameRendererSettings".
+
+          Per avere pattern di esempio, visita il sito https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="8493645415242333585">Disabilita salvataggio della cronologia del browser</translation>
 <translation id="8499172469244085141">Impostazioni predefinite (gli utenti possono ignorarle)</translation>
 <translation id="8501011084242226370">Specifica un elenco di plug-in che l'utente può attivare o disattivare in <ph name="PRODUCT_NAME" />.
@@ -1847,6 +1911,8 @@ Se l'impostazione viene impostata su true, o se non viene impostata, l'attestazi
 
       Se questa impostazione è disattivata, la cronologia di navigazione e la cronologia dei download non possono essere eliminate.</translation>
 <translation id="8764119899999036911">Consente di specificare se il Kerberos SPN generato si basa sul nome canonico DNS o sul nome originale inserito. Se attivi questa impostazione, la ricerca CNAME verrà saltata e verrà utilizzato il nome del server inserito. Se disattivi l'impostazione o non la imposti, il nome canonico del server sarà determinato tramite ricerca CNAME.</translation>
+<translation id="8774131509736383471">Se questa norma viene impostata su true, <ph name="PRODUCT_NAME" /> ingrandirà senza condizioni la prima finestra mostrata alla prima esecuzione.
+      Se la norma viene impostata su false o non viene configurata, verrà stabilito se ingrandire o meno la prima finestra mostrata in base alle dimensioni dello schermo.</translation>
 <translation id="8777120694819070607">Consente a <ph name="PRODUCT_NAME" /> di eseguire i plug-in obsoleti. Se attivi questa impostazione, i plug-in obsoleti vengono utilizzati come normali plug-in. Se disattivi questa impostazione, i plug-in obsoleti non vengono utilizzati e agli utenti non viene richiesta l'autorizzazione per eseguirli. Se l'impostazione non è configurata, agli utenti viene richiesta l'autorizzazione per eseguire i plug-in obsoleti.</translation>
 <translation id="87812015706645271">Richiede la corrispondenza tra il nome dell'utente locale e il proprietario dell'host di accesso remoto</translation>
 <translation id="8782750230688364867">Consente di specificare la percentuale di regolazione del ritardo di oscuramento dello schermo quando il dispositivo è in modalità di presentazione.

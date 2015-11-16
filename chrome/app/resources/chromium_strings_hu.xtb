@@ -32,6 +32,7 @@
 <translation id="1967743265616885482">Egy ugyanilyen nevű modul ismereteink szerint ütközik a Chromiummal.</translation>
 <translation id="2077129598763517140">Hardveres gyorsítás alkalmazása lehetőség szerint</translation>
 <translation id="2097986737970966220">A Chromium megnyitása az asztalon</translation>
+<translation id="2117181891440368863">A Chromium megerősítette, hogy a(z) <ph name="ISSUER" /> állította ki ennek a webhelynek a tanúsítványát. A szerver megadott tanúsítványátláthatósági adatokat, de azok érvénytelenek.</translation>
 <translation id="2119636228670142020">A &amp;Chromium OS névjegye</translation>
 <translation id="2158734852934720349">Chromium OS nyílt forráskódú licencek</translation>
 <translation id="2233513990531887259">Újraindítás a Chromium kiterjesztett módjában</translation>
@@ -46,13 +47,11 @@
 <translation id="2558641060352364164">Ez a webhely a Chromium Frame beépülő modult használja, amelynek támogatása hamarosan megszűnik. Kérjük, távolítsa el, majd frissítsen egy modern böngészőre.</translation>
 <translation id="2572494885440352020">Chromium Helper</translation>
 <translation id="2602806952220118310">Chromium – Értesítések</translation>
-<translation id="2615699638672665509">Mivel a hardver támogatása megszűnik, ez a számítógép hamarosan nem kap további Chromium-frissítéseket.</translation>
 <translation id="2636877269779209383">A Chromiumnak hozzáférésre van szüksége a kamerához, hogy megoszthassa azt a webhellyel.</translation>
 <translation id="2648074677641340862">Az operációs rendszer hibát jelzett a telepítés során. Kérjük, töltse le újra a Chromiumot.</translation>
 <translation id="2673087257647337101">Már majdnem naprakész! Indítsa újra a Chromiumot a frissítés befejezéséhez.</translation>
 <translation id="2685838254101182273">A Chromium a továbbiakban nem frissül, és már nem támogatja az Ön operációs rendszerének ezen verzióját.</translation>
 <translation id="2705212601509139398">Ez a webhely a Chromium Frame beépülő modult használja, amelynek támogatása hamarosan megszűnik. Kérjük, távolítsa el, majd töltsön le egy kompatibilis böngészőt.</translation>
-<translation id="2732467638532545152">Számítógépe a Microsoft Windows régebbi változatát futtatja, amely nem tudja feldolgozni a webhely biztonsági tanúsítványát. A hiba miatt a Chromium nem tudja eldönteni, hogy a tanúsítvány a(z) <ph name="SITE" /> webhelytől származik, vagy valakitől az Ön hálózatán, aki a(z) <ph name="SITE" /> webhelynek adja ki magát. Frissítse számítógépén a Windows rendszert egy újabb verzióra.</translation>
 <translation id="2770231113462710648">Alapértelmezett böngésző beállítása:</translation>
 <translation id="2801146392936645542">A(z) <ph name="FILE_NAME" /> fájl rosszindulatú, ezért a Chromium letiltotta.</translation>
 <translation id="2847479871509788944">Eltávolítás a Chromiumból…</translation>
@@ -85,8 +84,6 @@
 <translation id="3582788516608077514">A Chromium frissítése...</translation>
 <translation id="358997566136285270">Chromium embléma</translation>
 <translation id="3595526210123705352">A Windows 8 módban való újraindítással bezárja és újraindítja a Chromium-alkalmazásokat.</translation>
-<translation id="3656661827369545115">A Chromium automatikus indítása a számítógép elindulásakor</translation>
-<translation id="3736987306260231966">A Chromium nem tudja megjeleníteni a weboldalt, mert számítógépe nem csatlakozik az internethez.</translation>
 <translation id="3738139272394829648">Érintéssel keresés</translation>
 <translation id="3744899669254331632">Most nem keresheti fel a(z) <ph name="SITE" /> webhelyet, mert az zavaros, a Chromium által nem feldolgozható hitelesítő adatokat küldött. A hálózati hibák és támadások általában ideiglenesek, úgyhogy az oldal később valószínűleg megfelelően fog működni.</translation>
 <translation id="3748537968684000502">Ön egy biztonságos Chromium-oldalt tekint meg.</translation>
@@ -107,7 +104,6 @@
 <translation id="4285930937574705105">A telepítés váratlan hiba miatt nem sikerült. Ha a Chromium jelenleg fut, zárja be, majd próbálkozzon újra.</translation>
 <translation id="4330585738697551178">Ismereteink szerint ez a modul ütközik a Chromiummal.</translation>
 <translation id="4423735387467980091">A Chromium személyre szabása és beállításai</translation>
-<translation id="442817494342774222">A Chromium úgy van beállítva, hogy automatikusan elinduljon a számítógép indításakor.</translation>
 <translation id="4458285410772214805">Kérjük, jelentkezzen ki, majd jelentkezzen be újra a módosítás aktiválásához.</translation>
 <translation id="4488676065623537541">Számlázási adatait a Chromium mentette.</translation>
 <translation id="4559775032954821361">Lépjen ide:
@@ -176,6 +172,7 @@
 <translation id="6734080038664603509">A &amp;Chromium frissítése</translation>
 <translation id="6757767188268205357">Ne zavarjanak ezzel</translation>
 <translation id="6810143991807788455">Segítsen a Chromium fejlesztésében a jelenlegi beállítások elküldésével</translation>
+<translation id="6838494703713445896">A Chromium megerősítette, hogy a(z) <ph name="ISSUER" /> állította ki ennek a webhelynek a tanúsítványát. A szerver megadott érvényes tanúsítványátláthatósági adatokat.</translation>
 <translation id="6883876366448858277">a szót és annak szövegkörnyezetét elküldi a Google Keresésnek, amely meghatározásokat, képeket és egyéb keresési eredményeket küld vissza.</translation>
 <translation id="6893813176749746474">A Chromium frissítése megtörtént, de nem használta a böngészőt legalább 30 napja.</translation>
 <translation id="6900895776413482243">A Chromium kiterjesztett módban való újraindítása bezárja, majd újraindítja a Chromium-alkalmazásokat.</translation>
@@ -188,6 +185,7 @@
 <translation id="7066436765290594559">A Chromium OS nem tudta szinkronizálni az adatokat. Kérjük, frissítse a szinkronizálás jelszavát.</translation>
 <translation id="7138853919861947730">A Chromium internetes szolgáltatások használatával javíthatja a böngészési élményt.</translation>
 <translation id="7162152143154757523">A Chromium pontosabb helyesírás-ellenőrzést tud biztosítani azáltal, hogy a böngészőbe beírt szöveget elküldi a Google szervereinek, ami lehetővé teszi, hogy Ön ugyanazt a helyesírás-ellenőrző technológiát használja, amelyet a Google-keresés is.</translation>
+<translation id="7178626992616222740">A Chromium megerősítette, hogy a(z) <ph name="ISSUER" /> állította ki ennek a webhelynek a tanúsítványát. A szerver megadott tanúsítványátláthatósági adatokat, de a Chromium nem ismerte fel a tanúsítványátláthatósági naplók egyikét sem.</translation>
 <translation id="7196020411877309443">Miért jelenik meg ez az üzenet?</translation>
 <translation id="7205698830395646142">Elrejtés a Chromium-menüben</translation>
 <translation id="7211828883345145708">További billentyűkódokat engedélyez, amelyek hasznosak a hibakeresés során a Chromiumban.</translation>
@@ -213,13 +211,13 @@ A Chromium nem tudja visszaállítani a beállításait.</translation>
 <translation id="7723128346970903111">Bekapcsolása esetén iframe-alapú Chromium bejelentkezési folyamatot, ellenkező esetben pedig webview-alapú folyamatot használ.</translation>
 <translation id="7729447699958282447">A Chromium nem tudta szinkronizálni az adatait, mert a szinkronizálás nem érhető el az Ön domainjénél.</translation>
 <translation id="7747138024166251722">A telepítőnek nem sikerült létrehoznia az ideiglenes könyvtárat. Kérjük ellenőrizze, hogy van-e elegendő hely a lemezen, és rendelkezik-e engedéllyel a szoftvertelepítésre.</translation>
+<translation id="7918535023914021398">A Chromium megerősítette, hogy a(z) <ph name="ISSUER" /> állította ki ennek a webhelynek a tanúsítványát. A szerver nem adott meg tanúsítványátláthatósági adatokat.</translation>
 <translation id="7937630085815544518"><ph name="USER_EMAIL_ADDRESS" /> néven volt bejelentkezve a Chromiumba. Kérjük, ugyanazzal a fiókkal jelentkezzen be újra.</translation>
 <translation id="7962572577636132072">A Chromium automatikusan frissít, így Ön mindig a legújabb verzióval rendelkezik.</translation>
 <translation id="7979877361127045932">Elrejtés a Chromium-menüben</translation>
 <translation id="8030318113982266900">Eszköz frissítése a(z) <ph name="CHANNEL_NAME" /> csatornára...</translation>
 <translation id="8033665941300843262">A Chromiumnak hozzáférésre van szüksége az engedélyekhez, hogy megoszthassa azokat a webhellyel.</translation>
 <translation id="805745970029938373">Itt tekintheti meg a Chromium-alkalmazások és bővítmények, valamint a webhelyek értesítéseit.</translation>
-<translation id="811857857463334932">Mivel a hardver támogatása megszűnik, ez a számítógép a továbbiakban nem kap Chromium-frissítéseket.</translation>
 <translation id="8134284582177628525">Ha közösen használja ezt a számítógépet <ph name="PROFILE_NAME" /> felhasználóval, adja hozzá magát a Chromiumhoz, hogy külön böngészhessen. Máskülönben válassza le az ő Google-fiókját.</translation>
 <translation id="8187289872471304532">Az Applications &gt; System Preferences &gt; Network &gt; Advanced &gt; Proxies (Alkalmazások &gt; Rendszerbeállítások &gt; Hálózat &gt; Speciális &gt; Proxyk) menüpont alatt törölje a jelet minden kijelölt proxy mellől.</translation>
 <translation id="8269379391216269538">Segítsen a Chromium továbbfejlesztésében</translation>

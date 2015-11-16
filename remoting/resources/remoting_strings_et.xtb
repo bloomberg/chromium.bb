@@ -33,7 +33,6 @@ Lisateavet privaatsuse kohta vaadake Google'i privaatsuseeskirjadest (http://goo
 <translation id="1770394049404108959">Ma ei saa seda rakendust avada.</translation>
 <translation id="177096447311351977">Kanali IP kliendi jaoks: <ph name="CLIENT_GAIA_IDENTIFIER" /> ip='<ph name="CLIENT_IP_ADDRESS_AND_PORT" />' host_ip='<ph name="HOST_IP_ADDRESS_AND_PORT" />' channel='<ph name="CHANNEL_TYPE" />' connection='<ph name="CONNECTION_TYPE" />'.</translation>
 <translation id="1779766957982586368">Sulgeb akna</translation>
-<translation id="1818475040640568770">Te ei ole registreerinud ühtegi arvutit.</translation>
 <translation id="1841799852846221389">Arvuti kaugühenduste keelamine …</translation>
 <translation id="189172778771606813">Sule navigeerimissahtel</translation>
 <translation id="195619862187186579">Klaviatuuri paigutused</translation>
@@ -87,8 +86,6 @@ Lisateavet privaatsuse kohta vaadake Google'i privaatsuseeskirjadest (http://goo
 <translation id="2926340305933667314">Arvuti kaugühenduste keelamine ebaõnnestus. Proovige hiljem uuesti.</translation>
 <translation id="2930135165929238380">Mõned vajalikud komponendid on puudu. Minge lehele chrome://plugins ja veenduge, et Native Client oleks lubatud.</translation>
 <translation id="2939145106548231838">Hostiga autentimine</translation>
-<translation id="2998137343848432918">• Lisati osaliste ekraan.
-• Parandati probleem, mille puhul täisekraanirežiimis oli klaviatuur nähtaval.</translation>
 <translation id="3020807351229499221">PIN-koodi värskendamine ebaõnnestus. Proovige hiljem uuesti.</translation>
 <translation id="3025388528294795783">Probleemi lahendamisel abistamiseks öelge meile, mis läks valesti:</translation>
 <translation id="3027681561976217984">Puuterežiim</translation>
@@ -124,6 +121,7 @@ Host</translation>
 <translation id="3950820424414687140">Sisselogimine</translation>
 <translation id="3989511127559254552">Jätkamiseks peate esmalt oma arvutile andma laiendatud juurdepääsuload. Peate seda tegema vaid ühe korra.</translation>
 <translation id="4006787130661126000">Kui soovite Chrome Remote Desktopiga arvuti juurde pääseda, peate lubama kaugühendused.</translation>
+<translation id="405887016757208221">Kaugarvutil ei õnnestunud seanssi lähtestada. Kui probleem püsib, proovige hosti uuesti seadistada.</translation>
 <translation id="4068946408131579958">Kõik ühendused</translation>
 <translation id="409800995205263688">MÄRKUS: reegli seaded lubavad luua ühenduse ainult teie võrku kuuluvate arvutite vahel.</translation>
 <translation id="4155497795971509630">Mõned vajalikud komponendid on puudu. Veenduge, et installitud oleks tarkvara uusim versioon, ja proovige uuesti.</translation>
@@ -170,7 +168,6 @@ Desktopi host</translation>
 <translation id="518094545883702183">Seda teavet kasutatakse ainult teavitatud probleemi diagnoosimiseks, see on saadaval ainult probleemiga tegelejale ja seda ei säilitata üle 30 päeva.</translation>
 <translation id="5222676887888702881">Logi välja</translation>
 <translation id="5254120496627797685">Lehelt lahkudes katkeb teie Chrome Remote Desktopi seanss.</translation>
-<translation id="5285241842433869526">Vaadake, kuidas seadistada arvuti kaugjuurdepääsu jaoks.</translation>
 <translation id="5308380583665731573">Ühendamine</translation>
 <translation id="5363265567587775042">Paluge kasutajal, kelle arvutile soovite juurde pääseda, klõpsata nupul „<ph name="SHARE" />” ja anda teile juurdepääsukood.</translation>
 <translation id="5379087427956679853">Chrome Remote Desktop võimaldab arvutit turvaliselt veebi kaudu jagada. Mõlema kasutaja arvutis peab töötama rakendus Chrome Remote Desktop, mille leiate aadressilt <ph name="URL" />.</translation>
@@ -258,6 +255,7 @@ Desktopi host</translation>
 <translation id="7869445566579231750">Teil puudub luba selle rakenduse käitamiseks.</translation>
 <translation id="7948001860594368197">Ekraani valikud</translation>
 <translation id="7970576581263377361">Autentimine ebaõnnestus. Logige uuesti Chromiumi sisse.</translation>
+<translation id="7981525049612125370">Kaugseanss on aegunud.</translation>
 <translation id="8041721485428375115">Chrome Remote Desktopi hosti installiprogrammi allalaadimisel nõustute Google'i <ph name="LINK_BEGIN" />teenusetingimustega<ph name="LINK_END" />.</translation>
 <translation id="8073845705237259513">Chrome Remote Desktopi kasutamiseks peate lisama seadmele Google'i konto.</translation>
 <translation id="80739703311984697">Kaughost vajab autentimist kolmanda osapoole veebisaidil. Jätkamiseks peate andma chromootimisele täiendavad load juurdepääsuks sellele aadressile:</translation>

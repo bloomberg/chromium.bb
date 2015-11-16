@@ -33,7 +33,6 @@ Informace ohledně ochrany soukromí naleznete v zásadách ochrany soukromí sp
 <translation id="1770394049404108959">Aplikaci nelze otevřít.</translation>
 <translation id="177096447311351977">IP adresa kanálu pro klienta: <ph name="CLIENT_GAIA_IDENTIFIER" /> ip='<ph name="CLIENT_IP_ADDRESS_AND_PORT" />' host_ip='<ph name="HOST_IP_ADDRESS_AND_PORT" />' channel='<ph name="CHANNEL_TYPE" />' connection='<ph name="CONNECTION_TYPE" />'.</translation>
 <translation id="1779766957982586368">Zavřít okno</translation>
-<translation id="1818475040640568770">Nemáte zaregistrovány žádné počítače.</translation>
 <translation id="1841799852846221389">Zakazování vzdálených připojení k tomuto počítači…</translation>
 <translation id="189172778771606813">Zavřít vysouvací panel navigace</translation>
 <translation id="195619862187186579">Rozložení klávesnice</translation>
@@ -87,8 +86,6 @@ Informace ohledně ochrany soukromí naleznete v zásadách ochrany soukromí sp
 <translation id="2926340305933667314">Vzdálený přístup k tomuto počítači se nepodařilo zakázat. Zkuste to prosím později.</translation>
 <translation id="2930135165929238380">Chybí některé povinné komponenty. Přejděte na stránku chrome://plugins a zkontrolujte, zda je aplikace Native Client aktivní.</translation>
 <translation id="2939145106548231838">Ověření v hostitelském počítači</translation>
-<translation id="2998137343848432918">• Přidání obrazovky Poděkování
-• Oprava problému při přepnutí do režimu celé obrazovky s viditelnou klávesnicí</translation>
 <translation id="3020807351229499221">Aktualizace kódu PIN se nezdařila. Zkuste to prosím později.</translation>
 <translation id="3025388528294795783">Abychom váš problém mohli vyřešit, sdělte nám, v čem spočívá:</translation>
 <translation id="3027681561976217984">Dotykový režim</translation>
@@ -125,6 +122,7 @@ Chromoting</translation>
 <translation id="3950820424414687140">Přihlaste se</translation>
 <translation id="3989511127559254552">Aby bylo možné pokračovat, je nutné udělit dodatečná oprávnění k přístupu do vašeho počítače. Tuto akci stačí provést jednou.</translation>
 <translation id="4006787130661126000">Chcete-li se k tomuto počítači připojit prostřednictvím Vzdálené plochy Chrome, je třeba povolit vzdálená připojení.</translation>
+<translation id="405887016757208221">Vzdálený počítač relaci neinicializoval. Pokud problém přetrvává, zkuste hostitele nakonfigurovat znovu.</translation>
 <translation id="4068946408131579958">Všechna připojení</translation>
 <translation id="409800995205263688">POZNÁMKA: Nastavení zásad umožňují spojení pouze mezi počítači v rámci vaší sítě.</translation>
 <translation id="4155497795971509630">Chybí některé povinné komponenty. Zkontrolujte, zda máte nainstalovanou nejnovější verzi softwaru, a zkuste to znovu.</translation>
@@ -171,7 +169,6 @@ plochy Chrome</translation>
 <translation id="518094545883702183">Tyto informace jsou využity pouze při diagnostikování problému, který jste nahlásili, jsou dostupné pouze osobě, která vaši zprávu prošetřuje, a nejsou uchovávány déle než 30 dní.</translation>
 <translation id="5222676887888702881">Odhlásit se</translation>
 <translation id="5254120496627797685">Pokud opustíte tuto stránku, relace Vzdálené plochy Chrome bude ukončena.</translation>
-<translation id="5285241842433869526">Naučte se nastavit počítač pro vzdálený přístup.</translation>
 <translation id="5308380583665731573">Připojení</translation>
 <translation id="5363265567587775042">Požádejte uživatele, k jehož počítači chcete získat přístup, aby kliknul na tlačítko <ph name="SHARE" /> a dal vám přístupový kód.</translation>
 <translation id="5379087427956679853">Vzdálená plocha Chrome vám umožňuje bezpečně sdílet svůj počítač přes internet. Oba uživatelé musí mít spuštěnou aplikaci Vzdálená plocha Chrome, kterou najdete na adrese <ph name="URL" />.</translation>
@@ -259,6 +256,7 @@ plochy Chrome</translation>
 <translation id="7869445566579231750">Ke spuštění této aplikace nemáte oprávnění.</translation>
 <translation id="7948001860594368197">Možnosti obrazovky</translation>
 <translation id="7970576581263377361">Ověření selhalo. Přihlaste se do prohlížeče Chromium znovu.</translation>
+<translation id="7981525049612125370">Platnost vzdálené relace vypršela.</translation>
 <translation id="8041721485428375115">Stažením instalačního programu hostitele Vzdálené plochy Chrome vyjadřujete souhlas se <ph name="LINK_BEGIN" />smluvními podmínkami<ph name="LINK_END" /> společnosti Google.</translation>
 <translation id="8073845705237259513">Chcete-li používat Vzdálenou plochu Chrome, budete do zařízení muset přidat účet Google.</translation>
 <translation id="80739703311984697">Vzdálený hostitelský server vyžaduje, abyste provedli ověření na stránce třetí strany. Aby bylo možné pokračovat, je nutné udělit funkci Chromoting dodatečná oprávnění k přístupu na tuto adresu:</translation>

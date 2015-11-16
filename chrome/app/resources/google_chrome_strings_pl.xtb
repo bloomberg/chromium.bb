@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="pl">
 <translation id="1001534784610492198">Archiwum instalatora jest uszkodzone lub nieprawidłowe. Pobierz Google Chrome ponownie.</translation>
+<translation id="1013290471399003443">Chrome sprawdził, że wydawcą certyfikatu tej witryny jest <ph name="ISSUER" />. Serwer dostarczył poprawne informacje o certyfikacie, korzystając z protokołu Certificate Transparency.</translation>
 <translation id="1016765312371154165">Chrome nie został poprawnie zamknięty.</translation>
 <translation id="103396972844768118">Ważna informacja dotycząca Twoich danych Chrome</translation>
 <translation id="1061441684050139317">Aby zezwolić stronie na wykorzystanie mikrofonu, Chrome musi mieć do niego dostęp.</translation>
@@ -62,6 +63,7 @@ Jeśli jednak zalogujesz się teraz, informacje Chrome, takie jak zakładki, his
 <translation id="2769762047821873045">Google Chrome nie jest domyślną przeglądarką.</translation>
 <translation id="2770231113462710648">Zmień przeglądarkę domyślną na:</translation>
 <translation id="2871893339301912279">Jesteś zalogowany w Chrome.</translation>
+<translation id="2997147809295888909">Chrome sprawdził, że wydawcą certyfikatu tej witryny jest <ph name="ISSUER" />. Serwer nie dostarczył informacji o certyfikacie, korzystając z protokołu Certificate Transparency.</translation>
 <translation id="3037838751736561277">Google Chrome jest w trybie działania w tle</translation>
 <translation id="3047079729301751317">Odłączenie konta <ph name="USERNAME" /> spowoduje wyczyszczenie jego historii, zakładek, ustawień i innych danych Chrome zapisanych na tym urządzeniu. Dane przechowywane na koncie Google nie zostaną usunięte. Możesz nimi zarządzać w <ph name="GOOGLE_DASHBOARD_LINK" />Panelu Google<ph name="END_GOOGLE_DASHBOARD_LINK" />.</translation>
 <translation id="3080151273017101988">Kontynuuj działanie aplikacji w tle po zamknięciu przeglądarki Google Chrome</translation>
@@ -76,7 +78,6 @@ Jeśli jednak zalogujesz się teraz, informacje Chrome, takie jak zakładki, his
 <translation id="345171907106878721">Dodaj siebie do Chrome</translation>
 <translation id="3612333635265770873">Znane są przypadki konfliktu modułu o takiej nazwie z przeglądarką Google Chrome.</translation>
 <translation id="3622797965165704966">Korzystanie z Chrome na wspólnych komputerach i przy użyciu konta Google jest teraz jeszcze łatwiejsze.</translation>
-<translation id="3656661827369545115">Uruchamiaj Chromium automatycznie po włączeniu komputera</translation>
 <translation id="3735758079232443276">Rozszerzenie „<ph name="EXTENSION_NAME" />” ustawiło inną stronę wyświetlaną po uruchomieniu Chrome.</translation>
 <translation id="3738139272394829648">Dotknij, by wyszukać</translation>
 <translation id="3784527566857328444">Usuń z Chrome...</translation>
@@ -84,6 +85,7 @@ Jeśli jednak zalogujesz się teraz, informacje Chrome, takie jak zakładki, his
 <translation id="3847841918622877581">Przeglądarka Google Chrome może korzystać z usług internetowych w celu poprawy wygody użytkowania.</translation>
 <translation id="386202838227397562">Zamknij wszystkie okna przeglądarki Google Chrome i spróbuj ponownie.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
+<translation id="3881912906674381083">Chrome sprawdził, że wydawcą certyfikatu tej witryny jest <ph name="ISSUER" />. Serwer dostarczył informacje o certyfikacie, korzystając z protokołu Certificate Transparency, ale Chrome nie rozpoznał żadnego z dzienników.</translation>
 <translation id="3889417619312448367">Odinstaluj Google Chrome</translation>
 <translation id="4011219958405096740">Gdy ta funkcja jest włączona, używany będzie proces logowania w Chrome oparty na iframe. Jeśli nie, logowanie będzie oparte na WebView.</translation>
 <translation id="4050175100176540509">W najnowszej wersji zostały wprowadzone ważne poprawki bezpieczeństwa i nowe funkcje.</translation>
@@ -93,11 +95,9 @@ Jeśli jednak zalogujesz się teraz, informacje Chrome, takie jak zakładki, his
 <translation id="4167057906098955729">Tutaj możesz zobaczyć wszystkie powiadomienia z aplikacji, rozszerzeń i stron internetowych w Chrome.</translation>
 <translation id="423410644998903704">Aby zezwolić stronie na wykorzystanie uprawnień, Chrome musi je mieć.</translation>
 <translation id="4251615635259297716">Połączyć Twoje dane Chrome z tym kontem?</translation>
-<translation id="4273752058983339720">Google Chrome uruchamia się automatycznie po włączeniu komputera.</translation>
 <translation id="4309555186815777032">(wymaga <ph name="BEGIN_BUTTON" />ponownego uruchomienia<ph name="END_BUTTON" /> Chrome)</translation>
 <translation id="4331809312908958774">Chrome OS
 </translation>
-<translation id="4367618624832907428">Google Chrome nie może wyświetlić strony internetowej, bo komputer nie ma połączenia z internetem.</translation>
 <translation id="4407807842708586359">System operacyjny Google Chrome</translation>
 <translation id="4458285410772214805">Wyloguj się i zaloguj ponownie, by zmiana zaczęła obowiązywać.</translation>
 <translation id="4480040274068703980">System operacyjny Chrome nie może zsynchronizować danych z powodu błędu logowania.</translation>
@@ -106,7 +106,6 @@ Jeśli jednak zalogujesz się teraz, informacje Chrome, takie jak zakładki, his
 <translation id="4567424176335768812">Jesteś zalogowany jako <ph name="USER_EMAIL_ADDRESS" />. Teraz możesz korzystać ze swoich zakładek, historii i innych ustawień na wszystkich zalogowanych urządzeniach.</translation>
 <translation id="4631713731678262610">Ukryj w menu Chrome</translation>
 <translation id="4633000520311261472">Aby poprawić bezpieczeństwo Chrome, wyłączyliśmy niektóre rozszerzenia niedostępne w <ph name="IDS_EXTENSION_WEB_STORE_TITLE" />, które mogły zostać dodane bez Twojej wiedzy.</translation>
-<translation id="4692614041509923516">Twój komputer ma starą wersję Microsoft Windows, która nie potrafi przetworzyć certyfikatu bezpieczeństwa tej witryny. Przez ten problem Google Chrome nie może ustalić, czy ten certyfikat pochodzi z <ph name="SITE" /> czy od kogoś w Twojej sieci podszywającego się pod <ph name="SITE" />. Zaktualizuj Windows na komputerze do nowszej wersji.</translation>
 <translation id="4700157086864140907">Google Chrome może lepiej sprawdzać pisownię, przesyłając do serwerów Google tekst, który wpisujesz w przeglądarce. Dzięki temu możesz korzystać z technologii sprawdzania pisowni używanej przez wyszukiwarkę Google.</translation>
 <translation id="4728575227883772061">Instalacja nie powiodła się z powodu nieokreślonego błędu. Jeśli Google Chrome jest aktualnie uruchomiony, zamknij aplikację i spróbuj ponownie.</translation>
 <translation id="473775607612524610">Aktualizuj</translation>
@@ -115,6 +114,7 @@ Jeśli jednak zalogujesz się teraz, informacje Chrome, takie jak zakładki, his
 <translation id="4794050651896644714">Zapisz szczegóły w Chrome</translation>
 <translation id="4891791193823137474">Zezwalaj przeglądarce Google Chrome na działanie w tle</translation>
 <translation id="4921569541910214635">Używasz komputera, z którego korzystają inne osoby? Teraz możesz skonfigurować Chrome tak, jak chcesz.</translation>
+<translation id="4925019873400497719">Chrome sprawdził, że wydawcą certyfikatu tej witryny jest <ph name="ISSUER" />. Serwer dostarczył informacje o certyfikacie, korzystając z protokołu Certificate Transparency, ale były one nieprawidłowe.</translation>
 <translation id="4953650215774548573">Ustaw Google Chrome jako domyślną przeglądarkę</translation>
 <translation id="4987308747895123092">Zamknij wszystkie okna Chrome (także te działające w trybie Windows 8) i spróbuj ponownie.</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
@@ -191,7 +191,6 @@ Jeśli jednak zalogujesz się teraz, informacje Chrome, takie jak zakładki, his
 <translation id="6989339256997917931">Przeglądarka Google Chrome została zaktualizowana, ale nie była przez Ciebie używana przez co najmniej 30 dni.</translation>
 <translation id="699076943483372849">Ta strona korzysta z wycofanej wtyczki Chrome Frame, której zabezpieczenia i stabilność nie są już aktualizowane. Odinstaluj wtyczkę i przejdź na nowoczesną przeglądarkę.</translation>
 <translation id="6991142834212251086">Połącz moje dane Chrome z tym kontem</translation>
-<translation id="7054640471403081847">Ten komputer wkrótce przestanie otrzymywać aktualizacje Google Chrome, ponieważ zawiera sprzęt, który nie jest już obsługiwany.</translation>
 <translation id="7060865993964054389">Program uruchamiający aplikacje Google Chrome</translation>
 <translation id="7084448929020576097">Plik <ph name="FILE_NAME" /> jest złośliwy i został zablokowany przez Chrome.</translation>
 <translation id="7098166902387133879">Google Chrome używa Twojego mikrofonu.</translation>
@@ -228,7 +227,6 @@ Jeśli jednak zalogujesz się teraz, informacje Chrome, takie jak zakładki, his
 <translation id="781069973841903133">Ponowne uruchomienie Chrome w trybie pojemnym spowoduje zamknięcie i ponowne uruchomienie aplikacji Chrome.</translation>
 <translation id="7825851276765848807">Instalacja nie powiodła się z powodu nieokreślonego błędu. Pobierz Google Chrome ponownie.</translation>
 <translation id="7890208801193284374">Jeśli dzielisz komputer ze znajomymi lub rodziną, wszyscy możecie niezależnie przeglądać internet i po swojemu skonfigurować Chrome.</translation>
-<translation id="7908968924842975895">Ten komputer nie będzie otrzymywać aktualizacji Google Chrome, ponieważ zawiera sprzęt, który nie jest już obsługiwany.</translation>
 <translation id="7984945080620862648">Nie możesz teraz odwiedzić strony <ph name="SITE" />, bo wysłała ona zakodowane poświadczenia, których Chrome nie może przetworzyć. Błędy sieci i ataki są zazwyczaj przejściowe, więc prawdopodobnie strona będzie wkrótce działać.</translation>
 <translation id="8000275528373650868">Google Chrome wymaga systemu Windows Vista bądź Windows XP z dodatkiem SP2 lub nowszym.</translation>
 <translation id="8005540215158006229">Chrome jest już prawie gotowy.</translation>

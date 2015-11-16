@@ -33,7 +33,6 @@ Informacije o privatnosti potražite u Googleovim pravilima o privatnosti (http:
 <translation id="1770394049404108959">Ne mogu otvoriti aplikaciju.</translation>
 <translation id="177096447311351977">IP kanal za klijenta: <ph name="CLIENT_GAIA_IDENTIFIER" /> ip='<ph name="CLIENT_IP_ADDRESS_AND_PORT" />' host_ip='<ph name="HOST_IP_ADDRESS_AND_PORT" />' channel='<ph name="CHANNEL_TYPE" />' connection='<ph name="CONNECTION_TYPE" />'.</translation>
 <translation id="1779766957982586368">Zatvori prozor</translation>
-<translation id="1818475040640568770">Nemate registriranih računala.</translation>
 <translation id="1841799852846221389">Onemogućavanje daljinskih veza za ovo računalo…</translation>
 <translation id="189172778771606813">Zatvori ladicu za navigaciju</translation>
 <translation id="195619862187186579">Rasporedi tipkovnice</translation>
@@ -87,8 +86,6 @@ Informacije o privatnosti potražite u Googleovim pravilima o privatnosti (http:
 <translation id="2926340305933667314">Onemogućavanje daljinskog pristupa ovom računalu nije uspjelo. Pokušajte ponovo kasnije.</translation>
 <translation id="2930135165929238380">Nedostaju neke obavezne komponente. Otvorite chrome://plugins i provjerite je li omogućen Lokalni klijent.</translation>
 <translation id="2939145106548231838">Autentifikacija na hostu</translation>
-<translation id="2998137343848432918">• Dodan je zaslon sa zaslugama.
-• Riješen je problem prelaska na cijeli zaslon s vidljivom tipkovnicom.</translation>
 <translation id="3020807351229499221">PIN nije uspješno ažuriran. Pokušajte ponovo kasnije.</translation>
 <translation id="3025388528294795783">Da bismo lakše riješili vaš problem, recite nam što nije u redu:</translation>
 <translation id="3027681561976217984">Način dodira</translation>
@@ -124,6 +121,7 @@ Chromoting</translation>
 <translation id="3950820424414687140">Prijava</translation>
 <translation id="3989511127559254552">Da biste nastavili, morate odobriti dopuštenja za prošireni pristup svojem računalu. To morate učiniti samo jednom.</translation>
 <translation id="4006787130661126000">Morate omogućiti daljinske veze ako želite pristupati računalu pomoću Udaljene radne površine Chrome.</translation>
+<translation id="405887016757208221">Udaljeno računalo nije uspjelo inicijalizirati sesiju. Ako se problem ne riješi, pokušajte ponovo konfigurirati host.</translation>
 <translation id="4068946408131579958">Sve veze</translation>
 <translation id="409800995205263688">NAPOMENA: postavke pravila dopuštaju jedino veze između računala u vašoj mreži.</translation>
 <translation id="4155497795971509630">Nedostaju neke obavezne komponente. Provjerite jeste li instalirali najnoviju verziju softvera i pokušajte ponovo.</translation>
@@ -170,7 +168,6 @@ površine Chrome</translation>
 <translation id="518094545883702183">Informacije se upotrebljavaju samo za dijagnosticiranje problema koji prijavljujete, dostupne su samo osobi koja istražuje vaše izvješće i ne zadržavaju se dulje od 30 dana.</translation>
 <translation id="5222676887888702881">Odjava</translation>
 <translation id="5254120496627797685">Ako napustite ovu stranicu, završit će vaša sesija u aplikaciji Udaljena radna površina Chrome.</translation>
-<translation id="5285241842433869526">Saznajte kako postaviti računalo za udaljeni pristup.</translation>
 <translation id="5308380583665731573">Povežite se</translation>
 <translation id="5363265567587775042">Zamolite korisnika čijem računalu želite pristupiti da klikne "<ph name="SHARE" />" i da vam pristupni kôd.</translation>
 <translation id="5379087427956679853">Udaljena radna površina Chrome omogućuje vam da svoje računalo sigurno dijelite putem weba. Na računalima oba korisnika mora biti pokrenuta aplikacija Udaljena radna površina Chrome koju možete pronaći na web-lokaciji <ph name="URL" />.</translation>
@@ -258,6 +255,7 @@ površine Chrome</translation>
 <translation id="7869445566579231750">Nemate dopuštenje za pokretanje te aplikacije.</translation>
 <translation id="7948001860594368197">Opcije zaslona</translation>
 <translation id="7970576581263377361">Autentifikacija nije uspjela. Prijavite se ponovo na Chromium.</translation>
+<translation id="7981525049612125370">Daljinska je sesija istekla.</translation>
 <translation id="8041721485428375115">Preuzimanjem programa za instalaciju hosta Udaljene radne površine Chrome prihvaćate Googleove <ph name="LINK_BEGIN" />Uvjete pružanja usluge<ph name="LINK_END" />.</translation>
 <translation id="8073845705237259513">Da biste upotrebljavali Udaljenu radnu površinu Chrome, uređaju morate dodati Google račun.</translation>
 <translation id="80739703311984697">Udaljeni host zahtijeva autentifikaciju web-lokacije treće strane. Da biste nastavili, morate dati Chromotingu dodatne dozvole za pristup ovoj adresi:</translation>

@@ -56,6 +56,9 @@
 <translation id="1221359380862872747">Indlæs de angivne webadresser ved demologin</translation>
 <translation id="1240643596769627465">Angiver webadressen for den søgemaskine, der bruges til at give direkte resultater. Webadressen skal indeholde strengen <ph name="SEARCH_TERM_MARKER" />, som erstattes på forespørgselstidspunktet af den tekst, som brugeren har indtastet hidtil. Denne politik er valgfri. Hvis dette ikke angives, gives der ikke øjeblikkelige søgeresultater. Denne politik respekteres kun, hvis politikken "DefaultSearchProviderEnabled" er aktiveret.</translation>
 <translation id="1265053460044691532">Begræns den tid, hvor en bruger, der er godkendt via SAML, kan logge på offline</translation>
+<translation id="1291880496936992484">Advarsel! RC4 bliver fjernet helt fra <ph name="PRODUCT_NAME" /> efter version 52 (omkring september 2016), og på det tidspunkt vil denne politik holde op med at virke.
+
+      Hvis politikken ikke er angivet eller er angivet til Falsk, aktiveres RC4-krypteringsprogrammer i TLS ikke. Alternativt kan den angives til Sandt for at bevare kompatibiliteten med en forældet server. Dette er en midlertidig løsning, og serveren bør rekonfigureres.</translation>
 <translation id="1297182715641689552">Brug et .pac-proxyscript</translation>
 <translation id="1300635491585192248">Forudsig netværkshandlinger på ethvert netværk, der ikke er
           mobilnetværk</translation>
@@ -470,6 +473,9 @@
       Hvis du aktiverer eller deaktiverer denne indstilling, kan brugerne ikke ændre eller tilsidesætte indstillingen "Aktivér phishing og malwarebeskyttelse" i <ph name="PRODUCT_NAME" />.
 
       Hvis denne politik ikke indstilles, vil den blive aktiveret, men brugeren vil være i stand til at ændre den.</translation>
+<translation id="2801230735743888564">Giv brugerne mulighed for at spille det ekstra dinosaurspil, når enheden er offline.
+
+      Hvis denne politik er angivet til Falsk, kan brugerne ikke spille det ekstra dinosaurspil, når enheden er offline. Hvis indstillingen er angivet til Sand, kan brugerne spille dinosaurspillet. Hvis politikken ikke er angivet, kan brugerne ikke spille det ekstra dinosaurspil på tilmeldte Chrome OS-systemer, men de kan spille det under andre omstændigheder.</translation>
 <translation id="2805707493867224476">Tillad, at alle websites viser pop op-vinduer</translation>
 <translation id="2808013382476173118">Muliggør brug af STUN-servere, hvis fjernklienter forsøger at oprette forbindelse til denne computer.
 
@@ -729,6 +735,13 @@ Hvis du aktiverer denne indstilling, tjekker <ph name="PRODUCT_NAME" /> altid ve
 Hvis denne indstilling deaktiveres, tjekker <ph name="PRODUCT_NAME" /> aldrig se om den er standardbrowseren, og deaktivere brugerens kontrol over denne indstilling. 
 
 Hvis denne indstilling ikke er angivet, vil <ph name="PRODUCT_NAME" /> tillade brugere at tjekke, om den er standardbrowseren, og om der skal vises underretninger til brugeren, når den ikke er det.</translation>
+<translation id="3800626789999016379">Konfigurerer den mappe, som <ph name="PRODUCT_NAME" /> bruger til at downloade filer.
+
+      Hvis du angiver denne politik, vil <ph name="PRODUCT_NAME" /> bruge den medfølgende mappe, uanset om brugeren har angivet en eller aktiveret flaget for at blive bedt om en downloadplacering hver gang.
+
+      Du kan se en liste over variabler, der kan anvendes, på http://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.
+
+      Hvis denne politik ikke angives, anvendes standardmappen til downloads, og brugeren vil kunne ændre den.</translation>
 <translation id="3805659594028420438">Aktivér udvidelse af certifikater, der er bundet til TLS-domænet (udfaset)</translation>
 <translation id="3806576699227917885">Tillad lydafspilning.
 
@@ -842,6 +855,13 @@ Hvis denne politik ikke er indstillet, er standardfrekvensen 3 minutter. Minimum
           Denne politik respekteres kun, hvis politikken "DefaultSearchProviderEnabled" er aktiveret.</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 eller nyere</translation>
 <translation id="4325690621216251241">Tilføj en log ud-knap til systembakken</translation>
+<translation id="4349746760316962317">Konfigurerer den mappe, som <ph name="PRODUCT_NAME" /> bruger til at gemme cachelagrede filer på disken.
+
+      Hvis du angiver denne politik, vil <ph name="PRODUCT_NAME" /> bruge den medfølgende mappe, uanset om brugeren har angivet flaget "--disk-cache-dir" eller ej.
+
+      Du kan se en liste over variabler, der kan anvendes, på https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.
+
+      Hvis denne politik ikke angives, anvendes standardcachemappen, og brugeren vil kunne tilsidesætte den med flaget "--disk-cache-dir" på kommandolinjen.</translation>
 <translation id="436581050240847513">Rapportér enhedens netværksgrænseflader</translation>
 <translation id="4372704773119750918">Tillad ikke, at virksomhedsbrugere er en del af en multiprofil (primær eller sekundær)</translation>
 <translation id="4377599627073874279">Tillad alle websites at vise alle billeder</translation>
@@ -911,6 +931,11 @@ Mens selve politikken understøttes på ovenstående platforme, kan den funktion
 <translation id="4665897631924472251">Indstillinger for administration af udvidelser</translation>
 <translation id="4668325077104657568">Standardindstilling for billeder</translation>
 <translation id="467236746355332046">Understøttede funktioner:</translation>
+<translation id="4674167212832291997">Tilpas listen over webadressemønstre, der altid skal gengives af <ph name="PRODUCT_FRAME_NAME" />.
+
+          Hvis denne politik ikke er angivet, anvendes standardgengivelsen på alle websites, sådan som det er angivet i politikken "ChromeFrameRendererSettings".
+
+          Du kan se eksempler på mønstre på https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="467449052039111439">Åbn en liste over webadresser</translation>
 <translation id="4680961954980851756">Aktiver AutoFyld</translation>
 <translation id="4723829699367336876">Aktiver gennemgang af firewall fra fjernklient</translation>
@@ -1007,6 +1032,13 @@ Mens selve politikken understøttes på ovenstående platforme, kan den funktion
           Når denne politik ikke er angivet, foretages standardhandlingen, hvilket er suspendering.
 
           Hvis handlingen er suspendering, kan <ph name="PRODUCT_OS_NAME" /> konfigureres særskilt til enten at låse eller ikke at låse skærmen før suspendering.</translation>
+<translation id="5111712393799006197">Konfigurerer den mappe, som <ph name="PRODUCT_NAME" /> bruger til at lagre brugerdata.
+      Hvis du angiver denne politik, vil <ph name="PRODUCT_NAME" /> bruge den medfølgende mappe, uanset om brugeren har angivet flaget "--user-data-dir" eller ej.
+
+      Du kan se en liste over variabler, der kan anvendes, på https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.
+
+      Hvis denne politik ikke angives, anvendes stien til standardprofilen, og brugeren vil kunne tilsidesætte den med flaget "--user-data-dir" på kommandolinjen.</translation>
+<translation id="5130288486815037971">Afgør, om RC4-krypteringsprogrammer i TLS aktiveres</translation>
 <translation id="5141670636904227950">Indstil standardtype for lup til aktiveret på loginskærmen</translation>
 <translation id="5142301680741828703">Gengiv altid følgende webadressemønstre i <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="5148753489738115745">Giver dig mulighed for at angive yderligere parametre, som bruges, når <ph name="PRODUCT_FRAME_NAME" /> starter <ph name="PRODUCT_NAME" />.
@@ -1175,6 +1207,20 @@ Hvis denne politik slås fra eller indstilles til False (falsk), er udviklertils
 <translation id="5809728392451418079">Indstil det viste navn for enhedslokale konti</translation>
 <translation id="5814301096961727113">Indstil standardtilstanden for talefeedback på loginskærmen</translation>
 <translation id="5815129011704381141">Automatisk genstart efter opdatering</translation>
+<translation id="5815353477778354428">Konfigurerer den mappe, som <ph name="PRODUCT_FRAME_NAME" /> bruger til at lagre brugerdata.
+
+      Hvis du angiver denne politik, vil <ph name="PRODUCT_FRAME_NAME" /> bruge den angivne mappe.
+
+      Se kan se en liste over variabler, der kan anvendes, på http://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.
+
+      Hvis denne indstilling ikke angives, anvendes standardprofilmappen.</translation>
+<translation id="5819660021114910752">Angiver den tidszone, der skal gælde for enheden. Brugerne kan tilsidesætte den angivne tidszone for den aktuelle session, men når der logges ud, anvendes den angivne tidszone igen. Hvis der angives en ugyldig værdi, aktiveres politikken med "GMT" i stedet. Hvis der angives en tom streng, ignoreres politikken.
+
+      Hvis denne politik ikke anvendes, benyttes den aktive tidszone, men brugerne kan dog skifte tidszone, og ændringen gemmes i så fald. En ændring, der foretages af én bruger, påvirker således loginskærmen og alle andre brugere.
+
+      Nye enheder er som udgangspunkt angivet med tidszonen "Pacific Standard Time".
+
+      Formatet for værdierne følger navnene på tidszonerne i "IANA Time Zone Database" (se "https://en.wikipedia.org/wiki/Tz_database"). De fleste tidszoner betegnes som "continent/large_city" eller "ocean/large_city".</translation>
 <translation id="5826047473100157858">Angiver, om brugeren kan åbne sider i inkognitotilstand i <ph name="PRODUCT_NAME" />. Hvis "Aktiveret" er valgt, eller hvis politikken ikke angives, kan siderne åbnes i inkognitotilstand. Hvis "Deaktiveret" er valgt, kan sider ikke åbnes i inkognitotilstand. Hvis "Tvunget" er valgt, kan siderne kun åbnes i inkognitotilstand.</translation>
 <translation id="5836064773277134605">Begræns rækkevidden for den UDP-port, der bruges af hosten for fjernadgang</translation>
 <translation id="5845159892130426052">Aktivér ShowModalDialog API v2015.04.30</translation>
@@ -1265,6 +1311,7 @@ Hvis denne politik slås fra eller indstilles til False (falsk), er udviklertils
           Den anbefalede metode til skærmlåsning, når brugeren er inaktiv, er at aktivere skærmlåsning ved midlertidigt stop og få <ph name="PRODUCT_OS_NAME" /> til at stoppe midlertidigt efter den angivne forsinkelse for inaktivitet. Denne politik bør kun anvendes, når skærmen skal låses en betydelig mængde tid før det midlertidige stop, eller når det midlertidige stop i forbindelse inaktivitet slet ikke ønskes.
 
           Værdien for politikken bør angives i millisekunder. Værdierne skal være mindre end forsinkelsen for inaktivitet.</translation>
+<translation id="6111936128861357925">Tillad det ekstra dinosaurspil</translation>
 <translation id="6114416803310251055">frarådet</translation>
 <translation id="6145799962557135888">Giver dig mulighed for at oprette en liste med webadressemønstre, der angiver websites, der får lov til at køre JavaScript. Hvis denne politik ikke angives, anvendes den globale standardværdi på alle websites, enten fra politikken "DefaultJavaScriptSetting", hvis den er indstillet, eller brugerens personlige konfiguration.</translation>
 <translation id="6151775819333710697">
@@ -1823,6 +1870,18 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 
       Hvis denne politik ikke angives, vil der ikke være nogen undtagelser til sortlisten fra politikken "URLBlacklist".</translation>
 <translation id="8176035528522326671">Tillad, at kun virksomhedsbrugeren er primær multiprofilbruger (standardadfærd for virksomhedsadministrerede brugere)</translation>
+<translation id="8191318459035150777">Konfigurerer webadressen til standardstartsiden i <ph name="PRODUCT_NAME" /> og forhindrer brugerne i at ændre den.
+
+          Startsiden er den side, der åbnes med knappen Start. De sider, der åbnes ved opstart, kontrolleres af RestoreOnStartup-politikkerne.
+
+          Startsidetypen kan enten indstilles til en webadresse, som du angiver her, eller til siden Ny fane. Hvis du vælger siden Ny fane, gælder denne politik ikke.
+
+          Hvis du aktiverer denne indstilling, kan brugerne ikke ændre deres webadresse til startsiden i <ph name="PRODUCT_NAME" />, men de kan stadig vælge siden Ny fane som deres startside.
+
+          Hvis denne politik ikke angives, kan brugeren selv vælge sin startside, hvis HomepageIsNewTabPage heller ikke er angivet.
+
+          Denne politik er ikke tilgængelig på Windows-forekomster, der ikke er knyttet
+          til et Active Directory-domæne.</translation>
 <translation id="8197918588508433925">Denne politik angiver de tilladte udvidelser til brug af Enterprise Platform Keys API chrome.enterprise.platformKeysPrivate.challengeUserKey() til fjernattestering. Udvidelser skal føjes til denne liste for at kunne anvende API'en
 
           Hvis en udvidelse ikke findes på listen, eller listen ikke er angivet, mislykkes kaldet til API'en med en fejlkode.</translation>
@@ -1864,6 +1923,11 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 <translation id="8465065632133292531">Parametre for direkte webadresse, som bruger POST</translation>
 <translation id="847472800012384958">Tillad ikke, at websites viser pop op-vinduer</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
+<translation id="8484458986062090479">Tilpas listen over webstedsmønstre, der altid bør gengives af hostbrowseren.
+
+          Hvis denne politik ikke er angivet, anvendes standardgengivelsen på alle websites, sådan som det er angivet i politikken "ChromeFrameRendererSettings".
+
+          Se eksempler på mønstre på https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="8493645415242333585">Deaktiver lagring af browserhistorik</translation>
 <translation id="8499172469244085141">Standardindstillinger (brugere kan tilsidesætte)</translation>
 <translation id="8501011084242226370">Angiver en liste over plugins, som brugeren kan aktivere eller deaktivere i <ph name="PRODUCT_NAME" />.
@@ -1931,6 +1995,8 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 
       Hvis denne indstilling er deaktiveret, kan browser- og downloadhistorik ikke slettes.</translation>
 <translation id="8764119899999036911">Angiver, om den genererede Kerberos SPN er baseret på det kanoniske DNS-navn eller det navn, der oprindeligt blev indtastet. Hvis du aktiverer denne indstilling, springes CNAME-opslag over, og servernavnet anvendes, sådan som det er indtastet. Hvis du deaktiverer denne indstilling eller ikke angiver den, vil det kanoniske navn på den pågældende server blive fastlagt via CNAME-opslag.</translation>
+<translation id="8774131509736383471">Hvis denne politik er angivet til Sand, maksimerer <ph name="PRODUCT_NAME" /> ubetinget det første vindue, der vises ved den første kørsel.
+      Hvis denne politik er angivet til Falsk eller ikke er konfigureret, besluttes det ud fra skærmstørrelsen, om det første vindue, der vises, skal maksimeres.</translation>
 <translation id="8777120694819070607">Tillader, at <ph name="PRODUCT_NAME" /> kører plugins, der er forældede. Hvis du aktiverer denne indstilling, bruges forældede plugins som almindelige plugins. Hvis du deaktiverer denne indstilling, bruges forældede plugins ikke, og brugerne bliver ikke bedt om tilladelse til at køre dem. Hvis denne indstilling ikke angives, bliver brugerne bedt om tilladelse til at køre forældede plugins.</translation>
 <translation id="87812015706645271">Kræver, at navnet på den lokale bruger og ejeren af hosten for fjernadgang stemmer overens</translation>
 <translation id="8782750230688364867">Angiver den procentdel, som nedtoningsforsinkelsen på skærmen skaleres, når enheden er i præsentationstilstand.

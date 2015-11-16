@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="de">
 <translation id="1001534784610492198">Das Installationsarchiv ist beschädigt oder ungültig. Laden Sie Google Chrome erneut herunter.</translation>
+<translation id="1013290471399003443">Chrome hat verifiziert, dass <ph name="ISSUER" /> das Zertifikat dieser Website ausgestellt hat. Der Server hat gültige Informationen zur Zertifikatstransparenz bereitgestellt.</translation>
 <translation id="1016765312371154165">Chrome wurde nicht richtig beendet.</translation>
 <translation id="103396972844768118">Wichtige Informationen zu Ihren Chrome-Daten</translation>
 <translation id="1061441684050139317">Chrome benötigt Zugriff auf das Mikrofon, um es für diese Website freizugeben.</translation>
@@ -62,6 +63,7 @@ Sollten Sie sich trotzdem anmelden, werden die Chrome-Daten wie Lesezeichen, Ver
 <translation id="2769762047821873045">Google Chrome ist nicht als Ihr Standardbrowser festgelegt.</translation>
 <translation id="2770231113462710648">Standardbrowser ändern in:</translation>
 <translation id="2871893339301912279">Sie sind in Chrome angemeldet.</translation>
+<translation id="2997147809295888909">Chrome hat verifiziert, dass <ph name="ISSUER" /> das Zertifikat dieser Website ausgestellt hat. Der Server hat keine Informationen zur Zertifikatstransparenz bereitgestellt.</translation>
 <translation id="3037838751736561277">Google Chrome wird im Hintergrundmodus ausgeführt.</translation>
 <translation id="3047079729301751317">Wenn Sie die Verbindung zu <ph name="USERNAME" /> trennen, werden Ihr Verlauf sowie Ihre Lesezeichen, Einstellungen und sonstigen auf diesem Gerät gespeicherten Chrome-Daten gelöscht. In Ihrem Google-Konto gespeicherte Daten bleiben erhalten und können über das <ph name="GOOGLE_DASHBOARD_LINK" />Google Dashboard<ph name="END_GOOGLE_DASHBOARD_LINK" /> verwaltet werden.</translation>
 <translation id="3080151273017101988">Apps im Hintergrund ausführen, wenn Google Chrome geschlossen ist</translation>
@@ -76,7 +78,6 @@ Sollten Sie sich trotzdem anmelden, werden die Chrome-Daten wie Lesezeichen, Ver
 <translation id="345171907106878721">Mich zu Chrome hinzufügen</translation>
 <translation id="3612333635265770873">Es ist bekannt, dass ein Modul mit dem gleichen Namen in Konflikt mit Google Chrome steht.</translation>
 <translation id="3622797965165704966">Sie können Chrome jetzt noch einfacher mit Ihrem Google-Konto und auf gemeinsam genutzten Computern verwenden.</translation>
-<translation id="3656661827369545115">Chromium beim Starten des Computers automatisch ausführen</translation>
 <translation id="3735758079232443276">Die beim Start von Chrome angezeigte Seite wurde durch die Erweiterung <ph name="EXTENSION_NAME" /> geändert.</translation>
 <translation id="3738139272394829648">Zum Suchen tippen</translation>
 <translation id="3784527566857328444">Aus Chrome entfernen...</translation>
@@ -84,6 +85,7 @@ Sollten Sie sich trotzdem anmelden, werden die Chrome-Daten wie Lesezeichen, Ver
 <translation id="3847841918622877581">Google Chrome kann das Browserverhalten mithilfe von Webdiensten verbessern.</translation>
 <translation id="386202838227397562">Schließen Sie alle Google Chrome-Fenster und versuchen Sie es erneut.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
+<translation id="3881912906674381083">Chrome hat verifiziert, dass <ph name="ISSUER" /> das Zertifikat dieser Website ausgestellt hat. Zwar hat der Server Informationen zur Zertifikatstransparenz bereitgestellt, Chrome hat die Zertifikatstransparenzprotokolle jedoch nicht erkannt.</translation>
 <translation id="3889417619312448367">Google Chrome deinstallieren</translation>
 <translation id="4011219958405096740">Wenn dieses Flag aktiviert ist, wird ein Iframe-basierter Anmeldevorgang für Chrome verwendet. Andernfalls wird ein auf WebView basierender Vorgang verwendet.</translation>
 <translation id="4050175100176540509">Wichtige Sicherheitsverbesserungen und neue Funktionen sind in der aktuellen Version verfügbar.</translation>
@@ -93,10 +95,8 @@ Sollten Sie sich trotzdem anmelden, werden die Chrome-Daten wie Lesezeichen, Ver
 <translation id="4167057906098955729">Hier finden Sie alle Benachrichtigungen von Chrome-Apps, Erweiterungen und Websites.</translation>
 <translation id="423410644998903704">Chrome benötigt Zugriff auf die Berechtigungen, um sie für diese Website freizugeben.</translation>
 <translation id="4251615635259297716">Ihre Chrome-Daten mit diesem Konto verknüpfen?</translation>
-<translation id="4273752058983339720">Google Chrome ist so konfiguriert, dass es beim Hochfahren Ihres Computers automatisch gestartet wird.</translation>
 <translation id="4309555186815777032">Ein <ph name="BEGIN_BUTTON" />Neustart<ph name="END_BUTTON" /> von Chrome ist erforderlich.</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
-<translation id="4367618624832907428">Die Webseite kann nicht in Google Chrome angezeigt werden, weil Ihr Computer nicht mit dem Internet verbunden ist.</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="4458285410772214805">Melden Sie sich ab und wieder an, damit diese Änderung wirksam wird.</translation>
 <translation id="4480040274068703980">Chrome OS konnte Ihre Daten aufgrund eines Fehlers bei der Anmeldung nicht synchronisieren.</translation>
@@ -105,7 +105,6 @@ Sollten Sie sich trotzdem anmelden, werden die Chrome-Daten wie Lesezeichen, Ver
 <translation id="4567424176335768812">Sie sind als <ph name="USER_EMAIL_ADDRESS" /> angemeldet. Auf allen Geräten, auf denen Sie angemeldet sind, sind nun Ihre Lesezeichen, Ihr Verlauf und andere Einstellungen verfügbar.</translation>
 <translation id="4631713731678262610">Im Chrome-Menü ausblenden</translation>
 <translation id="4633000520311261472">Um Chrome sicherer zu machen, haben wir einige Erweiterungen deaktiviert, die nicht im <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> aufgeführt sind und möglicherweise ohne Ihr Wissen hinzugefügt wurden.</translation>
-<translation id="4692614041509923516">Auf Ihrem Computer wird eine alte Version von Microsoft Windows ausgeführt, die das Sicherheitszertifikat dieser Website nicht verarbeiten kann. Google Chrome kann daher nicht feststellen, ob das Zertifikat von <ph name="SITE" /> oder von jemandem aus Ihrem Netzwerk stammt, der sich als <ph name="SITE" /> ausgibt. Bitte installieren Sie eine neuere Version von Windows auf Ihrem Computer.</translation>
 <translation id="4700157086864140907">Google Chrome bietet eine intelligentere Rechtschreibprüfung, indem der Browser das, was Sie eingeben, an die Google-Server sendet. So steht Ihnen dieselbe Technologie zur Rechtschreibprüfung zur Verfügung, die bei der Google-Suche zum Einsatz kommt.</translation>
 <translation id="4728575227883772061">Installation aufgrund von unbekanntem Fehler fehlgeschlagen. Falls Google Chrome bereits ausgeführt wird, schließen Sie es und versuchen Sie es erneut.</translation>
 <translation id="473775607612524610">Aktualisieren</translation>
@@ -114,6 +113,7 @@ Sollten Sie sich trotzdem anmelden, werden die Chrome-Daten wie Lesezeichen, Ver
 <translation id="4794050651896644714">Details in Chrome speichern</translation>
 <translation id="4891791193823137474">Google Chrome im Hintergrund ausführen</translation>
 <translation id="4921569541910214635">Sie nutzen einen Computer gemeinsam mit anderen? Jetzt können Sie Chrome nach Ihren Wünschen einrichten.</translation>
+<translation id="4925019873400497719">Chrome hat verifiziert, dass <ph name="ISSUER" /> das Zertifikat dieser Website ausgestellt hat. Zwar hat der Server Informationen zur Zertifikatstransparenz bereitgestellt, diese waren jedoch ungültig.</translation>
 <translation id="4953650215774548573">Google Chrome als Standardbrowser festlegen</translation>
 <translation id="4987308747895123092">Schließen Sie alle Google Chrome-Fenster einschließlich der Fenster im Windows 8-Modus und versuchen Sie es erneut.</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
@@ -174,7 +174,6 @@ Sollten Sie sich trotzdem anmelden, werden die Chrome-Daten wie Lesezeichen, Ver
 <translation id="6989339256997917931">Google Chrome wurde aktualisiert, Sie haben den Browser jedoch mindestens 30 Tage nicht verwendet.</translation>
 <translation id="699076943483372849">Diese Website verwendet das eingestellte Chrome Frame-Plug-in, für das es keine Sicherheits- und Stabilitätsupdates mehr gibt. Deinstallieren Sie das Plug-in und führen Sie ein Upgrade auf einen neueren Browser aus.</translation>
 <translation id="6991142834212251086">Meine Chrome-Daten mit diesem Konto verknüpfen</translation>
-<translation id="7054640471403081847">Für diesen Computer werden in Kürze keine weiteren Google Chrome-Updates mehr bereitgestellt, da die Hardware des Geräts nicht mehr unterstützt wird.</translation>
 <translation id="7060865993964054389">Google Chrome App Launcher</translation>
 <translation id="7084448929020576097"><ph name="FILE_NAME" /> ist schädlich und wurde von Chrome blockiert.</translation>
 <translation id="7098166902387133879">Google Chrome verwendet Ihr Mikrofon.</translation>
@@ -210,7 +209,6 @@ Sollten Sie sich trotzdem anmelden, werden die Chrome-Daten wie Lesezeichen, Ver
 <translation id="781069973841903133">Bei einem Neustart im immersiven Modus von Chrome werden Ihre Chrome-Apps geschlossen und neu gestartet.</translation>
 <translation id="7825851276765848807">Die Installation ist aufgrund eines unbekannten Fehlers fehlgeschlagen. Laden Sie Google Chrome erneut herunter.</translation>
 <translation id="7890208801193284374">Bei gemeinsam genutzten Computern können die verschiedenen Personen separat surfen und Chrome jeweils nach ihren Wünschen einrichten.</translation>
-<translation id="7908968924842975895">Für diesen Computer werden keine weiteren Google Chrome-Updates mehr bereitgestellt, da die Hardware des Geräts nicht mehr unterstützt wird.</translation>
 <translation id="7984945080620862648">Sie können <ph name="SITE" /> zurzeit nicht aufrufen, weil die Website verschlüsselte Anmeldedaten gesendet hat, die von Chrome nicht verarbeitet werden können. Netzwerkfehler und Angriffe sind in der Regel nur vorübergehend, sodass die Seite wahrscheinlich später wieder funktioniert.</translation>
 <translation id="8000275528373650868">Für Google Chrome ist Windows Vista oder Windows XP SP2 oder höher erforderlich.</translation>
 <translation id="8005540215158006229">Chrome ist gleich bereit.</translation>

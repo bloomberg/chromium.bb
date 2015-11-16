@@ -26,9 +26,7 @@
 மாற்ற Shift + Alt ஐ அழுத்தவும்.</translation>
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME" /> ஐப் பிரதிபலிக்கிறது</translation>
 <translation id="1923539912171292317">தன்னியக்க கிளிக்குகள்</translation>
-<translation id="1950626184269948555">காரிய நிர்வாகியின் குறுக்குவழி மாற்றப்பட்டது. Shift+Escக்குப் பதில் Search+Esc பயன்படுத்தவும்.</translation>
 <translation id="1957803754585243749">0°</translation>
-<translation id="1963814843110128691">$1ஐ $2க்கு அனுப்புகிறது</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1987317783729300807">கணக்குகள்</translation>
 <translation id="2127372758936585790">குறைந்த சக்திகொண்ட சார்ஜர்</translation>
@@ -94,6 +92,7 @@
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">பூட்டு</translation>
 <translation id="3799026279081545374">உங்களிடம் நல்ல நிலையில் இல்லாத சார்ஜர் இருக்கலாம். நீங்கள் US இல் வசிக்கிறீர்கள் எனில், உதவி மற்றும் மாற்று சார்ஜரைப் பெறுவதற்கு 866-628-1371 ஐ அழைக்கவும். நீங்கள் UK இல் வசிக்கிறீர்கள் எனில், 0800-026-0613 ஐ அழைக்கவும். நீங்கள் அயர்லாந்தில் வசிக்கிறீர்கள் எனில், 1-800-832-664 ஐ அழைக்கவும். நீங்கள் கனடாவில் வசிக்கிறீர்கள் எனில், 866-628-1372 ஐ அழைக்கவும். நீங்கள் ஆஸ்திரேலியாவில் வசிக்கிறீர்கள் எனில், 1-800-067-460 ஐ அழைக்கவும்.</translation>
+<translation id="3866182280516392520">IPv6 முகவரி</translation>
 <translation id="3891340733213178823">வெளியேற Ctrl+Shift+Q ஐ இருமுறை அழுத்தவும்.</translation>
 <translation id="3892641579809465218">இணையக் காட்சி</translation>
 <translation id="3963445509666917109">ஸ்பீக்கர் (உட்புறம்)</translation>
@@ -152,7 +151,6 @@
 <translation id="6165508094623778733">மேலும் அறிக</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE" />%</translation>
 <translation id="6248847161401822652">வெளியேற Control Shift Q ஐ இருமுறை அழுத்தவும்.</translation>
-<translation id="6287020362823083378">திரைப் பூட்டின் குறுக்குவழி மாற்றப்பட்டது. Ctrl+Shift+Lக்குப் பதில் Search+L பயன்படுத்தவும்.</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> <ph name="ROTATION" /> ஆகச் சுழற்றப்பட்டது</translation>
 <translation id="6359806961507272919"><ph name="PHONE_NUMBER" /> என்ற எண்ணிலிருந்து வந்த SMS</translation>
 <translation id="639644700271529076">CAPS LOCK முடக்கப்பட்டுள்ளது</translation>
@@ -205,7 +203,6 @@
 <translation id="8308637677604853869">முந்தைய மெனு</translation>
 <translation id="8356164830168736643"><ph name="WINDOW_TITLE" />ஐ மூடு</translation>
 <translation id="8428213095426709021">அமைப்புகள்</translation>
-<translation id="8443356412772935865">திரையை $1க்கு அனுப்புகிறது</translation>
 <translation id="8456362689280298700">நிரம்ப <ph name="HOUR" />:<ph name="MINUTE" /> உள்ளது</translation>
 <translation id="8517041960877371778">இயக்கப்பட்டிருக்கும் போது உங்கள் <ph name="DEVICE_TYPE" /> இல் சார்ஜ் ஏறாது.</translation>
 <translation id="8528322925433439945">மொபைல் ...</translation>

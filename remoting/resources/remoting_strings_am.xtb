@@ -33,7 +33,6 @@
 <translation id="1770394049404108959">መተግበሪያውን መክፈት አልችልም።</translation>
 <translation id="177096447311351977">የሰርጥ አይ ፒ ለደንበኛ፦ <ph name="CLIENT_GAIA_IDENTIFIER" /> አይ ፒ=«<ph name="CLIENT_IP_ADDRESS_AND_PORT" />» የአስተናጋጅ አይ ፒ=«<ph name="HOST_IP_ADDRESS_AND_PORT" />» ሰርጥ=«<ph name="CHANNEL_TYPE" />» ግንኙነት=«<ph name="CONNECTION_TYPE" />»።</translation>
 <translation id="1779766957982586368">መስኮት ዝጋ</translation>
-<translation id="1818475040640568770">ምንም የተመዘገቡ ኮምፒውተሮች የሉዎትም።</translation>
 <translation id="1841799852846221389">ለዚህ ኮምፒውተር የርቀት ግንኙነቶችን በማሰናከል ላይ…</translation>
 <translation id="189172778771606813">የአሰሳ መሳቢያ ዝጋ</translation>
 <translation id="195619862187186579">የቁልፍ ሰሌዳ አቀማመጦች</translation>
@@ -87,8 +86,6 @@
 <translation id="2926340305933667314">የዚህን ኮምፒውተር የርቀት መዳረሻ ማሰናከል አልተሳካም። እባክዎ እንደገና ይሞክሩ።</translation>
 <translation id="2930135165929238380">አንዳንድ አስፈላጊ ክፍላተ አካላት ይጎድላሉ። እባክዎ ወደ chrome://plugins ይሂዱ እና ቤተኛ ደንበኝ እንደነቃ ያረጋግጡ።</translation>
 <translation id="2939145106548231838">ለማስተናገድ ያረጋግጡ</translation>
-<translation id="2998137343848432918">• የእውቅና ማያ ገጽ ታክሏል።
-• የቁልፍ ሰሌዳ የሚታይ ሆኖ ወደ ሙሉ ገጽ ማያ ሲኬድ የነበረው ችግር ተስተካክሏል።</translation>
 <translation id="3020807351229499221">ፒኑን ማዘመን አልተሳካም። እባክዎ ቆይተው እንደገና ይሞክሩ።</translation>
 <translation id="3025388528294795783">የእርስዎን ችግር እንድንፈታ እኛን ለማገዝ፣ ምን እንደተሳሳተ እባክዎ ለእኛ ይንገሩን፦</translation>
 <translation id="3027681561976217984">ንኪ ሁነታ</translation>
@@ -171,7 +168,6 @@
 <translation id="518094545883702183">ይህ መረጃ ጥቅም ላይ የሚውለው ሪፖርት የሚያደርጉትን ችግር ለመመርመር ብቻ ነው፣ የሚገኘው ሪፖርትዎን ለሚመረምረው ሰው ብቻ ነው፣ እና ከ30 ቀኖች በላይ አይቆይም።</translation>
 <translation id="5222676887888702881">ዘግተህ ውጣ</translation>
 <translation id="5254120496627797685">ከዚህ ገጽ መውጣት የChrome ርቀት ዴስክቶፕ ክፍለ-ጊዜዎን ያጠናቅቀዋል።</translation>
-<translation id="5285241842433869526">እንዴት አንድ ኮምፒውተር በርቀት ለመድረስ ማዋቀር እንደሚችሉ ይወቁ።</translation>
 <translation id="5308380583665731573">ይገናኙ</translation>
 <translation id="5363265567587775042">«<ph name="SHARE" />» ጠቅ ለማድረግ ለመድረስ የሚፈልጉትን ኮምፒዩተር ተጠቃሚ ይጠይቁ እና የመድረሻ ኮድ ይሰጡዎታል።</translation>
 <translation id="5379087427956679853">Chrome የርቀት ዴስክቶፕ ኮምፒውተርዎን ደህንነቱ በተጠበቀ መልኩ ድሩ ላይ እንዲያጋሩት ያስችልዎታል። ሁለቱም ተጠቃሚዎች የChrome ርቀት ዴስክቶፕ መተግበሪያውን ማሄድ አለባቸው፣ እሱም <ph name="URL" /> ላይ ሊገኝ ይችላል።</translation>

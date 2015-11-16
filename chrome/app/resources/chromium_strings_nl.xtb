@@ -34,6 +34,7 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="1967743265616885482">Van een module met dezelfde naam is bekend dat deze conflicteert met Chromium.</translation>
 <translation id="2077129598763517140">Hardwareversnelling gebruiken indien beschikbaar</translation>
 <translation id="2097986737970966220">Chromium openen in desktopmodus</translation>
+<translation id="2117181891440368863">Chromium heeft geverifieerd dat <ph name="ISSUER" /> het certificaat van deze website heeft uitgegeven. De server heeft certificaattransparantiegegevens geleverd, maar deze waren ongeldig.</translation>
 <translation id="2119636228670142020">Over &amp;Chromium OS</translation>
 <translation id="2158734852934720349">Open-sourcelicenties van Chromium OS</translation>
 <translation id="2233513990531887259">Opnieuw starten in het uitgebreide scherm van Chromium</translation>
@@ -48,13 +49,11 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="2558641060352364164">Deze site maakt gebruik van de plug-in Chromium Frame die binnenkort niet meer wordt ondersteund. Verwijder deze en voer een upgrade naar een moderne browser uit.</translation>
 <translation id="2572494885440352020">Chromium Helper</translation>
 <translation id="2602806952220118310">Chromium - Meldingen</translation>
-<translation id="2615699638672665509">Deze computer ontvangt binnenkort geen Chromium-updates meer omdat de hardware van de computer niet meer wordt ondersteund.</translation>
 <translation id="2636877269779209383">Chromium heeft cameratoegang nodig om het item te delen met deze site.</translation>
 <translation id="2648074677641340862">Er is tijdens de installatie een fout opgetreden in het besturingssysteem. Download Chromium opnieuw.</translation>
 <translation id="2673087257647337101">Bijwerken bijna voltooid. Start Chromium opnieuw om de update te voltooien.</translation>
 <translation id="2685838254101182273">Chromium is gestopt met bijwerken en ondersteunt deze versie van je besturingssysteem niet langer.</translation>
 <translation id="2705212601509139398">Deze site maakt gebruik van de plug-in Chromium Frame die binnenkort niet meer wordt ondersteund. Verwijder deze en download een compatibele browser.</translation>
-<translation id="2732467638532545152">Je computer gebruikt een oude versie van Microsoft Windows waarmee het beveiligingscertificaat van deze website niet kan worden verwerkt. Vanwege dit probleem kan Chromium niet bepalen of het certificaat afkomstig is van <ph name="SITE" /> of van iemand in je netwerk die zich voordoet als <ph name="SITE" />. Werk je computer bij naar een nieuwere versie van Windows.</translation>
 <translation id="2770231113462710648">Standaardbrowser wijzigen in:</translation>
 <translation id="2801146392936645542"><ph name="FILE_NAME" /> is schadelijk en is door Chromium geblokkeerd.</translation>
 <translation id="2847479871509788944">Verwijderen uit Chromium…</translation>
@@ -86,8 +85,6 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="3582788516608077514">Chromium bijwerken...</translation>
 <translation id="358997566136285270">Chromium-logo</translation>
 <translation id="3595526210123705352">Als je opnieuw start in Windows 8-modus, worden je Chromium-apps gesloten en opnieuw gestart.</translation>
-<translation id="3656661827369545115">Chromium automatisch starten wanneer je computer wordt opgestart</translation>
-<translation id="3736987306260231966">Chromium kan de internetpagina niet weergeven, omdat je computer niet is verbonden met internet.</translation>
 <translation id="3738139272394829648">Tikken om te zoeken</translation>
 <translation id="3744899669254331632">Je kunt <ph name="SITE" /> op dit moment niet bezoeken, omdat de website gecodeerde inloggegevens heeft verstuurd die niet door Chromium kunnen worden verwerkt. Aangezien netwerkfouten en aanvallen doorgaans van tijdelijke aard zijn, zal deze pagina later waarschijnlijk wel werken.</translation>
 <translation id="3748537968684000502">Je bekijkt een veilige Chromium-pagina.</translation>
@@ -108,7 +105,6 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="4285930937574705105">De installatie is mislukt wegens een onbekende fout. Als Chromium momenteel actief is, moet je Chromium sluiten en het opnieuw proberen.</translation>
 <translation id="4330585738697551178">Van deze module is bekend dat deze conflicteert met  Chromium.</translation>
 <translation id="4423735387467980091">Chromium aanpassen en beheren</translation>
-<translation id="442817494342774222">Chromium is geconfigureerd om automatisch te worden gestart als je je computer opstart.</translation>
 <translation id="4458285410772214805">Log uit en log weer in om deze wijziging door te voeren.</translation>
 <translation id="4488676065623537541">Je factureringsgegevens zijn opgeslagen in Chromium.</translation>
 <translation id="4559775032954821361">Ga naar
@@ -179,6 +175,7 @@ Sommige functies zijn mogelijk niet beschikbaar. Geef een andere profieldirector
 <translation id="6734080038664603509">&amp;Chromium updaten</translation>
 <translation id="6757767188268205357">Vraag me niet meer</translation>
 <translation id="6810143991807788455">Help Chromium beter te maken door de huidige instellingen te melden</translation>
+<translation id="6838494703713445896">Chromium heeft geverifieerd dat <ph name="ISSUER" /> het certificaat van deze website heeft uitgegeven. De server heeft geldige certificaattransparantiegegevens geleverd.</translation>
 <translation id="6883876366448858277">stuurt een woord met de context naar Google Zoeken en retourneert definities, foto's en andere zoekresultaten.</translation>
 <translation id="6893813176749746474">Chromium is bijgewerkt, maar je hebt het programma minstens 30 dagen niet gebruikt.</translation>
 <translation id="6900895776413482243">Als je opnieuw start op het uitgebreid scherm van Chromium, worden je Chromium-apps gesloten en opnieuw gestart.</translation>
@@ -191,6 +188,7 @@ Sommige functies zijn mogelijk niet beschikbaar. Geef een andere profieldirector
 <translation id="7066436765290594559">Chromium OS kan je gegevens niet synchroniseren. Update je wachtwoordzin voor synchronisatie.</translation>
 <translation id="7138853919861947730">Chromium gebruikt mogelijk webservices om je surfervaring te verbeteren.</translation>
 <translation id="7162152143154757523">Chromium kan een betere spellingcontrole leveren door wat je in de browser typt naar Google-servers te verzenden. Hierdoor kun je profiteren van dezelfde technologie voor spellingcontrole die ook voor Google Zoeken wordt gebruikt.</translation>
+<translation id="7178626992616222740">Chromium heeft geverifieerd dat <ph name="ISSUER" /> het certificaat van deze website heeft uitgegeven. De server heeft certificaattransparantiegegevens geleverd, maar Chromium heeft geen van de logboeken voor certificaattransparantie herkend.</translation>
 <translation id="7196020411877309443">Waarom zie ik dit venster?</translation>
 <translation id="7205698830395646142">Verbergen in Chromium-menu</translation>
 <translation id="7211828883345145708">Extra sneltoetsen inschakelen die nuttig zijn voor foutopsporing in Chromium.</translation>
@@ -216,13 +214,13 @@ Chromium kan je instellingen niet herstellen.</translation>
 <translation id="7723128346970903111">Als dit is ingeschakeld, wordt een Chromium-inlogprocedure op basis van iframes gebruikt. Anders wordt een procedure op basis van webweergaven gebruikt.</translation>
 <translation id="7729447699958282447">Chromium kan je gegevens niet synchroniseren, omdat synchronisatie niet beschikbaar is voor je domein.</translation>
 <translation id="7747138024166251722">Het installatieprogramma kan geen tijdelijke directory maken. Controleer of je nog schijfruimte hebt en of je toestemming hebt om software te installeren.</translation>
+<translation id="7918535023914021398">Chromium heeft geverifieerd dat <ph name="ISSUER" /> het certificaat van deze website heeft uitgegeven. De server heeft geen certificaattransparantiegegevens geleverd.</translation>
 <translation id="7937630085815544518">Je bent ingelogd bij Chromium als <ph name="USER_EMAIL_ADDRESS" />. Gebruik hetzelfde account om opnieuw in te loggen.</translation>
 <translation id="7962572577636132072">Chromium wordt automatisch bijgewerkt, zodat je altijd beschikt over de nieuwste versie.</translation>
 <translation id="7979877361127045932">Verbergen in Chromium-menu</translation>
 <translation id="8030318113982266900">Je apparaat bijwerken naar <ph name="CHANNEL_NAME" /> kanaal...</translation>
 <translation id="8033665941300843262">Chromium heeft toegang tot rechten nodig om ze te delen met deze site.</translation>
 <translation id="805745970029938373">Hier kun je al je meldingen van Chromium-apps, -extensies en -websites weergeven.</translation>
-<translation id="811857857463334932">Deze computer ontvangt geen Chromium-updates meer omdat de hardware van de computer niet meer wordt ondersteund.</translation>
 <translation id="8134284582177628525">Als je deze computer met <ph name="PROFILE_NAME" /> deelt, voeg je jezelf toe aan Chromium om afzonderlijk te surfen. Anders ontkoppel je zijn Google-account.</translation>
 <translation id="8187289872471304532">Ga naar 'Applicaties &gt; Systeemvoorkeuren &gt; Netwerk &gt; Geavanceerd &gt; Proxy's' en verwijder de vinkjes bij proxyservers die zijn aangevinkt.</translation>
 <translation id="8269379391216269538">Help ons Chromium beter te maken</translation>

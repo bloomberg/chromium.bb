@@ -34,6 +34,7 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="1967743265616885482">O modulu se stejným názvem je známo, že u něj dochází ke konfliktu s prohlížečem Chromium.</translation>
 <translation id="2077129598763517140">V případě dostupnosti použít hardwarovou akceleraci</translation>
 <translation id="2097986737970966220">Spustit Chromium na ploše</translation>
+<translation id="2117181891440368863">Prohlížeč Chromium ověřil, že certifikát tohoto webu byl vydán vydavatelem <ph name="ISSUER" />. Server poskytl údaje Certificate Transparency, byly však neplatné.</translation>
 <translation id="2119636228670142020">O systému &amp;Chromium OS</translation>
 <translation id="2158734852934720349">Chromium OS – licence open source</translation>
 <translation id="2233513990531887259">Znovu spustit v moderním režimu prohlížeče Chromium</translation>
@@ -48,13 +49,11 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="2558641060352364164">Tento web používá plugin Chromium Frame, jehož podpora bude brzy ukončena. Odinstalujte jej a přejděte na moderní prohlížeč.</translation>
 <translation id="2572494885440352020">Chromium Helper</translation>
 <translation id="2602806952220118310">Chromium – oznámení</translation>
-<translation id="2615699638672665509">Tento počítač brzy přestane dostávat aktualizace prohlížeče Chromium, protože jeho hardware již není podporován.</translation>
 <translation id="2636877269779209383">Prohlížeč Chromium potřebuje přístup k fotoaparátu, aby jej mohl sdílet s těmito stránkami.</translation>
 <translation id="2648074677641340862">Během instalace došlo k chybě operačního systému. Stáhněte prosím Chromium znovu.</translation>
 <translation id="2673087257647337101">Aktualizace již je skoro hotova. Dokončete ji restartováním prohlížeče Chromium.</translation>
 <translation id="2685838254101182273">Chromium již nepodporuje verzi operačního systému, kterou používáte, a nebude možné jej aktualizovat.</translation>
 <translation id="2705212601509139398">Tento web používá plugin Chromium Frame, jehož podpora bude brzy ukončena. Odinstalujte jej prosím a stáhněte si kompatibilní prohlížeč.</translation>
-<translation id="2732467638532545152">Váš počítač používá starou verzi operačního systému Microsoft Windows, která bezpečnostní certifikát tohoto webu neumí zpracovat. Kvůli tomuto problému Chromium nedokáže určit, zda certifikát pochází z webu <ph name="SITE" />, nebo od někoho ve vaší síti, kdo se za web <ph name="SITE" /> vydává. Aktualizujte prosím operační systém počítače na nejnovější verzi systému Windows.</translation>
 <translation id="2770231113462710648">Změnit výchozí prohlížeč na:</translation>
 <translation id="2801146392936645542">Soubor <ph name="FILE_NAME" /> je škodlivý a prohlížeč Chromium jej zablokoval.</translation>
 <translation id="2847479871509788944">Odstranit z prohlížeče Chromium...</translation>
@@ -86,8 +85,6 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="3582788516608077514">Aktualizace prohlížeče Chromium...</translation>
 <translation id="358997566136285270">Logo Chromium</translation>
 <translation id="3595526210123705352">Spuštěním v režimu Windows 8 zavřete a znovu spustíte všechny aplikace prohlížeče Chromium.</translation>
-<translation id="3656661827369545115">Při spuštění počítače automaticky spustit Chromium</translation>
-<translation id="3736987306260231966">Chromium nemůže webovou stránku zobrazit, protože počítač není připojen k internetu.</translation>
 <translation id="3738139272394829648">Vyhledání klepnutím</translation>
 <translation id="3744899669254331632">Web <ph name="SITE" /> nyní nelze navštívit, protože tento web odeslal nesprávné identifikační údaje, které prohlížeč Chromium nedokáže zpracovat. Síťové chyby a útoky jsou obvykle dočasné, tato stránka pravděpodobně později bude fungovat.</translation>
 <translation id="3748537968684000502">Zobrazujete zabezpečenou stránku Chromium.</translation>
@@ -108,7 +105,6 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="4285930937574705105">Došlo k nespecifikované chybě, instalace se nezdařila. Pokud je prohlížeč Chromium právě spuštěný, zavřete jej prosím a zkuste to znovu.</translation>
 <translation id="4330585738697551178">O tomto modulu je známo, že u něj dochází ke konfliktu s prohlížečem Chromium.</translation>
 <translation id="4423735387467980091">Přizpůsobit a ovládat Chromium</translation>
-<translation id="442817494342774222">Prohlížeč Chromium je nastaven na automatické spuštění po zapnutí počítače.</translation>
 <translation id="4458285410772214805">Chcete-li, aby se změny projevily, odhlaste se a znovu se přihlaste.</translation>
 <translation id="4488676065623537541">Fakturační údaje byly uloženy do prohlížeče Chromium.</translation>
 <translation id="4559775032954821361">Přejděte do
@@ -179,6 +175,7 @@ Některé funkce mohou být nedostupné. Zadejte prosím jiný adresář profilu
 <translation id="6734080038664603509">Aktualizovat &amp;Chromium</translation>
 <translation id="6757767188268205357">Již se neptat</translation>
 <translation id="6810143991807788455">Pomoci s vylepšováním prohlížeče Chromium prostřednictvím nahlášení aktuálního nastavení</translation>
+<translation id="6838494703713445896">Prohlížeč Chromium ověřil, že certifikát tohoto webu byl vydán vydavatelem <ph name="ISSUER" />. Server poskytl platné údaje Certificate Transparency.</translation>
 <translation id="6883876366448858277">odesílá slovo a jeho okolní kontext do Vyhledávání Google a vrací definice, obrázky a další výsledky vyhledávání.</translation>
 <translation id="6893813176749746474">Prohlížeč Chromium byl aktualizován, ale minimálně po 30 dnů jste jej nepoužili.</translation>
 <translation id="6900895776413482243">Spuštěním v moderním režimu zavřete a znovu spustíte všechny aplikace prohlížeče Chromium.</translation>
@@ -191,6 +188,7 @@ Některé funkce mohou být nedostupné. Zadejte prosím jiný adresář profilu
 <translation id="7066436765290594559">Chromium OS vaše data nemohl synchronizovat. Aktualizujte prosím heslovou frázi pro synchronizaci.</translation>
 <translation id="7138853919861947730">Chromium vám může usnadnit prohlížení pomocí webových služeb.</translation>
 <translation id="7162152143154757523">Chromium může poskytovat lepší kontrolu pravopisu tím, že text zadaný do prohlížeče odešle na servery Google. Umožňuje vám tak používat stejnou technologii kontroly pravopisu, jakou používá Vyhledávání Google.</translation>
+<translation id="7178626992616222740">Prohlížeč Chromium ověřil, že certifikát tohoto webu byl vydán vydavatelem <ph name="ISSUER" />. Server poskytl údaje Certificate Transparency, prohlížeč Chromium však žádný z uvedených protokolů Certificate Transparency neuznává.</translation>
 <translation id="7196020411877309443">Proč je zobrazeno toto dialogové okno?</translation>
 <translation id="7205698830395646142">Skrýt v nabídce Chromium</translation>
 <translation id="7211828883345145708">Aktivuje další klávesové zkratky, které jsou užitečné pro ladění aplikace Chromium.</translation>
@@ -216,13 +214,13 @@ Chromium nemůže vaše nastavení obnovit.</translation>
 <translation id="7723128346970903111">Pokud je tato zásada aktivována, v prohlížeči Chromium bude použit proces přihlášení založený na rámcích iframe. Jinak bude použit proces založený na webovém zobrazení.</translation>
 <translation id="7729447699958282447">Prohlížeč Chromium nemůže synchronizovat data, protože ve vaší doméně není k dispozici Synchronizace.</translation>
 <translation id="7747138024166251722">Instalační soubor nemohl vytvořit dočasný adresář. Zkontrolujte prosím volné místo na disku a povolení instalovat software.</translation>
+<translation id="7918535023914021398">Prohlížeč Chromium ověřil, že certifikát tohoto webu byl vydán vydavatelem <ph name="ISSUER" />. Server neposkytl žádné údaje Certificate Transparency.</translation>
 <translation id="7937630085815544518">K prohlížeči Chromium jste byli přihlášeni s účtem <ph name="USER_EMAIL_ADDRESS" />. Přihlaste se prosím znovu pomocí stejného účtu.</translation>
 <translation id="7962572577636132072">Prohlížeč Chromium se automaticky aktualizuje, abyste vždy měli k dispozici nejnovější verzi.</translation>
 <translation id="7979877361127045932">Skrýt v nabídce Chromium</translation>
 <translation id="8030318113982266900">Aktualizace zařízení na verzi <ph name="CHANNEL_NAME" />...</translation>
 <translation id="8033665941300843262">Prohlížeč Chromium potřebuje přístup k oprávněním, aby je mohl sdílet s těmito stránkami.</translation>
 <translation id="805745970029938373">Zde se zobrazují všechna oznámení z aplikací, rozšíření a webů Chromium.</translation>
-<translation id="811857857463334932">Tento počítač již nebude dostávat aktualizace prohlížeče Chromium, protože jeho hardware již není podporován.</translation>
 <translation id="8134284582177628525">Pokud tento počítač sdílíte s uživatelem <ph name="PROFILE_NAME" />, přidejte do prohlížeče Chromium svůj profil, abyste internet mohli procházet samostatně. Jinak jeho účet Google odpojte.</translation>
 <translation id="8187289872471304532">Přejděte do nabídky
           Aplikace &gt; Nastavení systému &gt; Síť &gt; Rozšířená nastavení &gt; Servery proxy

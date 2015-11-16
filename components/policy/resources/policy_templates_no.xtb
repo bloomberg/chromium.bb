@@ -59,6 +59,9 @@
 <translation id="1221359380862872747">Last inn angitte nettadresser ved demo-pålogging</translation>
 <translation id="1240643596769627465">Angir nettadressen til søkemotoren som brukes til å gi umiddelbare resultater. Nettadressen skal inneholde strengen <ph name="SEARCH_TERM_MARKER" />, som blir erstattet av teksten brukeren har skrevet inn, når søket utføres. Denne retningslinjen er valgfri. Hvis den ikke er aktivert, brukes det ingen forslagsnettadresse. Denne retningslinjen gjelder bare hvis retningslinjen DefaultSearchProviderEnabled er aktivert.</translation>
 <translation id="1265053460044691532">Begrens hvor lenge en bruker som er autentisert via SAML kan logge på uten nett</translation>
+<translation id="1291880496936992484">Advarsel: RC4 fjernes helt fra <ph name="PRODUCT_NAME" /> etter versjon 52 (rundt september 2016), og da slutter denne regelen å fungere.
+
+      Hvis regelen ikke er angitt eller er satt til false (usann), er ikke RC4-chifferserier i TLS slått på. Ellers kan den settes til true (sann) for å sikre kompatibilitet med en utdatert tjener. Dette er en midlertidig løsning, og tjeneren bør konfigureres på nytt.</translation>
 <translation id="1297182715641689552">Bruk et .pac-skript for mellomtjener</translation>
 <translation id="1300635491585192248">Forutsi nettverkshandlinger på et hvilket som helst nettverk som ikke
           er et mobilnettverk</translation>
@@ -504,6 +507,9 @@
       Hvis du aktiverer eller deaktiverer denne innstillingen, kan ikke brukere endre eller overstyre innstillingen for å aktivere beskyttelse mot nettfisking og skadelig programvare i <ph name="PRODUCT_NAME" />.
 
       Hvis innstillingen ikke angis, aktiveres dette, men brukeren kan endre det.</translation>
+<translation id="2801230735743888564">Gir brukerne mulighet til å spille dinosaurspill-påskeegget når enheten ikke er koblet til.
+
+      Hvis denne regelen er satt til false (usann), kan ikke brukerne spille dinosaurspillet når enheten ikke er koblet til. Hvis regelen er satt til true (sann), kan brukerne spille dinosaurspillet. Hvis denne regelen ikke er angitt, kan ikke brukerne spille dinosaurspillet på registrerte Chrome OS-installasjoner, men de kan spille det i andre situasjoner.</translation>
 <translation id="2805707493867224476">Tillat alle nettsteder å vise forgrunnsvinduer</translation>
 <translation id="2808013382476173118">Aktiverer bruk av STUN-servere når eksterne klienter prøver å opprette forbindelse til denne maskinen.
 
@@ -773,6 +779,13 @@
 <translation id="3780152581321609624">Inkluder ikke-standardisert port i SPN for Kerberos</translation>
 <translation id="3788662722837364290">Innstillinger for strømstyring når brukeren er inaktiv</translation>
 <translation id="3793095274466276777">Konfigurerer standard nettleserkontroller i <ph name="PRODUCT_NAME" /> og hindrer brukere i å endre dem. Hvis du aktiverer denne innstillingen, sjekker <ph name="PRODUCT_NAME" /> alltid ved oppstart om den er standardnettleser, og registrerer seg selv automatisk om mulig. Hvis denne innstillingen er deaktivert, sjekker <ph name="PRODUCT_NAME" /> aldri om den er standardnettleser, og deaktiverer brukerstyrt kontroll av dette alternativet. Hvis denne innstillingen ikke er angitt, lar <ph name="PRODUCT_NAME" /> brukeren kontrollere om den er standardnettleser, og hvorvidt brukervarslinger skal vises når den ikke er det.</translation>
+<translation id="3800626789999016379">Konfigurerer katalogen <ph name="PRODUCT_NAME" /> bruker for å laste ned filer. 
+
+      Hvis du angir denne regelen, bruker <ph name="PRODUCT_NAME" /> den oppgitte katalogen uansett om brukeren har angitt en annen katalog eller slått på flagget for å velge lagringsplass for hver nedlasting.
+
+      Gå til https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables for å se en liste over variabler som kan brukes.
+
+        Hvis du ikke angir denne regelen, brukes standardkatalogen for nedlasting. Brukeren kan i så fall endre denne katalogen.</translation>
 <translation id="3805659594028420438">Aktiver TLS-domenebetingede sertifikatutvidelser (foreldet)</translation>
 <translation id="3806576699227917885">Tillat avspilling av lyd.
 
@@ -901,6 +914,13 @@
           Denne innstillingen brukes bare hvis «DefaultSearchProviderEnabled»-innstillingen er aktivert.</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 eller nyere</translation>
 <translation id="4325690621216251241">Legg til en avloggingsknapp for systemstatusfeltet</translation>
+<translation id="4349746760316962317">Konfigurerer katalogen <ph name="PRODUCT_NAME" /> bruker til å lagre bufrede filer på disken.
+
+Hvis du angir denne regelen, bruker <ph name="PRODUCT_NAME" /> den oppgitte katalogen uansett om brukeren har spesifisert «--disk-cache-dir»-flagget eller ikke.
+
+Gå til https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables for å se en liste over variabler som kan brukes.
+
+Hvis du ikke angir denne regelen, brukes standardkatalogen for bufring. Brukeren kan i så fall overstyre den med kommandolinjeflagget «--disk-cache-dir»</translation>
 <translation id="436581050240847513">Rapportér nettverksgrensesnitt for enheten</translation>
 <translation id="4372704773119750918">Ikke tilllat bedriftsbrukeren å være en del av flerprofilen (primær eller sekundær)</translation>
 <translation id="4377599627073874279">La alle nettsteder vise alle bilder</translation>
@@ -982,6 +1002,11 @@
 <translation id="4665897631924472251">Innstillinger for administrasjon av utvidelser</translation>
 <translation id="4668325077104657568">Standardinnstilling for bilder</translation>
 <translation id="467236746355332046">Støttede funksjoner:</translation>
+<translation id="4674167212832291997">Tilpass listen over nettadressemønstre som alltid skal gjengis av <ph name="PRODUCT_FRAME_NAME" />.
+
+          Hvis denne regelen ikke er angitt, brukes standardgjengivelsen for alle nettsteder, som angitt i regelen «ChromeFrameRendererSettings».
+
+          Du finner eksempelmønstre på https://www.chromium.org/developers/how-tos/chrome-frame-getting-started</translation>
 <translation id="467449052039111439">Åpne en liste over nettadresser</translation>
 <translation id="4680961954980851756">Aktiver Autofyll</translation>
 <translation id="4723829699367336876">Aktiver kryssing av brannmur fra ekstern tilgangsklient</translation>
@@ -1079,6 +1104,14 @@
           Når denne innstillingen ikke er angitt, brukes standardhandlingen, som er å suspendere økten.
 
           Hvis handlingen er å suspendere økten, kan <ph name="PRODUCT_OS_NAME" /> konfigureres til å låse eller ikke låse skjermen før økten suspenderes.</translation>
+<translation id="5111712393799006197">Konfigurerer katalogen <ph name="PRODUCT_NAME" /> bruker til lagring av brukerdata.
+
+      Hvis du angir denne regelen, bruker <ph name="PRODUCT_NAME" /> den oppgitte katalogen uansett om brukeren har angitt «--user-data-dir»-flagget eller ikke. 
+
+      Gå til https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables for å se en liste over variabler som kan brukes.
+
+        Hvis du ikke angir denne regelen, brukes standardbanen for profiler. Brukeren kan i så fall overstyre den med kommandolinjeflagget «--user-data-dir».</translation>
+<translation id="5130288486815037971">Definerer om RC4-chifferserier i TLS er slått på</translation>
 <translation id="5141670636904227950">Angi standard skjermforstørrelsestype som er aktivert på påloggingssiden</translation>
 <translation id="5142301680741828703">Alltid gjengi følgende nettadressemønstre i <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="5148753489738115745">Lar deg spesifisere ytterligere parametere som brukes når <ph name="PRODUCT_FRAME_NAME" /> kjører <ph name="PRODUCT_NAME" />.
@@ -1265,6 +1298,20 @@
 <translation id="5809728392451418079">Angi skjermnavn for lokale kontoer på enheten</translation>
 <translation id="5814301096961727113">Angi standard tilstand for muntlig tilbakemelding på påloggingssiden</translation>
 <translation id="5815129011704381141">Start automatisk på nytt etter oppdatering</translation>
+<translation id="5815353477778354428">Konfigurerer katalogen <ph name="PRODUCT_FRAME_NAME" /> bruker til lagring av brukerdata. 
+
+       Hvis du angir denne regelen, bruker <ph name="PRODUCT_FRAME_NAME" /> den oppgitte katalogen.
+
+      Gå til https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables for å se en liste over variabler som kan brukes.
+
+     Hvis du ikke angir denne innstillingen, brukes standardkatalogen for profiler.</translation>
+<translation id="5819660021114910752">Spesifiserer tidssonen som skal brukes på enheten. Brukerne kan overstyre den angitte tidssonen for den gjeldende økten, men ved avlogging tilbakestilles den til den spesifiserte tidssonen. Hvis du angir en ugyldig verdi, slås regelen fortsatt på, men «GMT» brukes som tidssone. Hvis strengen er tom, ignoreres regelen.
+
+      Hvis du ikke bruker denne regelen, brukes fortsatt den aktive tidssonen. Brukerne kan imidlertid endre tidssonen, og endringen er varig. Endringer som gjøres av brukere, påvirker imidlertid påloggingssiden og alle andre brukere.
+
+      «US Pacific Time» (USA og Stillehavskysten) er konfigurert som tidssonen for nye enheter.
+
+      Formatet til verdien følger navnene på tidssonene i «IANA Time Zone Database» (se https://en.wikipedia.org/wiki/Tz_database). De fleste tidssonene kan refereres til som «continent/large_city» eller «ocean/large_city».</translation>
 <translation id="5826047473100157858">Angir om brukeren kan åpne sider i inkognitomodus i <ph name="PRODUCT_NAME" />.
 
       Hvis dette er aktivert, eller hvis retningslinjen ikke er angitt, kan sider åpnes i inkognitomodus.
@@ -1363,6 +1410,7 @@
           Den anbefalte måten å låse skjermen på når den er inaktiv, er å aktivere skjermlåsing ved hvilemodus, slik at <ph name="PRODUCT_OS_NAME" /> aktiverer skjermlåsen etter det innstilte inaktive perioden. Tidsinnstillingen for skjermlåsen bør bare brukes når skjermlåsen skal aktiveres lenge før hvilemodus, eller når bruk av hvilemodus ved inaktivitet ikke er ønskelig i det hele tatt.
 
           Innstillingsverdien bør angis i millisekunder. Verdien må være mindre enn inaktivitetsforsinkelsen.</translation>
+<translation id="6111936128861357925">Tillat dinosaurspill-påskeegget</translation>
 <translation id="6114416803310251055">avskrevet</translation>
 <translation id="6145799962557135888">Gjør at du kan angi en liste over nettadressemønstre som angir hvilke nettsteder som får kjøre JavaScript.
 
@@ -1725,13 +1773,13 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 
       Hvis denne retningslinjen ikke er konfigurert, fins det ingen begrensninger for hvilke brukere som kan logge seg på. Vær oppmerksom på at oppretting av nye brukere fortsatt krever at <ph name="DEVICEALLOWNEWUSERS_POLICY_NAME" />-retningslinjen er konfigurert på korrekt måte.</translation>
 <translation id="7234280155140786597">Navnene på de forbudte innebygde meldingsvertene (eller * for alle)</translation>
-<translation id="7236775576470542603">Angi standard type skjermforsterker som aktiveres på påloggingssiden.
+<translation id="7236775576470542603">Angi standard type lupe som slås på fra påloggingssiden.
 
-          Hvis innstillingen angis, kontrollerer den type skjermforsterker som aktiveres når påloggingssiden vises. Hvis innstillingen angis til «None», deaktiveres skjermforsterkeren.
+          Hvis innstillingen angis, kontrollerer den hvilken type lupe som slås på når påloggingssiden vises. Hvis innstillingen settes til «Ingen», er lupen avslått.
 
-          Hvis du angir denne innstillingen, kan brukere midlertidig overstyre den ved å aktivere eller deaktivere skjermforsterkeren. Brukerens valg er imidlertid ikke permanent, og standardinnstillingen gjenopprettes når påloggingssiden vises på nytt, eller brukeren har vært inaktiv på påloggingssiden i ett minutt.
+          Hvis du angir denne innstillingen, kan brukere midlertidig overstyre den ved å slå lupen av eller på. Brukerens valg er imidlertid ikke permanent, og standardinnstillingen gjenopprettes når påloggingssiden vises på nytt, eller når brukeren har vært inaktiv på påloggingssiden i ett minutt.
 
-          Hvis innstillingen ikke angis, deaktiveres skjermforsterkeren når påloggingssiden vises for første gang. Brukere kan aktivere eller deaktivere skjermforsterkeren når som helst, og dens status på påloggingssiden forblir den samme mellom brukere.</translation>
+          Hvis innstillingen ikke angis, slås lupen av når påloggingssiden vises for første gang. Brukere kan slå lupen på eller av når som helst, og dens status på påloggingssiden forblir den samme mellom brukere.</translation>
 <translation id="7258823566580374486">Aktiver begrensning (curtaining) av verter for fjerntilgang</translation>
 <translation id="7260277299188117560">Automatisk oppdatering for p2p aktivert</translation>
 <translation id="7267809745244694722">Medietaster har standardfunksjon som funksjonstaster</translation>
@@ -1977,6 +2025,18 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 
       Hvis denne retningslinjen ikke angis, er det ingen unntak fra retningslinjen URLBlacklist.</translation>
 <translation id="8176035528522326671">Tillat at bedriftsbrukeren bare er primær flerprofilbruker (standardatferd for bedriftsadministrerte brukere)</translation>
+<translation id="8191318459035150777">Konfigurerer nettadressen for standardstartsiden i <ph name="PRODUCT_NAME" /> og hindrer brukerne i å endre den.
+
+          Startsiden er siden som åpnes når du trykker på startsideknappen. Hvilke sider som åpnes ved oppstart, styres av RestoreOnStartup-regelen.
+
+          Startsidetypen kan enten settes til en nettadresse du angir her, eller du kan bruke en ny fane. Hvis du velger en ny fane, gjelder ikke denne regelen.
+
+          Hvis du slår på denne regelen, kan ikke brukerne endre nettadressen for startsiden sin i <ph name="PRODUCT_NAME" />, men de kan fortsatt velge en ny fane som startside.
+
+          Hvis denne regelen ikke spesifiseres, kan brukeren velge startsiden sin selv hvis HomepageIsNewTabPage heller ikke er spesifisert.
+
+          Denne regelen er ikke tilgjengelig på Windows-forekomster som ikke er knyttet
+          til et Active Directory-domene.</translation>
 <translation id="8197918588508433925">Denne innstillingen angir hvilke utvidelser som har tillatelse til å bruke Enterprise Platform Keys API-en chrome.enterprise.platformKeysPrivate.challengeUserKey() for ekstern attestering. Utvidelser må legges til på listen for å bruke API-en.
 
           Hvis en utvidelse ikke er på listen, eller listen ikke er angitt, vil kall av API-en returnere en feilkode.</translation>
@@ -2018,6 +2078,11 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 <translation id="8465065632133292531">Parametere for Instant-nettadresser som bruker POST</translation>
 <translation id="847472800012384958">Ikke la noen nettsteder vise forgrunnsvinduer</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
+<translation id="8484458986062090479">Tilpass listen over nettadressemønstre som alltid skal gjengis av vertsnettleseren.
+
+          Hvis denne regelen ikke er angitt, brukes standardgjengivelsen for alle nettsteder, som den er angitt i regelen «ChromeFrameRendererSettings».
+
+          Du finner eksempelmønstre på https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="8493645415242333585">Deaktiver lagring av nettleserlogg</translation>
 <translation id="8499172469244085141">Standardinnstillinger (kan overstyres av brukere)</translation>
 <translation id="8501011084242226370">Angir en liste over programtillegg som brukeren kan aktivere eller deaktivere i <ph name="PRODUCT_NAME" />.
@@ -2088,6 +2153,8 @@ programtillegg. Shockwave Flash-programtillegget tilhører for eksempel Adobe Fl
 
       Hvis innstillingen deaktiveres, kan ikke nettleser- og nedlastingsloggen slettes.</translation>
 <translation id="8764119899999036911">Angir om generert Kerberos-SPN er basert på det kanoniske DNS-navnet eller på det angitte originalnavnet. Hvis du aktiverer denne innstillingen, droppes CNAME-oppslag, og tjenernavnet brukes som angitt. Hvis du deaktiverer denne innstillingen eller ikke angir den, bestemmes tjenerens kanoniske navn ved hjelp av CNAME-oppslag.</translation>
+<translation id="8774131509736383471">Hvis denne regelen settes til true (sann), blir det første vinduet som vises ved den første kjøringen av <ph name="PRODUCT_NAME" />, alltid maksimert.
+      Hvis denne regelen settes til false (usann) eller ikke spesifiseres, blir skjermstørrelsen brukt for å bestemme om det første vinduet som vises, skal maksimeres.</translation>
 <translation id="8777120694819070607">Lar <ph name="PRODUCT_NAME" /> kjøre programtillegg som er foreldede. Hvis du aktiverer denne innstillingen, brukes foreldede programtillegg som normale programtillegg. Hvis du deaktiverer denne innstillingen, brukes ikke foreldede programtillegg, og brukerne blir ikke bedt om tillatelse til å kjøre dem. Hvis denne innstillingen ikke er angitt, blir brukerne spurt om tillatelse til å kjøre foreldede programtillegg.</translation>
 <translation id="87812015706645271">Krever at navnet på den lokale brukeren samsvarer med verten for ekstern tilgang</translation>
 <translation id="8782750230688364867">Angir prosentandelen for hvordan forsinkelsen til skjermdemping skaleres når enheten er i presentasjonsmodus.

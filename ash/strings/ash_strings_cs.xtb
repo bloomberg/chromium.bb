@@ -25,9 +25,7 @@
 <translation id="1812696562331527143">Metoda zadávání se změnila na metodu <ph name="INPUT_METHOD_ID" />* <ph name="BEGIN_LINK" />třetí strany<ph name="END_LINK" />. Přepnout ji můžete stisknutím klávesové zkratky Shift + Alt.</translation>
 <translation id="1882897271359938046">Zrcadlení na displej <ph name="DISPLAY_NAME" /></translation>
 <translation id="1923539912171292317">Automatická kliknutí</translation>
-<translation id="1950626184269948555">Zkratka správce úloh se změnila. Použijte kombinaci kláves Hledat+Esc (namísto Shift+Esc).</translation>
 <translation id="1957803754585243749">0°</translation>
-<translation id="1963814843110128691">Odesílání karty $1 do televize $2</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1987317783729300807">Účty</translation>
 <translation id="2127372758936585790">Nabíječka má příliš nízký výkon</translation>
@@ -92,6 +90,7 @@
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">Uzamknout</translation>
 <translation id="3799026279081545374">Je možné, že máte vadnou nabíječku. Pokud žijete v USA, požádejte o pomoc a výměnu na čísle 866-628-1371. Pokud žijete ve Spojeném království, volejte na číslo 0800-026-0613. Pokud žijete v Irsku, volejte na číslo 1-800-832-664. Pokud žijete v Kanadě, volejte na číslo 866-628-1372. Pokud žijete v Austrálii, volejte na číslo 1-800-067-460.</translation>
+<translation id="3866182280516392520">Adresa IPv6</translation>
 <translation id="3891340733213178823">Odhlaste se dvojitým stisknutím kombinace kláves Ctrl+Shift+Q.</translation>
 <translation id="3892641579809465218">Interní displej</translation>
 <translation id="3963445509666917109">Reproduktor (interní)</translation>
@@ -149,7 +148,6 @@
 <translation id="6165508094623778733">Další informace</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE" /> %</translation>
 <translation id="6248847161401822652">Práci ukončíte dvojitým stisknutím kombinace kláves Ctrl+Shift+Q.</translation>
-<translation id="6287020362823083378">Zkratka zámku obrazovky se změnila. Použijte kombinaci kláves Hledat+L (namísto Ctrl+Shift+L).</translation>
 <translation id="6310121235600822547">Displej <ph name="DISPLAY_NAME" /> byl otočen o <ph name="ROTATION" /></translation>
 <translation id="6359806961507272919">SMS z čísla <ph name="PHONE_NUMBER" /></translation>
 <translation id="639644700271529076">CAPS LOCK je vypnutý</translation>
@@ -202,7 +200,6 @@ Vypnete jej stisknutím kombinace kláves Alt + Vyhledávání nebo Shift.</tran
 <translation id="8308637677604853869">Předchozí nabídka</translation>
 <translation id="8356164830168736643">Zavřít okno <ph name="WINDOW_TITLE" /></translation>
 <translation id="8428213095426709021">Nastavení</translation>
-<translation id="8443356412772935865">Odesílání obrazovky do televize $1</translation>
 <translation id="8456362689280298700"><ph name="HOUR" />:<ph name="MINUTE" /> do úplného nabití</translation>
 <translation id="8517041960877371778">Je možné, že když bude zařízení <ph name="DEVICE_TYPE" /> zapnuté, nebude se nabíjet.</translation>
 <translation id="8528322925433439945">Mobilní sítě...</translation>

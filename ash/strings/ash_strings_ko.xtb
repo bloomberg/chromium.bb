@@ -26,9 +26,7 @@
 전환하려면 Shift+Alt를 누르세요.</translation>
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME" />에 미러링</translation>
 <translation id="1923539912171292317">자동 클릭</translation>
-<translation id="1950626184269948555">작업 관리자 단축키가 변경되었습니다. Shift+Esc 대신 Search+Esc를 사용하세요.</translation>
 <translation id="1957803754585243749">0°</translation>
-<translation id="1963814843110128691">$1을(를) $2(으)로 전송 중</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" />(USB)</translation>
 <translation id="1987317783729300807">계정</translation>
 <translation id="2127372758936585790">저출력 충전기</translation>
@@ -94,6 +92,7 @@
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">잠금</translation>
 <translation id="3799026279081545374">충전기에 문제가 있을 수 있습니다. 미국에 거주하는 경우 866-628-1371에 전화하여 문의하고 교체받으세요. 영국에 거주하는 경우 0800-026-0613에 문의하세요. 아일랜드에 거주하는 경우 1-800-832-664에 문의하세요. 캐나다에 거주하는 경우 866-628-1372에 문의하세요. 오스트레일리아에 거주하는 경우 1-800-067-460에 문의하세요.</translation>
+<translation id="3866182280516392520">IPv6 주소</translation>
 <translation id="3891340733213178823">로그아웃하려면 Ctrl+Shift+Q를 두 번 누릅니다.</translation>
 <translation id="3892641579809465218">내부 디스플레이</translation>
 <translation id="3963445509666917109">스피커(내부)</translation>
@@ -152,7 +151,6 @@
 <translation id="6165508094623778733">자세히 알아보기</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE" />%</translation>
 <translation id="6248847161401822652">종료하려면 Ctrl+Shift+Q를 두 번 누릅니다.</translation>
-<translation id="6287020362823083378">화면 잠금 단축키가 변경되었습니다. Ctrl+Shift+L 대신 Search+L을 사용하세요.</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" />(이)가 <ph name="ROTATION" />(으)로 회전되었습니다.</translation>
 <translation id="6359806961507272919"><ph name="PHONE_NUMBER" />에서 전송된 SMS</translation>
 <translation id="639644700271529076">CAPS LOCK이 꺼져 있음</translation>
@@ -205,7 +203,6 @@
 <translation id="8308637677604853869">이전 메뉴</translation>
 <translation id="8356164830168736643"><ph name="WINDOW_TITLE" /> 닫기</translation>
 <translation id="8428213095426709021">설정</translation>
-<translation id="8443356412772935865">화면을 $1(으)로 전송 중</translation>
 <translation id="8456362689280298700">충전 완료까지 <ph name="HOUR" />:<ph name="MINUTE" /> 남음</translation>
 <translation id="8517041960877371778"><ph name="DEVICE_TYPE" />이(가) 켜져 있는 동안에는 충전되지 않을 수 있습니다.</translation>
 <translation id="8528322925433439945">모바일 ...</translation>

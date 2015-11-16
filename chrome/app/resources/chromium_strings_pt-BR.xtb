@@ -32,6 +32,7 @@
 <translation id="1967743265616885482">Um módulo com o mesmo nome é conhecido por entrar em conflito com o Chromium.</translation>
 <translation id="2077129598763517140">Usar aceleração de hardware quando disponível</translation>
 <translation id="2097986737970966220">Abrir Chromium na área de trabalho</translation>
+<translation id="2117181891440368863">O Chromium verificou que <ph name="ISSUER" /> emitiu o certificado deste website. O servidor forneceu informações de Transparência de certificado, mas elas eram inválidas.</translation>
 <translation id="2119636228670142020">Sobre o &amp;Chromium OS</translation>
 <translation id="2158734852934720349">Licenças de código aberto do Chromium OS</translation>
 <translation id="2233513990531887259">Reiniciar no modo imersivo do Chromium</translation>
@@ -46,13 +47,11 @@
 <translation id="2558641060352364164">Este site está usando o plug-in Chromium Frame, que não será mais compatível em breve. Desinstale-o e faça upgrade para um navegador moderno.</translation>
 <translation id="2572494885440352020">Assistente do Chromium</translation>
 <translation id="2602806952220118310">Chromium – Notificações</translation>
-<translation id="2615699638672665509">Este computador em breve parará de receber atualizações do Chromium, porque seu hardware não é mais suportado.</translation>
 <translation id="2636877269779209383">O Chromium precisa de acesso à câmera para compartilhá-la com este site.</translation>
 <translation id="2648074677641340862">Ocorreu um erro no sistema operacional durante a instalação. Faça o download do Chromium novamente.</translation>
 <translation id="2673087257647337101">Quase atualizado! Reinicie o Chromium para concluir a atualização.</translation>
 <translation id="2685838254101182273">O Chromium parou de ser atualizado e não oferece mais suporte para esta versão do seu sistema operacional.</translation>
 <translation id="2705212601509139398">Este site está usando o plug-in Chromium Frame, que não será mais compatível em breve. Desinstale-o e faça o download de um navegador compatível.</translation>
-<translation id="2732467638532545152">Seu computador está executando uma versão antiga do Microsoft Windows que não consegue processar o certificado de segurança deste website. Devido a esse problema, o Chromium não consegue identificar se o certificado veio de <ph name="SITE" /> ou de alguém da sua rede fingindo ser <ph name="SITE" />. Atualize seu computador para uma versão mais recente do Windows.</translation>
 <translation id="2770231113462710648">Alterar navegador padrão para:</translation>
 <translation id="2801146392936645542"><ph name="FILE_NAME" /> é malicioso e foi bloqueado pelo Chromium.</translation>
 <translation id="2847479871509788944">Remover do Chromium</translation>
@@ -83,8 +82,6 @@ incomuns e incorretas. Isso pode acontecer quando que um invasor está fingindo 
 <translation id="3582788516608077514">Atualizando o Chromium....</translation>
 <translation id="358997566136285270">Logotipo do Chromium</translation>
 <translation id="3595526210123705352">A reinicialização no modo Windows 8 fecha e reinicia todos os aplicativos do Chromium.</translation>
-<translation id="3656661827369545115">Iniciar o Chromium automaticamente ao iniciar o computador</translation>
-<translation id="3736987306260231966">O Chromium não pode exibir a página da Web porque seu computador não está conectado à Internet.</translation>
 <translation id="3738139272394829648">Tocar para pesquisar</translation>
 <translation id="3744899669254331632">Você não pode visitar <ph name="SITE" /> agora porque o website enviou credenciais embaralhadas que o Chromium não consegue processar. Erros de rede e ataques são geralmente temporários, de modo que esta página provavelmente funcionará mais tarde.</translation>
 <translation id="3748537968684000502">Você está vendo uma página segura do Chromium.</translation>
@@ -105,7 +102,6 @@ incomuns e incorretas. Isso pode acontecer quando que um invasor está fingindo 
 <translation id="4285930937574705105">Ocorreu uma falha na instalação devido a um erro não especificado. Se o Chromium estiver sendo executado, feche-o e tente novamente.</translation>
 <translation id="4330585738697551178">Este módulo é conhecido por entrar em conflito com o Chromium.</translation>
 <translation id="4423735387467980091">Personalizar e controlar o Chromium</translation>
-<translation id="442817494342774222">O Chromium está configurado para iniciar automaticamente quando você inicia o computador.</translation>
 <translation id="4458285410772214805">Saia e faça login novamente para que esta alteração entre em vigor.</translation>
 <translation id="4488676065623537541">Seus dados para cobrança foram salvos no Chromium.</translation>
 <translation id="4559775032954821361">Vá para
@@ -174,6 +170,7 @@ incomuns e incorretas. Isso pode acontecer quando que um invasor está fingindo 
 <translation id="6734080038664603509">Atualizar o &amp;Chromium</translation>
 <translation id="6757767188268205357">Não estou a fim</translation>
 <translation id="6810143991807788455">Ajude a melhorar o Chromium informando as configurações atuais</translation>
+<translation id="6838494703713445896">O Chromium verificou que <ph name="ISSUER" /> emitiu o certificado deste website. O servidor forneceu informações de Transparência de certificado válidas.</translation>
 <translation id="6883876366448858277">envia uma palavra e o contexto relacionado para a Pesquisa Google, retornando definições, imagens e outros resultados de pesquisa.</translation>
 <translation id="6893813176749746474">O Chromium foi atualizado, mas não é utilizado há pelo menos 30 dias.</translation>
 <translation id="6900895776413482243">A reinicialização no modo imersivo fecha e reinicia todos os aplicativos do Chromium.</translation>
@@ -186,6 +183,7 @@ incomuns e incorretas. Isso pode acontecer quando que um invasor está fingindo 
 <translation id="7066436765290594559">O Chromium OS não pôde sincronizar seus dados. Atualize sua senha de sincronização.</translation>
 <translation id="7138853919861947730">O Chromium pode usar os serviços da web para melhorar sua experiência de navegação.</translation>
 <translation id="7162152143154757523">O Chromium pode oferecer uma verificação ortográfica mais inteligente, enviando as informações que você digita no navegador para os servidores do Google. Isso permite que você utilize a mesma tecnologia de verificação ortográfica utilizada pela Pesquisa Google.</translation>
+<translation id="7178626992616222740">O Chromium verificou que <ph name="ISSUER" /> emitiu o certificado deste website. O servidor forneceu informações de Transparência de certificado, mas o Chromium não reconheceu nenhum dos registros de Transparência de certificado.</translation>
 <translation id="7196020411877309443">Por que estou vendo este aviso?</translation>
 <translation id="7205698830395646142">Esconder no menu do Chromium</translation>
 <translation id="7211828883345145708">Permite atalhos adicionais do teclado que são úteis para a depuração do Chromium.</translation>
@@ -209,13 +207,13 @@ incomuns e incorretas. Isso pode acontecer quando que um invasor está fingindo 
 <translation id="7723128346970903111">Quando ativada, usa o fluxo de login do Chromium baseado em iframe. Caso contrário, usa um fluxo baseado em visualização da Web.</translation>
 <translation id="7729447699958282447">O Chromium não pôde sincronizar seus dados porque a sincronização não está disponível para seu domínio.</translation>
 <translation id="7747138024166251722">O instalador não conseguiu criar um diretório temporário. Verifique se há espaço livre em disco e se há permissão para a instalação de software.</translation>
+<translation id="7918535023914021398">O Chromium verificou que <ph name="ISSUER" /> emitiu o certificado deste website. O servidor não forneceu nenhuma informação de Transparência de certificado.</translation>
 <translation id="7937630085815544518">Você estava conectado ao Chromium como <ph name="USER_EMAIL_ADDRESS" />. Use a mesma conta para fazer login novamente.</translation>
 <translation id="7962572577636132072">O Chromium é atualizado automaticamente para que você sempre tenha a versão mais recente.</translation>
 <translation id="7979877361127045932">Esconder no menu do Chromium</translation>
 <translation id="8030318113982266900">Atualizando seu dispositivo para o canal <ph name="CHANNEL_NAME" />...</translation>
 <translation id="8033665941300843262">O Chromium precisa de acesso às permissões para compartilhá-las com este site.</translation>
 <translation id="805745970029938373">Veja aqui todas suas notificações de aplicativos, extensões e websites do Chromium.</translation>
-<translation id="811857857463334932">Este computador não receberá mais atualizações do Chromium, porque seu hardware não é mais suportado.</translation>
 <translation id="8134284582177628525">Se você compartilha este computador com <ph name="PROFILE_NAME" />, adicione seu perfil ao Chromium para navegar separadamente. Caso contrário, desconecte sua Conta do Google.</translation>
 <translation id="8187289872471304532">Vá para
           Aplicativos &gt; Preferências do Sistema &gt; Rede &gt; Avançado &gt; Proxies

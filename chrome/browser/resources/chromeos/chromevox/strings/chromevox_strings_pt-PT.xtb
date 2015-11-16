@@ -41,6 +41,7 @@
 <translation id="1452236308086741652"><ph name="VALUE" />, caixa de texto da palavra-passe</translation>
 <translation id="1467432559032391204">Esquerda</translation>
 <translation id="1474557363159888097">Não existe nenhuma âncora anterior.</translation>
+<translation id="1499041187027566160">aumentar o volume</translation>
 <translation id="1502086903961450562">Gráfico anterior</translation>
 <translation id="1506187449813838456">Aumentar timbre</translation>
 <translation id="151784044608172266">Frase seguinte</translation>
@@ -128,6 +129,7 @@
 <translation id="2639750663247012216">Modificador do ChromeVox</translation>
 <translation id="2644542693584024604">erro ortográfico</translation>
 <translation id="2667291555398229137">Clique no item sob uma chave de encaminhamento</translation>
+<translation id="267442004702508783">atualizar</translation>
 <translation id="2697408785920771974">autoinl</translation>
 <translation id="2704429362613743330">{COUNT,plural, =1{parêntese esquerdo}other{# parênteses esquerdos}}</translation>
 <translation id="2705875883745373140">Não premido</translation>
@@ -392,6 +394,7 @@
 <translation id="5042770794184672516">Aumentar o volume de voz</translation>
 <translation id="5050015258024679800">Título de nível 4 anterior</translation>
 <translation id="5054047268577924192">Item de lista anterior</translation>
+<translation id="5075936896689244141">Mapa de teclas do Next</translation>
 <translation id="5078661581131202757">Seleção de ficheiro</translation>
 <translation id="5080758118274074384">clicado duas vezes</translation>
 <translation id="5087864757604726239">anterior</translation>
@@ -462,6 +465,7 @@
 <translation id="5683155931978483559">Caixa de verificação anterior</translation>
 <translation id="5684277895745049190">Lista</translation>
 <translation id="5700650669149824506">Não existe nenhum título de nível 4 anterior.</translation>
+<translation id="5703716265115423771">diminuir o volume</translation>
 <translation id="5709192780268610569">Sem descrição longa</translation>
 <translation id="5712244464475377681">popbtn</translation>
 <translation id="5712338278108304766">Coluna seguinte da tabela</translation>
@@ -526,6 +530,7 @@
 <translation id="6459511626086141404">Mapa de teclas simples</translation>
 <translation id="6468049171101508116">Botão seguinte</translation>
 <translation id="6491972999578897419">Alterar a voz atual ao selecionar uma opção da lista abaixo.</translation>
+<translation id="6493991254603208962">Diminuir o brilho</translation>
 <translation id="6508059270146105198">Mover linha braille para o fim da página</translation>
 <translation id="6536864053412760904">Token de matemática ML</translation>
 <translation id="6550720799683018100">Alterar o mapa de teclas atual ao selecionar uma opção da lista abaixo.</translation>
@@ -564,6 +569,7 @@
 <translation id="7031651751836475482">lstitm</translation>
 <translation id="7037042857287298941">Lista anterior</translation>
 <translation id="7041173719775863268">Terminar seleção</translation>
+<translation id="7086377898680121060">Aumentar o brilho</translation>
 <translation id="7095834689119144465">Editar apenas números</translation>
 <translation id="7096001299300236431">Multimédia anterior</translation>
 <translation id="7116595520562830928">multln</translation>
@@ -658,6 +664,7 @@
 <translation id="8153880621934657047">Não está dentro da tabela.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{sublinhado}other{# sublinhados}}</translation>
 <translation id="8179976553408161302">Enter</translation>
+<translation id="8186185314313222077">ativar/desativar ecrã inteiro</translation>
 <translation id="81960742267269908">cortar.</translation>
 <translation id="8199231515320852133">Anunciar os cabeçalhos da célula atual</translation>
 <translation id="820417203470636242">Célula vazia.</translation>
@@ -678,12 +685,14 @@
 <translation id="844681116543532394">Não existe nenhuma caixa de verificação anterior.</translation>
 <translation id="8455868257606149352">Máx.: <ph name="X" /></translation>
 <translation id="84575901236241018">tem chave de acesso, <ph name="KEY" /></translation>
+<translation id="8476508772960940536">vista geral das janelas</translation>
 <translation id="8503360654911991865">Diminuir nível de detalhe da navegação</translation>
 <translation id="8520472399088452386">Botão giratório</translation>
 <translation id="8538744478902126321">Adivinhar o cabeçalho da linha da célula atual</translation>
 <translation id="8540054775867439484">Direcionado para o início</translation>
 <translation id="8548973727659841685">Caráter</translation>
 <translation id="8561322612995434619">inclui pop-up</translation>
+<translation id="8571096049907249734">mult sel</translation>
 <translation id="8584721346566392021">h5</translation>
 <translation id="8587549812518406253">Item de lista seguinte</translation>
 <translation id="860150890330522909">Caixa de verificação <ph name="NAME" /> marcada</translation>
@@ -691,6 +700,7 @@
 <translation id="8631359288236106450"><ph name="COUNT" /> itens selecionados</translation>
 <translation id="8638532244051952400">Anunciar coordenadas da célula atual</translation>
 <translation id="8650576015643545550">Não existe nenhuma lista anterior.</translation>
+<translation id="8651481478098336970">desativar o som</translation>
 <translation id="8653031188082306838">urled</translation>
 <translation id="8653646212587894517">Mostrar lista de links</translation>
 <translation id="8664519043722036194">segundos</translation>

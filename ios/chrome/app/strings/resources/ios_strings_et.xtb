@@ -4,6 +4,7 @@
 <translation id="1008557486741366299">Mitte praegu</translation>
 <translation id="1047726139967079566">Lisa selle lehe järjehoidja...</translation>
 <translation id="1172898394251786223">Järgmine väli</translation>
+<translation id="1625603797851307283">Kas soovite, et rakendus <ph name="PRODUCT_NAME" /> salvestaks saidi parooli?</translation>
 <translation id="2320166752086256636">Peida klaviatuur</translation>
 <translation id="2704606927547763573">Kopeeritud</translation>
 <translation id="2747003861858887689">Eelmine väli</translation>
@@ -11,11 +12,17 @@
 <translation id="3244271242291266297">kk</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> <ph name="NUM_SUGGESTIONS" />-st</translation>
 <translation id="3335947283844343239">Ava uuesti suletud vaheleht</translation>
+<translation id="3414292259312108062">Chrome salvestab selle <ph name="BEGIN_LINK" />Google'i salvestatud paroolide<ph name="END_LINK" /> hulka ja täidab parooli automaatselt, nii et te ei pea seda meeles pidama.</translation>
 <translation id="385051799172605136">Tagasi</translation>
 <translation id="4121993058175073134">Netiekspordi andmete saatmiseks seadistage meilikonto rakenduses Seaded.</translation>
 <translation id="4728558894243024398">Platvorm</translation>
+<translation id="5317780077021120954">Salvesta</translation>
 <translation id="5779929835642192302">Soovitused on saadaval</translation>
 <translation id="605721222689873409">aa</translation>
+<translation id="6149061208933997199">Kasuta parooli</translation>
+<translation id="6314335155547195432">Parooli loomine</translation>
+<translation id="6456425917241817154">Chrome'i loodud parool</translation>
 <translation id="7456847797759667638">Ava asukoht...</translation>
 <translation id="7481312909269577407">Edasta</translation>
+<translation id="7961015016161918242">Mitte kunagi</translation>
 </translationbundle>

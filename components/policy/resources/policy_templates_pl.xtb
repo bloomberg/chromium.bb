@@ -55,6 +55,9 @@
 <translation id="1221359380862872747">Załaduj podane URL-e przy logowaniu demonstracyjnym</translation>
 <translation id="1240643596769627465">Pozwala określić URL wyszukiwarki, z której pobierane są wyniki wyszukiwania dynamicznego. URL musi zawierać ciąg <ph name="SEARCH_TERM_MARKER" />, który podczas wyszukiwania jest zastępowany tekstem wprowadzonym przez użytkownika. Ta zasada jest opcjonalna. Jeśli nie zostanie skonfigurowana, wyniki wyszukiwania dynamicznego nie będą dostarczane. Ta zasada jest egzekwowana tylko wówczas, gdy włączona jest zasada „DefaultSearchProviderEnabled”.</translation>
 <translation id="1265053460044691532">Ograniczenie czasu, przez który użytkownik uwierzytelniony za pomocą SAML może logować się offline</translation>
+<translation id="1291880496936992484">Ostrzeżenie: RC4 zostanie całkowicie usunięty z <ph name="PRODUCT_NAME" /> po wersji 52 (około września 2016 r.) i wtedy ta zasada przestanie działać.
+
+      Jeśli ta zasada nie jest ustawiona lub jest wyłączona, to mechanizmy szyfrowania RC4 w TLS będą wyłączone. Można ją włączyć dla zachowania zgodności z przestarzałym serwerem. Jest to rozwiązanie tymczasowe i konieczna jest zmiana konfiguracji serwera.</translation>
 <translation id="1297182715641689552">Używaj skryptu PAC serwera proxy</translation>
 <translation id="1300635491585192248">Przewiduj działania w dowolnej sieci innej niż komórkowa</translation>
 <translation id="1304973015437969093">Identyfikatory rozszerzeń/aplikacji i adresy URL aktualizacji, które mają być instalowane dyskretnie</translation>
@@ -465,6 +468,9 @@
       Gdy włączysz lub wyłączysz ustawienie, użytkownicy nie mogą zmienić ani zastąpić ustawienia „Włącz ochronę przed wyłudzaniem danych (phishingiem) i złośliwym oprogramowaniem” w <ph name="PRODUCT_NAME" />.
 
       Jeśli zasada pozostanie nieustawiona, funkcja jest włączona, ale użytkownik może to zmienić.</translation>
+<translation id="2801230735743888564">Daje użytkownikom dostęp do ukrytej gry-żartu z dinozaurem, gdy urządzenie jest offline.
+
+      Jeśli ta zasada jest wyłączona, użytkownicy nie mają dostępu do ukrytej gry-żartu z dinozaurem, gdy urządzenie jest offline. Jeśli jest włączona, użytkownicy mogą grać w tę grę. Jeśli zasada nie jest ustawiona, użytkownicy nie mają dostępu do gry na zarejestrowanych urządzeniach z Chrome OS, a w innych przypadkach mogą w nią grać.</translation>
 <translation id="2805707493867224476">Zezwalaj na pokazywanie wyskakujących okienek we wszystkich witrynach</translation>
 <translation id="2808013382476173118">Pozwala korzystać z serwerów STUN, gdy klienty zdalne próbują nawiązać połączenie z tym komputerem.
 
@@ -728,6 +734,13 @@
 <translation id="3780152581321609624">Umieść port niestandardowy w nazwie SPN w protokole Kerberos</translation>
 <translation id="3788662722837364290">Ustawienia zarządzania energią, gdy użytkownik jest nieaktywny</translation>
 <translation id="3793095274466276777">Pozwala skonfigurować w przeglądarce <ph name="PRODUCT_NAME" /> sprawdzanie przeglądarki domyślnej i uniemożliwia użytkownikom jej zmianę. Jeśli włączysz to ustawienie, <ph name="PRODUCT_NAME" /> zawsze po uruchomieniu będzie sprawdzać, czy jest przeglądarką domyślną, oraz w miarę możliwości automatycznie przypisywać sobie tę rolę. W przypadku wyłączenia ustawienia <ph name="PRODUCT_NAME" /> nigdy nie sprawdza, czy jest przeglądarką domyślną, a opcje umożliwiające użytkownikowi zmianę ustawienia są nieaktywne. Jeśli ustawienie jest nieskonfigurowane, użytkownik może kontrolować funkcję sprawdzania, czy <ph name="PRODUCT_NAME" /> jest przeglądarką domyślną, oraz wyświetlanie odpowiednich powiadomień.</translation>
+<translation id="3800626789999016379">Określa katalog, w którym <ph name="PRODUCT_NAME" /> zapisuje pobrane pliki.
+
+      Jeśli ustawisz tę zasadę, <ph name="PRODUCT_NAME" /> używa wskazanego katalogu niezależnie od tego, czy użytkownik podał własny katalog czy włączył opcję pytania o lokalizację przy każdym pobieraniu.
+
+      Na https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables znajdziesz listę zmiennych, których możesz użyć.
+
+      Gdy ta zasada nie jest ustawiona, obowiązuje domyślny katalog pobierania, a użytkownik może go zmienić.</translation>
 <translation id="3805659594028420438">Włącz rozszerzenie certyfikatów TLS powiązanych z domeną (wycofana)</translation>
 <translation id="3806576699227917885">Zezwala na odtwarzanie dźwięku.
 
@@ -845,6 +858,13 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
           Ta zasada jest uwzględniana tyko wtedy, gdy włączona jest zasada „DefaultSearchProviderEnabled”.</translation>
 <translation id="4320376026953250541">Microsoft Windows XP z dodatkiem SP2 lub nowszy</translation>
 <translation id="4325690621216251241">Dodaj przycisk wylogowania do paska zadań</translation>
+<translation id="4349746760316962317">Określa katalog, w którym <ph name="PRODUCT_NAME" /> przechowuje pliki buforowane na dysku.
+
+      Jeśli ustawisz tę zasadę, <ph name="PRODUCT_NAME" /> używa wskazanego katalogu niezależnie od tego, czy użytkownik zastosował flagę „--disk-cache-dir”.
+
+      Na https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables znajdziesz listę zmiennych, których możesz użyć.
+
+      Gdy ta zasada nie jest ustawiona, obowiązuje domyślny katalog pamięci podręcznej, a użytkownik może go zastąpić, korzystając z flagi „--disk-cache-dir” w wierszu polecenia.</translation>
 <translation id="436581050240847513">Raportuj interfejsy sieciowe urządzeń</translation>
 <translation id="4372704773119750918">Nie zezwalaj użytkownikom firmowym na korzystanie z trybu wieloprofilowego (jako użytkownik główny ani dodatkowy)</translation>
 <translation id="4377599627073874279">Zezwalaj na wyświetlanie wszelkich grafik we wszystkich witrynach</translation>
@@ -910,6 +930,11 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="4665897631924472251">Ustawienia zarządzania rozszerzeniami</translation>
 <translation id="4668325077104657568">Domyślne ustawienie grafik</translation>
 <translation id="467236746355332046">Obsługiwane funkcje:</translation>
+<translation id="4674167212832291997">Pozwala dostosować listę wzorców adresów URL stron, które <ph name="PRODUCT_FRAME_NAME" /> ma zawsze renderować.
+
+          Jeśli nie ustawisz tej zasady, na wszystkich stronach działa domyślny mechanizm renderowania określony przez zasadę „ChromeFrameRendererSettings”.
+
+          Przykładowe wzorce znajdziesz na https://www.chromium.org/developers/how-tos/chrome-frame-getting-started</translation>
 <translation id="467449052039111439">Otwórz adresy URL z listy</translation>
 <translation id="4680961954980851756">Włącz autouzupełnianie</translation>
 <translation id="4723829699367336876">Włącz omijanie zapory sieciowej przez klienta dostępu zdalnego</translation>
@@ -1002,6 +1027,14 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
           Jeśli ta zasada nie jest ustawiona, podejmowana jest domyślna czynność, czyli wstrzymanie.
 
           Jeśli czynnością jest wstrzymanie, <ph name="PRODUCT_OS_NAME" /> można skonfigurować osobno tak, by ekran przedtem był lub nie był blokowany.</translation>
+<translation id="5111712393799006197">Określa katalog, w którym <ph name="PRODUCT_NAME" /> przechowuje dane użytkownika.
+
+      Jeśli ustawisz tę zasadę, <ph name="PRODUCT_NAME" /> używa wskazanego katalogu niezależnie od tego, czy użytkownik zastosował flagę „--user-data-dir”.
+
+      Na https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables znajdziesz listę zmiennych, których możesz użyć.
+
+      Gdy ta zasada nie jest ustawiona, obowiązuje domyślna ścieżka profilu, a użytkownik może ją zastąpić, korzystając z flagi „--user-data-dir” w wierszu polecenia.</translation>
+<translation id="5130288486815037971">Czy włączone są mechanizmy szyfrowania RC4 w TLS</translation>
 <translation id="5141670636904227950">Ustaw domyślny typ lupy włączony na ekranie logowania</translation>
 <translation id="5142301680741828703">Zawsze renderuj strony we wtyczce <ph name="PRODUCT_FRAME_NAME" /> według następujących wzorców adresów URL</translation>
 <translation id="5148753489738115745">Pozwala określić dodatkowe parametry używane, gdy <ph name="PRODUCT_FRAME_NAME" /> uruchamia <ph name="PRODUCT_NAME" />.
@@ -1170,6 +1203,20 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="5809728392451418079">Ustaw nazwę wyświetlaną dla lokalnych kont na urządzeniu</translation>
 <translation id="5814301096961727113">Ustaw domyślny stan potwierdzeń głosowych na ekranie logowania</translation>
 <translation id="5815129011704381141">Automatyczne ponowne uruchomienie po aktualizacji</translation>
+<translation id="5815353477778354428">Określa katalog, w którym <ph name="PRODUCT_FRAME_NAME" /> przechowuje dane użytkownika.
+
+      Jeśli ustawisz tę zasadę, <ph name="PRODUCT_FRAME_NAME" /> używa wskazanego katalogu.
+
+      Na https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables znajdziesz listę zmiennych, których możesz użyć.
+
+      Gdy ta opcja nie jest ustawiona, obowiązuje domyślny katalog profilu.</translation>
+<translation id="5819660021114910752">Określa strefę czasową używaną na urządzeniu. Użytkownicy mogą zastąpić obowiązującą strefę czasową na czas bieżącej sesji. Jednak po wylogowaniu ponownie ustawiana jest pierwotna strefa czasowa. Jeśli podasz nieprawidłową wartość, zasada jest aktywowana z ustawieniem „GMT”. Gdy wartość to pusty ciąg znaków, zasada jest ignorowana.
+
+      Jeśli nie zastosujesz tej zasady, aktualnie aktywna strefa czasowa nadal obowiązuje, ale użytkownicy mogą zmienić ją na stałe. Zmiana wprowadzona przez jednego użytkownika wpływa na ekran logowania i konta wszystkich innych użytkowników.
+
+      Nowe urządzenia mają strefę czasową „Stany Zjednoczone/Czas pacyficzny”.
+
+      Format wartości musi być zgodny z nazwami stref czasowych w bazie danych stref czasowych IANA (zobacz https://en.wikipedia.org/wiki/Tz_database – strona w języku angielskim). To oznacza, że większość stref czasowych można podawać w formacie „kontynent/duże_miasto” lub „ocean/duże_miasto”.</translation>
 <translation id="5826047473100157858">Określa, czy użytkownik może otwierać strony w trybie incognito w <ph name="PRODUCT_NAME" />. W przypadku opcji „Włączone” lub nieskonfigurowania zasady strony mogą być otwierane w tym trybie. Opcja „Wyłączone” uniemożliwia otwieranie stron w tym trybie. Po wybraniu opcji „Wymuszone” strony można otwierać TYLKO w trybie incognito.</translation>
 <translation id="5836064773277134605">Ogranicz zakres portów UDP używanych przez host zdalnego dostępu</translation>
 <translation id="5845159892130426052">Włącz interfejs ShowModalDialog API do 30.04.2015</translation>
@@ -1260,6 +1307,7 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
           Zalecany sposób blokowania ekranu w czasie nieaktywności to włączenie blokowania ekranu przy wstrzymaniu pracy i pozwolenie, by <ph name="PRODUCT_OS_NAME" /> wstrzymywał pracę po okresie nieaktywności. Zasady tej należy używać jedynie, gdy ekran powinien zostać zablokowany znacznie wcześniej niż nastąpi wstrzymanie pracy lub gdy wstrzymanie pracy przy nieaktywności nie jest w ogóle wskazane.
 
           Wartość dla tej zasady należy określić w milisekundach. Wartości są zmniejszane tak, by były mniejsze niż opóźnienie nieaktywności.</translation>
+<translation id="6111936128861357925">Zezwól na ukrytą grę-żart z dinozaurem</translation>
 <translation id="6114416803310251055">przestarzała</translation>
 <translation id="6145799962557135888">Umożliwia skonfigurowanie listy wzorcowych URL-i określających witryny, w których może być wykonywany kod JavaScript. Jeśli ta zasada nie zostanie skonfigurowana, dla wszystkich witryn będzie używana globalna wartość domyślna pochodząca z zasady „DefaultJavaScriptSetting” (jeśli została skonfigurowana) lub z osobistej konfiguracji użytkownika.</translation>
 <translation id="6151775819333710697">
@@ -1794,6 +1842,18 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 
       W przypadku nieskonfigurowania tej zasady nie będzie wyjątków w zasadzie „URLBlacklist”.</translation>
 <translation id="8176035528522326671">Zezwól, by użytkownik korporacyjny był tylko głównym użytkownikiem korzystającym z wielu profili (domyślne zachowanie w przypadku użytkowników zarządzanych przez przedsiębiorstwo)</translation>
+<translation id="8191318459035150777">Konfiguruje adres URL domyślnej strony startowej <ph name="PRODUCT_NAME" /> i uniemożliwia użytkownikom jego zmianę.
+
+          Stronę startową otwiera się przyciskiem strony startowej. Strony otwierane po uruchomieniu są określone w zasadach RestoreOnStartup.
+
+          Jako stronę startową można ustawić podany tu adres URL albo stronę nowej karty. Wybranie strony nowej karty powoduje, że ta zasada nie jest stosowana.
+
+          Jeśli ta zasada jest włączona, użytkownicy nie mogą zmienić adresu URL strony startowej <ph name="PRODUCT_NAME" />, ale mogą wybrać stronę nowej karty jako swoją stronę startową.
+
+          Jeśli ta zasada jest nieskonfigurowana, użytkownik może wybrać stronę startową, o ile nie jest też skonfigurowana zasada HomepageIsNewTabPage.
+
+          Zasada nie jest dostępna na komputerach z systemem Windows,
+          które nie są dołączone do domeny Active Directory.</translation>
 <translation id="8197918588508433925">Ta zasada określa dozwolone rozszerzenia do użycia z funkcją  chrome.enterprise.platformKeysPrivate.challengeUserKey() interfejsu API Enterprise Platform Keys do zdalnego poświadczania. Rozszerzenia muszą zostać dodane do tej listy, by były używane z interfejsem API.
 
           Jeśli rozszerzenie nie znajduje się na liście, lub lista nie jest ustawiona, wywołanie interfejsu API zakończy się błędem.</translation>
@@ -1835,6 +1895,11 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="8465065632133292531">Parametry dla URL-i dynamicznych używających POST</translation>
 <translation id="847472800012384958">Nie zezwalaj na pokazywanie wyskakujących okienek w żadnej witrynie</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
+<translation id="8484458986062090479">Pozwala dostosować listę wzorców adresów URL stron, które przeglądarka hosta ma zawsze renderować.
+
+          Jeśli nie ustawisz tej zasady, na wszystkich stronach działa domyślny mechanizm renderowania określony przez zasadę „ChromeFrameRendererSettings”.
+
+          Przykładowe wzorce znajdziesz na https://www.chromium.org/developers/how-tos/chrome-frame-getting-started</translation>
 <translation id="8493645415242333585">Wyłącz zapisywanie historii przeglądarki</translation>
 <translation id="8499172469244085141">Ustawienia domyślne (użytkownicy mogą zmienić)</translation>
 <translation id="8501011084242226370">Określa listę wtyczek, które użytkownik może włączyć lub wyłączyć w <ph name="PRODUCT_NAME" />.
@@ -1889,6 +1954,8 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 
       Jeśli to ustawienie jest wyłączone, nie można usuwać historii przeglądania ani pobierania.</translation>
 <translation id="8764119899999036911">Pozwala określić, czy generowana nazwa SPN w protokole Kerberos jest tworzona na podstawie kanonicznej nazwy DNS, czy też wpisanej, oryginalnej nazwy. Włączenie tego ustawienia powoduje pominięcie wyszukiwania rekordu CNAME i użycie wprowadzonej nazwy serwera. Jeśli wyłączysz ustawienie lub nie skonfigurujesz go, nazwa kanoniczna serwera będzie określana za pomocą wyszukiwania rekordu CNAME.</translation>
+<translation id="8774131509736383471">Jeśli ta zasada jest włączona, <ph name="PRODUCT_NAME" /> bezwarunkowo zmaksymalizuje pierwsze okno wyświetlone przy pierwszym uruchomieniu.
+      Jeśli zasada jest wyłączona lub nieskonfigurowana, pierwsze wyświetlone okno zostanie zmaksymalizowane lub nie, w zależności od rozmiaru ekranu.</translation>
 <translation id="8777120694819070607">Zezwala na uruchamianie nieaktualnych wtyczek w przeglądarce <ph name="PRODUCT_NAME" />. Jeśli włączysz to ustawienie, nieaktualne wtyczki będą używane w normalny sposób. W przypadku jego wyłączenia nieaktualne wtyczki nie są używane, a użytkownikom nie są wyświetlane monity o udzielenie pozwolenia na ich uruchomienie. Jeśli ustawienie jest nieskonfigurowane, użytkownikom są wyświetlane monity o udzielenie pozwolenia na uruchomienie nieaktualnych wtyczek.</translation>
 <translation id="87812015706645271">Wymaga, by nazwa użytkownika lokalnego była taka sama jak właściciela hosta dostępu zdalnego</translation>
 <translation id="8782750230688364867">Określa wartość procentową skalowania opóźnienia przyciemnienia ekranu, gdy urządzenie działa w trybie prezentacji.

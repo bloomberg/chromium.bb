@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="vi">
 <translation id="1001534784610492198">Lưu trữ trình cài đặt bị lỗi hoặc không hợp lệ. Vui lòng tải xuống lại Google Chrome.</translation>
+<translation id="1013290471399003443">Chrome đã xác minh rằng <ph name="ISSUER" /> cấp chứng chỉ của trang web này. Máy chủ cung cấp thông tin hợp lệ về Tính minh mạch của chứng chỉ.</translation>
 <translation id="1016765312371154165">Chrome đã không tắt đúng cách.</translation>
 <translation id="103396972844768118">Thông tin quan trọng liên quan đến dữ liệu Chrome của bạn</translation>
 <translation id="1061441684050139317">Chrome cần quyền truy cập micrô để chia sẻ micrô với trang web này.</translation>
@@ -64,6 +65,7 @@
 <translation id="2769762047821873045">Google Chrome không phải là trình duyệt mặc định của bạn.</translation>
 <translation id="2770231113462710648">Thay đổi trình duyệt mặc định thành:</translation>
 <translation id="2871893339301912279">Bạn đã đăng nhập vào Chrome!</translation>
+<translation id="2997147809295888909">Chrome đã xác minh rằng <ph name="ISSUER" /> cấp chứng chỉ của trang web này. Máy chủ không cung cấp bất kỳ thông tin nào về Tính minh mạch của chứng chỉ.</translation>
 <translation id="3037838751736561277">Google Chrome đang chạy trong nền.</translation>
 <translation id="3047079729301751317">Ngắt kết nối <ph name="USERNAME" /> sẽ xóa lịch sử, dấu trang, cài đặt và các dữ liệu Chrome khác của bạn trên thiết bị này. Dữ liệu được lưu trữ trong tài khoản Google của bạn sẽ không bị xóa và có thể được quản lý trên <ph name="GOOGLE_DASHBOARD_LINK" />Trang tổng quan của Google<ph name="END_GOOGLE_DASHBOARD_LINK" />.</translation>
 <translation id="3080151273017101988">Tiếp tục chạy các ứng dụng nền khi Google Chrome đóng</translation>
@@ -78,7 +80,6 @@
 <translation id="345171907106878721">Thêm chính bạn vào Chrome</translation>
 <translation id="3612333635265770873">Một mô-đun có cùng tên đã được xác định là xung đột với Google Chrome.</translation>
 <translation id="3622797965165704966">Giờ đây, việc sử dụng Chrome bằng tài khoản Google của bạn và trên máy tính được chia sẻ trở nên dễ dàng hơn.</translation>
-<translation id="3656661827369545115">Tự động khởi động Chromium khi máy tính của bạn khởi động</translation>
 <translation id="3735758079232443276">Tiện ích "<ph name="EXTENSION_NAME" />" đã thay đổi trang nào được hiển thị khi bạn khởi động Chrome.</translation>
 <translation id="3738139272394829648">Chạm để tìm kiếm</translation>
 <translation id="3784527566857328444">Xóa khỏi Chrome...</translation>
@@ -86,6 +87,7 @@
 <translation id="3847841918622877581">Google Chrome có thể sử dụng dịch vụ web để cải thiện trải nghiệm duyệt web của bạn.</translation>
 <translation id="386202838227397562">Vui lòng đóng tất cả cửa sổ của Google Chrome và thử lại.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
+<translation id="3881912906674381083">Chrome đã xác minh rằng <ph name="ISSUER" /> cấp chứng chỉ của trang web này. Máy chủ cung cấp thông tin về Tính minh mạch của chứng chỉ nhưng Chrome không nhận ra bất kỳ nhật ký nào về Tính minh bạch của chứng chỉ.</translation>
 <translation id="3889417619312448367">Gỡ cài đặt Google Chrome</translation>
 <translation id="4011219958405096740">Khi được bật, sẽ sử dụng luồng đăng nhập Chrome dựa trên iframe; nếu không, sử dụng luồng dựa trên chế độ xem web.</translation>
 <translation id="4050175100176540509">Cải thiện bảo mật quan trọng và tính năng mới có trong phiên bản mới nhất.</translation>
@@ -95,11 +97,9 @@
 <translation id="4167057906098955729">Bạn có thể thấy tất cả các thông báo từ ứng dụng, tiện ích và trang web Chrome của bạn tại đây.</translation>
 <translation id="423410644998903704">Chrome cần quyền truy cập quyền để chia sẻ quyền với trang web này.</translation>
 <translation id="4251615635259297716">Bạn muốn liên kết dữ liệu Chrome của bạn với tài khoản này?</translation>
-<translation id="4273752058983339720">Google Chrome được định cấu hình để tự động chạy khi bạn khởi động máy tính của mình.</translation>
 <translation id="4309555186815777032">(yêu cầu Chrome <ph name="BEGIN_BUTTON" />khởi động lại<ph name="END_BUTTON" />)</translation>
 <translation id="4331809312908958774">Chrome OS
 </translation>
-<translation id="4367618624832907428">Google Chrome không thể hiển thị trang web vì máy tính của bạn chưa kết nối Internet.</translation>
 <translation id="4407807842708586359">Hệ điều hành Google Chrome</translation>
 <translation id="4458285410772214805">Vui lòng đăng xuất và đăng nhập lại để thay đổi này có hiệu lực.</translation>
 <translation id="4480040274068703980">Chrome OS không thể đồng bộ hóa dữ liệu của bạn do lỗi khi đăng nhập.</translation>
@@ -108,7 +108,6 @@
 <translation id="4567424176335768812">Bạn đã đăng nhập với tên <ph name="USER_EMAIL_ADDRESS" />. Bây giờ, bạn có thể truy cập dấu trang, lịch sử và các cài đặt khác trên tất cả những thiết bị đã đăng nhập của bạn.</translation>
 <translation id="4631713731678262610">Ẩn trong menu Chrome</translation>
 <translation id="4633000520311261472">Để làm cho Chrome an toàn hơn, chúng tôi đã vô hiệu hóa một số tiện ích không được liệt kê trong <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> và có thể đã được thêm mà bạn không biết.</translation>
-<translation id="4692614041509923516">Máy tính của bạn đang chạy phiên bản Microsoft Windows cũ. Phiên bản này không thể xử lý chứng chỉ bảo mật của trang web này. Do sự cố này, Google Chrome không thể biết chứng chỉ đến từ <ph name="SITE" /> hay từ ai đó trên mạng của bạn giả làm <ph name="SITE" />. Vui lòng cập nhật máy tính của bạn lên phiên bản Windows mới hơn.</translation>
 <translation id="4700157086864140907">Google Chrome có thể cung cấp tính năng kiểm tra chính tả thông minh hơn bằng cách gửi những gì bạn nhập vào trình duyệt tới máy chủ Google, cho phép bạn sử dụng cùng một công nghệ kiểm tra chính tả mà tìm kiếm của Google sử dụng.</translation>
 <translation id="4728575227883772061">Không cài đặt được do lỗi chưa xác định. Nếu Google Chrome hiện đang chạy, vui lòng đóng Google Chrome và thử lại.</translation>
 <translation id="473775607612524610">Cập nhật</translation>
@@ -117,6 +116,7 @@
 <translation id="4794050651896644714">Lưu chi tiết trong Chrome</translation>
 <translation id="4891791193823137474">Để Google Chrome chạy trên nền</translation>
 <translation id="4921569541910214635">Bạn muốn chia sẻ máy tính? Giờ đây, bạn có thể thiết lập Chrome theo cách mình muốn.</translation>
+<translation id="4925019873400497719">Chrome đã xác minh rằng <ph name="ISSUER" /> cấp chứng chỉ của trang web này. Máy chủ cung cấp thông tin về Tính minh mạch của chứng chỉ nhưng thông tin này không hợp lệ.</translation>
 <translation id="4953650215774548573">Đặt Google Chrome làm trình duyệt mặc định của bạn</translation>
 <translation id="4987308747895123092">Hãy đóng tất cả cửa sổ Google Chrome (bao gồm cả những cửa sổ trong chế độ Windows 8) và thử lại.</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
@@ -196,7 +196,6 @@ Một số tính năng có thể không khả dụng. Vui lòng chỉ định th
 <translation id="6989339256997917931">Google Chrome đã được cập nhật, nhưng bạn đã không sử dụng chương trình này ít nhất 30 ngày.</translation>
 <translation id="699076943483372849">Trang web này đang sử dụng plugin Chrome Frame đã ngừng hoạt động. Plugin này không còn nhận được các bản cập nhật về bảo mật và độ ổn định nữa. Vui lòng gỡ cài đặt và nâng cấp lên trình duyệt hiện đại.</translation>
 <translation id="6991142834212251086">Liên kết dữ liệu Chrome của tôi với tài khoản này</translation>
-<translation id="7054640471403081847">Máy tính này sẽ sớm ngừng nhận bản cập nhật của Google Chrome bởi vì phần cứng của máy không được hỗ trợ nữa.</translation>
 <translation id="7060865993964054389">Trình chạy ứng dụng Google Chrome</translation>
 <translation id="7084448929020576097"><ph name="FILE_NAME" /> là tệp độc hại và Chrome đã chặn tệp này.</translation>
 <translation id="7098166902387133879">Google Chrome đang sử dụng micrô của bạn.</translation>
@@ -233,7 +232,6 @@ Một số tính năng có thể không khả dụng. Vui lòng chỉ định th
 <translation id="781069973841903133">Khởi chạy lại ở chế độ chìm của Chrome sẽ đóng và khởi chạy lại ứng dụng Chrome của bạn.</translation>
 <translation id="7825851276765848807">Không thể cài đặt do lỗi không xác định. Hãy tải xuống lại Google Chrome.</translation>
 <translation id="7890208801193284374">Nếu bạn chia sẻ máy tính, bạn bè và gia đình có thể duyệt web một cách riêng biệt và thiết lập Chrome theo ý của họ.</translation>
-<translation id="7908968924842975895">Máy tính này sẽ không còn nhận được bản cập nhật của Google Chrome vì phần cứng của máy không được hỗ trợ nữa.</translation>
 <translation id="7984945080620862648">Bạn không thể truy cập <ph name="SITE" /> ngay bây giờ do trang web gửi thông tin đăng nhập đã thu thập mà Chrome không thể xử lý. Lỗi mạng và các cuộc tấn công mạng thường chỉ là tạm thời, do đó trang này có thể sẽ hoạt động lại sau.</translation>
 <translation id="8000275528373650868">Google Chrome yêu cầu Windows Vista hoặc Windows XP với SP2 trở lên.</translation>
 <translation id="8005540215158006229">Chrome sắp sẵn sàng.</translation>

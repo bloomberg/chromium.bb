@@ -4,6 +4,7 @@
 <translation id="1008557486741366299">ليس الآن</translation>
 <translation id="1047726139967079566">وضع إشارة مرجعية على هذه الصفحة...</translation>
 <translation id="1172898394251786223">الحقل التالي</translation>
+<translation id="1625603797851307283">هل تريد من <ph name="PRODUCT_NAME" /> حفظ كلمة المرور لهذا الموقع؟</translation>
 <translation id="2320166752086256636">إخفاء لوحة المفاتيح</translation>
 <translation id="2704606927547763573">تم النسخ</translation>
 <translation id="2747003861858887689">الحقل السابق</translation>
@@ -11,11 +12,17 @@
 <translation id="3244271242291266297">الشهر</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />، و<ph name="ADDITIONAL_INFO" />، و<ph name="INDEX" /> من <ph name="NUM_SUGGESTIONS" /></translation>
 <translation id="3335947283844343239">إعادة فتح علامة التبويب المغلقة</translation>
+<translation id="3414292259312108062">‏سيخزن Chrome ذلك في <ph name="BEGIN_LINK" />كلمات مرور Chrome المحفوظة<ph name="END_LINK" /> ويكتبها تلقائيًا بالنيابة عنك حتى لا تضطر لحفظها بنفسك.</translation>
 <translation id="385051799172605136">الرجوع إلى الوراء</translation>
 <translation id="4121993058175073134">لإرسال بيانات تصدير الشبكة، الرجاء تهيئة حساب بريدك الإلكتروني في التطبيق "الإعدادات".</translation>
 <translation id="4728558894243024398">النظام الأساسي</translation>
+<translation id="5317780077021120954">حفظ</translation>
 <translation id="5779929835642192302">الاقتراحات المتاحة</translation>
 <translation id="605721222689873409">العام</translation>
+<translation id="6149061208933997199">استخدام كلمة المرور</translation>
+<translation id="6314335155547195432">إنشاء كلمة المرور</translation>
+<translation id="6456425917241817154">‏تم إنشاء كلمة المرور من قبل Chrome</translation>
 <translation id="7456847797759667638">فتح موقع...</translation>
 <translation id="7481312909269577407">إلى الأمام</translation>
+<translation id="7961015016161918242">مطلقًا</translation>
 </translationbundle>

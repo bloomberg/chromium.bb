@@ -64,6 +64,9 @@
 
           Pravilnik velja samo, če je omogočen pravilnik »DefaultSearchProviderEnabled«.</translation>
 <translation id="1265053460044691532">Omejitev časa, ki je uporabniku, katerega pristnost je preverjena prek SAML-ja, na voljo za prijavo brez internetne povezave</translation>
+<translation id="1291880496936992484">Opozorilo: RC4 bo v celoti odstranjen iz programa <ph name="PRODUCT_NAME" /> po različici 52 (okoli septembra 2016) in ta pravilnik bo takrat prenehal delovati.
+
+      Če pravilnik ni nastavljen ali je onemogočen, šifrirane zbirke v protokolu TLS ne bodo omogočene, sicer pa je lahko omogočen zaradi ohranjanja združljivosti z zastarelim strežnikom. To je začasen ukrep in strežnik je treba na novo konfigurirati.</translation>
 <translation id="1297182715641689552">Uporabi skript .pac za proxy</translation>
 <translation id="1300635491585192248">Predvidevanje omrežnih dejanj v katerem koli omrežju, ki ni
           mobilno</translation>
@@ -526,6 +529,9 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
 Če omogočite ali onemogočite to nastavitev, uporabniki ne morejo spremeniti ali preglasiti nastavitve »Omogoči zaščito pred lažnim predstavljanjem in zlonamerno programsko opremo« v brskalniku <ph name="PRODUCT_NAME" />.
 
 Če ta pravilnik ni nastavljen, bo to omogočeno, vendar bo lahko uporabnik spremenil nastavitev.</translation>
+<translation id="2801230735743888564">Uporabnikom dovoli igranje skrite igre z dinozavrom, ko je naprava brez internetne povezave.
+
+      Če je ta pravilnik onemogočen, uporabniki ne bodo mogli igrati skrite igre z dinozavrom, ko je naprava brez internetne povezave. Če je nastavitev omogočena, bodo uporabniki lahko igrali igro. Če ta pravilnik ni nastavljen, uporabniki igre ne bodo mogli igrati v včlanjenem OS Chrome, lahko pa jo bodo igrali v drugih okoliščinah.</translation>
 <translation id="2805707493867224476">Dovoli vsem mestom, da pokažejo pojavna okna</translation>
 <translation id="2808013382476173118">Omogoča uporabo strežnikov STUN, ko oddaljeni odjemalci poskušajo vzpostaviti zvezo s tem računalnikom.
 
@@ -809,6 +815,13 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
       Če jo onemogočite, <ph name="PRODUCT_NAME" /> ne bo nikoli preveril, ali je privzeti brskalnik, in uporabniki ne bodo mogli nastaviti te možnosti.
 
       Če ta možnost ni nastavljena, bo <ph name="PRODUCT_NAME" /> uporabniku dovolil, da nadzira, ali je privzeti brskalnik in ali naj bodo prikazana obvestila, če ni.</translation>
+<translation id="3800626789999016379">Konfigurira imenik, ki ga bo <ph name="PRODUCT_NAME" /> uporabljal za prenašanje datotek.
+
+      Če ta pravilnik nastavite, bo <ph name="PRODUCT_NAME" /> uporabljal navedeni imenik ne glede na to, ali ga je uporabnik določil ali omogočil zastavico za vsakokraten poziv za mesto prenosa.
+
+      Seznam spremenljivk, ki jih je mogoče uporabiti, si lahko ogledate na https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.
+
+      Če tega pravilnika ne nastavite, bo uporabljen privzeti imenik za prenose in uporabnik ga bo lahko spremenil.</translation>
 <translation id="3805659594028420438">Omogoči razširitev za potrdila, domensko vezana na TLS (zastarelo)</translation>
 <translation id="3806576699227917885">Omogočanje predvajanje zvoka.
 
@@ -949,6 +962,13 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
           Ta pravilnik se upošteva samo, če je omogočen pravilnik »DefaultSearchProviderEnabled«.</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 ali novejši</translation>
 <translation id="4325690621216251241">Dodajanje gumb za odjavo v sistemsko vrstico</translation>
+<translation id="4349746760316962317">Konfigurira imenik, ki ga bo <ph name="PRODUCT_NAME" /> uporabljal za shranjevanje predpomnjenih datotek na disk.
+
+      Če nastavite ta pravilnik, bo <ph name="PRODUCT_NAME" /> uporabljal navedeni imenik ne glede na to, ali je uporabnik določil zastavico »--disk-cache-dir« ali ne.
+
+      Seznam spremenljivk, ki jih je mogoče uporabiti, si lahko ogledate na https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.
+
+      Če tega pravilnika ne nastavite, bo uporabljen privzeti imenik za shranjevanje predpomnjenih datotek in uporabnik ga bo lahko preglasil z zastavico »--disk-cache-dir« v ukazni vrstici.</translation>
 <translation id="436581050240847513">Poročanje o omrežnih vmesnikih naprave</translation>
 <translation id="4372704773119750918">Ne dovoli uporabnikom v podjetjih, da so del večkratnega profila (primarnega ali sekundarnega)</translation>
 <translation id="4377599627073874279">Dovoli vsem mestom, da pokažejo vse slike</translation>
@@ -1032,6 +1052,11 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 <translation id="4665897631924472251">Nastavitve upravljanja razširitev</translation>
 <translation id="4668325077104657568">Nastavitev privzetih slik</translation>
 <translation id="467236746355332046">Podprte funkcije:</translation>
+<translation id="4674167212832291997">Prilagaja seznam vzorcev URL-jev, ki jih vedno upodobi <ph name="PRODUCT_FRAME_NAME" />.
+
+          Če ta pravilnik ni nastavljen, bo za vsa spletna mesta uporabljen privzeti upodabljalnik, kot ga določa pravilnik »ChromeFrameRendererSettings«.
+
+          Primere vzorcev si lahko ogledate na https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="467449052039111439">Odpri seznam URL-jev</translation>
 <translation id="4680961954980851756">Omogoči samodejno izpolnjevanje</translation>
 <translation id="4723829699367336876">Omogoči prehod skozi požarni zid iz odjemalca za oddaljeni dostop</translation>
@@ -1134,6 +1159,14 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
           Če ta pravilnik ni nastavljen, se izvede privzeto dejanje, ki je preklop v stanje pripravljenosti.
 
           Če je dejanje preklop v stanje pripravljenosti, se lahko <ph name="PRODUCT_OS_NAME" /> po navadi ločeno nastavi, da pred preklopom v stanje pripravljenosti zaklene zaslon ali ga ne zaklene.</translation>
+<translation id="5111712393799006197">Konfigurira imenik, ki ga bo <ph name="PRODUCT_NAME" /> uporabljal za shranjevanje uporabniških podatkov.
+
+      Če ta pravilnik nastavite, bo <ph name="PRODUCT_NAME" /> uporabljal navedeni imenik ne glede na to, ali je uporabnik določil zastavico »--user-data-dir«.
+
+      Seznam spremenljivk, ki jih je mogoče uporabiti, si lahko ogledate na https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.
+
+      Če tega pravilnika ne nastavite, bo uporabljena privzeta pot profila in uporabnik jo bo lahko preglasil z zastavico »--user-data-dir« v ukazni vrstici.</translation>
+<translation id="5130288486815037971">Ali so v protokolu TLS omogočene šifrirne zbirke RC4</translation>
 <translation id="5141670636904227950">Nastavitev privzete vrste lupe, omogočene na prijavnem zaslonu</translation>
 <translation id="5142301680741828703">Vedno upodobi te vzorce URL-jev v programu <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="5148753489738115745">Določite lahko dodatne parametre, ki so uporabljeni, ko <ph name="PRODUCT_FRAME_NAME" /> zažene <ph name="PRODUCT_NAME" />.
@@ -1325,6 +1358,20 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 <translation id="5809728392451418079">Nastavljanje prikaznega imena za lokalne račune za napravo</translation>
 <translation id="5814301096961727113">Nastavitev privzetega stanja glasovnih povratnih informacij načina na prijavnem zaslonu</translation>
 <translation id="5815129011704381141">Samodejni vnovični zagon po posodobitvi</translation>
+<translation id="5815353477778354428">Konfigurira imenik, ki ga bo <ph name="PRODUCT_FRAME_NAME" /> uporabljal za shranjevanje uporabniških podatkov.
+
+      Če ta pravilnik nastavite, bo <ph name="PRODUCT_FRAME_NAME" /> uporabil navedeni imenik.
+
+      Seznam spremenljivk, ki jih je mogoče uporabiti, si lahko ogledate na http://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.
+
+      Če te nastavitve ne določite, bo uporabljen privzeti imenik profila.</translation>
+<translation id="5819660021114910752">Določi časovni pas za napravo. Uporabniki lahko določeni časovni pas za trenutno sejo preglasijo. Pri odjavi je spet nastavljen določeni časovni pas. Če je vnesena neveljavna vrednost, je pravilnik kljub temu aktiviran s časovnim pasom »GMT«. Če je vnesen prazen niz, je pravilnik prezrt.
+
+      Če ta pravilnik ni uporabljen, se uporablja trenutno aktivni časovni pas. Če uporabniki spremenijo časovni pas, je sprememba vidna povsod. Sprememba časovnega pasu tako vpliva na zaslon za prijavo in vse druge uporabnike.
+
+      Nove naprave imajo na začetku nastavljen »ameriški/tihomorski« časovni pas.
+
+      Oblika vrednosti je v skladu z imeni časovnih pasov v zbirki podatkov o časovnih pasovih IANA (glejte »https://en.wikipedia.org/wiki/Tz_database«). Večino časovnih pasov je mogoče navesti kot »celina/vele_mesto« ali »ocean/vele_mesto«.</translation>
 <translation id="5826047473100157858">Določa, ali lahko uporabnik v brskalniku <ph name="PRODUCT_NAME" /> odpre strani v načinu brez beleženja zgodovine.
 
       Če je izbrano »Omogočeno« ali pravilnik ni nastavljen, je strani mogoče odpirati v načinu brez beleženja zgodovine.
@@ -1423,6 +1470,7 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
           Priporočljivo je, da za zaklep zaslona ob nedejavnosti omogočite zaklepanje ob prekinitvi, da se <ph name="PRODUCT_OS_NAME" /> prekine po preteku zakasnitve zaradi nedejavnosti. Ta pravilnik uporabite samo, če želite, da se zaslon zaklene bistveno prej pred prekinitvijo, ali če ne želite prekinitve ob nedejavnosti.
 
           Vrednost pravilnika naj bo navedena v milisekundah. Vrednosti morajo biti manjše od zakasnitve zaradi nedejavnosti.</translation>
+<translation id="6111936128861357925">Dovoli skrito igro z dinozavrom</translation>
 <translation id="6114416803310251055">zastarelo</translation>
 <translation id="6145799962557135888">Omogoča nastavitev seznama vzorcev URL-jev, s katerim so določena mesta, ki smejo izvajati JavaScript.
 
@@ -2057,6 +2105,18 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 
       Če tega pravilnika ne nastavite, v pravilniku ne bo izjem za seznam blokiranih v pravilniku »URLBlacklist«.</translation>
 <translation id="8176035528522326671">Dovoli poslovnemu uporabniku, da je samo primarni uporabnik z več profili (privzeti način delovanja za uporabnike, ki jih upravlja podjetje)</translation>
+<translation id="8191318459035150777">Konfigurira privzeti URL domače strani za <ph name="PRODUCT_NAME" /> in uporabnikom prepreči, da bi ga spreminjali.
+
+          Domača stran je stran, ki se odpre ob kliku na gumb »Domača stran«. Strani, ki se odprejo ob zagonu, določajo pravilniki RestoreOnStartup.
+
+          Vrsta začetne strani je lahko določena z URL-jem, ki ga navedete tukaj, ali nastavljena na »Nov zavihek s povezavami«. Če izberete »Nov zavihek s povezavami«, ta pravilnik nima vpliva.
+
+          Če omogočite to nastavitev, uporabniki ne bodo mogli spremeniti URL-ja domače strani za <ph name="PRODUCT_NAME" />, lahko pa kot domačo stran še vedno izberejo možnost »Nov zavihek s povezavami«.
+
+          Če tega pravilnika ne nastavite, bo lahko uporabnik sam izbral domačo stran, če ni nastavljen tudi pravilnik HomepageIsNewTabPage.
+
+          Ta pravilnik ni na voljo v primerkih sistema Windows, ki niso 
+          pridruženi domeni Active Directory.</translation>
 <translation id="8197918588508433925">Ta pravilnik določa dovoljene razširitve, ki lahko uporabljajo API Enterprise Platform Keys chrome.enterprise.platformKeysPrivate.challengeUserKey() za potrditev na daljavo. Razširitve, ki lahko uporabljajo API, morate dodati na ta seznam.
 
           Če razširitve ni na seznamu ali seznam ni nastavljen, poziv API-ju ne bo uspel in bo prikazano sporočilo o napaki.</translation>
@@ -2098,6 +2158,11 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 <translation id="8465065632133292531">Parametri za takojšnji URL, ki uporablja POST</translation>
 <translation id="847472800012384958">Nobenemu mestu ne dovoli prikaza pojavnih oken</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
+<translation id="8484458986062090479">Prilagodi seznam vzorcev URL-jev, ki naj jih vedno upodobi gostiteljski brskalnik.
+
+          Če ta pravilnik ni nastavljen, bo za vsa spletna mesta, določena s pravilnikom »ChromeFrameRendererSettings«, uporabljen privzeti upodabljalnik.
+
+          Primere vzorcev si lahko ogledate na https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="8493645415242333585">Onemogoči shranjevanje zgodovine brskalnika</translation>
 <translation id="8499172469244085141">Privzete nastavitve (uporabniki jih lahko preglasijo)</translation>
 <translation id="8501011084242226370">Določi seznam vtičnikov, ki jih lahko uporabnik omogoči ali onemogoči v brskalniku <ph name="PRODUCT_NAME" />.
@@ -2173,6 +2238,8 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
           Če to nastavitev omogočite, bo iskanje CNAME preskočeno in uporabljeno bo vneseno ime strežnika.
 
           Če to nastavitev onemogočite ali jo ne nastavite, bo kanonično ime strežnika določeno z iskanjem CNAME.</translation>
+<translation id="8774131509736383471">Če je ta pravilnik omogočen, <ph name="PRODUCT_NAME" /> brezpogojno poveča prvo okno, prikazano pri prvem izvajanju.
+      Če je ta pravilnik onemogočen ali ni konfiguriran, se na podlagi velikosti zaslona določi, ali se prvo prikazano okno poveča.</translation>
 <translation id="8777120694819070607">Dovoli, da <ph name="PRODUCT_NAME" /> izvaja zastarele vtičnike.
 
       Če to nastavitev omogočite, se zastareli vtičniki uporabljajo kot običajni.

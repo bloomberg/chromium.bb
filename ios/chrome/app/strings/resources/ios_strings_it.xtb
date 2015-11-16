@@ -4,6 +4,7 @@
 <translation id="1008557486741366299">Non adesso</translation>
 <translation id="1047726139967079566">Aggiungi questa pagina ai Preferiti...</translation>
 <translation id="1172898394251786223">Campo successivo</translation>
+<translation id="1625603797851307283">Vuoi che <ph name="PRODUCT_NAME" /> salvi la password di questo sito?</translation>
 <translation id="2320166752086256636">Nascondi tastiera</translation>
 <translation id="2704606927547763573">Copiata</translation>
 <translation id="2747003861858887689">Campo precedente</translation>
@@ -11,11 +12,17 @@
 <translation id="3244271242291266297">MM</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> di <ph name="NUM_SUGGESTIONS" /></translation>
 <translation id="3335947283844343239">Riapri scheda chiusa</translation>
+<translation id="3414292259312108062">Chrome archivierà questa password nelle <ph name="BEGIN_LINK" />password Google salvate<ph name="END_LINK" /> per inserirla automaticamente, in modo da non doverla imparare a memoria.</translation>
 <translation id="385051799172605136">Indietro</translation>
 <translation id="4121993058175073134">Per inviare dati net-export, configura il tuo account email nell'app Impostazioni.</translation>
 <translation id="4728558894243024398">Piattaforma</translation>
+<translation id="5317780077021120954">Salva</translation>
 <translation id="5779929835642192302">Suggerimenti disponibili</translation>
 <translation id="605721222689873409">AA</translation>
+<translation id="6149061208933997199">Utilizza password</translation>
+<translation id="6314335155547195432">Genera password</translation>
+<translation id="6456425917241817154">Password generata da Chrome</translation>
 <translation id="7456847797759667638">Apri percorso...</translation>
 <translation id="7481312909269577407">Avanti</translation>
+<translation id="7961015016161918242">Mai</translation>
 </translationbundle>

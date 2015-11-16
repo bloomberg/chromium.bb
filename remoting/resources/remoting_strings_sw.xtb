@@ -33,7 +33,6 @@ Kwa maelezo kuhusu faragha, tafadhali angalia Sera ya Faragha ya Google (http://
 <translation id="1770394049404108959">Siwezi kuifungua programu.</translation>
 <translation id="177096447311351977">IP ya Kituo cha kiteja: <ph name="CLIENT_GAIA_IDENTIFIER" /> ip='<ph name="CLIENT_IP_ADDRESS_AND_PORT" />' ip ya mpangishi='<ph name="HOST_IP_ADDRESS_AND_PORT" />' kituo='<ph name="CHANNEL_TYPE" />' muunganisho='<ph name="CONNECTION_TYPE" />'.</translation>
 <translation id="1779766957982586368">Funga dirisha</translation>
-<translation id="1818475040640568770">Huna kompyuta zilizosajiliwa.</translation>
 <translation id="1841799852846221389">Inafunga miunganisho ya mbali ya kompyuta hii...</translation>
 <translation id="189172778771606813">Funga droo ya kusogeza</translation>
 <translation id="195619862187186579">Mipangilio ya kibodi</translation>
@@ -87,8 +86,6 @@ Kwa maelezo kuhusu faragha, tafadhali angalia Sera ya Faragha ya Google (http://
 <translation id="2926340305933667314">Imeshindwa kufunga ufikiaji wa mbali kwenye kompyuta hii. Tafadhali jaribu tena baadaye.</translation>
 <translation id="2930135165929238380">Baadhi ya vipengele vinavyohitajika havipo. Tafadhali nenda kwenye chrome://plugins na uhakikishe kipengee cha Native Client kimewashwa.</translation>
 <translation id="2939145106548231838">Thibitisha ili upangishe</translation>
-<translation id="2998137343848432918">• Skrini ya Waliohusika imeongezwa.
-• Imetatua tatizo unapotumia skrini nzima na kibodi inaonekana.</translation>
 <translation id="3020807351229499221">Imeshindwa kusasisha PIN. Tafadhali jaribu tena baadaye.</translation>
 <translation id="3025388528294795783">Ili kutusaidia kutatua tatizo lako, tafadhali tuambie kilichokwenda kombo:</translation>
 <translation id="3027681561976217984">Hali ya kugusa</translation>
@@ -124,6 +121,7 @@ Chromoting</translation>
 <translation id="3950820424414687140">Ingia</translation>
 <translation id="3989511127559254552">Ili kuendelea lazima uipe kompyuta yako ruhusa za ufikiaji zilizoongezwa kwanza. Unahitaji kufanya hili mara moja pekee.</translation>
 <translation id="4006787130661126000">Lazima uwashe miunganisho ya mbali ukitaka kutumia Eneo-kazi la Mbali la Chrome kufikia kompyuta hii.</translation>
+<translation id="405887016757208221">Kompyuta ya mbali imeshindwa kuanzisha kipindi. Tatizo likiendelea tafadhali jaribu kuweka mipangilio ya seva pangishi tena.</translation>
 <translation id="4068946408131579958">Miunganisho yote</translation>
 <translation id="409800995205263688">DOKEZO: Mipangilio ya sera inakubali miunganisho kati ya kompyuta zilizo katika mtandao wako.</translation>
 <translation id="4155497795971509630">Baadhi ya vipengele vinavyohitajika havipo. Tafadhali hakikisha kuwa umesakinisha toleo jipya la programu na ujaribu tena.</translation>
@@ -170,7 +168,6 @@ ya Mbali ya Chrome</translation>
 <translation id="518094545883702183">Maelezo haya yanatumika tu kwa kutambua tatizo unaloripoti, yanapatikana tu kwa mtu anayechunguza ripoti yako, na yanahifadhiwa kwa siku zisizozidi 30.</translation>
 <translation id="5222676887888702881">Ondoka</translation>
 <translation id="5254120496627797685">Kuondoka kwenye ukurasa huu kutakamilisha kipindi chako cha Eneo-kazi la Mbali la Chrome.</translation>
-<translation id="5285241842433869526">Pata maelezo zaidi jinsi ya kusanidi kompyuta kwa upatikanaji wa mbali.</translation>
 <translation id="5308380583665731573">Unganisha</translation>
 <translation id="5363265567587775042">Mwombe mtumiaji wa kompyuta unayotaka kufikia abofye “<ph name="SHARE" />” na akupe nambari ya kuthibitisha ya idhini ya kufikia.</translation>
 <translation id="5379087427956679853">Eneo-kazi la Mbali la Chrome hukuruhusu kushiriki kompyuta yako kwa usalama kwenye Wavuti. Watumiaji wote wawili lazima wawe na programu ya Eneo-kazi la Mbali la Chrome, inayoweza kupatikana katika <ph name="URL" />.</translation>
@@ -258,6 +255,7 @@ ya Mbali ya Chrome</translation>
 <translation id="7869445566579231750">Huna ruhusa ya kuendesha programu hii.</translation>
 <translation id="7948001860594368197">Chaguo za skrini</translation>
 <translation id="7970576581263377361">Uidhinishaji haujafaulu. Tafadhali ingia kwenye Chromium tena.</translation>
+<translation id="7981525049612125370">Kipindi cha mbali kimekwisha muda.</translation>
 <translation id="8041721485428375115">Kwa kupakua Kisakinishaji cha Seva Pangishi ya Programu ya Chrome ya Ufikiaji wa Kompyuta kutoka Mbali, unakubaliana na <ph name="LINK_BEGIN" />Sheria na Masharti ya Google<ph name="LINK_END" />.</translation>
 <translation id="8073845705237259513">Ili kutumia Chrome ya Kompyuta ya Mbali, itabidi uongeze Akaunti ya Google kwenye kifaa chako.</translation>
 <translation id="80739703311984697">Seva pangishi ya mbali inakuhitaji uhalalishe hadi kwenye tovuti nyingine. Ili kuendelea, sharti uipe Chromoting idhini za ziada ili ifikie anwani hii:</translation>

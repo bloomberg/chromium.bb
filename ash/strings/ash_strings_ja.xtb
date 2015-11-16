@@ -26,9 +26,7 @@
 切り替えるには Shift+Alt キーを押します。</translation>
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME" /> へミラーリング</translation>
 <translation id="1923539912171292317">自動クリック</translation>
-<translation id="1950626184269948555">タスク マネージャのショートカットが変更されました。Shift+Esc キーの代わりに検索+Esc キーを使用してください。</translation>
 <translation id="1957803754585243749">0°</translation>
-<translation id="1963814843110128691">$1 を $2 にキャストしています</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" />（USB）</translation>
 <translation id="1987317783729300807">アカウント</translation>
 <translation id="2127372758936585790">低電力の充電器</translation>
@@ -94,6 +92,7 @@
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">ロック</translation>
 <translation id="3799026279081545374">充電器に問題がある可能性があります。お住まいの国に応じて、それぞれのサポート/交換対応窓口までお問い合わせください。米国にお住まいの場合は 866-628-1371 までお電話ください。英国にお住まいの場合は 0800-026-0613 までお電話ください。アイルランドにお住まいの場合は 1-800-832-664 までお電話ください。カナダにお住まいの場合は 866-628-1372 までお電話ください。オーストラリアにお住まいの場合は 1-800-067-460 までお電話ください。</translation>
+<translation id="3866182280516392520">IPv6 アドレス</translation>
 <translation id="3891340733213178823">ログアウトするには、Ctrl+Shift+Q を 2 回押します。</translation>
 <translation id="3892641579809465218">内蔵ディスプレイ</translation>
 <translation id="3963445509666917109">スピーカー（内蔵）</translation>
@@ -152,7 +151,6 @@
 <translation id="6165508094623778733">詳しく見る</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE" />%</translation>
 <translation id="6248847161401822652">終了するには Ctrl+Shift+Q を 2 回押してください。</translation>
-<translation id="6287020362823083378">画面ロックのショートカットが変更されました。Ctrl+Shift+L キーの代わりに検索+L キーを使用してください。</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> を <ph name="ROTATION" /> に回転しました</translation>
 <translation id="6359806961507272919"><ph name="PHONE_NUMBER" /> の SMS</translation>
 <translation id="639644700271529076">CapsLock 機能はオフになっています</translation>
@@ -205,7 +203,6 @@ Alt+ 検索/Shift キーを押すと解除されます。</translation>
 <translation id="8308637677604853869">前のメニュー</translation>
 <translation id="8356164830168736643"><ph name="WINDOW_TITLE" /> を閉じる</translation>
 <translation id="8428213095426709021">設定</translation>
-<translation id="8443356412772935865">画面を $1 にキャストしています</translation>
 <translation id="8456362689280298700">フル充電まで: <ph name="HOUR" />:<ph name="MINUTE" /></translation>
 <translation id="8517041960877371778"><ph name="DEVICE_TYPE" /> は電源がオンでも充電できない可能性があります。</translation>
 <translation id="8528322925433439945">モバイル...</translation>

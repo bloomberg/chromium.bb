@@ -9,6 +9,7 @@
 <translation id="1113869188872983271">&amp;Võta korrastamine tagasi</translation>
 <translation id="111844081046043029">Olete kindel, et soovite sellele lehelt lahkuda?</translation>
 <translation id="112840717907525620">Reegli vahemälu töötab probleemideta</translation>
+<translation id="113188000913989374"><ph name="SITE" /> ütleb:</translation>
 <translation id="1132774398110320017">Chrome'i automaattäite seaded ...</translation>
 <translation id="1146673768181266552">Krahhi ID <ph name="CRASH_ID" /> (<ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="1150979032973867961">Server ei suutnud tõestada, et see on domeen <ph name="DOMAIN" />, arvuti operatsioonisüsteem ei usalda selle turvasertifikaati. Selle põhjuseks võib olla vale seadistus või ründaja, kes on sekkunud teie ühendusse.</translation>
@@ -28,6 +29,10 @@
 <translation id="1519264250979466059">Järgu kuupäev</translation>
 <translation id="1549470594296187301">Selle funktsiooni kasutamiseks peab JavaScript olema lubatud.</translation>
 <translation id="1559528461873125649">Pole sellist faili või kataloogi</translation>
+<translation id="1559572115229829303">&lt;p&gt;Domeeniga <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> ei saa privaatset ühendust luua, kuna seadme kuupäev ja kellaaeg (<ph name="DATE_AND_TIME" />DATE_AND_TIME) on valed.&lt;/p&gt;
+
+          &lt;p&gt;Kohandage kuupäeva ja kellaaega rakenduse &lt;strong&gt;Seaded&lt;/strong&gt; jaotises &lt;strong&gt;Üldine&lt;/strong&gt;.&lt;/p&gt;</translation>
+<translation id="1629803312968146339">Kas soovite, et Chrome salvestaks selle kaardi?</translation>
 <translation id="1640180200866533862">Kasutajareeglid</translation>
 <translation id="1644184664548287040">Võrgu seadistus on sobimatu ja seda ei saa importida.</translation>
 <translation id="1655462015569774233">{1,plural, =1{Server ei suutnud tõestada, et tegemist on domeeniga <ph name="DOMAIN" />, selle turvasertifikaat aegus eile. Selle põhjuseks võib olla vale seadistus või teie ühendust segav ründaja. Teie arvuti kell on praegu seatud kuupäevale <ph name="CURRENT_DATE" />. Kas see on õige? Kui ei ole, seadke süsteemi kell õigeks ja värskendage lehte.}other{Server ei suutnud tõestada, et tegemist on domeeniga <ph name="DOMAIN" />, selle turvasertifikaat aegus # päeva tagasi. Selle põhjuseks võib olla vale seadistus või teie ühendust segav ründaja. Teie arvuti kell on praegu seatud kuupäevale <ph name="CURRENT_DATE" />. Kas see on õige? Kui ei ole, seadke süsteemi kell õigeks ja värskendage lehte.}}</translation>
@@ -94,6 +99,7 @@
 <translation id="2922350208395188000">Serveri sertifikaati ei saa kontrollida.</translation>
 <translation id="2941952326391522266">Server ei suutnud tõestada, et see on domeen <ph name="DOMAIN" />, selle turvasertifikaati pärineb domeenilt <ph name="DOMAIN2" />. Selle põhjuseks võib olla vale seadistus või ründaja, kes on sekkunud teie ühendusse.</translation>
 <translation id="2958431318199492670">Võrgu seadistus ei vasta ONC standardile. On võimalik, et seadistuse mõnd osa ei saa importida.</translation>
+<translation id="2969319727213777354">Turvalise ühenduse loomiseks peab kell olema õigesti seadistatud, kuna sertifikaadid, mida veebisaidid kasutavad enda tuvastamiseks, kehtivad ainult teatud perioodi jooksul. Kuna teie seadme kell on vale, ei saa Chrome neid sertifikaate kinnitada.</translation>
 <translation id="2972581237482394796">&amp;Tee uuesti</translation>
 <translation id="3010559122411665027">Loendi kirje „<ph name="ENTRY_INDEX" />”: <ph name="ERROR" /></translation>
 <translation id="3024663005179499861">Reegli tüüp on vale</translation>
@@ -146,11 +152,14 @@
 <translation id="4117700440116928470">Reegli ulatust ei toetata.</translation>
 <translation id="4120075327926916474">Kas soovite, et Chrome salvestaks krediitkaarditeabe veebivormide täitmiseks?</translation>
 <translation id="4148925816941278100">American Express</translation>
+<translation id="4169947484918424451">Kas soovite, et Chromium salvestaks selle kaardi?</translation>
 <translation id="4171400957073367226">Sobimatu kinnitusallkiri</translation>
+<translation id="4176463684765177261">Keelatud</translation>
 <translation id="4196861286325780578">&amp;Teisalda uuesti</translation>
 <translation id="4220128509585149162">Krahhid</translation>
 <translation id="4250680216510889253">Ei</translation>
 <translation id="4258748452823770588">Sobimatu allkiri</translation>
+<translation id="4268298190799576220">Chromium ei saanud praegu teie kaarti kinnitada. Proovige hiljem uuesti.</translation>
 <translation id="4269787794583293679">(Kasutajanimi puudub)</translation>
 <translation id="4300246636397505754">Vanema soovitused</translation>
 <translation id="4325863107915753736">Artiklit ei leitud</translation>
@@ -204,6 +213,7 @@
 <translation id="5523118979700054094">Reegli nimi</translation>
 <translation id="552553974213252141">Kas tekst ekstraktiti õigesti?</translation>
 <translation id="5540224163453853">Taotletud artiklit ei õnnestunud leida.</translation>
+<translation id="5544037170328430102">Manustatud leht saidil <ph name="SITE" /> ütleb:</translation>
 <translation id="5556459405103347317">Laadi uuesti</translation>
 <translation id="5565735124758917034">Aktiivne</translation>
 <translation id="560412284261940334">Haldust ei toetata</translation>
@@ -213,15 +223,18 @@
 <translation id="5813119285467412249">&amp;Lisa uuesti</translation>
 <translation id="5872918882028971132">Vanema soovitused</translation>
 <translation id="59107663811261420">Google Payments ei toeta selle kaupmehe puhul seda tüüpi kaarti. Valige teine kaart.</translation>
+<translation id="59174027418879706">Lubatud</translation>
 <translation id="5975083100439434680">Suumib välja</translation>
 <translation id="5989320800837274978">Määratud ei ole fikseeritud puhverservereid ega pac-skriptiga URL-i.</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6040143037577758943">Sule</translation>
+<translation id="604124094241169006">Automaatne</translation>
 <translation id="6060685159320643512">Ettevaatust, need katsed võivad hammustada.</translation>
 <translation id="6099520380851856040">Ilmnes <ph name="CRASH_TIME" /></translation>
 <translation id="6151417162996330722">Serveri sertifikaadi kehtivusaeg on liiga pikk.</translation>
 <translation id="6154808779448689242">Tagastatud reegli luba ei kattu praeguse loaga</translation>
 <translation id="6165508094623778733">Lisateave</translation>
+<translation id="6218753634732582820">Kas eemaldada Chromiumist aadress?</translation>
 <translation id="6259156558325130047">&amp;Korrasta uuesti</translation>
 <translation id="6263376278284652872">Domeeni <ph name="DOMAIN" /> järjehoidjad</translation>
 <translation id="6282194474023008486">Sihtnumber</translation>
@@ -239,6 +252,7 @@
 <translation id="6628463337424475685"><ph name="ENGINE" />'i otsing</translation>
 <translation id="6644283850729428850">See reegel on aegunud.</translation>
 <translation id="6646897916597483132">Sisestage 4-kohaline CVC kaardi tagaküljelt</translation>
+<translation id="6671697161687535275">Kas eemaldada Chromiumist vormi soovitus?</translation>
 <translation id="674375294223700098">Serveri sertifikaadi tundmatu viga.</translation>
 <translation id="6753269504797312559">Reegli väärtus</translation>
 <translation id="6831043979455480757">Tõlgi</translation>
@@ -272,6 +286,7 @@
 <translation id="7378627244592794276">Ei</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7419106976560586862">Profiili tee</translation>
+<translation id="7424977062513257142">Selle veebilehe manustatud leht ütleb:</translation>
 <translation id="7441627299479586546">Reegli objekt on vale</translation>
 <translation id="7485870689360869515">Andmeid ei leitud.</translation>
 <translation id="7537536606612762813">Kohustuslik</translation>
@@ -282,6 +297,7 @@
 <translation id="7592362899630581445">Serveri sertifikaat rikub nime piiranguid.</translation>
 <translation id="7600965453749440009">Ära kunagi tõlgi: <ph name="LANGUAGE" /></translation>
 <translation id="7610193165460212391">Väärtus on vahemikust (<ph name="VALUE" />) väljaspool.</translation>
+<translation id="7637571805876720304">Kas eemaldada Chromiumist krediitkaart?</translation>
 <translation id="7674629440242451245">Kas olete huvitatud Chrome'i uutest lahedatest funktsioonidest? Proovige meie arenduskanalit aadressil chrome.com/beta.</translation>
 <translation id="7752995774971033316">Haldamata</translation>
 <translation id="7761701407923456692">Serveri sertifikaat ei vasta URL-ile.</translation>
@@ -325,6 +341,7 @@
 <translation id="8725066075913043281">Proovi uuesti</translation>
 <translation id="8738058698779197622">Turvalise ühenduse loomiseks peab kell olema õigesti seadistatud. See on nii, kuna sertifikaadid, mida veebisaidid kasutavad enda tuvastamiseks, kehtivad ainult teatud perioodi jooksul. Kuna teie seadme kell on vale, ei saa Chromium neid sertifikaate kinnitada.</translation>
 <translation id="8790007591277257123">&amp;Kustuta uuesti</translation>
+<translation id="8798099450830957504">Vaikimisi</translation>
 <translation id="8804164990146287819">Privaatsuseeskirjad</translation>
 <translation id="8820817407110198400">Järjehoidjad</translation>
 <translation id="8824019021993735287">Chrome ei saanud praegu teie kaarti kinnitada. Proovige hiljem uuesti.</translation>
@@ -332,6 +349,7 @@
 <translation id="883848425547221593">Muud järjehoidjad</translation>
 <translation id="884923133447025588">Tühistusmehhanismi ei leitud.</translation>
 <translation id="8866481888320382733">Reegli seadete sõelumisel ilmnes viga</translation>
+<translation id="8866959479196209191">Leht ütleb:</translation>
 <translation id="8876793034577346603">Võrgu seadistust ei õnnestunud sõeluda.</translation>
 <translation id="8891727572606052622">Kehtetu puhverserveri režiim.</translation>
 <translation id="889901481107108152">Kahjuks ei ole see eksperiment teie platvormil saadaval.</translation>

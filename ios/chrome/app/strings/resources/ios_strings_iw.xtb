@@ -4,6 +4,7 @@
 <translation id="1008557486741366299">לא עכשיו</translation>
 <translation id="1047726139967079566">הוסף דף זה לסימניות...</translation>
 <translation id="1172898394251786223">השדה הבא</translation>
+<translation id="1625603797851307283">אתה רוצה <ph name="PRODUCT_NAME" /> לשמור את הסיסמה עבור אתר זה?</translation>
 <translation id="2320166752086256636">הסתר מקלדת</translation>
 <translation id="2704606927547763573">הועתק</translation>
 <translation id="2747003861858887689">השדה הקודם</translation>
@@ -11,11 +12,17 @@
 <translation id="3244271242291266297">MM</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> מתוך <ph name="NUM_SUGGESTIONS" /></translation>
 <translation id="3335947283844343239">פתח מחדש כרטיסייה שנסגרה</translation>
+<translation id="3414292259312108062">‏Chrome יאחסן את הסיסמה ב<ph name="BEGIN_LINK" />סיסמאות Google השמורות<ph name="END_LINK" /> ויזין אותה באופן אוטומטי כדי שלא תצטרך לזכור אותה.</translation>
 <translation id="385051799172605136">חזור</translation>
 <translation id="4121993058175073134">כדי לשלוח נתוני ייצוא ברשת, הגדר את חשבון האימייל שלך ביישום 'הגדרות'.</translation>
 <translation id="4728558894243024398">פלטפורמה</translation>
+<translation id="5317780077021120954">שמור</translation>
 <translation id="5779929835642192302">הצעות זמינות</translation>
 <translation id="605721222689873409">YY</translation>
+<translation id="6149061208933997199">השתמש בסיסמה</translation>
+<translation id="6314335155547195432">צור סיסמה</translation>
+<translation id="6456425917241817154">‏סיסמה שנוצרה על ידי Chrome</translation>
 <translation id="7456847797759667638">פתח מיקום...</translation>
 <translation id="7481312909269577407">קדימה</translation>
+<translation id="7961015016161918242">אף פעם</translation>
 </translationbundle>

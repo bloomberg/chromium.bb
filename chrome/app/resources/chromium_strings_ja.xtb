@@ -32,6 +32,7 @@
 <translation id="1967743265616885482">同じ名前のモジュールは Chromium と競合することがわかっています。</translation>
 <translation id="2077129598763517140">ハードウェア アクセラレーションが使用可能な場合は使用する</translation>
 <translation id="2097986737970966220">デスクトップで Chromium を開く</translation>
+<translation id="2117181891440368863">Chromium で <ph name="ISSUER" /> がこのウェブサイトの証明書を発行したことを確認しました。証明書の透明性に関する情報がサーバーから提供されましたが無効でした。</translation>
 <translation id="2119636228670142020">Chromium OS について(&amp;C)</translation>
 <translation id="2158734852934720349">Chromium OS オープンソース ライセンス</translation>
 <translation id="2233513990531887259">Chromium 没入モードで再起動</translation>
@@ -46,13 +47,11 @@
 <translation id="2558641060352364164">このサイトで使用されている Chromium Frame プラグインは、間もなくサポートが終了します。プラグインをアンインストールし、最新のブラウザにアップグレードしてください。</translation>
 <translation id="2572494885440352020">Chromium Helper</translation>
 <translation id="2602806952220118310">Chromium - お知らせ</translation>
-<translation id="2615699638672665509">このパソコンは、ハードウェアのサポートが終了しているため、まもなく Chromium アップデートの受信を停止します。</translation>
 <translation id="2636877269779209383">このサイトとカメラを共有するには、Chromium にカメラへのアクセスを許可する必要があります。</translation>
 <translation id="2648074677641340862">インストール中にオペレーティング システム エラーが発生しました。Chromium をダウンロードし直してください。</translation>
 <translation id="2673087257647337101">Chromium を再起動して更新を完了してください</translation>
 <translation id="2685838254101182273">Chromium はアップデートの提供を中止しています。お使いのバージョンのオペレーティング システムには対応していません。</translation>
 <translation id="2705212601509139398">このサイトで使用されている Chromium Frame プラグインは、間もなくサポートが終了します。プラグインをアンインストールし、互換性のあるブラウザをダウンロードしてください。</translation>
-<translation id="2732467638532545152">ご使用のパソコンは、このウェブサイトのセキュリティ証明書を処理できない旧バージョンの Microsoft Windows を実行しています。このため Chromium では、証明書が <ph name="SITE" /> から発行されたものか、それとも <ph name="SITE" /> になりすましたネットワーク上の別のユーザーによって発行されたものかを判別することができません。パソコンを新しいバージョンの Windows に更新してください。</translation>
 <translation id="2770231113462710648">既定のブラウザを変更:</translation>
 <translation id="2801146392936645542"><ph name="FILE_NAME" /> は不正なファイルです。Chromium はこのファイルをブロックしました。</translation>
 <translation id="2847479871509788944">Chromium から削除...</translation>
@@ -85,8 +84,6 @@
 <translation id="3582788516608077514">Chromium を更新しています...</translation>
 <translation id="358997566136285270">Chromium ロゴ</translation>
 <translation id="3595526210123705352">Windows 8 モードで再起動すると、Chromium アプリが終了して再起動します。</translation>
-<translation id="3656661827369545115">パソコンの起動時に Chromium を自動的に起動する</translation>
-<translation id="3736987306260231966">パソコンがインターネットに接続されていないため、Chromium ではウェブページを表示できません。</translation>
 <translation id="3738139272394829648">タップして検索</translation>
 <translation id="3744899669254331632"><ph name="SITE" /> から送信された暗号化済みの認証情報を Chromium で処理できないため、現在このウェブサイトにアクセスできません。通常、ネットワーク エラーやネットワークへの攻撃は一時的なものです。しばらくするとページにアクセスできるようになります。</translation>
 <translation id="3748537968684000502">Chromium の安全なページを表示しています。</translation>
@@ -107,7 +104,6 @@
 <translation id="4285930937574705105">原因不明のエラーによりインストールが失敗しました。実行中の Chromium を終了してからもう一度お試しください。</translation>
 <translation id="4330585738697551178">このモジュールは Chromium と競合することがわかっています。</translation>
 <translation id="4423735387467980091">Chromium の設定</translation>
-<translation id="442817494342774222">Chromium は、パソコン起動時に自動的に起動されるよう設定されています。</translation>
 <translation id="4458285410772214805">変更内容を反映するには、一度ログアウトして、もう一度ログインしてください。</translation>
 <translation id="4488676065623537541">お支払い情報を Chromium に保存しました。</translation>
 <translation id="4559775032954821361">このオプションを無効にするには:
@@ -178,6 +174,7 @@
 <translation id="6734080038664603509">Chromium を更新(&amp;C)</translation>
 <translation id="6757767188268205357">今後は表示しない</translation>
 <translation id="6810143991807788455">現在の設定を送信して Chromium の品質向上にご協力ください</translation>
+<translation id="6838494703713445896">Chromium で <ph name="ISSUER" /> がこのウェブサイトの証明書を発行したことを確認しました。証明書の透明性に関する有効な情報がサーバーから提供されました。</translation>
 <translation id="6883876366448858277">機能は、単語とその周辺のコンテキストを Google 検索に送信し、定義、画像などの検索結果を返します。</translation>
 <translation id="6893813176749746474">Chromium が更新されましたが、30 日以上使用されていません。</translation>
 <translation id="6900895776413482243">Chromium 没入モードモードで再起動すると、Chromium アプリが終了して再起動します。</translation>
@@ -190,6 +187,7 @@
 <translation id="7066436765290594559">Chromium OS はデータを同期できませんでした。同期パスフレーズを更新してください。</translation>
 <translation id="7138853919861947730">Chromium は、より快適なブラウジングを提供する目的でウェブ サービスを使用することがあります。</translation>
 <translation id="7162152143154757523">Chromium ではブラウザに入力された内容を Google のサーバーに送信することで高度なスペルチェックを実現し、Google 検索で使用されるスペルチェック テクノロジーを活用できます。</translation>
+<translation id="7178626992616222740">Chromium で <ph name="ISSUER" /> がこのウェブサイトの証明書を発行したことを確認しました。証明書の透明性に関する情報がサーバーから提供されましたが、証明書の透明性ログを認識できませんでした。</translation>
 <translation id="7196020411877309443">このウィンドウが表示される理由</translation>
 <translation id="7205698830395646142">Chromium メニューで非表示</translation>
 <translation id="7211828883345145708">Chromium のデバッグに役立つ追加のキーボード ショートカットを有効にします。</translation>
@@ -215,13 +213,13 @@
 <translation id="7723128346970903111">有効な場合は、iframe を使った Chromium ログインフローが使用されます。それ以外の場合は、WebView を使ったフローが使用されます。</translation>
 <translation id="7729447699958282447">お使いのドメインでは同期を利用できないため、Chromium はデータを同期できませんでした。</translation>
 <translation id="7747138024166251722">インストーラーの一時ディレクトリを作成できませんでした。ディスクの空き領域とソフトウェアのインストール許可があることを確認してください。</translation>
+<translation id="7918535023914021398">Chromium で <ph name="ISSUER" /> がこのウェブサイトの証明書を発行したことを確認しました。証明書の透明性に関する情報はサーバーから提供されませんでした。</translation>
 <translation id="7937630085815544518">Chromium に <ph name="USER_EMAIL_ADDRESS" /> としてログインしていました。再度ログインするには同じアカウントを使用してください。</translation>
 <translation id="7962572577636132072">Chromium は自動的に更新されるため、常に最新版をご利用になれます。</translation>
 <translation id="7979877361127045932">Chromium メニューで非表示</translation>
 <translation id="8030318113982266900">デバイスを <ph name="CHANNEL_NAME" /> チャンネルに更新しています...</translation>
 <translation id="8033665941300843262">このサイトと制限付き機能を共有するには、Chromium に制限付き機能へのアクセスを許可する必要があります。</translation>
 <translation id="805745970029938373">Chromium のアプリ、拡張機能、ウェブサイトからの通知がすべてここに表示されます。</translation>
-<translation id="811857857463334932">このパソコンは、ハードウェアのサポートが終了しているため、今後 Chromium アップデートを受信することはありません。</translation>
 <translation id="8134284582177628525">このパソコンを <ph name="PROFILE_NAME" /> さんと共有する場合は、個別に閲覧できるように、ご自分を Chromium に追加してください。そうしない場合は、他のユーザーの Google アカウントの接続を解除してください。</translation>
 <translation id="8187289872471304532">このオプションを無効にするには:
           [アプリケーション] &gt; [システム環境設定] &gt; [ネットワーク] &gt; [詳細] &gt; [プロキシ] の順に移動して、

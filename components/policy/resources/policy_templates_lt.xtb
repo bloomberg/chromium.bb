@@ -64,6 +64,9 @@
 
           Į šią politiką atsižvelgiama, tik jei įgalinta politika „Numatytasis paieškos teikėjas įgalintas“.</translation>
 <translation id="1265053460044691532">Apribokite laiką, per kurį per SAML autentifikuotas naudotojas gali prisijungti neprisijungęs</translation>
+<translation id="1291880496936992484">Įspėjimas: RC4 bus visiškai pašalinta iš „<ph name="PRODUCT_NAME" />“ įdiegus 52 versiją (maždaug 2016 m. rugsėjo mėn.) ir ši politika nebegalios.
+
+      Jei politika nenustatyta arba nustatyta į „false“, TLS RC4 šifruotieji programų komplektai nebus įgalinti. Priešingu atveju ją galima nustatyti į „true“, kad būtų išsaugotas suderinamumas su pasenusiu serveriu. Tai laikina priemonė; serverį reikia iš naujo sukonfigūruoti.</translation>
 <translation id="1297182715641689552">Naudoti .pac tarpinio serverio scenarijų</translation>
 <translation id="1300635491585192248">Nuspėti tinklo veiksmus bet kuriame tinkle, kuris nėra
           korinis tinklas</translation>
@@ -526,6 +529,9 @@
       Jei įgalinsite arba išjungsite šį nustatymą, naudotojai negalės keisti arba nepaisyti „<ph name="PRODUCT_NAME" />“ nustatymo „Įgalinti apsaugą nuo sukčiavimo ir kenkėjiškų programų“.
 
       Jei ši politika nenustatyta, šis nustatymas bus įgalintas, bet naudotojas galės jį keisti.</translation>
+<translation id="2801230735743888564">Leidžiama naudotojams žaisti dinozaurų Velykų kiaušinių žaidimą, kai įrenginys neprijungtas prie interneto.
+
+      Jei ši politika nustatyta į „False“, naudotojai negali žaisti dinozaurų Velykų kiaušinių žaidimo, kai įrenginys neprijungtas prie interneto. Jei šis nustatymas nustatytas į „True“, naudotojams leidžiama žaisti dinozaurų žaidimą. Jei ši politika nenustatyta, naudotojams neleidžiama žaisti dinozaurų Velykų kiaušinių žaidimo užregistruotoje „Chrome“ OS, bet leidžiama žaisti kitomis aplinkybėmis.</translation>
 <translation id="2805707493867224476">Leisti visose svetainėse rodyti iššokančiuosius langus</translation>
 <translation id="2808013382476173118">Įgalinamas STUN serverių naudojimas, kai nuotolinės programos bando užmegzti ryšį su šiuo įrenginiu.
 
@@ -809,6 +815,13 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
       Jei šio nustatymo neleisite, „<ph name="PRODUCT_NAME" />“ niekada netikrins, ar ji yra numatytoji naršyklė, o naudotojams bus neleidžiama naudoti šios parinkties nustatymo valdiklių.
 
       Nenustačius šio nustatymo „<ph name="PRODUCT_NAME" />“ leis naudotojui valdyti numatytosios naršyklės parinktis ir nurodyti, ar turi būti pateikti naudotojui skirti pranešimai, jei naršyklė nėra numatytoji.</translation>
+<translation id="3800626789999016379">Konfigūruojamas katalogas, kurį „<ph name="PRODUCT_NAME" />“ naudos failams atsisiųsti.
+
+      Jei nustatysite šią politiką, „<ph name="PRODUCT_NAME" />“ naudos nurodytą katalogą, nesvarbu, ar naudotojas jį nurodė, ar įgalino žymą kiekvieną kartą raginti nurodyti atsisiuntimo vietą.
+
+      Apsilankykite adresu https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables. Čia rasite kintamųjų, kuriuos galima naudoti, sąrašą.
+
+      Jei ši politika nenustatyta, bus naudojamas numatytasis atsisiuntimo katalogas ir naudotojas galės jį pakeisti.</translation>
 <translation id="3805659594028420438">Įgalinti TLS domenų sertifikatų plėtinį (nebenaudojamas)</translation>
 <translation id="3806576699227917885">Leisti paleisti garsą.
 
@@ -949,6 +962,13 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
           Šios politikos laikomasi, tik jei įgalinta politika „DefaultSearchProviderEnabled“.</translation>
 <translation id="4320376026953250541">„Microsoft Windows XP“ SP2 arba naujesnė versija</translation>
 <translation id="4325690621216251241">Pridėti atsijungimo mygtuką prie sistemos dėklo</translation>
+<translation id="4349746760316962317">Konfigūruojamas katalogas, kurį „<ph name="PRODUCT_NAME" />“ naudos talpyklos failams saugoti diske.
+
+      Jei nustatysite šią politiką, „<ph name="PRODUCT_NAME" />“ naudos nurodytą katalogą, nesvarbu, ar naudotojas nurodys žymą „--disk-cache-dir“, ar ne.
+
+      Apsilankykite adresu https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables. Čia rasite kintamųjų, kuriuos galima naudoti, sąrašą.
+
+      Jei ši politika nenustatyta, bus naudojamas numatytasis talpyklos katalogas, o naudotojas galės jo nepaisyti nurodydamas komandos eilutės žymą „--disk-cache-dir“.</translation>
 <translation id="436581050240847513">Pateikti įrenginio tinklo sąsajų ataskaitą</translation>
 <translation id="4372704773119750918">Neleisti įmonės naudotojui būti kelių profilių dalimi (pirminiu ar antriniu naudotoju)</translation>
 <translation id="4377599627073874279">Leisti visose svetainėse rodyti visus vaizdus</translation>
@@ -1032,6 +1052,11 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
 <translation id="4665897631924472251">Plėtinių valdymo nustatymai</translation>
 <translation id="4668325077104657568">Numatytasis vaizdų nustatymas</translation>
 <translation id="467236746355332046">Palaikomos funkcijos:</translation>
+<translation id="4674167212832291997">Tinkinkite URL šablonų, kurie visada turėtų būti pateikti naudojant „<ph name="PRODUCT_FRAME_NAME" />“, sąrašą.
+
+          Nenustačius šios politikos visose svetainėse bus naudojamas numatytasis pateikėjas, kaip nurodyta politikoje „ChromeFrameRendererSettings“.
+
+          Šablonų pavyzdžių pateikiama apsilankius adresu https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="467449052039111439">Atidaryti URL sąrašą</translation>
 <translation id="4680961954980851756">Įgalinti automatinį pildymą</translation>
 <translation id="4723829699367336876">Įgalinti užkardos apėjimą iš nuotolinės prieigos kliento programos</translation>
@@ -1133,6 +1158,14 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
           Kai ši politika nenustatyta, atliekamas nustatytasis veiksmas – laikinas sustabdymas.
 
           Jei veiksmas yra laikinas sustabdymas, „<ph name="PRODUCT_OS_NAME" />“ gali būti atskirai sukonfigūruota užrakinti ekraną prieš laikiną sustabdymą arba jo neužrakinti.</translation>
+<translation id="5111712393799006197">Konfigūruojamas katalogas, kurį „<ph name="PRODUCT_NAME" />“ naudos naudotojo duomenims saugoti.
+
+      Jei nustatysite šią politiką, „<ph name="PRODUCT_NAME" />“ naudos nurodytą katalogą, nesvarbu, ar naudotojas nurodė žymą „--user-data-dir“, ar ne.
+
+      Apsilankykite adresu ttps://www.chromium.org/administrators/policy-list-3/user-data-directory-variables. Čia rasite kintamųjų, kuriuos galima naudoti, sąrašą.
+
+      Jei ši politika nenustatyta, bus naudojamas numatytasis profilio kelias ir naudotojas galės jo nepaisyti naudodamas komandos eilutės žymą „--user-data-dir“.</translation>
+<translation id="5130288486815037971">Ar įgalinti RC4 šifruotieji programų komplektai TLS</translation>
 <translation id="5141670636904227950">Nustatyti numatytąjį ekrano didinimo tipą, kuris įgalintas prisijungimo ekrane</translation>
 <translation id="5142301680741828703">„<ph name="PRODUCT_FRAME_NAME" />“ visada pateikti šiuos URL šablonus</translation>
 <translation id="5148753489738115745">Leidžia nurodyti papildomus parametrus, naudojamus, kai „<ph name="PRODUCT_FRAME_NAME" />“ paleidžia „<ph name="PRODUCT_NAME" />“.
@@ -1326,6 +1359,20 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
 <translation id="5809728392451418079">Nustatyti įrenginio vietinių paskyrų pateikiamą pavadinimą</translation>
 <translation id="5814301096961727113">Nustatyti numatytąją žodinių atsiliepimų prisijungimo ekrane būklę</translation>
 <translation id="5815129011704381141">Po atnaujinimo automatiškai įkelti operacinę sistemą iš naujo</translation>
+<translation id="5815353477778354428">Konfigūruojamas katalogas, kurį „<ph name="PRODUCT_FRAME_NAME" />“ naudos naudotojo duomenims saugoti.
+
+      Jei nustatysite šią politiką, „<ph name="PRODUCT_FRAME_NAME" />“ naudos nurodytą katalogą.
+
+      Apsilankykite adresu https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables. Čia rasite kintamųjų, kuriuos galima naudoti, sąrašą.
+
+      Jei šis nustatymas paliekamas nenustatytas, naudojamas numatytasis profilio katalogas.</translation>
+<translation id="5819660021114910752">Nurodoma laiko juosta, kuri bus naudojama įrenginyje. Naudotojai gali nepaisyti dabartinės sesijos nurodytos laiko juostos. Tačiau atsijungus, ji nustatoma į nurodytą laiko juostą. Jei pateikiama netinkama vertė, politika vis tiek suaktyvinama vietoj to naudojant GMT. Jei pateikiama tuščia eilutė, politikos nepaisoma.
+
+      Jei ši politika nenaudojama, šiuo metu suaktyvinta laiko juosta ir toliau bus naudojama, bet naudotojai galės pakeisti laiko juostą, o atliktas pakeitimas bus nuolatinis. Todėl vienam naudotojui pakeitus nustatymą, bus paveiktas prisijungimo ekranas ir visų kitų naudotojų nustatymai.
+
+      Naujuose įrenginiuose nustatyta JAV / Ramiojo vandenyno laiko juosta.
+
+      Vertės formatas atitinka laiko juostų pavadinimus, nurodytus duomenų bazėje „IANA Time Zone Database“ (žr. „https://en.wikipedia.org/wiki/Tz_database“). Dauguma laiko juostų galima pasiekti nurodžius žemyną / didelį miestą arba vandenyną / didelį miestą.</translation>
 <translation id="5826047473100157858">Nurodoma, ar naudotojas (-a) gali atidaryti puslapius inkognito režimu „<ph name="PRODUCT_NAME" />“.
 
       Jei pasirinkta „Įgalinta“ arba politika nenustatyta, puslapius galima atidaryti inkognito režimu.
@@ -1423,6 +1470,7 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
           Rekomenduojamas būdas užrakinti ekraną, kai naudotojas tampa neaktyvus, – įgalinti ekrano užraktą, kai įrenginys laikinai sustabdomas, ir nustatyti, kad „<ph name="PRODUCT_OS_NAME" />“ kad laikinai sustabdytų įrenginį po neaktyvumo laikotarpio. Ši politika turėtų būti naudojama tik norint, kad ekrano užraktas būtų suaktyvintas žymiai anksčiau nei laikinas sustabdymas arba kai įrenginys neturi būti laikinai sustabdomas po neaktyvumo laikotarpio.
 
           Politikos vertė turėtų būti nurodyta milisekundėmis. Vertės apribojamos, kad būtų mažesnės nei neaktyvumo laikotarpis.</translation>
+<translation id="6111936128861357925">Leisti dinozaurų Velykų kiaušinių žaidimą</translation>
 <translation id="6114416803310251055">nepatvirtinta</translation>
 <translation id="6145799962557135888">Leidžiama nurodyti URL šablonų, nurodančių svetaines, kuriose leidžiama paleisti „JavaScript“, sąrašą.
 
@@ -2059,6 +2107,18 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
 
       Jei ši politika nenustatoma, nebus jokių politikos „URLBlacklist“ juodojo sąrašo išimčių.</translation>
 <translation id="8176035528522326671">Leisti įmonei būti tik pirminiu kelių profilių naudotoju (numatytoji elgsena įmonių valdomiems naudotojams)</translation>
+<translation id="8191318459035150777">Konfigūruojamas „<ph name="PRODUCT_NAME" />“ numatytojo pagrindinio puslapio URL ir neleidžiama naudotojams jo keisti.
+
+          Pagrindinis puslapis – tai puslapis, kuris atidaromas spustelėjus pagrindinio puslapio mygtuką. Puslapiai, kurie atidaromi paleidus, valdomi taikant politiką „RestoreOnStartup“.
+
+          Pagrindinio puslapio tipas gali būti nustatytas kaip URL, kurį čia nurodote, arba naujo skirtuko puslapis. Jei pasirinksite naujo skirtuko puslapį, ši politika neįsigalios.
+
+          Jei įgalinsite šį nustatymą, naudotojai negalės keisti pagrindinio puslapio URL sistemoje „<ph name="PRODUCT_NAME" />“, bet vis tiek galės pasirinkti naujo skirtuko puslapį kaip pagrindinį puslapį.
+
+          Nenustačius šios politikos naudotojai galės patys pasirinkti savo pagrindinį puslapį, jei „HomepageIsNewTabPage“ taip pat nebus nustatyta.
+
+          Ši politika nepasiekiama „Windows“ objektuose, kurie nesusieti
+          su aktyvaus katalogo domenu.</translation>
 <translation id="8197918588508433925">Šioje politikoje nustatomi plėtiniai, kuriems leidžiama naudoti įmonės platformos raktų API „chrome.enterprise.platformKeysPrivate.challengeUserKey()“ patvirtinant nuotoliniu būdu. Plėtiniai turi būti pridėti prie šio sąrašo, kad galėtų naudoti API.
 
 Jei plėtinio nėra sąraše arba sąrašas nenustatytas, kreipiantis į API įvyks klaida ir bus pateiktas jos kodas.</translation>
@@ -2100,6 +2160,11 @@ Jei plėtinio nėra sąraše arba sąrašas nenustatytas, kreipiantis į API įv
 <translation id="8465065632133292531">Intuityviosios paieškos URL parametrai, kuriuose naudojama POST</translation>
 <translation id="847472800012384958">Neleisti jokioje svetainėje rodyti iššokančiųjų langų</translation>
 <translation id="8477885780684655676">1.0 versijos TLS</translation>
+<translation id="8484458986062090479">Tinkinkite URL šablonų, kuriuos prieglobos naršyklė visada turėtų pateikti, sąrašą.
+
+          Jei ši politika nenustatyta, numatytasis pateikėjas naudojamas visose svetainėse, kaip nurodyta politikoje „ChromeFrameRendererSettings“.
+
+          Šablonų pavyzdžių galite rasti apsilankę adresu https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="8493645415242333585">Neleisti išsaugoti naršyklės istorijos</translation>
 <translation id="8499172469244085141">Numatytieji nustatymai (naudotojai gali nepaisyti)</translation>
 <translation id="8501011084242226370">Nurodomi papildiniai, kuriuos naudotojai gali įgalinti arba išjungti „<ph name="PRODUCT_NAME" />“.
@@ -2175,6 +2240,8 @@ Jei plėtinio nėra sąraše arba sąrašas nenustatytas, kreipiantis į API įv
           Jei įgalinsite šį nustatymą, CNAME paieška bus praleista ir bus naudojamas įvestas serverio pavadinimas.
 
           Jei neleisite šio nustatymo arba jo nenustatysite, kanoninis serverio pavadinimas bus nustatytas naudojant CNAME paiešką.</translation>
+<translation id="8774131509736383471">Jei ši politika nustatyta į „true“, „<ph name="PRODUCT_NAME" />“ besąlygiškai padidins pirmą langą, rodomą pirmą kartą paleidus programą.
+      Jei ši politika nustatyta į „false“ arba yra nesukonfigūruota, sprendimas, ar bus padidintas pirmas rodomas langas, bus priimtas atsižvelgiant į ekrano dydį.</translation>
 <translation id="8777120694819070607">Leidžiama „<ph name="PRODUCT_NAME" />“ paleisti pasenusius papildinius.
 
       Jei įgalinsite šį nustatymą, pasenę papildiniai bus naudojami kaip įprasti.

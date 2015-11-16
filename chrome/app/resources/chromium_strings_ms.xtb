@@ -47,13 +47,11 @@
 <translation id="2558641060352364164">Tapak ini menggunakan pemalam Chromium Frame yang tidak akan disokong tidak lama lagi. Sila nyahpasangnya dan naik taraf kepada penyemak imbas moden.</translation>
 <translation id="2572494885440352020">Pembantu Chromium</translation>
 <translation id="2602806952220118310">Chromium - Pemberitahuan</translation>
-<translation id="2615699638672665509">Komputer ini akan berhenti menerima kemas kini Chromium kerana perkakasan komputer ini tidak lagi disokong.</translation>
 <translation id="2636877269779209383">Chromium memerlukan akses kamera untuk mengongsinya dengan tapak ini.</translation>
 <translation id="2648074677641340862">Ralat sistem pengendalian berlaku semasa pemasangan. Sila muat turun Chromium semula.</translation>
 <translation id="2673087257647337101">Hampir terkini! Lancarkan semula Chromium untuk selesai mengemas kini.</translation>
 <translation id="2685838254101182273">Chromium telah berhenti mengemas kini dan tidak lagi menyokong versi sistem pengendalian anda ini.</translation>
 <translation id="2705212601509139398">Tapak ini menggunakan pemalam Chromium Frame yang tidak akan disokong tidak lama lagi. Sila nyahpasangnya dan muat turun penyemak imbas yang serasi.</translation>
-<translation id="2732467638532545152">Komputer anda menjalankan versi lama Microsoft Windows yang tidak dapat memproses sijil keselamatan tapak web ini. Disebabkan masalah ini, Chromium tidak dapat memberitahu sama ada sijil berasal dari <ph name="SITE" /> atau daripada seseorang pada rangkaian anda yang berpura-pura menjadi <ph name="SITE" />. Sila kemas kini komputer anda kepada versi Windows yang lebih baharu.</translation>
 <translation id="2770231113462710648">Tukar penyemak imbas lalai kepada:</translation>
 <translation id="2801146392936645542"><ph name="FILE_NAME" /> bersifat hasad dan Chromium telah menyekatnya.</translation>
 <translation id="2847479871509788944">Alih keluar daripada Chromium...</translation>
@@ -86,8 +84,6 @@ dan salah. Hal ini boleh berlaku apabila penyerang sedang cuba menyamar sebagai 
 <translation id="3582788516608077514">Mengemas kini Chromium...</translation>
 <translation id="358997566136285270">Logo Chromium</translation>
 <translation id="3595526210123705352">Melancarkan semula dalam mod Windows 8 akan menutup dan melancarkan semula apl Chromium anda.</translation>
-<translation id="3656661827369545115">Lancarkan Chromium secara automatik apabila komputer anda bermula</translation>
-<translation id="3736987306260231966">Chromium tidak dapat memaparkan halaman web kerana komputer anda tidak disambungkan ke Internet.</translation>
 <translation id="3738139272394829648">Sentuh untuk Cari</translation>
 <translation id="3744899669254331632">Anda tidak boleh melawat <ph name="SITE" /> sekarang kerana tapak web telah menghantar bukti kelayakan hancur yang tidak boleh diproses oleh Chromium. Ralat dan serangan rangkaian biasanya sementara. Oleh itu halaman ini mungkin akan berfungsi kemudian.</translation>
 <translation id="3748537968684000502">Anda melihat halaman Chromium yang selamat.</translation>
@@ -108,7 +104,6 @@ dan salah. Hal ini boleh berlaku apabila penyerang sedang cuba menyamar sebagai 
 <translation id="4285930937574705105">Pemasangan gagal disebabkan ralat yang tidak dinyatakan. Jika Chromium sedang dijalankan, sila tutup dan cuba semula.</translation>
 <translation id="4330585738697551178">Modul ini diketahui bercanggah dengan Chromium.</translation>
 <translation id="4423735387467980091">Sesuaikan dan kawal Chromium</translation>
-<translation id="442817494342774222">Chromium dikonfigurasi untuk dilancarkan secara automatik apabila anda memulakan komputer anda.</translation>
 <translation id="4458285410772214805">Sila log keluar dan log masuk semula supaya perubahan ini boleh dilaksanakan.</translation>
 <translation id="4488676065623537541">Butiran pengebilan anda telah disimpan dalam Chromium.</translation>
 <translation id="4559775032954821361">Pergi ke
@@ -225,7 +220,6 @@ Chromium tidak dapat mengembalikan tetapan anda.</translation>
 <translation id="8030318113982266900">Mengemas kini peranti anda kepada saluran <ph name="CHANNEL_NAME" />...</translation>
 <translation id="8033665941300843262">Chromium memerlukan akses kebenaran untuk mengongsinya dengan tapak ini.</translation>
 <translation id="805745970029938373">Anda boleh melihat semua pemberitahuan anda dari apl, sambungan dan tapak web Chromium di sini.</translation>
-<translation id="811857857463334932">Komputer ini akan menerima kemas kini Chromium lagi kerana perkakasan komputer ini tidak lagi disokong.</translation>
 <translation id="8134284582177628525">Jika anda berkongsi komputer ini dengan <ph name="PROFILE_NAME" /> , tambahkan diri anda pada Chromium menyemak imbas secara berasingan. Jika tidak, putuskan sambungan Akaun Googlenya.</translation>
 <translation id="8187289872471304532">Pergi ke
           Apikasi &gt; Pilihan Sistem &gt; Rangkaian &gt; Terperinci &gt; Proksi

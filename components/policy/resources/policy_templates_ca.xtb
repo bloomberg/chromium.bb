@@ -56,6 +56,9 @@
 <translation id="1221359380862872747">Carrega URL especificats a l'inici de sessió de demostració</translation>
 <translation id="1240643596769627465">Especifica l'URL del motor de cerca utilitzat per proporcionar resultats instantanis. L'URL ha de contenir la cadena <ph name="SEARCH_TERM_MARKER" />, que se substituirà en el moment de fer la consulta pel text que l'usuari hagi introduït fins al moment. Aquesta política és opcional. Si no es defineix, no es proporcionaran resultats de cerca instantanis. Aquesta política només es respecta si s'activa la política "DefaultSearchProviderEnabled".</translation>
 <translation id="1265053460044691532">Limiteu el temps durant el qual un usuari autenticat mitjançant SAML pot iniciar la sessió fora de línia.</translation>
+<translation id="1291880496936992484">Advertiment: RC4 se suprimirà completament del producte <ph name="PRODUCT_NAME" /> a partir de la versió 52 (cap al setembre de 2016) i aquesta política deixarà de funcionar en aquell moment.
+
+      Si la política no s'estableix o s'estableix en "false", els sistemes de xifratge RC4 de TLS no s'activaran. En cas contrari, es pot establir en "true" per conservar la compatibilitat amb un servidor obsolet. Es tracta d'una mesura temporal i el servidor s'ha de tornar a configurar.</translation>
 <translation id="1297182715641689552">Fes servir un script de servidor intermediari .pac</translation>
 <translation id="1300635491585192248">Prediu accions de xarxa en qualsevol xarxa que no sigui mòbil</translation>
 <translation id="1304973015437969093">Identificadors de les extensions i de les aplicacions i URL de les actualitzacions que s'instal·laran en silenci</translation>
@@ -469,6 +472,9 @@ Cada entrada de la llista especifica un identificador, que s'utilitza internamen
       Si activeu o desactiveu aquesta configuració, els usuaris no podran canviar ni ignorar la configuració "Activa la protecció contra contra pesca i programari maliciós" a <ph name="PRODUCT_NAME" />.
 
       Si no s'estableix aquesta política, aquesta configuració s'activarà, però l'usuari podrà canviar-la.</translation>
+<translation id="2801230735743888564">Permet que els usuaris juguin al joc del dinosaure que apareix per sorpresa quan el dispositiu està sense connexió.
+
+       Si aquesta política s'estableix en "false", els usuaris no podran jugar-hi quan el dispositiu estigui sense connexió. En canvi, si s'estableix en "true", els usuaris podran jugar-hi. Si es deixa sense establir, els usuaris no podran jugar a aquest joc en un dispositiu Chrome OS inscrit, però sí que ho podran fer en altres circumstàncies.</translation>
 <translation id="2805707493867224476">Permet que tots els llocs mostrin finestres emergents</translation>
 <translation id="2808013382476173118">Activa l'ús de servidors STUN quan els clients remots proven d'establir una connexió a aquest ordinador.
 
@@ -729,6 +735,13 @@ Si no es configura aquesta opció, no s'aplicarà cap restricció sobre els tipu
 <translation id="3780152581321609624">Inclou un port no estàndard a l'SPN de Kerberos</translation>
 <translation id="3788662722837364290">Configuració de la gestió de l'energia quan l'usuari està inactiu</translation>
 <translation id="3793095274466276777">Configura les comprovacions del navegador predeterminat a <ph name="PRODUCT_NAME" /> i evita que els usuaris les modifiquin. Si activeu aquest paràmetre, <ph name="PRODUCT_NAME" /> comprovarà sempre en iniciar-se que sigui el navegador predeterminat i es registrarà automàticament si és possible. Si el desactiveu, <ph name="PRODUCT_NAME" /> no comprovarà que sigui el navegador predeterminat i es desactivaran els controls de l'usuari per configurar aquesta opció. Si no definiu aquest paràmetre, <ph name="PRODUCT_NAME" /> permetrà que l'usuari decideixi si és el navegador predeterminat i si s'han de mostrar les notificacions de l'usuari quan no ho sigui.</translation>
+<translation id="3800626789999016379">Configura el directori que <ph name="PRODUCT_NAME" /> utilitzarà per baixar fitxers.
+
+      Si definiu aquesta política, <ph name="PRODUCT_NAME" /> farà servir el directori proporcionat independentment de si l'usuari n'ha especificat cap o de si ha activat la marca perquè es demani la ubicació de baixada cada vegada.
+
+      Visiteu l'enllaç https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables per veure una llista de les variables que es poden utilitzar.
+
+      Si no es defineix aquesta política, s'utilitzarà el directori de baixada predeterminat i l'usuari podrà canviar-lo.</translation>
 <translation id="3805659594028420438">Activa l'extensió de certificats lligats al domini TLS (obsolet)</translation>
 <translation id="3806576699227917885">Permet reproduir àudio.
 
@@ -844,6 +857,13 @@ Si no es configura aquesta opció, no s'aplicarà cap restricció sobre els tipu
           Aquesta política només es respecta si la política "DefaultSearchProviderEnabled" està activada.</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 o una versió posterior</translation>
 <translation id="4325690621216251241">Afegeix un botó de tancament de sessió a la safata del sistema</translation>
+<translation id="4349746760316962317">Configura el directori que <ph name="PRODUCT_NAME" /> utilitzarà per emmagatzemar fitxers a la memòria cau del disc.
+
+      Si definiu aquesta política, <ph name="PRODUCT_NAME" /> farà servir el directori proporcionat independentment de si l'usuari ha especificat la marca "--disk-cache-dir" o no.
+
+      Visiteu l'enllaç https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables per veure una llista de les variables que es poden utilitzar.
+
+      Si no es defineix aquesta política, s'utilitzarà el directori de memòria cau predeterminat i l'usuari podrà substituir-lo per la marca de la línia d'ordres "--disk-cache-dir".</translation>
 <translation id="436581050240847513">Informe de les interfícies de xarxa del dispositiu</translation>
 <translation id="4372704773119750918">No permetis que l'usuari empresarial formi part dels perfils múltiples (com a usuari principal o secundari)</translation>
 <translation id="4377599627073874279">Permet que tots els llocs mostrin totes les imatges</translation>
@@ -909,6 +929,11 @@ Si no es configura aquesta opció, no s'aplicarà cap restricció sobre els tipu
 <translation id="4665897631924472251">Configuració de la gestió d'extensions</translation>
 <translation id="4668325077104657568">Configuració predeterminada de les imatges</translation>
 <translation id="467236746355332046">Funcions compatibles:</translation>
+<translation id="4674167212832291997">Personalitza la llista dels patrons d'URL que <ph name="PRODUCT_FRAME_NAME" /> sempre ha de renderitzar.
+
+          Si no es defineix aquesta política, s'utilitzarà el renderitzador predeterminat per a tots els llocs, tal com s'especifica a la política "ChromeFrameRendererSettings".
+
+          Per veure patrons d'exemple, consulteu l'enllaç https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="467449052039111439">Obre una llista d'URL</translation>
 <translation id="4680961954980851756">Activa l'emplenament automàtic</translation>
 <translation id="4723829699367336876">Activa que es pugui travessar el tallafoc des d'un client d'accés remot</translation>
@@ -998,6 +1023,14 @@ Si no es configura aquesta opció, no s'aplicarà cap restricció sobre els tipu
           Si aquesta política no està definida, s'emprèn l'acció predeterminada, que és la suspensió.
 
           Si l'acció és la suspensió, <ph name="PRODUCT_OS_NAME" /> es pot configurar per separat perquè bloquegi o perquè no bloquegi la pantalla abans de la suspensió.</translation>
+<translation id="5111712393799006197">Configura el directori que <ph name="PRODUCT_NAME" /> farà servir per emmagatzemar les dades de l'usuari.
+
+      Si definiu aquesta política, <ph name="PRODUCT_NAME" /> farà servir el directori proporcionat independentment de si l'usuari ha especificat la marca "--user-data-dir" o no.
+
+      Visiteu l'enllaç https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables per veure una llista de les variables que es poden utilitzar.
+
+      Si no es defineix aquesta política, s'utilitzarà el camí de perfil predeterminat i l'usuari podrà substituir-lo per la marca de la línia d'ordres "--user-data-dir".</translation>
+<translation id="5130288486815037971">Si els sistemes de xifratge RC4 de TLS estan activats</translation>
 <translation id="5141670636904227950">Estableix el tipus de lupa predeterminat activat a la pantalla d'inici de sessió</translation>
 <translation id="5142301680741828703">Renderitza sempre els patrons URL següents a <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="5148753489738115745">Us permet especificar els paràmetres especials que s'utilitzen quan <ph name="PRODUCT_FRAME_NAME" /> inicia <ph name="PRODUCT_NAME" />.
@@ -1168,6 +1201,20 @@ Si la política no es defineix, els usuaris podran triar si el prestatge s'ha d'
 <translation id="5809728392451418079">Defineix el nom de visualització per als comptes locals del dispositiu</translation>
 <translation id="5814301096961727113">Estableix l'estat predeterminat dels comentaris per veu a la pantalla d'inici de sessió</translation>
 <translation id="5815129011704381141">Reinicia automàticament després d'actualitzar</translation>
+<translation id="5815353477778354428">Configura el directori que <ph name="PRODUCT_FRAME_NAME" /> utilitzarà per emmagatzemar les dades de l'usuari.
+
+      Si definiu aquesta política, <ph name="PRODUCT_FRAME_NAME" /> farà servir el directori proporcionat.
+
+      Visiteu l'enllaç https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables per veure una llista de les variables que es poden utilitzar.
+
+      Si no es defineix aquesta opció, s'utilitzarà el directori de perfil predeterminat.</translation>
+<translation id="5819660021114910752">Especifica la zona horària que ha d'utilitzar el dispositiu. Els usuaris poden canviar la zona horària especificada a la sessió actual. Tanmateix, en tancar la sessió, la sessió recupera la zona horària especificada. Si es proporciona un valor que no és vàlid, la política fa servir la zona horària "GMT" per activar-se. Si es proporciona una cadena buida, la política s'ignora.
+
+      Si no es fa servir aquesta política, es continuarà utilitzant la zona horària activa actualment, tot i que els usuaris podran canviar-la, i el canvi es mantindrà. Els canvis fets pels usuaris afecten la pantalla d'inici de sessió i la resta d'usuaris.
+
+      Els dispositius nous s'inicien amb la zona horària definida com a "EUA/Pacífic".
+
+      El format del valor es regeix pels noms de les zones horàries, que podeu consultar a la base de dades de zones horàries IANA (vegeu https://en.wikipedia.org/wiki/Tz_database). En concret, la majoria de zones horàries es descriuen amb el format "continent/ciutat_gran" o "oceà/ciutat_gran".</translation>
 <translation id="5826047473100157858">Especifica si l'usuari pot obrir les pàgines en mode d'incògnit a <ph name="PRODUCT_NAME" />. Si se selecciona l'opció "activat" o no es defineix la política, les pàgines es podran obrir en mode d'incògnit. Si se selecciona l'opció "desactivat", les pàgines no es podran obrir en mode d'incògnit. Si se selecciona l'opció "forçat", les pàgines NOMÉS es podran obrir en mode d'incògnit.</translation>
 <translation id="5836064773277134605">Restringeix l'interval de port UDP utilitzat per l'amfitrió d'accés remot</translation>
 <translation id="5845159892130426052">Activa l'API de ShowModalDialog fins al 30/04/2015</translation>
@@ -1258,6 +1305,7 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
           Per bloquejar la pantalla en mode inactiu, us recomanem que activeu el bloqueig de pantalla en mode de suspensió i que configureu <ph name="PRODUCT_OS_NAME" /> perquè se suspengui després del temps d'inactivitat. Aquesta política només s'ha d'utilitzar quan el bloqueig de pantalla s'hagi de produir molt abans que la suspensió o quan no vulgueu emprar la suspensió en mode inactiu.
 
           El valor de la política s'ha d'especificar en mil·lisegons. Els valors es fixen perquè siguin inferiors al temps d'inactivitat.</translation>
+<translation id="6111936128861357925">Permet el joc sorpresa del dinosaure</translation>
 <translation id="6114416803310251055">obsolet</translation>
 <translation id="6145799962557135888">Us permet definir una llista de patrons d'URL que especifiquen els llocs que no poden executar JavaScript. Si no es defineix aquesta política, s'utilitzarà el valor global predeterminat per a tots els llocs tant de la política "DefaultJavaScriptSetting", si es defineix, com d'un altre tipus de configuració personal de l'usuari.</translation>
 <translation id="6151775819333710697">
@@ -1806,6 +1854,17 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 
       Si no es defineix aquesta política, no es faran excepcions a la llista negra de la política "URLBlacklist".</translation>
 <translation id="8176035528522326671">Permet que un usuari empresarial només sigui un usuari multiperfil principal (comportament predeterminat per a usuaris gestionats per l'empresa)</translation>
+<translation id="8191318459035150777">Configura l'URL predeterminat de la pàgina d'inici a <ph name="PRODUCT_NAME" /> i no permet que els usuaris el canviïn.
+
+          La pàgina d'inici és la pàgina que obre el botó Inici. Les pàgines que s'obren a l'inici estan controlades per les polítiques RestoreOnStartup.
+
+          Podeu definir com a pàgina d'inici l'URL que especifiqueu aquí o bé la pàgina Pestanya nova. Si seleccioneu la pàgina Pestanya nova, aquesta política no té cap efecte.
+
+          Si activeu aquesta opció de configuració, els usuaris no podran canviar l'URL de la seva pàgina d'inici a <ph name="PRODUCT_NAME" />, però sí que podran triar la pàgina Pestanya nova com a pàgina d'inici.
+
+         Si no s'estableix aquesta política, l'usuari podrà triar la seva pàgina d'inici si tampoc no s'estableix HomepageIsNewTabPage.
+
+          Aquesta política no està disponible en instàncies de Windows que no formin part d'un domini d'Active Directory.</translation>
 <translation id="8197918588508433925">Aquesta política especifica les extensions permeses per utilitzar l'API de claus de plataformes empresarials chrome.enterprise.platformKeysPrivate.challengeUserKey() per als testimonis remots. Les extensions s'han d'afegir a aquesta llista perquè utilitzin l'API.
 
           Si alguna extensió no s'inclou a la llista o si no es defineix la llista, les crides a l'API fallaran i tornaran un codi d'error.</translation>
@@ -1847,6 +1906,13 @@ Aquesta política s'ignora en els comptes d'usuari normals.</translation>
 <translation id="8465065632133292531">Paràmetres per a l'URL instantani que utilitza POST</translation>
 <translation id="847472800012384958">No permetis que cap lloc mostri elements emergents</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
+<translation id="8484458986062090479">Personalitza la llista de patrons d'URL que sempre ha de renderitzar el navegador amfitrió.
+
+
+          Si no es defineix aquesta política, s'utilitzarà el renderitzador predeterminat per a tots els llocs, tal com s'especifica a la política "ChromeFrameRendererSettings".
+
+
+          Per veure exemples de patrons, consulteu l'enllaç https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="8493645415242333585">Desactiva el desament de l'historial de navegació</translation>
 <translation id="8499172469244085141">Configuració predeterminada (els usuaris la poden sobreescriure)</translation>
 <translation id="8501011084242226370">Especifica una llista de connectors que l'usuari pot activar o desactivar a <ph name="PRODUCT_NAME" />.
@@ -1914,6 +1980,8 @@ Aquesta política s'ignora en els comptes d'usuari normals.</translation>
 
       Si es desactiva aquesta configuració, l'historial de navegació i de baixades no es pot suprimir.</translation>
 <translation id="8764119899999036911">Especifica si l'SPN de Kerberos que es genera es basa en el nom del DNS canònic o en el nom original introduït. Si activeu aquest paràmetre, s'ometrà la cerca de CNAME i el nom del servidor s'utilitzarà tal com s'ha introduït. Si desactiveu aquest paràmetre o el deixeu sense definir, el nom canònic del servidor es determinarà a través de la cerca de CNAME.</translation>
+<translation id="8774131509736383471">Si aquesta política s'estableix en "true", <ph name="PRODUCT_NAME" /> maximitzarà sense condicions la primera finestra que es mostra en iniciar el navegador per primera vegada.
+      Si s'estableix en "false" o no es configura, la decisió de maximitzar la primera finestra mostrada es basarà en la mida de la pantalla.</translation>
 <translation id="8777120694819070607">Permet que <ph name="PRODUCT_NAME" /> executi connectors obsolets. Si activeu aquest paràmetre, els connectors obsolets es faran servir com a connectors normals. Si el desactiveu, els connectors obsolets no es faran servir i se sol·licitarà als usuaris permís per executar-los. Si no definiu aquest paràmetre, se sol·licitarà permís als usuaris per executar els connectors obsolets.</translation>
 <translation id="87812015706645271">Requereix que el nom de l'usuari local i el propietari de l'amfitrió d'accés remot coincideixin</translation>
 <translation id="8782750230688364867">Especifica el percentatge d'ajust del temps d'espera d'inactivitat de la pantalla quan el dispositiu estigui en mode de presentació.

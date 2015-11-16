@@ -9,6 +9,7 @@
 <translation id="1113869188872983271">&amp;Deshacer reorganización</translation>
 <translation id="111844081046043029">¿Seguro que quieres abandonar esta página?</translation>
 <translation id="112840717907525620">Caché de política correcta</translation>
+<translation id="113188000913989374"><ph name="SITE" /> dice:</translation>
 <translation id="1132774398110320017">Configuración de la función Autocompletar de Chrome...</translation>
 <translation id="1146673768181266552">ID de error <ph name="CRASH_ID" /> (<ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="1150979032973867961">Este servidor no ha podido probar que su dominio es <ph name="DOMAIN" />, el sistema operativo de tu ordenador no confía en su certificado de seguridad. Este problema puede deberse a una configuración incorrecta o a que un atacante haya interceptado la conexión.</translation>
@@ -28,6 +29,10 @@
 <translation id="1519264250979466059">Fecha de compilación</translation>
 <translation id="1549470594296187301">JavaScript debe estar habilitado para utilizar esta función.</translation>
 <translation id="1559528461873125649">No existe el archivo o el directorio.</translation>
+<translation id="1559572115229829303">&lt;p&gt;No se puede establecer una conexión privada con <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> porque la fecha y la hora de tu dispositivo (<ph name="DATE_AND_TIME" />) no son correctas.&lt;/p&gt;
+
+      &lt;p&gt;Ajusta la fecha y la hora en la sección &lt;strong&gt;General&lt;/strong&gt; de la aplicación &lt;strong&gt;Ajustes&lt;/strong&gt;.&lt;/p&gt;</translation>
+<translation id="1629803312968146339">¿Quieres que Chrome guarde esta tarjeta?</translation>
 <translation id="1640180200866533862">Políticas de usuario</translation>
 <translation id="1644184664548287040">La configuración de red no es válida y no se ha podido importar.</translation>
 <translation id="1655462015569774233">{1,plural, =1{Este servidor no ha podido demostrar que es <ph name="DOMAIN" />; su certificado de seguridad caducó ayer. Este problema puede deberse a una configuración incorrecta o a que un atacante ha interceptado la conexión. El reloj de tu ordenador está establecido actualmente en las <ph name="CURRENT_DATE" />. ¿Es correcto? Si no lo es, corrige el reloj del sistema y, a continuación, actualiza esta página.}other{Este servidor no ha podido demostrar que es <ph name="DOMAIN" />; su certificado de seguridad caducó hace # días. Este problema puede deberse a una configuración incorrecta o a que un atacante ha interceptado la conexión. El reloj de tu ordenador está establecido actualmente en las <ph name="CURRENT_DATE" />. ¿Es correcto? Si no lo es, corrige el reloj del sistema y, a continuación, actualiza esta página.}}</translation>
@@ -94,6 +99,7 @@
 <translation id="2922350208395188000">No es posible comprobar el certificado del servidor.</translation>
 <translation id="2941952326391522266">Este servidor no ha podido probar que su dominio es <ph name="DOMAIN" />, su certificado de seguridad procede de <ph name="DOMAIN2" />. Este problema puede deberse a una configuración incorrecta o a que un atacante haya interceptado la conexión.</translation>
 <translation id="2958431318199492670">La configuración de red no cumple el estándar ONC. Es posible que no se importen partes de la configuración.</translation>
+<translation id="2969319727213777354">Para establecer una conexión segura, el reloj debe estar configurado correctamente. Esto se debe a que los certificados que utilizan los sitios web para identificarse solo son válidos para períodos de tiempo específicos. Como el reloj de tu dispositivo no está configurado correctamente, Google Chrome no puede verificar estos certificados.</translation>
 <translation id="2972581237482394796">&amp;Rehacer</translation>
 <translation id="3010559122411665027">Entrada de lista "<ph name="ENTRY_INDEX" />": <ph name="ERROR" /></translation>
 <translation id="3024663005179499861">Tipo de política incorrecto</translation>
@@ -146,11 +152,14 @@
 <translation id="4117700440116928470">No se admite el alcance de la política.</translation>
 <translation id="4120075327926916474">¿Quieres que Chrome guarde la información de esta tarjeta de crédito para que se completen los formularios web?</translation>
 <translation id="4148925816941278100">American Express</translation>
+<translation id="4169947484918424451">¿Quieres que Chromium guarde esta tarjeta?</translation>
 <translation id="4171400957073367226">La firma de verificación no es válida</translation>
+<translation id="4176463684765177261">Inhabilitado</translation>
 <translation id="4196861286325780578">&amp;Rehacer movimiento</translation>
 <translation id="4220128509585149162">La página no responde o se cierra</translation>
 <translation id="4250680216510889253">No</translation>
 <translation id="4258748452823770588">Firma errónea</translation>
+<translation id="4268298190799576220">Chromium no ha podido verificar tu tarjeta en este momento. Vuelve a intentarlo más tarde.</translation>
 <translation id="4269787794583293679">(Ningún nombre de usuario)</translation>
 <translation id="4300246636397505754">Sugerencias de padres</translation>
 <translation id="4325863107915753736">Error al buscar el artículo</translation>
@@ -204,6 +213,7 @@
 <translation id="5523118979700054094">Nombre de la política</translation>
 <translation id="552553974213252141">¿Se ha extraído el texto correctamente?</translation>
 <translation id="5540224163453853">No se ha podido encontrar el artículo solicitado.</translation>
+<translation id="5544037170328430102">Una página insertada en <ph name="SITE" /> dice:</translation>
 <translation id="5556459405103347317">Cargar de nuevo</translation>
 <translation id="5565735124758917034">Activo</translation>
 <translation id="560412284261940334">Administración no admitida</translation>
@@ -213,15 +223,18 @@
 <translation id="5813119285467412249">&amp;Rehacer acción de añadir</translation>
 <translation id="5872918882028971132">Sugerencias de padres</translation>
 <translation id="59107663811261420">Google Payments no admite este tipo de tarjeta para este comerciante. Selecciona otra.</translation>
+<translation id="59174027418879706">Habilitada</translation>
 <translation id="5975083100439434680">Reducir</translation>
 <translation id="5989320800837274978">No se han especificado servidores proxy fijos ni una URL de secuencia de comandos .pac.</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6040143037577758943">Cerrar</translation>
+<translation id="604124094241169006">Automático</translation>
 <translation id="6060685159320643512">¡Atención! Estos experimentos pueden ser peligrosos</translation>
 <translation id="6099520380851856040">Fecha del fallo: <ph name="CRASH_TIME" /></translation>
 <translation id="6151417162996330722">El certificado del servidor tiene un período de validez demasiado largo.</translation>
 <translation id="6154808779448689242">El token de política devuelto no coincide con el token actual.</translation>
 <translation id="6165508094623778733">Más información</translation>
+<translation id="6218753634732582820">¿Quitar dirección de Chromium?</translation>
 <translation id="6259156558325130047">&amp;Rehacer reorganización</translation>
 <translation id="6263376278284652872">Marcadores de <ph name="DOMAIN" /></translation>
 <translation id="6282194474023008486">Código postal</translation>
@@ -239,6 +252,7 @@
 <translation id="6628463337424475685">Búsqueda de <ph name="ENGINE" /></translation>
 <translation id="6644283850729428850">Esta política está obsoleta.</translation>
 <translation id="6646897916597483132">Introduce el código CVC de cuatro dígitos que aparece en el anverso de tu tarjeta</translation>
+<translation id="6671697161687535275">¿Quitar sugerencia de formulario de Chromium?</translation>
 <translation id="674375294223700098">Error de certificado de servidor desconocido</translation>
 <translation id="6753269504797312559">Valor de la política</translation>
 <translation id="6831043979455480757">Traducir</translation>
@@ -272,6 +286,7 @@
 <translation id="7378627244592794276">No</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7419106976560586862">Ruta del perfil</translation>
+<translation id="7424977062513257142">Una página insertada en este sitio web dice:</translation>
 <translation id="7441627299479586546">Asunto de política incorrecto</translation>
 <translation id="7485870689360869515">No se han encontrado datos.</translation>
 <translation id="7537536606612762813">Obligatoria</translation>
@@ -282,6 +297,7 @@
 <translation id="7592362899630581445">El certificado del servidor incluye un nombre que está fuera de su cobertura.</translation>
 <translation id="7600965453749440009">No traducir nunca del <ph name="LANGUAGE" /></translation>
 <translation id="7610193165460212391">El valor <ph name="VALUE" /> se encuentra fuera del intervalo.</translation>
+<translation id="7637571805876720304">¿Quitar tarjeta de crédito de Chromium?</translation>
 <translation id="7674629440242451245">Si estás interesado en probar nuevas e interesantes funciones de Chrome, prueba el canal para desarrolladores en la página chrome.com/dev.</translation>
 <translation id="7752995774971033316">No administrado</translation>
 <translation id="7761701407923456692">El certificado del servidor no coincide con la URL.</translation>
@@ -325,6 +341,7 @@
 <translation id="8725066075913043281">Volver a intentarlo</translation>
 <translation id="8738058698779197622">Para establecer una conexión segura, tu reloj debe estar correctamente configurado. Esto se debe a que los certificados utilizados por los sitios web para identificarse son solo válidos durante períodos específicos de tiempo. Dado que la hora de tu dispositivo no es correcta, Chromium no puede verificar estos certificados.</translation>
 <translation id="8790007591277257123">&amp;Rehacer eliminación</translation>
+<translation id="8798099450830957504">Predeterminado</translation>
 <translation id="8804164990146287819">Política de privacidad</translation>
 <translation id="8820817407110198400">Marcadores</translation>
 <translation id="8824019021993735287">Chrome no ha podido verificar tu tarjeta en este momento. Vuelve a intentarlo más tarde.</translation>
@@ -332,6 +349,7 @@
 <translation id="883848425547221593">Otros marcadores</translation>
 <translation id="884923133447025588">No se ha encontrado ningún mecanismo de revocación.</translation>
 <translation id="8866481888320382733">Error al analizar la configuración de la política</translation>
+<translation id="8866959479196209191">Esta página dice:</translation>
 <translation id="8876793034577346603">No se ha podido analizar la configuración de red.</translation>
 <translation id="8891727572606052622">El modo de proxy no es válido.</translation>
 <translation id="889901481107108152">Esta función experimental no está disponible en tu plataforma.</translation>

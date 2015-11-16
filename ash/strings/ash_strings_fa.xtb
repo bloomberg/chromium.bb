@@ -25,9 +25,7 @@
 <translation id="1812696562331527143">‏روش ورودی شما به <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />شخص ثالث<ph name="END_LINK" />) تغییر یافت. Shift + Alt را برای تعویض فشار دهید.</translation>
 <translation id="1882897271359938046">بازتاب به <ph name="DISPLAY_NAME" /></translation>
 <translation id="1923539912171292317">کلیک‌های خودکار</translation>
-<translation id="1950626184269948555">‏میان‌بر مدیر فعالیت‌ها تغییر کرده است. لطفاً به‌جای Shift+Esc از Search+Esc استفاده کنید.</translation>
 <translation id="1957803754585243749">۰ درجه</translation>
-<translation id="1963814843110128691">در حال فرستادن $1 به $2</translation>
 <translation id="1969011864782743497">‏<ph name="DEVICE_NAME" /> (‏USB)</translation>
 <translation id="1987317783729300807">حساب‌ها</translation>
 <translation id="2127372758936585790">شارژر برق ضعیف</translation>
@@ -93,6 +91,7 @@
 <translation id="3783640748446814672">دگرساز</translation>
 <translation id="3784455785234192852">قفل</translation>
 <translation id="3799026279081545374">ممکن است شارژرتان بد باشد. اگر در ایالات متحده زندگی می‌کنید، لطفاً با شماره ۱۳۷۱-۶۲۸-۸۶۶ تماس بگیرید تا راهنمایی شوید و جایگزین را دریافت کنید. اگر دربریتانیا زندگی می‌کنید، لطفاً با شماره ۰۶۱۳-۰۲۶-۰۸۰۰ تماس بگیرید. اگر در ایرلند زندگی می‌کنید، لطفاً با شماره ۶۶۴-۸۳۲-۸۰۰-۱ تماس بگیرید. اگر در کانادا زندگی می‌کنید، لطفاً با شماره ۱۳۷۲-۶۲۸-۸۶۶ تماس بگیرید. اگر در استرالیا زندگی می‌کنید، لطفاً با شماره ۴۶۰-۰۶۷-۸۰۰-۱ تماس بگیرید.</translation>
+<translation id="3866182280516392520">‏آدرس IPv6</translation>
 <translation id="3891340733213178823">‏برای خروج از سیستم Ctrl+Shift+Q را دو بار فشار دهید.</translation>
 <translation id="3892641579809465218">صفحه نمایش داخلی</translation>
 <translation id="3963445509666917109">بلندگو (داخلی)</translation>
@@ -150,7 +149,6 @@
 <translation id="6165508094623778733">بیشتر بدانید</translation>
 <translation id="6247708409970142803">%<ph name="PERCENTAGE" /></translation>
 <translation id="6248847161401822652">‏برای خروج Control‏، Shift و Q را دو بار فشار دهید.</translation>
-<translation id="6287020362823083378">‏میان‌بر قفل صفحه تغییر کرده است. لطفاً به‌جای Ctrl+Shift+L از Search+L استفاده کنید.</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> به <ph name="ROTATION" /> چرخانده شد</translation>
 <translation id="6359806961507272919">پیامک از <ph name="PHONE_NUMBER" /></translation>
 <translation id="639644700271529076">‏CAPS LOCK خاموش است</translation>
@@ -203,7 +201,6 @@ Alt+جستجو یا Shift را برای لغو فشار دهید.</translation>
 <translation id="8308637677604853869">منوی قبلی</translation>
 <translation id="8356164830168736643">بستن <ph name="WINDOW_TITLE" /></translation>
 <translation id="8428213095426709021">تنظیمات</translation>
-<translation id="8443356412772935865">در حال فرستادن صفحه به $1</translation>
 <translation id="8456362689280298700"><ph name="HOUR" />:<ph name="MINUTE" /> تا پر شود</translation>
 <translation id="8517041960877371778">ممکن است وقتی <ph name="DEVICE_TYPE" /> شما خاموش است، شارژ نشود.</translation>
 <translation id="8528322925433439945">تلفن همراه...</translation>

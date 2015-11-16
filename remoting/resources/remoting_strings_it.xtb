@@ -33,7 +33,6 @@ Per informazioni sulla privacy, leggi le Norme sulla privacy di Google (http://g
 <translation id="1770394049404108959">Non riesco ad aprire l'applicazione.</translation>
 <translation id="177096447311351977">IP canale per client: <ph name="CLIENT_GAIA_IDENTIFIER" /> ip="<ph name="CLIENT_IP_ADDRESS_AND_PORT" />" ip_host="<ph name="HOST_IP_ADDRESS_AND_PORT" />" canale="<ph name="CHANNEL_TYPE" />" connessione="<ph name="CONNECTION_TYPE" />".</translation>
 <translation id="1779766957982586368">Chiudi finestra</translation>
-<translation id="1818475040640568770">Non sono presenti computer registrati.</translation>
 <translation id="1841799852846221389">Disattivazione connessioni remote per questo computer in corso…</translation>
 <translation id="189172778771606813">Chiudi riquadro di navigazione a scomparsa</translation>
 <translation id="195619862187186579">Layout tastiera</translation>
@@ -87,8 +86,6 @@ Per informazioni sulla privacy, leggi le Norme sulla privacy di Google (http://g
 <translation id="2926340305933667314">Impossibile disattivare l'accesso remoto a questo computer. Riprova più tardi.</translation>
 <translation id="2930135165929238380">Mancano alcuni componenti obbligatori. Visita la pagina chrome://plugins e assicurati che il plug-in Native Client sia attivo.</translation>
 <translation id="2939145106548231838">Esegui autenticazione host</translation>
-<translation id="2998137343848432918">• Aggiunta la schermata Riconoscimenti.
-• Risolto un problema relativo alla modalità a schermo intero con la tastiera visibile.</translation>
 <translation id="3020807351229499221">Impossibile aggiornare il PIN. Riprova più tardi.</translation>
 <translation id="3025388528294795783">Per aiutarci a risolvere il tuo problema, spiegaci che cosa è successo:</translation>
 <translation id="3027681561976217984">Modalità multi-touch</translation>
@@ -124,6 +121,7 @@ Chromoting</translation>
 <translation id="3950820424414687140">Accedi</translation>
 <translation id="3989511127559254552">Per continuare devi concedere autorizzazioni di accesso esteso per il tuo computer. È necessario eseguire questa operazione solo una volta.</translation>
 <translation id="4006787130661126000">Per accedere a questo computer utilizzando Chrome Remote Desktop devi attivare le connessioni remote.</translation>
+<translation id="405887016757208221">Impossibile inizializzare la sessione sul computer remoto. Se il problema persiste, riprova a configurare l'host.</translation>
 <translation id="4068946408131579958">Tutte le connessioni</translation>
 <translation id="409800995205263688">NOTA. Le impostazioni dei criteri consentono connessioni solo tra computer all'interno della tua rete.</translation>
 <translation id="4155497795971509630">Mancano alcuni componenti obbligatori. Verifica che sia installata la versione più recente del software e riprova.</translation>
@@ -170,7 +168,6 @@ Remote Desktop</translation>
 <translation id="518094545883702183">Queste informazioni vengono utilizzate soltanto per identificare il problema segnalato, sono disponibili soltanto a chi effettua accertamenti in merito alla tua segnalazione e vengono conservate per massimo 30 giorni.</translation>
 <translation id="5222676887888702881">Esci</translation>
 <translation id="5254120496627797685">Se esci da questa pagina, la sessione Chrome Remote Desktop verrà terminata.</translation>
-<translation id="5285241842433869526">Scopri come configurare l'accesso remoto per un computer.</translation>
 <translation id="5308380583665731573">Connessione</translation>
 <translation id="5363265567587775042">Chiedi al proprietario del computer a cui vuoi accedere di fare clic su "<ph name="SHARE" />" e fornirti il codice di accesso.</translation>
 <translation id="5379087427956679853">Chrome Remote Desktop ti consente di condividere in modo sicuro il computer sul Web. Entrambi gli utenti devono eseguire l'app Chrome Remote Desktop, reperibile all'indirizzo <ph name="URL" />.</translation>
@@ -258,6 +255,7 @@ Remote Desktop</translation>
 <translation id="7869445566579231750">Non sei autorizzato a eseguire questa applicazione.</translation>
 <translation id="7948001860594368197">Opzioni schermo</translation>
 <translation id="7970576581263377361">Autenticazione non riuscita. Accedi di nuovo a Chromium.</translation>
+<translation id="7981525049612125370">La sessione remota è scaduta.</translation>
 <translation id="8041721485428375115">Se scarichi il programma di installazione di Chrome Remote Desktop Host, accetti i <ph name="LINK_BEGIN" />Termini di servizio<ph name="LINK_END" /> di Google.</translation>
 <translation id="8073845705237259513">Per poter utilizzare Chrome Remote Desktop devi aggiungere un account Google sul dispositivo.</translation>
 <translation id="80739703311984697">L'host remoto richiede l'autenticazione su un sito web di terze parti. Per continuare, devi concedere a Chromoting ulteriori autorizzazioni per accedere a questo indirizzo:</translation>

@@ -49,13 +49,11 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="2558641060352364164">Táto stránka používa doplnok Chromium Frame, ktorého podpora sa čoskoro ukončí. Odinštalujte ho a inovujte na moderný prehliadač.</translation>
 <translation id="2572494885440352020">Chromium Helper</translation>
 <translation id="2602806952220118310">Chromium – upozornenia</translation>
-<translation id="2615699638672665509">Tento počítač čoskoro prestane dostávať aktualizácie prehliadača Chromium, pretože jeho hardvér už nie je podporovaný.</translation>
 <translation id="2636877269779209383">Chromium musí mať najprv prístup k fotoaparátu, aby ho mohol s týmito webovými stránkami zdieľať.</translation>
 <translation id="2648074677641340862">V priebehu inštalácie sa vyskytla chyba operačného systému. Stiahnite prehliadač Chromium znova.</translation>
 <translation id="2673087257647337101">Prehliadač už je skoro aktualizovaný. Proces dokončíte reštartovaním prehliadača Chromium.</translation>
 <translation id="2685838254101182273">Prehliadač Chromium sa prestal aktualizovať a túto verziu vášho operačného systému už nepodporuje.</translation>
 <translation id="2705212601509139398">Táto stránka používa doplnok Chromium Frame, ktorého podpora sa čoskoro ukončí. Odinštalujte ho a stiahnite si kompatibilný prehliadač.</translation>
-<translation id="2732467638532545152">Váš počítač používa starú verziu operačného systému Microsoft Windows, ktorá bezpečnostný certifikát tohto webu nedokáže spracovať. Pre tento problém nedokáže Chromium určiť, či certifikát pochádza z webu <ph name="SITE" /> alebo od inej osoby vo vašej sieti, ktorá sa za web <ph name="SITE" /> vydáva. Aktualizujte operačný systém počítača na najnovšiu verziu systému Windows.</translation>
 <translation id="2770231113462710648">Zmeniť predvolený prehliadač na:</translation>
 <translation id="2801146392936645542">Súbor <ph name="FILE_NAME" /> je škodlivý, a preto ho prehliadač Chromium zablokoval.</translation>
 <translation id="2847479871509788944">Odstrániť z prehliadača Chromium...</translation>
@@ -87,8 +85,6 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="3582788516608077514">Prebieha aktualizácia prehliadača Chromium...</translation>
 <translation id="358997566136285270">Logo prehliadača Chromium</translation>
 <translation id="3595526210123705352">Spustením v režime Windows 8 zavriete a znova spustíte všetky aplikácie prehliadača Chromium.</translation>
-<translation id="3656661827369545115">Pri spustení počítača spustiť automaticky prehliadač Chromium</translation>
-<translation id="3736987306260231966">Prehliadač Chromium nemôže zobraziť danú webovú stránku, pretože počítač nie je pripojený k internetu.</translation>
 <translation id="3738139272394829648">Vyhľadávanie klepnutím</translation>
 <translation id="3744899669254331632">Webové stránky <ph name="SITE" /> momentálne nemôžete navštíviť, pretože odoslali zakódované poverenia, ktoré Chromium neodkáže spracovať. Chyby siete a útoky sú zvyčajne dočasné, takže táto stránka by mala pravdepodobne neskôr fungovať.</translation>
 <translation id="3748537968684000502">Práve si prezeráte zabezpečenú stránku prehliadača Chromium.</translation>
@@ -109,7 +105,6 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="4285930937574705105">Inštalácia zlyhala kvôli neurčenej chybe. Ak je prehliadač Chromium momentálne spustený, zatvorte ho a skúste znova.</translation>
 <translation id="4330585738697551178">Tento modul zvykne spôsobovať konflikt s prehliadačom Chromium.</translation>
 <translation id="4423735387467980091">Prispôsobiť a spravovať Chromium</translation>
-<translation id="442817494342774222">Prehliadač Chromium je nakonfigurovaný tak, aby sa automaticky spustil pri zapnutí počítača.</translation>
 <translation id="4458285410772214805">Ak chcete, aby sa zmeny prejavili, odhláste sa a znova sa prihláste.</translation>
 <translation id="4488676065623537541">Vaše fakturačné údaje sa uložili do prehliadača Chromium.</translation>
 <translation id="4559775032954821361">Prejdite na
@@ -226,7 +221,6 @@ Prehliadač Chromium nedokáže obnoviť vaše nastavenia.</translation>
 <translation id="8030318113982266900">Prebieha aktualizácia vášho zariadenia na kanál <ph name="CHANNEL_NAME" />...</translation>
 <translation id="8033665941300843262">Chromium musí mať najprv prístup k povoleniam, aby ich mohol s týmito webovými stránkami zdieľať.</translation>
 <translation id="805745970029938373">Tu sa zobrazujú všetky upozornenia z rozšírení, webových stránok a aplikácií prehliadača Chromium.</translation>
-<translation id="811857857463334932">Tento počítač už nebude dostávať aktualizácie prehliadača Chromium, pretože jeho hardvér už nie je podporovaný.</translation>
 <translation id="8134284582177628525">Ak tento počítač zdieľate s používateľom <ph name="PROFILE_NAME" />, pridajte sa do prehliadača Chromium, aby ste mohli samostatne prehliadať. V inom prípade odpojte účet Google daného používateľa.</translation>
 <translation id="8187289872471304532">Prejdite na možnosť
           Aplikácie &gt; Systémové predvoľby &gt; Sieť &gt; Rozšírené nastavenia &gt; Servery proxy

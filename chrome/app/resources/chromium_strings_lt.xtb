@@ -34,6 +34,7 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="1967743265616885482">Modulis tokiu pačiu pavadinimu žinomas kaip prieštaraujantis „Chromium“.</translation>
 <translation id="2077129598763517140">Kai galima, naudoti aparatinės įrangos paspartinimą</translation>
 <translation id="2097986737970966220">Atidaryti „Chromium“ staliniame kompiuteryje</translation>
+<translation id="2117181891440368863">„Chromium“ patvirtino, kad „<ph name="ISSUER" />“ išdavė šį svetainės sertifikatą. Serveris pateikė sertifikato skaidrumo informaciją, bet ji negalioja.</translation>
 <translation id="2119636228670142020">Apie &amp;„Chromium“ OS</translation>
 <translation id="2158734852934720349">„Chromium“ OS atvirojo šaltinio licencijos</translation>
 <translation id="2233513990531887259">Iš naujo paleisti „Chromium“ įtraukiančiuoju režimu</translation>
@@ -48,13 +49,11 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="2558641060352364164">Šioje svetainėje naudojamas „Chromium“ rėmelio papildinys, kuris greitai bus nepalaikomas. Pašalinkite jį ir atsisiųskite modernią naršyklę.</translation>
 <translation id="2572494885440352020">„Chromium“ pagalbos priemonė</translation>
 <translation id="2602806952220118310">„Chromium“ – pranešimai</translation>
-<translation id="2615699638672665509">Šiame kompiuteryje netrukus nebebus gaunami „Chromium“ naujiniai, nes jo aparatinė įranga nebepalaikoma.</translation>
 <translation id="2636877269779209383">„Chromium“ reikia pasiekti fotoaparatą, kad galėtų bendrinti jį su šia svetaine.</translation>
 <translation id="2648074677641340862">Diegiant įvyko operacinės sistemos klaida. Atsisiųskite „Chromium“ dar kartą.</translation>
 <translation id="2673087257647337101">Beveik atnaujinta! Paleiskite „Chromium“ iš naujo, kad būtų užbaigtas naujinimas.</translation>
 <translation id="2685838254101182273">„Chromium“ nebeatsinaujina ir nebepalaiko šios operacinės sistemos versijos.</translation>
 <translation id="2705212601509139398">Šioje svetainėje naudojamas „Chromium“ rėmelio papildinys, kuris greitai bus nepalaikomas. Pašalinkite jį ir atsisiųskite suderinamą naršyklę.</translation>
-<translation id="2732467638532545152">Kompiuteryje veikia sena „Microsoft Windows“ versija, kurią naudojant negalima apdoroti šio svetainės saugos sertifikato. Dėl šios problemos „Chromium“ negali nustatyti, ar sertifikatas gautas iš <ph name="SITE" /> ar iš kažko, kas jūsų tinkle apsimeta esantis <ph name="SITE" />. Atnaujinkite kompiuterį į naujesnę „Windows“ versiją.</translation>
 <translation id="2770231113462710648">Pakeisti numatytąją naršyklę į:</translation>
 <translation id="2801146392936645542">„<ph name="FILE_NAME" />“ yra kenkėjiškas failas, todėl „Chromium“ jį užblokavo.</translation>
 <translation id="2847479871509788944">Pašalinti iš „Chromium“...</translation>
@@ -87,8 +86,6 @@ ir netinkamus prisijungimo duomenis. Gali būti, kad užpuolėjas bando apsimest
 <translation id="3582788516608077514">Atnaujinama „Chromium“...</translation>
 <translation id="358997566136285270">„Chromium“ logotipas</translation>
 <translation id="3595526210123705352">Iš naujo paleidus „Windows 8“ režimu „Chromium“ programos bus uždarytos ir iš naujo paleistos.</translation>
-<translation id="3656661827369545115">Automatiškai paleisti „Chromium“, kai įjungiamas kompiuteris</translation>
-<translation id="3736987306260231966">„Chromium“ nepavyksta pateikti tinklalapio, nes kompiuteris neprijungtas prie interneto.</translation>
 <translation id="3738139272394829648">Paieška palietus</translation>
 <translation id="3744899669254331632">Negalite dabar apsilankyti svetainėje <ph name="SITE" />, nes ji atsiuntė užšifruotus prisijungimo duomenis, kurių „Chromium“ negali apdoroti. Tinklo klaidos ir užpuolimai dažniausiai yra laikini, todėl šis puslapis vėliau tikriausiai veiks.</translation>
 <translation id="3748537968684000502">Žiūrite saugų „Chromium“ puslapį.</translation>
@@ -109,7 +106,6 @@ ir netinkamus prisijungimo duomenis. Gali būti, kad užpuolėjas bando apsimest
 <translation id="4285930937574705105">Diegimas nepavyko dėl nežinomos klaidos. Jei šiuo metu veikia „Chromium“, uždarykite ir pabandykite iš naujo.</translation>
 <translation id="4330585738697551178">Šis modulis žinomas kaip prieštaraujantis „Chromium“.</translation>
 <translation id="4423735387467980091">Tinkinkite ir valdykite „Chromium“</translation>
-<translation id="442817494342774222">„Chromium“ sukonfigūruota taip, kad paleidus kompiuterį automatiškai paleidžiama ir „Chromium“.</translation>
 <translation id="4458285410772214805">Atsijunkite ir prisijunkite iš naujo, kad šis pakeitimas būtų pritaikytas.</translation>
 <translation id="4488676065623537541">Išsami atsiskaitymo informacija išsaugota „Chromium“.</translation>
 <translation id="4559775032954821361">Eikite į 
@@ -180,6 +176,7 @@ Kai kurios funkcijos gali būti nepasiekiamos. Nurodykite kitą profilio katalog
 <translation id="6734080038664603509">&amp;„Chromium“ naujinys</translation>
 <translation id="6757767188268205357">Netrukdykite</translation>
 <translation id="6810143991807788455">Padėkite tobulinti „Chromium“ pateikę ataskaitą apie dabartinius nustatymus</translation>
+<translation id="6838494703713445896">„Chromium“ patvirtino, kad „<ph name="ISSUER" />“ išdavė šį svetainės sertifikatą. Serveris pateikė galiojančią sertifikato skaidrumo informaciją.</translation>
 <translation id="6883876366448858277">siunčiamas žodis ir jo kontekstas „Google“ paieškai, kuri pateikia apibrėžimų, nuotraukų ir kitų paieškos rezultatų.</translation>
 <translation id="6893813176749746474">„Chromium“ atnaujinta, bet jos nenaudojote mažiausiai 30 dienų.</translation>
 <translation id="6900895776413482243">Iš naujo paleidus „Chromium“ įtraukiančiuoju režimu „Chromium“ programos bus uždarytos ir iš naujo paleistos.</translation>
@@ -192,6 +189,7 @@ Kai kurios funkcijos gali būti nepasiekiamos. Nurodykite kitą profilio katalog
 <translation id="7066436765290594559">„Chromium“ OS negali sinchronizuoti duomenų. Atnaujinkite sinchronizavimo slaptafrazę.</translation>
 <translation id="7138853919861947730">„Chromium“ gali naudoti žiniatinklio paslaugas naršymo kokybei pagerinti.</translation>
 <translation id="7162152143154757523">„Chromium“ gali teikti išmanesnę rašybos tikrinimo funkciją, siųsdama tai, ką įvedate naršyklėje, „Google“ serveriams. Tai suteikia galimybę naudoti tą pačią rašybos tikrinimo technologiją, kuri naudojama „Google“ paieškoje.</translation>
+<translation id="7178626992616222740">„Chromium“ patvirtino, kad „<ph name="ISSUER" />“ išdavė šį svetainės sertifikatą. Serveris pateikė sertifikato skaidrumo informaciją, bet „Chromium“ neatpažino jokių sertifikato skaidrumo žurnalų.</translation>
 <translation id="7196020411877309443">Kodėl tai matau?</translation>
 <translation id="7205698830395646142">Paslėpti „Chromium“ meniu elementą</translation>
 <translation id="7211828883345145708">Įgalinami papildomi spartieji klavišai, kurie naudingi derinant „Chromium“.</translation>
@@ -217,13 +215,13 @@ Kai kurios funkcijos gali būti nepasiekiamos. Nurodykite kitą profilio katalog
 <translation id="7723128346970903111">Kai įgalinta, naudojamas „Chromium“ prisijungimo „iframe“ pagrindu srautas; priešingu atveju naudojamas žiniatinklio peržiūra pagrįstas srautas.</translation>
 <translation id="7729447699958282447">„Chromium“ negali sinchronizuoti duomenų, nes jūsų domene sinchronizavimas nepasiekiamas.</translation>
 <translation id="7747138024166251722">Diegimo programai nepavyko sukurti laikino katalogo. Patikrinkite, ar yra laisvos vietos diske ir, ar leidžiama įdiegti programinę įrangą.</translation>
+<translation id="7918535023914021398">„Chromium“ patvirtino, kad „<ph name="ISSUER" />“ išdavė šį svetainės sertifikatą. Serveris nepateikė jokios sertifikato skaidrumo informacijos.</translation>
 <translation id="7937630085815544518">Buvote prisijungę prie „Chromium“ kaip <ph name="USER_EMAIL_ADDRESS" />. Prisijungdami vėl naudokite tą pačią paskyrą.</translation>
 <translation id="7962572577636132072">„Chromium“ atnaujinama automatiškai, todėl visada naudojatės naujausia versija.</translation>
 <translation id="7979877361127045932">Paslėpti „Chromium“ meniu elementą</translation>
 <translation id="8030318113982266900">Atnaujinamas įrenginys į „<ph name="CHANNEL_NAME" />“ kanalą...</translation>
 <translation id="8033665941300843262">„Chromium“ reikia pasiekti leidimus, kad galėtų bendrinti juos su šia svetaine.</translation>
 <translation id="805745970029938373">Čia pateikti visi „Chromium“ programų, plėtinių ir svetainių pranešimai.</translation>
-<translation id="811857857463334932">Šiame kompiuteryje nebebus gaunami „Chromium“ naujiniai, nes jo aparatinė įranga nebepalaikoma.</translation>
 <translation id="8134284582177628525">Jei bendrinate šį kompiuterį su <ph name="PROFILE_NAME" />, pridėkite save prie „Chromium“, kad galėtumėte atskirai naršyti. Arba atjunkite to asmens „Google“ paskyrą.</translation>
 <translation id="8187289872471304532">Eikite į
           „Programos“ &gt; „Sistemos nuostatos“ &gt; „Tinklas“ &gt; „Išplėstinis“ &gt; „Tarpiniai serveriai“

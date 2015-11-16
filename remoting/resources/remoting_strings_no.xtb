@@ -33,7 +33,6 @@ Du kan finne informasjon om personvern i Googles personvernregler (http://goo.gl
 <translation id="1770394049404108959">Jeg kan ikke åpne appen.</translation>
 <translation id="177096447311351977">Kanal-IP for klienten: <ph name="CLIENT_GAIA_IDENTIFIER" /> ip='<ph name="CLIENT_IP_ADDRESS_AND_PORT" />' host_ip='<ph name="HOST_IP_ADDRESS_AND_PORT" />' channel='<ph name="CHANNEL_TYPE" />' connection='<ph name="CONNECTION_TYPE" />'.</translation>
 <translation id="1779766957982586368">Lukk vindu</translation>
-<translation id="1818475040640568770">Du har ikke registrert noen datamaskiner.</translation>
 <translation id="1841799852846221389">Slår av eksterne tilkoblinger for denne datamaskinen …</translation>
 <translation id="189172778771606813">Lukk uttrekksmenyen</translation>
 <translation id="195619862187186579">Tastaturoppsett</translation>
@@ -87,8 +86,6 @@ Du kan finne informasjon om personvern i Googles personvernregler (http://goo.gl
 <translation id="2926340305933667314">Kunne ikke deaktivere fjerntilgang til denne datamaskinen. Prøv på nytt senere.</translation>
 <translation id="2930135165929238380">Det mangler noen nødvendige komponenter. Gå til chrome://plugins og sjekk at Native Client er slått på.</translation>
 <translation id="2939145106548231838">Autentiser for å være vert</translation>
-<translation id="2998137343848432918">• La til et anerkjennelsesskjermbilde.
-• Korrigerte et problem ved åpning av fullskjermmodus med tastaturet synlig.</translation>
 <translation id="3020807351229499221">Kunne ikke oppdatere PIN-koden. Prøv på nytt senere.</translation>
 <translation id="3025388528294795783">Fortell oss hva som gikk galt, slik at vi kan prøve å løse problemet ditt.</translation>
 <translation id="3027681561976217984">Berøringsmodus</translation>
@@ -124,6 +121,7 @@ Vert</translation>
 <translation id="3950820424414687140">Logg på</translation>
 <translation id="3989511127559254552">Før du kan fortsette, må du gi datamaskinen utvidede tilgangstillatelser. Det er bare nødvendig å gjøre dette én gang.</translation>
 <translation id="4006787130661126000">Du må aktivere eksterne tilkoblinger hvis du vil ha tilgang til denne datamaskinen gjennom Chrome Eksternt skrivebord.</translation>
+<translation id="405887016757208221">Den eksterne datamaskinen kunne ikke initialisere økten. Hvis problemet vedvarer, kan du prøve å konfigurere verten på nytt.</translation>
 <translation id="4068946408131579958">Alle tilkoblinger</translation>
 <translation id="409800995205263688">MERK: I henhold til lokale retningslinjer er tilkobling tillatt bare mellom datamaskiner i nettverket ditt.</translation>
 <translation id="4155497795971509630">Det mangler noen nødvendige komponenter. Kontrollér at du kjører den nyeste versjonen av programvaren, og prøv på nytt.</translation>
@@ -170,7 +168,6 @@ skrivebord-vert</translation>
 <translation id="518094545883702183">Denne informasjonen brukes bare til å diagnostisere problemet du rapporterer om. Informasjonen er bare tilgjengelig for personer som går gjennom rapporten, og den slettes etter maksimalt 30 dager.</translation>
 <translation id="5222676887888702881">Logg av</translation>
 <translation id="5254120496627797685">Hvis du forlater denne siden, avsluttes Chrome Eksternt skrivebord-økten.</translation>
-<translation id="5285241842433869526">Finn ut hvordan du konfigurerer en datamaskin for ekstern tilgang.</translation>
 <translation id="5308380583665731573">Koble til</translation>
 <translation id="5363265567587775042">Be brukeren av datamaskinen du vil ha tilgang til, om å klikke på «<ph name="SHARE" />» og gi deg tilgangskoden.</translation>
 <translation id="5379087427956679853">Med Chrome Eksternt skrivebord kan du trygt dele datamaskinen din på nettet. Begge brukerne må installere Chrome Eksternt skrivebord-appen, som er å finne på <ph name="URL" /></translation>
@@ -258,6 +255,7 @@ skrivebord-vert</translation>
 <translation id="7869445566579231750">Du har ikke tillatelse til å kjøre dette programmet.</translation>
 <translation id="7948001860594368197">Skjermalternativer</translation>
 <translation id="7970576581263377361">Autentiseringen mislyktes. Logg på Chromium på nytt.</translation>
+<translation id="7981525049612125370">Den eksterne økten er utløpt.</translation>
 <translation id="8041721485428375115">Ved å laste ned installasjonsprogrammet for verten for Chrome Eksternt skrivebord samtykker du i Googles <ph name="LINK_BEGIN" />vilkår for bruk<ph name="LINK_END" />.</translation>
 <translation id="8073845705237259513">Hvis du vil bruke Chrome Eksternt skrivebord, må du legge til en Google-konto på enheten din.</translation>
 <translation id="80739703311984697">Den eksterne verten krever at du godkjenner via et tredjepartsnettsted. For å fortsette må du gi Chromoting ytterligere tillatelser til å åpne denne adressen:</translation>

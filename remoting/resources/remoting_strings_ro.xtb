@@ -33,7 +33,6 @@ Pentru informații privind confidențialitatea, accesați Politica de confidenț
 <translation id="1770394049404108959">Nu pot deschide aplicația.</translation>
 <translation id="177096447311351977">IP canal pentru client: <ph name="CLIENT_GAIA_IDENTIFIER" /> ip=„<ph name="CLIENT_IP_ADDRESS_AND_PORT" />” host_ip=„<ph name="HOST_IP_ADDRESS_AND_PORT" />” channel=„<ph name="CHANNEL_TYPE" />” connection=„<ph name="CONNECTION_TYPE" />”.</translation>
 <translation id="1779766957982586368">Închide fereastra</translation>
-<translation id="1818475040640568770">Nu aveți niciun computer înregistrat.</translation>
 <translation id="1841799852846221389">Se dezactivează conexiunile la distanță pentru acest computer…</translation>
 <translation id="189172778771606813">Închide panoul de navigare</translation>
 <translation id="195619862187186579">Aspecte de tastatură</translation>
@@ -87,8 +86,6 @@ Pentru informații privind confidențialitatea, accesați Politica de confidenț
 <translation id="2926340305933667314">Dezactivarea accesului la distanță la acest computer nu a reușit. Încercați din nou mai târziu.</translation>
 <translation id="2930135165929238380">Unele componente necesare lipsesc. Accesează chrome://plugins și asigură-te că ai activat Clientul nativ.</translation>
 <translation id="2939145106548231838">Autentificare la gazdă</translation>
-<translation id="2998137343848432918">• S-a adăugat un ecran Mulțumiri.
-• S-a remediat problema privind trecerea la modul ecran complet cu afișarea tastaturii.</translation>
 <translation id="3020807351229499221">Codul PIN nu a putut fi actualizat. Încercați din nou mai târziu.</translation>
 <translation id="3025388528294795783">Pentru a remedia problema, spune-ne ce nu este în regulă:</translation>
 <translation id="3027681561976217984">Modul tactil</translation>
@@ -124,6 +121,7 @@ Chromoting</translation>
 <translation id="3950820424414687140">Conectează-te</translation>
 <translation id="3989511127559254552">Pentru a continua, trebuie să acorzi permisiuni extinse de acces la computer. Acest lucru este necesar o singură dată.</translation>
 <translation id="4006787130661126000">Trebuie să activați conexiunile la distanță dacă doriți să utilizați Desktop la distanță Chrome pentru a accesa acest computer.</translation>
+<translation id="405887016757208221">Computerul la distanță nu a putut să inițializeze sesiunea. Dacă problema persistă, încearcă să configurezi gazda din nou.</translation>
 <translation id="4068946408131579958">Toate conexiunile</translation>
 <translation id="409800995205263688">NOTĂ: setările politicii permit conexiuni numai între computerele din rețeaua dvs.</translation>
 <translation id="4155497795971509630">Unele componente necesare lipsesc. Asigură-te că ai instalată cea mai recentă versiune a software-ului și încearcă din nou.</translation>
@@ -170,7 +168,6 @@ la distanță Chrome</translation>
 <translation id="518094545883702183">Această informație este folosită numai pentru diagnosticarea problemei pe care o raportezi, este disponibilă numai pentru persoana care îți examinează raportul și nu este păstrată pentru mai mult de 30 de zile.</translation>
 <translation id="5222676887888702881">Deconectează-te</translation>
 <translation id="5254120496627797685">Părăsind această pagină, veți încheia sesiunea Desktop la distanță Chrome.</translation>
-<translation id="5285241842433869526">Aflați cum puteți configura un computer pentru acces la distanță.</translation>
 <translation id="5308380583665731573">Conectează-te</translation>
 <translation id="5363265567587775042">Roagă utilizatorul al cărui computer dorești să îl accesezi să dea clic pe „<ph name="SHARE" />” și să îți trimită codul de acces.</translation>
 <translation id="5379087427956679853">Cu aplicația Desktop la distanță Chrome, puteți permite accesul în siguranță la computerul dvs. pe web. Ambii utilizatori trebuie să ruleze aplicația Desktop la distanță Chrome, care poate fi găsită la <ph name="URL" />.</translation>
@@ -258,6 +255,7 @@ la distanță Chrome</translation>
 <translation id="7869445566579231750">Nu ai permisiunea să rulezi această aplicație.</translation>
 <translation id="7948001860594368197">Opțiuni ecran</translation>
 <translation id="7970576581263377361">Autentificarea nu a reușit. Conectează-te din nou la Chromium.</translation>
+<translation id="7981525049612125370">Sesiunea la distanță a expirat.</translation>
 <translation id="8041721485428375115">Descărcând programul de instalare gazdă pentru Desktop la distanță Chrome, accepți <ph name="LINK_BEGIN" />Termenii și condițiile<ph name="LINK_END" /> Google.</translation>
 <translation id="8073845705237259513">Pentru a folosi Desktop la distanță Chrome, va trebui să adăugați un Cont Google pe dispozitiv.</translation>
 <translation id="80739703311984697">Gazda la distanță solicită să vă autentificați pe un site terță parte. Pentru a continua, trebuie să acordați permisiuni suplimentare serviciului Chromoting pentru a accesa această adresă:</translation>

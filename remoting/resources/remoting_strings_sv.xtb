@@ -33,7 +33,6 @@ Du hittar mer information om sekretess i Googles sekretesspolicy (http://goo.gl/
 <translation id="1770394049404108959">Jag kan inte öppna appen.</translation>
 <translation id="177096447311351977">IP-adress för kanal för klient: <ph name="CLIENT_GAIA_IDENTIFIER" /> ip='<ph name="CLIENT_IP_ADDRESS_AND_PORT" />' host_ip='<ph name="HOST_IP_ADDRESS_AND_PORT" />' channel='<ph name="CHANNEL_TYPE" />' connection='<ph name="CONNECTION_TYPE" />'.</translation>
 <translation id="1779766957982586368">Stäng fönstret</translation>
-<translation id="1818475040640568770">Du har inga registrerade datorer.</translation>
 <translation id="1841799852846221389">Fjärranslutningar inaktiveras för den här datorn ...</translation>
 <translation id="189172778771606813">Stäng navigeringspanelen</translation>
 <translation id="195619862187186579">Tangentbordslayouter</translation>
@@ -87,8 +86,6 @@ Du hittar mer information om sekretess i Googles sekretesspolicy (http://goo.gl/
 <translation id="2926340305933667314">Det gick inte att inaktivera fjärråtkomst till den här datorn. Försök igen senare.</translation>
 <translation id="2930135165929238380">Vissa obligatoriska komponenter saknas. Öppna chrome://plugins och kontrollera att Native Client har aktiverats.</translation>
 <translation id="2939145106548231838">Autentisera till värd</translation>
-<translation id="2998137343848432918">• Saldoskärm tillagd.
-• Korrigering av problem när fullskärmsläget aktiveras med tangentbordet synligt.</translation>
 <translation id="3020807351229499221">Det gick inte att uppdatera PIN-koden. Försök igen senare.</translation>
 <translation id="3025388528294795783">Hjälp oss att lösa problemet och berätta vad som har gått fel.</translation>
 <translation id="3027681561976217984">Tryckläge</translation>
@@ -171,7 +168,6 @@ Desktop Host</translation>
 <translation id="518094545883702183">Den här informationen används bara för att diagnostisera det som felrapporten gäller. Bara den som arbetar med ärendet kan se den och den sparas i högst 30 dagar.</translation>
 <translation id="5222676887888702881">Logga ut</translation>
 <translation id="5254120496627797685">Om du lämnar sidan avslutas sessionen i Chrome Remote Desktop.</translation>
-<translation id="5285241842433869526">Läs mer om hur du konfigurerar en dator för fjärråtkomst.</translation>
 <translation id="5308380583665731573">Ansluta</translation>
 <translation id="5363265567587775042">Be användaren vars dator du vill använda att klicka på <ph name="SHARE" /> och ge dig åtkomstkoden.</translation>
 <translation id="5379087427956679853">Med Chrome Remote Desktop kan du dela din dator via internet på ett säkert sätt. Båda användarna måste köra appen Chrome Remote Desktop som du hittar på <ph name="URL" />.</translation>

@@ -4,6 +4,7 @@
 <translation id="1008557486741366299">Jetzt nicht</translation>
 <translation id="1047726139967079566">Lesezeichen für diese Seite erstellen</translation>
 <translation id="1172898394251786223">Nächstes Feld</translation>
+<translation id="1625603797851307283">Soll <ph name="PRODUCT_NAME" /> Ihr Passwort für diese Website speichern?</translation>
 <translation id="2320166752086256636">Tastatur ausblenden</translation>
 <translation id="2704606927547763573">Kopiert</translation>
 <translation id="2747003861858887689">Vorheriges Feld</translation>
@@ -11,11 +12,17 @@
 <translation id="3244271242291266297">MM</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> von <ph name="NUM_SUGGESTIONS" /></translation>
 <translation id="3335947283844343239">Geschlossenen Tab wieder öffnen</translation>
+<translation id="3414292259312108062">Chrome speichert dieses Passwort in Ihren <ph name="BEGIN_LINK" />in Google gespeicherten Passwörtern<ph name="END_LINK" /> und fügt es automatisch für Sie ein. Sie müssen es sich also nicht merken.</translation>
 <translation id="385051799172605136">Zurück</translation>
 <translation id="4121993058175073134">Zum Senden von Exportdaten E-Mail-Konto in App "Einstellungen" konfigurieren</translation>
 <translation id="4728558894243024398">Plattform</translation>
+<translation id="5317780077021120954">Speichern</translation>
 <translation id="5779929835642192302">Vorschläge verfügbar</translation>
 <translation id="605721222689873409">JJ</translation>
+<translation id="6149061208933997199">Passwort verwenden</translation>
+<translation id="6314335155547195432">Passwort erstellen</translation>
+<translation id="6456425917241817154">Passwort von Chrome erstellt</translation>
 <translation id="7456847797759667638">Adresse öffnen...</translation>
 <translation id="7481312909269577407">Vorwärts</translation>
+<translation id="7961015016161918242">Nie</translation>
 </translationbundle>

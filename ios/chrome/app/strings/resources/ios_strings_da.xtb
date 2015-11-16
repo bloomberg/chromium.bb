@@ -4,6 +4,7 @@
 <translation id="1008557486741366299">Ikke nu</translation>
 <translation id="1047726139967079566">Tilføj denne side som bogmærke...</translation>
 <translation id="1172898394251786223">Næste felt</translation>
+<translation id="1625603797851307283">Ønsker du, at <ph name="PRODUCT_NAME" /> gemmer din adgangskode for dette website?</translation>
 <translation id="2320166752086256636">Skjul tastaturet</translation>
 <translation id="2704606927547763573">Kopieret</translation>
 <translation id="2747003861858887689">Forrige felt</translation>
@@ -11,11 +12,17 @@
 <translation id="3244271242291266297">MM</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> af <ph name="NUM_SUGGESTIONS" /></translation>
 <translation id="3335947283844343239">Åbn lukket fane igen</translation>
+<translation id="3414292259312108062">Chrome gemmer denne i dine <ph name="BEGIN_LINK" />Gemte adgangskoder på Google<ph name="END_LINK" /> og autofylder den for dig, så du ikke behøver at huske den selv.</translation>
 <translation id="385051799172605136">Tilbage</translation>
 <translation id="4121993058175073134">For at sende oplysninger om nettoeksporten skal du konfigurere din e-mailkonto i appen Indstillinger.</translation>
 <translation id="4728558894243024398">Platform</translation>
+<translation id="5317780077021120954">Gem</translation>
 <translation id="5779929835642192302">Tilgængelige forslag</translation>
 <translation id="605721222689873409">ÅÅ</translation>
+<translation id="6149061208933997199">Brug adgangskoden</translation>
+<translation id="6314335155547195432">Generér adgangskode</translation>
+<translation id="6456425917241817154">Adgangskode genereret af Chrome</translation>
 <translation id="7456847797759667638">Åbn placering...</translation>
 <translation id="7481312909269577407">Frem</translation>
+<translation id="7961015016161918242">Aldrig</translation>
 </translationbundle>

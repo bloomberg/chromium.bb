@@ -33,7 +33,6 @@
 <translation id="1770394049404108959">我无法打开此应用。</translation>
 <translation id="177096447311351977">客户端信道 IP：<ph name="CLIENT_GAIA_IDENTIFIER" /> ip='<ph name="CLIENT_IP_ADDRESS_AND_PORT" />' host_ip='<ph name="HOST_IP_ADDRESS_AND_PORT" />' channel='<ph name="CHANNEL_TYPE" />' connection='<ph name="CONNECTION_TYPE" />'。</translation>
 <translation id="1779766957982586368">关闭窗口</translation>
-<translation id="1818475040640568770">您未注册任何计算机。</translation>
 <translation id="1841799852846221389">正在对此计算机停用远程连接…</translation>
 <translation id="189172778771606813">关闭抽屉式导航栏</translation>
 <translation id="195619862187186579">键盘布局</translation>
@@ -87,8 +86,6 @@
 <translation id="2926340305933667314">无法停用对此计算机的远程访问。请稍后重试。</translation>
 <translation id="2930135165929238380">缺少某些必需的组件。请前往 chrome://plugins，确保 Native Client 处于启用状态。</translation>
 <translation id="2939145106548231838">向主机验证身份</translation>
-<translation id="2998137343848432918">• 添加了“鸣谢”屏幕。
-• 解决了一个在显示键盘的情况下进入全屏模式时会出现的问题。</translation>
 <translation id="3020807351229499221">无法更新 PIN。请稍后重试。</translation>
 <translation id="3025388528294795783">请将您遇到的问题告诉我们，以便我们为您解决：</translation>
 <translation id="3027681561976217984">触摸模式</translation>
@@ -124,6 +121,7 @@
 <translation id="3950820424414687140">登录</translation>
 <translation id="3989511127559254552">要继续，您必须先为该应用授予对您的计算机的扩展访问权限（该操作只需执行一次）。</translation>
 <translation id="4006787130661126000">如果您想使用 Chrome 远程桌面来访问此计算机，就必须启用远程连接。</translation>
+<translation id="405887016757208221">远程计算机未能将该会话初始化。如果问题仍然存在，请尝试重新配置主机。</translation>
 <translation id="4068946408131579958">所有连接</translation>
 <translation id="409800995205263688">注意：策略设置仅允许您网络内的计算机之间建立连接。</translation>
 <translation id="4155497795971509630">缺少某些必需的组件。请确保您已安装该软件的最新版本，然后重试。</translation>
@@ -170,7 +168,6 @@
 <translation id="518094545883702183">这些信息仅用于诊断您报告的问题，并且只有负责对您报告的问题进行调查的人员才可使用。这些信息的保留时间不会超过 30 天。</translation>
 <translation id="5222676887888702881">退出</translation>
 <translation id="5254120496627797685">如果您离开此页，那么您的 Chrome 远程桌面会话就会结束。</translation>
-<translation id="5285241842433869526">了解如何为计算机设置远程访问。</translation>
 <translation id="5308380583665731573">连接</translation>
 <translation id="5363265567587775042">请让您想访问其计算机的用户点击“<ph name="SHARE" />”，然后向您提供访问代码。</translation>
 <translation id="5379087427956679853">Chrome 远程桌面可让您通过网络安全地共享自己的计算机。双方用户必须同时运行 Chrome 远程桌面应用（下载地址为 <ph name="URL" />）。</translation>
@@ -258,6 +255,7 @@
 <translation id="7869445566579231750">您无权运行该应用。</translation>
 <translation id="7948001860594368197">屏幕选项</translation>
 <translation id="7970576581263377361">身份验证失败。请重新登录 Chromium。</translation>
+<translation id="7981525049612125370">远程会话已过期。</translation>
 <translation id="8041721485428375115">下载 Chrome 远程桌面主机安装程序，即表示您同意遵守 Google <ph name="LINK_BEGIN" />服务条款<ph name="LINK_END" />。</translation>
 <translation id="8073845705237259513">要使用Chrome远程桌面，您需要先为自己的设备添加一个Google帐户。</translation>
 <translation id="80739703311984697">远程主机要求您对第三方网站进行身份验证。要继续操作，您必须向 Chrome 远程桌面授予访问以下地址的额外权限：</translation>

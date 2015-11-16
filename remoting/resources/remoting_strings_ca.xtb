@@ -33,7 +33,6 @@ Per obtenir informació sobre la privadesa, vegeu la Política de privadesa de G
 <translation id="1770394049404108959">No puc obrir l'aplicació.</translation>
 <translation id="177096447311351977">IP del canal del client: <ph name="CLIENT_GAIA_IDENTIFIER" /> ip='<ph name="CLIENT_IP_ADDRESS_AND_PORT" />' host_ip='<ph name="HOST_IP_ADDRESS_AND_PORT" />' channel='<ph name="CHANNEL_TYPE" />' connection='<ph name="CONNECTION_TYPE" />'.</translation>
 <translation id="1779766957982586368">Tanca la finestra</translation>
-<translation id="1818475040640568770">No teniu cap ordinador registrat.</translation>
 <translation id="1841799852846221389">S'estan desactivant les connexions remotes en aquest ordinador...</translation>
 <translation id="189172778771606813">Tanca el tauler de navegació</translation>
 <translation id="195619862187186579">Dissenys de teclat</translation>
@@ -87,8 +86,6 @@ Per obtenir informació sobre la privadesa, vegeu la Política de privadesa de G
 <translation id="2926340305933667314">No s'ha pogut desactivar l'accés remot a aquest ordinador. Torneu-ho a provar més tard.</translation>
 <translation id="2930135165929238380">Falten alguns components necessaris. Aneu a chrome://plugins i assegureu-vos que Native Client estigui activat.</translation>
 <translation id="2939145106548231838">Autenticació a l'amfitrió</translation>
-<translation id="2998137343848432918">• S'ha afegit la pantalla Crèdits.
-• S'ha esmenat un problema en canviar a pantalla completa amb el teclat visible.</translation>
 <translation id="3020807351229499221">No s'ha pogut actualitzar el PIN. Torneu-ho a provar més tard.</translation>
 <translation id="3025388528294795783">Per ajudar-nos a resoldre el problema, ens heu de dir què passa:</translation>
 <translation id="3027681561976217984">Mode tàctil</translation>
@@ -124,6 +121,7 @@ Host</translation>
 <translation id="3950820424414687140">Inici de sessió</translation>
 <translation id="3989511127559254552">Per continuar heu de concedir permisos d'accés ampliat a l'ordinador. Només ho heu de fer una vegada.</translation>
 <translation id="4006787130661126000">Heu d'activar les connexions remotes si voleu utilitzar l'escriptori remot de Chrome per accedir a aquest ordinador.</translation>
+<translation id="405887016757208221">L'ordinador remot no ha pogut inicialitzar la sessió. Si el problema continua, torneu a configurar l'amfitrió.</translation>
 <translation id="4068946408131579958">Totes les connexions</translation>
 <translation id="409800995205263688">NOTA: La configuració de la política només permet connexions entre ordinadors de la vostra xarxa.</translation>
 <translation id="4155497795971509630">Falten alguns components necessaris. Assegureu-vos que hàgiu instal·lat la versió més recent del programari i torneu-ho a provar.</translation>
@@ -170,7 +168,6 @@ remot de Chrome</translation>
 <translation id="518094545883702183">Aquesta informació només s'utilitza per diagnosticar el problema de què esteu informant. Només hi poden accedir les persones que analitzen l'informe i es conserva com a màxim durant 30 dies.</translation>
 <translation id="5222676887888702881">Tanca la sessió</translation>
 <translation id="5254120496627797685">Si sortiu d'aquesta pàgina, la sessió de l'escriptori remot de Chrome finalitzarà.</translation>
-<translation id="5285241842433869526">Obteniu informació sobre com podeu configurar un ordinador per a l'accés remot.</translation>
 <translation id="5308380583665731573">Connexió</translation>
 <translation id="5363265567587775042">Demaneu a l'usuari de l'ordinador al qual voleu accedir que faci clic a <ph name="SHARE" /> i que us faciliti el codi d'accés.</translation>
 <translation id="5379087427956679853">L'escriptori remot de Chrome us permet compartir el vostre ordinador de manera segura al web. Els dos usuaris han d'executar l'aplicació d'escriptori remot de Chrome, que podeu trobar a la pàgina <ph name="URL" />.</translation>
@@ -258,6 +255,7 @@ remot de Chrome</translation>
 <translation id="7869445566579231750">No teniu permís per executar aquesta aplicació.</translation>
 <translation id="7948001860594368197">Opcions de pantalla</translation>
 <translation id="7970576581263377361">L'autenticació ha fallat. Torneu a iniciar la sessió a Chromium.</translation>
+<translation id="7981525049612125370">La sessió remota ha caducat.</translation>
 <translation id="8041721485428375115">En baixar l'instal·lador de l'amfitrió d'Escriptori remot de Chrome accepteu les <ph name="LINK_BEGIN" />Condicions del servei<ph name="LINK_END" /> de Google.</translation>
 <translation id="8073845705237259513">Per utilitzar l'escriptori remot de Chrome, haureu d'afegir un compte de Google al dispositiu.</translation>
 <translation id="80739703311984697">L'amfitrió remot necessita que us autentiqueu en un lloc web de tercers. Per continuar, cal que concediu permisos addicionals a Chromoting per accedir a aquesta adreça:</translation>

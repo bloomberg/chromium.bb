@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="it">
 <translation id="1001534784610492198">Il file del programma di installazione è danneggiato oppure non è valido. Scarica nuovamente Google Chrome.</translation>
+<translation id="1013290471399003443">Chrome ha verificato che <ph name="ISSUER" /> ha rilasciato il certificato del sito web. Le informazioni su Certificate Transparency fornite dal server sono valide.</translation>
 <translation id="1016765312371154165">Chrome non si è chiuso correttamente.</translation>
 <translation id="103396972844768118">Informazioni importanti relative ai tuoi dati Chrome</translation>
 <translation id="1061441684050139317">Chrome deve avere accesso al microfono per condividerla con questo sito.</translation>
@@ -62,6 +63,7 @@ Se esegui comunque l'accesso, le informazioni di Chrome come Preferiti, cronolog
 <translation id="2769762047821873045">Google Chrome non è il tuo browser predefinito.</translation>
 <translation id="2770231113462710648">Cambia browser predefinito con:</translation>
 <translation id="2871893339301912279">Hai eseguito l'accesso a Chrome.</translation>
+<translation id="2997147809295888909">Chrome ha verificato che <ph name="ISSUER" /> ha rilasciato il certificato del sito web. Il server non ha fornito informazioni su Certificate Transparency.</translation>
 <translation id="3037838751736561277">Google Chrome è in modalità background.</translation>
 <translation id="3047079729301751317">Se ti disconnetti da <ph name="USERNAME" /> verranno cancellati la cronologia, i Preferiti, le impostazioni e gli altri dati di Chrome memorizzati sul dispositivo. I dati memorizzati nel tuo account Google non verranno cancellati e potrai gestirli su <ph name="GOOGLE_DASHBOARD_LINK" />Google Dashboard<ph name="END_GOOGLE_DASHBOARD_LINK" />.</translation>
 <translation id="3080151273017101988">Continua a eseguire applicazioni in background dopo la chiusura di Google Chrome</translation>
@@ -76,7 +78,6 @@ Se esegui comunque l'accesso, le informazioni di Chrome come Preferiti, cronolog
 <translation id="345171907106878721">Aggiungiti a Chrome</translation>
 <translation id="3612333635265770873">Un modulo con lo stesso nome risulta in conflitto con Google Chrome.</translation>
 <translation id="3622797965165704966">Ora è più facile utilizzare Chrome con il tuo account Google e sui computer condivisi.</translation>
-<translation id="3656661827369545115">Lancia automaticamente Chromium all'avvio del computer</translation>
 <translation id="3735758079232443276">L'estensione "<ph name="EXTENSION_NAME" />" ha cambiato la pagina mostrata all'avvio di Chrome.</translation>
 <translation id="3738139272394829648">Tocca per cercare</translation>
 <translation id="3784527566857328444">Rimuovi da Chrome...</translation>
@@ -84,6 +85,7 @@ Se esegui comunque l'accesso, le informazioni di Chrome come Preferiti, cronolog
 <translation id="3847841918622877581">Google Chrome potrebbe utilizzare servizi web per migliorare la navigazione.</translation>
 <translation id="386202838227397562">Chiudi tutte le finestre di Google Chrome e riprova.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
+<translation id="3881912906674381083">Chrome ha verificato che <ph name="ISSUER" /> ha rilasciato il certificato del sito web. Il server ha fornito le informazioni relative a Certificate Transparency, ma non è stato riconosciuto nessun log di Certificate Transparency.</translation>
 <translation id="3889417619312448367">Disinstalla Google Chrome</translation>
 <translation id="4011219958405096740">Quando questa opzione è abilitata, viene utilizzato un flusso di accesso a Chrome basato su iframe; in caso contrario, viene utilizzato un flusso basato sulla visualizzazione web.</translation>
 <translation id="4050175100176540509">Nell'ultima versione sono stati apportati miglioramenti rilevanti in materia di sicurezza e sono state aggiunte nuove funzioni.</translation>
@@ -93,10 +95,8 @@ Se esegui comunque l'accesso, le informazioni di Chrome come Preferiti, cronolog
 <translation id="4167057906098955729">Qui puoi visualizzare tutte le tue notifiche da parte delle estensioni e app Chrome e dei siti web.</translation>
 <translation id="423410644998903704">Chrome deve avere accesso alle autorizzazioni per condividerle con questo sito.</translation>
 <translation id="4251615635259297716">Collegare i tuoi dati Chrome a questo account?</translation>
-<translation id="4273752058983339720">Google Chrome è stato configurato per avviarsi automaticamente all'accensione del computer.</translation>
 <translation id="4309555186815777032">(è necessario <ph name="BEGIN_BUTTON" />riavviare<ph name="END_BUTTON" /> Chrome)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
-<translation id="4367618624832907428">Impossibile visualizzare la pagina web in Google Chrome perché il computer non è connesso a Internet.</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="4458285410772214805">Esci ed esegui di nuovo l'accesso per applicare la modifica.</translation>
 <translation id="4480040274068703980">Impossibile sincronizzare i dati in Chrome OS a causa di un errore durante l'accesso.</translation>
@@ -105,7 +105,6 @@ Se esegui comunque l'accesso, le informazioni di Chrome come Preferiti, cronolog
 <translation id="4567424176335768812">Hai eseguito l'accesso come <ph name="USER_EMAIL_ADDRESS" />. Ora puoi accedere ai tuoi Preferiti, alla tua cronologia e ad altre impostazioni su tutti i tuoi dispositivi su cui esegui l'accesso.</translation>
 <translation id="4631713731678262610">Nascondi in menu Chrome</translation>
 <translation id="4633000520311261472">Per rendere Chrome più sicuro, abbiamo disattivato alcune estensioni che non sono elencate nel <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> e potrebbero essere state aggiunte a tua insaputa.</translation>
-<translation id="4692614041509923516">Sul computer è installata una vecchia versione di Microsoft Windows che non è in grado di elaborare il certificato di sicurezza del sito web. Per questo problema, Google Chrome non riesce a capire se il certificato proviene da <ph name="SITE" /> o da qualcuno sulla tua rete che si spaccia per il sito <ph name="SITE" />. Aggiorna il computer a una versione più recente di Windows.</translation>
 <translation id="4700157086864140907">Google Chrome può offrire una funzione di controllo ortografico migliore inviando il testo digitato nel browser ai server di Google, consentendo così di usufruire della stessa tecnologia di controllo ortografico utilizzata da Ricerca Google.</translation>
 <translation id="4728575227883772061">Installazione non riuscita a causa di un errore non specificato. Se Google Chrome è attivo, chiudilo e riprova.</translation>
 <translation id="473775607612524610">Aggiorna</translation>
@@ -114,6 +113,7 @@ Se esegui comunque l'accesso, le informazioni di Chrome come Preferiti, cronolog
 <translation id="4794050651896644714">Salva dati in Chrome</translation>
 <translation id="4891791193823137474">Lascia Google Chrome in esecuzione in background</translation>
 <translation id="4921569541910214635">Condividi un computer con altre persone? Ora puoi configurare Chrome come preferisci.</translation>
+<translation id="4925019873400497719">Chrome ha verificato che <ph name="ISSUER" /> ha rilasciato il certificato del sito web. Le informazioni su Certificate Transparency fornite dal server non sono valide.</translation>
 <translation id="4953650215774548573">Imposta Google Chrome come browser predefinito</translation>
 <translation id="4987308747895123092">Chiudi tutte le finestre di Google Chrome (incluse quelle in modalità Windows 8) e riprova.</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
@@ -191,7 +191,6 @@ insolite e sbagliate. È possibile che un malintenzionato stia cercando di spacc
 <translation id="6989339256997917931">Google Chrome è stato aggiornato ma non lo utilizzi da almeno 30 giorni.</translation>
 <translation id="699076943483372849">Questo sito utilizza il plug-in Chrome Frame, che non riceve più aggiornamenti su sicurezza e stabilità perché è stato ritirato. Disinstallalo ed esegui l'upgrade a un browser recente.</translation>
 <translation id="6991142834212251086">Collega i miei dati Chrome a questo account</translation>
-<translation id="7054640471403081847">A breve non sarà più possibile ricevere gli aggiornamenti di Google Chrome, perché l'hardware del computer in uso non è più supportato.</translation>
 <translation id="7060865993964054389">Avvio applicazioni di Google Chrome</translation>
 <translation id="7084448929020576097"><ph name="FILE_NAME" /> è dannoso ed è stato bloccato da Chrome.</translation>
 <translation id="7098166902387133879">Google Chrome sta utilizzando il microfono.</translation>
@@ -228,7 +227,6 @@ insolite e sbagliate. È possibile che un malintenzionato stia cercando di spacc
 <translation id="781069973841903133">Il riavvio in modalità immersiva di Chrome comporterà la chiusura e il riavvio delle tue app di Chrome.</translation>
 <translation id="7825851276765848807">Installazione non riuscita a causa di un errore non specificato. Scarica nuovamente Google Chrome.</translation>
 <translation id="7890208801193284374">Se condividi un computer, i tuoi amici e la tua famiglia possono navigare separatamente e configurare Chrome in base alle proprie esigenze.</translation>
-<translation id="7908968924842975895">Non è più possibile ricevere gli aggiornamenti di Google Chrome, perché l'hardware del computer in uso non è più supportato.</translation>
 <translation id="7984945080620862648">Al momento non puoi visitare il sito web <ph name="SITE" /> perché ha inviato strane credenziali che Chrome non riesce a elaborare. In genere gli errori di rete e gli attacchi sono temporanei, pertanto questa pagina potrebbe funzionare più tardi.</translation>
 <translation id="8000275528373650868">Google Chrome richiede Windows Vista o Windows XP con SP2 o versioni successive.</translation>
 <translation id="8005540215158006229">Chrome è quasi pronto.</translation>

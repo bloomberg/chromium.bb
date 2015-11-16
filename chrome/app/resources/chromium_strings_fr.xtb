@@ -33,6 +33,7 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="1967743265616885482">Nous avons constaté qu'un module du même nom n'est pas compatible avec Chromium.</translation>
 <translation id="2077129598763517140">Utiliser l'accélération matérielle (le cas échéant)</translation>
 <translation id="2097986737970966220">Ouvrir Chromium sur le bureau</translation>
+<translation id="2117181891440368863">Il a été confirmé dans Chromium que le certificat de ce site a bien été fourni par <ph name="ISSUER" />. Des informations relatives à la transparence du certificat ont été fournies via le serveur, mais celles-ci ne sont pas valides.</translation>
 <translation id="2119636228670142020">À propos de &amp;Chromium OS</translation>
 <translation id="2158734852934720349">Licences Chromium OS Open Source</translation>
 <translation id="2233513990531887259">Redémarrer en mode immersif dans Chromium</translation>
@@ -47,13 +48,11 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="2558641060352364164">Ce site utilise le plug-in Chromium Frame, dont le développement va bientôt être abandonné. Veuillez désinstaller ce plug-in, puis passer à un navigateur récent.</translation>
 <translation id="2572494885440352020">Chromium Helper</translation>
 <translation id="2602806952220118310">Notifications – Chromium</translation>
-<translation id="2615699638672665509">Cet ordinateur ne recevra bientôt plus les mises à jour de Chromium, car ses composants matériels ne sont plus compatibles.</translation>
 <translation id="2636877269779209383">Chromium doit accéder à la caméra pour la partager avec ce site.</translation>
 <translation id="2648074677641340862">Une erreur du système d'exploitation s'est produite pendant l'installation. Veuillez télécharger Chromium à nouveau.</translation>
 <translation id="2673087257647337101">Mise à jour presque terminée. Relancez Chromium pour terminer la mise à jour.</translation>
 <translation id="2685838254101182273">Chromium n'est plus mis à jour et n'est plus compatible avec la version actuelle de votre système d'exploitation.</translation>
 <translation id="2705212601509139398">Ce site utilise le plug-in Chromium Frame, dont le développement va bientôt être abandonné. Veuillez désinstaller ce plug-in, puis télécharger un navigateur compatible.</translation>
-<translation id="2732467638532545152">La version de Microsoft Windows installée sur votre ordinateur ne permet pas d'analyser le certificat de sécurité de ce site Web. Par conséquent, il est impossible de déterminer dans Chromium si le certificat provient du site <ph name="SITE" /> ou d'un membre de votre réseau se faisant passer pour le site <ph name="SITE" />. Veuillez installer une version de Windows plus récente.</translation>
 <translation id="2770231113462710648">Remplacer le navigateur par défaut par :</translation>
 <translation id="2801146392936645542">Le fichier "<ph name="FILE_NAME" />" a été bloqué dans Chromium, car son contenu est malveillant.</translation>
 <translation id="2847479871509788944">Supprimer de Chromium</translation>
@@ -86,8 +85,6 @@ au site <ph name="SITE" />, des identifiants inhabituels et incorrects ont été
 <translation id="3582788516608077514">Mise à jour de Chromium en cours…</translation>
 <translation id="358997566136285270">Logo Chromium</translation>
 <translation id="3595526210123705352">Le redémarrage en mode Windows 8 entraîne la fermeture, puis la réouverture des applications Chromium.</translation>
-<translation id="3656661827369545115">Lancer Chromium automatiquement au démarrage de l'ordinateur</translation>
-<translation id="3736987306260231966">Cette page Web ne peut pas s'afficher dans Chromium, car votre ordinateur n'est pas connecté à Internet.</translation>
 <translation id="3738139272394829648">Appuyer pour rechercher</translation>
 <translation id="3744899669254331632"><ph name="SITE" /> est actuellement inaccessible. Le site Web a envoyé des identifiants brouillés inutilisables par Chromium. Les erreurs de réseau et les attaques étant généralement temporaires, cette page devrait à nouveau fonctionner ultérieurement.</translation>
 <translation id="3748537968684000502">Cette page Chromium est sécurisée.</translation>
@@ -108,7 +105,6 @@ au site <ph name="SITE" />, des identifiants inhabituels et incorrects ont été
 <translation id="4285930937574705105">Échec de l'installation suite à une erreur non spécifiée. Si Chromium est en cours d'exécution, veuillez le fermer, puis réessayer.</translation>
 <translation id="4330585738697551178">Ce module n'est pas compatible avec Chromium.</translation>
 <translation id="4423735387467980091">Personnaliser et contrôler Chromium</translation>
-<translation id="442817494342774222">Chromium est configuré de façon à être lancé automatiquement lorsque vous démarrez votre ordinateur.</translation>
 <translation id="4458285410772214805">Pour que cette modification soit prise en compte, veuillez vous déconnecter, puis vous reconnecter.</translation>
 <translation id="4488676065623537541">Vos informations de facturation ont été enregistrées dans Chromium.</translation>
 <translation id="4559775032954821361">Accédez au
@@ -179,6 +175,7 @@ Certaines fonctionnalités seront peut-être indisponibles. Veuillez spécifier 
 <translation id="6734080038664603509">Mettre à jour &amp;Chromium</translation>
 <translation id="6757767188268205357">Ne plus me notifier</translation>
 <translation id="6810143991807788455">Aidez-nous à améliorer Chromium en nous signalant vos paramètres actuels.</translation>
+<translation id="6838494703713445896">Il a été confirmé dans Chromium que le certificat de ce site a bien été fourni par <ph name="ISSUER" />. Les informations relatives à la transparence du certificat fournies via le serveur sont valides.</translation>
 <translation id="6883876366448858277">envoie un mot et son contexte à la recherche Google, qui renvoie à son tour des définitions, des photos et d'autres résultats de recherche.</translation>
 <translation id="6893813176749746474">Chromium a été mis à jour, mais vous ne l'avez pas utilisé pendant au moins 30 jours.</translation>
 <translation id="6900895776413482243">Le redémarrage en mode immersif dans Chromium entraîne la fermeture, puis la réouverture des applications Chromium.</translation>
@@ -191,6 +188,7 @@ Certaines fonctionnalités seront peut-être indisponibles. Veuillez spécifier 
 <translation id="7066436765290594559">Impossible de synchroniser vos données dans Chromium OS. Veuillez mettre à jour votre phrase secrète de synchronisation.</translation>
 <translation id="7138853919861947730">Chromium utilise parfois des services Web pour améliorer votre confort de navigation.</translation>
 <translation id="7162152143154757523">Chromium peut vous proposer une correction orthographique plus intelligente en envoyant ce que vous saisissez dans le navigateur aux serveurs Google, ce qui vous permet d'utiliser la même technologie de correction orthographique que la recherche Google.</translation>
+<translation id="7178626992616222740">Il a été confirmé dans Chromium que le certificat de ce site a bien été fourni par <ph name="ISSUER" />. Des informations relatives à la transparence du certificat ont été fournies via le serveur, mais aucun des journaux relatifs à la transparence du certificat n'a été reconnu dans Chromium.</translation>
 <translation id="7196020411877309443">Pourquoi ce message s'affiche-t-il ?</translation>
 <translation id="7205698830395646142">Masquer dans le menu Chromium</translation>
 <translation id="7211828883345145708">Active des raccourcis clavier supplémentaires qui sont utiles pour le débogage de Chromium.</translation>
@@ -216,13 +214,13 @@ Chromium ne peut pas récupérer vos paramètres.</translation>
 <translation id="7723128346970903111">Lorsque cet indicateur est activé, un processus de connexion Chromium basé sur iFrame est utilisé. Dans le cas contraire, il s'agit d'un processus basé sur l'affichage Web.</translation>
 <translation id="7729447699958282447">Impossible de synchroniser vos données dans Chromium, car la synchronisation n'est pas disponible pour votre domaine.</translation>
 <translation id="7747138024166251722">Le programme d'installation n'a pas pu créer de répertoire temporaire. Vérifiez que le disque a suffisamment d'espace libre et que vous disposez des autorisations nécessaires pour installer le logiciel.</translation>
+<translation id="7918535023914021398">Il a été confirmé dans Chromium que le certificat de ce site a bien été fourni par <ph name="ISSUER" />. Aucune information relative à la transparence du certificat n'a été fournie via le serveur.</translation>
 <translation id="7937630085815544518">Vous étiez connecté à Chromium en tant que <ph name="USER_EMAIL_ADDRESS" />. Veuillez utiliser le même compte pour vous reconnecter.</translation>
 <translation id="7962572577636132072">Chromium est automatiquement mis à jour pour vous permettre de toujours disposer de la dernière version.</translation>
 <translation id="7979877361127045932">Masquer dans le menu Chromium</translation>
 <translation id="8030318113982266900">Passage de votre appareil à la version <ph name="CHANNEL_NAME" />…</translation>
 <translation id="8033665941300843262">Chromium doit accéder aux autorisations pour les partager avec ce site.</translation>
 <translation id="805745970029938373">Vous pouvez consulter ici toutes les notifications associées aux applications, aux extensions et aux sites Web Chromium.</translation>
-<translation id="811857857463334932">Cet ordinateur ne recevra plus les mises à jour de Chromium, car ses composants matériels ne sont plus compatibles.</translation>
 <translation id="8134284582177628525">Si vous partagez cet ordinateur avec <ph name="PROFILE_NAME" />, ajoutez-vous en tant qu'utilisateur à Chromium pour naviguer indépendamment. Sinon, déconnectez le compte Google de cette personne.</translation>
 <translation id="8187289872471304532">Sélectionnez
           Applications &gt; Préférences système &gt; Réseau &gt; Avancé &gt; Proxys

@@ -9,6 +9,7 @@
 <translation id="1113869188872983271">&amp;Razveljavi razvrstitev</translation>
 <translation id="111844081046043029">Ali ste prepričani, da želite zapustiti to stran?</translation>
 <translation id="112840717907525620">Predpomnilnik pravilnika ustrezen</translation>
+<translation id="113188000913989374"><ph name="SITE" /> sporoča:</translation>
 <translation id="1132774398110320017">Nastavitve samodejnega izpolnjevanja v Chromu …</translation>
 <translation id="1146673768181266552">ID zrušitve <ph name="CRASH_ID" /> (<ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="1150979032973867961">Strežniku ni uspelo dokazati, da je <ph name="DOMAIN" />; operacijski sistem vašega računalnika ne zaupa njegovemu varnostnemu potrdilu. Razlog za to je lahko napačna konfiguracija ali napadalčevo prestrezanje povezave.</translation>
@@ -28,6 +29,10 @@
 <translation id="1519264250979466059">Datum gradnje</translation>
 <translation id="1549470594296187301">Če želite uporabljati to funkcijo, mora biti omogočen JavaScript.</translation>
 <translation id="1559528461873125649">Taka datoteka ali imenik ne obstaja</translation>
+<translation id="1559572115229829303">&lt;p&gt;Zasebne povezave z domeno <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> ni mogoče vzpostaviti, ker sta datum in ura (<ph name="DATE_AND_TIME" />) v napravi nepravilna.&lt;/p&gt;
+
+      &lt;p&gt;V razdelku &lt;strong&gt;Splošno&lt;/strong&gt; aplikacije &lt;strong&gt;Nastavitve&lt;/strong&gt; prilagodite datum in uro.&lt;/p&gt;</translation>
+<translation id="1629803312968146339">Ali želite, da Chrome shrani to kartico?</translation>
 <translation id="1640180200866533862">Uporabniški pravilniki</translation>
 <translation id="1644184664548287040">Omrežna konfiguracija ni veljavna in je ni mogoče uvoziti.</translation>
 <translation id="1655462015569774233">{1,plural, =1{Strežniku ni uspelo dokazati, da je domena <ph name="DOMAIN" />; njegovo varnostno potrdilo je poteklo včeraj. Razlog za to je lahko napačna konfiguracija ali napadalčevo prestrezanje povezave. Ura vašega računalnika je trenutno nastavljena na <ph name="CURRENT_DATE" />. Je to videti v redu? Če ni, pravilno nastavite sistemsko uro in nato osvežite stran.}one{Strežniku ni uspelo dokazati, da je domena <ph name="DOMAIN" />; njegovo varnostno potrdilo je poteklo pred # dnevom. Razlog za to je lahko napačna konfiguracija ali napadalčevo prestrezanje povezave. Ura vašega računalnika je trenutno nastavljena na <ph name="CURRENT_DATE" />. Je to videti v redu? Če ni, pravilno nastavite sistemsko uro in nato osvežite stran.}two{Strežniku ni uspelo dokazati, da je domena <ph name="DOMAIN" />; njegovo varnostno potrdilo je poteklo pred # dnevoma. Razlog za to je lahko napačna konfiguracija ali napadalčevo prestrezanje povezave. Ura vašega računalnika je trenutno nastavljena na <ph name="CURRENT_DATE" />. Je to videti v redu? Če ni, pravilno nastavite sistemsko uro in nato osvežite stran.}few{Strežniku ni uspelo dokazati, da je domena <ph name="DOMAIN" />; njegovo varnostno potrdilo je poteklo pred # dnevi. Razlog za to je lahko napačna konfiguracija ali napadalčevo prestrezanje povezave. Ura vašega računalnika je trenutno nastavljena na <ph name="CURRENT_DATE" />. Je to videti v redu? Če ni, pravilno nastavite sistemsko uro in nato osvežite stran.}other{Strežniku ni uspelo dokazati, da je domena <ph name="DOMAIN" />; njegovo varnostno potrdilo je poteklo pred # dnevi. Razlog za to je lahko napačna konfiguracija ali napadalčevo prestrezanje povezave. Ura vašega računalnika je trenutno nastavljena na <ph name="CURRENT_DATE" />. Je to videti v redu? Če ni, pravilno nastavite sistemsko uro in nato osvežite stran.}}</translation>
@@ -95,6 +100,7 @@
 <translation id="2922350208395188000">Potrdila strežnika ni mogoče preveriti.</translation>
 <translation id="2941952326391522266">Strežniku ni uspelo dokazati, da je res <ph name="DOMAIN" />; njegovo varnostno potrdilo je od <ph name="DOMAIN2" />. Razlog za to je lahko napačna konfiguracija ali napadalčevo prestrezanje povezave.</translation>
 <translation id="2958431318199492670">Omrežna konfiguracija ne ustreza standardu ONC. Deli konfiguracije morda niso bili uvoženi.</translation>
+<translation id="2969319727213777354">Če želite vzpostaviti varno povezavo, mora biti ura pravilno nastavljena. Potrdila, ki jih uporabljajo spletna mesta za prepoznavanje, namreč veljajo samo določen čas. Ker je ura naprave nepravilna, Google Chrome teh potrdil ne more preveriti.</translation>
 <translation id="2972581237482394796">&amp;Uveljavi</translation>
 <translation id="3010559122411665027">Vnos na sznamu »<ph name="ENTRY_INDEX" />«: <ph name="ERROR" /></translation>
 <translation id="3024663005179499861">Napačna vrsta pravilnika</translation>
@@ -147,11 +153,14 @@
 <translation id="4117700440116928470">Obseg pravilnika ni podprt.</translation>
 <translation id="4120075327926916474">Ali želite, naj Chrome shrani podatke o tej kreditni kartici za izpolnjevanje spletnih obrazcev?</translation>
 <translation id="4148925816941278100">American Express</translation>
+<translation id="4169947484918424451">Ali želite, da Chromium shrani to kartico?</translation>
 <translation id="4171400957073367226">Neveljavni podpis za preverjanje</translation>
+<translation id="4176463684765177261">Onemogočeno</translation>
 <translation id="4196861286325780578">&amp;Uveljavi premik</translation>
 <translation id="4220128509585149162">Zrušitve</translation>
 <translation id="4250680216510889253">Ne</translation>
 <translation id="4258748452823770588">Napačen podpis</translation>
+<translation id="4268298190799576220">Chromium trenutno ni mogel preveriti vaše kartice. Poskusite znova pozneje.</translation>
 <translation id="4269787794583293679">(Ni uporabniškega imena)</translation>
 <translation id="4300246636397505754">Predlogi staršev</translation>
 <translation id="4325863107915753736">Članka ni bilo mogoče najti</translation>
@@ -205,6 +214,7 @@
 <translation id="5523118979700054094">Ime pravilnika</translation>
 <translation id="552553974213252141">Ali je bilo besedilo pravilno izvlečeno?</translation>
 <translation id="5540224163453853">Zahtevanega članka ni bilo mogoče najti.</translation>
+<translation id="5544037170328430102">Vdelana stran na spletnem mestu <ph name="SITE" /> sporoča:</translation>
 <translation id="5556459405103347317">Ponovno naloži</translation>
 <translation id="5565735124758917034">Aktivno</translation>
 <translation id="560412284261940334">Upravljanje ni podprto</translation>
@@ -214,15 +224,18 @@
 <translation id="5813119285467412249">&amp;Uveljavi dodajanje</translation>
 <translation id="5872918882028971132">Predlogi staršev</translation>
 <translation id="59107663811261420">Ta vrsta kartice ni podprta v storitvi Google Payments pri tem trgovcu. Izberite drugo kartico.</translation>
+<translation id="59174027418879706">Omogočena</translation>
 <translation id="5975083100439434680">Pomanjšaj</translation>
 <translation id="5989320800837274978">Določeni niso ne stalni strežniki proxy ne URL skripta .pac.</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6040143037577758943">Zapri</translation>
+<translation id="604124094241169006">Samodejno</translation>
 <translation id="6060685159320643512">Previdno, ti poskusi lahko škodujejo</translation>
 <translation id="6099520380851856040">Ura zrušitve: <ph name="CRASH_TIME" /></translation>
 <translation id="6151417162996330722">Potrdilo strežnika ima predolgo obdobje veljavnosti.</translation>
 <translation id="6154808779448689242">Vrnjen žeton pravilnika se ne ujema s trenutnim žetonom</translation>
 <translation id="6165508094623778733">Več o tem</translation>
+<translation id="6218753634732582820">Želite naslov odstraniti iz Chromiuma?</translation>
 <translation id="6259156558325130047">&amp;Uveljavi razvrstitev</translation>
 <translation id="6263376278284652872">Zaznamki <ph name="DOMAIN" /></translation>
 <translation id="6282194474023008486">Poštna številka</translation>
@@ -240,6 +253,7 @@
 <translation id="6628463337424475685"><ph name="ENGINE" /> Iskanje</translation>
 <translation id="6644283850729428850">Ta pravilnik je zastarel.</translation>
 <translation id="6646897916597483132">Vnesite štirimestno kodo CVC na sprednji strani kartice</translation>
+<translation id="6671697161687535275">Želite predlog obrazca odstraniti iz Chromiuma?</translation>
 <translation id="674375294223700098">Neznana napaka potrdila strežnika.</translation>
 <translation id="6753269504797312559">Vrednost pravilnika</translation>
 <translation id="6831043979455480757">Prevedi</translation>
@@ -273,6 +287,7 @@
 <translation id="7378627244592794276">Ne</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7419106976560586862">Pot profila</translation>
+<translation id="7424977062513257142">Vdelana stran na tej spletni strani sporoča:</translation>
 <translation id="7441627299479586546">Napačen subjekt pravilnika</translation>
 <translation id="7485870689360869515">Ni podatkov.</translation>
 <translation id="7537536606612762813">Obvezen</translation>
@@ -283,6 +298,7 @@
 <translation id="7592362899630581445">Strežnikovo potrdilo krši omejitve imen.</translation>
 <translation id="7600965453749440009">Nikoli ne prevedi iz jezika: <ph name="LANGUAGE" /></translation>
 <translation id="7610193165460212391">Vrednost je zunaj obsega <ph name="VALUE" />.</translation>
+<translation id="7637571805876720304">Želite kreditno kartico odstraniti iz Chromiuma?</translation>
 <translation id="7674629440242451245">Vas zanimajo super nove funkcije Chroma? Preskusite naš kanal za razvijalce na chrome.com/dev.</translation>
 <translation id="7752995774971033316">Odstranjen iz uporabe</translation>
 <translation id="7761701407923456692">Potrdilo strežnika se ne ujema z URL-jem.</translation>
@@ -326,6 +342,7 @@
 <translation id="8725066075913043281">Poskusite znova</translation>
 <translation id="8738058698779197622">Če želite vzpostaviti varno povezavo, mora biti ura pravilno nastavljena. Potrdila, ki jih uporabljajo spletna mesta za prepoznavanje, namreč veljajo samo določen čas. Ker je ura sistema nepravilna, Chromium teh potrdil ne more preveriti.</translation>
 <translation id="8790007591277257123">&amp;Uveljavi izbris</translation>
+<translation id="8798099450830957504">Privzeto</translation>
 <translation id="8804164990146287819">Pravilnik o zasebnosti</translation>
 <translation id="8820817407110198400">Zaznamki</translation>
 <translation id="8824019021993735287">Trenutno trenutno ni mogel preveriti vaše kartice. Poskusite znova pozneje.</translation>
@@ -333,6 +350,7 @@
 <translation id="883848425547221593">Drugi zaznamki</translation>
 <translation id="884923133447025588">Najden ni bil noben mehanizem za preklic.</translation>
 <translation id="8866481888320382733">Napaka pri razčlenjevanju nastavitev pravilnika</translation>
+<translation id="8866959479196209191">Ta stran sporoča:</translation>
 <translation id="8876793034577346603">Omrežne konfiguracije ni bilo mogoče razčleniti.</translation>
 <translation id="8891727572606052622">Neveljaven način strežnika proxy.</translation>
 <translation id="889901481107108152">Oprostite, ta poskus ni na voljo za vaše okolje.</translation>

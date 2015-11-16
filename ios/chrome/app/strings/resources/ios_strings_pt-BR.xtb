@@ -4,6 +4,7 @@
 <translation id="1008557486741366299">Não agora</translation>
 <translation id="1047726139967079566">Adicionar esta página aos favoritos...</translation>
 <translation id="1172898394251786223">Próximo campo</translation>
+<translation id="1625603797851307283">Deseja que o <ph name="PRODUCT_NAME" /> salve sua senha para este site?</translation>
 <translation id="2320166752086256636">Ocultar teclado</translation>
 <translation id="2704606927547763573">Copiado</translation>
 <translation id="2747003861858887689">Campo anterior</translation>
@@ -11,11 +12,17 @@
 <translation id="3244271242291266297">MM</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> de <ph name="NUM_SUGGESTIONS" /></translation>
 <translation id="3335947283844343239">Reabrir guia fechada</translation>
+<translation id="3414292259312108062">O Chrome armazenará esta senha nas suas <ph name="BEGIN_LINK" />senhas salvas do Google<ph name="END_LINK" /> e a preencherá automaticamente para você, para que não precise se lembrar dela.</translation>
 <translation id="385051799172605136">Voltar</translation>
 <translation id="4121993058175073134">Para enviar dados de exportação líquida, configure sua conta de e-mail no aplicativo "Configurações".</translation>
 <translation id="4728558894243024398">Plataforma</translation>
+<translation id="5317780077021120954">Salvar</translation>
 <translation id="5779929835642192302">Sugestões disponíveis</translation>
 <translation id="605721222689873409">AA</translation>
+<translation id="6149061208933997199">Usar senha</translation>
+<translation id="6314335155547195432">Gerar senha</translation>
+<translation id="6456425917241817154">Senha gerada pelo Google Chrome</translation>
 <translation id="7456847797759667638">Abrir local...</translation>
 <translation id="7481312909269577407">Avançar</translation>
+<translation id="7961015016161918242">Nunca</translation>
 </translationbundle>

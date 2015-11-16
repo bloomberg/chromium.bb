@@ -4,6 +4,7 @@
 <translation id="1008557486741366299">ಈಗಲೇ ಅಲ್ಲ</translation>
 <translation id="1047726139967079566">ಈ ಪುಟವನ್ನು ಬುಕ್‌ಮಾರ್ಕ್ ಮಾಡಿ...</translation>
 <translation id="1172898394251786223">ಮುಂದಿನ ಕ್ಷೇತ್ರ</translation>
+<translation id="1625603797851307283">ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್ ಅನ್ನು ಈ ಸೈಟ್‌ಗಾಗಿ <ph name="PRODUCT_NAME" /> ಉಳಿಸಬೇಕೇ?</translation>
 <translation id="2320166752086256636">ಕೀಬೋರ್ಡ್ ಮರೆಮಾಡಿ</translation>
 <translation id="2704606927547763573">ನಕಲಿಸಲಾಗಿದೆ</translation>
 <translation id="2747003861858887689">ಹಿಂದಿನ ಕ್ಷೇತ್ರ</translation>
@@ -11,11 +12,17 @@
 <translation id="3244271242291266297">ಮಿಮೀ</translation>
 <translation id="3252394070589632019"><ph name="NUM_SUGGESTIONS" /> ರಲ್ಲಿ <ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /></translation>
 <translation id="3335947283844343239">ಮುಚ್ಚಿದ ಟ್ಯಾಬ್ ಮರುತೆರೆ</translation>
+<translation id="3414292259312108062">Chrome ಇದನ್ನು ನಿಮ್ಮ <ph name="BEGIN_LINK" />Google ಉಳಿಸಲಾದ ಪಾಸ್‌ವಡ್‌‌ಗಳಲ್ಲಿ<ph name="END_LINK" /> ಸಂಗ್ರಹಿಸುತ್ತದೆ ಮತ್ತು ಅದನ್ನು ಸ್ವಯಂ ಭರ್ತಿ ಮಾಡುತ್ತದೆ ಆದ್ದರಿಂದ ನೀವು ಅದನ್ನು ನೆನಪಿಡುವ ಅಗತ್ಯವಿಲ್ಲ.</translation>
 <translation id="385051799172605136">ಹಿಂದೆ</translation>
 <translation id="4121993058175073134">ಒಟ್ಟು ರಫ್ತು ಡೇಟಾ ಕಳುಹಿಸಲು, ದಯವಿಟ್ಟು ನಿಮ್ಮ ಇಮೇಲ್ ಖಾತೆಯನ್ನು ಸೆಟ್ಟಿಂಗ್‌‌ಗಳ ಅಪ್ಲಿಕೇಶನ್‌‌ನಲ್ಲಿ ಕಾನ್ಫಿಗರ್ ಮಾಡಿ.</translation>
 <translation id="4728558894243024398">ಪ್ಲಾಟ್‌ಫಾರ್ಮ್</translation>
+<translation id="5317780077021120954">ಉಳಿಸು</translation>
 <translation id="5779929835642192302">ಸಲಹೆಗಳು ಲಭ್ಯವಿದೆ</translation>
 <translation id="605721222689873409">YY</translation>
+<translation id="6149061208933997199">ಪಾಸ್‌ವರ್ಡ್ ಬಳಸಿ</translation>
+<translation id="6314335155547195432">ಪಾಸ್‌ವರ್ಡ್ ರಚಿಸಿ</translation>
+<translation id="6456425917241817154">ಪಾಸ್‌ವರ್ಡ್ ಅನ್ನು Chrome ಮೂಲಕ ರಚಿಸಲಾಗಿದೆ</translation>
 <translation id="7456847797759667638">ಸ್ಥಳವನ್ನು ತೆರೆ...</translation>
 <translation id="7481312909269577407">ಫಾರ್ವರ್ಡ್</translation>
+<translation id="7961015016161918242">ಎಂದಿಗೂ ಇಲ್ಲ</translation>
 </translationbundle>

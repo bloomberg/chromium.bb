@@ -54,6 +54,9 @@
 <translation id="1221359380862872747">在演示登录时加载指定网址</translation>
 <translation id="1240643596769627465">指定用于提供即搜即得结果的搜索引擎的网址，其中应包含字符串“<ph name="SEARCH_TERM_MARKER" />”，系统会在查询时将该字符串替换为用户输入的文字。此政策是可选的，如果未设置，就不会提供任何即搜即得结果。要实施此政策，必须先启用“DefaultSearchProviderEnabled”政策。</translation>
 <translation id="1265053460044691532">限制通过SAML验证身份的用户可离线登录的时长</translation>
+<translation id="1291880496936992484">警告：从 52 版开始，<ph name="PRODUCT_NAME" /> 中将彻底移除 RC4（2016 年 9 月左右）。届时，此政策将不再有效。
+
+      如果此政策未设置或设为 false，系统将不会在 TLS 中启用 RC4 加密套件。您也可以将此政策设为 true，以便与过时的服务器保持兼容。但这只是一种权宜之计，对服务器进行重新配置才是正确之道。</translation>
 <translation id="1297182715641689552">使用 .pac 代理脚本</translation>
 <translation id="1300635491585192248">连上网络时一律预测网络操作（移动网络除外）</translation>
 <translation id="1304973015437969093">要静默安装的扩展程序/应用的 ID 和更新网址</translation>
@@ -450,6 +453,9 @@
       如果您启用或停用了此设置，那么用户将无法在 <ph name="PRODUCT_NAME" /> 中更改或覆盖“启用网上诱骗和恶意软件防护”设置。
 
       如果未设置此政策，则系统将会启用安全浏览功能，但用户可以对其进行更改。</translation>
+<translation id="2801230735743888564">允许用户在设备未联网的情况下玩恐龙复活节彩蛋游戏。
+
+      如果此政策设为 False，用户将无法在设备未联网的情况下玩恐龙复活节彩蛋游戏。如果此设置设为 True，用户将可以玩恐龙复活节彩蛋游戏。如果此政策未设置，用户将无法在已注册的 Chrome 操作系统上玩恐龙复活节彩蛋游戏，但可以在其他环境下玩该游戏。</translation>
 <translation id="2805707493867224476">允许所有网站显示弹出式窗口</translation>
 <translation id="2808013382476173118">当远程客户端尝试与此机器建立连接时，允许使用STUN服务器。
 
@@ -699,6 +705,13 @@
 <translation id="3780152581321609624">在 Kerberos SPN 中加入非标准端口</translation>
 <translation id="3788662722837364290">设备闲置时的电源管理设置</translation>
 <translation id="3793095274466276777">在“<ph name="PRODUCT_NAME" />”中配置默认浏览器检查，并禁止用户更改此设置。如果您启用了此设置，则“<ph name="PRODUCT_NAME" />”在启动时总是会检查自己是否为默认浏览器，并会自动注册（如果可以）。如果此设置已停用，则“<ph name="PRODUCT_NAME" />”永远不会检查自己是否为默认浏览器，并会禁止用户设置此选项。如果此设置未配置，则“<ph name="PRODUCT_NAME" />”会让用户控制是否将它设为默认浏览器，并控制是否在它不是默认浏览器的情况下显示用户通知。</translation>
+<translation id="3800626789999016379">配置 <ph name="PRODUCT_NAME" /> 将用于下载文件的目录。
+
+      如果您设置了此政策，那么无论用户是指定了一个目录，还是启用了要求在每次下载文件时都提示指定下载位置的项，<ph name="PRODUCT_NAME" /> 都将使用通过此政策提供的目录。
+
+      有关可用变量的列表，请访问 http://www.chromium.org/administrators/policy-list-3/user-data-directory-variables。
+
+      如果此政策未设置，系统将使用默认的下载目录，并且用户可以更改此目录。</translation>
 <translation id="3805659594028420438">启用TLS网域绑定证书扩展程序（已弃用）</translation>
 <translation id="3806576699227917885">允许播放视频。
 
@@ -812,6 +825,13 @@
           此政策只在启用了“DefaultSearchProviderEnabled”政策的前提下才会生效。</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 或更高版本</translation>
 <translation id="4325690621216251241">向系统任务栏添加退出按钮</translation>
+<translation id="4349746760316962317">配置 <ph name="PRODUCT_NAME" /> 将用于在磁盘上存储缓存文件的目录。
+
+      如果您设置了此政策，那么无论用户是否指定了“--disk-cache-dir”，<ph name="PRODUCT_NAME" /> 都将使用通过此政策提供的目录。
+
+      有关可用变量的列表，请访问 https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables。
+
+      如果此政策未设置，系统将使用默认的缓存目录，并且用户可以通过“--disk-cache-dir”命令行项覆盖此目录。</translation>
 <translation id="436581050240847513">报告设备网络接口</translation>
 <translation id="4372704773119750918">不允许企业用户成为多用户配置的用户（一级或二级）</translation>
 <translation id="4377599627073874279">允许所有网站显示所有图片</translation>
@@ -877,6 +897,11 @@
 <translation id="4665897631924472251">扩展程序管理设置</translation>
 <translation id="4668325077104657568">默认图片设置</translation>
 <translation id="467236746355332046">支持的功能：</translation>
+<translation id="4674167212832291997">以列表形式自定义应始终由 <ph name="PRODUCT_FRAME_NAME" />呈现的网址格式。
+
+          如果此政策未设置，系统将对所有网站使用通过“ChromeFrameRendererSettings”政策指定的默认呈现器。
+
+          要查看示例格式，请访问 https://www.chromium.org/developers/how-tos/chrome-frame-getting-started。</translation>
 <translation id="467449052039111439">打开网址列表</translation>
 <translation id="4680961954980851756">启用自动填充</translation>
 <translation id="4723829699367336876">支持通过远程访问客户端穿越防火墙</translation>
@@ -966,6 +991,14 @@
           如果未设置此政策，系统会执行默认操作（即暂停）。
 
           如果需要执行的操作是暂停，您还可单独配置 <ph name="PRODUCT_OS_NAME" />在暂停前是否锁定屏幕。</translation>
+<translation id="5111712393799006197">配置 <ph name="PRODUCT_NAME" /> 将用于存储用户数据的目录。
+
+      如果您设置了此政策，那么无论用户是否指定了“--user-data-dir”，<ph name="PRODUCT_NAME" /> 都将使用通过此政策提供的目录。
+
+      有关可用变量的列表，请访问 http://www.chromium.org/administrators/policy-list-3/user-data-directory-variables。
+
+      如果此政策未设置，系统将使用默认的个人资料路径，并且用户可以通过“--user-data-dir”命令行项覆盖此路径。</translation>
+<translation id="5130288486815037971">是否在 TLS 中启用 RC4 加密套件</translation>
 <translation id="5141670636904227950">设置登录屏幕上启用的默认放大镜类型</translation>
 <translation id="5142301680741828703">总是通过“<ph name="PRODUCT_FRAME_NAME" />”呈现以下网址格式</translation>
 <translation id="5148753489738115745">可让您指定在 <ph name="PRODUCT_FRAME_NAME" />启动 <ph name="PRODUCT_NAME" />时所使用的其他参数。
@@ -1136,6 +1169,20 @@
 <translation id="5809728392451418079">设置设备本地帐户的显示名称</translation>
 <translation id="5814301096961727113">设置登录屏幕上语音反馈的默认状态</translation>
 <translation id="5815129011704381141">更新后自动重启</translation>
+<translation id="5815353477778354428">配置 <ph name="PRODUCT_FRAME_NAME" />将用于存储用户数据的目录。
+
+      如果您设置了此政策，<ph name="PRODUCT_FRAME_NAME" />将使用通过此政策提供的目录。
+
+      有关可用变量的列表，请访问 http://www.chromium.org/administrators/policy-list-3/user-data-directory-variables。
+
+      如果此政策未设置，系统将使用默认的个人资料目录。</translation>
+<translation id="5819660021114910752">指定该设备使用的时区。对于当前的会话，用户可以覆盖指定的时区。不过，当用户退出当前会话后，系统会将时区重新设为指定的时区。如果提供的值无效，系统仍会启用此政策，但会采用“GMT”时区。如果提供的是空字符串，此政策将被忽略。
+
+      如果不使用此政策，系统将继续使用当前在使用的时区，不过，用户可以更改时区，并且所做更改持续有效。因此，任何用户所做的更改都会对登录屏幕和所有其他用户造成影响。
+
+      新设备在出厂时的时区设置是“美国/太平洋”。
+
+      值的格式遵循“IANA 时区数据库”中的时区名称所采用的格式（请访问 https://zh.wikipedia.org/wiki/%E6%97%B6%E5%8C%BA%E4%BF%A1%E6%81%AF%E6%95%B0%E6%8D%AE%E5%BA%93）。基本上，大多数时区都可以采用“洲/大城市”或“洋/大城市”的格式表示。</translation>
 <translation id="5826047473100157858">指定用户是否可以在 <ph name="PRODUCT_NAME" />中以隐身模式打开网页。如果选择“已启用”或未设置此政策，则允许以隐身模式打开网页。如果选择“已停用”，则不能以隐身模式打开网页。如果选择“强制”，则只能以隐身模式打开网页。</translation>
 <translation id="5836064773277134605">限制远程访问主机使用的UDP端口范围</translation>
 <translation id="5845159892130426052">启用 ShowModalDialog API，有效期至 2015 年 4 月 30 日</translation>
@@ -1225,6 +1272,7 @@
           要在设备闲置时锁定屏幕，建议您采用以下方式：启用在系统处于暂停状态时锁定屏幕，并指示<ph name="PRODUCT_OS_NAME" />在闲置延迟时间过后进入暂停状态。只有在以下情况下才应使用此政策：系统进入暂停状态之前的很长一段时间内便应锁定屏幕，或者完全不需要启用在设备闲置时暂停系统。
 
           此政策的值应以毫秒为单位，且必须小于闲置延迟时间。</translation>
+<translation id="6111936128861357925">允许用户玩恐龙复活节彩蛋游戏</translation>
 <translation id="6114416803310251055">已弃用</translation>
 <translation id="6145799962557135888">可让您设置网址格式的列表，这些网址格式用于指定允许运行 JavaScript 的网站。在未设置此政策的情况下，如果设置了“DefaultJavaScriptSetting”政策，那么将对该政策中的所有网站使用全局默认值，否则将对用户个人配置中的所有网站使用全局默认值。</translation>
 <translation id="6151775819333710697">
@@ -1762,6 +1810,17 @@
 
       如果未设置此策略，来自“URLBlacklist”策略的黑名单就不存在任何例外情况。</translation>
 <translation id="8176035528522326671">只允许企业用户以主用户的身份登录多个人资料会话（企业托管用户的默认行为）</translation>
+<translation id="8191318459035150777">指定 <ph name="PRODUCT_NAME" /> 的默认主页网址，并禁止用户对其进行更改。
+
+          主页是指用户点击“主页”按钮后打开的页面。该浏览器启动时打开的页面由 RestoreOnStartup 政策控制。
+
+          您可以将主页类型设为在此处指定的网址，也可以将其设为“打开新的标签页”。如果您选择“打开新的标签页”，此政策将不会产生任何影响。
+
+          如果您启用了此设置，用户将无法更改 <ph name="PRODUCT_NAME" /> 的主页网址，但仍可以选择“打开新的标签页”作为主页。
+
+          如果此政策未设置，并且 HomepageIsNewTabPage 也未设置，用户将可以自行选择主页。
+
+          此政策不适用于未加入 Active Directory 网域的 Windows 实例。</translation>
 <translation id="8197918588508433925">此政策指定了允许使用 Enterprise Platform Keys API chrome.enterprise.platformKeysPrivate.challengeUserKey() 进行远程认证的扩展程序。只有添加到此列表中的扩展程序才能使用该 API。
 
           如果扩展程序不在此列表中，或者未设置此列表，则会导致无法调用 API，并返回错误代码。</translation>
@@ -1803,6 +1862,11 @@
 <translation id="8465065632133292531">在使用 POST 的即搜即得网址中所需的参数</translation>
 <translation id="847472800012384958">不允许任何网站显示弹出式窗口</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
+<translation id="8484458986062090479">以列表形式自定义应始终由主机浏览器呈现的网址格式。
+
+          如果此政策未设置，系统将对所有网站使用通过“ChromeFrameRendererSettings”政策指定的默认呈现器。
+
+          要查看示例格式，请访问 https://www.chromium.org/developers/how-tos/chrome-frame-getting-started。</translation>
 <translation id="8493645415242333585">停用保存浏览器历史记录的功能</translation>
 <translation id="8499172469244085141">默认设置（用户可以覆盖）</translation>
 <translation id="8501011084242226370">指定用户可在<ph name="PRODUCT_NAME" />中启用或停用的一系列插件。
@@ -1856,6 +1920,8 @@
 
       如果停用了此设置，则不能删除浏览和下载记录。</translation>
 <translation id="8764119899999036911">指定 Kerberos SPN 是基于规范 DNS 名称还是基于输入的原始名称。如果您启用了此设置，系统将跳过 CNAME 查找步骤，并使用输入的服务器名称。如果您停用或未配置此设置，系统将通过 CNAME 查找来确定服务器的规范名称。</translation>
+<translation id="8774131509736383471">如果此政策设为 true，<ph name="PRODUCT_NAME" /> 将在首次运行时一律将显示的第一个窗口最大化。
+      如果此政策设为 false 或未配置，系统将根据屏幕尺寸决定是否将显示的第一个窗口最大化。</translation>
 <translation id="8777120694819070607">允许“<ph name="PRODUCT_NAME" />”运行过期插件。如果您启用了此设置，则过期插件可作为正常插件使用。如果您停用了此设置，则过期插件将无法使用，并且系统不会要求用户提供运行过期插件的权限。如果此设置未配置，则系统会要求用户提供运行过期插件的权限。</translation>
 <translation id="87812015706645271">本地用户的名称和远程访问主机所有者的名称必须一致</translation>
 <translation id="8782750230688364867">指定设备处于演示模式时屏幕变暗延迟时间的调整幅度（百分比）。

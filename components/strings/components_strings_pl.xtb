@@ -9,6 +9,7 @@
 <translation id="1113869188872983271">&amp;Cofnij zmianę kolejności</translation>
 <translation id="111844081046043029">Czy na pewno chcesz opuścić tę stronę?</translation>
 <translation id="112840717907525620">Pamięć podręczna zasad: OK</translation>
+<translation id="113188000913989374">Komunikat ze strony <ph name="SITE" />:</translation>
 <translation id="1132774398110320017">Ustawienia autouzupełniania Chrome...</translation>
 <translation id="1146673768181266552">Identyfikator awarii: <ph name="CRASH_ID" /> (<ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="1150979032973867961">Ten serwer nie mógł udowodnić, że należy do <ph name="DOMAIN" />. Jego certyfikat bezpieczeństwa nie jest zaufany w systemie operacyjnym tego komputera. Może to być spowodowane błędną konfiguracją lub przechwyceniem połączenia przez atakującego.</translation>
@@ -28,6 +29,10 @@
 <translation id="1519264250979466059">Data kompilacji</translation>
 <translation id="1549470594296187301">Aby można było korzystać z tej funkcji, musi być włączony JavaScript.</translation>
 <translation id="1559528461873125649">Brak takiego pliku lub katalogu</translation>
+<translation id="1559572115229829303">&lt;p&gt;Nie można nawiązać prywatnego połączenia z <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />, bo data i godzina (<ph name="DATE_AND_TIME" />) ustawione na urządzeniu są nieprawidłowe.&lt;/p&gt;
+
+      &lt;p&gt;Popraw datę i godzinę w sekcji &lt;strong&gt;Ogólne&lt;/strong&gt; w aplikacji &lt;strong&gt;Ustawienia&lt;/strong&gt;.&lt;/p&gt;</translation>
+<translation id="1629803312968146339">Czy Chrome ma zapisać tę kartę?</translation>
 <translation id="1640180200866533862">Zasady dotyczące użytkowników</translation>
 <translation id="1644184664548287040">Konfiguracja sieci jest nieprawidłowa i nie można jej zaimportować.</translation>
 <translation id="1655462015569774233">{1,plural, =1{Ten serwer nie mógł udowodnić, że należy do <ph name="DOMAIN" />. Jego certyfikat bezpieczeństwa wygasł wczoraj. Może to być spowodowane błędną konfiguracją lub przechwyceniem połączenia. Zegar komputera jest obecnie ustawiony na <ph name="CURRENT_DATE" />. Czy to prawidłowa data? Jeśli nie, musisz skorygować zegar systemu, a następnie odświeżyć tę stronę.}few{Ten serwer nie mógł udowodnić, że należy do <ph name="DOMAIN" />. Jego certyfikat bezpieczeństwa wygasł # dni temu. Może to być spowodowane błędną konfiguracją lub przechwyceniem połączenia. Zegar komputera jest obecnie ustawiony na <ph name="CURRENT_DATE" />. Czy to prawidłowa data? Jeśli nie, musisz skorygować zegar systemu, a następnie odświeżyć tę stronę.}many{Ten serwer nie mógł udowodnić, że należy do <ph name="DOMAIN" />. Jego certyfikat bezpieczeństwa wygasł # dni temu. Może to być spowodowane błędną konfiguracją lub przechwyceniem połączenia. Zegar komputera jest obecnie ustawiony na <ph name="CURRENT_DATE" />. Czy to prawidłowa data? Jeśli nie, musisz skorygować zegar systemu, a następnie odświeżyć tę stronę.}other{Ten serwer nie mógł udowodnić, że należy do <ph name="DOMAIN" />. Jego certyfikat bezpieczeństwa wygasł # dnia temu. Może to być spowodowane błędną konfiguracją lub przechwyceniem połączenia. Zegar komputera jest obecnie ustawiony na <ph name="CURRENT_DATE" />. Czy to prawidłowa data? Jeśli nie, musisz skorygować zegar systemu, a następnie odświeżyć tę stronę.}}</translation>
@@ -94,6 +99,7 @@
 <translation id="2922350208395188000">Nie można sprawdzić certyfikatu serwera.</translation>
 <translation id="2941952326391522266">Ten serwer nie mógł udowodnić, że należy do <ph name="DOMAIN" />. Jego certyfikat pochodzi z <ph name="DOMAIN2" />. Może to być spowodowane błędną konfiguracją lub przechwyceniem połączenia przez atakującego.</translation>
 <translation id="2958431318199492670">Konfiguracja sieci jest niezgodna ze standardem ONC. Jej fragmenty mogły nie zostać zaimportowane.</translation>
+<translation id="2969319727213777354">Aby urządzenie nawiązało bezpieczne połączenie, jego zegar musi wskazywać prawidłową godzinę. To wymagane, bo certyfikaty używane do identyfikacji stron internetowych są ważne tylko przez określony czas. Zegar urządzenia jest ustawiony nieprawidłowo, więc Google Chrome nie może zweryfikować tych certyfikatów.</translation>
 <translation id="2972581237482394796">&amp;Ponów</translation>
 <translation id="3010559122411665027">Pozycja listy „<ph name="ENTRY_INDEX" />”: <ph name="ERROR" /></translation>
 <translation id="3024663005179499861">Nieprawidłowy typ zasady</translation>
@@ -146,11 +152,14 @@
 <translation id="4117700440116928470">Ten zakres zasad nie jest obsługiwany.</translation>
 <translation id="4120075327926916474">Czy Google Chrome ma zapisać informacje o karcie kredytowej, aby ułatwić wypełnianie formularzy w przyszłości?</translation>
 <translation id="4148925816941278100">American Express</translation>
+<translation id="4169947484918424451">Czy Chromium ma zapisać tę kartę?</translation>
 <translation id="4171400957073367226">Nieprawidłowy podpis weryfikujący</translation>
+<translation id="4176463684765177261">Wyłączone</translation>
 <translation id="4196861286325780578">&amp;Ponów przeniesienie</translation>
 <translation id="4220128509585149162">Awarie</translation>
 <translation id="4250680216510889253">Nie</translation>
 <translation id="4258748452823770588">Nieprawidłowy podpis</translation>
+<translation id="4268298190799576220">Chromium nie może obecnie zweryfikować karty. Spróbuj ponownie później.</translation>
 <translation id="4269787794583293679">(Brak nazwy użytkownika)</translation>
 <translation id="4300246636397505754">Propozycje rodziców</translation>
 <translation id="4325863107915753736">Nie udało się znaleźć artykułu</translation>
@@ -204,6 +213,7 @@
 <translation id="5523118979700054094">Nazwa zasady</translation>
 <translation id="552553974213252141">Czy tekst został prawidłowo wyodrębniony?</translation>
 <translation id="5540224163453853">Nie udało się znaleźć tego artykułu.</translation>
+<translation id="5544037170328430102">Komunikat z elementu umieszczonego na stronie <ph name="SITE" />:</translation>
 <translation id="5556459405103347317">Odśwież</translation>
 <translation id="5565735124758917034">Aktywny</translation>
 <translation id="560412284261940334">Zarządzanie jest nieobsługiwane</translation>
@@ -213,15 +223,18 @@
 <translation id="5813119285467412249">&amp;Ponów dodanie</translation>
 <translation id="5872918882028971132">Propozycje rodziców</translation>
 <translation id="59107663811261420">Karty tego typu nie są obsługiwane w Google Payments w przypadku tego sprzedawcy. Wybierz inną.</translation>
+<translation id="59174027418879706">Włączone</translation>
 <translation id="5975083100439434680">Pomniejsz</translation>
 <translation id="5989320800837274978">Nie określono ani stałych serwerów proxy, ani adresu URL skryptu PAC.</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6040143037577758943">Zamknij</translation>
+<translation id="604124094241169006">Automatyczne</translation>
 <translation id="6060685159320643512">Ostrożnie, na tych eksperymentach można się sparzyć</translation>
 <translation id="6099520380851856040">Czas wystąpienia: <ph name="CRASH_TIME" /></translation>
 <translation id="6151417162996330722">Certyfikat serwera ma za długi okres ważności.</translation>
 <translation id="6154808779448689242">Zwrócony token zasady jest niezgodny z bieżącym</translation>
 <translation id="6165508094623778733">Więcej informacji</translation>
+<translation id="6218753634732582820">Usunąć ten adres z Chromium?</translation>
 <translation id="6259156558325130047">&amp;Ponów zmianę kolejności</translation>
 <translation id="6263376278284652872">Zakładki <ph name="DOMAIN" /></translation>
 <translation id="6282194474023008486">Kod pocztowy</translation>
@@ -239,6 +252,7 @@
 <translation id="6628463337424475685">Wyszukiwarka <ph name="ENGINE" /></translation>
 <translation id="6644283850729428850">Zasada jest przestarzała.</translation>
 <translation id="6646897916597483132">Wpisz czterocyfrowy kod CVC widoczny na przodzie karty</translation>
+<translation id="6671697161687535275">Usunąć tę podpowiedź do formularza z Chromium?</translation>
 <translation id="674375294223700098">Nieznany błąd certyfikatu serwera.</translation>
 <translation id="6753269504797312559">Wartość zasady</translation>
 <translation id="6831043979455480757">Tłumacz</translation>
@@ -272,6 +286,7 @@
 <translation id="7378627244592794276">Nie</translation>
 <translation id="7400418766976504921">Adres URL</translation>
 <translation id="7419106976560586862">Ścieżka profilu</translation>
+<translation id="7424977062513257142">Komunikat z elementu umieszczonego na bieżącej stronie internetowej:</translation>
 <translation id="7441627299479586546">Nieprawidłowy podmiot zasady</translation>
 <translation id="7485870689360869515">Nie znaleziono danych.</translation>
 <translation id="7537536606612762813">Obowiązkowe</translation>
@@ -282,6 +297,7 @@
 <translation id="7592362899630581445">Certyfikat serwera narusza ograniczenia dotyczące nazw.</translation>
 <translation id="7600965453749440009">Nigdy nie tłumacz z języka: <ph name="LANGUAGE" /></translation>
 <translation id="7610193165460212391">Wartość spoza zakresu (<ph name="VALUE" />)</translation>
+<translation id="7637571805876720304">Usunąć tę kartę kredytową z Chromium?</translation>
 <translation id="7674629440242451245">Interesują Cię nowe, przydatne funkcje Chrome? Wypróbuj wersję deweloperską ze strony chrome.com/dev.</translation>
 <translation id="7752995774971033316">Niezarządzany</translation>
 <translation id="7761701407923456692">Certyfikat serwera jest niezgodny z adresem URL.</translation>
@@ -325,6 +341,7 @@
 <translation id="8725066075913043281">Spróbuj ponownie</translation>
 <translation id="8738058698779197622">Aby nawiązać bezpieczne połączenie, Twój zegar musi mieć ustawioną prawidłową godzinę. Jest to wymagane, ponieważ certyfikaty używane do identyfikacji stron internetowych są ważne tylko przez określony czas. Ponieważ zegar Twojego urządzenia nie jest ustawiony prawidłowo, Chromium nie może zweryfikować tych certyfikatów.</translation>
 <translation id="8790007591277257123">&amp;Ponów usunięcie</translation>
+<translation id="8798099450830957504">Domyślny</translation>
 <translation id="8804164990146287819">Polityka prywatności</translation>
 <translation id="8820817407110198400">Zakładki</translation>
 <translation id="8824019021993735287">Chrome nie może obecnie zweryfikować karty. Spróbuj ponownie później.</translation>
@@ -332,6 +349,7 @@
 <translation id="883848425547221593">Inne zakładki</translation>
 <translation id="884923133447025588">Nie znaleziono mechanizmu unieważniania.</translation>
 <translation id="8866481888320382733">Podczas przetwarzania ustawień zasady wystąpił błąd</translation>
+<translation id="8866959479196209191">Komunikat z bieżącej strony:</translation>
 <translation id="8876793034577346603">Przetwarzanie konfiguracji sieci nie powiodło się.</translation>
 <translation id="8891727572606052622">Nieprawidłowy tryb proxy</translation>
 <translation id="889901481107108152">Eksperyment jest niedostępny na Twojej platformie.</translation>

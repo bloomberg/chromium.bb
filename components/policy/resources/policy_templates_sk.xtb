@@ -799,6 +799,13 @@ Odporúčaný spôsob nastavenia pravidiel v systéme Windows je nastavenie pro
 <translation id="3780152581321609624">Do hlavného názvu služby protokolu Kerberos zahrnúť neštandardný port</translation>
 <translation id="3788662722837364290">Nastavenia správy spotreby energie, keď je používateľ nečinný</translation>
 <translation id="3793095274466276777">Slúži na konfiguráciu kontroly predvoleného prehliadača v prehliadači <ph name="PRODUCT_NAME" /> a bráni používateľom toto nastavenie zmeniť. Ak toto nastavenie povolíte, prehliadač <ph name="PRODUCT_NAME" /> pri spustení vždy skontroluje, či je predvoleným prehliadačom, a ak to bude možné, automaticky sa registruje. Ak je toto nastavenie zakázané, prehliadač <ph name="PRODUCT_NAME" /> nebude kontrolovať, či je predvoleným prehliadačom, a zakáže používateľské ovládacie prvky na nastavenie tejto možnosti. Ak toto nastavenie nebolo nakonfigurované, prehliadač <ph name="PRODUCT_NAME" /> umožní používateľovi určiť, či ho chce nastaviť ako predvolený prehliadač a či sa v prípade, ak ním nie je, majú používateľovi zobraziť upozornenia.</translation>
+<translation id="3800626789999016379">Umožňuje nakonfigurovať adresár, ktorý bude prehliadač <ph name="PRODUCT_NAME" /> používať na sťahovanie súborov.
+
+      Ak nastavíte toto pravidlo, prehliadač <ph name="PRODUCT_NAME" /> bude používať zadaný adresár bez ohľadu na to, či používateľ určil takýto adresár alebo povolil príznak na zobrazenie výzvy na zadanie umiestnenia pre stiahnuté položky pri každom sťahovaní.
+
+      Zoznam premenných, ktoré sa dajú použiť, nájdete na adrese https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.
+
+      Ak toto pravidlo nenastavíte, použije sa predvolený adresár pre stiahnuté súbory a používateľ ho bude môcť zmeniť.</translation>
 <translation id="3805659594028420438">Povolí rozšírenie pre certifikáty TLS typu domain-bound (ktorého podpora bola ukončená)</translation>
 <translation id="3806576699227917885">Povoliť prehrávanie zvuku.
 
@@ -937,6 +944,13 @@ Odporúčaný spôsob nastavenia pravidiel v systéme Windows je nastavenie pro
           Toto pravidlo sa rešpektuje iba v prípade, ak je povolené pravidlo DefaultSearchProviderEnabled.</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 alebo novší</translation>
 <translation id="4325690621216251241">Pridať do oblasti oznámení tlačidlo odhlásenia</translation>
+<translation id="4349746760316962317">Umožňuje nakonfigurovať adresár na disku, ktorý bude prehliadač <ph name="PRODUCT_NAME" /> používať na ukladanie súborov vo vyrovnávacej pamäti.
+
+      Ak nastavíte toto pravidlo, prehliadač <ph name="PRODUCT_NAME" /> bude používať zadaný adresár bez ohľadu na to, či používateľ určil príznak „--disk-cache-dir“.
+
+      Zoznam premenných, ktoré sa dajú použiť, nájdete na adrese https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.
+
+      Ak toto pravidlo nenastavíte, použije sa predvolený adresár pre súbory vo vyrovnávacej pamäti a používateľ ho bude môcť prepísať pomocou príznaku príkazového riadku „--disk-cache-dir“.</translation>
 <translation id="436581050240847513">Hlásiť sieťové rozhrania zariadenia</translation>
 <translation id="4372704773119750918">Nepovoliť podnikovému používateľovi byť súčasťou viacnásobného profilu (primárneho ani sekundárneho)</translation>
 <translation id="4377599627073874279">Povoliť všetkým stránkam zobrazovať obrázky</translation>
@@ -1020,6 +1034,11 @@ Odporúčaný spôsob nastavenia pravidiel v systéme Windows je nastavenie pro
 <translation id="4665897631924472251">Nastavenia správy rozšírení</translation>
 <translation id="4668325077104657568">Predvolené nastavenie obrázkov</translation>
 <translation id="467236746355332046">Podporované funkcie:</translation>
+<translation id="4674167212832291997">Umožňuje prispôsobiť zoznam vzorov webových adries, ktoré by mal doplnok <ph name="PRODUCT_FRAME_NAME" /> vždy vykresliť.
+
+          Ak toto pravidlo nenastavíte, bude pre všetky webové stránky použitý predvolený vykresľovací modul (ako je určené pravidlom „ChromeFrameRendererSettings“).
+
+          Príklady vzorov nájdete na adrese http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="467449052039111439">Otvoriť zoznam webových adries</translation>
 <translation id="4680961954980851756">Povoliť automatické dopĺňanie</translation>
 <translation id="4723829699367336876">Povoliť prechod cez bránu firewall v smere od klienta vzdialeného prístupu</translation>
@@ -1126,6 +1145,13 @@ Ak toto pravidlo nie je nastavené alebo je prázdne, akýkoľvek používateľ 
           Keď nie je toto pravidlo nastavené, vykoná sa predvolená akcia – pozastavenie.
 
           Ak dôjde k pozastaveniu, <ph name="PRODUCT_OS_NAME" /> je možné samostatne nakonfigurovať, aby pred pozastavením obrazovku buď zamkol, alebo nezamkol.</translation>
+<translation id="5111712393799006197">Umožňuje nakonfigurovať adresár, ktorý bude prehliadač <ph name="PRODUCT_NAME" /> používať na ukladanie údajov používateľa.
+
+      Ak nastavíte toto pravidlo, prehliadač <ph name="PRODUCT_NAME" /> bude používať zadaný adresár bez ohľadu na to, či používateľ uviedol príznak „--user-data-dir“.
+
+      Zoznam premenných, ktoré sa dajú použiť, nájdete na adrese http://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.
+
+      Ak toto pravidlo nenastavíte, použije sa predvolená cesta profilu a používateľ ju bude môcť prepísať pomocou príznaku príkazového riadku „--user-data-dir“.</translation>
 <translation id="5130288486815037971">Ovláda, či sú v protokole TLS povolené šifrovacie súpravy RC4</translation>
 <translation id="5141670636904227950">Nastaviť predvolený typ lupy obrazovky, ktorý je povolený na prihlasovacej obrazovke</translation>
 <translation id="5142301680741828703">Vždy vykreslovať nasledujúce vzory webových adries v doplnku <ph name="PRODUCT_FRAME_NAME" /></translation>
@@ -1313,6 +1339,20 @@ Ak toto pravidlo nie je nastavené alebo je prázdne, akýkoľvek používateľ 
 <translation id="5809728392451418079">Nastaviť zobrazovaný názov pre miestne účty na zariadení</translation>
 <translation id="5814301096961727113">Nastaviť predvolený stav hlasovej odozvy na prihlasovacej obrazovke</translation>
 <translation id="5815129011704381141">Automaticky reštartovať po aktualizácii</translation>
+<translation id="5815353477778354428">Umožňuje nakonfigurovať adresár, ktorý prehliadač <ph name="PRODUCT_FRAME_NAME" /> použije na ukladanie údajov používateľa.
+
+      Ak toto pravidlo nastavíte, prehliadač <ph name="PRODUCT_FRAME_NAME" /> bude používať zadaný adresár.
+
+      Zoznam premenných, ktoré sa dajú použiť, nájdete na adrese http://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.
+
+      Ak toto pravidlo nenastavíte, použije sa predvolený adresár profilu.</translation>
+<translation id="5819660021114910752">Určí časové pásmo, ktoré sa má použiť v zariadení. Používatelia môžu prepísať určené časové pásmo pre aktuálnu reláciu. Po odhlásení sa však opäť nastaví určené časové pásmo. Ak poskytnete neplatnú hodnotu, toto pravidlo sa aktivuje a použije sa časové pásmo GMT. Ak poskytnete prázdny reťazec, toto pravidlo sa bude ignorovať.
+
+      Ak toto pravidlo nepoužijete, bude sa naďalej používať aktuálne časové pásmo. Používatelia však môžu časové pásmo zmeniť a táto zmena bude trvalá. Zmena, ktorú vykoná jeden používateľ, teda bude mať vplyv prihlasovaciu obrazovku a všetkých ďalších používateľov.
+
+      Nové zariadenia začínajú s časovým pásmom US/Pacific.
+
+      Formát hodnoty zodpovedá názvom časových pásiem v databáze časových pásiem IANA (nájdete ju na adrese https://en.wikipedia.org/wiki/Tz_database). Konkrétne je väčšina časových pásiem vyjadrená vo formáte „kontinent/veľkomesto“ alebo „oceán/veľkomesto“.</translation>
 <translation id="5826047473100157858">Určuje, či môže používateľ v prehliadači <ph name="PRODUCT_NAME" /> otvoriť stránky v režime Inkognito.
 
       Ak vyberiete možnosť „Povolené“ alebo bude pravidlo ponechané nenastavené, stránky sa v režime Inkognito budú dať otvoriť.
@@ -2093,6 +2133,11 @@ Ak toto pravidlo nie je nastavené alebo je prázdne, akýkoľvek používateľ 
 <translation id="8465065632133292531">Parametre pre webovú adresu okamžitého vyhľadávania, ktorá používa metódu POST</translation>
 <translation id="847472800012384958">Zakázať všetkým stránkam zobrazovať kontextové okná</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
+<translation id="8484458986062090479">Prispôsobte si zoznam vzorov webových adries, ktoré by mali byť vždy vykresľované hostiteľským prehliadačom.
+
+          Ak toto pravidlo nenastavíte, pre všetky webové stránky sa použije predvolený vykresľovací modul (ako je určené pravidlom „ChromeFrameRendererSettings“).
+
+          Príklady vzorov nájdete na adrese http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="8493645415242333585">Zakázať ukladanie histórie prehliadača</translation>
 <translation id="8499172469244085141">Predvolené nastavenia (používatelia ich môžu nahradiť)</translation>
 <translation id="8501011084242226370">Určuje zoznam doplnkov, ktoré používateľ v aplikácii <ph name="PRODUCT_NAME" /> môže povoliť alebo zakázať.

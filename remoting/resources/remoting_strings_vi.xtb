@@ -33,7 +33,6 @@ Các máy tính từ xa có bàn phím không phải tiếng Anh-Mỹ có thể 
 <translation id="1770394049404108959">Tôi không thể mở ứng dụng.</translation>
 <translation id="177096447311351977">IP kênh dành cho ứng dụng khách: <ph name="CLIENT_GAIA_IDENTIFIER" /> ip='<ph name="CLIENT_IP_ADDRESS_AND_PORT" />' host_ip='<ph name="HOST_IP_ADDRESS_AND_PORT" />' kênh='<ph name="CHANNEL_TYPE" />' kết nối='<ph name="CONNECTION_TYPE" />'.</translation>
 <translation id="1779766957982586368">Đóng cửa sổ</translation>
-<translation id="1818475040640568770">Bạn chưa đăng ký máy tính nào.</translation>
 <translation id="1841799852846221389">Đang tắt kết nối từ xa cho máy tính này…</translation>
 <translation id="189172778771606813">Đóng ngăn điều hướng</translation>
 <translation id="195619862187186579">Bố cục bàn phím</translation>
@@ -87,8 +86,6 @@ Các máy tính từ xa có bàn phím không phải tiếng Anh-Mỹ có thể 
 <translation id="2926340305933667314">Không thể tắt kết nối từ xa với máy tính này. Vui lòng thử lại sau.</translation>
 <translation id="2930135165929238380">Thiếu một số thành phần bắt buộc. Vui lòng chuyển tới chrome://plugins và đảm bảo Native Client được bật.</translation>
 <translation id="2939145106548231838">Xác thực với máy chủ lưu trữ</translation>
-<translation id="2998137343848432918">• Đã thêm màn hình Ghi nhận tác giả.
-• Đã khắc phục sự cố khi chuyển sang chế độ toàn màn hình với bàn phím hiển thị.</translation>
 <translation id="3020807351229499221">Không thể cập nhật mã PIN. Vui lòng thử lại sau.</translation>
 <translation id="3025388528294795783">Để giúp chúng tôi giải quyết sự cố của bạn, vui lòng cho chúng tôi biết vấn đề đã xảy ra:</translation>
 <translation id="3027681561976217984">Chế độ cảm ứng</translation>
@@ -124,6 +121,7 @@ trên Chrome</translation>
 <translation id="3950820424414687140">Đăng nhập</translation>
 <translation id="3989511127559254552">Để tiếp tục, trước tiên, bạn phải cấp các quyền truy cập mở rộng cho máy tính của mình. Bạn chỉ phải thực hiện việc này một lần.</translation>
 <translation id="4006787130661126000">Bạn phải bật kết nối từ xa nếu bạn muốn sử dụng Chrome Remote Desktop để truy cập vào máy tính này.</translation>
+<translation id="405887016757208221">Máy tính từ xa đã không khởi tạo được phiên. Nếu sự cố vẫn tiếp diễn, vui lòng thử định cấu hình lại máy chủ.</translation>
 <translation id="4068946408131579958">Tất cả kết nối</translation>
 <translation id="409800995205263688">LƯU Ý: Cài đặt chính sách chỉ cho phép kết nối giữa các máy tính trong mạng của bạn.</translation>
 <translation id="4155497795971509630">Thiếu một số thành phần bắt buộc. Vui lòng đảm bảo rằng bạn đã cài đặt phiên bản mới nhất của phần mềm và thử lại.</translation>
@@ -170,7 +168,6 @@ Remote Desktop</translation>
 <translation id="518094545883702183">Thông tin này chỉ được sử dụng để chẩn đoán sự cố bạn đang báo cáo, chỉ khả dụng đối với người điều tra báo cáo của bạn và được giữ lại tối đa 30 ngày.</translation>
 <translation id="5222676887888702881">Đăng xuất</translation>
 <translation id="5254120496627797685">Thoát khỏi trang này sẽ kết thúc phiên Chrome Remote Desktop của bạn.</translation>
-<translation id="5285241842433869526">Tìm hiểu cách thiết lập máy tính để truy cập từ xa.</translation>
 <translation id="5308380583665731573">Kết nối</translation>
 <translation id="5363265567587775042">Yêu cầu người dùng có máy tính bạn muốn truy cập nhấp vào “<ph name="SHARE" />” và cung cấp cho bạn mã truy cập.</translation>
 <translation id="5379087427956679853">Chrome Remote Desktop cho phép bạn chia sẻ máy tính của mình một cách an toàn qua Web. Cả hai người dùng đều phải chạy ứng dụng Chrome Remote Desktop mà bạn có thể tìm thấy tại <ph name="URL" />.</translation>
@@ -258,6 +255,7 @@ Remote Desktop</translation>
 <translation id="7869445566579231750">Bạn không có quyền chạy ứng dụng này.</translation>
 <translation id="7948001860594368197">Tùy chọn màn hình</translation>
 <translation id="7970576581263377361">Xác thực bị lỗi. Vui lòng đăng nhập lại vào Chromium.</translation>
+<translation id="7981525049612125370">Phiên từ xa đã hết hạn.</translation>
 <translation id="8041721485428375115">Khi tải xuống Trình cài đặt máy chủ Chrome Remote Desktop, bạn đồng ý với <ph name="LINK_BEGIN" />Điều khoản dịch vụ<ph name="LINK_END" /> của Google.</translation>
 <translation id="8073845705237259513">Để sử dụng Chrome Remote Desktop, bạn cần thêm một tài khoản Google cho thiết bị của mình.</translation>
 <translation id="80739703311984697">Máy chủ lưu trữ từ xa yêu cầu bạn xác thực với một trang web của bên thứ ba. Để tiếp tục, bạn phải cấp cho Kết nối từ xa trên Chrome thêm quyền truy cập vào địa chỉ sau:</translation>

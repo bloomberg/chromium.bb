@@ -33,7 +33,6 @@ Para sa higit pang impormasyon tungkol sa privacy, pakitingnan ang Patakaran sa 
 <translation id="1770394049404108959">Hindi ko mabuksan ang application.</translation>
 <translation id="177096447311351977">Channel IP para sa client: <ph name="CLIENT_GAIA_IDENTIFIER" /> ip='<ph name="CLIENT_IP_ADDRESS_AND_PORT" />' host_ip='<ph name="HOST_IP_ADDRESS_AND_PORT" />' channel='<ph name="CHANNEL_TYPE" />' koneksyon='<ph name="CONNECTION_TYPE" />'.</translation>
 <translation id="1779766957982586368">Isara ang window</translation>
-<translation id="1818475040640568770">Wala kang mga computer na nakarehistro.</translation>
 <translation id="1841799852846221389">Hindi pinapagana ang mga malayuang koneksyon para sa computer na ito…</translation>
 <translation id="189172778771606813">Isara ang navigation drawer</translation>
 <translation id="195619862187186579">Mga layout ng keyboard</translation>
@@ -87,8 +86,6 @@ Para sa higit pang impormasyon tungkol sa privacy, pakitingnan ang Patakaran sa 
 <translation id="2926340305933667314">Nabigo ang hindi pagpapagana sa malayuang access sa computer na ito. Pakisubukang muli sa ibang pagkakataon.</translation>
 <translation id="2930135165929238380">Nawawala ang ilang kinakailangang bahagi. Mangyaring pumunta sa chrome://plugins at tiyaking naka-enable ang Native Client.</translation>
 <translation id="2939145106548231838">Patunayan upang ma-host</translation>
-<translation id="2998137343848432918">• Nagdagdag ng screen ng Mga Credit.
-• Nag-ayos ng problema kapag nagfu-full-screen habang nakikita ang keyboard.</translation>
 <translation id="3020807351229499221">Nabigong i-update ang PIN. Pakisubukang muli sa ibang pagkakataon.</translation>
 <translation id="3025388528294795783">Upang tulungan kaming lutasin ang iyong problema, pakilahad sa amin kung ano ang maling nangyari:</translation>
 <translation id="3027681561976217984">Touch mode</translation>
@@ -171,7 +168,6 @@ Desktop ng Chrome</translation>
 <translation id="518094545883702183">Ang impormasyong ito ay ginagamit lang para sa pagda-diagnose sa problemang inuulat mo, available lang sa isang taong nagsisiyasat ng iyong ulat, at pinapanatili sa loob ng hindi hihigit sa 30 araw.</translation>
 <translation id="5222676887888702881">Mag-sign out</translation>
 <translation id="5254120496627797685">Tatapusin ng pag-alis sa pahinang ito ang iyong session sa Remote na Desktop ng Chrome.</translation>
-<translation id="5285241842433869526">Alamin kung paano mag-set up ng isang computer para sa malayuang pag-access.</translation>
 <translation id="5308380583665731573">Kumonekta</translation>
 <translation id="5363265567587775042">Hilingin sa user na may-ari ng computer na gusto mong i-access na i-click ang “<ph name="SHARE" />” at ibigay sa iyo ang access code.</translation>
 <translation id="5379087427956679853">Binibigyang-daan ka ng Remote na Desktop ng Chrome na ligtas na maibahagi ang iyong computer sa Web. Dapat na nagpapatakbo ang parehong user ng app ng Remote na Desktop ng Chrome, na matatagpuan sa <ph name="URL" />.</translation>

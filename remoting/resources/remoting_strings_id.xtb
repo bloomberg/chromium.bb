@@ -33,7 +33,6 @@ Untuk informasi tentang privasi, lihat Kebijakan Privasi Google (http://goo.gl/S
 <translation id="1770394049404108959">Saya tidak dapat membuka aplikasi ini.</translation>
 <translation id="177096447311351977">IP saluran untuk klien: <ph name="CLIENT_GAIA_IDENTIFIER" /> ip='<ph name="CLIENT_IP_ADDRESS_AND_PORT" />' host_ip='<ph name="HOST_IP_ADDRESS_AND_PORT" />' channel='<ph name="CHANNEL_TYPE" />' connection='<ph name="CONNECTION_TYPE" />'.</translation>
 <translation id="1779766957982586368">Tutup jendela</translation>
-<translation id="1818475040640568770">Anda tidak memiliki komputer yang terdaftar.</translation>
 <translation id="1841799852846221389">Menonaktifkan sambungan jarak jauh untuk komputer ini...</translation>
 <translation id="189172778771606813">Tutup panel samping navigasi</translation>
 <translation id="195619862187186579">Layout keyboard</translation>
@@ -87,8 +86,6 @@ Untuk informasi tentang privasi, lihat Kebijakan Privasi Google (http://goo.gl/S
 <translation id="2926340305933667314">Gagal menonaktifkan akses jarak jauh ke komputer ini. Coba lagi nanti.</translation>
 <translation id="2930135165929238380">Beberapa komponen yang diperlukan tidak ada. Buka chrome://plugins dan pastikan Native Client diaktifkan.</translation>
 <translation id="2939145106548231838">Autentikasi untuk menghosting</translation>
-<translation id="2998137343848432918">• Penambahan layar Kredit.
-• Perbaikan masalah saat menggunakan layar penuh dengan keyboard yang terlihat.</translation>
 <translation id="3020807351229499221">Gagal memperbarui PIN. Coba lagi nanti.</translation>
 <translation id="3025388528294795783">Guna membantu kami menyelesaikan masalah Anda, beri tahu kami apa masalahnya:</translation>
 <translation id="3027681561976217984">Mode sentuh</translation>
@@ -124,7 +121,7 @@ Chromoting</translation>
 <translation id="3950820424414687140">Masuk</translation>
 <translation id="3989511127559254552">Untuk melanjutkan, Anda harus memberikan izin akses yang diperpanjang ke komputer. Anda hanya perlu melakukan ini satu kali.</translation>
 <translation id="4006787130661126000">Anda harus mengaktifkan sambungan jarak jauh jika ingin menggunakan Chrome Desktop Jarak Jauh untuk mengakses komputer ini.</translation>
-<translation id="405887016757208221">Komputer jarak jauh gagal melakukan inisialisasi sesi. Jika masalah tetap ada, coba lakukan konfigurasi pada host lagi.</translation>
+<translation id="405887016757208221">Komputer jarak jauh gagal melakukan inisialisasi sesi. Jika masalah tetap ada, coba konfigurasi ulang host.</translation>
 <translation id="4068946408131579958">Semua sambungan</translation>
 <translation id="409800995205263688">CATATAN: Setelan kebijakan hanya mengizinkan sambungan antar-komputer dalam jaringan Anda.</translation>
 <translation id="4155497795971509630">Beberapa komponen yang diperlukan tidak ada. Pastikan Anda memasang perangkat lunak versi terbaru dan coba lagi.</translation>
@@ -171,7 +168,6 @@ Desktop Jarak Jauh</translation>
 <translation id="518094545883702183">Informasi ini hanya digunakan untuk mendiagnosis masalah yang Anda laporkan, hanya tersedia untuk orang yang menyelidiki laporan, dan dipertahankan selama tidak lebih dari 30 hari.</translation>
 <translation id="5222676887888702881">Keluar</translation>
 <translation id="5254120496627797685">Dengan meninggalkan laman ini, Anda akan mengakhiri sesi Chrome Desktop Jarak Jauh.</translation>
-<translation id="5285241842433869526">Pelajari cara menyiapkan komputer untuk akses jarak jauh.</translation>
 <translation id="5308380583665731573">Sambungkan</translation>
 <translation id="5363265567587775042">Minta pengguna yang menggunakan komputer yang ingin Anda akses untuk mengeklik “<ph name="SHARE" />” dan memberikan kode akses kepada Anda.</translation>
 <translation id="5379087427956679853">Chrome Desktop Jarak Jauh memungkinkan Anda berbagi komputer melalui web dengan aman. Kedua pengguna harus menjalankan aplikasi Chrome Desktop Jarak Jauh yang dapat ditemukan di <ph name="URL" />.</translation>

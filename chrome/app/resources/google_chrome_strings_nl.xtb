@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="nl">
 <translation id="1001534784610492198">Het archief van het installatieprogramma is beschadigd of ongeldig. Download Google Chrome opnieuw.</translation>
+<translation id="1013290471399003443">Chrome heeft geverifieerd dat <ph name="ISSUER" /> het certificaat van deze website heeft uitgegeven. De server heeft geldige certificaattransparantiegegevens geleverd.</translation>
 <translation id="1016765312371154165">Chrome is niet correct afgesloten.</translation>
 <translation id="103396972844768118">Belangrijke informatie over je Chrome-gegevens</translation>
 <translation id="1061441684050139317">Chrome heeft microfoontoegang nodig om het item te delen met deze site.</translation>
@@ -66,6 +67,7 @@ Als je inlogt, worden Chrome-gegevens zoals bladwijzers, geschiedenis en andere 
 <translation id="2769762047821873045">Google Chrome is niet je standaardbrowser.</translation>
 <translation id="2770231113462710648">Standaardbrowser wijzigen in:</translation>
 <translation id="2871893339301912279">U bent ingelogd bij Chrome.</translation>
+<translation id="2997147809295888909">Chrome heeft geverifieerd dat <ph name="ISSUER" /> het certificaat van deze website heeft uitgegeven. De server heeft geen certificaattransparantiegegevens geleverd.</translation>
 <translation id="3037838751736561277">Google Chrome bevindt zich in de achtergrondmodus.</translation>
 <translation id="3047079729301751317">Als je de verbinding met <ph name="USERNAME" /> verbreekt, worden je geschiedenis, bladwijzers, instellingen en andere Chrome-gegevens op dit apparaat opgeslagen. De gegevens die in je Google-account zijn opgeslagen, worden niet gewist en kunnen worden beheerd via <ph name="GOOGLE_DASHBOARD_LINK" />Google Dashboard<ph name="END_GOOGLE_DASHBOARD_LINK" />.</translation>
 <translation id="3080151273017101988">Achtergrondapps blijven uitvoeren wanneer Google Chrome is gesloten</translation>
@@ -80,7 +82,6 @@ Als je inlogt, worden Chrome-gegevens zoals bladwijzers, geschiedenis en andere 
 <translation id="345171907106878721">Jezelf toevoegen aan Chrome</translation>
 <translation id="3612333635265770873">Van een module met dezelfde naam is bekend dat deze conflicteert met Google Chrome.</translation>
 <translation id="3622797965165704966">Het is nu gemakkelijker om Chrome met je Google-account en op gedeelde computers te gebruiken.</translation>
-<translation id="3656661827369545115">Chromium automatisch starten wanneer je computer wordt opgestart</translation>
 <translation id="3735758079232443276">De extensie '<ph name="EXTENSION_NAME" />' heeft gewijzigd welke pagina wordt weergegeven wanneer je Chrome start.</translation>
 <translation id="3738139272394829648">Tikken om te zoeken</translation>
 <translation id="3784527566857328444">Verwijderen uit Chrome…</translation>
@@ -88,6 +89,7 @@ Als je inlogt, worden Chrome-gegevens zoals bladwijzers, geschiedenis en andere 
 <translation id="3847841918622877581">Google Chrome kan webservices gebruiken om je internetervaring te verbeteren.</translation>
 <translation id="386202838227397562">Sluit alle Google Chrome-vensters en probeer het opnieuw.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
+<translation id="3881912906674381083">Chrome heeft geverifieerd dat <ph name="ISSUER" /> het certificaat van deze website heeft uitgegeven. De server heeft certificaattransparantiegegevens geleverd, maar Chrome heeft geen van de logboeken voor certificaattransparantie herkend.</translation>
 <translation id="3889417619312448367">Google Chrome verwijderen</translation>
 <translation id="4011219958405096740">Als deze markering is ingeschakeld, wordt een Chrome-inlogprocedure op basis van iframes gebruikt. Anders wordt een procedure op basis van webweergaven gebruikt.</translation>
 <translation id="4050175100176540509">Er zijn belangrijke beveiligingsverbeteringen en nieuwe functies beschikbaar in de nieuwste versie.</translation>
@@ -97,10 +99,8 @@ Als je inlogt, worden Chrome-gegevens zoals bladwijzers, geschiedenis en andere 
 <translation id="4167057906098955729">Hier kun je al je meldingen van Chrome-apps, -extensies en -websites weergeven.</translation>
 <translation id="423410644998903704">Chrome heeft rechten nodig om het item te delen met deze site.</translation>
 <translation id="4251615635259297716">Wil je je Chrome-gegevens aan dit account koppelen?</translation>
-<translation id="4273752058983339720">Google Chrome is geconfigureerd om automatisch te worden gestart als je je computer opstart.</translation>
 <translation id="4309555186815777032">(je moet Chrome <ph name="BEGIN_BUTTON" />opnieuw starten<ph name="END_BUTTON" />)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
-<translation id="4367618624832907428">Google Chrome kan de internetpagina niet weergeven, omdat je computer niet is verbonden met internet.</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="4458285410772214805">Log uit en log weer in om deze wijziging door te voeren.</translation>
 <translation id="4480040274068703980">Chrome OS kan je gegevens niet synchroniseren door een fout tijdens het inloggen.</translation>
@@ -109,7 +109,6 @@ Als je inlogt, worden Chrome-gegevens zoals bladwijzers, geschiedenis en andere 
 <translation id="4567424176335768812">Je bent ingelogd als <ph name="USER_EMAIL_ADDRESS" />. Je hebt nu toegang tot je bladwijzers, geschiedenis en andere instellingen op al je apparaten waarop je bent ingelogd.</translation>
 <translation id="4631713731678262610">Verbergen in Chrome-menu</translation>
 <translation id="4633000520311261472">Om Chrome veiliger te maken, hebben we een aantal extensies uitgeschakeld die niet worden vermeld in de <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> en mogelijk zonder je medeweten zijn geïnstalleerd.</translation>
-<translation id="4692614041509923516">Je computer gebruikt een oude versie van Microsoft Windows waarmee het beveiligingscertificaat van deze website niet kan worden verwerkt. Vanwege dit probleem kan Google Chrome niet bepalen of het certificaat afkomstig is van <ph name="SITE" /> of van iemand in je netwerk die zich voordoet als <ph name="SITE" />. Werk je computer bij naar een nieuwere versie van Windows.</translation>
 <translation id="4700157086864140907">Google Chrome kan een betere spellingcontrole leveren door wat je in de browser typt naar Google-servers te verzenden. Hierdoor kun je profiteren van dezelfde technologie voor spellingcontrole die ook voor Google Zoeken wordt gebruikt.</translation>
 <translation id="4728575227883772061">De installatie is mislukt wegens een onbekende fout. Als Google Chrome momenteel actief is, sluit je het programma af en probeer je het opnieuw.</translation>
 <translation id="473775607612524610">Updaten</translation>
@@ -118,6 +117,7 @@ Als je inlogt, worden Chrome-gegevens zoals bladwijzers, geschiedenis en andere 
 <translation id="4794050651896644714">Details opslaan in Chrome</translation>
 <translation id="4891791193823137474">Google Chrome op de achtergrond laten uitvoeren</translation>
 <translation id="4921569541910214635">Deel je een computer? Je kunt Chrome nu precies instellen zoals jij dat wilt.</translation>
+<translation id="4925019873400497719">Chrome heeft geverifieerd dat <ph name="ISSUER" /> het certificaat van deze website heeft uitgegeven. De server heeft certificaattransparantiegegevens geleverd, maar deze waren ongeldig.</translation>
 <translation id="4953650215774548573">Google Chrome instellen als je standaardbrowser</translation>
 <translation id="4987308747895123092">Sluit alle Google Chrome-vensters (inclusief de vensters in Windows 8-modus) en probeer het opnieuw.</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
@@ -196,7 +196,6 @@ Sommige functies zijn wellicht niet beschikbaar. Geef een andere profieldirector
 <translation id="6989339256997917931">Google Chrome is bijgewerkt, maar je hebt het programma minstens 30 dagen niet gebruikt.</translation>
 <translation id="699076943483372849">Deze site maakt gebruikt van de Chrome Frame-plug-in die uit roulatie is genomen en waarvoor geen beveiligings- en stabiliteitsupdates meer beschikbaar komen. Verwijder de plug-in en voer een upgrade uit naar een moderne browser.</translation>
 <translation id="6991142834212251086">Mijn Chrome-gegevens koppelen aan dit account</translation>
-<translation id="7054640471403081847">Deze computer ontvangt binnenkort geen Google Chrome-updates meer omdat de hardware van de computer niet meer wordt ondersteund.</translation>
 <translation id="7060865993964054389">App-opstartprogramma van Google Chrome</translation>
 <translation id="7084448929020576097"><ph name="FILE_NAME" /> is schadelijk en is door Chrome geblokkeerd.</translation>
 <translation id="7098166902387133879">Google Chrome gebruikt je microfoon.</translation>
@@ -232,7 +231,6 @@ Sommige functies zijn wellicht niet beschikbaar. Geef een andere profieldirector
 <translation id="781069973841903133">Wanneer je Chrome opnieuw start met het uitgebreide scherm, worden al je Chrome-apps gesloten en opnieuw gestart.</translation>
 <translation id="7825851276765848807">De installatie is mislukt vanwege een onbekende fout. Download Google Chrome opnieuw.</translation>
 <translation id="7890208801193284374">Als je een computer deelt, kunnen vrienden en familie afzonderlijk surfen en Chrome configureren zoals zij dat willen.</translation>
-<translation id="7908968924842975895">Deze computer ontvangt geen Google Chrome-updates meer omdat de hardware van de computer niet meer wordt ondersteund.</translation>
 <translation id="7984945080620862648">Je kunt <ph name="SITE" /> op dit moment niet bezoeken, omdat de website gecodeerde verificatiegegevens heeft verzonden die niet door Chrome kunnen worden verwerkt. Netwerkfouten en aanvallen zijn doorgaans tijdelijk, dus deze pagina werkt later waarschijnlijk correct.</translation>
 <translation id="8000275528373650868">Voor Google Chrome is Windows Vista of Windows XP met SP2 of hoger vereist.</translation>
 <translation id="8005540215158006229">Chrome is bijna klaar.</translation>

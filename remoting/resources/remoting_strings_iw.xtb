@@ -33,7 +33,6 @@
 <translation id="1770394049404108959">איני יכול לפתוח את היישום.</translation>
 <translation id="177096447311351977">‏IP הערוץ של הלקוח: <ph name="CLIENT_GAIA_IDENTIFIER" /> ip='<ph name="CLIENT_IP_ADDRESS_AND_PORT" />' host_ip='<ph name="HOST_IP_ADDRESS_AND_PORT" />' ערוץ='<ph name="CHANNEL_TYPE" />' חיבור='<ph name="CONNECTION_TYPE" />'.</translation>
 <translation id="1779766957982586368">סגור חלון</translation>
-<translation id="1818475040640568770">אין לך מחשבים רשומים.</translation>
 <translation id="1841799852846221389">משבית חיבורים מרוחקים למחשב זה...</translation>
 <translation id="189172778771606813">סגור את חלונית ההזזה לניווט</translation>
 <translation id="195619862187186579">פריסות מקלדת</translation>
@@ -87,8 +86,6 @@
 <translation id="2926340305933667314">הניסיון להשבית גישה מרחוק למחשב זה נכשל. נסה שוב מאוחר יותר.</translation>
 <translation id="2930135165929238380">‏חלק מהרכיבים הדרושים חסרים. עבור אל chrome://plugins וודא ש-Native Client מופעל.</translation>
 <translation id="2939145106548231838">אמת מול המארח</translation>
-<translation id="2998137343848432918">• נוסף מסך המציג את פרטי הכניסה.
-• תוקנה בעיה בעת המעבר למסך מלא כשהמקלדת מוצגת.</translation>
 <translation id="3020807351229499221">‏הניסיון לעדכן את ה-PIN נכשל. נסה שוב מאוחר יותר.</translation>
 <translation id="3025388528294795783">כדי לעזור לנו לפתור את הבעיה שבה נתקלת, ספר לנו מה קרה:</translation>
 <translation id="3027681561976217984">מצב מסך מגע</translation>
@@ -171,7 +168,6 @@ Chromoting</translation>
 <translation id="518094545883702183">המידע הזה משמש רק לאבחון הבעיה שדיווחת עליה. הוא זמין רק למי שבוחן את הדוח, ונשמר למשך זמן של 30 ימים לכל היותר.</translation>
 <translation id="5222676887888702881">יציאה</translation>
 <translation id="5254120496627797685">‏יציאה מדף זה תגרום לסיום הפעילות של 'שולחן עבודה מרוחק של Chrome'.</translation>
-<translation id="5285241842433869526">למד כיצד להגדיר מחשב לגישה מרחוק.</translation>
 <translation id="5308380583665731573">התחברות</translation>
 <translation id="5363265567587775042">בקש מבעל המחשב שאליו אתה רוצה לגשת שילחץ על “<ph name="SHARE" />” וייתן לך את קוד הגישה.</translation>
 <translation id="5379087427956679853">‏'שולחן עבודה מרוחק של Chrome' מאפשר לך לשתף את המחשב שלך דרך האינטרנט באופן מאובטח. על שני המשתמשים להפעיל את היישום 'שולחן עבודה מרוחק של Chrome', שניתן למצוא בכתובת <ph name="URL" />.</translation>

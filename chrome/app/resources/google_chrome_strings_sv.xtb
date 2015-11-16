@@ -82,7 +82,6 @@ Om du loggar in ändå synkroniseras din information i Chrome, till exempel bokm
 <translation id="345171907106878721">Lägg till dig själv i Chrome</translation>
 <translation id="3612333635265770873">En modul med samma namn har tidigare varit i konflikt med Google Chrome.</translation>
 <translation id="3622797965165704966">Nu är det enklare att använda Chrome med ditt Google-konto och på delade datorer.</translation>
-<translation id="3656661827369545115">Starta Chromium automatiskt när datorn startas</translation>
 <translation id="3735758079232443276">Tillägget <ph name="EXTENSION_NAME" /> har ändrat vilken sida som visas när du startar Chrome.</translation>
 <translation id="3738139272394829648">Tryck för att söka</translation>
 <translation id="3784527566857328444">Ta bort från Chrome …</translation>
@@ -100,10 +99,8 @@ Om du loggar in ändå synkroniseras din information i Chrome, till exempel bokm
 <translation id="4167057906098955729">Alla dina meddelanden från Chrome-appar, tillägg och webbplatser visas här.</translation>
 <translation id="423410644998903704">Chrome behöver tillgång till behörigheter för att kunna dela dem på den här webbplatsen.</translation>
 <translation id="4251615635259297716">Koppla dina uppgifter i Chrome till det här kontot</translation>
-<translation id="4273752058983339720">Google Chrome är konfigurerad för att starta automatiskt när du startar datorn.</translation>
 <translation id="4309555186815777032">(Chrome måste <ph name="BEGIN_BUTTON" />startas om<ph name="END_BUTTON" />)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
-<translation id="4367618624832907428">Det går inte att visa webbsidan i Google Chrome eftersom datorn inte är ansluten till internet.</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="4458285410772214805">Den här ändringen träder inte i kraft förrän du loggat ut och sedan loggar in igen.</translation>
 <translation id="4480040274068703980">Det gick inte att synkronisera data med Chrome OS på grund av ett inloggningsfel.</translation>
@@ -112,7 +109,6 @@ Om du loggar in ändå synkroniseras din information i Chrome, till exempel bokm
 <translation id="4567424176335768812">Du är inloggad som <ph name="USER_EMAIL_ADDRESS" />. Nu kan du komma åt dina bokmärken, historik och andra inställningar på alla enheter som du är inloggad på.</translation>
 <translation id="4631713731678262610">Dölj i Chrome-menyn</translation>
 <translation id="4633000520311261472">Vi har gjort Chrome säkrare genom att inaktivera vissa tillägg som inte finns i <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> och som kan ha lagts till utan att du vet om det.</translation>
-<translation id="4692614041509923516">En gammal version av Microsoft Windows som inte kan behandla webbplatsens säkerhetscertifikat körs på datorn. På grund av detta kan inte Chrome avgöra om certifikatet kommer från <ph name="SITE" /> eller från någon i ditt nätverk som utger sig för att vara <ph name="SITE" />. Uppdatera datorn till en nyare version av Windows.</translation>
 <translation id="4700157086864140907">Google Chrome kan ge smartare stavningskontroll genom att skicka det som du skriver i webbläsaren till Googles servrar så att du kan använda samma stavningsteknik som används i Googles webbsökning.</translation>
 <translation id="4728575227883772061">Installationen misslyckades på grund av ett ospecificerat fel. Stäng Google Chrome, om det är igång, och försök sedan igen.</translation>
 <translation id="473775607612524610">Uppdatera</translation>
@@ -203,7 +199,6 @@ Google Chrome kan inte återställa dina inställningar.</translation>
 <translation id="6989339256997917931">Chrome har uppdaterats men du har inte använt det på över 30 dagar.</translation>
 <translation id="699076943483372849">Den här webbplatsen använder Chrome Frame. Denna plugin är inaktuell och inga nya säkerhets- eller stabilitetsuppdateringar släpps. Du bör avinstallera den och uppgradera till en modern webbläsare.</translation>
 <translation id="6991142834212251086">Koppla mina uppgifter i Chrome till det här kontot</translation>
-<translation id="7054640471403081847">Den här datorn slutar snart att få uppdateringar för Google Chrome eftersom maskinvaran inte längre stöds.</translation>
 <translation id="7060865993964054389">Startprogrammet för appar i Google Chrome</translation>
 <translation id="7084448929020576097"><ph name="FILE_NAME" /> är skadlig och har blockerats av Chrome.</translation>
 <translation id="7098166902387133879">Google Chrome använder din mikrofon.</translation>
@@ -240,7 +235,6 @@ Google Chrome kan inte återställa dina inställningar.</translation>
 <translation id="781069973841903133">Om du startar om Chrome i integrerat läge stängs och startas appar i Chrome om.</translation>
 <translation id="7825851276765848807">Installationen misslyckades på grund av ett okänt fel. Ladda ned Google Chrome igen.</translation>
 <translation id="7890208801193284374">Om du delar en dator med vänner och familj kan de konfigurera Chrome precis som de vill och surfa separat.</translation>
-<translation id="7908968924842975895">Den här datorn får inte längre uppdateringar för Google Chrome eftersom maskinvaran inte längre stöds.</translation>
 <translation id="7984945080620862648">Det går inte att besöka <ph name="SITE" /> just nu på grund av att webbplatsen skickade röriga användaruppgifter som Chrome inte kan behandla. Nätverksfel och attacker är vanligtvis tillfälliga, så sidan fungerar troligen senare.</translation>
 <translation id="8000275528373650868">För Google Chrome krävs Windows Vista eller Windows XP med SP2 eller senare.</translation>
 <translation id="8005540215158006229">Chrome är nästan klar.</translation>

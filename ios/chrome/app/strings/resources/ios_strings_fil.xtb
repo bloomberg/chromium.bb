@@ -4,6 +4,7 @@
 <translation id="1008557486741366299">Hindi Ngayon</translation>
 <translation id="1047726139967079566">Bookmark This Page...</translation>
 <translation id="1172898394251786223">Susunod na field</translation>
+<translation id="1625603797851307283">Gusto mo bang i-save ng <ph name="PRODUCT_NAME" /> ang iyong password para sa site na ito?</translation>
 <translation id="2320166752086256636">Itago ang keyboard</translation>
 <translation id="2704606927547763573">Kinopya</translation>
 <translation id="2747003861858887689">Nakaraang field</translation>
@@ -11,11 +12,17 @@
 <translation id="3244271242291266297">MM</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> ng <ph name="NUM_SUGGESTIONS" /></translation>
 <translation id="3335947283844343239">Muling buksan ang Nakasarang Tab</translation>
+<translation id="3414292259312108062">Iiimbak ito ng Chrome sa iyong <ph name="BEGIN_LINK" />mga naka-save na password sa Google<ph name="END_LINK" /> at io-autofill ito para sa iyo nang sa gayon ay hindi mo na ito kailangang tandaan.</translation>
 <translation id="385051799172605136">Bumalik</translation>
 <translation id="4121993058175073134">Upang makapagpadala ng net-export data, paki-configure ang iyong email account sa app ng Mga Setting.</translation>
 <translation id="4728558894243024398">Platform</translation>
+<translation id="5317780077021120954">I-save</translation>
 <translation id="5779929835642192302">May available na mga suhestyon</translation>
 <translation id="605721222689873409">YY</translation>
+<translation id="6149061208933997199">Gamitin ang Password</translation>
+<translation id="6314335155547195432">Bumuo ng password</translation>
+<translation id="6456425917241817154">Binuo ng Chrome ang Password</translation>
 <translation id="7456847797759667638">Buksan ang Lokasyon...</translation>
 <translation id="7481312909269577407">Sumulong</translation>
+<translation id="7961015016161918242">Hindi Kailanman</translation>
 </translationbundle>

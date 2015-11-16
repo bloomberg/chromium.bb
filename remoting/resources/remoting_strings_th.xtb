@@ -33,7 +33,6 @@
 <translation id="1770394049404108959">ฉันไม่สามารถเปิดแอปพลิเคชันนี้</translation>
 <translation id="177096447311351977">IP ช่องสำหรับไคลเอ็นต์: <ph name="CLIENT_GAIA_IDENTIFIER" /> ip='<ph name="CLIENT_IP_ADDRESS_AND_PORT" />' host_ip='<ph name="HOST_IP_ADDRESS_AND_PORT" />' channel='<ph name="CHANNEL_TYPE" />' connection='<ph name="CONNECTION_TYPE" />'.</translation>
 <translation id="1779766957982586368">ปิดหน้าต่าง</translation>
-<translation id="1818475040640568770">คอมพิวเตอร์ของคุณยังไม่ได้ลงทะเบียน</translation>
 <translation id="1841799852846221389">กำลังปิดใช้งานการเชื่อมต่อระยะไกลสำหรับคอมพิวเตอร์เครื่องนี้…</translation>
 <translation id="189172778771606813">ปิดลิ้นชักการนำทาง</translation>
 <translation id="195619862187186579">การจัดวางแป้นพิมพ์</translation>
@@ -87,8 +86,6 @@
 <translation id="2926340305933667314">ไม่สามารถปิดใช้งานการเข้าถึงคอมพิวเตอร์เครื่องนี้จากระยะไกล โปรดลองอีกครั้งในภายหลัง</translation>
 <translation id="2930135165929238380">คอมโพเนนต์ที่ต้องใช้หายไปบางส่วน โปรดไปที่ chrome://plugins และตรวจสอบว่าได้เปิดใช้ Native Client แล้ว</translation>
 <translation id="2939145106548231838">ตรวจสอบสิทธิ์ตามที่โฮสต์กำหนด</translation>
-<translation id="2998137343848432918">• เพิ่มหน้าจอรายชื่อทีมงาน
-• แก้ไขปัญหาเมื่อขยายเต็มหน้าจอโดยแสดงแป้นพิมพ์</translation>
 <translation id="3020807351229499221">ไม่สามารถอัปเดต PIN โปรดลองอีกครั้งในภายหลัง</translation>
 <translation id="3025388528294795783">เพื่อช่วยเราในการแก้ปัญหา โปรดบอกปัญหาให้เราทราบ:</translation>
 <translation id="3027681561976217984">โหมดสัมผัส</translation>
@@ -124,6 +121,7 @@ Host</translation>
 <translation id="3950820424414687140">ลงชื่อเข้าใช้</translation>
 <translation id="3989511127559254552">หากต้องการดำเนินการต่อ คุณจะต้องให้สิทธิ์เพิ่มเติมในการเข้าถึงคอมพิวเตอร์ของคุณก่อน โดยต้องทำเพียงครั้งเดียว</translation>
 <translation id="4006787130661126000">คุณต้องเปิดใช้งานการเชื่อมต่อระยะไกลหากคุณต้องการใช้ Chrome Remote Desktop ในการเข้าถึงคอมพิวเตอร์เครื่องนี้</translation>
+<translation id="405887016757208221">คอมพิวเตอร์ระยะไกลไม่สามารถเริ่มต้นเซสชัน หากปัญหายังคงอยู่ โปรดลองกำหนดค่าโฮสต์อีกครั้ง</translation>
 <translation id="4068946408131579958">การเชื่อมต่อทั้งหมด</translation>
 <translation id="409800995205263688">หมายเหตุ: การตั้งค่านโยบายอนุญาตเฉพาะการเชื่อมต่อระหว่างคอมพิวเตอร์ภายในเครือข่ายของคุณเท่านั้น</translation>
 <translation id="4155497795971509630">คอมโพเนนต์ที่จำเป็นบางอย่างขาดหายไป โปรดตรวจสอบว่าคุณได้ติดตั้งซอฟต์แวร์เวอร์ชันล่าสุดและลองอีกครั้ง</translation>
@@ -170,7 +168,6 @@ Desktop Host</translation>
 <translation id="518094545883702183">ข้อมูลนี้จะใช้เพื่อวินิจฉัยปัญหาที่คุณรายงานเท่านั้น โดยจะมีเพียงผู้ตรวจสอบรายงานเท่านั้นที่ใช้งานได้ และจะมีการเก็บรักษาไว้ไม่เกิน 30 วัน</translation>
 <translation id="5222676887888702881">ออกจากระบบ</translation>
 <translation id="5254120496627797685">การออกจากหน้านี้จะสิ้นสุดเซสชัน Chrome Remote Desktop ของคุณ</translation>
-<translation id="5285241842433869526">เรียนรู้วิธีตั้งค่าคอมพิวเตอร์สำหรับการเข้าถึงระยะไกล</translation>
 <translation id="5308380583665731573">เชื่อมต่อ</translation>
 <translation id="5363265567587775042">ขอให้ผู้ใช้ที่เป็นเจ้าของคอมพิวเตอร์ที่คุณต้องการใช้งานคลิก “<ph name="SHARE" />” และให้รหัสการเข้าถึงแก่คุณ</translation>
 <translation id="5379087427956679853">Chrome Remote Desktop อนุญาตให้คุณแชร์คอมพิวเตอร์ของคุณผ่านเว็บอย่างปลอดภัย ผู้ใช้ทั้งสองฝ่ายจะต้องเรียกใช้แอปพลิเคชัน Chrome Remote Desktop ซึ่งสามารถรับได้ที่ <ph name="URL" /></translation>
@@ -258,6 +255,7 @@ Desktop Host</translation>
 <translation id="7869445566579231750">คุณไม่มีสิทธิ์ในการเรียกใช้แอปพลิเคชันนี้</translation>
 <translation id="7948001860594368197">ตัวเลือกหน้าจอ</translation>
 <translation id="7970576581263377361">การตรวจสอบสิทธิ์ล้มเหลว โปรดลงชื่อเข้าใช้ Chromium อีกครั้ง</translation>
+<translation id="7981525049612125370">เซสชันระยะไกลหมดอายุลงแล้ว</translation>
 <translation id="8041721485428375115">การดาวน์โหลด Chrome Remote Desktop Host Installer หมายถึงคุณยอมรับ<ph name="LINK_BEGIN" />ข้อกำหนดในการให้บริการ<ph name="LINK_END" />ของ Google</translation>
 <translation id="8073845705237259513">ในการใช้ Chrome Remote Desktop คุณจะต้องเพิ่มบัญชี Google ลงในอุปกรณ์ของคุณ</translation>
 <translation id="80739703311984697">โฮสต์ระยะไกลกำหนดให้คุณตรวจสอบสิทธิ์กับเว็บไซต์ของบุคคลที่สาม หากต้องการดำเนินการต่อ คุณต้องให้สิทธิ์อนุญาตเพิ่มเติมแก่ Chromoting เพื่อเข้าถึงที่อยู่นี้:</translation>

@@ -82,7 +82,6 @@
 <translation id="345171907106878721">እራስዎን ወደ Chrome ያክሉ</translation>
 <translation id="3612333635265770873">ተመሳሳይ ስም ያለው አንድ ሞዱል ከGoogle Chrome ጋር የሚጋጭ መሆኑ ይታወቃል።</translation>
 <translation id="3622797965165704966">አሁን Chromeን ከGoogle መለያዎ ጋር እና በተጋሩ ኮምፒውተሮች ላይ መጠቀም ይበልጥ ቀላል ነው።</translation>
-<translation id="3656661827369545115">ኮምፒውተርዎ ሲጀምር Chromiumን በራስ-ሰር ያስጀምሩ</translation>
 <translation id="3735758079232443276">ይህ «<ph name="EXTENSION_NAME" />» ቅጥያ Chromeን ሲጀምሩት የሚታየውን ገጽ ቀይሮታል።</translation>
 <translation id="3738139272394829648">ለመፈለግ ይንኩ</translation>
 <translation id="3784527566857328444">ከChrome አስወግድ</translation>
@@ -100,10 +99,8 @@
 <translation id="4167057906098955729">ሁሉም ማሳወቂያዎችዎን እዚህ ካሉት የChrome መተግበሪያዎች፣ ቅጥያዎች፣ እና ድር ጣቢያዎች ሆነው ማየት ይችላሉ።</translation>
 <translation id="423410644998903704">Chrome እነሱን ለዚህ ጣቢያ ለማጋራት የፍቃዶች መዳረሻን ያስፈልገዋል።</translation>
 <translation id="4251615635259297716">የChrome ውሂብዎ ከዚህ መለያ ጋር ይገናኝ?</translation>
-<translation id="4273752058983339720">ኮምፒውተርዎን ሲያስነሱ Google Chrome በራስ-ሰር እንዲጀምር ተዋቅሯል።</translation>
 <translation id="4309555186815777032">(የChrome <ph name="BEGIN_BUTTON" />ዳግም መጀመር<ph name="END_BUTTON" /> ያስፈልገዋል)</translation>
 <translation id="4331809312908958774">Chrome ስርዓተ ክወና</translation>
-<translation id="4367618624832907428">የእርስዎ ኮምፒውተር ከበይነመረቡ ጋር ስላልተገናኘ Google Chrome ድረ-ገጹን ማሳየት አይችልም።</translation>
 <translation id="4407807842708586359">Google Chrome ስርዓተ ክወና</translation>
 <translation id="4458285410772214805">ይሄ ለውጥ እንዲተገበር እባክዎ ይውጡ እና እንደገና ይግቡ።</translation>
 <translation id="4480040274068703980">Chrome OS እየተገባ ሳለ በተፈጠረ አንድ ስህተት ምክንያት ውሂብዎን ማመሳሰል አልቻለም።</translation>
@@ -112,7 +109,6 @@
 <translation id="4567424176335768812">እንደ <ph name="USER_EMAIL_ADDRESS" /> ሆነው ገብተዋል። አሁን የእርስዎን ዕልባቶች፣ ታሪክ እና ሌሎች ቅንብሮች በመለያ በገቡ ሁሉም መሣሪያዎችዎ ላይ መድረስ ይችላሉ።</translation>
 <translation id="4631713731678262610">በChrome ምናሌ ውስጥ ደብቅ</translation>
 <translation id="4633000520311261472">Chrome ይበልጥ ደህንነቱ የተጠበቀ እንዲሆን ለማድረግ፣ በ<ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> ውስጥ ያልተጠቀሱ እና እርስዎ ሳያውቋቸው የታከሉ ሊሆኑ የሚችሉ የተወሰኑ ዝርዝሮችን አሰናክለናል።</translation>
-<translation id="4692614041509923516">ኮምፒውተርዎ የዚህ ድር ጣቢያ ደህንነት እውቅና ማረጋገጫ ማስሄድ የማይችል የድሮ የMicrosoft Windows ስሪት አያሄደ ነው። በዚህ ችግር ምክንያት Google Chrome የእውቅና ማረጋገጫው ከ<ph name="SITE" /> ይሁን ወይም በአውታረ መረብዎ ላይ ያለ <ph name="SITE" />ን ከሚያስመስል ሰው ይሁን የመጣው መለየት አይችልም። እባክዎ ኮምፒውተርዎን ይበልጥ የቅርብ ጊዜ ወደሆነ የWindows ስሪት ያዘምኑ።</translation>
 <translation id="4700157086864140907">Google Chrome አሳሹ ላይ የሚተይቡትን ለGoogle አገልጋዮች በመላክ ይበልጥ አዋቂ የሆነ ፊደል አራሚ ሊያቀርብልዎት ይችላል፣ ይህም Google ፍለጋ የሚጠቀመውን ተመሳሳዩ የፊደል አራሚ ቴክኖሎጂ እንዲጠቀሙ ያስችልዎታል።</translation>
 <translation id="4728575227883772061">ተለይቶ ባልታወቀ ስህተት ምክንያት ጭነት ከሽፏል። Google Chrome አሁን እያሄደ ከሆነ ፣ እባክዎ ይዝጉትና እንደገና ይሞክሩ።</translation>
 <translation id="473775607612524610">አዘምን</translation>
@@ -202,7 +198,6 @@ Google Chrome ቅንጅቶችዎን ማስመለስ አልቻለም።</translat
 <translation id="6989339256997917931">Google Chrome ተዘምኗል፣ ግን ቢያንስ ለ30 ቀኖች አልተጠቀሙበትም።</translation>
 <translation id="699076943483372849">ይህ ጣቢያ ከእንግዲህ የደህንነት እና የመረጋጋት ዝማኔዎችን መቀበል የማይችለውን አገልግሎቱ ያበቃውን Chrome ክፈፍ ተሰኪ እየተጠቀመ ነው። እባክዎ ያራግፉትና ወደ ዘመናዊ አሳሽ ያሻሽሉት።</translation>
 <translation id="6991142834212251086">የChrome ውሂቤን ከዚህ መለያ ጋር አገናኝ</translation>
-<translation id="7054640471403081847">ይህ ኮምፒውተር ሃርድዌሩ ከአሁን በኋላ ስለማይደገፍ በቅርቡ የGoogle Chrome ዝማኔዎችን መቀበል ያቆማል።</translation>
 <translation id="7060865993964054389">Google Chrome የመተግበሪያ አስጀማሪ</translation>
 <translation id="7084448929020576097"><ph name="FILE_NAME" /> ተንኮል-አዘል ነው፣ እና Chrome አግዶታል።</translation>
 <translation id="7098166902387133879">Google Chrome የእርስዎን ማይክሮፎን እየተጠቀመ ነው።</translation>
@@ -239,7 +234,6 @@ Google Chrome ቅንጅቶችዎን ማስመለስ አልቻለም።</translat
 <translation id="781069973841903133">በChrome መሳጭ ሁነታ ዳግም ማስጀመር የእርስዎን Chrome መተግበሪያዎች ይዘጋ እና ዳግም ያስጀምራቸዋል።</translation>
 <translation id="7825851276765848807">ተለይቶ ባልታወቀ ስህተት ምክንያት ጭነት ከሽፏል። እባክዎ Google Chromeን እንደገና ያውርዱ።</translation>
 <translation id="7890208801193284374">ኮምፒውተር የሚጋሩ ከሆኑ ጓደኛዎች እና ቤተሰብ ተለይተው ሊያስሱ እና Chromeን በሚፈልጉበት መንገድ ማዋቀር ይችላሉ።</translation>
-<translation id="7908968924842975895">ይህ ኮምፒውተር ሃርድዌሩ ከአሁን በኋላ ስለማይደገፍ ከአሁን በኋላ የGoogle Chrome ዝማኔዎችን መቀበል ያቆማል።</translation>
 <translation id="7984945080620862648">ድር ጣቢያው Chrome ሊሰራባቸው የማይችላቸው የተዘበራረቁ ምስክርነቶችን ስለላከ <ph name="SITE" />ን አሁን መጎብኘት ይችላሉ። የአውታረ መረብ ስህተቶች እና ጥቃቶች አብዛኛው ጊዜ ጊዜያዊ ናቸው፣ ስለዚህ ይህ ገጽ በኋላ ላይ ሊሰራ ይችላል።</translation>
 <translation id="8000275528373650868">Google Chrome Windows Vista ወይም Windows XP SP2 ወይም ከዛበላይ ይፈልጋል።</translation>
 <translation id="8005540215158006229">በቃ Chrome ዝግጁ ሊሆን ነው።</translation>

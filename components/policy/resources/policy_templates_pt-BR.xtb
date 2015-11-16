@@ -52,6 +52,9 @@
 <translation id="1221359380862872747">Carrega os urls especificados no login de demonstração</translation>
 <translation id="1240643596769627465">Especifica o URL do mecanismo de pesquisa utilizado para fornecer resultados instantâneos. O URL deve conter a sequência <ph name="SEARCH_TERM_MARKER" />, que será substituída no momento da consulta pelo texto digitado pelo usuário até então. Esta política é opcional. Caso não seja definida, nenhum resultado de pesquisa instantânea será fornecido. Esta política só é respeitada caso a política "DefaultSearchProviderEnabled" seja ativada.</translation>
 <translation id="1265053460044691532">Limite o tempo pelo qual um usuário autenticado via SAML pode fazer login off-line</translation>
+<translation id="1291880496936992484">Atenção: o RC4 será completamente removido de <ph name="PRODUCT_NAME" /> após a versão 52 (por volta de setembro de 2016), e esta política parará de funcionar.
+
+      Se a política ainda não estiver configurada ou estiver configurada como "false", os pacotes de criptografia RC4 em TLS não serão ativados. Caso contrário, ela poderá ser configurada como "true" para manter a compatibilidade com um servidor desatualizado. Esta é uma medida temporária, e o servidor deve ser reconfigurado.</translation>
 <translation id="1297182715641689552">Usar um script de proxy .pac</translation>
 <translation id="1300635491585192248">Prever ações de rede em qualquer rede que não seja a de
           celular</translation>
@@ -455,6 +458,9 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
       Se você ativar ou desativar essa configuração, os usuários não poderão alterar ou substituir a configuração "Ativar proteção contra phishing e malware" no <ph name="PRODUCT_NAME" />.
 
       Se essa política não for definida, ficará ativada, mas o usuário poderá alterá-la.</translation>
+<translation id="2801230735743888564">Permite que os usuários joguem o easter egg de dinossauro quando o dispositivo estiver off-line.
+
+      Se esta política for configurada como "False", não será possível jogar o easter egg de dinossauro quando o dispositivo estiver off-line. Se esta configuração for definida como "True", os usuários estarão autorizados a jogar o easter egg de dinossauro. Se esta política não for configurada, os usuários não terão autorização para jogar o easter egg de dinossauro em Chrome OS registrados, mas poderão jogá-lo em outras circunstâncias.</translation>
 <translation id="2805707493867224476">Permitir que todos os sites exibam pop-ups</translation>
 <translation id="2808013382476173118">Permite o uso de servidores STUN quando clientes remotos estiverem tentando estabelecer uma conexão com a máquina.
 
@@ -714,6 +720,13 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 <translation id="3780152581321609624">Incluir porta não padrão no SPN Kerberos</translation>
 <translation id="3788662722837364290">Configurações de gerenciamento de energia quando o usuário se torna inativo</translation>
 <translation id="3793095274466276777">Configura as verificações do navegador padrão no <ph name="PRODUCT_NAME" /> e impede que os usuários as modifiquem. Se você ativar essa configuração, o <ph name="PRODUCT_NAME" /> sempre verificará, na inicialização, se ele é o navegador padrão e automaticamente se registrará, se possível. Se essa configuração for desativada, o <ph name="PRODUCT_NAME" /> nunca verificará se ele é o navegador padrão e desativará controles do usuário para configurar essa opção. Se essa configuração não for definida, o <ph name="PRODUCT_NAME" /> permitirá ao usuário controlar se ele é o navegador padrão e se as notificações do usuário devem ser exibidas quando não forem exibidas.</translation>
+<translation id="3800626789999016379">Configura o diretório que o <ph name="PRODUCT_NAME" /> usará para fazer o download de arquivos.
+
+      Se você definir esta política, o <ph name="PRODUCT_NAME" /> usará o diretório fornecido, independentemente de o usuário ter especificado um ou ter definido que a sinalização deve ser sempre solicitada para o local do download.
+
+      Consulte https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables (link em inglês) para ver uma lista de variáveis que podem ser usadas. 
+
+      Se esta política não for definida, será usado o diretório de download padrão, e o usuário poderá alterá-lo.</translation>
 <translation id="3805659594028420438">Ativar extensão dos certificados vinculados ao domínio TLS (obsoleto)</translation>
 <translation id="3806576699227917885">Permite a reprodução de áudio.
 
@@ -829,6 +842,13 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
           Esta política só é seguida se a política "DefaultSearchProviderEnabled" estiver ativada.</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 ou posterior</translation>
 <translation id="4325690621216251241">Adicionar um botão de logout à bandeja do sistema</translation>
+<translation id="4349746760316962317">Configura o diretório que o <ph name="PRODUCT_NAME" /> usará para armazenar arquivos em cache no disco.
+
+      Se você definir esta política, o <ph name="PRODUCT_NAME" /> usará o diretório fornecido, independentemente de o usuário ter especificado a sinalização "--disk-cache-dir" ou não.
+
+      Consulte https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables (link em inglês) para ver uma lista de variáveis que podem ser usadas.
+
+      Se esta política não for definida, será usado o diretório de cache padrão, e o usuário será capaz de substituí-lo com a sinalização de linha de comando "--disk-cache-dir".</translation>
 <translation id="436581050240847513">Relatar interfaces de redes de dispositivos</translation>
 <translation id="4372704773119750918">Não permitir que o usuário corporativo faça parte de diversos perfis (primários ou secundários)</translation>
 <translation id="4377599627073874279">Permitir que todos os sites exibam todas as imagens</translation>
@@ -894,6 +914,11 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 <translation id="4665897631924472251">Configurações de gerenciamento de extensão</translation>
 <translation id="4668325077104657568">Configuração de imagens padrão</translation>
 <translation id="467236746355332046">Recursos compatíveis:</translation>
+<translation id="4674167212832291997">Personaliza a lista de padrões de URL que devem ser sempre renderizados por <ph name="PRODUCT_FRAME_NAME" />.
+
+          Se esta política não for definida, o renderizador padrão será utilizado para todos os sites conforme especificado pela política "ChromeFrameRendererSettings".
+
+          Para ver exemplos de padrões, consulte http://www.chromium.org/developers/how-tos/chrome-frame-getting-started (link em inglês).</translation>
 <translation id="467449052039111439">Abrir uma lista de URLs</translation>
 <translation id="4680961954980851756">Ativar Preenchimento automático</translation>
 <translation id="4723829699367336876">Habilitar passagem de firewall a partir do cliente de acesso remoto</translation>
@@ -983,6 +1008,14 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
           Quando esta política não está definida, é executada a ação padrão, que é a suspensão.
 
           Se ação for suspensa, o <ph name="PRODUCT_OS_NAME" /> pode ser configurado separadamente para bloquear ou não a tela antes da suspensão.</translation>
+<translation id="5111712393799006197">Configura o diretório que o <ph name="PRODUCT_NAME" /> usará para armazenar dados do usuário.
+
+      Se você definir esta política, o <ph name="PRODUCT_NAME" /> usará o diretório fornecido, independentemente de o usuário ter ou não especificado a sinalização "--user-data-dir".
+
+      Consulte http://www.chromium.org/administrators/policy-list-3/user-data-directory-variables (link em inglês) para ver uma lista de variáveis que podem ser usadas.
+
+      Se esta política não for definida, será usado o caminho padrão do perfil, e o usuário poderá substituí-lo pela sinalização de linha de comando "--user-data-dir".</translation>
+<translation id="5130288486815037971">Se os pacotes de criptografia RC4 em TLS estão ativados ou não</translation>
 <translation id="5141670636904227950">Definir o tipo de lupa padrão ativada na tela de login</translation>
 <translation id="5142301680741828703">Sempre renderizar os seguintes padrões de URL no <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="5148753489738115745">Permite especificar os parâmetros adicionais que são usados quando o <ph name="PRODUCT_FRAME_NAME" /> inicia o <ph name="PRODUCT_NAME" />. Se essa política não for configurada, será usada a linha de comando padrão.</translation>
@@ -1145,6 +1178,20 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 <translation id="5809728392451418079">Definir o nome de exibição das contas locais de dispositivo</translation>
 <translation id="5814301096961727113">Definir estado padrão do feedback falado na tela de login</translation>
 <translation id="5815129011704381141">Reinicializar automaticamente após a atualização</translation>
+<translation id="5815353477778354428">Configura o diretório que o <ph name="PRODUCT_FRAME_NAME" /> usará para armazenar dados do usuário.
+
+      Se você definir esta política, o <ph name="PRODUCT_FRAME_NAME" /> usará o diretório fornecido.
+
+      Consulte http://www.chromium.org/administrators/policy-list-3/user-data-directory-variables (link em inglês) para ver uma lista de variáveis que podem ser usadas.
+
+      Se a política não for definida, será usado o diretório padrão do perfil.</translation>
+<translation id="5819660021114910752">Especifica o fuso horário a ser utilizado no dispositivo. Os usuários podem substituir o fuso horário especificado para a sessão atual. No entanto, quando o usuário sai, o fuso horário especificado é restaurado. Se um valor inválido for fornecido, a política ainda será ativada usando "GMT". Se uma string vazia for fornecida, a política será ignorada.
+
+      Se esta política não for usada, o fuso horário ativo no momento permanecerá em uso. No entanto, os usuários podem alterar o fuso horário, e a alteração é permanente. Assim, uma alteração feita por um usuário afeta a tela de login e todos os outros usuários.
+
+      Novos dispositivos são iniciados com o fuso horário definido como "EUA/Pacífico".
+
+      O formato do valor segue os nomes dos fusos horários do "IANA Time Zone Database" (consulte "https://en.wikipedia.org/wiki/Tz_database" - link em inglês). Em particular, a maioria dos fusos horários pode ser referida como "continente/cidade_grande" ou "oceano/cidade_grande".</translation>
 <translation id="5826047473100157858">Especifica se o usuário pode abrir páginas no Modo de navegação anônima em <ph name="PRODUCT_NAME" />. Se a opção "Ativado" for selecionada ou a política for deixada sem configuração, as páginas podem ser abertas no Modo de navegação anônima. Se a opção "Destivado" for selecionada, as páginas não poderão ser abertas no Modo de navegação anônima. Se a opção "Forçado" for selecionada, as páginas podem ser abertas somente no Modo de navegação anônima.</translation>
 <translation id="5836064773277134605">Restringir o intervalo de portas UDP usado pelo host de acesso remoto</translation>
 <translation id="5845159892130426052">Ativar a API ShowModalDialog por 2015.04.30</translation>
@@ -1235,6 +1282,7 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
           A forma recomendável de bloquear a tela ao se tornar inativo é ativar o bloqueio de tela para o modo de suspensão, a fim de que o <ph name="PRODUCT_OS_NAME" /> fique suspenso após o tempo de espera de inatividade. Esta política só deve ser usada quando a tela tiver que ser bloqueada muito antes de ser suspensa ou quando a suspensão em caso de inatividade não é desejada.
 
           O valor da política deve ser especificado em milissegundos. Os valores são fixados para serem menores que o tempo de espera de inatividade.</translation>
+<translation id="6111936128861357925">Permitir jogo easter egg de dinossauro</translation>
 <translation id="6114416803310251055">obsoleto</translation>
 <translation id="6145799962557135888">Permite que você defina uma lista de padrões de URL que especificam sites com permissão para executar o JavaScript. Se esta política for deixada sem definição, o valor padrão global será utilizado para todos os sites a partir da política "DefaultJavaScriptSetting", caso esta tenha sido definida, ou a partir das configurações pessoais do usuário, caso não tenha sido definida.</translation>
 <translation id="6151775819333710697">
@@ -1777,6 +1825,18 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 
       Se esta política não for definida, não haverá exceções para a lista negra na política "URLBlacklist".</translation>
 <translation id="8176035528522326671">Permitir que o usuário empresarial seja o usuário principal de diversos perfis (comportamento padrão para usuários gerenciados por empresa)</translation>
+<translation id="8191318459035150777">Configura o URL da página inicial padrão em <ph name="PRODUCT_NAME" /> e impede que os usuários o alterem.
+
+          A página inicial é a página aberta pelo botão "Início". As páginas que são abertas na inicialização são controladas pelas políticas RestoreOnStartup.
+
+          O tipo de página inicial pode ser definido como um URL que você especifica aqui ou definido para a página "Nova guia". Se você selecionar a página "Nova guia", esta política não entrará em vigor.
+
+          Se você ativar esta configuração, os usuários não serão capazes de alterar o URL da página inicial deles em <ph name="PRODUCT_NAME" />, mas ainda será possível escolher a página Nova guia como página inicial.
+
+          A não configuração desta política permitirá que o usuário escolha a página inicial por conta própria, se HomepageIsNewTabPage também não estiver configurada.
+
+          Esta política não está disponível em instâncias do Windows que não estejam associadas
+          a um domínio do Active Directory.</translation>
 <translation id="8197918588508433925">Esta política especifica as extensões que podem usar a API Enterprise Platform Keys chrome.enterprise.platformKeysPrivate.challengeUserKey() para declaração remota. As extensões devem ser adicionadas a esta lista para usar a API.
 
           Se uma extensão não estiver na lista ou se a lista não estiver definida, a chamada para a API falhará com um código de erro.</translation>
@@ -1814,6 +1874,11 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 <translation id="8465065632133292531">Parâmetros para URL de instantâneos que usa POST</translation>
 <translation id="847472800012384958">Não permite que nenhum site exiba pop-ups</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
+<translation id="8484458986062090479">Personaliza a lista de padrões de URL que deve sempre ser processada pelo navegador do host.
+
+          Se esta política não estiver definida, o renderizador padrão será usado para todos os sites, conforme especificado pela política "ChromeFrameRendererSettings".
+
+          Para ver exemplos de padrões, acesse http://www.chromium.org/developers/how-tos/chrome-frame-getting-started (link em inglês).</translation>
 <translation id="8493645415242333585">Desativar o salvamento do histórico do navegador</translation>
 <translation id="8499172469244085141">Configurações padrão (podem ser substituídas pelos usuários)</translation>
 <translation id="8501011084242226370">Especifica uma lista de plug-ins que o usuário pode ativar ou desativar no <ph name="PRODUCT_NAME" />.
@@ -1873,6 +1938,8 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 
       Se esta configuração estiver desativada, não será possível excluir o histórico de navegação e de download.</translation>
 <translation id="8764119899999036911">Especifica se o SPN do Kerberos se baseia no nome DNS canônico ou no nome original inserido. Se ativar esta configuração, a pesquisa CNAME será ignorada e o nome do servidor será usado como inserido. Se desativar essa configuração ou a deixar sem definição, o nome canônico do servidor será determinado através da pesquisa CNAME.</translation>
+<translation id="8774131509736383471">Se esta política for definida como "true", <ph name="PRODUCT_NAME" /> maximizará incondicionalmente a primeira janela mostrada na primeira execução.
+      Se esta política for definida como "false" ou não for configurada, a decisão de maximizar a primeira janela mostrada será baseada no tamanho da tela.</translation>
 <translation id="8777120694819070607">Permite que o <ph name="PRODUCT_NAME" /> execute plug-ins que estão desatualizados. Se você ativar essa configuração, plug-ins desatualizados serão usados ​​como plug-ins normais. Se você desativar essa configuração, plug-ins desatualizados não serão utilizados, e os usuários não terão uma solicitação de permissão para executá-los. Se essa configuração não for definida, os usuários terão uma solicitação de permissão para executar plug-ins desatualizados.</translation>
 <translation id="87812015706645271">Exige correspondência entre o nome do usuário local e o proprietário do host de acesso remoto</translation>
 <translation id="8782750230688364867">Especifica o percentual pelo qual o intervalo de escurecimento da tela é calculado quando o dispositivo está no modo de apresentação.

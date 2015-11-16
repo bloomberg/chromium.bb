@@ -4,6 +4,7 @@
 <translation id="1008557486741366299">Не зараз</translation>
 <translation id="1047726139967079566">Додати цю сторінку до закладок...</translation>
 <translation id="1172898394251786223">Наступне поле</translation>
+<translation id="1625603797851307283">Зберегти пароль для цього сайту в <ph name="PRODUCT_NAME" />?</translation>
 <translation id="2320166752086256636">Сховати клавіатуру</translation>
 <translation id="2704606927547763573">Скопійов.</translation>
 <translation id="2747003861858887689">Попереднє поле</translation>
@@ -11,11 +12,17 @@
 <translation id="3244271242291266297">ММ</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> з <ph name="NUM_SUGGESTIONS" /></translation>
 <translation id="3335947283844343239">Знову відкрити закриту вкладку</translation>
+<translation id="3414292259312108062">Chrome додасть пароль у розділ <ph name="BEGIN_LINK" />Збережені паролі Google<ph name="END_LINK" /> й автоматично вводитиме його, тож вам не потрібно нічого запам’ятовувати.</translation>
 <translation id="385051799172605136">Назад</translation>
 <translation id="4121993058175073134">Щоб надсил. дані про чистий експорт, налашт. обл. запис у програмі Налаштування.</translation>
 <translation id="4728558894243024398">Платформа</translation>
+<translation id="5317780077021120954">Зберегти</translation>
 <translation id="5779929835642192302">Є пропозиції</translation>
 <translation id="605721222689873409">РР</translation>
+<translation id="6149061208933997199">Прийняти пароль</translation>
+<translation id="6314335155547195432">Згенерувати пароль</translation>
+<translation id="6456425917241817154">Пароль, згенерований Chrome</translation>
 <translation id="7456847797759667638">Відкрити розташування...</translation>
 <translation id="7481312909269577407">Переслати</translation>
+<translation id="7961015016161918242">Ніколи</translation>
 </translationbundle>

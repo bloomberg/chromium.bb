@@ -9,6 +9,7 @@
 <translation id="1113869188872983271">復原重新排序(&amp;U)</translation>
 <translation id="111844081046043029">您確定要離開此網頁嗎?</translation>
 <translation id="112840717907525620">政策快取正確</translation>
+<translation id="113188000913989374"><ph name="SITE" /> 顯示：</translation>
 <translation id="1132774398110320017">Chrome 自動填入設定...</translation>
 <translation id="1146673768181266552">當機 ID：<ph name="CRASH_ID" /> (<ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="1150979032973867961">伺服器無法證明其屬於 <ph name="DOMAIN" /> 網域；其安全性憑證未取得您電腦作業系統的信任。這可能是因為設定錯誤，或有攻擊者攔截您的連線所致。</translation>
@@ -28,6 +29,10 @@
 <translation id="1519264250979466059">建立日期</translation>
 <translation id="1549470594296187301">您必須啟用 JavaScript 才能使用這項功能。</translation>
 <translation id="1559528461873125649">找不到您所指定的檔案或目錄</translation>
+<translation id="1559572115229829303">&lt;p&gt;您裝置的日期和時間 (<ph name="DATE_AND_TIME" />) 不正確，因此無法與 <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> 建立私人連線。&lt;/p&gt;
+
+      &lt;p&gt;請前往「設定」應用程式的「一般設定」部分調整日期和時間。&lt;strong&gt;&lt;/strong&gt;&lt;strong&gt;&lt;/strong&gt;&lt;/p&gt;</translation>
+<translation id="1629803312968146339">您希望 Chrome 儲存這張信用卡嗎？</translation>
 <translation id="1640180200866533862">使用者政策</translation>
 <translation id="1644184664548287040">網路設定無效，無法匯入。</translation>
 <translation id="1655462015569774233">{1,plural, =1{這個伺服器無法證明所在網域是 <ph name="DOMAIN" />；伺服器的安全性憑證已在昨天過期。這可能是因為設定錯誤，或是有攻擊者攔截您的連線。您電腦的時鐘目前設為 <ph name="CURRENT_DATE" />，這是正確的時間嗎？如果不是的話，請更新系統時鐘，然後重新整理這個網頁。}other{這個伺服器無法證明所在網域是 <ph name="DOMAIN" />；伺服器的安全性憑證已在 # 天前過期。這可能是因為設定錯誤，或是有攻擊者攔截您的連線。您電腦的時鐘目前設為 <ph name="CURRENT_DATE" />，這是正確的時間嗎？如果不是的話，請更新系統時鐘，然後重新整理這個網頁。}}</translation>
@@ -94,6 +99,7 @@
 <translation id="2922350208395188000">無法檢查伺服器憑證。</translation>
 <translation id="2941952326391522266">伺服器無法證明其屬於 <ph name="DOMAIN" /> 網域；其安全性憑證來自 <ph name="DOMAIN2" /> 網域。這可能是因為設定錯誤，或有攻擊者攔截您的連線所致。</translation>
 <translation id="2958431318199492670">網路設定未遵循 ONC 標準，系統可能無法匯入部分設定。</translation>
+<translation id="2969319727213777354">您必須正確設定時鐘，才能建立安全連線。這是因為網站驗證身分時所使用的憑證僅於特定一段時間內有效。由於您裝置的時鐘不正確，因此 Google Chrome 無法驗證這些憑證。</translation>
 <translation id="2972581237482394796">重做(&amp;R)</translation>
 <translation id="3010559122411665027">清單項目「<ph name="ENTRY_INDEX" />」：<ph name="ERROR" /></translation>
 <translation id="3024663005179499861">政策類型有誤</translation>
@@ -146,11 +152,14 @@
 <translation id="4117700440116928470">系統不支援這項政策的範圍。</translation>
 <translation id="4120075327926916474">您希望 Google Chrome 儲存此信用卡資訊，方便您填妥網路表單嗎？</translation>
 <translation id="4148925816941278100">American Express</translation>
+<translation id="4169947484918424451">您希望 Chromium 儲存這張信用卡嗎？</translation>
 <translation id="4171400957073367226">驗證簽名無效</translation>
+<translation id="4176463684765177261">已停用</translation>
 <translation id="4196861286325780578">重做移動(&amp;R)</translation>
 <translation id="4220128509585149162">當機</translation>
 <translation id="4250680216510889253">否</translation>
 <translation id="4258748452823770588">簽名有誤</translation>
+<translation id="4268298190799576220">Chromium 目前無法驗證您的信用卡，請稍後再試。</translation>
 <translation id="4269787794583293679">(沒有使用者名稱)</translation>
 <translation id="4300246636397505754">家長建議</translation>
 <translation id="4325863107915753736">找不到文章</translation>
@@ -204,6 +213,7 @@
 <translation id="5523118979700054094">政策名稱</translation>
 <translation id="552553974213252141">擷取的文字是否正確？</translation>
 <translation id="5540224163453853">找不到要求的文章。</translation>
+<translation id="5544037170328430102"><ph name="SITE" /> 的嵌入式網頁顯示：</translation>
 <translation id="5556459405103347317">重新載入</translation>
 <translation id="5565735124758917034">管理中</translation>
 <translation id="560412284261940334">系統不支援管理</translation>
@@ -213,15 +223,18 @@
 <translation id="5813119285467412249">重做新增(&amp;R)</translation>
 <translation id="5872918882028971132">家長建議</translation>
 <translation id="59107663811261420">這個商家的 Google Payments 不支援此類型卡片，請選取其他卡片。</translation>
+<translation id="59174027418879706">已啟用</translation>
 <translation id="5975083100439434680">縮小</translation>
 <translation id="5989320800837274978">沒有指定固定的 Proxy 伺服器和 .pac 指令碼網址。</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6040143037577758943">關閉</translation>
+<translation id="604124094241169006">自動</translation>
 <translation id="6060685159320643512">請注意，這些實驗性功能可能對電腦有害</translation>
 <translation id="6099520380851856040">當機時間：<ph name="CRASH_TIME" /></translation>
 <translation id="6151417162996330722">伺服器憑證的有效期限太長。</translation>
 <translation id="6154808779448689242">傳回的政策符記與目前符記不相符</translation>
 <translation id="6165508094623778733">瞭解詳情</translation>
+<translation id="6218753634732582820">要從 Chromium 中移除地址嗎？</translation>
 <translation id="6259156558325130047">重做重新排序(&amp;R)</translation>
 <translation id="6263376278284652872"><ph name="DOMAIN" /> 書籤</translation>
 <translation id="6282194474023008486">郵遞區號</translation>
@@ -239,6 +252,7 @@
 <translation id="6628463337424475685"><ph name="ENGINE" /> 搜尋</translation>
 <translation id="6644283850729428850">這項政策已遭取代。</translation>
 <translation id="6646897916597483132">請輸入信用卡正面的四位數信用卡安全碼</translation>
+<translation id="6671697161687535275">要從 Chromium 中移除表單填寫建議嗎？</translation>
 <translation id="674375294223700098">不明的伺服器憑證錯誤。</translation>
 <translation id="6753269504797312559">政策值</translation>
 <translation id="6831043979455480757">翻譯</translation>
@@ -272,6 +286,7 @@
 <translation id="7378627244592794276">不需要</translation>
 <translation id="7400418766976504921">網址</translation>
 <translation id="7419106976560586862">設定檔路徑</translation>
+<translation id="7424977062513257142">這個網頁上的嵌入式網頁顯示：</translation>
 <translation id="7441627299479586546">政策主體有誤</translation>
 <translation id="7485870689360869515">找不到任何資料。</translation>
 <translation id="7537536606612762813">強制</translation>
@@ -282,6 +297,7 @@
 <translation id="7592362899630581445">伺服器憑證的名稱不符合限制。</translation>
 <translation id="7600965453749440009">一律不翻譯<ph name="LANGUAGE" /></translation>
 <translation id="7610193165460212391">值超出 <ph name="VALUE" /> 的範圍。</translation>
+<translation id="7637571805876720304">要從 Chromium 中移除信用卡嗎？</translation>
 <translation id="7674629440242451245">想搶先試用酷炫的 Chrome 新功能嗎？請前往 chrome.com/dev 安裝開發人員版。</translation>
 <translation id="7752995774971033316">未管理</translation>
 <translation id="7761701407923456692">伺服器憑證與網址不符。</translation>
@@ -325,6 +341,7 @@
 <translation id="8725066075913043281">再試一次</translation>
 <translation id="8738058698779197622">您必須正確設定時鐘，才能建立安全連線。這是因為網站驗證身分時所使用的憑證僅於特定一段時間內有效。由於您裝置的時鐘不正確，因此 Chromium 無法驗證這些憑證。</translation>
 <translation id="8790007591277257123">重做刪除(&amp;R)</translation>
+<translation id="8798099450830957504">預設</translation>
 <translation id="8804164990146287819">隱私權政策</translation>
 <translation id="8820817407110198400">書籤</translation>
 <translation id="8824019021993735287">Chrome 目前無法驗證您的信用卡，請稍後再試。</translation>
@@ -332,6 +349,7 @@
 <translation id="883848425547221593">其他書籤</translation>
 <translation id="884923133447025588">未發現撤銷機制。</translation>
 <translation id="8866481888320382733">解析政策設定時發生錯誤</translation>
+<translation id="8866959479196209191">這個網頁顯示：</translation>
 <translation id="8876793034577346603">無法解析網路設定。</translation>
 <translation id="8891727572606052622">Proxy 模式無效。</translation>
 <translation id="889901481107108152">很抱歉，這項實驗功能無法支援您的平台。</translation>

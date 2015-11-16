@@ -4,6 +4,7 @@
 <translation id="1008557486741366299">Inte nu</translation>
 <translation id="1047726139967079566">Skapa bokmärke för den här sidan...</translation>
 <translation id="1172898394251786223">Nästa fält</translation>
+<translation id="1625603797851307283">Vill du att <ph name="PRODUCT_NAME" /> sparar lösenordet för den här webbplatsen?</translation>
 <translation id="2320166752086256636">Dölj tangentbordet</translation>
 <translation id="2704606927547763573">Kopierat</translation>
 <translation id="2747003861858887689">Föregående fält</translation>
@@ -11,11 +12,17 @@
 <translation id="3244271242291266297">MM</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> av <ph name="NUM_SUGGESTIONS" /></translation>
 <translation id="3335947283844343239">Öppna stängd flik igen</translation>
+<translation id="3414292259312108062">Chrome vill spara lösenordet i <ph name="BEGIN_LINK" />lösenord som Google sparat<ph name="END_LINK" /> och fylla i det automatiskt så att du slipper komma ihåg det.</translation>
 <translation id="385051799172605136">Bakåt</translation>
 <translation id="4121993058175073134">Ange ett e-postkonto i appen Inställningar om du vill skicka nätverksexportdata.</translation>
 <translation id="4728558894243024398">Plattform</translation>
+<translation id="5317780077021120954">Spara</translation>
 <translation id="5779929835642192302">Förslag tillgängliga</translation>
 <translation id="605721222689873409">ÅÅ</translation>
+<translation id="6149061208933997199">Använd lösenordet</translation>
+<translation id="6314335155547195432">Generera lösenord</translation>
+<translation id="6456425917241817154">Lösenord från Chrome</translation>
 <translation id="7456847797759667638">Öppna plats...</translation>
 <translation id="7481312909269577407">Framåt</translation>
+<translation id="7961015016161918242">Aldrig</translation>
 </translationbundle>

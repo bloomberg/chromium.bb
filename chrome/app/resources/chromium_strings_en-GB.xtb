@@ -49,13 +49,11 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="2558641060352364164">This site is using the Chromium Frame plug-in which will soon be unsupported. Please uninstall it and upgrade to a modern browser.</translation>
 <translation id="2572494885440352020">Chromium Helper</translation>
 <translation id="2602806952220118310">Chromium - Notifications</translation>
-<translation id="2615699638672665509">This computer will soon stop receiving Chromium updates because its hardware is no longer supported.</translation>
 <translation id="2636877269779209383">Chromium needs camera access to share it with this site.</translation>
 <translation id="2648074677641340862">An operating system error occurred during installation. Please download Chromium again.</translation>
 <translation id="2673087257647337101">Nearly up to date! Relaunch Chromium to finish updating.</translation>
 <translation id="2685838254101182273">Chromium has stopped updating and no longer supports this version of your operating system.</translation>
 <translation id="2705212601509139398">This site is using the Chromium Frame plug-in that will soon be unsupported. Please uninstall it and download a compatible browser.</translation>
-<translation id="2732467638532545152">Your computer is running an old version of Microsoft Windows that cannot process this website's security certificate. Because of this problem, Chromium can't tell whether the certificate came from <ph name="SITE" /> or from someone on your network pretending to be <ph name="SITE" />. Please update your computer to a more recent version of Windows.</translation>
 <translation id="2770231113462710648">Change default browser to:</translation>
 <translation id="2801146392936645542"><ph name="FILE_NAME" /> is malicious and Chromium has blocked it.</translation>
 <translation id="2847479871509788944">Remove from Chromium...</translation>
@@ -87,8 +85,6 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="3582788516608077514">Updating Chromium ...</translation>
 <translation id="358997566136285270">Chromium logo</translation>
 <translation id="3595526210123705352">Relaunching in Windows 8 mode will close and relaunch your Chromium apps.</translation>
-<translation id="3656661827369545115">Launch Chromium automatically when your computer starts</translation>
-<translation id="3736987306260231966">Chromium can’t display the web page because your computer isn’t connected to the Internet.</translation>
 <translation id="3738139272394829648">Touch to Search</translation>
 <translation id="3744899669254331632">You cannot visit <ph name="SITE" /> right now because the website sent scrambled credentials that Chromium cannot process. Network errors and attacks are usually temporary, so this page will probably work later.</translation>
 <translation id="3748537968684000502">You are viewing a secure Chromium page.</translation>
@@ -109,7 +105,6 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="4285930937574705105">Installation failed due to unspecified error. If Google Chrome is currently running, please close it and try again.</translation>
 <translation id="4330585738697551178">This module is known to conflict with Chromium.</translation>
 <translation id="4423735387467980091">Customise and control Chromium</translation>
-<translation id="442817494342774222">Chromium is configured to automatically launch when you start your computer.</translation>
 <translation id="4458285410772214805">Please sign out and sign in again for this change to take effect.</translation>
 <translation id="4488676065623537541">Your billing details have been saved in Chromium.</translation>
 <translation id="4559775032954821361">Go to
@@ -226,7 +221,6 @@ Google Chrome is unable to recover your settings.</translation>
 <translation id="8030318113982266900">Updating your device to <ph name="CHANNEL_NAME" /> channel...</translation>
 <translation id="8033665941300843262">Chromium needs permissions access to share them with this site.</translation>
 <translation id="805745970029938373">You can see all your notifications from Chromium apps, extensions and websites here.</translation>
-<translation id="811857857463334932">This computer will no longer receive Chromium updates because its hardware is no longer supported.</translation>
 <translation id="8134284582177628525">If you share this computer with <ph name="PROFILE_NAME" />, add yourself to Chromium to browse separately. Otherwise disconnect their Google Account.</translation>
 <translation id="8187289872471304532">Go to
           Applications &gt; System Preferences &gt; Network &gt; Advanced &gt; Proxies

@@ -64,6 +64,9 @@
 
           Bu politikaya yalnızca 'DefaultSearchProviderEnabled' politikası etkinleştirilirse uyulur.</translation>
 <translation id="1265053460044691532">SAML kullanarak kimlik doğrulaması yapmış kullanıcının çevrimdışı olarak giriş yapabileceği süreyi sınırla</translation>
+<translation id="1291880496936992484">Uyarı: RC4, sürüm 52'den sonra (yaklaşık olarak Eylül 2016'da) <ph name="PRODUCT_NAME" /> ürününden tamamen kaldırılacak ve sonrasında bu politika çalışmayacaktır.
+
+      Politika ayarlanmamışsa veya yanlış seçeneğine ayarlanmışsa, TLS'deki RC4 şifre paketleri etkinleştirilmez. Aksi takdirde, eski bir sunucuyla uyumluluğun korunması için doğru seçeneğine ayarlanabilir. Bu geçici bir tedbirdir ve sunucu yeniden yapılandırılmalıdır.</translation>
 <translation id="1297182715641689552">.pac proxy komut dosyası kullan</translation>
 <translation id="1300635491585192248">Hücresel olmayan herhangi bir ağda, ağ işlemlerini tahmin et</translation>
 <translation id="1304973015437969093">Uzantı/Uygulama kimlikleri ve güncelleme URL'leri sessizce yüklenir</translation>
@@ -530,6 +533,9 @@
       Bu ayarı etkinleştirirseniz veya devre dışı bırakırsanız, kullanıcılar <ph name="PRODUCT_NAME" /> içindeki "Kimlik avı ve kötü amaçlı yazılımlara karşı koruma" ayarını değiştiremez veya geçersiz kılamaz.
 
       Bu politika ayarlanmadan bırakılırsa, bu ayar etkinleştirilecek, ancak kullanıcı bunu değiştirebilecektir.</translation>
+<translation id="2801230735743888564">Cihaz çevrimdışıyken kullanıcıların dinozor paskalya yumurtası oyununu oynamasına izin ver.
+
+      Bu politika Yanlış seçeneğine ayarlanırsa kullanıcılar, cihaz çevrimdışıyken dinozor paskalya yumurtası oyununu oynayamaz. Bu ayar Doğru seçeneğine ayarlanırsa kullanıcıların dinozor oyununu oynamalarına izin verilir. Bu politika ayarlanmazsa kullanıcıların dinozor paskalya yumurtası oyununu oynamalarına kayıtlı Chrome OS'de izin verilmez, ancak diğer durumlarda izin verilir.</translation>
 <translation id="2805707493867224476">Tüm sitelerin pop-up göstermesine izin ver</translation>
 <translation id="2808013382476173118">Uzak istemciler bu makineyle bağlantı kurmaya çalıştığında STUN sunucularının kullanılabilmesini sağlar.
 
@@ -810,6 +816,13 @@
 <translation id="3780152581321609624">Kerberos SPN'sine standart dışı bağlantı noktasını dahil et</translation>
 <translation id="3788662722837364290">Kullanıcının işlem yapmadığı zaman için güç yönetimi ayarları</translation>
 <translation id="3793095274466276777"><ph name="PRODUCT_NAME" /> içindeki varsayılan tarayıcı denetimlerini yapılandırır ve kullanıcıların bu ayarı değiştirmelerini önler. Bu ayarı etkinleştirirseniz, <ph name="PRODUCT_NAME" /> her zaman başlangıçta varsayılan tarayıcı olup olmadığını denetler ve mümkünse kendini otomatik olarak kaydeder. Bu ayar devre dışı bırakılırsa, <ph name="PRODUCT_NAME" /> varsayılan tarayıcı olup olmadığını hiçbir zaman denetlemez ve bu seçeneği ayarlamaya yönelik kullanıcı denetimlerini devre dışı bırakır. Bu ayar belirtilmezse, <ph name="PRODUCT_NAME" /> varsayılan tarayıcı olup olmadığını ve varsayılan tarayıcı değilse kullanıcı bildirimlerinin gösterilip gösterilmeyeceğini kullanıcının denetlemesine izin verir.</translation>
+<translation id="3800626789999016379"><ph name="PRODUCT_NAME" /> ürününün, dosyaları indirmek için kullanacağı dizini yapılandırır.
+
+      Bu politikayı ayarlarsanız <ph name="PRODUCT_NAME" />, kullanıcının bir dizin belirtip belirtmediğine veya her defasında indirme konumunun sorulmasıyla ilgili işareti etkinleştirip etkinleştirmediğine bakmaksızın sağlanan dizini kullanır.
+
+      Kullanılabilecek değişkenlerin bir listesi için https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables adresine bakın.
+
+      Bu politika ayarlanmadan bırakılırsa, varsayılan indirme dizini kullanılır ve kullanıcı, bu ayarı değiştirebilir.</translation>
 <translation id="3805659594028420438">TLS alan adına bağlı sertifikalar uzantısını etkinleştir (kullanımdan kaldırıldı)</translation>
 <translation id="3806576699227917885">Ses çalmaya izin verin.
 
@@ -951,6 +964,13 @@ politikayı geçersiz kılamaz.
           Bu politika sadece "DefaultSearchProviderEnabled" politikası etkinleştirilmişse dikkate alınır.</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 veya sonrası</translation>
 <translation id="4325690621216251241">Sistem tepsisine çıkış düğmesi ekle</translation>
+<translation id="4349746760316962317"><ph name="PRODUCT_NAME" /> ürününün, önbelleğe alınan dosyaları diskte saklamak için kullanacağı dizini yapılandırır.
+
+      Bu politikayı ayarlarsanız <ph name="PRODUCT_NAME" />, kullanıcının "--disk-cache-dir" işaretini belirtmiş olup olmamasına bakmaksızın, sağlanan dizini kullanır.
+
+      Kullanılabilecek değişkenlerin listesi için  https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables adresine bakın.
+
+      Bu politika ayarlanmadan bırakılırsa varsayılan önbellek dizini kullanılır ve kullanıcı bu ayarı "--disk-cache-dir" komut satırı işaretiyle geçersiz kılabilir.</translation>
 <translation id="436581050240847513">Cihaz ağ arayüzlerini rapor etme</translation>
 <translation id="4372704773119750918">Kurumsal kullanıcının çok profilli oturumun parçası olmasına izin verme (birincil veya ikincil)</translation>
 <translation id="4377599627073874279">Tüm sitelerin tüm resimleri görüntülemesine izin ver</translation>
@@ -1034,6 +1054,11 @@ politikayı geçersiz kılamaz.
 <translation id="4665897631924472251">Uzantı yönetim ayarları</translation>
 <translation id="4668325077104657568">Varsayılan resimler ayarı</translation>
 <translation id="467236746355332046">Desteklenen özellikler:</translation>
+<translation id="4674167212832291997">Her zaman <ph name="PRODUCT_FRAME_NAME" /> tarafından oluşturulması gereken URL kalıplarının listesini özelleştirin.
+
+          Bu politika ayarlanmazsa, "ChromeFrameRendererSettings" politikasında belirtilen tüm siteler için varsayılan oluşturucu kullanılır.
+
+          Örneğin, kalıplar için https://www.chromium.org/developers/how-tos/chrome-frame-getting-started adresine bakın.</translation>
 <translation id="467449052039111439">URL listesi aç</translation>
 <translation id="4680961954980851756">Otomatik Doldurmayı etkinleştir</translation>
 <translation id="4723829699367336876">Uzaktan erişim istemcisinden güvenlik duvarı geçişini etkinleştir</translation>
@@ -1137,6 +1162,14 @@ politikayı geçersiz kılamaz.
           Bu politika ayarlanmadığında, varsayılan işlem uygulanır ve askıya alınır.
 
           Yapılacak işlem askıya almak olduğunda, <ph name="PRODUCT_OS_NAME" /> askıya almadan önce ekranı kilitleyecek veya kilitlemeyecek şekilde ayrı olarak yapılandırılabilir.</translation>
+<translation id="5111712393799006197"><ph name="PRODUCT_NAME" /> ürünün, kullanıcı verilerini depolamak için kullanacağı dizini yapılandırır.
+
+      Bu politikayı ayarlarsanız <ph name="PRODUCT_NAME" />, kullanıcının "--user-data-dir" işaretini belirtip belirtmediğine bakmaksızın sağlanan dizini kullanır.
+
+      Kullanılabilecek değişkenlerin bir listesi için https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables adresine bakın.
+
+      Bu politika ayarlanmadan bırakılırsa, varsayılan profil yolu kullanılır ve kullanıcı, "--user-data-dir" komut satırı işaretiyle bu ayarı geçersiz kılabilir.</translation>
+<translation id="5130288486815037971">TLS'deki RC4 şifre paketlerinin etkinleştirilip etkinleştirilmediği</translation>
 <translation id="5141670636904227950">Giriş ekranında varsayılan ekran büyüteci türünü etkin olarak ayarla</translation>
 <translation id="5142301680741828703"><ph name="PRODUCT_FRAME_NAME" /> içinde aşağıdaki URL kalıplarını her zaman oluştur</translation>
 <translation id="5148753489738115745"><ph name="PRODUCT_FRAME_NAME" /> tarafından <ph name="PRODUCT_NAME" /> başlatıldığında kullanılan ek parametreleri belirtmenize olanak verir.
@@ -1324,6 +1357,20 @@ politikayı geçersiz kılamaz.
 <translation id="5809728392451418079">Cihaz-yerel hesaplar için görünen adı ayarla</translation>
 <translation id="5814301096961727113">Giriş ekranında sesli geri bildirimin varsayılan durumunu ayarla</translation>
 <translation id="5815129011704381141">Güncelleme sonrasında otomatik olarak yeniden başlat</translation>
+<translation id="5815353477778354428"><ph name="PRODUCT_FRAME_NAME" /> ürününün, kullanıcı verilerini depolamak için kullanacağı dizini yapılandırır.
+
+      Bu politikayı ayarlarsanız <ph name="PRODUCT_FRAME_NAME" />, sağlanan dizini kullanır.
+
+      Kullanılabilecek değişkenlerin listesi için https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables adresine bakın.
+
+      Bu ayar ayarlanmadan bırakılırsa, varsayılan profil dizini kullanılır.</translation>
+<translation id="5819660021114910752">Cihazda kullanılacak saat dilimini belirtir. Kullanıcılar belirtilen saat dilimini mevcut oturum için geçersiz kılabilirler. Ancak, çıkış yapınca saat dilimi belirtilen dilime geri döner. Geçersiz bir değer sağlanırsa, politika yine etkinleştirilir ve bu durumda saat dilimi olarak "GMT" kullanılır. Boş bir dize sağlanırsa politika yoksayılır.
+
+      Bu politika kullanılmazsa, o anda etkin olan saat dilimi kullanımda kalır, ancak kullanıcılar saat dilimini değiştirebilirler ve bu değişiklik kalıcı olur. Bu durumda bir kullanıcının yaptığı değişiklik giriş ekranını ve diğer tüm kullanıcıları etkiler.
+
+      Yeni cihazlarda saat dilimi "ABD/Pasifik" olarak ayarlıdır.
+
+      Değerin biçimi "IANA Saat Dilimleri Veritabanı" (bkz."https://tr.wikipedia.org/wiki/IANA_zaman_dilimi_veritaban%C4%B1") içindeki saat dilimi adlarına uygundur. Özellikle, saat dilimlerinin çoğu "kıta/büyük_kent" veya "okyanus/büyük_kent" olarak anılır.</translation>
 <translation id="5826047473100157858">Kullanıcının <ph name="PRODUCT_NAME" /> içinde Gizli modda sayfa açıp açamayacağını belirtir.
 
       'Etkin' değeri seçilirse veya politika ayarlanmadan bırakılırsa, sayfalar Gizli modda açılabilir.
@@ -1421,6 +1468,7 @@ politikayı geçersiz kılamaz.
           Boşta kalma durumunda ekranı kilitlemek için önerilen yöntem, askıya alındığında ekranın kilitlenmesini etkinleştirmek ve boşta kalma süresi beklendikten sonra <ph name="PRODUCT_OS_NAME" /> tarafından askıya alma işlemi yapılmasını sağlamaktır.
 
           Politikanın değeri milisaniye olarak belirtilmelidir. Değerler boşta kalma bekleme süresinden az olacak şekilde ayarlanır.</translation>
+<translation id="6111936128861357925">Dinozor Paskalya Yumurtası Oyununa İzin Verme</translation>
 <translation id="6114416803310251055">onaylanmadı</translation>
 <translation id="6145799962557135888">JavaScript'i çalıştırmasına izin verilen sitelerin belirtildiği bir URL kalıpları listesi ayarlamanıza olanak tanır.
 
@@ -2046,6 +2094,17 @@ politikayı geçersiz kılamaz.
 
       Bu politika ayarlanmazsa, kara listenin 'URLBlacklist' politikasına göre hiçbir istisnası olmaz.</translation>
 <translation id="8176035528522326671">Kurumsal kullanıcının sadece birincil çok profilli kullanıcı olmasına izin ver (Kurumsal olarak yönetilen kullanıcılar için varsayılan çalışma biçimidir)</translation>
+<translation id="8191318459035150777"><ph name="PRODUCT_NAME" /> içindeki varsayılan ana sayfa URL'sini yapılandırır ve kullanıcıların bunu değiştirmelerini önler.
+
+          Ana sayfa, Ana Sayfa düğmesiyle açılan sayfadır. Başlangıçta açılan sayfalar RestoreOnStartup politikalarıyla kontrol edilir.
+
+          Ana sayfa türü, burada belirttiğiniz bir URL'ye veya Yeni Sekme Sayfası'na ayarlanabilir. Yeni Sekme Sayfası'nı seçerseniz bu politika geçerli olmaz.
+
+          Bu ayarı etkinleştirirseniz kullanıcılar <ph name="PRODUCT_NAME" /> uygulamasında ana sayfalarının URL'sini değiştiremezler, ancak ana sayfaları olarak Yeni Sekme Sayfası'nı seçebilirler.
+
+          Bu politika ayarlanmadan bırakılırsa ve HomepageIsNewTabPage ayarlanmazsa kullanıcı kendi istediği ana sayfayı seçebilir.
+
+          Bu politika bir Active Directory alan adına katılmamış Windows örneklerinde kullanılamaz.</translation>
 <translation id="8197918588508433925">Bu politika, uzaktan doğrulama için chrome.enterprise.platformKeysPrivate.challengeUserKey() Kurumsal Platform Anahtarları API'sını kullanmasına izin verilen uzantıları belirtir. API'yı kullanmak için uzantılar bu listeye eklenmelidir.
 
           Bir uzantı listede yoksa veya liste ayarlanmamışsa, API'ya yapılan çağrılar başarısız olur ve hata kodu görüntülenir.</translation>
@@ -2087,6 +2146,11 @@ politikayı geçersiz kılamaz.
 <translation id="8465065632133292531">POST kullanan anlık URL parametreleri</translation>
 <translation id="847472800012384958">Hiçbir sitenin pop-up göstermesine izin verme</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
+<translation id="8484458986062090479">Her zaman ana makine tarayıcısı tarafından oluşturulması gereken URL kalıplarının listesini özelleştirin.
+
+          Bu politika ayarlanmazsa, tüm siteler için "ChromeFrameRendererSettings" politikası tarafından belirtilen varsayılan oluşturucu kullanılır.
+
+          Örnek kalıplar için https://www.chromium.org/developers/how-tos/chrome-frame-getting-started sayfasına bakın.</translation>
 <translation id="8493645415242333585">Tarayıcı geçmişini kaydetmeyi devre dışı bırak</translation>
 <translation id="8499172469244085141">Varsayılan Ayarlar (kullanıcılar geçersiz kılabilir)</translation>
 <translation id="8501011084242226370">Kullanıcının <ph name="PRODUCT_NAME" /> uygulamasında etkinleştirebileceği veya devre dışı bırakabileceği eklentilerin listesini belirtir.
@@ -2161,6 +2225,8 @@ politikayı geçersiz kılamaz.
           Bu ayarı etkinleştirirseniz, CNAME araması atlanır ve sunucu adı girildiği gibi kullanılır.
 
           Bu ayarı devre dışı veya ayarlanmadan bırakırsanız, sunucunun standart adı CNAME araması ile belirlenir.</translation>
+<translation id="8774131509736383471">Bu politika doğru seçeneğine ayarlanırsa, <ph name="PRODUCT_NAME" /> koşulsuz olarak ilk çalıştırmada gösterilen ilk pencereyi ekranı kaplayacak hale getirir.
+      Bu politika yanlış seçeneğine ayarlanırsa veya hiç yapılandırılmazsa ekran boyutuna göre, gösterilen ilk pencerenin ekranı kaplayıp kaplamayacağına karar verilir.</translation>
 <translation id="8777120694819070607"><ph name="PRODUCT_NAME" /> ürününün eski eklentileri çalıştırmasına izin verir. Bu ayarı etkinleştirirseniz eski eklentiler normal eklentiler gibi kullanılır. Bu ayarı devre dışı bırakırsanız eski eklentiler kullanılmaz ve kullanıcılardan bu eklentilerin çalıştırılması için izin istenmez. Bu ayar belirtilmezse kullanıcılardan eski eklentilerin çalıştırılması için izin istenir.</translation>
 <translation id="87812015706645271">Yerel kullanıcının adı ile uzak erişim ana makinesi sahibinin adının aynı olmasını gerektirir.</translation>
 <translation id="8782750230688364867">Cihaz sunum modunda iken ekran kararma gecikmesinin ölçeklendiği yüzdeyi belirtir.

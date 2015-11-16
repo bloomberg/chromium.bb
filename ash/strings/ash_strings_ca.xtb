@@ -26,9 +26,7 @@
 Premeu Maj+Alt per canviar-lo.</translation>
 <translation id="1882897271359938046">S'està replicant <ph name="DISPLAY_NAME" /></translation>
 <translation id="1923539912171292317">Clics automàtics</translation>
-<translation id="1950626184269948555">La drecera del gestor de tasques ha canviat. Utilitzeu Cerca+Esc en lloc de Maj+Esc.</translation>
 <translation id="1957803754585243749">0°</translation>
-<translation id="1963814843110128691">S'està emetent $1 a $2</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1987317783729300807">Comptes</translation>
 <translation id="2127372758936585790">Carregador de baix consum</translation>
@@ -94,6 +92,7 @@ Premeu Cerca o Maj per cancel·lar.</translation>
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">Bloqueja</translation>
 <translation id="3799026279081545374">Pot ser que el carregador s'hagi espatllat. Si residiu als EUA, truqueu al 866-628-1371 per rebre ajuda i un carregador de recanvi. Si residiu al Regne Unit, truqueu al 0800-026-0613. Si residiu a Irlanda, truqueu al 1-800-832-664. Si residiu al Canadà, truqueu al 866-628-1372. Si residiu a Austràlia, truqueu al 1-800-067-460.</translation>
+<translation id="3866182280516392520">Adreça IPv6</translation>
 <translation id="3891340733213178823">Premeu Ctrl+Maj+Q dues vegades per tancar la sessió.</translation>
 <translation id="3892641579809465218">Pantalla interna</translation>
 <translation id="3963445509666917109">Altaveu (intern)</translation>
@@ -152,7 +151,6 @@ Premeu Maj+Alt per canviar-lo.</translation>
 <translation id="6165508094623778733">Més informació</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE" />%</translation>
 <translation id="6248847161401822652">Premeu Control+Maj+Q dues vegades per sortir.</translation>
-<translation id="6287020362823083378">La drecera del bloqueig de pantalla ha canviat. Utilitzeu Cerca+L en lloc de Ctrl+Maj+L.</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> s'ha canviat a <ph name="ROTATION" /></translation>
 <translation id="6359806961507272919">SMS de <ph name="PHONE_NUMBER" /></translation>
 <translation id="639644700271529076">Bloq Maj està desactivat</translation>
@@ -205,7 +203,6 @@ Premeu Alt+Cerca o Maj per cancel·lar.</translation>
 <translation id="8308637677604853869">Menú anterior</translation>
 <translation id="8356164830168736643">Tanca <ph name="WINDOW_TITLE" /></translation>
 <translation id="8428213095426709021">Configuració</translation>
-<translation id="8443356412772935865">S'està emetent la pantalla a $1</translation>
 <translation id="8456362689280298700">Temps per a càrrega completa: <ph name="HOUR" />:<ph name="MINUTE" /></translation>
 <translation id="8517041960877371778">És possible que el dispositiu <ph name="DEVICE_TYPE" /> no es carregui mentre està encès.</translation>
 <translation id="8528322925433439945">Xarxes mòbils...</translation>

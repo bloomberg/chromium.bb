@@ -55,6 +55,9 @@
 <translation id="1221359380862872747">Bei Demo-Anmeldung angegebene URLs laden</translation>
 <translation id="1240643596769627465">Gibt die URL der Suchmaschine an, die zur Ausgabe von Instant-Ergebnissen verwendet wird. Die URL sollte den String <ph name="SEARCH_TERM_MARKER" /> enthalten. Dieser wird bei der Suchanfrage mit dem Text ersetzt, den der Nutzer bis dahin eingegeben hat. Diese Richtlinie ist optional. Wenn keine Festlegung erfolgt, so werden keine Instant-Ergebnisse ausgegeben. Diese Richtlinie wird nur dann umgesetzt, wenn die Richtlinie "DefaultSearchProviderEnabled" aktiviert ist.</translation>
 <translation id="1265053460044691532">Zeit beschränken, für die sich ein über SAML authentifizierter Nutzer offline anmelden kann</translation>
+<translation id="1291880496936992484">Achtung: RC4 wird nach Version 52, etwa im September 2016, vollständig aus <ph name="PRODUCT_NAME" /> entfernt. Anschließend funktioniert diese Richtlinie nicht mehr.
+
+      Wenn die Richtlinie nicht konfiguriert oder auf "false" festgelegt ist, werden RC4-Verschlüsselungssammlungen in TLS nicht aktiviert. Sie kann auf "true" gestellt werden, um die Kompatibilität mit veralteten Servern zu gewährleisten. Hierbei handelt es sich jedoch um eine provisorische Maßnahme. Der Server sollte neu konfiguriert werden.</translation>
 <translation id="1297182715641689552">PAC-Proxy-Skript verwenden</translation>
 <translation id="1300635491585192248">Netzwerkaktionen in allen Netzwerken außer Mobilfunknetzen vorhersagen</translation>
 <translation id="1304973015437969093">Ohne Nutzereingriff zu installierende Erweiterungs-/App-IDs und Aktualisierungs-URLs</translation>
@@ -464,6 +467,9 @@ Falls die Richtlinie auf "false" gesetzt wird, kann eine verzögerungsfreie auto
       Falls Sie diese Einstellung aktivieren oder deaktivieren, können die Nutzer die Einstellung "Phishing- und Malware-Schutz aktivieren" in <ph name="PRODUCT_NAME" /> nicht ändern oder außer Kraft setzen.
 
       Ist die Richtlinie nicht konfiguriert, wird Safe Browsing aktiviert, aber die Einstellung kann von den Nutzern geändert werden.</translation>
+<translation id="2801230735743888564">Nutzern erlauben, das Easter Egg-Dinosaurierspiel zu spielen, wenn das Gerät offline ist.
+
+      Wenn diese Richtlinie auf "false" eingestellt ist, können Nutzer das Easter Egg-Dinosaurierspiel nicht spielen, wenn das Gerät offline ist. Ist es auf "true" eingestellt, können Nutzer das Dinosaurierspiel spielen. Falls die Richtlinie nicht konfiguriert ist, können Nutzer das Easter Egg-Dinosaurierspiel nicht unter einer registrierten Version von Chrome OS spielen, unter anderen Umständen jedoch schon.</translation>
 <translation id="2805707493867224476">Anzeige von Pop-ups für alle Websites zulassen</translation>
 <translation id="2808013382476173118">Aktiviert den Einsatz von STUN-Servern, wenn Remote-Clients versuchen, eine Verbindung zu diesem Computer herzustellen
 
@@ -723,6 +729,13 @@ Falls die Richtlinie auf "false" gesetzt oder nicht festgelegt wird, treten bei 
 <translation id="3780152581321609624">Nicht-Standard-Port in Kerberos-SPN einschließen</translation>
 <translation id="3788662722837364290">Einstellungen für die Energieverwaltung bei Inaktivität des Nutzers</translation>
 <translation id="3793095274466276777">Konfiguriert den Standardbrowser, führt in <ph name="PRODUCT_NAME" /> eine Überprüfung durch und verhindert, dass Nutzer die Einstellung ändern. Falls Sie diese Einstellung aktivieren, überprüft <ph name="PRODUCT_NAME" /> bei jedem Start, ob es der Standardbrowser ist. Nach Möglichkeit registriert sich die Anwendung dann automatisch. Ist diese Einstellung deaktiviert, überprüft <ph name="PRODUCT_NAME" /> nie, ob es der Standardbrowser ist. Außerdem werden alle Nutzersteuerelemente zum Einstellen dieser Option deaktiviert. Falls diese Einstellung nicht festgelegt ist, kann der Nutzer selbst steuern, ob <ph name="PRODUCT_NAME" /> der Standardbrowser ist und ob Nutzerbenachrichtigungen angezeigt werden sollen, wenn dies nicht der Fall ist.</translation>
+<translation id="3800626789999016379">Konfiguriert das Verzeichnis, das <ph name="PRODUCT_NAME" /> zum Herunterladen von Dateien verwendet.
+
+      Wenn Sie diese Richtlinie festlegen, verwendet <ph name="PRODUCT_NAME" /> das angegebene Verzeichnis unabhängig davon, ob der Nutzer selbst eines angegeben oder festgelegt hat, dass er den Downloadpfad jedes Mal selbst angeben möchte.
+
+      Unter https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables finden Sie eine Liste der Variablen, die verwendet werden können.
+
+      Wird diese Richtlinie nicht konfiguriert, wird das Standard-Downloadverzeichnis verwendet, wobei dieses vom Nutzer geändert werden kann.</translation>
 <translation id="3805659594028420438">Erweiterung für domaingebundene TLS-Zertifikate aktivieren (veraltet)</translation>
 <translation id="3806576699227917885">Wiedergabe von Audioinhalten zulassen
 
@@ -838,6 +851,13 @@ Falls die Richtlinie nicht festgelegt wird, bleibt die Varianten-Seed-URL unver�
           Diese Richtlinie wird nur berücksichtigt, wenn die Richtlinie "DefaultSearchProviderEnabled" aktiviert ist.</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 oder höher</translation>
 <translation id="4325690621216251241">Schaltfläche "Abmelden" zur Taskleiste hinzufügen</translation>
+<translation id="4349746760316962317">Konfiguriert das Verzeichnis, das <ph name="PRODUCT_NAME" /> verwendet, um zwischengespeicherte Dateien auf der Festplatte zu speichern.
+
+      Wenn Sie diese Richtlinie festlegen, verwendet <ph name="PRODUCT_NAME" /> das angegebene Verzeichnis unabhängig davon, ob der Nutzer "--disk-cache-dir" angegeben hat.
+
+      Unter https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables finden Sie eine Liste der Variablen, die verwendet werden können.
+
+      Wird diese Richtlinien nicht konfiguriert, wird das Standardverzeichnis des Profils verwendet. Dieses kann dann vom Nutzer mithilfe des Befehlszeilenparameters "--disk-cache-dir" überschrieben werden.</translation>
 <translation id="436581050240847513">Gerätenetzwerk-Schnittstellen melden</translation>
 <translation id="4372704773119750918">Nutzer in Unternehmen dürfen keine Mehrfachprofile verwenden (weder als primärer, noch als sekundärer Nutzer)</translation>
 <translation id="4377599627073874279">Anzeige aller Bilder auf allen Websites zulassen</translation>
@@ -903,6 +923,11 @@ Wenn die Richtlinie auf "FALSE" gesetzt oder nicht festgelegt wird, führt die T
 <translation id="4665897631924472251">Verwaltungseinstellungen für Erweiterungen</translation>
 <translation id="4668325077104657568">Standardeinstellung für Bilder</translation>
 <translation id="467236746355332046">Unterstützte Funktionen:</translation>
+<translation id="4674167212832291997">Passt die Liste mit URL-Mustern an, die immer von <ph name="PRODUCT_FRAME_NAME" /> gerendert werden müssen.
+
+          Wenn diese Richtlinie nicht konfiguriert ist, kommt der über die Richtlinie "ChromeFrameRendererSettings" festgelegte Standard-Renderer für alle Websites zum Einsatz.
+
+          Beispielmuster finden Sie unter https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="467449052039111439">URL-Liste öffnen</translation>
 <translation id="4680961954980851756">AutoFill aktivieren</translation>
 <translation id="4723829699367336876">Firewallausnahme über Client für Remote-Zugriff aktivieren</translation>
@@ -995,6 +1020,14 @@ Falls die Richtlinie auf "false" gesetzt wird, werden Anfragen für Bildschirm-W
           Wenn diese Richtlinie nicht festgelegt ist, wird die Standardaktion ausgeführt: Es wird in den Suspend-Modus gewechselt.
 
           Wenn als Aktion der Wechsel in den Suspend-Modus festgelegt ist, kann <ph name="PRODUCT_OS_NAME" /> separat dafür konfiguriert werden, den Bildschirm zu sperren oder nicht zu sperren.</translation>
+<translation id="5111712393799006197">Konfiguriert das Verzeichnis, in dem <ph name="PRODUCT_NAME" /> Nutzerdaten speichert.
+
+      Wenn Sie diese Richtlinie festlegen, verwendet <ph name="PRODUCT_NAME" /> das angegebene Verzeichnis unabhängig davon, ob der Nutzer "--user-data-dir" angegeben hat.
+
+      Unter https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables finden Sie eine Liste der Variablen, die verwendet werden können.
+
+      Wird diese Richtlinie nicht konfiguriert, wird das Standardverzeichnis des Profils verwendet. Dieses kann dann vom Nutzer mithilfe des Befehlszeilenparameters "--user-data-dir" überschrieben werden.</translation>
+<translation id="5130288486815037971">Legt fest, ob RC4-Verschlüsselungssammlungen in TLS aktiviert sind</translation>
 <translation id="5141670636904227950">Standardtyp für die Lupe festlegen, die auf der Anmeldeseite aktiviert ist</translation>
 <translation id="5142301680741828703">Folgende URL-Muster immer in <ph name="PRODUCT_FRAME_NAME" /> darstellen</translation>
 <translation id="5148753489738115745">Ermöglicht die Verwendung zusätzlicher Parameter, die beim Start von <ph name="PRODUCT_NAME" /> durch <ph name="PRODUCT_FRAME_NAME" /> eingesetzt werden.
@@ -1163,6 +1196,20 @@ Falls die Richtlinie auf "false" gesetzt wird, werden Anfragen für Bildschirm-W
 <translation id="5809728392451418079">Anzeigename für lokale Gerätekonten festlegen</translation>
 <translation id="5814301096961727113">Standardstatus für das gesprochene Feedback auf der Anmeldeseite festlegen</translation>
 <translation id="5815129011704381141">Nach Update automatisch neu starten</translation>
+<translation id="5815353477778354428">Konfiguriert das Verzeichnis, in dem <ph name="PRODUCT_FRAME_NAME" /> Nutzerdaten speichert.
+
+      Wenn Sie diese Richtlinie festlegen, verwendet <ph name="PRODUCT_FRAME_NAME" /> das angegebene Verzeichnis.
+
+      Unter https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables finden Sie eine Liste der Variablen, die verwendet werden können.
+
+      Wird diese Einstellung nicht konfiguriert, wird das Standardverzeichnis des Profils verwendet.</translation>
+<translation id="5819660021114910752">Legt die Zeitzone fest, die für das Gerät verwendet wird. Für die aktuelle Sitzung können Nutzer die festgelegte Zeitzone überschreiben. Bei der Abmeldung wird die festgelegte Zeitzone jedoch wieder zurückgesetzt. Bei Angabe eines ungültigen Werts greift die Richtlinie weiterhin und es wird stattdessen "GMT" verwendet. Wenn ein leerer String angegeben wird, wird die Richtlinie nicht angewendet.
+
+      Wird die Richtlinie nicht angewendet, wird die derzeit aktive Zeitzone verwendet. Allerdings können die Nutzer die Zeitzone dann ändern und die Änderung wird beibehalten. Die Änderung durch einen Nutzer wirkt sich somit auf die Anmeldeseite und alle anderen Nutzer aus.
+
+      Bei neuen Geräten ist die Zeitzone "US/Pacific" voreingestellt.
+
+      Das Format des Werts entspricht den Namen der Zeitzone in der "IANA Time Zone Database" (siehe "https://en.wikipedia.org/wiki/Tz_database"). Auf den meisten Zeitzonen kann über "Kontinent/Stadt" oder "Ozean/Stadt" verwiesen werden.</translation>
 <translation id="5826047473100157858">Gibt an, ob der Nutzer Seiten in <ph name="PRODUCT_NAME" /> im Inkognitomodus öffnen kann. Ist diese Richtlinie aktiviert oder nicht konfiguriert, so können Seiten im Inkognitomodus geöffnet werden. Wenn sie deaktiviert ist, so können Seiten nicht im Inkognitomodus geöffnet werden. Mit dem Wert "Forced" können Seiten ausschließlich im Inkognitomodus geöffnet werden.</translation>
 <translation id="5836064773277134605">Vom Host für den Remote-Zugriff verwendeten UDP-Portbereich einschränken</translation>
 <translation id="5845159892130426052">ShowModalDialog API über 2015.04.30 aktivieren</translation>
@@ -1253,6 +1300,7 @@ Wenn diese Einstellung deaktiviert oder nicht konfiguriert ist, wird kein Proxy 
           Wenn der Bildschirm bei Inaktivität gesperrt werden soll, empfehlen wir, die Bildschirmsperre für den Wechsel in den Suspend-Modus zu aktivieren und <ph name="PRODUCT_OS_NAME" /> anzuweisen, nach der Inaktivitätsverzögerung in den Suspend-Modus zu wechseln. Diese Richtlinie sollte nur verwendet werden, wenn die Bildschirmsperre deutlich früher aktiviert werden soll als der Suspend-Modus oder wenn der Suspend-Modus bei Inaktivität nicht erwünscht ist.
 
           Der Richtlinienwert muss in Millisekunden angegeben werden und wird automatisch auf einen Wert unter der Inaktivitätsverzögerung reduziert.</translation>
+<translation id="6111936128861357925">Easter Egg-Dinosaurierspiel zulassen</translation>
 <translation id="6114416803310251055">Veraltet</translation>
 <translation id="6145799962557135888">Ermöglicht Ihnen die Zusammenstellung einer Liste mit URL-Mustern, die Websites angeben, denen die Ausführung von JavaScript gestattet ist. Wenn diese Richtlinie nicht konfiguriert ist, kommt für alle Websites entweder der globale Standardwert der Richtlinie "DefaultJavaScriptSetting", falls konfiguriert, oder der persönlichen Konfiguration des Nutzers zum Einsatz.</translation>
 <translation id="6151775819333710697">
@@ -1790,6 +1838,18 @@ Speicherinformationen werden unabhängig von der gewählten Option an die Seite 
 
       Bleibt diese Richtlinie unkonfiguriert, gibt es keine Ausnahmen von der schwarzen Liste aus der Richtlinie "URLBlacklist".</translation>
 <translation id="8176035528522326671">Unternehmensnutzer nur als primären Nutzer mehrerer Profile zulassen (Standardverhalten für von Unternehmen verwaltete Nutzer)</translation>
+<translation id="8191318459035150777">Hiermit wird die Standard-URL für die Startseite in <ph name="PRODUCT_NAME" /> konfiguriert und verhindert, dass diese von Nutzern geändert werden kann.
+
+          Die Startseite ist die Seite, die über die Schaltfläche "Startseite" geöffnet wird. Die Seiten, die beim Starten geöffnet werden, werden über die "RestoreOnStartup"-Richtlinien festgelegt.
+
+          Der Startseitentyp kann entweder auf eine URL, die Sie hier angeben, oder auf die "Neuer Tab"-Seite eingestellt werden. Wenn Sie sich für die "Neuer Tab"-Seite entscheiden, wird diese Richtlinie nicht angewendet.
+
+          Wenn Sie diese Einstellung aktivieren, können Nutzer ihre Startseiten-URL in <ph name="PRODUCT_NAME" /> nicht ändern, jedoch weiterhin ihre Startseite auf die "Neuer Tab"-Seite umstellen.
+
+          Ist diese Richtlinie nicht konfiguriert, können die Nutzer selbst eine Startseite wählen, sofern "HomepageIsNewTabPage" ebenfalls nicht konfiguriert ist.
+
+          Diese Richtlinie ist nur in Windows-Instanzen verfügbar, die nicht mit einer
+          Active Directory-Domain verbunden sind.</translation>
 <translation id="8197918588508433925">Mit dieser Richtlinie wird festgelegt, welche Erweiterungen zum Zweck der Remote-Bestätigung die Enterprise Platform Keys API chrome.enterprise.platformKeysPrivate.challengeUserKey() verwenden dürfen. Damit eine Erweiterung die API verwenden darf, muss sie zu dieser Liste hinzugefügt werden.
 
 Wenn eine Erweiterung nicht in der Liste enthalten ist oder keine Liste festgelegt wurde, treten beim API-Aufruf Fehler auf und ein Fehlercode wird angezeigt.</translation>
@@ -1831,6 +1891,11 @@ Wenn eine Erweiterung nicht in der Liste enthalten ist oder keine Liste festgele
 <translation id="8465065632133292531">Parameter für URL der Suche im Voraus, die POST verwendet</translation>
 <translation id="847472800012384958">Anzeige von Pop-ups für keine Website zulassen</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
+<translation id="8484458986062090479">Passt die Liste mit URL-Mustern an, die immer vom Host-Browser gerendert werden müssen.
+
+          Wenn diese Richtlinie nicht konfiguriert ist, kommt der über die Richtlinie "ChromeFrameRendererSettings" festgelegte Standard-Renderer für alle Websites zum Einsatz.
+
+          Beispielmuster finden Sie unter https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="8493645415242333585">Speichern des Browserverlaufs deaktivieren</translation>
 <translation id="8499172469244085141">Standardeinstellungen (können vom Nutzer überschrieben werden)</translation>
 <translation id="8501011084242226370">Gibt eine Liste von Plug-ins an, die der Nutzer in <ph name="PRODUCT_NAME" /> aktivieren oder deaktivieren kann.
@@ -1891,6 +1956,8 @@ Wenn eine Erweiterung nicht in der Liste enthalten ist oder keine Liste festgele
 
       Wenn diese Einstellung deaktiviert ist, können der Browser- und Downloadverlauf nicht gelöscht werden.</translation>
 <translation id="8764119899999036911">Gibt an, ob der generierte Kerberos-SPN auf dem kanonischen DNS-Namen oder dem ursprünglich eingegebenen Namen basiert. Wenn Sie diese Einstellung aktivieren, wird die CNAME-Suche übersprungen und der Servername so wie eingegeben verwendet. Sollten Sie die Einstellung deaktivieren oder nicht konfigurieren, wird der kanonische Name des Servers per CNAME-Suche ermittelt.</translation>
+<translation id="8774131509736383471">Wenn für diese Richtlinie "true" festgelegt ist, maximiert <ph name="PRODUCT_NAME" /> beim ersten Start das erste angezeigte Fenster, ohne Ausnahme.
+      Falls die Richtlinie auf "false" festgelegt oder nicht konfiguriert wird, wird die Entscheidung, ob das erste angezeigte Fenster maximiert wird, auf Grundlage der Bildschirmgröße getroffen.</translation>
 <translation id="8777120694819070607">Aktiviert die Ausführung veralteter Plug-ins in <ph name="PRODUCT_NAME" />. Falls Sie diese Einstellung aktivieren, werden veraltete Plug-ins wie normale Plug-ins verwendet. Ist diese Einstellung deaktiviert, werden veraltete Plug-ins nicht verwendet und Nutzer werden nicht aufgefordert, ihrer Ausführung zuzustimmen. Falls diese Einstellung nicht festgelegt ist, müssen die Nutzer zustimmen, damit veraltete Plug-ins ausgeführt werden können.</translation>
 <translation id="87812015706645271">Erfordert, dass der Name des lokalen Nutzers und des Remotezugriffs-Host-Inhabers übereinstimmen</translation>
 <translation id="8782750230688364867">Hiermit wird der Prozentsatz angegeben, um den die Spanne für die Bildschirmabdunkelung skaliert wird, wenn sich das Gerät im Präsentationsmodus befindet.

@@ -4,6 +4,7 @@
 <translation id="1008557486741366299">Không phải Bây giờ</translation>
 <translation id="1047726139967079566">Đánh dấu Trang Này...</translation>
 <translation id="1172898394251786223">Trường tiếp theo</translation>
+<translation id="1625603797851307283">Bạn có muốn <ph name="PRODUCT_NAME" /> lưu mật khẩu của bạn cho trang web này không?</translation>
 <translation id="2320166752086256636">Ẩn bàn phím</translation>
 <translation id="2704606927547763573">Đã sao chép</translation>
 <translation id="2747003861858887689">Trường trước</translation>
@@ -11,11 +12,17 @@
 <translation id="3244271242291266297">MM</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> trong số <ph name="NUM_SUGGESTIONS" /></translation>
 <translation id="3335947283844343239">Mở lại Tab đã Đóng</translation>
+<translation id="3414292259312108062">Chrome sẽ lưu mật khẩu này vào <ph name="BEGIN_LINK" />Mật khẩu đã lưu của Google<ph name="END_LINK" /> và tự động điền mật khẩu cho bạn để bạn không phải tự ghi nhớ.</translation>
 <translation id="385051799172605136">Quay lại</translation>
 <translation id="4121993058175073134">Để gửi dữ liệu đã xuất, hãy định cấu hình tài khoản email trong ứng dụng Cài đặt.</translation>
 <translation id="4728558894243024398">Nền tảng</translation>
+<translation id="5317780077021120954">Lưu</translation>
 <translation id="5779929835642192302">Có đề xuất</translation>
 <translation id="605721222689873409">YY</translation>
+<translation id="6149061208933997199">Sử dụng mật khẩu</translation>
+<translation id="6314335155547195432">Tạo mật khẩu</translation>
+<translation id="6456425917241817154">Chrome đã tạo mật khẩu</translation>
 <translation id="7456847797759667638">Mở Vị trí...</translation>
 <translation id="7481312909269577407">Chuyển tiếp</translation>
+<translation id="7961015016161918242">Chưa bao giờ</translation>
 </translationbundle>

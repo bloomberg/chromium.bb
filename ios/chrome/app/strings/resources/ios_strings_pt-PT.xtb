@@ -4,6 +4,7 @@
 <translation id="1008557486741366299">Agora não</translation>
 <translation id="1047726139967079566">Marcar esta página...</translation>
 <translation id="1172898394251786223">Campo seguinte</translation>
+<translation id="1625603797851307283">Pretende que o <ph name="PRODUCT_NAME" /> guarde a sua palavra-passe para este Website?</translation>
 <translation id="2320166752086256636">Ocultar teclado</translation>
 <translation id="2704606927547763573">Copiado</translation>
 <translation id="2747003861858887689">Campo anterior</translation>
@@ -11,11 +12,17 @@
 <translation id="3244271242291266297">MM</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> de <ph name="NUM_SUGGESTIONS" /></translation>
 <translation id="3335947283844343239">Reabrir separador fechado</translation>
+<translation id="3414292259312108062">O Chrome armazena esta informação nas suas <ph name="BEGIN_LINK" />palavras-passe guardadas do Google<ph name="END_LINK" /> e preenche-a automaticamente por si para que não a tenha de memorizar.</translation>
 <translation id="385051799172605136">Anterior</translation>
 <translation id="4121993058175073134">P/enviar dados exp. da Int., config. a conta de email na ap. Definiç.</translation>
 <translation id="4728558894243024398">Plataforma</translation>
+<translation id="5317780077021120954">Guardar</translation>
 <translation id="5779929835642192302">Sugestões disponíveis</translation>
 <translation id="605721222689873409">AA</translation>
+<translation id="6149061208933997199">Util. palavra-passe</translation>
+<translation id="6314335155547195432">Gerar palavra-passe</translation>
+<translation id="6456425917241817154">Pal.-passe ger. pelo Chrome</translation>
 <translation id="7456847797759667638">Abrir localização...</translation>
 <translation id="7481312909269577407">Avançar</translation>
+<translation id="7961015016161918242">Nunca</translation>
 </translationbundle>

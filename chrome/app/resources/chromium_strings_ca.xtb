@@ -32,6 +32,7 @@
 <translation id="1967743265616885482">Se sap que un mòdul amb el mateix nom entra en conflicte amb Chromium.</translation>
 <translation id="2077129598763517140">Utilitza l'acceleració per maquinari quan estigui disponible</translation>
 <translation id="2097986737970966220">Obre Chromium a l'escriptori</translation>
+<translation id="2117181891440368863">Chromium ha verificat que <ph name="ISSUER" /> ha emès el certificat d'aquest lloc web. El servidor ha proporcionat informació sobre Certificate Transparency, però no era vàlida.</translation>
 <translation id="2119636228670142020">Quant a &amp;Chromium OS</translation>
 <translation id="2158734852934720349">Llicències de programari lliure de Chromium OS</translation>
 <translation id="2233513990531887259">Tornar a iniciar en el mode envoltant de Chromium</translation>
@@ -46,13 +47,11 @@
 <translation id="2558641060352364164">Aquest lloc fa servir el connector Chromium Frame que aviat deixarà de ser compatible. Desinstal·leu-lo i instal·leu un navegador més modern.</translation>
 <translation id="2572494885440352020">Aplicació auxiliar de Chromium</translation>
 <translation id="2602806952220118310">Chromium: notificacions</translation>
-<translation id="2615699638672665509">Aquest ordinador aviat deixarà de rebre actualitzacions de Chromium perquè el seu maquinari ja no s'admet.</translation>
 <translation id="2636877269779209383">Chromium necessita accedir a la càmera per compartir-la amb aquest lloc.</translation>
 <translation id="2648074677641340862">S'ha produït un error en el sistema operatiu durant la instal·lació. Torneu a baixar Chromium.</translation>
 <translation id="2673087257647337101">Gairebé esteu al dia! Reinicieu Chromium per completar l'actualització.</translation>
 <translation id="2685838254101182273">Chromium ha deixat d'actualitzar-se i ja no admet aquesta versió del vostre sistema operatiu.</translation>
 <translation id="2705212601509139398">Aquest lloc fa servir el connector Chromium Frame que aviat deixarà de ser compatible. Desinstal·leu-lo i baixeu un navegador compatible.</translation>
-<translation id="2732467638532545152">El vostre ordinador funciona amb una versió antiga de Microsoft Windows que no pot processar el certificat de seguretat d'aquest lloc web. A causa d'aquest problema, Chromium no pot saber si el certificat prové del lloc <ph name="SITE" /> o d'algú de la vostra xarxa que es fa passar per <ph name="SITE" />. Feu l'actualització de l'ordinador a una versió més recent de Windows.</translation>
 <translation id="2770231113462710648">Canvia el navegador predeterminat a:</translation>
 <translation id="2801146392936645542"><ph name="FILE_NAME" /> és maliciós i Chromium l'ha bloquejat.</translation>
 <translation id="2847479871509788944">Suprimeix de Chromium...</translation>
@@ -84,8 +83,6 @@
 <translation id="3582788516608077514">S'està actualitzant Chromium...</translation>
 <translation id="358997566136285270">Logotip de Chromium</translation>
 <translation id="3595526210123705352">En tornar a iniciar en mode Windows 8 es tancaran i es tornaran a iniciar les vostres aplicacions Chromium.</translation>
-<translation id="3656661827369545115">Inicia Chromium automàticament en iniciar l'ordinador</translation>
-<translation id="3736987306260231966">Chromium no pot mostrar la pàgina web perquè l'ordinador no està connectat a Internet.</translation>
 <translation id="3738139272394829648">Toca per cercar</translation>
 <translation id="3744899669254331632">En aquest moments no podeu visitar la pàgina <ph name="SITE" /> perquè el lloc web ha enviat credencials aleatòries que Chromium no pot processar. Els atacs i els errors de xarxa acostumen a ser temporals, o sigui que probablement la pàgina funcionarà més endavant.</translation>
 <translation id="3748537968684000502">Esteu visualitzant una pàgina segura de Chromium.</translation>
@@ -106,7 +103,6 @@
 <translation id="4285930937574705105">S'ha produït un error no especificat durant la instal·lació. Si Chromium s'està executant en aquests moments, tanqueu-lo i torneu-ho a provar.</translation>
 <translation id="4330585738697551178">Se sap que aquest mòdul entra en conflicte amb Chromium.</translation>
 <translation id="4423735387467980091">Personalitza i controla Chromium</translation>
-<translation id="442817494342774222">Chromium està configurat per iniciar-se automàticament cada vegada que inicieu l'equip.</translation>
 <translation id="4458285410772214805">Tanqueu la sessió i torneu a iniciar-la perquè aquest canvi es faci efectiu.</translation>
 <translation id="4488676065623537541">Els detalls de facturació s'han desat a Chromium.</translation>
 <translation id="4559775032954821361">Aneu al
@@ -177,6 +173,7 @@
 <translation id="6734080038664603509">Actualitza &amp;Chromium</translation>
 <translation id="6757767188268205357">No em molestis</translation>
 <translation id="6810143991807788455">Informa de la configuració actual per ajudar-nos a millorar Chromium</translation>
+<translation id="6838494703713445896">Chromium ha verificat que <ph name="ISSUER" /> ha emès el certificat d'aquest lloc web. El servidor ha proporcionat informació vàlida sobre Certificate Transparency.</translation>
 <translation id="6883876366448858277">Envia una paraula i el seu context a Cerca de Google i, a continuació, mostra definicions, imatges i altres resultats de la cerca.</translation>
 <translation id="6893813176749746474">S'ha actualitzat Chromium, però fa almenys 30 dies que no l'heu utilitzat.</translation>
 <translation id="6900895776413482243">Tornar a iniciar en el mode envoltant de Chromium tancarà i tornarà a iniciar les vostres aplicacions de Chromium.</translation>
@@ -189,6 +186,7 @@
 <translation id="7066436765290594559">Chromium OS no ha pogut sincronitzar les vostres dades. Actualitzeu la frase de contrasenya de sincronització.</translation>
 <translation id="7138853919861947730">Chromium pot utilitzar serveis web per millorar l'experiència de navegació dels usuaris.</translation>
 <translation id="7162152143154757523">Perquè el corrector ortogràfic sigui més útil, Chromium envia als servidors de Google el text que escriviu al navegador i, així, podeu fer servir la mateixa tecnologia de correcció ortogràfica de la Cerca de Google.</translation>
+<translation id="7178626992616222740">Chromium ha verificat que <ph name="ISSUER" /> ha emès el certificat d'aquest lloc web. El servidor ha proporcionat informació sobre Certificate Transparency, però Chromium no n'ha reconegut cap registre.</translation>
 <translation id="7196020411877309443">Per què veig aquest missatge?</translation>
 <translation id="7205698830395646142">Amaga al menú de Chromium</translation>
 <translation id="7211828883345145708">Activa tecles de drecera addicionals que siguin útils per depurar Chromium.</translation>
@@ -214,13 +212,13 @@ Chromium no pot recuperar la configuració.</translation>
 <translation id="7723128346970903111">Quan l'opció estigui activada, utilitzarem un flux d'inici de sessió Chromium basat en iframe; quan no estigui activada, utilitzarem un flux de visualització web.</translation>
 <translation id="7729447699958282447">Chromium no ha pogut sincronitzar les dades perquè l'opció de sincronització no està disponible per al vostre domini.</translation>
 <translation id="7747138024166251722">L'instal·lador no ha pogut crear un directori temporal. Comprova que hi ha espai lliure al disc i que tens permís per instal·lar el programari.</translation>
+<translation id="7918535023914021398">Chromium ha verificat que <ph name="ISSUER" /> ha emès el certificat d'aquest lloc web. El servidor no ha proporcionat informació sobre Certificate Transparency.</translation>
 <translation id="7937630085815544518">Teníeu la sessió iniciada a Chromium com a <ph name="USER_EMAIL_ADDRESS" />. Utilitzeu el mateix compte per tornar a iniciar-hi la sessió.</translation>
 <translation id="7962572577636132072">Chromium s'actualitza automàticament perquè en tingueu sempre la versió més recent.</translation>
 <translation id="7979877361127045932">Amaga al menú de Chromium</translation>
 <translation id="8030318113982266900">S'està actualitzant el vostre dispositiu al canal <ph name="CHANNEL_NAME" />...</translation>
 <translation id="8033665941300843262">Chromium necessita accedir als permisos per compartir-los amb aquest lloc.</translation>
 <translation id="805745970029938373">Podeu veure totes les vostres notificacions des de les aplicacions, les extensions i els llocs web de Chromium aquí.</translation>
-<translation id="811857857463334932">Aquest ordinador ja no rebrà més actualitzacions de Chromium perquè el seu maquinari ja no s'admet.</translation>
 <translation id="8134284582177628525">Si compartiu aquest ordinador amb <ph name="PROFILE_NAME" />, afegiu el vostre usuari a Chromium per navegar per separat. Si no, també podeu desconnectar el seu compte de Google.</translation>
 <translation id="8187289872471304532">Aneu a
           Aplicacions &gt; Preferències del sistema &gt; Xarxa &gt; Opcions avançades &gt; Servidors intermediaris

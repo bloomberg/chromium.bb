@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="lv">
 <translation id="1001534784610492198">Instalētāja arhīvs ir bojāts vai nav derīgs. Lūdzu, vēlreiz lejupielādējiet Google Chrome.</translation>
+<translation id="1013290471399003443">Chrome verificēja, ka <ph name="ISSUER" /> izsniedza šīs vietnes sertifikātu. Serveris sniedza derīgu Certificate Transparency informāciju.</translation>
 <translation id="1016765312371154165">Chrome netika pareizi izslēgts.</translation>
 <translation id="103396972844768118">Svarīga informācija par jūsu datiem pārlūkā Chrome</translation>
 <translation id="1061441684050139317">Pārlūkam Chrome ir nepieciešama piekļuve mikrofonam, lai kopīgotu to ar šo vietni.</translation>
@@ -64,6 +65,7 @@ Ja pierakstīsieties tik un tā, Chrome informācija, piemēram, grāmatzīmes, 
 <translation id="2769762047821873045">Google Chrome nav jūsu noklusējuma pārlūks.</translation>
 <translation id="2770231113462710648">Mainīt noklusējuma pārlūkprogrammu uz:</translation>
 <translation id="2871893339301912279">Esat pierakstījies pārlūkā Chrome!</translation>
+<translation id="2997147809295888909">Chrome verificēja, ka <ph name="ISSUER" /> izsniedza šīs vietnes sertifikātu. Serveris nesniedza nekādu Certificate Transparency informāciju.</translation>
 <translation id="3037838751736561277">Google Chrome darbojas fona režīmā.</translation>
 <translation id="3047079729301751317">Atvienojot lietotāju <ph name="USERNAME" />, tiks notīrīta vēsture, grāmatzīmes, iestatījumi un citi Chrome dati, kas ir saglabāti šajā ierīcē. Jūsu Google kontā saglabātie dati netiks notīrīti, un tos var pārvaldīt <ph name="GOOGLE_DASHBOARD_LINK" />Google informācijas panelī<ph name="END_GOOGLE_DASHBOARD_LINK" />.</translation>
 <translation id="3080151273017101988">Turpināt lietotņu izpildi fonā, kad Google Chrome ir aizvērts</translation>
@@ -78,7 +80,6 @@ Ja pierakstīsieties tik un tā, Chrome informācija, piemēram, grāmatzīmes, 
 <translation id="345171907106878721">Pievienot savu kontu pārlūkā Chrome</translation>
 <translation id="3612333635265770873">Ir zināms, ka modulis ar tādu pašu nosaukumu konfliktē ar Google Chrome.</translation>
 <translation id="3622797965165704966">Tagad pārlūkā Chrome ir vieglāk izmantot Google kontu, kā arī ir atvieglota lietošana datoros, ko izmanto vairākas personas.</translation>
-<translation id="3656661827369545115">Datora startēšanas laikā automātiski palaist Chromium</translation>
 <translation id="3735758079232443276">Paplašinājums “<ph name="EXTENSION_NAME" />” mainīja iestatījumu, kura lapa tiek parādīta, palaižot pārlūku Chrome.</translation>
 <translation id="3738139272394829648">Meklēšana pieskaroties</translation>
 <translation id="3784527566857328444">Noņemšana no pārlūka Chrome...</translation>
@@ -86,6 +87,7 @@ Ja pierakstīsieties tik un tā, Chrome informācija, piemēram, grāmatzīmes, 
 <translation id="3847841918622877581">Lai uzlabotu pārlūkošanu, Google Chrome var izmantot tīmekļa pakalpojumus.</translation>
 <translation id="386202838227397562">Lūdzu, aizveriet visus Google Chrome logus un mēģiniet vēlreiz.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
+<translation id="3881912906674381083">Chrome verificēja, ka <ph name="ISSUER" /> izsniedza šīs vietnes sertifikātu. Serveris sniedza Certificate Transparency informāciju, taču Chrome neatpazina nevienu no Certificate Transparency žurnāliem.</translation>
 <translation id="3889417619312448367">Atinstalēt Google Chrome</translation>
 <translation id="4011219958405096740">Ja opcija būs iespējota, tiks izmantota uz iFrame balstīta Chrome pierakstīšanās plūsma; pretējā gadījumā tiks izmantota uz WebView balstīta plūsma.</translation>
 <translation id="4050175100176540509">Jaunākajā versijā ir pieejami svarīgi drošības uzlabojumi un jaunas funkcijas.</translation>
@@ -95,10 +97,8 @@ Ja pierakstīsieties tik un tā, Chrome informācija, piemēram, grāmatzīmes, 
 <translation id="4167057906098955729">Šeit tiks parādīti visi paziņojumi no Chrome lietotnēm, paplašinājumiem un vietnēm.</translation>
 <translation id="423410644998903704">Pārlūkam Chrome ir nepieciešama piekļuve atļaujām, lai kopīgotu tās ar šo vietni.</translation>
 <translation id="4251615635259297716">Vai saistīt Chrome datus ar šo kontu?</translation>
-<translation id="4273752058983339720">Pārlūks Google Chrome ir konfigurēts automātiskai palaišanai, kad jūs startējat savu datoru.</translation>
 <translation id="4309555186815777032">(ir <ph name="BEGIN_BUTTON" />jārestartē<ph name="END_BUTTON" /> pārlūks Chrome)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
-<translation id="4367618624832907428">Pārlūkā Google Chrome nevar parādīt šo tīmekļa lapu, jo jūsu datoram nav izveidots savienojums ar internetu.</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="4458285410772214805">Lūdzu, izrakstieties un pierakstieties vēlreiz, lai šīs izmaiņas stātos spēkā.</translation>
 <translation id="4480040274068703980">Chrome OS nevarēja sinhronizēt jūsu datus pierakstīšanās kļūdas dēļ.</translation>
@@ -107,7 +107,6 @@ Ja pierakstīsieties tik un tā, Chrome informācija, piemēram, grāmatzīmes, 
 <translation id="4567424176335768812">Jūs esat pierakstījies kā <ph name="USER_EMAIL_ADDRESS" />. Tagad varat piekļūt savām grāmatzīmēm, vēsturei un citiem iestatījumiem visās ierīcēs, kurās esat pierakstījies.</translation>
 <translation id="4631713731678262610">Paslēpt Chrome izvēlnē</translation>
 <translation id="4633000520311261472">Lai uzlabotu Chrome drošību, mēs atspējojām dažus paplašinājumus, kas nav norādīti vietnē <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> un, iespējams, tika pievienoti, jums nezinot.</translation>
-<translation id="4692614041509923516">Jūsu datorā tiek izmantota iepriekšējā Microsoft Windows versija, kurā nevar apstrādāt šīs vietnes drošības sertifikātu. Šīs problēmas dēļ pārlūkā Google Chrome nevar noteikt, vai sertifikāts tika sūtīts no vietnes <ph name="SITE" /> vai arī to nosūtījusi kāda persona, kas izmanto jūsu tīklu un uzdodas par vietni <ph name="SITE" />. Lūdzu, atjauniniet datora operētājsistēmu uz jaunāku Windows versiju.</translation>
 <translation id="4700157086864140907">Google Chrome var efektīvāk labot pareizrakstības kļūdas, nosūtot pārlūkā rakstīto uz Google serveriem un tādējādi ļaujot izmantot to pašu pareizrakstības pārbaudes tehnoloģiju, kas tiek izmantota Google meklēšanā.</translation>
 <translation id="4728575227883772061">Instalācija neizdevās nenoteiktas kļūdas dēļ. Ja Google Chrome pašlaik darbojas, lūdzu, aizveriet to un mēģiniet vēlreiz.</translation>
 <translation id="473775607612524610">Atjaunināt</translation>
@@ -116,6 +115,7 @@ Ja pierakstīsieties tik un tā, Chrome informācija, piemēram, grāmatzīmes, 
 <translation id="4794050651896644714">Saglabāt informāciju pārlūkā Chrome</translation>
 <translation id="4891791193823137474">Ļaut Google Chrome darboties fonā</translation>
 <translation id="4921569541910214635">Vai datoru izmanto vairāki lietotāji? Tagad varat iestatīt pārlūku Chrome atbilstoši savām vajadzībām.</translation>
+<translation id="4925019873400497719">Chrome verificēja, ka <ph name="ISSUER" /> izsniedza šīs vietnes sertifikātu. Serveris sniedza Certificate Transparency informāciju, taču tā nebija derīga.</translation>
 <translation id="4953650215774548573">Iestatīt Google Chrome kā manu noklusējuma pārlūku</translation>
 <translation id="4987308747895123092">Lūdzu, aizveriet visus Google Chrome logus (tostarp Windows 8 režīmā atvērtos) un mēģiniet vēlreiz.</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
@@ -196,7 +196,6 @@ neparastus
 <translation id="6989339256997917931">Pārlūkprogramma Google Chrome ir atjaunināta, bet jūs neesat to izmantojis vismaz 30 dienas.</translation>
 <translation id="699076943483372849">Šajā vietnē tiek izmantots novecojušais spraudnis Chrome Frame, kuram vairs netiek nodrošināti drošības un stabilitātes atjauninājumi. Lūdzu, atinstalējiet to un veiciet jaunināšanu uz modernu pārlūku.</translation>
 <translation id="6991142834212251086">Saistīt manus Chrome datus ar šo kontu</translation>
-<translation id="7054640471403081847">Šis dators drīz vairs nesaņems Google Chrome atjauninājumus, jo tā aparatūra vairs netiek atbalstīta.</translation>
 <translation id="7060865993964054389">Google Chrome lietotņu palaišanas programma</translation>
 <translation id="7084448929020576097">Fails <ph name="FILE_NAME" /> ir ļaunprātīgs, un Chrome to bloķēja.</translation>
 <translation id="7098166902387133879">Pārlūkā Google Chrome tiek izmantots mikrofons.</translation>
@@ -233,7 +232,6 @@ neparastus
 <translation id="781069973841903133">Atkārtoti palaižot pārlūku Chrome iekļaujošajā režīmā, Chrome lietotnes tiks aizvērtas un atkārtoti palaistas.</translation>
 <translation id="7825851276765848807">Instalēšana neizdevās nenoteiktas kļūdas dēļ. Lūdzu, lejupielādējiet pārlūkprogrammu Google Chrome vēlreiz.</translation>
 <translation id="7890208801193284374">Ja jūsu datoru izmanto arī jūsu draugi un ģimenes locekļi, viņi var iestatīt pārlūku Chrome atbilstoši savām vēlmēm un pārlūkot saturu atsevišķos kontos.</translation>
-<translation id="7908968924842975895">Šis dators vairs nesaņems Google Chrome atjauninājumus, jo tā aparatūra vairs netiek atbalstīta.</translation>
 <translation id="7984945080620862648">Pašlaik nevarat apmeklēt vietni <ph name="SITE" />, jo tā nosūtīja bojātus akreditācijas datus, ko nevar apstrādāt pārlūkā Chrome. Tīkla kļūdas un uzbrukumi parasti ir īslaicīgi, tāpēc šī lapa vēlāk, visticamāk, darbosies.</translation>
 <translation id="8000275528373650868">Pārlūkprogrammas Google Chrome izmantošanai nepieciešama operētājsistēma Windows Vista vai Windows XP ar SP2, vai jaunāka tās versija.</translation>
 <translation id="8005540215158006229">Chrome ir gandrīz gatavs.</translation>

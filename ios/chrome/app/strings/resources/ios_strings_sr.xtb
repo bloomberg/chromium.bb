@@ -4,6 +4,7 @@
 <translation id="1008557486741366299">Не сада</translation>
 <translation id="1047726139967079566">Обележи ову страницу...</translation>
 <translation id="1172898394251786223">Следеће поље</translation>
+<translation id="1625603797851307283">Да ли желите да <ph name="PRODUCT_NAME" /> сачува лозинку за овај сајт?</translation>
 <translation id="2320166752086256636">Сакриј тастатуру</translation>
 <translation id="2704606927547763573">Копирано</translation>
 <translation id="2747003861858887689">Претходно поље</translation>
@@ -11,11 +12,17 @@
 <translation id="3244271242291266297">ММ</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> од <ph name="NUM_SUGGESTIONS" /></translation>
 <translation id="3335947283844343239">Поново отвори затворену картицу</translation>
+<translation id="3414292259312108062">Chrome ће ово сачувати у вашим <ph name="BEGIN_LINK" />Google сачуваним лозинкама<ph name="END_LINK" /> и аутоматски унети тако да не морате да памтите.</translation>
 <translation id="385051799172605136">Назад</translation>
 <translation id="4121993058175073134">За слање података нето извоза подесите налог е-поште у апликацији Подешавања.</translation>
 <translation id="4728558894243024398">Платформа</translation>
+<translation id="5317780077021120954">Сачувај</translation>
 <translation id="5779929835642192302">Доступни су предлози</translation>
 <translation id="605721222689873409">ГГ</translation>
+<translation id="6149061208933997199">Користи лозинку</translation>
+<translation id="6314335155547195432">Генериши лозинку</translation>
+<translation id="6456425917241817154">Лозинку генерише Chrome</translation>
 <translation id="7456847797759667638">Отвори локацију...</translation>
 <translation id="7481312909269577407">Проследи</translation>
+<translation id="7961015016161918242">Никад</translation>
 </translationbundle>

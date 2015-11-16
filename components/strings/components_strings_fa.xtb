@@ -9,6 +9,7 @@
 <translation id="1113869188872983271">&amp;واگرد ترتیب‌بندی مجدد</translation>
 <translation id="111844081046043029">آیا می‌خواهید این صفحه را ترک کنید؟</translation>
 <translation id="112840717907525620">حافظه پنهان خط‌مشی مورد تأیید است</translation>
+<translation id="113188000913989374"><ph name="SITE" /> می‌گوید:</translation>
 <translation id="1132774398110320017">‏تنظیمات تکمیل خودکار Chrome...</translation>
 <translation id="1146673768181266552">شناسه خرابی <ph name="CRASH_ID" />‏ (<ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="1150979032973867961">این سرور نتوانست اثبات کند که این <ph name="DOMAIN" /> است؛ گواهی امنیتی آن مورد اعتماد سیستم عامل رایانه شما نیست. ممکن است علت این موضوع پیکربندی اشتباه باشد یا مهاجی اتصال شما را قطع کرده است.</translation>
@@ -28,6 +29,10 @@
 <translation id="1519264250979466059">تاریخ ساخت</translation>
 <translation id="1549470594296187301">برای استفاده از این قابلیت، جاوا اسکریپت باید فعال باشد.</translation>
 <translation id="1559528461873125649">فاقد چنین فایل یا دایرکتوری است</translation>
+<translation id="1559572115229829303">‏&lt;p&gt;اتصال خصوصی به <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> برقرار نشد، زیرا تاریخ و زمان دستگاه شما (<ph name="DATE_AND_TIME" />) نادرست است.&lt;/p&gt;
+
+          &lt;p&gt;لطفاً تاریخ و زمان را در بخش &lt;strong&gt;عمومی&lt;/strong&gt; برنامه &lt;strong&gt;تنظیمات&lt;/strong&gt; تنظیم کنید.&lt;/p&gt;</translation>
+<translation id="1629803312968146339">‏می‌خواهید Chrome این کارت را ذخیره کند؟</translation>
 <translation id="1640180200866533862">خط‌مشی‌های کاربر</translation>
 <translation id="1644184664548287040">پیکربندی شبکه نامعتبر است و نتوانست وارد شود.</translation>
 <translation id="1655462015569774233">{1,plural, =1{این سرور نتوانست ثابت کند این <ph name="DOMAIN" /> است؛ اعتبار گواهی امنیتی آن دیروز به پایان رسیده است. ممکن است علت این موضوع پیکربندی اشتباه باشد یا مهاجمی اتصالتان را قطع می‌کند. ساعت رایانه‌تان درحال‌حاضر روی <ph name="CURRENT_DATE" /> تنظیم شده است. آیا درست است؟ اگر پاسخ منفی است، باید ساعت سیستمتان را درست کنید و سپس این صفحه را بازخوانی کنید.}one{این سرور نتوانست ثابت کند این <ph name="DOMAIN" /> است. اعتبار گواهی امنیتی آن # روز قبل به پایان رسیده است. ممکن است علت این موضوع پیکربندی اشتباه باشد یا مهاجمی اتصالتان را قطع می‌کند. ساعت رایانه‌تان درحال‌حاضر روی <ph name="CURRENT_DATE" /> تنظیم شده است. آیا درست است؟ اگر پاسخ منفی است، باید ساعت سیستمتان را درست کنید و سپس این صفحه را بازخوانی کنید.}other{این سرور نتوانست ثابت کند این <ph name="DOMAIN" /> است. اعتبار گواهی امنیتی آن # روز قبل به پایان رسیده است. ممکن است علت این موضوع پیکربندی اشتباه باشد یا مهاجمی اتصالتان را قطع می‌کند. ساعت رایانه‌تان درحال‌حاضر روی <ph name="CURRENT_DATE" /> تنظیم شده است. آیا درست است؟ اگر پاسخ منفی است، باید ساعت سیستمتان را درست کنید و سپس این صفحه را بازخوانی کنید.}}</translation>
@@ -94,6 +99,7 @@
 <translation id="2922350208395188000">گواهی سرور بررسی نمی‌شود.</translation>
 <translation id="2941952326391522266">این سرور نتوانست اثبات کند که این <ph name="DOMAIN" /> است؛ گواهی امنیتی آن از <ph name="DOMAIN2" /> است. ممکن است علت این موضوع پیکربندی اشتباه باشد یا مهاجی اتصال شما را قطع کرده است.</translation>
 <translation id="2958431318199492670">‏پیکربندی شبکه با استاندارد ONC تطابق ندارد. بخشی از پیکربندی ممکن است وارد نشود.</translation>
+<translation id="2969319727213777354">‏برای برقراری یک اتصال امن، لازم است ساعت شما درست تنظیم شده باشد. زیرا گواهی‌هایی که وب‌سایت‌ها برای شناسایی خودشان استفاده می‌کنند، تنها برای دوره‌های زمانی خاصی معتبرند. از آنجا که ساعت دستگاه شما نادرست است، Google Chrome نمی‌تواند این گواهی‌ها را تأیید کند.</translation>
 <translation id="2972581237482394796">انجام مجدد</translation>
 <translation id="3010559122411665027">ورودی لیست "<ph name="ENTRY_INDEX" />": <ph name="ERROR" /></translation>
 <translation id="3024663005179499861">نوع خط‌مشی اشتباه است</translation>
@@ -146,11 +152,14 @@
 <translation id="4117700440116928470">محدوده خط‌مشی پشتیبانی نمی‌شود.</translation>
 <translation id="4120075327926916474">‏آیا می‌خواهید Chrome این اطلاعات کارت اعتباری را برای تکمیل فرم‌های وب ذخیره کند؟</translation>
 <translation id="4148925816941278100">American Express</translation>
+<translation id="4169947484918424451">‏می‌خواهید Chromium این کارت را ذخیره کند؟</translation>
 <translation id="4171400957073367226">امضای تأیید نامناسب</translation>
+<translation id="4176463684765177261">غیرفعال شد</translation>
 <translation id="4196861286325780578">&amp;انجام مجدد انتقال</translation>
 <translation id="4220128509585149162">خرابی ها</translation>
 <translation id="4250680216510889253">نه</translation>
 <translation id="4258748452823770588">امضای نادرست</translation>
+<translation id="4268298190799576220">‏Chromium در حال حاضر نمی‌تواند کارتتان را تأیید کند. لطفاً بعداً دوباره امتحان کنید.</translation>
 <translation id="4269787794583293679">(بدون نام کاربری)</translation>
 <translation id="4300246636397505754">پیشنهادات والدین</translation>
 <translation id="4325863107915753736">مقاله یافت نشد.</translation>
@@ -204,6 +213,7 @@
 <translation id="5523118979700054094">نام خط‌مشی</translation>
 <translation id="552553974213252141">آیا نوشتار به درستی استخراج شده است؟</translation>
 <translation id="5540224163453853">مقاله درخواستی یافت نشد.</translation>
+<translation id="5544037170328430102">صفحه جاسازی‌شده‌ای در <ph name="SITE" /> می‌گوید:</translation>
 <translation id="5556459405103347317">تازه‌سازی</translation>
 <translation id="5565735124758917034">فعال</translation>
 <translation id="560412284261940334">مدیریت پشتیبانی نمی‌شود</translation>
@@ -213,15 +223,18 @@
 <translation id="5813119285467412249">&amp;انجام مجدد افزودن</translation>
 <translation id="5872918882028971132">پیشنهادات والدین</translation>
 <translation id="59107663811261420">‏Google Payments این نوع کارت را برای این تاجر پشتیبانی نمی‌کند. لطفاً کارت دیگری انتخاب کنید.</translation>
+<translation id="59174027418879706">فعال شد</translation>
 <translation id="5975083100439434680">کوچک نمایی</translation>
 <translation id="5989320800837274978">‏سرور پروکسی ثابت و URL اسکریپت pac. تعیین نشده‌اند.</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6040143037577758943">بستن</translation>
+<translation id="604124094241169006">خودکار</translation>
 <translation id="6060685159320643512">مراقب باشید، این آزمایشات ممکن است خطرناک باشند</translation>
 <translation id="6099520380851856040">تاریخ وقوع <ph name="CRASH_TIME" /></translation>
 <translation id="6151417162996330722">دوره اعتبار گواهینامه سرور بسیار طولانی است.</translation>
 <translation id="6154808779448689242">نشانه خط‌مشی بازگشتی با نشانه فعلی تطابق ندارد</translation>
 <translation id="6165508094623778733">بیشتر بدانید</translation>
+<translation id="6218753634732582820">‏آدرس از Chromium پاک شود؟</translation>
 <translation id="6259156558325130047">&amp;انجام مجدد ترتیب‌بندی مجدد</translation>
 <translation id="6263376278284652872">نشانک‌های <ph name="DOMAIN" /></translation>
 <translation id="6282194474023008486">کد پستی</translation>
@@ -239,6 +252,7 @@
 <translation id="6628463337424475685">جستجوی <ph name="ENGINE" /></translation>
 <translation id="6644283850729428850">این قانون قدیمی شده است.</translation>
 <translation id="6646897916597483132">‏کد تأیید چهار رقمی CVC را از روی کارت‌تان وارد کنید</translation>
+<translation id="6671697161687535275">‏پیشنهاد فرم از Chromium پاک شود؟</translation>
 <translation id="674375294223700098">خطای ناشناخته گواهی سرور.</translation>
 <translation id="6753269504797312559">مقدار خط‌‌مشی</translation>
 <translation id="6831043979455480757">ترجمه</translation>
@@ -272,6 +286,7 @@
 <translation id="7378627244592794276">نه</translation>
 <translation id="7400418766976504921">نشانی وب</translation>
 <translation id="7419106976560586862">مسیر نمایه</translation>
+<translation id="7424977062513257142">صفحه جاسازی‌شده‌ای در این صفحه وب می‌گوید:</translation>
 <translation id="7441627299479586546">موضوع خط‌مشی اشتباه است</translation>
 <translation id="7485870689360869515">هیچ داده‌ای یافت نشد.</translation>
 <translation id="7537536606612762813">اجباری</translation>
@@ -282,6 +297,7 @@
 <translation id="7592362899630581445">گواهی سرور محدودیت‌های نام را نقض می‌کند.</translation>
 <translation id="7600965453749440009">هرگز <ph name="LANGUAGE" /> ترجمه نشود</translation>
 <translation id="7610193165460212391">مقدار خارج از محدوده <ph name="VALUE" /> است.</translation>
+<translation id="7637571805876720304">‏کارت اعتباری از Chromium پاک شود؟</translation>
 <translation id="7674629440242451245">‏علاقه‌مند به قابلیت‌های جدید و جالب Chrome هستید؟ کانال برنامه‌نویسان ما را در chrome.com/dev امتحان کنید.</translation>
 <translation id="7752995774971033316">مدیریت نشده</translation>
 <translation id="7761701407923456692">گواهی سرور با نشانی وب مطابقت ندارد.</translation>
@@ -325,6 +341,7 @@
 <translation id="8725066075913043281">سعی مجدد</translation>
 <translation id="8738058698779197622">‏به منظور برقراری یک اتصال امن، لازم است که ساعت شما به درستی تنظیم شود. زیرا گواهینامه‌هایی که وب‌سایت‌ها برای شناسایی خودشان استفاده می‌کنند تنها برای دوره‌های زمانی خاصی معتبر هستند. از آنجایی که ساعت دستگاه نادرست است، Chromium نمی‌تواند این گواهینامه‌ها را تأیید کند.</translation>
 <translation id="8790007591277257123">&amp;انجام مجدد حذف</translation>
+<translation id="8798099450830957504">پیش‌فرض</translation>
 <translation id="8804164990146287819">خط‌مشی رازداری</translation>
 <translation id="8820817407110198400">نشانک‌ها</translation>
 <translation id="8824019021993735287">‏Chrome در حال حاضر نمی‌تواند کارت‌تان را تأیید کند. لطفاً بعداً دوباره امتحان کنید.</translation>
@@ -332,6 +349,7 @@
 <translation id="883848425547221593">نشانک‌های دیگر</translation>
 <translation id="884923133447025588">هیچ مکانیزم ابطالی یافت نشد.</translation>
 <translation id="8866481888320382733">خطا در تجزیه تنظیمات خط‌مشی</translation>
+<translation id="8866959479196209191">این صفحه می‌گوید:</translation>
 <translation id="8876793034577346603">پیکربندی شبکه نتوانست تجزیه شود.</translation>
 <translation id="8891727572606052622">حالت پروکسی نامعتبر است.</translation>
 <translation id="889901481107108152">متأسفیم، این آزمایش بر روی دستگاه شما قابل انجام نیست.</translation>

@@ -59,6 +59,9 @@
 
           Dit beleid wordt alleen gerespecteerd als het beleid 'DefaultSearchProviderEnabled' is ingeschakeld.</translation>
 <translation id="1265053460044691532">De offline inlogtijd beperken voor een gebruiker die is geverifieerd via SAML</translation>
+<translation id="1291880496936992484">Waarschuwing: RC4 wordt volledig verwijderd van <ph name="PRODUCT_NAME" /> na versie 52 (rond september 2016) en dit beleid werkt vanaf dan niet meer.
+
+      Als het beleid niet is ingesteld of is ingesteld op 'onwaar', worden de RC4-coderingssuites in TLS niet ingeschakeld. Anders kan het worden ingesteld op 'waar' om compatibiliteit met een verouderde server te behouden. Dit is een tijdelijke oplossing en de server moet opnieuw worden geconfigureerd.</translation>
 <translation id="1297182715641689552">Een PAC-script voor de proxy gebruiken</translation>
 <translation id="1300635491585192248">Netwerkacties voorspellen op netwerken die geen
           mobiel netwerk zijn</translation>
@@ -511,6 +514,9 @@
       Als je deze instelling in- of uitschakelt, kunnen gebruikers de instelling 'Bescherming tegen phishing en malware inschakelen' in <ph name="PRODUCT_NAME" /> niet wijzigen of negeren.
 
       Als je deze instelling niet instelt, wordt deze uitgeschakeld maar kan de gebruiker deze wijzigen.</translation>
+<translation id="2801230735743888564">Toestaan dat gebruikers de easter egg-dinosaurusgame spelen wanneer het apparaat offline is.
+
+      Als dit beleid is ingesteld op 'oinwaar', kunnen gebruikers de easter egg-dinosaurusgame niet spelen wanneer het apparaat offline is. Als deze instelling is ingesteld op 'waar', kunnen gebruikers de easter egg-dinosaurusgame spelen. Als dit beleid niet is ingesteld, kunnen gebruikers de easter egg-dinosaurusgame niet spelen op geregistreerde Chrome OS-apparaten, maar kunnen ze deze wel onder andere omstandigheden spelen.</translation>
 <translation id="2805707493867224476">Alle sites toestaan pop-ups weer te geven</translation>
 <translation id="2808013382476173118">Maakt het gebruik van STUN-servers mogelijk wanneer externe clients verbinding proberen te maken met dit apparaat.
 
@@ -794,6 +800,13 @@
       Als deze instelling is uitgeschakeld, controleert <ph name="PRODUCT_NAME" /> nooit of dit programma de standaardbrowser is en worden gebruikersopties voor het instellen van de standaardbrowser uitgeschakeld.
 
       Als deze instelling niet is ingeschakeld, kan de gebruiker in <ph name="PRODUCT_NAME" /> bepalen of dit programma de standaardbrowser is, en of er een melding aan de gebruiker moet worden weergegeven wanneer dit niet het geval is.</translation>
+<translation id="3800626789999016379">Hiermee configureer je de directory die <ph name="PRODUCT_NAME" /> gebruikt voor het downloaden van bestanden.
+
+      Als je dit beleid instelt, gebruikt <ph name="PRODUCT_NAME" /> deze directory, ongeacht of de gebruiker een directory heeft gespecificeerd of heeft aangegeven telkens te willen worden gevraagd wat de downloadlocatie moet zijn.
+
+      Ga naar https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables voor een lijst met variabelen die kunnen worden gebruikt.
+
+      Als dit beleid niet wordt ingesteld, wordt de directory voor het downloaden van bestanden gebruikt en kan de gebruiker deze wijzigen.</translation>
 <translation id="3805659594028420438">Extensie TLS-domeingebonden certificaten inschakelen (afgekeurd)</translation>
 <translation id="3806576699227917885">Het afspelen van audio toestaan.
 
@@ -934,6 +947,13 @@
           Dit beleid wordt alleen gerespecteerd als het beleid 'DefaultSearchProviderEnabled' is ingeschakeld.</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 of hoger</translation>
 <translation id="4325690621216251241">Een afmeldknop toevoegen aan de systeembalk</translation>
+<translation id="4349746760316962317">Hiermee configureer je de directory die <ph name="PRODUCT_NAME" /> gebruikt om gecachte bestanden op schijf op te slaan.
+
+      Als je dit beleid instelt, gebruikt <ph name="PRODUCT_NAME" /> de opgegeven directory, ongeacht of de gebruiker de markering '--disk-cache-dir' heeft ingesteld.
+
+      Ga naar https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables voor een lijst met variabelen die kunnen worden gebruikt.
+
+      Als dit beleid niet wordt ingesteld, wordt de standaard cachedirectory gebruikt en kan de gebruiker dit overschrijven met de opdrachtregelmarkering '--disk-cache-dir'.</translation>
 <translation id="436581050240847513">Apparaatnetwerkinterface rapporteren</translation>
 <translation id="4372704773119750918">Zakelijke gebruikers niet toestaan deel uit te maken van multiprofielen (primair of secundair)</translation>
 <translation id="4377599627073874279">Alle sites toestaan afbeeldingen weer te geven</translation>
@@ -1017,6 +1037,11 @@
 <translation id="4665897631924472251">Instellingen voor extensiebeheer</translation>
 <translation id="4668325077104657568">Standaardinstelling voor afbeeldingen</translation>
 <translation id="467236746355332046">Ondersteunde functies:</translation>
+<translation id="4674167212832291997">Hiermee kun je de lijst aanpassen van URL-patronen die altijd door <ph name="PRODUCT_FRAME_NAME" /> moeten worden verwerkt.
+
+          Als dit beleid niet wordt ingesteld, wordt het standaard weergaveprogramma gebruikt voor alle sites die door het beleid 'ChromeFrameRendererSettings' zijn opgegeven.
+
+          Ga voor voorbeeldpatronen naar https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="467449052039111439">Een lijst met URL's openen</translation>
 <translation id="4680961954980851756">Automatisch aanvullen inschakelen</translation>
 <translation id="4723829699367336876">Firewallpassage vanaf client voor externe toegang inschakelen</translation>
@@ -1115,6 +1140,14 @@
           Als het instellen van dit beleid ongedaan wordt gemaakt, wordt de standaardactie ondernomen, namelijk opschorten.
 
           Als de actie opschorten is, kan <ph name="PRODUCT_OS_NAME" /> afzonderlijk worden geconfigureerd om het scherm wel of niet te vergrendelen vóór het opschorten.</translation>
+<translation id="5111712393799006197">Hiermee configureer je de directory die <ph name="PRODUCT_NAME" /> gebruikt voor het opslaan van gebruikersgegevens.
+
+      Als je dit beleid instelt, gebruikt <ph name="PRODUCT_NAME" /> deze directory, ongeacht of de gebruiker de markering voor '--user-data-dir' heeft ingesteld.
+
+      Ga naar https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables voor een lijst met variabelen die kunnen worden gebruikt.
+
+      Als dit beleid niet wordt ingesteld, wordt het standaardprofielpad gebruikt en kan de gebruiker dit overschrijven met de opdrachtregelmarkering '--user-data-dir'.</translation>
+<translation id="5130288486815037971">Of RC4-coderingssuites in TLS zijn ingeschakeld</translation>
 <translation id="5141670636904227950">Het standaardtype van vergrootglas instellen dat op het inlogscherm is ingeschakeld</translation>
 <translation id="5142301680741828703">De volgende URL-patronen altijd verwerken in <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="5148753489738115745">Hiermee kun je extra parameters opgeven die worden gebruikt wanneer <ph name="PRODUCT_FRAME_NAME" /> <ph name="PRODUCT_NAME" /> start.
@@ -1307,6 +1340,20 @@
 <translation id="5809728392451418079">De weergavenaam voor lokale accounts van het apparaat instellen</translation>
 <translation id="5814301096961727113">De standaardstatus van gesproken feedback op het inlogscherm instellen</translation>
 <translation id="5815129011704381141">Automatisch opnieuw opstarten na update</translation>
+<translation id="5815353477778354428">Hiermee configureer je de directory die <ph name="PRODUCT_FRAME_NAME" /> gebruikt voor het opslaan van gebruikersgegevens.
+
+      Als je dit beleid instelt, gebruikt <ph name="PRODUCT_FRAME_NAME" /> deze directory.
+
+      Ga naar https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables voor een lijst met variabelen die kunnen worden gebruikt.
+
+      Als deze instelling niet wordt ingesteld, wordt de standaarddirectory voor het profiel gebruikt.</translation>
+<translation id="5819660021114910752">Hiermee specificeer je de tijdzone die voor het apparaat moet worden gebruikt. Gebruikers kunnen de gespecificeerde tijdzone overschrijven voor hun actieve sessie. Bij het uitloggen wordt de tijd echter teruggezet naar de gespecificeerde tijdzone. Als een ongeldige waarde wordt opgegeven, wordt het beleid nog steeds geactiveerd, maar wordt 'GMT' gebruikt. Als je een lege tekenreeks opgeeft, wordt het beleid genegeerd.
+
+      Als dit beleid niet wordt gebruikt, blijft de huidige actieve tijdzone in gebruik. Gebruikers kunnen de tijdzone echter wijzigen en de wijziging is blijvend. Een wijziging door één gebruiker is dus van invloed op het inlogscherm en op alle andere gebruikers.
+
+      Bij nieuwe apparaten is de tijdzone standaard ingesteld op 'US/Pacific'.
+
+      De notatie van de waarde volgt de naamgeving van tijdzones in de IANA Time Zone Database (zie https://en.wikipedia.org/wiki/Tz_database). Je kunt naar veel tijdzones verwijzen met de notatie 'continent/grote_stad' of 'oceaan/grote_stad'.</translation>
 <translation id="5826047473100157858">Geeft aan of de gebruiker pagina's in de incognitomodus mag openen in <ph name="PRODUCT_NAME" />.
 
       Als 'Ingeschakeld' is geselecteerd, mogen pagina's worden geopend in de incognitomodus.
@@ -1405,6 +1452,7 @@
           De aanbevolen manier om het scherm te vergrendelen bij inacitiviteit is de schermvergrendeling in te schakelen bij tijdelijk blokkeren en <ph name="PRODUCT_OS_NAME" /> tijdelijk te laten blokkeren zodra de inactiviteitsdrempel is bereikt. Dit beleid mag alleen worden gebruikt wanneer de schermvergrendeling aanzienlijk eerder moet worden ingesteld dan de tijdelijke blokkering of wanneer tijdelijk blokkeren bij inactiviteit helemaal niet wenselijk is.
 
           De beleidswaarde moet worden gespecificeerd in milliseconden. Waarden worden vastgezet op een lagere waarde dan de inactiviteitsdrempel.</translation>
+<translation id="6111936128861357925">Easter egg-dinosaurusgame toestaan</translation>
 <translation id="6114416803310251055">verouderd</translation>
 <translation id="6145799962557135888">Hiermee kun je een lijst URL-patronen instellen waarmee sites worden gespecificeerd die JavaScript mogen uitvoeren.
 
@@ -2029,6 +2077,17 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 
       Als dit beleid niet is ingesteld, worden er geen uitzonderingen opgegeven voor de zwarte lijst van het beleid 'URLBlacklist'.</translation>
 <translation id="8176035528522326671">Toestaan dat Enterprise-gebruiker alleen primair gebruiker van meerdere profielen is (standaardgedrag voor beheerde Enterprise-gebruikers)</translation>
+<translation id="8191318459035150777">Hiermee wordt de standaardstartpagina-URL in <ph name="PRODUCT_NAME" /> geconfigureerd en wordt voorkomen dat gebruikers deze wijzigen.
+
+          De startpagina is de pagina die wordt geopend met de startpaginaknop. De pagina's die worden geopend bij het opstarten, worden beheerd door het RestoreOnStartup-beleid.
+
+          Het type startpagina kan worden ingesteld op een URL die je hier opgeeft of op de nieuwe tabbladpagina. Als je de nieuwe tabbladpagina selecteert, is dit beleid niet van kracht.
+
+          Als je deze instelling inschakelt, kunnen gebruikers hun startpagina-URL in <ph name="PRODUCT_NAME" /> niet wijzigen, maar kunnen ze de nieuwe tabbladpagina nog steeds kiezen als startpagina.
+
+          Als dit beleid niet wordt ingesteld, kan de gebruiker zijn eigen startpagina kiezen als HomepageIsNewTabPage ook niet is ingesteld.
+
+          Dit beleid is niet beschikbaar op Windows-instanties die niet zijn gekoppeld aan een Active Directory-domein.</translation>
 <translation id="8197918588508433925">Dit beleid geeft aan welke extensies de Enterprise Platform Keys-API chrome.enterprise.platformKeysPrivate.challengeUserKey() mogen gebruiken voor externe bevestiging. Je moet extensies aan deze lijst toevoegen om de API te kunnen gebruiken.
 
           Als een extensie niet in de lijst voorkomt, of als de lijst niet is ingesteld, mislukt het aanroepen van de API en wordt een foutcode weergegeven.</translation>
@@ -2070,6 +2129,11 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 <translation id="8465065632133292531">Parameters voor instant-URL die POST gebruikt</translation>
 <translation id="847472800012384958">Niet toestaan dat sites pop-ups weergeven</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
+<translation id="8484458986062090479">Hiermee kun je de lijst aanpassen van URL-patronen die altijd door de hostbrowser moeten worden verwerkt.
+
+         Als dit beleid niet is ingesteld, wordt het standaard weergaveprogramma gebruikt voor alle sites die door het beleid 'ChromeFrameRendererSettings' zijn gespecificeerd.
+
+          Ga voor voorbeeldpatronen naar https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="8493645415242333585">Opslaan van browsegeschiedenis uitschakelen</translation>
 <translation id="8499172469244085141">Standaardinstellingen (gebruikers kunnen overschrijven)</translation>
 <translation id="8501011084242226370">Een lijst met plug-ins opgeven die de gebruiker kan in- of uitschakelen in <ph name="PRODUCT_NAME" />.
@@ -2144,6 +2208,8 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
           Als je deze instelling inschakelt, wordt de CNAME-lookup overgeslagen en wordt de servernaam gebruikt zoals deze is opgegeven.
 
           Als je deze instelling uitschakelt of niet instelt, wordt de canonieke naam van de server bepaald aan de hand van de CNAME-lookup.</translation>
+<translation id="8774131509736383471">Als dit beleid is ingesteld op 'waar', maximaliseert <ph name="PRODUCT_NAME" /> automatisch het eerste venster dat bij eerste uitvoering wordt weergegeven.
+      Als dit beleid is ingesteld op 'onwaar' of niet is geconfigureerd, wordt op basis van de schermgrootte bepaald of het eerste venster moet worden gemaximaliseerd.</translation>
 <translation id="8777120694819070607">Hiermee kun je aangeven dat <ph name="PRODUCT_NAME" /> verouderde plug-ins mag uitvoeren.
 
       Als je deze instelling inschakelt, worden verouderde plug-ins op dezelfde manier gebruikt als normale plug-ins.

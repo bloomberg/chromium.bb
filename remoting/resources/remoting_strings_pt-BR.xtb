@@ -33,7 +33,6 @@ Para ver mais informações sobre privacidade, consulte a Política de Privacida
 <translation id="1770394049404108959">Não consigo abrir o aplicativo.</translation>
 <translation id="177096447311351977">IP do canal do cliente: <ph name="CLIENT_GAIA_IDENTIFIER" /> ip='<ph name="CLIENT_IP_ADDRESS_AND_PORT" />' ip_host='<ph name="HOST_IP_ADDRESS_AND_PORT" />' canal='<ph name="CHANNEL_TYPE" />' conexão='<ph name="CONNECTION_TYPE" />'.</translation>
 <translation id="1779766957982586368">Fechar janela</translation>
-<translation id="1818475040640568770">Você não possui computadores registrados.</translation>
 <translation id="1841799852846221389">Desativando conexões remotas para este computador...</translation>
 <translation id="189172778771606813">Fechar gaveta de navegação</translation>
 <translation id="195619862187186579">Layouts de teclado</translation>
@@ -87,8 +86,6 @@ Para ver mais informações sobre privacidade, consulte a Política de Privacida
 <translation id="2926340305933667314">Falha ao desativar o acesso remoto a este computador. Tente novamente mais tarde.</translation>
 <translation id="2930135165929238380">Alguns componentes obrigatórios não foram encontrados. Acesse chrome://plugins e certifique-se de que "Cliente nativo' esteja ativado.</translation>
 <translation id="2939145106548231838">Autenticar para host</translation>
-<translation id="2998137343848432918">• Adição da tela "Créditos".
-• Correção de um problema que ocorria ao entrar no modo tela cheia com o teclado visível.</translation>
 <translation id="3020807351229499221">Falha ao atualizar o PIN. Tente novamente mais tarde.</translation>
 <translation id="3025388528294795783">Para nos ajudar a resolver seu problema, diga o que deu errado:</translation>
 <translation id="3027681561976217984">Modo de toque</translation>
@@ -124,6 +121,7 @@ Chromoting</translation>
 <translation id="3950820424414687140">Fazer login</translation>
 <translation id="3989511127559254552">Para continuar, é necessário conceder permissões de acesso estendidas ao seu computador. Você só precisará fazer isso uma vez.</translation>
 <translation id="4006787130661126000">Ative conexões remotas se desejar usar a Área de trabalho remota do Google Chrome para acessar este computador.</translation>
+<translation id="405887016757208221">O computador remoto apresentou uma falha ao inicializar a sessão. Se o problema persistir, tente configurar o host novamente.</translation>
 <translation id="4068946408131579958">Todas as conexões</translation>
 <translation id="409800995205263688">OBSERVAÇÃO: as configurações da política permitem conexão apenas entre computadores em sua rede.</translation>
 <translation id="4155497795971509630">Alguns componentes obrigatórios não foram encontrados. Certifique-se de que você esteja executando a última versão do software e tente novamente.</translation>
@@ -170,7 +168,6 @@ remota do Google Chrome</translation>
 <translation id="518094545883702183">Essa informação é usada apenas para diagnosticar o problema que você está relatando, está disponível apenas para as pessoas que estão investigando seu relatório e só fica retida por até 30 dias.</translation>
 <translation id="5222676887888702881">Sair</translation>
 <translation id="5254120496627797685">Abandonar esta página encerrará sua sessão na Área de trabalho remota do Google Chrome.</translation>
-<translation id="5285241842433869526">Saiba como configurar um computador para acesso remoto.</translation>
 <translation id="5308380583665731573">Conectar-se</translation>
 <translation id="5363265567587775042">Peça ao usuário do computador que você deseja acessar que clique em "<ph name="SHARE" />" e forneça o código de acesso para você.</translation>
 <translation id="5379087427956679853">A Área de trabalho remota do Google Chrome permite que você compartilhe seu computador com segurança através da Web. Para isso, é preciso que os usuários executem simultaneamente o aplicativo da Área de trabalho remota do Google Chrome, disponível em <ph name="URL" />.</translation>
@@ -258,6 +255,7 @@ remota do Google Chrome</translation>
 <translation id="7869445566579231750">Você não tem permissão para executar este aplicativo.</translation>
 <translation id="7948001860594368197">Opções de tela</translation>
 <translation id="7970576581263377361">Falha na autenticação. Faça login novamente no Chromium.</translation>
+<translation id="7981525049612125370">A sessão remota expirou.</translation>
 <translation id="8041721485428375115">Ao fazer o download do instalador do host da Área de trabalho remota do Google Chrome, você concorda com os <ph name="LINK_BEGIN" />Termos de Serviço<ph name="LINK_END" /> do Google.</translation>
 <translation id="8073845705237259513">Para usar a Área de trabalho remota do Google, adicione uma Conta do Google a seu dispositivo.</translation>
 <translation id="80739703311984697">O host remoto requer a autenticação em um website de terceiros. Para continuar, é preciso conceder ao Chromoting acesso a permissões adicionais para acessar este endereço:</translation>

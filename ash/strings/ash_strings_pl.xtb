@@ -26,9 +26,7 @@
 Naciśnij Shift + Alt, by ją przełączyć.</translation>
 <translation id="1882897271359938046">Kopia na <ph name="DISPLAY_NAME" /></translation>
 <translation id="1923539912171292317">Automatyczne kliknięcia</translation>
-<translation id="1950626184269948555">Zmienił się skrót menedżera zadań. Naciśnij klawisz wyszukiwania i Esc zamiast kombinacji Shift+Esc.</translation>
 <translation id="1957803754585243749">0°</translation>
-<translation id="1963814843110128691">Przesyłam $1 do $2</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1987317783729300807">Konta</translation>
 <translation id="2127372758936585790">Ładowarka o małej mocy</translation>
@@ -94,6 +92,7 @@ Naciśnij Szukaj lub Shift, by anulować.</translation>
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">Zablokuj</translation>
 <translation id="3799026279081545374">Możesz mieć niewłaściwą ładowarkę. Jeśli mieszkasz w Stanach Zjednoczonych, aby uzyskać pomoc i zamówić ładowarkę zastępczą, zadzwoń pod numer 866-628-1371. W Wielkiej Brytanii – pod numer 0800-026-0613. W Irlandii – pod numer 1-800-832-664. W Kanadzie – pod numer 866-628-1372. W Australii – pod numer 1-800-067-460.</translation>
+<translation id="3866182280516392520">Adres IPv6</translation>
 <translation id="3891340733213178823">Naciśnij dwukrotnie Ctrl+Shift+Q, by się wylogować.</translation>
 <translation id="3892641579809465218">Wyświetlacz wewnętrzny</translation>
 <translation id="3963445509666917109">Głośnik (wewnętrzny)</translation>
@@ -152,7 +151,6 @@ Naciśnij Shift + Alt, by ją przełączyć.</translation>
 <translation id="6165508094623778733">Więcej informacji</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE" />%</translation>
 <translation id="6248847161401822652">Naciśnij dwukrotnie Control Shift Q, by zakończyć.</translation>
-<translation id="6287020362823083378">Zmienił się skrót blokady ekranu. Naciśnij klawisz wyszukiwania i L zamiast kombinacji Ctrl+Shift+L.</translation>
 <translation id="6310121235600822547">Wyświetlacz <ph name="DISPLAY_NAME" /> został obrócony na <ph name="ROTATION" /></translation>
 <translation id="6359806961507272919">Wiadomość SMS z numeru <ph name="PHONE_NUMBER" /></translation>
 <translation id="639644700271529076">CAPS LOCK jest wyłączony</translation>
@@ -205,7 +203,6 @@ Naciśnij Alt+Szukaj lub Shift, by anulować.</translation>
 <translation id="8308637677604853869">Poprzednie menu</translation>
 <translation id="8356164830168736643">Zamknij <ph name="WINDOW_TITLE" /></translation>
 <translation id="8428213095426709021">Ustawienia</translation>
-<translation id="8443356412772935865">Przesyłam ekran do $1</translation>
 <translation id="8456362689280298700">Do naładowania: <ph name="HOUR" />:<ph name="MINUTE" /></translation>
 <translation id="8517041960877371778"><ph name="DEVICE_TYPE" /> nie może się ładować, gdy jest włączony.</translation>
 <translation id="8528322925433439945">Komórkowe...</translation>

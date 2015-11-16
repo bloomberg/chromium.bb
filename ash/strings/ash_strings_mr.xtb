@@ -26,9 +26,7 @@
 स्‍विच करण्‍यासाठी Shift + Alt दाबा.</translation>
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME" /> वर मिरर करत आहे</translation>
 <translation id="1923539912171292317">स्वयंचलित क्लिक</translation>
-<translation id="1950626184269948555">कार्य व्यवस्थापक शॉर्टकट बदलला. कृपया Shift+Esc च्या ऐवजी Search+Esc चा वापर करा.</translation>
 <translation id="1957803754585243749">0°</translation>
-<translation id="1963814843110128691">$1 ते $2 कास्ट करत आहे...</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1987317783729300807">खाती</translation>
 <translation id="2127372758936585790">निम्न-उर्जेचे चार्जर</translation>
@@ -94,6 +92,7 @@
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">लॉक करा</translation>
 <translation id="3799026279081545374">आपल्याकडे खराब चार्जर असू शकतो. आपण यूएस मध्ये रहात असल्यास, कृपया मदत आणि दुसरा चार्जर प्राप्त करण्यासाठी 866-628-1371 वर कॉल करा. आपण यूके मध्ये रहात असल्यास, कृपया 0800-026-0613 वर कॉल करा. आपण आयर्लंडमध्ये रहात असल्यास, कृपया 1-800-832-664 वर कॉल करा. आपण कॅनडामध्ये रहात असल्यास, कृपया 866-628-1372 वर कॉल करा. आपण ऑस्ट्रेलियामध्ये रहात असल्यास, कृपया 1-800-067-460 वर कॉल करा.</translation>
+<translation id="3866182280516392520">IPv6 पत्ता</translation>
 <translation id="3891340733213178823">साइन आउट करण्यासाठी Ctrl+Shift+Q दोनदा दाबा.</translation>
 <translation id="3892641579809465218">अंतर्गत डिस्प्ले</translation>
 <translation id="3963445509666917109">स्पीकर (अंतर्गत)</translation>
@@ -152,7 +151,6 @@
 <translation id="6165508094623778733">अधिक जाणून घ्या</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE" />%</translation>
 <translation id="6248847161401822652">बाहेर पडण्यासाठी Control Shift Q दोनदा दाबा.</translation>
-<translation id="6287020362823083378">स्क्रीन लॉक शॉर्टकट बदलला. कृपया Ctrl+Shift+L च्या ऐवजी Search+L चा वापर करा.</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> <ph name="ROTATION" /> वर फिरविले होते</translation>
 <translation id="6359806961507272919"><ph name="PHONE_NUMBER" /> कडून SMS</translation>
 <translation id="639644700271529076">CAPS LOCK बंद आहे</translation>
@@ -204,7 +202,6 @@
 <translation id="8308637677604853869">मागील मेनू</translation>
 <translation id="8356164830168736643"><ph name="WINDOW_TITLE" /> बंद करा</translation>
 <translation id="8428213095426709021">सेटिंग्ज</translation>
-<translation id="8443356412772935865">स्क्रीन $1 वर कास्ट करीत आहे</translation>
 <translation id="8456362689280298700"><ph name="HOUR" />:<ph name="MINUTE" /> बाकी पूर्ण होण्यात</translation>
 <translation id="8517041960877371778">आपले <ph name="DEVICE_TYPE" /> चालू केले असताना कदाचित चार्ज होणार नाही.</translation>
 <translation id="8528322925433439945">मोबाइल ...</translation>

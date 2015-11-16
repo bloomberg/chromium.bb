@@ -32,6 +32,7 @@
 <translation id="1967743265616885482">Modul s tim nazivom već je bio u konfliktu s preglednikom Chromium.</translation>
 <translation id="2077129598763517140">Upotrijebi hardversko ubrzanje kada je dostupno</translation>
 <translation id="2097986737970966220">Otvori Chromium na radnoj površini</translation>
+<translation id="2117181891440368863">Chromium je potvrdio da je <ph name="ISSUER" /> izdavač certifikata web-lokacije. Informacije o transparentnosti certifikata pružio je poslužitelj, no nisu bile važeće.</translation>
 <translation id="2119636228670142020">O OS-u &amp;Chromium</translation>
 <translation id="2158734852934720349">Licence otvorenog izvornog koda OS-a Chromium</translation>
 <translation id="2233513990531887259">Ponovo pokreni u interaktivnom načinu Chromiuma</translation>
@@ -46,13 +47,11 @@
 <translation id="2558641060352364164">Web-lokacija upotrebljava dodatak Chromium Frame koji se uskoro više neće podržavati. Deinstalirajte ga i nadogradite na suvremeni preglednik.</translation>
 <translation id="2572494885440352020">Chromium Helper</translation>
 <translation id="2602806952220118310">Chromium – obavijesti</translation>
-<translation id="2615699638672665509">Ovo će računalo uskoro prestati primati ažuriranja Chromiuma jer njegov hardver više nije podržan.</translation>
 <translation id="2636877269779209383">Chromium treba imati pristup kameri da bi je dijelio s ovom web-lokacijom.</translation>
 <translation id="2648074677641340862">Došlo je do pogreške operativnog sustava tijekom instalacije. Ponovo preuzmite Chromium.</translation>
 <translation id="2673087257647337101">Još malo i ažuran! Ponovo pokrenite Chromium da biste završili ažuriranje.</translation>
 <translation id="2685838254101182273">Chromium se prestao ažurirati i više ne podržava ovu verziju vašeg operativnog sustava.</translation>
 <translation id="2705212601509139398">Web-lokacija upotrebljava dodatak Chromium Frame koji se uskoro više neće podržavati. Deinstalirajte ga i preuzmite kompatibilan preglednik.</translation>
-<translation id="2732467638532545152">Vaše računalo ima staru verziju Microsoft Windowsa koja ne može obraditi sigurnosni certifikat ove web-lokacije. Zbog tog problema Chromium ne može odrediti je li certifikat s domene <ph name="SITE" /> ili od nekog u vašoj mreži tko se pretvara da je <ph name="SITE" />. Ažurirajte Windows na računalu na noviju verziju.</translation>
 <translation id="2770231113462710648">Promijeni zadani preglednik na:</translation>
 <translation id="2801146392936645542">Datoteka <ph name="FILE_NAME" /> zlonamjerna je i Chromium ju je blokirao.</translation>
 <translation id="2847479871509788944">Ukloni iz Chromiuma...</translation>
@@ -85,8 +84,6 @@ i netočne vjerodajnice. To može značiti da se neki napadač pokušava predsta
 <translation id="3582788516608077514">Ažuriranje Chromiuma...</translation>
 <translation id="358997566136285270">Logotip Chromiuma</translation>
 <translation id="3595526210123705352">Ponovnim pokretanjem u načinu Windows 8 zatvorit će se i ponovo pokrenuti Chromiumove aplikacije.</translation>
-<translation id="3656661827369545115">Pokrenite Chrome automatski prilikom pokretanja računala</translation>
-<translation id="3736987306260231966">Chromium ne može prikazati web-stranicu jer vaše računalo nije povezano s internetom.</translation>
 <translation id="3738139272394829648">Dodirnite za pretraživanje</translation>
 <translation id="3744899669254331632">Trenutačno ne možete otvoriti <ph name="SITE" /> jer je web-lokacija poslala šifrirane vjerodajnice koje Chromium ne može obraditi. Mrežne pogreške i napadi obično su privremeni, tako da će stranica kasnije vjerojatno funkcionirati.</translation>
 <translation id="3748537968684000502">Gledate sigurnu stranicu preglednika Chromium.</translation>
@@ -107,7 +104,6 @@ i netočne vjerodajnice. To može značiti da se neki napadač pokušava predsta
 <translation id="4285930937574705105">Instalacija nije uspjela zbog nepoznate pogreške. Ako je Chromium trenutačno otvoren, zatvorite ga i pokušajte ponovo.</translation>
 <translation id="4330585738697551178">Za taj se modul već zna da je u konfliktu s Chromiumom.</translation>
 <translation id="4423735387467980091">Prilagodite Chromium i upravljajte njime</translation>
-<translation id="442817494342774222">Chromium je konfiguriran za automatsko pokretanje kod pokretanja računala.</translation>
 <translation id="4458285410772214805">Odjavite se i prijavite se ponovo da bi ta promjena postala aktivna.</translation>
 <translation id="4488676065623537541">Vaše pojedinosti o naplati spremljene su u Chromium.</translation>
 <translation id="4559775032954821361">Idite na
@@ -178,6 +174,7 @@ Neke su značajke možda nedostupne. Navedite neki drugi direktorij profila ili 
 <translation id="6734080038664603509">Ažuriranje &amp;Chromiuma</translation>
 <translation id="6757767188268205357">Ne ometaj me</translation>
 <translation id="6810143991807788455">Doprinesite poboljšanju Chromiuma prijavljivanjem trenutačnih postavki</translation>
+<translation id="6838494703713445896">Chromium je potvrdio da je <ph name="ISSUER" /> izdavač certifikata web-lokacije. Informacije o transparentnosti certifikata pružio je poslužitelj.</translation>
 <translation id="6883876366448858277">Šalje riječ i njezin okolni kontekst na Google pretraživanje te vraća definicije, slike i ostale rezultate pretraživanja.</translation>
 <translation id="6893813176749746474">Chromium je ažuriran, ali vi ga niste upotrebljavali najmanje 30 dana.</translation>
 <translation id="6900895776413482243">Ponovnim pokretanjem Chromiuma u interaktivnom načinu zatvorit će se i ponovo pokrenuti Chromiumove aplikacije.</translation>
@@ -190,6 +187,7 @@ Neke su značajke možda nedostupne. Navedite neki drugi direktorij profila ili 
 <translation id="7066436765290594559">OS Chromium nije mogao sinkronizirati vaše podatke. Ažurirajte svoju zaporku za sinkronizaciju.</translation>
 <translation id="7138853919861947730">Chromium može upotrebljavati web-usluge za poboljšanje vašeg doživljaja pregledavanja.</translation>
 <translation id="7162152143154757523">Chromium može pružati bolju provjeru pravopisa slanjem onoga što upišete u preglednik Googleovim poslužiteljima, što vam omogućuje upotrebu iste tehnologije provjere pravopisa koju upotrebljava Google pretraživanje.</translation>
+<translation id="7178626992616222740">Chromium je potvrdio da je <ph name="ISSUER" /> izdavač certifikata web-lokacije. Informacije o transparentnosti certifikata pružio je poslužitelj, no Chromium nije prepoznao nijedan zapisnik transparentnosti certifikata.</translation>
 <translation id="7196020411877309443">Zašto vidim ovo?</translation>
 <translation id="7205698830395646142">Sakrij u izborniku Chromiuma</translation>
 <translation id="7211828883345145708">Omogućuje dodatne tipkovničke prečace koji su korisni za uklanjanje pogrešaka u Chromiumu.</translation>
@@ -215,13 +213,13 @@ Chromium ne može oporaviti vaše postavke.</translation>
 <translation id="7723128346970903111">Kada je to omogućeno, upotrebljavat će se postupak prijave na Chromium na temelju iframea. U suprotnom će se upotrebljavati postupak na temelju web-prikaza.</translation>
 <translation id="7729447699958282447">Chromium nije mogao sinkronizirati vaše podatke jer sinkronizacija nije dostupna za vašu domenu.</translation>
 <translation id="7747138024166251722">Program za instalaciju nije izradio privremeni direktorij. Provjerite ima li slobodnog prostora na disku i postoji li dopuštenje za instalaciju softvera.</translation>
+<translation id="7918535023914021398">Chromium je potvrdio da je <ph name="ISSUER" /> izdavač certifikata web-lokacije. Poslužitelj nije pružio informacije o transparentnosti certifikata.</translation>
 <translation id="7937630085815544518">Bili ste prijavljeni na Chromium kao <ph name="USER_EMAIL_ADDRESS" />. Prijavite se ponovo istim računom.</translation>
 <translation id="7962572577636132072">Chromium se automatski ažurira tako da uvijek imate najnoviju verziju.</translation>
 <translation id="7979877361127045932">Sakrij u izborniku Chromiuma</translation>
 <translation id="8030318113982266900">Ažuriranje vašeg uređaja na kanal <ph name="CHANNEL_NAME" />...</translation>
 <translation id="8033665941300843262">Chromium treba imati pristup dopuštenjima da bi ih dijelio s ovom web-lokacijom.</translation>
 <translation id="805745970029938373">Ovdje možete vidjeti sve svoje obavijesti s Chromiumovih aplikacija, proširenja i web-lokacija.</translation>
-<translation id="811857857463334932">Ovo računalo više neće primati ažuriranja Chromiuma jer njegov hardver više nije podržan.</translation>
 <translation id="8134284582177628525">Ako dijelite ovo računalo s korisnikom <ph name="PROFILE_NAME" />, dodajte sebe u Chromium kako biste pregledavali odvojeno. U suprotnom odjavite njegov Google račun.</translation>
 <translation id="8187289872471304532">Idite na
           Aplikacije &gt; Postavke sustava &gt; Mreža &gt; Napredno &gt; Proxy poslužitelji

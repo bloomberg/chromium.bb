@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="bn">
 <translation id="1001534784610492198">ইনস্টলার সংরক্ষণাগারটি দূষিত বা অকার্যকর৷ দয়া করে পুনরায় Google Chrome ডাউনলোড করুন৷</translation>
+<translation id="1013290471399003443">Chrome যাচাই করেছে যে <ph name="ISSUER" /> এই ওয়েবসাইটের শংসাপত্র জারি করেছে। সার্ভারটি বৈধ শংসাপত্র স্বচ্ছতা তথ্য সরবরাহ করেছে।</translation>
 <translation id="1016765312371154165">Chrome সঠিকভাবে বন্ধ হয়নি৷</translation>
 <translation id="103396972844768118">আপনার Chrome ডেটা সংক্রান্ত গুরুত্বপূর্ণ তথ্য</translation>
 <translation id="1061441684050139317">এই সাইটের সাথে এটি ভাগ করতে Chrome এর মাইক্রোফোন অ্যাক্সেস প্রয়োজন।</translation>
@@ -64,6 +65,7 @@
 <translation id="2769762047821873045">Google Chrome আপনার ডিফল্ট ব্রাউসার নয় ৷</translation>
 <translation id="2770231113462710648">ডিফল্ট ব্রাউজার এতে পরিবর্তন করুন:</translation>
 <translation id="2871893339301912279">আপনি Chrome এ সাইন ইন করেছেন৷</translation>
+<translation id="2997147809295888909">Chrome যাচাই করেছে যে <ph name="ISSUER" /> এই ওয়েবসাইটের শংসাপত্র জারি করেছে। সার্ভারটি কোনো শংসাপত্র স্বচ্ছতা তথ্য সরবরাহ করেনি।</translation>
 <translation id="3037838751736561277">Google Chrome পটভূমি মোডে রয়েছে।</translation>
 <translation id="3047079729301751317"><ph name="USERNAME" /> সংযোগ বিচ্ছিন্ন করলে তা আপনার ইতিহাস, বুকমার্ক, সেটিংস, এবং এই ডিভাইসে সঞ্চিত অন্যান্য Chrome ডেটা মুছে দেবে। আপনার Google অ্যাকাউন্টে সঞ্চিত ডেটা সাফ করা হবে না এবং <ph name="GOOGLE_DASHBOARD_LINK" />Google ড্যাশবোর্ড <ph name="END_GOOGLE_DASHBOARD_LINK" /> এ তা পরিচালনা করা যেতে পারে।</translation>
 <translation id="3080151273017101988">Google Chrome বন্ধ হলে পশ্চাদপট অ্যাপ্লিকেশানের চলা অবিরত রাখুন</translation>
@@ -78,7 +80,6 @@
 <translation id="345171907106878721">Chrome এর সাথে নিজেকে যোগ করুন</translation>
 <translation id="3612333635265770873">একই নামের একটি মডিউল Google Chrome-এর সাথে বিবাদ করছে বলে জানা গেছে৷</translation>
 <translation id="3622797965165704966">এখন আপনার Google অ্যাকাউন্ট ও ভাগ করা কম্পিউটারগুলিতে Chrome ব্যবহার করা আরো সহজ৷</translation>
-<translation id="3656661827369545115">আপনার কম্পিউটার চালু হওয়ার সময় স্বয়ংক্রিয়ভাবে Chromium লঞ্চ করুন</translation>
 <translation id="3735758079232443276">আপনি Chrome শুরু করলে কোন পৃষ্ঠাটি দেখানো হবে তা "<ph name="EXTENSION_NAME" />" এক্সটেনশান পরিবর্তন করেছে।</translation>
 <translation id="3738139272394829648">স্পর্শের মাধ্যমে অনুসন্ধান</translation>
 <translation id="3784527566857328444">Chrome থেকে সরান...</translation>
@@ -86,6 +87,7 @@
 <translation id="3847841918622877581">আপনার ব্রাউজিং অভিজ্ঞতার উন্নতি ঘটাতে Google Chrome ওয়েব পরিষেবা ব্যবহার করতে পারে৷</translation>
 <translation id="386202838227397562">দয়া করে সকল Google Chrome উইন্ডো বন্ধ করুন ও আবার চেষ্টা করুন৷</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
+<translation id="3881912906674381083">Chrome যাচাই করেছে যে <ph name="ISSUER" /> এই ওয়েবসাইটের শংসাপত্র জারি করেছে। সার্ভারটি শংসাপত্র স্বচ্ছতা তথ্য সরবরাহ করেছে, কিন্তু Chrome শংসাপত্র স্বচ্ছতা লগের কোনোটিই শনাক্ত করতে পারছে না।</translation>
 <translation id="3889417619312448367">Google Chrome আনইনস্টল করুন</translation>
 <translation id="4011219958405096740">সক্ষম করা থাকলে, আইফ্রেম-ভিত্তিক Chrome সাইন-ইন ফ্লো ব্যবহার করবে; অন্যথায় কোনো ওয়েব দর্শন-ভিত্তিক ফ্লো ব্যবহার করে৷</translation>
 <translation id="4050175100176540509">গুরুত্বপূর্ণ নিরাপত্তা উন্নতি এবং নতুন বৈশিষ্ট্যগুলি সর্বশেষ সংস্করণে উপলব্ধ।</translation>
@@ -95,10 +97,8 @@
 <translation id="4167057906098955729">Chrome অ্যাপ্লিকেশান, এক্সটেনশান, এবং ওয়েবসাইটগুলি থেকে আপনার সব বিজ্ঞপ্তি আপনি এখানে দেখতে পারবেন৷</translation>
 <translation id="423410644998903704">এই সাইটের সাথে এগুলি ভাগ করতে Chrome এর অনুমতির অ্যাক্সেস প্রয়োজন।</translation>
 <translation id="4251615635259297716">এই অ্যাকাউন্টে আপনার Chrome ডেটা লিঙ্ক করবেন?</translation>
-<translation id="4273752058983339720">আপনি যখন আপনার কম্পিউটার সূচনা করবেন তখন স্বয়ংক্রিয়ভাবে লঞ্চ হওয়ার জন্য Google Chrome কনফিগার করা হয়েছে৷</translation>
 <translation id="4309555186815777032">(Chrome <ph name="BEGIN_BUTTON" />পুনরায় চালু করা<ph name="END_BUTTON" /> প্রয়োজন)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
-<translation id="4367618624832907428">আপনার কম্পিউটার ইন্টারনেটে সংযুক্ত না থাকায় Google Chrome ওয়েবপৃষ্ঠাটি প্রদর্শন করতে পারেনি৷</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="4458285410772214805">দয়া করে পরিবর্তনটি সম্ভব করতে সাইন আউট এবং পুনরায় সাইন ইন করুন৷</translation>
 <translation id="4480040274068703980">সাইন ইনে ত্রুটির কারণে Chrome OS আপনার ডেটা সিঙ্ক করতে পারেনি৷</translation>
@@ -107,7 +107,6 @@
 <translation id="4567424176335768812">আপনি <ph name="USER_EMAIL_ADDRESS" /> হিসাবে সাইন ইন করেছেন৷ এখন আপনি আপনার সমস্ত সাইন ইন করা ডিভাইসে আপনার বুকমার্ক, ইতিহাস এবং অন্যান্য সেটিংস অ্যাক্সেস করতে পারেন৷</translation>
 <translation id="4631713731678262610">Chromium মেনুর মধ্যে লুকান</translation>
 <translation id="4633000520311261472">Chrome কে আরো নিরাপদ করতে, আমরা কিছু এক্সটেনশান অক্ষম করেছি যা <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> এ তালিকাবদ্ধ করা হয়নি এবং হয়ত আপনাকে না জানিয়ে যোগ করা হয়েছে৷</translation>
-<translation id="4692614041509923516">আপনার কম্পিউটার Microsoft Windows এর একটি পুরনো সংস্করণে চলছে যেটি এই ওয়েবসাইটের নিরাপত্তা শংসাপত্র প্রক্রিয়া করতে পারছে না। এই সমস্যার কারণে Google Chrome বলতে পারছে না যে শংসাপত্রটি <ph name="SITE" /> এর কাছ থেকে এসেছে নাকি আপনার নেটওয়ার্কের কেউ নিজেকে <ph name="SITE" /> বলে দাবী করছে এমন কারো কাছ থেকে এসেছে। দয়া করে আপনার Windows আরো সাম্প্রতিক এক সংস্করণে আপডেট করুন।</translation>
 <translation id="4700157086864140907">Google Chrome আপনি Google সার্ভারগুলিতে ব্রাউজারে কী টাইপ করেন তা পাঠিয়ে আরো স্মার্ট বানান-পরীক্ষণ সরবরাহ করতে পারে এতে আপনাকে Google অনুসন্ধানে ব্যবহৃত একই বানান-পরীক্ষণের প্রযুক্তি ব্যবহার করার অনুমতি দেয়৷</translation>
 <translation id="4728575227883772061">অনির্দিষ্ট ত্রুটির জন্য ইনস্টলেশন ব্যর্থ হয়েছে৷ যদি Google Chrome বর্তমানে চলতে থাকে তবে দয়া করে এটি বন্ধ করে আবার চেষ্টা করুন৷</translation>
 <translation id="473775607612524610">আপডেট</translation>
@@ -116,6 +115,7 @@
 <translation id="4794050651896644714">Chrome এ বিবরণ সংরক্ষণ করুন</translation>
 <translation id="4891791193823137474">Google Chrome-কে পশ্চাদপটে চালতে দিন</translation>
 <translation id="4921569541910214635">একটি কম্পিউটার ভাগ করবেন? এখন আপনি আপনার পছন্দমতো উপায়ে Chrome কে সেট আপ করতে পারেন৷</translation>
+<translation id="4925019873400497719">Chrome যাচাই করেছে যে <ph name="ISSUER" /> এই ওয়েবসাইটের শংসাপত্র জারি করেছে। সার্ভারটি শংসাপত্র স্বচ্ছতা তথ্য সরবরাহ করেছে, কিন্তু এটি অবৈধ।</translation>
 <translation id="4953650215774548573">আপনার ডিফল্ট ব্রাউজার হিসাবে Google Chrome কে সেট করুন</translation>
 <translation id="4987308747895123092">দয়া করে সমস্ত Google Chrome উইন্ডোগুলি (Windows 8 মোডে যেগুলি আছে সেগুলি সহ) বন্ধ করুন এবং আবার চেষ্টা করুন৷</translation>
 <translation id="4990567037958725628">Google Chrome  ক্যানারি</translation>
@@ -194,7 +194,6 @@
 <translation id="6989339256997917931">Google Chrome আপডেট হয়েছে তবে আপনি এটি কমপক্ষে 30 দিন যাবত ব্যবহার করেন নি৷</translation>
 <translation id="699076943483372849">এই সাইটটি বাতিল হয়ে যাওয়া Chrome ফ্রেম প্লাগ ইন ব্যবহার করছে যা আর নিরাপত্তা এবং স্থিতিশীলতার আপডেট গ্রহণ করে না৷ দয়া করে এটিকে আনইনস্টল করুন এবং একটি আধুনিক ব্রাউজারে আপগ্রেড করুন৷</translation>
 <translation id="6991142834212251086">এই অ্যাকাউন্টে আমার Chrome ডেটা লিঙ্ক করুন</translation>
-<translation id="7054640471403081847">এই কম্পিউটারটি শীঘ্রই Google Chrome এর আপডেটগুলি গ্রহণ করা বন্ধ করবে কারণ এটির হার্ডওয়্যার আর সমর্থিত নয়৷</translation>
 <translation id="7060865993964054389">Google Chrome অ্যাপ্লিকেশান লঞ্চার</translation>
 <translation id="7084448929020576097"><ph name="FILE_NAME" /> ক্ষতিকারক, এবং Chrome এটিকে অবরুদ্ধ করেছে৷</translation>
 <translation id="7098166902387133879">Google Chrome আপনার মাইক্রোফোন ব্যবহার করছে৷</translation>
@@ -231,7 +230,6 @@
 <translation id="781069973841903133">Chrome ইমারসিভ মোড পুনরায় লঞ্চ করা হলে আপনার Chrome অ্যাপ্লিকেশানগুলি বন্ধ হয়ে পুনরায় লঞ্চ হবে।</translation>
 <translation id="7825851276765848807">অনির্দিষ্ট ত্রুটির জন্য ইনস্টলেশন ব্যর্থ হয়েছে৷ দয়া করে পুনরায় Google Chrome ডাউনলোড করুন৷</translation>
 <translation id="7890208801193284374">যদি আপনি একটি কম্পিউটার ভাগ করেন, তাহলে বন্ধু ও পরিবারের লোকজন পৃথকভাবে ব্রাউজ করতে পারবেন এবং তাদের ইচ্ছা অনুযায়ী Chrome এর সেটআপ করতে পারবেন৷</translation>
-<translation id="7908968924842975895">এই কম্পিউটারটি আর Google Chrome এর আপডেটগুলি গ্রহণ করবে না কারণ এটির হার্ডওয়্যার আর সমর্থিত নয়৷</translation>
 <translation id="7984945080620862648">আপনি <ph name="SITE" /> এ যেতে পারবেন না কারণ অসম্পূর্ণ শংসাপত্র পাঠিয়েছে যেটি Chrome প্রক্রিয়া করতে পারে না।  নেটওয়ার্ক ত্রুটি এবং আক্রমণ সাধারণত সাময়িকভাবে হয়, তাই এই পৃষ্ঠা সম্ভবত পরে কাজ করবে।</translation>
 <translation id="8000275528373650868">Google Chrome-এর জন্য SP2 বা উচ্চতর সহ Windows Vista বা Windows XP প্রয়োজন৷</translation>
 <translation id="8005540215158006229">Chrome প্রায় প্রস্তুত৷</translation>

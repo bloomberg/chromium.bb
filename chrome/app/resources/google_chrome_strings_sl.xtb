@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="sl">
 <translation id="1001534784610492198">Arhiv namestitvenega programa je poškodovan ali neveljaven. Ponovno prenesite program Google Chrome.</translation>
+<translation id="1013290471399003443">Chrome je preveril, da je potrdilo tega spletnega mesta izdal izdajatelj <ph name="ISSUER" />. Strežnik je poslal veljavne podatke o preglednosti potrdila.</translation>
 <translation id="1016765312371154165">Chrome se ni pravilno zaustavil.</translation>
 <translation id="103396972844768118">Pomembne informacije o vaših podatkih v Chromu</translation>
 <translation id="1061441684050139317">Chrome potrebuje dostop do mikrofona, če želite, da temu spletnemu mestu omogoči dostop do njega.</translation>
@@ -66,6 +67,7 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="2769762047821873045">Google Chrome ni privzeti brskalnik.</translation>
 <translation id="2770231113462710648">Spremeni privzeti brskalnik na:</translation>
 <translation id="2871893339301912279">Zdaj ste prijavljeni v Chrome.</translation>
+<translation id="2997147809295888909">Chrome je preveril, da je potrdilo tega spletnega mesta izdal izdajatelj <ph name="ISSUER" />. Strežnik ni poslal nobenih podatkov o preglednosti potrdila.</translation>
 <translation id="3037838751736561277">Google Chrome se izvaja v ozadju.</translation>
 <translation id="3047079729301751317">Če prekinete povezavo za <ph name="USERNAME" />, boste izbrisali zgodovino, zaznamke, nastavitve in druge Chromove podatke, ki so shranjeni v tej napravi. Podatki, shranjeni v Google Računu, ne bodo izbrisani in jih je mogoče upravljati na <ph name="GOOGLE_DASHBOARD_LINK" />Google Nadzorni plošči<ph name="END_GOOGLE_DASHBOARD_LINK" />.</translation>
 <translation id="3080151273017101988">Nadaljuj izvajanje programov v ozadju, ko je Google Chrome zaprt</translation>
@@ -80,7 +82,6 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="345171907106878721">Dodajte se v Chrome</translation>
 <translation id="3612333635265770873">Modul z istim imenom je že bil v sporu z Google Chromom.</translation>
 <translation id="3622797965165704966">Zdaj je Chrome lažje uporabljati z Google Računom in v računalnikih, ki so v skupni rabi.</translation>
-<translation id="3656661827369545115">Samodejni zagon Chromiuma ob zagonu računalnika</translation>
 <translation id="3735758079232443276">Zaradi razširitve »<ph name="EXTENSION_NAME" />« se je spremenila stran, ki je prikazana, ko zaženete Chrome.</translation>
 <translation id="3738139272394829648">Dotaknite se za iskanje</translation>
 <translation id="3784527566857328444">Odstranitev iz Chroma ...</translation>
@@ -88,6 +89,7 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="3847841918622877581">Google Chrome lahko za boljšo izkušnjo brskanja uporablja spletne storitve.</translation>
 <translation id="386202838227397562">Zaprite vsa okna brskalnika Google Chrome in poskusite znova.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
+<translation id="3881912906674381083">Chrome je preveril, da je potrdilo tega spletnega mesta izdal izdajatelj <ph name="ISSUER" />. Strežnik je poslal podatke o preglednosti potrdila, vendar Chrome ni prepoznal nobenega od dnevnikov o preglednost potrdila.</translation>
 <translation id="3889417619312448367">Odstrani Google Chrome</translation>
 <translation id="4011219958405096740">Ko je zastavica omogočena, bo uporabljen potek prijave v Chromu na podlagi oznake »iframe«, v nasprotnem primeru pa potek na podlagi spletnega pogleda.</translation>
 <translation id="4050175100176540509">V najnovejši različici so na voljo pomembne varnostne izboljšave in nove funkcije.</translation>
@@ -97,10 +99,8 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="4167057906098955729">Vsa obvestila aplikacij za Chrome, razširitev in spletnih mest lahko vidite tukaj.</translation>
 <translation id="423410644998903704">Chrome potrebuje dostop do dovoljenj, če želite, da temu spletnemu mestu omogoči dostop do njih.</translation>
 <translation id="4251615635259297716">Želite svoje podatke v Chromu povezati s tem računom?</translation>
-<translation id="4273752058983339720">Google Chrome se samodejno zažene ob zagonu računalnika.</translation>
 <translation id="4309555186815777032">(zahteva <ph name="BEGIN_BUTTON" />vnovični zagon<ph name="END_BUTTON" /> Chroma)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
-<translation id="4367618624832907428">Google Chrome ne more prikazati spletne strani, ker računalnik nima internetne povezave.</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="4458285410772214805">Odjavite se in znova prijavite, da bodo te spremembe začele veljati.</translation>
 <translation id="4480040274068703980">Chrome OS ni mogel sinhronizirati podatkov zaradi napake pri prijavi.</translation>
@@ -109,7 +109,6 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="4567424176335768812">Prijavljeni ste kot <ph name="USER_EMAIL_ADDRESS" />. Zdaj imate dostop do zaznamkov, zgodovine in drugih nastavitev v vseh napravah, v katerih ste prijavljeni.</translation>
 <translation id="4631713731678262610">Skrij v meniju Chroma</translation>
 <translation id="4633000520311261472">Zaradi večje varnosti smo v Chromu onemogočili nekatere razširitve, ki niso navedene v storitvi <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> in so bile morda dodane brez vaše vednosti.</translation>
-<translation id="4692614041509923516">Vaš računalnik uporablja staro različico sistema Microsoft Windows, ki ne more obdelati varnostnega potrdila tega spletnega mesta. Zaradi te težave Google Chrome ne more ugotoviti, ali je prišlo potrdilo s spletnega mesta <ph name="SITE" /> ali od nekoga v vašem omrežju, ki se izdaja za spletno mesto <ph name="SITE" />. Posodobite sistem Microsoft Windows v računalniku na novejšo različico.</translation>
 <translation id="4700157086864140907">Google Chrome lahko zagotovi pametnejše črkovanje, tako da vaše vnose v brskalnik pošilja v Googlove strežnike in vam omogoči, da uporabljate isto tehnologijo preverjanja črkovanja, kot jo uporablja Googlovo iskanje.</translation>
 <translation id="4728575227883772061">Namestitev ni bila izvedena zaradi nedoločene napake. Če je Google Chrome trenutno vklopljen, ga zaprite in poskusite znova.</translation>
 <translation id="473775607612524610">Posodobi</translation>
@@ -118,6 +117,7 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="4794050651896644714">Shrani podrobnosti v Chrome</translation>
 <translation id="4891791193823137474">Naj se Google Chrome izvaja v ozadju</translation>
 <translation id="4921569541910214635">Imate računalnik v skupni rabi? Zdaj lahko nastavite Chrome po svojih željah.</translation>
+<translation id="4925019873400497719">Chrome je preveril, da je potrdilo tega spletnega mesta izdal izdajatelj <ph name="ISSUER" />. Strežnik je poslal podatke o preglednosti potrdila, vendar so bili neveljavni.</translation>
 <translation id="4953650215774548573">Nastavitev Google Chroma za privzeti brskalnik</translation>
 <translation id="4987308747895123092">Zaprite vsa brskalnika Google Chrome (tudi tista v načinu Windows 8) in poskusite znova.</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
@@ -198,7 +198,6 @@ Google Chrome ne more obnoviti vaših nastavitev.</translation>
 <translation id="6989339256997917931">Google Chrome je posodobljen, a ga niste uporabljali že vsaj 30 dni.</translation>
 <translation id="699076943483372849">To spletno mesto uporablja ukinjen vtičnik Chrome Frame, za katerega več niso na voljo posodobitve varnosti in stabilnosti. Odstranite ga in nadgradite na sodoben brskalnik.</translation>
 <translation id="6991142834212251086">Poveži moje podatke v Chromu s tem računom</translation>
-<translation id="7054640471403081847">Ta računalnik bo kmalu prenehal prejemati posodobitve za Google Chrome, ker njegova strojna oprema ni več podprta.</translation>
 <translation id="7060865993964054389">Zaganjalnik aplikacij v Google Chromu</translation>
 <translation id="7084448929020576097">Datoteka <ph name="FILE_NAME" /> je zlonamerna, zato jo je Chrome blokiral.</translation>
 <translation id="7098166902387133879">Google Chrome uporablja vaš mikrofon.</translation>
@@ -235,7 +234,6 @@ Google Chrome ne more obnoviti vaših nastavitev.</translation>
 <translation id="781069973841903133">Z vnovičnim zagonom v Chromovem prostornem načinu mode boste zaprli in znova zagnali Chromove aplikacije.</translation>
 <translation id="7825851276765848807">Namestitev ni uspela zaradi nenavedene napake. Znova prenesite Google Chrome.</translation>
 <translation id="7890208801193284374">Če računalnik souporabljate z drugimi, lahko prijatelji in sorodniki ločeno brskajo ter nastavijo Chrome tako, kot želijo.</translation>
-<translation id="7908968924842975895">Ta računalnik ne bo več prejemal posodobitev za Google Chrome, ker njegova strojna oprema ni več podprta.</translation>
 <translation id="7984945080620862648">Spletnega mesta <ph name="SITE" /> trenutno ne morete obiskati, saj je poslalo šifrirane poverilnice, ki jih Chrome ne more obdelati. Napake omrežja in napadi na omrežje so običajno začasni, zato bo ta stran verjetno delovala pozneje.</translation>
 <translation id="8000275528373650868">Za Google Chrome potrebujete operacijski sistem Windows Vista ali Windows XP s servisnim paketom SP2 ali novejšim.</translation>
 <translation id="8005540215158006229">Chrome je skoraj pripravljen.</translation>

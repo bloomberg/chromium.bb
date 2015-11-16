@@ -41,6 +41,7 @@
 <translation id="1452236308086741652"><ph name="VALUE" />, текстове поле пароля</translation>
 <translation id="1467432559032391204">Ліворуч</translation>
 <translation id="1474557363159888097">Немає попередньої прив’язки.</translation>
+<translation id="1499041187027566160">збільшити гучність</translation>
 <translation id="1502086903961450562">Попереднє зображення</translation>
 <translation id="1506187449813838456">Збільшити висоту звуку</translation>
 <translation id="151784044608172266">Наступне речення</translation>
@@ -128,6 +129,7 @@
 <translation id="2639750663247012216">Модифікатор ChromeVox</translation>
 <translation id="2644542693584024604">орфографічна помилка</translation>
 <translation id="2667291555398229137">Натиснути елемент під ключем маршрутизації</translation>
+<translation id="267442004702508783">оновити</translation>
 <translation id="2697408785920771974">вбудоване автозавершення</translation>
 <translation id="2704429362613743330">{COUNT,plural, =1{ліва кругла дужка}one{# ліва кругла дужка}few{# ліві круглі дужки}many{# лівих круглих дужок}other{# open parens}}</translation>
 <translation id="2705875883745373140">Не натиснуто</translation>
@@ -392,6 +394,7 @@
 <translation id="5042770794184672516">Збільшити гучність мовлення</translation>
 <translation id="5050015258024679800">Попередній заголовок рівня 4</translation>
 <translation id="5054047268577924192">Попередній пункт списку</translation>
+<translation id="5075936896689244141">Наступна розкладка</translation>
 <translation id="5078661581131202757">Вибір файлу</translation>
 <translation id="5080758118274074384">двічі натиснуто</translation>
 <translation id="5087864757604726239">назад</translation>
@@ -462,6 +465,7 @@
 <translation id="5683155931978483559">Попередній прапорець</translation>
 <translation id="5684277895745049190">Список</translation>
 <translation id="5700650669149824506">Немає попереднього заголовка рівня 4.</translation>
+<translation id="5703716265115423771">зменшити гучність</translation>
 <translation id="5709192780268610569">Немає докладного опису</translation>
 <translation id="5712244464475377681">кнопка підказки</translation>
 <translation id="5712338278108304766">Наступний стовпець таблиці</translation>
@@ -526,6 +530,7 @@
 <translation id="6459511626086141404">Звичайна розкладка</translation>
 <translation id="6468049171101508116">Наступна кнопка</translation>
 <translation id="6491972999578897419">Змініть поточний голос, вибравши один із варіантів зі списку нижче.</translation>
+<translation id="6493991254603208962">Зменшити яскравість</translation>
 <translation id="6508059270146105198">Перемістити брайлівський дисплей униз сторінки</translation>
 <translation id="6536864053412760904">Маркер Math ML</translation>
 <translation id="6550720799683018100">Змініть поточну розкладку клавіатури, вибравши один із варіантів зі списку нижче.</translation>
@@ -564,6 +569,7 @@
 <translation id="7031651751836475482">пункт списку</translation>
 <translation id="7037042857287298941">Попередній список</translation>
 <translation id="7041173719775863268">Кінець виділення</translation>
+<translation id="7086377898680121060">Збільшити яскравість</translation>
 <translation id="7095834689119144465">Редагування тексту лише для цифр</translation>
 <translation id="7096001299300236431">Медіа – назад</translation>
 <translation id="7116595520562830928">багаторядковий</translation>
@@ -658,6 +664,7 @@
 <translation id="8153880621934657047">Не всередині таблиці.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{підкреслення}one{# підкреслення}few{# підкреслення}many{# підкреслень}other{# underscores}}</translation>
 <translation id="8179976553408161302">Enter</translation>
+<translation id="8186185314313222077">увімкнути або вимкнути повноекранний режим</translation>
 <translation id="81960742267269908">вирізати.</translation>
 <translation id="8199231515320852133">Повідомити заголовки поточної клітинки</translation>
 <translation id="820417203470636242">Порожня клітинка.</translation>
@@ -678,12 +685,14 @@
 <translation id="844681116543532394">Немає попереднього прапорця.</translation>
 <translation id="8455868257606149352">Макс. <ph name="X" /></translation>
 <translation id="84575901236241018">має клавішу доступу: <ph name="KEY" /></translation>
+<translation id="8476508772960940536">огляд вікна</translation>
 <translation id="8503360654911991865">Зменшити деталізацію навігації</translation>
 <translation id="8520472399088452386">Кнопка обертання</translation>
 <translation id="8538744478902126321">Зробити припущення щодо заголовка рядка поточної клітинки</translation>
 <translation id="8540054775867439484">Перенесення вгору</translation>
 <translation id="8548973727659841685">Символ</translation>
 <translation id="8561322612995434619">має спливаюче вікно</translation>
+<translation id="8571096049907249734">вибір кількох пунктів</translation>
 <translation id="8584721346566392021">заголовок 5</translation>
 <translation id="8587549812518406253">Наступний пункт списку</translation>
 <translation id="860150890330522909"><ph name="NAME" /> вибрано</translation>
@@ -691,6 +700,7 @@
 <translation id="8631359288236106450">виділено пунктів: <ph name="COUNT" /></translation>
 <translation id="8638532244051952400">Повідомити координати поточної клітинки</translation>
 <translation id="8650576015643545550">Немає попереднього списку.</translation>
+<translation id="8651481478098336970">вимкнути звук</translation>
 <translation id="8653031188082306838">посилання</translation>
 <translation id="8653646212587894517">Показати список посилань</translation>
 <translation id="8664519043722036194">секунд</translation>

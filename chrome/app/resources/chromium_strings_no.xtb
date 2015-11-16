@@ -32,6 +32,7 @@
 <translation id="1967743265616885482">Vi har tidligere lagt merke til at en modul med det samme navnet, har kommet i konflikt med Chromium.</translation>
 <translation id="2077129598763517140">Bruk maskinvareakselerasjon når det er tilgjengelig</translation>
 <translation id="2097986737970966220">Åpne Chromium på skrivebordet</translation>
+<translation id="2117181891440368863">Chromium bekreftet at sertifikatet for dette nettstedet er utstedt av <ph name="ISSUER" />. Tjeneren oppga informasjon om sertifikatåpenhet, men den var ugyldig.</translation>
 <translation id="2119636228670142020">Om &amp;Chromium OS</translation>
 <translation id="2158734852934720349">Åpen kildekode-lisenser for Chromium OS</translation>
 <translation id="2233513990531887259">Start på nytt i maksimert modus for Chromium</translation>
@@ -46,13 +47,11 @@
 <translation id="2558641060352364164">Dette nettstedet bruker Chromium Frame-programtillegget. Støtten for dette programtillegget utløper snart, og du bør derfor avinstallere det og oppgradere til en nyere nettleser.</translation>
 <translation id="2572494885440352020">Chromium-hjelper</translation>
 <translation id="2602806952220118310">Chromium – varsler</translation>
-<translation id="2615699638672665509">Denne datamaskinen slutter snart å motta Chromium-oppdateringer. Dette skjer fordi maskinvaren ikke støttes lenger.</translation>
 <translation id="2636877269779209383">Chromium må ha tilgang til kameraet ditt for å kunne dele det med dette nettstedet.</translation>
 <translation id="2648074677641340862">Det oppsto en systemfeil under installering. Last ned Chromium på nytt.</translation>
 <translation id="2673087257647337101">Nå er oppdateringen snart ferdig! Start Chromium på nytt for å fullføre oppdateringen.</translation>
 <translation id="2685838254101182273">Chromium oppdateres ikke lenger og har mistet støtten for denne versjonen av operativsystemet ditt.</translation>
 <translation id="2705212601509139398">Dette nettstedet bruker Chromium Frame-programtillegget. Støtten for dette programtillegget utløper snart, og du bør derfor avinstallere det og laste ned en kompatibel nettleser.</translation>
-<translation id="2732467638532545152">Datamaskinen din kjører en gammel versjon av Microsoft Windows som ikke kan behandle dette nettstedets sikkerhetssertifikat. På grunn av dette problemet kan ikke Chromium vite om sertifikatet kom fra <ph name="SITE" /> eller fra noen på nettverket ditt som utgir seg for å være <ph name="SITE" />. Oppdater datamaskinen din til en nyere versjon av Windows.</translation>
 <translation id="2770231113462710648">Endre standardnettleser til:</translation>
 <translation id="2801146392936645542">Filen <ph name="FILE_NAME" /> er skadelig, og Chromium har blokkert den.</translation>
 <translation id="2847479871509788944">Fjern fra Chromium</translation>
@@ -85,8 +84,6 @@ og feil legitimasjon. Dette kan skje når en angriper prøver å utgi seg for å
 <translation id="3582788516608077514">Oppdaterer Chromium …</translation>
 <translation id="358997566136285270">Chromium-logo</translation>
 <translation id="3595526210123705352">Når du starter på nytt i Windows 8-modus, blir Chromium-appene lukket og startet på nytt.</translation>
-<translation id="3656661827369545115">Start Chromium automatisk når datamaskinen din starter</translation>
-<translation id="3736987306260231966">Chromium kan ikke vise nettsiden fordi datamaskinen din ikke har noen Internett-tilkobling.</translation>
 <translation id="3738139272394829648">Trykk for å søke</translation>
 <translation id="3744899669254331632">Du kan ikke gå til <ph name="SITE" /> akkurat nå, fordi nettstedet sendte kryptert legitimasjon som Chromium ikke kan behandle. Nettverksfeil og -angrep er vanligvis forbigående, så siden kommer sikkert til å virke senere.</translation>
 <translation id="3748537968684000502">Du ser på en sikker Chromium-side.</translation>
@@ -107,7 +104,6 @@ og feil legitimasjon. Dette kan skje når en angriper prøver å utgi seg for å
 <translation id="4285930937574705105">Installeringen mislyktes på grunn av en uspesifisert feil. Lukk Chromium hvis nettleseren kjører, og prøv på nytt.</translation>
 <translation id="4330585738697551178">Denne modulen er kjent for å komme i konflikt med Chromium.</translation>
 <translation id="4423735387467980091">Tilpass og kontrollér Chromium</translation>
-<translation id="442817494342774222">Chromium er konfigurert til automatisk å starte når du starter datamaskinen din.</translation>
 <translation id="4458285410772214805">Logg deg av og så på igjen for at denne endringen skal tre i kraft.</translation>
 <translation id="4488676065623537541">Faktureringsdetaljene dine er lagret i Chromium.</translation>
 <translation id="4559775032954821361">Gå til
@@ -178,6 +174,7 @@ Det er mulig at enkelte funksjoner ikke er tilgjengelige. Angi en annen profilka
 <translation id="6734080038664603509">Oppdater &amp;Chromium</translation>
 <translation id="6757767188268205357">Ikke spør meg igjen</translation>
 <translation id="6810143991807788455">Bidra til å gjøre Chromium bedre ved å rapportere inn de gjeldende innstillingene</translation>
+<translation id="6838494703713445896">Chromium bekreftet at sertifikatet for dette nettstedet er utstedt av <ph name="ISSUER" />. Tjeneren oppga gyldig informasjon om sertifikatåpenhet.</translation>
 <translation id="6883876366448858277">sender et ord og den omkringliggende konteksten til Google Søk. Definisjoner, bilder og andre søkeresultater blir sendt tilbake.</translation>
 <translation id="6893813176749746474">Chromium har blitt oppdatert, men du har ikke brukt den på minst 30 dager.</translation>
 <translation id="6900895776413482243">Når du starter på nytt i maksimert modus, blir Chromium-appene lukket og startet på nytt.</translation>
@@ -190,6 +187,7 @@ Det er mulig at enkelte funksjoner ikke er tilgjengelige. Angi en annen profilka
 <translation id="7066436765290594559">Chromium kunne ikke synkronisere dataene dine. Oppdater passordfrasen for synkronisering.</translation>
 <translation id="7138853919861947730">Chromium kan bruke nett-tjenester for å forbedre surfingen din.</translation>
 <translation id="7162152143154757523">Chromium kan levere bedre stavekontroll ved å sende det du skriver i nettleseren, til Google-tjenerne. Dette gjør at du kan bruke samme teknologi for stavekontroll som det Google Søk bruker.</translation>
+<translation id="7178626992616222740">Chromium bekreftet at sertifikatet for dette nettstedet er utstedt av <ph name="ISSUER" />. Tjeneren oppga informasjon om sertifikatåpenhet, men Chromium gjenkjente ingen av loggene for sertifikatåpenhet.</translation>
 <translation id="7196020411877309443">Hvorfor vises dette?</translation>
 <translation id="7205698830395646142">Skjul i Chromium-menyen</translation>
 <translation id="7211828883345145708">Aktiverer flere hurtigtaster som er nyttige for feilsøking av Chromium.</translation>
@@ -215,13 +213,13 @@ Chromium kan ikke gjenopprette innstillingen dine.</translation>
 <translation id="7723128346970903111">Når dette er slått på, brukes en iframe-basert påloggingsprosess for Chromium. Hvis ikke brukes en nettvisningsbasert prosess.</translation>
 <translation id="7729447699958282447">Chromium kunne ikke synkronisere dataene dine. Dette skyldes at synkronisering ikke er tilgjengelig for domenet ditt.</translation>
 <translation id="7747138024166251722">Installasjonsprogrammet kunne ikke opprette en midlertidig katalog. Kontroller at du har nok ledig diskplass og tillatelse til å installere programvare.</translation>
+<translation id="7918535023914021398">Chromium bekreftet at sertifikatet for dette nettstedet er utstedt av <ph name="ISSUER" />. Tjeneren oppga ingen informasjon om sertifikatåpenhet.</translation>
 <translation id="7937630085815544518">Du ble logget på Chromium som <ph name="USER_EMAIL_ADDRESS" />. Du må logge deg på igjen med samme konto.</translation>
 <translation id="7962572577636132072">Chromium oppdateres automatisk, sånn at du alltid har den nyeste versjonen.</translation>
 <translation id="7979877361127045932">Skjul i Chromium-menyen</translation>
 <translation id="8030318113982266900">Oppdaterer enheten din til <ph name="CHANNEL_NAME" />-kanalen ...</translation>
 <translation id="8033665941300843262">Chromium må ha tilgang til tillatelsene dine for å kunne dele dem med dette nettstedet.</translation>
 <translation id="805745970029938373">Du kan se alle varslene dine fra Chromium-apper, -utvidelser og -nettsteder her.</translation>
-<translation id="811857857463334932">Denne datamaskinen kommer ikke lenger til å motta Chromium-oppdateringer. Dette skjer fordi maskinvaren ikke støttes lenger.</translation>
 <translation id="8134284582177628525">Hvis du deler denne datamaskinen med <ph name="PROFILE_NAME" />, kan du legge deg selv til i Chromium for å holde surfingen atskilt. Eventuelt kan du koble fra vedkommendes Google-konto.</translation>
 <translation id="8187289872471304532">Gå til Programmer &gt; Systeminnstillinger &gt; Nettverk &gt; Avansert &gt; Mellomtjenere og fjern avmerkingen for alle valgte mellomtjenere.</translation>
 <translation id="8269379391216269538">Bidra til å gjøre Chromium bedre</translation>

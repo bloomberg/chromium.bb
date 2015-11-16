@@ -33,7 +33,6 @@
 <translation id="1770394049404108959">애플리케이션이 열리지 않음</translation>
 <translation id="177096447311351977">클라이언트용 채널 IP: <ph name="CLIENT_GAIA_IDENTIFIER" /> ip='<ph name="CLIENT_IP_ADDRESS_AND_PORT" />' host_ip='<ph name="HOST_IP_ADDRESS_AND_PORT" />' channel='<ph name="CHANNEL_TYPE" />' connection='<ph name="CONNECTION_TYPE" />'</translation>
 <translation id="1779766957982586368">창 닫기</translation>
-<translation id="1818475040640568770">등록된 컴퓨터가 없습니다.</translation>
 <translation id="1841799852846221389">컴퓨터의 원격 연결을 사용중지하는 중...</translation>
 <translation id="189172778771606813">탐색 창 닫기</translation>
 <translation id="195619862187186579">키보드 레이아웃</translation>
@@ -87,8 +86,6 @@
 <translation id="2926340305933667314">컴퓨터에 대한 원격 액세스를 사용중지하지 못했습니다. 나중에 다시 시도해 주세요.</translation>
 <translation id="2930135165929238380">필수 구성요소가 일부 누락되었습니다. chrome://plugins로 이동하여 Native Client를 사용하도록 설정되어 있는지 확인해 주시기 바랍니다.</translation>
 <translation id="2939145106548231838">호스트에 대한 인증</translation>
-<translation id="2998137343848432918">• 크레딧 화면 추가
-• 전체화면 보기로 할 때 키보드가 표시되는 문제 해결</translation>
 <translation id="3020807351229499221">PIN을 업데이트하지 못했습니다. 나중에 다시 시도해 주세요.</translation>
 <translation id="3025388528294795783">어떤 문제인지 말씀해 주시면 문제해결에 도움이 됩니다.</translation>
 <translation id="3027681561976217984">터치 모드</translation>
@@ -124,6 +121,7 @@
 <translation id="3950820424414687140">로그인</translation>
 <translation id="3989511127559254552">계속하려면 내 컴퓨터에 확장 액세스 권한을 부여해야 합니다. 이 작업은 한번만 수행하면 됩니다.</translation>
 <translation id="4006787130661126000">Chrome 원격 데스크톱을 사용하여 컴퓨터에 액세스하려면 원격 연결을 사용하도록 설정해야 합니다.</translation>
+<translation id="405887016757208221">원격 컴퓨터가 세션을 초기화하는 데 실패했습니다. 문제가 지속되면 호스트를 다시 구성해 보시기 바랍니다.</translation>
 <translation id="4068946408131579958">모든 연결</translation>
 <translation id="409800995205263688">참고: 정책 설정에 따라 네트워크 내에 있는 컴퓨터 간의 연결만 허용됩니다.</translation>
 <translation id="4155497795971509630">일부 필수 구성요소가 누락되었습니다. 소프트웨어의 최신 버전을 설치했는지 확인한 뒤 다시 시도해주세요.</translation>
@@ -170,7 +168,6 @@
 <translation id="518094545883702183">이 정보는 보고된 문제를 진단하는 데만 사용되고 보고서 조사 담당자만 볼 수 있으며, 30일 이내에 폐기됩니다.</translation>
 <translation id="5222676887888702881">로그아웃</translation>
 <translation id="5254120496627797685">이 페이지를 닫으면 Chrome 원격 데스크톱 세션이 종료됩니다.</translation>
-<translation id="5285241842433869526">컴퓨터에 원격 액세스를 설정하는 방법을 알아보세요.</translation>
 <translation id="5308380583665731573">연결</translation>
 <translation id="5363265567587775042">액세스하려는 컴퓨터의 사용자에게 '<ph name="SHARE" />'를 클릭하여 액세스 코드를 달라고 요청하세요.</translation>
 <translation id="5379087427956679853">Chrome 원격 데스크톱을 사용하면 웹에서 내 컴퓨터를 안전하게 공유할 수 있습니다. 양쪽 사용자 모두 <ph name="URL" /> 페이지에 있는 Chrome 원격 데스크톱 앱을 실행해야 합니다.</translation>
@@ -258,6 +255,7 @@
 <translation id="7869445566579231750">이 애플리케이션을 실행할 수 있는 권한이 없습니다.</translation>
 <translation id="7948001860594368197">화면 옵션</translation>
 <translation id="7970576581263377361">인증에 실패했습니다. Chromium에 다시 로그인하세요.</translation>
+<translation id="7981525049612125370">원격 세션이 만료되었습니다.</translation>
 <translation id="8041721485428375115">Chrome 원격 데스크톱 호스트 설치 프로그램을 다운로드하면 Google <ph name="LINK_BEGIN" />서비스 약관<ph name="LINK_END" />에 동의하게 됩니다.</translation>
 <translation id="8073845705237259513">Chrome 원격 데스크톱을 사용하려면 기기에 Google 계정을 추가해야 합니다.</translation>
 <translation id="80739703311984697">원격 호스트는 타사 웹사이트에 대한 인증이 필요합니다. 계속하려면 이 주소에 액세스할 수 있도록 Chromoting에 추가 권한을 허용해야 합니다.</translation>

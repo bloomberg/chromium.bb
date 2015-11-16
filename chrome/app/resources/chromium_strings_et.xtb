@@ -32,6 +32,7 @@
 <translation id="1967743265616885482">Samanimeline moodul põhjustab teadaolevalt Chromiumiga vastuolusid.</translation>
 <translation id="2077129598763517140">Kasuta võimaluse korral riistvarakiirendust</translation>
 <translation id="2097986737970966220">Ava Chromium töölaual</translation>
+<translation id="2117181891440368863">Chromium kinnitas, et selle veebisaidi sertifikaadi andis välja väljaandja <ph name="ISSUER" />. Server esitas sertifikaadi läbipaistvuse teabe, aga see oli kehtetu.</translation>
 <translation id="2119636228670142020">Teave &amp;Chromium OS-i kohta</translation>
 <translation id="2158734852934720349">Chromium OS-i avatud lähtekoodi litsentsid</translation>
 <translation id="2233513990531887259">Chromiumi immersiivses režiimis taaskäivitamine</translation>
@@ -46,13 +47,11 @@
 <translation id="2558641060352364164">See sait kasutab pistikprogrammi Chromium Frame, mille tugi peagi lõpeb. Desinstallige see ja täiendage moodsale brauserile.</translation>
 <translation id="2572494885440352020">Chromiumi abiline</translation>
 <translation id="2602806952220118310">Chromium – märguanded</translation>
-<translation id="2615699638672665509">See arvuti ei saa peagi enam Chromiumi värskendusi, kuna selle riistvara ei toetata enam.</translation>
 <translation id="2636877269779209383">Chromiumil on vaja kaamerale juurdepääsu selle jagamiseks saidiga.</translation>
 <translation id="2648074677641340862">Installimisel ilmnes operatsioonisüsteemi viga. Laadige Chromium uuesti alla.</translation>
 <translation id="2673087257647337101">Rakendus on peaaegu ajakohane! Värskendamise lõpuleviimiseks taaskäivitage Chromium.</translation>
 <translation id="2685838254101182273">Chromiumi värskendamine peatati ja teie operatsioonisüsteemi seda versiooni ei toetata enam.</translation>
 <translation id="2705212601509139398">See sait kasutab pistikprogrammi Chromium Frame, mille tugi peagi lõpeb. Desinstallige see ja laadige alla ühilduv brauser.</translation>
-<translation id="2732467638532545152">Teie arvuti käitab Microsoft Windowsi vana versiooni, mis ei suuda töödelda selle veebisaidi turvasertifikaati. Seetõttu ei saa Chromium tuvastada, kas sertifikaat pärineb saidilt <ph name="SITE" /> või kelleltki võrgus, kes teeskleb saiti <ph name="SITE" />. Viige arvuti üle uuemale Windowsi versioonile.</translation>
 <translation id="2770231113462710648">Asenda vaikebrauser:</translation>
 <translation id="2801146392936645542"><ph name="FILE_NAME" /> on pahatahtlik ja Chromium on selle blokeerinud.</translation>
 <translation id="2847479871509788944">Chromiumist eemaldamine ...</translation>
@@ -85,8 +84,6 @@ ja valed mandaadid. See võib juhtuda siis, kui ründaja proovib teeselda, et on
 <translation id="3582788516608077514">Chromiumi värskendamine ...</translation>
 <translation id="358997566136285270">Chromiumi logo</translation>
 <translation id="3595526210123705352">Kui taaskäivitate Windows 8 režiimis, suletakse ja taaskäivitatakse teie Chromiumi rakendused.</translation>
-<translation id="3656661827369545115">Käivita Chromium automaatselt, kui arvuti käivitub</translation>
-<translation id="3736987306260231966">Chromium ei saa veebilehte kuvada, kuna teie arvuti pole Internetiga ühendatud.</translation>
 <translation id="3738139272394829648">Puudutage otsimiseks</translation>
 <translation id="3744899669254331632">Te ei saa saiti <ph name="SITE" /> praegu külastada, sest veebisait saatis tagasi arusaamatud mandaadid, mida Chromium ei saa töödelda. Võrguvead ja -rünnakud on tavaliselt ajutised, nii et leht tõenäoliselt hiljem töötab.</translation>
 <translation id="3748537968684000502">Vaatate turvalist Chromiumi lehte.</translation>
@@ -107,7 +104,6 @@ ja valed mandaadid. See võib juhtuda siis, kui ründaja proovib teeselda, et on
 <translation id="4285930937574705105">Installimine ebaõnnestus tundmatu vea tõttu. Kui Chromium praegu töötab, siis sulgege see ja proovige uuesti.</translation>
 <translation id="4330585738697551178">See moodul põhjustab teadaolevalt Chromiumiga vastuolusid.</translation>
 <translation id="4423735387467980091">Chromiumi kohandamine ja juhtimine</translation>
-<translation id="442817494342774222">Chromium on seadistatud arvuti sisselülitamisel automaatselt käivituma.</translation>
 <translation id="4458285410772214805">Muudatuse jõustamiseks logige välja ja uuesti sisse.</translation>
 <translation id="4488676065623537541">Teie arvelduse detailid on salvestatud Chromiumi.</translation>
 <translation id="4559775032954821361">Valige
@@ -178,6 +174,7 @@ On võimalik, et mõni funktsioon ei ole saadaval. Määrake muu profiilikataloo
 <translation id="6734080038664603509">Värskenda &amp;Chromiumi</translation>
 <translation id="6757767188268205357">Ära tüüta mind</translation>
 <translation id="6810143991807788455">Aidake muuta Chromiumi paremaks, teavitades meid praegustest seadetest</translation>
+<translation id="6838494703713445896">Chromium kinnitas, et selle veebisaidi sertifikaadi andis välja väljaandja <ph name="ISSUER" />. Server esitas sertifikaadi läbipaistvuse kehtiva teabe.</translation>
 <translation id="6883876366448858277">saadab sõna ja ümbritseva konteksti Google'i otsingule, tagastades definitsioonid, kujutised, otsingutulemused ja muud otsingutulemused.</translation>
 <translation id="6893813176749746474">Chromiumi on värskendatud, kuid te ei ole seda kasutanud vähemalt 30 päeva.</translation>
 <translation id="6900895776413482243">Kui taaskäivitate Chromiumi immersiivses režiimis, suletakse ja taaskäivitatakse teie Chromiumi rakendused.</translation>
@@ -190,6 +187,7 @@ On võimalik, et mõni funktsioon ei ole saadaval. Määrake muu profiilikataloo
 <translation id="7066436765290594559">Chromium OS ei saanud teie andmeid sünkroonida. Värskendage oma sünkroonimisparooli.</translation>
 <translation id="7138853919861947730">Chromium võib kasutada veebiteenuseid sirvimiskogemuse täiustamiseks.</translation>
 <translation id="7162152143154757523">Chromium võib õigekirjakontrolli täiustada, saates brauserisse sisestatud teksti Google'i serveritesse ja võimaldades kasutada sama õigekirjakontrolli tehnoloogiat, mida kasutatakse Google'i otsingus.</translation>
+<translation id="7178626992616222740">Chromium kinnitas, et selle veebisaidi sertifikaadi andis välja väljaandja <ph name="ISSUER" />. Server esitas sertifikaadi läbipaistvuse teabe, aga Chromium ei tuvastanud sertifikaadi läbipaistvuse logisid.</translation>
 <translation id="7196020411877309443">Miks mulle seda näidatakse?</translation>
 <translation id="7205698830395646142">Chromiumi menüüs peitmine</translation>
 <translation id="7211828883345145708">Võimaldab täiendavaid klaviatuuri otseteid, mis on kasulikud Chromiumi silumiseks.</translation>
@@ -215,13 +213,13 @@ Chromium ei saa teie seadeid taastada.</translation>
 <translation id="7723128346970903111">Kui see on lubatud, kasutatakse iframe'il põhinevat Chromiumi sisselogimisvoogu. Muidu kasutatakse veebikuval põhinevat voogu.</translation>
 <translation id="7729447699958282447">Chromium ei saa teie andmeid sünkroonida, sest teie domeenil pole sünkroonimine saadaval.</translation>
 <translation id="7747138024166251722">Installija ei suutnud luua ajutist kataloogi. Palun kontrollige vaba kettaruumi ja tarkvara installimise loa olemasolu.</translation>
+<translation id="7918535023914021398">Chromium kinnitas, et selle veebisaidi sertifikaadi andis välja väljaandja <ph name="ISSUER" />. Server ei esitanud sertifikaadi läbipaistvuse teavet.</translation>
 <translation id="7937630085815544518">Olite Chromiumisse sisse logitud kasutajana <ph name="USER_EMAIL_ADDRESS" />. Kasutage uuesti sisselogimiseks sama kontot.</translation>
 <translation id="7962572577636132072">Chromium teeb värskendused automaatselt, nii et kasutate alati uusimat versiooni.</translation>
 <translation id="7979877361127045932">Chromiumi menüüs peitmine</translation>
 <translation id="8030318113982266900">Seadet värskendatakse kanalile <ph name="CHANNEL_NAME" /> ...</translation>
 <translation id="8033665941300843262">Chromiumil on vaja lubadele juurdepääsu nende jagamiseks saidiga.</translation>
 <translation id="805745970029938373">Siin näete kõiki Chromiumi rakendustest, laiendustest ja veebisaitidelt pärinevaid märguandeid.</translation>
-<translation id="811857857463334932">See arvuti ei saa enam Chromiumi värskendusi, kuna selle riistvara ei toetata enam.</translation>
 <translation id="8134284582177628525">Kui jagate seda arvutit kasutajaga <ph name="PROFILE_NAME" />, lisage ennast Chromiumi, et saaksite eraldi sirvida. Muidu katkestage ühendus nende Google'i kontoga.</translation>
 <translation id="8187289872471304532">Tehke valikud
           Rakendused &gt; Süsteemieelised &gt; Võrk &gt; Täpsem &gt; Puhverserverid

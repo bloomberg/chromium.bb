@@ -60,6 +60,7 @@
 <translation id="1076818208934827215">Microsoft Internet Explorer</translation>
 <translation id="1077946062898560804">Imposta aggiornamenti automatici per tutti gli utenti</translation>
 <translation id="1079766198702302550">Impedisci sempre l'accesso alla webcam</translation>
+<translation id="1082398631555931481"><ph name="THIRD_PARTY_TOOL_NAME" /> vuole ripristinare le impostazioni predefinite originali di Chrome. Questa operazione comporta la reimpostazione di pagina iniziale, pagina Nuova scheda e motore di ricerca, oltre alla disattivazione delle estensioni e allo sblocco di tutte le schede. Verranno inoltre cancellati altri dati temporanei e memorizzati nella cache, come cookie e dati relativi a contenuti e siti.</translation>
 <translation id="108346963417674655">Impossibile collegarsi in sicurezza al server. È possibile che questo sito web funzionasse in passato, ma attualmente c'è un problema con il server. La connessione a questo tipo di siti riduce la sicurezza per tutti gli utenti ed è quindi stata disattivata.</translation>
 <translation id="1084538181352409184">Controlla le impostazioni del proxy o contatta il tuo amministratore di rete per
           assicurarti che il server proxy sia in funzione.
@@ -117,6 +118,7 @@
 <translation id="1155759005174418845">Catalan</translation>
 <translation id="1156185823432343624">Volume: disattivato</translation>
 <translation id="1156689104822061371">Layout tastiera:</translation>
+<translation id="1158274711289833876">Connessione TLS protetta</translation>
 <translation id="1160536908808547677">In modalità ingrandita, gli elementi con posizione fissa e le barre di scorrimento ridimensionate vengono aggiunte a questa visualizzazione.</translation>
 <translation id="1161575384898972166">Accedi a <ph name="TOKEN_NAME" /> per esportare il certificato client.</translation>
 <translation id="1162223735669141505">Per utilizzare questa funzione è necessario attivare il <ph name="BEGIN_LINK" />plug-in Native Client<ph name="END_LINK" />.</translation>
@@ -135,6 +137,8 @@
 <translation id="1178581264944972037">Pausa</translation>
 <translation id="1179803038870941185"><ph name="URL" /> vuole avere il controllo totale dei tuoi dispositivi MIDI.</translation>
 <translation id="1181037720776840403">Rimuovi</translation>
+<translation id="11814323404622888">"&gt;
+    Dispositivo USB-C (porta posteriore destra)</translation>
 <translation id="1183083053288481515">Utilizzo di un certificato fornito dall'amministratore</translation>
 <translation id="1183237619868651138">Impossibile installare <ph name="EXTERNAL_CRX_FILE" /> nella cache locale.</translation>
 <translation id="1185924365081634987">Puoi anche provare a <ph name="GUEST_SIGNIN_LINK_START" />navigare come ospite<ph name="GUEST_SIGNIN_LINK_END" /> per correggere questo errore di rete.</translation>
@@ -144,6 +148,7 @@
 <translation id="1189418886587279221">Attiva funzioni di accessibilità per facilitare l'utilizzo del dispositivo.</translation>
 <translation id="1190144681599273207">Per il recupero di questo file verranno utilizzati circa <ph name="FILE_SIZE" /> di dati mobili.</translation>
 <translation id="11901918071949011">{NUM_FILES,plural, =1{Accesso a un file memorizzato sul computer}other{Accesso a # file memorizzati sul computer}}</translation>
+<translation id="1190855992966397019">Attiva blocco AppContainer.</translation>
 <translation id="1195447618553298278">Errore sconosciuto.</translation>
 <translation id="1196338895211115272">Operazione di esportazione della chiave privata non riuscita.</translation>
 <translation id="1196789802623400962">Consente di attivare/disattivare l'opzione di modifica gestuale nella pagina di impostazioni della tastiera virtuale.</translation>
@@ -179,6 +184,7 @@
 <translation id="1234808891666923653">Service Workers</translation>
 <translation id="123578888592755962">Disco pieno</translation>
 <translation id="1240892293903523606">DOM Inspector</translation>
+<translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" /> vuole ripristinare le impostazioni.</translation>
 <translation id="1243314992276662751">Carica</translation>
 <translation id="1244303850296295656">Errore delle estensioni</translation>
 <translation id="1248269069727746712"><ph name="PRODUCT_NAME" /> sta utilizzando le impostazioni proxy di sistema del dispositivo per connettersi alla rete.</translation>
@@ -232,6 +238,7 @@
 <translation id="1338950911836659113">Eliminazione in corso...</translation>
 <translation id="1339266338863469628">Predefinito (viene rilevata soltanto la tua voce)</translation>
 <translation id="1340527397989195812">Importa elementi multimediali dal dispositivo utilizzando l'app File.</translation>
+<translation id="1341988552785875222">Lo sfondo attuale è stato impostato da "<ph name="APP_NAME" />". Prima di selezionare uno sfondo diverso, potrebbe essere necessario disinstallare "<ph name="APP_NAME" />".</translation>
 <translation id="1343517687228689568">Sblocca questa pagina da schermata iniziale...</translation>
 <translation id="1344519653668879001">Disattiva controllo dei link ipertestuali</translation>
 <translation id="1346104802985271895">Metodo di immissione vietnamita (TELEX)</translation>
@@ -326,6 +333,7 @@ Tieni presente che il Bluetooth verrà attivato per tutti i dispositivi compatib
 <translation id="1468038450257740950">WebGL non è supportato.</translation>
 <translation id="1470719357688513792">Le nuove impostazioni dei cookie avranno effetto una volta ricaricata la pagina.</translation>
 <translation id="14720830734893704">Attiva il supporto della tastiera virtuale.</translation>
+<translation id="1474079335130556426">Attiva la modalità background per l'API Push. Ciò permette a Chrome di rimanere in esecuzione dopo la chiusura dell'ultima finestra e di attivarsi all'avvio del sistema operativo, se l'API Push lo richiede.</translation>
 <translation id="1474339897586437869">Impossibile caricare "<ph name="FILENAME" />". Lo spazio disponibile su Google Drive non è sufficiente.</translation>
 <translation id="1476949146811612304">Imposta il motore di ricerca da utilizzare per le ricerche dalla <ph name="BEGIN_LINK" />omnibox<ph name="END_LINK" />.</translation>
 <translation id="1477301030751268706">Cache token dell'API Identity</translation>
@@ -643,6 +651,7 @@ Tieni presente che il Bluetooth verrà attivato per tutti i dispositivi compatib
 <translation id="1918141783557917887">Più &amp;piccolo</translation>
 <translation id="192144045824434199">Attiva i riquadri che si aprono al di fuori del frame del browser. Se tenti di aprire un riquadro senza attivare questa opzione, viene visualizzato un popup. I riquadri sono sempre attivi sui canali Dev e Canary.</translation>
 <translation id="1921584744613111023"><ph name="DPI" /> dpi</translation>
+<translation id="1921986354447415460">Tastiera Turco F</translation>
 <translation id="1923786009776354244">Attiva supporto dell'intestazione Origin nei messaggi Stun WebRTC.</translation>
 <translation id="1926741348654461781">Attiva pagine offline</translation>
 <translation id="1929546189971853037">Leggere la cronologia di navigazione su tutti i dispositivi su cui viene eseguito l'accesso</translation>
@@ -841,6 +850,7 @@ Tieni presente che il Bluetooth verrà attivato per tutti i dispositivi compatib
 <translation id="2231990265377706070">Punto esclamativo</translation>
 <translation id="2232876851878324699">Il file conteneva un certificato, che non è stato importato:</translation>
 <translation id="2233502537820838181">Ulteriori infor&amp;mazioni</translation>
+<translation id="2233587473672843170">Mostra siti famosi nella pagina Nuova scheda</translation>
 <translation id="223714078860837942">Se una pagina non ha impostato un criterio di referrer esplicito, l'impostazione di questo flag riduce la quantità di informazioni incluse nell'intestazione "referrer" per richieste multiorigine.</translation>
 <translation id="2238379619048995541">Dati sullo stato di frequenza</translation>
 <translation id="2239921694246509981">Aggiungi persona supervisionata</translation>
@@ -984,6 +994,7 @@ Dopo avere creato un nuovo utente supervisionato, puoi gestirne le impostazioni 
 <translation id="2421956571193030337">Utilizza questa funzione solo con gli account che consideri attendibili.</translation>
 <translation id="2422426094670600218">&lt;senza nome&gt;</translation>
 <translation id="2423578206845792524">Sa&amp;lva immagine con nome...</translation>
+<translation id="2424091190911472304">Esegui sempre su <ph name="ORIGIN" /></translation>
 <translation id="2433452467737464329">Aggiungi un parametro di ricerca nell'URL per aggiornare automaticamente la pagina: chrome://network/?refresh=&lt;sec&gt;</translation>
 <translation id="2433507940547922241">Aspetto</translation>
 <translation id="2433728760128592593">Premi Alt+Maiusc per passare da un metodo di immissione all'altro.</translation>
@@ -1046,7 +1057,6 @@ Non credo che questo sito debba essere bloccato.</translation>
 <translation id="2504775205691825589">Il server che ospita la pagina web potrebbe essere troppo carico o in corso di manutenzione. Per evitare di generare traffico eccessivo e di peggiorare la situazione, le richieste a questo URL sono state temporaneamente disattivate.</translation>
 <translation id="2505402373176859469"><ph name="RECEIVED_AMOUNT" /> di <ph name="TOTAL_SIZE" /></translation>
 <translation id="2507649982651274960">Il dispositivo è stato registrato correttamente per la gestione aziendale, ma non sono state inviate le relative informazioni su asset e posizione. Inserisci manualmente queste informazioni nella Console di amministrazione del dispositivo.</translation>
-<translation id="2508404591020172552"><ph name="DOWNLOAD_RECEIVED_AND_TOTAL" /> da <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="2509739495444557741">Nessun plug-in installato.</translation>
 <translation id="2509857212037838238">Installa <ph name="PLUGIN_NAME" /></translation>
 <translation id="2510708650472996893">Profilo colore:</translation>
@@ -1300,6 +1310,8 @@ Non credo che questo sito debba essere bloccato.</translation>
 <translation id="2841837950101800123">Provider</translation>
 <translation id="2843055980807544929">Se l'opzione viene disattivata, Chrome gestirà WM_KEY* e WM_CHAR separatamente.</translation>
 <translation id="2843806747483486897">Cambia predefinita...</translation>
+<translation id="2844111009524261443">Esegui al clic</translation>
+<translation id="2844169650293029770">Dispositivo USB-C (porta anteriore sinistra)</translation>
 <translation id="2845382757467349449">Mostra sempre barra dei Preferiti</translation>
 <translation id="2846816712032308263">Consente la chiusura veloce di schede/finestre - viene eseguito il gestore onunload js di una scheda indipendentemente dalla GUI.</translation>
 <translation id="284970761985428403"><ph name="ASCII_NAME" /> (<ph name="UNICODE_NAME" />)</translation>
@@ -1365,6 +1377,7 @@ Non credo che questo sito debba essere bloccato.</translation>
 <translation id="2923469375796950815">Disattiva il nuovo ZIP unpacker.</translation>
 <translation id="2924296707677495905">Traslitterazione (namaskaram → ನಮಸ್ಕಾರ)</translation>
 <translation id="2925966894897775835">Fogli</translation>
+<translation id="2927017729816812676">Spazio di archiviazione cache</translation>
 <translation id="2927657246008729253">Modifica...</translation>
 <translation id="2928526264833629376">Continua su Hangouts</translation>
 <translation id="2930644991850369934">Si è verificato un problema durante il download dell'immagine di ripristino. Connessione di rete persa.</translation>
@@ -1374,6 +1387,7 @@ Non credo che questo sito debba essere bloccato.</translation>
 <translation id="2937174152333875430">Attiva sincronizzazione di Avvio applicazioni</translation>
 <translation id="2938225289965773019">Aprire i link <ph name="PROTOCOL" /></translation>
 <translation id="2938685643439809023">Mongolo</translation>
+<translation id="2941479658084239256">Consente di attivare la memorizzazione in locale delle pagine da utilizzare offline.</translation>
 <translation id="2942290791863759244">Tastiera Tedesco NEO 2</translation>
 <translation id="2943400156390503548">Presentazioni</translation>
 <translation id="2946119680249604491">Aggiungi connessione</translation>
@@ -1395,6 +1409,7 @@ Non credo che questo sito debba essere bloccato.</translation>
 <translation id="2966598748518102999">Migliora la ricerca vocale inviando a Google l'audio di "OK Google" e di alcuni secondi precedenti.</translation>
 <translation id="2967544384642772068">Termina</translation>
 <translation id="2968792643335932010">Meno copie</translation>
+<translation id="2971033837577180453">&lt;span&gt;ID:&lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="2971213274238188218">riduci luminosità</translation>
 <translation id="2972557485845626008">Firmware</translation>
 <translation id="2972581237482394796">&amp;Ripeti</translation>
@@ -1457,6 +1472,7 @@ Non credo che questo sito debba essere bloccato.</translation>
 <translation id="3064388234319122767">Traslitterazione (zdravo → здраво)</translation>
 <translation id="3065041951436100775">Feedback relativo alle schede ignorate</translation>
 <translation id="3065140616557457172">Digita i termini di ricerca o inserisci un URL per navigare. Entrambe le soluzioni funzionano.</translation>
+<translation id="3065351588762546748">La connessione a questo sito utilizza una versione del protocollo e un pacchetto di crittografia sicuri.</translation>
 <translation id="3067198360141518313">Esegui questo plug-in</translation>
 <translation id="3075239840551149663"><ph name="NEW_PROFILE_NAME" /> è stato creato come utente supervisionato.</translation>
 <translation id="3075874217500066906">È necessario riavviare per iniziare la procedura di Powerwash. Dopo il riavvio ti verrà chiesto di confermare di voler procedere.</translation>
@@ -1636,6 +1652,7 @@ I dati di accesso del tuo account sono obsoleti.</translation>
 <translation id="3308006649705061278">Unità organizzativa (OU)</translation>
 <translation id="3308116878371095290">Impostazione dei cookie vietata per questa pagina.</translation>
 <translation id="3308134619352333507">Nascondi pulsante</translation>
+<translation id="3309747692199697901">Esegui sempre su tutti i siti</translation>
 <translation id="3313590242757056087">Per impostare i siti web che l'utente supervisionato può visualizzare, puoi configurare limitazioni e impostazioni visitando il sito all'indirizzo <ph name="MANAGEMENT_URL" />.
 Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> può visitare tutti i siti sul Web.</translation>
 <translation id="3313622045786997898">Valore firma certificato</translation>
@@ -1701,6 +1718,7 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="3396331542604645348">La stampante selezionata non è disponibile o non è installata correttamente. Controlla la stampante o prova a selezionarne un'altra.</translation>
 <translation id="3399597614303179694">Tastiera macedone</translation>
 <translation id="340013220407300675">Gli autori di un attacco potrebbero cercare di rubare le tue informazioni (ad esempio password, messaggi o dati della carta di credito) da <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />.</translation>
+<translation id="3401130144947259741">Se l'opzione viene attivata, gli eventi di tracciamento vengono esportati in ETW (Event Tracing for Windows) e quindi possono essere acquisiti tramite strumenti come UIForETW o Xperf.</translation>
 <translation id="340282674066624"><ph name="DOWNLOAD_RECEIVED" />, <ph name="TIME_LEFT" /></translation>
 <translation id="3405763860805964263">...</translation>
 <translation id="3406605057700382950">&amp;Mostra barra dei Preferiti</translation>
@@ -1712,6 +1730,7 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="3423858849633684918">Riavvia <ph name="PRODUCT_NAME" /></translation>
 <translation id="3426704822745136852">Consente di specificare il numero di thread raster.</translation>
 <translation id="3428010780253032925">Disattiva targeting basato su rettangolo nelle visualizzazioni</translation>
+<translation id="3429274334716393946">{COUNT,plural, =0{almeno 1 elemento sui dispositivi sincronizzati}=1{1 elemento (e altri sui dispositivi sincronizzati)}other{# elementi (e altri sui dispositivi sincronizzati)}}</translation>
 <translation id="3429599832623003132">$1 elementi</translation>
 <translation id="3433621910545056227">Spiacenti. Il sistema non è riuscito a stabilire il blocco degli attributi del tempo di installazione del dispositivo.</translation>
 <translation id="343467364461911375">Alcuni servizi di contenuti utilizzano identificatori automatici per identificarti in modo univoco al fine di autorizzare l'accesso ai contenuti protetti.</translation>
@@ -1857,6 +1876,7 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="3603385196401704894">Francese canadese</translation>
 <translation id="3603622770190368340">Ottieni certificato di rete</translation>
 <translation id="3605780360466892872">Ventiquattrore</translation>
+<translation id="3606220979431771195">Turco F</translation>
 <translation id="3608454375274108141">F10</translation>
 <translation id="3608576286259426129">Anteprima immagine utente</translation>
 <translation id="3609138628363401169">Il server non supporta l'estensione di rinegoziazione TLS.</translation>
@@ -1982,6 +2002,7 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="3759933321830434300">Blocco di parti delle pagine web</translation>
 <translation id="3760460896538743390">Ispeziona pagina in &amp;background</translation>
 <translation id="37613671848467444">Apri in finestra di navigazione in &amp;incognito</translation>
+<translation id="3763401818161139108">Esegui sempre su <ph name="ORIGIN" /></translation>
 <translation id="3764583730281406327">{NUM_DEVICES,plural, =1{Comunicazione con un dispositivo USB}other{Comunicazione con # dispositivi USB}}</translation>
 <translation id="3764800135428056022">Richiedi di salvare le tue password web.</translation>
 <translation id="3764986667044728669">Impossibile registrare</translation>
@@ -2206,6 +2227,7 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="409579654357498729">Aggiungi a Cloud Print</translation>
 <translation id="4096508467498758490">Disattiva estensioni in modalità sviluppatore</translation>
 <translation id="4098354747657067197">Sito ingannevole in vista</translation>
+<translation id="4099585076575543605">{COUNT,plural, =0{nessuna}=1{1}other{#}}</translation>
 <translation id="409980434320521454">Sincronizzazione non riuscita</translation>
 <translation id="4103763322291513355">Visita &lt;strong&gt;chrome://policy&lt;/strong&gt; per visualizzare l'elenco di URL inseriti nella blacklist e altre norme applicate dall'amministratore di sistema.</translation>
 <translation id="4104163789986725820">E&amp;sporta...</translation>
@@ -2348,6 +2370,7 @@ Per continuare, devono disconnettersi tutti gli utenti.</translation>
 <translation id="4321136812570927563">{NUM_DOWNLOAD,plural, =1{Continua il download}other{Continua i download}}</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4322394346347055525">Chiudi le altre schede</translation>
+<translation id="4325378361067528777">Attiva la modalità background API Push</translation>
 <translation id="4326952458285403282">Consente di disattivare l'utilizzo del sistema sperimentale di visualizzazione dei caratteri DirectWrite.</translation>
 <translation id="4326999707196471878">Finestre di dialogo del browser con visualizzazioni toolkit.</translation>
 <translation id="4330406155931244378">Abilita il controllo ortografico multilingue</translation>
@@ -2414,6 +2437,7 @@ Premi un tasto qualsiasi per continuare a esplorare.</translation>
 <translation id="4439318412377770121">Vuoi registrare <ph name="DEVICE_NAME" /> su Google Cloud Devices?</translation>
 <translation id="4441124369922430666">Vuoi avviare automaticamente questa app all'accensione del computer?</translation>
 <translation id="444134486829715816">Espandi...</translation>
+<translation id="4442309605992420742">Attiva l'accoppiamento Weave</translation>
 <translation id="444267095790823769">Eccezioni di contenuti protetti</translation>
 <translation id="4443536555189480885">&amp;Guida</translation>
 <translation id="4444304522807523469">Accesso a scanner di documenti aggiunti tramite USB o sulla rete locale</translation>
@@ -2475,6 +2499,7 @@ Premi un tasto qualsiasi per continuare a esplorare.</translation>
 <translation id="4545759655004063573">Impossibile salvare a causa dell'insufficienza di autorizzazioni. Salva in un'altra posizione.</translation>
 <translation id="4547659257713117923">Nessuna scheda di altri dispositivi</translation>
 <translation id="4547992677060857254">La cartella che hai selezionato contiene file delicati. Vuoi concedere a "$1" accesso di scrittura permanente a questa cartella?</translation>
+<translation id="4552495056028768700">Accesso alla pagina</translation>
 <translation id="4552678318981539154">Acquista più spazio di archiviazione</translation>
 <translation id="4554591392113183336">La versione dell'estensione esterna è pari o precedente a quella dell'estensione esistente.</translation>
 <translation id="4554796861933393312">Velocità animazione goccia d'inchiostro material design</translation>
@@ -2734,6 +2759,7 @@ Premi un tasto qualsiasi per continuare a esplorare.</translation>
 <translation id="4920887663447894854">Il monitoraggio della tua posizione da parte dei seguenti siti è stato bloccato su questa pagina:</translation>
 <translation id="492322146001920322">Strategia conservativa di rilascio dell'utilizzo di memoria</translation>
 <translation id="4923279099980110923">Sì, desidero dare il mio contributo</translation>
+<translation id="4924202073934898868">Consente di attivare l'utilizzo di un AppContainer sui processi sandbox per migliorare la sicurezza.</translation>
 <translation id="4924638091161556692">Corretta</translation>
 <translation id="4925542575807923399">L'amministratore di questo account richiede che questo account sia il primo account registrato in una sessione con accesso simultaneo.</translation>
 <translation id="4927301649992043040">Crea pacchetto estensione</translation>
@@ -2871,6 +2897,8 @@ Premi un tasto qualsiasi per continuare a esplorare.</translation>
 <translation id="5145331109270917438">Data modifica</translation>
 <translation id="5148652308299789060">Disattiva unità di rasterizzazione software 3D</translation>
 <translation id="5150254825601720210">Nome server SSL certificato Netscape</translation>
+<translation id="5151639798712723370">"&gt;
+    Dispositivo USB-C (porta anteriore destra)</translation>
 <translation id="5152451685298621771">(Account per minori)</translation>
 <translation id="5154108062446123722">Impostazioni avanzate per <ph name="PRINTING_DESTINATION" /></translation>
 <translation id="5154176924561037127">F8</translation>
@@ -2969,6 +2997,7 @@ Premi un tasto qualsiasi per continuare a esplorare.</translation>
 <translation id="5271247532544265821">Attiva/disattiva modalità cinese tradizionale/cinese semplificato</translation>
 <translation id="5271549068863921519">Salva password</translation>
 <translation id="5273628206174272911">Navigazione sperimentale nella cronologia in risposta allo scorrimento orizzontale.</translation>
+<translation id="5275795814002959418"><ph name="COUNT" /> da questo sito</translation>
 <translation id="5275973617553375938">File recuperati da Google Drive</translation>
 <translation id="527605719918376753">Disattiva audio scheda</translation>
 <translation id="527605982717517565">Consenti sempre JavaScript su <ph name="HOST" /></translation>
@@ -3013,6 +3042,7 @@ Premi un tasto qualsiasi per continuare a esplorare.</translation>
 <translation id="5328285148748012771">Accedi a tutte le tue app da Avvio applicazioni. Gioca, videochatta, ascolta musica, modifica documenti o recupera altre app dal Chrome Web Store.</translation>
 <translation id="5329858601952122676">&amp;Elimina</translation>
 <translation id="5330145655348521461">Questi file sono aperti su un desktop differente. Passa a <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />) per visualizzarli.</translation>
+<translation id="5331975486040154427">Dispositivo USB-C (porta posteriore sinistra)</translation>
 <translation id="5332624210073556029">Fuso orario:</translation>
 <translation id="5334142896108694079">Cache script</translation>
 <translation id="533433379391851622">La versione prevista era "<ph name="EXPECTED_VERSION" />", ma in realtà era "<ph name="NEW_ID" />".</translation>
@@ -3059,6 +3089,7 @@ Premi un tasto qualsiasi per continuare a esplorare.</translation>
 <translation id="539755880180803351">Annota i moduli web con previsioni sul tipo di campi di Compilazione automatica sotto forma di testo segnaposto.</translation>
 <translation id="5397578532367286026">L'utilizzo e la cronologia di questo utente possono essere esaminati dal gestore (<ph name="MANAGER_EMAIL" />) su chrome.com.</translation>
 <translation id="5397794290049113714">Tu</translation>
+<translation id="5398824043967640339"><ph name="COUNT" /> da altri siti</translation>
 <translation id="5399158067281117682">I PIN non corrispondono.</translation>
 <translation id="5400640815024374115">Il chip TPM (Trusted Platform Module) non è attivo o è assente.</translation>
 <translation id="5402367795255837559">Braille</translation>
@@ -3249,6 +3280,7 @@ Premi un tasto qualsiasi per continuare a esplorare.</translation>
 <translation id="5662457369790254286">Consente di configurare l'animazione della barra di avanzamento del caricamento delle pagine sui telefoni Android.</translation>
 <translation id="5663459693447872156">Passa automaticamente a metà larghezza</translation>
 <translation id="5669267381087807207">In fase di attivazione</translation>
+<translation id="5669462439438204699">Salva la carta di credito</translation>
 <translation id="5671961047338275645">Gestisci siti</translation>
 <translation id="5673305876422468017">Attiva popup rimozione ambiguità link.</translation>
 <translation id="5676267133227121599">Accedi alle tue password da qualsiasi dispositivo all'indirizzo <ph name="MANAGEMENT_LINK" />.</translation>
@@ -3542,11 +3574,13 @@ Premi un tasto qualsiasi per continuare a esplorare.</translation>
         Se il problema persiste, prova a svuotare la cache. In alcuni casi, può
         anche trattarsi di un sintomo iniziale di malfunzionamento dell'hardware.</translation>
 <translation id="6084983096586510630">Solo connessioni proprietarie</translation>
+<translation id="6086814797483779854">Esegui al clic</translation>
 <translation id="6086846494333236931">Installata dall'amministratore</translation>
 <translation id="6089481419520884864">Pagina Distill</translation>
 <translation id="6092270396854197260">MSPY</translation>
 <translation id="6093795393556121384">La carta è stata verificata</translation>
 <translation id="6093888419484831006">Annullamento aggiornamento...</translation>
+<translation id="6094826672794738469">Alternative Services.</translation>
 <translation id="6095984072944024315">–</translation>
 <translation id="6096047740730590436">Apri ingrandita</translation>
 <translation id="6096326118418049043">Nome X.500</translation>
@@ -3864,6 +3898,7 @@ Tentativo di identificazione del problema in corso...</translation>
 <translation id="6575251558004911012">Chiedi quando un sito richiede l'accesso alla fotocamera (opzione consigliata)</translation>
 <translation id="6581162200855843583">Link Google Drive</translation>
 <translation id="6583070985841601920">Accesso eseguito come <ph name="USER_EMAIL_ADDRESS" />. La sincronizzazione è stata disattivata dall'amministratore.</translation>
+<translation id="65832705307647870">Inserisci automaticamente siti famosi nella pagina Nuova scheda</translation>
 <translation id="6584878029876017575">Firma definitiva Microsoft</translation>
 <translation id="6585234750898046415">Scegli un'immagine da visualizzare per il tuo account nella schermata di accesso.</translation>
 <translation id="6585283250473596934">Accesso a una sessione pubblica.</translation>
@@ -3871,6 +3906,7 @@ Tentativo di identificazione del problema in corso...</translation>
 <translation id="6588399906604251380">Abilita controllo ortografico</translation>
 <translation id="6589706261477377614">Consente di aumentare la luminosità dei tasti</translation>
 <translation id="6592267180249644460">Data/ora acquisizione log WebRTC: <ph name="WEBRTC_LOG_CAPTURE_TIME" /></translation>
+<translation id="6593753688552673085">meno di <ph name="UPPER_ESTIMATE" /></translation>
 <translation id="6593868448848741421">migliore</translation>
 <translation id="6596092346130528198">È la pagina Nuova scheda prevista?</translation>
 <translation id="6596325263575161958">Opzioni di crittografia</translation>
@@ -3911,7 +3947,6 @@ Tentativo di identificazione del problema in corso...</translation>
 <translation id="6657585470893396449">Password</translation>
 <translation id="6659213950629089752">Questa pagina è stata ingrandita con l'estensione "<ph name="NAME" />"</translation>
 <translation id="6659594942844771486">TAB</translation>
-<translation id="6660753359158386737">Consente ai siti web di impostare il colore della omnibox in modalità a schede (con l'opzione "Unisci app e schede" disattivata) tramite il meta tag <ph name="META_TAG_NAME" />.</translation>
 <translation id="6662016084451426657">Errore di sincronizzazione. Contatta l'amministratore per richiedere l'attivazione della sincronizzazione.</translation>
 <translation id="6663792236418322902">La password scelta sarà necessaria per recuperare il file in un secondo momento. Registrala in una posizione sicura.</translation>
 <translation id="6664237456442406323">Purtroppo il tuo computer è configurato con un ID hardware non valido. Ciò impedisce a Chrome OS di aggiornarsi con le ultime correzioni relative alla sicurezza e il tuo computer <ph name="BEGIN_BOLD" />potrebbe essere vulnerabile ad attacchi dannosi<ph name="END_BOLD" />.</translation>
@@ -3926,7 +3961,6 @@ Tentativo di identificazione del problema in corso...</translation>
 <translation id="6686490380836145850">Chiudi schede a destra</translation>
 <translation id="6686817083349815241">Salva la password</translation>
 <translation id="6689514201497896398">Eludi controlli coinvolgimento utenti</translation>
-<translation id="6690455781383741953">Attiva risparmio energetico dei plug-in</translation>
 <translation id="6690565918367819723"><ph name="PROFILE_NAME" /> Cambia persona</translation>
 <translation id="6690659332373509948">Impossibile analizzare il file: <ph name="FILE_NAME" /></translation>
 <translation id="6690751852586194791">Scegli un utente controllato da aggiungere a questo dispositivo.</translation>
@@ -3987,6 +4021,7 @@ Tentativo di identificazione del problema in corso...</translation>
 <translation id="6782622603507084740">Attiva l'API EmbeddedSearch</translation>
 <translation id="6786747875388722282">Estensioni</translation>
 <translation id="6787839852456839824">Scorciatoie da tastiera</translation>
+<translation id="6790428901817661496">Play</translation>
 <translation id="6790820461102226165">Aggiungi persona...</translation>
 <translation id="6791443592650989371">Stato attivazione:</translation>
 <translation id="6793649375377511437">Info servizio Google Copresence</translation>
@@ -4067,7 +4102,6 @@ Tentativo di identificazione del problema in corso...</translation>
 <translation id="6910211073230771657">Eliminato</translation>
 <translation id="691024665142758461">Scaricare più file</translation>
 <translation id="6911468394164995108">Connetti a un'altra...</translation>
-<translation id="691321796646552019">Dacci un taglio.</translation>
 <translation id="6914291514448387591">L'esecuzione di <ph name="PLUGIN_NAME" /> richiede la tua autorizzazione.</translation>
 <translation id="6915804003454593391">Utente:</translation>
 <translation id="6916590542764765824">Gestisci estensioni</translation>
@@ -4081,7 +4115,6 @@ Tentativo di identificazione del problema in corso...</translation>
         che le modifiche dovute a questo percorso rendano inutilizzabili molti contenuti.</translation>
 <translation id="6935367737854035550">Consente di impostare gli elementi Material Design nel riquadro superiore del browser.</translation>
 <translation id="6937152069980083337">Metodo di immissione giapponese Google (per tastiera USA)</translation>
-<translation id="6938928695307934375">Consente di forzare la modalità di risparmio energetico sperimentale per i contenuti dei plug-in periferici. Le Impostazioni contenuti vengono ignorate.</translation>
 <translation id="6941427089482296743">Rimuovi tutto il testo visualizzato</translation>
 <translation id="6941937518557314510">Accedi a <ph name="TOKEN_NAME" /> per autenticarti su <ph name="HOST_NAME" /> con il tuo certificato.</translation>
 <translation id="6945221475159498467">Seleziona</translation>
@@ -4089,6 +4122,7 @@ Tentativo di identificazione del problema in corso...</translation>
 <translation id="6948736568813450284">Per gli sviluppatori. Consente di utilizzare il servizio sandbox per le chiamate all'API di Google Payments.</translation>
 <translation id="6949306908218145636">Aggiungi pagine aperte ai Preferiti...</translation>
 <translation id="695164542422037736">Se questa opzione viene attivata e al corpo viene applicato lo stile background-attachment:fixed, lo sfondo avrà il proprio livello composito.</translation>
+<translation id="6952626679169241027"><ph name="PASSWORD_MANAGER_BRAND" /> memorizza le tue password e ti permette di accedere automaticamente ai siti su questo dispositivo.</translation>
 <translation id="6954850746343724854">Attiva Native Client per tutte le applicazioni web, anche quelle che non sono state installate dal Chrome Web Store.</translation>
 <translation id="6955446738988643816">Ispeziona popup</translation>
 <translation id="695755122858488207">Pulsante di opzione non selezionato</translation>
@@ -4143,6 +4177,7 @@ Tentativo di identificazione del problema in corso...</translation>
 <translation id="7014051144917845222">Il tentativo di connessione di <ph name="PRODUCT_NAME" /> a <ph name="HOST_NAME" /> è stato rifiutato. Il sito web potrebbe non essere disponibile o la rete potrebbe non essere configurata correttamente.</translation>
 <translation id="7014174261166285193">Installazione non riuscita.</translation>
 <translation id="7015226785571892184">Se accetti la richiesta, verrà avviata la seguente applicazione: <ph name="APPLICATION" /></translation>
+<translation id="7016688023264690202">L'accoppiamento Weave viene utilizzato dall'app Weave per le comunicazioni protette con i dispositivi sulla rete locale.</translation>
 <translation id="7017004637493394352">Dì "Ok Google" di nuovo</translation>
 <translation id="7017219178341817193">Aggiungi una nuova pagina</translation>
 <translation id="7017354871202642555">Impossibile impostare la modalità dopo l'impostazione della finestra.</translation>
@@ -4161,7 +4196,6 @@ Tentativo di identificazione del problema in corso...</translation>
 <translation id="7030031465713069059">Salva password</translation>
 <translation id="7030084719913890980">I malintenzionati potrebbero avere compromesso il sito e potrebbero tentare di installare sul tuo computer programmi pericolosi che scoprono o eliminano i tuoi dati (ad esempio foto, password, messaggi e carte di credito).</translation>
 <translation id="7031962166228839643">Preparazione del TPM in corso, attendi (l'operazione potrebbe richiedere alcuni minuti)...</translation>
-<translation id="7036710474162401473">Questo servizio di accesso è in hosting su <ph name="SAML_DOMAIN" />.</translation>
 <translation id="7039326228527141150">Accedi a dispositivi USB di <ph name="VENDOR_NAME" /></translation>
 <translation id="7039912931802252762">Accesso smart card Microsoft</translation>
 <translation id="7040138676081995583">Apri con...</translation>
@@ -4203,6 +4237,7 @@ Tentativo di identificazione del problema in corso...</translation>
 <translation id="7092106376816104">Eccezioni popup</translation>
 <translation id="7093866338626856921">Scambio di dati con i dispositivi: <ph name="HOSTNAMES" /></translation>
 <translation id="7096082900368329802">Vuoi scoprire altre funzionalità straordinarie?</translation>
+<translation id="7098389117866926363">Dispositivo USB-C (porta posteriore sinistra)</translation>
 <translation id="7100897339030255923"><ph name="COUNT" /> elementi selezionati</translation>
 <translation id="7106346894903675391">Acquista più spazio di archiviazione...</translation>
 <translation id="7108338896283013870">Nascondi</translation>
@@ -4467,6 +4502,7 @@ Psst! La prossima volta potrebbe esserti utile la modalità di navigazione in in
 <translation id="7503191893372251637">Tipo di certificato Netscape</translation>
 <translation id="7503821294401948377">Impossibile caricare l'icona "<ph name="ICON" />" per l'azione del browser.</translation>
 <translation id="750413812607578381">Devi riavviare <ph name="PRODUCT_NAME" /> ora.</translation>
+<translation id="7504483980780085481">Il sito ha fornito informazioni su Certificate Transparency non valide.</translation>
 <translation id="7504676042960447229"><ph name="SITE_NAME" /> vorrebbe:</translation>
 <translation id="750509436279396091">Apri cartella dei download</translation>
 <translation id="7505167922889582512">Mostra file nascosti</translation>
@@ -4580,7 +4616,6 @@ Psst! La prossima volta potrebbe esserti utile la modalità di navigazione in in
 <translation id="7658239707568436148">Annulla</translation>
 <translation id="7659584679870740384">Non sei autorizzato a utilizzare questo dispositivo. Per ottenere l'autorizzazione di accesso contatta l'amministratore.</translation>
 <translation id="7664620655576155379">Dispositivo Bluetooth non supportato: "<ph name="DEVICE_NAME" />".</translation>
-<translation id="766494940855677502">Attiva <ph name="META_TAG_NAME" /> in modalità a schede.</translation>
 <translation id="7665369617277396874">Aggiungi account</translation>
 <translation id="766747607778166022">Gestisci carte di credito...</translation>
 <translation id="7668654391829183341">Dispositivo sconosciuto</translation>
@@ -4718,6 +4753,7 @@ Psst! La prossima volta potrebbe esserti utile la modalità di navigazione in in
 <translation id="7864539943188674973">Disattiva Bluetooth</translation>
 <translation id="7870790288828963061">Nessuna app kiosk con versione più recente trovata. Non c'è nulla da aggiornare. Rimuovi la chiavetta USB.</translation>
 <translation id="787150342916295244">Scansione di carte di credito</translation>
+<translation id="7874357055309047713">Esegui sempre su tutti i siti</translation>
 <translation id="7876243839304621966">Rimuovi tutto</translation>
 <translation id="7877451762676714207">Errore del server sconosciuto. Riprova o contatta l'amministratore del server.</translation>
 <translation id="7878999881405658917">Google ha inviato una notifica a questo telefono. Tieni presente che, se il Bluetooth è attivo, il telefono potrebbe tenere sbloccato il tuo dispositivo <ph name="DEVICE_TYPE" /> da oltre 30 metri di distanza. Qualora fosse un problema, puoi &lt;a&gt;disattivare temporaneamente questa funzione&lt;/a&gt;.</translation>
@@ -4757,6 +4793,7 @@ Psst! La prossima volta potrebbe esserti utile la modalità di navigazione in in
 <translation id="7918257978052780342">Registrati</translation>
 <translation id="7920092496846849526">Hai chiesto ai tuoi genitori l'autorizzazione per visitare questa pagina.</translation>
 <translation id="7925285046818567682">In attesa di risposta da <ph name="HOST_NAME" />...</translation>
+<translation id="7925425262460550824"><ph name="PASSWORD_MANAGER_BRAND" /> memorizza le tue password e ti permette di accedere automaticamente ad app e siti su più dispositivi.</translation>
 <translation id="7925686952655276919">Non utilizzare dati mobili per la sincronizzazione</translation>
 <translation id="7926906273904422255">Contrassegna origini non sicure come "non sicure" o "dubbie".</translation>
 <translation id="7928710562641958568">Espelli dispositivo</translation>
@@ -4942,6 +4979,7 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="8179976553408161302">Invio</translation>
 <translation id="8180239481735238521">pagina</translation>
 <translation id="8180786512391440389">L'estensione "<ph name="EXTENSION" />" può leggere ed eliminare file di immagini, video e audio nelle posizioni selezionate.</translation>
+<translation id="8183368067134675917">{COUNT,plural, =0{nessuno}=1{1 elemento}other{# elementi}}</translation>
 <translation id="8184538546369750125">Usa predefinita globale (Consenti)</translation>
 <translation id="818454486170715660"><ph name="NAME" /> - Proprietario</translation>
 <translation id="8185331656081929126">Mostra notifiche quando vengono rilevate nuove stampanti in rete</translation>
@@ -5007,6 +5045,7 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="8263231521757761563">Attiva gestori protocollo</translation>
 <translation id="8263744495942430914"><ph name="FULLSCREEN_ORIGIN" /> ha disattivato il puntatore del mouse.</translation>
 <translation id="8264718194193514834">"<ph name="EXTENSION_NAME" />" ha attivato lo schermo intero.</translation>
+<translation id="8267698848189296333">Accesso come <ph name="USERNAME" /> in corso</translation>
 <translation id="8272443605911821513">Gestisci le tue estensioni facendo clic su Estensioni nel menu "Altri strumenti".</translation>
 <translation id="8273972836055206582"><ph name="FULLSCREEN_ORIGIN" /> ora è a schermo intero e vuole disattivare il puntatore del mouse.</translation>
 <translation id="8275038454117074363">Importa</translation>
@@ -5078,9 +5117,9 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="8379970328220427967"><ph name="SPACE_AVAILABLE" /> rimanenti</translation>
 <translation id="8381055888183086563">Abilita il debugging di opzioni di menu contestuale, come Ispeziona elemento per le applicazioni in pacchetto.</translation>
 <translation id="8381179624334829711">Gestisci le impostazioni della videocamera...</translation>
-<translation id="8381977081675353473">Slovacco</translation>
 <translation id="8382645631174981738"><ph name="EXTENSION_NAME" /> è stata installata da remoto</translation>
 <translation id="8382913212082956454">Copia indirizzo &amp;email</translation>
+<translation id="8384113940676655504">Consente di attivare un'impostazione Smart Lock che permette al Chromebook di rilevare i telefoni tramite la tecnologia Bluetooth Low Energy in modo da sbloccare il Chromebook quando il telefono si trova nelle vicinanze.</translation>
 <translation id="8390029840652165810">Assicurati che la connessione di rete sia attiva; se il problema persiste, esci e accedi nuovamente per aggiornare le credenziali.</translation>
 <translation id="8390445751804042000">Consente di riattivare il dispositivo in base alla ricezione di alcuni pacchetti di rete.</translation>
 <translation id="8390449457866780408">Server non disponibile.</translation>
@@ -5120,6 +5159,8 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="8435334418765210033">Reti memorizzate</translation>
 <translation id="8437209419043462667">USA</translation>
 <translation id="843730695811085446">Consente di attivare il frame in stile app web per le app in hosting, incluse le app di Preferiti. Al momento la funzione è disponibile soltanto per Ash.</translation>
+<translation id="8437331208797669910">Accesso alla pagina</translation>
+<translation id="843760761634048214">Salva la carta di credito</translation>
 <translation id="8438601631816548197">Informazioni sulla ricerca vocale</translation>
 <translation id="8439506636278576865">Proponi di tradurre pagine in questa lingua</translation>
 <translation id="8442065444327205563">Il documento può essere visualizzato.</translation>
@@ -5166,6 +5207,7 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="8509646642152301857">Download del dizionario per il controllo ortografico non riuscito.</translation>
 <translation id="8512476990829870887">Termina processo</translation>
 <translation id="851263357009351303">Consenti sempre la visualizzazione di immagini in <ph name="HOST" /></translation>
+<translation id="8513191386157529469">"<ph name="CLIENT_NAME" />" sta eseguendo il debug del browser.</translation>
 <translation id="8513974249124254369">ChromeVox (lettura vocale) attivo. Premi Ctrl+Alt+Z per disattivarlo.</translation>
 <translation id="8515737884867295000">Autenticazione basata su certificato non riuscita</translation>
 <translation id="8518865679229538285">Metodo di immissione tamil (Typewriter)</translation>
@@ -5281,6 +5323,7 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="8677039480012021122">Cancella dati e disconnetti</translation>
 <translation id="8677212948402625567">Comprimi tutto...</translation>
 <translation id="8678648549315280022">Gestisci impostazioni download...</translation>
+<translation id="8680251145628383637">Accedi per trovare i tuoi segnalibri, la cronologia, le password e altre impostazioni su tutti i tuoi dispositivi. Verrà inoltre eseguito l'accesso automatico ai tuoi servizi Google.</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />, risposta, <ph name="ANSWER" /></translation>
 <translation id="8680787084697685621">I dati di accesso dell'account sono obsoleti.</translation>
 <translation id="8684255857039823328">Password salvata. Accedi alle tue password da qualsiasi dispositivo all'indirizzo <ph name="MANAGEMENT_LINK" />.</translation>
@@ -5353,7 +5396,6 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="8769662576926275897">Dettagli della carta</translation>
 <translation id="8770196827482281187">Metodo di immissione persiano (layout ISIRI 2901)</translation>
 <translation id="8774934320277480003">Margine superiore</translation>
-<translation id="8775128744359439057"><ph name="DOWNLOAD_RECEIVED_AND_TOTAL" /> da <ph name="DOWNLOAD_DOMAIN" />, <ph name="SUB_STATUS_TEXT" /></translation>
 <translation id="8775404590947523323">Le modifiche vengono salvate automaticamente.<ph name="BREAKS" />Per conservare una copia dell'immagine originale, deseleziona l'opzione "Sovrascrivi originale".</translation>
 <translation id="8777218413579204310">Rileva contenuti</translation>
 <translation id="8777628254805677039">password root</translation>
@@ -5451,6 +5493,7 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="8933960630081805351">Mo&amp;stra nel Finder</translation>
 <translation id="8934732568177537184">Continua</translation>
 <translation id="8938356204940892126">Ci rinuncio</translation>
+<translation id="8938800817013097409">Dispositivo USB-C (porta posteriore destra)</translation>
 <translation id="8940081510938872932">Troppe operazioni in corso al momento. Riprova più tardi.</translation>
 <translation id="8941173171815156065">Revoca l'autorizzazione "<ph name="PERMISSION" />"</translation>
 <translation id="8941248009481596111">La tua connessione a questo sito è privata.</translation>
@@ -5515,7 +5558,6 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="9017798300203431059">Fonetica russa</translation>
 <translation id="901834265349196618">email</translation>
 <translation id="9019062154811256702">Lettura e modifica delle impostazioni di Compilazione automatica</translation>
-<translation id="9019654278847959325">Tastiera slovacca</translation>
 <translation id="9020142588544155172">Il server ha rifiutato la connessione.</translation>
 <translation id="9020278534503090146">La pagina web non è disponibile</translation>
 <translation id="9021662811137657072">Virus rilevato</translation>
@@ -5538,6 +5580,7 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="9039890312082871605">Disattiva audio schede</translation>
 <translation id="9040185888511745258">I malintenzionati su <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> potrebbero cercare di indurti con l'inganno a installare programmi che danneggiano la tua navigazione (ad esempio cambiando la tua pagina iniziale o mostrando annunci extra sui siti che visiti).</translation>
 <translation id="9040421302519041149">L'accesso a questa rete è protetto.</translation>
+<translation id="9040967476106479091">Per accedere, scegli il tuo account da <ph name="PASSWORD_MANAGER_BRAND" /></translation>
 <translation id="9041603713188951722">Mostra impostazioni in una finestra</translation>
 <translation id="904451693890288097">Inserisci la passkey di "<ph name="DEVICE_NAME" />":</translation>
 <translation id="904949795138183864">La pagina web all'indirizzo <ph name="URL" /> non esiste più.</translation>

@@ -9,6 +9,7 @@
 <translation id="1113869188872983271">&amp;Undo reorder</translation>
 <translation id="111844081046043029">Are you sure that you want to leave this page?</translation>
 <translation id="112840717907525620">Policy cache OK</translation>
+<translation id="113188000913989374"><ph name="SITE" /> says:</translation>
 <translation id="1132774398110320017">Chrome Auto-fill settings...</translation>
 <translation id="1146673768181266552">Crash ID <ph name="CRASH_ID" /> (<ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="1150979032973867961">This server could not prove that it is <ph name="DOMAIN" />; its security certificate is not trusted by your computer's operating system. This may be caused by a misconfiguration or an attacker intercepting your connection.</translation>
@@ -28,6 +29,9 @@
 <translation id="1519264250979466059">Build Date</translation>
 <translation id="1549470594296187301">JavaScript must be enabled to use this feature.</translation>
 <translation id="1559528461873125649">No such file or directory</translation>
+<translation id="1559572115229829303">&lt;p&gt;A private connection to <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> can't be established because your device's date and time (<ph name="DATE_AND_TIME" />) are incorrect.&lt;/p&gt;
+
+      &lt;p&gt;Please adjust the date and time from the &lt;strong&gt;General&lt;/strong&gt; section of the &lt;strong&gt;Settings&lt;/strong&gt; app.&lt;/p&gt;</translation>
 <translation id="1629803312968146339">Do you want Chrome to save this card?</translation>
 <translation id="1640180200866533862">User policies</translation>
 <translation id="1644184664548287040">The network configuration is invalid and couldn't be imported.</translation>
@@ -95,6 +99,7 @@
 <translation id="2922350208395188000">Server's certificate cannot be checked.</translation>
 <translation id="2941952326391522266">This server could not prove that it is <ph name="DOMAIN" />; its security certificate is from <ph name="DOMAIN2" />. This may be caused by a misconfiguration or an attacker intercepting your connection.</translation>
 <translation id="2958431318199492670">The network configuration doesn't comply to the ONC standard. Parts of the configuration may not be imported.</translation>
+<translation id="2969319727213777354">To establish a secure connection, your clock needs to be set correctly. This is because the certificates that websites use to identify themselves are only valid for specific periods of time. Since your device's clock is incorrect, Google Chrome cannot verify these certificates.</translation>
 <translation id="2972581237482394796">&amp;Redo</translation>
 <translation id="3010559122411665027">List entry "<ph name="ENTRY_INDEX" />": <ph name="ERROR" /></translation>
 <translation id="3024663005179499861">Wrong policy type</translation>
@@ -149,6 +154,7 @@
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4169947484918424451">Do you want Chromium to save this card?</translation>
 <translation id="4171400957073367226">Bad verification signature</translation>
+<translation id="4176463684765177261">Disabled</translation>
 <translation id="4196861286325780578">&amp;Redo move</translation>
 <translation id="4220128509585149162">Crashes</translation>
 <translation id="4250680216510889253">No</translation>
@@ -207,6 +213,7 @@
 <translation id="5523118979700054094">Policy name</translation>
 <translation id="552553974213252141">Was the text extracted correctly?</translation>
 <translation id="5540224163453853">Could not find the requested article.</translation>
+<translation id="5544037170328430102">An embedded page at <ph name="SITE" /> says:</translation>
 <translation id="5556459405103347317">Reload</translation>
 <translation id="5565735124758917034">Active</translation>
 <translation id="560412284261940334">Management not supported</translation>
@@ -216,10 +223,12 @@
 <translation id="5813119285467412249">&amp;Redo Add</translation>
 <translation id="5872918882028971132">Parent Suggestions</translation>
 <translation id="59107663811261420">This type of card is not supported by Google Payments for this merchant. Please select a different card.</translation>
+<translation id="59174027418879706">Enabled</translation>
 <translation id="5975083100439434680">Zoom out</translation>
 <translation id="5989320800837274978">Neither fixed proxy servers nor a .pac script URL are specified.</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6040143037577758943">Close</translation>
+<translation id="604124094241169006">Automatic</translation>
 <translation id="6060685159320643512">Careful, these experiments may bite</translation>
 <translation id="6099520380851856040">Occurred <ph name="CRASH_TIME" /></translation>
 <translation id="6151417162996330722">The server certificate has a validity period that is too long.</translation>
@@ -277,6 +286,7 @@
 <translation id="7378627244592794276">Nope</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7419106976560586862">Profile Path</translation>
+<translation id="7424977062513257142">An embedded page on this webpage says:</translation>
 <translation id="7441627299479586546">Wrong policy subject</translation>
 <translation id="7485870689360869515">No data found.</translation>
 <translation id="7537536606612762813">Mandatory</translation>
@@ -331,6 +341,7 @@
 <translation id="8725066075913043281">Try again</translation>
 <translation id="8738058698779197622">To establish a secure connection, your clock needs to be set correctly. This is because the certificates that websites use to identify themselves are only valid for specific periods of time. Since your device's clock is incorrect, Chromium cannot verify these certificates.</translation>
 <translation id="8790007591277257123">&amp;Redo delete</translation>
+<translation id="8798099450830957504">Default</translation>
 <translation id="8804164990146287819">Privacy Policy</translation>
 <translation id="8820817407110198400">Bookmarks</translation>
 <translation id="8824019021993735287">Chrome was unable to verify your card at this time. Please try again later.</translation>
@@ -338,6 +349,7 @@
 <translation id="883848425547221593">Other Bookmarks</translation>
 <translation id="884923133447025588">No revocation mechanism found.</translation>
 <translation id="8866481888320382733">Error parsing policy settings</translation>
+<translation id="8866959479196209191">This page says:</translation>
 <translation id="8876793034577346603">Network configuration failed to be parsed.</translation>
 <translation id="8891727572606052622">Invalid proxy mode.</translation>
 <translation id="889901481107108152">Sorry, this experiment is not available on your platform.</translation>

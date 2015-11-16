@@ -34,6 +34,7 @@
 <translation id="1967743265616885482">같은 이름의 모듈이 Chromium과 충돌하는 것으로 알려져 있습니다.</translation>
 <translation id="2077129598763517140">가능한 경우 하드웨어 가속 사용</translation>
 <translation id="2097986737970966220">데스크톱에서 Chromium 열기</translation>
+<translation id="2117181891440368863">Chromium에서 <ph name="ISSUER" />이(가) 이 웹사이트의 인증서를 발행했음을 확인했습니다. 서버에서 인증서 투명성 정보를 제공했으나, 올바르지 않았습니다.</translation>
 <translation id="2119636228670142020">Chromium OS 정보</translation>
 <translation id="2158734852934720349">Chromium OS 오픈소스 라이선스</translation>
 <translation id="2233513990531887259">Chromium 몰입형 모드로 다시 시작</translation>
@@ -48,13 +49,11 @@
 <translation id="2558641060352364164">이 사이트에서 곧 지원이 중단되는 Chromium 프레임 플러그인을 사용하고 있습니다. 플러그인을 제거하고 최신 브라우저로 업그레이드하세요.</translation>
 <translation id="2572494885440352020">Chromium 도우미</translation>
 <translation id="2602806952220118310">Chromium - 알림</translation>
-<translation id="2615699638672665509">이 컴퓨터의 하드웨어가 더 이상 지원되지 않으므로 Chromium 업데이트가 곧 중단됩니다.</translation>
 <translation id="2636877269779209383">Chromium이 이 사이트와 카메라를 공유하려면 카메라 액세스가 필요합니다.</translation>
 <translation id="2648074677641340862">설치 중 운영체제 오류가 발생했습니다. Chromium을 다시 다운로드하세요.</translation>
 <translation id="2673087257647337101">업데이트가 거의 완료되었습니다. 업데이트를 완료하려면 Chromium을 다시 시작하세요.</translation>
 <translation id="2685838254101182273">Chromium에서 업데이트를 중단했으며 이 버전의 운영체제를 더 이상 지원하지 않습니다.</translation>
 <translation id="2705212601509139398">이 사이트에서 곧 지원이 중단되는 Chromium 프레임 플러그인을 사용하고 있습니다. 이 플러그인을 제거하고 호환되는 브라우저를 다운로드하세요.</translation>
-<translation id="2732467638532545152">컴퓨터에서 이 웹사이트의 보안 인증서를 처리할 수 없는 이전 버전의 Microsoft Windows를 실행 중입니다. 이 문제로 인해 <ph name="SITE" />에서 제공한 인증서인지 <ph name="SITE" />(으)로 위장한 네트워크의 사용자가 제공한 인증서인지 Chromium에서 확인할 수 없습니다. 컴퓨터를 최신 버전의 Windows로 업데이트하시기 바랍니다.</translation>
 <translation id="2770231113462710648">다음으로 기본 브라우저 변경:</translation>
 <translation id="2801146392936645542"><ph name="FILE_NAME" />은(는) 악성 파일이므로 Chromium에서 차단했습니다.</translation>
 <translation id="2847479871509788944">Chromium에서 제거...</translation>
@@ -87,8 +86,6 @@
 <translation id="3582788516608077514">Chromium 업데이트 중...</translation>
 <translation id="358997566136285270">Chromium 로고</translation>
 <translation id="3595526210123705352">Windows 8 모드로 다시 실행하면 Chromium 앱이 닫혔다가 다시 실행됩니다.</translation>
-<translation id="3656661827369545115">컴퓨터를 시작하면 Chromium 자동 실행</translation>
-<translation id="3736987306260231966">컴퓨터가 인터넷에 연결되어 있지 않아 Chrominum에서 웹페이지를 표시할 수 없습니다.</translation>
 <translation id="3738139272394829648">터치하여 검색</translation>
 <translation id="3744899669254331632">웹사이트가 Chromium이 처리할 수 없는 암호화된 사용자 인증 정보를 전송하였으므로 지금은 <ph name="SITE" />에 방문할 수 없습니다. 네트워크 오류와 공격은 대체로 일시적인 문제이기 때문에 이후에는 이 페이지가 제대로 작동할 가능성이 높습니다.</translation>
 <translation id="3748537968684000502">지금 안전한 Chromium 페이지를 보고 계십니다.</translation>
@@ -109,7 +106,6 @@
 <translation id="4285930937574705105">확인되지 않은 오류로 설치에 실패했습니다. Chromium이 실행 중인 경우 종료한 후 다시 실행하세요.</translation>
 <translation id="4330585738697551178">이 모듈은 Chromium과 충돌하는 것으로 알려져 있습니다.</translation>
 <translation id="4423735387467980091">Chromium 맞춤설정 및 제어</translation>
-<translation id="442817494342774222">컴퓨터를 시작하면 Chromium을 자동으로 실행하도록 설정됩니다.</translation>
 <translation id="4458285410772214805">변경사항을 적용하려면 로그아웃했다가 다시 로그인하세요.</translation>
 <translation id="4488676065623537541">결제 세부정보가 Chromium에 저장되었습니다.</translation>
 <translation id="4559775032954821361">Chromium 메뉴 &gt;
@@ -178,6 +174,7 @@
 <translation id="6734080038664603509">Chromium 업데이트</translation>
 <translation id="6757767188268205357">더 이상 묻지 않음</translation>
 <translation id="6810143991807788455">현재 설정을 보고하여 Chromium 개선에 참여</translation>
+<translation id="6838494703713445896">Chromium에서 <ph name="ISSUER" />이(가) 이 웹사이트의 인증서를 발행했음을 확인했습니다. 서버에서 올바른 인증서 투명성 정보를 제공했습니다.</translation>
 <translation id="6883876366448858277">단어와 관련 컨텍스트를 Google 검색에 전송하며 정의, 사진, 기타 검색결과를 표시합니다.</translation>
 <translation id="6893813176749746474">Chromium이 업데이트되었지만, 최소 30일 동안 사용하지 않았습니다.</translation>
 <translation id="6900895776413482243">Chromium 몰입형 모드로 다시 실행하면 Chromium 앱이 닫혔다가 다시 실행됩니다.</translation>
@@ -190,6 +187,7 @@
 <translation id="7066436765290594559">Chromium OS에서 데이터를 동기화하지 못했습니다. 동기화 암호를 업데이트하세요.</translation>
 <translation id="7138853919861947730">Chromium은 사용자의 탐색 환경을 개선하기 위해 웹 서비스를 사용할 수 있습니다.</translation>
 <translation id="7162152143154757523">Chromium에서 제공하는 더욱 지능적인 맞춤법 검사 기능은 사용자가 브라우저에 입력한 내용을 Google 서버에 보내는 방식을 사용하므로 사용자가 Google 검색에서 사용하는 것과 동일한 맞춤법 검사 기술을 사용할 수 있습니다.</translation>
+<translation id="7178626992616222740">Chromium에서 <ph name="ISSUER" />이(가) 이 웹사이트의 인증서를 발행했음을 확인했습니다. 서버에서 인증서 투명성 정보를 제공했으나, Chromium에서 인증서 투명성 로그를 인식하지 못했습니다.</translation>
 <translation id="7196020411877309443">이 메시지가 표시되는 이유</translation>
 <translation id="7205698830395646142">Chromium 메뉴에서 숨기기</translation>
 <translation id="7211828883345145708">Chromium 디버깅에 유용한 추가 키보드 단축키를 사용합니다.</translation>
@@ -215,13 +213,13 @@ Chromium에서 설정을 복구할 수 없습니다.</translation>
 <translation id="7723128346970903111">사용 설정하면 iframe 기반 Chromium 로그인 절차를 사용하며, 그렇지 않은 경우 WebView 기반 로그인 절차를 사용합니다.</translation>
 <translation id="7729447699958282447">도메인에서 동기화를 사용할 수 없어 Chromium에서 데이터를 동기화하지 못했습니다.</translation>
 <translation id="7747138024166251722">설치 프로그램이 임시 디렉토리를 만들지 못했습니다. 디스크 공간 및 설치 권한을 확인해 보세요.</translation>
+<translation id="7918535023914021398">Chromium에서 <ph name="ISSUER" />이(가) 이 웹사이트의 인증서를 발행했음을 확인했습니다. 서버에서 인증서 투명성 정보를 제공하지 않았습니다.</translation>
 <translation id="7937630085815544518"><ph name="USER_EMAIL_ADDRESS" />(으)로 Chromium에 로그인되어 있습니다. 같은 계정으로 다시 로그인해 주세요.</translation>
 <translation id="7962572577636132072">Chromium은 자동으로 업데이트되므로 항상 최신 버전을 사용할 수 있습니다.</translation>
 <translation id="7979877361127045932">Chromium 메뉴에서 숨기기</translation>
 <translation id="8030318113982266900">기기를 <ph name="CHANNEL_NAME" /> 채널로 업데이트하는 중...</translation>
 <translation id="8033665941300843262">Chromium이 이 사이트와 권한을 공유하려면 권한 액세스가 필요합니다.</translation>
 <translation id="805745970029938373">Chromium 앱, 확장 프로그램 및 웹사이트의 모든 알림을 여기에서 볼 수 있습니다.</translation>
-<translation id="811857857463334932">이 컴퓨터의 하드웨어가 더 이상 지원되지 않으므로 Chromium 업데이트를 더 이상 사용할 수 없습니다.</translation>
 <translation id="8134284582177628525"><ph name="PROFILE_NAME" />님과 컴퓨터를 공유하는 경우 개별적으로 인터넷을 사용하려면 본인을 Chromium에 추가하세요. 아니면 상대방의 Google 계정 연결을 해제하세요.</translation>
 <translation id="8187289872471304532">애플리케이션 &gt; 시스템 환경설정 &gt; 네트워크 &gt; 고급 &gt; 프록시로 이동한 다음
           선택된 프록시를 선택 취소합니다.</translation>

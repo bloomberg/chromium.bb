@@ -4,6 +4,7 @@
 <translation id="1008557486741366299">अभी नहीं</translation>
 <translation id="1047726139967079566">इस पृष्ठ को बुकमार्क करें...</translation>
 <translation id="1172898394251786223">अगला फ़ील्‍ड</translation>
+<translation id="1625603797851307283">क्या आप चाहते हैं कि <ph name="PRODUCT_NAME" /> इस साइट के लिए आपका पासवर्ड सहेजे?</translation>
 <translation id="2320166752086256636">कीबोर्ड छिपाएं</translation>
 <translation id="2704606927547763573">कॉपी किया गया</translation>
 <translation id="2747003861858887689">पिछला फ़ील्‍ड</translation>
@@ -11,11 +12,17 @@
 <translation id="3244271242291266297">MM</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="NUM_SUGGESTIONS" /> में से <ph name="INDEX" /></translation>
 <translation id="3335947283844343239">बंद किए गए टैब फिर से खोलें</translation>
+<translation id="3414292259312108062">Chrome इसे आपके <ph name="BEGIN_LINK" />Google द्वारा सहेजे गए पासवर्ड<ph name="END_LINK" /> में संग्रहीत करेगा और आपके लिए इसका स्वत:-भरण करेगा ताकि आपको उसे याद न रखना पड़े.</translation>
 <translation id="385051799172605136">वापस</translation>
 <translation id="4121993058175073134">कुल निर्यात डेटा भेजने के लिए, कृपया सेटिंग ऐप्स में अपना ईमेल खाता कॉन्फ़िगर करें.</translation>
 <translation id="4728558894243024398">प्लेटफ़ॉर्म</translation>
+<translation id="5317780077021120954">सहेजें</translation>
 <translation id="5779929835642192302">सुझाव उपलब्ध हैं</translation>
 <translation id="605721222689873409">YY</translation>
+<translation id="6149061208933997199">पासवर्ड का उपयोग करें</translation>
+<translation id="6314335155547195432">पासवर्ड जेनरेट करें</translation>
+<translation id="6456425917241817154">Chrome जेनरेटड पासवर्ड</translation>
 <translation id="7456847797759667638">स्थान खोलें...</translation>
 <translation id="7481312909269577407">आगे भेजें</translation>
+<translation id="7961015016161918242">कभी नहीं</translation>
 </translationbundle>

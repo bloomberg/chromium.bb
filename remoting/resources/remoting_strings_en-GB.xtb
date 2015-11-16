@@ -33,7 +33,6 @@ For information about privacy, please see the Google Privacy Policy (http://goo.
 <translation id="1770394049404108959">I can't open the application.</translation>
 <translation id="177096447311351977">Channel IP for client: <ph name="CLIENT_GAIA_IDENTIFIER" /> ip='<ph name="CLIENT_IP_ADDRESS_AND_PORT" />' host_ip='<ph name="HOST_IP_ADDRESS_AND_PORT" />' channel='<ph name="CHANNEL_TYPE" />' connection='<ph name="CONNECTION_TYPE" />'.</translation>
 <translation id="1779766957982586368">Close window</translation>
-<translation id="1818475040640568770">You have no computers registered.</translation>
 <translation id="1841799852846221389">Disabling remote connections for this computer…</translation>
 <translation id="189172778771606813">Close navigation drawer</translation>
 <translation id="195619862187186579">Keyboard layouts</translation>
@@ -87,8 +86,6 @@ For information about privacy, please see the Google Privacy Policy (http://goo.
 <translation id="2926340305933667314">Failed to disable remote access to this computer. Please try again later.</translation>
 <translation id="2930135165929238380">Some required components are missing. Please go to chrome://plugins and make sure Native Client is enabled.</translation>
 <translation id="2939145106548231838">Authenticate to host</translation>
-<translation id="2998137343848432918">• Added Credits screen.
-• Fixed a problem when going full-screen with the keyboard visible.</translation>
 <translation id="3020807351229499221">Failed to update the PIN. Please try again later.</translation>
 <translation id="3025388528294795783">To help us solve your problem, please tell us what went wrong:</translation>
 <translation id="3027681561976217984">Touch mode</translation>
@@ -171,7 +168,6 @@ Desktop Host</translation>
 <translation id="518094545883702183">This information is used only for diagnosing the problem that you are reporting, is available only to someone investigating your report, and is retained for no more than 30 days.</translation>
 <translation id="5222676887888702881">Sign out</translation>
 <translation id="5254120496627797685">Leaving this page will end your Chrome Remote Desktop session.</translation>
-<translation id="5285241842433869526">Learn how to set up a computer for remote access.</translation>
 <translation id="5308380583665731573">Connect</translation>
 <translation id="5363265567587775042">Ask the user whose computer you wish to access to click “<ph name="SHARE" />” and give you the access code.</translation>
 <translation id="5379087427956679853">Chrome Remote Desktop allows you to securely share your computer over the Web. Both users must be running the Chrome Remote Desktop app, which can be found at <ph name="URL" />.</translation>

@@ -56,6 +56,9 @@
 <translation id="1221359380862872747">在示範登入時載入指定的網址</translation>
 <translation id="1240643596769627465">指定用來提供即時搜尋結果的搜尋引擎網址。網址應包含 <ph name="SEARCH_TERM_MARKER" /> 字串，使用者輸入的查詢文字會取代這個字串。這項政策是選擇性的，如果未設定，系統就不會提供即時搜尋結果。只有在啟用「DefaultSearchProviderEnabled」政策時，系統才會遵循這項政策。</translation>
 <translation id="1265053460044691532">限制透過 SAML 驗證的使用者可離線登入的時間</translation>
+<translation id="1291880496936992484">警告：自 <ph name="PRODUCT_NAME" /> 52 版 (將於 2016 年 9 月左右推出) 起，系統將全面移除 RC4，屆時這項政策將停止運作。
+
+      如果未設定這項政策或將其設為 False，系統就不會在 TLS 中啟用 RC4 加密套件。您也可以將這項政策設為 True，以保持與過舊伺服器的相容性。這種方法是權宜之計，伺服器應重新設定，才是正確的做法。</translation>
 <translation id="1297182715641689552">使用 .pac Proxy 指令碼</translation>
 <translation id="1300635491585192248">連上網路時一律預測網路動作
           (行動網路除外)</translation>
@@ -465,6 +468,9 @@
       只要您啟用或停用這項設定，使用者即無法變更或覆寫 <ph name="PRODUCT_NAME" /> 的 [阻擋釣魚網站及惡意程式] 設定。
 
       如果您未設定這項政策，安全瀏覽將保持啟用，但使用者可以自行決定是否要予以變更。</translation>
+<translation id="2801230735743888564">允許使用者在裝置處於離線狀態時玩恐龍復活節彩蛋遊戲。
+
+      如果將這項政策設為 False，使用者將無法在裝置處於離線狀態時玩恐龍復活節彩蛋遊戲。如果將這項政策設為 True，使用者就可以玩這個遊戲。如果未設定這項政策，使用者將無法在已註冊的 Chrome 作業系統中玩恐龍復活節彩蛋遊戲，但可以在其他環境下玩這個遊戲。</translation>
 <translation id="2805707493867224476">允許所有網站顯示彈出式視窗</translation>
 <translation id="2808013382476173118">在遠端用戶端嘗試與這台電腦建立連線時，啟用 STUN 伺服器。
 
@@ -715,6 +721,13 @@
 <translation id="3780152581321609624">Kerberos SPN 包含非標準通訊埠</translation>
 <translation id="3788662722837364290">使用者進入閒置狀態時的電源管理設定</translation>
 <translation id="3793095274466276777">設定 <ph name="PRODUCT_NAME" /> 中的預設瀏覽器檢查功能並禁止使用者變更。如果您啟用這項設定，<ph name="PRODUCT_NAME" /> 會一律在起始時檢查是否為預設瀏覽器，並在情況許可下自動登錄。如果您停用這項設定，<ph name="PRODUCT_NAME" /> 就永遠不會檢查是否為預設瀏覽器，且會停用使用者控制這項設定的選項。如果您尚未設定這項設定，<ph name="PRODUCT_NAME" /> 會允許使用者控制是否為預設瀏覽器，並在不是預設瀏覽器時，允許使用者控制是否要顯示使用者通知。</translation>
+<translation id="3800626789999016379">設定 <ph name="PRODUCT_NAME" /> 下載檔案時所使用的目錄。
+
+      如果設定這項政策，無論使用者是否指定政策或啟用每次均提示下載位置的標記，<ph name="PRODUCT_NAME" /> 都會使用您所提供的目錄。
+
+      如需可使用的變數清單，請參閱 https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables。
+
+      如未設定這項政策，系統會使用預設的下載目錄，日後使用者可以自行變更這個目錄。</translation>
 <translation id="3805659594028420438">啟用 TLS 網域專屬憑證擴充功能 (已不適用)</translation>
 <translation id="3806576699227917885">允許播放音訊。
 
@@ -830,6 +843,13 @@
           只有在啟用「DefaultSearchProviderEnabled」時，系統才會遵循這項政策。</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 或更新版本</translation>
 <translation id="4325690621216251241">在系統列顯示登出按鈕</translation>
+<translation id="4349746760316962317">設定 <ph name="PRODUCT_NAME" /> 在磁碟中儲存快取檔案時所使用的目錄。
+
+      如果設定這項政策，無論使用者是否指定「--disk-cache-dir」標記，<ph name="PRODUCT_NAME" /> 都會使用您所提供的目錄。
+
+      如需可使用的變數清單，請參閱 https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables。
+
+      如未設定這項政策，系統會使用預設的快取目錄，日後使用者可以自行透過「--disk-cache-dir」命令列標記覆寫這個目錄。</translation>
 <translation id="436581050240847513">回報裝置網路介面</translation>
 <translation id="4372704773119750918">不允許企業使用者使用多重設定檔 (主要或次要)</translation>
 <translation id="4377599627073874279">允許所有網站顯示所有圖片</translation>
@@ -895,6 +915,11 @@
 <translation id="4665897631924472251">擴充功能管理設定</translation>
 <translation id="4668325077104657568">預設圖片設定</translation>
 <translation id="467236746355332046">支援功能</translation>
+<translation id="4674167212832291997">自訂 <ph name="PRODUCT_FRAME_NAME" /> 應一律轉譯的網址模式清單。
+
+          如果未設定這項政策，系統會針對所有網站使用「ChromeFrameRendererSettings」政策指定的預設轉譯器。
+
+          如需模式範例，請參閱 https://www.chromium.org/developers/how-tos/chrome-frame-getting-started。</translation>
 <translation id="467449052039111439">開啟網址清單</translation>
 <translation id="4680961954980851756">啟用自動填入</translation>
 <translation id="4723829699367336876">允許遠端存取用戶端穿越防火牆</translation>
@@ -987,6 +1012,14 @@
           如果您未設定這項政策，系統就會採取預設動作 (暫停)。
 
           如果您將動作設為暫停，您可另行設定 <ph name="PRODUCT_OS_NAME" /> 是否要在暫停前鎖定螢幕。</translation>
+<translation id="5111712393799006197">設定 <ph name="PRODUCT_NAME" /> 儲存使用者資料時所使用的目錄。
+
+      如果設定這項政策，無論使用者是否指定「--user-data-dir」標記，<ph name="PRODUCT_NAME" /> 都會使用您所提供的目錄。
+
+      如需可使用的變數清單，請參閱 https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables。
+
+      如未設定這項政策，系統會使用預設的設定檔路徑，日後使用者可以自行透過「--user-data-dir」命令列標記覆寫這個路徑。</translation>
+<translation id="5130288486815037971">是否在 TLS 中啟用 RC4 加密套件</translation>
 <translation id="5141670636904227950">設定啟用的螢幕放大鏡在登入畫面的預設類型</translation>
 <translation id="5142301680741828703">一律轉譯下列 <ph name="PRODUCT_FRAME_NAME" /> 中的網址模式</translation>
 <translation id="5148753489738115745">允許您指定 <ph name="PRODUCT_FRAME_NAME" /> 啟動 <ph name="PRODUCT_NAME" /> 時使用的其他參數。
@@ -1157,6 +1190,20 @@
 <translation id="5809728392451418079">設定裝置本機帳戶的顯示名稱</translation>
 <translation id="5814301096961727113">設定互動朗讀在登入畫面的預設狀態</translation>
 <translation id="5815129011704381141">更新完成後自動重新啟動</translation>
+<translation id="5815353477778354428">設定 <ph name="PRODUCT_FRAME_NAME" /> 儲存使用者資料時所使用的目錄。
+
+      如果設定這項政策，<ph name="PRODUCT_FRAME_NAME" /> 會使用您所提供的目錄。
+
+      如需可使用的變數清單，請參閱 https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables。
+
+      如未設定這項政策，系統會使用預設的設定檔目錄。</translation>
+<translation id="5819660021114910752">指定裝置所使用的時區。使用者可以為目前的工作階段覆寫指定的時區，不過系統會在使用者登出後恢復原本指定的時區。如果提供無效的值，系統仍會啟用這項政策，並自動套用「GMT」時區設定。如果提供空白的值，系統會忽視這項政策。
+
+      如果不使用這項政策，系統仍會套用目前作用中的時區，但使用者可以變更時區，且變更將永久有效。因此，某位使用者所做的變更將會影響登入畫面和所有其他使用者。
+
+      新裝置的出廠預設時區為「美國/太平洋」時間。
+
+      時區值格式是採用「IANA 時區資料庫」中訂定的時區名稱 (請參閱「https://en.wikipedia.org/wiki/Tz_database」)。基本上，大部分時區均依照「&lt;大陸&gt;/&lt;大城市&gt;」或「&lt;大洋&gt;/&lt;大城市&gt;」的格式定名。</translation>
 <translation id="5826047473100157858">指定使用者是否可以在「<ph name="PRODUCT_NAME" />」中以無痕模式開啟網頁。如果選取的是 [啟用] 或未設定政策，網頁能以無痕模式開啟。如果選取的是 [停用]，則網頁可能無法以無痕模式開啟。如果選取的是 [強制]，系統只會以無痕模式開啟網頁。</translation>
 <translation id="5836064773277134605">限制遠端存取主機所使用的 UDP 通訊埠範圍</translation>
 <translation id="5845159892130426052">啟用 ShowModalDialog API (至 2015 年 4 月 30 日停用)</translation>
@@ -1246,6 +1293,7 @@
           如要在閒置狀態下鎖定螢幕，建議您啟用暫停時的螢幕鎖定功能，並且將 <ph name="PRODUCT_OS_NAME" /> 設為在閒置延遲時間過後暫停。只有在螢幕鎖定發生的時間比進入暫停狀態的時間提早許多時，或是完全不需閒置暫停功能時，才需要使用這項政策。
 
           指定政策值時需以毫秒為單位。該值必須小於閒置延遲時間值。</translation>
+<translation id="6111936128861357925">允許 Dinosaur Easter Egg Game (恐龍復活節彩蛋遊戲)</translation>
 <translation id="6114416803310251055">淘汰的</translation>
 <translation id="6145799962557135888">允許您設定網址模式清單，指定可以執行 JavaScript 的網站。如果未設定這項政策，系統會從「DefaultJavaScriptSetting」政策 (如果有設定的話) 或使用者的個人設定，將通用預設值套用至所有網站。</translation>
 <translation id="6151775819333710697">
@@ -1785,6 +1833,18 @@
 
       如未設定這項政策，則「URLBlacklist」政策的黑名單不會有例外情況。</translation>
 <translation id="8176035528522326671">僅允許企業使用者成為多重設定檔的主要使用者 (受企業管理的使用者的預設行為)</translation>
+<translation id="8191318459035150777">設定 <ph name="PRODUCT_NAME" /> 的預設首頁網址，並禁止使用者變更。
+
+          首頁是指點選 [首頁] 按鈕後開啟的網頁。您可以透過 RestoreOnStartup 政策控制系統啟動時開啟的網頁。
+
+          首頁類型可以設為您在這裡指定的網址，也可以設為新分頁。如果您選擇設為新分頁，這項政策就不會生效。
+
+          如果您啟用這項設定，使用者將無法變更 <ph name="PRODUCT_NAME" /> 的首頁網址，但仍可選擇使用新分頁做為首頁。
+
+          如果您沒有設定這項政策和 HomepageIsNewTabPage，使用者將可自行設定首頁。
+
+          這項政策不適用於未加入 Active Directory 網域的
+          Windows 執行個體。</translation>
 <translation id="8197918588508433925">這項政策可指定允許透過 Enterprise Platform Keys API chrome.enterprise.platformKeysPrivate.challengeUserKey() 進行遠端證明的擴充功能。使用方法是將擴充功能經由 API 加入清單中。
 
           如果清單中並無擴充功能，或是尚未設定清單，則會導致無法呼叫 API，並顯示錯誤代碼。</translation>
@@ -1826,6 +1886,11 @@
 <translation id="8465065632133292531">使用 POST 的互動智慧搜尋網址參數</translation>
 <translation id="847472800012384958">不允許任何網站顯示彈出式視窗</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
+<translation id="8484458986062090479">自訂主機瀏覽器應一律轉譯的網址模式清單。
+
+          如果未設定這項政策，系統會針對所有網站使用「ChromeFrameRendererSettings」政策指定的預設轉譯器。
+
+          如需模式範例，請參閱 https://www.chromium.org/developers/how-tos/chrome-frame-getting-started。</translation>
 <translation id="8493645415242333585">停用儲存瀏覽紀錄功能</translation>
 <translation id="8499172469244085141">預設設定 (使用者可覆寫)</translation>
 <translation id="8501011084242226370">指定使用者可以在 <ph name="PRODUCT_NAME" /> 中啟用或停用的外掛程式清單。
@@ -1885,6 +1950,8 @@
 
       如果停用這項政策，則使用者無法刪除瀏覽和下載紀錄項目。</translation>
 <translation id="8764119899999036911">指定是否要根據標準 DNS 名稱或輸入的原始名稱來產生 Kerberos SPN。如果啟用這項設定，系統會略過 CNAME 查詢，並且使用先前輸入的伺服器名稱。如果您停用或未調整這項設定，伺服器的標準名稱會透過 CNAME 查詢決定。</translation>
+<translation id="8774131509736383471">如果將這項政策設為 True，<ph name="PRODUCT_NAME" /> 會在首次執行時一律將第一個顯示的視窗最大化。
+      如果將這項政策設為 False 或不予設定，系統會根據螢幕尺寸決定是否將顯示的第一個視窗最大化。</translation>
 <translation id="8777120694819070607">允許 <ph name="PRODUCT_NAME" /> 執行舊版的外掛程式。如果您啟用這項設定，系統就會像執行一般外掛程式一樣執行舊版外掛程式。如果您停用這項設定，系統就不會使用舊版外掛程式，且不會向使用者要求權限執行這些外掛程式。如過這項設定尚未設定好，系統會向使用者要求權限以執行舊版外掛程式。</translation>
 <translation id="87812015706645271">要求比對本機使用者和遠端存取主機擁有者的名稱</translation>
 <translation id="8782750230688364867">指定裝置處於簡報模式時的調暗延遲時間延長百分比。

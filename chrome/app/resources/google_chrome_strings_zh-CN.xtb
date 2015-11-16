@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="zh-CN">
 <translation id="1001534784610492198">安装程序存档文件损坏或无效。请重新下载 Google Chrome。</translation>
+<translation id="1013290471399003443">Chrome 已证实此网站的证书是由<ph name="ISSUER" />签发的。服务器提供了有效的 Certificate Transparency 信息。</translation>
 <translation id="1016765312371154165">Chrome 未正确关闭。</translation>
 <translation id="103396972844768118">与您的 Chrome 数据相关的重要信息</translation>
 <translation id="1061441684050139317">Chrome 需要具有麦克风使用权限，才能批准此网站的分享请求。</translation>
@@ -62,6 +63,7 @@
 <translation id="2769762047821873045">Google Chrome 浏览器不是您的默认浏览器。</translation>
 <translation id="2770231113462710648">将默认浏览器更改为：</translation>
 <translation id="2871893339301912279">您已登录 Chrome！</translation>
+<translation id="2997147809295888909">Chrome 已证实此网站的证书是由<ph name="ISSUER" />签发的。服务器未提供任何 Certificate Transparency 信息。</translation>
 <translation id="3037838751736561277">Google Chrome处于后台运行模式。</translation>
 <translation id="3047079729301751317">取消与<ph name="USERNAME" />的关联将会清除您的历史记录、书签、设置以及存储在此设备上的其他Chrome数据。您的Google帐户中存储的数据将不会被清除，并且您可以通过<ph name="GOOGLE_DASHBOARD_LINK" />Google信息中心<ph name="END_GOOGLE_DASHBOARD_LINK" />管理这些数据。</translation>
 <translation id="3080151273017101988">关闭 Google Chrome 后继续运行后台应用</translation>
@@ -76,7 +78,6 @@
 <translation id="345171907106878721">将您自己添加到Chrome</translation>
 <translation id="3612333635265770873">已发现一个同名的模块与 Google Chrome 浏览器存在冲突。</translation>
 <translation id="3622797965165704966">现在，无论是通过Google帐户还是在共用的计算机上，您都可以更轻松地使用Chrome。</translation>
-<translation id="3656661827369545115">启动计算机时自动启动Chromium</translation>
 <translation id="3735758079232443276">“<ph name="EXTENSION_NAME" />”扩展程序更改了 Chrome 启动后系统显示的页面。</translation>
 <translation id="3738139272394829648">触摸搜索</translation>
 <translation id="3784527566857328444">从Chrome中移除…</translation>
@@ -84,6 +85,7 @@
 <translation id="3847841918622877581">Google Chrome 浏览器可能会使用网络服务改善您的浏览体验。</translation>
 <translation id="386202838227397562">请关闭所有 Google Chrome 浏览器窗口，然后重试。</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
+<translation id="3881912906674381083">Chrome 已证实此网站的证书是由<ph name="ISSUER" />签发的。服务器提供了 Certificate Transparency 信息，但 Chrome 无法识别任何 Certificate Transparency 日志。</translation>
 <translation id="3889417619312448367">卸载 Google Chrome</translation>
 <translation id="4011219958405096740">启用此项后，将使用基于 iframe 的 Chrome 登录流程；否则，将使用基于 WebView 的流程。</translation>
 <translation id="4050175100176540509">最新版本不仅在安全性方面做出了重要改进，还提供了多项新功能。</translation>
@@ -93,11 +95,9 @@
 <translation id="4167057906098955729">您可以在此处查看来自 Chrome 应用、扩展程序和网站的所有通知。</translation>
 <translation id="423410644998903704">Chrome 需要具有这些功能的使用权限，才能批准此网站的分享请求。</translation>
 <translation id="4251615635259297716">是否将您的 Chrome 数据与此帐户相关联？</translation>
-<translation id="4273752058983339720">Google Chrome 浏览器已配置为在计算机启动时自动启动。</translation>
 <translation id="4309555186815777032">（需要<ph name="BEGIN_BUTTON" />重新启动<ph name="END_BUTTON" /> Chrome）</translation>
 <translation id="4331809312908958774">Chrome OS
 </translation>
-<translation id="4367618624832907428">您的计算机未连接到互联网，因此 Google Chrome 无法显示该网页。</translation>
 <translation id="4407807842708586359">Google Chrome 操作系统</translation>
 <translation id="4458285410772214805">请先退出，然后重新登录，以便此更改生效。</translation>
 <translation id="4480040274068703980">登录时出现错误，Chrome操作系统无法同步您的数据。</translation>
@@ -106,7 +106,6 @@
 <translation id="4567424176335768812">您已使用 <ph name="USER_EMAIL_ADDRESS" /> 的身份登录。现在您可在已登录的所有设备上访问您的书签、历史记录和其他设置。</translation>
 <translation id="4631713731678262610">在 Chrome 菜单中隐藏</translation>
 <translation id="4633000520311261472">为了提高 Chrome 的安全性，系统停用了一些未列在 <ph name="IDS_EXTENSION_WEB_STORE_TITLE" />中、可能是在您不知情的情况下添加的扩展程序。</translation>
-<translation id="4692614041509923516">您的计算机运行的是旧版Microsoft Windows，无法处理此网站的安全证书。因此，Google Chrome无法确定该证书是来自<ph name="SITE" />，还是来自您所在的网络中假冒<ph name="SITE" />的用户。请将您的计算机更新到更高版本的Windows。</translation>
 <translation id="4700157086864140907">Google Chrome会将您在浏览器中输入的内容发送到Google服务器，并使用Google搜索所用的拼写检查技术，因而可为您提供更智能的拼写检查功能。</translation>
 <translation id="4728575227883772061">未知错误导致安装失败。如果 Google Chrome 浏览器正在运行，请将其关闭，然后重试。</translation>
 <translation id="473775607612524610">更新</translation>
@@ -115,6 +114,7 @@
 <translation id="4794050651896644714">在 Chrome 中保存详细信息</translation>
 <translation id="4891791193823137474">让 Google Chrome 浏览器在后台运行</translation>
 <translation id="4921569541910214635">与其他人共用计算机？现在，您可以随心所欲地设置Chrome。</translation>
+<translation id="4925019873400497719">Chrome 已证实此网站的证书是由<ph name="ISSUER" />签发的。服务器提供了 Certificate Transparency 信息，但这些信息无效。</translation>
 <translation id="4953650215774548573">将Google Chrome设为默认浏览器</translation>
 <translation id="4987308747895123092">请关闭所有 Google Chrome 窗口（包括 Windows 8 模式下的窗口），然后重试。</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
@@ -175,7 +175,6 @@
 <translation id="6989339256997917931">Google Chrome 浏览器已更新，但您已经至少 30 天未使用它了。</translation>
 <translation id="699076943483372849">此网站使用的 Chrome 内嵌框架插件已停用，并且不再接收安全性和稳定性更新。请将其卸载，然后升级到新型浏览器。</translation>
 <translation id="6991142834212251086">将我的 Chrome 数据与此帐户关联</translation>
-<translation id="7054640471403081847">此计算机很快将停止接收Google Chrome更新，因为其硬件不再受支持。</translation>
 <translation id="7060865993964054389">Google Chrome 应用启动器</translation>
 <translation id="7084448929020576097"><ph name="FILE_NAME" /> 是恶意文件，Chrome 已将其拦截。</translation>
 <translation id="7098166902387133879">Google Chrome 正在使用您的麦克风。</translation>
@@ -211,7 +210,6 @@
 <translation id="781069973841903133">在 Chrome 沉浸模式下重新启动将关闭并重新启动您的 Chrome 应用。</translation>
 <translation id="7825851276765848807">由于未指定的错误导致安装失败。请重新下载 Google Chrome 浏览器。</translation>
 <translation id="7890208801193284374">如果您与亲朋好友共用计算机，他们将能够使用单独的帐户进行浏览，并可随心所欲地设置Chrome。</translation>
-<translation id="7908968924842975895">此计算机将不再接收Google Chrome更新，因为其硬件不再受支持。</translation>
 <translation id="7984945080620862648">您目前无法访问<ph name="SITE" />，因为此网站发送了Chrome无法处理的杂乱凭据。网络错误和攻击通常是暂时的，因此，此网页稍后可能会恢复正常。</translation>
 <translation id="8000275528373650868">Google Chrome 浏览器要求操作系统必须为 Windows Vista 或者 Windows XP SP2 或更高版本。</translation>
 <translation id="8005540215158006229">Chrome 浏览器即将准备就绪。</translation>

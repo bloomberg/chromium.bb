@@ -32,6 +32,7 @@
 <translation id="1967743265616885482">Một mô-đun có cùng tên đã được xác định là xung đột với Chromium.</translation>
 <translation id="2077129598763517140">Sử dụng chế độ tăng tốc phần cứng khi khả dụng</translation>
 <translation id="2097986737970966220">Mở Chromium trên máy tính để bàn</translation>
+<translation id="2117181891440368863">Chromium đã xác minh rằng <ph name="ISSUER" /> cấp chứng chỉ của trang web này. Máy chủ cung cấp thông tin về Tính minh mạch của chứng chỉ nhưng thông tin này không hợp lệ.</translation>
 <translation id="2119636228670142020">Giới thiệu về &amp;Chromium OS</translation>
 <translation id="2158734852934720349">Giấy phép nguồn mở Chromium OS</translation>
 <translation id="2233513990531887259">Khởi chạy lại chế độ chìm của Chromium</translation>
@@ -46,13 +47,11 @@
 <translation id="2558641060352364164">Trang web này đang sử dụng plugin Chromium Frame sắp không còn được hỗ trợ. Vui lòng gỡ cài đặt plugin này và nâng cấp lên một trình duyệt hiện đại.</translation>
 <translation id="2572494885440352020">Trình trợ giúp của Chromium</translation>
 <translation id="2602806952220118310">Chromium - Thông báo</translation>
-<translation id="2615699638672665509">Máy tính này sẽ sớm ngừng nhận bản cập nhật của Chromium vì phần cứng của máy không được hỗ trợ nữa.</translation>
 <translation id="2636877269779209383">Chromium cần quyền truy cập vào máy ảnh để chia sẻ máy ảnh với trang web này.</translation>
 <translation id="2648074677641340862">Đã xảy ra lỗi hệ điều hành khi cài đặt. Hãy tải xuống Chromium lại lần nữa.</translation>
 <translation id="2673087257647337101">Gần được cập nhật! Hãy chạy lại Chromium để hoàn tất cập nhật.</translation>
 <translation id="2685838254101182273">Chromium đã ngừng cập nhật và không còn hỗ trợ phiên bản hệ điều hành này của bạn.</translation>
 <translation id="2705212601509139398">Trang web này đang sử dụng plugin Chromium Frame sắp không còn được hỗ trợ. Vui lòng gỡ cài đặt plugin này và tải xuống trình duyệt tương thích.</translation>
-<translation id="2732467638532545152">Máy tính của bạn đang chạy phiên bản Microsoft Windows cũ. Phiên bản này không thể xử lý chứng chỉ bảo mật của trang web này. Do sự cố này, Chromium không thể biết chứng chỉ đến từ <ph name="SITE" /> hay từ ai đó trên mạng của bạn giả làm <ph name="SITE" />. Vui lòng cập nhật máy tính của bạn lên phiên bản Windows mới hơn.</translation>
 <translation id="2770231113462710648">Thay đổi trình duyệt mặc định thành:</translation>
 <translation id="2801146392936645542"><ph name="FILE_NAME" /> là tệp độc hại và Chromium đã chặn tệp này.</translation>
 <translation id="2847479871509788944">Xóa khỏi Chromium...</translation>
@@ -85,8 +84,6 @@ không chính xác và bất thường. Điều này có thể xảy ra khi kẻ
 <translation id="3582788516608077514">Đang cập nhật Chromium...</translation>
 <translation id="358997566136285270">Biểu trưng Chromium</translation>
 <translation id="3595526210123705352">Khởi chạy lại ở chế độ Windows 8 sẽ đóng và khởi chạy lại các ứng dụng Chromium của bạn.</translation>
-<translation id="3656661827369545115">Tự động khởi động Chromium khi máy tính của bạn khởi động</translation>
-<translation id="3736987306260231966">Chromium không thể hiển thị trang web vì máy tính của bạn chưa kết nối Internet.</translation>
 <translation id="3738139272394829648">Chạm để tìm kiếm</translation>
 <translation id="3744899669254331632">Bạn không thể truy cập <ph name="SITE" /> ngay bây giờ vì trang web này đã gửi thông tin đăng nhập hỗn độn mà Chromium không thể xử lý. Lỗi mạng và các cuộc tấn công thường chỉ diễn ra tạm thời nên trang này có thể sẽ hoạt động sau.</translation>
 <translation id="3748537968684000502">Bạn đang xem trang Chromium an toàn.</translation>
@@ -107,7 +104,6 @@ không chính xác và bất thường. Điều này có thể xảy ra khi kẻ
 <translation id="4285930937574705105">Không thể cài đặt do lỗi chưa xác định. Nếu Chromium hiện đang chạy, hãy đóng Chromium và thử lại.</translation>
 <translation id="4330585738697551178">Mô-đun này được xác định xung đột với Chromium.</translation>
 <translation id="4423735387467980091">Tùy chỉnh và điều khiển Chromium</translation>
-<translation id="442817494342774222">Chromium được định cấu hình để tự động chạy khi bạn khởi động máy tính của bạn.</translation>
 <translation id="4458285410772214805">Vui lòng đăng xuất và đăng nhập lại để thay đổi này có hiệu lực.</translation>
 <translation id="4488676065623537541">Chi tiết thanh toán của bạn đã được lưu trong Chromium.</translation>
 <translation id="4559775032954821361">Đi tới
@@ -178,6 +174,7 @@ Một số tính năng có thể không khả dụng. Hãy chỉ định thư m�
 <translation id="6734080038664603509">Cập nhật &amp;Chromium</translation>
 <translation id="6757767188268205357">Đừng hỏi lại</translation>
 <translation id="6810143991807788455">Giúp cải thiện Chromium bằng cách báo cáo cài đặt hiện tại</translation>
+<translation id="6838494703713445896">Chromium đã xác minh rằng <ph name="ISSUER" /> cấp chứng chỉ của trang web này. Máy chủ cung cấp thông tin hợp lệ về Tính minh mạch của chứng chỉ.</translation>
 <translation id="6883876366448858277">gửi một từ và ngữ cảnh xung quanh từ đó tới Google Tìm kiếm, trả về định nghĩa, hình ảnh và các kết quả tìm kiếm khác.</translation>
 <translation id="6893813176749746474">Chromium đã được cập nhật nhưng bạn đã không sử dụng trình duyệt này trong ít nhất 30 ngày.</translation>
 <translation id="6900895776413482243">Khởi chạy lại ở chế độ chìm của Chromium sẽ đóng và khởi chạy lại các ứng dụng Chromium của bạn.</translation>
@@ -190,6 +187,7 @@ Một số tính năng có thể không khả dụng. Hãy chỉ định thư m�
 <translation id="7066436765290594559">Chromium OS không thể đồng bộ hóa dữ liệu của bạn. Vui lòng cập nhật cụm mật khẩu Đồng bộ hóa của bạn.</translation>
 <translation id="7138853919861947730">Chromium có thể sử dụng các dịch vụ web để cải thiện trải nghiệm duyệt web của bạn.</translation>
 <translation id="7162152143154757523">Chromium có thể cung cấp tính năng kiểm tra chính tả thông minh hơn bằng cách gửi những gì bạn nhập vào trình duyệt tới máy chủ Google, cho phép bạn sử dụng cùng một công nghệ kiểm tra chính tả mà tìm kiếm của Google sử dụng.</translation>
+<translation id="7178626992616222740">Chromium đã xác minh rằng <ph name="ISSUER" /> cấp chứng chỉ của trang web này. Máy chủ cung cấp thông tin về Tính minh bạch của chứng chỉ nhưng Chromium không nhận ra bất kỳ nhật ký nào về Tính minh bạch của chứng chỉ.</translation>
 <translation id="7196020411877309443">Tại sao tôi nhìn thấy thông báo này?</translation>
 <translation id="7205698830395646142">Ẩn trong menu Chromium</translation>
 <translation id="7211828883345145708">Bật các phím tắt bổ sung hữu ích cho gỡ lỗi Chromium.</translation>
@@ -215,13 +213,13 @@ Chromium không thể khôi phục cài đặt của bạn.</translation>
 <translation id="7723128346970903111">Khi được bật, sẽ sử dụng luồng đăng nhập Chromium dựa trên iframe; nếu không, sẽ sử dụng luồng dựa trên chế độ xem web.</translation>
 <translation id="7729447699958282447">Chromium không thể đồng bộ hóa dữ liệu của bạn vì Đồng bộ hóa không khả dụng cho miền của bạn.</translation>
 <translation id="7747138024166251722">Trình cài đặt không thể tạo thư mục tạm thời. Vui lòng kiểm tra dung lượng ổ đĩa còn trống và quyền cài đặt phần mềm.</translation>
+<translation id="7918535023914021398">Chromium đã xác minh rằng <ph name="ISSUER" /> cấp chứng chỉ của trang web này. Máy chủ không cung cấp bất kỳ thông tin nào về Tính minh mạch của chứng chỉ.</translation>
 <translation id="7937630085815544518">Bạn đã đăng nhập vào Chromium là <ph name="USER_EMAIL_ADDRESS" />. Vui lòng sử dụng cùng tài khoản để đăng nhập lại.</translation>
 <translation id="7962572577636132072">Chromium tự động cập nhật nên bạn luôn có phiên bản mới nhất.</translation>
 <translation id="7979877361127045932">Ẩn trong menu Chromium</translation>
 <translation id="8030318113982266900">Đang cập nhật thiết bị tới kênh <ph name="CHANNEL_NAME" />...</translation>
 <translation id="8033665941300843262">Chromium cần quyền truy cập vào các quyền để chia sẻ chúng với trang web này.</translation>
 <translation id="805745970029938373">Bạn có thể thấy tất cả các thông báo từ ứng dụng, tiện ích và trang web Chromium của bạn tại đây.</translation>
-<translation id="811857857463334932">Máy tính này sẽ không còn nhận được bản cập nhật của Chromium vì phần cứng của máy không được hỗ trợ nữa.</translation>
 <translation id="8134284582177628525">Nếu bạn chia sẻ máy tính này với <ph name="PROFILE_NAME" />, hãy thêm chính mình vào Chromium để duyệt web riêng biệt. Nếu không, hãy ngắt kết nối tài khoản Google của họ.</translation>
 <translation id="8187289872471304532">Đi tới
           Ứng dụng&gt; Tùy chọn hệ thống &gt; Mạng &gt; Nâng cao &gt; Proxy

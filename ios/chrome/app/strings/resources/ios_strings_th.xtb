@@ -4,6 +4,7 @@
 <translation id="1008557486741366299">ไม่ใช่ตอนนี้</translation>
 <translation id="1047726139967079566">บุ๊กมาร์กหน้านี้...</translation>
 <translation id="1172898394251786223">ช่องถัดไป</translation>
+<translation id="1625603797851307283">คุณต้องการให้ <ph name="PRODUCT_NAME" /> บันทึกรหัสผ่านของไซต์นี้หรือไม่</translation>
 <translation id="2320166752086256636">ซ่อนแป้นพิมพ์</translation>
 <translation id="2704606927547763573">คัดลอกแล้ว</translation>
 <translation id="2747003861858887689">ช่องก่อนหน้า</translation>
@@ -11,11 +12,17 @@
 <translation id="3244271242291266297">ดด</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> จาก <ph name="NUM_SUGGESTIONS" /></translation>
 <translation id="3335947283844343239">เปิดแท็บที่ปิดไปแล้วขึ้นใหม่</translation>
+<translation id="3414292259312108062">Chrome จะเก็บข้อมูลนี้ไว้ใน<ph name="BEGIN_LINK" />รหัสผ่านที่บันทึกไว้ของ Google<ph name="END_LINK" /> และป้อนให้คุณโดยอัตโนมัติ เพื่อให้คุณไม่ต้องจำเอง</translation>
 <translation id="385051799172605136">กลับ</translation>
 <translation id="4121993058175073134">หากต้องการส่งข้อมูล net-export โปรดกำหนดค่าบัญชีอีเมลของคุณในแอปการตั้งค่า</translation>
 <translation id="4728558894243024398">แพลตฟอร์ม</translation>
+<translation id="5317780077021120954">บันทึก</translation>
 <translation id="5779929835642192302">มีคำแนะนำ</translation>
 <translation id="605721222689873409">ปป</translation>
+<translation id="6149061208933997199">ใช้รหัสผ่าน</translation>
+<translation id="6314335155547195432">สร้างรหัสผ่าน</translation>
+<translation id="6456425917241817154">รหัสผ่านสร้างโดย Chrome</translation>
 <translation id="7456847797759667638">เปิดตำแหน่ง...</translation>
 <translation id="7481312909269577407">ส่งต่อ</translation>
+<translation id="7961015016161918242">ไม่เคย</translation>
 </translationbundle>

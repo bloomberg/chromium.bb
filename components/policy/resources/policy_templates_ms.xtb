@@ -66,7 +66,7 @@
 <translation id="1265053460044691532">Hadkan masa untuk pengguna yang membuat pengesahan melalui SAML boleh melog masuk dalam talian.</translation>
 <translation id="1291880496936992484">Amaran: RC4 akan dialih keluar sepenuhnya daripada <ph name="PRODUCT_NAME" /> selepas versi 52 (sekitar September 2016) dan dasar ini akan berhenti berfungsi selepas itu.
 
-      Jika dasar ini tidak ditetapkan atau ditetapkan kepada palsu, maka suit sifer RC4 dalam TLS tidak akan didayakan. Jika tidak, dasar mungkin ditetapkan kepada benar untuk mengekalkan keserasian dengan pelayan yang lapuk. Ini adalah langkah sementara dan pelayan harus dikonfigurasi semula.</translation>
+      Jika dasar ini tidak ditetapkan atau ditetapkan kepada palsu, maka suit sifer RC4 dalam TLS tidak akan didayakan. Jika tidak, dasar mungkin ditetapkan kepada benar untuk mengekalkan keserasian dengan pelayan yang sudah lapuk. Ini adalah langkah sementara dan pelayan harus dikonfigurasi semula.</translation>
 <translation id="1297182715641689552">Gunakan skrip proksi .pac</translation>
 <translation id="1300635491585192248">Ramalkan tindakan rangkaian pada mana-mana rangkaian yang bukan
           selular</translation>
@@ -817,6 +817,13 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
       Jika tetapan ini dilumpuhkan, <ph name="PRODUCT_NAME" /> tidak akan sesekali memeriksa jika ia adalah penyemak imbas lalai dan akan melumpuhkan kawalan pengguna untuk menetapkan pilihan ini.
 
       Jika tetapan ini tidak ditetapkan, <ph name="PRODUCT_NAME" /> akan membenarkan pengguna untuk mengawal sama ada ia adalah penyemak imbas lalai dan sama ada pemberitahuan pengguna perlu dipaparkan apabila ia tidak perlu.</translation>
+<translation id="3800626789999016379">Mengkonfigurasi direktori yang <ph name="PRODUCT_NAME" /> akan gunakan untuk memuat turun fail.
+
+      Jika anda menetapkan dasar ini, <ph name="PRODUCT_NAME" /> akan menggunakan direktori yang disediakan tidak kira sama ada pengguna telah menetapkan satu direktori atau mendayakan bendera untuk digesa bagi lokasi muat turun pada setiap kali.
+
+      Lihat http://www.chromium.org/administrators/policy-list-3/user-data-directory-variables untuk mendapatkan senarai pemboleh ubah yang boleh digunakan.
+
+      Jika dasar ini dibiarkan tanpa ditetapkan, direktori muat turun lalai akan digunakan dan pengguna akan dapat mengubahnya.</translation>
 <translation id="3805659594028420438">Dayakan sambungan sijil hala domain TLS (dikecam)</translation>
 <translation id="3806576699227917885">Benarkan audio dimainkan.
 
@@ -954,6 +961,13 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
           Dasar ini hanya dipatuhi jika dasar 'DefaultSearchProviderEnabled' didayakan.</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 atau lebih baharu</translation>
 <translation id="4325690621216251241">Tambahkan butang log keluar pada dulang sistem</translation>
+<translation id="4349746760316962317">Mengkonfigurasi direktori yang <ph name="PRODUCT_NAME" /> akan gunakan untuk menyimpan fail cache pada cakera.
+
+      Jika anda menetapkan dasar ini, <ph name="PRODUCT_NAME" /> akan menggunakan direktori yang disediakan tanpa mengira sama ada pengguna telah menentukan bendera '--disk-cache-dir' atau tidak.
+
+      Lihat https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables untuk mendapatkan senarai pemboleh ubah yang boleh digunakan.
+
+       Jika dasar ini dibiarkan tanpa ditetapkan, direktori cache lalai akan digunakan dan pengguna akan boleh mengatasinya dengan bendera baris perintah '--disk-cache-dir'.</translation>
 <translation id="436581050240847513">Laporkan antara muka rangkaian peranti</translation>
 <translation id="4372704773119750918">Jangan benarkan pengguna perusahaan menjadi sebahagian daripada berbilang profil (utama atau kedua)</translation>
 <translation id="4377599627073874279">Benarkan semua tapak untuk menunjukkan semua imej</translation>
@@ -1037,6 +1051,11 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
 <translation id="4665897631924472251">Tetapan pengurusan sambungan</translation>
 <translation id="4668325077104657568">Tetapan imej lalai</translation>
 <translation id="467236746355332046">Ciri yang disokong:</translation>
+<translation id="4674167212832291997">Sesuaikan senarai pola URL yang sentiasa harus dipaparkan oleh <ph name="PRODUCT_FRAME_NAME" />.
+
+          Jika dasar ini tidak ditetapkan, pemapar lalai akan digunakan untuk semua tapak seperti yang dinyatakan oleh dasar 'ChromeFrameRendererSettings'.
+
+          Untuk melihat contoh pola, lawati http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="467449052039111439">Buka senarai URL</translation>
 <translation id="4680961954980851756">Dayakan Auto Isi</translation>
 <translation id="4723829699367336876">Dayakan penyusuran tembok api daripada klien akses jauh</translation>
@@ -1140,6 +1159,13 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
           Apabila dasar ini tidak ditetapkan, tindakan lalai iaitu penggantungan akan diambil.
 
           Jika tindakan penggantungan diambil, <ph name="PRODUCT_OS_NAME" /> boleh dikonfigurasi secara berasingan sama ada kepada mengunci atau tidak mengunci skrin sebelum penggantungan.</translation>
+<translation id="5111712393799006197">Mengkonfigurasi direktori yang <ph name="PRODUCT_NAME" /> akan gunakan untuk menyimpan data pengguna.
+
+      Jika anda menetapkan dasar ini, <ph name="PRODUCT_NAME" /> akan menggunakan direktori yang disediakan tidak kira sama ada pengguna telah menetapkan bendera '--user-data-dir' atau tidak.
+
+      Lihat http://www.chromium.org/administrators/policy-list-3/user-data-directory-variables untuk mendapatkan senarai pemboleh ubah yang boleh digunakan.
+
+      Jika dasar ini dibiarkan tanpa ditetapkan, laluan profil lalai akan digunakan dan pengguna akan dapat mengatasinya dengan bendera baris perintah '--user-data-dir'.</translation>
 <translation id="5130288486815037971">Sama ada suit sifer RC4 dalam TLS didayakan</translation>
 <translation id="5141670636904227950">Tetapkan jenis penggadang skrin lalai yang didayakan pada skrin log masuk</translation>
 <translation id="5142301680741828703">Sentiasa paparkan corak URL berikut dalam <ph name="PRODUCT_FRAME_NAME" /></translation>
@@ -1328,6 +1354,20 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
 <translation id="5809728392451418079">Tetapkan nama paparan untuk akaun setempat peranti</translation>
 <translation id="5814301096961727113">Tetapkan keadaan lalai maklum balas pertuturan pada skrin log masuk</translation>
 <translation id="5815129011704381141">But semula secara automatik selepas kemas kini</translation>
+<translation id="5815353477778354428">Mengkonfigurasi direktori yang <ph name="PRODUCT_FRAME_NAME" /> akan gunakan untuk menyimpan data pengguna.
+
+      Jika anda menetapkan dasar ini, <ph name="PRODUCT_FRAME_NAME" /> akan menggunakan direktori yang disediakan.
+
+      Lihat http://www.chromium.org/administrators/policy-list-3/user-data-directory-variables untuk mendapatkan senarai pemboleh ubah yang boleh digunakan.
+
+      Jika tetapan ini dibiarkan tanpa ditetapkan, direktori profil lalai akan digunakan.</translation>
+<translation id="5819660021114910752">Menentukan zon waktu yang akan digunakan untuk peranti. Pengguna boleh membatalkan zon waktu yang ditentukan untuk sesi semasa. Walau bagaimanapun, semasa log keluar, zon waktu akan ditetapkan semula ke zon waktu yang ditentukan. Sebaliknya, jika nilai tidak sah diberikan, dasar ini masih diaktifkan menggunakan "GMT". Jika rentetan kosong diberikan, dasar ini akan diabaikan.
+
+      Jika dasar ini tidak digunakan, zon waktu yang sedang aktif akan kekal digunakan namun pengguna boleh menukar zon waktu dan perubahan adalah berterusan. Oleh itu, perubahan oleh seorang pengguna mempengaruhi skrin log masuk dan semua pengguna lain.
+
+      Peranti baharu bermula dengan zon waktu yang ditetapkan kepada "AS/Pasifik".
+
+      Nilai diformatkan mengikut nama zon waktu dalam "Pangkalan Data Zon Waktu IANA" (lihat "https://en.wikipedia.org/wiki/Tz_database"). Secara khususnya, kebanyakan zon waktu boleh dirujuk mengikut "continent/large_city" atau "ocean/large_city".</translation>
 <translation id="5826047473100157858">Menentukan sama ada pengguna boleh membuka halaman dalam mod Inkognito dalam <ph name="PRODUCT_NAME" />.
 
       Jika 'Didayakan' dipilih atau dasar ini dibiarkan tanpa ditetapkan, halaman akan boleh dibuka dalam mod Inkognito.
@@ -2067,7 +2107,7 @@ Halaman yang dibuka semasa permulaan dikawal oleh dasar RestoreOnStartup.
 
           Jika anda mendayakan tetapan ini, pengguna tidak boleh menukar URL halaman utama mereka dalam <ph name="PRODUCT_NAME" />, tetapi mereka masih boleh memilih Halaman Tab Baharu sebagai halaman utama mereka.
 
-          Jika dasar ini dibiarkan tanpa ditetapkan, pengguna boleh memilih halaman utamanya sendiri jika HomepageIsNewTabPage turut tidak ditetapkan.
+          Jika dasar ini dibiarkan tanpa ditetapkan, pengguna boleh memilih sendiri halaman utamanya jika HomepageIsNewTabPage turut tidak ditetapkan.
 
           Dasar ini tidak tersedia pada tika Windows yang tidak dihubungkan
           ke domain Direktori Aktif.</translation>
@@ -2112,6 +2152,11 @@ Halaman yang dibuka semasa permulaan dikawal oleh dasar RestoreOnStartup.
 <translation id="8465065632133292531">Parameter untuk URL semerta yang menggunakan POST</translation>
 <translation id="847472800012384958">Jangan benarkan mana-mana tapak untuk menunjukkan pop muncul</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
+<translation id="8484458986062090479">Sesuaikan senarai pola URL yang sentiasa harus dipaparkan oleh penyemak imbas hos.
+
+          Jika dasar ini tidak ditetapkan, pemapar lalai akan digunakan untuk semua tapak seperti yang dinyatakan oleh dasar 'ChromeFrameRendererSettings'.
+
+          Untuk melihat contoh pola, lihat http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="8493645415242333585">Lumpuhkan penyimpanan sejarah penyemakan imbas</translation>
 <translation id="8499172469244085141">Tetapan lalai (pengguna boleh mengatasi)</translation>
 <translation id="8501011084242226370">Menyatakan senarai pemalam yang boleh didayakan atau dilumpuhkan oleh pengguna dalam <ph name="PRODUCT_NAME" />.

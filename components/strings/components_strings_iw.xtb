@@ -9,6 +9,7 @@
 <translation id="1113869188872983271">&amp;ביטול של שינוי סדר</translation>
 <translation id="111844081046043029">האם אתה בטוח שברצונך לצאת מדף זה?</translation>
 <translation id="112840717907525620">הקובץ השמור של המדיניות תקין</translation>
+<translation id="113188000913989374"><ph name="SITE" /> אומר:</translation>
 <translation id="1132774398110320017">‏הגדרות מילוי אוטומטי של Chrome...</translation>
 <translation id="1146673768181266552">מזהה קריסה <ph name="CRASH_ID" /> ‏(<ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="1150979032973867961">השרת הזה לא הצליח להוכיח שהוא <ph name="DOMAIN" />. אישור האבטחה שלו לא נחשב כמהימן על ידי מערכת ההפעלה של המחשב. ייתכן שהסיבה לכך היא תצורה שגויה או תוקף המיירט את החיבור שלך.</translation>
@@ -95,6 +96,7 @@
 <translation id="2922350208395188000">לא ניתן לבדוק את אישור השרת.</translation>
 <translation id="2941952326391522266">השרת הזה לא הצליח להוכיח שהוא <ph name="DOMAIN" />. אישור האבטחה שלו הוא מ-<ph name="DOMAIN2" />. ייתכן שהסיבה לכך היא תצורה שגויה או תוקף המיירט את החיבור שלך.</translation>
 <translation id="2958431318199492670">‏תצורת הרשת אינה תואמת לתקן ONC. ייתכן שחלקים מהתצורה לא ייכללו בייבוא.</translation>
+<translation id="2969319727213777354">‏כדי ליצור חיבור מאובטח, השעון צריך להיות מוגדר כהלכה. הסיבה לכך היא שהאישורים שבהם אתרים משתמשים כדי לזהות את עצמם תקפים רק למשך פרקי זמן מסוימים. מאחר שהשעון במכשיר שלך שגוי, Google Chrome לא יכול לאמת את האישורים האלו.</translation>
 <translation id="2972581237482394796">&amp;בצע שנית</translation>
 <translation id="3010559122411665027">רשומה ברשימה "<ph name="ENTRY_INDEX" />": <ph name="ERROR" /></translation>
 <translation id="3024663005179499861">סוג המדיניות שגוי</translation>
@@ -149,11 +151,12 @@
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4169947484918424451">‏האם תרצה ש-Chromium ישמור את הכרטיס הזה?</translation>
 <translation id="4171400957073367226">חתימת אימות לא חוקית</translation>
+<translation id="4176463684765177261">מושבת</translation>
 <translation id="4196861286325780578">&amp;ביצוע מחדש של העברה</translation>
 <translation id="4220128509585149162">קריסה</translation>
 <translation id="4250680216510889253">לא</translation>
 <translation id="4258748452823770588">חתימה שגויה</translation>
-<translation id="4268298190799576220">‏Chromium לא הצליח לאמת את הכרטיס הפעם. נסה שוב מאוחר יותר.</translation>
+<translation id="4268298190799576220">‏ל-Chromium אין כרגע אפשרות לאמת את הכרטיס. נסה שוב מאוחר יותר.</translation>
 <translation id="4269787794583293679">(אין שם משתמש)</translation>
 <translation id="4300246636397505754">הצעות להורים</translation>
 <translation id="4325863107915753736">לא ניתן היה למצוא את הפריט</translation>
@@ -211,6 +214,7 @@ Del</translation>
 <translation id="5523118979700054094">שם מדיניות</translation>
 <translation id="552553974213252141">האם הטקסט נשלף כראוי?</translation>
 <translation id="5540224163453853">לא ניתן היה למצוא את הפריט המבוקש.</translation>
+<translation id="5544037170328430102">דף המוטמע ב-<ph name="SITE" /> אומר:</translation>
 <translation id="5556459405103347317">טען שוב</translation>
 <translation id="5565735124758917034">פעיל</translation>
 <translation id="560412284261940334">ניהול אינו נתמך</translation>
@@ -220,16 +224,18 @@ Del</translation>
 <translation id="5813119285467412249">&amp;ביצוע מחדש של הוספה</translation>
 <translation id="5872918882028971132">הצעות להורים</translation>
 <translation id="59107663811261420">‏סוג הכרטיס הזה אינו נתמך על ידי Google Payments אצל הסוחר הזה. בחר כרטיס אחר.</translation>
+<translation id="59174027418879706">מופעל</translation>
 <translation id="5975083100439434680">התרחק</translation>
 <translation id="5989320800837274978">‏לא צוינו שרתי Proxy קבועים ולא כתובת אתר של סקריפט ‎.pac</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6040143037577758943">סגור</translation>
+<translation id="604124094241169006">אוטומטי</translation>
 <translation id="6060685159320643512">זהירות, ניסויים אלה עלולים לנשוך</translation>
 <translation id="6099520380851856040">התרחש ב: <ph name="CRASH_TIME" /></translation>
 <translation id="6151417162996330722">תקופת התוקף של אישור השרת ארוכה מדי.</translation>
 <translation id="6154808779448689242">אסימון המדיניות שהוחזר אינו תואם לאסימון הנוכחי</translation>
 <translation id="6165508094623778733">למידע נוסף</translation>
-<translation id="6218753634732582820">‏האם להסיר את הכתובת מ-Chromium?</translation>
+<translation id="6218753634732582820">‏האם להסיר מ-Chromium את הכתובת?</translation>
 <translation id="6259156558325130047">&amp;ביצוע מחדש של שינוי סדר</translation>
 <translation id="6263376278284652872">סימניות <ph name="DOMAIN" /></translation>
 <translation id="6282194474023008486">מיקוד</translation>
@@ -247,7 +253,7 @@ Del</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> חיפוש</translation>
 <translation id="6644283850729428850">מדיניות זו אינה בתוקף.</translation>
 <translation id="6646897916597483132">‏הזן את ה-CVC בן ארבע הספרות המופיע בחזית הכרטיס</translation>
-<translation id="6671697161687535275">‏האם להסיר מ-Chromium הצעות בשביל טפסים?</translation>
+<translation id="6671697161687535275">‏האם להסיר מ-Chromium הצעות לטפסים?</translation>
 <translation id="674375294223700098">שגיאת אישור שרת לא ידוע.</translation>
 <translation id="6753269504797312559">ערך מדיניות</translation>
 <translation id="6831043979455480757">תרגם</translation>
@@ -281,6 +287,7 @@ Del</translation>
 <translation id="7378627244592794276">לא</translation>
 <translation id="7400418766976504921">כתובת אתר</translation>
 <translation id="7419106976560586862">נתיב פרופיל</translation>
+<translation id="7424977062513257142">דף המוטמע בדף אינטרנט זה אומר:</translation>
 <translation id="7441627299479586546">נושא המדיניות שגוי</translation>
 <translation id="7485870689360869515">לא נמצאו נתונים.</translation>
 <translation id="7537536606612762813">הכרחי</translation>
@@ -291,7 +298,7 @@ Del</translation>
 <translation id="7592362899630581445">אישור השרת מפר את אילוצי השמות.</translation>
 <translation id="7600965453749440009">אל תתרגם לעולם <ph name="LANGUAGE" /></translation>
 <translation id="7610193165460212391">הערך מחוץ לטווח <ph name="VALUE" />.</translation>
-<translation id="7637571805876720304">‏האם להסיר את כרטיס האשראי מ-Chromium?</translation>
+<translation id="7637571805876720304">‏האם להסיר מ-Chromium את כרטיס האשראי?</translation>
 <translation id="7674629440242451245">‏מעוניין בתכונות חדשות ומגניבות של Chrome? נסה את הערוץ שלנו למפתחים בכתובת chrome.com/dev.</translation>
 <translation id="7752995774971033316">ללא ניהול</translation>
 <translation id="7761701407923456692">אישור השרת אינו תואם לכתובת האתר.</translation>
@@ -335,6 +342,7 @@ Del</translation>
 <translation id="8725066075913043281">נסה שוב</translation>
 <translation id="8738058698779197622">‏כדי ליצור חיבור מאובטח, השעון צריך להיות מוגדר כהלכה. הסיבה לכך היא שהאישורים שבהם אתרים משתמשים כדי לזהות את עצמם תקפים רק למשך פרקי זמן מסוימים. מאחר שהשעון במכשיר שלך שגוי, Chromium לא יכול לאמת את האישורים האלו.</translation>
 <translation id="8790007591277257123">&amp;ביצוע מחדש של מחיקה</translation>
+<translation id="8798099450830957504">ברירת מחדל</translation>
 <translation id="8804164990146287819">מדיניות פרטיות</translation>
 <translation id="8820817407110198400">סימניות</translation>
 <translation id="8824019021993735287">‏Chrome לא הצליח לאמת את כרטיס הפעם. נסה שוב מאוחר יותר.</translation>
@@ -342,6 +350,7 @@ Del</translation>
 <translation id="883848425547221593">סימניות אחרות</translation>
 <translation id="884923133447025588">לא נמצא מנגנון ביטול</translation>
 <translation id="8866481888320382733">שגיאה בניתוח הגדרות המדיניות</translation>
+<translation id="8866959479196209191">דף זה אומר:</translation>
 <translation id="8876793034577346603">ניתוח תצורת הרשת נכשל.</translation>
 <translation id="8891727572606052622">‏מצב שרת Proxy לא חוקי.</translation>
 <translation id="889901481107108152">מצטערים, ניסוי זה אינו זמין בפלטפורמה שלך.</translation>

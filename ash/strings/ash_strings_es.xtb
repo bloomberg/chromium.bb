@@ -26,9 +26,7 @@
 Para cambiarlo, pulsa Mayús + Alt.</translation>
 <translation id="1882897271359938046">Copiando en <ph name="DISPLAY_NAME" /></translation>
 <translation id="1923539912171292317">Clics automáticos</translation>
-<translation id="1950626184269948555">Se ha modificado la combinación de teclas del Administrador de tareas. Utiliza la tecla de búsqueda+Esc en lugar de Mayús+Esc.</translation>
 <translation id="1957803754585243749">0°</translation>
-<translation id="1963814843110128691">Enviando $1 a $2</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1987317783729300807">Cuentas</translation>
 <translation id="2127372758936585790">Cargador de baja potencia</translation>
@@ -94,6 +92,7 @@ Pulsa Mayús o la tecla de búsqueda para cancelar la operación.</translation>
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">Bloquear</translation>
 <translation id="3799026279081545374">Es posible que tu cargador esté defectuoso. Si vives en Estados Unidos, llama al teléfono 866-628-1371 para obtener ayuda y recibir un cargador de sustitución. Si vives en el Reino Unido, llama al teléfono 0800-026-0613. Si vives en Irlanda, llama al teléfono 1-800-832-664. Si vives en Canadá, llama al teléfono 866-628-1372. Si vives en Australia, llama al teléfono 1-800-067-460.</translation>
+<translation id="3866182280516392520">Dirección IPv6</translation>
 <translation id="3891340733213178823">Pulsa Ctrl+Mayús+Q dos veces para cerrar sesión.</translation>
 <translation id="3892641579809465218">Pantalla interna</translation>
 <translation id="3963445509666917109">Altavoz (interno)</translation>
@@ -152,7 +151,6 @@ Para cambiarlo, pulsa Mayús + Alt.</translation>
 <translation id="6165508094623778733">Más información</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE" />%</translation>
 <translation id="6248847161401822652">Pulsa Ctrl+Mayús+Q dos veces para salir.</translation>
-<translation id="6287020362823083378">Se ha modificado la combinación de teclas del bloqueo de pantalla. Utiliza la tecla de búsqueda+L en lugar de Ctrl+Mayús+L.</translation>
 <translation id="6310121235600822547">Se ha modificado la rotación de <ph name="DISPLAY_NAME" /> a <ph name="ROTATION" /></translation>
 <translation id="6359806961507272919">SMS de <ph name="PHONE_NUMBER" /></translation>
 <translation id="639644700271529076">Bloqueo de mayúsculas desactivado</translation>
@@ -205,7 +203,6 @@ Pulsa Alt y la tecla de búsqueda o Mayús para cancelar la operación.</transla
 <translation id="8308637677604853869">Menú anterior</translation>
 <translation id="8356164830168736643">Cerrar <ph name="WINDOW_TITLE" /></translation>
 <translation id="8428213095426709021">Configuración</translation>
-<translation id="8443356412772935865">Enviando pantalla a $1</translation>
 <translation id="8456362689280298700"><ph name="HOUR" />:<ph name="MINUTE" /> hasta cargarse</translation>
 <translation id="8517041960877371778">Es posible que tu <ph name="DEVICE_TYPE" /> no se cargue mientras esté encendido.</translation>
 <translation id="8528322925433439945">Redes móviles...</translation>

@@ -33,7 +33,6 @@ Informacje na temat prywatności znajdziesz w Polityce prywatności Google (http
 <translation id="1770394049404108959">Nie mogę otworzyć aplikacji.</translation>
 <translation id="177096447311351977">Adres IP kanału dla klienta: <ph name="CLIENT_GAIA_IDENTIFIER" /> ip='<ph name="CLIENT_IP_ADDRESS_AND_PORT" />' host_ip='<ph name="HOST_IP_ADDRESS_AND_PORT" />' channel='<ph name="CHANNEL_TYPE" />' connection='<ph name="CONNECTION_TYPE" />'.</translation>
 <translation id="1779766957982586368">Zamknij okno</translation>
-<translation id="1818475040640568770">Brak zarejestrowanych komputerów.</translation>
 <translation id="1841799852846221389">Wyłączam połączenia zdalne z tym komputerem…</translation>
 <translation id="189172778771606813">Zamknij panel nawigacji</translation>
 <translation id="195619862187186579">Układy klawiatury</translation>
@@ -87,8 +86,6 @@ Informacje na temat prywatności znajdziesz w Polityce prywatności Google (http
 <translation id="2926340305933667314">Nie udało się wyłączyć dostępu zdalnego do tego komputera. Spróbuj ponownie później.</translation>
 <translation id="2930135165929238380">Brak niektórych wymaganych komponentów. Otwórz stronę chrome://plugins i upewnij się, że jest włączony Klient natywny.</translation>
 <translation id="2939145106548231838">Host wymaga uwierzytelnienia</translation>
-<translation id="2998137343848432918">• Dodano ekran z listą twórców.
-• Rozwiązano problem z włączaniem trybu pełnoekranowego przy widocznej klawiaturze.</translation>
 <translation id="3020807351229499221">Nie udało się zaktualizować PIN-u. Spróbuj ponownie później.</translation>
 <translation id="3025388528294795783">Aby pomóc nam w rozwiązaniu problemu, opisz, na czym on polega:</translation>
 <translation id="3027681561976217984">Tryb dotykowy</translation>
@@ -124,6 +121,7 @@ Chromoting</translation>
 <translation id="3950820424414687140">Zaloguj się</translation>
 <translation id="3989511127559254552">Aby przejść dalej, musisz najpierw przyznać rozszerzone uprawnienia dostępu do swojego komputera. Trzeba to zrobić tylko raz.</translation>
 <translation id="4006787130661126000">Jeśli chcesz korzystać z tego komputera przez Pulpit zdalny Chrome, musisz włączyć połączenia zdalne.</translation>
+<translation id="405887016757208221">Komputerowi zdalnemu nie udało się zainicjować sesji. Jeśli problem nie zniknie, spróbuj ponownie skonfigurować hosta.</translation>
 <translation id="4068946408131579958">Wszystkie połączenia</translation>
 <translation id="409800995205263688">UWAGA: ustawienia zasad zezwalają wyłącznie na połączenia między komputerami w Twojej sieci.</translation>
 <translation id="4155497795971509630">Brak niektórych wymaganych komponentów. Upewnij się, że masz zainstalowaną najnowszą wersję oprogramowania, i spróbuj ponownie.</translation>
@@ -170,7 +168,6 @@ zdalnego Chrome</translation>
 <translation id="518094545883702183">Użyjemy tych informacji jedynie do zdiagnozowania zgłoszonego problemu, udostępnimy je tylko osobie sprawdzającej zgłoszenie i usuniemy w ciągu 30 dni.</translation>
 <translation id="5222676887888702881">Wyloguj się</translation>
 <translation id="5254120496627797685">Jeśli opuścisz tę stronę, sesja Pulpitu zdalnego Chrome zostanie zakończona.</translation>
-<translation id="5285241842433869526">Przeczytaj, jak skonfigurować komputer do zdalnego dostępu.</translation>
 <translation id="5308380583665731573">Połącz</translation>
 <translation id="5363265567587775042">Poproś użytkownika, z którego komputera chcesz korzystać, by kliknął „<ph name="SHARE" />” i udostępnił Ci kod dostępu.</translation>
 <translation id="5379087427956679853">Pulpit zdalny Chrome pozwala na bezpieczne udostępnianie komputera przez internet. Obaj użytkownicy muszą mieć uruchomioną aplikację Pulpit zdalny Chrome, którą można znaleźć na <ph name="URL" />.</translation>
@@ -258,6 +255,7 @@ zdalnego Chrome</translation>
 <translation id="7869445566579231750">Nie masz uprawnień do uruchamiania tej aplikacji.</translation>
 <translation id="7948001860594368197">Opcje ekranu</translation>
 <translation id="7970576581263377361">Uwierzytelnianie nie powiodło się. Zaloguj się ponownie do Chromium.</translation>
+<translation id="7981525049612125370">Sesja zdalna wygasła.</translation>
 <translation id="8041721485428375115">Pobierając instalatora hosta Pulpitu zdalnego Chrome, akceptujesz <ph name="LINK_BEGIN" />Warunki korzystania z usług<ph name="LINK_END" /> Google.</translation>
 <translation id="8073845705237259513">Aby użyć Pulpitu zdalnego Chrome, musisz dodać do urządzenia konto Google.</translation>
 <translation id="80739703311984697">Host zdalny wymaga uwierzytelnienia w witrynie innej firmy. Aby kontynuować, musisz udzielić funkcji Chromoting dodatkowych uprawnień dostępu do tego adresu:</translation>

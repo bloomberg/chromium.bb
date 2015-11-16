@@ -64,6 +64,9 @@ Cette règle est facultative. Si elle n'est pas configurée, aucun résultat de 
 
 Cette règle n'est respectée que si la règle "DefaultSearchProviderEnabled" est activée.</translation>
 <translation id="1265053460044691532">Limiter la durée pendant laquelle un utilisateur authentifié via SAML peut se connecter hors connexion</translation>
+<translation id="1291880496936992484">Avertissement : RC4 sera intégralement supprimé de <ph name="PRODUCT_NAME" /> après la version 52 (autour de septembre 2016) et cette règle ne sera plus valable.
+
+      Si cette règle n'est pas configurée, ou si elle est définie sur "False", les suites de chiffrement RC4 dans TLS ne seront pas activées. La règle peut être définie sur "True" pour assurer la compatibilité avec un serveur obsolète. Il s'agit là d'une solution provisoire, et le serveur devrait être reconfiguré.</translation>
 <translation id="1297182715641689552">Utiliser un script de proxy .pac</translation>
 <translation id="1300635491585192248">Prédire les actions réseau sur tous les réseaux,
           sauf les réseaux mobiles</translation>
@@ -528,6 +531,9 @@ Cette règle n'est respectée que si la règle "DefaultSearchProviderEnabled" es
       Si vous activez ou désactivez ce paramètre, les utilisateurs ne peuvent pas modifier ni ignorer le paramètre "Activer la protection contre le phishing et les logiciels malveillants" dans <ph name="PRODUCT_NAME" />.
 
       Si vous ne définissez pas cette règle, la navigation sécurisée est activée, mais les utilisateurs peuvent la modifier.</translation>
+<translation id="2801230735743888564">Autoriser les utilisateurs à jouer au jeu Easter Egg du dinosaure lorsque l'appareil est déconnecté.
+
+Si cette règle est définie sur "False", les utilisateurs ne pourront pas jouer au jeu Easter Egg du dinosaure lorsque l'appareil est déconnecté. Si ce paramètre est défini sur "True", les utilisateurs sont autorisés à jouer au jeu des dinosaures. Si cette règle n'est pas définie, les utilisateurs ne sont pas autorisés à jouer au jeu Easter Egg du dinosaure sur les appareils équipés de Chrome OS et enregistrés, mais ils peuvent y jouer dans d'autres circonstances.</translation>
 <translation id="2805707493867224476">Autoriser tous les sites à afficher des fenêtres pop-up</translation>
 <translation id="2808013382476173118">Permet l'utilisation de serveurs STUN lorsque les clients distants tentent d'établir une connexion avec ce poste.
 
@@ -1138,6 +1144,7 @@ Si cette règle n'est pas configurée, Google Sync est disponible et l'utilisate
 
 
           Si la mesure est la mise en veille, <ph name="PRODUCT_OS_NAME" /> peut être configuré séparément pour que l'écran soit verrouillé ou non avant la mise en veille.</translation>
+<translation id="5130288486815037971">Activation ou non des suites de chiffrement RC4 dans TLS</translation>
 <translation id="5141670636904227950">Activer la loupe plein écran sur l'écran de connexion</translation>
 <translation id="5142301680741828703">Toujours rendre les formats d'URL suivants dans <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="5148753489738115745">Permet de spécifier les paramètres supplémentaires utilisés lorsque <ph name="PRODUCT_FRAME_NAME" /> lance <ph name="PRODUCT_NAME" />.
@@ -1427,6 +1434,7 @@ Si cette règle n'est pas configurée, le moteur de rendu par défaut est utilis
 
           La méthode recommandée pour verrouiller l'écran en cas d'inactivité consiste à activer le verrouillage de l'écran lors de l'arrêt de <ph name="PRODUCT_OS_NAME" />, qui survient au terme de la durée d'inactivité définie. Cette règle ne devrait être utilisée que lorsque le verrouillage de l'écran doit avoir lieu bien avant l'arrêt du système, ou lorsque l'arrêt du système en cas d'inactivité n'est absolument pas souhaitable.
           La valeur de la règle doit être définie en millisecondes. Les valeurs ne peuvent pas être supérieures au délai d'inactivité.</translation>
+<translation id="6111936128861357925">Autoriser le jeu Easter Egg du dinosaure</translation>
 <translation id="6114416803310251055">obsolète</translation>
 <translation id="6145799962557135888">Permet de définir une liste de formats d'URL spécifiant les sites qui sont autorisés à exécuter JavaScript. 
 
@@ -2057,6 +2065,18 @@ Si ce paramètre n'est pas défini, l'utilisateur peut décider d'utiliser cette
 
       Si vous ne définissez pas cette règle, il n'y a pas d'exceptions à la liste noire définie par la règle "URLBlacklist".</translation>
 <translation id="8176035528522326671">Autoriser l'utilisateur d'entreprise à participer aux sessions à plusieurs profils en tant qu'utilisateur principal seulement (comportement par défaut pour les utilisateurs gérés par une entreprise)</translation>
+<translation id="8191318459035150777">Configure l'URL de la page d'accueil par défaut dans <ph name="PRODUCT_NAME" /> et empêche les utilisateurs de la modifier.
+
+          La page d'accueil est celle qui s'ouvre à l'aide du bouton Accueil. Les pages ouvertes au démarrage sont contrôlées par les règles RestoreOnStartup.
+
+          Le type de la page d'accueil peut être défini sur une URL que vous indiquez ici ou être défini sur la page Nouvel onglet. Si vous sélectionnez la page Nouvel onglet, cette règle n'est pas appliquée.
+
+          Si vous activez ce paramètre, les utilisateurs ne peuvent pas modifier l'URL de la page d'accueil dans <ph name="PRODUCT_NAME" />, mais ils peuvent toujours choisir la page Nouvel onglet comme page d'accueil.
+
+          Si cette règle n'est pas définie, l'utilisateur peut choisir sa page d'accueil lui-même si la règle HomepageIsNewTabPage n'est pas définie non plus.
+
+          Cette règle n'est pas disponible sur les instances Windows qui ne sont pas associées
+          à un domaine Active Directory.</translation>
 <translation id="8197918588508433925">Cette règle définit les extensions autorisées à utiliser l'API Enterprise Platform Keys "chrome.enterprise.platformKeysPrivate.challengeUserKey()" pour l'attestation à distance. Pour pouvoir utiliser l'API, les extensions doivent être ajoutées à cette liste.
 
           Si une extension ne figure pas dans la liste, ou si la liste n'est pas définie, l'appel vers l'API échoue, et un code d'erreur est renvoyé.</translation>
@@ -2173,6 +2193,8 @@ Cette règle n'est prise en compte que si la règle "DefaultSearchProviderEnable
 Si vous activez ce paramètre, la recherche du CNAME sera ignorée et le nom du serveur sera utilisé tel qu'il a été saisi. 
 
 Si vous désactivez ce paramètre ou s'il n'est pas défini, le nom canonique du serveur sera déterminé par le biais de la recherche du CNAME.</translation>
+<translation id="8774131509736383471">Si cette règle est définie sur "True",  la première fenêtre affichée lors de la première exécution est automatiquement agrandie dans <ph name="PRODUCT_NAME" />.
+      Si cette règle est définie sur "False" ou si elle n'est pas configurée, la décision d'agrandir ou non la première fenêtre affichée dépend de la taille de l'écran.</translation>
 <translation id="8777120694819070607">Permet à <ph name="PRODUCT_NAME" /> d'exécuter des plug-ins obsolètes.
 
       Si vous activez ce paramètre, les plug-ins obsolètes sont utilisés comme des plug-ins normaux.

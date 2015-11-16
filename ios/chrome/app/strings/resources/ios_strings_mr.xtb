@@ -4,6 +4,7 @@
 <translation id="1008557486741366299">सध्या नाही</translation>
 <translation id="1047726139967079566">हे पृष्ठ बुकमार्क करा...</translation>
 <translation id="1172898394251786223">पुढील फील्ड</translation>
+<translation id="1625603797851307283">या साइटसाठी <ph name="PRODUCT_NAME" /> ने संकेतशब्द जतन करावा असे आपण  इच्छिता?</translation>
 <translation id="2320166752086256636">कीबोर्ड लपवा</translation>
 <translation id="2704606927547763573">कॉपी केले</translation>
 <translation id="2747003861858887689">मागील फील्ड</translation>
@@ -11,11 +12,17 @@
 <translation id="3244271242291266297">MM</translation>
 <translation id="3252394070589632019"><ph name="NUM_SUGGESTIONS" /> पैकी <ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /></translation>
 <translation id="3335947283844343239">बंद केलेले टॅब पुन्हा उघडा</translation>
+<translation id="3414292259312108062">Chrome हे आपल्या <ph name="BEGIN_LINK" />Google ने जतन केलेले संकेतशब्द<ph name="END_LINK" /> मध्ये जतन करेल आणि आपल्यासाठी हे स्वयं-भरण करेल जेणेकरून आपल्याला हे लक्षात ठेवावे लागत नाही.</translation>
 <translation id="385051799172605136">मागील</translation>
 <translation id="4121993058175073134">निव्वळ-निर्यात डेटा पाठविण्यासाठी, कृपया सेटिंग्ज अॅप मध्ये आपले ईमेल खाते कॉन्फिगर करा.</translation>
 <translation id="4728558894243024398">प्लॅटफॉर्म</translation>
+<translation id="5317780077021120954">जतन करा</translation>
 <translation id="5779929835642192302">सूचना उपलब्ध</translation>
 <translation id="605721222689873409">YY</translation>
+<translation id="6149061208933997199">संकेतशब्द वापरा</translation>
+<translation id="6314335155547195432">संकेतशब्द व्युत्पन्न करा</translation>
+<translation id="6456425917241817154">संकेतशब्द Chrome द्वारे व्युत्पन्न करण्यात आला</translation>
 <translation id="7456847797759667638">स्थान उघडा...</translation>
 <translation id="7481312909269577407">पुढील</translation>
+<translation id="7961015016161918242">कधीही नाही</translation>
 </translationbundle>

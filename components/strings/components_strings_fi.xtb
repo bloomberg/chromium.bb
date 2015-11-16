@@ -9,6 +9,7 @@
 <translation id="1113869188872983271">K&amp;umoa uudelleenjärjestely</translation>
 <translation id="111844081046043029">Haluatko varmasti poistua tältä sivulta?</translation>
 <translation id="112840717907525620">Käytännön välimuisti on OK</translation>
+<translation id="113188000913989374">Viesti sivustolta <ph name="SITE" />:</translation>
 <translation id="1132774398110320017">Chromen automaattisen täytön asetukset…</translation>
 <translation id="1146673768181266552">Kaatumistunnus <ph name="CRASH_ID" /> (<ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="1150979032973867961">Palvelin ei voinut todistaa olevansa <ph name="DOMAIN" />; tietokoneesi käyttöjärjestelmä ei luota sen suojausvarmenteeseen. Tämä voi johtua määritysvirheestä tai verkkoyhteytesi siepanneesta hyökkääjästä.</translation>
@@ -28,6 +29,10 @@
 <translation id="1519264250979466059">Koontipäivä</translation>
 <translation id="1549470594296187301">Tämän ominaisuuden käyttö edellyttää JavaScriptiä.</translation>
 <translation id="1559528461873125649">Tiedostoa tai hakemistoa ei ole olemassa</translation>
+<translation id="1559572115229829303">&lt;p&gt;Verkkotunnukseen <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> ei voi muodostaa salattua yhteyttä, koska laitteesi aika ja päivämäärä (<ph name="DATE_AND_TIME" />) ovat virheelliset.&lt;/p&gt;
+
+          &lt;p&gt;Muokkaa aikaa ja päivämäärää &lt;strong&gt;Asetukset&lt;/strong&gt;-sovelluksen  &lt;strong&gt;Yleistä&lt;/strong&gt;-osiossa.&lt;/p&gt;</translation>
+<translation id="1629803312968146339">Haluatko, että Chrome tallentaa tämän kortin?</translation>
 <translation id="1640180200866533862">Käyttäjäkäytännöt</translation>
 <translation id="1644184664548287040">Verkkoasetukset ovat virheelliset eikä niitä voi tuoda.</translation>
 <translation id="1655462015569774233">{1,plural, =1{Palvelin ei voinut todistaa olevansa <ph name="DOMAIN" />; sen suojausvarmenne vanhentui eilen. Tämä voi johtua määritysvirheestä tai verkkoyhteytesi siepanneesta hyökkääjästä. Tietokoneesi kellonaika on tällä hetkellä <ph name="CURRENT_DATE" />. Onko se oikein? Jos ei, korjaa järjestelmän kellonaika ja päivitä sivu.}other{Palvelin ei voinut todistaa olevansa <ph name="DOMAIN" />; sen suojausvarmenne vanhentui # päivää sitten. Tämä voi johtua määritysvirheestä tai verkkoyhteytesi siepanneesta hyökkääjästä. Tietokoneesi kellonaika on tällä hetkellä <ph name="CURRENT_DATE" />. Onko se oikein? Jos ei, korjaa järjestelmän kellonaika ja päivitä sivu.}}</translation>
@@ -94,6 +99,7 @@
 <translation id="2922350208395188000">Palvelimen varmennetta ei voi tarkistaa.</translation>
 <translation id="2941952326391522266">Palvelin ei voinut todistaa olevansa <ph name="DOMAIN" />; sen suojausvarmenne on verkkotunnuksesta <ph name="DOMAIN2" />. Tämä voi johtua määritysvirheestä tai verkkoyhteytesi siepanneesta hyökkääjästä.</translation>
 <translation id="2958431318199492670">Verkkoasetukset eivät noudata ONC-standardia. Kaikkia asetuksia ei välttämättä tuoda.</translation>
+<translation id="2969319727213777354">Kellosi täytyy asettaa oikeaan aikaan, jotta salattu yhteys voidaan muodostaa. Tämä johtuu siitä, että verkkosivustojen tunnistamisessa käytettävät varmenteet ovat voimassa vain tiettyinä aikoina. Chrome ei voi vahvistaa varmenteita, koska laitteesi kello on väärässä ajassa.</translation>
 <translation id="2972581237482394796">&amp;Tee uudelleen</translation>
 <translation id="3010559122411665027">Luettelokohde "<ph name="ENTRY_INDEX" />": <ph name="ERROR" /></translation>
 <translation id="3024663005179499861">Väärä käytäntötyyppi</translation>
@@ -146,11 +152,14 @@
 <translation id="4117700440116928470">Käytännön laajuutta ei tueta.</translation>
 <translation id="4120075327926916474">Haluatko Chromen tallentavan nämä luottokortin tiedot verkkolomakkeiden täydentämistä varten?</translation>
 <translation id="4148925816941278100">American Express</translation>
+<translation id="4169947484918424451">Haluatko, että Chromium tallentaa tämän kortin?</translation>
 <translation id="4171400957073367226">Virheellinen vahvistusallekirjoitus.</translation>
+<translation id="4176463684765177261">Pois käytöstä</translation>
 <translation id="4196861286325780578">&amp;Toista siirto</translation>
 <translation id="4220128509585149162">Kaatuu</translation>
 <translation id="4250680216510889253">Ei</translation>
 <translation id="4258748452823770588">Virheellinen allekirjoitus</translation>
+<translation id="4268298190799576220">Chromium ei voinut vahvistaa korttiasi. Yritä myöhemmin uudelleen.</translation>
 <translation id="4269787794583293679">(Ei käyttäjänimeä)</translation>
 <translation id="4300246636397505754">Ylätason ehdotukset</translation>
 <translation id="4325863107915753736">Artikkelia ei löydy</translation>
@@ -204,6 +213,7 @@
 <translation id="5523118979700054094">Käytännön nimi</translation>
 <translation id="552553974213252141">Noudettiinko teksti oikein?</translation>
 <translation id="5540224163453853">Pyydettyä artikkelia ei löydy.</translation>
+<translation id="5544037170328430102">Viesti sivustolle <ph name="SITE" /> upotetulta sivulta:</translation>
 <translation id="5556459405103347317">Lataa uudelleen</translation>
 <translation id="5565735124758917034">Aktiivinen</translation>
 <translation id="560412284261940334">Hallintaa ei tueta</translation>
@@ -213,15 +223,18 @@
 <translation id="5813119285467412249">&amp;Toista lisäys</translation>
 <translation id="5872918882028971132">Ylätason ehdotukset</translation>
 <translation id="59107663811261420">Google Payments ei tue tämän tyyppisen kortin käyttämistä ostoksien tekemiseen tältä myyjältä. Valitse eri kortti.</translation>
+<translation id="59174027418879706">Käytössä</translation>
 <translation id="5975083100439434680">Loitonna</translation>
 <translation id="5989320800837274978">Kiinteitä välityspalvelimia tai .pac-URL-osoitetta ei ole määritetty.</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6040143037577758943">Sulje</translation>
+<translation id="604124094241169006">Automaattinen</translation>
 <translation id="6060685159320643512">Varoitus, nämä kokeilut saattavat puraista</translation>
 <translation id="6099520380851856040">Tapahtui <ph name="CRASH_TIME" /></translation>
 <translation id="6151417162996330722">Palvelimen varmenteen voimassaoloaika on liian pitkä.</translation>
 <translation id="6154808779448689242">Palautettu käytännön tunnus ei vastaa nykyistä tunnusta</translation>
 <translation id="6165508094623778733">Lisätietoja</translation>
+<translation id="6218753634732582820">Poistetaanko osoite Chromiumista?</translation>
 <translation id="6259156558325130047">&amp;Toista uudelleenjärjestely</translation>
 <translation id="6263376278284652872">Verkkotunnuksen <ph name="DOMAIN" /> kirjanmerkit</translation>
 <translation id="6282194474023008486">Postinumero</translation>
@@ -239,6 +252,7 @@
 <translation id="6628463337424475685"><ph name="ENGINE" />-haku</translation>
 <translation id="6644283850729428850">Tämä käytäntö on vanhentunut.</translation>
 <translation id="6646897916597483132">Anna nelinumeroinen CVC luottokortin etupuolelta.</translation>
+<translation id="6671697161687535275">Poistetaanko lomake-ehdotus Chromiumista?</translation>
 <translation id="674375294223700098">Tuntematon palvelimen varmennevirhe.</translation>
 <translation id="6753269504797312559">Käytännön arvo</translation>
 <translation id="6831043979455480757">Käännä</translation>
@@ -272,6 +286,7 @@
 <translation id="7378627244592794276">Ei</translation>
 <translation id="7400418766976504921">URL-osoite</translation>
 <translation id="7419106976560586862">Profiilin polku</translation>
+<translation id="7424977062513257142">Viesti tälle verkkosivulle upotetulta sivulta:</translation>
 <translation id="7441627299479586546">Väärä käytännön aihe</translation>
 <translation id="7485870689360869515">Tietoja ei löydy.</translation>
 <translation id="7537536606612762813">Pakollinen</translation>
@@ -282,6 +297,7 @@
 <translation id="7592362899630581445">Palvelimen varmenne rikkoo nimirajoituksia.</translation>
 <translation id="7600965453749440009">Älä koskaan käännä kieltä <ph name="LANGUAGE" /></translation>
 <translation id="7610193165460212391">Arvo on alueen ulkopuolella (<ph name="VALUE" />).</translation>
+<translation id="7637571805876720304">Poistetaanko luottokortti Chromiumista?</translation>
 <translation id="7674629440242451245">Oletko kiinnostunut Chromen uusista jännittävistä ominaisuuksista? Kokeile kehittäjäkanavaa osoitteessa chrome.com/dev.</translation>
 <translation id="7752995774971033316">Ei hallinnoida</translation>
 <translation id="7761701407923456692">Palvelimen varmenne ei vastaa URL-osoitetta.</translation>
@@ -325,6 +341,7 @@
 <translation id="8725066075913043281">Yritä uudelleen</translation>
 <translation id="8738058698779197622">Kellosi täytyy asettaa oikeaan aikaan, jotta salattu yhteys voidaan muodostaa. Tämä johtuu siitä, että verkkosivustojen tunnistamisessa käytettävät varmenteet ovat voimassa vain tiettyinä ajanjaksoina. Chromium ei voi vahvistaa varmenteita, koska laitteesi kello on väärässä ajassa.</translation>
 <translation id="8790007591277257123">&amp;Toista poisto</translation>
+<translation id="8798099450830957504">Oletus</translation>
 <translation id="8804164990146287819">Tietosuojakäytäntö</translation>
 <translation id="8820817407110198400">Kirjanmerkit</translation>
 <translation id="8824019021993735287">Chrome ei voinut vahvistaa korttiasi. Yritä myöhemmin uudelleen.</translation>
@@ -332,6 +349,7 @@
 <translation id="883848425547221593">Muut kirjanmerkit</translation>
 <translation id="884923133447025588">Kumoamisjärjestelmää ei löytynyt.</translation>
 <translation id="8866481888320382733">Virhe jäsennettäessä käytännön asetuksia</translation>
+<translation id="8866959479196209191">Viesti tältä sivulta:</translation>
 <translation id="8876793034577346603">Verkkoasetuksia ei voitu jäsentää.</translation>
 <translation id="8891727572606052622">Virheellinen välityspalvelimen tila.</translation>
 <translation id="889901481107108152">Tämä kokeilu ei ole käytettävissä käyttöympäristössäsi.</translation>

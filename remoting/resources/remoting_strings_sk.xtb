@@ -33,7 +33,6 @@ Informácie o ochrane osobných údajov nájdete v Pravidlách ochrany osobných
 <translation id="1770394049404108959">Aplikáciu nemôžem spustiť.</translation>
 <translation id="177096447311351977">Adresa IP kanála pre klient: <ph name="CLIENT_GAIA_IDENTIFIER" /> ip='<ph name="CLIENT_IP_ADDRESS_AND_PORT" />' host_ip='<ph name="HOST_IP_ADDRESS_AND_PORT" />' channel='<ph name="CHANNEL_TYPE" />' connection='<ph name="CONNECTION_TYPE" />'.</translation>
 <translation id="1779766957982586368">Zavrieť okno</translation>
-<translation id="1818475040640568770">Nemáte zaregistrované žiadne počítače.</translation>
 <translation id="1841799852846221389">Prebieha zakazovanie vzdialených pripojení pre tento počítač...</translation>
 <translation id="189172778771606813">Zavrieť navigačný vysúvací panel</translation>
 <translation id="195619862187186579">Rozloženia klávesnice</translation>
@@ -87,8 +86,6 @@ Informácie o ochrane osobných údajov nájdete v Pravidlách ochrany osobných
 <translation id="2926340305933667314">Vzdialený prístup k tomuto počítaču sa nepodarilo zakázať. Skúste to znova neskôr.</translation>
 <translation id="2930135165929238380">Niektoré potrebné komponenty chýbajú. Prejdite na adresu chrome://plugins a uistite sa, že je aktivovaný doplnok Native Client.</translation>
 <translation id="2939145106548231838">Overenie na účely hostenia</translation>
-<translation id="2998137343848432918">• Pridaná obrazovka Kredity
-• Opravený problém pri prepnutí do režimu celej obrazovky s viditeľnou klávesnicou</translation>
 <translation id="3020807351229499221">Aktualizácia kódu PIN sa nepodarila. Skúste to znova neskôr.</translation>
 <translation id="3025388528294795783">Pomôžte nám vyriešiť váš problém. Dajte nám vedieť, čo sa stalo:</translation>
 <translation id="3027681561976217984">Dotykový režim</translation>
@@ -171,7 +168,6 @@ Hostiteľ pracovnej plochy</translation>
 <translation id="518094545883702183">K týmto informáciám, ktoré sa používajú iba na diagnostiku vami nahláseného problému, má prístup výhradne osoba prešetrujúca vaše hlásenie. Tieto informácie budú uchovávané maximálne 30 dní.</translation>
 <translation id="5222676887888702881">Odhlásiť sa</translation>
 <translation id="5254120496627797685">Ak opustíte túto stránku, relácia Vzdialenej plochy Chrome sa ukončí.</translation>
-<translation id="5285241842433869526">Prečítajte si, ako na počítači nastaviť vzdialený prístup.</translation>
 <translation id="5308380583665731573">Pripojenie</translation>
 <translation id="5363265567587775042">Požiadajte používateľa s počítačom, do ktorého chcete získať prístup, aby klikol na tlačidlo <ph name="SHARE" /> a poskytol vám prístupový kód.</translation>
 <translation id="5379087427956679853">Vzdialená plocha Chrome vám umožňuje bezpečne zdieľať váš počítač cez internet. Obaja používatelia musia mať spustenú aplikáciu Vzdialená plocha Chrome, ktorú nájdete na adrese <ph name="URL" />.</translation>

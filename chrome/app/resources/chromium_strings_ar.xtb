@@ -47,13 +47,11 @@
 <translation id="2558641060352364164">‏هذا الموقع يستخدم المكون الإضافي Chromium Frame والذي سيصبح غير معتمد قريبًا. يُرجى إلغاء تثبيته والترقية إلى متصفّح حديث.</translation>
 <translation id="2572494885440352020">‏أداة مساعدة Chromium</translation>
 <translation id="2602806952220118310">‏Chromium - الإشعارات</translation>
-<translation id="2615699638672665509">‏سيتوقف هذا الكمبيوتر قريبًا عن تلقي تحديثات Chromium نظرًا لأن أجهزته لم تعد متوافقة.</translation>
 <translation id="2636877269779209383">‏يحتاج Chromium الوصول إلى الكاميرا لمشاركتها مع هذا الموقع.</translation>
 <translation id="2648074677641340862">‏حدث خطأ في نظام التشغيل أثناء عملية التثبيت. الرجاء إعادة تنزيل Chromium.</translation>
 <translation id="2673087257647337101">‏أوشك الانتهاء من التحديث! إعادة تشغيل Chromium لإنهاء التحديث.</translation>
 <translation id="2685838254101182273">‏توقف تحديث Chromium ولم يعد متوافقًا مع هذا الإصدار من نظام التشغيل.</translation>
 <translation id="2705212601509139398">‏هذا الموقع يستخدم المكون الإضافي Chromium Frame الذي سيصبح غير معتمد قريبًا. يُرجى إزالته وتنزيل متصفح متوافق.</translation>
-<translation id="2732467638532545152">‏يشغل جهاز الكمبيوتر إصدارًا قديمًا من Microsoft Windows لا يمكنها معالجة شهادة أمان موقع الويب. وبسبب هذه المشكلة، لا يمكن لـ Chromium أن يخبر ما إذا كانت الشهادة جاءت من <ph name="SITE" /> أو من شخص ما على الشبكة يتظاهر بأنه <ph name="SITE" />. يُرجى تحديث جهاز الكمبيوتر إلى الإصدار الأكثر حداثة من Windows.</translation>
 <translation id="2770231113462710648">تغيير المتصفح الافتراضي إلى:</translation>
 <translation id="2801146392936645542">‏يُعد <ph name="FILE_NAME" /> برنامجًا ضارًا، وقد أجرى Chromium حظره.</translation>
 <translation id="2847479871509788944">‏إزالة من Chromium</translation>
@@ -86,8 +84,6 @@
 <translation id="3582788516608077514">‏جارٍ تحديث Chromium...</translation>
 <translation id="358997566136285270">‏شعار Chromium</translation>
 <translation id="3595526210123705352">‏ستؤدي إعادة التشغيل في وضع Windows 8 إلى إغلاق تطبيقات Chromium وإعادة تشغيلها.</translation>
-<translation id="3656661827369545115">‏تشغيل Chromium تلقائيًا عندما يتم تشغيل جهاز الكمبيوتر</translation>
-<translation id="3736987306260231966">‏لا يستطيع Chromium عرض صفحة الويب لأن الجهاز غير متصل بالإنترنت.</translation>
 <translation id="3738139272394829648">المس للبحث</translation>
 <translation id="3744899669254331632">‏لا يمكنك زيارة <ph name="SITE" /> في الوقت الحالي لأن الموقع أرسل اعتمادات مختلطة حيث لا يستطيع Chromium المعالجة. أخطاء الشبكة وهجماتها عادةً ما تكون مؤقتة، لذلك من المحتمل أن تعمل هذه الصفحة في وقت لاحق.</translation>
 <translation id="3748537968684000502">‏أنت تعرض صفحة Google Chrome آمنة.</translation>
@@ -108,7 +104,6 @@
 <translation id="4285930937574705105">‏أخفقت عملية التثبيت بسبب خطأ غير محدد. إذا كان Chromium في حالة التشغيل حاليًا، فالرجاء إغلاقه وإعادة المحاولة.</translation>
 <translation id="4330585738697551178">‏هذه الوحدة معروف أنها تتعارض مع Chromium.</translation>
 <translation id="4423735387467980091">‏تخصيص Chromium والتحكم فيه</translation>
-<translation id="442817494342774222">‏تمت تهيئة Chromium لتشغيله تلقائيًا عند بدء تشغيل جهاز الكمبيوتر.</translation>
 <translation id="4458285410772214805">الرجاء الخروج ثم تسجيل الدخول حتى يسري هذا التغيير.</translation>
 <translation id="4488676065623537541">‏تم حفظ تفاصيل الفوترة في Chromium.</translation>
 <translation id="4559775032954821361">‏انتقل إلى
@@ -225,7 +220,6 @@
 <translation id="8030318113982266900">جارٍ تحديث جهازك إلى قناة <ph name="CHANNEL_NAME" />...</translation>
 <translation id="8033665941300843262">‏يحتاج Chromium الوصول إلى الأذونات لمشاركتها مع هذا الموقع.</translation>
 <translation id="805745970029938373">‏يُمكنك الاطلاع على جميع إشعاراتك من تطبيقات Chromium والإضافات ومواقع الويب هنا.</translation>
-<translation id="811857857463334932">‏لن يتلقى هذا الكمبيوتر تحديثات Chromium بعد الآن نظرًا لأن أجهزته لم تعد متوافقة.</translation>
 <translation id="8134284582177628525">‏إذا كنت تشارك جهاز الكمبيوتر هذا مع <ph name="PROFILE_NAME" />، فأضف نفسك إلى Chromium للتصفح بشكلٍ منفصل. أو ألغِ ربط حسابك بحسابه في Google.</translation>
 <translation id="8187289872471304532">‏انتقل إلى Applications (التطبيقات) &gt; System Preferences (تفضيلات النظام) &gt; Network (الشبكة) &gt; Advanced (الخيارات المتقدمة) &gt; Proxies (الخوادم الوكيلة) وألغ تحديد أي خوادم وكيلة تم تحديدها.</translation>
 <translation id="8269379391216269538">‏المساعدة في تحسين Chromium</translation>

@@ -26,9 +26,7 @@
 اضغط على Shift + Alt للتبديل.</translation>
 <translation id="1882897271359938046">نسخ إلى <ph name="DISPLAY_NAME" /></translation>
 <translation id="1923539912171292317">النقرات التلقائية</translation>
-<translation id="1950626184269948555">‏تم تغيير اختصار إدارة المهام. يُرجى استخدام زر البحث + Esc بدلاً من Esc + Shift.</translation>
 <translation id="1957803754585243749">0 درجة</translation>
-<translation id="1963814843110128691">جارٍ إرسال $1 إلى $2</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1987317783729300807">الحسابات</translation>
 <translation id="2127372758936585790">شاحن منخفض الطاقة</translation>
@@ -152,7 +150,6 @@
 <translation id="6165508094623778733">مزيد من المعلومات</translation>
 <translation id="6247708409970142803">%<ph name="PERCENTAGE" /></translation>
 <translation id="6248847161401822652">‏للإنهاء، اضغط على Control Shift Q مرتين.</translation>
-<translation id="6287020362823083378">‏تم تغيير اختصار قفل الشاشة. يُرجى استخدام زر البحث + L بدلاً من L + Shift + Ctrl.</translation>
 <translation id="6310121235600822547">تم تدوير <ph name="DISPLAY_NAME" /> إلى <ph name="ROTATION" /></translation>
 <translation id="6359806961507272919">‏رسالة قصيرة SMS من الهاتف رقم <ph name="PHONE_NUMBER" /></translation>
 <translation id="639644700271529076">‏مفتاح CAPS LOCK قيد الإيقاف</translation>
@@ -203,7 +200,6 @@
 <translation id="8308637677604853869">القائمة السابقة</translation>
 <translation id="8356164830168736643">إغلاق <ph name="WINDOW_TITLE" /></translation>
 <translation id="8428213095426709021">إعدادات</translation>
-<translation id="8443356412772935865">جارٍ إرسال الشاشة إلى $1</translation>
 <translation id="8456362689280298700">حتى الاكتمال: <ph name="HOUR" />:<ph name="MINUTE" /> ‏</translation>
 <translation id="8517041960877371778">قد يتعذر شحن <ph name="DEVICE_TYPE" /> أثناء التشغيل.</translation>
 <translation id="8528322925433439945">الجوال ...</translation>

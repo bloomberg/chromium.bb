@@ -4,6 +4,7 @@
 <translation id="1008557486741366299">Nie teraz</translation>
 <translation id="1047726139967079566">Dodaj stronę do zakładek...</translation>
 <translation id="1172898394251786223">Następne pole</translation>
+<translation id="1625603797851307283">Czy <ph name="PRODUCT_NAME" /> ma zapisać hasło do tej strony?</translation>
 <translation id="2320166752086256636">Ukryj klawiaturę</translation>
 <translation id="2704606927547763573">Skopiowane</translation>
 <translation id="2747003861858887689">Poprzednie pole</translation>
@@ -11,11 +12,17 @@
 <translation id="3244271242291266297">MM</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> z <ph name="NUM_SUGGESTIONS" /></translation>
 <translation id="3335947283844343239">Otwórz ponownie zamkniętą kartę</translation>
+<translation id="3414292259312108062">Chrome umieści to hasło w <ph name="BEGIN_LINK" />zapisanych hasłach Google<ph name="END_LINK" /> i będzie je automatycznie wstawiać, więc nie musisz go zapamiętywać.</translation>
 <translation id="385051799172605136">Wstecz</translation>
 <translation id="4121993058175073134">Aby wysłać dane net-export, skonfiguruj konto e-mail w aplikacji Ustawienia.</translation>
 <translation id="4728558894243024398">Platforma</translation>
+<translation id="5317780077021120954">Zapisz</translation>
 <translation id="5779929835642192302">Dostępne są sugestie</translation>
 <translation id="605721222689873409">RR</translation>
+<translation id="6149061208933997199">Użyj hasła</translation>
+<translation id="6314335155547195432">Wygeneruj hasło</translation>
+<translation id="6456425917241817154">Hasło wygenerowane przez Chrome</translation>
 <translation id="7456847797759667638">Otwórz lokalizację...</translation>
 <translation id="7481312909269577407">Dalej</translation>
+<translation id="7961015016161918242">Nigdy</translation>
 </translationbundle>

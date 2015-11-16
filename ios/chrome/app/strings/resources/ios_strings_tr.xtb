@@ -4,6 +4,7 @@
 <translation id="1008557486741366299">Şimdi Değil</translation>
 <translation id="1047726139967079566">Bu Sayfaya Yer İşareti Koy...</translation>
 <translation id="1172898394251786223">Sonraki alan</translation>
+<translation id="1625603797851307283"><ph name="PRODUCT_NAME" /> bu site için şifrenizi kaydetsin mi?</translation>
 <translation id="2320166752086256636">Klavyeyi gizle</translation>
 <translation id="2704606927547763573">Kopyalandı</translation>
 <translation id="2747003861858887689">Önceki alan</translation>
@@ -11,11 +12,17 @@
 <translation id="3244271242291266297">AA</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> / <ph name="NUM_SUGGESTIONS" /></translation>
 <translation id="3335947283844343239">Kapatılan Sekmeyi Tekrar Aç</translation>
+<translation id="3414292259312108062">Chrome, daha sonra hatırlamak zorunda kalmamanız için bunu <ph name="BEGIN_LINK" />Google kayıtlı şifrelerinizde<ph name="END_LINK" /> depolar ve sizin için otomatik olarak doldurur.</translation>
 <translation id="385051799172605136">Geri</translation>
 <translation id="4121993058175073134">Net-export verilerini göndermek için lütfen Ayarlar uygulamasında e-posta hesabınızı yapılandırın.</translation>
 <translation id="4728558894243024398">Platform</translation>
+<translation id="5317780077021120954">Kaydet</translation>
 <translation id="5779929835642192302">Öneri mevcut</translation>
 <translation id="605721222689873409">YY</translation>
+<translation id="6149061208933997199">Şifre Kullan</translation>
+<translation id="6314335155547195432">Şifre Oluştur</translation>
+<translation id="6456425917241817154">Chrome'un Oluşturduğu Şifre</translation>
 <translation id="7456847797759667638">Konumu Aç...</translation>
 <translation id="7481312909269577407">İleri</translation>
+<translation id="7961015016161918242">Hiçbir Zaman</translation>
 </translationbundle>

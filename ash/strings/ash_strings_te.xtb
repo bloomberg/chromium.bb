@@ -26,9 +26,7 @@
 మారడానికి Shift + Altను నొక్కండి.</translation>
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME" />కు దర్పణం చేస్తోంది</translation>
 <translation id="1923539912171292317">స్వయంచాలక క్లిక్‌లు</translation>
-<translation id="1950626184269948555">విధి నిర్వాహికి సత్వరమార్గం మార్చబడింది. దయచేసి Shift+Esc బదులుగా Search+Esc ఉపయోగించండి.</translation>
 <translation id="1957803754585243749">0°</translation>
-<translation id="1963814843110128691">$1 నుండి $2కి ప్రసారం చేస్తోంది</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1987317783729300807">ఖాతాలు</translation>
 <translation id="2127372758936585790">తక్కువ-పవర్ గల ఛార్జర్</translation>
@@ -94,6 +92,7 @@
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">లాక్ చేయి</translation>
 <translation id="3799026279081545374">మీరు పని చేయని ఛార్జర్‌ను కలిగి ఉండవచ్చు. మీరు USలో నివసిస్తుంటే, దయచేసి సహాయం పొందడానికి మరియు భర్తీ అభ్యర్థించడానికి 866-628-1371కి కాల్ చేయండి. మీరు UKలో నివసిస్తుంటే, దయచేసి 0800-026-0613కి కాల్ చేయండి. మీరు ఐర్లాండ్‌లో నివసిస్తుంటే, దయచేసి 1-800-832-664కి కాల్ చేయండి. మీరు కెనడాలో నివసిస్తుంటే, దయచేసి 866-628-1372కి కాల్ చేయండి. మీరు ఆస్ట్రేలియాలో నివసిస్తుంటే, దయచేసి 1-800-067-460కి కాల్ చేయండి.</translation>
+<translation id="3866182280516392520">IPv6 చిరునామా</translation>
 <translation id="3891340733213178823">సైన్ అవుట్ చేయడానికి Ctrl+Shift+Qని రెండుసార్లు నొక్కండి.</translation>
 <translation id="3892641579809465218">అంతర్గత ప్రదర్శన</translation>
 <translation id="3963445509666917109">స్పీకర్ (అంతర్గతం)</translation>
@@ -152,7 +151,6 @@
 <translation id="6165508094623778733">మరింత తెలుసుకోండి</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE" />%</translation>
 <translation id="6248847161401822652">నిష్క్రమించడానికి రెండుసార్లు Control Shift Q నొక్కండి.</translation>
-<translation id="6287020362823083378">స్క్రీన్ లాక్ సత్వరమార్గం మార్చబడింది. దయచేసి Ctrl+Shift+Lకి బదులుగా Search+L ఉపయోగించండి.</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> <ph name="ROTATION" />కి తిప్పబడింది</translation>
 <translation id="6359806961507272919"><ph name="PHONE_NUMBER" /> నుండి SMS</translation>
 <translation id="639644700271529076">CAPS LOCK ఆపివేయబడింది</translation>
@@ -205,7 +203,6 @@
 <translation id="8308637677604853869">మునుపటి మెను</translation>
 <translation id="8356164830168736643"><ph name="WINDOW_TITLE" />ని మూసివేయి</translation>
 <translation id="8428213095426709021">సెట్టింగ్‌లు</translation>
-<translation id="8443356412772935865">స్క్రీన్‌ను $1కి ప్రసారం చేస్తోంది</translation>
 <translation id="8456362689280298700"><ph name="HOUR" />:<ph name="MINUTE" />లో పూర్తవుతుంది</translation>
 <translation id="8517041960877371778">మీ <ph name="DEVICE_TYPE" /> ఆన్‌లో ఉన్నప్పుడు ఛార్జ్ కాకపోవచ్చు.</translation>
 <translation id="8528322925433439945">మొబైల్ ...</translation>

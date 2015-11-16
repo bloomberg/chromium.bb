@@ -41,6 +41,7 @@
 <translation id="1452236308086741652"><ph name="VALUE" />، کادر نوشتاری گذرواژه</translation>
 <translation id="1467432559032391204">چپ</translation>
 <translation id="1474557363159888097">کد لنگر قبلی موجود نیست.</translation>
+<translation id="1499041187027566160">بالا بردن صدا</translation>
 <translation id="1502086903961450562">گرافیک قبلی</translation>
 <translation id="1506187449813838456">افزایش گام</translation>
 <translation id="151784044608172266">جمله بعدی</translation>
@@ -128,6 +129,7 @@
 <translation id="2639750663247012216">‏تغییردهنده Chrome Vox</translation>
 <translation id="2644542693584024604">املای اشتباه</translation>
 <translation id="2667291555398229137">روی مورد زیر کلید مسیریابی کلیک کنید</translation>
+<translation id="267442004702508783">بازخوانی</translation>
 <translation id="2697408785920771974">autoinl</translation>
 <translation id="2704429362613743330">{COUNT,plural, =1{پرانتز باز}one{# پرانتز باز}other{# پرانتز باز}}</translation>
 <translation id="2705875883745373140">فشرده نشده</translation>
@@ -392,6 +394,7 @@
 <translation id="5042770794184672516">افزایش میزان صدای گفتار</translation>
 <translation id="5050015258024679800">عنوان قبلی سطح ۴</translation>
 <translation id="5054047268577924192">مورد قبلی لیست</translation>
+<translation id="5075936896689244141">نقشه کلید بعدی</translation>
 <translation id="5078661581131202757">انتخاب فایل</translation>
 <translation id="5080758118274074384">دوبار کلیک شد</translation>
 <translation id="5087864757604726239">برگشت</translation>
@@ -462,6 +465,7 @@
 <translation id="5683155931978483559">کادر انتخاب قبلی</translation>
 <translation id="5684277895745049190">لیست</translation>
 <translation id="5700650669149824506">عنوان سطح ۴ قبلی وجود ندارد.</translation>
+<translation id="5703716265115423771">پایین آوردن صدا</translation>
 <translation id="5709192780268610569">بدون شرح طولانی</translation>
 <translation id="5712244464475377681">popbtn</translation>
 <translation id="5712338278108304766">ستون بعدی جدول</translation>
@@ -526,6 +530,7 @@
 <translation id="6459511626086141404">نقشه کلید مسطح</translation>
 <translation id="6468049171101508116">دکمه بعدی</translation>
 <translation id="6491972999578897419">صدای کنونی را با انتخاب یک گزینه از لیست زیر تغییر دهید.</translation>
+<translation id="6493991254603208962">کم کردن روشنایی</translation>
 <translation id="6508059270146105198">انتقال صفحه‌نمایش بریل به پایین صفحه</translation>
 <translation id="6536864053412760904">‏کد ML ریاضی</translation>
 <translation id="6550720799683018100">نقشه کلید کنونی را با انتخاب یک گزینه از لیست زیر تغییر دهید.</translation>
@@ -564,6 +569,7 @@
 <translation id="7031651751836475482">lstitm</translation>
 <translation id="7037042857287298941">لیست قبلی</translation>
 <translation id="7041173719775863268">پایان انتخاب</translation>
+<translation id="7086377898680121060">زیاد کردن روشنایی</translation>
 <translation id="7095834689119144465">فقط ویرایش عددی نوشتار</translation>
 <translation id="7096001299300236431">رسانه قبلی</translation>
 <translation id="7116595520562830928">multln</translation>
@@ -658,6 +664,7 @@
 <translation id="8153880621934657047">خارج از جدول</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{زیرخط}one{# زیرخط}other{# زیرخط}}</translation>
 <translation id="8179976553408161302">ورود</translation>
+<translation id="8186185314313222077">جابه‌جایی به حالت تمام صفحه</translation>
 <translation id="81960742267269908">برش.</translation>
 <translation id="8199231515320852133">اعلان عناوین سلول کنونی</translation>
 <translation id="820417203470636242">سلول خالی است.</translation>
@@ -678,12 +685,14 @@
 <translation id="844681116543532394">کادر انتخاب قبلی وجود ندارد.</translation>
 <translation id="8455868257606149352">حداکثر <ph name="X" /></translation>
 <translation id="84575901236241018">کلید دسترسی دارد، <ph name="KEY" /></translation>
+<translation id="8476508772960940536">نمای کلی پنجره</translation>
 <translation id="8503360654911991865">کاهش جزئیات پیمایش</translation>
 <translation id="8520472399088452386">دکمه چرخش</translation>
 <translation id="8538744478902126321">حدس در مورد عنوان ردیف سلول کنونی</translation>
 <translation id="8540054775867439484">جمع کردن به بالا</translation>
 <translation id="8548973727659841685">نویسه</translation>
 <translation id="8561322612995434619">پنجره بازشو دارد</translation>
+<translation id="8571096049907249734">چندانتخاب</translation>
 <translation id="8584721346566392021">h5</translation>
 <translation id="8587549812518406253">مورد لیست بعدی</translation>
 <translation id="860150890330522909">کادر تأیید <ph name="NAME" /> علامت‌گذاری شد</translation>
@@ -691,6 +700,7 @@
 <translation id="8631359288236106450"><ph name="COUNT" /> مورد انتخاب شده</translation>
 <translation id="8638532244051952400">اعلام مختصات سلول کنونی</translation>
 <translation id="8650576015643545550">لیست قبلی موجود نیست.</translation>
+<translation id="8651481478098336970">بی‌صدا کردن</translation>
 <translation id="8653031188082306838">urled</translation>
 <translation id="8653646212587894517">نمایش لیست پیوندها</translation>
 <translation id="8664519043722036194">ثانیه</translation>

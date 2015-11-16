@@ -808,6 +808,13 @@
       ይህ ቅንብር ከተሰናከለ <ph name="PRODUCT_NAME" /> በጭራሽ ነባሪ አሳሽ መሆኑን አያረጋግጥምና ይህ አማራጭ እንዳይዋቀር የተጠቃሚ መቆጣጠሪያዎችን ያሰናክላል።
 
       ይህ ቅንብር ካልተዋቀረ <ph name="PRODUCT_NAME" /> ተጠቃሚው ነባሪ አሳሽ መሆኑን ወይም አለመሆኑን፣ እና ሳይሆን ሲቀር ደግሞ የተጠቃሚ ማሳወቂያዎች መታየት እንዲቆጣጠር ያስችለዋል።</translation>
+<translation id="3800626789999016379"><ph name="PRODUCT_NAME" /> ፋይሎችን ለማውረድ የሚጠቀምበትን ማውጫ ያዋቅራል።
+
+      ይህን መመሪያ ካቀናበሩት ተጠቃሚው ማውጫ ቢጠቅስም ባይጠቅስም ወይም ለማውረጃ አካባቢ በየጊዜው እንዲጠየቅ ዕልባቱን ቢያነቃ ባይነቃም <ph name="PRODUCT_NAME" /> የተሰጠውን ማውጫ ብቻ ነው የሚጠቀመው።
+
+      ስራ ላይ ሊውሉ የሚችሉ የተለዋዋጮችን ዝርዝር ለማየት https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables ን ይመልከቱ።
+
+      ይህ መመሪያ ሳይቀናበር ከተተወ ነባሪው የማውረጃ ማውጫ ስራ ላይ ይውላል፣ እና ተጠቃሚው ሊለውጠው ይችላል።</translation>
 <translation id="3805659594028420438">TLS ጎራ ጋር የተሳሰሩ የምስክር ወረቀት ቅጥያዎችን አንቃ (ተቀባይነት ያላገኘ)</translation>
 <translation id="3806576699227917885">ተሰሚ እንዲያጫወት ይፍቀዱ።
 
@@ -948,6 +955,13 @@
 ይህ መመሪያ የሚከበረው የ«DefaultSearchProviderEnabled» መመሪያ ሲነቃ ብቻ ነው።</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 ወይም ከዚያ በኋላ</translation>
 <translation id="4325690621216251241">የመውጫ አዝራር በስርዓቱ መሣቢያ ላይ ያሳያል</translation>
+<translation id="4349746760316962317"><ph name="PRODUCT_NAME" /> የመሸጎጫ ፋይሎችን በዲስክ ላይ ለማከማቸት የሚጠቀምበትን ማውጫ ያዋቅራል።
+
+      ይህን መመሪያ ካቀናበሩት ተጠቃሚው የ«--disk-cache-dir» ዕልባቱን ጠቀሰም አልጠቀሰም <ph name="PRODUCT_NAME" /> የተሰጠውን ማውጫ ይጠቀማል።
+
+      ስራ ላይ ሊውሉ የሚችሉ የተለዋዋጮችን ዝርዝር ለማየት https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables ን ይመልከቱ።
+
+       ይህ መመሪያ ሳይቀናበር ከተተወ ነባሪው የመሸጎጫ ማውጫ ስራ ላይ ይውላል፣ እና ተጠቀሚው በ«--disk-cache-dir» ትዕዛዝ መስመር ጠቋሚው ሊሽረው ይችላል።</translation>
 <translation id="436581050240847513">የመሳሪያ አውታረ መረብ በይነ ገጽን ሪፖርት ያድርጉ</translation>
 <translation id="4372704773119750918">የድርጅት ተጠቃሚ የብዝሃ-መገለጫ (ዋናው ወይም ሁለተኛው) አካል እንዲሆን አይፍቀዱ</translation>
 <translation id="4377599627073874279">ሁሉም ጣቢያዎች ሁሉንም ምስሎች እንዲያሳዩ ፍቀድ</translation>
@@ -1031,6 +1045,11 @@
 <translation id="4665897631924472251">የቅጥያ አስተዳደር ቅንብሮች</translation>
 <translation id="4668325077104657568">ነባሪ የምስሎች ቅንብር</translation>
 <translation id="467236746355332046">የተደገፉ ባህሪያት፦</translation>
+<translation id="4674167212832291997">ሁልጊዜ በ<ph name="PRODUCT_FRAME_NAME" /> እንዲታዩ የሚደረጉ የዩአርኤል ስርዓተ ጥለቶችን ያብጁ።
+
+          ይህ መምሪያ ካልተዋቀረ በ«ChromeFrameRendererSettings» መመሪያው በተገለጸው መሠረት ነባሪው ማስል ሰሪው ነው ለሁሉም ጣቢያዎች ስራ ላይ የሚውለው።
+
+          የምሳሌ ስርዓተ ጥለቶችን ለማግኘት https://www.chromium.org/developers/how-tos/chrome-frame-getting-started ይመልከቱ።</translation>
 <translation id="467449052039111439">የዩ አር ኤልዎች ዝርዝር ይክፈቱ</translation>
 <translation id="4680961954980851756">ራስ-ሙላን ያንቁ</translation>
 <translation id="4723829699367336876">በኬላ ውስጥ ማለፍን ከሩቅ መዳረሻ ደንበኛ አንቃ</translation>
@@ -1133,6 +1152,13 @@
 ይህ መመሪያ ሳይዘጋጅ ሲቀር፣ ነባሪ እርምጃው ይወሰዳል፣ እሱም ማገድ ነው።
 
 እርምጃው ከታገደ፣ <ph name="PRODUCT_OS_NAME" /> ከማገዱ በፊት የማያ ገጹን ለመቆለፍ ወይም ላለመቆለፍ በተናጠል ሊዋቀር ይችላል።</translation>
+<translation id="5111712393799006197"><ph name="PRODUCT_NAME" /> የተጠቃሚ ውሂብ ለማከማቸት የሚጠቀመውን አቃፊ ያዋቅራል።
+
+      ይህንን መምሪያ ካዋቀሩት ተጠቃሚው የ«--user-data-dir» ዕልባቱን ገለጸ አልገለጸ <ph name="PRODUCT_NAME" /> የተሰጠውን አቃፊ ይጠቀማል።
+
+      ስራ ላይ ሊውሉ የሚችሉ የተለዋዋጮችን ዝርዝር ለማግኘት https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables ን ይመልከቱ።
+
+      ይህ መምሪያ ሳይቀናበር ከተተወ ነባሪው የመገለጫ ዱካ ስራ ላይ ይውልና ተጠቃሚው በ«--user-data-dir» ትዕዛዝ መስመር ዕልባቱን በመጠቀም ሊሽረው ይችላል።</translation>
 <translation id="5130288486815037971">በTLS ውስጥ ያሉት የRC4 ስነ መሰውር ጥቅሎች እንደነቁ</translation>
 <translation id="5141670636904227950">ነባሪውን የማጉሊያ አይነት በመግቢያ ገጹ ላይ ያንቁት</translation>
 <translation id="5142301680741828703">በ<ph name="PRODUCT_FRAME_NAME" /> ውስጥ ያሉት የሚከተሉት የዩ አር ኤል ቅጦችን ሁልጊዜ አሳይ</translation>
@@ -1327,6 +1353,20 @@
 <translation id="5809728392451418079">የማሳያ ስሙን ለመሣሪያ-አካባቢያዊ መለያዎች ያዋቅሩ</translation>
 <translation id="5814301096961727113">የሚነገረው ግብረመልስ ነባሪ ሁኔታ በመግቢያ ገጹ ላይ ያዋቅሩት</translation>
 <translation id="5815129011704381141">ከዝማኔ በኋላ በራስ-ዳግም አስጀምር</translation>
+<translation id="5815353477778354428"><ph name="PRODUCT_FRAME_NAME" /> የተጠቃሚ ውሂብን ለማከማቸት የሚጠቀመውን ማውጫ ያዋቅራል።
+
+      ይህንን መምሪያ ካዋቀሩ <ph name="PRODUCT_FRAME_NAME" /> የተሰጠውን ማውጫ ይጠቀማል።
+
+      ስራ ላይ ሊውሉ የሚችሉ የተለዋዋጮችን ዝርዝር ለማግኘት https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables ን ይመልከቱ።
+
+      ይህ ቅንብር ሳይቀናበር ከተተወ ነባሪው የመገለጫ ማውጫ ሥራ ላይ ይውላል።</translation>
+<translation id="5819660021114910752">ለመሣሪያው ስራ ላይ የሚውለውን የሰዓት ሰቅ ይጠቅሳል። ተጠቃሚዎች አሁን ላለው ክፍለ ጊዜ የተጠቀሰውን የሰዓት ሰቅ መሻር ይችላሉ። ሆኖም ግን፣ ዘግቶ ሲወጣ ወደ ተጠቀሰው የሰዓት ሰቅ ተመልሶ ይቀናበራል። የማይሰራ እሴት ከተሰጠ መመሪያው አሁንም ድረስ በምትኩ ጂኤምቲ በመጠቀም ይነቃል። ባዶ ህብረቁምፊ ከተሰጠ መመሪያው ችላ ይባላል።
+
+      ይህ መመሪያ ስራ ላይ ካልዋለ አሁን ንቁ የሆነው የሰዓት ሰቅ በስራ ላይ እንደዋለ ይቆያል፣ ሆኖም ግን ተጠቃሚዎች የሰዓት ሰቁን ሊለውጡት ይችላሉ፣ ለውጡም የሚጸና ነው። በመሆኑም በአንድ ተጠቃሚ የሚደረግ ለውጥ በመለያ መግቢያ ገጹ እና በሁሉም ሌሎች ተጠቃሚዎች ላይ ተጽዕኖ ያሳርፍባቸዋል።
+
+      አዲስ መሣሪያዎች ለ«US/Pacific» በተቀናበረ የሰዓት ሰቅ ይጀምራሉ።
+
+      የእሴቱ ቅርጸት በ«IANA Time Zone Database» ውስጥ ያሉትን የሰዓት ሰቆች ስሞች ይከተላል («https://en.wikipedia.org/wiki/Tz_database»ን ይመከቱ) ይከተላል። በተለይ ደግሞ አብዛኛዎቹ የሰዓት ሰቆች በ«continent/large_city» ወይም «ocean/large_city» ዋቢ ሊጠቀሱ ይችላሉ።</translation>
 <translation id="5826047473100157858">ተጠቃሚው በ<ph name="PRODUCT_NAME" /> ውስጥ ገጾች በስውር ሁነታ መክፈት ይችል ወይም አይችል እንደሆነ ይገልጻል።
 
       «ነቅቷል» ከተመረጠ ወይም መምሪያው እንዳልተዋቀረ ከተተወ ገጾች በስውር ሁነታ ሊከፈቱ ይችላሉ።
@@ -2061,7 +2101,7 @@
       ይህ መመሪያ ካልተዋቀረ በ«URLBlacklist» የተከለከሉ ዝርዝር ውስጥ ምንም የማይካተቱ አይኖሩም።</translation>
 <translation id="8176035528522326671">የድርጅት ተጠቃሚ ዋናው ባለብዙ መገለጫ ተጠቃሚ እንዲሆን ይፈቀድለት (በድርጅት ለሚቀናበሩ ተጠቃሚዎች ነባሪ ባህሪ)</translation>
 <translation id="8191318459035150777">በ<ph name="PRODUCT_NAME" /> ውስጥ ያለውን ነባሪ የመነሻ ገፅ URL ያዋቅራል እና ተጠቃሚዎች እንዳይለውጡት ይከላከላል። የመነሻ ገፅ በመነሻ አዝራር መመሪያዎች የተከፈተ ገፅ ነው። በመጀመሪያ የሚከፈቱ ገጾች በRestoreOnStartup መመሪያዎች ቁጥጥር ይደረግባቸዋል። የመነሻ ገፅ አይነት አንድም እርስዎ እዚህ እንደጠቀሱት URL ሊዋቀር ይችላል ወይም በአዲስ ትር ገፅ ላይ ይዋቀራል። አዲስ የትር ገፅ ከመረጡ፣ ይህ መመሪያ በሥራ ላይ አይውልም። 
-ይህንን ቅንብር ካነቁ፣ ተጠቃሚዎች የመነሻ ገጻቸውን URL በ<ph name="PRODUCT_NAME" /> ውስጥ አይለውጡም፣ ሆኖም ግን አሁንም የአዲስ ትርን ገፅ እንደ መነሻ ገፃቸው መምረጥ ይችላሉ። ይህንን መመሪያ ሳያዋቅሩ መተው እንዲሁም በመነሻገፅአዲስትርገፅነውን አለማዋቀር ተጠቃሚው የራሱን መነሻ ገፅ ለመምረጥ ያስችለዋል። ይህ መመሪያ ንቁ የማውጫ ጎራን ባልተቀላቀሉ የWindows ምሳሌዎች ላይ አይገኝም።</translation>
+ይህንን ቅንብር ካነቁ፣ ተጠቃሚዎች የመነሻ ገጻቸውን URL በ<ph name="PRODUCT_NAME" /> ውስጥ አይለውጡም፣ ሆኖም ግን አሁንም የአዲስ ትርን ገፅ እንደ መነሻ ገፃቸው መምረጥ ይችላሉ። ይህንን መመሪያ ሳያዋቅሩ መተው እንዲሁም በመነሻ ገፅ አዲስ ትር ገፅ ነውን አለማዋቀር ተጠቃሚው የራሱን መነሻ ገፅ ለመምረጥ ያስችለዋል። ይህ መመሪያ ንቁ የማውጫ ጎራን ባልተቀላቀሉ የWindows ምሳሌዎች ላይ አይገኝም።</translation>
 <translation id="8197918588508433925">ይህ መመሪያ ለርቀት ማስረገጥ የድርጅት መሣሪያ ስርዓት ቁልፎች ኤ ፒ አዩን chrome.enterprise.platformKeysPrivate.challengeUserKey() እንዲጠቀሙ የተፈቀደላቸው ቅጥያዎችን ይገልጻል። ቅጥያዎች ኤ ፒ አዩን ለመጠቀም ወደዚህ ዝርዝር መታከል አለባቸው።
 
           አንድ ቅጥያ በዝርዝሩ ውስጥ ከሌለ ወይም ደግሞ ዝርዝሩ ካልተዋቀረ ወደ ኤ ፒ አዩ የሚደረግ ጥሪ ከስህተት ኮድ ጋር አይሳካም።</translation>
@@ -2103,6 +2143,11 @@
 <translation id="8465065632133292531">POST የሚጠቀም የፈጣን ዩአርኤል ግቤቶች</translation>
 <translation id="847472800012384958">ምንም ጣቢያ ብቅ-ባዮችን እንዲያሳይ አይፍቀዱ</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
+<translation id="8484458986062090479">ሁልጊዜ በአስተናጋጅ አሳሹ ምስል ሊሰራላቸው የሚገባቸውን የዩአርኤል ስርዓተ ጥለቶች ዝርዝሩን ያብጁ።
+
+          ይህ መምሪያ ሳይቀናበር ከተተወ ለሁሉም ጣቢያዎች ሥራ ላይ የሚውለው ነባሪ ምስል ሰሪ በ«ChromeFrameRendererSettings» መመሪያ የተገለጸው ነው።
+
+          የምሳሌ ስርዓተ ጥለቶችን ለማግኘት https://www.chromium.org/developers/how-tos/chrome-frame-getting-started ን ይመልከቱ።</translation>
 <translation id="8493645415242333585">የአሰሳ ታሪክ ማስቀመጥን ያሰናክሉ</translation>
 <translation id="8499172469244085141">ነባሪ ቅንብሮች (ተጠቃሚዎች ሊሽሯቸው የሚችሉት)</translation>
 <translation id="8501011084242226370">ተጠቃሚው በ<ph name="PRODUCT_NAME" /> ውስጥ ሊያነቃቸው ወይም ሊያሰናክላቸው የሚችላቸው የተሰኪዎች ዝርዝር ይገልጻል።

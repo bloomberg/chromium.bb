@@ -41,6 +41,7 @@
 <translation id="1452236308086741652">Adgangskodetekstfeltet <ph name="VALUE" /></translation>
 <translation id="1467432559032391204">Venstre</translation>
 <translation id="1474557363159888097">Ingen tidligere ankre.</translation>
+<translation id="1499041187027566160">lydstyrke op</translation>
 <translation id="1502086903961450562">Forrige grafik</translation>
 <translation id="1506187449813838456">Skru op for toneleje</translation>
 <translation id="151784044608172266">Næste sætning</translation>
@@ -128,6 +129,7 @@
 <translation id="2639750663247012216">Ændringstast til ChromeVox</translation>
 <translation id="2644542693584024604">stavefejl</translation>
 <translation id="2667291555398229137">Klik på elementet under en routing-tast</translation>
+<translation id="267442004702508783">opdater</translation>
 <translation id="2697408785920771974">autoinl</translation>
 <translation id="2704429362613743330">{COUNT,plural, =1{venstre parentes}one{# venstre parentes}other{# venstre parenteser}}</translation>
 <translation id="2705875883745373140">Ikke trykket på</translation>
@@ -392,6 +394,7 @@
 <translation id="5042770794184672516">Skru op for talevolumen</translation>
 <translation id="5050015258024679800">Forrige niveau 4-overskrift</translation>
 <translation id="5054047268577924192">Forrige punkt på listen</translation>
+<translation id="5075936896689244141">Næste tastaturoversigt</translation>
 <translation id="5078661581131202757">Filvalg</translation>
 <translation id="5080758118274074384">dobbeltklikket på</translation>
 <translation id="5087864757604726239">tilbage</translation>
@@ -462,6 +465,7 @@
 <translation id="5683155931978483559">Forrige afkrydsningsfelt</translation>
 <translation id="5684277895745049190">Liste</translation>
 <translation id="5700650669149824506">Ingen tidligere niveau 4-overskrifter.</translation>
+<translation id="5703716265115423771">lydstyrke ned</translation>
 <translation id="5709192780268610569">Ingen lang beskrivelse</translation>
 <translation id="5712244464475377681">popbtn</translation>
 <translation id="5712338278108304766">Næste tabelkolonne</translation>
@@ -526,6 +530,7 @@
 <translation id="6459511626086141404">Flad tasteoversigt</translation>
 <translation id="6468049171101508116">Knappen Næste</translation>
 <translation id="6491972999578897419">Skift aktuel stemme ved at vælge en indstilling på listen nedenfor.</translation>
+<translation id="6493991254603208962">Lysstyrke ned</translation>
 <translation id="6508059270146105198">Flyt braille-visningen til bunden af siden</translation>
 <translation id="6536864053412760904">Math ML-token</translation>
 <translation id="6550720799683018100">Skift den nuværende tastaturoversigt ved at vælge en mulighed på listen nedenfor.</translation>
@@ -564,6 +569,7 @@
 <translation id="7031651751836475482">ovs.elmt</translation>
 <translation id="7037042857287298941">Forrige liste</translation>
 <translation id="7041173719775863268">Det valgte afsluttes</translation>
+<translation id="7086377898680121060">Lysstyrke op</translation>
 <translation id="7095834689119144465">Rediger kun tal i tekst</translation>
 <translation id="7096001299300236431">Forrige medie</translation>
 <translation id="7116595520562830928">multln</translation>
@@ -658,6 +664,7 @@
 <translation id="8153880621934657047">Ikke i tabel.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{understregning}one{# understregninger}other{# understregninger}}</translation>
 <translation id="8179976553408161302">Enter</translation>
+<translation id="8186185314313222077">slå fuld skærm til/fra</translation>
 <translation id="81960742267269908">klip.</translation>
 <translation id="8199231515320852133">Offentliggør overskrifterne for den aktuelle celle</translation>
 <translation id="820417203470636242">Tom celle.</translation>
@@ -678,12 +685,14 @@
 <translation id="844681116543532394">Ingen tidligere afkrydsningsfelter.</translation>
 <translation id="8455868257606149352">Maksimum <ph name="X" /></translation>
 <translation id="84575901236241018">har hurtigtasten <ph name="KEY" /></translation>
+<translation id="8476508772960940536">vinduesoversigt</translation>
 <translation id="8503360654911991865">Mindsk detaljegraden for navigation</translation>
 <translation id="8520472399088452386">Skalafelt</translation>
 <translation id="8538744478902126321">Giv et bud på rækkeoverskriften for den aktuelle celle</translation>
 <translation id="8540054775867439484">Ombrudt til toppen</translation>
 <translation id="8548973727659841685">Tegn</translation>
 <translation id="8561322612995434619">har pop op-vindue</translation>
+<translation id="8571096049907249734">flr vlg</translation>
 <translation id="8584721346566392021">h5</translation>
 <translation id="8587549812518406253">Næste element på listen</translation>
 <translation id="860150890330522909">Afkrydsningsfeltet <ph name="NAME" /> er markeret</translation>
@@ -691,6 +700,7 @@
 <translation id="8631359288236106450"><ph name="COUNT" /> elementer er valgt</translation>
 <translation id="8638532244051952400">Oplys aktuelle cellekoordinater</translation>
 <translation id="8650576015643545550">Ingen tidligere lister.</translation>
+<translation id="8651481478098336970">slå lyden fra</translation>
 <translation id="8653031188082306838">urled</translation>
 <translation id="8653646212587894517">Vis liste over links</translation>
 <translation id="8664519043722036194">sekunder</translation>

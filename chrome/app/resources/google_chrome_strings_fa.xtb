@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="fa">
 <translation id="1001534784610492198">‏آرشیو نصب کننده خراب یا نامعتبر است. لطفاً دوباره Google Chrome را دانلود کنید.</translation>
+<translation id="1013290471399003443">‏Chrome تأیید کرد <ph name="ISSUER" /> گواهی‌نامه این وب‌سایت را صادر کرده است. سرور، اطلاعات «شفافیت گواهی‌نامه» معتبری ارائه کرد.</translation>
 <translation id="1016765312371154165">‏Chrome به درستی بسته نشده است.</translation>
 <translation id="103396972844768118">‏اطلاعات مهم درباره داده‌های Chrome</translation>
 <translation id="1061441684050139317">‏Chrome باید به میکروفون دسترسی داشته باشد تا آن را با این سایت به اشتراک بگذارد.</translation>
@@ -62,6 +63,7 @@
 <translation id="2769762047821873045">‏Google Chrome مرورگر پیش‌فرض شما نیست.</translation>
 <translation id="2770231113462710648">تغییر مرورگر پیش‌فرض به:</translation>
 <translation id="2871893339301912279">‏شما در حال حاضر وارد سیستم Chrome شده‌اید!</translation>
+<translation id="2997147809295888909">‏Chrome تأیید کرد <ph name="ISSUER" /> گواهی‌نامه این وب‌سایت را صادر کرده است. سرور هیچ اطلاعات «شفافیت گواهی‌نامه» معتبری ارائه نکرد.</translation>
 <translation id="3037838751736561277">‏Google Chrome در حالت پس‌زمینه است.</translation>
 <translation id="3047079729301751317">‏با قطع اتصال <ph name="USERNAME" />، سابقه، نشانک‌ها، تنظیمات و سایر داده‌های Chrome شما که در این دستگاه ذخیره شده‌اند، پاک می‌شود. داده‌های ذخیره شده در حساب Google شما پاک نمی‌شوند و در <ph name="GOOGLE_DASHBOARD_LINK" />داشبورد Google<ph name="END_GOOGLE_DASHBOARD_LINK" /> قابل مدیریت هستند.</translation>
 <translation id="3080151273017101988">‏ادامه اجرای برنامه‌ها در پس‌زمینه هنگامیکه Google Chrome بسته می‌شود</translation>
@@ -76,7 +78,6 @@
 <translation id="345171907106878721">‏افرودن خودتان به Chrome</translation>
 <translation id="3612333635265770873">‏یک مدول با همین نام با Google Chrome تداخل دارد.</translation>
 <translation id="3622797965165704966">‏اکنون استفاده از Chrome با حساب Google شما و در رایانه‌های مشترک آسان‌تر شده است.</translation>
-<translation id="3656661827369545115">‏راه‌اندازی خودکار Chromium هنگام شروع به کار رایانه</translation>
 <translation id="3735758079232443276">‏افزونه «<ph name="EXTENSION_NAME" />»، صفحه‌ای را تغییر داده است که هنگام راه‌اندازی Chrome نشان داده می‌شود.</translation>
 <translation id="3738139272394829648">لمس کردن برای جستجو</translation>
 <translation id="3784527566857328444">‏حذف از Chrome...</translation>
@@ -84,6 +85,7 @@
 <translation id="3847841918622877581">‏Google Chrome ممکن است از سرویس‌های وب برای بهبود تجربه مرور استفاده کند.</translation>
 <translation id="386202838227397562">‏لطفاً همه پنجره‌های Google Chrome را ببندید و دوباره امتحان کنید.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
+<translation id="3881912906674381083">‏Chrome تأیید کرد <ph name="ISSUER" /> گواهی‌نامه این وب‌سایت را صادر کرده است. سرور، اطلاعات «شفافیت گواهی‌نامه» را ارائه کرد اما Chrome هیچ‌یک از گزارش‌های «شفافیت گواهی‌نامه» را تشخیص نداد.</translation>
 <translation id="3889417619312448367">‏حذف نصب Google Chrome</translation>
 <translation id="4011219958405096740">‏وقتی فعال شود، از جریان ورود به سیستم Chrome مبتنی بر iframe استفاده می‌کند؛ در غیر این صورت از جریان مبتنی بر webview استفاده می‌کند.</translation>
 <translation id="4050175100176540509">بهبودهای امنیتی مهم و ویژگی‌های جدید در جدیدترین نسخه در دسترس است.</translation>
@@ -93,11 +95,9 @@
 <translation id="4167057906098955729">‏می‌توانید همه اعلان‌هایتان از برنامه‌های Chrome، افزودنی‌ها و وب‌سایت‌ها را در اینجا مشاهده کنید.</translation>
 <translation id="423410644998903704">‏Chrome باید به مجوزها دسترسی داشته باشد تا آن‌ها را با این سایت به اشتراک بگذارد.</translation>
 <translation id="4251615635259297716">‏داده‌های Chrome شما به این حساب مرتبط شوند؟</translation>
-<translation id="4273752058983339720">‏Google Chrome طوری تنظیم شده است که هنگام روشن شدن رایانهٔ شما، به‌طور خودکار اجرا شود.</translation>
 <translation id="4309555186815777032">‏(Chrome باید <ph name="BEGIN_BUTTON" />راه‌اندازی مجدد<ph name="END_BUTTON" /> شود)</translation>
 <translation id="4331809312908958774">Chrome OS
 </translation>
-<translation id="4367618624832907428">‏Google Chrome نمی‌تواند صفحه وب را نمایش دهد، زیرا رایانه شما به اینترنت متصل نیست.</translation>
 <translation id="4407807842708586359">‏سیستم عامل Google Chrome</translation>
 <translation id="4458285410772214805">لطفاً از سیستم خارج شوید و دوباره وارد آن شوید تا این تغییر اعمال شود.</translation>
 <translation id="4480040274068703980">‏به دلیل وجود یک خطای ورود به سیستم، سیستم‌عامل Chrome قادر به همگام‌سازی داده‌هایتان نبود.</translation>
@@ -106,7 +106,6 @@
 <translation id="4567424176335768812">با حساب <ph name="USER_EMAIL_ADDRESS" /> وارد سیستم شده‌اید. اکنون در همه دستگاه‌هایی که با آنها به سیستم وارد شده‌اید می‌توانید به نشانک‌ها، سابقه و دیگر تنظیماتتان دسترسی داشته باشید.</translation>
 <translation id="4631713731678262610">‏پنهان در منوی Chrome</translation>
 <translation id="4633000520311261472">‏برای ایمن‌تر کردن Chrome، برخی از افزونه‌هایی را که در<ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> فهرست نشده‌اند و ممکن است بدون اطلاع شما اضافه شده باشند، غیرفعال کردیم.</translation>
-<translation id="4692614041509923516">‏رایانه شما از نسخه‌ای قدیمی از Microsoft Windows استفاده می‌کند که نمی‌تواند گواهی امنیت این وب‌سایت را پردازش نماید. به علت این مشکل، Google Chrome نمی‌تواند تعیین کند که آیا گواهی از طرف <ph name="SITE" /> است یا از طرف شخصی در شبکه شما است که وانمود می‌کند <ph name="SITE" /> است. لطفاً رایانه‌تان را به جدیدترین نسخه Windows به‌روزرسانی کنید.</translation>
 <translation id="4700157086864140907">‏Google chrome می‌تواند با ارسال آنچه در مرورگر تایپ می‌کنید به سرورهای Google، غلط‌گیر املایی هوشمندانه‌تری ارائه دهد که به شما امکان دهد از همان فناوری غلط‌گیر املایی استفاده‌شده در جستجوی Google استفاده کنید.</translation>
 <translation id="4728575227883772061">‏به دلیل خطای نامشخص نصب ناموفق بود. اگر Google Chrome در حال اجرا است، لطفاً آن را ببندید و دوباره سعی کنید.</translation>
 <translation id="473775607612524610">به‌روزرسانی</translation>
@@ -115,6 +114,7 @@
 <translation id="4794050651896644714">‏ذخیره جزئیات در Chrome</translation>
 <translation id="4891791193823137474">‏اجازه به Google Chrome برای اجرا در پس‌زمینه</translation>
 <translation id="4921569541910214635">‏از رایانه به‌طور مشترک استفاده می‌کنید؟ اکنون می‌توانید Chrome را هر طور که دوست دارید، تنظیم کنید.</translation>
+<translation id="4925019873400497719">‏Chrome تأیید کرد <ph name="ISSUER" /> گواهی‌نامه این وب‌سایت را صادر کرده است. سرور، اطلاعات «شفافیت گواهی‌نامه» را ارائه کرد اما این اطلاعات نامعتبر بود.</translation>
 <translation id="4953650215774548573">‏تنظیم Google Chrome به عنوان مرورگر پیش‌فرضتان</translation>
 <translation id="4987308747895123092">‏لطفاً تمام پنجره‌های Google Chrome را ببندید (از جمله آنهایی که در حالت Windows 8 هستند) و دوباره امتحان کنید.</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
@@ -191,7 +191,6 @@
 <translation id="6989339256997917931">‏Google Chrome به روز شده است اما حداقل ۳۰ روز از آن استفاده نکرده‌اید.</translation>
 <translation id="699076943483372849">‏این سایت از افزایه Chrome Frame استفاده می‌کند که دیگر فعال نیست و به‌روزرسانی‌های ثبات و امنیت را دریافت نمی‌کند. لطفاً نصب آن را لغو کنید و به مرورگر جدید ارتقا دهید.</translation>
 <translation id="6991142834212251086">‏مرتبط کردن داده‌های Chrome من به این حساب</translation>
-<translation id="7054640471403081847">‏دریافت به‌روزرسانی‌های Google Chrome به زودی در این رایانه متوقف خواهد شد زیرا سخت‌افزار آن دیگر پشتیبانی نمی‌شود.</translation>
 <translation id="7060865993964054389">‏راه‌انداز برنامه Google Chrome</translation>
 <translation id="7084448929020576097">‏<ph name="FILE_NAME" /> مخرب است و Chrome آن را مسدود کرده است.</translation>
 <translation id="7098166902387133879">‏Google Chrome درحال استفاده از میکروفون شما است.</translation>
@@ -227,7 +226,6 @@
 <translation id="781069973841903133">‏راه‌اندازی مجدد در حالت تمرکز بر محتوای Chrome برنامه‌های Chrome شما را می‌بندد و دوباره راه‌اندازی می‌کند.</translation>
 <translation id="7825851276765848807">‏بدلیل خطای نامشخص، نصب ناموفق بود. لطفاً دوباره Google Chrome را دانلود کنید.</translation>
 <translation id="7890208801193284374">‏اگر رایانه‌ای را به صورت مشترک استفاده می‌کنید، دوستان و خانواده می‌توانند به صورت جداگانه مرور کنند و Chrome را به صورتی که مایلند تنظیم کنند.</translation>
-<translation id="7908968924842975895">‏این رایانه دیگر به‌روزرسانی‌های Google Chrome را دریافت نمی‌کند زیرا سخت‌افزار آن دیگر پشتیبانی نمی‌شود.</translation>
 <translation id="7984945080620862648">‏در حال حاضر نمی‌توانید از <ph name="SITE" /> بازدید کنید زیرا این وب‌سایت اعتبارنامه‌های درهمی ارسال کرده است که Chrome نمی‌تواند پردازش کند. معمولاً خطاهای شبکه و حمله‌ها موقتی هستند، بنابراین احتمالاً این صفحه بعداً کار خواهد کرد.</translation>
 <translation id="8000275528373650868">‏Google Chrome به Windows Vista یا Windows XP با SP2 یا بالاتر نیاز دارد.</translation>
 <translation id="8005540215158006229">‏Chrome تقریباً آماده است.</translation>

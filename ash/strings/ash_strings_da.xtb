@@ -26,9 +26,7 @@
 Tryk på Shift+Alt for at ændre den.</translation>
 <translation id="1882897271359938046">Spejler mod <ph name="DISPLAY_NAME" /></translation>
 <translation id="1923539912171292317">Automatiske klik</translation>
-<translation id="1950626184269948555">Genvejen til Jobliste er blevet ændret. Brug Søg+Esc i stedet for Shift+Esc.</translation>
 <translation id="1957803754585243749">0°</translation>
-<translation id="1963814843110128691">Caster $1 til $2</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1987317783729300807">Konti</translation>
 <translation id="2127372758936585790">Oplader ved lav kraft</translation>
@@ -94,6 +92,7 @@ Tryk på Søg eller Shift for at annullere.</translation>
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">Lås</translation>
 <translation id="3799026279081545374">Din oplader er muligvis beskadiget. Hvis du er bosiddende i USA, skal du ringe på 866-628-1371 for at få hjælp og en ny oplader. Hvis du er bosiddende i Storbritannien, skal du ringe på 0800-026-0613. Hvis du er bosiddende i Irland, skal du ringe på 1-800-832-664. Hvis du er bosiddende i Canada, skal du ringe på 866-628-1372. Hvis du er bosiddende i Australien, skal du ringe på 1-800-067-460.</translation>
+<translation id="3866182280516392520">IPv6-adresse</translation>
 <translation id="3891340733213178823">Tryk på Ctrl+Shift+Q to gange for at logge ud.</translation>
 <translation id="3892641579809465218">Intern skærm</translation>
 <translation id="3963445509666917109">Højttaler (indbygget)</translation>
@@ -152,7 +151,6 @@ Tryk på Shift+Alt for at ændre den.</translation>
 <translation id="6165508094623778733">Flere oplysninger</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE" /> %</translation>
 <translation id="6248847161401822652">Tryk på Ctrl+Shift+Q to gange for at afslutte.</translation>
-<translation id="6287020362823083378">Genvejen til skærmlås er blevet ændret. Brug Søg+L i stedet for Ctrl+Shift+L.</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> er roteret til <ph name="ROTATION" /></translation>
 <translation id="6359806961507272919">Sms fra <ph name="PHONE_NUMBER" /></translation>
 <translation id="639644700271529076">CAPS LOCK er deaktiveret</translation>
@@ -205,7 +203,6 @@ Tryk på Alt+Søg eller Shift for at annullere.</translation>
 <translation id="8308637677604853869">Forrige menu</translation>
 <translation id="8356164830168736643">Luk <ph name="WINDOW_TITLE" /></translation>
 <translation id="8428213095426709021">Indstillinger</translation>
-<translation id="8443356412772935865">Caster skærm til $1</translation>
 <translation id="8456362689280298700"><ph name="HOUR" />:<ph name="MINUTE" /> indtil fuldt opladet</translation>
 <translation id="8517041960877371778">Din <ph name="DEVICE_TYPE" /> kan muligvis ikke oplades, mens den er tændt.</translation>
 <translation id="8528322925433439945">Mobil...</translation>

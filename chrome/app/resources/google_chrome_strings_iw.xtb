@@ -2,7 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="iw">
 <translation id="1001534784610492198">‏הארכיון של המתקין פגום או שאינו חוקי. הורד שוב את Google Chrome.</translation>
-<translation id="1013290471399003443">‏Chrome אימת ש-<ph name="ISSUER" /> הנפיק את אישור האתר. השרת סיפק פרטים חוקיים על שקיפות האישור.</translation>
+<translation id="1013290471399003443">‏Chrome אימת שהגורם שהנפיק את אישור האתר הזה הוא <ph name="ISSUER" />. השרת סיפק פרטים חוקיים על שקיפות האישור.</translation>
 <translation id="1016765312371154165">‏כיבוי Chrome לא בוצע כהלכה.</translation>
 <translation id="103396972844768118">‏מידע חשוב בנוגע לנתונים שלך ב-Chrome</translation>
 <translation id="1061441684050139317">‏Chrome זקוק לגישה למיקרופון כדי לשתף אותו עם האתר הזה.</translation>
@@ -63,7 +63,7 @@
 <translation id="2769762047821873045">‏Google Chrome‏ אינו דפדפן ברירת המחדל שלך.</translation>
 <translation id="2770231113462710648">שנה את דפדפן ברירת המחדל ל:</translation>
 <translation id="2871893339301912279">‏נכנסת ל-Chrome!</translation>
-<translation id="2997147809295888909">‏Chrome אימת ש-<ph name="ISSUER" /> הנפיק את אישור האתר. השרת לא סיפק פרטים על שקיפות האישור.</translation>
+<translation id="2997147809295888909">‏Chrome אימת שהגורם שהנפיק את אישור האתר הזה הוא <ph name="ISSUER" />. השרת לא סיפק פרטים על שקיפות האישור.</translation>
 <translation id="3037838751736561277">‏Google Chrome נמצא במצב רקע.</translation>
 <translation id="3047079729301751317">‏ניתוק <ph name="USERNAME" /> ינקה את ההיסטוריה, הסימניות, ההגדרות ונתוני Chrome אחרים המאוחסנים במכשיר הזה. נתונים המאוחסנים בחשבון Google לא ינוקו, וניתן לנהל אותם <ph name="GOOGLE_DASHBOARD_LINK" />במרכז השליטה של Google<ph name="END_GOOGLE_DASHBOARD_LINK" />.</translation>
 <translation id="3080151273017101988">‏המשך הפעלת יישומים ברקע כאשר Google Chrome סגור</translation>
@@ -78,7 +78,6 @@
 <translation id="345171907106878721">‏הוסף את עצמך ל-Chrome</translation>
 <translation id="3612333635265770873">‏מודול בעל אותו שם מתנגש עם Google Chrome.</translation>
 <translation id="3622797965165704966">‏קל יותר כעת להשתמש ב-Chrome באמצעות חשבון Google שלך ובמחשבים משותפים.</translation>
-<translation id="3656661827369545115">‏הפעל את Chromium אוטומטית בעת הפעלת המחשב</translation>
 <translation id="3735758079232443276">‏התוסף "<ph name="EXTENSION_NAME" />" שינה את הדף שמוצג כשאתה מפעיל את Chrome.</translation>
 <translation id="3738139272394829648">גע כדי לחפש</translation>
 <translation id="3784527566857328444">‏הסר מ-Chrome...</translation>
@@ -86,7 +85,7 @@
 <translation id="3847841918622877581">‏Google Chrome עשוי להשתמש בשירותי אינטרנט כדי לשפר את חווית הגלישה שלך.</translation>
 <translation id="386202838227397562">‏סגור את כל החלונות של Google Chrome ונסה שוב.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
-<translation id="3881912906674381083">‏Chrome אימת ש-<ph name="ISSUER" /> הנפיק את אישור האתר. השרת סיפק פרטים על שקיפות האישור, אבל Chrome לא זיהה את היומנים של שקיפות האישור.</translation>
+<translation id="3881912906674381083">‏Chrome אימת שהגורם שהנפיק את אישור האתר הזה הוא <ph name="ISSUER" />. השרת סיפק פרטים על שקיפות האישור, אבל Chrome לא זיהה אף אחד מהיומנים של שקיפות האישור.</translation>
 <translation id="3889417619312448367">‏הסר את Google Chrome</translation>
 <translation id="4011219958405096740">‏כשמצב זה מופעל, יעשה שימוש בתהליך כניסה אל Chrome המבוסס על iframe. אם לא יופעל, יעשה שימוש בתהליך המבוסס על WebView.</translation>
 <translation id="4050175100176540509">הגרסה החדשה כוללת שיפורי בטיחות חשובים ותכונות חדשות.</translation>
@@ -96,10 +95,8 @@
 <translation id="4167057906098955729">‏כאן תוכל לראות את כל ההתראות שלך מיישומים, מתוספים ומאתרים של Chrome.</translation>
 <translation id="423410644998903704">‏Chrome זקוק לגישה אל ההרשאות כדי לשתף אותן עם האתר הזה.</translation>
 <translation id="4251615635259297716">‏האם לקשר את הנתונים שלך ב-Chrome לחשבון זה?</translation>
-<translation id="4273752058983339720">‏Google Chrome מוגדר באופן אוטומטי לפעול בעת הפעלת המחשב.</translation>
 <translation id="4309555186815777032">‏(נדרש <ph name="BEGIN_BUTTON" />אתחול<ph name="END_BUTTON" /> של Chrome)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
-<translation id="4367618624832907428">‏Google Chrome אינו יכול להציג את דף האינטרנט מכיוון שהמחשב שלך לא מחובר לאינטרנט.</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="4458285410772214805">צא מהמערכת והיכנס שוב כדי שהשינוי ייכנס לתוקף.</translation>
 <translation id="4480040274068703980">‏מערכת ההפעלה של Chrome לא הצליחה לסנכרן את הנתונים שלך עקב שגיאה בתהליך הכניסה.</translation>
@@ -108,7 +105,6 @@
 <translation id="4567424176335768812">נכנסת למערכת בתור <ph name="USER_EMAIL_ADDRESS" />. כעת אתה יכול לגשת אל הסימניות, ההיסטוריה והגדרות אחרות שלך בכל המכשירים שבהם אתה מחובר לחשבון.</translation>
 <translation id="4631713731678262610">‏הסתר בתפריט Chrome</translation>
 <translation id="4633000520311261472">‏כדי לשפר את האבטחה של Chrome, השבתנו חלק מהתוספים שלא רשומים ב<ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> וייתכן שנוספו ללא ידיעתך.</translation>
-<translation id="4692614041509923516">‏המחשב שלך מבוסס על גרסה ישנה של Microsoft Windows שאינה מצליחה לעבד את אישור האבטחה של האתר הזה. עקב בעיה זו, Google Chrome לא יכול לדעת אם האישור הגיע מ-<ph name="SITE" /> או ממישהו ברשת שלך המתחזה להיות <ph name="SITE" />. עדכן את גרסת Windows במחשב שלך.</translation>
 <translation id="4700157086864140907">‏Google Chrome יכול לספק בדיקת איות חכמה יותר על ידי כך שהוא שולח את מה שאתה מקליד בדפדפן לשרתי Google, ומאפשר לך להשתמש באותה טכנולוגיית בדיקת איות ש'חיפוש Google' משתמש בה.</translation>
 <translation id="4728575227883772061">‏ההתקנה נכשלה בשל שגיאה לא צפויה. אם Google Chrome פועל כעת, סגור אותו ונסה שוב.</translation>
 <translation id="473775607612524610">עדכן</translation>
@@ -117,7 +113,7 @@
 <translation id="4794050651896644714">‏שמור פרטים ב-Chrome</translation>
 <translation id="4891791193823137474">‏אפשר ל-Google Chrome לפעול ברקע</translation>
 <translation id="4921569541910214635">‏משתף את המחשב? עכשיו תוכל להגדיר את Chrome בדיוק כמו שאתה אוהב.</translation>
-<translation id="4925019873400497719">‏Chrome אימת ש-<ph name="ISSUER" /> הנפיק את אישור האתר. השרת סיפק פרטים על שקיפות האישור אבל הם לא חוקיים.</translation>
+<translation id="4925019873400497719">‏Chrome אימת שהגורם שהנפיק את אישור האתר הזה הוא <ph name="ISSUER" />. השרת סיפק פרטים על שקיפות האישור, אבל הם אינם חוקיים.</translation>
 <translation id="4953650215774548573">‏הגדר את Google Chrome כדפדפן ברירת המחדל</translation>
 <translation id="4987308747895123092">‏סגור את כל החלונות של Google Chrome (כולל חלונות במצב Windows 8) ונסה שוב.</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
@@ -195,7 +191,6 @@
 <translation id="6989339256997917931">‏Google Chrome עודכן, אך לא השתמשת בו לפחות 30 ימים.</translation>
 <translation id="699076943483372849">‏האתר הזה משתמש בפלאגין Chrome Frame שיצא משימוש ושאינו מקבל עוד עדכוני אבטחה ויציבות. הסר את ההתקנה שלו ושדרג לדפדפן מודרני.</translation>
 <translation id="6991142834212251086">‏קשר את הנתונים שלי ב-Chrome לחשבון הזה</translation>
-<translation id="7054640471403081847">‏קבלת העדכונים של Google Chrome תופסק בקרוב למחשב זה מאחר והחומרה שלו אינה נתמכת עוד.</translation>
 <translation id="7060865993964054389">Google Chrome App Launcher</translation>
 <translation id="7084448929020576097">‏<ph name="FILE_NAME" /> הוא קובץ זדוני, ו-Chrome חסם אותו.</translation>
 <translation id="7098166902387133879">‏Google Chrome משתמש במיקרופון שלך.</translation>
@@ -231,7 +226,6 @@
 <translation id="781069973841903133">‏הפעלה מחדש במצב עשיר ב-Chrome תביא לסגירת היישומים שלך ב-Chrome והפעלתם מחדש.</translation>
 <translation id="7825851276765848807">‏ההתקנה נכשלה בשל שגיאה לא מזוהה. הורד שוב את Google Chrome.</translation>
 <translation id="7890208801193284374">‏אם אתה משתף מחשב, חברים ובני משפחה יכולים לגלוש בנפרד ולהגדיר את Chrome בדיוק כפי שהם רוצים.</translation>
-<translation id="7908968924842975895">‏קבלת העדכונים של Google Chrome תופסק בקרוב למחשב זה מאחר והחומרה שלו אינה נתמכת עוד.</translation>
 <translation id="7984945080620862648">‏לא ניתן לבקר כעת באתר <ph name="SITE" /> מכיוון שהאתר שלח אישורים משובשים ש-Chrome אינו יכול לעבד. שגיאות רשת ותקיפות מתרחשות בדרך כלל לזמן מוגבל, כך שסביר להניח שדף זה יפעל מאוחר יותר.</translation>
 <translation id="8000275528373650868">‏להפעלת Google Chrome יש להשתמש במערכת ההפעלה Windows Vista או Windows XP עם SP2 ואילך.</translation>
 <translation id="8005540215158006229">‏Chrome כמעט מוכן.</translation>

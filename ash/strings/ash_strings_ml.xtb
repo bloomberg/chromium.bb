@@ -26,9 +26,7 @@
 സ്വിച്ചുചെയ്യുന്നതിന് Shift + Alt അമർത്തുക.</translation>
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME" /> എന്നതിലേക്ക് മിറർചെയ്യുന്നു</translation>
 <translation id="1923539912171292317">യാന്ത്രിക ക്ലിക്കുകൾ</translation>
-<translation id="1950626184269948555">ടാസ്‌ക്‌ മാനേജർ കുറുക്കുവഴി മാറ്റി. Shift+Esc-ന് പകരം Search+Esc ഉപയോഗിക്കുക.</translation>
 <translation id="1957803754585243749">0°</translation>
-<translation id="1963814843110128691">$1എന്നതിനെ $2 എന്നതിലേക്ക് കാസ്‌റ്റുചെയ്യുന്നു</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1987317783729300807">അക്കൗണ്ടുകൾ‌</translation>
 <translation id="2127372758936585790">കുറഞ്ഞ തോതിൽ വൈദ്യുതി പ്രവഹിക്കുന്ന ചാർജർ</translation>
@@ -94,6 +92,7 @@
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">ലോക്കുചെയ്യുക</translation>
 <translation id="3799026279081545374">നിങ്ങളുടെ ചാർജർ മോശമായിരിക്കാം. നിങ്ങൾ യു.എസിലാണ് താമസിക്കുന്നതെങ്കിൽ, സഹായത്തിനും മാറ്റിവാങ്ങുന്നതിനുമായി 866-628-1371 എന്ന നമ്പറിൽ വിളിക്കുക. നിങ്ങൾ യു.കെയിലാണ് താമസിക്കുന്നതെങ്കിൽ, 0800-026-0613 എന്ന നമ്പറിൽ വിളിക്കുക. നിങ്ങൾ അയർലൻഡിലാണ് താമസിക്കുന്നതെങ്കിൽ, 1-800-832-664 എന്ന നമ്പറിൽ വിളിക്കുക. നിങ്ങൾ കാനഡയിലാണ് താമസിക്കുന്നതെങ്കിൽ, 866-628-1372 എന്ന നമ്പറിൽ വിളിക്കുക. നിങ്ങൾ ഓസ്‌ട്രേലിയയിലാണ് താമസിക്കുന്നതെങ്കിൽ, 1-800-067-460 എന്ന നമ്പറിൽ വിളിക്കുക.</translation>
+<translation id="3866182280516392520">IPv6 വിലാസം</translation>
 <translation id="3891340733213178823">സൈൻ ഔട്ട് ചെയ്യുന്നതിന് രണ്ടു‌തവണ Ctrl+Shift+Q അമർത്തുക.</translation>
 <translation id="3892641579809465218">ആന്തരിക പ്രദർശനം</translation>
 <translation id="3963445509666917109">സ്‌പീക്കർ (ആന്തരികം)</translation>
@@ -151,7 +150,6 @@
 <translation id="6165508094623778733">കൂടുതല്‍ മനസിലാക്കുക</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE" />%</translation>
 <translation id="6248847161401822652">പുറത്തുപോകുന്നതിന് രണ്ടുതവണ Control Shift Q അമർത്തുക.</translation>
-<translation id="6287020362823083378">സ്‌ക്രീൻ ലോക്ക് കുറുക്കുവഴി മാറ്റി. Ctrl+Shift+L-നുപകരം Search+L ഉപയോഗിക്കുക.</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> എന്നതിനെ <ph name="ROTATION" /> എന്നതിലേയ്‌ക്ക് തിരിച്ചു</translation>
 <translation id="6359806961507272919"><ph name="PHONE_NUMBER" /> എന്നതില്‍ നിന്നുള്ള SMS</translation>
 <translation id="639644700271529076">CAPS LOCK ഓഫാണ്</translation>
@@ -203,7 +201,6 @@
 <translation id="8308637677604853869">മുൻ മെനു</translation>
 <translation id="8356164830168736643"><ph name="WINDOW_TITLE" /> അടയ്‌ക്കുക</translation>
 <translation id="8428213095426709021">ക്രമീകരണങ്ങള്‍</translation>
-<translation id="8443356412772935865">സ്‌ക്രീൻ $1 എന്നതിലേക്ക് കാസ്റ്റുചെയ്യുന്നു</translation>
 <translation id="8456362689280298700"><ph name="HOUR" />:<ph name="MINUTE" /> നിറയാൻ</translation>
 <translation id="8517041960877371778">നിങ്ങളുടെ <ph name="DEVICE_TYPE" /> ഓണായിരിക്കുമ്പോൾ അത് ചാർജ്ജാകാതിരിക്കാം.</translation>
 <translation id="8528322925433439945">മൊബൈൽ ...</translation>

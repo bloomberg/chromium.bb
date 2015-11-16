@@ -813,6 +813,13 @@
 <translation id="3780152581321609624">Isama sa Kerberos SPN ang port na hindi karaniwan</translation>
 <translation id="3788662722837364290">Mga setting ng pamamahala ng power kapag naging idle ang user</translation>
 <translation id="3793095274466276777">Kino-configure ang default na mga pagsusuri ng browser sa <ph name="PRODUCT_NAME" /> at pinipigilan ang mga user sa pagbabago ng mga ito. Kung pinagana mo ang setting na ito, palaging titingnan ng <ph name="PRODUCT_NAME" /> ang startup kahit na default na browser ito at awtomatikong irerehistro ang sarili nito kung posible. Kung hindi pinagana ang setting na ito, hindi kailanmang titingnan ng <ph name="PRODUCT_NAME" /> kung ito ang default na browser at hindi papaganahin ang mga kontrol ng user para sa pagtatakda ng pagpipiliang ito. Kung hindi nakatakda ang setting na ito, papayagan ng <ph name="PRODUCT_NAME" /> ang user na kontrolin kahit na ito ay default na browser at kahit na dapat maipakita ang mga notification ng user kapag hindi ito ipinapakita.</translation>
+<translation id="3800626789999016379">Kino-configure ang direktoryong gagamitin ng <ph name="PRODUCT_NAME" /> para sa pagda-download ng mga file.
+
+      Kung itatakda mo ang patakarang ito, gagamitin ng <ph name="PRODUCT_NAME" /> ang ibinigay na direktoryo, tumukoy man ang user ng isa o na-enable niya ang flag upang ma-prompt para sa lokasyon ng download sa bawat pagkakataon.
+
+      Tingnan ang https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables para sa isang listahan ng mga variable na magagamit.
+
+      Kung hinayaang hindi nakatakda ang patakarang ito, gagamitin ang default na direktoryo ng download at magagawa itong baguhin ng user.</translation>
 <translation id="3805659594028420438">I-enable ang extension ng TLS domain-bound na mga certificate (hindi na ginagamit)</translation>
 <translation id="3806576699227917885">Payagan ang pag-play ng audio.
 
@@ -953,6 +960,13 @@
           Iginagalang lang ang patakarang ito kung naka-enable ang patakarang 'DefaultSearchProviderEnabled.'</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 o mas bago</translation>
 <translation id="4325690621216251241">Magdagdag ng button sa pag-logout sa tray ng system</translation>
+<translation id="4349746760316962317">Kino-configure ang direktoryong gagamitin ng <ph name="PRODUCT_NAME" /> para sa pag-iimbak ng mga naka-cache na file sa disk.
+
+      Kung itatakda mo ang patakarang ito, gagamitin ng <ph name="PRODUCT_NAME" /> ang ibinigay na direktoryo, tinukoy man ng user ang '--disk-cache-dir' na flag o hindi.
+
+      Tingnan ang https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables para sa isang listahan ng mga variable na magagamit.
+
+      Kung hinayaang hindi nakatakda ang patakarang ito, gagamitin ang default na direktoryo ng cache at magagawa itong i-override ng user gamit ang '--disk-cache-dir' na command line flag.</translation>
 <translation id="436581050240847513">I-ulat ang mga interface ng network ng device</translation>
 <translation id="4372704773119750918">Hindi pinapayagan ang enterprise user na maging bahagi ng multiprofile (pangunahin o pangalawa)</translation>
 <translation id="4377599627073874279">Payagan ang lahat ng mga site na ipakita ang lahat ng mga larawan</translation>
@@ -1036,6 +1050,11 @@
 <translation id="4665897631924472251">Mga setting ng pamamahala ng extension</translation>
 <translation id="4668325077104657568">Default na setting ng mga larawan</translation>
 <translation id="467236746355332046">Mga suportadong tampok:</translation>
+<translation id="4674167212832291997">I-customize ang listahan ng mga pattern ng URL na dapat na palaging i-render ng <ph name="PRODUCT_FRAME_NAME" />.
+
+          Kung hindi nakatakda ang patakarang ito, gagamitin ang default na tagapag-render para sa lahat ng site tulad ng tinukoy sa patakarang 'ChromeFrameRendererSettings.'
+
+          Para sa mga halimbawang pattern, tingnan ang https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="467449052039111439">Magbukas ng listahan ng mga URL</translation>
 <translation id="4680961954980851756">Paganahin ang AutoFill</translation>
 <translation id="4723829699367336876">Paganahin ang firewall traversal mula sa client ng malayuang pag-access</translation>
@@ -1138,6 +1157,13 @@
           Kapag hindi nakatakda ang patakarang ito, ginagawa ang default na pagkilos, na suspendihin.
 
           Kung ang pagkilos ay suspendihin, mako-configure nang hiwalay ang <ph name="PRODUCT_OS_NAME" /> upang i-lock o hindi i-lock ang screen bago ang pagsususpinde.</translation>
+<translation id="5111712393799006197">Kino-configure ang direktoryong gagamitin ng <ph name="PRODUCT_NAME" /> para sa pag-iimbak ng data ng user.
+
+      Kung itatakda mo ang patakarang ito, gagamitin ng <ph name="PRODUCT_NAME" /> ang ibinigay na direktoryo, tinukoy man ng user ang '--user-data-dir' na flag o hindi.
+
+      Tingnan ang https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables para sa isang listahan ng mga variable na magagamit.
+
+      Kung hinayaang hindi nakatakda ang patakarang ito, gagamitin ang default na path ng profile at magagawa itong i-override ng user gamit ang '--user-data-dir' na command line flag.</translation>
 <translation id="5130288486815037971">Kung naka-enable ang mga RC4 na cipher suite sa TLS o hindi</translation>
 <translation id="5141670636904227950">Itakda ang default na uri ng magnifier ng screen na naka-enable sa screen sa pag-login</translation>
 <translation id="5142301680741828703">Palaging i-render ang mga sumusunod na pattern ng URL sa <ph name="PRODUCT_FRAME_NAME" /></translation>
@@ -1327,6 +1353,20 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="5809728392451418079">Itakda ang display name para sa mga account na lokal sa device</translation>
 <translation id="5814301096961727113">Itakda ang default na katayuan ng isinalitang feedback sa screen sa pag-login</translation>
 <translation id="5815129011704381141">Awtomatikong mag-reboot pagkatapos mag-update</translation>
+<translation id="5815353477778354428">Kino-configure ang direktoryong gagamitin ng <ph name="PRODUCT_FRAME_NAME" /> para sa pag-iimbak ng data ng user.
+
+      Kung itatakda mo ang patakarang ito, gagamitin ng <ph name="PRODUCT_FRAME_NAME" /> ang ibinigay na direktoryo.
+
+      Tingnan ang https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables para sa isang listahan ng mga variable na magagamit.
+
+      Kung hinayaang hindi nakatakda ang setting na ito, gagamitin ang default na direktoryo ng profile.</translation>
+<translation id="5819660021114910752">Tinutukoy ang timezone na gagamitin para sa device. Maaaring i-override ng mga user ang tinukoy na timezone para sa kasalukuyang session. Gayunpaman, kapag nag-logout, ibinabalik ito sa tinukoy na timezone. Kung may ibinibigay na di-wastong value, ia-activate pa rin ang patakaran gamit sa halip ang "GMT." Kung may ibinibigay na walang lamang string, babalewalain ang patakaran.
+
+      Kung hindi gagamitin ang patakarang ito, patuloy pa ring gagamitin ang kasalukuyang aktibong timezone, gayunpaman, mababago ng mga user ang timezone at patuloy na gagamitin ang pagbabago. Samakatuwid, nakakaapekto sa screen ng pag-login at sa lahat ng iba pang user ang isang pagbabago ng isang user.
+
+      Magsisimula ang mga bagong device gamit ang timezone na nakatakda sa "US/Pacific."
+
+      Sinusunod ng format ng value ang mga pangalan ng mga timezone sa "IANA Time Zone Database" (tingnan ang "https://en.wikipedia.org/wiki/Tz_database"). Sa partikular, maaaring tukuyin ang karamihan ng mga timezone sa pamamagitan ng "continent/large_city" o "ocean/large_city."</translation>
 <translation id="5826047473100157858">Tinutukoy kung maaaring buksan ng user o hindi ang mga pahina sa mode na Incognito sa <ph name="PRODUCT_NAME" />.
 
       Kung pinili ang 'Pinagana' o hinayaang hindi nakatakda ang patakaran, maaaring buksan sa mode na Incognito ang mga pahina.
@@ -2109,6 +2149,11 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="8465065632133292531">Mga parameter para sa instant na URL na ginagamit ang POST</translation>
 <translation id="847472800012384958">Huwag payagang magpakita ng mga popup ang anumang site</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
+<translation id="8484458986062090479">I-customize ang listahan ng mga pattern ng URL na dapat na palaging i-render ng browser ng host.
+
+          Kung hindi nakatakda ang patakarang ito, gagamitin ang default na tagapag-render para sa lahat ng site tulad ng tinukoy sa patakarang 'ChromeFrameRendererSettings.'
+
+          Para sa mga halimbawang pattern, tingnan ang https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="8493645415242333585">Huwag paganahin ang pag-save ng kasaysayan ng browser</translation>
 <translation id="8499172469244085141">Mga Default na Setting (maaaring i-override ng mga user)</translation>
 <translation id="8501011084242226370">Tumutukoy ng listahan ng mga plugin na maaaring i-enable o i-disable ng user sa <ph name="PRODUCT_NAME" />.

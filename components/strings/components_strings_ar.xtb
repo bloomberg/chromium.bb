@@ -9,6 +9,7 @@
 <translation id="1113869188872983271">تراجع عن إعادة الت&amp;رتيب</translation>
 <translation id="111844081046043029">هل تريد بالتأكيد مغادرة هذه الصفحة؟</translation>
 <translation id="112840717907525620">ذاكرة التخزين المؤقت للسياسة بحالة جيدة</translation>
+<translation id="113188000913989374"><ph name="SITE" /> يعرض:</translation>
 <translation id="1132774398110320017">‏إعدادات الملء التلقائي في Chrome...</translation>
 <translation id="1146673768181266552">معرِّف العطل <ph name="CRASH_ID" /> (<ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="1150979032973867961">هذا الخادم لم يتمكن من إثبات أن ذلك <ph name="DOMAIN" />؛ بل إنه شهادة أمان غير موثقة من خلال نظام تشغيل الكمبيوتر. وربما يكون السبب في ذلك خطأ في التكوين أو مهاجمًا يعترض الاتصال.</translation>
@@ -28,6 +29,9 @@
 <translation id="1519264250979466059">تاريخ الإصدار</translation>
 <translation id="1549470594296187301">‏يجب تمكين JavaScript لاستخدام هذه الميزة.</translation>
 <translation id="1559528461873125649">لا وجود لمثل هذا الملف أو الدليل</translation>
+<translation id="1559572115229829303">‏&lt;p&gt;تعذر إنشاء اتصال خاص بـ <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> نظرًا لأن تاريخ ووقت جهازك (<ph name="DATE_AND_TIME" />) غير صحيحين.&lt;/p&gt;
+
+          &lt;p&gt;يُرجى تعديل التاريخ والوقت من القسم &lt;strong&gt;عام&lt;/strong&gt; في تطبيق &lt;strong&gt;الإعدادات&lt;/strong&gt; .&lt;/p&gt;</translation>
 <translation id="1629803312968146339">‏هل تريد من Chrome حفظ هذه البطاقة؟</translation>
 <translation id="1640180200866533862">سياسات المستخدم</translation>
 <translation id="1644184664548287040">تهيئة الشبكة غير صالحة ويتعذر استيرادها.</translation>
@@ -95,6 +99,7 @@
 <translation id="2922350208395188000">لا يمكن التحقق من شهادة الخادم.</translation>
 <translation id="2941952326391522266">هذا الخادم لم يتمكن من إثبات أن ذلك <ph name="DOMAIN" />؛ بل إنه شهادة أمان من <ph name="DOMAIN2" />. وربما سبب ذلك خطأ في التكوين أو مهاجمًا يعترض اتصالك.</translation>
 <translation id="2958431318199492670">‏لا تتوافق تهيئة الشبكة مع معيار ONC. قد لا يتم استيراد بعض أجزاء التهيئة.</translation>
+<translation id="2969319727213777354">‏لإنشاء اتصال آمن، فإنك بحاجة إلى ضبط ساعتك بشكل صحيح. وذلك لأن الشهادات التي تستخدمها مواقع الويب لتعريف نفسها تكون صالحة فقط لفترات محددة من الوقت. فإذا كانت ساعة جهازك غير صحيحة، فلن يتمكن Google Chrome من التحقق من هذه الشهادات.</translation>
 <translation id="2972581237482394796">إعا&amp;دة</translation>
 <translation id="3010559122411665027">إدخال القائمة "<ph name="ENTRY_INDEX" />": <ph name="ERROR" /></translation>
 <translation id="3024663005179499861">نوع السياسة غير صحيح</translation>
@@ -149,6 +154,7 @@
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4169947484918424451">‏هل تريد من Chromium حفظ هذه البطاقة؟</translation>
 <translation id="4171400957073367226">توقيع تحقق سيئ</translation>
+<translation id="4176463684765177261">معطل</translation>
 <translation id="4196861286325780578">إ&amp;عادة النقل</translation>
 <translation id="4220128509585149162">الأعطال</translation>
 <translation id="4250680216510889253">لا</translation>
@@ -207,6 +213,7 @@
 <translation id="5523118979700054094">اسم السياسة</translation>
 <translation id="552553974213252141">هل تم استخراج النص بشكل صحيح؟</translation>
 <translation id="5540224163453853">تعذر العثور على المقالة المطلوبة</translation>
+<translation id="5544037170328430102">صفحة مُضمنة في <ph name="SITE" /> تعرض:</translation>
 <translation id="5556459405103347317">إعادة تحميل</translation>
 <translation id="5565735124758917034">نشط</translation>
 <translation id="560412284261940334">الإدارة غير متوفرة</translation>
@@ -216,10 +223,12 @@
 <translation id="5813119285467412249">إعا&amp;دة الإضافة</translation>
 <translation id="5872918882028971132">اقتراحات الآباء</translation>
 <translation id="59107663811261420">‏هذا النوع من البطاقات غير متوافق مع Google Payments لهذا التاجر. يُرجى تحديد بطاقة أخرى.</translation>
+<translation id="59174027418879706">تم التمكين</translation>
 <translation id="5975083100439434680">تصغير</translation>
 <translation id="5989320800837274978">‏لم يتم تحديد أي من الخوادم الوكيلة الثابتة ولا عنوان URL للنص البرمجي pac.</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6040143037577758943">إغلاق</translation>
+<translation id="604124094241169006">تلقائي</translation>
 <translation id="6060685159320643512">احذر، هذه التجارب غير مضمونة النتائج</translation>
 <translation id="6099520380851856040">حدث في <ph name="CRASH_TIME" /></translation>
 <translation id="6151417162996330722">فترة صلاحية شهادة الخادم طويلة جدًا.</translation>
@@ -277,6 +286,7 @@
 <translation id="7378627244592794276">لا</translation>
 <translation id="7400418766976504921">‏عنوان URL</translation>
 <translation id="7419106976560586862">مسار الملف الشخصي</translation>
+<translation id="7424977062513257142">صفحة مُضمنة في صفحة الويب هذه تعرض:</translation>
 <translation id="7441627299479586546">موضوع السياسة غير صحيح</translation>
 <translation id="7485870689360869515">لم يتم العثور على بيانات.</translation>
 <translation id="7537536606612762813">إلزامية</translation>
@@ -331,6 +341,7 @@
 <translation id="8725066075913043281">أعد المحاولة</translation>
 <translation id="8738058698779197622">‏لإنشاء اتصال آمن، فإنك بحاجة إلى ضبط ساعتك بشكل صحيح. وذلك لأن الشهادات التي تستخدمها مواقع الويب لتعريف نفسها تكون صالحة فقط لفترات محددة من الوقت. فإذا كانت ساعة جهازك غير صحيحة، فلن يتمكن Chromium من التحقق من هذه الشهادات.</translation>
 <translation id="8790007591277257123">إعادة الح&amp;ذف</translation>
+<translation id="8798099450830957504">الافتراضي</translation>
 <translation id="8804164990146287819">سياسة الخصوصية</translation>
 <translation id="8820817407110198400">إشارات</translation>
 <translation id="8824019021993735287">‏لم يتمكن Chrome من التحقق من بطاقتك في الوقت الحالي.يُرجى إعادة المحاولة في وقت لاحق.</translation>
@@ -338,6 +349,7 @@
 <translation id="883848425547221593">إشارات أخرى</translation>
 <translation id="884923133447025588">لم يتمّ العثور على أي آلبة إبطال.</translation>
 <translation id="8866481888320382733">خطأ في إعدادات تحليل السياسة</translation>
+<translation id="8866959479196209191">تعرض هذه الصفحة:</translation>
 <translation id="8876793034577346603">أخفق تحليل تهيئة الشبكة</translation>
 <translation id="8891727572606052622">وضع الخادم الوكيل غير صالح.</translation>
 <translation id="889901481107108152">عذرًا، هذه التجربة غير متاحة على نظامك الأساسي.</translation>

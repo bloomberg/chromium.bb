@@ -4,6 +4,7 @@
 <translation id="1008557486741366299">Niet nu</translation>
 <translation id="1047726139967079566">Bladwijzer instellen voor deze pagina...</translation>
 <translation id="1172898394251786223">Volgend veld</translation>
+<translation id="1625603797851307283">Wil je dat <ph name="PRODUCT_NAME" /> je wachtwoord voor deze site opslaat?</translation>
 <translation id="2320166752086256636">Toetsenbord verbergen</translation>
 <translation id="2704606927547763573">Gekopieerd</translation>
 <translation id="2747003861858887689">Vorig veld</translation>
@@ -11,11 +12,17 @@
 <translation id="3244271242291266297">MM</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> van <ph name="NUM_SUGGESTIONS" /></translation>
 <translation id="3335947283844343239">Open gesloten tabblad opnieuw</translation>
+<translation id="3414292259312108062">Chrome slaat dit op in je <ph name="BEGIN_LINK" />door Google opgeslagen wachtwoorden<ph name="END_LINK" /> en vult dit automatisch voor je aan, zodat je je wachtwoord niet zelf hoeft te onthouden.</translation>
 <translation id="385051799172605136">Vorige</translation>
 <translation id="4121993058175073134">Als je netto-exportgegevens wilt verzenden, configureer je je e-mailaccount in de app Instellingen.</translation>
 <translation id="4728558894243024398">Platform</translation>
+<translation id="5317780077021120954">Opslaan</translation>
 <translation id="5779929835642192302">Beschikbare suggesties</translation>
 <translation id="605721222689873409">JJ</translation>
+<translation id="6149061208933997199">Wachtwoord gebruiken</translation>
+<translation id="6314335155547195432">Wachtwoord genereren</translation>
+<translation id="6456425917241817154">Gegenereerd Chrome-wachtw.</translation>
 <translation id="7456847797759667638">Open locatie...</translation>
 <translation id="7481312909269577407">Vooruit</translation>
+<translation id="7961015016161918242">Nooit</translation>
 </translationbundle>

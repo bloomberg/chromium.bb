@@ -9,6 +9,7 @@
 <translation id="1113869188872983271">&amp;Vrátit změnu uspořádání zpět</translation>
 <translation id="111844081046043029">Jste si jisti, že chcete opustit tuto stránku?</translation>
 <translation id="112840717907525620">Mezipaměť zásady je v pořádku</translation>
+<translation id="113188000913989374">Web <ph name="SITE" /> říká:</translation>
 <translation id="1132774398110320017">Nastavení Automatického vyplňování v prohlížeči Chrome...</translation>
 <translation id="1146673768181266552">ID selhání <ph name="CRASH_ID" /> (<ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="1150979032973867961">Server nedokázal prokázat, že patří doméně <ph name="DOMAIN" />. Operační systém vašeho počítače nedůvěřuje jeho bezpečnostnímu certifikátu.Může to být způsobeno nesprávnou konfigurací nebo tím, že vaše připojení zachytává útočník.</translation>
@@ -28,6 +29,10 @@
 <translation id="1519264250979466059">Datum sestavení</translation>
 <translation id="1549470594296187301">Chcete-li tuto funkci použít, musí být aktivován JavaScript.</translation>
 <translation id="1559528461873125649">Daný soubor nebo adresář neexistuje.</translation>
+<translation id="1559572115229829303">&lt;p&gt;Soukromé připojení k doméně <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> nelze navázat, protože máte v zařízení nastaveno chybné datum a čas (<ph name="DATE_AND_TIME" />).&lt;/p&gt;
+
+      &lt;p&gt;Datum a čas upravte v aplikaci &lt;strong&gt;Nastavení&lt;/strong&gt; v sekci &lt;strong&gt;Obecné&lt;/strong&gt;.&lt;/p&gt;</translation>
+<translation id="1629803312968146339">Chcete, aby Chrome tuto kartu uložil?</translation>
 <translation id="1640180200866533862">Zásady pro uživatele</translation>
 <translation id="1644184664548287040">Konfigurace sítě je neplatná a nelze ji importovat.</translation>
 <translation id="1655462015569774233">{1,plural, =1{Server nedokázal prokázat, že patří doméně <ph name="DOMAIN" />. Platnost jeho bezpečnostního certifikátu včera vypršela. Může to být způsobeno nesprávnou konfigurací nebo tím, že vaše připojení zachytává útočník. Hodiny ve vašem počítači jsou aktuálně nastaveny na <ph name="CURRENT_DATE" />. Je to správně? Pokud ne, měli byste nastavit správné hodiny systému a poté tuto stránku načíst znovu.}few{Server nedokázal prokázat, že patří doméně <ph name="DOMAIN" />. Platnost jeho bezpečnostního certifikátu vypršela před # dny. Může to být způsobeno nesprávnou konfigurací nebo tím, že vaše připojení zachytává útočník. Hodiny ve vašem počítači jsou aktuálně nastaveny na <ph name="CURRENT_DATE" />. Je to správně? Pokud ne, měli byste čas v počítači opravit a poté tuto stránku načíst znovu.}many{Server nedokázal prokázat, že patří doméně <ph name="DOMAIN" />. Platnost jeho bezpečnostního certifikátu vypršela před # dnem. Může to být způsobeno nesprávnou konfigurací nebo tím, že vaše připojení zachytává útočník. Hodiny ve vašem počítači jsou aktuálně nastaveny na <ph name="CURRENT_DATE" />. Je to správně? Pokud ne, měli byste nastavit správné hodiny systému a poté tuto stránku načíst znovu.}other{Server nedokázal prokázat, že patří doméně <ph name="DOMAIN" />. Platnost jeho bezpečnostního certifikátu vypršela před # dny. Může to být způsobeno nesprávnou konfigurací nebo tím, že vaše připojení zachytává útočník. Hodiny ve vašem počítači jsou aktuálně nastaveny na <ph name="CURRENT_DATE" />. Je to správně? Pokud ne, měli byste nastavit správné hodiny systému a poté tuto stránku načíst znovu.}}</translation>
@@ -94,6 +99,7 @@
 <translation id="2922350208395188000">Certifikát serveru nelze zkontrolovat.</translation>
 <translation id="2941952326391522266">Server nedokázal prokázat, že patří doméně <ph name="DOMAIN" />. Jeho bezpečnostní certifikát pochází z domény <ph name="DOMAIN2" />. Může to být způsobeno nesprávnou konfigurací nebo tím, že vaše připojení zachytává útočník.</translation>
 <translation id="2958431318199492670">Konfigurace sítě nesplňuje standard ONC. Může se stát, že některé části konfigurace nebudou importovány.</translation>
+<translation id="2969319727213777354">Aby bylo možné navázat zabezpečené spojení, musejí být správně nastaveny hodiny. Důvodem je, že certifikáty, pomocí kterých se weby identifikují, platí pouze pro konkrétní období. Jelikož hodiny v zařízení nejsou nastaveny správně, Google Chrome tyto certifikáty nemůže ověřit.</translation>
 <translation id="2972581237482394796">&amp;Opakovat</translation>
 <translation id="3010559122411665027">Položka seznamu „<ph name="ENTRY_INDEX" />“: <ph name="ERROR" /></translation>
 <translation id="3024663005179499861">Chybný typ zásady</translation>
@@ -146,11 +152,14 @@
 <translation id="4117700440116928470">Rozsah zásady není podporován.</translation>
 <translation id="4120075327926916474">Chcete v aplikaci Chrome uložit informace o této kreditní kartě k vyplňování formulářů?</translation>
 <translation id="4148925816941278100">American Express</translation>
+<translation id="4169947484918424451">Chcete, aby prohlížeč Chromium tuto kartu uložil?</translation>
 <translation id="4171400957073367226">Chybný ověřovací podpis</translation>
+<translation id="4176463684765177261">Deaktivováno</translation>
 <translation id="4196861286325780578">&amp;Opakovat přesunutí</translation>
 <translation id="4220128509585149162">Selhání</translation>
 <translation id="4250680216510889253">Ne</translation>
 <translation id="4258748452823770588">Chybný podpis</translation>
+<translation id="4268298190799576220">Prohlížeč Chromium vaši kartu aktuálně nemohl ověřit. Zkuste to znovu později.</translation>
 <translation id="4269787794583293679">(Žádné uživatelské jméno)</translation>
 <translation id="4300246636397505754">Návrhy rodičů</translation>
 <translation id="4325863107915753736">Článek nebyl nalezen</translation>
@@ -204,6 +213,7 @@
 <translation id="5523118979700054094">Název zásady</translation>
 <translation id="552553974213252141">Byl text extrahován správně?</translation>
 <translation id="5540224163453853">Požadovaný článek nebyl nalezen.</translation>
+<translation id="5544037170328430102">Vložená stránka na webu <ph name="SITE" /> říká:</translation>
 <translation id="5556459405103347317">Načíst znovu</translation>
 <translation id="5565735124758917034">Aktivní</translation>
 <translation id="560412284261940334">Správa není podporována</translation>
@@ -213,15 +223,18 @@
 <translation id="5813119285467412249">&amp;Opakovat přidání</translation>
 <translation id="5872918882028971132">Návrhy rodičů</translation>
 <translation id="59107663811261420">Tento typ karty ve službě Google Payments u tohoto obchodníka není podporován. Vyberte prosím jinou kartu.</translation>
+<translation id="59174027418879706">Aktivní</translation>
 <translation id="5975083100439434680">Oddálit</translation>
 <translation id="5989320800837274978">Nejsou určeny pevně dané servery proxy ani adresa URL skriptu PAC.</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6040143037577758943">Zavřít</translation>
+<translation id="604124094241169006">Automaticky</translation>
 <translation id="6060685159320643512">Pozor, tyto experimenty mohou skončit všelijak.</translation>
 <translation id="6099520380851856040">Stalo se v <ph name="CRASH_TIME" /></translation>
 <translation id="6151417162996330722">Certifikát serveru má příliš dlouhé období platnosti.</translation>
 <translation id="6154808779448689242">Vrácený token zásad neodpovídá aktuálnímu tokenu</translation>
 <translation id="6165508094623778733">Další informace</translation>
+<translation id="6218753634732582820">Odstranit adresu z prohlížeče Chromium?</translation>
 <translation id="6259156558325130047">&amp;Opakovat změnu uspořádání</translation>
 <translation id="6263376278284652872">Záložky webu <ph name="DOMAIN" /></translation>
 <translation id="6282194474023008486">PSČ</translation>
@@ -239,6 +252,7 @@
 <translation id="6628463337424475685">Vyhledávání <ph name="ENGINE" /></translation>
 <translation id="6644283850729428850">Tato zásada se již nepoužívá.</translation>
 <translation id="6646897916597483132">Zadejte čtyřmístný kód CVC z přední strany karty</translation>
+<translation id="6671697161687535275">Odstranit návrh položky formuláře z prohlížeče Chromium?</translation>
 <translation id="674375294223700098">Neznámá chyba certifikátu serveru.</translation>
 <translation id="6753269504797312559">Hodnota zásady</translation>
 <translation id="6831043979455480757">Přeložit</translation>
@@ -272,6 +286,7 @@
 <translation id="7378627244592794276">Ne</translation>
 <translation id="7400418766976504921">Adresa URL</translation>
 <translation id="7419106976560586862">Cesta k profilu</translation>
+<translation id="7424977062513257142">Stránka vložená na této webové stránce říká:</translation>
 <translation id="7441627299479586546">Chybný předmět zásady</translation>
 <translation id="7485870689360869515">Nebyla nalezena žádná data.</translation>
 <translation id="7537536606612762813">Povinná</translation>
@@ -282,6 +297,7 @@
 <translation id="7592362899630581445">Certifikát serveru porušuje omezení názvů domén.</translation>
 <translation id="7600965453749440009">Jazyk <ph name="LANGUAGE" /> nikdy nepřekládat</translation>
 <translation id="7610193165460212391">Hodnota <ph name="VALUE" /> je mimo rozsah.</translation>
+<translation id="7637571805876720304">Odstranit platební kartu z prohlížeče Chromium?</translation>
 <translation id="7674629440242451245">Zajímají vás nové funkce Chromu? Vyzkoušejte kanál pro vývojáře na adrese chrome.com/dev.</translation>
 <translation id="7752995774971033316">Nespravováno</translation>
 <translation id="7761701407923456692">Certifikát serveru neodpovídá adrese URL.</translation>
@@ -325,6 +341,7 @@
 <translation id="8725066075913043281">Zkusit znovu</translation>
 <translation id="8738058698779197622">Aby bylo možné navázat zabezpečené spojení, hodiny musejí být nastaveny správně. Důvodem je, že certifikáty, pomocí kterých se weby identifikují, platí pouze pro pevně daná období. Jelikož hodiny v zařízení nejsou nastaveny správně, prohlížeč Chromium tyto certifikáty nemůže ověřit.</translation>
 <translation id="8790007591277257123">&amp;Opakovat smazání</translation>
+<translation id="8798099450830957504">Výchozí</translation>
 <translation id="8804164990146287819">Zásady ochrany soukromí</translation>
 <translation id="8820817407110198400">Záložky</translation>
 <translation id="8824019021993735287">Chrome vaši kartu aktuálně nemohli ověřit. Zkuste to znovu později.</translation>
@@ -332,6 +349,7 @@
 <translation id="883848425547221593">Jiné záložky</translation>
 <translation id="884923133447025588">Nebyl nalezen žádný mechanismus zamítnutí.</translation>
 <translation id="8866481888320382733">Při analýze nastavení zásady došlo k chybě</translation>
+<translation id="8866959479196209191">Tato stránka říká:</translation>
 <translation id="8876793034577346603">Analýza konfigurace sítě se nezdařila.</translation>
 <translation id="8891727572606052622">Neplatný režim proxy serveru.</translation>
 <translation id="889901481107108152">Je nám líto, tento experiment není na vaší platformě dostupný.</translation>

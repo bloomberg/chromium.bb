@@ -33,7 +33,6 @@ Du kan få flere oplysninger om privatliv i privatlivspolitikkerne for Google (h
 <translation id="1770394049404108959">Jeg kan ikke åbne applikationen.</translation>
 <translation id="177096447311351977">Kanal-IP for klient: <ph name="CLIENT_GAIA_IDENTIFIER" /> ip='<ph name="CLIENT_IP_ADDRESS_AND_PORT" />' host_ip='<ph name="HOST_IP_ADDRESS_AND_PORT" />' channel='<ph name="CHANNEL_TYPE" />' connection='<ph name="CONNECTION_TYPE" />'.</translation>
 <translation id="1779766957982586368">Luk vindue</translation>
-<translation id="1818475040640568770">Du har ingen registrerede computere.</translation>
 <translation id="1841799852846221389">Deaktiverer fjernforbindelserne for denne computer…</translation>
 <translation id="189172778771606813">Luk sidemenuen</translation>
 <translation id="195619862187186579">Tastaturlayout</translation>
@@ -87,8 +86,6 @@ Du kan få flere oplysninger om privatliv i privatlivspolitikkerne for Google (h
 <translation id="2926340305933667314">Fjernadgangen til denne computer kunne ikke deaktiveres. Prøv igen senere.</translation>
 <translation id="2930135165929238380">Nogle obligatoriske komponenter mangler. Gå til chrome://plugins, og sørg for, at Native Client er aktiveret.</translation>
 <translation id="2939145106548231838">Godkend over for host</translation>
-<translation id="2998137343848432918">• Tilføjelse af skærm med medvirkende.
-• Løsning af problemet med visning i fuld skærm med synligt tastatur.</translation>
 <translation id="3020807351229499221">Pinkoden kunne ikke opdateres. Prøv igen senere.</translation>
 <translation id="3025388528294795783">Du kan hjælpe os med at løse problemet ved at fortælle os, hvad der gik galt:</translation>
 <translation id="3027681561976217984">Tryk</translation>
@@ -124,6 +121,7 @@ host</translation>
 <translation id="3950820424414687140">Log ind</translation>
 <translation id="3989511127559254552">For at fortsætte skal du give udvidet adgangstilladelse til din computer. Du skal kun gøre dette én gang.</translation>
 <translation id="4006787130661126000">Du skal aktivere fjernforbindelserne, hvis du vil bruge Chrome Fjernskrivebord til at få adgang til denne computer.</translation>
+<translation id="405887016757208221">Fjerncomputeren har ikke startet sessionen. Hvis problemet fortsætter, kan du prøve at konfigurere hosten igen.</translation>
 <translation id="4068946408131579958">Alle forbindelser</translation>
 <translation id="409800995205263688">BEMÆRK! Politikindstillingerne tillader kun forbindelser mellem computere inden for dit netværk.</translation>
 <translation id="4155497795971509630">Nogle obligatoriske komponenter mangler. Kontrollér, at du har installeret den nyeste version af softwaren, og prøv igen.</translation>
@@ -170,7 +168,6 @@ Fjernskrivebord</translation>
 <translation id="518094545883702183">Disse oplysninger bruges kun til diagnosticering af det problem, du rapporterer, de er kun tilgængelige for personer, der undersøger din rapport, og de tilbageholdes i højst 30 dage.</translation>
 <translation id="5222676887888702881">Log ud</translation>
 <translation id="5254120496627797685">Hvis du forlader denne side, afsluttes din session med Chrome Fjernskrivebord.</translation>
-<translation id="5285241842433869526">Få flere oplysninger om at konfigurere en computer til fjernadgang.</translation>
 <translation id="5308380583665731573">Få forbindelse</translation>
 <translation id="5363265567587775042">Bed den bruger, hvis computer du ønsker at få adgang til, om at klikke på "<ph name="SHARE" />" for at give dig adgangskoden.</translation>
 <translation id="5379087427956679853">Med Chrome Fjernskrivebord får du mulighed for sikkert at dele din computer via internettet. Begge brugere skal køre appen Chrome Fjernskrivebord, som kan findes på <ph name="URL" />.</translation>
@@ -258,6 +255,7 @@ Fjernskrivebord</translation>
 <translation id="7869445566579231750">Du har ikke tilladelse til at køre denne applikation.</translation>
 <translation id="7948001860594368197">Valgmuligheder for skærm</translation>
 <translation id="7970576581263377361">Godkendelse mislykkedes. Log ind på Chromium igen.</translation>
+<translation id="7981525049612125370">Fjernsessionen er udløbet.</translation>
 <translation id="8041721485428375115">Når du downloader installationsprogrammet til host for Chrome Fjernskrivebord, accepterer du automatisk Google <ph name="LINK_BEGIN" />Servicevilkår<ph name="LINK_END" />.</translation>
 <translation id="8073845705237259513">Hvis du vil bruge Chrome Fjernskrivebord, skal du føje en Google-konto til din enhed.</translation>
 <translation id="80739703311984697">Fjernværten kræver, at du bekræftes over for et tredjepartswebsite. Du skal give Chromoting yderligere tilladelser til at få adgang til denne adresse, før du kan fortsætte:</translation>

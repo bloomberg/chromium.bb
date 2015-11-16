@@ -62,6 +62,9 @@ Není-li tato zásada nastavena, výchozí frekvence je 3 hodiny. Minimální po
 
           Zásada je dodržována pouze v případě, že je aktivní zásada DefaultSearchProviderEnabled.</translation>
 <translation id="1265053460044691532">Omezit dobu, po kterou se uživatel ověřený pomocí technologie SAML může přihlásit offline</translation>
+<translation id="1291880496936992484">Upozornění: Po verzi 52 (přibližně v září 2016) bude šifrovací algoritmus RC4 z prohlížeče <ph name="PRODUCT_NAME" /> zcela odstraněn a tato zásada přestane fungovat.
+
+      Pokud tato zásada není nastavena nebo je nastavena na hodnotu false, v protokolu TLS nebudou povoleny šifrovací sady RC4. Nastavením této zásady na hodnotu true je možné zajistit kompatibilitu se zastaralým serverem. Toto nastavení by však mělo být použito pouze jako dočasné nouzové opatření a server by měl být překonfigurován.</translation>
 <translation id="1297182715641689552">Použít skript proxy serveru ve formátu PAC</translation>
 <translation id="1300635491585192248">Předvídat síťové akce u všech nemobilních sítí</translation>
 <translation id="1304973015437969093">ID aplikací/rozšíření a adresy URL aktualizací, které se mají nainstalovat na pozadí</translation>
@@ -499,6 +502,9 @@ Pokud toto nastavení deaktivujete, Bezpečné prohlížení nebude nikdy aktivn
 Pokud toto nastavení aktivujete nebo deaktivujete, uživatelé nebudou moci v prohlížeči <ph name="PRODUCT_NAME" /> změnit ani přepsat nastavení Povolit ochranu proti phishingu a malwaru.
 
 Pokud tuto zásadu ponecháte nenastavenou, bude tato možnost aktivována, ale uživatelé budou moci nastavení změnit.</translation>
+<translation id="2801230735743888564">Povolit uživatelům hrát hru s dinosaurem, když je zařízení offline.
+
+      Je-li tato zásada nastavena na hodnotu False, uživatelé nemohou hrát hru s dinosaurem, když je zařízení offline. Pokud je tato zásada nastavena na hodnotu True, uživatelé hru s dinosaurem hrát mohou. Pokud tato zásada není nastavena, v zaregistrovaném systému Chrome OS uživatelé hru s dinosaurem hrát nemohou, ale za všech jiných okolností ji hrát mohou.</translation>
 <translation id="2805707493867224476">Povolit všem webům zobrazovat vyskakovací okna</translation>
 <translation id="2808013382476173118">Povolí použití synchronizačních serverů a serverů STUN, když se vzdálení klienti pokouší připojit k tomuto počítači.
 
@@ -771,6 +777,13 @@ Pokud je toto nastavení ponecháno nenakonfigurované, nebudou ohledně přijat
       Pokud je toto nastavení deaktivováno, <ph name="PRODUCT_NAME" /> nebude kontrolovat, zda je výchozím prohlížečem, a deaktivuje uživatelské ovládací prvky pro nastavení této možnosti.
 
       Pokud toto nastavení není nakonfigurováno, může uživatel v prohlížeči <ph name="PRODUCT_NAME" /> určit, zda jej chce nastavit jako výchozí prohlížeč a zda se má zobrazit oznámení v případě, že jím není.</translation>
+<translation id="3800626789999016379">Slouží ke konfiguraci adresáře, do kterého bude prohlížeč <ph name="PRODUCT_NAME" /> stahovat soubory.
+
+      Pokud tuto zásadu nastavíte, použije <ph name="PRODUCT_NAME" /> zadaný adresář i v případě, že uživatel zadal jiný adresář nebo zvolil, že chce pokaždé zobrazit výzvu k zadání umístění stahovaného souboru.
+
+      Seznam proměnných, které můžete použít, naleznete na stránce https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.
+
+      Pokud tato zásada není nastavena, bude se používat výchozí adresář pro stažené soubory a uživatel jej bude moci změnit.</translation>
 <translation id="3805659594028420438">Povolit rozšíření certifikátů TLS vázaných na doménu (zastaralé)</translation>
 <translation id="3806576699227917885">Umožňuje přehrávat zvuky.
 
@@ -908,6 +921,13 @@ Tato zásada je určena k internímu použití prohlížečem <ph name="PRODUCT_
           Tato zásada je respektována pouze v případě, že je aktivována zásada DefaultSearchProviderEnabled.</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 nebo novější</translation>
 <translation id="4325690621216251241">Přidat na hlavní panel systému tlačítko pro odhlášení</translation>
+<translation id="4349746760316962317">Slouží ke konfiguraci adresáře, který bude <ph name="PRODUCT_NAME" /> používat k ukládání souborů do mezipaměti na disku.
+
+      Pokud tuto zásadu nastavíte, <ph name="PRODUCT_NAME" /> bude používat stanovený adresář bez ohledu na to, zda uživatel zadal příznak „--disk-cache-dir“.
+
+      Seznam proměnných, které můžete použít, naleznete na stránce https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.
+
+      Pokud tuto zásadu nenastavíte, bude použit výchozí adresář mezipaměti a uživatel jej bude moci přepsat pomocí příznaku příkazového řádku „--disk-cache-dir“.</translation>
 <translation id="436581050240847513">Odesílat informace o síťových rozhraních zařízení</translation>
 <translation id="4372704773119750918">Nepovolí podnikovým uživatelům být součástí multiprofilu (primárního či sekundárního)</translation>
 <translation id="4377599627073874279">Povolit všem webům zobrazování všech obrázků</translation>
@@ -991,6 +1011,11 @@ Samotná zásada je na výše uvedených platformách podporována. Funkce, kter
 <translation id="4665897631924472251">Nastavení správy rozšíření</translation>
 <translation id="4668325077104657568">Výchozí nastavení obrázků</translation>
 <translation id="467236746355332046">Podporované funkce:</translation>
+<translation id="4674167212832291997">Umožňuje personalizovat seznam vzorů adres URL, které by měl vždy vykreslit plugin <ph name="PRODUCT_FRAME_NAME" />.
+
+          Pokud tato zásada není nastavena, použije se pro všechny weby výchozí modul vykreslení určený zásadou ChromeFrameRendererSettings.
+
+          Ukázkové vzory naleznete na stránce https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="467449052039111439">Otevřít seznam adres URL</translation>
 <translation id="4680961954980851756">Aktivovat Automatické vyplňování</translation>
 <translation id="4723829699367336876">Povolení přechodu přes bránu firewall z klienta vzdáleného připojení</translation>
@@ -1089,6 +1114,14 @@ Tato zásada ovlivňuje kromě integrované webové kamery i všechny ostatní v
           Není-li tato zásada nastavena, bude provedena výchozí akce (přechod do režimu spánku).
 
           Pokud je zvolenou akcí přechod do režimu spánku, můžete zvlášť nastavit, zda má systém <ph name="PRODUCT_OS_NAME" /> před přechodem do tohoto režimu uzamknout obrazovku, nebo ne.</translation>
+<translation id="5111712393799006197">Slouží ke konfiguraci adresáře, do kterého bude <ph name="PRODUCT_NAME" /> ukládat uživatelská data.
+
+      Pokud tuto zásadu nastavíte, <ph name="PRODUCT_NAME" /> bude používat stanovený adresář bez ohledu na to, zda uživatel zadal příznak „--user-data-dir“.
+
+      Seznam proměnných, které můžete použít, naleznete na stránce https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.
+
+      Pokud zásadu nenastavíte, použije se výchozí cesta profilu a uživatelé ji budou moci přepsat pomocí příznaku příkazového řádku „--user-data-dir“.</translation>
+<translation id="5130288486815037971">Zda jsou v protokolu TLS povoleny šifrovací sady RC4</translation>
 <translation id="5141670636904227950">Nastavení výchozího typu lupy, který je aktivován na přihlašovací obrazovce</translation>
 <translation id="5142301680741828703">Následující vzory adres URL vykreslovat vždy v pluginu <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="5148753489738115745">Umožňuje nastavit dodatečné parametry, které plugin <ph name="PRODUCT_FRAME_NAME" /> při spouštění aplikace <ph name="PRODUCT_NAME" /> použije.
@@ -1280,6 +1313,20 @@ Pokud tato zásada není nastavena nebo je nastavena na hodnotu false, prohlíž
 <translation id="5809728392451418079">Nastavit viditelný název pro místní účty v zařízení</translation>
 <translation id="5814301096961727113">Nastavení výchozího stavu hlasové odezvy na přihlašovací obrazovce</translation>
 <translation id="5815129011704381141">Automaticky restartovat po aktualizaci</translation>
+<translation id="5815353477778354428">Slouží ke konfiguraci adresáře, do kterého bude <ph name="PRODUCT_FRAME_NAME" /> ukládat uživatelská data.
+
+      Pokud tuto zásadu nastavíte, bude <ph name="PRODUCT_FRAME_NAME" /> používat zadaný adresář.
+
+      Seznam proměnných, které můžete použít, naleznete na stránce https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.
+
+          Pokud tuto zásadu ponecháte nenastavenou, použije se výchozí adresář.</translation>
+<translation id="5819660021114910752">Udává časové pásmo, která se má pro zařízení použít. Uživatelé mohou zadané časové pásmo pro aktuální relaci přepsat. Při odhlášení se však nastaví zpět na zadané časové pásmo. Pokud zadáte neplatnou hodnotu, bude zásada aktivována s použitím hodnoty „GMT“. Pokud zadáte prázdný řetězec, bude tato zásada ignorována.
+
+      Pokud tato zásada není použita, bude i nadále používáno časové pásmo, které je aktuálně aktivní, ale uživatelé časové pásmo budou moci změnit a změna bude trvalá. Změna provedená jedním uživatelem tak bude mít dopad na přihlašovací obrazovku i na všechny ostatní uživatele.
+
+      V nových zařízeních je časové pásmo nastaveno na americký tichomořský čas („US/Pacific“).
+
+      Formát hodnot odpovídá názvům časových pásem v databázi IANA Time Zone Database (viz https://en.wikipedia.org/wiki/Tz_database). Název většiny časových pásem má tvar kontinent/velké_město nebo oceán/velké_město.</translation>
 <translation id="5826047473100157858">Určuje, zda uživatel může v aplikaci <ph name="PRODUCT_NAME" /> otevřít stránky v anonymním režimu. 
 
      Je-li zvolena možnost Povoleno, stránky lze otevřít v anonymním režimu.
@@ -1377,6 +1424,7 @@ Pokud je zásada nastavena na hodnotu false, hardwarová akcelerace bude zakáz�
           Doporučený způsob uzamknutí obrazovky při nečinnosti je povolit uzamčení obrazovky při pozastavení a zapnout pozastavení systému <ph name="PRODUCT_OS_NAME" /> po uplynutí časové prodlevy nečinnosti. Tuto zásadu použijte, pouze pokud chcete obrazovku uzamknout podstatně dříve, než má dojít k pozastavení, nebo pokud pozastavení při nečinnosti vůbec nechcete používat.
 
           Hodnota této zásady se zadává v milisekundách. Pokud zadáte hodnotu vyšší než je prodleva při nečinnosti, použije se hodnota prodlevy při nečinnosti.</translation>
+<translation id="6111936128861357925">Povolit hru s dinosaurem</translation>
 <translation id="6114416803310251055">zastaralé</translation>
 <translation id="6145799962557135888">Umožňuje nastavit seznam vzorů adres URL stránek, kterým je povoleno spouštět JavaScript.
 
@@ -1992,6 +2040,17 @@ Tato zásada je určena k internímu použití prohlížečem <ph name="PRODUCT_
 
       Není-li zásada nastavena, nebudou ze zásady URLBlacklist učiněny žádné výjimky.</translation>
 <translation id="8176035528522326671">Povolit firemnímu uživateli být pouze primárním uživatelem s více profily (výchozí chování pro uživatele spravované firmou)</translation>
+<translation id="8191318459035150777">Nakonfiguruje v prohlížeči <ph name="PRODUCT_NAME" /> adresu URL výchozí domovské stránky a brání uživatelům, aby toto nastavení změnili.
+
+          Domovská stránka je stránka, která se otevírá tlačítkem Domovská stránka. Stránky, které se otevírají po spuštění, jsou určeny zásadami RestoreOnStartup.
+
+          Typ domovské stránky může být nastaven na adresu URL, kterou zde zadáte, nebo na stránku Nová karta. Pokud zvolíte stránku Nová karta, tato zásada se nebude uplatňovat.
+
+          Pokud toto nastavení aktivujete, uživatelé v prohlížeči <ph name="PRODUCT_NAME" /> nebudou moci změnit adresu URL domovské stránky. Jako domovskou stránku však stále budou moci nastavit stránku Nová karta.
+
+          Pokud tuto zásadu nenastavíte a není nastavena ani zásada HomepageIsNewTabPage, uživatelé si budou moci zvolit vlastní domovskou stránku.
+
+          Tato zásada není k dispozici v instancích Windows, které nejsou připojeny k doméně Active Directory.</translation>
 <translation id="8197918588508433925">Tato zásada určuje povolená rozšíření, která mohou ke vzdálenému ověření identity použít rozhraní Enterprise Platform Keys API chrome.enterprise.platformKeysPrivate.challengeUserKey(). Rozšíření oprávněná používat rozhraní API musí být přidána do tohoto seznamu.
 
           Pokud rozšíření není na seznamu nebo seznam není nastaven, volání rozhraní API se nezdaří a zobrazí se kód chyby.</translation>
@@ -2033,6 +2092,11 @@ Pokud je tato zásada nastavena na hodnotu false, prohlížeč uvítací stránk
 <translation id="8465065632133292531">Parametry pro adresu URL dynamického vyhledávání používající metodu POST</translation>
 <translation id="847472800012384958">Nepovolit zobrazení vyskakovacích oken žádným webovým stránkám</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
+<translation id="8484458986062090479">Umožňuje personalizovat seznam vzorů adres URL, které by měl vždy vykreslit hostitelský prohlížeč.
+
+          Pokud tato zásada není nastavena, použije se pro všechny weby výchozí modul vykreslení určený zásadou ChromeFrameRendererSettings.
+
+          Ukázkové vzory naleznete na stránce https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="8493645415242333585">Deaktivovat ukládání historie prohlížeče</translation>
 <translation id="8499172469244085141">Výchozí nastavení (uživatelé mohou zásady přepsat)</translation>
 <translation id="8501011084242226370">Určuje seznam pluginů, které uživatel v <ph name="PRODUCT_NAME" /> může povolit nebo zakázat.
@@ -2102,6 +2166,8 @@ Tato zásada není k dispozici v relacích Windows, které nejsou připojené 
         Pokud toto nastavení aktivujete, vyhledávání záznamů CNAME bude přeskočeno a bude použit zadaný název serveru.
        
         Pokud toto nastavení deaktivujete nebo nenastavíte, určí se kanonický název serveru prostřednictvím vyhledávání záznamů CNAME.</translation>
+<translation id="8774131509736383471">Pokud je tato zásada nastavena na hodnotu true, <ph name="PRODUCT_NAME" /> při prvním spuštění bezpodmínečně maximalizuje první zobrazené okno.
+      Pokud je tato zásada nastavena na hodnotu false nebo není nakonfigurována, o maximalizaci prvního zobrazeného okna bude rozhodnuto podle velikosti obrazovky.</translation>
 <translation id="8777120694819070607">Umožňuje prohlížeči <ph name="PRODUCT_NAME" /> spouštět zastaralé pluginy.
 
       Pokud toto nastavení aktivujete, budou zastaralé pluginy použity jako normální pluginy.

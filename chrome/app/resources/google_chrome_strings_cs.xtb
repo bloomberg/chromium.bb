@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="cs">
 <translation id="1001534784610492198">Archiv instalačního programu je poškozený nebo neplatný. Stáhněte prosím Google Chrome ještě jednou.</translation>
+<translation id="1013290471399003443">Chrome ověřil, že certifikát tohoto webu byl vydán vydavatelem <ph name="ISSUER" />. Server poskytl platné údaje Certificate Transparency.</translation>
 <translation id="1016765312371154165">Aplikace Chrome nebyla řádně ukončena.</translation>
 <translation id="103396972844768118">Důležité informace o datech prohlížeče Chrome</translation>
 <translation id="1061441684050139317">Aby Chrome mohl s těmito webovými stránkami sdílet mikrofon, musí k němu mít přístup.</translation>
@@ -66,6 +67,7 @@ Pokud se přesto přihlásíte, budou data prohlížeče Chrome (například zá
 <translation id="2769762047821873045">Google Chrome není vaším výchozím prohlížečem.</translation>
 <translation id="2770231113462710648">Změnit výchozí prohlížeč na:</translation>
 <translation id="2871893339301912279">Nyní jste přihlášeni do Chromu.</translation>
+<translation id="2997147809295888909">Chrome ověřil, že certifikát tohoto webu byl vydán vydavatelem <ph name="ISSUER" />. Server neposkytl žádné údaje Certificate Transparency.</translation>
 <translation id="3037838751736561277">Google Chrome je v režimu na pozadí.</translation>
 <translation id="3047079729301751317">Odpojení uživatele <ph name="USERNAME" /> smaže také historii, záložky, nastavení a další data Chromu uložená v tomto zařízení. Data uložená ve vašem účtu Google nebudou vymazána a lze je spravovat na <ph name="GOOGLE_DASHBOARD_LINK" />Hlavním panelu Google<ph name="END_GOOGLE_DASHBOARD_LINK" />.</translation>
 <translation id="3080151273017101988">Po ukončení prohlížeče Google Chrome nechat aplikace na pozadí spuštěné</translation>
@@ -80,7 +82,6 @@ Pokud se přesto přihlásíte, budou data prohlížeče Chrome (například zá
 <translation id="345171907106878721">Přidejte do Chromu svůj účet</translation>
 <translation id="3612333635265770873">Je známo, že s aplikací Google Chrome koliduje modul se stejným názvem.</translation>
 <translation id="3622797965165704966">Používání Chromu se spravovaným účtem Google a sdílenými počítači je nyní snazší.</translation>
-<translation id="3656661827369545115">Při spuštění počítače automaticky spustit Chromium</translation>
 <translation id="3735758079232443276">Rozšíření <ph name="EXTENSION_NAME" /> změnilo stránku, která se zobrazí při spuštění prohlížeče Chrome.</translation>
 <translation id="3738139272394829648">Vyhledání klepnutím</translation>
 <translation id="3784527566857328444">Odstranit z Chromu...</translation>
@@ -88,6 +89,7 @@ Pokud se přesto přihlásíte, budou data prohlížeče Chrome (například zá
 <translation id="3847841918622877581">Prohlížeč Google Chrome vám může usnadnit prohlížení pomocí webových služeb.</translation>
 <translation id="386202838227397562">Zavřete prosím všechna okna prohlížeče Google Chrome a zkuste to znovu.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
+<translation id="3881912906674381083">Chrome ověřil, že certifikát tohoto webu byl vydán vydavatelem <ph name="ISSUER" />. Server poskytl údaje Certificate Transparency, Chrome však žádný z uvedených protokolů Certificate Transparency neuznává.</translation>
 <translation id="3889417619312448367">Odinstalovat Google Chrome</translation>
 <translation id="4011219958405096740">Pokud je tato zásada aktivována, bude v Chromu použit proces přihlášení založený na rámcích iframe. Jinak bude použit proces založený na webovém zobrazení.</translation>
 <translation id="4050175100176540509">V nejnovější verzi jsou k dispozici důležitá vylepšení zabezpečení a nové funkce.</translation>
@@ -97,11 +99,9 @@ Pokud se přesto přihlásíte, budou data prohlížeče Chrome (například zá
 <translation id="4167057906098955729">Zde se zobrazují všechna oznámení z aplikací, rozšíření a webů Chrome.</translation>
 <translation id="423410644998903704">Aby Chrome mohl s těmito webovými stránkami sdílet oprávnění, musí k nim mít přístup.</translation>
 <translation id="4251615635259297716">Chcete propojit údaje prohlížeče Chrome s tímto účtem?</translation>
-<translation id="4273752058983339720">Google Chrome je nastaven na automatické spuštění po zapnutí počítače.</translation>
 <translation id="4309555186815777032">(vyžaduje <ph name="BEGIN_BUTTON" />restartování<ph name="END_BUTTON" /> prohlížeče Chrome)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
-<translation id="4367618624832907428">Google Chrome nemůže webovou stránku zobrazit, protože počítač není připojen k internetu.</translation>
-<translation id="4407807842708586359">Google Chrome</translation>
+<translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="4458285410772214805">Chcete-li, aby se změny projevily, odhlaste se a znovu se přihlaste.</translation>
 <translation id="4480040274068703980">Chrome OS vaše data nemohl synchronizovat z důvodu chyby při přihlášení.</translation>
 <translation id="4513711165509885787">Fakturační údaje byly uloženy do prohlížeče Chrome.</translation>
@@ -109,7 +109,6 @@ Pokud se přesto přihlásíte, budou data prohlížeče Chrome (například zá
 <translation id="4567424176335768812">Jste přihlášeni pomocí účtu <ph name="USER_EMAIL_ADDRESS" />. Nyní můžete přistupovat ke všem svým záložkám, historii a dalším nastavením ve všech přihlášených zařízeních.</translation>
 <translation id="4631713731678262610">Skrýt v nabídce Chrome</translation>
 <translation id="4633000520311261472">Aby byl Chrome bezpečnější, deaktivovali jsme některá rozšíření, která nejsou uvedena na webu <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> a mohla být přidána bez vašeho vědomí.</translation>
-<translation id="4692614041509923516">Váš počítač používá starou verzi operačního systému Microsoft Windows, která bezpečnostní certifikát tohoto webu neumí zpracovat. Kvůli tomuto problému Google Chrome nedokáže určit, zda certifikát pochází z webu <ph name="SITE" />, nebo od někoho ve vaší síti, kdo se za web <ph name="SITE" /> vydává. Aktualizujte prosím operační systém počítače na nejnovější verzi systému Windows.</translation>
 <translation id="4700157086864140907">Google Chrome může poskytovat lepší kontrolu pravopisu tím, že text zadaný do prohlížeče odešle na servery Google. Umožňuje vám tak používat stejnou technologii kontroly pravopisu, jakou používá Vyhledávání Google.</translation>
 <translation id="4728575227883772061">Došlo k nespecifikované chybě, instalace se nezdařila. Pokud je Google Chrome právě spuštěný, zavřete jej prosím a zkuste to znovu.</translation>
 <translation id="473775607612524610">Aktualizovat</translation>
@@ -118,6 +117,7 @@ Pokud se přesto přihlásíte, budou data prohlížeče Chrome (například zá
 <translation id="4794050651896644714">Ukládat údaje do prohlížeče Chrome</translation>
 <translation id="4891791193823137474">Nechat aplikaci Google Chrome spuštěnou na pozadí</translation>
 <translation id="4921569541910214635">Sdílíte počítač s dalšími uživateli? Nyní si Chrome můžete nastavit podle svých představ.</translation>
+<translation id="4925019873400497719">Chrome ověřil, že certifikát tohoto webu byl vydán vydavatelem <ph name="ISSUER" />. Server poskytl údaje Certificate Transparency, byly však neplatné.</translation>
 <translation id="4953650215774548573">Nastavit Google Chrome jako výchozí prohlížeč</translation>
 <translation id="4987308747895123092">Zavřete všechna okna prohlížeče Google Chrome (včetně oken v režimu Windows 8) a zkuste to znovu.</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
@@ -198,7 +198,6 @@ Aplikace Google Chrome nemůže vaše nastavení obnovit.</translation>
 <translation id="6989339256997917931">Prohlížeč Google Chrome byl aktualizován, ale minimálně po 30 dnů jste jej nepoužili.</translation>
 <translation id="699076943483372849">Tento web využívá plugin Chrome Frame, pro který již nejsou dodávány aktualizace zabezpečení a stability. Odinstalujte jej a přejděte na moderní prohlížeč.</translation>
 <translation id="6991142834212251086">Propojit má data prohlížeče Chrome s tímto účtem</translation>
-<translation id="7054640471403081847">Tento počítač brzy přestane dostávat aktualizace Google Chrome, protože jeho hardware již není podporován.</translation>
 <translation id="7060865993964054389">Spouštěč aplikací Google Chrome</translation>
 <translation id="7084448929020576097">Soubor <ph name="FILE_NAME" /> je škodlivý a prohlížeč Chrome jej zablokoval.</translation>
 <translation id="7098166902387133879">Google Chrome používá váš mikrofon.</translation>
@@ -235,7 +234,6 @@ Aplikace Google Chrome nemůže vaše nastavení obnovit.</translation>
 <translation id="781069973841903133">Když znovu spustíte Chrome v moderním režimu, všechny aplikace pro Chrome se zavřou a znovu spustí.</translation>
 <translation id="7825851276765848807">Instalace se z neznámého důvodu nezdařila. Stáhněte prosím aplikaci Google Chrome znovu.</translation>
 <translation id="7890208801193284374">Pokud počítač sdílíte s kamarády a členy rodiny, každý může web procházet samostatně a nastavit si Chrome podle svých požadavků.</translation>
-<translation id="7908968924842975895">Tento počítač již nebude dostávat aktualizace Google Chrome, protože jeho hardware již není podporován.</translation>
 <translation id="7984945080620862648">Web <ph name="SITE" /> nyní nemůžete navštívit, protože webové stránky odeslaly zakódované identifikační údaje, které Chrome nedokáže zpracovat. Síťové chyby a útoky jsou obvykle dočasné, tato stránka pravděpodobně později bude fungovat.</translation>
 <translation id="8000275528373650868">Google Chrome vyžaduje operační systém Windows Vista nebo Windows XP SP2 nebo vyšší.</translation>
 <translation id="8005540215158006229">Chrome je téměř připraven.</translation>

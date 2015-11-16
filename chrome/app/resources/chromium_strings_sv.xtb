@@ -49,13 +49,11 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="2558641060352364164">På den här webbplatsen används pluginprogrammet Chromium Frame som snart slutar stödjas. Avinstallera det och uppgradera till en modern webbläsare.</translation>
 <translation id="2572494885440352020">Hjälp för Chromium</translation>
 <translation id="2602806952220118310">Chromium – meddelanden</translation>
-<translation id="2615699638672665509">Den här datorn slutar snart att få uppdateringar för Chromium eftersom maskinvaran inte längre stöds.</translation>
 <translation id="2636877269779209383">Chromium behöver tillgång till kameran för att kunna dela den på den här webbplatsen.</translation>
 <translation id="2648074677641340862">Ett operativsystemsfel inträffade under installationen. Ladda ned Chromium igen.</translation>
 <translation id="2673087257647337101">Nästan klart! Slutför uppdateringen genom att starta om Chromium.</translation>
 <translation id="2685838254101182273">Chromium uppdateras inte längre och har inte längre stöd för den här versionen av ditt operativsystem.</translation>
 <translation id="2705212601509139398">På den här webbplatsen används pluginprogrammet Chromium Frame som snart slutar stödjas. Avinstallera det och ladda ned en kompatibel webbläsare.</translation>
-<translation id="2732467638532545152">En gammal version av Microsoft Windows som inte kan behandla webbplatsens säkerhetscertifikat körs på datorn. På grund av detta kan inte Chromium avgöra om certifikatet kommer från <ph name="SITE" /> eller från någon i ditt nätverk som utger sig för att vara <ph name="SITE" />. Uppdatera datorn till en nyare version av Windows.</translation>
 <translation id="2770231113462710648">Ändra standardwebbläsare till:</translation>
 <translation id="2801146392936645542"><ph name="FILE_NAME" /> är skadlig och har blockerats av Chromium.</translation>
 <translation id="2847479871509788944">Ta bort från Chromium …</translation>
@@ -88,8 +86,6 @@ och felaktiga uppgifter. Sådant kan hända när en angripare utger sig för att
 <translation id="3582788516608077514">Uppdaterar Chromium ...</translation>
 <translation id="358997566136285270">Chromium-logotyp</translation>
 <translation id="3595526210123705352">Om du startar om i Windows 8-läge stängs dina appar i Chromium och startas om.</translation>
-<translation id="3656661827369545115">Starta Chromium automatiskt när datorn startas</translation>
-<translation id="3736987306260231966">Det går inte att visa webbsidan i Chrome eftersom datorn inte är ansluten till internet.</translation>
 <translation id="3738139272394829648">Tryck för att söka</translation>
 <translation id="3744899669254331632">Du kan inte besöka <ph name="SITE" /> just nu eftersom webbplatsen skickade krypterade användaruppgifter som Chromium inte kan bearbeta. Nätverksfel och attacker är ofta tillfälliga, så sidan kommer förmodligen fungera senare.</translation>
 <translation id="3748537968684000502">Du tittar på en säker Chromium-sida.</translation>
@@ -110,7 +106,6 @@ och felaktiga uppgifter. Sådant kan hända när en angripare utger sig för att
 <translation id="4285930937574705105">Installationen misslyckades på grund av ett ospecificerat fel. Stäng Chromium om det är igång och försök sedan igen.</translation>
 <translation id="4330585738697551178">Den här modulen har tidigare varit i konflikt med Chromium.</translation>
 <translation id="4423735387467980091">Anpassa och kontrollera Chromium</translation>
-<translation id="442817494342774222">Chromium är konfigurerad för att starta automatiskt när du startar datorn.</translation>
 <translation id="4458285410772214805">Den här ändringen träder inte i kraft förrän du loggat ut och sedan loggar in igen.</translation>
 <translation id="4488676065623537541">Dina faktureringsuppgifter har sparats i Chromium.</translation>
 <translation id="4559775032954821361">Öppna
@@ -227,7 +222,6 @@ Chromium kan inte återställa dina inställningar.</translation>
 <translation id="8030318113982266900">Uppdaterar din enhet till kanalen <ph name="CHANNEL_NAME" /> ...</translation>
 <translation id="8033665941300843262">Chromium behöver tillgång till behörigheter för att kunna dela dem på den här webbplatsen.</translation>
 <translation id="805745970029938373">Alla dina meddelanden från Chromium-appar, tillägg och webbplatser visas här.</translation>
-<translation id="811857857463334932">Den här datorn får inte längre uppdateringar för Chromium eftersom maskinvaran inte längre stöds.</translation>
 <translation id="8134284582177628525">Om du delar den här datorn med <ph name="PROFILE_NAME" /> lägger du till dig själv i Chromium så att du kan surfa enskilt. I annat fall kopplar du från deras Google-konto.</translation>
 <translation id="8187289872471304532">Öppna
           Program &gt; Systeminställningar &gt; Nätverk &gt; Avancerat &gt; Proxyservrar

@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="es-419">
 <translation id="1001534784610492198">El instalador está dañado o no es válido. Descargue Google Chrome nuevamente.</translation>
+<translation id="1013290471399003443">Chrome verificó que <ph name="ISSUER" /> emitió el certificado de este sitio web. El servidor proporcionó información válida de transparencia de certificados.</translation>
 <translation id="1016765312371154165">Chrome no se cerró correctamente.</translation>
 <translation id="103396972844768118">Información importante sobre tus datos de Google Chrome</translation>
 <translation id="1061441684050139317">Chrome necesita acceso al micrófono para compartirlo con este sitio.</translation>
@@ -62,6 +63,7 @@ Si accedes de todos modos, se fusionará la información de Google Chrome, como 
 <translation id="2769762047821873045">Google Chrome no es tu navegador predeterminado.</translation>
 <translation id="2770231113462710648">Cambiar el navegador predeterminado a:</translation>
 <translation id="2871893339301912279">Accediste a Google Chrome.</translation>
+<translation id="2997147809295888909">Chrome verificó que <ph name="ISSUER" /> emitió el certificado de este sitio web. El servidor no proporcionó información de transparencia de certificados.</translation>
 <translation id="3037838751736561277">Google Chrome está en modo de segundo plano</translation>
 <translation id="3047079729301751317">Si desconectas <ph name="USERNAME" />, se borrarán el historial, los marcadores, la configuración y otros datos de Chrome almacenados en este dispositivo. Los datos almacenados en la cuenta de Google no se borrarán y se pueden administrar en el <ph name="GOOGLE_DASHBOARD_LINK" />Panel de control de Google<ph name="END_GOOGLE_DASHBOARD_LINK" />.</translation>
 <translation id="3080151273017101988">Seguir ejecutando aplicaciones en segundo plano al cerrar Google Chrome</translation>
@@ -76,7 +78,6 @@ Si accedes de todos modos, se fusionará la información de Google Chrome, como 
 <translation id="345171907106878721">Agrégate a Chrome</translation>
 <translation id="3612333635265770873">Un módulo con el mismo nombre ha interferido con Google Chrome.</translation>
 <translation id="3622797965165704966">Ahora es más sencillo utilizar Chrome con la cuenta de Google y en computadoras compartidas.</translation>
-<translation id="3656661827369545115">Iniciar Chromium automáticamente al iniciarse la computadora</translation>
 <translation id="3735758079232443276">La extensión "<ph name="EXTENSION_NAME" />" cambió la página que se muestra al iniciar Chrome.</translation>
 <translation id="3738139272394829648">Tocar para buscar</translation>
 <translation id="3784527566857328444">Eliminar de Chrome…</translation>
@@ -84,6 +85,7 @@ Si accedes de todos modos, se fusionará la información de Google Chrome, como 
 <translation id="3847841918622877581">Google Chrome puede utilizar servicios web con el objetivo de mejorar la navegación.</translation>
 <translation id="386202838227397562">Cierra todas las ventanas de Google Chrome e intenta nuevamente.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
+<translation id="3881912906674381083">Chrome verificó que <ph name="ISSUER" /> emitió el certificado de este sitio web. El servidor proporcionó información de transparencia de certificados, pero Chrome no reconoció ninguno de los registros de la transparencia de certificados.</translation>
 <translation id="3889417619312448367">Desinstalar Google Chrome</translation>
 <translation id="4011219958405096740">Cuando la marca está habilitada, se usa un flujo de acceso a Chrome basado en marcos flotantes. De lo contrario, se usa un flujo basado en vista web.</translation>
 <translation id="4050175100176540509">La última versión proporciona importantes mejoras de seguridad y nuevas funciones.</translation>
@@ -93,10 +95,8 @@ Si accedes de todos modos, se fusionará la información de Google Chrome, como 
 <translation id="4167057906098955729">Aquí puedes ver las notificaciones de aplicaciones, extensiones y sitios web de Chrome.</translation>
 <translation id="423410644998903704">Chrome necesita acceso a los permisos para compartirlos con este sitio.</translation>
 <translation id="4251615635259297716">¿Quieres vincular tus datos de Google Chrome con esta cuenta?</translation>
-<translation id="4273752058983339720">Google Chrome está configurado para iniciarse automáticamente al iniciar la computadora.</translation>
 <translation id="4309555186815777032">(Es necesario <ph name="BEGIN_BUTTON" />reiniciar<ph name="END_BUTTON" /> Chrome).</translation>
 <translation id="4331809312908958774">SO Chrome</translation>
-<translation id="4367618624832907428">Google Chrome no puede mostrar la página web porque la computadora no está conectada a Internet.</translation>
 <translation id="4407807842708586359">SO de Google Chrome</translation>
 <translation id="4458285410772214805">Cierra la sesión y vuelve a iniciarla para que se aplique el cambio.</translation>
 <translation id="4480040274068703980">El Sistema operativo Chrome no pudo sincronizar los datos porque se produjo un error de acceso.</translation>
@@ -105,7 +105,6 @@ Si accedes de todos modos, se fusionará la información de Google Chrome, como 
 <translation id="4567424176335768812">Accediste como <ph name="USER_EMAIL_ADDRESS" />. Ahora puedes ir a los marcadores, al historial y a otras opciones en todos los dispositivos en los que hayas accedido.</translation>
 <translation id="4631713731678262610">Ocultar en el menú de Chrome</translation>
 <translation id="4633000520311261472">Para que Chrome sea más seguro, inhabilitamos algunas extensiones que no figuran en <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> y que posiblemente se hayan agregado sin tu conocimiento.</translation>
-<translation id="4692614041509923516">La computadora utiliza una versión antigua de Microsoft Windows que no puede procesar el certificado de seguridad de este sitio web. Debido a este problema, Google Chrome no puede saber si el certificado procede de <ph name="SITE" /> o de un atacante de tu red que quiere hacerse pasar por <ph name="SITE" />. Instala una versión más reciente de Windows en la computadora.</translation>
 <translation id="4700157086864140907">Google Chrome puede proporcionar una corrección ortográfica más inteligente al enviar lo que escribes en el navegador a los servidores de Google. Esto te permite utilizar la misma tecnología de corrección ortográfica que usa la búsqueda de Google.</translation>
 <translation id="4728575227883772061">No se pudo completar la instalación debido a un error no identificado. Si Google Chrome se está ejecutando en este momento, ciérrelo e intente nuevamente.</translation>
 <translation id="473775607612524610">Actualizar</translation>
@@ -114,6 +113,7 @@ Si accedes de todos modos, se fusionará la información de Google Chrome, como 
 <translation id="4794050651896644714">Guardar los detalles en Google Chrome</translation>
 <translation id="4891791193823137474">Permitir que Google Chrome se ejecute en segundo plano</translation>
 <translation id="4921569541910214635">¿Compartes una computadora? Ahora puedes configurar Chrome como a ti te gusta.</translation>
+<translation id="4925019873400497719">Chrome verificó que <ph name="ISSUER" /> emitió el certificado de este sitio web. El servidor proporcionó información de transparencia de certificados que no era válida.</translation>
 <translation id="4953650215774548573">Establecer Google Chrome como navegador predeterminado</translation>
 <translation id="4987308747895123092">Cierra todas las ventanas de Google Chrome (incluidas las que están en modo Windows 8) e inténtalo nuevamente.</translation>
 <translation id="4990567037958725628">Google Chrome Canario</translation>
@@ -190,7 +190,6 @@ Si accedes de todos modos, se fusionará la información de Google Chrome, como 
 <translation id="6989339256997917931">Google Chrome fue actualizado, pero no lo has utilizado en los últimos 30 días.</translation>
 <translation id="699076943483372849">Este sitio usa el complemento Chrome Frame discontinuado que ya no recibe actualizaciones de seguridad ni estabilidad. Debes desinstalarlo y obtener un navegador más moderno.</translation>
 <translation id="6991142834212251086">Vincular mis datos de Google Chrome con esta cuenta</translation>
-<translation id="7054640471403081847">Debido a que ya no se admite su hardware, esta computadora dejará de recibir actualizaciones de Google Chrome en breve.</translation>
 <translation id="7060865993964054389">Selector de aplicaciones de Google Chrome</translation>
 <translation id="7084448929020576097">Chrome bloqueó <ph name="FILE_NAME" /> porque es un archivo malicioso.</translation>
 <translation id="7098166902387133879">Google Chrome está usando tu micrófono.</translation>
@@ -226,7 +225,6 @@ Si accedes de todos modos, se fusionará la información de Google Chrome, como 
 <translation id="781069973841903133">Si vuelves a iniciar en el modo envolvente de Chrome, las aplicaciones de Chrome se cerrarán y se reiniciarán.</translation>
 <translation id="7825851276765848807">La instalación falló debido a un error no especificado. Descarga Google Chrome otra vez.</translation>
 <translation id="7890208801193284374">Si compartes una computadora, tus amigos y familiares pueden navegar de forma independiente y configurar Chrome según los gustos individuales.</translation>
-<translation id="7908968924842975895">Debido a que ya no se admite su hardware, esta computadora dejará de recibir actualizaciones de Google Chrome.</translation>
 <translation id="7984945080620862648">No puedes visitar <ph name="SITE" /> ahora porque el sitio web envió credenciales confusas que Chrome no puede procesar. Los ataques y errores de red suelen ser temporales, por lo que es posible que esta página funcione más tarde.</translation>
 <translation id="8000275528373650868">Para usar Google Chrome, se necesita Windows Vista o Windows XP con SP2 o superior.</translation>
 <translation id="8005540215158006229">Chrome ya está casi listo.</translation>

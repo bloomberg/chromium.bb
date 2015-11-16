@@ -33,7 +33,6 @@ Para obtener más información sobre la privacidad, consulta la política de pri
 <translation id="1770394049404108959">No puedo abrir la aplicación.</translation>
 <translation id="177096447311351977">IP de canal para cliente: <ph name="CLIENT_GAIA_IDENTIFIER" /> ip='<ph name="CLIENT_IP_ADDRESS_AND_PORT" />' host_ip='<ph name="HOST_IP_ADDRESS_AND_PORT" />' channel='<ph name="CHANNEL_TYPE" />' connection='<ph name="CONNECTION_TYPE" />'.</translation>
 <translation id="1779766957982586368">Cerrar ventana</translation>
-<translation id="1818475040640568770">No hay computadoras registradas.</translation>
 <translation id="1841799852846221389">Inhabilitando conexiones remotas con esta computadora…</translation>
 <translation id="189172778771606813">Cerrar panel lateral de navegación</translation>
 <translation id="195619862187186579">Diseños de teclado</translation>
@@ -87,8 +86,6 @@ Para obtener más información sobre la privacidad, consulta la política de pri
 <translation id="2926340305933667314">No se pudo inhabilitar el acceso remoto a esta computadora. Vuelve a intentarlo más tarde.</translation>
 <translation id="2930135165929238380">Faltan algunos de los componentes necesarios. Dirígete a chrome://plugins y asegúrate de que Native Client esté habilitado.</translation>
 <translation id="2939145106548231838">Autenticarse en host</translation>
-<translation id="2998137343848432918">• Se agregó la pantalla Créditos.
-• Se solucionó un problema con el acceso al modo de pantalla completa con el teclado visible.</translation>
 <translation id="3020807351229499221">No se pudo actualizar el PIN. Vuelve a intentarlo más tarde.</translation>
 <translation id="3025388528294795783">Para que te ayudemos a resolver el problema, indícanos qué sucede:</translation>
 <translation id="3027681561976217984">Modo táctil</translation>
@@ -124,6 +121,7 @@ Chromoting</translation>
 <translation id="3950820424414687140">Acceder</translation>
 <translation id="3989511127559254552">Para continuar, primero debes extender los permisos de acceso a tu computadora. Solo tienes que hacerlo una vez.</translation>
 <translation id="4006787130661126000">Debes habilitar las conexiones remotas si deseas usar Escritorio remoto de Chrome para acceder a esta computadora.</translation>
+<translation id="405887016757208221">La computadora remota no pudo inicializar la sesión. Si el problema persiste, intenta volver a configurar el host.</translation>
 <translation id="4068946408131579958">Todas las conexiones</translation>
 <translation id="409800995205263688">NOTA: La configuración de la política solo permite conexiones entre computadoras que estén dentro de tu red.</translation>
 <translation id="4155497795971509630">Faltan algunos de los componentes necesarios. Asegúrate de tener instalada la última versión del software y vuelve a intentarlo.</translation>
@@ -170,7 +168,6 @@ remoto de Chrome</translation>
 <translation id="518094545883702183">Esta información solo se usa con el fin de diagnosticar el problema informado, solo está disponible para la persona que investiga el informe y se guarda por no más de 30 días.</translation>
 <translation id="5222676887888702881">Salir</translation>
 <translation id="5254120496627797685">Al abandonar esta página, se cerrará la sesión en el Escritorio remoto de Chrome.</translation>
-<translation id="5285241842433869526">Más información sobre cómo configurar una computadora para el acceso remoto</translation>
 <translation id="5308380583665731573">Conectar</translation>
 <translation id="5363265567587775042">Solicita al usuario a cuya computadora quieres tener acceso que haga clic en "<ph name="SHARE" />" y te envíe el código de acceso correspondiente.</translation>
 <translation id="5379087427956679853">Escritorio remoto de Chrome te permite compartir tu computadora con otro usuario de manera segura en la Web. Tanto tú como el otro usuario deben usar la aplicación Escritorio remoto de Chrome, que está disponible en <ph name="URL" />.</translation>
@@ -258,6 +255,7 @@ remoto de Chrome</translation>
 <translation id="7869445566579231750">No tienes permiso para ejecutar esta aplicación.</translation>
 <translation id="7948001860594368197">Opciones de pantalla</translation>
 <translation id="7970576581263377361">Se produjo un error de autenticación. Vuelve a acceder a Chromium.</translation>
+<translation id="7981525049612125370">La sesión remota expiró.</translation>
 <translation id="8041721485428375115">Al descargar el instalador del host de Escritorio remoto de Chrome, aceptas las <ph name="LINK_BEGIN" />Condiciones del servicio<ph name="LINK_END" /> de Google.</translation>
 <translation id="8073845705237259513">Para utilizar el escritorio remoto de Chrome, debes agregar una cuenta de Google en el dispositivo.</translation>
 <translation id="80739703311984697">El host remoto requiere la autenticación de un sitio web de terceros. Para continuar, debes otorgar permisos adicionales a Chromoting para acceder a la siguiente dirección:</translation>

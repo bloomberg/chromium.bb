@@ -814,6 +814,13 @@ If you enable this setting, <ph name="PRODUCT_NAME" /> will always check on star
 If this setting is disabled, <ph name="PRODUCT_NAME" /> will never check if it is the default browser and will disable user controls for setting this option.
 
 If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to control whether it is the default browser and whether user notifications should be shown when it isn't.</translation>
+<translation id="3800626789999016379">Configures the directory that <ph name="PRODUCT_NAME" /> will use for downloading files.
+
+      If you set this policy, <ph name="PRODUCT_NAME" /> will use the provided directory regardless of whether the user has specified one or enabled the flag to be prompted for download location every time.
+
+      See https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables for a list of variables that can be used.
+
+      If this policy is left not set the default download directory will be used and the user will be able to change it.</translation>
 <translation id="3805659594028420438">Enable TLS domain-bound certificates extension (deprecated)</translation>
 <translation id="3806576699227917885">Allow playing audio.
 
@@ -955,6 +962,13 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
           This policy is only respected if the 'DefaultSearchProviderEnabled' policy is enabled.</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 or later</translation>
 <translation id="4325690621216251241">Add a logout button to the system tray</translation>
+<translation id="4349746760316962317">Configures the directory that <ph name="PRODUCT_NAME" /> will use for storing cached files on the disk.
+
+      If you set this policy, <ph name="PRODUCT_NAME" /> will use the provided directory regardless of whether the user has specified the '--disk-cache-dir' flag or not.
+
+      See https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables for a list of variables that can be used.
+
+      If this policy is left not set the default cache directory will be used and the user will be able to override it with the '--disk-cache-dir' command line flag.</translation>
 <translation id="436581050240847513">Report device network interfaces</translation>
 <translation id="4372704773119750918">Do not allow enterprise user to be part of multiprofile (primary or secondary)</translation>
 <translation id="4377599627073874279">Allow all sites to show all images</translation>
@@ -1038,6 +1052,11 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="4665897631924472251">Extension management settings</translation>
 <translation id="4668325077104657568">Default images setting</translation>
 <translation id="467236746355332046">Supported features:</translation>
+<translation id="4674167212832291997">Customise the list of URL patterns that should always be rendered by <ph name="PRODUCT_FRAME_NAME" />.
+
+          If this policy is not set the default renderer will be used for all sites as specified by the 'ChromeFrameRendererSettings' policy.
+
+          For example patterns see https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="467449052039111439">Open a list of URLs</translation>
 <translation id="4680961954980851756">Enable AutoFill</translation>
 <translation id="4723829699367336876">Enable firewall traversal from remote access client</translation>
@@ -1140,6 +1159,13 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
           When this policy is unset, the default action is taken, which is suspend.
 
           If the action is suspend, <ph name="PRODUCT_OS_NAME" /> can separately be configured to either lock or not lock the screen before suspending.</translation>
+<translation id="5111712393799006197">Configures the directory that <ph name="PRODUCT_NAME" /> will use for storing user data.
+
+      If you set this policy, <ph name="PRODUCT_NAME" /> will use the provided directory regardless of whether the user has specified the '--user-data-dir' flag or not.
+
+      See https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables for a list of variables that can be used.
+
+      If this policy is left not set the default profile path will be used and the user will be able to override it with the '--user-data-dir' command line flag.</translation>
 <translation id="5130288486815037971">Whether RC4 cipher suites in TLS are enabled</translation>
 <translation id="5141670636904227950">Set the default screen magnifier type enabled on the login screen</translation>
 <translation id="5142301680741828703">Always render the following URL patterns in <ph name="PRODUCT_FRAME_NAME" /></translation>
@@ -1335,6 +1361,20 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="5809728392451418079">Set the display name for device-local accounts</translation>
 <translation id="5814301096961727113">Set the default state of spoken feedback on the login screen</translation>
 <translation id="5815129011704381141">Automatically reboot after update</translation>
+<translation id="5815353477778354428">Configures the directory that <ph name="PRODUCT_FRAME_NAME" /> will use for storing user data.
+
+      If you set this policy, <ph name="PRODUCT_FRAME_NAME" /> will use the provided directory.
+
+      See https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables for a list of variables that can be used.
+
+      If this setting is left not set the default profile directory will be used.</translation>
+<translation id="5819660021114910752">Specifies the timezone to be used for the device. Users can override the specified timezone for the current session. However, on logout it is set back to the specified timezone. If an invalid value is provided, the policy is still activated using "GMT" instead. If an empty string is provided, the policy is ignored.
+
+      If this policy is not used, the currently active timezone will remain in use. However, users can change the timezone and the change is persistent. Thus a change by one user affects the login screen and all other users.
+
+      New devices start out with the timezone set to "US/Pacific".
+
+      The format of the value follows the names of timezones in the "IANA Time Zone Database" (see "https://en.wikipedia.org/wiki/Tz_database"). In particular, most timezones can be referred to by "continent/large_city" or "ocean/large_city".</translation>
 <translation id="5826047473100157858">Specifies whether the user may open pages in Incognito mode in <ph name="PRODUCT_NAME" />.
 
       If 'Enabled' is selected or the policy is left unset, pages may be opened in Incognito mode.
@@ -2120,6 +2160,11 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="8465065632133292531">Parameters for instant URL which uses POST</translation>
 <translation id="847472800012384958">Do not allow any site to show pop-ups</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
+<translation id="8484458986062090479">Customise the list of URL patterns that should always be rendered by the host browser.
+
+          If this policy is not set the default renderer will be used for all sites as specified by the 'ChromeFrameRendererSettings' policy.
+
+          For example patterns see https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="8493645415242333585">Disable saving browser history</translation>
 <translation id="8499172469244085141">Default Settings (users can override)</translation>
 <translation id="8501011084242226370">Specifies a list of plug-ins that user can enable or disable in <ph name="PRODUCT_NAME" />.

@@ -41,6 +41,7 @@
 <translation id="1452236308086741652"><ph name="VALUE" />、パスワード テキスト ボックス</translation>
 <translation id="1467432559032391204">左</translation>
 <translation id="1474557363159888097">前のアンカーはありません。</translation>
+<translation id="1499041187027566160">音量を上げる</translation>
 <translation id="1502086903961450562">前の図</translation>
 <translation id="1506187449813838456">ピッチを上げる</translation>
 <translation id="151784044608172266">次の文</translation>
@@ -128,6 +129,7 @@
 <translation id="2639750663247012216">ChromeVox 修飾キー</translation>
 <translation id="2644542693584024604">スペルミス</translation>
 <translation id="2667291555398229137">ルーティング キーの下の項目をクリックします</translation>
+<translation id="267442004702508783">更新</translation>
 <translation id="2697408785920771974">インライン オートコンプリート</translation>
 <translation id="2704429362613743330">{COUNT,plural, =1{左丸かっこ}other{# 個の左丸かっこ}}</translation>
 <translation id="2705875883745373140">オフ</translation>
@@ -392,6 +394,7 @@
 <translation id="5042770794184672516">読み上げの音量を上げる</translation>
 <translation id="5050015258024679800">前のレベル 4 見出し</translation>
 <translation id="5054047268577924192">前のリスト項目</translation>
+<translation id="5075936896689244141">Next のキーマップ</translation>
 <translation id="5078661581131202757">ファイル選択</translation>
 <translation id="5080758118274074384">ダブルクリックしました</translation>
 <translation id="5087864757604726239">戻る</translation>
@@ -462,6 +465,7 @@
 <translation id="5683155931978483559">前のチェックボックス</translation>
 <translation id="5684277895745049190">リスト</translation>
 <translation id="5700650669149824506">前のレベル 4 見出しはありません。</translation>
+<translation id="5703716265115423771">音量を下げる</translation>
 <translation id="5709192780268610569">長い説明はありません</translation>
 <translation id="5712244464475377681">ポップアップ ボタン</translation>
 <translation id="5712338278108304766">表の次の列</translation>
@@ -526,6 +530,7 @@
 <translation id="6459511626086141404">フラット キーマップ</translation>
 <translation id="6468049171101508116">次のボタン</translation>
 <translation id="6491972999578897419">下のリストからオプションを選択して、現在の音声を変更できます。</translation>
+<translation id="6493991254603208962">明るさを下げる</translation>
 <translation id="6508059270146105198">ブライユ点字表示をページ下部に移動</translation>
 <translation id="6536864053412760904">MathML トークン</translation>
 <translation id="6550720799683018100">下のリストからオプションを選択して、現在のキーマップを変更できます。</translation>
@@ -564,6 +569,7 @@
 <translation id="7031651751836475482">リスト項目</translation>
 <translation id="7037042857287298941">前のリスト</translation>
 <translation id="7041173719775863268">選択を終了</translation>
+<translation id="7086377898680121060">明るさを上げる</translation>
 <translation id="7095834689119144465">数字のみのテキスト編集</translation>
 <translation id="7096001299300236431">前のメディア</translation>
 <translation id="7116595520562830928">複数行</translation>
@@ -658,6 +664,7 @@
 <translation id="8153880621934657047">表の中ではありません。</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{アンダースコア}other{# 個のアンダースコア}}</translation>
 <translation id="8179976553408161302">Enter</translation>
+<translation id="8186185314313222077">全画面表示の切り替え</translation>
 <translation id="81960742267269908">切り取ります。</translation>
 <translation id="8199231515320852133">現在のセルの見出しを読み上げる</translation>
 <translation id="820417203470636242">セルは空欄です。</translation>
@@ -678,12 +685,14 @@
 <translation id="844681116543532394">前のチェックボックスはありません。</translation>
 <translation id="8455868257606149352">最大値 <ph name="X" /></translation>
 <translation id="84575901236241018">アクセス キー <ph name="KEY" /> があります</translation>
+<translation id="8476508772960940536">ウィンドウ概観</translation>
 <translation id="8503360654911991865">一度に移動する単位を大きくする</translation>
 <translation id="8520472399088452386">スピンボタン</translation>
 <translation id="8538744478902126321">現在のセルの行見出しを推測</translation>
 <translation id="8540054775867439484">先頭に戻ります</translation>
 <translation id="8548973727659841685">文字</translation>
 <translation id="8561322612995434619">ポップアップあり</translation>
+<translation id="8571096049907249734">複数選択</translation>
 <translation id="8584721346566392021">見出し 5</translation>
 <translation id="8587549812518406253">次のリスト項目</translation>
 <translation id="860150890330522909"><ph name="NAME" /> チェックボックスがオンです</translation>
@@ -691,6 +700,7 @@
 <translation id="8631359288236106450"><ph name="COUNT" /> 件の項目を選択しました</translation>
 <translation id="8638532244051952400">現在のセルの座標を読み上げる</translation>
 <translation id="8650576015643545550">前のリストはありません。</translation>
+<translation id="8651481478098336970">音量をミュート</translation>
 <translation id="8653031188082306838">URL を編集</translation>
 <translation id="8653646212587894517">リンク リストを表示</translation>
 <translation id="8664519043722036194">秒</translation>

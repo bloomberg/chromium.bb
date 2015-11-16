@@ -41,6 +41,7 @@
 <translation id="1452236308086741652"><ph name="VALUE" />፣ የይለፍ ቃል ጽሑፍ ሳጥን</translation>
 <translation id="1467432559032391204">ግራ</translation>
 <translation id="1474557363159888097">ምንም ቀዳሚ መልህቅ የለም።</translation>
+<translation id="1499041187027566160">ድምጽ ጨምር</translation>
 <translation id="1502086903961450562">ቀዳሚ ስዕላዊ</translation>
 <translation id="1506187449813838456">የድምጽ ቅጥነት ይጨምሩ</translation>
 <translation id="151784044608172266">ቀጣይ አረፍተ ነገር</translation>
@@ -128,6 +129,7 @@
 <translation id="2639750663247012216">የChromeVox መቀየሪያ</translation>
 <translation id="2644542693584024604">misspelled</translation>
 <translation id="2667291555398229137">ከማዞሪያ ቁልፍ ስር ያለውን ንጥል ጠቅ ያድርጉ</translation>
+<translation id="267442004702508783">ዓድስ</translation>
 <translation id="2697408785920771974">autoinl</translation>
 <translation id="2704429362613743330">{COUNT,plural, =1{ክፍት ቅንፍ}one{# ክፍት ቅንፎች}other{# ክፍት ቅንፎች}}</translation>
 <translation id="2705875883745373140">አልተጫነም</translation>
@@ -463,6 +465,7 @@
 <translation id="5683155931978483559">ቀዳሚ አመልካች ሳጥን</translation>
 <translation id="5684277895745049190">ዝርዝር</translation>
 <translation id="5700650669149824506">ምንም ቀዳሚ የደረጃ 4 ርዕስ የለም።</translation>
+<translation id="5703716265115423771">ድምጽ ቀንስ</translation>
 <translation id="5709192780268610569">ምንም ረጅም ማብራሪያ የለም</translation>
 <translation id="5712244464475377681">popbtn</translation>
 <translation id="5712338278108304766">ቀጣይ የሠንጠረዥ አምድ</translation>
@@ -527,6 +530,7 @@
 <translation id="6459511626086141404">ልሙጥ የቁልፍ አደራደር</translation>
 <translation id="6468049171101508116">ቀጣይ አዝራር</translation>
 <translation id="6491972999578897419">ከታች ካለው ዝርዝር አንድ አማራጭ በመምረጥ የአሁኑን ድምጽ ይቀይሩት።</translation>
+<translation id="6493991254603208962">ብሩህነት ቀንስ</translation>
 <translation id="6508059270146105198">የብሬይል ማሳያውን ወደ ገጹ ግርጌ ያንቀሳቅሱ</translation>
 <translation id="6536864053412760904">የMath ML ማስመሰያ</translation>
 <translation id="6550720799683018100">ከታች ካለው ዝርዝር አንድ አማራጭ በመምረጥ የአሁኑ የቁልፍ አደራደር ይቀይሩት።</translation>
@@ -565,6 +569,7 @@
 <translation id="7031651751836475482">lstitm</translation>
 <translation id="7037042857287298941">ቀዳሚ ዝርዝር</translation>
 <translation id="7041173719775863268">ምርጫ ይጨርሱ</translation>
+<translation id="7086377898680121060">ብሩህነት ጨምር</translation>
 <translation id="7095834689119144465">የጽሑፍ ቁጥር ብቻ ያርትዑ</translation>
 <translation id="7096001299300236431">ቀዳሚ ሚዲያ</translation>
 <translation id="7116595520562830928">multln</translation>
@@ -659,6 +664,7 @@
 <translation id="8153880621934657047">በሠንጠረዥ ውስጥ አይደሉም።</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{ሰረዘዘብጥ}one{# ሰረዘዘብጦች}other{# ሰረዘዘብጦች}}</translation>
 <translation id="8179976553408161302">አስገባ</translation>
+<translation id="8186185314313222077">ሙሉ ማያ ገጽ ቀያይር</translation>
 <translation id="81960742267269908">ቁረጥ።</translation>
 <translation id="8199231515320852133">የአሁኑ ሕዋስ ራስጌዎችን አስታውቅ</translation>
 <translation id="820417203470636242">ባዶ ሕዋስ።</translation>
@@ -679,12 +685,14 @@
 <translation id="844681116543532394">ምንም ቀዳሚ አመልካች ሳጥን የለም።</translation>
 <translation id="8455868257606149352">ከፍተኛ <ph name="X" /></translation>
 <translation id="84575901236241018">የመዳረሻ ቁልፍ <ph name="KEY" /> አለው</translation>
+<translation id="8476508772960940536">የመስኮት አጠቃላይ እይታ</translation>
 <translation id="8503360654911991865">የአሰሳ ጥራት ደረጃ ይቀንሱ</translation>
 <translation id="8520472399088452386">ማሾሪያ አዝራር</translation>
 <translation id="8538744478902126321">የአሁኑ ሕዋስ ረድፍ ራስጌ ገምት</translation>
 <translation id="8540054775867439484">ወደ ላይ ተጠቅልሏል</translation>
 <translation id="8548973727659841685">ቁምፊ</translation>
 <translation id="8561322612995434619">ብቅ-ባይ አለው</translation>
+<translation id="8571096049907249734">በርካታ ምርጫ</translation>
 <translation id="8584721346566392021">h5</translation>
 <translation id="8587549812518406253">የቀጣይ ዝርዝር ንጥል</translation>
 <translation id="860150890330522909"><ph name="NAME" /> አመልካች ሳጥን ላይ ምልክት ተደርጓል</translation>
@@ -692,6 +700,7 @@
 <translation id="8631359288236106450"><ph name="COUNT" /> ንጥሎች ተመርጠዋል</translation>
 <translation id="8638532244051952400">የአሁኑ የሕዋስ መገናኛ ነጥቦች አስታውቅ</translation>
 <translation id="8650576015643545550">ምንም ቀዳሚ ዝርዝር የለም።</translation>
+<translation id="8651481478098336970">ድምጽ ዝጋ</translation>
 <translation id="8653031188082306838">urled</translation>
 <translation id="8653646212587894517">የአገናኞች ዝርዝር አሳይ</translation>
 <translation id="8664519043722036194">ሴኮንድ</translation>

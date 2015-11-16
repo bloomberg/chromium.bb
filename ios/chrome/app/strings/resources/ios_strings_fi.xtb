@@ -4,6 +4,7 @@
 <translation id="1008557486741366299">Ei nyt</translation>
 <translation id="1047726139967079566">Aseta tämä sivu kirjanmerkiksi...</translation>
 <translation id="1172898394251786223">Seuraava kenttä</translation>
+<translation id="1625603797851307283">Haluatko tuotteen <ph name="PRODUCT_NAME" /> tallentavan tämän sivuston salasanan?</translation>
 <translation id="2320166752086256636">Piilota näppäimistö</translation>
 <translation id="2704606927547763573">Kopioitu</translation>
 <translation id="2747003861858887689">Edellinen kenttä</translation>
@@ -11,11 +12,17 @@
 <translation id="3244271242291266297">KK</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" />/<ph name="NUM_SUGGESTIONS" /></translation>
 <translation id="3335947283844343239">Avaa suljettu välilehti uudelleen</translation>
+<translation id="3414292259312108062">Chrome tallentaa tämän <ph name="BEGIN_LINK" />Googlen tallennettuihin salasanoihin<ph name="END_LINK" /> ja täyttää sen automaattisesti, joten sinun ei tarvitse muistaa salasanaa itse.</translation>
 <translation id="385051799172605136">Edellinen</translation>
 <translation id="4121993058175073134">Tee sähköp.tilin määritykset asetuksissa lähettääksesi nettovientitiet.</translation>
 <translation id="4728558894243024398">Käyttöympäristö</translation>
+<translation id="5317780077021120954">Tallenna</translation>
 <translation id="5779929835642192302">Ehdotuksia on saatavilla.</translation>
 <translation id="605721222689873409">VV</translation>
+<translation id="6149061208933997199">Käytä salasanaa</translation>
+<translation id="6314335155547195432">Luo salasana</translation>
+<translation id="6456425917241817154">Salasanan loi Chrome</translation>
 <translation id="7456847797759667638">Avaa sijainti...</translation>
 <translation id="7481312909269577407">Seuraava</translation>
+<translation id="7961015016161918242">Ei koskaan</translation>
 </translationbundle>

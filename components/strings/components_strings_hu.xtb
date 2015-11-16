@@ -9,6 +9,7 @@
 <translation id="1113869188872983271">&amp;Átrendezés visszavonása</translation>
 <translation id="111844081046043029">Biztos, hogy el szeretné hagyni ezt az oldalt?</translation>
 <translation id="112840717907525620">Irányelv-gyorsítótár OK</translation>
+<translation id="113188000913989374">A(z) <ph name="SITE" /> közlendője:</translation>
 <translation id="1132774398110320017">A Chrome Automatikus kitöltési beállításai…</translation>
 <translation id="1146673768181266552"><ph name="CRASH_ID" /> összeomlás-azonosító (<ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="1150979032973867961">A szerver nem tudta bizonyítani, hogy valóban a(z) <ph name="DOMAIN" /> domainbe tartozik; biztonsági tanúsítványa az Ön számítógépének operációs rendszere szerint nem megbízható. Ennek oka lehet konfigurációs hiba, vagy hogy egy támadó eltérítette az Ön kapcsolódását.</translation>
@@ -28,6 +29,10 @@
 <translation id="1519264250979466059">Build dátuma</translation>
 <translation id="1549470594296187301">A funkció használatához engedélyezni kell a JavaScriptet.</translation>
 <translation id="1559528461873125649">Nincs ilyen fájl vagy könyvtár</translation>
+<translation id="1559572115229829303">&lt;p&gt;Nem hozható létre privát kapcsolat a következővel: <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />, mert az eszköz dátum- és időbeállítása helytelen (<ph name="DATE_AND_TIME" />).&lt;/p&gt;
+
+      &lt;p&gt;Módosítsa a dátumot és az időt a &lt;strong&gt;Beállítások&lt;/strong&gt; alkalmazás &lt;strong&gt;Általános&lt;/strong&gt; részében.&lt;/p&gt;</translation>
+<translation id="1629803312968146339">Szeretné, hogy a Chrome mentse ezt a kártyát?</translation>
 <translation id="1640180200866533862">Felhasználói házirendek</translation>
 <translation id="1644184664548287040">A hálózati konfiguráció érvénytelen és nem importálható.</translation>
 <translation id="1655462015569774233">{1,plural, =1{A szerver nem tudta bizonyítani, hogy valóban a(z) <ph name="DOMAIN" /> domainbe tartozik; biztonsági tanúsítványa tegnap lejárt. Ennek oka lehet konfigurációs hiba, de az is lehet, hogy egy támadó eltérítette az Ön kapcsolódását. Számítógépének órája jelenleg a következőre van állítva: <ph name="CURRENT_DATE" />. Ez megfelelőnek tűnik? Ha nem, állítsa be megfelelően a rendszer óráját, majd frissítse az oldalt.}other{A szerver nem tudta bizonyítani, hogy valóban a(z) <ph name="DOMAIN" /> domainbe tartozik; biztonsági tanúsítványa # nappal ezelőtt lejárt. Ennek oka lehet konfigurációs hiba, de az is lehet, hogy egy támadó eltérítette az Ön kapcsolódását. Számítógépének órája jelenleg a következőre van állítva: <ph name="CURRENT_DATE" />. Ez megfelelőnek tűnik? Ha nem, állítsa be megfelelően a rendszer óráját, majd frissítse az oldalt.}}</translation>
@@ -94,6 +99,7 @@
 <translation id="2922350208395188000">A szerver tanúsítványát nem sikerült leellenőrizni.</translation>
 <translation id="2941952326391522266">A szerver nem tudta bizonyítani, hogy valóban a(z) <ph name="DOMAIN" /> domainbe tartozik; biztonsági tanúsítványa a következőről származik: <ph name="DOMAIN2" />. Ennek oka lehet konfigurációs hiba, vagy hogy egy támadó eltérítette az Ön kapcsolódását.</translation>
 <translation id="2958431318199492670">A hálózati konfiguráció nem felel meg az ONC szabványnak. A konfiguráció egyes részeit nem lehet importálni.</translation>
+<translation id="2969319727213777354">Biztonságos kapcsolat létrehozásához az órát pontosan be kell állítani. Ez azért szükséges, mert a webhelyek által az azonosításukra használt tanúsítványok csak adott ideig érvényesek. Mivel az eszköz órája nem pontos, a Google Chrome nem tudja ellenőrizni ezeket a tanúsítványokat.</translation>
 <translation id="2972581237482394796">&amp;Újra</translation>
 <translation id="3010559122411665027">"<ph name="ENTRY_INDEX" />." listabejegyzés: <ph name="ERROR" /></translation>
 <translation id="3024663005179499861">Nem megfelelő irányelvtípus</translation>
@@ -146,11 +152,14 @@
 <translation id="4117700440116928470">Az irányelv hatásköre nem támogatott.</translation>
 <translation id="4120075327926916474">Szeretné, hogy a Chrome elmentse ezt a bankkártya-információt a internetes űrlapok kitöltéséhez?</translation>
 <translation id="4148925816941278100">American Express</translation>
+<translation id="4169947484918424451">Szeretné, hogy a Chromium mentse ezt a kártyát?</translation>
 <translation id="4171400957073367226">Hibás igazoló aláírás.</translation>
+<translation id="4176463684765177261">Kikapcsolva</translation>
 <translation id="4196861286325780578">&amp;Áthelyezés újra</translation>
 <translation id="4220128509585149162">Összeomlások</translation>
 <translation id="4250680216510889253">Nem</translation>
 <translation id="4258748452823770588">Rossz aláírás</translation>
+<translation id="4268298190799576220">A Chromium ez alkalommal nem tudta azonosítani kártyáját. Próbálja újra később.</translation>
 <translation id="4269787794583293679">(Nincs felhasználónév)</translation>
 <translation id="4300246636397505754">Szülői javaslatok</translation>
 <translation id="4325863107915753736">Nem sikerült megtalálni a cikket</translation>
@@ -204,6 +213,7 @@
 <translation id="5523118979700054094">Az irányelv neve</translation>
 <translation id="552553974213252141">Megfelelően kinyerte a szöveget?</translation>
 <translation id="5540224163453853">A kért cikk nem található.</translation>
+<translation id="5544037170328430102">A(z) <ph name="SITE" /> egy beágyazott oldalának közlendője:</translation>
 <translation id="5556459405103347317">Újratöltés</translation>
 <translation id="5565735124758917034">Aktív</translation>
 <translation id="560412284261940334">A kezelés nem támogatott</translation>
@@ -213,15 +223,18 @@
 <translation id="5813119285467412249">&amp;Hozzáadás újra</translation>
 <translation id="5872918882028971132">Szülői javaslatok</translation>
 <translation id="59107663811261420">A Google Payments ennél a kereskedőnél nem támogatja az ilyen típusú kártyákat. Kérjük, válasszon másik kártyát.</translation>
+<translation id="59174027418879706">Engedélyezve</translation>
 <translation id="5975083100439434680">Kicsinyítés</translation>
 <translation id="5989320800837274978">Sem fix proxyszerver, sem pedig .pac típusú szkript URL-címe nincs megadva.</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6040143037577758943">Bezárás</translation>
+<translation id="604124094241169006">Automatikus</translation>
 <translation id="6060685159320643512">Óvatosan, ezek a kísérletek haraphatnak</translation>
 <translation id="6099520380851856040">Időpont: <ph name="CRASH_TIME" /></translation>
 <translation id="6151417162996330722">A szervertanúsítvány érvényességi ideje túl hosszú.</translation>
 <translation id="6154808779448689242">A visszaadott irányelvtoken nem egyezik az aktuális tokennel</translation>
 <translation id="6165508094623778733">További információ</translation>
+<translation id="6218753634732582820">Eltávolítja a címet a Chromiumból?</translation>
 <translation id="6259156558325130047">&amp;Átrendezés újra</translation>
 <translation id="6263376278284652872"><ph name="DOMAIN" /> könyvjelzők</translation>
 <translation id="6282194474023008486">Irányítószám</translation>
@@ -239,6 +252,7 @@
 <translation id="6628463337424475685">Keresés: <ph name="ENGINE" /></translation>
 <translation id="6644283850729428850">Ez a házirend már elavult.</translation>
 <translation id="6646897916597483132">Adja meg a kártya elején szereplő négyjegyű CVC-kódot</translation>
+<translation id="6671697161687535275">Eltávolítja az űrlapjavaslatot a Chromiumból?</translation>
 <translation id="674375294223700098">Ismeretlen szervertanúsítvány-hiba.</translation>
 <translation id="6753269504797312559">Házirend értéke</translation>
 <translation id="6831043979455480757">Fordítás</translation>
@@ -272,6 +286,7 @@
 <translation id="7378627244592794276">Nem</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7419106976560586862">Profil elérési útja</translation>
+<translation id="7424977062513257142">A weboldal beágyazott oldalának közlendője:</translation>
 <translation id="7441627299479586546">Az irányelv tárgya nem megfelelő</translation>
 <translation id="7485870689360869515">Nem található adat.</translation>
 <translation id="7537536606612762813">Kötelező</translation>
@@ -282,6 +297,7 @@
 <translation id="7592362899630581445">A szervertanúsítvány sérti a névre vonatkozó megkötéseket.</translation>
 <translation id="7600965453749440009">Soha ne fordítsa le a(z) <ph name="LANGUAGE" /> nyelvű szöveget</translation>
 <translation id="7610193165460212391">Az érték kívül esik a következő tartományon: <ph name="VALUE" />.</translation>
+<translation id="7637571805876720304">Eltávolítja a hitelkártyát a Chromiumból?</translation>
 <translation id="7674629440242451245">Érdekli néhány remek új Chrome-funkció? Próbálja ki a fejlesztői csatornánkat a chrome.com/dev webhelyen.</translation>
 <translation id="7752995774971033316">Nem kezelt</translation>
 <translation id="7761701407923456692">A szerver tanúsítványa nem egyezik az URL-lel</translation>
@@ -325,6 +341,7 @@
 <translation id="8725066075913043281">Újrapróbálás</translation>
 <translation id="8738058698779197622">Biztonságos kapcsolat létrehozásához az órát pontosan be kell állítani. Ez azért szükséges, mert a webhelyek által az azonosításukra használt tanúsítványok csak adott ideig érvényesek. Mivel az eszköz órája nem pontos, a Chromium nem tudja ellenőrizni ezeket a tanúsítványokat.</translation>
 <translation id="8790007591277257123">&amp;Törlés újra</translation>
+<translation id="8798099450830957504">Alapértelmezett</translation>
 <translation id="8804164990146287819">Adatvédelmi irányelvek</translation>
 <translation id="8820817407110198400">Könyvjelzők</translation>
 <translation id="8824019021993735287">A Chrome ez alkalommal nem tudta azonosítani kártyáját. Próbálja újra később.</translation>
@@ -332,6 +349,7 @@
 <translation id="883848425547221593">Egyéb könyvjelzők</translation>
 <translation id="884923133447025588">Nem található visszavonási mechanizmus.</translation>
 <translation id="8866481888320382733">Irányelv-beállítások előfeldolgozási hibája</translation>
+<translation id="8866959479196209191">Az oldal közlendője:</translation>
 <translation id="8876793034577346603">A hálózati konfiguráció előfeldolgozása sikertelen.</translation>
 <translation id="8891727572606052622">Érvénytelen proxymód.</translation>
 <translation id="889901481107108152">Sajnos ez a kísérlet nem érhető el az Ön operációs rendszerén.</translation>

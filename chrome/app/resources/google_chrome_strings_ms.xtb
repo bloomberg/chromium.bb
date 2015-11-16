@@ -78,7 +78,6 @@ Teruskan juga log masuk akan menggabungkan maklumat Chrome seperti penanda halam
 <translation id="345171907106878721">Tambahkan diri anda kepada Chrome</translation>
 <translation id="3612333635265770873">Modul dengan nama yang sama telah diketahui bercanggah dengan Google Chrome.</translation>
 <translation id="3622797965165704966">Kini lebih mudah menggunakan Chrome dengan Akaun Google anda dan pada komputer yang dikongsi.</translation>
-<translation id="3656661827369545115">Lancarkan Chromium secara automatik apabila komputer anda bermula</translation>
 <translation id="3735758079232443276">Sambungan "<ph name="EXTENSION_NAME" />" telah menukar halaman yang ditunjukkan apabila anda memulakan Chrome.</translation>
 <translation id="3738139272394829648">Sentuh untuk Cari</translation>
 <translation id="3784527566857328444">Alih Keluar Daripada Chrome...</translation>
@@ -96,10 +95,8 @@ Teruskan juga log masuk akan menggabungkan maklumat Chrome seperti penanda halam
 <translation id="4167057906098955729">Anda boleh melihat semua pemberitahuan anda dari apl, sambungan dan tapak web Chrome di sini.</translation>
 <translation id="423410644998903704">Chrome memerlukan akses kebenaran untuk mengongsikannya dengan tapak ini.</translation>
 <translation id="4251615635259297716">Paut data Chrome anda ke akaun ini?</translation>
-<translation id="4273752058983339720">Google Chrome dikonfigurasi untuk dilancarkan secara automatik apabila anda memulakan komputer anda.</translation>
 <translation id="4309555186815777032">(memerlukan Chrome <ph name="BEGIN_BUTTON" />mula semula<ph name="END_BUTTON" />)</translation>
 <translation id="4331809312908958774">OS Chrome</translation>
-<translation id="4367618624832907428">Google Chrome tidak dapat memaparkan halaman web kerana komputer anda tidak disambungkan ke Internet.</translation>
 <translation id="4407807842708586359">OS Google Chrome</translation>
 <translation id="4458285410772214805">Sila log keluar dan log masuk semula supaya perubahan ini boleh dilaksanakan.</translation>
 <translation id="4480040274068703980">OS Chrome tidak dapat menyegerakkan data anda disebabkan oleh ralat melog masuk.</translation>
@@ -108,7 +105,6 @@ Teruskan juga log masuk akan menggabungkan maklumat Chrome seperti penanda halam
 <translation id="4567424176335768812">Anda telah log masuk sebagai <ph name="USER_EMAIL_ADDRESS" />. Sekarang anda boleh mengakses penanda halaman, sejarah dan tetapan anda yang lain pada semua peranti yang anda gunakan untuk log masuk.</translation>
 <translation id="4631713731678262610">Sembunyikan dalam menu Chrome</translation>
 <translation id="4633000520311261472">Untuk menjadikan Chrome lebih selamat, kami melumpuhkan beberapa sambungan yang tidak disenaraikan dalam <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> dan mungkin telah ditambahkan tanpa pengetahuan anda.</translation>
-<translation id="4692614041509923516">Komputer anda menjalankan versi lama Microsoft Windows yang tidak dapat memproses sijil keselamatan tapak web ini. Disebabkan masalah ini, Google Chrome tidak dapat memberitahu sama ada sijil berasal dari <ph name="SITE" /> atau daripada seseorang pada rangkaian anda yang berpura-pura menjadi <ph name="SITE" />. Sila kemas kini komputer anda kepada versi Windows yang lebih baharu.</translation>
 <translation id="4700157086864140907">Google Chrome dapat menyediakan semakan ejaan yang lebih pintar dengan menghantar apa yang anda taip dalam penyemak imbas kepada pelayan Google, membolehkan anda menggunakan teknologi semakan ejaan yang sama seperti yang digunakan oleh carian Google.</translation>
 <translation id="4728575227883772061">Pemasangan gagal disebabkan ralat tidak dinyatakan. Jika Google Chrome kini dijalankan, sila tutupnya dan cuba semula.</translation>
 <translation id="473775607612524610">Kemas kini</translation>
@@ -195,7 +191,6 @@ Teruskan juga log masuk akan menggabungkan maklumat Chrome seperti penanda halam
 <translation id="6989339256997917931">Google Chrome telah dikemas kini, tetapi anda belum menggunakannya untuk sekurang-kurangnya 30 hari.</translation>
 <translation id="699076943483372849">Tapak ini menggunakan pemalam Chrome Frame lama yang tidak lagi menerima kemas kini keselamatan dan kestabilan. Sila nyahpasang dan tingkatkan kepada penyemak imbas moden.</translation>
 <translation id="6991142834212251086">Pautkan data Chrome saya ke akaun ini</translation>
-<translation id="7054640471403081847">Komputer ini akan berhenti menerima kemas kini Google Chrome kerana perkakasan komputer ini tidak lagi disokong.</translation>
 <translation id="7060865993964054389">Pelancar Apl Google Chrome</translation>
 <translation id="7084448929020576097"><ph name="FILE_NAME" /> bersifat hasad dan Chrome telah menyekatnya.</translation>
 <translation id="7098166902387133879">Google Chrome menggunakan mikrofon anda.</translation>
@@ -232,7 +227,6 @@ Teruskan juga log masuk akan menggabungkan maklumat Chrome seperti penanda halam
 <translation id="781069973841903133">Langkah melancarkan semula dalam mod benaman Chrome akan menyebabkan apl Chrome anda ditutup dan dilancarkan semula.</translation>
 <translation id="7825851276765848807">Gagal pemasangan disebabkan ralat yang tidak dinyatakan. Sila muat turun semula Google Chrome.</translation>
 <translation id="7890208801193284374">Jika anda berkongsi komputer, rakan dan keluarga boleh menyemak imbas secara berasingan dan menyediakan Chrome sebagaimana yang mereka mahukan.</translation>
-<translation id="7908968924842975895">Komputer ini tidak akan menerima kemas kini Google Chrome lagi kerana perkakasan komputer ini tidak lagi disokong.</translation>
 <translation id="7984945080620862648">Anda tidak boleh melawati <ph name="SITE" /> sekarang kerana tapak web ini menghantar bukti kelayakan yang dicampuradukkan yang tidak boleh diproses oleh Chrome. Ralat rangkaian dan serangan biasanya bersifat sementara oleh itu, halaman ini mungkin akan berfungsi sebentar lagi.</translation>
 <translation id="8000275528373650868">Google Chrome memerlukan Windows Vista atau Windows XP dengan SP2 atau lebih tinggi.</translation>
 <translation id="8005540215158006229">Chrome hampir sedia.</translation>

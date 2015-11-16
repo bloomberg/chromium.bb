@@ -9,6 +9,7 @@
 <translation id="1113869188872983271">&amp;પુનઃક્રમાંકિત કરવું પૂર્વવત્ કરો</translation>
 <translation id="111844081046043029">શું તમે ખરેખર આ પૃષ્ઠ છોડવા માંગો છો?</translation>
 <translation id="112840717907525620">નીતિ કેશ ઑકે</translation>
+<translation id="113188000913989374"><ph name="SITE" /> આ કહે છે:</translation>
 <translation id="1132774398110320017">Chrome સ્વતઃભરણ સેટિંગ્સ...</translation>
 <translation id="1146673768181266552">ક્રેશ ID <ph name="CRASH_ID" /> (<ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="1150979032973867961">આ સર્વર સાબિત કરી શક્યું નથી કે તે <ph name="DOMAIN" /> છે; તેનું સુરક્ષા પ્રમાણપત્ર તમારા કમ્પ્યુટરની ઑપરેટિંગ સિસ્ટમ દ્વારા વિશ્વસનીય નથી. આ કોઈ ખોટી ગોઠવણીને કારણે થયું હશે અથવા કોઈ હુમલાખોર તમારા કનેક્શનને અટકાવી રહ્યો છે.</translation>
@@ -28,6 +29,10 @@
 <translation id="1519264250979466059">નિર્માણ તારીખ</translation>
 <translation id="1549470594296187301">આ સુવિધાનો ઉપયોગ કરવા માટે JavaScript સક્ષમ કરેલ હોવી આવશ્યક છે.</translation>
 <translation id="1559528461873125649">આવી કોઈ ફાઇલ અથવા નિર્દેશિકા નથી</translation>
+<translation id="1559572115229829303">&lt;p&gt;<ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> પર ખાનગી કનેક્શન સ્થાપિત કરી શકાતું નથી કારણ કે તમારા ઉપકરણની તારીખ અને સમય (<ph name="DATE_AND_TIME" />) અયોગ્ય છે.&lt;/p&gt;
+
+          &lt;p&gt;કૃપા કરીને &lt;strong&gt;સેટિંગ્સ&lt;/strong&gt; અ‍ૅપ્લિકેશનના &lt;strong&gt;સામાન્ય&lt;/strong&gt; વિભાગમાં તારીખ અને સમય સમાયોજિત કરો.&lt;/p&gt;</translation>
+<translation id="1629803312968146339">શું તમે ઇચ્છો છો કે Chrome આ કાર્ડ સાચવે?</translation>
 <translation id="1640180200866533862">વપરાશકર્તા નીતિઓ</translation>
 <translation id="1644184664548287040">નેટવર્ક ગોઠવણી અમાન્ય છે અને આયાત કરી શકાઇ નથી.</translation>
 <translation id="1655462015569774233">{1,plural, =1{આ સર્વર સાબિત કરી શક્યું નથી કે તે <ph name="DOMAIN" /> છે; તેના સુરક્ષા પ્રમાણપત્રની સમય સીમા ગઈકાલે સમાપ્ત થઈ ગઈ. આ કોઇ ખોટી ગોઠવણીને કારણે થયું હશે અથવા કોઇ હુમલાખોર તમારા કનેક્શનને અટકાવી રહ્યો છે. તમારા કમ્પ્યુટરની ઘડિયાળને હાલમાં <ph name="CURRENT_DATE" /> પર સેટ કરવામાં આવી છે. શું તે બરાબર લાગે છે? જો ઠીક ન લાગતી હોય, તો તમારે તમારી સિસ્ટમની ઘડિયાળને ઠીક કરવી જોઈએ અને પછી આ પૃષ્ઠ તાજું કરવું જોઈએ.}one{આ સર્વર સાબિત કરી શક્યું નથી કે તે <ph name="DOMAIN" /> છે; તેના સુરક્ષા પ્રમાણપત્રની સમય સીમા #  દિવસ પહેલાં સમાપ્ત થઈ ગઈ. આ કોઇ ખોટી ગોઠવણીને કારણે થયું હશે અથવા કોઇ હુમલાખોર તમારા કનેક્શનને અટકાવી રહ્યો છે. તમારા કમ્પ્યુટરની ઘડિયાળને હાલમાં <ph name="CURRENT_DATE" /> પર સેટ કરવામાં આવી છે. શું તે બરાબર લાગે છે? જો ઠીક ન લાગતી હોય, તો તમારે તમારી સિસ્ટમની ઘડિયાળને ઠીક કરવી જોઈએ અને પછી આ પૃષ્ઠ તાજું કરવું જોઈએ.}other{આ સર્વર સાબિત કરી શક્યું નથી કે તે <ph name="DOMAIN" /> છે; તેના સુરક્ષા પ્રમાણપત્રની સમય સીમા #  દિવસ પહેલાં સમાપ્ત થઈ ગઈ. આ કોઇ ખોટી ગોઠવણીને કારણે થયું હશે અથવા કોઇ હુમલાખોર તમારા કનેક્શનને અટકાવી રહ્યો છે. તમારા કમ્પ્યુટરની ઘડિયાળને હાલમાં <ph name="CURRENT_DATE" /> પર સેટ કરવામાં આવી છે. શું તે બરાબર લાગે છે? જો ઠીક ન લાગતી હોય, તો તમારે તમારી સિસ્ટમની ઘડિયાળને ઠીક કરવી જોઈએ અને પછી આ પૃષ્ઠ તાજું કરવું જોઈએ.}}</translation>
@@ -94,6 +99,7 @@
 <translation id="2922350208395188000">સર્વરનું પ્રમાણપત્ર તપાસી શકાતું નથી.</translation>
 <translation id="2941952326391522266">આ સર્વર સાબિત કરી શક્યું નથી કે તે <ph name="DOMAIN" /> છે; તેનું સુરક્ષા પ્રમાણપત્ર <ph name="DOMAIN2" /> નું છે. આ કોઈ ખોટી ગોઠવણીને કારણે થયું હશે અથવા કોઈ હુમલાખોર તમારા કનેક્શનને અટકાવી રહ્યો છે.</translation>
 <translation id="2958431318199492670">નેટવર્ક ગોઠવણી ONC માનકનું પાલન કરતી નથી. ગોઠવણીના ભાગો આયાત કરી શકાશે નહીં.</translation>
+<translation id="2969319727213777354">એક સુરક્ષિત કનેક્શન સ્થાપિત કરવા માટે, તમારી ઘડિયાળ યોગ્ય રીતે સેટ હોવી જરૂરી છે. આનું કારણ એ કે વેબસાઇટ્સ તેઓને ઓળખવા માટે જે પ્રમાણપત્રોનો ઉપયોગ કરે છે તે ચોક્કસ સમય અવધિ માટે જ માન્ય હોય છે. તમારા ઉપકરણની ઘડિયાળ ખોટી હોવાને લીધે, Google Chrome આ પ્રમાણપત્રોને ચકાસી શકતું નથી.</translation>
 <translation id="2972581237482394796">&amp;ફરી કરો</translation>
 <translation id="3010559122411665027">"<ph name="ENTRY_INDEX" />" એન્ટ્રીને સૂચિબદ્ધ કરો: <ph name="ERROR" /></translation>
 <translation id="3024663005179499861">ખોટો નીતિ પ્રકાર</translation>
@@ -146,11 +152,14 @@
 <translation id="4117700440116928470">નીતિ મર્યાદા સમર્થિત નથી.</translation>
 <translation id="4120075327926916474">શું તમે ઇચ્છો છો કે વેબ ફોર્મ્સ પૂર્ણ કરવા માટે આ ક્રેડિટ કાર્ડ માહિતી Chrome સાચવી રાખે?</translation>
 <translation id="4148925816941278100">American Express</translation>
+<translation id="4169947484918424451">શું તમે ઇચ્છો છો કે Chromium આ કાર્ડ સાચવે?</translation>
 <translation id="4171400957073367226">ખોટી ચકાસણી સહી</translation>
+<translation id="4176463684765177261">અક્ષમ કરેલું</translation>
 <translation id="4196861286325780578">&amp;ખસેડવું ફરી કરો</translation>
 <translation id="4220128509585149162">ક્રેશેસ</translation>
 <translation id="4250680216510889253">નહીં</translation>
 <translation id="4258748452823770588">ખરાબ હસ્તાક્ષર</translation>
+<translation id="4268298190799576220">આ સમયે Chromium તમારું કાર્ડ ચકાસવા અસમર્થ હતું. કૃપા કરીને પછી ફરીથી પ્રયત્ન કરશો.</translation>
 <translation id="4269787794583293679">(કોઇ વપરાશકર્તાનામ નથી)</translation>
 <translation id="4300246636397505754">પેરેન્ટ સૂચનો</translation>
 <translation id="4325863107915753736">લેખ શોધવામાં નિષ્ફળ થયાં</translation>
@@ -204,6 +213,7 @@
 <translation id="5523118979700054094">નીતિનું નામ</translation>
 <translation id="552553974213252141">શું ટેક્સ્ટ ઠીકથી કાઢી હતી?</translation>
 <translation id="5540224163453853">વિનંતી કરેલ લેખ શોધી શકાયો નથી.</translation>
+<translation id="5544037170328430102"><ph name="SITE" /> પરનું એમ્બેડ કરેલ પૃષ્ઠ આ કહે છે:</translation>
 <translation id="5556459405103347317">ફરિથી લોડ કરો</translation>
 <translation id="5565735124758917034">સક્રિય</translation>
 <translation id="560412284261940334">સંચાલન સમર્થિત નથી</translation>
@@ -213,15 +223,18 @@
 <translation id="5813119285467412249">&amp;ઉમેરવું ફરી કરો</translation>
 <translation id="5872918882028971132">પેરેન્ટ સૂચનો</translation>
 <translation id="59107663811261420">આ વેપારી માટે Google Payments દ્વારા આ પ્રકારના કાર્ડને સમર્થન નથી. કૃપા કરીને બીજું કાર્ડ પસંદ કરો.</translation>
+<translation id="59174027418879706">સક્ષમ</translation>
 <translation id="5975083100439434680">ઝૂમ ઘટાડો</translation>
 <translation id="5989320800837274978">નિયત પ્રોક્સી સર્વર્સ અથવા .pac સ્ક્રિપ્ટનો URL નો ઉલ્લેખ કરેલો નથી.</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6040143037577758943">બંધ કરો</translation>
+<translation id="604124094241169006">સ્વચલિત</translation>
 <translation id="6060685159320643512">સાવચેતી રાખો, આ પ્રયોગો નુકસાનકારક હોઈ શકે છે</translation>
 <translation id="6099520380851856040"><ph name="CRASH_TIME" /> પર થયું</translation>
 <translation id="6151417162996330722">સર્વર પ્રમાણપત્ર પાસે ખૂબ લાંબી હોય એવી માન્યતા અવધિ છે.</translation>
 <translation id="6154808779448689242">પરત થયેલ નીતિ ટોકન વર્તમાન ટોકનથી મેળ ખાતો નથી</translation>
 <translation id="6165508094623778733">વધુ જાણો</translation>
+<translation id="6218753634732582820">Chromium માંથી સરનામું દૂર કરીએ?</translation>
 <translation id="6259156558325130047">&amp;પુનઃક્રમાંકિત કરવું ફરી કરો</translation>
 <translation id="6263376278284652872"><ph name="DOMAIN" /> બુકમાર્ક્સ</translation>
 <translation id="6282194474023008486">પોસ્ટલ કોડ</translation>
@@ -239,6 +252,7 @@
 <translation id="6628463337424475685"><ph name="ENGINE" /> શોધ</translation>
 <translation id="6644283850729428850">આ નીતિ દૂર કરવામાં આવેલી છે.</translation>
 <translation id="6646897916597483132">તમારા કાર્ડની આગળની બાજુ પરથી 4-અંકનો CVC દાખલ કરો</translation>
+<translation id="6671697161687535275">Chromium માંથી ફોર્મ સૂચન દૂર કરીએ?</translation>
 <translation id="674375294223700098">અજ્ઞાત સર્વર પ્રમાણપત્ર ભૂલ.</translation>
 <translation id="6753269504797312559">નીતિ મૂલ્ય</translation>
 <translation id="6831043979455480757">અનુવાદ કરો</translation>
@@ -272,6 +286,7 @@
 <translation id="7378627244592794276">ના</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7419106976560586862">પ્રોફાઇલ પાથ</translation>
+<translation id="7424977062513257142">આ વેબપૃષ્ઠ પરનું એમ્બેડ કરેલ પૃષ્ઠ આ કહે છે:</translation>
 <translation id="7441627299479586546">ખોટો નીતિ વિષય</translation>
 <translation id="7485870689360869515">કોઈ ડેટા મળ્યો નથી.</translation>
 <translation id="7537536606612762813">ફરજિયાત</translation>
@@ -282,6 +297,7 @@
 <translation id="7592362899630581445">સર્વરનું પ્રમાણપત્ર, નામ નિગ્રહોનું ઉલ્લંઘન કરે છે.</translation>
 <translation id="7600965453749440009"><ph name="LANGUAGE" /> નું ક્યારેય અનુવાદ કરશો નહીં</translation>
 <translation id="7610193165460212391">મૂલ્ય <ph name="VALUE" /> શ્રેણી બહારનું છે.</translation>
+<translation id="7637571805876720304">Chromium માંથી ક્રેડિટ કાર્ડ દૂર કરીએ?</translation>
 <translation id="7674629440242451245">શું કૂલ નવી Chrome સુવિધાઓમાં રુચિ ધરાવો છો? chrome.com/dev પર અમારી dev ચૅનલ અજમાવી જુઓ.</translation>
 <translation id="7752995774971033316">બિનસંચાલિત</translation>
 <translation id="7761701407923456692">સર્વરનું પ્રમાણપત્ર URL સાથે મેળ ખાતું નથી.</translation>
@@ -325,6 +341,7 @@
 <translation id="8725066075913043281">ફરી પ્રયાસ કરો</translation>
 <translation id="8738058698779197622">એક સુરક્ષિત કનેક્શન સ્થાપિત કરવા માટે, તમારું ઘડિયાળ યોગ્ય રીતે સેટ હોવું જરૂરી છે. આનું કારણ એ કે  વેબસાઇટ્સ તેઓને ઓળખવા માટે જે પ્રમાણપત્રોનો ઉપયોગ કરે છે તે ચોક્કસ સમય અવધિ માટે જ માન્ય હોય છે. તમારા ઉપકરણની ઘડિયાળ ખોટી હોવાને લીધે, Chromium આ પ્રમાણપત્રોને ચકાસી શકતું નથી.</translation>
 <translation id="8790007591277257123">&amp;કાઢી નાખવું ફરી કરો</translation>
+<translation id="8798099450830957504">ડિફૉલ્ટ</translation>
 <translation id="8804164990146287819">ગોપનીયતા નીતિ</translation>
 <translation id="8820817407110198400">બુકમાર્ક્સ</translation>
 <translation id="8824019021993735287">આ સમયે Chrome તમારું કાર્ડ ચકાસવા અસમર્થ હતું. કૃપા કરીને પછી ફરીથી પ્રયત્ન કરશો.</translation>
@@ -332,6 +349,7 @@
 <translation id="883848425547221593">અન્ય બુકમાર્ક્સ</translation>
 <translation id="884923133447025588">રદ કરવાની કોઈ મેકેનિઝમ મળી નથી.</translation>
 <translation id="8866481888320382733">ભૂલ વિશ્લેષણ નીતિ સેટિંગ્સ</translation>
+<translation id="8866959479196209191">આ પૃષ્ઠ આ કહે છે:</translation>
 <translation id="8876793034577346603">નેટવર્ક ગોઠવણી વિશ્લેષિત થવામાં નિષ્ફળ થઇ.</translation>
 <translation id="8891727572606052622">અમાન્ય પ્રોક્સી મોડ.</translation>
 <translation id="889901481107108152">માફ કરશો, આ પ્રયોગ તમારા પ્લેટફોર્મ પર ઉપલબ્ધ નથી.</translation>

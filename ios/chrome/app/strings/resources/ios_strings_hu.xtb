@@ -4,6 +4,7 @@
 <translation id="1008557486741366299">Ne most</translation>
 <translation id="1047726139967079566">Könyvjelző hozzáadása ehhez az oldalhoz...</translation>
 <translation id="1172898394251786223">Következő mező</translation>
+<translation id="1625603797851307283">Szeretné, hogy a(z) <ph name="PRODUCT_NAME" /> mentse az oldalhoz tartozó jelszót?</translation>
 <translation id="2320166752086256636">Billentyűzet elrejtése</translation>
 <translation id="2704606927547763573">Másolt</translation>
 <translation id="2747003861858887689">Előző mező</translation>
@@ -11,11 +12,17 @@
 <translation id="3244271242291266297">HH</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="NUM_SUGGESTIONS" />/<ph name="INDEX" />. javaslat</translation>
 <translation id="3335947283844343239">Bezárt lap megnyitása</translation>
+<translation id="3414292259312108062">A Chrome eltárolja ezt a jelszót a <ph name="BEGIN_LINK" />mentett Google-jelszavak<ph name="END_LINK" /> közé, és szükség esetén automatikusan beilleszti, így Önnek nem kell megjegyeznie.</translation>
 <translation id="385051799172605136">Vissza</translation>
 <translation id="4121993058175073134">Net-export adatok küldéséhez, kérjük, konfigurálja e-mail fiókját a Beállítások alkalmazásban.</translation>
 <translation id="4728558894243024398">Platform</translation>
+<translation id="5317780077021120954">Mentés</translation>
 <translation id="5779929835642192302">Javaslatok állnak rendelkezésre</translation>
 <translation id="605721222689873409">ÉÉ</translation>
+<translation id="6149061208933997199">Jelszó használata</translation>
+<translation id="6314335155547195432">Jelszó létrehozása</translation>
+<translation id="6456425917241817154">A Chrome által generált jelszó</translation>
 <translation id="7456847797759667638">Hely megnyitása...</translation>
 <translation id="7481312909269577407">Előre</translation>
+<translation id="7961015016161918242">Soha</translation>
 </translationbundle>

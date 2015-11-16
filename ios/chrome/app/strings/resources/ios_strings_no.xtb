@@ -4,6 +4,7 @@
 <translation id="1008557486741366299">Ikke nå</translation>
 <translation id="1047726139967079566">Legg til bokmerke for denne siden</translation>
 <translation id="1172898394251786223">Neste felt</translation>
+<translation id="1625603797851307283">Vil du at <ph name="PRODUCT_NAME" /> skal lagre passordet for dette nettstedet?</translation>
 <translation id="2320166752086256636">Skjul tastaturet</translation>
 <translation id="2704606927547763573">Kopiert</translation>
 <translation id="2747003861858887689">Forrige felt</translation>
@@ -11,11 +12,17 @@
 <translation id="3244271242291266297">MM</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> av <ph name="NUM_SUGGESTIONS" /></translation>
 <translation id="3335947283844343239">Åpne lukkede faner igjen</translation>
+<translation id="3414292259312108062">Chrome lagrer dette i <ph name="BEGIN_LINK" />Google-lagrede passord<ph name="END_LINK" />. Deretter legges det inn automatisk, slik at du ikke trenger å huske det selv.</translation>
 <translation id="385051799172605136">Tilbake</translation>
 <translation id="4121993058175073134">For å sende data for netteksport må du konfigurere e-postkontoen din i Innstillinger-appen.</translation>
 <translation id="4728558894243024398">Plattform</translation>
+<translation id="5317780077021120954">Lagre</translation>
 <translation id="5779929835642192302">Det finnes tilgjengelige forslag</translation>
 <translation id="605721222689873409">ÅÅ</translation>
+<translation id="6149061208933997199">Bruk passord</translation>
+<translation id="6314335155547195432">Generer passord</translation>
+<translation id="6456425917241817154">Passord generert av Chrome</translation>
 <translation id="7456847797759667638">Åpne sted</translation>
 <translation id="7481312909269577407">Frem</translation>
+<translation id="7961015016161918242">Aldri</translation>
 </translationbundle>

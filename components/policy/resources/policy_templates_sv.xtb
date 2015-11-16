@@ -820,6 +820,13 @@
       Om inställningen är inaktiverad kontrollerar <ph name="PRODUCT_NAME" /> aldrig om den är standardwebbläsare och användarkontrollerna för inställningen inaktiveras.
 
       Om inställningen inte anges kan användaren avgöra om <ph name="PRODUCT_NAME" /> ska vara standardwebbläsare och om ett meddelande ska visas för användaren när den inte är det.</translation>
+<translation id="3800626789999016379">Konfigurerar vilken katalog som ska användas för nedladdade filer i <ph name="PRODUCT_NAME" />.
+
+      Om principen har ställts in används den angivna katalogen i <ph name="PRODUCT_NAME" /> oavsett om användaren har angett en katalog eller aktiverat flaggan för att bli tillfrågad om nedladdningsplats varje gång.
+
+      En lista med variabler som kan användas finns på https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.
+
+      Om principen inte har ställts in används standardplatsen för nedladdningar och användaren kan ändra inställningen.</translation>
 <translation id="3805659594028420438">Aktivera domänbundna TLS-certifikattillägg (föråldrad)</translation>
 <translation id="3806576699227917885">Tillåta uppspelning av ljud.
 
@@ -960,6 +967,13 @@
           Den här policyn följs endast om policyn DefaultSearchProviderEnabled är aktiverad.</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 eller senare</translation>
 <translation id="4325690621216251241">Lägg till en utloggningsknapp i systemfältet</translation>
+<translation id="4349746760316962317">Konfigurerar vilken katalog som ska användas för cachelagrade filer i <ph name="PRODUCT_NAME" />.
+
+      Om principen har ställts in används den angivna katalogen i <ph name="PRODUCT_NAME" /> oavsett om användaren har angett flaggan --disk-cache-dir eller inte.
+
+      En lista med variabler som kan användas finns på https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.
+
+      Om principen inte har ställts in används standardkatalogen för cachelagring och användaren kan åsidosätta inställningen med kommandoradsflaggan --disk-cache-dir.</translation>
 <translation id="436581050240847513">Rapporteringsgränssnitt för nätverk med enheter</translation>
 <translation id="4372704773119750918">Tillåt inte att företagsanvändare ingår i multiprofiler (primärt eller sekundärt)</translation>
 <translation id="4377599627073874279">Tillåt att alla bilder visas på alla webbplatser</translation>
@@ -1043,6 +1057,11 @@
 <translation id="4665897631924472251">Inställningar för hantering av tillägg</translation>
 <translation id="4668325077104657568">Standardinställning för bilder</translation>
 <translation id="467236746355332046">Funktioner som stöds:</translation>
+<translation id="4674167212832291997">Anpassa listan med webbadressmönster som alltid ska renderas av <ph name="PRODUCT_FRAME_NAME" />.
+
+          Om principen inte har ställts in används standardrenderaren för alla webbplatser enligt specifikationen i principen ChromeFrameRendererSettings.
+
+          Exempel på mönster finns på https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="467449052039111439">Öppna följande sidor</translation>
 <translation id="4680961954980851756">Aktivera Autofyll</translation>
 <translation id="4723829699367336876">Aktivera brandväggspassage från fjärråtkomstklient</translation>
@@ -1145,6 +1164,13 @@
           När policyn inte har angetts kommer standardåtgärden avstängning att vidtas.
 
           Om åtgärden är avstängning kan <ph name="PRODUCT_OS_NAME" /> konfigureras separat för att antingen låsa eller inte låsa skärmen före avstängningen.</translation>
+<translation id="5111712393799006197">Konfigurerar i vilken katalog som användardata ska sparas i <ph name="PRODUCT_NAME" />.
+
+      Om principen har ställts in används den angivna katalogen i <ph name="PRODUCT_NAME" /> oavsett om användaren har angett flaggan --user-data-dir eller inte.
+
+      En lista med variabler som kan användas finns på https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.
+
+      Om principen inte har ställts in används profilens standardsökväg och användaren kan åsidosätta den med kommandoradsflaggan --user-data-dir.</translation>
 <translation id="5130288486815037971">Om RC4-krypteringssviter i TLS är aktiverade eller inte</translation>
 <translation id="5141670636904227950">Ange standardtypen för skärmförstoraren på inloggningsskärmen</translation>
 <translation id="5142301680741828703">Rendera alltid följande webbadressmönster i <ph name="PRODUCT_FRAME_NAME" /></translation>
@@ -1337,6 +1363,20 @@
 <translation id="5809728392451418079">Ange visningsnamnet för lokala konton på enheten</translation>
 <translation id="5814301096961727113">Ange standardtillståndet för talad feedback på inloggningsskärmen</translation>
 <translation id="5815129011704381141">Starta om automatiskt efter uppdatering</translation>
+<translation id="5815353477778354428">Konfigurerar i vilken katalog som användardata ska sparas i <ph name="PRODUCT_FRAME_NAME" />.
+
+      Om principen har ställts in används den angivna katalogen i <ph name="PRODUCT_FRAME_NAME" />.
+
+      En lista med variabler som kan användas finns på https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.
+
+      Om inget har ställts in används profilens standardkatalog.</translation>
+<translation id="5819660021114910752">Anger vilken tidszon som används på enheten. En användare kan åsidosätta den angivna tidszonen under sin pågående session, men tidszonen återställs när användaren loggar ut. Om ett ogiltigt värde anges aktiveras principen ändå men med GMT i stället. Om tomma strängen anges ignoreras principen.
+
+      Om den här principen inte används kommer den tidszon som just nu är aktiv att användas även i fortsättningen. Användarna kan fortfarande ändra tidszon och ändringar sparas. Om en användare ändrar inställningen påverkar det alltså inloggningsskärmen och alla andra användare.
+
+      På nya enheter används tidszonen US/Pacific.
+
+      Värdet ska följa tidszonernas namn i IANA Time Zone Database (se https://en.wikipedia.org/wiki/Tz_database). De flesta tidszoner går att hänvisa till enligt mönstret kontinent/storstad eller världshav/storstad.</translation>
 <translation id="5826047473100157858">Policyn anger om användaren får öppna sidor i inkognitoläge i <ph name="PRODUCT_NAME" />.
 
       Om policyn är aktiverad eller inte anges kan sidor öppnas i inkognitoläge.
@@ -2123,6 +2163,11 @@
 <translation id="8465065632133292531">Parametrar för webbadress för Instant som använder POST</translation>
 <translation id="847472800012384958">Tillåt inte att popup-fönster visas på någon webbplats</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
+<translation id="8484458986062090479">Anpassa listan med webbadressmönster som alltid ska renderas av värdwebbläsaren.
+
+          Om principen inte har ställts in används standardrenderaren för alla webbplatser enligt specifikationen i principen ChromeFrameRendererSettings.
+
+          Exempel på mönster finns på https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="8493645415242333585">Spara inte webbhistorik</translation>
 <translation id="8499172469244085141">Standardinställningar (kan åsidosättas av användare)</translation>
 <translation id="8501011084242226370">Anger en lista med plugin-program som användaren kan aktivera eller inaktivera i <ph name="PRODUCT_NAME" />.

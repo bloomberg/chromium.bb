@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="sr">
 <translation id="1001534784610492198">Архива програма за инсталацију је оштећена или неважећа. Преузмите Google Chrome поново.</translation>
+<translation id="1013290471399003443">Chrome је верификовао да је <ph name="ISSUER" /> издао сертификат овог сајта. Сервер је послао важеће информације о транспарентности сертификата.</translation>
 <translation id="1016765312371154165">Chrome се није исправно затворио.</translation>
 <translation id="103396972844768118">Важне информације у вези са Chrome подацима</translation>
 <translation id="1061441684050139317">Chrome-у је потребан приступ за микрофон да би га делио са овим сајтом.</translation>
@@ -66,6 +67,7 @@
 <translation id="2769762047821873045">Google Chrome није ваш подразумевани прегледач.</translation>
 <translation id="2770231113462710648">Промени подразумевани прегледач у:</translation>
 <translation id="2871893339301912279">Пријављени сте у Chrome!</translation>
+<translation id="2997147809295888909">Chrome је верификовао да је <ph name="ISSUER" /> издао сертификат овог сајта. Сервер није послао ниједну информацију о транспарентности сертификата.</translation>
 <translation id="3037838751736561277">Google Chrome је у позадинском режиму.</translation>
 <translation id="3047079729301751317">Ако прекинете везу са <ph name="USERNAME" />, обрисаћете историју, обележиваче, подешавања и друге Chrome податке ускладиштене на овом уређају. Подаци сачувани на Google налогу неће бити обрисани и можете њима да управљате на <ph name="GOOGLE_DASHBOARD_LINK" />Google контролној табли<ph name="END_GOOGLE_DASHBOARD_LINK" />.</translation>
 <translation id="3080151273017101988">Настави са покретањем апликација у позадини када се Google Chrome затвори</translation>
@@ -80,7 +82,6 @@
 <translation id="345171907106878721">Додајте себе у Chrome</translation>
 <translation id="3612333635265770873">Модул истог назива се већ сукобљавао са Google Chrome прегледачем.</translation>
 <translation id="3622797965165704966">Сада можете лакше да користите Chrome са Google налогом и на дељеним рачунарима.</translation>
-<translation id="3656661827369545115">Аутоматски покрени Chromium када се рачунар покрене</translation>
 <translation id="3735758079232443276">Додатак „<ph name="EXTENSION_NAME" />“ је променио страницу која се приказује када покренете Chrome.</translation>
 <translation id="3738139272394829648">Додирни за претрагу</translation>
 <translation id="3784527566857328444">Уклони из Chrome-а...</translation>
@@ -88,6 +89,7 @@
 <translation id="3847841918622877581">Google Chrome може да користи веб услуге да би побољшао доживљај прегледања.</translation>
 <translation id="386202838227397562">Затворите све прозоре Google Chrome прегледача и покушајте поново.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
+<translation id="3881912906674381083">Chrome је верификовао да је <ph name="ISSUER" /> издао сертификат овог сајта. Сервер је послао информације о транспарентности сертификата, али Chrome није препознао ниједну евиденцију транспарентности сертификата.</translation>
 <translation id="3889417619312448367">Деинсталирај Google Chrome</translation>
 <translation id="4011219958405096740">Када је омогућено, користи ток пријављивања у Chrome заснован на iframe-у; у супротном, користи ток заснован на webview-у.</translation>
 <translation id="4050175100176540509">Важна безбедносна побољшања и нове функције су доступни у најновијој верзији.</translation>
@@ -97,10 +99,8 @@
 <translation id="4167057906098955729">Овде можете да видите сва обавештења из Chrome апликација, додатака и веб-сајтова.</translation>
 <translation id="423410644998903704">Chrome-у је потребан приступ за дозволе да би их делио са овим сајтом.</translation>
 <translation id="4251615635259297716">Желите ли да повежете Chrome податке са овим налогом?</translation>
-<translation id="4273752058983339720">Google Chrome је конфигурисан тако да се аутоматски покреће када покренете рачунар.</translation>
 <translation id="4309555186815777032">(захтева <ph name="BEGIN_BUTTON" />поновно покретање<ph name="END_BUTTON" /> Chrome-а)</translation>
 <translation id="4331809312908958774">Chrome ОС</translation>
-<translation id="4367618624832907428">Google Chrome не може да прикаже веб-страницу јер рачунар није повезан са интернетом.</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="4458285410772214805">Одјавите се и поново се пријавите да би ова промена ступила на снагу.</translation>
 <translation id="4480040274068703980">Chrome ОС не може да синхронизује податке због грешке при пријављивању.</translation>
@@ -109,7 +109,6 @@
 <translation id="4567424176335768812">Пријављени сте као <ph name="USER_EMAIL_ADDRESS" />. Сада можете да приступате обележивачима, историји и другим подешавањима на свим уређајима на којима сте пријављени.</translation>
 <translation id="4631713731678262610">Сакриј у Chrome менију</translation>
 <translation id="4633000520311261472">Да бисмо учинили Chrome безбеднијим, онемогућили смо неке додатке које не наводи <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> и који су можда додати без вашег знања.</translation>
-<translation id="4692614041509923516">Рачунар користи стару верзију Microsoft Windows-а која не може да обради безбедносни сертификат овог веб-сајта. Због тог проблема, Google Chrome не може да одреди да ли сертификат потиче са <ph name="SITE" /> или од неког на мрежи ко се претвара да је <ph name="SITE" />. Ажурирајте рачунар на новију верзију Windows-а.</translation>
 <translation id="4700157086864140907">Google Chrome може да пружи паметнију проверу правописа тако што оно што куцате у прегледач шаље Google серверима, што вам омогућава да користите исту технологију провере правописа коју користи Google претрага.</translation>
 <translation id="4728575227883772061">Инсталација није успела због неодређене грешке. Ако је Google Chrome тренутно отворен, затворите га и покушајте поново.</translation>
 <translation id="473775607612524610">Ажурирај</translation>
@@ -118,6 +117,7 @@
 <translation id="4794050651896644714">Сачувај детаље у Chrome-у</translation>
 <translation id="4891791193823137474">Нека Google Chrome ради у позадини</translation>
 <translation id="4921569541910214635">Делите рачунар? Сада можете да подесите Chrome баш онако како вама одговара.</translation>
+<translation id="4925019873400497719">Chrome је верификовао да је <ph name="ISSUER" /> издао сертификат овог сајта. Сервер је послао информације о транспарентности сертификата, али оне су неважеће.</translation>
 <translation id="4953650215774548573">Подеси Google Chrome као подразумевани прегледач</translation>
 <translation id="4987308747895123092">Затворите све Google Chrome прозоре (укључујући оне у режиму Windows 8) и покушајте поново.</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
@@ -198,7 +198,6 @@ Google Chrome не може да врати подешавања.</translation>
 <translation id="6989339256997917931">Google Chrome је ажуриран, али га нисте користили најмање 30 дана.</translation>
 <translation id="699076943483372849">Овај сајт користи додатну компоненту Chrome Frame која је повучена из употребе и која више не прима безбедносна ажурирања и ажурирања за стабилност. Деинсталирајте је и надоградите на модеран прегледач.</translation>
 <translation id="6991142834212251086">Повежи моје Chrome податке са овим налогом</translation>
-<translation id="7054640471403081847">Овај рачунар ће ускоро престати да прима ажурирања за Google Chrome јер његов хардвер више није подржан.</translation>
 <translation id="7060865993964054389">Покретач Google Chrome апликација</translation>
 <translation id="7084448929020576097">Датотека <ph name="FILE_NAME" /> је злонамерна, па ју је Chrome блокирао.</translation>
 <translation id="7098166902387133879">Google Chrome користи микрофон.</translation>
@@ -235,7 +234,6 @@ Google Chrome не може да врати подешавања.</translation>
 <translation id="781069973841903133">Поновним покретањем у утапајућем режиму Chrome-а затварате и поново покрећете Chrome апликације.</translation>
 <translation id="7825851276765848807">Инсталација није успела услед неутврђене грешке. Преузмите Google Chrome поново.</translation>
 <translation id="7890208801193284374">Ако делите рачунар, пријатељи и породица могу засебно да прегледају и да подесе Chrome баш онако како желе.</translation>
-<translation id="7908968924842975895">Овај рачунар више неће примати ажурирања за Google Chrome јер његов хардвер више није подржан.</translation>
 <translation id="7984945080620862648">Тренутно не можете да посетите <ph name="SITE" /> зато што је веб-сајт послао шифроване акредитиве које Chrome не може да обради. Грешке и напади на мрежи су обично привремени, па ће ова страница вероватно функционисати касније.</translation>
 <translation id="8000275528373650868">За Google Chrome је неопходан оперативни систем Windows Vista или Windows XP са SP2 или новија верзија.</translation>
 <translation id="8005540215158006229">Chrome је скоро спреман.</translation>

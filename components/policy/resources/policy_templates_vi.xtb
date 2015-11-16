@@ -64,6 +64,9 @@
 
           Chính sách này chỉ được áp dụng nếu chính sách  'DefaultSearchProviderEnabled' được bật.</translation>
 <translation id="1265053460044691532">Hạn chế thời gian người dùng được xác thực qua SAML có thể đăng nhập ngoại tuyến</translation>
+<translation id="1291880496936992484">Cảnh báo: RC4 sẽ bị xóa hoàn toàn khỏi <ph name="PRODUCT_NAME" /> sau phiên bản 52 (khoảng tháng 9 năm 2016) và chính sách này sẽ ngừng hoạt động sau đó.
+
+      Nếu chính sách này không được đặt hoặc được đặt thành false thì bộ mã hóa RC4 trong TLS sẽ không được bật. Ngoài ra, chính sách có thể được đặt thành true để duy trì khả năng tương thích với máy chủ lỗi thời. Đây là một biện pháp tạm thời và cần phải định cấu hình lại máy chủ.</translation>
 <translation id="1297182715641689552">Sử dụng tập lệnh proxy .pac</translation>
 <translation id="1300635491585192248">Dự đoán các tác vụ mạng trên bất kỳ mạng nào không phải là
           mạng di động</translation>
@@ -521,6 +524,10 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Nếu bạn bật hoặc tắt cài đặt này, người dùng không thể thay đổi hoặc ghi đè cài đặt ''Bật tính năng bảo vệ chống lừa đảo và phần mềm độc hại'' trong <ph name="PRODUCT_NAME" />.
 
       Nếu không đặt chính sách này, cài đặt này sẽ được bật nhưng người dùng có thể thay đổi cài đặt này.</translation>
+<translation id="2801230735743888564">Cho phép người dùng chơi trò chơi trứng khủng long Phục sinh khi thiết bị ngoại tuyến.
+
+
+      Nếu chính sách này được đặt thành False, người dùng sẽ không thể chơi trò chơi trứng khủng long Phục sinh khi thiết bị đang ngoại tuyến. Nếu cài đặt này được đặt thành True, người dùng được phép chơi trò chơi khủng long. Nếu chính sách này không được đặt, người dùng không được phép chơi trò chơi trứng khủng long Phục sinh trên Chrome OS đã đăng ký nhưng được phép chơi trong những trường hợp khác.</translation>
 <translation id="2805707493867224476">Cho phép tất cả các trang web hiển thị cửa sổ bật lên</translation>
 <translation id="2808013382476173118">Cho phép sử dụng máy chủ STUN khi máy khách từ xa cố gắng thiết lập kết nối với máy tính này.
 
@@ -797,6 +804,13 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="3780152581321609624">Bao gồm cổng không chuẩn trong  Kerberos SPN</translation>
 <translation id="3788662722837364290">Cài đặt quản lý nguồn khi người dùng không sử dụng</translation>
 <translation id="3793095274466276777">Định cấu hình kiểm tra trình duyệt mặc định trong <ph name="PRODUCT_NAME" /> và ngăn người dùng thay đổi cấu hình này. Nếu bạn bật cài đặt này, <ph name="PRODUCT_NAME" /> sẽ luôn kiểm tra khi khởi động để xem đó có phải là trình duyệt mặc định không và tự động đăng ký chính nó nếu có thể. Nếu bạn tắt cài đặt này, <ph name="PRODUCT_NAME" /> sẽ không bao giờ kiểm tra xem đó có phải là trình duyệt mặc định không và vô hiệu hóa kiểm soát của người dùng để đặt tùy chọn này. Nếu cài đặt này không được thiết lập, <ph name="PRODUCT_NAME" /> sẽ cho phép người dùng kiểm soát xem đó có phải là trình duyệt mặc định không và có nên hiển thị thông báo cho người dùng hay không khi không phải là trình duyệt mặc định.</translation>
+<translation id="3800626789999016379">Định cấu hình thư mục mà <ph name="PRODUCT_NAME" /> sẽ sử dụng để tải xuống tệp.
+
+      Nếu bạn đặt chính sách này, <ph name="PRODUCT_NAME" /> sẽ sử dụng thư mục được cung cấp bất kể người dùng đã chỉ định một thư mục hay đã bật cờ để được nhắc vị trí cho mỗi lần tải xuống.
+
+      Truy cập http://www.chromium.org/administrators/policy-list-3/user-data-directory-variables để xem danh sách các biến có thể được sử dụng.
+
+      Nếu bạn không đặt chính sách này, thư mục tải xuống mặc định sẽ được sử dụng và người dùng sẽ có thể thay đổi thư mục đó.</translation>
 <translation id="3805659594028420438">Bật tiện ích chứng chỉ giới hạn miền TLS (không được chấp thuận)</translation>
 <translation id="3806576699227917885">Cho phép phát âm thanh.
 
@@ -936,6 +950,13 @@ Khi chính sách này được đặt thành false hoặc không được địn
           Chính sách này chỉ được tuân theo nếu kích hoạt chính sách 'DefaultSearchProviderEnabled'.</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 hoặc mới hơn</translation>
 <translation id="4325690621216251241">Thêm một nút đăng xuất vào khay hệ thống</translation>
+<translation id="4349746760316962317">Định cấu hình thư mục mà <ph name="PRODUCT_NAME" /> sẽ sử dụng để lưu trữ tệp đã lưu vào bộ nhớ cache trên đĩa.
+
+      Nếu bạn đặt chính sách này, <ph name="PRODUCT_NAME" /> sẽ sử dụng thư mục được cung cấp bất kể người dùng đã chỉ định cờ '--disk-cache-dir' hay chưa.
+
+      Truy cập https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables để xem danh sách các biến có thể được sử dụng.
+
+      Nếu bạn không đặt chính sách này, thư mục bộ nhớ cache mặc định sẽ được sử dụng và người dùng sẽ có thể ghi đè thư mục đó bằng cờ dòng lệnh '--disk-cache-dir'.</translation>
 <translation id="436581050240847513">Báo cáo giao diện mạng thiết bị</translation>
 <translation id="4372704773119750918">Không cho phép người dùng doanh nghiệp là một phần của đa cấu hình (chính hoặc phụ)</translation>
 <translation id="4377599627073874279">Cho phép tất cả các trang web hiển thị tất cả hình ảnh</translation>
@@ -1019,6 +1040,11 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="4665897631924472251">Cài đặt quản lý tiện ích</translation>
 <translation id="4668325077104657568">Cài đặt hình ảnh mặc định</translation>
 <translation id="467236746355332046">Các tính năng được hỗ trợ:</translation>
+<translation id="4674167212832291997">Tùy chỉnh danh sách các mẫu URL sẽ luôn được <ph name="PRODUCT_FRAME_NAME" /> hiển thị.
+
+          Nếu bạn không đặt chính sách này, kết xuất đồ họa mặc định sẽ được sử dụng cho tất cả các trang web được chỉ định theo chính sách 'ChromeFrameRendererSettings'.
+
+          Để biết các mẫu ví dụ, hãy xem http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="467449052039111439">Mở một danh sách URL</translation>
 <translation id="4680961954980851756">Bật Tự động điền</translation>
 <translation id="4723829699367336876">Bật tính năng chặn tường lửa từ máy khách truy cập từ xa</translation>
@@ -1119,6 +1145,14 @@ Khi chính sách này được đặt thành false hoặc không được địn
           Khi không đặt chính sách này, tác vụ mặc định sẽ được thực hiện, tác vụ này bị tạm ngưng.
 
           Nếu tác vụ bị tạm ngưng, <ph name="PRODUCT_OS_NAME" /> có thể được định cấu hình riêng biệt để khóa hoặc không khóa màn hình trước khi tạm ngưng.</translation>
+<translation id="5111712393799006197">Định cấu hình thư mục mà <ph name="PRODUCT_NAME" /> sẽ sử dụng để lưu trữ dữ liệu người dùng.
+
+      Nếu bạn đặt chính sách này, <ph name="PRODUCT_NAME" /> sẽ sử dụng thư mục được cung cấp bất kể người dùng đã chỉ định cờ '--user-data-dir' hay chưa.
+
+      Truy cập http://www.chromium.org/administrators/policy-list-3/user-data-directory-variables để xem danh sách các biến có thể được sử dụng.
+
+      Nếu bạn không đặt chính sách này, đường dẫn hồ sơ mặc định sẽ được sử dụng và người dùng sẽ có thể ghi đè đường dẫn đó với cờ dòng lệnh '--user-data-dir'.</translation>
+<translation id="5130288486815037971">Bộ mã hóa RC4 trong TLS có được bật không</translation>
 <translation id="5141670636904227950">Đặt loại kính lúp màn hình mặc định được bật trên màn hình đăng nhập</translation>
 <translation id="5142301680741828703">Luôn hiển thị các mẫu URL sau đây trong <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="5148753489738115745">Cho phép bạn chỉ định tham số bổ sung được sử dụng khi <ph name="PRODUCT_FRAME_NAME" /> chạy <ph name="PRODUCT_NAME" />.
@@ -1312,6 +1346,20 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="5809728392451418079">Đặt tên hiển thị cho tài khoản trong thiết bị</translation>
 <translation id="5814301096961727113">Đặt trạng thái phản hồi bằng giọng nói mặc định trên màn hình đăng nhập</translation>
 <translation id="5815129011704381141">Tự động khởi động lại sau khi cập nhật</translation>
+<translation id="5815353477778354428">Định cấu hình thư mục mà <ph name="PRODUCT_FRAME_NAME" /> sẽ sử dụng để lưu trữ dữ liệu người dùng.
+
+      Nếu bạn đặt chính sách này, <ph name="PRODUCT_FRAME_NAME" /> sẽ sử dụng thư mục được cung cấp.
+
+      Truy cập http://www.chromium.org/administrators/policy-list-3/user-data-directory-variables để xem danh sách các biến có thể được sử dụng.
+
+      Nếu bạn không đặt cài đặt này, thư mục hồ sơ mặc định sẽ được sử dụng.</translation>
+<translation id="5819660021114910752">Chỉ định múi giờ được sử dụng cho thiết bị. Người dùng có thể ghi đè múi giờ đã chỉ định cho phiên hiện tại. Tuy nhiên, khi đăng xuất, phiên được đặt trở về múi giờ đã chỉ định. Nếu giá trị không hợp lệ được cung cấp, chính sách sẽ vẫn được kích hoạt bằng ''GMT". Nếu chuỗi trống được cung cấp, chính sách bị bỏ qua.
+
+      Nếu chính sách này không được sử dụng, múi giờ đang hoạt động sẽ vẫn được sử dụng. Tuy nhiên, người dùng có thể thay đổi múi giờ và thay đổi sẽ vẫn duy trì. Do đó, sự thay đổi do một người dùng thực hiện sẽ ảnh hưởng đến màn hình đăng nhập và tất cả người dùng khác.
+
+      Thiết bị mới khởi động với múi giờ được đặt thành "Hoa Kỳ/Thái Bình Dương".
+
+      Định dạng của giá trị tuân theo tên của múi giờ trong "Cơ sở dữ liệu múi giờ của IANA" (hãy xem "https://en.wikipedia.org/wiki/Tz_database"). Đặc biệt, bạn có thể tham chiếu hầu hết các múi giờ theo "continent/large_city" hoặc "ocean/large_city".</translation>
 <translation id="5826047473100157858">Chỉ định liệu người dùng có thể mở trang ở chế độ Ẩn danh trong <ph name="PRODUCT_NAME" /> hay không.
 
       Nếu chọn 'Bật' hoặc không thiết lập chính sách này, bạn có thể mở trang ở chế độ Ẩn danh.
@@ -1410,6 +1458,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
           Cách khóa màn hình khi không sử dụng được khuyến nghị là bật khóa màn hình khi tạm ngừng và đặt <ph name="PRODUCT_OS_NAME" /> tạm ngừng sau độ trễ khi không sử dụng. Bạn chỉ nên sử dụng chính sách này khi khóa màn hình xảy ra sớm hơn thời gian tạm ngừng đáng kể hoặc khi tạm ngừng khi không sử dụng hoàn toàn không được mong muốn.
 
           Bạn phải chỉ định giá trị chính sách bằng mili giây. Các giá trị được giới hạn ở mức nhỏ hơn khoảng thời gian trễ khi không sử dụng.</translation>
+<translation id="6111936128861357925">Cho phép trò chơi trứng khủng long Phục sinh</translation>
 <translation id="6114416803310251055">không được chấp thuận</translation>
 <translation id="6145799962557135888">Cho phép bạn thiết lập danh sách các mẫu url chỉ định những trang web được phép chạy JavaScript.
 
@@ -2028,6 +2077,18 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
       Nếu không thiết lập chính sách này, sẽ không có ngoại lệ nào cho danh sách đen từ chính sách 'URLBlacklist'.</translation>
 <translation id="8176035528522326671">Cho phép người dùng doanh nghiệp trở thành người dùng chính duy nhất có nhiều hồ sơ (Hành vi mặc định cho người dùng do doanh nghiệp quản lý)</translation>
+<translation id="8191318459035150777">Định cấu hình URL trang chủ mặc định trong <ph name="PRODUCT_NAME" /> và ngăn người dùng thay đổi cấu hình đó.
+
+          Trang chủ là trang bạn có thể mở bằng nút Home. Trang mở khi khởi động được kiểm soát theo chính sách RestoreOnStartup.
+
+          Có thể đặt loại trang chủ thành URL bạn chỉ định tại đây hoặc thành Trang tab mới. Nếu bạn chọn Trang tab mới thì chính sách này sẽ không có hiệu lực.
+
+          Nếu bạn bật cài đặt này, người dùng không thể thay đổi URL trang chủ trong <ph name="PRODUCT_NAME" /> nhưng họ vẫn có thể chọn Trang tab mới làm trang chủ của mình.
+
+          Không đặt chính sách này sẽ cho phép người dùng tự chọn trang chủ của mình nếu HomepageIsNewTabPage cũng không được đặt.
+
+          Chính sách này không áp dụng cho các phiên bản Windows không tham gia vào
+          miền Active Directory.</translation>
 <translation id="8197918588508433925">Chính sách này nêu rõ các tiện ích cụ thể để sử dụng API khóa nền tảng doanh nghiệp chrome.enterprise.platformKeysPrivate.challengeUserKey() để chứng thực từ xa. Các tiện ích phải được thêm vào danh sách này để sử dụng API.
 
           Nếu tiện ích không có trong danh sách hoặc danh sách không được đặt thì cuộc gọi đến API sẽ không thực hiện được với mã lỗi.</translation>
@@ -2069,6 +2130,11 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="8465065632133292531">Tham số cho URL tức thì sử dụng POST</translation>
 <translation id="847472800012384958">Không cho phép bất kỳ trang web nào hiển thị cửa sổ bật lên</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
+<translation id="8484458986062090479">Tùy chỉnh danh sách các mẫu URL sẽ luôn được trình duyệt chính hiển thị.
+
+          Nếu bạn không đặt chính sách này, kết xuất đồ họa mặc định sẽ được sử dụng cho tất cả các trang web được chỉ định theo chính sách 'ChromeFrameRendererSettings'.
+
+          Để biết các mẫu ví dụ, hãy xem http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="8493645415242333585">Tắt lưu lịch sử trình duyệt</translation>
 <translation id="8499172469244085141">Cài đặt mặc định (người dùng có thể ghi đè)</translation>
 <translation id="8501011084242226370">Chỉ định danh sách plugin mà người dùng có thể bật hoặc tắt trong <ph name="PRODUCT_NAME" />.
@@ -2144,6 +2210,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
           Nếu bạn bật cài đặt này, tra cứu CNAME sẽ được bỏ qua và tên máy chủ sẽ giống như tên đã nhập.
 
           Nếu bạn tắt hoặc không thiết lập cài đặt này, tên chuẩn của máy chủ sẽ được xác định thông qua tra cứu CNAME.</translation>
+<translation id="8774131509736383471">Nếu chính sách này được đặt thành true, <ph name="PRODUCT_NAME" /> sẽ mở tối đa vô điều kiện cửa sổ đầu tiên được hiển thị trong lần chạy đầu tiên.      Nếu chính sách này được đặt thành false hoặc không được định cấu hình, quyết định có mở tối đa cửa sổ đầu tiên được hiển thị hay không sẽ dựa trên kích thước màn hình.</translation>
 <translation id="8777120694819070607">Cho phép <ph name="PRODUCT_NAME" /> chạy các plugin lỗi thời. Nếu bạn bật cài đặt này, các plugin lỗi thời sẽ được sử dụng như những plugin bình thường. Nếu bạn tắt cài đặt này, các plugin lỗi thời sẽ không được sử dụng và người dùng sẽ không được yêu cầu cấp phép chạy các plugin đó. Nếu bạn không đặt cài đặt này, người dùng sẽ được yêu cầu cấp phép để chạy các plugin lỗi thời.</translation>
 <translation id="87812015706645271">Yêu cầu tên của người dùng cục bộ và chủ sở hữu máy chủ truy cập từ xa khớp nhau</translation>
 <translation id="8782750230688364867">Chỉ định tỷ lệ phần trăm theo đó độ trễ mờ màn hình được xác định khi thiết bị ở chế độ bản trình bày.

@@ -33,7 +33,6 @@
 <translation id="1770394049404108959">لا أستطيع فتح التطبيق.</translation>
 <translation id="177096447311351977">‏عنوان IP للقناة التابع للعميل: <ph name="CLIENT_GAIA_IDENTIFIER" /> ip='<ph name="CLIENT_IP_ADDRESS_AND_PORT" />' host_ip='<ph name="HOST_IP_ADDRESS_AND_PORT" />' channel='<ph name="CHANNEL_TYPE" />' connection='<ph name="CONNECTION_TYPE" />'.</translation>
 <translation id="1779766957982586368">إغلاق النافذة</translation>
-<translation id="1818475040640568770">ليس لديك أجهزة كمبيوتر مسجلة.</translation>
 <translation id="1841799852846221389">جارٍ تعطيل الاتصالات عن بُعد لهذا الكمبيوتر...</translation>
 <translation id="189172778771606813">إغلاق لائحة التنقل</translation>
 <translation id="195619862187186579">تخطيطات لوحة المفاتيح</translation>
@@ -87,8 +86,6 @@
 <translation id="2926340305933667314">أخفق تعطيل الدخول عن بُعد لهذا الكمبيوتر. الرجاء إعادة المحاولة لاحقًا.</translation>
 <translation id="2930135165929238380">‏بعض المكونات المطلوبة مفقودة. يُرجى الانتقال إلى chrome://plugins، والتأكد من تمكين Native Client.</translation>
 <translation id="2939145106548231838">مصادقة للاستضافة</translation>
-<translation id="2998137343848432918">• شاشة مضافة للأرصدة.
-• إصلاح مشكلة الانتقال إلى وضع ملء الشاشة مع إظهار لوحة المفاتيح.</translation>
 <translation id="3020807351229499221">أخفق تحديث رقم التعريف الشخصي. الرجاء إعادة المحاولة لاحقًا.</translation>
 <translation id="3025388528294795783">لمساعدتنا في حل مشكلتك، يُرجى إطلاعنا على ما حدث:</translation>
 <translation id="3027681561976217984">وضع اللمس</translation>
@@ -172,7 +169,6 @@
 <translation id="518094545883702183">ولا تستخدم هذه المعلومات سوى لتشخيص المشكلة التي قدمت عنها التقرير، كما أنها غير متاحة إلا للشخص الذي يحقق في تقريرك، ويتم الاحتفاظ بها لمدة لا تتجاوز 30 يومًا.</translation>
 <translation id="5222676887888702881">الخروج</translation>
 <translation id="5254120496627797685">‏ستؤدي مغادرة هذه الصفحة إلى إنهاء جلسة سطح المكتب البعيد من Chrome.</translation>
-<translation id="5285241842433869526">تعرف على كيفية إعداد جهاز كمبيوتر لإتاحة الدخول عن بُعد.</translation>
 <translation id="5308380583665731573">اتصال</translation>
 <translation id="5363265567587775042">اطلب من المستخدم الذي ترغب في الدخول إلى جهاز الكمبيوتر التابع له أن ينقر على "<ph name="SHARE" />" وأن يمنحك رمز الدخول.</translation>
 <translation id="5379087427956679853">‏يسمح لك سطح المكتب البعيد من Chrome بمشاركة جهاز الكمبيوتر التابع لك بشكل آمن عبر الويب. ويجب أن يشغّل كلا المستخدمَين تطبيق سطح المكتب البعيد من Chrome، والذي يمكن العثور عليه على <ph name="URL" />.</translation>

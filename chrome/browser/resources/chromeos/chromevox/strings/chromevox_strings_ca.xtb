@@ -41,6 +41,7 @@
 <translation id="1452236308086741652"><ph name="VALUE" />, quadre de text de contrasenya</translation>
 <translation id="1467432559032391204">A l'esquerra</translation>
 <translation id="1474557363159888097">No hi ha cap ancoratge anterior.</translation>
+<translation id="1499041187027566160">apuja el volum</translation>
 <translation id="1502086903961450562">Gràfic anterior</translation>
 <translation id="1506187449813838456">Augmenta la presentació</translation>
 <translation id="151784044608172266">Frase següent</translation>
@@ -128,6 +129,7 @@
 <translation id="2639750663247012216">Tecla modificadora de ChromeVox</translation>
 <translation id="2644542693584024604">amb errors ortogràfics</translation>
 <translation id="2667291555398229137">Fa clic a l'element que hi ha a sota d'una tecla d'encaminament.</translation>
+<translation id="267442004702508783">actualitza</translation>
 <translation id="2697408785920771974">autoinl</translation>
 <translation id="2704429362613743330">{COUNT,plural, =1{parèntesi d'obertura}other{# parèntesis d'obertura}}</translation>
 <translation id="2705875883745373140">Sense prémer.</translation>
@@ -392,6 +394,7 @@
 <translation id="5042770794184672516">Augmenta el volum de la veu.</translation>
 <translation id="5050015258024679800">Capçalera del nivell 4 anterior</translation>
 <translation id="5054047268577924192">Element de la llista anterior</translation>
+<translation id="5075936896689244141">Mapa de teclat Next</translation>
 <translation id="5078661581131202757">Selecció de fitxer</translation>
 <translation id="5080758118274074384">s'hi ha fet doble clic.</translation>
 <translation id="5087864757604726239">enrere</translation>
@@ -462,6 +465,7 @@
 <translation id="5683155931978483559">Casella de selecció anterior</translation>
 <translation id="5684277895745049190">Llista</translation>
 <translation id="5700650669149824506">No hi ha cap capçalera anterior del nivell 4.</translation>
+<translation id="5703716265115423771">abaixa el volum</translation>
 <translation id="5709192780268610569">No hi ha cap descripció llarga.</translation>
 <translation id="5712244464475377681">popbtn</translation>
 <translation id="5712338278108304766">Columna següent de la taula</translation>
@@ -526,6 +530,7 @@
 <translation id="6459511626086141404">Mapa de teclat pla</translation>
 <translation id="6468049171101508116">Botó següent</translation>
 <translation id="6491972999578897419">Podeu canviar la veu actual si seleccioneu una opció de la llista següent.</translation>
+<translation id="6493991254603208962">Disminueix la brillantor</translation>
 <translation id="6508059270146105198">Mou la pantalla Braille a la part inferior de la pàgina.</translation>
 <translation id="6536864053412760904">Testimoni de MathML</translation>
 <translation id="6550720799683018100">Per canviar el mapa de teclat actual, seleccioneu una opció de la llista següent.</translation>
@@ -564,6 +569,7 @@
 <translation id="7031651751836475482">element llista</translation>
 <translation id="7037042857287298941">Llista anterior</translation>
 <translation id="7041173719775863268">Final de la selecció</translation>
+<translation id="7086377898680121060">Augmenta la brillantor</translation>
 <translation id="7095834689119144465">Edita només text numèric</translation>
 <translation id="7096001299300236431">Fitxer multimèdia anterior</translation>
 <translation id="7116595520562830928">multln</translation>
@@ -658,6 +664,7 @@
 <translation id="8153880621934657047">No sou dins la taula.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{ratlla baixa}other{# ratlles baixes}}</translation>
 <translation id="8179976553408161302">Retorn</translation>
+<translation id="8186185314313222077">activa la pantalla completa</translation>
 <translation id="81960742267269908">retalla</translation>
 <translation id="8199231515320852133">Presenta les capçaleres de la cel·la actual.</translation>
 <translation id="820417203470636242">Cel·la buida</translation>
@@ -678,12 +685,14 @@
 <translation id="844681116543532394">No hi ha cap casella de selecció anterior.</translation>
 <translation id="8455868257606149352">Màx.: <ph name="X" /></translation>
 <translation id="84575901236241018">té una tecla d'accés, <ph name="KEY" /></translation>
+<translation id="8476508772960940536">visió general de la finestra</translation>
 <translation id="8503360654911991865">Disminueix la granularitat de la navegació.</translation>
 <translation id="8520472399088452386">Botó de selecció de valors</translation>
 <translation id="8538744478902126321">Fes una suposició a la capçalera de la fila de la cel·la actual</translation>
 <translation id="8540054775867439484">Ajustat a la part superior</translation>
 <translation id="8548973727659841685">Caràcter</translation>
 <translation id="8561322612995434619">té una finestra emergent</translation>
+<translation id="8571096049907249734">selecció múltiple</translation>
 <translation id="8584721346566392021">h5</translation>
 <translation id="8587549812518406253">Element de llista següent</translation>
 <translation id="860150890330522909">S'ha marcat la casella de selecció <ph name="NAME" />.</translation>
@@ -691,6 +700,7 @@
 <translation id="8631359288236106450">S'han seleccionat <ph name="COUNT" /> elements.</translation>
 <translation id="8638532244051952400">Anuncia les coordenades de la cel·la actual</translation>
 <translation id="8650576015643545550">No hi ha cap llista anterior.</translation>
+<translation id="8651481478098336970">silencia el volum</translation>
 <translation id="8653031188082306838">urled</translation>
 <translation id="8653646212587894517">Mostra la llista d'enllaços.</translation>
 <translation id="8664519043722036194">segons</translation>

@@ -9,7 +9,6 @@
 <translation id="1095407227123756519">เพิ่มบัญชีเพื่อรับบุ๊กมาร์ก ประวัติการเข้าชม รหัสผ่าน และการตั้งค่าอื่นๆ บนอุปกรณ์ทั้งหมดของคุณ</translation>
 <translation id="1098052486217676340">เสร็จแล้ว</translation>
 <translation id="1121094540300013208">รายงานการใช้งานและข้อขัดข้อง</translation>
-<translation id="1159783623621444829">นี่เป็นบัญชีของเด็ก</translation>
 <translation id="1173289567081511873">คุณได้ลงชื่อเข้าใช้บัญชี Google ต่อไปนี้ เพิ่มหรือนำบัญชีในการตั้งค่า Android ออก</translation>
 <translation id="1178581264944972037">หยุดชั่วคราว</translation>
 <translation id="1181037720776840403">ลบ</translation>
@@ -37,7 +36,6 @@
 <translation id="145097072038377568">ปิดในการตั้งค่า Android</translation>
 <translation id="1506061864768559482">เครื่องมือค้นหา</translation>
 <translation id="1513352483775369820">บุ๊กมาร์กและประวัติเว็บ</translation>
-<translation id="1521530746149324532">คุณเข้าสู่โหมดไม่ระบุตัวตนแล้ว</translation>
 <translation id="1557201757634521564">ตรวจหาการเข้ารหัสโดยอัตโนมัติ</translation>
 <translation id="1568822834048182062">บุ๊กมาร์ก ประวัติการเข้าชม รหัสผ่าน และการตั้งค่าอื่นๆ ของคุณจะได้รับการซิงค์กับบัญชี Google ของคุณ</translation>
 <translation id="1620510694547887537">กล้องถ่ายรูป</translation>
@@ -46,6 +44,7 @@
 <translation id="1643702317193804718">กำลังแปลหน้าเป็นภาษา<ph name="SOURCE_LANGUAGE" />…</translation>
 <translation id="1644574205037202324">ประวัติการเข้าชม</translation>
 <translation id="1647391597548383849">เข้าถึงกล้องถ่ายรูป</translation>
+<translation id="1648687357130613845">พื้นที่เก็บข้อมูล</translation>
 <translation id="1657479659644194568">ตั้งค่า Chrome</translation>
 <translation id="1692118695553449118">การซิงค์เปิดอยู่</translation>
 <translation id="1709438864123551175">โปรแกรมประหยัดอินเทอร์เน็ต</translation>
@@ -67,9 +66,7 @@
 <translation id="1994173015038366702">URL ของเว็บไซต์</translation>
 <translation id="200669432486043882">แทนที่ไฟล์</translation>
 <translation id="2038563949887743358">เปิดการขอเว็บไซต์เดสก์ท็อป</translation>
-<translation id="2060102051813087825">ลงชื่อเข้าใช้เว็บไซต์โดยอัตโนมัติโดยใช้ข้อมูลรับรองที่เก็บไว้ เมื่อคุณลักษณะนี้ปิดอยู่ ระบบจะขอให้คุณยืนยันทุกครั้งก่อนที่จะลงชื่อเข้าใช้เว็บไซต์</translation>
 <translation id="2073235970478114994">โหลดรูปภาพ</translation>
-<translation id="2077711166702792587">ดูแท็บด้วยแอปล่าสุดอื่นๆ บนหน้าจอภาพรวมของโทรศัพท์</translation>
 <translation id="2079545284768500474">เลิกทำ</translation>
 <translation id="2082238445998314030">ผลลัพธ์ <ph name="RESULT_NUMBER" /> จาก <ph name="TOTAL_RESULTS" /> รายการ</translation>
 <translation id="2095887075102408547">เมื่อเปิดคุณลักษณะนี้ Chrome จะใช้เซิร์ฟเวอร์ของ Google ในการบีบอัดหน้าเว็บที่คุณเข้าชมก่อนที่จะดาวน์โหลดหน้าเหล่านั้น Google จะมองไม่เห็นและไม่เพิ่มประสิทธิภาพหน้าที่เข้าถึงโดยใช้การเชื่อมต่อส่วนตัว (HTTPS) หรือแท็บไม่ระบุตัวตน</translation>
@@ -86,7 +83,6 @@
 <translation id="2321958826496381788">ลากแถบเลื่อนจนกว่าคุณจะสามารถอ่านได้อย่างสะดวก ข้อความควรมีขนาดเท่านี้เป็นอย่างน้อยหลังจากแตะ 2 ครั้งบนย่อหน้า</translation>
 <translation id="2343328333327081434">กำลังติดตั้ง…</translation>
 <translation id="2351097562818989364">รีเซ็ตการตั้งค่าการแปลภาษาของคุณแล้ว</translation>
-<translation id="2354750644801399986">"ไม่ติดตาม"</translation>
 <translation id="2359808026110333948">ดำเนินการต่อ</translation>
 <translation id="2381756643783702095">ถามก่อนที่จะส่ง (แนะนำ)</translation>
 <translation id="2387895666653383613">อัตราส่วนข้อความ</translation>
@@ -157,7 +153,7 @@
 <translation id="3358663646935160692">ผู้จัดการบัญชีนี้คือ <ph name="DOMAIN_NAME" />
 
 คุณกำลังลงชื่อเข้าใช้ด้วยบัญชีที่มีผู้อื่นเป็นผู้จัดการ และคุณอนุญาตให้ผู้ดูแลระบบควบคุมโปรไฟล์ Chrome ของคุณได้ ข้อมูล Chrome ของคุณจะเชื่อมโยงกับบัญชีนี้อย่างถาวร การยกเลิกการเชื่อมต่อกับบัญชีนี้จะเป็นการนำออกข้อมูล Chrome ในเครื่อง</translation>
-<translation id="3410346880900521918">หากคุณเห็นข้อความนี้บ่อยๆ โปรดลองทำตาม<ph name="BEGIN_LINK" />คำแนะนำ<ph name="END_LINK" />เหล่านี้</translation>
+<translation id="3384347053049321195">แชร์รูปภาพ</translation>
 <translation id="3414952576877147120">ขนาด:</translation>
 <translation id="3485544713029068372">Smart Lock สำหรับรหัสผ่าน</translation>
 <translation id="3492207499832628349">แท็บใหม่ที่ไม่ระบุตัวตน</translation>
@@ -182,7 +178,6 @@
 <translation id="3988213473815854515">อนุญาตตำแหน่ง</translation>
 <translation id="3992315671621218278">บันทึกลิงก์</translation>
 <translation id="4002066346123236978">ชื่อ</translation>
-<translation id="4023950129927433024">หากคุณลืมรหัสผ่าน ให้หยุดและรีเซ็ตการซิงค์ผ่าน <ph name="BEGIN_LINK" />Google แดชบอร์ด<ph name="END_LINK" /></translation>
 <translation id="4042870126885713738">แสดงคำแนะนำเมื่อไม่สามารถระบุที่อยู่เว็บหรือไม่สามารถเชื่อมต่อได้</translation>
 <translation id="4056223980640387499">ซีเปีย</translation>
 <translation id="4059119910594077751">แตะปุ่มกลับเพื่อออกจากโหมดเต็มหน้าจอ</translation>
@@ -203,7 +198,6 @@
 <translation id="4278390842282768270">อนุญาตแล้ว</translation>
 <translation id="4297410240212242334">แยกแท็บและแอป</translation>
 <translation id="4307992518367153382">พื้นฐาน</translation>
-<translation id="4333969446981951071">การใช้แอปพลิเคชันนี้แสดงว่า คุณยอมรับ<ph name="BEGIN_LINK1" />ข้อกำหนดในการให้บริการ<ph name="END_LINK1" />และ<ph name="BEGIN_LINK2" />ประกาศเกี่ยวกับนโยบายส่วนบุคคล<ph name="END_LINK2" />ของ Chrome</translation>
 <translation id="4334294535648607276">ดาวน์โหลดเสร็จสมบูรณ์</translation>
 <translation id="4350413759959745971">ย้ายหน้าที่บันทึกไว้</translation>
 <translation id="4351244548802238354">ปิดหน้าต่างโต้ตอบ</translation>
@@ -218,6 +212,7 @@
 <translation id="4532845899244822526">เลือกโฟลเดอร์</translation>
 <translation id="4543087392704641517">ชื่อบุ๊กมาร์ก</translation>
 <translation id="4543661749405994812">คัดลอกที่อยู่อีเมล</translation>
+<translation id="4583974066823898813">{NUM_URLS,plural, =1{มีลิงก์ Physical Web 1 ลิงก์อยู่ใกล้เคียง}other{มีลิงก์ Physical Web # ลิงก์อยู่ใกล้เคียง}}</translation>
 <translation id="4645575059429386691">มีการจัดการโดยผู้ปกครอง</translation>
 <translation id="4663756553811254707">ลบบุ๊กมาร์ก <ph name="NUMBER_OF_BOOKMARKS" /> รายการแล้ว</translation>
 <translation id="4665282149850138822">เพิ่ม <ph name="NAME" /> ลงในหน้าแรกแล้ว</translation>
@@ -226,6 +221,7 @@
 <translation id="4690286298542128877">แท็บจะย้ายไปยังตัวเปิดปิดแท็บใน Chrome</translation>
 <translation id="4698413471314543145">ฟังก์ชันที่จำเป็นต่อการเรียกใช้ Chrome ขาดหายไป อาจเป็นเพราะการติดตั้ง Chrome ของคุณไม่สมบูรณ์หรือไม่สามารถทำงานร่วมกับ Android เวอร์ชันนี้ได้</translation>
 <translation id="4720023427747327413">เปิดใน <ph name="PRODUCT_NAME" /></translation>
+<translation id="4726963856048758366">ล้างพื้นที่เก็บข้อมูลแล้ว</translation>
 <translation id="473775607612524610">การอัปเดต</translation>
 <translation id="4761374747761474835">เลือกบัญชีเพื่อรับบุ๊กมาร์ก ประวัติการเข้าชม รหัสผ่าน และการตั้งค่าอื่นๆ บนอุปกรณ์ทั้งหมดของคุณ</translation>
 <translation id="4773299976671772492">หยุดแล้ว</translation>
@@ -238,6 +234,7 @@
 <translation id="4871370605780490696">เพิ่มบุ๊กมาร์ก</translation>
 <translation id="4881695831933465202">เปิด</translation>
 <translation id="4885273946141277891">อินสแตนซ์ของ Chrome เกินจำนวนที่สนับสนุน</translation>
+<translation id="4927198283430892231">ตอนนี้หน้าที่บันทึกไว้ใช้พื้นที่เก็บข้อมูลถึง <ph name="TOTAL_OFFLINE_STORAGE_SIZE" /> แล้ว</translation>
 <translation id="494334276486034338">ซิงค์ครั้งล่าสุด: <ph name="HOURS" /> ชั่วโมงที่ผ่านมา</translation>
 <translation id="4943872375798546930">ไม่มีผลการค้นหา</translation>
 <translation id="4970484396410298643">เข้าถึงแท็บที่คุณได้เปิดไว้ในคอมพิวเตอร์ได้ที่นี่
@@ -248,9 +245,11 @@
 <translation id="5000922062037820727">ถูกบล็อก (แนะนำ)</translation>
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5017989644593831205">หากคุณไม่ใช่ <ph name="NOT_YOU_USER_NAME" /></translation>
+<translation id="5026147292873308216">ไม่พบหน้าเว็บอยู่ใกล้เคียง</translation>
 <translation id="5039804452771397117">อนุญาต</translation>
 <translation id="5040262127954254034">ความเป็นส่วนตัว</translation>
 <translation id="5063480226653192405">การใช้</translation>
+<translation id="5074309530946372881">กำลังค้นหาหน้าเว็บที่อยู่ใกล้เคียง</translation>
 <translation id="509605886816275399">บันทึกหน้านี้เป็นแบบออฟไลน์ไหม</translation>
 <translation id="5100237604440890931">ยุบ - คลิกเพื่อขยาย</translation>
 <translation id="5127805178023152808">การซิงค์ปิดอยู่</translation>
@@ -285,11 +284,13 @@
 <translation id="5423934151118863508">หน้าที่มีการเข้าชมมากที่สุดของคุณจะปรากฏที่นี่</translation>
 <translation id="5424715742813396254">แก้ไขชื่อ/รหัสผ่านหรือข้อยกเว้นที่บันทึกไว้</translation>
 <translation id="5435662027590074193"><ph name="SEARCH_ENGINE_NAME" /> (<ph name="SEARCH_ENGINE_DOMAIN" />)</translation>
+<translation id="5442257541162692417">แก้ไขหน้าที่บันทึกไว้</translation>
 <translation id="544291274896356069">ออกจากโหมดไม่ระบุตัวตนถ้ามีการเปิดลิงก์นี้ในแอปพลิเคชันภายนอก ดำเนินการต่อไหม</translation>
 <translation id="5487729733663684359">ไม่มีการสนับสนุนการอัปเดต Chrome บน Android เวอร์ชันนี้อีกต่อไป</translation>
 <translation id="5511351932351731210">ส่งเสมอ</translation>
 <translation id="5512137114520586844">บัญชีนี้ได้รับการจัดการโดย <ph name="PARENT_NAME" /></translation>
 <translation id="5530766185686772672">ปิดแท็บที่ไม่ระบุตัวตน</translation>
+<translation id="554327794654007401">Physical Web</translation>
 <translation id="5556459405103347317">โหลดใหม่</translation>
 <translation id="5565871407246142825">บัตรเครดิต</translation>
 <translation id="5578795271662203820">ค้นหาภาพนี้ใน <ph name="SEARCH_ENGINE" /></translation>
@@ -298,7 +299,6 @@
 <translation id="5626134646977739690">ชื่อ:</translation>
 <translation id="5626370437647899551">เพิ่มบัญชี Google</translation>
 <translation id="563535393368633106">ถามก่อนที่จะเข้าถึง (แนะนำ)</translation>
-<translation id="5643573370311148178"><ph name="BEGIN_LINK" />ขอความช่วยเหลือ<ph name="END_LINK" /></translation>
 <translation id="5646376287012673985">ตำแหน่ง</translation>
 <translation id="5659593005791499971">อีเมล</translation>
 <translation id="5668404140385795438">แทนที่คำขอของเว็บไซต์เพื่อป้องกันการซูมเข้า</translation>
@@ -337,13 +337,9 @@
 <translation id="6012342843556706400">Chrome ต้องการเข้าถึงตำแหน่งเพื่อแชร์กับเว็บไซต์นี้</translation>
 <translation id="6027491994609789413">กำลังเล่นวิดีโอ</translation>
 <translation id="6031101910111098835">ยุบ - คลิกเพื่อขยาย</translation>
-<translation id="6036158371062192100">การเปิดใช้ "ไม่ติดตาม" หมายความว่าจะมีการรวมคำขอไว้กับการเข้าชมของคุณ ผลกระทบทั้งหมดขึ้นอยู่กับว่าเว็บไซต์ตอบสนองต่อคำขอไหม และวิธีตีความคำขอ
-
-ตัวอย่างเช่น บางเว็บไซต์อาจตอบสนองต่อคำขอนี้โดยแสดงให้คุณเห็นโฆษณาที่ไม่ได้อิงอยู่กับเว็บไซต์อื่นๆ ที่คุณเข้าชม เว็บไซต์จำนวนมากจะยังคงรวบรวมและใช้ข้อมูลการท่องเว็บของคุณเพื่อปรับปรุงความปลอดภัย เพื่อแสดงเนื้อหา โฆษณา และคำแนะนำเกี่ยวกับเว็บไซต์ของตน และเพื่อสร้างสถิติในการรายงาน เป็นต้น</translation>
 <translation id="6040143037577758943">ปิด</translation>
 <translation id="6042308850641462728">เพิ่มเติม</translation>
 <translation id="605721222689873409">ปป</translation>
-<translation id="6066720739967032277">ดูแท็บด้วยแอปล่าสุดอื่นๆ บนหน้าจอภาพรวมของโทรศัพท์ คุณสามารถควบคุมคุณลักษณะนี้ได้ใน<ph name="BEGIN_LINK" />การตั้งค่า<ph name="END_LINK" /></translation>
 <translation id="6075798973483050474">แก้ไขหน้าแรก</translation>
 <translation id="6108923351542677676">กำลังดำเนินการตั้งค่า…</translation>
 <translation id="6112702117600201073">กำลังรีเฟรชหน้า</translation>
@@ -375,7 +371,6 @@
 <translation id="654446541061731451">เลือกแท็บที่จะบีม</translation>
 <translation id="6550675742724504774">ตัวเลือก</translation>
 <translation id="656628257199996201">แปลภาษา<ph name="SOURCE_LANGUAGE" />เสมอ</translation>
-<translation id="6570560778840017462">คุณจะไม่ออกจากระบบ<ph name="BEGIN_LINK" />บัญชี Google<ph name="END_LINK" /> โดยอัตโนมัติ</translation>
 <translation id="6571070086367343653">แก้ไขบัตรเครดิต</translation>
 <translation id="6575643671698722332">การรีเซ็ตล้มเหลว ตรวจสอบว่าอุปกรณ์ของคุณออนไลน์และลองอีกครั้ง</translation>
 <translation id="6600954340915313787">คัดลอกไปยัง Chrome แล้ว</translation>
@@ -427,6 +422,7 @@
 <translation id="7208788139759694678">ปิดใช้โปรแกรมประหยัดอินเทอร์เน็ต</translation>
 <translation id="7243308994586599757">มีตัวเลือกอยู่ทางด้านล่างของหน้าจอ</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> ใช้ตำแหน่งเพื่อแสดงผลการค้นหาในท้องถิ่น</translation>
+<translation id="7299441085833132046"><ph name="BEGIN_LINK" />ความช่วยเหลือ<ph name="END_LINK" /></translation>
 <translation id="7299721129597238157">นำออกบุ๊กมาร์ก</translation>
 <translation id="7324738665594301612">เรากำลังทดสอบการพร็อกซีของหน้า HTTPS ผ่านเซิร์ฟเวอร์ของ Google ซึ่งเป็นส่วนหนึ่งของการทดลอง</translation>
 <translation id="7346909386216857016">รับทราบ</translation>
@@ -456,6 +452,9 @@
 <translation id="7648422057306047504">เข้ารหัสรหัสผ่านด้วยข้อมูลรับรองของ Google</translation>
 <translation id="7658239707568436148">ยกเลิก</translation>
 <translation id="7665369617277396874">เพิ่มบัญชี</translation>
+<translation id="7735023902678907596">หน้าที่คุณดูในแท็บแบบไม่ระบุตัวตนจะไม่เก็บอยู่ในประวัติของเบราว์เซอร์ การจัดเก็บคุกกี้ หรือประวัติการค้นหาหลังจากที่คุณปิดแท็บที่ไม่ระบุตัวตนทั้งหมดแล้ว แต่จะมีการเก็บไฟล์ที่ดาวน์โหลดหรือหน้าที่บันทึกไว้
+
+อย่างไรก็ตาม คนอื่นจะยังสามารถมองเห็นคุณ การเข้าสู่โหมดไม่ระบุตัวตนไม่ได้เป็นการซ่อนการท่องเว็บจากนายจ้าง ผู้ให้บริการอินเทอร์เน็ต หรือเว็บไซต์ที่คุณเข้าชม</translation>
 <translation id="7761240775244195612">ลบสำเนาออฟไลน์ <ph name="PAGES_NUMBER" /> รายการที่ไม่ได้ใช้ในเดือนที่แล้วไหม การลบจะทำให้มีพื้นที่ว่างเพิ่มขึ้น <ph name="TOTAL_PAGE_SIZE" /></translation>
 <translation id="7764225426217299476">เพิ่มที่อยู่</translation>
 <translation id="7765158879357617694">ย้าย</translation>
@@ -509,13 +508,13 @@
 <translation id="8428213095426709021">การตั้งค่า</translation>
 <translation id="8429160401486700187">ลบหน้าที่บันทึกไว้</translation>
 <translation id="8481940801237642152">การเชื่อมต่อกับไซต์นี้เป็นแบบส่วนตัว แต่คนอื่นในเครือข่ายอาจเปลี่ยนลักษณะของหน้าได้</translation>
+<translation id="8493948351860045254">เพิ่มพื้นที่ว่าง</translation>
 <translation id="8497726226069778601">ที่นี่ยังไม่มีอะไรให้ดู… เลย</translation>
 <translation id="8514577642972634246">เข้าสู่โหมดไม่ระบุตัวตน</translation>
 <translation id="8515416241041728525">เพิ่มบัญชีสำหรับ <ph name="ADD_ACCOUNT_USER_NAME" /></translation>
 <translation id="8518901949365209398">ไซต์นี้ใช้การกำหนดค่าความปลอดภัยที่หละหลวม (ลายเซ็นแบบ SHA-1) ดังนั้น การเชื่อมต่อของคุณอาจไม่เป็นส่วนตัว</translation>
 <translation id="8528538445849828817">ภาษาหน้าเว็บ: <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="854522910157234410">เปิดหน้านี้</translation>
-<translation id="8547287415299944404">ไม่สามารถล้างประวัติการเข้าชมด้วยบัญชีของเด็ก</translation>
 <translation id="8562452229998620586">รหัสผ่านที่บันทึกไว้จะแสดงที่นี่</translation>
 <translation id="856481929701340285">ขอเว็บไซต์เดสก์ท็อป</translation>
 <translation id="857943718398505171">อนุญาตแล้ว (แนะนำ)</translation>
@@ -527,7 +526,6 @@
 
 ในการรับใบอนุญาตใหม่ ให้เชื่อมต่ออินเทอร์เน็ตและเล่นเนื้อหาที่ดาวน์โหลดไว้ของคุณ</translation>
 <translation id="8660471606262461360">จาก Google Payments</translation>
-<translation id="8670737526251003256">กำลังค้นหาอุปกรณ์...</translation>
 <translation id="8676374126336081632">ล้างข้อมูลที่ป้อน</translation>
 <translation id="869891660844655955">วันหมดอายุ</translation>
 <translation id="8719023831149562936">ไม่สามารถบีมแท็บปัจจุบัน</translation>
@@ -546,7 +544,6 @@
 <translation id="8909135823018751308">แชร์…</translation>
 <translation id="8912362522468806198">บัญชี Google</translation>
 <translation id="8920114477895755567">กำลังรอรายละเอียดของผู้ปกครอง</translation>
-<translation id="8928220460877261598">คุณได้ลงชื่อเข้าใช้ Chrome แล้ว</translation>
 <translation id="8934455786738644694">ลากจากด้านบนแล้วแตะปุ่มกลับเพื่อออกจากโหมดเต็มหน้าจอ</translation>
 <translation id="8941248009481596111">การเชื่อมต่อกับไซต์นี้เป็นแบบส่วนตัว</translation>
 <translation id="8941729603749328384">www.example.com</translation>
@@ -567,7 +564,6 @@
 <translation id="9156605176886108508">ไม่มีโฟลเดอร์บุ๊กมาร์ก</translation>
 <translation id="9192643434065497760">เปิดบลูทูธใน<ph name="BEGIN_LINK" />การตั้งค่าอุปกรณ์<ph name="END_LINK" />เพื่อให้จับคู่กันได้</translation>
 <translation id="9206873250291191720">A</translation>
-<translation id="93001355573231213">การดาวน์โหลด <ph name="FILE_NAME" /> ล้มเหลว</translation>
 <translation id="932327136139879170">หน้าแรก</translation>
 <translation id="938850635132480979">ข้อผิดพลาด: <ph name="ERROR_CODE" /></translation>
 <translation id="939736085109172342">โฟลเดอร์ใหม่</translation>

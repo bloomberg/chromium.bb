@@ -9,6 +9,7 @@
 <translation id="1113869188872983271">&amp;Anuliuoti pertvarkymą</translation>
 <translation id="111844081046043029">Ar tikrai norite išeiti iš šio puslapio?</translation>
 <translation id="112840717907525620">Gera politikos talpykla</translation>
+<translation id="113188000913989374"><ph name="SITE" /> sakoma:</translation>
 <translation id="1132774398110320017">„Chrome“ automatinio pildymo nustatymai...</translation>
 <translation id="1146673768181266552">Strigties ID <ph name="CRASH_ID" /> (<ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="1150979032973867961">Šiam serveriui nepavyko patvirtinti, kad tai yra <ph name="DOMAIN" />; jo saugos sertifikatas nėra patikimas kompiuterio operacinei sistemai. Taip gali nutikti dėl netinkamos konfigūracijos ar dėl ryšį pertraukusio užgrobėjo.</translation>
@@ -28,6 +29,10 @@
 <translation id="1519264250979466059">Sukūrimo data</translation>
 <translation id="1549470594296187301">Norint naudoti šią funkciją, reikia įgalinti „JavaScript“.</translation>
 <translation id="1559528461873125649">Nėra tokio failo ar katalogo</translation>
+<translation id="1559572115229829303">&lt;p&gt;Nepavyksta užmegzti privataus ryšio su <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />, nes įrenginio data ir laikas (<ph name="DATE_AND_TIME" />) yra netinkami.&lt;/p&gt;
+
+      &lt;p&gt;Koreguokite datą ir laiką programos &lt;strong&gt;Settings&lt;/strong&gt; skiltyje &lt;strong&gt;General&lt;/strong&gt;.&lt;/p&gt;</translation>
+<translation id="1629803312968146339">Ar norite, kad „Chrome“ išsaugotų šią kortelę?</translation>
 <translation id="1640180200866533862">Naudotojo politika</translation>
 <translation id="1644184664548287040">Tinklo konfigūracija netinkama ir jos neįmanoma importuoti.</translation>
 <translation id="1655462015569774233">{1,plural, =1{Šiam serveriui nepavyko patvirtinti, kad tai yra <ph name="DOMAIN" />; jo saugos sertifikato galiojimas baigėsi vakar. Taip gali nutikti dėl netinkamos konfigūracijos ar dėl ryšį pertraukusio užpuoliko. Šiuo metu kompiuterio laikrodis nustatytas į <ph name="CURRENT_DATE" />. Ar tai tinkama? Jei netinkama, turėtumėte koreguoti sistemos laikrodį ir atnaujinti šį puslapį.}one{Šiam serveriui nepavyko patvirtinti, kad tai yra <ph name="DOMAIN" />; jo saugos sertifikato galiojimas baigėsi prieš # dieną. Taip gali nutikti dėl netinkamos konfigūracijos ar dėl ryšį pertraukusio užpuoliko. Šiuo metu kompiuterio laikrodis nustatytas į <ph name="CURRENT_DATE" />. Ar tai tinkama? Jei netinkama, turėtumėte koreguoti sistemos laikrodį ir atnaujinti šį puslapį.}few{Šiam serveriui nepavyko patvirtinti, kad tai yra <ph name="DOMAIN" />; jo saugos sertifikato galiojimas baigėsi prieš # dienas. Taip gali nutikti dėl netinkamos konfigūracijos ar dėl ryšį pertraukusio užpuoliko. Šiuo metu kompiuterio laikrodis nustatytas į <ph name="CURRENT_DATE" />. Ar tai tinkama? Jei netinkama, turėtumėte koreguoti sistemos laikrodį ir atnaujinti šį puslapį.}many{Šiam serveriui nepavyko patvirtinti, kad tai yra <ph name="DOMAIN" />; jo saugos sertifikato galiojimas baigėsi prieš # dienos. Taip gali nutikti dėl netinkamos konfigūracijos ar dėl ryšį pertraukusio užpuoliko. Šiuo metu kompiuterio laikrodis nustatytas į <ph name="CURRENT_DATE" />. Ar tai tinkama? Jei netinkama, turėtumėte koreguoti sistemos laikrodį ir atnaujinti šį puslapį.}other{Šiam serveriui nepavyko patvirtinti, kad tai yra <ph name="DOMAIN" />; jo saugos sertifikato galiojimas baigėsi prieš # dienų. Taip gali nutikti dėl netinkamos konfigūracijos ar dėl ryšį pertraukusio užpuoliko. Šiuo metu kompiuterio laikrodis nustatytas į <ph name="CURRENT_DATE" />. Ar tai tinkama? Jei netinkama, turėtumėte koreguoti sistemos laikrodį ir atnaujinti šį puslapį.}}</translation>
@@ -94,6 +99,7 @@
 <translation id="2922350208395188000">Neįmanoma patikrinti serverio sertifikato.</translation>
 <translation id="2941952326391522266">Šiam serveriui nepavyko patvirtinti, kad tai yra <ph name="DOMAIN" />; jo saugos sertifikatas yra iš <ph name="DOMAIN2" />. Taip gali nutikti dėl netinkamos konfigūracijos ar dėl ryšį pertraukusio užgrobėjo.</translation>
 <translation id="2958431318199492670">Tinklo konfigūracija neatitinka ONC standarto. Kai kurių konfigūracijos dalių neįmanoma importuoti.</translation>
+<translation id="2969319727213777354">Kad užmegztumėte saugų ryšį, turėsite tinkamai nustatyti laikrodį. To reikia, nes svetainių tapatybei įrodyti naudojami sertifikatai galioja tik tam tikru laikotarpiu. Įrenginio laikrodis nustatytas netinkamai, todėl „Google Chrome“ negali patvirtinti šių sertifikatų.</translation>
 <translation id="2972581237482394796">&amp;Atlikti iš naujo</translation>
 <translation id="3010559122411665027">Sąrašo įrašas „<ph name="ENTRY_INDEX" />“: <ph name="ERROR" /></translation>
 <translation id="3024663005179499861">Netinkamas politikos tipas</translation>
@@ -146,11 +152,14 @@
 <translation id="4117700440116928470">Politikos aprėptis nepalaikoma.</translation>
 <translation id="4120075327926916474">Ar norite, kad „Chrome“ išsaugotų šią kredito kortelės informaciją ir naudotų ją žiniatinklio formoms užpildyti?</translation>
 <translation id="4148925816941278100">American Express</translation>
+<translation id="4169947484918424451">Ar norite, kad „Chromium“ išsaugotų šią kortelę?</translation>
 <translation id="4171400957073367226">Netinkamas patvirtinimo parašas</translation>
+<translation id="4176463684765177261">Neleista</translation>
 <translation id="4196861286325780578">&amp;Perkelti dar kartą</translation>
 <translation id="4220128509585149162">Gedimai</translation>
 <translation id="4250680216510889253">Ne</translation>
 <translation id="4258748452823770588">Netinkamas parašas</translation>
+<translation id="4268298190799576220">Šiuo metu „Chromium“ negali patvirtinti jūsų kortelės. Bandykite dar kartą vėliau.</translation>
 <translation id="4269787794583293679">(Nėra naudotojo vardo)</translation>
 <translation id="4300246636397505754">Pasiūlymai tėvams</translation>
 <translation id="4325863107915753736">Nepavyko rasti straipsnio</translation>
@@ -204,6 +213,7 @@
 <translation id="5523118979700054094">Politikos pavadinimas</translation>
 <translation id="552553974213252141">Ar tekstas tinkamai ištrauktas?</translation>
 <translation id="5540224163453853">Nepavyko rasti straipsnio, dėl kurio pateikta užklausa.</translation>
+<translation id="5544037170328430102"><ph name="SITE" /> įterptame puslapyje sakoma:</translation>
 <translation id="5556459405103347317">Įkelti iš naujo</translation>
 <translation id="5565735124758917034">Aktyvus</translation>
 <translation id="560412284261940334">Tvarkymas nepalaikomas</translation>
@@ -213,15 +223,18 @@
 <translation id="5813119285467412249">&amp;Pridėti dar kartą</translation>
 <translation id="5872918882028971132">Pasiūlymai tėvams</translation>
 <translation id="59107663811261420">„Google Payments“ nepalaiko šio tipo kortelės naudojantis šio prekybininko paslaugomis. Pasirinkite kitą kortelę.</translation>
+<translation id="59174027418879706">Įgalinta</translation>
 <translation id="5975083100439434680">Tolinti</translation>
 <translation id="5989320800837274978">Nenurodyti nei fiksuoti įgaliotieji serveriai, nei .pac scenarijaus URL.</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6040143037577758943">Uždaryti</translation>
+<translation id="604124094241169006">Automatinis</translation>
 <translation id="6060685159320643512">Atsargiai, šie bandymai gali būti pavojingi</translation>
 <translation id="6099520380851856040">Įvyko <ph name="CRASH_TIME" /></translation>
 <translation id="6151417162996330722">Serverio sertifikato galiojimo laikotarpis per ilgas.</translation>
 <translation id="6154808779448689242">Sugrąžintas politikos prieigos raktas neatitinka dabartinio prieigos rakto</translation>
 <translation id="6165508094623778733">Sužinokite daugiau</translation>
+<translation id="6218753634732582820">Pašalinti adresą iš „Chromium“?</translation>
 <translation id="6259156558325130047">&amp;Pertvarkyti dar kartą</translation>
 <translation id="6263376278284652872"><ph name="DOMAIN" /> žymės</translation>
 <translation id="6282194474023008486">Pašto kodas</translation>
@@ -239,6 +252,7 @@
 <translation id="6628463337424475685">„<ph name="ENGINE" />“ paieška</translation>
 <translation id="6644283850729428850">Ši politika nepatvirtinta.</translation>
 <translation id="6646897916597483132">Įveskite 4 skaitmenų kortelės saugos kodą (CVC), nurodytą kortelės priekyje</translation>
+<translation id="6671697161687535275">Pašalinti formos pasiūlymą iš „Chromium“?</translation>
 <translation id="674375294223700098">Nežinoma serverio sertifikato klaida.</translation>
 <translation id="6753269504797312559">Politikos vertė</translation>
 <translation id="6831043979455480757">Vertėjas</translation>
@@ -272,6 +286,7 @@
 <translation id="7378627244592794276">Ne</translation>
 <translation id="7400418766976504921">URL adresas</translation>
 <translation id="7419106976560586862">Profilio kelias</translation>
+<translation id="7424977062513257142">Šiame tinklalapyje įterptame puslapyje sakoma:</translation>
 <translation id="7441627299479586546">Netinkamas politikos objektas</translation>
 <translation id="7485870689360869515">Nerasta jokių duomenų.</translation>
 <translation id="7537536606612762813">Privaloma</translation>
@@ -282,6 +297,7 @@
 <translation id="7592362899630581445">Serverio sertifikatas pažeidžia pavadinimų apribojimus.</translation>
 <translation id="7600965453749440009">Niekada neversti <ph name="LANGUAGE" /></translation>
 <translation id="7610193165460212391">Vertė nepatenka į diapazoną <ph name="VALUE" />.</translation>
+<translation id="7637571805876720304">Pašalinti kredito kortelės informaciją iš „Chromium“?</translation>
 <translation id="7674629440242451245">Domina naujos „Chrome“ funkcijos? Išbandykite mūsų kuriamą kanalą adresu chrome.com/dev.</translation>
 <translation id="7752995774971033316">Netvarkoma</translation>
 <translation id="7761701407923456692">Serverio sertifikatas neatitinka URL.</translation>
@@ -325,6 +341,7 @@
 <translation id="8725066075913043281">Bandyti dar kartą</translation>
 <translation id="8738058698779197622">Jei norite užmegzti saugų ryšį, turėsite tinkamai nustatyti laikrodį. To reikalaujama todėl, kad svetainių tapatybei įrodyti naudojami sertifikatai galioja tik tam tikrą laikotarpį. Kadangi įrenginio laikrodis nustatytas netinkamai, „Chromium“ negali tinkamai patvirtinti sertifikatų.</translation>
 <translation id="8790007591277257123">&amp;Ištrinti dar kartą</translation>
+<translation id="8798099450830957504">Numatytasis</translation>
 <translation id="8804164990146287819">Privatumo politika</translation>
 <translation id="8820817407110198400">Žymės</translation>
 <translation id="8824019021993735287">Šiuo metu „Chrome“ negali patvirtinti jūsų kortelės. Bandykite dar kartą vėliau.</translation>
@@ -332,6 +349,7 @@
 <translation id="883848425547221593">Kitos žymės</translation>
 <translation id="884923133447025588">Nerasta atšaukimo mechanizmo.</translation>
 <translation id="8866481888320382733">Analizuojant politikos nustatymus įvyko klaida</translation>
+<translation id="8866959479196209191">Šiame puslapyje sakoma:</translation>
 <translation id="8876793034577346603">Analizuojant tinklo konfigūraciją įvyko klaida.</translation>
 <translation id="8891727572606052622">Netinkamas įgaliotojo serverio režimas.</translation>
 <translation id="889901481107108152">Deja, šis eksperimentas negalimas platformoje.</translation>

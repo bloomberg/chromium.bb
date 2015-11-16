@@ -64,6 +64,9 @@
 
           Šī politika tiek ievērota tikai tad, ja ir iespējota politika DefaultSearchProviderEnabled.</translation>
 <translation id="1265053460044691532">Ierobežojiet laiku, kad autentificēts lietotājs, izmantojot SAML, var pieteikties bezsaistē.</translation>
+<translation id="1291880496936992484">Brīdinājums: RC4 tiks pilnībā noņemts no <ph name="PRODUCT_NAME" /> pēc 52. versijas (aptuveni 2016. gada septembrī), un šī politika vairs nebūs spēkā.
+
+      Ja politika nav iestatīta vai ir iestatīta vērtība Nepatiesa, RC4 šifra komplekti standartā TLS netiks iespējoti. Politikai var iestatīt vērtību Patiesa, lai saglabātu saderību ar novecojušu serveri. Tas ir pagaidu risinājums, un serveris ir jākonfigurē atkārtoti.</translation>
 <translation id="1297182715641689552">Izmantot .pac starpniekservera skriptu</translation>
 <translation id="1300635491585192248">Prognozēt tīkla darbības jebkurā tīklā, kas nav
           mobilais tīkls</translation>
@@ -525,6 +528,9 @@
       Ja iespējojat vai atspējojat šo iestatījumu, lietotāji nevar mainīt vai ignorēt <ph name="PRODUCT_NAME" /> iestatījumu “Iespējot aizsardzību pret pikšķerēšanu un ļaunprātīgu programmatūru”.
 
       Ja šī politika nav iestatīta, funkcija tiks iespējota, bet lietotāji varēs to mainīt.</translation>
+<translation id="2801230735743888564">Ļaujiet lietotājiem spēlēt dinozauru spēli, kad ierīce ir bezsaistē.
+
+      Ja šai politikai ir iestatīta vērtība Nepatiesa, lietotāji nevarēs spēlēt dinozauru spēli, kad ierīce būs bezsaistē. Ja iestatījums ir Patiesa, lietotāji varēs spēlēt dinozauru spēli. Ja politika nav iestatīta, lietotāji nevarēs spēlēt dinozauru spēli reģistrētās Chrome OS ierīcēs, taču varēs spēlēt visos citos gadījumos.</translation>
 <translation id="2805707493867224476">Atļaut visām vietnēm rādīt uznirstošos logus</translation>
 <translation id="2808013382476173118">Iespējo STUN serveru lietošanu, kad attālie klienti cenšas izveidot savienojumu ar ierīci.
 
@@ -797,6 +803,13 @@
       Ja šis iestatījums ir atspējots, <ph name="PRODUCT_NAME" /> nekad nepārbauda, vai tas ir noklusējuma pārlūks, un lietotājam tiek atspējota iespēja iestatīt šo opciju.
 
       Ja šis iestatījums nav iestatīts, <ph name="PRODUCT_NAME" /> ļauj lietotājam noteikt, vai tas ir noklusējuma pārlūks un, ja tas nav, vai jāparāda lietotāja paziņojumi.</translation>
+<translation id="3800626789999016379">Tiek konfigurēts direktorijs, kas pārlūkā <ph name="PRODUCT_NAME" /> tiek lietots failu lejupielādei.
+
+      Ja šī politika ir iestatīta, pārlūkā <ph name="PRODUCT_NAME" /> tiek lietots norādītais direktorijs neatkarīgi no tā, vai lietotājs ir norādījis direktoriju vai iespējojis karodziņu, lai ikreiz tiktu pieprasīts norādīt lejupielādes vietu.
+
+      Izmantojamo mainīgo sarakstu skatiet šeit: https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.
+
+      Ja šī politika nav iestatīta, tiek lietots noklusējuma lejupielādes direktorijs un lietotājs to var mainīt.</translation>
 <translation id="3805659594028420438">TLS domēnam piesaistīto sertifikātu paplašinājumu iespējošana (vairs netiek izmantota)</translation>
 <translation id="3806576699227917885">Atļaut atskaņot audio.
 
@@ -935,6 +948,13 @@
           Šī politika ir spēkā tikai tad, ja ir iespējota politika “DefaultSearchProviderEnabled”.</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 vai jaunāka versija</translation>
 <translation id="4325690621216251241">Atteikšanās pogas pievienošana sistēmas teknei</translation>
+<translation id="4349746760316962317">Tiek konfigurēts direktorijs, kas pārlūkā <ph name="PRODUCT_NAME" /> tiek lietots kešatmiņā ievietoto failu glabāšanai diskā.
+
+      Ja šī politika ir iestatīta, pārlūkā <ph name="PRODUCT_NAME" /> tiek lietots norādītais direktorijs neatkarīgi no tā, vai lietotājs ir norādījis karodziņu “--disk-cache-dir”.
+
+      Izmantojamo mainīgo sarakstu skatiet šeit: https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.
+
+      Ja šī politika nav iestatīta, tiek lietots noklusējuma kešatmiņas direktorijs un lietotājs varēs to ignorēt ar komandrindas karodziņu “--disk-cache-dir”.</translation>
 <translation id="436581050240847513">Ziņot par ierīču tīkla saskarnēm</translation>
 <translation id="4372704773119750918">Neatļaut korporatīvajam lietotājam piedalīties vairākprofilu sesijā (ne kā primārajam, ne sekundārajam lietotājam)</translation>
 <translation id="4377599627073874279">Atļauj visām vietnēm rādīt visus attēlus</translation>
@@ -1018,6 +1038,11 @@
 <translation id="4665897631924472251">Paplašinājumu pārvaldības iestatījumi</translation>
 <translation id="4668325077104657568">Noklusējuma attēlu iestatījums</translation>
 <translation id="467236746355332046">Atbalstītās funkcijas</translation>
+<translation id="4674167212832291997">Tiek pielāgots URL šablonu saraksts, kas vienmēr jārenderē ar <ph name="PRODUCT_FRAME_NAME" />.
+
+          Ja šī politika nav iestatīta, visām vietnēm tiks izmantots politikā ChromeFrameRendererSettings norādītais noklusējuma renderētājs.
+
+          Šablonu piemērus skatiet šeit: https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="467449052039111439">Atvērt vietrāžu URL sarakstu</translation>
 <translation id="4680961954980851756">Iespējo automātisko aizpildi</translation>
 <translation id="4723829699367336876">Ugunsmūra apvada iespējošana no attālās piekļuves klienta</translation>
@@ -1120,6 +1145,14 @@
           Ja šīs politikas iestatījums ir noņemts, tiek veikta noklusējuma darbība — darbības apturēšana.
 
           Ja tiek apturēta darbība, operētājsistēmu <ph name="PRODUCT_OS_NAME" /> var atsevišķi konfigurēt, lai pirms darbības apturēšanas tā tiktu vai netiktu bloķēta.</translation>
+<translation id="5111712393799006197">Tiek konfigurēts direktorijs, kas pārlūkā <ph name="PRODUCT_NAME" /> tiek izmantots lietotāja datu glabāšanai.
+
+      Ja šī politika ir iestatīta, pārlūkā <ph name="PRODUCT_NAME" /> tiek lietots norādītais direktorijs neatkarīgi no tā, vai lietotājs ir norādījis karodziņu “--user-data-dir”.
+
+      Izmantojamo mainīgo sarakstu skatiet šeit: https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.
+
+      Ja šī politika nav iestatīta, tiek lietots noklusējuma profila ceļš un lietotājs to var ignorēt, izmantojot komandrindas karodziņu “--user-data-dir”.</translation>
+<translation id="5130288486815037971">RC4 šifra komplektu iespējošana standartā TLS</translation>
 <translation id="5141670636904227950">Pieteikšanās ekrānā iespējotā ekrāna lupas noklusējuma veida iestatīšana</translation>
 <translation id="5142301680741828703">Norādītās URL struktūras vienmēr tiek renderētas produktā <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="5148753489738115745">Ļauj noteikt papildu parametrus, kas tiek lietoti, kad spraudnis <ph name="PRODUCT_FRAME_NAME" /> palaiž pārlūkprogrammu <ph name="PRODUCT_NAME" />.
@@ -1311,6 +1344,20 @@
 <translation id="5809728392451418079">Ierīces lokālo kontu parādāmā vārda iestatīšana</translation>
 <translation id="5814301096961727113">Mutisko atsauksmju noklusējuma statusa iestatīšana pieteikšanās ekrānā</translation>
 <translation id="5815129011704381141">Automātiski atsāknēt pēc atjaunināšanas</translation>
+<translation id="5815353477778354428">Tiek konfigurēts direktorijs, ko spraudnis <ph name="PRODUCT_FRAME_NAME" /> izmanto lietotāja datu glabāšanai.
+
+      Ja šī politika ir iestatīta, spraudnis <ph name="PRODUCT_FRAME_NAME" /> lieto norādīto direktoriju.
+
+      Izmantojamo mainīgo sarakstu skatiet šeit: https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.
+
+      Ja šis iestatījums nav iestatīts, tiek lietots noklusējuma profila direktorijs.</translation>
+<translation id="5819660021114910752">Tiek norādīts, kāda laika josla tiks izmantota ierīcē. Sesijas laikā lietotāji var ignorēt norādīto laika joslu, tomēr atsakoties tā tiek atiestatīta uz norādīto laika joslu. Šī politika tiek aktivizēta arī tad, ja ir norādīta nederīga vērtība, taču šajā gadījumā tiek izmantots Griničas laiks (GMT). Ja tiek norādīta tukša virkne, politika tiek ignorēta.
+
+      Ja šī politika netiek lietota, joprojām tiek izmantota pašreizējā aktīvā laika josla, taču lietotāji var to mainīt un šīs izmaiņas paliek spēkā. Tas nozīmē, ka izmaiņas, ko veic kāds lietotājs, ietekmē gan pieteikšanās ekrānu, gan visus pārējos lietotājus.
+
+      Jaunās ierīcēs sākotnēji ir iestatīta laika josla “ASV/Klusā okeāna piekrastes laiks”.
+
+      Vērtības formāts tiek rādīts atbilstoši IANA laika joslu datu bāzē (skatiet vietni https://en.wikipedia.org/wiki/Tz_database) norādītajiem laika joslu nosaukumiem. Lielākā daļa laika joslu tiek attēlotas formātā “kontinents/liela_pilsēta” vai “okeāns/liela_pilsēta”.</translation>
 <translation id="5826047473100157858">Norāda, vai lietotājs ar <ph name="PRODUCT_NAME" /> var atvērt lapas inkognito režīmā.
 
       Ja tiek atlasīta vērtība Iespējots vai politika netiek iestatīta, lapas var atvērt inkognito režīmā.
@@ -1409,6 +1456,7 @@
           Ieteicamais veids, kā bloķēt ekrānu pēc noteikta neaktivitātes perioda, ir iespējot ekrāna bloķēšanu, kad tiek apturēta darbība, un iestatīt operētājsistēmā <ph name="PRODUCT_OS_NAME" /> darbības apturēšanu pēc neaktivitātes atlikšanas. Šī politika ir jāizmanto tikai tad, ja ekrāns jābloķē ievērojami agrāk par darbības apturēšanu vai ja nav vēlams apturēt darbību neaktivitātes laikā.
 
           Politikas vērtība ir jānorāda milisekundēs. Vērtības vienmēr būs mazākas nekā neaktivitātes atlikšana.</translation>
+<translation id="6111936128861357925">Dinozauru spēles atļaušana</translation>
 <translation id="6114416803310251055">novecojis</translation>
 <translation id="6145799962557135888">Ļauj iestatīt URL rakstu sarakstu, kurā ir norādītas vietnes, kurām ir atļauts izpildīt JavaScript.
 
@@ -2042,6 +2090,18 @@
 
       Ja šī politika nav iestatīta, netiek lietots neviens politikas URLBlacklist melnā saraksta izņēmums.</translation>
 <translation id="8176035528522326671">Atļaut korporatīvajam lietotājam būt tikai primārajam vairākprofilu lietotājam (noklusējuma rīcība attiecībā uz uzņēmuma pārvaldītiem lietotājiem)</translation>
+<translation id="8191318459035150777">Tiek konfigurēts noklusējuma sākumlapas vietrādis URL pārlūkā <ph name="PRODUCT_NAME" />, un lietotājiem tiek liegts to mainīt.
+
+          Sākumlapa ir lapa, kas tiek atvērta, nospiežot pogu Sākums. Lapas, kas tiek atvērtas pēc startēšanas, kontrolē politikas RestoreOnStartup.
+
+          Sākumlapa var būt vai nu šeit norādītais vietrādis URL, vai arī jaunas cilnes lapa. Ja atlasīsiet jaunas cilnes lapu, šī politika nebūs spēkā.
+
+          Ja iespējosiet šo iestatījumu, lietotāji nevarēs mainīt sākumlapas URL pārlūkā <ph name="PRODUCT_NAME" />, taču viņi varēs izvēlēties jaunas cilnes lapu kā savu sākumlapu.
+
+          Ja atstāsiet šo politiku un politiku HomepageIsNewTabPage neiestatītu, lietotāji varēs izvēlēties savu sākumlapu.
+
+          Šī politika nav pieejama Windows datoros, kas nav pievienoti
+          Active Directory domēnam.</translation>
 <translation id="8197918588508433925">Šajā politikā ir norādīti paplašinājumi, kuros atļauts attālinātajai apstiprināšanai izmantot uzņēmumu platformu atslēgu (Enterprise Platform Keys) API chrome.enterprise.platformKeysPrivate.challengeUserKey(). Lai izmantotu šo API, paplašinājumiem ir jābūt pievienotiem šajā sarakstā.
 
           Ja paplašinājums nav iekļauts sarakstā vai ja saraksts nav iestatīts, API izsaukumi neizdosies un tiks rādīts kļūdas kods.</translation>
@@ -2083,6 +2143,11 @@
 <translation id="8465065632133292531">Parametri dinamiskās meklēšanas vietrādim URL, kurā izmantota metode POST</translation>
 <translation id="847472800012384958">Neļaut nevienai vietnei rādīt uznirstošos logus</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
+<translation id="8484458986062090479">Tiek pielāgots URL šablonu saraksts, kas vienmēr jārenderē saimniekdatora pārlūkam.
+
+          Ja šī politika nav iestatīta, visām vietnēm tiks izmantots politikā ChromeFrameRendererSettings norādītais noklusējuma renderētājs.
+
+          Šablonu piemērus skatiet šeit: https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="8493645415242333585">Atspējo pārlūkošanas vēstures saglabāšanu</translation>
 <translation id="8499172469244085141">Noklusējuma iestatījumi (lietotāji var ignorēt)</translation>
 <translation id="8501011084242226370">Tiek norādīts saraksts ar spraudņiem, kurus lietotājs var iespējot vai atspējot pārlūkā <ph name="PRODUCT_NAME" />.
@@ -2158,6 +2223,8 @@
           Ja šis iestatījums ir iespējots, tiks izlaista CNAME meklēšana un tiks izmantots faktiski ievadītais servera nosaukums.
 
           Ja šis iestatījums ir atspējots vai nav iestatīts, servera kanoniskais nosaukums tiks noteikts, izmantojot CNAME meklēšanu.</translation>
+<translation id="8774131509736383471">Ja šai politikai ir iestatīta vērtība Patiesa, pirmajā palaišanas reizē pārlūkā <ph name="PRODUCT_NAME" /> vienmēr tiek maksimizēts pirmais parādītais logs.
+      Ja šai politikai ir iestatīta vērtība Nepatiesa vai ja politika nav konfigurēta, pirmā parādītā loga maksimizēšana būs atkarīga no ekrāna izmēra.</translation>
 <translation id="8777120694819070607">Ļauj produktā <ph name="PRODUCT_NAME" /> izpildīt novecojušus spraudņus.
 
       Ja šis iestatījums ir iespējots, novecojuši spraudņi tiek lietoti kā parasti spraudņi.

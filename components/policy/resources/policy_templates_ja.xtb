@@ -55,6 +55,9 @@
 <translation id="1221359380862872747">デモでのログイン時に指定 URL を読み込む</translation>
 <translation id="1240643596769627465">インスタント検索の結果表示に使用する検索エンジンの URL を指定します。URL には <ph name="SEARCH_TERM_MARKER" /> という文字列を含める必要があり、この文字列は検索時にユーザーが入力したテキストに置き換えられます。このポリシーは省略可能です。このポリシーが未設定の場合、インスタント検索の結果は表示されません。このポリシーは「DefaultSearchProviderEnabled」ポリシーが有効な場合にのみ適用されます。</translation>
 <translation id="1265053460044691532">SAML 経由で認証されたユーザーがオフラインでログインできる時間を制限する</translation>
+<translation id="1291880496936992484">警告: <ph name="PRODUCT_NAME" /> ではバージョン 52 で RC4 のサポートを完全に終了し（2016 年 9 月頃）、このポリシーも機能しなくなります。
+
+      このポリシーが未設定または false に設定されている場合、TLS の RC4 暗号スイートは有効化されません。古いサーバーに対応するため、true に設定しておくこともできますが、あくまで暫定的な措置であり、サーバーを再設定する必要があります。</translation>
 <translation id="1297182715641689552">.pac プロキシ スクリプトを使用する</translation>
 <translation id="1300635491585192248">セルラー ネットワーク以外でネットワーク動作を
           予測する</translation>
@@ -464,6 +467,9 @@
       管理者がこの設定を有効または無効にした場合は、ユーザーが <ph name="PRODUCT_NAME" /> の [フィッシングや不正なソフトウェアからの保護を有効にする] 設定を変更することはできません。
 
       このポリシーが未設定の場合は、この機能が有効になりますが、ユーザーが設定を変更できます。</translation>
+<translation id="2801230735743888564">デバイスがオフラインのときに、ユーザーが恐竜のイースター エッグゲームをプレイすることを許可します。
+
+      このポリシーを False に設定すると、ユーザーはデバイスがオフラインのときに恐竜のイースター エッグゲームをプレイできません。True に設定するとプレイできます。ポリシーが未設定の場合、登録されている Chrome OS ではプレイできませんが、他の環境ではプレイできます。</translation>
 <translation id="2805707493867224476">すべてのサイトに対してポップアップ表示を許可する</translation>
 <translation id="2808013382476173118">リモート クライアントがこのコンピュータへの接続を試行するときに STUN サーバーを使用できるようにします。
 
@@ -724,6 +730,13 @@
 <translation id="3780152581321609624">Kerberos SPN に非標準ポートを含める</translation>
 <translation id="3788662722837364290">ユーザーがアイドル状態になったときの電源管理設定</translation>
 <translation id="3793095274466276777"><ph name="PRODUCT_NAME" /> での既定のブラウザのチェックを設定し、ユーザーがこの設定を変更できないようにします。この設定を有効にすると、<ph name="PRODUCT_NAME" /> が既定のブラウザであるかどうかを常に起動時にチェックし、必要に応じて自動登録します。この設定を無効にすると、<ph name="PRODUCT_NAME" /> が既定のブラウザであるかどうかをチェックせずに、このオプションを設定するユーザー コントロールを無効にします。この設定を設定しないと、<ph name="PRODUCT_NAME" /> が既定のブラウザであるかどうか、既定でない場合にユーザー通知を表示すべきかどうかをユーザーが管理できます。</translation>
+<translation id="3800626789999016379">ファイルをダウンロードするときに <ph name="PRODUCT_NAME" /> が使用するディレクトリを設定します。
+
+      このポリシーを設定した場合は、ユーザーがディレクトリを指定していたり毎回ダウンロード先の場所を確認するよう指定していたりしても、ここで指定したディレクトリが <ph name="PRODUCT_NAME" /> で使用されます。
+
+      使用できる変数のリストについては、https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables をご覧ください。
+
+      このポリシーが未設定の場合は、デフォルトのダウンロード ディレクトリが使用されます。ユーザーはこのディレクトリを変更することもできます。</translation>
 <translation id="3805659594028420438">TLS ドメイン固定証明書の拡張機能を有効にする（サポート終了）</translation>
 <translation id="3806576699227917885">音声の再生を許可します。
 
@@ -839,6 +852,13 @@
           このポリシーは「DefaultSearchProviderEnabled」ポリシーが有効な場合にのみ適用されます。</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 以降</translation>
 <translation id="4325690621216251241">システム トレイにログアウト ボタンを追加する</translation>
+<translation id="4349746760316962317">キャッシュされたファイルをディスクに保存するときに <ph name="PRODUCT_NAME" /> が使用するディレクトリを設定します。
+
+      このポリシーを設定した場合は、ユーザーが「--disk-cache-dir」フラグを指定していても、ここで指定したディレクトリが <ph name="PRODUCT_NAME" /> で使用されます。
+
+      使用できる変数のリストについては、https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables をご覧ください。
+
+      このポリシーが未設定の場合は、デフォルトのキャッシュ ディレクトリが使用されます。ユーザーは、「--disk-cache-dir」コマンドライン フラグを使って別のディレクトリを指定することもできます。</translation>
 <translation id="436581050240847513">デバイスのネットワーク インターフェースを報告する</translation>
 <translation id="4372704773119750918">マルチプロフィール（プライマリまたはセカンダリ）への参加を企業ユーザーに許可しない</translation>
 <translation id="4377599627073874279">すべてのサイトに対してすべての画像表示を許可する</translation>
@@ -904,6 +924,11 @@
 <translation id="4665897631924472251">拡張機能の管理設定</translation>
 <translation id="4668325077104657568">デフォルト画像設定</translation>
 <translation id="467236746355332046">サポートされる機能:</translation>
+<translation id="4674167212832291997">常に <ph name="PRODUCT_FRAME_NAME" /> でレンダリングする URL パターンのリストをカスタマイズします。
+
+          このポリシーが未設定の場合は、「ChromeFrameRendererSettings」ポリシーで指定されているデフォルトのレンダラがすべてのサイトで使用されます。
+
+          パターンの例については、https://www.chromium.org/developers/how-tos/chrome-frame-getting-started をご覧ください。</translation>
 <translation id="467449052039111439">URL のリストを開く</translation>
 <translation id="4680961954980851756">自動入力を有効にする</translation>
 <translation id="4723829699367336876">リモート アクセス クライアントからのファイアウォール トラバーサルを有効にする</translation>
@@ -996,6 +1021,14 @@
           このポリシーを設定しない場合は、デフォルトの操作（停止）が行われます。
 
           操作が「停止」の場合は、停止の前に画面をロックするかどうか、<ph name="PRODUCT_OS_NAME" /> を別途設定できます。</translation>
+<translation id="5111712393799006197">ユーザーデータを保存するときに <ph name="PRODUCT_NAME" /> が使用するディレクトリを設定します。
+
+      このポリシーを設定した場合は、ユーザーが「--user-data-dir」フラグを指定していても、ここで指定したディレクトリが <ph name="PRODUCT_NAME" /> で使用されます。
+
+      使用できる変数のリストについては、https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables をご覧ください。
+
+      このポリシーが未設定の場合は、デフォルトのプロフィール パスが使用されます。ユーザーは、「--user-data-dir」コマンドライン フラグを使って別のディレクトリを指定することもできます。</translation>
+<translation id="5130288486815037971">TLS の RC4 暗号スイートを有効にするかどうかを指定する</translation>
 <translation id="5141670636904227950">ログイン画面で有効にする画面拡大鏡のデフォルトのタイプを設定する</translation>
 <translation id="5142301680741828703"><ph name="PRODUCT_FRAME_NAME" /> で次の URL パターンを常に表示する</translation>
 <translation id="5148753489738115745"><ph name="PRODUCT_FRAME_NAME" /> により <ph name="PRODUCT_NAME" /> が起動される際に使用される追加パラメータを指定することができます。
@@ -1166,6 +1199,20 @@
 <translation id="5809728392451418079">デバイスのローカル アカウントの表示名を設定する</translation>
 <translation id="5814301096961727113">ログイン画面での音声フィードバックのデフォルト状態を設定する</translation>
 <translation id="5815129011704381141">更新後に自動再起動</translation>
+<translation id="5815353477778354428">ユーザーデータを保存するときに <ph name="PRODUCT_FRAME_NAME" /> が使用するディレクトリを設定します。
+
+      このポリシーを設定した場合は、ここで指定したディレクトリが <ph name="PRODUCT_FRAME_NAME" /> で使用されます。
+
+      使用できる変数のリストについては、https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables をご覧ください。
+
+      この設定が未設定の場合は、デフォルトのプロフィール ディレクトリが使用されます。</translation>
+<translation id="5819660021114910752">デバイスで使用するタイムゾーンを指定します。ユーザーは現在のセッションに対して別のタイムゾーンを指定することもできます。ただしログアウトするとここで指定したタイムゾーンに戻ります。指定した値が無効な場合、ポリシーは有効になりますが、代わりに「GMT」が使用されます。空の文字列を指定した場合、このポリシーは無視されます。
+
+      このポリシーを使用しない場合は、現在有効なタイムゾーンがそのまま使用されます。ユーザーはタイムゾーンを変更することもできます。この変更は一時的なものではないため、1 人のユーザーが変更を加えると、その変更はログイン画面と他のすべてのユーザーにも適用されることになります。
+
+      新しいデバイスの場合、起動時のタイムゾーンは「太平洋標準時」に設定されます。
+
+      値の形式は、「IANA Time Zone Database」のタイムゾーンの名前に沿ったものとなります（「https://ja.wikipedia.org/wiki/Tz_database」をご覧ください）。ほとんどのタイムゾーンは、「continent/large_city」または「ocean/large_city」で表すことができます。</translation>
 <translation id="5826047473100157858">ユーザーが <ph name="PRODUCT_NAME" /> でシークレット モードを使用してページを開くことができるかどうかを指定します。[有効] が選択されている、またはポリシーが未設定の場合、シークレット モードでページを開くことができます。[無効] が選択されている場合、シークレット モードでページを開くことはできません。[強制] が選択されている場合、シークレット モードでのみページを開くことができます。</translation>
 <translation id="5836064773277134605">リモート アクセス ホストが使用する UDP ポートの範囲を制限する</translation>
 <translation id="5845159892130426052">ShowModalDialog API を 2015 年 4 月 30 日から有効にする</translation>
@@ -1255,6 +1302,7 @@ Active Directory ドメインに参加していない Windows インスタンス
           アイドル状態になったときに画面をロックする方法としては、停止時の画面ロックを有効にして、アイドル時間経過後に <ph name="PRODUCT_OS_NAME" /> が停止状態になるように設定する方法をおすすめします。このポリシーは、停止状態になるのを待たずに画面をロックする場合、またはアイドル時の停止を希望しない場合にのみ使用してください。
 
           ポリシーの値はミリ秒単位で指定してください。アイドル時間より長い値は指定できません。</translation>
+<translation id="6111936128861357925">恐竜のイースター エッグゲームを許可する</translation>
 <translation id="6114416803310251055">廃止予定</translation>
 <translation id="6145799962557135888">JavaScript の実行を許可するサイトを指定する URL パターンのリストを設定できます。このポリシーが未設定の場合、グローバルのデフォルト値がすべてのサイトで使用されます。グローバルのデフォルト値は「DefaultJavaScriptSetting」ポリシーの値か、この値が未設定の場合はユーザーの個人設定の値です。</translation>
 <translation id="6151775819333710697">
@@ -1800,6 +1848,17 @@ Active Directory ドメインに参加していない Windows インスタンス
 
       このポリシーが未設定の場合、「URLBlacklist」ポリシーのブラックリストに対して例外は適用されません。</translation>
 <translation id="8176035528522326671">企業ユーザーがメインのマルチプロフィール ユーザーとしてのみ操作できるようにする（企業の管理対象ユーザーに対するデフォルトの動作）</translation>
+<translation id="8191318459035150777"><ph name="PRODUCT_NAME" /> のデフォルトのホームページ URL を設定し、ユーザーによる変更を禁止します。
+
+          ホームページは [ホーム] ボタンを押したときに開くページです。起動時に開くページは RestoreOnStartup ポリシーで制御されます。
+
+          ホームページは、ここで指定した URL、または新しいタブページのいずれかになります。新しいタブページを選択した場合、このポリシーは適用されません。
+
+          この設定を有効にした場合、ユーザーは <ph name="PRODUCT_NAME" /> のホームページ URL を変更することはできませんが、新しいタブページをホームページとして選択することができます。
+
+          このポリシーと HomepageIsNewTabPage の両方が未設定の場合、ユーザーは独自にホームページを選択できます。
+
+          Active Directory ドメインに参加していない Windows インスタンスでこのポリシーを使用することはできません。</translation>
 <translation id="8197918588508433925">このポリシーでは、リモート認証に Enterprise Platform Key API の chrome.enterprise.platformKeysPrivate.challengeUserKey() の使用が許可された拡張機能が指定されます。この API を使用するには、このリストに拡張機能を追加する必要があります。
 
           拡張機能がリストに追加されていないか、またはリストが設定されていない場合、API 呼び出しは失敗し、エラー コードが返されます。</translation>
@@ -1840,6 +1899,11 @@ Active Directory ドメインに参加していない Windows インスタンス
 <translation id="8465065632133292531">POST を使用するインスタント検索 URL のパラメータ</translation>
 <translation id="847472800012384958">すべてのサイトに対してポップアップ表示を許可しない</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
+<translation id="8484458986062090479">常にホストブラウザでレンダリングする URL パターンのリストをカスタマイズします。
+
+          このポリシーが未設定の場合は、「ChromeFrameRendererSettings」ポリシーで指定されているデフォルトのレンダラがすべてのサイトで使用されます。
+
+          パターンの例については、https://www.chromium.org/developers/how-tos/chrome-frame-getting-started をご覧ください。</translation>
 <translation id="8493645415242333585">ブラウザの履歴の保存を無効にする</translation>
 <translation id="8499172469244085141">デフォルト設定（ユーザーによるオーバーライド可能）</translation>
 <translation id="8501011084242226370">ユーザーが <ph name="PRODUCT_NAME" /> で有効または無効にできるプラグインのリストを指定します。
@@ -1899,6 +1963,8 @@ Active Directory ドメインに参加していない Windows インスタンス
 
       この設定が無効な場合、閲覧とダウンロードの履歴は削除できません。</translation>
 <translation id="8764119899999036911">標準の DNS 名と入力された元の名前のうちどちらを基準にして Kerberos SPN を生成するかを指定します。この設定を有効にすると CNAME 検索がスキップされ、入力されたサーバー名が使用されます。この設定を無効にするか未設定の場合、サーバーの標準名は CNAME 検索によって決まります。</translation>
+<translation id="8774131509736383471">このポリシーが true に設定されている場合、<ph name="PRODUCT_NAME" /> では初回実行時に最初に表示されるウィンドウが無条件に最大化されます。
+      このポリシーが false に設定されているか未設定の場合、最初に表示されるウィンドウを最大化するかどうかは画面のサイズに基づいて決まります。</translation>
 <translation id="8777120694819070607"><ph name="PRODUCT_NAME" /> に対して古いプラグインの実行を許可します。この設定を有効にすると、古いプラグインが通常のプラグインとして使用されます。この設定を無効にすると、古いプラグインは使用されず、実行の許可を確認するメッセージも表示されません。この設定を行わない場合は、古いプラグインの実行の許可を確認するメッセージが表示されます。</translation>
 <translation id="87812015706645271">ローカル ユーザーの名前とリモート アクセス ホストの所有者が一致していることを要件とする</translation>
 <translation id="8782750230688364867">画面を暗くするまでの時間に掛ける倍率を指定します。これは、デバイスがプレゼンテーション モードのときに使用されます。

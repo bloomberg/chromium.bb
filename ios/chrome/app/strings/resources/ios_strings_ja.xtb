@@ -4,6 +4,7 @@
 <translation id="1008557486741366299">後で</translation>
 <translation id="1047726139967079566">ブックマークに追加...</translation>
 <translation id="1172898394251786223">次の項目</translation>
+<translation id="1625603797851307283"><ph name="PRODUCT_NAME" />でこのサイトのパスワードを保存しますか？</translation>
 <translation id="2320166752086256636">キーボードを非表示</translation>
 <translation id="2704606927547763573">コピーしました</translation>
 <translation id="2747003861858887689">前の項目</translation>
@@ -11,11 +12,17 @@
 <translation id="3244271242291266297">MM</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />、<ph name="ADDITIONAL_INFO" />、<ph name="INDEX" /> / <ph name="NUM_SUGGESTIONS" /></translation>
 <translation id="3335947283844343239">閉じたタブを開く</translation>
+<translation id="3414292259312108062">このパスワードは<ph name="BEGIN_LINK" />Googleの保存パスワード<ph name="END_LINK" />として保存され、次回から自動入力されます。</translation>
 <translation id="385051799172605136">戻る</translation>
 <translation id="4121993058175073134">エクスポート データのみを送信するには、設定アプリでメール アカウントを設定してください。</translation>
 <translation id="4728558894243024398">プラットフォーム</translation>
+<translation id="5317780077021120954">保存</translation>
 <translation id="5779929835642192302">候補があります</translation>
 <translation id="605721222689873409">YY</translation>
+<translation id="6149061208933997199">パスワードを使用</translation>
+<translation id="6314335155547195432">パスワードを生成</translation>
+<translation id="6456425917241817154">自動生成パスワード</translation>
 <translation id="7456847797759667638">場所を開く...</translation>
 <translation id="7481312909269577407">進む</translation>
+<translation id="7961015016161918242">使用しない</translation>
 </translationbundle>

@@ -33,7 +33,6 @@
 <translation id="1770394049404108959">我無法開啟應用程式。</translation>
 <translation id="177096447311351977">用戶端版本 IP：<ph name="CLIENT_GAIA_IDENTIFIER" /> ip='<ph name="CLIENT_IP_ADDRESS_AND_PORT" />' host_ip='<ph name="HOST_IP_ADDRESS_AND_PORT" />' channel='<ph name="CHANNEL_TYPE" />' connection='<ph name="CONNECTION_TYPE" />'。</translation>
 <translation id="1779766957982586368">關閉視窗</translation>
-<translation id="1818475040640568770">您尚未註冊任何電腦。</translation>
 <translation id="1841799852846221389">正在停用這台電腦的遠端連線...</translation>
 <translation id="189172778771606813">關閉導覽匣</translation>
 <translation id="195619862187186579">鍵盤配置</translation>
@@ -87,8 +86,6 @@
 <translation id="2926340305933667314">無法停用這台電腦的遠端存取功能，請稍後再試。</translation>
 <translation id="2930135165929238380">找不到部分必要元件。請開啟 chrome://plugins 頁面，確認您已啟用 Native Client。</translation>
 <translation id="2939145106548231838">主機驗證</translation>
-<translation id="2998137343848432918">• 新增「製作人員名單」畫面。
-• 修正無法在鍵盤顯示時開啟全螢幕的問題。</translation>
 <translation id="3020807351229499221">無法更新 PIN，請稍後再試。</translation>
 <translation id="3025388528294795783">請將您遇到的問題告訴我們，以協助我們為您解決問題：</translation>
 <translation id="3027681561976217984">觸控模式</translation>
@@ -124,6 +121,7 @@
 <translation id="3950820424414687140">登入</translation>
 <translation id="3989511127559254552">您必須先授予電腦的延伸存取權限，才能繼續操作 (只需執行一次)。</translation>
 <translation id="4006787130661126000">您必須啟用遠端連線，才能透過 Chrome 遠端桌面存取這台電腦。</translation>
+<translation id="405887016757208221">遠端電腦無法初始化工作階段。如果問題持續發生，請嘗試重新設定主機。</translation>
 <translation id="4068946408131579958">所有連線</translation>
 <translation id="409800995205263688">注意：政策設定僅允許您網路中的電腦相互連線。</translation>
 <translation id="4155497795971509630">找不到部分必要元件。請確認您已安裝最新版本的軟體，然後再試一次。</translation>
@@ -170,7 +168,6 @@
 <translation id="518094545883702183">這些資訊只會用於診斷您所回報的問題，並且僅供相關調查人員存取。此外，系統會在 30 天後刪除這些資訊。</translation>
 <translation id="5222676887888702881">登出</translation>
 <translation id="5254120496627797685">如果離開這個頁面，您的 Chrome 遠端桌面工作階段也會結束。</translation>
-<translation id="5285241842433869526">瞭解如何設定電腦以供遠端存取。</translation>
 <translation id="5308380583665731573">連線</translation>
 <translation id="5363265567587775042">請您要存取的電腦的使用者點選 [<ph name="SHARE" />]，並提供存取碼給您。</translation>
 <translation id="5379087427956679853">Chrome 遠端桌面提供了安全的連線機制，可讓您透過網路與他人共用自己的電腦。您和共用對象都必須執行 Chrome 遠端桌面應用程式，請前往 <ph name="URL" /> 安裝。</translation>
@@ -258,6 +255,7 @@
 <translation id="7869445566579231750">您沒有執行這個應用程式的權限。</translation>
 <translation id="7948001860594368197">螢幕選項</translation>
 <translation id="7970576581263377361">驗證失敗，請重新登入 Chromium。</translation>
+<translation id="7981525049612125370">遠端工作階段已逾時。</translation>
 <translation id="8041721485428375115">下載 Chrome 遠端桌面主機安裝程式即表示您同意 Google 的《<ph name="LINK_BEGIN" />服務條款<ph name="LINK_END" />》。</translation>
 <translation id="8073845705237259513">您必須在裝置上新增 Google 帳戶，才能使用 Chrome 遠端桌面。</translation>
 <translation id="80739703311984697">遠端主機要求您向第三方網站進行驗證。如要繼續，您必須授予額外權限，讓 Chromoting 能夠存取這個位址：</translation>

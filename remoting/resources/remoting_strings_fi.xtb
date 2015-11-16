@@ -33,7 +33,6 @@ Lisätietoja tietosuojasta on Googlen tietosuojakäytännössä (http://goo.gl/S
 <translation id="1770394049404108959">Sovellus ei aukea.</translation>
 <translation id="177096447311351977">Asiakkaan kanavan IP-osoite: <ph name="CLIENT_GAIA_IDENTIFIER" /> ip='<ph name="CLIENT_IP_ADDRESS_AND_PORT" />' host_ip='<ph name="HOST_IP_ADDRESS_AND_PORT" />' channel='<ph name="CHANNEL_TYPE" />' connection='<ph name="CONNECTION_TYPE" />'.</translation>
 <translation id="1779766957982586368">Sulje ikkuna</translation>
-<translation id="1818475040640568770">Et ole rekisteröinyt tietokoneita.</translation>
 <translation id="1841799852846221389">Poistetaan tietokoneen etäyhteyksiä käytöstä…</translation>
 <translation id="189172778771606813">Sulje navigoinnin vetopaneeli</translation>
 <translation id="195619862187186579">Näppäinasettelut</translation>
@@ -87,8 +86,6 @@ Lisätietoja tietosuojasta on Googlen tietosuojakäytännössä (http://goo.gl/S
 <translation id="2926340305933667314">Etäyhteyksien poistaminen käytöstä epäonnistui. Yritä myöhemmin uudelleen.</translation>
 <translation id="2930135165929238380">Joitakin pakollisia komponentteja puuttuu. Avaa osoite chrome://plugins ja varmista, että Native Client on käytössä.</translation>
 <translation id="2939145106548231838">Todenna isännälle</translation>
-<translation id="2998137343848432918">• Tekijät-näyttö lisätty.
-• Korjattu ongelma, joka ilmeni siirryttäessä koko näytön tilaan näppäimistön ollessa näkyvillä.</translation>
 <translation id="3020807351229499221">PIN-koodin päivitys epäonnistui. Yritä myöhemmin uudelleen.</translation>
 <translation id="3025388528294795783">Auta ratkaisemaan ongelma kertomalla, mikä on vialla:</translation>
 <translation id="3027681561976217984">Kosketustila</translation>
@@ -124,6 +121,7 @@ isäntä</translation>
 <translation id="3950820424414687140">Kirjaudu sisään</translation>
 <translation id="3989511127559254552">Jotta voit jatkaa, sinun on annettava laajennetut käyttöoikeudet tietokoneeseesi. Tämä täytyy tehdä vain kerran.</translation>
 <translation id="4006787130661126000">Etäyhteydet on otettava käyttöön, jotta tietokonetta voidaan käyttää Chrome-etäkäytön avulla.</translation>
+<translation id="405887016757208221">Etätietokone ei alustanut istuntoa oikein. Jos ongelma ei ratkea, yritä määrittää isäntäkoneen asetukset uudelleen.</translation>
 <translation id="4068946408131579958">Kaikki yhteydet</translation>
 <translation id="409800995205263688">HUOMAA: käytäntöasetusten vuoksi vain verkossasi olevien tietokoneiden väliset yhteydet sallitaan.</translation>
 <translation id="4155497795971509630">Joitakin vaadittavia komponentteja puuttuu. Varmista, että olet asentanut ohjelmiston uusimman version, ja yritä uudelleen.</translation>
@@ -170,7 +168,6 @@ isäntä</translation>
 <translation id="518094545883702183">Näitä tietoja käytetään vain ilmoittamasi ongelman diagnosointiin, näytetään vain ongelmaasi selvittävälle henkilölle ja säilytetään korkeintaan 30 päivää.</translation>
 <translation id="5222676887888702881">Kirjaudu ulos</translation>
 <translation id="5254120496627797685">Vaihtamalla sivua päätät Chrome-etäkäyttökerran.</translation>
-<translation id="5285241842433869526">Tutustu tietokoneen valmisteluun etäkäyttöä varten.</translation>
 <translation id="5308380583665731573">Muodosta yhteys</translation>
 <translation id="5363265567587775042">Ota yhteyttä käyttäjään, jonka tietokonetta haluat käyttää. Pyydä häntä klikkaamaan <ph name="SHARE" /> ja antamaan käyttökoodi sinulle.</translation>
 <translation id="5379087427956679853">Chrome-etäkäyttösovelluksen avulla voit jakaa tietokoneesi suojatun verkkoyhteyden kautta. Molempien käyttäjien täytyy käyttää osoitteesta <ph name="URL" /> löytyvää Chrome-etäkäyttösovellusta.</translation>
@@ -258,6 +255,7 @@ isäntä</translation>
 <translation id="7869445566579231750">Sinulla ei ole lupaa suorittaa tätä sovellusta.</translation>
 <translation id="7948001860594368197">Ruudun asetukset</translation>
 <translation id="7970576581263377361">Todennus epäonnistui. Kirjaudu Chromiumiin uudelleen.</translation>
+<translation id="7981525049612125370">Etäistunto on vanhentunut.</translation>
 <translation id="8041721485428375115">Lataamalla Chrome-etäkäytön isännän asennusohjelman hyväksyt Googlen <ph name="LINK_BEGIN" />käyttöehdot<ph name="LINK_END" />.</translation>
 <translation id="8073845705237259513">Sinun on lisättävä laitteeseesi Google-tili, jotta voit käyttää Chrome-etäkäyttöä.</translation>
 <translation id="80739703311984697">Etäisäntä edellyttää todennusta kolmannen osapuolen sivustossa. Jos haluat jatkaa, anna Chromotingille lisäkäyttölupia tämän osoitteen avaamiseksi:</translation>

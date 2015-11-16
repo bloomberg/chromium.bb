@@ -4,6 +4,7 @@
 <translation id="1008557486741366299">Не сега</translation>
 <translation id="1047726139967079566">Запазване на отметка към тази страница...</translation>
 <translation id="1172898394251786223">Следващото поле</translation>
+<translation id="1625603797851307283">Искате ли <ph name="PRODUCT_NAME" /> да запази паролата ви за този сайт?</translation>
 <translation id="2320166752086256636">Скриване на клавиатурата</translation>
 <translation id="2704606927547763573">Копирано</translation>
 <translation id="2747003861858887689">Предишното поле</translation>
@@ -11,11 +12,17 @@
 <translation id="3244271242291266297">ММ</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> от <ph name="NUM_SUGGESTIONS" /></translation>
 <translation id="3335947283844343239">Повторно отваряне на затворения раздел</translation>
+<translation id="3414292259312108062">Chrome ще съхрани тази парола при <ph name="BEGIN_LINK" />останалите, запазени в Google<ph name="END_LINK" />, и автоматично ще я попълва вместо вас, за да не се налага да я помните.</translation>
 <translation id="385051799172605136">Назад</translation>
 <translation id="4121993058175073134">За изпращане на експ. данни от мрежата конфиг. имейла си в Настройки.</translation>
 <translation id="4728558894243024398">Платформа</translation>
+<translation id="5317780077021120954">Запазване</translation>
 <translation id="5779929835642192302">Налице са предложения</translation>
 <translation id="605721222689873409">ГГ</translation>
+<translation id="6149061208933997199">Ползване на паролата</translation>
+<translation id="6314335155547195432">Генериране на парола</translation>
+<translation id="6456425917241817154">Парола, генерирана от Chrome</translation>
 <translation id="7456847797759667638">Отваряне на местоположение...</translation>
 <translation id="7481312909269577407">Препращане</translation>
+<translation id="7961015016161918242">Никога</translation>
 </translationbundle>

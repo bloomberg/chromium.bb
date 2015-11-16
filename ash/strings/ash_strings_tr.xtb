@@ -26,9 +26,7 @@
 Geçiş yapmak için ÜstKrktr + Alt tuşlarına basın.</translation>
 <translation id="1882897271359938046">Şuraya yansıtılıyor: <ph name="DISPLAY_NAME" /></translation>
 <translation id="1923539912171292317">Otomatik tıklamalar</translation>
-<translation id="1950626184269948555">Görev yöneticisi kısayolu değişti. Lütfen Üst Karakter+Esc yerine Arama+Esc tuşlarını kullanın.</translation>
 <translation id="1957803754585243749">0°</translation>
-<translation id="1963814843110128691">$1, şuraya yayınlanıyor: $2</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1987317783729300807">Hesaplar</translation>
 <translation id="2127372758936585790">Düşük güçlü şarj cihazı</translation>
@@ -94,6 +92,7 @@ Geçiş yapmak için ÜstKrktr + Alt tuşlarına basın.</translation>
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">Kilitle</translation>
 <translation id="3799026279081545374">Şarj cihazınız sorunlu olabilir. ABD'de yaşıyorsanız yardım almak ve cihazı yenisiyle değiştirmek için lütfen 866-628-1371 numaralı telefonu arayın. İngiltere'de yaşıyorsanız 0800-026-0613 numaralı telefonu, İrlanda'da yaşıyorsanız 1-800-832-664 numaralı telefonu, Kanada'da yaşıyorsanız 866-628-1372 numaralı telefonu, Avustralya'da yaşıyorsanız lütfen 1-800-067-460 numaralı telefonu arayın.</translation>
+<translation id="3866182280516392520">IPv6 Adresi</translation>
 <translation id="3891340733213178823">Oturumu kapatmak için Ctrl+ÜstKrktr+Q tuşlarına iki defa basın.</translation>
 <translation id="3892641579809465218">Dahili Ekran</translation>
 <translation id="3963445509666917109">Hoparlör (Dahili)</translation>
@@ -153,7 +152,6 @@ Geçiş yapmak için ÜstKrktr + Alt tuşlarına basın.</translation>
 <translation id="6165508094623778733">Daha fazla bilgi edinin</translation>
 <translation id="6247708409970142803">%<ph name="PERCENTAGE" /></translation>
 <translation id="6248847161401822652">Çıkmak için Ctrl+ÜstKrktr+Q tuşlarına iki kez basın.</translation>
-<translation id="6287020362823083378">Ekran kilidi kısayolu değişti. Lütfen Ctrl+Üst Karakter+L yerine Arama+L tuşunu kullanın.</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> dönme ayarı <ph name="ROTATION" /> olarak değiştirildi</translation>
 <translation id="6359806961507272919"><ph name="PHONE_NUMBER" /> numaradan SMS alındı</translation>
 <translation id="639644700271529076">CAPS LOCK kapalı</translation>
@@ -206,7 +204,6 @@ Devre dışı bırakmak için Ctrl+Alt+Z tuşlarına basın.</translation>
 <translation id="8308637677604853869">Önceki menü</translation>
 <translation id="8356164830168736643"><ph name="WINDOW_TITLE" /> penceresini kapat</translation>
 <translation id="8428213095426709021">Ayarlar</translation>
-<translation id="8443356412772935865">Ekran şuraya yayınlanıyor: $1</translation>
 <translation id="8456362689280298700">Dolması için gereken süre: <ph name="HOUR" />:<ph name="MINUTE" /> </translation>
 <translation id="8517041960877371778"><ph name="DEVICE_TYPE" /> cihazınız açıkken şarj olmayabilir.</translation>
 <translation id="8528322925433439945">Mobile...</translation>

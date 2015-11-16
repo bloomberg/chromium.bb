@@ -33,7 +33,6 @@ Adatvédelmi információkért tekintse meg a Google adatvédelmi irányelveit (
 <translation id="1770394049404108959">Nem tudom megnyitni az alkalmazást.</translation>
 <translation id="177096447311351977">Kliens csatorna-IP-je: <ph name="CLIENT_GAIA_IDENTIFIER" /> ip='<ph name="CLIENT_IP_ADDRESS_AND_PORT" />' host_ip='<ph name="HOST_IP_ADDRESS_AND_PORT" />' channel='<ph name="CHANNEL_TYPE" />' connection='<ph name="CONNECTION_TYPE" />'.</translation>
 <translation id="1779766957982586368">Ablak bezárása</translation>
-<translation id="1818475040640568770">Nincs regisztrált számítógépe.</translation>
 <translation id="1841799852846221389">Távoli kapcsolatok letiltása ezen a számítógépen...</translation>
 <translation id="189172778771606813">Navigációs fiók bezárása</translation>
 <translation id="195619862187186579">Billentyűzetkiosztások</translation>
@@ -87,8 +86,6 @@ Adatvédelmi információkért tekintse meg a Google adatvédelmi irányelveit (
 <translation id="2926340305933667314">Nem sikerült letiltani a távoli hozzáférést a számítógéphez. Kérjük, próbálja újra később.</translation>
 <translation id="2930135165929238380">Hiányzik néhány szükséges összetevő. Nyissa meg a chrome://plugins oldalt, és győződjön meg róla, hogy engedélyezve van a Natív kliens beépülő modul.</translation>
 <translation id="2939145106548231838">Hitelesítés a gazdagépen</translation>
-<translation id="2998137343848432918">• „Készítők” képernyő hozzáadva.
-• Javítva egy teljes képernyőre váltáskor jelentkező probléma, ha a billentyűzet látható.</translation>
 <translation id="3020807351229499221">Nem sikerült módosítani a PIN kódot. Kérjük, próbálja újra később.</translation>
 <translation id="3025388528294795783">A probléma megoldásának elősegítéséhez számoljon be arról, hogy mi nem működött megfelelően:</translation>
 <translation id="3027681561976217984">Érintő mód</translation>
@@ -124,6 +121,7 @@ gazdagép</translation>
 <translation id="3950820424414687140">Bejelentkezés</translation>
 <translation id="3989511127559254552">A folytatáshoz előbb kiterjesztett hozzáférési jogosultságokat kell adnia a számítógépének. Ezt csak egyszer kell elvégezni.</translation>
 <translation id="4006787130661126000">Engedélyeznie kell a távoli kapcsolatokat, ha a Chrome távoliasztal-szolgáltatást szeretné használni ennek a számítógépnek az eléréséhez.</translation>
+<translation id="405887016757208221">A távoli számítógépnek nem sikerült inicializálnia a munkamenetet. Ha a probléma továbbra is fennáll, próbálja meg újra beállítani a gazdagépet.</translation>
 <translation id="4068946408131579958">Minden kapcsolat</translation>
 <translation id="409800995205263688">MEGJEGYZÉS: az irányelv-beállítások a csatlakozást csak a saját hálózaton belül található számítógépek között teszik lehetővé.</translation>
 <translation id="4155497795971509630">Hiányzik néhány szükséges összetevő. Kérjük, ellenőrizze, hogy a szoftver legfrissebb verzióját telepítette-e, majd próbálja újra.</translation>
@@ -170,7 +168,6 @@ gazdagép</translation>
 <translation id="518094545883702183">Ezt az információt csak az Ön által jelentett probléma diagnosztizálására használjuk. Az adatok csak a jelentés vizsgálója számára érhetők el, és a rendszerünk nem őrzi meg őket 30 napnál tovább.</translation>
 <translation id="5222676887888702881">Kijelentkezés</translation>
 <translation id="5254120496627797685">Ha elhagyja ezt az oldalt, akkor befejeződik a Chrome távoliasztal-szolgáltatás munkamenete.</translation>
-<translation id="5285241842433869526">Tudja meg, hogyan állíthat be számítógépet a távoli hozzáféréshez.</translation>
 <translation id="5308380583665731573">Csatlakozás</translation>
 <translation id="5363265567587775042">Kérje meg a felhasználót, akinek számítógépéhez megpróbál hozzáférni, hogy kattintson a „<ph name="SHARE" />” lehetőségre, és adja meg Önnek a hozzáférési kódot.</translation>
 <translation id="5379087427956679853">A Chrome távoliasztal-szolgáltatás lehetővé teszi a számítógép biztonságos megosztását az interneten keresztül. Mindkét felhasználónál futnia kell a Chrome távoliasztal-szolgáltatás alkalmazásnak, amely itt található: <ph name="URL" />.</translation>
@@ -258,6 +255,7 @@ gazdagép</translation>
 <translation id="7869445566579231750">Nincs engedélye az alkalmazás futtatására.</translation>
 <translation id="7948001860594368197">Képernyő-beállítások</translation>
 <translation id="7970576581263377361">A hitelesítés nem sikerült. Kérjük, jelentkezzen be újra a Chromiumba.</translation>
+<translation id="7981525049612125370">A távoli munkamenet lejárt.</translation>
 <translation id="8041721485428375115">A Chrome távoliasztal-szolgáltatási gazdagép-telepítő letöltésével elfogadja a Google <ph name="LINK_BEGIN" />Általános Szerződési Feltételeit<ph name="LINK_END" />.</translation>
 <translation id="8073845705237259513">A Chrome távoliasztal-szolgáltatás használatához adjon hozzá eszközéhez egy Google-fiókot.</translation>
 <translation id="80739703311984697">A távoli gazdagép hitelesítést kér egy harmadik féltől származó webhelyhez. A folytatáshoz további engedélyeket kell adnia a Chromoting szolgáltatásnak a cím eléréséhez:</translation>

@@ -82,7 +82,6 @@ Signing in anyway will merge Chrome information like bookmarks, history and othe
 <translation id="345171907106878721">Add yourself to Chrome</translation>
 <translation id="3612333635265770873">A module with the same name has been known to conflict with Google Chrome.</translation>
 <translation id="3622797965165704966">Now it's easier to use Chrome with your Google Account and on shared computers.</translation>
-<translation id="3656661827369545115">Launch Chromium automatically when your computer starts</translation>
 <translation id="3735758079232443276">The extension "<ph name="EXTENSION_NAME" />" has changed the page that is shown when you start Chrome.</translation>
 <translation id="3738139272394829648">Touch to Search</translation>
 <translation id="3784527566857328444">Remove from Chrome</translation>
@@ -100,10 +99,8 @@ Signing in anyway will merge Chrome information like bookmarks, history and othe
 <translation id="4167057906098955729">You can see all your notifications from Chrome apps, extensions and websites here.</translation>
 <translation id="423410644998903704">Chrome needs permissions access to share them with this site.</translation>
 <translation id="4251615635259297716">Link my Chrome data to this account</translation>
-<translation id="4273752058983339720">Google Chrome is configured to automatically launch when you start your computer.</translation>
 <translation id="4309555186815777032">(requires Chrome <ph name="BEGIN_BUTTON" />restart<ph name="END_BUTTON" />)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
-<translation id="4367618624832907428">Google Chrome can’t display the web page because your computer isn’t connected to the Internet.</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="4458285410772214805">Please sign out and sign in again for this change to take effect.</translation>
 <translation id="4480040274068703980">Chrome OS could not sync your data due to an error signing in.</translation>
@@ -112,7 +109,6 @@ Signing in anyway will merge Chrome information like bookmarks, history and othe
 <translation id="4567424176335768812">You're signed in as <ph name="USER_EMAIL_ADDRESS" />. Now you can access your bookmarks, history and other settings on all your signed in devices.</translation>
 <translation id="4631713731678262610">Hide in Chrome menu</translation>
 <translation id="4633000520311261472">To make Chrome safer, we disabled some extensions that aren't listed in the <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> and may have been added without your knowledge.</translation>
-<translation id="4692614041509923516">Your computer is running an old version of Microsoft Windows that cannot process this website's security certificate. Because of this problem, Google Chrome can't tell whether the certificate came from <ph name="SITE" /> or from someone on your network pretending to be <ph name="SITE" />. Please update your computer to a more recent version of Windows.</translation>
 <translation id="4700157086864140907">Google Chrome can provide smarter spell-checking by sending what you type in the browser to Google servers, allowing you to use the same spell-checking technology used by Google search.</translation>
 <translation id="4728575227883772061">Installation failed due to unspecified error. If Google Chrome is currently running, please close it and try again.</translation>
 <translation id="473775607612524610">Update</translation>
@@ -202,7 +198,6 @@ Google Chrome is unable to recover your settings.</translation>
 <translation id="6989339256997917931">Google Chrome has been updated, but you haven't used it for at least 30 days.</translation>
 <translation id="699076943483372849">This site is using the retired Chrome Frame plug-in which no longer receives security and stability updates. Please uninstall it and upgrade to a modern browser.</translation>
 <translation id="6991142834212251086">Link my Chrome data to this account</translation>
-<translation id="7054640471403081847">This computer will soon stop receiving Google Chrome updates because its hardware is no longer supported.</translation>
 <translation id="7060865993964054389">Google Chrome App Launcher</translation>
 <translation id="7084448929020576097"><ph name="FILE_NAME" /> is malicious and Chrome has blocked it.</translation>
 <translation id="7098166902387133879">Google Chrome is using your microphone.</translation>
@@ -239,7 +234,6 @@ Google Chrome is unable to recover your settings.</translation>
 <translation id="781069973841903133">Relaunching in Chrome immersive mode will close and relaunch your Chrome apps.</translation>
 <translation id="7825851276765848807">Installation failed due to unspecified error. Please download Google Chrome again.</translation>
 <translation id="7890208801193284374">If you share a computer, friends and family can browse separately and set up Chrome just the way they want.</translation>
-<translation id="7908968924842975895">This computer will no longer receive Google Chrome updates because its hardware is no longer supported.</translation>
 <translation id="7984945080620862648">You cannot visit <ph name="SITE" /> at the moment because the website sent scrambled credentials that Chrome cannot process. Network errors and attacks are usually temporary, so this page will probably work later.</translation>
 <translation id="8000275528373650868">Google Chrome requires Windows Vista or Windows XP with SP2 or higher.</translation>
 <translation id="8005540215158006229">Chrome is almost ready.</translation>

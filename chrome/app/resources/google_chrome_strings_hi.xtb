@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="hi">
 <translation id="1001534784610492198">इंस्टॉलर संग्रह अनुपयोगी या अमान्य है. कृपया Google Chrome फिर से डाउनलोड करें.</translation>
+<translation id="1013290471399003443">Chrome ने सत्यापित किया है कि <ph name="ISSUER" /> ने इस वेबसाइट का प्रमाणपत्र जारी किया है. सर्वर ने मान्य प्रमाणपत्र पारदर्शिता जानकारी प्रदान की है.</translation>
 <translation id="1016765312371154165">Chrome सही तरीके से बंद नहीं हुआ था.</translation>
 <translation id="103396972844768118">आपके Chrome डेटा से संबंधित महत्वपूर्ण जानकारी</translation>
 <translation id="1061441684050139317">Chrome को माइक्रोफ़ोन ऐक्सेस की आवश्यकता है ताक‍ि माइक्रोफ़ोन को इस साइट के साथ साझा किया जा सके.</translation>
@@ -62,6 +63,7 @@
 <translation id="2769762047821873045">Google Chrome आपका सामान्य ब्राउज़र नहीं है.</translation>
 <translation id="2770231113462710648">डिफ़ॉल्ट ब्राउज़र को इसमें बदलें:</translation>
 <translation id="2871893339301912279">आप Chrome में प्रवेश हैं.</translation>
+<translation id="2997147809295888909">Chrome ने सत्यापित किया है कि <ph name="ISSUER" /> ने इस वेबसाइट का प्रमाणपत्र जारी किया है. सर्वर ने कोई प्रमाणपत्र पारदर्शिता जानकारी प्रदान नहीं की है.</translation>
 <translation id="3037838751736561277">Google Chrome पृष्ठभूमि मोड में है.</translation>
 <translation id="3047079729301751317"><ph name="USERNAME" /> को डिस्कनेक्ट करने से आपका इतिहास, बुकमार्क, सेटिंग, और इस डिवाइस पर संग्रहीत अन्य Chrome डेटा साफ़ हो जाएगा. आपके Google खाते में संग्रहीत डेटा साफ़ नहीं होगा और उसे <ph name="GOOGLE_DASHBOARD_LINK" />Google डैशबोर्ड<ph name="END_GOOGLE_DASHBOARD_LINK" /> पर प्रबंधित किया जा सकता है.</translation>
 <translation id="3080151273017101988">Google Chrome के बंद होने पर पृष्ठभूमि ऐप्स  चलाना जारी रखें</translation>
@@ -76,7 +78,6 @@
 <translation id="345171907106878721">स्वयं को Chrome में जोड़ें</translation>
 <translation id="3612333635265770873">इसी नाम के एक मॉड्यूल को Google Chrome का विरोध करने के लिए जाना जाता है.</translation>
 <translation id="3622797965165704966">अब अपने Google खाते के साथ और साझा किए गए कंप्यूटर पर Chrome का उपयोग करना आसान हो गया है.</translation>
-<translation id="3656661827369545115">आपका कंप्यूटर प्रारंभ होने पर क्रोमियम अपने आप लॉन्च करें</translation>
 <translation id="3735758079232443276">एक्सटेंशन "<ph name="EXTENSION_NAME" />" ने यह बदल दिया है कि जब आप Chrome प्रारंभ करते हैं तब कौन सा पृष्‍ठ दिखाया जाए.</translation>
 <translation id="3738139272394829648">खोजने के लिए स्पर्श करें</translation>
 <translation id="3784527566857328444">Chrome से नि‍कालें...</translation>
@@ -84,6 +85,7 @@
 <translation id="3847841918622877581">Google Chrome आपके ब्राउज़िंग अनुभव को बेहतर बनाने के लिए वेब सेवाओं का उपयोग कर सकता है.</translation>
 <translation id="386202838227397562">कृपया सभी Google Chrome विंडो बंद करें और फिर से प्रयास करें.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
+<translation id="3881912906674381083">Chrome ने सत्यापित किया है कि <ph name="ISSUER" /> ने इस वेबसाइट का प्रमाणपत्र जारी किया है. सर्वर ने प्रमाणपत्र पारदर्शिता जानकारी प्रदान की है, लेकिन Chrome ने किसी भी प्रमाणपत्र पारदर्शिता लॉग को नहीं पहचाना.</translation>
 <translation id="3889417619312448367">Google Chrome को विस्थापित करें</translation>
 <translation id="4011219958405096740">सक्षम होने पर, iframe-आधारित Chrome प्रवेश प्रवाह का उपयोग करेगा; अन्‍यथा वेबदृश्‍य-आधारित प्रवाह का उपयोग करता है.</translation>
 <translation id="4050175100176540509">महत्‍वपूर्ण सुरक्षा सुधार और नई सुविधाएं नवीनतम वर्शन में उपलब्‍ध हैं.</translation>
@@ -93,10 +95,8 @@
 <translation id="4167057906098955729">आप Chrome ऐप्स , एक्सटेंशन, और वेबसाइटों की अपनी सभी सूचनाएं यहां देख सकते हैं.</translation>
 <translation id="423410644998903704">Chrome को अनुमति ऐक्सेस की आवश्यकता है ताकि अनुमति को इस साइट के साथ साझा किया जा सके.</translation>
 <translation id="4251615635259297716">आपके Chrome डेटा को इस खाते से लिंक करें?</translation>
-<translation id="4273752058983339720">Google Chrome आपके द्वारा अपना कंप्‍यूटर प्रारंभ करते ही लॉन्‍च होने के लिए कॉन्‍फ़ि‍गर किया गया है.</translation>
 <translation id="4309555186815777032">(Chrome <ph name="BEGIN_BUTTON" />पुन: प्रारंभ<ph name="END_BUTTON" /> करना आवश्यक है)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
-<translation id="4367618624832907428">Google Chrome वेबपृष्‍ठ प्रदर्शित नहीं कर सकता क्‍योंकि आपका कंप्‍यूटर इंटरनेट से कनेक्‍ट नहीं है.</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="4458285410772214805">इस परिवर्तन के प्रभावी होने के लिए, कृपया प्रस्थान करें और पुन: प्रवेश करें.</translation>
 <translation id="4480040274068703980">प्रवेश करने संबंधी त्रुटि के कारण Chrome OS आपका डेटा सिंक नहीं कर सका.</translation>
@@ -105,7 +105,6 @@
 <translation id="4567424176335768812">आपने <ph name="USER_EMAIL_ADDRESS" /> के रूप में प्रवेश किया हुआ है. अब आप अपने सभी प्रवेश किए हुए डिवाइस पर अपने बुकमार्क, इतिहास, और अन्य सेटिंग की एक्सेस कर सकेंगे.</translation>
 <translation id="4631713731678262610">Chrome मेनू में छिपाएं</translation>
 <translation id="4633000520311261472">Chrome को अधिक सुरक्षित बनाने के लिए, हमने ऐसे कुछ एक्सटेंशन अक्षम कर दिए हैं जो <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> में सूचीबद्ध नहीं हैं और आपकी जानकारी के बिना जोड़े गए हो सकते हैं.</translation>
-<translation id="4692614041509923516">आपका कंप्यूटर Microsoft Windows के किसी पुराने वर्शन को चला रहा है जो इस वेबसाइट के सुरक्षा प्रमाणपत्र को संसाधित नहीं कर सकता. इस समस्या के कारण, Google Chrome यह नहीं बता सकता कि प्रमाणपत्र <ph name="SITE" /> से आया है या आपके नेटवर्क पर मौजूद किसी व्यक्ति की ओर से जो <ph name="SITE" /> होने का दावा कर रहा है. कृपया अपने कंप्यूटर को नवीनतम Windows वर्शन में अपडेट करें.</translation>
 <translation id="4700157086864140907">Google Chrome आपके द्वारा ब्राउज़र में लिखे गए टेक्स्ट को Google सर्वर को भेजकर शानदार वर्तनी-जांच प्रदान करता है, जो आपको Google खोज द्वारा उपयोग की जाने वाली वर्तनी-जांच के समान वर्तनी जांच तकनीक का उपयोग करने की अनुमति देता है.</translation>
 <translation id="4728575227883772061">अनिर्दिष्ट कारण से स्थापना विफल हुई. यदि Google Chrome अभी खुला हुआ है, तो कृपया उसे बंद करें और फिर से प्रयास करें.</translation>
 <translation id="473775607612524610">अपडेट करें</translation>
@@ -114,6 +113,7 @@
 <translation id="4794050651896644714">Chrome में विवरण सहेजें</translation>
 <translation id="4891791193823137474">Google Chrome को पृष्ठभूमि में चलने दें</translation>
 <translation id="4921569541910214635">कंप्यूटर साझा करते हैं? अब आप Chrome जैसा चाहें वैसा सेट कर सकते हैं.</translation>
+<translation id="4925019873400497719">Chrome ने सत्यापित किया है कि <ph name="ISSUER" /> ने इस वेबसाइट का प्रमाणपत्र जारी किया है. सर्वर ने प्रमाणपत्र पारदर्शिता जानकारी प्रदान की, लेकिन वह अमान्य थी.</translation>
 <translation id="4953650215774548573">Google Chrome को अपने डिफ़ॉल्ट ब्राउज़र के रूप में सेट करना</translation>
 <translation id="4987308747895123092">कृपया सभी Google Chrome windows (Windows 8 मोड वाले भी) बंद कर दें और फिर से प्रयास करें.</translation>
 <translation id="4990567037958725628">Google Chrome कैनरी</translation>
@@ -193,7 +193,6 @@
 <translation id="6989339256997917931">Google Chrome को अपडेट कर दिया गया  है, लेकिन आपने इसका कम से कम 30 दिन से उपयोग नहीं किया है.</translation>
 <translation id="699076943483372849">यह साइट ऐसे पुराने Chrome फ़्रेम प्‍लग इन का उपयोग कर रही है, जिसे अब सुरक्षा और स्‍थिरता अपडेट प्राप्त नहीं होते. कृपया उसे अनइंस्‍टॉल करें और किसी आधुनिक ब्राउज़र में अपग्रेड करें.</translation>
 <translation id="6991142834212251086">मेरे Chrome डेटा को इस खाते से लिंक करें</translation>
-<translation id="7054640471403081847">यह कंप्यूटर जल्दी ही Google Chrome अपडेट प्राप्त करना बंद कर देगा क्योंकि इसका हार्डवेयर अब समर्थित नहीं है.</translation>
 <translation id="7060865993964054389">Google Chrome ऐप्स  लॉन्चर</translation>
 <translation id="7084448929020576097"><ph name="FILE_NAME" /> दुर्भावनापूर्ण है, और Chrome ने इसे अवरुद्ध कर दिया है.</translation>
 <translation id="7098166902387133879">Google Chrome आपके माइक्रोफ़ोन का उपयोग कर रहा है.</translation>
@@ -230,7 +229,6 @@
 <translation id="781069973841903133">Chrome इमर्सिव मोड में पुन: लॉन्‍च करने से आपके Chrome ऐप्‍स्‍ पुन: लॉन्‍च हो जाएंगे.</translation>
 <translation id="7825851276765848807">अनिर्दिष्ट त्रुटि के कारण डाउनलोड विफल हुआ. कृपया Google Chrome पुन: डाउनलोड करें.</translation>
 <translation id="7890208801193284374">यदि आप कंप्यूटर साझा करते हैं, तो मित्र और परिवार अलग-अलग ब्राउज़ कर सकते हैं और Chrome को जैसा चाहें सेट कर सकते हैं.</translation>
-<translation id="7908968924842975895">यह कंप्यूटर अब Google Chrome अपडेट प्राप्त नहीं करेगा क्योंकि इसका हार्डवेयर अब समर्थित नहीं है.</translation>
 <translation id="7984945080620862648">आप इस समय <ph name="SITE" /> पर विज़िट नहीं कर सकते हैं क्योंकि वेबसाइट ने ऐसे अव्यवस्थित प्रमाणिकता भेजे हैं जिन्हें Chrome संसाधित नहीं कर सकता. नेटवर्क की त्रुटियां और हमले आमतौर पर अस्थायी होते हैं, इसलिए संभवत: यह पृष्ठ बाद में काम करेगा.</translation>
 <translation id="8000275528373650868">Google Chrome को Windows Vista या SP2 वाले Windows XP या इसके बाद के वर्शन की आवश्यकता है.</translation>
 <translation id="8005540215158006229">Chrome लगभग तैयार है.</translation>

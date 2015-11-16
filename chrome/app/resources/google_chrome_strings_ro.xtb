@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ro">
 <translation id="1001534784610492198">Arhiva programului de instalare este deteriorată sau nevalidă. Descarcă din nou Google Chrome.</translation>
+<translation id="1013290471399003443">Chrome s-a asigurat că certificatul acestui site a fost emis de <ph name="ISSUER" />. Serverul a oferit informații valide privind Certificate Transparency.</translation>
 <translation id="1016765312371154165">Chrome nu s-a închis corect.</translation>
 <translation id="103396972844768118">Informații importante cu privire la datele dvs. Chrome</translation>
 <translation id="1061441684050139317">Chrome are nevoie de acces la microfon pentru a-l acorda acestui site.</translation>
@@ -62,6 +63,7 @@ Dacă totuși vă conectați, informațiile Chrome cum ar fi marcajele, istoricu
 <translation id="2769762047821873045">Google Chrome nu este browserul dvs. prestabilit.</translation>
 <translation id="2770231113462710648">Schimbă browserul prestabilit la:</translation>
 <translation id="2871893339301912279">V-ați conectat la Chrome!</translation>
+<translation id="2997147809295888909">Chrome s-a asigurat că certificatul acestui site a fost emis de <ph name="ISSUER" />. Serverul nu a oferit nicio informație privind Certificate Transparency.</translation>
 <translation id="3037838751736561277">Google Chrome este în modul fundal.</translation>
 <translation id="3047079729301751317">Dacă deconectați utilizatorul <ph name="USERNAME" />, vor fi șterse istoricul, marcajele, setările și alte date Chrome salvate pe acest dispozitiv. Datele salvate în Contul Google nu vor fi șterse și pot fi gestionate din <ph name="GOOGLE_DASHBOARD_LINK" />Tabloul de bord Google<ph name="END_GOOGLE_DASHBOARD_LINK" />.</translation>
 <translation id="3080151273017101988">Rulează în continuare aplicații în fundal când Google Chrome este închis</translation>
@@ -76,7 +78,6 @@ Dacă totuși vă conectați, informațiile Chrome cum ar fi marcajele, istoricu
 <translation id="345171907106878721">Adăugați-vă la Chrome</translation>
 <translation id="3612333635265770873">Un modul cu același nume este cunoscut ca având conflicte cu Google Chrome.</translation>
 <translation id="3622797965165704966">Acum este mai ușor să folosiți Chrome cu Contul Google și pe computerele utilizate în comun.</translation>
-<translation id="3656661827369545115">Chromium se lansează automat la pornirea computerului</translation>
 <translation id="3735758079232443276">Extensia „<ph name="EXTENSION_NAME" />” a modificat ce pagină se afișează când pornești Chrome.</translation>
 <translation id="3738139272394829648">Atinge pentru a căuta</translation>
 <translation id="3784527566857328444">Elimină din Chrome...</translation>
@@ -84,6 +85,7 @@ Dacă totuși vă conectați, informațiile Chrome cum ar fi marcajele, istoricu
 <translation id="3847841918622877581">Google Chrome poate utiliza servicii web pentru îmbunătățirea experienței de navigare.</translation>
 <translation id="386202838227397562">Închide toate ferestrele Google Chrome și încearcă din nou.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
+<translation id="3881912906674381083">Chrome s-a asigurat că certificatul acestui site a fost emis de <ph name="ISSUER" />. Serverul a oferit informații privind Certificate Transparency, însă Chrome nu a recunoscut niciunul dintre jurnalele Certificate Transparency.</translation>
 <translation id="3889417619312448367">Dezinstalează Google Chrome</translation>
 <translation id="4011219958405096740">Dacă este activat, se va folosi un flux de conectare la Chrome bazat pe iframe; în caz contrar se va folosi un flux bazat pe WebView.</translation>
 <translation id="4050175100176540509">În cea mai recentă versiune sunt disponibile îmbunătățiri de securitate și funcții noi importante.</translation>
@@ -93,10 +95,8 @@ Dacă totuși vă conectați, informațiile Chrome cum ar fi marcajele, istoricu
 <translation id="4167057906098955729">Aici puteți vedea toate notificările de la aplicațiile, extensiile și site-urile web Chrome.</translation>
 <translation id="423410644998903704">Chrome are nevoie de acces la permisiuni pentru a-l acorda acestui site.</translation>
 <translation id="4251615635259297716">Vă conectați datele Chrome cu acest cont?</translation>
-<translation id="4273752058983339720">Google Chrome este configurat pentru a se lansa automat când porniți computerul.</translation>
 <translation id="4309555186815777032">(necesită <ph name="BEGIN_BUTTON" />repornirea<ph name="END_BUTTON" /> Chrome)</translation>
 <translation id="4331809312908958774">Sistemul de operare Chrome</translation>
-<translation id="4367618624832907428">Google Chrome nu poate afișa pagina web, deoarece computerul nu este conectat la internet.</translation>
 <translation id="4407807842708586359">Sistemul de operare Google Chrome</translation>
 <translation id="4458285410772214805">Pentru ca modificarea să fie aplicată, deconectați-vă și conectați-vă din nou.</translation>
 <translation id="4480040274068703980">Sistemul de operare Chrome nu a putut sincroniza datele din cauza unei erori la conectare.</translation>
@@ -105,7 +105,6 @@ Dacă totuși vă conectați, informațiile Chrome cum ar fi marcajele, istoricu
 <translation id="4567424176335768812">V-ați conectat ca <ph name="USER_EMAIL_ADDRESS" />. Acum vă puteți accesa marcajele, istoricul și alte setări de pe toate dispozitivele pe care v-ați conectat.</translation>
 <translation id="4631713731678262610">Ascunde în meniul Chrome</translation>
 <translation id="4633000520311261472">Pentru ca browserul Chrome să fie mai sigur, am dezactivat câteva extensii care nu sunt incluse în <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> și care este posibil să fi fost adăugate fără știrea dvs.</translation>
-<translation id="4692614041509923516">Computerul rulează o versiune veche de Microsoft Windows care nu poate să proceseze certificatul de securitate al acestui site. Din cauza acestei probleme, Google Chrome nu poate stabili dacă certificatul a provenit de la <ph name="SITE" /> sau de la o entitate din rețeaua ta, care pretinde că este <ph name="SITE" />. Actualizează computerul cu o versiune mai recentă de Windows.</translation>
 <translation id="4700157086864140907">Google Chrome poate oferi o verificare a ortografiei mai inteligentă prin trimiterea textului introdus în browser la serverele Google, permițându-vă să utilizați aceeași tehnologie de verificare a ortografiei utilizată de Căutare Google.</translation>
 <translation id="4728575227883772061">Instalarea nu a reușit din cauza unei erori necunoscute. Dacă Google Chrome rulează în acest moment, închide-l și încearcă din nou.</translation>
 <translation id="473775607612524610">Actualizează</translation>
@@ -114,6 +113,7 @@ Dacă totuși vă conectați, informațiile Chrome cum ar fi marcajele, istoricu
 <translation id="4794050651896644714">Salvați detaliile în Chrome</translation>
 <translation id="4891791193823137474">Permite ca Google Chrome să ruleze în fundal</translation>
 <translation id="4921569541910214635">Folosești un computer în comun? Acum poți să configurezi Chrome exact cum îți place.</translation>
+<translation id="4925019873400497719">Chrome s-a asigurat că certificatul acestui site a fost emis de <ph name="ISSUER" />. Serverul a oferit informații privind Certificate Transparency, însă acestea nu au fost valide.</translation>
 <translation id="4953650215774548573">Setați Google Chrome ca browser prestabilit</translation>
 <translation id="4987308747895123092">Închideți toate ferestrele Google Chrome (inclusiv pe cele în modul Windows 8) și încercați din nou.</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
@@ -190,7 +190,6 @@ Dacă totuși vă conectați, informațiile Chrome cum ar fi marcajele, istoricu
 <translation id="6989339256997917931">Google Chrome a fost actualizat, dar nu l-ai folosit cel puțin 30 de zile.</translation>
 <translation id="699076943483372849">Acest site folosește pluginul Chrome Frame, care a fost retras și nu mai primește actualizări de securitate sau de stabilitate. Dezinstalează-l sau fă upgrade la un browser modern.</translation>
 <translation id="6991142834212251086">Conectați-vă datele Chrome cu acest cont</translation>
-<translation id="7054640471403081847">În curând, acest computer nu va mai primi actualizări Google Chrome, deoarece hardware-ul său nu mai este acceptat.</translation>
 <translation id="7060865993964054389">Lansatorul de aplicații Google Chrome</translation>
 <translation id="7084448929020576097">Fișierul <ph name="FILE_NAME" /> este rău-intenționat și a fost blocat de Chrome.</translation>
 <translation id="7098166902387133879">Google Chrome utilizează microfonul.</translation>
@@ -227,7 +226,6 @@ Dacă totuși vă conectați, informațiile Chrome cum ar fi marcajele, istoricu
 <translation id="781069973841903133">Relansarea în modul extins Chrome va închide și va relansa aplicațiile Chrome.</translation>
 <translation id="7825851276765848807">Instalarea nu a reușit din cauza unei erori neprecizate. Descarci Google Chrome din nou.</translation>
 <translation id="7890208801193284374">Dacă permiteți accesul la un computer, familia și prietenii pot să navigheze separat și să configureze Chrome cum doresc.</translation>
-<translation id="7908968924842975895">Acest computer nu va mai primi actualizări Google Chrome, deoarece hardware-ul său nu mai este acceptat.</translation>
 <translation id="7984945080620862648">Nu puteți accesa acum site-ul <ph name="SITE" />, deoarece acesta a trimis date de conectare într-un format necunoscut, pe care Chrome nu le poate procesa. Erorile de rețea și atacurile sunt de obicei temporare și probabil că această pagină va funcționa mai târziu.</translation>
 <translation id="8000275528373650868">Google Chrome necesită Windows Vista sau Windows XP cu SP2 sau o versiune ulterioară.</translation>
 <translation id="8005540215158006229">Chrome este aproape pregătit.</translation>

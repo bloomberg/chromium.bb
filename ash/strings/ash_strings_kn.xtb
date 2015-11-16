@@ -26,9 +26,7 @@
 ಬದಲಿಸಲು Shift + Alt ಅನ್ನು ಒತ್ತಿರಿ.</translation>
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME" /> ಗೆ ಪ್ರತಿಬಿಂಬಿಸುತ್ತಿದೆ</translation>
 <translation id="1923539912171292317">ಸ್ವಯಂಚಾಲಿತ ಕ್ಲಿಕ್‌ಗಳು</translation>
-<translation id="1950626184269948555">ಕಾರ್ಯ ನಿರ್ವಾಹಕರ ಶಾರ್ಟ್‌ಕಟ್ ಬದಲಾಗಿದೆ. ದಯವಿಟ್ಟು Shift+Esc ಬದಲಿಗೆ Search+Esc ಬಳಸಿ.</translation>
 <translation id="1957803754585243749">0°</translation>
-<translation id="1963814843110128691">$1 ರಿಂದ $2 ಗೆ ಬಿತ್ತರಿಸಲಾಗುತ್ತಿದೆ</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1987317783729300807">ಖಾತೆಗಳು</translation>
 <translation id="2127372758936585790">ಕಡಿಮೆ ವಿದ್ಯುತ್ ಚಾರ್ಜರ್</translation>
@@ -94,6 +92,7 @@
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">ಲಾಕ್ ಮಾಡಿ</translation>
 <translation id="3799026279081545374">ನೀವು ತಪ್ಪಾದ ಚಾರ್ಜರ್ ಅನ್ನು ಹೊಂದಿರಬಹುದು. ನೀವು US ನಲ್ಲಿ ನೆಲೆಸಿದ್ದರೇ, ಕ್ರಮವಾಗಿ ಸಹಾಯ ಪಡೆಯಲು ಮತ್ತು ಬದಲಾವಣೆಯನ್ನು ಪಡೆಯಲು ದಯವಿಟ್ಟು 866-628-1371 ಗೆ ಕರೆ ಮಾಡಿ. ನೀವು UK ಯಲ್ಲಿ ನೆಲೆಸಿದ್ದರೆ, ದಯವಿಟ್ಟು 0800-026-0613 ಗೆ ಕರೆ ಮಾಡಿ. ನೀವು ಐರ್ಲೆಂಡ್‍‍ನಲ್ಲಿ ನೆಲೆಸಿದ್ದರೆ, ದಯವಿಟ್ಟು 1-800-832-664 ಗೆ ಕರೆ ಮಾಡಿ. ನೀವು ಕೆನಡಾದಲ್ಲಿ ನೆಲೆಸಿದ್ದರೆ, ದಯವಿಟ್ಟು 866-628-1372 ಗೆ ಕರೆ ಮಾಡಿ. ನೀವು ಆಸ್ಟ್ರೇಲಿಯಾದಲ್ಲಿ ನೆಲೆಸಿದ್ದರೆ, ದಯವಿಟ್ಟು 1-800-067-460 ಗೆ ಕರೆ ಮಾಡಿ.</translation>
+<translation id="3866182280516392520">IPv6 ವಿಳಾಸ</translation>
 <translation id="3891340733213178823">ಸೈನ್ ಔಟ್ ಮಾಡಲು Ctrl+Shift+Q ಅನ್ನು ಎರಡುಬಾರಿ ಒತ್ತಿರಿ.</translation>
 <translation id="3892641579809465218">ಆಂತರಿಕ ಪ್ರದರ್ಶನ</translation>
 <translation id="3963445509666917109">ಸ್ಪೀಕರ್ (ಆಂತರಿಕ)</translation>
@@ -152,7 +151,6 @@
 <translation id="6165508094623778733">ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE" />%</translation>
 <translation id="6248847161401822652">ತೊರೆಯಲು Control Shift Q ಅನ್ನು ಎರಡು ಬಾರಿ ಒತ್ತಿರಿ.</translation>
-<translation id="6287020362823083378">ಪರದೆ ಲಾಕ್ ಶಾರ್ಟ್‌ಕಟ್ ಬದಲಾಗಿದೆ. ದಯವಿಟ್ಟು Ctrl+Shift+L ಬದಲಿಗೆ Search+L ಬಳಸಿ.</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> ಅನ್ನು <ph name="ROTATION" /> ಗೆ ತಿರುಗಿಸಲಾಗಿದೆ</translation>
 <translation id="6359806961507272919"><ph name="PHONE_NUMBER" /> ನಿಂದ SMS</translation>
 <translation id="639644700271529076">CAPS LOCK ಆಫ್ ಆಗಿದೆ</translation>
@@ -204,7 +202,6 @@
 <translation id="8308637677604853869">ಹಿಂದಿನ ಮೆನು</translation>
 <translation id="8356164830168736643"><ph name="WINDOW_TITLE" /> ಮುಚ್ಚಿ</translation>
 <translation id="8428213095426709021">ಸೆಟ್ಟಿಂಗ್‌ಗಳು</translation>
-<translation id="8443356412772935865">ಪರದೆಯನ್ನು $1 ಗೆ ಬಿತ್ತರಿಸಲಾಗುತ್ತಿದೆ</translation>
 <translation id="8456362689280298700"><ph name="HOUR" />:<ph name="MINUTE" /> ಪೂರ್ಣಗೊಳ್ಳುವವರೆಗೆ</translation>
 <translation id="8517041960877371778">ನಿಮ್ಮ <ph name="DEVICE_TYPE" /> ಅನ್ನು ಆನ್ ಮಾಡಿರುವಾಗ ಅದನ್ನು ಚಾರ್ಜ್ ಮಾಡಲಾಗುವುದಿಲ್ಲ.</translation>
 <translation id="8528322925433439945">ಮೊಬೈಲ್...</translation>
