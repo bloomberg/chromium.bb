@@ -115,9 +115,9 @@ int SelectedKeywordView::GetImageAndPaddingWidth() const {
   int width = IconLabelBubbleView::GetImageAndPaddingWidth();
   // Squeeze the icon and label closer to account for intrinsic padding in the
   // icon.
-  if (ui::MaterialDesignController::IsModeMaterial() && width > 0)
+  if (ui::MaterialDesignController::IsModeMaterial())
     width -= 3;
 
-  DCHECK_GT(width, 0);
+  DCHECK_GE(width, 0);
   return width;
 }
