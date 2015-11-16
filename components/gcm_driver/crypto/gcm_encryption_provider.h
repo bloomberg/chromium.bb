@@ -41,13 +41,13 @@ class GCMEncryptionProvider {
     // The contents of the Encryption HTTP header could not be parsed.
     DECRYPTION_FAILURE_INVALID_ENCRYPTION_HEADER,
 
-    // The contents of the Encryption-Key HTTP header could not be parsed.
-    DECRYPTION_FAILURE_INVALID_ENCRYPTION_KEY_HEADER,
+    // The contents of the Crypto-Key HTTP header could not be parsed.
+    DECRYPTION_FAILURE_INVALID_CRYPTO_KEY_HEADER,
 
     // No public/private key-pair was associated with the app_id.
     DECRYPTION_FAILURE_NO_KEYS,
 
-    // The public key provided in the Encryption-Key header is invalid.
+    // The public key provided in the Crypto-Key header is invalid.
     DECRYPTION_FAILURE_INVALID_PUBLIC_KEY,
 
     // The payload could not be decrypted as AES-128-GCM.

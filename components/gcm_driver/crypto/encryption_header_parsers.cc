@@ -15,7 +15,7 @@ namespace gcm {
 namespace {
 
 // The default record size in bytes, as defined in section two of
-// https://tools.ietf.org/html/draft-thomson-http-encryption-01.
+// https://tools.ietf.org/html/draft-thomson-http-encryption-02.
 const uint64_t kDefaultRecordSizeBytes = 4096;
 
 // Decodes the string between |begin| and |end| using base64url, and writes the
@@ -63,7 +63,7 @@ bool RecordSizeToInt(const std::string::const_iterator& begin,
 // This implementation applies the parameters defined in section 3.1 of the
 // HTTP encryption encoding document:
 //
-// https://tools.ietf.org/html/draft-thomson-http-encryption-01#section-3.1
+// https://tools.ietf.org/html/draft-thomson-http-encryption-02#section-3.1
 //
 // This means that the three supported parameters are:
 //
@@ -103,24 +103,24 @@ bool ParseEncryptionHeaderValuesImpl(std::string::const_iterator input_begin,
 }
 
 // Parses the string between |input_begin| and |input_end| according to the
-// extended ABNF syntax for the Encryption-Key HTTP header, per the "parameter"
-// rule from RFC 7231 (https://tools.ietf.org/html/rfc7231).
+// extended ABNF syntax for the Crypto-Key HTTP header, per the "parameter" rule
+// from RFC 7231 (https://tools.ietf.org/html/rfc7231).
 //
 // encryption_params = [ parameter *( ";" parameter ) ]
 //
 // This implementation applies the parameters defined in section 4 of the
 // HTTP encryption encoding document:
 //
-//https://tools.ietf.org/html/draft-thomson-http-encryption-01#section-4
+//https://tools.ietf.org/html/draft-thomson-http-encryption-02#section-4
 //
 // This means that the three supported parameters are:
 //
 //     [ "keyid" "=" string ]
-//     [ ";" "key" "=" base64url ]
+//     [ ";" "aesgcm128" "=" base64url ]
 //     [ ";" "dh" "=" base64url ]
-bool ParseEncryptionKeyHeaderValuesImpl(std::string::const_iterator input_begin,
-                                        std::string::const_iterator input_end,
-                                        EncryptionKeyHeaderValues* values) {
+bool ParseCryptoKeyHeaderValuesImpl(std::string::const_iterator input_begin,
+                                    std::string::const_iterator input_end,
+                                    CryptoKeyHeaderValues* values) {
   net::HttpUtil::NameValuePairsIterator name_value_pairs(
       input_begin, input_end, ';',
       net::HttpUtil::NameValuePairsIterator::VALUES_NOT_OPTIONAL);
@@ -132,9 +132,10 @@ bool ParseEncryptionKeyHeaderValuesImpl(std::string::const_iterator input_begin,
     if (base::LowerCaseEqualsASCII(name, "keyid")) {
       values->keyid.assign(name_value_pairs.value_begin(),
                            name_value_pairs.value_end());
-    } else if (base::LowerCaseEqualsASCII(name, "key")) {
+    } else if (base::LowerCaseEqualsASCII(name, "aesgcm128")) {
       if (!ValueToDecodedString(name_value_pairs.value_begin(),
-                                name_value_pairs.value_end(), &values->key)) {
+                                name_value_pairs.value_end(),
+                                &values->aesgcm128)) {
         return false;
       }
     } else if (base::LowerCaseEqualsASCII(name, "dh")) {
@@ -176,18 +177,18 @@ bool ParseEncryptionHeader(const std::string& input,
   return true;
 }
 
-bool ParseEncryptionKeyHeader(const std::string& input,
-                              std::vector<EncryptionKeyHeaderValues>* values) {
+bool ParseCryptoKeyHeader(const std::string& input,
+                          std::vector<CryptoKeyHeaderValues>* values) {
   DCHECK(values);
 
-  std::vector<EncryptionKeyHeaderValues> candidate_values;
+  std::vector<CryptoKeyHeaderValues> candidate_values;
 
   net::HttpUtil::ValuesIterator value_iterator(input.begin(), input.end(), ',');
   while (value_iterator.GetNext()) {
-    EncryptionKeyHeaderValues candidate_value;
-    if (!ParseEncryptionKeyHeaderValuesImpl(value_iterator.value_begin(),
-                                            value_iterator.value_end(),
-                                            &candidate_value)) {
+    CryptoKeyHeaderValues candidate_value;
+    if (!ParseCryptoKeyHeaderValuesImpl(value_iterator.value_begin(),
+                                        value_iterator.value_end(),
+                                        &candidate_value)) {
       return false;
     }
 

@@ -21,7 +21,7 @@ namespace gcm {
 namespace {
 
 const char kEncryptionProperty[] = "encryption";
-const char kEncryptionKeyProperty[] = "encryption_key";
+const char kCryptoKeyProperty[] = "crypto_key";
 
 // Directory in the GCM Store in which the encryption database will be stored.
 const base::FilePath::CharType kEncryptionDirectoryName[] =
@@ -62,14 +62,11 @@ void GCMEncryptionProvider::GetPublicKey(const std::string& app_id,
 
 bool GCMEncryptionProvider::IsEncryptedMessage(const IncomingMessage& message)
     const {
-  // The Web Push protocol requires the encryption and encryption_key properties
-  // to be set, and the raw_data field to be populated with the payload.
+  // The Web Push protocol requires the encryption and crypto_key properties to
+  // be set, and the raw_data field to be populated with the payload.
   if (message.data.find(kEncryptionProperty) == message.data.end() ||
-      message.data.find(kEncryptionKeyProperty) == message.data.end())
+      message.data.find(kCryptoKeyProperty) == message.data.end())
     return false;
-
-  // TODO(peter): Support decrypting messages that were sent using the existing
-  // GCM protocol, as opposed to the Web Push protocol.
 
   return message.raw_data.size() > 0;
 }
@@ -82,11 +79,11 @@ void GCMEncryptionProvider::DecryptMessage(
   DCHECK(key_store_);
 
   const auto& encryption_header = message.data.find(kEncryptionProperty);
-  const auto& encryption_key_header = message.data.find(kEncryptionKeyProperty);
+  const auto& crypto_key_header = message.data.find(kCryptoKeyProperty);
 
   // Callers are expected to call IsEncryptedMessage() prior to this method.
   DCHECK(encryption_header != message.data.end());
-  DCHECK(encryption_key_header != message.data.end());
+  DCHECK(crypto_key_header != message.data.end());
 
   std::vector<EncryptionHeaderValues> encryption_header_values;
   if (!ParseEncryptionHeader(encryption_header->second,
@@ -104,18 +101,18 @@ void GCMEncryptionProvider::DecryptMessage(
     return;
   }
 
-  std::vector<EncryptionKeyHeaderValues> encryption_key_header_values;
-  if (!ParseEncryptionKeyHeader(encryption_key_header->second,
-                                &encryption_key_header_values)) {
-    DLOG(ERROR) << "Unable to parse the value of the Encryption-Key header";
-    failure_callback.Run(DECRYPTION_FAILURE_INVALID_ENCRYPTION_KEY_HEADER);
+  std::vector<CryptoKeyHeaderValues> crypto_key_header_values;
+  if (!ParseCryptoKeyHeader(crypto_key_header->second,
+                            &crypto_key_header_values)) {
+    DLOG(ERROR) << "Unable to parse the value of the Crypto-Key header";
+    failure_callback.Run(DECRYPTION_FAILURE_INVALID_CRYPTO_KEY_HEADER);
     return;
   }
 
-  if (encryption_key_header_values.size() != 1u ||
-      !encryption_key_header_values[0].dh.size()) {
-    DLOG(ERROR) << "Invalid values supplied in the Encryption-Key header";
-    failure_callback.Run(DECRYPTION_FAILURE_INVALID_ENCRYPTION_KEY_HEADER);
+  if (crypto_key_header_values.size() != 1u ||
+      !crypto_key_header_values[0].dh.size()) {
+    DLOG(ERROR) << "Invalid values supplied in the Crypto-Key header";
+    failure_callback.Run(DECRYPTION_FAILURE_INVALID_CRYPTO_KEY_HEADER);
     return;
   }
 
@@ -124,7 +121,7 @@ void GCMEncryptionProvider::DecryptMessage(
                          weak_ptr_factory_.GetWeakPtr(), message,
                          success_callback, failure_callback,
                          encryption_header_values[0].salt,
-                         encryption_key_header_values[0].dh,
+                         crypto_key_header_values[0].dh,
                          encryption_header_values[0].rs));
 }
 

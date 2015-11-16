@@ -129,27 +129,28 @@ TEST(EncryptionHeaderParsersTest, ParseInvalidEncryptionHeaders) {
   }
 }
 
-TEST(EncryptionHeaderParsersTest, ParseValidEncryptionKeyHeaders) {
+TEST(EncryptionHeaderParsersTest, ParseValidCryptoKeyHeaders) {
   struct {
     const char* const header;
     const char* const parsed_keyid;
-    const char* const parsed_key;
+    const char* const parsed_aesgcm128;
     const char* const parsed_dh;
   } expected_results[] = {
-    { "keyid=foo;key=c2l4dGVlbmNvb2xieXRlcw;dh=dHdlbHZlY29vbGJ5dGVz",
+    { "keyid=foo;aesgcm128=c2l4dGVlbmNvb2xieXRlcw;dh=dHdlbHZlY29vbGJ5dGVz",
       "foo", "sixteencoolbytes", "twelvecoolbytes" },
-    { "keyid=foo; key=c2l4dGVlbmNvb2xieXRlcw; dh=dHdlbHZlY29vbGJ5dGVz",
+    { "keyid=foo; aesgcm128=c2l4dGVlbmNvb2xieXRlcw; dh=dHdlbHZlY29vbGJ5dGVz",
       "foo", "sixteencoolbytes", "twelvecoolbytes" },
-    { "keyid = foo ; key = c2l4dGVlbmNvb2xieXRlcw ; dh = dHdlbHZlY29vbGJ5dGVz ",
+    { "keyid = foo ; aesgcm128 = c2l4dGVlbmNvb2xieXRlcw ; dh = dHdlbHZlY29vbGJ5"
+          "dGVz ",
       "foo", "sixteencoolbytes", "twelvecoolbytes" },
-    { "KEYID=foo;KEY=c2l4dGVlbmNvb2xieXRlcw;DH=dHdlbHZlY29vbGJ5dGVz",
+    { "KEYID=foo;AESGCM128=c2l4dGVlbmNvb2xieXRlcw;DH=dHdlbHZlY29vbGJ5dGVz",
       "foo", "sixteencoolbytes", "twelvecoolbytes" },
     { "keyid=foo", "foo", "", "" },
-    { "key=c2l4dGVlbmNvb2xieXRlcw", "", "sixteencoolbytes", "" },
-    { "key=\"c2l4dGVlbmNvb2xieXRlcw\"", "", "sixteencoolbytes", "" },
-    { "key='c2l4dGVlbmNvb2xieXRlcw'", "", "sixteencoolbytes", "" },
+    { "aesgcm128=c2l4dGVlbmNvb2xieXRlcw", "", "sixteencoolbytes", "" },
+    { "aesgcm128=\"c2l4dGVlbmNvb2xieXRlcw\"", "", "sixteencoolbytes", "" },
+    { "aesgcm128='c2l4dGVlbmNvb2xieXRlcw'", "", "sixteencoolbytes", "" },
     { "dh=dHdlbHZlY29vbGJ5dGVz", "", "", "twelvecoolbytes" },
-    { "keyid=foo;someothervalue=bar;key=dHdlbHZlY29vbGJ5dGVz",
+    { "keyid=foo;someothervalue=bar;aesgcm128=dHdlbHZlY29vbGJ5dGVz",
       "foo", "twelvecoolbytes", "" },
     { "keyid=foo;keyid=bar", "bar", "", "" },
   };
@@ -157,38 +158,38 @@ TEST(EncryptionHeaderParsersTest, ParseValidEncryptionKeyHeaders) {
   for (size_t i = 0; i < arraysize(expected_results); i++) {
     SCOPED_TRACE(i);
 
-    std::vector<EncryptionKeyHeaderValues> values;
-    ASSERT_TRUE(ParseEncryptionKeyHeader(expected_results[i].header, &values));
+    std::vector<CryptoKeyHeaderValues> values;
+    ASSERT_TRUE(ParseCryptoKeyHeader(expected_results[i].header, &values));
     ASSERT_EQ(1u, values.size());
 
     EXPECT_EQ(expected_results[i].parsed_keyid, values[0].keyid);
-    EXPECT_EQ(expected_results[i].parsed_key, values[0].key);
+    EXPECT_EQ(expected_results[i].parsed_aesgcm128, values[0].aesgcm128);
     EXPECT_EQ(expected_results[i].parsed_dh, values[0].dh);
   }
 }
 
-TEST(EncryptionHeaderParsersTest, ParseValidMultiValueEncryptionKeyHeaders) {
+TEST(EncryptionHeaderParsersTest, ParseValidMultiValueCryptoKeyHeaders) {
   const size_t kNumberOfValues = 2u;
 
   struct {
     const char* const header;
     struct {
       const char* const keyid;
-      const char* const key;
+      const char* const aesgcm128;
       const char* const dh;
     } parsed_values[kNumberOfValues];
   } expected_results[] = {
-    { "keyid=foo;key=c2l4dGVlbmNvb2xieXRlcw;dh=dHdlbHZlY29vbGJ5dGVz,keyid=bar;"
-          "key=dHdlbHZlY29vbGJ5dGVz;dh=c2l4dGVlbmNvb2xieXRlcw",
+    { "keyid=foo;aesgcm128=c2l4dGVlbmNvb2xieXRlcw;dh=dHdlbHZlY29vbGJ5dGVz,"
+          "keyid=bar;aesgcm128=dHdlbHZlY29vbGJ5dGVz;dh=c2l4dGVlbmNvb2xieXRlcw",
       { { "foo", "sixteencoolbytes", "twelvecoolbytes" },
         { "bar", "twelvecoolbytes", "sixteencoolbytes" } } },
-    { "keyid=foo,key=c2l4dGVlbmNvb2xieXRlcw",
+    { "keyid=foo,aesgcm128=c2l4dGVlbmNvb2xieXRlcw",
       { { "foo", "", "" },
         { "", "sixteencoolbytes", "" } } },
     { "keyid=foo,keyid=bar;dh=dHdlbHZlY29vbGJ5dGVz",
       { { "foo", "", "" },
         { "bar", "", "twelvecoolbytes" } } },
-    { "keyid=\"foo,keyid=bar\",key=c2l4dGVlbmNvb2xieXRlcw",
+    { "keyid=\"foo,keyid=bar\",aesgcm128=c2l4dGVlbmNvb2xieXRlcw",
       { { "foo,keyid=bar", "", "" },
         { "", "sixteencoolbytes", "" } } },
   };
@@ -196,28 +197,29 @@ TEST(EncryptionHeaderParsersTest, ParseValidMultiValueEncryptionKeyHeaders) {
   for (size_t i = 0; i < arraysize(expected_results); i++) {
     SCOPED_TRACE(i);
 
-    std::vector<EncryptionKeyHeaderValues> values;
-    ASSERT_TRUE(ParseEncryptionKeyHeader(expected_results[i].header, &values));
+    std::vector<CryptoKeyHeaderValues> values;
+    ASSERT_TRUE(ParseCryptoKeyHeader(expected_results[i].header, &values));
     ASSERT_EQ(kNumberOfValues, values.size());
 
     for (size_t j = 0; j < kNumberOfValues; ++j) {
       EXPECT_EQ(expected_results[i].parsed_values[j].keyid, values[j].keyid);
-      EXPECT_EQ(expected_results[i].parsed_values[j].key, values[j].key);
+      EXPECT_EQ(expected_results[i].parsed_values[j].aesgcm128,
+                values[j].aesgcm128);
       EXPECT_EQ(expected_results[i].parsed_values[j].dh, values[j].dh);
     }
   }
 }
 
-TEST(EncryptionHeaderParsersTest, ParseInvalidEncryptionKeyHeaders) {
+TEST(EncryptionHeaderParsersTest, ParseInvalidCryptoKeyHeaders) {
   const char* const expected_failures[] = {
     "keyid",
     "keyid=",
     "keyid=foo,keyid",
     "keyid=foo;novaluekey",
-    "key",
-    "key=",
-    "key=123$xyz",
-    "key=foobar,key=123$xyz",
+    "aesgcm128",
+    "aesgcm128=",
+    "aesgcm128=123$xyz",
+    "aesgcm128=foobar,aesgcm128=123$xyz",
     "dh",
     "dh=",
     "dh=YmV/2ZXJ-sMDA",
@@ -228,8 +230,8 @@ TEST(EncryptionHeaderParsersTest, ParseInvalidEncryptionKeyHeaders) {
   for (size_t i = 0; i < arraysize(expected_failures); i++) {
     SCOPED_TRACE(i);
 
-    std::vector<EncryptionKeyHeaderValues> values;
-    EXPECT_FALSE(ParseEncryptionKeyHeader(expected_failures[i], &values));
+    std::vector<CryptoKeyHeaderValues> values;
+    EXPECT_FALSE(ParseCryptoKeyHeader(expected_failures[i], &values));
     EXPECT_EQ(0u, values.size());
   }
 }
@@ -240,11 +242,11 @@ TEST(EncryptionHeaderParsersTest, SixValueHeader) {
   std::vector<EncryptionHeaderValues> encryption_values;
   ASSERT_TRUE(ParseEncryptionHeader(header, &encryption_values));
 
-  std::vector<EncryptionKeyHeaderValues> encryption_key_values;
-  ASSERT_TRUE(ParseEncryptionKeyHeader(header, &encryption_key_values));
+  std::vector<CryptoKeyHeaderValues> crypto_key_values;
+  ASSERT_TRUE(ParseCryptoKeyHeader(header, &crypto_key_values));
 
   ASSERT_EQ(6u, encryption_values.size());
-  ASSERT_EQ(6u, encryption_key_values.size());
+  ASSERT_EQ(6u, crypto_key_values.size());
 
   for (size_t i = 0; i < encryption_values.size(); i++) {
     SCOPED_TRACE(i);
@@ -252,7 +254,7 @@ TEST(EncryptionHeaderParsersTest, SixValueHeader) {
     const std::string value = base::IntToString(i);
 
     EXPECT_EQ(value, encryption_values[i].keyid);
-    EXPECT_EQ(value, encryption_key_values[i].keyid);
+    EXPECT_EQ(value, crypto_key_values[i].keyid);
   }
 }
 
@@ -272,20 +274,20 @@ TEST(EncryptionHeaderParsersTest, InvalidHeadersDoNotModifyOutput) {
   EXPECT_EQ("somesalt", encryption_values[0].salt);
   EXPECT_EQ(42u, encryption_values[0].rs);
 
-  EncryptionKeyHeaderValues encryption_key_value;
-  encryption_key_value.keyid = "myotherkeyid";
-  encryption_key_value.key = "akey";
-  encryption_key_value.dh = "yourdh";
+  CryptoKeyHeaderValues crypto_key_value;
+  crypto_key_value.keyid = "myotherkeyid";
+  crypto_key_value.aesgcm128 = "akey";
+  crypto_key_value.dh = "yourdh";
 
-  std::vector<EncryptionKeyHeaderValues> encryption_key_values;
-  encryption_key_values.push_back(encryption_key_value);
+  std::vector<CryptoKeyHeaderValues> crypto_key_values;
+  crypto_key_values.push_back(crypto_key_value);
 
-  ASSERT_FALSE(ParseEncryptionKeyHeader("key=$$$", &encryption_key_values));
-  ASSERT_EQ(1u, encryption_key_values.size());
+  ASSERT_FALSE(ParseCryptoKeyHeader("aesgcm128=$$$", &crypto_key_values));
+  ASSERT_EQ(1u, crypto_key_values.size());
 
-  EXPECT_EQ("myotherkeyid", encryption_key_values[0].keyid);
-  EXPECT_EQ("akey", encryption_key_values[0].key);
-  EXPECT_EQ("yourdh", encryption_key_values[0].dh);
+  EXPECT_EQ("myotherkeyid", crypto_key_values[0].keyid);
+  EXPECT_EQ("akey", crypto_key_values[0].aesgcm128);
+  EXPECT_EQ("yourdh", crypto_key_values[0].dh);
 }
 
 }  // namespace
