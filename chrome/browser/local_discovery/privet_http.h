@@ -62,24 +62,6 @@ class PrivetHTTPClient {
 
   virtual void RefreshPrivetToken(
       const PrivetURLFetcher::TokenCallback& token_callback) = 0;
-
-  // TODO(vitalybuka): Remove all below as part of crbug.com/551631
-  // PrivetV3Session should not need to use PrivetHTTPClient.
-  // After this call only HTTPS will be used. Only requests to the server with
-  // matching certificate will be allowed.
-  // Privet v3 devices MUST support HTTPS. Before communicating over HTTPS,
-  // Privet v3 pairing generates a shared secret using SPAKE2 over an
-  // unauthenticated channel. This shared secret is used to then authenticate
-  // the fingerprint of a certificate, which is self-signed. The client then
-  // validates that the HTTPS peer is sending a certificate matching that
-  // fingerprint.
-  // For more information on this protocol:
-  // https://developers.google.com/cloud-devices/v1/reference/local-api/pairing_start
-  virtual void SwitchToHttps(uint16_t port) = 0;
-
-  virtual bool IsInHttpsMode() const = 0;
-
-  virtual std::string GetHost() const = 0;
 };
 
 class PrivetDataReadOperation {

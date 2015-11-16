@@ -95,12 +95,17 @@ class PrivetV3Session {
   void StartPostRequest(const std::string& api,
                         const base::DictionaryValue& input,
                         const MessageCallback& callback);
+  void SwitchToHttps();
+  GURL CreatePrivetURL(const std::string& path) const;
   local_discovery::PrivetURLFetcher* CreateFetcher(
       const std::string& api,
       net::URLFetcher::RequestType request_type,
       const MessageCallback& callback);
   void DeleteFetcher(const FetcherDelegate* fetcher);
   void Cancel();
+
+  // Endpoint for the current session.
+  net::HostPortPair host_port_;
 
   // Creates instances of PrivetURLFetcher.
   scoped_ptr<local_discovery::PrivetHTTPClient> client_;
@@ -122,6 +127,9 @@ class PrivetV3Session {
 
   // HTTPS port of the device.
   uint16_t https_port_ = 0;
+
+  // If true, HTTPS will be used.
+  bool use_https_ = false;
 
   // List of fetches to cancel when session is destroyed.
   ScopedVector<FetcherDelegate> fetchers_;

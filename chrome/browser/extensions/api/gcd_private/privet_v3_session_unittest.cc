@@ -43,7 +43,7 @@ using Result = PrivetV3Session::Result;
 
 const char kInfoResponse[] =
     "{\"version\":\"3.0\","
-    "\"endpoints\":{\"httpsPort\": 443},"
+    "\"endpoints\":{\"httpsPort\": 1443},"
     "\"authentication\":{"
     "  \"mode\":[\"anonymous\",\"pairing\",\"cloud\"],"
     "  \"pairing\":[\"pinCode\",\"embeddedCode\"],"
@@ -78,7 +78,7 @@ class PrivetV3SessionTest : public testing::Test {
         new PrivetV3ContextGetter(base::ThreadTaskRunnerHandle::Get());
 
     session_.reset(
-        new PrivetV3Session(context_getter, net::HostPortPair("host", 80)));
+        new PrivetV3Session(context_getter, net::HostPortPair("host", 180)));
 
     session_->on_post_data_ =
         base::Bind(&PrivetV3SessionTest::OnPostData, base::Unretained(this));
@@ -93,7 +93,7 @@ class PrivetV3SessionTest : public testing::Test {
 TEST_F(PrivetV3SessionTest, InitError) {
   EXPECT_CALL(*this, OnInitializedMock(Result::STATUS_CONNECTIONERROR, _))
       .Times(1);
-  fetcher_factory_.SetFakeResponse(GURL("http://host/privet/info"), "",
+  fetcher_factory_.SetFakeResponse(GURL("http://host:180/privet/info"), "",
                                    net::HTTP_OK, net::URLRequestStatus::FAILED);
   session_->Init(
       base::Bind(&PrivetV3SessionTest::OnInitialized, base::Unretained(this)));
@@ -106,8 +106,8 @@ TEST_F(PrivetV3SessionTest, VersionError) {
 
   EXPECT_CALL(*this, OnInitializedMock(Result::STATUS_SESSIONERROR, _))
       .Times(1);
-  fetcher_factory_.SetFakeResponse(GURL("http://host/privet/info"), response,
-                                   net::HTTP_OK,
+  fetcher_factory_.SetFakeResponse(GURL("http://host:180/privet/info"),
+                                   response, net::HTTP_OK,
                                    net::URLRequestStatus::SUCCESS);
   session_->Init(
       base::Bind(&PrivetV3SessionTest::OnInitialized, base::Unretained(this)));
@@ -120,8 +120,8 @@ TEST_F(PrivetV3SessionTest, ModeError) {
 
   EXPECT_CALL(*this, OnInitializedMock(Result::STATUS_SESSIONERROR, _))
       .Times(1);
-  fetcher_factory_.SetFakeResponse(GURL("http://host/privet/info"), response,
-                                   net::HTTP_OK,
+  fetcher_factory_.SetFakeResponse(GURL("http://host:180/privet/info"),
+                                   response, net::HTTP_OK,
                                    net::URLRequestStatus::SUCCESS);
   session_->Init(
       base::Bind(&PrivetV3SessionTest::OnInitialized, base::Unretained(this)));
@@ -130,7 +130,7 @@ TEST_F(PrivetV3SessionTest, ModeError) {
 
 TEST_F(PrivetV3SessionTest, NoHttpsError) {
   EXPECT_CALL(*this, OnInitializedMock(Result::STATUS_SUCCESS, _)).Times(1);
-  fetcher_factory_.SetFakeResponse(GURL("http://host/privet/info"),
+  fetcher_factory_.SetFakeResponse(GURL("http://host:180/privet/info"),
                                    kInfoResponse, net::HTTP_OK,
                                    net::URLRequestStatus::SUCCESS);
 
@@ -147,7 +147,7 @@ TEST_F(PrivetV3SessionTest, NoHttpsError) {
 
 TEST_F(PrivetV3SessionTest, Pairing) {
   EXPECT_CALL(*this, OnInitializedMock(Result::STATUS_SUCCESS, _)).Times(1);
-  fetcher_factory_.SetFakeResponse(GURL("http://host/privet/info"),
+  fetcher_factory_.SetFakeResponse(GURL("http://host:180/privet/info"),
                                    kInfoResponse, net::HTTP_OK,
                                    net::URLRequestStatus::SUCCESS);
 
@@ -182,7 +182,7 @@ TEST_F(PrivetV3SessionTest, Pairing) {
         std::string device_commitment;
         base::Base64Encode(spake.GetNextMessage(), &device_commitment);
         fetcher_factory_.SetFakeResponse(
-            GURL("http://host/privet/v3/pairing/start"),
+            GURL("http://host:180/privet/v3/pairing/start"),
             base::StringPrintf(
                 "{\"deviceCommitment\":\"%s\",\"sessionId\":\"testId\"}",
                 device_commitment.c_str()),
@@ -231,7 +231,7 @@ TEST_F(PrivetV3SessionTest, Pairing) {
             base::Base64Encode(signature, &signature_base64);
 
             fetcher_factory_.SetFakeResponse(
-                GURL("http://host/privet/v3/pairing/confirm"),
+                GURL("http://host:180/privet/v3/pairing/confirm"),
                 base::StringPrintf(
                     "{\"certFingerprint\":\"%s\",\"certSignature\":\"%s\"}",
                     fingerprint_base64.c_str(), signature_base64.c_str()),
@@ -249,7 +249,7 @@ TEST_F(PrivetV3SessionTest, Pairing) {
         EXPECT_TRUE(hmac.Verify("testId", access_token));
 
         fetcher_factory_.SetFakeResponse(
-            GURL("https://host/privet/v3/auth"),
+            GURL("https://host:1443/privet/v3/auth"),
             "{\"accessToken\":\"567\",\"tokenType\":\"testType\","
             "\"scope\":\"owner\"}",
             net::HTTP_OK, net::URLRequestStatus::SUCCESS);
@@ -259,13 +259,13 @@ TEST_F(PrivetV3SessionTest, Pairing) {
                                    base::Unretained(this)));
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_TRUE(session_->client_->IsInHttpsMode());
+  EXPECT_TRUE(session_->use_https_);
   EXPECT_EQ("testType 567", session_->privet_auth_token_);
 }
 
 TEST_F(PrivetV3SessionTest, Cancel) {
   EXPECT_CALL(*this, OnInitializedMock(Result::STATUS_SUCCESS, _)).Times(1);
-  fetcher_factory_.SetFakeResponse(GURL("http://host/privet/info"),
+  fetcher_factory_.SetFakeResponse(GURL("http://host:180/privet/info"),
                                    kInfoResponse, net::HTTP_OK,
                                    net::URLRequestStatus::SUCCESS);
 
@@ -279,7 +279,7 @@ TEST_F(PrivetV3SessionTest, Cancel) {
         std::string device_commitment;
         base::Base64Encode("1234", &device_commitment);
         fetcher_factory_.SetFakeResponse(
-            GURL("http://host/privet/v3/pairing/start"),
+            GURL("http://host:180/privet/v3/pairing/start"),
             base::StringPrintf(
                 "{\"deviceCommitment\":\"%s\",\"sessionId\":\"testId\"}",
                 device_commitment.c_str()),
@@ -290,9 +290,9 @@ TEST_F(PrivetV3SessionTest, Cancel) {
                                     base::Unretained(this)));
   base::RunLoop().RunUntilIdle();
 
-  fetcher_factory_.SetFakeResponse(GURL("http://host/privet/v3/pairing/cancel"),
-                                   kInfoResponse, net::HTTP_OK,
-                                   net::URLRequestStatus::SUCCESS);
+  fetcher_factory_.SetFakeResponse(
+      GURL("http://host:180/privet/v3/pairing/cancel"), kInfoResponse,
+      net::HTTP_OK, net::URLRequestStatus::SUCCESS);
   EXPECT_CALL(*this, OnPostData(_))
       .WillOnce(Invoke([this](const base::DictionaryValue& data) {
         std::string session_id;
