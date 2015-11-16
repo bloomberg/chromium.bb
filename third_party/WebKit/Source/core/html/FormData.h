@@ -75,9 +75,6 @@ public:
 
     // Internal functions.
 
-    void makeOpaque() { m_opaque = true; }
-    bool opaque() const { return m_opaque; }
-
     const WTF::TextEncoding& encoding() const { return m_encoding; }
     class Entry;
     const HeapVector<Member<const Entry>>& entries() const { return m_entries; }
@@ -99,7 +96,6 @@ private:
     WTF::TextEncoding m_encoding;
     // Entry pointers in m_entries never be nullptr.
     HeapVector<Member<const Entry>> m_entries;
-    bool m_opaque;
 };
 
 // Represents entry, which is a pair of a name and a value.

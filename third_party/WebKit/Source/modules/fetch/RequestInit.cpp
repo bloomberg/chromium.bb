@@ -23,7 +23,7 @@
 namespace blink {
 
 RequestInit::RequestInit(ExecutionContext* context, const Dictionary& options, ExceptionState& exceptionState)
-    : opaque(false), isReferrerSet(false)
+    : isReferrerSet(false)
 {
     bool areAnyMembersSet = false;
 
@@ -76,10 +76,7 @@ RequestInit::RequestInit(ExecutionContext* context, const Dictionary& options, E
         contentType = blobDataHandle->type();
         body = FetchBlobDataConsumerHandle::create(context, blobDataHandle.release());
     } else if (V8FormData::hasInstance(v8Body, isolate)) {
-        FormData* domFormData = V8FormData::toImpl(v8::Local<v8::Object>::Cast(v8Body));
-        opaque = domFormData->opaque();
-
-        RefPtr<EncodedFormData> formData = domFormData->encodeMultiPartFormData();
+        RefPtr<EncodedFormData> formData = V8FormData::toImpl(v8::Local<v8::Object>::Cast(v8Body))->encodeMultiPartFormData();
         // Here we handle formData->boundary() as a C-style string. See
         // FormDataEncoder::generateUniqueBoundaryString.
         contentType = AtomicString("multipart/form-data; boundary=", AtomicString::ConstructFromLiteral) + formData->boundary().data();

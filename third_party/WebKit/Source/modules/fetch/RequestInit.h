@@ -34,9 +34,6 @@ public:
     String credentials;
     String redirect;
     String integrity;
-
-    // https://w3c.github.io/webappsec/specs/credentialmanagement/#monkey-patching-fetch-2
-    bool opaque;
     // True if any members in RequestInit are set and hence the referrer member
     // should be used in the Request constructor.
     bool isReferrerSet;

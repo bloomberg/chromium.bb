@@ -300,10 +300,6 @@ Request* Request::createRequestWithRequestOrString(ScriptState* scriptState, Req
     if (temporaryBody)
         r->m_request->setBuffer(temporaryBody);
 
-    // https://w3c.github.io/webappsec/specs/credentialmanagement/#monkey-patching-fetch-2
-    if (init.opaque || (inputRequest && inputRequest->opaque()))
-        r->makeOpaque();
-
     // "34. Set |r|'s MIME type to the result of extracting a MIME type from
     // |r|'s request's header list."
     r->m_request->setMIMEType(r->m_request->headerList()->extractMIMEType());

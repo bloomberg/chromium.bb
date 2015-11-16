@@ -9,7 +9,7 @@
 
 namespace blink {
 
-TEST(FormDataTest, opacityGet)
+TEST(FormDataTest, get)
 {
     FormData* fd = FormData::create(UTF8Encoding());
     fd->append("name1", "value1");
@@ -22,21 +22,9 @@ TEST(FormDataTest, opacityGet)
     const FormData::Entry& entry = *fd->entries()[0];
     EXPECT_STREQ("name1", entry.name().data());
     EXPECT_STREQ("value1", entry.value().data());
-
-    fd->makeOpaque();
-
-    // Web-exposed interface should be opaque.
-    FileOrUSVString opaqueResult;
-    fd->get("name1", opaqueResult);
-    EXPECT_TRUE(opaqueResult.isNull());
-
-    // Internal interface should be uneffected.
-    const FormData::Entry& entry2 = *fd->entries()[0];
-    EXPECT_STREQ("name1", entry2.name().data());
-    EXPECT_STREQ("value1", entry2.value().data());
 }
 
-TEST(FormDataTest, opacityGetAll)
+TEST(FormDataTest, getAll)
 {
     FormData* fd = FormData::create(UTF8Encoding());
     fd->append("name1", "value1");
@@ -47,31 +35,14 @@ TEST(FormDataTest, opacityGetAll)
     EXPECT_EQ("value1", results[0].getAsUSVString());
 
     EXPECT_EQ(1u, fd->size());
-
-    fd->makeOpaque();
-
-    // Web-exposed interface should be opaque.
-    results = fd->getAll("name1");
-    EXPECT_EQ(0u, results.size());
-
-    // Internal interface should be uneffected.
-    EXPECT_EQ(1u, fd->size());
 }
 
-TEST(FormDataTest, opacityHas)
+TEST(FormDataTest, has)
 {
     FormData* fd = FormData::create(UTF8Encoding());
     fd->append("name1", "value1");
 
     EXPECT_TRUE(fd->has("name1"));
-    EXPECT_EQ(1u, fd->size());
-
-    fd->makeOpaque();
-
-    // Web-exposed interface should be opaque.
-    EXPECT_FALSE(fd->has("name1"));
-
-    // Internal collection should be uneffected.
     EXPECT_EQ(1u, fd->size());
 }
 

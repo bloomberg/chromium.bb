@@ -51,7 +51,6 @@ FormData* PasswordCredential::toFormData(ScriptState* scriptState, const FormDat
 
     fd->append(options.idName(), id());
     fd->append(options.passwordName(), password());
-    fd->makeOpaque();
     return fd;
 }
 

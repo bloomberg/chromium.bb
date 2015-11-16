@@ -104,9 +104,6 @@ public:
 
 ScriptPromise Body::arrayBuffer(ScriptState* scriptState)
 {
-    if (m_opaque)
-        return ScriptPromise::reject(scriptState, V8ThrowException::createTypeError(scriptState->isolate(), "The body is opaque."));
-
     if (bodyUsed())
         return ScriptPromise::reject(scriptState, V8ThrowException::createTypeError(scriptState->isolate(), "Already read"));
 
@@ -131,9 +128,6 @@ ScriptPromise Body::arrayBuffer(ScriptState* scriptState)
 
 ScriptPromise Body::blob(ScriptState* scriptState)
 {
-    if (m_opaque)
-        return ScriptPromise::reject(scriptState, V8ThrowException::createTypeError(scriptState->isolate(), "The body is opaque."));
-
     if (bodyUsed())
         return ScriptPromise::reject(scriptState, V8ThrowException::createTypeError(scriptState->isolate(), "Already read"));
 
@@ -156,9 +150,6 @@ ScriptPromise Body::blob(ScriptState* scriptState)
 
 ScriptPromise Body::json(ScriptState* scriptState)
 {
-    if (m_opaque)
-        return ScriptPromise::reject(scriptState, V8ThrowException::createTypeError(scriptState->isolate(), "The body is opaque."));
-
     if (bodyUsed())
         return ScriptPromise::reject(scriptState, V8ThrowException::createTypeError(scriptState->isolate(), "Already read"));
 
@@ -178,9 +169,6 @@ ScriptPromise Body::json(ScriptState* scriptState)
 
 ScriptPromise Body::text(ScriptState* scriptState)
 {
-    if (m_opaque)
-        return ScriptPromise::reject(scriptState, V8ThrowException::createTypeError(scriptState->isolate(), "The body is opaque."));
-
     if (bodyUsed())
         return ScriptPromise::reject(scriptState, V8ThrowException::createTypeError(scriptState->isolate(), "Already read"));
 
@@ -218,10 +206,7 @@ bool Body::hasPendingActivity() const
     return bodyBuffer()->hasPendingActivity();
 }
 
-Body::Body(ExecutionContext* context)
-    : ActiveDOMObject(context)
-    , m_bodyPassed(false)
-    , m_opaque(false)
+Body::Body(ExecutionContext* context) : ActiveDOMObject(context), m_bodyPassed(false)
 {
     suspendIfNeeded();
 }
