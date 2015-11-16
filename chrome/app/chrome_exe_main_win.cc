@@ -123,11 +123,9 @@ void SwitchToLFHeap() {
 
 }  // namespace
 
-#if !defined(ADDRESS_SANITIZER)
+#if !defined(WIN_CONSOLE_APP)
 int APIENTRY wWinMain(HINSTANCE instance, HINSTANCE prev, wchar_t*, int) {
 #else
-// The AddressSanitizer build should be a console program as it prints out stuff
-// on stderr.
 int main() {
   HINSTANCE instance = GetModuleHandle(NULL);
 #endif

@@ -109,6 +109,9 @@
                 'kasko_dll',
               ],
             }],
+            ['win_console_app==1', {
+              'defines': ['WIN_CONSOLE_APP'],
+            }],
           ],
         }],
         ['OS == "android"', {
@@ -450,9 +453,9 @@
                 'crypt32.lib'
               ],
               'conditions': [
-                ['asan==0', {
-                  # Set /SUBSYSTEM:WINDOWS for chrome.exe itself, except for the
-                  # AddressSanitizer build where console output is important.
+                ['win_console_app==0', {
+                  # Set /SUBSYSTEM:WINDOWS for chrome.exe itself, unless a
+                  # console build has been requested.
                   'SubSystem': '2',
                 }],
               ],

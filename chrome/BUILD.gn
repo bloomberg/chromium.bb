@@ -11,6 +11,14 @@ import("//build/config/win/manifest.gni")
 import("//chrome/chrome_repack_locales.gni")
 import("//chrome/version.gni")
 
+declare_args() {
+  # If true, builds as a console app (rather than a windowed app), which allows
+  # logging to be printed to the user. This will cause a terminal window to pop
+  # up when Chrome is not run from the command line, so should only be used for
+  # development. Only has an effect on Windows builds.
+  win_console_app = false
+}
+
 if (is_android) {
   import("//build/config/android/rules.gni")
 }
@@ -39,6 +47,12 @@ if (is_win) {
     deps = [
       ":chrome_initial",
     ]
+  }
+
+  # The AddressSanitizer build should be a console program as it prints out
+  # stuff on stderr.
+  if (is_asan) {
+    win_console_app = true
   }
 }
 
@@ -154,9 +168,11 @@ if (!is_android) {
         "wintrust.lib",
         "crypt32.lib",
       ]
-      if (!is_asan) {
-        # Set /SUBSYSTEM:WINDOWS for chrome.exe itself, except for the
-        # AddressSanitizer build where console output is important.
+      if (win_console_app) {
+        defines += [ "WIN_CONSOLE_APP" ]
+      } else {
+        # Set /SUBSYSTEM:WINDOWS for chrome.exe itself, unless a console build
+        # has been requested.
         configs -= [ "//build/config/win:console" ]
         configs += [ "//build/config/win:windowed" ]
       }

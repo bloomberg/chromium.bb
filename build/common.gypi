@@ -1987,6 +1987,13 @@
           ['asan==1 or syzyasan==1', {
             'win_use_allocator_shim%': 0,
           }],
+          # The AddressSanitizer build should be a console program as it prints
+          # out stuff on stderr.
+          ['asan==1', {
+            'win_console_app%': 1,
+          }, {
+            'win_console_app%': 0,
+          }],
           ['syzyasan==1', {
             'kasko%': 1,
           }],
