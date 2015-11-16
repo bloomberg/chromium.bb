@@ -1206,6 +1206,10 @@ void RenderViewHostImpl::OnFocusedNodeChanged(
   }
 #endif
 
+  // None of the rest makes sense without a view.
+  if (!GetWidget()->GetView())
+    return;
+
   // Convert node_bounds to screen coordinates.
   gfx::Rect view_bounds_in_screen = GetWidget()->GetView()->GetViewBounds();
   gfx::Point origin = node_bounds_in_viewport.origin();
