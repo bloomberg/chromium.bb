@@ -1103,6 +1103,13 @@
           ],
         }
       ],
+      ['OS!="mac"',
+        {
+          'platform_test_files': [
+            'scroll/ScrollAnimatorTest.cpp',
+          ],
+        }
+      ],
     ],
   },
 }

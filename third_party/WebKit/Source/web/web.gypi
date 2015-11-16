@@ -316,15 +316,5 @@
       'tests/sim/SimWebViewClient.cpp',
       'tests/sim/SimWebViewClient.h',
     ],
-    'conditions': [
-      ['OS!="mac"',
-        {
-          'web_unittest_files': [
-            # Mac uses ScrollAnimatorMac instead of ScrollAnimator.
-            'tests/ScrollAnimatorTest.cpp',
-          ],
-        }
-      ],
-    ],
   },
 }
