@@ -154,6 +154,7 @@ public:
     {
         if (sizeCalculationMayOverflow(width, height))
             return setFailed();
+
         m_size = IntSize(width, height);
         m_sizeAvailable = true;
         return true;

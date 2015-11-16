@@ -160,7 +160,18 @@ size_t ImageDecoder::frameBytesAtIndex(size_t index) const
 {
     if (index >= m_frameBufferCache.size() || m_frameBufferCache[index].status() == ImageFrame::FrameEmpty)
         return 0;
-    return frameSizeAtIndex(index).area() * sizeof(ImageFrame::PixelData);
+
+    struct ImageSize {
+
+        explicit ImageSize(IntSize size)
+        {
+            area = static_cast<uint64_t>(size.width()) * size.height();
+        }
+
+        uint64_t area;
+    };
+
+    return ImageSize(frameSizeAtIndex(index)).area * sizeof(ImageFrame::PixelData);
 }
 
 bool ImageDecoder::deferredImageDecodingEnabled()
