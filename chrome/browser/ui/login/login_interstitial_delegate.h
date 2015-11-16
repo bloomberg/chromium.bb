@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/memory/weak_ptr.h"
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/interstitial_page_delegate.h"
 #include "url/gurl.h"
@@ -35,6 +36,10 @@ class LoginInterstitialDelegate : public content::InterstitialPageDelegate {
 
   ~LoginInterstitialDelegate() override;
 
+  void Proceed();
+  void DontProceed();
+  base::WeakPtr<LoginInterstitialDelegate> GetWeakPtr();
+
   // content::InterstitialPageDelegate:
   void CommandReceived(const std::string& command) override;
   content::InterstitialPageDelegate::TypeID GetTypeForTesting() const override;
@@ -44,6 +49,8 @@ class LoginInterstitialDelegate : public content::InterstitialPageDelegate {
 
  private:
   base::Closure callback_;
+  content::InterstitialPage* interstitial_page_;
+  base::WeakPtrFactory<LoginInterstitialDelegate> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginInterstitialDelegate);
 };

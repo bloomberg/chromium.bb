@@ -1423,4 +1423,66 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
   }
 }
 
+// Fails on non-aura because of crbug.com/555804.
+// TODO(meacer): Enable for all when that bug is fixed.
+#if defined(USE_AURA)
+#define MAYBE_ShouldNotProceedExistingInterstitial \
+  ShouldNotProceedExistingInterstitial
+#else
+#define MAYBE_ShouldNotProceedExistingInterstitial \
+  DISABLED_MAYBE_ShouldNotProceedExistingInterstitial
+#endif
+
+// Test that the login interstitial isn't proceeding itself or any other
+// interstitial. If this test becomes flaky, it's likely that the logic that
+// prevents the tested scenario from happening got broken, rather than the test
+// itself.
+IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
+                       MAYBE_ShouldNotProceedExistingInterstitial) {
+  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server.SetSSLConfig(net::EmbeddedTestServer::CERT_EXPIRED);
+  ASSERT_TRUE(https_server.Start());
+
+  const char* kTestPage = "files/login/load_iframe_from_b.html";
+
+  host_resolver()->AddRule("www.b.com", "127.0.0.1");
+  ASSERT_TRUE(test_server()->Start());
+
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  NavigationController* controller = &contents->GetController();
+  LoginPromptBrowserTestObserver observer;
+  observer.Register(content::Source<NavigationController>(controller));
+
+  // Load a page that has a cross-domain iframe authentication. This should
+  // trigger a login prompt but no login interstitial.
+  GURL test_page = test_server()->GetURL(kTestPage);
+  GURL broken_ssl_page = https_server.GetURL("/");
+  ASSERT_EQ("127.0.0.1", test_page.host());
+  WindowedAuthNeededObserver auth_needed_waiter(controller);
+  browser()->OpenURL(OpenURLParams(test_page, Referrer(), CURRENT_TAB,
+                                   ui::PAGE_TRANSITION_TYPED, false));
+  auth_needed_waiter.Wait();
+  ASSERT_EQ(1u, observer.handlers().size());
+  EXPECT_FALSE(contents->ShowingInterstitialPage());
+
+  // Redirect to a broken SSL page. This redirect should not accidentally
+  // proceed through the SSL interstitial.
+  WindowedAuthCancelledObserver auth_cancelled_waiter(controller);
+  EXPECT_TRUE(content::ExecuteScript(
+      browser()->tab_strip_model()->GetActiveWebContents(),
+      std::string("window.location = '") + broken_ssl_page.spec() + "'"));
+  content::WaitForInterstitialAttach(contents);
+  auth_cancelled_waiter.Wait();
+
+  // If the interstitial was accidentally clicked through, this wait may time
+  // out.
+  EXPECT_TRUE(
+      WaitForRenderFrameReady(contents->GetInterstitialPage()->GetMainFrame()));
+  EXPECT_TRUE(contents->ShowingInterstitialPage());
+  EXPECT_EQ(SSLBlockingPage::kTypeForTesting, contents->GetInterstitialPage()
+                                                  ->GetDelegateForTesting()
+                                                  ->GetTypeForTesting());
+}
+
 }  // namespace
