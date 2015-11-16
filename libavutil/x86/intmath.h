@@ -29,6 +29,12 @@
 
 #if HAVE_FAST_CLZ
 #if defined(__INTEL_COMPILER) || defined(_MSC_VER)
+/* Work around http://crbug.com/556735: the _tzcnt intrinsics are not available
+ * on non-BMI targets. Upstream should ideally be fixed to not use them. */
+#   if defined(__clang__)
+#       define _tzcnt_u32(v) __builtin_ctz(v)
+#       define _tzcnt_u64(v) __builtin_ctzll(v)
+#   endif
 #   if defined(__INTEL_COMPILER)
 #       define ff_log2(x) (_bit_scan_reverse((x)|1))
 #   else
@@ -54,6 +60,10 @@ static av_always_inline av_const int ff_ctzll_x86(long long v)
 }
 #   endif
 
+#   if defined(__clang__)
+#       undef _tzcnt_u32
+#       undef _tzcnt_u64
+#   endif
 #endif /* __INTEL_COMPILER */
 
 #endif /* HAVE_FAST_CLZ */

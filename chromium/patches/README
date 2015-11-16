@@ -65,6 +65,9 @@ Current patches:
     C++11 compatability for string concatenation (http://crbug.com/454590).
     Add spaces between string literals and tokens.
 
+  Change to libavutil/x86/intmath.h
+    Avoid using the _tzcnt intrinsics (crbug.com/556735).
+
   Changes/additions to libavutil/x86/x86inc.asm
     https://chromium-review.googlesource.com/#/c/272274/
     Fixes the conditionals on Linux so that these symbols are hidden and
