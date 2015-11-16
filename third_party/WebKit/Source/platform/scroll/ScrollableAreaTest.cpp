@@ -14,8 +14,6 @@
 
 namespace blink {
 
-namespace {
-
 class MockScrollableArea : public NoBaseWillBeGarbageCollectedFinalized<MockScrollableArea>, public ScrollableArea {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(MockScrollableArea);
 public:
@@ -99,8 +97,6 @@ public:
 private:
     FakeWebThread m_webThread;
 };
-
-} // namespace
 
 class ScrollableAreaTest : public testing::Test {
 public:
