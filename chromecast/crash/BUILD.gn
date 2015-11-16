@@ -48,23 +48,25 @@ source_set("test_support") {
   ]
 }
 
-test("cast_crash_unittests") {
-  sources = [
-    "cast_crashdump_uploader_unittest.cc",
-    "linux/dummy_minidump_generator_unittest.cc",
-    "linux/dump_info_unittest.cc",
-    "linux/minidump_writer_unittest.cc",
-    "linux/synchronized_minidump_manager_unittest.cc",
-  ]
+if (is_linux) {
+  test("cast_crash_unittests") {
+    sources = [
+      "cast_crashdump_uploader_unittest.cc",
+      "linux/dummy_minidump_generator_unittest.cc",
+      "linux/dump_info_unittest.cc",
+      "linux/minidump_writer_unittest.cc",
+      "linux/synchronized_minidump_manager_unittest.cc",
+    ]
 
-  deps = [
-    ":crash",
-    ":test_support",
-    "//base",
-    "//base/test:run_all_unittests",
-    "//base/test:test_support",
-    "//breakpad:client",
-    "//testing/gmock",
-    "//testing/gtest",
-  ]
+    deps = [
+      ":crash",
+      ":test_support",
+      "//base",
+      "//base/test:run_all_unittests",
+      "//base/test:test_support",
+      "//breakpad:client",
+      "//testing/gmock",
+      "//testing/gtest",
+    ]
+  }
 }

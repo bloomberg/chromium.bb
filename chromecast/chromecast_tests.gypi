@@ -94,7 +94,6 @@
       'type': 'none',
       'dependencies': [
         'cast_base_unittests',
-        'cast_crash_unittests',
         '../base/base.gyp:base_unittests',
         '../content/content_shell_and_tests.gyp:content_unittests',
         '../crypto/crypto.gyp:crypto_unittests',
@@ -162,6 +161,11 @@
             ],
           }
         }],
+        ['OS=="linux"', {
+          'dependencies': [
+            'cast_crash_unittests',
+          ],
+        }],
         ['disable_display==0', {
           'dependencies': [
             '../gpu/gpu.gyp:gpu_unittests',
@@ -218,17 +222,6 @@
           'includes': ['../build/apk_test.gypi'],
         },  # end of target 'cast_base_unittests_apk'
         {
-          'target_name': 'cast_crash_unittests_apk',
-          'type': 'none',
-          'dependencies': [
-            'cast_crash_unittests',
-          ],
-          'variables': {
-            'test_suite_name': 'cast_crash_unittests',
-          },
-          'includes': ['../build/apk_test.gypi'],
-        },  # end of target 'cast_crash_unittests_apk'
-        {
           'target_name': 'cast_android_tests',
           'type': 'none',
           'dependencies': ['cast_android_tests_generator'],
@@ -254,7 +247,6 @@
           },
           'dependencies': [
             'cast_base_unittests_apk',
-            'cast_crash_unittests_apk',
             '../base/base.gyp:base_unittests_apk',
             '../cc/cc_tests.gyp:cc_unittests_apk',
             '../ipc/ipc.gyp:ipc_tests_apk',
