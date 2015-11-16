@@ -305,6 +305,7 @@ bool LeveldbValueStore::Restore() {
 
   leveldb::Options options;
   options.create_if_missing = true;
+  options.paranoid_checks = true;
 
   // Repair can drop an unbounded number of leveldb tables (key/value sets)
   leveldb::Status status = leveldb::RepairDB(db_path_.AsUTF8Unsafe(), options);

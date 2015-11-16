@@ -256,7 +256,9 @@ void SettingsStorageQuotaEnforcer::CalculateUsage() {
     if (maybe_settings->error().code == ValueStore::CORRUPTION &&
         delegate_->Restore()) {
       maybe_settings = delegate_->Get();
-    } else {
+    }
+
+    if (maybe_settings->HasError()) {
       LOG(WARNING) << "Failed to get settings for quota:"
                    << maybe_settings->error().message;
       return;
