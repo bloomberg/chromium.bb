@@ -3303,13 +3303,7 @@ static void
 popup_grab_axis(struct weston_pointer_grab *grab,
 		uint32_t time, uint32_t axis, wl_fixed_t value)
 {
-	struct weston_pointer *pointer = grab->pointer;
-	struct wl_resource *resource;
-	struct wl_list *resource_list;
-
-	resource_list = &pointer->focus_resource_list;
-	wl_resource_for_each(resource, resource_list)
-		wl_pointer_send_axis(resource, time, axis, value);
+	weston_pointer_send_axis(grab->pointer, time, axis, value);
 }
 
 static void
