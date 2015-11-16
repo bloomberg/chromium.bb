@@ -41,10 +41,10 @@ class ShapeCache;
 struct GlyphData;
 
 class PLATFORM_EXPORT CachingWordShaper final {
+    WTF_MAKE_NONCOPYABLE(CachingWordShaper);
 public:
-    CachingWordShaper();
-    ~CachingWordShaper();
-    void clear();
+    CachingWordShaper(ShapeCache* cache) : m_shapeCache(cache) { }
+    ~CachingWordShaper() { }
 
     float width(const Font*, const TextRun&,
         HashSet<const SimpleFontData*>* fallbackFonts,
@@ -60,7 +60,7 @@ public:
         int height, unsigned from, unsigned to);
 
 private:
-    OwnPtr<ShapeCache> m_shapeCache;
+    ShapeCache* m_shapeCache;
 };
 
 } // namespace blink

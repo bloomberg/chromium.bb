@@ -113,7 +113,7 @@ float Font::buildGlyphBuffer(const TextRunPaintInfo& runInfo, GlyphBuffer& glyph
 {
     if (codePath(runInfo) == ComplexPath) {
         float width;
-        CachingWordShaper& shaper = m_fontFallbackList->cachingWordShaper();
+        CachingWordShaper shaper(m_fontFallbackList->shapeCache(m_fontDescription));
         if (emphasisData) {
             width = shaper.fillGlyphBufferForTextEmphasis(this, runInfo.run,
                 emphasisData, &glyphBuffer, runInfo.from, runInfo.to);
@@ -703,7 +703,7 @@ void Font::drawTextBlob(SkCanvas* canvas, const SkPaint& paint, const SkTextBlob
 
 float Font::floatWidthForComplexText(const TextRun& run, HashSet<const SimpleFontData*>* fallbackFonts, FloatRect* glyphBounds) const
 {
-    CachingWordShaper& shaper = m_fontFallbackList->cachingWordShaper();
+    CachingWordShaper shaper(m_fontFallbackList->shapeCache(m_fontDescription));
     float width = shaper.width(this, run, fallbackFonts, glyphBounds);
     return width;
 }
@@ -712,7 +712,7 @@ float Font::floatWidthForComplexText(const TextRun& run, HashSet<const SimpleFon
 int Font::offsetForPositionForComplexText(const TextRun& run, float xFloat,
     bool includePartialGlyphs) const
 {
-    CachingWordShaper& shaper = m_fontFallbackList->cachingWordShaper();
+    CachingWordShaper shaper(m_fontFallbackList->shapeCache(m_fontDescription));
     return shaper.offsetForPosition(this, run, xFloat);
 }
 
@@ -720,7 +720,7 @@ int Font::offsetForPositionForComplexText(const TextRun& run, float xFloat,
 FloatRect Font::selectionRectForComplexText(const TextRun& run,
     const FloatPoint& point, int height, int from, int to) const
 {
-    CachingWordShaper& shaper = m_fontFallbackList->cachingWordShaper();
+    CachingWordShaper shaper(m_fontFallbackList->shapeCache(m_fontDescription));
     return shaper.selectionRect(this, run, point, height, from, to);
 }
 

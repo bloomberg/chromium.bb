@@ -31,6 +31,8 @@
 #define FontCache_h
 
 #include "platform/PlatformExport.h"
+#include "platform/fonts/FallbackListCompositeKey.h"
+#include "platform/fonts/FontCacheKey.h"
 #include "platform/fonts/FontFaceCreationParams.h"
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
@@ -55,6 +57,7 @@ class FontFaceCreationParams;
 class FontPlatformData;
 class FontDescription;
 class OpenTypeVerticalData;
+class ShapeCache;
 class SimpleFontData;
 
 enum ShouldRetain { Retain, DoNotRetain };
@@ -80,6 +83,13 @@ public:
     PassRefPtr<SimpleFontData> getLastResortFallbackFont(const FontDescription&, ShouldRetain = Retain);
     SimpleFontData* getNonRetainedLastResortFallbackFont(const FontDescription&);
     bool isPlatformFontAvailable(const FontDescription&, const AtomicString&);
+
+    // Returns the ShapeCache instance associated with the given cache key.
+    // Creates a new instance as needed and as such is guaranteed not to return
+    // a nullptr. Instances are managed by FontCache and are only guaranteed to
+    // be valid for the duration of the current session, as controlled by
+    // disable/enablePurging.
+    ShapeCache* getShapeCache(const FallbackListCompositeKey&);
 
     void addClient(FontCacheClient*);
 #if !ENABLE(OILPAN)
@@ -128,6 +138,8 @@ public:
     static void getFontForCharacter(UChar32, const char* preferredLocale, PlatformFallbackFont*);
 #endif
     PassRefPtr<SimpleFontData> fontDataFromFontPlatformData(const FontPlatformData*, ShouldRetain = Retain);
+
+    void invalidateShapeCache();
 
 private:
     FontCache();

@@ -30,7 +30,9 @@
 #include "platform/fonts/FontFallbackList.h"
 
 #include "platform/FontFamilyNames.h"
+#include "platform/fonts/AlternateFontFamily.h"
 #include "platform/fonts/FontCache.h"
+#include "platform/fonts/FontCacheKey.h"
 #include "platform/fonts/FontDescription.h"
 #include "platform/fonts/FontFamily.h"
 #include "platform/fonts/SegmentedFontData.h"
@@ -62,7 +64,6 @@ void FontFallbackList::invalidate(PassRefPtrWillBeRawPtr<FontSelector> fontSelec
         m_fontSelector = fontSelector;
     m_fontSelectorVersion = m_fontSelector ? m_fontSelector->version() : 0;
     m_generation = FontCache::fontCache()->generation();
-    m_cachingWordShaper.clear();
 }
 
 void FontFallbackList::releaseFontData()
@@ -74,6 +75,7 @@ void FontFallbackList::releaseFontData()
             FontCache::fontCache()->releaseFontData(toSimpleFontData(m_fontList[i]));
         }
     }
+    m_shapeCache.clear();
 }
 
 bool FontFallbackList::loadingCustomFonts() const
@@ -189,6 +191,36 @@ PassRefPtr<FontData> FontFallbackList::getFontData(const FontDescription& fontDe
     return FontCache::fontCache()->getLastResortFallbackFont(fontDescription);
 }
 
+
+FallbackListCompositeKey FontFallbackList::compositeKey(const FontDescription& fontDescription) const
+{
+    FallbackListCompositeKey key(fontDescription);
+    const FontFamily* currentFamily = &fontDescription.family();
+    while (currentFamily) {
+        if (currentFamily->family().length()) {
+            FontFaceCreationParams params(adjustFamilyNameToAvoidUnsupportedFonts(currentFamily->family()));
+            RefPtr<FontData> result;
+            if (m_fontSelector)
+                result = m_fontSelector->getFontData(fontDescription, currentFamily->family());
+            if (!result) {
+                if (FontPlatformData* platformData = FontCache::fontCache()->getFontPlatformData(fontDescription, params))
+                    result = FontCache::fontCache()->fontDataFromFontPlatformData(platformData);
+            }
+
+            // Include loading state and version when constructing key, that way if called when a font is loading
+            // and then again once it has been loaded or updated different keys are produced.
+            if (result) {
+                FontCacheKey cacheKey = fontDescription.cacheKey(params, FontTraits(0),
+                    result->isLoading() || result->isLoadingFallback(),
+                    m_fontSelector ? m_fontSelector->version() : 0);
+                key.add(cacheKey);
+            }
+        }
+        currentFamily = currentFamily->next();
+    }
+
+    return key;
+}
 
 const FontData* FontFallbackList::fontDataAt(const FontDescription& fontDescription, unsigned realizedFontIndex) const
 {

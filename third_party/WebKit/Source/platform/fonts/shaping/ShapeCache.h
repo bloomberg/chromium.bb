@@ -34,6 +34,7 @@
 #include "wtf/HashSet.h"
 #include "wtf/HashTableDeletedValueType.h"
 #include "wtf/StringHasher.h"
+#include "wtf/WeakPtr.h"
 
 namespace blink {
 
@@ -127,7 +128,7 @@ private:
     friend bool operator==(const SmallStringKey&, const SmallStringKey&);
 
 public:
-    ShapeCache() { }
+    ShapeCache(): m_weakFactory(this) { }
 
     ShapeCacheEntry* add(const TextRun& run, ShapeCacheEntry entry)
     {
@@ -141,6 +142,16 @@ public:
     {
         m_singleCharMap.clear();
         m_shortStringMap.clear();
+    }
+
+    unsigned size() const
+    {
+        return m_singleCharMap.size() + m_shortStringMap.size();
+    }
+
+    WeakPtr<ShapeCache> weakPtr()
+    {
+        return m_weakFactory.createWeakPtr();
     }
 
 private:
@@ -173,9 +184,8 @@ private:
         if (!isNewEntry)
             return value;
 
-        if (m_singleCharMap.size() + m_shortStringMap.size() < s_maxSize) {
+        if (size() < s_maxSize)
             return value;
-        }
 
         // No need to be fancy: we're just trying to avoid pathological growth.
         m_singleCharMap.clear();
@@ -191,11 +201,14 @@ private:
     // cache entries is a lot lower given the average word count for a web page
     // is well below 1,000 and even full length books rarely have over 10,000
     // unique words [1]. 1: http://www.mine-control.com/zack/guttenberg/
-    // 2,500 seems like a resonable number.
-    static const unsigned s_maxSize = 2500;
+    // Our definition of a word is somewhat different from the norm in that we
+    // only segment on space. Thus "foo", "foo-", and "foo)" would count as
+    // three separate words. Given that 10,000 seems like a reasonable maximum.
+    static const unsigned s_maxSize = 10000;
 
     SingleCharMap m_singleCharMap;
     SmallStringMap m_shortStringMap;
+    WeakPtrFactory<ShapeCache> m_weakFactory;
 };
 
 inline bool operator==(const ShapeCache::SmallStringKey& a, const ShapeCache::SmallStringKey& b)

@@ -27,6 +27,7 @@
 
 #include "platform/fonts/FontDescription.h"
 
+#include "wtf/Vector.h"
 #include <gtest/gtest.h>
 
 namespace blink {
@@ -116,6 +117,60 @@ TEST(FontDescriptionTest, TestFontTraits)
     source.setWeight(FontWeight200);
     source.setStretch(FontStretchNormal);
     assertDescriptionMatchesMask(source, source.traits().bitfield());
+}
+
+TEST(FontDescriptionTest, TestHashCollision)
+{
+    FontWeight weights[] = {
+        FontWeight100,
+        FontWeight200,
+        FontWeight300,
+        FontWeight400,
+        FontWeight500,
+        FontWeight600,
+        FontWeight700,
+        FontWeight800,
+        FontWeight900,
+    };
+    FontStretch stretches[] {
+        FontStretchUltraCondensed,
+        FontStretchExtraCondensed,
+        FontStretchCondensed,
+        FontStretchSemiCondensed,
+        FontStretchNormal,
+        FontStretchSemiExpanded,
+        FontStretchExpanded,
+        FontStretchExtraExpanded,
+        FontStretchUltraExpanded
+    };
+    FontStyle styles[] = {
+        FontStyleNormal,
+        FontStyleOblique,
+        FontStyleItalic
+    };
+    FontVariant variants[] = {
+        FontVariantNormal,
+        FontVariantSmallCaps
+    };
+
+    FontDescription source;
+    WTF::Vector<unsigned> hashes;
+    for (size_t i = 0; i < WTF_ARRAY_LENGTH(weights); i++) {
+        source.setWeight(weights[i]);
+        for (size_t j = 0; j < WTF_ARRAY_LENGTH(stretches); j++) {
+            source.setStretch(stretches[j]);
+            for (size_t k = 0; k < WTF_ARRAY_LENGTH(styles); k++) {
+                source.setStyle(styles[k]);
+                for (size_t m = 0; m < WTF_ARRAY_LENGTH(variants); m++) {
+                    source.setVariant(variants[m]);
+                    unsigned hash = source.styleHashWithoutFamilyList();
+                    ASSERT_FALSE(hashes.contains(hash));
+                    hashes.append(hash);
+                }
+            }
+        }
+    }
+
 }
 
 } // namespace blink
