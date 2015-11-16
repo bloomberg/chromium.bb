@@ -288,6 +288,16 @@ Parameter pack</a></td>
 <td><a href="http://en.cppreference.com/w/cpp/utility/tuple/tie">std::tie</a></td>
 <td>General use of <code>std::tuple</code>, and <code>std::tie</code> for unpacking or multiple assignments is still not allowed. <a href="https://groups.google.com/a/chromium.org/d/topic/cxx/3DZ64dIMRTY/discussion">Discussion thread</a></td>
 </tr>
+
+<tr>
+<td>Move Semantics</td>
+<td><code>std::move()</code></td>
+<td>Facilitates efficient move operations</td>
+<td><a href="http://en.cppreference.com/w/cpp/utility/move">
+<code>std::move</code> reference</a></td>
+<td>Note: std::move() is allowed but writing your own move constructors is still only allowed in exceptional cases for now, see 'Rvalue References (and Move Semantics)'. <a href='https://groups.google.com/a/chromium.org/forum/#!topic/cxx/x_dWFxJFdbM'>Discussion thread</a></td>
+</tr>
+
 </tbody>
 </table>
 
@@ -805,15 +815,6 @@ and <a href="http://en.cppreference.com/w/cpp/iterator/prev">std::prev</a>
 <td><code>std::initializer_list&lt;T&gt;</code></td>
 <td>Allows containers to be initialized with aggregate elements</td>
 <td>TODO: documentation link</td>
-<td></td>
-</tr>
-
-<tr>
-<td>Move Semantics</td>
-<td><code>std::move()</code></td>
-<td>Facilitates efficient move operations</td>
-<td><a href="http://en.cppreference.com/w/cpp/utility/move">
-<code>std::move</code> reference</a></td>
 <td></td>
 </tr>
 
