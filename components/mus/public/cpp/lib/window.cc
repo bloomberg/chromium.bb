@@ -365,12 +365,6 @@ void Window::SetPreferredSize(const gfx::Size& size) {
         ->SetPreferredSize(id_, size);
 }
 
-void Window::SetShowState(mojom::ShowState show_state) {
-  if (connection_)
-    static_cast<WindowTreeClientImpl*>(connection_)
-        ->SetShowState(id_, show_state);
-}
-
 void Window::SetResizeBehavior(mojom::ResizeBehavior resize_behavior) {
   if (connection_)
     static_cast<WindowTreeClientImpl*>(connection_)

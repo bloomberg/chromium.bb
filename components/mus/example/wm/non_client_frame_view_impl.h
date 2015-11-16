@@ -6,9 +6,12 @@
 #define COMPONENTS_MUS_EXAMPLE_WM_NON_CLIENT_FRAME_VIEW_IMPL_H_
 
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "components/mus/public/cpp/window_observer.h"
 #include "ui/compositor/paint_cache.h"
 #include "ui/views/window/custom_frame_view.h"
+
+class MoveLoop;
 
 class NonClientFrameViewImpl : public views::CustomFrameView,
                                public mus::WindowObserver {
@@ -21,6 +24,10 @@ class NonClientFrameViewImpl : public views::CustomFrameView,
   gfx::Rect GetBoundsForClientView() const override;
   void OnPaint(gfx::Canvas* canvas) override;
   void PaintChildren(const ui::PaintContext& context) override;
+  bool OnMousePressed(const ui::MouseEvent& event) override;
+  bool OnMouseDragged(const ui::MouseEvent& event) override;
+  void OnMouseReleased(const ui::MouseEvent& event) override;
+  void OnMouseCaptureLost() override;
 
   // mus::WindowObserver:
   void OnWindowClientAreaChanged(mus::Window* window,
@@ -28,8 +35,13 @@ class NonClientFrameViewImpl : public views::CustomFrameView,
   void OnWindowDestroyed(mus::Window* window) override;
 
  private:
+  bool StartMoveLoopIfNecessary(const ui::Event& event);
+  void ContinueMove(const ui::Event& event);
+  void StopMove();
+
   mus::Window* window_;
   ui::PaintCache paint_cache_;
+  scoped_ptr<MoveLoop> move_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(NonClientFrameViewImpl);
 };

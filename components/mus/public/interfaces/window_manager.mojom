@@ -20,23 +20,22 @@ struct WindowManagerConfig {
 // created by calls to OpenWindow() from the *same connection* to the window
 // manager. The callback indicates success or failure.
 interface WindowManager {
-  // The window bounds as set by user input. Type: gfx::Rect.
-  const string kUserSetBounds_Property = "prop:user-set-bounds";
   // The window's preferred size as defined by its content. Type: gfx::Size.
   const string kPreferredSize_Property = "prop:preferred-size";
-  // The window's show state. Type: ShowState.
-  const string kShowState_Property = "prop:show-state";
   // The window's resize behavior. Type: ResizeBehavior.
   const string kResizeBehavior_Property = "prop:resize-behavior";
+  // Bounds the window is restored to. Type: gfx::Rect.
+  const string kRestoreBounds_Property = "prop:restore-bounds";
+  // The window's show state. Type: ShowState.
+  const string kShowState_Property = "prop:show-state";
+  // The window bounds as set by user input. Type: gfx::Rect.
+  const string kUserSetBounds_Property = "prop:user-set-bounds";
 
   OpenWindow(WindowTreeClient client, map<string, array<uint8>> properties);
 
   // Updates the window's preferred size and triggers a relayout of the window
   // within its container.
   SetPreferredSize(uint32 window_id, mojo.Size size) =>
-      (WindowManagerErrorCode result);
-
-  SetShowState(uint32 window_id, ShowState show_state) =>
       (WindowManagerErrorCode result);
 
   SetResizeBehavior(uint32 window_id, ResizeBehavior resize_behavior);

@@ -72,9 +72,6 @@ class TestWindowTree : public mojom::WindowTree {
   void SetPreferredSize(uint32_t window_id,
                         mojo::SizePtr size,
                         const SetPreferredSizeCallback& callback) override;
-  void SetShowState(uint32_t window_id,
-                    mojom::ShowState show_state,
-                    const SetShowStateCallback& callback) override;
   void SetResizeBehavior(uint32_t window_id,
                          mojom::ResizeBehavior resize_behavior) override;
   void WmResponse(uint32_t change_id, bool response) override;

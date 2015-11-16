@@ -21,16 +21,19 @@ class Window;
 // Utility functions to read values from properties & convert them to the
 // appropriate types.
 
-mus::mojom::ShowState GetWindowShowState(mus::Window* window);
+mus::mojom::ShowState GetWindowShowState(const mus::Window* window);
 
 void SetWindowUserSetBounds(mus::Window* window, const gfx::Rect& bounds);
-gfx::Rect GetWindowUserSetBounds(mus::Window* window);
+gfx::Rect GetWindowUserSetBounds(const mus::Window* window);
 
 void SetWindowPreferredSize(mus::Window* window, const gfx::Size& size);
-gfx::Size GetWindowPreferredSize(mus::Window* window);
+gfx::Size GetWindowPreferredSize(const mus::Window* window);
 
-ash::mojom::Container GetRequestedContainer(mus::Window* window);
+ash::mojom::Container GetRequestedContainer(const mus::Window* window);
 
 mus::mojom::ResizeBehavior GetResizeBehavior(const mus::Window* window);
+
+void SetRestoreBounds(mus::Window* window, const gfx::Rect& bounds);
+gfx::Rect GetRestoreBounds(const mus::Window* window);
 
 #endif  // COMPONENTS_MUS_EXAMPLE_WM_PROPERTY_UTIL_H_

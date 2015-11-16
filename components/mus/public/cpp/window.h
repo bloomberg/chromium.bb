@@ -170,7 +170,6 @@ class Window {
   // The following make their way to the WindowManager. See
   // window_manager.mojom for details.
   void SetPreferredSize(const gfx::Size& size);
-  void SetShowState(mojom::ShowState show_state);
   void SetResizeBehavior(mojom::ResizeBehavior resize_behavior);
 
   // Focus.

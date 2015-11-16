@@ -77,6 +77,9 @@ class VIEWS_MUS_EXPORT NativeWidgetMus
   void OnActivationChanged(bool active);
 
  protected:
+  // Updates the client area in the mus::Window.
+  virtual void UpdateClientArea();
+
   // internal::NativeWidgetPrivate:
   NonClientFrameView* CreateNonClientFrameView() override;
   void InitNativeWidget(const Widget::InitParams& params) override;
@@ -190,8 +193,6 @@ class VIEWS_MUS_EXPORT NativeWidgetMus
   void OnGestureEvent(ui::GestureEvent* event) override;
 
  private:
-  void UpdateClientAreaInWindowManager();
-
   mus::Window* window_;
 
   mojo::Shell* shell_;

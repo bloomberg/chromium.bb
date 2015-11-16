@@ -217,8 +217,6 @@ interface WindowTree {
   //   OpenWindow(WindowTreeClient client);
   SetPreferredSize(uint32 window_id, mojo.Size size) =>
       (WindowManagerErrorCode result);
-  SetShowState(uint32 window_id, ShowState show_state) =>
-      (WindowManagerErrorCode result);
   SetResizeBehavior(uint32 window_id, ResizeBehavior resize_behavior);
 
   // --------------------------------------------------------------------------

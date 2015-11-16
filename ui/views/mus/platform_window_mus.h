@@ -64,6 +64,7 @@ class VIEWS_MUS_EXPORT PlatformWindowMus
   ui::PlatformWindowDelegate* delegate_;
   mus::Window* mus_window_;
   mus::mojom::ShowState show_state_;
+  bool has_capture_;
 
   DISALLOW_COPY_AND_ASSIGN(PlatformWindowMus);
 };

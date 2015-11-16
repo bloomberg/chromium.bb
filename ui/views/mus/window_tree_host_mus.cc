@@ -7,6 +7,7 @@
 #include "mojo/application/public/interfaces/shell.mojom.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_event_dispatcher.h"
 #include "ui/events/event.h"
 #include "ui/views/mus/input_method_mus.h"
 #include "ui/views/mus/native_widget_mus.h"
@@ -33,6 +34,11 @@ WindowTreeHostMus::WindowTreeHostMus(mojo::Shell* shell,
       aura::Env::GetInstance()->context_factory();
   aura::Env::GetInstance()->set_context_factory(context_factory_.get());
   SetPlatformWindow(make_scoped_ptr(new PlatformWindowMus(this, window)));
+  // The location of events is already transformed, and there is no way to
+  // correctly determine the reverse transform. So, don't attempt to transform
+  // event locations, else the root location is wrong.
+  // TODO(sky): we need to transform for device scale though.
+  dispatcher()->set_transform_events(false);
   compositor()->SetHostHasTransparentBackground(true);
   aura::Env::GetInstance()->set_context_factory(default_context_factory);
   DCHECK_EQ(context_factory_.get(), compositor()->context_factory());

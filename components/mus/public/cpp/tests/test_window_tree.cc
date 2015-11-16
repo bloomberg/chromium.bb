@@ -97,10 +97,6 @@ void TestWindowTree::SetPreferredSize(
     mojo::SizePtr size,
     const SetPreferredSizeCallback& callback) {}
 
-void TestWindowTree::SetShowState(uint32_t window_id,
-                                  mojom::ShowState show_state,
-                                  const SetShowStateCallback& callback) {}
-
 void TestWindowTree::SetResizeBehavior(uint32_t window_id,
                                        mojom::ResizeBehavior resize_behavior) {}
 

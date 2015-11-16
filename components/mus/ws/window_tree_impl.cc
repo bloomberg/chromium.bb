@@ -830,14 +830,6 @@ void WindowTreeImpl::SetPreferredSize(
   }
 }
 
-void WindowTreeImpl::SetShowState(uint32_t window_id,
-                                  mojom::ShowState show_state,
-                                  const SetShowStateCallback& callback) {
-  ServerWindow* window = GetWindow(WindowIdFromTransportId(window_id));
-  if (window && ShouldRouteToWindowManager(window))
-    GetHost()->window_manager()->SetShowState(window_id, show_state, callback);
-}
-
 void WindowTreeImpl::SetResizeBehavior(
     uint32_t window_id,
     mus::mojom::ResizeBehavior resize_behavior) {

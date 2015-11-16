@@ -5,14 +5,11 @@
 #ifndef COMPONENTS_MUS_EXAMPLE_WM_WINDOW_MANAGER_IMPL_H_
 #define COMPONENTS_MUS_EXAMPLE_WM_WINDOW_MANAGER_IMPL_H_
 
-#include <set>
-
 #include "base/macros.h"
 #include "components/mus/common/types.h"
 #include "components/mus/public/cpp/window_observer.h"
 #include "components/mus/public/interfaces/window_manager.mojom.h"
 
-class MoveLoop;
 class WindowManagerApplication;
 
 using WindowManagerErrorCodeCallback =
@@ -25,6 +22,9 @@ class WindowManagerImpl : public mus::mojom::WindowManager,
   ~WindowManagerImpl() override;
 
  private:
+  gfx::Rect CalculateDefaultBounds(mus::Window* window) const;
+  gfx::Rect GetMaximizedWindowBounds() const;
+
   // mus::mojom::WindowManager:
   void OpenWindow(
       mus::mojom::WindowTreeClientPtr client,
@@ -33,22 +33,13 @@ class WindowManagerImpl : public mus::mojom::WindowManager,
       mus::Id window_id,
       mojo::SizePtr size,
       const WindowManagerErrorCodeCallback& callback) override;
-  void SetShowState(mus::Id window_id,
-                    mus::mojom::ShowState show_state,
-                    const WindowManagerErrorCodeCallback& callback) override;
   void SetResizeBehavior(uint32_t window_id,
                          mus::mojom::ResizeBehavior resize_behavior) override;
   void GetConfig(const GetConfigCallback& callback) override;
 
-  // mus::WindowObserver:
-  void OnWindowDestroyed(mus::Window* window) override;
-  void OnWindowInputEvent(mus::Window* window,
-                          const mus::mojom::EventPtr& event) override;
-
   mus::Window* GetContainerForChild(mus::Window* child);
 
   WindowManagerApplication* state_;
-  scoped_ptr<MoveLoop> move_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowManagerImpl);
 };

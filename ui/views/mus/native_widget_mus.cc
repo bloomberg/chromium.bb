@@ -211,6 +211,19 @@ void NativeWidgetMus::OnActivationChanged(bool active) {
   }
 }
 
+void NativeWidgetMus::UpdateClientArea() {
+  NonClientView* non_client_view =
+      native_widget_delegate_->AsWidget()->non_client_view();
+  if (!non_client_view || !non_client_view->client_view())
+    return;
+
+  const gfx::Rect client_area_rect(non_client_view->client_view()->bounds());
+  window_->SetClientArea(gfx::Insets(
+      client_area_rect.y(), client_area_rect.x(),
+      non_client_view->bounds().height() - client_area_rect.bottom(),
+      non_client_view->bounds().width() - client_area_rect.right()));
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // NativeWidgetMus, private:
 
@@ -341,7 +354,7 @@ void NativeWidgetMus::ReleaseCapture() {
 }
 
 bool NativeWidgetMus::HasCapture() const {
-  return window_tree_host_->window()->HasCapture();
+  return content_->HasCapture();
 }
 
 ui::InputMethod* NativeWidgetMus::GetInputMethod() {
@@ -644,7 +657,7 @@ void NativeWidgetMus::OnBoundsChanged(const gfx::Rect& old_bounds,
   }
   if (old_bounds.size() != new_bounds.size()) {
     native_widget_delegate_->OnNativeWidgetSizeChanged(new_bounds.size());
-    UpdateClientAreaInWindowManager();
+    UpdateClientArea();
   }
 }
 
@@ -746,22 +759,6 @@ void NativeWidgetMus::OnScrollEvent(ui::ScrollEvent* event) {
 
 void NativeWidgetMus::OnGestureEvent(ui::GestureEvent* event) {
   native_widget_delegate_->OnGestureEvent(event);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// NativeWidgetMus, private:
-
-void NativeWidgetMus::UpdateClientAreaInWindowManager() {
-  NonClientView* non_client_view =
-      native_widget_delegate_->AsWidget()->non_client_view();
-  if (!non_client_view || !non_client_view->client_view())
-    return;
-
-  const gfx::Rect client_area_rect(non_client_view->client_view()->bounds());
-  window_->SetClientArea(gfx::Insets(
-      client_area_rect.y(), client_area_rect.x(),
-      non_client_view->bounds().height() - client_area_rect.bottom(),
-      non_client_view->bounds().width() - client_area_rect.right()));
 }
 
 }  // namespace views

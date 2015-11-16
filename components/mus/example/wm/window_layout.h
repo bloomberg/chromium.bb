@@ -17,6 +17,11 @@ class WindowLayout : public LayoutManager {
  private:
   // Overridden from LayoutManager:
   void LayoutWindow(mus::Window* window) override;
+  void OnWindowSharedPropertyChanged(
+      mus::Window* window,
+      const std::string& name,
+      const std::vector<uint8_t>* old_data,
+      const std::vector<uint8_t>* new_data) override;
 
   void FitToContainer(mus::Window* window);
   void CenterWindow(mus::Window* window, const gfx::Size& preferred_size);

@@ -10,7 +10,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
-mus::mojom::ShowState GetWindowShowState(mus::Window* window) {
+mus::mojom::ShowState GetWindowShowState(const mus::Window* window) {
   if (window->HasSharedProperty(
       mus::mojom::WindowManager::kShowState_Property)) {
     return static_cast<mus::mojom::ShowState>(
@@ -30,7 +30,7 @@ void SetWindowUserSetBounds(mus::Window* window, const gfx::Rect& bounds) {
   }
 }
 
-gfx::Rect GetWindowUserSetBounds(mus::Window* window) {
+gfx::Rect GetWindowUserSetBounds(const mus::Window* window) {
   if (window->HasSharedProperty(
       mus::mojom::WindowManager::kUserSetBounds_Property)) {
     return window->GetSharedProperty<gfx::Rect>(
@@ -44,7 +44,7 @@ void SetWindowPreferredSize(mus::Window* window, const gfx::Size& size) {
       mus::mojom::WindowManager::kPreferredSize_Property, size);
 }
 
-gfx::Size GetWindowPreferredSize(mus::Window* window) {
+gfx::Size GetWindowPreferredSize(const mus::Window* window) {
   if (window->HasSharedProperty(
       mus::mojom::WindowManager::kPreferredSize_Property)) {
     return window->GetSharedProperty<gfx::Size>(
@@ -53,7 +53,7 @@ gfx::Size GetWindowPreferredSize(mus::Window* window) {
   return gfx::Size();
 }
 
-ash::mojom::Container GetRequestedContainer(mus::Window* window) {
+ash::mojom::Container GetRequestedContainer(const mus::Window* window) {
   if (window->HasSharedProperty(ash::mojom::kWindowContainer_Property)) {
     return static_cast<ash::mojom::Container>(
         window->GetSharedProperty<int32_t>(
@@ -70,4 +70,18 @@ mus::mojom::ResizeBehavior GetResizeBehavior(const mus::Window* window) {
             mus::mojom::WindowManager::kResizeBehavior_Property));
   }
   return mus::mojom::RESIZE_BEHAVIOR_NONE;
+}
+
+void SetRestoreBounds(mus::Window* window, const gfx::Rect& bounds) {
+  window->SetSharedProperty<gfx::Rect>(
+      mus::mojom::WindowManager::kRestoreBounds_Property, bounds);
+}
+
+gfx::Rect GetRestoreBounds(const mus::Window* window) {
+  if (window->HasSharedProperty(
+          mus::mojom::WindowManager::kRestoreBounds_Property)) {
+    return window->GetSharedProperty<gfx::Rect>(
+        mus::mojom::WindowManager::kRestoreBounds_Property);
+  }
+  return gfx::Rect();
 }

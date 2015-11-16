@@ -104,9 +104,9 @@ bool WindowManagerApplication::OnWmSetProperty(
     mus::Window* window,
     const std::string& name,
     scoped_ptr<std::vector<uint8_t>>* new_data) {
-  // TODO(sky): constrain this to set of keys we know about and return false
-  // otherwise.
-  return true;
+  // TODO(sky): constrain this to set of keys we know about, and allowed
+  // values.
+  return name == mus::mojom::WindowManager::kShowState_Property;
 }
 
 void WindowManagerApplication::CreateContainers() {

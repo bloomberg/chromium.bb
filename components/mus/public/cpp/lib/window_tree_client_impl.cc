@@ -310,12 +310,6 @@ void WindowTreeClientImpl::SetPreferredSize(Id window_id,
                           base::Bind(&WindowManagerCallback));
 }
 
-void WindowTreeClientImpl::SetShowState(Id window_id,
-                                        mojom::ShowState show_state) {
-  tree_->SetShowState(window_id, show_state,
-                      base::Bind(&WindowManagerCallback));
-}
-
 void WindowTreeClientImpl::SetResizeBehavior(
     Id window_id,
     mojom::ResizeBehavior resize_behavior) {

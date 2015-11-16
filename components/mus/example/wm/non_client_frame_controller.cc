@@ -33,6 +33,10 @@ class WmNativeWidgetMus : public views::NativeWidgetMus {
   void CenterWindow(const gfx::Size& size) override {
     // Do nothing. The client controls the size, not us.
   }
+  void UpdateClientArea() override {
+    // This pushes the client area to the WS. We don't want to do that as
+    // the client area should come from the client, not us.
+  }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WmNativeWidgetMus);

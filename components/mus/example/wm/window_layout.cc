@@ -51,6 +51,21 @@ void WindowLayout::LayoutWindow(mus::Window* window) {
   }
 }
 
+void WindowLayout::OnWindowSharedPropertyChanged(
+    mus::Window* window,
+    const std::string& name,
+    const std::vector<uint8_t>* old_data,
+    const std::vector<uint8_t>* new_data) {
+  // TODO(sky): this feels like the wrong place for this logic. Find a better
+  // place.
+  if (name == mus::mojom::WindowManager::kShowState_Property &&
+      GetWindowShowState(window) == mus::mojom::SHOW_STATE_MAXIMIZED) {
+    SetRestoreBounds(window, window->bounds());
+  }
+  LayoutManager::OnWindowSharedPropertyChanged(window, name, old_data,
+                                               new_data);
+}
+
 void WindowLayout::FitToContainer(mus::Window* window) {
   window->SetBounds(gfx::Rect(owner()->bounds().size()));
 }
