@@ -31,8 +31,8 @@
 
 #include "test-runner.h"
 #include "wayland-util.h"
+#include "wayland-private.h"
 
-#define WL_HIDE_DEPRECATED
 #include "test-compositor.h"
 
 extern int leak_check_enabled;
@@ -54,6 +54,11 @@ FAIL_TEST(exit_failure)
 FAIL_TEST(fail_abort)
 {
 	abort();
+}
+
+FAIL_TEST(fail_wl_abort)
+{
+	wl_abort("Abort the program\n");
 }
 
 FAIL_TEST(fail_kill)

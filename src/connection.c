@@ -33,7 +33,6 @@
 #include <stdio.h>
 #include <errno.h>
 #include <sys/uio.h>
-#include <assert.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/types.h>
@@ -569,16 +568,12 @@ wl_closure_marshal(struct wl_object *sender, uint32_t opcode,
 		case 'h':
 			fd = args[i].h;
 			dup_fd = wl_os_dupfd_cloexec(fd, 0);
-			if (dup_fd < 0) {
-				wl_log("dup failed: %m");
-				abort();
-			}
+			if (dup_fd < 0)
+				wl_abort("dup failed: %s\n", strerror(errno));
 			closure->args[i].h = dup_fd;
 			break;
 		default:
-			wl_log("unhandled format code: '%c'\n",
-				arg.type);
-			assert(0);
+			wl_abort("unhandled format code: '%c'\n", arg.type);
 			break;
 		}
 	}
@@ -771,8 +766,7 @@ wl_connection_demarshal(struct wl_connection *connection,
 			closure->args[i].h = fd;
 			break;
 		default:
-			wl_log("unknown type\n");
-			assert(0);
+			wl_abort("unknown type\n");
 			break;
 		}
 	}
@@ -906,8 +900,7 @@ convert_arguments_to_ffi(const char *signature, uint32_t flags,
 			ffi_args[i] = &args[i].h;
 			break;
 		default:
-			wl_log("unknown type\n");
-			assert(0);
+			wl_abort("unknown type\n");
 			break;
 		}
 	}
@@ -938,9 +931,8 @@ wl_closure_invoke(struct wl_closure *closure, uint32_t flags,
 
 	implementation = target->implementation;
 	if (!implementation[opcode]) {
-		wl_log("listener function for opcode %u of %s is NULL\n",
-			opcode, target->interface->name);
-		abort();
+		wl_abort("listener function for opcode %u of %s is NULL\n",
+			 opcode, target->interface->name);
 	}
 	ffi_call(&cif, implementation[opcode], NULL, ffi_args);
 }

@@ -385,3 +385,15 @@ wl_log(const char *fmt, ...)
 	wl_log_handler(fmt, argp);
 	va_end(argp);
 }
+
+void
+wl_abort(const char *fmt, ...)
+{
+	va_list argp;
+
+	va_start(argp, fmt);
+	wl_log_handler(fmt, argp);
+	va_end(argp);
+
+	abort();
+}
