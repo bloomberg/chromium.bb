@@ -1586,8 +1586,6 @@
         'browser/accessibility/browser_accessibility_manager_android.h',
         'browser/android/composited_touch_handle_drawable.cc',
         'browser/android/composited_touch_handle_drawable.h',
-        'browser/android/content_readback_handler.cc',
-        'browser/android/content_readback_handler.h',
         'browser/android/content_view_core_impl.cc',
         'browser/android/content_view_core_impl.h',
         'browser/android/content_view_render_view.cc',

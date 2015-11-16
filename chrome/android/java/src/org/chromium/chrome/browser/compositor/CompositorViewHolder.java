@@ -51,7 +51,6 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.widget.ClipDrawableProgressBar.DrawingInfo;
 import org.chromium.chrome.browser.widget.ControlContainer;
-import org.chromium.content.browser.ContentReadbackHandler;
 import org.chromium.content.browser.ContentViewClient;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.SPenSupport;
@@ -319,14 +318,6 @@ public class CompositorViewHolder extends FrameLayout
 
     public ContentOffsetProvider getContentOffsetProvider() {
         return mCompositorView;
-    }
-
-    /**
-     * @return The content readback handler.
-     */
-    public ContentReadbackHandler getContentReadbackHandler() {
-        if (mCompositorView == null) return null;
-        return mCompositorView.getContentReadbackHandler();
     }
 
     /**

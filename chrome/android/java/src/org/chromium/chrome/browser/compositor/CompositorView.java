@@ -39,7 +39,6 @@ import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.tabmodel.TabModelImpl;
 import org.chromium.chrome.browser.widget.ClipDrawableProgressBar.DrawingInfo;
-import org.chromium.content.browser.ContentReadbackHandler;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.resources.AndroidResourceType;
@@ -80,8 +79,6 @@ public class CompositorView
     private int mSurfaceHeight;
     private boolean mPreloadedResources;
 
-    private ContentReadbackHandler mContentReadbackHandler;
-
     // The current SurfaceView pixel format. Defaults to OPAQUE.
     private int mCurrentPixelFormat = PixelFormat.OPAQUE;
 
@@ -97,12 +94,6 @@ public class CompositorView
         resetFlags();
         setVisibility(View.INVISIBLE);
         setZOrderMediaOverlay(true);
-        mContentReadbackHandler = new ContentReadbackHandler() {
-            @Override
-            protected boolean readyForReadback() {
-                return mNativeCompositorView != 0;
-            }
-        };
     }
 
     /**
@@ -166,13 +157,6 @@ public class CompositorView
     }
 
     /**
-     * @return The content readback handler.
-     */
-    public ContentReadbackHandler getContentReadbackHandler() {
-        return mContentReadbackHandler;
-    }
-
-    /**
      * @return The ResourceManager.
      */
     public ResourceManager getResourceManager() {
@@ -199,8 +183,6 @@ public class CompositorView
      */
     public void shutDown() {
         getHolder().removeCallback(this);
-        mContentReadbackHandler.destroy();
-        mContentReadbackHandler = null;
         if (mNativeCompositorView != 0) nativeDestroy(mNativeCompositorView);
         mNativeCompositorView = 0;
     }
@@ -232,8 +214,6 @@ public class CompositorView
 
         // Grab the Resource Manager
         mResourceManager = nativeGetResourceManager(mNativeCompositorView);
-
-        mContentReadbackHandler.initNativeContentReadbackHandler();
     }
 
     @Override

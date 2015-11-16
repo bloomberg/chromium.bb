@@ -31,8 +31,6 @@ public class ContentViewRenderView extends FrameLayout {
     private final SurfaceView mSurfaceView;
     protected ContentViewCore mContentViewCore;
 
-    private ContentReadbackHandler mContentReadbackHandler;
-
     /**
      * Constructs a new ContentViewRenderView.
      * This should be called and the {@link ContentViewRenderView} should be added to the view
@@ -93,21 +91,6 @@ public class ContentViewRenderView extends FrameLayout {
         };
         mSurfaceView.getHolder().addCallback(mSurfaceCallback);
         mSurfaceView.setVisibility(VISIBLE);
-
-        mContentReadbackHandler = new ContentReadbackHandler() {
-            @Override
-            protected boolean readyForReadback() {
-                return mNativeContentViewRenderView != 0 && mContentViewCore != null;
-            }
-        };
-        mContentReadbackHandler.initNativeContentReadbackHandler();
-    }
-
-    /**
-     * @return The content readback handler.
-     */
-    public ContentReadbackHandler getContentReadbackHandler() {
-        return mContentReadbackHandler;
     }
 
     /**
@@ -134,8 +117,6 @@ public class ContentViewRenderView extends FrameLayout {
      * native resource can be freed.
      */
     public void destroy() {
-        mContentReadbackHandler.destroy();
-        mContentReadbackHandler = null;
         mSurfaceView.getHolder().removeCallback(mSurfaceCallback);
         nativeDestroy(mNativeContentViewRenderView);
         mNativeContentViewRenderView = 0;

@@ -4,7 +4,9 @@
 
 package org.chromium.content.browser.webcontents;
 
+import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.graphics.Rect;
 import android.os.Bundle;
 import android.os.Parcel;
 import android.os.ParcelUuid;
@@ -15,6 +17,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.content_public.browser.AccessibilitySnapshotCallback;
 import org.chromium.content_public.browser.AccessibilitySnapshotNode;
+import org.chromium.content_public.browser.ContentBitmapCallback;
 import org.chromium.content_public.browser.JavaScriptCallback;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.WebContents;
@@ -413,6 +416,19 @@ import java.util.UUID;
         mObserverProxy.removeObserver(observer);
     }
 
+    @Override
+    public void getContentBitmapAsync(Bitmap.Config config, float scale, Rect srcRect,
+            ContentBitmapCallback callback) {
+        nativeGetContentBitmap(mNativeWebContentsAndroid, callback, config, scale,
+                srcRect.top, srcRect.left, srcRect.width(), srcRect.height());
+    }
+
+    @CalledByNative
+    private void onGetContentBitmapFinished(ContentBitmapCallback callback, Bitmap bitmap,
+            int response) {
+        callback.onFinishGetBitmap(bitmap, response);
+    }
+
     // This is static to avoid exposing a public destroy method on the native side of this class.
     private static native void nativeDestroyWebContents(long webContentsAndroidPtr);
 
@@ -468,4 +484,7 @@ import java.util.UUID;
     private native void nativeSuspendMediaSession(long nativeWebContentsAndroid);
     private native void nativeStopMediaSession(long nativeWebContentsAndroid);
     private native String nativeGetEncoding(long nativeWebContentsAndroid);
+    private native void nativeGetContentBitmap(long nativeWebContentsAndroid,
+            ContentBitmapCallback callback, Bitmap.Config config, float scale,
+            float x, float y, float width, float height);
 }

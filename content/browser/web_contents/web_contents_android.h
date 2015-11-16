@@ -7,6 +7,7 @@
 
 #include <jni.h>
 
+#include "base/android/jni_android.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
@@ -122,6 +123,16 @@ class CONTENT_EXPORT WebContentsAndroid
   base::android::ScopedJavaLocalRef<jstring> GetEncoding(JNIEnv* env,
                                                          jobject obj) const;
 
+  // Relay the access from Java layer to GetScaledContentBitmap through JNI.
+  void GetContentBitmap(JNIEnv* env,
+                        const base::android::JavaParamRef<jobject>& obj,
+                        const base::android::JavaParamRef<jobject>& jcallback,
+                        const base::android::JavaParamRef<jobject>& color_type,
+                        jfloat scale,
+                        jfloat x,
+                        jfloat y,
+                        jfloat width,
+                        jfloat height);
   void set_synchronous_compositor_client(SynchronousCompositorClient* client) {
     synchronous_compositor_client_ = client;
   }
@@ -131,6 +142,12 @@ class CONTENT_EXPORT WebContentsAndroid
 
  private:
   RenderWidgetHostViewAndroid* GetRenderWidgetHostViewAndroid();
+
+  void OnFinishGetContentBitmap(
+      base::android::ScopedJavaGlobalRef<jobject>* obj,
+      base::android::ScopedJavaGlobalRef<jobject>* callback,
+      const SkBitmap& bitmap,
+      ReadbackResponse response);
 
   WebContents* web_contents_;
   NavigationControllerAndroid navigation_controller_;

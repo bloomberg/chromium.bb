@@ -123,10 +123,10 @@ import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.webapps.AddToHomescreenDialog;
 import org.chromium.chrome.browser.widget.ControlContainer;
-import org.chromium.content.browser.ContentReadbackHandler;
 import org.chromium.content.browser.ContentVideoView;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.common.ContentSwitches;
+import org.chromium.content_public.browser.ContentBitmapCallback;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.readback_types.ReadbackResponse;
 import org.chromium.policy.CombinedPolicyProvider.PolicyChangeListener;
@@ -177,6 +177,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
      */
     private static final int PARTNER_BROWSER_CUSTOMIZATIONS_TIMEOUT_MS = 10000;
     private static final String TAG = "cr.ChromeActivity";
+    private static final Rect EMPTY_RECT = new Rect();
 
     private TabModelSelector mTabModelSelector;
     private TabModelSelectorTabObserver mTabModelSelectorTabObserver;
@@ -903,10 +904,9 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         if (currentTab == null) return;
 
         final Activity mainActivity = this;
-        ContentReadbackHandler.GetBitmapCallback bitmapCallback =
-                new ContentReadbackHandler.GetBitmapCallback() {
+        ContentBitmapCallback callback = new ContentBitmapCallback() {
                     @Override
-                    public void onFinishGetBitmap(Bitmap bitmap, int reponse) {
+                    public void onFinishGetBitmap(Bitmap bitmap, int response) {
                         ShareHelper.share(shareDirectly, mainActivity, currentTab.getTitle(),
                                 currentTab.getUrl(), bitmap);
                         if (shareDirectly) {
@@ -916,12 +916,11 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
                         }
                     }
                 };
-        ContentReadbackHandler readbackHandler = getContentReadbackHandler();
-        if (isIncognito || readbackHandler == null || currentTab.getContentViewCore() == null) {
-            bitmapCallback.onFinishGetBitmap(null, ReadbackResponse.SURFACE_UNAVAILABLE);
+        if (isIncognito || currentTab.getWebContents() == null) {
+            callback.onFinishGetBitmap(null, ReadbackResponse.SURFACE_UNAVAILABLE);
         } else {
-            readbackHandler.getContentBitmapAsync(1, new Rect(), currentTab.getContentViewCore(),
-                    Bitmap.Config.ARGB_8888, bitmapCallback);
+            currentTab.getWebContents().getContentBitmapAsync(
+                    Bitmap.Config.ARGB_8888, 1.f, EMPTY_RECT, callback);
         }
     }
 
@@ -1182,13 +1181,6 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
      */
     public ContentOffsetProvider getContentOffsetProvider() {
         return mCompositorViewHolder.getContentOffsetProvider();
-    }
-
-    /**
-     * @return The content readback handler, may be null.
-     */
-    public ContentReadbackHandler getContentReadbackHandler() {
-        return mCompositorViewHolder.getContentReadbackHandler();
     }
 
     /**

@@ -35,12 +35,15 @@
 #include "net/android/network_library.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/gfx/android/device_display_info.h"
+#include "ui/gfx/android/java_bitmap.h"
+#include "ui/gfx/geometry/rect.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertJavaStringToUTF8;
 using base::android::ConvertJavaStringToUTF16;
 using base::android::ConvertUTF8ToJavaString;
 using base::android::ConvertUTF16ToJavaString;
+using base::android::JavaParamRef;
 using base::android::ScopedJavaGlobalRef;
 using base::android::ToJavaIntArray;
 
@@ -560,4 +563,50 @@ ScopedJavaLocalRef<jstring>  WebContentsAndroid::GetEncoding(
                                                 web_contents_->GetEncoding());
 }
 
+void WebContentsAndroid::GetContentBitmap(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jobject>& jcallback,
+    const JavaParamRef<jobject>& color_type,
+    jfloat scale,
+    jfloat x,
+    jfloat y,
+    jfloat width,
+    jfloat height) {
+  RenderWidgetHostViewAndroid* view = GetRenderWidgetHostViewAndroid();
+  const ReadbackRequestCallback result_callback =
+      base::Bind(&WebContentsAndroid::OnFinishGetContentBitmap,
+                 weak_factory_.GetWeakPtr(),
+                 base::Owned(new ScopedJavaGlobalRef<jobject>(env, obj)),
+                 base::Owned(new ScopedJavaGlobalRef<jobject>(env, jcallback)));
+  SkColorType pref_color_type = gfx::ConvertToSkiaColorType(color_type.obj());
+  if (!view || pref_color_type == kUnknown_SkColorType) {
+    result_callback.Run(SkBitmap(), READBACK_FAILED);
+    return;
+  }
+  if (!view->IsSurfaceAvailableForCopy()) {
+    result_callback.Run(SkBitmap(), READBACK_SURFACE_UNAVAILABLE);
+    return;
+  }
+  view->GetScaledContentBitmap(scale,
+                               pref_color_type,
+                               gfx::Rect(x, y, width, height),
+                               result_callback);
+}
+
+void WebContentsAndroid::OnFinishGetContentBitmap(
+    ScopedJavaGlobalRef<jobject>* obj,
+    ScopedJavaGlobalRef<jobject>* callback,
+    const SkBitmap& bitmap,
+    ReadbackResponse response) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> java_bitmap;
+  if (response == READBACK_SUCCESS)
+    java_bitmap = gfx::ConvertToJavaBitmap(&bitmap);
+  Java_WebContentsImpl_onGetContentBitmapFinished(env,
+                                                  obj->obj(),
+                                                  callback->obj(),
+                                                  java_bitmap.obj(),
+                                                  response);
+}
 }  // namespace content
