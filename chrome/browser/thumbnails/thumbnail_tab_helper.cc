@@ -126,7 +126,6 @@ void AsyncProcessThumbnail(scoped_refptr<ThumbnailingContext> context,
 
 ThumbnailTabHelper::ThumbnailTabHelper(content::WebContents* contents)
     : content::WebContentsObserver(contents),
-      enabled_(true),
       load_interrupted_(false) {
   // Even though we deal in RenderWidgetHosts, we only care about its
   // subclass, RenderViewHost when it is in a tab. We don't make thumbnails
@@ -229,7 +228,5 @@ void ThumbnailTabHelper::RenderViewHostCreated(
 }
 
 void ThumbnailTabHelper::WidgetHidden(RenderWidgetHost* widget) {
-  if (!enabled_)
-    return;
   UpdateThumbnailIfNecessary(web_contents());
 }

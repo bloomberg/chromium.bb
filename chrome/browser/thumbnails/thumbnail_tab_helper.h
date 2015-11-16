@@ -25,11 +25,6 @@ class ThumbnailTabHelper
  public:
   ~ThumbnailTabHelper() override;
 
-  // Enables or disables the function of taking thumbnails.
-  // A disabled ThumbnailTabHelper generates no thumbnails although it still
-  // continues to receive the notifications from the web contents.
-  void set_enabled(bool enabled) { enabled_ = enabled; }
-
  private:
   explicit ThumbnailTabHelper(content::WebContents* contents);
   friend class content::WebContentsUserData<ThumbnailTabHelper>;
@@ -52,8 +47,6 @@ class ThumbnailTabHelper
 
   // Indicates that the given widget has changed is visibility.
   void WidgetHidden(content::RenderWidgetHost* widget);
-
-  bool enabled_;
 
   content::NotificationRegistrar registrar_;
 
