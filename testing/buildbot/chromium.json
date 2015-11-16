@@ -1,5 +1,8 @@
 {
   "Linux x64": {
+    "additional_compile_targets": [
+      "all"
+    ],
     "scripts": [
       {
         "args": [
