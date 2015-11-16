@@ -1275,19 +1275,6 @@ DirectoryTree.prototype.redraw = function(recursive) {
 };
 
 /**
-  * Handles keydown events on the tree and activates the selected item on Enter.
-  * @param {Event} e The click event object.
-  * @override
-  */
-DirectoryTree.prototype.handleKeyDown = function(e) {
-  cr.ui.Tree.prototype.handleKeyDown.call(this, e);
-  if (util.getKeyModifiers(e) === '' && e.keyIdentifier === 'Enter') {
-    if (this.selectedItem)
-      this.selectedItem.activate();
-  }
-};
-
-/**
  * Invoked when the filter is changed.
  * @private
  */
