@@ -20,6 +20,9 @@ config("media_config") {
   if (!media_use_ffmpeg) {
     defines += [ "MEDIA_DISABLE_FFMPEG" ]
   }
+  if (!media_use_libwebm) {
+    defines += [ "MEDIA_DISABLE_LIBWEBM" ]
+  }
   if (current_cpu == "arm" && arm_use_neon) {
     defines += [ "USE_NEON" ]
   }
@@ -48,6 +51,9 @@ config("media_dependent_config") {
   }
   if (!media_use_ffmpeg) {
     defines += [ "MEDIA_DISABLE_FFMPEG" ]
+  }
+  if (!media_use_libwebm) {
+    defines += [ "MEDIA_DISABLE_LIBWEBM" ]
   }
   if (is_win) {
     ldflags = [

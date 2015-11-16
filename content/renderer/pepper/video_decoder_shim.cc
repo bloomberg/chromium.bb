@@ -49,7 +49,11 @@ bool IsCodecSupported(media::VideoCodec codec) {
     return true;
 #endif
 
+#if !defined(MEDIA_DISABLE_FFMPEG) && !defined(DISABLE_FFMPEG_VIDEO_DECODERS)
   return media::FFmpegVideoDecoder::IsCodecSupported(codec);
+#else
+  return false;
+#endif
 }
 
 }  // namespace
@@ -689,12 +693,18 @@ void VideoDecoderShim::DecoderImpl::Initialize(
         new media::VpxVideoDecoder(base::ThreadTaskRunnerHandle::Get()));
   } else
 #endif
+
+#if !defined(MEDIA_DISABLE_FFMPEG) && !defined(DISABLE_FFMPEG_VIDEO_DECODERS)
   {
     scoped_ptr<media::FFmpegVideoDecoder> ffmpeg_video_decoder(
         new media::FFmpegVideoDecoder(base::ThreadTaskRunnerHandle::Get()));
     ffmpeg_video_decoder->set_decode_nalus(true);
     decoder_ = ffmpeg_video_decoder.Pass();
   }
+#elif defined(MEDIA_DISABLE_LIBVPX)
+  OnInitDone(false);
+  return;
+#endif
 
   // VpxVideoDecoder and FFmpegVideoDecoder support only one pending Decode()
   // request.

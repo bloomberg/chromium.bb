@@ -21,8 +21,11 @@
 #include "extensions/common/extension_utility_messages.h"
 #include "extensions/utility/unpacker.h"
 #include "media/base/media.h"
-#include "media/base/media_file_checker.h"
 #include "ui/base/ui_base_switches.h"
+
+#if !defined(MEDIA_DISABLE_FFMPEG)
+#include "media/base/media_file_checker.h"
+#endif
 
 #if defined(OS_WIN)
 #include "chrome/common/extensions/api/networking_private/networking_private_crypto.h"
@@ -120,11 +123,15 @@ bool ExtensionsHandler::OnMessageReceived(const IPC::Message& message) {
 void ExtensionsHandler::OnCheckMediaFile(
     int64 milliseconds_of_decoding,
     const IPC::PlatformFileForTransit& media_file) {
+#if !defined(MEDIA_DISABLE_FFMPEG)
   media::MediaFileChecker checker(
       IPC::PlatformFileForTransitToFile(media_file));
   const bool check_success = checker.Start(
       base::TimeDelta::FromMilliseconds(milliseconds_of_decoding));
   Send(new ChromeUtilityHostMsg_CheckMediaFile_Finished(check_success));
+#else
+  Send(new ChromeUtilityHostMsg_CheckMediaFile_Finished(false));
+#endif
   ReleaseProcessIfNeeded();
 }
 

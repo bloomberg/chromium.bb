@@ -31,6 +31,7 @@ bool DecodeAudioFileData(
   if (!destination_bus)
     return false;
 
+#if !defined(MEDIA_DISABLE_FFMPEG)
   // Uses the FFmpeg library for audio file reading.
   InMemoryUrlProtocol url_protocol(reinterpret_cast<const uint8*>(data),
                                    data_size, false);
@@ -89,6 +90,9 @@ bool DecodeAudioFileData(
            << " number of channels: " << number_of_channels;
 
   return actual_frames > 0;
+#else
+  return false;
+#endif  // !defined(MEDIA_DISABLE_FFMPEG)
 }
 
 }  // namespace content

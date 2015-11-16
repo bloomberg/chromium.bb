@@ -11,9 +11,12 @@
 #include "content/renderer/media/webrtc_uma_histograms.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/video_frame.h"
-#include "media/capture/webm_muxer.h"
 #include "third_party/WebKit/public/platform/WebMediaRecorderHandlerClient.h"
 #include "third_party/WebKit/public/platform/WebString.h"
+
+#if !defined(MEDIA_DISABLE_LIBWEBM)
+#include "media/capture/webm_muxer.h"
+#endif
 
 using base::TimeDelta;
 using base::TimeTicks;
@@ -74,7 +77,6 @@ bool MediaRecorderHandler::start(int timeslice) {
   DCHECK(main_render_thread_checker_.CalledOnValidThread());
   DCHECK(!recording_);
   DCHECK(!media_stream_.isNull());
-  DCHECK(!webm_muxer_);
   DCHECK(timeslice_.is_zero());
 
   timeslice_ = TimeDelta::FromMilliseconds(timeslice);
@@ -83,11 +85,18 @@ bool MediaRecorderHandler::start(int timeslice) {
   blink::WebVector<blink::WebMediaStreamTrack> video_tracks;
   media_stream_.videoTracks(video_tracks);
 
+#if !defined(MEDIA_DISABLE_LIBWEBM)
+  DCHECK(!webm_muxer_);
+
   webm_muxer_.reset(new media::WebmMuxer(
       use_vp9_ ? media::kCodecVP9 : media::kCodecVP8, video_tracks.size() > 0,
       false /* no audio for now - http://crbug.com/528519 */,
       base::Bind(&MediaRecorderHandler::WriteData,
                  weak_factory_.GetWeakPtr())));
+#else
+  LOG(WARNING) << "No muxer available";
+  return false;
+#endif
 
   if (video_tracks.isEmpty()) {
     // TODO(mcasas): Add audio_tracks and update the code in this function
@@ -123,7 +132,9 @@ void MediaRecorderHandler::stop() {
   recording_ = false;
   timeslice_ = TimeDelta::FromMilliseconds(0);
   video_recorders_.clear();
+#if !defined(MEDIA_DISABLE_LIBWEBM)
   webm_muxer_.reset();
+#endif
 }
 
 void MediaRecorderHandler::pause() {
@@ -148,10 +159,12 @@ void MediaRecorderHandler::OnEncodedVideo(
     TimeTicks timestamp,
     bool is_key_frame) {
   DCHECK(main_render_thread_checker_.CalledOnValidThread());
+#if !defined(MEDIA_DISABLE_LIBWEBM)
   if (!webm_muxer_)
     return;
   webm_muxer_->OnEncodedVideo(video_frame, encoded_data.Pass(), timestamp,
                               is_key_frame);
+#endif
 }
 
 void MediaRecorderHandler::WriteData(base::StringPiece data) {

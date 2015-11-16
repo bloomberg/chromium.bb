@@ -958,8 +958,13 @@ void WebMediaPlayerImpl::StartPipeline() {
     DCHECK(!chunk_demuxer_);
     DCHECK(data_source_);
 
+#if !defined(MEDIA_DISABLE_FFMPEG)
     demuxer_.reset(new FFmpegDemuxer(media_task_runner_, data_source_.get(),
                                      encrypted_media_init_data_cb, media_log_));
+#else
+    OnPipelineError(PipelineStatus::DEMUXER_ERROR_COULD_NOT_OPEN);
+    return;
+#endif
   } else {
     DCHECK(!chunk_demuxer_);
     DCHECK(!data_source_);

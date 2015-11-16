@@ -718,6 +718,15 @@
             'capture/webm_muxer.cc',
             'capture/webm_muxer.h',
           ],
+        }, {  # media_use_libwebm==0
+          'defines': [
+            'MEDIA_DISABLE_LIBWEBM',
+          ],
+          'direct_dependent_settings': {
+            'defines': [
+              'MEDIA_DISABLE_LIBWEBM',
+            ],
+          },
         }],
         ['OS=="android"', {
           'dependencies': [
