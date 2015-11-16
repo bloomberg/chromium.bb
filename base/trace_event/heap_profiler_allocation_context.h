@@ -50,18 +50,28 @@ bool BASE_EXPORT operator==(const Backtrace& lhs, const Backtrace& rhs);
 // when heap profiling is enabled. To simplify memory management for book-
 // keeping, this struct has a fixed size. All |const char*|s here must have
 // static lifetime.
-// TODO(ruuda): Make the default constructor private to avoid accidentally
-// constructing an instance and forgetting to initialize it. Only
-// |AllocationContextTracker| should be able to construct. (And tests.)
 struct BASE_EXPORT AllocationContext {
+ public:
   // A type ID is a number that is unique for every C++ type. A type ID is
   // stored instead of the type name to avoid inflating the binary with type
   // name strings. There is an out of band lookup table mapping IDs to the type
   // names. A value of 0 means that the type is not known.
   using TypeId = uint16_t;
 
+  // An allocation context with empty backtrace and type ID 0 (unknown type).
+  static AllocationContext Empty();
+
   Backtrace backtrace;
   TypeId type_id;
+
+ private:
+  friend class AllocationContextTracker;
+
+  // Don't allow uninitialized instances except inside the allocation context
+  // tracker. Except in tests, an |AllocationContext| should only be obtained
+  // from the tracker. In tests, paying the overhead of initializing the struct
+  // to |Empty| and then overwriting the members is not such a big deal.
+  AllocationContext();
 };
 
 bool BASE_EXPORT operator==(const AllocationContext& lhs,

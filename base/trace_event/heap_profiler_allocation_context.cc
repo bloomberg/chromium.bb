@@ -7,9 +7,25 @@
 #include <cstring>
 
 #include "base/hash.h"
+#include "base/macros.h"
 
 namespace base {
 namespace trace_event {
+
+// Constructor that does not initialize members.
+AllocationContext::AllocationContext() {}
+
+// static
+AllocationContext AllocationContext::Empty() {
+  AllocationContext ctx;
+
+  for (size_t i = 0; i < arraysize(ctx.backtrace.frames); i++)
+    ctx.backtrace.frames[i] = nullptr;
+
+  ctx.type_id = 0;
+
+  return ctx;
+}
 
 bool operator==(const Backtrace& lhs, const Backtrace& rhs) {
   // Pointer equality of the stack frames is assumed, so instead of doing a deep
