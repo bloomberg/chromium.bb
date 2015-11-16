@@ -61,7 +61,7 @@ class MockPasswordStoreConsumer
 class MockPasswordStoreObserver
     : public password_manager::PasswordStore::Observer {
  public:
-  MockPasswordStoreObserver(PasswordStoreProxyMac* password_store)
+  explicit MockPasswordStoreObserver(PasswordStoreProxyMac* password_store)
       : guard_(this) {
     guard_.Add(password_store);
   }

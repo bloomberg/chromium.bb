@@ -5,6 +5,7 @@
 #include "chrome/browser/password_manager/password_store_win.h"
 
 #include <map>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/logging.h"

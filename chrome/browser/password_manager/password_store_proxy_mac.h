@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_STORE_PROXY_MAC_H_
 #define CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_STORE_PROXY_MAC_H_
 
+#include <string>
 #include <vector>
 
 #include "base/prefs/pref_member.h"

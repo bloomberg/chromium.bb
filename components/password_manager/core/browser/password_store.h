@@ -5,6 +5,9 @@
 #ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_STORE_H_
 #define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_STORE_H_
 
+#include <string>
+#include <vector>
+
 #include "base/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"

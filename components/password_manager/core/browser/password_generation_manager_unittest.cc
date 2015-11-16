@@ -34,7 +34,7 @@ namespace {
 
 class TestPasswordManagerDriver : public StubPasswordManagerDriver {
  public:
-  TestPasswordManagerDriver(PasswordManagerClient* client)
+  explicit TestPasswordManagerDriver(PasswordManagerClient* client)
       : password_manager_(client),
         password_generation_manager_(client, this),
         password_autofill_manager_(this, nullptr) {}
@@ -71,7 +71,7 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
   MOCK_CONST_METHOD0(IsSavingAndFillingEnabledForCurrentPage, bool());
   MOCK_CONST_METHOD0(IsOffTheRecord, bool());
 
-  MockPasswordManagerClient(scoped_ptr<PrefService> prefs)
+  explicit MockPasswordManagerClient(scoped_ptr<PrefService> prefs)
       : prefs_(prefs.Pass()), store_(new TestPasswordStore), driver_(this) {}
 
   ~MockPasswordManagerClient() override { store_->Shutdown(); }

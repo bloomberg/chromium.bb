@@ -4,6 +4,8 @@
 
 #include "chrome/browser/password_manager/password_store_mac.h"
 
+#include <string>
+
 #include "base/basictypes.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/scoped_observer.h"
@@ -1479,10 +1481,10 @@ TEST_F(PasswordStoreMacTest, TestDBKeychainAssociation) {
 
 namespace {
 
-class PasswordsChangeObserver :
-    public password_manager::PasswordStore::Observer {
-public:
- PasswordsChangeObserver(PasswordStoreMac* store) : observer_(this) {
+class PasswordsChangeObserver
+    : public password_manager::PasswordStore::Observer {
+ public:
+  explicit PasswordsChangeObserver(PasswordStoreMac* store) : observer_(this) {
     observer_.Add(store);
   }
 
@@ -1495,9 +1497,9 @@ public:
   MOCK_METHOD1(OnLoginsChanged,
                void(const password_manager::PasswordStoreChangeList& changes));
 
-private:
-  ScopedObserver<password_manager::PasswordStore,
-                PasswordsChangeObserver> observer_;
+ private:
+  ScopedObserver<password_manager::PasswordStore, PasswordsChangeObserver>
+      observer_;
 };
 
 password_manager::PasswordStoreChangeList GetAddChangeList(

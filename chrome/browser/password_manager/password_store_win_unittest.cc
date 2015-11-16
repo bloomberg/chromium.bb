@@ -58,7 +58,7 @@ class MockPasswordStoreConsumer : public PasswordStoreConsumer {
 };
 
 class MockWebDataServiceConsumer : public WebDataServiceConsumer {
-public:
+ public:
   MOCK_METHOD2(OnWebDataServiceRequestDone,
                void(PasswordWebDataService::Handle, const WDTypedResult*));
 };
