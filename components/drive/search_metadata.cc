@@ -54,44 +54,15 @@ bool CompareByTimestamp(const ResourceEntry& a, const ResourceEntry& b) {
 }
 
 struct ResultCandidateComparator {
-  bool operator()(const ResultCandidate* a, const ResultCandidate* b) const {
+  bool operator()(const scoped_ptr<ResultCandidate>& a,
+                  const scoped_ptr<ResultCandidate>& b) const {
     return CompareByTimestamp(a->entry, b->entry);
   }
 };
 
-// A wrapper of std::priority_queue which deals with pointers of values.
-template<typename T, typename Compare>
-class ScopedPriorityQueue {
- public:
-  ScopedPriorityQueue() {}
-
-  ~ScopedPriorityQueue() {
-    while (!empty())
-      pop();
-  }
-
-  bool empty() const { return queue_.empty(); }
-
-  size_t size() const { return queue_.size(); }
-
-  const T* top() const { return queue_.top(); }
-
-  void push(T* x) { queue_.push(x); }
-
-  void pop() {
-    // Keep top alive for the pop() call so that debug checks can access
-    // underlying data (e.g. validating heap property of the priority queue
-    // will call the comparator).
-    T* saved_top = queue_.top();
-    queue_.pop();
-    delete saved_top;
-  }
-
- private:
-  std::priority_queue<T*, std::vector<T*>, Compare> queue_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedPriorityQueue);
-};
+typedef std::priority_queue<scoped_ptr<ResultCandidate>,
+                            std::vector<scoped_ptr<ResultCandidate>>,
+                            ResultCandidateComparator> ResultCandidateQueue;
 
 // Classifies the given entry as hidden if it's not under specific directories.
 class HiddenEntryClassifier {
@@ -154,8 +125,7 @@ FileError MaybeAddEntryToResult(
     const SearchMetadataPredicate& predicate,
     size_t at_most_num_matches,
     HiddenEntryClassifier* hidden_entry_classifier,
-    ScopedPriorityQueue<ResultCandidate, ResultCandidateComparator>*
-        result_candidates) {
+    ResultCandidateQueue* result_candidates) {
   DCHECK_GE(at_most_num_matches, result_candidates->size());
 
   const ResourceEntry& entry = it->GetValue();
@@ -184,7 +154,8 @@ FileError MaybeAddEntryToResult(
   // Make space for |entry| when appropriate.
   if (result_candidates->size() == at_most_num_matches)
     result_candidates->pop();
-  result_candidates->push(new ResultCandidate(it->GetID(), entry, highlighted));
+  result_candidates->push(make_scoped_ptr(
+      new ResultCandidate(it->GetID(), entry, highlighted)));
   return FILE_ERROR_OK;
 }
 
@@ -194,8 +165,7 @@ FileError SearchMetadataOnBlockingPool(ResourceMetadata* resource_metadata,
                                        const SearchMetadataPredicate& predicate,
                                        int at_most_num_matches,
                                        MetadataSearchResultVector* results) {
-  ScopedPriorityQueue<ResultCandidate,
-                      ResultCandidateComparator> result_candidates;
+  ResultCandidateQueue result_candidates;
 
   // Prepare data structure for searching.
   std::vector<base::string16> keywords =
