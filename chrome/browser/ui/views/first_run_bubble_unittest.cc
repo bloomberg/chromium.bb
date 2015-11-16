@@ -13,9 +13,43 @@
 #include "ui/aura/window_tree_host.h"
 #include "ui/events/event.h"
 #include "ui/events/event_processor.h"
+#include "ui/events/event_utils.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
+
+// Provides functionality to observe the widget passed in the constructor for
+// the widget closing event.
+class WidgetClosingObserver : public views::WidgetObserver {
+ public:
+  explicit WidgetClosingObserver(views::Widget* widget)
+      : widget_(widget),
+        widget_destroyed_(false) {
+    widget_->AddObserver(this);
+  }
+
+  ~WidgetClosingObserver() override {
+    if (widget_)
+      widget_->RemoveObserver(this);
+  }
+
+  void OnWidgetClosing(views::Widget* widget) override {
+    DCHECK(widget == widget_);
+    widget_->RemoveObserver(this);
+    widget_destroyed_ = true;
+    widget_ = nullptr;
+  }
+
+  bool widget_destroyed() const {
+    return widget_destroyed_;
+  }
+
+ private:
+  views::Widget* widget_;
+  bool widget_destroyed_;
+
+  DISALLOW_COPY_AND_ASSIGN(WidgetClosingObserver);
+};
 
 class FirstRunBubbleTest : public views::ViewsTestBase,
                            views::WidgetObserver {
@@ -26,6 +60,8 @@ class FirstRunBubbleTest : public views::ViewsTestBase,
   // Overrides from views::ViewsTestBase:
   void SetUp() override;
   void TearDown() override;
+
+  void CreateAndCloseBubbleOnEventTest(ui::Event* event);
 
  protected:
   TestingProfile* profile() { return profile_.get(); }
@@ -56,38 +92,33 @@ void FirstRunBubbleTest::TearDown() {
   TestingBrowserProcess::DeleteInstance();
 }
 
-// Provides functionality to observe the widget passed in the constructor for
-// the widget closing event.
-class WidgetClosingObserver : public views::WidgetObserver {
- public:
-  WidgetClosingObserver(views::Widget* widget)
-      : widget_(widget),
-        widget_destroyed_(false) {
-    widget_->AddObserver(this);
-  }
+void FirstRunBubbleTest::CreateAndCloseBubbleOnEventTest(ui::Event* event) {
+  // Create the anchor and parent widgets.
+  views::Widget::InitParams params =
+      CreateParams(views::Widget::InitParams::TYPE_WINDOW);
+  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  scoped_ptr<views::Widget> anchor_widget(new views::Widget);
+  anchor_widget->Init(params);
+  anchor_widget->SetBounds(gfx::Rect(10, 10, 500, 500));
+  anchor_widget->Show();
 
-  ~WidgetClosingObserver() override {
-    if (widget_)
-      widget_->RemoveObserver(this);
-  }
+  FirstRunBubble* delegate =
+      FirstRunBubble::ShowBubble(NULL, anchor_widget->GetContentsView());
+  EXPECT_TRUE(delegate != NULL);
 
-  void OnWidgetClosing(views::Widget* widget) override {
-    DCHECK(widget == widget_);
-    widget_->RemoveObserver(this);
-    widget_destroyed_ = true;
-    widget_ = nullptr;
-  }
+  anchor_widget->GetFocusManager()->SetFocusedView(
+      anchor_widget->GetContentsView());
 
-  bool widget_destroyed() const {
-    return widget_destroyed_;
-  }
+  scoped_ptr<WidgetClosingObserver> widget_observer(
+      new WidgetClosingObserver(delegate->GetWidget()));
 
- private:
-  views::Widget* widget_;
-  bool widget_destroyed_;
+  ui::EventDispatchDetails details =
+      anchor_widget->GetNativeWindow()->GetHost()->event_processor()->
+          OnEventFromSource(event);
+  EXPECT_FALSE(details.dispatcher_destroyed);
 
-  DISALLOW_COPY_AND_ASSIGN(WidgetClosingObserver);
-};
+  EXPECT_TRUE(widget_observer->widget_destroyed());
+}
 
 TEST_F(FirstRunBubbleTest, CreateAndClose) {
   // Create the anchor and parent widgets.
@@ -107,30 +138,21 @@ TEST_F(FirstRunBubbleTest, CreateAndClose) {
 // Tests that the first run bubble is closed when keyboard events are
 // dispatched to the anchor widget.
 TEST_F(FirstRunBubbleTest, CloseBubbleOnKeyEvent) {
-  // Create the anchor and parent widgets.
-  views::Widget::InitParams params =
-      CreateParams(views::Widget::InitParams::TYPE_WINDOW);
-  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  scoped_ptr<views::Widget> anchor_widget(new views::Widget);
-  anchor_widget->Init(params);
-  anchor_widget->Show();
-
-  FirstRunBubble* delegate =
-      FirstRunBubble::ShowBubble(NULL, anchor_widget->GetContentsView());
-  EXPECT_TRUE(delegate != NULL);
-
-  anchor_widget->GetFocusManager()->SetFocusedView(
-      anchor_widget->GetContentsView());
-
-  scoped_ptr<WidgetClosingObserver> widget_observer(
-      new WidgetClosingObserver(delegate->GetWidget()));
-
   ui::KeyEvent key_event(ui::ET_KEY_PRESSED, ui::VKEY_ESCAPE, ui::EF_NONE);
-
-  ui::EventDispatchDetails details =
-      anchor_widget->GetNativeWindow()->GetHost()->event_processor()->
-          OnEventFromSource(&key_event);
-  EXPECT_FALSE(details.dispatcher_destroyed);
-
-  EXPECT_TRUE(widget_observer->widget_destroyed());
+  CreateAndCloseBubbleOnEventTest(&key_event);
 }
+
+TEST_F(FirstRunBubbleTest, CloseBubbleOnMouseDownEvent) {
+  gfx::Point pt(110, 210);
+  ui::MouseEvent mouse_down(
+      ui::ET_MOUSE_PRESSED, pt, pt, ui::EventTimeForNow(),
+      ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
+  CreateAndCloseBubbleOnEventTest(&mouse_down);
+}
+
+TEST_F(FirstRunBubbleTest, CloseBubbleOnTouchDownEvent) {
+  ui::TouchEvent touch_down(
+      ui::ET_TOUCH_PRESSED, gfx::Point(10, 10), 0, ui::EventTimeForNow());
+  CreateAndCloseBubbleOnEventTest(&touch_down);
+}
+

@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/search_engines/util.h"
+#include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/views/controls/label.h"
@@ -103,30 +104,48 @@ FirstRunBubble::FirstRunBubbleCloser::FirstRunBubbleCloser(
     views::View* anchor_view)
     : bubble_(bubble),
       anchor_widget_(anchor_view->GetWidget()) {
-  AddKeyboardEventObserver();
+  AddEventObservers();
 }
 
 FirstRunBubble::FirstRunBubbleCloser::~FirstRunBubbleCloser() {
   if (anchor_widget_)
-    RemoveKeyboardEventObserver();
+    RemoveEventObservers();
 }
 
 void FirstRunBubble::FirstRunBubbleCloser::OnKeyEvent(ui::KeyEvent* event) {
+  CloseBubble();
+}
+
+void FirstRunBubble::FirstRunBubbleCloser::OnMouseEvent(
+    ui::MouseEvent* event) {
+  if (event->type() == ui::ET_MOUSE_PRESSED)
+    CloseBubble();
+}
+
+void FirstRunBubble::FirstRunBubbleCloser::OnGestureEvent(
+    ui::GestureEvent* event) {
+  if (event->type() == ui::ET_GESTURE_TAP ||
+      event->type() == ui::ET_GESTURE_TAP_DOWN) {
+    CloseBubble();
+  }
+}
+
+void FirstRunBubble::FirstRunBubbleCloser::AddEventObservers() {
+  anchor_widget_->GetNativeView()->AddPreTargetHandler(this);
+}
+
+void FirstRunBubble::FirstRunBubbleCloser::RemoveEventObservers() {
+  DCHECK(anchor_widget_);
+  anchor_widget_->GetNativeView()->RemovePreTargetHandler(this);
+  anchor_widget_ = nullptr;
+}
+
+void FirstRunBubble::FirstRunBubbleCloser::CloseBubble() {
   if (!anchor_widget_)
     return;
 
-  RemoveKeyboardEventObserver();
+  RemoveEventObservers();
   DCHECK(bubble_);
   bubble_->GetWidget()->Close();
   bubble_ = nullptr;
-}
-
-void FirstRunBubble::FirstRunBubbleCloser::AddKeyboardEventObserver() {
-  anchor_widget_->GetRootView()->AddPreTargetHandler(this);
-}
-
-void FirstRunBubble::FirstRunBubbleCloser::RemoveKeyboardEventObserver() {
-  DCHECK(anchor_widget_);
-  anchor_widget_->GetRootView()->RemovePreTargetHandler(this);
-  anchor_widget_ = nullptr;
 }
