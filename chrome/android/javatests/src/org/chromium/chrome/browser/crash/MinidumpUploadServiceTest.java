@@ -399,7 +399,7 @@ public class MinidumpUploadServiceTest extends CrashTestCase {
          */
         private CountedMinidumpUploadCallable(
                 String fileName, int result, boolean networkChange) {
-            super(new File(fileName), null, null, null, null);
+            super(new File(fileName), null, null, null);
             this.mResult = result;
             this.mTriggerNetworkChange = networkChange;
         }

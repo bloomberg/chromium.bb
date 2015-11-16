@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.crash;
 
-import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.annotations.SuppressFBWarnings;
@@ -25,7 +23,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.Calendar;
 
 /**
  * Unittests for {@link MinidumpUploadCallable}.
@@ -139,18 +136,10 @@ public class MinidumpUploadCallableTest extends CrashTestCase {
      * This class calls |getInstrumentation| which cannot be done in a static context.
      */
     private class MockMinidumpUploadCallable extends MinidumpUploadCallable {
-        private Calendar mCalendar;
-
         MockMinidumpUploadCallable(
                 HttpURLConnectionFactory httpURLConnectionFactory,
                 CrashReportingPermissionManager permManager) {
-            super(mTestUpload, mUploadLog, httpURLConnectionFactory, permManager,
-                    PreferenceManager.getDefaultSharedPreferences(
-                            getInstrumentation().getTargetContext()));
-            mCalendar = Calendar.getInstance();
-            mCalendar.clear();
-            mCalendar.set(Calendar.YEAR, 2014);
-            mCalendar.set(Calendar.DAY_OF_YEAR, 14);
+            super(mTestUpload, mUploadLog, httpURLConnectionFactory, permManager);
         }
     }
 
@@ -224,17 +213,6 @@ public class MinidumpUploadCallableTest extends CrashTestCase {
         assertEquals(MinidumpUploadCallable.UPLOAD_FAILURE,
                 minidumpUploadCallable.call().intValue());
         assertFalse(mExpectedFileAfterUpload.exists());
-    }
-
-    private void setUpCrashPreferences(int lastDay, int count, int lastWeek, long totalSize) {
-        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(
-                getInstrumentation().getTargetContext());
-        pref.edit()
-                .putInt(MinidumpUploadCallable.PREF_LAST_UPLOAD_DAY, lastDay)
-                .putInt(MinidumpUploadCallable.PREF_DAY_UPLOAD_COUNT, count)
-                .putInt(MinidumpUploadCallable.PREF_LAST_UPLOAD_WEEK, lastWeek)
-                .putLong(MinidumpUploadCallable.PREF_WEEK_UPLOAD_SIZE, totalSize)
-                .apply();
     }
 
     private void extendUploadFile(int numBytes) throws FileNotFoundException, IOException {

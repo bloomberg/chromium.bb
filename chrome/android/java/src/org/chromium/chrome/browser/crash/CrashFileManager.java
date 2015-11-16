@@ -156,20 +156,6 @@ public class CrashFileManager {
         }
     }
 
-    /**
-     * Deletes all files including unsent crash reports.
-     * Note: This method is called from multiple threads, but it is not thread-safe. It will
-     * generate warning messages in logs if race condition occurs.
-     */
-    @VisibleForTesting
-    public void cleanAllMiniDumps() {
-        cleanOutAllNonFreshMinidumpFiles();
-
-        for (File f : getAllMinidumpFiles()) {
-            deleteFile(f);
-        }
-    }
-
     @VisibleForTesting
     File[] getMatchingFiles(final Pattern pattern) {
         // Get dump dir and get all files with specified suffix.. The path

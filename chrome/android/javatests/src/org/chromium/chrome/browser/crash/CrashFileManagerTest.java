@@ -174,15 +174,4 @@ public class CrashFileManagerTest extends CrashTestCase {
         assertEquals("f.tryN.dmp.try1",
                 CrashFileManager.filenameWithIncrementedAttemptNumber("f.tryN.dmp"));
     }
-
-    @SmallTest
-    @Feature({"Android-AppBase"})
-    public void testCleanAllMiniDumps() {
-        assertEquals(7, mCrashDir.listFiles().length);
-
-        CrashFileManager crashFileManager = new CrashFileManager(mCacheDir);
-        crashFileManager.cleanAllMiniDumps();
-
-        assertEquals(0, mCrashDir.listFiles().length);
-    }
 }
