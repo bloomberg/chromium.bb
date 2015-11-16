@@ -7,6 +7,7 @@
 
 #include "core/CoreExport.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
+#include "platform/heap/Handle.h"
 #include "wtf/Allocator.h"
 #include "wtf/text/WTFString.h"
 
@@ -33,7 +34,8 @@ private:
     bool portMatches(const KURL&) const;
     bool isSchemeOnly() const;
 
-    ContentSecurityPolicy* m_policy;
+    // TODO(Oilpan): consider moving ContentSecurityPolicy auxilliary objects to the heap.
+    RawPtrWillBeUntracedMember<ContentSecurityPolicy> m_policy;
     String m_scheme;
     String m_host;
     int m_port;

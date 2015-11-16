@@ -9,6 +9,7 @@
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/frame/csp/MediaListDirective.h"
 #include "core/frame/csp/SourceListDirective.h"
+#include "platform/heap/Handle.h"
 #include "platform/network/ContentSecurityPolicyParsers.h"
 #include "platform/network/HTTPParsers.h"
 #include "platform/weborigin/KURL.h"
@@ -123,7 +124,8 @@ private:
 
     bool denyIfEnforcingPolicy() const { return m_reportOnly; }
 
-    ContentSecurityPolicy* m_policy;
+    // TODO(Oilpan): consider moving ContentSecurityPolicy auxilliary objects to the heap.
+    RawPtrWillBeUntracedMember<ContentSecurityPolicy> m_policy;
 
     String m_header;
     ContentSecurityPolicyHeaderType m_headerType;

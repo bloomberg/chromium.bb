@@ -8,6 +8,7 @@
 #include "core/CoreExport.h"
 #include "core/frame/csp/CSPSource.h"
 #include "platform/Crypto.h"
+#include "platform/heap/Handle.h"
 #include "platform/network/ContentSecurityPolicyParsers.h"
 #include "wtf/HashSet.h"
 #include "wtf/text/WTFString.h"
@@ -52,7 +53,8 @@ private:
 
     bool hasSourceMatchInList(const KURL&, ContentSecurityPolicy::RedirectStatus) const;
 
-    ContentSecurityPolicy* m_policy;
+    // TODO(Oilpan): consider moving ContentSecurityPolicy auxilliary objects to the heap.
+    RawPtrWillBeUntracedMember<ContentSecurityPolicy> m_policy;
     Vector<CSPSource> m_list;
     String m_directiveName;
     bool m_allowSelf;
