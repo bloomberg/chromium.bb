@@ -332,10 +332,16 @@ bool IsInvertedColorScheme() {
 #endif  // !defined(OS_WIN)
 
 SkColor DeriveDefaultIconColor(SkColor text_color) {
-  // For black text, this comes out to gfx::kChromeIconGrey.
-  SkColor color = BlendTowardOppositeLuminance(
-      text_color, SkColorGetR(gfx::kChromeIconGrey));
-  return color;
+  // This function works similarly to BlendTowardOppositeLuminance, but uses a
+  // different blend value for lightening and darkening.
+  unsigned char luminance = color_utils::GetLuminanceForColor(text_color);
+  if (luminance < 128) {
+    // For black text, this comes out to kChromeIconGrey.
+    return color_utils::AlphaBlend(SK_ColorWHITE, text_color,
+                                   SkColorGetR(gfx::kChromeIconGrey));
+  }
+  // The dimming is less dramatic when darkening a light color.
+  return color_utils::AlphaBlend(SK_ColorBLACK, text_color, 0x33);
 }
 
 }  // namespace color_utils
