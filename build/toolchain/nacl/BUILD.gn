@@ -28,7 +28,6 @@ nacl_arm_glibc_rev = revisions[1]
 #pnacl_newlib_rev = revisions[2]
 
 template("pnacl_toolchain") {
-  assert(defined(invoker.strip), "Must define strip")
   assert(defined(invoker.executable_extension),
          "Must define executable_extension")
 
@@ -50,7 +49,9 @@ template("pnacl_toolchain") {
     ld = cxx
     readelf = toolprefix + "readelf"
     nm = toolprefix + "nm"
-    strip = toolprefix + invoker.strip
+    if (defined(invoker.strip)) {
+      strip = toolprefix + invoker.strip
+    }
     executable_extension = invoker.executable_extension
   }
 }
@@ -70,8 +71,9 @@ pnacl_toolchain("newlib_pnacl") {
 
 pnacl_toolchain("newlib_pnacl_nonsfi") {
   executable_extension = ""
-
-  strip = "strip"
+  # TODO(mcgrathr): Uncomment this after pnacl-strip has been taught
+  # to grok --strip-unneeded.
+  #strip = "strip"
 }
 
 template("nacl_glibc_toolchain") {
