@@ -212,15 +212,23 @@ void ConvertCdmKeysInfo(const std::vector<media::CdmKeyInformation*>& keys_info,
   }
 }
 
+template<typename Type>
+class ScopedResetter {
+ public:
+  explicit ScopedResetter(Type* object) : object_(object) {}
+  ~ScopedResetter() { object_->Reset(); }
+
+ private:
+  Type* const object_;
+};
+
 void INITIALIZE_CDM_MODULE() {
-  DVLOG(1) << __FUNCTION__;
 #if defined(CLEAR_KEY_CDM_USE_FFMPEG_DECODER)
   av_register_all();
 #endif  // CLEAR_KEY_CDM_USE_FFMPEG_DECODER
 }
 
 void DeinitializeCdmModule() {
-  DVLOG(1) << __FUNCTION__;
 }
 
 void* CreateCdmInstance(int cdm_interface_version,
@@ -247,8 +255,7 @@ void* CreateCdmInstance(int cdm_interface_version,
     return NULL;
 
   // TODO(jrummell): Obtain the proper origin for this instance.
-  GURL empty_gurl;
-  return new media::ClearKeyCdm(host, key_system_string, empty_gurl);
+  return new media::ClearKeyCdm(host, key_system_string, GURL::EmptyGURL());
 }
 
 const char* GetCdmVersion() {
