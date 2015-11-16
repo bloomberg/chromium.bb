@@ -29,7 +29,7 @@ class SyncApiComponentFactoryMock
       sync_driver::ChangeProcessor* change_processor);
   ~SyncApiComponentFactoryMock() override;
 
-  MOCK_METHOD1(RegisterDataTypes, void(sync_driver::SyncClient*));
+  MOCK_METHOD1(RegisterDataTypes, void(const RegisterDataTypesMethod&));
   MOCK_METHOD5(CreateDataTypeManager,
                sync_driver::DataTypeManager*(
                    const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>&,
@@ -37,10 +37,9 @@ class SyncApiComponentFactoryMock
                    const sync_driver::DataTypeEncryptionHandler*,
                    browser_sync::SyncBackendHost*,
                    sync_driver::DataTypeManagerObserver* observer));
-  MOCK_METHOD5(CreateSyncBackendHost,
+  MOCK_METHOD4(CreateSyncBackendHost,
                browser_sync::SyncBackendHost*(
                    const std::string& name,
-                   sync_driver::SyncClient* sync_client,
                    invalidation::InvalidationService* invalidator,
                    const base::WeakPtr<sync_driver::SyncPrefs>& sync_prefs,
                    const base::FilePath& sync_folder));

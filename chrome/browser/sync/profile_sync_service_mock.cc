@@ -21,12 +21,12 @@
 
 ProfileSyncServiceMock::ProfileSyncServiceMock(Profile* profile)
     : ProfileSyncServiceMock(
-          make_scoped_ptr(
-              new browser_sync::ChromeSyncClient(
-                  profile,
-                  make_scoped_ptr(new SyncApiComponentFactoryMock())))
-              .Pass(),
-          profile) {}
+          make_scoped_ptr(new browser_sync::ChromeSyncClient(profile)),
+          profile) {
+  static_cast<browser_sync::ChromeSyncClient*>(GetSyncClient())
+      ->SetSyncApiComponentFactoryForTesting(
+          make_scoped_ptr(new SyncApiComponentFactoryMock()));
+}
 
 ProfileSyncServiceMock::ProfileSyncServiceMock(
     scoped_ptr<sync_driver::SyncClient> sync_client,

@@ -27,6 +27,8 @@ class FakeSyncClient : public SyncClient {
   scoped_refptr<password_manager::PasswordStore> GetPasswordStore() override;
   ClearBrowsingDataCallback GetClearBrowsingDataCallback() override;
   base::Closure GetPasswordStateChangedCallback() override;
+  sync_driver::SyncApiComponentFactory::RegisterDataTypesMethod
+  GetRegisterPlatformTypesCallback() override;
   autofill::PersonalDataManager* GetPersonalDataManager() override;
   scoped_refptr<autofill::AutofillWebDataService> GetWebDataService() override;
   BookmarkUndoService* GetBookmarkUndoServiceIfExists() override;
