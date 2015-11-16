@@ -122,12 +122,11 @@ TEST(DragImageTest, NonNullHandling)
 
 TEST(DragImageTest, CreateDragImage)
 {
-    {
-        // Tests that the DrageImage implementation doesn't choke on null values
-        // of imageForCurrentFrame().
-        RefPtr<TestImage> testImage(TestImage::create(IntSize()));
-        EXPECT_FALSE(DragImage::create(testImage.get()));
-    }
+    // Tests that the DrageImage implementation doesn't choke on null values
+    // of imageForCurrentFrame().
+    // FIXME: how is this test any different from test NullHandling?
+    RefPtr<TestImage> testImage(TestImage::create(IntSize()));
+    EXPECT_FALSE(DragImage::create(testImage.get()));
 }
 
 TEST(DragImageTest, TrimWhitespace)
