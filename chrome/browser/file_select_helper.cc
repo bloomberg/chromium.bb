@@ -489,7 +489,8 @@ void FileSelectHelper::RunFileChooserOnUIThread(
     const base::FilePath& default_file_path,
     scoped_ptr<FileChooserParams> params) {
   DCHECK(params);
-  if (!render_view_host_ || !web_contents_ || !IsValidProfile(profile_)) {
+  if (!render_view_host_ || !web_contents_ || !IsValidProfile(profile_) ||
+      !render_view_host_->GetWidget()->GetView()) {
     // If the renderer was destroyed before we started, just cancel the
     // operation.
     RunFileChooserEnd();
