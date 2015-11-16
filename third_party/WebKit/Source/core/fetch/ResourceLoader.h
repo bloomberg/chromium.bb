@@ -47,7 +47,7 @@ class ThreadedDataReceiver;
 
 class CORE_EXPORT ResourceLoader final : public GarbageCollectedFinalized<ResourceLoader>, protected WebURLLoaderClient {
 public:
-    static ResourceLoader* create(ResourceFetcher*, Resource*, ResourceRequest&, const ResourceLoaderOptions&);
+    static ResourceLoader* create(ResourceFetcher*, Resource*, const ResourceRequest&, const ResourceLoaderOptions&);
     ~ResourceLoader() override;
     DECLARE_TRACE();
 
@@ -59,6 +59,7 @@ public:
     void cancelIfNotFinishing();
 
     Resource* cachedResource() { return m_resource; }
+    const ResourceRequest& originalRequest() const { return m_originalRequest; }
 
     void setDefersLoading(bool);
     bool defersLoading() const { return m_defersLoading; }
@@ -84,13 +85,14 @@ public:
     bool isLoadedBy(ResourceFetcher*) const;
 
     bool reachedTerminalState() const { return m_state == Terminated; }
+    const ResourceRequest& request() const { return m_request; }
 
     bool loadingMultipartContent() const { return m_loadingMultipartContent; }
 
 private:
     ResourceLoader(ResourceFetcher*, Resource*, const ResourceLoaderOptions&);
 
-    void init(ResourceRequest&);
+    void init(const ResourceRequest&);
     void requestSynchronously();
 
     void didFinishLoadingOnePart(double finishTime, int64_t encodedDataLength);
@@ -103,6 +105,7 @@ private:
     Member<ResourceFetcher> m_fetcher;
 
     ResourceRequest m_request;
+    ResourceRequest m_originalRequest; // Before redirects.
 
     bool m_notifiedLoadComplete;
 

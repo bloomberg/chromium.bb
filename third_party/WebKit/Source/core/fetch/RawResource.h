@@ -74,6 +74,7 @@ private:
     bool shouldIgnoreHTTPStatusCodeErrors() const override { return true; }
 
     void willFollowRedirect(ResourceRequest&, const ResourceResponse&) override;
+    void updateRequest(const ResourceRequest&) override;
     void responseReceived(const ResourceResponse&, PassOwnPtr<WebDataConsumerHandle>) override;
     void setSerializedCachedMetadata(const char*, size_t) override;
     void didSendData(unsigned long long bytesSent, unsigned long long totalBytesToBeSent) override;

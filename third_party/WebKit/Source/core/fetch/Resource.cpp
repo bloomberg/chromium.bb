@@ -176,8 +176,13 @@ Resource::Resource(const ResourceRequest& request, Type type)
     if (m_resourceRequest.url().protocolIsInHTTPFamily())
         m_cacheHandler = CacheHandler::create(this);
 
-    if (!accept().isEmpty())
-        m_resourceRequest.setHTTPAccept(accept());
+    if (!m_resourceRequest.url().hasFragmentIdentifier())
+        return;
+    KURL urlForCache = MemoryCache::removeFragmentIdentifierIfNeeded(m_resourceRequest.url());
+    if (urlForCache.hasFragmentIdentifier())
+        return;
+    m_fragmentIdentifierForRequest = m_resourceRequest.url().fragmentIdentifier();
+    m_resourceRequest.setURL(urlForCache);
 }
 
 Resource::~Resource()
@@ -209,23 +214,28 @@ void Resource::load(ResourceFetcher* fetcher, const ResourceLoaderOptions& optio
 {
     m_options = options;
     m_loading = true;
-    m_status = Pending;
 
+    ResourceRequest request(m_revalidatingRequest.isNull() ? m_resourceRequest : m_revalidatingRequest);
+    if (!accept().isEmpty())
+        request.setHTTPAccept(accept());
+
+    // FIXME: It's unfortunate that the cache layer and below get to know anything about fragment identifiers.
+    // We should look into removing the expectation of that knowledge from the platform network stacks.
+    if (!m_fragmentIdentifierForRequest.isNull()) {
+        KURL url = request.url();
+        url.setFragmentIdentifier(m_fragmentIdentifierForRequest);
+        request.setURL(url);
+        m_fragmentIdentifierForRequest = String();
+    }
+    m_status = Pending;
     if (m_loader) {
         ASSERT(m_revalidatingRequest.isNull());
         RELEASE_ASSERT(m_options.synchronousPolicy == RequestSynchronously);
         m_loader->changeToSynchronous();
         return;
     }
-
-    ResourceRequest& request(m_revalidatingRequest.isNull() ? m_resourceRequest : m_revalidatingRequest);
-    ResourceRequest requestCopy(m_revalidatingRequest.isNull() ? m_resourceRequest : m_revalidatingRequest);
-    m_loader = ResourceLoader::create(fetcher, this, requestCopy, options);
+    m_loader = ResourceLoader::create(fetcher, this, request, options);
     m_loader->start();
-
-    // Headers might have been modified during load start. Copy them over so long as the url didn't change.
-    if (request.url() == requestCopy.url())
-        request = requestCopy;
 }
 
 void Resource::checkNotify()

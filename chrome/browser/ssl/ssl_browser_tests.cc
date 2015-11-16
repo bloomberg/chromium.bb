@@ -2573,8 +2573,6 @@ IN_PROC_BROWSER_TEST_F(CommonNameMismatchBrowserTest,
   CheckSecurityState(contents, CertError::NONE,
                      content::SECURITY_STYLE_AUTHENTICATED, AuthState::NONE);
   replacements.SetHostStr("mail.example.com");
-  // blink strips the ref from requests.
-  replacements.ClearRef();
   GURL https_server_new_url = https_server_url.ReplaceComponents(replacements);
   // Verify that the current URL is the suggested URL.
   EXPECT_EQ(https_server_new_url.spec(),
