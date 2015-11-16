@@ -85,7 +85,7 @@ String HTMLElement::debugNodeName() const
 String HTMLElement::nodeName() const
 {
     // localNameUpper may intern and cache an AtomicString.
-    RELEASE_ASSERT(isMainThread());
+    ASSERT(isMainThread());
 
     // FIXME: Would be nice to have an atomicstring lookup based off uppercase
     // chars that does not have to copy the string on a hit in the hash.
