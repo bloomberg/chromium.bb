@@ -2515,6 +2515,66 @@ TEST_P(GLES2DecoderManualInitTest, DiscardFramebufferEXT) {
   EXPECT_FALSE(framebuffer->IsCleared());
 }
 
+TEST_P(GLES2DecoderManualInitTest, ClearBackbufferBitsOnDiscardFramebufferEXT) {
+  InitState init;
+  init.extensions = "GL_EXT_discard_framebuffer";
+  init.gl_version = "opengl es 2.0";
+  InitDecoder(init);
+
+  // EXPECT_EQ can't be used to compare function pointers.
+  EXPECT_TRUE(
+      gfx::MockGLInterface::GetGLProcAddress("glDiscardFramebufferEXT") ==
+      gfx::g_driver_gl.fn.glDiscardFramebufferEXTFn);
+
+  const GLenum target = GL_FRAMEBUFFER;
+  const GLsizei count = 1;
+  GLenum attachments[] = {GL_COLOR_EXT};
+
+  EXPECT_CALL(*gl_, DiscardFramebufferEXT(target, count, _))
+      .Times(1)
+      .RetiresOnSaturation();
+  DiscardFramebufferEXTImmediate& cmd =
+      *GetImmediateAs<DiscardFramebufferEXTImmediate>();
+  cmd.Init(target, count, attachments);
+  EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(attachments)));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  EXPECT_EQ(static_cast<uint32_t>(GL_COLOR_BUFFER_BIT),
+            GetAndClearBackbufferClearBitsForTest());
+
+  attachments[0] = GL_DEPTH_EXT;
+  EXPECT_CALL(*gl_, DiscardFramebufferEXT(target, count, _))
+      .Times(1)
+      .RetiresOnSaturation();
+  cmd.Init(target, count, attachments);
+  EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(attachments)));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  EXPECT_EQ(static_cast<uint32_t>(GL_DEPTH_BUFFER_BIT),
+            GetAndClearBackbufferClearBitsForTest());
+
+  attachments[0] = GL_STENCIL_EXT;
+  EXPECT_CALL(*gl_, DiscardFramebufferEXT(target, count, _))
+      .Times(1)
+      .RetiresOnSaturation();
+  cmd.Init(target, count, attachments);
+  EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(attachments)));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  EXPECT_EQ(static_cast<uint32_t>(GL_STENCIL_BUFFER_BIT),
+            GetAndClearBackbufferClearBitsForTest());
+
+  const GLsizei count0 = 3;
+  const GLenum attachments0[] = {GL_COLOR_EXT, GL_DEPTH_EXT, GL_STENCIL_EXT};
+  EXPECT_CALL(*gl_, DiscardFramebufferEXT(target, count0, _))
+      .Times(1)
+      .RetiresOnSaturation();
+  cmd.Init(target, count0, attachments0);
+  EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(attachments0)));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  EXPECT_EQ(static_cast<uint32_t>(GL_COLOR_BUFFER_BIT |
+                                  GL_DEPTH_BUFFER_BIT |
+                                  GL_STENCIL_BUFFER_BIT),
+            GetAndClearBackbufferClearBitsForTest());
+}
+
 TEST_P(GLES2DecoderTest, DiscardFramebufferEXTUnsupported) {
   const GLenum target = GL_FRAMEBUFFER;
   const GLsizei count = 1;

@@ -749,6 +749,10 @@ bool GLES2Decoder::GetServiceTextureId(uint32 client_texture_id,
   return false;
 }
 
+uint32 GLES2Decoder::GetAndClearBackbufferClearBitsForTest() {
+  return 0;
+}
+
 GLES2Decoder::GLES2Decoder()
     : initialized_(false),
       debug_(false),
@@ -867,6 +871,7 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
 
   void SetIgnoreCachedStateForTest(bool ignore) override;
   void SetForceShaderNameHashingForTest(bool force) override;
+  uint32 GetAndClearBackbufferClearBitsForTest() override;
   void ProcessFinishedAsyncTransfers();
 
   bool GetServiceTextureId(uint32 client_texture_id,
@@ -4910,6 +4915,13 @@ void GLES2DecoderImpl::SetForceShaderNameHashingForTest(bool force) {
   force_shader_name_hashing_for_test = force;
 }
 
+// Added specifically for testing backbuffer_needs_clear_bits unittests.
+uint32 GLES2DecoderImpl::GetAndClearBackbufferClearBitsForTest() {
+  uint32 clear_bits = backbuffer_needs_clear_bits_;
+  backbuffer_needs_clear_bits_ = 0;
+  return clear_bits;
+}
+
 void GLES2DecoderImpl::OnFboChanged() const {
   if (workarounds().restore_scissor_on_fbo_change)
     state_.fbo_binding_for_scissor_workaround_dirty = true;
@@ -5130,6 +5142,7 @@ void GLES2DecoderImpl::DoDiscardFramebufferEXT(GLenum target,
           break;
         case GL_DEPTH_EXT:
           backbuffer_needs_clear_bits_ |= GL_DEPTH_BUFFER_BIT;
+          break;
         case GL_STENCIL_EXT:
           backbuffer_needs_clear_bits_ |= GL_STENCIL_BUFFER_BIT;
           break;

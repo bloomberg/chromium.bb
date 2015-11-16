@@ -179,6 +179,7 @@ class GPU_EXPORT GLES2Decoder : public base::SupportsWeakPtr<GLES2Decoder>,
 
   virtual void SetIgnoreCachedStateForTest(bool ignore) = 0;
   virtual void SetForceShaderNameHashingForTest(bool force) = 0;
+  virtual uint32 GetAndClearBackbufferClearBitsForTest();
 
   // Gets the QueryManager for this context.
   virtual QueryManager* GetQueryManager() = 0;

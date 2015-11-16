@@ -225,6 +225,10 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool> {
     return decoder_.get();
   }
 
+  uint32 GetAndClearBackbufferClearBitsForTest() const {
+    return decoder_->GetAndClearBackbufferClearBitsForTest();
+  }
+
   typedef TestHelper::AttribInfo AttribInfo;
   typedef TestHelper::UniformInfo UniformInfo;
 
