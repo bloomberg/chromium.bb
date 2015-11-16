@@ -427,7 +427,7 @@ def conditional_if_endif(code, conditional_string):
 def exposed_if(code, exposed_test):
     if not exposed_test:
         return code
-    return generate_indented_conditional(code, 'context && (%s)' % exposed_test)
+    return generate_indented_conditional(code, 'executionContext && (%s)' % exposed_test)
 
 
 # [RuntimeEnabled]

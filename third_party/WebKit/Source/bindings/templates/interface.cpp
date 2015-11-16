@@ -877,8 +877,9 @@ void {{v8_class}}::installConditionallyEnabledProperties(v8::Local<v8::Object> i
 {% block prepare_prototype_and_interface_object %}
 {% from 'methods.cpp' import install_conditionally_enabled_methods with context %}
 {% if unscopeables or has_conditional_attributes_on_prototype or conditionally_enabled_methods %}
-void {{v8_class}}::preparePrototypeAndInterfaceObject(v8::Isolate* isolate, v8::Local<v8::Object> prototypeObject, v8::Local<v8::Function> interfaceObject, v8::Local<v8::FunctionTemplate> interfaceTemplate)
+void {{v8_class}}::preparePrototypeAndInterfaceObject(v8::Local<v8::Context> context, v8::Local<v8::Object> prototypeObject, v8::Local<v8::Function> interfaceObject, v8::Local<v8::FunctionTemplate> interfaceTemplate)
 {
+    v8::Isolate* isolate = context->GetIsolate();
 {% if unscopeables %}
     {{install_unscopeables() | indent}}
 {% endif %}
@@ -896,26 +897,25 @@ void {{v8_class}}::preparePrototypeAndInterfaceObject(v8::Isolate* isolate, v8::
 
 {##############################################################################}
 {% macro install_unscopeables() %}
-v8::Local<v8::Context> v8Context(prototypeObject->CreationContext());
 v8::Local<v8::Name> unscopablesSymbol(v8::Symbol::GetUnscopables(isolate));
 v8::Local<v8::Object> unscopeables;
-if (v8CallBoolean(prototypeObject->HasOwnProperty(v8Context, unscopablesSymbol)))
-    unscopeables = prototypeObject->Get(v8Context, unscopablesSymbol).ToLocalChecked().As<v8::Object>();
+if (v8CallBoolean(prototypeObject->HasOwnProperty(context, unscopablesSymbol)))
+    unscopeables = prototypeObject->Get(context, unscopablesSymbol).ToLocalChecked().As<v8::Object>();
 else
     unscopeables = v8::Object::New(isolate);
 {% for name, runtime_enabled_function in unscopeables %}
 {% filter runtime_enabled(runtime_enabled_function) %}
-unscopeables->CreateDataProperty(v8Context, v8AtomicString(isolate, "{{name}}"), v8::True(isolate)).FromJust();
+unscopeables->CreateDataProperty(context, v8AtomicString(isolate, "{{name}}"), v8::True(isolate)).FromJust();
 {% endfilter %}
 {% endfor %}
-prototypeObject->CreateDataProperty(v8Context, unscopablesSymbol, unscopeables).FromJust();
+prototypeObject->CreateDataProperty(context, unscopablesSymbol, unscopeables).FromJust();
 {% endmacro %}
 
 
 {##############################################################################}
 {% macro install_conditionally_enabled_attributes_on_prototype() %}
 {% from 'attributes.cpp' import attribute_configuration with context %}
-ExecutionContext* context = toExecutionContext(prototypeObject->CreationContext());
+ExecutionContext* executionContext = toExecutionContext(context);
 v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interfaceTemplate);
 {% for attribute in attributes if attribute.exposed_test and attribute.on_prototype %}
 {% filter exposed(attribute.exposed_test) %}

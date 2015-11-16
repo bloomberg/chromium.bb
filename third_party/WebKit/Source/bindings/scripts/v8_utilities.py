@@ -292,7 +292,7 @@ class ExposureSet:
 
     @staticmethod
     def _code(exposure):
-        exposed = ('context->%s()' %
+        exposed = ('executionContext->%s()' %
                    EXPOSED_EXECUTION_CONTEXT_METHOD[exposure.exposed])
         if exposure.runtime_enabled is not None:
             runtime_enabled = ('RuntimeEnabledFeatures::%sEnabled()' %

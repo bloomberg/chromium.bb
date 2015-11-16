@@ -675,8 +675,8 @@ V8DOMConfiguration::installMethod(isolate, {{instance_template}}, {{prototype_te
 {% if conditionally_enabled_methods %}
 {# Define operations with limited exposure #}
 v8::Local<v8::Signature> defaultSignature = v8::Signature::New(isolate, domTemplate(isolate));
-ExecutionContext* context = toExecutionContext(prototypeObject->CreationContext());
-ASSERT(context);
+ExecutionContext* executionContext = toExecutionContext(prototypeObject->CreationContext());
+ASSERT(executionContext);
 {% for method in conditionally_enabled_methods %}
 {% filter exposed(method.overloads.exposed_test_all
                   if method.overloads else

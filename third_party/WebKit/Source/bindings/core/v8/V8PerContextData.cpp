@@ -120,7 +120,7 @@ v8::Local<v8::Function> V8PerContextData::constructorForTypeSlowCase(const Wrapp
     if (prototypeObject->InternalFieldCount() == v8PrototypeInternalFieldcount
         && type->wrapperTypePrototype == WrapperTypeInfo::WrapperTypeObjectPrototype)
         prototypeObject->SetAlignedPointerInInternalField(v8PrototypeTypeIndex, const_cast<WrapperTypeInfo*>(type));
-    type->preparePrototypeAndInterfaceObject(m_isolate, prototypeObject, interfaceObject, interfaceTemplate);
+    type->preparePrototypeAndInterfaceObject(currentContext, prototypeObject, interfaceObject, interfaceTemplate);
     if (type->wrapperTypePrototype == WrapperTypeInfo::WrapperTypeExceptionPrototype) {
         if (!v8CallBoolean(prototypeObject->SetPrototype(currentContext, m_errorPrototype.newLocal(m_isolate))))
             return v8::Local<v8::Function>();
