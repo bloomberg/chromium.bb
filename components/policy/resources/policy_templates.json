@@ -87,7 +87,7 @@
 #   numbers can be any string that does not contain ':' or '-' characters.
 #
 #   Currently supported product names:
-#       'chrome_frame', 'chrome_os', 'android', 'ios',
+#       'chrome_frame', 'chrome_os', 'android', 'ios', 'webview_android',
 #       'chrome.win', 'chrome.linux', 'chrome.mac', 'chrome.*'
 #     For example if 'chrome.*:5-10' is specified for a policy, then it should
 #     be read as:
@@ -4161,6 +4161,7 @@
         'chrome.*:15-',
         'chrome_os:15-',
         'android:30-',
+        'webview_android:47-',
         'ios:34-',
       ],
       'features': {
@@ -4198,6 +4199,7 @@
         'chrome.*:15-',
         'chrome_os:15-',
         'android:30-',
+        'webview_android:47-',
         'ios:34-',
       ],
       'features': {
@@ -8026,6 +8028,10 @@
     'doc_android_restriction_name': {
       'desc': '''Caption text of the field 'android restriction name' in the summary chart of a policy in the generated documentation''',
       'text': '''Android restriction name:'''
+    },
+    'doc_android_webview_restriction_name': {
+      'desc': '''Caption text of the field 'android webview restriction name' in the summary chart of a policy in the generated documentation''',
+      'text': '''Android WebView restriction name:'''
     },
     'doc_supported_on': {
       'desc': '''Caption text of the list of 'products, platforms and versions where this policy is supported' in the summary chart of a policy in the generated documentation''',
