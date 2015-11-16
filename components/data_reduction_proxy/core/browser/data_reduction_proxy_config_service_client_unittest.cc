@@ -496,11 +496,12 @@ TEST_F(DataReductionProxyConfigServiceClientTest,
       },
   };
 
-  ScopedVector<net::SocketDataProvider> socket_data_providers;
+  std::vector<scoped_ptr<net::SocketDataProvider>> socket_data_providers;
   for (net::MockRead* mock_reads : mock_reads_array) {
-    socket_data_providers.push_back(
-        new net::StaticSocketDataProvider(mock_reads, 3, nullptr, 0));
-    mock_socket_factory()->AddSocketDataProvider(socket_data_providers.back());
+    socket_data_providers.push_back(make_scoped_ptr(
+        new net::StaticSocketDataProvider(mock_reads, 3, nullptr, 0)));
+    mock_socket_factory()->AddSocketDataProvider(
+        socket_data_providers.back().get());
   }
 
   config_client()->SetConfigServiceURL(GURL("http://configservice.com"));
@@ -533,11 +534,12 @@ TEST_F(DataReductionProxyConfigServiceClientTest, OnIPAddressChange) {
       net::MockRead(net::SYNCHRONOUS, net::OK),
   };
 
-  ScopedVector<net::SocketDataProvider> socket_data_providers;
+  std::vector<scoped_ptr<net::SocketDataProvider>> socket_data_providers;
   for (int i = 0; i < kFailureCount; ++i) {
-    socket_data_providers.push_back(
-        new net::StaticSocketDataProvider(failure_reads, 3, nullptr, 0));
-    mock_socket_factory()->AddSocketDataProvider(socket_data_providers.back());
+    socket_data_providers.push_back(make_scoped_ptr(
+        new net::StaticSocketDataProvider(failure_reads, 3, nullptr, 0)));
+    mock_socket_factory()->AddSocketDataProvider(
+        socket_data_providers.back().get());
     config_client()->RetrieveConfig();
     RunUntilIdle();
   }
@@ -610,12 +612,13 @@ TEST_F(DataReductionProxyConfigServiceClientTest, AuthFailure) {
        net::MockRead(net::SYNCHRONOUS, net::OK),
       },
   };
-  ScopedVector<net::SocketDataProvider> socket_data_providers;
+  std::vector<scoped_ptr<net::SocketDataProvider>> socket_data_providers;
   base::HistogramTester histogram_tester;
   for (net::MockRead* mock_reads : mock_reads_array) {
-    socket_data_providers.push_back(
-        new net::StaticSocketDataProvider(mock_reads, 3, nullptr, 0));
-    mock_socket_factory()->AddSocketDataProvider(socket_data_providers.back());
+    socket_data_providers.push_back(make_scoped_ptr(
+        new net::StaticSocketDataProvider(mock_reads, 3, nullptr, 0)));
+    mock_socket_factory()->AddSocketDataProvider(
+        socket_data_providers.back().get());
   }
 
   config_client()->SetConfigServiceURL(GURL("http://configservice.com"));

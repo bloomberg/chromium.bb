@@ -10,7 +10,6 @@
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_service.h"
 #include "base/run_loop.h"
@@ -454,11 +453,12 @@ TEST_F(DataReductionProxyInterceptorEndToEndTest, RedirectWithBypassAndRetry) {
           MockRead(net::SYNCHRONOUS, net::OK),
       },
   };
-  ScopedVector<net::SocketDataProvider> socket_data_providers;
+  std::vector<scoped_ptr<net::SocketDataProvider>> socket_data_providers;
   for (MockRead* mock_reads : mock_reads_array) {
-    socket_data_providers.push_back(
-        new net::StaticSocketDataProvider(mock_reads, 3, nullptr, 0));
-    mock_socket_factory()->AddSocketDataProvider(socket_data_providers.back());
+    socket_data_providers.push_back(make_scoped_ptr(
+        new net::StaticSocketDataProvider(mock_reads, 3, nullptr, 0)));
+    mock_socket_factory()->AddSocketDataProvider(
+        socket_data_providers.back().get());
   }
 
   scoped_ptr<net::URLRequest> request =
