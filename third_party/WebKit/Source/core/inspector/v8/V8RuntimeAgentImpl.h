@@ -35,6 +35,7 @@
 #include "core/InspectorFrontend.h"
 #include "core/inspector/InspectorBaseAgent.h"
 #include "core/inspector/v8/V8RuntimeAgent.h"
+#include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
 
@@ -94,7 +95,7 @@ private:
     InjectedScriptManager* injectedScriptManager() { return m_injectedScriptManager; }
     void addExecutionContextToFrontend(int executionContextId, const String& type, const String& origin, const String& humanReadableName, const String& frameId) override;
 
-    InspectorState* m_state;
+    RawPtrWillBeWeakPersistent<InspectorState> m_state;
     InspectorFrontend::Runtime* m_frontend;
     RawPtrWillBeWeakPersistent<InjectedScriptManager> m_injectedScriptManager;
     V8DebuggerImpl* m_debugger;

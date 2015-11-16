@@ -15,6 +15,7 @@
 #include "core/inspector/v8/V8DebuggerAgent.h"
 #include "core/inspector/v8/V8DebuggerImpl.h"
 #include "core/inspector/v8/V8DebuggerListener.h"
+#include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"
@@ -51,7 +52,7 @@ public:
     ~V8DebuggerAgentImpl() override;
     DECLARE_TRACE();
 
-    void setInspectorState(InspectorState* state) override { m_state = state; }
+    void setInspectorState(InspectorState*) override;
     void setFrontend(InspectorFrontend::Debugger* frontend) override { m_frontend = frontend; }
     void clearFrontend() override;
     void restore() override;
@@ -194,7 +195,7 @@ private:
     V8DebuggerImpl* m_debugger;
     int m_contextGroupId;
     bool m_enabled;
-    InspectorState* m_state;
+    RawPtrWillBeWeakPersistent<InspectorState> m_state;
     InspectorFrontend::Debugger* m_frontend;
     v8::Isolate* m_isolate;
     RefPtr<ScriptState> m_pausedScriptState;

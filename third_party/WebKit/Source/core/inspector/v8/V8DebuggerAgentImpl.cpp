@@ -265,6 +265,11 @@ void V8DebuggerAgentImpl::internalSetAsyncCallStackDepth(int depth)
     m_v8AsyncCallTracker->asyncCallTrackingStateChanged(m_maxAsyncCallStackDepth);
 }
 
+void V8DebuggerAgentImpl::setInspectorState(InspectorState* state)
+{
+    m_state = state;
+}
+
 void V8DebuggerAgentImpl::clearFrontend()
 {
     ErrorString error;

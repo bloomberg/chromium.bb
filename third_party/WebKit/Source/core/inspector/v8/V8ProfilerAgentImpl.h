@@ -8,6 +8,7 @@
 #include "core/CoreExport.h"
 #include "core/InspectorFrontend.h"
 #include "core/inspector/v8/V8ProfilerAgent.h"
+#include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/text/WTFString.h"
@@ -47,7 +48,7 @@ private:
     bool isRecording() const;
 
     v8::Isolate* m_isolate;
-    InspectorState* m_state;
+    RawPtrWillBeWeakPersistent<InspectorState> m_state;
     InspectorFrontend::Profiler* m_frontend;
     bool m_enabled;
     bool m_recordingCPUProfile;
