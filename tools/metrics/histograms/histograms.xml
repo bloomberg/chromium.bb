@@ -29925,6 +29925,23 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Result of removing an offline copy for a page.</summary>
 </histogram>
 
+<histogram name="OfflinePages.Filter.OnlineWhenEntering" enum="Boolean">
+  <owner>fgorski@chromium.org</owner>
+  <owner>jianli@chromium.org</owner>
+  <summary>
+    Whether user is connected when entering the filter with offline only
+    content.
+  </summary>
+</histogram>
+
+<histogram name="OfflinePages.Filter.OnlineWhenLeaving" enum="Boolean">
+  <owner>fgorski@chromium.org</owner>
+  <owner>jianli@chromium.org</owner>
+  <summary>
+    Whether user is connected when leaving the filter with offline only content.
+  </summary>
+</histogram>
+
 <histogram name="OfflinePages.FirstOpenSinceCreated" units="minutes">
   <owner>jianli@chromium.org</owner>
   <summary>

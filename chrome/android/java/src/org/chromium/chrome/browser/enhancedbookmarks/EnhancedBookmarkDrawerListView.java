@@ -11,8 +11,11 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.bookmark.BookmarksBridge.BookmarkModelObserver;
 import org.chromium.chrome.browser.enhancedbookmarks.EnhancedBookmarkManager.UIState;
+import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
+import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.components.bookmarks.BookmarkId;
 
 import java.util.List;
@@ -35,7 +38,7 @@ class EnhancedBookmarkDrawerListView extends ListView implements EnhancedBookmar
     private final EnhancedBookmarkDrawerListViewAdapter mAdapter =
             new EnhancedBookmarkDrawerListViewAdapter();
 
-    public EnhancedBookmarkDrawerListView(Context context, AttributeSet attrs) {
+    public EnhancedBookmarkDrawerListView(final Context context, AttributeSet attrs) {
         super(context, attrs);
 
         setAdapter(mAdapter);
@@ -46,6 +49,20 @@ class EnhancedBookmarkDrawerListView extends ListView implements EnhancedBookmar
 
                 EnhancedBookmarkDrawerListViewAdapter.Item item =
                         (EnhancedBookmarkDrawerListViewAdapter.Item) mAdapter.getItem(position);
+
+                if (OfflinePageBridge.isEnabled()) {
+                    int currentState = mDelegate.getCurrentState();
+                    boolean isConnected = OfflinePageUtils.isConnected(context);
+                    if (item.mType == EnhancedBookmarkDrawerListViewAdapter.TYPE_FILTER
+                            && currentState != UIState.STATE_FILTER) {
+                        RecordHistogram.recordBooleanHistogram(
+                                "OfflinePages.Filter.OnlineWhenEntering", isConnected);
+                    } else if (item.mType != EnhancedBookmarkDrawerListViewAdapter.TYPE_FILTER
+                            && currentState == UIState.STATE_FILTER) {
+                        RecordHistogram.recordBooleanHistogram(
+                                "OfflinePages.Filter.OnlineWhenLeaving", isConnected);
+                    }
+                }
 
                 switch (item.mType) {
                     case EnhancedBookmarkDrawerListViewAdapter.TYPE_FOLDER:
