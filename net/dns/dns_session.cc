@@ -93,8 +93,8 @@ DnsSession::DnsSession(const DnsConfig& config,
   UMA_HISTOGRAM_CUSTOM_COUNTS(
       "AsyncDNS.ServerCount", config_.nameservers.size(), 0, 10, 11);
   for (size_t i = 0; i < config_.nameservers.size(); ++i) {
-    server_stats_.push_back(new ServerStats(config_.timeout,
-                                            rtt_buckets_.Pointer()));
+    server_stats_.push_back(make_scoped_ptr(
+        new ServerStats(config_.timeout, rtt_buckets_.Pointer())));
   }
 }
 

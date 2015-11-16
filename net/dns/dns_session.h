@@ -10,7 +10,6 @@
 #include "base/lazy_instance.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_vector.h"
 #include "base/metrics/bucket_ranges.h"
 #include "base/time/time.h"
 #include "net/base/net_export.h"
@@ -131,7 +130,7 @@ class NET_EXPORT_PRIVATE DnsSession
   struct ServerStats;
 
   // Track runtime statistics of each DNS server.
-  ScopedVector<ServerStats> server_stats_;
+  std::vector<scoped_ptr<ServerStats>> server_stats_;
 
   // Buckets shared for all |ServerStats::rtt_histogram|.
   struct RttBuckets : public base::BucketRanges {
