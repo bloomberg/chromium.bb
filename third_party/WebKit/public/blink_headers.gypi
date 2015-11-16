@@ -401,7 +401,6 @@
       "web/WebGeolocationPermissionRequest.h",
       "web/WebGeolocationPermissionRequestManager.h",
       "web/WebGeolocationPosition.h",
-      "web/WebGlyphCache.h",
       "web/WebHeap.h",
       "web/WebHelperPlugin.h",
       "web/WebHistoryCommitType.h",

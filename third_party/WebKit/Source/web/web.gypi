@@ -155,7 +155,6 @@
       'WebGeolocationPermissionRequest.cpp',
       'WebGeolocationPermissionRequestManager.cpp',
       'WebGeolocationPosition.cpp',
-      'WebGlyphCache.cpp',
       'WebHeap.cpp',
       'WebHelperPluginImpl.cpp',
       'WebHelperPluginImpl.h',

@@ -68,6 +68,7 @@
 #include "platform/UserGestureIndicator.h"
 #include "platform/exported/WrappedResourceRequest.h"
 #include "platform/exported/WrappedResourceResponse.h"
+#include "platform/fonts/GlyphPageTreeNode.h"
 #include "platform/network/HTTPParsers.h"
 #include "platform/plugins/PluginData.h"
 #include "public/platform/Platform.h"
@@ -462,6 +463,12 @@ void FrameLoaderClientImpl::dispatchDidChangeIcons(IconType type)
 void FrameLoaderClientImpl::dispatchDidCommitLoad(HistoryItem* item, HistoryCommitType commitType)
 {
     m_webFrame->viewImpl()->didCommitLoad(commitType == StandardCommit, false);
+
+    // Save some histogram data so we can compute the average memory used per
+    // page load of the glyphs.
+    // TODO(esprehn): Is this ancient uma actually useful?
+    Platform::current()->histogramCustomCounts("Memory.GlyphPagesPerLoad", GlyphPageTreeNode::treeGlyphPageCount(), 1, 10000, 50);
+
     if (m_webFrame->client())
         m_webFrame->client()->didCommitProvisionalLoad(m_webFrame, WebHistoryItem(item), static_cast<WebHistoryCommitType>(commitType));
     WebDevToolsAgentImpl* devToolsAgent = WebLocalFrameImpl::fromFrame(m_webFrame->frame()->localFrameRoot())->devToolsAgentImpl();
