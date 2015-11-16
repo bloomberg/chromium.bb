@@ -47,6 +47,21 @@ class CHROMECAST_EXPORT CastMediaShlib {
   // MediaPipelineBackend instance.
   static MediaPipelineBackend* CreateMediaPipelineBackend(
       const MediaPipelineDeviceParams& params);
+
+  // Fetches the renderer clock rate (Hz).
+  static double GetMediaClockRate();
+
+  // Fetches the granularity of clock rate adjustments.
+  static double MediaClockRatePrecision();
+
+  // Fetches the possible range of clock rate adjustments.
+  static void MediaClockRateRange(double* minimum_rate, double* maximum_rate);
+
+  // Sets the renderer clock rate (Hz).
+  static bool SetMediaClockRate(double new_rate);
+
+  // Tests if the implementation supports renderer clock rate adjustments.
+  static bool SupportsMediaClockRateChange();
 };
 
 }  // namespace media

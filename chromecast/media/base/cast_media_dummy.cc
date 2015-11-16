@@ -28,5 +28,24 @@ MediaCodecSupportShlib::CodecSupport MediaCodecSupportShlib::IsSupported(
   return kDefault;
 }
 
+double CastMediaShlib::GetMediaClockRate() {
+  return 0.0;
+}
+
+double CastMediaShlib::MediaClockRatePrecision() {
+  return 0.0;
+}
+
+void CastMediaShlib::MediaClockRateRange(double* minimum_rate,
+                                         double* maximum_rate) {}
+
+bool CastMediaShlib::SetMediaClockRate(double new_rate) {
+  return false;
+}
+
+bool CastMediaShlib::SupportsMediaClockRateChange() {
+  return false;
+}
+
 }  // namespace media
 }  // namespace chromecast
