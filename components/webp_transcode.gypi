@@ -5,6 +5,7 @@
 {
   'targets': [
     {
+      # GN version: //components/webp_transcode
       'target_name': 'webp_transcode',
       'type': 'static_library',
       'dependencies': [

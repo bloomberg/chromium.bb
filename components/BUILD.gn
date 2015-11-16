@@ -218,7 +218,10 @@ group("all_components") {
       ]
     }
   } else {
-    deps += [ "//components/autofill/ios/browser" ]
+    deps += [
+      "//components/autofill/ios/browser",
+      "//components/webp_transcode",
+    ]
   }
 
   if (toolkit_views) {
@@ -490,7 +493,7 @@ test("components_unittests") {
       ]
     }
   } else {
-    deps += [ "//components/sessions:unit_tests" ]
+    deps += [ "//components/webp_transcode:unit_tests" ]
   }
 
   if (toolkit_views) {
