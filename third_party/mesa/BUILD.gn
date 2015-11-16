@@ -79,10 +79,7 @@ config("mesa_internal_config") {
   ]
 
   if (is_android) {
-    defines += [
-      "__GLIBC__",
-      "_GNU_SOURCE",
-    ]
+    defines += [ "_GNU_SOURCE" ]
   }
 
   if (is_linux) {
