@@ -108,12 +108,7 @@ void V8Window::frameElementAttributeGetterCustom(const v8::PropertyCallbackInfo<
 {
     LocalDOMWindow* impl = toLocalDOMWindow(V8Window::toImpl(info.Holder()));
 
-    // Do the security check against the parent frame rather than
-    // frameElement() itself, so that a remote parent frame can be handled
-    // properly. In that case, there's no frameElement(), yet we should still
-    // return null and deny access.
-    Frame* target = impl->frame() ? impl->frame()->tree().parent() : nullptr;
-    if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), callingDOMWindow(info.GetIsolate()), target, DoNotReportSecurityError)) {
+    if (!BindingSecurity::shouldAllowAccessToNode(info.GetIsolate(), callingDOMWindow(info.GetIsolate()), impl->frameElement(), DoNotReportSecurityError)) {
         v8SetReturnValueNull(info);
         return;
     }

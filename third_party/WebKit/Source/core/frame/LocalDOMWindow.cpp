@@ -724,10 +724,9 @@ DOMSelection* LocalDOMWindow::getSelection()
 
 Element* LocalDOMWindow::frameElement() const
 {
-    if (!frame())
+    if (!(frame() && frame()->owner() && frame()->owner()->isLocal()))
         return nullptr;
 
-    // The bindings security check should ensure we're same origin...
     return toHTMLFrameOwnerElement(frame()->owner());
 }
 

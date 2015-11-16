@@ -51,7 +51,11 @@ enum SecurityReportingOption {
 class BindingSecurity {
     STATIC_ONLY(BindingSecurity);
 public:
+    // Check the access to the return value.
+    static bool shouldAllowAccessToNode(v8::Isolate*, LocalDOMWindow* accessingWindow, Node*, SecurityReportingOption);
     static bool shouldAllowAccessToNode(v8::Isolate*, LocalDOMWindow* accessingWindow, Node*, ExceptionState&);
+
+    // Check the access to the receiver.
     CORE_EXPORT static bool shouldAllowAccessToFrame(v8::Isolate*, LocalDOMWindow* accessingWindow, Frame*, SecurityReportingOption = ReportSecurityError);
     CORE_EXPORT static bool shouldAllowAccessToFrame(v8::Isolate*, LocalDOMWindow* accessingWindow, Frame*, ExceptionState&);
 };

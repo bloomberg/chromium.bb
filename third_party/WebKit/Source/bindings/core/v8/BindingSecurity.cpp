@@ -80,9 +80,14 @@ bool BindingSecurity::shouldAllowAccessToFrame(v8::Isolate* isolate, LocalDOMWin
     return canAccessFrame(isolate, accessingWindow, target->securityContext()->securityOrigin(), target->domWindow(), exceptionState);
 }
 
+bool BindingSecurity::shouldAllowAccessToNode(v8::Isolate* isolate, LocalDOMWindow* accessingWindow, Node* target, SecurityReportingOption reportingOption)
+{
+    return target && canAccessFrame(isolate, accessingWindow, target->document().securityOrigin(), target->document().domWindow(), reportingOption);
+}
+
 bool BindingSecurity::shouldAllowAccessToNode(v8::Isolate* isolate, LocalDOMWindow* accessingWindow, Node* target, ExceptionState& exceptionState)
 {
     return target && canAccessFrame(isolate, accessingWindow, target->document().securityOrigin(), target->document().domWindow(), exceptionState);
 }
 
-}
+} // namespace blink
