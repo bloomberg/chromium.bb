@@ -170,9 +170,15 @@ void FirstWebContentsProfiler::FinishedCollectingMetrics(
     }
     finished_ = true;
   }
+
+  // Continue recording deprecated v1 stats (see |finished_|) except in
+  // scenarios where stats collection was already being abandonned previously.
   // TODO(gab): Delete right away when getting rid of |finished_|.
-  if (IsFinishedCollectingMetrics())
+  if (IsFinishedCollectingMetrics() ||
+      finish_reason == FinishReason::ABANDON_CONTENT_DESTROYED ||
+      finish_reason == FinishReason::ABANDON_BLOCKING_UI) {
     delegate_->ProfilerFinishedCollectingMetrics();
+  }
 }
 
 #endif  // !defined(OS_ANDROID)
