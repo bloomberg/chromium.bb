@@ -7,19 +7,12 @@ package org.chromium.media;
 import android.annotation.TargetApi;
 import android.media.MediaCrypto;
 import android.media.MediaDrm;
-import android.os.AsyncTask;
 import android.os.Build;
 
 import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 
-import java.io.BufferedInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.nio.ByteBuffer;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -57,7 +50,7 @@ public class MediaDrmBridge {
     //   calls. Indirect calls should not call release() again to avoid
     //   duplication (even though it doesn't hurt to call release() twice).
 
-    private static final String TAG = "cr.media";
+    private static final String TAG = "cr_media";
     private static final String SECURITY_LEVEL = "securityLevel";
     private static final String SERVER_CERTIFICATE = "serviceCertificate";
     private static final String PRIVACY_MODE = "privacyMode";
@@ -413,9 +406,7 @@ public class MediaDrmBridge {
     @CalledByNative
     private void resetDeviceCredentials() {
         mResetDeviceCredentialsPending = true;
-        MediaDrm.ProvisionRequest request = mMediaDrm.getProvisionRequest();
-        PostRequestTask postTask = new PostRequestTask(request.getData());
-        postTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, request.getDefaultUrl());
+        startProvisioning();
     }
 
     /**
@@ -740,22 +731,32 @@ public class MediaDrmBridge {
     }
 
     private void startProvisioning() {
+        if (mProvisioningPending) {
+            Log.d(TAG, "startProvisioning: another provisioning is in progress, returning");
+            return;
+        }
+
         Log.d(TAG, "startProvisioning");
-        assert mMediaDrm != null;
-        assert !mProvisioningPending;
         mProvisioningPending = true;
+        assert mMediaDrm != null;
         MediaDrm.ProvisionRequest request = mMediaDrm.getProvisionRequest();
-        PostRequestTask postTask = new PostRequestTask(request.getData());
-        postTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, request.getDefaultUrl());
+
+        if (isNativeMediaDrmBridgeValid()) {
+            nativeOnStartProvisioning(
+                    mNativeMediaDrmBridge, request.getDefaultUrl(), request.getData());
+        }
     }
 
     /**
      * Called when the provision response is received.
      *
+     * @param isResponseReceived Flag set to true if commincation with provision server was
+     * successful.
      * @param response Response data from the provision server.
      */
-    private void onProvisionResponse(byte[] response) {
-        Log.d(TAG, "onProvisionResponse()");
+    @CalledByNative
+    private void processProvisionResponse(boolean isResponseReceived, byte[] response) {
+        Log.d(TAG, "processProvisionResponse()");
         assert mProvisioningPending;
         mProvisioningPending = false;
 
@@ -764,7 +765,10 @@ public class MediaDrmBridge {
             return;
         }
 
-        boolean success = provideProvisionResponse(response);
+        boolean success = isResponseReceived;
+        if (success) {
+            success = provideProvisionResponse(response);
+        }
 
         if (mResetDeviceCredentialsPending) {
             onResetDeviceCredentialsCompleted(success);
@@ -777,7 +781,7 @@ public class MediaDrmBridge {
     }
 
     /**
-     * Provide the provisioning response to MediaDrm.
+     * Provides the provision response to MediaDrm.
      *
      * @returns false if the response is invalid or on error, true otherwise.
      */
@@ -966,80 +970,12 @@ public class MediaDrmBridge {
         }
     }
 
-    private class PostRequestTask extends AsyncTask<String, Void, Void> {
-        private static final String TAG = "PostRequestTask";
-
-        private byte[] mDrmRequest;
-        private byte[] mResponseBody;
-
-        public PostRequestTask(byte[] drmRequest) {
-            mDrmRequest = drmRequest;
-        }
-
-        @Override
-        protected Void doInBackground(String... urls) {
-            mResponseBody = postRequest(urls[0], mDrmRequest);
-            if (mResponseBody != null) {
-                Log.d(TAG, "response length=%d", mResponseBody.length);
-            }
-            return null;
-        }
-
-        private byte[] postRequest(String url, byte[] drmRequest) {
-            HttpURLConnection urlConnection = null;
-            try {
-                URL request = new URL(url + "&signedRequest=" + new String(drmRequest));
-                urlConnection = (HttpURLConnection) request.openConnection();
-                urlConnection.setDoOutput(true);
-                urlConnection.setDoInput(true);
-                urlConnection.setUseCaches(false);
-                urlConnection.setRequestMethod("POST");
-                urlConnection.setRequestProperty("User-Agent", "Widevine CDM v1.0");
-                urlConnection.setRequestProperty("Content-Type", "application/json");
-
-                int responseCode = urlConnection.getResponseCode();
-                if (responseCode == 200) {
-                    BufferedInputStream bis =
-                            new BufferedInputStream(urlConnection.getInputStream());
-                    ByteArrayOutputStream bos = new ByteArrayOutputStream();
-                    int read = 0;
-                    int bufferSize = 512;
-                    byte[] buffer = new byte[bufferSize];
-                    try {
-                        while (true) {
-                            read = bis.read(buffer);
-                            if (read == -1) break;
-                            bos.write(buffer, 0, read);
-                        }
-                    } finally {
-                        bis.close();
-                    }
-                    return bos.toByteArray();
-                } else {
-                    Log.d(TAG, "Server returned HTTP error code %d", responseCode);
-                    return null;
-                }
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (IllegalStateException e) {
-                e.printStackTrace();
-            } finally {
-                if (urlConnection != null) urlConnection.disconnect();
-            }
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Void v) {
-            onProvisionResponse(mResponseBody);
-        }
-    }
-
     // Native functions. At the native side, must post the task immediately to
     // avoid reentrancy issues.
     private native void nativeOnMediaCryptoReady(long nativeMediaDrmBridge);
+
+    private native void nativeOnStartProvisioning(
+            long nativeMediaDrmBridge, String defaultUrl, byte[] requestData);
 
     private native void nativeOnPromiseResolved(long nativeMediaDrmBridge, long promiseId);
     private native void nativeOnPromiseResolvedWithSession(

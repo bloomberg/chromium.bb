@@ -1892,6 +1892,7 @@
             'base/android/media_task_runner.cc',
             'base/android/media_task_runner.h',
             'base/android/media_url_interceptor.h',
+            'base/android/provision_fetcher.h',
             'base/android/video_decoder_job.cc',
             'base/android/video_decoder_job.h',
             'base/android/webaudio_media_codec_bridge.cc',

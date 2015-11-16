@@ -6,6 +6,8 @@
 #define MEDIA_BASE_ANDROID_ANDROID_CDM_FACTORY_H_
 
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
+#include "media/base/android/provision_fetcher.h"
 #include "media/base/cdm_factory.h"
 #include "media/base/media_export.h"
 
@@ -15,7 +17,9 @@ struct CdmConfig;
 
 class MEDIA_EXPORT AndroidCdmFactory : public CdmFactory {
  public:
-  AndroidCdmFactory();
+  using CreateFetcherCB = base::Callback<scoped_ptr<ProvisionFetcher>()>;
+
+  AndroidCdmFactory(const CreateFetcherCB& create_fetcher_cb);
   ~AndroidCdmFactory() final;
 
   // CdmFactory implementation.
@@ -30,6 +34,8 @@ class MEDIA_EXPORT AndroidCdmFactory : public CdmFactory {
               const CdmCreatedCB& cdm_created_cb) final;
 
  private:
+  CreateFetcherCB create_fetcher_cb_;
+
   DISALLOW_COPY_AND_ASSIGN(AndroidCdmFactory);
 };
 

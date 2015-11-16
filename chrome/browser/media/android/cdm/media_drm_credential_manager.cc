@@ -11,8 +11,11 @@
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
+#include "chrome/browser/browser_process.h"
+#include "content/public/browser/android/provision_fetcher_factory.h"
 #include "jni/MediaDrmCredentialManager_jni.h"
 #include "media/base/android/media_drm_bridge.h"
+#include "media/base/android/provision_fetcher.h"
 #include "url/gurl.h"
 
 #include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR.
@@ -89,8 +92,13 @@ void MediaDrmCredentialManager::OnResetCredentialsCompleted(
 // TODO(ddorwin): The key system should be passed in. http://crbug.com/459400
 bool MediaDrmCredentialManager::ResetCredentialsInternal(
     SecurityLevel security_level) {
-  media_drm_bridge_ =
-      media::MediaDrmBridge::CreateWithoutSessionSupport(kWidevineKeySystem);
+  // Create provision fetcher for the default browser http request context.
+  scoped_ptr<media::ProvisionFetcher> provision_fetcher =
+      content::CreateProvisionFetcher(
+          g_browser_process->system_request_context());
+
+  media_drm_bridge_ = media::MediaDrmBridge::CreateWithoutSessionSupport(
+      kWidevineKeySystem, provision_fetcher.Pass());
   if (!media_drm_bridge_)
     return false;
 

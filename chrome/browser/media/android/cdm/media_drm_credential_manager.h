@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "media/base/android/media_drm_bridge.h"
+#include "media/base/android/provision_fetcher.h"
 
 // This class manages the media DRM credentials on Android.
 class MediaDrmCredentialManager {

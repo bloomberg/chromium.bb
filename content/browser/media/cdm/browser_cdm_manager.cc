@@ -26,6 +26,7 @@
 #include "media/base/limits.h"
 
 #if defined(OS_ANDROID)
+#include "content/public/browser/android/provision_fetcher_factory.h"
 #include "content/public/common/renderer_preferences.h"
 #include "media/base/android/android_cdm_factory.h"
 #endif
@@ -278,8 +279,17 @@ media::CdmFactory* BrowserCdmManager::GetCdmFactory() {
     cdm_factory_ = GetContentClient()->browser()->CreateCdmFactory();
 
 #if defined(OS_ANDROID)
-    if (!cdm_factory_)
-      cdm_factory_.reset(new media::AndroidCdmFactory());
+    if (!cdm_factory_) {
+      // Obtain http request context for the current render process.
+      net::URLRequestContextGetter* context_getter =
+          RenderProcessHost::FromID(render_process_id_)
+              ->GetBrowserContext()
+              ->GetRequestContext();
+      DCHECK(context_getter);
+
+      cdm_factory_.reset(new media::AndroidCdmFactory(
+          base::Bind(&CreateProvisionFetcher, context_getter)));
+    }
 #endif
   }
 

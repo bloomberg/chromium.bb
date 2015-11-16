@@ -57,6 +57,7 @@ source_set("android") {
     "media_task_runner.cc",
     "media_task_runner.h",
     "media_url_interceptor.h",
+    "provision_fetcher.h",
     "video_decoder_job.cc",
     "video_decoder_job.h",
     "webaudio_media_codec_bridge.cc",

@@ -32,6 +32,8 @@ namespace media {
 // called on the |task_runner_| except for the PlayerTracker methods and
 // SetMediaCryptoReadyCB(), which can be called on any thread.
 
+class ProvisionFetcher;
+
 class MEDIA_EXPORT MediaDrmBridge : public MediaKeys, public PlayerTracker {
  public:
   // TODO(ddorwin): These are specific to Widevine. http://crbug.com/459400
@@ -77,6 +79,7 @@ class MEDIA_EXPORT MediaDrmBridge : public MediaKeys, public PlayerTracker {
   // TODO(xhwang): Is it okay not to update session expiration info?
   static scoped_refptr<MediaDrmBridge> Create(
       const std::string& key_system,
+      scoped_ptr<ProvisionFetcher> provision_fetcher,
       const SessionMessageCB& session_message_cb,
       const SessionClosedCB& session_closed_cb,
       const LegacySessionErrorCB& legacy_session_error_cb,
@@ -87,7 +90,8 @@ class MEDIA_EXPORT MediaDrmBridge : public MediaKeys, public PlayerTracker {
   // otherwise. No session callbacks are provided. This is used when we need to
   // use MediaDrmBridge without creating any sessions.
   static scoped_refptr<MediaDrmBridge> CreateWithoutSessionSupport(
-      const std::string& key_system);
+      const std::string& key_system,
+      scoped_ptr<ProvisionFetcher> provision_fetcher);
 
   // MediaKeys implementation.
   void SetServerCertificate(
@@ -159,6 +163,12 @@ class MEDIA_EXPORT MediaDrmBridge : public MediaKeys, public PlayerTracker {
   // Called by Java after a MediaCrypto object is created.
   void OnMediaCryptoReady(JNIEnv* env, jobject j_media_drm);
 
+  // Called by Java when we need to send a provisioning request,
+  void OnStartProvisioning(JNIEnv* env,
+                           jobject j_media_drm,
+                           jstring j_default_url,
+                           jbyteArray j_request_data);
+
   // Callbacks to resolve the promise for |promise_id|.
   void OnPromiseResolved(JNIEnv* env, jobject j_media_drm, jint j_promise_id);
   void OnPromiseResolvedWithSession(JNIEnv* env,
@@ -221,6 +231,7 @@ class MEDIA_EXPORT MediaDrmBridge : public MediaKeys, public PlayerTracker {
   friend class base::DeleteHelper<MediaDrmBridge>;
 
   MediaDrmBridge(const std::vector<uint8>& scheme_uuid,
+                 scoped_ptr<ProvisionFetcher> provision_fetcher,
                  const SessionMessageCB& session_message_cb,
                  const SessionClosedCB& session_closed_cb,
                  const LegacySessionErrorCB& legacy_session_error_cb,
@@ -238,11 +249,21 @@ class MEDIA_EXPORT MediaDrmBridge : public MediaKeys, public PlayerTracker {
   // run this callback.
   void NotifyMediaCryptoReady(const MediaCryptoReadyCB& cb);
 
+  // Sends HTTP provisioning request to a provisioning server.
+  void SendProvisioningRequest(const std::string& default_url,
+                               const std::string& request_data);
+
+  // Process the data received by provisioning server.
+  void ProcessProvisionResponse(bool success, const std::string& response);
+
   // UUID of the key system.
   std::vector<uint8> scheme_uuid_;
 
   // Java MediaDrm instance.
   base::android::ScopedJavaGlobalRef<jobject> j_media_drm_;
+
+  // The object that requests and receives provisioning data.
+  scoped_ptr<ProvisionFetcher> provision_fetcher_;
 
   // Callbacks for firing session events.
   SessionMessageCB session_message_cb_;

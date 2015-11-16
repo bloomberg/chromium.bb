@@ -981,6 +981,8 @@
       'browser/media/android/media_session_uma_helper.h',
       'browser/media/android/media_throttler.cc',
       'browser/media/android/media_throttler.h',
+      'browser/media/android/url_provision_fetcher.cc',
+      'browser/media/android/url_provision_fetcher.h',
       'browser/media/audio_stream_monitor.cc',
       'browser/media/audio_stream_monitor.h',
       'browser/media/capture/audio_mirroring_manager.cc',
