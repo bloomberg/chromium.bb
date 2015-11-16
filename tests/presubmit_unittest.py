@@ -2896,6 +2896,13 @@ class CannedChecksUnittest(PresubmitTestsBase):
     input_api.AffectedSourceFiles(mox.IgnoreArg()).AndReturn([affected_file])
     input_api.ReadFile(affected_file).AndReturn('Hey!\nHo!\nHey!\nHo!\n\n')
 
+    input_api.AffectedSourceFiles(mox.IgnoreArg()).AndReturn([affected_file])
+
+    input_api.AffectedSourceFiles(mox.IgnoreArg()).AndReturn([affected_file])
+    input_api.ReadFile(affected_file, 'rb').AndReturn(
+        'Hey!\nHo!\nHey!\nHo!\n\n')
+    affected_file.LocalPath()
+
     self.mox.ReplayAll()
     results = presubmit_canned_checks.PanProjectChecks(
         input_api,
@@ -2905,7 +2912,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
         license_header=None,
         project_name=None,
         owners_check=False)
-    self.assertEqual(1, len(results))
+    self.assertEqual(2, len(results))
     self.assertEqual(
         'Found line ending with white spaces in:', results[0]._message)
     self.checkstdout('')

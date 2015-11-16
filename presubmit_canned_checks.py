@@ -1103,19 +1103,17 @@ def PanProjectChecks(input_api, output_api,
   snapshot("checking nsobjects")
   results.extend(_CheckConstNSObject(
       input_api, output_api, source_file_filter=sources))
+  snapshot("checking eol style")
+  results.extend(input_api.canned_checks.CheckChangeSvnEolStyle(
+      input_api, output_api, source_file_filter=text_files))
+  snapshot("checking license")
+  results.extend(input_api.canned_checks.CheckLicense(
+      input_api, output_api, license_header, source_file_filter=sources))
 
-  # The following checks are only done on commit, since the commit bot will
-  # auto-fix most of these.
   if input_api.is_committing:
-    snapshot("checking eol style")
-    results.extend(input_api.canned_checks.CheckChangeSvnEolStyle(
-        input_api, output_api, source_file_filter=text_files))
     snapshot("checking svn mime types")
     results.extend(input_api.canned_checks.CheckSvnForCommonMimeTypes(
         input_api, output_api))
-    snapshot("checking license")
-    results.extend(input_api.canned_checks.CheckLicense(
-        input_api, output_api, license_header, source_file_filter=sources))
     snapshot("checking was uploaded")
     results.extend(input_api.canned_checks.CheckChangeWasUploaded(
         input_api, output_api))
