@@ -33,6 +33,7 @@ template <typename T>
 std::vector<std::pair<T, size_t>> SortBySizeDescending(
     const hash_map<T, size_t>& grouped) {
   std::vector<std::pair<T, size_t>> sorted;
+  sorted.reserve(grouped.size());
   std::copy(grouped.begin(), grouped.end(), std::back_inserter(sorted));
   std::sort(sorted.begin(), sorted.end(), PairSizeGt<T>);
   return sorted;
