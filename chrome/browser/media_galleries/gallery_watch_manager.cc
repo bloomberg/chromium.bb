@@ -4,6 +4,8 @@
 
 #include "chrome/browser/media_galleries/gallery_watch_manager.h"
 
+#include <tuple>
+
 #include "base/bind.h"
 #include "base/stl_util.h"
 #include "base/time/time.h"
@@ -154,8 +156,8 @@ GalleryWatchManager::WatchOwner::WatchOwner(BrowserContext* browser_context,
 }
 
 bool GalleryWatchManager::WatchOwner::operator<(const WatchOwner& other) const {
-  return browser_context < other.browser_context ||
-         extension_id < other.extension_id || gallery_id < other.gallery_id;
+  return std::tie(browser_context, extension_id, gallery_id) <
+    std::tie(other.browser_context, other.extension_id, other.gallery_id);
 }
 
 GalleryWatchManager::NotificationInfo::NotificationInfo()

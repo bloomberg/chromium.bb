@@ -5,6 +5,7 @@
 #include "chrome/browser/predictors/resource_prefetch_common.h"
 
 #include <stdlib.h>
+#include <tuple>
 
 #include "base/command_line.h"
 #include "base/metrics/field_trial.h"
@@ -173,12 +174,8 @@ bool NavigationID::is_valid() const {
 
 bool NavigationID::operator<(const NavigationID& rhs) const {
   DCHECK(is_valid() && rhs.is_valid());
-  if (render_process_id != rhs.render_process_id)
-    return render_process_id < rhs.render_process_id;
-  else if (render_frame_id != rhs.render_frame_id)
-    return render_frame_id < rhs.render_frame_id;
-  else
-    return main_frame_url < rhs.main_frame_url;
+  return std::tie(render_process_id, render_frame_id, main_frame_url) <
+    std::tie(rhs.render_process_id, rhs.render_frame_id, rhs.main_frame_url);
 }
 
 bool NavigationID::operator==(const NavigationID& rhs) const {

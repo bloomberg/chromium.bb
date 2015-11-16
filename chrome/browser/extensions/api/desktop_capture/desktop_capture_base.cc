@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/api/desktop_capture/desktop_capture_base.h"
 
+#include <tuple>
+
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/media/desktop_media_list_ash.h"
@@ -187,11 +189,8 @@ DesktopCaptureRequestsRegistry::RequestId::RequestId(int process_id,
 
 bool DesktopCaptureRequestsRegistry::RequestId::operator<(
     const RequestId& other) const {
-  if (process_id != other.process_id) {
-    return process_id < other.process_id;
-  } else {
-    return request_id < other.request_id;
-  }
+  return std::tie(process_id, request_id) <
+         std::tie(other.process_id, other.request_id);
 }
 
 DesktopCaptureCancelChooseDesktopMediaFunctionBase::

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/api/identity/extension_token_key.h"
 
+#include <tuple>
+
 namespace extensions {
 
 ExtensionTokenKey::ExtensionTokenKey(const std::string& extension_id,
@@ -14,17 +16,8 @@ ExtensionTokenKey::ExtensionTokenKey(const std::string& extension_id,
 ExtensionTokenKey::~ExtensionTokenKey() {}
 
 bool ExtensionTokenKey::operator<(const ExtensionTokenKey& rhs) const {
-  if (extension_id < rhs.extension_id)
-    return true;
-  else if (rhs.extension_id < extension_id)
-    return false;
-
-  if (account_id < rhs.account_id)
-    return true;
-  else if (rhs.account_id < account_id)
-    return false;
-
-  return scopes < rhs.scopes;
+  return std::tie(extension_id, account_id, scopes) <
+    std::tie(rhs.extension_id, rhs.account_id, rhs.scopes);
 }
 
 }  // namespace extensions

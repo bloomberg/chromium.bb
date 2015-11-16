@@ -4,6 +4,8 @@
 
 #include "chrome/browser/android/bookmarks/partner_bookmarks_shim.h"
 
+#include <tuple>
+
 #include "base/lazy_instance.h"
 #include "base/prefs/pref_service.h"
 #include "base/values.h"
@@ -189,8 +191,8 @@ PartnerBookmarksShim::NodeRenamingMapKey::~NodeRenamingMapKey() {}
 
 bool operator<(const PartnerBookmarksShim::NodeRenamingMapKey& a,
                const PartnerBookmarksShim::NodeRenamingMapKey& b) {
-  return (a.url_ < b.url_) ||
-      (a.url_ == b.url_ && a.provider_title_ < b.provider_title_);
+  return std::tie(a.url_, a.provider_title_) <
+         std::tie(b.url_, b.provider_title_);
 }
 
 // static

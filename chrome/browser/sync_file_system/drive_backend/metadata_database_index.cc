@@ -4,6 +4,8 @@
 
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database_index.h"
 
+#include <tuple>
+
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -56,9 +58,8 @@ bool operator==(const ParentIDAndTitle& left, const ParentIDAndTitle& right) {
 }
 
 bool operator<(const ParentIDAndTitle& left, const ParentIDAndTitle& right) {
-  if (left.parent_id != right.parent_id)
-    return left.parent_id < right.parent_id;
-  return left.title < right.title;
+  return std::tie(left.parent_id, left.title) <
+         std::tie(right.parent_id, right.title);
 }
 
 DatabaseContents::DatabaseContents() {}

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/icon_manager.h"
 
+#include <tuple>
+
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
@@ -142,7 +144,5 @@ IconManager::CacheKey::CacheKey(const IconGroupID& group,
 }
 
 bool IconManager::CacheKey::operator<(const CacheKey &other) const {
-  if (group != other.group)
-    return group < other.group;
-  return size < other.size;
+  return std::tie(group, size) < std::tie(other.group, other.size);
 }

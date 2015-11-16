@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/menu_manager.h"
 
 #include <algorithm>
+#include <tuple>
 
 #include "base/json/json_writer.h"
 #include "base/logging.h"
@@ -977,19 +978,8 @@ bool MenuItem::Id::operator!=(const Id& other) const {
 }
 
 bool MenuItem::Id::operator<(const Id& other) const {
-  if (incognito < other.incognito)
-    return true;
-  if (incognito == other.incognito) {
-    if (extension_key < other.extension_key)
-      return true;
-    if (extension_key == other.extension_key) {
-      if (uid < other.uid)
-        return true;
-      if (uid == other.uid)
-        return string_uid < other.string_uid;
-    }
-  }
-  return false;
+  return std::tie(incognito, extension_key, uid, string_uid) <
+    std::tie(other.incognito, other.extension_key, other.uid, other.string_uid);
 }
 
 }  // namespace extensions
