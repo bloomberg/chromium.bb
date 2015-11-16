@@ -19,7 +19,8 @@ AppCacheDispatcherHost::AppCacheDispatcherHost(
     : BrowserMessageFilter(AppCacheMsgStart),
       appcache_service_(appcache_service),
       frontend_proxy_(this),
-      process_id_(process_id) {
+      process_id_(process_id),
+      weak_factory_(this) {
 }
 
 void AppCacheDispatcherHost::OnChannelConnected(int32 peer_pid) {
@@ -28,13 +29,13 @@ void AppCacheDispatcherHost::OnChannelConnected(int32 peer_pid) {
         appcache_service_.get(), &frontend_proxy_, process_id_);
     get_status_callback_ =
         base::Bind(&AppCacheDispatcherHost::GetStatusCallback,
-                   base::Unretained(this));
+                    weak_factory_.GetWeakPtr());
     start_update_callback_ =
         base::Bind(&AppCacheDispatcherHost::StartUpdateCallback,
-                   base::Unretained(this));
+                    weak_factory_.GetWeakPtr());
     swap_cache_callback_ =
         base::Bind(&AppCacheDispatcherHost::SwapCacheCallback,
-                   base::Unretained(this));
+                    weak_factory_.GetWeakPtr());
   }
 }
 
