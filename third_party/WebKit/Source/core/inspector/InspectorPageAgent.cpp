@@ -789,6 +789,7 @@ void InspectorPageAgent::setOverlayMessage(ErrorString*, const String* message)
 
 DEFINE_TRACE(InspectorPageAgent)
 {
+    visitor->trace(m_inspectedFrames);
     visitor->trace(m_debuggerAgent);
     visitor->trace(m_inspectorResourceContentLoader);
     InspectorBaseAgent::trace(visitor);

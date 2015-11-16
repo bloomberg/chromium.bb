@@ -1959,6 +1959,7 @@ void InspectorCSSAgent::getBackgroundColors(ErrorString* errorString, int nodeId
 DEFINE_TRACE(InspectorCSSAgent)
 {
     visitor->trace(m_domAgent);
+    visitor->trace(m_inspectedFrames);
     visitor->trace(m_resourceAgent);
     visitor->trace(m_resourceContentLoader);
 #if ENABLE(OILPAN)

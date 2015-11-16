@@ -320,7 +320,7 @@ WebDevToolsAgentImpl::WebDevToolsAgentImpl(
     , m_resourceContentLoader(InspectorResourceContentLoader::create(m_webLocalFrameImpl->frame()))
     , m_state(adoptPtrWillBeNoop(new InspectorCompositeState(this)))
     , m_overlay(overlay)
-    , m_inspectedFrames(adoptPtr(new InspectedFrames(m_webLocalFrameImpl->frame())))
+    , m_inspectedFrames(InspectedFrames::create(m_webLocalFrameImpl->frame()))
     , m_inspectorAgent(nullptr)
     , m_domAgent(nullptr)
     , m_pageAgent(nullptr)
@@ -413,6 +413,7 @@ DEFINE_TRACE(WebDevToolsAgentImpl)
     visitor->trace(m_resourceContentLoader);
     visitor->trace(m_state);
     visitor->trace(m_overlay);
+    visitor->trace(m_inspectedFrames);
     visitor->trace(m_inspectorAgent);
     visitor->trace(m_domAgent);
     visitor->trace(m_pageAgent);

@@ -201,8 +201,8 @@ PassRefPtr<TypeBuilder::ApplicationCache::ApplicationCacheResource> InspectorApp
 
 DEFINE_TRACE(InspectorApplicationCacheAgent)
 {
+    visitor->trace(m_inspectedFrames);
     InspectorBaseAgent::trace(visitor);
 }
 
 } // namespace blink
-

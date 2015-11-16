@@ -165,7 +165,7 @@ private:
 
     bool getResponseBodyBlob(const String& requestId, PassRefPtrWillBeRawPtr<GetResponseBodyCallback>);
 
-    InspectedFrames* m_inspectedFrames;
+    RawPtrWillBeMember<InspectedFrames> m_inspectedFrames;
     String m_userAgentOverride;
     String m_hostId;
     OwnPtrWillBeMember<NetworkResourcesData> m_resourcesData;

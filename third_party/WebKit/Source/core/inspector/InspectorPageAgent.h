@@ -143,7 +143,7 @@ private:
 
     PassRefPtr<TypeBuilder::Page::Frame> buildObjectForFrame(LocalFrame*);
     PassRefPtr<TypeBuilder::Page::FrameResourceTree> buildObjectForFrameTree(LocalFrame*);
-    InspectedFrames* m_inspectedFrames;
+    RawPtrWillBeMember<InspectedFrames> m_inspectedFrames;
     RawPtrWillBeMember<InspectorDebuggerAgent> m_debuggerAgent;
     Client* m_client;
     long m_lastScriptIdentifier;

@@ -469,6 +469,7 @@ double InspectorAnimationAgent::normalizedStartTime(Animation& animation)
 DEFINE_TRACE(InspectorAnimationAgent)
 {
 #if ENABLE(OILPAN)
+    visitor->trace(m_inspectedFrames);
     visitor->trace(m_domAgent);
     visitor->trace(m_cssAgent);
     visitor->trace(m_injectedScriptManager);

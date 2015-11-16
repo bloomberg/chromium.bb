@@ -210,7 +210,8 @@ StorageArea* InspectorDOMStorageAgent::findStorageArea(ErrorString* errorString,
     if (!m_page->mainFrame()->isLocalFrame())
         return nullptr;
 
-    LocalFrame* frame = InspectedFrames(m_page->deprecatedLocalMainFrame()).frameWithSecurityOrigin(securityOrigin);
+    OwnPtrWillBeRawPtr<InspectedFrames> inspectedFrames = InspectedFrames::create(m_page->deprecatedLocalMainFrame());
+    LocalFrame* frame = inspectedFrames->frameWithSecurityOrigin(securityOrigin);
     if (!frame) {
         if (errorString)
             *errorString = "LocalFrame not found for the given security origin";

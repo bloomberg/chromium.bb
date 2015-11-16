@@ -208,8 +208,8 @@ void InspectorInputAgent::dispatchTouchEvent(ErrorString* error, const String& t
 
 DEFINE_TRACE(InspectorInputAgent)
 {
+    visitor->trace(m_inspectedFrames);
     InspectorBaseAgent::trace(visitor);
 }
 
 } // namespace blink
-

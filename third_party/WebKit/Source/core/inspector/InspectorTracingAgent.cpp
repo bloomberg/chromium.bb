@@ -38,6 +38,7 @@ InspectorTracingAgent::InspectorTracingAgent(Client* client, InspectorWorkerAgen
 DEFINE_TRACE(InspectorTracingAgent)
 {
     visitor->trace(m_workerAgent);
+    visitor->trace(m_inspectedFrames);
     InspectorBaseAgent::trace(visitor);
 }
 

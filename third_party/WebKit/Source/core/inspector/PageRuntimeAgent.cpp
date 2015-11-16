@@ -62,6 +62,7 @@ PageRuntimeAgent::~PageRuntimeAgent()
 
 DEFINE_TRACE(PageRuntimeAgent)
 {
+    visitor->trace(m_inspectedFrames);
     InspectorRuntimeAgent::trace(visitor);
 }
 
@@ -175,4 +176,3 @@ void PageRuntimeAgent::reportExecutionContext(ScriptState* scriptState, bool isP
 }
 
 } // namespace blink
-

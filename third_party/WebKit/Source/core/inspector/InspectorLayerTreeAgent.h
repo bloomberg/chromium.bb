@@ -103,7 +103,7 @@ private:
     void gatherGraphicsLayers(GraphicsLayer*, HashMap<int, int>& layerIdToNodeIdMap, RefPtr<TypeBuilder::Array<TypeBuilder::LayerTree::Layer> >&);
     int idForNode(Node*);
 
-    InspectedFrames* m_inspectedFrames;
+    RawPtrWillBeMember<InspectedFrames> m_inspectedFrames;
     Vector<int, 2> m_pageOverlayLayerIds;
 
     typedef HashMap<String, RefPtr<PictureSnapshot> > SnapshotById;

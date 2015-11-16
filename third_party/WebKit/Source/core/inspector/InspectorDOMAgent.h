@@ -245,7 +245,7 @@ private:
 
     RawPtrWillBeMember<InspectorRevalidateDOMTask> revalidateTask();
 
-    InspectedFrames* m_inspectedFrames;
+    RawPtrWillBeMember<InspectedFrames> m_inspectedFrames;
     RawPtrWillBeMember<InjectedScriptManager> m_injectedScriptManager;
     Client* m_client;
     RawPtrWillBeMember<DOMListener> m_domListener;

@@ -210,7 +210,7 @@ private:
     void resetPseudoStates();
 
     RawPtrWillBeMember<InspectorDOMAgent> m_domAgent;
-    InspectedFrames* m_inspectedFrames;
+    RawPtrWillBeMember<InspectedFrames> m_inspectedFrames;
     RawPtrWillBeMember<InspectorResourceAgent> m_resourceAgent;
     RawPtrWillBeMember<InspectorResourceContentLoader> m_resourceContentLoader;
 

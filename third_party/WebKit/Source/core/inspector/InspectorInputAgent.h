@@ -61,7 +61,7 @@ public:
 private:
     explicit InspectorInputAgent(InspectedFrames*);
 
-    InspectedFrames* m_inspectedFrames;
+    RawPtrWillBeMember<InspectedFrames> m_inspectedFrames;
 };
 
 

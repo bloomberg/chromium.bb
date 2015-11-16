@@ -6,6 +6,7 @@
 #define InspectedFrames_h
 
 #include "core/CoreExport.h"
+#include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
 
@@ -13,10 +14,12 @@ namespace blink {
 
 class LocalFrame;
 
-class CORE_EXPORT InspectedFrames {
+class CORE_EXPORT InspectedFrames final : public NoBaseWillBeGarbageCollectedFinalized<InspectedFrames> {
     WTF_MAKE_NONCOPYABLE(InspectedFrames);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(InspectedFrames);
 public:
     class CORE_EXPORT Iterator {
+        STACK_ALLOCATED();
     public:
         Iterator operator++(int);
         Iterator& operator++();
@@ -27,19 +30,30 @@ public:
     private:
         friend class InspectedFrames;
         Iterator(LocalFrame* root, LocalFrame* current);
-        LocalFrame* m_root;
-        LocalFrame* m_current;
+        RawPtrWillBeMember<LocalFrame> m_root;
+        RawPtrWillBeMember<LocalFrame> m_current;
     };
 
-    explicit InspectedFrames(LocalFrame* root);
+    static PassOwnPtrWillBeRawPtr<InspectedFrames> create(LocalFrame* root)
+    {
+        return adoptPtrWillBeNoop(new InspectedFrames(root));
+    }
+
     LocalFrame* root() { return m_root; }
     bool contains(LocalFrame*) const;
     LocalFrame* frameWithSecurityOrigin(const String& originRawString);
     Iterator begin();
     Iterator end();
 
+    DEFINE_INLINE_TRACE()
+    {
+        visitor->trace(m_root);
+    }
+
 private:
-    LocalFrame* m_root;
+    explicit InspectedFrames(LocalFrame*);
+
+    RawPtrWillBeMember<LocalFrame> m_root;
 };
 
 } // namespace blink

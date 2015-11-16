@@ -143,7 +143,7 @@ private:
     OwnPtrWillBeMember<InspectorResourceContentLoader> m_resourceContentLoader;
     OwnPtrWillBeMember<InspectorCompositeState> m_state;
     OwnPtrWillBeMember<InspectorOverlay> m_overlay;
-    OwnPtr<InspectedFrames> m_inspectedFrames;
+    OwnPtrWillBeMember<InspectedFrames> m_inspectedFrames;
 
     RawPtrWillBeMember<InspectorInspectorAgent> m_inspectorAgent;
     RawPtrWillBeMember<InspectorDOMAgent> m_domAgent;

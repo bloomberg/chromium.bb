@@ -71,7 +71,7 @@ private:
     Animation* animationClone(Animation*);
     String createCSSId(Animation&);
 
-    InspectedFrames* m_inspectedFrames;
+    RawPtrWillBeMember<InspectedFrames> m_inspectedFrames;
     RawPtrWillBeMember<InspectorDOMAgent> m_domAgent;
     RawPtrWillBeMember<InspectorCSSAgent> m_cssAgent;
     RawPtrWillBeMember<InjectedScriptManager> m_injectedScriptManager;
