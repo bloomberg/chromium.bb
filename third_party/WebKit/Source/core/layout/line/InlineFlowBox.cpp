@@ -375,8 +375,8 @@ LayoutUnit InlineFlowBox::placeBoxesInInlineDirection(LayoutUnit logicalLeft, bo
     return logicalLeft;
 }
 
-// TODO(wkorman): needsWordSpacing doesn't need to be a reference in the below. Review all params for ref-required.
-LayoutUnit InlineFlowBox::placeBoxRangeInInlineDirection(InlineBox* firstChild, InlineBox* lastChild,
+// TODO(wkorman): needsWordSpacing may not need to be a reference in the below. Seek a test case.
+void InlineFlowBox::placeBoxRangeInInlineDirection(InlineBox* firstChild, InlineBox* lastChild,
     LayoutUnit& logicalLeft, LayoutUnit& minLogicalLeft, LayoutUnit& maxLogicalRight, bool& needsWordSpacing)
 {
     for (InlineBox* curr = firstChild; curr && curr != lastChild; curr = curr->nextOnLine()) {
@@ -425,8 +425,16 @@ LayoutUnit InlineFlowBox::placeBoxRangeInInlineDirection(InlineBox* firstChild, 
             } else if (!curr->layoutObject().isListMarker() || toLayoutListMarker(curr->layoutObject()).isInside()) {
                 // The box can have a different writing-mode than the overall line, so this is a bit complicated.
                 // Just get all the physical margin and overflow values by hand based off |isHorizontal|.
-                LayoutUnit logicalLeftMargin = isHorizontal() ? curr->boxModelObject().marginLeft() : curr->boxModelObject().marginTop();
-                LayoutUnit logicalRightMargin = isHorizontal() ? curr->boxModelObject().marginRight() : curr->boxModelObject().marginBottom();
+                LineLayoutBoxModel box = curr->boxModelObject();
+                LayoutUnit logicalLeftMargin;
+                LayoutUnit logicalRightMargin;
+                if (isHorizontal()) {
+                    logicalLeftMargin = box.marginLeft();
+                    logicalRightMargin = box.marginRight();
+                } else {
+                    logicalLeftMargin = box.marginTop();
+                    logicalRightMargin = box.marginBottom();
+                }
 
                 logicalLeft += logicalLeftMargin;
                 curr->setLogicalLeft(logicalLeft);
@@ -441,7 +449,6 @@ LayoutUnit InlineFlowBox::placeBoxRangeInInlineDirection(InlineBox* firstChild, 
             }
         }
     }
-    return logicalLeft;
 }
 
 FontBaseline InlineFlowBox::dominantBaseline() const

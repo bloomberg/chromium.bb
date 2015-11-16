@@ -176,15 +176,6 @@ public:
     void determineSpacingForFlowBoxes(bool lastLine, bool isLogicallyLastRunWrapped, LayoutObject* logicallyLastRunLayoutObject);
     LayoutUnit getFlowSpacingLogicalWidth();
     LayoutUnit placeBoxesInInlineDirection(LayoutUnit logicalLeft, bool& needsWordSpacing);
-    LayoutUnit placeBoxRangeInInlineDirection(InlineBox* firstChild, InlineBox* lastChild,
-        LayoutUnit& logicalLeft, LayoutUnit& minLogicalLeft, LayoutUnit& maxLogicalRight, bool& needsWordSpacing);
-    void beginPlacingBoxRangesInInlineDirection(LayoutUnit logicalLeft) { setLogicalLeft(logicalLeft); }
-    void endPlacingBoxRangesInInlineDirection(LayoutUnit logicalLeft, LayoutUnit logicalRight, LayoutUnit minLogicalLeft, LayoutUnit maxLogicalRight)
-    {
-        setLogicalWidth(logicalRight - logicalLeft);
-        if (knownToHaveNoOverflow() && (minLogicalLeft < logicalLeft || maxLogicalRight > logicalRight))
-            clearKnownToHaveNoOverflow();
-    }
 
     void computeLogicalBoxHeights(RootInlineBox*, LayoutUnit& maxPositionTop, LayoutUnit& maxPositionBottom, int& maxAscent, int& maxDescent, bool& setMaxAscent, bool& setMaxDescent, bool noQuirksMode, GlyphOverflowAndFallbackFontsMap&, FontBaseline, VerticalPositionCache&);
     void adjustMaxAscentAndDescent(int& maxAscent, int& maxDescent, int maxPositionTop, int maxPositionBottom);
@@ -296,6 +287,16 @@ public:
     }
 
 private:
+    void placeBoxRangeInInlineDirection(InlineBox* firstChild, InlineBox* lastChild,
+        LayoutUnit& logicalLeft, LayoutUnit& minLogicalLeft, LayoutUnit& maxLogicalRight, bool& needsWordSpacing);
+    void beginPlacingBoxRangesInInlineDirection(LayoutUnit logicalLeft) { setLogicalLeft(logicalLeft); }
+    void endPlacingBoxRangesInInlineDirection(LayoutUnit logicalLeft, LayoutUnit logicalRight, LayoutUnit minLogicalLeft, LayoutUnit maxLogicalRight)
+    {
+        setLogicalWidth(logicalRight - logicalLeft);
+        if (knownToHaveNoOverflow() && (minLogicalLeft < logicalLeft || maxLogicalRight > logicalRight))
+            clearKnownToHaveNoOverflow();
+    }
+
     void addBoxShadowVisualOverflow(LayoutRect& logicalVisualOverflow);
     void addBorderOutsetVisualOverflow(LayoutRect& logicalVisualOverflow);
     void addOutlineVisualOverflow(LayoutRect& logicalVisualOverflow);
