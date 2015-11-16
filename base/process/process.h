@@ -134,6 +134,14 @@ class BASE_EXPORT Process {
 #endif
 };
 
+#if defined(OS_CHROMEOS)
+// Exposed for testing.
+// Given the contents of the /proc/<pid>/cgroup file, determine whether the
+// process is backgrounded or not.
+BASE_EXPORT bool IsProcessBackgroundedCGroup(
+    const StringPiece& cgroup_contents);
+#endif  // defined(OS_CHROMEOS)
+
 }  // namespace base
 
 #endif  // BASE_PROCESS_PROCESS_H_

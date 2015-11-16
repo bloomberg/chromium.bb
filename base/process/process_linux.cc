@@ -60,10 +60,10 @@ struct CGroups {
   }
 };
 
-base::LazyInstance<CGroups> cgroups = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<CGroups> g_cgroups = LAZY_INSTANCE_INITIALIZER;
 #else
 const int kBackgroundPriority = 5;
-#endif
+#endif  // defined(OS_CHROMEOS)
 
 struct CheckForNicePermission {
   CheckForNicePermission() : can_reraise_priority(false) {
@@ -84,9 +84,9 @@ struct CheckForNicePermission {
 // static
 bool Process::CanBackgroundProcesses() {
 #if defined(OS_CHROMEOS)
-  if (cgroups.Get().enabled)
+  if (g_cgroups.Get().enabled)
     return true;
-#endif
+#endif  // defined(OS_CHROMEOS)
 
   static LazyInstance<CheckForNicePermission> check_for_nice_permission =
       LAZY_INSTANCE_INITIALIZER;
@@ -97,21 +97,18 @@ bool Process::IsProcessBackgrounded() const {
   DCHECK(IsValid());
 
 #if defined(OS_CHROMEOS)
-  if (cgroups.Get().enabled) {
+  if (g_cgroups.Get().enabled) {
     // Used to allow reading the process priority from proc on thread launch.
     base::ThreadRestrictions::ScopedAllowIO allow_io;
     std::string proc;
     if (base::ReadFileToString(
             base::FilePath(StringPrintf(kProcPath, process_)), &proc)) {
-      std::vector<StringPiece> proc_parts = base::SplitStringPiece(
-          proc, ":", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-      DCHECK_EQ(proc_parts.size(), 3u);
-      return proc_parts[2] == kBackground;
-    } else {
-      return false;
+      return IsProcessBackgroundedCGroup(proc);
     }
+    return false;
   }
-#endif
+#endif  // defined(OS_CHROMEOS)
+
   return GetPriority() == kBackgroundPriority;
 }
 
@@ -119,14 +116,14 @@ bool Process::SetProcessBackgrounded(bool background) {
   DCHECK(IsValid());
 
 #if defined(OS_CHROMEOS)
-  if (cgroups.Get().enabled) {
+  if (g_cgroups.Get().enabled) {
     std::string pid = IntToString(process_);
     const base::FilePath file =
         background ?
-            cgroups.Get().background_file : cgroups.Get().foreground_file;
+            g_cgroups.Get().background_file : g_cgroups.Get().foreground_file;
     return base::WriteFile(file, pid.c_str(), pid.size()) > 0;
   }
-#endif // OS_CHROMEOS
+#endif  // defined(OS_CHROMEOS)
 
   if (!CanBackgroundProcesses())
     return false;
@@ -136,5 +133,28 @@ bool Process::SetProcessBackgrounded(bool background) {
   DPCHECK(result == 0);
   return result == 0;
 }
+
+#if defined(OS_CHROMEOS)
+bool IsProcessBackgroundedCGroup(const StringPiece& cgroup_contents) {
+  // The process can be part of multiple control groups, and for each cgroup
+  // hierarchy there's an entry in the file. We look for a control group
+  // named "/chrome_renderers/background" to determine if the process is
+  // backgrounded. crbug.com/548818.
+  std::vector<StringPiece> lines =
+      SplitStringPiece(cgroup_contents, "\n", TRIM_WHITESPACE, SPLIT_WANT_ALL);
+  for (const auto& line : lines) {
+    std::vector<StringPiece> fields =
+        SplitStringPiece(line, ":", TRIM_WHITESPACE, SPLIT_WANT_ALL);
+    if (fields.size() != 3U) {
+      NOTREACHED();
+      continue;
+    }
+    if (fields[2] == kBackground)
+      return true;
+  }
+
+  return false;
+}
+#endif  // defined(OS_CHROMEOS)
 
 }  // namespace base
