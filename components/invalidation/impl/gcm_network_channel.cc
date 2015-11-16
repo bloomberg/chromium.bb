@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/base64.h"
+#include "components/invalidation/impl/gcm_network_channel.h"
+
+#include "base/base64url.h"
 #include "base/i18n/time_formatting.h"
 #include "base/location.h"
 #include "base/metrics/histogram_macros.h"
@@ -11,6 +13,13 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/thread_task_runner_handle.h"
+#include "components/data_use_measurement/core/data_use_user_data.h"
+#include "components/invalidation/impl/gcm_network_channel_delegate.h"
+#include "google_apis/gaia/google_service_auth_error.h"
+#include "net/http/http_status_code.h"
+#include "net/url_request/url_fetcher.h"
+#include "net/url_request/url_request_status.h"
+
 #if !defined(OS_ANDROID)
 // channel_common.proto defines ANDROID constant that conflicts with Android
 // build. At the same time TiclInvalidationService is not used on Android so it
@@ -19,13 +28,6 @@
 #include "google/cacheinvalidation/channel_common.pb.h"
 #include "google/cacheinvalidation/types.pb.h"
 #endif
-#include "components/data_use_measurement/core/data_use_user_data.h"
-#include "components/invalidation/impl/gcm_network_channel.h"
-#include "components/invalidation/impl/gcm_network_channel_delegate.h"
-#include "google_apis/gaia/google_service_auth_error.h"
-#include "net/http/http_status_code.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_request_status.h"
 
 namespace syncer {
 
@@ -272,7 +274,8 @@ void GCMNetworkChannel::OnIncomingMessage(const std::string& message,
     return;
   }
   std::string data;
-  if (!Base64DecodeURLSafe(message, &data)) {
+  if (!base::Base64UrlDecode(
+          message, base::Base64UrlDecodePolicy::IGNORE_PADDING, &data)) {
     RecordIncomingMessageStatus(INVALID_ENCODING);
     return;
   }
@@ -345,7 +348,9 @@ GURL GCMNetworkChannel::BuildUrl(const std::string& registration_id) {
   network_endpoint_id.SerializeToString(&network_endpoint_id_buffer);
 
   std::string base64URLPiece;
-  Base64EncodeURLSafe(network_endpoint_id_buffer, &base64URLPiece);
+  base::Base64UrlEncode(
+      network_endpoint_id_buffer, base::Base64UrlEncodePolicy::OMIT_PADDING,
+      &base64URLPiece);
 
   std::string url(kCacheInvalidationEndpointUrl);
   url += base64URLPiece;
@@ -355,31 +360,6 @@ GURL GCMNetworkChannel::BuildUrl(const std::string& registration_id) {
   NOTREACHED();
   return GURL();
 #endif
-}
-
-void GCMNetworkChannel::Base64EncodeURLSafe(const std::string& input,
-                                            std::string* output) {
-  base::Base64Encode(input, output);
-  // Covert to url safe alphabet.
-  base::ReplaceChars(*output, "+", "-", output);
-  base::ReplaceChars(*output, "/", "_", output);
-  // Trim padding.
-  size_t padding_size = 0;
-  for (size_t i = output->size(); i > 0 && (*output)[i - 1] == '='; --i)
-    ++padding_size;
-  output->resize(output->size() - padding_size);
-}
-
-bool GCMNetworkChannel::Base64DecodeURLSafe(const std::string& input,
-                                            std::string* output) {
-  // Add padding.
-  size_t padded_size = (input.size() + 3) - (input.size() + 3) % 4;
-  std::string padded_input(input);
-  padded_input.resize(padded_size, '=');
-  // Convert to standard base64 alphabet.
-  base::ReplaceChars(padded_input, "-", "+", &padded_input);
-  base::ReplaceChars(padded_input, "_", "/", &padded_input);
-  return base::Base64Decode(padded_input, output);
 }
 
 void GCMNetworkChannel::SetMessageReceiver(
