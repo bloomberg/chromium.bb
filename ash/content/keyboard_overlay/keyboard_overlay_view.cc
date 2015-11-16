@@ -26,6 +26,7 @@ const ash::KeyboardOverlayView::KeyEventData kCancelKeys[] = {
     {ui::VKEY_HELP, ui::EF_NONE},
     {ui::VKEY_F14, ui::EF_NONE},
 };
+
 }
 
 namespace ash {
@@ -47,8 +48,10 @@ void KeyboardOverlayView::Cancel() {
 bool KeyboardOverlayView::IsCancelingKeyEvent(ui::KeyEvent* event) {
   if (event->type() != ui::ET_KEY_PRESSED)
     return false;
-  // Ignore the caps lock state.
-  const int flags = (event->flags() & ~ui::EF_CAPS_LOCK_DOWN);
+
+  // Ignore the non-modifiers flags in order to treat it the same way
+  // Accelerators are generated and compared. crbug.com/535008.
+  const int flags = ui::Accelerator::MaskOutKeyEventFlags(event->flags());
   for (size_t i = 0; i < arraysize(kCancelKeys); ++i) {
     if ((kCancelKeys[i].key_code == event->key_code()) &&
         (kCancelKeys[i].flags == flags))

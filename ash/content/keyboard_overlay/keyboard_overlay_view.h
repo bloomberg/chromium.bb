@@ -52,6 +52,8 @@ class ASH_WITH_CONTENT_EXPORT KeyboardOverlayView
 
  private:
   FRIEND_TEST_ALL_PREFIXES(KeyboardOverlayViewTest, OpenAcceleratorsClose);
+  FRIEND_TEST_ALL_PREFIXES(KeyboardOverlayViewTest,
+                           TestCancelingKeysWithNonModifierFlags);
   FRIEND_TEST_ALL_PREFIXES(KeyboardOverlayViewTest, NoRedundantCancelingKeys);
 
   // Overridden from views::WidgetDelegate:

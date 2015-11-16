@@ -46,7 +46,7 @@ Accelerator::Accelerator(KeyboardCode keycode, int modifiers)
 Accelerator::Accelerator(const KeyEvent& key_event)
     : key_code_(key_event.key_code()),
       type_(key_event.type()),
-      modifiers_(key_event.flags() & kEventFlagsMask),
+      modifiers_(MaskOutKeyEventFlags(key_event.flags())),
       is_repeat_(key_event.IsRepeat()) {
 }
 
@@ -60,6 +60,11 @@ Accelerator::Accelerator(const Accelerator& accelerator) {
 }
 
 Accelerator::~Accelerator() {
+}
+
+// static
+int Accelerator::MaskOutKeyEventFlags(int flags) {
+  return flags & kEventFlagsMask;
 }
 
 Accelerator& Accelerator::operator=(const Accelerator& accelerator) {

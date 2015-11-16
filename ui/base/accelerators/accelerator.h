@@ -33,6 +33,10 @@ class UI_BASE_EXPORT Accelerator {
   Accelerator(const Accelerator& accelerator);
   ~Accelerator();
 
+  // Masks out all the non-modifiers KeyEvent |flags| and returns only the
+  // available modifier ones.
+  static int MaskOutKeyEventFlags(int flags);
+
   Accelerator& operator=(const Accelerator& accelerator);
 
   // Define the < operator so that the KeyboardShortcut can be used as a key in

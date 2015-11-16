@@ -41,6 +41,27 @@ TEST_F(KeyboardOverlayViewTest, OpenAcceleratorsClose) {
   }
 }
 
+// Test modifiers that might exist in a KeyEvent but they shouldn't be
+// considered in an accelerator comparison to determine if a KeyEvent is a
+// canceling key.
+TEST_F(KeyboardOverlayViewTest, TestCancelingKeysWithNonModifierFlags) {
+  ui::test::TestWebDialogDelegate delegate(GURL("chrome://keyboardoverlay"));
+  KeyboardOverlayView view(
+      ShellContentState::GetInstance()->GetActiveBrowserContext(), &delegate,
+      new ui::test::TestWebContentsHandler);
+
+  const int kNonModifierFlags = ui::EF_IS_REPEAT | ui::EF_IME_FABRICATED_KEY |
+                                ui::EF_NUM_LOCK_DOWN | ui::EF_IS_SYNTHESIZED;
+
+  std::vector<KeyboardOverlayView::KeyEventData> canceling_keys;
+  KeyboardOverlayView::GetCancelingKeysForTesting(&canceling_keys);
+  for (const auto& key_data : canceling_keys) {
+    ui::KeyEvent key_event(ui::ET_KEY_PRESSED, key_data.key_code,
+                           key_data.flags | kNonModifierFlags);
+    EXPECT_TRUE(view.IsCancelingKeyEvent(&key_event));
+  }
+}
+
 // Verifies that there are no redunduant keys in the canceling keys.
 TEST_F(KeyboardOverlayViewTest, NoRedundantCancelingKeys) {
   std::vector<KeyboardOverlayView::KeyEventData> open_keys;
