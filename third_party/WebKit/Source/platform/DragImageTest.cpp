@@ -51,29 +51,20 @@ namespace blink {
 
 class TestImage : public Image {
 public:
+    static PassRefPtr<TestImage> create(PassRefPtr<SkImage> image)
+    {
+        return adoptRef(new TestImage(image));
+    }
 
     static PassRefPtr<TestImage> create(const IntSize& size)
     {
         return adoptRef(new TestImage(size));
     }
 
-    explicit TestImage(const IntSize& size)
-    {
-        RefPtr<SkSurface> surface = adoptRef(SkSurface::NewRaster(
-            SkImageInfo::MakeN32(size.width(), size.height(), kPremul_SkAlphaType)));
-        if (!surface)
-            return;
-
-        surface->getCanvas()->clear(SK_ColorTRANSPARENT);
-        m_image = adoptRef(surface->newImageSnapshot());
-    }
-
-    explicit TestImage(PassRefPtr<SkImage> image)
-        : m_image(image) { }
-
     IntSize size() const override
     {
         ASSERT(m_image);
+
         return IntSize(m_image->width(), m_image->height());
     }
 
@@ -82,21 +73,43 @@ public:
         return m_image;
     }
 
-    // Stub implementations of pure virtual Image functions.
-    void destroyDecodedData(bool) override
-    {
-    }
-
     bool currentFrameKnownToBeOpaque() override
     {
         return false;
     }
 
+    void destroyDecodedData(bool) override
+    {
+        // Image pure virtual stub.
+    }
+
     void draw(SkCanvas*, const SkPaint&, const FloatRect&, const FloatRect&, RespectImageOrientationEnum, ImageClampingMode) override
     {
+        // Image pure virtual stub.
     }
 
 private:
+    explicit TestImage(PassRefPtr<SkImage> image)
+        : m_image(image)
+    {
+    }
+
+    explicit TestImage(IntSize size)
+        : m_image(nullptr)
+    {
+        RefPtr<SkSurface> surface = adoptRef(createSkSurface(size));
+        if (!surface)
+            return;
+
+        surface->getCanvas()->clear(SK_ColorTRANSPARENT);
+        m_image = adoptRef(surface->newImageSnapshot());
+    }
+
+    static SkSurface* createSkSurface(IntSize size)
+    {
+        return SkSurface::NewRaster(SkImageInfo::MakeN32(size.width(), size.height(), kPremul_SkAlphaType));
+    }
+
     RefPtr<SkImage> m_image;
 };
 
@@ -208,7 +221,7 @@ TEST(DragImageTest, InterpolationNone)
         testBitmap.eraseArea(SkIRect::MakeXYWH(1, 1, 1, 1), 0xFFFFFFFF);
     }
 
-    RefPtr<TestImage> testImage = adoptRef(new TestImage(adoptRef(SkImage::NewFromBitmap(testBitmap))));
+    RefPtr<TestImage> testImage = TestImage::create(adoptRef(SkImage::NewFromBitmap(testBitmap)));
     OwnPtr<DragImage> dragImage = DragImage::create(testImage.get(), DoNotRespectImageOrientation, 1, InterpolationNone);
     ASSERT_TRUE(dragImage);
     dragImage->scale(2, 2);
