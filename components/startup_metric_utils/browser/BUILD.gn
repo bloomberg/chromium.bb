@@ -2,7 +2,20 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-source_set("browser") {
+# We have 2 separate targets because //components/html_viewer requires :lib,
+# but has symbols that conflict with mojo symbols that :message_filter_lib
+# indirectly depends on.
+
+group("browser") {
+  testonly = true
+
+  deps = [
+    ":lib",
+    ":message_filter_lib",
+  ]
+}
+
+source_set("lib") {
   sources = [
     "startup_metric_utils.cc",
     "startup_metric_utils.h",
@@ -10,5 +23,19 @@ source_set("browser") {
 
   deps = [
     "//base",
+  ]
+}
+
+source_set("message_filter_lib") {
+  sources = [
+    "startup_metric_message_filter.cc",
+    "startup_metric_message_filter.h",
+  ]
+
+  deps = [
+    ":lib",
+    "//base",
+    "//components/startup_metric_utils/common",
+    "//content/public/browser",
   ]
 }

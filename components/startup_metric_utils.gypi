@@ -2,9 +2,14 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+# We have 2 separate browser targets because //components/html_viewer requires
+# startup_metric_utils_browser, but has symbols that conflict with mojo symbols
+# that startup_metric_utils_browser_message_filter indirectly depends on.
+
 {
   'targets': [
     {
+      # GN version: //components/startup_metric_utils/browser:lib
       'target_name': 'startup_metric_utils_browser',
       'type': 'static_library',
       'dependencies': [
@@ -16,6 +21,41 @@
       'sources': [
         'startup_metric_utils/browser/startup_metric_utils.cc',
         'startup_metric_utils/browser/startup_metric_utils.h',
+      ],
+    },
+    {
+      # GN version: //components/startup_metric_utils/browser:message_filter_lib
+      'target_name': 'startup_metric_utils_browser_message_filter',
+      'type': 'static_library',
+      'dependencies': [
+        '../base/base.gyp:base',
+        '../content/content.gyp:content_browser',
+        'startup_metric_utils_browser',
+        'startup_metric_utils_common',
+      ],
+      'include_dirs': [
+        '..',
+      ],
+      'sources': [
+        'startup_metric_utils/browser/startup_metric_message_filter.cc',
+        'startup_metric_utils/browser/startup_metric_message_filter.h',
+      ],
+    },
+    {
+      # GN version: //components/startup_metric_utils/common
+      'target_name': 'startup_metric_utils_common',
+      'type': 'static_library',
+      'dependencies': [
+        '../base/base.gyp:base',
+        '../ipc/ipc.gyp:ipc',
+      ],
+      'include_dirs': [
+        '..',
+      ],
+      'sources': [
+        'startup_metric_utils/common/startup_metric_message_generator.cc',
+        'startup_metric_utils/common/startup_metric_message_generator.h',
+        'startup_metric_utils/common/startup_metric_messages.h',
       ],
     },
   ],

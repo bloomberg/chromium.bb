@@ -29,6 +29,7 @@ source_set("renderer") {
     "//cc",
     "//cc/blink",
     "//components/scheduler:scheduler",
+    "//components/startup_metric_utils/common",
     "//components/url_formatter",
     "//components/webusb",
     "//content:resources",

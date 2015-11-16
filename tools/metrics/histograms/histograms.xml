@@ -45069,6 +45069,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Startup.BrowserMainToRendererMain" units="milliseconds">
+  <owner>fdoray@chromium.org</owner>
+  <summary>
+    Time from the ChromeMain() entry in the browser process to the first
+    RendererMain() entry.
+  </summary>
+</histogram>
+
 <histogram name="Startup.BrowserMessageLoopStartHardFaultCount" units="faults">
   <owner>chrisha@chromium.org</owner>
   <summary>
@@ -82082,6 +82090,7 @@ To add a new entry, add it with any value and run test to compute valid value.
 <histogram_suffixes name="StartupTemperature" separator=".">
   <suffix name="ColdStartup" label="Startup was cold (mostly hard faults)."/>
   <suffix name="WarmStartup" label="Startup was warm (almost no hard faults)."/>
+  <affected-histogram name="Startup.BrowserMainToRendererMain"/>
   <affected-histogram name="Startup.BrowserMessageLoopStartTime"/>
   <affected-histogram name="Startup.BrowserMessageLoopStartTimeFromMainEntry"/>
   <affected-histogram

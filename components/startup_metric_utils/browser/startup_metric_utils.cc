@@ -30,13 +30,16 @@ volatile bool g_non_browser_ui_displayed = false;
 base::LazyInstance<base::TimeTicks>::Leaky g_process_creation_ticks =
     LAZY_INSTANCE_INITIALIZER;
 
-base::LazyInstance<base::TimeTicks>::Leaky g_main_entry_point_ticks =
+base::LazyInstance<base::TimeTicks>::Leaky g_browser_main_entry_point_ticks =
+    LAZY_INSTANCE_INITIALIZER;
+
+base::LazyInstance<base::TimeTicks>::Leaky g_renderer_main_entry_point_ticks =
     LAZY_INSTANCE_INITIALIZER;
 
 // Only used by RecordMainEntryTimeHistogram(), should go away with it (do not
 // add new uses of this), see crbug.com/317481 for discussion on why it was kept
 // as-is for now.
-base::LazyInstance<base::Time>::Leaky g_main_entry_point_time =
+base::LazyInstance<base::Time>::Leaky g_browser_main_entry_point_time =
     LAZY_INSTANCE_INITIALIZER;
 
 StartupTemperature g_startup_temperature = UNCERTAIN_STARTUP_TEMPERATURE;
@@ -170,6 +173,8 @@ bool GetHardFaultCountForCurrentProcess(uint32_t* hard_fault_count,
 // ".ColdStart" or ".WarmStart", as appropriate.
 // |value_expr| is an expression evaluating to the value to be recorded. This
 // will be evaluated exactly once and cached, so side effects are not an issue.
+// A metric logged using this macro must have an affected-histogram entry in the
+// definition of the StartupTemperature suffix in histograms.xml.
 #define UMA_HISTOGRAM_WITH_STARTUP_TEMPERATURE(type, basename, value_expr) \
   {                                                                        \
     const auto kValue = value_expr;                                        \
@@ -298,9 +303,9 @@ base::TimeTicks StartupTimeToTimeTicks(const base::Time& time) {
 void RecordMainEntryTimeHistogram() {
   const int kLowWordMask = 0xFFFFFFFF;
   const int kLower31BitsMask = 0x7FFFFFFF;
-  DCHECK(!g_main_entry_point_time.Get().is_null());
+  DCHECK(!g_browser_main_entry_point_time.Get().is_null());
   const base::TimeDelta browser_main_entry_time_absolute =
-      g_main_entry_point_time.Get() - base::Time::UnixEpoch();
+      g_browser_main_entry_point_time.Get() - base::Time::UnixEpoch();
 
   const uint64 browser_main_entry_time_raw_ms =
       browser_main_entry_time_absolute.InMilliseconds();
@@ -318,6 +323,21 @@ void RecordMainEntryTimeHistogram() {
       browser_main_entry_time_raw_ms_high_word);
   LOCAL_HISTOGRAM_TIMES("Startup.BrowserMainEntryTimeAbsoluteLowWord",
       browser_main_entry_time_raw_ms_low_word);
+}
+
+// Record renderer main entry time histogram.
+void RecordRendererMainEntryHistogram() {
+  const base::TimeTicks& browser_main_entry_point_ticks =
+      g_browser_main_entry_point_ticks.Get();
+  const base::TimeTicks& renderer_main_entry_point_ticks =
+      g_renderer_main_entry_point_ticks.Get();
+
+  if (!browser_main_entry_point_ticks.is_null() &&
+      !renderer_main_entry_point_ticks.is_null()) {
+    UMA_HISTOGRAM_AND_TRACE_WITH_STARTUP_TEMPERATURE(
+        UMA_HISTOGRAM_LONG_TIMES_100, "Startup.BrowserMainToRendererMain",
+        browser_main_entry_point_ticks, renderer_main_entry_point_ticks);
+  }
 }
 
 // Environment variable that stores the timestamp when the executable's main()
@@ -354,15 +374,15 @@ void RecordStartupProcessCreationTime(const base::Time& time) {
 }
 
 void RecordMainEntryPointTime(const base::Time& time) {
-  DCHECK(g_main_entry_point_ticks.Get().is_null());
-  g_main_entry_point_ticks.Get() = StartupTimeToTimeTicks(time);
-  DCHECK(!g_main_entry_point_ticks.Get().is_null());
+  DCHECK(g_browser_main_entry_point_ticks.Get().is_null());
+  g_browser_main_entry_point_ticks.Get() = StartupTimeToTimeTicks(time);
+  DCHECK(!g_browser_main_entry_point_ticks.Get().is_null());
 
   // TODO(jeremy): Remove this with RecordMainEntryTimeHistogram() when
   // resolving crbug.com/317481.
-  DCHECK(g_main_entry_point_time.Get().is_null());
-  g_main_entry_point_time.Get() = time;
-  DCHECK(!g_main_entry_point_time.Get().is_null());
+  DCHECK(g_browser_main_entry_point_time.Get().is_null());
+  g_browser_main_entry_point_time.Get() = time;
+  DCHECK(!g_browser_main_entry_point_time.Get().is_null());
 }
 
 void RecordExeMainEntryPointTime(const base::Time& time) {
@@ -400,12 +420,12 @@ void RecordBrowserMainMessageLoopStart(const base::TimeTicks& ticks,
     UMA_HISTOGRAM_AND_TRACE_WITH_STARTUP_TEMPERATURE(
         UMA_HISTOGRAM_LONG_TIMES,
         "Startup.BrowserMessageLoopStartTimeFromMainEntry.FirstRun",
-        g_main_entry_point_ticks.Get(), ticks);
+        g_browser_main_entry_point_ticks.Get(), ticks);
   } else {
     UMA_HISTOGRAM_AND_TRACE_WITH_STARTUP_TEMPERATURE(
         UMA_HISTOGRAM_LONG_TIMES,
         "Startup.BrowserMessageLoopStartTimeFromMainEntry",
-        g_main_entry_point_ticks.Get(), ticks);
+        g_browser_main_entry_point_ticks.Get(), ticks);
   }
 
   // Record timings between process creation, the main() in the executable being
@@ -421,13 +441,13 @@ void RecordBrowserMainMessageLoopStart(const base::TimeTicks& ticks,
       // chrome.exe:main() to chrome.dll:main().
       UMA_HISTOGRAM_AND_TRACE_WITH_STARTUP_TEMPERATURE(
           UMA_HISTOGRAM_LONG_TIMES, "Startup.LoadTime.ExeMainToDllMain",
-          exe_main_ticks, g_main_entry_point_ticks.Get());
+          exe_main_ticks, g_browser_main_entry_point_ticks.Get());
 
       // Process create to chrome.dll:main(). Reported as a histogram only as
       // the other two events above are sufficient for tracing purposes.
       UMA_HISTOGRAM_WITH_STARTUP_TEMPERATURE(
           UMA_HISTOGRAM_LONG_TIMES, "Startup.LoadTime.ProcessCreateToDllMain",
-          g_main_entry_point_ticks.Get() - process_creation_ticks);
+          g_browser_main_entry_point_ticks.Get() - process_creation_ticks);
     }
   }
 }
@@ -453,6 +473,13 @@ void RecordBrowserOpenTabsDelta(const base::TimeDelta& delta) {
 
   UMA_HISTOGRAM_WITH_STARTUP_TEMPERATURE(UMA_HISTOGRAM_LONG_TIMES_100,
                                          "Startup.BrowserOpenTabs", delta);
+}
+
+void RecordRendererMainEntryTime(const base::TimeTicks& ticks) {
+  // Record the renderer main entry time, but don't log the UMA metric
+  // immediately because the startup temperature is not known yet.
+  if (g_renderer_main_entry_point_ticks.Get().is_null())
+    g_renderer_main_entry_point_ticks.Get() = ticks;
 }
 
 void RecordFirstWebContentsMainFrameLoad(const base::TimeTicks& ticks) {
@@ -487,6 +514,11 @@ void RecordFirstWebContentsNonEmptyPaint(const base::TimeTicks& ticks) {
   if (!is_first_call || ticks.is_null())
     return;
   is_first_call = false;
+
+  // Log Startup.BrowserMainToRendererMain now that the first renderer main
+  // entry time and the startup temperature are known.
+  RecordRendererMainEntryHistogram();
+
   if (WasNonBrowserUIDisplayed() || g_process_creation_ticks.Get().is_null())
     return;
 
@@ -539,7 +571,7 @@ void RecordFirstWebContentsMainNavigationFinished(
 }
 
 base::TimeTicks MainEntryPointTicks() {
-  return g_main_entry_point_ticks.Get();
+  return g_browser_main_entry_point_ticks.Get();
 }
 
 StartupTemperature GetStartupTemperature() {

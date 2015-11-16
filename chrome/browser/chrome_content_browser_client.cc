@@ -117,6 +117,7 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/rappor/rappor_utils.h"
 #include "components/signin/core/common/profile_management_switches.h"
+#include "components/startup_metric_utils/browser/startup_metric_message_filter.h"
 #include "components/translate/core/common/translate_switches.h"
 #include "components/url_formatter/url_fixer.h"
 #include "components/variations/variations_associated_data.h"
@@ -907,6 +908,7 @@ void ChromeContentBrowserClient::RenderProcessWillLaunch(
       DataReductionProxyChromeSettingsFactory::GetForBrowserContext(profile);
   host->AddFilter(new data_reduction_proxy::DataReductionProxyMessageFilter(
       data_reduction_proxy_settings));
+  host->AddFilter(new startup_metric_utils::StartupMetricMessageFilter());
 
   host->Send(new ChromeViewMsg_SetIsIncognitoProcess(
       profile->IsOffTheRecord()));
