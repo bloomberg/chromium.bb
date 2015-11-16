@@ -2324,7 +2324,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
         r".*? All Rights Reserved\." "\n"
     )
     self._LicenseCheck(text, license_text, False,
-                       presubmit.OutputApi.PresubmitNotifyResult)
+                       presubmit.OutputApi.PresubmitPromptWarning)
 
   def testCheckLicenseEmptySuccess(self):
     text = ''

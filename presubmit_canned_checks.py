@@ -419,11 +419,7 @@ def CheckLicense(input_api, output_api, license_re, source_file_filter=None,
     if not license_re.search(contents):
       bad_files.append(f.LocalPath())
   if bad_files:
-    if input_api.is_committing:
-      res_type = output_api.PresubmitPromptWarning
-    else:
-      res_type = output_api.PresubmitNotifyResult
-    return [res_type(
+    return [output_api.PresubmitPromptWarning(
         'License must match:\n%s\n' % license_re.pattern +
         'Found a bad license header in these files:', items=bad_files)]
   return []
