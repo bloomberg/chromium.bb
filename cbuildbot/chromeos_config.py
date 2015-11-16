@@ -290,6 +290,16 @@ class HWTestList(object):
                                           **default_dict)]
     return suite_list
 
+  @classmethod
+  def AsanTest(cls, **kwargs):
+    """Return a list of HWTESTConfigs which run asan tests."""
+    default_dict = dict(pool=constants.HWTEST_MACH_POOL, file_bugs=False,
+                        priority=constants.HWTEST_DEFAULT_PRIORITY)
+    default_dict.update(kwargs)
+    return [config_lib.HWTestConfig(constants.HWTEST_BVT_SUITE,
+                                    **default_dict)]
+
+
 def append_useflags(useflags):
   """Used to append a set of useflags to existing useflags.
 
@@ -1267,6 +1277,8 @@ def GetConfig():
       incremental,
       boards=['x86-generic'],
       chroot_replace=True,
+      hw_tests=HWTestList.AsanTest(),
+      hw_tests_override=HWTestList.AsanTest(),
       description='Build with Address Sanitizer (Clang)',
       trybot_list=True,
   )
