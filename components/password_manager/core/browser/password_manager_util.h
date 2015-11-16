@@ -5,8 +5,11 @@
 #ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_MANAGER_UTIL_H_
 #define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_MANAGER_UTIL_H_
 
+#include <vector>
+
 #include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "ui/gfx/native_widget_types.h"
@@ -41,6 +44,11 @@ void FindDuplicates(
 // Transforms federated credentials into non zero-click ones.
 void TrimUsernameOnlyCredentials(
     ScopedVector<autofill::PasswordForm>* android_credentials);
+
+// TODO(crbug.com/555132): Remove this when the migration from ScopedVector is
+// finished for PasswordForm.
+std::vector<scoped_ptr<autofill::PasswordForm>> ConvertScopedVector(
+    ScopedVector<autofill::PasswordForm> old_vector);
 
 }  // namespace password_manager_util
 

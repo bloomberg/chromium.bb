@@ -53,10 +53,11 @@ class PasswordsPrivateDelegateImpl : public PasswordsPrivateDelegate,
       const std::string& username,
       const base::string16& plaintext_password) override;
   void SetPasswordList(
-      const ScopedVector<autofill::PasswordForm>& password_list,
+      const std::vector<scoped_ptr<autofill::PasswordForm>>& password_list,
       bool show_passwords) override;
-  void SetPasswordExceptionList(const ScopedVector<autofill::PasswordForm>&
-      password_exception_list) override;
+  void SetPasswordExceptionList(
+      const std::vector<scoped_ptr<autofill::PasswordForm>>&
+          password_exception_list) override;
 #if !defined(OS_ANDROID)
   gfx::NativeWindow GetNativeWindow() const override;
 #endif

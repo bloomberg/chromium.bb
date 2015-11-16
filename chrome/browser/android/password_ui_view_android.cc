@@ -45,7 +45,7 @@ void PasswordUIViewAndroid::ShowPassword(
 }
 
 void PasswordUIViewAndroid::SetPasswordList(
-    const ScopedVector<autofill::PasswordForm>& password_list,
+    const std::vector<scoped_ptr<autofill::PasswordForm>>& password_list,
     bool show_passwords) {
   // Android just ignores the |show_passwords| argument.
   JNIEnv* env = base::android::AttachCurrentThread();
@@ -57,7 +57,8 @@ void PasswordUIViewAndroid::SetPasswordList(
 }
 
 void PasswordUIViewAndroid::SetPasswordExceptionList(
-    const ScopedVector<autofill::PasswordForm>& password_exception_list) {
+    const std::vector<scoped_ptr<autofill::PasswordForm>>&
+        password_exception_list) {
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jobject> ui_controller = weak_java_ui_controller_.get(env);
   if (!ui_controller.is_null()) {

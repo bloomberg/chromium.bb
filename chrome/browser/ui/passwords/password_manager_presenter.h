@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/prefs/pref_member.h"
 #include "components/password_manager/core/browser/password_store.h"
@@ -111,8 +112,8 @@ class PasswordManagerPresenter
   PasswordListPopulater populater_;
   PasswordExceptionListPopulater exception_populater_;
 
-  ScopedVector<autofill::PasswordForm> password_list_;
-  ScopedVector<autofill::PasswordForm> password_exception_list_;
+  std::vector<scoped_ptr<autofill::PasswordForm>> password_list_;
+  std::vector<scoped_ptr<autofill::PasswordForm>> password_exception_list_;
 
   // Whether to show stored passwords or not.
   BooleanPrefMember show_passwords_;

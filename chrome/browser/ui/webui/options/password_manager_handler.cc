@@ -216,12 +216,12 @@ void PasswordManagerHandler::HandleUpdatePasswordLists(
 }
 
 void PasswordManagerHandler::SetPasswordList(
-    const ScopedVector<autofill::PasswordForm>& password_list,
+    const std::vector<scoped_ptr<autofill::PasswordForm>>& password_list,
     bool show_passwords) {
   base::ListValue entries;
   languages_ = GetProfile()->GetPrefs()->GetString(prefs::kAcceptLanguages);
   base::string16 placeholder(base::ASCIIToUTF16("        "));
-  for (const autofill::PasswordForm* saved_password : password_list) {
+  for (const auto& saved_password : password_list) {
     scoped_ptr<base::DictionaryValue> entry(new base::DictionaryValue);
     CopyOriginInfoOfPasswordForm(*saved_password, languages_, entry.get());
 
@@ -250,9 +250,10 @@ void PasswordManagerHandler::SetPasswordList(
 }
 
 void PasswordManagerHandler::SetPasswordExceptionList(
-    const ScopedVector<autofill::PasswordForm>& password_exception_list) {
+    const std::vector<scoped_ptr<autofill::PasswordForm>>&
+        password_exception_list) {
   base::ListValue entries;
-  for (const autofill::PasswordForm* exception : password_exception_list) {
+  for (const auto& exception : password_exception_list) {
     scoped_ptr<base::DictionaryValue> entry(new base::DictionaryValue);
     CopyOriginInfoOfPasswordForm(*exception, languages_, entry.get());
     entries.Append(entry.release());

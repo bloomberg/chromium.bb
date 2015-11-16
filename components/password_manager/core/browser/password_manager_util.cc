@@ -74,4 +74,15 @@ void TrimUsernameOnlyCredentials(
   android_credentials->swap(result);
 }
 
+std::vector<scoped_ptr<autofill::PasswordForm>> ConvertScopedVector(
+    ScopedVector<autofill::PasswordForm> old_vector) {
+  std::vector<scoped_ptr<autofill::PasswordForm>> new_vector;
+  new_vector.reserve(old_vector.size());
+  for (auto* form : old_vector) {
+    new_vector.push_back(make_scoped_ptr(form));
+  }
+  old_vector.weak_clear();  // All owned by |new_vector| by now.
+  return new_vector;
+}
+
 }  // namespace password_manager_util

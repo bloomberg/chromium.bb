@@ -23,6 +23,7 @@
 #include "components/autofill/core/common/password_form.h"
 #include "components/browser_sync/browser/profile_sync_service.h"
 #include "components/password_manager/core/browser/affiliation_utils.h"
+#include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/password_manager/sync/browser/password_sync_util.h"
 #include "content/public/browser/user_metrics.h"
@@ -186,7 +187,7 @@ const autofill::PasswordForm* PasswordManagerPresenter::GetPassword(
     NOTREACHED();
     return NULL;
   }
-  return password_list_[index];
+  return password_list_[index].get();
 }
 
 const autofill::PasswordForm* PasswordManagerPresenter::GetPasswordException(
@@ -197,7 +198,7 @@ const autofill::PasswordForm* PasswordManagerPresenter::GetPasswordException(
     NOTREACHED();
     return NULL;
   }
-  return password_exception_list_[index];
+  return password_exception_list_[index].get();
 }
 
 void PasswordManagerPresenter::SetPasswordList() {
@@ -240,7 +241,8 @@ void PasswordManagerPresenter::PasswordListPopulater::Populate() {
 
 void PasswordManagerPresenter::PasswordListPopulater::OnGetPasswordStoreResults(
     ScopedVector<autofill::PasswordForm> results) {
-  page_->password_list_.swap(results);
+  page_->password_list_ =
+      password_manager_util::ConvertScopedVector(results.Pass());
   page_->SetPasswordList();
 }
 
@@ -261,6 +263,7 @@ void PasswordManagerPresenter::PasswordExceptionListPopulater::Populate() {
 
 void PasswordManagerPresenter::PasswordExceptionListPopulater::
     OnGetPasswordStoreResults(ScopedVector<autofill::PasswordForm> results) {
-  page_->password_exception_list_.swap(results);
+  page_->password_exception_list_ =
+      password_manager_util::ConvertScopedVector(results.Pass());
   page_->SetPasswordExceptionList();
 }
