@@ -24,11 +24,28 @@ class WebsiteSettingsInfo {
 
   enum LossyStatus { LOSSY, NOT_LOSSY };
 
+  enum ScopingType {
+    // Settings scoped to the domain of the main frame only.
+    TOP_LEVEL_DOMAIN_ONLY_SCOPE,
+
+    // Settings scoped to the origin of the requesting frame only.
+    REQUESTING_ORIGIN_ONLY_SCOPE,
+
+    // Settings scoped to the domain of the requesting frame only. This should
+    // not generally be used.
+    REQUESTING_DOMAIN_ONLY_SCOPE,
+
+    // Settings scoped to the combination of the origin of the requesting
+    // frame and the origin of the top level frame.
+    REQUESTING_ORIGIN_AND_TOP_LEVEL_ORIGIN_SCOPE
+  };
+
   WebsiteSettingsInfo(ContentSettingsType type,
                       const std::string& name,
                       scoped_ptr<base::Value> initial_default_value,
                       SyncStatus sync_status,
-                      LossyStatus lossy_status);
+                      LossyStatus lossy_status,
+                      ScopingType scoping_type);
   ~WebsiteSettingsInfo();
 
   ContentSettingsType type() const { return type_; }
@@ -44,6 +61,8 @@ class WebsiteSettingsInfo {
 
   uint32 GetPrefRegistrationFlags() const;
 
+  ScopingType scoping_type() const { return scoping_type_; }
+
  private:
   const ContentSettingsType type_;
   const std::string name_;
@@ -53,6 +72,7 @@ class WebsiteSettingsInfo {
   const scoped_ptr<base::Value> initial_default_value_;
   const SyncStatus sync_status_;
   const LossyStatus lossy_status_;
+  const ScopingType scoping_type_;
 
   DISALLOW_COPY_AND_ASSIGN(WebsiteSettingsInfo);
 };

@@ -61,7 +61,8 @@ class ContentSettingsRegistry {
                 ContentSetting initial_default_value,
                 WebsiteSettingsInfo::SyncStatus sync_status,
                 const std::vector<std::string>& whitelisted_schemes,
-                const std::set<ContentSetting>& valid_settings);
+                const std::set<ContentSetting>& valid_settings,
+                WebsiteSettingsInfo::ScopingType scoping_type);
 
   Map content_settings_info_;
   WebsiteSettingsRegistry* website_settings_registry_;

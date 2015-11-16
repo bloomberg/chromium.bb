@@ -54,9 +54,11 @@ const WebsiteSettingsInfo* WebsiteSettingsRegistry::Register(
     const std::string& name,
     scoped_ptr<base::Value> initial_default_value,
     WebsiteSettingsInfo::SyncStatus sync_status,
-    WebsiteSettingsInfo::LossyStatus lossy_status) {
-  WebsiteSettingsInfo* info = new WebsiteSettingsInfo(
-      type, name, initial_default_value.Pass(), sync_status, lossy_status);
+    WebsiteSettingsInfo::LossyStatus lossy_status,
+    WebsiteSettingsInfo::ScopingType scoping_type) {
+  WebsiteSettingsInfo* info =
+      new WebsiteSettingsInfo(type, name, initial_default_value.Pass(),
+                              sync_status, lossy_status, scoping_type);
   website_settings_info_.set(info->type(), make_scoped_ptr(info));
   return info;
 }
@@ -80,16 +82,21 @@ void WebsiteSettingsRegistry::Init() {
   // Website settings.
   Register(CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE,
            "auto-select-certificate", nullptr, WebsiteSettingsInfo::UNSYNCABLE,
-           WebsiteSettingsInfo::NOT_LOSSY);
+           WebsiteSettingsInfo::NOT_LOSSY,
+           WebsiteSettingsInfo::REQUESTING_DOMAIN_ONLY_SCOPE);
   Register(CONTENT_SETTINGS_TYPE_SSL_CERT_DECISIONS, "ssl-cert-decisions",
            nullptr, WebsiteSettingsInfo::UNSYNCABLE,
-           WebsiteSettingsInfo::NOT_LOSSY);
+           WebsiteSettingsInfo::NOT_LOSSY,
+           WebsiteSettingsInfo::REQUESTING_ORIGIN_ONLY_SCOPE);
   Register(CONTENT_SETTINGS_TYPE_APP_BANNER, "app-banner", nullptr,
-           WebsiteSettingsInfo::UNSYNCABLE, WebsiteSettingsInfo::LOSSY);
+           WebsiteSettingsInfo::UNSYNCABLE, WebsiteSettingsInfo::LOSSY,
+           WebsiteSettingsInfo::REQUESTING_DOMAIN_ONLY_SCOPE);
   Register(CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT, "site-engagement", nullptr,
-           WebsiteSettingsInfo::UNSYNCABLE, WebsiteSettingsInfo::LOSSY);
+           WebsiteSettingsInfo::UNSYNCABLE, WebsiteSettingsInfo::LOSSY,
+           WebsiteSettingsInfo::REQUESTING_ORIGIN_ONLY_SCOPE);
   Register(CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA, "usb-chooser-data", nullptr,
-           WebsiteSettingsInfo::UNSYNCABLE, WebsiteSettingsInfo::NOT_LOSSY);
+           WebsiteSettingsInfo::UNSYNCABLE, WebsiteSettingsInfo::NOT_LOSSY,
+           WebsiteSettingsInfo::REQUESTING_ORIGIN_AND_TOP_LEVEL_ORIGIN_SCOPE);
 }
 
 }  // namespace content_settings

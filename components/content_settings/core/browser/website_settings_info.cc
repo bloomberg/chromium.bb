@@ -30,14 +30,16 @@ WebsiteSettingsInfo::WebsiteSettingsInfo(
     const std::string& name,
     scoped_ptr<base::Value> initial_default_value,
     SyncStatus sync_status,
-    LossyStatus lossy_status)
+    LossyStatus lossy_status,
+    ScopingType scoping_type)
     : type_(type),
       name_(name),
       pref_name_(GetPrefName(name, kPrefPrefix)),
       default_value_pref_name_(GetPrefName(name, kDefaultPrefPrefix)),
       initial_default_value_(initial_default_value.Pass()),
       sync_status_(sync_status),
-      lossy_status_(lossy_status) {
+      lossy_status_(lossy_status),
+      scoping_type_(scoping_type) {
   // For legacy reasons the default value is currently restricted to be an int.
   // TODO(raymes): We should migrate the underlying pref to be a dictionary
   // rather than an int.

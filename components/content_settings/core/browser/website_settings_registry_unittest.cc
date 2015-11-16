@@ -45,7 +45,8 @@ TEST_F(WebsiteSettingsRegistryTest, GetByName) {
   // Register a new setting.
   registry()->Register(static_cast<ContentSettingsType>(10), "test", nullptr,
                        WebsiteSettingsInfo::UNSYNCABLE,
-                       WebsiteSettingsInfo::LOSSY);
+                       WebsiteSettingsInfo::LOSSY,
+                       WebsiteSettingsInfo::TOP_LEVEL_DOMAIN_ONLY_SCOPE);
   info = registry()->GetByName("test");
   ASSERT_TRUE(info);
   EXPECT_EQ(10, info->type());
@@ -69,7 +70,8 @@ TEST_F(WebsiteSettingsRegistryTest, Properties) {
   registry()->Register(static_cast<ContentSettingsType>(10), "test",
                        make_scoped_ptr(new base::FundamentalValue(999)),
                        WebsiteSettingsInfo::SYNCABLE,
-                       WebsiteSettingsInfo::LOSSY);
+                       WebsiteSettingsInfo::LOSSY,
+                       WebsiteSettingsInfo::TOP_LEVEL_DOMAIN_ONLY_SCOPE);
   info = registry()->Get(static_cast<ContentSettingsType>(10));
   ASSERT_TRUE(info);
   EXPECT_EQ("profile.content_settings.exceptions.test", info->pref_name());
@@ -81,13 +83,16 @@ TEST_F(WebsiteSettingsRegistryTest, Properties) {
   EXPECT_EQ(PrefRegistry::LOSSY_PREF |
                 user_prefs::PrefRegistrySyncable::SYNCABLE_PREF,
             info->GetPrefRegistrationFlags());
+  EXPECT_EQ(WebsiteSettingsInfo::TOP_LEVEL_DOMAIN_ONLY_SCOPE,
+            info->scoping_type());
 }
 
 TEST_F(WebsiteSettingsRegistryTest, Iteration) {
   registry()->Register(static_cast<ContentSettingsType>(10), "test",
                        make_scoped_ptr(new base::FundamentalValue(999)),
                        WebsiteSettingsInfo::SYNCABLE,
-                       WebsiteSettingsInfo::LOSSY);
+                       WebsiteSettingsInfo::LOSSY,
+                       WebsiteSettingsInfo::TOP_LEVEL_DOMAIN_ONLY_SCOPE);
 
   bool found = false;
   for (const WebsiteSettingsInfo* info : *registry()) {

@@ -46,7 +46,8 @@ class WebsiteSettingsRegistry {
       const std::string& name,
       scoped_ptr<base::Value> initial_default_value,
       WebsiteSettingsInfo::SyncStatus sync_status,
-      WebsiteSettingsInfo::LossyStatus lossy_status);
+      WebsiteSettingsInfo::LossyStatus lossy_status,
+      WebsiteSettingsInfo::ScopingType scoping_type);
 
   const_iterator begin() const;
   const_iterator end() const;
