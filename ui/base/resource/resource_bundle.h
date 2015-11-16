@@ -295,7 +295,10 @@ class UI_BASE_EXPORT ResourceBundle {
   FRIEND_TEST_ALL_PREFIXES(ResourceBundleTest, DelegateGetNativeImageNamed);
   FRIEND_TEST_ALL_PREFIXES(ResourceBundleImageTest,
                            CountMaterialDesignDataPacksInResourceBundle);
+  FRIEND_TEST_ALL_PREFIXES(ResourceBundleMacImageTest,
+                           CheckImageFromMaterialDesign);
 
+  friend class ResourceBundleMacImageTest;
   friend class ResourceBundleImageTest;
   friend class ResourceBundleTest;
 

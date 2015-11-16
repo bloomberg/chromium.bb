@@ -44,6 +44,7 @@
         'resource/data_pack_literal.cc',
         'resource/data_pack_unittest.cc',
         'resource/resource_bundle_unittest.cc',
+        'resource/resource_bundle_mac_unittest.mm',
         'template_expressions_unittest.cc',
         'test/run_all_unittests.cc',
       ],

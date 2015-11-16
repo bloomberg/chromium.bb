@@ -21,7 +21,7 @@ class MaterialDesignControllerTest : public testing::Test {
   ~MaterialDesignControllerTest() override;
 
   // testing::Test:
-  void TearDown() override;
+  void SetUp() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MaterialDesignControllerTest);
@@ -33,10 +33,14 @@ MaterialDesignControllerTest::MaterialDesignControllerTest() {
 MaterialDesignControllerTest::~MaterialDesignControllerTest() {
 }
 
-void MaterialDesignControllerTest::TearDown() {
-  testing::Test::TearDown();
+void MaterialDesignControllerTest::SetUp() {
+  testing::Test::SetUp();
 
-  // Ensure other tests aren't polluted by a Mode set in these tests.
+  // Ensure other tests aren't polluted by a Mode set in these tests. The Mode
+  // has to be cleared in SetUp and not in TearDown because when the test suite
+  // starts up it triggers a call to ResourceBundle::LoadCommonResources()
+  // which calls MaterialDesignController::IsModeMaterial(), thereby
+  // initializing the mode and potentially causing the first test to fail.
   test::MaterialDesignControllerTestAPI::UninitializeMode();
 }
 

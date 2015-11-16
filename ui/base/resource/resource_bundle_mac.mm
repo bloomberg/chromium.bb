@@ -14,6 +14,7 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/synchronization/lock.h"
+#include "ui/base/resource/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_handle.h"
 #include "ui/gfx/image/image.h"
 
@@ -48,6 +49,20 @@ base::FilePath GetResourcesPakFilePath(NSString* name, NSString* mac_locale) {
 }  // namespace
 
 void ResourceBundle::LoadCommonResources() {
+  // The material design data packs contain some of the same asset IDs as in
+  // the non-material design data packs. Add these to the ResourceBundle
+  // first so that they are searched first when a request for an asset is
+  // made.
+  if (MaterialDesignController::IsModeMaterial()) {
+    AddMaterialDesignDataPackFromPath(
+        GetResourcesPakFilePath(@"chrome_material_100_percent", nil),
+        SCALE_FACTOR_100P);
+
+    AddOptionalMaterialDesignDataPackFromPath(
+        GetResourcesPakFilePath(@"chrome_material_200_percent", nil),
+        SCALE_FACTOR_200P);
+  }
+
   AddDataPackFromPath(GetResourcesPakFilePath(@"chrome_100_percent",
                         nil), SCALE_FACTOR_100P);
 
@@ -111,6 +126,8 @@ gfx::Image& ResourceBundle::GetNativeImageNamed(int resource_id, ImageRTL rtl) {
   if (delegate_)
     image = delegate_->GetNativeImageNamed(resource_id, rtl);
 
+  bool found_in_a_material_design_pack = false;
+
   if (image.IsEmpty()) {
     base::scoped_nsobject<NSImage> ns_image;
     for (size_t i = 0; i < data_packs_.size(); ++i) {
@@ -118,6 +135,18 @@ gfx::Image& ResourceBundle::GetNativeImageNamed(int resource_id, ImageRTL rtl) {
           data_packs_[i]->GetStaticMemory(resource_id));
       if (!data.get())
         continue;
+
+      // This loop adds the image resource from each available pack, if it's
+      // present. When Material Design packs are available, however, their
+      // images are meant to override the same image in the standard packs. The
+      // Material Design packs exist at the start of the data_packs_ vector,
+      // so make a note that the image was pulled from a Material Design pack,
+      // and ignore the same image in the standard packs.
+      if (found_in_a_material_design_pack) {
+        break;
+      }
+      found_in_a_material_design_pack =
+          data_packs_[i]->HasOnlyMaterialDesignAssets();
 
       base::scoped_nsobject<NSData> ns_data(
           [[NSData alloc] initWithBytes:data->front() length:data->size()]);
