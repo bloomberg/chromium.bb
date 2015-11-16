@@ -7,7 +7,7 @@
 #include <sstream>
 #include <string>
 
-#include "base/base64.h"
+#include "base/base64url.h"
 #include "base/bind.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/message_loop/message_loop.h"
@@ -36,14 +36,6 @@ const char kValidEncryptionKeyHeader[] =
     "keyid=foo;dh=BL_UGhfudEkXMUd4U4-D4nP5KHxKjQHsW6j88ybbehXM7fqi1OMFefDUEi0eJ"
     "vsKfyVBWYkQjH-lSPJKxjAyslg";
 const char kInvalidEncryptionKeyHeader[] = "keyid";
-
-// TODO(peter): Unify the Base64Url implementations. https://crbug.com/536745.
-void Base64UrlEncode(const std::string& decoded_input,
-                     std::string* encoded_output) {
-  base::Base64Encode(decoded_input, encoded_output);
-  base::ReplaceChars(*encoded_output, "+", "-", encoded_output);
-  base::ReplaceChars(*encoded_output, "/", "_", encoded_output);
-}
 
 }  // namespace
 
@@ -293,8 +285,11 @@ TEST_F(GCMEncryptionProviderTest, EncryptionRoundTrip) {
   std::string encoded_salt, encoded_key;
 
   // Compile the incoming GCM message, including the required headers.
-  Base64UrlEncode(salt, &encoded_salt);
-  Base64UrlEncode(server_pair.public_key(), &encoded_key);
+  base::Base64UrlEncode(
+      salt, base::Base64UrlEncodePolicy::INCLUDE_PADDING, &encoded_salt);
+  base::Base64UrlEncode(
+      server_pair.public_key(), base::Base64UrlEncodePolicy::INCLUDE_PADDING,
+      &encoded_key);
 
   std::stringstream encryption_header;
   encryption_header << "rs=" << base::SizeTToString(record_size) << ";";

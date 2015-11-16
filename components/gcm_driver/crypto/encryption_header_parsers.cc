@@ -4,8 +4,7 @@
 
 #include "components/gcm_driver/crypto/encryption_header_parsers.h"
 
-#include "base/base64.h"
-#include "base/numerics/safe_math.h"
+#include "base/base64url.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
@@ -19,29 +18,6 @@ namespace {
 // https://tools.ietf.org/html/draft-thomson-http-encryption-01.
 const uint64_t kDefaultRecordSizeBytes = 4096;
 
-// TODO(peter): Unify the base64url implementations. https://crbug.com/536745
-bool Base64URLDecode(const base::StringPiece& input, std::string* output) {
-  // Bail on malformed strings, which already contain a '+' or a '/'. All valid
-  // strings should escape these special characters as '-' and '_',
-  // respectively.
-  if (input.find_first_of("+/") != std::string::npos)
-    return false;
-
-  base::CheckedNumeric<size_t> checked_padded_size = input.size();
-  if (input.size() % 4)
-    checked_padded_size += 4 - (input.size() % 4);
-
-  // Add padding to |input|.
-  std::string padded_input(input.begin(), input.end());
-  padded_input.resize(checked_padded_size.ValueOrDie(), '=');
-
-  // Convert to standard base64 alphabet.
-  base::ReplaceChars(padded_input, "-", "+", &padded_input);
-  base::ReplaceChars(padded_input, "_", "/", &padded_input);
-
-  return base::Base64Decode(padded_input, output);
-}
-
 // Decodes the string between |begin| and |end| using base64url, and writes the
 // decoded value to |*salt|. Returns whether the string could be decoded.
 bool ValueToDecodedString(const std::string::const_iterator& begin,
@@ -51,7 +27,8 @@ bool ValueToDecodedString(const std::string::const_iterator& begin,
   if (value.empty())
     return false;
 
-  return Base64URLDecode(value, salt);
+  return base::Base64UrlDecode(
+      value, base::Base64UrlDecodePolicy::IGNORE_PADDING, salt);
 }
 
 // Parses the record size between |begin| and |end|, and writes the value to
