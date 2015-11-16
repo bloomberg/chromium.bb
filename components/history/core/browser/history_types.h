@@ -452,6 +452,9 @@ class MostVisitedThumbnails
 // Map from host to visit count, sorted by visit count descending.
 typedef std::vector<std::pair<std::string, int>> TopHostsList;
 
+// Map from origins to a count of matching URLs.
+typedef std::map<GURL, int> OriginCountMap;
+
 // Statistics -----------------------------------------------------------------
 
 // HistoryCountResult encapsulates the result of a call to

@@ -19,9 +19,11 @@
 #include "chrome/browser/engagement/site_engagement_eviction_policy.h"
 #include "chrome/browser/engagement/site_engagement_helper.h"
 #include "chrome/browser/engagement/site_engagement_service_factory.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
+#include "components/history/core/browser/history_service.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/browser_thread.h"
 #include "url/gurl.h"
@@ -292,25 +294,6 @@ bool SiteEngagementService::IsEnabled() {
   return base::StartsWith(group_name, "Enabled", base::CompareCase::SENSITIVE);
 }
 
-// static
-void SiteEngagementService::ClearHistoryForURLs(Profile* profile,
-                                                const std::set<GURL>& origins) {
-  HostContentSettingsMap* settings_map =
-      HostContentSettingsMapFactory::GetForProfile(profile);
-
-  for (const GURL& origin_url : origins) {
-    ContentSettingsPattern pattern(
-        ContentSettingsPattern::FromURLNoWildcard(origin_url));
-    if (!pattern.IsValid())
-      continue;
-
-    settings_map->SetWebsiteSetting(pattern, ContentSettingsPattern::Wildcard(),
-                                    CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT,
-                                    std::string(), nullptr);
-  }
-  settings_map->FlushLossyWebsiteSettings();
-}
-
 SiteEngagementService::SiteEngagementService(Profile* profile)
     : SiteEngagementService(profile, make_scoped_ptr(new base::DefaultClock)) {
   content::BrowserThread::PostAfterStartupTask(
@@ -326,6 +309,10 @@ SiteEngagementService::SiteEngagementService(Profile* profile)
 }
 
 SiteEngagementService::~SiteEngagementService() {
+  history::HistoryService* history = HistoryServiceFactory::GetForProfile(
+      profile_, ServiceAccessType::IMPLICIT_ACCESS);
+  if (history)
+    history->RemoveObserver(this);
 }
 
 void SiteEngagementService::HandleNavigation(const GURL& url,
@@ -355,6 +342,23 @@ void SiteEngagementService::HandleMediaPlaying(const GURL& url,
                      ? SiteEngagementScore::g_hidden_media_playing_points
                      : SiteEngagementScore::g_visible_media_playing_points);
   RecordMetrics();
+}
+
+void SiteEngagementService::OnURLsDeleted(
+    history::HistoryService* history_service,
+    bool all_history,
+    bool expired,
+    const history::URLRows& deleted_rows,
+    const std::set<GURL>& favicon_urls) {
+  std::set<GURL> origins;
+  for (const history::URLRow& row : deleted_rows)
+    origins.insert(row.url().GetOrigin());
+
+  history::HistoryService* hs = HistoryServiceFactory::GetForProfile(
+      profile_, ServiceAccessType::EXPLICIT_ACCESS);
+  hs->GetCountsForOrigins(
+      origins, base::Bind(&SiteEngagementService::GetCountsForOriginsComplete,
+                          weak_factory_.GetWeakPtr()));
 }
 
 double SiteEngagementService::GetScore(const GURL& url) {
@@ -400,7 +404,13 @@ std::map<GURL, double> SiteEngagementService::GetScoreMap() {
 
 SiteEngagementService::SiteEngagementService(Profile* profile,
                                              scoped_ptr<base::Clock> clock)
-    : profile_(profile), clock_(clock.Pass()), weak_factory_(this) {}
+    : profile_(profile), clock_(clock.Pass()), weak_factory_(this) {
+  // May be null in tests.
+  history::HistoryService* history = HistoryServiceFactory::GetForProfile(
+      profile, ServiceAccessType::IMPLICIT_ACCESS);
+  if (history)
+    history->AddObserver(this);
+}
 
 void SiteEngagementService::AddPoints(const GURL& url, double points) {
   HostContentSettingsMap* settings_map =
@@ -536,4 +546,23 @@ int SiteEngagementService::OriginsWithMaxEngagement(
       ++total_origins;
 
   return total_origins;
+}
+
+void SiteEngagementService::GetCountsForOriginsComplete(
+    const history::OriginCountMap& origin_counts) {
+  HostContentSettingsMap* settings_map =
+      HostContentSettingsMapFactory::GetForProfile(profile_);
+  for (const auto& origin_to_count : origin_counts) {
+    if (origin_to_count.second != 0)
+      continue;
+
+    ContentSettingsPattern pattern(
+        ContentSettingsPattern::FromURLNoWildcard(origin_to_count.first));
+    if (!pattern.IsValid())
+      continue;
+
+    settings_map->SetWebsiteSetting(pattern, ContentSettingsPattern::Wildcard(),
+                                    CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT,
+                                    std::string(), nullptr);
+  }
 }

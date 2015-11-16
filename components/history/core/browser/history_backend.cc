@@ -424,6 +424,29 @@ TopHostsList HistoryBackend::TopHosts(int num_hosts) const {
   return top_hosts;
 }
 
+OriginCountMap HistoryBackend::GetCountsForOrigins(
+    const std::set<GURL>& origins) const {
+  if (!db_)
+    return OriginCountMap();
+
+  URLDatabase::URLEnumerator it;
+  if (!db_->InitURLEnumeratorForEverything(&it))
+    return OriginCountMap();
+
+  OriginCountMap origin_count_map;
+  for (const GURL& origin : origins)
+    origin_count_map[origin] = 0;
+
+  URLRow row;
+  while (it.GetNextURL(&row)) {
+    GURL origin = row.url().GetOrigin();
+    if (ContainsValue(origins, origin))
+      ++origin_count_map[origin];
+  }
+
+  return origin_count_map;
+}
+
 int HistoryBackend::HostRankIfAvailable(const GURL& url) const {
   auto it = host_ranks_.find(HostForTopHosts(url));
   return it != host_ranks_.end() ? it->second : kMaxTopHosts;

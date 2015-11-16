@@ -581,11 +581,14 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
   }
 #endif
 
+  if (remove_mask & REMOVE_SITE_USAGE_DATA) {
+    HostContentSettingsMapFactory::GetForProfile(profile_)
+        ->ClearSettingsForOneType(CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT);
+  }
+
   if (remove_mask & REMOVE_SITE_USAGE_DATA || remove_mask & REMOVE_HISTORY) {
     HostContentSettingsMapFactory::GetForProfile(profile_)
         ->ClearSettingsForOneType(CONTENT_SETTINGS_TYPE_APP_BANNER);
-    HostContentSettingsMapFactory::GetForProfile(profile_)
-        ->ClearSettingsForOneType(CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT);
   }
 
   if (remove_mask & REMOVE_PASSWORDS) {

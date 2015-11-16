@@ -367,6 +367,17 @@ void HistoryService::TopHosts(int num_hosts,
       callback);
 }
 
+void HistoryService::GetCountsForOrigins(
+    const std::set<GURL>& origins,
+    const GetCountsForOriginsCallback& callback) const {
+  DCHECK(thread_) << "History service being called after cleanup";
+  DCHECK(thread_checker_.CalledOnValidThread());
+  PostTaskAndReplyWithResult(thread_->task_runner().get(), FROM_HERE,
+                             base::Bind(&HistoryBackend::GetCountsForOrigins,
+                                        history_backend_.get(), origins),
+                             callback);
+}
+
 void HistoryService::HostRankIfAvailable(
     const GURL& url,
     const base::Callback<void(int)>& callback) const {

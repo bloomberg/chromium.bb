@@ -685,10 +685,8 @@ void BrowsingHistoryHandler::HandleRemoveVisits(const base::ListValue* args) {
   }
 #endif
 
-  for (const history::ExpireHistoryArgs& expire_entry : expire_list) {
+  for (const history::ExpireHistoryArgs& expire_entry : expire_list)
     AppBannerSettingsHelper::ClearHistoryForURLs(profile, expire_entry.urls);
-    SiteEngagementService::ClearHistoryForURLs(profile, expire_entry.urls);
-  }
 }
 
 void BrowsingHistoryHandler::HandleClearBrowsingData(

@@ -3316,6 +3316,35 @@ TEST_F(HistoryBackendTest, RecordTopHostsMetrics) {
               ElementsAre(base::Bucket(1, 1), base::Bucket(51, 1)));
 }
 
+TEST_F(HistoryBackendTest, GetCountsForOrigins) {
+  std::vector<GURL> urls;
+  urls.push_back(GURL("http://cnn.com/us"));
+  urls.push_back(GURL("http://cnn.com/intl"));
+  urls.push_back(GURL("https://cnn.com/intl"));
+  urls.push_back(GURL("http://cnn.com:8080/path"));
+  urls.push_back(GURL("http://dogtopia.com/pups?q=poods"));
+  for (const GURL& url : urls) {
+    backend_->AddPageVisit(url, base::Time::Now(), 0, ui::PAGE_TRANSITION_LINK,
+                           history::SOURCE_BROWSED);
+  }
+
+  std::set<GURL> origins;
+  origins.insert(GURL("http://cnn.com/"));
+  EXPECT_THAT(backend_->GetCountsForOrigins(origins),
+              ElementsAre(std::make_pair(GURL("http://cnn.com/"), 2)));
+
+  origins.insert(GURL("http://dogtopia.com/"));
+  origins.insert(GURL("http://cnn.com:8080/"));
+  origins.insert(GURL("https://cnn.com/"));
+  origins.insert(GURL("http://notpresent.com/"));
+  EXPECT_THAT(backend_->GetCountsForOrigins(origins),
+              ElementsAre(std::make_pair(GURL("http://cnn.com/"), 2),
+                          std::make_pair(GURL("http://cnn.com:8080/"), 1),
+                          std::make_pair(GURL("http://dogtopia.com/"), 1),
+                          std::make_pair(GURL("http://notpresent.com/"), 0),
+                          std::make_pair(GURL("https://cnn.com/"), 1)));
+}
+
 TEST_F(HistoryBackendTest, UpdateVisitDuration) {
   // This unit test will test adding and deleting visit details information.
   ASSERT_TRUE(backend_.get());

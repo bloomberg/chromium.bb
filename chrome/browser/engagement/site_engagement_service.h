@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "chrome/browser/engagement/site_engagement_metrics.h"
+#include "components/history/core/browser/history_service_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "ui/base/page_transition_types.h"
 
@@ -129,6 +130,7 @@ class SiteEngagementScoreProvider {
 // such as rejecting permission prompts or not responding to notifications, will
 // decrease the site engagement score.
 class SiteEngagementService : public KeyedService,
+                              public history::HistoryServiceObserver,
                               public SiteEngagementScoreProvider {
  public:
   // The name of the site engagement variation field trial.
@@ -138,10 +140,6 @@ class SiteEngagementService : public KeyedService,
 
   // Returns whether or not the SiteEngagementService is enabled.
   static bool IsEnabled();
-
-  // Clears engagement scores for the given origins.
-  static void ClearHistoryForURLs(Profile* profile,
-                                  const std::set<GURL>& origins);
 
   explicit SiteEngagementService(Profile* profile);
   ~SiteEngagementService() override;
@@ -162,6 +160,13 @@ class SiteEngagementService : public KeyedService,
   // tab.
   void HandleMediaPlaying(const GURL& url, bool is_hidden);
 
+  // Overridden from history::HistoryServiceObserver:
+  void OnURLsDeleted(history::HistoryService* history_service,
+                     bool all_history,
+                     bool expired,
+                     const history::URLRows& deleted_rows,
+                     const std::set<GURL>& favicon_urls) override;
+
   // Overridden from SiteEngagementScoreProvider:
   double GetScore(const GURL& url) override;
   double GetTotalEngagementPoints() override;
@@ -173,6 +178,8 @@ class SiteEngagementService : public KeyedService,
   FRIEND_TEST_ALL_PREFIXES(SiteEngagementServiceTest, GetMedianEngagement);
   FRIEND_TEST_ALL_PREFIXES(SiteEngagementServiceTest, GetTotalNavigationPoints);
   FRIEND_TEST_ALL_PREFIXES(SiteEngagementServiceTest, GetTotalUserInputPoints);
+  FRIEND_TEST_ALL_PREFIXES(SiteEngagementServiceTest,
+                           CleanupOriginsOnHistoryDeletion);
 
   // Only used in tests.
   SiteEngagementService(Profile* profile, scoped_ptr<base::Clock> clock);
@@ -194,6 +201,9 @@ class SiteEngagementService : public KeyedService,
   // respectively.
   int OriginsWithMaxDailyEngagement();
   int OriginsWithMaxEngagement(std::map<GURL, double>& score_map);
+
+  void GetCountsForOriginsComplete(
+      const history::OriginCountMap& origin_counts);
 
   Profile* profile_;
 

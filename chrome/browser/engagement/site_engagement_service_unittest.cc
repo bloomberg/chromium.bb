@@ -3,20 +3,30 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "base/run_loop.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/simple_test_clock.h"
 #include "base/values.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/engagement/site_engagement_helper.h"
 #include "chrome/browser/engagement/site_engagement_metrics.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/engagement/site_engagement_service_factory.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
+#include "components/content_settings/core/browser/content_settings_observer.h"
+#include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/history/core/browser/history_database_params.h"
+#include "components/history/core/browser/history_service.h"
+#include "components/history/core/test/test_history_database.h"
 #include "content/public/browser/page_navigator.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
+
+base::FilePath g_temp_history_dir;
 
 const int kLessAccumulationsThanNeededToMaxDailyEngagement = 2;
 const int kMoreAccumulationsThanNeededToMaxDailyEngagement = 40;
@@ -25,6 +35,37 @@ const int kLessDaysThanNeededToMaxTotalEngagement = 4;
 const int kMoreDaysThanNeededToMaxTotalEngagement = 40;
 const int kLessPeriodsThanNeededToDecayMaxScore = 2;
 const int kMorePeriodsThanNeededToDecayMaxScore = 40;
+
+// Waits until a change is observed in site engagement content settings.
+class SiteEngagementChangeWaiter : public content_settings::Observer {
+ public:
+  explicit SiteEngagementChangeWaiter(Profile* profile) : profile_(profile) {
+    HostContentSettingsMapFactory::GetForProfile(profile)->AddObserver(this);
+  }
+  ~SiteEngagementChangeWaiter() override {
+    HostContentSettingsMapFactory::GetForProfile(profile_)
+        ->RemoveObserver(this);
+  }
+
+  // Overridden from content_settings::Observer:
+  void OnContentSettingChanged(const ContentSettingsPattern& primary_pattern,
+                               const ContentSettingsPattern& secondary_pattern,
+                               ContentSettingsType content_type,
+                               std::string resource_identifier) override {
+    if (content_type == CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT)
+      Proceed();
+  }
+
+  void Wait() { run_loop_.Run(); }
+
+ private:
+  void Proceed() { run_loop_.Quit(); }
+
+  Profile* profile_;
+  base::RunLoop run_loop_;
+
+  DISALLOW_COPY_AND_ASSIGN(SiteEngagementChangeWaiter);
+};
 
 base::Time GetReferenceTime() {
   base::Time::Exploded exploded_reference_time;
@@ -38,6 +79,14 @@ base::Time GetReferenceTime() {
   exploded_reference_time.millisecond = 0;
 
   return base::Time::FromLocalExploded(exploded_reference_time);
+}
+
+scoped_ptr<KeyedService> BuildTestHistoryService(
+    content::BrowserContext* context) {
+  scoped_ptr<history::HistoryService> service(new history::HistoryService());
+  service->Init(std::string(),
+                history::TestHistoryDatabaseParamsForPath(g_temp_history_dir));
+  return service.Pass();
 }
 
 }  // namespace
@@ -313,13 +362,16 @@ TEST_F(SiteEngagementScoreTest, PopulatedDictionary) {
   TestScoreInitializesAndUpdates(&dict, 1, 2, GetReferenceTime());
 }
 
-
 class SiteEngagementServiceTest : public BrowserWithTestWindowTest {
  public:
   SiteEngagementServiceTest() {}
 
   void SetUp() override {
     BrowserWithTestWindowTest::SetUp();
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+    g_temp_history_dir = temp_dir_.path();
+    HistoryServiceFactory::GetInstance()->SetTestingFactory(
+        profile(), &BuildTestHistoryService);
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kEnableSiteEngagementService);
   }
@@ -351,12 +403,15 @@ class SiteEngagementServiceTest : public BrowserWithTestWindowTest {
     CommitPendingLoad(controller);
     EXPECT_EQ(prev_score, service->GetScore(url));
   }
+
+ private:
+  base::ScopedTempDir temp_dir_;
 };
 
 TEST_F(SiteEngagementServiceTest, GetMedianEngagement) {
   SiteEngagementService* service =
       SiteEngagementServiceFactory::GetForProfile(profile());
-  DCHECK(service);
+  ASSERT_TRUE(service);
 
   GURL url1("http://www.google.com/");
   GURL url2("https://www.google.com/");
@@ -423,7 +478,7 @@ TEST_F(SiteEngagementServiceTest, GetMedianEngagement) {
 TEST_F(SiteEngagementServiceTest, ScoreIncrementsOnPageRequest) {
   SiteEngagementService* service =
       SiteEngagementServiceFactory::GetForProfile(profile());
-  DCHECK(service);
+  ASSERT_TRUE(service);
 
   GURL url("http://www.google.com/");
   EXPECT_EQ(0, service->GetScore(url));
@@ -441,7 +496,7 @@ TEST_F(SiteEngagementServiceTest, ScoreIncrementsOnPageRequest) {
 TEST_F(SiteEngagementServiceTest, GetTotalNavigationPoints) {
   SiteEngagementService* service =
       SiteEngagementServiceFactory::GetForProfile(profile());
-  DCHECK(service);
+  ASSERT_TRUE(service);
 
   // The https and http versions of www.google.com should be separate.
   GURL url1("https://www.google.com/");
@@ -478,7 +533,7 @@ TEST_F(SiteEngagementServiceTest, GetTotalNavigationPoints) {
 TEST_F(SiteEngagementServiceTest, GetTotalUserInputPoints) {
   SiteEngagementService* service =
       SiteEngagementServiceFactory::GetForProfile(profile());
-  DCHECK(service);
+  ASSERT_TRUE(service);
 
   // The https and http versions of www.google.com should be separate.
   GURL url1("https://www.google.com/");
@@ -768,52 +823,13 @@ TEST_F(SiteEngagementServiceTest, CleanupEngagementScores) {
   }
 }
 
-// Expect that history can be cleared for given origins.
-TEST_F(SiteEngagementServiceTest, ClearHistoryForURLs) {
-  SiteEngagementService* service =
-      SiteEngagementServiceFactory::GetForProfile(profile());
-
-  GURL url1("https://www.google.com/");
-  GURL url2("http://www.google.com/");
-  GURL url3("http://www.example.com/");
-
-  EXPECT_EQ(0u, service->GetScoreMap().size());
-
-  service->AddPoints(url1, 5.0);
-  EXPECT_EQ(5.0, service->GetScore(url1));
-  service->AddPoints(url2, 5.0);
-  EXPECT_EQ(5.0, service->GetScore(url2));
-  service->AddPoints(url3, 5.0);
-  EXPECT_EQ(5.0, service->GetScore(url3));
-  EXPECT_EQ(3u, service->GetScoreMap().size());
-
-  // Delete 2 of the origins, leaving one left.
-  std::set<GURL> origins_to_clear;
-  origins_to_clear.insert(url1);
-  origins_to_clear.insert(url3);
-
-  SiteEngagementService::ClearHistoryForURLs(profile(), origins_to_clear);
-
-  std::map<GURL, double> score_map = service->GetScoreMap();
-  EXPECT_EQ(1u, score_map.size());
-  EXPECT_DOUBLE_EQ(5.0, score_map[url2]);
-
-  // Ensure nothing bad happens when URLs in the clear list are not in the site
-  // engagement service.
-  SiteEngagementService::ClearHistoryForURLs(profile(), origins_to_clear);
-
-  score_map = service->GetScoreMap();
-  EXPECT_EQ(1u, score_map.size());
-  EXPECT_DOUBLE_EQ(5.0, score_map[url2]);
-}
-
 TEST_F(SiteEngagementServiceTest, NavigationAccumulation) {
   AddTab(browser(), GURL("about:blank"));
   GURL url("https://www.google.com/");
 
   SiteEngagementService* service =
     SiteEngagementServiceFactory::GetForProfile(browser()->profile());
-  DCHECK(service);
+  ASSERT_TRUE(service);
 
   // Only direct navigation should trigger engagement.
   NavigateWithTransitionAndExpectHigherScore(service, url,
@@ -834,4 +850,79 @@ TEST_F(SiteEngagementServiceTest, NavigationAccumulation) {
                                             ui::PAGE_TRANSITION_RELOAD);
   NavigateWithTransitionAndExpectEqualScore(service, url,
                                             ui::PAGE_TRANSITION_FORM_SUBMIT);
+}
+
+TEST_F(SiteEngagementServiceTest, CleanupOriginsOnHistoryDeletion) {
+  SiteEngagementService* engagement =
+      SiteEngagementServiceFactory::GetForProfile(profile());
+  ASSERT_TRUE(engagement);
+
+  GURL origin1("http://www.google.com/");
+  GURL origin1a("http://www.google.com/search?q=asdf");
+  GURL origin2("https://drive.google.com/");
+  GURL origin2a("https://drive.google.com/somedoc");
+  GURL origin3("http://notdeleted.com/");
+
+  base::Time today = GetReferenceTime();
+  base::Time yesterday = GetReferenceTime() - base::TimeDelta::FromDays(1);
+  base::Time yesterday_afternoon = GetReferenceTime() -
+                                   base::TimeDelta::FromDays(1) +
+                                   base::TimeDelta::FromHours(4);
+
+  history::HistoryService* history = HistoryServiceFactory::GetForProfile(
+      profile(), ServiceAccessType::IMPLICIT_ACCESS);
+
+  history->AddPage(origin1, yesterday_afternoon, history::SOURCE_BROWSED);
+  history->AddPage(origin1a, today, history::SOURCE_BROWSED);
+  engagement->AddPoints(origin1, 5.0);
+
+  history->AddPage(origin2, yesterday_afternoon, history::SOURCE_BROWSED);
+  history->AddPage(origin2a, yesterday_afternoon, history::SOURCE_BROWSED);
+  engagement->AddPoints(origin2, 5.0);
+
+  history->AddPage(origin3, today, history::SOURCE_BROWSED);
+  engagement->AddPoints(origin3, 5.0);
+
+  EXPECT_EQ(5.0, engagement->GetScore(origin1));
+  EXPECT_EQ(5.0, engagement->GetScore(origin2));
+  EXPECT_EQ(5.0, engagement->GetScore(origin3));
+
+  {
+    SiteEngagementChangeWaiter waiter(profile());
+
+    base::CancelableTaskTracker task_tracker;
+    // Expire origin1, origin2 and origin2a.
+    history->ExpireHistoryBetween(std::set<GURL>(), yesterday, today,
+                                  base::Bind(&base::DoNothing), &task_tracker);
+    waiter.Wait();
+
+    // origin2 is cleaned up because all its urls are deleted. origin1a is still
+    // in history, maintaining origin1's score. origin3 is untouched.
+    EXPECT_EQ(5.0, engagement->GetScore(origin1));
+    EXPECT_EQ(0, engagement->GetScore(origin2));
+    EXPECT_EQ(5.0, engagement->GetScore(origin3));
+    EXPECT_EQ(10.0, engagement->GetTotalEngagementPoints());
+  }
+
+  {
+    SiteEngagementChangeWaiter waiter(profile());
+
+    // Expire origin1a.
+    std::vector<history::ExpireHistoryArgs> expire_list;
+    history::ExpireHistoryArgs args;
+    args.urls.insert(origin1a);
+    args.SetTimeRangeForOneDay(today);
+    expire_list.push_back(args);
+
+    base::CancelableTaskTracker task_tracker;
+    history->ExpireHistory(expire_list, base::Bind(&base::DoNothing),
+                           &task_tracker);
+    waiter.Wait();
+
+    // Only origin3 remains.
+    EXPECT_EQ(0, engagement->GetScore(origin1));
+    EXPECT_EQ(0, engagement->GetScore(origin2));
+    EXPECT_EQ(5.0, engagement->GetScore(origin3));
+    EXPECT_EQ(5.0, engagement->GetTotalEngagementPoints());
+  }
 }
