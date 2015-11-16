@@ -45,8 +45,9 @@ the wayland-devel@lists.freedesktop.org mailing list using
 'PATCH wayland-protocols' depending on what state the protocol is in.
 
 To propose changes to existing protocols, create a patch with the
-changes and send it using 'git send-email' with a subject prefix
-describe above.
+changes and send it to the list mentioned above while also CC:ing the
+maintainers mentioned in the README file. Use the same rule for adding a
+subject prefix as above and method for sending the patch.
 
 If the changes are backward incompatible changes to an unstable protocol,
 see <<Unstable protocol changes>>.
