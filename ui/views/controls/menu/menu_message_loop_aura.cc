@@ -145,7 +145,7 @@ void MenuMessageLoopAura::Run(MenuController* controller,
     message_loop_quit_ = run_loop.QuitClosure();
     run_loop.Run();
   } else {
-    base::MessageLoopForUI* loop = base::MessageLoopForUI::current();
+    base::MessageLoop* loop = base::MessageLoop::current();
     base::MessageLoop::ScopedNestableTaskAllower allow(loop);
     base::RunLoop run_loop(&nested_dispatcher);
     message_loop_quit_ = run_loop.QuitClosure();
@@ -165,7 +165,7 @@ void MenuMessageLoopAura::Run(MenuController* controller,
     menu_event_filter.reset(new MenuKeyEventHandler);
   }
 
-  base::MessageLoopForUI* loop = base::MessageLoopForUI::current();
+  base::MessageLoop* loop = base::MessageLoop::current();
   base::MessageLoop::ScopedNestableTaskAllower allow(loop);
   base::RunLoop run_loop;
   message_loop_quit_ = run_loop.QuitClosure();
