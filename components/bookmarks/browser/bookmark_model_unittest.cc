@@ -39,6 +39,8 @@ namespace {
 
 // Test cases used to test the removal of extra whitespace when adding
 // a new folder/bookmark or updating a title of a folder/bookmark.
+// Note that whitespace characters are all replaced with spaces, but spaces are
+// not collapsed or trimmed.
 static struct {
   const std::string input_title;
   const std::string expected_title;
@@ -46,24 +48,24 @@ static struct {
   {"foobar", "foobar"},
   // Newlines.
   {"foo\nbar", "foo bar"},
-  {"foo\n\nbar", "foo bar"},
-  {"foo\n\n\nbar", "foo bar"},
-  {"foo\r\nbar", "foo bar"},
-  {"foo\r\n\r\nbar", "foo bar"},
-  {"\nfoo\nbar\n", "foo bar"},
-  // Spaces.
-  {"foo  bar", "foo bar"},
-  {" foo bar ", "foo bar"},
-  {"  foo  bar  ", "foo bar"},
+  {"foo\n\nbar", "foo  bar"},
+  {"foo\n\n\nbar", "foo   bar"},
+  {"foo\r\nbar", "foo  bar"},
+  {"foo\r\n\r\nbar", "foo    bar"},
+  {"\nfoo\nbar\n", " foo bar "},
+  // Spaces should not collapse.
+  {"foo  bar", "foo  bar"},
+  {" foo bar ", " foo bar "},
+  {"  foo  bar  ", "  foo  bar  "},
   // Tabs.
-  {"\tfoo\tbar\t", "foo bar"},
-  {"\tfoo bar\t", "foo bar"},
+  {"\tfoo\tbar\t", " foo bar "},
+  {"\tfoo bar\t", " foo bar "},
   // Mixed cases.
-  {"\tfoo\nbar\t", "foo bar"},
-  {"\tfoo\r\nbar\t", "foo bar"},
-  {"  foo\tbar\n", "foo bar"},
-  {"\t foo \t  bar  \t", "foo bar"},
-  {"\n foo\r\n\tbar\n \t", "foo bar"},
+  {"\tfoo\nbar\t", " foo bar "},
+  {"\tfoo\r\nbar\t", " foo  bar "},
+  {"  foo\tbar\n", "  foo bar "},
+  {"\t foo \t  bar  \t", "  foo    bar   "},
+  {"\n foo\r\n\tbar\n \t", "  foo   bar   "},
 };
 
 // Test cases used to test the removal of extra whitespace when adding

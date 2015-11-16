@@ -617,7 +617,7 @@ const BookmarkNode* BookmarkModel::AddURL(const BookmarkNode* parent,
   return AddURLWithCreationTimeAndMetaInfo(
       parent,
       index,
-      base::CollapseWhitespace(title, false),
+      title,
       url,
       Time::Now(),
       NULL);
