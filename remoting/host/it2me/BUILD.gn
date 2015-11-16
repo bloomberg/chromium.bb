@@ -27,7 +27,7 @@ source_set("common") {
   ]
 }
 
-if (!is_win && enable_remoting_host) {
+if (!is_win && !is_chromeos && enable_remoting_host) {
   executable("remote_assistance_host") {
     sources = [
       "it2me_native_messaging_host_entry_point.cc",

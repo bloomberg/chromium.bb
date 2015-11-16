@@ -101,6 +101,12 @@ if (enable_nacl && enable_nacl_untrusted && enable_pnacl) {
     ]
     args += shim_override_args
 
+    if (current_os == "chromeos") {
+      toolchain_os = "linux"
+    } else {
+      toolchain_os = current_os
+    }
+
     args += [
       "--target_arch",
       target_cpu,
@@ -109,7 +115,7 @@ if (enable_nacl && enable_nacl_untrusted && enable_pnacl) {
                   root_build_dir),
       "--pnacl_translator_path",
       rebase_path(
-          "//native_client/toolchain/${current_os}_x86/pnacl_translator",
+          "//native_client/toolchain/${toolchain_os}_x86/pnacl_translator",
           root_build_dir),
       "--package_version_path",
       rebase_path("//native_client/build/package_version/package_version.py",
