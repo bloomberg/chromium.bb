@@ -139,10 +139,14 @@ void OffscreenBrowserCompositorOutputSurface::SwapBuffers(
   // TODO(oshima): sync with the reflector's SwapBuffersComplete
   // (crbug.com/520567).
   // The original implementation had a flickering issue (crbug.com/515332).
-  uint32_t sync_point =
-      context_provider_->ContextGL()->InsertSyncPointCHROMIUM();
-  context_provider_->ContextSupport()->SignalSyncPoint(
-      sync_point, base::Bind(&OutputSurface::OnSwapBuffersComplete,
+  gpu::gles2::GLES2Interface* gl = context_provider_->ContextGL();
+  const GLuint64 fence_sync = gl->InsertFenceSyncCHROMIUM();
+  gl->ShallowFlushCHROMIUM();
+
+  gpu::SyncToken sync_token;
+  gl->GenUnverifiedSyncTokenCHROMIUM(fence_sync, sync_token.GetData());
+  context_provider_->ContextSupport()->SignalSyncToken(
+      sync_token, base::Bind(&OutputSurface::OnSwapBuffersComplete,
                              weak_ptr_factory_.GetWeakPtr()));
 }
 
