@@ -24,12 +24,6 @@ namespace crypto {
 class P224EncryptedKeyExchange;
 }
 
-namespace local_discovery {
-class PrivetHTTPClient;
-class PrivetJSONOperation;
-class PrivetURLFetcher;
-}
-
 namespace extensions {
 
 class PrivetV3ContextGetter;
@@ -74,6 +68,7 @@ class PrivetV3Session {
  private:
   friend class PrivetV3SessionTest;
   FRIEND_TEST_ALL_PREFIXES(PrivetV3SessionTest, Pairing);
+  FRIEND_TEST_ALL_PREFIXES(PrivetV3SessionTest, SendMessage);
 
   void OnInfoDone(const InitCallback& callback,
                   Result result,
@@ -97,18 +92,14 @@ class PrivetV3Session {
                         const MessageCallback& callback);
   void SwitchToHttps();
   GURL CreatePrivetURL(const std::string& path) const;
-  local_discovery::PrivetURLFetcher* CreateFetcher(
-      const std::string& api,
-      net::URLFetcher::RequestType request_type,
-      const MessageCallback& callback);
+  net::URLFetcher* CreateFetcher(const std::string& api,
+                                 net::URLFetcher::RequestType request_type,
+                                 const MessageCallback& callback);
   void DeleteFetcher(const FetcherDelegate* fetcher);
   void Cancel();
 
   // Endpoint for the current session.
   net::HostPortPair host_port_;
-
-  // Creates instances of PrivetURLFetcher.
-  scoped_ptr<local_discovery::PrivetHTTPClient> client_;
 
   // Provides context for client_.
   scoped_refptr<PrivetV3ContextGetter> context_getter_;

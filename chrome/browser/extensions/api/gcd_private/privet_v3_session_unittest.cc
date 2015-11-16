@@ -9,20 +9,16 @@
 #include "base/strings/stringprintf.h"
 #include "base/thread_task_runner_handle.h"
 #include "chrome/browser/extensions/api/gcd_private/privet_v3_context_getter.h"
-#include "chrome/browser/local_discovery/privet_http.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "crypto/hmac.h"
 #include "crypto/p224_spake.h"
+#include "net/http/http_response_headers.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-using local_discovery::PrivetHTTPClient;
-using local_discovery::PrivetJSONOperation;
-using local_discovery::PrivetURLFetcher;
 
 namespace extensions {
 
@@ -37,6 +33,7 @@ using testing::InvokeWithoutArgs;
 using testing::Return;
 using testing::SaveArg;
 using testing::StrictMock;
+using testing::WithArgs;
 
 using PairingType = PrivetV3Session::PairingType;
 using Result = PrivetV3Session::Result;
@@ -56,7 +53,9 @@ class PrivetV3SessionTest : public testing::Test {
  public:
   PrivetV3SessionTest()
       : thread_bundle_(content::TestBrowserThreadBundle::REAL_IO_THREAD),
-        fetcher_factory_(nullptr) {}
+        fetcher_factory_(nullptr,
+                         base::Bind(&PrivetV3SessionTest::CreateFakeURLFetcher,
+                                    base::Unretained(this))) {}
 
   void OnInitialized(Result result, const base::DictionaryValue& info) {
     info_.MergeDictionary(&info);
@@ -82,6 +81,21 @@ class PrivetV3SessionTest : public testing::Test {
 
     session_->on_post_data_ =
         base::Bind(&PrivetV3SessionTest::OnPostData, base::Unretained(this));
+  }
+
+  scoped_ptr<net::FakeURLFetcher> CreateFakeURLFetcher(
+      const GURL& url,
+      net::URLFetcherDelegate* fetcher_delegate,
+      const std::string& response_data,
+      net::HttpStatusCode response_code,
+      net::URLRequestStatus::Status status) {
+    scoped_ptr<net::FakeURLFetcher> fetcher(new net::FakeURLFetcher(
+        url, fetcher_delegate, response_data, response_code, status));
+    scoped_refptr<net::HttpResponseHeaders> headers =
+        new net::HttpResponseHeaders("");
+    headers->AddHeader("Content-Type: application/json");
+    fetcher->set_response_headers(headers);
+    return fetcher.Pass();
   }
 
   content::TestBrowserThreadBundle thread_bundle_;
@@ -303,7 +317,29 @@ TEST_F(PrivetV3SessionTest, Cancel) {
   base::RunLoop().RunUntilIdle();
 }
 
-// TODO(vitalybuka): replace PrivetHTTPClient with regular URL fetcher and
-// implement SendMessage test.
+TEST_F(PrivetV3SessionTest, SendMessage) {
+  session_->use_https_ = true;
+  session_->host_port_.set_port(1443);
+
+  const std::string id = "123123";
+
+  fetcher_factory_.SetFakeResponse(
+      GURL("https://host:1443/privet/v3/commands/status"),
+      "{\"id\":\"123123\"}", net::HTTP_OK, net::URLRequestStatus::SUCCESS);
+
+  EXPECT_CALL(*this, OnMessageSend(Result::STATUS_SUCCESS, _))
+      .WillOnce(WithArgs<1>(Invoke([id](const base::DictionaryValue& data) {
+        std::string reply_id;
+        EXPECT_TRUE(data.GetString("id", &reply_id));
+        EXPECT_EQ(id, reply_id);
+      })));
+
+  base::DictionaryValue input;
+  input.SetString("id", id);
+  session_->SendMessage(
+      "/privet/v3/commands/status", input,
+      base::Bind(&PrivetV3SessionTest::OnMessageSend, base::Unretained(this)));
+  base::RunLoop().RunUntilIdle();
+}
 
 }  // namespace extensions

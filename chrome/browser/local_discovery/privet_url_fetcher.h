@@ -46,9 +46,6 @@ class PrivetURLFetcher : public net::URLFetcherDelegate {
         PrivetURLFetcher* fetcher,
         const TokenCallback& callback);
 
-    // If this returns the empty string, will not send an auth token.
-    virtual std::string GetAuthToken();
-
     virtual void OnError(PrivetURLFetcher* fetcher, ErrorType error) = 0;
     virtual void OnParsedJson(PrivetURLFetcher* fetcher,
                               const base::DictionaryValue& value,
@@ -84,8 +81,6 @@ class PrivetURLFetcher : public net::URLFetcherDelegate {
   void DoNotRetryOnTransientError();
 
   void SendEmptyPrivetToken();
-
-  void V3Mode();
 
   // Set the contents of the Range header. |OnRawData| must return true if this
   // is called.
@@ -132,7 +127,6 @@ class PrivetURLFetcher : public net::URLFetcherDelegate {
   bool send_empty_privet_token_;
   bool has_byte_range_;
   bool make_response_file_;
-  bool v3_mode_;
 
   int byte_range_start_;
   int byte_range_end_;

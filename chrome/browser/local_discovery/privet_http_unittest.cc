@@ -1047,6 +1047,12 @@ class PrivetHttpWithServerTest : public ::testing::Test,
                                            context_getter_));
   }
 
+  void OnNeedPrivetToken(
+      PrivetURLFetcher* fetcher,
+      const PrivetURLFetcher::TokenCallback& callback) override {
+    callback.Run("abc");
+  }
+
   void OnError(PrivetURLFetcher* fetcher,
                PrivetURLFetcher::ErrorType error) override {
     done_ = true;
@@ -1085,7 +1091,6 @@ class PrivetHttpWithServerTest : public ::testing::Test,
         server_->GetURL("/simple.html"), net::URLFetcher::GET, this);
 
     fetcher->SetMaxRetries(1);
-    fetcher->V3Mode();
     fetcher->Start();
 
     run_loop.Run();

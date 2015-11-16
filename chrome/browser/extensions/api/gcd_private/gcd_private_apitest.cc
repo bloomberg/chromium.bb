@@ -8,6 +8,7 @@
 #include "chrome/browser/local_discovery/test_service_discovery_client.h"
 #include "chrome/common/chrome_switches.h"
 #include "extensions/common/switches.h"
+#include "net/http/http_response_headers.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 
 namespace api = extensions::api;
@@ -75,8 +76,11 @@ const uint8 kAnnouncePacket[] = {
 
 class GcdPrivateAPITest : public ExtensionApiTest {
  public:
-  GcdPrivateAPITest() : url_fetcher_factory_(&url_fetcher_impl_factory_) {
-  }
+  GcdPrivateAPITest()
+      : url_fetcher_factory_(
+            &url_fetcher_impl_factory_,
+            base::Bind(&GcdPrivateAPITest::CreateFakeURLFetcher,
+                       base::Unretained(this))) {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     ExtensionApiTest::SetUpCommandLine(command_line);
@@ -84,6 +88,21 @@ class GcdPrivateAPITest : public ExtensionApiTest {
         extensions::switches::kWhitelistedExtensionID,
         "ddchlicdkolnonkihahngkmmmjnjlkkf");
     command_line->AppendSwitch(switches::kEnablePrivetV3);
+  }
+
+  scoped_ptr<net::FakeURLFetcher> CreateFakeURLFetcher(
+      const GURL& url,
+      net::URLFetcherDelegate* fetcher_delegate,
+      const std::string& response_data,
+      net::HttpStatusCode response_code,
+      net::URLRequestStatus::Status status) {
+    scoped_ptr<net::FakeURLFetcher> fetcher(new net::FakeURLFetcher(
+        url, fetcher_delegate, response_data, response_code, status));
+    scoped_refptr<net::HttpResponseHeaders> headers =
+        new net::HttpResponseHeaders("");
+    headers->AddHeader("Content-Type: application/json");
+    fetcher->set_response_headers(headers);
+    return fetcher.Pass();
   }
 
  protected:
