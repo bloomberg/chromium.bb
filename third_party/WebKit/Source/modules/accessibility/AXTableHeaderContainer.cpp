@@ -69,6 +69,7 @@ bool AXTableHeaderContainer::computeAccessibilityIsIgnored(IgnoredReasons* ignor
 
 void AXTableHeaderContainer::addChildren()
 {
+    ASSERT(!isDetached());
     ASSERT(!m_haveChildren);
 
     m_haveChildren = true;

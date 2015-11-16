@@ -102,6 +102,7 @@ bool AXMenuListPopup::press() const
 
 void AXMenuListPopup::addChildren()
 {
+    ASSERT(!isDetached());
     if (!m_parent)
         return;
 

@@ -1226,7 +1226,7 @@ bool AXLayoutObject::ariaRoleHasPresentationalChildren() const
 AXObject* AXLayoutObject::ancestorForWhichThisIsAPresentationalChild() const
 {
     // Walk the parent chain looking for a parent that has presentational children
-    AXObject* parent = parentObject();
+    AXObject* parent = parentObjectIfExists();
     while (parent) {
         if (parent->ariaRoleHasPresentationalChildren())
             break;
@@ -1564,6 +1564,7 @@ AXObject* AXLayoutObject::elementAccessibilityHitTest(const IntPoint& point) con
 
 AXObject* AXLayoutObject::computeParent() const
 {
+    ASSERT(!isDetached());
     if (!m_layoutObject)
         return 0;
 
@@ -1677,6 +1678,7 @@ AXObject* AXLayoutObject::nextSibling() const
 
 void AXLayoutObject::addChildren()
 {
+    ASSERT(!isDetached());
     // If the need to add more children in addition to existing children arises,
     // childrenChanged should have been called, leaving the object with no children.
     ASSERT(!m_haveChildren);

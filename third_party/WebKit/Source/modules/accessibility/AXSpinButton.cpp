@@ -80,6 +80,7 @@ AccessibilityRole AXSpinButton::roleValue() const
 
 void AXSpinButton::addChildren()
 {
+    ASSERT(!isDetached());
     m_haveChildren = true;
 
     AXSpinButtonPart* incrementor = toAXSpinButtonPart(axObjectCache().getOrCreate(SpinButtonPartRole));

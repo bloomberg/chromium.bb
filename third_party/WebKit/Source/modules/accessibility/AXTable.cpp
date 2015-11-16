@@ -359,6 +359,7 @@ void AXTable::clearChildren()
 
 void AXTable::addChildren()
 {
+    ASSERT(!isDetached());
     if (!isAXTable()) {
         AXLayoutObject::addChildren();
         return;

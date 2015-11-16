@@ -81,6 +81,7 @@ bool AXARIAGrid::addTableRowChild(AXObject* child, HeapHashSet<Member<AXObject>>
 
 void AXARIAGrid::addChildren()
 {
+    ASSERT(!isDetached());
     ASSERT(!m_haveChildren);
 
     if (!isAXTable()) {

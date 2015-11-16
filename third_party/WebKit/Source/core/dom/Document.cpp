@@ -2237,6 +2237,18 @@ void Document::detach(const AttachContext& context)
     m_layoutView = nullptr;
     ContainerNode::detach(context);
 
+    if (this != &axObjectCacheOwner()) {
+        if (AXObjectCache* cache = existingAXObjectCache()) {
+            // Documents that are not a root document use the AXObjectCache in
+            // their root document. Node::removedFrom is called after the
+            // document has been detached so it can't find the root document.
+            // We do the removals here instead.
+            for (Node& node : NodeTraversal::descendantsOf(*this)) {
+                cache->remove(&node);
+            }
+        }
+    }
+
     styleEngine().didDetach();
 
     frameHost()->eventHandlerRegistry().documentDetached(*this);

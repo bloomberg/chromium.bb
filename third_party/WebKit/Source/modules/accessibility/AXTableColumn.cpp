@@ -137,6 +137,7 @@ bool AXTableColumn::computeAccessibilityIsIgnored(IgnoredReasons* ignoredReasons
 
 void AXTableColumn::addChildren()
 {
+    ASSERT(!isDetached());
     ASSERT(!m_haveChildren);
 
     m_haveChildren = true;

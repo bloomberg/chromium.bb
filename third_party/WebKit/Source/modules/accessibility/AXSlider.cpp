@@ -87,6 +87,7 @@ AccessibilityOrientation AXSlider::orientation() const
 
 void AXSlider::addChildren()
 {
+    ASSERT(!isDetached());
     ASSERT(!m_haveChildren);
 
     m_haveChildren = true;

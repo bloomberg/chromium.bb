@@ -2142,6 +2142,7 @@ static Node* getParentNodeForComputeParent(Node* node)
 
 AXObject* AXNodeObject::computeParent() const
 {
+    ASSERT(!isDetached());
     if (Node* parentNode = getParentNodeForComputeParent(node()))
         return axObjectCache().getOrCreate(parentNode);
 
@@ -2183,6 +2184,7 @@ AXObject* AXNodeObject::nextSibling() const
 
 void AXNodeObject::addChildren()
 {
+    ASSERT(!isDetached());
     // If the need to add more children in addition to existing children arises,
     // childrenChanged should have been called, leaving the object with no children.
     ASSERT(!m_haveChildren);

@@ -123,6 +123,7 @@ String AXInlineTextBox::stringValue() const
 
 AXObject* AXInlineTextBox::computeParent() const
 {
+    ASSERT(!isDetached());
     if (!m_inlineTextBox || !m_axObjectCache)
         return 0;
 

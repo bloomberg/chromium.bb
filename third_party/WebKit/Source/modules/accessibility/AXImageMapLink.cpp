@@ -61,6 +61,7 @@ HTMLMapElement* AXImageMapLink::mapElement() const
 
 AXObject* AXImageMapLink::computeParent() const
 {
+    ASSERT(!isDetached());
     if (m_parent)
         return m_parent;
 

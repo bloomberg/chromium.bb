@@ -79,6 +79,7 @@ void AXMenuList::clearChildren()
 
 void AXMenuList::addChildren()
 {
+    ASSERT(!isDetached());
     m_haveChildren = true;
 
     AXObjectCacheImpl& cache = axObjectCache();
