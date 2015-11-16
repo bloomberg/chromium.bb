@@ -3338,10 +3338,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Bookmarks.LaunchLocation" enum="BookmarkLaunchLocation">
   <owner>ianwen@chromium.org</owner>
-  <summary>
-    Logs every time a bookmark is launched from an assortment of different UI
-    surfaces.
-  </summary>
+  <summary>Logs a UI location from which a bookmark is launched.</summary>
 </histogram>
 
 <histogram name="Bookmarks.OnFaviconsChangedIconURL" enum="BooleanHit">
@@ -29936,6 +29933,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="OfflinePages.LaunchLocation" enum="StarsLaunchLocation">
+  <owner>fgorski@chromium.org</owner>
+  <owner>jianli@chromium.org</owner>
+  <summary>Logs a UI location from which an offline page is launched.</summary>
+</histogram>
+
 <histogram name="OfflinePages.LoadStatus" enum="OfflinePagesLoadStatus">
   <owner>jianli@chromium.org</owner>
   <summary>
@@ -44962,6 +44965,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     Percentage of clips with images within first 20. Logs every time user goes
     to chrome://bookmarks.
   </summary>
+</histogram>
+
+<histogram name="Stars.LaunchLocation" enum="StarsLaunchLocation">
+  <owner>ianwen@chromium.org</owner>
+  <summary>Logs a UI location from which a bookmark is launched.</summary>
 </histogram>
 
 <histogram name="Stars.No_Images_Snippets" units="percent">
@@ -74889,6 +74897,15 @@ To add a new entry, add it with any value and run test to compute valid value.
              (DEPRECATED_CAPTIVE_PORTAL_DETECTED_OVERRIDABLE)"/>
   <int value="25"
       label="Displayed clock interstitial. (DISPLAYED_CLOCK_INTERSTITIAL)"/>
+</enum>
+
+<enum name="StarsLaunchLocation" type="int">
+  <int value="0" label="All Items"/>
+  <int value="1" label="Uncategorized"/>
+  <int value="2" label="Folder"/>
+  <int value="3" label="Filter"/>
+  <int value="4" label="Search"/>
+  <int value="5" label="Bookmark Editor"/>
 </enum>
 
 <enum name="StartupProfilingFinishReason" type="int">

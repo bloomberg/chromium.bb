@@ -440,8 +440,13 @@ public class EnhancedBookmarkManager implements EnhancedBookmarkDelegate {
             if (TextUtils.isEmpty(url)) return;
 
             NewTabPageUma.recordAction(NewTabPageUma.ACTION_OPENED_BOOKMARK);
-            RecordHistogram.recordEnumeratedHistogram("Stars.LaunchLocation", launchLocation,
-                    LaunchLocation.COUNT);
+            if (url.startsWith("file:")) {
+                RecordHistogram.recordEnumeratedHistogram("OfflinePages.LaunchLocation",
+                        launchLocation, LaunchLocation.COUNT);
+            } else {
+                RecordHistogram.recordEnumeratedHistogram("Stars.LaunchLocation", launchLocation,
+                        LaunchLocation.COUNT);
+            }
             EnhancedBookmarkUtils.openBookmark(mActivity, url);
             EnhancedBookmarkUtils.finishActivityOnPhone(mActivity);
         }
