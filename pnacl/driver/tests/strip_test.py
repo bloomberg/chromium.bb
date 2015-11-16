@@ -71,6 +71,10 @@ void foo%d(void) {
         ['--strip-debug', f.name, '-o', f_stripped.name])
     self.assertTrue(self.getFileSize(f_stripped.name) <
                     self.getFileSize(f.name))
+    driver_tools.RunDriver('pnacl-strip',
+        ['--strip-unneeded', f.name, '-o', f_stripped.name])
+    self.assertTrue(self.getFileSize(f_stripped.name) <
+                    self.getFileSize(f.name))
 
   # Individual tests.
   # NOTE: We do not test the bitcode archive case.

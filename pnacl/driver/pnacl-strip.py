@@ -17,8 +17,10 @@ EXTRA_ENV = {
 
   'OPT_FLAGS_all'      : '-disable-opt --strip',
   'OPT_FLAGS_debug'    : '-disable-opt --strip-debug',
+  'OPT_FLAGS_unneeded' : '-disable-opt --strip',
   'STRIP_FLAGS_all'    : '-s',
   'STRIP_FLAGS_debug'  : '-S',
+  'STRIP_FLAGS_unneeded': '--strip-unneeded',
 
   'OPT_FLAGS'          : '${OPT_FLAGS_%MODE%}',
   'STRIP_FLAGS'        : '${STRIP_FLAGS_%MODE%}',
@@ -38,6 +40,8 @@ StripPatterns = [
     ( '-S',              "env.set('MODE', 'debug')"),
     ( '-g',              "env.set('MODE', 'debug')"),
     ( '-d',              "env.set('MODE', 'debug')"),
+
+    ( '--strip-unneeded',"env.set('MODE', 'unneeded')"),
 
     ( '(-p)',            "env.append('STRIP_FLAGS', $0)"),
     ( '(--info)',        "env.append('STRIP_FLAGS', $0)"),
@@ -96,6 +100,7 @@ def get_help(unused_argv):
                                    (only native code for now)
   -s --strip-all                   Remove all symbol and relocation information
   -g -S -d --strip-debug           Remove all debugging symbols & sections
+  --strip-unneeded                 Remove all symbols not needed by relocations
   -h --help                        Display this output
      --info                        List object formats & architectures supported
   -o <file>                        Place stripped output into <file>
