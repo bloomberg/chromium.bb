@@ -207,7 +207,7 @@
           # until the number of 32 bit devices which don't support this
           # approach falls to a minimal level -  http://crbug.com/390618.
           ['chrome_apk_use_chromium_linker==1 and profiling==0 and (target_arch == "arm64" or target_arch == "x86_64")', {
-            'load_library_from_zip': 1,
+            'load_library_from_zip': '<(chrome_apk_load_library_from_zip)',
           }],
         ],
       },
@@ -247,7 +247,7 @@
           # until the number of 32 bit devices which don't support this
           # approach falls to a minimal level -  http://crbug.com/390618.
           ['chrome_apk_use_chromium_linker==1 and profiling==0 and (target_arch == "arm64" or target_arch == "x86_64")', {
-            'load_library_from_zip': 1,
+            'load_library_from_zip': '<(chrome_apk_load_library_from_zip)',
           }],
         ],
       },
