@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SYNC_DRIVER_OPEN_TABS_UI_DELEGATE_H_
-#define COMPONENTS_SYNC_DRIVER_OPEN_TABS_UI_DELEGATE_H_
+#ifndef COMPONENTS_SYNC_SESSIONS_OPEN_TABS_UI_DELEGATE_H_
+#define COMPONENTS_SYNC_SESSIONS_OPEN_TABS_UI_DELEGATE_H_
 
 #include <string>
 #include <vector>
@@ -13,7 +13,7 @@
 #include "base/memory/ref_counted_memory.h"
 #include "components/sessions/core/session_id.h"
 #include "components/sessions/core/session_types.h"
-#include "components/sync_driver/glue/synced_session.h"
+#include "components/sync_sessions/synced_session.h"
 
 namespace sync_driver {
 
@@ -67,4 +67,4 @@ class OpenTabsUIDelegate {
 
 }  // namespace sync_driver
 
-#endif  // COMPONENTS_SYNC_DRIVER_OPEN_TABS_UI_DELEGATE_H_
+#endif  // COMPONENTS_SYNC_SESSIONS_OPEN_TABS_UI_DELEGATE_H_

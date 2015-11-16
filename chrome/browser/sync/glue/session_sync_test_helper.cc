@@ -5,7 +5,7 @@
 #include "chrome/browser/sync/glue/session_sync_test_helper.h"
 
 #include "base/strings/utf_string_conversions.h"
-#include "components/sync_driver/glue/synced_session.h"
+#include "components/sync_sessions/synced_session.h"
 #include "sync/protocol/session_specifics.pb.h"
 #include "sync/protocol/sync_enums.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"

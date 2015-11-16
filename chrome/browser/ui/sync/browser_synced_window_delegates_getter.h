@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "components/sessions/core/session_id.h"
-#include "components/sync_driver/sessions/synced_window_delegates_getter.h"
+#include "components/sync_sessions/synced_window_delegates_getter.h"
 
 class Profile;
 

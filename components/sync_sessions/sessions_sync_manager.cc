@@ -7,11 +7,11 @@
 #include <algorithm>
 
 #include "base/metrics/field_trial.h"
-#include "components/sync_driver/glue/synced_window_delegate.h"
 #include "components/sync_driver/local_device_info_provider.h"
-#include "components/sync_driver/sessions/synced_window_delegates_getter.h"
 #include "components/sync_sessions/sync_sessions_client.h"
 #include "components/sync_sessions/synced_tab_delegate.h"
+#include "components/sync_sessions/synced_window_delegate.h"
+#include "components/sync_sessions/synced_window_delegates_getter.h"
 #include "components/variations/variations_associated_data.h"
 #include "sync/api/sync_error.h"
 #include "sync/api/sync_error_factory.h"

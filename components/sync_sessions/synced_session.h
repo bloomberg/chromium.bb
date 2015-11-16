@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SYNC_DRIVER_GLUE_SYNCED_SESSION_H_
-#define COMPONENTS_SYNC_DRIVER_GLUE_SYNCED_SESSION_H_
+#ifndef COMPONENTS_SYNC_SESSIONS_SYNCED_SESSION_H_
+#define COMPONENTS_SYNC_SESSIONS_SYNCED_SESSION_H_
 
 #include <map>
 #include <string>
 
+#include "base/macros.h"
 #include "base/time/time.h"
 #include "components/sessions/core/session_id.h"
 #include "components/sessions/core/session_types.h"
@@ -91,4 +92,4 @@ struct SyncedSession {
 
 }  // namespace sync_driver
 
-#endif  // COMPONENTS_SYNC_DRIVER_GLUE_SYNCED_SESSION_H_
+#endif  // COMPONENTS_SYNC_SESSIONS_SYNCED_SESSION_H_

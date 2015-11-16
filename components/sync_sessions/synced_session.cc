@@ -2,15 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/sync_driver/glue/synced_session.h"
+#include "components/sync_sessions/synced_session.h"
 
 #include "base/stl_util.h"
 
 namespace sync_driver {
 
 SyncedSession::SyncedSession()
-    : session_tag("invalid"), device_type(TYPE_UNSET) {
-}
+    : session_tag("invalid"), device_type(TYPE_UNSET) {}
 
 SyncedSession::~SyncedSession() {
   STLDeleteContainerPairSecondPointers(windows.begin(), windows.end());

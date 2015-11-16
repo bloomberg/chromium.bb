@@ -6,9 +6,9 @@
 
 #include "base/memory/ref_counted.h"
 #include "components/sessions/ios/ios_serialized_navigation_builder.h"
-#include "components/sync_driver/glue/synced_window_delegate.h"
-#include "components/sync_driver/sessions/synced_window_delegates_getter.h"
 #include "components/sync_sessions/sync_sessions_client.h"
+#include "components/sync_sessions/synced_window_delegate.h"
+#include "components/sync_sessions/synced_window_delegates_getter.h"
 #include "ios/chrome/browser/sessions/ios_chrome_session_tab_helper.h"
 #include "ios/web/public/favicon_status.h"
 #include "ios/web/public/navigation_item.h"

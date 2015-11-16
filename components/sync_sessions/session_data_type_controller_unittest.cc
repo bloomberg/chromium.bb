@@ -14,10 +14,10 @@
 #include "base/run_loop.h"
 #include "base/thread_task_runner_handle.h"
 #include "components/sync_driver/fake_sync_client.h"
-#include "components/sync_driver/glue/synced_window_delegate.h"
 #include "components/sync_driver/local_device_info_provider_mock.h"
-#include "components/sync_driver/sessions/synced_window_delegates_getter.h"
 #include "components/sync_driver/sync_api_component_factory_mock.h"
+#include "components/sync_sessions/synced_window_delegate.h"
+#include "components/sync_sessions/synced_window_delegates_getter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using sync_driver::LocalDeviceInfoProviderMock;

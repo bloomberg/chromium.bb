@@ -11,7 +11,7 @@
 #include "base/compiler_specific.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "components/sessions/core/session_types.h"
-#include "components/sync_driver/glue/synced_session.h"
+#include "components/sync_sessions/synced_session.h"
 #include "sync/syncable/nigori_util.h"
 
 class GURL;

@@ -14,7 +14,6 @@
         '../sync/sync.gyp:sync',
         '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation',
         '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation_proto_cpp',
-        '../ui/gfx/gfx.gyp:gfx',
         'data_use_measurement_core',
         'invalidation_public',
         'os_crypt',
@@ -77,9 +76,6 @@
         'sync_driver/glue/sync_backend_host_impl.h',
         'sync_driver/glue/sync_backend_registrar.cc',
         'sync_driver/glue/sync_backend_registrar.h',
-        'sync_driver/glue/synced_session.cc',
-        'sync_driver/glue/synced_session.h',
-        'sync_driver/glue/synced_window_delegate.h',
         'sync_driver/glue/ui_model_worker.cc',
         'sync_driver/glue/ui_model_worker.h',
         'sync_driver/invalidation_adapter.cc',
@@ -98,8 +94,6 @@
         'sync_driver/non_frontend_data_type_controller.h',
         'sync_driver/non_ui_data_type_controller.cc',
         'sync_driver/non_ui_data_type_controller.h',
-        'sync_driver/open_tabs_ui_delegate.cc',
-        'sync_driver/open_tabs_ui_delegate.h',
         'sync_driver/pref_names.cc',
         'sync_driver/pref_names.h',
         'sync_driver/profile_sync_auth_provider.cc',
@@ -108,8 +102,6 @@
         'sync_driver/protocol_event_observer.h',
         'sync_driver/proxy_data_type_controller.cc',
         'sync_driver/proxy_data_type_controller.h',
-        'sync_driver/sessions/synced_window_delegates_getter.cc',
-        'sync_driver/sessions/synced_window_delegates_getter.h',
         'sync_driver/shared_change_processor.cc',
         'sync_driver/shared_change_processor.h',
         'sync_driver/shared_change_processor_ref.cc',
@@ -142,22 +134,11 @@
         'sync_driver/sync_util.h',
         'sync_driver/system_encryptor.cc',
         'sync_driver/system_encryptor.h',
-        'sync_driver/tab_node_pool.cc',
-        'sync_driver/tab_node_pool.h',
         'sync_driver/ui_data_type_controller.cc',
         'sync_driver/ui_data_type_controller.h',
         'sync_driver/user_selectable_sync_type.h',
       ],
       'conditions': [
-        ['OS!="ios"', {
-          'dependencies': [
-            'sessions_content',
-          ],
-        }, {  # OS==ios
-          'dependencies': [
-            'sessions_ios',
-          ],
-        }],
         ['configuration_policy==1', {
           'dependencies': [
             'policy',

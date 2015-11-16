@@ -10,8 +10,8 @@
 #include "base/scoped_observer.h"
 #include "base/time/time.h"
 #include "chrome/browser/sessions/session_service.h"
-#include "components/sync_driver/open_tabs_ui_delegate.h"
 #include "components/sync_driver/sync_service_observer.h"
+#include "components/sync_sessions/open_tabs_ui_delegate.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_message_handler.h"
 

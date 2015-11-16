@@ -19,7 +19,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/browser_sync/browser/profile_sync_service.h"
-#include "components/sync_driver/open_tabs_ui_delegate.h"
+#include "components/sync_sessions/open_tabs_ui_delegate.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"

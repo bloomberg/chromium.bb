@@ -19,7 +19,7 @@
 #include "components/browser_sync/browser/profile_sync_service.h"
 #include "components/favicon_base/favicon_url_parser.h"
 #include "components/history/core/browser/top_sites.h"
-#include "components/sync_driver/open_tabs_ui_delegate.h"
+#include "components/sync_sessions/open_tabs_ui_delegate.h"
 #include "net/url_request/url_request.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/layout.h"

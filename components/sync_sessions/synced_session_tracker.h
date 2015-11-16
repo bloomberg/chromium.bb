@@ -13,8 +13,8 @@
 #include "base/basictypes.h"
 #include "components/sessions/core/session_id.h"
 #include "components/sessions/core/session_types.h"
-#include "components/sync_driver/glue/synced_session.h"
-#include "components/sync_driver/tab_node_pool.h"
+#include "components/sync_sessions/synced_session.h"
+#include "components/sync_sessions/tab_node_pool.h"
 
 namespace sync_sessions {
 class SyncSessionsClient;

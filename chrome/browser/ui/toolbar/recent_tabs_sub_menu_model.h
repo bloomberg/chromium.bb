@@ -13,7 +13,7 @@
 #include "components/favicon/core/favicon_service.h"
 #include "components/sessions/core/tab_restore_service.h"
 #include "components/sessions/core/tab_restore_service_observer.h"
-#include "components/sync_driver/glue/synced_session.h"
+#include "components/sync_sessions/synced_session.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/models/simple_menu_model.h"
 

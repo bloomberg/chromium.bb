@@ -701,7 +701,6 @@
       'sync_driver/sync_stopped_reporter_unittest.cc',
       'sync_driver/sync_util_unittest.cc',
       'sync_driver/system_encryptor_unittest.cc',
-      'sync_driver/tab_node_pool_unittest.cc',
       'sync_driver/ui_data_type_controller_unittest.cc',
     ],
     'sync_sessions_unittest_sources': [
@@ -714,6 +713,7 @@
       'sync_sessions/revisit/typed_url_page_revisit_task_unittest.cc',
       'sync_sessions/session_data_type_controller_unittest.cc',
       'sync_sessions/synced_session_tracker_unittest.cc',
+      'sync_sessions/tab_node_pool_unittest.cc',
     ],
     'syncable_prefs_unittest_sources': [
       'syncable_prefs/pref_model_associator_unittest.cc',

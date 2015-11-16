@@ -18,14 +18,14 @@
 #include "components/sessions/core/session_id.h"
 #include "components/sessions/core/session_types.h"
 #include "components/sync_driver/device_info.h"
-#include "components/sync_driver/glue/synced_session.h"
-#include "components/sync_driver/open_tabs_ui_delegate.h"
 #include "components/sync_driver/sync_prefs.h"
-#include "components/sync_driver/tab_node_pool.h"
 #include "components/sync_sessions/favicon_cache.h"
 #include "components/sync_sessions/local_session_event_router.h"
+#include "components/sync_sessions/open_tabs_ui_delegate.h"
 #include "components/sync_sessions/revisit/page_revisit_broadcaster.h"
+#include "components/sync_sessions/synced_session.h"
 #include "components/sync_sessions/synced_session_tracker.h"
+#include "components/sync_sessions/tab_node_pool.h"
 #include "sync/api/syncable_service.h"
 
 namespace syncer {

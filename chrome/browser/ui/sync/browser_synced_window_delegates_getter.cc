@@ -7,7 +7,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_iterator.h"
 #include "chrome/browser/ui/sync/browser_synced_window_delegate.h"
-#include "components/sync_driver/glue/synced_window_delegate.h"
+#include "components/sync_sessions/synced_window_delegate.h"
 
 namespace browser_sync {
 

@@ -10,10 +10,10 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "components/sessions/core/session_types.h"
-#include "components/sync_driver/glue/synced_session.h"
 #include "components/sync_sessions/revisit/current_tab_matcher.h"
 #include "components/sync_sessions/revisit/offset_tab_matcher.h"
 #include "components/sync_sessions/revisit/page_equality.h"
+#include "components/sync_sessions/synced_session.h"
 #include "url/gurl.h"
 
 namespace sync_sessions {

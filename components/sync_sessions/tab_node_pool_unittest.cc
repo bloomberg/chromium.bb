@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/sync_driver/tab_node_pool.h"
+#include "components/sync_sessions/tab_node_pool.h"
 
 #include <vector>
 
@@ -24,8 +24,7 @@ class SyncTabNodePoolTest : public testing::Test {
   TabNodePool pool_;
 };
 
-void SyncTabNodePoolTest::AddFreeTabNodes(
-    size_t size, const int node_ids[]) {
+void SyncTabNodePoolTest::AddFreeTabNodes(size_t size, const int node_ids[]) {
   for (size_t i = 0; i < size; ++i) {
     pool_.free_nodes_pool_.insert(node_ids[i]);
   }

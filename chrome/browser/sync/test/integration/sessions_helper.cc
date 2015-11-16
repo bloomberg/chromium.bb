@@ -25,8 +25,8 @@
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/browser_sync/browser/profile_sync_service.h"
-#include "components/sync_driver/open_tabs_ui_delegate.h"
 #include "components/sync_driver/sync_client.h"
+#include "components/sync_sessions/open_tabs_ui_delegate.h"
 #include "content/public/test/test_utils.h"
 #include "url/gurl.h"
 

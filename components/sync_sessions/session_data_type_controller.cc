@@ -5,9 +5,9 @@
 #include "components/sync_sessions/session_data_type_controller.h"
 
 #include "base/prefs/pref_service.h"
-#include "components/sync_driver/glue/synced_window_delegate.h"
-#include "components/sync_driver/sessions/synced_window_delegates_getter.h"
 #include "components/sync_driver/sync_client.h"
+#include "components/sync_sessions/synced_window_delegate.h"
+#include "components/sync_sessions/synced_window_delegates_getter.h"
 
 namespace browser_sync {
 

@@ -6,7 +6,6 @@ include_rules = [
   "+components/password_manager/core/browser",
   "+components/policy",
   "+components/pref_registry",
-  "+components/sessions",
   "+components/signin/core/browser",
   "+components/version_info",
   "+google",

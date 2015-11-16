@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/sync_driver/tab_node_pool.h"
+#include "components/sync_sessions/tab_node_pool.h"
 
 #include "base/format_macros.h"
 #include "base/logging.h"
@@ -18,8 +18,7 @@ namespace browser_sync {
 const size_t TabNodePool::kFreeNodesLowWatermark = 25;
 const size_t TabNodePool::kFreeNodesHighWatermark = 100;
 
-TabNodePool::TabNodePool()
-    : max_used_tab_node_id_(kInvalidTabNodeID) {}
+TabNodePool::TabNodePool() : max_used_tab_node_id_(kInvalidTabNodeID) {}
 
 // static
 // We start vending tab node IDs at 0.
@@ -41,8 +40,7 @@ void TabNodePool::AddTabNode(int tab_node_id) {
     max_used_tab_node_id_ = tab_node_id;
 }
 
-void TabNodePool::AssociateTabNode(int tab_node_id,
-                                    SessionID::id_type tab_id) {
+void TabNodePool::AssociateTabNode(int tab_node_id, SessionID::id_type tab_id) {
   DCHECK_GT(tab_node_id, kInvalidTabNodeID);
   // Remove sync node if it is in unassociated nodes pool.
   std::set<int>::iterator u_it = unassociated_nodes_.find(tab_node_id);
@@ -74,15 +72,11 @@ int TabNodePool::GetFreeTabNode(syncer::SyncChangeList* append_changes) {
     specifics->set_session_tag(machine_tag_);
     specifics->set_tab_node_id(tab_node_id);
     append_changes->push_back(syncer::SyncChange(
-        FROM_HERE,
-        syncer::SyncChange::ACTION_ADD,
-        syncer::SyncData::CreateLocalData(tab_node_tag,
-                                          tab_node_tag,
-                                          entity)));
+        FROM_HERE, syncer::SyncChange::ACTION_ADD,
+        syncer::SyncData::CreateLocalData(tab_node_tag, tab_node_tag, entity)));
 
     // Grow the pool by 1 since we created a new node.
-    DVLOG(1) << "Adding sync node " << tab_node_id
-             << " to tab node id pool";
+    DVLOG(1) << "Adding sync node " << tab_node_id << " to tab node id pool";
     free_nodes_pool_.insert(tab_node_id);
     return tab_node_id;
   } else {
@@ -92,7 +86,7 @@ int TabNodePool::GetFreeTabNode(syncer::SyncChangeList* append_changes) {
 }
 
 void TabNodePool::FreeTabNode(int tab_node_id,
-                               syncer::SyncChangeList* append_changes) {
+                              syncer::SyncChangeList* append_changes) {
   DCHECK(append_changes);
   TabNodeIDToTabIDMap::iterator it = nodeid_tabid_map_.find(tab_node_id);
   DCHECK(it != nodeid_tabid_map_.end());
@@ -100,9 +94,8 @@ void TabNodePool::FreeTabNode(int tab_node_id,
   FreeTabNodeInternal(tab_node_id, append_changes);
 }
 
-void TabNodePool::FreeTabNodeInternal(
-    int tab_node_id,
-    syncer::SyncChangeList* append_changes) {
+void TabNodePool::FreeTabNodeInternal(int tab_node_id,
+                                      syncer::SyncChangeList* append_changes) {
   DCHECK(free_nodes_pool_.find(tab_node_id) == free_nodes_pool_.end());
   DCHECK(append_changes);
   free_nodes_pool_.insert(tab_node_id);
@@ -116,10 +109,8 @@ void TabNodePool::FreeTabNodeInternal(
          free_it != free_nodes_pool_.end();) {
       const std::string tab_node_tag = TabIdToTag(machine_tag_, *free_it);
       append_changes->push_back(syncer::SyncChange(
-          FROM_HERE,
-          syncer::SyncChange::ACTION_DELETE,
-          syncer::SyncData::CreateLocalDelete(tab_node_tag,
-                                              syncer::SESSIONS)));
+          FROM_HERE, syncer::SyncChange::ACTION_DELETE,
+          syncer::SyncData::CreateLocalDelete(tab_node_tag, syncer::SESSIONS)));
       free_nodes_pool_.erase(free_it++);
       if (free_nodes_pool_.size() <= kFreeNodesLowWatermark) {
         return;
@@ -133,7 +124,7 @@ bool TabNodePool::IsUnassociatedTabNode(int tab_node_id) {
 }
 
 void TabNodePool::ReassociateTabNode(int tab_node_id,
-                                      SessionID::id_type tab_id) {
+                                     SessionID::id_type tab_id) {
   // Remove from list of unassociated sync_nodes if present.
   std::set<int>::iterator it = unassociated_nodes_.find(tab_node_id);
   if (it != unassociated_nodes_.end()) {
@@ -145,8 +136,7 @@ void TabNodePool::ReassociateTabNode(int tab_node_id,
   nodeid_tabid_map_[tab_node_id] = tab_id;
 }
 
-SessionID::id_type TabNodePool::GetTabIdFromTabNodeId(
-    int tab_node_id) const {
+SessionID::id_type TabNodePool::GetTabIdFromTabNodeId(int tab_node_id) const {
   TabNodeIDToTabIDMap::const_iterator it = nodeid_tabid_map_.find(tab_node_id);
   if (it != nodeid_tabid_map_.end()) {
     return it->second;
@@ -177,9 +167,13 @@ size_t TabNodePool::Capacity() const {
          free_nodes_pool_.size();
 }
 
-bool TabNodePool::Empty() const { return free_nodes_pool_.empty(); }
+bool TabNodePool::Empty() const {
+  return free_nodes_pool_.empty();
+}
 
-bool TabNodePool::Full() { return nodeid_tabid_map_.empty(); }
+bool TabNodePool::Full() {
+  return nodeid_tabid_map_.empty();
+}
 
 void TabNodePool::SetMachineTag(const std::string& machine_tag) {
   machine_tag_ = machine_tag;

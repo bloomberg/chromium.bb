@@ -23,7 +23,7 @@
 #include "components/favicon/core/favicon_service.h"
 #include "components/favicon/core/favicon_util.h"
 #include "components/favicon_base/favicon_util.h"
-#include "components/sync_driver/open_tabs_ui_delegate.h"
+#include "components/sync_sessions/open_tabs_ui_delegate.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/FaviconHelper_jni.h"
 #include "third_party/skia/include/core/SkBitmap.h"
