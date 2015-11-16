@@ -460,14 +460,14 @@ void ProfileSyncService::GetDataTypeControllerStates(
 }
 
 void ProfileSyncService::OnSessionRestoreComplete() {
-  scoped_refptr<DataTypeController> session_data_type_controller =
-      data_type_controllers_[syncer::SESSIONS];
-
-  if (!session_data_type_controller)
+  DataTypeController::TypeMap::const_iterator iter =
+      data_type_controllers_.find(syncer::SESSIONS);
+  if (iter == data_type_controllers_.end()) {
     return;
+  }
+  DCHECK(iter->second);
 
-  static_cast<browser_sync::SessionDataTypeController*>(
-      session_data_type_controller.get())
+  static_cast<browser_sync::SessionDataTypeController*>(iter->second.get())
       ->OnSessionRestoreComplete();
 }
 

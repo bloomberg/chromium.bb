@@ -483,7 +483,6 @@ TEST_F(ProfileSyncServiceTest, SuccessfulInitialization) {
   EXPECT_EQ(ProfileSyncService::SYNC, service()->backend_mode());
 }
 
-
 // Verify that the SetSetupInProgress function call updates state
 // and notifies observers.
 TEST_F(ProfileSyncServiceTest, SetupInProgress) {
@@ -1064,6 +1063,16 @@ TEST_F(ProfileSyncServiceTest, ResetSyncData) {
   client_cmd.action = syncer::RESET_LOCAL_SYNC_DATA;
   service()->OnActionableError(client_cmd);
   EXPECT_EQ(ProfileSyncService::SYNC, service()->backend_mode());
+}
+
+// Regression test for crbug/555434. The issue is that check for sessions DTC in
+// OnSessionRestoreComplete was creating map entry with nullptr which later was
+// dereferenced in OnSyncCycleCompleted. The fix is to use find() to check if
+// entry for sessions exists in map.
+TEST_F(ProfileSyncServiceTest, ValidPointersInDTCMap) {
+  CreateService(browser_sync::AUTO_START);
+  service()->OnSessionRestoreComplete();
+  service()->OnSyncCycleCompleted();
 }
 
 }  // namespace
