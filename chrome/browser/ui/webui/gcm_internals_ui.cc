@@ -8,11 +8,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/format_macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/strings/string_number_conversions.h"
-#include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/services/gcm/gcm_profile_service_factory.h"
@@ -20,6 +16,7 @@
 #include "components/gcm_driver/gcm_client.h"
 #include "components/gcm_driver/gcm_driver.h"
 #include "components/gcm_driver/gcm_internals_constants.h"
+#include "components/gcm_driver/gcm_internals_helper.h"
 #include "components/gcm_driver/gcm_profile_service.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_controller.h"
@@ -28,85 +25,6 @@
 #include "grit/components_resources.h"
 
 namespace {
-
-void SetCheckinInfo(
-    const std::vector<gcm::CheckinActivity>& checkins,
-    base::ListValue* checkin_info) {
-  std::vector<gcm::CheckinActivity>::const_iterator it = checkins.begin();
-  for (; it < checkins.end(); ++it) {
-    base::ListValue* row = new base::ListValue();
-    checkin_info->Append(row);
-
-    row->AppendDouble(it->time.ToJsTime());
-    row->AppendString(it->event);
-    row->AppendString(it->details);
-  }
-}
-
-void SetConnectionInfo(
-    const std::vector<gcm::ConnectionActivity>& connections,
-    base::ListValue* connection_info) {
-  std::vector<gcm::ConnectionActivity>::const_iterator it = connections.begin();
-  for (; it < connections.end(); ++it) {
-    base::ListValue* row = new base::ListValue();
-    connection_info->Append(row);
-
-    row->AppendDouble(it->time.ToJsTime());
-    row->AppendString(it->event);
-    row->AppendString(it->details);
-  }
-}
-
-void SetRegistrationInfo(
-    const std::vector<gcm::RegistrationActivity>& registrations,
-    base::ListValue* registration_info) {
-  std::vector<gcm::RegistrationActivity>::const_iterator it =
-      registrations.begin();
-  for (; it < registrations.end(); ++it) {
-    base::ListValue* row = new base::ListValue();
-    registration_info->Append(row);
-
-    row->AppendDouble(it->time.ToJsTime());
-    row->AppendString(it->app_id);
-    row->AppendString(it->source);
-    row->AppendString(it->event);
-    row->AppendString(it->details);
-  }
-}
-
-void SetReceivingInfo(
-    const std::vector<gcm::ReceivingActivity>& receives,
-    base::ListValue* receive_info) {
-  std::vector<gcm::ReceivingActivity>::const_iterator it = receives.begin();
-  for (; it < receives.end(); ++it) {
-    base::ListValue* row = new base::ListValue();
-    receive_info->Append(row);
-
-    row->AppendDouble(it->time.ToJsTime());
-    row->AppendString(it->app_id);
-    row->AppendString(it->from);
-    row->AppendString(base::IntToString(it->message_byte_size));
-    row->AppendString(it->event);
-    row->AppendString(it->details);
-  }
-}
-
-void SetSendingInfo(
-    const std::vector<gcm::SendingActivity>& sends,
-    base::ListValue* send_info) {
-  std::vector<gcm::SendingActivity>::const_iterator it = sends.begin();
-  for (; it < sends.end(); ++it) {
-    base::ListValue* row = new base::ListValue();
-    send_info->Append(row);
-
-    row->AppendDouble(it->time.ToJsTime());
-    row->AppendString(it->app_id);
-    row->AppendString(it->receiver_id);
-    row->AppendString(it->message_id);
-    row->AppendString(it->event);
-    row->AppendString(it->details);
-  }
-}
 
 // Class acting as a controller of the chrome://gcm-internals WebUI.
 class GcmInternalsUIMessageHandler : public content::WebUIMessageHandler {
@@ -150,66 +68,8 @@ void GcmInternalsUIMessageHandler::ReturnResults(
     gcm::GCMProfileService* profile_service,
     const gcm::GCMClient::GCMStatistics* stats) const {
   base::DictionaryValue results;
-  base::DictionaryValue* device_info = new base::DictionaryValue();
-  results.Set(gcm_driver::kDeviceInfo, device_info);
-
-  device_info->SetBoolean(gcm_driver::kProfileServiceCreated,
-                          profile_service != NULL);
-  device_info->SetBoolean(
-      gcm_driver::kGcmEnabled,
-      gcm::GCMProfileService::IsGCMEnabled(profile->GetPrefs()));
-  if (stats) {
-    results.SetBoolean(gcm_driver::kIsRecording, stats->is_recording);
-    device_info->SetBoolean(gcm_driver::kGcmClientCreated,
-                            stats->gcm_client_created);
-    device_info->SetString(gcm_driver::kGcmClientState,
-                           stats->gcm_client_state);
-    device_info->SetBoolean(gcm_driver::kConnectionClientCreated,
-                            stats->connection_client_created);
-    device_info->SetString(gcm_driver::kRegisteredAppIds,
-                           base::JoinString(stats->registered_app_ids, ","));
-    if (stats->connection_client_created)
-      device_info->SetString(gcm_driver::kConnectionState,
-                             stats->connection_state);
-    if (stats->android_id > 0) {
-      device_info->SetString(
-          gcm_driver::kAndroidId,
-          base::StringPrintf("0x%" PRIx64, stats->android_id));
-    }
-    device_info->SetInteger(gcm_driver::kSendQueueSize, stats->send_queue_size);
-    device_info->SetInteger(gcm_driver::kResendQueueSize,
-                            stats->resend_queue_size);
-
-    if (stats->recorded_activities.checkin_activities.size() > 0) {
-      base::ListValue* checkin_info = new base::ListValue();
-      results.Set(gcm_driver::kCheckinInfo, checkin_info);
-      SetCheckinInfo(stats->recorded_activities.checkin_activities,
-                     checkin_info);
-    }
-    if (stats->recorded_activities.connection_activities.size() > 0) {
-      base::ListValue* connection_info = new base::ListValue();
-      results.Set(gcm_driver::kConnectionInfo, connection_info);
-      SetConnectionInfo(stats->recorded_activities.connection_activities,
-                        connection_info);
-    }
-    if (stats->recorded_activities.registration_activities.size() > 0) {
-      base::ListValue* registration_info = new base::ListValue();
-      results.Set(gcm_driver::kRegistrationInfo, registration_info);
-      SetRegistrationInfo(stats->recorded_activities.registration_activities,
-                          registration_info);
-    }
-    if (stats->recorded_activities.receiving_activities.size() > 0) {
-      base::ListValue* receive_info = new base::ListValue();
-      results.Set(gcm_driver::kReceiveInfo, receive_info);
-      SetReceivingInfo(stats->recorded_activities.receiving_activities,
-                       receive_info);
-    }
-    if (stats->recorded_activities.sending_activities.size() > 0) {
-      base::ListValue* send_info = new base::ListValue();
-      results.Set(gcm_driver::kSendInfo, send_info);
-      SetSendingInfo(stats->recorded_activities.sending_activities, send_info);
-    }
-  }
+  gcm_driver::SetGCMInternalsInfo(stats, profile_service, profile->GetPrefs(),
+                                  &results);
   web_ui()->CallJavascriptFunction(gcm_driver::kSetGcmInternalsInfo, results);
 }
 

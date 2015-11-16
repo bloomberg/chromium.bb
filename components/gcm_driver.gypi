@@ -81,6 +81,8 @@
         'gcm_driver/gcm_driver_desktop.h',
         'gcm_driver/gcm_internals_constants.cc',
         'gcm_driver/gcm_internals_constants.h',
+        'gcm_driver/gcm_internals_helper.cc',
+        'gcm_driver/gcm_internals_helper.h',
         'gcm_driver/gcm_profile_service.cc',
         'gcm_driver/gcm_profile_service.h',
         'gcm_driver/gcm_stats_recorder_impl.cc',

@@ -45,6 +45,8 @@ static_library("gcm_driver") {
     "gcm_driver_desktop.h",
     "gcm_internals_constants.cc",
     "gcm_internals_constants.h",
+    "gcm_internals_helper.cc",
+    "gcm_internals_helper.h",
     "gcm_profile_service.cc",
     "gcm_profile_service.h",
     "gcm_stats_recorder_impl.cc",
