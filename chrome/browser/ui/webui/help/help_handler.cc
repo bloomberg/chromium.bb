@@ -277,9 +277,11 @@ void HelpHandler::GetLocalizedValues(base::DictionaryValue* localized_strings) {
     {"commandLine", IDS_VERSION_UI_COMMAND_LINE},
     {"buildDate", IDS_VERSION_UI_BUILD_DATE},
 #endif
+#if defined(OS_MACOSX) || defined(OS_WIN)
+    {"learnMore", IDS_LEARN_MORE},
+#endif
 #if defined(OS_MACOSX)
     {"promote", IDS_ABOUT_CHROME_PROMOTE_UPDATER},
-    {"learnMore", IDS_LEARN_MORE},
 #endif
   };
 
