@@ -986,6 +986,35 @@ class LogUsageTest(unittest.TestCase):
     self.assertTrue('HasDottedTag.java' in msgs[4].items)
     self.assertTrue('HasOldTag.java' in msgs[4].items)
 
+class HardcodedGoogleHostsTest(unittest.TestCase):
+
+  def testWarnOnAssignedLiterals(self):
+    input_api = MockInputApi()
+    input_api.files = [
+      MockFile('content/file.cc',
+               ['char* host = "https://www.google.com";']),
+      MockFile('content/file.cc',
+               ['char* host = "https://www.googleapis.com";']),
+      MockFile('content/file.cc',
+               ['char* host = "https://clients1.google.com";']),
+    ]
+
+    warnings = PRESUBMIT._CheckHardcodedGoogleHostsInLowerLayers(
+      input_api, MockOutputApi())
+    self.assertEqual(1, len(warnings))
+    self.assertEqual(3, len(warnings[0].items))
+
+  def testAllowInComment(self):
+    input_api = MockInputApi()
+    input_api.files = [
+      MockFile('content/file.cc',
+               ['char* host = "https://www.aol.com"; // google.com'])
+    ]
+
+    warnings = PRESUBMIT._CheckHardcodedGoogleHostsInLowerLayers(
+      input_api, MockOutputApi())
+    self.assertEqual(0, len(warnings))
+
 
 if __name__ == '__main__':
   unittest.main()

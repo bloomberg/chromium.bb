@@ -900,7 +900,8 @@ def _CheckHardcodedGoogleHostsInLowerLayers(input_api, output_api):
                   _TEST_CODE_EXCLUDED_PATHS +
                   input_api.DEFAULT_BLACK_LIST))
 
-  base_pattern = '"[^"]*google\.com[^"]*"'
+  base_pattern = ('"[^"]*(google|googleapis|googlezip|googledrive|appspot)'
+                  '\.(com|net)[^"]*"')
   comment_pattern = input_api.re.compile('//.*%s' % base_pattern)
   pattern = input_api.re.compile(base_pattern)
   problems = []  # items are (filename, line_number, line)
