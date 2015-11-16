@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "components/favicon/core/fallback_icon_client.h"
+#include "components/favicon/core/fallback_url_util.h"
 #include "components/favicon_base/fallback_icon_style.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "ui/gfx/canvas.h"
@@ -66,8 +67,7 @@ void FallbackIconService::DrawFallbackIcon(
       gfx::Rect(kOffsetX, kOffsetY, size, size), corner_radius, paint);
 
   // Draw text.
-  base::string16 icon_text =
-      fallback_icon_client_->GetFallbackIconText(icon_url);
+  base::string16 icon_text = GetFallbackIconText(icon_url);
   if (icon_text.empty())
     return;
   int font_size = static_cast<int>(size * style.font_size_ratio);

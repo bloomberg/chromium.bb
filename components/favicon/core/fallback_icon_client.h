@@ -8,7 +8,6 @@
 #include <string>
 #include <vector>
 
-#include "base/strings/string16.h"
 #include "components/keyed_service/core/keyed_service.h"
 
 class GURL;
@@ -21,9 +20,6 @@ class FallbackIconClient : public KeyedService {
  public:
   // Returns a list of font names for fallback icon rendering.
   virtual const std::vector<std::string>& GetFontNameList() const = 0;
-
-  // Returns the text to render in fallback icon for |url|.
-  virtual base::string16 GetFallbackIconText(const GURL& url) const = 0;
 
  protected:
   ~FallbackIconClient() override {}

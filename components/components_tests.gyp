@@ -201,6 +201,7 @@
     ],
     'favicon_unittest_sources': [
       'favicon/content/content_favicon_driver_unittest.cc',
+      'favicon/core/fallback_url_util_unittest.cc',
       'favicon/core/favicon_handler_unittest.cc',
       'favicon/core/large_icon_service_unittest.cc',
     ],

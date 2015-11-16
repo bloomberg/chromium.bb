@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/strings/string16.h"
 #include "components/favicon/core/fallback_icon_client.h"
 
 class GURL;
@@ -22,8 +21,6 @@ class ChromeFallbackIconClient : public favicon::FallbackIconClient {
 
   // FallbackIconClient implementation:
   const std::vector<std::string>& GetFontNameList() const override;
-
-  base::string16 GetFallbackIconText(const GURL& url) const override;
 
  private:
   std::vector<std::string> font_list_;
