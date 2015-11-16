@@ -258,8 +258,8 @@ inline void BreakingContext::initializeForCurrentObject()
     if (m_nextObject && m_nextObject.parent() && !m_nextObject.parent().isDescendantOf(m_current.object().parent()))
         m_includeEndWidth = true;
 
-    m_currWS = m_current.object().isReplaced() ? m_current.object().parent().style()->whiteSpace() : m_currentStyle->whiteSpace();
-    m_lastWS = m_lastObject.isReplaced() ? m_lastObject.parent().style()->whiteSpace() : m_lastObject.style()->whiteSpace();
+    m_currWS = m_current.object().isLayoutInline() ? m_currentStyle->whiteSpace() : m_current.object().parent().style()->whiteSpace();
+    m_lastWS = m_lastObject.isLayoutInline() ? m_lastObject.style()->whiteSpace() : m_lastObject.parent().style()->whiteSpace();
 
     bool isSVGText = m_current.object().isSVGInlineText();
     m_autoWrap = !isSVGText && ComputedStyle::autoWrap(m_currWS);
