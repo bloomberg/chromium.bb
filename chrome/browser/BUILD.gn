@@ -613,6 +613,7 @@ source_set("browser") {
     deps += [
       "//components/crash/content/app",
       "//components/crash/content/browser",
+      "//components/version_info:generate_version_info",
     ]
   }
   if (use_nss_certs) {

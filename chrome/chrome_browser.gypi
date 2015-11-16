@@ -3588,6 +3588,7 @@
           'dependencies': [
             '../components/components.gyp:breakpad_host',
             '../components/components.gyp:crash_component',
+            '../components/components.gyp:generate_version_info',
           ],
         }],
         ['use_nss_certs==1', {

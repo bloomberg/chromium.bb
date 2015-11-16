@@ -1563,6 +1563,7 @@ test("unit_tests") {
     "//base/allocator",
     "//chrome:resources",
     "//chrome:strings",
+    "//components/version_info:generate_version_info",
     "//courgette:courgette_lib",
     "//google_apis",
     "//skia",

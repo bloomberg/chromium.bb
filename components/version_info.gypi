@@ -43,9 +43,6 @@
           'defines': ['USE_UNOFFICIAL_VERSION_NUMBER'],
         }],
       ],
-      'export_dependent_settings': [
-        'generate_version_info',
-      ],
     },
     {
       # GN version: //components/version_info:generate_version
