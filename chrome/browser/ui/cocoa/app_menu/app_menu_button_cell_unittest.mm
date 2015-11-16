@@ -4,28 +4,28 @@
 
 #include "base/mac/scoped_nsobject.h"
 #include "chrome/app/chrome_command_ids.h"
+#import "chrome/browser/ui/cocoa/app_menu/app_menu_button_cell.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
-#import "chrome/browser/ui/cocoa/wrench_menu/wrench_menu_button_cell.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
-@interface TestWrenchMenuButton : NSButton
+@interface TestAppMenuButton : NSButton
 @end
-@implementation TestWrenchMenuButton
+@implementation TestAppMenuButton
 + (Class)cellClass {
-  return [WrenchMenuButtonCell class];
+  return [AppMenuButtonCell class];
 }
 @end
 
 namespace {
 
-class WrenchMenuButtonCellTest : public CocoaTest {
+class AppMenuButtonCellTest : public CocoaTest {
  public:
   void SetUp() override {
     CocoaTest::SetUp();
 
     NSRect frame = NSMakeRect(10, 10, 50, 19);
-    button_.reset([[TestWrenchMenuButton alloc] initWithFrame:frame]);
+    button_.reset([[TestAppMenuButton alloc] initWithFrame:frame]);
     [button_ setBezelStyle:NSSmallSquareBezelStyle];
     [[button_ cell] setControlSize:NSSmallControlSize];
     [button_ setTitle:@"Allays"];
@@ -35,13 +35,13 @@ class WrenchMenuButtonCellTest : public CocoaTest {
   base::scoped_nsobject<NSButton> button_;
 };
 
-TEST_F(WrenchMenuButtonCellTest, Draw) {
+TEST_F(AppMenuButtonCellTest, Draw) {
   ASSERT_TRUE(button_.get());
   [[test_window() contentView] addSubview:button_.get()];
   [button_ setNeedsDisplay:YES];
 }
 
-TEST_F(WrenchMenuButtonCellTest, DrawHighlight) {
+TEST_F(AppMenuButtonCellTest, DrawHighlight) {
   ASSERT_TRUE(button_.get());
   [[test_window() contentView] addSubview:button_.get()];
   [button_ highlight:YES];

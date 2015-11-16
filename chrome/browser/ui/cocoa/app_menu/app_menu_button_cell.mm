@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/ui/cocoa/wrench_menu/wrench_menu_button_cell.h"
+#import "chrome/browser/ui/cocoa/app_menu/app_menu_button_cell.h"
 
 #include "base/mac/scoped_nsobject.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 
-@implementation WrenchMenuButtonCell
+@implementation AppMenuButtonCell
 
 - (void)drawBezelWithFrame:(NSRect)frame inView:(NSView*)controlView {
   gfx::ScopedNSGraphicsContextSaveGState scopedGState;

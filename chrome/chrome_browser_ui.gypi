@@ -644,14 +644,14 @@
       'browser/ui/views/frame/web_app_left_header_view_ash.cc',
       'browser/ui/views/frame/web_app_left_header_view_ash.h',
       'browser/ui/views/tabs/window_finder_ash.cc',
-      'browser/ui/views/tabs/window_finder_impl.h',
       'browser/ui/views/tabs/window_finder_impl.cc',
+      'browser/ui/views/tabs/window_finder_impl.h',
     ],
     # Used when Android + Views.
     'chrome_browser_ui_views_android_sources': [
       'browser/ui/views/tabs/window_finder_android.cc',
-      'browser/ui/views/tabs/window_finder_impl.h',
       'browser/ui/views/tabs/window_finder_impl.cc',
+      'browser/ui/views/tabs/window_finder_impl.h',
     ],
     # Used when ash is disabled.
     'chrome_browser_ui_non_ash_sources': [
@@ -729,6 +729,8 @@
       'browser/ui/cocoa/animatable_image.mm',
       'browser/ui/cocoa/animatable_view.h',
       'browser/ui/cocoa/animatable_view.mm',
+      'browser/ui/cocoa/app_menu/app_menu_button_cell.h',
+      'browser/ui/cocoa/app_menu/app_menu_button_cell.mm',
       'browser/ui/cocoa/app_menu/app_menu_controller.h',
       'browser/ui/cocoa/app_menu/app_menu_controller.mm',
       'browser/ui/cocoa/applescript/apple_event_util.h',
@@ -1280,8 +1282,6 @@
       'browser/ui/cocoa/wrench_menu/menu_tracked_root_view.mm',
       'browser/ui/cocoa/wrench_menu/recent_tabs_menu_model_delegate.h',
       'browser/ui/cocoa/wrench_menu/recent_tabs_menu_model_delegate.mm',
-      'browser/ui/cocoa/wrench_menu/wrench_menu_button_cell.h',
-      'browser/ui/cocoa/wrench_menu/wrench_menu_button_cell.mm',
     ],
     # Files used only on desktop systems (not iOS, Android, ChromeOS).
     'chrome_browser_ui_desktop_sources': [
