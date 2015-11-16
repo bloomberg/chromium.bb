@@ -250,6 +250,7 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, InvalidOrEmptyURL) {
   load2.Wait();
   EXPECT_TRUE(tab_manager->DiscardTab());
 }
+
 }  // namespace memory
 
 #endif  // OS_WIN || OS_CHROMEOS

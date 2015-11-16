@@ -94,6 +94,14 @@ void TabManager::WebContentsData::SetLastAudioChangeTime(TimeTicks timestamp) {
   tab_data_.last_audio_change_time_ = timestamp;
 }
 
+TimeTicks TabManager::WebContentsData::LastInactiveTime() {
+  return tab_data_.last_inactive_time_;
+}
+
+void TabManager::WebContentsData::SetLastInactiveTime(TimeTicks timestamp) {
+  tab_data_.last_inactive_time_ = timestamp;
+}
+
 // static
 void TabManager::WebContentsData::CopyState(
     content::WebContents* old_contents,
@@ -126,14 +134,16 @@ TabManager::WebContentsData::Data::Data()
       is_recently_audible_(false),
       last_audio_change_time_(TimeTicks::UnixEpoch()),
       last_discard_time_(TimeTicks::UnixEpoch()),
-      last_reload_time_(TimeTicks::UnixEpoch()) {}
+      last_reload_time_(TimeTicks::UnixEpoch()),
+      last_inactive_time_(TimeTicks::UnixEpoch()) {}
 
 bool TabManager::WebContentsData::Data::operator==(const Data& right) const {
   return is_discarded_ == right.is_discarded_ &&
          is_recently_audible_ == right.is_recently_audible_ &&
          last_audio_change_time_ == right.last_audio_change_time_ &&
          last_discard_time_ == right.last_discard_time_ &&
-         last_reload_time_ == right.last_reload_time_;
+         last_reload_time_ == right.last_reload_time_ &&
+         last_inactive_time_ == right.last_inactive_time_;
 }
 
 bool TabManager::WebContentsData::Data::operator!=(const Data& right) const {

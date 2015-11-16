@@ -34,31 +34,35 @@ class TabManager::WebContentsData
   void DidStartLoading() override;
   void WebContentsDestroyed() override;
 
-  // Returns true if |web_contents| has been discarded to save memory.
+  // Returns true if the tab has been discarded to save memory.
   bool IsDiscarded();
 
-  // Sets/clears the discard state of |web_contents|.
+  // Sets/clears the discard state of the tab.
   void SetDiscardState(bool state);
 
-  // Returns the number of times |web_contents| has been discarded.
+  // Returns the number of times the tab has been discarded.
   int DiscardCount();
 
-  // Increments the number of times |web_contents| has been discarded.
+  // Increments the number of times the tab has been discarded.
   void IncrementDiscardCount();
 
-  // Returns true if audio has recently been audible from the WebContents.
+  // Returns true if audio has recently been audible.
   bool IsRecentlyAudible();
 
-  // Set/clears the state of whether audio has recently been audible from the
-  // WebContents.
+  // Set/clears the state of whether audio has recently been audible.
   void SetRecentlyAudible(bool state);
 
-  // Returns the timestamp of the last time |web_contents| changed its audio
-  // state.
+  // Returns the timestamp of the last time the tab changed its audio state.
   base::TimeTicks LastAudioChangeTime();
 
-  // Sets the timestamp of the last time |web_contents| changed its audio state.
+  // Sets the timestamp of the last time the tab changed its audio state.
   void SetLastAudioChangeTime(base::TimeTicks timestamp);
+
+  // Returns the timestamp of the last time the tab changed became inactive.
+  base::TimeTicks LastInactiveTime();
+
+  // Sets the timestamp of the last time the tab became inactive.
+  void SetLastInactiveTime(base::TimeTicks timestamp);
 
   // Copies the discard state from |old_contents| to |new_contents|.
   static void CopyState(content::WebContents* old_contents,
@@ -90,6 +94,8 @@ class TabManager::WebContentsData
     base::TimeTicks last_discard_time_;
     // The last time the tab was reloaded after being discarded.
     base::TimeTicks last_reload_time_;
+    // The last time the tab switched from being active to inactive.
+    base::TimeTicks last_inactive_time_;
   };
 
   // Returns either the system's clock or the test clock. See |test_tick_clock_|
@@ -99,8 +105,8 @@ class TabManager::WebContentsData
   // Contains all the needed data for the tab.
   Data tab_data_;
 
-  // Pointer to a test clock. If this is set, then NowTicks() returns the value
-  // of this test clock, otherwise it will return the system clock's value.
+  // Pointer to a test clock. If this is set, NowTicks() returns the value of
+  // this test clock. Otherwise it returns the system clock's value.
   base::TickClock* test_tick_clock_;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsData);

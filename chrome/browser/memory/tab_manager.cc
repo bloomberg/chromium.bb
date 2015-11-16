@@ -245,6 +245,10 @@ void TabManager::ActiveTabChanged(content::WebContents* old_contents,
                                   int index,
                                   int reason) {
   GetWebContentsData(new_contents)->SetDiscardState(false);
+  // If |old_contents| is set, that tab has switched from being active to
+  // inactive, so record the time of that transition.
+  if (old_contents)
+    GetWebContentsData(old_contents)->SetLastInactiveTime(TimeTicks::Now());
 }
 
 ///////////////////////////////////////////////////////////////////////////////

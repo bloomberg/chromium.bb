@@ -85,6 +85,13 @@ TEST_F(TabManagerWebContentsDataTest, LastAudioChangeTime) {
   EXPECT_EQ(now, tab_data()->LastAudioChangeTime());
 }
 
+TEST_F(TabManagerWebContentsDataTest, LastInactiveTime) {
+  EXPECT_EQ(base::TimeTicks::UnixEpoch(), tab_data()->LastInactiveTime());
+  auto now = base::TimeTicks::Now();
+  tab_data()->SetLastInactiveTime(now);
+  EXPECT_EQ(now, tab_data()->LastInactiveTime());
+}
+
 TEST_F(TabManagerWebContentsDataTest, CopyState) {
   scoped_ptr<WebContents> web_contents2;
   auto tab_data2 = CreateWebContentsAndTabData(&web_contents2);
