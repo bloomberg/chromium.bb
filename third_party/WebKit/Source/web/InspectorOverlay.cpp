@@ -411,8 +411,11 @@ void InspectorOverlay::drawNodeHighlight()
     String selectors = m_nodeHighlightConfig.selectorList;
     RefPtrWillBeRawPtr<StaticElementList> elements = nullptr;
     TrackExceptionState exceptionState;
+    ContainerNode* queryBase = m_highlightNode->containingShadowRoot();
+    if (!queryBase)
+        queryBase = m_highlightNode->ownerDocument();
     if (selectors.length())
-        elements = m_highlightNode->ownerDocument()->querySelectorAll(AtomicString(selectors), exceptionState);
+        elements = queryBase->querySelectorAll(AtomicString(selectors), exceptionState);
     if (elements && !exceptionState.hadException()) {
         for (unsigned i = 0; i < elements->length(); ++i) {
             Element* element = elements->item(i);
