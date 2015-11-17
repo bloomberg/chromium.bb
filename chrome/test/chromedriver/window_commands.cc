@@ -402,13 +402,7 @@ Status ExecuteGetTitle(
     WebView* web_view,
     const base::DictionaryValue& params,
     scoped_ptr<base::Value>* value) {
-  const char kGetTitleScript[] =
-      "function() {"
-      "  if (document.title)"
-      "    return document.title;"
-      "  else"
-      "    return document.URL;"
-      "}";
+  const char kGetTitleScript[] = "function() {  return document.title;}";
   base::ListValue args;
   return web_view->CallFunction(std::string(), kGetTitleScript, args, value);
 }
