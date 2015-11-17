@@ -82,16 +82,6 @@ void FakeDebugDaemonClient::GetNetworkInterfaces(
 
 void FakeDebugDaemonClient::GetPerfOutput(
     uint32_t duration,
-    const GetPerfOutputCallback& callback) {
-  int status = 0;
-  std::vector<uint8> perf_data;
-  std::vector<uint8> perf_stat;
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(callback, status, perf_data, perf_stat));
-}
-
-void FakeDebugDaemonClient::GetPerfOutput(
-    uint32_t duration,
     const std::vector<std::string>& perf_args,
     const GetPerfOutputCallback& callback) {
   int status = 0;

@@ -94,11 +94,6 @@ class CHROMEOS_EXPORT DebugDaemonClient : public DBusClient {
                           const std::vector<uint8>& perf_data,
                           const std::vector<uint8>& perf_stat)>;
 
-  // Runs perf for |duration| seconds and returns data collected.
-  // TODO(dhsharp): Remove this overload.
-  virtual void GetPerfOutput(uint32_t duration,
-                             const GetPerfOutputCallback& callback) = 0;
-
   // Runs perf with arguments for |duration| seconds and returns data collected.
   virtual void GetPerfOutput(uint32_t duration,
                              const std::vector<std::string>& perf_args,
