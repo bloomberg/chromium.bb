@@ -2452,6 +2452,7 @@ void GLRenderer::FinishDrawingFrame(DrawingFrame* frame) {
   gl_->Disable(GL_BLEND);
   blend_shadow_ = false;
 
+  ScheduleCALayers(frame);
   ScheduleOverlays(frame);
 }
 
@@ -3525,6 +3526,32 @@ void GLRenderer::RestoreFramebuffer(DrawingFrame* frame) {
 
 bool GLRenderer::IsContextLost() {
   return gl_->GetGraphicsResetStatusKHR() != GL_NO_ERROR;
+}
+
+void GLRenderer::ScheduleCALayers(DrawingFrame* frame) {
+  for (const CALayerOverlay& ca_layer_overlay : frame->ca_layer_overlay_list) {
+    unsigned texture_id = 0;
+    if (ca_layer_overlay.contents_resource_id) {
+      pending_overlay_resources_.push_back(
+          make_scoped_ptr(new ResourceProvider::ScopedReadLockGL(
+              resource_provider_, ca_layer_overlay.contents_resource_id)));
+      texture_id = pending_overlay_resources_.back()->texture_id();
+    }
+    GLfloat contents_rect[4] = {
+        ca_layer_overlay.contents_rect.x(), ca_layer_overlay.contents_rect.y(),
+        ca_layer_overlay.contents_rect.width(),
+        ca_layer_overlay.contents_rect.height(),
+    };
+    GLfloat bounds_size[2] = {
+        ca_layer_overlay.bounds_size.width(),
+        ca_layer_overlay.bounds_size.height(),
+    };
+    GLfloat transform[16];
+    ca_layer_overlay.transform.asColMajorf(transform);
+    gl_->ScheduleCALayerCHROMIUM(
+        texture_id, contents_rect, ca_layer_overlay.opacity,
+        ca_layer_overlay.background_color, bounds_size, transform);
+  }
 }
 
 void GLRenderer::ScheduleOverlays(DrawingFrame* frame) {

@@ -9,6 +9,7 @@
 #include "base/callback.h"
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "cc/base/cc_export.h"
+#include "cc/output/ca_layer_overlay.h"
 #include "cc/output/overlay_processor.h"
 #include "cc/output/renderer.h"
 #include "cc/raster/task_graph_runner.h"
@@ -56,6 +57,7 @@ class CC_EXPORT DirectRenderer : public Renderer {
     bool disable_picture_quad_image_filtering;
 
     OverlayCandidateList overlay_list;
+    CALayerOverlayList ca_layer_overlay_list;
   };
 
   void SetEnlargePassTextureAmountForTesting(const gfx::Vector2d& amount);
@@ -157,6 +159,10 @@ class CC_EXPORT DirectRenderer : public Renderer {
 
  private:
   gfx::Vector2d enlarge_pass_texture_amount_;
+
+  // Regions that must be drawn in the next frame because they were represented
+  // as CALayers in the current frame.
+  gfx::Rect next_root_damage_rect_;
 
   DISALLOW_COPY_AND_ASSIGN(DirectRenderer);
 };

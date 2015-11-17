@@ -257,6 +257,7 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
   void EnsureBackbuffer() override;
   void EnforceMemoryPolicy();
 
+  void ScheduleCALayers(DrawingFrame* frame);
   void ScheduleOverlays(DrawingFrame* frame);
 
   typedef ScopedPtrVector<ResourceProvider::ScopedReadLockGL>

@@ -42,6 +42,10 @@ void BrowserCompositorOverlayCandidateValidatorOzone::GetStrategies(
   strategies->push_back(make_scoped_ptr(new cc::OverlayStrategyUnderlay(this)));
 }
 
+bool BrowserCompositorOverlayCandidateValidatorOzone::AllowCALayerOverlays() {
+  return false;
+}
+
 void BrowserCompositorOverlayCandidateValidatorOzone::CheckOverlaySupport(
     cc::OverlayCandidateList* surfaces) {
   // SW mirroring copies out of the framebuffer, so we can't remove any

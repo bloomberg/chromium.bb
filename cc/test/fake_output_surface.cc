@@ -23,7 +23,8 @@ FakeOutputSurface::FakeOutputSurface(
       num_sent_frames_(0),
       has_external_stencil_test_(false),
       suspended_for_recycle_(false),
-      framebuffer_(0) {
+      framebuffer_(0),
+      overlay_candidate_validator_(nullptr) {
   if (delegated_rendering) {
     capabilities_.delegated_rendering = true;
     capabilities_.max_frames_pending = 1;
@@ -38,7 +39,8 @@ FakeOutputSurface::FakeOutputSurface(
       num_sent_frames_(0),
       has_external_stencil_test_(false),
       suspended_for_recycle_(false),
-      framebuffer_(0) {
+      framebuffer_(0),
+      overlay_candidate_validator_(nullptr) {
   if (delegated_rendering) {
     capabilities_.delegated_rendering = true;
     capabilities_.max_frames_pending = 1;
@@ -53,7 +55,8 @@ FakeOutputSurface::FakeOutputSurface(
       num_sent_frames_(0),
       has_external_stencil_test_(false),
       suspended_for_recycle_(false),
-      framebuffer_(0) {
+      framebuffer_(0),
+      overlay_candidate_validator_(nullptr) {
   if (delegated_rendering) {
     capabilities_.delegated_rendering = true;
     capabilities_.max_frames_pending = 1;
@@ -69,7 +72,8 @@ FakeOutputSurface::FakeOutputSurface(
       num_sent_frames_(0),
       has_external_stencil_test_(false),
       suspended_for_recycle_(false),
-      framebuffer_(0) {
+      framebuffer_(0),
+      overlay_candidate_validator_(nullptr) {
   if (delegated_rendering) {
     capabilities_.delegated_rendering = true;
     capabilities_.max_frames_pending = 1;
@@ -145,6 +149,11 @@ bool FakeOutputSurface::HasExternalStencilTest() const {
 
 bool FakeOutputSurface::SurfaceIsSuspendForRecycle() const {
   return suspended_for_recycle_;
+}
+
+OverlayCandidateValidator* FakeOutputSurface::GetOverlayCandidateValidator()
+    const {
+  return overlay_candidate_validator_;
 }
 
 void FakeOutputSurface::SetMemoryPolicyToSetAtBind(

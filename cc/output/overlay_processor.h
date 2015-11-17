@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "cc/base/cc_export.h"
+#include "cc/output/ca_layer_overlay.h"
 #include "cc/output/overlay_candidate.h"
 #include "cc/quads/render_pass.h"
 
@@ -37,6 +38,11 @@ class CC_EXPORT OverlayProcessor {
   virtual ~OverlayProcessor();
   // Virtual to allow testing different strategies.
   virtual void Initialize();
+
+  bool ProcessForCALayers(ResourceProvider* resource_provider,
+                          RenderPassList* render_passes,
+                          CALayerOverlayList* ca_layer_overlays,
+                          OverlayCandidateList* overlay_candidates);
 
   void ProcessForOverlays(ResourceProvider* resource_provider,
                           RenderPassList* render_passes,

@@ -29,6 +29,12 @@ void BrowserCompositorOverlayCandidateValidatorMac::GetStrategies(
   strategies->push_back(make_scoped_ptr(new cc::OverlayStrategySandwich(this)));
 }
 
+bool BrowserCompositorOverlayCandidateValidatorMac::AllowCALayerOverlays() {
+  if (software_mirror_active_ || ca_layers_disabled_)
+    return false;
+  return true;
+}
+
 void BrowserCompositorOverlayCandidateValidatorMac::CheckOverlaySupport(
     cc::OverlayCandidateList* surfaces) {
   // SW mirroring copies out of the framebuffer, so we can't remove any

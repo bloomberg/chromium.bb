@@ -25,6 +25,7 @@ class CONTENT_EXPORT BrowserCompositorOverlayCandidateValidatorOzone
 
   // cc::OverlayCandidateValidator implementation.
   void GetStrategies(cc::OverlayProcessor::StrategyList* strategies) override;
+  bool AllowCALayerOverlays() override;
   void CheckOverlaySupport(cc::OverlayCandidateList* surfaces) override;
 
   // BrowserCompositorOverlayCandidateValidator implementation.

@@ -2029,6 +2029,22 @@ class TestOverlayProcessor : public OverlayProcessor {
                       gfx::Rect* damage_rect));
   };
 
+  class Validator : public OverlayCandidateValidator {
+   public:
+    void GetStrategies(OverlayProcessor::StrategyList* strategies) override {}
+
+    // Returns true if draw quads can be represented as CALayers (Mac only).
+    MOCK_METHOD0(AllowCALayerOverlays, bool());
+
+    // A list of possible overlay candidates is presented to this function.
+    // The expected result is that those candidates that can be in a separate
+    // plane are marked with |overlay_handled| set to true, otherwise they are
+    // to be traditionally composited. Candidates with |overlay_handled| set to
+    // true must also have their |display_rect| converted to integer
+    // coordinates if necessary.
+    void CheckOverlaySupport(OverlayCandidateList* surfaces) {}
+  };
+
   explicit TestOverlayProcessor(OutputSurface* surface)
       : OverlayProcessor(surface) {}
   ~TestOverlayProcessor() override {}
@@ -2050,7 +2066,7 @@ void IgnoreCopyResult(scoped_ptr<CopyOutputResult> result) {
 TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
   scoped_ptr<DiscardCheckingContext> context_owned(new DiscardCheckingContext);
   FakeOutputSurfaceClient output_surface_client;
-  scoped_ptr<OutputSurface> output_surface(
+  scoped_ptr<FakeOutputSurface> output_surface(
       FakeOutputSurface::Create3d(context_owned.Pass()));
   CHECK(output_surface->BindToClient(&output_surface_client));
 
@@ -2070,6 +2086,9 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
       new TestOverlayProcessor(output_surface.get());
   processor->Initialize();
   renderer.SetOverlayProcessor(processor);
+  scoped_ptr<TestOverlayProcessor::Validator> validator(
+      new TestOverlayProcessor::Validator);
+  output_surface->SetOverlayCandidateValidator(validator.get());
 
   gfx::Rect viewport_rect(1, 1);
   RenderPass* root_pass =
@@ -2105,9 +2124,11 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
   // any attempt to overlay, which there shouldn't be. We can't use the quad
   // list because the render pass is cleaned up by DrawFrame.
   EXPECT_CALL(*processor->strategy_, Attempt(_, _, _, _)).Times(0);
+  EXPECT_CALL(*validator, AllowCALayerOverlays()).Times(0);
   renderer.DrawFrame(&render_passes_in_draw_order_, 1.f, viewport_rect,
                      viewport_rect, false);
   Mock::VerifyAndClearExpectations(processor->strategy_);
+  Mock::VerifyAndClearExpectations(validator.get());
 
   // Without a copy request Attempt() should be called once.
   root_pass = AddRenderPass(&render_passes_in_draw_order_, RenderPassId(1, 0),
@@ -2120,8 +2141,29 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
                        premultiplied_alpha, gfx::PointF(0, 0),
                        gfx::PointF(1, 1), SK_ColorTRANSPARENT, vertex_opacity,
                        flipped, nearest_neighbor);
-
+  EXPECT_CALL(*validator, AllowCALayerOverlays())
+      .Times(1)
+      .WillOnce(::testing::Return(false));
   EXPECT_CALL(*processor->strategy_, Attempt(_, _, _, _)).Times(1);
+  renderer.DrawFrame(&render_passes_in_draw_order_, 1.f, viewport_rect,
+                     viewport_rect, false);
+
+  // If the CALayerOverlay path is taken, then the ordinary overlay path should
+  // not be called.
+  root_pass = AddRenderPass(&render_passes_in_draw_order_, RenderPassId(1, 0),
+                            viewport_rect, gfx::Transform());
+  root_pass->has_transparent_background = false;
+
+  overlay_quad = root_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
+  overlay_quad->SetNew(root_pass->CreateAndAppendSharedQuadState(),
+                       viewport_rect, viewport_rect, viewport_rect, resource_id,
+                       premultiplied_alpha, gfx::PointF(0, 0),
+                       gfx::PointF(1, 1), SK_ColorTRANSPARENT, vertex_opacity,
+                       flipped, nearest_neighbor);
+  EXPECT_CALL(*validator, AllowCALayerOverlays())
+      .Times(1)
+      .WillOnce(::testing::Return(true));
+  EXPECT_CALL(*processor->strategy_, Attempt(_, _, _, _)).Times(0);
   renderer.DrawFrame(&render_passes_in_draw_order_, 1.f, viewport_rect,
                      viewport_rect, false);
 }
@@ -2135,6 +2177,8 @@ class SingleOverlayOnTopProcessor : public OverlayProcessor {
           make_scoped_ptr(new OverlayStrategySingleOnTop(this)));
       strategies->push_back(make_scoped_ptr(new OverlayStrategyUnderlay(this)));
     }
+
+    bool AllowCALayerOverlays() override { return false; }
 
     void CheckOverlaySupport(OverlayCandidateList* surfaces) override {
       ASSERT_EQ(1U, surfaces->size());
