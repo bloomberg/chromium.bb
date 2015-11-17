@@ -8,6 +8,7 @@
    },
   'targets': [
     {
+      # GN version: //ios/web/public/app
       'target_name': 'ios_web_app',
       'type': 'static_library',
       'include_dirs': [

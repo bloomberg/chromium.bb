@@ -8,6 +8,7 @@
    },
   'targets': [
     {
+      # GN version: //ios/web/shell:ios_web_shell
       'target_name': 'ios_web_shell',
       'type': 'executable',
       'mac_bundle': 1,

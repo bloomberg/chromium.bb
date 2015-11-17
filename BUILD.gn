@@ -207,6 +207,7 @@ group("both_gn_and_gyp") {
       "//ios/net:ios_net_unittests",
       "//ios/public/provider/web",
       "//ios/testing:ocmock_support_unittest",
+      "//ios/web/shell:ios_web_shell",
       "//ios/web:ios_web_unittests",
     ]
   }
