@@ -31,6 +31,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/version.h"
+#include "chrome/browser/after_startup_task_utils.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/blacklist.h"
@@ -432,6 +433,14 @@ class MockProviderVisitor
 class ExtensionServiceTest
     : public extensions::ExtensionServiceTestWithInstall {
  public:
+  ExtensionServiceTest() {
+    // The extension subsystem posts logging tasks to be done after
+    // browser startup. There's no StartupObserver as there normally
+    // would be since we're in a unit test, so we have to explicitly
+    // note tasks should be processed.
+    AfterStartupTaskUtils::SetBrowserStartupIsComplete();
+  }
+
   void AddMockExternalProvider(
       extensions::ExternalProviderInterface* provider) {
     service()->AddProviderForTesting(provider);

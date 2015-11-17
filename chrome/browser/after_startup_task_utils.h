@@ -10,6 +10,8 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 
+class ExtensionServiceTest;
+
 namespace android {
 class AfterStartupTaskUtilsJNI;
 }
@@ -41,6 +43,7 @@ class AfterStartupTaskUtils {
  private:
   friend class AfterStartupTaskTest;
   friend class android::AfterStartupTaskUtilsJNI;
+  friend class ::ExtensionServiceTest;
   friend class InProcessBrowserTest;
   FRIEND_TEST_ALL_PREFIXES(AfterStartupTaskTest, IsStartupComplete);
   FRIEND_TEST_ALL_PREFIXES(AfterStartupTaskTest, PostTask);

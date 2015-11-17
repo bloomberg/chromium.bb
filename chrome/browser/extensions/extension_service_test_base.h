@@ -122,9 +122,14 @@ class ExtensionServiceTestBase : public testing::Test {
   const base::ScopedTempDir& temp_dir() const { return temp_dir_; }
 
  private:
+  // Must be declared before anything that may make use of the
+  // directory so as to ensure files are closed before cleanup.
+  base::ScopedTempDir temp_dir_;
+
   // Destroying at_exit_manager_ will delete all LazyInstances, so it must come
   // after thread_bundle_ in the destruction order.
   base::ShadowingAtExitManager at_exit_manager_;
+
   scoped_ptr<content::TestBrowserThreadBundle> thread_bundle_;
 
  protected:
@@ -142,10 +147,6 @@ class ExtensionServiceTestBase : public testing::Test {
 
  private:
   void CreateExtensionService(const ExtensionServiceInitParams& params);
-
-  // Destroy temp_dir_ after thread_bundle_ so clean-up tasks can still use the
-  // directory.
-  base::ScopedTempDir temp_dir_;
 
   // Whether or not the thread bundle was reset in the test.
   bool did_reset_thread_bundle_;
