@@ -29,6 +29,7 @@ namespace mus {
 class ServiceProviderImpl;
 class WindowObserver;
 class WindowSurface;
+class WindowTreeClientImpl;
 class WindowTreeConnection;
 
 namespace {
@@ -195,6 +196,8 @@ class Window {
   friend class WindowTreeClientImpl;
 
   Window(WindowTreeConnection* connection, Id id);
+
+  WindowTreeClientImpl* tree_client();
 
   // Applies a shared property change locally and forwards to the server. If
   // |data| is null, this property is deleted.
