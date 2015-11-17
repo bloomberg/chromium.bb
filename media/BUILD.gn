@@ -683,6 +683,7 @@ test("media_unittests") {
     "//skia",  # Direct dependency required to inherit config.
     "//testing/gmock",
     "//testing/gtest",
+    "//third_party/libyuv",
     "//third_party/widevine/cdm:version_h",
     "//ui/gfx:test_support",
     "//url",

@@ -42,14 +42,6 @@ class VideoUtilTest : public testing::Test {
         PIXEL_FORMAT_YV12, size, gfx::Rect(size), size, base::TimeDelta());
   }
 
-  void CopyPlanes() {
-    CopyYPlane(y_plane_.get(), y_stride_, height_, destination_frame_.get());
-    CopyUPlane(
-        u_plane_.get(), u_stride_, height_ / 2, destination_frame_.get());
-    CopyVPlane(
-        v_plane_.get(), v_stride_, height_ / 2, destination_frame_.get());
-  }
-
  private:
   scoped_ptr<uint8[]> y_plane_;
   scoped_ptr<uint8[]> u_plane_;
@@ -92,24 +84,6 @@ TEST_F(VideoUtilTest, GetNaturalSize) {
   // Test some random ratios.
   EXPECT_EQ(gfx::Size(495, 240), GetNaturalSize(visible_size, 17, 11));
   EXPECT_EQ(gfx::Size(207, 240), GetNaturalSize(visible_size, 11, 17));
-}
-
-TEST_F(VideoUtilTest, CopyPlane_Exact) {
-  CreateSourceFrame(16, 16, 16, 8, 8);
-  CreateDestinationFrame(16, 16);
-  CopyPlanes();
-}
-
-TEST_F(VideoUtilTest, CopyPlane_SmallerSource) {
-  CreateSourceFrame(8, 8, 8, 4, 4);
-  CreateDestinationFrame(16, 16);
-  CopyPlanes();
-}
-
-TEST_F(VideoUtilTest, CopyPlane_SmallerDestination) {
-  CreateSourceFrame(16, 16, 16, 8, 8);
-  CreateDestinationFrame(8, 8);
-  CopyPlanes();
 }
 
 namespace {
