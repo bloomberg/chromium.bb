@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.signin;
 
 import android.accounts.Account;
-import android.app.Activity;
 import android.content.Context;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -24,8 +23,6 @@ import java.util.Set;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
-
-import javax.annotation.Nullable;
 
 /**
  * Java instance for the native OAuth2TokenService.
@@ -165,13 +162,11 @@ public final class OAuth2TokenService
     /**
      * Call this method to retrieve an OAuth2 access token for the given account and scope.
      *
-     * @param activity the current activity. May be null.
      * @param account the account to get the access token for.
      * @param scope The scope to get an auth token for (without Android-style 'oauth2:' prefix).
      * @param callback called on successful and unsuccessful fetching of auth token.
      */
-    public static void getOAuth2AccessToken(
-            Context context, @Nullable Activity activity, Account account, String scope,
+    public static void getOAuth2AccessToken(Context context, Account account, String scope,
             AccountManagerHelper.GetAuthTokenCallback callback) {
         String oauth2Scope = OAUTH2_SCOPE_PREFIX + scope;
         AccountManagerHelper.get(context).getAuthToken(account, oauth2Scope, callback);
@@ -183,7 +178,6 @@ public final class OAuth2TokenService
      *
      * Given that this is a blocking method call, this should never be called from the UI thread.
      *
-     * @param activity the current activity. May be null.
      * @param account the account to get the access token for.
      * @param scope The scope to get an auth token for (without Android-style 'oauth2:' prefix).
      * @param timeout the timeout.
@@ -191,13 +185,12 @@ public final class OAuth2TokenService
      */
     @VisibleForTesting
     public static String getOAuth2AccessTokenWithTimeout(
-            Context context, @Nullable Activity activity, Account account, String scope,
-            long timeout, TimeUnit unit) {
+            Context context, Account account, String scope, long timeout, TimeUnit unit) {
         assert !ThreadUtils.runningOnUiThread();
         final AtomicReference<String> result = new AtomicReference<String>();
         final Semaphore semaphore = new Semaphore(0);
         getOAuth2AccessToken(
-                context, activity, account, scope, new AccountManagerHelper.GetAuthTokenCallback() {
+                context, account, scope, new AccountManagerHelper.GetAuthTokenCallback() {
                     @Override
                     public void tokenAvailable(String token) {
                         result.set(token);

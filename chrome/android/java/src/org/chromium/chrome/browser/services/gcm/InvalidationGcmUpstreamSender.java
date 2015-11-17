@@ -42,7 +42,7 @@ public class InvalidationGcmUpstreamSender extends GcmUpstreamSenderService {
         }
 
         // Attempt to retrieve a token for the user.
-        OAuth2TokenService.getOAuth2AccessToken(this, null, account,
+        OAuth2TokenService.getOAuth2AccessToken(this, account,
                 SyncConstants.CHROME_SYNC_OAUTH2_SCOPE,
                 new AccountManagerHelper.GetAuthTokenCallback() {
                     @Override

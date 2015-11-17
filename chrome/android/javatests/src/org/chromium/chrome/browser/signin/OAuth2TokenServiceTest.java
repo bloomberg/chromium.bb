@@ -115,9 +115,8 @@ public class OAuth2TokenServiceTest extends InstrumentationTestCase {
                         .authToken(oauth2Scope, expectedToken).build();
         mAccountManager.addAccountHolderExplicitly(accountHolder);
 
-        String accessToken =
-                OAuth2TokenService.getOAuth2AccessTokenWithTimeout(
-                        mContext, null, account, scope, 5, TimeUnit.SECONDS);
+        String accessToken = OAuth2TokenService.getOAuth2AccessTokenWithTimeout(
+                mContext, account, scope, 5, TimeUnit.SECONDS);
         assertEquals(expectedToken, accessToken);
     }
 }
