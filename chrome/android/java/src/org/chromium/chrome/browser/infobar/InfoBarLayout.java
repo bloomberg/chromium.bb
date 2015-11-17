@@ -418,7 +418,7 @@ public class InfoBarLayout extends ViewGroup implements View.OnClickListener {
         }
 
         if (mButtonGroup != null) {
-            startRowWithIconMargin();
+            startRowWithoutIconMargin();
             updateButtonGroupLayoutProperties();
 
             // If the infobar consists of just a main row and a buttons row, the buttons must be
@@ -471,7 +471,13 @@ public class InfoBarLayout extends ViewGroup implements View.OnClickListener {
         } else {  // group.gravity is Gravity.START or Gravity.FILL_HORIZONTAL
             for (int i = 0; i < group.views.length; i++) {
                 placeChild(group.views[i], group.gravity);
-                if (group.isStacked && i != group.views.length - 1) startRowWithIconMargin();
+                if (group.isStacked && i != group.views.length - 1) {
+                    if (group == mButtonGroup) {
+                        startRowWithoutIconMargin();
+                    } else {
+                        startRowWithIconMargin();
+                    }
+                }
             }
         }
     }
