@@ -229,6 +229,7 @@ scoped_ptr<cc::SurfaceIdAllocator> CompositorImpl::CreateSurfaceIdAllocator() {
 CompositorImpl::CompositorImpl(CompositorClient* client,
                                gfx::NativeWindow root_window)
     : root_layer_(cc::Layer::Create(Compositor::LayerSettings())),
+      resource_manager_(root_window),
       surface_id_allocator_(GetSurfaceManager() ? CreateSurfaceIdAllocator()
                                                 : nullptr),
       has_transparent_background_(false),

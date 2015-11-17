@@ -9,6 +9,7 @@
 #include "ui/android/resources/resource_manager.h"
 #include "ui/android/ui_android_export.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/native_widget_types.h"
 
 namespace ui {
 
@@ -16,7 +17,7 @@ class UI_ANDROID_EXPORT ResourceManagerImpl : public ResourceManager {
  public:
   static ResourceManagerImpl* FromJavaObject(jobject jobj);
 
-  ResourceManagerImpl();
+  explicit ResourceManagerImpl(gfx::NativeWindow native_window);
   ~ResourceManagerImpl() override;
 
   void Init(cc::LayerTreeHost* host);

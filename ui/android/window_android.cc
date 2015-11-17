@@ -38,6 +38,13 @@ WindowAndroid::~WindowAndroid() {
   DCHECK(!compositor_);
 }
 
+WindowAndroid* WindowAndroid::createForTesting() {
+  JNIEnv* env = AttachCurrentThread();
+  jobject context = base::android::GetApplicationContext();
+  return new WindowAndroid(
+      env, Java_WindowAndroid_createForTesting(env, context).obj());
+}
+
 void WindowAndroid::OnCompositingDidCommit() {
   FOR_EACH_OBSERVER(WindowAndroidObserver,
                     observer_list_,

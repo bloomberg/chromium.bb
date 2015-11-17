@@ -13,6 +13,7 @@
 #include "cc/resources/scoped_ui_resource.h"
 #include "jni/ResourceManager_jni.h"
 #include "ui/android/resources/ui_resource_provider.h"
+#include "ui/android/window_android.h"
 #include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -27,11 +28,13 @@ ResourceManagerImpl* ResourceManagerImpl::FromJavaObject(jobject jobj) {
                                         jobj));
 }
 
-ResourceManagerImpl::ResourceManagerImpl() : host_(nullptr) {
+ResourceManagerImpl::ResourceManagerImpl(gfx::NativeWindow native_window)
+    : host_(nullptr) {
   JNIEnv* env = base::android::AttachCurrentThread();
   java_obj_.Reset(env, Java_ResourceManager_create(
-                           env, base::android::GetApplicationContext(),
-                           reinterpret_cast<intptr_t>(this)).obj());
+                           env, native_window->GetJavaObject().obj(),
+                           reinterpret_cast<intptr_t>(this))
+                           .obj());
   DCHECK(!java_obj_.is_null());
 }
 

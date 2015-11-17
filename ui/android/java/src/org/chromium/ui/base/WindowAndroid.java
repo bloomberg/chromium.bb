@@ -77,6 +77,8 @@ public class WindowAndroid {
 
     protected Context mApplicationContext;
     protected SparseArray<IntentCallback> mOutstandingIntents;
+    // We use a weak reference here to prevent this from leaking in WebView.
+    private WeakReference<Context> mContextRef;
 
     // Ideally, this would be a SparseArray<String>, but there's no easy way to store a
     // SparseArray<String> in a bundle during saveInstanceState(). So we use a HashMap and suppress
@@ -136,13 +138,20 @@ public class WindowAndroid {
      */
     @SuppressLint("UseSparseArrays")
     public WindowAndroid(Context context) {
-        assert context == context.getApplicationContext();
-        mApplicationContext = context;
+        mApplicationContext = context.getApplicationContext();
+        // context does not have the same lifetime guarantees as an application context so we can't
+        // hold a strong reference to it.
+        mContextRef = new WeakReference<Context>(context);
         mOutstandingIntents = new SparseArray<IntentCallback>();
         mIntentErrors = new HashMap<Integer, String>();
         mVSyncMonitor = new VSyncMonitor(context, mVSyncListener);
-        mAccessibilityManager = (AccessibilityManager)
-                context.getSystemService(Context.ACCESSIBILITY_SERVICE);
+        mAccessibilityManager = (AccessibilityManager) mApplicationContext.getSystemService(
+                Context.ACCESSIBILITY_SERVICE);
+    }
+
+    @CalledByNative
+    private static WindowAndroid createForTesting(Context context) {
+        return new WindowAndroid(context);
     }
 
     /**
@@ -581,6 +590,16 @@ public class WindowAndroid {
                 refreshWillNotDraw();
             }
         });
+    }
+
+    /**
+     * Getter for the current context (not necessarily the application context).
+     * Make no assumptions regarding what type of Context is returned here, it could be for example
+     * an Activity or a Context created specifically to target an external display.
+     */
+    public WeakReference<Context> getContext() {
+        // Return a new WeakReference to prevent clients from releasing our internal WeakReference.
+        return new WeakReference<Context>(mContextRef.get());
     }
 
     /**

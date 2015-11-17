@@ -4,7 +4,6 @@
 
 package org.chromium.ui.resources.system;
 
-import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -12,7 +11,6 @@ import android.graphics.Paint;
 import android.graphics.Paint.Style;
 import android.graphics.RectF;
 
-import org.chromium.ui.gfx.DeviceDisplayInfo;
 import org.chromium.ui.resources.Resource;
 import org.chromium.ui.resources.SystemUIResourceType;
 import org.chromium.ui.resources.async.AsyncPreloadResourceLoader;
@@ -30,19 +28,19 @@ public class SystemResourceLoader extends AsyncPreloadResourceLoader {
      * @param resourceType The resource type this loader is responsible for loading.
      * @param callback     The {@link ResourceLoaderCallback} to notify when a {@link Resource} is
      *                     done loading.
-     * @param resources    A {@link Resources} instance to load assets from.
+     * @param minScreenSideLengthPx    The length (in pixels) of the smallest side of the screen.
      */
-    public SystemResourceLoader(int resourceType, ResourceLoaderCallback callback,
-            final Context context) {
+    public SystemResourceLoader(
+            int resourceType, ResourceLoaderCallback callback, final int minScreenSideLengthPx) {
         super(resourceType, callback, new ResourceCreator() {
             @Override
             public Resource create(int resId) {
-                return createResource(context, resId);
+                return createResource(minScreenSideLengthPx, resId);
             }
         });
     }
 
-    private static Resource createResource(Context context, int resId) {
+    private static Resource createResource(int minScreenSideLengthPx, int resId) {
         switch (resId) {
             case SystemUIResourceType.OVERSCROLL_EDGE:
                 return StaticResource.create(Resources.getSystem(),
@@ -51,7 +49,7 @@ public class SystemResourceLoader extends AsyncPreloadResourceLoader {
                 return StaticResource.create(Resources.getSystem(),
                         getResourceId("android:drawable/overscroll_glow"), 128, 64);
             case SystemUIResourceType.OVERSCROLL_GLOW_L:
-                return createOverscrollGlowLBitmap(context);
+                return createOverscrollGlowLBitmap(minScreenSideLengthPx);
 
             default:
                 assert false;
@@ -59,14 +57,8 @@ public class SystemResourceLoader extends AsyncPreloadResourceLoader {
         return null;
     }
 
-    private static Resource createOverscrollGlowLBitmap(Context context) {
-        DeviceDisplayInfo displayInfo = DeviceDisplayInfo.create(context);
-        int screenWidth = displayInfo.getPhysicalDisplayWidth() != 0
-                ? displayInfo.getPhysicalDisplayWidth() : displayInfo.getDisplayWidth();
-        int screenHeight = displayInfo.getPhysicalDisplayHeight() != 0
-                ? displayInfo.getPhysicalDisplayHeight() : displayInfo.getDisplayHeight();
-
-        float arcWidth = Math.min(screenWidth, screenHeight) * 0.5f / SIN_PI_OVER_6;
+    private static Resource createOverscrollGlowLBitmap(int minScreenSideLengthPx) {
+        float arcWidth = minScreenSideLengthPx * 0.5f / SIN_PI_OVER_6;
         float y = COS_PI_OVER_6 * arcWidth;
         float height = arcWidth - y;
 

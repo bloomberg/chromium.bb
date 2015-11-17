@@ -930,8 +930,7 @@ public class AwContents implements SmartClipProvider,
         Activity activity = ContentViewCore.activityFromContext(context);
         if (activity == null) {
             if (sCachedWindowAndroid == null) {
-                sCachedWindowAndroid = new WindowAndroidWrapper(
-                        new WindowAndroid(context.getApplicationContext()));
+                sCachedWindowAndroid = new WindowAndroidWrapper(new WindowAndroid(context));
             }
             return sCachedWindowAndroid;
         }

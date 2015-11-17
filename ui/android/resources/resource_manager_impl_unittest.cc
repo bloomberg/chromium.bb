@@ -12,6 +12,7 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/android/resources/resource_manager_impl.h"
 #include "ui/android/resources/system_ui_resource_type.h"
+#include "ui/android/window_android.h"
 #include "ui/gfx/android/java_bitmap.h"
 
 
@@ -34,7 +35,9 @@ namespace ui {
 
 class TestResourceManagerImpl : public ResourceManagerImpl {
  public:
-  TestResourceManagerImpl() {}
+  TestResourceManagerImpl(WindowAndroid* window_android)
+      : ResourceManagerImpl(window_android) {}
+
   ~TestResourceManagerImpl() override {}
 
   void SetResourceAsLoaded(AndroidResourceType res_type, int res_id) {
@@ -80,7 +83,10 @@ class MockLayerTreeHost : public cc::LayerTreeHost {
 
 class ResourceManagerTest : public testing::Test {
  public:
-  ResourceManagerTest() : fake_client_(cc::FakeLayerTreeHostClient::DIRECT_3D) {
+  ResourceManagerTest()
+      : window_android_(WindowAndroid::createForTesting()),
+        resource_manager_(window_android_),
+        fake_client_(cc::FakeLayerTreeHostClient::DIRECT_3D) {
     cc::LayerTreeHost::InitParams params;
     cc::LayerTreeSettings settings;
     params.client = &fake_client_;
@@ -89,6 +95,8 @@ class ResourceManagerTest : public testing::Test {
     host_.reset(new MockLayerTreeHost(&params));
     resource_manager_.Init(host_.get());
   }
+
+  ~ResourceManagerTest() override { window_android_->Destroy(NULL, NULL); }
 
   void PreloadResource(ui::SystemUIResourceType type) {
     resource_manager_.PreloadResource(ui::ANDROID_RESOURCE_TYPE_SYSTEM, type);
@@ -103,6 +111,9 @@ class ResourceManagerTest : public testing::Test {
     resource_manager_.SetResourceAsLoaded(ui::ANDROID_RESOURCE_TYPE_SYSTEM,
                                           type);
   }
+
+ private:
+  WindowAndroid* window_android_;
 
  protected:
   scoped_ptr<MockLayerTreeHost> host_;

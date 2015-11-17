@@ -13,6 +13,8 @@ import android.util.SparseArray;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.MainDex;
+import org.chromium.ui.base.WindowAndroid;
+import org.chromium.ui.gfx.DeviceDisplayInfo;
 import org.chromium.ui.resources.ResourceLoader.ResourceLoaderCallback;
 import org.chromium.ui.resources.dynamics.DynamicResource;
 import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
@@ -37,33 +39,51 @@ public class ResourceManager implements ResourceLoaderCallback {
 
     private long mNativeResourceManagerPtr;
 
-    private ResourceManager(Context context, long staticResourceManagerPtr) {
-        Resources resources = context.getResources();
+    private ResourceManager(
+            Resources resources, int minScreenSideLength, long staticResourceManagerPtr) {
         mPxToDp = 1.f / resources.getDisplayMetrics().density;
 
-        // Register ResourceLoaders
         registerResourceLoader(new StaticResourceLoader(
                 AndroidResourceType.STATIC, this, resources));
         registerResourceLoader(new DynamicResourceLoader(
                 AndroidResourceType.DYNAMIC, this));
         registerResourceLoader(new DynamicResourceLoader(
                 AndroidResourceType.DYNAMIC_BITMAP, this));
-        registerResourceLoader(new SystemResourceLoader(
-                AndroidResourceType.SYSTEM, this, context));
+        registerResourceLoader(
+                new SystemResourceLoader(AndroidResourceType.SYSTEM, this, minScreenSideLength));
         mCrushedSpriteResourceLoader = new CrushedSpriteResourceLoader(this, resources);
 
         mNativeResourceManagerPtr = staticResourceManagerPtr;
     }
 
     /**
-     * Creates an instance of a {@link ResourceManager}.  This will
-     * @param context                  A {@link Context} instance to grab {@link Resources} from.
+     * Creates an instance of a {@link ResourceManager}.
+     * @param WindowAndroid            A {@link WindowAndroid} instance to fetch a {@link Context}
+     * and thus grab {@link Resources} from.
      * @param staticResourceManagerPtr A pointer to the native component of this class.
      * @return                         A new instance of a {@link ResourceManager}.
      */
     @CalledByNative
-    private static ResourceManager create(Context context, long staticResourceManagerPtr) {
-        return new ResourceManager(context, staticResourceManagerPtr);
+    private static ResourceManager create(
+            WindowAndroid windowAndroid, long staticResourceManagerPtr) {
+        Context context = windowAndroid.getContext().get();
+        // This call should happen early enough (i.e. during construction) that this context should
+        // not yet have been released.
+        if (context == null) {
+            throw new IllegalStateException("Context should not be null during initialization.");
+        }
+
+        DeviceDisplayInfo displayInfo = DeviceDisplayInfo.create(context);
+        int screenWidth = displayInfo.getPhysicalDisplayWidth() != 0
+                ? displayInfo.getPhysicalDisplayWidth()
+                : displayInfo.getDisplayWidth();
+        int screenHeight = displayInfo.getPhysicalDisplayHeight() != 0
+                ? displayInfo.getPhysicalDisplayHeight()
+                : displayInfo.getDisplayHeight();
+        int minScreenSideLength = Math.min(screenWidth, screenHeight);
+
+        Resources resources = context.getResources();
+        return new ResourceManager(resources, minScreenSideLength, staticResourceManagerPtr);
     }
 
     /**
