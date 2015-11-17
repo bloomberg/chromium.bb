@@ -79,11 +79,6 @@ AXObject* ColorChooserPopupUIController::rootAXObject()
     return m_popup ? m_popup->rootAXObject() : 0;
 }
 
-IntSize ColorChooserPopupUIController::contentSize()
-{
-    return IntSize(0, 0);
-}
-
 void ColorChooserPopupUIController::writeDocument(SharedBuffer* data)
 {
     Vector<ColorSuggestion> suggestions = m_client->suggestions();

@@ -73,7 +73,6 @@ public:
 
 private:
     // WebWidget functions
-    WebSize size() override;
     void beginFrame(double lastFrameTimeMonotonic) override;
     void updateAllLifecyclePhases() override;
     void willCloseLayerTreeView() override;

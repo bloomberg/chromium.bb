@@ -85,11 +85,6 @@ AXObject* DateTimeChooserImpl::rootAXObject()
     return m_popup ? m_popup->rootAXObject() : 0;
 }
 
-IntSize DateTimeChooserImpl::contentSize()
-{
-    return IntSize(0, 0);
-}
-
 static String valueToDateTimeString(double value, AtomicString type)
 {
     DateComponents components;

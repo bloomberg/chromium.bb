@@ -44,7 +44,6 @@ private:
     void updateFromElement() override;
 
     // PagePopupClient functions:
-    IntSize contentSize() override;
     void writeDocument(SharedBuffer*) override;
     void selectFontsFromOwnerDocument(Document&) override;
     void setValueAndClosePopup(int, const String&) override;

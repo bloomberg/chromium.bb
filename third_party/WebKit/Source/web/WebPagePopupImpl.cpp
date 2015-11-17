@@ -230,8 +230,6 @@ bool WebPagePopupImpl::initialize(WebViewImpl* webView, PagePopupClient* popupCl
     m_webView = webView;
     m_popupClient = popupClient;
 
-    resize(m_popupClient->contentSize());
-
     if (!m_widgetClient || !initializePage())
         return false;
     m_widgetClient->show(WebNavigationPolicy());
@@ -262,7 +260,6 @@ bool WebPagePopupImpl::initializePage()
     frame->setPagePopupOwner(m_popupClient->ownerElement());
     frame->setView(FrameView::create(frame.get()));
     frame->init();
-    frame->view()->resize(m_popupClient->contentSize());
     frame->view()->setTransparent(false);
     if (AXObjectCache* cache = m_popupClient->ownerElement().document().existingAXObjectCache())
         cache->childrenChanged(&m_popupClient->ownerElement());
@@ -350,11 +347,6 @@ void WebPagePopupImpl::setIsAcceleratedCompositingActive(bool enter)
             m_isAcceleratedCompositingActive = false;
         }
     }
-}
-
-WebSize WebPagePopupImpl::size()
-{
-    return m_popupClient->contentSize();
 }
 
 void WebPagePopupImpl::beginFrame(double lastFrameTimeMonotonic)

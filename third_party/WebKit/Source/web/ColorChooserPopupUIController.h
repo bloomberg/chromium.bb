@@ -54,7 +54,6 @@ public:
     AXObject* rootAXObject() override;
 
     // PagePopupClient functions:
-    IntSize contentSize() override;
     void writeDocument(SharedBuffer*) override;
     void selectFontsFromOwnerDocument(Document&) override { }
     Locale& locale() override;

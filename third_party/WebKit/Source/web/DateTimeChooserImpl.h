@@ -55,7 +55,6 @@ public:
 private:
     DateTimeChooserImpl(ChromeClientImpl*, DateTimeChooserClient*, const DateTimeChooserParameters&);
     // PagePopupClient functions:
-    IntSize contentSize() override;
     void writeDocument(SharedBuffer*) override;
     void selectFontsFromOwnerDocument(Document&) override { }
     Locale& locale() override;

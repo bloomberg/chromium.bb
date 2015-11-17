@@ -259,11 +259,6 @@ DEFINE_TRACE(PopupMenuImpl)
     PopupMenu::trace(visitor);
 }
 
-IntSize PopupMenuImpl::contentSize()
-{
-    return IntSize();
-}
-
 void PopupMenuImpl::writeDocument(SharedBuffer* data)
 {
     HTMLSelectElement& ownerElement = *m_ownerElement;

@@ -45,8 +45,6 @@ class Locale;
 
 class CORE_EXPORT PagePopupClient {
 public:
-    virtual IntSize contentSize() = 0;
-
     // Provide an HTML source to the specified buffer. The HTML
     // source is rendered in a PagePopup.
     // The content HTML supports:
