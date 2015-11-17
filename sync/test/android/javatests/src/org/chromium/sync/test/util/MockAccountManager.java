@@ -90,6 +90,10 @@ public class MockAccountManager implements AccountManagerDelegate {
 
     private final SingleThreadedExecutor mExecutor;
 
+    // Tracks the number of in-progress getAccountsByType() tasks so that tests can wait for
+    // their completion.
+    private final ZeroCounter mGetAccountsTaskCounter;
+
     @VisibleForTesting
     public MockAccountManager(Context context, Context testContext, Account... accounts) {
         mContext = context;
@@ -98,6 +102,7 @@ public class MockAccountManager implements AccountManagerDelegate {
         mTestContext = testContext;
         mMainHandler = new Handler(mContext.getMainLooper());
         mExecutor = new SingleThreadedExecutor();
+        mGetAccountsTaskCounter = new ZeroCounter();
         mAccounts = new HashSet<AccountHolder>();
         mAccountPermissionPreparations = new LinkedList<AccountAuthTokenPreparation>();
         if (accounts != null) {
@@ -139,6 +144,7 @@ public class MockAccountManager implements AccountManagerDelegate {
 
     @Override
     public void getAccountsByType(final String type, final Callback<Account[]> callback) {
+        mGetAccountsTaskCounter.increment();
         new AsyncTask<Void, Void, Account[]>() {
             @Override
             protected Account[] doInBackground(Void... params) {
@@ -148,8 +154,15 @@ public class MockAccountManager implements AccountManagerDelegate {
             @Override
             protected void onPostExecute(Account[] accounts) {
                 callback.onResult(accounts);
+                mGetAccountsTaskCounter.decrement();
             }
         }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+    }
+
+    @VisibleForTesting
+    public void waitForGetAccountsTask() throws InterruptedException {
+        // Wait until all tasks are done because we don't know which is being waited for.
+        mGetAccountsTaskCounter.waitUntilZero();
     }
 
     @VisibleForTesting
@@ -641,6 +654,38 @@ public class MockAccountManager implements AccountManagerDelegate {
                     + ", mAuthTokenType='" + mAuthTokenType + '\''
                     + ", mAllowed=" + mAllowed
                     + '}';
+        }
+    }
+
+    /**
+     * Simple concurrency helper class for waiting until a resource count becomes zero.
+     */
+    private static class ZeroCounter {
+        private static final int WAIT_TIMEOUT_MS = 10000;
+
+        private final Object mLock = new Object();
+        private int mCount = 0;
+
+        public void increment() {
+            synchronized (mLock) {
+                mCount++;
+            }
+        }
+
+        public void decrement() {
+            synchronized (mLock) {
+                if (--mCount == 0) {
+                    mLock.notifyAll();
+                }
+            }
+        }
+
+        public void waitUntilZero() throws InterruptedException {
+            synchronized (mLock) {
+                while (mCount != 0) {
+                    mLock.wait(WAIT_TIMEOUT_MS);
+                }
+            }
         }
     }
 }
