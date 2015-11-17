@@ -5951,6 +5951,55 @@ TEST_F(LayerTreeHostCommonTest,
   EXPECT_EQ(0u, render_surface2->num_unclipped_descendants());
 }
 
+TEST_F(LayerTreeHostCommonTest,
+       CreateRenderSurfaceWhenFlattenInsideRenderingContext) {
+  // Verifies that Render Surfaces are created at the edge of rendering context.
+
+  scoped_refptr<LayerWithForcedDrawsContent> parent =
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
+  Layer* root = parent.get();
+  scoped_refptr<LayerWithForcedDrawsContent> child_1 =
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
+  Layer* child1 = child_1.get();
+  scoped_refptr<LayerWithForcedDrawsContent> child_2 =
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
+  Layer* child2 = child_2.get();
+  scoped_refptr<LayerWithForcedDrawsContent> child_3 =
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
+  Layer* child3 = child_3.get();
+
+  parent->AddChild(child_1.Pass());
+  child1->AddChild(child_2.Pass());
+  child2->AddChild(child_3.Pass());
+
+  host()->SetRootLayer(root);
+
+  const gfx::Transform identity_matrix;
+  gfx::Point3F transform_origin;
+  gfx::PointF position;
+  gfx::Size bounds(100, 100);
+
+  SetLayerPropertiesForTesting(root, identity_matrix, transform_origin,
+                               position, bounds, true, false);
+  SetLayerPropertiesForTesting(child1, identity_matrix, transform_origin,
+                               position, bounds, false, true);
+  SetLayerPropertiesForTesting(child2, identity_matrix, transform_origin,
+                               position, bounds, true, false);
+  SetLayerPropertiesForTesting(child3, identity_matrix, transform_origin,
+                               position, bounds, true, false);
+
+  child2->Set3dSortingContextId(1);
+  child3->Set3dSortingContextId(1);
+
+  ExecuteCalculateDrawPropertiesWithPropertyTrees(parent.get());
+
+  // Verify which render surfaces were created.
+  EXPECT_TRUE(root->has_render_surface());
+  EXPECT_FALSE(child1->has_render_surface());
+  EXPECT_TRUE(child2->has_render_surface());
+  EXPECT_FALSE(child3->has_render_surface());
+}
+
 TEST_F(LayerTreeHostCommonTest, CanRenderToSeparateSurface) {
   FakeImplTaskRunnerProvider task_runner_provider;
   TestSharedBitmapManager shared_bitmap_manager;
@@ -5977,10 +6026,10 @@ TEST_F(LayerTreeHostCommonTest, CanRenderToSeparateSurface) {
   // This layer structure normally forces render surface due to preserves3d
   // behavior.
   SetLayerPropertiesForTesting(child1.get(), identity_matrix, transform_origin,
-                               position, bounds, false, true, true);
+                               position, bounds, false, true, false);
   child1->SetDrawsContent(true);
   SetLayerPropertiesForTesting(child2.get(), identity_matrix, transform_origin,
-                               position, bounds, true, false, false);
+                               position, bounds, true, false, true);
   child2->SetDrawsContent(true);
   SetLayerPropertiesForTesting(child3.get(), identity_matrix, transform_origin,
                                position, bounds, true, false, false);
