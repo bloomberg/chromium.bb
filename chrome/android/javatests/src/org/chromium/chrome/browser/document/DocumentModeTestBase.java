@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.document;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
@@ -299,8 +300,9 @@ public class DocumentModeTestBase extends MultiActivityTestBase {
                     }
                 });
 
-                return ApplicationStatus.getStateForActivity(tab.getActivity())
-                        == ActivityState.RESUMED;
+                Activity activity = tab.getWindowAndroid().getActivity().get();
+                if (activity == null) return false;
+                return ApplicationStatus.getStateForActivity(activity) == ActivityState.RESUMED;
             }
         }));
     }

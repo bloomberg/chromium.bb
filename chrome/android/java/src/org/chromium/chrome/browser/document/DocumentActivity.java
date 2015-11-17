@@ -459,10 +459,13 @@ public class DocumentActivity extends ChromeActivity {
                 ActivityDelegate.getTabIdFromIntent(getIntent()));
         int tabId = determineTabId();
         TabState tabState = mTabModel.getTabStateForDocument(tabId);
-        boolean isInitiallyHidden = asyncParams != null ? asyncParams.isInitiallyHidden() : false;
+        boolean isAffiliated = asyncParams != null ? asyncParams.isAffiliated() : false;
+        boolean isCreatedWithWebContents = asyncParams != null
+                && asyncParams.getWebContents() != null;
+
         mDocumentTab = DocumentTab.create(DocumentActivity.this, isIncognito(), getWindowAndroid(),
                 determineLastKnownUrl(), asyncParams != null ? asyncParams.getWebContents() : null,
-                tabState, isInitiallyHidden);
+                tabState, isAffiliated);
 
         if (asyncParams != null && asyncParams.getWebContents() != null) {
             Intent parentIntent = IntentUtils.safeGetParcelableExtra(getIntent(),
@@ -478,19 +481,17 @@ public class DocumentActivity extends ChromeActivity {
 
         getTabModelSelector().setTab(mDocumentTab);
 
-        TabCreationState creationState = isInitiallyHidden
-                ? TabCreationState.LIVE_IN_BACKGROUND : TabCreationState.LIVE_IN_FOREGROUND;
+        TabCreationState creationState = isAffiliated
+                ? (SysUtils.isLowEndDevice() ? TabCreationState.FROZEN_FOR_LAZY_LOAD
+                        : TabCreationState.LIVE_IN_BACKGROUND)
+                        : TabCreationState.LIVE_IN_FOREGROUND;
+
         if (!mDocumentTab.didRestoreState()
                 || (asyncParams != null && asyncParams.getLoadUrlParams().getUrl() != null)) {
-            if (!mDocumentTab.isCreatedWithWebContents()) {
+            if (!isCreatedWithWebContents) {
                 // Don't load tabs in the background on low end devices. We will call
                 // loadLastKnownUrl() in onResumeWithNative() next time activity is resumed.
-                int launchMode = IntentUtils.safeGetIntExtra(getIntent(),
-                        ChromeLauncherActivity.EXTRA_LAUNCH_MODE,
-                        ChromeLauncherActivity.LAUNCH_MODE_FOREGROUND);
-                if (SysUtils.isLowEndDevice()
-                        && launchMode == ChromeLauncherActivity.LAUNCH_MODE_AFFILIATED
-                        && asyncParams != null) {
+                if (SysUtils.isLowEndDevice() && isAffiliated) {
                     // onResumeWithNative() wants asyncParams's URL to be non-null.
                     LoadUrlParams loadUrlParams = asyncParams.getLoadUrlParams();
                     if (loadUrlParams.getUrl() == null) {
@@ -502,7 +503,6 @@ public class DocumentActivity extends ChromeActivity {
 
                     // Use the URL as the document title until tab is loaded.
                     updateTaskDescription(loadUrlParams.getUrl(), null);
-                    creationState = TabCreationState.FROZEN_FOR_LAZY_LOAD;
                 } else {
                     loadLastKnownUrl(asyncParams);
                 }

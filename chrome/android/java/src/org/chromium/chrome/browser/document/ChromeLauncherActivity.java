@@ -569,7 +569,7 @@ public class ChromeLauncherActivity extends Activity
         Bundle options = null;
         if (affiliated && !isWebContentsPending) {
             options = ActivityOptions.makeTaskLaunchBehind().toBundle();
-            asyncParams.setIsInitiallyHidden(true);
+            asyncParams.setIsAffiliated(true);
         }
 
         try {

@@ -35,7 +35,7 @@ public class AsyncTabCreationParams {
     private int mDocumentStartedBy = DocumentMetricIds.STARTED_BY_UNKNOWN;
 
     /** Whether or not the {@link WebContents} should be initially hidden. */
-    private boolean mIsInitiallyHidden;
+    private boolean mIsAffiliated;
 
     /** Create parameters for creating a Tab asynchronously. */
     public AsyncTabCreationParams(LoadUrlParams loadUrlParams) {
@@ -92,12 +92,12 @@ public class AsyncTabCreationParams {
         return mWebContents;
     }
 
-    public void setIsInitiallyHidden(boolean initiallyHidden) {
-        mIsInitiallyHidden = initiallyHidden;
+    public void setIsAffiliated(boolean isAffiliated) {
+        mIsAffiliated = isAffiliated;
     }
 
-    public boolean isInitiallyHidden() {
-        return mIsInitiallyHidden;
+    public boolean isAffiliated() {
+        return mIsAffiliated;
     }
 
     private AsyncTabCreationParams(LoadUrlParams loadUrlParams, Intent originalIntent,

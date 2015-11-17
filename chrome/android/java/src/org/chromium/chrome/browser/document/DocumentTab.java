@@ -4,10 +4,10 @@
 
 package org.chromium.chrome.browser.document;
 
+import android.app.Activity;
 import android.graphics.Bitmap;
 
 import org.chromium.base.ObserverList.RewindableIterator;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.IntentHandler;
@@ -45,11 +45,6 @@ public class DocumentTab extends Tab {
 
     private boolean mDidRestoreState;
 
-    // Whether this document tab was constructed from passed-in web contents pointer.
-    private boolean mCreatedFromWebContents;
-
-    private final DocumentActivity mActivity;
-
     /**
      * Standard constructor for the document tab.
      * @param activity The document activity that will hold on to this tab.
@@ -63,7 +58,6 @@ public class DocumentTab extends Tab {
             String url, int parentTabId, boolean initiallyHidden) {
         super(ActivityDelegate.getTabIdFromIntent(activity.getIntent()), parentTabId, incognito,
                 activity, windowAndroid, TabLaunchType.FROM_EXTERNAL_APP, null, null);
-        mActivity = activity;
         initialize(url, null, activity.getTabContentManager(), false, initiallyHidden);
     }
 
@@ -80,7 +74,6 @@ public class DocumentTab extends Tab {
             WindowAndroid windowAndroid, String url, TabState tabState, int parentTabId) {
         super(ActivityDelegate.getTabIdFromIntent(activity.getIntent()), parentTabId, incognito,
                 activity, windowAndroid, TabLaunchType.FROM_RESTORE,  null, tabState);
-        mActivity = activity;
         initialize(url, null, activity.getTabContentManager(), true, false);
     }
 
@@ -97,9 +90,7 @@ public class DocumentTab extends Tab {
             WindowAndroid windowAndroid, String url, int parentTabId, WebContents webContents) {
         super(ActivityDelegate.getTabIdFromIntent(activity.getIntent()), parentTabId, incognito,
                 activity, windowAndroid, TabLaunchType.FROM_LONGPRESS_FOREGROUND, null, null);
-        mActivity = activity;
         initialize(url, webContents, activity.getTabContentManager(), false, false);
-        mCreatedFromWebContents = true;
     }
 
     @Override
@@ -173,13 +164,6 @@ public class DocumentTab extends Tab {
     }
 
     /**
-     * @return Whether this tab was created using web contents passed to it.
-     */
-    public boolean isCreatedWithWebContents() {
-        return mCreatedFromWebContents;
-    }
-
-    /**
      * Create a DocumentTab.
      * @param activity The activity the tab will be residing in.
      * @param incognito Whether the tab is incognito.
@@ -215,17 +199,14 @@ public class DocumentTab extends Tab {
         onActivityStartInternal(false /* showNow */);
     }
 
-    @VisibleForTesting
-    public DocumentActivity getActivity() {
-        return mActivity;
-    }
-
     /**
      * A helper function to create TabUma and set it to the tab.
      * @param creationState In what state the tab was created.
      */
     public void initializeTabUma(TabCreationState creationState) {
+        Activity activity = getWindowAndroid().getActivity().get();
+        if (!(activity instanceof ChromeActivity)) return;
         setTabUma(new TabUma(this, creationState,
-                mActivity.getTabModelSelector().getModel(mActivity.isIncognito())));
+                ((ChromeActivity) activity).getTabModelSelector().getModel(isIncognito())));
     }
 }
