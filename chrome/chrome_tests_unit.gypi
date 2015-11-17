@@ -2680,7 +2680,6 @@
         }, { # 'OS!="android" and OS!="ios"'
           'dependencies': [
             '../components/components.gyp:bubble_test_support',
-            'tools/profile_reset/jtl_compiler.gyp:jtl_compiler_lib',
           ],
         }],
         ['OS != "android" and chromeos == 0', {

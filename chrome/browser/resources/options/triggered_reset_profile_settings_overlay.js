@@ -6,7 +6,6 @@ cr.define('options', function() {
   var Page = cr.ui.pageManager.Page;
 
   var ResetProfileSettingsOverlay = options.ResetProfileSettingsOverlay;
-  var ResetProfileSettingsBanner = options.ResetProfileSettingsBanner;
 
   /**
    * TriggeredResetProfileSettingsOverlay class
@@ -37,7 +36,6 @@ cr.define('options', function() {
           loadTimeData.getString('triggeredResetProfileSettingsOverlay');
       $('reset-profile-settings-explanation').textContent =
           loadTimeData.getString('triggeredResetProfileSettingsExplanation');
-      ResetProfileSettingsBanner.dismiss();
       chrome.send('onShowResetProfileDialog');
     },
   };

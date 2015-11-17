@@ -268,11 +268,6 @@ class BrowserWindow : public ui::BaseWindow {
       translate::TranslateErrors::Type error_type,
       bool is_user_gesture) = 0;
 
-  // Shows the profile reset bubble on the platforms that support it.
-  virtual bool IsProfileResetBubbleSupported() const = 0;
-  virtual GlobalErrorBubbleViewBase* ShowProfileResetBubble(
-      const base::WeakPtr<ProfileResetGlobalError>& global_error) = 0;
-
 #if defined(ENABLE_ONE_CLICK_SIGNIN)
   enum OneClickSigninBubbleType {
     ONE_CLICK_SIGNIN_BUBBLE_TYPE_BUBBLE,

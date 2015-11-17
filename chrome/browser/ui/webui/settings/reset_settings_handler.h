@@ -22,7 +22,6 @@ namespace content {
 class WebUIDataSource;
 }
 
-class AutomaticProfileResetter;
 class BrandcodeConfigFetcher;
 class ProfileResetter;
 class ResettableSettingsSnapshot;
@@ -77,14 +76,6 @@ class ResetSettingsHandler
   // Whether factory reset can be performed.
   bool allow_powerwash_ = false;
 #endif  // defined(OS_CHROMEOS)
-
-  // Destroyed with the Profile, thus it should outlive us. This will be NULL if
-  // the underlying profile is off-the-record (e.g. in Guest mode on Chrome OS).
-  AutomaticProfileResetter* automatic_profile_resetter_ = nullptr;
-
-  // Records whether or not the Profile Reset confirmation dialog was opened at
-  // least once during the lifetime of the settings page.
-  bool has_shown_confirmation_dialog_ = false;
 
   scoped_ptr<ProfileResetter> resetter_;
 

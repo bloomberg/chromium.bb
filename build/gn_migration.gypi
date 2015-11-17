@@ -356,7 +356,6 @@
             '../chrome/chrome.gyp:performance_browser_tests',
             '../chrome/chrome.gyp:sync_integration_tests',
             '../chrome/chrome.gyp:sync_performance_tests',
-            '../chrome/tools/profile_reset/jtl_compiler.gyp:jtl_compiler',
             '../extensions/extensions_tests.gyp:extensions_browsertests',
             '../extensions/extensions_tests.gyp:extensions_unittests',
             '../gin/gin.gyp:gin_shell',

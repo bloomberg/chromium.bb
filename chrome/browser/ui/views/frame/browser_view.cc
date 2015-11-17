@@ -80,7 +80,6 @@
 #include "chrome/browser/ui/views/omnibox/omnibox_view_views.h"
 #include "chrome/browser/ui/views/profiles/avatar_menu_button.h"
 #include "chrome/browser/ui/views/profiles/profile_chooser_view.h"
-#include "chrome/browser/ui/views/profiles/profile_reset_bubble_view.h"
 #include "chrome/browser/ui/views/session_crashed_bubble_view.h"
 #include "chrome/browser/ui/views/settings_api_bubble_helper_views.h"
 #include "chrome/browser/ui/views/status_bubble_views.h"
@@ -1328,15 +1327,6 @@ void BrowserView::ShowTranslateBubble(
       GetToolbarView()->GetTranslateBubbleAnchor(), web_contents, step,
       error_type, is_user_gesture ? TranslateBubbleView::USER_GESTURE
                                   : TranslateBubbleView::AUTOMATIC);
-}
-
-bool BrowserView::IsProfileResetBubbleSupported() const {
-  return true;
-}
-
-GlobalErrorBubbleViewBase* BrowserView::ShowProfileResetBubble(
-    const base::WeakPtr<ProfileResetGlobalError>& global_error) {
-  return ProfileResetBubbleView::ShowBubble(global_error, browser_.get());
 }
 
 #if defined(ENABLE_ONE_CLICK_SIGNIN)

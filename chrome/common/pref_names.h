@@ -379,8 +379,6 @@ extern const char kDefaultSupervisedUserFilteringBehavior[];
 extern const char kSupervisedUserCreationAllowed[];
 extern const char kSupervisedUsers[];
 
-extern const char kProfileResetPromptMementoInProfilePrefs[];
-
 extern const char kMessageCenterDisabledExtensionIds[];
 extern const char kMessageCenterDisabledSystemComponentIds[];
 extern const char kWelcomeNotificationDismissed[];
@@ -430,7 +428,6 @@ extern const char kProfilesLastActive[];
 extern const char kProfilesNumCreated[];
 extern const char kProfileInfoCache[];
 extern const char kProfileCreatedByVersion[];
-extern const char kProfileResetPromptMementosInLocalState[];
 
 extern const char kStabilityOtherUserCrashCount[];
 extern const char kStabilityKernelCrashCount[];

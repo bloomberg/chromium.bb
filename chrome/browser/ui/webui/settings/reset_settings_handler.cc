@@ -11,8 +11,6 @@
 #include "base/strings/string16.h"
 #include "base/values.h"
 #include "chrome/browser/google/google_brand.h"
-#include "chrome/browser/profile_resetter/automatic_profile_resetter.h"
-#include "chrome/browser/profile_resetter/automatic_profile_resetter_factory.h"
 #include "chrome/browser/profile_resetter/brandcode_config_fetcher.h"
 #include "chrome/browser/profile_resetter/brandcoded_default_settings.h"
 #include "chrome/browser/profile_resetter/profile_resetter.h"
@@ -49,8 +47,6 @@ ResetSettingsHandler::ResetSettingsHandler(
   google_brand::GetBrand(&brandcode_);
   Profile* profile = Profile::FromWebUI(web_ui);
   resetter_.reset(new ProfileResetter(profile));
-  automatic_profile_resetter_ =
-      AutomaticProfileResetterFactory::GetForBrowserContext(profile);
 
 #if defined(OS_CHROMEOS)
   policy::BrowserPolicyConnectorChromeOS* connector =
@@ -62,12 +58,7 @@ ResetSettingsHandler::ResetSettingsHandler(
 #endif  // defined(OS_CHROMEOS)
 }
 
-ResetSettingsHandler::~ResetSettingsHandler() {
-  if (has_shown_confirmation_dialog_ && automatic_profile_resetter_) {
-    automatic_profile_resetter_->NotifyDidCloseWebUIResetDialog(
-        false /*performed_reset*/);
-  }
-}
+ResetSettingsHandler::~ResetSettingsHandler() {}
 
 void ResetSettingsHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("performResetProfileSettings",
@@ -120,17 +111,10 @@ void ResetSettingsHandler::OnResetProfileSettingsDone(
       setting_snapshot_->Subtract(current_snapshot);
       std::string report = SerializeSettingsReport(*setting_snapshot_,
                                                    difference);
-      bool is_reset_prompt_active = automatic_profile_resetter_ &&
-          automatic_profile_resetter_->IsResetPromptFlowActive();
-      SendSettingsFeedback(report, profile, is_reset_prompt_active ?
-          PROFILE_RESET_PROMPT : PROFILE_RESET_WEBUI);
+      SendSettingsFeedback(report, profile);
     }
   }
   setting_snapshot_.reset();
-  if (automatic_profile_resetter_) {
-    automatic_profile_resetter_->NotifyDidCloseWebUIResetDialog(
-        true /*performed_reset*/);
-  }
 }
 
 void ResetSettingsHandler::OnShowResetProfileDialog(
@@ -142,10 +126,6 @@ void ResetSettingsHandler::OnShowResetProfileDialog(
         &ResetSettingsHandler::UpdateFeedbackUI, AsWeakPtr()));
     UpdateFeedbackUI();
   }
-
-  if (automatic_profile_resetter_)
-    automatic_profile_resetter_->NotifyDidOpenWebUIResetDialog();
-  has_shown_confirmation_dialog_ = true;
 
   if (brandcode_.empty())
     return;

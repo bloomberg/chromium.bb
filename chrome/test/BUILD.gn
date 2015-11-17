@@ -2006,8 +2006,6 @@ test("unit_tests") {
       "../browser/ui/bookmarks/bookmark_ui_utils_desktop_unittest.cc",
       "../browser/ui/sync/sync_promo_ui_unittest.cc",
     ]
-  } else {
-    deps += [ "//chrome/tools/profile_reset:jtl_compiler_lib" ]
   }
   if (!is_android && !is_chromeos) {
     sources += rebase_path(
@@ -2104,7 +2102,6 @@ if (is_win || (is_linux && !is_chromeos)) {
       "../common/crash_keys.cc",
       "../common/crash_keys.h",
     ]
-
     deps = [
       ":test_support",
       "//breakpad:client",

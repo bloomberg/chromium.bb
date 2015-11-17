@@ -177,15 +177,6 @@ autofill::SaveCardBubbleView* TestBrowserWindow::ShowSaveCreditCardBubble(
   return nullptr;
 }
 
-bool TestBrowserWindow::IsProfileResetBubbleSupported() const {
-  return false;
-}
-
-GlobalErrorBubbleViewBase* TestBrowserWindow::ShowProfileResetBubble(
-    const base::WeakPtr<ProfileResetGlobalError>& global_error) {
-  return nullptr;
-}
-
 bool TestBrowserWindow::IsDownloadShelfVisible() const {
   return false;
 }

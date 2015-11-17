@@ -75843,7 +75843,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="10" label="kDefaultSearchProviderName"/>
   <int value="11" label="kPinnedTabs"/>
   <int value="12" label="kKnownDisabled (Obsolete 07/2014)"/>
-  <int value="13" label="kProfileResetPromptMemento"/>
+  <int value="13" label="kProfileResetPromptMemento (Obsolete 11/2015)"/>
   <int value="14" label="kDefaultSearchProviderDataPrefName"/>
   <int value="15" label="kPreferenceResetTime"/>
   <int value="16" label="kSafeBrowsingIncidentReportSent"/>

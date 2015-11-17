@@ -5,7 +5,6 @@
 // Note: the native-side handler for this is AutomaticSettingsResetHandler.
 
 cr.define('options', function() {
-  /** @const */ var SettingsBannerBase = options.SettingsBannerBase;
   /** @const */ var PageManager = cr.ui.pageManager.PageManager;
 
   /**
@@ -19,7 +18,38 @@ cr.define('options', function() {
   cr.addSingletonGetter(AutomaticSettingsResetBanner);
 
   AutomaticSettingsResetBanner.prototype = {
-    __proto__: SettingsBannerBase.prototype,
+    /**
+     * Whether or not the banner has already been dismissed.
+     *
+     * This is needed because of the surprising ordering of asynchronous
+     * JS<->native calls when the settings page is opened with specifying a
+     * given sub-page, e.g. chrome://settings/AutomaticSettingsReset.
+     *
+     * In such a case, AutomaticSettingsResetOverlay's didShowPage(), which
+     * calls our dismiss() method, would be called before the native Handlers'
+     * InitalizePage() methods have an effect in the JS, which includes calling
+     * our show() method. This would mean that the banner would be first
+     * dismissed, then shown. We want to prevent this.
+     *
+     * @type {boolean}
+     * @private
+     */
+    hadBeenDismissed_: false,
+
+    /**
+     * Metric name to send when a show event occurs.
+     */
+    showMetricName_: '',
+
+    /**
+     * Name of the native callback invoked when the banner is dismised.
+     */
+    dismissNativeCallbackName_: '',
+
+    /**
+     * DOM element whose visibility is set when setVisibility_ is called.
+     */
+    setVisibilibyDomElement_: null,
 
     /**
      * Initializes the banner's event handlers.
@@ -31,12 +61,12 @@ cr.define('options', function() {
      * private implementations using cr.makePublic().
      */
     initialize: function() {
-      this.showMetricName = 'AutomaticSettingsReset_WebUIBanner_BannerShown';
+      this.showMetricName_ = 'AutomaticSettingsReset_WebUIBanner_BannerShown';
 
-      this.dismissNativeCallbackName =
+      this.dismissNativeCallbackName_ =
           'onDismissedAutomaticSettingsResetBanner';
 
-      this.visibilityDomElement = $('automatic-settings-reset-banner');
+      this.setVisibilibyDomElement_ = $('automatic-settings-reset-banner');
 
       $('automatic-settings-reset-banner-close').onclick = function(event) {
         chrome.send('metricsHandler:recordAction',
@@ -54,18 +84,45 @@ cr.define('options', function() {
         PageManager.showPageByName('resetProfileSettings');
       };
     },
+
+    /**
+     * Sets whether or not the reset profile settings banner shall be visible.
+     * @param {boolean} show Whether or not to show the banner.
+     * @protected
+     */
+    setVisibility: function(show) {
+      this.setVisibilibyDomElement_.hidden = !show;
+    },
+
+    /**
+     * Called by the native code to show the banner if needed.
+     * @private
+     */
+    show_: function() {
+      if (!this.hadBeenDismissed_) {
+        chrome.send('metricsHandler:recordAction', [this.showMetricName_]);
+        this.setVisibility(true);
+      }
+    },
+
+    /**
+     * Called when the banner should be closed as a result of something taking
+     * place on the WebUI page, i.e. when its close button is pressed, or when
+     * the confirmation dialog for the profile settings reset feature is opened.
+     * @private
+     */
+    dismiss_: function() {
+      chrome.send(this.dismissNativeCallbackName_);
+      this.hadBeenDismissed_ = true;
+      this.setVisibility(false);
+    },
   };
 
-  // Forward public APIs to protected implementations.
-  [
+  // Forward public APIs to private implementations.
+  cr.makePublic(AutomaticSettingsResetBanner, [
     'show',
     'dismiss',
-  ].forEach(function(name) {
-    AutomaticSettingsResetBanner[name] = function() {
-      var instance = AutomaticSettingsResetBanner.getInstance();
-      return instance[name].apply(instance, arguments);
-    };
-  });
+  ]);
 
   // Export
   return {

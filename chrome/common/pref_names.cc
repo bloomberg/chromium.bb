@@ -1121,11 +1121,6 @@ const char kSupervisedUserCreationAllowed[] =
 // List pref containing the users supervised by this user.
 const char kSupervisedUsers[] = "profile.managed_users";
 
-// String that indicates that the profile reset prompt has already been shown to
-// the user (profile).
-const char kProfileResetPromptMementoInProfilePrefs[] =
-    "profile.reset_prompt_memento";
-
 // List pref containing the extension ids which are not allowed to send
 // notifications to the message center.
 const char kMessageCenterDisabledExtensionIds[] =
@@ -1245,14 +1240,6 @@ const char kProfileCreatedByVersion[] = "profile.created_by_version";
 // used to display information about profiles without actually having to load
 // them.
 const char kProfileInfoCache[] = "profile.info_cache";
-
-// Dictionary that maps profile keys to strings that indicate that the profile
-// reset prompt has already been shown to the corresponding user (profile).
-// This is semantically similar to kProfileResetPromptMementoInProfilePrefs, see
-// chrome/browser/profile_resetter/automatic_profile_resetter_mementos.h for an
-// explanation of why this redundancy is needed.
-const char kProfileResetPromptMementosInLocalState[] =
-    "profile.reset_prompt_mementos";
 
 // Boolean that specifies whether or not crash reports are sent
 // over the network for analysis.

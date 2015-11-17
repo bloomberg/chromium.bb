@@ -72,7 +72,6 @@ extern const base::FilePath::CharType kOfflinePageMetadataDirname[];
 extern const base::FilePath::CharType kPreferencesFilename[];
 extern const base::FilePath::CharType kProtectedPreferencesFilenameDeprecated[];
 extern const base::FilePath::CharType kReadmeFilename[];
-extern const base::FilePath::CharType kResetPromptMementoFilename[];
 extern const base::FilePath::CharType kSafeBrowsingBaseFilename[];
 extern const base::FilePath::CharType kSecurePreferencesFilename[];
 extern const base::FilePath::CharType kServiceStateFileName[];

@@ -391,7 +391,6 @@ group("both_gn_and_gyp") {
       "//chrome/test:sync_performance_tests",
       "//chrome/test/chromedriver:chromedriver",
       "//chrome/test/chromedriver:chromedriver_tests",
-      "//chrome/tools/profile_reset:jtl_compiler",
       "//components:components_perftests",
       "//content/test:content_gl_tests",
       "//content/test:content_gl_benchmark",

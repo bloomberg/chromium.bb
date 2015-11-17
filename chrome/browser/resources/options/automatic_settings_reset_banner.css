@@ -2,9 +2,6 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-/* These styles are used by both reset_profile_settings_banner.html and
- * automatic_settings_reset_banner.html. */
-
 .settings-banner {
   background-color: #f5f5f5;
   border-color: #c8c8c8;
@@ -43,8 +40,8 @@ html[dir='rtl'] .settings-banner > .close-button {
 }
 
 .settings-banner .content-area {
-  -webkit-box-align: center;
-  display: -webkit-box;
+  align-items: center;
+  display: flex;
   padding: 17px;
 }
 
@@ -57,8 +54,8 @@ html[dir='rtl'] .settings-banner > .close-button {
 }
 
 .settings-banner .content-area .text {
-  -webkit-box-flex: 1.0;
   -webkit-margin-start: 18px;
+  flex: 1.0;
 }
 
 .settings-banner .content-area .text p {

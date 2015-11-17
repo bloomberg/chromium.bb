@@ -2347,8 +2347,6 @@
       'browser/ui/views/profiles/avatar_menu_button.h',
       'browser/ui/views/profiles/profile_chooser_view.cc',
       'browser/ui/views/profiles/profile_chooser_view.h',
-      'browser/ui/views/profiles/profile_reset_bubble_view.cc',
-      'browser/ui/views/profiles/profile_reset_bubble_view.h',
       'browser/ui/views/profiles/supervised_user_avatar_label.cc',
       'browser/ui/views/profiles/supervised_user_avatar_label.h',
       'browser/ui/views/profiles/user_manager_view.cc',

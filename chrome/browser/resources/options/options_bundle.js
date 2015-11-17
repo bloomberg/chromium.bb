@@ -14,7 +14,6 @@
 <include src="options_page.js">
 <include src="pref_ui.js">
 <include src="settings_dialog.js">
-<include src="settings_banner.js">
 <if expr="chromeos">
 <include src="../chromeos/user_images_grid.js">
 <include src="../help/channel_change_page.js">
@@ -104,7 +103,6 @@ var CertificateImportErrorOverlay = options.CertificateImportErrorOverlay;
 <include src="password_manager.js">
 <include src="password_manager_list.js">
 <include src="profiles_icon_grid.js">
-<include src="reset_profile_settings_banner.js">
 <include src="reset_profile_settings_overlay.js">
 <include src="search_engine_manager.js">
 <include src="search_engine_manager_engine_list.js">
