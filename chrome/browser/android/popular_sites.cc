@@ -10,9 +10,11 @@
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/path_service.h"
+#include "base/prefs/pref_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/task_runner_util.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/net/file_downloader.h"
@@ -21,6 +23,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/google/core/browser/google_util.h"
+#include "components/pref_registry/pref_registry_syncable.h"
 #include "components/search_engines/search_engine_type.h"
 #include "components/search_engines/template_url_prepopulate_data.h"
 #include "components/search_engines/template_url_service.h"
@@ -37,6 +40,8 @@ const char kPopularSitesDefaultCountryCode[] = "DEFAULT";
 const char kPopularSitesDefaultVersion[] = "3";
 const char kPopularSitesLocalFilename[] = "suggested_sites.json";
 const int kPopularSitesRedownloadIntervalHours = 24;
+
+const char kPopularSitesLastDownloadPref[] = "popular_sites_last_download";
 
 // Extract the country from the default search engine if the default search
 // engine is Google.
@@ -203,62 +208,66 @@ PopularSites::PopularSites(Profile* profile,
 
 PopularSites::~PopularSites() {}
 
+// static
+void PopularSites::RegisterProfilePrefs(
+    user_prefs::PrefRegistrySyncable* user_prefs) {
+  user_prefs->RegisterInt64Pref(kPopularSitesLastDownloadPref, 0);
+}
+
 PopularSites::PopularSites(Profile* profile,
                            const GURL& url,
                            bool force_download,
                            const FinishedCallback& callback)
     : callback_(callback),
-      redownload_interval_(
-          base::TimeDelta::FromHours(kPopularSitesRedownloadIntervalHours)),
       popular_sites_local_path_(GetPopularSitesPath()),
+      profile_(profile),
       weak_ptr_factory_(this) {
   // Re-download the file once on every Chrome startup, but use the cached
   // local file afterwards.
   static bool first_time = true;
-  FetchPopularSites(url, profile, first_time || force_download);
+
+  const base::Time last_download_time = base::Time::FromInternalValue(
+      profile_->GetPrefs()->GetInt64(kPopularSitesLastDownloadPref));
+  const base::TimeDelta time_since_last_download =
+      base::Time::Now() - last_download_time;
+  const base::TimeDelta redownload_interval =
+      base::TimeDelta::FromHours(kPopularSitesRedownloadIntervalHours);
+  const bool download_time_is_future = base::Time::Now() < last_download_time;
+
+  const bool should_redownload_if_exists =
+      first_time || force_download || download_time_is_future ||
+      (time_since_last_download > redownload_interval);
+
+  FetchPopularSites(url, should_redownload_if_exists, false /* is_fallback */);
   first_time = false;
 }
 
 void PopularSites::FetchPopularSites(const GURL& url,
-                                     Profile* profile,
-                                     bool force_download) {
-  base::TimeDelta age = base::TimeTicks::Now() - last_download_time_;
-  bool redownload = force_download || (age > redownload_interval_);
+                                     bool force_download,
+                                     bool is_fallback) {
   downloader_.reset(
-      new FileDownloader(url, popular_sites_local_path_, redownload,
-                         profile->GetRequestContext(),
+      new FileDownloader(url, popular_sites_local_path_, force_download,
+                         profile_->GetRequestContext(),
                          base::Bind(&PopularSites::OnDownloadDone,
-                                    base::Unretained(this), profile)));
+                                    base::Unretained(this), is_fallback)));
 }
 
-void PopularSites::FetchFallbackSites(Profile* profile) {
-  downloader_.reset(new FileDownloader(
-      GetPopularSitesFallbackURL(profile), popular_sites_local_path_,
-      true /* force_download */, profile->GetRequestContext(),
-      base::Bind(&PopularSites::OnDownloadFallbackDone,
-                 base::Unretained(this))));
-}
-
-void PopularSites::OnDownloadDone(Profile* profile, bool success) {
+void PopularSites::OnDownloadDone(bool is_fallback, bool success) {
+  downloader_.reset();
   if (success) {
-    last_download_time_ = base::TimeTicks::Now();
+    profile_->GetPrefs()->SetInt64(kPopularSitesLastDownloadPref,
+                                   base::Time::Now().ToInternalValue());
     ParseSiteList(popular_sites_local_path_);
-    downloader_.reset();
-  } else {
+  } else if (!is_fallback) {
     DLOG(WARNING) << "Download country site list failed";
-    FetchFallbackSites(profile);
-  }
-}
-
-void PopularSites::OnDownloadFallbackDone(bool success) {
-  if (success) {
-    last_download_time_ = base::TimeTicks::Now();
-    ParseSiteList(popular_sites_local_path_);
+    // It is fine to force the download as Fallback is only triggered after a
+    // failed download.
+    FetchPopularSites(GetPopularSitesFallbackURL(profile_),
+                      true /* force_download */, true /* is_fallback */);
   } else {
     DLOG(WARNING) << "Download fallback site list failed";
     callback_.Run(false);
   }
-  downloader_.reset();
 }
 
 void PopularSites::ParseSiteList(const base::FilePath& path) {

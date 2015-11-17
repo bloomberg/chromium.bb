@@ -13,11 +13,14 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
-#include "base/time/time.h"
 #include "url/gurl.h"
 
 namespace net {
 class URLRequestContextGetter;
+}
+
+namespace user_prefs {
+class PrefRegistrySyncable;
 }
 
 class FileDownloader;
@@ -67,6 +70,10 @@ class PopularSites {
 
   const std::vector<Site>& sites() const { return sites_; }
 
+  // Register preferences used by this class.
+  static void RegisterProfilePrefs(
+      user_prefs::PrefRegistrySyncable* user_prefs);
+
  private:
   PopularSites(Profile* profile,
                const GURL& url,
@@ -76,14 +83,12 @@ class PopularSites {
   // Fetch the popular sites at the given URL. |force_download| should be true
   // if any previously downloaded site list should be overwritten.
   void FetchPopularSites(const GURL& url,
-                         Profile* profile,
-                         bool force_download);
-  void OnDownloadDone(Profile* profile, bool success);
+                         bool force_download,
+                         bool is_fallback);
 
-  // Fetch the default popular site list. This method will always overwrite
-  // a previously downloaded site list.
-  void FetchFallbackSites(Profile* profile);
-  void OnDownloadFallbackDone(bool success);
+  // If the download was not successful and it was not a fallback, attempt to
+  // download the fallback suggestions.
+  void OnDownloadDone(bool success, bool is_fallback);
 
   void ParseSiteList(const base::FilePath& path);
   void OnJsonParsed(scoped_ptr<std::vector<Site>> sites);
@@ -91,10 +96,10 @@ class PopularSites {
   FinishedCallback callback_;
   scoped_ptr<FileDownloader> downloader_;
   std::vector<Site> sites_;
-  base::TimeTicks last_download_time_;
 
-  base::TimeDelta redownload_interval_;
   base::FilePath popular_sites_local_path_;
+
+  Profile* profile_;
 
   base::WeakPtrFactory<PopularSites> weak_ptr_factory_;
 

@@ -141,6 +141,7 @@
 #include "chrome/browser/android/bookmarks/partner_bookmarks_shim.h"
 #include "chrome/browser/android/most_visited_sites.h"
 #include "chrome/browser/android/new_tab_page_prefs.h"
+#include "chrome/browser/android/popular_sites.h"
 #else
 #include "chrome/browser/profile_resetter/automatic_profile_resetter_factory.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
@@ -458,6 +459,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   MostVisitedSites::RegisterProfilePrefs(registry);
   NewTabPagePrefs::RegisterProfilePrefs(registry);
   PartnerBookmarksShim::RegisterProfilePrefs(registry);
+  PopularSites::RegisterProfilePrefs(registry);
 #else
   AppShortcutManager::RegisterProfilePrefs(registry);
   DeviceIDFetcher::RegisterProfilePrefs(registry);
