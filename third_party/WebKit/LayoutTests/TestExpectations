@@ -1360,7 +1360,7 @@ crbug.com/548765 http/tests/inspector/console-fetch-logging.html [ Failure Pass 
 
 crbug.com/549314 [ XP ] inspector-protocol/layout-fonts/unicode-range-combining-chars-fallback.html [ Failure ]
 
-crbug.com/551272 fast/js/getOwnPropertyDescriptor.html [ NeedsManualRebaseline ]
-crbug.com/551272 fast/js/pic/cached-named-property-getter.html [ NeedsManualRebaseline ]
-crbug.com/551272 fast/js/mozilla/strict/15.10.7.html [ NeedsManualRebaseline ]
+crbug.com/551272 fast/js/getOwnPropertyDescriptor.html [ NeedsRebaseline ]
+crbug.com/551272 fast/js/pic/cached-named-property-getter.html [ NeedsRebaseline ]
+crbug.com/551272 fast/js/mozilla/strict/15.10.7.html [ NeedsRebaseline ]
 crbug.com/555052 http/tests/misc/script-sync-slow-scripts-onerror.html [ Failure Pass ]
