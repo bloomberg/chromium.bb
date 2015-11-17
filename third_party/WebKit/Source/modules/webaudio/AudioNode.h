@@ -280,7 +280,7 @@ public:
     DECLARE_VIRTUAL_TRACE();
     AudioHandler& handler() const;
 
-    virtual void connect(AudioNode*, unsigned outputIndex, unsigned inputIndex, ExceptionState&);
+    virtual AudioNode* connect(AudioNode*, unsigned outputIndex, unsigned inputIndex, ExceptionState&);
     void connect(AudioParam*, unsigned outputIndex, ExceptionState&);
     void disconnect();
     virtual void disconnect(unsigned outputIndex, ExceptionState&);

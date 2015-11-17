@@ -1,0 +1,63 @@
+Test method chaining feature of AudioNode.connect() method.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS The return value of AnalyserNode.connect(GainNode) matches the destination GainNode.
+PASS The return value of AnalyserNode.connect(BiquadFilterNode, 0) matches the destination BiquadFilterNode.
+PASS The return value of AnalyserNode.connect(ChannelMergerNode, 0, 1) matches the destination ChannelMergerNode.
+PASS The return value of BiquadFilterNode.connect(GainNode) matches the destination GainNode.
+PASS The return value of BiquadFilterNode.connect(BiquadFilterNode, 0) matches the destination BiquadFilterNode.
+PASS The return value of BiquadFilterNode.connect(ChannelMergerNode, 0, 1) matches the destination ChannelMergerNode.
+PASS The return value of AudioBufferSourceNode.connect(GainNode) matches the destination GainNode.
+PASS The return value of AudioBufferSourceNode.connect(BiquadFilterNode, 0) matches the destination BiquadFilterNode.
+PASS The return value of AudioBufferSourceNode.connect(ChannelMergerNode, 0, 1) matches the destination ChannelMergerNode.
+PASS The return value of ChannelMergerNode.connect(GainNode) matches the destination GainNode.
+PASS The return value of ChannelMergerNode.connect(BiquadFilterNode, 0) matches the destination BiquadFilterNode.
+PASS The return value of ChannelMergerNode.connect(ChannelMergerNode, 0, 1) matches the destination ChannelMergerNode.
+PASS The return value of ChannelSplitterNode.connect(GainNode) matches the destination GainNode.
+PASS The return value of ChannelSplitterNode.connect(BiquadFilterNode, 0) matches the destination BiquadFilterNode.
+PASS The return value of ChannelSplitterNode.connect(ChannelMergerNode, 0, 1) matches the destination ChannelMergerNode.
+PASS The return value of ConvolverNode.connect(GainNode) matches the destination GainNode.
+PASS The return value of ConvolverNode.connect(BiquadFilterNode, 0) matches the destination BiquadFilterNode.
+PASS The return value of ConvolverNode.connect(ChannelMergerNode, 0, 1) matches the destination ChannelMergerNode.
+PASS The return value of DelayNode.connect(GainNode) matches the destination GainNode.
+PASS The return value of DelayNode.connect(BiquadFilterNode, 0) matches the destination BiquadFilterNode.
+PASS The return value of DelayNode.connect(ChannelMergerNode, 0, 1) matches the destination ChannelMergerNode.
+PASS The return value of DynamicsCompressorNode.connect(GainNode) matches the destination GainNode.
+PASS The return value of DynamicsCompressorNode.connect(BiquadFilterNode, 0) matches the destination BiquadFilterNode.
+PASS The return value of DynamicsCompressorNode.connect(ChannelMergerNode, 0, 1) matches the destination ChannelMergerNode.
+PASS The return value of GainNode.connect(GainNode) matches the destination GainNode.
+PASS The return value of GainNode.connect(BiquadFilterNode, 0) matches the destination BiquadFilterNode.
+PASS The return value of GainNode.connect(ChannelMergerNode, 0, 1) matches the destination ChannelMergerNode.
+PASS The return value of OscillatorNode.connect(GainNode) matches the destination GainNode.
+PASS The return value of OscillatorNode.connect(BiquadFilterNode, 0) matches the destination BiquadFilterNode.
+PASS The return value of OscillatorNode.connect(ChannelMergerNode, 0, 1) matches the destination ChannelMergerNode.
+PASS The return value of PannerNode.connect(GainNode) matches the destination GainNode.
+PASS The return value of PannerNode.connect(BiquadFilterNode, 0) matches the destination BiquadFilterNode.
+PASS The return value of PannerNode.connect(ChannelMergerNode, 0, 1) matches the destination ChannelMergerNode.
+PASS The return value of ScriptProcessorNode.connect(GainNode) matches the destination GainNode.
+PASS The return value of ScriptProcessorNode.connect(BiquadFilterNode, 0) matches the destination BiquadFilterNode.
+PASS The return value of ScriptProcessorNode.connect(ChannelMergerNode, 0, 1) matches the destination ChannelMergerNode.
+PASS The return value of StereoPannerNode.connect(GainNode) matches the destination GainNode.
+PASS The return value of StereoPannerNode.connect(BiquadFilterNode, 0) matches the destination BiquadFilterNode.
+PASS The return value of StereoPannerNode.connect(ChannelMergerNode, 0, 1) matches the destination ChannelMergerNode.
+PASS The return value of WaveShaperNode.connect(GainNode) matches the destination GainNode.
+PASS The return value of WaveShaperNode.connect(BiquadFilterNode, 0) matches the destination BiquadFilterNode.
+PASS The return value of WaveShaperNode.connect(ChannelMergerNode, 0, 1) matches the destination ChannelMergerNode.
+PASS The return value of MediaElementAudioSourceNode.connect(GainNode) matches the destination GainNode.
+PASS The return value of MediaElementAudioSourceNode.connect(BiquadFilterNode, 0) matches the destination BiquadFilterNode.
+PASS The return value of MediaElementAudioSourceNode.connect(ChannelMergerNode, 0, 1) matches the destination ChannelMergerNode.
+PASS The return value of MediaStreamAudioDestinationNode.connect(GainNode) matches the destination GainNode.
+PASS The return value of MediaStreamAudioDestinationNode.connect(BiquadFilterNode, 0) matches the destination BiquadFilterNode.
+PASS The return value of MediaStreamAudioDestinationNode.connect(ChannelMergerNode, 0, 1) matches the destination ChannelMergerNode.
+PASS The return value of MediaStreamAudioSourceNode.connect(GainNode) matches the destination GainNode.
+PASS The return value of MediaStreamAudioSourceNode.connect(BiquadFilterNode, 0) matches the destination BiquadFilterNode.
+PASS The return value of MediaStreamAudioSourceNode.connect(ChannelMergerNode, 0, 1) matches the destination ChannelMergerNode.
+PASS Connecting with an invalid output threw IndexSizeError: Failed to execute 'connect' on 'AudioNode': output index (1) exceeds number of outputs (1)..
+PASS Connecting to a node from the different context threw SyntaxError: Failed to execute 'connect' on 'AudioNode': cannot connect to a destination belonging to a different audio context..
+PASS The output of chained connection of gain nodes contains only the constant 0.125.
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

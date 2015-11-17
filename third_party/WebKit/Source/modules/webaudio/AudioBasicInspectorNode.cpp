@@ -49,7 +49,7 @@ void AudioBasicInspectorHandler::pullInputs(size_t framesToProcess)
     input(0).pull(output(0).bus(), framesToProcess);
 }
 
-void AudioBasicInspectorNode::connect(AudioNode* destination, unsigned outputIndex, unsigned inputIndex, ExceptionState& exceptionState)
+AudioNode* AudioBasicInspectorNode::connect(AudioNode* destination, unsigned outputIndex, unsigned inputIndex, ExceptionState& exceptionState)
 {
     ASSERT(isMainThread());
 
@@ -57,6 +57,8 @@ void AudioBasicInspectorNode::connect(AudioNode* destination, unsigned outputInd
 
     AudioNode::connect(destination, outputIndex, inputIndex, exceptionState);
     static_cast<AudioBasicInspectorHandler&>(handler()).updatePullStatus();
+
+    return destination;
 }
 
 void AudioBasicInspectorNode::disconnect(unsigned outputIndex, ExceptionState& exceptionState)

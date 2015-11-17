@@ -56,7 +56,7 @@ protected:
 private:
     // TODO(tkent): Should AudioBasicInspectorNode override other variants of
     // connect() and disconnect()?
-    void connect(AudioNode*, unsigned outputIndex, unsigned inputIndex, ExceptionState&) final;
+    AudioNode* connect(AudioNode*, unsigned outputIndex, unsigned inputIndex, ExceptionState&) final;
     void disconnect(unsigned outputIndex, ExceptionState&) final;
 };
 

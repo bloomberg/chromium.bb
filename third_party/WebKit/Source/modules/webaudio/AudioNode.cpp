@@ -559,7 +559,7 @@ AbstractAudioContext* AudioNode::context() const
     return m_context;
 }
 
-void AudioNode::connect(AudioNode* destination, unsigned outputIndex, unsigned inputIndex, ExceptionState& exceptionState)
+AudioNode* AudioNode::connect(AudioNode* destination, unsigned outputIndex, unsigned inputIndex, ExceptionState& exceptionState)
 {
     ASSERT(isMainThread());
     AbstractAudioContext::AutoLocker locker(context());
@@ -568,14 +568,14 @@ void AudioNode::connect(AudioNode* destination, unsigned outputIndex, unsigned i
         exceptionState.throwDOMException(
             InvalidStateError,
             "Cannot connect after the context has been closed.");
-        return;
+        return nullptr;
     }
 
     if (!destination) {
         exceptionState.throwDOMException(
             SyntaxError,
             "invalid destination node.");
-        return;
+        return nullptr;
     }
 
     // Sanity check input and output indices.
@@ -583,21 +583,21 @@ void AudioNode::connect(AudioNode* destination, unsigned outputIndex, unsigned i
         exceptionState.throwDOMException(
             IndexSizeError,
             "output index (" + String::number(outputIndex) + ") exceeds number of outputs (" + String::number(numberOfOutputs()) + ").");
-        return;
+        return nullptr;
     }
 
     if (destination && inputIndex >= destination->numberOfInputs()) {
         exceptionState.throwDOMException(
             IndexSizeError,
             "input index (" + String::number(inputIndex) + ") exceeds number of inputs (" + String::number(destination->numberOfInputs()) + ").");
-        return;
+        return nullptr;
     }
 
     if (context() != destination->context()) {
         exceptionState.throwDOMException(
             SyntaxError,
             "cannot connect to a destination belonging to a different audio context.");
-        return;
+        return nullptr;
     }
 
     // ScriptProcessorNodes with 0 output channels can't be connected to any destination.  If there
@@ -607,7 +607,7 @@ void AudioNode::connect(AudioNode* destination, unsigned outputIndex, unsigned i
         exceptionState.throwDOMException(
             InvalidAccessError,
             "cannot connect a ScriptProcessorNode with 0 output channels to any destination node.");
-        return;
+        return nullptr;
     }
 
     destination->handler().input(inputIndex).connect(handler().output(outputIndex));
@@ -617,6 +617,8 @@ void AudioNode::connect(AudioNode* destination, unsigned outputIndex, unsigned i
 
     // Let context know that a connection has been made.
     context()->incrementConnectionCount();
+
+    return destination;
 }
 
 void AudioNode::connect(AudioParam* param, unsigned outputIndex, ExceptionState& exceptionState)
