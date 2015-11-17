@@ -888,6 +888,8 @@ public class ContextualSearchManager extends ContextualSearchObservable
 
         @Override
         public void onMainFrameLoadStarted(String url, boolean isExternalUrl) {
+            mSearchPanel.updateTopControlsState();
+
             if (isExternalUrl) {
                 onExternalNavigation(url);
             }
@@ -1088,8 +1090,6 @@ public class ContextualSearchManager extends ContextualSearchObservable
      * @param url The URL we are navigating to.
      */
     public void onExternalNavigation(String url) {
-        mSearchPanel.updateTopControlsState();
-
         if (!mDidPromoteSearchNavigation
                 && !BLACKLISTED_URL.equals(url)
                 && !url.startsWith(INTENT_URL_PREFIX)
