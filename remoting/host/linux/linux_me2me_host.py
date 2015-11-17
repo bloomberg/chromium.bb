@@ -766,7 +766,9 @@ def daemonize():
         '%Y%m%d_%H%M%S', time.localtime(time.time()))
     log_file = tempfile.NamedTemporaryFile(prefix=log_file_prefix, delete=False)
     os.environ[LOG_FILE_ENV_VAR] = log_file.name
-    log_fd = log_file.file.fileno()
+
+    # The file-descriptor in this case is owned by the tempfile object.
+    log_fd = os.dup(log_file.file.fileno())
   else:
     log_fd = os.open(os.environ[LOG_FILE_ENV_VAR],
                      os.O_WRONLY | os.O_CREAT | os.O_APPEND, 0o600)
