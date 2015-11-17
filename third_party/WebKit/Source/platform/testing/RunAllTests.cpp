@@ -37,6 +37,9 @@
 #include "wtf/MainThread.h"
 #include "wtf/Partitions.h"
 #include "wtf/WTF.h"
+#include <base/bind.h>
+#include <base/bind_helpers.h>
+#include <base/test/launcher/unit_test_launcher.h>
 #include <base/test/test_suite.h>
 #include <string.h>
 
@@ -50,6 +53,13 @@ static void AlwaysZeroNumberSource(unsigned char* buf, size_t len)
     memset(buf, '\0', len);
 }
 
+static int runTestSuite(base::TestSuite* testSuite)
+{
+    int result = testSuite->Run();
+    blink::Heap::collectAllGarbage();
+    return result;
+}
+
 int main(int argc, char** argv)
 {
     WTF::setRandomSource(AlwaysZeroNumberSource);
@@ -61,8 +71,12 @@ int main(int argc, char** argv)
 
     blink::Heap::init();
     blink::ThreadState::attachMainThread();
+    blink::ThreadState::current()->registerTraceDOMWrappers(nullptr, nullptr);
     blink::EventTracer::initialize();
-    int result = base::RunUnitTestsUsingBaseTestSuite(argc, argv);
+
+    base::TestSuite testSuite(argc, argv);
+    int result = base::LaunchUnitTests(argc, argv, base::Bind(runTestSuite, base::Unretained(&testSuite)));
+
     blink::ThreadState::detachMainThread();
     blink::Heap::shutdown();
 
