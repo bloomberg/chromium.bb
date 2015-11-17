@@ -97,6 +97,24 @@ bool FLAGS_redirect_is_success = true;
 // Initial MTU of the connection.
 int32 FLAGS_initial_mtu = 0;
 
+class FakeCertVerifier : public net::CertVerifier {
+ public:
+  int Verify(net::X509Certificate* cert,
+             const std::string& hostname,
+             const std::string& ocsp_response,
+             int flags,
+             net::CRLSet* crl_set,
+             net::CertVerifyResult* verify_result,
+             const net::CompletionCallback& callback,
+             scoped_ptr<net::CertVerifier::Request>* out_req,
+             const net::BoundNetLog& net_log) override {
+    return net::OK;
+  }
+
+  // Returns true if this CertVerifier supports stapled OCSP responses.
+  bool SupportsOCSPStapling() override { return false; }
+};
+
 int main(int argc, char *argv[]) {
   base::CommandLine::Init(argc, argv);
   base::CommandLine* line = base::CommandLine::ForCurrentProcess();
@@ -126,7 +144,8 @@ int main(int argc, char *argv[]) {
         "--redirect_is_success       if specified an HTTP response code of 3xx "
         "is considered to be a successful response, otherwise a failure\n"
         "--initial_mtu=<initial_mtu> specify the initial MTU of the connection"
-        "\n";
+        "\n"
+        "--disable-certificate-verification do not verify certificates\n";
     cout << help_str;
     exit(0);
   }
@@ -218,6 +237,9 @@ int main(int argc, char *argv[]) {
   }
   // For secure QUIC we need to verify the cert chain.
   scoped_ptr<CertVerifier> cert_verifier(CertVerifier::CreateDefault());
+  if (line->HasSwitch("disable-certificate-verification")) {
+    cert_verifier.reset(new FakeCertVerifier());
+  }
   scoped_ptr<TransportSecurityState> transport_security_state(
       new TransportSecurityState);
   ProofVerifierChromium* proof_verifier = new ProofVerifierChromium(
