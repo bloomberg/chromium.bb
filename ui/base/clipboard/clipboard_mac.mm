@@ -307,8 +307,21 @@ SkBitmap ClipboardMac::ReadImage(ClipboardType type) const {
   // may throw, and that exception will leak. Prevent a crash in that case;
   // a blank image is better.
   base::scoped_nsobject<NSImage> image;
+  NSPasteboard* pb = GetPasteboard();
   @try {
-    image.reset([[NSImage alloc] initWithPasteboard:GetPasteboard()]);
+    if ([[pb types] containsObject:NSFilenamesPboardType]) {
+      // -[NSImage initWithPasteboard:] gets confused with copies of a single
+      // file from the Finder, so extract the path ourselves.
+      // http://crbug.com/553686
+      NSArray* paths = [pb propertyListForType:NSFilenamesPboardType];
+      if ([paths count]) {
+        // If N number of files are selected from finder, choose the last one.
+        image.reset([[NSImage alloc]
+            initWithContentsOfURL:[NSURL fileURLWithPath:[paths lastObject]]]);
+      }
+    } else {
+      image.reset([[NSImage alloc] initWithPasteboard:pb]);
+    }
   } @catch (id exception) {
   }
 
