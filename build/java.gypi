@@ -331,7 +331,6 @@
         'input_path': '<(jar_path)',
         'output_path': '<(jar_final_path)',
         'stamp_path': '<(emma_instr_stamp)',
-        'instr_type': 'jar',
       },
       'outputs': [
         '<(jar_final_path)',

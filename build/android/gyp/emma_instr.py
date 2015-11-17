@@ -8,12 +8,10 @@
 
 This script corresponds to the 'emma_instr' action in the java build process.
 Depending on whether emma_instrument is set, the 'emma_instr' action will either
-call one of the instrument commands, or the copy command.
+call the instrument command or the copy command.
 
 Possible commands are:
 - instrument_jar: Accepts a jar and instruments it using emma.jar.
-- instrument_classes: Accepts a directory containing java classes and
-      instruments it using emma.jar.
 - copy: Called when EMMA coverage is not enabled. This allows us to make
       this a required step without necessarily instrumenting on every build.
       Also removes any stale coverage files.
@@ -91,11 +89,7 @@ def _RunCopyCommand(_command, options, _, option_parser):
   if os.path.exists(sources_file):
     os.remove(sources_file)
 
-  if os.path.isdir(options.input_path):
-    shutil.rmtree(options.output_path, ignore_errors=True)
-    shutil.copytree(options.input_path, options.output_path)
-  else:
-    shutil.copy(options.input_path, options.output_path)
+  shutil.copy(options.input_path, options.output_path)
 
   if options.stamp:
     build_utils.Touch(options.stamp)
@@ -129,13 +123,12 @@ def _CreateSourcesFile(sources_string, sources_file, src_root):
     json.dump(relative_sources, f)
 
 
-def _RunInstrumentCommand(command, options, _, option_parser):
-  """Instruments the classes/jar files using EMMA.
+def _RunInstrumentCommand(_command, options, _, option_parser):
+  """Instruments jar files using EMMA.
 
   Args:
-    command: 'instrument_jar' or 'instrument_classes'. This distinguishes
-        whether we copy the output from the created lib/ directory, or classes/
-        directory.
+    command: String indicating the command that was received to trigger
+        this function.
     options: optparse options dictionary.
     args: List of extra args from optparse.
     option_parser: optparse.OptionParser object.
@@ -165,15 +158,9 @@ def _RunInstrumentCommand(command, options, _, option_parser):
            '-m', 'fullcopy']
     build_utils.CheckOutput(cmd)
 
-    if command == 'instrument_jar':
-      for jar in os.listdir(os.path.join(temp_dir, 'lib')):
-        shutil.copy(os.path.join(temp_dir, 'lib', jar),
+    for jar in os.listdir(os.path.join(temp_dir, 'lib')):
+      shutil.copy(os.path.join(temp_dir, 'lib', jar),
                     options.output_path)
-    else:  # 'instrument_classes'
-      if os.path.isdir(options.output_path):
-        shutil.rmtree(options.output_path, ignore_errors=True)
-      shutil.copytree(os.path.join(temp_dir, 'classes'),
-                      options.output_path)
   finally:
     shutil.rmtree(temp_dir)
 
@@ -192,8 +179,6 @@ VALID_COMMANDS = {
                                  _RunCopyCommand),
     'instrument_jar': CommandFunctionTuple(_AddInstrumentOptions,
                                            _RunInstrumentCommand),
-    'instrument_classes': CommandFunctionTuple(_AddInstrumentOptions,
-                                               _RunInstrumentCommand),
 }
 
 

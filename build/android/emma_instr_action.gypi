@@ -7,7 +7,6 @@
 
 {
   'variables': {
-    'instr_type%': 'jar',
     'input_path%': '',
     'output_path%': '',
     'stamp_path%': '',
@@ -24,13 +23,7 @@
           '--emma-jar=<(emma_jar)',
           '--filter-string=<(emma_filter)',
         ],
-        'conditions': [
-          ['instr_type == "jar"', {
-            'instr_action': 'instrument_jar',
-          }, {
-            'instr_action': 'instrument_classes',
-          }]
-        ],
+        'instr_action': 'instrument_jar',
       }, {
         'instr_action': 'copy',
         'extra_instr_args': [],

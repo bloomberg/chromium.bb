@@ -973,7 +973,6 @@
         'input_path': '<(javac_jar_path)',
         'output_path': '<(jar_path)',
         'stamp_path': '<(emma_instr_stamp)',
-        'instr_type': 'jar',
       },
       'outputs': [
         '<(emma_instr_stamp)',
