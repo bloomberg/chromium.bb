@@ -163,12 +163,12 @@ def ParseCommandLineFlagParameters(annotations):
   """
   ParamsTuple = collections.namedtuple('ParamsTuple', ['add', 'remove'])
   parameterized_tests = []
-  if _PARAMETERIZED_TEST_ANNOTATION in annotations:
-    parameterized_tests = [annotations[_PARAMETERIZED_TEST_ANNOTATION]]
-  elif _PARAMETERIZED_TEST_SET_ANNOTATION in annotations:
+  if _PARAMETERIZED_TEST_SET_ANNOTATION in annotations:
     if annotations[_PARAMETERIZED_TEST_SET_ANNOTATION]:
       parameterized_tests = annotations[
         _PARAMETERIZED_TEST_SET_ANNOTATION].get('tests', [])
+  elif _PARAMETERIZED_TEST_ANNOTATION in annotations:
+    parameterized_tests = [annotations[_PARAMETERIZED_TEST_ANNOTATION]]
   else:
     return None
 

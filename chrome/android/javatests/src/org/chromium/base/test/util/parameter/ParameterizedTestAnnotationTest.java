@@ -190,6 +190,22 @@ public class ParameterizedTestAnnotationTest extends
     }
 
     @SmallTest
+    @ParameterizedTest(parameters = {
+            @Parameter(tag = MethodParameter.PARAMETER_TAG,
+                    arguments = {@Parameter.Argument(name = "string", stringVar = "t_val")})})
+    @ParameterizedTest.Set(tests = {
+            @ParameterizedTest(parameters = {
+                    @Parameter(
+                            tag = MethodParameter.PARAMETER_TAG,
+                            arguments = {
+                                    @Parameter.Argument(name = "string", stringVar = "s_val")})})})
+    public void testParameterizedSetOverridesParameterizedTest() {
+        String expected = "s_val";
+        String actual = getArgument("string").stringVar();
+        assertEquals("Expected the value set via @ParameterizedTest.Set", expected, actual);
+    }
+
+    @SmallTest
     @ParameterizedTest.Set(tests = {
             @ParameterizedTest(parameters = {
                     @Parameter(

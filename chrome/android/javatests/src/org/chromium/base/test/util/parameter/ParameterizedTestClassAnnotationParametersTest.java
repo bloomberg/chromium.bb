@@ -40,21 +40,13 @@ public class ParameterizedTestClassAnnotationParametersTest extends
             @Parameter(tag = MethodParameter.PARAMETER_TAG,
                     arguments = {@Parameter.Argument(name = "m_string", stringVar = "value")})})
     public void testMethodParametersWithOneStringValue() {
-        if (getArgument("m_string") != null) {
-            // An invocation with a test method parameter.
-            String expected = "value";
-            String actual = getArgument("m_string").stringVar();
-            assertEquals(mismatchMessage("m_string"), expected, actual);
-            assertNull("c_string parameter should not exist", getArgument("c_string"));
-            assertNull("c_int parameter should not exist", getArgument("c_int"));
-        } else {
-            String expectedString = "value";
-            String actualString = getArgument("c_string").stringVar();
-            assertEquals(mismatchMessage("c_string"), expectedString, actualString);
-            int expectedInt = 0;
-            int actualInt = getArgument("c_int").intVar();
-            assertEquals(mismatchMessage("c_int"), expectedInt, actualInt);
-        }
+        // Method parameter overrides class parameter.
+        assertNotNull("m_string parameter should exist", getArgument("m_string"));
+        String expected = "value";
+        String actual = getArgument("m_string").stringVar();
+        assertEquals(mismatchMessage("m_string"), expected, actual);
+        assertNull("c_string parameter should not exist", getArgument("c_string"));
+        assertNull("c_int parameter should not exist", getArgument("c_int"));
     }
 
     private static String mismatchMessage(String name) {

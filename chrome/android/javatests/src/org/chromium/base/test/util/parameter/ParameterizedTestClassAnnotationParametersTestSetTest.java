@@ -47,26 +47,28 @@ public class ParameterizedTestClassAnnotationParametersTestSetTest extends
                                     @Parameter.Argument(name = "m_string", stringVar = "value"),
                                     @Parameter.Argument(name = "m_int", intVar = 0)})})})
     public void testClassAndMethodParameterSets() {
-        if (getArgument("m_string") != null) {
-            // An invocation with a test method parameter.
-            String expectedString = "value";
-            String actualString = getArgument("m_string").stringVar();
-            assertEquals(mismatchMessage("m_string"), expectedString, actualString);
-            int expectedInt = 0;
-            int actualInt = getArgument("m_int").intVar();
-            assertEquals(mismatchMessage("m_int"), expectedInt, actualInt);
-            assertNull("c_string1 parameter should not exist", getArgument("c_string1"));
-            assertNull("c_string2 parameter should not exist", getArgument("c_string2"));
-            assertNull("c_int1 parameter should not exist", getArgument("c_int1"));
-            assertNull("c_int2 parameter should not exist", getArgument("c_int2"));
-        } else {
-            assertEquals("c_string1 variable should equals \"testvalue\"", "testvalue",
-                    getArgument("c_string1").stringVar());
-            assertEquals("c_string2 variable should equals \"blahblah\"", "blahblah",
-                    getArgument("c_string2").stringVar());
-            assertEquals("c_int1 variable should equals 4", 4, getArgument("c_int1").intVar());
-            assertEquals("c_int2 variable should equals 0", 0, getArgument("c_int2").intVar());
-        }
+        // Method parameter overrides class parameter.
+        assertNotNull("m_string parameter should exist", getArgument("m_string"));
+        String expectedString = "value";
+        String actualString = getArgument("m_string").stringVar();
+        assertEquals(mismatchMessage("m_string"), expectedString, actualString);
+        int expectedInt = 0;
+        int actualInt = getArgument("m_int").intVar();
+        assertEquals(mismatchMessage("m_int"), expectedInt, actualInt);
+        assertNull("c_string1 parameter should not exist", getArgument("c_string1"));
+        assertNull("c_string2 parameter should not exist", getArgument("c_string2"));
+        assertNull("c_int1 parameter should not exist", getArgument("c_int1"));
+        assertNull("c_int2 parameter should not exist", getArgument("c_int2"));
+    }
+
+    @SmallTest
+    @ParameterizedTest(parameters = {
+            @Parameter(tag = MethodParameter.PARAMETER_TAG,
+                    arguments = {@Parameter.Argument(name = "c_string1", stringVar = "t_val")})})
+    public void testParameterizedSetOverridesParameterizedTest() {
+        String expected = "testvalue";
+        String actual = getArgument("c_string1").stringVar();
+        assertEquals("Expected the value set via @ParameterizedTest.Set", expected, actual);
     }
 
     private static String mismatchMessage(String name) {

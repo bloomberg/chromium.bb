@@ -6,8 +6,10 @@ package org.chromium.base.test.util.parameter;
 
 import junit.framework.TestCase;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -46,7 +48,7 @@ public @interface Parameter {
      * The tool to read Parameter related annotations.
      */
     class Reader {
-        private AnnotatedElement mAnnotatedTestClass;
+        private Class mAnnotatedTestClass;
         private AnnotatedElement mAnnotatedTestMethod;
         private ParameterizedTest mParameterizedTest;
 
@@ -65,22 +67,52 @@ public @interface Parameter {
          * @return a list of all the {@link ParameterizedTest}s for the current test.
          */
         public List<ParameterizedTest> getParameterizedTests() {
-            List<ParameterizedTest> parameterizedTests = new ArrayList<>();
-            if (mAnnotatedTestClass.isAnnotationPresent(ParameterizedTest.Set.class)) {
-                Collections.addAll(parameterizedTests,
-                        getParameterizedTestSet(mAnnotatedTestClass).tests());
-            } else if (mAnnotatedTestClass.isAnnotationPresent(ParameterizedTest.class)) {
-                parameterizedTests.add(getParameterizedTest(mAnnotatedTestClass));
-            }
-            if (mAnnotatedTestMethod.isAnnotationPresent(ParameterizedTest.Set.class)) {
-                Collections.addAll(parameterizedTests,
-                        getParameterizedTestSet(mAnnotatedTestMethod).tests());
-            } else if (mAnnotatedTestMethod.isAnnotationPresent(ParameterizedTest.class)) {
-                parameterizedTests.add(getParameterizedTest(mAnnotatedTestMethod));
-            }
-            return parameterizedTests;
+            return new ArrayList<ParameterizedTest>(getParameterizedTestsImpl());
         }
 
+        /**
+         * Gets the {@link ParameterizedTest}s for the current test as immutable list.
+         *
+         * @return a list of all the {@link ParameterizedTest}s for the current test.
+         */
+        private List<ParameterizedTest> getParameterizedTestsImpl() {
+            // Note: this must be aligned with Python code in
+            // instrumentation_test_instance.ParseCommandLineFlagParameters (regarding priority of
+            // ParameterizedTest.Set vs. ParameterizedTest) and in test_jar._GetProguardData
+            // (regarding composition of method annotations with class and superclasses
+            // annotations). Composition precedes selecting the annotation to process.
+            if (mAnnotatedTestMethod.isAnnotationPresent(ParameterizedTest.Set.class)) {
+                return Arrays.asList(getParameterizedTestSet(mAnnotatedTestMethod).tests());
+            }
+            AnnotatedElement classWithAnnotation = findClassWithAnnotation(
+                    mAnnotatedTestClass, ParameterizedTest.Set.class);
+            if (classWithAnnotation != null) {
+                return Arrays.asList(getParameterizedTestSet(classWithAnnotation).tests());
+            }
+            if (mAnnotatedTestMethod.isAnnotationPresent(ParameterizedTest.class)) {
+                return Collections.singletonList(getParameterizedTest(mAnnotatedTestMethod));
+            }
+            classWithAnnotation = findClassWithAnnotation(
+                    mAnnotatedTestClass, ParameterizedTest.class);
+            if (classWithAnnotation != null) {
+                return Collections.singletonList(getParameterizedTest(classWithAnnotation));
+            }
+            return Collections.emptyList();
+        }
+
+        /**
+         * Finds a class with the given annotation class starting from the given clazz.
+         *
+         * @return the class as {@link AnnotatedElement} or null if the class is not found.
+         */
+        private AnnotatedElement findClassWithAnnotation(
+                Class<?> clazz, Class<? extends Annotation> annotationClass) {
+            if (clazz == null || clazz.isAnnotationPresent(annotationClass)) {
+                return clazz;
+            } else {
+                return findClassWithAnnotation(clazz.getSuperclass(), annotationClass);
+            }
+        }
 
         /**
          * Gets the {@link ParameterizedTest} annotation of the current test.
@@ -101,10 +133,12 @@ public @interface Parameter {
         }
 
         public boolean isParameterizedTest() {
-            return mAnnotatedTestClass.isAnnotationPresent(ParameterizedTest.class)
-                    || mAnnotatedTestClass.isAnnotationPresent(ParameterizedTest.Set.class)
+            return mAnnotatedTestMethod.isAnnotationPresent(ParameterizedTest.Set.class)
                     || mAnnotatedTestMethod.isAnnotationPresent(ParameterizedTest.class)
-                    || mAnnotatedTestMethod.isAnnotationPresent(ParameterizedTest.Set.class);
+                    || findClassWithAnnotation(
+                            mAnnotatedTestClass, ParameterizedTest.Set.class) != null
+                    || findClassWithAnnotation(
+                            mAnnotatedTestClass, ParameterizedTest.class) != null;
         }
 
         public void setCurrentParameterizedTest(ParameterizedTest parameterizedTest) {

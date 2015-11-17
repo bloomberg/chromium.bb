@@ -50,20 +50,28 @@ public class ParameterizedTestClassAnnotationTest extends
             @Parameter(tag = MethodParameter.PARAMETER_TAG,
                     arguments = {@Parameter.Argument(name = "string", stringVar = "value")})})
     public void testMethodParametersWithOneStringValue() {
-        if (getArgument("string") != null) {
-            // An invocation with a test method parameter.
-            String expected = "value";
-            String actual = getArgument("string").stringVar();
-            assertEquals(mismatchMessage("string"), expected, actual);
-        } else {
-            assertEquals(0,
-                    getParameterReader().getParameter(
-                            MethodParameter.PARAMETER_TAG).arguments().length);
-        }
+        // Method parameter overrides class parameter.
+        assertNotNull("string parameter should exist.", getArgument("string"));
+        String expected = "value";
+        String actual = getArgument("string").stringVar();
+        assertEquals(mismatchMessage("string"), expected, actual);
         assertNull("someParameter should not exist.", getParameterReader()
                 .getParameter("someParameter"));
         assertNull("someParameterArgument should not exist.", getParameterReader()
                 .getParameterArgument("someParameter", "someParameterArgument"));
+    }
+
+    @SmallTest
+    @ParameterizedTest.Set(tests = {
+            @ParameterizedTest(parameters = {
+                    @Parameter(
+                            tag = MethodParameter.PARAMETER_TAG,
+                            arguments = {
+                                    @Parameter.Argument(name = "string", stringVar = "s_val")})})})
+    public void testParameterizedSetOverridesParameterizedTest() {
+        String expected = "s_val";
+        String actual = getArgument("string").stringVar();
+        assertEquals("Expected the value set via @ParameterizedTest.Set", expected, actual);
     }
 
     private static String mismatchMessage(String name) {
