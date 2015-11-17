@@ -31,14 +31,13 @@
 #ifndef WebOptionElement_h
 #define WebOptionElement_h
 
-#include "../platform/WebVector.h"
 #include "WebElement.h"
 
 namespace blink {
 
 class HTMLOptionElement;
+class WebString;
 
-// Provides readonly access to some properties of a DOM option element node.
 class WebOptionElement final : public WebElement {
 public:
     WebOptionElement() : WebElement() { }
@@ -51,13 +50,9 @@ public:
     }
     void assign(const WebOptionElement& element) { WebElement::assign(element); }
 
-    BLINK_EXPORT void setValue(const WebString&);
     BLINK_EXPORT WebString value() const;
-
-    BLINK_EXPORT int index() const;
     BLINK_EXPORT WebString text() const;
     BLINK_EXPORT WebString label() const;
-    BLINK_EXPORT bool isEnabled() const;
 
 #if BLINK_IMPLEMENTATION
     WebOptionElement(const PassRefPtrWillBeRawPtr<HTMLOptionElement>&);
