@@ -5,7 +5,7 @@
 // Adds a Javascript source tag to the document.
 function addScriptTag(src) {
   document.write(
-      '<script type="text/javascript" async="false" src="eme_player_js/' + src +
+      '<script type="text/javascript" src="eme_player_js/' + src +
       '"></script>');
 }
 
