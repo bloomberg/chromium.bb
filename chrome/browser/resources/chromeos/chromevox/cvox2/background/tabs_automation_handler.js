@@ -20,6 +20,8 @@ TabsAutomationHandler = function(node) {
 };
 
 TabsAutomationHandler.prototype = {
+  __proto__: DesktopAutomationHandler.prototype,
+
   /** @override */
   didHandleEvent_: function(evt) {
     evt.stopPropagation();

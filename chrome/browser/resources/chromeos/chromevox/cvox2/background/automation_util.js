@@ -96,7 +96,7 @@ AutomationUtil.findNextSubtree = function(cur, dir) {
     if (!AutomationUtil.isInSameTree(cur, cur.parent))
       return null;
     cur = cur.parent;
-    if (AutomationUtil.isTraversalRoot(cur))
+    if (!cur || AutomationUtil.isTraversalRoot(cur))
       return null;
   }
 };
