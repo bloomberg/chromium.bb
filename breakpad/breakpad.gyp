@@ -310,8 +310,7 @@
             ['OS=="ios"', {
               'xcode_settings' : {
                 'WARNING_CFLAGS': [
-                  # MinidumpGenerator uses an API deprecated in iOS 7.
-                  # crbug.com/408562
+                  # See https://bugs.chromium.org/p/google-breakpad/issues/detail?id=675.
                   '-Wno-deprecated-declarations',
                 ],
               },

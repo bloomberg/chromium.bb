@@ -725,6 +725,7 @@ if (is_linux || is_android) {
 
 if (is_ios) {
   static_library("client") {
+    set_sources_assignment_filter([])
     sources = [
       "src/client/ios/Breakpad.h",
       "src/client/ios/Breakpad.mm",
@@ -751,6 +752,8 @@ if (is_ios) {
       "src/client/minidump_file_writer.h",
       "src/common/convert_UTF.c",
       "src/common/convert_UTF.h",
+      "src/common/mac/GTMLogger.h",
+      "src/common/mac/GTMLogger.m",
       "src/common/mac/HTTPMultipartUpload.m",
       "src/common/mac/file_id.cc",
       "src/common/mac/file_id.h",
@@ -770,12 +773,20 @@ if (is_ios) {
       "src/common/string_conversion.h",
       "src/google_breakpad/common/minidump_format.h",
     ]
+    set_sources_assignment_filter(sources_assignment_filter)
 
     include_dirs = [
       "src",
       "src/client/mac/Framework",
       "src/common/mac",
     ]
+
+    public_configs = [ ":client_config" ]
+
+    if (is_clang) {
+      # See https://bugs.chromium.org/p/google-breakpad/issues/detail?id=675.
+      cflags = [ "-Wno-deprecated-declarations" ]
+    }
   }
   # TODO(GYP) There is some XCode-only targets like ninja-breakpad.
 }
