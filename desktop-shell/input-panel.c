@@ -31,7 +31,7 @@
 
 #include "shell.h"
 #include "desktop-shell-server-protocol.h"
-#include "input-method-server-protocol.h"
+#include "input-method-unstable-v1-server-protocol.h"
 #include "shared/helpers.h"
 
 struct input_panel_surface {
@@ -290,7 +290,7 @@ input_panel_surface_set_overlay_panel(struct wl_client *client,
 	input_panel_surface->panel = 1;
 }
 
-static const struct wl_input_panel_surface_interface input_panel_surface_implementation = {
+static const struct zwp_input_panel_surface_v1_interface input_panel_surface_implementation = {
 	input_panel_surface_set_toplevel,
 	input_panel_surface_set_overlay_panel
 };
@@ -332,14 +332,16 @@ input_panel_get_input_panel_surface(struct wl_client *client,
 
 	ipsurf->resource =
 		wl_resource_create(client,
-				   &wl_input_panel_surface_interface, 1, id);
+				   &zwp_input_panel_surface_v1_interface,
+				   1,
+				   id);
 	wl_resource_set_implementation(ipsurf->resource,
 				       &input_panel_surface_implementation,
 				       ipsurf,
 				       destroy_input_panel_surface_resource);
 }
 
-static const struct wl_input_panel_interface input_panel_implementation = {
+static const struct zwp_input_panel_v1_interface input_panel_implementation = {
 	input_panel_get_input_panel_surface
 };
 
@@ -359,7 +361,7 @@ bind_input_panel(struct wl_client *client,
 	struct wl_resource *resource;
 
 	resource = wl_resource_create(client,
-				      &wl_input_panel_interface, 1, id);
+				      &zwp_input_panel_v1_interface, 1, id);
 
 	if (shell->input_panel.binding == NULL) {
 		wl_resource_set_implementation(resource,
@@ -398,7 +400,7 @@ input_panel_setup(struct desktop_shell *shell)
 	wl_list_init(&shell->input_panel.surfaces);
 
 	if (wl_global_create(shell->compositor->wl_display,
-			     &wl_input_panel_interface, 1,
+			     &zwp_input_panel_v1_interface, 1,
 			     shell, bind_input_panel) == NULL)
 		return -1;
 

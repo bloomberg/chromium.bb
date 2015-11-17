@@ -33,7 +33,7 @@
 #include <linux/input.h>
 
 #include "window.h"
-#include "input-method-client-protocol.h"
+#include "input-method-unstable-v1-client-protocol.h"
 
 enum compose_state {
 	state_normal,
@@ -54,8 +54,8 @@ typedef void (*keyboard_input_key_handler_t)(struct simple_im *keyboard,
 					     enum wl_keyboard_key_state state);
 
 struct simple_im {
-	struct wl_input_method *input_method;
-	struct wl_input_method_context *context;
+	struct zwp_input_method_v1 *input_method;
+	struct zwp_input_method_context_v1 *context;
 	struct wl_display *display;
 	struct wl_registry *registry;
 	struct wl_keyboard *keyboard;
@@ -105,7 +105,7 @@ static const uint32_t ignore_keys_on_compose[] = {
 
 static void
 handle_surrounding_text(void *data,
-			struct wl_input_method_context *context,
+			struct zwp_input_method_context_v1 *context,
 			const char *text,
 			uint32_t cursor,
 			uint32_t anchor)
@@ -115,7 +115,7 @@ handle_surrounding_text(void *data,
 
 static void
 handle_reset(void *data,
-	     struct wl_input_method_context *context)
+	     struct zwp_input_method_context_v1 *context)
 {
 	struct simple_im *keyboard = data;
 
@@ -126,7 +126,7 @@ handle_reset(void *data,
 
 static void
 handle_content_type(void *data,
-		    struct wl_input_method_context *context,
+		    struct zwp_input_method_context_v1 *context,
 		    uint32_t hint,
 		    uint32_t purpose)
 {
@@ -134,7 +134,7 @@ handle_content_type(void *data,
 
 static void
 handle_invoke_action(void *data,
-		     struct wl_input_method_context *context,
+		     struct zwp_input_method_context_v1 *context,
 		     uint32_t button,
 		     uint32_t index)
 {
@@ -142,7 +142,7 @@ handle_invoke_action(void *data,
 
 static void
 handle_commit_state(void *data,
-		    struct wl_input_method_context *context,
+		    struct zwp_input_method_context_v1 *context,
 		    uint32_t serial)
 {
 	struct simple_im *keyboard = data;
@@ -152,12 +152,12 @@ handle_commit_state(void *data,
 
 static void
 handle_preferred_language(void *data,
-			  struct wl_input_method_context *context,
+			  struct zwp_input_method_context_v1 *context,
 			  const char *language)
 {
 }
 
-static const struct wl_input_method_context_listener input_method_context_listener = {
+static const struct zwp_input_method_context_v1_listener input_method_context_listener = {
 	handle_surrounding_text,
 	handle_reset,
 	handle_content_type,
@@ -256,7 +256,7 @@ input_method_keyboard_modifiers(void *data,
 				uint32_t group)
 {
 	struct simple_im *keyboard = data;
-	struct wl_input_method_context *context = keyboard->context;
+	struct zwp_input_method_context_v1 *context = keyboard->context;
 	xkb_mod_mask_t mask;
 
 	xkb_state_update_mask(keyboard->state, mods_depressed,
@@ -273,9 +273,9 @@ input_method_keyboard_modifiers(void *data,
 	if (mask & keyboard->shift_mask)
 		keyboard->modifiers |= MOD_SHIFT_MASK;
 
-	wl_input_method_context_modifiers(context, serial,
-					  mods_depressed, mods_depressed,
-					  mods_latched, group);
+	zwp_input_method_context_v1_modifiers(context, serial,
+					      mods_depressed, mods_depressed,
+					      mods_latched, group);
 }
 
 static const struct wl_keyboard_listener input_method_keyboard_listener = {
@@ -288,23 +288,23 @@ static const struct wl_keyboard_listener input_method_keyboard_listener = {
 
 static void
 input_method_activate(void *data,
-		      struct wl_input_method *input_method,
-		      struct wl_input_method_context *context)
+		      struct zwp_input_method_v1 *input_method,
+		      struct zwp_input_method_context_v1 *context)
 {
 	struct simple_im *keyboard = data;
 
 	if (keyboard->context)
-		wl_input_method_context_destroy(keyboard->context);
+		zwp_input_method_context_v1_destroy(keyboard->context);
 
 	keyboard->compose_state = state_normal;
 
 	keyboard->serial = 0;
 
 	keyboard->context = context;
-	wl_input_method_context_add_listener(context,
-					     &input_method_context_listener,
-					     keyboard);
-	keyboard->keyboard = wl_input_method_context_grab_keyboard(context);
+	zwp_input_method_context_v1_add_listener(context,
+						 &input_method_context_listener,
+						 keyboard);
+	keyboard->keyboard = zwp_input_method_context_v1_grab_keyboard(context);
 	wl_keyboard_add_listener(keyboard->keyboard,
 				 &input_method_keyboard_listener,
 				 keyboard);
@@ -312,19 +312,19 @@ input_method_activate(void *data,
 
 static void
 input_method_deactivate(void *data,
-			struct wl_input_method *input_method,
-			struct wl_input_method_context *context)
+			struct zwp_input_method_v1 *input_method,
+			struct zwp_input_method_context_v1 *context)
 {
 	struct simple_im *keyboard = data;
 
 	if (!keyboard->context)
 		return;
 
-	wl_input_method_context_destroy(keyboard->context);
+	zwp_input_method_context_v1_destroy(keyboard->context);
 	keyboard->context = NULL;
 }
 
-static const struct wl_input_method_listener input_method_listener = {
+static const struct zwp_input_method_v1_listener input_method_listener = {
 	input_method_activate,
 	input_method_deactivate
 };
@@ -335,12 +335,12 @@ registry_handle_global(void *data, struct wl_registry *registry,
 {
 	struct simple_im *keyboard = data;
 
-	if (!strcmp(interface, "wl_input_method")) {
+	if (!strcmp(interface, "zwp_input_method_v1")) {
 		keyboard->input_method =
 			wl_registry_bind(registry, name,
-					 &wl_input_method_interface, 1);
-		wl_input_method_add_listener(keyboard->input_method,
-					     &input_method_listener, keyboard);
+					 &zwp_input_method_v1_interface, 1);
+		zwp_input_method_v1_add_listener(keyboard->input_method,
+						 &input_method_listener, keyboard);
 	}
 }
 
@@ -379,7 +379,7 @@ simple_im_key_handler(struct simple_im *keyboard,
 		      uint32_t serial, uint32_t time, uint32_t key, uint32_t sym,
 		      enum wl_keyboard_key_state state)
 {
-	struct wl_input_method_context *context = keyboard->context;
+	struct zwp_input_method_context_v1 *context = keyboard->context;
 	char text[64];
 
 	if (sym == XKB_KEY_Multi_key &&
@@ -399,7 +399,11 @@ simple_im_key_handler(struct simple_im *keyboard,
 
 		for (i = 0; i < sizeof(ignore_keys_on_compose) / sizeof(ignore_keys_on_compose[0]); i++) {
 			if (sym == ignore_keys_on_compose[i]) {
-				wl_input_method_context_key(context, keyboard->serial, time, key, state);
+				zwp_input_method_context_v1_key(context,
+								keyboard->serial,
+								time,
+								key,
+								state);
 				return;
 			}
 		}
@@ -414,16 +418,16 @@ simple_im_key_handler(struct simple_im *keyboard,
 
 		if (cs) {
 			if (cs->keys[i + 1] == 0) {
-				wl_input_method_context_preedit_cursor(keyboard->context,
-								       0);
-				wl_input_method_context_preedit_string(keyboard->context,
-								       keyboard->serial,
-								       "", "");
-				wl_input_method_context_cursor_position(keyboard->context,
-									0, 0);
-				wl_input_method_context_commit_string(keyboard->context,
-								      keyboard->serial,
-								      cs->text);
+				zwp_input_method_context_v1_preedit_cursor(keyboard->context,
+									   0);
+				zwp_input_method_context_v1_preedit_string(keyboard->context,
+									   keyboard->serial,
+									   "", "");
+				zwp_input_method_context_v1_cursor_position(keyboard->context,
+									    0, 0);
+				zwp_input_method_context_v1_commit_string(keyboard->context,
+									  keyboard->serial,
+									  cs->text);
 				keyboard->compose_state = state_normal;
 			} else {
 				uint32_t j = 0, idx = 0;
@@ -432,12 +436,12 @@ simple_im_key_handler(struct simple_im *keyboard,
 					idx += xkb_keysym_to_utf8(cs->keys[j], text + idx, sizeof(text) - idx);
 				}
 
-				wl_input_method_context_preedit_cursor(keyboard->context,
-								       strlen(text));
-				wl_input_method_context_preedit_string(keyboard->context,
-								       keyboard->serial,
-								       text,
-								       text);
+				zwp_input_method_context_v1_preedit_cursor(keyboard->context,
+									   strlen(text));
+				zwp_input_method_context_v1_preedit_string(keyboard->context,
+									   keyboard->serial,
+									   text,
+									   text);
 			}
 		} else {
 			uint32_t j = 0, idx = 0;
@@ -445,34 +449,34 @@ simple_im_key_handler(struct simple_im *keyboard,
 			for (; j <= i; j++) {
 				idx += xkb_keysym_to_utf8(keyboard->compose_seq.keys[j], text + idx, sizeof(text) - idx);
 			}
-			wl_input_method_context_preedit_cursor(keyboard->context,
-							       0);
-			wl_input_method_context_preedit_string(keyboard->context,
-							       keyboard->serial,
-							       "", "");
-			wl_input_method_context_cursor_position(keyboard->context,
-								0, 0);
-			wl_input_method_context_commit_string(keyboard->context,
-							      keyboard->serial,
-							      text);
+			zwp_input_method_context_v1_preedit_cursor(keyboard->context,
+								   0);
+			zwp_input_method_context_v1_preedit_string(keyboard->context,
+								   keyboard->serial,
+								   "", "");
+			zwp_input_method_context_v1_cursor_position(keyboard->context,
+								    0, 0);
+			zwp_input_method_context_v1_commit_string(keyboard->context,
+								  keyboard->serial,
+								  text);
 			keyboard->compose_state = state_normal;
 		}
 		return;
 	}
 
 	if (xkb_keysym_to_utf8(sym, text, sizeof(text)) <= 0) {
-		wl_input_method_context_key(context, serial, time, key, state);
+		zwp_input_method_context_v1_key(context, serial, time, key, state);
 		return;
 	}
 
 	if (state == WL_KEYBOARD_KEY_STATE_PRESSED)
 		return;
 
-	wl_input_method_context_cursor_position(keyboard->context,
-						0, 0);
-	wl_input_method_context_commit_string(keyboard->context,
-					      keyboard->serial,
-					      text);
+	zwp_input_method_context_v1_cursor_position(keyboard->context,
+						    0, 0);
+	zwp_input_method_context_v1_commit_string(keyboard->context,
+						  keyboard->serial,
+						  text);
 }
 
 int

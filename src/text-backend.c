@@ -34,7 +34,7 @@
 
 #include "compositor.h"
 #include "text-input-unstable-v1-server-protocol.h"
-#include "input-method-server-protocol.h"
+#include "input-method-unstable-v1-server-protocol.h"
 #include "shared/helpers.h"
 
 struct text_input_manager;
@@ -127,7 +127,7 @@ deactivate_input_method(struct input_method *input_method)
 
 	if (input_method->context && input_method->input_method_binding) {
 		input_method_context_end_keyboard_grab(input_method->context);
-		wl_input_method_send_deactivate(
+		zwp_input_method_v1_send_deactivate(
 			input_method->input_method_binding,
 			input_method->context->resource);
 	}
@@ -172,7 +172,7 @@ text_input_set_surrounding_text(struct wl_client *client,
 			      &text_input->input_methods, link) {
 		if (!input_method->context)
 			continue;
-		wl_input_method_context_send_surrounding_text(
+		zwp_input_method_context_v1_send_surrounding_text(
 			input_method->context->resource, text, cursor, anchor);
 	}
 }
@@ -245,7 +245,7 @@ text_input_reset(struct wl_client *client,
 			      &text_input->input_methods, link) {
 		if (!input_method->context)
 			continue;
-		wl_input_method_context_send_reset(
+		zwp_input_method_context_v1_send_reset(
 			input_method->context->resource);
 	}
 }
@@ -283,7 +283,7 @@ text_input_set_content_type(struct wl_client *client,
 			      &text_input->input_methods, link) {
 		if (!input_method->context)
 			continue;
-		wl_input_method_context_send_content_type(
+		zwp_input_method_context_v1_send_content_type(
 			input_method->context->resource, hint, purpose);
 	}
 }
@@ -301,7 +301,7 @@ text_input_invoke_action(struct wl_client *client,
 			      &text_input->input_methods, link) {
 		if (!input_method->context)
 			continue;
-		wl_input_method_context_send_invoke_action(
+		zwp_input_method_context_v1_send_invoke_action(
 			input_method->context->resource, button, index);
 	}
 }
@@ -318,7 +318,7 @@ text_input_commit_state(struct wl_client *client,
 			      &text_input->input_methods, link) {
 		if (!input_method->context)
 			continue;
-		wl_input_method_context_send_commit_state(
+		zwp_input_method_context_v1_send_commit_state(
 			input_method->context->resource, serial);
 	}
 }
@@ -368,7 +368,7 @@ text_input_set_preferred_language(struct wl_client *client,
 			      &text_input->input_methods, link) {
 		if (!input_method->context)
 			continue;
-		wl_input_method_context_send_preferred_language(
+		zwp_input_method_context_v1_send_preferred_language(
 			input_method->context->resource, language);
 	}
 }
@@ -745,7 +745,7 @@ input_method_context_text_direction(struct wl_client *client,
 }
 
 
-static const struct wl_input_method_context_interface context_implementation = {
+static const struct zwp_input_method_context_v1_interface context_implementation = {
 	input_method_context_destroy,
 	input_method_context_commit_string,
 	input_method_context_preedit_string,
@@ -794,7 +794,8 @@ input_method_context_create(struct text_input *input,
 	binding = input_method->input_method_binding;
 	context->resource =
 		wl_resource_create(wl_resource_get_client(binding),
-				   &wl_input_method_context_interface, 1, 0);
+				   &zwp_input_method_context_v1_interface,
+				   1, 0);
 	wl_resource_set_implementation(context->resource,
 				       &context_implementation,
 				       context, destroy_input_method_context);
@@ -804,7 +805,7 @@ input_method_context_create(struct text_input *input,
 	input_method->context = context;
 
 
-	wl_input_method_send_activate(binding, context->resource);
+	zwp_input_method_v1_send_activate(binding, context->resource);
 }
 
 static void
@@ -848,7 +849,8 @@ bind_input_method(struct wl_client *client,
 	struct wl_resource *resource;
 
 	resource =
-		wl_resource_create(client, &wl_input_method_interface, 1, id);
+		wl_resource_create(client,
+				   &zwp_input_method_v1_interface, 1, id);
 
 	if (input_method->input_method_binding != NULL) {
 		wl_resource_post_error(resource,
@@ -999,7 +1001,8 @@ text_backend_seat_created(struct text_backend *text_backend,
 	input_method->text_backend = text_backend;
 
 	input_method->input_method_global =
-		wl_global_create(ec->wl_display, &wl_input_method_interface, 1,
+		wl_global_create(ec->wl_display,
+				 &zwp_input_method_v1_interface, 1,
 				 input_method, bind_input_method);
 
 	input_method->destroy_listener.notify = input_method_notifier_destroy;

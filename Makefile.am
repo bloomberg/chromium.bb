@@ -119,8 +119,8 @@ nodist_weston_SOURCES =					\
 	protocol/text-cursor-position-server-protocol.h	\
 	protocol/text-input-unstable-v1-protocol.c			\
 	protocol/text-input-unstable-v1-server-protocol.h		\
-	protocol/input-method-protocol.c		\
-	protocol/input-method-server-protocol.h		\
+	protocol/input-method-unstable-v1-protocol.c			\
+	protocol/input-method-unstable-v1-server-protocol.h		\
 	protocol/workspaces-protocol.c			\
 	protocol/workspaces-server-protocol.h		\
 	protocol/presentation_timing-protocol.c		\
@@ -696,15 +696,15 @@ weston_keyboard_SOURCES = clients/keyboard.c
 nodist_weston_keyboard_SOURCES =			\
 	protocol/desktop-shell-client-protocol.h	\
 	protocol/desktop-shell-protocol.c		\
-	protocol/input-method-protocol.c		\
-	protocol/input-method-client-protocol.h
+	protocol/input-method-unstable-v1-protocol.c		\
+	protocol/input-method-unstable-v1-client-protocol.h
 weston_keyboard_LDADD = libtoytoolkit.la
 weston_keyboard_CFLAGS = $(AM_CFLAGS) $(CLIENT_CFLAGS)
 
 weston_simple_im_SOURCES = clients/weston-simple-im.c
 nodist_weston_simple_im_SOURCES =		\
-	protocol/input-method-protocol.c	\
-	protocol/input-method-client-protocol.h
+	protocol/input-method-unstable-v1-protocol.c		\
+	protocol/input-method-unstable-v1-client-protocol.h
 weston_simple_im_LDADD = $(CLIENT_LIBS)
 weston_simple_im_CFLAGS = $(AM_CFLAGS) $(CLIENT_CFLAGS)
 
@@ -755,8 +755,8 @@ BUILT_SOURCES +=					\
 	protocol/text-cursor-position-protocol.c	\
 	protocol/text-input-unstable-v1-protocol.c			\
 	protocol/text-input-unstable-v1-client-protocol.h		\
-	protocol/input-method-protocol.c		\
-	protocol/input-method-client-protocol.h		\
+	protocol/input-method-unstable-v1-protocol.c			\
+	protocol/input-method-unstable-v1-client-protocol.h		\
 	protocol/desktop-shell-client-protocol.h	\
 	protocol/desktop-shell-protocol.c		\
 	protocol/scaler-client-protocol.h		\
@@ -1342,7 +1342,6 @@ BUILT_SOURCES +=				\
 EXTRA_DIST +=					\
 	protocol/desktop-shell.xml		\
 	protocol/screenshooter.xml		\
-	protocol/input-method.xml		\
 	protocol/workspaces.xml			\
 	protocol/text-cursor-position.xml	\
 	protocol/weston-test.xml		\
