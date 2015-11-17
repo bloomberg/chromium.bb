@@ -29,7 +29,6 @@ class WebContentLayerImpl : public blink::WebContentLayer,
 
   // WebContentLayer implementation.
   blink::WebLayer* layer() override;
-  void setDoubleSided(bool double_sided) override;
 
  protected:
   ~WebContentLayerImpl() override;

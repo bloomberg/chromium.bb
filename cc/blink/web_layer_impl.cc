@@ -208,6 +208,10 @@ bool WebLayerImpl::drawsContent() const {
   return layer_->DrawsContent();
 }
 
+void WebLayerImpl::setDoubleSided(bool double_sided) {
+  layer_->SetDoubleSided(double_sided);
+}
+
 void WebLayerImpl::setShouldFlattenTransform(bool flatten) {
   layer_->SetShouldFlattenTransform(flatten);
 }

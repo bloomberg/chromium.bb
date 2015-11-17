@@ -104,6 +104,10 @@ public:
     virtual void setDrawsContent(bool) = 0;
     virtual bool drawsContent() const = 0;
 
+    // Set to true if the backside of this layer's contents should be visible
+    // when composited. Defaults to false.
+    virtual void setDoubleSided(bool) = 0;
+
     // Sets whether the layer's transform should be flattened.
     virtual void setShouldFlattenTransform(bool) = 0;
 

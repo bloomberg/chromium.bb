@@ -58,10 +58,6 @@ blink::WebLayer* WebContentLayerImpl::layer() {
   return layer_.get();
 }
 
-void WebContentLayerImpl::setDoubleSided(bool double_sided) {
-  layer_->layer()->SetDoubleSided(double_sided);
-}
-
 scoped_refptr<cc::DisplayItemList>
 WebContentLayerImpl::PaintContentsToDisplayList(
     const gfx::Rect& clip,

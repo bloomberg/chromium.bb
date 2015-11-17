@@ -125,7 +125,6 @@ GraphicsLayer::GraphicsLayer(GraphicsLayerClient* client)
     m_layer = adoptPtr(Platform::current()->compositorSupport()->createContentLayer(m_contentLayerDelegate.get()));
     m_layer->layer()->setDrawsContent(m_drawsContent && m_contentsVisible);
     m_layer->layer()->setWebLayerClient(this);
-    m_layer->setAutomaticallyComputeRasterScale(true);
 
     // TODO(rbyers): Expose control over this to the web - crbug.com/489802:
     setScrollBlocksOn(WebScrollBlocksOnStartTouch | WebScrollBlocksOnWheelEvent);
@@ -961,7 +960,7 @@ void GraphicsLayer::setContentsClippingMaskLayer(GraphicsLayer* contentsClipping
 void GraphicsLayer::setBackfaceVisibility(bool visible)
 {
     m_backfaceVisibility = visible;
-    m_layer->setDoubleSided(m_backfaceVisibility);
+    platformLayer()->setDoubleSided(m_backfaceVisibility);
 }
 
 void GraphicsLayer::setOpacity(float opacity)

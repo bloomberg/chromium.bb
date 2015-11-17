@@ -95,6 +95,7 @@ class WebLayerImpl : public blink::WebLayer, public cc::LayerClient {
   SkMatrix44 transform() const override;
   void setDrawsContent(bool draws_content) override;
   bool drawsContent() const override;
+  void setDoubleSided(bool double_sided) override;
   void setShouldFlattenTransform(bool flatten) override;
   void setRenderingContext(int context) override;
   void setUseParentBackfaceVisibility(bool visible) override;
